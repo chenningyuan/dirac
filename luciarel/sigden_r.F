@@ -11,6 +11,7 @@
 *
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *. specific input Coefficients and types
       DIMENSION T(*)
 *
@@ -60,6 +61,9 @@ C     INCLUDE 'cc_exc.inc'
       call memmar(KWCPMT_OX,LENGTH_OX,'ADDL  ',1,'KNCPMT')
       IUSLAB = 0
 *
+* FIXME
+* !!! Define KLOBEX,KLSOX_TO_OX when debugging !!!
+*
 *. Occupation of strings of given sym and supergroup
       CALL ANA_GENCCS(T,WORK(KLSOBEX),WORK(KLOBEX),
      &            NSPOBEX_TP,NOBEX_TP,ISM,
@@ -71,7 +75,7 @@ C     INCLUDE 'cc_exc.inc'
      &            WORK(KNCPMT_OX),WORK(KWCPMT_OX),      
      &            NTOOB,IPRNCIV,WORK(KLSOX_TO_OX))
    
-      call memmar(IDUM,IDUM,'FLUSM',IDUM,'GASGCC')
+      call memmar(KDUM,IDUM,'FLUSM',IDUM,'GASGCC')
       CALL QEXIT('ANAGC')
 *
       RETURN
@@ -103,6 +107,7 @@ C     INCLUDE 'cc_exc.inc'
 *  Orbitals
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "symm.inc"
@@ -397,6 +402,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 * list of excitations
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
@@ -443,6 +449,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 * Jeppe Olsen, Summer of 99
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *. Input
       INTEGER INOCC(NGAS)
       INTEGER ICCEXC(NGAS)
@@ -492,6 +499,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *. Input
       INTEGER NCA(NGAS),NCB(NGAS),NAA(NGAS),NAB(NGAS)
 *
@@ -562,6 +570,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. input
@@ -1438,6 +1447,7 @@ C            WRT_SPOX_TP(IEX_TP,NEX_TP)
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       REAL*8 INPROD
 *. General input
 #include "mxpdim.inc"
@@ -2012,6 +2022,7 @@ C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
 * Double group version
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -2204,6 +2215,7 @@ C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
 * Jeppe Olsen, July 2000 ( At summerschool, HNIE)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 *. Specific input
@@ -2317,6 +2329,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *                 ISMDST added Aug. 2003
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
@@ -2539,6 +2552,7 @@ C    &                  IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
 * Jeppe Olsen, March 1999
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -2612,6 +2626,7 @@ C     INTEGER JGRP(MXPNGAS)
 * Jeppe Olsen, Summer of 99
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *. Input/Output
       INTEGER IOPGAS(NGAS),IOP(MXNOP)
 *
@@ -2670,6 +2685,7 @@ C     INTEGER JGRP(MXPNGAS)
 * IHTYPE = 3  : Include all terms for general relativistic Hamiltonian
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *  
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -2748,6 +2764,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 *  Timo Fleig, Halloween 2001  =:-()
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 * ======
@@ -2764,7 +2781,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 * (*_MS2 arrays are in CSTATE )
       JCMBSPC = 1
       call z_blkfo_rel(IDC,NMS2VAL,JCMBSPC,IREFSM,
-     &                 KLSLBT,KLSLEBT,KLSI1BT,KLSIBT,KLSBLTP,
+     &                 KLSLBT,KLSLEBT,KLSI1BT,KLSIBT,KDUM,
      &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
      &                 NBAT_MS2,IBAT_MS2)
 *
@@ -2795,6 +2812,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 * Timo Fleig, Halloween 2001
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 * =====
@@ -2824,7 +2842,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 *
       CALL QENTER('SIGDE')
       IDUM = 0
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'SIGDEN')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'SIGDEN')
 *
       NTESTL = 0000
       if (ISIGDEN.eq.1) then
@@ -2915,7 +2933,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
           CALL IAIBCM_REL(ISSPC,IASTP,IBSTP,WORK(KSIOIO))
 *. Arrays giving block type
           KSVST = 1
-      call memmar(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
+          call memmar(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
           CALL ZBLTP_REL(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP))
 *
 * Loop over batches of sigma for this MK2_S projection value
@@ -3064,6 +3082,7 @@ C FIXME: Debug me !!
 * =====
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "gasstr.inc"
 #include "cstate.inc"
@@ -3169,6 +3188,7 @@ C DEBUG
 *============================================
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 * =====
@@ -3201,8 +3221,8 @@ C DEBUG
 #include "cintfo.inc"
 *
       DIMENSION CB(*), HCB(*)
-      IDUM = 0
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'SIGDE3')
+      KDUM = 0
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'SIGDE3')
 *
       NTESTL = 00
       IF(NTESTL.GE.5)
@@ -3215,6 +3235,7 @@ C DEBUG
 *.T-elements                       
       INTSCR = MIN(MXINKA**4,MX_TBLK_MX)
       call memmar(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
+      call rmemchk
 *. Offsets for alpha and beta supergroups
 *
       NOCTPA_C = NOCTYP(IACTP)
@@ -3227,13 +3248,11 @@ C DEBUG
       call memmar(KCIOIO,NOCTPA_C*NOCTPB_C,'ADDL  ',2,'CIOIO ')
       CALL IAIBCM_REL(ICSPC,IACTP,IBCTP,WORK(KCIOIO))
 *
-      KC2 = KVEC3
-*
-      KCJRES = KC2
-      KSIRESL = MXINKA**4
+      KCJRES = KVEC3
+      LSIRES = MXINKA**4
 *
 * Proper allocation of these resolution matrices:
-      call memmar(KSIRES,KSIRESL,'ADDL  ',2,'KSIRES')
+      call memmar(KSIRES,LSIRES,'ADDL  ',2,'KSIRES')
 *
 *. Arrays for storing NEL consecutive annihilations/creations
 *  (resolution matrices)
@@ -3375,7 +3394,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
      &     WORK(KSIGNNHX),WORK(KLSPOBEX_FRZ),WORK(KLISMDST))
 *. Eliminate local memory
       IDUM = 0
-      call memmar(IDUM ,IDUM,'FLUSM ',2,'SIGDE3')
+      call memmar(KDUM ,IDUM,'FLUSM ',2,'SIGDE3')
       RETURN
       END
 ***********************************************************************
@@ -3441,6 +3460,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
 * Symmetry-occupation-occupation blocks
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "csm.inc"
@@ -3680,6 +3700,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
 * IDIAG     = 1 : Input block is lower diagonal
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *. Input and output
       DIMENSION TCC(NCA*NCB*NAA*NAB)
       DIMENSION TCC_SUB(NCA_SUB,NCB_SUB,NAA_SUB,NAB_SUB)
@@ -3793,6 +3814,7 @@ C     CALL RMEMCHK
 *    Timo Fleig, Apr. 07, 2003
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "symm.inc"
 *
@@ -3950,6 +3972,7 @@ C?           WRITE(6,*) ' ISM_AB = ', ISM_AB
 * Timo Fleig, summer of 2001, modified for relativistic case
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "symm.inc"
 *. Input

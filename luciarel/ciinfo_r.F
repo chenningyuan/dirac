@@ -41,6 +41,7 @@
 *     Timo Fleig, December 2000
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *.output
       INTEGER IUB1(2,10),IUB2(4,10),ISM2(3,10)
 *
@@ -194,6 +195,7 @@ CTEMP     ISM2(3,5) = 1
 * Timo Fleig, August '97
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
 #include "crun.inc"
@@ -302,6 +304,7 @@ CTEMP     ISM2(3,5) = 1
 * Jeppe Olsen, June 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION IACTIN(NCLS)
 *. Output
@@ -333,6 +336,7 @@ CTEMP     ISM2(3,5) = 1
 * Jeppe Olsen, June 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION ICLS(NGAS,NCLS)
       DIMENSION IACTIN(NCLS)
@@ -421,6 +425,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
 *´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 * =====
 *.Input
 * =====
@@ -569,7 +574,7 @@ CTF       IF( ICISTR .NE. 1 ) CALL REWINO(LUC)
         end do
       end do
 *
-      call memmar(IDUM,IDUM,'FLUSM',IDUM,'GASANA')
+      call memmar(KDUM,IDUM,'FLUSM',IDUM,'GASANA')
       CALL QEXIT('ANACI')
 *
 C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
@@ -615,6 +620,7 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
 *. If IUSLAB  differs from zero Character*6 array IOBLAB is used to identify
 *  Orbitals
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION C(*)
 *. General input
       DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)
@@ -952,6 +958,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *               Relativistic version, Feb. 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -975,7 +982,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 #include "cands.inc"
 *
       IDUM = 1
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'GET_3B')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'GET_3B')
 *
       NTESTL = 0000
       NTEST = MAX(NTESTL,IPRDIA)
@@ -1000,8 +1007,8 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
         IOCTPA = IBSPGPFTP(IATP)
         IOCTPB = IBSPGPFTP(IBTP)
 *
-      call memmar(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
-      call memmar(KLCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
+        call memmar(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
+        call memmar(KLCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
 *
         if (NTEST.ge.500) then
           write(6,*) 'KLCIOIO at ',KLCIOIO
@@ -1080,7 +1087,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
       LBLOCK = MAX(LBLOCK,LCSBLK)
       LSCR12 = MAX(LBLOCK,2*LSCR2)
 *
-      call memmar(IDUM,IDUM,'FLUSM ',IDUM,'GET_3B')
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'GET_3B')
 *
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
@@ -1102,6 +1109,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 * Jeppe Olsen, November 97
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -1135,6 +1143,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *
       subroutine grinfo(PNTGRP)
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
       integer PNTGRP
 *
@@ -1496,6 +1505,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *       Timo Fleig, 1999
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -1538,6 +1548,7 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 *. Last modifications : Jan 98, relativistic integrals added
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 * =====
 *.Input
@@ -1661,6 +1672,7 @@ C     &                    ISPINFREE)
 * Jeppe Olsen, Jan 98
 
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 * =====
 *.Input
@@ -1733,6 +1745,7 @@ C            PNT2DM2(I12SM,NSMOB,IPSM,JPSM,IJSM,IPNTR)
 * Note : Generation of symmetry of last index (ISL1, ISL2) eliminated
 
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 * =====
 *.Input
@@ -1792,6 +1805,7 @@ C    &           IDXSM,IS12,IS34,IS1234,IPNTR)
 * Offset to given integral block of double group integrals
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "glbbas.inc"
@@ -1833,6 +1847,7 @@ C    &           IDXSM,IS12,IS34,IS1234,IPNTR)
 * as well as opposite Kramers index IBUK
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "symm.inc"
 *
@@ -1868,6 +1883,7 @@ C    &           IDXSM,IS12,IS34,IS1234,IPNTR)
 * GAS VERSION
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 * ===================
 *.Input common blocks
@@ -2038,6 +2054,7 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Include blocks     
 #include "mxpdim.inc"
 #include "strbas.inc"
@@ -2103,6 +2120,7 @@ C Requires setting up of  MINMAX_SM_GP and  MINMAX_SM_GP2
 * TYPE : 'SX','OB','ST','DX','CI'
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
       CHARACTER*2 TYPE
 *./NONAB/
@@ -2187,6 +2205,7 @@ C        ISM = (IPARI-1)*NML + MNML - 1
 *              Last modification, Feb. 1998 (reorder deg eigenvalues)
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION RHO1(NACOB,NACOB)
       DIMENSION ISTOB(*)
@@ -2400,6 +2419,7 @@ C 100     CONTINUE
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       INTEGER ITPOP(*),IACOP(*)
 *. Number of active spaces  (NGAS )
@@ -2467,6 +2487,7 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 *               GAS version July 1995
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *. Generel input
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -2529,6 +2550,7 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 * Jeppe Olsen, Sept 97
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION MINVAL(NGAS),MAXVAL(NGAS)
 *. Input and output
@@ -2598,6 +2620,7 @@ C    &     MAXVAL(NGAS).LT.ISYM(NGAS)    )NONEW = 1
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Allowed combinations of alpha and beta types
       INTEGER IOCOC(NOCTPA,NOCTPB)
 *. Occupation constraints
@@ -2766,6 +2789,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 * Jeppe Olsen, August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION IGSMIN(NGAS),IGSMAX(NGAS)
 *. Output
@@ -2873,6 +2897,7 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 *. Local scratch
 *. Specific input
       INTEGER IOCC(NGAS)
+#include "ipoist8.inc"
 *
       NTEST = 000
 *
@@ -2917,6 +2942,7 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       INTEGER CITYP
 #include "mxpdim.inc"
 #include "lucinp.inc"
@@ -3255,6 +3281,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
 * Jeppe Olsen, Winter 1994
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION NGSOB(MXPOBS,MXPNGAS),NOCOBS(*),NTOOBS(*)
       DIMENSION NGSOBT(MXPNGAS)
@@ -3432,6 +3459,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
 *              Updated, July 97 : Double group symmetry added
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
       INTEGER PNTGRP
@@ -3621,6 +3649,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
 * 2 : Blocks filled from a given offset
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
       INTEGER IOCOC(NOCTPA,NOCTPB)
@@ -3709,9 +3738,10 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
         WRITE(6,*) ' Not enough scratch space to include a single Block'
         WRITE(6,*) ' Since I cannot procede I will stop '
         WRITE(6,*) ' Insufficient buffer detected in PART_CIV3'
+	write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
         WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
         CALL RMEMCHK
-        Call Abend1( 11 )
+        stop ' In PART_CIV3. '
       ELSE
 *. This batch is finished, goto next batch
         GOTO 2000
@@ -3770,6 +3800,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *         = 0 indicates forbidden block
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       INTEGER IPSM(*),JPSM(*)
 *.Output
@@ -3831,6 +3862,7 @@ C            SYMCOM(ITASK,IOBJ,I1,I2,I12)
 *
 *.input
       INTEGER NO1PS(*),NO2PS(*),NO3PS(*),NO4PS(*)
+#include "ipoist8.inc"
 *.Output
       INTEGER IPNTR(NSMOB,NSMOB,NSMOB)
 *
@@ -3920,6 +3952,7 @@ C             ISM4A(I1SM,I2SM,I3SM) = I4SM
 * Construct accumulated MAX and MIN arrays for a RAS set of strings
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION MINEL(*),MAXEL(*)
 *
       NORB = NORB1 + NORB2 + NORB3
@@ -3992,6 +4025,7 @@ COLD  MIN1A = MIN1_T
 * Jeppe Olsen, Winter of 1991
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION NSHPIR(*),NOSPIR(*),IOSPIR(*)
 *. Output
@@ -4030,6 +4064,7 @@ C         IISM = IOSPIR(ISM,IRREP)
 * Obtain ISGVST(ISM) : Symmetry of sigma v on string of symmetry ism
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       INTEGER ISGVST(*)
 *
       DO 100 ISM = 1, NSMST
@@ -4064,6 +4099,7 @@ C            MLSM_REL(IML,IPARI,ISM,TYPE,IWAY)
 * Jeppe Olsen , Spring of 1991
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION ISMOST(MXPCSM,MXPCSM)
 *
       DO 1000 ITOTSM = 1, NSMCI
@@ -4103,6 +4139,7 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
 * symmetry of sx (dx) connecting two given string symmetries
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       INTEGER STSTSX(NSMST,NSMST),STSTDX(NSMST,NSMST)
 *
       DO 100 ILSTSM = 1, NSMST
@@ -4136,6 +4173,7 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
 * Jeppe Olsen, July 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION ILTP(NGAS),IRTP(NGAS)
 *. Output
@@ -4209,6 +4247,8 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
 *
 * Double group version, written for compatibility with general symmetry
 *
+#include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "symm.inc"
 *
@@ -4263,6 +4303,8 @@ C    &              NSMOB,NRS0SH(1,MXPIRR),NRS4SH(MXPR4T,MXPIRR),
 C    &              MXR4TP, MXHR0,MXER4,
 C    &              NINASH(MXPIRR),
 C    &              INTXCI,NDELSH(MXPIRR),MNRS10,MXRS30
+#include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "lucinp.inc"
 *
@@ -4306,6 +4348,7 @@ C    &              INTXCI,NDELSH(MXPIRR),MNRS10,MXRS30
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
 C     PARAMETER(MXPIRR = 20)
 C     PARAMETER ( MXPOBS = 20 )
@@ -4410,6 +4453,7 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
 *
 * For relativistic program
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "cicisp.inc"
@@ -4441,11 +4485,10 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
       call memmar(KPCI1BT,MXNTTS,'ADDL  ',1,'CI1BT ')
       call memmar(KPCIBT ,8*MXNTTS,'ADDL  ',1,'CIBT  ')
       call memmar(KPCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
-
 *.    ^ These should be preserved after exit so put mark for 
 *       flushing after
 *
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'Z_BLKF')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'Z_BLKF')
 *
       IDUM = 0
 *. Allowed length of each batch
@@ -4542,7 +4585,7 @@ C    &                 ICOMP,ITTSS_ORD)
       call civcinf_mc(WORK(KPCIBT),WORK(KPCLBT),WORK(KPCI1BT),
      &                WORK(KPCLEBT),NBAT_MS2,NMS2VAL,NBLOCK)
 *
-      call memmar(IDUM,IDUM,'FLUSM ',IDUM,'Z_BLKF')
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLKF')
       RETURN
       END
 ***********************************************************************
@@ -4575,6 +4618,7 @@ C    &                 ICOMP,ITTSS_ORD)
 * = 2 : symmetry block is included , lower OO types
 *
 *. Input
+#include "ipoist8.inc"
       DIMENSION ISMOST(*)
 *. Output
       DIMENSION ICBLTP(*)
@@ -4613,6 +4657,7 @@ C    &                 ICOMP,ITTSS_ORD)
 * Ratio between real and integer
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       include 'SysDef.inc'
 #include "machine.inc"
@@ -4652,6 +4697,7 @@ c     IRAT = RTOI
 * Jeppe Olsen, July 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. input
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -4758,6 +4804,7 @@ C    &              NTOOBS(MXPOBS),NDEOBS(MXPOBS),NRS4TO(MXPR4T),
 C    &              IREOTS(MXPORB),IREOST(MXPORB),ISMFTO(MXPORB),
 C    &              ITPFSO(MXPORB),IBSO(MXPOBS),
 C    &              NTSOB(3,MXPOBS),IBTSOB(3,MXPOBS),ITSOB(MXPORB)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 *./CSM/
@@ -4910,6 +4957,7 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
 * Symmetry connecting arrays
 * ( trivial, written for compatibility with higher point groups)
 *
+#include "ipoist8.inc"
       INTEGER SYMPRO(8,8)
       DATA  SYMPRO/1,2,3,4,5,6,7,8,
      &             2,1,4,3,6,5,8,7,
@@ -4973,6 +5021,7 @@ C    &              NSMOB,NRS0SH(1,MXPIRR),NRS4SH(MXPR4T,MXPIRR),
 C    &              MXR4TP, MXHR0,MXER4,
 C    &              NINASH(MXPIRR),
 C    &              INTXCI,NDELSH(MXPIRR),MNRS10,MXRS30
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "lucinp.inc"
 *./NONAB/
@@ -5073,6 +5122,7 @@ C       MLSM_REL(IML,IPARI,ISM,TYPE,IWAY)
 * Symmetry connecting arrays
 *
 *
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "csm.inc"
 #include "symm.inc"

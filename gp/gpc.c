@@ -202,9 +202,21 @@ void sysinf(int parcal)
    free(un);
 }
 
-void compoff_(double *wrk,double *work, int *kbase) {
-   *kbase = (int) (wrk-work+1);
+#if defined (IA64)
+void compoff_(double *wrk,double *work, long *kbase) {
+  *kbase = (long) (wrk-work+1);
+/*
+ *printf( "compoff: wrk=%p work=%p diff=%p\n", wrk, work, wrk-work+1);
+ *printf( "kbase=%d\n", *kbase );
+ *printf( "int %d long %d short int %d\n", sizeof(int), sizeof(long),
+ *sizeof(short int));
+*/
 }
+#else
+void compoff_(double *wrk,double *work, int *kbase) {
+  *kbase = (int) (wrk-work+1);
+}
+#endif
 
 void distribute_env(const char* name, int mytid)
 {

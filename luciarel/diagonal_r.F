@@ -33,6 +33,7 @@
 *
 * separate alpha and beta 1-electron integrals  May 1998
       IMPLICIT REAL*8           (A-H,O-Z)
+#include "ipoist8.inc"
 *
 *.General input
       DIMENSION NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -301,6 +302,7 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
 * Modifed fetch of 1 electron integrals, May 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 * =====
 *.Input
 * =====
@@ -342,7 +344,7 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
       END DO
 *. Local memory
       IDUM = 0
-      call memmar(IDUM,  IDUM,    'MARK  ',IDUM,'GASDIA')
+      call memmar(KDUM,  IDUM,    'MARK  ',IDUM,'GASDIA')
 *
 CTF  Total number of orbitals and active orbitals (spinors, actually)
 CTF  from BOTH sets, barred and unbarred !
@@ -437,7 +439,7 @@ C     stop 'after setting up diagonal integrals.'
 *     ^End of loop over MK2 spaces
 c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
 *.Flush local memory
-      call memmar(IDUM,  IDUM,    'FLUSM ',IDUM,'GASDIA')
+      call memmar(KDUM,  IDUM,    'FLUSM ',IDUM,'GASDIA')
       CALL QEXIT('CIDIA')
 *
       RETURN
@@ -465,6 +467,7 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
 * UBBUE(I,J) = ( I J_ ! J_ I)
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION UUUUC(NTOOB,NTOOB),UUUUE(NTOOB,NTOOB)
       DIMENSION UBBUE(NTOOB,NTOOB)
 *
@@ -831,6 +834,7 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
 *-----------------------------------
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -862,7 +866,7 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
       end if
 *
       IDUM = 1
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'GT1DIA')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'GT1DIA')
       call memmar(KLH1,NTOOB**2,'ADDL  ',2,'H1BL  ')
 *
       if (SIGDEN_ROUTE.eq.'TRADIT') then
@@ -990,7 +994,7 @@ C                COPDIA(A,VEC,NDIM,IPACK)
         CALL WRTMAT(H1DIA_B,1,NTOOB,1,NTOOB)
       END IF
 *
-      call memmar(IDUM,IDUM,'FLUSM ',IDUM,'GT1DIA')
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'GT1DIA')
       RETURN
       END
 ***********************************************************************
@@ -1004,6 +1008,7 @@ C                COPDIA(A,VEC,NDIM,IPACK)
      &                           ISTART,IEND,IREOTS,IPRNT)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *
       dimension INDEX(4,N1E),IREOTS(*)
       dimension XINT(N1E),XOUT(*)
@@ -1062,6 +1067,7 @@ C                COPDIA(A,VEC,NDIM,IPACK)
      &                           IREOTS,IREOTS2,IPRNT)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *
       character*4 TYPE
 *
@@ -1135,6 +1141,7 @@ C                COPDIA(A,VEC,NDIM,IPACK)
       subroutine orbind_gssm(INSYM,NSM,INDGATH,NELM,IPRNT)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
@@ -1190,6 +1197,7 @@ C                COPDIA(A,VEC,NDIM,IPACK)
       subroutine reo1fdia(IOBPTS,IORD,NGSOB,NSMOB,NGAS,ICOMP)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 *

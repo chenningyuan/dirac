@@ -174,7 +174,7 @@ C
 C 37: No integrals (we use this to calculate just #determinants)
       CALL LUCI_TRAVA(CIRUN,'NOINT ',NOINT,DUMMY)
 C
-C 39: Dimension of resolution matrices
+C 39: Dimension of resolution matrices (used in SIGDEN_REL3)
       MXINKA = 50
 C
 C 46: Core energy from DIRAC
@@ -199,7 +199,7 @@ C 62: No combinations of degenerate initial vectors
       INIDEG = 0
 C
 C 64: Length of batches of C vectors
-      LCSBLK = 100000
+      LCSBLK = 1000000
 C
 C 74: Density matrices requested
       CALL LUCI_TRAVA(CIRUN,'DENSI ',IDENSI,DUMMY)
@@ -1241,6 +1241,9 @@ C***********************************************************************
 #include "../luciarel/picasso.inc"
 CTF
       character*6 CIRUN
+#if defined (IA64)
+      integer*8 KBASE
+#endif
       logical MCSCF
 CTF  global reference values for Z_BLKFO needed in MV7 !!
       common/glbref/ISPC,ISM,ITERGLB
@@ -1259,18 +1262,23 @@ C
 C     Compute offset from WRK to WORK
 C
       CALL COMPOFF(WRK,WORK,KBASE)
-C          *kbase = (int) (wrk-work+1);
-C     KBASE = (LOC(WRK)-LOC(WORK))/8 + 1
+C 32 bit:  *kbase = (int) (wrk-work+1);
+C 64 bit:  *kbase = (long) (wrk-work+1);
 C
+      WORK(KBASE) = 9991.
+      IF (WRK(1).NE.9991.) THEN
+        write(6,*) ' WARNING from KRMC_LUCI:'
+        WRITE(6,'(A,3X,I22)')     '      KBASE  = ',KBASE
+        WRITE(6,'(A,3X,1F22.16)') ' WORK(KBASE) = ',WORK(KBASE)
+        WRITE(6,'(A,3X,1F22.16)') ' WRK(1)      = ',WRK(1)
+        write(6,*) ' Absolute memory addresses do not match.'
+        write(6,*) ' Continuing.'
+c       CALL QUIT('Memory addressing error in KRMCLUCI')
+      END IF
+*
       MXPWRD = LWRK
       KADD = MXPWRD
       call memmar(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
-      WORK(KBASE) = 9991
-      IF (WRK(1).NE.9991) THEN
-C        CALL QUIT('Memory addressing error')
-         WRITE(6,*) 'WARNING: WORK(KBASE) = 9991'
-         WRITE(6,*) '         WRK(1)      = ',WRK(1)
-      END IF
 *
       IMEMCK = 0
       MCSCF = .true.

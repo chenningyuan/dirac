@@ -23,6 +23,7 @@
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "gasstr.inc"
@@ -186,6 +187,7 @@ C     WRITE(6,*) ' MEMCHECK passed '
 * version  of : dec 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -396,6 +398,7 @@ C     WRITE(6,*) ' MEMCHECK passed '
 *
 *. Input
 #include "implicit.inc"
+#include "ipoist8.inc"
       INTEGER    IKJA(NTA*NKA), IKJB(NTB,NKB)             
       DIMENSION  XKJA(NTA*NKA), XKJB(NTB,NKB)             
 *. Input/Output 
@@ -498,6 +501,7 @@ C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
 *                          Output lists differs from input lists
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input lists
       DIMENSION I1I(N1,NKIN),XI1I(N1,NKIN)
       DIMENSION I2I(N2,NKIN),XI2I(N2,NKIN)
@@ -617,6 +621,7 @@ CTF                       NTEST)
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 *  symmetry info for double group CI
@@ -943,6 +948,7 @@ CTF     WRITE(6,*) ' DMK0ONE : MOC,IH2TRM ', MOC,IH2TRM
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 *  symmetry info for double group CI
@@ -1369,6 +1375,7 @@ C                      MATCAS(CIN,COUT,NROWI,NROWO,IROWO1,NGCOL,ISCA,SCASGN
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 *. Symmetry info
@@ -1707,6 +1714,7 @@ C    &                  FACS,MXTSOB,XIJILS)
 *     Jeppe Olsen, March 1994, LUCIA version of DXFSTR
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       INTEGER IKIN1(MXSXST,*),IKIN2(MXSXST,*)
       INTEGER IKST(MXSXST,*),NIK(*)
@@ -1834,6 +1842,7 @@ C         END IF
 CTI  This array has to be passed from above or put on a common block
 CTI      DIMENSION IOP(NOP)
       INTEGER ILOCC(NGAS),IROCC(NGAS)
+#include "ipoist8.inc"
 *. output
       DIMENSION IX(MXNX,NOP)
 *
@@ -1863,6 +1872,7 @@ CTI      DIMENSION IOP(NOP)
 *  Timo Fleig, July 2001, January 2002
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "symm.inc"
@@ -1891,6 +1901,7 @@ CTI      DIMENSION IOP(NOP)
       END IF
 C?    WRITE(6,*) ' Dim of IKJ, XKJ ',NTOP,IK_E-IK_B+1
 *
+      THRESH = 1.D-30
       IZERO_MAP = 1
       IF(LTOP.GT.0) THEN
         DO KSTR = IK_B, IK_E
@@ -1976,8 +1987,8 @@ C?   &      ITOP-IT_B+1,KSTR-IK_B+1
 *
 * Jeppe Olsen
 *
-
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION AX(*),X(NDIM,*)
       DIMENSION A(*) ,INDEX(*)
 *
@@ -2068,6 +2079,7 @@ C?   &      ITOP-IT_B+1,KSTR-IK_B+1
 * Generalized to allow for relativistic sigma, T.F. + J.O., march 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 * =====
@@ -2099,7 +2111,8 @@ CTF  Variable INONREL added to list. It is passed from CMICDV
 *
       CALL QENTER('MV7REL')
       IDUM = 0
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'MV7REL')
+      KDUM = 0
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'MV7REL')
 *
       IF(ICISTR.EQ.1) THEN
         WRITE(6,*) ' MV7_REL does not work for ICISTR = 1'
@@ -2152,6 +2165,7 @@ C    &     LUC,LUHC)
 * NOCTPB : Number of active alpha supergroups
 
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION IAB(NOCTPA,NOCTPB)
       DIMENSION NSTFSMSPGP(MXPNSMST,*)
       DIMENSION NTSOB(MXPTOB,NSMOB)
@@ -2639,6 +2653,7 @@ C    &     LUC,LUHC)
 * =====
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Batches of sigma
       INTEGER LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
 *.Scratch
@@ -2885,6 +2900,7 @@ C?            write(6,*) 'RASSG3 : IOFF, SB(IOFF)',IOFF,SB(IOFF)
 * Jeppe Olsen, Winter of 1991
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 *. General input
@@ -3554,6 +3570,7 @@ C      call memchk
 *.              Cleaned and shaved, only IROUTE = 3 option active
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 *. General input
@@ -3898,6 +3915,7 @@ CTF
 *     Timo Fleig + Jeppe Olsen, March 1998
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       REAL*8 INPROD
       INTEGER  ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX
 *
@@ -4727,6 +4745,7 @@ c    &        SOMESCR)
 *                                    (not bad for a saturday)
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 * =====
@@ -4770,7 +4789,8 @@ CTF
       dimension XIJILS(MXTSOB)
 *
       IDUM = 0
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'SBLOCK')
+      KDUM = 0
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'SBLOCK')
 *
       NTEST = 0
       IF(NTEST.GE.5)
@@ -4984,7 +5004,7 @@ C?    write(6,*) 'Checking IDC  ',IDC
       END IF
 *. Eliminate local memory
       IDUM = 0
-      call memmar(IDUM ,IDUM,'FLUSM ',2,'SBLOCK')
+      call memmar(KDUM ,IDUM,'FLUSM ',2,'SBLOCK')
       RETURN
       END
 ***********************************************************************
@@ -5068,6 +5088,7 @@ CTF  &                IH0SPC,
 * Note : Prescreen + Restrict features eliminated
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Specific input
       INTEGER ISBLOCK(8,*)
 #include "picasso.inc"
@@ -5456,6 +5477,7 @@ C?    CALL RMEMCHK
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *.Input
       DIMENSION ISCT(*),SSCT(*),AIN(NROWIN,NCOL)
 *.Output
@@ -5496,6 +5518,7 @@ C?    CALL RMEMCHK
 * Jeppe Olsen, Winter of 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION CKJJ(NKA,*)
       DIMENSION XIJKL(*)
@@ -5568,6 +5591,7 @@ C             ICOFF = (JB-1)*NI*NKA + 1
 *
 * : Note : Route 1 has retired, March 97
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION CKJJ(*)
       DIMENSION XIJKL(*)
@@ -5707,6 +5731,7 @@ C     CALL QEXIT('SKICK')
 *     Jeppe Olsen, March 1994, LUCIA version
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. a few include blocks
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -5845,6 +5870,7 @@ C?   &                     ISTRGP,IP1FUL,LP1
 *
 * Jeppe Olsen, March 1994
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 *. Input
 *

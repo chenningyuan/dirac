@@ -12,6 +12,7 @@
 *              Winter of 1998 : Modified for relativistic calculations
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
       EXTERNAL MV7_REL
 *
@@ -46,12 +47,11 @@
 *./CECORE/
       COMMON/CECORER/ECORE
 *
-      dimension SCR2(MXROOT)
       dimension F1(*),F2(*)
 *
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'GASCI ')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
 *
-      NTESTL = 0010
+      NTESTL = 0000
       NTEST = MAX(NTESTL,IPRNT)
 *
       IF(NTEST.GE.3) THEN
@@ -123,12 +123,10 @@
       END IF
 *
       LBLOCK = MAX(LBLOCK,LCSBLK)
-      call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
-      call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
 *. Partition CI vector - for all MS2 spaces into batches
 * (*_MS2 arrays are in CSTATE )
       CALL Z_BLKFO_REL(IDC,NMS2VAL,
-     &                 ISPC,ISM,KLCLBT,KLCLEBT,KLI1BT,KLCIBT,KLCBLTP,
+     &                 ISPC,ISM,KPCLBT,KPCLEBT,KPCI1BT,KPCIBT,KPCBLTP,
      &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
      &                 IBAT_MS2)
 C          Z_BLKFO_REL(ISPC,ISM,KPCLBT,KPCLEBT,
@@ -137,7 +135,7 @@ C    &                 NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
       if (IMEMCK.gt.0) then
         write(6,*) ' Memory map after Z_BLKFO_REL in GASCI_REL'
         IDUM = 0
-        call memmar(IDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
+        call memmar(KDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
       end if
 *
 *. Class divisions of dets
@@ -173,7 +171,7 @@ C    &                 NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
         IF(ICISTR.GE.2) CALL REWINO(LUDIA)
         IRECO = 1
         CALL GASDIAT_REL(WORK(KVEC1),LUDIA,ECOREP,ICISTR,IHAM12,
-     &               WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),
+     &               WORK(KPCBLTP),NBLOCK,WORK(KPCIBT),
      &               KPICI1,INTSPACE,IDENSI,NIRREP,ISPINFREE,ENVIRO,
      &               SIGDEN_ROUTE,IRECO)
 *. End of real part
@@ -182,7 +180,7 @@ C    &                 NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
 * Diagonal once again- for the imaginary part
           IRECO = 2
           CALL GASDIAT_REL(WORK(KVEC1),LUDIA,ECOREP,ICISTR,IHAM12,
-     &                 WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),
+     &                 WORK(KPCBLTP),NBLOCK,WORK(KPCIBT),
      &                 KPICI1,INTSPACE,IDENSI,NIRREP,ISPINFREE,ENVIRO,
      &                 SIGDEN_ROUTE,IRECO)
 *. End of imaginary  part
@@ -192,7 +190,7 @@ C    &                 NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
         if (IMEMCK.gt.0) then
           write(6,*) ' Memory map after GASDIAT_REL in GASCI_REL'
           IDUM = 0
-          call memmar(IDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
+          call memmar(KDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
         end if
       ELSE
          WRITE(6,*) ' Diagonal not calculated '
@@ -229,30 +227,33 @@ C    &                 NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
             call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),LUC,LUHC,
      &                       WORK(KT_CC),1)
+            call rmemchk
 C           print*,'C VECTOR'
 C           call wrtvcdc(WORK(KVEC1),LUC,1,-1)
 C           print*,'SIGMA VECTOR'
 C           call wrtvcdc(WORK(KVEC2),LUHC,1,-1)
           else
 *
+* Allocate some scratch space
+      NFINDM = min(NVAR,4*NROOT)
+      call memmar(KFINDMR,4*NFINDM+1,'ADDL  ',2,'FINDMR')
+      call memmar(KFINDMI,4*NFINDM+1,'ADDL  ',1,'FINDMI')
+      call memmar(KSCR2,MXROOT,'ADDL  ',2,'SCR2S ')
+*
       CALL CIEIG5_REL(MV7_REL,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
      &     MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,
      &     NVAR,NBLK,NROOT,MXCIV,MAXIT,MXROOT,
      &     LUCIVI,IPRNT,WORK(KSBEVC),
-     &     NPRDET,WORK(KH0),WORK(KSBIDT),
-     &     MXP1,MXP2,MXQ,WORK(KH0SCR),SCR2,
+     &     NPRDET,WORK(KSBIDT),
+     &     MXP1,MXP2,MXQ,
+     &     WORK(KFINDMR),WORK(KFINDMI),WORK(KSCR2),
      &     WORK(KT_CC),
      &     ECORE,ICISTR,LBLK,
      &     IDIAG,WORK(KVEC3),THRES_E,
-     &     NBATCH,WORK(KLCLBT),WORK(KLCLEBT),
-CTF  &     WORK(KLCI1BT),
-     &     WORK(KLCIBT),INIDEG,E_THRE,C_THRE,
+     &     NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &     WORK(KPCIBT),INIDEG,E_THRE,C_THRE,
      &     E_CONV,C_CONV,ICLSSEL,
-CTF  &     WORK(KLBLKCLS),
      &     NOCCLS,
-CTF  &     WORK(KLCLSC),WORK(KLCLSE), WORK(KLCLSCT),WORK(KLCLSET),
-CTF  &     WORK(KLCLSA),WORK(KLCLSL),WORK(KLBLKA),
-CTF  &     WORK(KLCLSD),WORK(KLCLSDT),ISKIPEI,WORK(KLC2B),WORK(KLCLSA2),
      &     LBLOCK,IRC,IDCOMH,IHAM12,SIGDEN_ROUTE)
       EREF = EROOT(IRFROOT)
 CTF   WRITE(6,*) ' Memcheck after CIEIG5'
@@ -278,8 +279,8 @@ CTF   CALL RMEMCHK
           WRITE(6,'(1H ,A,I3)')
      &    ' ***************************************************'
 *
-          call gasana(WORK(KVEC1),NBLOCK,WORK(KLCIBT),
-     &                WORK(KLCBLTP),LUSC61,LUSC37,
+          call gasana(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
+     &                WORK(KPCBLTP),LUSC61,LUSC37,
      &                KVEC3)
         end do
       end if
@@ -421,13 +422,13 @@ CTF  &                WORK(KRHO2),
 CTF  &                WORK(KVEC1),WORK(KVEC2),LUSC1,LUHC)
 C         IF(NROOT.GT.1) THEN
 C           CALL REWINO(LUSC1)
-C           CALL GASANA_REL(WORK(KVEC1),NBLOCK,WORK(KLCIBT),
-C    &                      WORK(KLCBLTP),
+C           CALL GASANA_REL(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
+C    &                      WORK(KPCBLTP),
 C    &                      LUSC1,ICISTR)
 C         ELSE
 C           CALL REWINO(LUC)
-C           CALL GASANA_REL(WORK(KVEC1),NBLOCK,WORK(KLCIBT),
-C    &                      WORK(KLCBLTP),
+C           CALL GASANA_REL(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
+C    &                      WORK(KPCBLTP),
 C    &                      LUC,ICISTR)
 C           END IF
 CTF       END IF
@@ -445,7 +446,7 @@ C         IF(NPROP.GT.0) CALL ONE_EL_PROP
 *
       print*,'I have completed my task'
 *
-      call memmar(IDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI')
+      call memmar(KDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI')
       RETURN
       END
 ***********************************************************************
@@ -499,6 +500,7 @@ C      CALL SLASK
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Parameters for dimensioning
 #include "mxpdim.inc"
 *.Memory
@@ -724,7 +726,7 @@ CTF           CALL SCLH2(XLAMBDA)
             ELSE
               LBLK = -1
             END IF
-      call memmar(IDUM,IDUM,'MARK ',IDUM,'VCSAVE')
+            call memmar(KDUM,IDUM,'MARK ',IDUM,'VCSAVE')
             IF(ICISTR.EQ.1) THEN
               LBLOCK = XISPSM(IREFSM,2)
             ELSE IF (ICISTR.EQ.2) THEN
@@ -732,7 +734,7 @@ CTF           CALL SCLH2(XLAMBDA)
             ELSE IF (ICISTR.EQ.3) THEN
               LBLOCK = MXSOOB
             END IF
-      call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
+            call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
             CALL REWINO(LUC)
             CALL REWINO(LUSC39)
             DO JROOT = 1, NROOT
@@ -741,7 +743,7 @@ C             CALL COPVCD_REL(LUIN,LUOUT,SEGMNT,IREW,LBLK)
             END DO
 C?        WRITE(6,*) ' Back copied first vector on LUC'
 C?        CALL WRTVCD(WORK(KVEC1),LUC,1,LBLK)
-      call memmar(IDUM,IDUM,'FLUSM',IDUM,'VCSAVE')
+            call memmar(KDUM,IDUM,'FLUSM',IDUM,'VCSAVE')
 *. No expansion should follow
             I_EXPAND = 0
 *. But normal restart
@@ -877,6 +879,7 @@ c         CALL FINMO_REL
 ********************************************
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
       PARAMETER(MXPLNC = 72 )
       CHARACTER*72 TITLEC

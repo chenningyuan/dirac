@@ -18,6 +18,7 @@
 * GAS version August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
 #include "wrkspc.inc"
@@ -29,7 +30,7 @@
 #include "gasstr.inc"
 
 *
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'EXPCIV')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'EXPCIV')
 *
       NTESTL = 1
       NTEST = MAX(NTESTG,NTESTL)
@@ -192,7 +193,7 @@ C?      ELSE
 C?        CALL WRTVCD(WORK(KLBLU),LUUT,0,-1)
 C?      END IF
 C?    END DO
-      call memmar(IDUM,IDUM,'FLUSM ',IDUM,'EXPCV2')
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'EXPCV2')
 *
       RETURN
       END
@@ -221,6 +222,7 @@ C?    END DO
 * Jeppe Olsen, February 1994
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       INTEGER IABIN(NOCTPA,NOCTPB),IABUT(NOCTPA,NOCTPB)
       INTEGER IBLTPIN(NSMST),IBLTPUT(NSMST)
@@ -366,6 +368,7 @@ C           CALL TODSC(VECUT,NELMNT,-1,LUUT)
 * Jeppe Olsen, January 1996
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION C(*)
       DIMENSION IBLOCK(8,*)
 *
@@ -426,6 +429,7 @@ CM    IREW = 1
 * Simplified version working only for vectors on disc
 *
       IMPLICIT REAL*8  (A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION CTT(*),NSASO(NSMST, *),NSBSO(NSMST, *)
       DIMENSION SCR(*)
 *
@@ -509,6 +513,7 @@ C?   &ISCALE,SCLFAC
 * Timo Fleig + Jeppe Olsen, April 1997
 *
       IMPLICIT REAL(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "input.inc"
@@ -828,6 +833,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 *           = 1 : Only blocks with ASM .GE. BSM are included
 *           =-1 : Only blocks with ASM .LT. BSM are included
 #include "implicit.inc"
+#include "ipoist8.inc"
 *. General input  
 #include "mxpdim.inc"
 #include "symm.inc"

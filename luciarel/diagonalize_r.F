@@ -6,16 +6,12 @@
       SUBROUTINE CIEIG5_REL(MV7_REL,INICI,EROOT,VEC1,
      &           VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
      &           NDIM,NBLK,NROOT,MAXVEC,MXCIIT,MXROOT,LUINCI,
-     &           IPRT,PEIGVC,NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,
-     &           SCR2,T_CC,
+     &           IPRT,PEIGVC,NPRDET,IPNTR,NP1,NP2,NQ,
+     &           SCR1,ISCR1,SCR2,T_CC,
      &           EIGSHF,ICISTR,LBLK,IDIAG,VEC3,THRES_E,
      &           NBATCH,LBATCHB,LBATCHE,
-CTF  &           LBLOCK,
      &           IBLOCK,INIDEG,E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,
-CTF  &           IBLK_TO_CLS,
      &           NCLS,
-CTF  &           CLS_C,CLS_E,CLS_CT,CLS_ET,CLS_A,ICLS_L,BLKS_A,
-CTF  &           CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,ICLS_A2,
      &           MXLNG,IRC,IDCOMH,IHAM12,SIGDEN_ROUTE)
 *
 * Master routine for CI diagonalization
@@ -24,14 +20,19 @@ CTF  &           CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,ICLS_A2,
 * PICO,MICDV4 added spring of 1991
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
+#include "wrkspc.inc"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION INIDET(100)
-      PARAMETER( LLWRK = 70000 )
-      COMMON/SCRR/SCR1(LLWRK),ISCR1(LLWRK)
+      DIMENSION IPNTR(*),ISCR1(*)
+      dimension PEIGVC(*),SCR1(*),SCR2(*)
+*
+c     PARAMETER( LLWRK = 70000 )
+c     COMMON/SCRR/SCR1(LLWRK),ISCR1(LLWRK)
 *. Output from Subspace dagonalization
-      DIMENSION H0(*),IPNTR(*),H0SCR(*),PEIGVC(*),SCR2(*)
 *.
       DIMENSION EROOT(NROOT)
+*
       IF( IPRT.GT. 1 )  WRITE(6,'(/A)')
      &'          *** information from ci diagonalization  ***'
       WRITE(6,*)
@@ -97,10 +98,10 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
             CALL REWINE(LUDIA,LBLK)
 c           ISCR1(1) = 16
             CALL WRSVCD_REL(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
-     &                  LUDIA)
+     &                      LUDIA)
 *. Imaginary part
             CALL WRSVCD_REL(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,0,NDIM,
-     &                  LUDIA)
+     &                      LUDIA)
             IBASE = IBASE + NDEG
   100     CONTINUE
         ELSE
@@ -145,113 +146,68 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
      &   '  Allowed number of CI iterations  ..',MXCIIT
       END IF
 *
-      KRNRM = 1
+      MRNRM = 1
       IF(IRC.EQ.1) THEN
        IFAC = 1
       ELSE
        IFAC = 2
       END IF
-      KEIG = KRNRM + (MXCIIT+1)*NROOT
-      KFIN = KEIG  + (MXCIIT+1)*2*MAXVEC
-      KAPROJ = KFIN + NROOT
+      MEIG = MRNRM + (MXCIIT+1)*NROOT
+      MAPROJ = MEIG  + (MXCIIT+1)*2*MAXVEC + NROOT
       IF(IRC.EQ.2) THEN
-        KAPROJI = KAPROJ +  MAXVEC*(MAXVEC+1)/2
+        MAPROJI = MAPROJ +  MAXVEC*(MAXVEC+1)/2
       ELSE
-        KAPROJI = KAPROJ
+        MAPROJI = MAPROJ
       END IF
-      KAVEC = KAPROJI + MAXVEC*(MAXVEC+1)/2
-      KWORK = KAVEC + MAXVEC ** 2*IFAC*IFAC
-      KLFREE = KWORK + MAXVEC*(MAXVEC+1)*IFAC*IFAC
+      MAVEC = MAPROJI + MAXVEC*(MAXVEC+1)/2
+      MWORK = MAVEC + MAXVEC ** 2*IFAC*IFAC
+      MLFRSC = MWORK + MAXVEC*(MAXVEC+1)*IFAC*IFAC
+*
       IF( IPRT .GE. 5 ) THEN
-         WRITE(6,*) ' KRNRM KEIG KFIN KAPROJ KAVEC KWORK KLFREE '
-         WRITE(6,'(6I4)')  KRNRM,KEIG,KFIN,KAPROJ,KAVEC,KWORK,KLFREE
+         WRITE(6,*) ' MRNRM MEIG MAPROJ MAVEC MWORK MLFRSC '
+         WRITE(6,'(6I4)')  MRNRM,MEIG,MAPROJ,MAVEC,MWORK,MLFRSC
       END IF
-      IF( KLFREE-1 .GT. LLWRK) THEN
-         WRITE(6,'(A,2I7)' )
-     &   ' Not enough memory in CIEIG5 : needed and available ',
-     &   KLFREE-1, LLWRK
-         Call Abend2( ' insufficient memory in cieig5 ' )
-      END IF
+*
+*     IF( MLFRSC-1 .GT. LLWRK) THEN
+*        WRITE(6,'(A,2I7)' )
+*    &   ' Not enough memory in CIEIG5 : needed and available ',
+*    &   MLFRSC-1, LLWRK
+*        Call Abend2( ' insufficient memory in cieig5 ' )
+*     END IF
+*
+* Proper allocation of scratch arrays:
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'CIEIG5')
+      call memmar(KRNRM,MEIG-1,'ADDL  ',2,'KRNRMS')
+      call memmar(KEIG,MAPROJ-MEIG,'ADDL  ',2,'KEIGS ')
+      call memmar(KAPROJ,MAPROJI-MAPROJ,'ADDL  ',2,'KAPROJ')
+      call memmar(KAPROJI,MAVEC-MAPROJI,'ADDL  ',2,'KAPROI')
+      call memmar(KAVEC,MWORK-MAVEC,'ADDL  ',2,'KAVECS')
+      call memmar(KWORK,MLFRSC-MWORK,'ADDL  ',2,'KWORKS')
 *
       IF(IRC.EQ.1) THEN
-*. Real numbers only
-       IF(IDIAG.EQ.1.AND.ICISTR.EQ.1) THEN
-*. Routine using two complete vectors in core
-         IOLSEN = 1
-         IPICO = 0
-         IF(MXCIIT.NE.0) THEN
-C        CALL MINDV4(MV7_REL,VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-C    &              EROOT     ,MXCIIT,NDIM,LU3,LUDIA,NROOT,
-C    &              MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
-C    &              SCR1(KWORK) ,IPRT,
-C    &              NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,EIGSHF,
-C    &              IOLSEN,IPICO)
-         ELSE
-*. No iterations, set energy to 0
-           DO IROOT = 1, NROOT
-             EROOT(IROOT) = 0.0D0
-           END DO
-         END IF
-       ELSE IF(IDIAG.EQ.1.AND.ICISTR.GE.2) THEN
-*. Routine using two blocks in core
-*
-        I_USE_MICDV6 = 1
-         IF(I_USE_MICDV6.EQ.1) THEN
-C       IF(.NOT.(MAXVEC.EQ.2.AND.NROOT.EQ.1)) THEN
-         WRITE(6,*) ' MICDV6 will be called '
-C        CALL MICDV6(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-C    &              EROOT     ,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
-C    &              LUDIA,NROOT,
-C    &              MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
-C    &              SCR1(KWORK) ,IPRT,
-C    &              NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-C    &              THRES_E)
-        ELSE
-*. Special version for one root 2 vectors
-          WRITE(6,*) ' MICDV5 will be called '
-C        CALL MICDV5(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-C    &              EROOT     ,MXCIIT,NDIM,LU3,LU4,LU5,LUDIA,NROOT,
-C    &              MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
-C    &              SCR1(KWORK) ,IPRT,
-C    &              NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-C    &              THRES_E)
-        END IF
-       ELSE IF (IDIAG.EQ.2)  THEN
-*.Routine using two vector segments and three files
-CTF      NSUB = 0
-CTF      WRITE(6,*) ' New PICO3'
-CTF      WRITE(6,*) ' ISKIPEI before call to PICO2',ISKIPEI
-CTF
-CTF      CALL PICO3(VEC1,VEC2,LU1,LU2,LU3,LU4,SCR1(KRNRM),SCR1(KEIG),
-CTF  &        EROOT,MXCIIT,NBATCH,LBATCHB,LBATCHE,LBLOCK,IBLOCK,
-CTF  &        IPRT,
-CTF  &        NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-CTF  &        THRES_E,E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,
-CTF  &        IBLK_TO_CLS,NCLS,CLS_C,CLS_E,CLS_CT,CLS_ET,
-CTF  &        CLS_A,ICLS_L,BLKS_A,CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,VEC3,
-CTF  &        ICLS_A2,MXLNG)
-CTF
-         continue
-       END IF
+        write(6,*) ' Real algebra not implemented.'
+	write(6,*) ' Use LUCITA or some other non-relativistic code.'
+	stop ' Quitting in CIEIG5_REL.'
 *
       ELSE
 *. Complex numbers may be encountered
 *
-        CALL CMICDV(MV7_REL,VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-     &     SCR2(1),MXCIIT,
-     &     NDIM,LU3,LU4,LU5,LU6,LUDIA,NROOT,MAXVEC,NROOT,
-     &     T_CC,
-     &     SCR1(KAPROJI),SCR1(KAPROJ),SCR1(KAVEC),SCR1(KWORK),IPRT,
-     &     NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &     0,0,IDCOMH,IHAM12,SIGDEN_ROUTE)
+        CALL CMICDV(MV7_REL,VEC1,VEC2,LU1,LU2,WORK(KRNRM),WORK(KEIG),
+     &              SCR2(1),MXCIIT,
+     &              NDIM,LU3,LU4,LU5,LU6,LUDIA,NROOT,MAXVEC,NROOT,
+     &              T_CC,
+     &              WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),WORK(KWORK),
+     &              IPRT,NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
+     &              0,0,IDCOMH,IHAM12,SIGDEN_ROUTE)
 *
 C      SUBROUTINE CMICDV(MV7_REL,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
 C     &                  NVAR,LU3,LU4,LU5,LU6,LUDIA,NROOT,MAXVEC,NINVEC,
 C     &                  T_CC,
 C     &                  APROJI,APROJR,AVEC,WORK,IPRT,
-C     &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
+C     &                  NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
 C     &                  IPREDZN,INONREL,IDCOMH,IHAM12,SIGDEN_ROUTE)
 C
+        call memmar(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
       END IF
 *     ^ End if switch real/complex numbers
       ENOT = SCR1(KFIN)
@@ -280,6 +236,7 @@ C
 *                       EIGVEC(NDIM+1,IVEC)-EIGVEC(2*NDIM,IVEC) is imag coefs
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "ipoist8.inc"
       REAL*8 INPROD
 *. Input
       DIMENSION HR(NDIM*(NDIM+1)/2),HI(NDIM*(NDIM+1)/2)
@@ -466,6 +423,7 @@ CTF     end do
 *. positive.
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION ICLS_L(NCLS)
       DIMENSION CLS_CT(NCLS),CLS_ET(NCLS),CLS_C(NCLS),CLS_E(NCLS)
@@ -673,7 +631,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
      &                  NVAR,LU3,LU4,LU5,LU6,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  T_CC,
      &                  APROJI,APROJR,AVEC,WORK,IPRT,
-     &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
+     &                  NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
      &                  IPREDZN,INONREL,IDCOMH,IHAM12,SIGDEN_ROUTE)
 *
 * Multi root Davidson routine for complex Hermitian
@@ -707,8 +665,6 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
 *          IPNTR   : IPNTR(I) IS ORIGINAL ADRESS OF SUBSPACE ELEMENT I
 *          NP1,NP2,NQ : Dimension of the three subspaces
 *
-* H0SCR : Scratch space for handling H0, at least 2*(NP1+NP2) ** 2 +
-*         4 (NP1+NP2+NQ)
 *           LBLK : Defines block structure of matrices
 * On input LU1 is supposed to hold initial guesses to eigenvectors
 *
@@ -719,6 +675,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
 * (-1) in my simple world
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "ipoist8.inc"
       REAL * 8   INPROD,INPRDD
       character*6 SIGDEN_ROUTE
       LOGICAL CONVER,RTCNV(100),EXSTOP
@@ -728,15 +685,13 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION RNRM(NROOT,MAXIT),EIG(2*MAXVEC,MAXIT)
       DIMENSION APROJI(*),APROJR(*),AVEC(*),WORK(*)
-      DIMENSION H0(*),IPNTR(1)
-      DIMENSION H0SCR(*)
+      DIMENSION IPNTR(1)
 *
 * Dimensioning required of local vectors
 *      APROJR : MAXVEC*(MAXVEC+1)/2
 *      APROJI : MAXVEC*(MAXVEC+1)/2
 *      AVEC   : (2*MAXVEC) ** 2
 *      WORK   : 2*MAXVEC*(2*MAXVEC+1)/2
-*      H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
 *
       DIMENSION FINEIG(*)
       EXTERNAL mv7_rel
@@ -1368,6 +1323,7 @@ C!?      ITER = ITER - 1
 *
 * LUDIA needed for giving form of vectors
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "wrkspc.inc"

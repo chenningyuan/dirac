@@ -11,6 +11,7 @@
 *
 * Jeppe Olsen
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
       DIMENSION FIFA(*)
 *
@@ -40,6 +41,7 @@
 * Jeppe Olsen
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION FIFA(*),RHO1(NACOB,NACOB)
       INTEGER IOBSM(*),LOBSM(*),ISTOB(*)
 *
@@ -92,6 +94,7 @@ C?            write(6,*) ' IP JP ', IP,JP
       subroutine fockmat(FMAT,OINTS,ITRAF)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
       dimension OINTS(ITRAF)
 

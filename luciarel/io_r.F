@@ -18,6 +18,7 @@
 * NO EOV mark written
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN
@@ -78,6 +79,7 @@ C LBLK DEFINES STRUCTURE OF FILE
 *
 C Type of file LUOUT is inherited from LUIN
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN
@@ -137,6 +139,7 @@ C
 * Copy complex vector from LUIN to LUOUT
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       DIMENSION VEC1(*)
 *
       IF(IREW.NE.0) THEN
@@ -158,6 +161,7 @@ C
 ***********************************************************************
       SUBROUTINE DISKUN_REL
       IMPLICIT REAL*8           (A-H,O-Z)
+#include "ipoist8.inc"
 *
 * Assign logical unit numbers for LUCIA:
 *
@@ -302,6 +306,7 @@ C  avoid unit 66. Used in DALTON
       subroutine savevcdc(VECT,SCR,LU,IRILP_LOC,IPRNT)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 #include "krmcluci_inf.h"

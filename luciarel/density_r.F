@@ -25,6 +25,7 @@
      &                    ISPSF_MO,ITOTDM,NGAS,IPRDEN)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 *
@@ -197,6 +198,7 @@
 * =====
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Batches of sigma
       INTEGER LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
 *.Scratch
@@ -369,6 +371,7 @@ CTF  Shouldn't ABS be .le. 4 instead?
 * cont'd ... june 2000, Timo Fleig
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 * =====
@@ -409,7 +412,7 @@ CTF  Shouldn't ABS be .le. 4 instead?
 *
       CALL QENTER('DBG_RH')
       IDUM = 0
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'DBG_RH')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'DBG_RH')
 *
 *. Arrays for partitioning of sigma
 * (MS2 arrays are in CSTATE )
@@ -651,6 +654,7 @@ c       ISTOTRI = ((2*ISTORE)**2 + 2*ISTORE) / 2
 *  cont'd Sept. 1999   Timo Fleig
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 * =====
@@ -687,7 +691,7 @@ c       ISTOTRI = ((2*ISTORE)**2 + 2*ISTORE) / 2
       common/HIDSCRR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
 *
       IDUM = 0
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'DBLOCK')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'DBLOCK')
 *
       NTESTL = 000
       NTEST = max(NTESTL,IPRDEN)
@@ -864,7 +868,7 @@ CTF setting this undefined variable to two:
 *
 *. Eliminate local memory
       IDUM = 0
-      call memmar(IDUM,IDUM,'FLUSM ',2,'DBLOCK')
+      call memmar(KDUM,IDUM,'FLUSM ',2,'DBLOCK')
       return
       end
 ***********************************************************************
@@ -953,6 +957,7 @@ CTF setting this undefined variable to two:
 * Note : Prescreen + Restrict features eliminated
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Specific input
       INTEGER ISBLOCK(8,*)
 *.General input
@@ -1290,6 +1295,7 @@ CTF  &                      RHO2,
 * ijkl = ij*(ij-1)/2+kl, ij.ge.kl
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 * =====
 *.Input
@@ -1337,7 +1343,7 @@ CTF   dimension RHO2(*)
 *. Before I forget it :
       CALL QENTER('DENSI')
       IDUM = 0
-      call memmar(IDUM,IDUM,'MARK ',IDUM,'DENSI ')
+      call memmar(KDUM,IDUM,'MARK ',IDUM,'DENSI ')
       ZERO = 0.0D0
       CALL SETVEC(RHO1,ZERO,NACOB ** 2)
       IF(I12.EQ.2)
@@ -1622,7 +1628,7 @@ C    &                WORK(KRHO1P),IPRDEN)
         CALL PRSYM(RHO2,NACOB**2)
       END IF
 *. Eliminate local memory
-      call memmar(IDUM,IDUM,'FLUSM',IDUM,'DENSI ')
+      call memmar(KDUM,IDUM,'FLUSM',IDUM,'DENSI ')
       CALL QEXIT('DENSI')
 C     WRITE(6,*) ' Leaving DENSI '
       RETURN
@@ -1694,6 +1700,7 @@ C     WRITE(6,*) ' Leaving DENSI '
 * Updated for GAS , August '95
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 *. General input
@@ -1949,6 +1956,7 @@ C!    stop ' enforced stop in RSBBD1 '
 *------------------------------------------------------------
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
       INTEGER  ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX
       integer DELTA_MK2
 *. Input
@@ -2444,6 +2452,7 @@ C    &                  CJRES,SIRES,NORB,NTEST)
 * Updated for GAS , August '95
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 *. General input
@@ -2685,6 +2694,7 @@ C    &                  CJRES,SIRES,NORB,NTEST)
      &                  LUMOUTI,ISPSM)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
       dimension ONATSPI(2*IDIM,IDIM)
 *

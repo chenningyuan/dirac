@@ -32,6 +32,7 @@
 * 4 : Imag part, unbarred spinors
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 * ======
 *. Input
@@ -233,6 +234,7 @@ Ctimo  from IMOSF_SP matrix.
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 *. Input
@@ -365,6 +367,7 @@ c        LSP = NMOFSM(IUBSM)
 * Jeppe Olsen + Timo Fleig, April 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "input.inc"
@@ -825,6 +828,7 @@ C2011        END DO
      &                   IACSYM,IOUTLST,MXGSDIM,
      &                   ISPSF_MO,IDBG)
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "onel.inc"
@@ -1106,6 +1110,7 @@ C2011        END DO
      &                  SPIORB,IDBG,NTRIAEL,ENVIRO,COORD)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "input.inc"
@@ -1578,6 +1583,7 @@ C?    write(6,*) 'IEND is    ',IEND
 * Timo Fleig + Jeppe Olsen, April 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. input
 *.. Symmetry information
       INTEGER ISPSFAO(NSMSP,2), IAOSFSP(NSMAO,2)
@@ -1625,6 +1631,7 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
 *---------------------------------------------------
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "symm.inc"
@@ -1777,7 +1784,7 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
 ************************************************
 * Set mark for flushing local memory
 ************************************************
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'ITRCTL')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'ITRCTL')
 *
 *  2) Local memory
 *  Some index and GAS info
@@ -2253,7 +2260,9 @@ c    &                   ITRA_TYPE,INTITER)
 *  2) Local memory (scratch)
 *
 *  Mark first free address
-             call memmar(IDUM,IDUM,'MARK  ',IDUM,'ITRCTL')
+             IDUM = 0
+	     KDUM = 0
+             call memmar(KDUM,IDUM,'MARK  ',IDUM,'ITRCTL')
 *
              IALLOCDIM = SYMDIM(IDIMGRP)
 *  Untransformed sf AO integrals
@@ -2361,10 +2370,10 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
      &                           ITRALINE,NDIM_TOT,NDIM_TOT2,
      &                           IHAM12,ISPINFREE,IMXDIM,DOUGRP)
           else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-      call memmar(KISTR_CA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_CA')
-      call memmar(KISTR_CB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_CB')
-      call memmar(KISTR_AA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AA')
-      call memmar(KISTR_AB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AB')
+            call memmar(KISTR_CA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_CA')
+            call memmar(KISTR_CB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_CB')
+            call memmar(KISTR_AA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AA')
+            call memmar(KISTR_AB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AB')
             call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                            WORK(KLSOBEX),WORK(KT_CC),
      &                            WORK(KISTR_CA),WORK(KISTR_CB),
@@ -2392,7 +2401,7 @@ c           stop 'AFTER DIST_INTS_SIGDEN.'
 *     ^ End if external Fock matrix active or not
 *
 *  Flush local memory to mark set at beginning of do loop
-      call memmar(IDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
 *
       call qexit('ITRCTRL')
       return
@@ -2419,6 +2428,7 @@ c           stop 'AFTER DIST_INTS_SIGDEN.'
      &                   INTSPACE,ENVIRO,IFOCKEX)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 *  for lblas, COORD for x,y,z spin-orbit
       character*1 transa,transb,COORD
@@ -2850,6 +2860,7 @@ c           stop 'AFTER DIST_INTS_SIGDEN.'
 *******************************************************************
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
       integer POI(30)
       logical MCSCF
@@ -2933,6 +2944,7 @@ C     write(6,*) '     *******************************************'
      &                     INDREO,NTRIAIN,NMAXBAS,IPRINT)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
       dimension SOIN(NTRIAIN),HELPMAT(IDIM,IDIM),
      &          HELPMAT2(IDIM,IDIM)
@@ -2966,6 +2978,7 @@ C     write(6,*) '     *******************************************'
      &                 COORD,IDBG)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
       character*2 transa,transb
       character*1 COORD
 *
@@ -3239,6 +3252,7 @@ C     write(6,*) '     *******************************************'
 * Timo Fleig + Jeppe Olsen, April 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -3258,7 +3272,7 @@ C     write(6,*) '     *******************************************'
 
 C     CALL QENTER('DBGT2')
       IDUM = 0
-C     CALL MEMMAR(IDUM,IDUM,'MARK',IDUM,'SPITR2')
+C     CALL MEMMAR(KDUM,IDUM,'MARK',IDUM,'SPITR2')
 *
 *
       WRITE(6,*) ' Control has been transferred to SPITRA2'
@@ -3386,6 +3400,7 @@ C     CALL MEMMAR(IDUM,IDUM,'MARK',IDUM,'SPITR2')
 * Jeppe Olsen, July 2000
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *
 *. Input
       INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
@@ -3492,6 +3507,7 @@ C?    WRITE(6,*) ' SPOBEX_TO_ABOBEX : NSPOBEX_TP = ', NSPOBEX_TP
      &                  NTRSM_FULL,IFOCKEX)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 *  for lblas, COORD for x,y,z spin-orbit
       character*1 transa,transb,COORD
@@ -3759,6 +3775,7 @@ C     if (IOUTLST.eq.2) stop 'Timo forced me to stop in tra_so.'
 *                 Excluding integrals with an odd number of bars
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -3934,6 +3951,7 @@ C         ISPITRA_RC(1) = 1
 * Jeppe + Timo, December 1997
 *
       IMPLICIT REAL*8  (A-H,O-Z)
+#include "ipoist8.inc"
 *.General input :  Double group - point group translation :
 #include "mxpdim.inc"
 #include "symm.inc"

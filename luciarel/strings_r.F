@@ -10,6 +10,7 @@
 * only combinations with type(I) .ge. type(J) * are included
 *
 *
+#include "ipoist8.inc"
       INTEGER LOCC(NGAS),ROCC(NGAS)
 *. First ensure that the types differs by annihilation of two elecs
       ICREA = 0
@@ -106,6 +107,7 @@
 * ======
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *./BIGGY
 #include "wrkspc.inc"
@@ -273,6 +275,7 @@ C?    WRITE(6,*) '  IOBPTS(JOBTP,JOBSM) ',  IOBPTS(JOBTP,JOBSM)
 *
 *./BIGGY
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -338,7 +341,7 @@ CTF   DIMENSION IOFFI(LOFFI)
 *
       END IF
 *
-C!    call memmar(IDUM,IDUM,'MARK  ',IDUM,'ADASTG')
+C!    call memmar(KDUM,IDUM,'MARK  ',IDUM,'ADASTG')
 *. A few preparations
       if (IAB.eq.1) then
         NORBTS= NOBPTS(IOBTP,IOBSM)
@@ -582,7 +585,7 @@ C       IF(NGASL-1.GT.0) GOTO 1000
  1001 CONTINUE
 *
  9999 CONTINUE
-C!    call memmar(IDUM,IDUM,'FLUSM ',IDUM,'ADASTG')
+C!    call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ADASTG')
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Output from ADAST_GAS '
@@ -630,6 +633,7 @@ C!    call memmar(IDUM,IDUM,'FLUSM ',IDUM,'ADASTG')
 * NELTOT : Total number of electrons
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION ISTADD(NELADD,*)
 *. Input and output
@@ -709,6 +713,7 @@ C!    call memmar(IDUM,IDUM,'FLUSM ',IDUM,'ADASTG')
 * Offset is KMIN
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *.Input
       INTEGER KSTR(NKEL,NKSTR)
       INTEGER IREO(*), IZ(NOCOB,*)
@@ -885,6 +890,7 @@ C     STOP'JEPPE forced me to stop in ADS1   '
 *
 *./BIGGY
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -1042,6 +1048,7 @@ C     SAVE NELK , NSTRK
 *
 *./BIGGY
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -1423,6 +1430,7 @@ C?      write(6,*) ' KACGRP ', KACGRP
 * <L! a+J !R> is nonvanishing
 *
       INTEGER LOCC(NGAS),ROCC(NGAS)
+#include "ipoist8.inc"
 *. First ensure that the types differ by creation of one electron
       ICREA = 0
       IANNI = 0
@@ -1479,6 +1487,7 @@ C?      write(6,*) ' KACGRP ', KACGRP
 * <L! aJ !R> is nonvanishing
 *
       INTEGER LOCC(NGAS),ROCC(NGAS)
+#include "ipoist8.inc"
 *. First ensure that the types differ by annihilation of one electron
       ICREA = 0
       IANNI = 0
@@ -1571,6 +1580,7 @@ C?      write(6,*) ' KACGRP ', KACGRP
 *          if the string have a negative sign
 *          then the phase equals - 1
       IMPLICIT REAL*8           (A-H,O-Z)
+#include "ipoist8.inc"
 C     INTEGER STRING,TI,TTO,OCC,UNOCC,STRIN2,Z
       INTEGER STRING,TI,TTO,STRIN2,Z
 *.Input
@@ -1699,6 +1709,7 @@ C?          write(6,*) ' corresponding number ', JSTRIN
 *                      order to symmetry and occupation type order.
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION ISTASO(NSMST,*)
       INTEGER Z(NACOB,NEL)
@@ -1900,6 +1911,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 *              Version of Dec 1997
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -2109,6 +2121,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 * Double group modifications (april 98 ) : Separate treatment of alpha and beta
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -2374,7 +2387,7 @@ c         if (NGASCT.eq.0) goto 1001
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTROC,NSTR,NEL,
-     &                          NNSTSGP,IISTSGP,IUB)
+     &                                  NNSTSGP,IISTSGP,IUB)
 *
 * Obtain all superstrings containing  strings of given sym and type
 *
@@ -2397,6 +2410,7 @@ c         if (NGASCT.eq.0) goto 1001
 *     Loop over gas N strings
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -2539,6 +2553,7 @@ C?        call memchk
 * Jeppe Olsen, Summer of 99
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *. Input
       INTEGER ILA(NGAS),ILB(NGAS),IRA(NGAS),IRB(NGAS)
       INTEGER ICA(NGAS),ICB(NGAS),IAA(NGAS),IAB(NGAS)
@@ -2790,6 +2805,7 @@ C
 * Jeppe Olsen , Winter of 1994
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "lucinp.inc"
@@ -2932,6 +2948,7 @@ C
 *   Timo Fleig
 * 
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "gasstr.inc"
@@ -3042,6 +3059,7 @@ C  OCC_TO_GRP_(NSTR,IOCC,IGRP,IWAY)
 *
 *. Double group version
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *. Specific Input
       DIMENSION IGRP(NIGRP)
@@ -3135,6 +3153,7 @@ C     DIMENSION NSTSGP(NSMST,*)
 * Jeppe Olsen , Fall of 94
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
       DIMENSION ISPGRP(NGAS),NSTSGP(NSMST,*)
 *. Output
@@ -3238,6 +3257,7 @@ C?      WRITE(6,*) ISMSPGP , NST
 * Jeppe Olsen Winter of 1994
 *
       IMPLICIT REAL*8           ( A-H,O-Z)
+#include "ipoist8.inc"
 C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
       DIMENSION IOC(*),NSTASO(NSMST,*),ISTASO(NSMST,*)
 *
@@ -3393,6 +3413,7 @@ C
 * /STRINP/,/STINF/,/STRBAS/ and string information in STIN
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. Input
 *     (and /LUCINP/ not occuring here )
 #include "mxpdim.inc"
@@ -3867,6 +3888,7 @@ C    &       ' annihilation map from ',ISTTYP,' to ',ISTTYPA
 *              July 1997, modified for relativistic calculations
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -4369,6 +4391,7 @@ C     END IF
 * Version 2 : Uses IGRP and NIGRP to define supergroup
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -4522,6 +4545,7 @@ CTF
 * Reverse lexical ordering is used for restricted space
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "ipoist8.inc"
       INTEGER Z(*),ISCR(*)
 *
       NORB = NORB1 + NORB2 + NORB3
@@ -4575,6 +4599,8 @@ CTF
 *                    Orbital group are mapped
 *                    mapped
 *. Input
+#include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"

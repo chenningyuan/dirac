@@ -32,6 +32,7 @@
 
 *. Input
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
@@ -224,7 +225,7 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
         KISPSAOUT = 0
       END IF
 *. (more to come )
-      call memmar(IDUMMY,IDUMMY,'CHECK',IDUMMY,'Dummy ')
+      call memmar(KDUMMY,IDUMMY,'CHECK',IDUMMY,'Dummy ')
       RETURN
       END
 ***********************************************************************
@@ -233,10 +234,11 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 *                                                                     *
 ***********************************************************************
       SUBROUTINE RMEMCHK
+#include "ipoist8.inc"
 *
 * Check memory allocated  with the memory manager
 *
-      call memmar(IDUM,IDUM,'CHECK ',IDUM,'IDUM  ')
+      call memmar(KDUM,IDUM,'CHECK ',IDUM,'IDUM  ')
 *
       RETURN
       END
@@ -271,12 +273,15 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 * is tranferred to static memory
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#if defined (IA64)
+      integer*8 KBASE,KFREES,KFREEL,IBASE,NWORD,JBASE,JBASEN,IMARK
+#endif
       CHARACTER*6 TASK,IDENT,IIDENT,MARKC
       PARAMETER(NPAD = 1 )
       PARAMETER(MAXLVL = 4096 )
       PARAMETER(MAXMRK = 1024)
-      COMMON/CMEMOR/NWORD,KFREES,KFREEL,NS,NL,NM,IBASE(MAXLVL),
-     &              LENGTH(MAXLVL),IIDENT(MAXLVL),IMARK(MAXMRK),
+      COMMON/CMEMOR/NWORD,KFREES,KFREEL,IBASE(MAXLVL),IMARK(MAXMRK),
+     &              LENGTH(MAXLVL),IIDENT(MAXLVL),NS,NL,NM,
      &              MARKL(MAXMRK),MARKS(MAXMRK),MARKC(MAXMRK)
 *. Two real*8 words, one added NPAD times before each array, another
 *. added NPAD times after each array
@@ -473,19 +478,19 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
                IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
                IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
                IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                WRITE(6,'(4X,A6,2X,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
                ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                WRITE(6,'(4X,A6,2X,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'    OKAY       -  '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                WRITE(6,'(4X,A6,2X,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'     -       OKAY '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                  WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                WRITE(6,'(4X,A6,2X,I20,4X,A)')
      &            IIDENT(IL),IBASE(IL),'     -       OKAY '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                WRITE(6,'(4X,A6,2X,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'     -       -    '
                END IF
             END IF
@@ -498,8 +503,9 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
           WRITE(6,'(A,A)') ' Current task : ', TASK
           WRITE(6,*) ' NS, NL, NSNLI',NS,NL,NSNLI
           WRITE(6,'(A,A)') ' Current Identifier : ', IDENT
-          IF(ITSOK.EQ.0)
-     &    WRITE(6,*) '  Sorry to say it , but memory is CORRUPTED '
+          IF (ITSOK.EQ.0) THEN
+            WRITE(6,*) '  Sorry to say it , but memory is CORRUPTED '
+	  END IF
           WRITE(6,*) '  Memory map : '
           WRITE(6,*) '  Identifier   Offset    Pad1 okay Pad2 okay '
           WRITE(6,*) '  ========== ==========  ========= ========= '
@@ -519,19 +525,19 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
               IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
    50       CONTINUE
             IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
+               WRITE(6,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
             ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
+               WRITE(6,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'    OKAY       -  '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
+               WRITE(6,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
+               WRITE(6,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
+               WRITE(6,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'     -       -    '
             END IF
   200     CONTINUE
@@ -547,7 +553,7 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
           WRITE(6,*) ' Identifier  Start of free memory '
           WRITE(6,*) ' ================================='
           DO JMARK = 1, NM
-            WRITE(6,'(3X,A6,10X,I10)') MARKC(JMARK),IMARK(JMARK)
+            WRITE(6,'(3X,A6,10X,I20)') MARKC(JMARK),IMARK(JMARK)
           END DO
 *
         IF(ITSOK.EQ.0) 

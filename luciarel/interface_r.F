@@ -12,6 +12,7 @@
      &                      NMS2VAL,NBLOCK)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 #include "krmcluci_inf.h"
@@ -48,6 +49,7 @@
      &                       IMXDIM,IPRINT)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -72,7 +74,7 @@
 *
       call findhigh(NGSOBPI,MXPIRR*MXPNGAS,MXGSDIM)
       do LIST=1,NIRR_PN,1
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'DIST1E')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'DIST1E')
         if (LIST.le.2) then
           IDIMGRP = 1
         else
@@ -160,7 +162,7 @@
           end do
         end do
 *
-      call memmar(IDUM,IDUM,'FLUSM ',IDUM,'DIST1E')
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'DIST1E')
       end do
 *
       if (NTEST.ge.10) then
@@ -200,6 +202,7 @@
      &                             LIST,NTEST)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -232,7 +235,7 @@
         call wrtmat(HELPMAT,IDIM,IDIM,IDIM,IDIM)
       end if
 *
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'DISTDI')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'DISTDI')
       call memmar(KIGSIND,NIRR_PN*SYMDIM(IDIMGRP),
      &              'ADDL  ',2,'IGSIND')
       call memmar(KISMIND,SYMDIM(IDIMGRP),'ADDL  ',2,'ISMIND')
@@ -248,7 +251,7 @@
      &             WORK(KISMIND),WORK(KIGSOFF),WORK(KIGSIND),
      &             IACSYM,LIST,MXGSDIM,ISPSF_MO,DOUGRP)
 *
-      call memmar(IDUM,IDUM,'FLUSM ',IDUM,'DISTDI') 
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'DISTDI') 
 *
       write(6,'(A,I3,A,I6)') 
      &      ' List no. ',LIST,' of 1-el. ints processed. DIM ',IDIM
@@ -316,6 +319,7 @@
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -335,7 +339,7 @@
 *
       IPNTGRP_SAVE = PNTGRP
       IDUM = 1
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'DIST2E')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'DIST2E')
 *. Block holding largest block of integrals
       MXTSOB_L = 0
       DO IOBTP = 1, NGAS
@@ -633,7 +637,7 @@ C?     WRITE(6,*) 'JLIST,  KINT2D(1,JLIST)',JLIST,  KINT2D(1,JLIST)
         END DO
       END IF
 *
-      call memmar(IDUM,IDUM,'FLUSM ',IDUM,'DIST2E')
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'DIST2E')
 *
       RETURN
       END
@@ -659,6 +663,7 @@ C?     WRITE(6,*) 'JLIST,  KINT2D(1,JLIST)',JLIST,  KINT2D(1,JLIST)
      &                           ISPINFREE,IMXDIM,IDBG)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -889,6 +894,7 @@ c       if (LIST.eq.1) call numints_red_rel(IGLSUM,NSMBLK,NTEST)
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 *. General input
 #include "mxpdim.inc"
@@ -916,7 +922,7 @@ c       if (LIST.eq.1) call numints_red_rel(IGLSUM,NSMBLK,NTEST)
       end if
 *
       IDUM = 1
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'DIST2E')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'DIST2E')
 *
 * Some additional information:
 *. Block holding largest block of integrals
@@ -1186,7 +1192,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
         end do
       end if
 *
-      call memmar(IDUM,IDUM,'FLUSM ',IDUM,'DIST2E')
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'DIST2E')
 *
       return
       end
@@ -1217,6 +1223,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
      &                            IBSPOBEX_TP,LABEL,CIRUN,IPRNT)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "ctcc.inc"
@@ -1245,7 +1252,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * dimensioned outside as integers MX_ST_TSOSO_BLK_MX
       dimension ISTR_CA(*),ISTR_CB(*),ISTR_AA(*),ISTR_AB(*)
 *
-      NTESTL = 01
+      NTESTL = 0
       NTEST = max(NTESTL,IPRNT)
       IZERO = 0
 *
@@ -1783,12 +1790,10 @@ C   formalism !
 *         ^ End loop over creation part symmetry
         end do
 *       ^ End loop over excitation types
-C       print*,'ICOUNT=',ICOUNT
       end do
 *     ^ End loop over real/imaginary
       if (NTEST.ge.1) close(LUINGR)
 *
-C     stop 'After dist_ints_sigden.'
       return
       end
 ***********************************************************************
@@ -1807,6 +1812,7 @@ C     stop 'After dist_ints_sigden.'
 * Jeppe Olsen, December 97
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -1872,6 +1878,7 @@ CC        CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV)
 *-----------------------------------
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "input.inc"
@@ -2121,6 +2128,7 @@ CC        CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV)
 *  Debugged to some extent ...     Timo Fleig, August '98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -2410,6 +2418,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
      &                  XIN)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 *--------------------------------------
 *  Timo Fleig, December 2000
@@ -2596,9 +2605,10 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
      &                        KR,INDK,INDL,IOFF12,IRI,XIN,IPRNT)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "symm.inc"
-      include 'crun.inc'
+#include "crun.inc"
 *
       dimension NUMINT(MORB_DIRAC,MORB_DIRAC,4),KR(-NDIM_TOT:NDIM_TOT),
      &          INDK((2*NDIM_TOT)**4),INDL((2*NDIM_TOT)**4),
@@ -2879,6 +2889,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
      &                       KR,NASHT,DMFC,VMUUUU,IPRNT)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *
       dimension VMUUUU(*),DMFC(*)
       dimension ICSAVE(4),INDEX(4),INVREO(-IDIM:IDIM),KR(-IDIM:IDIM)
@@ -2945,7 +2956,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
 *
       else
         write(6,*) 'No QFT implemented YET in LUCIAREL.'
-        write(6,*) 'you specified ',4-NCT,' indices.'
+        write(6,*) 'you specified ',NCT,' indices.'
         call abend2('Quitting.')
       end if
 *
@@ -2965,6 +2976,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
      &                         IOFF12,XIN,ONEINT,IPRNT)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *
       dimension INDEX(4),ICSAVE(4),INVREO(-ITOTDIM:ITOTDIM)
       dimension ONEINT(ITOTDIM*2,ITOTDIM*2)
@@ -3043,6 +3055,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
 *                              = (IJ!KL)-(IL!KJ) for IXCHNG = 1
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *.ORBINP
 C     PARAMETER(MXPORB=500)
 C     PARAMETER(MXPIRR = 20)
@@ -3127,6 +3140,7 @@ C    &    - GTIJKL_REL(IABS_T,LABS_T,KABS_T,JABS_T)
 *                              = (IJ!KL)-(IL!KJ) for IXCHNG = 1
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -3491,6 +3505,7 @@ C?              print '(7i6)',ijkl,ij,kl,i,j,k,l
 *     Timo Fleig
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *. output
       DIMENSION XINT(*)
 *. Scratch (should be able to hold one integral block)
@@ -3887,6 +3902,7 @@ C?          WRITE(6,*) ' GETINT_DBG_S 16 '
 * all symmetries etc refers to data for the output block
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -4199,6 +4215,7 @@ C?          WRITE(6,*) ' GETINT_DBG_S 16 '
 * Outer routine for accessing integral block
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 *./CRUN/ : INTIMP used
@@ -4313,6 +4330,7 @@ C     STOP ' Jeppe forced me to stop in GETINT '
      &                         NASHT,F1,F2,IPRNT)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "glbbas.inc"
@@ -4375,6 +4393,7 @@ c       call getinm_sigden()
 * Outer routine for accessing integral block
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -4475,6 +4494,7 @@ C. Interface to LUCAS integrals
 ***** M.P. Fuelscher, University of Lund, Sweden, 1991 *****************
 *
       Implicit Real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
       Include 'SysDef.inc'
 *
@@ -4689,6 +4709,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 * Type ordering
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 
@@ -4728,6 +4749,7 @@ CINA &           ISMFTO,IBSO,NACOB,NSMOB,NOCOBS,I,J,K,L)
       subroutine gtmoswe(XINT_L,NTOTINT)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -4742,7 +4764,7 @@ CINA &           ISMFTO,IBSO,NACOB,NSMOB,NOCOBS,I,J,K,L)
       DIMENSION XINT_L(*)
 *
       IDUMMY = 1
-      call memmar(IDUMMY,IDUMMY,'MARK  ', IDUMMY,'GTMOSW')
+      call memmar(KDUMMY,IDUMMY,'MARK  ', IDUMMY,'GTMOSW')
       call memmar(KLSWINT,NINT2,'ADDL  ',2,'SWEINT')
       write(6,*) 'SWEINT length NINT2  ',NINT2
 *
@@ -4782,7 +4804,7 @@ C    &                (NFRO(I),I=1,NIRR_PN),PNUCCO
      &             XINT_L)
 CTF
 *
-      call memmar(IDUMMY,IDUMMY,'FLUSM ', IDUMMY,'GTMOSW')
+      call memmar(KDUMMY,IDUMMY,'FLUSM ', IDUMMY,'GTMOSW')
       return
       end
 ***********************************************************************
@@ -4791,7 +4813,9 @@ CTF
 *                                                                     *
 ***********************************************************************
       subroutine integral_type(ISOB,NGAS,ITPSV,LUINGR)
-      include 'implicit.inc'
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
       character*11 CELEC2
       character*13 CELEC
       dimension ISOB(NGAS,4)
@@ -4825,21 +4849,18 @@ CTF
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      Function I2EAD2(ISM,IORB,JSM,JORB,KSM,KORB,LSM,LORB)
+      FUNCTION I2EAD2(ISM,IORB,JSM,JORB,KSM,KORB,LSM,LORB)
 *
 * Find adress of integral in LUCIA order
 *
 * Indeces IORB,JORB,KORB,LORB are relative to start of symmetry block of orbs.
 *
-      IMPLICIT REAL*8           (A-H,O-Z)
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
-C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,
-C    &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR
-
-#include "glbbas.inc"
-*
 #include "wrkspc.inc"
+#include "glbbas.inc"
 *
       I2EAD2 = I2EAD2S(ISM,IORB,JSM,JORB,KSM,KORB,LSM,LORB,WORK(KPINT2))
 *
@@ -5009,6 +5030,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *    Timo Fleig
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -5193,6 +5215,7 @@ C!    stop ' Jeppe forced my to stop in INTIM '
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
 
       Include 'SysDef.inc'
 
@@ -5304,6 +5327,7 @@ C!    stop ' Jeppe forced my to stop in INTIM '
       subroutine kkr_set(KR,IDIM,ISYDI,NIRR,INVSYM)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *
       dimension KR(-IDIM:IDIM),ISYDI(NIRR)
 *
@@ -5344,6 +5368,7 @@ C!    stop ' Jeppe forced my to stop in INTIM '
       subroutine luc2pic(ISOOP,IPRTRA)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "lucinp.inc"
@@ -5427,6 +5452,7 @@ C     Only SO operator doesn't make any sense!
 *------------------------------------
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -5577,6 +5603,7 @@ C     Only SO operator doesn't make any sense!
 ************************************************************************
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -5893,6 +5920,7 @@ C994   Call StkA(0,ComLbl)
       subroutine rd_traone(ONEINT,LU2,FNONEMO,IPRINT)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -5923,6 +5951,7 @@ C Not required in DIRAC environment.
      &                  LUMOUTR,LUMOUTI)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "coeff.inc"
@@ -6230,6 +6259,7 @@ c       end do
 *------------------------------------------------------
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "coeff.inc"
@@ -6447,6 +6477,7 @@ C?    write(6,*) 'ILEN is    ',ILEN
       subroutine rdint_molcas(ONEINT,FNONEAO,LU2,NATOMS,IFOCKEX)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -6471,6 +6502,7 @@ C?    write(6,*) 'ILEN is    ',ILEN
       subroutine rdint_molecu(AOTRISM,HELPMAT,
      &                 LU2,LU9,LUSGI1,LENGTH,IHELEN)
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -6641,6 +6673,7 @@ C?    end do
 *  Timo Fleig
 *
       implicit real*8 (A-H,O,P,R-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "input.inc"
@@ -7125,6 +7158,7 @@ CTF               ISPQR = IPGMULT(ISPQ,ISR)
      &                           ISPINFREE,IBOSYM,IDUMAR,DUMAR)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "input.inc"
 *
@@ -7231,6 +7265,7 @@ CTF               ISPQR = IPGMULT(ISPQ,ISR)
      &                   LUSGI2,LUSGI3,LUSGI4)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
       character*8 CHARTEST
       character*30 INTTYPE
@@ -7323,6 +7358,7 @@ CTF               ISPQR = IPGMULT(ISPQ,ISR)
 *--------------------------------------------------------
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
       integer TRIANGLE
       character*6 FNONEAO
@@ -7526,6 +7562,7 @@ C994   Call StkA(0,ComLbl)
      &                          LUSGI2,LUSGI3,LUSGI4)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
       character*8 CHARTEST
 *
@@ -7644,6 +7681,7 @@ C994   Call StkA(0,ComLbl)
      &                           KR,IOFF12,NUMINT,ITPLOC,INDK,INDL)
 *
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "input.inc"
 *
@@ -8043,6 +8081,7 @@ c     IF (BREIT) CLOSE (MDBINT,STATUS='KEEP')
      &                          ISPINFREE,IPRNT)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
       integer SYDI(NIRR_PN),SYMDIM(NIRR_PN),DOUGRP
@@ -8199,6 +8238,7 @@ c     IF (BREIT) CLOSE (MDBINT,STATUS='KEEP')
      &                       MOLNIT,LUCNIT,IGLSUM_M,IGLSUM_L,
      &                       NSMBLK,NSMBLK_L,ILOCLEN)
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
       dimension SWEINT(IGLSUM_M),HELPVEC(IGLSUM_M)
       dimension MOLOFF(NSMBLK),LUCOFF(NSMBLK_L)
@@ -8289,6 +8329,7 @@ c     IF (BREIT) CLOSE (MDBINT,STATUS='KEEP')
 *. Output
 * SYMINT_L : Complete list of LUCIA integrals
       implicit real*8 (A-H,O-Z)
+#include "ipoist8.inc"
 *
 *. Input
       dimension SYMINT_M(*)
@@ -8402,6 +8443,7 @@ C             IJKL_L = I2EAD2(ISM,IR,JSM,JR,KSM,KR,LSM,LR)
       subroutine sspir(ISOI)
 *
       implicit real*8(A-H,O-Z)
+#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -8571,6 +8613,7 @@ Cjan      end do
 * #############################################
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "glbbas.inc"
@@ -8776,6 +8819,7 @@ Cjan      end do
      &                   SIGN_REO,ISF)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "glbbas.inc"
