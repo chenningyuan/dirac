@@ -266,7 +266,6 @@ make_export()
      \$szCurrDir/main/*.h \\
      \$szCurrDir/main/*.head \\
      \$szCurrDir/main/*.struct \\
-     \$szCurrDir/lucita/Makefile.sub
      \$szCurrDir/test \\
      \$szCurrDir/testlast \\
      \$szCurrDir/utils 2> export.log
@@ -341,7 +340,6 @@ make_makefile()
    #
    cat <<EOF> Makefile
 include ./Makefile.config
-include lucita/Makefile.sub
 
 #
 # Note that only object files from fortran files (.F) should be included in OBJS,
