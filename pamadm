@@ -602,7 +602,7 @@ clean   :
 	cd prp      ; \$(MAKE) clean
 	cd dirac/main ; \$(MAKE) clean
 EOF
-if [ -n "$TRAMOD" ]; then
+if [ -n "$ERIMOD" ]; then
    echo '	cd eri      ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$RSPMOD" ]; then
