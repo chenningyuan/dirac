@@ -3530,8 +3530,7 @@ C
       IF(ICHANG.GT.0) WRITE(LUPRI,'(A)') 
      &    '   with the following modifications:'
       IF(SPINFR) THEN
-         WRITE(LUPRI,'(3X,A)') '- Spin-orbit terms zeroed out '//
-     &      '(NB : ONLY in the DHF calculation !!)'
+         WRITE(LUPRI,'(3X,A)') '- Spin-orbit interactions neglected'
       ELSE IF(SPINFR2) THEN
          WRITE(LUPRI,'(3X,A)') '- 2-el. spin-orbit terms zeroed out '//
      &      '(NB : ONLY in the DHF calculation !!)'
