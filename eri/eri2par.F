@@ -901,7 +901,9 @@ C INFORB : N2BASX
 C
 #include "infpar.h"
 #include "inforb.h"
+#if defined (VAR_VECTOR)
 #include "veclen.h"
+#endif
 C
 #include "memint.h"
 C

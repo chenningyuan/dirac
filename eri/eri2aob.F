@@ -50,7 +50,9 @@ C  /* Deck setaob */
 #include "shells.h"
 #include "symmet.h"
 #include "aobtch.h"
+#if defined (VAR_VECTOR)
 #include "veclen.h" 
+#endif
 #include "ibtfun.h"
 C
 C     Number of basis functions
@@ -62,7 +64,9 @@ C
       END DO
       END DO
 C
+#if defined (VAR_VECTOR)
       NODD = 1 - MOD(NBASE,2)
+#endif
 C
       NGAB = 0
       DO I = 1, KMAX

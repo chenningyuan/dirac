@@ -60,7 +60,9 @@ C
 #include "erienr.h"
 #include "erimem.h"
 #include "aobtch.h"
+#if defined (VAR_VECTOR)
 #include "veclen.h"
+#endif
 #include "odbtch.h"
 #include "symmet.h"
 #include "infpar.h"
