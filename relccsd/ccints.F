@@ -471,9 +471,9 @@ C
       I  = 1
       DO IREP = 1, NREP
          DO J = 1, NO(IREP)
-            EPSDIF = DABS(EPS(I)-FOO(II))
+            EPSDIF = ABS(EPS(I)-FOO(II))
 C64B        EPSDIF =  ABS(EPS(I)-FOO(II))
-            IF (DABS(FOO(II)).GT.1.D0) EPSDIF = EPSDIF / DABS(FOO(II))
+            IF (ABS(FOO(II)).GT.1.D0) EPSDIF = EPSDIF / ABS(FOO(II))
 C64B        IF ( ABS(FOO(II)).GT.1.0 ) EPSDIF = EPSDIF /  ABS(FOO(II))
             IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.1)
      &         WRITE (IW,1002) I,REPNA(IREP),EPS(I),FOO(II)
@@ -486,9 +486,9 @@ C64B        IF ( ABS(FOO(II)).GT.1.0 ) EPSDIF = EPSDIF /  ABS(FOO(II))
       II = 1
       DO IREP = 1, NREP
          DO J = 1, NV(IREP)
-            EPSDIF = DABS(EPS(I)-FVV(II))
+            EPSDIF = ABS(EPS(I)-FVV(II))
 C64B        EPSDIF =  ABS(EPS(I)-FVV(II))
-            IF (DABS(FVV(II)).GT.1.D0) EPSDIF = EPSDIF / DABS(FVV(II))
+            IF (ABS(FVV(II)).GT.1.D0) EPSDIF = EPSDIF / ABS(FVV(II))
 C64B        IF ( ABS(FVV(II)).GT.1.0 ) EPSDIF = EPSDIF /  ABS(FVV(II))
             IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.2)
      &         WRITE (IW,1002) I,REPNA(IREP),EPS(I),FVV(II)
@@ -634,7 +634,7 @@ C
          ELSE
             APHASE(1) = AMAXR
             APHASE(2) = AMAXI 
-            ANORM = DSQRT(AMAXR*AMAXR+AMAXI*AMAXI)
+            ANORM = SQRT(AMAXR*AMAXR+AMAXI*AMAXI)
 C64B        ANORM =  SQRT(AMAXR*AMAXR+AMAXI*AMAXI)
             APHASE(1) = APHASE(1) / ANORM
             APHASE(2) = APHASE(2) / ANORM
