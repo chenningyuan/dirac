@@ -330,13 +330,15 @@ remove_work_dir()
 #  These directories are not suited for restart.
 #
    master=`hostname`
-   for node in ` uniq $WRK/dirac_machines `; do
-       if [ $node != $master ]; then
-          echo "Contents of work directory $WRK on slave node $node"
-          $RSH $node "ls -l $WRK"
-          $RSH $node "rm -fr $WRK"
-       fi
-   done
+   if [ "$DIRPAR" = "1" -a "$LOCALDISKS" = "yes" ]; then
+     for node in ` uniq $WRK/dirac_machines `; do
+         if [ $node != $master ]; then
+            echo "Contents of work directory $WRK on slave node $node"
+            $RSH $node "ls -l $WRK"
+            $RSH $node "rm -fr $WRK"
+         fi
+     done
+   fi
 #
 #  Now delete work directory on primary machine if requested
 #
@@ -787,7 +789,7 @@ print_header
 copy_files
 save_old_output
 setup_command
-if [ "$LOCALDISKS" = "yes" ]; then
+if [ "$DIRPAR" = "1" -a "$LOCALDISKS" = "yes" ]; then
   distribute_work_dir 
 fi
 execute_dirac
