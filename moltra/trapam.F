@@ -772,7 +772,11 @@ C
           IR(2,IFRP) =  NOCC(IFRP)
         ENDIF
 C
-        ISTART = 1 + NIOCC(IFRP)
+        IF(NOCC(IFRP).EQ.0) THEN
+          ISTART = 0
+        ELSE
+          ISTART = 1 + NIOCC(IFRP)
+        ENDIF
         IEND = NOCC(IFRP)
         WRITE(MPR_INDSTR(1,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
 C
@@ -802,7 +806,11 @@ C
         ENDIF
 C
         ISTART = NOCC(IFRP) + 1
-        IEND = NOCC(IFRP) + NAVIR(IFRP)
+        IF(NAVIR(IFRP).EQ.0) THEN
+          IEND = NOCC(IFRP) + 1
+        ELSE
+          IEND = NOCC(IFRP) + NAVIR(IFRP)
+        ENDIF
         WRITE(MPR_INDSTR(2,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
 C
         CALL MEMGET('INTE',KVEC(IFRP,2),NR(IFRP),WORK,KFREE,LFREE)
@@ -831,7 +839,11 @@ C
         ENDIF
 C
         ISTART = NOCC(IFRP) + 1
-        IEND = NOCC(IFRP) + NAVIR(IFRP)
+        IF(NAVIR(IFRP).EQ.0) THEN
+          IEND = NOCC(IFRP) + 1
+        ELSE
+          IEND = NOCC(IFRP) + NAVIR(IFRP)
+        ENDIF
         WRITE(MPR_INDSTR(3,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
 C
         CALL MEMGET('INTE',KVEC(IFRP,3),NR(IFRP),WORK,KFREE,LFREE)
@@ -862,7 +874,11 @@ C
           IR(2,IFRP) =  NOCC(IFRP)
         ENDIF
 C    
-        ISTART = 1 + NIOCC(IFRP)
+        IF(NOCC(IFRP).EQ.0) THEN
+          ISTART = 0
+        ELSE
+          ISTART = 1 + NIOCC(IFRP)
+        ENDIF
         IEND = NOCC(IFRP)
         WRITE(MPR_INDSTR(4,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
 C

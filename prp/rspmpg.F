@@ -70,8 +70,8 @@ C
       nbfreq    = 1             !number of frequencies
       bfreq(1)  = 0.d0
       allcmb    = .false.       !generate all operator combinations
-      xlr_skipep= .false.       !do include e-p orbital rotations
-      xlr_skipee= .false.       !do include e-e orbital rotations
+      XLR_SKIPEP= .false.       !do include e-p orbital rotations
+      XLR_SKIPEE= .false.       !do include e-e orbital rotations
 c     qedrun    = .TRUE.        !not implemented
       xlr_lsfg(1) = .true.        !Generate G-matrix in MO basis
       xlr_lsfg(2) = .true.        !Generate G-matrix in MO basis
@@ -177,7 +177,11 @@ C
 C     Calculate D_ax
 C     ==============
 C
-      CALL CALCDAX(DMO,XMO,WORK,KFREE,LFREE)
+      IF(.NOT.XLR_SKIPEP) THEN
+C
+        CALL CALCDAX(DMO,XMO,WORK,KFREE,LFREE)
+C
+      ENDIF
 C
       call qexit('PRPXLR_MPG')
       return
@@ -742,7 +746,7 @@ C
 C     Solution vector (e-p) part
 C     ==========================
 C
-      if(nzxopp.gt.0)then
+      IF(NZXOPP.GT.0)THEN
          write(lupri,'(a)') 'e-p solutions'
          npsim=nfreq*ifac
          call memget('REAL',kxvec,nzxoppq*nfreq,work,kfree,lfree)
@@ -774,7 +778,7 @@ C
                IO2 = IO2 + NORB(IFRP)
             ENDDO
          ENDDO
-      endif
+      ENDIF
 C
          IO1 = 0
          IO2 = 0
@@ -908,13 +912,15 @@ C     first the x - j" part
 C     ---------------------
 C
       DO IZ = 1,NZ
-        IOFF1 = (IZ-1)*NORBT*NORBT*NZ
+        IOFF1 = (IZ-1)*NORBT*NORBT
         IOFF2 = IOFF1
         DO IFSYM = 1,NFSYM
           IOFF2 = IOFF2 + NORBT*NPSH(IFSYM)
           IOFF3 = IOFF2 + 1
           DO J = 1,NOCC(IFSYM)
             CALL DCOPY(NPSH(IFSYM),DMO(IOFF3),1,DVJ(IOFF3),1)
+            do k=1,npsh(ifsym)
+            enddo
             IOFF3 = IOFF3 + NORBT
           ENDDO ! j
           IOFF2 = IOFF1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
@@ -925,7 +931,7 @@ C     next the a" - j" part
 C     ---------------------
 C
       DO IZ = 1,NZ
-        IOFF1 = (IZ-1)*NORBT*NORBT*NZ
+        IOFF1 = (IZ-1)*NORBT*NORBT
         IOFF2 = IOFF1
         DO IFSYM = 1,NFSYM
           IOFF2 = IOFF2 + NORBT*NPSH(IFSYM) + NPSH(IFSYM) + NOCC(IFSYM)
@@ -933,16 +939,19 @@ C
           NV = NAVIR(IFSYM) + NIVIR(IFSYM)
           DO J = 1,NOCC(IFSYM)
             CALL DCOPY(NV,DMO(IOFF3),1,DVJ(IOFF3),1)
+            do k=1,nv
+            enddo
             IOFF3 = IOFF3 + NORBT
           ENDDO ! j
           IOFF2 = IOFF1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
         ENDDO   ! ifsym
       ENDDO     ! iz
 C
+C
 C     Calculate the 2-electron dependent part of D_ax
 C     ===============================================
 C
-      CALL MPGLVC(DVJ,DAX,WORK,KFREE,LFREE,2)
+c     CALL MPGLVC(DVJ,DAX,WORK,KFREE,LFREE,2)
 C
 C     Add L_ax and divide by spinor energies
 C     ======================================
@@ -963,7 +972,8 @@ C
               IOFD4 = IOFD4 + 1
               IOFEGA2 = IOFEGA1 + IA
               DIV = (EIG(IOFEGA2) - EIG(IOFEGX2))
-              DMO(IOFD4) = (D2*XMO(IOFD4) - DAX(IOFD4))/DIV
+c             DMO(IOFD4) = (D2*XMO(IOFD4) - DAX(IOFD4))/DIV
+              DMO(IOFD4) = (D2*XMO(IOFD4))/DIV
             ENDDO !ia
             IOFD3 = IOFD3 + NORBT
           ENDDO   !ix
@@ -1007,29 +1017,33 @@ C
 C
       KFRSAV=KFREE
 C
-C     Open the coefficient file and read the eigenvalues
-C     ==================================================
+      IF(NIOCCT.GT.0 .OR. NIVIRT.GT.0) THEN      
 C
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) GOTO 1000
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CALCDJI')
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6,
-     &            WORK,KFREE,LFREE)
-      CLOSE(LUCOEF,STATUS='KEEP')
+C       Open the coefficient file and read the eigenvalues
+C       ==================================================
 C
-C     Calculate D_ji' and D_b'a
-C     =========================
+        INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+        IF(.NOT.FILEX) GOTO 1000
+        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CALCDJI')
+        CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6,
+     &              WORK,KFREE,LFREE)
+        CLOSE(LUCOEF,STATUS='KEEP')
 C
-      CALL CALC1_DJI(DMO,XMO,WORK(KEIG),WORK,KFREE,LFREE)
+C       Calculate D_ji' and D_b'a
+C       =========================
 C
-C     Create also the Hermitian counterpart of D_ji' and D_b'a
-C     ========================================================
+        CALL CALC1_DJI(DMO,XMO,WORK(KEIG),WORK,KFREE,LFREE)
 C
-      CALL QHMRST(DMO,NORBT,NZ,NORBT,NORBT)
+C       Create also the Hermitian counterpart of D_ji' and D_b'a
+C       ========================================================
 C
-      CALL MEMREL('CALCDJI',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+        CALL QHMRST(DMO,NORBT,NZ,NORBT,NORBT)
+C
+        CALL MEMREL('CALCDJI',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+      ENDIF
 C
       CALL QEXIT('CALCDJI')
       RETURN

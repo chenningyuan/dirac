@@ -443,7 +443,7 @@ C  /* Deck dtaomo */
       SUBROUTINE DTAOMO(DAOAX,DMOAX,CMO,WORK,KFREE,LFREE)
 C***********************************************************************
 C        
-C     Written by J. van Stralen - Feb 2003
+C     Written by J. van Stralen - september 2003
 C      
 C     PURPOSE: Transform density matrix from AO-basis to MO-basis
 C    
