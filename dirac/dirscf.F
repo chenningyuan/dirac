@@ -1308,7 +1308,7 @@ C
          IF(IPRSCF.GE.2) THEN
             WRITE(LUPRI,'(6X,A,'//FMT//')')
      &         '* 1-electron energy          :  ',E1PART
-            IF(NZ.GT.1) THEN
+c           IF(NZ.GT.1) THEN
                DO 20 IZ = 1,NZ
                DO IOPEN = 0,NOPEN
                   WRITE(LUPRI,'(6X,A,A2,A,I2,A,'//FMT//')')
@@ -1316,10 +1316,10 @@ C
      +               IOPEN,'):  ',E(IZ,1,IOPEN)
                END DO
    20          CONTINUE
-            ENDIF
+c           ENDIF
             WRITE(LUPRI,'(6X,A,'//FMT//')')
      +         '* 2-electron energy          :  ',E2PART
-            IF(NZ.GT.1) THEN
+c           IF(NZ.GT.1) THEN
                DO 30 IZ = 1,NZ
                DO IOPEN = 0,NOPEN
                   WRITE(LUPRI,'(6X,A,A2,A,I2,A,'//FMT//')')
@@ -1327,7 +1327,7 @@ C
      +               IOPEN,'):  ',E(IZ,2,IOPEN)
                END DO
    30          CONTINUE
-            ENDIF
+c           ENDIF
          END IF
       ENDIF
 C
