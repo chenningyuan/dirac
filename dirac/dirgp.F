@@ -1243,7 +1243,7 @@ C
         ENDIF
       ENDDO
 C
-      IF(IPRINT.GE.1) THEN
+      IF(IPRINT.GE.2) THEN
          CALL HEADER('NUCORB:Basis set information:',-1)
         DO I = 1,NUCIND
           WRITE(LUPRI,'(/A,A4,A/)') '*** Center: ',NAMN(I),' ***'
