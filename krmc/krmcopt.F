@@ -271,7 +271,8 @@ C
       LOGICAL   WFCONV
       DIMENSION WORK(*)
       DIMENSION CMO(*),DV(*),FC(*),FV(*),FQ(*),FCAC(*),CREF(*),
-     &          H2AC(*),GCI(*),GOEE(*),GOEP(*), PV(*)
+     &          H2AC(*),GCI(*),GOEE(*),GOEP(*)
+      DIMENSION PV(*)
 C
       LOGICAL CHKSTP,DO4INDEX,TOBE
       LOGICAL NRALW, NEOALW
@@ -559,7 +560,7 @@ C
             GOTO 1999
          END IF
 C
- 9050    FORMAT(//' *** WARNING *** ',
+ 9050    FORMAT(//,1X,'*** WARNING *** ',
      &        'Aborting: step rejected and backstep is NOT available')
 C
          IF (ISTEP .GT. 0) THEN
@@ -583,16 +584,16 @@ c           call quit('argh')
             ITBCK = 0
          END IF
 C
- 9060    FORMAT(/' (PSIOP1) Optimization control: ',
+ 9060    FORMAT(/,1X,'(PSIOP1) Optimization control: ',
      &        'Step was too large, we backstep')
- 9062    FORMAT(/' (PSIOP1) Optimization control: ',
+ 9062    FORMAT(/,1X,'(PSIOP1) Optimization control: ',
      &        '*** ERROR in PSIOP1 *** No convergence',
-     &        //' Step was too large and maximum number of ',
+     &        //,1X,'Step was too large and maximum number of ',
      &        'backsteps',I2,' reached'/)
- 9064    FORMAT(/' (PSIOP1) Optimization control: ',
+ 9064    FORMAT(/,1X,'(PSIOP1) Optimization control: ',
      &        '*** ERROR in PSIOP1 *** ',
      &        'Gradient norm increasing in local region.',
-     &        /' Probable cause: numerical round-off errors ',
+     &        /,1X,'Probable cause: numerical round-off errors ',
      &        'or too many integrals neglected/screening away')
 C
          CHKSTP = .TRUE.
@@ -744,7 +745,7 @@ C
       CALL RTKTIME(.TRUE.,9)
       KFRSAV = KFREE
 C
-      WRITE(LUPRI,'(/A)') ' (RGRAD) Calculating gradient.'
+      WRITE(LUPRI,'(/1X,A)') '(RGRAD) Calculating gradient.'
 C
       DFAC(1) = D1
       DFAC(2) = DM1
@@ -858,6 +859,10 @@ C
      &        NORBT * NASHT * NZ)
          CALL MEMREL('RORBGRD.KFPV',WORK,KFRSAV,KFPV,KFREE,LFREE)
       END IF
+C
+CEXTREME DEBUG
+c     GOEE(9) = 0.0D00
+C END DEBUG
 C
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('rGRAD: gradient:',-1)
@@ -1103,11 +1108,11 @@ C
 C     END IF
       IF ( IPROPT .GE. 5 ) THEN
          IF (CALCDV) THEN
-            WRITE(LUPRI,'(/A)') ' (RMAKDM) DV density matrix'
+            WRITE(LUPRI,'(1X,A)') '(RMAKDM) DV density matrix'
             CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
          IF (CALCPV) THEN
-            WRITE(LUPRI,'(/A)') ' (RMAKDM) PV density matrix'
+            WRITE(LUPRI,'(1X,A)') '(RMAKDM) PV density matrix'
             CALL PRDNZ3(PV,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
          END IF
       END IF
@@ -1777,7 +1782,7 @@ C     ***************************************************
 C
       CALL IZERO(NOROT,NORBT)
 C
-      WRITE(LUPRI,'(/A)') ' (RSETWOP) Orbital classes:'
+      WRITE(LUPRI,'(1X,A)') '(RSETWOP) Orbital classes:'
       DO I = 1,NFSYM
          WRITE(LUPRI,'(3X,A,I1)') 'Fermion irrep ',I
          IF (NISH(I).GT.0) THEN
@@ -1997,8 +2002,8 @@ C     Check that NAELEC .le. 2 *NASHT
 C     (NAELEC: # of active electrons)
 C
       IF (NAELEC .GT. 2 * NASHT) THEN
-         WRITE(LUPRI,'(//2A,I3,2A,I3,A)')
-     &        ' *** ERROR in RSETCI *** ',
+         WRITE(LUPRI,'(//,1X,2A,I3,2A,I3,A)')
+     &        '*** ERROR in RSETCI *** ',
      &        'Number of electrons (',NAELEC,') is larger than ',
      &        'the number of spinors (',2 * NASHT,')!'
          CALL QUIT('*** ERROR in RSETCI *** NAELEC > 2 * NASHT')
@@ -2365,8 +2370,8 @@ C
          NOSTOP = .FALSE.
       END IF
       IF (IOPT .LT. 1 .OR. IOPT .GT. 2) THEN
-          WRITE(LUPRI,'(/A,I10)')
-     &       ' rREADMO: ERROR: Unknown option ',IOPT
+          WRITE(LUPRI,'(/1X,A,I10)')
+     &       'rREADMO: ERROR: Unknown option ',IOPT
           CALL QUIT('rREADMO: ERROR: Unknown option.')
       END IF
       GOTO (100,100), IOPT
@@ -3270,14 +3275,14 @@ C
      &     WORK(KFREE),LFREE)
 C
       IF (IPROPT .GE. 5 .AND. NZXOPT .GT. 0) THEN
-         WRITE(LUPRI,'(A)') ' (GTNORB) Kappa matrix'
+         WRITE(LUPRI,'(1X,A)') '(GTNORB) Kappa matrix'
          CALL RPRKAP(WORK(KKAPPA),WORK(KKAPPA+NZXOPEQ),
      &               WORK(KZXOPE),NZXOPE,
      &               WORK(KZXOPP),NZXOPP,
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
       IF (IPROPT .GE. 5 .AND. NZCONF .GT. 0) THEN
-         WRITE(LUPRI,'(A)') ' (GTNORB) CI delta vector'
+         WRITE(LUPRI,'(1X,A)') '(GTNORB) CI delta vector'
          CALL RPRCI(WORK(KDELTACI),NZCONF,NZ,
      &        OPT_CIPROGRAM,THRPCI,LUPRI)
       END IF
@@ -3295,7 +3300,7 @@ C
          CALL DAXPY(NZCONFQ,D1,WORK(KDELTACI),1,CREF,1)
 C
          IF (IPROPT .GE. 20 ) THEN
-            WRITE(LUPRI,'(A)') ' (GTNORB) New unnorm. CI vector'
+            WRITE(LUPRI,'(1X,A)') '(GTNORB) New unnorm. CI vector'
             CALL RPRCI(CREF,NZCONF,NZ,
      &           OPT_CIPROGRAM,THRZER,LUPRI)
          END IF
@@ -3303,7 +3308,7 @@ C
          CALL RCINORM(CREF)
 C
          IF (IPROPT .GE. 20 ) THEN
-            WRITE(LUPRI,'(A)') ' (GTNORB) New norm. CI vector'
+            WRITE(LUPRI,'(1X,A)') '(GTNORB) New norm. CI vector'
             CALL RPRCI(CREF,NZCONF,NZ,
      &           OPT_CIPROGRAM,THRZER,LUPRI)
          END IF
@@ -3324,7 +3329,7 @@ C
      &             WORK(KZXOPE),NZXOPE,
      &             WORK(KZXOPP),NZXOPP,NZ)
       IF (IPROPT .GE. 10) THEN
-         WRITE(LUPRI,'(A)') ' (GTNORB) Unpacked kappa'
+         WRITE(LUPRI,'(1X,A)') '(GTNORB) Unpacked kappa'
          CALL PRQMAT(WORK(KUKAPPA),NORBT,NORBT,NORBT,NORBT,NZ,
      &               IPQTOQ(1,0),LUPRI)
       END IF
@@ -3416,9 +3421,9 @@ C
          ISTEP = -1
          WRITE(LUPRI,9002) DEACT,DEPRED
       END IF
- 9000 FORMAT(/' (DIRSTP): Energy difference;',
+ 9000 FORMAT(/1X,'(DIRSTP): Energy difference;',
      &       /' actual, predicted, and ratio: ',1P,2D15.5,0P,F12.6)
- 9002 FORMAT(/' (DIRSTP): Close to convergence, ratio set to one.'
+ 9002 FORMAT(/1X,'(DIRSTP): Close to convergence, ratio set to one.'
      &       /' Energy difference; actual and predicted: ',1P,2D15.5)
 C
 C     Save info for final summary output.
@@ -3437,8 +3442,6 @@ C
             IF ( RATIO .LT. RATREJ .AND. .NOT. NOREJT ) THEN
                ISTEP = 1
                RTRUST = MIN(RTRUST, STPRED * STPLEN)
-               IF (RATIO .LT.  0.0D0) RTRUST = STPRED * RTRUST
-               IF (RATIO .LT. -1.0D0) RTRUST = STPRED * RTRUST
             END IF
          ELSE IF (RATIO .GT. RATGOD) THEN
             RTRUST = MIN (STPMAX, STPINC * RTRUST)
@@ -3477,8 +3480,8 @@ C
 C           However, if the energy is decreasing we accept the step
 C           anyway.
 C
-            WRITE(LUPRI,'(/A,F12.6,A)')
-     &           ' *** WARNING *** bad ratio (',RATIO,
+            WRITE(LUPRI,'(/1X,A,F12.6,A)')
+     &           '*** WARNING *** bad ratio (',RATIO,
      &           '), but step accepted because DEACT < 0'
             ISTEP = 0
             EMCOLD = EMCSCF
@@ -3506,9 +3509,9 @@ C
 C
 C     Save information for final summary outout
 C
-      IF (IPROPT .GE. 2)
-     &     WRITE(LUPRI,'(A,2F15.10)')
-     &     ' (DIRSTP) Old and new KR-MCSCF trust radius: ',RTSAVE,RTRUST
+      IF (IPROPT .GE. 5)
+     &     WRITE(LUPRI,'(1X,A,2F15.10)')
+     &     '(DIRSTP) Old and new KR-MCSCF trust radius: ',RTSAVE, RTRUST
 C
       CALL QEXIT('DIRSTP')
       RETURN
@@ -3574,15 +3577,15 @@ C
       DIMENSION IBTYP(2,*)
 C
       IF ( IPROPT .GE. 20 ) THEN
-         WRITE(LUPRI,'(A)')
-     &        ' (RSNRPRD) Reduced solution vector '
+         WRITE(LUPRI,'(1X,A)')
+     &        '(RSNRPRD) Reduced solution vector '
          CALL OUTPUT(EVECR,1,NZRED,1,1,NREDM,1,1,LUPRI)
 C
-         WRITE(LUPRI,'(A)')
-     &        ' (RSNRPRD) Reduced gradient'
+         WRITE(LUPRI,'(1X,A)')
+     &        '(RSNRPRD) Reduced gradient'
          CALL OUTPUT(REDGP,1,NZRED,1,1,NREDM,1,1,LUPRI)
-         WRITE(LUPRI,'(A)')
-     &        ' (RSNRPRD) Reduced Hessian'
+         WRITE(LUPRI,'(1X,A)')
+     &        '(RSNRPRD) Reduced Hessian'
          CALL OUTPUT(REDE,1,NZRED,1,NZRED,NREDM,NREDM,1,LUPRI)
       END IF
 C
@@ -3630,8 +3633,9 @@ C     Multiply with 0.5 as trial vectors are normalized to 0.5
 C
       DEPRED = DP5*SUM
 C
-      IF (IPROPT .GE. 2) WRITE(LUPRI,'(A,F15.8)')
-     &     ' (RSNRPRD) Predicted energy change = ',DEPRED
+      IF (IPROPT .GE. 2)
+     &     WRITE(LUPRI,'(1X,A,F15.8)')
+     &     '(RSNRPRD) Predicted energy change = ',DEPRED
 C
       RETURN
       END
@@ -3726,8 +3730,8 @@ C
       EVALR = DLVLSH
       IPAR = INERTIA(3)
       IF (IPRINT .GE. 2) THEN
-         WRITE(LUPRI,'(/A,I3,A,F15.8)')
-     &        ' (KRMCSOL) Level shift (after',ITER,' bi-sec. iter.) = ',
+         WRITE(LUPRI,'(/,1X,A,I3,A,F15.8)')
+     &        '(KRMCSOL) Level shift (after',ITER,' bi-sec. iter.) = ',
      &        DLVLSH
       END IF
       IF(IPRINT.GE.4.OR.IPAR.GT.0) THEN
@@ -3845,13 +3849,13 @@ C
             DN = DNORM2(NZCONFQ,CREF,1)
          END IF
          DN = D1 / DN
-         WRITE(LUPRI,'(/A,F20.12)')
-     &        ' (RCINORM) CI vector renormalized with factor ',DN
+         WRITE(LUPRI,'(/1X,A,F20.12)')
+     &        '(RCINORM) CI vector renormalized with factor ',DN
          CALL DSCAL(NZCONF, DN, CREF, 1)
          CNRM = .TRUE.
       END IF
       IF ( IPROPT .GE. 20 .AND. CNRM) THEN
-         WRITE(LUPRI,'(/A)') ' (RCINORM) Renormalized CI vector'
+         WRITE(LUPRI,'(/1X,A)') '(RCINORM) Renormalized CI vector'
          CALL RPRCI(CREF,NZCONF,NZ,OPT_CIPROGRAM, THRZER,LUPRI)
       END IF
 C
@@ -3894,13 +3898,13 @@ C
       END IF
 C
       IF ( N .LT. 1 .OR. N .GT. NOPTTIM ) THEN
-         WRITE(LUPRI,'(A,I3)')
-     &        ' *** ERROR in RTKTIME ***: parameter N invalid; N = ',N
+         WRITE(LUPRI,'(1X,A,I3)')
+     &        '*** ERROR in RTKTIME ***: parameter N invalid; N = ',N
          CALL QUIT('*** ERROR in RTKTIME ***')
       END IF
       IF ( STATET(N) .EQV. TFLAG ) THEN
-         WRITE(LUPRI,'(A)')
-     &        ' *** ERROR in RTKTIME ***: state of timer = tflag'
+         WRITE(LUPRI,'(1X,A)')
+     &        '*** ERROR in RTKTIME ***: state of timer = tflag'
          CALL QUIT('*** ERROR in RTKTIME ***')
       END IF
 C
@@ -3973,8 +3977,8 @@ C
       IF ( FNDLAB('LREDUCED',LUKRMC) ) THEN
          READ(LUKRMC) NREDM
       ELSE
-         WRITE(LUPRI,'(/A)')
-     &        ' *** ERROR in RNRBSTP *** LREDUCED not found on LUKRMC'
+         WRITE(LUPRI,'(/1X,A)')
+     &        '*** ERROR in RNRBSTP *** LREDUCED not found on LUKRMC'
          CALL QUIT('*** ERROR in RNRBSTP ***'//
      &        ' LREDUCED not found on LUKRMC')
       END IF
@@ -3995,13 +3999,13 @@ C
      &     WORK(KIBEVC),WORK(KIBPVC),WORK(KIBCVC),NPRED)
 C
       IF (IPROPT .GE. 20) THEN
-         WRITE(LUPRI,'(/A,3I4)')
-     &        ' (RNRBSTP1) NZRED, NREDM, NPRED ',NZRED, NREDM, NPRED
-         WRITE(LUPRI,'(A)') ' (RNRBSTP1) Reduced Hessian'
+         WRITE(LUPRI,'(/,1X,A,3I4)')
+     &        '(RNRBSTP1) NZRED, NREDM, NPRED ',NZRED, NREDM, NPRED
+         WRITE(LUPRI,'(1X,A)') '(RNRBSTP1) Reduced Hessian'
          CALL OUTPUT(WORK(KREDE),1,NZRED,1,NZRED,NREDM,NREDM,1,LUPRI)
-         WRITE(LUPRI,'(A)') ' (RNRBSTP1) Minus reduced gradient'
+         WRITE(LUPRI,'(1X,A)') '(RNRBSTP1) Minus reduced gradient'
          CALL OUTPUT(WORK(KREDGP),1,NZRED,1,1,NREDM,1,1,LUPRI)
-         WRITE(LUPRI,'(A)') ' (RNRBSTP1) IBTYP'
+         WRITE(LUPRI,'(1X,A)') '(RNRBSTP1) IBTYP'
          DO I = 1, NZRED
             WRITE(LUPRI,'(5X,2I4)')
      &           IGETINT(WORK(KIBTYP),1 + (I-1)*2),
@@ -4018,8 +4022,8 @@ C
      &     EVALR,WORK(KREDGP),WORK(KEVECR),
      &     WORK(KIBTYP),NPRED,IPROPT,WORK,KFREE,LFREE)
 C
-      WRITE(LUPRI,'(/A/4X,2F15.8)')
-     &     ' (RNRBSTP1) Backstep; new trust radius & new levelshift : ',
+      WRITE(LUPRI,'(/,1X,A,/,4X,2F15.8)')
+     &     '(RNRBSTP1) Backstep; new trust radius & new levelshift : ',
      &     RTRUST,DLVLSH
 C
 C     Write stuff back to KRMC_REDL
@@ -4148,13 +4152,13 @@ C
       ELSE IF (MCTYPE .EQ. JGAS) THEN
          CALL TITLER('KR-GASSCF wave function optimization','*',110)
       ELSE
-         WRITE(LUPRI,'(A,I3)')
-     &        ' *** ERROR in KRMCHI *** Unknown MCTYPE : ',MCTYPE
+         WRITE(LUPRI,'(1X,A,I3)')
+     &        '*** ERROR in KRMCHI *** Unknown MCTYPE : ',MCTYPE
          CALL QUIT('*** ERROR in KRMCHI *** Unknown MCTYPE!')
       END IF
 C
       WRITE(LUPRI,9000)
- 9000 FORMAT(/1X,78('*'),//,
+ 9000 FORMAT(/,1X,78('*'),//,
      &     3X,'This is output from DIRAC KR-MCSCF',/,
      &     3X,' - a relativistic four-component second order ',
      &     'restricted-step ',/,
@@ -4177,19 +4181,20 @@ C
      &     1X,78('*'),/)
 *
       WRITE(LUPRI,9110)
- 9110 FORMAT(/' This module is published in:',//,
+ 9110 FORMAT(/,
+     &     1X,'This module is published in:',//,
      &     4X,'KRMC THEORY: H J Aa Jensen, K G Dyall, T Saue,',/,
      &     7X,'          and K Faegri Jr.',/,
      &     7X,'             JCP 104,11 (1995) 4083',/,
      &     4X,'KRMC-GOSCI: J Thyssen, H J Aa Jensen, and T Fleig',/,
-     &     7X,'         manuscript, (J Chem Phys, 2004)',/,
+     &     7X,'         manuscript, (J Chem Phys, 2003)',/,
      &     4X,'DIRAC-LUCIAREL: T Fleig, J Olsen, and L Visscher',/,
      &     7X,'                J Chem Phys, 119 (2003)',/,
      &     4X,'                T Fleig, J Olsen, and C M Marian',/,
      &     7X,'                JCP 114,11 (2001) 4775-4790 ',/,
      &     4X,'KRMC-LUCIAREL: T Fleig, L Visscher, J Olsen,',/,
      &     4X,'               J Thyssen, and H J Aa Jensen',/,
-     &     7X,'               in preparation, (2004)',
+     &     7X,'               in preparation, (2003)',
      &     ///,
      &     1X,78('*'),//)
 C
@@ -4353,8 +4358,8 @@ C
       DIMENSION JXOPE(2,*),JXOPP(2,*)
 C
       KFRSAV = KFREE
-      IF(IPRINT.GE.3) WRITE(LUPRI,'(/A,1P,D15.6)')
-     &     ' RSMPAR: compression threshold = ',THRCOM
+      IF(IPRINT.GE.3) WRITE(LUPRI,'(/1X,A,1P,D15.6)')
+     &     'RSMPAR: compression threshold = ',THRCOM
 C
       write(LUPRI,*) 'RSMPAR before'
       CALL RPRKAP(GPOE,GPOP,JXOPE,NHOPE,
@@ -4505,8 +4510,8 @@ C
 C
       NAFTER = NORBT - ISUM(NORBT,NOROT,1)
 C
-      WRITE(LUPRI,'(A,I4,A,I4)')
-     &     ' FSMROT: Orbitals before: ',NBEFORE,
+      WRITE(LUPRI,'(1X,A,I4,A,I4)')
+     &     'FSMROT: Orbitals before: ',NBEFORE,
      &     ', orbitals after: ',NAFTER
 C
       CALL MEMREL('FSMROT',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -5005,8 +5010,8 @@ C
      &        WORK(KEIG),MATZ,U,NC,NC,
      &        WORK(KFREE),LFREE,IERR)
          IF (IERR .NE. 0) THEN
-            WRITE(LUPRI,'(/2A,I4)')
-     &           ' *** ERROR in SVLDE2 ***: ',
+            WRITE(LUPRI,'(/,1X,2A,I4)')
+     &           '*** ERROR in SVLDE2 ***: ',
      &           'QDIAG failed with error code ',IERR
             CALL QUIT('*** ERROR in SVLDE2 ***')
          END IF

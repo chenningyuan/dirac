@@ -4597,7 +4597,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rsigoogb */
 #ifdef MOD_KRMC
       SUBROUTINE RSIGOOGB(SEVEC,SPVEC,GPOE,GPOP,BEVEC,BPVEC,
-     &     JXOPE,JXOPP,WORK,LWORK)
+     &                    JXOPE,JXOPP,WORK,LWORK)
 C***********************************************************************
 C
 C     For KR-MCSCF wave function optimizations:
@@ -4635,11 +4635,11 @@ C
 C     Transform gradient from (NZXOPE,NZ) + (NZHOPE-NZXOPE,NZ) format to
 C     (NZHOPE,NZ) format:
 C
-      CALL MEMGET('REAL',KGPOE,NZHOPEQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGPOE,NZHOPE*NZ,WORK,KFREE,LFREE)
       IF (NZ .GT. 1 .AND. NZHOPE.GT.NZXOPE) THEN
          CALL INVREOGP(NZXOPE,NZHOPE,NZ,WORK(KGPOE),GPOE)
       ELSE
-         CALL DCOPY(NZHOPEQ,GPOE,1,WORK(KGPOE),1)
+         CALL DCOPY(NZHOPE*NZ,GPOE,1,WORK(KGPOE),1)
       END IF
 C
 C     Add G * B term

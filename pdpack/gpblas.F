@@ -8315,7 +8315,7 @@ c
       dcabs1 = dabs(t(1)) + dabs(t(2))
       return
       end
-      subroutine  dcopy(n,dx,incx,dy,incy)
+      subroutine dcopy(n,dx,incx,dy,incy)
 c
 c     copies a vector, x, to a vector, y.
 c     uses unrolled loops for increments equal to one.
