@@ -558,7 +558,7 @@ C
         IZ   = JM4POS(IM4)
         IQ   = IQMULT(1,JQBAS(IBRP,IC),IZ)
         IQP  = IQTOPQ(IQ,IBRPOP)
-        IF(IQP.GT.NZ) THEN
+        IF(IQP .LT. 1 .OR. IQP.GT.NZ) THEN
           WRITE(LUPRI,'(A)') '***** PRPMAO ERROR *****'
           WRITE(LUPRI,'(A)') PRPLBL(KLBL)
           WRITE(LUPRI,'(A,I2,A,I2,A)') 'IQP(',IQP,').GT.MZ(',
@@ -566,7 +566,7 @@ C
           CALL WRIXPR(0,IOP)
           WRITE(LUPRI,'(A,I5)') 'Q: Scalar :',JQBAS(IBRP,IC)
           WRITE(LUPRI,'(A,I5)') 'Q: Matrix :',IZ
-          CALL QUIT('PRPMAO: IQP.GT.NZ !!!')
+          CALL QUIT('PRPMAO: IQP<1 or IQP>NZ !!!')
         ENDIF
         IF(IPRINT.GE.4) THEN
           WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
@@ -2807,12 +2807,4 @@ C
 C
       CALL QEXIT('TSCORR')
       RETURN
-  1000 CONTINUE
-C
-C     Not able to read DOINT information from COMB
-C
-c     There is no goto 1000 is this routine./Feb 9 1998 - jth
-c      WRITE(LUPRI,'(A,A)') 'TSCORR: Not able to read COMB =',COMB
-c      CALL QUIT('TSCORR: Not able to read COMB')
       END
-C
