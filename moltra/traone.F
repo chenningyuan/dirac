@@ -763,25 +763,27 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmultln */
       SUBROUTINE GMULTLN (NSYMRPA,REPA,MJ_TO_REP,MULTB,NORDER)
-C*****************************************************************************
+C***********************************************************************
 C
-C     We make the multiplication table for linear molecules where we have
-C     used the mj quantum number to identify blocks. Here the full point group
-C     is the non-Abelian Dinfh or Cinfv and we use the Abelian Cinfh or Cinf, 
-C     respectively. Since the Cinfh and Cinv have an infinite number of irreps 
-C     and we use a finite multiplication table to store the coupling information
-C     we need to truncate at some point. We do this at mj=15/2 in Cinfh and 
-C     mj=31/2 in Cinf so that we can keep MULTB dimensioned at 64 like before. 
-C     In fact this means that we'll be using the subgroups C8h and C16 respectively.
-C     This can be easily extended or decreased using the input parameter NORDER
-C     that indicates how large MULTB may become.
+C     We make the multiplication table for linear molecules where we 
+C     have used the mj quantum number to identify blocks. Here the 
+C     full point group is the non-Abelian Dinfh or Cinfv and we use 
+C     the Abelian Cinfh or Cinf, respectively. Since the Cinfh and 
+C     Cinv have an infinite number of irreps and we use a finite 
+C     multiplication table to store the coupling information we need 
+C     to truncate at some point. We do this at mj=15/2 in Cinfh and 
+C     mj=31/2 in Cinf so that we can keep MULTB dimensioned at 64 like 
+C     before. In fact this means that we'll be using the subgroups C8h 
+C     and C16 respectively. This can be easily extended or decreased 
+C     using the input parameter NORDER that indicates how large MULTB 
+C     may become.
 C
 C     Luuk Visscher, Nov 03 2003
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
@@ -898,7 +900,8 @@ C
                WRITE (REPA(IREP),1001) -MJ,PARITY
                IF (MJ.NE.0) MJ_TO_REP(-MJ,IFSYM) = IREP
             ENDDO
-C           For MJ = 16 we will not distinguish between positive and negative MJ
+C           For MJ = 16 we will not distinguish between positive and 
+C           negative MJ
             MJ = NORDER
             IREP = IREP + 1
             WRITE (REPA(IREP),1001) MJ,PARITY

@@ -569,21 +569,21 @@ C
       ZMAT = .FALSE.
       CALL IZERO(IRKB,MXPRIM)
 C
-C*****************************************************************************
+C***********************************************************************
 C     Card 1: Keyword (INTGRL/BASIS) - read in READIN
-C*****************************************************************************
-C*****************************************************************************
+C***********************************************************************
+C***********************************************************************
 C     Card 2: If basis set library, read additional card containing basis set
-C*****************************************************************************
+C***********************************************************************
       IF (BASIS) THEN
          CALL RDLINE(LUINFO)
          READ (MLINE(NMLINE),'(A)') BASNAM
          IF (IPREAD .GT. 1) WRITE (LUPRI,'(/A/5X,A/A)') ' Basis set',
      &      BASNAM,' from the basis set library will be used.'
       END IF
-C*****************************************************************************
+C***********************************************************************
 C     Card 2-3: Title cards
-C*****************************************************************************
+C***********************************************************************
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A72)') TTITLE(1)
       CALL RDLINE(LUINFO)
@@ -592,7 +592,7 @@ C*****************************************************************************
          CALL HEADER('Title Cards',1)
          WRITE (LUPRI,'(2X,A,/,2X,A)') TTITLE(1),TTITLE(2)
       END IF
-C*****************************************************************************
+C***********************************************************************
 C     Card 4:
 C       CRT     - flag for spherical harmonics or "your own scheme"
 C       NONTYP  - number of atomic types
@@ -604,15 +604,15 @@ C                 point group to be used
 C       KASYM   - 3x3 character array specifying the basic symmetry operations;
 C                 specify axis that are reversed under the operation
 C       THRS    - integral threshold
-C******************************************************************************
+C***********************************************************************
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)')
      &     CRT,NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
       IF(NONTYP.GT.KATOM) GOTO 5000
-C*****************************************************************************
+C***********************************************************************
 C Check integral threshold: THRS must be .gt. 0
 C       ( log(thrs*thrs) taken in oneint) (851005-hjaaj)
-C*****************************************************************************
+C***********************************************************************
 C
       IF (MLINE(NMLINE)(21:30) .EQ. '          ') THEN
 C        nothing specified, default minimum value used
@@ -626,10 +626,10 @@ C        nothing specified, default minimum value used
          END IF
          THRS = THRMIN
       ENDIF
-C*****************************************************************************
+C***********************************************************************
 C Check if symmetry is to be added automatically
 C       ADDSYM  - flag for automatic determination of symmetry
-C*****************************************************************************
+C***********************************************************************
       ADDSYM = (SYMTXT .EQ. '  ')
       IF (.NOT. ADDSYM) THEN
          READ(SYMTXT,'(I2)') NSYMOP
@@ -647,10 +647,10 @@ C*****************************************************************************
       ELSE
          ANG = .FALSE.
       ENDIF
-C*****************************************************************************
+C***********************************************************************
 C Process Cartesian to spherical or your own transformation
 C     note: SPHINP will read additional input lines if DOOWN true
-C*****************************************************************************
+C***********************************************************************
       DOCART = CRT .EQ. 'C' .OR. CRT .EQ. 'c'
       DOOWN  = CRT. EQ. 'X'
       IF (DIRAC .AND. .NOT. (DOCART .OR. DOOWN)) THEN
@@ -764,7 +764,7 @@ C
       END
 C  /* Deck baspar */
       SUBROUTINE BASPAR(NSYMOP)
-C*****************************************************************************
+C***********************************************************************
 C
 C       Set various basis parameters:
 C               KHK(J) - number of spherical (cartesian) components for given J
@@ -773,7 +773,7 @@ C                      - tabulate incomplete Gamma function
 C                      - determine Cartesian powers
 C               NHKOFF(J) - offset for components in list of l-functions
 C               MAXOPR - maximum number of operations to loop over
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -829,11 +829,11 @@ C  /* Deck basinp */
       SUBROUTINE BASINP(LUINFO,WORK,LWORK,NONTYP,NONT,IQM,NBLCK,
      &                  JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG,ZMTTST)
-C*****************************************************************************
+C***********************************************************************
 C
 C       Read orbital and geometry input data
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -908,14 +908,14 @@ C
          NOFITFS = .TRUE.
          INUC = NUCIND
 C
-C*****************************************************************************
+C***********************************************************************
 C        Card 6: ATOMIC DATA
 C         Q     - nuclear charge
 C         NONT  - number of symmetry independent atoms
 C         IQM   - maximum angular quantum number (s=1,p=2,d=3 etc.)
 C         NHTYP - maximum angular quantum number for ALL orbitals
 C         JCO   - number of AO-blocks for each l-value
-C*****************************************************************************
+C***********************************************************************
 C
          CALL RDLINE(LUINFO)
 C

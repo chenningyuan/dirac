@@ -3451,12 +3451,13 @@ C     DIMENSION IOCTYP(MXPNGAS)
 ** 4 : Info about group of strings
 *
 *.First free address
+      call memmar(KFREEL,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
       if (NTEST.ge.1) then
         write(6,*) 'Getting first free address in strinf_gas'
         write(6,*) '----------------------------------------'
-        call memmar(KFREEL,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
         write(6,*) 'first free address is   ',KFREEL
       end if
+*
 *. For spin up spinors :
       if (NTEST.ge.5) then
         write(6,*) '======================================='
@@ -3484,15 +3485,15 @@ C     DIMENSION IOCTYP(MXPNGAS)
         IOCTYPX = 1
 *. Reverse lexical adresing schemes for each group of string
         CALL WEIGHT_REL(STIN(KZ(IGRP)),IEL,NORB1,NORB2,NORB3,
-     &              MNRS1X,MXRS1X,MNRS3X,MXRS3X,
-     &              STIN(KFREEL),IPRNT)
+     &                  MNRS1X,MXRS1X,MNRS3X,MXRS3X,
+     &                  STIN(KFREEL),IPRNT)
 *. Number of strings per symmetry in a given group
         CALL NSTRSO_GAS_REL(IEL,NORB1,NORB2,NORB3,
-     &              MNRS1X,MXRS1X,MNRS3X,MXRS3X,
-     &              STIN(KFREEL),NACOB,
-     &              STIN(KNSTSGP(1)),
-     &              STIN(KISTSGP(1)),
-     &              IOCTYPX,NSMST,IGRP,IPRNT)
+     &                      MNRS1X,MXRS1X,MNRS3X,MXRS3X,
+     &                      STIN(KFREEL),NACOB,
+     &                      STIN(KNSTSGP(1)),
+     &                      STIN(KISTSGP(1)),
+     &                      IOCTYPX,NSMST,IGRP,IPRNT)
 *
        CALL ICOPVE2(STIN(KNSTSGP(1)),1+(IGRP-1)*NSMST,NSMST,
      &              NSTFSMGP(1,IGRP))
@@ -3501,10 +3502,10 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *. Construct the strings ordered by symmetry
         if (IEL.gt.0) then
           CALL GENSTR_GAS_REL(IEL,MNRS1X,MXRS1X,MNRS3X,MXRS3X,
-     &                STIN(KISTSGP(1)),IGRP,
-     &                IOCTYPX,NSMST,STIN(KZ(IGRP)),STIN(KFREEL),
-     &                STIN(KSTREO(IGRP)),STIN(KOCSTR(IGRP)),
-     &                STIN(KFREEL+IOCTYPX*NSMST),IGRP,IPRNT)
+     &                        STIN(KISTSGP(1)),IGRP,
+     &                        IOCTYPX,NSMST,STIN(KZ(IGRP)),STIN(KFREEL),
+     &                        STIN(KSTREO(IGRP)),STIN(KOCSTR(IGRP)),
+     &                        STIN(KFREEL+IOCTYPX*NSMST),IGRP,IPRNT)
         end if
       END DO
 *
@@ -3577,15 +3578,15 @@ C     DIMENSION IOCTYP(MXPNGAS)
         IOCTYPX = 1
 *. Reverse lexical adresing schemes for each group of string
         CALL WEIGHT_REL(STIN(KZ(IGRP)),IEL,NORB1,NORB2,NORB3,
-     &              MNRS1X,MXRS1X,MNRS3X,MXRS3X,
-     &              STIN(KFREEL),IPRNT)
+     &                  MNRS1X,MXRS1X,MNRS3X,MXRS3X,
+     &                  STIN(KFREEL),IPRNT)
 *. Number of strings per symmetry in a given group
         CALL NSTRSO_GAS_REL(IEL,NORB1,NORB2,NORB3,
-     &              MNRS1X,MXRS1X,MNRS3X,MXRS3X,
-     &              STIN(KFREEL),NACOB,
-     &              STIN(KNSTSGP2(1)),
-     &              STIN(KISTSGP2(1)),
-     &              IOCTYPX,NSMST,IGRP,IPRNT)
+     &                      MNRS1X,MXRS1X,MNRS3X,MXRS3X,
+     &                      STIN(KFREEL),NACOB,
+     &                      STIN(KNSTSGP2(1)),
+     &                      STIN(KISTSGP2(1)),
+     &                      IOCTYPX,NSMST,IGRP,IPRNT)
 *. Construct the strings ordered by symmetry
         CALL ICOPVE2(STIN(KNSTSGP2(1)),1+(IGRP-1)*NSMST,NSMST,
      &               NSTFSMGP2(1,IGRP))
@@ -3593,10 +3594,10 @@ C     DIMENSION IOCTYP(MXPNGAS)
      &               ISTFSMGP2(1,IGRP))
         if (IEL.gt.0) then
           CALL GENSTR_GAS_REL(IEL,MNRS1X,MXRS1X,MNRS3X,MXRS3X,
-     &                STIN(KISTSGP2(1)),IGRP,
-     &                IOCTYPX,NSMST,STIN(KZ(IGRP)),STIN(KFREEL),
-     &                STIN(KSTREO2(IGRP)),STIN(KOCSTR2(IGRP)),
-     &                STIN(KFREEL+IOCTYPX*NSMST),IGRP,IPRNT)
+     &                        STIN(KISTSGP2(1)),IGRP,
+     &                        IOCTYPX,NSMST,STIN(KZ(IGRP)),STIN(KFREEL),
+     &                        STIN(KSTREO2(IGRP)),STIN(KOCSTR2(IGRP)),
+     &                        STIN(KFREEL+IOCTYPX*NSMST),IGRP,IPRNT)
         end if
       END DO
 *

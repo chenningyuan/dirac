@@ -1272,7 +1272,7 @@ C     UPPCAS(LINE,LENGTH)
                ISETKW (3) = 1
                IF(MAXML.LT.0) THEN
                   WRITE(LUOUT,*)
-     &           ' Largest ML values of shells must be atleast be zero '
+     &           ' Largest ML values of shells must at least be zero '
                   WRITE(LUOUT,*) ' MAXML from input : ',MAXML
                   NERROR = NERROR + 1
                   ISETKW(3) = -1

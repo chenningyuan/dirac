@@ -4020,8 +4020,9 @@ C
       IPKINERG         = INDXPR
       IF (LINEAR) THEN
 C
-C        Angular momentum integrals (used in case of atomic or linear symmetry !)
-C        ========================================================================
+C        Angular momentum integrals (used in case of atomic or linear 
+C        symmetry !)
+C        ============================================================
 C
          PNAME            = 'Orbital z-momentum'
          IPTYP            = 1
