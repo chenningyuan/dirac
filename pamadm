@@ -29,7 +29,6 @@ usage()
    echo '     -densfit      : Include density fitting module'
    echo '     -esr          : Include ESR property module'
    echo '     -xpp          : Include PP excitation energy module'
-   echo '     -xqr          : Include quadratic response module'
    echo '     -dft          : Include DFT module'
    echo '     -krmc         : Include KR-MCSCF and LUCIAREL modules'
    echo '     tarfile=make  : only generate new Makefile'
@@ -57,7 +56,6 @@ setup()
    if [ -n "$PAMADM" ]; then
       ERITAR=1
       ESRMOD=1
-      XQRMOD=1
       XPPMOD=1
       DFTMOD=1
       KRMCMOD=1
@@ -82,16 +80,6 @@ setup()
       ESRMAK=ESR_OBJ
       ESRTAR=1
       echo " - ESR property module (ESR)"
-   fi
-   #
-   #  XQR
-   #
-   if [ -n "$XQRMOD" ]; then
-      XQRFLG='-DMOD_XQR'
-      XQROBJ='$(XQROBJS)'
-      XQRMAK=XQR_OBJ
-      XQRTAR=1
-      echo " - Quadratic reponse module (XQR)"
    fi
    #
    #  XPP
@@ -293,11 +281,6 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/luciarel/{*.c,*.f,*.F,Makefile.in,*.inc,*.c} 2>> export.log
 EOF
    fi
-   if [ "$XQRTAR" ]; then
-      cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/prp/xqr/{*.F,*.h,Makefile,include} 2>> export.log
-EOF
-   fi
 # A DIRAC administrator should have everything
    if [ "$PAMADM" ]; then
       cat <<EOF>> ./export
@@ -329,8 +312,8 @@ make_makefile()
 {
    echo "*** Making general Makefile"
    echo
-   AUXOBJ="$CCFOCKSPOBJ $ESROBJ $XQROBJ $DFTOBJ $DNFOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ"
-   AUXMAK="$CCFOCKSPMAK $ESRMAK $XQRMAK $DFTMAK $DNFMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK"
+   AUXOBJ="$CCFOCKSPOBJ $ESROBJ $DFTOBJ $DNFOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ"
+   AUXMAK="$CCFOCKSPMAK $ESRMAK $DFTMAK $DNFMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK"
    #
    # Write current Makefile
    #
@@ -367,7 +350,7 @@ gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
 prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\
-prp/mp2lag.o \\
+prp/mp2lag.o        prp/pamxqr.o        prp/pamtpa.o \\
 moltra/tradr1.o moltra/tradr2.o moltra/tradr3.o moltra/tradr4.o moltra/tradr5.o \\
 moltra/trainp.o moltra/traone.o moltra/traout.o moltra/trapam.o \\
 moltra/traprp.o \\
@@ -441,16 +424,6 @@ cat <<EOF>> Makefile
 
 ESROBJS = \\
 prp/esr/pamesr.o prp/esr/pamesrci.o
-EOF
-fi
-#
-#  Object-files for XQR module
-#
-if [ -n "$XQRMOD" ]; then
-cat <<EOF>> Makefile
-
-XQROBJS = \\
-prp/xqr/pamxqr.o
 EOF
 fi
 #
@@ -537,7 +510,7 @@ cat <<EOF>> Makefile
 
 OBJSMXM = gp/mxmpack.o
 
-TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \\
+TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \$(CCFOCKSPOBJS) \\
 	\$(DFTOBJS) \$(DNFOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS)
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
@@ -649,9 +622,6 @@ fi
 if [ -n "$XPPMOD" ]; then
    echo '	cd prp/xpp   ; $(MAKE) clean' >> Makefile
 fi
-if [ -n "$XQRMOD" ]; then
-   echo '	cd prp/xqr   ; $(MAKE) clean' >> Makefile
-fi
 if [ -n "$CCFOCKSPMOD" ]; then
    echo '	cd relccsd/ccfocksp  ; $(MAKE) clean' >> Makefile
 fi
@@ -703,13 +673,6 @@ cat <<EOF>> Makefile
 
 ESR_OBJ :
 	cd prp/esr; \$(MAKE) all
-EOF
-fi
-if [ -n "$XQRMOD" ]; then
-cat <<EOF>> Makefile
-
-XQR_OBJ :
-	cd prp/xqr ; \$(MAKE) all
 EOF
 fi
 if [ -n "$XPPMOD" ]; then
@@ -792,9 +755,6 @@ fi
 if [ -n "$XPPMOD" ]; then
    TEMP="$TEMP prp/xpp"
 fi
-if [ -n "$XQRMOD" ]; then
-   TEMP="$TEMP prp/xqr"
-fi
 if [ -n "$DNFMOD" ]; then
    TEMP="$TEMP densfit"
 fi
@@ -849,8 +809,8 @@ which_modules()
 {
 #  
 #
-MODS="$ERIFLG $DNFFLG $DFTFLG $KRMCFLG $ESRFLG $XQRFLG $XPPFLG"
-MODS_IBM="$ERIFLG,$DNFFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XQRFLG,$XPPFLG"
+MODS="$ERIFLG $DNFFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG"
+MODS_IBM="$ERIFLG,$DNFFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG"
 dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
@@ -869,9 +829,6 @@ if [ -n "$ESRFLG" ]; then
 fi
 if [ -n "$XPPFLG" ]; then
    dirs="$dirs prp/xpp"
-fi
-if [ -n "$XQRFLG" ]; then
-   dirs="$dirs prp/xqr"
 fi
 }
 #
@@ -903,9 +860,6 @@ while [ -n "$1" ]; do
          ;;
       -xpp|-xp)
          XPPMOD=1
-         ;;
-      -xqr|-xq|-x)
-         XQRMOD=1
          ;;
       -densfit|-dnf)
          DNFMOD=1

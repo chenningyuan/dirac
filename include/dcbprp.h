@@ -10,13 +10,16 @@
 !  DOXPP - do excitation energies 
 !          (by the polarization propagator method)
 !  DOXQR - do quadratic response
+!  DOTPA - do two-photon absortion calculation
+C  DOVER - do verdet calculations (via DOXQR)
 !  MGRAD - calculate molecular gradient
       INTEGER LUCORP
       PARAMETER (LUCORP = 91)
 
       LOGICAL DOEXP, DOXLR, DOXPP, DOXQR, DIPOLE, EPOLAR, MSUSCP,       &
      &        SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, PVC, DOESR,     &
-     &        ESRGTENS, ESRANISO, EFT, EFTNTL, PVCSHI, EFN, RHONUC
+     &        ESRGTENS, ESRANISO, EFT, EFTNTL, PVCSHI, EFN, RHONUC,     &
+     &        DOTPA,DOVER
 
       INTEGER MXPRPWF
       PARAMETER (MXPRPWF = 3)
@@ -26,7 +29,7 @@
       COMMON /CBLPRP/ DOXLR, DOXPP, DOEXP, DOXQR, DIPOLE, EPOLAR,       &
      &                MSUSCP, SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, &
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
-     &                PVCSHI, EFN, RHONUC
+     &                PVCSHI, EFN, RHONUC, DOTPA
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &

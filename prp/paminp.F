@@ -44,7 +44,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 8, NTABLE = 24)
+      PARAMETER (NDIR = 8, NTABLE = 25)
 #include "maxorb.h"
 #include "mxcent.h"
 C
@@ -62,7 +62,8 @@ C
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
      &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   ',
      &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
-     &             '.WAVE F','.RHONUC','.XXXXXX','.XXXXXX'/
+     &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
+     &             '.VERDET'/
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -78,6 +79,8 @@ C
       DOXLR    = .FALSE.
       DOXPP    = .FALSE.
       DOXQR    = .FALSE.
+      DOTPA    = .FALSE.
+      DOVER    = .FALSE.
       DIPOLE   = .FALSE.
       QUADRU   = .FALSE.
       EPOLAR   = .FALSE.
@@ -141,7 +144,7 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121,122,123,124),I
+     &                117,118,119,120,121,122,123,124,125),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -276,8 +279,19 @@ C&&&& RHONUC - electronic density at nuclei
             DOEXP    = .TRUE.
             GO TO 100
  123     CONTINUE
+C&&&& FIRST HYPERPOLARIZABILITY - compute complete beta tensor
+            DOXQR = .TRUE.
+            CALL DEF_1STHYP(WORK(KFREE),LFREE)
             GO TO 100
  124     CONTINUE
+C&&&& TWO-PHOTON ABSORPTION - compute all two-photon absorption matrix elements
+            CALL DEF_TPA(WORK(KFREE),LFREE,DOTPA)
+            GO TO 100
+C&&&& .VERDET - Calculates the Verdet constant with the QR module
+ 125     CONTINUE
+            DOVER = .TRUE.
+            DOXQR = .TRUE.
+            CALL DEF_VERDET(WORK(KFREE),LFREE)
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -363,12 +377,8 @@ C
 #endif
         GO TO 200
     8 CONTINUE
-#if defined (MOD_XQR)
-        CALL XQRINP(WORD,.FALSE.,WORK,LWORK)
-#else
-        CALL QUIT('*QUADRA not included in this version')
-#endif
-        GO TO 200
+         CALL XQRINP(WORD,.FALSE.,WORK,LWORK)
+         GO TO 200
 C
     1 CONTINUE
       WORD = 'INITLZE'
@@ -379,9 +389,7 @@ C
 #if defined (MOD_XPP)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
 #endif
-#if defined (MOD_XQR)
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
-#endif
 #if defined (MOD_ESR)
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
 #endif

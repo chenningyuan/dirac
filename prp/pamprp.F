@@ -222,16 +222,13 @@ C***********************************************************************
 C*****  Q U A D R A T I C   R E S P O N S E  ***************************
 C***********************************************************************
 C
-#if defined (MOD_XQR)
-      IF (DOXQR) THEN
-         IF (WF. EQ. 'DHF') THEN
-            CALL PRPXQR(WORK(KFREE),LFREE)
-         ELSE
-            CALL QUIT('*** ERROR in PAMPR1 *** ' //
-     &           'Quadratic response not implemented for ' // WF )
-         END IF
+      IF (DOXQR .OR. DOTPA) THEN
+         IF (WF. NE. 'DHF') 
+     &        CALL QUIT('*** ERROR in PAMPR1 *** ' //
+     &        'Quadratic response not implemented for ' // WF )
+         IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)
+         IF (DOTPA) CALL PRPTPA(WORK(KFREE),LFREE)
       ENDIF
-#endif
 C
 C***********************************************************************
 C*****  standardized P R O P E R T Y   O U T P U T  ********************
