@@ -62,7 +62,11 @@ C  /* Deck eridi1 */
 #include "odbtch.h"
 #include "symmet.h"
 #include "iratdef.h"
+#ifndef PRG_DIRAC
 #include "inftap.h"
+#else
+#include "hrunit.h"
+#endif
 C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
@@ -157,7 +161,11 @@ C  /* Deck eridi2 */
 #include "odclss.h"
 #include "symmet.h"
 #include "iratdef.h"
+#ifndef PRG_DIRAC
 #include "inftap.h"
+#else
+#include "hrunit.h"
+#endif
 C
       IPRINT = IPRERI
 C

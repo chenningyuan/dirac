@@ -56,7 +56,11 @@ C
 #include "ericom.h"
 #include "symmet.h"
 #include "hertop.h"
+#ifndef PRG_DIRAC
 #include "inftap.h"
+#else
+#include "hrunit.h"
+#endif
 C
 C     Allocation for ERIOUT
 C
