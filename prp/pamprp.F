@@ -706,7 +706,9 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "maxorb.h"
-      PARAMETER(D1 = 1.0D0)
+#include "gfac.h"
+#include "pi.h"
+      PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
       LOGICAL   DOATOM(NUCIND)
@@ -722,7 +724,11 @@ C
       ITYP = 0
       IPTYP     = 9
       NPCOMP    = 1
-      PFAC(1)   = D1
+      IF(GAUNUC) THEN
+        PFAC(1) = D1
+      ELSE
+        PFAC(1) = D3/(D4*GFAC*PI)
+      ENDIF
       DO 100 IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
             DO 200 IREP = 0, MAXREP
@@ -731,9 +737,17 @@ C
                   PNAME = 'PVC: '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                    CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+C....             Gaussian nucleus
+                  IF(GAUNUC) THEN
+                    PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+C....             Point charge
+                  ELSE
+                    PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  ENDIF
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                   CALL OP1IND('PVC   '
@@ -3084,8 +3098,8 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "dummy.h"
 #include "codata.h"
-      PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
+      PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
+      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *6.5796838999D15)
 C
 #include "dcbprp.h"
