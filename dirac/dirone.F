@@ -4910,6 +4910,8 @@ C*****************************************************************************
 C
       IF (URKBAL) THEN
          WRITE (LUPRI,1000) "unrestricted kinetic balance"
+         LINEAR = .FALSE.
+         CALL QEXIT('GLINSM')
          RETURN
       ENDIF
 C
