@@ -140,7 +140,7 @@ done
 echo
 echo 'FINDING TESTS...'
 echo
-short_test='1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 22.lucita_short'
+short_test='1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short'
 medium_test='1.energy+dipole 2.nmrspinspin 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 10.efg 11.methods.cosci 12.zora 14.basis.set.input 19.fockspace 22.lucita_short'
 long_test='1.energy+dipole 2.nmrspinspin 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 10.efg 11.methods.cosci 12.zora 14.basis.set.input 19.fockspace 24.lucita_large'
 all_test=

@@ -1,3 +1,4 @@
 $ERROR 0.000000001
-Nlines 3:Electronic energy
+FROM:Atoms and basis sets
+TO:Threshold for integrals
 

@@ -566,6 +566,9 @@ C
       NMULT(1)  = 1
       DO 10 I = 2,NVAL
         DEGTST = ABS(EIG(I)-DEGVAL)
+C       We better take the relative difference for large eigenvalues
+        AEIG = ABS(EIG(I))
+        IF (AEIG.GT.1.0D3) DEGTST = DEGTST / AEIG
 C
 C       Degeneracy
 C       ==========
