@@ -2111,7 +2111,7 @@ C     IPAR = INERT(2) + INERT(3)
      &    '* Number of negative eigenvalues:',INERT(2)
       ENDIF
 C
-      CALL MEMREL('LINRED',WORK,1,KFREE,KFREE,LFREE)
+      CALL MEMREL('LINRED',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('LINRED')
       RETURN
       END
