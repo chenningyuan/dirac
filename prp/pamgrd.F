@@ -168,7 +168,7 @@ C     GRDORB employes the orbital rotation index JXOP(a,m).
 C     Indices are therefore permuted...
 C
 C     Written by T.Saue July 1996
-C     Last revision: July 10 1996
+C     Last revision: Feb 17 2000 (hjaaj, new parameter list for PRPMAT)
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -203,7 +203,8 @@ C
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
-      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,WORK,KFREE,LFREE,IPRINT)
+      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,ICMOQ,NORB,
+     &            WORK,KFREE,LFREE,IPRINT)
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Hermicity of operator
@@ -240,7 +241,7 @@ C     Construct gradient - positronic part
 C     ====================================
 C
       IF(NXOPP.GT.0) THEN
-         CALL DZERO(GPOP,NZ*NXOPP)
+        CALL DZERO(GPOP,NZ*NXOPP)
         CALL PRPORB(GPOP,JXOPP,NXOPP,PRPMO,NORBT,WORK(KDV),NZ,IH)
 c       no scaling
         CALL DSCAL(NZ*NXOPP,DM1,GPOP,1)
@@ -323,13 +324,15 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmat */
-      SUBROUTINE PRPMAT(INDXPR,IOPSY,PRPMO,CMO,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IMO,NMO,
+     &                  WORK,KFREE,LFREE,IPRINT)
 C*****************************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
 C
 C     Written by T.Saue July 1996
-C     Last revision: July 10 1996
+C     Revisions:
+C       Feb 17 2000 (hjaaj, IMO(2), NMO(2) parameters for partial MO transf.)
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -338,7 +341,7 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
 C
-      DIMENSION PRPMO(*),CMO(*),WORK(*)
+      DIMENSION PRPMO(*),CMO(*),IMO(*),NMO(*),WORK(*)
 C
       CALL QENTER('PRPMAT')
       KFRSAV = KFREE
@@ -350,7 +353,7 @@ C
       CALL MEMGET('REAL',KONEIN ,   NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
 C
-      CALL PRPMA1(INDXPR,PRPMO,CMO,WORK(KPRPAO),WORK(KPTRI),
+      CALL PRPMA1(INDXPR,PRPMO,CMO,IMO,NMO,WORK(KPRPAO),WORK(KPTRI),
      &            WORK(KONEIN),WORK(KFIRST),
      &            WORK,KFREE,LFREE,IPRINT)
 
@@ -361,14 +364,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpma1 */
-      SUBROUTINE PRPMA1(INDXPR,PRPMO,CMO,PRPAO,PTRI,OP1INT,
+      SUBROUTINE PRPMA1(INDXPR,PRPMO,CMO,IMO,NMO,PRPAO,PTRI,OP1INT,
      &                  FIRST,WORK,KFREE,LFREE,IPRINT)
 C*****************************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
 C
 C     Written by T.Saue July 1996
-C     Last revision: July 10 1996
+C     Last revision: Feb 17 2000 (hjaaj, see PRPMAT)
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -382,7 +385,7 @@ C
 #include <dcbxpr.h>
 C
       LOGICAL FIRST(*)
-      DIMENSION PRPMO(N2ORBX,NZ),CMO(*),PRPAO(N2BBASX,NZ),
+      DIMENSION PRPMO(N2ORBX,NZ),CMO(*),IMO(*),NMO(*),PRPAO(N2BBASX,NZ),
      &          PTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(*),IQBF(4)
 C
@@ -426,12 +429,12 @@ C
       DO I1 = 1,NFSYM
          I2  = MOD(I1+IOPSY,2) + 1
          CALL QTRANS('AOMO','S',D0,
-     &           NFBAS(I1,0),NFBAS(I2,0),NORB(I1),NORB(I2),
+     &           NFBAS(I1,0),NFBAS(I2,0),NMO(I1),NMO(I2),
      &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
      &           PRPMO(I2ORBX(I1,I2)+1,1),NORBT,NORBT,NBF,IQBF,
-     &           CMO(ICMOQ(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-     &           CMO(ICMOQ(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &           CMO(IMO(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &           CMO(IMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRINT)
         IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
      &     '*** WARNING *** PRPMA1: NBF.NE.NZ !'
@@ -571,7 +574,7 @@ C     GRDORB employes the orbital rotation index JXOP(a,m).
 C     Indices are therefore permuted...
 C
 C     Written by T.Saue July 1996
-C     Last revision: July 10 1996
+C     Last revision: Feb 17 2000 hjaaj (new parameter list for PRPMAT)
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -600,7 +603,8 @@ C
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
-      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,WORK,KFREE,LFREE,IPRINT)
+      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,ICMOQ,NORB,
+     &            WORK,KFREE,LFREE,IPRINT)
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Hermicity of operator
