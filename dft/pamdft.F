@@ -15,7 +15,7 @@ C*****************************************************************************
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
-      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC,SUCCESS
+      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC,SUCCESS, SETFUN
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER CTEMP*72, LINE*80, TEXT*20
       DIMENSION WORK(LWORK)
@@ -28,11 +28,11 @@ C
 #include "dftcom.h"
 #include "functionals.h"
 C
-      SAVE SET
+      SAVE SET, SETFUN
       DATA TABLE /'.DFTFUN','.FROMVX','.DFTAC ','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE'/
-      DATA SET/.FALSE./
+      DATA SET/.FALSE./, SETFUN/.FALSE./
 C
 #include "memint.h"
       IF (SET) THEN
@@ -52,6 +52,9 @@ C
       DFTRUN = .FALSE.
       DFTADD = .FALSE.
       GRDONE = .FALSE.
+C     ... GRDONE false: calculate grid
+C         (this also ensures new grid is calculated for each
+C          geometry in a geometry optimization) /hjaaj
       DFTPOT = .FALSE.
       DFTORD = .FALSE.
       DFTASC = .FALSE.
@@ -92,13 +95,19 @@ C
  1             CONTINUE
 C&&&: DFT functional selection.
                READ(LUCMD,'(A80)') LINE
-               CALL DFTINPUT(LINE, SUCCESS)
-               IF(.NOT.SUCCESS) THEN
-                  CALL DFTLISTFUNCS
-                  CALL QUIT("DFT FUNCTIONAL Read failed.")
-               ENDIF
+               IF (.NOT. SETFUN) THEN
+C              ... hjaaj: DFTINPUT accumulates def. of functional
+C                  so if we call more than once (as in geom.opt.)
+C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
+                  CALL DFTINPUT(LINE, SUCCESS)
+                  IF(.NOT.SUCCESS) THEN
+                     CALL DFTLISTFUNCS
+                     CALL QUIT("DFT FUNCTIONAL Read failed.")
+                  ENDIF
+               END IF
                DFTADD = .TRUE.
                DFTRUN = .TRUE.
+               SETFUN = .TRUE.
                GO TO 100
  2             CONTINUE
 C&&& DFTPOT: calculate Kohn-Sham matrix directly using v_xc
