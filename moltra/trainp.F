@@ -367,7 +367,7 @@ C     Initialize /DCBTRA/
 C     ===================
 C
       IPRTRA  = 0
-      ISTRAT = 1
+      ISTRAT = 4
       ITRA_INTFLG = 7
       ITRA_INTFL2 = -8
       ITRA_INTFL4 = -8
@@ -465,6 +465,7 @@ C&&&& Anti-Symmetrize integrals
                   TRA_ANTIS = .TRUE.
                GO TO 100
     5          CONTINUE
+                  CALL QUIT ('Option disabled')
 C&&&& 4INDEX
 C     Ranges of active orbitals in 4-index transformation module
 C     specified for index 1 to 4 and Fermion irrep 1 and 2
@@ -523,6 +524,7 @@ C&&&& NO4IND - Skip 4-index transformation 2-electron integrals
                   NO4IND = .TRUE.
                GO TO 100
    13          CONTINUE
+                  CALL QUIT ('Option disabled')
 C&&&& 2INDEX
 C     Ranges of active orbitals in 2-index transformation module
 C     specified for index 1 to 2 and Fermion irrep 1 and 2
@@ -570,7 +572,6 @@ C&&&& SCREEN - Screening threshold
    18          CONTINUE
 C&&&& RCORBS - Recanonize orbitals before transforming
                   RCORBS = .TRUE.
-                  CALL QUIT ('Option still needs debugging')
                GO TO 100
    19          CONTINUE
                GO TO 100
