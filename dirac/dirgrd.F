@@ -1678,6 +1678,7 @@ C
 #include <dummy.h>
 C
 #include <dcbpsi.h>
+#include <dcbgen.h>
 #include <dcbgrd.h>
 C
       LOGICAL LBIT
@@ -2038,6 +2039,7 @@ C
 #include <mxcent.h>
 C
 #include <nuclei.h>
+#include <dcbgen.h>
 #include <frame.h>
       DIMENSION DMAT(*),WORK(LWORK)
 C
@@ -2046,7 +2048,7 @@ C
       CALL QENTER('LVCGRD')
 C
       CALL MEMGET('REAL',KSCQ,NUCIND,WORK,KFREE,LFREE)
-      CALL LVCGR1(WORK(KSCQ),DMAT,WORK(KFREE),LFREE,IPRINT)
+      CALL LVCGR1(WORK(KSCQ),DMAT,LVNEW,WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('LVCORR',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('LVCGRD')
@@ -2055,7 +2057,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lvcgr1 */
-      SUBROUTINE LVCGR1(SCQ,DMAT,WORK,LWORK,IPRINT)
+      SUBROUTINE LVCGR1(SCQ,DMAT,LVNEW,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     (c) 1997/09/23 by J. Thyssen
@@ -2080,6 +2082,7 @@ C
 #include <symmet.h>
 C
       DIMENSION SCQ(NUCIND),DMAT(*),WORK(LWORK)
+      LOGICAL LVNEW
 #include <dcbgrd.h>
 #include <ibtfun.h>
 C
@@ -2089,7 +2092,11 @@ C
 C     Get small component charges
 C
       CALL FLSHFO(LUPRI)
-      CALL SCDENS(SCQ,DMAT,WORK,LWORK,IPRINT)
+      IF (LVNEW) THEN
+        CALL SCDENS(SCQ,DMAT,WORK,LWORK,IPRINT)
+      ELSE
+        CALL SCDEN2(CHARGE,WORK(KSCQ),NUCIND,IPRINT)
+      ENDIF
 C
 C     This is copied from ABACUS/NUCREP
 C
@@ -2351,14 +2358,14 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-C
-      DIMENSION COORD(3,*)
       CHARACTER CFIRST*1
 C
 #include <nuclei.h>
 #include <symmet.h>
 #include <ibtfun.h>
 C
+C
+      DIMENSION COORD(3,*)
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)

@@ -176,7 +176,7 @@ C
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.INTFLG','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
-     &             '.SPHTRA','.XXXXXX','.XXXXXX','.XXXXXX',
+     &             '.SPHTRA','.LVCORR','.LVNEW ','.TSCORR',
      &             '.XXXXXX','.VACUUM','.NUCVAC','.FAMILY',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
@@ -188,6 +188,9 @@ C
       ILLINT = 1
       ILSINT = 1
       ISSINT = 1
+      DOLVC   = .FALSE.
+      LVNEW   = .FALSE.
+      DOTSC   = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -288,11 +291,19 @@ C
             READ(LUCMD,*) ILSPH,ISSPH
             ISPHTR = ILSPH+2*ISSPH
             GO TO 100
-  110    CONTINUE
+  110     CONTINUE
+C&&&& LVCORR: Model interatomic SS-integral contribution by classical
+C             repulsion of small component atomic charges
+            DOLVC = .TRUE.
             GO TO 100
-  111    CONTINUE
+  111     CONTINUE
+C&&&& LVNEW: Get Small component charge via Mulliken analysis
+            LVNEW = .TRUE.
             GO TO 100
-  112    CONTINUE
+  112     CONTINUE
+C&&&& TSCORR: Model SS-integrals by SS nuclear attraction integrals
+C             using small component atomic charges
+            DOTSC = .TRUE.
             GO TO 100
   113    CONTINUE
             GO TO 100
@@ -342,6 +353,9 @@ ctec we require that it is a direct calculation
          IDFLAG = 7
       ENDIF
 C
+      IF(DOLVC) ISSINT = 0
+      IF(DOTSC) ISSINT = 0
+C
 C     Set integral flags
 C
       INTGEN = 1*ILLINT + 2*ILSINT + 4*ISSINT
@@ -367,6 +381,26 @@ C
         IF(ISLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SL-integrals'
         IF(ISSDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
       ENDIF
+C
+C     Write info about the modelling of SS interactions
+C
+      IF(DOLVC) THEN
+C
+C        Calculate LV-correction
+C        (SS integrals modelled by Coulombic correction)
+C        ===============================================
+C
+         WRITE(LUPRI,'(1X,A)')
+     &   '* SS integrals neglected: ',
+     &   '  Interatomic Coulombic SS-contributions modelled ',
+     &   '  by  classical repulsion of small component atomic charges.'
+      END IF
+C
+      IF(DOTSC) WRITE(LUPRI,'(1X,A)')
+     &   '* SS integrals neglected: ',
+     &   '  Interatomic Coulombic SS-contributions modelled ',
+     &   '  by  nuclear attraction integrals using ',
+     &   '  small component atomic charges.'
 C
 C     Write information about default integrals flags
 C
@@ -1190,7 +1224,6 @@ C
         MXDIIS = 0
       ENDIF
 C
-      IF(DOLVC) ISSINT = 0
       IF (LEVYLE) THEN
         ISLINT = 0
         ISSINT = 0
@@ -1513,8 +1546,6 @@ C
       DODHF   = .FALSE.
       DODFT   = .FALSE.
       DOMP2   = .FALSE.
-      DOLVC   = .FALSE.
-      DOTSC   = .FALSE.
       DORES   = .FALSE.
 C
 C     Read menu file
@@ -1582,12 +1613,14 @@ C&&&& MP2: Perform second-order Moller-Plesset calculation
   104    CONTINUE
 C&&&& LVCORR: Model interatomic SS-integral contribution by classical
 C             repulsion of small component atomic charges
-            DOLVC = .TRUE.
+C     This option should be specified in the general section as
+C     it has nothing to do with the generation of the wave function....
+            CALL QUIT ('LVCORR option now in general input section !')
             GO TO 100
   105    CONTINUE
 C&&&& TSCORR: Model SS-integrals by SS nuclear attraction integrals
 C             using small component atomic charges
-            DOTSC = .TRUE.
+            CALL QUIT ('TSCORR option now in general input section !')
             GO TO 100
   106    CONTINUE
 C&&&& RELCCSD: Perfrom CCSD, CCSD(T) or MP2 with relccsd
@@ -1647,23 +1680,6 @@ C
       IF(DOMP2) WRITE(LUPRI,'(1X,A)') '* MP2 calculation'
       IF(DOCCM) WRITE(LUPRI,'(1X,A)') '* Run RELCCSD code'
       IF(DOCIM) WRITE(LUPRI,'(1X,A)') '* Run DIRCCI code'
-      IF(DOLVC) THEN
-         WRITE(LUPRI,'(1X,A)')
-     &   '* SS integrals neglected: ',
-     &   '  Interatomic Coulombic SS-contributions modelled ',
-     &   '  by  classical repulsion of small component atomic charges.'
-C
-C        Calculate LV-correction
-C        (SS integrals modelled by Coulombic correction)
-C        ===============================================
-C
-CTROND         CALL LVCORR(WORK,LWORK,IPRGEN)
-      END IF
-      IF(DOTSC) WRITE(LUPRI,'(1X,A)')
-     &   '* SS integrals neglected: ',
-     &   '  Interatomic Coulombic SS-contributions modelled ',
-     &   '  by  nuclear attraction integrals using ',
-     &   '  small component atomic charges.'
 C
 C     Process input for various program sections
 C     ==========================================
@@ -2613,7 +2629,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      PARAMETER (NTABLE = 20,NDIR = 8)
+      PARAMETER (NTABLE = 24,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include <maxaqn.h>
@@ -2642,7 +2658,8 @@ C
      &            '.PROJEC','.OWNBAS','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.SPINFR','.ZORA  ','.SMLV1C','.PRJTHR',
-     &            '.DFT   ','.HFXFAC','.XXXXXX','.XXXXXX'/
+     &            '.DFT   ','.HFXFAC','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 #include <ibtfun.h>
 C
@@ -2839,6 +2856,14 @@ C&&& HFXFAC: weight of pure exchange
   119     CONTINUE
             GO TO 100
   120     CONTINUE
+            GO TO 100
+  121     CONTINUE
+            GO TO 100
+  122     CONTINUE
+            GO TO 100
+  123     CONTINUE
+            GO TO 100
+  124     CONTINUE
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -3040,6 +3065,7 @@ C         Operator must be symmetric under time reversal
      &      '* The SS parts of the e-e repulsion and n-e attraction',
      &      '  are done via a one-center approximation scheme' 
       ENDIF
+C
       IF(PROJEC) THEN
         WRITE(LUPRI,'(1X,A,A)')
      &      '* Variational space reduced by projection',

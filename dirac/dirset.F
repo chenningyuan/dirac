@@ -694,6 +694,7 @@ C
 #include <shells.h>
 #include <dcbbas.h>
 #include <dcborb.h>     
+#include <dcbgen.h>
 #include <dcbham.h>
       DIMENSION DMAT(N2BBASXQ,*),WORK(*)
 #include <memint.h>
@@ -703,7 +704,15 @@ C
         CALL MEMGET('REAL',KSCQ,NUCIND,WORK,KFREE,LFREE)
 C
 C     Get small component charges
+C     Two options :
+C     - Old method uses a table lookup with to get the DHF limit
+C       small component charges
+C     - New method uses a Mulliken analysis of the density
+C       THIS WILL NOT WORK FOR PARTIAL DENSITIES AS IN MOLTRA !!!!
 C
+      IF (.NOT.LVNEW) THEN
+        CALL SCDEN2(CHARGE,WORK(KSCQ),NUCIND,IPRINT)
+      ELSE
         IF(NOPEN.GT.1) THEN
           CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
           CALL DCOPY(N2BBASX,DMAT,1,WORK(KBUF),1)           
@@ -715,6 +724,7 @@ C
         ELSE
           CALL SCDENS(WORK(KSCQ),DMAT,WORK(KFREE),LFREE,IPRINT)
         ENDIF
+      ENDIF
 C
 C       Calculate nuclear repulsion energy
 C     
@@ -726,6 +736,10 @@ C     Print section
 C      
       IF(IPRINT.GE.1) THEN
         CALL HEADER('Output from LVCORR',-1)
+        WRITE(LUPRI,'(1X,A)')
+     &    '* Small component atomic charges :'
+        WRITE(LUPRI,'(4X,A4,F10.4)') 
+     &        (NAMN(I),WORK(KSCQ+I-1),I = 1,NUCIND)
         WRITE(LUPRI,'(1X,A,F18.12)')
      &    '* Classical repulsion of small component atomic charges:',
      &    CORRLV

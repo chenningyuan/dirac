@@ -1166,6 +1166,7 @@ C
 #include <dcbpsi.h>
 #include <dcborb.h>
 #include <dcbham.h>
+#include <dcbgen.h>
 #if defined (MOD_DFT)
 #include <dfterg.h>
 #endif
