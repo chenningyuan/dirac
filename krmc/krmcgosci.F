@@ -324,7 +324,7 @@ C
       MAXOCC = MAX(MAXAEL,MAXBEL)
 C
 C
-C     Generate determintants:
+C     Generate determinants:
 C     -----------------------
 C
 D     write(lupri,*) 'IAEL   IBEL'
@@ -359,7 +359,7 @@ C
                   IF (GOSCI_SYMOK(IASTR(IA),IBSTR(IB))) THEN
                      NDET = NDET + 1
                      IF (NDET .GE. MAXDET) THEN
-                        WRITE(LUPRI,'(2A,I,A)')
+                        WRITE(LUPRI,'(2A,I9,A)')
      &                       ' *** ERROR in GOSCI_GENDET ***',
      &                       'Maximum number of determinants reached!',
      &                       MAXDET,
