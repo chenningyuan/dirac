@@ -386,7 +386,10 @@ C
 C     4. Fold Fock matrix
 C     ================
 C
-      CALL RMOLGRD_FOLDMAT(WORK(KFCAO),NTBAS(0),NZ)
+      DO IZ = 1, NZ
+         CALL RMOLGRD_FOLDMAT(WORK(KFCAO + ( IZ - 1 ) * N2BBASX ),
+     &        NTBAS(0), (IZ .EQ. 1) )
+      END DO
 C
       IF ( IPRINT .GT. 5 ) THEN
          CALL HEADER('CONMAT_DHF: FOCK After folding',-1)
@@ -478,7 +481,7 @@ C
 C
 C     Fold the damn thing
 C
-      CALL RMOLGRD_FOLDMAT(WORK(KDCAO),NTBAS(0),NZ)
+c      CALL RMOLGRD_FOLDMAT(WORK(KDCAO),NTBAS(0),NZ)
 C
 C     Insert half-phases
 C
@@ -505,8 +508,10 @@ C
 C     The real part:
 C     --------------
 C
+      CALL DCOPY(N2BBASX, WORK(KDCAO), 1, WORK(KCMO), 1)
       CALL DZERO(WORK(KDVAO),N2BBASX)
-      CALL DSYM1R(WORK(KDCAO),WORK(KDVAO),NTBAS(0),0,IPRINT)
+      CALL RMOLGRD_FOLDMAT( WORK(KCMO), NTBAS(0), .TRUE. )
+      CALL DSYM1R(WORK(KCMO),WORK(KDVAO),NTBAS(0),0,IPRINT - 20)
       CALL NEWLAB('DTFLDCT1',LUMGRD,LUERR)
       CALL WRITT(LUMGRD,N2BBASX,WORK(KDVAO))
 C
@@ -529,6 +534,7 @@ C        IDIR = 1(X), 2(Y), or 3(Z)
 C
          IDIR = 5-I
 C
+C
 C        Symmetry of axis:
 C
          ISYM = ISYMAX(IDIR,1)
@@ -547,6 +553,8 @@ C
 C
          CALL DSYM1R(WORK(KDCAO + (IQP - 1) * N2BBASX),WORK(KDVAO),
      &              NTBAS(0),IREPD,IPRINT - 20)
+C
+         CALL RMOLGRD_FOLDMAT( WORK(KDVAO), NTBAS(0), .FALSE. )
 C
          CALL NEWLAB('DTFLDCT'//CHAR(I+48),LUMGRD,LUERR)
          CALL WRITT(LUMGRD,N2BBASX,WORK(KDVAO))
@@ -567,6 +575,9 @@ C
 C
 C     Contruct density matrix
 C
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,4)
+      CLOSE(LUCOEF,STATUS='KEEP')
       DO IMAT = 1,NFMAT
          IBIT = IBTSHL(1,IMAT-1)
          CALL GENDEN(WORK(KDCAO),WORK(KCMO),IBIT,IPRINT)
@@ -666,7 +677,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rmolgrd_foldmat */
-      SUBROUTINE RMOLGRD_FOLDMAT(A,N,NZ)
+      SUBROUTINE RMOLGRD_FOLDMAT(A,N,FLAG)
 C*****************************************************************************
 C
 C
@@ -677,25 +688,27 @@ C*****************************************************************************
 C
       PARAMETER ( D0 = 0.0D00 )
 C
-      DIMENSION A(N,N,NZ)
+      DIMENSION A(N,N)
+      LOGICAL FLAG
 C
-      DO IZ = 1, NZ
-         IF ( IZ .EQ. 1 ) THEN
-            DO I = 2, N
-               DO J = 1, I - 1
-                  A(I,J,IZ) = A(I,J,IZ) + A(J,I,IZ)
-                  A(J,I,IZ) = D0
-               END DO
+C     FLAG: symmetric folding ( FLAG = true )
+C         : anti-symmetric folding ( FLAG = false )
+C
+      IF (FLAG) THEN
+         DO I = 2, N
+            DO J = 1, I - 1
+               A(I,J) = A(I,J) + A(J,I)
+               A(J,I) = D0
             END DO
-         ELSE
-            DO I = 2, N
-               DO J = 1, I - 1
-                  A(I,J,IZ) = A(I,J,IZ) - A(J,I,IZ)
-                  A(J,I,IZ) = D0
-               END DO
+         END DO
+      ELSE
+         DO I = 2, N
+            DO J = 1, I - 1
+               A(I,J) = A(I,J) - A(J,I)
+               A(J,I) = D0
             END DO
-         END IF
-      END DO
+         END DO
+      END IF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -801,12 +814,13 @@ C
      &      '- No small-small reorthonormalization gradient'
          NOINFO = .FALSE.
          GRD_NOSMLS = .TRUE.
+         GRD_NOSMLV = .TRUE.
          IF (.NOT. NOSMLV) THEN
             WRITE(LUPRI,'(/1X,2A)')
      &         'WARNING: small-small nuclear attraction integrals AND',
      &         ' Levy-Leblond Hamiltonian: Inconsistent...'
          END IF
-         IGRD_INTBUF = IBTXOR( 2+4, IGRD_INTBUF )
+         IGRD_INTBUF = IBTAND( 1, IGRD_INTBUF )
       ELSE IF (NOSMLV) THEN
          WRITE(LUPRI,'(/X,A)') 
      &      '- No small-small nuclear attraction integrals.'
@@ -814,7 +828,7 @@ C
       END IF
 C
       IF ( DOLVC .AND. LBIT( IGRD_INTBUF, 3 ) ) THEN
-         IGRD_INTBUF = IBTXOR ( 4, IGRD_INTBUF )
+         IGRD_INTBUF = IBTAND ( 1+2, IGRD_INTBUF )
          WRITE(LUPRI,'(/1X,A)')
      &      'INFO: LVCORR used in wavefunction, but not in gradient =>'
          WRITE(LUPRI,'(1X,A/)') 
@@ -1194,7 +1208,7 @@ C     they seem unnecessary.
 C
 C
       CALL HEADER('DHFGRD: LS-Two-electron part',-1)
-      IF ( DOTRCK ) THEN
+      IF ( DOTRCK .AND. LBIT ( IGRD_INTBUF, 2 ) ) THEN
          CALL ESTGLS(DOLS)
          IF ( .NOT. DOLS ) THEN
             IGRD_INTBUF = IBTXOR ( IGRD_INTBUF, 2 )
@@ -1304,7 +1318,8 @@ C
  200  CONTINUE
 C
       CALL HEADER('DHFGRD: SS-Two-electron part',-1)
-      IF ( DOTRCK .AND. .NOT. DOLVC) THEN
+      IF ( DOTRCK .AND. LBIT ( IGRD_INTBUF, 3 )
+     &     .AND. .NOT. DOLVC ) THEN
          CALL ESTGSS(DOSS)
          IF ( .NOT. DOSS ) THEN
             IGRD_INTBUF = IBTXOR ( IGRD_INTBUF, 4 )
