@@ -4193,15 +4193,11 @@ C
          ICENTC = JCENTC(IATOMC)
          ISYMC  = JSYMC (IATOMC)
          FACTOR = FACINT(IATOMC)
-c        write(6,*) '- jth iatomc ',iatomc
          ITYP = ITYP + 1
          DO 200 IREPC = 0, MAXREP
             IF (IBTAND(ISTBNU(ICENTC),IREPC) .EQ. 0) THEN
-c              write(6,*) '   - jth irepc ',irepc
                FACSYM = FACTOR*PT(IBTAND(IREPC,ISYMC))
                IADR = IPVCTBL(ICENTC,IREPC)
-c              write(6,*) '   - jth iadr ',iadr
-c              call flshfo(6)
                IF (IREPC .EQ. 0) THEN
                   CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),ISYMOP,
      &                       MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -5543,6 +5539,7 @@ C
 C Exponent and coordinates of Spherical Nuclear distribution
       NUCPN1 = 0
       DO 50 IATOM = 1, NUCIND
+      IF (DOATOM(IATOM)) THEN
       DO 60 IREP = 0, MAXREP
          IF (IBTAND(IREP,ISTBNU(IATOM)).NE.0) GOTO 60
       NUCPN1 = NUCPN1 + 1
@@ -5645,6 +5642,7 @@ C
  100  CONTINUE
 
   60  CONTINUE
+      ENDIF
   50  CONTINUE
 C
 C     Print
