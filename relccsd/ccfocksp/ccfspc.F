@@ -227,6 +227,7 @@ C---------------Local variables -----------------------------------
       REAL*8 EV(NDIMH),EVI(NDIMH),HR(NDIMH2),HI(NDIMH2)
       REAL*8 SCR(3*NDIMH),VEC(NDIMH2),VECI(NDIMH2)
       REAL*8 FNOR
+      INTEGER INDX(NDIMH)
 C---------------Executable code--------------------------------------
 C-------------------------------------------
 C (0,1)  Sector
@@ -278,9 +279,8 @@ C-------------------------------------------
 C       Add the one electron contributions
         CALL XCOPY (NDIMT1,S1,1,BUF1,1)
         CALL XAXPY (NDIMT1,A1,FVO,1,BUF1,1)
-C       Add the two electron contributions
-        CALL GETVVOO (BUF2)
-        CALL XAXPY (NDIMT2,A1,S2,1,BUF2,1)
+C       Make the effective Hamiltonian in the full array.
+        CALL XCOPY (NDIMT2,S2,1,BUF2,1)
         CALL GETTAU2 (BUF1,BUF3,BUF2)
 C       Extract the Hamiltonian
         CALL EXTRT2T(BUF2,H,1,1,3,3,LFA)
@@ -340,7 +340,8 @@ C
             CALL CG(NDT,NDT,HR,HI,EV,EVI,1,VEC,VECI,
      &               SCR,SCR(NDT+1),SCR(2*NDT+1),IERR)
          ELSE
-cluuk       call output (h(ioff),1,ndt,1,ndt,ndt,ndt,1,iw)
+Cluuk       uncomment when debugging, gives huge output
+Cluuk       call output (h(ioff),1,ndt,1,ndt,ndt,ndt,1,iw)
             CALL RG(NDT,NDT,H(IOFF),EV,EVI,1,VEC,SCR,SCR(NDT+1),IERR)
          ENDIF
 C
@@ -350,22 +351,29 @@ C
             WRITE (IW,'('' RG IERR='',I4)') IERR
             CALL QUIT('Error in diagonalization of eff. Hamiltonian')
          ENDIF
-         IF (IPR.GT.0) WRITE (IW,8300) TIT,IRP,(EV(I),I=1,NDT)
+C
+C........Sort eigenvalues 
+C
+C
+         CALL INDEXX (NDT,EV,INDX)
+C
+         IF (IPR.GT.0) WRITE (IW,8300) TIT,IRP,(EV(INDX(I)),I=1,NDT)
 C
 C........Write  eigenvalues & vectors if desired.
 C
-         IVEC = 1
          DO I = 1, NDT
+C          Calculate pointer to start of vector
+           IVEC = (INDX(I)-1)*NDT + 1
 C          Normalize
            FNOR = DDOT (NDT,VEC(IVEC),1,VEC(IVEC),1)
            IF (CARITH) FNOR = FNOR + DDOT(NDT,VECI(IVEC),1,VECI(IVEC),1)
            FNOR = A1 / DSQRT(FNOR)
            CALL DSCAL (NDT,FNOR,VEC(IVEC),1)
            IF (CARITH) CALL DSCAL (NDT,FNOR,VECI(IVEC),1)
-           IF (IPR.GT.1) WRITE (IW,8400) I,EV(I),(VEC(IVEC+J-1),J=1,NDT)
+           IF (IPR.GT.1) 
+     &         WRITE (IW,8400) I,EV(INDX(I)),(VEC(IVEC+J-1),J=1,NDT)
            IF (CARITH.AND.IPR.GT.1) 
-     &         WRITE (IW,8401) I,EVI(I),(VECI(IVEC+J-1),J=1,NDT)
-           IVEC = IVEC + NDT
+     &         WRITE (IW,8401) I,EVI(INDX(I)),(VECI(IVEC+J-1),J=1,NDT)
          ENDDO
          IOFF=IOFF+NDT2*RCW
 C
@@ -389,11 +397,9 @@ C---------------Description--------------------------------------------
 C
 C     Option 1) :
 C     Divide parts of T1 and T2 that correspond to WF by denominators
-C     The parts that correspond to the effective Hamiltonian are
-C     untouched.
+C     Parts that correspond to the effective Hamiltonian are untouched.
 C     Option 2) :
-C     Delete parts of T1 and T2 that corresponds to the Hamiltonian
-C     are deleted.
+C     Delete parts of T1 and T2 that correspond to the Hamiltonian.
 C
 C---------------Routines called----------------------------------------
 C
@@ -418,7 +424,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 FAC,FAC1,FAC2,FAC3
+      REAL*8 FAC,FAC1,FAC2,FAC3,VALUE
       INTEGER IOI(0:3), IVA(0:3)
       INTEGER IOJ(0:3), IVB(0:3)
       CHARACTER*2 CLASS(3,2)
@@ -622,6 +628,7 @@ C                    This will zero out Hamiltonian elements
                            FAC = FAC3 - EPS(AA)
                            ABIJ = ABIJ + 1
                            IF (DENO) THEN
+C                            Check for zero denominators
                              IF (ABS(FAC).LT.1.D-12) THEN
                                 WRITE (IW,1000) IRP,JRP,ARP,BRP,
      &                          I,J,A,B,
@@ -635,6 +642,22 @@ C                    This will zero out Hamiltonian elements
                              ELSE
                                 T2(ABIJ) = T2(ABIJ)/FAC
                              ENDIF
+C-----------------------------------------------------------------------
+CThis may cause large output : activate when debugging..
+C                            Check for large amplitudes
+C                            IF (CARITH) THEN
+C                               VALUE = CDABS(CT2(ABIJ))
+C                            ELSE
+C                               VALUE = ABS(T2(ABIJ))
+C                            ENDIF
+C                            IF (VALUE.GT.0.1D0) THEN
+C                               WRITE (IW,1001) IRP,JRP,ARP,BRP,
+C    &                          I,J,A,B,
+C    &                          CLASS(ICO,1),CLASS(JCO,1),
+C    &                          CLASS(ACV,2),CLASS(BCV,2),
+C    &                          EPS(II),EPS(JJ),EPS(AA),EPS(BB),VALUE
+C                            ENDIF
+C-----------------------------------------------------------------------
                            ENDIF
 C
                            IF (ZERO) THEN
@@ -670,6 +693,13 @@ C
      &/' Energies    : ',4F15.5,
      &/' Denominator : ',E15.5,
      &//' Please choose a better model space ! We will stop now.')
+ 1001 FORMAT (//' Large amplitude in DENOMF',
+     &/T30,'I',14X,'J',14x,'A',14X,'B',
+     &/' Irreps      : ',4I15,
+     &/' Indices     : ',4I15,
+     &/' Classes     : ',4(13X,A2),
+     &/' Energies    : ',4F15.5,
+     &/' Absolute value ',E15.5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT1 (T1,FT1,ACVMIN,ACVMAX,ICOMIN,ICOMAX,DOINV)

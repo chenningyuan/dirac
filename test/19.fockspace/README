@@ -1,0 +1,6 @@
+!
+! This test calculates the ionization energies and electron
+! affinities of the magnesium(2+) ion via the Fock CC space method.
+! The algorithm is documented in 
+! L. Visscher, E. Eliav, and U. Kaldor, Journal of Chemical Physics {\bf 115}, 9720-9726 (2001).
+!

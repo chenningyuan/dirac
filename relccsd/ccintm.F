@@ -413,24 +413,6 @@ C
       CALL XTIME(29,1,' ** HINTM: VVOO cont             ')
 
 C
-C --- old nonparallel VOVO contraction
-C
-C     OFF1 = 1
-C     OFF3 = 1
-C     DO IREP = 1, NREP
-C        JREP = MULTB(IREP+NREP,1+NREP,2)
-C        M = MVO(IREP)
-C        N = MVO(IREP)
-C        K = MVO(JREP)
-C        OFF2 = J2VOVO(JREP) * RCW + 1
-C        CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,BUF2(OFF2),K,
-C    &               A1,H(OFF3),M)
-C        OFF1 = OFF1 + M * K * RCW
-C        OFF3 = OFF3 + M * N * RCW
-C     ENDDO
-C
- 
-C
 C --- new parallelized VOVO contraction
 C
       OFF3 = 1

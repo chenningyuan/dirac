@@ -187,7 +187,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 CPUDELTA,CPU0,CPUT1,CPUT2,CPUINT,CPU4V,CPUE,CPUVAR,CPUTOT
-      LOGICAL TEQ,FOCKSP
+      LOGICAL TEQ,FOCKSP,PRENE
       real*8 ddot,sdot
       complex*16 zdotc,cdotc
       CHARACTER*2 DELS1
@@ -205,7 +205,6 @@ C
 #ifdef MOD_FOCKSPCC
          TEQ = .TRUE.
          FOCKSP = .TRUE.
-         CALL PUTAMPT (T1,T2)
          DELS1 = 'DD'
          IF (ICURFSS.EQ. 1) DELS1 = 'DK'
          IF (ICURFSS.EQ.10) DELS1 = 'KD'
@@ -218,8 +217,14 @@ C
          IF (ICURFSS.EQ.11) DELS2 = 'KDDK'
          IF (ICURFSS.EQ. 2) DELS2 = 'DDKK'
          IF (ICURFSS.EQ.20) DELS2 = 'KKDD'
+C
+C        The incoming T arrays contain Hamiltonian and wave function
+C        parts for all sectors. Eliminate the ones that we don't need.
+C
+C        Delete wave function parts that belong to higher sectors.
          CALL DELFCK ('VO',DELS1,T1)
          CALL DELINT ('VVOO',DELS2,T2,0,0,0)
+C        Delete Hamiltonian parts
          CALL DENOMF (EPS,T1,T2,T1,T2,2)
 #else
          CALL QUIT('FOCKSP keyword disabled in this version of CCEQNS')
@@ -271,7 +276,7 @@ C
 C
       CALL T1DIAG(DIAG,T1,BUF1)
       CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD)
-      IF (DEBUG.OR.IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
+      IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
 C
       IF (IPRNT.GE.1) THEN
          WRITE(IW,6003)
@@ -511,17 +516,18 @@ C
 C     In the Fockspace algorithm we only need to extrapolate the
 C     amplitudes of the current sector. We delete the ones from
 C     the higher sectors, the ones from the previous sectors are
-C     constant and can be left inside.
+C     constant and can be left inside. In addition the Hamiltonian
+C     matrix elements should not be taken into account in the 
+C     extrapolation because of the difference in magnitude with the wf 
+C     (energy vs. dimensionless).
 C
+C        Save the full S1 and S2 arrays (all wf and ham elements)
+         CALL XCOPY(NDIMT1,S1,1,BUF1,1)
+         CALL XCOPY(NDIMT2,S2,1,BUF2,1)
 C        Delete the wave function amps that belong to higher sectors
          CALL DELFCK ('VO',DELS1,S1)
          CALL DELINT ('VVOO',DELS2,S2,0,0,0)
-C        Save the remaining S1 and S2 arrays (wf and matrix elements)
-         CALL XCOPY(NDIMT1,S1,1,BUF1,1)
-         CALL XCOPY(NDIMT2,S2,1,BUF2,1)
-C        Delete the Hamiltonian matrix elements
-C        They should not be taken into account in the extrapolation because
-C        of the difference in magnitude with the wf (energy vs. dimensionless)
+C        Delete the effective Hamiltonian elements
          CALL DENOMF (EPS,S1,S2,S1,S2,2)
          if (carith.and.debug) then
          write(iw,111)"s1 without Ham.",MYPROC,zdotc(ndimt1,s1,1,s1,1)
@@ -537,10 +543,12 @@ C        of the difference in magnitude with the wf (energy vs. dimensionless)
          CALL DIISX(ITAMPL,ITAMPD,NDIMT1,NDIMT2,T1,S1,T2,S2,IT,
      &              CC1,BB1,ITC,BB2,RMS,NST1,NST2)
 C
-C        Put the Hamiltonian elements back.
+C        Put the deleted elements back.
 C
          CALL XAXPY(NDIMT1,A1,BUF1,1,S1,1)
          CALL XAXPY(NDIMT2,A1,BUF2,1,S2,1)
+         CALL DELFCK ('VO',DELS1,BUF1)
+         CALL DELINT ('VVOO',DELS2,BUF2,0,0,0)
          CALL DENOMF (EPS,BUF1,BUF2,BUF1,BUF2,2)
          CALL XAXPY(NDIMT1,-A1,BUF1,1,S1,1)
          CALL XAXPY(NDIMT2,-A1,BUF2,1,S2,1)
@@ -559,7 +567,7 @@ C
 C  EVALUATE CORRELATION ENERGY AND WRITE OUT RESULTS
 C
       IF (TEQ) THEN
-         IF (DEBUG.OR.IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
+         IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
          CALL CCENG  (S1,S2,FVO,BUF1,BUF2,ECCSD)
       ENDIF
 C
@@ -573,10 +581,14 @@ C
       CALL XCOPY(NDIMT2,S2,1,T2,1)
 C
 C     Remove the Hamiltonian elements, T1 and T2 should only contain
-C     the wave function (amplitudes)
+C     the wave function (amplitudes) appropriate for this sector.
 C
 #ifdef MOD_FOCKSPCC
-      IF (FOCKSP) CALL DENOMF (EPS,T1,T2,T1,T2,2)
+      IF (FOCKSP) THEN
+         CALL DENOMF (EPS,T1,T2,T1,T2,2)
+         CALL DELFCK ('VO',DELS1,T1)
+         CALL DELINT ('VVOO',DELS2,T2,0,0,0)
+      ENDIF
 #endif
 C
       CPUE = CPUE + CPUDELTA()
@@ -589,7 +601,16 @@ C
       CPUE = CPUE + CPUDELTA()
       WRITE(IW,6071)
 C
-      IF (TEQ) THEN
+C     Only print energy when doing amplitudes for the reference
+C     wave function.
+C
+      IF (.NOT.FOCKSP) THEN
+         PRENE =  TEQ
+      ELSE
+         PRENE = ICURFSS .EQ. 0
+      ENDIF
+C
+      IF (PRENE) THEN
          ETOT = ESCF + ECCSD
          WRITE(IW,6072) ESCF
          IF (.NOT.(NOCCD.OR.NOCCS)) THEN
@@ -608,16 +629,11 @@ C
 C
 #ifdef MOD_FOCKSPCC
       IF (FOCKSP) THEN
+C        Calculate the energies for this sector
          CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
-C        Now restore the parts that were not calculated in this sector
-         CALL GETAMPT (BUF1,BUF2)
-         CALL XAXPY(NDIMT1,A1,BUF1,1,S1,1)
-         CALL XAXPY(NDIMT2,A1,BUF2,1,S2,1)
-         CALL DELFCK ('VO',DELS1,BUF1)
-         CALL DELINT ('VVOO',DELS2,BUF2,0,0,0)
-         CALL DENOMF (EPS,BUF1,BUF2,BUF1,BUF2,2)
-         CALL XAXPY(NDIMT1,-A1,BUF1,1,S1,1)
-         CALL XAXPY(NDIMT2,-A1,BUF2,1,S2,1)
+C        The updated amplitudes should be in T1 & T2
+         CALL XCOPY(NDIMT1,S1,1,T1,1)
+         CALL XCOPY(NDIMT2,S2,1,T2,1)
       ENDIF
 #endif
 C
@@ -1029,13 +1045,6 @@ C-------------------------------------------
 C S(AB,IJ) = W(AB,IJ)
 C-------------------------------------------
         CALL GETVVOO (S2)
-C
-C       Delete zeroth order Hamiltonian parts
-C       for Fockspace
-C
-#ifdef MOD_FOCKSPCC
-        IF (EQNS.EQ.'FOCKSP') CALL DENOMF (BUF1,BUF1,S2,BUF1,S2,2)
-#endif
       ENDIF
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
@@ -1087,26 +1096,11 @@ C----------------------------------------------------------------
      &             BUF2,BUF1)
       CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
 
-C     OFF3 = 1
-C     DO IREP = 1, NREP
-C        M    = NVVOT(IREP)
-C        N    = NO   (IREP)
-C        KLD  = NO   (IREP)
-C        K    = IDIST(1,7,IREP)
-C        OFF1 = IDIST(2,7,IREP)
-C        OFF2 = IDIST(3,7,IREP)
-C        CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,GO(OFF2),KLD,
-C    &                A0,BUF2(OFF3),M)
-C        OFF3 = OFF3 + M * N * RCW
-C     ENDDO
-
 C ***************************
 C ** END OF TASK SPLITTING **
 C ***************************
 
       ENDIF
-
-
 C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PIJ [ W(AB,CJ) * T1(C,I) ]
 C-----------------------------------------------------------------------
@@ -1237,21 +1231,7 @@ C------------------------------------------------
       CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
       CALL SRT1S2 (NREP,MULTB,LFA,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,
      &             BUF3,BUF2)
-
-C     OFF3 = 1
-C     DO IREP = 1, NREP
-C       M    = NV(IREP)
-C       N    = NVOOT(IREP)
-C       KLD  = NO(IREP)
-C       K    = IDIST(1,8,IREP)
-C       OFF1 = IDIST(2,8,IREP)
-C       OFF2 = IDIST(3,8,IREP)
-C       CALL XGEMM ('N','N',M,N,K,-A1,T1(OFF1),M,BUF2(OFF2),KLD,
-C    &              A1,BUF1(OFF3),M)
-C       OFF3 = OFF3 + M * N * RCW
-C     ENDDO
       CALL CNTRCT ('N','N',NV,NVOOT,NO,-A1,T1,BUF2,A1,BUF1,NREP)
-
 
 C ***
 C *** end of task splitting
@@ -2985,7 +2965,7 @@ C
                ENDIF
 C
 C              Triangular arrays need special treatment, we can have the
-C              case that out to be deleted index is related by anti-
+C              case that the to be deleted index is related by anti-
 C              symmetry to the index to be kept. 
 C              We treat this as the condition 'DD'to have the proper
 C              loop structure but modify the delete condition somewhat

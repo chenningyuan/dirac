@@ -2486,7 +2486,7 @@ C
       CALL MEMOPT('REAL',HOV,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',GOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',GVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
-      MAXDIM = MXDIMCC
+      MAXDIM = MXDIMFS
       CALL MEMOPT('REAL',CCC,MAXDIM,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BB1,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BB2,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
@@ -2545,7 +2545,6 @@ C
 C     Solve relativistic Fock space CCSD equations
 C
       WRITE (IW,1008) MXITFS,MXDIMFS,10.0D0**(-NTOLFS)
-      MAXDIM = MXDIMFS
       MAXIT  = MXITFS
       TOL = 10.0D0**(-NTOLFS)
 C
@@ -2554,6 +2553,8 @@ C
       CALL XCOPY (NDIMT1,CC(FVO),1,CC(T1),1)
       CALL GETVVOO (CC(T2))
       CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),1)
+C     Save the zeroth order wave function & Hamiltonian
+      CALL PUTAMPT (CC(T1),CC(T2))
 C
       IFSS(1) = 00
       IFSS(2) = 01
@@ -2567,12 +2568,18 @@ C
       DO ISECT = 1, 6
       IF (FSSECT(ISECT).NE.0) THEN
       ICURFSS = IFSS(ISECT)
-      WRITE (IW,1009) ICURFSS
-      CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
-     &           CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
-     &           CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
-     &           CC(CCC),CC(BB1),CC(BB2),
-     &           TOL,NBUF2,NBUF3)
+      IF (ICURFSS.LE.10) THEN
+        WRITE (IW,1009) ICURFSS
+        CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
+     &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
+     &             CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
+     &             CC(CCC),CC(BB1),CC(BB2),
+     &             TOL,NBUF2,NBUF3)
+C       Save the updated wave function & Hamiltonian
+        CALL PUTAMPT (CC(T1),CC(T2))
+      ELSE
+        WRITE (IW,1010) ICURFSS
+      ENDIF
       ENDIF
       ENDDO
 C
@@ -2588,6 +2595,7 @@ C
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
 1009  FORMAT (//" Solving equations for sector ",I2/)
+1010  FORMAT (//" Sector ",I2," is not implemented."/)
       END
 #endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
