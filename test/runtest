@@ -1,0 +1,165 @@
+#!/bin/sh
+#
+#
+# VERSION : $Revision$
+# DATE    : $Date$
+# FILE    : runtest
+# SOURCE  : $Source$
+#
+# (c) 1998 J. Thyssen
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Does 'echo' understand escapes?
+#
+#
+if [ "	" = "`echo '\t'`" ]; then
+   echo="echo"
+else
+   echo="echo -e"
+fi
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# CHECK OPTIONS
+#
+#
+usage () {
+   $echo 'Usage: '$0
+   $echo '--help'
+   $echo '\tPrint this'
+   $echo '--version'
+   $echo '\tPrint version of runtest'
+   $echo '--quick'
+   $echo '\tDo not prompt user'
+   $echo '--tests="tests to run"'
+   $echo '\tChoose which tests to run'
+   $echo '--pampath="path to pam script"'
+   $echo '\tSet path to pam script'
+   $echo '--mpi="number of slaves"'
+   $echo '\tRun test in parallell under MPI'
+   $echo
+}
+
+arg_quick=0
+arg_tests=
+arg_pampath=
+arg_mpi=
+
+while [ $# != 0 ]; do
+   arg="$1"; shift
+   case "${arg}" in
+      -*=*)
+         opt=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*\([^=]*\)=.*$:\1:'`
+         val=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*[^=]*=\(.*\)$:\1:'`
+         valomitted=no
+         ;;
+      -*)
+         opt=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*\(.*\)$:\1:'`
+         val="yes"
+         valomitted=yes
+         ;;
+      *)
+         $echo $usage
+         exit
+   esac
+   optname="${opt}"
+   opt="`echo '' ${opt} | sed -e 's:^ ::' | tr - _`"
+   case "${opt}" in
+      "help")
+         usage
+         exit
+         ;;
+      "quick")
+         arg_quick=1
+         ;;
+      "version")
+         echo $0
+         echo '$Revision$'
+         echo '$Date$'
+         exit
+         ;;
+      "tests")
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         arg_tests="$val"
+         ;;
+      "mpi")
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         arg_mpi="-mpi $val"
+         ;;
+      "pampath")
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         arg_pampath="$val"
+         ;;
+      *)
+         echo 'Unknown option: '$opt''
+         usage
+         exit 1
+         ;;
+   esac
+done
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# FIND ALL POSSIBLE TESTS
+#
+#
+echo
+echo 'FINDING TESTS...'
+echo
+all_test=
+$echo 'Available tests: \c'
+for ff in *; do
+   if test -d $ff; then
+      all_test=$all_test' '$ff
+      $echo $ff' \c'
+      sleep 1
+   fi
+done
+echo
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# RUN THE REQUESTED TESTS
+#
+#
+echo 
+echo 'RUNNING TESTS...'
+echo
+if [ ! -z "$arg_tests" ]; then
+   tests=$arg_tests
+else
+   tests=$all_test
+fi
+
+for tt in $tests; do
+   if [ ! -d $tt ]; then
+      echo 'Test '$tt' not found...'
+      exit 1
+   fi
+   echo
+   echo 'Running test '$tt
+   echo
+   cat $tt/README
+   echo
+   ( cd $tt; export PAM_PATH=$arg_pampath; export MPIARG=$arg_mpi; ./run.sh)  
+done

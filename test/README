@@ -1,0 +1,10 @@
+TEST INPUT FILES FOR DIRAC
+
+run
+% runtest
+
+If pam is not in your path then run
+% runtest --pampath="path to pam"
+
+See
+% runtest --help
