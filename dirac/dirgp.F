@@ -806,13 +806,9 @@ C           ... single number
                GOTO 920
             ENDIF
          ELSE 
-            WRITE(LUPRI,'(A,A1,A1,I3,A1)')
-     &        'NUMLST: Wrong Character in Input: ',CHAR(INT),'(',INT,')'
             GOTO 910
          ENDIF
       ELSEIF ((INT.NE.ISPACE).AND.(INT.NE.IPOINT)) THEN
-         WRITE(LUPRI,'(A,A1,A1,I3,A1)')
-     &      'NUMLST: Wrong Character in Input: ',CHAR(INT),'(',INT,')'
          GOTO 910
       ENDIF
       I = I+1
@@ -852,24 +848,35 @@ C
 C
       RETURN
  900  CONTINUE
-      WRITE(LUPRI,'(//A,I3/3A/9X,200A1)')
+      WRITE(LUPRI,'(//A,I3//3A/9X,200A1)')
      &     'NUMLST: Wrong syntax in input at character ',I,
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
       CALL QUIT('NUMLST: Wrong Syntax in Input')
  910  CONTINUE
-      CALL QUIT('NUMLST: Wrong Characters in Input')
+      WRITE(LUPRI,'(/A,A1,A,I4,A,I3//3A/9X,200A1)')
+     &   'NUMLST: Wrong Character in Input: ',CHAR(INT),
+     &   ' ( ASCII code',INT,') at character',I,
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
+      CALL QUIT('NUMLST: Wrong Character in Input')
  920  CONTINUE
-      WRITE(LUPRI,'(A,2I6)') 'Out of Range in NUMLST. Range:',
-     &     IRNGE1,IRNGE2
+      WRITE(LUPRI,'(/A,2I6//3A/9X,200A1)')
+     &     'Out of Range in NUMLST. Range:',IRNGE1,IRNGE2,
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
       CALL QUIT('NUMLST: Out of Range!')
  930  CONTINUE
-      WRITE(LUPRI,'(A,I7)') 'Out of Range in NUMLST. NLIST:',
-     &     NLIST
+      WRITE(LUPRI,'(/A,I7//3A/9X,200A1)')
+     &     'Out of Range in NUMLST. NLIST:',NLIST,
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
       CALL QUIT('NUMLST: Out of Range in ITMPAR') 
  940  CONTINUE
-      WRITE(LUPRI,'(A)') 'Character string beyond 72'
+      WRITE(LUPRI,'(/A//3A/9X,200A1)')
+     &     'NUMLST: Character string beyond 72.',
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
       CALL QUIT('NUMLST: Character string beyond 72') 
  950  CONTINUE
+      WRITE(LUPRI,'(/A//3A/9X,200A1)')
+     &     'NUMLST: oo must be two consecutive characters.',
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
       CALL QUIT('NUMLST: oo must be two consecutive characters.')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
