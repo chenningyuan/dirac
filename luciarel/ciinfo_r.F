@@ -4441,8 +4441,6 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
       call memmar(KPCI1BT,MXNTTS,'ADDL  ',1,'CI1BT ')
       call memmar(KPCIBT ,8*MXNTTS,'ADDL  ',1,'CIBT  ')
       call memmar(KPCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
-      call memmar(KPCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
-C     stop 'CHECKING in Z_BLKFO_REL.'
 
 *.    ^ These should be preserved after exit so put mark for 
 *       flushing after

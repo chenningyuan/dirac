@@ -2945,7 +2945,7 @@ C
       INTEGER ISM(MXPNGAS),MNSM(MXPNGAS),MXSM(MXPNGAS)
       INTEGER IGRP(MXPNGAS)
 *
-      NTEST = 100
+      NTEST = 000
       IF(NTEST.GE.10) THEN
         WRITE(6,*) ' ======================='
         WRITE(6,*) ' NST_SPGP is speaking '
@@ -4662,7 +4662,7 @@ C       call nst_spgrp_dbg(NIGRP,KGRP,KSM,NSMST,NKSTR,NKDIST,IAB)
 *
       MAX_NSYMDIST_DBG = MAXX
 *
-      NTEST = 100
+      NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Largest number of symmetrydistributions ',
      &  MAXX
