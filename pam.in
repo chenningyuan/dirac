@@ -538,6 +538,11 @@ while [ -n "$1" ]; do
       *)
          MOL=${1%\.mol}
          shift 
+         if [ -z "$1" ]; then
+            echo "No menu file given"
+            EXIT=1
+            exitfunc
+         fi
          MENU=${1%\.inp}
          ;;
    esac
