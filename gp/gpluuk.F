@@ -481,7 +481,7 @@ C
         AVER=AVER+E
         IF (ABS(E-EW).GT.DEGEN) THEN
           IF (NEW.NE.0)
-     &      WRITE(6,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
+     &      WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
           ILEVEL=ILEVEL+1
           NEW=1
           EW=E
@@ -491,12 +491,12 @@ C
         ENDIF
       ENDDO
       IF (NEW.NE.0)
-     &WRITE(6,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
-      WRITE(6,1020) AVER/DBLE(N_TOTAL)+E_OFF
+     &WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
+      WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
 C
       DO IRP1 = 1, N_IRPS, 8
       IRP2 = MIN0(N_IRPS,IRP1+7)
-      WRITE(6,1025) (REPNA(I),I=IRP1,IRP2)
+      WRITE(LUPRI,1025) (REPNA(I),I=IRP1,IRP2)
       ILEVEL=0
       EW=0.0D0
       EWF=EV(INDX(1))
@@ -509,7 +509,8 @@ C
         E=EV(INDX(I))
         IF (ABS(E-EW).GT.DEGEN) THEN
           IF (NEW.NE.0)
-     &      WRITE(6,1030) ILEVEL,XTEV*(EW-EWF),XTKAYS*(EW-EWF),
+     &      WRITE(LUPRI,1030) ILEVEL,
+     &                     XTEV*(EW-EWF),XTKAYS*(EW-EWF),
      &                    (IND(JRP),JRP=IRP1,IRP2)
           DO JRP = IRP1, IRP2
             IND(JRP) = 0
@@ -524,7 +525,8 @@ C
           EW=((NEW-1)*EW+E)/DBLE(NEW)
         ENDIF
  140    CONTINUE
-      IF (NEW.NE.0) WRITE(6,1030) ILEVEL,XTEV*(EW-EWF),XTKAYS*(EW-EWF),
+      IF (NEW.NE.0) WRITE(LUPRI,1030) ILEVEL,
+     &              XTEV*(EW-EWF),XTKAYS*(EW-EWF),
      &              (IND(JRP),JRP=IRP1,IRP2)
       ENDDO
  1000 FORMAT(F17.8)
