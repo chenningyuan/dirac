@@ -871,35 +871,35 @@ C
       RETURN
  900  CONTINUE
       WRITE(LUPRI,'(//A,I3//3A/9X,200A1)')
-     &     'NUMLST: Wrong syntax in input at character ',I,
+     &     'NUMLS1: Wrong syntax in input at character ',I,
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: Wrong Syntax in Input')
+      CALL QUIT('NUMLS1: Wrong Syntax in Input')
  910  CONTINUE
       WRITE(LUPRI,'(/A,A1,A,I4,A,I3//3A/9X,200A1)')
-     &   'NUMLST: Wrong Character in Input: ',CHAR(INT),
+     &   'NUMLS1: Wrong Character in Input: ',CHAR(INT),
      &   ' ( ASCII code',INT,') at character',I,
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: Wrong Character in Input')
+      CALL QUIT('NUMLS1: Wrong Character in Input')
  920  CONTINUE
       WRITE(LUPRI,'(/A,2I6//3A/9X,200A1)')
-     &     'Out of Range in NUMLST. Range:',IRNGE1,IRNGE2,
+     &     'Out of Range in NUMLS1. Range:',IRNGE1,IRNGE2,
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: Out of Range!')
+      CALL QUIT('NUMLS1: Out of Range!')
  930  CONTINUE
       WRITE(LUPRI,'(/A,I7//3A/9X,200A1)')
-     &     'Out of Range in NUMLST. NLIST:',NLIST,
+     &     'Out of Range in NUMLS1. NLIST:',NLIST,
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: Out of Range in ITMPAR') 
+      CALL QUIT('NUMLS1: Out of Range in ITMPAR') 
  940  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
-     &     'NUMLST: Character string beyond 72.',
+     &     'NUMLS1: Character string beyond 72.',
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: Character string beyond 72') 
+      CALL QUIT('NUMLS1: Character string beyond 72') 
  950  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
-     &     'NUMLST: oo must be two consecutive characters.',
+     &     'NUMLS1: oo must be two consecutive characters.',
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: oo must be two consecutive characters.')
+      CALL QUIT('NUMLS1: oo must be two consecutive characters.')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck numls2 */
@@ -995,8 +995,8 @@ C
 C
  900  CONTINUE
       WRITE(LUPRI,'(//A)')
-     & 'NUMLST2: Error reading energy criteria, the string is ',A(1:NA)
-      CALL QUIT('NUMLST2: Error in Input')
+     & 'NUMLS2: Error reading energy criteria, the string is ',A(1:NA)
+      CALL QUIT('NUMLS2: Error in Input')
  1000 FORMAT (5X,'Energy selection of active orbitals :',
      & F10.2,' < Eps. < ',F8.2,' with a mininum gap of ',F8.4,' au.')
  1001 FORMAT (/' Changed ',A7,' energy for active orbital range to ',
@@ -1727,33 +1727,33 @@ C           ... single number
       RETURN
  900  CONTINUE
       WRITE(LUPRI,'(//A,I3//3A/9X,200A1)')
-     &     'NUMLST: Wrong syntax in input at character ',I,
+     &     'NUMLS3: Wrong syntax in input at character ',I,
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: Wrong Syntax in Input')
+      CALL QUIT('NUMLS3: Wrong Syntax in Input')
  910  CONTINUE
       WRITE(LUPRI,'(/A,A1,A,I4,A,I3//3A/9X,200A1)')
-     &   'NUMLST: Wrong Character in Input: ',CHAR(INT),
+     &   'NUMLS3: Wrong Character in Input: ',CHAR(INT),
      &   ' ( ASCII code',INT,') at character',I,
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: Wrong Character in Input')
+      CALL QUIT('NUMLS3: Wrong Character in Input')
  920  CONTINUE
       WRITE(LUPRI,'(/A,2I6//3A/9X,200A1)')
-     &     'Out of Range in NUMLST. Range:',IRNGE1,IRNGE2,
+     &     'Out of Range in NUMLS3. Range:',IRNGE1,IRNGE2,
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: Out of Range!')
+      CALL QUIT('NUMLS3: Out of Range!')
  930  CONTINUE
       WRITE(LUPRI,'(/A,I7//3A/9X,200A1)')
-     &     'Out of Range in NUMLST. NLIST:',NLIST,
+     &     'Out of Range in NUMLS3. NLIST:',NLIST,
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: Out of Range in ITMPAR') 
+      CALL QUIT('NUMLS3: Out of Range in ITMPAR') 
  940  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
-     &     'NUMLST: Character string beyond 72.',
+     &     'NUMLS3: Character string beyond 72.',
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: Character string beyond 72') 
+      CALL QUIT('NUMLS3: Character string beyond 72') 
  950  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
-     &     'NUMLST: oo must be two consecutive characters.',
+     &     'NUMLS3: oo must be two consecutive characters.',
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLST: oo must be two consecutive characters.')
+      CALL QUIT('NUMLS3: oo must be two consecutive characters.')
       END
