@@ -4,6 +4,8 @@ C DATE    : $Date$
 C FILE    : dcbgrd.h
 C SOURCE  : $Source$
 C
+C Depencies: mxcent.h
+C
 C*** RELGRD is true if we want to calculate a relativistic gradient
 C     DO2GRD    : Do LL (1), LS(2) and SS(3) gradient.
 C     DOTRCK    : Estimate LS and SS gradient and skip them if "small"
