@@ -1372,15 +1372,17 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
         end do
       end if
 *
-      if (IFLAG.ne.1.and.NTEST.ge.100) then
-        WRITE(6,*) ' Information from  GET_HX_RELA '
-        WRITE(6,*)
-        write(6,*) ' Max. no of electrons per GAS:'
-        call iwrtma(MXNELGS,1,NGAS,1,NGAS)
-        WRITE(6,*) ' The excitation types '
-        CALL WRT_SPOX_TP(IHX,NHX)
-C            WRT_SPOX_TP(IEX_TP,NEX_TP)
-      else
+      if (IFLAG.ne.1) then
+        if (NTEST.ge.100) then
+          WRITE(6,*) ' Information from  GET_HX_RELA '
+          WRITE(6,*)
+          write(6,*) ' Max. no of electrons per GAS:'
+          call iwrtma(MXNELGS,1,NGAS,1,NGAS)
+          WRITE(6,*) ' The excitation types '
+          CALL WRT_SPOX_TP(IHX,NHX)
+C              WRT_SPOX_TP(IEX_TP,NEX_TP)
+        end if
+        write(6,*)
         WRITE(6,*) ' Number of excitation types ', NHX
       end if
 *

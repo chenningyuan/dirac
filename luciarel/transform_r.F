@@ -1679,16 +1679,18 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
       NTESTL = 00
       NTEST = max(IPRINT,NTESTL)
 *
-      WRITE(6,*) ' *************************************************'
-      WRITE(6,*) ' *                                               *'
-      WRITE(6,*) ' *  Transformer man                              *'
-      WRITE(6,*) ' *  You run the show                             *'
-      WRITE(6,*) ' *  Remote control                               *'
-      WRITE(6,*) ' *  Direct the action with the push of a button  *'
-      WRITE(6,*) ' *                                               *'
-      WRITE(6,*) ' *                               Neil Young      *'
-      WRITE(6,*) ' *                                               *'
-      WRITE(6,*) ' *************************************************'
+      if (NTEST.ge.1) then
+        WRITE(6,*) ' *************************************************'
+        WRITE(6,*) ' *                                               *'
+        WRITE(6,*) ' *  Transformer man                              *'
+        WRITE(6,*) ' *  You run the show                             *'
+        WRITE(6,*) ' *  Remote control                               *'
+        WRITE(6,*) ' *  Direct the action with the push of a button  *'
+        WRITE(6,*) ' *                                               *'
+        WRITE(6,*) ' *                               Neil Young      *'
+        WRITE(6,*) ' *                                               *'
+        WRITE(6,*) ' *************************************************'
+      end if
 *
 *  CI or MCSCF transformation?
 *  Note: We will do the one-particle transformation always with
@@ -1735,7 +1737,7 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
 *
 *  Transformed integrals, 32 lists
       call findhigh(NGSOBPI,MXPIRR*MXPNGAS,MXGSDIM)
-      write(6,*) 'Highest GAS dimension is  ',MXGSDIM
+      if (NTEST.ge.1) write(6,*) 'Highest GAS dimension is  ',MXGSDIM
       call findhigh(SYMDIM(1),NIRR_DG,IMXDDIM)
       call findhigh(NORB_FULL(1),NIRR_PN,IMXDIM_F)
       if (IMXDDIM.gt.MXNSPIPDMGRP) then
