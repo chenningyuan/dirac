@@ -155,7 +155,7 @@ C
       IF(LBIT(IPREIG,1))
      &   CALL PREIGN(EIG,IBEIG,LBIT(IPREIG,2),WORK,LWORK)
 C
-C     Check HOMO - LUMO gab, and if there are any negative
+C     Check HOMO - LUMO gap, and if there are any negative
 C     energy virtuals.
 C
       CALL CHKHLG(EIG,IBEIG)
@@ -1303,7 +1303,7 @@ C  /* Deck eighlc */
       SUBROUTINE CHKHLG(EIG,IBEIG)
 C*****************************************************************************
 C
-C     Check HOMO-LUMO gab
+C     Check HOMO-LUMO gap
 C
 C     Written by J. Thyssen - 26 Aug 1999
 C
