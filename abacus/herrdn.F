@@ -5936,7 +5936,9 @@ C     ==========================================================
 C
       MXDUM = MXCON_PARAM - MOD(MXCON_PARAM,(NPRIM*KHK(ITYP)))
       MXCONTR = MAX((MXDUM/(NPRIM*KHK(ITYP))),1)
-      JCO(ITYP,IAT,ICP) = MAX(((NCONTR-MOD(NCONTR,MXCONTR))/MXCONTR),1)
+      JCO(ITYP,IAT,ICP) = NCONTR/MXCONTR
+      IF (MOD(NCONTR,MXCONTR).NE.0)  
+     &JCO(ITYP,IAT,ICP) = JCO(ITYP,IAT,ICP) + 1
 C
 C     Put the entire list of ITYP primitives and contracted functions
 C     into KPRIM long blocks
