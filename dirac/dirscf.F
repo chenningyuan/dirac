@@ -329,6 +329,8 @@ C        ================================
            CALL DSCAL(N2BBASX,D2,CMO,1)
 #if defined (VAR_MPI)
            IF(PARCAL) THEN
+C            Get hold of slaves
+             CALL DIRAC_PARCTL( 1 )
              IRNTYP = 7
              CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
      &          IDUM,IDUM,
@@ -972,6 +974,8 @@ C        ================================
 #if defined (VAR_MPI)
            IF(PARCAL) THEN
              IRNTYP = 7
+C            Get hold of slaves
+             CALL DIRAC_PARCTL( 1 )
              CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
      &          IDUM,IDUM,
      &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
