@@ -81,7 +81,7 @@ C
      &"J. Chem. Phys. 115 (2002) 9720."
      &/"  - Parallelization :",T30,
      &"M. Pernpointner and L. Visscher, ",
-     &"J. Comp. Chem. (accepted, will appear in 2002/2003).")
+     &"J. Comp. Chem. 24 (2003) 754.")
 C
       RETURN
 C---------------Record of modifications made in the code-------------
