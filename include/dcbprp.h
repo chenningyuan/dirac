@@ -41,12 +41,12 @@
      &        IPNSTDIA(MXCOOR*3), NNSTIN, IPESR(MXCOOR+3, 2), NPRPWF,   &
      &        IPROTG(2,3),IPMSUSC(2,3),                                 &
      &        IPCON21(3),IPCON22(3),IPCON23(6),                         &
-     &        IPLONDON(4,3),IPCON(3),IPRNST(MXCOOR*3)                   &
+     &        IPLONDON(4,3),IPCON(3),IPRNST(MXCOOR*3),IPPVCSHI(MXCOOR)  &
       COMMON /CBIPRP/ IPRPRP, IPEPOLAR, IPSPNSPN, IPDSO, NDSOIN,        &
      &                IPSHIELD, IPNSTDIA, NNSTIN, IPESR, NPRPWF,        &
      &                         IPROTG,IPMSUSC,                          &
      &                IPCON21,IPCON22,IPCON23,                          &
-     &                IPLONDON,IPCON,IPRNST
+     &                IPLONDON,IPCON,IPRNST,IPPVCSHI
 
       REAL*8 ABUND
       COMMON /CBRPRP/ ABUND

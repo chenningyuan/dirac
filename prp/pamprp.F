@@ -3790,6 +3790,7 @@ C
       NNSTIN = 0
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSHIELD,3+MXCOOR)
+C
 C     XAVECTOR
       IOP(1) = 5
 C     YAVECTOR
@@ -4023,7 +4024,7 @@ C
 C     written by trond saue - modified by radovan bast
 C
       IF(PVCSHI) THEN
-C       CALL IZERO(IPPVCSHI,MXCOOR)
+        CALL IZERO(IPPVCSHI,MXCOOR)
         WRITE(LUPRI,'(A)') 'Parity-violating contribution'
         WRITE(LUPRI,'(A)') 'to NMR shielding'
         ITYP = 0
@@ -4048,7 +4049,7 @@ C       if point nucleus
         ENDIF
 C        
         NPCOMP = 1
-        DO IATOM = 1,NUCIND
+        DO IATOM = 1,NUCDEP
           IF(DOATOM(IATOM)) THEN
             DO IREP = 0,MAXREP
               IF(IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
@@ -4076,10 +4077,10 @@ C               if point nucleus
      &                       INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                   CALL OP1IND(PNAME(1:6),INDOP1,LLRAPU,NLRAPT,
      &                       INDXPR,MAXLLR)
-C                 ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,2)
-C                 IF(ISCOOR.GT.0) THEN
-C                   IPPVCSHI(ISCOOR) = INDOP1
-C                 ENDIF
+                  ISCOOR = IPTCNT(3*(IATOM-1) + ICOOR,IREP,2)
+                  IF(ISCOOR.GT.0) THEN
+                    IPPVCSHI(ISCOOR) = INDOP1
+                  ENDIF
                   CALL WRIXPR(INDOP1,INDXPR)
                 ENDDO
               ENDIF
@@ -6140,9 +6141,9 @@ C***********************************************************************
 #include "codata.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
      &           GFERMI = 2.22254D-14,STHETAW2 = 0.2319D0)
-      LOGICAL TEST,DOATOM(NUCIND)
+      LOGICAL TEST,DOATOM(NUCDEP)
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &          TMPMAT(NUCIND,4),GVALMAT(5,NUCDEP),WORK(*)
+     &          TMPMAT(NUCDEP,4),GVALMAT(5,NUCDEP),WORK(*)
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -6156,7 +6157,8 @@ C
       WRITE(LUPRI,*)
 C     DO IFREQ = 1,NBFREQ
       IFREQ = 1
-        CALL DZERO(TMPMAT,NUCIND*4)
+C
+        CALL DZERO(TMPMAT,NUCDEP*4)
 C       IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
 C         WRITE(LUPRI,*) 'something', BFREQ(IFREQ)
 C       ENDIF
@@ -6166,8 +6168,8 @@ C       fill temporary matrix
 C
         DO INUC = 1,NUCDEP
           DO ICOOR = 1,3
-            KB = (INUC*3)-3+ICOOR
-            KA = KB+NUCDEP*6
+            KA = IPPVCSHI((INUC*3)-3+ICOOR)
+            KB = IPSPNSPN(1,(INUC*3)-3+ICOOR)
 C
 C           e-e
             TMPMAT(INUC,ICOOR) = ABLRF(IFREQ,KA,KB,2)
@@ -6198,12 +6200,7 @@ C
         NSPEC = 0
         IDEP = 0
 C
-C       take this out later
-        DO INUC = 1,NUCIND
-          DOATOM(INUC) = .TRUE.
-        ENDDO
-C
-        DO INUC = 1,NUCIND
+        DO INUC = 1,NUCDEP
           IDEG = NUCDEG(INUC)
           IF(DOATOM(INUC)) THEN
             TEST = .FALSE.
