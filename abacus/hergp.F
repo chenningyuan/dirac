@@ -382,6 +382,30 @@ C
       ICHRG = NINT(CHRGNU) - (2*NISHT + NACTEL)
       RETURN
       END
+C  /* Deck rmolchr */
+      SUBROUTINE RMOLCHR(ICHRG)
+C
+C     Calculates total charge of molecule
+C
+#include <implicit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxorb.h>
+      PARAMETER (D0 = 0.0D00)
+C
+#include <nuclei.h>
+#include <symmet.h>
+C
+C     Nuclear charge
+C
+      CHRGNU = D0
+      DO 100 IATOM = 1, NUCIND
+         CHRGNU = CHRGNU + FMULT(ISTBNU(IATOM))*CHARGE(IATOM)
+  100 CONTINUE
+      ICHRG = NINT(CHRGNU)
+      RETURN
+      END
 C  /* Deck disotp */
       FUNCTION DISOTP(IATOM,ISOTOP,TYPE)
 C
