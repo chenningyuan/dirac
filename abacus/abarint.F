@@ -545,8 +545,8 @@ C     Systems with more than three atoms where no regular dihedral
 C     angles has been found, need addition of dihedral angle to
 C     take care of out of plane bending.
 C
+      ITRI = 0
       IF ((IATOM .GE. 4) .AND. (IBEFOR .EQ. IINTCR)) THEN
-         ITRI = 0
          DO 50 I = 1, IATOM
             INUMBN = 0
             DO 55 J = 1, IATOM
