@@ -611,7 +611,7 @@ fi
 if [ -n "$TRAMOD" ]; then
    echo '	cd moltra   ; $(MAKE) clean' >> Makefile
 fi
-if [ -n "$RAMOD" ]; then
+if [ -n "$CCMOD" ]; then
    echo '	cd relccsd  ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$PARMOD" ]; then
