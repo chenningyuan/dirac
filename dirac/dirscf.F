@@ -687,6 +687,10 @@ C  /* Deck dhfscf */
 C*****************************************************************************
 C
 C*****************************************************************************
+#ifdef MOD_EMB
+      USE Embedding
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -699,6 +703,14 @@ C
 #include "cbihr1.h"
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          WORK(LWORK)
+
+!     Initialize Embedding Module
+!     ===========================
+
+#ifdef MOD_EMB
+      CALL start_Embedding ()
+#endif
+
 C
 C     Generate one-electron Fock matrix and write to file
 C     ===================================================
@@ -722,7 +734,14 @@ C     ========================
 C
         CALL SCFCYC(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
       ENDIF
-C
+
+!     Finalize Embedding Module
+!     ===========================
+
+#ifdef MOD_EMB
+      CALL end_Embedding ()
+#endif
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

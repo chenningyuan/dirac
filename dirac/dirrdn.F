@@ -683,6 +683,10 @@ C     Written by T.Saue - November 1992
 C     Last revision: 1997/09/15 - jth
 C
 C***********************************************************************
+#ifdef MOD_EMB
+      USE Embedding
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1218,6 +1222,15 @@ C
       END IF
                
   300 CONTINUE
+
+!
+!     Setup embedding
+!     ===============
+
+#ifdef MOD_EMB
+      CALL init_embedding () 
+#endif
+
 C
 C     Determine occupation
 C     ====================
@@ -1453,8 +1466,13 @@ C
       IF (NELECT_DHF+NAELEC_DHF .EQ. 0) THEN
          CALL QUIT('DHFINP: Zero electrons not allowed!')
       END IF
-C
-C
+
+! Print embedding information
+
+#ifdef MOD_EMB
+      CALL report_embedding ()
+#endif
+
       IF(.NOT.DOSCF) GOTO 999
 C
       IF (BNCRON) THEN
