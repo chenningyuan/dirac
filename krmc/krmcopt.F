@@ -2489,7 +2489,7 @@ C
                IF (IPRINT .GE. 0) THEN
                   WRITE(LUPRI,'(/A)')
      &                 ' (ROPTST)  Start orbitals read from' //
-     &                 ' label NEWORB on file KRMCSCF'
+     &                 ' label NEWORB on file KRMCOLD'
                END IF
                GO TO 1000
             END IF
@@ -2507,7 +2507,7 @@ C
                IF (IPRINT .GE. 0) THEN
                   WRITE(LUPRI,'(/A)')
      &                 ' (ROPTST)  Start orbitals read from' //
-     &                 ' label OLDORB on file KRMCSCF'
+     &                 ' label OLDORB on file KRMCOLD'
                END IF
                GO TO 1000
             END IF
@@ -2540,8 +2540,11 @@ C
          CALL RH1DIAG(CMO,WORK(KFREE),LFREE)
          IF (IPRINT .GE. 0) THEN
             WRITE(LUPRI,'(/A)')
-     &           ' (ROPTST)  Start orbitals from' //
-     &           ' diagonalization of H1'
+     &      ' (ROPTST)  Start orbitals from' //
+     &      ' diagonalization of H_1'
+            IF (BNCRON) WRITE(LUPRI,'(A/)')
+     &      "           Improved by an estimate "//
+     &      "of the electronic screening (Slater's rules)."
          END IF
          GOTO 1000
       END IF
@@ -2600,7 +2603,7 @@ C
                      IF (IPRINT .GE. 0) THEN
                         WRITE(LUPRI,'(/A)')
      &                       ' (ROPTST)  CI start vector read from' //
-     &                       ' label CREF on file KRMCSCF'
+     &                       ' label CREF on file KRMCOLD'
                      END IF
                   END IF
                   IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
@@ -2645,7 +2648,7 @@ C
                   IF (IPRINT .GE. 0) THEN
                      WRITE(LUPRI,'(/A)')
      $                    ' (ROPTST)  CI start vector read from' //
-     $                    ' label CREFOLD on file KRMCSCF'
+     $                    ' label CREFOLD on file KRMCOLD'
                   END IF
                   GO TO 2000
                END IF
@@ -4305,6 +4308,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -4322,13 +4326,14 @@ C
       CALL MEMGET('REAL',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH1MO,N2ORBTQ,WORK,KFREE,LFREE)
       CALL DIRH1(WORK(KH1AO),IPROPT,WORK(KFREE),LFREE)
+      IF (BNCRON .AND. (2*NISHT+NAELEC).GT.1) THEN
+          CALL BNCORR(WORK(KH1AO),WORK(KFREE),LFREE,IPROPT)
+      ENDIF
 C
 C     Transform H1DIAG to MO-basis
 C     ----------------------------
 C
-
-C
-C     Get TMAT (AO-MO transformation)
+C     1) Get TMAT (AO-MO transformation)
 C
       LUTMAT = 3
       CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
@@ -4336,7 +4341,7 @@ C
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
       CLOSE(LUTMAT,STATUS='KEEP')
 C
-C     Transform to MO basis
+C     2) Transform to MO basis
 C
       DO I = 1, NFSYM
          CALL QTRANS('AOMO','S',D0,
@@ -4354,14 +4359,14 @@ C
 C
 C
 C
-C     Diagonalize H1DIAG
+C     3) Diagonalize H1DIAG / BNCORR
 C
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KIBEIG,NORBT,WORK,KFREE,LFREE)
       CALL DFDIAG(WORK(KH1MO),WORK(KEIG),WORK(KIBEIG),WORK(KH1AO),
      &            .FALSE.,WORK,KFREE,LFREE)
 C
-C     Backtransform to current MO basis
+C     4) Backtransform to current MO basis
 C
       DO I = 1, NFSYM
          IF(NORB(I).GT.0) THEN
