@@ -6394,7 +6394,7 @@ C
          DO 200 IPRIM = iPrimStart, iPrimEnd
             PRIEXI = PRIEXP(IPRIM)
 C
-            ISH2M = 0
+            JSH2M = 0
             iPrimTest = 0
 C
 C           Loop over small component shells
@@ -6436,17 +6436,16 @@ C                       Check for two identical functions.
 C                       This should never happen, since GENSML deletes
 C                       functions it already knows.
 C
-                        IF(ISH2M.NE.0) CALL QUIT
+                        IF(JSH2M.NE.0) CALL QUIT
      &                   ('RKBREL: Error, two identical S.C. functions')
 C
-C                       Note that we use ISHS and not IPRIMS, since RKBLOW
+C                       Note that we use JSH2M and not JPRIM, since RKBLOW
 C                       in dirone.F wants shell number, and not primitive
 C                       number. This is not the same if L Component basis
 C                       set is contracted.
 C
-c                       ISH2M = JSHL + (JPRIM - jPrimStart)
-c                       IRKB(IPRIM) = ISH2M
-                        IRKB(IPRIM) = JPRIM
+                        JSH2M = JSHL + (JPRIM - jPrimStart)
+                        IRKB(IPRIM) = JSH2M
                      ENDIF
 C
 C                    Match large component to L+1 small function and 
@@ -6456,8 +6455,10 @@ C                    serves to check whether this SC is used to balance
 C                    by itself.
 C
                      IF (NHKTJ.EQ.NHKTI+1.AND.ISHL.LE.NLRGSH) THEN
-                        IRKB(IPRIM) = JPRIM
-                        IRKB(JPRIM) = - IPRIM
+                        JSH1P = JSHL + (JPRIM - jPrimStart)
+                        ISH1M = ISHL + (IPRIM - iPrimStart)
+                        IRKB(IPRIM) = JSH1P
+                        IRKB(JPRIM) = - ISH1M
                      ENDIF
                   ENDIF
  400           CONTINUE
