@@ -66,7 +66,7 @@ C
      &            '.POSITR','.SCHEME','.THROUT','.SPECIA','.VIRTHR',
      &            '.IJTSK ','.SCLMEM','.SCREEN','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
-#include <ibtand.h>
+#include <ibtfun.h>
 #include <memint.h>
 C
       IF (SET) THEN
