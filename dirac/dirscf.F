@@ -1099,7 +1099,8 @@ C
 C        It looks like CMO is trashed at this point, so we re-read
 C        the orbitals from DFCOEF:
 C
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,EXXX,2)
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,EXXX,2,
+     &               WORK,KFREE,LFREE)
 C
          CALL REORD(CMO,EIG,IBEIG,IMOORF,IREORF,MXREORD,
      &        WORK(KFREE),LFREE)
