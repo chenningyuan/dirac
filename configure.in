@@ -268,7 +268,7 @@ case $machine in
       debug='gdb';;
 
    sparc-sun|m68k-sun)  
-      liblist='libblas'
+      liblist='libblas sunperf'
       complist='f77 f90';;
 
    c*-convex)
