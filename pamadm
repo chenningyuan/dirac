@@ -315,7 +315,7 @@ export:
 	dirac/*.F dirac/*.c dirac/Makefile.in \
 	prp/*.F prp/Makefile.in \
 	abacus/*.F abacus/Makefile.in \
-	gp/Makefile.in gp/*.F \
+	gp/Makefile.in gp/*.F gp/*.c \
 	pdpack/Makefile.in pdpack/*.F 
 EOF
 if($ERITAR) then
