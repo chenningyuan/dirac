@@ -189,12 +189,12 @@ endif
 # The -p switch makes all parent directories first
 #
 if ( ! -d $WRK ) then
-   mkdir -p $WRK || echo "MKDIR error!" ; goto exit1
+   mkdir -p $WRK || echo "MKDIR error\!" ; goto exit1
 endif
 #
 # Remove contents for $WRK if requested ( RMSCR )
 if ( $RMSCR ) then
-   rm -f $WRK/* >& /dev/null || echo "RM error!"
+   rm -f $WRK/* >& /dev/null || echo "RM error\!"
 endif
 #
 #
