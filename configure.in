@@ -1,4 +1,3 @@
-#!/bin/sh
 #
 # VERSION : $Revision$
 # DATE    : $Date$
@@ -127,6 +126,14 @@ while [ $# != 0 ]; do
             exit 1
          fi
          worksp="$val"
+         ;;
+      "f77" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         F77="$val"
          ;;
       *)
          echo  'Unknown option: '$opt''
@@ -407,26 +414,31 @@ echo
 echo 'COMPILER'
 echo
 $echo "\nChecking for compiler ...\c"
-if [ "$mesp" = "mpi" -a "$machine" = "rs6000-ibm" ]; then
-    set dummy $comp; ac_word=$2
-    $echo " $comp\c"
-    IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
-    for ac_dir in $PATH; do
-        test -z "$ac_dir" && ac_dir=.
-        if test -f $ac_dir/$ac_word; then
-            ac_cv_prog_F77=$ac_word
-            break
-        fi
-    done
-    IFS="$ac_save_ifs"
-    test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
-    F77="$ac_cv_prog_F77"
-    if test -n "$F77"; then
-        echo
-        $echo "Fortran compiler: $F77"
-        break
-    fi
+if [ ! -z "$F77" ]; then
+   complist=$F77
+   F77=
 fi
+
+#if [ "$mesp" = "mpi" -a "$machine" = "rs6000-ibm" ]; then
+#    set dummy $comp; ac_word=$2
+#    $echo " $comp\c"
+#    IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+#    for ac_dir in $PATH; do
+#        test -z "$ac_dir" && ac_dir=.
+#        if test -f $ac_dir/$ac_word; then
+#            ac_cv_prog_F77=$ac_word
+#            break
+#        fi
+#    done
+#    IFS="$ac_save_ifs"
+#    test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
+#    F77="$ac_cv_prog_F77"
+#    if test -n "$F77"; then
+#        echo
+#        $echo "Fortran compiler: $F77"
+#        break
+#    fi
+#fi
 if test -z "$F77"; then
 for comp in $complist; do
     set dummy $comp; ac_word=$2
@@ -499,7 +511,7 @@ else
       echo  $LIB' is not a legal library.'; \
       rm -f gnyf.F gnyf.x ; \
       exit 1 
-   rm -f gnyf.F gnyf.x
+   rm -f gnyf.F gnyf.x gnyf.o
 fi
 
 if [ -z "$LIB" -a -n "$liblist" ]; then
@@ -553,7 +565,6 @@ if [ -z "$INSTALL_DIR" ]; then
       if [ -z "$curr" ]; then
          curr=`pwd`
       fi
-      INCLUDE_DIR=include
       $echo 'Directory for installation of binaries and scripts ['$curr'] \c'
       read INSTALL_DIR
       if [ -z "$INSTALL_DIR" ]; then
@@ -639,26 +650,25 @@ if [ -f Makefile.config ]; then
       while [ "$answer" != "y" -a "$answer" != "n" ]
       do
          $echo 'Do you want me to overwrite' \
-               'Makefile.config.orig anyway? [y]/n\c'
+               'Makefile.config.orig anyway? [y]/n \c'
          read answer
          if [ -z "$answer" ]; then
             answer="y"
          fi
       done
       if [ "$answer" = "n" ];  then
-         echo 'I do not take a backup of Makefile.config. \
+         echo 'I do not take a backup of Makefile.config.' \
               'This file will be overwritten'
       else
          exec `chmod u+w Makefile.config.orig`
          exec `mv Makefile.config Makefile.config.orig`
          exec `chmod u-w Makefile.config.orig`
       fi
-    else
+   else
       exec `mv Makefile.config Makefile.config.orig`
       exec `chmod u-w Makefile.config.orig`
-    fi
+   fi
 fi
-
 #
 # Parallel preprocessor directive need to be set
 #
@@ -681,6 +691,7 @@ if [ "$machine" = "rs6000-ibm" ]; then
 fi
 
 
+INCLUDE_DIR=include
 case $machine in
 #
 #  HEWLETT - PACKARD
@@ -688,14 +699,14 @@ case $machine in
     *-hp) 
        echo "hp"
        if [ "$mesp" = "dummy" ]; then
-          cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' "
+          cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' "
           ccp="-DSYS_HPUX"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
           done
           def='dirac.x'
        else
-          cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+          cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
           ccp="-DSYS_HPUX"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
@@ -714,14 +725,14 @@ case $machine in
 #
     860-intel-osf1) 
        if [ "$mesp" = "dummy" ]; then
-          cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=$memsiz' "
+          cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' "
           ccp="-DSYS_PARAGON"
           for mod in $MODS; do
             cpp=`echo $cpp $mod`
           done
           def='dirmpi.x'
        else
-          cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+          cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
           ccp="-DSYS_PARAGON"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
@@ -739,14 +750,14 @@ case $machine in
 #
     alpha-dec|mips-dec|vax-dec)
        if [ "$mesp" = "dummy" ]; then
-          cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' "
+          cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' "
           ccp="-DSYS_DEC"
           for mod in $MODS; do
             cpp=`echo $cpp $mod`
           done
           def='dirac.x'
        else
-          cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+          cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
           ccp="-DSYS_DEC"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
@@ -781,10 +792,10 @@ case $machine in
 #
     *-cray)
       if [ "$mesp" = "dummy" ]; then
-         cpp="-DPRG_DIRAC -DSYS_CRAY, -D'INSTALL_WRKMEM=$memsiz' "
+         cpp="-DPRG_DIRAC -DSYS_CRAY, -D'INSTALL_WRKMEM=\${WRKMEM}' "
          ccp="-DSYS_CRAY"
       else
-         cpp="-DPRG_DIRAC -DSYS_CRAY,-D'INSTALL_WRKMEM=$memsiz' ,$parop"
+         cpp="-DPRG_DIRAC -DSYS_CRAY,-D'INSTALL_WRKMEM=\${WRKMEM}' ,$parop"
          ccp="-DSYS_CRAY"
       fi
       for mod in $MODS; do
@@ -798,14 +809,14 @@ case $machine in
 #
    c*-convex)
       if [ "$mesp" = "dummy" ]; then
-         cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=$memsiz' "
+         cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}' "
          ccp="-DSYS_CONVEX"
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
          done
          def='dirac.x'
       else
-         cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+         cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
          ccp="-DSYS_CONVEX"
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
@@ -819,14 +830,14 @@ case $machine in
 #
    sparc-sun|m68k-sun)  
       if [ "$mesp" = "dummy" ]; then
-         cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz'"
+         cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
          ccp="-DSYS_SUN"
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
          done
          def='dirac.x'
       else
-         cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+         cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
          ccp="-DSYS_SUN"
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
@@ -846,14 +857,14 @@ case $machine in
       case $os in
          aix2*) 
             if [ "$mesp" = "dummy" ]; then
-               cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' "
+               cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' "
                ccp="-DSYS_AIX -DSYS_AIX23"
                for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                done
                def='dirac.x'
             else
-               cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+               cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
                ccp="-DSYS_AIX -DSYS_AIX23"
                for mod in $MODS; do
                   cpp=`echo $cpp $mod`
@@ -867,14 +878,14 @@ case $machine in
             inc="-I$INCLUDE_DIR";;
          *)
             if [ "$mesp" = "dummy" ]; then
-               cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz'"
+               cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
                ccp="-DSYS_AIX"
                for mod in $MODS; do
                   cpp=`echo $cpp,$mod`
                done
                def='dirac.x'
             else
-               cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D$parop"
+               cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}',-D$parop"
                ccp="-DSYS_AIX"
                for mod in $MODS; do
                   cpp=`echo $cpp,$mod`
@@ -941,11 +952,11 @@ case $machine in
       echo "Get the BLAS routines. See 'Known issues and problems' at"
       echo "http://assens.chem.ou.dk/Dirac"
       if [ "$mesp" = "dummy" ]; then
-         cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' "
-         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=$memsiz'"
+         cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' "
+         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
          def='dirac.x'
       else
-         cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+         cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
          ccp="-DSYS_LINUX"
          if [ "$mesp" = "mpi" ]; then
             def='dirmpi.x'
@@ -969,7 +980,7 @@ esac
 #
 if [ "$F77" = "g77" ]; then
    cpp="$cpp -DVAR_G77"
-   ccp="$ccp -DVAR_G77 -D'INSTALL_WRKMEM=$memsiz'"
+   ccp="$ccp -DVAR_G77 -D'INSTALL_WRKMEM=\${WRKMEM}'"
 fi
 # 
 #  Make Makefile.config
@@ -1165,6 +1176,21 @@ esac
 echo
 echo "Making Makefiles..."
 dirs="dirac prp abacus gp pdpack"
+if [ -z "$ERIFLG" ] ; then
+   ERIFLG=0
+fi
+if [ -z "$CCFLG" ] ; then
+   CCFLG=0
+fi
+if [ -z "$RSPFLG" ] ; then
+   RSPFLG=0
+fi
+if [ -z "$TRAFLG" ] ; then
+   TRAFLG=0
+fi
+if [ -z "$PARFLG" ] ; then
+   PARFLG=0
+fi
 if [ $ERIFLG != 0 ]; then
    dirs="$dirs eri"
 fi
@@ -1190,6 +1216,7 @@ echo
 #
 for link in $dirs; do
    echo "Making link from include to $link/include"
+   rm -f $link/include
    ln -sf ../include $link/include
 done
 echo
@@ -1203,6 +1230,6 @@ echo "   http://assens.chem.ou.dk/Dirac"
 echo "to see hints or/and problems concerning your platform."
 echo
 echo "Then run "
-echo "   make depend"
+echo "   make depend (not necesary)"
 echo "   make"
 echo "Then Dirac should be ready to run..."
