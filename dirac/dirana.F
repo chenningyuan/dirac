@@ -326,12 +326,12 @@ C     Write out total poulations
 C     ==========================
 C
       IF(NFSYM.GT.1) THEN
-        WRITE(LUPRI,'(//A)') '*** Total gross poulation ***'
+        WRITE(LUPRI,'(//A)') '*** Total gross population ***'
         CALL DAXPY(NPOPLAB,D1,PGTOT(1,2),1,PGTOT(1,1),1)        
         CALL WRPOPT(PGTOT(1,1),POPLAB,NPOPLAB,IEFF)                
         IF(DONETP) THEN
           CALL DAXPY(N2LAB,D1,PNTOT(1,1,2),1,PNTOT(1,1,1),1)
-          WRITE(LUPRI,'(//A)') '*** Total net poulation ***'
+          WRITE(LUPRI,'(//A)') '*** Total net population ***'
           CALL WRPOPN(PNTOT(1,1,1),PGTOT(1,1),
      &                POPLAB,NPOPLAB,IEFF,'total')
         ENDIF
@@ -838,6 +838,7 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER(D0=0.0D0,D2=2.0D0)
 C
 #include <dcbgen.h>
 #include <dcbprj.h>
@@ -848,8 +849,9 @@ C
 C
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
+      DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
-     &          KE(2,2),KQ(2,2),NDMOQR(2,2),NQ(2),NE(2)
+     &          KE(2,2),KQ(2,2),NVECS(2,2),NQ(2),NE(2)
 C
 #include <memint.h>
       KFRSAV = KFREE
@@ -866,7 +868,7 @@ C
         CALL ORBCNT(WORK(KVEC(IFRP,0)),NSTR(IFRP,0,0),IFRP,
      &              NSTR(IFRP,2,0),NSTR(IFRP,1,0))
         NSTR(IFRP,0,0) = NSTR(IFRP,1,0) + NSTR(IFRP,2,0)
-        NDMOQR(IFRP,1) = NSTR(IFRP,0,0)
+        NVECS(IFRP,1) = NSTR(IFRP,0,0)
         CALL MEMREL('PRJANA',WORK,KVEC(IFRP,0),KVEC(IFRP,0),
      &              KFREE,LFREE)
         CALL MEMGET('INTE',KVEC(IFRP,0),NSTR(IFRP,0,0),
@@ -876,7 +878,7 @@ C
 C     Find total numbers of reference orbitals
 C
       DO IFRP = 1,NFSYM
-        NDMOQR(IFRP,2) = 0
+        NVECS(IFRP,2) = 0
         DO I = 1,NREFS
           CALL MEMGET('INTE',KVEC(IFRP,I),NORB(IFRP),WORK,KFREE,LFREE)
           NSTR(IFRP,0,I) = 1
@@ -886,7 +888,7 @@ C
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
-          NDMOQR(IFRP,2) = NDMOQR(IFRP,2) + NSTR(IFRP,0,I)
+          NVECS(IFRP,2) = NVECS(IFRP,2) + NSTR(IFRP,0,I)
           CALL MEMREL('PRJANA',WORK,KVEC(IFRP,I),KVEC(IFRP,I),
      &                KFREE,LFREE)
           CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
@@ -899,25 +901,25 @@ C     Selected molecular eigenvalues
 C
       NDIM = 0
       DO IFRP = 1, NFSYM
-        NDIM = NDIM + NSTR(IFRP,0,0)
+        NDIM = NDIM + NVECS(IFRP,1)
       ENDDO
       CALL MEMGET('REAL',KE(1,1),NDIM,WORK,KFREE,LFREE)
-      KE(2,1) = KE(1,1) + NSTR(1,0,0)
+      KE(2,1) = KE(1,1) + NVECS(1,1)
 C
 C     Selected reference eigenvalues
 C
       NDIM = 0
       DO IFRP = 1, NFSYM
-        NDIM = NDIM + NDMOQR(IFRP,2)
+        NDIM = NDIM + NVECS(IFRP,2)
       ENDDO
       CALL MEMGET('REAL',KE(1,2),NDIM,WORK,KFREE,LFREE)
-      KE(2,2) = KE(1,2) + NDMOQR(IFRP,2)
+      KE(2,2) = KE(1,2) + NVECS(1,2)
 C
 C     Calculate dimensions of molecular coefficient array
 C
       NDIM = 0
       DO IFRP = 1,NFSYM
-        NQ(IFRP)         = NFBAS(IFRP,0)*NSTR(IFRP,0,0)*NZ
+        NQ(IFRP)         = NFBAS(IFRP,0)*NVECS(IFRP,1)*NZ
         NDIM             = NDIM + NQ(IFRP)
       ENDDO       
       CALL MEMGET('REAL',KQ(1,1),NDIM,WORK,KFREE,LFREE)
@@ -927,7 +929,7 @@ C     Calculate dimensions of reference coefficients array
 C
       NDIM = 0
       DO IFRP = 1,NFSYM
-        NQ(IFRP)         = NFBAS(IFRP,0)*NDMOQR(IFRP,2)*NZ
+        NQ(IFRP)         = NFBAS(IFRP,0)*NVECS(IFRP,2)*NZ
         NDIM             = NDIM + NQ(IFRP)
       ENDDO       
       CALL MEMGET('REAL',KQ(1,2),NDIM,WORK,KFREE,LFREE)
@@ -936,12 +938,10 @@ C
 C     COEFFICIENT SELECTION
 C     =====================
 C
-      KBUF = KFREE
       ICFS = 1
-      IF(IPRPRJ.GE.4) ICFS = 2
+      IF(IPRPRJ.GE.4) ICFS = 3
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KBEIG,NORBT  ,WORK,KFREE,LFREE)
 C
 C     Get molecular coefficients and eigenvalues
 C
@@ -952,7 +952,7 @@ C
       ENDIF
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRJANA')
       IF(IPRPRJ.GE.4) WRITE(LUPRI,'(A)') '* Molecular coefficients:'
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,
      &            TOTERG,ICFS)
       CLOSE(LUCOEF,STATUS='KEEP')
       DO IFRP = 1, NFSYM
@@ -982,27 +982,39 @@ C
         CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','PRJANA')
         IF(IPRPRJ.GE.4) WRITE(LUPRI,'(A,A6)') 
      &       '* Coefficients for reference ',REFFIL(I)
-        CALL REACMO(LUCOEF,REFFIL(I),WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &              TOTERG,ICFS)
+        IF(OWNBAS) THEN
+          CALL SELOWN(WORK(KCMO),WORK(KEIG),I,LUCOEF,REFFIL(I),NE,NQ,
+     &                NVECS(1,2),KVEC(1,I),
+     &                NSTR(1,0,I),WORK,KFREE,LFREE)
+          DO IFRP = 1, NFSYM
+            IF(NSTR(IFRP,0,I).GT.0) THEN
+              NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,I)*NFBAS(IFRP,0)
+              NE(IFRP) = NE(IFRP) + NSTR(IFRP,0,I)
+            ENDIF
+         ENDDO
+        ELSE
+          CALL REACMO(LUCOEF,REFFIL(I),WORK(KCMO),WORK(KEIG),
+     &                IDUM,TOTERG,ICFS)
+          DO IFRP = 1, NFSYM
+            IF(NSTR(IFRP,0,I).GT.0) THEN
+              CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(NQ(IFRP)),
+     &                       NVECS(IFRP,2),WORK(KVEC(IFRP,I)),
+     &                       NSTR(IFRP,2,I),NSTR(IFRP,1,I),
+     &                       NFBAS(IFRP,0),NORB(IFRP))
+              CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(NE(IFRP)),
+     &             WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+              NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,I)*NFBAS(IFRP,0)
+              NE(IFRP) = NE(IFRP) + NSTR(IFRP,0,I)
+            ENDIF
+          ENDDO
+        ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
-        DO IFRP = 1, NFSYM
-          IF(NSTR(IFRP,0,I).GT.0) THEN
-            CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(NQ(IFRP)),
-     &                     NDMOQR(IFRP,2),WORK(KVEC(IFRP,I)),
-     &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I),
-     &                     NFBAS(IFRP,0),NORB(IFRP))
-            CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(NE(IFRP)),
-     &           WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-            NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,I)*NFBAS(IFRP,0)
-            NE(IFRP) = NE(IFRP) + NSTR(IFRP,0,I)
-          ENDIF
-        ENDDO
       ENDDO
 C
 C     Throw away the full coefficients and eigenvalues
 C     ================================================
 C
-      CALL MEMREL('PRJANA.cfs',WORK,KBUF,KBUF,KFREE,LFREE)
+      CALL MEMREL('PRJANA.cfs',WORK,KCMO,KCMO,KFREE,LFREE)
 C
 C     Do projection analysis
 C     ======================
@@ -1011,9 +1023,10 @@ C
       CALL GTOVLT(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
       IS = KSMAT
       DO IFRP = 1,NFSYM
+        CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
         KBUF   = KFREE
-        NMOL   = NDMOQR(IFRP,1)
-        NREF   = NDMOQR(IFRP,2)
+        NMOL   = NVECS(IFRP,1)
+        NREF   = NVECS(IFRP,2)
         N2REF  = NREF*NREF
         NBVEC  = NREF*NMOL
         CALL MEMGET('REAL',KBVEC,NBVEC*NZ ,WORK,KFREE,LFREE)
@@ -1032,11 +1045,24 @@ C
         ENDDO
         CALL PRJAN1(IFRP,NMOL,NREF,KQ,KE,WORK(KAMAT),WORK(KBVEC),
      &       WORK(KGVEC),WORK(KVEC(IFRP,0)),WORK(KJREF),NSTR,
-     &       WORK(IS),WORK(KIPIV),WORK,KFREE,LFREE)
+     &       WORK(IS),WORK(KIPIV),GROSS,WORK,KFREE,LFREE)
         IS = IS + N2BAS(IFRP)
         CALL MEMREL('PRJANA.loop',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDDO
 C
+      IF(NFSYM.EQ.2) THEN
+        CALL HEADER('Total gross contributions:',-1)
+        GTOT = D0
+        DO I = 1,NREFS
+          WRITE(LUPRI,'(3X,A6,8X,3X,F7.4,2(3X,A4,F7.4))')
+     &        REFFIL(I),(GROSS(1,0,I)+GROSS(2,0,I)),
+     &        'E - '   ,(GROSS(1,2,I)+GROSS(2,2,I)),
+     &        'P - '   ,(GROSS(1,1,I)+GROSS(2,1,I))
+          GTOT = GTOT + GROSS(1,0,I)+GROSS(2,0,I)
+        ENDDO
+        POL = D2*(NVECS(1,1)+NVECS(2,1))-GTOT
+        WRITE(LUPRI,'(3X,A,F10.4)') 'Polarization: ',POL
+      ENDIF
       CALL MEMREL('PRJANA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
@@ -1044,7 +1070,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjan1 */
       SUBROUTINE PRJAN1(IFRP,NMOL,NREF,KQ,KE,AMAT,BVEC,GVEC,
-     &           JMOL,JREF,NSTR,SMAT,IPIVOT,WORK,KFREE,LFREE)
+     &           JMOL,JREF,NSTR,SMAT,IPIVOT,GROSS,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Projection analysis for fermion ircop IFRP
@@ -1063,6 +1089,7 @@ C
 #include <dcbham.h>
 C
       LOGICAL DOPOP
+      DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),
      &          KE(2,2),KQ(2,2),AMAT(NREF,NREF,NZ),
      &          BVEC(NREF,NMOL,NZ),SMAT(*),GVEC(*),IPIVOT(*),WORK(*)
@@ -1123,9 +1150,10 @@ C       Solve linear system by Cholesky decomposition
 C       with full pivoting
 C        --> notice that overlap matrix SMAT is destroyed !
 C
-      CALL QCHOLD(AMAT,NREF,NZ,NREF,NREF,SMAT,PTOL,NEFF,1,IPIVOT)
-      CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZ,NREF,NREF,SMAT,
-     &              BVEC,NREF,NMOL,BVEC,NREF,NMOL,1,IPIVOT,SMAT(1+NREF))
+      JOB = 1
+      CALL QCHOLD(AMAT,NREF,NZ,NREF,NREF,SMAT,PTOL,NEFF,JOB,IPIVOT)
+      CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZ,NREF,NREF,SMAT,BVEC,
+     &     NREF,NMOL,BVEC,NREF,NMOL,JOB,IPIVOT,SMAT(1+NREF))
       IF(NEFF.LT.NREF) THEN
         WRITE(LUPRI,'(A,A)') '* WARNING: ',
      &   ' linear dependencies detected in Cholesky decomposition'
@@ -1142,7 +1170,7 @@ C     Population analysis
 C
       CALL ANAPR2(IFRP,DOPOP,NREF,NMOL,SMAT,GVEC,AMAT,BVEC,
      &            JMOL,WORK(KE(IFRP,1)),NSTR,
-     &            JREF,WORK(KE(IFRP,2)))
+     &            JREF,WORK(KE(IFRP,2)),GROSS)
 C
       CALL MEMREL('PRJAN1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
@@ -1188,7 +1216,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
       SUBROUTINE ANAPR2(IFRP,DOPOP,NREF,NMOL,PMAT,GVEC,AMAT,BVEC,
-     &            JMOL,EMOL,NSTR,JREF,EREF)
+     &            JMOL,EMOL,NSTR,JREF,EREF,GROSS)
 C*****************************************************************************
 C
 C
@@ -1217,6 +1245,7 @@ C
 C
       LOGICAL DOPOP
       CHARACTER FMT*6,MXFORM*6,OTYP*1
+      DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NREF,NREF,NZ),
      &          BVEC(NREF,NMOL,NZ),JMOL(*),EMOL(*),
      &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*)
@@ -1336,27 +1365,7 @@ C
           ENDIF
         ENDIF
         WRITE(LUPRI,'(A)') '* Gross contributions:'
-        GTOT = D0
-        IVEC = 0
-        DO I = 1,NREFS
-          GP = D0
-          DO J = 1,NSTR(IFRP,2,I)
-            IVEC = IVEC + 1
-            GP   = GP + GVEC(IVEC,2)
-          ENDDO
-          GTOT = GTOT + GP
-          GE = D0
-          DO J = NSTR(IFRP,2,I)+1,NSTR(IFRP,0,I)
-            IVEC = IVEC + 1
-            GE   = GE + GVEC(IVEC,2)
-          ENDDO
-          GTOT = GTOT + GE
-          WRITE(LUPRI,'(3X,A6,8X,3X,F7.4,2(3X,A4,F7.4))')
-     &      REFFIL(I),(GP+GE),'E - ',GE,'P - ',GP
-        ENDDO
-        GVEC(NREF+1,2) = D1 - GTOT
-        WRITE(LUPRI,'(3X,A,F10.4)')
-     &    'Polarization: ',GVEC(NREF+1,2)
+        CALL GROSSC(GROSS,NREFS,IFRP,NREF,D1,GVEC(1,2),NSTR,REFFIL)
         CALL DAXPY((NREF+1),D2,GVEC(1,2),1,GVEC(1,1),1)
   10  CONTINUE
       CALL PRSYMB(LUPRI,'=',48,0)
@@ -1370,25 +1379,8 @@ C
      &   REFFIL(KREF),OTYP(KTYP),KORB,GVEC(I,1),EREF(I)
       ENDDO
       WRITE(LUPRI,'(/A)') '* Total gross contributions:'
-      GTOT = D0
-      IVEC = 0
-      DO I = 1,NREFS
-        GP = D0
-        DO J = 1,NSTR(IFRP,2,I)
-          IVEC = IVEC + 1
-          GP   = GP + GVEC(IVEC,1)
-        ENDDO
-        GTOT = GTOT + GP
-        GE = D0
-        DO J = NSTR(IFRP,2,I)+1,NSTR(IFRP,0,I)
-          IVEC = IVEC + 1
-          GE   = GE + GVEC(IVEC,1)
-        ENDDO
-        GTOT = GTOT + GE
-          WRITE(LUPRI,'(3X,A6,8X,3X,F7.4,2(3X,A4,F7.4))')
-     &      REFFIL(I),(GP+GE),'E - ',GE,'P - ',GP
-      ENDDO
-      WRITE(LUPRI,'(3X,A,F10.4)') 'Polarization: ',GVEC(NREF+1,1)
+      TOTM = D2*NMOL
+      CALL GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC(1,1),NSTR,REFFIL)
 C
       RETURN
  100  FORMAT(4X,A7,12X,A5,11X,A10,4X,2(3X,A17))
@@ -1569,3 +1561,47 @@ C
       ENDDO
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck grossc */
+      SUBROUTINE GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC,NSTR,REFFIL)
+C***********************************************************************
+C
+C     Determine gross contribution in projection analysis
+C
+C     Written by T.Saue Oct 5 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0=0.0D0)
+C
+      CHARACTER REFFIL*6
+      DIMENSION GROSS(2,0:2,NREFS)
+      DIMENSION GVEC(*),NSTR(2,0:2,0:NREFS),REFFIL(*)
+      GTOT = D0
+      IVEC = 0
+      DO I = 1,NREFS
+        GROSS(IFRP,1,I) = D0
+        DO J = 1,NSTR(IFRP,2,I)
+          IVEC = IVEC + 1
+          GROSS(IFRP,1,I)   = GROSS(IFRP,1,I) + GVEC(IVEC)
+        ENDDO
+        GTOT = GTOT + GROSS(IFRP,1,I)
+        GROSS(IFRP,2,I) = D0
+        DO J = NSTR(IFRP,2,I)+1,NSTR(IFRP,0,I)
+          IVEC = IVEC + 1
+          GROSS(IFRP,2,I)   = GROSS(IFRP,2,I) + GVEC(IVEC)
+        ENDDO
+        GROSS(IFRP,0,I) = GROSS(IFRP,1,I) + GROSS(IFRP,2,I)
+        GTOT = GTOT + GROSS(IFRP,2,I)
+        WRITE(LUPRI,'(3X,A6,8X,3X,F7.4,2(3X,A4,F7.4))')
+     &      REFFIL(I),GROSS(IFRP,0,I),
+     &      'E - ',GROSS(IFRP,2,1),'P - ',GROSS(IFRP,1,I)
+      ENDDO
+      GVEC(NREF+1) = TOTM - GTOT
+      WRITE(LUPRI,'(3X,A,F10.4)')
+     &    'Polarization: ',GVEC(NREF+1)
+      RETURN
+C
+      END
+
