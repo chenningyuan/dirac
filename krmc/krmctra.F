@@ -384,7 +384,7 @@ C     Read time & date for creation
 C
       READ (LUINT) DATEX, TIMEX
 C
-      IF ( IPRINT .GE. 3 ) WRITE(LUPRI,'(4A)')
+      IF ( IPRINT .GE. 3 ) WRITE(LUPRI,'(1X,4A)')
      &     '- time and date read from MDINFO: ',
      &     TIMEX, ' ',DATEX
 C
@@ -479,11 +479,11 @@ C
                      END IF
                      KL = KL + 1
 C
-c#ifdef UNDEF
+#ifdef UNDEF
                      WRITE(6,'(A,I2,A,I2,A,I2,A,I2,A,4(3X,D14.8))')
      &                    '    INT(',IKR,',',JKR,',',KK,',',LL,') = ',
      &                    (WORK(KHMAT + KL + (I-1)*NKL - 1),I=1,NCLASS)
-c#endif
+#endif
 C
 C                    Get active indeces from general/active indeces.
 C
@@ -724,7 +724,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck D2MUUUU */
-      SUBROUTINE D2MUUUU(VDUUUU,VMUUUU,IPRINT,WORK,LWORK)
+      SUBROUTINE D2MUUUU(VDUUUU,VMUUUU,IPRINT)
 C*****************************************************************************
 C
 C     Transform a UUUU matrix in Dirac format to a UUUU matrix
@@ -735,6 +735,7 @@ C     Last revision :
 C
 C*****************************************************************************
 #include <implicit.h>
+#include <priunit.h>
 C
 #include <dcborb.h>
 #include <dgroup.h>
@@ -744,41 +745,155 @@ C
 C
       DIMENSION NFPCK12(2), NFPCK34(2)
       DIMENSION NSTR(2,0:2,4)
+      DIMENSION KR(-300:300)
+      DIMENSION DINT(8,2)
 C
+#include <ibtfun.h>
 #include <memint.h>
 C
-      CALL READ4IDX(NSTR,NFPCK12,NFPCK34,
-     &     KDXKR12,KDXB12,KDXB34,WORK,KFREE,LFREE)
+      CALL DZERO(VMUUUU,(2*NASHT)**4 * MIN0(2,NZ))
 C
-      CALL DZERO(VMUUUU,(2*NASHT)**2 * MIN0(2,NZ))
+      NCLASS = NZ * NZ * NBSYM / NFSYM
+      CALL DEFCL(NCLASS)
 C
       II = 0
       JJ = 0
       DO IFSYM = 1, NFSYM
-         DO I = 1, NSTR(IFSYM,0,1)
+         DO I = 1, NASH(IFSYM)
             II = II + 1
             JJ = JJ + 1
-            IKRA(II) = JJ
-            IKRB(II) = JJ + NSTR(IFSYM)
+            KR(II) = JJ
+            KR(-II) = JJ + NASH(IFSYM)
          ENDDO
-         JJ = JJ + NSTR(IFSYM)
+         JJ = JJ + NASH(IFSYM)
       ENDDO
 C
-      NIJOFF = 0
-      NKLOFF = 0
-      DO IREPIJ = 1, NFSYM
-         NIJ = NFPCK12(IREPIJ)
-         NKL = NFPCK34(IREPIJ)
-            CALL D2MUUUU1(WORK(KFREE),LFREE,IPRINT,
-     &        NSTR(1,0,3),NSTR(1,0,4),
-     &        IREPIJ,NIJ,WORK(KDXKR12),NIJOFF,
-     &        WORK(KDXB12),WORK(KDXB34),NKLOFF,
-     &        VDUUUU,VMUUUU)
-         NIJOFF = NIJOFF + NIJ
-         NKLOFF = NKLOFF + NKL
-      ENDDO
+      DO IREPI = 1, NFSYM
+      DO II = 1+IASH(IREPI),IASH(IREPI)+NASH(IREPI)
+         DO IREPJ = 1, NFSYM
+         IREPIJ = IBTXOR(IREPI-1,IREPJ-1) + 1
+         DO JJ = 1+IASH(IREPJ),IASH(IREPJ)+NASH(IREPJ)
+            DO KK = 1, NASHT
+               DO LL = 1, NASHT
+                  I = KR(II)
+                  J = KR(JJ)
+                  K = KR(KK)
+                  L = KR(LL)
+                  ITR = KR(-II)
+                  JTR = KR(-JJ)
+                  KTR = KR(-KK)
+                  LTR = KR(-LL)
+C                 
+                  CALL DZERO(DINT,16)
+                  DO ICLASS = 1, 4
+                     IREPABR = 0
+                     DO IREPAB = 0, NBSYM - 1
+                        IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
+                           IREPABR = IREPABR + 1
+                           DO IZ1 = 1, NZ
+                              IQ1 = IPQTOQ(IZ1,IREPAB)
+                              DO IZ2 = 1,NZ
+                                 IQ2 = IPQTOQ(IZ2,IREPAB)
+                                 IFAC = INTCL(ICLASS,IQ1,IQ2)
+#ifdef UNDEF
+                                 if (ii .eq. 1 .and. jj .eq. 2 .and.
+     &                                kk .eq. 1 .and. ll .eq. 2 ) then
+                                    write(6,*) 'iz1,iz2,iq1,iq2',
+     &                                   iz1,iz2,iq1,iq2,iclass,ifac
+                                    write(6,*) 'dint before',
+     &                                   dint(iclass,1)
+                                    write(6,*) 'vd',vduuuu(ii,jj,kk,ll,
+     &                                   iz2,iz1,irepabr)
+                                 end if
+#endif
+                                 IF (IFAC .NE. 0) THEN
+                                    DINT(ICLASS,1) = DINT(ICLASS,1) +
+     &                                   IFAC * VDUUUU(II,JJ,KK,LL,
+     &                                   IZ2,IZ1,IREPABR)
+                                 END IF
+#ifdef UNDEF
+                                 if (ii .eq. 1 .and. jj .eq. 2 .and.
+     &                                kk .eq. 1 .and. ll .eq. 2 ) then
+                                    write(6,*) 'dint after',
+     &                                   dint(iclass,1)
+                                 end if
+#endif
+                                 IF (NZ .GT. 1) THEN
+                                    IFAC = INTCL(ICLASS+4,IQ1,IQ2)
+                                    IF (IFAC .NE. 0) THEN
+                                       DINT(ICLASS,2) = DINT(ICLASS,2) +
+     &                                      IFAC * VDUUUU(II,JJ,KK,LL,
+     &                                      IZ2,IZ1,IREPABR)
+                                    END IF
+                                 END IF
+                              END DO
+                           END DO
+                        END IF
+                     END DO
+                  END DO
+                  IF (NZ .EQ. 4) THEN
+                     DO ICLASS = 1, 4
+                        IREPABR = 0
+                        DO IREPAB = 0, NBSYM - 1
+                           IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
+                              IREPABR = IREPABR + 1
+                              DO IZ1 = 1, NZ
+                                 IQ1 = IPQTOQ(IZ1,IREPAB)
+                                 DO IZ2 = 1,NZ
+                                    IQ2 = IPQTOQ(IZ2,IREPAB)
+                                    IFAC = INTCL(ICLASS+8,IQ1,IQ2)
+                                    IF (IFAC .NE. 0) THEN
+                                       DINT(ICLASS+4,1) =
+     &                                      DINT(ICLASS+4,1) +
+     &                                      IFAC * VDUUUU(II,JJ,KK,LL,
+     &                                      IZ2,IZ1,IREPABR)
+                                    END IF
+                                    IFAC = INTCL(ICLASS+12,IQ1,IQ2)
+                                    IF (IFAC .NE. 0) THEN
+                                       DINT(ICLASS+4,2) =
+     &                                      DINT(ICLASS+4,2) +
+     &                                      IFAC * VDUUUU(II,JJ,KK,LL,
+     &                                      IZ2,IZ1,IREPABR)
+                                    END IF
+                                 END DO
+                              END DO
+                           END IF
+                        END DO
+                     END DO
+                  END IF
 C
-      CALL MEMREL('REAINTS',WORK,KWORK,KWORK,KFREE,LFREE)
+C                 Distribute integrals
+C                 
+#ifdef UNDEF
+                  write(6,'(1P,A,8I3,/,3(4D15.8/),4D15.8)')
+     &                 'd2u: ',i,j,k,l,itr,jtr,ktr,ltr,dint
+#endif
+                  DO IZ = 1,2
+                     IS = -2*IZ+3
+                     VMUUUU(I,J,K,L,IZ) = DINT(1,IZ)
+                     VMUUUU(ITR,J,K,L,IZ) = DINT(7,IZ)
+                     VMUUUU(I,JTR,K,L,IZ) = DINT(8,IZ)
+                     VMUUUU(ITR,JTR,K,L,IZ) = IS * DINT(2,IZ)
+                     VMUUUU(I,J,KTR,L,IZ) = DINT(5,IZ)
+                     VMUUUU(ITR,J,KTR,L,IZ) = IS * DINT(3,IZ)
+                     VMUUUU(I,JTR,KTR,L,IZ) = DINT(4,IZ)
+                     VMUUUU(ITR,JTR,KTR,L,IZ) = -IS * DINT(6,IZ)
+c
+                     VMUUUU(I,J,K,LTR,IZ) = DINT(6,IZ)
+                     VMUUUU(ITR,J,K,LTR,IZ) = IS * DINT(4,IZ)
+                     VMUUUU(I,JTR,K,LTR,IZ) = DINT(3,IZ)
+                     VMUUUU(ITR,JTR,K,LTR,IZ) = -IS * DINT(5,IZ)
+                     VMUUUU(I,J,KTR,LTR,IZ) = DINT(2,IZ)
+                     VMUUUU(ITR,J,KTR,LTR,IZ) = -IS * DINT(8,IZ)
+                     VMUUUU(I,JTR,KTR,LTR,IZ) = -IS * DINT(7,IZ)
+                     VMUUUU(ITR,JTR,KTR,LTR,IZ) = IS * DINT(1,IZ)
+                  END DO
+               END DO
+            END DO
+            END DO
+         END DO
+      END DO
+      END DO
 C
  9000 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
 C
@@ -788,7 +903,9 @@ C
             DO J = 1,2*NASHT
                DO K = 1,2*NASHT
                   DO L = 1,2*NASHT
-                     WRITE(LUPRI,9000)
+                     IF ( ABS(VMUUUU(I,J,K,L,1)) .GT. 0 .OR.
+     &                    ABS(VMUUUU(I,J,K,L,2)) .GT. 0) 
+     &                    WRITE(LUPRI,9000)
      &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,MIN0(2,NZ))
                   END DO
                END DO
@@ -798,336 +915,3 @@ C
 C
       RETURN
       END 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck d2muuuu1*/
-      SUBROUTINE D2MUUUU1(WORK,LWORK,IPRINT,NSTR3,NSTR4,
-     & IREPIJ,NIJ,INDXKR,NIJOFF,INDXB12,INDXB34,NKLOFF,
-     &     VDUUUU,VMUUUU)
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-C     Driver for D2MUUUU2.
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-C
-      INTEGER   NSTR3(2),NSTR4(2)
-      DIMENSION WORK(*)
-      DIMENSION INDXKR(2,*),INDXB12(*),INDXB34(*)
-      DIMENSION VDUUUU(*), VMUUUU(*)
-C
-#include <memint.h>
-C
-      DO IJ = 1, NIJ
-         IKR = INDXKR(1,IJ+NIJOFF)
-         JKR = INDXKR(2,IJ+NIJOFF)
-         IREPIJB = INDXB12(IJ+NIJOFF)
-         CALL D2MUUUU2(IPRINT,IREPIJ,IREPIJB,INDXB34(1+NKLOFF),IJ,
-     &        IKR,JKR,NSTR3,NSTR4,NKL,VDUUUU,VMUUUU,
-     &        WORK(KFREE),LFREE)
-      ENDDO
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck D2MUUUU2 */
-      SUBROUTINE D2MUUUU2(IPRINT,IREPIJ,IREPIJB,IREPKLB,IJ,IKR,JKR,
-     &                   NSTR3,NSTR4,NKL,VDUUUU,VMUUUU,WORK,LWORK)
-C
-C     Symmetrize the final integrals.
-C
-C     Written by Joern Thyssen, Nov 3 2000
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-C
-#include <dgroup.h>
-#include <dcborb.h>
-C
-      DIMENSION WORK(*)
-      INTEGER NSTR3(2),NSTR4(2)
-      DIMENSION VDUUUU(NASHT,NASHT,NASHT,NASHT,NZ,NZ,*)
-      DIMENSION VMUUUU(*)
-      DIMENSION IREPKLB(NKL)
-C
-#include <memint.h>
-C
-      CALL MEMGET('REAL',KFTMAT,NKL*2,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDK,NKL,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDL,NKL,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRKL,2*NKL,WORK,KFREE,LFREE)
-C
-C     Real and complex classes
-C     They are always written as complex for MOLFDIR
-C
-      DO ICLASS = 1, 4
-         IREPABR = 0
-         DO IREPAB = 0, NBSYM-1
-            IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
-               IREPABR = IREPABR + 1
-               DO IZ1 = 1, NZ
-                  IQ1 = IPQTOQ(IZ1,IREPAB)
-                  DO IZ2 = 1, NZ
-                     IQ2 = IPQTOQ(IZ2,IREPAB)
-                     IFAC = INTCL(ICLASS,IQ1,IQ2)
-                     IF (IFAC.NE.0) THEN
-                        FACTR = IFAC
-                        CALL DAXPY (NKL,FACTR,
-     &                       VDUUUU(1,1,IKR,JKR,IZ2,IZ1,IREPABR),
-     &                       1, WORK(KFTMAT),1)
-                     ENDIF
-                     IF (NZ.GT.1) THEN
-                        IFAC=INTCL(ICLASS+4,IQ1,IQ2)
-                        IF (IFAC.NE.0) THEN
-                           FACTR = IFAC
-                           CALL DAXPY (NKL,FACTR,
-     &                          VDUUUU(1,1,IKR,JKR,IZ2,IZ1,IREPABR),1,
-     &                          WORK(KFTMAT+NKL),1)
-                        ENDIF
-                     ENDIF
-                  ENDDO
-               ENDDO
- 100           CONTINUE
-            ENDIF
-         ENDDO
-         CALL D2MUUUU3(IPRINT,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
-     &        WORK(KFTMAT),NKL,
-     &        WORK(KINDK),WORK(KINDL),
-     &        VMUUUU)
-      ENDDO
-C
-C     Quaternion classes
-C
-      IF (NZ.EQ.4) THEN
-         DO ICLASS = 9, 12
-            CALL DZERO(WORK(KFTMAT),2*NKL)
-            DO IREPAB = 0, NBSYM-1
-               IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
-                  DO IZ1 = 1, NZ
-                     IQ1 = IPQTOQ(IZ1,IREPAB)
-                     DO IZ2 = 1, NZ
-                        IQ2 = IPQTOQ(IZ2,IREPAB)
-                        IFAC = INTCL(ICLASS,IQ1,IQ2)
-                        IF (IFAC.NE.0) THEN
-                            FACTR = IFAC
-                            CALL DAXPY (NKL,FACTR,
-     &                           VDUUUU(1,1,IKR,JKR,IZ2,IZ1,IREPABR),1,
-     &                           WORK(KFTMAT),1)
-                        ENDIF
-                        IFAC=INTCL(ICLASS+4,IQ1,IQ2)
-                        IF (IFAC.NE.0) THEN
-                           FACTR = IFAC
-                           CALL DAXPY (NKL,FACTR,
-     &                          VDUUUU(1,1,IKR,JKR,IZ2,IZ1,IREPABR),1,
-     &                          WORK(KFTMAT+NKL),1)
-                        ENDIF
-                     ENDDO
-                  ENDDO
-               ENDIF
-            ENDDO
-            CALL D2MUUUU3(IPRINT,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
-     &           WORK(KFTMAT),NKL,
-     &           WORK(KINDK),WORK(KINDL),
-     &           VMUUUU)
-         ENDDO
-      ENDIF
-C
-      CALL MEMREL('D2MUUUU2',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck d2muuuu3 */
-      SUBROUTINE D2MUUUU3(IPRINT,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,FMAT,
-     &     NFM,INDK,INDL,VMUUUU)
-C
-C     blah blah
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
-#include <dcborb.h>
-      DIMENSION NSTR3(2),NSTR4(2)
-      DIMENSION FMAT(NFM,2),INDK(*),INDL(*)
-      DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
-C
-      IKR1 = IKR
-      JKR1 = JKR
-      KL = 0
-      LL = 0
-      DO IREPL = 1, NFSYM
-         IREPK = MOD(IREPL+IREPIJ,2) + 1
-         DO L = 1, NSTR4(IREPL)
-            LL = LL + 1
-            DO K = 1, NSTR3(IREPK)
-               IF (IREPK.EQ.1) THEN
-                  KK = K
-               ELSE
-                  KK = K + NSTR3(1)
-               ENDIF
-               KL = KL + 1
-               INDK(KL) = KK
-               INDL(KL) = LL
-            ENDDO
-         ENDDO
-      ENDDO
-C
-      IF (ICLASS.EQ.1) THEN
-         CONTINUE
-      ELSEIF (ICLASS.EQ.2) THEN
-         DO INZ = 1, NZKL
-            INDK(INZ) = - INDK(INZ)
-            INDL(INZ) = - INDL(INZ)
-         ENDDO
-      ELSEIF (ICLASS.EQ.3) THEN
-         JKR1 = - JKR1
-         DO INZ = 1, NZKL
-            INDL(INZ) = - INDL(INZ)
-         ENDDO
-      ELSEIF (ICLASS.EQ.4) THEN
-         JKR1 = - JKR1
-         DO INZ = 1, NZKL
-            INDK(INZ) = - INDK(INZ)
-         ENDDO
-      ELSEIF (ICLASS.EQ.9) THEN
-         DO INZ = 1, NZKL
-            INDK(INZ) = - INDK(INZ)
-         ENDDO
-      ELSEIF (ICLASS.EQ.10) THEN
-         DO INZ = 1, NZKL
-            INDL(INZ) = - INDL(INZ)
-         ENDDO
-      ELSEIF (ICLASS.EQ.11) THEN
-         IKR1 = - IKR1
-      ELSEIF (ICLASS.EQ.12) THEN
-         JKR1 = - JKR1
-      ELSE
-         CALL QUIT ('Class not defined in MDINTB')
-      ENDIF
-C
-C
-C     Distribute integrals in VMUUUU
-C
-      I   = KR(IKR)
-      ITR = KR(-IKR)
-      J   = KR(JKR)
-      ITR = KR(-JKR)
-      SIGNIJ = SIGN(1,IKR) * SIGN(1,JKR)
-      DO INZ = 1, NZKL
-         KKR = INDK(INZ)
-         K = KR(KKR)
-         KTR = KR(-KKR)
-         LKR = INDL(INZ)
-         L = KR(LKR)
-         LTR = KR(-LKR)
-         SignKL = SIGN(1,kkr) * SIGN(1,lkr)
-C--> Original integral plus time-reversed partners
-         VMUUUU(I,J,K,L,1) = FMAT(INZ,1)
-         VMUUUU(I,J,K,L,2) = FMAT(INZ,2)
-C
-         VMUUUU(JTR,ITR,K,L,1) = SIGNIJ * FMAT(INZ,1)
-         VMUUUU(JTR,ITR,K,L,2) = SIGNIJ * FMAT(INZ,2)
-C
-         VMUUUU(I,J,LTR,KTR,1) = SIGNKL * FMAT(INZ,1)
-         VMUUUU(I,J,LTR,KTR,2) = SIGNKL * FMAT(INZ,2)
-C
-         VMUUUU(JTR,ITR,LTR,KTR,1) = SIGNIJ * SIGNKL * FMAT(INZ,1)
-         VMUUUU(JTR,ITR,LTR,KTR,2) = SIGNIJ * SIGNKL * FMAT(INZ,2)
-C--> Complex conjugate plus time-reversed partners
-         VMUUUU(J,I,L,K,1) = FMAT(INZ,1)
-         VMUUUU(J,I,L,K,2) = - FMAT(INZ,2)
-C
-         VMUUUU(ITR,JTR,L,K,1) = SIGNIJ * FMAT(INZ,1)
-         VMUUUU(ITR,JTR,L,K,2) = - SIGNIJ * FMAT(INZ,2)
-C
-         VMUUUU(J,I,KTR,LTR,1) = SIGNKL * FMAT(INZ,1)
-         VMUUUU(J,I,KTR,LTR,2) = - SIGNKL * FMAT(INZ,2)
-C
-         VMUUUU(ITR,JTR,KTR,LTR,1) = SIGNIJ * SIGNKL * FMAT(INZ,1)
-         VMUUUU(ITR,JTR,KTR,LTR,2) = - SIGNIJ * SIGNKL * FMAT(INZ,2)
-C
-C--> Particle interchanged plus time-reversed partners
-C
-         VMUUUU(K,L,I,J,1) = FMAT(INZ,1)
-         VMUUUU(K,L,I,J,2) = FMAT(INZ,2)
-C
-         VMUUUU(LTR,KTR,I,J,1) = SIGNKL * FMAT(INZ,1)
-         VMUUUU(LTR,KTR,I,J,2) = SIGNKL * FMAT(INZ,2)
-C
-         VMUUUU(K,L,JTR,ITR,1) = SIGNIJ * FMAT(INZ,1)
-         VMUUUU(K,L,JTR,ITR,2) = SIGNIJ * FMAT(INZ,2)
-C
-         VMUUUU(LTR,KTR,JTR,ITR,1) = SIGNKL * SIGNIJ * FMAT(INZ,1)
-         VMUUUU(LTR,KTR,JTR,ITR,2) = SIGNKL * SIGNIJ * FMAT(INZ,2)
-C
-C--> Particle interchanged and complex conjugated plus time-reversed partners
-C
-         VMUUUU(L,K,J,I,1) = FMAT(INZ,1)
-         VMUUUU(L,K,J,I,2) = - FMAT(INZ,2)
-C
-         VMUUUU(KTR,LTR,J,I,1) = SIGNKL * FMAT(INZ,1)
-         VMUUUU(KTR,LTR,J,I,2) = - SIGNKL * FMAT(INZ,2)
-C
-         VMUUUU(L,K,ITR,JTR,1) = SIGNIJ * FMAT(INZ,1)
-         VMUUUU(L,K,ITR,JTR,2) = - SIGNIJ * FMAT(INZ,2)
-C
-         VMUUUU(KTR,LTR,ITR,JTR,1) = SIGNKL * SIGNIJ * FMAT(INZ,1)
-         VMUUUU(KTR,LTR,ITR,JTR,2) = - SIGNKL * SIGNIJ * FMAT(INZ,2)
-C
-      END DO
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck read4idx */
-      SUBROUTINE READ4IDX(NSTR,NFPCK12,NFPCK34,
-     &     KDXKR12,KDXB12,KDXB34,WORK,KFREE,LFREE)
-C*****************************************************************************
-C
-C     Read NSTR, IDXKR12, and other index vectors from MDINFO.
-C
-C     Written by J. Thyssen - Jul 21 2000
-C     Last revision : 
-C
-C*****************************************************************************
-#include <implicit.h>
-C
-      DIMENSION NSTR(2,0:2,4)
-      DIMENSION NFPCK12(2),NFPCK34(2)
-      CHARACTER DATEX*8, TIMEX*8
-C
-C
-C     Read integral info from MDINFO
-C
-      LUINT = 1 
-      OPEN (LUINT, FILE = 'MDINFO', STATUS = 'OLD',
-     &     FORM = 'UNFORMATTED' )
-C
-C     Read time & date for creation
-C
-      READ (LUINT) DATEX, TIMEX
-C
-      READ (LUINT) NFPCK12, NFPCK12T
-      READ (LUINT) NFPCK34, NFPCK34T
-      READ (LUINT) NSTR
-C     
-      CALL MEMGET('INTE',KDXKR12,2*NFPCK12T,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KDXB12,NFPCK12T,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KDXB34,NFPCK34T,WORK,KFREE,LFREE)
-C
-C     I and J indeces
-      CALL READI(LUINT,NFPCK12T*2,WORK(KDXKR12))
-C     Boson irrep for IJ indeces
-      CALL READI(LUINT,NFPCK12T,WORK(KDXB12))
-C     Boson irrep for KL indeces
-      CALL READI(LUINT,NFPCK34T,WORK(KDXB34))
-C
-      CLOSE (LUINT, STATUS = 'KEEP')
-C
-      RETURN
-      END
-
-
-
-
