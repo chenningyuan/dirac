@@ -87,7 +87,7 @@ C
      &            '.SKIPEE','.SKIPEP','.CNVINT','.ITRINT','.INTFLG',
      &            '.NO CI ','.THRPCI','.NR SYM','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
-     &            '.CI PRO','.INACTI','.CASSCF','xxxxxxx','.SYMMET',
+     &            '.CI PRO','.INACTI','.CASSCF','.CI SYM','.SYMMET',
      &            '.RELSYM'/
       DATA SET/.FALSE./
 C
@@ -274,12 +274,13 @@ C&&& THRPCI:
                GO TO 100
    18          CONTINUE
 C&&& NR SYMMETRY: use non-relativistic boson spatial spinor symmetry for CI expansion
-               IF (IKWSET(18) .EQ. 1) THEN
+               IF (IKWSET(18) .GT. 0) THEN
                   CALL QUIT('*** ERROR in KRMCINP *** ' //
-     &                 'You cannot specify both .RELSYM and .NR SYM')
+     &                 'You can only specify symmetry once')
                END IF
+               READ(LUCMD,*) IKRMC_SYMMETRY
                KRMC_UCIBOS = .TRUE.
-               IKWSET(18) = 1
+               IKWSET(18) = 2
                GO TO 100
    19          CONTINUE
 C&&& MIN MK2: minimum value of 2 * MK
@@ -355,21 +356,27 @@ C&&&  CASSCF -- this defines a CAS space
                NKRMCGSP(2,NKRMCGAS) = NKRMCAELEC 
                GO TO 100
  29            CONTINUE
-C&&&  xxxxx
-               GO TO 100
+C&&&  CI SYMMETRY -- alias for SYMMETRY
+C              GO TO 100
  30            CONTINUE
 C&&&  SYMMETRY: symmetry of the wave function
+               IF (IKWSET(18) .GT. 0) THEN
+                  CALL QUIT('*** ERROR in KRMCINP *** ' //
+     &                 'You can only specify symmetry once')
+               END IF
                READ(LUCMD,*) IKRMC_SYMMETRY
+               IKWSET(18) = 1
                GO TO 100
  31            CONTINUE
 C&&&  RELSYM: use relativistic double group symmetry of the wave function
 C              including spin in symmetry
-               IF (IKWSET(18) .EQ. 1) THEN
+               IF (IKWSET(18) .GT. 0) THEN
                   CALL QUIT('*** ERROR in KRMCINP *** ' //
-     &                 'You cannot specify both .RELSYM and .NR SYM')
+     &                 'You can only specify symmetry once')
                END IF
+               READ(LUCMD,*) IKRMC_SYMMETRY
                KRMC_UCIBOS = .FALSE.
-               IKWSET(18) = 1
+               IKWSET(18) = 2
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -427,7 +434,7 @@ C
 C     Use boson symmetry for CI expansion for the spin-free and
 C     the Levy-Leblond Hamiltonian, if KRMC_UCIBOS not set in input.
 C
-      IF (IKWSET(18).EQ.0 .AND. (SPINFR.OR.LEVYLE)) THEN
+      IF (IKWSET(18).LE.1 .AND. (SPINFR.OR.LEVYLE)) THEN
          KRMC_UCIBOS = .TRUE.
       END IF
 c     krmc_ucibos = .false.
