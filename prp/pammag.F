@@ -585,7 +585,7 @@ C
       DIMENSION IFCTYP(4,NCOMP),IREPDM(4,NCOMP)
       DIMENSION ISYMOP(3),IHRMOP(3),IFCKOP(3),MTOTTK(3)
       LOGICAL LBIT,NODV,NOPV,NOCONT,RETUR,
-     &            FCKDDR,DDFOCK,LONDON,FIRST
+     &         FCKDDR,DDFOCK,LONDON,FIRST,PARCAL_SAVE
 
       CALL QENTER('TWOLO1')
 #include <memint.h>
@@ -638,6 +638,11 @@ C
       FIRST2 = .TRUE.
       FIRST3 = .TRUE.
 #endif
+
+CMI   ... fix the parallel run...
+      PARCAL_SAVE = PARCAL
+      PARCAL = .FALSE.
+
       CALL GETTIM(CPU1,WALL1)
       DO I2TYP = 1,3  ! LL,LS,SS
         IF (LBIT(INTNMR,I2TYP)) THEN
@@ -658,13 +663,15 @@ CMI   - Cauchy-Schwarz inequality does not hold for dg(1,2)/dB integrals !
              CALL TWOINT(WORK(KFREE),LWRK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP
      &        ,DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT
      &        ,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY
-     &        ,I2TYP,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL
-     &         IDUM,DUMM)
+     &        ,I2TYP,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL,
+     &         IDUMMY,DUMMY)
 #if defined (VAR_MPI) || defined (VAR_PVM)
          ENDIF
 #endif
          ENDIF
       ENDDO
+
+      PARCAL = PARCAL_SAVE
 
       CALL GETTIM(CPU2,WALL2)
 C
