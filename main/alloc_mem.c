@@ -62,7 +62,10 @@
    if ( ! mytid )
       printf("Master : DIRAC allocating %i words of memory\n",*size);
    else
+   {
       printf("Node %2i: DIRAC allocating %i words of memory\n",mytid,*size);
+      fflush( stdout );
+   }
    return diracmalloc((size_t) SIZE_REAL*(*size));
 }
 
