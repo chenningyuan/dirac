@@ -1110,6 +1110,7 @@ CTROND : Remember LOFFTY !!!!!
      &    'unknown NBTYP = ',NBTYP
         CALL QUIT('XRSORT: Unknown NBTYP !')
       ENDIF
+      IF (LINEQ) THEN
 Chj-nov99: If differential screening (TKNORM false) then
 C     only keep trial vectors which norm has been reduced by less than 
 C     a factor of THRLDV under Gram-Schmidt orthogonalization
@@ -1127,6 +1128,18 @@ chj   ELSE
 chj      THRLDV = 5.0D-3
          THRLDV2 = 5.0D-3
 chj   END IF
+      ELSE
+C     ... hjaaj Oct 2004: for excitations we don't want
+C         to use the THRLDV2 test (we don't have close-lying solutions
+C         vectors as for LINEQ with close-lying frequencies,
+C         and it has been seen to destroy the paired structure
+C         by removing a P(-) trial vector but not the 
+C         corresponding P(+) trial vector.
+C
+         THRLDV1 = NBDIM*THRLDP
+         THRLDV1 = SQRT(THRLDV1)
+         THRLDV2 = 0.0D0
+      END IF
 C
 C     Memory allocation
 C
