@@ -387,6 +387,14 @@ EOF
       tar rvf DIRAC.new.tar export 2>> export.log
 EOF
    fi
+   #
+   # Add test suite
+   #
+   if [ "$REL3_1" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar test 2>> export.log
+EOF
+   fi
    cat <<EOF>> ./export
       echo " - gzip'ing archive..."
       echo
