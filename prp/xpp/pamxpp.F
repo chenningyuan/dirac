@@ -268,15 +268,11 @@ Chj: must be set to define IPX, IMX in pamrsp.F /Nov.2000
         DO 20 IS = 1,NFC
           JSYMOP = JFSYM(IS,JOPSY)
           NEXCNV = KEXCNV(JSYMOP)
+          IF (NEXCNV .EQ. 0) GO TO 20
           WRITE (LUPRI,'(///A,A3/A,I3,A)')
      &      ' >>>  SOLVING PP EXCITATION ENERGIES - Symmetry: ',
      &        REP(JSYMOP-1),
      &      '      for the',NEXCNV,' lowest excitation energies.'
-          IF (NEXCNV .EQ. 0) THEN
-             WRITE (LUPRI,'(/A)')
-     &       ' -- No excitation energies requested for this symmetry.'
-             GO TO 20
-          END IF
 C
 C         Initialize configurational and orbital parameters
 C         =================================================
