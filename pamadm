@@ -308,7 +308,7 @@ if ($CIMOD) then
 cat <<EOF>> Makefile
 
 CIOBJS = \
-dirrci/cidirr.o dirrci/cigenp.o
+dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o
 EOF
 endif
 #
