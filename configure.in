@@ -249,6 +249,10 @@ case $machine in
       liblist='libesslp2 libessl libblas'
       complist='xlf f77 f90';;
 
+   powerpc-ibm)
+      liblist='libesslp2 libessl libblas'
+      complist='xlf f77 f90';;
+
    mips*-sgi) 
 # libcomplib.sgimath.so removed since it is slow /tec
       liblist='libblas'
