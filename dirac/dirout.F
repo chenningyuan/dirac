@@ -1015,7 +1015,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck preigb */
-      SUBROUTINE PREIGB(EIG,IBEIG,NVAL,IVAL)
+      SUBROUTINE PREIGB(EIG,IBEIG,IVAL,NVAL)
 C*****************************************************************************
 C
 C     Prints eigenvalues and their degeneracies
