@@ -281,8 +281,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <symmet.h>
       LOGICAL ANTIS, LMP2, NODV, NOPV,L2TYP(0:3),IBEQJB,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),INDX(3,*),
-     &          NSTRT(4), ITQMT(0:7,0:7,2),IQMO(4,0:7),NZMO(0:7),
-     &          IQP34(4,0:7),NZ34(0:7),NDMOQR(2,2,4),ICMOQR(2,4),
+     &          NSTRT(4), ITQMT(0:7,0:7,2),
+     &          NDMOQR(2,2,4),ICMOQR(2,4),
      &          IJP12(0:7),IJP34(2),IHM(0:7),
      &          TIM1(7),DINTSKP(*),GABAO(*),WORK(*)
       DIMENSION ISAMEIJ(4)
@@ -504,8 +504,7 @@ C
      &                   NSTR(1,0,1),NSTR(1,0,2),
      &                   NDMOQR,ICMOQR,WORK(KIJPASS),
      &                   WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &                   WORK(KGMAT),NSIZG,NZMO,IQMO,
-     &                   WORK(KHMAT)) 
+     &                   WORK(KGMAT),NSIZG,WORK(KHMAT)) 
             CALL TIMEC('MS4IN1',TIMSTR,TIMEND) 
             TIM1(2) = TIM1(2) + TIMEND - TIMSTR
 C
@@ -524,7 +523,7 @@ C
             CALL TQTRNS (WORK,KFREE,LFREE,IPRINT,IC,IHM,
      &           INDX,WORK(KDXAB),WORK(KHMAT),ITQMT,
      &           ICMOQR(1,3),NDMOQR(1,1,3),WORK(KTQMAT),NSTR(1,0,3),
-     &           IQP34,NZ34,WORK(KQ(1,3)))
+     &           WORK(KQ(1,3)))
 C
             CALL TIMEC('TQTRNS',TIMSTR,TIMEND) 
             TIM1(3) = TIM1(3) + TIMEND - TIMSTR
@@ -575,8 +574,8 @@ C
       CALL TIMEC('START ',TIMSTR,TIMEND)
       CALL LQTRNS (WORK,KFREE,LFREE,IPRINT,
      &     ITQMT,ICMOQR(1,4),NDMOQR(1,1,4),
-     &     IQMO,NZMO,WORK(KTQMAT),NSTR(1,0,3),NSTR(1,0,4),
-     &     IQP34,NZ34,WORK(KQ(1,4)),WORK(K4QMAT),ICS2,ICF2)
+     &     WORK(KTQMAT),NSTR(1,0,3),NSTR(1,0,4),
+     &     WORK(KQ(1,4)),WORK(K4QMAT),ICS2,ICF2)
       CALL TIMEC('TQTRNS',TIMSTR,TIMEND) 
       TIM1(4) = TIM1(4) + TIMEND - TIMSTR
 C     
@@ -668,13 +667,13 @@ C     Offset for iz2
      &                             NSTR(IREPK,0,3)*NSTR(IREPL,0,4)
 C
                               IRPCN1 = IRPCN1 + 1
-                              IQ2 = IQMO(IZ2,IREPRS)
+                              IQ2 = IPQTOQ(IZ2,IREPRS)
                               IRPCN2 = 0
                               DO IZ1 = 1, NZ
 C     Offest for iz1
                                  IOFF5 = NFPCK12(IREPKL)*IRPCN2
                                  IRPCN2 = IRPCN2 + 1
-                                 IQ1 = IQMO(IZ1,IREPRS)
+                                 IQ1 = IPQTOQ(IZ1,IREPRS)
                                  IFAC=INTCL(JCLASS,IQ1,IQ2)
                                  IOFF=IOFF1+IOFF2+IOFF3
                                  IOFF=IOFF+IOFF4+IOFF5+IOFF6
@@ -730,13 +729,13 @@ C     Offset for iz2
      &                                NSTR(IREPK,0,3)*NSTR(IREPL,0,4)
 C     
                                  IRPCN1 = IRPCN1 + 1
-                                 IQ2 = IQMO(IZ2,IREPRS)
+                                 IQ2 = IPQTOQ(IZ2,IREPRS)
                                  IRPCN2 = 0
                                  DO IZ1 = 1, NZ
 C     Offest for iz1
                                     IOFF5 = NFPCK12(IREPKL)*IRPCN2
                                     IRPCN2 = IRPCN2 + 1
-                                    IQ1 = IQMO(IZ1,IREPRS)
+                                    IQ1 = IPQTOQ(IZ1,IREPRS)
                                     IFAC=INTCL(JCLASS,IQ1,IQ2)
                                     IOFF=IOFF1+IOFF2+IOFF3
                                     IOFF=IOFF+IOFF4+IOFF5+IOFF6
@@ -802,7 +801,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TQTRNS */
       SUBROUTINE TQTRNS (WORK,KFREE,LFREE,IPRINT,IC,IHM,
      &     INDX,INDXAB,HMAT,ITQMT,ICMOQR,NDMOQR,
-     &     TQMAT,NSTR3,IQP34,NZ34,Q3)
+     &     TQMAT,NSTR3,Q3)
 C
 C     Written by Jon Laerdahl, June 1997
 C
@@ -821,8 +820,7 @@ C
       INTEGER   NSTR3(2)
       DIMENSION NDMOQR(2,2),ICMOQR(2)
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5)
-      DIMENSION IQP12(4),ITQMT(0:7,0:7,2)
-      DIMENSION IQP34(4,0:7),NZ34(0:7)
+      DIMENSION ITQMT(0:7,0:7,2)
       DIMENSION IHM(0:7)
       DIMENSION HMAT(*),TQMAT(*),Q3(*),QCOF(4)
       DIMENSION WORK(*)
@@ -832,14 +830,6 @@ C
 C     
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
       CALL QENTER('TQTRNS')
-C
-C     Define HMAT as real matrices.
-C
-      NZ12 = 1
-      IQP12(1) = 1
-      IQP12(2) = 0
-      IQP12(3) = 0
-      IQP12(4) = 0
 C
       KFRSAV = KFREE
       NIJMAX = 0
@@ -914,11 +904,6 @@ C
                ELSE
                   IREPR2 = IBTXOR(IXYZ,IREPR)
                ENDIF
-C
-C     Making IQP34 and NZ34
-C
-               CALL IQPACK(IQP12,NZ12,IPQTOQ(1,IREPR2),
-     &              NZ,IQP34(1,IREPR2),NZ34(IREPR2))
 C     
 C     Start looping over K index
 C
@@ -935,9 +920,9 @@ C
                   IF (NZ.GT.1) THEN
                      CALL DZERO(WORK(KT3MAT),NIJNZ2)
                      CALL QAXPY(NIJNZ1,'C','N',QCOF,IPQTOQ(1,IREPR2),
-     &                    NZ,HMAT(IOFF),NIJNZ1,1,IQP12,NZ12,
-     &                    WORK(KT3MAT),NIJNZ1,1,IQP34(1,IREPR2),
-     &                    NZ34(IREPR2))
+     &                    NZ,HMAT(IOFF),NIJNZ1,1,IPQTOQ(1,0),1,
+     &                    WORK(KT3MAT),NIJNZ1,1,IPQTOQ(1,IREPR2),
+     &                    NZ)
 C     
                      DO IZ = 1,NZ
                         JOFF = JOFF2 + (IZ-1)*NIJKS
@@ -950,9 +935,8 @@ C     Real groups
 C
                   ELSE
                      CALL QAXPY(NIJNZ1,'C','N',QCOF,IPQTOQ(1,IREPR2),
-     &                    NZ,HMAT(IOFF),NIJNZ1,1,IQP12,NZ12,
-     &                    TQMAT(JOFF2),NIJNZ1,1,IQP34(1,IREPR2),
-     &                    NZ34(IREPR2))
+     &                    NZ,HMAT(IOFF),NIJNZ1,1,IPQTOQ(1,0),NZ,
+     &                    TQMAT(JOFF2),NIJNZ1,1,IPQTOQ(1,IREPR2),NZ)
                   ENDIF
                ENDDO
 C     
@@ -972,9 +956,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LQTRNS */
       SUBROUTINE LQTRNS (WORK,KFREE,LFREE,IPRINT,
-     &     ITQMT,ICMOQR,NDMOQR,IQMO,NZMO,
-     &     TQMAT,NSTR3,NSTR4,IQP34,NZ34,Q4,FQMAT,
-     &     ICS,ICF)
+     &     ITQMT,ICMOQR,NDMOQR,
+     &     TQMAT,NSTR3,NSTR4,Q4,FQMAT,ICS,ICF)
 C
 C     Written by Jon Laerdahl, June 1997
 C
@@ -993,8 +976,6 @@ C
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION NDMOQR(2,2),ICMOQR(2)
       DIMENSION ITQMT(0:7,0:7,2)
-      DIMENSION IQP34(4,0:7),NZ34(0:7)
-      DIMENSION IQMO(4,0:7),NZMO(0:7)
       DIMENSION TQMAT(*),Q4(*),FQMAT(*)
       DIMENSION WORK(*)
 C
@@ -1002,8 +983,6 @@ C
 C
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
       CALL QENTER('LQTRNS')
-C
-C     NZ34 and IQP34 imported from 3/4 transformation.
 C
       IOFF=1
       DO IREPIJ = 1,NFSYM
@@ -1056,17 +1035,15 @@ C
                      ENDIF
 C     
                      IF (N1*N2.GT.0) THEN
-                        CALL IQPACK(IQP34(1,IREPR2),NZ34(IREPR2),
-     &                       IPQTOQ(1,IREPS2),NZ,IQMO(1,IREPRS),
-     &                       NZMO(IREPRS))
 C
+CTROND  check this....
                         CALL QGEMM(N1,N3,N2,D1,
-     &                       'N','N',IQP34(1,IREPR2),TQMAT(JOFF),
-     &                       N1,N2,NZ34(IREPR2),
+     &                       'N','N',IPQTOQ(1,IREPR2),TQMAT(JOFF),
+     &                       N1,N2,NZ,
      &                       'N','N',IPQTOQ(1,IREPS2),Q4(KOFF),
      &                       NRQ1,NCQ1,NZ,
-     &                       D1,IQMO(1,IREPRS),FQMAT(IOFF1),
-     &                       N1,N3,NZMO(IREPRS))
+     &                       D1,IPQTOQ(1,IREPRS),FQMAT(IOFF1),
+     &                       N1,N3,NZ)
                      ENDIF
  100                 CONTINUE
                   ENDDO
@@ -1230,7 +1207,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN1E*/
       SUBROUTINE MS4IN1E(WORK,KFREE,LFREE,IPRINT,LGREC,ICS,ICF,
      &                   NSTR1,NSTR2,NDMOQR,ICMOQR,IJPASS,Q1,Q2,
-     &                   GMAT,NSIZG,NZMO,IQMO,HMAT)
+     &                   GMAT,NSIZG,HMAT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher May 1997.
@@ -1265,8 +1242,6 @@ C                    position in the shell
 C
 C     Output :
 C
-C     - NZMO         Number of non-zero quaternion components of HMAT
-C     - IQMO         Quaternion packing of HMAT
 C     -              Updated values of buffer blocks
 C
 #include <implicit.h>
@@ -1277,7 +1252,6 @@ C
       DIMENSION WORK(*)
       DIMENSION Q1(*),Q2(*),GMAT(NSIZG)
       DIMENSION IJPASS(0:7,NPASS)
-      DIMENSION IQAO(4),IQMO(4,0:7),NZMO(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
       DIMENSION HMAT(*)
 C
@@ -1327,7 +1301,7 @@ C
          CALL MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,
      &                .FALSE.,NSTR1,NSTR2,NDMOQR,
      &                ICMOQR,IJPASS(0,IPASS),Q1,Q2,
-     &                GMAT,HMAT(IHOFF),NZMO,IQMO)
+     &                GMAT,HMAT(IHOFF))
          IHOFF = IHOFF + NSIZH*NZ
 C
 C        We can also rewrite code and call the 3/4 transformation here.

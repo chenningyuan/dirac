@@ -89,7 +89,7 @@ C***********************************************************************
 
 #include <blocks.h>
       LOGICAL ANTIS,LMP2,TRIAN(2)
-      DIMENSION NSTR(2,0:2,4),IQMO(4,0:7),
+      DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
 C
       CALL QENTER('TRDR4T')
@@ -179,7 +179,7 @@ C
               CALL FLSHFO(LUPRI)
               CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                   NSTR,ANTIS,LMP2,WORK(KINDX),TRIAN,
-     &                   KQ,KE,KIBE,IC,IQMO,
+     &                   KQ,KE,KIBE,IC,
      &                   WORK(KDRIJ),WORK(KGAB),DINTSKP)
            ENDDO
         ENDDO
@@ -226,7 +226,7 @@ C
          NIJ = NFPCK12(IREPIJ)
          NKL = NFPCK34(IREPIJ)
          CALL DRV4SYM(WORK,KFREE,LFREE,IPRINT,NSTR(1,0,3),NSTR(1,0,4),
-     &                IREPIJ,NIJ,IQMO,WORK(KDXKR12),NIJOFF,
+     &                IREPIJ,NIJ,WORK(KDXKR12),NIJOFF,
      &                WORK(KDXB12),WORK(KDXB34),NKLOFF)
          NIJOFF = NIJOFF + NIJ
          NKLOFF = NKLOFF + NKL
@@ -258,7 +258,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDRV4 */
       SUBROUTINE TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,INDX,TRIAN,KQ,KE,KIBE,
-     &                  IC,IQMO,DRIJ,GABRAO,DINTSKP)
+     &                  IC,DRIJ,GABRAO,DINTSKP)
 C
 C     Written by Luuk Visscher, december 1996
 C     Screening by T.Saue Sep 8 1998
@@ -276,7 +276,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dgroup.h>
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
-      DIMENSION IQMO(4,0:7),NZMO(0:7),KQ(2,4),KE(2,4),KIBE(2,4)
+      DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION IJP12(0:7)
       DIMENSION IHTM(0:7),MHTM(2),NHTM(2)
       DIMENSION IRECC(2),NBFSZ(2),NBUF(2),NIJBUF(2),NHTIM(2),IBOFF(2)
@@ -547,7 +547,7 @@ C
      &                WORK(KALGREC),ICS12,ICF12,IC,
      &                TRIAN(1),NSTR(1,0,1),NSTR(1,0,2),
      &                WORK(KIJPASS),WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &                WORK(KGMAT),NSIZG,NZMO,IQMO,
+     &                WORK(KGMAT),NSIZG,
      &                MHTM,IHTM,INDX,WORK(KDXAB),IRECC,WORK(KJBOFF),
      &                IBOFF,NBUF,NIJBUF,NBFSZ,WORK(KRBUF),
      &                WORK(KLBUF1))
@@ -614,8 +614,8 @@ C
       CALL MS4IN2D(WORK,KFREE,LFREE,IPRINT,ICS34,ICF34,
      &             NSTR(1,0,3),NSTR(1,0,4),
      &             WORK(KQ3S),WORK(KQ(1,4)),WORK(KQ(1,3)),
-     &             WORK(KQ4T),NZMO,
-     &             IQMO,IRECC,NBFSZ,NBUF,NIJBUF,MHTM,WORK(KDXKR12),
+     &             WORK(KQ4T),
+     &             IRECC,NBFSZ,NBUF,NIJBUF,MHTM,WORK(KDXKR12),
      &             WORK(KDXB12),WORK(KDXB34))
 C
 C     Delete half-transformed integral files and intermediary file
@@ -638,7 +638,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck DRV4SYM*/
       SUBROUTINE DRV4SYM(WORK,KFREE,LFREE,IPRINT,NSTR3,NSTR4,
-     & IREPIJ,NIJ,IQMO,INDXKR,NIJOFF,INDXB12,INDXB34,NKLOFF)
+     & IREPIJ,NIJ,INDXKR,NIJOFF,INDXB12,INDXB34,NKLOFF)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher January 1997.
@@ -670,7 +670,6 @@ C
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)
       DIMENSION INDXKR(2,*),INDXB12(*),INDXB34(*)
-      DIMENSION IQMO(4,0:7)
 #include <dgroup.h>
 #include <dcbtra.h>
 #include <dcbtr3.h>
@@ -714,7 +713,7 @@ Clv end if
 #endif
              CALL SYMFINT(IPRINT,IREPIJ,IREPIJB,INDXB34(1+NKLOFF),
      &                    IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMATS),
-     &                    IPQTOQ,WORK,KFREE,LFREE)
+     &                    WORK,KFREE,LFREE)
 #if defined (VAR_MPI)
 Clv if (one node) include
 Clv       ENDIF
@@ -728,7 +727,7 @@ Clv endif
           IREPIJB = INDXB12(IJ+NIJOFF)
           CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),WORK,KFREE,LFREE)
           CALL SYMFINT(IPRINT,IREPIJ,IREPIJB,INDXB34(1+NKLOFF),IJ,
-     &                 IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMAT),IPQTOQ,
+     &                 IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMAT),
      &                 WORK,KFREE,LFREE)
         ENDDO
       ENDIF
@@ -835,7 +834,7 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
       LOGICAL ANTIS,LMP2,TRIAN(2)
-      DIMENSION KQ(2,4),KE(2,4),KIBE(2,4),NSTR(2,0:2,4),IQMO(4,0:7)
+      DIMENSION KQ(2,4),KE(2,4),KIBE(2,4),NSTR(2,0:2,4)
       DIMENSION DINTSKP(*),WORK(*)
 C
 C     Define the packing of the 2-index transformed integrals
@@ -863,7 +862,7 @@ C
 #endif
          CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &               NSTR(1,0,1),ANTIS,LMP2,WORK(KINDX),TRIAN,
-     &               KQ,KE,KIBE,IC,IQMO,
+     &               KQ,KE,KIBE,IC,
      &               WORK(KDRIJ),WORK(KGAB),DINTSKP)
          GOTO 100
   200 CONTINUE
@@ -898,7 +897,7 @@ C
          NIJ = NFPCK12(IREPIJ)
          NKL = NFPCK34(IREPIJ)
          CALL DRV4SYM(WORK,KFREE,LFREE,IPRINT,NSTR(1,0,3),NSTR(1,0,4),
-     &                IREPIJ,NIJ,IQMO,WORK(KDXKR12),NIJOFF,
+     &                IREPIJ,NIJ,WORK(KDXKR12),NIJOFF,
      &                WORK(KDXB12),WORK(KDXB34),NKLOFF)
          NIJOFF = NIJOFF + NIJ
          NKLOFF = NKLOFF + NKL

@@ -771,8 +771,6 @@ C
 #include <dcbibt.h>
 C
       KFRSAV = KFREE
-CTROND: Is this good ?
-CTROND
 C
 C     Set up symmetry packing information.
 C
@@ -925,8 +923,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN1 */
       SUBROUTINE MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,TRIAN,
-     & NSTR1,NSTR2,NDMOQR,ICMOQR,IJPAIRS,Q1,Q2,GMAT,
-     & HMAT,NZMO,IQMO)
+     & NSTR1,NSTR2,NDMOQR,ICMOQR,IJPAIRS,Q1,Q2,GMAT,HMAT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher January 1997.
@@ -954,8 +951,6 @@ C
 C     Output :
 C
 C     - HMAT         Symmetry packed half-transformed integrals
-C     - NZMO         Number of non-zero quaternion components of HMAT
-C     - IQMO         Quaternion packing of HMAT
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -966,7 +961,6 @@ C
       DIMENSION WORK(*)
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(0:7)
-      DIMENSION IQAO(4),IQMO(4,0:7),NZMO(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
 #include <mxorb.h>
 #include <mxcent.h>
@@ -982,12 +976,6 @@ C
       KFRSAV = KFREE
 C
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
-C
-      NZAO = 1
-      IQAO(1) = 1
-      IQAO(2) = 0
-      IQAO(3) = 0
-      IQAO(4) = 0
 C
 C     Transform lefthand indices to molecular spinor basis
 C
@@ -1046,12 +1034,7 @@ C
                      IREPQI = IBTXOR(IXYZ,IREPQ)
                   ENDIF
 C
-C                 Do the actual transformation. IQMO is set by QTRANS
-C                 on basis of IQAO (real) and the IQ's of the 
-C                 coefficients. We need to keep this information as it
-C                 will tell us which were the non-zero quaternion units
-C                 of the density, which is to be used in the final 
-C                 symmetrization step. 
+C                 Do the actual transformation. 
 C
                   IF (.NOT.TRIAN.OR.(TRIAN.AND.IREPI.GT.IREPJ)) THEN
 C
@@ -1059,8 +1042,8 @@ C                 Square transformation
 C
                      IF ((NP*NQ.NE.0).AND.(NI*NJ.NE.0)) THEN
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
-     &                    GMAT(IOFF),NP,NQ,NZAO,1,
-     &                    WORK(KHTMP),NI,NJ,NZMO(IREPPQ),IQMO(1,IREPPQ),
+     &                    GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
+     &                    WORK(KHTMP),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
      &                    Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
      &                    Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
      &                    WORK(KFREE),LFREE,IPRINT)
@@ -1086,11 +1069,11 @@ C
      &                              KFREE,LFREE)
                        CALL DZERO(WORK(KBMAT),NI*NJ*NZ)
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
-     &                    GMAT(IOFF),NP,NQ,NZAO,1,
-     &                    WORK(KBMAT),NI,NJ,NZMO(IREPPQ),IQMO(1,IREPPQ),
-     &                    Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
-     &                    Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
-     &                    WORK(KFREE),LFREE,IPRINT)
+     &                  GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
+     &                  WORK(KBMAT),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
+     &                  Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
+     &                  Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
+     &                  WORK(KFREE),LFREE,IPRINT)
                        CALL QTRIAN('PACK',D0,NI,NZ,WORK(KBMAT),NI,NJ,
      &                             WORK(KHTMP),NI*(NI+1)/2)
                        CALL MEMREL('MS4IN1',WORK,KFRSAV,KBMAT,
@@ -2594,10 +2577,10 @@ C
         IF(NFMO(1,I).EQ.0) GOTO 40
         CALL BCKTRA(CMO(ICMOQR(I)),NDMOQR(1,I),NDMOQR(2,I),
      &              FAO(IFMO(I)+1),NDMOQR(2,I),NDMOQR(2,I),
-     &              NDMOQR(2,I),NZ,IPQTOQ(1,0),
+     &              NDMOQR(2,I),NZ,
      &              NDMOQR(2,I),1,NDMOQR(1,I),
      &              WORK(KQ(I)),NDMOQR(1,I),NDMOQR(2,I),NZ,
-     &              IPQTOQ(1,0),IPRINT)
+     &              IPRINT)
         NELM = NDMOQR(1,I)*NDMOQR(2,I)*NZ
         CALL DCOPY(NELM,CMO(ICMOQR(I)),1,WORK(KQ(I)),1)
  40   CONTINUE
@@ -2739,7 +2722,7 @@ CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE,BF1,BF2,BF3
       DIMENSION FMO(*),NFMO(2,2),IFMO(2),FAO(*),CMO(*),Q1(*),Q2(*),
      &          NCMO1(2,2),NCMO2(2,2),ICMO1(2),ICMO2(2),
-     &          WORK(*),IQBF(4)
+     &          WORK(*)
 C
       CALL QENTER('GTVFCK')
       KFRSAV = KFREE
@@ -2843,16 +2826,13 @@ CTROND      CALL DZERO(FMO,N2ORBXQ)
       DO 10 I = 1,NFSYM
         N2FMO = NFMO(1,I)*NFMO(2,I)
         IF(N2FMO.EQ.0) GOTO 10
-        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &              NFMO(1,I),NFMO(2,I),
-     &              FAO(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,
-     &              IPQTOQ(1,0),
-     &              FMO(IFMO(I)+1),NFMO(1,I),NFMO(2,I),NBF,IQBF,
+        CALL QTRANS('AOMO','S',D0,
+     &              NFBAS(I,0),NFBAS(I,0),NFMO(1,I),NFMO(2,I),
+     &              FAO(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &              FMO(IFMO(I)+1),NFMO(1,I),NFMO(2,I),NZ,IPQTOQ(1,0),
      &              Q1(ICMO1(I)),NCMO1(1,I),NCMO1(2,I),NZ,IPQTOQ(1,0),
      &              Q2(ICMO2(I)),NCMO2(1,I),NCMO2(2,I),NZ,IPQTOQ(1,0),
      &              WORK(KFREE),LFREE,IPRINT)
-        IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &     '*** WARNING *** GETFC1: NBF.NE.NZ !'
       IF(IPRINT.GE.5) THEN
         CALL HEADER('GTVFC1:MO Fock matrix '//FREP(I),-1)
         CALL PRQMAT(FMO(IFMO(I)+1),NFMO(1,I),NFMO(2,I),
@@ -3568,7 +3548,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dcbbas.h>
 #include <dgroup.h>
       LOGICAL ANTIS,LMP2
-      DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4),IQMO(4,0:7)
+      DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION WORK(*),DINTSKP(8),TIM1(7)
 C
       CALL QENTER('TRANOD')

@@ -52,7 +52,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dgroup.h>
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
-      DIMENSION IQMO(4,0:7),NZMO(0:7),KQ(2,4),KE(2,4),KIBE(2,4)
+      DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION IJP12(0:7)
       DIMENSION IJP34(2)
       DIMENSION IHTM(0:7),IHM(0:7),IFM(0:7),MHTM(2),NHTM(2)
@@ -325,8 +325,8 @@ C
      &                  WORK(KALGREC),ICS,ICF,
      &                  IC,TRIAN(1),NSTR(1,0,1),NSTR(1,0,2),
      &                  WORK(KIJPASS),WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &                  WORK(KGMAT),NSIZG,NZMO,IQMO,
-     &           MHTM,IHTM,INDX,WORK(KDXAB),IRECC,WORK(KJBOFF),
+     &                  WORK(KGMAT),NSIZG,MHTM,IHTM,
+     &                  INDX,WORK(KDXAB),IRECC,WORK(KJBOFF),
      &                  IBOFF,NBUF,NIJBUF,NBFSZ,WORK(KRBUF),
      &                  WORK(KLBUF1))
 C
@@ -373,7 +373,7 @@ C
      &             NSTR(1,0,3),NSTR(1,0,4),
      &             WORK(KQ(1,3)),WORK(KQ(1,4)),
      &             WORK(KQ(1,3)),WORK(KQ(1,4)),
-     &             NZMO,IQMO,IRECC,NBFSZ,NBUF,NIJBUF,MHTM,
+     &             IRECC,NBFSZ,NBUF,NIJBUF,MHTM,
      &             WORK(KDXKR12),WORK(KDXB12),WORK(KDXB34))
 C
 C     Delete half-transformed integral files
@@ -561,7 +561,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN2D*/
       SUBROUTINE MS4IN2D(WORK,KFREE,LFREE,IPRINT,ICS,ICF,NSTR3,NSTR4,
-     & Q3S,Q4S,Q3T,Q4T,NZMO,IQMO,IRECC,NBFSZ,NBUF,NIJBUF,MHTM,INDXKR,
+     & Q3S,Q4S,Q3T,Q4T,IRECC,NBFSZ,NBUF,NIJBUF,MHTM,INDXKR,
      & INDXB12,INDXB34)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -592,7 +592,6 @@ C
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION INDXKR(2,*),INDXB12(*),INDXB34(*)
       DIMENSION IRECC(2),MHTM(2),NBUF(2),NIJBUF(2),NBFSZ(2)
-      DIMENSION IQMO(4,0:7),NZMO(0:7)
 #include <mxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
@@ -631,7 +630,7 @@ C
      &                   WORK(KHMAT))
             CALL MS4IN2P(WORK,KFREE,LFREE,IPRINT,ICS,ICF,NSTR3,NSTR4,
      &                   IREPIJ,IJS,NIJ,Q3S,Q4S,Q3T,Q4T,
-     &                   WORK(KHMAT),NZMO,IQMO,INDXKR(1,NIJOFF),
+     &                   WORK(KHMAT),INDXKR(1,NIJOFF),
      &                   INDXB12(NIJOFF),INDXB34(NKLOFF))
             IOFF = IOFF + NIJ * MHTM(IREPIJ)
             IJS = IJS + NIJ
@@ -648,7 +647,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN2P*/
       SUBROUTINE MS4IN2P(WORK,KFREE,LFREE,IPRINT,ICS,ICF,NSTR3,NSTR4,
-     & IREPIJ,IJS,NIJ,Q3S,Q4S,Q3T,Q4T,HMAT,NZMO,IQMO,INDXKR,INDXB12,
+     & IREPIJ,IJS,NIJ,Q3S,Q4S,Q3T,Q4T,HMAT,INDXKR,INDXB12,
      & INDXB34)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -684,7 +683,6 @@ C
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION HMAT(*)
       DIMENSION INDXKR(2,*),INDXB12(*),INDXB34(*)
-      DIMENSION IQAO(4),IQMO(4,0:7),NZMO(0:7)
 #include <mxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
@@ -699,12 +697,6 @@ C
       KFRSAV = KFREE
 C
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
-C
-      NZAO = 1
-      IQAO(1) = 1
-      IQAO(2) = 0
-      IQAO(3) = 0
-      IQAO(4) = 0
 C
 C     Number of boson symmetry for each fermion irrep (parity)
 C
@@ -771,22 +763,13 @@ C
                         IREPSI = IBTXOR(IXYZ,IREPS)
                      ENDIF
 C
-C                    Do the actual transformation. IQMO is set by QTRANS
-C                    on basis of IQAO (real) and the IQ's of the
-C                    coefficients. We already did this in MS4IN1 and
-C                    overwrite it here. That does not matter as the 
-C                    result is consistent. Important is that we keep
-C                    the array to the end as it will tell us which were
-C                    were the non-zero quaternion units of the density
-C                    which is to be used in the final symmetrization 
-C                    step.
-C
+C                    Do the actual transformation. 
 
                      IF ((NR*NS.NE.0).AND.(NK*NL.NE.0)) THEN
                         CALL QTRANS('AOMO','S',D0,NR,NS,NK,NL,
-     &                       HMAT(IOFF),NR,NS,NZAO,IQAO,
+     &                       HMAT(IOFF),NR,NS,1,IPQTOQ(1,0),
      &                       WORK(KHTMP),NK,NL,
-     &                       NZMO(IREPRS),IQMO(1,IREPRS),
+     &                       NZ,IPQTOQ(1,IREPRS),
      &                       Q3S(KOFF),NRQ3,NCQ3,NZ,IPQTOQ(1,IREPRI),
      &                       Q4S(LOFF),NRQ4,NCQ4,NZ,IPQTOQ(1,IREPSI),
      &                       WORK(KFREE),LFREE,IPRINT)
@@ -825,9 +808,8 @@ C
      &                              WORK,KFREE,LFREE)
                         CALL MTRSP (NR,NS,HMAT(IOFF),NR,WORK(KTRMAT),NS)
                         CALL QTRANS('AOMO','S',D0,NS,NR,NK,NL,
-     &                       WORK(KTRMAT),NS,NR,NZAO,IQAO,
-     &                       WORK(KHTMP),NK,NL,
-     &                       NZMO(IREPRS),IQMO(1,IREPRS),
+     &                       WORK(KTRMAT),NS,NR,1,IPQTOQ(1,0),
+     &                       WORK(KHTMP),NK,NL,NZ,IPQTOQ(1,IREPRS),
      &                       Q3T(KOFF),NRQ3,NCQ3,NZ,IPQTOQ(1,IREPSI),
      &                       Q4T(LOFF),NRQ4,NCQ4,NZ,IPQTOQ(1,IREPRI),
      &                       WORK(KFREE),LFREE,IPRINT)
@@ -861,7 +843,7 @@ C
            JKR = INDXKR(2,IJ)
            IREPIJB = INDXB12(IJ)
            CALL SYMFINT(IPRINT,IREPIJ,IREPIJB,INDXB34,IJ,IKR,JKR,
-     &                  NSTR3,NSTR4,NKL,WORK(KHMAT),IQMO,
+     &                  NSTR3,NSTR4,NKL,WORK(KHMAT),
      &                  WORK,KFREE,LFREE)
         ELSEIF (ISTRAT.EQ.4) THEN
            CALL MDSCRU(IPRINT,IREPIJ,IJS+IJ,NKL,WORK(KHMAT)
@@ -1008,7 +990,7 @@ C/* Deck MS4IN1D*/
      &                   ICS,ICF,IC,
      &                   TRIAN,NSTR1,NSTR2,
      &                   IJPASS,Q1,Q2,
-     &                   GMAT,NSIZG,NZMO,IQMO,MHTM,IHTM,INDX,
+     &                   GMAT,NSIZG,MHTM,IHTM,INDX,
      &                   INDXAB,IRECC,JBOFF,IBOFF,NBUF,
      &                   NIJBUF,NBFSZ,RBUF,LBUF1)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1053,8 +1035,6 @@ C     - LBUF1        Buffer arrays with label of half-transformed integ
 C
 C     Output :
 C
-C     - NZMO         Number of non-zero quaternion components of HMAT
-C     - IQMO         Quaternion packing of HMAT
 C     -              Updated values of buffer blocks
 C
 #include <implicit.h>
@@ -1066,7 +1046,6 @@ C
       DIMENSION WORK(*)
       DIMENSION Q1(*),Q2(*),GMAT(NSIZG)
       DIMENSION IJPASS(0:7,NPASS),INDX(3,*)
-      DIMENSION IQAO(4),IQMO(4,0:7),NZMO(0:7)
       LOGICAL   SUB3,SUB4
 C
 C     For the buffered input
@@ -1121,7 +1100,7 @@ C
          CALL MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,
      &                TRIAN,NSTR1,NSTR2,NDMOQR,
      &                ICMOQR,IJPASS(0,IPASS),Q1,Q2,
-     &                GMAT,WORK(KHMAT),NZMO,IQMO)
+     &                GMAT,WORK(KHMAT))
 C
 C        Scatter half-transformed integrals to the right position
 C        Write them out to disk 

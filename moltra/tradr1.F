@@ -119,7 +119,6 @@ C
 #include <dgroup.h>
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*),KQ(2,4),KE(2,4),KIBE(2,4)
-      DIMENSION IQMO(4,0:7),NZMO(0:7)
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
       DIMENSION IJP12(0:7)
       DIMENSION IJP34(2)
@@ -248,7 +247,7 @@ C
      &                   NSTR(1,0,1),NSTR(1,0,2),
      &                   NDMOQR,ICMOQR,IJP12,
      &                   WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &                   WORK(KGMAT),WORK(KHMAT),NZMO,IQMO)
+     &                   WORK(KGMAT),WORK(KHMAT))
 C
 C           Scatter half-transformed integrals to the right position
 C
@@ -300,7 +299,7 @@ c        print*,ix,work(khtmat+ix-1)
      &             NSTR(1,0,3),NSTR(1,0,4),
      &             NDMOQR(1,1,3),ICMOQR(1,3),
      &             NFPCK12,WORK(KQ(1,3)),WORK(KQ(1,4)),
-     &             WORK(KHTMAT),WORK(KFMAT),NZMO,IQMO)
+     &             WORK(KHTMAT),WORK(KFMAT))
 c     write (LUPRI,'(//A)') ' The fully transformed integrals'
 c     do ix = 1, nsizf
 c        print*,ix,work(kfmat+ix-1)
@@ -345,7 +344,7 @@ C
          NKL = NFPCK34(IREPIJ)
          NF = NFPCK34(IREPIJ)*NZ*NZ*NBSYMP
          CALL DRV1SYM(WORK,KFREE,LFREE,IPRINT,NSTR(1,0,3),NSTR(1,0,4),
-     &                IREPIJ,NIJ,IQMO,WORK(KDXKR12),NIJOFF,
+     &                IREPIJ,NIJ,WORK(KDXKR12),NIJOFF,
      &                WORK(KDXB12),WORK(KDXB34),NKLOFF,
      &                WORK(KFMAT+IOFF),NF)
          NIJOFF = NIJOFF + NIJ
@@ -453,7 +452,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN2 */
       SUBROUTINE MS4IN2 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,NSTR1,NSTR2,
-     & NDMOQR,ICMOQR,IJPAIRS,Q1,Q2,GMAT,HMAT,NZMO,IQMO)
+     & NDMOQR,ICMOQR,IJPAIRS,Q1,Q2,GMAT,HMAT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher January 1997.
@@ -483,8 +482,6 @@ C
 C     Output :
 C
 C     - HMAT         Symmetry packed half-transformed integrals
-C     - NZMO         Number of non-zero quaternion components of HMAT
-C     - IQMO         Quaternion packing of HMAT
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -494,7 +491,6 @@ C
       DIMENSION WORK(*)
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(2)
-      DIMENSION IQAO(4),IQMO(4,0:7),NZMO(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
 #include <mxorb.h>
 #include <mxcent.h>
@@ -508,12 +504,6 @@ C
       CALL QENTER('MS4IN2')
 C
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
-C
-      NZAO = 1
-      IQAO(1) = 1
-      IQAO(2) = 0
-      IQAO(3) = 0
-      IQAO(4) = 0
 C
 C     Transform righthand indices to molecular spinor basis
 C
@@ -553,9 +543,8 @@ C
                      ENDIF
                      IF ((NP*NQ.NE.0).AND.(NI*NJ.NE.0)) THEN
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
-     &                      GMAT(IOFF),NP,NQ,NZAO,IQAO,
-     &                      WORK(KHTMP),NI,NJ,NZMO(IREPPQ),
-     &                                            IQMO(1,IREPPQ),
+     &                      GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
+     &                      WORK(KHTMP),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
      &                      Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
      &                      Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
      &                      WORK(KFREE),LFREE,IPRINT)
@@ -588,7 +577,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck DRV1SYM*/
       SUBROUTINE DRV1SYM(WORK,KFREE,LFREE,IPRINT,NSTR3,NSTR4,
-     & IREPIJ,NIJ,IQMO,INDXKR,NIJOFF,INDXB12,INDXB34,NKLOFF,FMAT,NF)
+     & IREPIJ,NIJ,INDXKR,NIJOFF,INDXB12,INDXB34,NKLOFF,FMAT,NF)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher May 1999.
@@ -613,7 +602,6 @@ C
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)
       DIMENSION INDXKR(2,*),INDXB12(*),INDXB34(*)
-      DIMENSION IQMO(4,0:7)
       DIMENSION FMAT(NF,*)
 #include <dgroup.h>
 #include <dcbtra.h>
@@ -625,7 +613,7 @@ C
          JKR = INDXKR(2,IJ+NIJOFF)
          IREPIJB = INDXB12(IJ+NIJOFF)
          CALL SYMFINT(IPRINT,IREPIJ,IREPIJB,INDXB34(1+NKLOFF),
-     &                IJ,IKR,JKR,NSTR3,NSTR4,NKL,FMAT(1,IJ),IPQTOQ,
+     &                IJ,IKR,JKR,NSTR3,NSTR4,NKL,FMAT(1,IJ),
      &                WORK,KFREE,LFREE)
       ENDDO
 C

@@ -227,7 +227,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SYMFINT */
       SUBROUTINE SYMFINT(IPRINT,IREPIJ,IREPIJB,IREPKLB,IJ,IKR,JKR,
-     &                   NSTR3,NSTR4,NKL,FMAT,IQMO,WORK,KFREE,LFREE)
+     &                   NSTR3,NSTR4,NKL,FMAT,WORK,KFREE,LFREE)
 C
 C     Symmetrize the final integrals and write them to file
 C
@@ -241,7 +241,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dgroup.h>
       DIMENSION WORK(*)
       INTEGER NSTR3(2),NSTR4(2)
-      DIMENSION IQMO(4,0:7)
       DIMENSION FMAT(NKL,NZ,NZ,*)
       DIMENSION IREPKLB(NKL)
 C
@@ -270,7 +269,7 @@ C    If spinfree : zero out the spin-orbit coupling for electron 1
 C
                IF (IREPAB.NE.IREPIJB.AND.SPINFR) GOTO 100
                DO IZ1 = 1, NZS
-                  IQ1 = IQMO(IZ1,IREPAB)
+                  IQ1 = IPQTOQ(IZ1,IREPAB)
                   DO IZ2 = 1, NZS
 C
 C    If spinfree : zero out the spin-orbit coupling for electron 2
@@ -281,7 +280,7 @@ C
      &                        FMAT(I,IZ2,IZ1,IREPABR) = 0.D0
                         ENDDO
                      ENDIF
-                     IQ2 = IQMO(IZ2,IREPAB)
+                     IQ2 = IPQTOQ(IZ2,IREPAB)
                      IFAC = INTCL(ICLASS,IQ1,IQ2)
                      IF (IFAC.NE.0) THEN
                         FACTR = IFAC
@@ -317,9 +316,9 @@ C
             DO IREPAB = 0, NBSYM-1
                IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
                   DO IZ1 = 1, NZS
-                     IQ1 = IQMO(IZ1,IREPAB)
+                     IQ1 = IPQTOQ(IZ1,IREPAB)
                      DO IZ2 = 1, NZS
-                        IQ2 = IQMO(IZ2,IREPAB)
+                        IQ2 = IPQTOQ(IZ2,IREPAB)
                         IFAC = INTCL(ICLASS,IQ1,IQ2)
                         IF (IFAC.NE.0) THEN
                             FACTR = IFAC

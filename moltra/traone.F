@@ -178,7 +178,7 @@ C
       LOGICAL TOBE,BF1,BF2,BF3
       DIMENSION FMO(*),FAO(*),DMAT(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
-      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),IQBF(4)
+      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
       DIMENSION Q1(*),Q2(*),QCO(*)
 C
       CALL QENTER('GTCFC1')
@@ -301,15 +301,13 @@ C
           CALL PRQMAT(Q2(ICMOQR(I,2)),NRQ2,NCQ2,NRQ2,NCQ2,NZ,
      &                IPQTOQ(1,0),LUPRI)
         ENDIF
-        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &            NSTR(I,0,1),NSTR(I,0,2),
+        CALL QTRANS('AOMO','S',D0,
+     &            NFBAS(I,0),NFBAS(I,0),NSTR(I,0,1),NSTR(I,0,2),
      &            FAO(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &            FMO(I2ORBX(I,I)+1),NORBT,NORBT,NBF,IQBF,
+     &            FMO(I2ORBX(I,I)+1),NORBT,NORBT,NZ,IPQTOQ(1,0),
      &            Q1(ICMOQR(I,1)),NRQ1,NCQ1,NZ,IPQTOQ(1,0),
      &            Q2(ICMOQR(I,2)),NRQ2,NCQ2,NZ,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRINT)
-        IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &     '*** WARNING *** GTCFC1: NBF.NE.NZ !'
  10   CONTINUE
 C
       CALL QEXIT('GTCFC1')
