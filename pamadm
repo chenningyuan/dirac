@@ -206,7 +206,7 @@ abacus/abanuc.o abacus/abaopt.o abacus/abaortvec.o abacus/abarint.o\
 abacus/abatro.o abacus/abavrml.o abacus/abawalk.o\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \
-gp/gpjth.o \
+gp/gpjth.o          gp/gpjth_c.o \
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \
 prp/pamgrd.o 
 
@@ -269,7 +269,7 @@ if ($OPENMOD) then
 cat <<EOF>> Makefile
 
 OPENOBJS = \
-dirac/open/gpjth_c.o        dirac/open/diropen.o
+dirac/open/diropen.o
 EOF
 endif
 #
@@ -341,7 +341,7 @@ export:
 	dirac/*.F dirac/*.c dirac/Makefile.in \
 	prp/*.F prp/Makefile.in \
 	abacus/*.F abacus/Makefile.in \
-	gp/Makefile.in gp/*.F \
+	gp/Makefile.in gp/*.F gp/*.c \
 	pdpack/Makefile.in pdpack/*.F 
 EOF
 if($ERITAR) then
