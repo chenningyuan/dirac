@@ -6,415 +6,253 @@
 # FILE    : dhf.in
 # SOURCE  : $Source$
 #
-# Should we use echo or echo -n
 #
-set LOC = `pwd`
-set argv_save = "$argv"
-set echo_style = sysv
-if ( "	" == "`echo '\t'`" ) then
-   set _echo = echo
-else
-   set _echo = 'echo -e'
-endif
-#
-# Print usage
-#
-if ($#argv == 0) then
-      echo 'Usage: '$0' [flags] mol[.mol] menu[.inp]'
-      echo '   Flags:'
-      echo '     -copy "file1 file2 .." : Copy files to work area'
-      echo '     -debug                 : Run dirac in debugger'
-      echo '     -get "file1 file2 .."  : Get files from work area'
-      echo '     -incmo                 : Copy DFCOEF to   work area'
-      echo '     -utcmo                 : Save DFCOEF from work area'
-      echo '     -infck                 : Copy DFFCK2 to   work area'
-      echo '     -utfck                 : Save DFFCK2 from work area'
-      echo '     -inxvc                 : Copy PAMXV1 to   work area'
-      echo '     -utxvc                 : Save PAMXV1 from work area'
-      echo '     -mw mem                : Set memory(in megawords) for master '
-      echo '     -nw mem                : Set memory(in megawords) for the nodes '
-      echo '     -rmscr                 : Remove work area before calculation'
-      echo '     -rmwrk                 : Remove work area after calculation'
-      echo '     -run name              : File suffix for output    '
-      echo '     -scr name              : Directory name for scratch  '
-      echo '     -mpi n                 : Run MPI with n nodes'
-      echo '     -nonice                : Do not execute with nice'
-      echo '     -notify                : Notify user'
-      echo '     -user                  : Which user to notify'
-      echo '     -dirac dirac_cmd       : Use dirac_cmd instead for default'
-      echo '                              dirac'
-      goto exit0
-endif
-#
-# Allow deletion of files when piping
-# Unalias rm
-#
-unset noclobber
-unalias rm
-#
-# Set default values
-#
-set COPY_FILES = 
-
-set DEBUG      = 0
-
-set GET_FILES  =
-
-set INCMO      = 0
-set UTCMO      = 0
-set INFCK      = 0
-set UTFCK      = 0
-set INXVC      = 0
-set UTXVC      = 0
-
-set MEMORY     =
-set NODE_MEMORY=
-
-set RMSCR      = 0
-set RMWRK      = 0
-
-set RUN        = 'out'
-
-if ( $?USER ) then
-   set SCR        = $SCR_DEFAULT/$USER
-else
-   set SCR        = $SCR_DEFAULT/$LOGNAME
-endif
-
-set SCR_DIR    =
-
-set MPI_NPROC  = 
-set PARCAL     =
-
-set NICE       = 1
-
-set NOTIFY     = 0
-set NOTIFY_USER =
-
-set ALT_DIRAC  =
-#
-# Parse arguments
-#
-while($#argv)
-   switch($argv[1])
-      case -copy:
-         shift
-         set COPY_FILES = $argv[1]
-         breaksw
-      case -debug:
-         set DEBUG = 1
-         breaksw
-      case -get:
-         shift
-         set GET_FILES = $argv[1]
-         breaksw
-      case -infck:
-         set INFCK = 1
-         breaksw
-      case -utfck:
-         set UTFCK = 1
-         breaksw
-      case -incmo:
-         set INCMO = 1
-         breaksw
-      case -utcmo:
-         set UTCMO = 1
-         breaksw
-      case -mw:
-         shift
-         @ MEMORY = $argv[1] * 1000000
-         breaksw
-      case -nw:
-         shift
-         @ NODE_MEMORY = $argv[1] * 1000000
-         breaksw
-      case -rmscr:
-         set RMSCR = 1
-         breaksw
-      case -rmwrk:
-         set RMWRK = 1
-         breaksw
-      case -run:
-         shift
-         set RUN = $argv[1]
-         breaksw
-      case -scr:
-         shift
-         set SCR_DIR = $argv[1]
-         breaksw
-      case -mpi:
-         shift
-         @ MPI_NPROC = $argv[1] + 1
-         set PARCAL = 1
-         breaksw
-      case -nonice:
-         set NICE = 0
-         breaksw
-      case -notify
-         set NOTIFY = 1
-         breaksw
-      case -user
-         set NOTIFY = 1
-         shift
-         set NOTIFY_USER = $argv[1]
-         breaksw
-      case -dirac
-         shift
-         set ALT_DIRAC = $argv[1]
-         breaksw
-      case -*:
-         echo $argv[1] 'not recognized'
-         goto exit1
-         breaksw
-      case  *:
-         set MOL = $argv[1]
-         if ( "$MOL:e" == "mol" ) then
-            set MOL = $MOL:r.mol
-         else
-            set MOL = $MOL.mol
-         endif
-         if ($#argv>1) shift
-         set MENU = $argv[1]
-         if ( "$MENU:e" == "inp" ) then
-            set MENU = $MENU:r.inp
-         else
-            set MENU = $MENU.inp
-         endif
-         breaksw
-   endsw
-   shift
-end
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# Function usage
+#    - prints usage to stdout
 #
 #
-# SET WORKING DIRECTORY
+usage ()
+{
+   echo 'Usage: '$0' [flags] mol[.mol] menu[.inp]'
+   echo '   Flags:'
+   echo '     -copy "file1 file2 .." : Copy files to work area'
+   echo '     -debug                 : Run dirac in debugger'
+   echo '     -get "file1 file2 .."  : Get files from work area'
+   echo '     -incmo                 : Copy DFCOEF to   work area'
+   echo '     -utcmo                 : Save DFCOEF from work area'
+   echo '     -infck                 : Copy DFFCK2 to   work area'
+   echo '     -utfck                 : Save DFFCK2 from work area'
+   echo '     -inxvc                 : Copy PAMXV1 to   work area'
+   echo '     -utxvc                 : Save PAMXV1 from work area'
+   echo '     -mw mem                : Set memory(in megawords) for master '
+   echo '     -nw mem                : Set memory(in megawords) for the nodes '
+   echo '     -rmscr                 : Remove work area before calculation'
+   echo '     -rmwrk                 : Remove work area after calculation'
+   echo '     -run name              : File suffix for output    '
+   echo '     -scr name              : Directory name for scratch  '
+   echo '     -mpi n                 : Run MPI with n nodes'
+   echo '     -nonice                : Do not execute with nice'
+   echo '     -notify                : Notify user'
+   echo '     -user                  : Which user to notify'
+   echo '     -dirac dirac_cmd       : Use dirac_cmd instead for default'
+   echo '                              dirac'
+}
 #
 #
-if ( "$SCR_DIR" != "" ) then
-   set WRK = $SCR_DIR
-else
-   set WRK = $SCR/{$MOL:r}
-endif
-#
-# Make $WRK if non-existing
-# The -p switch makes all parent directories first
-#
-if ( ! -d $WRK ) then
-   mkdir -p $WRK || echo "   MKDIR error\!" 
-   if ( ! -d $WRK ) then
-      echo "   Could not create work directory"
-      goto exit1
-   endif
-endif
-#
-# Remove contents for $WRK if requested ( RMSCR )
-if ( $RMSCR ) then
-   rm -f $WRK/* >& /dev/null || echo "RM error\!"
-endif
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# Notify user
 #
 #
-# SET WORKING MEMORY FOR MASTER AND NODE
-#
-#
-if ($PARCAL) then
-   setenv DIRPAR 1
-endif
-if ( "$MEMORY" != "" ) then
-   setenv DIRWRK "$MEMORY"
-endif
-if ( "$NODE_MEMORY" != "" ) then
-   setenv DIRNOD "$NODE_MEMORY"
-endif
-#
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#
-# SOME TEXT ...
-#
-echo "   ****************************************"
-echo "   **** OUTPUT FROM DIRAC SHELL SCRIPT ****"
-echo "   ****************************************"
-echo
-echo '   $Revision$'
-echo "   Host        : `hostname`"
-echo "   Date        : `date`"
-echo "   PID         : $$"
-echo "   Input dir   : `pwd`"
-echo "   Work dir    : $WRK"
-echo
-echo
-#
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#
-# SET SPECIAL CRAY T3E OPTIONS
-#
-#
-if ( "`uname -m | grep 'T3E' `" != "" ) then
-   echo "   Setting special Cray T3E options:" 
-   echo "   assign -Yon u:5" 
-   assign -Yon u:5
-endif
-#
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#
-# COPY MOLECULE AND MENU FILE
-#
-#
-cd $WRK
-$_echo "   Copying $LOC/$MOL to working directory : \c"
-if ( -e $LOC/$MOL ) then
-   cp $LOC/$MOL MOLECULE.INP || goto exit1
-   echo "ok"
-else
-   echo "not found"
-   goto exit1
-endif
-$_echo "   Copying $LOC/$MENU to working directory : \c"
-if ( -e $LOC/$MENU ) then
-   cp $LOC/$MENU DIRAC.INP || goto exit1
-   echo "ok"
-else
-   echo "not found"
-   goto exit1
-endif
-#
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#
-# COPY REQUESTED FILES TO WORKING DIRECTORY
-#
-#
-#
-# Coefficients
-#
-if($INCMO) then
-   $_echo "   Copying $LOC/DFCOEF to working directory : \c"
-   if ( -e $LOC/DFCOEF ) then
-      cp $LOC/DFCOEF . || goto exit1
-      echo "ok"
+notify_user()
+{
+   if [ -n "$NOTIFY_USER" ]; then
+      TO=$NOTIFY_USER
    else
-      echo "not found"
-   endif
-endif
-#
-# Two-electron fock matrix
-#
-if($INFCK) then
-   $_echo "   Copying $LOC/DFFCK2 to working directory : \c"
-   if ( -e $LOC/DFFCK2 ) then
-      cp $LOC/DFFCK2 . || goto exit1
-      echo "ok"
-   else
-      echo "not found"
-   endif
-endif
-#
-# The rest
-#
-if ( "$COPY_FILES" != "" ) then
-   foreach file ( $COPY_FILES )
-      $_echo "   Copying $LOC/$file to working directory : \c"
-      if ( -e $LOC/$file ) then
-         cp $LOC/$file . || goto exit1
-         echo "ok"
+      if [ -n "$USER" ]; then
+         TO="$USER@`hostname`"
       else
-         echo "not found"
-      endif
-   end
-endif
+         TO="$LOGNAME@`hostname`"
+      fi
+   fi
+   #mail $TO <<EOF
+   cat <<EOF
+
+Your job has has returned with exit status: $EXIT
+
+Command      : $0 $ARG_SAVE
+Hostname     : `hostname`
+Input dir    : $LOC
+Menu file    : $MENU
+Molecule file: $MOL
+Output file  : $OUTPUT_FILE
+
+EOF
+}
 #
 #
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#
-# SAVE OLD OUTPUT FILE
-#
-#
-if ( "$MOL:r" == "$MENU:r" ) then
-   set OUTPUT_FILE = {$LOC}/{$MOL:r}.{$RUN}
-else
-   set OUTPUT_FILE = {$LOC}/{$MENU:r}_{$MOL:r}.{$RUN}
-endif
-#
-if ( -f $OUTPUT_FILE ) then
-   $_echo "   Existing file $OUTPUT_FILE:t renamed to $OUTPUT_FILE:t.bak : \c"
-   mv $OUTPUT_FILE $OUTPUT_FILE.bak
-   echo "ok"
-endif
-#
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
 # SET UP COMMAND TO RUN
 #
 #
-# Nice ?
-#
-if ( $NICE ) then
-   if ( -e /usr/sbin/npri ) then
-      set NICE_CMD = "npri -h129"
+setup_command()
+{
+   #
+   # Execute Dirac "nicely"?
+   #
+   if [ -n "$NICE" ]; then
+      if [ -x /usr/sbin/npri ]; then
+         NICE_CMD="npri -h129"
+      else
+         NICE_CMD="nice -20"
+      fi
    else
-      set NICE_CMD = "nice -20"
-   endif
-else
-   set NICE_CMD = 
-endif
+      NICE_CMD=
+   fi
+   #
+   # Dirac executable
+   #
+   if [ -n "$ALT_DIRAC" ]; then
+      DIRAC=${ALT_DIRAC##*/}
+      BIN_DIR=${ALT_DIRAC%/*}
+   else
+      DIRAC=dirac.x
+   fi
+   #
+   # MPI?
+   #
+   if [ -n "$PARCAL" ]; then
+      DIRAC_CMD=mpirun -np $MPI_NPROC $DIRAC
+   else
+      DIRAC_CMD=$DIRAC
+   fi
+   #
+   # Debug
+   #
+   if [ -n "$DEBUG" ]; then
+      DIRAC_CMD="dbx -I $SRC_DIR/abacus -I $SRC_DIR/dirac -I $SRC_DIR/prp "
+      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/rsp -I $SRC_DIR/dirac/open "
+      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/gp -I $SRC_DIR/pdpack "
+      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/moltra -I $SRC_DIR/relccsd "
+      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/eri -I $SRC_DIR/dirac/main $DIRAC"
+   fi
+}
 #
-# Mpi ?
 #
-if ( "$ALT_DIRAC" != "" ) then
-   set DIRAC = $ALT_DIRAC:t
-   set BIN_DIR = $ALT_DIRAC:h
-else
-   set DIRAC = "dirac.x"
-endif
-if ($PARCAL) then
-   set DIRAC_CMD = "mpirun -np $MPI_NPROC $DIRAC"
-else
-   set DIRAC_CMD = "$DIRAC"
-endif
-#
-# Debug
-#
-if ( $DEBUG ) then
-   set DIRAC_CMD = "dbx -I $SRC_DIR/abacus -I $SRC_DIR/dirac -I $SRC_DIR/prp "
-   set DIRAC_CMD = "$DIRAC_CMD -I $SRC_DIR/prp/rsp -I $SRC_DIR/dirac/open "
-   set DIRAC_CMD = "$DIRAC_CMD -I $SRC_DIR/gp -I $SRC_DIR/pdpack "
-   set DIRAC_CMD = "$DIRAC_CMD -I $SRC_DIR/moltra -I $SRC_DIR/relccsd "
-   set DIRAC_CMD = "$DIRAC_CMD -I $SRC_DIR/eri $DIRAC"
-endif
-#
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
 # EXECUTE DIRAC
-$_echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
-if ( -e $BIN_DIR/$DIRAC ) then
-   cp $BIN_DIR/$DIRAC . || goto exit1
-   echo "ok"
-else
-   echo "not found"
-   goto exit1
-endif
-echo "   Executing: $NICE_CMD $DIRAC_CMD"
-if ( $DEBUG ) then
-   $NICE_CMD $DIRAC_CMD
-else
-   $NICE_CMD $DIRAC_CMD > $OUTPUT_FILE || goto exit1
-endif
+#
+#
+execute_dirac()
+{
+   echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
+   if [ -x $BIN_DIR/$DIRAC ]; then
+      cp $BIN_DIR/$DIRAC . || \
+         ( \
+            echo "   Error copying $BIN_DIR/$DIRAC" ; \
+            EXIT=1 ;\
+            exitfunc \
+         )
+      echo "ok"
+   else
+      echo "not found"
+      EXIT=1
+      exitfunc
+   fi
+   echo "   Executing: $NICE_CMD $DIRAC_CMD"
+   if [ -n "$DEBUG"  ]; then
+      $NICE_CMD $DIRAC_CMD
+   else
+      $NICE_CMD $DIRAC_CMD > $OUTPUT_FILE || \
+         ( \
+            echo "   $DIRAC returned non-zero exit code" ; \
+            EXIT=1 ;
+            export EXIT \
+         )
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Print header
+#
+#
+print_header()
+{
+   echo "   ****************************************"
+   echo "   **** OUTPUT FROM DIRAC SHELL SCRIPT ****"
+   echo "   ****************************************"
+   echo
+   echo '   $Revision$'
+   echo "   Host        : `hostname`"
+   echo "   Date        : `date`"
+   echo "   PID         : $$"
+   echo "   Input dir   : `pwd`"
+   echo "   Work dir    : $WRK"
+   echo
+   echo
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Exit
+#
+#
+exitfunc()
+{
+   if [ $EXIT -eq 0 ]; then
+      echo
+      echo "   Exit date: `date`"
+      echo "   *** NORMAL EXIT"
+   else
+      echo
+      echo "   Exit date: `date`"
+      echo "   *** ABNORMAL EXIT"
+   fi
+   if [ -n "$NOTIFY" ]; then
+      notify_user()
+   fi
+   exit $EXIT
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# REMOVE WORK DIRECTORY
+#
+#
+remove_work_dir()
+{
+   if [ -n "$RMWRK" ]; then
+      cd ..
+      rm -fr $WRK
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SET WORKING DIRECTORY
+#
+#
+set_work_dir()
+{
+   if [ -n "$SCR_DIR" ]; then
+      WRK=$SCR_DIR
+   else
+      WRK=$SCR/$MOL
+   fi
+   #
+   # Make $WRK if non-existing
+   # The -p switch makes all parent directories first
+   #
+   mkdir -p $WRK || echo "   MKDIR error\!"
+   if [ ! -d $WRK ]; then
+      echo "   Could not create work directory: $WRK"
+      EXIT=1
+      exitfunc
+   fi
+   #
+   # Remove contents of $WRK if requested ( RMSCR )
+   #
+   if [ -n "$RMSCR" ]; then
+      rm -f $WRK/* 2> /dev/null || echo "RM error\!"
+   fi
+}
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -423,100 +261,312 @@ endif
 # SAVE REQUESTED FILES
 #
 #
-# Coefficients
-#
-if ( $UTCMO ) then
-   $_echo "   Saving $WRK/DFCOEF : \c"
-   if ( -e $WRK/DFCOEF ) then
-      cp $WRK/DFCOEF $LOC
-      echo "ok"
-   else
-      echo "not found"
-   endif
-endif
-#
-# Two-electron Fock matrix
-#
-if ( $UTFCK ) then
-   $_echo "   Saving $WRK/DFFCK2 : \c"
-   if ( -e $WRK/DFFCK2 ) then
-      cp $WRK/DFFCK2 $LOC
-      echo "ok"
-   else
-      echo "not found"
-   endif
-endif
-if ( "$GET_FILES" != "" ) then
-   foreach file ( $GET_FILES )
-      $_echo "   Saving $WRK/$file : \c"
-      if ( -e $WRK/$file ) then
-         cp $WRK/$file $LOC
-         echo "ok"
-      else
-         echo "not found"
-      endif
-   end
-endif
+save_files()
+{
+   #
+   # GET REQUESTED FILES FROM WORKING DIRECTORY
+   #
+   if [ -n "$GET_FILES" ]; then
+      for file in $GET_FILES; do
+         echo "   Saving $WRK/$file : \c"
+         if [ -e $WRK/$file ]; then
+            cp $WRK/$file $LOC || echo "not \c"
+            echo "ok"
+         else
+            echo "not found"
+            EXIT=1
+            exitfunc
+         fi
+      done
+   fi
+}
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
-# REMOVE WORK DIRECTORY
+# COPY FILES TO WORKING DIRECTORY
 #
 #
-if ( $RMWRK ) then
-   cd ..
-   rm -fr $WRK
-endif
+copy_files()
+{
+   #
+   # COPY MOLECULE AND MENU FILE
+   #
+   cd $WRK
+   echo "   Copying $LOC/$MOL.mol to working directory : \c"
+   if [ -e $LOC/$MOL.mol ]; then
+      cp $LOC/$MOL.mol MOLECULE.INP || \
+         ( \
+            echo "   Error copying $LOC/$MOL.mol" ; \
+            EXIT=1 ; \
+            exitfunc \
+         )
+      echo "ok"
+   else
+      echo "not found"
+      EXIT=1
+      exitfunc
+   fi
+   echo "   Copying $LOC/$MENU.inp to working directory : \c"
+   if [ -e $LOC/$MENU.inp ]; then
+      cp $LOC/$MENU.inp DIRAC.INP || \
+         ( \
+            echo "   Error copying $LOC/$MENU.inp" ; \
+            EXIT=1 ; \
+            exitfunc \
+         )
+      echo "ok"
+   else
+      echo "not found"
+      EXIT=1
+      exitfunc
+   fi
+   #
+   # COPY REQUESTED FILES TO WORKING DIRECTORY
+   #
+   if [ -n "$COPY_FILES" ]; then
+      for file in $COPY_FILES; do
+         echo "   Copying $LOC/$file to working directory : \c"
+         if [ -e $LOC/$file ]; then
+            cp $LOC/$file . || \
+               ( \
+                  echo "   Error copying $LOC/$file" ; \
+                  EXIT=1 ; \
+                  exitfunc \
+               )
+            echo "ok"
+         else
+            echo "not found"
+            EXIT=1
+            exitfunc
+         fi
+      done
+   fi
+}
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
-echo 
-echo "   Exit date: `date`"
-echo "   *** NORMAL EXIT"
-set return = exit0
-set exit_status = 0
-if ( $NOTIFY ) goto sub_notify
-exit0:
-exit 0
-
-exit1:
-echo
-echo "   Exit date: `date`"
-echo "   *** ABNORMAL EXIT"
-set return = ab_exit
-set exit_status = 1
-if ( $NOTIFY ) goto sub_notify
-ab_exit:
-exit 1
-
-sub_notify:
-
-if ( "$NOTIFY_USER" != "" ) then
-   set TO = $NOTIFY_USER
-else
-   if ( "`uname -m | sed -e 's/^CRAY.*/CRAY/'`" != "CRAY" ) then
-      set TO = "$USER@`hostname`"
+# SAVE OLD OUTPUT FILE
+#
+#
+save_old_output()
+{
+   if [ "$MOL" = "$MENU" ]; then
+      OUTPUT_FILE=${LOC}/${MOL}.${RUN}
    else
-      set TO = "$LOGNAME@`hostname`"
-   endif
-endif
+      OUTPUT_FILE=${LOC}/${MENU}_${MOL}.${RUN}
+   fi
+   #
+   # Save old output file
+   #
+   if [ -e $OUTPUT_FILE ]; then
+      echo "   Existing file ${OUTPUT_FILE##*/} renamed to ${OUTPUT_FILE##*/}.bak : \c"
+      mv $OUTPUT_FILE $OUTPUT_FILE.bak || \
+         ( \
+            echo "   Error renaming $OUTPUT_FILE" ; \
+            EXIT=1 ;\
+            exitfunc \
+         )
+      echo "ok"
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SET WORKING MEMORY FOR MASTER AND NODE
+#
+#
+set_work_memory()
+{
+   if [ -n "$PARCAL" ]; then
+      DIRPAR=1
+      export DIRPAR
+   fi
+   if [ -n "$MEMORY" ]; then
+      DIRWRK=$MEMORY
+      export DIRWRK
+   fi
+   if [ -n "$NODE_MEMORY" ]; then
+      DIRNOD=$$NODE_MEMORY
+      export DIRNOD
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Set default values
+#
+#
+initialize()
+{
+   LOC=`pwd`
 
-#echo $TO
-#cat <<EOF
-mail $TO <<EOF
+   EXIT=0
 
-Your job has has returned with exit status: $exit_status
+   RMWRK=
+   RMSCR=
 
-Command      : $0 $argv_save
-Hostname     : `hostname`
-Input dir    : $LOC
-Menu file    : $MENU
-Molecule file: $MOL
-Output file  : $OUTPUT_FILE
+   COPY_FILES=
 
-EOF
-goto $return
+   DEBUG=
+
+   GET_FILES=
+
+   MEMORY=
+   NODE_MEMORY=
+
+   RUN='out'
+
+   if [ "$LOGNAME" = "" ]; then
+      SCR=$SCR_DEFAULT/$USER
+   else
+      SCR=$SCR_DEFAULT/$LOGNAME
+   fi
+
+   SCR_DIR=
+
+   MPI_NPROC=
+   PARCAL=
+
+   NICE=1
+
+   NOTIFY=
+   NOTIFY_USER=
+
+   ALT_DIRAC=
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Parse arguments
+#
+#
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+initialize
+ARG_SAVE="$*"
+if [ -z "$1" ]; then
+   usage
+   exitfunc
+fi
+
+while [ -n "$1" ]; do
+   case $1 in
+      -copy)
+         shift
+         COPY_FILES="$COPY_FILES $1"
+         ;;
+      -debug)
+         DEBUG=1
+         ;;
+      -get)
+         shift
+         GET_FILES="$GET_FILES $1"
+         ;;
+      -infck)
+         COPY_FILES="$COPY_FILES DFFCK2"
+         ;;
+      -utfck)
+         GET_FILES="$GET_FILES DFFCK2"
+         ;;
+      -incmo)
+         COPY_FILES="$COPY_FILES DFCOEF"
+         ;;
+      -utcmo)
+         GET_FILES="$GET_FILES DFCOEF"
+         ;;
+      -mw|-memory)
+         shift
+         let MEMORY=$1*1000000
+         ;;
+      -nw|-nodememory)
+         shift
+         let NODE_MEMORY=$1*1000000
+         ;;
+      -rmscr)
+         RMSCR=1
+         ;;
+      -rmwrk)
+         RMWRK=1
+         ;;
+      -run)
+         shift
+         RUN=$1
+         ;;
+      -scr|-scratch)
+         shift
+         SCR_DIR=$1
+         ;;
+      -mpi)
+         shift
+         let MPI_NPROC=$1+1
+         PARCAL=1
+         ;;
+      -nonice)
+         NICE=
+         ;;
+      -notify)
+         NOTIFY=1
+         ;;
+      -user)
+         NOTIFY=1
+         shift
+         NOTIFY_USER=$1
+         ;;
+      -dirac)
+         shift
+         ALT_DIRAC=$1
+         ;;
+      -*)
+         echo "$1 not recognized"
+         usage
+         EXIT=2
+         exitfunc
+         ;;
+      *)
+         MOL=${1%\.mol}
+         shift 
+         MENU=${1%\.inp}
+         ;;
+   esac
+   shift
+done
+
+#
+#  Set working directory, set work memory, print header
+#  copy files to working directory, save existing output file,
+#  setup command to run, execute dirac, save files, and delete
+#  working directory
+#
+EXIT=0
+set_work_dir
+set_work_memory
+print_header
+copy_files
+save_old_output
+setup_command
+execute_dirac
+save_files
+remove_work_dir
+#
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Exit 
+#
+#
+exitfunc
