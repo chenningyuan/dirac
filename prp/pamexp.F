@@ -529,7 +529,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1_mp2 */
       SUBROUTINE PRPEX1_MP2(EXPVAL,LEXPST,CMO,EIG,DMAT,PMAT,PTRI,OP1INT,
-     &                      DMO,FIRST,WORK,KFREE,LWORK)
+     &                      DMO,FIRST,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Calculate correlation contribution to static first order properties
@@ -568,7 +568,7 @@ C
 C     Initialize
 C     ==========
 C
-#include "memint.h"
+c#include "memint.h"
 #if defined (SYS_IBM)
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='APROPER')
@@ -576,6 +576,8 @@ C
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
+C
+      LWORK=LFREE
 C
       CALL MEMCHK('voor dzero',WORK,1)
       CALL DZERO(EXPVAL,NEXPP)
