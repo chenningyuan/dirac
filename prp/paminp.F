@@ -60,7 +60,7 @@ C
       DATA TABLE  /'.DIPOLE','.QUADRU','.POLARI','.MAGNET',
      &             '.NMR   ','.SPIN-S','.SHIELD','.PRINT ',
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
-     &             '.MOLGRD','.NSTDIA','.XXXXXX','.XXXXXX'/
+     &             '.MOLGRD','.NSTDIA','.XXXXXX','.PVC   '/
 C
       CALL QENTER('PRPINP')
 #include <memint.h>
@@ -84,6 +84,7 @@ C
       NQCC     = .FALSE.
       DSO      = .FALSE.
       NSTDIA   = .FALSE.
+      PVC      = .FALSE.
       ABUND    = D1
       NDSOINT  = 0
       MGRAD    = .FALSE.
@@ -209,6 +210,9 @@ C&&&& NSTDIA diamagnetic contribution to shielding
   115    CONTINUE
             GO TO 100
   116    CONTINUE
+C&&&& PVC Parity violation - chirality
+            PVC   = .TRUE.
+            DOEXP = .TRUE.
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -441,6 +445,10 @@ C
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Quadrupole moment'
       ENDIF
+      IF(PVC) THEN    
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(4X,A)')'- Parity violation - chirality'
+      ENDIF
       IF(EFG) THEN    
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Electric field gradient'
@@ -491,6 +499,12 @@ C       [Alpha x P]_z * vector product of alpha and vector operator,
 C                       z-component    
 C    8. ALPHADOT
 C       A.P           * dot-product of alpha and vector operator
+C
+C    9. GAMMA5        
+C       gamma5 p      * The gamma5 matrix times a scalar operator
+C                       gamma5 = | 0 I | 
+C                                | I 0 |
+C
 C  Operator types 5,6 and 7 form the components of a vectorproduct 
 C  of the alpha matrices and some scalar operator.
 C
@@ -508,7 +522,7 @@ C
 #include <priunit.h>
       CHARACTER*7 WORD
 C
-      PARAMETER (NTABKW = 11)
+      PARAMETER (NTABKW = 12)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
@@ -520,7 +534,7 @@ C
       SAVE TABKW
       DATA TABKW/'DIAGONAL', 'XALPHA  ', 'YALPHA  ', 'ZALPHA  ',
      &           'XAVECTOR', 'YAVECTOR', 'ZAVECTOR', 'ALPHADOT',
-     &           'CLASS   ', 'FACTORS ', 'COMFACTO'/
+     &           'GAMMA5  ', 'CLASS   ', 'FACTORS ', 'COMFACTO'/
 C
       CALL QENTER('XPRINP')
 C
@@ -623,13 +637,13 @@ C
 C          If keyword defines operator type, then initialize
 C          =================================================
 C
-           IF (I .LE. 8) THEN
+           IF (I .LE. 9) THEN
               IPTYP = I
               NLABEL= 0
               NFAC  = 0
               IKW = 2
            END IF
-           GO TO (1,1,1,1,2,2,2,3,4,5,6), I
+           GO TO (1,1,1,1,2,2,2,3,1,4,5,6), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -1258,6 +1272,13 @@ C
         RETURN
       ENDIF
 C
+C     Parity violation - chirality operator
+C
+      IF(LABINT(1:3).EQ.'PVC') THEN
+        CLASSLB = 'PVC    '
+        RETURN
+      ENDIF
+C
 C     Electric field gradient at the individual nuclei, spherical
 C
       IF(LABINT(3:5).EQ.'FGS') THEN
@@ -1586,7 +1607,7 @@ C     ======================
 C
 C     Matrix operator
       IATIM = -1
-      IF(IAIND.EQ.0) IATIM = 1
+      IF(IAIND.EQ.0 .OR. IAIND .EQ. 4) IATIM = 1
 C     Scalar operator
       IBTIM    = IPRLTYP(IBIND)
 C     Total operator
@@ -1688,7 +1709,7 @@ C     Operator type
 C     =============
 C
       ITYP = IPRPTYP(INDXPR)
-      GO TO (1,2,3,4,5,6,7,8), ITYP
+      GO TO (1,2,3,4,5,6,7,8,9), ITYP
     1 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'DIAGONAL : scalar operator'
@@ -1720,6 +1741,10 @@ C
     8 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'ALPHADOT : [Alpha.P]'
+      GOTO 10
+    9 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'GAMMA5   : '
       GOTO 10
 C
    10 CONTINUE
