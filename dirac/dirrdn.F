@@ -565,7 +565,7 @@ C         if reading input from a terminal
          GO TO 900
       END IF
   910 CONTINUE
-         CALL QUIT('End of file on LUCMD, no DIRAC input found')
+         CALL QUIT('End of file on LUCMD, no Dirac input found')
   920 CONTINUE
          CALL QUIT('Error reading LUCMD, no Dirac input found')
   930 CONTINUE
@@ -782,13 +782,15 @@ C
          SET = .TRUE.
       END IF
 C
-C     Initialize /CBCDHF/
+C *** Initialize in dcbdhf.h ***
+C
+C 1.  Initialize /DCCDHF/
 C     ===================
 C
       DHF_INTTYP= '         '
       CACC      = '        '
 C
-C     Initialize /CBLDHF/
+C 2.  Initialize /DCLDHF/
 C     ===================
 C
       ERGCNV    = .FALSE.
@@ -820,7 +822,7 @@ C
       DHF_SKIPEE = .FALSE.
       DHF_SKIPEP = .FALSE.
 C
-C     Initialize /CBIDHF/
+C 3.  Initialize /DCIDHF/
 C     ===================
 C
       MAXITR    = 50
@@ -843,7 +845,7 @@ C
       MXMICRO = 25
       MAXBCK  = 5
 C
-C     Initialize /CBRDHF/
+C 4.  Initialize /DCRDHF/
 C     ===================
 C
       SCFCNV(1) = 1.0D-7
@@ -868,7 +870,7 @@ C
       CALL DZERO(SCFTID,8)
       CALL IZERO(ITRSCF,8)
 C
-C     Initialize /DCBORB/
+C 5.  Initialize /DCODHF/
 C     ===================
 C
       NELEC_DHF(1) = 0
@@ -883,7 +885,7 @@ C
       CALL DZERO(DF,1+MXOPEN)
       CALL DZERO(DALPHA,1+MXOPEN)
 C
-C     Initialize /CBIREO/
+C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
 C
       LMOORD    = .FALSE.
@@ -1061,12 +1063,20 @@ C              as A/K then L is assumed to be zero.
 C
                DO IOPEN = 1,NOPEN
                   READ(LUCMD,'(A80)') LINE
-                  ISLASH = INDEX(LINE,'/')
-                  IPERIOD= INDEX(LINE,',')
 C
+                  ISLASH = INDEX(LINE,'/')
+                  IF (ISLASH .LE. 0) THEN
+                     WRITE (LUPRI,'(/A,I4/A/A)')
+     &               'ERROR for *DHFCAL .OPEN SHELL shell no.',IOPEN,
+     &               'the defining input line does not contain a "/":',
+     &               LINE
+                     CALL QUIT(
+     &               'Input error for .OPEN SHELL under *DHFCAL')
+                  END IF
                   TEXT = LINE(1:ISLASH-1)
                   READ (TEXT,'(I20)') IELEC
 C
+                  IPERIOD= INDEX(LINE,',')
                   IF (IPERIOD .GT. 0) THEN
                      IF (IPERIOD .LE. ISLASH+1) THEN
                         CALL QUIT('ERROR: Misplaced /')
@@ -1522,10 +1532,10 @@ C     Quadratic convergent DHF?
 C
       IF (NOQCDHF) THEN
          WRITE(LUPRI,'(A)')
-     &   ' * No quadratic convergent Dirac-Hartree-Fock'
+     &   ' * No quadratic convergent Hartree-Fock'
       ELSE
          WRITE(LUPRI,'(A)')
-     &   ' * Quadratic convergent Dirac-Hartree-Fock'
+     &   ' * Quadratic convergent Hartree-Fock'
          WRITE(LUPRI,'(A,I4)')
      +   ' * Maximum number of macro iterations: ',MXMACRO
          WRITE(LUPRI,'(A,I4)')
@@ -1812,7 +1822,7 @@ C
      *         ' Keyword ',WORD,' not recognized in PSIINP.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in PSIINP.')
-C&&&& DHF: Perform Dirac-Hartree-Fock or Dirac-Kohn-Sham calculation
+C&&&& DHF: Perform Hartree-Fock or Kohn-Sham calculation
   101    CONTINUE
             DOSCF = .TRUE.
             IF(DFTHAM) THEN
@@ -1888,34 +1898,33 @@ C     =============
 C
       CALL TITLER('Wave function module','*',126)
       IF(NJOBS.GT.0) THEN
-        WRITE(LUPRI,'(1X,A)') 'Jobs in this run:'
+        WRITE(LUPRI,'(A)') ' Jobs in this run (in execution order):'
       ENDIF
-      IF(DODHF) WRITE(LUPRI,'(1X,A)') '* Dirac-Hartree-Fock calculation'
+      IF(DODHF) WRITE(LUPRI,'(A)') ' * Hartree-Fock calculation'
 #if defined (MOD_DFT)
-      IF(DODFT) WRITE(LUPRI,'(1X,A)') '* Density functional '//
+      IF(DODFT) WRITE(LUPRI,'(A)') ' * Density functional '//
      &    'calculation (Kohn-Sham method)'
 #else
       IF(DODFT) THEN
         CALL QUIT('*** DFT is not included in this version')        
       ENDIF
 #endif
-      IF(DORES) WRITE(LUPRI,'(1X,A)') 
-     &   '* Followed by resolution of open-shell states'
-      IF(DOMP2) WRITE(LUPRI,'(1X,A)') '* MP2 calculation'
-      IF(DOMVO) WRITE(LUPRI,'(1X,A)') 
-     &   '* Generate modified virtual orbitals'
-      IF(DOCCM) WRITE(LUPRI,'(1X,A)') '* Run RELCCSD code'
-      IF(DOCIM) WRITE(LUPRI,'(1X,A)') '* Run DIRRCI code'
-      IF(DOLUCT)WRITE(LUPRI,'(1X,A)') '* Run LUCITA code'
-      IF(DOKRMC) THEN
-         WRITE(LUPRI,'(1X,A)')
-     &   '* Kramers restricted MCSCF calculation'
-         IF(DOLUCIAR) THEN
-            WRITE(LUPRI,'(1X,A)') '- using LUCIAREL code'
-         ELSE
-            WRITE(LUPRI,'(1X,A)') '- using KRMC-GOSCI code'
-         END IF
+      IF(DORES) WRITE(LUPRI,'(A)') 
+     &   ' * Followed by resolution of open-shell states'
+      IF(DOMP2) WRITE(LUPRI,'(A)') ' * MP2 calculation'
+      IF(DOMVO) WRITE(LUPRI,'(A)') 
+     &   ' * Generate modified virtual orbitals'
+      IF(DOKRMC) WRITE(LUPRI,'(A)')
+     &   ' * Kramers restricted MCSCF calculation'
+      IF(DOLUCIAR) THEN
+C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI 
+         WRITE(LUPRI,'(A)') ' * Run LUCIAREL CI code'
+         WRITE(LUPRI,'(A)') '   ERROR: not implemented yet'
+         CALL QUIT('.LUCIAREL as stand-alone not implemented yet')
       END IF
+      IF(DOCCM) WRITE(LUPRI,'(A)') ' * Run RELCCSD code'
+      IF(DOCIM) WRITE(LUPRI,'(A)') ' * Run DIRRCI CI code'
+      IF(DOLUCT)WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
 C
 C   ... Check that the selected One-center model is reasonable,
 C       and write appropriate output.
@@ -1927,55 +1936,58 @@ C
             CALL QUIT('  Invalid one-center model specified.')
          END IF
          IF(INTV1C.EQ.1) THEN
-            WRITE(LUPRI,'(1X,A)')
-     &      '* Only one-center SS parts of the e-e repulsion and n-e',
-     &      '  attraction are calculated explicitly.'
+            WRITE(LUPRI,'(A)')
+     &      ' * Only one-center SS parts of the e-e repulsion and n-e'//
+     &      ' attraction are calculated explicitly.'
             IF (ICTLV1C(2) .EQ. 1)
-     &          WRITE(LUPRI,'(1X,A)')
-     &       '  - Using a projection scheme for the multicenter parts.'
+     &          WRITE(LUPRI,'(3X,A)')
+     &       '- Using a projection scheme for the multicenter parts.'
             IF (ICTLV1C(2) .EQ. 2)
-     &          WRITE(LUPRI,'(1X,A)')
-     &       '  - Testing the simulation of terms neglected in this',
-     &       '    way (cheap alternative to Luuk`s projection scheme)'
+     &          WRITE(LUPRI,'(3X,A)')
+     &       '- Testing the simulation of terms neglected in this'//
+     &       ' way (cheap alternative to Luuk`s projection scheme)'
              ELSE IF (INTV1C .EQ. 2) THEN
-                WRITE(LUPRI,'(1X,A)')
+                WRITE(LUPRI,'(1X,A/3X,A)')
+                WRITE(LUPRI,'(A)')
      &          '* One-center approximation (model 2):',
-     &          '  - Multicenter SS and LS integrals are modelled by',
-     &          '    classical interaction of atomic charges'
+     &          '- Multicenter SS and LS integrals are modelled by'//
+     &          ' classical interaction of atomic charges'
              IF(ICTLV1C(2) .EQ. 0) THEN
-                WRITE(LUPRI,'(1X,A)')
-     &          '  - Using Mulliken small component charges.'
+                WRITE(LUPRI,'(3X,A)')
+     &          '- Using Mulliken small component charges.'
              ELSE IF (ICTLV1C(2) .EQ. 1) THEN
-                WRITE(LUPRI,'(1X,A)')
-     &          '  - Using tabulated small component charges.'
+                WRITE(LUPRI,'(3X,A)')
+     &          '- Using tabulated small component charges.'
              ELSE IF(ICTLV1C(2) .EQ. 2) THEN
-                WRITE(LUPRI,'(1X,A)')
-     &          '  - Using Mulliken small component charges.',
-     &          '  - Estimating error associated with this model.'
+                WRITE(LUPRI,'(3X,A)')
+     &          '- Using Mulliken small component charges.',
+     &          '- Estimating error associated with this model.'
              ELSE IF (ICTLV1C(2) .EQ. 3) THEN
-                WRITE(LUPRI,'(1X,A)')
-     &          '  - Testing HJJs penalty suggestion.'
+                WRITE(LUPRI,'(3X,A)')
+     &          '- Testing HJJs penalty suggestion.'
              ELSE
-                WRITE(LUPRI,'(1X,/A/)') 
-     &          '    Wrong one-center model specification !'
-                CALL QUIT('    HERRDN : ERROR in readin. ')
+                WRITE(LUPRI,'(/A,I10/)') 
+     &          'ERROR: Wrong one-center model specification :',
+     &          ICTLV1C(2)
+                CALL QUIT('ERROR in one-center model spec.')
              END IF
          ELSE IF(INTV1C.EQ.3) THEN
-             WRITE(LUPRI,'(1X,A)')
+             WRITE(LUPRI,'(1X,A,2(/3X,A))')
      &       '* One-center approximation (model 3):',
-     &    '  - Multicenter SS and LS modelled by Coulomb attraction',
-     &    '    integrals using large and small component charges',
-     &    '    based on the density matrix.'
+     &       '- Multicenter SS and LS modelled by Coulomb repulsion'//
+     &          ' integrals',
+     &       '  using large and small component charges'//
+     &          ' based on the density matrix.'
              IF(ICTLV1C(2) .EQ. 0) THEN
-                WRITE(LUPRI,'(1X,A)')
-     &    '  - Charges are distributed on the nuclei and on points',
-     &    '    between the nuclei where the contribution to the',
-     &    '    interaction from the dipole moment is zero.'
+                WRITE(LUPRI,'(3X,A)')
+     &    '- Charges are distributed on the nuclei and on points',
+     &    '  between the nuclei where the contribution to the',
+     &    '  interaction from the dipole moment is zero.'
              ELSE IF(ICTLV1C(2) .EQ. 1) THEN
-                WRITE(LUPRI,'(1X,A)')
-     &    '  - Option not available (no tabulated large component '//
-     &         'charges).'
-               CALL QUIT('    HERRDN : ERROR in readin. ')
+                WRITE(LUPRI,'(3X,A)')
+     &          '- Option not available'//
+     &          ' (no tabulated large component charges).'
+               CALL QUIT('    .ONECAP specification error')
              ELSE IF(ICTLV1C(2) .EQ. 2) THEN
                 WRITE(LUPRI,'(1X,A)')
      &    '  - Using atomic centered Mulliken large and small'//
@@ -1987,12 +1999,12 @@ C
              ELSE
                 WRITE(LUPRI,'(1X,/A/)') 
      &          '    Invalid one-center model specified !'
-                CALL QUIT('    ONECAP : ERROR in readin. ')
+                CALL QUIT('    .ONECAP specification error')
              END IF
          ELSE IF(INTV1C.EQ.4) THEN
              WRITE(LUPRI,'(1X,A)')
      &       '* One-center approximation (model 4):',
-     &    '  - All SS and LS integrals modelled by Coulomb attraction',
+     &    '  - All SS and LS integrals modelled by Coulomb repulsion',
      &    '    integrals using small component atomic charges'
              IF(ICTLV1C(2) .EQ. 0) THEN
                 WRITE(LUPRI,'(1X,A)')
@@ -2003,7 +2015,7 @@ C
              ELSE
                 WRITE(LUPRI,'(1X,/A/)') 
      &          '    Wrong ONECAP type 4 specification !'
-                CALL QUIT('    HERRDN : ERROR in readin. ')
+                CALL QUIT('    .ONECAP specification error')
              END IF
          END IF
          IF (.NOT.DIRSET .AND. INTV1C.NE.2) THEN
@@ -4167,7 +4179,7 @@ C&&& IONMVO: Generate MVOS by ionic Fock operator
                   IONMVO = .TRUE.
                GO TO 100
     7          CONTINUE
-C&&& POTMVO: Generate MVOS from Dirac-Hartree-Fock potential
+C&&& POTMVO: Generate MVOS from Hartree-Fock potential
                   IONMVO = .FALSE.
                GO TO 100
     8          CONTINUE
