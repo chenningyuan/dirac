@@ -273,7 +273,7 @@ C
       OFF = 1
       IREC = OFFSET / NWORDS_ON_RECORD + 1
 C
-      OFFB =  MOD(OFFSET,NWORDS_ON_RECORD)
+      OFFB =  MOD(OFFSET,NWORDS_ON_RECORD8)
       IF (OFFB.NE.0) THEN
 C
 C        Read the first partial record  

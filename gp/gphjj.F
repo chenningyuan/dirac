@@ -206,6 +206,13 @@ C      TIMWAL = itimwl
 C      write(mydebugfile,*) 'TIMWAL : ', TIMWAL
 C      close(mydebugfile)
 C
+#ifdef VAR_EKO
+      IF (FIRST) THEN
+         FIRST = .FALSE.
+      END IF
+      TIMCPU = ETIME(TARRAY)
+      TIMWAL = 0D0
+#else
       IF (FIRST) THEN
          FIRST = .FALSE.
          IWALL0 = TIME()
@@ -213,6 +220,7 @@ C
       TIMCPU = ETIME(TARRAY)
       ITIMWL = TIME() - IWALL0
       TIMWAL = ITIMWL
+#endif
 #endif
 #if defined (SYS_CONVEX)
 C...  CONVEX code
@@ -515,8 +523,10 @@ C
       WRITE (LUPRIN,'(T6,2A)') 'Data and time (Linux)  : ',FDATE()
 #endif
 #if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
+#ifndef VAR_EKO
       CALL HOSTNM(HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
+#endif
 #endif
 #if defined (SYS_AIX)
 C 930414-hjaaj: apparent error IBM's xlf library routines:

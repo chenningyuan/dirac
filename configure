@@ -275,8 +275,8 @@ case $machine in
 
     x86_64-*)
 #     liblist=$liblist
-      complist='g77 pgf90 f77'
-      cclist='gcc pgcc cc'
+      complist='g77 pgf90 pathf90 f77'
+      cclist='gcc pgcc pathcc cc'
       debug='gdb';;
 
    ia64-unknown-linux)
@@ -1253,6 +1253,10 @@ case $machine in
          ccp="$ccp -DVAR_IFC"
          ldflag="-O3 -ip -nofor_main"
          ;;
+      pathf90)
+         ldflag=i"-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
+         ccp="$ccp -DVAR_EKO"
+         ;;
       esac
 
       case "$CC" in
@@ -1296,7 +1300,10 @@ case $machine in
       icc)
          c_opt="-O3 -ip -w"
          ;;
-      esac
+      pathcc)
+         c_opt=$opt 
+         ;;
+     esac
       inc="-I$INCLUDE_DIR";;
 #
 #   Linux on 64 bit Itanium
