@@ -65,6 +65,7 @@ while($#argv)
         breaksw
      case -par:
         set PARMOD = 1
+        set PARTAR = 1
         breaksw
      case -rsp:
         set RSPMOD = 1
@@ -98,6 +99,8 @@ if($PAMADM) then
   set RSPMOD = 1
   set TRAMOD = 1
   set ERITAR = 1
+  set PARMOD = 1
+  set PARTAR = 1
 endif
 #
 #  RELCCSD-module
