@@ -33,6 +33,7 @@
 # Does 'echo' understand escapes?
 #
 #
+set echo_style = sysv
 if [ "	" = "`echo '\t'`" ]; then
    echo="echo"
 else

@@ -10,6 +10,7 @@
 #
 set LOC = `pwd`
 set argv_save = "$argv"
+set echo_style = sysv
 if ( "	" == "`echo '\t'`" ) then
    set _echo = echo
 else
