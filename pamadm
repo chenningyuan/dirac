@@ -1,5 +1,7 @@
 #! /bin/csh -f
 #
+#   $Id$
+#
 #   Master script for administrator of DIRAC
 #   Written by Trond Saue Oct 1 1997
 #   Polish by Thomas Enevoldsen Oct 2 1997
