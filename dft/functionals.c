@@ -446,6 +446,15 @@ lda_read(const char* conf_line)
 }
 
 static int
+pbe_read(const char* conf_line)
+{
+    gga_fun_list = add_functional(gga_fun_list, &pbexFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &pw91cFunctional,1.0);
+    dft_set_hf_weight(0);
+    return 1;
+}
+
+static int
 blyp_read(const char* conf_line)
 {
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
@@ -640,6 +649,18 @@ Functional GGAKeyFunctional = {
   gga_first,
   gga_second,
   gga_third
+};
+
+Functional PBEFunctional = {
+    "PBE",       /* name */
+    gga_isgga,   /* gga-corrected */
+    pbe_read, 
+    NULL,
+    gga_energy, 
+    gga_first,
+    gga_second,
+    gga_third
+#endif
 };
 
 Functional BLYPFunctional = {
