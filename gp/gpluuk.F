@@ -363,30 +363,27 @@ C
       End
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Subroutine DayTime (Datum,Tijd)
-#if defined (SYS_HPUX) || (SYS_LINUX) || (SYS_DARWIN)
-      CHARACTER FDATE*24
-#endif
-      Character*10 Datum,Tijd*8,String*24
-      external time
-      Datum = '          '
-      Tijd  = '        '
+      Character Datum*10,Tijd*8
+
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       Call Date(Datum)
       Call Clock(Tijd)
-#endif
-#if defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_DARWIN)
+
+#elif defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_DARWIN) \
+   || defined (SYS_DEC) || defined (SYS_IRIX)  || defined (SYS_AIX) \
+   || defined (SYS_SUN) || defined (SYS_SX)
+      CHARACTER FDATE*24, String*24
+C
       STRING = FDATE()
-      DATUM = STRING(1:10)
+C     format from fdate(): 'Fri Sep 13 00:00:00 1986'
+      DATUM = STRING(9:10) // STRING(4:8) // STRING(23:24) // ' '
+C     format of DATUM: '13 Sep 86 '
       TIJD  = STRING(12:19)
-#endif
-#if defined (SYS_AIX) 
-      Call fdate (String)
-      Datum = String(1:10)
-      Tijd  = String(12:19)
-#endif
-#if defined (SYS_IRIX)
-      Call Date(Datum)
-      Call Time(Tijd)
+C     format of TIJD: '00:00:00'
+
+#else
+      Datum = '          '
+      Tijd  = '        '
 #endif
       Return
       End
