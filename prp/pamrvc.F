@@ -269,7 +269,7 @@ C
 C     3) Gather contributions to sigma-vectors
 C     ===================================================
 C
-      IF(NZXOPE.GT.0) THEN
+      IF(NZXOPE+NZXOPP.GT.0) THEN
         CALL SMOLI(SEVEC,SPVEC,WORK(KFMO),
      &             WORK(KZXOPE),NZXOPE,WORK(KZXOPP),NZXOPP,
      &             IBEVC,IBPVC,IBTYP,WORK(KFREE),LFREE)
@@ -1425,9 +1425,9 @@ C
 C           or active density matrix...
 C
             NI  = NASH(I2)
-            II  = IORB(I2) + NPSH(I2) + NFRO(I2) + NISH(I2) + 1
+            II  = IORB(I2) + NPSH(I2) + NISH(I2) + 1
             JI  = ICMOQ(I2) + 
-     &               (NPSH(I2)+ NFRO(I2) + NISH(I2))*NFBAS(I2,0) + 1
+     &               (NPSH(I2)+ NISH(I2))*NFBAS(I2,0) + 1
 C
          END IF
 c        NI = NESH(I2)
@@ -2877,7 +2877,7 @@ C
      &          WORK(*)
 C
       CNVMAX = D0
-      IF(IPRXRS.GT.0) THEN
+      IF(IPRXRS.GE.0) THEN
         WRITE(LUPRI,'(/A)') '* XRSBVC: Norm of residual vectors:'
         WRITE(LUPRI,'(A15,2X,A8,9(2X,A2,A6))')  
      &      '* Frequency    ','Total   ',(BVTYP(I),' part ',I=1,NVPAR)
