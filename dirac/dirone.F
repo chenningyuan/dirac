@@ -3173,9 +3173,9 @@ c     ... In Slater's rules we write the electron configuration as
 c         [1s] [2s2p] [3s3p][3d] [4s4p][4d][4f]... so for each shell we have
 c          1     1        2            3           loops
          IF (N.LE.1) THEN
-	    NSLOOP = 1
+            NSLOOP = 1
          ELSE
-	    NSLOOP = N - 1
+            NSLOOP = N - 1
          ENDIF
 c        ... we will not go beyond f-orbitals
          NSLOOP = MIN(NSLOOP,3)
@@ -3436,7 +3436,7 @@ c     ...Always make 1 electron delocalized
       ENDIF
 c     ... If Hydrogen we are done
       IF (Z.EQ.D1) GOTO 10
-c     ... special case case for the (2-1) 1s electron
+c     ... special case for the (2-1) 1s electron
       IF (N.EQ.1) THEN
          ZEFF = D1
          SEXP = Z - 0.35
@@ -3456,61 +3456,51 @@ c     ... Now figure out the occupation used for the Slater rules (N >= 2) :
 c      [1s][2s2p][3s3p][3d][4s4p][4d][4f]...
 c
 c     =================================
-c     How many s-electron in this shell
+c     How many s-electrons in this shell
 c     =================================
 c
-      NS = NST - (N-1)*D2
+      NS = NST - (N-1)*2
 c
-      IF (NS .LE. D0) THEN
+      IF (NS .LE. 0) THEN
          NS = D0
-      ELSEIF (NS.GE.D2) THEN
-         NS = D2
+      ELSEIF (NS.GE.2) THEN
+         NS = 2
       ENDIF
 c
 c     =================================
-c     How many p-electron in this shell
+c     How many p-electrons in this shell
 c     =================================
 c
-      NP = NPT - (N-2)*D6
+      NP = NPT - (N-2)*6
 c
-      IF (NP .LE. D0) THEN
-         NP = D0
-      ELSEIF (NP.GE.D6) THEN
-         NP = D6
+      IF (NP .LE. 0) THEN
+         NP = 0
+      ELSEIF (NP.GE.6) THEN
+         NP = 6
       ENDIF
 c
 c     =================================
-c     How many d-electron in this shell
+c     How many d-electrons in this shell
 c     =================================
 c
-      ND = NDT
-      DO I  = 1,N-3
-         ND = ND - D10
-      ENDDO
+      ND = NDT - (N-3)*10
 c
-      IF (ND .LE. D0) THEN
-         ND = D0
-      ELSEIF (ND.GE.D10) THEN
-         ND = D10
-      ELSE
-         ND = NDT - (N-3)*D10
+      IF (ND .LE. 0) THEN
+         ND = 0
+      ELSEIF (ND.GE.10) THEN
+         ND = 10
       ENDIF
 c
 c     =================================
 c     How many f-electron in this shell
 c     =================================
 c
-      NF = NFT
-      DO I  = 1,N-4
-         NF = NF - D14
-      ENDDO
+      NF = NFT - (N-4)*14
 c
-      IF (NF .LE. D0) THEN
-         NF = D0
-      ELSEIF (NF.GE.D14) THEN
-         NF = D14
-      ELSE
-         NF = NFT - (N-4)*D14
+      IF (NF .LE. 0) THEN
+         NF = 0
+      ELSEIF (NF.GE.14) THEN
+         NF = 14
       ENDIF
       IF (J.EQ.1) ZEFF = NS + NP
       IF (J.EQ.2) ZEFF = ND

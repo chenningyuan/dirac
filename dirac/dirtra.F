@@ -84,8 +84,8 @@ C
             NAORB = NAORB + 1
             JLAB  = IPACK(ICLS,ICENT,IDEG,ITYP)
 C
-C           Check if labels are already defined
-C           ==================================
+C           Check if label is already defined
+C           =================================
             DO 40 ILAB = 1,NLAB
             IF(JLAB.EQ.IATTR(ILAB,1)) THEN
               IPLAB(NAORB,1) = ILAB
@@ -93,7 +93,7 @@ C           ==================================
             ENDIF
 C
  40         CONTINUE
-            NLAB          = NLAB + 1
+            NLAB = NLAB + 1
             IF(NLAB.GT.MAXLAB) GOTO 999
             DEG = '  '
             IF(NDEG.GT.1) WRITE(DEG,'(I2)') IDEG
@@ -117,8 +117,8 @@ C
             NAORB = NAORB + 1
             JLAB  = IPACK(ICLS,ICENT,IDEG,ITYP)
 C
-C           Check if labels is already defined
-C           ==================================
+C           Check if label is already defined
+C           =================================
             DO 80 ILAB = 1,NLAB
             IF(JLAB.EQ.IATTR(ILAB,1)) THEN
               IPLAB(NAORB,1) = ILAB
@@ -128,7 +128,7 @@ C           ==================================
 C
 C           Define new label
 C           ================
-            NLAB          = NLAB + 1
+            NLAB = NLAB + 1
             IF(NLAB.GT.MAXLAB) GOTO 999
             DEG = '  '
             IF(NDEG.GT.1) WRITE(DEG,'(I2)') IDEG
