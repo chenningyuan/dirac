@@ -500,12 +500,11 @@ C    &    '     Spin multiplicity ....  ', MULTS
       WRITE(LUPRI,*) ' *************************'
       WRITE(LUPRI,*)
       IF(IRELACI.EQ.0) THEN
-        WRITE(LUPRI,'(A)') ' Orbital subspaces:'
-        WRITE(LUPRI,'(A)') ' ================== '
+        WRITE(LUPRI,'(A/A)') ' Orbital subspaces:',
+     &                       ' =================='
       ELSE
-        WRITE(LUPRI,'(A)')
-     &  ' Orbital subspaces in molecular pointgroup'
-        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A/A)')
+     &  ' Orbital subspaces in molecular pointgroup',
      &  ' ========================================='
       END IF
       WRITE(LUPRI,'(A,10I4,A)')
@@ -663,18 +662,16 @@ C    &    '     Spin multiplicity ....  ', MULTS
       IF(INCORE.EQ.1) WRITE(LUPRI,'(A)')
      &  '     All integrals stored in core'
       END IF
-      WRITE(LUPRI,*)
 * ( END IF for NOINT
 *. CSF or SD expansion
       IF(NOCSF.EQ.0) THEN
-        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(/A/)')
      &  '     CI optimization performed with CSF''s '
       ELSE
-        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(/A/)')
      &  '     CI optimization performed with SD''s '
       END IF
 *. Initial approximation to vectors
-      WRITE(LUPRI,*)
       IF(IRESTR.EQ.1.AND.IRESTRF.EQ.0) THEN
          WRITE(LUPRI,'(A)')
      &  '     Restarted calculation '
@@ -702,32 +699,31 @@ C    &    '     Spin multiplicity ....  ', MULTS
      &  '     No combination of degenerate initial vectors'
       END IF
 *. CI storage mode
-      WRITE(6,*)
       if (SIGDEN_ROUTE.eq.'SIGDEN') then
-        WRITE(6,*)
+        WRITE(LUPRI,'(/A)')
      &  '     SIGDEN route for sigma vectors and densities invoked   '
       else
-        WRITE(6,*)
+        WRITE(LUPRI,'(/A)')
      &  '     SIGDEN keyword: ',SIGDEN_ROUTE
         call quit('Unallowed keyword value')
       end if
-      WRITE(6,*)
+      WRITE(LUPRI,*)
       IF(ICISTR.EQ.1) THEN
-        WRITE(6,*)
+        WRITE(LUPRI,*)
      &  '     3 symmetry blocks and two vectors will be held in core '
       ELSE IF( ICISTR.EQ.2) THEN
-        WRITE(6,*)
+        WRITE(LUPRI,*)
      &  '     3 symmetry blocks will be held in core '
       ELSE IF( ICISTR.EQ.3) THEN
-        WRITE(6,*)
+        WRITE(LUPRI,*)
      &  '     3 symmetry-occ-occ blocks will be held in core '
       END IF
-      IF(LCSBLK.NE.0) WRITE(6,'(A,I10)')
+      IF(LCSBLK.NE.0) WRITE(LUPRI,'(A,I10)')
      &  '      Smallest allowed size of sigma- and C-batch ',LCSBLK
       WRITE(LUPRI,'(A,I4)')
      &  '     Dimension of block of resolution strings ', MXINKA
       IF(ICJKAIB.EQ.1) THEN
-        WRITE(6,*)
+        WRITE(LUPRI,*)
      &  '     C(Ka,Jb,j) matrices will be used in alpha-beta loop '
       END IF
       IF(MOCAA.NE.0) WRITE(LUPRI,'(A,I4)')
@@ -755,9 +751,8 @@ C    &    '     Spin multiplicity ....  ', MULTS
 *
 *
 *. Diagonalization information
-      WRITE(LUPRI,'(A)')
-     &  '     CI diagonalization : '
-      WRITE(LUPRI,'(A)')
+      WRITE(LUPRI,'(A/A)')
+     &  '     CI diagonalization : ',
      &  '     ==================== '
 *. Subspace Hamiltonian
       IF (MXP1+MXP2+MXQ .EQ.0) THEN
@@ -784,13 +779,12 @@ C    &    '     Spin multiplicity ....  ', MULTS
 *
 *. No restart in CI calc 2
       IF(IRST2.EQ.0) THEN
-      WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A)')
      &  '        No restart from previous vectors in second calc '
       END IF
       IF(ISKIPEI.EQ.1) THEN
-      WRITE(LUPRI,'(A)')
-     &  '        Initial energy evaluations skipped after first calc'
-      WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A/A)')
+     &  '        Initial energy evaluations skipped after first calc',
      &  '        (Only active in connection with TERACI )'
       END IF
 *
@@ -801,19 +795,16 @@ C    &    '     Spin multiplicity ....  ', MULTS
       WRITE(LUPRI,'(A,I2)')
      &  '        Allowed Dimension of CI subspace',MXCIV
 *
-      WRITE(LUPRI,'(A,1P,E11.5)')
+      WRITE(LUPRI,'(A,1P,E11.5/)')
      &  '        Convergence threshold for energy',THRES_E
-      WRITE(6,*)
       IF(IDIAG.EQ.2) THEN
         WRITE(LUPRI,'(A,1P,E11.5)')
      &   '        Individual second order energy threshold ',E_THRE
         WRITE(LUPRI,'(A,1P,E11.5)')
      &   '        Individual first order wavefunction threshold ',C_THRE
         IF(ICLSSEL.EQ.1) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A)')
-     &   '         Class selection will be performed : '
-         WRITE(LUPRI,'(A)')
+         WRITE(LUPRI,'(/A/A)')
+     &   '         Class selection will be performed : ',
      &   '         =================================== '
          WRITE(LUPRI,'(A,1P,E11.5)')
      &    '          Total second order energy threshold ',E_CONV
@@ -828,8 +819,7 @@ C    &    '     Spin multiplicity ....  ', MULTS
 *
 *. Print levels
 *
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A)')  '     Print levels : '
+      WRITE(LUPRI,'(/A)')  '     Print levels : '
       WRITE(LUPRI,'(A,I3)')
      &'      Chosen  print level for string    information = ', IPRSTR
       WRITE(LUPRI,'(A,I3)')
