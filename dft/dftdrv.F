@@ -136,6 +136,7 @@ C
 #endif
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
+#include "dcborb.h"
 #include "dcbham.h"
 #endif
 #include "inforb.h"
@@ -286,6 +287,22 @@ CTROND      END IF
           ENDDO
         ENDDO
       END IF 
+C
+C     Test on the number of electrons
+C
+      ELCTRX = FLOAT(2*NELECT)
+      ERROR  = ELCTRN - ELCTRX
+      IF (ABS(ERROR) .GT. DFTELS) THEN
+         WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
+     &   ' Number of electrons from numerical integration:',ELCTRN,
+     &   ' Number of electrons from orbial occupations:   ',ELCTRX,
+     &   ' Error in the number of electrons:              ',ERROR,
+     &   ' Error larger than DFTELS (set input):          ',DFTELS,
+     &   ' Calculation aborted.'
+         CALL QUIT
+     &    ('Wrong number of electrons in DFTDRV. Calculation aborted.')
+      END IF
+C
 C
 C     Print section
 C
