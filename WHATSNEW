@@ -1,3 +1,9 @@
+* November 2 1999
+
+  - small bugfixes and new output here and there(jth)
+  - New **GENERAL keyword .INTFLG which is passed on to 
+    all modules. (jth)
+
 * October 15 1999
 
   - relccsd bugfixes (luuk)
