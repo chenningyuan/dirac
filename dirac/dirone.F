@@ -408,7 +408,6 @@ C
 CMI...   If BSS is active read one-electron
 CMI     DKn(BSS) AO integrals from the file BSSMAT(lu=LUBSS)
       IF (BSS) THEN
-
          IS_READ=.FALSE.
          CALL OPNFIL(LUBSS,'BSSMAT','OLD','ONEFCK')
          REWIND LUBSS
@@ -812,14 +811,9 @@ C*****************************************************************************
 #include "priunit.h"
 #include "maxaqn.h"
 C
-      PARAMETER(D0 = 0.0D0, D1 = 1.0D0,DM1 = -1.0D0)
 #include "ccom.h"
 #include "dcbgen.h"
-#include "dgroup.h"
 #include "dcbbas.h"
-
-#include "dcbsph.h"
-#include "dcbqal.h"
       DIMENSION VMAT(*),WORK(LWORK)
 C
       CALL QENTER('LOWDIN')
@@ -829,7 +823,6 @@ C     Memory allocation
 C
       CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,MXBBAS ,WORK,KFREE,LFREE)
-
       IF(ISPHTR.NE.0) THEN
         NCSPH = 0
         DO LL = 1,NHTYP
@@ -862,7 +855,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lowdi1 */
       SUBROUTINE LOWDI1(VMAT,SMAT,EIG,CSPH,ICSP,WORK,LWORK,IPRINT)
 C*****************************************************************************
-C
 C     PURPOSE:
 C        Construction of the transformation matrix for Lowdin
 C        ortogonalization
@@ -902,15 +894,12 @@ C     Get overlap matrix packed on fermion irreps
 C     ===========================================
 C
       CALL GTOVLT(SMAT,D1,WORK,LWORK)
-
 C
 C     If spherical transformations, get general transformation matrix
 C     ===============================================================
 C
-
        IF(ISPHTR.NE.0) 
      &       CALL GETSPH(1,2,CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
-
 C
 C     Initialize Lowdin matrix
 C     ========================
@@ -1406,13 +1395,14 @@ C     ... transformation matrix is the Le part of the Lowdin matrix
          KTMAT = KVMAT
       ELSE
 C
-C     Charge conjugation symmetry
-C     ===========================
+C     Transformation matrix with modified Dirac equation embedded
+C     ===========================================================
 C
         CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-        CALL DELPOS(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
+        CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
      &            WORK(KFREE),LFREE)
+        CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
       ENDIF
       N2TMT   = 0
       N2TMOTQ = 0
@@ -1504,12 +1494,15 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck delpos */
-      SUBROUTINE DELPOS(TMAT,VMAT,TBUF,EIG,WORK,LWORK)
+C  /* Deck modham */
+      SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,WORK,LWORK)
 C*****************************************************************************
 C
-C     Diagonalize free particle matrix and remove unphysical solutions
-C     Or transform to basis for Levy-Leblond Hamiltonian
+C     Generate transformation matrix to MO-basis with the modified
+C     Dirac equation embedded.
+C
+C     On input: 
+C       VMAT - Lowdin transformation matrix for canonical orthonormalization 
 C
 C     Written by T.Saue, October 1995
 C     Modified by L. Visscher, Jan 20, 1998 to include Levy-Leblond 
@@ -1759,21 +1752,14 @@ C
           IMAT = IMAT + NFORB(I,0)*NFORB(I,0)*NZ
           IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
    40   CONTINUE
-        CALL MEMREL('DELPOS',WORK,KSMT,KSMT,KFREE,LFREE)
+        CALL MEMREL('MODHAM',WORK,KSMT,KSMT,KFREE,LFREE)
 C
         IF(VEXTPJ.OR.FREEPJ) THEN
-C
-C       Deleting positronic solutions of:
-C       =================================
-C         FREEPJ - free particle matrix
-C         VEXTPJ - bare nucleus matrix          
-C
-          LWRK  = 0
-Ctsaue:   These variables are later set by SETDC2, but needed here
-C         in modified form....
+C       These variables are later set by SETDC2, but needed here...
           N2TMT  = 0
           NORBT  = 0
           N2ORBT = 0
+          N2TMOTQ = 0
           DO I = 1,NFSYM
             I2TMT(I) = N2TMT
             N2TMT    = N2TMT + NFORB(I,0)*NORB(I)*NZT
@@ -1781,92 +1767,15 @@ C         in modified form....
             NORBT    = NORBT  + NORB(I)
             I2ORBT(I)= N2ORBT*NZ
             N2ORBT   = N2ORBT + NFBAS(I,0)*NORB(I)
+            I2TMOT(I) = N2TMOTQ
+            N2TMOTQ = N2TMOTQ + NTMO(I)*NTMO(I)*NZ
           ENDDO
           CALL MEMGET('REAL',KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-C
-C         Transform free particle/bare nucleus matrix
-C         to modified Dirac form; 
-          IMAT = 1
-          IBUF = 1
-          IOFT = 1
-          IOFV = 1
-          DO 50 I = 1,NFSYM
-            IF(NORB(I).EQ.0) GOTO 50
-            IBUF = KBUF + I2ORBT(I)
-            CALL QTRANS('AOMO','S',D0,NFORB(I,0),NFORB(I,0),
-     &           NORB(I),NORB(I),
-     &           TMAT(IOFT),NFORB(I,0),NFORB(I,0),NZ,IPQTOQ(1,0),
-     &           WORK(IBUF),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &           TBUF(1+I2TMT(I)),NFORB(I,0),NORB(I),NZT,IPQTOQ(1,0),
-     &           TBUF(1+I2TMT(I)),NFORB(I,0),NORB(I),NZT,IPQTOQ(1,0),
-     &           WORK(KFREE),LFREE,IPRHAM)
-          IF (IPRHAM.GE.6) THEN
-            IF(VEXTPJ) THEN
-              CALL HEADER('Bare nucleus matrix in mod.MO-basis',-1)
-            ELSE
-              CALL HEADER('Free particle matrix in mod.MO-basis',-1)
-            ENDIF
-            CALL PRQMAT(WORK(IBUF),NORB(I),NORB(I),
-     &                 NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-          ENDIF
-C         get full transformation as well !
-            CALL BCKTR1(TMAT(IMAT),NFBAS(I,0),NORB(I),
-     &                  TBUF(1+I2TMT(I)),NFORB(I,0),NORB(I),
-     &                  NFORB(I,0),NZ,
-     &                  NORB(I),1,NFBAS(I,0),
-     &                  VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,
-     &                  IPRHAM)
-            IF (IPRHAM.GE.6) THEN
-              CALL HEADER('Transformation matrix',-1)
-              CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
-     &                    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-            ENDIF
-            IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
-            IOFT = IOFT + NFORB(I,0)*NFORB(I,0)*NZ
-            IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
-            IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
- 50       CONTINUE
-C
-C         Diagonalize
-C
-          CALL DFDIAG (WORK(KBUF),EIG,WORK(KBEIG),TBUF,
-     &                 .FALSE.,WORK,KFREE,LFREE)
-C
-C         Backtransform only electronic solutions
-C
-          N2TMT = 0
-          IBUF = KBUF
-          IMAT = 1
-          NBUF = 0
-          DO 60 I = 1,NFSYM
-          IF(NESH(I).EQ.0) GOTO 60
-          I2TMT(I) = N2TMT
-          N2TMT = NFBAS(I,0)*NORB(I)*NZ
-          IF(IPRHAM.GE.5) THEN
-            CALL HEADER('Eigenvalues',-1)
-            WRITE(LUPRI,'(I5,E16.8)') (J,EIG(IORB(I)+J),J=1,NORB(I))
-          ENDIF
-          CALL BCKTR1(WORK(IBUF),NFBAS(I,0),NESH(I),
-     &              TBUF(I2ORBT(I)+1),NORB(I),NORB(I),
-     &              NORB(I),NZ,NESH(I),(NPSH(I)+1),NFBAS(I,0),
-     &              TMAT(I2TMT(I)+1),NFBAS(I,0),NORB(I),NZT,
-     &              IPRHAM)
-          NPSH(I) = 0
-          NORB(I) = NESH(I)
-          NTMO(I) = NORB(I)
-          NBUF = NFBAS(I,0)*NESH(I)*NZ
-          CALL DCOPY(NBUF,WORK(IBUF),1,TMAT(IMAT),1)
-          IBUF = IBUF + NBUF
-          IMAT = IMAT + NBUF
-C         Finish by adjusting the number of positron solutions to zero
-          DO ISYM = 1, NSYM
-            NBORB(ISYM,I,2) = 0
-            NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)
-          ENDDO
- 60       CONTINUE
-          CALL MEMREL('DELPOS',WORK,KWORK,KWORK,KFREE,LFREE)
-        ELSE      
+          CALL DELPOS(TMAT,TBUF,WORK(KBUF),EIG,WORK(KBEIG),
+     &                VMAT,WORK,KFREE,LFREE)
+          CALL MEMREL('DELPOS',WORK,KBUF,KBUF,KFREE,LFREE)
+        ELSE
 C
 C       Generate transformation matrix
 C       ==============================
@@ -1891,7 +1800,7 @@ C
 C
 C     Print section
 C
-      CALL HEADER('Output from DELPOS',-1)
+      CALL HEADER('Output from MODHAM',-1)
       IF(LEVYLE.OR.VEXTPJ.OR.FREEPJ) THEN
         WRITE(LUPRI,'(A)') '* All positronic solutions deleted !'
       ELSE
@@ -4352,7 +4261,7 @@ C
      &                VECS(1,JVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
  300    CONTINUE
  200  CONTINUE
-      IF (ITURN.LT.3) THEN
+      IF (ITURN.LT.4) THEN
         GO TO 10
       ENDIF
       IF(IPRINT.GE.7) THEN
@@ -5081,7 +4990,7 @@ C  /* Deck linsym */
 C*****************************************************************************
 C
 C     Construct matrix J(x,y,z) and transform to eigenvectors of this operator
-C     Routine based on DELPOS and parts of the ZORA diagonalization routine
+C     Routine based on MODHAM and parts of the ZORA diagonalization routine
 C
 C     Written by L.Visscher, october 2003
 C
@@ -5587,3 +5496,110 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck DELPOS */
+      SUBROUTINE DELPOS(TMAT,TMOD,FMAT,EIG,IBEIG,VMAT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C
+C     Deleting negative-energy solutions of:
+C     ======================================
+C       FREEPJ - free particle matrix
+C       VEXTPJ - bare nucleus matrix          
+C
+C     On input:
+C       TMAT(NFORB,NFORB,IFRP) 
+C            - free particle/bare nucleus in MO1 basis
+C       TMOD(NFORB,NORB,IFRP) 
+C            - transformation matrix with modified Dirac equation
+C              embedded, in orthonormal basis
+C       FMAT - empty
+C     On output:
+C       TMAT - transformation matrix with negative-energy solutions deleted
+C     Written by T.Saue, October 1995
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0)
+C
+#include "dgroup.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+      DIMENSION TMAT(*),TMOD(*),FMAT(*),EIG(*),IBEIG(*),VMAT(*),WORK(*)
+C
+      NSYM = 4/NZ
+C
+C     Transform free particle/bare nucleus matrix to modified Dirac form; 
+C
+      IOFT = 1
+      IOFV = 1
+      DO 10 I = 1,NFSYM
+        IF(NTMO(I).EQ.0) GOTO 10
+        CALL QTRANS('AOMO','S',D0,NFORB(I,0),NFORB(I,0),
+     &       NTMO(I),NTMO(I),
+     &       TMAT(IOFT),NFORB(I,0),NFORB(I,0),NZ,IPQTOQ(1,0),
+     &       FMAT(1+I2TMOT(I)),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &       TMOD(1+I2TMT(I)),NFORB(I,0),NTMO(I),NZT,IPQTOQ(1,0),
+     &       TMOD(1+I2TMT(I)),NFORB(I,0),NTMO(I),NZT,IPQTOQ(1,0),
+     &       WORK(KFREE),LFREE,IPRHAM)
+        IF (IPRHAM.GE.6) THEN
+          IF(VEXTPJ) THEN
+            CALL HEADER('Bare nucleus matrix in mod.MO-basis',-1)
+          ELSE
+            CALL HEADER('Free particle matrix in mod.MO-basis',-1)
+          ENDIF
+          CALL PRQMAT(FMAT(1+I2TMOT(I)),NTMO(I),NTMO(I),
+     &              NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+C       get full transformation as well !
+        CALL BCKTR1(TMAT(1+I2ORBT(I)),NFBAS(I,0),NTMO(I),
+     &              TMOD(1+I2TMT(I)),NFORB(I,0),NTMO(I),
+     &              NFORB(I,0),NZ,NTMO(I),1,NFBAS(I,0),
+     &              VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,
+     &              IPRHAM)
+        IF (IPRHAM.GE.6) THEN
+          CALL HEADER('Transformation matrix',-1)
+          CALL PRQMAT(TMAT(1+I2ORBT(I)),NFBAS(I,0),NTMO(I),
+     &                NFBAS(I,0),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+        IOFT = IOFT + NFORB(I,0)*NFORB(I,0)*NZ
+        IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
+ 10   CONTINUE
+C
+C     Diagonalize: eigenvectors are now stored in TMOD
+C
+      CALL DFDIAG (FMAT,EIG,IBEIG,TMOD,.FALSE.,WORK,KFREE,LFREE)
+C
+C     Backtransform only electronic solutions
+C
+      IBUF = 1
+      DO 20 I = 1,NFSYM
+        IF(NESH(I).EQ.0) GOTO 20
+          IF(IPRHAM.GE.5) THEN
+            CALL HEADER('Eigenvalues',-1)
+            WRITE(LUPRI,'(I5,E16.8)') (J,EIG(IORB(I)+J),J=1,NTMO(I))
+          ENDIF
+          CALL BCKTR1(FMAT(IBUF),NFBAS(I,0),NESH(I),
+     &                TMOD(1+I2TMOT(I)),NTMO(I),NTMO(I),NTMO(I),NZ,
+     &                NESH(I),(NPSH(I)+1),NFBAS(I,0),
+     &                TMAT(1+I2ORBT(I)+1),NFBAS(I,0),NTMO(I),NZT,IPRHAM)
+          NPSH(I) = 0
+          NORB(I) = NESH(I)
+          NBUF = NFBAS(I,0)*NESH(I)*NZ
+          CALL DCOPY(NBUF,FMAT(IBUF),1,TMAT(IBUF),1)
+          IBUF = IBUF + NBUF
+          NTMO(I) = NORB(I)
+C         Finish by adjusting the number of positron solutions to zero
+          DO ISYM = 1, NSYM
+            NBORB(ISYM,I,2) = 0
+            NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)
+          ENDDO
+ 20     CONTINUE
+C
+      RETURN
+      END
+
+
