@@ -261,7 +261,7 @@ C
       IF (CARITH) THEN
          YSUM = ZSUM (N,X,INCX)
 C64B     YSUM = CSUM (N,X,INCX)
-         IF (DABS(DIMAG(YSUM)).GT.ACCUR) THEN
+         IF (ABS(DIMAG(YSUM)).GT.ACCUR) THEN
 C64B     IF ( ABS(AIMAG(YSUM)).GT.ACCUR) THEN
             PRINT*, "IMAGINARY PART OF XSUM :",DIMAG(YSUM)
 C64B        PRINT*, "IMAGINARY PART OF XSUM :",AIMAG(YSUM)
@@ -291,8 +291,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 #endif
 C
-#if defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_LINUX) \
- || defined (SYS_HPUX)
+#if defined (SYS_AIX)  || defined (SYS_IRIX) || defined (SYS_LINUX) \
+ || defined (SYS_HPUX) || defined (SYS_T3D)
 C
       COMPLEX*16 FUNCTION ZSUM (N,X,INCX)
       COMPLEX*16 X(*),SUM

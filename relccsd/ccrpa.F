@@ -613,7 +613,7 @@ C64B     RNORM = RNORM + FACTOR * SDOT (NDIMX,Y1,1,Y1,1)
 C
       IF (RNORM.LT.1.D-32) CALL QUIT('RNORM TOO SMALL')
 C
-      RNORM = 1.D0 / DSQRT(RNORM)
+      RNORM = 1.D0 / SQRT(RNORM)
 C64B  RNORM = 1.0 / SQRT(RNORM)
 C
       IF (CARITH) THEN
@@ -990,8 +990,8 @@ C  Combine normalization and symmetric orthogonalization
 C  The normalization constant is that of the first normalization
 C  multiplied with the one from the symmetric orthonormalization
 C
-      SUM1 = DSQRT(1.D0/SUM1) 
-      SUM1 = SUM1 * DSQRT(1.D0/ (1.D0-SUM2*SUM2))
+      SUM1 = SQRT(1.D0/SUM1) 
+      SUM1 = SUM1 * SQRT(1.D0/ (1.D0-SUM2*SUM2))
 C64B  SUM1 =  SQRT(1.0 /SUM1) *  SQRT(1.0 / (1.D0-SUM2*SUM2))
       ANGLE = DASIN(SUM2)/2
       C1COS = DCOS(ANGLE)
@@ -1258,7 +1258,7 @@ C
          RNORM = DDOT (2*N,CC(1,I),1,ERS,1)
 C64B     RNORM = SDOT (2*N,CC(1,I),1,ERS,1)
          IF (RNORM.GT.AR0) THEN
-            RNORM = 1.D0 / DSQRT(RNORM)
+            RNORM = 1.D0 / SQRT(RNORM)
 C64B        RNORM = 1.0 / SQRT(RNORM)
             DO J = 1, NS
                IF (ER(I).LT.ER(IND(J))) THEN
@@ -1281,7 +1281,7 @@ C64B        RNORM = 1.0 / SQRT(RNORM)
          RNORM = DDOT (2*N,CC(1,I),1,ERS,1)
 C64B     RNORM = SDOT (2*N,CC(1,I),1,ERS,1)
          IF (RNORM.LT.AR0) THEN
-            RNORM = 1.D0 / DSQRT(-RNORM)
+            RNORM = 1.D0 / SQRT(-RNORM)
 C64B        RNORM = 1.0 / SQRT(-RNORM)
             DO J = 1, NS
                IF (ER(I).GT.ER(IND(NSP+J))) THEN

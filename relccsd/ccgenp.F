@@ -93,7 +93,7 @@ C
 #if defined (SYS_AIX)  || defined (SYS_IRIX) || defined (SYS_LINUX) \
  || defined (SYS_HPUX)
       Sec = MCLOCK()/100.D0
-#elif defined (SYS_CRAY) 
+#elif defined (SYS_CRAY) || defined (SYS_T3D)
       Sec = Second()
 #else
       Does MCLOCK exist on your computer???
@@ -116,32 +116,40 @@ C
       End
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Subroutine DayTime (Datum,Tijd)
+#if defined (SYS_HPUX)
+      CHARACTER FDATE*24
+#endif
       Character*10 Datum,Tijd*8,String*26
       external time
       Datum = '          '
       Tijd  = '        '
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       Call Date(Datum)
       Call Clock(Tijd)
+#endif
+#if defined (SYS_HPUX)
+      STRING(1:24) = FDATE()
+      DATUM = STRING(1:10)
+      TIJD  = STRING(12:19)
 #elif defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_HPUX)
       Call Date(Datum)
       Call Time(Tijd)
 #elif defined (SYS_AIX) 
       Call fdate_ (String)
-      Do i = 1, 10
-         Datum(i:i) = String(i:i)
-      EndDo
-      Do i = 1, 8
-         Tijd(i:i) = String(i+11:i+11)
-      EndDo
-#else
-      Date and time on your computer???
+      Datum = Strinf(1:10)
+      Tijd  = String(12:19)
 #endif
       Return
       End
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#else
+      Date and time on your computer???
       INTEGER FUNCTION INTOWP(N)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+      INTOWP = N
+#else
       INTOWP=2*N
+#endif
 C64B  INTOWP=N
       RETURN
       END
@@ -187,7 +195,7 @@ C
       ENDIF
       SECTOR = SEC2I(1)
       MAXLN = SECTOR*1024*1024
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       IF (BLOCKS.EQ.0) BLOCKS = 20
       IF (BLOCKS.EQ.1) BLOCKS = 2
       ISTATS = 1
@@ -263,7 +271,7 @@ C
 C
       DIMENSION ARRAY(NLEN)
 C
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL PUTWA(ITAPE,ARRAY,FWORD,NLEN,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN WWRITW FOR FILE ',ITAPE
@@ -292,7 +300,7 @@ C
 C
       DIMENSION ARRAY(NLEN)
 C
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined(SYS_T3D)
       CALL GETWA(ITAPE,ARRAY,FWORD,NLEN,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN WREADW FOR FILE ',ITAPE,FWORD,NLEN
@@ -301,7 +309,7 @@ C
       END IF
 #else
       OFF = FWORD - 1
-      CALL RDABSF(ITAPE,ARRAY,NLEN,OFF)
+      CALL WRABSF(ITAPE,ARRAY,NLEN,OFF)
 #endif
 C
 C UPDATE LWORD AND THEN RETURN
@@ -334,7 +342,7 @@ C
 C
       NW = (NLEN/SECTOR)*SECTOR
       OFF = FWORD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       IERR = 0
       IF(NW.GT.0) CALL GETWA(ITAPE,ARRAY,FWORD,NW,IERR)
       IF(IERR.NE.0) THEN
@@ -350,7 +358,7 @@ C
       IF(EXTRA.NE.0) THEN
       FWD = FWORD + NW
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL GETWA(ITAPE,BUFF,FWD,SECTOR,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RREAD FOR FILE ',ITAPE,FWD,NW
@@ -374,7 +382,7 @@ C
       DO 11 IGRP = 1,NGRP-1
       IPT = (IGRP-1)*MAXLN + 1
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL GETWA(ITAPE,ARRAY(IPT),FWD,MAXLN,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RREAD FOR FILE ',ITAPE
@@ -390,7 +398,7 @@ C
       NW = (LLEN/SECTOR)*SECTOR
       IPT = (NGRP-1)*MAXLN + 1
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       IF(NW.GT.0) CALL GETWA(ITAPE,ARRAY(IPT),FWD,NW,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RREAD FOR FILE ',ITAPE
@@ -405,7 +413,7 @@ C
       IF(EXTRA.NE.0) THEN
       FWD = FWD + NW
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL GETWA(ITAPE,BUFF,FWD,SECTOR,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RREAD FOR FILE ',ITAPE
@@ -454,7 +462,7 @@ C
       IF(NGRP.EQ.1) THEN
       NW = (NLEN/SECTOR)*SECTOR
       OFF = FWORD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       IERR = 0
       IF(NW.GT.0) CALL PUTWA(ITAPE,ARRAY,FWORD,NW,IERR)
       IF(IERR.NE.0) THEN
@@ -473,7 +481,7 @@ C
    12 CONTINUE
       FWD = FWORD + NW
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL PUTWA(ITAPE,BUFF,FWD,SECTOR,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RWRIT FOR FILE ',ITAPE
@@ -494,7 +502,7 @@ C
       DO 11 IGRP = 1,NGRP-1
       IPT = (IGRP-1)*MAXLN + 1
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL PUTWA(ITAPE,ARRAY(IPT),FWD,MAXLN,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RWRIT FOR FILE ',ITAPE
@@ -510,7 +518,7 @@ C
       NW = (LLEN/SECTOR)*SECTOR
       IPT = (NGRP-1)*MAXLN + 1
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       IF(NW.GT.0) CALL PUTWA(ITAPE,ARRAY(IPT),FWD,NW,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RWRIT FOR FILE ',ITAPE
@@ -529,7 +537,7 @@ C
    13 CONTINUE
       FWD = FWD + NW
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL PUTWA(ITAPE,BUFF,FWD,SECTOR,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RWRIT FOR FILE ',ITAPE
@@ -574,7 +582,7 @@ C
 C
       NW = (NLEN/SECTOR)*SECTOR
       OFF = FWORD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       IERR = 0
       IF(NW.GT.0) CALL GETWA(ITAPE,ARRAY,FWORD,NW,IERR)
       IF(IERR.NE.0) THEN
@@ -590,7 +598,7 @@ C
       IF(EXTRA.NE.0) THEN
       FWD = FWORD + NW
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL GETWA(ITAPE,BUFF,FWD,SECTOR,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
@@ -614,7 +622,7 @@ C
       DO 11 IGRP = 1,NGRP-1
       IPT = (IGRP-1)*MAXLN + 1
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL GETWA(ITAPE,ARRAY(IPT),FWD,MAXLN,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
@@ -630,7 +638,7 @@ C
       NW = (LLEN/SECTOR)*SECTOR
       IPT = (NGRP-1)*MAXLN + 1
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       IF(NW.GT.0) CALL GETWA(ITAPE,ARRAY(IPT),FWD,NW,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
@@ -645,7 +653,7 @@ C
       IF(EXTRA.NE.0) THEN
       FWD = FWD + NW
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL GETWA(ITAPE,BUFF,FWD,SECTOR,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
@@ -693,7 +701,7 @@ C
       IF(NGRP.EQ.1) THEN
       NW = (NLEN/SECTOR)*SECTOR
       OFF = FWORD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       IERR = 0
       IF(NW.GT.0) CALL PUTWA(ITAPE,ARRAY,FWORD,NW,IERR)
       IF(IERR.NE.0) THEN
@@ -712,7 +720,7 @@ C
    12 CONTINUE
       FWD = FWORD + NW
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL PUTWA(ITAPE,BUFF,FWD,SECTOR,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
@@ -733,7 +741,7 @@ C
       DO 11 IGRP = 1,NGRP-1
       IPT = (IGRP-1)*MAXLN + 1
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL PUTWA(ITAPE,ARRAY(IPT),FWD,MAXLN,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
@@ -749,7 +757,7 @@ C
       NW = (LLEN/SECTOR)*SECTOR
       IPT = (NGRP-1)*MAXLN + 1
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       IF(NW.GT.0) CALL PUTWA(ITAPE,ARRAY(IPT),FWD,NW,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
@@ -768,7 +776,7 @@ C
    13 CONTINUE
       FWD = FWD + NW
       OFF = FWD - 1
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL PUTWA(ITAPE,BUFF,FWD,SECTOR,IERR)
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
@@ -829,7 +837,7 @@ C
       END IF
 C
       IF(ITAPE.EQ.6) CALL QUIT(' YOU CANNOT CLOSE A FILE ON UNIT 6')
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       IERR = 0
       CALL WCLOSE(ITAPE,IERR)
       IF(IERR.NE.0) THEN
@@ -843,11 +851,13 @@ C
       IF(JCODE.EQ.4) THEN
         FNAM = DN(ITAPE)
         FNAM(5:5)=CHAR(0)
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
         IF (ITAPE.LT.10) WRITE (FNAM,'(A5,I1,A1)') 'fort.',ITAPE,char(0)
         IF (ITAPE.GT.10) WRITE (FNAM,'(A5,I2,A1)') 'fort.',ITAPE,char(0)
-#endif
+        CALL PXFUNLINK(FNAM,0,STAT)
+#else
         STAT = UNLINK(FNAM)
+#endif
         IF(STAT.NE.0) THEN
           WRITE(6,*) '  PROBLEMS DELETING FILE ',ITAPE,'  STAT = ',STAT
           WRITE(6,*) ' DN = ',DN(ITAPE)
@@ -899,9 +909,9 @@ C M IS THE STAGE OF ELIMINATION
       DO 41 I=M,N
       IF(M.GT.1)A(I,M)=A(I,M)-DOTT(A(I,1),IDIM,A(1,M),1,M-1)
       AVAL=A(I,M)
-      IF(DABS(AVAL).LE.TEMP)GOTO 41
+      IF(ABS(AVAL).LE.TEMP)GOTO 41
 C64B  IF( ABS(AVAL).LE.TEMP)GOTO 41
-      TEMP=DABS(AVAL)
+      TEMP=ABS(AVAL)
 C64B  TEMP= ABS(AVAL)
       IMAX=I
  41   CONTINUE
@@ -936,8 +946,8 @@ C64B  TEMP= ABS(AVAL)
       A(J,NPI)=A(J,NPI)-DOTT(A(J,J+1),IDIM,A(J+1,NPI),1,K-1)
  58   CONTINUE
  59   CONTINUE
-C***  IF(DABS(D).GE.1.0D+36) D=1.0D+36
-C***  IF(DABS(D).LE.1.0D-36) D=1.0D-36
+C***  IF(ABS(D).GE.1.0D+36) D=1.0D+36
+C***  IF(ABS(D).LE.1.0D-36) D=1.0D-36
       DET=D*SIGN
       RETURN
 C ON ZERO PIVOT, SET DET=0.AND RETURN TO CALLING PROGRAM NOV 1972

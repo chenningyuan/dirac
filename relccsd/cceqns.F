@@ -195,6 +195,7 @@ C
 C
       NIT = 0
       RMS = 1.D0
+      CALL T1DIAG(DIAG,T1)
 C
       IF (IPRNT.GE.1) THEN
          WRITE(IW,6003)
@@ -203,7 +204,6 @@ C
 C
 C     Calculate fixed intermediaries for Lambda equations
 C
-      call memchk ('before Lambda intermediates',t1(0),1)
       IF (.NOT.TEQ) THEN
          CALL GETAMPT (S1,S2)
          CALL HOINTM (FOO,S1,S2,BUF1,BUF2,BUF3,HO)
@@ -217,7 +217,6 @@ C
          CALL HINTM (S1,S2,BUF1,BUF2,BUF3,NBUF3,H)
          CPUINT = CPUINT + CPUDELTA()
       ENDIF
-      call memchk ('before iterations',t1(0),1)
 C
 C  START ITERATIVE PROCEDURE
 C
@@ -297,10 +296,8 @@ C
 C
 C  INTERMEDIATES FORMED --- T2 EQUATIONS
 C
-      call memchk ('before t2eqns',t1(0),1)
       CALL T2EQNS (T1,T2,HO,HV,HOV,H,AZ,CZ,GOO,GVV,
      &             BUF1,BUF2,BUF3,NBUF3,S2)
-      call memchk ('after t2eqns',t1(0),1)
       CPUT2 = CPUT2 + CPUDELTA()
 C
 C
@@ -440,7 +437,7 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE,TEQ,USEDZ
       REAL*8 SDOT,DDOT
-      COMPLEX*16 CDOTU,ZDOTU,CT1
+      COMPLEX*16 CDOTU,ZDOTU
 C
 C---------------Executable code--------------------------------------
 C
@@ -927,22 +924,16 @@ C
       ET2 = D0
       ET3 = D0
 C
-      call memchk ('entering T3CORR',fvo(0),1)
       CALL GETVOOO(VOOO)
       CALL GETVVOO(VVOO)
 C
 C     Bring arrays in correct order
 C
-      call memchk ('before sorts srt23',fvo(0),1)
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,T2,T2S)
-      call memchk ('after srt1ls1',fvo(0),1)
       CALL SRT22 (NREP,MULTB,NVVT,NO,NO,NVVOT,LOVVOT,LLOVVT,T2,T2T)
-      call memchk ('after srt22',fvo(0),1)
       CALL SRT23 (NREP,MULTB,NVO,NV,NO,NVVT,NVVVT,KVVVOT,LLVVVT,
      &            BUF4,VVVO)
-      call memchk ('after srt23',fvo(0),1)
       IF (CARITH) CALL CONJUGA (KVVVOT(NREP+1),VVVO,1)
-      call memchk ('after sorts',fvo(0),1)
 C
 C     Put TAU3 in block BUF4 for use in evaluating -T correction
 C
@@ -1295,7 +1286,6 @@ C-----------------------------
       ENDDO
 C
       CPU3 = CPU3 + CPUDELTA()
-      call memchk ('triple loop',fvo(0),1)
 C
       ENDDO
       ENDDO
@@ -1468,7 +1458,7 @@ C64B     SUM2 = SUM2 + SDOT (NDIMT2,T2O,1,T2O,1)
          RMS = SUM1 * SUM1
       ENDIF
 C
-      RMS = DSQRT(DABS(SUM2-RMS))
+      RMS = SQRT(ABS(SUM2-RMS))
 C64B  RMS = SQRT(ABS(SUM2-RMS))
 C
       SECT1 = (ITC-1)*(NST1+NST2) + 1
@@ -1516,13 +1506,13 @@ C
 C
 C  FIND THE MAXIMUM AND SCALE
 C
-      XM = DABS(BB(1,1))
+      XM =  ABS(BB(1,1))
 C64B  XM =  ABS(BB(1,1))
       DO 80 N = 1,IT
       DO 90 M = 1,N
-      XFAC = DABS(BB(N,M))
+      XFAC =  ABS(BB(N,M))
 C64B  XFAC =  ABS(BB(N,M))
-      XMAX = DMAX1(XM,XFAC)
+      XMAX =  DMAX1(XM,XFAC)
 C64B  XMAX =  MAX (XM,XFAC)
       XM = XMAX
    90 CONTINUE
@@ -1615,7 +1605,7 @@ C
       IF (CARITH) THEN
          CECC1 = ZDOTC (NFVO,FVO,1,T1,1)
 C64B     CECC1 = CDOTC (NFVO,FVO,1,T1,1)
-         IF (DABS(DIMAG(CECC1)).GT.ACCUR) 
+         IF (ABS(DIMAG(CECC1)).GT.ACCUR) 
      &      WRITE (6,1000) 'T1',DIMAG(CECC1)
 C64B     IF (ABS(AIMAG(CECC1)).GT.ACCUR) 
 C64B &      WRITE (6,1000) 'T1',AIMAG(CECC1)
@@ -1629,7 +1619,7 @@ C
       IF (CARITH) THEN
          CECC2 = ZDOTC (NDIMT2,BUF1,1,BUF2,1)
 C64B     CECC2 = CDOTC (NDIMT2,BUF1,1,BUF2,1)
-         IF (DABS(DIMAG(CECC2)).GT.ACCUR) 
+         IF (ABS(DIMAG(CECC2)).GT.ACCUR) 
      &      WRITE (6,1000) 'T2',DIMAG(CECC2)
 C64B     IF (ABS(AIMAG(CECC2)).GT.ACCUR) 
 C64B &      WRITE (6,1000) 'T2',AIMAG(CECC2)
@@ -1685,7 +1675,7 @@ C
       IF (CARITH) THEN
          CEMP21 = ZDOTC (NFVO,FVO,1,T1,1)
 C64B     CEMP21 = CDOTC (NFVO,FVO,1,T1,1)
-         IF (DABS(DIMAG(CEMP21)).GT.ACCUR) 
+         IF (ABS(DIMAG(CEMP21)).GT.ACCUR) 
      &      WRITE (6,1000) 'T1',DIMAG(CEMP21)
 C64B     IF (ABS(AIMAG(CEMP21)).GT.ACCUR) 
 C64B &      WRITE (6,1000) 'T1',AIMAG(CEMP21)
@@ -1698,7 +1688,7 @@ C
       IF (CARITH) THEN
          CEMP22 = ZDOTC (NDIMT2,BUF1,1,T2,1)
 C64B     CEMP22 = CDOTC (NDIMT2,BUF1,1,T2,1)
-         IF (DABS(DIMAG(CEMP22)).GT.ACCUR) 
+         IF (ABS(DIMAG(CEMP22)).GT.ACCUR) 
      &      WRITE (6,1000) 'T2',DIMAG(CEMP22)
 C64B     IF (ABS(AIMAG(CEMP22)).GT.ACCUR) 
 C64B &      WRITE (6,1000) 'T2',AIMAG(CEMP22)
@@ -1859,7 +1849,7 @@ C64B     DIAG = REAL(CDOTC (NDIMT1,T1,1,T1,1))
 C64B     DIAG = SDOT (NDIMT1,T1,1,T1,1)
       ENDIF
 C
-      DIAG = DSQRT(DIAG/RSUM)
+      DIAG =  SQRT(DIAG/RSUM)
 C64B  DIAG =  SQRT(DIAG/RSUM)
 C
       RETURN

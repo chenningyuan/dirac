@@ -93,7 +93,7 @@ C     But is vectorized by using matrix multiplies where ever possible
 C--------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCINPT (IN,IW)
+      SUBROUTINE CCINPT (IN,IW,MIOBUF)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -120,7 +120,8 @@ C
 C
       NAMELIST/RELCCSD/ NELEC,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOGRAD,DOLINR,DOEXC,
-     &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
+     &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE,
+     &                  MIOBUF
       NAMELIST/CCSORT/ SRTALL
       NAMELIST/CCENER/ DOMP2,DOCCSD,DOCCSDT,MAXIT,MAXDIM,NTOL
       NAMELIST/CCGRAD/ DOMP2G,DOCCSDG,DOCCSDTG,NEOPER,NAMEE,
@@ -136,6 +137,7 @@ C---------------Executable code--------------------------------------
 C
 C     Read number of occupied spinors from input
 C
+      MIOBUF = 0
       REWIND (IN)
       DO I = 1, 16
          NELEC(I) = 0
@@ -283,7 +285,7 @@ C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
 #if defined (CC_ALONE)
-#if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX)
+#if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_T3D)
       POINTER (ICC,CC(1))
       REAL*8 CC
 #else
@@ -318,7 +320,7 @@ C
 C
 C     Read input
 C
-      CALL CCINPT (IN,IW)
+      CALL CCINPT (IN,IW,MIOBUF)
 C
 C     Number of integer words for REAL*8 and 
 C     number of REAL*8 words per variable (2 for complex groups, 
@@ -353,7 +355,7 @@ C     Allow for file buffers (Cray only) : NCCFIL files with 20 blocks each
 C
 #if defined (CC_ALONE)
          MAXCOR = MAXCOR - 800 * 1024
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
          MAXCOR = MAXCOR - NCCFIL * 20 * 512
 #endif
 #endif
@@ -424,7 +426,7 @@ C
       IF (MXCORR.GT.MAXCOR) THEN
 #if defined (CC_ALONE)
          MXCORR = MXCORR+800*1024
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
          MXCORR = MXCORR+NCCFIL*20*512
 #endif
 #endif
@@ -439,14 +441,14 @@ C
 #if defined (CC_ALONE)
       IERR = 0
       IABORT = 0
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL HPALLOC (ICC,MXCORR,IERR,IABORT)
 #endif
 #if defined (SYS_AIX)
       ICC =  MALLOC (%VAL(MXCORR*8))
       IF (ICC.EQ.0) IERR = 1
 #endif
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || defined (SYS_HPUX)
       ICC =  MALLOC (MXCORR*8)
       IF (ICC.EQ.0) IERR = 1
 #endif
@@ -462,17 +464,30 @@ C  Use remaining free memory as extra buffer for integral and
 C  coefficient files.
 C  At present only used in Cray version.
 C
+#if defined (CC_ALONE)
       MREMAIN = MAXCOR - MXCORR
+#else
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+      MREMAIN = NCCFIL*20*512
+      IF(MIOBUF.NE.0) THEN
+        IF(MIOBUF.LT.MREMAIN) THEN
+          PRINT*, "MIOBUF too small; need at least ", MREMAIN
+          CALL QUIT("Too small IO-buffer")
+        ENDIF
+        MREMAIN = MIOBUF
+      ENDIF
+#endif
+#endif
 C
       NINTSB = MAX0(MREMAIN/512,20)
       NINTSB  = MIN0(MXDIMCC*(NV3*RCW/512+FVO*RCW/512+2),NINTSB)
-      CALL RFILE(ITAMPL,NINTSB)
-      MREMAIN = MREMAIN - (NINTSB-20)*512
+CTROND      CALL RFILE(ITAMPL,NINTSB)
+CTROND      MREMAIN = MREMAIN - (NINTSB-20)*512
 C
       NINTSB = MAX0(MREMAIN/512,20)
       NINTSB  = MIN0(MXDIMCC*(NV3*RCW/512+FVO*RCW/512+2),NINTSB)
-      CALL RFILE(ITAMPD,NINTSB)
-      MREMAIN = MREMAIN - (NINTSB-20)*512
+CTROND      CALL RFILE(ITAMPD,NINTSB)
+CTROND      MREMAIN = MREMAIN - (NINTSB-20)*512
 C
 C     Start the calculations
 C     ----------------------
@@ -1800,6 +1815,7 @@ C
       CALL MEMOPT('REAL',FREQR,MAXDIM,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',FREQI,MAXDIM,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',FREQD,MAXDIM,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',CCC,MAXDIM*MAXDIM,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BB1,MAXDIM*MAXDIM,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BB2,MAXDIM*MAXDIM,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BB3,MAXDIM*MAXDIM,CC,KFREE,LFREE,ALLOC)

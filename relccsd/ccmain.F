@@ -25,7 +25,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
       PARAMETER (MAXCOR = 13 000 000)
-#if !defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) 
+#if !defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_T3D)
       COMMON // CC(MAXCOR)
 #endif
       INCLUDE "files.inc"
