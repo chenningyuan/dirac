@@ -322,17 +322,17 @@ C
 C     Prepare screening
 C
 C     AO-integrals
-      IJOB   = 0
-      IGTYP  = 1
+CC      IJOB   = 0
+CC      IGTYP  = 1
 C     Differentiated integrals
-      ITYPE  = 2
-      MAXDIF = 1
+CC      ITYPE  = 2
+CC      MAXDIF = 1
 C     Misc.
-      JATOM  = 0
-      NOCONT = .FALSE.
-      CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,JATOM,NOCONT,
-     &            100,WORK(KFREE),LFREE)
-C     &            IPRINT,WORK(KFREE),LFREE)
+CC      JATOM  = 0
+CC      NOCONT = .FALSE.
+CC      CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,JATOM,NOCONT,
+CC     &            100,WORK(KFREE),LFREE)
+CCC     &            IPRINT,WORK(KFREE),LFREE)
 C
       IF ( DO2GRD(1) .AND. .NOT. LBIT(INTFLG,1)) THEN
          WRITE(LUPRI,'(/1X,A/)') 'WARNING: LL-integrals not used in '//
