@@ -37,6 +37,10 @@
 #include "functionals.h"
 #include "dcbham.h"
 #include "inforb.h"
+#ifdef VAR_MPI
+#include <mpi.h>
+#include "infpar.h"
+#endif
 
 Functional* available_functionals[] = {
     /* generic functionals */
@@ -164,7 +168,7 @@ dft_input_(char* line, int len)
     line[i+1] = '\0';
     if(DftConfString) free(DftConfString);
     DftConfString = strdup(line);
-    fort_print("Reading DFT input from '%s'...", line);
+    /* fort_print("Reading DFT input from '%s'...", line); */
     sscanf(line,"%20s", func_name);
 
     for(i=0; available_functionals[i]; i++)
@@ -505,3 +509,38 @@ Functional WAHFunctional = {
   gga_second,
   gga_third
 };
+
+/* ################################################################### */
+/* MPI related functions                                               */
+/* ################################################################### */
+/* dft_sync_func:
+   synchronizes functional data between nodes.
+   Needs to be called only once (after functional initialization/change).
+   NO-OP for serial code.
+   In any case, do it only once, otherwise the functional becomes
+   a sum of functionals.
+*/
+void
+dft_sync_func_(int* amImaster)
+{
+#ifdef VAR_MPI
+    static int Initialized = 0;
+    int dft_conf_len =  DftConfString ? strlen(DftConfString)+1 : 0;
+    
+    if(infpar_.nodes==1||Initialized) return;
+
+    MPI_Bcast(&dft_conf_len, 1, MPI_INT, infpar_.mparid, MPI_COMM_WORLD);
+    if(dft_conf_len>0) {
+        char* line = malloc(dft_conf_len);
+        if(*amImaster)
+            strcpy(line, DftConfString);
+
+        MPI_Bcast(line, dft_conf_len, MPI_CHAR, infpar_.mparid, MPI_COMM_WORLD);
+        if(!*amImaster)
+            dft_input_(line, dft_conf_len);
+
+        free(line);
+        Initialized = 1;
+    }
+#endif /* VAR_MPI */
+}
