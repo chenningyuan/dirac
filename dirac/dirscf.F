@@ -516,7 +516,6 @@ C
       LOGICAL CHKCNV,DOSEL,TEST
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),DMAT(*),BMAT(*),
      &          WORK(LWORK)
-      DIMENSION NISHOLD(2),NASHOLD(2)
 C
 #include "memint.h"
 C
@@ -528,6 +527,10 @@ C
         KDTEMP = KFREE
         KDEVEC = KFREE
       ENDIF
+C
+C     Transform AO Fock matrix to MO basis
+C     ==================================== 
+C
       CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
@@ -540,7 +543,7 @@ C
       END IF
       IF (TEST) THEN
 C        read LUTMAT rec#2 with SAOMO
-C        NZT=number of tranf.matrixes
+C        NZT is the NZ value for the transformation matrix
         ISIZE = 0
         DO I = 1,NFSYM
            ISIZE = ISIZE + NZT*NORB(I)*NFBAS(I,0)
@@ -568,78 +571,35 @@ C
      &              DUM,WORK(KFREE),LFREE)
       ENDIF
 C
+C     Diagonalize Fock matrix
+C     =======================
+C
       TDDG = SECOND()
       CALL DFDIAG (FMO,EIG,IBEIG,FAO,WORK,KFREE,LFREE)
       TDDG = SECOND() - TDDG
 C
 C
 C     Automatic occupation
+C     ====================
 C
-      IF (AUTOCC .OR. INIOCC) THEN
-C
-C        Save old occupation
-C
-         CALL ICOPY(2,NISH,1,NISHOLD,1)
-         CALL ICOPY(2,NASH,1,NASHOLD,1)
-C
-C        Determine new occupation
-C
-         CALL FNDOCC(EIG)
-C
-C
-C
-         TEST = .FALSE.
-         DO I = 1,NFSYM
-            TEST = TEST .OR. (NISH(I) .NE. NISHOLD(I))
-            TEST = TEST .OR. (NASH(I) .NE. NASHOLD(I))
-         END DO
-         IF (TEST .OR. INIOCC) THEN
-C
-C           AUTOCC has changed occupation...
-C
-C           Update common block info about N2ISHT,...
-C
-            CALL SETDC2(0)
-            CALL SETDHF(0)
-C
-            IF (INIOCC) THEN
-               INIOCC = .FALSE.
-               WRITE(LUPRI,'(/A/)')
-     &            '* AUTOCC( 0) : Initial occupation:'
-            ELSE
-               NEWOCC = NEWOCC + 1
-               WRITE(LUPRI,'(/A,I2,A/)')
-     &            '* AUTOCC(',NEWOCC,') : New occupation:'
-            END IF
-C
-            CALL PROCC()
-C
-            IF (NEWOCC .GT. 10) THEN
-               WRITE(LUPRI,'(/A,/A,I2,A)')
-     &            'Problems with AUTOCC:',
-     &            'DHF occupation has changed ',NEWOCC, ' times.'
-               CALL QUIT('DHF occupation has changed too many times.')
-            END IF
-         END IF
-C
-      END IF
+      IF(AUTOCC.OR.INIOCC) CALL DETOCC(EIG)
 C
 C     Overlap selection
+C     =================
 C
       IF(DOSEL) CALL SMOSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
 C
 C     Print eigenvalues
 C
-      IF (IPRSCF .GE. 3)
+      IF (IPRSCF.GE.3)
      &   CALL PREIGN(EIG,IBEIG,(IPRSCF .GE. 4),WORK(KFREE),LFREE)
+C
+C
+C     Backtransform all spinors (temporary storage in FMO)
+C     ====================================================
 C
       DO 40 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 40
-C
-C       Backtransform all spinors
-C         - temporary storage in FMO
-C       ==============================
-C
         CALL BCKTRA(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &              FAO(I2ORBT(I)+1),NORB(I),NORB(I),
      &              NORB(I),NZ,NORB(I),1,NFBAS(I,0),
@@ -3415,3 +3375,63 @@ C
       RETURN
 C
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck detocc */
+      SUBROUTINE DETOCC(EIG)
+C***********************************************************************
+C
+C     Handle automatic occupation
+C     A cut-and-paste job by T. Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcborb.h"
+#include "dcbdhf.h"
+      LOGICAL TEST
+      DIMENSION EIG(*)
+      DIMENSION NISHOLD(2),NASHOLD(2)
+C
+C     Save old occupation
+C
+      CALL ICOPY(2,NISH,1,NISHOLD,1)
+      CALL ICOPY(2,NASH,1,NASHOLD,1)
+C
+C     Determine new occupation
+C
+      CALL FNDOCC(EIG)
+C
+      TEST = .FALSE.
+      DO IFRP = 1,NFSYM
+        TEST = TEST.OR.(NISH(IFRP).NE.NISHOLD(IFRP))
+        TEST = TEST.OR.(NASH(IFRP).NE.NASHOLD(IFRP))
+      END DO
+      IF (TEST.OR.INIOCC) THEN
+C
+C        AUTOCC has changed occupation...
+C        Update common block info about N2ISHT,...
+C
+         CALL SETDC2(0)
+         CALL SETDHF(0)
+         IF(INIOCC) THEN
+           INIOCC = .FALSE.
+           WRITE(LUPRI,'(/A/)') '* AUTOCC( 0) : Initial occupation:'
+         ELSE
+           NEWOCC = NEWOCC + 1
+           WRITE(LUPRI,'(/A,I2,A/)')
+     &            '* AUTOCC(',NEWOCC,') : New occupation:'
+         END IF
+C
+         CALL PROCC()
+C
+         IF(NEWOCC .GT. 10) THEN
+           WRITE(LUPRI,'(/A,/A,I2,A)') 'Problems with AUTOCC:',
+     &            'DHF occupation has changed ',NEWOCC, ' times.'
+           CALL QUIT('DHF occupation has changed too many times.')
+         END IF
+      END IF
+C
+      RETURN
+      END
+

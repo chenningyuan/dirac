@@ -78,8 +78,6 @@ C     ---------------------------
 C
 C     See paper by J. Thyssen
 C     (reference: manuscript)
-C     
-C     
 C
 C        Transform FD to MO-basis
 C

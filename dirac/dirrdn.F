@@ -738,7 +738,8 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 31)
+#include "mxcent.h"
+      PARAMETER (NTABLE = 35)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -747,6 +748,7 @@ C
       CHARACTER CTEMP*72, LINE*80, TEXT*20
       DIMENSION WORK(LWORK)
 C
+#include "nuclei.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbdhf.h"
@@ -757,13 +759,13 @@ C
 #include "dcbreo.h"
 C
       SAVE SET
-      DATA TABLE /'.XXXXXX','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
+      DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
      &            '.FCKCNV','.NODSCF','.PHCOEF','.FIXDIF','.NODAMP',
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.TRIVEC','.TRIFCK','.CLOSED','.EIGPRI','.OPEN S',
-     &            '.AUTOCC','xXXXXXX','.NOBNCR','.DIISTH','.DAMPFC',
+     &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
-     &            '.POST D'/
+     &            '.POST D','.PRJTHR','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -811,6 +813,8 @@ C
       AUTOCC    = .FALSE.
       BNCRON    = .TRUE.
       INIOCC    = .TRUE.
+      PROJEC  = .FALSE.
+      PROOWN  = .FALSE.
 C
 C     Initialize /CBIDHF/
 C     ===================
@@ -853,6 +857,7 @@ C
       DIISTH    = DUMMY
       CNVINT(1) = DUMMY
       CNVINT(2) = DUMMY
+      PRJTHR  = 1.0D-10
       CALL DZERO(SCFTID,8)
       CALL IZERO(ITRSCF,8)
 C
@@ -896,7 +901,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31), I
+     &                     31,32,33,34,35), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -908,6 +913,19 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in DHFINP.')
     1          CONTINUE
+C&&&& PROJECtion: Reduce transformation matrix by projection
+               PROJEC = .TRUE.
+               READ(LUCMD,*) NPRJREF
+               IF(NPRJREF.GT.MPRJREF) THEN
+                 WRITE(LUPRI,'(A,I5)')
+     &           '* Number of reference fragments specified:',NPRJREF,
+     &           '* Current maximum                        :',MPRJREF
+                 CALL QUIT('DHFINP:Too many fragments !')
+               ENDIF
+               DO J = 1,NPRJREF
+                 READ(LUCMD,'(A6)') PRJFIL(J)
+                 READ(LUCMD,'(A72)') (VCPROJ(I,J),I=1,NFSYM)
+               ENDDO
                GO TO 100
     2          CONTINUE
 C&&& PRINT : General print level in DHF-module
@@ -1085,7 +1103,8 @@ C&&& AUTOCC: Automatic DHF occupation
                   AUTOCC = .TRUE.
                GO TO 100
    22          CONTINUE
-C
+C&&&& OWNBASis: Use local basis for projection
+               PROOWN = .TRUE.
                GO TO 100
    23          CONTINUE
 C&&&& BNCRON : Improved screening for use with bare nucleus start guess
@@ -1152,6 +1171,16 @@ C
      &                           I,IREORF(I),WORK,LWORK)
                   END DO
                GO TO 100
+ 32            CONTINUE
+C&&& PRJTHR: Smallest norm accepted in projection step
+               READ(LUCMD,*) PRJTHR
+               GOTO 100
+ 33            CONTINUE
+               GOTO 100
+ 34            CONTINUE
+               GOTO 100
+ 35            CONTINUE
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1277,6 +1306,52 @@ C
          NFROT  = NFRO(1)  + NFRO(2)
          NELECT = NELEC(1) + NELEC(2)
       END IF
+      IF(PROJEC) THEN
+        WRITE(LUPRI,'(A)')
+     &      ' * Variational space reduced by projection'//
+     &      '  using a set of reference orbitals.'
+        WRITE(LUPRI,'(3X,A,D12.4)') '- Smallest norm accepted: ',PRJTHR
+        IF(PROOWN) THEN
+          WRITE(LUPRI,'(3X,A)') 
+     &     '- Reference orbitals are obtained from local bases !',
+     &     '  The indexing of reference spinor sets is assumed ',
+     &     '  to follow list of symmetry independent nuclei.'
+          DO J = 1,NPRJREF
+            WRITE(LUPRI,'(3X,A,I3,A,A4)') '- Reference spinor set ',J,
+     &             ' --> ',NAMN(J)
+            WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
+            DO I = 1,NFSYM
+              NVEC = 0
+              CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
+     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+              IF(NVEC.EQ.0) THEN
+                WRITE(LUPRI,'(7X,A,A3)') 
+     &             '- No orbitals in fermion ircop ',FREP(I)
+              ELSE
+                WRITE(LUPRI,'(7X,A,A3,A,A72)') 
+     &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
+              ENDIF
+            ENDDO
+          ENDDO
+        ELSE
+          DO J = 1,NPRJREF
+            WRITE(LUPRI,'(3X,A,I3)') '- Reference spinor set ',J
+            WRITE(LUPRI,'(3X,A,A6)') '  read from file ',PRJFIL(J)
+            DO I = 1,NFSYM
+              NVEC = 0
+              CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
+     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+              IF(NVEC.EQ.0) THEN
+                WRITE(LUPRI,'(5X,A,A3)') 
+     &             '- No orbitals in fermion ircop ',FREP(I)
+              ELSE
+                WRITE(LUPRI,'(5X,A,A3,A,A72)') 
+     &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
+              ENDIF
+            ENDDO
+          ENDDO
+        ENDIF
+      ENDIF
 C
 C     If no DIIS set MXDIIS to zero
 C     =============================
@@ -2572,7 +2647,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
-     &            '.WGPOP','.OWNBAS','.OPERATO','.XXXXXX'/
+     &            '.WGPOP','.OWNBAS','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2596,7 +2671,6 @@ C     Default is to project all occupied vectors onto all reference vectors
       PROTHR   = 1.0D-3
       LWGPOP = .FALSE.
       OWNBAS = .FALSE.
-      NPRANA = 0
 C
 C     Process input from CBIPRJ
 C     =========================
@@ -2661,17 +2735,6 @@ C&&& OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis 
                  OWNBAS = .TRUE.
                GO TO 100
     7          CONTINUE
-C&&& OPERATOR: Analyze expectation value in terms of fragment orbitals
-               CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                     WORK,LWORK,IPRGEN)
-               NPRANA = NPRANA + 1
-               IF(NPRANA.GT.MPRANA) THEN
-                 WRITE(LUPRI,'(A)') 
-     &             '***** PRJINP ERROR *****',
-     &             'Redimension MPRANA of /CBIPRJ/ !'
-                 CALL QUIT('PRJINP: beyond MAXANA !')
-               ENDIF
-               IPRANA(NPRANA) = INDXPR
                GO TO 100
     8          CONTINUE
                GO TO 100
@@ -2766,18 +2829,6 @@ C
       IF(LWGPOP) WRITE(LUPRI,'(A,A)') '* Overlap densities split ',
      &  'between contributions according to their weight.'
       WRITE(LUPRI,'(1X,A,I5)') '* Print level:',IPRPRJ
-      IF(NPRANA.GT.0) THEN
-        WRITE(LUPRI,'(3X,A)') '- The expectation value of the '//
-     &    'following one-electron operators',' will be analyzed:'
-        DO I = 1,NPRANA
-          INDXPR = IPRANA(I)
-          CALL PRSYMB(LUPRI,'-',75,0)
-          WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
-     &     'Operator no.',I,':',PRPNAM(INDXPR)
-          CALL PRSYMB(LUPRI,'-',75,0)
-          CALL WRIXPR(I,INDXPR)
-        ENDDO
-      ENDIF
   999 CONTINUE
       RETURN
 C
@@ -3096,9 +3147,9 @@ C
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','XXXXXXX',
      &             'XXXXXXX','XXXXXXX','XXXXXXX','XXXXXXX'/
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
-     &            '.PROJEC','.OWNBAS','.SOLVEN','.FREEPJ',
+     &            '.XXXXXX','.XXXXXX','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
-     &            '.SPINFR','.ZORA  ','.SMLV1C','.PRJTHR',
+     &            '.SPINFR','.ZORA  ','.SMLV1C','.XXXXXX',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
      &            '.ONECAP','.SPINF2','XXXXXXX','XXXXXXX'/
 C
@@ -3117,8 +3168,6 @@ C
       ONESYS  = .FALSE.
       FREEPJ  = .FALSE.
       VEXTPJ  = .FALSE.
-      PROJEC  = .FALSE.
-      PROOWN  = .FALSE.
       URKBAL  = .FALSE.
       NOSMLV  = .FALSE.
       LEVYLE  = .FALSE.
@@ -3137,7 +3186,6 @@ C
       N1OPER  = 0
       SSMTRC  = D1
       HFXFAC  = D1
-      PRJTHR  = 1.0D-10
       CALL OP1INI(WORK,LWORK)
       NOINPUT = .FALSE.
 C
@@ -3217,23 +3265,8 @@ CTROND          Must be implemented......
             CALL QUIT('.GAUNT not implemented')
             GO TO 100
   105     CONTINUE
-C&&&& PROJECtion: Reduce transformation matrix by projection
-              PROJEC = .TRUE.
-              READ(LUCMD,*) NPRJREF
-              IF(NPRJREF.GT.MPRJREF) THEN
-                WRITE(LUPRI,'(A,I5)')
-     &         '* Number of reference fragments specified:',NPRJREF,
-     &         '* Current maximum                        :',MPRJREF
-                CALL QUIT('PRJINP:Too many fragments !')
-              ENDIF
-              DO J = 1,NPRJREF
-                READ(LUCMD,'(A6)') PRJFIL(J)
-                READ(LUCMD,'(A72)') (VCPROJ(I,J),I=1,NFSYM)
-              ENDDO
             GO TO 100
   106     CONTINUE
-C&&&& OWNBASis: Use local basis for projection
-              PROOWN = .TRUE.
             GO TO 100
   107     CONTINUE
 C&&& SOLVENT: Solvent effects modelled by spherical cavity in dielectric medium
@@ -3294,8 +3327,6 @@ C             projection scheme
              ICHANG = ICHANG + 1
              GO TO 100
   116      CONTINUE
-C&&& PRJTHR: Smallest norm accepted in projection step
-             READ(LUCMD,*) PRJTHR
              GOTO 100
   117      CONTINUE
 C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
@@ -3565,52 +3596,6 @@ C         Operator must be symmetric under time reversal
      &      '- No nuclear attraction integrals for small components !'
       ENDIF
 C
-      IF(PROJEC) THEN
-        WRITE(LUPRI,'(A)')
-     &      ' * Variational space reduced by projection'//
-     &      '  using a set of reference orbitals.'
-        WRITE(LUPRI,'(3X,A,D12.4)') '- Smallest norm accepted: ',PRJTHR
-        IF(PROOWN) THEN
-          WRITE(LUPRI,'(3X,A)') 
-     &     '- Reference orbitals are obtained from local bases !',
-     &     '  The indexing of reference spinor sets is assumed ',
-     &     '  to follow list of symmetry independent nuclei.'
-          DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3,A,A4)') '- Reference spinor set ',J,
-     &             ' --> ',NAMN(J)
-            WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
-            DO I = 1,NFSYM
-              NVEC = 0
-              CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
-     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
-              IF(NVEC.EQ.0) THEN
-                WRITE(LUPRI,'(7X,A,A3)') 
-     &             '- No orbitals in fermion ircop ',FREP(I)
-              ELSE
-                WRITE(LUPRI,'(7X,A,A3,A,A72)') 
-     &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
-              ENDIF
-            ENDDO
-          ENDDO
-        ELSE
-          DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3)') '- Reference spinor set ',J
-            WRITE(LUPRI,'(3X,A,A6)') '  read from file ',PRJFIL(J)
-            DO I = 1,NFSYM
-              NVEC = 0
-              CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
-     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
-              IF(NVEC.EQ.0) THEN
-                WRITE(LUPRI,'(5X,A,A3)') 
-     &             '- No orbitals in fermion ircop ',FREP(I)
-              ELSE
-                WRITE(LUPRI,'(5X,A,A3,A,A72)') 
-     &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
-              ENDIF
-            ENDDO
-          ENDDO
-        ENDIF
-      ENDIF
       IF (NOINPUT) GOTO 500
 C
 C     Process input for various program sections

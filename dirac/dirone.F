@@ -1313,6 +1313,7 @@ C
           NESH(IFRP)  = NFORB(IFRP,1)
           NPSH(IFRP)  = NFORB(IFRP,2)
           NORB(IFRP)  = NESH(IFRP) + NPSH(IFRP)
+          NTMO(IFRP)  = NORB(IFRP)
         ENDDO
         KTMAT = KVMAT
       ELSE
@@ -1325,10 +1326,13 @@ C
         CALL DELPOS(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
      &            WORK(KFREE),LFREE)
       ENDIF
-      N2TMT = 0
+      N2TMT  = 0
+      N2TMOT = 0
       DO IFRP = 1,NFSYM
         I2TMT(IFRP) = N2TMT
         N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
+        I2TMOT(IFRP) = N2TMOT
+        N2TMOT = N2TMOT + NTMO(IFRP)*NTMO(IFRP)*NZ
       ENDDO
 C
 C     Construct right index transformed overlap matrix Saomo = Sao C
@@ -1340,6 +1344,13 @@ C     respect to a set of reference orbitals
 C
       IF(PROJEC) THEN
         CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),IPRONE,WORK,KFREE,LFREE)
+        N2TMOT = 0
+        DO IFRP = 1,NFSYM
+          I2TMOT(IFRP) = N2TMOT
+          N2TMOT = N2TMOT + NTMO(IFRP)*NTMO(IFRP)*NZ
+          NORB(IFRP) = NTMO(IFRP) + NFRO(IFRP)
+        ENDDO
+        CALL SETDC2(0)
       ENDIF
 C
 C     Output
@@ -1480,6 +1491,7 @@ C
           NESH(I)  = NFORB(I,1)
           NPSH(I)  = 0
           NORB(I)  = NESH(I) + NPSH(I)
+          NTMO(I)  = NORB(I)
           IF(NORB(I).EQ.0) GOTO 20
           CALL DZERO(TBUF(IBUF),NFORB(I,0)*NORB(I)*NZT)
           JBUF = IBUF
@@ -1548,6 +1560,7 @@ C               [                      0, (2mc)^-1 sigma.p Psi(L) ]
           NESH(I)  = NFORB(I,1)
           NPSH(I)  = NFORB(I,1)
           NORB(I)  = NESH(I) + NPSH(I)
+          NTMO(I)  = NORB(I)
           IF(NORB(I).EQ.0) GOTO 40
 C
 C         Prepare small component part
@@ -1602,6 +1615,7 @@ C
           ENDDO
           NPSH(I)  = NEFF
           NORB(I)  = NESH(I) + NPSH(I)
+          NTMO(I)  = NORB(I)
 C
           CALL DZERO(TBUF(IBUF),NFORB(I,0)*NORB(I)*NZ)
           IBO  = 0
@@ -1740,6 +1754,7 @@ C
      &              IPRHAM)
           NPSH(I) = 0
           NORB(I) = NESH(I)
+          NTMO(I) = NORB(I)
           NBUF = NFBAS(I,0)*NESH(I)*NZ
           CALL DCOPY(NBUF,WORK(IBUF),1,TMAT(IMAT),1)
           IBUF = IBUF + NBUF
@@ -2258,6 +2273,7 @@ C
       ENDDO
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reno */
       SUBROUTINE RENO(LDM,NDIM,SMAT)
 #include "implicit.h"
@@ -3254,6 +3270,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbham.h"
+#include "dcbdhf.h"
 C
       LOGICAL TOBE
       DIMENSION TMAT(*),TINV(*),WORK(*)

@@ -4,9 +4,11 @@ C DATE    : $Date$
 C FILE    : dcbdhf.h
 C
 C*** Dirac-Fock calculations ***
-      CHARACTER INTTYP*9,CACC*8
+C     PROJEC     - any projection, defined by a set of coefficients
+      CHARACTER INTTYP*9,CACC*8,PRJFIL*6,VCPROJ*72
       PARAMETER(MFMAT = 10)
-      COMMON/DCCDHF/INTTYP,CACC
+      PARAMETER(MPRJREF=6)
+      COMMON/DCCDHF/INTTYP,CACC,PRJFIL(MPRJREF),VCPROJ(2,MPRJREF)
       LOGICAL DHFCONV,DHFEXIT,TRIVEC,TRIFCK,
      &        ERGCNV,EVCCNV,FCKCNV,DODSCF,
      &        DODAMP,DAMPON,DODIIS,DIISON,OVLSEL,PHCOEF,FIXDIF,
@@ -19,12 +21,12 @@ C*** Dirac-Fock calculations ***
      &              NEVEC(2),N2EVECQ(2),I2EVECTQ(2),N2EVECTQ,
      &              NSMOTQ,ISMOQ(2),ITRSCF(0:7),
      &              NFMAT,ISYMOP(MFMAT),IFCKOP(MFMAT),IHRMOP(MFMAT),
-     &              NEWOCC
+     &              NEWOCC,NPRJREF
       COMMON/DCRDHF/SCFCNV(2),ERGVAL,EVCVAL,FCKVAL,
      &              DHFERG,ELERGY,E1PART,E2PART,ERGBUF,
      &              CONVRG,TDF2,TDDG,DNSDHF,
      &              DAMPFC,DIISTH,BMCOND,CNVINT(2),
-     &              SCFTID(0:7),ESOLVE,ESOLVN
+     &              SCFTID(0:7),ESOLVE,ESOLVN,PRJTHR
       COMMON/DHFIOU/LUCYCL,LUFCK1,LUFCK2,LUFOCK,
-     &  LUDIIS,LUDENS,LUEVEC,LUCMOS,LUSMOS
+     &              LUDIIS,LUDENS,LUEVEC,LUCMOS,LUSMOS
 

@@ -24,4 +24,5 @@ C     Length of common block : keep up to date !!
      +              NACSH(2,MXOPEN),NOPEN,
      +              IASH(2),I2ASHT(2),I2ASHX(2,2),
      +              NAOCC(2),NAOCCT,
-     +              NAVIR(2),NAVIRT
+     +              NAVIR(2),NAVIRT,
+     +              NTMO(2),I2TMOT(2)

@@ -973,12 +973,12 @@ C
 C
 C     Calculate dimensions of reference coefficients array
 C
-      NDIM = 0
+      NRDIM = 0
       DO IFRP = 1,NFSYM
         NQ(IFRP)         = NFBAS(IFRP,0)*NVECS(IFRP,2)*NZ
-        NDIM             = NDIM + NQ(IFRP)
+        NRDIM            = NRDIM + NQ(IFRP)
       ENDDO       
-      CALL MEMGET('REAL',KQ(1,2),NDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KQ(1,2),NRDIM,WORK,KFREE,LFREE)
       KQ(2,2)   = KQ(1,2) + NQ(1)
 C
 C     COEFFICIENT SELECTION
@@ -1067,12 +1067,11 @@ C
 C     Do projection analysis
 C     ======================
 C
-
-      NDIM = 0
+      NBDIM = 0
       DO IFRP = 1,NFSYM
-        NDIM = NDIM + NVECS(IFRP,2)*NVECS(IFRP,1)*NZ
+        NBDIM = NBDIM + NVECS(IFRP,2)*NVECS(IFRP,1)*NZ
       ENDDO       
-      CALL MEMGET('REAL',KBV(1),NDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBV(1),NBDIM,WORK,KFREE,LFREE)
       KBV(2)   = KBV(1) + NVECS(1,2)*NVECS(1,1)*NZ
       CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
       CALL GTOVLT(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
@@ -1085,7 +1084,6 @@ C
         NREF   = NVECS(IFRP,2)
         N2REF  = NREF*NREF
         NBVEC  = NREF*NMOL
-CTROND        CALL MEMGET('REAL',KBVEC,NBVEC*NZ ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KGVEC,(NREF+1)*2,WORK,KFREE,LFREE)
         IF(NREFS.GT.1) THEN
           CALL MEMGET('REAL',KAMAT,N2REF*NZ,WORK,KFREE,LFREE)
@@ -1117,25 +1115,24 @@ C
      &        'P - '   ,(GROSS(1,1,I)+GROSS(2,1,I))
           GTOT = GTOT + GROSS(1,0,I)+GROSS(2,0,I)
         ENDDO
-CTROND        POLT = D2*(NVECS(1,1)+NVECS(2,1))-GTOT
         WRITE(LUPRI,'(3X,A,F10.4)') 'Polarization: ',POLT
       ENDIF
 C
-C     Prepare for expectation value analysis
-C     ======================================
+C     Dump reference and projection coefficients to file
+C     ==================================================
 C
-      IF(NPRANA.GT.0) THEN
-        CALL MEMREL('PRJANA.exp',WORK,KSMAT,KSMAT,KFREE,LFREE)
-CTROND
-        CALL MEMGET('LOGI',KEXPST ,2*NPRANA  ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KDMAT  ,NZ*N2BBASX*(NOPEN+1),
-     &              WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KPMAT  ,NZ*N2BBASX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KONEIN ,   NNBBASX,WORK,KFREE,LFREE)
-        CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
-CTROND        CALL PRJEXP
-      ENDIF
+      CALL OPNFIL(LUCOEF,'DFPRJC','UNKNOWN','PRJANA')
+      WRITE(LUCOEF) NREFS
+      DO IFRP = 1,NFSYM
+C       Dimensions....NMOL..........NREF.........
+        WRITE(LUCOEF) NVECS(IFRP,1),NVECS(IFRP,2),
+     &                (NSTR(IFRP,0,I),I=1,NREFS)
+      ENDDO
+C.....Reference coefficients
+      CALL WRITT(LUCOEF,NRDIM,WORK(KQ(1,2)))
+C.....Projection coefficients
+      CALL WRITT(LUCOEF,NBDIM,WORK(KBV(1)))
+      CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL MEMREL('PRJANA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN

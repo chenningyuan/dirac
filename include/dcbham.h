@@ -18,7 +18,6 @@ C     QED        - use QED Hamiltonian (filled positronic levels)
 C     ONESYS     - No two-electron operators
 C     FREEPJ     - Hamiltonian embedded in free particle projections
 C     VEXTPJ     - Hamiltonian embedded in molecular field projections
-C     PROJEC     - any projection, defined by a set of coefficients
 C     NOSMLV     - No small nuclear attraction integrals
 C     URKBAL     - Unrestricted kinetic balance
 C     LEVYLE     - Levy-Leblond Hamiltonian
@@ -36,12 +35,10 @@ C                  ONECAP type 3 model. One-center (SS|SS) and (LL|SS).
 C                  Correction made to two-electron Fock-matrix.
 C     ONECOFF    - internal flag for turning off ONECAP
 C
-      PARAMETER(MAX1OPER=10,MPRJREF=6)
-      CHARACTER PRJFIL*6,VCPROJ*72
-      COMMON/DCCHAM/PRJFIL(MPRJREF),VCPROJ(2,MPRJREF)
+      PARAMETER(MAX1OPER=10)
       COMMON/DCIHAM/IPRHAM,IPOVRLAP,IPBETAMT,IPMOLFLD,IPKINERG,
      &              N1OPER,IPR1OP(MAX1OPER),LSOLMX,IPRSOL,
-     &              NPRJREF,ICTLV1C(2)
+     &              ICTLV1C(2)
       EQUIVALENCE (INTV1C, ICTLV1C(1))
       LOGICAL QED,ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
      &        INERSI,INERSF,SPINFR,SPINFR2,ZORA,ZORA4,ZORASC,
@@ -51,12 +48,11 @@ C
      &        QED,ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
      &        INERSI,INERSF,SPINFR,SPINFR2,ZORA,ZORA4,ZORASC,
      &        PROJEC,PROOWN,DFTHAM,SMLV1C,ONECAP,ONECOFF
-      COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV,PRJTHR,HFXFAC,ONECNV
+      COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV,HFXFAC,ONECNV
 #else  /* __CVERSION__ */
 #define MAX1OPER 10
-#define MPRJREF 6
   extern struct common_dcrham {
-    real ssmtrc,epsol,epstat,rsolav,prjthr,hfxfac;
+    real ssmtrc,epsol,epstat,rsolav,hfxfac;
   } dcrham_;
 
 #endif /* __CVERSION__ */
