@@ -3,9 +3,6 @@ $ERROR 0.0000001
 From:Nuclear repulsion + core energy
 ToI:SCF energy
 
-From:RPA results
-To:Timing of routine RPAA
-
 From:This is output from  XRPA
 To:    s0 = T : Expectation value zero by point group symmetry.
 
