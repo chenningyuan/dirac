@@ -465,6 +465,10 @@ C
 C
  100  CONTINUE
 C
+C     Add the first order wave function contribution
+C
+      CALL S1S2_ADDFO (FVO,BUF1,BUF2,S1,S2)
+C
 C  ADD PARTIAL T1 AND T2 (PARALLEL RUNS)
 C
 C     CALL XTIME(35,1,'- PARTS (sync before adding)    ')
@@ -735,28 +739,10 @@ C
       ELSE
          CALL QUIT('Wrong keyword in call to T1EQNS')
       ENDIF
-
-C------------------------------------------------------------------
-C If not master initialize S1 buffer with zero otherwise with F(A,I)
-C------------------------------------------------------------------
-      IF (MYPROC.NE.MASTER) THEN
-C-------------------------------
-C S(A,I) = 0.0
-C-------------------------------
-        CALL XCOPY (NDIMT1,A0,0,S1,1)
-      ELSE
-C-------------------------------
-C S(A,I) = F(A,I)
-C-------------------------------
-        CALL XCOPY (NDIMT1,FVO,1,S1,1)
-C
-C       Delete zeroth order Hamiltonian parts
-C       for Fockspace
-C
-        IF (EQNS.EQ.'FOCKSP') CALL DENOMF (BUF1,S1,BUF2,S1,BUF2,2)
-      ENDIF
-
-
+C-------------------
+C Initialize to zero
+C-------------------
+      CALL XCOPY (NDIMT1,A0,0,S1,1)
 C--------------------------------
 C Terms specific for T1 equations
 C--------------------------------
@@ -1018,16 +1004,8 @@ C
          CALL QUIT('Wrong keyword in call to T2EQNS')
       ENDIF
 
-C---- fill arrays according to node...
-
-      IF (MYPROC.NE.MASTER) THEN
-         CALL XCOPY (NDIMT2,A0,0,S2,1)
-      ELSE
-C-------------------------------------------
-C S(AB,IJ) = W(AB,IJ)
-C-------------------------------------------
-        CALL GETVVOO (S2)
-      ENDIF
+C---- Initialize to zero...
+      CALL XCOPY (NDIMT2,A0,0,S2,1)
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
 C---------------------------------------------
@@ -3141,6 +3119,60 @@ C
      &'Correlation energy (T2-amplitudes)')
  3001 FORMAT (2(I7,I8),F30.15)
  4000 FORMAT (//)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE S1S2_ADDFO (FVO,BUF1,BUF2,S1,S2)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Add the first order wavefunction contribution to S1 and S2.
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 BUF1(*),BUF2,FVO(*)
+      REAL*8 S1(*),S2(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "ccpar.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C---------------------------------------
+C Only the master gets this contribution
+C---------------------------------------
+      IF (MYPROC.NE.MASTER) RETURN
+C-------------------------------
+C S(A,I) = S(A,I) + F(A,I)
+C-------------------------------
+      IF (EQNS.EQ.'FOCKSP') THEN
+C       Delete first order Hamiltonian parts
+C       first for Fockspace
+        CALL XCOPY (NDIMT1,FVO,1,BUF1,1)
+        CALL DENOMF (BUF1,BUF1,BUF2,BUF1,BUF2,2)
+        CALL XAXPY (NDIMT1,A1,BUF1,1,S1,1)
+      ELSE
+        CALL XAXPY (NDIMT1,A1,FVO,1,S1,1)
+      ENDIF
+C-------------------------------
+C S(AB,IJ) = S(AB,IJ) + W(AB,IJ)
+C-------------------------------
+      CALL GETVVOO (BUF2)
+      CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
 C
       RETURN
       END

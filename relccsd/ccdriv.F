@@ -174,7 +174,7 @@ C
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
       NAMELIST/CCFSPC/ DOEA,DOIE,FSSECT,NACTH,NACTP,
      &                 MAXIT,MAXDIM,NTOL,DOIH
-      NAMELIST/CCIH/ NACTHI,NACTPI,EIMIN,EIMAX,SHIFT
+      NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX
       NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
@@ -329,9 +329,10 @@ C
 C
 C     Input for IH procedure
 C
-      EIMIN=1000.D0
-      EIMAX=100.D0
-      SHIFT=-3.D0
+      EHMIN=1000.D0
+      EHMAX=100.D0
+      EPMIN=-1.D0
+      EPMAX=-1000.D0
       DO I = 1, 16
          NACTHI(I) = 0
          NACTPI(I) = 0
@@ -341,9 +342,11 @@ C
       GOTO 22
    21 CALL QUIT('Error exit while reading namelist CCIH')
    22 CONTINUE
-      ER_IH(1,1) = EIMIN
-      ER_IH(2,1) = EIMAX
-      CIH = SHIFT
+      ER_IH(1,1) = EHMIN
+      ER_IH(2,1) = EHMAX
+      ER_IH(1,2) = EPMIN
+      ER_IH(2,2) = EPMAX
+C
 C     Input for the sorting routine.
 C
       USEOE = .TRUE.
@@ -1425,13 +1428,13 @@ C
             ENDIF
             EPS(I) = EPS1(ISP)
 C           Always fill this array, used in intermediate Hamiltonian formalism
-            IF (I.LE.MAXSPIM) THEN
-               IPIORB(I)=0
-               IF(EPS(I).LE.ER_IH(2,1).AND.
-     &            EPS(I).GE.ER_IH(1,1)) IPIORB(I)=1
-            ELSE
-               CALL QUIT ("Increase MAXSPIM in relccsd/ihm.inc")
-            ENDIF
+            IF (I.GT.MAXSPIM)
+     &          CALL QUIT ("Increase MAXSPIM in relccsd/ihm.inc")
+            IPIORB(I)=0
+            DO J = 1, 2
+               IF(EPS(I).LE.ER_IH(2,J).AND.
+     &            EPS(I).GE.ER_IH(1,J)) IPIORB(I)=1
+            ENDDO
          ENDDO
       ENDIF
 C
@@ -2601,16 +2604,11 @@ C
       MAXIT  = MXITFS
       TOL = 10.0D0**(-NTOLFS)
 C
-
 C     Initialize T1 and T2 amplitudes
 C
       CALL XCOPY (NDIMT1,CC(FVO),1,CC(T1),1)
       CALL GETVVOO (CC(T2))
-	IF (DOIH) THEN
-      CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),3)
-	ELSE
       CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),1)
-	ENDIF
 C     Save the zeroth order wave function & Hamiltonian
       CALL PUTAMPT (CC(T1),CC(T2))
 C
@@ -2628,7 +2626,6 @@ C
       ICURFSS = IFSS(ISECT)
       IF (ICURFSS.LE.20) THEN
         WRITE (IW,1009) ICURFSS
-	IHEQ=1
         CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &             CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
@@ -2637,20 +2634,6 @@ C
 C       Save the updated wave function & Hamiltonian
         CALL FS_PUTAMPT (ICURFSS,CC(T1),CC(T2),CC(BUF1),CC(BUF2))
 C
-C       When we run with the intermediate Hamiltonian formalism
-C       we need a second iteration in which the neglected excitations
-C       are included via a modified scheme.
-C
-	IF (DOIH.AND.ICURFSS.GT.0) THEN
- 	   IHEQ=2
-           CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
-     &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
-     &             CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
-     &             CC(CCC),CC(BB1),CC(BB2),
-     &             TOL,NBUF2,NBUF3)
-C       Save the updated wave function & Hamiltonian
-            CALL FS_PUTAMPT (ICURFSS,CC(T1),CC(T2),CC(BUF1),CC(BUF2))
-	ENDIF
       ELSE
         WRITE (IW,1010) ICURFSS
       ENDIF
