@@ -94,6 +94,11 @@ C
       LOGICAL DONE
 C
       MAXCORE = MCORE
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+      IERR = 0
+      CALL ASNUNIT(5,'-Yon',IERR)
+      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
+#endif
       OPEN (5,FILE='DIRAC.INP')
       CALL SETUP   (CI,DONE)
       IF (DONE) RETURN
@@ -790,7 +795,7 @@ C
 C     Also set pointers for vertex weights, etc.
 C
       IVWS = 16 * (NORB + 1) * (NELEC + 1)
-      IVWW = IVWS / INTOWP(1) + MOD((IVWS),INTOWP(1))
+      IVWW = IVWS / INTOWP(1) + MOD(IVWS,INTOWP(1))
       IVWI = IVWW * INTOWP(1)
       IVW1 = 1               
       IIJR = IVW1 + 3*IVWW
@@ -1544,7 +1549,7 @@ C
 c
       SUBROUTINE GETIDS (I,J,K,L,ISYM,ND,NV,ILIND,IRIND,
      &                   JLIND,JRIND,JVECL,
-     &                   IVWU,IVWR,IREC,WAY)
+     &                   IVWU,IVWR,IREC)
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -1707,7 +1712,11 @@ C
       WRITE(6,*)
       WRITE(6,*)
       WRITE(6,'(A35,F6.4)') 'Determinants with coefficient .GT. ',COMIN
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+      OPEN (MRCFINV,FILE=FNAM(5),ACCESS='DIRECT',RECL=8)
+#else
       OPEN (MRCFINV,FILE=FNAM(5),ACCESS='DIRECT',RECL=4)
+#endif
 C64B  OPEN (MRCFINV,FILE=FNAM(5),ACCESS='DIRECT',RECL=8)
       READ (MRCFINV,REC=1,ERR=10000) LENREC
       CLOSE (MRCFINV)
@@ -1736,7 +1745,7 @@ C64B  OPEN (MRCFINV,FILE=FNAM(5),ACCESS='DIRECT',RECL=8)
          IF (.NOT.REALAR) COEFF = COEFF + COI(IDNZ)**2
          IF (COEFF.GT.COMIN) THEN
             WRITE(6,'(A12,I8,A23,F16.8)') "Determinant ",IDETER(IDNZ),
-     &       " with square of coeff. ",(COEFF)
+     &       " with square of coeff. ",COEFF
             IA=0
             IB=0
             IC=0
@@ -1879,6 +1888,7 @@ C
      &                   JVECL,IVWA)
 C
       IMPLICIT REAL*8 (A-H, O-Z)
+      PARAMETER(DM=100.0D0)
 C
 C     GENERATE FILE WITH ALL 1-ELECTRON COUPLING COEFFICIENTS
 C
@@ -1974,7 +1984,7 @@ C           IJREC(J,I) = - IREC
   300 CONTINUE
   500 NCOREX = ICOREX
       NTVERT = IVERT
-      RSTORE = REAL(NSTORE) / REAL(NCOUPL) * 100.0
+      RSTORE = REAL(NSTORE) / REAL(NCOUPL) * DM
       WRITE (6,1000) RSTORE
       RETURN
 C
@@ -2096,9 +2106,11 @@ C----------------------------------------------------
                Work1(I) = Work3(Ioff4+I-1)
             ENDDO
          ELSE
+CTROND: TOL is not defined !
             CALL F01BCF(NS,TOL,Work1,NS,Work2,NS, Work3(Ioff1),
 C64B        CALL F01BCE(NS,TOL,Work1,NS,Work2,NS, Work3(Ioff1),
      &                  Work3(Ioff2),Work3(Ioff3),Work3(Ioff4))
+            EPSI = X02AJF()
             CALL F02AYF(NS,EPSI,Work3(Ioff1),Work3(Ioff2),
 C64B        CALL F02AYE(NS,EPSI,Work3(Ioff1),Work3(Ioff2),
      &                  Work1,NS,Work2,NS,IFail)
@@ -2553,11 +2565,24 @@ C
       DIMENSION ILIND(*)
       DIMENSION IDREC(N8)
 C
+CTROND
+      WRITE(0,'(A)') '* Open MRCFINV:'
+CTROND
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+      OPEN (MRCFINV,FILE=FNAM(5),ACCESS='DIRECT',RECL=8)
+#else
       OPEN (MRCFINV,FILE=FNAM(5),ACCESS='DIRECT',RECL=4)
+#endif
 C64B  OPEN (MRCFINV,FILE=FNAM(5),ACCESS='DIRECT',RECL=8)
       READ (MRCFINV,REC=1,ERR=10000) LENREC
+CTROND
+      WRITE(0,'(A,I5)') '* LENREC:',LENREC
+CTROND
       CLOSE (MRCFINV)
       OPEN (MRCFINV,FILE=FNAM(5),ACCESS='DIRECT',RECL=LENREC)
+CTROND
+      WRITE(0,'(A)') '* Open MRCFINV:'
+CTROND
       READ (MRCFINV,REC=1,ERR=10000) LENREC,NPDET,NPROOT,
      &                     (EIGEN1(IROOT),IROOT=1,NPROOT),
      &                     (IDREC(IROOT),IROOT=1,NPROOT)

@@ -322,6 +322,7 @@ C     Process input from CBIEXP
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*EXPECT')
+      INPERR = 0
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
@@ -2029,18 +2030,37 @@ C*****************************************************************************
 #include <dcbgen.h>
 C
       DIMENSION WORK(LWORK)
+      LOGICAL OPEN
 C
       CALL QENTER('MINPRP')
 C
       NPRPS = 0
 C
-
+C
+C     Open LU1INT if not opened
+C
       IF (DOPRP) THEN
+         INQUIRE(FILE='AOPROPER',OPENED=OPEN)
+         IF (.NOT. OPEN) THEN
+#if defined (SYS_IBM)
+            OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='APROPER')
+#else
+            OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='AOPROPER')
+#endif
+         END IF
+C
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL PRPINP('**PRP F',WORK,LWORK)
          CLOSE(LUCMD)
 C
          CALL ONEGEN(WORK,LWORK)
+C
+C        Close AOPROPER if it was closed on entry to
+C        MINPRP.
+C
+         IF (.NOT. OPEN) CLOSE(LU1INT,STATUS = 'KEEP')
       END IF
 C
       CALL QEXIT('MINPRP')

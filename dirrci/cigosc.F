@@ -470,10 +470,10 @@ C
       THRESH=1.0D-3
       SELPOP=1.0D2
       DEGEN=1.0D-10
-      NDETI(IRP)=NDET
       REWIND(5)
       READ(5,POPAN,END=100)
  100  IF (IRP.EQ.0) GOTO 110
+      NDETI(IRP)=NDET
       IF (IPRNT.LT.5) RETURN
 C
 C     ------------------------------------------------
@@ -587,6 +587,7 @@ C     ================
 C
       INCLUDE 'goscom.inc'
 C
+      PARAMETER(D0 = 0.0D0)
       CHARACTER*10 DATEX,TIMEX*8
       DIMENSION KR(-N1:N1)
       COMPLEX*16 RPHASE(N1),ONE
@@ -594,6 +595,8 @@ C
 C
       MDINT = 1
       NUNIQ = 1
+      TWOINR(0) = D0
+      TWOINI(0) = D0
       OPEN(MDINT,FILE='MDCINT',FORM='UNFORMATTED')
       Read (mdint,err=10000,end=10000) datex,timex,nkr,
      &                                 (KR(I),KR(-I),I=1,NKR) 
