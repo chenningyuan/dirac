@@ -940,10 +940,12 @@ case $machine in
        if [ "$mesp" = "dummy" ]; then
           cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST"
           ccp="-DSYS_T3D -D'INSTALL_WRKMEM=\${WRKMEM}'"
+          def='dirac.x'
        else
           cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST -D$parop"
           ccp="-DSYS_T3D -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+          def='dirmpi.x'
        fi
        for mod in $MODS; do
           cpp=`echo $cpp $mod`
@@ -952,7 +954,7 @@ case $machine in
        opt="-dp -F -O3,unroll2,msgs,negmsgs -R nb -Wl,-Dstreams=on"
        inc="-I$INCLUDE_DIR"
        LIB="crilib.cld $LIB"
-       def='dirac.x';;
+       ;;
 #
 #   CRAY
 #
@@ -960,10 +962,12 @@ case $machine in
        if [ "$mesp" = "dummy" ]; then
           cpp="-DPRG_DIRAC -DSYS_CRAY  -D'INSTALL_WRKMEM=\${WRKMEM}' "
           ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}'"
+          def='dirac.x'
        else
           cpp="-DPRG_DIRAC -DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
           ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+          def='dirmpi.x'
        fi
        for mod in $MODS; do
           cpp=`echo $cpp $mod`
@@ -972,7 +976,7 @@ case $machine in
        c_opt="-i 64 -a stack -dp"
        inc="-I$INCLUDE_DIR"
        LIB="C90lib.cld $LIB"
-       def='dirac.x';;
+       ;;
 #
 #  CONVEX
 #
@@ -1444,7 +1448,7 @@ if [ -n "$CIFLG" ]; then
    dirs="$dirs dirrci"
 fi
 if [ -n "$GEOFLG" ]; then
-   dirs="$dirs dirac/geom"
+   dirs="$dirs dirac/geom abacus/geom"
 fi
 for makefile in $dirs; do
    echo "Making $makefile/Makefile from $makefile/Makefile.in"
