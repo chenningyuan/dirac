@@ -161,25 +161,26 @@ if [ "${cvs}" = "yes" ]; then
     exit 1 ;\
   }
   fi
+#
+#
+  echo ' Checking dependencies ... '
+  make depend > ${testdir}/logs/$makelog 2>&1 || \
+  { echo " Make depend failed" ; \
+    echo " Please check the logfile ${testdir}/logs/$makelog" ; \
+    exit 1 ;\
+  }
+  echo ' Recompiling ... '
+  make >> ${testdir}/logs/$makelog 2>&1 || \
+  { echo " Make failed" ; \
+    echo " Please check the logfile ${testdir}/logs/$makelog" ; \
+    exit 1 ;\
+  }
 fi
 #
-#
-echo ' Checking dependencies ... '
-make depend > ${testdir}/logs/$makelog 2>&1 || \
-{ echo " Make depend failed" ; \
-  echo " Please check the logfile ${testdir}/logs/$makelog" ; \
-  exit 1 ;\
-}
-echo ' Recompiling ... '
-make >> ${testdir}/logs/$makelog 2>&1 || \
-{ echo " Make failed" ; \
-  echo " Please check the logfile ${testdir}/logs/$makelog" ; \
-  exit 1 ;\
-}
 if [ "${queue}" = "none" ]; then
 echo ' Starting test calculations interactively ... '
 cd ${testdir};
-./runtest --tests=$tests --pampath=$pampath --dirac=$dirac --run=$run > ${testdir}/logs/$runlog 2>&1 || \
+./runtest --tests="$tests" --pampath=$pampath --dirac=$dirac --run=$run > ${testdir}/logs/$runlog 2>&1 || \
 { echo " runtest failed" ; \
   echo " Please check the logfile ${testdir}/logs/$runlog" ; \
   exit 1 ;\
@@ -196,7 +197,7 @@ echo " When they are done please check the results in the directory ${testdir}/l
 errfile=das500:${testdir}/logs/$runlog
 cat <<EOF >job
 cd ${testdir};
-./runtest --tests=$tests --pampath=$pampath --dirac=$dirac --run=$run ;
+./runtest --tests="$tests" --pampath=$pampath --dirac=$dirac --run=$run ;
 EOF
 qsub -j oe -o $errfile -l walltime=24:00:00,nodes=1:$queue -q ${queue}q -V job
 rm job
