@@ -3039,7 +3039,8 @@ C         Operator must be symmetric under time reversal
          IF(NOSMLV) WRITE(LUPRI,'(1X,A)')
      &      '* No nuclear attraction integrals for small components !'
          IF(SMLV1C) WRITE(LUPRI,'(1X,A)')
-     &      '* Only one-center contributions to Vss !'
+     &      '* The SS parts of the e-e repulsion and n-e attraction',
+     &      '  are done via a one-center approximation scheme' 
       ENDIF
       IF(PROJEC) THEN
         WRITE(LUPRI,'(1X,A,A)')

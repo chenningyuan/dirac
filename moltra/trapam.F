@@ -951,6 +951,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <priunit.h>
 #include <dcbgen.h>
 #include <dcbbas.h>
+#include <dcbham.h>
 #include <dcborb.h>
 #include <dgroup.h>
 #include <mxorb.h>
@@ -974,6 +975,10 @@ C
          CALL TITLER('Transformation of MCSCF 2-electron integrals',
      &        '*',116)
       ENDIF
+C
+      IF (SMLV1C) 
+     & WRITE(LUPRI,'(/A)') ' WARNING : Incomplete projection on 1-',
+     & ' center integrals with SMLV1C : results may be inconsistent'
 C
       CALL GTINFO(DAYTID)
       WRITE(LUPRI,'(/A,A24)') ' Transformation started at : ',DAYTID
