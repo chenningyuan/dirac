@@ -4236,7 +4236,7 @@ C
 C     If old KRMCSCF exists rename it to KRMCOLD.
 C
 C
-      LUKRMC = 50
+C     LUKRMC is set globally in dirac/dirset.F
 C
       CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSIOPT')
       CALL NEWLAB('*KRMCSCF',LUKRMC,LUPRI)

@@ -138,7 +138,7 @@ C  LABELS: NLAB
 #include "dcbpop.h"
 #include "dgroup.h"
 C
-      LOGICAL TOBE
+      LOGICAL TOBE,TOBEK
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('MULPOP')
@@ -146,21 +146,38 @@ C
 C
       CALL TITLER('Mulliken population analysis','*',122)
 C
+      KRMC_FLG = 0
+C
 C     Check if coefficients are on file
 C
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
+      IF ((.NOT.TOBE).AND.(.NOT.TOBEK)) GOTO 1000
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KBEIG,NORBT   ,WORK,KFREE,LFREE)
 C
-C     Read coefficients, eigenvalues and irrep identification + restart info
+C     Read coefficients, eigenvalues and 
+C     irrep identification + restart info
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &            TOTERG,14,WORK,KFREE,LFREE)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      IF (TOBEK) THEN
+         KRMC_FLG = 1
+         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','MULPOP')
+         JRDMO = -1
+         CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+         IF (JRDMO .EQ. 0) THEN
+            WRITE(LUPRI,'(/A)')
+     &           ' (MULPOP)  Orbitals read from' //
+     &           ' label NEWORB on file KRMCSCF'
+         END IF
+         CLOSE (LUKRMC)
+      ELSE
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
+     &               TOTERG,14,WORK,KFREE,LFREE)
+         CLOSE(LUCOEF,STATUS='KEEP')
+      END IF
 C
 C     Get labels for population analysis
 C
@@ -179,7 +196,7 @@ C     Memory allocation
 C
       CALL MULPO1(WORK(KPMAT),WORK(KSMAT),WORK(KCMO),WORK(KEIG),
      &            WORK(KIPGR),WORK(KPOPG),WORK(KIEFF),WORK(KPGTOT),
-     &            WORK(KPNTOT),WORK(KFREE),LFREE)
+     &            WORK(KPNTOT),WORK(KFREE),LFREE,KRMC_FLG)
 C
 C     Memory deallocation
       CALL MEMREL('MULPOP',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -194,7 +211,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo1 */
       SUBROUTINE MULPO1(PMAT,SMAT,CMO,EIG,IPGRS,POPG,IEFF,
-     &                  PGTOT,PNTOT,WORK,LWORK)
+     &                  PGTOT,PNTOT,WORK,LWORK,KRMC_FLG)
 C***********************************************************************
 C
 C     This routine generates net and gross Mulliken populations
@@ -355,7 +372,7 @@ C
         CALL MEMGET('REAL',KOCC,NVECS,WORK,KFREE,LFREE)
         CALL MULPO2(PMAT,IFRP,SMAT,WORK(KCBF1),EIG(IORB(IFRP)+1),
      &              IPGRS,POPG,IEFF,PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,
-     &              WORK(KJVEC),WORK(KOCC),WORK(KFREE),LFREE)
+     &              WORK(KJVEC),WORK(KOCC),WORK(KFREE),LFREE,KRMC_FLG)
         CALL MEMREL('MULPO1.occ',WORK,KOCC,KOCC,KFREE,LFREE)
  20     CONTINUE
         CALL MEMREL('MULPO1',WORK,1,KWORK,KFREE,LFREE)
@@ -386,7 +403,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo2 */
       SUBROUTINE MULPO2(PMAT,IFRP,SMAT,CMO,EIG,IPGRS,POPG,IEFF,
-     &           PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,JVEC,OCC,WORK,LWORK)
+     &           PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,JVEC,OCC,WORK,LWORK,
+     &           KRMC_FLG)
 C***********************************************************************
 C
 C     This routine generates net and gross Mulliken populations
@@ -462,16 +480,26 @@ c
         IF(I.GT.NPVECS) THEN
           II = NPSH(IFRP)+JVEC(I)
           FMT = MXFORM(EIG(II),16)
-          WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
-     +       '* Electronic eigenvalue nr.',JVEC(I),': ',
-     &       EIG(II),'       (Occupation : f = ',OCC(I),')'
+          IF (KRMC_FLG.EQ.1) THEN
+             WRITE(LUPRI,'(/A,I3)')
+     &       '* Electronic eigenvalue nr.',JVEC(I)
+          ELSE
+             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+     &          '* Electronic eigenvalue nr.',JVEC(I),': ',
+     &          EIG(II),'       (Occupation : f = ',OCC(I),')'
+          END IF
         ELSE
           II  = NPSH(IFRP)+1+JVEC(I)
           FMT = MXFORM(EIG(II),16)
-          WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
-     +       '* Positronic eigenvalue nr.',II,': ',
-     &       EIG(II),'       (Occupation : f = ',OCC(I),')'
-        ENDIF
+          IF (KRMC_FLG.EQ.1) THEN
+             WRITE(LUPRI,'(/A,I3)')
+     &       '* Positronic eigenvalue nr.',II
+          ELSE
+             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+     &          '* Positronic eigenvalue nr.',II,': ',
+     &          EIG(II),'       (Occupation : f = ',OCC(I),')'
+          END IF
+        END IF
         CALL PRSYMB(LUPRI,'=',80,0)
 C
 C       Calculate SO population matrix

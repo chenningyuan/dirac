@@ -667,7 +667,7 @@ C    &    '     Spin multiplicity ....  ', MULTS
      &  '       Dirac-Coulomb Hamiltonian '
       else if (INTIMP.eq.7) then
         WRITE(LUPRI,'(A)')
-     &  '     Integrals in full spinor list format '
+     &  '     Integrals in (NZ,3) format '
         WRITE(LUPRI,'(A)')
      &  '       Dirac-Coulomb Hamiltonian '
       else if (INTIMP.eq.8) then
@@ -788,7 +788,7 @@ C    &    '     Spin multiplicity ....  ', MULTS
       IF(IDIAG.EQ.1.AND.ICISTR.EQ.1) THEN
         WRITE(LUPRI,'(A)')
      &    '        Diagonalizer : MINDV4 '
-      ELSE IF(IDIAG.EQ.1.AND.ICISTR.GE.2) THEN
+      ELSE IF(IDIAG.EQ.1.AND.ICISTR.EQ.2) THEN
         WRITE(LUPRI,'(A)')
      &    '        Diagonalizer : MICDV4 '
       ELSE IF(IDIAG.EQ.2) THEN

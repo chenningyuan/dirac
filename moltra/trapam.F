@@ -61,7 +61,7 @@ C
 #include "dcbgen.h"
 #include "dcbmp2.h"
       CHARACTER*24 DAYTID
-      LOGICAL TOBE,TRASAM,ACTIVE
+      LOGICAL TOBE,TOBEK,TRASAM,ACTIVE
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
@@ -196,17 +196,33 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)')
-     &     'PAMTRA ERROR: MO coefficient file not present'
-         CALL QUIT('PAMTRA: No MO coefficient file !')
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+
+      IF (TOBEK) THEN
+         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
+         JRDMO = -1
+         CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+         IF (JRDMO .EQ. 0) THEN
+            IF (IPRINT .GE. 0) THEN
+               WRITE(LUPRI,'(/A)')
+     &              ' (PAMTRA)  Orbitals read from' //
+     &              ' label NEWORB on file KRMCSCF'
+            END IF
+         END IF
+         CLOSE (LUKRMC)
       ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      ENDIF
+         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+         IF (.NOT.TOBE) THEN
+            WRITE(LUPRI,'(/A)')
+     &        'PAMTRA ERROR: MO coefficient file not present'
+            CALL QUIT('PAMTRA: No MO coefficient file !')
+         ELSE
+            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
+            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+            CLOSE(LUCOEF,STATUS='KEEP')
+         END IF
+      END IF
 C
 C     Select the set that we need
 C
@@ -347,15 +363,30 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-         CALL QUIT('PAMTRA: No MO coefficient file !')
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+      IF (TOBEK) THEN
+         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
+         JRDMO = -1
+         CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+         IF (JRDMO .EQ. 0) THEN
+            IF (IPRINT .GE. 0) THEN
+               WRITE(LUPRI,'(/A)')
+     &              ' (PAMTRA)  Orbitals read from' //
+     &              ' label NEWORB on file KRMCSCF'
+            END IF
+         END IF
+         CLOSE (LUKRMC)
       ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
-      ENDIF
+         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+         IF (.NOT.TOBE) THEN
+            WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
+            CALL QUIT('PAMTRA: No MO coefficient file !')
+         ELSE
+            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
+            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+         ENDIF
+      END IF
 C
 C     Select the set that we need
 C
@@ -1418,7 +1449,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "dcbtra.h"
       CHARACTER*24 DAYTID
-      LOGICAL TOBE
+      LOGICAL TOBE,TOBEK
 C
 C     Now say hi and give orbital information
 C
@@ -1456,16 +1487,19 @@ C
       ENDIF
 C
       IF (IMODUL .NE. 4 ) THEN
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-            CALL QUIT('TRAHI: No MO coefficient file !')
-         ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAHI')
-            CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1,
-     &                  DUM,IDUM,IDUM)
-            CLOSE(LUCOEF,STATUS='KEEP')
-         ENDIF
+         INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+         IF (.NOT.TOBEK) THEN
+            INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+            IF (.NOT.TOBE) THEN
+               WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
+               CALL QUIT('TRAHI: No MO coefficient file !')
+            ELSE
+               CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAHI')
+               CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1,
+     &                     DUM,IDUM,IDUM)
+               CLOSE(LUCOEF,STATUS='KEEP')
+            ENDIF
+         END IF
       END IF
 C
       CALL FLSHFO(LUPRI)

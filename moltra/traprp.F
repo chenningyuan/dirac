@@ -63,7 +63,7 @@ C
 #include "dcbprl.h"
 #include "mxcent.h"
 #include "dcbtrp.h"
-      LOGICAL TOBE,TRASAM
+      LOGICAL TOBE,TOBEK,TRASAM
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KVEC(2,2),KQ(2,2),
      &          IR(2,2),NR(2),NQ(2,2),NQT(2),
      &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,2)
@@ -124,15 +124,30 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(A)') 'Coefficient file not present'
-         CALL QUIT('TRAPAM: No coefficients !')
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+      IF (TOBEK) THEN 
+         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','TRAPRP')
+         JRDMO = -1
+         CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+         IF (JRDMO .EQ. 0) THEN
+            IF (IPRINT .GE. 0) THEN
+               WRITE(LUPRI,'(/A)')
+     &              ' (TRAPRP)  Orbitals read from' //
+     &              ' label NEWORB on file KRMCSCF'
+            END IF
+         END IF
+         CLOSE (LUKRMC)
       ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
-      ENDIF
+         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+         IF (.NOT.TOBE) THEN
+            WRITE(LUPRI,'(A)') 'Coefficient file not present'
+            CALL QUIT('TRAPAM: No coefficients !')
+         ELSE
+            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
+            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+         ENDIF
+      END IF
 C
 C     Get the boson symmetries of the transformed spinors
 C
