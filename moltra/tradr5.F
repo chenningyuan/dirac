@@ -319,3 +319,120 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck MS3RLAG*/ 
+      SUBROUTINE MS3RLAG(WORK,KFREE,LFREE,IPRINT,SUB3,SUB4,IOFF4,LGREC,
+     &                   ICS,ICF,IC,
+     &                   NSTR1,NSTR2,
+     &                   IJPASS,Q1,Q2,Q3,
+     &                   GMAT,NSIZG,MHTM,IHTM,INDX,INDXAB)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     
+C     Written by Joost van Stralen & Luuk Visscher April 2003.
+C
+C     BASD ON : MS4IN1D
+C     
+C     PURPOSE : Driver for the three-index transformation.
+C               Loop over batches for a given shell combination and
+C               contract the 3/4 transformed integrals with the
+C               T-amplitudes to give a contribution to the Lagrangian.
+C     
+C     Input :
+C
+C     - IPRINT       Print flag
+C     - NPASS        Number of passes through the scalar integrals
+C     - ICS          First class of integrals 1 : (LL|XX), 2 : (SS|XX)
+C     - ICL          Last class of integrals
+C     - IC           Component of the right hand : (XX|LL) or (XX|SS)
+C     - NSTR1        Number of active spinors for index 1
+C     - NSTR2        Number of active spinors for index 2
+C     - IJPASS       Number of blocks for each boson symmetry
+C     - Q1           Coefficients for index 1
+C     - Q2           Coefficients for index 2
+C     - Q3           Coefficients for index 3 (active AOs only)
+C     - GMAT         Symmetry packed scalar integrals
+C     - NSIZG        Size of GMAT array
+C     - MTHM         Number of scalar integral pairs that contribute
+C                    to a given fermion ircop (multiplied with NZ)
+C     - ITHM         Start address of a boson representation on the
+C                    file of half-transformed integrals.
+C     - INDX         For each boson function the boson irrep and the
+C                    position in the shell
+C     - INDXAB       Information for a pair of boson function belonging
+C                    to the current shell pair, 
+C           
+C     Output :
+C           
+C     -              Updated Lagrangian
+C
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0)
+C
+      INTEGER   NSTR1(2),NSTR2(2)
+      DIMENSION WORK(*)
+      DIMENSION Q1(*),Q2(*),GMAT(NSIZG)
+      DIMENSION IJPASS(0:7,NPASS),INDX(3,*),IOFF4(0:7)
+      LOGICAL   SUB3,SUB4
+C
+C     For the buffered input
+C
+      DIMENSION LGREC(NPASS)
+C
+      DIMENSION IHM(0:7)
+C
+#include "dgroup.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbibt.h"
+C
+      CALL QENTER('MS4IN1D')
+      KFRSAV = KFREE
+C
+      DO IPASS = 1, NPASS
+C
+C        Get the scalar integrals that are processed in this pass
+C        The integral are already in GMAT when NPASS = 1
+C
+         IF (NPASS.GT.1) THEN
+             CALL DZERO(GMAT,NSIZG)
+             IREC = LGREC(IPASS)
+             CALL MEMGET('REAL',KRBUF,NGBFSZ,WORK,KFREE,LFREE)
+             CALL MEMGET('INTE',KLBUF,NGBFSZ,WORK,KFREE,LFREE)
+             CALL READGBF(LGFIL,IREC,WORK(KRBUF),WORK(KLBUF),NGBFSZ,
+     &                    GMAT)
+             CALL MEMREL('MS4IN1D',WORK,KFRSAV,KRBUF,KFREE,LFREE)
+         ENDIF
+C
+C        Calculate the size of the H-matrix for this pass
+C
+         NSIZH = 0
+         DO IREPAB = 0, NBSYM-1
+            IHM(IREPAB) = NSIZH
+            IREPIJ = JBTOF(IREPAB,1)
+            NSIZH = NSIZH + IJPASS(IREPAB,IPASS)*NFPCK12(IREPIJ)
+         ENDDO
+C
+         CALL MEMGET('REAL',KHMAT,NSIZH*NZ,WORK,KFREE,LFREE)
+         CALL DZERO(WORK(KHMAT),NSIZH*NZ)
+C
+C        Do first step of 4-index transformation :
+C        Transform first pair of indices
+C
+         CALL MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,
+     &                TRIAN,NSTR1,NSTR2,NDMOQR,
+     &                ICMOQR,IJPASS(0,IPASS),Q1,Q2,
+     &                GMAT,WORK(KHMAT))
+C
+C        Contract with amplitudes and update Lagrangian
+C
+C        To be written....
+C
+         CALL MEMREL('MS4IN1D',WORK,KFRSAV,KHMAT,KFREE,LFREE)
+C
+      ENDDO
+C
+      CALL QEXIT('MS4IN1D')
+      RETURN
+      END
+
