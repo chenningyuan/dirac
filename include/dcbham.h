@@ -38,15 +38,20 @@
 !                  Correction made to two-electron Fock-matrix.
 !     ONECOFF    - internal flag for turning off ONECAP
 !
+!     BSS        - flag for generating matrix elements of
+!                  Barysz-Sadlej-Snijders transformed two-component Hamiltonians
+!     IBSS       - what kind of BSS Hamiltonian(1.,2. or infinite order; scalar of full
+!                  relativity)
+
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
 
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
-     &        ICTLV1C(2)
+     &        ICTLV1C(2), IBSS
       COMMON /DCIHAM/ IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG,   &
      &                IPANGMOM, IPSPNMOM, N1OPER, IPR1OP, LSOLMX,       &
-     &                IPRSOL, ICTLV1C
+     &                IPRSOL, ICTLV1C, IBSS
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
@@ -54,14 +59,14 @@
       LOGICAL QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL, LEVYLE,      &
      &        SUB_BL, SOLVEN, INERSI, INERSF, SPINFR, SPINFR2, ZORA,    &
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
-     &        ONECOFF, NOSPIN
+     &        ONECOFF, NOSPIN, BSS
       INTEGER NDCLHAM
       PARAMETER (NDCLHAM = 18)
 
       COMMON /DCLHAM/ QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
-     &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN
+     &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS
 
       REAL*8 SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
       COMMON /DCRHAM/ SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
