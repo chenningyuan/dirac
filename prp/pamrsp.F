@@ -1867,6 +1867,7 @@ C
               REA = D4*DDOT(NZXOPPQ,BPVEC(1,IN),1,SPVEC(1,JN),1)
               REDMAT(I,J) = REA  
               REDMAT(J,I) = REA
+              write(6,*) 'jth posi i j',I,J,REA
             ENDIF
           ENDDO
         ENDDO
@@ -2122,8 +2123,8 @@ C
         WRITE(LUPRI,'(/3X,A)') '* Reduced matrix:'
         WRITE(LUPRI,'(5X,A,I5)')
      &    '* Number of positive eigenvalues:',INERT(1),
-     &    '* Number of zero     eigenvalues:',INERT(2),
-     &    '* Number of negative eigenvalues:',INERT(3)
+     &    '* Number of zero     eigenvalues:',INERT(3),
+     &    '* Number of negative eigenvalues:',INERT(2)
       ENDIF
 C
       CALL MEMREL('LINRED',WORK,1,KFREE,KFREE,LFREE)
