@@ -468,7 +468,8 @@ C
           DO 300 ICOOR1 = 1, 3
             ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
             IF (ISCOR1 .GT. 0) THEN
-              ITYP = ITYP + 1
+C Is ITYP used anywhere? /  Feb 25 1998 - jth
+C             ITYP = ITYP + 1
               PNAME    = 'NUCSPI'//CHRNOS(ISCOR1/10)
      &                         //CHRNOS(MOD(ISCOR1,10))
      &                //NAMN(IATOM1)//REP(IREPO)//CHRXYZ(ICOOR1)
@@ -2101,7 +2102,8 @@ C
           DO 300 ICOOR1 = 1, 3
             ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
             IF (ISCOR1 .GT. 0) THEN
-              ITYP = ITYP + 1
+C Is ITYP used anywhere? /  Feb 25 1998 - jth
+C             ITYP = ITYP + 1
               PNAME    = 'NUCSPI'//CHRNOS(ISCOR1/10)
      &                         //CHRNOS(MOD(ISCOR1,10))
      &                //NAMN(IATOM1)//REP(IREPO)//CHRXYZ(ICOOR1)
@@ -2114,7 +2116,7 @@ C
               IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
               IF((IS1.LE.0).OR.(IS2.LE.0))
      &          WRITE(LUPRI,'(A,5I5)') 
-     &          'DEF_SHIELD: sym. error !',IATOM1,ICOOR2,IC1,IC2
+     &          'DEF_SHIELD: sym. error !',IATOM1,ICOOR1,IC1,IC2
               PLABEL(1)= 'NEF '//CHRNOS(IS1/10)
      &                     //CHRNOS(MOD(IS1,10))//'  '
               PLABEL(2)= 'NEF '//CHRNOS(IS2/10)
