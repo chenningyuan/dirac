@@ -41,7 +41,7 @@
      &        IPNSTDIA(MXCOOR*3), NNSTIN, IPESR(MXCOOR+3, 2), NPRPWF,   &
      &        IPROTG(2,3),IPMSUSC(2,3),                                 &
      &        IPCON21(3),IPCON22(3),IPCON23(6),                         &
-     &        IPLONDON(4,3),IPCON(3),IPRNST(MXCOOR*3),IPPVCSHI(MXCOOR)  &
+     &        IPLONDON(4,3),IPCON(3),IPRNST(MXCOOR*3),IPPVCSHI(MXCOOR+3)&
       COMMON /CBIPRP/ IPRPRP, IPEPOLAR, IPSPNSPN, IPDSO, NDSOIN,        &
      &                IPSHIELD, IPNSTDIA, NNSTIN, IPESR, NPRPWF,        &
      &                         IPROTG,IPMSUSC,                          &

@@ -278,9 +278,8 @@ C&&&& EFTNTL - non-traceless electric field third derivatives
             DOEXP    = .TRUE.
             GO TO 100
   119    CONTINUE
-C&&&& SHIELD: NMR shielding constants with PVC contributions
-            DOXLR = .TRUE.
-            SHIELD = .TRUE.
+C&&&& PVCSHI: parity-violating contribution to NMR shielding
+            DOXLR  = .TRUE.
             PVCSHI = .TRUE.
   120    CONTINUE
 C&&&& EFN: Electric field at nuclei
