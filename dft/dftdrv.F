@@ -6,28 +6,28 @@ C
 C     T. Helgaker sep 99
 C     DIRAC adaption by T.Saue
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C 
       PARAMETER (DP5 = 0.5D0)
       LOGICAL DOERG, DOGRD, DOLND, DOATR
       DIMENSION DMAT(*),DTRMAT(*),EXCMAT(*),WORK(LWORK)
 C
 #if defined (PRG_DIRAC)
-#include <dcbgen.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbham.h"
 #endif
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include <infpar.h>
+#include "infpar.h"
 #endif
-#include <inforb.h>
-#include <nuclei.h>
-#include <dftcom.h>
-#include <memint.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "memint.h"
 C
 CTROND      LUQUAD = 29
       LUQUAD = 44
@@ -75,32 +75,32 @@ C /* Deck dftdrv */
 C
 C     T. Helgaker sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 CTROND      PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-10) 
       PARAMETER (THRSH = 1.0D-10, THRSH2 = 1.0D-10) 
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include <infpar.h>
+#include "infpar.h"
 #endif
 #if defined (PRG_DIRAC)
-#include <dcbgen.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbham.h"
 #endif
-#include <inforb.h>
-#include <nuclei.h>
-#include <dfterg.h>
-#include <dftcom.h>
-#include <orgcom.h>
-#include <dftbuf.h>
-#include <functionals.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dfterg.h"
+#include "dftcom.h"
+#include "orgcom.h"
+#include "dftbuf.h"
+#include "functionals.h"
 C
       LOGICAL DOERG, DOGRD, DOLND, DOATR
       DIMENSION DMAT(*),DTRMAT(*),
@@ -110,7 +110,7 @@ C
 C
 CTROND
       TIMSTR = SECOND()
-#include <memint.h>
+#include "memint.h"
 C
       IF (IPRINT .GE. 100) THEN
          CALL HEADER('DMAT in DFTDRV ',-1)
@@ -309,20 +309,20 @@ C
 C     Written by Trond Saue and T.Helgaker
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
       PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-10) 
 CTROND      PARAMETER (THRSH = 1.0D-12, THRSH2 = 1.0D-10) 
-#include <mxcent.h>
+#include "mxcent.h"
 C
-#include <nuclei.h>
-#include <inforb.h>
-#include <orgcom.h>
-#include <dftbuf.h>
-#include <dfterg.h>
-#include <functionals.h>
+#include "nuclei.h"
+#include "inforb.h"
+#include "orgcom.h"
+#include "dftbuf.h"
+#include "dfterg.h"
+#include "functionals.h"
       LOGICAL DOERG,DOGRD,DOLND,DOATR, DFTASC
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
@@ -446,18 +446,18 @@ C  /* Deck dftxcm */
 C
 C     T. Helgaker Sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0)
 C
       DIMENSION CMO(*), FMAT(NORBT,NORBT), WORK(LWORK)
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
 C
       KDAO = 1
       KFAO = KDAO + N2BASX
@@ -488,8 +488,8 @@ C
 #endif
 C  /* Deck reaqua */
       SUBROUTINE REAQUA(X,Y,Z,WT,LUQUAD,NPOINT)
-#include <implicit.h> 
-#include <priunit.h>
+#include "implicit.h" 
+#include "priunit.h"
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
       READ(LUQUAD) X,Y,Z,WT
       RETURN
@@ -499,14 +499,14 @@ C /* Deck dftest */
 C
 C     T. Helgaker sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C 
       DIMENSION WORK(LWORK)
 C
-#include <inforb.h>
-#include <nuclei.h>
+#include "inforb.h"
+#include "nuclei.h"
 C
       KX    = 1
       KY    = KX   + NBUF
@@ -529,12 +529,12 @@ C /* Deck dftest */
 C
 C     T. Helgaker sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DIMENSION CORX(NBUF), CORY(NBUF), CORZ(NBUF), WEIGHT(NBUF),
      &          DMAT(NBAST,NBAST), GAO(NBAST), GAO1(NBAST,3),
@@ -591,12 +591,12 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck dftsol */
       SUBROUTINE DFTSOL(WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       DIMENSION WORK(*)
-#include <infvar.h>
-#include <inflin.h>
+#include "infvar.h"
+#include "inflin.h"
 C
       KVEC = 1
       KFCK = KVEC + NWOPPT
@@ -607,16 +607,16 @@ C
       END
 C  /* Deck dftso1 */
       SUBROUTINE DFTSO1(VEC,FCK)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
       PARAMETER (FAC = -1.0D0/4.0D0)
       DIMENSION VEC(*), FCK(*)
-#include <nuctap.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <inforb.h>
+#include "nuctap.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "inforb.h"
       IA(I) = JWOP(1,I)
       IB(I) = JWOP(2,I)
       IAA(I) = IA(I)*(IA(I)+1)/2
@@ -645,8 +645,8 @@ C
 #ifdef ENABLE_DFT_NUMERICAL_TEST
 C  /* Deck dftnum */
       SUBROUTINE DFTNUM(DODRC,DOVWN,DOLYP,DOBCK,RHO,RHO13,RHOGRD)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, 
      &           DP3 = D1/D3, ADD = 1.0D-06)
       LOGICAL DODRC,DOVWN,DOLYP,DOBCK
@@ -771,13 +771,13 @@ C
 C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include <dcbham.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION GAO(NBAST),EXCMAT(NBAST,NBAST)
@@ -785,7 +785,7 @@ C
       DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0))
 #endif
 C      
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       MC = 2
       IF(LEVYLE) MC = 1      
@@ -820,13 +820,13 @@ C
 C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include <dcbham.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION GAO(NBAST),EXCMAT(NBAST,NBAST),
@@ -870,30 +870,30 @@ C     Send receive DFTresults
 C     Written by T.Saue and T.helgaker
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0)
 C
-#include <mxorb.h>
-#include <mxcent.h>
+#include "mxorb.h"
+#include "mxcent.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
-#include <infpar.h>
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dftbuf.h>
-#include <dftcom.h>
-#include <dfterg.h>
-#include <dgroup.h>
+#include "infpar.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dftbuf.h"
+#include "dftcom.h"
+#include "dfterg.h"
+#include "dgroup.h"
       DIMENSION EXCMAT(*),WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
       LFMAT = N2BBASX*NFMAT*NZ
       IF (MYTID.EQ.0) THEN
         CALL MEMGET('REAL',KFBUF,LFMAT,WORK,KFREE,LFREE)
@@ -957,32 +957,32 @@ C /* Deck dftpar */
 C
 C     T.Saue and T. Helgaker 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
       PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-10) 
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include <infpar.h>
+#include "infpar.h"
 #endif
 #if defined (PRG_DIRAC)
-#include <dcbgen.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbham.h"
 #endif
-#include <inforb.h>
-#include <nuclei.h>
-#include <dgroup.h>
-#include <dfterg.h>
-#include <dftcom.h>
-#include <orgcom.h>
-#include <dftbuf.h>
-#include <functionals.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "dfterg.h"
+#include "dftcom.h"
+#include "orgcom.h"
+#include "dftbuf.h"
+#include "functionals.h"
 C
       LOGICAL DOERG, DOGRD, DOLND, DOATR
       DIMENSION DMAT(*), DTRMAT(*),
@@ -992,7 +992,7 @@ C
 CTROND
       DIMENSION RHOB(0:2)
       TIMSTR = SECOND()
-#include <memint.h>
+#include "memint.h"
 C
         LFMAT = NBAST*NBAST*NZ*NXCMAT
         CALL DZERO(EXCMAT,LFMAT)
@@ -1087,27 +1087,27 @@ C                                 symmet
 C
 C     Based on traprd, Written by T. Saue 2000
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <symmet.h>
-#include <dgroup.h>
-#include <infpar.h>
-#include <parint.h>
-#include <blocks.h>
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "infpar.h"
+#include "parint.h"
+#include "blocks.h"
 C
 #if defined (VAR_MPI)
 C

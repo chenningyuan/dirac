@@ -36,8 +36,8 @@ C     **************************
 C
 C  /* Deck edrc */
       SUBROUTINE EDRC(ED,RHO,RHO13)
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D4 = 4.0D0)
 c     &           CX = -(D3/D4)*((D3/PI)**(D1/D3)))
       ED = -(D3/D4)*((D3/PI)**(D1/D3))*RHO*RHO13
@@ -46,8 +46,8 @@ c     &           CX = -(D3/D4)*((D3/PI)**(D1/D3)))
 C
 C  /* Deck vdrc */
       SUBROUTINE VDRC(VD,RHO13)
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0)
 c      , CXV = -(D3/PI)**(D1/D3))
       VD = -((D3/PI)**(D1/D3))*RHO13
@@ -56,8 +56,8 @@ c      , CXV = -(D3/PI)**(D1/D3))
 C
 C  /* Deck V1DRC */ 
       SUBROUTINE V1DRC(VD0,VD1,RHO,RHO13)
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, 
      &           D13 = D1/D3)
 c, CXV = -(D3/PI)**D13)
@@ -76,7 +76,7 @@ C  /* Deck evwn */
 C
 C     Correlation energy (G. J. Laming)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CALL WVWN(VA1,RHO,RHO13,E1,.FALSE.,.TRUE.)
       ECV = E1*RHO
@@ -85,7 +85,7 @@ C
 C
 C  /* Deck vvwn */
       SUBROUTINE VVWN(VA,RHO,RHO13)
-#include <implicit.h>
+#include "implicit.h"
       CALL WVWN(VA,RHO,RHO13,E1,.TRUE.,.TRUE.)
       RETURN
       END
@@ -96,8 +96,8 @@ C  /* Deck wvwn */
 C
 C     C. W. MURRAY & G. J. LAMING
 C
-#include <implicit.h> 
-#include <pi.h>
+#include "implicit.h" 
+#include "pi.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           D6 = 6.0D0)
       PARAMETER (CV = D1/D2) 
@@ -160,8 +160,8 @@ C
 C     WRITTEN   By    G. J. Laming
 C     Some adjustments by A. M. Lee
 C
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           D6 = 6.0D0, D7 = 7.0D0, D8 = 8.0D0)
       PARAMETER (CV = D1/D2) 
@@ -212,7 +212,7 @@ C
 C
 C  /* Deck vtvwn */
       SUBROUTINE VTVWN(VD1,RHO,RHO13)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D1 = 1.0D0, D2 = 2.0D0, DP3 = 1.0D0/3.0D0, 
      &          D8D9 = 8.0D0/9.0D0)
       FAC = -D8D9/(D2**DP3 - D1)
@@ -226,7 +226,7 @@ C
 C /* Deck ebck */
       SUBROUTINE EBCK(BECKI,RHO,RHO13,RHOGRD)
 C     *************WRITTEN BY G. J. LAMING********************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       PARAMETER (BETAP = 0.0042D0)
       DF = (D1/D2)**(D1/D3)
@@ -239,7 +239,7 @@ C
       END
 C /* Deck gbck */ 
       SUBROUTINE GBCK(VB1,VB2,RHO,RHO13,RHOGRD)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0, D6 = 6.0D0)
       PARAMETER (FT = 4.0D0/3.0D0, BETAP = 0.0042D0)
       DF = D2**FT
@@ -259,7 +259,7 @@ C
       END
 C/* Deck vbck */
       SUBROUTINE VBCK(VA,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0, 
      &           D6 = 6.0D0, D12 = 12.0D0, DP5 = 0.5D0)
       PARAMETER (BETAP=0.0042D0)
@@ -300,7 +300,7 @@ C  /* Deck B88xd2 */
       SUBROUTINE V1BCK(DF1000,DF0010,DF2000,DF1010,DF0020,
      &                 RHOINP,RHOGRD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.50D0, D1 = 1.0D0, D2 = 2.0D0, 
      &           D3 = 3.0D0, D4 = 4.0D0, D43 = D4/D3, D6 = 6.0D0, 
@@ -361,8 +361,8 @@ C
 C /* Deck elyp */
       SUBROUTINE ELYP(CLYPCI,RHO,RHO13,RHOGRD)
 C     *************WRITTEN BY G. J. LAMING********************
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (DP5 = 0.50D0,
      &           ALL=0.04918D0,
      &           BLL=0.132D0,
@@ -411,8 +411,8 @@ C /* Deck glyp */
 C
 C***********WRITTEN   BY   G. J. LAMING******************
 C
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (ALL=0.04918D0,
      &           BLL=0.132D0,
      &           CLL=0.2533D0,
@@ -453,8 +453,8 @@ C/* Deck vlyp */
 C
 C     Lee
 C  
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (ALL=0.04918D0,BLL=0.132D0,CLL=0.2533D0,DLL=0.349D0,
      &           FLL=(7.0D0/18.0D0),PLL=(5.0D0/18.0D0))
       CFFFF=0.3D0*((3.0D0*PI*PI)**(2.0D0/3.0D0))
@@ -485,8 +485,8 @@ C
       END
 C  /* Deck v1lyp */
       SUBROUTINE V1LYP(DF1000,DF0010,DF2000,DF1010,DF0020,RHOINP,RHOGRD)
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (DP5=0.050,
      &           ALL=0.04918D0,BLL=0.132D0,CLL=0.2533D0,DLL=0.349D0)
 C

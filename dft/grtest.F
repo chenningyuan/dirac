@@ -9,19 +9,19 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
  
       PARAMETER (DP5 = 0.5D0)
       DIMENSION WORK(LWORK)
 
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <dftcom.h>
-#include <memint.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "memint.h"
 
 CTROND      LUQUAD = 29
       LUQUAD = 44
@@ -55,10 +55,10 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pi.h"
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
@@ -68,20 +68,20 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DOUBLE PRECISION ERRAV, ERRAB, ERRMX, RERRAV, RERRAB, RERRMX,
      &                 SMATDF, SMATAN, SMATFR
 
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <mxorb.h> 
-#include <dcblab.h>
-#include <maxaqn.h> 
-#include <symmet.h>
-#include <nuclei.h>
-#include <dfterg.h>
-#include <dftcom.h>
-#include <orgcom.h>
-#include <dftbuf.h>
-#include <functionals.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "mxorb.h" 
+#include "dcblab.h"
+#include "maxaqn.h" 
+#include "symmet.h"
+#include "nuclei.h"
+#include "dfterg.h"
+#include "dftcom.h"
+#include "orgcom.h"
+#include "dftbuf.h"
+#include "functionals.h"
 
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -94,7 +94,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &          GAO2(*), GAB1(*), WORK(LWORK), 
      &          NCNT(*), DST(*), BUF(*)
 
-#include <memint.h>
+#include "memint.h"
 
 C
 C     Get analytical SMAT(I,J,2)
@@ -298,19 +298,19 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <orgcom.h>
-#include <dftbuf.h>
-#include <dfterg.h>
-#include <functionals.h>
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "orgcom.h"
+#include "dftbuf.h"
+#include "dfterg.h"
+#include "functionals.h"
       
       LOGICAL DFTASC
       DIMENSION SMAT(*)
@@ -350,8 +350,8 @@ C     /* Deck reaqua */
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
-#include <priunit.h>
+#include "implicit.h" 
+#include "priunit.h"
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
       READ(LUQUAD) X,Y,Z,WT
       
@@ -370,14 +370,14 @@ C     Written by T.Saue and T.Helgaker                                 C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 
       PARAMETER(D0=0.0D0,D2=2.0D0)
 
-#include <dcbham.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -387,7 +387,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0))
 #endif
       
-#include <ibtfun.h>
+#include "ibtfun.h"
 
       MC = 2
       IF(LEVYLE) MC = 1      

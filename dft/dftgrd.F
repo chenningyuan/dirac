@@ -8,30 +8,30 @@ C     T. Helgaker                                                      C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <nuclei.h>
-#include <dftcom.h>
-#include <symmet.h>
-#include <ccom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "symmet.h"
+#include "ccom.h"
 
       PARAMETER (MAXCEN=100)
       PARAMETER (D0=0.0D0)
       LOGICAL TEST
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
-#include <dftwrk.h>
+#include "dftwrk.h"
 
       DIMENSION WORK(LWORK)
 
-#include <ibtfun.h>
+#include "ibtfun.h"
 
       TIMSTR = SECOND()
 
-#include <memint.h>
+#include "memint.h"
 
 C
 C     ********************************
@@ -158,8 +158,8 @@ C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
-#include <priunit.h> 
+#include "implicit.h" 
+#include "priunit.h" 
 
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0)
 
@@ -169,17 +169,17 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PARAMETER (MAXCEN=100)
       CHARACTER SPDCAR*1
 
-#include <dftwrk.h>
+#include "dftwrk.h"
 
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ccom.h>
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ccom.h"
 
       DIMENSION WRKSP(4*NUM),
      &          ACCUM(IVECL),XMUIJN(IVECL),XMUIJ2(IVECL),
@@ -243,8 +243,8 @@ CTROND     &  1.80D0,1.80D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
 C       Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*
      &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0/ 
 
-#include <sdpre.h>
-#include <ibtfun.h>
+#include "sdpre.h"
+#include "ibtfun.h"
 
 C
 C     USE INPUTTED INFORMATION IN COMMON BLOCK DFTWRK TO DEFINE THE TYPE
@@ -487,7 +487,7 @@ C  /* Deck wrtqua */                                                   C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
+#include "implicit.h" 
 
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
 
@@ -504,7 +504,7 @@ C  /* Deck priqua */                                                   C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
+#include "implicit.h" 
 
       DIMENSION X(*),Y(*),Z(*),WT(*)
 
@@ -527,8 +527,8 @@ C  /* Deck priqu2 */                                                   C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
-#include <priunit.h>
+#include "implicit.h" 
+#include "priunit.h"
 
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
 
@@ -547,7 +547,7 @@ C  /* Deck nleb */                                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
+#include "implicit.h" 
 
       NTOT =1454
       
@@ -582,7 +582,7 @@ C  /* Deck nlebset */                                                  C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
+#include "implicit.h" 
  
       IF (NTOT.GE.1453) THEN
          NSCHEME=64
@@ -635,10 +635,10 @@ C  /* Deck sleb */                                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
-#include <priunit.h> 
-#include <dftcom.h>
-#include <pi.h>
+#include "implicit.h" 
+#include "priunit.h" 
+#include "dftcom.h"
+#include "pi.h"
 
       PARAMETER (MAXNUM=1455)
       DIMENSION X(MAXNUM),Y(MAXNUM),Z(MAXNUM),WT(MAXNUM)
@@ -792,7 +792,7 @@ C      the Becke partitioning amongst the atoms.                       C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
+#include "implicit.h" 
 
       PARAMETER (MAXBFN=1000)
       PARAMETER (MAXCEN=100)
@@ -866,11 +866,11 @@ C     T. Helgaker                                                      C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
+#include "implicit.h" 
 
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
 
-#include <sdpre.h>
+#include "sdpre.h"
 
       J = 0
       DO I = 1, NPOINT
@@ -899,16 +899,16 @@ C     T. Helgaker  Feb 01                                              C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 
       PARAMETER (A0 = 1.0D-8)
       LOGICAL LBTAX
 
-#include <symmet.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "ibtfun.h"
 
       LBTAX(I,J) = IBTAND(2**(I-1),ISYMAX(J,1)) .GT. 0
 

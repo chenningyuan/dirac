@@ -8,9 +8,9 @@ C
 C     Written by T.Saue and T.Helgaker - feb 2000
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (NTABLE = 9)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
@@ -20,13 +20,13 @@ C
       CHARACTER CTEMP*72, LINE*80, TEXT*20
       DIMENSION WORK(LWORK)
 C
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcbham.h>
-#include <dfterg.h>
-#include <dftcom.h>
-#include <functionals.h>
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcbham.h"
+#include "dfterg.h"
+#include "dftcom.h"
+#include "functionals.h"
 C
       SAVE SET
       DATA TABLE /'.DFTFUN','.FROMVX','.DFTAC ','.RADINT',
@@ -34,7 +34,7 @@ C
      &            '.ANGMIN'/
       DATA SET/.FALSE./
 C
-#include <memint.h>
+#include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN

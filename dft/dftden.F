@@ -3,12 +3,12 @@ C  /* Deck getden */
 C
 C     T. Helgaker Sep 1999
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (DP5 = 0.50D0, D1 = 1.0D0)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       LOGICAL NODC, NODV
       DIMENSION DMAT(NBAST,NBAST), WORK(LWORK)
@@ -41,9 +41,9 @@ C
 C
 C  /* Deck qdrdso */
       SUBROUTINE QDRDSO(DSO,WORK,LWORK,IPRINT,NODC,NODV)
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
       LOGICAL NODC, NODV
       DIMENSION DSO(NNBAST), WORK(LWORK)
 C
@@ -57,18 +57,18 @@ C
 C  /* Deck qdrds1 */
       SUBROUTINE QDRDS1(CMO,DV,DSO,IPRINT,NODC,NODV)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0)
       LOGICAL NODC, NODV
       DIMENSION CMO(*), DV(*), DSO(NNBAST)
-#include <iratdef.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "iratdef.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
-#include <abainf.h>
-#include <inforb.h>
-#include <nuctap.h>
+#include "abainf.h"
+#include "inforb.h"
+#include "nuctap.h"
       INTEGER R, S, RS, U, V, UV
 C
 C
@@ -198,16 +198,16 @@ C
 C  /* Deck qdrdao */
       SUBROUTINE QDRDAO(DENMAT,DSO,NBAST,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION DSO(*), DENMAT(*)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine QDRDAO',-1)
 C

@@ -8,13 +8,13 @@ C
 C     Written byu T.Saue May 11 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D2=2.0D0)
 C
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dgroup.h"
         DIMENSION DMAT(N2BBASX,NZ),DTRMAT(N2BBASX,NZ,NXCMAT),
      &            EXCMAT(N2BBASX,NZ,NXCMAT),WORK(*)
 CTROND        CALL DCOPY(N2BBASX,DMAT,1,CMO,1)           
@@ -73,22 +73,22 @@ C
 C     T. Helgaker sep 99/oct 00
 C     adapted to DIRAC by T.Saue May 3 2001
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,DP5 = 0.5D0)
 C
-#include <inforb.h>
-#include <nuclei.h>
+#include "inforb.h"
+#include "nuclei.h"
 #if defined (PRG_DIRAC)
-#include <dgroup.h>
+#include "dgroup.h"
 #else
-#include <wrkrsp.h>
-#include <dftinf.h>
+#include "wrkrsp.h"
+#include "dftinf.h"
 #endif
-#include <dftcom.h>
-#include <functionals.h>
+#include "dftcom.h"
+#include "functionals.h"
 C
       INTEGER A, B
       LOGICAL DOGGA, TRPLET
@@ -248,7 +248,7 @@ CTROND         END IF
       END
 
       SUBROUTINE FORT_WRT(str, slength)
-#include <priunit.h>
+#include "priunit.h"
       INTEGER unit, slength
       CHARACTER str(slength)
       WRITE(LUPRI, *) str

@@ -4,16 +4,16 @@ C
 C     T. Helgaker
 C     based on code by Handy and Tozer
 C
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0) 
       LOGICAL INSIDE 
       DIMENSION DST(NATOMS)
-#include <dfterg.h>
-#include <dftcom.h>
-#include <dftacb.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "dfterg.h"
+#include "dftcom.h"
+#include "dftacb.h"
+#include "nuclei.h"
+#include "codata.h"
 C
       DIMENSION RADIUS(0:18)
       DATA RADIUS /0.0D0,0.35D0,0.35D0,
