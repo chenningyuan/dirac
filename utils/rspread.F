@@ -7,19 +7,21 @@ C
 #include <priunit.h>
       PARAMETER (LUINP = 1)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16
-      INTEGER   NARG,IARG
+      INTEGER   NARG,IARG,JARG
       CHARACTER*80 ARGC
 C
       NARG = IARGC()
       IF (NARG .EQ. 0) THEN
          CALL GETARG(0,ARGC)
-         WRITE(6,'(/A,A,A/)') 'Usage: ',ARGC,' file1 file2 ...'
+         JARG = LNBLNK(ARGC)
+         WRITE(6,'(/3A/)') 'Usage: ',ARGC(1:JARG),' file1 file2 ...'
          STOP ' '
       END IF
       DO IARG = 1,NARG
          CALL GETARG(IARG,ARGC)
-         WRITE (LUPRI, '(/A,A/)') 
-     &      ' Solution vectors found on file : ',ARGC
+         JARG = LNBLNK(ARGC)
+         WRITE (LUPRI, '(/2A/)') 
+     &      ' Solution vectors found on file : ',ARGC(1:JARG)
 C
          OPEN(LUINP,FILE=ARGC,STATUS='UNKNOWN',FORM='UNFORMATTED')
          REWIND LUINP

@@ -41,20 +41,22 @@ CTROND      DOUBLE PRECISION TIME, SECOND
       CHARACTER*8 B(4), STARS
       PARAMETER (STARS = '********')
       PARAMETER (LUINP = 1, LUPRI = 6)
-      INTEGER   NARG,IARG
+      INTEGER   NARG,IARG,JARG
       CHARACTER*80 ARGC
 C
 C      TIME = SECOND()
       NARG = IARGC()
       IF (NARG .EQ. 0) THEN
          CALL GETARG(0,ARGC)
-         WRITE(6,'(/A,A,A/)') 'Usage: ',ARGC,' file1 file2 ...'
+         JARG = LNBLNK(ARGC)
+         WRITE(6,'(/3A/)') 'Usage: ',ARGC(1:JARG),' file1 file2 ...'
          STOP ' '
       END IF
       DO IARG = 1,NARG
          CALL GETARG(IARG,ARGC)
-         WRITE (LUPRI, '(/A,A/)') 
-     &      ' MOLECULE labels found on file :',ARGC
+         JARG = LNBLNK(ARGC)
+         WRITE (LUPRI, '(/2A/)') 
+     &      ' MOLECULE labels found on file :',ARGC(1:JARG)
 C
          OPEN(LUINP,FILE=ARGC,STATUS='UNKNOWN',FORM='UNFORMATTED')
          REWIND LUINP
@@ -84,7 +86,7 @@ C
 C      TIME = SECOND() - TIME
          WRITE (LUPRI,'(/I10,A)') IREC,
      *      ' records read before EOF on file.'
-         WRITE (LUPRI,'(F10.2,A)') TIME,' CPU seconds used.'
+C        WRITE (LUPRI,'(F10.2,A)') TIME,' CPU seconds used.'
          CLOSE(LUINP)
       END DO
       STOP ' '
