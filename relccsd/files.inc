@@ -11,7 +11,7 @@ C     Define the unit numbers
       PARAMETER (MDINT   = 14) ! Two-electron integrals
       PARAMETER (MDPROP  = 15) ! Property integrals
       PARAMETER (MCCRES  = 16) ! Restart information
-      PARAMETER (ITAMPL  = 26) ! T1 and T2 amplitudes
+      PARAMETER (ITAMPL  = 26) ! T1 and T2 amplitudes (used in DIIS only)
       PARAMETER (ITAMPD  = 27) ! Error vector for T1 and T2 amplitudes
       PARAMETER (IOAMPL  = 28) ! Orbital gradients
       PARAMETER (IOAMPS  = 29) ! Sigma vector for orbital gradients

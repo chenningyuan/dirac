@@ -133,7 +133,7 @@ C
      &/' Total time in MP2EQN :',T30,F12.3,' seconds')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCEQN(EPS,FOO,FVO,FVV,T1,S1,T2,S2,AZ,CZ,H,
+      SUBROUTINE CCEQN(MAXIT,EPS,FOO,FVO,FVV,T1,S1,T2,S2,AZ,CZ,H,
      &                 HO,HV,HOV,GOO,GVV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3)
@@ -172,14 +172,12 @@ C
 #include "files.inc"
 #include "param.inc"
 #include "symm.inc"
-#include "diis.inc"
 #include "eqns.inc"
 #include "inpt.inc"
 #include "ihm.inc"
 #include "results.inc"
 #include "complex.inc"
 #include "ccpar.inc"
-#include "waio.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -222,20 +220,10 @@ C        Initialize S1 and S2 in case we want to do zero
 C        iterations (tests). In normal runs S1 and S2 will
 C        be initialized in T1EQNS and T2EQNS.
 C
-         CALL XCOPY(NDIMT1,FVO,1,S1,1)
-         CALL DENOMF (BUF1,S1,BUF2,S1,BUF2,2)
-         CALL GETVVOO (S2)
+         CALL XCOPY(NDIMT1,A0,0,S1,1)
+         CALL XCOPY(NDIMT2,A0,0,S2,1)
+         CALL S1S2_ADDFO (FVO,BUF1,BUF2,S1,S2)
 C
-C        The incoming T arrays contain Hamiltonian and wave function
-C        parts for all sectors. Eliminate the ones that we don't need
-C        in the current sector.
-C
-C        Delete wave function parts that belong to higher sectors.
-C
-         CALL DELFCK ('VO',DELS1,T1)
-         CALL DELINT ('VVOO',DELS2,T2,0,0,0)
-C        Delete Hamiltonian parts
-         CALL DENOMF (EPS,T1,T2,T1,T2,2)
       ELSE
          CALL QUIT('Wrong keyword in call to CCEQNS')
       ENDIF
@@ -250,37 +238,28 @@ C
       CPUT2 = D0
       CPU4V = D0
 C
+C     Zero amplitudes if the NOCCX options are specified
+C
+      IF (TEQ.AND.NOCCS) CALL XCOPY (NDIMT1,A0,0,T1,1)
+      IF (TEQ.AND.NOCCD) CALL XCOPY (NDIMT2,A0,0,T2,1)
+C
 C     Initialize the work arrays to zero.
 C
       CALL XCOPY (NDIMT2,A0,0,BUF1,1)
       CALL XCOPY (NBUF2,A0,0,BUF2,1)
       CALL XCOPY (NBUF3,A0,0,BUF3,1)
 C
-C     Calculate record size for DIIS files.
+C     Initialize DIIS.
 C
-      ITC = 0
-      IT = 0
-      NST1 = INTOWP(RCW*NDIMT1)/ NWORDS_ON_RECORD
-      IF(NST1*NWORDS_ON_RECORD.NE.INTOWP(RCW*NDIMT1)) NST1 = NST1 + 1
-      NST2 = INTOWP(RCW*NDIMT2)/ NWORDS_ON_RECORD
-      IF(NST2*NWORDS_ON_RECORD.NE.INTOWP(RCW*NDIMT2)) NST2 = NST2 + 1
+      IT = -1
+      CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
+     &           IT,CC1,BB1,ITC,BB2,RMS)
 C
-C     Open DIIS scratch files
-C
-      CALL WAIO_OPEN(ITAMPL)
-      CALL WAIO_OPEN(ITAMPD)
-C
-      NIT = 0
-      RMS = 1.D0
       ECCSD = 0.D0
-C
-C     Zero amplitudes if the NOCCX options are specified
-C
-      IF (TEQ.AND.NOCCS) CALL XCOPY (NDIMT1,A0,0,T1,1)
-      IF (TEQ.AND.NOCCD) CALL XCOPY (NDIMT2,A0,0,T2,1)
+      NIT = 0
 C
       CALL T1DIAG(DIAG,T1,BUF1)
-      CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD)
+      CALL CCENG (T1,T2,FVO,BUF1,BUF2,ECCSD)
       IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
 C
       IF (IPRNT.GE.1) THEN
@@ -465,11 +444,16 @@ C
 C
  100  CONTINUE
 C
+C     Delete the Pi->Q excitations in case of Int. Ham. CCFS
+      IF (FOCKSP.AND.DOIH) THEN
+         CALL DENOMF (EPS,S1,S2,S1,S2,3)
+      ENDIF
+C
 C     Add the first order wave function contribution
 C
       CALL S1S2_ADDFO (FVO,BUF1,BUF2,S1,S2)
 C
-C  ADD PARTIAL T1 AND T2 (PARALLEL RUNS)
+C  ADD PARTIAL S1 AND S2 (PARALLEL RUNS)
 C
 C     CALL XTIME(35,1,'- PARTS (sync before adding)    ')
 C     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
@@ -479,9 +463,6 @@ C     CALL XTIME(35,2,'- PARTS (sync before adding)    ')
       CALL XTIME(36,2,'- adding partial T1/T2 amplitudes ')
 C
       IF (FOCKSP) THEN
-C        Delete the wave function amps that belong to higher sectors
-         CALL DELFCK ('VO',DELS1,S1)
-         CALL DELINT ('VVOO',DELS2,S2,0,0,0)
 C       Adding folded diagrams, use HOV and H as scratch arrays
         CALL FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,HOV,H,
      &               S1,S2)     
@@ -502,20 +483,27 @@ C
       write (*,111)"s1 after parts",MYPROC,ddot(ndimt1,s1,1,s1,1)
       endif
 C
-C     Zero amplitudes if the NOCCX options are specified
+C  Make new T1s and T2 by dividing S1s and S2 by eigenvalues
 C
-      IF (TEQ.AND.NOCCS) CALL XCOPY (NDIMT1,A0,0,S1,1)
-      IF (TEQ.AND.NOCCD) CALL XCOPY (NDIMT2,A0,0,S2,1)
-C
-C  DIVIDE NEW T1s AND T2s BY EIGENVALUES
+      CALL XCOPY (NDIMT1,S1,1,T1,1)
+      CALL XCOPY (NDIMT2,S2,1,T2,1)
 C
       IF (FOCKSP) THEN
-        CALL DENOMF (EPS,S1,S2,S1,S2,1)
+        CALL DENOMF (EPS,T1,T2,T1,T2,1)
+C       Remove the Hamiltonian elements, T1 and T2 should only contain
+C       the wave function (amplitudes) appropriate for this sector.
+        CALL DENOMF (EPS,T1,T2,T1,T2,2)
+        CALL DENOMF (EPS,T1,T2,T1,T2,3)
       ELSE
-        CALL DENOM (EPS,S1,S2,S1,S2)
+        CALL DENOM (EPS,T1,T2,T1,T2)
       ENDIF
 C
-      CALL ZCORE (S1,S2)
+C     Zero amplitudes if the NOCCX options are specified
+C
+      IF (TEQ.AND.NOCCS) CALL XCOPY (NDIMT1,A0,0,T1,1)
+      IF (TEQ.AND.NOCCD) CALL XCOPY (NDIMT2,A0,0,T2,1)
+C
+      CALL ZCORE (T1,T2)
 C
 C.....when debugging print out energies in every iteration
       IF (FOCKSP.AND.DEBUG) 
@@ -524,46 +512,10 @@ C
 C  EXTRAPOLATE THE AMPLITUDES
 C
       CALL XTIME(37,1,'- DIIS extrapolation            ')
-      IF (.NOT.FOCKSP) THEN
-         CALL DIISX(ITAMPL,ITAMPD,NDIMT1,NDIMT2,T1,S1,T2,S2,IT,
-     &              CC1,BB1,ITC,BB2,RMS,NST1,NST2)
-      ELSE
-C
-C     In the Fockspace algorithm we only need to extrapolate the
-C     amplitudes of the current sector. We already deleted the ones from
-C     the higher sectors, the ones from the previous sectors are
-C     constant and can be left inside. In addition the Hamiltonian
-C     matrix elements should not be taken into account in the 
-C     extrapolation because of the difference in magnitude with the wf 
-C     (energy vs. dimensionless).
-C
-C        Save the full S1 and S2 arrays (including ham elements)
-         CALL XCOPY(NDIMT1,S1,1,BUF1,1)
-         CALL XCOPY(NDIMT2,S2,1,BUF2,1)
-C        Delete the effective Hamiltonian elements
-         CALL DENOMF (EPS,S1,S2,S1,S2,2)
-         if (carith.and.debug) then
-         write(iw,111)"s1 without Ham.",MYPROC,zdotc(ndimt1,s1,1,s1,1)
-         write(iw,111)"s1 with Ham.",MYPROC,zdotc(ndimt1,buf1,1,buf1,1)
-         write(iw,111)"s2 without Ham.",MYPROC,zdotc(ndimt2,s2,1,s2,1)
-         write(iw,111)"s2 with Ham.",MYPROC,zdotc(ndimt2,buf2,1,buf2,1)
-         elseif (debug) then
-         write(iw,111)"s1 without Ham.",MYPROC,ddot(ndimt1,s1,1,s1,1)
-         write(iw,111)"s1 with Ham.",MYPROC,ddot(ndimt1,buf1,1,buf1,1)
-         write(iw,111)"s2 without Ham.",MYPROC,ddot(ndimt2,s2,1,s2,1)
-         write(iw,111)"s2 with Ham.",MYPROC,ddot(ndimt2,buf2,1,buf2,1)
-         endif
-         CALL DIISX(ITAMPL,ITAMPD,NDIMT1,NDIMT2,T1,S1,T2,S2,IT,
-     &              CC1,BB1,ITC,BB2,RMS,NST1,NST2)
-C
-C        Put the Hamiltonian elements back.
-C
-         CALL XAXPY(NDIMT1,A1,BUF1,1,S1,1)
-         CALL XAXPY(NDIMT2,A1,BUF2,1,S2,1)
-         CALL DENOMF (EPS,BUF1,BUF2,BUF1,BUF2,2)
-         CALL XAXPY(NDIMT1,-A1,BUF1,1,S1,1)
-         CALL XAXPY(NDIMT2,-A1,BUF2,1,S2,1)
-      ENDIF
+      CALL DELFCK ('VO',DELS1,T1)
+      CALL DELINT ('VVOO',DELS2,T2,0,0,0)
+      CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
+     &           IT,CC1,BB1,ITC,BB2,RMS)
       CALL XTIME(37,2,'- DIIS extrapolation            ')
 C
 C  SYNCHRONIZE T1 AND T2 (PARALLEL RUNS)
@@ -572,31 +524,19 @@ C     CALL XTIME(38,1,'- PARTS (sync before sync)      ')
 C     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 C     CALL XTIME(38,2,'- PARTS (sync before sync)      ')
       CALL XTIME(39,1,'- synchronizing T1 & R2 amplitudes')
-      CALL PARTS (2,RMS,S1,S2,BUF1,BUF2)
+      CALL PARTS (2,RMS,T1,T2,BUF1,BUF2)
       CALL XTIME(39,1,'- synchronizing T1 & T2 amplitudes')
 C
 C  EVALUATE CORRELATION ENERGY AND WRITE OUT RESULTS
 C
       IF (TEQ) THEN
          IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
-         CALL CCENG  (S1,S2,FVO,BUF1,BUF2,ECCSD)
+         CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD)
       ENDIF
 C
-      CALL T1DIAG (DIAG,S1,BUF1)
+      CALL T1DIAG (DIAG,T1,BUF1)
       IF (IPRNT.GE.1) WRITE(IW,6001) NIT,ECCSD,RMS,DIAG
       CALL FLSHFO(IW)
-C
-C  PUT S1,S2 INTO T1,T2 AND DO NEXT ITERATION
-C
-      CALL XCOPY(NDIMT1,S1,1,T1,1)
-      CALL XCOPY(NDIMT2,S2,1,T2,1)
-C
-C     Remove the Hamiltonian elements, T1 and T2 should only contain
-C     the wave function (amplitudes) appropriate for this sector.
-C
-      IF (FOCKSP) THEN
-         CALL DENOMF (EPS,T1,T2,T1,T2,2)
-      ENDIF
 C
       CPUE = CPUE + CPUDELTA()
 C
@@ -648,10 +588,9 @@ C
 C
 C     Close and delete DIIS scratch files
 C
-      JCODE = 4
-      CALL WAIO_CLOSE(ITAMPL,JCODE)
-      JCODE = 4
-      CALL WAIO_CLOSE(ITAMPD,JCODE)
+      IT = -2
+      CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
+     &           IT,CC1,BB1,ITC,BB2,RMS)
 C
  111  FORMAT(A20,I4,2f25.15)
  6001 FORMAT(2X,I3,5X,2F20.15,F10.5)
@@ -1961,32 +1900,34 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIISX(ITAPL,ITAPD,NDIMT1,NDIMT2,T1O,T1N,T2O,T2N,IT,
-     &                 CC,BB,ITC,BB2,RMS,NST1,NST2)
-C
+      SUBROUTINE DIISX (NDIMT1,NDIMT2,T1O,T1N,T2O,T2N,IT,
+     &                  CC,BB,ITC,BB2,RMS)
+C    
       IMPLICIT INTEGER (A-Z)
-C
+C     
 C---------------Description--------------------------------------------
 C
 C     DIIS extrapolation of the t1 and t2 amplitudes
-C
+C     
 C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher (based on a routine by T.J. Lee)
-C
+C     
 C---------------Calling variables--------------------------------------
 C
       REAL*8 T2O(*),T2N(*),T1O(*),T1N(*)
       REAL*8 CC(MAXDIM),BB(MAXDIM+1,MAXDIM+2),BB2(MAXDIM+1,MAXDIM+2)
       REAL*8 RMS
-C
+C     
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc" 
-#include "complex.inc" 
+#include "param.inc"
+#include "complex.inc"
 #include "diis.inc"
+#include "files.inc"
+#include "waio.h"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1994,10 +1935,53 @@ C
       REAL*8 XM,XMAX,XEN,XFAC,XADD,DET
       REAL*8 SUM1,SUM2,SSUM,DSUM,SDOT,DDOT
       COMPLEX*16 CSUM1,ZSUM,CSUM,ZDOTC,CDOTC,CFAC
-C
+C     
 C---------------Executable code--------------------------------------
 C
       IF (MYPROC.NE.MASTER) RETURN
+C     
+C     Handle special cases of initialization or finalization first
+C
+      IF (IT.EQ.-1) THEN
+C
+C       Initialization of the DIIS procedure;
+C       compute record lengths, open files, write first set of amplitudes
+C       This information is stored in the common block diis.inc
+C
+        NST1 = INTOWP(RCW*NDIMT1)/ NWORDS_ON_RECORD
+        IF(NST1*NWORDS_ON_RECORD.NE.INTOWP(RCW*NDIMT1)) NST1 = NST1 + 1
+        NST2 = INTOWP(RCW*NDIMT2)/ NWORDS_ON_RECORD
+        IF(NST2*NWORDS_ON_RECORD.NE.INTOWP(RCW*NDIMT2)) NST2 = NST2 + 1
+        CALL WAIO_OPEN(ITAMPL)
+        CALL WAIO_OPEN(ITAMPD)
+        SECT1 = MAXDIM*(NST1+NST2) + 1
+        SECT2 = SECT1 + NST1
+C       Place first input amplitudes at record maxdim+1 of ITAMPL
+        CALL RWRIT(ITAMPL,T1N,INTOWP(NDIMT1*RCW),SECT1)
+        CALL RWRIT(ITAMPL,T2N,INTOWP(NDIMT2*RCW),SECT2)
+        IT = 0
+        ITC = 0
+        RMS = 1.0
+C       Return to caller
+        RETURN
+      ENDIF
+C
+      IF (IT.EQ.-2) THEN
+C
+C        Stop DIIS and clean up files
+C
+        JCODE = 4
+        CALL WAIO_CLOSE(ITAMPL,JCODE)
+        CALL WAIO_CLOSE(ITAMPD,JCODE)
+        RETURN
+      ENDIF
+C
+C     Normal procedure : start by reading the old amplitudes that were used to produce T1N and T2N
+C
+      SECT1 = MAXDIM*(NST1+NST2) + 1
+      SECT2 = SECT1 + NST1
+      CALL RREAD(ITAMPL,T1O,INTOWP(NDIMT1*RCW),SECT1)
+      CALL RREAD(ITAMPL,T2O,INTOWP(NDIMT2*RCW),SECT2)
 C
       IT = IT + 1
       IF(IT.GT.MAXDIM) IT = MAXDIM
@@ -2026,17 +2010,17 @@ C
 C
       SECT1 = (ITC-1)*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1
-      CALL RWRIT(ITAPD,T1O,INTOWP(NDIMT1*RCW),SECT1)
-      CALL RWRIT(ITAPL,T1N,INTOWP(NDIMT1*RCW),SECT1)
-      CALL RWRIT(ITAPD,T2O,INTOWP(NDIMT2*RCW),SECT2)
-      CALL RWRIT(ITAPL,T2N,INTOWP(NDIMT2*RCW),SECT2)
+      CALL RWRIT(ITAMPD,T1O,INTOWP(NDIMT1*RCW),SECT1)
+      CALL RWRIT(ITAMPL,T1N,INTOWP(NDIMT1*RCW),SECT1)
+      CALL RWRIT(ITAMPD,T2O,INTOWP(NDIMT2*RCW),SECT2)
+      CALL RWRIT(ITAMPL,T2N,INTOWP(NDIMT2*RCW),SECT2)
 C
       DO 30 N = 1,IT
 C
       SECT1 = (N-1)*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1
-      CALL RREAD(ITAPD,T1N,INTOWP(NDIMT1*RCW),SECT1)
-      CALL RREAD(ITAPD,T2N,INTOWP(NDIMT2*RCW),SECT2)
+      CALL RREAD(ITAMPD,T1N,INTOWP(NDIMT1*RCW),SECT1)
+      CALL RREAD(ITAMPD,T2N,INTOWP(NDIMT2*RCW),SECT2)
 C
       IF (CARITH) THEN
          CSUM1 = ZDOTC (NDIMT1,T1N,1,T1O,1)
@@ -2107,14 +2091,23 @@ C
 C
       SECT1 = (N-1)*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1
-      CALL RREAD(ITAPL,T1O,INTOWP(NDIMT1*RCW),SECT1)
-      CALL RREAD(ITAPL,T2O,INTOWP(NDIMT2*RCW),SECT2)
+      CALL RREAD(ITAMPL,T1O,INTOWP(NDIMT1*RCW),SECT1)
+      CALL RREAD(ITAMPL,T2O,INTOWP(NDIMT2*RCW),SECT2)
 C
       CFAC = DCMPLX(CC(N),AR0)
       CALL XAXPY (NDIMT1,CFAC,T1O,1,T1N,1)
       CALL XAXPY (NDIMT2,CFAC,T2O,1,T2N,1)
 C
   150 CONTINUE
+C
+C     Write extrapolated amplitudes (which become input in the next iteration)
+C     at the end of the amplitude file.
+C
+      SECT1 = MAXDIM*(NST1+NST2) + 1
+      SECT2 = SECT1 + NST1
+      CALL RWRIT(ITAMPL,T1N,INTOWP(NDIMT1*RCW),SECT1)
+      CALL RWRIT(ITAMPL,T2N,INTOWP(NDIMT2*RCW),SECT2)
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

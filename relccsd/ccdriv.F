@@ -1800,7 +1800,7 @@ C
          CALL CCDUMP
 C
          CALL XTIME(2,1,'CCSD equations                ')
-         CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
+         CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &           CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &           CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &           CC(CCC),CC(BB1),CC(BB2),
@@ -1809,7 +1809,7 @@ C
 C
 C        This is a restart point: save the amplitudes and update status.
 C
-         CALL PUTAMPT(CC(S1),CC(S2))
+         CALL PUTAMPT(CC(T1),CC(T2))
          IMSTAT(5) = 3
          CALL CCDUMP
    20    CONTINUE
@@ -2155,7 +2155,7 @@ C
          TOL = 10.0D0**(-NTOLCC)
          CALL WAIO_OPEN(ITAPL)
 C
-         CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
+         CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &           CC(T2),CC(S2),CC(AZ),CC(CZ),CC(H),CC(HO),CC(HV),
      &           CC(HOV),CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &           CC(CCC),CC(BB1),CC(BB2),
@@ -2170,7 +2170,7 @@ C        Get amplitude part of density matrix
 C
          CALL CCDENSC (1,CC(T1),CC(S1),CC(T2),CC(S2),
      &                 CC(BUF1),CC(BUF2),CC(BUF3),CC(DOO),CC(DVV),
-     &                 CC(DVO),CC(DOV))
+     &                 CC(DVO),CC(DOV),CC(DMO))
 C
 C        Solve Z-vector equations
 C
@@ -2319,11 +2319,11 @@ C
          DO IFREQ = 1, NFREQ
             IF (IPRNT.GE.1) WRITE (IW,1010) NAMEB(BOPER),EFREQ(IFREQ)
             CALL RPAA
-     &           (NAOPER,NAMEA,NAMEB(BOPER),APHASE,BPHASE,BDONE,EPS,
-     &           EFREQ(IFREQ),CC(AVO),CC(AOV),CC(BVO),CC(BOV),CC(X1),
-     &           CC(X2),CC(Y1),CC(Y2),CC(DG),CC(BUF1),CC(BUF2),
-     &           CC(CCC),CC(BB1),CC(BB2),TOL,IPRNT,DEBUG,
-     &           TIMING)
+     &       (MAXIT,NAOPER,NAMEA,NAMEB(BOPER),APHASE,BPHASE,BDONE,EPS,
+     &        EFREQ(IFREQ),CC(AVO),CC(AOV),CC(BVO),CC(BOV),CC(X1),
+     &        CC(X2),CC(Y1),CC(Y2),CC(DG),CC(BUF1),CC(BUF2),
+     &        CC(CCC),CC(BB1),CC(BB2),TOL,IPRNT,DEBUG,
+     &        TIMING)
             CALL FLSHFO(IW)
          ENDDO
       ENDDO
@@ -2422,14 +2422,20 @@ C
 C  Solve relativistic Random Phase Approximation equations
 C
       WRITE (IW,1009) MXITRP,MXDIMRP,10.0D0**(-NTOLRP)
-      MAXIT  = MXITRP
+      MAXIT   = MXITRP
+      MAXDIM  = MXDIMRP
       TOL = 10.0D0**(-NTOLRP)
+C
+C     This is very old code and not well tested : better warn
+C     WRITE (IW,*) " WARNING : This module is obsolete and is not tested anymore"
+C     WRITE (IW,*) " Use it at your own risk....."
+C
 C
       DO IREP = 1, NREP
         IF (NEXC(IREP).NE.0) THEN
           WRITE (IW,1011) NEXC(IREP),REPNA(IREP+NREP)
-          CALL RPAB
-     &        (EPS,CC(X1),CC(X2),CC(Y1),CC(Y2),CC(DG),CC(BUF1),
+          CALL RPAB (MAXDIM,MAXIT,
+     &        EPS,CC(X1),CC(X2),CC(Y1),CC(Y2),CC(DG),CC(BUF1),
      &        CC(BUF2),CC(CCC),CC(BB1),CC(BB2),CC(BB3),CC(BB4),
      &        CC(FREQR),CC(FREQI),CC(FREQD),
      &        NEXC(IREP),IREP,TOL,IPRNT,DEBUG,TIMING)
@@ -2609,7 +2615,9 @@ C
       CALL XCOPY (NDIMT1,CC(FVO),1,CC(T1),1)
       CALL GETVVOO (CC(T2))
       CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),1)
-C     Save the zeroth order wave function & Hamiltonian
+      CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),2)
+      CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),3)
+C     Save the zeroth order wave function
       CALL PUTAMPT (CC(T1),CC(T2))
 C
       IFSS(1) = 00
@@ -2626,12 +2634,12 @@ C
       ICURFSS = IFSS(ISECT)
       IF (ICURFSS.LE.20) THEN
         WRITE (IW,1009) ICURFSS
-        CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
+        CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &             CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &             CC(CCC),CC(BB1),CC(BB2),
      &             TOL,NBUF2,NBUF3)
-C       Save the updated wave function & Hamiltonian
+C       Save the updated wave function
         CALL FS_PUTAMPT (ICURFSS,CC(T1),CC(T2),CC(BUF1),CC(BUF2))
 C
       ELSE

@@ -478,11 +478,12 @@ C     Option 1) :
 C     Divide parts of T1 and T2 that correspond to WF by denominators
 C     Parts that correspond to the effective Hamiltonian are untouched.
 C
-C     In the intermediate Hamiltonian formalism we also zero out Pi->Q
-C     excitations (but keep Pm->Q) and corresponding Hamiltonian parts.
-C
 C     Option 2) :
 C     Delete parts of T1 and T2 that correspond to the Hamiltonian.
+C
+C     Option 3) :
+C     In the intermediate Hamiltonian formalism we zero out Pi->Q
+C     excitations (but keep Pm->Q) and corresponding Hamiltonian parts.
 C
 C---------------Routines called----------------------------------------
 C
@@ -606,7 +607,7 @@ C
                 ENDIF
              ENDIF
 C
-             IHZERO = Z1.OR.Z2
+             IHZERO = (Z1.OR.Z2).AND.OPTION.EQ.3
              IF (DOIH.AND.IHZERO) THEN
                 IF (CARITH) THEN
                        CT1(AI) = A0
@@ -779,7 +780,8 @@ C                            ENDIF
 C-----------------------------------------------------------------------
                            ENDIF
 C
-                           IHZERO = Z1.OR.Z2.OR.Z3.OR.Z4
+                           IHZERO = (Z1.OR.Z2.OR.Z3.OR.Z4)
+     &                              .AND.OPTION.EQ.3
                            IF (DOIH.AND.IHZERO) THEN
                              IF (CARITH) THEN
                                 CT2(ABIJ) = A0

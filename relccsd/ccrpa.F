@@ -30,9 +30,9 @@ C DATE    : $Date$
 C FILE    : ccrpa.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RPAA(NAOPER,NAMEA,NAMEB,APHASE,BPHASE,BDONE,EPS,EFREQ,
-     &           AVO,AOV,BVO,BOV,X1,X2,Y1,Y2,DG,BUF1,BUF2,CC1,BB1,BB2,
-     &           CONV,IPRNT,DEBUG,TIMING)
+      SUBROUTINE RPAA(MAXIT,NAOPER,NAMEA,NAMEB,APHASE,BPHASE,BDONE,
+     &  EPS,EFREQ,AVO,AOV,BVO,BOV,X1,X2,Y1,Y2,DG,BUF1,BUF2,CC1,BB1,BB2,
+     &  CONV,IPRNT,DEBUG,TIMING)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -70,7 +70,6 @@ C
 #include "files.inc"
 #include "param.inc"
 #include "symm.inc"
-#include "diis.inc"
 #include "complex.inc"
 #include "waio.h"
 C
@@ -90,18 +89,11 @@ C
       CPUE = D0
       CPUAB = D0
 C
-C     Calculate record size for DIIS files.
+C     Initialize DIIS
 C
-      ITC = 0
-      IT = 0
-      NST1 = INTOWP(RCW*NDIMX)/ NWORDS_ON_RECORD
-      IF(NST1*NWORDS_ON_RECORD.NE.INTOWP(RCW*NDIMX)) NST1 = NST1 + 1
-      NST2 = NST1
-C
-C     Open DIIS scratch files
-C
-      CALL WAIO_OPEN(IOAMPL)
-      CALL WAIO_OPEN(IOAMPS)
+      IT = -1
+      CALL DIISX(NDIMX,NDIMX,BUF1,X1,BUF2,Y1,IT,
+     &           CC1,BB1,ITC,BB2,RMS)
 C
 C  INITIALIZE X AND Y AMPLITUDES IF THIS IS A NEW B OPERATOR
 C
@@ -206,8 +198,8 @@ C
 C  EXTRAPOLATE THE AMPLITUDES
 C
       CALL PRECD (EFREQ,DG,X2,Y2)
-      CALL DIISX(IOAMPL,IOAMPS,NDIMX,NDIMX,X1,X2,Y1,Y2,IT,
-     &           CC1,BB1,ITC,BB2,RMS,NST1,NST2)
+      CALL DIISX(NDIMX,NDIMX,BUF1,X2,BUF2,Y2,IT,
+     &           CC1,BB1,ITC,BB2,RMS)
 C
 C  WRITE OUT RESULTS
 C
@@ -256,10 +248,9 @@ C
 C
 C     Close and delete DIIS scratch files
 C
-      JCODE = 4
-      CALL WAIO_CLOSE(IOAMPL,JCODE)
-      JCODE = 4
-      CALL WAIO_CLOSE(IOAMPS,JCODE)
+      IT = -2
+      CALL DIISX(NDIMX,NDIMX,BUF1,X1,BUF2,Y1,IT,
+     &           CC1,BB1,ITC,BB2,RMS)
 C
       RETURN
  6001 FORMAT(2X,I3,5X,2F20.15,13X,E10.5)
@@ -278,7 +269,8 @@ C
      &/' Total time in RPA :',T35,F12.3,' seconds')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RPAB(EPS,X1,X2,Y1,Y2,DG,BUF1,BUF2,CC1,BB1,BB2,BB3,BB4,
+      SUBROUTINE RPAB(MAXDIM,MAXIT,EPS,X1,X2,Y1,Y2,DG,BUF1,BUF2,
+     &                CC1,BB1,BB2,BB3,BB4,
      &                FREQR,FREQI,FREQD,NEX,IEXREP,CONV,
      &                IPRNT,DEBUG,TIMING)
 C
@@ -316,7 +308,6 @@ C
 #include "files.inc"
 #include "param.inc"
 #include "symm.inc"
-#include "diis.inc"
 #include "complex.inc"
 #include "waio.h"
 C
@@ -402,7 +393,7 @@ C
 C
 C  SOLVE THE REDUCED EQUATIONS
 C
-      CALL REDEQ(NDIMX,DG,X1,X2,Y1,Y2,IT,CC1,BB1,ITC,
+      CALL REDEQ(MAXDIM,NDIMX,DG,X1,X2,Y1,Y2,IT,CC1,BB1,ITC,
      &           BB2,BB3,BB4,FREQR,FREQI,FREQD,EFREQ,CNV,NST1,NST2)
 C
 C  WRITE OUT RESULTS
@@ -700,7 +691,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE REDEQ(NDIMX,DG,X1,X2,Y1,Y2,IT,CC,HH,ITC,
+      SUBROUTINE REDEQ(MAXDIM,NDIMX,DG,X1,X2,Y1,Y2,IT,CC,HH,ITC,
      &                 SS,HH1,SS1,FREQR,FREQI,FREQD,EFREQ,CNV,NST1,NST2)
 C
       IMPLICIT INTEGER (A-Z)
@@ -727,7 +718,6 @@ C
 #include "files.inc" 
 #include "param.inc" 
 #include "complex.inc" 
-#include "diis.inc"
 C
 C---------------Local variables--------------------------------------
 C 
