@@ -108,3 +108,9 @@
 
 - include/nqcc.h: Dalton .ne. Dirac should be fixed.
 
+- possibly rewrite ccunix.c to use lseek64 where available.
+  (also some varaibles must be change from off_t to off64_t)
+
+- BGFINP should write out when it blocks the basis set
+
+- Use BASDIR for molfdir basis sets as well.
