@@ -173,9 +173,11 @@ C
                DO 25 JOPEN = IOPEN+1,NOPEN
                   IF (NACSH(I,JOPEN).EQ.0) GOTO 25
 C
+C                 We use DTEMP1(xxx,3) as temporary storage
+C
 C                 fi = fj?
 C
-                  CALL DZERO(DTEMP1,N2BBASXQ)
+                  CALL DZERO(DTEMP1(1,3),N2BBASXQ)
 C
                   IF (ABS(DF(IOPEN)-DF(JOPEN)).LT.DFTHR) THEN
 C
@@ -190,7 +192,7 @@ C                    so don't make the correction below.
 C
                      IF (ABS(DF(IOPEN)-D1).GE.DFTHR) THEN
 C
-                        CALL DAXPY(N2BBASXQ,-D1,FAO,1,DTEMP1,1)
+                        CALL DAXPY(N2BBASXQ,-D1,FAO,1,DTEMP1(1,3),1)
 C
 C                       add two-electron Fock matrices...
 C
@@ -205,7 +207,7 @@ C
                         DSCALE = DSCALE * DF(IOPEN)
 C
                         CALL DAXPY(N2BBASXQ,DSCALE,
-     &                     FAO(1,1+IOPEN),1,DTEMP1,1)
+     &                     FAO(1,1+IOPEN),1,DTEMP1(1,3),1)
                         DSCALE = -DF(JOPEN)*
      &                           (DA(JOPEN)-D1)
 C
@@ -214,9 +216,9 @@ C
                         DSCALE = DSCALE * DF(JOPEN)
 C
                         CALL DAXPY(N2BBASXQ,DSCALE,
-     &                     FAO(1,1+JOPEN),1,DTEMP1,1)
+     &                     FAO(1,1+JOPEN),1,DTEMP1(1,3),1)
                         CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),D1,
-     &                     'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),1),
+     &                     'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),3),
      &                     NTBAS(0),NTBAS(0),NZ,
      &                     'N','N',IPQTOQ(1,0),
      &                        DMAT(1+I2BASX(I,I),1+JOPEN),
@@ -240,7 +242,7 @@ C
                      DSCALE = DSCALE * DF(IOPEN)
 C
                      CALL DAXPY(N2BBASXQ,DSCALE,
-     &                  FAO(1,1+IOPEN),1,DTEMP1,1)
+     &                  FAO(1,1+IOPEN),1,DTEMP1(1,3),1)
                      DSCALE = -DF(JOPEN)*
      &                        (DA(JOPEN)-D1)/(DF(IOPEN)-DF(JOPEN))
 C
@@ -249,9 +251,9 @@ C
                      DSCALE = DSCALE * DF(JOPEN)
 C
                      CALL DAXPY(N2BBASXQ,DSCALE,
-     &                  FAO(1,1+JOPEN),1,DTEMP1,1)
+     &                  FAO(1,1+JOPEN),1,DTEMP1(1,3),1)
                      CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),D1,
-     &                  'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),1),
+     &                  'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),3),
      &                  NTBAS(0),NTBAS(0),NZ,
      &                  'N','N',IPQTOQ(1,0),DMAT(1+I2BASX(I,I),1+JOPEN),
      &                  NTBAS(0),NTBAS(0),NZ,
