@@ -100,6 +100,11 @@ C We count the number of slave nodes, subtract the master
       MYTID  = IMYTID
 C
       PARCAL = PARCAL.AND.NUMNOD.ne.0
+C
+C     Let the slaves sleep for now (where implemented) ...
+C        ( ITASK = 0 )
+C
+      IF (PARCAL) CALL DIRAC_PARCTL( 0 )
 #endif
 C
 C     Set basis set directory
@@ -110,6 +115,10 @@ C     Execute Dirac
 C
       CALL TIMDAT
       CALL DIRCTL(WORK,LWORK)
+C
+C     Send finish signal to slaves
+C
+      IF (PARCAL) CALL DIRAC_PARCTL( -2 )
 C
       RETURN
       END
@@ -225,6 +234,7 @@ C*****************************************************************************
 #include <priunit.h>
 C
       DIMENSION WORK(LWORK)
+C
 #include <dcbgen.h>
 #include <dcbpsi.h>
 C
@@ -250,8 +260,6 @@ C***** M O E L L E R - P L E S S E T  ****************************************
 C*****************************************************************************
 C
       IF(DOMP2) CALL PSIMP2(WORK,LWORK)
-#endif
-#if defined (MOD_TRA)
 C
 C*****************************************************************************
 C***** I N D E X  T R A N S F O R M A T I O N*********************************
@@ -308,6 +316,8 @@ C
 #if defined (VAR_MPI)
 #include <infmpi.h>
       INCLUDE 'mpif.h'
+      INTEGER ISTATUS(MPI_STATUS_SIZE)
+      LOGICAL NEWTASK
 #else
 #include <fpvm3h.h>
 #endif
@@ -333,7 +343,6 @@ C We count the number of slave nodes, subtract the master
       NUMNOD = INUMNOD - 1
       MYTID  = IMYTID
       PARCAL = (IPARCAL .NE. 0)
- 100  CONTINUE
 #endif
 #if defined (VAR_PVM)
       CALL PVMFMYTID(MYTID)
@@ -341,8 +350,32 @@ C We count the number of slave nodes, subtract the master
 C
       CALL PVMFPARENT(MPARID)
       IF (MPARID .LT. 0) CALL PFAIL(MPARID)
+#endif
 C
+C     Set basis set directory for this slave
+C     (it may be needed for reading the .mol file)
+C
+      CALL GETBASDIR()
+C
+chj   write (0,*) 'Calling mpi_iprobe for node',mytid
+      call flush(0)
  100  CONTINUE
+#if defined (VAR_MPI)
+      CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
+     &                NEWTASK,STATUS_MPI,IERR)
+      IF (NEWTASK) THEN
+chj      write (0,*) 'mpi_iprobe true for node',mytid
+chj      write (0,*) 'istatus(source,tag,error):',
+chj  &     ( istatus(i),i=1,3)
+         CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+chj      write (0,*) ' itask, node',itask,mytid
+chj      write (0,*) 'istatus(source,tag,error):',
+chj  &     ( istatus(i),i=1,3)
+      ELSE
+         CALL SLEEP(1)
+         GO TO 100
+      END IF
 #endif
 C
 C     Start timing.
@@ -354,7 +387,7 @@ C     ***** Receive initialization data from master *****
 C     ***************************************************
 C
 #if defined (VAR_MPI)
-      CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+chj   CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
 #endif
 #if defined (VAR_PVM)
       CALL PVMFUNPACK(INTEGER4,ITASK,1,1,INFO)
@@ -372,12 +405,12 @@ C
          CONTINUE
       ELSE IF (ITASK .EQ. 1) THEN
 C
-C        Start calculating integrals.
+C        Start calculating integrals for Fock matrices.
 C
          CALL HERNOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 2) THEN
 C
-C        Start calculating integrals.
+C        Start calculating integrals for MOLTRA.
 C
 #ifdef MOD_TRA
           CALL TRANOD(WORK,LWORK)
@@ -437,6 +470,7 @@ C  /* Deck dirctl */
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <infmpi.h>
 #include <dcbgen.h>
 C
 C     Check environment variable BASDIR
@@ -471,8 +505,67 @@ C
 C
       END IF
 C
-      WRITE(LUPRI,'(2A)')
+      IF (MYTID .EQ. 0) WRITE(LUPRI,'(2A)')
      $     ' Basis set dir.    : ',BASDIR(1:LENBAS)
 C 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck dirac_parctl */
+      SUBROUTINE DIRAC_PARCTL(ITASK)
+C
+C 5-July-2000 Hans Joergen Aa. Jensen
+C
+C Called by master to control parallel calculation.
+C Can be used to send slaves to sleep and to wake them up.
+C
+C ITASK .gt. 0: wake slaves and get hold of them for task ITASK
+C ITASK .eq. 0: send slaves to sleep ("0" makes sure they are in menu)
+C ITASK .lt. 0: release slaves from current task and send them to sleep
+C
+#include <implicit.h>
+#include <priunit.h>
+C
+
+#if defined (VAR_MPI)
+
+#include <infmpi.h>
+      INCLUDE 'mpif.h'
+
+#ifdef SYS_IRIX
+
+C
+      IF (ITASK .EQ. -1) THEN
+C        go back to main menu via MPI_BCAST
+         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      ELSE
+C        slave should be in main menu
+         DO NODE = 1,NUMNOD
+chj         write (0,*) 'sending itask',itask,' to node',node
+            CALL MPI_SEND(ITASK,1,MPI_INTEGER,NODE,27,
+     &                 MPI_COMM_WORLD,IERR)
+         END DO
+C        should call wait or barrier here
+      END IF
+
+#else /* not SYS_IRIX */
+
+C
+C This is not SGI IRIX; sleep and wake up not implemented (yet)
+C
+      IF (MYTID .NE. 0) THEN
+         CALL QUIT('DIRAC_PARCTL called from a slave')
+      END IF
+      CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+
+#endif /* SYS_IRIX */
+
+#else /* not VAR_MPI */
+
+      CALL QUIT('DIRAC_PARCTL called '//
+     &   'but this is a sequential Dirac version !')
+
+#endif /* VAR_MPI */
+
       RETURN
       END
