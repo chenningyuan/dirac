@@ -1,8 +1,7 @@
 #
 # VERSION : $Revision$
 # DATE    : $Date$
-# FILE    : Makefile.in
-# SOURCE  : $Source$
+# FILE    : utils/Makefile.in
 #
 
 include ../Makefile.config
