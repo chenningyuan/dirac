@@ -6978,7 +6978,7 @@ c     call XFLUSH(6)
      &          NGSSH(MXPIRR,MXPNGAS),IORBF(2),NSTR(NFSYM)
       dimension ONEINT((2*NDIM)**2),DUMAR(*)
 *
-      NTESTL = 05
+      NTESTL = 00
       NTEST = max(NTESTL,IPRINT)
 *
       IZERO = 0
