@@ -386,7 +386,7 @@ cat <<EOF>> Makefile
 
 export:
 	-rm -f DIRAC.new.tar.gz
-	tar cvLf DIRAC.new.tar \
+	tar cvf DIRAC.new.tar \
 	configure config.sub config.guess config.status doc/doc.html crilib.cld \
 	include/*.h Makefile Makefile.config \
 	dirac/*.F dirac/Makefile.in \
@@ -399,28 +399,28 @@ export:
 	dhf.in 
 EOF
 if($ERITAR) then
-echo '	tar rvLf DIRAC.new.tar eri/*.F eri/Makefile.in ' >> Makefile
+echo '	tar rvf DIRAC.new.tar eri/*.F eri/Makefile.in ' >> Makefile
 endif
 if($CCTAR) then
-echo '	tar rvLf DIRAC.new.tar relccsd/*.F relccsd/Makefile.in relccsd/*.inc relccsd/*.c ' >> Makefile
+echo '	tar rvf DIRAC.new.tar relccsd/*.F relccsd/Makefile.in relccsd/*.inc relccsd/*.c ' >> Makefile
 endif
 if($RSPTAR) then
-echo '	tar rvLf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile.in ' >> Makefile
+echo '	tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile.in ' >> Makefile
 endif
 if($OPENTAR) then
-echo '	tar rvLf DIRAC.new.tar dirac/open/*.F dirac/open/Makefile.in ' >> Makefile
+echo '	tar rvf DIRAC.new.tar dirac/open/*.F dirac/open/Makefile.in ' >> Makefile
 endif
 if($TRATAR) then
-echo '	tar rvLf DIRAC.new.tar moltra/*.F moltra/Makefile.in ' >> Makefile
+echo '	tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile.in ' >> Makefile
 endif
 if($PARTAR) then
-echo '	tar rvLf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile.in ' >> Makefile
+echo '	tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile.in ' >> Makefile
 endif
 if($CITAR) then
-echo '	tar rvLf DIRAC.new.tar dirrci/*.F dirrci/*.inc dirrci/Makefile.in ' >> Makefile
+echo '	tar rvf DIRAC.new.tar dirrci/*.F dirrci/*.inc dirrci/Makefile.in ' >> Makefile
 endif
 if($PAMADM) then
-echo '	tar rvLf DIRAC.new.tar configure.in pamadm' >> Makefile
+echo '	tar rvf DIRAC.new.tar configure.in pamadm' >> Makefile
 endif
 cat <<EOF>> Makefile
 	gzip -9 DIRAC.new.tar
