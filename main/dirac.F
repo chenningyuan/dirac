@@ -32,14 +32,14 @@ C SOURCE  : $Source$
 C
 C*****************************************************************************
       SUBROUTINE DIRAC(IPARCAL,IMYTID,IMPARID,INUMNOD,WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <dcbgen.h>
+#include "dcbgen.h"
 C
 #if defined (VAR_MPI)
-#include <mxorb.h>
-#include <infpar.h>
-#include <infmpi.h>
+#include "mxorb.h"
+#include "infpar.h"
+#include "infmpi.h"
 #endif
 C
       DIMENSION WORK(LWORK)
@@ -83,9 +83,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL(WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('DIRCTL')
@@ -132,10 +132,10 @@ C
 C     Written by T. Saue - November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
+#include "dcbgen.h"
 C
       DIMENSION WORK(LWORK)
 C
@@ -184,13 +184,13 @@ C     Written by T.Saue April 1996
 C     Last revision: April 27 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION WORK(LWORK)
 C
-#include <dcbgen.h>
-#include <dcbpsi.h>
+#include "dcbgen.h"
+#include "dcbpsi.h"
 C
       CALL QENTER('PAMPSI')
 C
@@ -266,31 +266,31 @@ C     Written by L.Visscher July 1997
 C     Last revision: July 29 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <dcbdhf.h>
-#include <dcbgen.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "priunit.h"
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       INTEGER ISTATUS(MPI_STATUS_SIZE)
       LOGICAL NEWTASK
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
 C
 #if defined (VAR_PVM)
       PARAMETER (MWORK = 6 000 000)
 #endif
-#include  <mxorb.h>
-#include <infpar.h>
+#include  "mxorb.h"
+#include "infpar.h"
 C
       DIMENSION WORK(MWORK)
 C
       CALL QENTER('DIRNOD')
       LWORK = MWORK
-#include <memint.h>
+#include "memint.h"
 C
 #if defined (VAR_MPI)
 C
@@ -418,10 +418,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE GETBASDIR()
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infmpi.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infmpi.h"
+#include "dcbgen.h"
 C
 C     Check environment variable BASDIR
 C
@@ -466,14 +466,14 @@ C ITASK .gt. 0: wake slaves and get hold of them for task ITASK
 C ITASK .eq. 0: send slaves to sleep ("0" makes sure they are in menu)
 C ITASK .lt. 0: release slaves from current task and send them to sleep
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 
 #if defined (VAR_MPI)
 
-#include <infmpi.h>
-#include <infpar.h>
+#include "infmpi.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
 C
       IF (ITASK .EQ. -1) THEN
