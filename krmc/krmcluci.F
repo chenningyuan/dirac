@@ -199,7 +199,7 @@ C 62: No combinations of degenerate initial vectors
       INIDEG = 0
 C
 C 64: Length of batches of C vectors
-      LCSBLK = 200000
+      LCSBLK = 1 000 000
 C
 C 74: Density matrices requested
       CALL LUCI_TRAVA(CIRUN,'DENSI ',IDENSI,DUMMY)
@@ -1300,7 +1300,7 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
       end if
 *
 *. Internal subspaces
-      CALL LCISPC_REL(IPRCIX)
+      CALL LCISPC_REL(LCSBLK,IPRCIX)
 *
 *******************************************
       if (CIRUN.ne.'NDET  ') then

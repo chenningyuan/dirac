@@ -567,7 +567,7 @@ C FIXME !!!
 *. Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS_REL(WORK(1),IPRSTR)
 *. Internal subspaces
-      CALL LCISPC_REL(IPRCIX)
+      CALL LCISPC_REL(LCSBLK,IPRCIX)
 *. Space for Hamiltonian in form suitable for SIGDEN
 *. Type of Hamiltonian : 2 e Delta MK = 0 + all 1 e ops
       if (SIGDEN_ROUTE.eq.'SIGDEN') then

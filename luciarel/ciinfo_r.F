@@ -1870,7 +1870,7 @@ C    &           IDXSM,IS12,IS34,IS1234,IPNTR)
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE LCISPC_REL(IPRNT)
+      SUBROUTINE LCISPC_REL(LCSBLK,IPRNT)
 *
 * Number of dets and combinations
 * per symmetry for each type of internal space
@@ -1998,6 +1998,11 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
           CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
   200 CONTINUE
       WRITE(6,*) ' Largest symmetry block           ',MXSB
+      if (MXSB.gt.LCSBLK) then
+        write(6,*) ' Exceeds space for resolution matrices: ',LCSBLK
+        write(6,*) ' Increase LCSBLK (in krmcluci) to at least ',MXSB
+        call quit ('Stop in LCISPC_REL.')
+      end if
       WRITE(6,*) ' Largest Symmetry-type-type block ',MXSOOB
 *
       WRITE(6,*)
