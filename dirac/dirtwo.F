@@ -178,6 +178,7 @@ C
 #include <dcbbas.h>
 #include <hrunit.h>
       DIMENSION WORK(LWORK)
+      LOGICAL NOCONT
 C
 C     Initialize COMMON BLOCKS
 C     ========================
@@ -225,7 +226,8 @@ C
         MAXDIF = 0
         IGTYP  = 1
         IJOB   = 0
-        CALL GABGEN(IJOB,IRNTYP,IGTYP,MAXDIF,0,.FALSE.,
+        NOCONT = .FALSE.
+        CALL GABGEN(IJOB,IRNTYP,IGTYP,MAXDIF,0,NOCONT,
      &              IPRTWO,WORK,LWORK)
       ENDIF
 C
@@ -3201,7 +3203,7 @@ C       is sent to DIRSC1 module:
 C
         CALL DIRSC1(FMAT,DSO,NFMAT,
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
-     &              WORK(KDMRAO),GABRAO,NPOS,INTFLG,
+     &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
       ENDIF
       CALL MEMREL('DIRSCF.DIRSC1',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3259,13 +3261,17 @@ C
 Ctec Is FIRST needed???
       FIRST = .TRUE.
       NDMAT = NFMAT*4
+      N2GAB   = NSYMBL*NSYMBL
       CALL SETFCK(IFCTYP,IREPDM,NFMAT,4,ISYMOP,IHRMOP,IFCKOP,IPRINT)
       CALL DZERO(DNTSKP,8)
 C
 C     Get G(ab)-matrix from AOPROPER
 C     ==============================
+C     GAB is already present i GABRAO
 C
-      CALL GETGAB(GABRAO,'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
+#ifdef UNDEF
+      CALL GETGAB(GABRAO         ,'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
+#endif 
 C
 C     Make reduced density matrix for screening
 C     =========================================
