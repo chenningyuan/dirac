@@ -230,7 +230,6 @@ C     We may  exceed the maximum file length. Check !
 C
       CALL MDINTN (NZKL)
 C
-      call flshfo(lupri)
       WRITE (LUMLF2) IKR1,JKR1,NZKL,
      &               (INDK(INZ),INDL(INZ),INZ=1,NZKL),
      &               (RKL(INZ),INZ=1,NZKL*RCW)
@@ -524,6 +523,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbtra.h"
 #include "dgroup.h"
       DIMENSION WORK(*)
+      LOGICAL   FEXIST
       CHARACTER*10 FNODE,LFNAM,FNAM*5
 C
       NQQCLASS = NZ * NZ * NBSYM / NFSYM
@@ -543,11 +543,16 @@ C
          IRECL = MAX(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
-C        Open and delete first in order to overwrite possible old files,
-C        leaving out the next two lines leads to errors in MCSCF where the record
+C        Open and delete first if old file, for some systems
+C        leaving out this leads to errors in MCSCF where the record
 C        length changes as the calculation continues
-         OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
-         CLOSE (LUMLF3+IREPIJ,STATUS='DELETE')
+         INQUIRE(FILE=FNODE,EXIST=FEXIST)
+         IF (FEXIST) THEN
+            JRECL = IRECLEN(1,0,0) 
+            OPEN (LUMLF3+IREPIJ,FILE=FNODE,STATUS='OLD',
+     &            ACCESS='DIRECT',RECL=JRECL)
+            CLOSE (LUMLF3+IREPIJ,STATUS='DELETE')
+         END IF
          OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
          NIJ = NFPCK12(IREPIJ)
          CALL MDSCRI1(LUMLF3+IREPIJ,NIJ,LFMAT,WORK(KFTMAT))
@@ -753,10 +758,10 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck INIMDINFO */
-      SUBROUTINE INIMDINFO
+C/* Deck INI4INDINFO */
+      SUBROUTINE INI4INDINFO
 C
-C     Initialize MDINFO file
+C     Initialize 4INDINFO file
 C     Authored by Joern Thyssen, 1/11/2000.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -769,11 +774,10 @@ C
 C
 C     Open file
 C
-      OPEN (LUMLF2,FILE='MDINFO',FORM='UNFORMATTED')
+      OPEN (LUMLF2,FILE='4INDINFO',FORM='UNFORMATTED')
 C
 C     Write date and time
 C
-      call flshfo(lupri)
       CALL GETDAT (DATEX,TIMEX)
       WRITE (LUMLF2) DATEX,TIMEX
 C

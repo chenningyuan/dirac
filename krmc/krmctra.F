@@ -68,11 +68,12 @@ C
       CALL QENTER('RTRACTL')
       CALL RTKTIME(.TRUE.,7)
 C
-      IF ( IPROPT .GT. 3 ) THEN
-         WRITE(LUPRI,'(/3A,I1,A/A,L1)')
+      IF ( IPROPT .GE. 3 ) THEN
+         WRITE(LUPRI,'(/3A,I1,A,2(/A,L1))')
      &        ' (RTRACTL) Integrals in transformation = ',OPT_INTTYP,
      &        ' (INTFLG=',IOPT_INTFLG,')',
-     &        '           No positronic integrals     = ',OPT_NOPFQ
+     &        '           No positronic integrals     = ',OPT_SKIPEP,
+     &        '           Approximate positronic FQX  = ',OPT_NOPFQ
 C
 C        Print orbital strings
 C
@@ -136,7 +137,9 @@ C
          ELSE
             CALL INISZ1('AAGA',SZTRA,USENOROT,NOROT)
          END IF
-      ELSE IF (ITRLVL .EQ. 3) THEN
+      ELSE IF (ITRLVL .EQ. 2 .OR. ITRLVL .EQ. 3) THEN
+C        ... 2. order transformation not implemented yet,
+C            so use 3. order if ITRLVL .eq. 2
          IF (OPT_SKIPEP) THEN
             CALL INISZ1('EAEE',SZTRA,USENOROT,NOROT)
          ELSE IF (OPT_NOPFQ) THEN
@@ -413,7 +416,7 @@ C
          IIDX(IFSYM) = IT
          DO I = 1, NORB(IFSYM)
             IA = IA + 1
-            IF (.NOT. USENOROT .OR. NOROT(IG) .EQ. 0) THEN
+            IF (.NOT. USENOROT .OR. NOROT(IA) .EQ. 0) THEN
                IT = IT + 1
                IF (IDXFLG) THEN
                   IG = IDX(IA)
@@ -652,6 +655,7 @@ C              /hjaaj aug 2002
       print*,'+++++++++++++++++++++++++++++++++++++'
       print*,'+++++++++++++++++++++++++++++++++++++'
       print*,'+++++++++++++++++++++++++++++++++++++'
+CHJ   IPRTRA = 3 ! hj 18-jun-2004 DEBUG FIXME TODO
 CTF   IPRTRA = 4
       ISTRAT = 4
 C
@@ -889,7 +893,7 @@ C
 C
       CALL GTINFO(DAYTID)
       WRITE(LUPRI,'(/A,A24)')
-     &     ' (RTRACTL1) Transformation ended at : ',DAYTID
+     &     ' (RTRACTL1) Transformation ended ',DAYTID
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('RTRACTL1')
@@ -998,7 +1002,7 @@ C     index arrays
       DIMENSION NSTR(2,0:2,4)
       DIMENSION IKLB(2)
 C     strings
-      CHARACTER CDATE*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
+      CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
       logical fopen
 C
 #include "memint.h"
@@ -1009,7 +1013,7 @@ C     Read information from integral file
 C     -----------------------------------
 C
       LUINT = 1
-      OPEN (LUINT, FILE = 'MDINFO', STATUS = 'OLD',
+      OPEN (LUINT, FILE = '4INDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
 C     Read time & date for creation
@@ -1017,12 +1021,10 @@ C
       READ (LUINT) DATEX, TIMEX
 C
       IF ( IPRINT .GE. 5 ) WRITE(LUPRI,'(4A)')
-     &     ' (RGETH2) Time and date read from MDINFO: ',
+     &     ' (RGETH2) Time and date read from 4INDINFO: ',
      &     TIMEX, ' ',DATEX
 C
-      READ (LUINT) NFPCK12, NFPCK12T
-      READ (LUINT) NFPCK34, NFPCK34T
-      READ (LUINT) NSTR
+      READ (LUINT) NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, NSTR
 C
       CALL MEMGET('INTE',KDXKR12,2*NFPCK12T,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
@@ -1048,7 +1050,7 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
       DO IREPIJ = 1, NFSYM
          IKLB(IREPIJ) = IIKLB
          IRECL = IRECLEN(NCLASS * NFPCK34 (IREPIJ), 0, 0)
-         IRECL = MAX0(IRECL,IRECLEN(1,0,0))
+         IRECL = MAX(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
          OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',
@@ -2125,7 +2127,7 @@ C     index arrays
       DIMENSION NSTR(2,0:2,4)
       DIMENSION IKLB(2)
 C     strings
-      CHARACTER CDATE*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
+      CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
 C     logicals
       LOGICAL DOFQT, DOFQX, DOH2ACX
       logical fopen
@@ -2158,7 +2160,7 @@ C     *** Read information from integral file ***
 C     *******************************************
 C
       LUINT = 1
-      OPEN (LUINT, FILE = 'MDINFO', STATUS = 'OLD',
+      OPEN (LUINT, FILE = '4INDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
 C     Read time & date for creation
@@ -2166,12 +2168,10 @@ C
       READ (LUINT) DATEX, TIMEX
 C
       IF ( IPRINT .GE. 3 ) WRITE(LUPRI,'(/4A/)')
-     &     ' (RGETH2TX1) time and date read from MDINFO: ',
+     &     ' (RGETH2TX1) time and date read from 4INDINFO: ',
      &     TIMEX, ' ',DATEX
 C
-      READ (LUINT) NFPCK12, NFPCK12T
-      READ (LUINT) NFPCK34, NFPCK34T
-      READ (LUINT) NSTR
+      READ (LUINT) NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, NSTR
 C
       CALL MEMGET('INTE',KDXKR12,2*NFPCK12T,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
@@ -2197,7 +2197,7 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
       DO IREPIJ = 1, NFSYM
          IKLB(IREPIJ) = IIKLB
          IRECL = IRECLEN(NCLASS * NFPCK34 (IREPIJ), 0, 0)
-         IRECL = MAX0(IRECL,IRECLEN(1,0,0))
+         IRECL = MAX(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
          OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',

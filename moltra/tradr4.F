@@ -284,7 +284,7 @@ C
          CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
          CALL MEMREL('TRDR4T',WORK,1,KIKRA,KFREE,LFREE)
       ELSE
-         CALL INIMDINFO
+         CALL INI4INDINFO
       END IF
 C
 C     Complete the integrals to the desired classes
@@ -332,20 +332,20 @@ C
 C
       IF (.NOT. NOMDCINT) THEN
 C        
-C        Close MOLFDIR integral file
+C        Close MOLFDIR integral file and
+C        delete scratch file(s) (only opened on slaves, if parcal)
 C        
          CALL MDINTF
+         IF (.NOT.PARCAL) CALL MDSCRF
 C
       ELSE
 C
-C        Write pointers etc. to MDINFO file.
+C        Write pointers etc. for 4IND*XXXX0 files to 4INDINFO file.
 C
 C        Number of IJ indices for each fermion symmetry
-         WRITE(LUMLF2) NFPCK12,NFPCK12T
 C        Number of KL indices for each fermion symmetry
-         WRITE(LUMLF2) NFPCK34,NFPCK34T
 C        Offsets
-         WRITE(LUMLF2) NSTR
+         WRITE(LUMLF2) NFPCK12,NFPCK12T,NFPCK34,NFPCK34T,NSTR
 C        I and J indices
          CALL WRITI(LUMLF2,NFPCK12T*2,WORK(KDXKR12))
 C        Boson irrep for IJ indices
@@ -359,12 +359,12 @@ C        Boson irreps for each index
             END DO
          END DO
 C
-C        Close MDINFO file.
+C        Close 4INDINFO and the direct access 4IND*XXXX0 files.
 C
          CLOSE (LUMLF2, STATUS='KEEP')
+         CALL MDSCRF
 C
       END IF
-      CALL MDSCRF
 C
 C     Print timing report
 C
