@@ -1186,11 +1186,11 @@ C
             END IF
             IOFF = IOFF + N2BBASX
          END DO
-         IF ( IMAT .GT. 4 ) THEN
-            CALL DAXPY(N2BBASX,D1,WORK(KDAO+IOFF),1,
-     &           WORK(KDAO + IOFF - 4 * N2BBASX),1)
-         END IF
       END DO
+      IF ( NFMAT .EQ. 2 ) THEN
+C        ... add DVao to DCao
+         CALL DAXPY(4*N2BBASX,D1,WORK(KDAO+4*N2BBASX),1,WORK(KDAO),1)
+      END IF
 C
       CALL GETTIM(CPU1,WALL1)
       IF (SCRGRD .GT. D0) THEN
