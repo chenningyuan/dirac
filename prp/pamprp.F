@@ -424,6 +424,7 @@ C     Written by T.Saue - June 28 1996
 C     Last revision: June 28 - tsaue
 C
 C***********************************************************************
+Cradovan
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1345,11 +1346,11 @@ C
         CALL PRP_NQCC(EXPVAL,WORK(KEXP_CORR),.FALSE.,WORK,KFREE,LFREE)
       ENDIF
 C
-C     Electric polarizability
+C     Electric dipole polarizability
 C
-C     IF(EPOLAR) THEN
-C       CALL PRP_EPOLAR(ABLRF,ABCNV,WORK,KFREE,LFREE)
-C     ENDIF
+      IF(EPOLAR) THEN
+        CALL PRP_EPOLAR(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+      ENDIF
 C
 C     Indirect spin-spin coupling
 C
@@ -2072,6 +2073,151 @@ C
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,1PE12.5,A,/)')
      &      '  1 a.u. = ',9.71736E21,' V*m**-2'
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck PRP_EPOLAR */
+      SUBROUTINE PRP_EPOLAR(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+C***********************************************************************
+C        
+C     prepare output for electric dipole polarizability
+C           
+C     radovan bast december 2004
+C        
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbxlr.h"
+#include "dcbibt.h"
+      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &          ABCNV(NBFREQ,NLRBPT),WORK(*)
+      CALL MEMGET('REAL',KTMPMAT,3*3,WORK,KFREE,LFREE)
+      CALL PRP_EPOLAR1(EXPVAL,ABLRF,ABCNV,WORK(KTMPMAT),
+     &                 WORK,KFREE,LFREE)
+      CALL MEMREL('PRP_EPOLAR',WORK,1,KFREE,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck PRP_EPOLAR1 */
+      SUBROUTINE PRP_EPOLAR1(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     output for electric dipole polarizability
+C
+C     radovan bast december 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbxlr.h"
+#include "dcbibt.h"
+#include "codata.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C     conversion factor alpha/a.u. > 1.0D30*alpha/m**3
+      PARAMETER (DFAC = XTANG**3)
+      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
+C
+      CALL AROUND('Electric dipole polarizability')
+      WRITE(LUPRI,*)
+C
+C
+C     print header
+C
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(A)') '@'
+      WRITE(LUPRI,'(A)') '@   Elements of the electric dipole'
+      WRITE(LUPRI,'(A)') '@   polarizability tensor'
+      WRITE(LUPRI,'(A)') '@'
+      WRITE(LUPRI,*)
+C
+      DO IFREQ = 1,NBFREQ
+        CALL DZERO(TMPMAT,9)
+C
+C       print frequency
+        IF(.NOT.(NBFREQ.EQ.1)) THEN
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,'(A3,A10,F15.8,A5)') '@  ',
+     &                         'frequency', BFREQ(IFREQ), 'a.u.'
+          WRITE(LUPRI,'(A)') '@'
+          WRITE(LUPRI,*)
+        ENDIF
+C
+C
+C       fill temporary matrix
+C
+        DO A = 1,3
+          DO B = 1,3
+            KA = IPEPOLAR(A,1)
+            KB = IPEPOLAR(B,1)
+C
+C           e-e
+            TMPMAT(A,B) = ABLRF(IFREQ,KA,KB,2)
+C
+C           don't look for e-p in case of XLR_SKIPEP
+            IF(.NOT.XLR_SKIPEP) THEN
+C
+C             e-p
+              TMPMAT(A,B) = TMPMAT(A,B)
+     &                    + ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
+            ENDIF
+          ENDDO
+        ENDDO
+C
+C       calculate average of trace
+        AVERAGE = (TMPMAT(1,1)+TMPMAT(2,2)+TMPMAT(3,3))/D3
+C
+C
+C       printout a.u.
+C
+        WRITE(LUPRI,'(A3,A3,F22.8,A5)') '@  ',
+     &                         'xx', TMPMAT(1,1), 'a.u.'
+        WRITE(LUPRI,'(A3,A3,F22.8,A5)') '@  ',
+     &                         'yy', TMPMAT(2,2), 'a.u.'
+        WRITE(LUPRI,'(A3,A3,F22.8,A5)') '@  ',
+     &                         'zz', TMPMAT(3,3), 'a.u.'
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,'(A3,A8,F17.8,A5)') '@  ',
+     &                    'average', AVERAGE, 'a.u.'
+        WRITE(LUPRI,'(A)') '@'
+        WRITE(LUPRI,*)
+C
+C
+C       convert to SI units
+C
+        DO A = 1,3
+          DO B = 1,3
+            TMPMAT(A,B) = TMPMAT(A,B)*DFAC
+          ENDDO
+        ENDDO
+C
+C       convert average of trace
+        AVERAGE = AVERAGE*DFAC
+C
+C
+C       printout SI
+C
+        WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
+     &                         'xx', TMPMAT(1,1), '1.0E30/m**3'
+        WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
+     &                         'yy', TMPMAT(2,2), '1.0E30/m**3'
+        WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
+     &                         'zz', TMPMAT(3,3), '1.0E30/m**3'
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,'(A3,A8,F17.8,A12)') '@  ',
+     &                    'average', AVERAGE, '1.0E30/m**3'
+        WRITE(LUPRI,'(A)') '@'
+        WRITE(LUPRI,*)
+C
+        IF(.NOT.(IFREQ.EQ.NBFREQ)) THEN
+          WRITE(LUPRI,'(A)') '@   ---------'
+        ENDIF
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',46,0)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -6102,23 +6248,23 @@ C***********************************************************************
 #include "dcbexp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
+      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),WORK(*)
-      CALL MEMGET('REAL',KTMPMAT,NUCDEP*4,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMPMAT ,NUCDEP*4,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGVALMAT,NUCDEP*5,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KDOATOM ,NUCDEP  ,WORK,KFREE,LFREE)
 C    
 C     INTTYP = 29 (electric field at individual nuclei)
 C     -29: accept .SELECT specification
       CALL SETATM(WORK(KDOATOM),NATOM,-29)
-      CALL PRP_PVCSHI1(EXPVAL,ABLRF,WORK(KTMPMAT),
+      CALL PRP_PVCSHI1(EXPVAL,ABLRF,ABCNV,WORK(KTMPMAT),
      &                 WORK(KGVALMAT),WORK(KDOATOM),WORK,KFREE,LFREE)
       CALL MEMREL('PRP_PVCSHI',WORK,1,KFREE,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck PRP_PVCSHI1 */
-      SUBROUTINE PRP_PVCSHI1(EXPVAL,ABLRF,TMPMAT,GVALMAT,
+      SUBROUTINE PRP_PVCSHI1(EXPVAL,ABLRF,ABCNV,TMPMAT,GVALMAT,
      &                       DOATOM,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -6143,6 +6289,7 @@ C***********************************************************************
      &           GFERMI = 2.22254D-14,STHETAW2 = 0.2319D0)
       LOGICAL TEST,DOATOM(NUCDEP)
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &          ABCNV(NBFREQ,NLRBPT),
      &          TMPMAT(NUCDEP,4),GVALMAT(5,NUCDEP),WORK(*)
 #include "nuclei.h"
 #include "symmet.h"
@@ -6157,7 +6304,6 @@ C
       WRITE(LUPRI,*)
 C     DO IFREQ = 1,NBFREQ
       IFREQ = 1
-C
         CALL DZERO(TMPMAT,NUCDEP*4)
 C       IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
 C         WRITE(LUPRI,*) 'something', BFREQ(IFREQ)
