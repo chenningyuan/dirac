@@ -840,7 +840,7 @@ C
       INTEGER IKR,JKR,KKR,LKR
       REAL*8 RDUM
       LOGICAL FOCKSP
-      CHARACTER*8 NEXTFIL
+      CHARACTER*10 NEXTFIL
 C
 C---------------Executable code--------------------------------------
 C
