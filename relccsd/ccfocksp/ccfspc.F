@@ -31,10 +31,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "ccpar.inc"
+      INCLUDE "../param.inc"
+      INCLUDE "../complex.inc"
+      INCLUDE "../symm.inc"
+      INCLUDE "../ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -208,10 +208,10 @@ C
       INTEGER ICURFSS
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "ccpar.inc"
+      INCLUDE "../param.inc"
+      INCLUDE "../complex.inc"
+      INCLUDE "../symm.inc"
+      INCLUDE "../ccpar.inc"
 C
 C---------------Local variables -----------------------------------
       PARAMETER (NDIMH=30,NDIMH2=NDIMH*NDIMH)
@@ -395,10 +395,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "param.inc"
+      INCLUDE "../symm.inc"
+      INCLUDE "../files.inc"
+      INCLUDE "../complex.inc"
+      INCLUDE "../param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -680,9 +680,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "param.inc"
+      INCLUDE "../symm.inc"
+      INCLUDE "../complex.inc"
+      INCLUDE "../param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -778,10 +778,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "param.inc"
-      INCLUDE "eqns.inc"
+      INCLUDE "../symm.inc"
+      INCLUDE "../complex.inc"
+      INCLUDE "../param.inc"
+      INCLUDE "../eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -898,10 +898,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "eqns.inc"
+      INCLUDE "../symm.inc"
+      INCLUDE "../param.inc"
+      INCLUDE "../complex.inc"
+      INCLUDE "../eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1116,9 +1116,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "param.inc"
+      INCLUDE "../symm.inc"
+      INCLUDE "../complex.inc"
+      INCLUDE "../param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1279,9 +1279,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "param.inc"
+      INCLUDE "../symm.inc"
+      INCLUDE "../complex.inc"
+      INCLUDE "../param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1431,11 +1431,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "param.inc"
-      INCLUDE "eqns.inc"
+      INCLUDE "../symm.inc"
+      INCLUDE "../files.inc"
+      INCLUDE "../complex.inc"
+      INCLUDE "../param.inc"
+      INCLUDE "../eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1647,9 +1647,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "param.inc"
+      INCLUDE "../symm.inc"
+      INCLUDE "../complex.inc"
+      INCLUDE "../param.inc"
 C
 C---------------Local variables--------------------------------------
 C
