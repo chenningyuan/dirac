@@ -42,6 +42,7 @@ C
       INCLUDE "complex.inc"
       INCLUDE "results.inc"
       INCLUDE "files.inc"
+      INCLUDE "inpt.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -571,11 +572,11 @@ C
       READ (MDPROP) PROP
       CLOSE (MDPROP,STATUS='KEEP')
 C
-      APHASE(1) = A1
-      APHASE(2) = A0
+      APHASE(1) = D1
+      APHASE(2) = D0
       PHASE = .FALSE.
 C
-    2 AMAXI = A0
+    2 AMAXI = D0
       AAMAX = 0
       IIMAX = 0
       AI = 1
@@ -895,7 +896,7 @@ C---------------------------------------------------------------------
          ENDDO
          KK = KK - NO(KREP) * NFOO * RCW
       ENDDO
-      E1 = E1 * AP5
+      E1 = E1 * DP5
 C---------------------------------------------------------------------
 C  E0 = E0 + FOO(I,I)
 C---------------------------------------------------------------------

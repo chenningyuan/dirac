@@ -49,7 +49,7 @@ C     Initialize the timing.
 C
       CPU0 = CPUDELTA()
       CALL CPUUSED(CPU0)
-      CPUE = A0
+      CPUE = D0
 C
 C  INITIALIZE T2 AND T1 AMPLITUDES
 C
@@ -166,11 +166,11 @@ C     Initialize the timing.
 C
       CPU0 = CPUDELTA()
       CALL CPUUSED(CPU0)
-      CPUE = A0
-      CPUINT = A0
-      CPUT1 = A0
-      CPUT2 = A0
-      CPU4V = A0
+      CPUE = D0
+      CPUINT = D0
+      CPUT1 = D0
+      CPUT2 = D0
+      CPU4V = D0
 C
 C     Calculate record size for DIIS files.
 C
@@ -367,8 +367,10 @@ C
 C
 C     Close and delete DIIS scratch files
 C
-      CALL RCLOSE(ITAMPL,4)
-      CALL RCLOSE(ITAMPD,4)
+      JCODE = 4
+      CALL RCLOSE(ITAMPL,JCODE)
+      JCODE = 4
+      CALL RCLOSE(ITAMPD,JCODE)
 C
  6001 FORMAT(2X,I3,5X,2F20.15,F10.5)
  6002 FORMAT(3X,'MP2   =',F20.15/3X,'EMP2  =',F20.15/)
@@ -910,14 +912,14 @@ C     Initialize the timing.
 C
       CPU0 = CPUDELTA()
       CALL CPUUSED(CPU0)
-      CPU1 = A0
-      CPU2 = A0
-      CPU3 = A0
+      CPU1 = D0
+      CPU2 = D0
+      CPU3 = D0
 C
 
-      ET1 = A0
-      ET2 = A0
-      ET3 = A0
+      ET1 = D0
+      ET2 = D0
+      ET3 = D0
 C
       call memchk ('entering T3CORR',fvo(0),1)
       CALL GETVOOO(VOOO)
@@ -1900,8 +1902,8 @@ C     Initialize the timing.
 C
       CPU0 = CPUDELTA()
       CALL CPUUSED(CPU0)
-      CPUINT = A0
-      CPU4V = A0
+      CPUINT = D0
+      CPU4V = D0
       CPU4INT = CPU4INT + CPUDELTA()
 C
       CALL CPUUSED (CPUTOT)

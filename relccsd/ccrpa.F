@@ -55,8 +55,8 @@ C     Initialize the timing.
 C
       CPU0 = CPUDELTA()
       CALL CPUUSED(CPU0)
-      CPUE = A0
-      CPUAB = A0
+      CPUE = D0
+      CPUAB = D0
 C
 C     Calculate record size for DIIS files.
 C
@@ -223,8 +223,10 @@ C
 C
 C     Close and delete DIIS scratch files
 C
-      CALL RCLOSE(IOAMPL,4)
-      CALL RCLOSE(IOAMPS,4)
+      JCODE = 4
+      CALL RCLOSE(IOAMPL,JCODE)
+      JCODE = 4
+      CALL RCLOSE(IOAMPS,JCODE)
 C
       RETURN
  6001 FORMAT(2X,I3,5X,2F20.15,13X,E10.5)
@@ -294,8 +296,8 @@ C     Initialize the timing.
 C
       CPU0 = CPUDELTA()
       CALL CPUUSED(CPU0)
-      CPUE = A0
-      CPUAB = A0
+      CPUE = D0
+      CPUAB = D0
 C
 C     Calculate record size for vector files.
 C
@@ -397,8 +399,10 @@ C
 C
 C     Close and delete DIIS scratch files
 C
-      CALL RCLOSE(IOAMPL,4)
-      CALL RCLOSE(IOAMPS,4)
+      JCODE = 4
+      CALL RCLOSE(IOAMPL,JCODE)
+      JCODE = 4
+      CALL RCLOSE(IOAMPS,JCODE)
 C
       RETURN
  6001 FORMAT(2X,2I5,5X,F20.15,13X,E10.5)
@@ -853,7 +857,7 @@ C
 C
 C  Store this vector temporarily and form sigma vector
 C
-      SECT1 = (IT)*(NST1+NST2) + 1
+      SECT1 = IT*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1
       CALL RWRIT(IOAMPL,X2,INTOWP(NDIMX*RCW),SECT1)
       CALL RWRIT(IOAMPL,Y2,INTOWP(NDIMX*RCW),SECT2)
@@ -881,14 +885,14 @@ C
 C
 C  Store the sigma vector
 C
-      SECT1 = (IT)*(NST1+NST2) + 1
+      SECT1 = IT*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1
       CALL RWRIT(IOAMPS,X2,INTOWP(NDIMX*RCW),SECT1)
       CALL RWRIT(IOAMPS,Y2,INTOWP(NDIMX*RCW),SECT2)
 C
 C  Get the solution vector back
 C
-      SECT1 = (IT)*(NST1+NST2) + 1
+      SECT1 = IT*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1
       CALL RREAD(IOAMPL,X1,INTOWP(NDIMX*RCW),SECT1)
       CALL RREAD(IOAMPL,Y1,INTOWP(NDIMX*RCW),SECT2)
@@ -997,7 +1001,7 @@ C64B  SUM1 =  SQRT(1.0 /SUM1) *  SQRT(1.0 / (1.D0-SUM2*SUM2))
 C
 C  Get the solution vector back and orthonormalize the pair
 C
-      SECT1 = (IT)*(NST1+NST2) + 1
+      SECT1 = IT*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1
       CALL RREAD(IOAMPL,X2,INTOWP(NDIMX*RCW),SECT1)
       CALL RREAD(IOAMPL,Y2,INTOWP(NDIMX*RCW),SECT2)
@@ -1022,7 +1026,7 @@ C
 C
 C  Get the new sigma vector and write it to the first record
 C
-      SECT1 = (IT)*(NST1+NST2) + 1
+      SECT1 = IT*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1
       CALL RREAD(IOAMPS,X2,INTOWP(NDIMX*RCW),SECT1)
       CALL RREAD(IOAMPS,Y2,INTOWP(NDIMX*RCW),SECT2)
@@ -1045,8 +1049,8 @@ C
 C
 C  Correct SS and HH matrices and set IT back to 1
 C
-      SUM1 = A0
-      SUM2 = A0
+      SUM1 = D0
+      SUM2 = D0
       DO N2 = 1, 2*IT
          DO N1 = 1, 2*IT
             IF (MOD(N1,2).NE.0) THEN
@@ -1065,15 +1069,15 @@ C
 C
 C  The off-diagonal metric matrix is always zero for one pair.
 C
-      SUM1 = A0
+      SUM1 = D0
       DO N2 = 1, 2*IT
          DO N1 = 1, 2*IT
             SUM1 = SUM1 + CC(N1,1) * SS(N1,N2) * CC(N2,1)
          ENDDO
       ENDDO
       SS(1,1) = SUM1
-      SS(1,2) = A0
-      SS(2,1) = A0
+      SS(1,2) = D0
+      SS(2,1) = D0
       SS(2,2) = - SUM1
 C
       IT = 1
@@ -1121,7 +1125,7 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      CEFREQ(2) = A0
+      CEFREQ(2) = D0
 C
       CEFREQ(1) = - EFREQ
       CALL XAXPY (NDIMX,CEFREQ,X1,1,X2,1)

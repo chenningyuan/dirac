@@ -109,6 +109,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Subroutine DayTime (Datum,Tijd)
       Character*10 Datum,Tijd*8,String*26
+      external time
       Datum = '          '
       Tijd  = '        '
 #if defined (SYS_CRAY)
@@ -117,7 +118,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif
 #if defined (SYS_IRIX)
       Call Date(Datum)
-      Call Time(Tijd)
+      Call ChTime(Tijd)
 #endif
 #if defined (SYS_AIX) 
       Call fdate_ (String)
@@ -153,7 +154,8 @@ C FLUSH THE FILE
 C
       IMPLICIT INTEGER (A-Z)
 C
-      CALL RCLOSE (ITAPE,3)
+      JCODE = 3
+      CALL RCLOSE (ITAPE,JCODE)
       CALL RFILE  (ITAPE,BLOCKS)
 C
       RETURN
