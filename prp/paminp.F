@@ -56,7 +56,7 @@ C
 #include <dcbprp.h>
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
-     &             '*MOLGRD','*NMR   ','*ESR   ','*XXXXXX'/
+     &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA'/
       DATA TABLE  /'.DIPOLE','.QUADRU','.POLARI','.MAGNET',
      &             '.NMR   ','.SPIN-S','.SHIELD','.PRINT ',
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
@@ -290,12 +290,18 @@ C        CALL XPPINP(WORD,WORK,LWORK)
         CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     8 CONTINUE
+#if defined (MOD_RSP)
+        CALL XQRINP(WORD,.FALSE.,WORK,LWORK)
+#else
+        CALL QUIT('RSP not in this distribution')
+#endif
         GO TO 200
 C
     1 CONTINUE
       CALL EXPINP(WORD,.TRUE.,WORK,LWORK)
 #if defined (MOD_RSP)
       CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
+      CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
       CALL NMRINP(WORD,.TRUE.)
 C      CALL XPPINP(WORD,WORK,LWORK)
 #endif

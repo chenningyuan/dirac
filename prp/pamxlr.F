@@ -306,7 +306,7 @@ C
 C           Initialize configurational and orbital parameters
 C           =================================================
 C
-            CALL XLRPAR(WORK,KFREE,LFREE)
+            CALL XLRPAR(WORK,KFREE,LFREE,IPRXLR)
 C      
 C           ******************************************
 C           *** P R O P E R T Y    G R A D I E N T ***
@@ -353,7 +353,7 @@ C
             NERED  = 0
             NPRED  = 0
             NZRED  = NCRED + NERED + NPRED
-            XRSLBL(3) = PRPNAM(INDPRB)(1:8)
+            RSPLAB = PRPNAM(INDPRB)
             CALL XRSCTL(WORK(KGPCI) ,WORK(KGPOE),WORK(KGPOP),
      &                 WORK(KIBTYP),WORK(KIBCVC),WORK(KIBEVC),
      &                 WORK(KIBPVC),RCNV(1,INDBP),
@@ -366,8 +366,10 @@ C           ************************************************************
 C           *** E V A L U A T E   R E S P O N S E   F U N C T I O N  ***
 C           ************************************************************
 C
+CTROND
+            WRITE(LUPRI,'(A,F7.4)') 'beffreq..',WORK(KEVALR)
             CALL GETLRF(ABLRF,WORK(KIBTYP),WORK(KIBCVC),
-     &                  WORK(KIBEVC),WORK(KIBPVC),
+     &                  WORK(KIBEVC),WORK(KIBPVC),RCNV(1,INDBP),
      &                  WORK(KEVALR),WORK(KEVECR),IORBCL,WORK(KEIG),
      &                  WORK,KFREE,LFREE)
  30       CONTINUE
@@ -463,9 +465,9 @@ C
       RESXLR     = DMIL
       CNVXLR(1)  = DUMMY
       CNVXLR(2)  = DUMMY
-      MAXRM      = 20
+      MAXRM      = 200
       MXLOAD     = 0
-      ITRXLR     = 30
+      ITRXLR     = 50
       INTXLR     = ILLINT + 2*ISLINT + 4*ISSINT
       IF (LEVYLE) INTXLR = ILLINT
       ITRILR(1)  = 1
@@ -1174,8 +1176,7 @@ C     Initialize file for solution vectors
 C
       LUXVC = 29
       CALL OPNFIL(LUXVC,'PAMXVC','UNKNOWN','PRPXLR')      
-      CALL GETDAT(XRSLBL(1),XRSLBL(2))
-      CALL NEWLB2('EOFLABEL',XRSLBL,LUXVC,LUPRI)
+      WRITE(LUXVC) 'END_OF_THIS_FILE'
 C
 C     Look for restart file for solution vectors
 C
@@ -1193,7 +1194,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETLRF */
-      SUBROUTINE GETLRF(ABLRF,IBTYP,IBCVC,IBEVC,IBPVC,
+      SUBROUTINE GETLRF(ABLRF,IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
      &                  EVALR,EVECR,IORBCL,EIG,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -1213,7 +1214,7 @@ C
 #include <dcborb.h>
 #include <dgroup.h>
       LOGICAL FIRST
-      DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),
+      DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(2,*),
      &          IBPVC(*),EVALR(*),EVECR(NREDM,*),EIG(*),WORK(*)
 C
@@ -1262,7 +1263,8 @@ C
         CALL MEMGET('REAL',KXVEC,NZXOPEQ*NFREQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBBUF,NZXOPEQ      ,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIVEC,NESIM        ,WORK,KFREE,LFREE)
-        CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,IBTYP,IBEVC,
+        CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,RCNV,
+     &              IBTYP,IBEVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPE,
      &              WORK(KCMO),IORBCL,EIG,WORK(KZXOPE),WORK(KIVEC),
      &              WORK,KFREE,LFREE)
@@ -1286,7 +1288,8 @@ C
         CALL MEMGET('REAL',KGVEC,NZXOPPQ      ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBBUF,NZXOPPQ      ,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIVEC,NPSIM        ,WORK,KFREE,LFREE)
-        CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBPNDX,EVECR,EVALR,IBTYP,IBPVC,
+        CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBPNDX,EVECR,EVALR,RCNV,
+     &              IBTYP,IBPVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPP,
      &              WORK(KCMO),IORBCL,EIG,WORK(KZXOPP),WORK(KIVEC),
      &              WORK,KFREE,LFREE)
@@ -1314,7 +1317,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETLR1 */
-      SUBROUTINE GETLR1(ABLRF,NBTYP,EVECR,EVALR,IBTYP,IBVEC,
+      SUBROUTINE GETLR1(ABLRF,NBTYP,EVECR,EVALR,RCNV,IBTYP,IBVEC,
      &                  GPO,XPO,BBUF,NXPAR,
      &                  CMO,IORBCL,EIG,JXOP,IVECS,WORK,KFREE,LFREE)
 C*****************************************************************************
@@ -1335,13 +1338,14 @@ C
 #include <dcbxlr.h>
 #include <dgroup.h>
 #include <dcbxpr.h>
-      CHARACTER FILNAM*6,MEMTYP*6,TYP*1
-      DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),
+      CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
+      DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,NFREQ),BBUF(*),
      &          CMO(*),EIG(*),IORBCL(2,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
      &          JXOP(2,*),IVECS(*),WORK(*)
-      CHARACTER*1 TTYPXV(2)
+      DATA BLANK16/'                  '/
+      DATA BLANK2/'  '/
 C
 #include <chrnos.h>
       CALL QENTER('GETLR1')
@@ -1354,13 +1358,13 @@ C
         LUBVEC = LUBOE
         FILNAM = 'PAMBOE'
         MEMTYP = 'GETLRE'
-        TYP    = 'E'
+        ITYP   = IPEP
       ELSEIF(NBTYP.EQ.JBPNDX) THEN
         NBRED  = NPRED
         LUBVEC = LUBOP
         FILNAM = 'PAMBOP'
         MEMTYP = 'GETLRP'
-        TYP    = 'P'
+        ITYP   = IPPP
       ELSE
         WRITE(LUPRI,'(A,A,I5)') 'GETLR1 ERROR: ',
      &    'unknown NBTYP = ',NBTYP
@@ -1387,25 +1391,11 @@ C     =========================
 C      
       OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
      +         ACCESS='DIRECT',RECL=8*NBDIM,STATUS='UNKNOWN')
-      REWIND LUXVC
-      CALL FNDLAB('EOFLABEL',LUXVC)      
-      BACKSPACE LUXVC
-      ITIM = JTIMOP
-Chj: TTYPXV(iround) = type of part of B solution vector in round iround
-      IF (ITIM .EQ. 1) THEN
-         TTYPXV(1) = '+'
-         TTYPXV(2) = '-'
-      ELSE IF (ITIM .EQ. -1) THEN
-         TTYPXV(1) = '-'
-         TTYPXV(2) = '+'
-      ELSE
-         write(lupri,*) 'GETLR1 error: JTIMOP =',ITIM
-         CALL QUIT('GETLR1: Illegal JTIMOP')
-      END IF
+      ITIM = IPX
       NXDIM = NBDIM*NFREQ
 C
-Chj:  If static we have one round with ITIM = JTIMOP, if 
-C     non-zero freq. then we have a second round with ITIM = -JTIMOP
+C     If static we have one round with ITIM = IPX, if 
+C     non-zero freq. then we have a second round with ITIM = IMX
 C
       IROUND = 0
   100 IROUND = IROUND + 1
@@ -1417,8 +1407,8 @@ C     -------------
 C
 Cjth   IF(IPRXLR.GE.10) THEN
       IF(IPRXLR.GE.3) THEN
-        WRITE(LUPRI,'(/1X,A1,3A,I3,A)') TYP,'-type X(',TTYPXV(IROUND),
-     &    ') part of solution vectors for',NFREQ,' frequencies:'
+        WRITE(LUPRI,'(/1X,A2,A,I3,A)') BVTYP(ITYP),
+     &   '- part of solution vectors for',NFREQ,' frequencies:'
         CALL PRBVEC(LUPRI,XPO,NFREQ,NXPAR)
         CALL FLSHFO(LUPRI)
       ENDIF
@@ -1458,8 +1448,8 @@ C
               FREQ = EVALR(IFREQ)
               WRITE(LUPRI,1000) 
      &            '<<',INDAP,',',INDBP,'>>:',ABLRF(IFREQ,INDAP,INDBP,1),
-     &            ' a.u.,  ',TYP,'(',TTYPXV(IROUND),
-     &            ')-contribution at frequency',FREQ,' a.u.'
+     &            ' a.u.,  ',BVTYP(ITYP),
+     &            '-contribution at frequency',FREQ,' a.u.'
             ENDIF            
             IF(ORBXLR .AND. KTIMOP.EQ.ITIM) THEN
               DO IZ = 1,NZ
@@ -1479,30 +1469,12 @@ C
 C
 C     Write solution vectors to unformatted file for restart
 C
-      CALL GETDAT(XRSLBL(1),XRSLBL(2))
-      WRITE(XRSLBL(2)(1:1),'(A1)') TYP
-      WRITE(XRSLBL(2)(2:2),'(A1)') TTYPXV(IROUND)
-      WRITE(XRSLBL(2)(5:5),'(I1)') JSYMOP
-CTROND      WRITE(XRSLBL(2)(6:7),'(I2)') ITIM
-      WRITE(XRSLBL(2)(6:7),'(I2)') JTIMOP
-      WRITE(XRSLBL(2)(8:8),'(I1)') INTFLG
-C
-      IF(NBDIM.LT.4) THEN
-        CALL MEMGET('REAL',KBUF,4,WORK,KFREE,LFREE)
-        CALL DZERO(WORK(KBUF),4)
-      ENDIF
       DO IFREQ = 1,NFREQ
         FREQ = EVALR(IFREQ)
         IF (IROUND.EQ.1 .OR. FREQ.NE.D0) THEN
-          XRSLBL(2)(3:3) = CHRNOS(IFREQ/10)
-          XRSLBL(2)(4:4) = CHRNOS(MOD(IFREQ,10))
-          CALL NEWLB2(XRSLBL(3),XRSLBL,LUXVC,LUPRI)
-          IF(NBDIM.LT.4) THEN
-            CALL DCOPY(NBDIM,XPO(1,1,IFREQ),1,WORK(KBUF),1)          
-            CALL WRITT(LUXVC,4,WORK(KBUF))
-          ELSE
-            CALL WRITT(LUXVC,NBDIM,XPO(1,1,IFREQ))
-          END IF
+          CALL WRTRSP(LUXVC,XPO(1,1,IFREQ),
+     &         RSPLAB,BVTYP(ITYP),FREQ,JSYMOP,JTIMOP,
+     &         BLANK16,BLANK2,D0,0,0,RCNV(IFREQ),INTXRS,NBDIM)
         END IF
       ENDDO
 C
@@ -1511,19 +1483,15 @@ C     B solution vector which is of -JTIMOP symmetry,
 C     calculate contribution to properties and write them to file also.
 C
       IF(.NOT.STATIC .AND. IROUND.EQ.1) THEN
-        ITIM = -ITIM
+        ITIM = IMX
+        ITYP = ITYP + 1
         GO TO 100
       END IF
-C
-C     We add an extra label to signify EOF
-C
-      CALL GETDAT(XRSLBL(1),XRSLBL(2))
-      CALL NEWLB2('EOFLABEL',XRSLBL,LUXVC,LUPRI)
       CLOSE(LUBVEC,STATUS = 'KEEP')
 C
       CALL QEXIT('GETLR1')      
       RETURN
- 1000 FORMAT(/A,I2,A,I2,A,F16.10,A,3X,3A1,A,F16.10,A)
+ 1000 FORMAT(/A,I2,A,I2,A,F16.10,A,3X,A2,A,F16.10,A)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XLROUT */
@@ -1665,7 +1633,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck xlrpar */
-      SUBROUTINE XLRPAR(WORK,KFREE,LFREE)
+      SUBROUTINE XLRPAR(WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Initialize configurational and orbital parameters for
@@ -1697,7 +1665,7 @@ C     Orbital parameters
 C     ==================
 C
       CALL SETXOP(XLR_INDSTR,JOPSY,NZXOPE,KZXOPE,NZXOPP,KZXOPP,
-     &            WORK,KFREE,LFREE,SKIPEP,SKIPEE,QEDRUN,IPRXLR)      
+     &            WORK,KFREE,LFREE,SKIPEP,SKIPEE,QEDRUN,IPRINT)      
       NZXOPEQ  = NZXOPE *NZ
       NZXOPPQ  = NZXOPP *NZ
       NZXOPT   = NZXOPE + NZXOPP

@@ -378,7 +378,7 @@ C     *** I n i t i a l i z e ***
 C     ***************************
 C
 C
-      CALL XRSINI(REDGP,REDS,REDE,RCNV,EVECR,RNORM,
+      CALL XRSINI(REDGP,REDS,REDE,GPCI,GPOE,GPOP,RCNV,EVECR,RNORM,
      &            WORK,KFREE,LFREE)
       KCONV = 1
 C
@@ -843,20 +843,11 @@ C
 C
       IND = NZRED
 C
-C     Calculate GP norm for elimination of trial vectors with small
-C     norm.
-C
-      GPNRM = DNRM2(NZCONFQ,GPCI,1)**2 + DNRM2(NZXOPEQ,GPOE,1)**2 + 
-     &     DNRM2(NZXOPPQ,GPOP,1)**2
-      GPNRM = SQRT(GPNRM)
-      IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
-     &     'Norm of gradient in XRSST1:',GPNRM
-C
 C     Orbtial (e-e) type trial vector
 C     -------------------------------
 C
       IF(NZXOPE.GT.0) THEN
-        CALL XRSST2('E',WORK(KBOE),GPOE,GPNRM,HEDIAG,SEDIAG,EVALR,
+        CALL XRSST2('E',WORK(KBOE),GPOE,HEDIAG,SEDIAG,EVALR,
      &              IBTYP,IBEVC,IEVEC,
      &              JBENDX,NESIM,IND,NERED,NZXOPE,WORK,KFREE,LFREE)
         IND = IND + NESIM
@@ -866,7 +857,7 @@ C     Orbital (e-p) type trial vector
 C     -------------------------------
 C
       IF(NZXOPP.GT.0) THEN
-        CALL XRSST2('P',WORK(KBOP),GPOP,GPNRM,HPDIAG,SPDIAG,EVALR,
+        CALL XRSST2('P',WORK(KBOP),GPOP,HPDIAG,SPDIAG,EVALR,
      &              IBTYP,IBPVC,IPVEC,
      &              JBPNDX,NPSIM,IND,NPRED,NZXOPP,WORK,KFREE,LFREE)
         IND = IND + NPSIM
@@ -876,7 +867,7 @@ C     Configurational type trial vector
 C     ---------------------------------
 C
       IF(NZCONF.GT.0) THEN
-        CALL XRSST2('C',WORK(KBCI),GPCI,GPNRM,HCDIAG,SCDIAG,
+        CALL XRSST2('C',WORK(KBCI),GPCI,HCDIAG,SCDIAG,
      &              EVALR,IBTYP,IBCVC,ICVEC,
      &              JBCNDX,NCSIM,IND,NCRED,NZCONF,WORK,KFREE,LFREE)
         IND = IND + NCSIM
@@ -1015,6 +1006,12 @@ C
           BVNRM(IBN) = D0
         ELSE
           BVNRM(IBN) = D2*DNRM2(NBDIM,BVECS(1,IBN),1)
+C
+C         Check for zero norm
+C
+          IF(BVNRM(IBN).EQ.D0) THEN
+            IVECS(IBN) = 0
+          ENDIF
         ENDIF
       ENDDO
 C
@@ -1499,8 +1496,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck xrsini */
-      SUBROUTINE XRSINI(REDGP,REDS,REDE,RCNV,EVECR,RNORM,
-     &                  WORK,KFREE,LFREE)
+      SUBROUTINE XRSINI(REDGP,REDS,REDE,GPCI,GPOE,GPOP,RCNV,EVECR,
+     &                  RNORM,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Initialize XRS-module
@@ -1519,6 +1516,7 @@ C
 #include <dgroup.h>
 #include <dcborb.h>
       DIMENSION WORK(*),REDGP(*), REDS(*), REDE(*), 
+     &          GPCI(*),GPOE(*),GPOP(*),
      &          EVECR(NREDM,NFREQ),RNORM(*),RCNV(*)
 C
       CALL QENTER('XRSINI')
@@ -1589,6 +1587,15 @@ C
       IF (NFOCKMAT .EQ. 0) THEN
          CALL QUIT('XRSINI: Neither inactive nor active orbitals!')
       END IF
+C
+C     Calculate GP norm for elimination of trial vectors with small
+C     norm.
+C
+      GPNRM = DNRM2(NZCONFQ,GPCI,1)**2 + DNRM2(NZXOPEQ,GPOE,1)**2 + 
+     &     DNRM2(NZXOPPQ,GPOP,1)**2
+      GPNRM = SQRT(GPNRM)
+      IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
+     &     'Norm of gradient in XRSINI:',GPNRM
 C
 C     Determine integral contribution
 C     ===============================
@@ -2775,9 +2782,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XRSST2 */
-      SUBROUTINE XRSST2(TYP,BVEC,GP,GPNRM,HDIAG,SDIAG,
+      SUBROUTINE XRSST2(TYP,BVEC,GP,HDIAG,SDIAG,
      &                  EVALR,IBTYP,IBVEC,IVEC,
-     &                  JBTYP,NBVEC,IBOFF,NBPREV,NVAR,WORK,KFREE,LFREE)
+     &                  NBTYP,NBVEC,IBOFF,NBPREV,NVAR,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Generate start vectors
@@ -2787,20 +2794,28 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1 = -1.0D0)
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1 = -1.0D0,D2=2.0D0)
+#include <dcbibn.h>
 C
 #include <dcbxrs.h>
 #include <dgroup.h>
 C
-      LOGICAL FNDXLB
-      CHARACTER TYP*1
+      LOGICAL FNDRSP
       DIMENSION BVEC(NVAR,NZ,*),GP(NVAR,NZ),HDIAG(NVAR),SDIAG(NVAR),
      &          EVALR(NFREQ),IBTYP(2,*),IBVEC(*),IVEC(*),
      &          WORK(*)
-      DIMENSION BUF(175)
 #include <chrnos.h>
 C
       NVARQ = NVAR*NZ
+      IF(NBTYP.EQ.JBENDX) THEN
+        ITYP    = IPEP
+      ELSEIF(NBTYP.EQ.JBPNDX) THEN
+        ITYP    = IPPP
+      ELSE
+        WRITE(LUPRI,'(A,A,I5)') 'XRSST2 ERROR: ',
+     &    'unknown NBTYP = ',NBTYP
+        CALL QUIT('XRSST2: Unknown NBTYP !')
+      ENDIF
       IF(LINEQ) THEN
 C
 C     L I N E A R   R E S P O N S E   F U N C T I O N S
@@ -2813,32 +2828,30 @@ C         Restart on solution vectors; scan through file
 C
           REWIND LURST
           NVEC = 0
+          IXX  = IPX
+          IROUND = 1
  10       CONTINUE
-          CALL GETDAT(XRSLBL(1),XRSLBL(2))
-          WRITE(XRSLBL(2)(1:1),'(A1)') TYP
-          IF(FNDXLB(XRSLBL,LURST)) THEN
-            IF(XRSLBL(2)(2:2).EQ.'+') THEN
-              IBTYP(2,IBOFF+NVEC+1) = IPX
-            ELSEIF(XRSLBL(2)(2:2).EQ.'-') THEN
-              IF(STATIC) GOTO 10
-              IBTYP(2,IBOFF+NVEC+1) = IMX
-            ELSE
-              CALL QUIT('XRSST2: Unknown type !')
-            ENDIF
+          IF(FNDRSP(LURST,BVEC(1,1,NVEC+1),RSPLAB,BVTYP(ITYP),
+     &              '                ','  ',NVARQ)) THEN
             NVEC = NVEC + 1
-            WRITE(LUPRI,'(A,A2,A,3(3X,A8))')
-     &        '*** Restart on ',XRSLBL(2)(1:2),' vector:',
-     &            (XRSLBL(I),I=1,3)
-            CALL READT(LURST,NVARQ,BVEC(1,1,NVEC))
-            IBTYP(1,IBOFF+NVEC) = JBTYP
+            IBTYP(2,IBOFF+NVEC) = IXX
+            IBTYP(1,IBOFF+NVEC) = NBTYP
             IBVEC(NBPREV+NVEC)  = IBOFF + NVEC
             IVEC(NVEC)          = 1        
+            IF(NVEC.EQ.NBVEC) GOTO 20
+            GOTO 10
+          ENDIF
+          IF(.NOT.STATIC.AND.IROUND.EQ.1) THEN
+            REWIND LURST
+            ITYP = ITYP + 1
+            IXX  = IMX
+            IROUND = IROUND + 1
             GOTO 10
           ENDIF
           IF(NVEC.GT.0) THEN
             DO I = (NVEC+1),NBVEC
-              IBTYP(1,IBOFF+I) = JBTYP
-              IBTYP(2,IBOFF+I) = IPX
+              IBTYP(1,IBOFF+I) = NBTYP
+              IBTYP(2,IBOFF+I) = IXX
               IBVEC(NBPREV+I)  = IBOFF + I
               IVEC(I)          = 0
             ENDDO
@@ -2854,10 +2867,10 @@ C
      &         'Norm of gradient ratio in XRSST2:',GPTMP/GPNRM
           DO IP = 1,NFREQ
             IM = IP + NFREQ
-            IBTYP(1,IBOFF+IP)     = JBTYP
+            IBTYP(1,IBOFF+IP)     = NBTYP
             IBTYP(2,IBOFF+IP)     = IPX
             IBVEC(NBPREV+IP)      = IBOFF + IP
-            IBTYP(1,IBOFF+IM)     = JBTYP
+            IBTYP(1,IBOFF+IM)     = NBTYP
             IBTYP(2,IBOFF+IM)     = IMX
             IBVEC(NBPREV+IM)      = IBOFF + IM
 C
@@ -2906,25 +2919,25 @@ Ctsaue:         retain norm for numerical stability !
         ELSE
           IF(STATIC) THEN
             CALL DCOPY(NVARQ,GP,1,BVEC(1,1,1),1)
-            IBTYP(1,IBOFF+1) = JBTYP
+            IBTYP(1,IBOFF+1) = NBTYP
             IBTYP(2,IBOFF+1) = IPX
             IBVEC(NBPREV+1)  = IBOFF + 1
             IVEC(1)         = 1
           ELSE
             CALL DCOPY(NVARQ,GP,1,BVEC(1,1,1),1)
-            IBTYP(1,IBOFF+1) = JBTYP
+            IBTYP(1,IBOFF+1) = NBTYP
             IBTYP(2,IBOFF+1) = IPX
             IBVEC(NBPREV+1)  = IBOFF + 1
             IVEC(1)         = 1
             CALL DCOPY(NVARQ,GP,1,BVEC(1,1,2),1)
-            IBTYP(1,IBOFF+2) = JBTYP
+            IBTYP(1,IBOFF+2) = NBTYP
             IBTYP(2,IBOFF+2) = IMX
             IBVEC(NBPREV+2)  = IBOFF + 2
             IVEC(2)         = 1
           ENDIF
         ENDIF
  20     CONTINUE
-        CALL XRSORT(BVEC,JBTYP,NBVEC,NBPREV,
+        CALL XRSORT(BVEC,NBTYP,NBVEC,NBPREV,
      &            IBVEC,IBTYP,IVEC,WORK,KFREE,LFREE)
       ELSE
 C
@@ -2976,6 +2989,197 @@ C 940510-hjaaj: same change for Cray's multifile datasets
       BACKSPACE LU
 #endif
     8 FNDXLB = .FALSE.
+C
+   10 RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Wrtrsp*/
+      SUBROUTINE WRTRSP(LU,RSPVEC,
+     &                  LAB1,TYP1,FREQ1,JSYMOP1,JTIMOP1,
+     &                  LAB2,TYP2,FREQ2,JSYMOP2,JTIMOP2,
+     &                     RNORM,INTFLG,LEN)
+C***********************************************************************
+C
+C   Write response vectors
+C   Written by T.Saue and P.Norman Aug 23 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbbas.h>
+#include <dcborb.h>
+      LOGICAL FNDLAB16
+      CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
+      DIMENSION RSPVEC(LEN)
+      REWIND LU
+      IF(FNDLAB16('END_OF_THIS_FILE',LU)) THEN
+        BACKSPACE LU
+        WRITE(LU) LAB1,LAB2,TYP1,TYP2,
+     &          FREQ1,FREQ2,JSYMOP1,JSYMOP2,
+     &          JTIMOP1,JTIMOP2,RNORM,LEN,INTFLG,
+     &          ERGRSP,NTBAS(0),NORBT
+        CALL WRITT(LU,LEN,RSPVEC)
+        WRITE(LU) 'END_OF_THIS_FILE'
+      ELSE
+        WRITE(LUPRI,'(A)') 'WRTRSP: EOF flag not found !'
+        CALL QUIT('WRTRSP: EOF flag not found !')
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Rearsp
+      LOGICAL FUNCTION REARSP(LU,RSPVEC,
+     &                  LAB1,TYP1,FREQ1,JSYMOP1,JTIMOP1,
+     &                  LAB2,TYP2,FREQ2,JSYMOP2,JTIMOP2,
+     &                     RNORM,LEN,INTFLG)
+C***********************************************************************
+C
+C   Read response vectors
+C   Written by T.Saue and P.Norman Aug 23 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbbas.h>
+#include <dcborb.h>
+      CHARACTER*16 LAB1,LAB2,XLAB1,XLAB2
+      CHARACTER*2 TYP1,TYP2,XTYP1,XTYP2
+      DIMENSION RSPVEC(LEN)
+C
+      REWIND LU
+ 5    CONTINUE
+      READ(LU,ERR=10,END=20) XLAB1
+      IF(XLAB1.EQ.'END_OF_THIS_FILE') THEN
+        REARSP = .FALSE.
+        RETURN
+      ELSE
+        BACKSPACE LU
+        READ(LU,ERR=10,END=20) XLAB1,XLAB2,XTYP1,XTYP2,
+     &          XFREQ1,XFREQ2,ISYMOP1,ISYMOP2,
+     &          ITIMOP1,ITIMOP2,RNORM,LEN,JNTFLG,ERGRSP,NB,NO
+        IF(XLAB1.EQ.LAB1.AND.XLAB2.EQ.LAB2.AND.
+     &   XFREQ1.EQ.FREQ1.AND.XFREQ2.EQ.FREQ2.AND.
+     &   XTYP1.EQ.TYP1.AND.XTYP2.EQ.TYP2.AND.
+     &   ISYMOP1.EQ.JSYMOP1.AND.ISYMOP2.EQ.JSYMOP2.AND.
+     &   ITIMOP1.EQ.JTIMOP2.AND.ITIMOP2.EQ.JTIMOP2.AND.
+     &   INTFLG.EQ.JNTFLG) THEN   
+          CALL READT(LU,LEN,RSPVEC)
+          REARSP = .TRUE.
+        ELSE
+          READ(LU)
+          GOTO 5
+        ENDIF
+      ENDIF
+      RETURN
+ 10   CONTINUE
+      IF(XLAB1.EQ.'END_OF_THIS_FILE') THEN
+        REARSP = .FALSE.
+        RETURN
+      ELSE
+        WRITE(LUPRI,'(A,I2)') 
+     &   '* REARSP: Error reading unit:',LU
+        CALL QUIT('* REARSP: Error reading rspvec')
+      ENDIF
+ 20   CONTINUE
+      WRITE(LUPRI,'(A,I2)') 
+     &   '* REARSP: EOF reading unit:',LU
+      CALL QUIT('* REARSP: EOF reading rspvec')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck fndrsp */
+      LOGICAL FUNCTION FNDRSP(LU,RSPVEC,LAB1,TYP1,LAB2,TYP2,LEN)
+C***********************************************************************
+C     
+C     Scan file for response vectors
+C     Written by T.Saue and P.Norman Aug 23 2000
+C     
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C     
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <pgroup.h>
+      CHARACTER*16 LAB1,LAB2,XLAB1,XLAB2
+      CHARACTER*2 TYP1,TYP2,XTYP1,XTYP2
+      DIMENSION RSPVEC(LEN)
+C     
+ 5    CONTINUE
+      READ(LU,ERR=10,END=20) XLAB1
+      IF(XLAB1.EQ.'END_OF_THIS_FILE') THEN
+         FNDRSP = .FALSE.
+         RETURN
+      ELSE
+         BACKSPACE LU
+         READ(LU,ERR=10,END=20) XLAB1,XLAB2,XTYP1,XTYP2,
+     &        XFREQ1,XFREQ2,ISYMOP1,ISYMOP2,
+     &        ITIMOP1,ITIMOP2,RNORM,LEN,INTFLG,ERGRSP,NB,NO
+         IF(XLAB1.EQ.LAB1.AND.XLAB2.EQ.LAB2.AND.
+     &        XTYP1.EQ.TYP1.AND.XTYP2.EQ.TYP2) THEN
+            CALL READT(LU,LEN,RSPVEC)
+            WRITE(LUPRI,'(A)') 
+     &           '*** Restart on response vector:'
+            WRITE(LUPRI,'(A,A16,2X,A2,A,A3,A,I2,A,F7.4)') 
+     &           'A: ',LAB1,TYP1,' boson irrep: ',REP(ISYMOP1-1),
+     &           ' timrev:',ITIMOP1,' frequency: ',XFREQ1
+            IF(LAB2.NE.'                ') THEN
+               WRITE(LUPRI,'(A,A16,2X,A2,A,A3,A,I2,A,F7.4)') 
+     &              'B: ',LAB2,TYP2,' boson irrep: ',REP(ISYMOP2-1),
+     &              ' timrev:',ITIMOP2,' frequency: ',XFREQ2
+            ENDIF
+            FNDRSP = .TRUE.
+            RETURN
+         ELSE
+            READ(LU)
+            GOTO 5
+         ENDIF
+      ENDIF
+      RETURN
+ 10   CONTINUE
+      WRITE(LUPRI,'(A,I2)') 
+     &     '* FNDRSP: Error reading unit:',LU
+      CALL QUIT('* FNDRSP: Error reading rspvec')
+ 20   CONTINUE
+      WRITE(LUPRI,'(A,I2)') 
+     &     '* FNDRSP: EOF reading unit:',LU
+      CALL QUIT('* FNDRSP: EOF reading rspvec')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck fndlab */
+      LOGICAL FUNCTION FNDLAB16(A,LU)
+C
+C     Based on FNDLAB
+C     T.Saue & P.Norman Aug 23 2000
+C
+      CHARACTER*16 A,B
+      IRDERR = 0
+    1 READ(LU,END=3,ERR=6)B
+      IRDERR = 0
+      IF (B.NE.A) GO TO 1
+      FNDLAB16 = .TRUE.
+      GO TO 10
+C
+    6 IRDERR = IRDERR + 1
+      IF (IRDERR .LT. 5) GO TO 1
+#if defined (SYS_IBM)
+C 880703-hjaaj -- attempt to fix an IBM problem
+C IBM gave permanent io error on write after calling FNDLAB for
+C     a non-existing file
+      CLOSE(LU,ERR=8)
+#endif
+      GO TO 8
+    3 CONTINUE
+#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+C 880916-hjaaj -- attempt to fix an IBM problem
+C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+C     of FTxxF001), backspace makes LU ready for append.
+C 940510-hjaaj: same change for Cray's multifile datasets
+      BACKSPACE LU
+#endif
+C
+    8 FNDLAB16 = .FALSE.
 C
    10 RETURN
       END

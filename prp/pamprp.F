@@ -116,6 +116,9 @@ C
         KLRF = KFREE
         KCNV = KFREE
       ENDIF
+      IF (DOXQR) THEN
+        CALL PRPXQR(WORK(KFREE),LFREE)
+      ENDIF
 #else
       KLRO = KFREE
       KLRF = KFREE
