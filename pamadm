@@ -260,14 +260,14 @@ make_export()
    echo " - adding files to tar-achive..."
    echo
    tar cvf \$szCurrDir.tar \\
-      \$szCurrDir/{configure,config.sub,config.guess,config.status,C90lib.cld,crilib.cld,pam.in,pam.1,Makefile,abacus/*.F,abacus/Makefile.in,basis,dirac/*.F,dirac/Makefile.in,dirrci/*.F,dirrci/Makefile.in,dirrci/*.inc,doc/doc.html,gp/*.F,gp/*.c,gp/Makefile.in,include/*.h,main/Makefile.in,main/*.c,main/*.F,main/*.h,main/*.head,main/*.struct,moltra/*.F,moltra/Makefile.in,pdpack/Makefile.in,pdpack/*.F,prp/*.F,prp/Makefile.in,relccsd/*.F,relccsd/*.inc,relccsd/*.c,relccsd/Makefile.in,test,utils} 2> export.log
+     \$szCurrDir/{configure,config.sub,config.guess,config.status,C90lib.cld,crilib.cld,pam.in,pam.1,Makefile,abacus/*.F,abacus/Makefile.in,basis,dirac/*.F,dirac/Makefile.in,dirrci/*.F,dirrci/Makefile.in,dirrci/*.inc,doc/doc.html,gp/*.F,gp/*.c,gp/Makefile.in,include/*.h,main/Makefile.in,main/*.c,main/*.F,main/*.h,main/*.head,main/*.struct,moltra/*.F,moltra/Makefile.in,pdpack/Makefile.in,pdpack/*.F,prp/*.F,prp/Makefile.in,relccsd/*.F,relccsd/*.inc,relccsd/*.c,relccsd/Makefile.in,lucita/*.F,lucita/*.inc,lucita/*.c,lucita/Makefile.in,lucita/Makefile.sub,test,utils} 2> export.log
 EOF
    #
    # Active modules
    #
    if [ "$DFTTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/dft/{*.F,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/dft/{*.c,*.F,Makefile.in} 2>> export.log
 EOF
    fi
    if [ "$ERITAR" ]; then
