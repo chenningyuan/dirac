@@ -301,7 +301,8 @@ C
      &              IPQTOQ(1,0),LUPRI)
       ENDIF
 C
-      IF (SPINFR) CALL SPFAO (FMO,FAO,WORK(KFREE),LFREE)
+CMI   ... in the BSS mode the spin-free AO matrix is ready on ONEFCK
+      IF (SPINFR.AND.(.NOT.BSS)) CALL SPFAO (FMO,FAO,WORK(KFREE),LFREE)
 C
       IF(IPRINT.GE.5.AND.SPINFR) THEN
         CALL HEADER('GTCFC1:Total spinfree Fock matrix in AO-basis',-1)

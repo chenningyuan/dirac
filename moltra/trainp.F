@@ -108,7 +108,8 @@ C     Default orbital strings is all occupied and all virtuals
         WRITE(MP2_INDSTR(2,I),'(I4,A2,I4)') NOCC(I)+1,'..',NFBAS(I,1)
       ENDDO
       MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
-      IF (LEVYLE) MP2_INTFLG = ILLINT
+CMI   IF (LEVYLE) MP2_INTFLG = ILLINT
+      IF (LEVYLE.OR.BSS) MP2_INTFLG = ILLINT
 C     MP2_ANTIS  = .TRUE.
       MP2_ANTIS  = .FALSE.
 C     note TODO: ANTIS is not implemented!
@@ -207,7 +208,7 @@ C
 C   'LS' gives the (LL|SS) contribution to the MP2 energy
 C   'SL' gives the (SS|LL) contribution to the MP2 energy
 C
-                  IF (LEVYLE) CALL QUIT(
+                  IF (LEVYLE.OR.BSS) CALL QUIT(
      &         '.SPECIAL testing in MP2 not allowed for Levy-Leblond')
                   READ(LUCMD,'(A2)') WS
                   IF (WS.EQ.'LS') THEN
@@ -299,7 +300,8 @@ C
      +     '* Testing (SS|LL) ONLY in MP2.'
       ENDIF
 C
-      IF (LEVYLE) MP2_INTFLG = ILLINT
+CMI   IF (LEVYLE) MP2_INTFLG = ILLINT
+      IF (LEVYLE.OR.BSS) MP2_INTFLG = ILLINT
       IF(SCRMP2.GT.D0) THEN
         WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold : ',SCRMP2
       ELSE
@@ -775,7 +777,8 @@ C
       IF (ITRA_INTFL4.EQ.-8) THEN
          ITRA_INTFL4 = ITRA_INTFLG
       ENDIF
-      IF (LEVYLE) THEN
+CMI   IF (LEVYLE) THEN
+      IF (LEVYLE.OR.BSS) THEN
          ITRA_INTFL2 = MOD(ITRA_INTFL2,2)
          ITRA_INTFL4 = MOD(ITRA_INTFL4,2)
       ENDIF
@@ -1278,7 +1281,8 @@ C
       ENDIF
       IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LL integrals not included.'
-      IF (.NOT.LEVYLE) THEN
+CMI   IF (.NOT.LEVYLE) THEN
+      IF (.NOT.(LEVYLE.OR.BSS)) THEN
          IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LS integrals not included.'
          IF (ISSINT.NE.1) WRITE(LUPRI,'(1X,A)')
