@@ -174,17 +174,18 @@ C***********************************************************************
 C
       LOGICAL LBIT
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
-     &          WORD1*7
+     &          WORD1*7, MXFORM*6, FMT*6
       DIMENSION WORK(LWORK)
       LOGICAL   NOGENINP
 C
 #include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
+#include "codata.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
-      DATA TABLE  /'.DIRECT','.XXXXXX','.XXXXXX','.DOJACO',
+      DATA TABLE  /'.DIRECT','.CVALUE','.XXXXXX','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.ACMOUT','.XXXXXX','.XXXXXX','.FAMILY',
@@ -256,6 +257,8 @@ C&&&& DIRECT: Direct calculation
                  ENDIF
             GO TO 100
   102    CONTINUE
+C&&&& CVALUE: Set a different value of light
+            READ(LUCMD,*) CVAL
             GO TO 100
   103    CONTINUE
             GO TO 100
@@ -353,6 +356,16 @@ C     Print section
 C     =============
 C
       CALL TITLER('General DIRAC set-up','*',126)
+C
+      WRITE(LUPRI,'(1X,A,F18.7)')
+     +   '* The speed of light : ',CVEL
+      IF(CVAL.NE.CVEL) THEN
+        FMT = MXFORM(CVAL,14)
+        WRITE(LUPRI,'(3X,A,1P,D9.2,0P,A,'//FMT//')')
+     +   '* The speed of light scaled by ',(CVAL/CVEL),
+     +   ' to : ',CVAL
+      ENDIF
+
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
@@ -3084,7 +3097,6 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 C
-#include "codata.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -3103,7 +3115,7 @@ Cdirac#include "functionals.h"
 C
       LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
-     &          WORD1*7, LINE*80, MXFORM*6, FMT*6
+     &          WORD1*7, LINE*80
       DIMENSION KSOP(0:7),WORK(LWORK)
 C
       SAVE SETFUN
@@ -3114,7 +3126,7 @@ C
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.SPINFR','.ZORA  ','.SMLV1C','.ALDA  ',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
-     &            '.ONECAP','.SPINF2','.NOSPIN','.CVALUE',
+     &            '.ONECAP','.SPINF2','.NOSPIN','.XXXXXX',
      &            '.INTFLG','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
@@ -3402,8 +3414,6 @@ C&&& NOSPIN: Take out all spin-interactions
              ICHANG = ICHANG + 1
             GO TO 100
   124     CONTINUE
-C&&&& CVALUE: Set a different value of light
-            READ(LUCMD,*) CVAL
             GO TO 100
   125     CONTINUE
 C&&& INTFLG: Specify what two-integrals should be included in this run
@@ -3468,15 +3478,6 @@ C
  400  CONTINUE
       WRITE(LUPRI,'(A,I5)') ' * Print level :',IPRHAM
 C
-      WRITE(LUPRI,'(1X,A,F18.7)')
-     +   '* The speed of light : ',CVEL
-      IF(CVAL.NE.CVEL) THEN
-        FMT = MXFORM(CVAL,14)
-        WRITE(LUPRI,'(3X,A,1P,D9.2,0P,A,'//FMT//')')
-     +   '* The speed of light scaled by ',(CVAL/CVEL),
-     +   ' to : ',CVAL
-      ENDIF
-
       IF(LEVYLE) THEN
         WRITE(LUPRI,'(A)') ' * Levy-Leblond Hamiltonian'
       ELSE IF (IGTINT .NE. 0) THEN
