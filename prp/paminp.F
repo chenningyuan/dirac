@@ -1001,7 +1001,7 @@ Chj      PCOMB = 'FFFT'
       ELSE
          IF (IPTYP.LT.1 .OR. IPTYP.GT.18)
      &      CALL QUIT('Illegal IPTYP')
-         GO TO (1,2,2,2,2,2,2,2,1,
+         GO TO (1,2,2,2,2,2,2,2,2,
      &          1,1,1,3,3,3,4,4,4),IPTYP
 C
 C        DIAGONAL and SIGMA:
