@@ -562,7 +562,7 @@ C
       CALL IZERO(NINTS  ,16)
       CALL IZERO(ICOUNT,16)
       REWIND LUTWXX
-      CALL MOLLAB('BASTWOEL',LUTWXX,LUERR)
+      CALL MOLLAB('BASTWOEL',LUTWXX,LUPRI)
 C*** DO WHILE - loop: read a chunk of integrals, perform  sorting
       MINT = 0
    10 CONTINUE
@@ -721,7 +721,7 @@ C
       CALL IZERO(NINTS  ,16)
       CALL IZERO(ICOUNT,16)
       REWIND LUTWXX
-      CALL MOLLAB('BASTWOEL',LUTWXX,LUERR)
+      CALL MOLLAB('BASTWOEL',LUTWXX,LUPRI)
 C*** DO WHILE - loop: read a chunk of integrals, perform  sorting
       MINT = 0
    10 CONTINUE
