@@ -99,18 +99,18 @@ C
    10   CONTINUE
         CLOSE(LUCYCL,STATUS='KEEP')
         CALL PRSYMB(LUPRI,'-',128,0)
-        IF(WFCONV(1)) THEN
+        IF(DHFCONV(1)) THEN
           WRITE(LUPRI,'(A,I5,A)')
-     +       '* Convergence after ',NITER,' iterations'
-        ELSEIF (WFCONV(2)) THEN
+     +       '* Convergence after',NITER,' iterations.'
+        ELSEIF (DHFCONV(2)) THEN
           WRITE(LUPRI,'(A,I5,A)')
-     +       '* Desired convergence limit not reached after ',NITER,
-     +       ' iterations but the current convergence is acceptable'
+     +       '* Desired convergence limit not reached after',NITER,
+     +       ' iterations but the current convergence is acceptable.'
         ELSE
           WRITE(LUPRI,'(A,I5,A)')
-     +       '* No convergence after ',NITER,' iterations'
+     +       '* No convergence after',NITER,' iterations'
         ENDIF
-        WRITE(LUPRI,'(A)') '* Average CPU-time per iteration: '
+        WRITE(LUPRI,'(A)') '* Average elapsed time per iteration: '
         INTTYP = 'No 2-ints'
         IF(ITRSCF(0).GT.0) THEN
           SCFTID(0) = SCFTID(0)/ITRSCF(0)

@@ -2,21 +2,21 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.ou.dk
@@ -63,7 +63,7 @@ C
 C
 C     Calculate error vector for this iteration
 C     =========================================
-C             FMO   - Fock matrix in MO-basis 
+C             FMO   - Fock matrix in MO-basis
 C             FAO   - Fock matrix in AO-basis (FDao and FVao)
 C             DMAT  - Density matrix in AO-basis (DCao and DVao)
 C             TMAT  - MO-transformation matrix
@@ -120,7 +120,7 @@ C
 c     ... check if One-center app. should be turned off     /jkp
       IF(ONECAP.AND.(ABS(CONVRG).LT.ONECNV)) THEN
          ONECAP  = .FALSE.
-         DOLVC    = .FALSE.
+         DOLVC   = .FALSE.
          ONECOFF = .TRUE.
 c -->
 c automatic conventional evaluation of one-center
@@ -140,15 +140,15 @@ C     Check convergence : we have two tresholds, the first one
 C     is the desired treshold, the second one is the allowed
 C     upper limit for proceeding with post-HF calculations.
 C
-      IF(ABS(CONVRG).LT.SCFCNV(1)) WFCONV(1) = .TRUE.
-      IF(ABS(CONVRG).LT.SCFCNV(2)) WFCONV(2) = .TRUE.
-      IF(WFCONV(1).OR.(KITER.GT.MAXITR)) EXIT = .TRUE.
+      IF(ABS(CONVRG).LT.SCFCNV(1)) DHFCONV(1) = .TRUE.
+      IF(ABS(CONVRG).LT.SCFCNV(2)) DHFCONV(2) = .TRUE.
+      IF(DHFCONV(1).OR.(KITER.GT.MAXITR)) DHFEXIT = .TRUE.
 C
-C     If wave function converged or EXIT is true, then
+C     If wave function converged or DHFEXIT is true, then
 C     return to avoid an extra diagonalization of the Fock matrix.
 C
 C
-      IF ( EXIT ) RETURN
+      IF ( DHFEXIT ) RETURN
 C
 C
 C     Convergence acceleration
@@ -197,7 +197,7 @@ C
                 CALL PRQMAT(FMO(I2ORBT(I)+1),NORB(I),NORB(I),
      &                   NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
              END DO
-          END IF 
+          END IF
         ENDIF
       ENDIF
 C
@@ -233,7 +233,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2 = 2.0D0, DM1 = -1.00D00, 
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2 = 2.0D0, DM1 = -1.00D00,
      &          D4 = 4.00D00, DP5 = 0.50D00)
 C
 #include "dcbbas.h"
@@ -248,7 +248,7 @@ C    DCBORB: NFORB,
 C    DGROUP: NZ,NFSYM
 C
 C     Note that EBUF has dimension NFMAT*N2BBASXQ
-C 
+C
       DIMENSION FAO(*),DMAT(*),EVEC(*),EBUF(*),TMAT(*),
      &          SAOMO(*),WORK(LWORK), FMO(*)
       CHARACTER*1 CTMP
@@ -272,7 +272,7 @@ C        The gradient is
 C           g = DCao * FDao + f_o DVao * (FDao + (a_o-1) QVao) + H.C.
 C             = (DCao+f_o DVao) FDao + f_o (a_o-1) DVao QVao + H.C.
 C
-C   
+C
          IF (NASHT.GT.0) THEN
 C
 C           Construct total density matrix
@@ -375,7 +375,7 @@ C
 C
             IOFF2 = IOFF2 + NZ*NFBAS(I,0)*NORB(I)
             IOFF = IOFF + NORB(I)*NORB(I)*NZ
- 10      CONTINUE     
+ 10      CONTINUE
 C
 C        The factor:
 C
@@ -823,7 +823,7 @@ C
 COld Code
 C
       IF (DIISAO .OR. NASHT.GT.0 .OR. NAELEC.GT.0) THEN
-C   
+C
 C     jth: The new errorvector is half as big as in DALTON
 C       => the trace of two matrices is one fourth as big
 C       => we multiply by four (old code multiplied by two, so
@@ -919,7 +919,7 @@ C  /* Deck zrdiis */
 C*****************************************************************************
 C
 C     Modify DIIS matrix to account for ZORA
-C     When calculating the error vector we need to account for the 
+C     When calculating the error vector we need to account for the
 C     zero SS-metric
 C
 C*****************************************************************************
@@ -937,7 +937,7 @@ C
       CALL EXTRSB (2,I,0,0,2,2,1,NZ,WORK(KESS),NS,NS,NZ,EVEC,N1,N2)
       CALL MEMREL('ZRDIIS',WORK,KESS,KESS,KFREE,LFREE)
 C
-C     Same procedure for LS block 
+C     Same procedure for LS block
 C
       CALL MEMGET('REAL',KELS,NZ*NL*NS,WORK,KFREE,LFREE)
       CALL DZERO (WORK(KELS),NZ*NL*NS)

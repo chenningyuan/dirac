@@ -31,7 +31,7 @@ C FILE    : dirscf.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psidhf */
-      SUBROUTINE PSIDHF(WORK,LWORK)
+      SUBROUTINE PSIDHF(WFCONV,WORK,LWORK)
 C*****************************************************************************
 C
 C     Solve DHF - equations; print results
@@ -55,11 +55,13 @@ C
 #include "dcborb.h"
 #include "blocks.h"
 C
+      LOGICAL   WFCONV
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('PSIDHF')
 #include "memint.h"
 C
+      WFCONV = .FALSE.
       IF(DFTHAM) THEN
         CALL TITLER('Kohn - Sham calculation','*',125)
       ELSE
@@ -99,19 +101,9 @@ C     Memory deallocation
 C
       CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      IF (.NOT.WFCONV(1) .AND. .NOT.WFCONV(2)) THEN
-C        ... DHF not converged;
-         IF (.NOT.NOSTOP) THEN
-          WRITE (LUPRI,'(//A)')
-     &    ' ERROR, Dirac-Hartree-Fock not converged, Dirac stops!'
-          CALL QUIT('Dirac-Hartree-Fock not converged')
-         ELSE
-          WRITE (LUPRI,'(//A)')
-     &    'WARNING, DHF not converged, but post-SCF run is continuing !'
-          WRITE (LUPRI,'(A)')
-     &    'Check the MO convergence!'
-         ENDIF
-      END IF
+C     Check if DHF/DFT is converged (to hard or soft threshold):
+C
+      WFCONV = DHFCONV(1) .OR. DHFCONV(2)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PSIDHF')
@@ -548,9 +540,10 @@ C
       END IF
       IF (TEST) THEN
 C        read LUTMAT rec#2 with SAOMO
+C        NZT=number of tranf.matrixes
         ISIZE = 0
         DO I = 1,NFSYM
-           ISIZE = ISIZE + NZT*NORB(I)*NFBAS(I,0) ! NZT=number of tranf.matrixes
+           ISIZE = ISIZE + NZT*NORB(I)*NFBAS(I,0)
         END DO
         CALL MEMGET('REAL',KSAOMO,ISIZE,WORK,KFREE,LFREE)
         CALL READT(LUTMAT,ISIZE,WORK(KSAOMO))
@@ -706,8 +699,8 @@ C     Solve one-electron system ...
 C     =============================
 C
         CALL PREDHF(CMO,EIG,IBEIG,FOCK,DUM,DUM,IDUM,WORK,LWORK)
-        WFCONV(1) = .TRUE.
-        WFCONV(2) = .TRUE.
+        DHFCONV(1) = .TRUE.
+        DHFCONV(2) = .TRUE.
       ELSE
 C
 C     ... or perform SCF-cycle
@@ -840,7 +833,6 @@ C
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
-#include "dcbint.h"
 #include "dcbdhf.h"
 #if defined (MOD_DFT)
 #include "dftcom.h"
@@ -1115,7 +1107,7 @@ C            ONECOFF = .FALSE.
         WRITE(LUPRI,'(A,A12)')
      &    '>>> Total CPU-time :',CPUTID
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
-     +    '########## END ITERATION NO.',NITER,'##########',
+     +    '########## END ITERATION NO.',NITER,' ##########',
      &    DAYTID
         WRITE(LUCYCL,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,INTTYP,DAYTID(1:10)
@@ -1123,7 +1115,7 @@ C            ONECOFF = .FALSE.
      &                CACC,CPUTID,INTTYP,DAYTID(1:10)
         CALL FLSHFO(LUPRI)
 C
-        IF(EXIT) GOTO 30
+        IF(DHFEXIT) GOTO 30
 C       ... reset intbuf if one-center app. has been turned off
         IF (ONECOFF) THEN
            INTBUF = 0
