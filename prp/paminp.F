@@ -522,7 +522,7 @@ C
 C  An operator in 4-component theory is a linear combination
 C  of products of a 4x4 matrix and some scalar operator P.
 C  The 4x4 matrices are the alpha matrices and the identity.
-C  XPRINP recognizes eight different kinds of operators:
+C  XPRINP recognizes eighteen different kinds of operators:
 C
 C    1. DIAGONAL
 C       P             * scalar operator
@@ -538,7 +538,7 @@ C                       x-component
 C    6. YAVECTOR
 C       [Alpha x P]_y * vector product of alpha and vector operator,
 C                       y-component    
-C    7. ZVECTOR
+C    7. ZAVECTOR
 C       [Alpha x P]_z * vector product of alpha and vector operator,
 C                       z-component    
 C    8. ALPHADOT
@@ -548,6 +548,32 @@ C    9. GAMMA5
 C       gamma5 P      * The gamma5 matrix times a scalar operator
 C                       gamma5 = | 0 I | 
 C                                | I 0 |
+C   10. XSIGMA
+C       [sigma_x]p    * x-component of sigma times scalar operator
+C
+C   11. YSIGMA
+C       [sigma_y]p    * y-component of sigma times scalar operator
+C
+C   12. ZSIGMA 
+C       [sigma_z]p    * z-component of sigma times scalar operator
+C
+C   13. XBETASIG
+C       [betasig_x]p  * x-component of beta sigma times scalar operator
+C
+C   14. YBETASIG
+C       [betasig_y]p  * Y-component of beta sigma times scalar operator
+C
+C   15. ZBETASIG
+C       [betasig_z]p  * z-component of beta sigma times scalar operator
+C
+C   16. XiBETAAL
+C       i[betaalp_x]p * x-component of beta alpha times scalar operator
+C 
+C   17. YiBETAAL
+C       i[betaalp_y]p * y-component of beta alpha times scalar operator
+C
+C   18. ZiBETAAL
+C       i[betaalp_z]p * z-component of beta alpha times scalar operator
 C
 C  Operator types 5,6 and 7 form the components of a vectorproduct 
 C  of the alpha matrices and some scalar operator.
@@ -566,7 +592,7 @@ C
 #include <priunit.h>
       CHARACTER*7 WORD
 C
-      PARAMETER (NTABKW = 12)
+      PARAMETER (NTABKW = 21)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
@@ -576,9 +602,12 @@ C
       PARAMETER  (D1 = 1.0D0)
       PARAMETER (BLANK8='        ', BLANK16='                ' )
       SAVE TABKW
-      DATA TABKW/'DIAGONAL', 'XALPHA  ', 'YALPHA  ', 'ZALPHA  ',
+      DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO',
+     &           'DIAGONAL', 'XALPHA  ', 'YALPHA  ', 'ZALPHA  ',
      &           'XAVECTOR', 'YAVECTOR', 'ZAVECTOR', 'ALPHADOT',
-     &           'GAMMA5  ', 'CLASS   ', 'FACTORS ', 'COMFACTO'/
+     &           'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ', 'ZSIGMA  ',
+     &           'XBETASIG', 'YBETASIG', 'ZBETASIG', 'XiBETAAL',
+     &           'YiBETAAL', 'ZiBETAAL'/  
 C
       CALL QENTER('XPRINP')
 C
@@ -681,13 +710,13 @@ C
 C          If keyword defines operator type, then initialize
 C          =================================================
 C
-           IF (I .LE. 9) THEN
-              IPTYP = I
+           IF (I .GT. 3) THEN
+              IPTYP = I - 3
               NLABEL= 0
               NFAC  = 0
               IKW = 2
            END IF
-           GO TO (1,1,1,1,2,2,2,3,1,4,5,6), I
+           GO TO (4,5,6,1,1,1,1,2,2,2,3,1,1,1,1,1,1,1,1,1,1), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -695,11 +724,12 @@ C
      &     ' XPRINP: INPUT ERROR following '//WORD,
      &     ' Keyword "'//KEYWD(1:LKW)//'" not recognized.'
          GO TO 300
-C&&&&    One component: DIAGONAL, XALPHA, YALPHA, ZALPHA, GAMMA5
+C&&&&    One component: DIAGONAL, [XYZ]ALPHA, GAMMA5, [XYZ]SIGMA,
+C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL
     1    CONTINUE
            NPCOMP = 1
          GO TO 300
-C&&&&    Two components: XAVECTOR,YAVECTOR,ZAVECTOR
+C&&&&    Two components: [XYZ]AVECTOR
     2    CONTINUE
            NPCOMP = 2
 C          note that the minus in the second component
@@ -860,7 +890,7 @@ C  /* Deck xprind */
       SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
 C***************************************************************************** 
-C  Given a 4.component operator this routine returns and index
+C  Given a 4-component operator this routine returns an index
 C  INDXPR to the list of operators in COMMON block XCBPRP and
 C  returns its symmetry under time reversal(ITRXPR) and its
 C  spatial symmetry(ISYXPR)
@@ -895,8 +925,9 @@ C        Check factors and property labels for each component
             K = IPRPLBL(J,I)
             IF (PRPLBL(K) .NE. PLABEL(J)) GO TO 200
   100    CONTINUE
-C        Operator exists, but under another name; rename
+C
          IF (PNAME .NE. PRPNAM(I)) THEN
+C        Operator exists, but under another name; rename
             WRITE (LUPRI,'(3(/A))')
      &      ' XPRIND INFO: property operator named '//PNAME,
      &      '   is already existing under the name '//PRPNAM(I),
@@ -959,20 +990,47 @@ C
      &   '  PLABEL  =',(PLABEL(I),I=1,NPCOMP)
       END IF
       IF (PLABEL(1)(1:7).EQ.'BETAMAT') THEN
-         PCOMB = 'FFFT'
-      ELSEIF (IPTYP .EQ. 1) THEN
-         PCOMB = 'TFFT'
-         IF (LEVYLE) PCOMB = 'TFFF'
+Chj      PCOMB = 'FFFT'
+         PCOMB = '000+'
+      ELSE
+         IF (IPTYP.LT.1 .OR. IPTYP.GT.18)
+     &      CALL QUIT('Illegal IPTYP')
+         GO TO (1,2,2,2,2,2,2,2,1,
+     &          1,1,1,3,3,3,4,4,4),IPTYP
+C
+C        DIAGONAL and SIGMA:
+C
+    1    PCOMB = '+00+'
+Chj      PCOMB = 'TFFT'
+Chj      IF (LEVYLE) PCOMB = 'TFFF'
 CJTH DEBUG!!
 #ifdef UNDEF
          write(6,*) 'debug debug: operator ',PNAME
          IF (PNAME(1:2) .EQ. 'EF') THEN
-            PCOMB = 'TFFF'
+Chj         PCOMB = 'TFFF'
+            PCOMB = '+000'
             write(6,*) '           : setting comp to',pcomb
          END IF
 #endif
-      ELSE
-         PCOMB = 'FTTF'
+         GO TO 100
+C
+C        ALPHA and GAMMA5:
+C
+    2    PCOMB = '0++0'
+Chj      PCOMB = 'FTTF'
+         GO TO 100
+C
+C        BETA and BETA SIGMA:
+C
+    3    PCOMB = '+00-'
+         GO TO 100
+C
+C        i BETA ALPHA and i BETA GAMMA5:
+C
+    4    PCOMB = '0+-0'
+         GO TO 100
+C
+  100    IF (LEVYLE) PCOMB(4:4) = '0'
       END IF
 C
 C     Define property
@@ -1064,6 +1122,13 @@ C
         ENDIF
       ENDIF
       NPRPCLS = NPRPCLS + 1
+      IF (NPRPCLS .GT. MAXCLS) THEN
+         WRITE(LUPRI,'(/A/A,I5,A/A,1X,A)')
+     &      'INDXPL ERROR: MAXCLS in dcbcls.h too small',
+     &      'Limit of',MAXCLS,' exceeded for operator:',
+     &      PLABEL, PCOMB
+         CALL QUIT('INDPXL: MAXCLS in dcbcls.h too small')
+      END IF
       CLSINT(NPRPCLS) = CLASSLB
       CLSCMB(NPRPCLS) = PCOMB
       CLSCAL(NPRPCLS) = .TRUE.
@@ -1673,8 +1738,14 @@ C     Time reversal symmetry
 C     ======================
 C
 C     Matrix operator
-      IATIM = -1
-      IF(IAIND.EQ.0 .OR. IAIND .EQ. 4) IATIM = 1
+      IF(IAIND.EQ.0 .OR. IAIND.EQ.4 .OR.
+     &   (IAIND.GE.16 .AND.IAIND.LE.18) ) THEN
+C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA:
+        IATIM = 1
+      ELSE
+C       [XYZ]SIGMA, [XYZ]ALPHA:
+        IATIM = -1
+      ENDIF
 C     Scalar operator
       IBTIM    = IPRLTYP(IBIND)
 C     Total operator
@@ -1776,45 +1847,84 @@ C     Operator type
 C     =============
 C
       ITYP = IPRPTYP(INDXPR)
-      GO TO (1,2,3,4,5,6,7,8,9), ITYP
+      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18 ), ITYP
+        WRITE(LUPRI,'(6X,A,I5)')
+     &  'Program error: unknown operator type:',ITYP
+        CALL QUIT('WRIXPR: unknown operator type')
     1 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'DIAGONAL : scalar operator'
-      GOTO 10
+      GOTO 20
     2 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'XALPHA   : [alpha_x]P'
-      GOTO 10
+      GOTO 20
     3 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'YALPHA   : [alpha_y]P'
-      GOTO 10
+      GOTO 20
     4 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'ZALPHA   : [alpha_z]P'
-      GOTO 10
+      GOTO 20
     5 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'XAVECTOR : [alpha x P]_x'
-      GOTO 10
+      GOTO 20
     6 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'YAVECTOR : [alpha x P]_y'
-      GOTO 10
+      GOTO 20
     7 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'ZAVECTOR : [alpha x P]_z'
-      GOTO 10
+      GOTO 20
     8 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'ALPHADOT : [alpha.P]'
-      GOTO 10
+      GOTO 20
     9 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'GAMMA5   : [gamma_5]P'
-      GOTO 10
-C
+      GOTO 20
    10 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'XSIGMA   : [Sigma_x]P'
+      GOTO 20
+   11 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'YSIGMA   : [Sigma_y]P'
+      GOTO 20
+   12 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'ZSIGMA   : [Sigma_z]P'
+      GOTO 20
+   13 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'XBETASIG : [beta Sigma_x]P'
+      GOTO 20
+   14 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'YBETASIG : [beta Sigma_y]P'
+      GOTO 20
+   15 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'ZBETASIG : [beta Sigma_z]P'
+      GOTO 20
+   16 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'XiBETAAL : i[beta alpha_x]P'
+      GOTO 20
+   17 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'YiBETAAL : i[beta alpha_y]P'
+      GOTO 20
+   18 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'ZiBETAAL : i[beta alpha_z]P'
+      GOTO 20
+C
+   20 CONTINUE
 C
 C     Labels and factors
 C     ==================
