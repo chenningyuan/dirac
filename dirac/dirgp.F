@@ -889,7 +889,7 @@ C     Positronic part
         IV2 = 1-NR
       ENDIF
       NN = NB*NC
-      DO IZ = 1,NZf
+      DO IZ = 1,NZ
         CALL DCOPY(NN,CF2(1,IV2,IZ),1,CF1(1,IV1,IZ),1)        
       ENDDO
 C     Electronic part
