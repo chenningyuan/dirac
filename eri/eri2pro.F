@@ -100,10 +100,6 @@ C
       MODAB  = 0
       MODCD  = 0
 C
-C     Pi
-C
-      CALL GETPI
-C
 C     AO batches
 C     ==========
 C

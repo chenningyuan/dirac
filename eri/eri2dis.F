@@ -80,11 +80,6 @@ C
 C
       WRTINT = .TRUE.
       FCKINT = .FALSE.
-      ERGINT = .FALSE.
-C
-C     Pi
-C
-      CALL GETPI
 C
 C     AO batches
 C     ==========
@@ -173,7 +168,6 @@ C
       END IF
       WRTINT = .TRUE.
       FCKINT = .FALSE.
-      ERGINT = .FALSE.
       EXPERI = .FALSE.
       CCRUN  = .TRUE.
       NPDIMA = 0
@@ -320,7 +314,6 @@ C
       BDER   = .FALSE.
       WRTINT = .FALSE.
       FCKINT = .FALSE.
-      ERGINT = .FALSE.
       EXPERI = .TRUE.
       UNDIFF = .FALSE.
       CCRUN  = .TRUE.

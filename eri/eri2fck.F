@@ -57,7 +57,6 @@ C
 #include "cbieri.h"
 #include "ericom.h"
 #include "erithr.h"
-#include "erienr.h"
 #include "erimem.h"
 #include "aobtch.h"
 #if defined (VAR_VECTOR)
@@ -95,25 +94,15 @@ C
       WRTINT = .FALSE.
       IF (IFCTYP(1) .EQ.0) THEN
          FCKINT = .FALSE.
-         ERGINT = .TRUE.
       ELSE
          FCKINT = .TRUE.
-         ERGINT = .FALSE.
       END IF
-C
-C     Pi
-C
-      CALL GETPI
 C
 C     AO batches
 C     ==========
 C
       CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
 C
-      IF (ERGINT) THEN
-         ERGTOT = D0
-         ERGCOU = D0
-      END IF
 C
 C     Density matrix (not needed yet)
 C     ===============================
@@ -265,9 +254,6 @@ C
      &                        NBASE,1,LUPRI)
                   KSTR = KSTR + NBASE*NBASE
                END DO
-            ELSE IF (ERGINT) THEN
-               WRITE (LUPRI,'(1X,A,F20.10)') ' ERGTOT ',ERGTOT
-               WRITE (LUPRI,'(1X,A,F20.10)') ' ERGCOU ',ERGCOU
             END IF
          END IF
 C
@@ -351,11 +337,6 @@ C
       IF (FCKINT) THEN
          CALL FOKDI1(FMAT,DMAT,NDMT,IFCTYP,BIN,IBIN,LBIN,INT,IPRINT)
       END IF
-C
-C     Calculate energy 
-C     ================
-C
-      IF (ERGINT) CALL ERIERG(DMAT,BIN,IBIN,LBIN,INT)
 C
       RETURN
       END
@@ -634,30 +615,6 @@ C  /* Deck erisfk */
             FMAT(J,I,IDM) = FMT
          END DO
          END DO
-      END DO
-      RETURN
-      END
-C  /* Deck ERIERG */
-      SUBROUTINE ERIERG(DMAT,AOINT,IND,LBIN,LENGTH)
-C
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER (D4 = 4.0D0)
-      INTEGER P, Q, R, S 
-      DIMENSION DMAT(NBAST,NBAST),AOINT(LBIN),IND(LBIN,4)
-#include "inforb.h"
-#include "erienr.h"
-C
-      DO I = 1, LENGTH
-         P = IND(I,1)
-         Q = IND(I,2)
-         R = IND(I,3)
-         S = IND(I,4)
-         G = AOINT(I)
-         ERGTOT = ERGTOT + (D4*DMAT(P,Q)*DMAT(R,S)
-     &                       - DMAT(P,R)*DMAT(Q,S)
-     &                       - DMAT(P,S)*DMAT(R,Q))*G
-         ERGCOU = ERGCOU + D4*DMAT(P,Q)*DMAT(R,S)*G
       END DO
       RETURN
       END

@@ -420,11 +420,6 @@ C
 C
       WRTINT = .TRUE.
       FCKINT = .FALSE.
-      ERGINT = .FALSE.
-C
-C     Pi
-C
-      CALL GETPI
 C
 C     AO batches
 C     ==========
@@ -1739,7 +1734,7 @@ C
 C        Construct Fock matrix
 C        =====================
 C
-         IF (FCKINT .OR. ERGINT) THEN
+         IF (FCKINT) THEN
             CALL ERIFOK(WORK(KSOINT),IPNTCR,IODDHR(1,ICCXYZ),IPNTUV,
      &                  FMAT,DMAT,NDMT,IFCTYP,CCFBT,INDXBT,
      &                  WORK(LSTOUT),LWKOUT,IPRINT)
