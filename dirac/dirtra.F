@@ -2832,7 +2832,7 @@ C
 C
       ISIZE = 0
       DO I = 1,NFSYM
-         ISIZE = ISIZE + NZ*NFBAS(I,0)*NORB(I)
+         ISIZE = ISIZE + NZ*NFBAS(I,0)*NTMO(I)
       END DO
       CALL DZERO(SAOMO,ISIZE)
 C
@@ -2843,24 +2843,24 @@ C
 C
       IOFF = 1
       DO I = 1,NFSYM
-         IF ( NORB(I) .GT. 0 ) THEN
-            CALL QGEMM(NFBAS(I,0),NORB(I),NFBAS(I,0),D1,
+         IF ( NTMO(I) .GT. 0 ) THEN
+            CALL QGEMM(NFBAS(I,0),NTMO(I),NFBAS(I,0),D1,
      &         'N','N',IPQTOQ(1,0),WORK(KSAO+I2BASX(I,I)),
      &         NTBAS(0),NTBAS(0),1,
      &         'N','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
-     &         NFBAS(I,0),NORB(I),NZT,
+     &         NFBAS(I,0),NTMO(I),NZT,
      &         D0,IPQTOQ(1,0),SAOMO(IOFF),
-     &         NFBAS(I,0),NORB(I),NZT)
+     &         NFBAS(I,0),NTMO(I),NZT)
 C
             IF ( IPRINT .GE. 10 ) THEN
                CALL HEADER('MKSAOMO: Right index transf. overlap'//
      &            ' matrix Saomo',-1)
-               CALL PRQMAT(SAOMO(IOFF),NFBAS(I,0),NORB(I),
-     &            NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+               CALL PRQMAT(SAOMO(IOFF),NFBAS(I,0),NTMO(I),
+     &            NFBAS(I,0),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
                CALL FLSHFO(LUPRI)
             END IF
          END IF
-      IOFF = IOFF + NZ*NFBAS(I,0)*NORB(I)
+      IOFF = IOFF + NZ*NFBAS(I,0)*NTMO(I)
       END DO
 C
       CALL MEMREL('SAOMO',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3387,4 +3387,145 @@ C
       CALL QEXIT('QTRANS')
       RETURN
 C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck bcktr1 */
+      SUBROUTINE BCKTR1(COFT,LRT,LCT,COFU,LRU,LCU,NORB,NZC,
+     &                  NVEC,JVEC,NBAS,TMAT,LR1,LC1,NZT,IPRINT)
+C*****************************************************************************
+C
+C     PURPOSE: Transform vectors (basis) from one-representation to the other
+C
+C     METHOD: Uses blas routine QGEMM
+C
+C     INPUT:
+C	NORB - number of vectors to be tranformed
+C	COFU - array of untransformed vectors of dimension (NORB,NORB,NZC)
+C	COFT - array of backtransformed vectors of dimension (NBAS,NVEC,NZC)
+C       TMAT - transformation matrix of dimension (NBAS,NORB,NZT)
+C
+C	Written by T.Saue January 1995
+C	LAST VERSION: June 27 1996 - tsaue
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0)
+C
+#include "dgroup.h"
+      DIMENSION COFU(LRU,LCU,NZC),COFT(LRT,LCT,NZC),
+     &          TMAT(LR1,LC1,NZT)
+
+C   ...Define internal print level 
+      IBPRNT = 12 
+C
+      IF(NVEC.EQ.0) RETURN
+      IF(IPRINT.GE.IBPRNT) THEN
+        CALL HEADER('BCKTR1: Nontransformed coefficients',-1)
+        WRITE(LUPRI,'(2(3X,A,I5))')
+     +    'Start index: ',JVEC,'No. of vectors:',NVEC
+        CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZC,IPQTOQ(1,0),LUPRI)
+        CALL HEADER('BCKTR1: Transformation matrix:',-1)
+        CALL PRQMAT(TMAT,NBAS,NORB,LR1,LC1,NZT,IPQTOQ(1,0),LUPRI)
+      ENDIF
+      CALL QGEMM(NBAS,NVEC,NORB,D1,
+     &           'N','N',IPQTOQ(1,0),TMAT,LR1,LC1,NZT,
+     &           'N','N',IPQTOQ(1,0),COFU(1,JVEC,1),LRU,LCU,NZC,
+     &                D0,IPQTOQ(1,0),COFT,LRT,LCT,NZC)
+      IF(IPRINT.GE.IBPRNT) THEN
+        CALL HEADER('BCKTR1: Backtransformed coefficients',-1)
+        WRITE(LUPRI,'(2(3X,A,I5))')
+     +    'Start index: ',JVEC,'No. of vectors:',NVEC
+        CALL PRQMAT(COFT,NBAS,NVEC,LRT,LCT,NZC,IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Bcktr2 */
+      SUBROUTINE BCKTR2(IFRP,IUNIT,COFT,COFU,EIG,
+     &                  TMAT,IBUF,BUF,EBUF,IPRINT)
+C***********************************************************************
+C
+C     Backtransform coefficients and insert the frozen orbitals
+C     Written by T. Saue May 2003
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0)
+      DIMENSION COFT(*),COFU(*),EIG(*),TMAT(*),
+     &          BUF(*),EBUF(*),IBUF(*)
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+C   ...Define internal print level 
+      IBPRNT = 12 
+      IF(IPRINT.GE.IBPRNT) THEN
+        CALL HEADER('BCKTR2: Nontransformed coefficients',-1)
+        CALL PRQMAT(COFU,NTMO(IFRP),NTMO(IFRP),
+     &            NTMO(IFRP),NTMO(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+        CALL HEADER('BCKTR2: Transformation matrix:',-1)
+        CALL PRQMAT(TMAT,NFBAS(IFRP,0),NTMO(IFRP),
+     &              NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+C     Read pointer to positions of frozen orbitals
+C
+      CALL READI(IUNIT,NFRO(IFRP),IBUF)
+      NBUF = NFBAS(IFRP,0)*NZ
+      NOFF = NFBAS(IFRP,0)*NORB(IFRP)
+      IFRO = 1
+      JOFT = 1
+      JOFU = 1
+      CALL DCOPY(NTMO(IFRP),EIG,1,EBUF,1)        
+      DO IFO=1,NFRO(IFRP)
+        JFRO = IBUF(IFO)
+        JEND = JFRO-1
+        NVEC = JFRO-JOFT
+C       Backtransform coefficients inbetween
+        IF(NVEC.GT.0) THEN
+          ITO = NFBAS(IFRP,0)*(JOFT-1)+1
+          CALL BCKTR1(COFT(ITO),NFBAS(IFRP,0),NORB(IFRP),
+     &                COFU,NTMO(IFRP),NTMO(IFRP),
+     &                NTMO(IFRP),NZ,NVEC,JOFU,NFBAS(IFRP,0),
+     &                TMAT,NFBAS(IFRP,0),NTMO(IFRP),NZT,0)
+          CALL DCOPY(NVEC,EBUF(JOFU),1,EIG(JOFT),1)
+          JOFU = JOFU+NVEC
+          JOFT = JOFT+NVEC
+        ENDIF
+C       Insert frozen orbital
+        CALL READT(IUNIT,NBUF,BUF)
+        IB = 1
+        IC = NFBAS(IFRP,0)*JEND+1
+        DO IZ = 1,NZ
+          CALL DCOPY(NFBAS(IFRP,0),BUF(IB),1,COFT(IC),1)        
+          IB = IB + NFBAS(IFRP,0)
+          IC = IC + NOFF
+        ENDDO
+        EIG(JFRO)=D0
+        JOFT = JOFT + 1
+      ENDDO
+C
+C     Backtransform remaining coefficients
+C
+      NVEC = NORB(IFRP)+1-JOFT
+      IF(NVEC.GT.0) THEN
+        ITO = NFBAS(IFRP,0)*(JOFT-1)+1
+        CALL BCKTR1(COFT(ITO),NFBAS(IFRP,0),NORB(IFRP),
+     &                COFU,NTMO(IFRP),NTMO(IFRP),
+     &                NTMO(IFRP),NZ,NVEC,JOFU,NFBAS(IFRP,0),
+     &                TMAT,NFBAS(IFRP,0),NTMO(IFRP),NZT,0)
+          CALL DCOPY(NVEC,EBUF(JOFU),1,EIG(JOFT),1)
+      ENDIF
+C
+      IF(IPRINT.GE.IBPRNT) THEN
+        CALL HEADER('BCKTR2: Backtransformed coefficients',-1)
+        CALL PRQMAT(COFT,NFBAS(IFRP,0),NORB(IFRP),
+     &            NFBAS(IFRP,0),NORB(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+      RETURN
       END

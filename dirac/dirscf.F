@@ -196,7 +196,7 @@ C
         CALL OPNFIL(LUCMOS,'DFCMOS','UNKNOWN','PREDHF')
       ENDIF
       OPEN (LUFOCK, FILE='DFFOCK', FORM='UNFORMATTED',
-     +      ACCESS='DIRECT',RECL=8*N2ORBTQ,STATUS='UNKNOWN')
+     +      ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='UNKNOWN')
       CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PREDHF')
       CALL OPNFIL(LUFCK1,'DFFCK1','OLD','PREDHF')
 C
@@ -243,7 +243,7 @@ C
 C       Determine occupation if this was not given in input
 C
         IF (INIOCC) THEN
-           CALL DETOCC (EIG)
+           CALL DETOCC (EIG,WORK,KFREE,LFREE)
            INIOCC = .FALSE.
         ENDIF
 C
@@ -567,7 +567,7 @@ C        read LUTMAT rec#2 with SAOMO
 C        NZT is the NZ value for the transformation matrix
         ISIZE = 0
         DO I = 1,NFSYM
-           ISIZE = ISIZE + NZT*NORB(I)*NFBAS(I,0)
+           ISIZE = ISIZE + NZT*NTMO(I)*NFBAS(I,0)
         END DO
         CALL MEMGET('REAL',KSAOMO,ISIZE,WORK,KFREE,LFREE)
         CALL READT(LUTMAT,ISIZE,WORK(KSAOMO))
@@ -604,37 +604,50 @@ C
 C     Automatic occupation
 C     ====================
 C
-      IF(AUTOCC.OR.INIOCC) CALL DETOCC(EIG)
+      IF(AUTOCC.OR.INIOCC) CALL DETOCC(EIG,WORK,KFREE,LFREE)
 C
 C     Overlap selection
 C     =================
 C
       IF(DOSEL) CALL SMOSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
 C
-C     Print eigenvalues
-C
-      IF (IPRSCF.GE.3)
-     &   CALL PREIGN(EIG,IBEIG,(IPRSCF .GE. 4),WORK(KFREE),LFREE)
-C
 C
 C     Backtransform all spinors (temporary storage in FMO)
 C     ====================================================
 C
+      IF(NFROT.NE.0) CALL OPNFIL(LUTMAT,'DFFROZ','OLD','DFSOLV')
       DO 40 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 40
-        CALL BCKTRA(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
-     &              FAO(I2ORBT(I)+1),NORB(I),NORB(I),
-     &              NORB(I),NZ,NORB(I),1,NFBAS(I,0),
-     &              WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,
+        IF(NFRO(I).EQ.0) THEN
+        CALL BCKTR1(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
+     &              FAO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &              NTMO(I),NZ,NTMO(I),1,NFBAS(I,0),
+     &              WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,
      &              IPRSCF)
+        ELSE
+          CALL MEMGET('INTE',KIND,NFRO(I),WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KBUF,NFBAS(I,0)*NZ,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KEBF,NTMO(I),WORK,KFREE,LFREE)
+          CALL BCKTR2(I,LUTMAT,FMO(ICMOQ(I)+1),FAO(I2TMOT(I)+1),
+     &                EIG(IORB(I)+1),WORK(KTMAT+I2TMT(I)),
+     &                WORK(KIND),WORK(KBUF),WORK(KEBF),IPRSCF)
+          CALL MEMREL('DFSOLV.froz',WORK,KIND,KIND,KFREE,LFREE)
+        ENDIF
  40   CONTINUE
+      IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
+C
+C     Print eigenvalues 
+C     (after backtransformation in case of frozen orbitals)
+C
+      IF (IPRSCF.GE.3)
+     &   CALL PREIGN(EIG,IBEIG,(IPRSCF .GE. 4),WORK(KFREE),LFREE)
 C
 C     Write coefficients to file
 C     ==========================
 C
 C     Write untransformed coefficients
       REWIND LUCMOS
-      CALL WRITT(LUCMOS,N2ORBTQ,FAO)
+      CALL WRITT(LUCMOS,N2TMOTQ,FAO)
 C     Write transformed coefficients
       CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
 C
@@ -1993,24 +2006,24 @@ C
 C     Transform FD to MO-basis
 C
       DO I = 1,NFSYM
-      IF(NORB(I).GT.0) THEN
+      IF(NTMO(I).GT.0) THEN
         IF(SUB_BL) THEN
           CALL TSUBBL(I,FAO,FMO,TMAT,TMAT,WORK(KFREE),LFREE,IPRSCF)
         ELSE
           CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &            NORB(I),NORB(I),
+     &            NTMO(I),NTMO(I),
      &            FAO(I2BASX(I,I)+1,1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &            FMO(I2ORBT(I)+1),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
-     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &            FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
+     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRSCF)
         ENDIF
         IF(IPRSCF.GE.10 ) THEN
           WRITE(CTMP,'(I1)') I
           CALL HEADER('DFSOLV: D Fock matrix in MO-basis'//
      &                ', corep '//CTMP,-1)
-          CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
-     &                NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+          CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
+     &                NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
         END IF
       END IF
       END DO
@@ -2579,7 +2592,7 @@ C
         CALL QDIAG(NZ,NSSH(I),DMAT(ID(I)),NSSH(I),NSSH(I),
      &             EIG(IE(I)),1,FOCK(ID(I)),NSSH(I),
      &             NSSH(I),WORK(KFREE),LFREE,IERR)
-        CALL BCKTRA(DMAT(ID(I)),NFBAS(I,0),NSSH(I),
+        CALL BCKTR1(DMAT(ID(I)),NFBAS(I,0),NSSH(I),
      &              FOCK(ID(I)),NSSH(I),NSSH(I),
      &              NSSH(I),NZ,NSSH(I),1,NFBAS(I,0),
      &              CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,
@@ -2885,7 +2898,7 @@ C     ... 1020 is used for reading, thus no '1P' !!! /hjaaj
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck fndocc */
-      SUBROUTINE FNDOCC(EIG)
+      SUBROUTINE FNDOCC(EIG,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Find DHF occupation based on eigenvalues
@@ -2899,7 +2912,7 @@ C
 #include "dcbdhf.h"
 #include "dgroup.h"
 C
-      DIMENSION EIG(*)
+      DIMENSION EIG(*),WORK(*)
       DIMENSION IEIGMIN(2)
 C
       DO I = 1,NFSYM
@@ -2950,8 +2963,10 @@ C
          NACSH(IEIGSYM,1) = 1
       END IF
 C
+      NASHMFT = 0
       DO I = 1, NFSYM
          NOCC(I) = NISH(I) + NASH(I)
+         NISHMF(I) = NISH(I)
 C
 C        LV : CAUTION, POSSIBLE BUG
 C
@@ -2963,7 +2978,8 @@ C
          NISH_DHF(I) = NISH(I)
          NASH_DHF(I) = NASH(I)
       END DO
-C
+C     Subtract frozen orbitals (if any) from orbital classes
+      CALL SUBFRZ(WORK,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3007,7 +3023,7 @@ C
 C
       DO 30 I = 1,NFSYM
 C
-        IF(NORB(I).EQ.0) GOTO 30
+        IF(NTMO(I).EQ.0) GOTO 30
 C
 C       The next array is used in subblock calcs, initialize to zero.
 C
@@ -3023,13 +3039,13 @@ C       1 : Normal diagonalization, use matrix as supplied by dfsolv
 C
         IF (.NOT.SPECIAL) THEN
           IF(DOJACO) THEN
-            CALL RSJACO(NORB(I),NORB(I),NORB(I),FMO(I2ORBT(I)+1),
-     &                  EIG(IORB(I)+1),1,1,0,FAO(I2ORBT(I)+1),
+            CALL RSJACO(NTMO(I),NTMO(I),NTMO(I),FMO(I2TMOT(I)+1),
+     &                  EIG(IORB(I)+1),1,1,0,FAO(I2TMOT(I)+1),
      &                  WORK(KFREE),LFREE)
           ELSE
-            CALL QDIAG(NZ,NORB(I),FMO(I2ORBT(I)+1),NORB(I),NORB(I),
-     &                 EIG(IORB(I)+1),1,FAO(I2ORBT(I)+1),NORB(I),
-     &                 NORB(I),WORK(KFREE),LFREE,IERR)
+            CALL QDIAG(NZ,NTMO(I),FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                 EIG(IORB(I)+1),1,FAO(I2TMOT(I)+1),NTMO(I),
+     &                 NTMO(I),WORK(KFREE),LFREE,IERR)
           ENDIF
 C
 C
@@ -3289,8 +3305,8 @@ C
         IF (.NOT.SPINFR .AND. .NOT.LEVYLE .AND. .NOT.SUB_BL) THEN
            CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
            CALL MEMGET('REAL',KRDUM,4*NORB(I),WORK,KFREE,LFREE)
-           CALL APPBOS (I,NORB(I),WORK(KINDX),
-     &                  IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
+           CALL APPBOS (I,NTMO(I),WORK(KINDX),
+     &                  IBEIG(IORB(I)+1),FAO(I2TMOT(I)+1),
      &                  WORK(KRDUM))
            CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
         END IF
@@ -3449,7 +3465,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck detocc */
-      SUBROUTINE DETOCC(EIG)
+      SUBROUTINE DETOCC(EIG,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Handle automatic occupation
@@ -3463,7 +3479,7 @@ C
 #include "dcbdhf.h"
 #include "dgroup.h"
       LOGICAL TEST
-      DIMENSION EIG(*)
+      DIMENSION EIG(*),WORK(*)
       DIMENSION NISHOLD(2),NASHOLD(2)
 C
 C     Save old occupation
@@ -3473,7 +3489,7 @@ C
 C
 C     Determine new occupation
 C
-      CALL FNDOCC(EIG)
+      CALL FNDOCC(EIG,WORK,KFREE,LFREE)
 C
       TEST = .FALSE.
       DO IFRP = 1,NFSYM
@@ -3507,4 +3523,106 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Subfrz */
+      SUBROUTINE SUBFRZ(WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     For each orbital class determine the number of frozen orbitals
+C
+C     Written by T. Saue Apr 16 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      DIMENSION WORK(*)
+C
+      IF(NFROT.GT.0) CALL OPNFIL(LUTMAT,'DFFROZ','OLD','SUBFRZ')
+      DO IFRP = 1,NFRP
+        NISHMF(IFRP) = NISH(IFRP)
+        DO IOPEN = 1,NOPEN
+          NACSHMF(IFRP,IOPEN) = NACSH(IFRP,IOPEN)
+        END DO
+        IF(NFRO(IFRP).GT.0) THEN
+          CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIBF,NORB(IFRP),WORK,KFREE,LFREE)
+          CALL ORBARR(IFRP,WORK(KIBF))
+          CALL READI(LUTMAT,NFRO(IFRP),WORK(KIND))
+          READ(LUTMAT)
+          CALL SUBFR1(IFRP,WORK(KIND),WORK(KIBF))
+          CALL MEMREL('SUBFRZ.froz',WORK,KIND,KIND,KFREE,LFREE)
+        ENDIF
+      ENDDO
+      IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Subfr1 */
+      SUBROUTINE SUBFR1(IFRP,IND,IBUF)
+C***********************************************************************
+C
+C     For each orbital class determine the number of frozen orbitals
+C
+C     Written by T. Saue Apr 16 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcborb.h"
+#include "dcbdhf.h"
+      DIMENSION IND(*),IBUF(*)
+C
+      DO I = 1,NFRO(IFRP)
+        IP = IBUF(IND(I))
+        IF(IP.EQ.0) THEN
+          NISHMF(IFRP) = NISHMF(IFRP) - 1
+        ELSEIF(IP.GT.0) THEN
+          NACSHMF(IFRP,IP) = NACSHMF(IFRP,IP) - 1
+        ENDIF
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck orbstr */
+      SUBROUTINE ORBARR(IFRP,IBUF)
+C***********************************************************************
+C
+C     Make an array to distinguish orbital classes
+C     
+C     Written by T. Saue Apr 16 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcborb.h"
+#include "dcbdhf.h"
+      DIMENSION IBUF(*)
+C.....Negative-energy orbitals:
+      II = 1
+      CALL ICOPY(NPSH(IFRP),-2,0,IBUF(II),1)
+C.....Inactive orbitals:
+      II = II + NPSH(IFRP)
+      CALL ICOPY(NISH(IFRP),0,0,IBUF(II),1)
+C.....Active orbitals:
+      II = II + NISH(IFRP)
+      DO IOPEN = 1,NOPEN
+        CALL ICOPY(NACSH(IFRP,IOPEN),IOPEN,0,IBUF(II),1)
+        II = II + NACSH(IFRP,IOPEN)
+      ENDDO
+C.....Secondary positive-energy orbitals:
+      CALL ICOPY(NSSH(IFRP),-1,0,IBUF(II),1)
+C
+      RETURN
+      END
+
+
 

@@ -744,7 +744,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 38)
+      PARAMETER (NTABLE = 40)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -771,7 +771,7 @@ C
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
      &            '.POST D','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
-     &            '.SKIPEP','.MAX BA','.PRJTHR'/
+     &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -916,7 +916,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38), I
+     &                     31,32,33,34,35,36,37,38,39,40), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1222,6 +1222,17 @@ C&&& MAX BACKSTEPS: max. number of backsteps
 C&&& PRJTHR: Smallest norm accepted in projection step
                   READ(LUCMD,*) PRJTHR
                GOTO 100
+ 39               CONTINUE
+C&&& FROZEN: Frozen orbitals
+               DO I = 1,NFSYM
+                 READ(LUCMD,'(A72)') VCFROZ(I)
+                 CALL NUMLS3(VCFROZ(I),IDUMMY,NFBAS(I,0),
+     &                  -NFBAS(I,2),NFBAS(I,1),NFRO_DHF(I),NZERO)
+                 NFRO_DHF(I)=NFRO_DHF(I)-NZERO
+               ENDDO
+               GOTO 100
+ 40               CONTINUE
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1302,6 +1313,7 @@ C
          DO IFRP = 1,NFSYM
             DO IOPEN = 1,NOPEN
                NASH_DHF(IFRP) = NASH_DHF(IFRP) + NACSH(IFRP,IOPEN)
+               NACSHMF(IFRP,IOPEN) = NACSH(IFRP,IOPEN)
                DTEMP          = DTEMP +
      &                          NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
             END DO
@@ -1355,15 +1367,15 @@ C
         WRITE(LUPRI,'(A)')
      &      ' * Variational space reduced by projection'//
      &      '  using a set of reference orbitals.'
-        WRITE(LUPRI,'(3X,A,D12.4)') '- Smallest norm accepted: ',PRJTHR
+        WRITE(LUPRI,'(3X,A,E12.4)') '- Smallest norm accepted: ',PRJTHR
         IF(PROOWN) THEN
           WRITE(LUPRI,'(3X,A)') 
      &     '- Reference orbitals are obtained from local bases !',
      &     '  The indexing of reference spinor sets is assumed ',
      &     '  to follow list of symmetry independent nuclei.'
           DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3,A,A6)') '- Reference spinor set ',J,
-     &             ' --> ',NAMDEP(J)
+            WRITE(LUPRI,'(3X,A,I3,A,A4)') '- Reference spinor set ',J,
+     &             ' --> ',NAMN(J)
             WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
             DO I = 1,NFSYM
               NVEC = 0
@@ -1514,12 +1526,11 @@ C
         ENDIF
       ENDIF
       IF(DODIIS) THEN
-         IF (NASHT_DHF .GT. 0) THEN
-            DIISAO = .TRUE.
-            DIISMO = .FALSE.
+         IF (DIISAO.OR.(NASHT_DFT.GT.0)) THEN
+           WRITE(LUPRI,'(A)') ' * DIIS (in AO basis)'
+         ELSEIF(DIISMO) THEN
+           WRITE(LUPRI,'(A)') ' * DIIS (in MO basis)'
          ENDIF
-         IF (DIISMO) WRITE(LUPRI,'(A)') ' * DIIS (in MO basis)'
-         IF (DIISAO) WRITE(LUPRI,'(A)') ' * DIIS (in AO basis)'
          WRITE(LUPRI,'(A,1P,D8.2)')
      &      ' * DIIS will be activated when convergence reaches : ',
      &      DIISTH

@@ -5,10 +5,11 @@ C FILE    : dcbdhf.h
 C
 C*** Dirac-Fock calculations ***
 C     PROJEC     - any projection, defined by a set of coefficients
-      CHARACTER DHF_INTTYP*9,CACC*8,PRJFIL*6,VCPROJ*72
+      CHARACTER DHF_INTTYP*9,CACC*8,PRJFIL*6,VCPROJ*72,VCFROZ*72
       PARAMETER(MFMAT = 10, MXOPEN=10 )
       PARAMETER(MPRJREF=6)
-      COMMON/DCCDHF/DHF_INTTYP,CACC,PRJFIL(MPRJREF),VCPROJ(2,MPRJREF)
+      COMMON/DCCDHF/DHF_INTTYP,CACC,PRJFIL(MPRJREF),VCPROJ(2,MPRJREF),
+     &              VCFROZ(2)
       LOGICAL DHFCONV,DHFEXIT,TRIVEC,TRIFCK,
      &        ERGCNV,EVCCNV,FCKCNV,DODSCF,
      &        DODAMP,DAMPON,DODIIS,DIISON,OVLSEL,PHCOEF,FIXDIF,
@@ -23,7 +24,11 @@ C     PROJEC     - any projection, defined by a set of coefficients
      &              NEVEC(2),N2EVECQ(2),I2EVECTQ(2),N2EVECTQ,
      &              NSMOTQ,ISMOQ(2),ITRSCF(0:7),
      &              NFMAT,ISYMOP(MFMAT),IFCKOP(MFMAT),IHRMOP(MFMAT),
-     &              NEWOCC,MXMACRO,MXMICRO,MAXBCK,NPRJREF
+     &              NEWOCC,MXMACRO,MXMICRO,MAXBCK,NPRJREF,
+     &              NTMO(2),I2TMOT(2),N2TMOTQ,
+C..number of closed and open shell orbitals with frozen ones subtracted
+     &              NISHMF(2),NACSHMF(2,MXOPEN),NASHMFT
+
       COMMON/DCRDHF/SCFCNV(2),ERGVAL,EVCVAL,FCKVAL,
      &              DHFERG,ELERGY,E1PART,E2PART,ERGBUF,
      &              CONVRG,TDF2,TDDG,DNSDHF,

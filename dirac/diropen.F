@@ -87,19 +87,19 @@ C
           CALL TSUBBL(I,FAO,FMO,TMAT,TMAT,WORK(KFREE),LFREE,IPRSCF)
         ELSE           
           CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &            NORB(I),NORB(I),
+     &            NTMO(I),NTMO(I),
      &            FAO(I2BASX(I,I)+1,1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &            FMO(I2ORBT(I)+1),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
-     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &            FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
+     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRSCF)
         ENDIF
         IF(IPRSCF.GE.10) THEN
            WRITE(CTMP,'(I1)') I
            CALL HEADER('DFSOLV: D Fock matrix in MO-basis'//
      &                 ', corep '//CTMP,-1)
-           CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
-     &                 NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+           CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
+     &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
         END IF
       END IF
       END DO

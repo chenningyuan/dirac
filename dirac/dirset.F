@@ -428,7 +428,7 @@ C
         N2ISHT      = N2ISHT + N2ISH(IFRP)
 C
         N2ASH(IFRP) = NASH(IFRP)*NASH(IFRP)
-        NASHT       = NASHT  + NASH(IFRP)
+        NASHT       = NASHT  + NASH(IFRP) 
         I2ASHT(IFRP)= N2ASHT*NZ
         N2ASHT      = N2ASHT + N2ASH(IFRP)
 C
@@ -553,7 +553,7 @@ C
       NSMOTQ    = 0
       DO IFRP = 1,NFSYM
          ISMOQ(IFRP) = NSMOTQ
-         N2EVECTQ = N2EVECTQ + N2ORB(IFRP)*NZ
+         N2EVECTQ = N2EVECTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
          NSMOTQ   = NSMOTQ   + NOCC(IFRP)*NORB(IFRP)*NZ
       ENDDO
 C

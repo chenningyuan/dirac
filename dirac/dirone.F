@@ -1336,13 +1336,15 @@ C
         CALL DELPOS(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
      &            WORK(KFREE),LFREE)
       ENDIF
-      N2TMT  = 0
-      N2TMOT = 0
+      N2TMT   = 0
+      N2TMOTQ = 0
+      NASHMFT = 0
       DO IFRP = 1,NFSYM
+        NISHMF(IFRP) = NISH(IFRP)
         I2TMT(IFRP) = N2TMT
         N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
-        I2TMOT(IFRP) = N2TMOT
-        N2TMOT = N2TMOT + NTMO(IFRP)*NTMO(IFRP)*NZ
+        I2TMOT(IFRP) = N2TMOTQ
+        N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
       ENDDO
 C
 C     Construct right index transformed overlap matrix Saomo = Sao C
@@ -1460,6 +1462,7 @@ C  DGROUP:
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "cbihr1.h"
@@ -1561,7 +1564,7 @@ C
         IOFV = 1
         DO 30 I = 1,NFSYM
           IF(NORB(I).EQ.0) GOTO 30
-          CALL BCKTRA(TMAT(IMAT),NFBAS(I,0),NFORB(I,1),
+          CALL BCKTR1(TMAT(IMAT),NFBAS(I,0),NFORB(I,1),
      &                TBUF(IBUF),NFORB(I,0),NFORB(I,1),
      &                NFORB(I,0),NZ,
      &                NFORB(I,1),1,NFBAS(I,0),
@@ -1741,7 +1744,7 @@ C         to modified Dirac form;
      &                 NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
 C         get full transformation as well !
-            CALL BCKTRA(TMAT(IMAT),NFBAS(I,0),NORB(I),
+            CALL BCKTR1(TMAT(IMAT),NFBAS(I,0),NORB(I),
      &                  TBUF(1+I2TMT(I)),NFORB(I,0),NORB(I),
      &                  NFORB(I,0),NZ,
      &                  NORB(I),1,NFBAS(I,0),
@@ -1777,7 +1780,7 @@ C
             CALL HEADER('Eigenvalues',-1)
             WRITE(LUPRI,'(I5,E16.8)') (J,EIG(IORB(I)+J),J=1,NORB(I))
           ENDIF
-          CALL BCKTRA(WORK(IBUF),NFBAS(I,0),NESH(I),
+          CALL BCKTR1(WORK(IBUF),NFBAS(I,0),NESH(I),
      &              TBUF(I2ORBT(I)+1),NORB(I),NORB(I),
      &              NORB(I),NZ,NESH(I),(NPSH(I)+1),NFBAS(I,0),
      &              TMAT(I2TMT(I)+1),NFBAS(I,0),NORB(I),NZT,
@@ -1806,7 +1809,7 @@ C
           IOFV = 1
           DO 70 I = 1,NFSYM
             IF(NFORB(I,0).EQ.0) GOTO 70
-            CALL BCKTRA(TMAT(IMAT),NFBAS(I,0),NORB(I),
+            CALL BCKTR1(TMAT(IMAT),NFBAS(I,0),NORB(I),
      &                  TBUF(IBUF),NFORB(I,0),NORB(I),
      &                  NFORB(I,0),NZ,
      &                  NORB(I),1,NFBAS(I,0),
@@ -1831,10 +1834,12 @@ C
         CALL HEADER('Final transformation matrix ',-1)
         IMAT = 1
         DO 80 I = 1,NFSYM
+        IF(NORB(I).GT.0) THEN
           WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',I
           CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
      &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
           IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+        ENDIF
  80     CONTINUE
       ENDIF
       CALL FLSHFO(LUPRI)
@@ -3896,11 +3901,28 @@ C     =======================================================
 C
       CALL MEMREL('PSIPRJ.cfs',WORK,KCMO,KCMO,KFREE,LFREE)
 C
-C     If more than one set of reference orbitals, they must be orthogonalized !
-C     
+C     If frozen orbitals, save to file
+C     ================================
+C
+      IF(NFROT.GE.0) THEN
+        CALL OPNFIL(LUCOEF,'DFFROZ','UNKNOWN','PSIPRJ')
+        DO IFRP = 1,NFSYM
+        IF(NFRO(IFRP).GT.0) THEN
+          NBUF = NFBAS(IFRP,0)*NZ
+          CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
+          CALL WRIFRZ(LUCOEF,IFRP,WORK(KQ(IFRP)),WORK(KSEL),
+     &                WORK(KBUF),WORK(KIND),NVECS(IFRP))
+          CALL MEMREL('PSIPRJ.froz',WORK,KSEL,KSEL,KFREE,LFREE)       
+        ENDIF
+        ENDDO
+        CLOSE(LUCOEF,STATUS='KEEP')
+      ENDIF
 C
 C     Reduce variational space by projection using the reference orbitals
 C     ===================================================================
+C     If more than one set of reference orbitals, they must be orthogonalized !
 C
 C     Do projection
       TOBE = .FALSE.
@@ -3909,7 +3931,7 @@ C     Do projection
         WRITE(LUPRI,'(A,A3)') '* Fermion ircop ',FREP(IFRP)        
 C       Transform reference coefficients to orthonormal basis
         NDEL = 0
-        IF(NVECS(IFRP).EQ.0) GOTO 21
+        IF(NFRO(IFRP).EQ.0) GOTO 21
         NREF = NORB(IFRP)*NVECS(IFRP)*NZ
         NPRJ = NORB(IFRP)*NORB(IFRP)*NZ
         NBUF = MAX(NREF,NPRJ)
@@ -3938,37 +3960,54 @@ C       Do projection
      &              NVECS(IFRP),NDEL,IPRHAM)
  21     CONTINUE
         WRITE(LUPRI,'(2X,A,I6)') '- Number of orbitals deleted: ',NDEL
-        NEFF = NORB(IFRP)-NDEL
-        IEFF = I2TMT(IFRP)+1
+        NTMO(IFRP) = NORB(IFRP)-NDEL
+        IEFF       = I2TMT(IFRP)+1
         I2TMT(IFRP) = N2TMT
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NEFF*NZT
+        N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
         IF(NDEL.GT.0) THEN
+          IF(NFRO(IFRP).GT.0) THEN
+            IF(NDEL.LT.NFRO(IFRP)) THEN
+              WRITE(LUPRI,'(2X,A,I6,A)') 
+     &        'is smaller than number of frozen orbitals',
+     &        NFRO(IFRP),'!'
+              WRITE(LUPRI,'(2X,A)')
+     &        'You may rerun with PRINT.GE.2 under **HAMILTONIAN',
+     &        'to see the norms of the remaining vectors.',
+     &        'Based on this, you may set the projection threshold'
+              WRITE(LUPRI,'(2X,A,E12.4)')
+     &        'PRJTHR lower. Current value is ',PRJTHR
+              CALL QUIT
+     &        ('PSIPRJ:Fewer deleted orbitals than frozen ones!')
+            ENDIF
+          ENDIF
 C         Backtransform to SO-basis
           NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT
           CALL DCOPY(NDIM,TMAT(IEFF),1,TINV(IEFF),1)
           CALL PRJCNT(WORK(KBUF),TMAT(I2TMT(IFRP)+1),
      &                IFRP,NORB(IFRP),NFBAS(IFRP,0),
-     &                NEFF,WORK(KIBOS),TINV(IEFF))
+     &                NTMO(IFRP),WORK(KIBOS),TINV(IEFF))
 CTROND: It is assumed that the orbitals projected out belong to the electronic
 CTROND: space. This must be worked on !!!!
-          NESH(IFRP) = NESH(IFRP)-NDEL
-          NPSH(IFRP) = NPSH(IFRP)
-          NORB(IFRP) = NESH(IFRP) + NPSH(IFRP)
+          NESH(IFRP) = NESH(IFRP)-NDEL+NFRO(IFRP)
           TOBE = .TRUE.       
-        ELSEIF(I2TMT(IFRP).NE.IEFF) THEN
+        ELSEIF((I2TMT(IFRP)+1).NE.IEFF) THEN
 C         Move transformation matrix if columns was deleted in previous
 C         irrep ...
-          NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT
+          NDIM = NFBAS(IFRP,0)*NTMO(IFRP)*NZT
           CALL DCOPY(NDIM,TMAT(IEFF),1,TMAT(I2TMT(IFRP)+1),1)
         ENDIF
-        CALL MEMREL('PSIPRJ.prj',WORK,KBUF,KBUF,KFREE,LFREE)
+        IF(NFRO(IFRP).GT.0) THEN
+          CALL MEMREL('PSIPRJ.prj',WORK,KBUF,KBUF,KFREE,LFREE)
+        ENDIF
  20   CONTINUE
       IF(IPRHAM.GE.5) THEN
         CALL HEADER('PSIPRJ: Final transformation matrix ',-1)
         DO 80 I = 1,NFSYM
+        IF(NTMO(I).GT.0) THEN
           WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',I
-          CALL PRQMAT(TMAT(I2TMT(I)+1),NFBAS(I,0),NORB(I),
-     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+          CALL PRQMAT(TMAT(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
+     &                NFBAS(I,0),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
  80     CONTINUE
       ENDIF
       IF(TOBE) CALL MKSAOMO(TINV,TMAT,IPRINT,WORK(KFREE),LFREE)
@@ -4247,7 +4286,7 @@ C
      &                VECS(1,JVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
  300    CONTINUE
  200  CONTINUE
-      IF (ITURN.EQ.1) THEN
+      IF (ITURN.LT.3) THEN
         GO TO 10
       ENDIF
       IF(IPRINT.GE.7) THEN
@@ -5345,5 +5384,94 @@ C
    10   CONTINUE
       ENDIF
 C     
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Wrifrz */
+      SUBROUTINE WRIFRZ(IUNIT,IFRP,VECS,IVEC,BUF,IBUF,NVEC)
+C***********************************************************************
+C
+C     Dump frozen orbitals to file
+C     Written by T. Saue May 2003
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+      DIMENSION VECS(*),BUF(*),IVEC(*),IBUF(*)
+C
+C     Get index array for frozen orbitals; 
+C
+      NTOT=1
+      CALL NUMLS3(VCFROZ(IFRP),IVEC,NFBAS(IFRP,0),
+     &            -NPSH(IFRP),NESH(IFRP),NTOT,NZERO)
+C
+C     Consistency check
+C
+      IF(NFRO(IFRP).NE.(NTOT-NZERO)) THEN
+        CALL QUIT('WRIFRZ:Inconsistency !')
+      ENDIF
+C
+C     Selected orbitals that are not frozen have index zero;
+C     they must be taken out and pointers made to the remaining ones
+C     Write compressed index array to file
+C
+      II = 0
+      DO I = 1,NTOT
+      IP = IVEC(I)
+      IF(IP.NE.0) THEN
+        II = II + 1
+        IBUF(II)=I        
+C       Positronic position
+        IF(IP.LT.0.AND.IP.GE.(-NPSH(IFRP))) THEN
+          CALL QUIT('WRIFRZ: Positronic frozen orbitals not allowed !')
+          IVEC(II)=NPSH(IFRP)+1+IP
+C       Electronic position
+        ELSEIF (IP.GT.0.AND.IP.LE.NESH(IFRP)) THEN
+          IVEC(II)=NPSH(IFRP)+IP
+C         Check if orbital belongs to closed or open shells.
+C         If so, subtract from occupation number
+          IF(IP.GT.0.AND.IP.LE.NISH(IFRP)) THEN
+            NISHMF(IFRP) = NISHMF(IFRP) - 1
+          ELSE
+            I1 = NISH(IFRP)
+            DO IOPEN = 1,NOPEN
+              I2 = I1 + NACSH(IFRP,IOPEN)
+              IF(IP.GT.I1.OR.IP.LE.I2) THEN
+                NACSHMF(IFRP,IOPEN) = NACSHMF(IFRP,IOPEN) - 1
+                GOTO 20
+              ENDIF
+              I1 = I2
+            ENDDO
+ 20         CONTINUE
+          ENDIF
+        ENDIF
+      ENDIF
+      ENDDO
+      DO IOPEN = 1,NOPEN
+        NASHMFT = NASHMFT + NACSHMF(IFRP,IOPEN)
+      ENDDO
+      CALL WRITI(IUNIT,NFRO(IFRP),IVEC)
+C
+C     Write coefficients to file
+C
+      IDIM = NFBAS(IFRP,0)*NVEC
+      JDIM = NFBAS(IFRP,0)*NZ
+      DO II = 1,NFRO(IFRP)
+        I = IBUF(II)
+        IOFF = NFBAS(IFRP,0)*(I-1)+1
+        JOFF = 1
+        DO IZ = 1,NZ
+          CALL DCOPY(NFBAS(IFRP,0),VECS(IOFF),1,BUF(JOFF),1)
+          IOFF = IOFF + IDIM
+          JOFF = JOFF + NFBAS(IFRP,0)
+        ENDDO
+        CALL WRITT(IUNIT,JDIM,BUF)
+      ENDDO
+C
       RETURN
       END

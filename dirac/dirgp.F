@@ -1550,3 +1550,210 @@ C       Dimension....nref.......nmol......
       CALL READT(LUPRJ,NBDIM,WORK(KBVEC))
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck numls3 */
+      SUBROUTINE NUMLS3(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,NZERO)
+C*****************************************************************************
+C
+C     Reads the numbers in the string A which has
+C     the format : '3..6, 8, -27..2, 123, 14..15'.
+C     
+C     !! Number 0 (Zero) IS counted AND stored, and returned as number
+C
+C     Input: 
+C           IP.EQ.0: Only IP as OUTPUT
+C           IP.NE.0: Give list of numbers in array ILIST(NLIST).
+C
+C     Output:
+C           IP : number of elements in the list A.
+C
+C     IRNGE1..IRNGE2 is range of allowed values in A.
+C
+C     Based on the routine NUMLS1 written by Jon K. Laerdahl 30.12.96
+C     Written by T.Saue 2003
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+C
+      PARAMETER (MAXLB = 72)
+C
+      CHARACTER A*(*),B*(MAXLB)
+      CHARACTER*1 TEGN
+      DIMENSION ILIST(NLIST)
+C
+C     Initialize
+C
+      NZERO = 0
+      NUM1  = 0
+      NUM2  = 0
+      INO   = 0
+      NA = LEN(A)
+      IF(NA.GE.3) THEN
+        IF( INDEX(A(1:NA),'all') .GT. 0) THEN
+          IC = 0
+          IF(IP.EQ.0) THEN
+            DO 10 I=IRNGE1,IRNGE2
+              IF (I.EQ.0) GOTO 10
+              IC = IC + 1
+ 10         CONTINUE
+          ELSE
+            DO 11 I=IRNGE1,IRNGE2
+              IF (I.EQ.0) GOTO 11
+              IC = IC + 1
+              IF (IC.GT.NLIST) GOTO 930
+              ILIST(IC) = I
+ 11         CONTINUE
+          ENDIF
+          IP = IC
+          RETURN
+        ENDIF
+      ENDIF
+      IPOINT = ICHAR('.')
+      ISPACE = ICHAR(' ')
+      ISIGN  = ICHAR('-')
+      ICOMMA = ICHAR(',')
+      INULL  = ICHAR('0')
+      ININE  = ICHAR('9')
+      IOOH   = ICHAR('o')
+      B = ' '
+C
+C     Take out blanks
+C
+      NB = 0
+      DO 20 I = 1,NA
+         TEGN = A(I:I)
+         IF (TEGN.EQ.' ') GOTO 20
+         NB = NB + 1
+         IF(NB.GT.MAXLB) GOTO 940
+         B(NB:NB) = TEGN
+ 20   CONTINUE
+      I = 1
+ 100  CONTINUE
+      NEG1 = 1
+      NEG2 = 1
+      INT = ICHAR(B(I:I))
+      IF (INT.EQ.ISIGN) THEN
+         NEG1 = -1
+         I = I+1
+         INT = ICHAR(B(I:I))
+      ENDIF
+      IF ((INT.GE.INULL).AND.(INT.LE.ININE) .OR.
+     &    (INT.EQ.IOOH) ) THEN
+         IF (INT .EQ. IOOH) THEN
+C           ... "infinity"
+            I = I + 1
+            TEGN = B(I:I)
+            IF (TEGN .NE. 'o') GOTO 950
+            IF (NEG1 .EQ. -1) THEN
+               NUM1 = -IRNGE1
+            ELSE
+               NUM1 = IRNGE2
+            END IF
+            I = I + 1
+         ELSE
+C           ... found a number
+            NUM1 = INT-INULL
+            CALL READNM(I,NUM1,B)
+            NUM1 = NUM1*NEG1
+         END IF
+         TEGN = B(I:I)
+         IF (TEGN.EQ.'.') THEN
+C        ... checking for range
+            I = I+1
+            TEGN = B(I:I)
+            IF (TEGN.NE.'.') THEN
+               GOTO 900
+            ELSE
+C           ... find end of range
+               I = I+1
+               INT = ICHAR(B(I:I))
+               IF (INT.EQ.ISIGN) THEN
+                  IF (NEG1.GT.0) GOTO 900
+                  NEG2 = -1
+                  I = I+1
+                  INT = ICHAR(B(I:I))
+               ENDIF
+               IF ((INT.GE.INULL).AND.(INT.LE.ININE)) THEN
+C              ... read end of range
+                  NUM2 = INT-INULL
+                  CALL READNM(I,NUM2,B)
+                  NUM2 = NUM2*NEG2
+               ELSE IF (INT .EQ. IOOH) THEN
+                  I = I + 1
+                  TEGN = B(I:I)
+                  IF (TEGN .NE. 'o') GOTO 950
+                  IF (NEG2 .EQ. -1) THEN
+                     NUM2 = -IRNGE1
+                  ELSE
+                     NUM2 = IRNGE2
+                  END IF
+                  I = I + 1
+               ELSE 
+                  GOTO 900
+               ENDIF
+            ENDIF
+            IF (NUM1.GT.NUM2) GOTO 900
+            IF ((NUM1.GE.IRNGE1).AND.(NUM2.LE.IRNGE2)) THEN
+               DO 200 J=NUM1,NUM2
+                  INO = INO + 1
+                  IF(J.EQ.0) NZERO=NZERO+1
+                  IF(IP.NE.0) ILIST(INO)=J
+ 200           CONTINUE
+            ELSE
+               WRITE(LUPRI,'(A,I5,A,I5)') 'Range:', NUM1,'..',NUM2
+               GOTO 920
+            ENDIF
+         ELSEIF ((TEGN.EQ.',').OR.(TEGN.EQ.' ')) THEN
+C           ... single number
+            IF ((NUM1.GE.IRNGE1).AND.(NUM1.LE.IRNGE2)) THEN
+               INO = INO + 1
+               IF(NUM1.EQ.0) NZERO=NZERO+1
+               IF(IP.NE.0) ILIST(INO)=NUM1
+            ELSE
+               WRITE(LUPRI,'(A,I5)') 'Value:', NUM1
+               GOTO 920
+            ENDIF
+         ELSE 
+            GOTO 910
+         ENDIF
+      ELSEIF ((INT.NE.ISPACE).AND.(INT.NE.IPOINT)) THEN
+         GOTO 910
+      ENDIF
+      I = I+1
+      IF (I.LE.NB) GOTO 100
+      IP = INO
+      RETURN
+ 900  CONTINUE
+      WRITE(LUPRI,'(//A,I3//3A/9X,200A1)')
+     &     'NUMLST: Wrong syntax in input at character ',I,
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
+      CALL QUIT('NUMLST: Wrong Syntax in Input')
+ 910  CONTINUE
+      WRITE(LUPRI,'(/A,A1,A,I4,A,I3//3A/9X,200A1)')
+     &   'NUMLST: Wrong Character in Input: ',CHAR(INT),
+     &   ' ( ASCII code',INT,') at character',I,
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
+      CALL QUIT('NUMLST: Wrong Character in Input')
+ 920  CONTINUE
+      WRITE(LUPRI,'(/A,2I6//3A/9X,200A1)')
+     &     'Out of Range in NUMLST. Range:',IRNGE1,IRNGE2,
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
+      CALL QUIT('NUMLST: Out of Range!')
+ 930  CONTINUE
+      WRITE(LUPRI,'(/A,I7//3A/9X,200A1)')
+     &     'Out of Range in NUMLST. NLIST:',NLIST,
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
+      CALL QUIT('NUMLST: Out of Range in ITMPAR') 
+ 940  CONTINUE
+      WRITE(LUPRI,'(/A//3A/9X,200A1)')
+     &     'NUMLST: Character string beyond 72.',
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
+      CALL QUIT('NUMLST: Character string beyond 72') 
+ 950  CONTINUE
+      WRITE(LUPRI,'(/A//3A/9X,200A1)')
+     &     'NUMLST: oo must be two consecutive characters.',
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
+      CALL QUIT('NUMLST: oo must be two consecutive characters.')
+      END

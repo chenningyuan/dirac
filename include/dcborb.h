@@ -22,7 +22,6 @@ C     Length of common block : keep up to date !!
      &     NPSH(2),N2PSH(2),NPSHT,N2PSHT,N2PSHX,
      &     NFRO(2),NFROT,NELEC(2),
      &     NAELEC,NELECT,
-     &     NTMO(2),I2TMOT(2),
      &     IORB(2),I2ORBT(2),I2ORBX(2,2),
      &     NCMO(2),NCMOQ(2),NCMOT,NCMOTQ,ICMO(2),ICMOQ(2),
      &     IASH(2),I2ASHT(2),I2ASHX(2,2),
