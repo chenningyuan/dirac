@@ -16,7 +16,7 @@ all :	pdlib.a
 pdlib.a: $(OBJS)
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i
+	$(RM) -f *.o *~ *.f *.lst *.i *.a
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
