@@ -36,6 +36,7 @@ C
 C
 C VERSION : $Revision$
 C DATE    : $Date$
+C FILE    : krmcvec.F
 C
       SUBROUTINE KRMCVEC(IBTYP,IBCVC,IBEVC,IBPVC,EVALR,EVECR,
      &     DKAPPA,CREF,WORK,LWORK)

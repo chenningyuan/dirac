@@ -1,28 +1,28 @@
 C 
-C...   COPYRIGHT (C) 2004 BY THE AUTHORS OF DIRAC (SEE BELOW).
-C...   ALL RIGHTS RESERVED.
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C...   All Rights Reserved.
 C...
-C...   THE SOURCE CODE IN THIS FILE IS PART OF
-C...   DIRAC, A RELATIVISTIC AB INITIO ELECTRONIC STRUCTURE PROGRAM,
-C...   RELEASE DIRAC04.0 (2004),
-C...   WRITTEN BY H. J. AA. JENSEN, T. SAUE, AND L. VISSCHER
-C...   WITH CONTRIBUTIONS FROM V. BAKKEN, E. ELIAV, T. ENEVOLDSEN, T. FLEIG,
-C...   O. FOSSGAARD, T. HELGAKER, J. HENRIKSSON, J. K. LAERDAHL, C. V. LARSEN,
-C...   P. NORMAN, J. OLSEN, M. PERNPOINTNER, J. K. PEDERSEN, K. RUUD,
-C...   P. SALEK, J. N. P. VAN STRALEN, J. THYSSEN, O. VISSER, AND T. WINTHER
-C...   (HTTP://DIRAC.CHEM.SDU.DK).
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
 C...
-C...   FOR A SUITABLE BIBTEX ENTRY, SEE:
-C...      HTTP://DIRAC.CHEM.SDU.DK/DOC/REFERENCE.SHTML
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
 C...
-C...   THIS SOURCE CODE IS PROVIDED UNDER A WRITTEN LICENCE AND MAY BE
-C...   USED, COPIED, TRANSMITTED, OR STORED ONLY IN ACCORD WITH THAT
-C...   WRITTEN LICENCE.
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
 C...
-C...   IN PARTICULAR, NO PART OF THE SOURCE CODE OR COMPILED MODULES MAY
-C...   BE DISTRIBUTED OUTSIDE THE RESEARCH GROUP OF THE LICENCE HOLDER.
-C...   THIS MEANS ALSO THAT PERSONS (E.G. POST-DOCS) LEAVING THE RESEARCH
-C...   GROUP OF THE LICENCE HOLDER MAY NOT TAKE ANY PART OF DIRAC,
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
@@ -36,6 +36,7 @@ C
 C
 C VERSION : $Revision$
 C DATE    : $Date$
+C FILE    : krmcmlf.F
 C
 C     Subroutines related to the Molfdir format:
 C

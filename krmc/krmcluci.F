@@ -36,6 +36,7 @@ C
 C
 C VERSION : $Revision$
 C DATE    : $Date$
+C FILE    : krmcluci.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_TRACOM(CIRUN)

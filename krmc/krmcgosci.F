@@ -36,6 +36,8 @@ C
 C
 C VERSION : $Revision$
 C DATE    : $Date$
+C FILE    : krmcgosci.F
+C main authors: H.J.Aa. Jensen & J. Thyssen
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_setup */
@@ -248,6 +250,10 @@ C
 C
 #include "ibtfun.h"
 C
+C     Use GOSCI:
+C
+      CALL GOSCI_SETUP()
+C
       IF ( IPROPT .GE. 3 ) THEN
          WRITE(LUPRI,'(/A)')
      &       ' (GOSCI_GENDET) Output from generation of determinants:'
@@ -258,7 +264,7 @@ C
      &        'Generating determinants of all symmetries'
          ELSE IF (OPT_UCIBOS) THEN
             WRITE(LUPRI,'(15X,3A,I4,A,I3)')
-     &        'Generating dets. with symmetry ', REP(IRRP-1),
+     &        'Generating dets. with spatial symmetry ', REP(IRP-1),
      &        ' and 2*MS interval:',MINMK2,' to',MAXMK2
          ELSE
             WRITE(LUPRI,'(15X,2A)')
@@ -625,7 +631,7 @@ C
 C
 #include "ibtfun.h"
 C
-      IF (IOPT_SYMMETRY .LE. 0) THEN
+      IF (IRP .LE. 0) THEN
 C        ... include all symmetries
          GOSCI_SYMOK = .TRUE.
       ELSE IF (.NOT. OPT_UCIBOS) THEN
@@ -651,7 +657,7 @@ C
       ELSE
 C
 C        Boson symmetry (spin free or Levy-Leblond).
-C        (do not use MULTB which includes spin-symmetry -- see GMULTSF --
+C        (do not use IRRP and MULTB which includes spin-symmetry -- see GMULTSF --
 C         as we treat the spin Ms separately as in non-rel codes /hjaaj aug 03)
 C
          JRRP = 0
@@ -669,7 +675,7 @@ C
             END IF
             ID = ID / 2
          END DO
-         GOSCI_SYMOK = (JRRP .EQ. IOPT_SYMMETRY-1)
+         GOSCI_SYMOK = (JRRP .EQ. IRP-1)
       ENDIF
 C
       RETURN

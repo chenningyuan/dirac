@@ -36,7 +36,7 @@ C
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C FILE    : dirout.F
+C FILE    : krmcout.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */

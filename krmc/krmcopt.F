@@ -36,7 +36,7 @@ C
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C FILE    : diropt.F
+C FILE    : krmcopt.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
@@ -2031,10 +2031,6 @@ C                         (giving 1-2 determinants)
 C         for debug
 C
          IF ( USE_CIPROGRAM .EQ. 'GOSCI' ) THEN
-C
-C           Use GOSCI:
-C
-            CALL GOSCI_SETUP()
 C
 C           Generate determinants
 C
