@@ -209,7 +209,7 @@ C     CALL PRSYMB(LUPRI,'=',75,0)
          CALL PRSYMB(LUPRI,'=',75,0)
          WRITE(LUPRI,'(1X,A)') '*NMRINP: '
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'A,3F12.6,/)') 'User defined gauge '//
+         WRITE(LUPRI,'(A,3F12.6,/)') 'User defined gauge '//
      &   'origin used:',(GAGORG(I), I = 1, 3)
          IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(1X,A,/)')
      &  ' WARNING: User defined gauge '//
