@@ -165,9 +165,9 @@ C
      &                      MPI_COMM_WORLD,IERR)
               CALL MPI_SEND(ISHLB,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
-              CALL MPI_SEND(IC,1,MPI_INTEGER,NWHO,35,
+              CALL MPI_SEND(IC,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
-              CALL MPI_SEND(I2TYP,1,MPI_INTEGER,NWHO,35,
+              CALL MPI_SEND(I2TYP,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
            ENDDO
            ENDDO
@@ -1038,9 +1038,9 @@ C
          CALL MPI_RECV(ISHLBX,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
 C        do not use ISHLB because in common and used in TRDRV4
-         CALL MPI_RECV(IC,1,MPI_INTEGER,MPARID,35,
+         CALL MPI_RECV(IC,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-         CALL MPI_RECV(I2TYP,1,MPI_INTEGER,MPARID,35,
+         CALL MPI_RECV(I2TYP,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
 #endif
          CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
