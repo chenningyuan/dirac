@@ -105,3 +105,6 @@
 - TMAT should be cheched for orthonormality. If TMAT is not
   properly orthogonal you may get wrong linear dependecy errors
   etc.
+
+- include/nqcc.h: Dalton .ne. Dirac should be fixed.
+
