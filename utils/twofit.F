@@ -294,6 +294,51 @@ C
       WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
      &       D0*XKJMOL, 'kJ/mol'
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
+C
+C     Anharmonic constant at non-stationary geometry
+C     ==============================================
+C
+      WRITE(LUPRI,*) 'Do you want to calculate spectroscopic constants',
+     &   'at another geometry (y/n)?'
+      READ(LUCMD,*) REPLY
+      IF(REPLY.EQ.'y') THEN
+        WRITE(LUPRI,*) 'Give geometry in Angstroms '
+        READ(5,*) XNEW
+        WRITE(ILOGG,'(A,F9.3,A)') 
+     &    'Spectroscopic at non-stationary point ',
+     &                  XNEW, 'Angstrom '
+        XNEW = XNEW/XTANG
+        V2N = POL2DER(NORDER,C,XNEW)
+        TEMP  = V2N*XTJ/XTM/XTM
+        WRITE(LUPRI,'(A,1P,E18.4,A)') 
+     &   '* Force constant  :',TEMP, ' N/m'
+        WRITE(ILOGG,'(A,1P,E18.4,A)') 
+     &   '* Force constant  :',TEMP, ' N/m'
+        OMEGA = SQRT(V2N/UM)
+        WRITE(LUPRI,'(A,1P,E12.5,A)') 
+     &   '* Frequency       :',OMEGA*XTHZ,' Hz',
+     &   '                   ',OMEGA*XTCM,' cm-1'
+        WRITE(ILOGG,'(A,1P,E12.5,A)') 
+     &   '* Frequency       :',OMEGA*XTHZ,' Hz',
+     &   '                   ',OMEGA*XTCM,' cm-1'
+        V3N = POLNDER(NORDER,C,XNEW,3)
+        V4N = POLNDER(NORDER,C,XNEW,4)
+        TEMP = 7.0D0*V3N*V3N/V2N/9.0D0
+        T2 = 100.0D0*(TEMP - V4N)/V4N
+        WRITE(ILOGG,'(A,D20.10)')
+     &   '* Third derivative                   : ', V3N,
+     &   '* Fourth derivative                  : ', V4N
+        WRITE(ILOGG,'(A,D20.10, F9.2,A)')
+     &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \%'
+        TEMP = D1/UM/OMEGA
+        T2   = TEMP*TEMP
+        WXE = (5.0D0*TEMP*T2*V3N*V3N/48.0D0/OMEGA)-(V4N*T2/16.0D0)
+        WRITE(LUPRI,'(A,1P,E12.5,A)') 
+     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
+        WRITE(ILOGG,'(A,1P,E12.5,A)') 
+     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
+      ELSEIF(REPLY.EQ.'n') THEN
+      ENDIF
       IF(NPRP.EQ.0) GOTO 666
 C      
 C     Effective geometry (Newton-Raphson search)
