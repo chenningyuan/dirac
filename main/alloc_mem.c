@@ -21,6 +21,11 @@
 #include "get_memsize.head"
  ;
 
+#if defined (VAR_CRAY) || defined (VAR_T3D)
+#define SIZE_REAL (sizeof(float))
+#else
+#define SIZE_REAL (sizeof(double))
+#endif
 
 #include "alloc_mem.head"
 
@@ -30,7 +35,7 @@
       *size = INSTALL_WRKMEM;
    }
    printf("DIRAC allocating %i words of memory\n",*size);
-   return diracmalloc(8*(*size));
+   return diracmalloc(SIZE_REAL*(*size));
 }
 
 
