@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : symm.inc
+C SOURCE  : $Source$
+C
 C     The essential double group symmetry information.
       COMMON /SYMI/ NSYMRP,NREP,MULTB(16,16,2)
       COMMON /SYMC/ REPN(16),REPNA(16) 

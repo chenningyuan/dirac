@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : freeze.inc
+C SOURCE  : $Source$
+C
       PARAMETER (MAXFROZ=100)
       COMMON/FREEZE/NFROZEN,IFROZ(MAXFROZ,8)
       INTEGER NFROZEN,IFROZ

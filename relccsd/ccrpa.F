@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : ccrpa.F
+C SOURCE  : $Source$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RPAA(NAOPER,NAMEA,NAMEB,APHASE,BPHASE,BDONE,EPS,EFREQ,
      &           AVO,AOV,BVO,BOV,X1,X2,Y1,Y2,DG,BUF1,BUF2,CC1,BB1,BB2,

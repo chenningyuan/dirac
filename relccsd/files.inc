@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : files.F
+C SOURCE  : $Source$
+C
 C     Files to be used in RELCCSD
       PARAMETER (NCCFIL=11) ! Number of word addressable files
 C     Define the unit numbers

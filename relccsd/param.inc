@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : param.inc
+C SOURCE  : $Source$
+C
       REAL*8 ACCUR
       PARAMETER (ACCUR=1.D-15)
       REAL*8 AR0,AR1,ARP3

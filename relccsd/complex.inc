@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : complex.inc
+C SOURCE  : $Source$
+C
       COMMON /COMPL/ CARITH
       LOGICAL CARITH
       COMMON /COMPI/ IRW, RCW
