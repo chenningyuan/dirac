@@ -126,9 +126,15 @@ C            NPSIM - number of orbital trial vectors (e-p rotations)
 C
 C IBTYP is an array running over ALL trial vectors:
 C   IBTYP(1,*) - indicates type of this trial vector
+C                JBCNDX =-1: CI-type
+C                JBENDX =+1: electron orb-type
+C                JBPNDX =+2: positron orb-type
 C   IBTYP(2,*) - indicates Hermiticity of trial vector
-C                 1 - [Z+Y  Y*+Z*] - anti-Hermitian combination
-C                 2 - [Z-Y  Y*-Z*] - Hermitian combination
+C                +1 - [Z-Y  Y*-Z*] - Hermitian combination
+C                -1 - [Z+Y  Y*+Z*] - anti-Hermitian combination
+C                Note that for time-antisymmetric operators, an
+C                imaginary phase is extracted, thus reversing
+C                hermiticity during the calculation.
 C                    
 C  ( TRIAL VECTORS ARE ONLY ADDED FOR THE NON CONVERGED VECTORS AND
 C    LINEAR DEPENDENCE IS REMOVED)
@@ -339,9 +345,15 @@ C            NPSIM - number of orbital trial vectors (e-p rotations)
 C
 C IBTYP is an array running over ALL trial vectors:
 C   IBTYP(1,*) - indicates type of this trial vector
+C                JBCNDX =-1: CI-type
+C                JBENDX =+1: electron orb-type
+C                JBPNDX =+2: positron orb-type
 C   IBTYP(2,*) - indicates Hermiticity of trial vector
-C                 1 - [Z+Y  Y*+Z*] - anti-Hermitian combination
-C                 2 - [Z-Y  Y*-Z*] - Hermitian combination
+C                +1 - [Z-Y  Y*-Z*] - Hermitian combination
+C                -1 - [Z+Y  Y*+Z*] - anti-Hermitian combination
+C                Note that for time-antisymmetric operators, an
+C                imaginary phase is extracted, thus reversing
+C                hermiticity during the calculation.
 C                    
 C  ( TRIAL VECTORS ARE ONLY ADDED FOR THE NON CONVERGED VECTORS AND
 C    LINEAR DEPENDENCE IS REMOVED)
