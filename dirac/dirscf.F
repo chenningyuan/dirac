@@ -923,7 +923,9 @@ C
 *grac   
       DO 10 ITER = 2,MAXITR
 *grac   
-         IF(.NOT.GRACON) CALL HOMO(EIG,IBEIG,eigmax_previous)
+         IF(DFTGRAC.AND.(.NOT.GRACON)) THEN
+           CALL HOMO(EIG,IBEIG,eigmax_previous)
+         ENDIF
 *grac
          NITER  = NITER + 1
          KITER  = KITER + 1
