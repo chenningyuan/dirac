@@ -564,7 +564,7 @@ C       FIND BOTH EIGENVALUES AND EIGENVECTORS
 C       ======================================
 C
    10 CONTINUE
-      CALL DUNIT2(VEC(1,1,1),LRV,N)
+      CALL DUNIT2(VEC,N,LRV,LCV,NZ)
 C
 C       Find eigenvalues/vectors of real symmetric
 C       tridiagonal matrix
@@ -1718,7 +1718,7 @@ C
         NEVEC = 0
       ELSEIF(IJOB.EQ.1) THEN
         NEVEC = NDIM
-        CALL DUNIT2(EVEC,LDM,NDIM)
+        CALL DUNIT2(EVEC,NDIM,LDM,NDIM,1)
       ELSEIF(IJOB.EQ.2) THEN
         NEVEC = NDIM
       ELSE
@@ -1797,27 +1797,28 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dunit2 */
-      SUBROUTINE DUNIT2(A,LDM,N)
+      SUBROUTINE DUNIT2(A,N,LR,LC,NZ)
 C*****************************************************************************
 C
-C     Subroutine DUNIT sets the real square matrix A equal
+C     Subroutine DUNIT sets a general square matrix A equal
 C     to a unit matrix.
 C     /VER 2/ 14-Sep-1983 hjaaj
 C     Include leading dimension - T.Saue Aug 16 1996
 C
 C*****************************************************************************
 #include <implicit.h>
-      DIMENSION A(*)
+      DIMENSION A(LR,LC,NZ)
       PARAMETER (D1=1.0D00, D0=0.0D00)
 C
-      NN = LDM*(N-1) + N
-      DO 100 I = 1,NN
-         A(I) = D0
-  100 CONTINUE
-      N1 = LDM + 1
-      DO 200 I = 1,NN,N1
-         A(I) = D1
-  200 CONTINUE
+      DO IZ = 1,NZ
+        DO J = 1,N
+          CALL DCOPY(N,D0,0,A(1,J,IZ),1)
+        ENDDO
+      ENDDO
+      DO J = 1,N
+        A(J,J,1) = D1
+      ENDDO
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
