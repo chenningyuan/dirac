@@ -1154,7 +1154,7 @@ C
       IOPT  = 0
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
-      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,IOPT)
+      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,DUM,IOPT)
       CLOSE(LUBUF,STATUS='KEEP')
 C
 C     Initialize file for solution vectors
