@@ -247,145 +247,145 @@ cat <<EOF>> Makefile
 OBJSMXM = gp/mxmpack.o
 
 dirac.x: DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ  $AUXMAK
-        \$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirac.x \$(OBJS)  $AUXOBJ\
+	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirac.x \$(OBJS)  $AUXOBJ\
         \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
 
 EOF
 if($PARMOD) then
 cat <<EOF>> Makefile
 dirmpi.x: DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ  SLAVE_OBJ $AUXMAK
-        \$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirmpi.x \$(OBJS)  \$(OBJSLAVE) $AUXOBJ\
-        \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(MPI_LIB_PATH) \$(MPI_LIB)
+	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirmpi.x \$(OBJS)  \$(OBJSLAVE) $AUXOBJ\
+	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(MPI_LIB_PATH) \$(MPI_LIB)
 
 dirpvm.x: DIR_OBJ PRP_OBJ HER_OBJ PVM_OBJ  $AUXMAK\
-        GP_OBJ MXM_OBJ PD_OBJ    
-        \$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirpvm.x \$(OBJS)  \$(OBJSLAVE) $AUXOBJ\
-        \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(PVM_LIB_PATH) \$(PVM_LIB_LIST)
-        \$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/node.x \$(OBJSLAVE) \$(OBJS) \
-        \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(PVM_LIB_PATH) \$(PVM_LIB_LIST)
+	GP_OBJ MXM_OBJ PD_OBJ    
+	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirpvm.x \$(OBJS)  \$(OBJSLAVE) $AUXOBJ\
+	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(PVM_LIB_PATH) \$(PVM_LIB_LIST)
+	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/node.x \$(OBJSLAVE) \$(OBJS) \
+	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(PVM_LIB_PATH) \$(PVM_LIB_LIST)
 EOF
 endif
 cat <<EOF>> Makefile
 
 clean   :
-        cd dirac    ; make clean
-        cd abacus   ; make clean
-        cd prp      ; make clean
+	cd dirac    ; make clean
+	cd abacus   ; make clean
+	cd prp      ; make clean
 EOF
 if($ERIMOD) then
-echo '  cd eri      ; make clean' >> Makefile
+echo '	cd eri      ; make clean' >> Makefile
 endif
 if($RSPMOD) then
-echo '  cd prp/rsp  ; make clean' >> Makefile
+echo '	cd prp/rsp  ; make clean' >> Makefile
 endif
 if($TRAMOD) then
-echo '  cd moltra   ; make clean' >> Makefile
+echo '	cd moltra   ; make clean' >> Makefile
 endif
 if($CCMOD) then
-echo '  cd relccsd  ; make clean' >> Makefile
+echo '	cd relccsd  ; make clean' >> Makefile
 endif
 cat <<EOF>> Makefile
-        cd gp       ; make clean
-        cd pdpack   ; make clean
-        \$(RM) -f *~
+	cd gp       ; make clean
+	d pdpack   ; make clean
+	\$(RM) -f *~
 
-export  :
-        tar cvf DIRAC.new.tar \
-        configure doc/dirdoc.ps \
-        include/*.h Makefile Makefile.config dirac/*.F dirac/Makefile dirac/include \
-        prp/*.F prp/Makefile prp/include\
-        abacus/*.F abacus/Makefile abacus/include\
-        gp/Makefile gp/*.F gp/include \
-        pdpack/Makefile pdpack/*.F pdpack/include
+export:
+	tar cvf DIRAC.new.tar \
+	configure doc/dirdoc.ps \
+	include/*.h Makefile Makefile.config dirac/*.F dirac/Makefile dirac/include \
+	prp/*.F prp/Makefile prp/include\
+	abacus/*.F abacus/Makefile abacus/include\
+	gp/Makefile gp/*.F gp/include \
+	pdpack/Makefile pdpack/*.F pdpack/include
 EOF
 if($ERITAR) then
-echo '  tar rvf DIRAC.new.tar eri/*.F eri/Makefile eri/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar eri/*.F eri/Makefile eri/include' >> Makefile
 endif
 if($CCTAR) then
-echo '  tar rvf DIRAC.new.tar relccsd/*.F relccsd/Makefile relccsd/*.inc relccsd/*.c relccsd/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar relccsd/*.F relccsd/Makefile relccsd/*.inc relccsd/*.c relccsd/include' >> Makefile
 endif
 if($RSPTAR) then
-echo '  tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile prp/rsp/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile prp/rsp/include' >> Makefile
 endif
 if($TRATAR) then
-echo '  tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile moltra/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile moltra/include' >> Makefile
 endif
 if($PARTAR) then
-echo '  tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile abacus/par/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile abacus/par/include' >> Makefile
 endif
 if($PAMADM) then
-echo '  tar rvf DIRAC.new.tar adm/*' >> Makefile
+echo '	tar rvf DIRAC.new.tar adm/*' >> Makefile
 endif
 cat <<EOF>> Makefile
-        compress DIRAC.new.tar
+	compress DIRAC.new.tar
 
 veryclean :
-        \$(RM) -r dirac include abacus prp gp pdpack doc
+	\$(RM) -r dirac include abacus prp gp pdpack doc
 EOF
 if($TRAMOD) then
-echo '  $(RM) -r moltra' >> Makefile
+echo '	$(RM) -r moltra' >> Makefile
 endif
 if($CCMOD) then
-echo '  $(RM) -r relccsd' >> Makefile
+echo '	$(RM) -r relccsd' >> Makefile
 endif
 if($ERIMOD) then
-echo '  $(RM) -r eri' >> Makefile
+echo '	$(RM) -r eri' >> Makefile
 endif
 cat <<EOF>> Makefile
 
 DIR_OBJ :
-        cd dirac ; make all
+	cd dirac ; make all
 
 PRP_OBJ :
-        cd prp; make all
+	cd prp; make all
 EOF
 if($RSPMOD) then
 cat <<EOF>> Makefile
 
 RSP_OBJ :
-        cd prp/rsp; make all
+	cd prp/rsp; make all
 EOF
 endif
 if($TRAMOD) then
 cat <<EOF>> Makefile
 
 TRA_OBJ :
-        cd moltra ; make all
+	cd moltra ; make all
 EOF
 endif
 if($CCMOD) then
 cat <<EOF>> Makefile
 
 CCM_OBJ :
-        cd relccsd ; make all
+	cd relccsd ; make all
 EOF
 endif
 if($ERIMOD) then
 cat <<EOF>> Makefile
 
 ERI_OBJ :
-        cd eri; make all
+	cd eri; make all
 EOF
 endif
 cat <<EOF>> Makefile
 
 HER_OBJ :
-        cd abacus ; make all
+	cd abacus ; make all
 
 GP_OBJ :
-        cd gp ; make all
+	cd gp ; make all
 
 MXM_OBJ :
-        cd gp ; make mxm
+	cd gp ; make mxm
 
 EOF
 if($PARMOD) then
 cat <<EOF>> Makefile
 PVM_OBJ :
-        cd abacus/par ; make pvm 
+	cd abacus/par ; make pvm 
 
 SLAVE_OBJ :
-        cd abacus/par  ; make slave
+	cd abacus/par  ; make slave
 EOF
 #if($ERIMOD) then
 #cat <<EOF>> Makefile
@@ -396,7 +396,7 @@ endif
 cat <<EOF>> Makefile
 
 PD_OBJ  :
-        cd pdpack ; make all
+	cd pdpack ; make all
 EOF
 if($GENTAR) then
 #
