@@ -3521,6 +3521,7 @@ C
                   NAMDPX(3*NUCDEP-2) = NAMEX(3*N-2)
                   NAMDPX(3*NUCDEP-1) = NAMEX(3*N-1)
                   NAMDPX(3*NUCDEP  ) = NAMEX(3*N  )
+                  NDEGNM(NUCDEP)     = 1
                ELSE
                   ICHARD = ICHAR('0') + II
                   NAMDEP(NUCDEP)     = NAMEX(3*N)(1:4)//' '
@@ -3531,6 +3532,7 @@ C
      &                //CHAR(ICHARD)//NAMEX(3*N-1)(5:6)
                   NAMDPX(3*NUCDEP  ) = NAMEX(3*N  )(1:3)
      &                //CHAR(ICHARD)//NAMEX(3*N  )(5:6)
+                  NDEGNM(NUCDEP)     = II
                END IF
             ELSE
                NUCNUM(N,LA+1) = 0
@@ -5716,7 +5718,7 @@ C     ...and their Hermitian conjugates: 1,-i, j,-k
 C
       IQPH(1,2) =  1
       IQPH(2,2) = -1
-CTOND      IQPH(3,2) =  1
+CTROND      IQPH(3,2) =  1
       IQPH(3,2) = -1
       IQPH(4,2) = -1
 C

@@ -1735,8 +1735,7 @@ C
       SIGNAY = D1
       SIGNAZ = D1
       ICENTA = NUCNUM(NCNTSH(ISHELA),1)
-      READ(NAMDEP(ICENTA)(5:6),'(I2)') IDEG
-      IF(IDEG.EQ.0) IDEG = 1
+      IDEG   = NDEGNM(ICENTA)
       ISYBLA = ISYMBL(ISHELA,IDEG)
       IF (NCENTA .LE. 0) ICENTA = -1
 C
@@ -1766,8 +1765,7 @@ C
       IF (IBTAND(ISYMR,IBTOR(MULA,MULB)) .EQ. 0) THEN
          NSYMR = NSYMR + 1
          ICENTB = NUCNUM(NCNTSH(ISHELB),IBTAXO(ISYMR,MULB)+1)
-         READ(NAMDEP(ICENTB)(5:6),'(I2)') IDEG
-         IF(IDEG.EQ.0) IDEG = 1
+         IDEG   = NDEGNM(ICENTB)
          ISYBLB = ISYMBL(ISHELB,IDEG)
          IF (NCENTB .LE. 0) ICENTB = -2
          NUCAB  = NUCTAB(NSYMR)
@@ -1829,13 +1827,11 @@ C
             IF (IBTAND(ISYMT,IBTOR(MULAB,MULCD)) .EQ. 0) THEN
               ISYMTS = IBTXOR(ISYMT,ISYMS)
               ICENTC = NUCNUM(NCNTSH(ISHELC),IBTAXO(ISYMT,MULC)+1)
-              READ(NAMDEP(ICENTC)(5:6),'(I2)') IDEG
-              IF(IDEG.EQ.0) IDEG = 1
+              IDEG   = NDEGNM(ICENTC)
               ISYBLC = ISYMBL(ISHELC,IDEG)
               IF (NCENTC .LE. 0) ICENTC = -3
               ICENTD = NUCNUM(NCNTSH(ISHELD),IBTAXO(ISYMTS,MULD)+1)
-              READ(NAMDEP(ICENTD)(5:6),'(I2)') IDEG
-              IF(IDEG.EQ.0) IDEG = 1
+              IDEG   = NDEGNM(ICENTD)
               ISYBLD = ISYMBL(ISHELD,IDEG)
               IF (NCENTD .LE. 0) ICENTD = -4
 C

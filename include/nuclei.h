@@ -5,6 +5,7 @@
      &                ISTBNU(MXCENT), GNUEXP(MXCENT), NAMN(MXCENT),     &
      &                NUCIND, NUCDEP, NTRACO, ITRACO(3), NATOMS, NFLOAT,&
      &                NBASIS, NLARGE, NSMALL, NPBAS, NPLRG, NPSML,      &
-     &                NUCNET, INCENT(MXCENT),INUNIQ(MXCENT),GAUNUC
+     &                NUCNET, INCENT(MXCENT),INUNIQ(MXCENT),GAUNUC,     &
+     &                NDEGNM(MXCENT)
       CHARACTER NAMEX*6, NAMDEP*6, NAMDPX*6
       COMMON /NUCLEC/ NAMEX(MXCOOR), NAMDEP(MXCENT), NAMDPX(MXCOOR)
