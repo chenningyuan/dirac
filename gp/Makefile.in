@@ -15,7 +15,15 @@ C_OBJS = gpjth_c.o
 
 MXM_OBJS = mxmpack.o
 
-all:	$(OBJS) $(C_OBJS)
+all:	setcomp $(OBJS) $(C_OBJS)
+
+setcomp:
+	( \
+	   cd include ; \
+	   rm -f compinfo.h ; \
+	   echo "#define WHO_COMPILED \"${LOGNAME}\"" > compinfo.h ; \
+	   echo "#define WHERE_COMPILED \"`hostname`\"" >> compinfo.h ; \
+	)
 
 mxm:	$(MXM_OBJS)
 
