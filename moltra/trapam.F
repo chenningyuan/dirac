@@ -3120,7 +3120,11 @@ C
 C       Write MOLFDIR file MRCONEE
 C       --------------------------
 C
-        CALL MRCONE(WORK(KBUF),WORK(KE(1,1)),WORK(KIBE(1,1)),
+        CALL MEMGET('REAL',KORBE,NSTRT(1),WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIBORB,NSTRT(1),WORK,KFREE,LFREE)
+C
+        CALL MRCONE(WORK(KBUF),WORK(KORBE),WORK(KE(1,1)),WORK(KE(2,1)),
+     &              WORK(KIBORB),WORK(KIBE(1,1)),WORK(KIBE(2,1))
      &              NSPC,NSTR,NSTRT,IPRRES,
      &              WORK,KFREE,LFREE)
 C
