@@ -942,9 +942,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 Cjth - linux      DIMENSION EIG(NFBAS(IFRP,0)),
-      DIMENSION EIG(*),
-     &          EBUF(NPVEC+NEVEC),
-     &          JVEC(*)
+      DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(*)
 C
       NVEC = NPVEC + NEVEC
 C
@@ -978,9 +976,7 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-      DIMENSION IBEIG(*),
-     &          IBBUF(*),
-     &          JVEC(*)
+      DIMENSION IBEIG(*),IBBUF(*),JVEC(*)
 C
       NVEC = NPVEC + NEVEC
 C
@@ -1444,14 +1440,22 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selown */
-      SUBROUTINE SELOWN(IOPT,CMO,EIG,INUC,IUNIT,CMOFIL,NE,NQ,NVECS,
-     &                  KVEC,NSTR,WORK,KFREE,LFREE)
+      SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,IUNIT,CMOFIL,KQ,KE,KI,
+     &                  NVECS,KVEC,NSTR,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Select coeffiecients for symmetry independent nucleus INUC
 C     calculated in its own basis
-C      IOPT=1 - Select coefficients only
-C      IOPT=2 - Select coeffcicients AND eigenvalues
+C     Read option is provided from bit-packed IOPT:
+C       0001 - give restart info
+C       0010 - read coefficients
+C       0100 - read eigenvalues
+C       1000 - read boson irrep identification
+C
+C     The array IDIM contains the following information:
+C       IDIM(1,IFRP) = NPSH(IFRP)    : number of positronic solutions
+C       IDIM(2,IFRP) = NESH(IFRP)    : number of electronic solutions
+C       IDIM(3,IFRP) = NFBAS(IFRP,0) : number of AO-basis functions
 C
 C     Written by T.Saue Sep 25 2000
 C
@@ -1463,18 +1467,28 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "nuclei.h"
-      DIMENSION EIG(*),CMO(*),NSTR(2,0:2),KVEC(2),NVECS(2),
-     &          NQ(2),NE(2),WORK(*)
+      DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(2),NVECS(2),
+     &          KQ(2),KE(2),KI(2),WORK(*)
 C     Local variables
+      LOGICAL LBIT
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
       DIMENSION IDIM(3,2)
 C
       KFRSAV = KFREE
       REWIND IUNIT
+C
+C     Read title line
+C     ===============
+C
       READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
-      FMT = MXFORM(TOTERG,20)
-      WRITE(LUPRI,'(/A,A6,3X,A,'//FMT//')')
+C
+C     File info
+C     =========
+C
+      IF(LBIT(IOPT,1)) THEN
+        FMT = MXFORM(TOTERG,20)
+        WRITE(LUPRI,'(/A,A6,3X,A,'//FMT//')')
      &   'SELOWN: Coefficients read from file ',CMOFIL,
      &   '- Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
@@ -1484,6 +1498,11 @@ C
      &   '- Electrons : ',(IDIM(2,I),I=1,NFSYM)
         WRITE(LUPRI,'(A,2I8)')
      &   '- SO-basis  : ',(IDIM(3,I),I=1,NFSYM)
+      ENDIF
+C
+C     Calculate dimensions
+C     ====================
+C
       NCDIM = 0
       NEDIM = 0
       DO IFRP = 1,NFSYM
@@ -1491,10 +1510,37 @@ C
         NCDIM = NCDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))*IDIM(3,IFRP)
       ENDDO
       NCDIM = NCDIM*NZ
+C
 C     Read coefficients
-      CALL READT(IUNIT,NCDIM,CMO)
+C     =================
+C    
+      IF(LBIT(IOPT,2)) THEN
+        CALL READT(IUNIT,NCDIM,CMO)
+      ELSE
+        READ(IUNIT)
+      ENDIF
+C
 C     Read eigenvalues
-      IF(IOPT.EQ.2) CALL READT(IUNIT,NEDIM,EIG)
+C     ================
+C
+      IF(LBIT(IOPT,3)) THEN
+        CALL READT(IUNIT,NEDIM,EIG)
+      ELSE
+        READ(IUNIT)
+      ENDIF
+C
+C     Read boson irrep info
+C     =====================
+C
+      IF(LBIT(IOPT,4)) THEN
+        CALL READI(IUNIT,NEDIM,IBEIG)
+      ELSE
+        READ(IUNIT)
+      ENDIF
+C
+C     Select and adjust format to molecular basis
+C     ===========================================
+C
       IEIG = 1
       ICMO = 1
       DO IFRP = 1,NFSYM
@@ -1502,7 +1548,7 @@ C     Read eigenvalues
         NVEC = IDIM(1,IFRP)+IDIM(2,IFRP)
 C       Generate pointer array for bases
         CALL MEMGET('INTE',KBAS,IDIM(3,IFRP),WORK,KFREE,LFREE)
-        CALL SELOW4(INUC,IFRP,WORK(KBAS),NSBAS)
+        CALL SELOWI(INUC,IFRP,WORK(KBAS),NSBAS)
         IF(NSBAS.NE.IDIM(3,IFRP)) THEN
           WRITE(LUPRI,'(A,I3/A,A4,A,I3)')
      &      'SELOWN: Error in selection of coefficients in ircop ',
@@ -1515,16 +1561,26 @@ C       Generate pointer array for bases
            CALL QUIT('SELOWN: Error in cf.selection !')
         ENDIF
 C       Select coefficients
-        CALL SELOW2(INUC,CMO(ICMO),IDIM(3,IFRP),NVEC,
+        IF(LBIT(IOPT,2)) THEN
+          CALL SELOWC(INUC,CMO(ICMO),IDIM(3,IFRP),NVEC,
      &              IDIM(1,IFRP),IDIM(2,IFRP),
-     &              WORK(NQ(IFRP)),NFBAS(IFRP,0),NVECS(IFRP),
+     &              WORK(KQ(IFRP)),NFBAS(IFRP,0),NVECS(IFRP),
      &              WORK(KVEC(IFRP)),WORK(KBAS),
      &              NSTR(IFRP,2),NSTR(IFRP,1))
-        ICMO = ICMO + NVEC*IDIM(3,IFRP)*NZ
+          ICMO = ICMO + NVEC*IDIM(3,IFRP)*NZ
+        ENDIF
 C       Select eigenvalues
-        IF(IOPT.EQ.2) CALL SELOW3(EIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
-     &              WORK(NE(IFRP)),
-     &              WORK(KVEC(IFRP)),NSTR(IFRP,2),NSTR(IFRP,1))
+        IF(LBIT(IOPT,3)) THEN
+          CALL SELOWE(EIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
+     &                WORK(KE(IFRP)),
+     &                WORK(KVEC(IFRP)),NSTR(IFRP,2),NSTR(IFRP,1))
+        ENDIF
+C       Select boson irrep information
+        IF(LBIT(IOPT,4)) THEN
+          CALL SELOWB(IBEIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
+     &                WORK(KI(IFRP)),
+     &                WORK(KVEC(IFRP)),NSTR(IFRP,2),NSTR(IFRP,1))
+        ENDIF
         IEIG = IEIG + NVEC
         CALL MEMREL('SELOWN.loop',WORK,KBAS,KBAS,KFREE,LFREE)
       ENDIF
@@ -1537,7 +1593,7 @@ C       Select eigenvalues
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selow2 */
-      SUBROUTINE SELOW2(INUC,CMO,KBAS,KORB,KPSH,KESH,
+      SUBROUTINE SELOWC(INUC,CMO,KBAS,KORB,KPSH,KESH,
      &                  CBUF,MBAS,MORB,
      &                  JVEC,JBAS,NPVEC,NEVEC)
 C***********************************************************************
@@ -1584,8 +1640,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selow3 */
-      SUBROUTINE SELOW3(EIG,KPSH,KESH,EBUF,JVEC,NPVEC,NEVEC)
+C/* Deck selowe */
+      SUBROUTINE SELOWE(EIG,KPSH,KESH,EBUF,JVEC,NPVEC,NEVEC)
 C***********************************************************************
 C     Pick out a set of eigenvalues from EIG according to array JVEC
 C
@@ -1599,9 +1655,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 Cjth - linux      DIMENSION EIG(NFBAS(IFRP,0)),
-      DIMENSION EIG(*),
-     &          EBUF(NPVEC+NEVEC),
-     &          JVEC(*)
+      DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(*)
 C
       NVEC = NPVEC + NEVEC
 C
@@ -1623,8 +1677,45 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck selowb */
+      SUBROUTINE SELOWB(IBEIG,KPSH,KESH,IBBUF,JVEC,NPVEC,NEVEC)
+C***********************************************************************
+C     Pick out a set of from boson irrep info array IBEIG 
+C     according to array JVEC
+C
+C     Written by L. Visscher 1997
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+      DIMENSION IBEIG(*),IBBUF(NPVEC+NEVEC),JVEC(*)
+C
+      NVEC = NPVEC + NEVEC
+C
+C
+C     Positronic eigenvalues
+C
+      DO I = 1,NPVEC
+        II = KPSH+1+JVEC(I)
+        IBBUF(I) = IBEIG(II)
+      ENDDO
+C
+C     Electronic eigenvalues
+C
+      DO I = NPVEC+1,NVEC
+        II = KPSH+JVEC(I)
+        IBBUF(I) = IBEIG(II)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selow4 */
-      SUBROUTINE SELOW4(INUC,IFRP,JBAS,NSBAS)
+      SUBROUTINE SELOWI(INUC,IFRP,JBAS,NSBAS)
 C***********************************************************************
 C
 C     Make index array pointing from basis functions of
