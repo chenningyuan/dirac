@@ -1101,15 +1101,15 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
       DIMENSION IOS1(*),IOS2(*),IOS3(*),IOS4(*)
-      DIMENSION NSTR(0:2,2,NINDEX)
+      DIMENSION NSTR(2,0:2,NINDEX)
 C
-      WRITE(LUPRI,'(//1X,A,A3/)') '* Fermion ircop ',FREP(I)
+      WRITE(LUPRI,'(//A,A3)') ' * Fermion ircop ',FREP(I)
 C
 C     Index 1
 C
-      IF(NSTR(0,I,1).GT.0) THEN
-        WRITE(LUPRI,1000) 1,NSTR(0,I,1)
-        WRITE(LUPRI,1002) (IOS1(K),K=1,NSTR(0,I,1))
+      IF(NSTR(I,0,1).GT.0) THEN
+        WRITE(LUPRI,1000) 1,NSTR(I,0,1)
+        WRITE(LUPRI,1002) (IOS1(K),K=1,NSTR(I,0,1))
       ELSE
         WRITE(LUPRI,1001) 1
       ENDIF
@@ -1117,9 +1117,9 @@ C
 C       Index 2
 C
       IF (NINDEX.LT.2) RETURN
-      IF(NSTR(0,I,2).GT.0) THEN
-        WRITE(LUPRI,1000) 2,NSTR(0,I,2)
-        WRITE(LUPRI,1002) (IOS2(K),K=1,NSTR(0,I,2))
+      IF(NSTR(I,0,2).GT.0) THEN
+        WRITE(LUPRI,1000) 2,NSTR(I,0,2)
+        WRITE(LUPRI,1002) (IOS2(K),K=1,NSTR(I,0,2))
       ELSE
         WRITE(LUPRI,1001) 2
       ENDIF
@@ -1127,9 +1127,9 @@ C
 C       Index 3
 C
       IF (NINDEX.LT.3) RETURN
-      IF(NSTR(0,I,3).GT.0) THEN
-        WRITE(LUPRI,1000) 3,NSTR(0,I,3)
-        WRITE(LUPRI,1002) (IOS3(K),K=1,NSTR(0,I,3))
+      IF(NSTR(I,0,3).GT.0) THEN
+        WRITE(LUPRI,1000) 3,NSTR(I,0,3)
+        WRITE(LUPRI,1002) (IOS3(K),K=1,NSTR(I,0,3))
       ELSE
         WRITE(LUPRI,1001) 3
       ENDIF
@@ -1137,9 +1137,9 @@ C
 C       Index 4
 C
       IF (NINDEX.LT.4) RETURN
-      IF(NSTR(0,I,4).GT.0) THEN
-        WRITE(LUPRI,1000) 4,NSTR(0,I,4)
-        WRITE(LUPRI,1002) (IOS4(K),K=1,NSTR(0,I,4))
+      IF(NSTR(I,0,4).GT.0) THEN
+        WRITE(LUPRI,1000) 4,NSTR(I,0,4)
+        WRITE(LUPRI,1002) (IOS4(K),K=1,NSTR(I,0,4))
       ELSE
         WRITE(LUPRI,1001) 4
       ENDIF
