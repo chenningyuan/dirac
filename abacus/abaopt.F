@@ -1151,8 +1151,8 @@ C
          WRITE(LUPRI,'(1X,A,1P,E8.2)')
      &        '* Screening threshold in gradient calculation ',SCRGRD
       ELSE
-         WRITE(LUPRI,'(1X,A,1P,E8.2)')
-     &        '* No screening in the calcualtion of '//
+         WRITE(LUPRI,'(1X,A)')
+     &        '* No screening in the calculation of '//
      &        'two-electron integrals.'
       END IF
 #endif
