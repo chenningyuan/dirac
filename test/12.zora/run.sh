@@ -8,28 +8,20 @@ if [ -z "$PAM_PATH" ]; then
    fi
    PAM_PATH=${PAM_PATH%/*}
 fi
-echo $PAM_PATH/pamq
-if [ -z "$DIRAC" ]; then
-   DIRAC=`which dirac.x`
-fi
-echo $DIRAC
-if [ -z "$TAG" ]; then
-   TAG=out
-fi
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 U.dyall.2p 1el.dirac
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 U.dyall.2p 1el.diracsf
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 U.dyall.2p 1el.zora
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 U.dyall.2p 1el.zorasf
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 U.dyall.2p 1el.zorasc
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 U.dyall.2p 1el.zorascsf
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 Xe.Faas nonrel
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 Xe.Faas zora
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 Xe.Faas zora4
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 Xe.Faas dirac
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 Xe.Faas zorasf
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 Xe.Faas zora4sf
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 Xe.Faas diracsf
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 Xe.Faas zorasc
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 Xe.Faas zora4sc
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 Xe.Faas zorascsf
-pamq $MPIARG -dirac $DIRAC -run $TAG -t 3600 Xe.Faas zora4scsf
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 U.dyall.2p 1el.dirac
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 U.dyall.2p 1el.diracsf
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 U.dyall.2p 1el.zora
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 U.dyall.2p 1el.zorasf
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 U.dyall.2p 1el.zorasc
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 U.dyall.2p 1el.zorascsf
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 Xe.Faas nonrel
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 Xe.Faas zora
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 Xe.Faas zora4
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 Xe.Faas dirac
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 Xe.Faas zorasf
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 Xe.Faas zora4sf
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 Xe.Faas diracsf
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 Xe.Faas zorasc
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 Xe.Faas zora4sc
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 Xe.Faas zorascsf
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG -mw 10 Xe.Faas zora4scsf
