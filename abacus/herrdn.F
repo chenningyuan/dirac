@@ -5488,6 +5488,8 @@ C***********************************************************************
 #include <infpar.h>
 #include <molinp.h>
 C
+      PARAMETER (DSM=1.0D-30)
+C
       LOGICAL SEG,TOBE,SEGIJ
       CHARACTER*15 FILNAM*20,TEXT*80,DATE1*10,TIME1*8,FORMATE,FORMATC
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -5500,7 +5502,6 @@ C
 #include <ccom.h>
 #include <gencon.h>
 #include <ibtfun.h>
-      PARAMETER (DSM=1.0D-30)
 C     
       LUBFIL = 55
       NTYP   = 0
