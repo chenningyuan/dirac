@@ -442,7 +442,7 @@ C
 C
       DATA TABDIR /'*END OF','*MINIMI','*XXXXXX','*XXXXXX'/
 C
-      DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.INTGRL',
+      DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
      &             '.WAVE F','.ANALYZ','.PROPER','.HEINZ ',
      &             '.XXXXXX','.XXXXXX','.MINIMI','.XXXXXX'/
 C
@@ -504,12 +504,12 @@ C&&&& INPTES: Input test
             NJOBS = NJOBS + 1
             GO TO 100
   103    CONTINUE
-C&&&& $INDEX transformation
+C&&&& 4-INDEX transformation
             DOTRA = .TRUE.
             NJOBS = NJOBS + 1
             GO TO 100
   104    CONTINUE
-C&&&& INTGRL: Only run integrals
+C&&&& ONLY INTEGRALS: Only run integrals
             DOHRM = .TRUE.
             GO TO 100
   105    CONTINUE
