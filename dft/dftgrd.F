@@ -1,7 +1,7 @@
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck dftgrd */
-      SUBROUTINE DFTGRD(WORK,LWORK,IPRINT,TEST)
+      SUBROUTINE DFTGRD(DMAT,WORK,LWORK,IPRINT,TEST)
 C                                                                      C
 C     Interface routine for grid points                                C
 C     T. Helgaker                                                      C
@@ -17,7 +17,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dftcom.h"
 #include "symmet.h"
 #include "ccom.h"
-
       PARAMETER (MAXCEN=100)
       PARAMETER (D0=0.0D0)
       LOGICAL TEST
@@ -25,7 +24,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dftwrk.h"
 
-      DIMENSION WORK(LWORK)
+      DIMENSION DMAT(*),WORK(LWORK)
 
 #include "ibtfun.h"
 
@@ -98,6 +97,8 @@ C..added for the MOLCAS scheme:
       NDIM=2*NHTYP*NUCIND
       CALL MEMGET('INTE',KNUCO,NDIM  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KAA  ,2*NDIM,WORK,KFREE,LFREE)
+C..added for density-based atomic size estimates
+      CALL MEMGET('REAL',KCHIMT,NATOMS*NATOMS  ,WORK,KFREE,LFREE)
 C
 C     Open unit LUQUAD
 C     ================
@@ -116,7 +117,8 @@ C
      &              WORK(KXMUJN),WORK(KXMUJ2),
      &              WORK(KRIJ),WORK(KAIJ),IVECL,IBIG,
      &              WORK(KRBC),WORK(KRVEC),
-     &              WORK(KNUCO),WORK(KAA),LUQUAD,IPRINT)
+     &              WORK(KNUCO),WORK(KAA),DMAT,WORK(KCHIMT),LUQUAD,
+     &              IPRINT,WORK(KFREE),LFREE)
 
       IF (TEST) CALL DFTEST(WORK,LWORK,IBIG,LUQUAD,IPRINT)
 C
@@ -131,7 +133,7 @@ C     Check accuracy of numerical integration
 C     =======================================
 C
       IF (INTCHK .GT.0) THEN
-         CALL GRTEST(WORK(LFREE),LFREE,JPRINT)
+         CALL GRTEST(WORK(KFREE),LFREE,JPRINT)
       END IF
 
       TIMGRD = SECOND() - TIMSTR
@@ -147,7 +149,7 @@ C                                                                      C
 C  /* Deck construc */
       SUBROUTINE CONSTRUC(WRKSP,X8,Y8,Z8,WT8,PSMU,RJ,ACCUM,XMUIJN,
      &                    XMUIJ2,RIJ,AIJ,IVECL,IBIG,RBC,RVEC,
-     &                    NUCORB,AA,LUQUAD,IPRINT)
+     &                    NUCORB,AA,DMAT,CHIMT,LUQUAD,IPRINT,WORK,LWORK)
 C                                                                      C
 C      Creates a quadrature grid and writes it to disk                 C
 C      Original version by C.W.Murray. Rewritten by                    C
@@ -180,11 +182,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
+#include "dcbbas.h"
+#include "dftcom.h"
 
       DIMENSION WRKSP(4*NUM),
      &          ACCUM(IVECL),XMUIJN(IVECL),XMUIJ2(IVECL),
      &          PSMU(IVECL,NAT),RJ(IVECL,NAT)
-      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
+      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND),
+     &     DMAT(*),CHIMT(NATOMS,NATOMS),WORK(LWORK)
 C
 C     CARE: Some equivalencing through argument list!
 C
@@ -245,7 +250,47 @@ C       Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*
 
 #include "sdpre.h"
 #include "ibtfun.h"
+C
+C     Get estimates for atomic size ratios for use in the Becke
+C     partitioning scheme.
+C
+      CALL TITLER('Slater-Bragg atomic size estimates','*',122)
+C
+C     List atoms
+C
+C      WRITE(LUPRI,*)
+C      DO IATOM = 1,NUCIND
+C         WRITE(LUPRI,*) '** Atom(',IATOM,') = ',NAMN(IATOM)
+C      ENDDO
+C      WRITE(LUPRI,*)
 
+C
+C     Initialize CHIMT with Bragg-Slater data
+C
+      DO I = 1,NATOMS
+         DO J = 1,NATOMS
+            CHIMT(I,J) = BRAGG(NINT(ZAN(I)))/BRAGG(NINT(ZAN(J)))
+         END DO
+      END DO
+      CALL HEADER('Slater-Bragg relative atomic sizes',-1)
+      CALL OUTPUT(CHIMT,1,NAT,1,NAT,NAT,NAT,1,LUPRI)
+C
+C     Get density-based atomic radii if requested AND coefficients 
+C     exist.
+C
+      IF(ATSIZE) THEN
+         CALL TITLER('Density based atomic size estimates','*',122)
+         CALL GETCHI(DMAT,CHIMT,IPRINT,WORK,LWORK)
+         CALL HEADER('Density based relative atomic sizes',-1)
+         CALL OUTPUT(CHIMT,1,NAT,1,NAT,NAT,NAT,1,LUPRI)
+         WRITE(LUPRI,*)
+      ELSE
+         WRITE(LUPRI,'(/A)')
+     &        'DFTGRD: ATSIZE not requested or no '//
+     &        'trial vectors found. Slater-Bragg '//
+     &        'radii will be used.'
+         WRITE(LUPRI,*)
+      ENDIF
 C
 C     USE INPUTTED INFORMATION IN COMMON BLOCK DFTWRK TO DEFINE THE TYPE
 C     OF QUADRATURE
@@ -1038,5 +1083,380 @@ C     Newton-Raphson search
       ENDDO
       STOP 'Error in OUTERR'
 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gt1wt  */
+      SUBROUTINE GETCHI(DMAT,CHIMT,IPRINT,WORK,LWORK)
+C***********************************************************************
+C
+C     Get relative atomic size estimates by analyzing atomic
+c     contributions to the density along bonds. 
+C
+C     Written by Olav Fossgaard - June 2003
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION DMAT(*),WORK(LWORK)
+C
+      PARAMETER(MAXCEN = 100)
+C
+      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+C
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "nuclei.h"
+C
+      DIMENSION CHIMT(NATOMS,NATOMS)
+C
+#include "dcbbas.h"
+#include "dcbdhf.h"
+#include "dftcom.h"
+C
+      CALL QENTER('GETCHI')
+C
+#include "memint.h"
+C
+C     Quit if open shell
+C
+      IF (NFMAT .GT. 1) THEN
+        WRITE(LUPRI,'(/A)')
+     &  '--> Not implemented for open shell yet, nothing done.'
+        CALL QUIT('GETCHI: Not implemented for open shell')
+      END IF
+C
+C     Memory allocation
+C
+      CALL MEMGET('REAL',KCOOR,6        ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMTAO,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGAO,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSMAT,NTBAS(1)*NTBAS(1),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KASMAT,NATOMS*NATOMS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KICLAB,NTBAS(0),WORK,KFREE,LFREE)
+C
+C     Transform density matrix to unsorted basis, then to AO basis
+C
+      CALL BSTOBU(DMAT,1,WORK(KFREE),LFREE)
+      CALL DTSOAO(DMAT,WORK(KDMTAO),NTBAS(0),0,IPRINT)
+C
+C     Get atomic size estimates
+C
+      CALL CHI1(CHIMT,WORK(KDMTAO),WORK(KGAO),WORK(KSMAT),
+     &     WORK(KASMAT),WORK(KICLAB),WORK(KCOOR),IPRINT,WORK,KFREE,
+     &     LFREE)
+C
+C     Backtransform density matrix to sorted basis
+C
+      CALL BUTOBS(DMAT,1,WORK(KFREE),LFREE)
+C
+C     Memory deallocation
+C
+      CALL MEMREL('GETCHI',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+ 9999  CALL QEXIT('GETCHI')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gt1rh1 */
+      SUBROUTINE CHI1(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,COORD,IPRINT,
+     &     WORK,KFREE,LFREE)
+C
+C     Get atomic size estimates by analyzing pairwise partial densities
+C     in one dimension, along bonds.
+C
+C     Written by Trond Saue May 9 2000
+C     Modified for CHI1 by Olav Fossgaard - June 2003
+C
+C***********************************************************************
+#include "implicit.h"
+
+      PARAMETER(MAXCEN = 100)
+
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "dcbbas.h"
+C
+      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+C
+      DIMENSION COORD(3,2),CHIMT(NATOMS,NATOMS),DMAT(NTBAS(0),NTBAS(0)),
+     &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
+     &     ICLAB(NTBAS(0)),WORK(*)
+C
+C     
+#include "ibtfun.h"
+C
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(8X,A)') 'X  : Coordinate along the bond' 
+      WRITE(LUPRI,'(8X,A)') 'Y  : Sum of atomic contributions to '//
+     &     'the large component density'
+      WRITE(LUPRI,'(8X,A)') 'RHO: Total large component density '
+     
+      DO 10 I = 1,NAT
+         DO 20 J = 1,I-1
+            CHIMT(I,J) = 1.0D0
+            COORD(1,1) = C(1,I)
+            COORD(2,1) = C(2,I)
+            COORD(3,1) = C(3,I)
+            COORD(1,2) = C(1,J)
+            COORD(2,2) = C(2,J)
+            COORD(3,2) = C(3,J)
+            CALL CHI2(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,I,J,COORD,
+     &              IPRINT,WORK(KFREE),LFREE)
+ 20      END DO
+ 10   END DO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C                                                                      C   
+      SUBROUTINE CHI2(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,ICENTA,ICENTB,
+     &     COORD,IPRINT,WORK,LWORK)
+C                                                                      C
+C     Get atomic size estimates by analyzing pairwise partial densities
+C     in one dimension, along bonds.
+
+C     Written by Olav Fossgaard - June 2003
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER(D0=0.0D0,D2=2.0D0)
+      PARAMETER(MAXCEN = 100)
+
+#include "codata.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dcbbas.h"
+C
+      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+C
+      DIMENSION CHIMT(NATOMS,NATOMS),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),
+     &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
+     &     ICLAB(NTBAS(0)),WORK(LWORK)
+C
+C     Arrays for 2nd order polynomial fit:
+C
+      DIMENSION A(3,3),B(3),COFF(3),D(3),X(3),Y(3)
+C
+#include "sdpre.h"
+#include "memint.h"
+
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(A,I2,A,I2,A)') '** Region of density minimum '//
+     &      'for atom pair (', ICENTA,',', ICENTB,')'
+      WRITE(LUPRI,*)
+C
+C     Calculate distance between centers
+C
+      DSTEP = 0.01D0
+
+      DX = (COORD(1,2)-COORD(1,1))
+      DY = (COORD(2,2)-COORD(2,1))
+      DZ = (COORD(3,2)-COORD(3,1))
+      DISTAN = SQRT(DX*DX+DY*DY+DZ*DZ)
+      DX     = DX/DISTAN
+      DY     = DY/DISTAN
+      DZ     = DZ/DISTAN
+      ASTEP  = DSTEP/XTANG
+      NPOINT = INT(DISTAN/ASTEP)
+      IF(MOD(NPOINT,2).EQ.1) NPOINT = NPOINT+1
+      ASTEP  = DISTAN/SDPRE(NPOINT)
+
+      RHOA = 0.0D0
+      RHOB = 0.0D0
+      TOTRHO = 0.0D0
+      SUM = 0.0D0
+      SUMOLD = 0.0D0
+C
+C     Start between nuclei and get sum of partial densities for
+C     atom pair (ICENTA,ICENTB).
+
+      IP = NPOINT/2
+      PP  = SDPRE(IP)*ASTEP
+      PX  = COORD(1,1) + PP*DX
+      PY  = COORD(2,1) + PP*DY
+      PZ  = COORD(3,1) + PP*DZ
+C
+      CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,SMAT,
+     &     ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+
+      PPOLD = PP
+      SUMOLD = RHOA +RHOB
+C
+C     Take one step towards ICENTB
+C
+      IP = IP + 1
+      PP  = SDPRE(IP)*ASTEP
+      PX  = COORD(1,1) + PP*DX
+      PY  = COORD(2,1) + PP*DY
+      PZ  = COORD(3,1) + PP*DZ
+C
+      CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,SMAT,
+     &     ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+
+      SUM = RHOA + RHOB
+C
+C     Decide which way to go. Start walking until a minimum is found
+C     on the grid.
+C
+      IF(SUM.LT.SUMOLD) THEN
+         ISTART = NPOINT/2 + 1
+         IEND = NPOINT
+         INCR = 1
+         IBAK = -1
+      ELSE
+         ISTART = NPOINT/2 - 1
+         IEND = 0
+         INCR = -1
+         IBAK = 1
+      ENDIF
+
+      DO 1 IP = ISTART,IEND,INCR
+         PP  = SDPRE(IP)*ASTEP
+         PX  = COORD(1,1) + PP*DX
+         PY  = COORD(2,1) + PP*DY
+         PZ  = COORD(3,1) + PP*DZ
+C
+         CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
+     &        SMAT,ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+
+         SUM = RHOA + RHOB
+         IF(SUM.LE.SUMOLD) THEN
+            SUMOLD = SUM
+            PPOLD = PP
+            GO TO 1
+         ELSEIF(SUM.GT.SUMOLD) THEN
+            IPMIN = IP + IBAK
+            PPMIN = PPOLD
+            SUMMIN = SUMOLD
+            GO TO 2
+         END IF
+ 1    CONTINUE
+C
+C     Fit a second order polynomial around minimum point on the grid
+C
+ 2    K = 1
+      DO IP  = IPMIN-1,IPMIN+1
+         PP  = SDPRE(IP)*ASTEP
+         PX  = COORD(1,1) + PP*DX
+         PY  = COORD(2,1) + PP*DY
+         PZ  = COORD(3,1) + PP*DZ
+C     
+         CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
+     &        SMAT,ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+C
+         X(K) = PP
+         Y(K) = RHOA + RHOB
+C
+         WRITE(LUPRI,'(8X,A,I1,A,F12.8,4X,A,I1,A,F12.8,4X,A,F12.8)') 
+     &        'X(',K,') = ',X(K),'Y(',K,') =',Y(K),'RHO = ',
+     &        TOTRHO
+C
+         K = K +1
+      ENDDO
+
+      CALL POLSVD(3,3,A,B,X,Y,COFF,D,CHISQ,ISKIP)
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(8X,A)') 'Coefficients for 2nd order '//
+     &     'interpolating polynomial:'
+      WRITE(LUPRI,'(12X,A,I1,A,1P,E14.6)') ('c(',(I-1),'):  ',
+     &      COFF(I),I=1,3)
+      WRITE(LUPRI,*)
+
+C
+C     Minimum of 2. order interpolating polynomial is -b/2a
+c
+      PPMIN = -COFF(2)/2.0D0/COFF(3)
+      
+      WRITE(LUPRI,'(8X,A,I1,A,F12.8,A)') 'Radius of atom ',ICENTA,': ',
+     &     PPMIN*XTANG,' A'
+      WRITE(LUPRI,'(8X,A,I1,A,F12.8,A)') 'Radius of atom ',ICENTB,': ',
+     &     (DISTAN - PPMIN)*XTANG, ' A'
+
+      CHIMT(ICENTA,ICENTB) = PPMIN/(DISTAN - PPMIN)
+      CHIMT(ICENTB,ICENTA) = 1.0D0/CHIMT(ICENTA,ICENTB)
+
+      RETURN
+C
+      END
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+      SUBROUTINE CHI3(X,Y,Z,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
+     &     SMAT,ASMAT,ICLAB,IPRINT,WORK,LWORK)
+
+C     Get atomic size estimates by analyzing pairwise partial densities
+C     in one dimension, along bonds.
+C                                                                      C
+C      Written by Olav Fossgaard - June 2003                           C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dcbbas.h"
+
+      PARAMETER(ZERO=0.0D0,ONE=1.0D0)
+C
+
+      DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
+     &     SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
+     &     ICLAB(NTBAS(0)),WORK(LWORK)
+
+      CALL DZERO(GAO,NTBAS(0))
+      CALL DZERO(SMAT,NTBAS(1)*NTBAS(1))
+      CALL DZERO(ASMAT,NATOMS*NATOMS)
+      CALL IZERO(ICLAB,NTBAS(0))
+C
+C     GET AO's
+C
+      CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,X,Y,Z,WORK,LWORK,NTBAS(0),
+     &     0,.FALSE.,IPRINT)
+C
+C     Get "overlap" matrix
+C
+      CALL DGEMM('N','T',NTBAS(1),NTBAS(1),1,ONE,GAO,NTBAS(1),
+     &     GAO,NTBAS(1),ZERO,SMAT,NTBAS(1))
+C
+C     Multiply with density matrix elements
+C
+      DO I = 1,NTBAS(1)
+         DO J = 1,NTBAS(1)
+            SMAT(I,J) = SMAT(I,J)*0.5D0*DMAT(I,J)
+         END DO
+      END DO
+C
+C     Map basis functions onto atomic centers
+C
+      CALL LSQMA1(ICLAB)
+C
+C     Group SMAT matrix elements onto atomic centers. Overlap
+c     elements are ignored.
+C
+      CALL GATMAT(1,NTBAS(1),NTBAS(1),SMAT,ASMAT,ICLAB,NATOMS)
+C
+C     Calculate partial densities.
+C
+      RHOA = ASMAT(ICENTA,ICENTA)
+      RHOB = ASMAT(ICENTB,ICENTB)
+C
+C     Calculate total density for comparison with RHO1
+C
+      TOTRHO = 0.0D0
+      DO I = 1,NATOMS
+         DO J = 1,NATOMS
+            TOTRHO = TOTRHO + ASMAT(I,J)
+         END DO
+      END DO
+      
       RETURN
       END

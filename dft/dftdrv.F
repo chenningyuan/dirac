@@ -34,7 +34,7 @@ C
 C     Calculate grid
 C
       IF (.NOT.GRDONE) THEN
-         CALL DFTGRD(WORK,LWORK,1,.FALSE.)
+         CALL DFTGRD(DMAT,WORK,LWORK,1,.FALSE.)
          GRDONE = .TRUE.
       END IF
 #if defined (VAR_MPI)

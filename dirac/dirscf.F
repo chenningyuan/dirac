@@ -2688,6 +2688,7 @@ C
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbham.h"
+#include "dftcom.h"
 C
       DIMENSION BMAT(MXDIIS*MXDIIS)
       LOGICAL TOBE,CHKCNV,DSCFON,BARNUC
@@ -2758,6 +2759,8 @@ C
      &    '                Improved by a crude '//
      &    'estimate of the two-electron repulsion.'
           TRIVEC = .FALSE.
+C     Do not use density-based atomic size adjustments in this case:
+          ATSIZE = .FALSE.
         ENDIF
       ENDIF
 C
