@@ -1932,7 +1932,7 @@ C
 C
 C     Generate density matrix
 C     Be aware: Both density matrices are normed to 1
-      CALL GENDEN(WORK(KDMAT),WORK(KCMO),1,IPRHO1)
+      CALL GENDEN(WORK(KDMAT),WORK(KCMO),1,IPRRHO)
 CTROND      DO IOPEN = 1,NOPEN
 CTROND        CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRSCF)
 CTROND      END DO
