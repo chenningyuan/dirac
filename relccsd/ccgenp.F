@@ -86,19 +86,49 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      Subroutine CpuUsed (Sec)
+      Subroutine CpuUsed (TIMCPU)
+C     Rewritten by T.Saue based on GETTIM
+      Real*8 TIMCPU
+#if defined (SYS_VAX)
+      REAL*4 S0,SECNDS
+      PARAMETER (S0 = 0.0E0)
 C
-      Real*8 Sec
-C
-#if defined (SYS_AIX)  || defined (SYS_IRIX) || defined (SYS_LINUX) \
- || defined (SYS_HPUX)
-      Sec = MCLOCK()/100.D0
-#else 
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      Sec = Second()
-#else
-      Does MCLOCK exist on your computer???
+      TIMCPU = SECOND()
 #endif
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+C...  Cray unicos timing code
+      REAL    TCPU0
+      LOGICAL FIRST
+      SAVE TCPU0, FIRST
+      DATA FIRST /.TRUE./
+C
+      IF (FIRST) THEN
+         FIRST  = .FALSE.
+#if defined (SYS_CRAY)
+         TCPU0  = SECOND()
+#else
+         TCPU0 = TSECND()
+#endif
+      ENDIF
+#if defined (SYS_CRAY)
+      TIMCPU = SECOND() - TCPU0
+#else
+      TIMCPU = TSECND() - TCPU0
+#endif
+#endif
+#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
+ || defined (SYS_DEC)  || defined (SYS_LINUX) || (SYS_ALLIANT)
+      real*4  etime, tarray(2)
+C
+      TIMCPU = etime(tarray)
+#endif
+#if defined (SYS_AIX) || defined (SYS_PARAGON)
+C 900521-hjaaj timer for IBM AIX operating system
+C 941013-hjaaj: and for Intel PARAGON
+      integer*4 itime(4),times,iwall
+      iwall = times(itime)
+C     iwall = elapsed time, itime(1:2) = system and user time
+      TIMCPU = dfloat (itime(1) + itime(2)) * 0.01d0
 #endif
 C
       Return
@@ -315,7 +345,7 @@ C
       END IF
 #else
       OFF = FWORD - 1
-      CALL WRABSF(ITAPE,ARRAY,NLEN,OFF)
+      CALL RDABSF(ITAPE,ARRAY,NLEN,OFF)
 #endif
 C
 C UPDATE LWORD AND THEN RETURN
@@ -963,17 +993,18 @@ C ON ZERO PIVOT, SET DET=0.AND RETURN TO CALLING PROGRAM NOV 1972
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION DOTT(A,NA,B,NB,N)
       IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION A(1),B(1)
+
+      DIMENSION A(*),B(*)
       PARAMETER (ZERO=0.D0,ONE=1.D0)
 C64B  PARAMETER (ZERO=0.0,ONE=1.0)
 C
       IAPT=1
       IBPT=1
-      D=ZERO
+      D   =ZERO
       DO 10 I=1,N
-      D=D+A(IAPT)*B(IBPT)
-      IAPT=IAPT+NA
-      IBPT=IBPT+NB
+        D   = D+A(IAPT)*B(IBPT)
+        IAPT= IAPT+NA
+        IBPT= IBPT+NB
  10   CONTINUE
       DOTT=D
       RETURN

@@ -58,7 +58,6 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      call memchk ('Entering rdints',foo(0),1)
       CALL MKINDEX (NSP,IREPSP,IREPSPI,INDEX)
 C
       NSPQ = NSP*NSP

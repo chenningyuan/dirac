@@ -38,6 +38,11 @@ C
 C---------------Executable code--------------------------------------
 C
       CALL CPUUSED(SEC0)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+      IERR = 0
+      CALL ASNUNIT(LUCMD,'-Yon',IERR)
+      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
+#endif
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       IN = LUCMD
       IW = LUPRI

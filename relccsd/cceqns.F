@@ -43,6 +43,7 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+      TEQ = .TRUE.
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN

@@ -88,7 +88,8 @@ C DOV(A,I) = DOV(A,I) + T(AC,IK) * L(C,K)
 C----------------------------------------------------------------------
       CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              T2,BUF1)
-      CALL XGEMV ('N',NDIMT1,NDIMT1,NDIMT1,A1,BUF1,M,S1,1,A1,DOV,1)
+CTROND      CALL XGEMV('N',NDIMT1,NDIMT1,NDIMT1,A1,BUF1,M,S1,1,A1,DOV,1)
+      CALL XGEMV ('N',NDIMT1,NDIMT1,A1,BUF1,M,S1,1,A1,DOV,1)
 C----------------------------------------------------------------------
 C DOV(A,I) = DOV(A,I) - T(A,K) * L(C,K) * T(C,I)
 C----------------------------------------------------------------------
