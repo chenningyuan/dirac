@@ -41,13 +41,13 @@ C     Written by A.Noerager - Mar 2000
 C     Last revision: 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <dcbprp.h>
-#include <dcbesr.h>
-#include <orgcom.h>
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbesr.h"
+#include "orgcom.h"
       PARAMETER (NTABLE = 8)
       LOGICAL SET, NEWDEF, RESET, GORG
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -178,9 +178,9 @@ C
 C     Written by Anette Noerager - Mar 2000
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       PARAMETER (NZCMPLX = 2)
       DIMENSION IQINDX(NZCMPLX)
@@ -193,16 +193,16 @@ C
 C
       PARAMETER (D3 = 3.0D0, D4 = 4.0D0)
 C
-#include <dcbxpr.h>
-#include <dcbesr.h>
-#include <gfac.h>
-#include <dcbprp.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbxpr.h"
+#include "dcbesr.h"
+#include "gfac.h"
+#include "dcbprp.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       CALL QENTER('PRPESR')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
@@ -384,9 +384,9 @@ C     A. Noerager - Mar 2000
 C     Based on prpex1 by Trond Saue May 27 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
       LOGICAL FIRST(NZ),LESRST(2,*),FILEX
@@ -395,18 +395,18 @@ C
       CHARACTER MXFORM*6,FMT*6
       INTEGER   GETIOPEN, IMO(2), NMO(2)
 C
-#include <dgroup.h>
+#include "dgroup.h"
 ctec dcborb included
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbesr.h>
-#include <dcbgen.h>
-#include <dcbxpr.h>
-#include <dcbprp.h>
-#include <dcbdhf.h>
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbesr.h"
+#include "dcbgen.h"
+#include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbdhf.h"
 C
 C
-#include <memint.h>
+#include "memint.h"
 #if defined (SYS_IBM)
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='APROPER')
@@ -527,14 +527,14 @@ C
 C     
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include <dcbesr.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dcbesr.h"
+#include "dgroup.h"
+#include "dcborb.h"
 C
       DIMENSION ESRVAL(NCIESR,NCIESR,2),PMAT(*)
       INTEGER   NMO(*)
@@ -579,9 +579,9 @@ C
 C
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
       DIMENSION ESRVAL(*),PMAT(*)
@@ -603,16 +603,16 @@ C     A. Noerager - Mar 2000
 C     Based on prpex2 by Trond Saue May 27 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include <mxcent.h>
-#include <dcbxpr.h>
-#include <dcbesr.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "mxcent.h"
+#include "dcbxpr.h"
+#include "dcbesr.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcborb.h"
 C
       LOGICAL FIRST(NZ),LESRST(2), RODHF
       DIMENSION DMAT(N2BBASX,NZ,*),PMAT(N2BBASX,NZ),
@@ -693,12 +693,12 @@ C
 C     Written by A.Noerager APR 2000
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C     
-#include <dcbesr.h>
-#include <nuclei.h>
+#include "dcbesr.h"
+#include "nuclei.h"
 C
       DIMENSION ESRVAL(NCIESR,NCIESR,2,*),WORK(*)
       KFRSAV = KFREE
@@ -730,19 +730,19 @@ C
 C     Output routine for ESR properties
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
 C Used from common blocks:
 C  dcbprp: ABUND,?
 C
-#include <dcbprp.h>
-#include <dcbxpr.h>
-#include <dcbprl.h>
-#include <dcbesr.h>
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+#include "dcbesr.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL TEST,DOATOM(NUCIND)
@@ -750,9 +750,9 @@ C
      &          TISO(NUCDEP),IATINF(3,NUCDEP),RATINF(3,5,NUCDEP),
      &          IBUFA(3*NUCDEP),IBUFB(3),CSTRA(NUCDEP*NUCDEP*9),
      &          SCTRA(NUCDEP*NUCDEP*9),WORK(*)
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C     
       CALL TITLER('DIRAC  - ESR PROPERTIES','*',116)
 C
@@ -899,9 +899,9 @@ C
 C     April 2000 A. Noerager
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       PARAMETER (FACTOR = ALPHAC*ALPHAC/(XFMP))
@@ -909,7 +909,7 @@ C                factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)
       CHARACTER NAME*6, NAMEX(3)*6
       DIMENSION TMAT(3,3), TMATNY(3,3), IATINF(3), RATINF(3,*),
      &          TMATX(3,3)
-#include <chrxyz.h>
+#include "chrxyz.h"
 C #include <dcbxlr.h>
 C
       CALL DSCAL(9,FACTOR,TMAT,1)
