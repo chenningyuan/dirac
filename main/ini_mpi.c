@@ -131,6 +131,20 @@
 
       *mparid = 0;
       *parcal = 1;
+
+#if defined (MPE)
+      /* initialize MPE if precompiler option MPE_MP2 is set */
+      MPE_Init_log();
+      if ( *mytid == 0 ) {
+	MPE_Describe_state(1, 2, "Init", "black");
+	MPE_Describe_state(3, 4, "Wait", "red");
+	MPE_Describe_state(5, 6, "Send/recv task", "yellow");
+	MPE_Describe_state(7, 8, "Send/recv integrals", "green");
+	MPE_Describe_state(9,10, "Calc", "blue");
+      }
+      MPE_Start_log();
+#endif  /* MPE */
+
    }
     
 #else  /* VAR_MPI */

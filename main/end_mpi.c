@@ -83,6 +83,10 @@
       sleep(1);
 #endif
 
+#if defined (MPE)
+   MPE_Finish_log("mpilog");
+#endif
+
    if ( ( ierr = MPI_Finalize()) )
       printf("MPI_Finalize error %i in end_mpi()\n",ierr);
 
