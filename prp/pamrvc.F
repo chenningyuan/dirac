@@ -1,9 +1,3 @@
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : pamrvc.F
-C SOURCE  : $Source$
-C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssvc */
       SUBROUTINE XRSSVC(BCVEC,BEVEC,BPVEC,
@@ -1645,6 +1639,7 @@ C           Print section
           ENDIF
         ELSE
           NESIM = 0
+          CALL DZERO(XECNV,MFREQ)
         ENDIF
 C
 C       Orbital (e-p) part
@@ -1685,6 +1680,7 @@ C           Print section
           ENDIF
         ELSE
           NPSIM = 0
+          CALL DZERO(XPCNV,MFREQ)
         ENDIF
 C
 C       Configurational part
@@ -1721,10 +1717,11 @@ C           Print section
               CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
             ENDIF
           ELSE
-            CALL DZERO(XPCNV,NCSIM)
+            CALL DZERO(XCCNV,NCSIM)
           ENDIF
         ELSE
           NCSIM = 0
+          CALL DZERO(XCCNV,MFREQ)
         ENDIF
       ELSE
 C
@@ -1793,7 +1790,8 @@ C           Print section
           ENDIF
         ELSE
           NESIM = 0
-        ENDIF
+          CALL DZERO(XECNV,2*MFREQ)
+       ENDIF
 C
 C       Orbital (e-p) part
 C       ------------------
@@ -1850,6 +1848,7 @@ C           Print section
           ENDIF
         ELSE
           NPSIM = 0
+          CALL DZERO(XPCNV,2*MFREQ)
         ENDIF
 C
 C       Configurational part
@@ -1903,10 +1902,11 @@ C           Print section
               CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
             ENDIF
           ELSE
-            CALL DZERO(XPCNV,NCSIM)
+            CALL DZERO(XCCNV,NCSIM)
           ENDIF
         ELSE
           NCSIM = 0
+          CALL DZERO(XCCNV,2*MFREQ)
         ENDIF
       ENDIF
       NTSIM = NESIM + NPSIM + NCSIM
