@@ -35,7 +35,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  VOOOO,VOOOOA,VVOOO,VVOOOA,VVVOO,VVVOOA,
      &                  VVOVO,VVOVOA,VVOVV,VVOVVA,VVVVV,VVVVVA,
      &                  EPS,FOO,FVO,FVV,BREIT,SRTALL,INTERFACE,
-     &                  MREMAIN,cc)
+     &                  CC)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -76,6 +76,7 @@ C
 #include "results.inc"
 #include "files.inc"
 #include "ccpar.inc"
+#include "waio.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -110,7 +111,7 @@ C
 C
 C  Check buffer size for passing of VOVV and VVVV integrals
 C
-      IF (MOD(NVT*IRW*RCW,SEC2I(1)).NE.0)
+      IF (MOD(NVT*IRW*RCW,NWORDS_ON_RECORD).NE.0)
      &    CALL QUIT("INVALID BUFFER SIZE IN RDINTS")
 C
 C  INITIALIZE READING OF COULOMB INTEGRALS
@@ -141,32 +142,12 @@ C
       ITRSGN = 1
 C
 C  Initialize writing to sorted integral files
-C  Use extra memory as buffer space
 C
-      NINTSB0 = MAX(MREMAIN/512,20)
-      NINTSB0 = MIN((NFOO+NFVO+NFVV)*RCW/512+1,NINTSB0)
-      CALL RFILE(ITAPT,NINTSB0)
-      MREMAIN = MREMAIN - (NINTSB0-20)*512
-C
-      NINTSB1 = MAX(MREMAIN/512,20)
-      NINTSB1 = MIN(NV1*RCW/512+1,NINTSB1)
-      CALL RFILE(ITAPT+1,NINTSB1)
-      MREMAIN = MREMAIN - (NINTSB1-20)*512
-C
-      NINTSB2 = MAX(MREMAIN/512,20)
-      NINTSB2 = MIN(NV2*RCW/512+1,NINTSB2)
-      CALL RFILE(ITAPT+2,NINTSB2)
-      MREMAIN = MREMAIN - (NINTSB2-20)*512
-C
-      NINTSB3 = MAX(MREMAIN/512,20)
-      NINTSB3 = MIN(NV3*RCW/512+1,NINTSB3)
-      CALL RFILE(ITAPT+3,NINTSB3)
-      MREMAIN = MREMAIN - (NINTSB3-20)*512
-C
-      NINTSB4 = MAX(MREMAIN/512,20)
-      NINTSB4 = MIN(NV4*RCW/512+1,NINTSB4)
-      CALL RFILE(ITAPT+4,NINTSB4)
-      MREMAIN = MREMAIN - (NINTSB4-20)*512
+      CALL WAIO_OPEN(ITAPT+0)
+      CALL WAIO_OPEN(ITAPT+1)
+      CALL WAIO_OPEN(ITAPT+2)
+      CALL WAIO_OPEN(ITAPT+3)
+      CALL WAIO_OPEN(ITAPT+4)
 C
       IF (IMSTAT(1).GT.1.AND..NOT.FOCKSP) THEN
          WRITE (IW,1010)
@@ -264,10 +245,10 @@ C
 C     This is a restart point : save the files and update status.
 C
   150 CONTINUE
-      CALL RSAVE(ITAPT+1,NINTSB1)
-      CALL RSAVE(ITAPT+2,NINTSB2)
-      CALL RSAVE(ITAPT+3,NINTSB3)
-      CALL RSAVE(ITAPT+4,NINTSB4)
+      CALL WAIO_SAVE(ITAPT+1)
+      CALL WAIO_SAVE(ITAPT+2)
+      CALL WAIO_SAVE(ITAPT+3)
+      CALL WAIO_SAVE(ITAPT+4)
       IMSTAT(1) = 3
       CALL CCDUMP
       call memchk ('after first sort',cc,1)
@@ -275,10 +256,7 @@ C
       WRITE(IW,*) 'Sorting of first 4 classes done.'
       CALL FLSHFO (IW)
 C
-      NINTSB5 = MAX(MREMAIN/512,20)
-      NINTSB5 = MIN(NV5*RCW/512+1,NINTSB5)
-      CALL RFILE(ITAPT+5,NINTSB5)
-      MREMAIN = MREMAIN - (NINTSB5-20)*512
+      CALL WAIO_OPEN(ITAPT+5)
 C
       IF (IMSTAT(2).GT.1.AND..NOT.FOCKSP) THEN
          WRITE (IW,1011)
@@ -302,8 +280,8 @@ C ----------------------------
       N5F = N5L + 1
       N5L = MIN(N5L+NVT,NV5PAR)
       N5 = N5L - N5F + 1
-      NSEC = N5*IRW*RCW / SEC2I(1)
-      IF (MOD(N5*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
+      NSEC = N5*IRW*RCW / NWORDS_ON_RECORD
+      IF (MOD(N5*IRW*RCW,NWORDS_ON_RECORD).NE.0) NSEC = NSEC + 1
 C
       IF (INTERFACE(1:7).NE.'MOLFDIR'.OR.MYPROC.EQ.MASTER) THEN
          CLOSE (MDINT,STATUS='KEEP')
@@ -392,8 +370,7 @@ C
 C
 C     GET THE VVVV INTEGRALS
 C
-      NINTSB6 = 20
-      CALL RFILE(ITAPT+6,NINTSB6)
+      CALL WAIO_OPEN(ITAPT+6)
 C
       NPASS = (NV6PAR-1) / NVT + 1
       NSEC6 = 1
@@ -409,8 +386,8 @@ C --------------------------
       N6F = N6L + 1
       N6L = MIN(N6L+NVT,NV6PAR)
       N6 = N6L - N6F + 1
-      NSEC = N6*IRW*RCW / SEC2I(1)
-      IF (MOD(N6*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
+      NSEC = N6*IRW*RCW / NWORDS_ON_RECORD
+      IF (MOD(N6*IRW*RCW,NWORDS_ON_RECORD).NE.0) NSEC = NSEC + 1
 C
       IF (INTERFACE(1:7).NE.'MOLFDIR'.OR.MYPROC.EQ.MASTER) THEN
          CLOSE (MDINT,STATUS='KEEP')
@@ -519,8 +496,8 @@ C
 C     This is a restart point : save the files and update status.
 C
   550 CONTINUE
-      CALL RSAVE(ITAPT+5,NINTSB5)
-      CALL RSAVE(ITAPT+6,NINTSB6)
+      CALL WAIO_SAVE(ITAPT+5)
+      CALL WAIO_SAVE(ITAPT+6)
       IMSTAT(2) = 3
       CALL CCDUMP
       call memchk ('after second sort',cc,1)
@@ -533,7 +510,7 @@ C
 C
 C     This is a restart point : save the files and update status.
 C
-      CALL RSAVE(ITAPT+0,NINTSB0)
+      CALL WAIO_SAVE(ITAPT+0)
       IMSTAT(3) = 3
       CALL CCDUMP
 C

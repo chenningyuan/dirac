@@ -226,6 +226,7 @@ else
 echo " Submitting test calculations to queue $queue ... "
 echo " When they are done please check the results in the directory ${testdir}/logs. "
 /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=24:00:00,nodes=1:$queue -q ${queue} -V job
+#bsub <job
 fi
 rm job
 #

@@ -180,6 +180,7 @@ C
 #include "results.inc"
 #include "complex.inc"
 #include "ccpar.inc"
+#include "waio.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -260,16 +261,15 @@ C     Calculate record size for DIIS files.
 C
       ITC = 0
       IT = 0
-      NST1 = INTOWP(RCW*NDIMT1)/SEC2I(1)
-      IF(NST1*SEC2I(1).NE.INTOWP(RCW*NDIMT1)) NST1 = NST1 + 1
-      NST2 = INTOWP(RCW*NDIMT2)/SEC2I(1)
-      IF(NST2*SEC2I(1).NE.INTOWP(RCW*NDIMT2)) NST2 = NST2 + 1
+      NST1 = INTOWP(RCW*NDIMT1)/ NWORDS_ON_RECORD
+      IF(NST1*NWORDS_ON_RECORD.NE.INTOWP(RCW*NDIMT1)) NST1 = NST1 + 1
+      NST2 = INTOWP(RCW*NDIMT2)/ NWORDS_ON_RECORD
+      IF(NST2*NWORDS_ON_RECORD.NE.INTOWP(RCW*NDIMT2)) NST2 = NST2 + 1
 C
 C     Open DIIS scratch files
 C
-      NINTSB = 20
-      CALL RFILE(ITAMPL,NINTSB)
-      CALL RFILE(ITAMPD,NINTSB)
+      CALL WAIO_OPEN(ITAMPL)
+      CALL WAIO_OPEN(ITAMPD)
 C
       NIT = 0
       RMS = 1.D0
@@ -648,9 +648,9 @@ C
 C     Close and delete DIIS scratch files
 C
       JCODE = 4
-      CALL RCLOSE(ITAMPL,JCODE)
+      CALL WAIO_CLOSE(ITAMPL,JCODE)
       JCODE = 4
-      CALL RCLOSE(ITAMPD,JCODE)
+      CALL WAIO_CLOSE(ITAMPD,JCODE)
 C
  111  FORMAT(A20,I4,2f25.15)
  6001 FORMAT(2X,I3,5X,2F20.15,F10.5)

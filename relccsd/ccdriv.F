@@ -135,7 +135,7 @@ C     But is vectorized by using matrix multiplies where ever possible
 C--------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCINPT (IN,IW,IMIOBUF)
+      SUBROUTINE CCINPT (IN,IW)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -164,8 +164,7 @@ C
 C
       NAMELIST/RELCCSD/ NELEC,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOEXC,DOFSPC,
-     &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE,
-     &                  MIOBUF
+     &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
       NAMELIST/CCSORT/ USEOE,NORECMP
       NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
      &                 MAXIT,MAXDIM,NTOL
@@ -187,7 +186,6 @@ C---------------Executable code--------------------------------------
 C
 C     Read number of occupied spinors from input
 C
-      MIOBUF = 0
       REWIND (IN)
       DO I = 1, 16
          NFROZ(I) = 0
@@ -204,7 +202,6 @@ C
       TIMING = .FALSE.
       MWORD = 0
       READ (IN,RELCCSD,END=1,ERR=1)
-      IMIOBUF = MIOBUF
       GOTO 2
     1 CALL QUIT('Error exit while reading namelist RELCCSD')
     2 CONTINUE
@@ -395,13 +392,13 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "iobuf.inc"
 #include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "eqns.inc"
 #include "complex.inc"
 #include "ccpar.inc"
+#include "waio.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -442,6 +439,7 @@ C
 
 C
       CALL CCHEADER
+      CALL WAIO_INIT (IW)
 C
 C     Initialize the timing.
 C
@@ -472,7 +470,7 @@ C
 C
 C     Read input
 C
-      CALL CCINPT (IN,IW,MIOBUF)
+      CALL CCINPT (IN,IW)
 C
 C     Number of integer words for REAL*8 and 
 C     number of REAL*8 words per variable (2 for complex groups, 
@@ -512,16 +510,9 @@ C
 #endif
 #endif
 C
-      WRITE (IW,1000) MAXCOR
+C     Report memory in megaBytes
 C
-C  Calculate minimum size of I/O buffers 
-C  Records defined in integer*4 words, minimum size is one record
-C
-      NREC = 1
-      MINBUF = SEC2I(NREC)
-      MINSEC = IRW * RCW * NREC
-C
-      WRITE (IW,1005) MINBUF*RCW
+      WRITE (IW,1000) MAXCOR / (128 * 1024)
 C
 C     General setup
 C     -------------
@@ -552,7 +543,7 @@ C
       LFREE = MAXCOR
 C 
       MXCORR1 = 0
-      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,MREMAIN,EPS,
+      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &             NSP,IREPSP,IREPSPI)
       IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
 C     WRITE(IW,1015) 'CCSETI',MXCORR1,MXCORR
@@ -576,7 +567,7 @@ C
 C
       MXCORR1 = 0
       CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR1,EPS1,EPS,NSP,
-     &            IREPSP,IREPSPI,MREMAIN)
+     &            IREPSP,IREPSPI)
       IF (DOFSPC) MXCORR = MAX(MXCORR,MXCORR1)
 C
 C MXCORR is a cumulative maximum of individual memory requirements
@@ -621,24 +612,6 @@ C
 C
       WRITE (IW,1001) MXCORR
 C
-C  Use remaining free memory as extra buffer for integral and
-C  coefficient files.
-C  At present only used in Cray version.
-C
-#if defined (CC_ALONE)
-      MREMAIN = MAXCOR - MXCORR
-#else
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      MREMAIN = NCCFIL*20*512
-      IF(MIOBUF.NE.0) THEN
-        IF(MIOBUF.LT.MREMAIN) THEN
-          PRINT*, "MIOBUF too small; need at least ", MREMAIN
-          CALL QUIT("Too small IO-buffer")
-        ENDIF
-        MREMAIN = MIOBUF
-      ENDIF
-#endif
-#endif
       CALL CPUUSED(CPU2)
       CPUI = CPUI + CPU2 - CPU1
       CPU1 = CPU2
@@ -653,7 +626,7 @@ C
       LFREE = MXCORR
 C
       CALL XTIME(1,1,'Sorting of integrals          ')
-      IF (DOSORT) CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,MREMAIN,EPS,
+      IF (DOSORT) CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
       CALL XTIME(1,2,'Sorting of integrals          ')
       CALL CPUUSED(CPU2)
@@ -686,25 +659,25 @@ C
       CALL FLSHFO (IW)
 C
       IF (DOFSPC) CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
-     &                         NSP,IREPSP,IREPSPI,MREMAIN)
+     &                         NSP,IREPSP,IREPSPI)
       CALL FLSHFO (IW)
 C
 C  FINISHED; RETURN AFTER CLOSING FILES
 C
       JCODE = 3
-      CALL RCLOSE(ITAPT+0,JCODE)
+      CALL WAIO_CLOSE(ITAPT+0,JCODE)
       JCODE = 3
-      CALL RCLOSE(ITAPT+1,JCODE)
+      CALL WAIO_CLOSE(ITAPT+1,JCODE)
       JCODE = 3
-      CALL RCLOSE(ITAPT+2,JCODE)
+      CALL WAIO_CLOSE(ITAPT+2,JCODE)
       JCODE = 3
-      CALL RCLOSE(ITAPT+3,JCODE)
+      CALL WAIO_CLOSE(ITAPT+3,JCODE)
       JCODE = 3
-      CALL RCLOSE(ITAPT+4,JCODE)
+      CALL WAIO_CLOSE(ITAPT+4,JCODE)
       JCODE = 3
-      IF (DOCCSD.OR.DOCCSDT) CALL RCLOSE(ITAPT+5,JCODE)
+      IF (DOCCSD.OR.DOCCSDT) CALL WAIO_CLOSE(ITAPT+5,JCODE)
       JCODE = 3
-      IF (DOCCSD) CALL RCLOSE(ITAPT+6,JCODE)
+      IF (DOCCSD) CALL WAIO_CLOSE(ITAPT+6,JCODE)
 C
       CALL CCSUMM
       CALL FLSHFO (IW)
@@ -721,10 +694,10 @@ C
 C
       RETURN
 C
-1000  FORMAT (/" Maximum core available :",T50,I10," 8-byte words")
-1001  FORMAT (" Maximum core used for active modules :",
+1000  FORMAT (/" Total memory available :",T50,I10," MB")
+1001  FORMAT (" Memory used for active modules :",
      &        T50,I10," 8-byte words")
-1002  FORMAT (" Not enough core, increase to at least",
+1002  FORMAT (" Not enough memory, increase to at least",
      &        T50,I10," 8-byte words"//" Make Mword equal to ",I5)
 1003  FORMAT (/" Size of 3- and 4-virtual batches :",T50,I10
      &        /" Number of passes :",T50,I10)
@@ -741,8 +714,8 @@ C
      &        /" Print level          :",T40,I5
      &        /" Memory limit (MWord) :",T40,I5
      &        /" Interface used       :",T40,A10//)
-1005  FORMAT (" Size of I/O buffers :",T50,I10," 8-byte words")
-1006  FORMAT (" Too much core specified, maximum is",
+1005  FORMAT (" Size of I/O buffers :",T50,I10," kB")
+1006  FORMAT (" Too much memory specified, maximum is",
      &        T50,I10," 8-byte words"//" Make Mword equal to ",I5)
 1008  FORMAT (" Amount of memory used :",T50,F10.1," megawords")
 1010  FORMAT(//' Timing of main modules :'
@@ -1456,7 +1429,7 @@ C
       RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,MREMAIN,EPS,
+      SUBROUTINE CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &                   NSP,IREPSP,IREPSPI)
 C
       IMPLICIT INTEGER (A-Z)
@@ -1489,11 +1462,11 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "iobuf.inc"
 #include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "waio.h"
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1553,8 +1526,11 @@ C
       NVF = (LFREE-4) / (2 * RCW )
 C
 C  Determine number of available buffers with respect to free memory
+C  Records are defined for integers, calculate how many real or
+C  complex words we can store on these in MINBUF
 C  -----------------------------------------------------------------
 C
+      MINBUF = NWORDS_ON_RECORD / (RCW * IRW)
       IF (NVT.LT.NVF) THEN
          NBUF = NVT / MINBUF + 1
       ELSE
@@ -1594,12 +1570,12 @@ C
      &            IREPSPI,CC(V1),CC(V1A),
      &            CC(V2),CC(V2A),CC(V3),CC(V3A),CC(V4),CC(V4A),
      &            CC(VT),CC(VTA),CC(VT),CC(VTA),EPS,CC(FOO),CC(FVO),
-     &            CC(FVV),BREIT,SRTALL,INTERFACE,MREMAIN,cc)
+     &            CC(FVV),BREIT,SRTALL,INTERFACE,CC)
 C
       CALL MEMREL('CCSETI',CC,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Memory for ",A," :",T50,I10," 8-byte words")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,CC,KFREE,LFREE,MXCORR,EPS)
@@ -1630,7 +1606,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "iobuf.inc"
 #include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
@@ -1924,7 +1899,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "files.inc"
-#include "iobuf.inc"
 #include "diis.inc"
 #include "inpt.inc"
 #include "eqns.inc"
@@ -2138,8 +2112,7 @@ C
          MAXDIM = MXDIMCC
          MAXIT  = MXITCC
          TOL = 10.0D0**(-NTOLCC)
-         NINTSB = 20
-         CALL RFILE(ITAPL,NINTSB)
+         CALL WAIO_OPEN(ITAPL)
 C
          CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &           CC(T2),CC(S2),CC(AZ),CC(CZ),CC(H),CC(HO),CC(HV),
@@ -2239,7 +2212,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "iobuf.inc"
 #include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
@@ -2359,7 +2331,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "iobuf.inc"
 #include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
@@ -2436,7 +2407,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFSPC (ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
-     &                  NSP,IREPSP,IREPSPI,MREMAIN)
+     &                  NSP,IREPSP,IREPSPI)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2465,7 +2436,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "iobuf.inc"
 #include "diis.inc"
 #include "ihm.inc"
 #include "eqns.inc"
@@ -2505,7 +2475,7 @@ C
 C     Ask for the memory requirements of the modules
 C
       MXCORR1 = 0
-      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,MREMAIN,EPS,
+      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &             NSP,IREPSP,IREPSPI)
       MXCORR = MAX(MXCORR,MXCORR1)
 C

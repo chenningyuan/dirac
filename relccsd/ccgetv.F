@@ -56,6 +56,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "waio.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -64,11 +65,11 @@ C
 C     Calculate start of sectors
 C
       NSEC0 = 1
-      NSEC = NFVO*IRW*RCW / SEC2I(1)
-      IF (MOD(NFVO*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
+      NSEC = NFVO*IRW*RCW / NWORDS_ON_RECORD
+      IF (MOD(NFVO*IRW*RCW,NWORDS_ON_RECORD).NE.0) NSEC = NSEC + 1
       NSEC1 = NSEC0 + NSEC
-      NSEC = NFOO*IRW*RCW / SEC2I(1)
-      IF (MOD(NFOO*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
+      NSEC = NFOO*IRW*RCW / NWORDS_ON_RECORD
+      IF (MOD(NFOO*IRW*RCW,NWORDS_ON_RECORD).NE.0) NSEC = NSEC + 1
       NSEC2 = NSEC1 + NSEC
 C
 C     Read/write blocks
@@ -255,22 +256,14 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "iobuf.inc"
+#include "waio.h"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
-       PARAMETER (NIOBUF=4096)
-       INTEGER IOBUFFER(NIOBUF)
        INTEGER*8 JSTART
-       DATA IOBUFFER /NIOBUF*0/
 C
 C---------------Executable code--------------------------------------
-C
-      IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
-         PRINT*,"CHANGE NIOBUF IN GETVOVV TO MINIMALLY",MINBUF*RCW*IRW
-         CALL QUIT("UPDATE GETVOVV")
-      ENDIF
 C
       DONE = .FALSE.
       MTOT = NVO(IREP)     ! one (VV)_ij batch has length NVO
@@ -279,31 +272,11 @@ C
       NINT = MIN0(MINT,NTOT-ISTART)  ! # of batches which will actually be read
       JSTART = IDIST(5,2,IREP)      ! compute relative local offset
       JSTART = JSTART + (ISTART-IDIST(1,2,IREP)) * MTOT
-
-C     Read partial batch from first record
+C
 C     JINT : Total number of integrals to be read
-C     JINT1: Number of integrals of previous batch on first record
-C     JINT2: Number of integrals of current batch on first record
-C     JINT3: Total number of integrals on first record
 C
       JINT = MTOT * NINT
-      JSEC = (JSTART / MINBUF) * MINSEC + 1
-      JINT1 = MOD (JSTART,MINBUF)
-      JINT2 = 0
-      IF (JINT1.NE.0) THEN
-         JINT2 = MIN0(MINBUF-JINT1,JINT)
-         JINT3 = JINT1 + JINT2
-         CALL RREAD(ITAPT+5,IOBUFFER,JINT3*RCW*IRW,JSEC)
-         JINT1 = JINT1*RCW*IRW + 1
-         CALL XCOPY (JINT2,IOBUFFER(JINT1),1,VVOVV,1)
-         JSEC = JSEC + MINSEC
-      ENDIF
-C
-C     Read remaining integrals
-C
-      JINT = JINT - JINT2
-      JINT2 = JINT2*RCW + 1
-      IF (JINT.GT.0) CALL RREAD(ITAPT+5,VVOVV(JINT2),JINT*IRW*RCW,JSEC)
+      CALL WAIO_REALIO (ITAPT+5,VVOVV,JINT,JSTART,.TRUE.)
 C
 C     Are we done with this IRREP ?
 C
@@ -343,22 +316,14 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "iobuf.inc"
+#include "waio.h"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
-       PARAMETER (NIOBUF=4096)
-       INTEGER IOBUFFER(NIOBUF)
        INTEGER*8 JSTART
-       DATA IOBUFFER /NIOBUF*0/
 C
 C---------------Executable code--------------------------------------
-C
-      IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
-         PRINT*,"CHANGE NIOBUF IN GETVVVV TO MINIMALLY",MINBUF*RCW*IRW
-         CALL QUIT("UPDATE GETVVVV")
-      ENDIF
 C
 C     Calculate start address. The batches are distributed over the
 C     nodes for parallel runs. Take only the part that is on our node
@@ -371,30 +336,10 @@ C
       JSTART = IDIST(5,1,IREP)
       JSTART = JSTART + (ISTART-IDIST(1,1,IREP)) * MTOT
 C
-C     Read partial batch from first record
 C     JINT : Total number of integrals to be read
-C     JINT1: Number of integrals of previous batch on first record
-C     JINT2: Number of integrals of current batch on first record
-C     JINT3: Total number of integrals on first record
 C
       JINT = MTOT * NINT
-      JSEC = (JSTART / MINBUF) * MINSEC + 1
-      JINT1 = MOD (JSTART,MINBUF)
-      JINT2 = 0
-      IF (JINT1.NE.0) THEN
-         JINT2 = MIN0(MINBUF-JINT1,JINT)
-         JINT3 = JINT1 + JINT2
-         CALL RREAD(ITAPT+6,IOBUFFER,JINT3*RCW*IRW,JSEC)
-         JINT1 = JINT1*RCW*IRW + 1
-         CALL XCOPY (JINT2,IOBUFFER(JINT1),1,VVVVV,1)
-         JSEC = JSEC + MINSEC
-      ENDIF
-C
-C     Read remaining integrals
-C
-      JINT = JINT - JINT2
-      JINT2 = JINT2*RCW + 1
-      IF (JINT.GT.0) CALL RREAD(ITAPT+6,VVVVV(JINT2),JINT*IRW*RCW,JSEC)
+      CALL WAIO_REALIO (ITAPT+6,VVVVV,JINT,JSTART,.TRUE.)
 C
 C     Are we done with this IRREP ?
 C
@@ -433,59 +378,12 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
-#include "iobuf.inc"
 C
 C---------------Local variables--------------------------------------
 C
-       PARAMETER (NIOBUF=2048)
-       INTEGER IOBUFFER(NIOBUF)
-       DATA IOBUFFER /NIOBUF*0/
-C
 C---------------Executable code--------------------------------------
 C
-      IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
-         PRINT*,"CHANGE NIOBUF IN PUTDZ TO MINIMALLY",MINBUF*RCW*IRW
-         CALL QUIT("UPDATE PUTDZ")
-      ENDIF
-C
-      DONE = .FALSE.
-      MTOT = NVO(IREP)
-      NTOT = NVVT(IREP)
-      NINT = MIN0(NINT,NTOT-ISTART)
-C
-C     Calculate absolute starting address
-C
-      JSTART = IVOVVT(IREP) + ISTART * MTOT
-      JINT = MTOT * NINT
-      JSEC = (JSTART / MINBUF) * MINSEC + 1
-C
-C     Read partial batch from first record
-C     JINT : Total number of integrals to be read
-C     JINT1: Number of integrals of previous batch on first record
-C     JINT2: Number of integrals of current batch on first record
-C     JINT3: Total number of integrals on first record
-C
-      JINT1 = MOD (JSTART,MINBUF)
-      JINT2 = 0
-      IF (JINT1.NE.0) THEN
-         JINT2 = MIN0(MINBUF-JINT1,JINT)
-         JINT3 = JINT1 + JINT2
-         CALL RREAD(ITAPL,IOBUFFER,JINT3*RCW*IRW,JSEC)
-         JINT1 = JINT1*RCW*IRW + 1
-         CALL XCOPY (JINT2,IOBUFFER(JINT1),1,DZ,1)
-         JSEC = JSEC + MINSEC
-      ENDIF
-C
-C     Read remaining integrals
-C
-      JINT = JINT - JINT2
-      JINT2 = JINT2*RCW + 1
-      IF (JINT.GT.0) CALL RREAD(ITAPL,DZ(JINT2),JINT*IRW*RCW,JSEC)
-C
-C     Are we done with this IRREP ?
-C
-      IF (ISTART+NINT.EQ.NTOT) DONE = .TRUE.
-C
+      CALL QUIT ("Entered part of unfinished Lambda-code")
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -519,59 +417,12 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
-#include "iobuf.inc"
 C
 C---------------Local variables--------------------------------------
 C
-       PARAMETER (NIOBUF=2048)
-       INTEGER IOBUFFER(NIOBUF)
-       DATA IOBUFFER /NIOBUF*0/
-C
 C---------------Executable code--------------------------------------
 C
-      IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
-         PRINT*,"CHANGE NIOBUF IN GETDZ TO MINIMALLY",MINBUF*RCW*IRW
-         CALL QUIT("UPDATE GETDZ")
-      ENDIF
-C
-      DONE = .FALSE.
-      MTOT = NVO(IREP)
-      NTOT = NVVT(IREP)
-      NINT = MIN0(NINT,NTOT-ISTART)
-C
-C     Calculate absolute starting address
-C
-      JSTART = IVOVVT(IREP) + ISTART * MTOT
-      JINT = MTOT * NINT
-      JSEC = (JSTART / MINBUF) * MINSEC + 1
-C
-C     Read partial batch from first record and extend with new integrals
-C     JINT : Total number of integrals to be written
-C     JINT1: Number of integrals of previous batch on first record
-C     JINT2: Number of integrals of current batch on first record
-C     JINT3: Total number of integrals on first record
-C
-      JINT1 = MOD (JSTART,MINBUF)
-      JINT2 = 0
-      IF (JINT1.NE.0) THEN
-         JINT2 = MIN0(MINBUF-JINT1,JINT)
-         JINT3 = JINT1 + JINT2
-         CALL RREAD(ITAPL,IOBUFFER,JINT1*RCW*IRW,JSEC)
-         JINT1 = JINT1*RCW*IRW + 1
-         CALL XCOPY (JINT2,DZ,1,IOBUFFER(JINT1),1)
-         CALL RWRIT(ITAPL,IOBUFFER,JINT3*RCW*IRW,JSEC)
-         JSEC = JSEC + MINSEC
-      ENDIF
-C
-C     Write remaining integrals
-C
-      JINT = JINT - JINT2
-      JINT2 = JINT2*RCW + 1
-      IF (JINT.GT.0) CALL RWRIT(ITAPL,DZ(JINT2),JINT*IRW*RCW,JSEC)
-C
-C     Are we done with this IRREP ?
-C
-      IF (ISTART+NINT.EQ.NTOT) DONE = .TRUE.
+      CALL QUIT ("Entered part of unfinished Lambda-code")
 C
       RETURN
       END

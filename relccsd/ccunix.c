@@ -5,9 +5,10 @@
  * FILE    : ccunix.c
  * SOURCE  : $Source$
  *
-        Coded by U. Welz, Universitaet Bielefeld, January 1988
-        Further information from Peter Knowles or Joachim Werner
-        Stripped and revised for RELCCSD Luuk Visscher
+        Access to C I/O routrines from FORTAN.
+        The original idea comes from a MOLPRO routine that was incorporated in a skeleton (test)
+        coupled cluster code from Lee and Jayatilaka that formed the basis for RELCCSD.
+        The original routines were since then (1995) stripped and revised by Luuk Visscher.
 
 I/O routines:   openc(unit,fname,size,status)
                 character*(*) fname
@@ -31,10 +32,6 @@ I/O routines:   openc(unit,fname,size,status)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#if defined (SYS_T3D) || defined (SYS_CRAY)
-#include <fortran.h>
-#endif
-
 #include <sys/times.h>
 #include <sys/param.h>
 
@@ -42,12 +39,7 @@ extern char  *getenv();
 
 #define MAXLENGTH       15
 #define MAXUNIT         99
-
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-#define WORT            8       
-#else
-#define WORT            4       
-#endif
+#define INTEGER_WORD     4       
 
 #define PATHMAX         512 
 #define SCRATCH         0
@@ -63,31 +55,18 @@ typedef off_t off64_t;
 #endif
 
 typedef struct
-{ int  fd, size;
-  off64_t addr;
-  char fname[15];
+{ int  fd ;
+  off64_t size, addr;
+  char fname[MAXLENGTH];
 } FILE_DEFINITION;
 
 FILE_DEFINITION files[MAXUNIT];
 
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-#define MACRO_QUIT QUITC
-#else
 #define MACRO_QUIT quitc_
-#endif
 
 void MACRO_QUIT();
 
-#if defined (SYS_AIX) || defined (SYS_DARWIN) || defined (SYS_DEC)  || \
-    defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_LINUX) || \
-    defined (SYS_SUN) 
 #define PAM_GLOBAL_SYMBOLS_UNDERSCORED
-#elif defined (SYS_CRAY) || defined (SYS_T3D)
-     /* #define PAM_GLOBAL_SYMBOLS_PLAIN */
-#else
-????
-#endif
-
 
 #ifdef PAM_GLOBAL_SYMBOLS_UNDERSCORED
 void openc_(int*unit, char*fname, off64_t* size, int *status)
@@ -97,11 +76,6 @@ void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
 
 { char *cp, *env ;
   char  name[PATHMAX]; 
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-  char *fname;
-
-  fname = _fcdtocp(fcd);
-#endif
 
   if (*unit>MAXUNIT || *unit<0)
         { fprintf(stderr,"openc: Unit number out of range (%d)\n",*unit);
@@ -158,11 +132,6 @@ void wrabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 #endif
 
 { off64_t addr, m, n, temp;
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-  char *a;
-
-  a = _fcdtocp(fcd);
-#endif
 
   if (*unit>MAXUNIT || *unit<0)
         { fprintf(stderr,"wrabs: Unit number out of range (%d)\n",*unit);
@@ -175,9 +144,9 @@ void wrabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
           return;
         }
   temp = *p;
-  addr= temp * WORT;
+  addr= temp * INTEGER_WORD;
   temp = *l;
-  m= temp * WORT;
+  m= temp * INTEGER_WORD;
 
   if (addr!=files[*unit].addr)
         if (lseek64(files[*unit].fd,addr,0)==-1)
@@ -201,11 +170,6 @@ void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 #endif
 
 { off64_t addr, m, n, temp;
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-  char *a;
-
-  a = _fcdtocp(fcd);
-#endif
 
   if (*unit>MAXUNIT || *unit<0)
         { fprintf(stderr,"rdabs: Unit number out of range (%d)\n",*unit);
@@ -218,9 +182,9 @@ void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
           return;
         }
   temp = *p;
-  addr= temp * WORT;
+  addr= temp * INTEGER_WORD;
   temp = *l;
-  m= temp * WORT;
+  m= temp * INTEGER_WORD;
 
   if (addr!=files[*unit].addr)
         if (lseek64(files[*unit].fd,addr,0)==-1)

@@ -73,6 +73,7 @@ C
 #include "symm.inc"
 #include "diis.inc"
 #include "complex.inc"
+#include "waio.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -94,15 +95,14 @@ C     Calculate record size for DIIS files.
 C
       ITC = 0
       IT = 0
-      NST1 = INTOWP(RCW*NDIMX)/SEC2I(1)
-      IF(NST1*SEC2I(1).NE.INTOWP(RCW*NDIMX)) NST1 = NST1 + 1
+      NST1 = INTOWP(RCW*NDIMX)/ NWORDS_ON_RECORD
+      IF(NST1*NWORDS_ON_RECORD.NE.INTOWP(RCW*NDIMX)) NST1 = NST1 + 1
       NST2 = NST1
 C
 C     Open DIIS scratch files
 C
-      NINTSB = 20
-      CALL RFILE(IOAMPL,NINTSB)
-      CALL RFILE(IOAMPS,NINTSB)
+      CALL WAIO_OPEN(IOAMPL)
+      CALL WAIO_OPEN(IOAMPS)
 C
 C  INITIALIZE X AND Y AMPLITUDES IF THIS IS A NEW B OPERATOR
 C
@@ -258,9 +258,9 @@ C
 C     Close and delete DIIS scratch files
 C
       JCODE = 4
-      CALL RCLOSE(IOAMPL,JCODE)
+      CALL WAIO_CLOSE(IOAMPL,JCODE)
       JCODE = 4
-      CALL RCLOSE(IOAMPS,JCODE)
+      CALL WAIO_CLOSE(IOAMPS,JCODE)
 C
       RETURN
  6001 FORMAT(2X,I3,5X,2F20.15,13X,E10.5)
@@ -319,6 +319,7 @@ C
 #include "symm.inc"
 #include "diis.inc"
 #include "complex.inc"
+#include "waio.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -337,15 +338,14 @@ C     Calculate record size for vector files.
 C
       ITC = 0
       IT = 0
-      NST1 = INTOWP(RCW*NDIMX)/SEC2I(1)
-      IF(NST1*SEC2I(1).NE.INTOWP(RCW*NDIMX)) NST1 = NST1 + 1
+      NST1 = INTOWP(RCW*NDIMX)/ NWORDS_ON_RECORD
+      IF(NST1*NWORDS_ON_RECORD.NE.INTOWP(RCW*NDIMX)) NST1 = NST1 + 1
       NST2 = NST1
 C
 C     Open vector scratch files
 C
-      NINTSB = 20
-      CALL RFILE(IOAMPL,NINTSB)
-      CALL RFILE(IOAMPS,NINTSB)
+      CALL WAIO_OPEN(IOAMPL)
+      CALL WAIO_OPEN(IOAMPS)
 C
 C  INITIALIZE X AND Y AMPLITUDES
 C
@@ -433,9 +433,9 @@ C
 C     Close and delete DIIS scratch files
 C
       JCODE = 4
-      CALL RCLOSE(IOAMPL,JCODE)
+      CALL WAIO_CLOSE(IOAMPL,JCODE)
       JCODE = 4
-      CALL RCLOSE(IOAMPS,JCODE)
+      CALL WAIO_CLOSE(IOAMPS,JCODE)
 C
       RETURN
  6001 FORMAT(2X,2I5,5X,F20.15,13X,E10.5)
