@@ -53,7 +53,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 8, NTABLE = 26)
+      PARAMETER (NDIR = 8, NTABLE = 32)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -73,7 +73,8 @@ C
      &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   ',
      &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
-     &             '.VERDET','.ROTG  '   /
+     &             '.VERDET','.ROTG  ','.MSUSCD','.XXXXXX',
+     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -105,6 +106,7 @@ C
       NQCC     = .FALSE.
       DSO      = .FALSE.
       NSTDIA   = .FALSE.
+      MSUSCDIA = .FALSE.
       ROTG     = .FALSE.
       LONDON   = .TRUE.
       PVC      = .FALSE.
@@ -117,11 +119,9 @@ C
       NPRPWF   = 1
       PRPWF(1) = 'DHF'
 
-CMI ... activate the  picture change
-C   transformation of four-component property matrixes 
-C   in the two-component BSS mode.
-C   This is possible only for the BSS infinite order of relativity 
-C   not for lower orders...
+CMI Activate the  picture change transformations
+C   of four-component property matrixes 
+C   for the two-component (BSS) infinite order.
 C TODO with TS/HJJ: BSS spin-free picture change transformation
       IF (BSS.AND.IBSS.GE.99) THEN
         DOPCT=.TRUE.
@@ -170,7 +170,8 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121,122,123,124,125,126),I
+     &                117,118,119,120,121,122,123,124,
+     &                125,126,127,128,129,130,131,132), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -325,9 +326,29 @@ C&&&& .VERDET - Calculates the Verdet constant with the QR module
             GO TO 100
  126     CONTINUE
 C&&&& ROTG rotational g-tensor
-CMI   ... at present it's empty
+CMI ... at present it is not implemented
             ROTG  = .TRUE.
             DOXLR = .TRUE.
+            GO TO 100
+  127    CONTINUE 
+C&&&& MSUSCD diamagnetic contribution to the magnetizabilities
+            MSUSCDIA = .TRUE.
+            DOEXP    = .TRUE.
+            GO TO 100
+  128    CONTINUE 
+C&&&& XXXXXX
+            GO TO 100
+  129    CONTINUE 
+C&&&& XXXXXX
+            GO TO 100
+  130    CONTINUE 
+C&&&& XXXXXX
+            GO TO 100
+  131    CONTINUE 
+C&&&& XXXXXX
+            GO TO 100
+  132    CONTINUE 
+C&&&& XXXXXX
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180

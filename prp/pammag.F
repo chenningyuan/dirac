@@ -214,6 +214,8 @@ C     CALL PRSYMB(LUPRI,'=',75,0)
          IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(1X,A,/)')
      &  ' WARNING: User defined gauge '//
      &  'may give wrong results when using symmetry !'   
+CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
+         CALL DCOPY(3,GAGORG,1,DIPORG,1)
       ELSE
        IF (LONDON.OR.USECM) THEN
 C ... make the center of mass the gauge origin (default in dalton)

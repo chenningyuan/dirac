@@ -23,7 +23,7 @@
      &        SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, PVC, DOESR,     &
      &        ESRGTENS, ESRANISO, EFT, EFTNTL, PVCSHI, EFN, RHONUC,     &
      &        DOTPA,DOVER,                                              &
-     &        ROTG,LONDON,SYMCON,NOORTH,DOPCT                           & 
+     &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA             & 
 
       INTEGER MXPRPWF
       PARAMETER (MXPRPWF = 3)
@@ -34,7 +34,7 @@
      &                MSUSCP, SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, &
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
      &                PVCSHI, EFN, RHONUC, DOTPA, DOVER,                &
-     &                ROTG,LONDON,SYMCON,NOORTH,DOPCT                   & 
+     &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA          & 
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &
