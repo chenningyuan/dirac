@@ -1448,7 +1448,7 @@ C
                 CALL PRSYMB(LUPRI,'-',95,0)
                 DO I = 1,NBFREQ
                   FMT = MXFORM(ABLRF(I,INDAP,INDBP,1),15)
-                  IF(RCNV(1,INDBP).LT.THCLR) THEN
+                  IF(RCNV(I,INDBP).LT.THCLR) THEN
                     WRITE(LUPRI,
      &                '(3X,'//FMT//',A,A,F15.8,A,3X,1P,E9.2,3X,A)')
      &                ABLRF(I,INDAP,INDBP,1),' a.u.',
