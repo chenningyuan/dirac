@@ -12,13 +12,13 @@ C     both kind of irreps at the same time. Usually loops run
 C     only over either fermion or boson irreps at a time.
 C
       PARAMETER (MXREP=32)
-      COMMON /SYMI/ NSYMRP,NREP,MULTB(MXREP*2,MXREP*2,2)
+      COMMON /SYMI/ NZ,NSYMRP,NREP,MULTB(MXREP*2,MXREP*2,2)
       COMMON /SYMC/ REPN(16),REPNA(MXREP*2) 
       CHARACTER*4 REPN,REPNA
       COMMON /SYML/ SPFR
       LOGICAL SPFR
       COMMON /DIMS4/ NDIMT1,NDIMT2,NFOO,NFVO,NFVV,NV1,NV2,NV3,NV4
-     &              ,NDIMX,NDIMY
+     &              ,NDIMX,NDIMY,NORBT
       INTEGER*8 NV5,NV6
       COMMON /DIMS8/ NV5,NV6
 C     Sub dimensions of symmetry packed arrays.

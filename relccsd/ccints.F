@@ -176,9 +176,9 @@ C
 C
       call memchk ('after initialization',cc,1)
   100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
-     &               NZ,NZE,CBUF,IBUF)
-      IF (NZ.LT.0) GOTO 110
-      ICOUNT = ICOUNT + NZ
+     &               NONZR,NZE,CBUF,IBUF)
+      IF (NONZR.LT.0) GOTO 110
+      ICOUNT = ICOUNT + NONZR
       DO 102 INZE = 1, NZE
             ITYP = IBUF(1,INZE)
             IREP = IBUF(2,INZE) 
@@ -302,8 +302,8 @@ C
       CALL XCOPY (N5,A0,0,VVOVVA,1)
 C
   200 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,14,INDK,INDL,
-     &               NZ,NZE,CBUF,IBUF)
-      IF (NZ.LT.0) GOTO 210
+     &               NONZR,NZE,CBUF,IBUF)
+      IF (NONZR.LT.0) GOTO 210
       DO 202 INZE = 1, NZE
             ITYP = IBUF(1,INZE)
             IREP = IBUF(2,INZE) 
@@ -408,8 +408,8 @@ C
       CALL XCOPY (N6,A0,0,VVVVVA,1)
 C
   300 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,16,INDK,INDL,
-     &               NZ,NZE,CBUF,IBUF)
-      IF (NZ.LT.0) GOTO 310
+     &               NONZR,NZE,CBUF,IBUF)
+      IF (NONZR.LT.0) GOTO 310
       DO 302 INZE = 1, NZE
             ITYP = IBUF(1,INZE)
             IREP = IBUF(2,INZE) 
@@ -743,7 +743,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,IATYP,INDK,INDL,
-     &                     NZ,NZE,CBUF,IBUF)
+     &                     NONZR,NZE,CBUF,IBUF)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -803,26 +803,26 @@ C
 C     A number of different formats are possible. 
       IF (CARITH) THEN 
 C     For complex groups we read the real and imaginary part.
-         READ (MDINT,END=10010,ERR=10010) IKR,JKR,NZ,
-     &        (INDK(INZ),INDL(INZ),INZ=1,NZ),
-     &        (CBUF(1,INZ),CBUF(2,INZ),INZ=1,NZ) 
+         READ (MDINT,END=10010,ERR=10010) IKR,JKR,NONZR,
+     &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
+     &        (CBUF(1,INZ),CBUF(2,INZ),INZ=1,NONZR) 
       ELSEIF (INTERFACE(1:7).NE.'MOLFDIR') THEN
 C     For real groups we read only the real part in DIRAC format.
-         READ (MDINT,END=10010,ERR=10010) IKR,JKR,NZ,
-     &        (INDK(INZ),INDL(INZ),INZ=1,NZ),
-     &        (CBUF(1,INZ),INZ=1,NZ) 
+         READ (MDINT,END=10010,ERR=10010) IKR,JKR,NONZR,
+     &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
+     &        (CBUF(1,INZ),INZ=1,NONZR) 
 cluuk : The old code is given below, use this instead of the line above when restarting from old
 cluuk : MDCINT files.
-cluuk&        (CBUF(1,INZ),RDUM,INZ=1,NZ) 
+cluuk&        (CBUF(1,INZ),RDUM,INZ=1,NONZR) 
       ELSEIF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
 C     For real groups we skip the zero imaginary part in MOLFDIR format.
-         READ (MDINT,END=10010,ERR=10010) IKR,JKR,NZ,
-     &        (INDK(INZ),INDL(INZ),INZ=1,NZ),
-     &        (CBUF(1,INZ),RDUM,INZ=1,NZ) 
+         READ (MDINT,END=10010,ERR=10010) IKR,JKR,NONZR,
+     &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
+     &        (CBUF(1,INZ),RDUM,INZ=1,NONZR) 
       ENDIF
       IF (IKR.EQ.0) THEN
          IF (JKR.EQ.0) THEN
-            NZ = -1
+            NONZR = -1
          ELSE
             READ (MDINT) NEXTFIL
             CLOSE (MDINT,STATUS='KEEP')
@@ -835,23 +835,23 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
       IF (NMPROC.GT.1 .AND. INTERFACE(1:7).EQ.'MOLFDIR') THEN
       CALL MPI_BCAST(IKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(JKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NZ,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-      IF (NZ.GT.0) THEN
-         CALL MPI_BCAST(INDK,NZ,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(INDL,NZ,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(CBUF,NZ*RCW,MPI_DOUBLE_PRECISION,
-     &                  MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NONZR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      IF (NONZR.GT.0) THEN
+       CALL MPI_BCAST(INDK,NONZR,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+       CALL MPI_BCAST(INDL,NONZR,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+       CALL MPI_BCAST(CBUF,NONZR*RCW,MPI_DOUBLE_PRECISION,
+     &                MASTER,MPI_COMM_WORLD,IERR)
       ENDIF
       ENDIF
 #endif
-      IF (NZ.EQ.-1) RETURN
+      IF (NONZR.EQ.-1) RETURN
       IJSIGN = SIGN(1,IKR*JKR) * ITRSGN
 C
 C     Expand to the full list
 C
       IF(FOCKSP) THEN
       NZE = 0 
-      DO 50 INZ = 1, NZ
+      DO 50 INZ = 1, NONZR
          KKR = INDK(INZ)
          LKR = INDL(INZ)
          I0 = KR(IKR)
@@ -941,7 +941,7 @@ C
 C     Expand to the full list
 C
       NZE = 0 
-      DO 150 INZ = 1, NZ
+      DO 150 INZ = 1, NONZR
          KKR = INDK(INZ)
          LKR = INDL(INZ)
          I0 = KR(IKR)

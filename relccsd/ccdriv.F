@@ -639,8 +639,8 @@ C
       CPU1 = CPU2
       CALL FLSHFO (IW)
 C
-      IF (DOFOPR) CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,
-     &            MXCORR,EPS)
+      IF (DOFOPR) CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,
+     &            LFREE,MXCORR,EPS)
       CALL CPUUSED(CPU2)
       CPUFO = CPUFO + CPU2 - CPU1
       CPU1 = CPU2
@@ -1867,8 +1867,8 @@ C
 1012  FORMAT (/' Skipping CCSD(T) calculation')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR,
-     &                   EPS)
+      SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,
+     &                   MXCORR,EPS)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -1964,8 +1964,10 @@ C
       CALL MEMOPT('REAL',EOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',EVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',DG ,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',DMO,NORBT*NORBT*NZ,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',XMO,NORBT*NORBT*NZ,CC,KFREE,LFREE,ALLOC)
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
-     &             JVVOO(NREP+1),JVOVO(NREP+1))
+     &            JVVOO(NREP+1),JVOVO(NREP+1))
       NBUF2 = NBUF1
       CALL MEMOPT('REAL',CCC,MAXDIM,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BB1,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
@@ -1995,11 +1997,17 @@ C
 C     Check the minimum size for the general use of this array
 C
       NBUF3 = MAX(NBUF1,NBUF3)
+C###############################################
+C     joost: the rest of the memory will be used
+C###############################################
+      NBUF3 = (LFREE - 4) / RCW
 C
 C     Allocate the work array
 C
       CALL MEMOPT('REAL',BUF3,NBUF3*RCW,CC,KFREE,LFREE,ALLOC)
-C
+C################################
+      IF (DOMP2G) MXCORR = KFREE
+C################################
       IF (DOCCSDG) THEN
          CALL MEMOPT('REAL',AZ,NV1*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',H ,NV4*RCW,CC,KFREE,LFREE,ALLOC)
@@ -2058,7 +2066,7 @@ C        Get amplitude part of density matrix
 C
          CALL CCDENSC (1,CC(T1),CC(S1),CC(T2),CC(S2),
      &                 CC(BUF1),CC(BUF2),CC(BUF3),CC(DOO),CC(DVV),
-     &                 CC(DVO),CC(DOV))
+     &                 CC(DVO),CC(DOV),CC(DMO))
 C
 C        Solve Z-vector equations
 C
@@ -2069,7 +2077,15 @@ C
      &                 CC(BUF1),CC(BUF2),CC(BUF3),NBUF2,NBUF3,CC(CBUF),
      &                 CC(XVO),CC(XOV),CC(DOO),CC(DVV),CC(DVO),CC(DOV),
      &                 CC(EVO),CC(EOV),CC(D2VO),CC(D2OV),CC(DG),
-     &                 CC(CCC),CC(BB1),CC(BB2),TOL)
+     &                 CC(CCC),CC(BB1),CC(BB2),TOL,CC(XMO),CC(DMO))
+C
+C#################################################################
+C
+C     create upper triangle of density matrix
+C
+C#################################################################
+c      deactivated because of checking in to trunk
+c        CALL QHMRST(CC(DMO),NORBT,NZ,NORBT,NORBT)
 C
          WRITE (IW,1002) '    MP2'
          DO EOPER = 1, NEOPER
@@ -2081,6 +2097,19 @@ C
      &                  EPHASE,CEXPA)
             WRITE (IW,1004) NAMEE(EOPER),CEXPA
          ENDDO
+C
+C#################################################################
+C
+C     Multiply denstity matrix with property matrices
+C             (i.e. calculate expectation value)
+C
+C#################################################################
+C
+         KFREE1=1
+         LFREE1=NBUF3*RCW
+         CALL MEMCHK('voor prpexp_mp2',CC,1)
+c      deactivated because of checking in to trunk
+c        CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
 C
       ENDIF
 C
@@ -2981,12 +3010,13 @@ C     Read symmetry information (master node only)
 C
       IF (MYPROC.EQ.MASTER) THEN
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
-       READ (MRCONEE) NSP,BREIT,ECORE
+       READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,
+     &                              NFSYM,NZ,SPFR,NORBT
        READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
      &                ,(NELEC(IRP),IRP=1,NSYMRP)
        GOTO 11
 C---- Keep OLD (MOLFDIR) format here for compatibility
-   10     WRITE (IW,*) "No occupation info on MRCONEE, I assume"//
+   10     WRITE (IW,*) "Missing information on MRCONEE, I assume"//
      &    " this is a MOLFDIR file and try to continue.."
           INTERFACE='MOLFDIR'
           REWIND(MRCONEE)
@@ -3047,6 +3077,10 @@ C
          CALL MPI_BCAST(ECORE,1,MPI_DOUBLE_PRECISION,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(NSYMRP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NFSYM,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NZ,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NORBT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(REPN,NSYMRP*4,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(NELEC,NSYMRP,MPI_INTEGER,MASTER,

@@ -13,8 +13,6 @@ C
      &        DOFSPC
       COMMON/CCPRIN/IPRNT
       COMMON/CCOCC/NELEC(16),NFROZ(16)
-C-----For the DIRAC interface
-      COMMON/CCDIR/NQUNIT
 C-----For the MOLFDIR interface
       COMMON/CCMLF/MWORD
 C-----For the integral sorting module

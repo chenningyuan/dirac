@@ -92,6 +92,7 @@ C*****************************************************************************
 C*****  E X P E C T A T I O N  V A L U E S ***********************************
 C*****************************************************************************
 C
+      CALL MEMCHK('begin pamprp',WORK,1)
       CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
       IF(DOEXP) CALL PRPEXP(WORK(KEXP),WORK(KFREE),LFREE)
 C
@@ -152,6 +153,10 @@ C
       IF (DOEXP .OR. DOXLR) THEN
          CALL PRPOUT(WORK(KEXP),WORK(KLRF),WORK(KLRCNV),
      &            WORK,KFREE,LFREE)
+c    deactivated because of checking in to trunk
+c        IF (DOCCM) THEN
+c           CALL PRPOUT_CORR(WORK(KEXP),WORK,KFREE,LFREE)
+c        END IF
       END IF
 C
       CALL MEMREL('PAMPRP',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1053,13 +1058,24 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
       DIMENSION EXPVAL(*),ABLRF(*),ABCNV(*),WORK(*)
+#include "dcbexp.h"
 #include "dcbprp.h"
       CALL PRSYMB(LUPRI,'-',76,0)
+C
+      KFRSAV=KFREE
+C
+C     Memory Allocation
+C     -----------------
+C
+      CALL MEMGET('REAL',KEXP_CORR,NEXPP,WORK,KFREE,LFREE)
+C
+      CALL DZERO(WORK(KEXP_CORR),NEXPP)
+C
 C
 C     Dipole moment
 C
       IF(DIPOLE) THEN
-        CALL PRP_DIPOLE(EXPVAL,WORK,KFREE,LFREE)
+        CALL PRP_DIPOLE(EXPVAL,WORK(KEXP_CORR),.FALSE.,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Quadrupole moment
@@ -1078,25 +1094,27 @@ C
 C     Electric field gradients
 C
       IF(EFG) THEN
-        CALL PRP_EFG(EXPVAL,WORK,KFREE,LFREE)
+        CALL PRP_EFG(EXPVAL,WORK(KEXP_CORR),.FALSE.,WORK,KFREE,LFREE)
       ENDIF
 C
 C     non-traceless EFT's (electric field third derivatives)
 C
       IF(EFT) THEN
-        CALL PRP_EFT(EXPVAL,.FALSE.,WORK(KFREE),LFREE)
+        CALL PRP_EFT(EXPVAL,WORK(KEXP_CORR),.FALSE.,.FALSE.,WORK(KFREE),
+     &               LFREE)
       ENDIF
 C
 C     Traceless EFT's (electric field third derivatives)
 C
       IF(EFT) THEN
-        CALL PRP_EFT(EXPVAL,.TRUE.,WORK(KFREE),LFREE)
+        CALL PRP_EFT(EXPVAL,WORK(KEXP_CORR),.TRUE.,.FALSE.,WORK(KFREE),
+     &               LFREE)
       ENDIF
 C
 C     Nuclear quadrupole coupling
 C
       IF(NQCC) THEN
-        CALL PRP_NQCC(EXPVAL,WORK,KFREE,LFREE)
+        CALL PRP_NQCC(EXPVAL,WORK(KEXP_CORR),.FALSE.,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Electric polarizabilities
@@ -1123,18 +1141,117 @@ C
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
+C     Memory deallocation
+C     -------------------
+C
+      CALL MEMREL('PRPOUT',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
 ctec      CALL PRSYMB(LUPRI,'-',76,0)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Prpout_corr */
+      SUBROUTINE PRPOUT_CORR(EXPVAL,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Output of static 1st order properties at correlated level
+C
+C     Needs to be generalized
+C
+C     Written by Joost van Stralen June 2002 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+      DIMENSION EXPVAL(*),WORK(*)
+#include "dcbprp.h"
+#include "dcbexp.h"
+C
+      CALL PRSYMB(LUPRI,'-',76,0)
+C 
+      CALL TITLER('MP2 expectation values','*',124)
+C
+      KFRSAV=KFREE
+C
+C     Memory Allocation
+C     -----------------
+C
+      CALL MEMGET('REAL',KEXP_CORR,NEXPP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEXP_TOT,NEXPP,WORK,KFREE,LFREE)
+C
+C     Read correlation contribution to expectation value
+C     ==================================================
+C
+      CALL READEXPV(WORK(KEXP_CORR))
+C     
+C     Calculate total expectation value
+C     (HF + correlation)
+C     ==================================================
+C    
+      CALL EXPTOT(EXPVAL,WORK(KEXP_CORR),WORK(KEXP_TOT))
+C
+C     Dipole moment
+C
+      IF(DIPOLE) THEN
+        CALL PRP_DIPOLE(EXPVAL,WORK(KEXP_CORR),.TRUE.,WORK,KFREE,LFREE)
+      ENDIF
+C
+C     Parity violation: Chirality
+C
+      IF(PVC) THEN
+        CALL PRP_PVC(WORK(KEXP_TOT),WORK,KFREE,LFREE)
+      ENDIF
+C
+C     Electric field gradients
+C
+      IF(EFG) THEN
+        CALL PRP_EFG(EXPVAL,WORK(KEXP_CORR),.TRUE.,WORK,KFREE,LFREE)
+      ENDIF
+C
+C     non-traceless EFT's (electric field third derivatives)
+C
+      IF(EFT) THEN
+        CALL PRP_EFT(EXPVAL,WORK(KEXP_CORR),.FALSE.,.TRUE.,WORK(KFREE),
+     &               LFREE)
+      ENDIF
+C
+C     Traceless EFT's (electric field third derivatives)
+C
+      IF(EFT) THEN
+        CALL PRP_EFT(EXPVAL,WORK(KEXP_CORR),.TRUE.,.TRUE.,WORK(KFREE),
+     &               LFREE)
+      ENDIF
+C
+C     Nuclear quadrupole coupling
+C
+      IF(NQCC) THEN
+        CALL PRP_NQCC(EXPVAL,WORK(KEXP_CORR),.TRUE.,WORK,KFREE,LFREE)
+      ENDIF
+C
+C     NMR diamagnetic spin-orbit
+C
+      IF(DSO) THEN
+        CALL PRP_DSO(WORK(KEXP_TOT),WORK,KFREE,LFREE)
+      ENDIF
+C
+C     Memory deallocation
+C     -------------------
+C
+      CALL MEMREL('PRPOUT_CORR',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prp_dipol */
-      SUBROUTINE PRP_DIPOLE(EXPVAL,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_DIPOLE(EXPVAL,EXP_CORR,CORR,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C      Calculate dipole moment 
 C
 C      Written by T.Saue - May 30 1996
-C      Last revision July 8 1996 - tsaue
+C      Revision July 8 1996 - tsaue
+C      Last revision Joost van Stralen - June 11 2002
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1145,7 +1262,8 @@ C
 #include "dipole.h"
 #include "dcbexp.h"
 C
-      DIMENSION EXPVAL(*),WORK(*)
+      DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
+      LOGICAL CORR
 C
 C     Electronic contribution to dipole moment
 C     ========================================
@@ -1159,23 +1277,49 @@ C     ========================================
 C
       CALL DIPNUC(0,.FALSE.)
 C
+C     Correlation contribution to dipole moment
+C     =========================================
+C
+      IF (CORR) THEN
+         DO I = 1,3
+           DIPMCORR(I) = EXP_CORR(IPDIPOLE(I))
+         ENDDO
+      ENDIF
+C
 C     Print section
 C     =============
 C
       WRITE(LUPRI,'(A/)')
      &     '* Dipole moment:'
-      WRITE(LUPRI,'(10X,3(A12,13X))')
-     &   'Electronic  ','Nuclear     ','Total       '
-      WRITE(LUPRI,'(10X,3(A12,13X))')
-     &   'contribution','contribution','contribution'
+      IF (CORR) THEN
+         WRITE(LUPRI,'(12X,3(A12,11X))')
+     &        'Hartree-Fock','correlation ','Total       '
+         WRITE(LUPRI,'(12X,3(A12,11X))')
+     &        'contribution','contribution','MP2 value   '
+      ELSE
+         WRITE(LUPRI,'(10X,3(A12,13X))')
+     &      'Electronic  ','Nuclear     ','Total       '
+         WRITE(LUPRI,'(10X,3(A12,13X))')
+     &      'contribution','contribution','contribution'
+      ENDIF
       CALL PRSYMB(LUPRI,'-',76,0)
       IOFF = ICHAR('w')
-      DO I = 1,3
-        WRITE(LUPRI,'(A1,3(3X,F16.8,A))') 
-     &       CHAR(IOFF+I),(DEBYE*DIPME(I)),' Debye',
-     &                  (DEBYE*DIPMN(I)),' Debye',
-     &       (DEBYE*(DIPME(I)+DIPMN(I))),' Debye'
-      ENDDO
+      IF (CORR) THEN
+         DO I = 1,3
+           WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
+     &          CHAR(IOFF+I),
+     &          (DEBYE*(DIPME(I)+DIPMN(I))),' Debye',
+     &          (DEBYE*DIPMCORR(I)),' Debye',
+     &          (DEBYE*(DIPME(I)+DIPMN(I)+DIPMCORR(I))),' Debye'
+         ENDDO
+      ELSE
+        DO I = 1,3
+           WRITE(LUPRI,'(A1,3(3X,F16.8,A))') 
+     &          CHAR(IOFF+I),(DEBYE*DIPME(I)),' Debye',
+     &                     (DEBYE*DIPMN(I)),' Debye',
+     &          (DEBYE*(DIPME(I)+DIPMN(I))),' Debye'
+         ENDDO
+      ENDIF
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u = ',DEBYE,' Debye'
 C
@@ -1183,10 +1327,11 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRP_NQCC */
-      SUBROUTINE PRP_NQCC(EXPVAL,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_NQCC(EXPVAL,EXP_CORR,CORR,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Written by J. Thyssen - Oct 13 1998
+C     Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1197,7 +1342,8 @@ C
 #include "dcbexp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-      DIMENSION EXPVAL(*),WORK(*)
+      DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
+      LOGICAL CORR
 C
       KFRSAV = KFREE
 C
@@ -1208,20 +1354,21 @@ C
       CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
       CALL SETATM(WORK(KATOM),NATOM,30)
-      CALL PRP_NQCC1(EXPVAL,WORK(KATOM),WORK(KAXIS),WORK(KTEMP))
+      CALL PRP_NQCC1(EXPVAL,EXP_CORR,CORR,WORK(KATOM),WORK(KAXIS),
+     &               WORK(KTEMP))
       CALL MEMREL('PRP_NQCC',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prp_nqcc */
-      SUBROUTINE PRP_NQCC1(EXPVAL,DOATOM,AXIS,TEMP)
+      SUBROUTINE PRP_NQCC1(EXPVAL,EXP_CORR,CORR,DOATOM,AXIS,TEMP)
 C*****************************************************************************
 C
 C      Calculate nuclear quadrupole coupling constants
 C
 C      Written by T.Enevoldsen  - Sep 1996
-C      Last revision 
+C      Last revision by Joost van Stralen - June 11 2002
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1234,7 +1381,8 @@ C
 #include "dcbexp.h"
       PARAMETER(CONV = 234.9647417D0)
       DIMENSION EXPVAL(*),AXIS(*),TEMP(*),PVAL(9),TMP(3),ITMP(3)
-      LOGICAL   DOATOM(*)
+      DIMENSION EXP_CORR(*)
+      LOGICAL   DOATOM(*), CORR
       CHARACTER*4 HZUNIT
 #include "nuclei.h"
 #include "symmet.h"
@@ -1243,15 +1391,22 @@ C
 C
       IF (.NOT.EFG) THEN
 C
-C     Electronic contribution to dipole moment
-C     ========================================
+C     Electronic contribution to electric field gradient
+C     ==================================================
 C
          CALL EL_EFG(0,EXPVAL,DOATOM,AXIS,TEMP)
 C
-C     Nuclear contribution to dipole moment
-C     ========================================
+C     Nuclear contribution to electric field gradient
+C     ===============================================
 C
          CALL NUC_EFG(0,DOATOM,AXIS,TEMP)
+C
+C     correlation contribution to electric field gradient
+C     ===================================================
+C
+         IF (CORR) THEN
+            CALL CORR_EFG(0,EXP_CORR,DOATOM,AXIS,TEMP)
+         ENDIF
 C     
       ENDIF
 C
@@ -1272,6 +1427,10 @@ C
                   DO J=1,3
                      EFGTOT(I,J,NATOM)=
      &                  EFGNUC(I,J,NATOM)+EFGEL(I,J,NATOM)
+                     IF (CORR) THEN
+                        EFG_METHOD(I,J,NATOM)=
+     &                     EFGTOT(I,J,NATOM)+EFGCORR(I,J,NATOM)
+                     ENDIF
                   ENDDO
                ENDDO
 C
@@ -1280,14 +1439,24 @@ C
                IJ = 1
                DO I = 1, 3
                   DO J = 1, I
-                     PVAL(IJ) = EFGTOT(I,J,IATOM)
+                     IF (CORR) THEN
+                        PVAL(IJ) = EFG_METHOD(I,J,IATOM)
+                     ELSE
+                        PVAL(IJ) = EFGTOT(I,J,IATOM)
+                     ENDIF
                      IJ = IJ + 1
                   ENDDO
                ENDDO
                CALL JACO(PVAL,AXIS,3,3,3,TMP,ITMP)
-               EFGTOT(1,1,IATOM) = PVAL(1)
-               EFGTOT(2,2,IATOM) = PVAL(3)
-               EFGTOT(3,3,IATOM) = PVAL(6)
+               IF (CORR) THEN
+                  EFG_METHOD(1,1,IATOM) = PVAL(1)
+                  EFG_METHOD(2,2,IATOM) = PVAL(3)
+                  EFG_METHOD(3,3,IATOM) = PVAL(6)
+               ELSE
+                  EFGTOT(1,1,IATOM) = PVAL(1)
+                  EFGTOT(2,2,IATOM) = PVAL(3)
+                  EFGTOT(3,3,IATOM) = PVAL(6)
+               ENDIF
 C
 C              Reorder to calculate eta:
 C              |xx|<|yy|<|zz|
@@ -1322,9 +1491,15 @@ C
      &                  'Mass: ',MASS,'Spin: ',
      &                  SPIN,'Quadrupole moment: ',QMOM
                      DO I=1,3
-                        WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))') 
-     &                     'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
-     &                     EFGTOT(I,I,IATOM)*FACT,HZUNIT
+                        IF (CORR) THEN
+                           WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))')
+     &                        'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
+     &                        EFG_METHOD(I,I,IATOM)*FACT,HZUNIT
+                        ELSE
+                           WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))') 
+     &                        'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
+     &                        EFGTOT(I,I,IATOM)*FACT,HZUNIT
+                        ENDIF
                      ENDDO
                      WRITE (LUPRI,'(2X,A3,9X,F16.8)')
      &                  'Eta', ETA
@@ -1446,12 +1621,82 @@ C     END IF
 C     
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck corr_efg */
+      SUBROUTINE CORR_EFG(IPRINT,EXPVAL_CORR,DOATOM,AXIS,TEMP)
+C*****************************************************************************
+C     
+C     Calculates electronic contribution to electric field gradients
+C     
+C     Written by T.Enevoldsen  - Sep 1996
+C     Last revision 
+C     
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C     
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "dcbexp.h"
+      DIMENSION EXPVAL_CORR(*), TEMP(3,3,MXCENT), TMP(3), ITMP(3)
+      DIMENSION PVAL(9), AXIS(3,3,MXCENT)
+      LOGICAL DOATOM(*)
+#include "nuclei.h"
+#include "symmet.h"
+#include "nqcc.h"
+#include "ibtfun.h"
+      CALL DZERO(EFGCORR,9*MXCENT)
+      CALL DZERO(TEMP,9*MXCENT)
+      ITYP = 0
+      DO 100 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 100
+         DO 200 ICOOR1 = 1, 3
+            DO 210 ICOOR2 = ICOOR1, 3
+               ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+               DO 300 IREPC = 0, MAXREP
+                  IF (IBTAND(ISTBNU(IATOM),
+     &                IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                     ITYP = ITYP + 1
+                     TEMP(ICOOR1,ICOOR2,IATOM) =
+     &               TEMP(ICOOR1,ICOOR2,IATOM) +EXPVAL_CORR(IPEFG(ITYP))
+     &                                             /NUCDEG(IATOM)
+                  END IF
+ 300           CONTINUE
+ 210        CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
+      NATOM = 1
+      DO 110 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 110
+         DO 310 IREPC = 0, MAXREP
+            IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+               DO 220 I = 1, 3
+                  DO 230 J = I, 3
+                     EFGCORR(I,J,NATOM) = TEMP(I,J,IATOM)*
+     &                         PT(IBTAND(IBTXOR(ISYMAX(I,1),
+     &                            ISYMAX(J,1)),IREPC))
+                     IF (I .NE. J) EFGCORR(J,I,NATOM)=EFGCORR(I,J,NATOM)
+ 230              CONTINUE
+ 220           CONTINUE
+               IF (IPRINT .GE. 2) THEN
+                  WRITE (LUPRI ,'(/2X,A,A/)')
+     &               'MP2 corr. EFG Tensor of nucleus ',NAMDEP(NATOM)
+                  CALL OUTPUT(EFGCORR(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
+               END IF
+               NATOM = NATOM + 1
+            END IF
+ 310     CONTINUE
+ 110  CONTINUE
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRP_EFG */
-      SUBROUTINE PRP_EFG(EXPVAL,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_EFG(EXPVAL,EXP_CORR,CORR,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Written by J. Thyssen - Oct 13 1998
+C     Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1462,7 +1707,8 @@ C
 #include "dcbexp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-      DIMENSION EXPVAL(*),WORK(*)
+      DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
+      LOGICAL CORR
 C
       KFRSAV = KFREE
 C
@@ -1473,20 +1719,21 @@ C
       CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
       CALL SETATM(WORK(KATOM),NATOM,30)
-      CALL PRP_EFG1(EXPVAL,WORK(KATOM),WORK(KAXIS),WORK(KTEMP),
-     &              IPRPRP)
+      CALL PRP_EFG1(EXPVAL,EXP_CORR,WORK(KATOM),WORK(KAXIS),WORK(KTEMP),
+     &              CORR,IPRPRP)
       CALL MEMREL('PRP_EFG',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRP_EFG1(EXPVAL,DOATOM,AXIS,TEMP,IPRINT)
+      SUBROUTINE PRP_EFG1(EXPVAL,EXP_CORR,DOATOM,AXIS,TEMP,CORR,IPRINT)
 C*****************************************************************************
 C     
 C     Calculate nuclear quadrupole coupling constants
 C     
 C     Written by T.Enevoldsen  - Sep 1996
-C     Last revision by J. Thyssen - Oct 13 1998
+C     Revision by J. Thyssen - Oct 13 1998
+C     Last revision by Joost van Stralen - June 11 2002
 C     
 C*****************************************************************************
 #include "implicit.h"
@@ -1496,44 +1743,61 @@ C
 #include "maxaqn.h"
 #include "mxorb.h"
 #include "dcbexp.h"
-      DIMENSION EXPVAL(*),AXIS(3,3,MXCENT),TEMP(*)
+      DIMENSION EXPVAL(*),EXP_CORR(*),AXIS(3,3,MXCENT),TEMP(*)
       DIMENSION TMP(3),ITMP(3),PVAL(9)
-      LOGICAL   DOATOM(*)
+      LOGICAL   DOATOM(*), CORR
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
 #include "ibtfun.h"
 C     
 C     
-C     Electronic contribution to dipole moment
-C     ========================================
-C
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(A/)') '* Electric field gradients :'
 C    
       CALL EL_EFG(IPREXP,EXPVAL,DOATOM,AXIS,TEMP)
       CALL NUC_EFG(IPREXP,DOATOM,AXIS,TEMP)
+      IF (CORR) THEN
+         CALL CORR_EFG(IPREXP,EXP_CORR,DOATOM,AXIS,TEMP)
+      END IF
 C     
 C     print section
       IOFF = ICHAR('w')
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(12X,A/)')
      &     'Individual (non-zero) components'
+      IF (CORR) THEN
+      WRITE(LUPRI,'(12X,3(A12,11X))')
+     &     'Hartree-Fock','correlation ','Total       '
+      WRITE(LUPRI,'(12X,3(A12,11X))')
+     &     'contribution','contribution','MP2 value   '
+      ELSE
       WRITE(LUPRI,'(12X,3(A12,11X))')
      &     'Electronic  ','Nuclear     ','Total       '
       WRITE(LUPRI,'(12X,3(A12,11X))')
      &     'contribution','contribution','contribution'
+      END IF
       CALL PRSYMB(LUPRI,'-',72,2)
       DO IATOM = 1, NUCDEP
          WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
          DO I = 1,3
             DO J = 1,3
+               IF (CORR) THEN
+               EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
+              EFG_METHOD(I,J,IATOM)=EFGTOT(I,J,IATOM)+EFGCORR(I,J,IATOM)
+               IF (ABS(EFG_METHOD(I,J,IATOM)).GT.1.0D-12)
+     &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
+     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGTOT(I,J
+     &              ,IATOM),' au ',EFGCORR(I,J,IATOM),' au '
+     &              ,EFG_METHOD(I,J,IATOM),' au '
+               ELSE
                EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
                IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
-     &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
+     &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
      &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGEL(I,J
      &              ,IATOM),' au ',EFGNUC(I,J,IATOM),' au '
      &              ,EFGTOT(I,J,IATOM),' au '
+               ENDIF
             END DO
          END DO
       END DO
@@ -1550,19 +1814,35 @@ C
             IJ = 1
             DO I = 1, 3
                DO J = 1, I
-                  PVAL(IJ) = EFGTOT(I,J,IATOM)
+                  IF (CORR) THEN
+                     PVAL(IJ) = EFG_METHOD(I,J,IATOM)
+                  ELSE
+                     PVAL(IJ) = EFGTOT(I,J,IATOM)
+                  END IF
                   IJ = IJ + 1
                ENDDO
             ENDDO
             CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
-            EFGTOT(1,1,IATOM) = PVAL(1)
-            EFGTOT(2,2,IATOM) = PVAL(3)
-            EFGTOT(3,3,IATOM) = PVAL(6)
+            IF (CORR) THEN
+               EFG_METHOD(1,1,IATOM) = PVAL(1)
+               EFG_METHOD(2,2,IATOM) = PVAL(3)
+               EFG_METHOD(3,3,IATOM) = PVAL(6)
+            ELSE
+               EFGTOT(1,1,IATOM) = PVAL(1)
+               EFGTOT(2,2,IATOM) = PVAL(3)
+               EFGTOT(3,3,IATOM) = PVAL(6)
+            ENDIF
             WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
             DO I=1,3
-               WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
-     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
-     &              ,EFGTOT(I,I,IATOM),' au '
+               IF (CORR) THEN
+                  WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
+     &                 'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
+     &                 ,EFG_METHOD(I,I,IATOM),' au '
+               ELSE
+                  WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
+     &                 'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
+     &                 ,EFGTOT(I,I,IATOM),' au '
+               END IF
             ENDDO
 C
 C           print section principle axis
@@ -1581,10 +1861,11 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prp_eft */
-      SUBROUTINE PRP_EFT(EXPVAL,TRLESS,WORK,LWORK)
+      SUBROUTINE PRP_EFT(EXPVAL,EXP_CORR,TRLESS,CORR,WORK,LWORK)
 C***********************************************************************
 C
 C     Written by J. Thyssen - Oct 13 1998
+C     Last revision: Joost van Stralen - June 7 2002
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1596,36 +1877,41 @@ C
 #include "dcbxlr.h"
 #include "nuclei.h"
 C
-      DIMENSION EXPVAL(*),WORK(*)
+      DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
       LOGICAL   TRLESS
+      LOGICAL   CORR 		!add correlation contribution?
 C
 #include "memint.h"
 C
 C     Allocate memory
 C
-      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTEMP,15*NUCIND,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KNUC ,15*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEL  ,15*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KATOM    ,NUCIND  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTEMP    ,15*NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMP_CORR,15*NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KNUC     ,15*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEL      ,15*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCORR    ,15*NUCDEP,WORK,KFREE,LFREE)
 C
       IF (TRLESS) THEN
          CALL SETATM(WORK(KATOM),NATOM,52)
       ELSE
          CALL SETATM(WORK(KATOM),NATOM,53)
       END IF
-      CALL PRP_EFT1(EXPVAL,WORK(KATOM),
-     &              WORK(KTEMP),WORK(KEL),WORK(KNUC),TRLESS)
+      CALL PRP_EFT1(EXPVAL,EXP_CORR,WORK(KATOM),WORK(KTEMP),
+     &              WORK(KTMP_CORR),WORK(KEL),WORK(KNUC),WORK(KCORR),
+     &              TRLESS,CORR)
       CALL MEMREL('PRP_EFT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prp_EFT */
-      SUBROUTINE PRP_EFT1(EXPVAL,DOATOM,TEMPEFT,EFTEL,EFTNUC,
-     &                    TRLESS)
+      SUBROUTINE PRP_EFT1(EXPVAL,EXP_CORR,DOATOM,TEMPEFT,TMPEFT_CORR,
+     &                    EFTEL,EFTNUC,EFTCORR,TRLESS,CORR)
 C***********************************************************************
 C
 C     Written by J. Thyssen - Oct 19 1999
+C     Last revision: Joost van Stralen - June 7 2002
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1644,10 +1930,10 @@ C
 #include "nuclei.h"
 #include "chrxyz.h"
 #include "symmet.h"
-      LOGICAL   DOATOM(*), TRLESS
-      DIMENSION EXPVAL(*),TEMPEFT(15,*), EFTEL(15,*),
-     &          EFTNUC(15,*)
-      DIMENSION ITR(3,6),DTRNUC(6),DTREL(6)
+      LOGICAL   DOATOM(*), TRLESS, CORR
+      DIMENSION EXPVAL(*),EXP_CORR(*),TEMPEFT(15,*),TMPEFT_CORR(15,*),
+     &          EFTEL(15,*),EFTNUC(15,*),EFTCORR(15,*)
+      DIMENSION ITR(3,6),DTRNUC(6),DTREL(6),DTRCORR(6)
       DATA ITR  / 1, 4, 6,
      &            2, 7, 9,
      &            3, 8,10,
@@ -1681,8 +1967,10 @@ C
 C     Gather expectation values and take 
 C     symmetry combinations.
 C
-      CALL DZERO(TEMPEFT,15*NUCIND)
-      CALL DZERO(EFTEL  ,15*NUCDEP)
+      CALL DZERO(TEMPEFT    ,15*NUCIND)
+      CALL DZERO(EFTEL      ,15*NUCDEP)
+      CALL DZERO(TMPEFT_CORR,15*NUCIND)
+      CALL DZERO(EFTCORR    ,15*NUCDEP)
       ITYP = 0
       DO 100 IATOM = 1, NUCIND
 c        IF (.NOT. DOATOM(IATOM)) GOTO 100
@@ -1707,6 +1995,11 @@ c        IF (.NOT. DOATOM(IATOM)) GOTO 100
                   TEMPEFT(IELEM,IATOM) =
      &               TEMPEFT(IELEM,IATOM) +
      &               EXPVAL(IPE) / NUCDEG(IATOM)
+                  IF (CORR) THEN
+                  TMPEFT_CORR(IELEM,IATOM) =
+     &               TMPEFT_CORR(IELEM,IATOM) +
+     &               EXP_CORR(IPE) / NUCDEG(IATOM)
+                  ENDIF
                END IF
  300        CONTINUE
          END DO
@@ -1734,6 +2027,10 @@ c        IF (.NOT. DOATOM(IATOM)) GOTO 110
                   ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
                   EFTEL(IELEM,NATOM) =
      &               TEMPEFT(IELEM,IATOM) * PT(IBTAND(ISYMIJ,IREPC))
+                  IF (CORR) THEN
+                  EFTCORR(IELEM,NATOM) =
+     &               TMPEFT_CORR(IELEM,IATOM) * PT(IBTAND(ISYMIJ,IREPC))
+                  END IF
                END DO
                END DO
                END DO
@@ -1752,10 +2049,17 @@ C
      &     'Non-traceless electric field third derivatives'
       WRITE(LUPRI,'(14X,A/)')
      &     'Individual (non-zero) components'
-      WRITE(LUPRI,'(14X,3(A12,11X))')
-     &     'Electronic  ','Nuclear     ','Total       '
-      WRITE(LUPRI,'(14X,3(A12,11X))')
+      IF (CORR) THEN
+         WRITE(LUPRI,'(14X,3(A12,11X))')
+     &        'Hartee-Fock ','correlation  ','Total       '
+         WRITE(LUPRI,'(14X,3(A12,11X))')
+     &     'contribution','contribution','MP2 value   '
+      ELSE
+         WRITE(LUPRI,'(14X,3(A12,11X))')
+     &        'Electronic  ','Nuclear     ','Total       '
+         WRITE(LUPRI,'(14X,3(A12,11X))')
      &     'contribution','contribution','contribution'
+      ENDIF
       CALL PRSYMB(LUPRI,'-',72,2)
       DO IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
@@ -1766,14 +2070,28 @@ C
             DO ICOOR3=ICOOR2,3
             DO ICOOR4=ICOOR3,3
                IELEM = IELEM + 1
+C     EFT correlated method
+               IF (CORR) THEN
+               EFTHF = EFTNUC(IELEM,IATOM)+EFTEL(IELEM,IATOM)
+               EFT_METHOD = EFTHF + EFTCORR(IELEM,IATOM)
+               IF (ABS(EFT_METHOD).GT.1.0D-12)
+     &            WRITE(LUPRI,'(2X,A5,3(3X,1P,D16.9,A))') 
+     &                 'h'//CHRXYZ(-ICOOR1)//CHRXYZ(-ICOOR2)
+     &                    //CHRXYZ(-ICOOR3)//CHRXYZ(-ICOOR4),
+     &                 EFTHF                  ,' au ',
+     &                 EFTCORR(IELEM,IATOM)   ,' au ',
+     &                 EFT_METHOD             ,' au '
+C     EFT Hartee-Fock
+               ELSE
                EFTTOT = EFTNUC(IELEM,IATOM)+EFTEL(IELEM,IATOM)
                IF (ABS(EFTTOT).GT.1.0D-12)
-     &            WRITE(LUPRI,'(2X,A5,3(3X,1P,D16.9,A))') 
+     &            WRITE(LUPRI,'(2X,A5,3(3X,1P,D16.9,A))')
      &                 'h'//CHRXYZ(-ICOOR1)//CHRXYZ(-ICOOR2)
      &                    //CHRXYZ(-ICOOR3)//CHRXYZ(-ICOOR4),
      &                 EFTEL (IELEM,IATOM),' au ',
      &                 EFTNUC(IELEM,IATOM),' au ',
      &                 EFTTOT             ,' au '
+               END IF
             ENDDO
             ENDDO
             ENDDO
@@ -1799,6 +2117,11 @@ C
                DTREL(I)  = EFTEL (ITR(1,I),IATOM) + 
      &                     EFTEL (ITR(2,I),IATOM) + 
      &                     EFTEL (ITR(3,I),IATOM)
+               IF (CORR) THEN
+               DTRCORR(I)  = EFTCORR (ITR(1,I),IATOM) +
+     &                       EFTCORR (ITR(2,I),IATOM) +
+     &                       EFTCORR (ITR(3,I),IATOM)
+               END IF
             END DO
 C
 C           Subtract linear kombinations of traces...
@@ -1841,6 +2164,35 @@ C
             EFTEL(14,IATOM) = EFTEL(14,IATOM) - D3/D7*DTREL(5)
             EFTEL(15,IATOM) = EFTEL(15,IATOM) +
      &           D3/D35*DTREL(1) +  D3/D35*DTREL(4) - D27/D35*DTREL(6)
+         IF (CORR) THEN
+            EFTCORR( 1,IATOM) = EFTCORR( 1,IATOM) -
+     &         D27/D35*DTRCORR(1) +  D3/D35*DTRCORR(4) +
+     &         D3/D35*DTRCORR(6)
+            EFTCORR( 2,IATOM) = EFTCORR( 2,IATOM) - D3/D7*DTRCORR(2)
+            EFTCORR( 3,IATOM) = EFTCORR( 3,IATOM) - D3/D7*DTRCORR(3)
+            EFTCORR( 4,IATOM) = EFTCORR( 4,IATOM) +
+     &          (-D4/D35)*DTRCORR(1) -  D4/D35*DTRCORR(4) +
+     &           D1/D35*DTRCORR(6)
+            EFTCORR( 5,IATOM) = EFTCORR( 5,IATOM) - D1/D7*DTRCORR(5)
+            EFTCORR( 6,IATOM) = EFTCORR( 6,IATOM) +
+     &          (-D4/D35)*DTRCORR(1) +  D1/D35*DTRCORR(4) -
+     &           D4/D35*DTRCORR(6)
+            EFTCORR( 7,IATOM) = EFTCORR( 7,IATOM) - D3/D7*DTRCORR(2)
+            EFTCORR( 8,IATOM) = EFTCORR( 8,IATOM) - D1/D7*DTRCORR(3)
+            EFTCORR( 9,IATOM) = EFTCORR( 9,IATOM) - D1/D7*DTRCORR(2)
+            EFTCORR(10,IATOM) = EFTCORR(10,IATOM) - D3/D7*DTRCORR(3)
+            EFTCORR(11,IATOM) = EFTCORR(11,IATOM) +
+     &           D3/D35*DTRCORR(1) - D27/D35*DTRCORR(4) +
+     &           D3/D35*DTRCORR(6)
+            EFTCORR(12,IATOM) = EFTCORR(12,IATOM) - D3/D7*DTRCORR(5)
+            EFTCORR(13,IATOM) = EFTCORR(13,IATOM) +
+     &           D1/D35*DTRCORR(1) -  D4/D35*DTRCORR(4) -
+     &           D4/D35*DTRCORR(6)
+            EFTCORR(14,IATOM) = EFTCORR(14,IATOM) - D3/D7*DTRCORR(5)
+            EFTCORR(15,IATOM) = EFTCORR(15,IATOM) +
+     &           D3/D35*DTRCORR(1) +  D3/D35*DTRCORR(4) -
+     &           D27/D35*DTRCORR(6)
+         END IF
          END IF
 C
       END DO
@@ -1861,10 +2213,17 @@ C
      &     '    and P. B. Semmes, PRA 63, 022505 (2001).'
       WRITE(LUPRI,'(14X,A/)')
      &     'Individual (non-zero) components'
+      IF (CORR) THEN
+      WRITE(LUPRI,'(14X,3(A12,11X))')
+     &     'Hartree-Fock','correlation ','Total       '
+      WRITE(LUPRI,'(14X,3(A12,11X))')
+     &     'contribution','contribution','MP2 value   '
+      ELSE
       WRITE(LUPRI,'(14X,3(A12,11X))')
      &     'Electronic  ','Nuclear     ','Total       '
       WRITE(LUPRI,'(14X,3(A12,11X))')
      &     'contribution','contribution','contribution'
+      END IF
       CALL PRSYMB(LUPRI,'-',72,2)
       DO IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
@@ -1875,14 +2234,28 @@ C
             DO ICOOR3=ICOOR2,3
             DO ICOOR4=ICOOR3,3
                IELEM = IELEM + 1
+C     EFT correlated method
+               IF (CORR) THEN
+               EFTHF = EFTNUC(IELEM,IATOM)+EFTEL(IELEM,IATOM)
+               EFT_METHOD = EFTHF + EFTCORR(IELEM,IATOM)
+               IF (ABS(EFT_METHOD).GT.1.0D-12)
+     &            WRITE(LUPRI,'(2X,A5,3(3X,F16.10,A))')
+     &                 'h'//CHRXYZ(-ICOOR1)//CHRXYZ(-ICOOR2)
+     &                    //CHRXYZ(-ICOOR3)//CHRXYZ(-ICOOR4),
+     &                 EFTHF               ,' au ',
+     &                 EFTCORR(IELEM,IATOM),' au ',
+     &                 EFT_METHOD          ,' au '
+               ELSE
+C     EFT Hartree-Fock
                EFTTOT = EFTNUC(IELEM,IATOM)+EFTEL(IELEM,IATOM)
                IF (ABS(EFTTOT).GT.1.0D-12)
-     &            WRITE(LUPRI,'(2X,A5,3(3X,F16.10,A))') 
+     &            WRITE(LUPRI,'(2X,A5,3(3X,F16.10,A))')
      &                 'h'//CHRXYZ(-ICOOR1)//CHRXYZ(-ICOOR2)
      &                    //CHRXYZ(-ICOOR3)//CHRXYZ(-ICOOR4),
      &                 EFTEL (IELEM,IATOM),' au ',
      &                 EFTNUC(IELEM,IATOM),' au ',
      &                 EFTTOT             ,' au '
+               END IF
             ENDDO
             ENDDO
             ENDDO
@@ -2186,9 +2559,9 @@ C
          DO IREP = 0,MAXREP
             IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
                ITYP = ITYP + 1
-               write(6,*) 'jth iatom',
-     &            iatom,ippvc(ityp),ityp,
-     &            expval(ippvc(ityp)),nucdeg(iatom)
+c              write(6,*) 'jth iatom',
+c    &            iatom,ippvc(ityp),ityp,
+c    &            expval(ippvc(ityp)),nucdeg(iatom)
                TEMP(IATOM) = TEMP(IATOM) + 
      &            EXPVAL(IPPVC(ITYP)) / NUCDEG(IATOM)
             END IF
@@ -2961,7 +3334,7 @@ C
 C
 C     ***************************************
 C     ***** Extract nuclear information *****
-C    ****************************************
+C     ***************************************
 C
       WRITE(LUPRI,'(A)') '@ Nuclear species:'
       CALL PRSYMB(LUPRI,'=',61,0)

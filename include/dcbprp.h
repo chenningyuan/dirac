@@ -11,6 +11,7 @@ C  DOXPP - do excitation energies
 C          (by the polarization propagator method)
 C  DOXQR - do quadratic response
 C  MGRAD - calculate molecular gradient
+      PARAMETER (LUCORP = 91)
       LOGICAL DOEXP,DOXLR,DOXPP,DOXQR,DIPOLE,EPOLAR,MSUSCP,SHIELD,
      &        SPNSPN,EFG,NQCC,MGRAD,NSTDIA,PVC,DOESR,ESRGTENS,ESRANISO,
      &        EFT,EFTNTL

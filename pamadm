@@ -331,7 +331,7 @@ gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
-prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o \\
+prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\
 moltra/tradr1.o moltra/tradr2.o moltra/tradr3.o moltra/tradr4.o \\
 moltra/trainp.o moltra/traone.o moltra/traout.o moltra/trapam.o \\
 moltra/traprp.o \\

@@ -31,7 +31,7 @@ C FILE    : ccgrad.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDENSC(IOPT,T1,S1,T2,S2,
-     &                   BUF1,BUF2,BUF3,DOO,DVV,DVO,DOV)
+     &                   BUF1,BUF2,BUF3,DOO,DVV,DVO,DOV,DMO)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -53,10 +53,11 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IOPT
+      INTEGER IOPT,nps
       REAL*8 T1(*),S1(*),T2(*),S2(*)
       REAL*8 DOO(*),DVV(*),DVO(*),DOV(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
+      REAL*8 DMO(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -99,6 +100,12 @@ C
          CALL CONJUGA (NFVV,DVV,1)
       ENDIF
 C
+C###########################################
+C convert the density matrix to DIRAC format
+C###########################################
+c     deactivated because checking in to trunk
+c     CALL CONVDM(BUF1,BUF2,DOO,DVV,DMO)
+C
       IF (IOPT.LT.2) RETURN
 C----------------------------------------------------------------------
 C DVO(A,I) = L(A,I)
@@ -137,10 +144,128 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,dmo)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Convert the density matrix to DIRAC format
+C
+C
+C---------------Routines called----------------------------------------
+C
+C     DCOPY
+C     DOOTODIR
+C     DVVTODIR
+C---------------Last modified------------------------------------------
+C
+C     Author : Joost van Stralen - March 2002
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 DOO(*),DVV(*)
+      REAL*8 BUF1(*),BUF2(*)
+      REAL*8 DMO(*)
+C
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "param.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "symm.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+C
+C     Reorder density matrix
+C
+C######################################################################
+C  STEP 1:
+C
+C   OO       VO         OV      VV            Re          Im
+C +-----+   +-----+   +------+   +-----+    +----------+----------+
+C |     |   |     |   |      |   |     |    |          |          |
+C |     | , |     | , |      | , |     | -> |          |          |
+C +-----+   +-----+   +------+   +-----+    |          |          |
+C                                           |          |          |
+C                                           +----------+----------+
+C                                           <---O+V---->
+C                                            unbar + bar
+C######################################################################
+C
+C##############
+C     DOO
+C##############
+      IJ = 0
+      DO IREP = 1, NREP
+         DO J = 1, NO(IREP)
+            DO I = 1, NO(IREP)
+               IJ = IJ + 1
+               IF (CARITH) THEN
+                  BUF1(IJ) = DOO(RCW*IJ-1)
+                  BUF2(IJ) = DOO(RCW*IJ)
+               ELSE
+                  BUF1(IJ)= DOO(IJ)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+C
+C Put imaginary part after real part
+C
+      IF (CARITH) THEN
+         CALL DCOPY(NFOO,BUF2,1,BUF1(NFOO+1),1)
+      ELSE
+      ENDIF
+c     do i = 1, nfoo
+c        print*,'real DOO ',i,buf1(i)
+c        print*,'imag DOO ',i,buf1(i+nfoo)
+c     enddo
+C
+c     print*,'laat oo deel dmo op 0'
+      CALL DOOTODIR(dmo,BUF1,NO,nfoo,NREP,RCW)
+C##############
+C     DVV
+C##############
+      AB = 0
+      DO IREP = 1, NREP
+         DO B = 1, NV(IREP)
+            DO A = 1, NV(IREP)
+               AB = AB + 1
+               IF (CARITH) THEN
+                  BUF1(AB) = DVV(RCW*AB-1)
+                  BUF2(AB) = DVV(RCW*AB)
+               ELSE
+                  BUF1(AB)= DVV(AB)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+C
+C Put imaginary part after real part
+C
+      IF (CARITH) THEN
+         CALL DCOPY(NFVV,BUF2,1,BUF1(NFVV+1),1)
+      ELSE
+      ENDIF
+c     do i = 1, nfvv
+c        print*,'real DVV ',i,buf1(i)
+c        print*,'imag DVV ',i,buf1(i+nfvv)
+c     enddo
+C
+c     print*,'laat vv deel dmo op 0'
+      CALL DVVTODIR(dmo,BUF1,NV,nfvv,NREP,RCW)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDENSZ(IOPT,NSP,IREPSPI,EPS,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,NBUF2,NBUF3,CBUF,
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
-     &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
+     &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV,XMO,DMO)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -166,7 +291,9 @@ C
       REAL*8 T1(*),S1(*),T2(*),S2(*)
       REAL*8 DOO(*),DVO(*),DOV(*),DVV(*)
       REAL*8 D2VO(*),D2OV(*),DG(*)
+      REAL*8 DMO(*)
       REAL*8 XVO(*),XOV(*)
+      real*8 XMO(*)
       REAL*8 EVO(*),EOV(*)
       REAL*8 EPS(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*),CBUF(*)
@@ -253,6 +380,19 @@ C
       CALL XSCAL(NDIMX,-A1,XVO,1)
       CALL XCOPY (NDIMX,XVO,1,XOV,1)
       IF (CARITH) CALL CONJUGA (NDIMX,XOV,1)
+c
+c     if (rcw.EQ.2) then
+c     do i = 1, ndimx
+c        print*,'real xvo',i,xvo(2*i-1)
+c        print*,'imag xvo',i,xvo(2*i)
+c     enddo
+c     else
+c     do i = 1, ndimx
+c        print*,'real xvo',i,xvo(i)
+c     enddo
+c     endif
+C
+      call convxm(buf1,buf2,xvo,xmo)
 C
 C     Solve Z-vector equations by calling the RPA routine
 C
@@ -275,7 +415,117 @@ C
       CALL RPAA (NEOPER,NAMEE,NAME,EPHASE,A1,BDONE,EPS,A0,
      &           EVO,EOV,XVO,XOV,DVO,D2VO,DOV,D2OV,DG,BUF1,BUF2,
      &           CC1,BB1,BB2,CONV,JPRNT,DEBUG,TIMING)
+c     print*,'zet dvo en dov op 0'
+c     call dzero(dvo,NDIMX*RCW)
+c     call dzero(dov,NDIMX*RCW)
+c     if (rcw.EQ.2) then
+c     do i = 1, ndimx
+c        print*,'real dvo',i,dvo(2*i-1)
+c        print*,'imag dvo',i,dvo(2*i)
+c     enddo
+c     else
+c     do i = 1, ndimx
+c        print*,'real dvo',i,dvo(i)
+c     enddo
+c     endif
 C
+C###########################################
+C
+C     Solve Z-vector equations by using XRPA
+C
+C###########################################
+C
+      KFREE=1
+      LFREE=NBUF3*RCW
+c     print*,'laat VO deel DMO op o door prpxlr_mpg niet te callen'
+c     deactivated because checking in to trunk
+c     CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CONVXM(BUF1,BUF2,XVO,XMO)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Convert x-matrix(Lagranian) to DIRAC format
+C
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Joost van Stralen - April 2002
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 XVO(*)
+      REAL*8 BUF1(*),BUF2(*)
+      REAL*8 XMO(*)
+C
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "param.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "symm.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+C
+C###########################################
+C STEP 1: Put imaginary part after real part
+C###########################################
+      AI = 0
+      DO IREP = 1,NREP
+         DO I = 1, NO(IREP)
+            DO A = 1, NV(IREP)
+               AI = AI + 1
+               IF (CARITH) THEN
+                  BUF1(AI) = XVO(AI*RCW-1)
+                  BUF2(AI) = XVO(AI*RCW)
+c                 print*,'real XVO',ai,BUF1(AI)
+c                 print*,'imag XVO',ai,BUF2(AI)
+               ELSE
+                  BUF1(AI) = XVO(AI)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+C
+      IF (CARITH) THEN
+         CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
+      ELSE
+      ENDIF
+c     do i =1, NFVO*RCW
+c        print*,'xvo',i,BUF1(i)
+c     enddo
+C######################################################################
+C  STEP 2:
+C
+C           Re      Im
+C     -  +-------+-------+
+C   V |  |*******|*******|
+C  u+b|  |*******|*******|
+C     -  +-------+-------+
+C        <---O--->
+C         unbar+bar
+C                     -------------->
+C
+C          Re        I         J       K
+C       +--------+--------+--------+--------+
+C     P |        |        |        |        |
+C     O |        |        |        |        |
+C     V |  ***   |  ***   |  ***   |  ***   |
+C       +--------+--------+--------+--------+
+C        P  O  V
+C######################################################################
+C
+      CALL RELTODIR(XMO,BUF1,NFVO,RCW)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

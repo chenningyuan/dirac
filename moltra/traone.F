@@ -27,7 +27,6 @@ C
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C FILE    : traone.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAONE */
@@ -454,7 +453,7 @@ C
 #include "dcbtra.h"
 #include "dgroup.h"
 C
-      LOGICAL BREIT
+      LOGICAL BREIT,FORWARD
       CHARACTER*14 REPN(8)
       CHARACTER*4 REPA(64)
       DIMENSION FMO(NORBT,NORBT,NZ),ORBE(NSTRT),IBORB(NSTRT)
@@ -473,6 +472,7 @@ C     We treat the quaternion case as pseudocomplex to avoid ordering
 C     problems in the CCSD case.
 C
       BREIT = .FALSE.
+      FORWARD = .TRUE.
       IF (NFSYM.EQ.1.AND.NZ.EQ.4) THEN
          NSYMRP = 2
          NBSYMRP = 1
@@ -570,44 +570,7 @@ C
 C
 C     Fill in complete core-Fock matrix in complex form
 C
-      CALL DZERO(FMOM,NSTRT*NSTRT*8)
-      IOFF1 = 0
-      IOFF2 = 0
-      IOFF3 = 0
-      DO IFSYM = 1, NFSYM
-        IOFF3 = IOFF3 + NSTR(IFSYM)
-        DO J = 1, NSTR(IFSYM)
-          CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,1),1,
-     &                           FMOM(1+IOFF2,J+IOFF2,1),1)
-          CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,1),1,
-     &                           FMOM(1+IOFF3,J+IOFF3,1),1)
-        ENDDO
-        IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
-          DO J = 1, NSTR(IFSYM)
-            CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,2),1,
-     &                             FMOM(1+IOFF2,J+IOFF2,2),1)
-            CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,2),1,
-     &                             FMOM(1+IOFF3,J+IOFF3,2),1)
-            CALL DSCAL(NSTR(IFSYM),DM1,FMOM(1+IOFF3,J+IOFF3,2),1)
-          ENDDO
-          IF (NZ.GE.4.AND.(.NOT.SPINFR)) THEN
-            DO J = 1, NSTR(IFSYM)
-              CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,3),1,
-     &                               FMOM(1+IOFF2,J+IOFF3,1),1)
-              CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,3),1,
-     &                               FMOM(1+IOFF3,J+IOFF2,1),1)
-              CALL DSCAL(NSTR(IFSYM),DM1,FMOM(1+IOFF3,J+IOFF2,1),1)
-              CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,4),1,
-     &                               FMOM(1+IOFF2,J+IOFF3,2),1)
-              CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,4),1,
-     &                               FMOM(1+IOFF3,J+IOFF2,2),1)
-            ENDDO
-          ENDIF
-        ENDIF
-        IOFF1 = IOFF1 + NORB(IFSYM)
-        IOFF2 = IOFF2 + 2*NSTR(IFSYM)
-        IOFF3 = IOFF3 + NSTR(IFSYM)
-      ENDDO
+      CALL MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD)
 C
       IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/3X,A,I2/)') '*** Core Fock matrix ***'
@@ -622,8 +585,11 @@ C     electron correlation codes might need.
 C
       OPEN (LUMLF1,FILE='MRCONEE',FORM='UNFORMATTED')
 C     Total number of spinors, breit active in DHF ?,
-C     DHF energy, group type (1 real, 2 complex, 4 quat.)
-      WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR.OR.LEVYLE
+C     DHF energy, inversion symmetry (yes : 2; no : 1),
+C     group type (1 real, 2 complex, 4 quat.),spinfree formalism,
+C     total number of orbitals (so including frozen or deleted orbitals)
+      WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR.OR.LEVYLE,
+     &               NORBT
 C     Number of fermion irreps in parent group, names of these
 C     irreps (gerade, ungerade), number of spinors active
 C     in the transformation, number of occupied frozen spinors,
@@ -893,6 +859,535 @@ C
             REPA(ISR) = REP(IREP)//REPAS(IS)
          ENDDO
       ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck moltodir */
+      SUBROUTINE MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD)
+C*****************************************************************************
+C     
+C     Luuk Visscher, Mar 26 2002
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
+C
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbtr3.h"
+C
+      LOGICAL FORWARD
+      DIMENSION FMO(NORBT,NORBT,NZ)
+      DIMENSION FMOM(NSTRT*2,NSTRT*2,2)
+      DIMENSION NSTR(2)
+C
+C
+C     Transform from matrix in quaternion DIRAC form to complex MOLFDIR form
+C     ... or backwards if we want to go from RELCCSD back to DIRAC
+C
+      IF (FORWARD) THEN
+         CALL DZERO(FMOM,NSTRT*NSTRT*8)
+      ELSE
+         CALL DZERO(FMO ,NORBT*NORBT*NZ)
+      ENDIF
+C
+      IOFF1 = 0
+      IOFF2 = 0
+      IOFF3 = 0
+      DO IFSYM = 1, NFSYM
+        IOFF3 = IOFF3 + NSTR(IFSYM)
+        DO J = 1, NSTR(IFSYM)
+          IF (FORWARD) THEN
+             CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,1),1,
+     &                              FMOM(1+IOFF2,J+IOFF2,1),1)
+             CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,1),1,
+     &                              FMOM(1+IOFF3,J+IOFF3,1),1)
+          ELSE
+             CALL DCOPY(NSTR(IFSYM),FMOM(1+IOFF2,J+IOFF2,1),1,
+     &                              FMO (1+IOFF1,J+IOFF1,1),1)
+           ENDIF
+        ENDDO
+        IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
+          DO J = 1, NSTR(IFSYM)
+            IF (FORWARD) THEN
+               CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,2),1,
+     &                                FMOM(1+IOFF2,J+IOFF2,2),1)
+               CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,2),1,
+     &                                FMOM(1+IOFF3,J+IOFF3,2),1)
+               CALL DSCAL(NSTR(IFSYM),DM1,FMOM(1+IOFF3,J+IOFF3,2),1)
+             ELSE
+               CALL DCOPY(NSTR(IFSYM),FMOM(1+IOFF2,J+IOFF2,2),1,
+     &                                FMO (1+IOFF1,J+IOFF1,2),1)
+             ENDIF
+          ENDDO
+          IF (NZ.GE.4.AND.(.NOT.SPINFR)) THEN
+            DO J = 1, NSTR(IFSYM)
+              IF (FORWARD) THEN
+                CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,3),1,
+     &                                 FMOM(1+IOFF2,J+IOFF3,1),1)
+                CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,3),1,
+     &                                 FMOM(1+IOFF3,J+IOFF2,1),1)
+                CALL DSCAL(NSTR(IFSYM),DM1,FMOM(1+IOFF3,J+IOFF2,1),1)
+                CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,4),1,
+     &                                 FMOM(1+IOFF2,J+IOFF3,2),1)
+                CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,4),1,
+     &                                 FMOM(1+IOFF3,J+IOFF2,2),1)
+               ELSE
+                CALL DCOPY(NSTR(IFSYM),FMOM(1+IOFF2,J+IOFF3,1),1,
+     &                                 FMO (1+IOFF1,J+IOFF1,3),1)
+                CALL DCOPY(NSTR(IFSYM),FMOM(1+IOFF2,J+IOFF3,2),1,
+     &                                 FMO (1+IOFF1,J+IOFF1,4),1)
+               ENDIF
+            ENDDO
+          ENDIF
+        ENDIF
+        IOFF1 = IOFF1 + NORB(IFSYM)
+        IOFF2 = IOFF2 + 2*NSTR(IFSYM)
+        IOFF3 = IOFF3 + NSTR(IFSYM)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck moltodir */
+      SUBROUTINE RELTODIR(XMO,XMOM,NFVO,IRCW)
+C*****************************************************************************
+C     
+C     Joost van Stralen, april 2002
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
+C
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbtr3.h"
+C
+      DIMENSION XMO(NORBT,NORBT,NZ)
+      DIMENSION XMOM(NFVO,IRCW)
+C
+C
+C
+      CALL DZERO(XMO,NORBT*NORBT*NZ)
+C
+C
+      IF (nz.NE.4) THEN
+      IOFF1 = 0
+      IOFF2 = 0
+      IOFF3 = 0
+      DO IFSYM = 1, NFSYM
+         IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+         IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
+         IAI = 1
+         DO I = 1, NAOCC(IFSYM)
+            CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
+     &                              XMO(1+IOFF1,I+IOFF2,1),1)
+         IAI = IAI + NAVIR(IFSYM)
+         ENDDO
+         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
+          IAI = 1
+          DO I = 1, NAOCC(IFSYM)
+              CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
+     &                                XMO(1+IOFF1,I+IOFF2,2),1)
+          IAI = IAI + NAVIR(IFSYM)
+          ENDDO
+         ENDIF
+        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
+        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
+        IOFF3 = IOFF3 + 2*NAVIR(IFSYM)*NAOCC(IFSYM)
+      ENDDO
+C
+      ELSE
+C
+      IOFF1 = 0
+      IOFF2 = 0
+      IOFF3 = 0
+      DO IFSYM = 1, NFSYM
+        IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+        IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
+        IAI = 1
+        DO I = 1, NAOCC(IFSYM)
+C    Re
+           CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
+     &                             XMO(1+IOFF1,I+IOFF2,1),1)
+C    i
+           CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
+     &                             XMO(1+IOFF1,I+IOFF2,2),1)
+           IAI = IAI + 2*NAVIR(IFSYM)
+        ENDDO
+        IAI = 2*NAVIR(IFSYM)*NAOCC(IFSYM) + 1
+        DO I = 1, NAOCC(IFSYM)
+C    j
+             CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
+     &                               XMO(1+IOFF1,I+IOFF2,3),1)
+C    k
+             CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
+     &                               XMO(1+IOFF1,I+IOFF2,4),1)
+             IAI = IAI + 2*NAVIR(IFSYM)
+        ENDDO
+        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
+        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
+        IOFF3 = IOFF3 + 4*NAVIR(IFSYM)*NAOCC(IFSYM)
+      ENDDO
+C
+      ENDIF
+C
+      ioff1 = 0
+      ioff2 = 0
+      do ifsym = 1, nfsym
+         IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+         IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFYSM,1)
+         do iz=1,nz
+            do j=1,naocc(ifsym)
+               do i=1,navir(ifsym)
+c                 print*,'XMO ',i,j,'iz ',iz,xmo(i+ioff1,j+ioff2,iz)
+               enddo
+            enddo
+         enddo
+         IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
+         IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFYSM,1) + NORB(IFSYM)
+      enddo
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck dootodir */
+      SUBROUTINE DOOTODIR(DMO,DMOM,NO,NFOO,NREP,IRCW)
+C*****************************************************************************
+C     
+C     Joost van Stralen, may 2002
+C
+C     Transform occ-occ part of 2nd order Density matrix from RELCCSD format 
+C     to Dirac format
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
+C
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbtr3.h"
+C
+      DIMENSION DMO(NORBT,NORBT,NZ)
+      DIMENSION DMOM(NFOO,IRCW)
+      DIMENSION NO(NREP)
+C
+C
+      CALL DZERO(DMO,NORBT*NORBT*NZ)
+C
+      IF(NZ.NE.4) THEN
+         IOFF1 = 0
+         IOFF2 = 0
+         IOFF4 = 0
+         DO IFSYM = 1, NFSYM
+            IOFF1 = IOFF1 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
+            IJ = 1
+            DO I = 1, NO(NFSYM+IOFF4)
+               CALL DCOPY(NO(IFSYM+IOFF4),       DMOM(IJ+ioff2,1),1,
+     &                                     DMO(1+IOFF1,I+IOFF1,1),1)
+               IJ = IJ + NO(IFSYM+IOFF4)
+            ENDDO
+            IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
+               IJ = 1
+               DO I = 1, NO(IFSYM+IOFF4)
+                  CALL DCOPY(NO(IFSYM+IOFF4),       DMOM(IJ+IOFF2,2),1,
+     &                                        DMO(1+IOFF1,I+IOFF1,2),1)
+                  IJ = IJ + NO(IFSYM+IOFF4)
+               ENDDO
+            ENDIF
+            IOFF1 = IOFF1 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) +NORB(IFSYM)
+            IOFF2 = IOFF2 + 2*NO(IFSYM)*NO(IFSYM)
+            IOFF4 = IOFF4 + 1
+         ENDDO
+c     print*,'occ-occ D^2'
+c     ioff1=0
+c     ioff4=0
+c     do ifsym = 1, nfsym
+c        ioff1 = ioff1 + npsh(ifsym) + ndmoqc(2,ifsym,1)
+c        do iz=1,nz
+c           do j=1,no(ifsym+ioff4)
+c              do i=1,no(ifsym+ioff4)
+c     print*,'DMO ',i+ioff1,j+ioff1,'iz ',iz,dmo(i+ioff1,j+ioff1,iz)
+c              enddo
+c           enddo
+c        enddo
+c        ioff1 = ioff1 - npsh(ifsym) - ndmoqc(2,ifsym,1) + norb(ifsym)
+c        ioff4 = ioff4 +1
+c     enddo
+c     print*,'doo eenheidsmatrix'
+c     CALL DZERO(DMO,NORBT*NORBT*NZ)
+c     ioff1=0
+c     ioff4=0
+c     do ifsym = 1, nfsym
+c        ioff1 = ioff1 + npsh(ifsym) + ndmoqc(2,ifsym,1)
+c              do i=1,no(ifsym+ioff4)
+c              dmo(i+ioff1,i+ioff1,1)=D1
+c              enddo
+c        ioff1 = ioff1 - npsh(ifsym) - ndmoqc(2,ifsym,1) + norb(ifsym)
+c        ioff4 = ioff4 +1
+c     enddo
+      ELSE
+         IOFF1 = 0
+         IOFF2 = 0
+         DO IFSYM = 1, NFSYM
+            IOFF1 = IOFF1 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
+C     Re       
+            IJ = 1
+            DO I = 1, (NO(IFSYM)/2)
+               CALL DCOPY((NO(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
+     &                                  DMO(1+IOFF1,I+IOFF1,1),1)
+C     i
+               CALL DCOPY((NO(IFSYM)/2),      DMOM(IJ+IOFF2,2),1,
+     &                                  DMO(1+IOFF1,I+IOFF1,2),1)
+            IJ = IJ + NO(IFSYM)
+            ENDDO
+C     j
+            IJ = (NO(IFSYM)/2)*NO(IFSYM) + 1
+            DO I = 1, (NO(IFSYM)/2)
+               CALL DCOPY((NO(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
+     &                                  DMO(1+IOFF1,I+IOFF1,3),1)
+C     k
+               CALL DCOPY((NO(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
+     &                                  DMO(1+IOFF1,I+IOFF1,4),1)
+            IJ = IJ + NO(IFSYM)
+            ENDDO
+            IOFF1 = IOFF1 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) +NORB(IFSYM)
+            IOFF2 = IOFF2 + NO(IFSYM)*NO(IFSYM)
+         ENDDO
+c     print*,'occ-occ D^2'
+c     ioff1=0
+c     do ifsym = 1, nfsym
+c        ioff1 = ioff1 + npsh(ifsym) + ndmoqc(2,ifsym,1)
+c        do iz=1,nz
+c           do j=1,(no(ifsym)/2)
+c              do i=1,(no(ifsym)/2)
+c                 print*,'DMO ',i,j,'iz ',iz,dmo(i+ioff1,j+ioff1,iz)
+c              enddo
+c           enddo
+c        enddo
+c        ioff1 = ioff1 - npsh(ifsym) - ndmoqc(2,ifsym,1) + norb(ifsym)
+c     enddo
+c     print*,'doo eenheidsmatrix'
+c     CALL DZERO(DMO,NORBT*NORBT*NZ)
+c     ioff1=0
+c     do ifsym = 1, nfsym
+c        ioff1 = ioff1 + npsh(ifsym) + ndmoqc(2,ifsym,1)
+c              do i=1,(no(ifsym)/2)
+c                 dmo(i+ioff1,i+ioff1,1)=D1
+c              enddo
+c        ioff1 = ioff1 - npsh(ifsym) - ndmoqc(2,ifsym,1) + norb(ifsym)
+c     enddo
+      ENDIF
+C
+c     print*,'relccsd doo'
+c     do j=1, notot
+c        do i=1, notot
+c           print*,'real dmom',i,j,dmom(i,j,1)
+c           if (rcw.EQ.2) then
+c           print*,'imag dmom',i,j,dmom(i,j,2)
+c           else
+c           endif
+c        enddo 
+c     enddo
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck dvvtodir */
+      SUBROUTINE DVVTODIR(DMO,DMOM,NV,NFVV,NREP,IRCW)
+C*****************************************************************************
+C     
+C     Joost van Stralen, may 2002
+C
+C     Transform vir-vir part of 2nd order Density matrix from RELCCSD format 
+C     to Dirac format
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
+C
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbtr3.h"
+C
+      DIMENSION DMO(NORBT,NORBT,NZ)
+      DIMENSION DMOM(NFVV,IRCW)
+      DIMENSION NV(NREP)
+C
+      print*,'nz=',nz
+      IF(NZ.NE.4) THEN
+         IOFF1 = 0
+         IOFF2 = 0
+         IOFF4 = 0
+         DO IFSYM = 1, NFSYM
+            IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+            IJ = 1
+            DO I = 1, NV(NFSYM+IOFF4)
+               CALL DCOPY(NV(IFSYM+IOFF4),       DMOM(IJ+ioff2,1),1,
+     &                                     DMO(1+IOFF1,I+IOFF1,1),1)
+               IJ = IJ + NV(IFSYM+IOFF4)
+            ENDDO
+            IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
+               IJ = 1
+               DO I = 1, NV(IFSYM+IOFF4)
+                  CALL DCOPY(NV(IFSYM+IOFF4),       DMOM(IJ+IOFF2,2),1,
+     &                                        DMO(1+IOFF1,I+IOFF1,2),1)
+                  IJ = IJ + NV(IFSYM+IOFF4)
+               ENDDO
+            ENDIF
+            IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) +NORB(IFSYM)
+            IOFF2 = IOFF2 + 2*NV(IFSYM)*NV(IFSYM)
+            IOFF4 = IOFF4 + 1
+         ENDDO
+c     print*,'vir-vir D^2'
+c     ioff1=0
+c     ioff4=0
+c     do ifsym = 1, nfsym
+c        ioff1 = ioff1 + npsh(ifsym) + nocc(ifsym)
+c        do iz=1,nz
+c           do j=1,nv(ifsym+ioff4)
+c              do i=1,nv(ifsym+ioff4)
+c     print*,'DMO ',i+ioff1,j+ioff1,'iz ',iz,dmo(i+ioff1,j+ioff1,iz)
+c              enddo
+c           enddo
+c        enddo
+c        ioff1 = ioff1 - npsh(ifsym) - nocc(ifsym) + norb(ifsym)
+c        ioff4 = ioff4 +1
+c     enddo
+      ELSE
+         IOFF1 = 0
+         IOFF2 = 0
+         DO IFSYM = 1, NFSYM
+            IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+C     Re       
+            IJ = 1
+            DO I = 1, (NV(IFSYM)/2)
+               CALL DCOPY((NV(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
+     &                                  DMO(1+IOFF1,I+IOFF1,1),1)
+C     i
+               CALL DCOPY((NV(IFSYM)/2),      DMOM(IJ+IOFF2,2),1,
+     &                                  DMO(1+IOFF1,I+IOFF1,2),1)
+            IJ = IJ + NV(IFSYM)
+            ENDDO
+C     j
+            IJ = (NV(IFSYM)/2)*NV(IFSYM) + 1
+            DO I = 1, (NV(IFSYM)/2)
+               CALL DCOPY((NV(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
+     &                                  DMO(1+IOFF1,I+IOFF1,3),1)
+C     k
+               CALL DCOPY((NV(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
+     &                                  DMO(1+IOFF1,I+IOFF1,4),1)
+            IJ = IJ + NV(IFSYM)
+            ENDDO
+            IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) +NORB(IFSYM)
+            IOFF2 = IOFF2 + NV(IFSYM)*NV(IFSYM)
+         ENDDO
+c     print*,'vir-vir D^2'
+c     ioff1=0
+c     do ifsym = 1, nfsym
+c        ioff1 = ioff1 + npsh(ifsym) + nocc(ifsym)
+c        do iz=1,nz
+c           do j=1,(nv(ifsym)/2)
+c              do i=1,(nv(ifsym)/2)
+c                 print*,'DMO ',i,j,'iz ',iz,dmo(i+ioff1,j+ioff1,iz)
+c              enddo
+c           enddo
+c        enddo
+c        ioff1 = ioff1 - npsh(ifsym) - nocc(ifsym) + norb(ifsym)
+c     enddo
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck genden_mp2 */
+      SUBROUTINE GENDEN_MP2(DMO,DMAT,CMO,WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C
+C     Transform second order densitry matrix to 'orthonormal SO' basis
+C
+C     Written by Joost van Stralen, april 2002
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION DMO(*), DMAT(*), CMO(*), WORK(*)
+      CHARACTER CHR*80
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+C
+#include "ibtfun.h"
+C
+      CALL QENTER('GENDEN_MP2')
+C
+      KFRSAV = KFREE
+C
+      IOFF1 = 1
+      CALL DZERO(DMAT(IOFF1),N2BBASXQ)
+      DO IFSYM = 1,NFSYM
+         CALL MEMGET('REAL',KTMP,NORB(IFSYM)*NFBAS(IFSYM,0)*NZ,WORK,
+     &                KFREE,LFREE)
+         CHR    = 'GENDEN_MP2: second order density matrix, corep '
+         CALL DENST1_MP2(DMAT(I2BASX(IFSYM,IFSYM)+1),NTBAS(0),
+     &                   NTBAS(0),CMO(ICMOQ(IFSYM)+1),NFBAS(IFSYM,0),
+     &                   NORB(IFSYM),WORK(KTMP),DMO(IOFF1))
+         IF (IPRINT.GE.10) THEN
+            WRITE(LUPRI,'(/3X,I2/)') CHR,IFSYM
+            CALL PRQMAT(DMAT(I2BASX(IFSYM,IFSYM)+1),
+     &                  NFBAS(IFSYM,0),NFBAS(IFSYM,0),
+     &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+         CALL MEMREL('GENDEN_MP2',WORK,1,KFRSAV,KFREE,LFREE)
+         IOFF1 = IOFF1 + NORBT*NORB(IFSYM)+NORB(IFSYM)
+      ENDDO
+C
+C
+      CALL QEXIT('GENDEN_MP2')
+      CALL FLSHFO(LUPRI)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck denst1_mp2 */
+      SUBROUTINE DENST1_MP2(DMAT,LRD,LCD,CMO,LRC,LCC,TMP,DMO)
+C*****************************************************************************
+C
+C     Transform second order densitry matrix to 'orthonormal SO' basis
+C     for fermion corep IFSYM
+C
+C     Written by Joost van Stralen, April 2002
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.0D0,D0=0.0D0)
+#include "dgroup.h"
+#include "dcborb.h"
+C
+      DIMENSION DMAT(LRD,LCD,NZ),CMO(LRC,LCC,NZ)
+      DIMENSION TMP(LRC,LCC,NZ),DMO(NORBT,NORBT,NZ)
+C
+C     First transform left index
+C     --------------------------
+      CALL QGEMM(LRC,LCC,LCC,D1,
+     &      'N','N',IPQTOQ(1,0),CMO(1,1,1),LRC  ,LCC  ,NZ,
+     &      'N','N',IPQTOQ(1,0),DMO(1,1,1),NORBT,NORBT,NZ,
+     &           D0,IPQTOQ(1,0),TMP       ,LRC  ,LCC  ,NZ)
+C
+C     Next transform right index
+C     --------------------------
+      CALL QGEMM(LRC,LRC,LCC,D1,
+     &      'N','N',IPQTOQ(1,0),TMP       ,LRC,LCC,NZ,
+     &      'H','N',IPQTOQ(1,0),CMO(1,1,1),LRC,LCC,NZ,
+     &           D0,IPQTOQ(1,0),DMAT      ,LRD,LCD,NZ)
 C
       RETURN
       END

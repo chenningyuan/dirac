@@ -272,6 +272,24 @@ C
          NDMOQC(1,IFRP,2) = NFBAS(IFRP,0)
          NDMOQC(2,IFRP,2) = NSPC(IFRP,0)
       ENDDO
+C####################################################
+C
+C     number of active occupied
+C
+      NAOCCT=0
+      DO IFRP = 1, NFSYM
+         NAOCC(IFRP) = NOCC(IFRP) - NSPC(IFRP,0)
+         NAOCCT = NAOCCT + NAOCC(IFRP)
+      ENDDO
+C
+C     number of active virtuals
+C     
+      NAVIRT=0
+      DO IFRP = 1, NFSYM
+         NAVIR(IFRP) = NSTR(IFRP,0,1) - NAOCC(IFRP)
+         NAVIRT = NAVIRT + NAVIR(IFRP)
+      ENDDO
+C####################################################
 C
 C     Print section
 C     =============

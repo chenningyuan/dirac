@@ -58,7 +58,6 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "ccpar.inc"
-#include "symm.inc"
 #include "files.inc"
 #include "complex.inc"
 C
@@ -82,8 +81,7 @@ C
       IN = LUCMD
       IW = LUPRI
       INTFCE = 'DIRAC     '
-      SPFR = SPINFR.OR.LEVYLE 
-      CA = NZ.GE.2.AND..NOT.SPFR
+      CA = NZ.GE.2.AND..NOT.(SPINFR.OR.LEVYLE)
 #if defined (VAR_MPI)
       MASTER = MPARID
       MYPROC = MYTID
@@ -105,7 +103,6 @@ C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
          CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
       END IF
 #endif
 C
@@ -204,7 +201,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "dgroup.h"
 #include "ccpar.inc"
-#include "symm.inc"
 #include "files.inc"
       CHARACTER*10 INTFCE
       LOGICAL CA,CCEND
@@ -232,7 +228,6 @@ C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
          CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
       END IF
 #endif
 C

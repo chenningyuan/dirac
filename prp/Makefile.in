@@ -8,7 +8,7 @@
 include ../Makefile.config
 
 F_OBJS =paminp.o pamprp.o pamexp.o pamgrd.o pamogrd.o pamfck.o pamset.o pamxlr.o \
-	pamrvc.o pamrsp.o
+	pamrvc.o pamrsp.o rspmpg.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 

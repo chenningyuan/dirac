@@ -54,6 +54,7 @@ C
       CALL QENTER('PRPEXP')
 #include "memint.h"
 C
+c     CALL MEMCHK('begin prpexp',WORK,1)
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
@@ -125,6 +126,7 @@ C
 C     Initialize
 C     ==========
 C
+c     CALL MEMCHK('begin prpex1',WORK,1)
       CALL DZERO(EXPVAL,NEXPP)
       N2EXP = 2*NEXPP
       CALL LSET(N2EXP,.FALSE.,LEXPST)
@@ -249,6 +251,7 @@ C
 C     Check symmetry
 C
       EXPVAL = D0
+c       CALL MEMCHK('begin prpex2',WORK,1)
 C
 C     1. Molecular point group symmetry
 C
@@ -281,6 +284,7 @@ C
         ELSEIF(IH.EQ.2) THEN
           CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
         ENDIF
+c       CALL MEMCHK('voor butobs',WORK,1)
         CALL BUTOBS(PMAT(1,IZ),1,WORK,LWORK)
         IF (.NOT. ORBFLG) THEN
            DO IOPEN = 0,NOPEN
@@ -459,5 +463,267 @@ C
          ILOW = IHIGH+1
       END DO
       CALL QUIT('illegal value in GETIOPEN(pos)')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prpexp_mp2 */
+      SUBROUTINE PRPEXP_MP2(DMO,WORK,KFREE,LFREE)
+C*****************************************************************************
+C
+C     Calculate correlation contribution to static first order properties
+C     defined in /CBIEXP/
+C
+C     Based on PRPEXP
+C
+C     INPUT:   DMO - second order density matrix
+C
+C     Written by Joost van Stralen, april 2002
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+      DIMENSION DMO(*)
+      DIMENSION WORK(LFREE)
+C
+#include "dcbexp.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+C
+      CALL QENTER('PRPEXP_MP2')
+C
+C     We come from RELCCSD, The total memory available for the WORK array,
+C     LWORK is equal to LFREE.
+C
+      KFRSAV=KFREE
+C
+C     Memory allocation
+C     -----------------
+      CALL MEMGET('REAL',KCMO ,N2BBASXQ   ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,NORBT      ,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KEXPST,2*NEXPP   ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT ,NZ*N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT ,NZ*N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KONEIN,NNBBASX   ,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
+C
+      CALL MEMGET('REAL',KEXP  ,NEXPP     ,WORK,KFREE,LFREE)
+C
+      CALL MEMCHK('voor prpex1_mp2',WORK,1)
+      CALL PRPEX1_MP2(WORK(KEXP),WORK(KEXPST),WORK(KCMO),WORK(KEIG),
+     &            WORK(KDMAT),WORK(KPMAT),WORK(KPTRI),
+     &            WORK(KONEIN),DMO,WORK(KFIRST),WORK,
+     &            KFREE,LFREE)
+C
+C
+C     Memory deallocation
+C     -------------------
+      CALL MEMREL('PRPEXP_MP2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('PRPEXP_MP2')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prpex1_mp2 */
+      SUBROUTINE PRPEX1_MP2(EXPVAL,LEXPST,CMO,EIG,DMAT,PMAT,PTRI,OP1INT,
+     &                      DMO,FIRST,WORK,KFREE,LWORK)
+C*****************************************************************************
+C
+C     Calculate correlation contribution to static first order properties
+C     defined in /CBIEXP/
+C
+C     Based on PRPEXP1
+C
+C
+C     INPUT:   DMO - second order density matrix
+C
+C     Written by Joost van Stralen, april 2002
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+      PARAMETER(D0 = 0.0D0)
+C
+      LOGICAL FIRST(NZ),LEXPST(2,*),FILEX
+      DIMENSION EXPVAL(*),CMO(*),DMAT(*),PMAT(*),PTRI(*),
+     &          OP1INT(*),EIG(*),DMO(*),WORK(*)
+      CHARACTER MXFORM*6,FMT*6
+C
+#include "dgroup.h"
+ctec dcborb included
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbexp.h"
+#include "dcbgen.h"
+#include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbdhf.h"
+C
+      CALL QENTER('PRPEX1_MP2')
+C
+C     Initialize
+C     ==========
+C
+#include "memint.h"
+#if defined (SYS_IBM)
+         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='APROPER')
+#else
+         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='AOPROPER')
+#endif
+C
+      CALL MEMCHK('voor dzero',WORK,1)
+      CALL DZERO(EXPVAL,NEXPP)
+      CALL MEMCHK('na dzero',WORK,1)
+      N2EXP = 2*NEXPP
+      CALL LSET(N2EXP,.FALSE.,LEXPST)
+C
+C     Open coefficient file
+C     =====================
+C
+      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+      IF(.NOT.FILEX) GOTO 1000
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP_MP2')
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,1,
+     &            WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C
+C     Transform DMO to 'orthonormal SO' basis
+C     =======================================
+C
+      CALL MEMCHK('voor genden_mp2',WORK,1)
+      CALL GENDEN_MP2(DMO,DMAT,CMO,WORK,KFREE,LFREE,IPREXP)
+      CALL MEMCHK('na genden_mp2',WORK,1)
+C  
+C     Calculate correlation contribution to property
+C     ==============================================
+C
+      CALL TITLER('MP2 correlation contribution to property','*',115)
+      WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
+      CALL PRSYMB(LUPRI,'-',76,0)
+      DO I = 1,NEXPP
+        INDXPR = LEXPP(I)
+        CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
+     &      DMAT,PMAT,PTRI,OP1INT,FIRST,ORBANA,WORK,LWORK,IPREXP)
+        FMT = MXFORM(EXPVAL(I),15)
+        WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')   
+     &     PRPNAM(INDXPR),' : ',EXPVAL(I),'a.u.',
+     &     LEXPST(1,I),LEXPST(2,I)
+        CALL FLSHFO(LUPRI)
+      ENDDO
+      CALL MEMCHK('na verwachtingswaarde',WORK,1)
+C
+C     Write expectation values to file
+C     ================================
+C
+      CALL WEXPVTOF(EXPVAL)
+c     CALL READEXPV(EXPVAL)
+C
+      CALL PRSYMB(LUPRI,'-',76,0)
+      WRITE(LUPRI,'(4X,A)')
+     & 's0 = T : Expectation value zero by point group symmetry.'
+      WRITE(LUPRI,'(4X,A)')
+     & 't0 = T : Expectation value zero by time reversal symmetry.'
+C
+      CLOSE(LU1INT,STATUS = 'KEEP')
+C
+      CALL QEXIT('PRPEX1_MP2')
+C
+      RETURN
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'PRPEXP_MP2: Coefficient file not found !'
+      CALL QUIT('PRPEXP_MP2: Coefficients not found !')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck wexpvtof */
+      SUBROUTINE WEXPVTOF(EXPVAL)
+C*****************************************************************************
+C
+C     Write expectation values to file
+C
+C     Written by Joost van Stralen, June 2002
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+      DIMENSION EXPVAL(*)
+#include "dcbexp.h"
+#include "dcbprp.h"
+C
+      CALL QENTER('WEXPVTOF')
+C
+      OPEN (LUCORP,FILE='CORPROP',FORM='UNFORMATTED',STATUS='NEW')
+      WRITE (LUCORP) (EXPVAL(I),I=1,NEXPP)
+      CLOSE (LUCORP,STATUS='KEEP')
+C
+      CALL QEXIT('WEXPVTOF')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck readexpv */
+      SUBROUTINE READEXPV(EXPVAL)
+C*****************************************************************************
+C
+C     read expectation values from file
+C
+C     Written by Joost van Stralen, June 2002
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+      DIMENSION EXPVAL(*)
+#include "dcbexp.h"
+#include "dcbprp.h"
+C
+      CALL QENTER('READEXPV')
+C
+      CALL DZERO(EXPVAL,NEXPP)
+C
+      OPEN (LUCORP,FILE='CORPROP',FORM='UNFORMATTED',STATUS='OLD')
+      REWIND (LUCORP)
+      READ (LUCORP) (EXPVAL(I),I=1,NEXPP)
+      CLOSE (LUCORP)
+C
+      CALL QEXIT('READEXPV')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck  */
+      SUBROUTINE EXPTOT(EXPVAL,EXP_CORR,EXP_TOT)
+C*****************************************************************************
+C
+C     put HF and correlation contribution to expectation value together
+C
+C     Written by Joost van Stralen, June 2002
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+      DIMENSION EXPVAL(*), EXP_CORR(*), EXP_TOT(*)
+#include "dcbexp.h"
+#include "dcbprp.h"
+C
+      CALL QENTER('EXPTOT')
+C
+      CALL DZERO(EXP_TOT,NEXPP)
+C
+      DO I = 1,NEXPP
+         EXP_TOT(I) = EXPVAL(I) + EXP_CORR(I)
+      ENDDO
+C
+      CALL QEXIT('EXPTOT')
       RETURN
       END
