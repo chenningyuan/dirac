@@ -786,7 +786,36 @@ if [ -z "$worksp" ]; then
       fi
       if [ ! -d $worksp ]; then
          echo 'Scratch directory '$worksp' does not exist!'
-         worksp=
+         if [ $quick = 0 ]; then
+            ok=
+            while [ -z "$ok" ]; do
+               $echo "- Do you want to create $worksp [y]/n? \c"
+               read answer
+               case "$answer" in
+               "y" | "yes" | "")
+                  answer=yes
+                  ok=xxx
+                  ;;
+               "n" | "no")
+                  answer=no
+                  ok=xxx
+                  ;;
+               esac
+            done
+         else
+            answer=yes
+         fi
+         if [ "$answer" = "yes" ]; then
+            $echo "Making $worksp: \c"
+            mkdir -p $worksp 2> /dev/null || worksp=
+            if [ -z "$worksp" ]; then
+               echo "error..."
+            else
+               echo "ok"
+            fi
+         else
+            worksp=
+         fi
       fi
    done
 else
