@@ -440,13 +440,13 @@ C
 C     SGI IRIX counts recl in *4 words
       IRECL = 2 * NREAL + 1 * NINTE + 1 * NLOGI
 #endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) 
+#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_HPUX)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
 #endif
 #if defined (SYS_IBM)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
 #endif
-#if !defined (SYS_VAX) && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_IBM) && !defined (SYS_IRIX) && !defined (SYS_DEC) && ! defined (SYS_T3D)
+#if !defined (SYS_VAX) && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_IBM) && !defined (SYS_IRIX) && !defined (SYS_DEC) && ! defined (SYS_T3D) && !defined (SYS_
      ===== insert definition for specification of record length
 #endif
 C

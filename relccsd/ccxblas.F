@@ -283,7 +283,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DSUM = SUM
       RETURN
       END
+#endif
 C
+#if defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_HPUX)
       COMPLEX*16 FUNCTION ZSUM (N,X,INCX)
       COMPLEX*16 X(*),SUM
       SUM = DCMPLX(0.D0,0.D0)
@@ -345,4 +347,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
 

@@ -92,21 +92,25 @@ C  /* Deck oneso1 */
 C
       LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI
       DIMENSION WORK(LWORK)
-#ifdef PRG_DIRAC
+#if defined (PRG_DIRAC)
       DIMENSION STHMAT(NNBASX,3), STDER0(KCKTAB,2), STDER1(KCKTAB,6,2),
      &          STDER2(KCKTAB,6,2), ADER(*),
      &          DSHELL(KHKTAB,4),FSHELL(KHKTAB),
      &          DENMAT(*),FOCMAT(*),
+     &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
+     &          FACINT(*), COORC(3,*), JSYMC(*),
+     &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
+     &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
 #else 
       DIMENSION STHMAT(NNBASX,3), STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2), ADER(*),
      &          DSHELL(KHKTAB),FSHELL(KHKTAB),
      &          DENMAT(NNBASX),FOCMAT(NNBASX),
-#endif
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          FACINT(*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
+#endif
 #include <ccom.h>
 #include <onecom.h>
 #include <nuclei.h>
@@ -1100,3 +1104,5 @@ C
       END IF
       RETURN
       END
+
+
