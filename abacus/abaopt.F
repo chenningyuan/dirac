@@ -59,7 +59,7 @@ C  /* Deck opinpu */
 C
       SAVE FIRST
       DATA TABLE /'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC',
- 4   &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY',
+     &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY',
      &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA',
      &            '.SP BAS', '.PREOPT', '.VISUAL', '.VRML  ',
      &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG',
