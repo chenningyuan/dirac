@@ -841,6 +841,25 @@ C*****************************************************************************
 #include "gencon.h"
 #include "dcbgen.h"
 #include "ibtfun.h"
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+      PARAMETER (MAXBSFIL=5,KNG=MXAQN,KBLK=500,KPRM=30)
+C
+      INTEGER IQMT
+      DIMENSION JCOT(KNG,MAXBSFIL)
+      DIMENSION IBLKAGNMOM(KBLK)
+      DIMENSION NUCT(KBLK)
+      DIMENSION NRCT(KBLK)
+      DIMENSION SEGT(KBLK)
+      DIMENSION ALPHAT(KPRM,KBLK)
+      DIMENSION CPRIMT(KPRM,KPRM,KBLK)
+      DIMENSION CPRIMUT(KPRM,KPRM,KBLK)
+      DIMENSION ISGENT(KBLK)
+      CHARACTER*80 BASREFT(10,KATOM,MAXBSFIL)
+      CHARACTER*20 BSFIL(MAXBSFIL)
+      LOGICAL SEGT
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
       CNTBAS = .FALSE.
       NUCIND = 0
@@ -1027,6 +1046,18 @@ C
      $                 NFAMEXP(1), NFAMEXP(2),
      &                 IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
                   CALL GENFAMEXP(LUINFO,2)
+C
+               ELSE IF ( BSKEYWORD(1:10) .EQ. 'MULTIBASIS') THEN
+C
+                  IBSFLAG = 5
+                  READ (MLINE(NMLINE)(18:),*,ERR=9000)
+     &                   NFILES,(BSFIL(K),K=1,NFILES)
+                  IF ( NFILES .EQ. 0 ) THEN
+                     WRITE(*,*) 
+     &                 'PLEASE SPECIFY THE NUMBER OF BASIS SET FILES'
+                     GOTO 9000
+                  END IF
+C
                ELSE
 C                 Assume it is 'LARGE   2    1....'
                   IBSFLAG = 1
@@ -1074,6 +1105,7 @@ C
                   BASNAM = BASFIL
 C
                   KAOVEC = KBLOCK + 1 - IBLOCK(1)
+
                   CALL BASLIB(IQM(I,1),JCO(1,I,1),NUC(IBLOCK(1),1),
      &                 NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),
      &                 ALPHA(1,IBLOCK(1),1),
@@ -1096,6 +1128,110 @@ C
                   NBLCK(I,1) = NBLOCK
                   BASREF(1,I) = 
      &   "Well-tempered basis set typed explicitly in input file "
+C
+               ELSE IF ( IBSFLAG .EQ. 5 ) THEN
+C
+C reading of basis sets from a number of files, including when the files
+C do not necessarily have the same maximum and/or minimum orbital 
+C angular momenta (last modif. 11/09/2003 by gomes) 
+C
+C we will move through the basis set files using the dummy variable iblock1
+C 
+                  IBLOCK1 = 1
+                  MAXIQM  = 0
+C
+C we make sure we don't kave any junk on the temporary variables 
+C
+                     DO 461 R=1,KNG
+                        JCOT(R,M) = 0
+  461                CONTINUE
+                     DO 462 R=1,KBLK
+                        NUCT(R) = 0
+                        NRCT(R) = 0
+  462                CONTINUE
+C
+                  BASREF(1,I) =
+     &            "Basis set read from multiple files"
+C
+                  DO 463 M=1,NFILES
+                     BASNAM = BSFIL(M)
+                     KAOVEC  = KBLOCK + 1 - IBLOCK1 
+C
+                     BASREF(3*(M-1)+2,I) = " " 
+                     BASREF(3*(M-1)+3,I) = " ref. in file "//BSFIL(M) 
+
+                     CALL BASLIB(IQMT,JCOT(1,M),
+     &                   NUCT(IBLOCK1),
+     &                   NRCT(IBLOCK1),SEGT(IBLOCK1),
+     &                   ALPHAT(1,IBLOCK1),
+     &                   CPRIMT(1,1,IBLOCK1),
+     &                   CPRIMUT(1,1,IBLOCK1),
+     &                   NBLOCK,ISGENT(IBLOCK1),KAOVEC,KPRIM,Q,1,DSM,
+     &                   BASREFT(1,I,M))
+
+                     BASREF(3*(M-1)+4,I) = BASREFT(1,I,M)
+C
+C to help in the reordering, we create a table mapping the orbital
+C angular momentum of a block to the number of the block in the
+C temp storage 
+C 
+                     IDBLK = IBLOCK1
+                     IDANG = 1
+                     DO 464 RR=1,IQMT
+                        DO 465 RS=1,JCOT(RR,M)
+                           IBLKAGNMOM(IDBLK) = IDANG
+                           IDBLK = IDBLK + 1
+  465                   CONTINUE 
+                        IDANG = IDANG + 1
+  464                CONTINUE 
+C
+                     IF ( IQMT .GT. MAXIQM ) THEN
+                        MAXIQM = IQMT
+                     ENDIF
+                     IBLOCK1 = IBLOCK1 + NBLOCK
+  463             CONTINUE
+C
+C after reading all files, we reorder the data wrt orbital angular 
+C momentum. in this reordering variable kt is the "final" index of a given block
+C
+                  IQM(I,1) = MAXIQM
+                  KT = IBLOCK(1)
+                  DO 466 IQ=1,MAXIQM
+                  DO 467 IR=1,IBLOCK1 - 1
+C
+C in filling up the permanent storage with data, care should be taken to skip 
+C zero-sized blocks that arise when we have only parts of a basis
+C set in one file, as when the polarization functions are in one file and
+C the scf set is in another...
+C
+                       IF ( IBLKAGNMOM(IR) .EQ. IQ ) THEN
+                         IF ( NUCT(IR) .GT. 0 ) THEN
+
+                              JCO(IQ,I,1)= JCO(IQ,I,1)+ 1
+                              NUC(KT,1)  = NUC(KT,1) + NUCT(IR)
+                              NRC(KT,1)  = NRC(KT,1) + NRCT(IR)
+                              SEG(KT,1)  = SEGT(IR)
+                              ISGEN(KT)  = ISGENT(IR)
+
+                              DO 468 SI=1, NUCT(IR)
+                                 ALPHA(SI,KT,1)      =  ALPHAT(SI,IR)
+                                 DO 468 SJ=1, NRCT(IR) 
+                                   CPRIM(SI,SJ,KT,1) =  CPRIMT(SI,SJ,IR)
+                                   CPRIMU(SI,SJ,KT,1)= CPRIMUT(SI,SJ,IR)
+  468                         CONTINUE
+                              KT = KT + 1
+                           ENDIF 
+                        ENDIF
+  467                CONTINUE
+  466             CONTINUE
+C
+C finally, we update nblck(i,1) with the total number of non-zero sized
+C blocks read, subtracting one only because on the loops above kt was 
+C incremented after the last block was put in place ...
+C
+                 NBLCK(I,1) = KT - 1 
+C
+C ... and we are done
 C
                ENDIF
 C
