@@ -1,36 +1,9 @@
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck FRAC2I */
-      SUBROUTINE FRAC2I(A,IN,ID,IERR)
-C*****************************************************************************
 C
-C     Transform a fraction (in the string A) to the numerator 
-C     and denumerator
-C     E.g. A = ' 3/4'  --> IN = 3, ID = 4
-C     
-C*****************************************************************************
-#include <implicit.h>
-      CHARACTER A*(*),B*80
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : gpjth.F
+C SOURCE  : $Source$
 C
-      IERR = 0
-      IDX = INDEX(A,'/')
-      IF (IDX.EQ.0) THEN
-         IERR = -1
-         RETURN
-      END IF
-C
-      WRITE(B,'(A)') A(1:IDX-1)
-      READ (B,'(I)') IN
-      I = LEN(A)
- 20   CONTINUE
-         IF (INDEX('0123456789',A(I:I)).EQ.0.AND.I.GT.IDX) THEN
-            I = I - 1
-            GOTO 20
-         END IF
-C
-      WRITE(B,'(A)') A(IDX+1:I)
-      READ(B,'(I)') ID
-      RETURN
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck SUMMMH */
       SUBROUTINE SUMMMH(AMAT,NDIM,NZ,LRA,LCA)
