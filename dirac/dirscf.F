@@ -1584,6 +1584,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
+#include "dcborb.h"
       DIMENSION EIG(*), CFU(NO,NO,NZ)
       INTEGER   IBEIG(*), NB_CNT(*)
 C
@@ -1594,7 +1595,8 @@ C hjaaj Oct 2004: must also implement open shells (NASHB*)
       DO J = JST,NO
          IF (LINEAR) THEN
 C           ... IBEIG = 2 * abs(MJ)
-            JSYM = (IBEIG(J) + 1) / 2
+            JSYM = (abs(IBEIG(J)) + 1) / 2
+            IF (IFSYM.EQ.2) JSYM = JSYM + N_SUB_BL(1)
          ELSE
 C           ... IBEIG = (approximate) boson irrep
             JSYM = IBEIG(J) + 1

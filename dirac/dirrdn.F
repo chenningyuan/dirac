@@ -715,7 +715,7 @@ C
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
      &            '.POST D','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',
-     &            '.NSUBBL'/
+     &            '.MJSELE'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -761,8 +761,9 @@ C
       DYNSEL    = .FALSE.
       DOBOSSEL  = .FALSE.
       NSUBBL    = NBSYM
+      IBOSSEL   = 0
 C     ... hjaaj: default = # boson sym.s
-C         must be changed with .NSUBBL for LINEAR
+C         must be changed with .MJSELE for LINEAR
 C         this can not be tested if correct because 
 C         GLINSM in PAMSET has not been called yet. /19.Oct.04
       DIISAO    = .FALSE.
@@ -830,6 +831,8 @@ C     ===================
 C
       NELEC_DHF(1) = 0
       NELEC_DHF(2) = 0
+      NISH_DHF(1)  = 0
+      NISH_DHF(2)  = 0
       NASH_DHF(1)  = 0
       NASH_DHF(2)  = 0
       CALL IZERO(NISH_BOS,MAX_BOS_BL)
@@ -1185,17 +1188,24 @@ C&&& FROZEN: Frozen orbitals
  40            CONTINUE
 C&&& BOSONS: Selection based on (approx.) boson symmetry
                DOBOSSEL = .TRUE.
+               IBOSSEL  = 1
                READ(LUCMD,*) (NISH_BOS(I),I=1,NSUBBL)
                DO IOPEN = 1,NOPEN
                   READ(LUCMD,*) (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
                END DO
-C ... hjaaj 19.oct.2004, initial implementation for boson symmetriex
-C     can later be extended to linear symmetry
                GOTO 100
  41            CONTINUE
-C&&& .NSUBBL: # of subblocks for .BOSONS (p.t. for linear sym.)
+C&&& MJSELE: Selection based on Mj symmetry,
+C            NSUBBL = # of subblocks for MJ sym. 
+               DOBOSSEL = .TRUE.
+               IBOSSEL  = -1
                READ(LUCMD,*) NSUBBL
+               READ(LUCMD,*) (NISH_BOS(I),I=1,NSUBBL)
+               DO IOPEN = 1,NOPEN
+                  READ(LUCMD,*) (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
+               END DO
                GO TO 100
+C
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1446,6 +1456,75 @@ C
 C
       IF(.NOT.DOSCF) GOTO 999
 C
+      IF (DOBOSSEL) THEN
+C     .BOSONS/.MJSELE were programmed by hjaaj Oct 2004
+         NERR = 0
+         IF (MAX_BOS_BL .NE. MAX_SUB_BL) THEN
+            NERR = NERR + 1
+            WRITE (LUPRI,*)
+     &      'PROGRAMMING ERROR: MAX_BOS_BL .ne. MAX_SUB_BL'
+         END IF
+         IF (AUTOCC) THEN
+            NERR = NERR + 1
+            WRITE(LUPRI,*) 'INPUT ERROR! .AUTOCC combined with '//
+     &           '.BOSONS/.MJSELE does not work'
+         END IF
+         IF (INIOCC) THEN
+            NERR = NERR + 1
+            WRITE(LUPRI,*) 'INPUT ERROR! .BOSONS/.MJSELE requires'//
+     &           'specification of .CLOSED/.OPEN SH'
+         END IF
+         IF (OVLSEL) THEN
+            NERR = NERR + 1
+            WRITE(LUPRI,*) 'INPUT ERROR! .BOSONS/.MJSELE combined with'
+     &           //' .OVLSEL does not work'
+         END IF
+         IF (IBOSSEL .GT. 0) THEN
+            IF (SPINFR) THEN
+               WRITE(LUPRI,'(A)')
+     *      ' * Vector selection based on spin-free boson symmetry'
+            ELSE
+               WRITE(LUPRI,'(A)')
+     *      ' * Vector selection based on approximate boson symmetry'
+            END IF
+         ELSE IF (IBOSSEL .LT. 0) THEN
+            WRITE(LUPRI,'(A)')
+     *      ' * Vector selection based on m_j symmetry'
+            IF (.NOT. LINEAR) THEN
+               NERR = NERR + 1
+               WRITE(LUPRI,'(/A/)')
+     &         'INPUT ERROR! Linear symmetry was not identified.'
+            END IF
+         END IF
+         WRITE(LUPRI,'(A/4X,16I4)')
+     &      '   - inactive shell:',(NISH_BOS(J),J=1,NSUBBL)
+         I1 = NISH_DHF(1) + NISH_DHF(2)
+         I2 = ISUM(NSUBBL,NISH_BOS,1)
+         IF (I1 .NE. I2) THEN
+            NERR = NERR + 1
+            WRITE(LUPRI,'(/A,I3,A/)')
+     &      'INPUT ERROR! This shell should have',I1,' orbitals!'
+         END IF
+         IF (NOPEN.GT.0) THEN
+            WRITE(LUPRI,'(A)') '   - active shell(s):'
+            DO IOPEN = 1,NOPEN
+               WRITE(LUPRI,'(4X,16I4)') (NACSH_BOS(J,IOPEN),J=1,NSUBBL)
+               I1 = NACSH(1,IOPEN) + NACSH(2,IOPEN)
+               I2 = ISUM(NSUBBL,NACSH_BOS(1,IOPEN),1)
+               IF (I1 .NE. I2) THEN
+                  NERR = NERR + 1
+                  WRITE(LUPRI,'(/A,I3,A/)')
+     &            'INPUT ERROR! This shell should have',I1,' orbitals!'
+               END IF
+            END DO
+         END IF
+C  TODO HJAAJ: for NFSYM.eq.2
+C  TODO HJAAJ: check NISH_DHF(1/2) against gerade/ungerade NISH_BOS etc.
+         IF (NERR .GT. 0) THEN
+            CALL QUIT('Input error for .BOSONSelection or .MJSELEction')
+         END IF
+      END IF
+C
       IF (NOPEN.GT.0.AND.ZORA) THEN
           WRITE(LUPRI,'(A)') 
      &       'DHFINP: Open shell ZORA is not implemented yet, sorry.. '
@@ -1572,47 +1651,6 @@ C
      &         ' * Vector selection based on overlap ',
      &            '(dynamic update of overlap-selection matrix)'
          END IF
-      END IF
-      IF (DOBOSSEL) THEN
-C     .BOSONS was programmed by hjaaj Oct 2004
-         NERR = 0
-         IF (MAX_BOS_BL .NE. MAX_SUB_BL) THEN
-            NERR = NERR + 1
-            WRITE (LUPRI,*)
-     &      'PROGRAMMING ERROR: MAX_BOS_BL .ne. MAX_SUB_BL'
-         END IF
-         IF (AUTOCC) THEN
-            NERR = NERR + 1
-            WRITE(LUPRI,*) 'INPUT ERROR! .AUTOCC combined with '//
-     &           '.BOSONS does not work'
-         END IF
-         IF (INIOCC) THEN
-            NERR = NERR + 1
-            WRITE(LUPRI,*) 'INPUT ERROR! .BOSONS requires'//
-     &           'specification of .CLOSED/.OPEN SH'
-         END IF
-         IF (OVLSEL) THEN
-            NERR = NERR + 1
-            WRITE(LUPRI,*) 'INPUT ERROR! .BOSONS combined with'//
-     &           ' .OVLSEL does not work'
-         END IF
-         IF (NOPEN .GT. 1) THEN
-            NERR = NERR + 1
-            WRITE(LUPRI,*) 'INPUT ERROR! .BOSONS currently'//
-     &           'only works with at most one open shell'
-         END IF
-         WRITE(LUPRI,'(A/A/4X,8I4)')
-     *      ' * Vector selection based on (approximate) boson symmetry',
-     &      '   - inactive shell:',(NISH_BOS(J),J=1,NSUBBL)
-         IF (NOPEN.GT.0) THEN
-            WRITE(LUPRI,'(A)') '   - active shell(s):'
-            DO IOPEN = 1,NOPEN
-               WRITE(LUPRI,'(4X,8I4)') (NACSH_BOS(J,IOPEN),J=1,NSUBBL)
-            END DO
-         END IF
-C  TODO HJAAJ: check sum(NISH_BOS) = sum(NISH_DHF) 
-C  TODO HJAAJ: check sum(NACSH_BOS) = sum(NACSH) 
-C  TODO HJAAJ: check parity (IFSYM) of each boson symmetry
       END IF
       IF (AUTOCC .AND. NASHT_DHF .GT. 1) THEN
          WRITE(LUPRI,'(A)')
