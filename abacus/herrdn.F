@@ -2968,15 +2968,15 @@ C*****************************************************************************
 C       S Y M M E T R Y      O R B I T A L S
 C*****************************************************************************
       CALL HEADER('Symmetry Orbitals',1)
-      WRITE (LUPRI,'(1X,A,6X,8I3)')
+      WRITE (LUPRI,'(1X,A,6X,8I5)')
      *   ' Number of orbitals in each symmetry: ',(NAOS(I),I=1,MAXREP+1)
       IF(DIRAC) THEN
         COMP(1) = 'L'
         COMP(2) = 'S'
-        WRITE (LUPRI,'(1X,A,8I3)')
+        WRITE (LUPRI,'(1X,A,8I5)')
      *   ' Number of large orbitals in each symmetry: ',
      &    (NCOS(I,1),I=1,MAXREP+1)
-        WRITE (LUPRI,'(1X,A,8I3)')
+        WRITE (LUPRI,'(1X,A,8I5)')
      *   ' Number of small orbitals in each symmetry: ',
      &    (NCOS(I,2),I=1,MAXREP+1)
       ELSE
