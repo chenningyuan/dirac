@@ -1,19 +1,23 @@
+C
+C $Id$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fckden */
       SUBROUTINE FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
 C     Get backtransformed (contravariant) density matrices.
-C     Based on DENSTY and DALTON/FCKDEN
+C     Based on DENSTY
 C
 C     Written by J. Thyssen
 C     Last revision: 1997/09/22 - jth
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+C
+#include <dcbbas.h>
       DIMENSION DCAO(*),DVAO(*),CMO(*),DV(*)
       DIMENSION WORK(*)
-      DIMENSION IFMUL(2,2), IASH(2)
       LOGICAL GETDC,GETDV
 C
       CALL QENTER('FCKDEN')
@@ -22,14 +26,16 @@ C
 C     Get active density matrix
 C
       IF (GETDV) THEN
-         CALL DENSDV(DVAO,CMO,DV,IPRINT,WORK,LWORK)
+C         CALL DENSDV(DVAO,CMO,DV,IPRINT,WORK,LWORK)
+         CALL GENDEN(DVAO,CMO,2,IPRINT)
+         CALL DSCAL(N2BBASXQ,0.50D00,DVAO,1)
       END IF
 C
 C     Get inactive density matrix
 C   
+      CALL DZERO(DCAO,N2BBASXQ)
       IF (GETDC) THEN
-         CALL DENSTY(DCAO,CMO,0)
-C         CALL DENSTY(DCAO,CMO,IPRINT)
+         CALL DENSTY(DCAO,CMO,IPRINT)
       END IF
 C
       CALL FLSHFO(LUPRI)
@@ -52,8 +58,7 @@ C*****************************************************************************
 #include <priunit.h>
       DIMENSION DVAO(*),CMO(*),DV(*)
       DIMENSION WORK(LWORK)
-      DIMENSION IFMUL(2,2), IASH(2), IQBF(4)
-      DATA IFMUL /1,2,2,1/
+      DIMENSION IQBF(4)
       PARAMETER ( D1 = 1.0 D00, D0 = 0.0 D00 )
 #include <dgroup.h>
 #include <dcbbas.h>
@@ -63,8 +68,7 @@ C
 C
 C
       CALL QENTER('DENSDV')
-      IF ( IPRINT .GE. 10 ) CALL HEADER('Output from DENSDV',-1) 
-      CALL DZERO(DVAO,N2BBASXQ)
+      IF ( IPRINT .GE. 4 ) CALL HEADER('Output from DENSDV',-1) 
 C
 C     Get active density matrix
 C
@@ -74,64 +78,68 @@ C
          WRITE(LUPRI,*) 'So DVAO = 0'
          GOTO 1000
       END IF
-      WRITE(6,*) 'jth',DV(1),N2BBASXQ,NTBAS(0)
+      CALL DZERO(DVAO,N2BBASXQ)
 C 
 C     Allocate memory for temp. DVMO matrix
 C
-      CALL MEMGET('REAL',KTEMP,NZ*NORBT*NORBT,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KTEMP),NZ*NORBT*NORBT)
-C
-      IASH(1) = 0
-      IASH(2) = NASH(1) 
+      CALL MEMGET('REAL',KTEMP,N2ORBTQ,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KTEMP),N2ORBTQ)
 C
 C
+C
+      IOFF1 = 0
       DO IF = 1,NFSYM
          DO I = 1,NASH(IF)
             DO J = 1,NASH(IF)
+               IADR1 = I + (J-1) * NASH(IF) + IOFF1
+               II = NISH(IF)+NPSH(IF)+I-1
+               JJ = NISH(IF)+NPSH(IF)+J-1
+               IADR2 = I2ORBT(IF) + II + JJ * NORB(IF)
                DO IZ = 1,NZ
-                  IADR1 = I + (J-1) * NASH(IF) + 
-     &                    (IZ-1) * NASH(IF) * NASH(IF)
-                  II = NISH(IF)+NPSH(IF)+I-1
-                  JJ = NISH(IF)+NPSH(IF)+J-1
-                  WRITE(6,*) 'jth',I,J,II,JJ,NORBT
-                  WRITE(6,*) 'jth',JJ*NORBT, (IZ-1) * NORBT * NORBT
-                  IADR2 = II + JJ * NORBT + (IZ-1) * NORBT * NORBT
-                  WRITE(6,*) 'jth IADR',IADR1,IADR2
-                  CALL FLSHFO(6)
                   WORK(KTEMP+IADR2) = DV(IADR1)
+                  IADR1 = IADR1 + N2ASH(IF)
+                  IADR2 = IADR2 + N2ORB(IF)
                END DO
             END DO
          END DO
+         IOFF1 = IOFF1 + NASH(IF)*NASH(IF)
+         IF ( IPRINT .GE. 4 ) THEN
+            CALL HEADER('DENSDV "Expanded" DVMO',-1)
+            WRITE(LUPRI,*) '*** Fermion ircop ',IF
+            CALL PRQMAT(WORK(KTEMP+I2ORBT(IF)),NORB(IF),NORB(IF),
+     &                  NORB(IF),NORB(IF),
+     &                  NZ,IPQTOQ(1,0),LUPRI)
+         END IF
       END DO
-      CALL HEADER('DENSDV "Expanded" DVMO',-1)
-      CALL PRQMAT(WORK(KTEMP),NORBT,NORBT,NORBT,NORBT,
-     &            NZ,IPQTOQ(1,0),LUPRI)
 C
-      CALL MEMGET('REAL',KTEMP2,NZ*NTBAS(0)*NORBT,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KTEMP2),NZ*NTBAS(0)*NORBT)
       NZA = NZ
       NZB = NZ
       NZC = NZ
       NZD = NZ
       DO I = 1,NFSYM
-         IADR1 = KTEMP + I2ORBX(I,I)
-         CALL QTRANS('MOAO','S',D0,NFBAS(I,0),NFBAS(I,0),
+         IADR1 = KTEMP + I2ORBT(I)
+         IF ( NASH(I) .GT. 0 ) THEN
+            CALL QTRANS('MOAO','S',D0,NFBAS(I,0),NFBAS(I,0),
      &               NORB(I),NORB(I),
      &               DVAO(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),
      &               NZA,IQBF,
-     &               WORK(IADR1),NORBT,NORBT,
+     &               WORK(IADR1),NORB(I),NORB(I),
      &               NZB,IPQTOQ(1,0),
      &               CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZC,
      &               IPQTOQ(1,0),
      &               CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZD,
      &               IPQTOQ(1,0),
      &               WORK(KFREE),LFREE,IPRINT)
+         END IF
       END DO
 C
-      IF ( IPRINT .GE. 0 ) THEN
+      IF ( IPRINT .GE. 4 ) THEN
          CALL HEADER('DENSDV: Active density matrix',-1)
-         CALL PRQMAT(DVAO,NTBAS(0),NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+         DO I = 1,NFSYM
+            WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+            CALL PRQMAT(DVAO(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
+     &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+         END DO
       END IF
 C
       CALL MEMREL('DENSDV',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -143,5 +151,175 @@ C
 C
       RETURN
       END
-
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck dgetdv */
+      SUBROUTINE DGETDV(DV,NZ)
+C*****************************************************************************
+C
+C     Get active density matrix 
+C     This is a dummy routine; it just returns DV=[[1.0]]
+C
+C     Written by J. Thyssen
+C     Last revision: 1997/10/22 - jth
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      DIMENSION DV(*)
+C
+      DV(1) = 0.50D00
+      DO I = 2,NZ
+         DV(I) = 0.00D00
+      END DO
+      RETURN
+      END
+C
+C Dummy routine: writtes matrix to file for use by jth python program
+C
+      SUBROUTINE PYTHONMATRIX(A,NR,NC,NDIMR,NDIMC,FILENAME)
+#include <implicit.h>
+#include <priunit.h>
+      DIMENSION A(NDIMR,NDIMC)
+      CHARACTER FILENAME*(*)
+      WRITE(6,*) FILENAME
+      OPEN(100, FILE = FILENAME, STATUS = 'NEW', FORM = 'FORMATTED' )
+      WRITE(100,'(I/I)') NR,NC
+      DO J = 1,NC
+         DO I = 1,NR
+            WRITE(100,'(F)') A(I,J)
+         END DO
+      END DO
+      CLOSE (100)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck genden */
+      SUBROUTINE GENDEN(DMAT,CMO,IFLAG,IPRINT)
+C*****************************************************************************
+C
+C     Get (projection) projection density matrices (normed to unity)
+C     IFLAG is a 5 bit pattern:
+C       00000: No density matrices
+C       00001: Inactive density matrix
+C       00010: Active density matrix (see bit 6-?)
+C       00100: Secondary electron density matrix
+C       01000: Secondary positron density matrix
+C       10000: C Ct (that is 1 in AO-basis)
+C
+C     Important: Act. density matrix works only for one open shell.
+C
+C     Written by J. Thyssen
+C     Last revision: 1997/11/23 - jth
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION DMAT(*), CMO(*)
+      DIMENSION IFLG(5)
+      DATA IFLG /01,02,04,08,16/
+      CHARACTER CHR*80
+#include <dgroup.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+C
+#include <ibtfun.h>
+C
+      CALL QENTER('GENDEN')
+C
+      IOFF = 1
+      DO 10 I = 1,5
+         IF (IBTAND(IFLG(I),IFLAG) .NE. IFLG(I) ) GOTO 10
+         CALL DZERO(DMAT(IOFF),N2BBASXQ)
+         DO 20 ISYM = 1,NFSYM
+            IF (I.EQ.1) THEN
+               ITEST  = NISH(ISYM)
+               ISTART = NPSH(ISYM)+1
+               ILOOP  = NISH(ISYM)
+               CHR    = 'GENDEN: Inactive density matrix, corep '
+            ELSEIF (I.EQ.2) THEN
+               ITEST  = NASH(ISYM)
+               ISTART = NPSH(ISYM)+NISH(ISYM)+1
+               ILOOP  = NASH(ISYM)
+               CHR    = 'GENDEN: Active density matrix, corep '
+            ELSEIF (I.EQ.3) THEN
+               ITEST  = NSSH(ISYM)
+               ISTART = NPSH(ISYM)+NISH(ISYM)+NASH(ISYM)+1
+               ILOOP  = NSSH(ISYM)
+               CHR    = 'GENDEN: Sec. (electron) density matrix, corep '
+            ELSEIF (I.EQ.4) THEN
+               ITEST  = NPSH(ISYM)
+               ISTART = 1
+               ILOOP  = NPSH(ISYM)
+               CHR    = 'GENDEN: Sec. (positron) density matrix, corep '
+            ELSEIF (I.EQ.5) THEN
+               ITEST  = NORB(ISYM)
+               ISTART = 1
+               ILOOP  = NORB(ISYM)
+               CHR    = 'GENDEN: C Ct (1 in AO-basis), corep '
+            END IF
+            IF (ITEST.EQ.0) GOTO 20
+            CALL DENST1(DMAT(I2BASX(ISYM,ISYM)+IOFF),NTBAS(0),NTBAS(0),
+     &              CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
+     &              ISTART,ILOOP,NFBAS(ISYM,0))
+            IF (IPRINT.GE.10) THEN
+               WRITE(LUPRI,'(/3X,A,I2/)') CHR,ISYM
+               CALL PRQMAT(DMAT(I2BASX(ISYM,ISYM)+IOFF),
+     &                NFBAS(ISYM,0),NFBAS(ISYM,0),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+            END IF
+ 20      CONTINUE           
+         IOFF = IOFF + N2BBASXQ
+ 10   CONTINUE
+C
+C   
+      CALL QEXIT('GENDEN')
+      CALL FLSHFO(LUPRI)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck actden */
+      SUBROUTINE ACTDEN(DMAT,CMO,IOPEN,IPRINT)
+C*****************************************************************************
+C
+C     Get active density matrix number IOPEN
+C
+C     Written by J. Thyssen
+C     Last revision: 1997/12/27 - jth
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION DMAT(*), CMO(*)
+#include <dgroup.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+C
+      CALL QENTER('ACTDEN')
+C
+      CALL DZERO(DMAT,N2BBASXQ)
+      DO 20 ISYM = 1,NFSYM
+         ITEST  = NACSH(ISYM,IOPEN)
+         ISTART = NPSH(ISYM)+NISH(ISYM)+1
+         ILOOP  = NACSH(ISYM,IOPEN)
+         DO JOPEN = 1,IOPEN-1
+            ISTART = ISTART + NACSH(ISYM,JOPEN)
+         END DO
+         IF (ITEST.EQ.0) GOTO 20
+         CALL DENST1(DMAT(I2BASX(ISYM,ISYM)+1),NTBAS(0),NTBAS(0),
+     &              CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
+     &              ISTART,ILOOP,NFBAS(ISYM,0))
+         IF (IPRINT.GE.10) THEN
+            WRITE(LUPRI,'(/3X,A,I2,A,I2/)') 
+     &         'ACTDEN: Active density matrix number ',IOPEN,
+     &         ', corep ',ISYM
+            CALL PRQMAT(DMAT(I2BASX(ISYM,ISYM)+1),
+     &                NFBAS(ISYM,0),NFBAS(ISYM,0),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+            CALL FLSHFO(LUPRI)
+         END IF
+ 20   CONTINUE
+C
+      CALL QEXIT('ACTDEN')
+      RETURN
+      END
