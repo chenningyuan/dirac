@@ -501,6 +501,12 @@ dirrci.x: GP_OBJ PD_OBJ \\
 	\$(DIRRCI_MAIN) \$(DIRRCI_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
 	\$(LIB_LIST) \$(PDLIB)
 
+#
+# Utility program for diatomics
+#
+twofit.x: TWOFIT GP_OBJ PD_OBJ 
+	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/twofit.x \
+	utils/twofit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
 EOF
 #
 # Clean targets
@@ -619,6 +625,10 @@ cat <<EOF>> Makefile
 
 PD_OBJ:
 	cd pdpack ; \$(MAKE) all
+
+TWOFIT:
+	cd utils : make twofit
+
 EOF
 #
 #  Add makedepend targets
