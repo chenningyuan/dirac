@@ -103,6 +103,7 @@ C
       CALL QENTER('PRPXLR')
 C
       NRSPF  = NLRBPT*NBFREQ
+      IF(NRSPF.EQ.0) GOTO 10
       IF(ORBXLR) THEN
         CALL MEMGET('INTE',KLRO,2*NORBT,WORK,KFREE,LFREE)
         CALL DEFORB(WORK(KLRO),NCLS,3,XLR_INDSTR,
@@ -134,6 +135,9 @@ CTROND  Check out active ones...
       CALL MEMGET('REAL',KCNV,NRSPF,WORK,KFREE,LFREE)
 C
       CALL PRPXL1(WORK(KLRF),WORK(KCNV),WORK(KLRO),WORK,KFREE,LFREE)
+C
+ 10   CONTINUE
+      IF(XLRANA) CALL ANAXLR(WORK,KFREE,LFREE)
 C
       CALL QEXIT('PRPXLR')
       RETURN
@@ -430,7 +434,7 @@ C
      &            '.ONLYSF','.ONLYSG','.INTFLG','.NOPREC',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','.COMPRE',
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
-     &            '.RESFAC','.ORBANA','.STERNH','.SKIPEE',
+     &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
      &            '.MXLOAD','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -486,7 +490,7 @@ C
       XLRDIH     = .TRUE.
       TRIAB      = .FALSE.
       XVCFIL     = 'NORXVC'
-      ORBXLR     = .FALSE.
+      XLRANA     = .FALSE.
       XSTERN     = .FALSE.
       DO I = 1,NFSYM
          XLR_INDSTR(2,I) = ' '
@@ -674,8 +678,8 @@ C              has a norm that is a fraction RESFAC of the max norm
                   READ(LUCMD,*) RESXLR
                GO TO 100
  26            CONTINUE
-C&&&& ORBANA: Analyze individual contributions to repsonse functions
-                  ORBXLR = .TRUE.
+C&&&& ANALYZe: Analyze individual contributions to repsonse functions
+                  XLRANA = .TRUE.
                GO TO 100
  27            CONTINUE
 C&&&& STERNH: Diagonal part of ep,ep-Hessian approximated by -2mc^2
@@ -719,16 +723,31 @@ C     Print section
 C     =============
 C      
       DOXLR = DOXLR.OR.(NLRAPT.GT.0.AND.NLRBPT.GT.0.AND.NBFREQ.GT.0)
-      IF(.NOT.DOXLR) GOTO 999
+      IF(.NOT.(DOXLR.OR.XLRANA)) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 
      &    'XLRINP: Electronic linear reponse properties'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A,I5)') 
      &   '* Print level                 :',IPRXLR
-      IF(ORBXLR) THEN
+      IF(XLRANA) THEN
+        WRITE(LUPRI,'(1X,A)') '* Analysis of solution vectors.'
+      ENDIF
+      IF(SKIPEE) THEN
         WRITE(LUPRI,'(1X,A)') 
-     &   '* Analysis of individual orbital contributions.'
+     &     '* NB!!! No e-e rotations'
+      ENDIF
+      IF(SKIPEP) THEN
+        WRITE(LUPRI,'(1X,A)') 
+     &     '* NB!!! No rotations between electrons and positrons.'
+      ENDIF
+      IF(QEDRUN) THEN
+        WRITE(LUPRI,'(1X,A)') 
+     &     '* Rotations between positrons and secondary orbitals.'
+      ENDIF
+      IF(.NOT.DOXLR) THEN
+        DOXLR = DOXLR.OR.XLRANA
+        GOTO 999
       ENDIF
       IF(XVCFIL.NE.'NORXVC') THEN
         WRITE(LUPRI,'(1X,A,A,A6)')
@@ -747,18 +766,6 @@ C
       IF(XSTERN) THEN
         WRITE(LUPRI,'(4X,A)') 
      &    '* Approximating diagonal Hessian for ep-rotations by -2mc^2'
-      ENDIF
-      IF(SKIPEE) THEN
-        WRITE(LUPRI,'(1X,A)') 
-     &     '* NB!!! No e-e rotations'
-      ENDIF
-      IF(SKIPEP) THEN
-        WRITE(LUPRI,'(1X,A)') 
-     &     '* NB!!! No rotations between electrons and positrons.'
-      ENDIF
-      IF(QEDRUN) THEN
-        WRITE(LUPRI,'(1X,A)') 
-     &     '* Rotations between positrons and secondary orbitals.'
       ENDIF
       IF(THRCOM.NE.D0) THEN
         WRITE(LUPRI,'(1X,A/1X,A/1X,A,D12.6)')
@@ -1551,3 +1558,284 @@ C
       CALL QEXIT('XLRPAR')      
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Anaxlr */
+      SUBROUTINE ANAXLR(WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Analyze solution vectors on file PAMXVC
+C
+C     Written by Trond Saue July 4 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcbxrs.h>
+#include <dcbxlr.h>
+      DIMENSION WORK(*)
+      CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
+      LOGICAL TOBE   
+C
+      KFRSAV = KFREE   
+      CALL HEADER('Analysis of LR solution vectors',-1)
+C
+C     Check if file of solution vectors is present
+C
+      INQUIRE(FILE='PAMXVC',EXIST=TOBE)
+      IF(.NOT.TOBE) GOTO 1000
+      LUINP = 1
+      CALL OPNFIL(LUINP,'PAMXVC','OLD','XLRANA')
+      IREC = 0
+      IERR = 0
+      IVEC = 0
+      LBUF = '                '
+      TOBE = .FALSE.
+      JFRP = -1
+      CALL OSTRING(WORK,KFREE,LFREE)
+C
+C     WHILE DO - loop
+C
+    1 CONTINUE
+        READ (LUINP,END=3,ERR=2) LAB1
+        IF(LAB1.EQ.'END_OF_THIS_FILE') THEN
+          IF(TOBE) THEN
+            NVEC = IVEC-IPAR
+            NBDIM = NDIM/NZ
+            IF(PBUF.EQ.'E') THEN
+              IF(SKIPEE) GOTO 20
+              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPE),LUINP,LAB1,LAB2,
+     &                    TYP1,TYP2,WORK,KFREE,LFREE,IPRXLR)
+            ELSEIF(PBUF.EQ.'P') THEN
+              IF(SKIPEP) GOTO 20
+              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPP),LUINP,LAB1,LAB2,
+     &                    TYP1,TYP2,WORK,KFREE,LFREE,IPRXLR)
+            ENDIF
+            GOTO 20
+          ENDIF
+        ENDIF
+        BACKSPACE LUINP
+        READ (LUINP,END=3,ERR=2) LAB1,LAB2,TYP1,TYP2,
+     &            FREQ1,FREQ2,JSYMOP1,JSYMOP2,
+     &            JTIMOP1,JTIMOP2,RNORM,LEN,INTFLG,
+     &            ERGRSP,NBAS,NORB
+        IVEC = IVEC + 1
+        IREC = IREC + 1
+C       New parameter class
+        IF(TYP1(1:1).NE.PBUF.OR.LAB1.NE.LBUF) THEN
+          IF(TOBE) THEN
+C           Analyze solution vectors
+            NVEC = IVEC-IPAR
+            NBDIM = NDIM/NZ
+            IF(PBUF.EQ.'E') THEN
+              IF(SKIPEE) GOTO 30
+              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPE),LUINP,LAB1,LAB2,
+     &                    TYP1,TYP2,WORK,KFREE,LFREE,IPRXLR)
+            ELSEIF(PBUF.EQ.'P') THEN
+              IF(SKIPEP) GOTO 30
+              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPP),LUINP,LAB1,LAB2,
+     &                    TYP1,TYP2,WORK,KFREE,LFREE,IPRXLR)
+            ENDIF
+            READ (LUINP,END=3,ERR=2) LAB1,LAB2,TYP1,TYP2,
+     &              FREQ1,FREQ2,JSYMOP1,JSYMOP2,
+     &              JTIMOP1,JTIMOP2,RNORM,LEN,INTFLG,
+     &              ERGRSP,NBAS,NORB
+          ENDIF
+ 30       CONTINUE
+          PBUF = TYP1(1:1)
+          IPAR = IVEC
+          NDIM = LEN
+          TOBE = .TRUE.
+        ENDIF
+C       New property
+        IF(LAB1.NE.LBUF) THEN
+          IREP = JSYMOP1-1
+          IFRP = JBTOF(IREP,1)
+C         Generate orbital rotation operator
+          IF(IFRP.NE.JFRP) THEN
+            IF(TOBE) THEN
+              CALL MEMREL('ANAXLR',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+            ENDIF
+            CALL SETXOP(XLR_INDSTR,IFRP,NZXOPE,KZXOPE,NZXOPP,KZXOPP,
+     &                  WORK,KFREE,LFREE,SKIPEP,SKIPEE,QEDRUN,IPRXLR)
+            JFRP = IFRP
+          ENDIF
+C
+          LBUF = LAB1
+        ENDIF
+        READ(LUINP,END=3,ERR=2)
+        IREC = IREC + 1
+      GO TO 1
+C
+    2 CONTINUE
+      IREC = IREC + 1
+      IERR = IERR + 1
+      WRITE (LUPRI, '(/A,I5/)') ' ERROR READING RECORD NO.',IREC
+      GOTO 20
+C
+    3 CONTINUE
+      WRITE (LUPRI,'(/I10,A)') IREC,
+     *   ' records read before EOF on file.'
+      GOTO 20
+ 20   CONTINUE
+      CLOSE(LUINP)
+      CALL MEMREL('ANAXLR',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'ANAXLR: No solution vectors found !'
+      CALL QUIT('ANAXLR: Solution vectors not found !')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck anaxl1 */
+      SUBROUTINE ANAXL1(NBDIM,NVEC,JXOP,LUINP,LAB1,LAB2,TYP1,TYP2,
+     &                  WORK,KFREE,LFREE,IPRINT)
+C***********************************************************************
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+      DIMENSION JXOP(*),WORK(*)
+      CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
+C
+      KFRSAV = KFREE
+      CALL MEMGET('REAL',KVEC ,NBDIM*NZ*NVEC,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFREQ,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KNORM,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF1,NBDIM*NZ     ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF2,NBDIM        ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KBTYP,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KFLAG,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINDX,NBDIM        ,WORK,KFREE,LFREE)
+      CALL ANAXL2(WORK(KVEC),WORK(KFREQ),WORK(KNORM),
+     &            WORK(KBTYP),WORK(KFLAG),WORK(KBUF1),
+     &            WORK(KBUF2),WORK(KINDX),JXOP,
+     &            NBDIM,NVEC,LUINP,LAB1,LAB2,TYP1,TYP2,IPRINT)
+      CALL MEMREL('ANAXL1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Anaxl2 */
+      SUBROUTINE ANAXL2(BVEC,FREQ,RNORM,IBTYP,LFLAG,BUF1,BUF2,INDX,
+     &          JXOP,NBDIM,NVEC,LUINP,LAB1,LAB2,TYP1,TYP2,IPRINT)
+C***********************************************************************
+C
+C     Written by T.Saue July 6 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(DTOL=1.0D-12,D0=0.0D0,D1=1.0D0)
+C
+#include <dgroup.h>
+#include <pgroup.h>
+      CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
+      LOGICAL LFLAG(NVEC)
+      DIMENSION BVEC(NBDIM,NZ,NVEC),FREQ(NVEC),RNORM(NVEC),IBTYP(NVEC),
+     &          BUF1(NBDIM,NZ),BUF2(NBDIM),INDX(NBDIM),JXOP(2,NBDIM)
+C
+      BACKSPACE LUINP
+      DO I = 1,NVEC
+        BACKSPACE LUINP
+        BACKSPACE LUINP
+      ENDDO
+C     Read vectors
+      READ (LUINP) LAB1,LAB2,TYP1,TYP2,
+     &        FREQ1,FREQ2,JSYMOP1,JSYMOP2,
+     &        JTIMOP1,JTIMOP2,DUM,LEN,INTFLG,
+     &        ERGRSP,NBAS,NORB
+      IREP = JSYMOP1 - 1
+      WRITE(LUPRI,'(A,A1,A,A16,A,A3,A,I3,A,I10)') 
+     &     '** ',TYP1(1:1),'-solution vectors : ',LAB1,
+     &     ' Irrep: ',REP(IREP),' Trev: ',JTIMOP1,
+     &     ' Length: ',NBDIM
+      BACKSPACE LUINP
+      DO I = 1,NVEC
+        READ (LUINP) LAB1,LAB2,TYP1,TYP2,
+     &        FREQ(I),FREQ2,JSYMOP1,JSYMOP2,
+     &        JTIMOP1,JTIMOP2,RNORM(I),LEN,INTFLG,
+     &        ERGRSP,NBAS,NORB
+        IF(TYP1(2:2).EQ.'+') THEN
+          IBTYP(I) = 1
+        ELSEIF(TYP1(2:2).EQ.'-') THEN
+          IBTYP(I) = -1
+        ELSE
+          CALL QUIT('XLRANA: Unknown IBTYP !')
+        ENDIF
+        CALL READT(LUINP,LEN,BVEC(1,1,I))
+        IF(IPRINT.GE.4) THEN
+          WRITE(LUPRI,'(3X,A2,A,F10.6)') 
+     &      TYP1,' vector at frequency: ', FREQ(I)
+          CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,
+     &                NZ,IPQTOQ(1,IREP),LUPRI)
+        ENDIF
+      ENDDO
+C     Analyze major excitations
+      CALL LSET(NVEC,.TRUE.,LFLAG)      
+      DO I = 1,NVEC
+      IF(LFLAG(I)) THEN
+        LFLAG(I) = .FALSE.
+        DO IZ = 1,NZ
+          CALL DCOPY(NBDIM,BVEC(1,IZ,I),1,BUF1(1,IZ),1)
+        ENDDO
+        IF(DABS(FREQ(I)-D0).GT.DTOL) THEN
+C       Frequency dependent case; search for partner
+          DO J = 1,NVEC
+          IF(LFLAG(J)) THEN
+            IF(DABS(FREQ(I)-FREQ(J)).LT.DTOL) THEN
+              LFLAG(J)=.FALSE.
+              DO IZ = 1,NZ
+                CALL DAXPY(NBDIM,D1,BVEC(1,IZ,J),1,BUF1(1,IZ),1)
+              ENDDO
+              GOTO 10
+            ENDIF
+          ENDIF
+          ENDDO
+          WRITE(LUPRI,'(A,I5)') 
+     &      ' WARNING ! No partner found for vector. ',I
+        ENDIF
+ 10     CONTINUE
+C       Calculate norm
+        DNTOT = D0
+        DO J = 1,NBDIM
+          BUF2(J) = BUF1(J,1)*BUF1(J,1)
+        ENDDO
+        DO IZ = 2,NZ
+          DO J = 1,NBDIM
+            BUF2(J) = BUF2(J) + BUF1(J,IZ)*BUF1(J,IZ)
+          ENDDO
+        ENDDO
+        DO J = 1,NBDIM
+          DNTOT = DNTOT + BUF2(J)
+          BUF2(J) = SQRT(BUF2(J))
+        ENDDO
+        THR   = SQRT(DNTOT/NBDIM)
+        DNTOT = SQRT(DNTOT)
+        WRITE(LUPRI,'(A8,F10.6,A,E16.8,A,E10.2)')
+     &        ' Freq.: ',FREQ(I),' Norm: ',DNTOT,
+     &        ' Residual norm: ',RNORM(I)
+C       Establish order
+        CALL INDEXX (NBDIM,BUF2,INDX)
+        WRITE(LUPRI,'(3X,A,E10.2/)') 
+     &   'Excitation amplitudes larger than threshold ',THR
+        DO J = NBDIM,1,-1
+          JJ = INDX(J)
+          IF(BUF2(JJ).GE.THR) THEN
+            WRITE(LUPRI,'(3X,I6,A,I6,E16.8)') 
+     &       JXOP(1,JJ),' ---> ',JXOP(2,JJ),BUF2(JJ)
+          ENDIF
+        ENDDO
+        IF(IPRINT.GE.2) THEN
+          WRITE(LUPRI,'(3X,A/)') 'All excitation amplitudes :'
+          DO J = 1,NBDIM
+            WRITE(LUPRI,'(3X,I6,E16.8)') J,BUF2(J)
+          ENDDO
+        ENDIF
+      ENDIF
+      ENDDO
+      RETURN
+      END
+
+
