@@ -8,6 +8,8 @@
  *
  */
 
+#include <stdio.h>
+
 #include "pr_timing.head"
  ;
 #include "csectid.head"
@@ -21,6 +23,16 @@
 {
    char *sectid;
 
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HPUX)
+    FLSHFO(stdout);
+#elif defined (SYS_AIX)
+   flshfo(stdout);
+#else
+   flshfo_(stdout);
+#endif
+
+   if ( ! mytid )
+      printf("*****************************************************\n");
    sectid = (char *) malloc(30);
    csectid(gt_last->cpu - gt_first->cpu,sectid);
    if ( numnod > 0 )
@@ -36,5 +48,8 @@
    else
       printf(">>>> Total WALL time used in DIRAC: %s\n",sectid);
    free(sectid);
+
+   if ( ! mytid )
+      printf("********** E N D   of   D I R A C  output  **********\n");
 
 }
