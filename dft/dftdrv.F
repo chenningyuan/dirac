@@ -1256,7 +1256,7 @@ C
       CALL DFTDRV(DMAT,DTRMAT,FMAT,1,
      &            IREPOP,.TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &            DUM,DUM,DUM,DUM,DUM,DUM,DUM,
-     &            WORK(KFREE),LFREE,LUQUAD,IPRDFT)
+     &            WORK(KFREE),LFREE,LUQUAD,IPRINT)
 C
 C--------------------------------------
 C     Receive final results from nodes.
