@@ -8,7 +8,7 @@
 include ../Makefile.config
 
 F_OBJS =ccdriv.o ccints.o cceqns.o  ccintm.o ccgetv.o ccsort.o \
-      ccgenp.o ccrpa.o  ccxblas.o ccpam.o ccgrad.o ccmain.o ccfspc.o waio.o \
+      ccgenp.o ccrpa.o  ccxblas.o ccpam.o ccgrad.o ccmain.o ccfspc.o waio.o
 
 C_OBJS = ccunix.o
 
