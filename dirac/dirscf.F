@@ -168,7 +168,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbreo.h"
-      LOGICAL TOBE,DOSEL,DSCFON,BARNUC,TEST,DIISAO_SAVE
+      LOGICAL TOBE,DOSEL,DSCFON,BARNUC,DIISAO_SAVE
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
@@ -178,8 +178,6 @@ C
       CALL QENTER('PREDHF')
 C
 #include "memint.h"
-C
-      TEST = DIISAO.OR.NASHT.GT.0.OR.NAELEC.GT.0
 C
 C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
@@ -550,14 +548,14 @@ C
 #include "dgroup.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
-      LOGICAL DOSEL,TEST
+      LOGICAL DOSEL,DODIISAO
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),DMAT(*),BMAT(*),
      &          WORK(LWORK)
 C
 #include "memint.h"
 C
-      TEST = NASHT.GT.0.OR.DIISAO.OR.NAELEC.GT.0
-      IF (TEST) THEN
+      DODIISAO = NASHT.GT.0.OR.DIISAO.OR.NAELEC.GT.0
+      IF (DODIISAO) THEN
         CALL MEMGET('REAL',KDTEMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDEVEC,N2BBASXQ      ,WORK,KFREE,LFREE)
       ELSE
@@ -578,7 +576,7 @@ C
       ELSE
         KCMOSAV = KFREE
       END IF
-      IF (TEST) THEN
+      IF (DODIISAO) THEN
 C        read LUTMAT rec#2 with SAOMO
 C        NZT is the NZ value for the transformation matrix
         ISIZE = 0
@@ -600,7 +598,7 @@ C
 C     Convergence control/acceleration
 C     ================================
 C
-      IF(TEST) THEN
+      IF(DODIISAO) THEN
         CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),WORK(KTMAT),
      &              BMAT,ICHKCNV,WORK(KSAOMO),WORK(KFREE),LFREE)
       ELSE
@@ -1686,11 +1684,11 @@ C       Memory allocation
         CALL MEMGET('REAL',KCBUF,NESH(I)*NORB(I)*NZ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KSBUF,NESH(I)*NOCC(I)*NZ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KRSEL,NESH(I),WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KCSEL,NESH(I),WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KISEL,2*NESH(I),WORK,KFREE,LFREE)
         CALL SMOSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
      &              CFU(I2ORBT(I)+1),SMO(ISMOQ(I)+1),
      &              WORK(KEBUF),WORK(KIBEB),WORK(KCBUF),WORK(KSBUF),
-     &              WORK(KRSEL),WORK(KCSEL),ISELM,
+     &              WORK(KRSEL),WORK(KISEL),
      &              NORB(I),NOCC(I),NESH(I),WORK(KFREE),LFREE)
 C     Memory deallocation
       CALL MEMREL('SMOSE1.SMOSE2',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1702,7 +1700,7 @@ C     Memory deallocation
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smose2 */
       SUBROUTINE SMOSE2(IFRP,EIG,IBEIG,CFU,SMO,EBUF,IBEBUF,CBUF,SBUF,
-     &                  RCSEL,ICSEL,ISELM,KNORB,KNOCC,KNESH,WORK,LWORK)
+     &                  RCSEL,ICSEL,KNORB,KNOCC,KNESH,WORK,LWORK)
 C***********************************************************************
 C
 C     Select vectors based on overlap
@@ -1726,14 +1724,14 @@ C     KNORB = NORB(IFRP)
 C     KNOCC = NOCC(IFRP)
 C     KNESH = NESH(IFRP)
 C
-      CHARACTER FSYM*2
+      CHARACTER FSYM*1
       DIMENSION EIG(KNORB),IBEIG(KNORB),
      &          CFU(KNORB,KNORB,NZ),
      &          SMO(KNORB,KNOCC,NZ),
      &          SBUF(KNESH,KNOCC,NZ),
      &          EBUF(KNESH),IBEBUF(KNESH),
      &          CBUF(KNORB,KNESH,NZ),
-     &          RCSEL(KNESH),ICSEL(KNESH),
+     &          RCSEL(KNESH),ICSEL(KNESH,2),
      &          WORK(LWORK)
 C
 C     Form product CFU * (SMAT * COCC)
@@ -1785,16 +1783,18 @@ C
       ENDDO
       CALL DCOPY(KNESH,EIG(NPSH(IFRP)+1),1,EBUF,1)
       CALL ICOPY(KNESH,IBEIG(NPSH(IFRP)+1),1,IBEBUF,1)
+      CALL ICOPY(2*KNESH,0,0,ICSEL,1)
       ISELM = 0
       DO J = 1,NOCC(IFRP)
-        JJ = NPSH(IFRP) + J
         ISEL = IDAMAX(NESH(IFRP),SBUF(1,J,1),1)
-        ICSEL(J) = ISEL
+        ICSEL(J,1) = ISEL
+        ICSEL(ISEL,2) = J
         RCSEL(J) = SBUF(ISEL,J,1)
         ISELM = MAX(ISELM,ISEL)
 C       Zero out the selected overlap
         CALL DCOPY(NOCC(IFRP),D0,0,SBUF(ISEL,1,1),NESH(IFRP))
 C       Copy buffer into vector
+        JJ = NPSH(IFRP) + J
         DO IZ = 1,NZ
           CALL DCOPY(NORB(IFRP),CBUF(1,ISEL,IZ),1,CFU(1,JJ,IZ),1)
         ENDDO
@@ -1803,44 +1803,52 @@ C       Copy eigenvalue and (approx.) boson symmetry to new place:
         IBEIG(JJ) = IBEBUF(ISEL)
       ENDDO
 C
-C     Copy in missing vectors
+C     Copy in missing vectors among the unoccupied orbitals
 C
       IF(ISELM.GT.NOCC(IFRP)) THEN
         JSTR = NOCC(IFRP)+1
         DO J = JSTR,ISELM
-          JJ = NPSH(IFRP) + J
-          ISEL = IDAMAX(ISELM,SBUF(1,J,1),1)
-          ICSEL(J) = ISEL
-          RCSEL(J) = SBUF(ISEL,J,1)
-C         Zero out the selected overlap
-          CALL DCOPY(NOCC(IFRP),D0,0,SBUF(ISEL,1,1),NESH(IFRP))
-C         Copy buffer into vector
-          DO IZ = 1,NZ
-            CALL DCOPY(NORB(IFRP),CBUF(1,ISEL,IZ),1,CFU(1,JJ,IZ),1)
+        IF (ICSEL(J,2) .NE. 0) THEN
+C       ... i.e. has been copied to the occupied block
+          DO ISEL = 1,NOCC(IFRP)
+          IF (ICSEL(ISEL,2) .EQ. 0) THEN
+C         ... i.e. has not been selected to the occupied block
+            ICSEL(J,1) = ISEL
+            ICSEL(ISEL,2) = J
+            RCSEL(J) = 0.0D0
+C           Copy buffer into vector
+            JJ = NPSH(IFRP) + J
+            DO IZ = 1,NZ
+              CALL DCOPY(NORB(IFRP),CBUF(1,ISEL,IZ),1,CFU(1,JJ,IZ),1)
+            ENDDO
+C           Copy eigenvalue and (approx.) boson symmetry to new place:
+            EIG(JJ) = EBUF(ISEL)
+            IBEIG(JJ) = IBEBUF(ISEL)
+          END IF
           ENDDO
-C         Copy eigenvalue and (approx.) boson symmetry to new place:
-          EIG(JJ) = EBUF(ISEL)
-          IBEIG(JJ) = IBEBUF(ISEL)
+        END IF
         ENDDO
-      ENDIF
+      END IF
 C
 C     Print section
 C
-      WRITE(FSYM,'(I2)') IFRP
+      WRITE(FSYM,'(I1)') IFRP
       CALL HEADER('SMOSEL: Reordered vectors in fermion ircop '
      &            //FSYM,-1)
       NVEC = 0
-      DO J = 1,NOCC(IFRP)
-      IF(ICSEL(J).NE.J) THEN
+      DO J = 1,ISELM
+      IF(ICSEL(J,1).NE.J) THEN
         NVEC = NVEC + 1
-        WRITE(LUPRI,'(I5,A,I5,A,F20.10)') ICSEL(J),' --> ',J,
+        WRITE(LUPRI,'(I5,A,I5,A,F20.10)') ICSEL(J,1),' --> ',J,
      &                                    ' OVERLAP ',RCSEL(J)
       ENDIF
       ENDDO
       IF(NVEC.EQ.0) WRITE(LUPRI,'(A)') 'No reordering.'
       IF(IPRSCF.GE.2) THEN
-        WRITE(LUPRI,'(20I6)') (ICSEL(I),I=1,NOCC(IFRP))
-        WRITE(LUPRI,'(10F12.3)') (RCSEL(I),I=1,NOCC(IFRP))
+        WRITE(LUPRI,'(/A)') '  I  ICSEL(I,1)  ICSEL(I,2)    RCSEL(I)'
+        DO I = 1,ISELM
+          WRITE(LUPRI,'(I4,2I12,F12.4)')I,ICSEL(I,1),ICSEL(I,2),RCSEL(I)
+        END DO
       ENDIF
       RETURN
       END
@@ -1968,7 +1976,7 @@ C
 C
       CALL QENTER('REORD')
 C
-
+      WRITE(LUPRI,'(/A)') ' -> Reordering orbitals as requested'
       DO 10 I = 1,NFSYM
          IF (IREORD(I).EQ.0) GOTO 10
          IF (IPRSCF.GE.2) THEN
