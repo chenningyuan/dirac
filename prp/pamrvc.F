@@ -2327,7 +2327,7 @@ C
 C
 C     Configuration type trial vectors
 C
-      IF(NZXOPP.GT.0) THEN
+      IF(NZCONF.GT.0) THEN
         CALL XBVGEN(BCVEC,USEXVC,WORK(KCDIAH),EVALR,EVECR,
      &              IBTYP,IBCVC,IBVEC(1,IPCP),
      &              MFREQ,JBCNDX,NCSIM,IBOFF,NCPREV,NZCONF,
