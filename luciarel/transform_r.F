@@ -1770,7 +1770,7 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
 * When integral transformation section is generalized to traditional
 * or sigden route, the allocation should be revised. At the moment:
       if (SIGDEN_ROUTE.eq.'SIGDEN') then
-        print*,'NINT_CC',NINT_CC
+        write(6,*) ' Number of integrals/CC amplitudes: ',NINT_CC
         call memmar(KINDEX,4*NINT_CC,'ADDS  ',1,'IINDEX')
       end if
 *
@@ -1786,22 +1786,24 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
       call memmar(KPICHE2,(2*IMXDDIM)**2,'ADDL  ',2,'IPIHE2')
       if (ENVIRO(1:6).eq.'DIRAC ') then
         NUM_ONEI = (2*NDIM_TOT)**2
-      call memmar(KDUMAR,NDIM_TOT*2,'ADDL  ',2,'DUMARR')
-      call memmar(KIDUMAR,NDIM_TOT*2,'ADDL  ',1,'IDUMAR')
-      call memmar(KDIONEE,2*NUM_ONEI,'ADDL  ',2,'IDIONE')
+        call memmar(KDUMAR,NDIM_TOT*2,'ADDL  ',2,'DUMARR')
+        call memmar(KIDUMAR,NDIM_TOT*2,'ADDL  ',1,'IDUMAR')
+        call memmar(KDIONEE,2*NUM_ONEI,'ADDL  ',2,'IDIONE')
         NUM_TWEI = (2*NDIM_TOT)**4
-      call memmar(KDITWOE,2*NUM_TWEI,'ADDL  ',2,'IDITWO')
-      call memmar(KINVREO,2*NDIM_TOT+1,'ADDL  ',1,'INVREO')
-      call memmar(KKR,(2*NDIM_TOT+1),'ADDL  ',1,'IKR   ')
-      call memmar(KINDK,NUM_TWEI,'ADDL  ',2,'INDK  ')
-      call memmar(KINDL,NUM_TWEI,'ADDL  ',2,'INDL  ')
-      call memmar(KIOFF12,4*(2*NDIM_TOT)**2,'ADDL  ',1,'IOFF12')
-      call memmar(KNUMINT,4*(2*NDIM_TOT)**2,'ADDL  ',1,'NUMINT')
-      call memmar(KTPLOC,(2*NDIM_TOT)**2,'ADDL  ',1,'ITPLOC')
+        if (INTIMP.eq.6) then
+          call memmar(KDITWOE,2*NUM_TWEI,'ADDL  ',2,'IDITWO')
+          call memmar(KINDK,NUM_TWEI,'ADDL  ',2,'INDK  ')
+          call memmar(KINDL,NUM_TWEI,'ADDL  ',2,'INDL  ')
+          call memmar(KIOFF12,4*(2*NDIM_TOT)**2,'ADDL  ',1,'IOFF12')
+          call memmar(KNUMINT,4*(2*NDIM_TOT)**2,'ADDL  ',1,'NUMINT')
+          call memmar(KTPLOC,(2*NDIM_TOT)**2,'ADDL  ',1,'ITPLOC')
+        end if
+        call memmar(KKR,(2*NDIM_TOT+1),'ADDL  ',1,'IKR   ')
+        call memmar(KINVREO,2*NDIM_TOT+1,'ADDL  ',1,'INVREO')
       else
         if (IFOCKEX.eq.1) then
-      call memmar(KPICHE2_F,(4*IMXDIM_F)**2,'ADDL  ',2,'IPIHEF')
-      call memmar(KPICHE3_F,(4*IMXDIM_F)**2,'ADDL  ',2,'IPIHE3')
+        call memmar(KPICHE2_F,(4*IMXDIM_F)**2,'ADDL  ',2,'IPIHEF')
+        call memmar(KPICHE3_F,(4*IMXDIM_F)**2,'ADDL  ',2,'IPIHE3')
         end if
       end if
 *
@@ -1842,6 +1844,7 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
               MORB_DIRAC = MORB
               if (IHAM12.ge.2) then
                 IMOFFSET = (2*NDIM_TOT)**4
+                stop 'Calling LUCITA routine! Implement me!'
                 call rdtwo_dirac(WORK(KDITWOE),
      &                           WORK(KDITWOE+IMOFFSET),
      &                           LU40,DIRACTWO,
@@ -1883,6 +1886,7 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
               MORB_DIRAC = MORB
               if (IHAM12.ge.2) then
                 IMOFFSET = (2*NDIM_TOT)**4
+                stop 'Calling LUCITA routine! Implement me!'
                 call rdtwo_dirac(WORK(KDITWOE),
      &                           WORK(KDITWOE+IMOFFSET),
      &                           LU40,DIRACTWO,
