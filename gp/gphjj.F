@@ -168,8 +168,9 @@ C
       TIMWAL = DP001 * ( TIMEF() - TWALL0 )
 #endif
 #if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
- || defined (SYS_LINUX)
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_LINUX)
+ || defined (SYS_DEC)  || defined (SYS_LINUX)
+#if defined (SYS_IRIX) || defined (SYS_SUN)  || defined (SYS_SUN) \
+ || defined (SYS_DEC)
 C...  SGI IRIX code
       external time
 C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
@@ -206,14 +207,19 @@ C
       itimwl = stime() - iwall0
       TIMWAL = itimwl
 #endif
-C#if defined (SYS_LINUX)
-CC...  Linux code
-C      integer stime
-C      real*4  etime, tarray(2)
-CC
-C      TIMCPU = etime(tarray)
-C      TIMWAL = 0.
-C#endif
+#ifdef UNDEF
+C
+C     The SGI code above should work on Linux machines as well./jth-980704
+C
+#if defined (SYS_LINUX)
+C...  Linux code
+      integer stime
+      real*4  etime, tarray(2)
+C
+      TIMCPU = etime(tarray)
+      TIMWAL = 0.
+#endif
+#endif
 #if defined (SYS_ALLIANT)
 C...  Alliant FX/FORTRAN
       real*4 etime, tarray(2)
@@ -255,7 +261,11 @@ C     iwall = elapsed time, itime(1:2) = system and user time
       TIMWAL = dfloat (iwall) * 0.01d0
       TIMCPU = dfloat (itime(1) + itime(2)) * 0.01d0
 #endif
-#if !defined (SYS_VAX) && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_IBM) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_IRIX) && !defined (SYS_PARAGON) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN)
+#if !defined (SYS_VAX) && !defined (SYS_CRAY) && !defined (SYS_ALLIANT)
+&& !defined (SYS_CONVEX) && !defined (SYS_IBM) && !defined (SYS_AIX) &&
+!defined (SYS_HPUX) && !defined (SYS_IRIX) && !defined (SYS_PARAGON) &&
+!defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) &&
+!defined (SYS_DEC)
       PARAMETER (D0 = 0.0D0)
       TIMCPU = SECOND()
 C insert appropriate routine to get elapsed real time (wall time)
