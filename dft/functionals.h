@@ -266,6 +266,7 @@ extern Functional GGAKeyFunctional;
 extern Functional BLYPFunctional;
 extern Functional B3LYPFunctional;
 extern Functional WAHFunctional;
+extern Functional PBEFunctional;
 extern Functional PBE0Functional;
 
 /* generic functionals for embedding */

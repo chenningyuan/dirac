@@ -95,6 +95,7 @@ Functional* available_functionals[] = {
     &BLYPFunctional,
     &B3LYPFunctional,
     &WAHFunctional,
+    &PBEFunctional,
     &PBE0Functional,
 
     /* generic embedding functional */
