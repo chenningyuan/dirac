@@ -317,7 +317,7 @@ remove_work_dir()
 #  These directories are not suited for restart.
 #
    master=`hostname`
-   for node in ` cat $WRK/machines `; do
+   for node in ` uniq $WRK/machines `; do
        if [ $node != $master ]; then
           echo "Contents of work directory $WRK on slave node $node"
           rsh $node "ls -l $WRK"
