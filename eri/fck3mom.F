@@ -1,3 +1,4 @@
+#ifdef (MOD_FMM)
       SUBROUTINE SETMM(DMAT,NDMAT,IODBCLS,IODBTCH,RODBTCH,
      &                 WORK,LWORK,IPRINT1)
 #include "implicit.h"
@@ -680,3 +681,4 @@ C     &            RODP(1),RODP(2),RODP(3),-SPHINT, DEN12
 
       RETURN
       END 
+#endif
