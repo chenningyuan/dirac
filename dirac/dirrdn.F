@@ -97,7 +97,7 @@ C     Input of relccsd module
 C
       IF(DOCCM) THEN
          OPEN(LUCMD,FILE = 'DIRAC.INP')
-         CALL CCINPT(LUCMD,LUPRI)
+         CALL CCINPT(LUCMD,LUPRI,MIOBUF)
          CLOSE(LUCMD)
       ENDIF
 #endif
@@ -153,9 +153,9 @@ C
 #include <dcbcls.h>
 #include <dcbprl.h>
 C
-      DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
+      DATA TABDIR /'*END OF','*XXXXXX','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
-      DATA TABLE  /'.DIRECT','.CVALUE','.PARALL','.DOJACO',
+      DATA TABLE  /'.DIRECT','.CVALUE','.XXXXXX','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.VACUUM','.NUCVAC','.FAMILY',
@@ -223,8 +223,6 @@ C&&&& CVALUE: Set a different value of light
             READ(LUCMD,*) CVAL
             GO TO 100
   103    CONTINUE
-C&&&& PARALL: Parallel Direct calculation
-            PARCAL = .TRUE.
             GO TO 100
   104    CONTINUE
 C&&& DOJACO: Do Jacobi diagonalization if real group
@@ -1636,18 +1634,11 @@ C&&&& AOLAB:  Base definition of labels on AO-labels:
     2          CONTINUE
 C&&&& LABDEF: Define groups of primitive labels
                  LABDEF = .TRUE.
-                 CALL IZERO(IPOPLAB,MAXLAB)
                  READ(LUCMD,*) NPOPLAB
-                 IOFF = 1
-                 DO I = 1,NPOPLAB
-                   NGRP = 1
-                   NOFF = MAXLAB - IOFF + 1
-                   LINE = ' '
-                   READ(LUCMD,'(A72)') LINE
-                   POPLAB(I) = LINE(1:12)
-                   CALL NUMLST(LINE(12:72),IPOPLAB(IOFF),NOFF,1,
-     &                         MAXLAB,NGRP,WORK,LWORK)
-                 ENDDO
+                 CALL MEMGET('INTE',KIBUF,MAXLAB,WORK,KFREE,LFREE)
+                 CALL PROLAB(IPOPLAB,POPLAB,MAXLAB,NPOPLAB,LINE,LUCMD,
+     &                       WORK(KIBUF),WORK(KFREE),LFREE)
+                 CALL MEMREL('LABDEF',WORK,KWORK,KWORK,KFREE,LFREE)
                GO TO 100
     3          CONTINUE
 C&&&& VECPOP: Number of spinors to analyze
@@ -2149,7 +2140,6 @@ C
       NEWPRP = .TRUE.
       BASDIR = 'Not implemented !!!!'            
       RELCAL = .TRUE.
-      PARCAL = .FALSE.
 C
 C     Initialize SIPIPC from DALTON
 C
@@ -2186,13 +2176,13 @@ C
 C     Input section for modification of Dirac-Coulomb Hamiltonian
 C
 C     Written by T.Saue - May 1996
-C     Last revision: May 14 1996 - tsaue
+C     Last revision: May 27 1998 - tsaue and kmi
 C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 16,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00,
      &           DTHRS = 1.0D-13)
 C
@@ -2206,12 +2196,14 @@ C
 #include <dcbprl.h>
 C
       LOGICAL SYMSTP,LBIT
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION KSOP(0:7),WORK(LWORK)
       CHARACTER A*80
 C
+      DATA TABDIR /'*END OF','*SOLVEN','*XXXXXX','*XXXXXX',
+     &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
-     &            '.NELECT','.OPEN S','.XXXXXX','.FREEPJ',
+     &            '.NELECT','.OPEN S','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
@@ -2229,6 +2221,7 @@ C
       URKBAL  = .FALSE.
       NOSMLV  = .FALSE.
       LEVYLE  = .FALSE.
+      SOLVEN  = .FALSE.
       N1OPER  = 0
       SSMTRC  = D1
       CALL OP1INI(WORK,LWORK)
@@ -2356,6 +2349,8 @@ C
 #endif
             GO TO 100
   107     CONTINUE
+C&&& SOLVENT: Solvent effects modelled by spherical cavity in dielectric medium
+            SOLVEN = .TRUE.
             GO TO 100
   108     CONTINUE
 C&&& FREEPJ: Reduce variational space by projecting out free positronic solutions
@@ -2459,7 +2454,7 @@ C
       NFROT = NFRO(1) + NFRO(2)
       NELECT  = NELEC(1) + NELEC(2)
 C
-C     Remove inconsitencies
+C     Remove inconsistencies
 C     =====================
 C
       IF (LEVYLE) THEN
@@ -2635,6 +2630,47 @@ C         Operator must be symmetric under time reversal
      &      '* No nuclear attraction integrals for small components !'
       ENDIF
 C
+C     Process input for various program sections
+C     ==========================================
+C
+  200 PROMPT = WORD(1:1)
+      IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+         GO TO 200
+      ELSE IF (PROMPT .EQ. '*') THEN
+         DO 210 I = 1, NDIR
+            IF (WORD .EQ. TABDIR(I)) THEN
+               GO TO (1,2,3,4,5,6,7,8), I
+            END IF
+  210    CONTINUE
+         IF (WORD(1:2) .EQ. '**') GO TO 1
+         WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
+         CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
+         CALL QUIT('Illegal directory in HAMINP.')
+      ELSE
+         WRITE (LUPRI,'(/,4A,/)') ' Prompter "',PROMPT,'" illegal or',
+     *                        ' out of order.'
+         CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
+         CALL QUIT('Program stopped in HAMINP, error in prompt.')
+      END IF
+    2 CONTINUE
+        CALL SOLVIN(WORD,WORK,LWORK)
+        GO TO 200
+    3 CONTINUE
+        GO TO 200
+    4 CONTINUE
+        GO TO 200
+    5 CONTINUE
+        GO TO 200
+    6 CONTINUE
+        GO TO 200
+    7 CONTINUE
+        GO TO 200
+    8 CONTINUE
+        GO TO 200
+C
+    1 CONTINUE
+      IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
+C
 C
 C     Calculate LV-correction
 C     (SS integrals modelled by Coulombic correction)
@@ -2643,12 +2679,6 @@ C
       CALL LVCORR(WORK,LWORK,IPRHAM)
 C
       IF(SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator !')
-C
-C     Generating Transformation matrices for 
-C     spherical basis and scalar RKB type basis
-C     
-      IF(LBIT(ISPHTR,1)) CALL SPHGEN(WORK,LWORK,IPRHAM)
-      IF(LBIT(ISPHTR,2)) CALL RKBGEN(WORK,LWORK,IPRHAM)
 C
       RETURN
 C
@@ -2800,6 +2830,40 @@ C
       ENDIF
 C
       CALL QEXIT('MINANA')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prolab */
+      SUBROUTINE PROLAB(ILAB,LAB,NDIM,NLAB,LINE,IUNIT,IBUF,WORK,LWORK)
+C*****************************************************************************
+C
+C     Process labels:
+C       Read a string of new label name and list of primitive
+C       labels. 
+C         From pointer ILAB relating proimitve labels with new
+C       labels.
+C
+C     Written by T.Saue - Feb 3 1998
+C
+C***********************************************************************
+#include<implicit.h>
+#include<priunit.h>
+C
+      CHARACTER LINE*72,LAB(*)*12
+      DIMENSION ILAB(*),IBUF(*),WORK(*)
+C
+      CALL IZERO(ILAB,NDIM)
+      DO I = 1,NLAB
+        NGRP = 1
+        LINE = ' '
+        READ(IUNIT,'(A72)') LINE
+        LAB(I) = LINE(1:12)
+        CALL NUMLST(LINE(12:72),IBUF,NDIM,1,NDIM,NGRP,WORK,LWORK)
+        DO J = 1,NGRP
+          ILAB(IBUF(J)) = I
+        ENDDO
+      ENDDO
 C
       RETURN
       END

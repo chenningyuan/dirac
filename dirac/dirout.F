@@ -66,7 +66,7 @@ C
      &              FORM = 'FORMATTED')
         REWIND LUCYCL
         DO 10 I = 1,NITER
-          READ(LUCYCL,1010) NITER,DHFTMP,ERGVAL,FCKVAL,EVCVAL,
+          READ(LUCYCL,1020) NITER,DHFTMP,ERGVAL,FCKVAL,EVCVAL,
      &                 CACC,CPUTID,INTTYP,DAYTID
           WRITE(LUPRI,1010) NITER,DHFTMP,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,INTTYP,DAYTID
@@ -105,6 +105,11 @@ C
      +     'Electronic energy       :   ',ELERGY
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +     'Nuclear repulsion energy:   ',POTNUC
+        IF(SOLVEN) THEN
+          ERGSOL = ESOLVN + ESOLVE
+          WRITE(LUPRI,'(3X,A,'//FMT//')')
+     +     'Solvent energy          :   ',ERGSOL
+      ENDIF
         IF(LVCON) THEN
           WRITE(LUPRI,'(3X,A,'//FMT//')')
      +       'SS Coulombic correction:    ',CORRLV
@@ -147,6 +152,8 @@ C
  1000 FORMAT(11X,'Energy',15X,'ERGVAL',4X,'FCKVAL',4X,'EVCVAL',6X,
      &       'Conv.acc',4X,'CPU',10X,'Integrals',3X,'Time stamp')
  1010 FORMAT('It. ',I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
+     &       3X,A10)
+ 1020 FORMAT(4X,I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
      &       3X,A10)
 C
       END
