@@ -162,5 +162,8 @@ for tt in $tests; do
       cat $tt/README
    fi
    echo
-   ( cd $tt; export PAM_PATH=$arg_pampath; export MPIARG=$arg_mpi; ./run.sh)  
+   ( cd $tt; \
+     PAM_PATH=$arg_pampath; export PAM_PATH; \
+     MPIARG=$arg_mpi; export MPIARG; \
+     ./run.sh)  
 done
