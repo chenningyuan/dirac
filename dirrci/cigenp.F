@@ -778,7 +778,11 @@ C     RETURNS  B**(EMIN-1)  (THE SMALLEST POSITIVE MODEL NUMBER)
 C
       DOUBLE PRECISION SMALL
 C     .. Data Statements ..
-      DATA  SMALL /'10000000000000'X/	 
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+      DATA  SMALL /4503599627370496/
+#else
+      DATA  SMALL /'10000000000000'X/
+#endif
 C     .. Executable Statements ..
       X02AKF = SMALL
       RETURN
