@@ -8614,44 +8614,42 @@ Cjan      end do
 *
 *  INDEX array refers to integral indexing.
 *  The corresponding second quantization operators then result
-*  from the following resorting to CACA ordering:
-*  e.g. CA AA CB AB
-*  Retaining integral indexing for densities (as they come out of
-*  the program, and labelled by the INDEX array:
+*  from the index reordering as given in GET_HX_RELA. 
+*  Retaining integral indexing for densities as they come out of
+*  the program, and labelled by the INDEX array; this has been
+*  generated correctly within DIST_INTS_SIGDEN for all excitation 
+*  types. An overall sign for all 2-particle densities is accounted
+*  for in GET_HX_RELA (here called SIGN_OPREO):
                 IND_R(1) = INDEX_L(1) - (LABEL(1,IXTP) - 1)/2 * NASHT
                 if (NTEST.ge.50) then
                   write(6,*)
-                  write(6,*) ' I '
-                  write(6,*) ' IHINDX(1,IXTP) ' ,IHINDX(1,IXTP)
-                  write(6,*) ' LABEL(IHINDX(1,IXTP),IXTP) ',
-     &                         LABEL(IHINDX(1,IXTP),IXTP)
+                  write(6,*) ' operator I '
+                  write(6,*) ' INDEX_L(1) ',INDEX_L(1)
+                  write(6,*) ' LABEL(1,IXTP) ',LABEL(1,IXTP)
                 end if
 *
                 IND_R(2) = INDEX_L(2) - (LABEL(2,IXTP) - 1)/2 * NASHT
                 if (NTEST.ge.50) then
                   write(6,*)
-                  write(6,*) ' L '
+                  write(6,*) ' operator L '
                   write(6,*) ' INDEX_L(2) ',INDEX_L(2)
-                  write(6,*) ' LABEL(IHINDX(2,IXTP),IXTP) ',
-     &                         LABEL(IHINDX(2,IXTP),IXTP)
+                  write(6,*) ' LABEL(2,IXTP) ',LABEL(2,IXTP)
                 end if
 *
                 IND_R(3) = INDEX_L(3) - (LABEL(3,IXTP) - 1)/2 * NASHT
                 if (NTEST.ge.50) then
                   write(6,*)
-                  write(6,*) ' K '
+                  write(6,*) ' operator K '
                   write(6,*) ' INDEX_L(3) ',INDEX_L(3)
-                  write(6,*) ' LABEL(IHINDX(3,IXTP),IXTP) ',
-     &                         LABEL(IHINDX(3,IXTP),IXTP)
+                  write(6,*) ' LABEL(3,IXTP) ',LABEL(3,IXTP)
                 end if
 *
                 IND_R(4) = INDEX_L(4) - (LABEL(4,IXTP) - 1)/2 * NASHT
                 if (NTEST.ge.50) then
                   write(6,*)
-                  write(6,*) ' J '
+                  write(6,*) ' operator J '
                   write(6,*) ' INDEX_L(4) ',INDEX_L(4)
-                  write(6,*) ' LABEL(IHINDX(4,IXTP),IXTP) ',
-     &                         LABEL(IHINDX(4,IXTP),IXTP)
+                  write(6,*) ' LABEL(4,IXTP) ',LABEL(4,IXTP)
                 end if
 *
                 IOUT = (IRI-1)*NASHT2*NASHT2*NASHT2*NASHT2 +
@@ -8765,10 +8763,6 @@ Cjan      end do
 *  Two-particle density element.
 *
 *  INDEX array refers to integral indexing.
-*  The corresponding second quantization operators then result
-*  from the following resorting to CACA ordering:
-*  CA AA CB AB for printing:
-*
               IUBFAC = 1
               if (INDEX(1,IRUN).lt.0) IUBFAC = -1
               IND_R(1) = INDEX(1,IRUN) - (LABEL(1,IXTP) - 1)/2 * NASHT
