@@ -37,7 +37,7 @@ C
       WRITE(LUPRI,'(A)')
      &  'Select one of the following:',
      &  '  1. Spectroscopic constants.',
-     &  '  2. Spectroscopic constants + properties.',
+     &  '  2. Spectroscopic constants + properties.'
       READ(LUCMD,*) I
       IF(I.EQ.1) THEN
         WRITE(LUPRI,'(A)') 
