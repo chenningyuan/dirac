@@ -1716,7 +1716,7 @@ C            PNT2DM2(I12SM,NSMOB,IPSM,JPSM,IJSM,IPNTR)
      &       WORK(KPINT2D(IL2)))
       END DO
 *
-      CALL LMEMCHK
+      CALL RMEMCHK
       RETURN
       END
 ***********************************************************************
@@ -1779,7 +1779,7 @@ C    &           IDXSM,IS12,IS34,IS1234,IPNTR)
 
       PNTGRP = IPNTGRP_SAVE
 *
-      CALL LMEMCHK
+      CALL RMEMCHK
       RETURN
       END
 ***********************************************************************
@@ -3710,7 +3710,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
         WRITE(6,*) ' Since I cannot procede I will stop '
         WRITE(6,*) ' Insufficient buffer detected in PART_CIV3'
         WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
-        CALL LMEMCHK
+        CALL RMEMCHK
         Call Abend1( 11 )
       ELSE
 *. This batch is finished, goto next batch

@@ -261,8 +261,8 @@ C
 C        
 C        Find non-redundant active-active rotations.
 C        
-         CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,100,NOROT)
-c        CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT)
+c        CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,100,NOROT)
+         CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT)
 C        
       END IF
 C     
@@ -1083,6 +1083,7 @@ C
       LOGICAL GASCAS(MXMCGAS)
 C
 C
+c     iprint = 20
       NXOPES = NXOPE
 C
 C     Set up help arrays
@@ -1129,6 +1130,7 @@ C
          ELSE IF (I.EQ.NGAS.AND.NGAS.EQ.1) then
            MINCAS = NAELEC
          END IF
+c        print*,'GAS ',I,' MINCAS,MAXCAS ',MINCAS,MAXCAS
 C
 C        Maximum number of holes in this GAS space:
 C
@@ -1229,6 +1231,7 @@ C
      &           JXOPE(1,I), JXOPE(2,I)
          END DO
       END IF
+C     stop 'after GASCAS determination.'
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

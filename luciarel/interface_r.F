@@ -5025,7 +5025,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *
       NTEST = 0000
 *
-      CALL LMEMCHK
+      CALL RMEMCHK
 *
 *. : Pointers for symmetry blocks of integrals
 *
@@ -5153,13 +5153,13 @@ CTF      IF(NOINT.EQ.0)
 CTF     &CALL IJKK(WORK(KIJKK),1,WORK(KPNIJ),1,NSMOB,NTOOBS,
 CTF     &          IBSO,IREOST,NTOOB)
 CTF      WRITE(6,*) ' Memcheck after IJKK '
-CTF      CALL LMEMCHK
+CTF      CALL RMEMCHK
 C?    write(6,*) ' home from IJKK '
 *. Change one-electron integrals to inactive fock matrix
 CTF      IF(NOINT.EQ.0) CALL FI(WORK(KINT1),ECC)
 CTF      ECORE = ECORE + ECC
 CTF      WRITE(6,*) ' Updated core energy ',ECORE
-CTF      CALL LMEMCHK
+CTF      CALL RMEMCHK
 *
 C?    WRITE(6,*) ' IDMPIN ', IDMPIN
 CTF      IF (IDMPIN.EQ.1 ) THEN

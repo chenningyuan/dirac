@@ -152,7 +152,7 @@ C?      WRITE(6,*) 'NIJTYP, NKLTYP', NIJTYP,NKLTYP
       END IF
 *     ^ End if ITERM test ( type of excitation)
 C     WRITE(6,*) ' MEMCHECK at end of ADVICE'
-C     CALL LMEMCHK
+C     CALL RMEMCHK
 C     WRITE(6,*) ' MEMCHECK passed '
       RETURN
       END
@@ -2753,7 +2753,7 @@ C               CALL WRTVCD(CB,LUSC37,1,-1)
 *. Connection. The Hamiltonian is at most a two-particle operator!
 *. Obtain contribution to batch sigma from all blocks with MK2_C
 CM                WRITE(6,*) ' Memchk before call to SBLOCK '
-CM                CALL LMEMCHK
+CM                CALL RMEMCHK
                   IF(NTEST.GE.100) THEN
                    WRITE(6,*) ' Block info for S batch, JBATS:',JBATABS
                    WRITE(6,*) ' Number of blocks : ', LBATS(JBATABS)
@@ -3331,7 +3331,7 @@ C    &                          LSM,IXCHNG,IKSM,JLSM,ICOUL)
                     WRITE(6,*) ' SSCR matrix '
                     CALL WRTMAT(SSCR,LIKB,NIKT,LIKB,NIKT)
                     WRITE(6,*) ' Mem check '
-                    CALL LMEMCHK
+                    CALL RMEMCHK
                   END IF
 * ============================
 * Loop over ik and scatter out
@@ -3928,7 +3928,7 @@ CTF DELTA_MK2 should be an integer!!
       XNORM = INPROD(CB,CB,NJA*NJB)
 C     IF(XNORM.EQ.0.0D0) GOTO 1001
 *
-      if (NTEST.ge.100) call lmemchk
+      if (NTEST.ge.100) call rmemchk
 *
       IF(NTEST.GE.200) THEN
          WRITE(6,*) ' ====================='
@@ -4031,7 +4031,7 @@ CTF
 *
 *     Call new relativistic routines
 C?          WRITE(6,*) 'Do memory check ...before dmk0one'
-            if (NTEST.ge.100) call lmemchk
+            if (NTEST.ge.100) call rmemchk
             IUB = 2
             IPM1 = 0
             call dmk0one(IBSM,IBTP,JBSM,JBTP,
@@ -5102,8 +5102,8 @@ CTF  &                IH0SPC,
       REAL * 8 INPROD
 *
       CALL QENTER('SBLOCK_S')
-C     WRITE(6,*) ' LMEMCHK at start of SBLOCKS'
-C     CALL LMEMCHK
+C     WRITE(6,*) ' RMEMCHK at start of SBLOCKS'
+C     CALL RMEMCHK
       NTEST = 000
       NTEST = MAX(NTEST,IPRNT)
       IF(NTEST.GE.20) THEN
@@ -5144,7 +5144,7 @@ C     FIND_ACTIVE_BLOCKS(LUIN,LBLK,BLK_A,SEGMNT)
 *     \/ Change to accomodate for ICBAT_RES
       CALL FIND_ACTIVE_BLOCKS(LUC,-1,SCLFAC,CB)
 C     write(6,*) ' memchk after FIND_ACTIVE_BLOCKS'
-C     CALL LMEMCHK
+C     CALL RMEMCHK
 *
 * Loop over batches over C blocks
       IF(IDOH2.EQ.1) THEN
@@ -5398,8 +5398,8 @@ C                   WRITE(6,*) 'before CB(19) = ', CB(19)
 *.      ^ End of loop over C blocks in Batch
 20000 CONTINUE
 *.    ^End of loop over batches of C blocks
-C     write(6,*) ' LMEMCHK after loop 20000'
-C     CALL LMEMCHK
+C     write(6,*) ' RMEMCHK after loop 20000'
+C     CALL RMEMCHK
 *
 * Order
 * The condition I_DO_TRNSP.EQ.1 is fulfilled if
@@ -5439,8 +5439,8 @@ C?        WRITE(6,*) 'Transpose loop, NIA,NIB,ISOFF',NIA,NIB,ISOFF
       END IF
       NTEST = 0
 *
-C?    WRITE(6,*) ' LMEMCHK at END of SBLOCKS'
-C?    CALL LMEMCHK
+C?    WRITE(6,*) ' RMEMCHK at END of SBLOCKS'
+C?    CALL RMEMCHK
       CALL QEXIT('SBLOCK_S')
       RETURN
       END

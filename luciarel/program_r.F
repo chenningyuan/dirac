@@ -256,7 +256,7 @@ CTF  &     WORK(KLCLSD),WORK(KLCLSDT),ISKIPEI,WORK(KLC2B),WORK(KLCLSA2),
      &     LBLOCK,IRC,IDCOMH,IHAM12,SIGDEN_ROUTE)
       EREF = EROOT(IRFROOT)
 CTF   WRITE(6,*) ' Memcheck after CIEIG5'
-CTF   CALL LMEMCHK
+CTF   CALL RMEMCHK
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
           end if
         end if

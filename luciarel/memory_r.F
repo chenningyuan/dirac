@@ -232,6 +232,19 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE RMEMCHK
+*
+* Check memory allocated  with the memory manager
+*
+      call memmar(IDUM,IDUM,'CHECK ',IDUM,'IDUM  ')
+*
+      RETURN
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*                                                                     *
+***********************************************************************
       SUBROUTINE MEMMAR(KBASE,KADD,TASK,IR,IDENT)
 *
 * Memory manager routine for LUCIAREL "R"

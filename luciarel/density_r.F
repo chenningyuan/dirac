@@ -602,7 +602,7 @@ c       ISTOTRI = ((2*ISTORE)**2 + 2*ISTORE) / 2
      &                    LUMOUTR,LUMOUTI,ISPSM)
 *
           write(6,*) 'Checking memory in SPISYM loop ...'
-          call lmemchk
+          call rmemchk
 *
         end do
 *       ^ End loop over spinor symmetries
@@ -1022,7 +1022,7 @@ C     FIND_ACTIVE_BLOCKS(LUIN,LBLK,BLK_A,SEGMNT)
       CALL FIND_ACTIVE_BLOCKS(LUC,-1,SCLFAC,CB)
       if (NTEST.ge.100) then
         write(6,*) ' memchk after FIND_ACTIVE_BLOCKS'
-        CALL LMEMCHK
+        CALL RMEMCHK
       end if
 *
 * Loop over batches over C blocks
@@ -1578,7 +1578,7 @@ COLD  CALL MEMMAR(KC2,LSCR12,'ADDL  ',2,'KC2   ')
      &          + IFRMR_REL(WORK(KLLBTR),1,NBATCHR) - 1
         WRITE(6,*) ' DENSI2T :NBLOCKR =',NBLOCKR
       WRITE(6,*) ' Memcheck in densi2 before GASDN2'
-      CALL LMEMCHK
+      CALL RMEMCHK
 
       IF(ICISTR.EQ.1) THEN
          WRITE(6,*) ' Sorry, ICISTR = 1 is out of fashion'
@@ -1609,7 +1609,7 @@ C    &       WORK(KLSCLFCL),WORK(KLSCLFCR))
 C                        KLLBTR  KLLEBTR KLI1BTR KLIBTR
       END IF
       WRITE(6,*) ' Memcheck in densi2 after GASDN2'
-      CALL LMEMCHK
+      CALL RMEMCHK
 *
 * Natural Orbitals etc.
 *
@@ -2146,7 +2146,7 @@ C!    stop ' enforced stop in RSBBD1 '
 *
 C?      WRITE(6,*) ' GSBBD1DG was called '
 C?      WRITE(6,*) ' Memory check '
-C?      CALL LMEMCHK
+C?      CALL RMEMCHK
 *
 * ================================
 * beta-beta contribution to RHO2

@@ -27,7 +27,7 @@ This script should always be run when new files or directories are added to the 
 It creates all the Makefiles and the pam and export scripts (see below). 
 The author of the new files should take care that this script is modified so that these
 derived files contain proper reference to the new code. It should be rather straightforward
-to do this by looking at the example provide by other (optional) modules.
+to do this by looking at the example provided by other (optional) modules.
 DO NEVER EDIT THE MAKEFILES OR PAM DIRECTLY. They are derived files and are overwritten
 by pamadm. The files to be changed are pamadm, configure, pam.in and the Makefile.in files.
 Modules can be excluded from the release version by surrounding the
@@ -48,7 +48,7 @@ pamadm for an existing module (e.g. DFT or KRMC) to see how this is done in
 detail.
 
 4. The configure script.
-This script take care of the machine dependent code. Please use this only for this 
+This script takes care of the machine dependent code. Please use this only for this 
 purpose and DO NOT ADD MODULE RELATED INFORMATION. This was done in previous releases
 of DIRAC and made things more complicated. The configure script contains references to the
 GNU files configure.sub and config.guess that should not be edited. New versions should
@@ -70,13 +70,13 @@ The pam script is used to run DIRAC on various platforms. It takes care of setti
 a scratch directory, copying out restart files (if desired), cleaning up, etc.
 Please modify this script if you hit a non-supported platform and check the
 modification in so that others may also benefit from the work you did !
-Pamq is basically a wrapper of pam that works with a number of queue systems.
+Pamq is basically a wrapper of pam that works with a number of queueing systems.
 
 CHAPTER 2 : PROGRAMMING RULES AND HINTS
 
 Dirac is for historical reasons largely written in FORTRAN77 but in the newer
-parts of the code yoou may also see parts in C or Fortran90. Parallelism is
-achieved via the MPI message passage library allthough some shared memory
+parts of the code you may also see parts in C or Fortran90. Parallelism is
+achieved via the MPI message passing library although some shared memory
 parallelization via preprocessor statements of high-performance-fortran may
 pop up in the future. The program also users other libraries like blas or
 lapack for which a standard (but slow) implementation is found in pdpack. To
@@ -100,7 +100,7 @@ have done this before.
 3. Hints for using Fortran90.
 You may want to use Fortran90 features when modifying an existing routine.
 Since Fortran90 does support almost all FORTRAN77 features this should be no
-problem in principle. In practise you will hit some problems related to the
+problem in principle. In practice you will hit some problems related to the
 use of #include and preprocessor statments in the old code. A few things to
 make life easier (search also the net typing fortran77 and fortran90 in
 google, you will almost certainly find very relevant websites).
@@ -111,7 +111,7 @@ google, you will almost certainly find very relevant websites).
   Type an ampersand & in column 73 of the line you want to continue and
   also one in column 6 of the next. The first is not seen by f77 but read by
   f90 who then ignores the second. f77 just needs the second & (in column 6).
-  Do not use other continuation characters
+  Do not use other continuation characters.
 
 - Include works with #include in FORTRAN77 and with include in Fortran90.
   Make sure to define your include blocks such that they can be used by both
