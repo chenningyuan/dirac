@@ -336,7 +336,7 @@ set_work_dir()
    if [ -n "$SCR_DIR" ]; then
       WRK=$SCR_DIR
    else
-      WRK=$SCR/$MOL
+      WRK=$SCR/$MOL.$$
    fi
    #
    # Make $WRK if non-existing
