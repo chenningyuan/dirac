@@ -1028,13 +1028,10 @@ C
       CALL MEMOPT('REAL',V3A,NV3*RCW,CC,KFREE,LFREE,ALLOC)
       MXCORR = MAX0(MXCORR,KFREE)
 C
+C
 C     We cannot reuse the memory when the bound checking is active
 C     Here is room for improvement if the memory requirements become
 C     large for this step. Start after VVOO arrays.
-C
-C     We must be able to store at least a NV4 size array, check that.
-C     Since we use this array as work in MAKEFM we also need to store the
-C     first representation of the sorted (non-triangular) OOOO and VOOO ints
 C
 C     The maximum necessary size is
 C
@@ -1055,12 +1052,19 @@ C
       IF (NBUF.LT.1) NBUF = 1
       NVT = NBUF * MINBUF
 C
-      CALL MEMOPT('REAL',VT ,NVT*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',VTA,NVT*RCW,CC,KFREE,LFREE,ALLOC)
+C     We must be able to store at least a NV4 size array, check that.
+C     Since we use this array as work in MAKEFM we also need to store the
+C     first representation of the sorted (non-triangular) OOOO and VOOO ints
+C
+      NVTMIN = MAX0(NVT,NV4)
+      NVTMIN = MAX0(NVTMIN,JOOOO(2))
+      NVTMIN = MAX0(NVTMIN,JVOOO(2))
+C
+      CALL MEMOPT('REAL',VT ,NVTMIN*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',VTA,NVTMIN*RCW,CC,KFREE,LFREE,ALLOC)
       V4  = VT
       V4A = VTA
       MXCORR = MAX0(MXCORR,KFREE)
-C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,1001) "reading and sorting integrals",MXCORR
          KFREE = KFRSAV
