@@ -166,7 +166,6 @@ C
 #include "priunit.h"
 #include "optinf.h"
 #include "codata.h"
-#include "pi.h"
       DIMENSION VALINT(ICRD)
       CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
       LOGICAL REMCRD
@@ -230,7 +229,6 @@ C
 #include "implicit.h"
 C
 #include "codata.h"
-#include "pi.h"
 C
 #include "mxcent.h"
 #include "mxorb.h"
@@ -4245,17 +4243,24 @@ C
       END
 
 C  /* Deck rhoij */
-      FUNCTION RHOIJ(ATMARR,I,J,ALFA,DIST)
+      FUNCTION RHOIJ(ATMARR,I,J,ALFA,DIST,ORIG_LINDH)
 C
 C     Calculates the function
-C     rho_ij = exp[alfa_ij (r_ref,ij^2 - r_ij^2)]
+C        rho_ij = exp[alfa_ij (r_ref,ij^2 - r_ij^2)]
+C     for the model Hessian by Roland Lindh
+C
+C     Revised Nov 2002 hjaaj for using covalent/metallic radii
+C     instead of simplified values in DIST
+C     (the problem is that they do NOT work for heavier
+C     nuclei - as Roland also notes in his paper;
+C     with covalent/metallic radii we should get reasonable
+C     r_ref for all bonds)
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       DIMENSION ATMARR(MXCENT,8)
-      DIMENSION ALFA(3,3), DIST(3,3)
-      DIMENSION VEC(3)
+      DIMENSION ALFA(3,3), DIST(3,3), VEC(3)
+      LOGICAL   ORIG_LINDH
       IROWI = 2
       IROWJ = 2
       IF (ATMARR(I,1) .LE. 2) IROWI = 1
@@ -4266,8 +4271,14 @@ C
       VEC(2) = ATMARR(I,3) - ATMARR(J,3)
       VEC(3) = ATMARR(I,4) - ATMARR(J,4)
       V2 = VEC(1)*VEC(1) + VEC(2)*VEC(2) + VEC(3)*VEC(3)
-      RHOIJ = EXP(ALFA(IROWI,IROWJ)*
-     &     (DIST(IROWI,IROWJ)*DIST(IROWI,IROWJ) - V2))
+
+      IF (ORIG_LINDH) THEN
+         RREFIJ = DIST(IROWI,IROWJ)
+      ELSE
+         RREFIJ = ATMARR(I,5) + ATMARR(J,5)
+      END IF
+
+      RHOIJ = EXP( ALFA(IROWI,IROWJ)*(RREFIJ*RREFIJ - V2) )
       RETURN
       END
 
@@ -4275,7 +4286,7 @@ C  /* Deck bldhes */
       SUBROUTINE BLDHES(MXRCRD,ATMARR,HESINT,ALFA,DIST)
 C
 C     Builds a simple model Hessian in redundant internal coordinates.
-C     As described by Roland Lindh
+C     As described by Roland Lindh.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -4318,23 +4329,23 @@ C
       NRIC = IINTCR
       IF (DELINT) NRIC = IREDIC
       DO 10 IC = 1, NRIC
-         IF (INTCRD(IC,1) .LT. 10) THEN
-            FAC = STRET
-            RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST)
-            RJK = 1.0D0
-            RKL = 1.0D0
-         ELSE IF (INTCRD(IC,1) .LT. 20) THEN
-            FAC = ROTAT
-            RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST)
-            RJK = RHOIJ(ATMARR,INTCRD(IC,3),INTCRD(IC,4),ALFA,DIST)
-            RKL = 1.0D0
-         ELSE
-            FAC = TORSN
-            RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST)
-            RJK = RHOIJ(ATMARR,INTCRD(IC,3),INTCRD(IC,4),ALFA,DIST)
-            RKL = RHOIJ(ATMARR,INTCRD(IC,4),INTCRD(IC,5),ALFA,DIST)
-         END IF
-         HESINT(IC,IC) = FAC*RIJ*RJK*RKL
+        IF (INTCRD(IC,1) .LT. 10) THEN
+          FAC = STRET
+          RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST,LINDHD)
+          RJK = 1.0D0
+          RKL = 1.0D0
+        ELSE IF (INTCRD(IC,1) .LT. 20) THEN
+          FAC = ROTAT
+          RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST,LINDHD)
+          RJK = RHOIJ(ATMARR,INTCRD(IC,3),INTCRD(IC,4),ALFA,DIST,LINDHD)
+          RKL = 1.0D0
+        ELSE
+          FAC = TORSN
+          RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST,LINDHD)
+          RJK = RHOIJ(ATMARR,INTCRD(IC,3),INTCRD(IC,4),ALFA,DIST,LINDHD)
+          RKL = RHOIJ(ATMARR,INTCRD(IC,4),INTCRD(IC,5),ALFA,DIST,LINDHD)
+        END IF
+        HESINT(IC,IC) = FAC*RIJ*RJK*RKL
  10   CONTINUE
       RETURN
       END
