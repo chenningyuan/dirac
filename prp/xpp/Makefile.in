@@ -7,19 +7,21 @@
 
 include ../../Makefile.config
 
-F_OBJS = pamxpp.o
+F77_OBJS = pamxpp.o
 
-F_CPPS = $(F_OBJS:.o=.i)
+F90_OBJS = 
 
-pre:	$(F_CPPS)
+F77_CPPS = $(F77_OBJS:.o=.i)
+
+pre:	$(F77_CPPS)
 
 ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
 all:	$(F_OBJS)
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i
+	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
@@ -27,10 +29,7 @@ dirac.x:
 dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
 
-dirpvm.x:
-	cd .. ; $(MAKE) dirpvm.x
-
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F)
+	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS=.o=.F90)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
