@@ -305,9 +305,16 @@ C        Overdimension KCMO because it is used as Focksize scratch space
          CALL MEMREL('TRADRV',WORK,KFRSAV,KCMO,KFREE,LFREE)
       ENDIF
 C
+      CALL FLSHFO(LUPRI)
+C
       IF (PRPTRA) CALL TRAPRP(WORK,KFREE,LFREE)
+C
+      CALL FLSHFO(LUPRI)
+C
       IF (.NOT.NO2IND) 
      &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
+C
+      CALL FLSHFO(LUPRI)
 C
 C     Call driver for 4-index transformation
 C     --------------------------------------
@@ -344,6 +351,7 @@ C
       WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
 C
       CALL QEXIT('PAMTRA')
+      CALL FLSHFO(LUPRI)
 C
       RETURN
       END      
