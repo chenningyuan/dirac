@@ -3258,6 +3258,8 @@ C  /* Deck psiprj */
       SUBROUTINE PSIPRJ(TMAT,TINV,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
+C     Eliminate a set of reference orbitals from the variational space;
+C     this is done by projecting them out of the MO transformation matrix
 C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
@@ -3428,7 +3430,7 @@ C         Spin-free case: Fill array with boson irrep info
           CALL INIBOS(WORK(KIBOS),IFRP)
         ELSE
 C         Spin-orbit coupling: Fill array with zeros..
-          CALL ICOPY (NORB(IFRP),0,0,WORK(KIND),1) 
+          CALL ICOPY (NORB(IFRP),0,0,WORK(KIBOS),1) 
         ENDIF
 C       Do projection
         CALL PRJORT(WORK(KBUF),WORK(KIBOS),
