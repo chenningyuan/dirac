@@ -1380,6 +1380,8 @@ C***********************************************************************
 #include "dcbprp.h"
 #include "dcbexp.h"
 C
+C     disabled until all problems are solved
+      return
       CALL PRSYMB(LUPRI,'-',76,0)
 C
       CALL TITLER('MP2 expectation values','*',124)

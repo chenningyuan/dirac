@@ -117,100 +117,6 @@ C
         CALL SCALT2(TMATRX2,NSTR(1,0,4))
       ENDIF
 C
-C     *****************************************
-C     ****** P A R A L L E L    C O D E  ******
-C     *****************************************
-C
-#if defined (VAR_MPI)
-      IF (PARCAL) THEN
-C
-C       Get hold of the slaves
-C       ( ITASK = 2 for parallel integral transformation )
-C
-        CALL DIRAC_PARCTL( 2 )
-C
-C       Initialize
-C
-        CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &               KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
-C
-C
-C     We send out all the tasks (shell pairs in this case) to the slaves
-C     - reverse order of IC and ISHLA to get better load balancing
-C       - S blocks are generally bigger than L blocks
-C       - if IBSTEP is big the load is generally larger for bigger ISHLA
-C         because ISHLB loop in TRDRV4 must end at ISHLA
-C
-C       FIXME: calculate IBSTEP dynamically based on number of nodes
-C       and size of shells.
-C       (currently, it is just an input parameter for the wizards)
-        MXIBSTEP = IPAR4BS
-        IF (MXIBSTEP .LE. 0) THEN
-C           ... determine MXIBSTEP based on number of nodes and
-C               number of shell pairs to give optimal load balancing
-C               (minimize N**5*nbstep in second half transformation
-C                while having work for all nodes) /LV+HJAaJ Aug 2001
-C     
-           MXIBSTEP = NTR4BSTEP(INTFLG,I2TYP,NODES)
-           WRITE(LUPRI,'(/A,I4)')
-     &     ' * Max no. of B shells in a task determined to be',
-     &     MXIBSTEP 
-        END IF      
-C    
-        CALL GETTIM(CPUBEF,WALLBEF)
-        DO IC = 2, 1, -1
-           WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
-           CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
-           IBUFMPI(1) = IC
-           IBUFMPI(2) = I2TYP
-           DO ISHLA = IASMAX, IASTRT, -1
-              IBUFMPI(3) = ISHLA
-              CALL GETTIM(CPUST,WALLST)
-              WRITE(LUPRI,'(3X,A,I4,A,F14.2,A)')
-     &           '- Starting shell A no. ',ISHLA,' after ',
-     &           WALLST - WALLBEF,' seconds.'
-              CALL FLSHFO(LUPRI)
-C             Distribute number of B's evenly
-              NBSTEP = (ISHLA-IBSTRT)/MXIBSTEP + 1
-              IBSTEP = -(ISHLA-IBSTRT)/NBSTEP - 1
-           DO IBEND = ISHLA, IBSTRT, IBSTEP
-C
-              ISHLB = MAX(IBEND+IBSTEP+1,IBSTRT)
-              IBUFMPI(4) = ISHLB
-              IBUFMPI(5) = IBEND
-C
-              CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                      MPI_COMM_WORLD,ISTAT,IERR)
-              NWHO = ISTAT(MPI_SOURCE)
-              IF (ITEST .EQ. 0) THEN
-C             ... slave wants new set of A,B shells
-                 IF (IPRINT .GE. 3) THEN
-                    CALL GETTIM(CPUST,WALLST)
-                    WRITE(LUPRI,'(3X,4(A,I4),A,F10.2,A)')
-     &              '- Sending shells (',ISHLA,',',ISHLB,
-     &              '-',IBEND,') to node',NWHO,
-     &              ' after',WALLST-WALLBEF,' seconds'
-                    CALL FLSHFO(LUPRI)
-                 END IF
-                 CALL MPI_SEND(IBUFMPI,5,MPI_INTEGER,NWHO,30,
-     &                         MPI_COMM_WORLD,IERR)
-              ELSE IF (ABS(ITEST) .LE. 2) THEN
-C             ... slave wants to lock or free file
-                 CALL QUIT('lock/free file not implemented yet')
-              ELSE
-                 CALL QUIT('Illegal ITEST')
-              END IF
-           ENDDO
-           ENDDO
-        ENDDO
-C
-C       Get the slaves out of the transformation loop
-C       and receive final results
-C
-        CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,DUM,DUM,WALLBEF)
-      ELSE
-#endif
-C
 C     *************************************
 C     ****** S E R I A L    C O D E  ******
 C     *************************************
@@ -243,9 +149,6 @@ C
      &                   TMATRX1,TMATRX2,WORK(KXAOMO),WORK(KZAOMO))
            ENDDO            
         ENDDO               
-#if defined (VAR_MPI)
-      ENDIF                 
-#endif        
 C             
 C     +-----------------------------------------------------------+ 
 C     |                                                           |
@@ -284,11 +187,6 @@ C
       IF(SCRTRA.GT.D0) THEN
         CALL ST4SCR(DINTSKP)
       ENDIF
-C
-C     Release the slaves if we run in parallel.
-C        ( ITASK = -1 )
-C     
-      IF (PARCAL) CALL DIRAC_PARCTL( -1 )
 C
       CALL MEMREL('TRDR5T2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRDR5T')

@@ -747,7 +747,7 @@ C
       DUM = DUMMY
 C     
       CALL GETTIM(CPU1,WALL1)
-      CALL TRAHI(IPRTRA,3)
+      CALL TRAHI(IPRTRA,5)
 C     
 C     Define number of double quaternionic classes
 C     
@@ -1422,6 +1422,8 @@ C
       ELSEIF (IMODUL.EQ.4) THEN
          CALL TITLER('Transformation of MCSCF 2-electron integrals',
      &        '*',116)
+      ELSEIF (IMODUL.EQ.5) THEN
+         CALL TITLER('Formation of Lagrangian','*',116)
       ENDIF
 C
       IF (SMLV1C)
@@ -1440,7 +1442,7 @@ C
      &        (FREP(I),(NFBAS(I,J),J=0,2),I = 1,NFSYM)
       ENDIF
 C
-      IF (IMODUL .NE. 4) THEN
+      IF (IMODUL .NE. 4 ) THEN
          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
          IF (.NOT.TOBE) THEN
             WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
