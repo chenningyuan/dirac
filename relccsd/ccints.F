@@ -793,6 +793,7 @@ C
 C
 C     Expand to the full list
 C
+      IF(FOCKSP) THEN
       NZE = 0 
       DO 50 INZ = 1, NZ
          KKR = INDK(INZ)
@@ -815,41 +816,6 @@ C
                   K = K1
                   L = L1
                   DO 10 ICC = 1, -1, -2
-                     IF (.NOT.FOCKSP) THEN
-                       JLIND = INDEX(J,L,4,1)
-                       IKIND = INDEX(I,K,4,1)
-                       IF (JLIND.NE.0.AND.I.NE.K) THEN 
-C                         Canonical integral : Direct or exchange
-                          NZE = NZE + 1
-                          IF (IKIND.NE.0) THEN  
-C                            Contribution to direct part
-                             ITYP = (INDEX(J,L,1,1)-1)*4+INDEX(I,K,1,1)
-                             IBUF(1,NZE) = ITYP
-                             IBUF(2,NZE) = INDEX(J,L,3,1)
-                             IBUF(3,NZE) = INDEX(J,L,4,1)
-                             IBUF(4,NZE) = INDEX(I,K,4,1)
-                             IBUF(5,NZE) = IJSG * KLSG
-                             IBUF(6,NZE) = ICC * IJSG * KLSG
-                             IBUF(7,NZE) = INZ
-C                            Skip unnecessary integrals
-                             IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
-                           ELSE
-C                            Contribution to exchange part
-                             ITYP = (INDEX(J,L,1,1)-1)*4+INDEX(K,I,1,1)
-                             ITYP = - ITYP
-                             IBUF(1,NZE) = ITYP
-                             IBUF(2,NZE) = INDEX(J,L,3,1)
-                             IBUF(3,NZE) = INDEX(J,L,4,1)
-                             IBUF(4,NZE) = INDEX(K,I,4,1)
-                             IBUF(5,NZE) = IJSG * KLSG
-                             IBUF(6,NZE) = ICC * IJSG * KLSG
-                             IBUF(7,NZE) = INZ
-C                            Skip unnecessary integrals
-                             ITYP = - ITYP
-                             IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
-                           ENDIF
-                       ENDIF
-                     ELSE
 C
 C                     One integral can contribute to a maximum of
 C                     16 classes in Fock space CC calculations
@@ -895,7 +861,6 @@ C                         Skip unnecessary integrals
                         ENDIF
                       ENDDO
                       ENDDO
-                     ENDIF
                      J = I1
                      I = J1
                      L = K1
@@ -915,6 +880,85 @@ C                         Skip unnecessary integrals
             IJSG = IJSIGN
    40    CONTINUE
    50 CONTINUE
+      ELSE
+C
+C     Expand to the full list
+C
+      NZE = 0 
+      DO 150 INZ = 1, NZ
+         KKR = INDK(INZ)
+         LKR = INDL(INZ)
+         I0 = KR(IKR)
+         J0 = KR(JKR)
+         IJSG = 1
+         DO 140 ITR1 = 1, 2
+            K0 = KR(KKR)
+            L0 = KR(LKR)
+            KLSG = 1
+            DO 130 ITR2 = 1, 2
+               I1 = I0
+               J1 = J0
+               K1 = K0
+               L1 = L0
+               DO 120 IPI = 1, 2
+                  I = I1
+                  J = J1
+                  K = K1
+                  L = L1
+                  DO 110 ICC = 1, -1, -2
+                       JLIND = INDEX(J,L,4,1)
+                       IKIND = INDEX(I,K,4,1)
+                       IF (JLIND.NE.0.AND.I.NE.K) THEN 
+C                         Canonical integral : Direct or exchange
+                          NZE = NZE + 1
+                          IF (IKIND.NE.0) THEN  
+C                            Contribution to direct part
+                             ITYP = (INDEX(J,L,1,1)-1)*4+INDEX(I,K,1,1)
+                             IBUF(1,NZE) = ITYP
+                             IBUF(2,NZE) = INDEX(J,L,3,1)
+                             IBUF(3,NZE) = INDEX(J,L,4,1)
+                             IBUF(4,NZE) = INDEX(I,K,4,1)
+                             IBUF(5,NZE) = IJSG * KLSG
+                             IBUF(6,NZE) = ICC * IJSG * KLSG
+                             IBUF(7,NZE) = INZ
+C                            Skip unnecessary integrals
+                             IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                           ELSE
+C                            Contribution to exchange part
+                             ITYP = (INDEX(J,L,1,1)-1)*4+INDEX(K,I,1,1)
+                             ITYP = - ITYP
+                             IBUF(1,NZE) = ITYP
+                             IBUF(2,NZE) = INDEX(J,L,3,1)
+                             IBUF(3,NZE) = INDEX(J,L,4,1)
+                             IBUF(4,NZE) = INDEX(K,I,4,1)
+                             IBUF(5,NZE) = IJSG * KLSG
+                             IBUF(6,NZE) = ICC * IJSG * KLSG
+                             IBUF(7,NZE) = INZ
+C                            Skip unnecessary integrals
+                             ITYP = - ITYP
+                             IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                           ENDIF
+                       ENDIF
+                     J = I1
+                     I = J1
+                     L = K1
+                     K = L1
+  110             CONTINUE
+                  I1 = K0
+                  J1 = L0
+                  K1 = I0
+                  L1 = J0
+  120          CONTINUE
+               K0 = KR(-LKR)
+               L0 = KR(-KKR)
+               KLSG = SIGN(1,KKR*LKR) * ITRSGN
+  130       CONTINUE
+            I0 = KR(-JKR)
+            J0 = KR(-IKR)
+            IJSG = IJSIGN
+  140    CONTINUE
+  150 CONTINUE
+      ENDIF
 C
       RETURN
 10010 CALL QUIT('ERROR READING 2-E INTEGRALS')
