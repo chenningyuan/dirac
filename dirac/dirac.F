@@ -249,7 +249,7 @@ C
 C     Impose gang scheduling to avoid problems with idle nodes
 C     when high system load
 C
-      IF(MYTID.EQ.0.AND.SCHEDCTL(SCHEDMODE,SYS_GANG,0).LT.0) THEN
+      IF(MYTID.EQ.0.AND.SCHEDCTL(SCHEDMODE,SGS_GANG,0).LT.0) THEN
         WRITE(LUPRI,'(A)') '*** ERROR(DIRAC) gang scheduling '
         CALL QUIT('Error in gang scheduling !')   
       ENDIF
