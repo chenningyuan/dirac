@@ -425,12 +425,12 @@ C            Print section
              IF(IPRXRS.GE.8) THEN
                IREP = JSYMOP - 1
                WRITE(LUPRI,'(A,I5)') 
-     &           '* GMOLI2: inactive (e-e) G-matrix (AO-basis) no.:',I
+     &           '* GMOLI3: inactive (e-e) G-matrix (AO-basis) no.:',I
                CALL PRQMAT(FAO(1,IM),NTBAS(0),NTBAS(0),
      &                     NTBAS(0),NTBAS(0),NZ,
      &                     IPQTOQ(1,IREP),LUPRI)
                WRITE(LUPRI,'(A,I5)') 
-     &           '* GMOLI2: inactive (e-e) G-matrix (MO-basis) no.:',I
+     &           '* GMOLI3: inactive (e-e) G-matrix (MO-basis) no.:',I
                CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
      &                     IPQTOQ(1,IREP),LUPRI)
              ENDIF
@@ -447,12 +447,12 @@ C            Print section
              IF(IPRXRS.GE.8) THEN
                IREP = JSYMOP - 1
                WRITE(LUPRI,'(A,I5)') 
-     &           '* GMOLI2: active (e-e) G-matrix (AO-basis) no.:',I
+     &           '* GMOLI3: active (e-e) G-matrix (AO-basis) no.:',I
                CALL PRQMAT(FAO(1,IM),NTBAS(0),NTBAS(0),
      &                     NTBAS(0),NTBAS(0),NZ,
      &                     IPQTOQ(1,IREP),LUPRI)
                WRITE(LUPRI,'(A,I5)') 
-     &           '* GMOLI2: active (e-e) G-matrix (MO-basis) no.:',I
+     &           '* GMOLI3: active (e-e) G-matrix (MO-basis) no.:',I
                CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
      &                     IPQTOQ(1,IREP),LUPRI)
              ENDIF
@@ -473,12 +473,12 @@ C            Print section
              IF(IPRXRS.GE.8) THEN
                IREP = JSYMOP - 1
                WRITE(LUPRI,'(A,I5)') 
-     &           '* GMOLI2: (e-p) G-matrix (AO-basis) no.:',I
+     &           '* GMOLI3: (e-p) G-matrix (AO-basis) no.:',I
                CALL PRQMAT(FAO(1,IM),NTBAS(0),NTBAS(0),
      &                     NTBAS(0),NTBAS(0),NZ,
      &                     IPQTOQ(1,IREP),LUPRI)
                WRITE(LUPRI,'(A,I5)') 
-     &           '* GMOLI2: (e-p) G-matrix (MO-basis) no.:',I
+     &           '* GMOLI3: (e-p) G-matrix (MO-basis) no.:',I
                CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
      &                     IPQTOQ(1,IREP),LUPRI)
              ENDIF
@@ -492,12 +492,12 @@ C            Print section
              IF(IPRXRS.GE.8) THEN
                IREP = JSYMOP - 1
                WRITE(LUPRI,'(A,I5)') 
-     &           '* GMOLI2: (e-p) G-matrix (AO-basis) no.:',I
+     &           '* GMOLI3: (e-p) G-matrix (AO-basis) no.:',I
                CALL PRQMAT(FAO(1,IM),NTBAS(0),NTBAS(0),
      &                     NTBAS(0),NTBAS(0),NZ,
      &                     IPQTOQ(1,IREP),LUPRI)
                WRITE(LUPRI,'(A,I5)') 
-     &           '* GMOLI2: (e-p) G-matrix (MO-basis) no.:',I
+     &           '* GMOLI3: (e-p) G-matrix (MO-basis) no.:',I
                CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
      &                     IPQTOQ(1,IREP),LUPRI)
              ENDIF
@@ -782,7 +782,7 @@ C                     1   active density matrix
 C
 C     We define: DB_{ab} = c_{as}B_{si}c_{bi}^*
 C                a,b - AO-indices
-C                s   - all indeces (electronic or positronic)
+C                s   - all indices (electronic or positronic)
 C                i   - inactive index
 C
 C     IH   = 1        Hermitian density matrix:  DMAT = -[DB + DB^+]
@@ -836,14 +836,14 @@ C       Parameters for first index
 C
         IF (.NOT. LBIT(ITYP,1)) THEN
 C
-C         electronic indeces...
+C         electronic indices...
 C
           NS = NESH(I1)
           IS = IORB(I1) + NPSH(I1) + 1
           JS = ICMOQ(I1) + NPSH(I1)*NFBAS(I1,0) + 1
         ELSE
 C
-C         or positronic indeces...
+C         or positronic indices...
 C
           NS = NPSH(I1)
           IS = IORB(I1) + 1
@@ -1375,14 +1375,14 @@ C       Parameters for first index
 C
         IF (.NOT. LBIT(ITYP,1)) THEN
 C
-C         electronic indeces...
+C         electronic indices...
 C
           NS = NESH(I1)
           IS = IORB(I1) + NPSH(I1) + 1
           JS = ICMOQ(I1) + NPSH(I1)*NFBAS(I1,0) + 1
         ELSE
 C
-C         or positronic indeces...
+C         or positronic indices...
 C
           NS = NPSH(I1)
           IS = IORB(I1) + 1
@@ -1418,14 +1418,14 @@ C       Parameters for first index
 C
         IF (.NOT. LBIT(ITYP,1)) THEN
 C
-C         or positronic indeces...
+C         positronic indices...
 C
           NS = NPSH(I1)
           IS = IORB(I1) + 1
           JS = ICMOQ(I1) + 1
         ELSE
 C
-C         electronic indeces...
+C         or electronic indices...
 C
           NS = NESH(I1)
           IS = IORB(I1) + NPSH(I1) + 1
