@@ -1332,7 +1332,7 @@ C
 C
       CALL QEXIT('GETLR1')
       RETURN
- 1000 FORMAT(/A,I2,A,I2,A,F16.10,A,3X,A2,A,F16.10,A)
+ 1000 FORMAT(/A,I2,A,I2,A,E16.8,A,3X,A2,A,F16.10,A)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XLROUT */
