@@ -2179,7 +2179,12 @@ C
 C     Get Cauchy-Schwartz integrals
 C
       CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
-      CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
+      IJOB   = 0
+      ITYPE  = 0
+      IGTYP  = 1
+      MAXDF = 0
+      CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDF,
+     &     IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
 C
 C     Get screening matrices
 C

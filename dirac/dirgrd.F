@@ -1033,46 +1033,31 @@ C
          CALL RTROINI(.TRUE.)
          CALL TROINV(WORK(KFREE),LFREE)
          RELGRD = .FALSE.
-C        Make GAB matrices
 C
-C     Differentiated integrals
-         IJOB   = 0
-         IGTYP  = 1
-         ITYPE  = 10
-         MAXDF  = 2
-C     Misc.
-         JATOM  = 0
-         NOCONT = .FALSE.
-         CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDF,JATOM,NOCONT,
-     &               IPRINT,WORK(KFREE),LFREE)
-C
-C        Also undifferentiated integrals are necessary
-C        So first call GABGEN to produce these, if they are
-C           not already existing.
-C
-C        Undifferentiad integrals
-         IJOB   = 0
-         IGTYP  = 1
-         ITYPE  = 0
-         MAXDF  = 0
-         JATOM  = 0
-         NOCONT = .FALSE.
-         CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDF,JATOM,NOCONT,
-     &               IPRINT,WORK(KFREE),LFREE)
-C
-C        Read in GAB matrices
+C        Read/generate undiff. GAB matrices
 C
          N2GAB   = NSYMBL*NSYMBL
          CALL MEMGET ('REAL',KGABRAO, 4 * N2GAB, WORK, KFREE, LFREE )
 C
          IOFF = 0
-         GABLAB = 'GABAOXXX'
-         CALL GETGAB(WORK(KGABRAO+IOFF),GABLAB,N2GAB,WORK(KFREE),LFREE)
+C
+         IJOB   = 0
+         ITYPE  = 0
+         IGTYP  = 1
+         MAXDF = 0
+         CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDF,
+     &        IPRINT,WORK(KGABRAO+IOFF),WORK(KFREE),LFREE)
+C
+C        Read/generate diff. GAB matrices
+C
          IOFF = IOFF + N2GAB
          DO I = 1,3
-            GABLAB = 'GABAOX2'//CHRXYZ(-I)
-            CALL GETGAB(WORK(KGABRAO+IOFF),GABLAB,N2GAB,
-     &           WORK(KFREE),LFREE)
+            IJOB   = 0
+            ITYPE  = 10
+            IGTYP  = 1
+            MAXDF  = 2
+            CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDF,
+     &           IPRINT,WORK(KGABRAO+IOFF),WORK(KFREE),LFREE)
             IF (IPRINT.GE.10) THEN
                CALL HEADER('DHFGRD: GABRAO-matrix ('//CHRXYZ(I)//')',-1)
                CALL OUTPUT(WORK(KGABRAO+IOFF),1,NSYMBL,1,NSYMBL,

@@ -214,7 +214,6 @@ C
 #include <dcbbas.h>
 #include <hrunit.h>
       DIMENSION WORK(LWORK)
-      LOGICAL NOCONT
 C
 C     Initialize COMMON BLOCKS
 C     ========================
@@ -252,20 +251,6 @@ C
       NBIT2   = 2**(2*NBITS)
       IBIT1   = NBIT1 - 1
       IBIT2   = NBIT2 - 1
-C
-C     If direct run, generate G(ab) matrix
-C     and write to AOPROPER
-C     ====================================
-C
-      IF(IDFLAG.NE.0) THEN
-        IRNTYP = 0
-        MAXDIF = 0
-        IGTYP  = 1
-        IJOB   = 0
-        NOCONT = .FALSE.
-        CALL GABGEN(IJOB,IRNTYP,IGTYP,MAXDIF,0,NOCONT,
-     &              IPRTWO,WORK,LWORK)
-      ENDIF
 C
 C     Calculate integrals to be stored on disk
 C     ========================================
@@ -3178,7 +3163,12 @@ C
 C     Get G(ab) integrals from AOPROPER
 C     =================================
 C
-      CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
+      IJOB   = 0
+      ITYPE  = 0
+      IGTYP  = 1
+      MAXDIF = 0
+      CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
+     &     IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
 C
       IF(NBSYM.GT.1) THEN
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
@@ -3307,14 +3297,6 @@ Ctec Is FIRST needed???
       CALL SETFCK(IFCTYP,IREPDM,NFMAT,4,ISYMOP,IHRMOP,IFCKOP,IPRINT)
       CALL DZERO(DNTSKP,8)
       IF(SCRFCK.GT.D0) THEN
-C
-C       Get G(ab)-matrix from AOPROPER
-C       ==============================
-C       GAB is already present i GABRAO
-C
-#ifdef UNDEF
-        CALL GETGAB(GABRAO         ,'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
-#endif 
 C
 C       Make reduced density matrix for screening
 C       =========================================
@@ -3827,7 +3809,12 @@ C
 C     Get G(ab) integrals from AOPROPER
 C     =================================
 C
-      CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
+      IJOB   = 0
+      ITYPE  = 0
+      IGTYP  = 1
+      MAXDIF = 0
+      CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
+     &     IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
 C
       CALL DIRSO1(FMAT,DSO,NFMAT,
      &            WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,

@@ -101,10 +101,15 @@ C
 C     Get Cauchy-Schwartz integrals if screening
 C
       IF(SCRTRA.GT.D0) THEN
-        N2GAB   = NSYMBL*NSYMBL
-        CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
-        CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
-        CALL DZERO(DINTSKP,8)
+         N2GAB   = NSYMBL*NSYMBL
+         CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
+         IJOB   = 0
+         ITYPE  = 0
+         IGTYP  = 1
+         MAXDF = 0
+         CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDF,
+     &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
+         CALL DZERO(DINTSKP,8)
       ELSE
         KGAB = KFREE
       ENDIF
