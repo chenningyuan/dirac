@@ -421,6 +421,7 @@ C                 skip contiuation lines for contraction coeff.
                      READ (LUBAS,*)
                   END DO
                   CPRIMU(J,J,NBLOCK) = 1.0D0
+                  GOTO 20
                ELSE
 C     
 C     Getting the format for the read statement right.
@@ -486,6 +487,12 @@ C
             GOTO 20
          END IF
       ELSE
+C
+C        For uncontracted basis sets, update INTORB.
+C
+         IF ( INTORB .LE. 0 ) 
+     &      INTORB = INTEXP
+C
 C     
 C Read all of the primitives, and the coeffecients
 C If this is some kind of augmented basis set, we augment it here, kr-96
