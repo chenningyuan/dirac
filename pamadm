@@ -730,6 +730,7 @@ which_modules()
 #  
 #
 MODS="$ERIFLG $DFTFLG $ESRFLG $XQRFLG $XPPFLG"
+#for ibm MODS="$ERIFLG,$DFTFLG,$ESRFLG,$XQRFLG,$XPPFLG"
 dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"

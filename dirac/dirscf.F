@@ -99,7 +99,7 @@ C     Memory deallocation
 C
       CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      IF (.NOT. WFCONV) THEN
+      IF (.NOT.WFCONV(1) .AND. .NOT.WFCONV(2)) THEN
 C        ... DHF not converged;
          IF (.NOT.NOSTOP) THEN
           WRITE (LUPRI,'(//A)')
@@ -107,7 +107,7 @@ C        ... DHF not converged;
           CALL QUIT('Dirac-Hartree-Fock not converged')
          ELSE
           WRITE (LUPRI,'(//A)')
-     &    'WARNING, DHF not converged, post-SCF run is continuing !'
+     &    'WARNING, DHF not converged, but post-SCF run is continuing !'
           WRITE (LUPRI,'(A)')
      &    'Check the MO convergence!'
          ENDIF
@@ -690,7 +690,8 @@ C     Solve one-electron system ...
 C     =============================
 C
         CALL PREDHF(CMO,EIG,IBEIG,FOCK,DUM,DUM,IDUM,WORK,LWORK)
-        WFCONV = .TRUE.
+        WFCONV(1) = .TRUE.
+        WFCONV(2) = .TRUE.
       ELSE
 C
 C     ... or perform SCF-cycle

@@ -769,7 +769,8 @@ C
       ERGCNV    = .FALSE.
       EVCCNV    = .TRUE.
       FCKCNV    = .FALSE.
-      WFCONV    = .FALSE.
+      WFCONV(1) = .FALSE.
+      WFCONV(2) = .FALSE.
       EXIT      = .FALSE.
       TRIVEC    = .TRUE.
       TRIFCK    = .FALSE.
@@ -811,7 +812,8 @@ C
 C     Initialize /CBRDHF/
 C     ===================
 C
-      SCFCNV    = 1.0D-6
+      SCFCNV(1) = 1.0D-7
+      SCFCNV(2) = 1.0D-6
       ERGVAL    = DUMMY
       EVCVAL    = D0
       FCKVAL    = D0
@@ -894,21 +896,36 @@ C&&& MAXITR: Maximum number of SCF-iterations
                GO TO 100
     4          CONTINUE
 C&&& ERGCNV: Convergence on energy difference
-                  READ(LUCMD,*) SCFCNV
+                  READ(LUCMD,'(A80)') LINE
+                  READ(LINE,*,END=41,ERR=41) SCFCNV(1),SCFCNV(2)
+                  GOTO 42
+   41             READ(LINE,*) SCFCNV(1)
+                  SCFCNV(2) = SCFCNV(1)
+   42             CONTINUE
                   EVCCNV = .FALSE.
                   ERGCNV = .TRUE.
                   FCKCNV = .FALSE.
                GO TO 100
     5          CONTINUE
 C&&& EVCCNV: Convergence on approximate gradient (error vector)
-                  READ(LUCMD,*) SCFCNV
+                  READ(LUCMD,'(A80)') LINE
+                  READ(LINE,*,END=51,ERR=51) SCFCNV(1),SCFCNV(2)
+                  GOTO 52
+   51             READ(LINE,*) SCFCNV(1)
+                  SCFCNV(2) = SCFCNV(1)
+   52             CONTINUE
                   EVCCNV = .TRUE.
                   ERGCNV = .FALSE.
                   FCKCNV = .FALSE.
                GO TO 100
     6          CONTINUE
 C&&& FCKCNV: Convergence on total Fock matrix
-                  READ(LUCMD,*) SCFCNV
+                  READ(LUCMD,'(A80)') LINE
+                  READ(LINE,*,END=61,ERR=61) SCFCNV(1),SCFCNV(2)
+                  GOTO 62
+   61             READ(LINE,*) SCFCNV(1)
+                  SCFCNV(2) = SCFCNV(1)
+   62             CONTINUE
                   EVCCNV = .FALSE.
                   ERGCNV = .FALSE.
                   FCKCNV = .TRUE.
@@ -1306,17 +1323,20 @@ C
       WRITE(LUPRI,'(1X,A,I4)')
      +   '* Maximum number of iterations: ',MAXITR
       IF(ERGCNV) THEN
-        WRITE(LUPRI,'(1X,A,/,1X,A,1P,D9.2)')
+        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
      &    '* Convergence on total energy.',
-     &    '  Convergence threshold:',SCFCNV
+     &    '  Desired convergence :',SCFCNV(1),
+     &    '  Allowed convergence:',SCFCNV(2)
       ELSEIF(FCKCNV) THEN
-        WRITE(LUPRI,'(1X,A,/,1X,A,1P,D9.2)')
+        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
      &    '* Convergence on total Fock matrix.',
-     &    '  Convergence threshold:',SCFCNV
+     &    '  Desired convergence:',SCFCNV(1),
+     &    '  Allowed convergence:',SCFCNV(2)
       ELSEIF(EVCCNV) THEN
-      WRITE(LUPRI,'(1X,A,/,1X,A,1P,D9.2)')
-     &    '* Convergence on error vector(approximate gradient).',
-     &    '  Convergence threshold:',SCFCNV
+        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+     &'* Convergence on norm of error vector (gradient).',
+     &'  Desired convergence:',SCFCNV(1),
+     &'  Allowed convergence:',SCFCNV(2)
       ENDIF
       WRITE(LUPRI,'(1X,A)') '***** CONVERGENCE CONTROL *****'
       IF(DODSCF) THEN

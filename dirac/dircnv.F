@@ -114,8 +114,14 @@ C
       ELSEIF(EVCCNV) THEN
         CONVRG = EVCVAL
       ENDIF
-      IF(ABS(CONVRG).LT.SCFCNV) WFCONV = .TRUE.
-      IF(WFCONV.OR.(KITER.GT.MAXITR)) EXIT = .TRUE.
+C
+C     Check convergence : we have two tresholds, the first one
+C     is the desired treshold, the second one is the allowed
+C     upper limit for proceeding with post-HF calculations.
+C
+      IF(ABS(CONVRG).LT.SCFCNV(1)) WFCONV(1) = .TRUE.
+      IF(ABS(CONVRG).LT.SCFCNV(2)) WFCONV(2) = .TRUE.
+      IF(WFCONV(1).OR.(KITER.GT.MAXITR)) EXIT = .TRUE.
 C
 C     If wave function converged or EXIT is true, then
 C     return to avoid an extra diagonalization of the Fock matrix.

@@ -2288,9 +2288,9 @@ c     convergence and possibly screening thresholds (e.g. for MP2),
 C     and not just the SCF threshold which is used here.
 C
       IF ( EVCCNV .OR. FCKCNV ) THEN
-         THRGRD = SCFCNV
+         THRGRD = SCFCNV(1)
       ELSE
-         THRGRD = SQRT(SCFCNV)
+         THRGRD = SQRT(SCFCNV(1))
       END IF
 C 
       IF ((2.0D0*THRGRD) .GT. GRDTHR .AND. .NOT. CHGRDT) THEN

@@ -65,17 +65,20 @@ C
       IF(.NOT.ONESYS) THEN
         CALL HEADER('SCF - CYCLE',-1)
         IF(ERGCNV) THEN
-          WRITE(LUPRI,'(A,A,1P,D9.3)')
+          WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
      &      '* Convergence on total energy.',
-     &      ' Convergence threshold:',SCFCNV
+     &      '  Desired convergence :',SCFCNV(1),
+     &      '  Allowed convergence:',SCFCNV(2)
         ELSEIF(FCKCNV) THEN
-          WRITE(LUPRI,'(A,A,1P,D9.3)')
+          WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
      &      '* Convergence on total Fock matrix.',
-     &      ' Convergence threshold:',SCFCNV
+     &      '  Desired convergence:',SCFCNV(1),
+     &      '  Allowed convergence:',SCFCNV(2)
         ELSEIF(EVCCNV) THEN
-          WRITE(LUPRI,'(A,A,1P,D9.3)')
+          WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
      &  '* Convergence on norm of error vector (gradient).',
-     &   ' Convergence threshold:',SCFCNV
+     &  '  Desired convergence:',SCFCNV(1),
+     &  '  Allowed convergence:',SCFCNV(2)
         ENDIF
         WRITE(LUPRI,'(A)')
      &   '* ERGVAL - convergence in total energy',
@@ -96,9 +99,13 @@ C
    10   CONTINUE
         CLOSE(LUCYCL,STATUS='KEEP')
         CALL PRSYMB(LUPRI,'-',128,0)
-        IF(WFCONV) THEN
+        IF(WFCONV(1)) THEN
           WRITE(LUPRI,'(A,I5,A)')
      +       '* Convergence after ',NITER,' iterations'
+        ELSEIF (WFCONV(2)) THEN
+          WRITE(LUPRI,'(A,I5,A)')
+     +       '* Desired convergence limit not reached after ',NITER,
+     +       ' iterations but the current convergence is acceptable'
         ELSE
           WRITE(LUPRI,'(A,I5,A)')
      +       '* No convergence after ',NITER,' iterations'
