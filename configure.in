@@ -899,7 +899,7 @@ case $machine in
          ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}'"
       fi
       for mod in $MODS; do
-         cpp=`echo $cpp,$mod`
+         cpp=`echo $cpp $mod`
       done
       opt="-Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
       c_opt="-i 64 -a stack -dp"
