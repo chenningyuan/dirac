@@ -136,9 +136,9 @@ C     This solves the 2Gb problem on Linux.
       IF (NTKL.GT.60 000 000) THEN
          N2EFIL = N2EFIL + 1
          IF (N2EFIL.LT.10) THEN
-            WRITE (NEXTFIL,'(A7,I1)') 'MDC0',N2EFIL
+            WRITE (NEXTFIL,'(A4,I1)') 'MDC0',N2EFIL
          ELSEIF (N2EFIL.LT.100) THEN
-            WRITE (NEXTFIL,'(A6,I2)') 'MDC',N2EFIL
+            WRITE (NEXTFIL,'(A3,I2)') 'MDC',N2EFIL
          ELSE
             STOP "100 integral files is enough !"
          ENDIF
