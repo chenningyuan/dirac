@@ -100,7 +100,11 @@ C
 #include <aovec.h>
 #include <blocks.h>
 #include <molinp.h>
+#if defined (PRG_DIRAC)
+#include <dcbgen.h>
+#else
 #include <gnrinf.h>
+#endif
 #include <inforb.h>
 #include <infpar.h>
 C
@@ -248,7 +252,11 @@ C
 #include <mxorb.h>
 #include <aovec.h>
 #include <infpar.h>
+#if defined (PRG_DIRAC)
+#include <dcbgen.h>
+#else
 #include <gnrinf.h>
+#endif
 #include <blocks.h>
 #include <dcbfir.h>
 C
@@ -365,7 +373,11 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <mxorb.h>
+#if defined (PRG_DIRAC)
+#include <dcbgen.h>
+#else
 #include <gnrinf.h>
+#endif
 #include <molinp.h>
 #include <aovec.h>
 C
@@ -1101,7 +1113,11 @@ C
 #include <inforb.h>
 #include <infpar.h>
 #include <molinp.h>
+#if defined (PRG_DIRAC)
+#include <dcbgen.h>
+#else
 #include <gnrinf.h>
+#endif
 C
       DIMENSION WORK(MWORK),DINTSKP(2,4)
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
@@ -1240,7 +1256,11 @@ C
 #include <dorps.h>
 #include <abainf.h>
 #include <symmet.h>
+#if defined (PRG_DIRAC)
+#include <dcbgen.h>
+#else
 #include <gnrinf.h>
+#endif
 #include <molinp.h>
 #include <nuclei.h>
 #include <infpar.h>
@@ -2096,7 +2116,7 @@ C
       MTAG = ABS(NTAG)
       WRITE(6,'(/1X,A)') FAILS(MTAG)
 C
-#if defined (VAR_PVM)
+#ifdef VAR_PVM
       CALL PVMFEXIT(INFO)
       CALL QUIT('Error detected in PVM. Please consult sirius output!')
 #endif
