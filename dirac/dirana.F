@@ -894,7 +894,7 @@ C
 C
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
-      DIMENSION GROSS(2,0:2,MAXREF)
+      DIMENSION GROSS(2,0:2,MAXREF),POL(2)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
      &          KE(2,2),KQ(2,2),NVECS(2,2),NQ(2),NE(2)
 C
@@ -1067,6 +1067,7 @@ C
       CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
       CALL GTOVLT(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
       IS = KSMAT
+      POLT = D0
       DO IFRP = 1,NFSYM
         CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
         KBUF   = KFREE
@@ -1090,7 +1091,8 @@ C
         ENDDO
         CALL PRJAN1(IFRP,NMOL,NREF,KQ,KE,WORK(KAMAT),WORK(KBVEC),
      &       WORK(KGVEC),WORK(KVEC(IFRP,0)),WORK(KJREF),NSTR,
-     &       WORK(IS),WORK(KIPIV),GROSS,WORK,KFREE,LFREE)
+     &       WORK(IS),WORK(KIPIV),GROSS,POL(IFRP),WORK,KFREE,LFREE)
+        POLT = POLT + POL(IFRP)
         IS = IS + N2BAS(IFRP)
         CALL MEMREL('PRJANA.loop',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDDO
@@ -1105,8 +1107,8 @@ C
      &        'P - '   ,(GROSS(1,1,I)+GROSS(2,1,I))
           GTOT = GTOT + GROSS(1,0,I)+GROSS(2,0,I)
         ENDDO
-        POL = D2*(NVECS(1,1)+NVECS(2,1))-GTOT
-        WRITE(LUPRI,'(3X,A,F10.4)') 'Polarization: ',POL
+CTROND        POLT = D2*(NVECS(1,1)+NVECS(2,1))-GTOT
+        WRITE(LUPRI,'(3X,A,F10.4)') 'Polarization: ',POLT
       ENDIF
       CALL MEMREL('PRJANA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
@@ -1115,7 +1117,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjan1 */
       SUBROUTINE PRJAN1(IFRP,NMOL,NREF,KQ,KE,AMAT,BVEC,GVEC,
-     &           JMOL,JREF,NSTR,SMAT,IPIVOT,GROSS,WORK,KFREE,LFREE)
+     &           JMOL,JREF,NSTR,SMAT,IPIVOT,GROSS,POL,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Projection analysis for fermion ircop IFRP
@@ -1125,7 +1127,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,DC=1.0D-2)
+      PARAMETER(D0=0.0D0,DC=1.0D-2,D2=2.0D0)
 C
 #include "dcbprj.h"
 #include "dgroup.h"
@@ -1152,6 +1154,7 @@ C
      &            WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NREF,NZ,IPQTOQ(1,0),
      &            WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NMOL,NZ,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRPRJ)
+      CALL MEMGET('REAL',KOCC,NMOL,WORK,KFREE,LFREE)
       IF(NREFS.GT.1) THEN
 C
 C       If requested , print raw projection coefficients
@@ -1161,7 +1164,7 @@ C
      &     '* Raw projection coefficients for fermion ircop ',FREP(IFRP)
           CALL ANAPR2(IFRP,.FALSE.,NREF,NMOL,SMAT,GVEC,AMAT,BVEC,
      &            JMOL,WORK(KE(IFRP,1)),NSTR,
-     &            JREF,WORK(KE(IFRP,2)),GROSS)
+     &            JREF,WORK(KE(IFRP,2)),GROSS,WORK(KOCC),POL)
         ENDIF
 C
 C       Make overlap matrix
@@ -1195,16 +1198,16 @@ C       Solve linear system by Cholesky decomposition
 C       with full pivoting
 C        --> notice that overlap matrix SMAT is destroyed !
 C
-      JOB = 1
-      CALL QCHOLD(AMAT,NREF,NZ,NREF,NREF,SMAT,PTOL,NEFF,JOB,IPIVOT)
-      CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZ,NREF,NREF,SMAT,BVEC,
-     &     NREF,NMOL,BVEC,NREF,NMOL,JOB,IPIVOT,SMAT(1+NREF))
-      IF(NEFF.LT.NREF) THEN
-        WRITE(LUPRI,'(A,A)') '* WARNING: ',
-     &   ' linear dependencies detected in Cholesky decomposition'
-        WRITE(LUPRI,'(11X,A,I5,A,I5)') 
-     &   ' Reduced dimensionality: ',NREF,' --> ',NEFF
-      ENDIF
+        JOB = 1
+        CALL QCHOLD(AMAT,NREF,NZ,NREF,NREF,SMAT,PTOL,NEFF,JOB,IPIVOT)
+        CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZ,NREF,NREF,SMAT,BVEC,
+     &       NREF,NMOL,BVEC,NREF,NMOL,JOB,IPIVOT,SMAT(1+NREF))
+        IF(NEFF.LT.NREF) THEN
+          WRITE(LUPRI,'(A,A)') '* WARNING: ',
+     &     ' linear dependencies detected in Cholesky decomposition'
+          WRITE(LUPRI,'(11X,A,I5,A,I5)') 
+     &     ' Reduced dimensionality: ',NREF,' --> ',NEFF
+        ENDIF
 C
 C       Restore overlap matrix
 C
@@ -1215,7 +1218,7 @@ C     Population analysis
 C
       CALL ANAPR2(IFRP,DOPOP,NREF,NMOL,SMAT,GVEC,AMAT,BVEC,
      &            JMOL,WORK(KE(IFRP,1)),NSTR,
-     &            JREF,WORK(KE(IFRP,2)),GROSS)
+     &            JREF,WORK(KE(IFRP,2)),GROSS,WORK(KOCC),POL)
 C
       CALL MEMREL('PRJAN1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
@@ -1261,7 +1264,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
       SUBROUTINE ANAPR2(IFRP,DOPOP,NREF,NMOL,PMAT,GVEC,AMAT,BVEC,
-     &            JMOL,EMOL,NSTR,JREF,EREF,GROSS)
+     &            JMOL,EMOL,NSTR,JREF,EREF,GROSS,OCC,POL)
 C*****************************************************************************
 C
 C
@@ -1293,7 +1296,7 @@ C
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NREF,NREF,NZ),
      &          BVEC(NREF,NMOL,NZ),JMOL(*),EMOL(*),
-     &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*)
+     &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*),OCC(*)
       DIMENSION P(4),OTYP(2)
 
       DATA OTYP/'E','P'/
@@ -1309,15 +1312,36 @@ C
 C
 C     Loop over molecular orbitals
 C
+      CALL DZERO(OCC,NMOL)
       DO 10 K = 1,NMOL
         FMT = MXFORM(EMOL(K),16)
         IF(K.GT.NSTR(IFRP,2,0)) THEN
-          WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
-     +      '* Electronic eigenvalue nr.',JMOL(K),': ',EMOL(K)
+c
+c         Find fractional occupation for each requested orbital string
+c
+          NVORB =  NISH(IFRP)
+          DO IOPEN=1,NOPEN
+c       ... open shell
+             NVORB =  NVORB + NACSH(IFRP,IOPEN)
+             IF (JMOL(K).GT.NISH(IFRP).AND.JMOL(K).LE.NVORB) THEN
+               OCC(K) = DF(IOPEN)
+               GO TO 11
+             ENDIF
+          END DO
+          IF (JMOL(K).GT.0.AND.JMOL(K).LE.NISH(IFRP)) THEN
+c       ... closed shell
+             OCC(K) = DF(0)
+          ENDIF
+ 11       CONTINUE
+          WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+     +       '* Electronic eigenvalue nr.',JMOL(K),': ',
+     &       EMOL(K),'       (Occupation : f = ',OCC(K),')'
+
         ELSE
           KK  = NPSH(IFRP)+1+JMOL(K)
-          WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
-     &      '* Positronic eigenvalue nr.',KK,': ',EMOL(K)
+          WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+     +       '* Positronic eigenvalue nr.',KK,': ',
+     &       EMOL(K),'       (Occupation : f = ',OCC(K),')'
         ENDIF
         CALL PRSYMB(LUPRI,'=',48,0)
         WRITE(LUPRI,100) 'Orbital','Total','Eigenvalue',
@@ -1411,7 +1435,8 @@ C
         ENDIF
         WRITE(LUPRI,'(A)') '* Gross contributions:'
         CALL GROSSC(GROSS,NREFS,IFRP,NREF,D1,GVEC(1,2),NSTR,REFFIL)
-        CALL DAXPY((NREF+1),D2,GVEC(1,2),1,GVEC(1,1),1)
+        FACTOR  = D2*OCC(K)
+        CALL DAXPY((NREF+1),FACTOR,GVEC(1,2),1,GVEC(1,1),1)
   10  CONTINUE
       CALL PRSYMB(LUPRI,'=',48,0)
       WRITE(LUPRI,'(/A)') 
@@ -1424,8 +1449,9 @@ C
      &   REFFIL(KREF),OTYP(KTYP),KORB,GVEC(I,1),EREF(I)
       ENDDO
       WRITE(LUPRI,'(/A)') '* Total gross contributions:'
-      TOTM = D2*NMOL
+      TOTM = D2*DSUM(NMOL,OCC,1)
       CALL GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC(1,1),NSTR,REFFIL)
+      POL = GVEC(NMOL+1,1)
 C
       RETURN
  100  FORMAT(4X,A7,12X,A5,11X,A10,4X,2(3X,A17))
