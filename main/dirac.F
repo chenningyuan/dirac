@@ -275,6 +275,27 @@ C
       IF(DOMVO.AND.DOPSI) CALL MVOGEN(WORK,LWORK)
 C
 C***********************************************************************
+C***** K R - M C S C F *************************************************
+C***********************************************************************
+C      Do MCSCF before CC and CI because user may want
+C      to do an MR-CC or MR-CI /hjaaj aug 03
+C
+      IF(DOKRMC.AND.DOPSI) THEN
+C
+C        Transfer DHF info to common block DCBORB
+C        and recalculate DCBORB.
+C
+         CALL TKRMCORB
+         CALL SETDC2(0)
+C
+C        *************************************************
+C        *** Call PSIOPT for KR-MCSCF wave function ******
+C        *************************************************
+C
+         CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
+      END IF
+C
+C***********************************************************************
 C***** I N D E X  T R A N S F O R M A T I O N **************************
 C***********************************************************************
 C
@@ -297,7 +318,6 @@ C***** L U C I T A  M O D U L E ****************************************
 C***********************************************************************
 C
       IF(DOLUCT.AND.DOPSI) CALL PAMLUCITA(WORK,LWORK)
-Chj TODO: move PAMLUCITA after MCSCF ????
 C
 C
 #if defined (UNDEF)
@@ -306,43 +326,15 @@ C***********************************************************************
 C***** C I *************************************************************
 C***********************************************************************
 C
-      IF(DOCI) THEN
+      IF(DOCI.AND.DOPSI) THEN
 C
 C        *************************************************
 C        *** Call PSICI for CI wave function *************
 C        *************************************************
 C
-         IF (DODHF .AND. .NOT. WFCONV) THEN
-             CALL QUIT('PAMPSI: calling CI without converged DHF'//
-     &                 ' wavefunction.')
-         END IF
          CALL PSICI(WORK,LWORK)
       END IF
 #endif
-C
-C***********************************************************************
-C***** K R - M C S C F *************************************************
-C***********************************************************************
-C
-      IF(DOKRMC.AND.DOPSI) THEN
-C
-C        Transfer DHF info to common block DCBORB
-C        and recalculate DCBORB.
-C
-         CALL TKRMCORB
-         CALL SETDC2(0)
-C
-C
-C        *************************************************
-C        *** Call PSIOPT for KR-MCSCF wave function ******
-C        *************************************************
-C
-c         IF (DODHF .AND. .NOT. WFCONV) THEN
-c             CALL QUIT('PAMPSI: calling KF-MCSCF without converged '//
-c     &                 ' DHF wavefunction.')
-c         END IF
-         CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
-      END IF
 C
       CALL QEXIT('PAMPSI')
       RETURN
