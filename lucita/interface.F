@@ -6946,7 +6946,7 @@ c     call XFLUSH(6)
 *
 #include "mxpdim.inc"
 *
-      common/CECORE/ECORE
+      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
       character*7 DIRACONE
       character*14 DUMCHA(MXPIRR)
