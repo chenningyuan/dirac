@@ -1344,7 +1344,7 @@ C
 C
 C     Output
 C
-      CALL HEADER('Output from GMOTRA',-1)
+      CALL TITLER('Orbital dimensions','*',125)
       IF ( NFSYM .EQ. 1 ) THEN
          WRITE(LUPRI,'(A,I5)')
      &        'No. of electronic orbitals (NESH): ',NESH(1)
