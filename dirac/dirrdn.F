@@ -932,14 +932,14 @@ C
      &                 (MOD(IAC2,2) .NE. 0) .OR.
      &                 (IAC1 .LT. 0) .OR. (IAC2 .LT. 0) .OR.
      &                 (IAC1+IAC2 .EQ. 0)) THEN
-                     WRITE(LUPRI,'(A,2I)')
+                     WRITE(LUPRI,'(A,2I3)')
      &                  'ERROR: Number of spinors must be a '//
      &                  'positive even number:',IAC1,IAC2
                      CALL QUIT('ERROR: Number of spinors must be '//
      &                         'a positive even number')
                   END IF
                   IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
-                     WRITE(LUPRI,'(A,I,A,I)')
+                     WRITE(LUPRI,'(A,I3,A,I3)')
      &                  'ERROR: Number of electrons (',IELEC,
      &                  ') must be a positive even number less than',
      &                  IAC1+IAC2
