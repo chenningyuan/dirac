@@ -385,10 +385,6 @@ C
      &                WORK(KFREE),LFREE,1) ! last one is printlevel
        ENDIF
       ENDDO
-C
-C     Scale the Lagrangian by -1
-C     ==========================
-      CALL DSCAL(NORBT*NORBT*NZ,-D1,XLAGRAN,1)
 c     do iz = 1, nz
 c        do j = 1, norbt
 c           do i= 1, norbt

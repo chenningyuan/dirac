@@ -2016,7 +2016,6 @@ C
       CALL MEMOPT('REAL',DG ,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',DMO,NORBT*NORBT*NZ,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',XMO,NORBT*NORBT*NZ,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',XLAGRAN,NORBT*NORBT*NZ,CC,KFREE,LFREE,ALLOC)
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
      &            JVVOO(NREP+1),JVOVO(NREP+1))
       NBUF2 = NBUF1
@@ -2128,8 +2127,7 @@ C
      &                 CC(BUF1),CC(BUF2),CC(BUF3),NBUF2,NBUF3,CC(CBUF),
      &                 CC(XVO),CC(XOV),CC(DOO),CC(DVV),CC(DVO),CC(DOV),
      &                 CC(EVO),CC(EOV),CC(D2VO),CC(D2OV),CC(DG),
-     &                 CC(CCC),CC(BB1),CC(BB2),TOL,CC(XMO),CC(DMO),
-     &                 CC(XLAGRAN))
+     &                 CC(CCC),CC(BB1),CC(BB2),TOL,CC(XMO),CC(DMO))
 C
 C#################################################################
 C

@@ -265,8 +265,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDENSZ(IOPT,NSP,IREPSPI,EPS,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,NBUF2,NBUF3,CBUF,
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
-     &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV,XMO,DMO,
-     &                   XLAGRAN)
+     &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV,XMO,DMO)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -295,7 +294,6 @@ C
       REAL*8 DMO(*)
       REAL*8 XVO(*),XOV(*)
       REAL*8 XMO(*)
-      REAL*8 XLAGRAN(*)
       REAL*8 EVO(*),EOV(*)
       REAL*8 EPS(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*),CBUF(*)
@@ -428,9 +426,8 @@ c     deactivated because checking in to trunk
 c     
 c     KFREE=1
 c     LFREE=NBUF3*RCW 
-c     CALL MPGLVC(DMO,XLAGRAN,BUF3,KFREE,LFREE)
+c     CALL MPGLVC(DMO,XMO,BUF3,KFREE,LFREE)
 c     print*,'jvs: D via joost'
-c     CALL DAXPY(NORBT*NORBT*NZ,A1,XLAGRAN,1,xmo,1)
 C
 C     +------------------------------------------------+
 C     | Generate the T's in the right order for the    |
