@@ -380,6 +380,7 @@ C        =============================================
 C
          IOFF = 0
          EVCVAL = D0
+         CALL DZERO(EVEC,N2EVECTQ)
          DO 30 I = 1,NFSYM
             IF(NOCC(I).EQ.0) GOTO 30
             CALL QGEMM(NORB(I),NORB(I),NORB(I),D1,
