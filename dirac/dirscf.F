@@ -2176,7 +2176,6 @@ C
 C
 C     Get all coefficients
 C
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
          WRITE(LUPRI,'(A)') 'Coefficient file not present'
