@@ -40,13 +40,13 @@ C     Written by J. Thyssen - Nov 30 1998
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION WORK(*)
 C
-#include <dcbkrmc_itinfo.h>
-#include <dcbopt.h>
+#include "dcbkrmc_itinfo.h"
+#include "dcbopt.h"
 C
       CALL QENTER('KRMCOUT')
       KFRSAV = KFREE
@@ -71,14 +71,14 @@ C     Written by J. Thyssen - Nov 30 1998
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <frame.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "frame.h"
+#include "dgroup.h"
 C
       DIMENSION WORK(*), DINFO(LDINFO,*), IINFO(LIINFO,*)
 C
@@ -336,14 +336,14 @@ C
 C     Written by J. Thyssen - Mon Mar 26 11:58:53 MET 2001
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
-#include <dcblab.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcblab.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
 C
       DIMENSION CMO(*)
       LOGICAL PROCC, PRSML

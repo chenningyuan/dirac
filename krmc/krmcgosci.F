@@ -44,19 +44,19 @@ C     Written by J. Thyssen - Jan 2 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbidx.h>
-#include <dcbbos.h>
-#include <dgroup.h>
-#include <dcbham.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dcbgosci.h>
-#include <pgroup.h>
+#include "dcbidx.h"
+#include "dcbbos.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dcbgosci.h"
+#include "pgroup.h"
 C
       DIMENSION MULTB_TMP(N5,N5)
 C
@@ -210,13 +210,13 @@ C     Written by J. Thyssen - Jan 2 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgosci.h>
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgosci.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION NA(MAXASH_GOSCI)
       DIMENSION NB(MAXASH_GOSCI)
@@ -227,7 +227,7 @@ C
       INTEGER MSKGAS(MXMCGAS)
       INTEGER IBTAB(0:255)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF ( IPROPT .GE. 10 ) THEN
          WRITE(LUPRI,'(A)')
@@ -438,16 +438,16 @@ C     Written by J. Thyssen - Feb 11 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgosci.h>
-#include <dcbopt.h>
-#include <dcborb.h>
+#include "dcbgosci.h"
+#include "dcbopt.h"
+#include "dcborb.h"
 C
       DIMENSION MSKGAS(*), IBTAB(*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       GOSCI_GASOK = .TRUE.
       IF (NGAS .EQ. 0) RETURN
@@ -482,12 +482,12 @@ C     Written by J. Thyssen - Feb 27 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION IBTAB(0:255)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO I = 0, 255
          ID = I
@@ -517,16 +517,16 @@ C     Written by J. Thyssen - Feb 11 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgosci.h>
-#include <dcbopt.h>
-#include <dcborb.h>
+#include "dcbgosci.h"
+#include "dcbopt.h"
+#include "dcborb.h"
 C
       DIMENSION MSKMK(2), IBTAB(*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C
       NP    = NGOSCI_NBITS(IBTAND(MSKMK(1),I),IBTAB)
@@ -561,16 +561,16 @@ C     Written by J. Thyssen - Jan 23 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgosci.h>
-#include <dcbopt.h>
-#include <dcborb.h>
+#include "dcbgosci.h"
+#include "dcbopt.h"
+#include "dcborb.h"
 C
       DIMENSION IDET(*), KRLIST(*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       I1 = 2 ** (2*NASHT) - 1
 C     
@@ -615,11 +615,11 @@ C     Written by J. Thyssen - Jan 2 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgosci.h>
-#include <dcborb.h>
+#include "dcbgosci.h"
+#include "dcborb.h"
 C
       DIMENSION IBTAB(0:255)
 C
@@ -651,14 +651,14 @@ C     Written by J. Thyssen - Jan 2 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgosci.h>
-#include <dcborb.h>
-#include <dcbopt.h>
+#include "dcbgosci.h"
+#include "dcborb.h"
+#include "dcbopt.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IOPT_SYMMETRY .LT. 0) THEN
 C        ... include all symmetries
@@ -724,13 +724,13 @@ C     Written by J. Thyssen - Jun 27 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
 C
       DIMENSION WORK(*), CREF(NZCONF,*), CMO(*), IDET(*)
 C
@@ -834,13 +834,13 @@ C
 C     Extracted from GOSCI_STARTVEC July 2002 /hjaaj.
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
 C
       DIMENSION WORK(*), EIGVAL(*), EIGVEC(*), CMO(*), IDET(*)
 C
@@ -982,8 +982,8 @@ C
 C     Luuk Visscher, Mar 18 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER*4 REPA(8)
 C
@@ -1045,16 +1045,16 @@ C     Written by J. Thyssen - Oct 22 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
-#include <thrzer.h>
+#include "consts.h"
+#include "thrzer.h"
 C
-#include <dcbgosci.h>
-#include <dgroup.h>
-#include <dcbopt.h>
-#include <dcborb.h>
+#include "dcbgosci.h"
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcborb.h"
 C
       DIMENSION CL(NZCONF,NZ),CR(NZCONF,NZ),DV(2*NASHT,2*NASHT,2)
       DIMENSION PV(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
@@ -1150,8 +1150,8 @@ C     Written by H. J. Aa. Jensen & J. Thyssen - Dec 30 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION CL(*),CR(*)
       DIMENSION DV(*), PV(*)
@@ -1200,19 +1200,19 @@ C     Written by H. J. Aa. Jensen & J. Thyssen - Dec 30 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dcbgosci.h>
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dcbgosci.h"
 C
       LOGICAL   DOPV, DOIMAG
       DIMENSION IOCCI(2*MAXASH_GOSCI), JOCCI(2*MAXASH_GOSCI)
       DIMENSION DV(2*NASHT,2*NASHT,*)
       DIMENSION PV(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C
       IF (IT .EQ. 0) THEN
@@ -1365,14 +1365,14 @@ C     Written by H. J. Aa. Jensen & J. Thyssen - Dec 30 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "thrzer.h"
 C
-#include <dcbgosci.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbopt.h>
+#include "dcbgosci.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbopt.h"
 C
       DIMENSION HR(NZCONF,NZCONF),HI(NZCONF,NZCONF)
       DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
@@ -1383,7 +1383,7 @@ C
       DIMENSION IOCCI(2*MAXASH_GOSCI), JOCCI(2*MAXASH_GOSCI)
       LOGICAL HFULL
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL IBTABINI(IBTAB)
       HFULL = IHRM .EQ. 0
@@ -1548,20 +1548,20 @@ C     Written by H. J. Aa. Jensen & J. Thyssen - Dec 30 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcbgosci.h>
-#include <dcborb.h>
+#include "dcbgosci.h"
+#include "dcborb.h"
 C
       LOGICAL   DO2EL,DOIMAG
       DIMENSION IOCCI(2*MAXASH_GOSCI), JOCCI(2*MAXASH_GOSCI)
       DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
       DIMENSION HCORE(2*NASHT,2*NASHT,*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C
       IF (IT .EQ. 0) THEN
@@ -1678,8 +1678,8 @@ C     Written by J. Thyssen - Jan 3 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION SVEC(*), BVEC(*)
       DIMENSION VMUUUU(*), HCORE(*)
@@ -1722,8 +1722,8 @@ C     Written by J. Thyssen - Jan 3 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION DIAG(*), IDET(*), VMUUUU(*), HCORE(*)
 C
@@ -1763,21 +1763,21 @@ C     Written by J. Thyssen - Jan 3 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
-#include <thrzer.h>
+#include "consts.h"
+#include "thrzer.h"
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
 C
       DIMENSION WORK(*), CREF(NZCONF,*), CMO(*), IDET(2,*)
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('GOSCI_RCISTD')
 C
@@ -2260,18 +2260,18 @@ C     Written by J. Thyssen - Jan 5 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgosci.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgosci.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION IASTR(*), IBSTR(*)
 C
       LOGICAL LBIT
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IAELEC = 0
       IBELEC = 0
@@ -2307,16 +2307,16 @@ C     Written by J. Thyssen - Jan 5 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
       PARAMETER (D10 = 10.0D0)
 C
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbopt.h>
-#include <dcbgosci.h>
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcbgosci.h"
 C
       DIMENSION CREF(NZCONF,*), IDET(2,*), WORK(*)
 C
@@ -2380,16 +2380,16 @@ C     Written by J. Thyssen - Jan 23 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbopt.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbopt.h"
 C
       DIMENSION BVEC(*), WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       IF ( MOD(NAELEC,2) .NE. 0) RETURN
 C
@@ -2416,11 +2416,11 @@ C     Written by J. Thyssen - Jan 23 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcbopt.h"
+#include "dgroup.h"
 C
       DIMENSION BVEC(NZCONF,*), KRLIST(*)
 C
@@ -2465,13 +2465,13 @@ C     Written by J. Thyssen - Jan 23 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbgosci.h>
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbgosci.h"
 C
       DIMENSION ISTR(*), MSKGAS(*)
 C
@@ -2535,14 +2535,14 @@ C     Written by J. Thyssen - Jan 3 2001
 C     Last revision : July 2002 hjaaj
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "thrzer.h"
 C
-#include <dcbgosci.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbopt.h>
+#include "dcbgosci.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbopt.h"
 C
       DIMENSION DIAG(*)
 C
@@ -2563,7 +2563,7 @@ C
       DIMENSION IBTAB(0:255)
       INTEGER*8 FNCALLS, CNCALLS
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL FLSHFO(LUPRI)
 C

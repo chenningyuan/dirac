@@ -54,13 +54,13 @@ C     Written by J. Thyssen - Jun 27 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION DQFC(NASHT,NASHT,NZ)
       DIMENSION DMFC(2*NASHT,2*NASHT,2)
@@ -230,13 +230,13 @@ C     Written by J. Thyssen - Jun 27 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION DQFC(NASHT,NASHT,NZ)
       DIMENSION DMFC(2*NASHT,2*NASHT,2)
@@ -329,13 +329,13 @@ C     Written by J. Thyssen - Jul 21 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION VDUUUU(NASHT,NASHT,NNASHX,NZ,*)
       DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
@@ -346,7 +346,7 @@ C
 C
       LOGICAL PSYMM, KSYMM, TSYMM
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       NCLASS = NZ * NZ * NBSYM / NFSYM
       CALL DZERO(VDUUUU,NASHT * NASHT * NNASHX * NZ * 3)
@@ -869,14 +869,14 @@ C     Written by J. Thyssen - Nov 20 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
       PARAMETER (THROUT = 1.0D-16)
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION VDUUUU(NASHT,NASHT,NNASHX,NZ,*)
       DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
@@ -885,7 +885,7 @@ C
       DIMENSION KR(-300:300)
       DIMENSION DINT(8,2)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       NCLASS = NZ * NZ * NBSYM / NFSYM
       CALL DZERO(VMUUUU, (2*NASHT)**4 * MIN(NZ,2))
@@ -1132,14 +1132,14 @@ C     Written by J. Thyssen - Jan 21 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <thrzer.h>
-#include <consts.h>
+#include "thrzer.h"
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION VDUUUU(NASHT,NASHT,NNASHX,NZ,3)
 C
@@ -1188,10 +1188,10 @@ C
       END
 C     
       SUBROUTINE CHKNZ3R2(A,I,J,K,L,DA,DB)
-#include <priunit.h>
-#include <implicit.h>
-#include <thrzer.h>
-#include <consts.h>
+#include "priunit.h"
+#include "implicit.h"
+#include "thrzer.h"
+#include "consts.h"
 C
       CHARACTER A*(*)
 C
@@ -1221,19 +1221,19 @@ C     Written by J. Thyssen - Jan 21 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <thrzer.h>
-#include <consts.h>
+#include "thrzer.h"
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION VDUUUU(*)
       DIMENSION WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL MEMGET('REAL',KVDUUUU,NASHT*NASHT*NNASHX*NZ*3,
      &     WORK,KFREE,LFREE)
@@ -1291,14 +1291,14 @@ C     Written by J. Thyssen - Jan 18 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
       PARAMETER (THROUT = 1.0D-16)
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION VDUUUU(NASHT,NASHT,NNASHX,NZ,*)
       DIMENSION VMUUUU( (2*NASHT)**4, *)
@@ -1306,7 +1306,7 @@ C
       DIMENSION NUMINT(2*NASHT,2*NASHT), IOFF12(2*NASHT,2*NASHT)
       DIMENSION INDL(*), INDK(*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       NCLASS = NZ * NZ * NBSYM / NFSYM
 C

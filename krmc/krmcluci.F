@@ -39,10 +39,10 @@ C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision :
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <pgroup.h>
+#include "pgroup.h"
 C
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/lucinp.inc"
@@ -827,17 +827,17 @@ C                     May 17, 2002  T. Fleig (ROOTCI added.)
 C                     May 27, 2002  T. Fleig (MXCIV added.)
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
 #include "../luciarel/mxpdim.inc"
 C
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbham.h>
-#include <dcbbos.h>
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbham.h"
+#include "dcbbos.h"
 C
       CHARACTER*6 CTLSTR,CIRUN
       DIMENSION IVAR(*),DVAR(*)
@@ -1127,8 +1127,8 @@ C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision :
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 #include "../luciarel/cprnt.inc"
 C
@@ -1176,10 +1176,10 @@ C***********************************************************************
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. Parameters for dimensioning
-#include <maxorb.h>
+#include "maxorb.h"
 #include "../luciarel/mxpdim.inc"
 *. Boson symmetry info
-#include <dcbbos.h>
+#include "dcbbos.h"
 *.Memory
 #include "../luciarel/wrkspc.inc"
 *.File numbers
@@ -1566,10 +1566,10 @@ C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision : 23.01.2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbopt.h>
+#include "dcbopt.h"
 C
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cicisp.inc"
@@ -1606,12 +1606,12 @@ C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision :           T. Fleig         - Nov 30 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       CHARACTER*6 CIRUN,RCISTFILE
 C
@@ -1619,7 +1619,7 @@ C
 C
 #include "../luciarel/clunit.inc"
 C
-#include <memint.h>
+#include "memint.h"
 C
       CIRUN = 'CIINII'
 C
@@ -1753,12 +1753,12 @@ C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision :       T. Fleig             - Mar 16 2002
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       LOGICAL   SAVDIA
       CHARACTER*6 CIRUN
@@ -1768,7 +1768,7 @@ C
 C
 #include "../luciarel/clunit.inc"
 C
-#include <memint.h>
+#include "memint.h"
 C
       CIRUN = 'SIGMA '
       IF (SAVDIA) then
@@ -1846,12 +1846,12 @@ C     Last revision : KR_LUCI_IO calls     - Dec 04 2001    T. Fleig
 C                     CREF added           - Mar 17 2002    T. Fleig
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -1930,11 +1930,11 @@ C     Written by T. Fleig                  - Jan 24 2001
 C     Last revision :
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -1971,10 +1971,10 @@ C     Written by T. Fleig                  - Dec 04 2001
 C     Last revision :   KR_LUCI_IO calls   - Mar 17 2002    T. Fleig
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -2051,7 +2051,7 @@ C   Write array to file    IOTYPE = 2
 C          for input    (KRMC -> LUCIAREL)
 C
 C***********************************************************************
-#include <implicit.h>
+#include "implicit.h"
 *
       dimension VA(IDIMA),VB(IDIMB),X1(IDIM1),X2(IDIM2),SCR(*)
       dimension ISCR(*)

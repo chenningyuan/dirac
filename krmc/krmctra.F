@@ -22,17 +22,17 @@ C     Written by J. Thyssen - Jun 27 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcborb.h"
 C
       CHARACTER SZTRA(2,4)*(*)
       DIMENSION CMO(*),WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
 C
       CALL QENTER('RTRACTL')
@@ -87,11 +87,11 @@ C     Written by J. Thyssen - Wed Mar 14 15:03:26 "MET 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dcbopt.h>
+#include "dcborb.h"
+#include "dcbopt.h"
 C
       CHARACTER*(*) SZTRA(2,4)
       LOGICAL USENOROT
@@ -152,14 +152,14 @@ C     Written by J. Thyssen - Feb 19 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbidx.h>
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbidx.h"
 C
       CHARACTER C*4
       CHARACTER*(*) SZTRA(2,4)
@@ -372,10 +372,10 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
+#include "dgroup.h"
 C
       DIMENSION IDX(*)
       LOGICAL IDXFLG
@@ -423,13 +423,13 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
-#include <dcbidx.h>
-#include <dcborb.h>
+#include "dcbidx.h"
+#include "dcborb.h"
 C
       DIMENSION IDX(*)
       DIMENSION ILIST(MAXORB,2), NLIST(2)
@@ -462,11 +462,11 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
 C
-#include <dgroup.h>
+#include "dgroup.h"
 C
       DIMENSION ILIST(MAXORB,2), NLIST(2)
       CHARACTER*(*) SZTRA(2)
@@ -588,15 +588,15 @@ C     Written by J. Thyssen - Jun 27 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER ( DM1 = -1.0D00 )
 C
       CHARACTER SZ(2,4)*(*)
       LOGICAL LNOPAIR
 C
-#include <dcbtra.h>
+#include "dcbtra.h"
 C     
 C     /DCBTC/
 C
@@ -658,17 +658,17 @@ C
 C     Written by J. Thyssen - Dec 11 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
-#include <mxorb.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbgen.h>
+#include "mxorb.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
       CHARACTER*24 DAYTID
       LOGICAL TRASAM
       DIMENSION CMO(*),WORK(*),
@@ -677,7 +677,7 @@ C
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
 C
       CALL QENTER('RTRACTL1')
-#include <memint.h>
+#include "memint.h"
       KFRSAV = KFREE
       DUM = DUMMY
 C
@@ -883,13 +883,13 @@ C     Written by J. Thyssen - Jul 21 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dcbgen.h>
-#include <dgroup.h>
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dgroup.h"
 C
       DIMENSION FQ(*)
       DIMENSION H2AC(*)
@@ -897,7 +897,7 @@ C
       DIMENSION WORK(*)
 C
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('RGETH2')
       CALL RTKTIME(.TRUE.,3)
@@ -944,17 +944,17 @@ C     Written by J. Thyssen - Jul 21 2000
 C     Last revision : L. Visscher - Mar 15 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbidx.h>
-#include <dcbham.h>
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbidx.h"
+#include "dcbham.h"
 C
       DIMENSION FQ(NORBT,NASHT,NZ)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
@@ -969,7 +969,7 @@ C     strings
       CHARACTER CDATE*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
       logical fopen
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('RGETH21')
 C
@@ -1226,14 +1226,14 @@ C
 C     Written by J. Thyssen - Nov 16 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER ( D1 = 1.0D00 )
 C
-#include <dgroup.h>     
-#include <dcborb.h> 
-#include <dcbopt.h> 
+#include "dgroup.h"     
+#include "dcborb.h" 
+#include "dcbopt.h" 
 C
       DIMENSION H2XY(NORBT,NASHT,NZ,3)
       DIMENSION H2YX(NORBT,NASHT,NZ,3)
@@ -1753,15 +1753,15 @@ C        H2XY   : integrals in (NORBT,NASHT,*) format.
 C        H2YX   : integrals in (NORBT,NASHT,*) format.
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dgroup.h>     
-#include <dcborb.h> 
-#include <dcbopt.h> 
-#include <dcbidx.h>
+#include "dgroup.h"     
+#include "dcborb.h" 
+#include "dcbopt.h" 
+#include "dcbidx.h"
 C
       DIMENSION H2FULL(NKL,NZ,3)
       DIMENSION H2XY(NORBT,NASHT,NZ,3)
@@ -1904,14 +1904,14 @@ C        IREPIJ  : irrep for compound (IX,IY)
 C        IREC    : record number
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcbidx.h>
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcbidx.h"
 C
       DIMENSION NFPCK12(2)
       DIMENSION IDXKR12(2,*)
@@ -1966,7 +1966,7 @@ C     Written by J. Thyssen - Jul 21 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION IX(*)
 C
@@ -1997,13 +1997,13 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbxrs.h>
-#include <dcborb.h>
-#include <dcbgen.h>
-#include <dgroup.h>
+#include "dcbxrs.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dgroup.h"
 C
       DIMENSION FQX(*),FQT(*), H2ACX(*)
       DIMENSION PV(*),PVT(*)
@@ -2013,7 +2013,7 @@ C
       DIMENSION WORK(*)
 C
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('RGETH2TX')
       CALL RTKTIME(.TRUE.,4)
@@ -2067,16 +2067,16 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbxrs.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbidx.h>
-#include <dcbham.h>
+#include "dcbxrs.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbidx.h"
+#include "dcbham.h"
 C
       DIMENSION FQX(NORBT,NASHT,NZ,*)
       DIMENSION FQT(NORBT,NASHT,NZ,*)
@@ -2098,7 +2098,7 @@ C     logicals
       LOGICAL DOFQT, DOFQX, DOH2ACX
       logical fopen
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('RGETH2TX1')
 C
@@ -2563,14 +2563,14 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbidx.h>
-#include <dcbopt.h>
-#include <dcborb.h>
+#include "dcbidx.h"
+#include "dcbopt.h"
+#include "dcborb.h"
 C     
       DIMENSION IDXKR12(2,*)
 C
@@ -2604,16 +2604,16 @@ C     Written by J. Thyssen - Dec 5 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION H2AC(*)
       DIMENSION WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('SYMMH2AC')
       CALL MEMGET('REAL',KH2ACO,NASHT*NASHT*NNASHX*3*NZ,
@@ -2637,13 +2637,13 @@ C     Written by J. Thyssen - Dec 5 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3,*)
       DIMENSION H2ACO(NASHT,NASHT,NNASHX,NZ,3)
@@ -2874,12 +2874,12 @@ C     Written by J. Thyssen - Dec 6 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
 C
       DIMENSION BEVEC(*), BPVEC(*)
       DIMENSION IBEVC(*), IBPVC(*), IBTYP(2,*)
@@ -2890,8 +2890,8 @@ C
 C
       DIMENSION JGENMO(2), JACTMO(2), NGENMO(2), NACTMO(2)
 C
-#include <ibtfun.h>
-#include <memint.h>
+#include "ibtfun.h"
+#include "memint.h"
 C
       CALL QENTER('RGETH2TX2')
 C
@@ -3062,15 +3062,15 @@ C     Output:
 C        H2VP   : integrals in (NASHT,NASHT,*) format.
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dgroup.h>     
-#include <dcborb.h> 
-#include <dcbopt.h> 
-#include <dcbidx.h>
+#include "dgroup.h"     
+#include "dcborb.h" 
+#include "dcbopt.h" 
+#include "dcbidx.h"
 C
       DIMENSION H2GG(NKL,NZ,3)
       DIMENSION H2VP(NASHT,NASHT,NZ,3)
@@ -3166,17 +3166,17 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dgroup.h>     
-#include <dcborb.h> 
-#include <dcbopt.h> 
-#include <dcbidx.h> 
+#include "dgroup.h"     
+#include "dcborb.h" 
+#include "dcbopt.h" 
+#include "dcbidx.h" 
 C
       DIMENSION H2VPX(NASHT,NASHT,NZ,3)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
@@ -3377,13 +3377,13 @@ C
 C
       SUBROUTINE RADDFQX1(szPV,szQV,FAC,IZPV,I3PV,IZQV,I3QV,
      &     H2VPX,PV,NVQ,IQU,IVU,FQX)
-#include <priunit.h>
-#include <implicit.h>
+#include "priunit.h"
+#include "implicit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION H2VPX(NASHT,NASHT,NZ,3)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
@@ -3449,12 +3449,12 @@ C
       END
 C
       SUBROUTINE RADDFQX4(szPVXY,szQVXY,FAC,H2VPX,PV,FQX)
-#include <priunit.h>
-#include <implicit.h>
+#include "priunit.h"
+#include "implicit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
+#include "dcborb.h"
 C
       DIMENSION H2VPX(NASHT,NASHT), PV(NASHT,NASHT)
       CHARACTER szPVXY*2, szQVXY*2
@@ -3484,10 +3484,10 @@ C
 C
 C
       SUBROUTINE RADDFQX3(sz,FAC,IZ,I3,szXY)
-#include <priunit.h>
-#include <implicit.h>
+#include "priunit.h"
+#include "implicit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
       CHARACTER sz*2, szXY*2
 C
@@ -3543,10 +3543,10 @@ C
 C
 C
       SUBROUTINE RADDFQX2(sz,FAC,IZ,I3,szXY)
-#include <priunit.h>
-#include <implicit.h>
+#include "priunit.h"
+#include "implicit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
       CHARACTER SZ*2, szXY*2
 C

@@ -44,17 +44,17 @@ C     Output:
 C        VNZ3  : elements in (*,NZ,3) format
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>     
-#include <dcbham.h>     
+#include "dgroup.h"     
+#include "dcbham.h"     
 C
       DIMENSION VCL(NELEM,NZ,NZ,*)
       DIMENSION VNZ3(NELEM,NZ,3)
       DIMENSION IREPIJB(2),IREPKLB(2,*),IKLB(2)
 C
-#include <sdpre.h>
+#include "sdpre.h"
 C
       CALL DZERO(VNZ3,NELEM*NZ*3)
 C
@@ -168,16 +168,16 @@ C*****************************************************************************
 C
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
-#include <dgroup.h>     
-#include <dcbopt.h>     
-#include <dcborb.h>     
-#include <pgroup.h>     
-#include <dcbidx.h>
+#include "dgroup.h"     
+#include "dcbopt.h"     
+#include "dcborb.h"     
+#include "pgroup.h"     
+#include "dcbidx.h"
 C
 C
       DIMENSION HX(NORBT,NORBT,NZ,3)
@@ -212,16 +212,16 @@ C     Output:
 C        UGINT: (ug) integrals.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
-#include <dgroup.h>     
-#include <dcbopt.h>     
-#include <dcborb.h>     
-#include <pgroup.h>     
-#include <dcbidx.h>
+#include "dgroup.h"     
+#include "dcbopt.h"     
+#include "dcborb.h"     
+#include "pgroup.h"     
+#include "dcbidx.h"
 C
 C
       DIMENSION HX(NORBT,NORBT,NZ,3)
@@ -296,18 +296,18 @@ C     Output:
 C        UGINT: (ug) integrals.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dgroup.h>     
-#include <pgroup.h>     
+#include "dgroup.h"     
+#include "pgroup.h"     
 C
       DIMENSION GUINT(NORBI,NASHI,NZ,NZ,*)
       DIMENSION UGTINT(NORBI,NASHI,NZ,NZ,*)
 C
-#include <sdpre.h>
+#include "sdpre.h"
 C
       NCLASS = NZ * NZ * NBSYM / NFSYM
       CALL DCOPY(NORBI*NASHI*NCLASS,GUINT,1,UGTINT,1)
@@ -363,10 +363,10 @@ C
 C     Written by Joern Thyssen - Nov 15 2000
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
+#include "dgroup.h"
 C
       COMMON /SMOELF/ IFAC(4,3,4,4)
 C
@@ -474,15 +474,15 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbidx.h>
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbidx.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C     
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
@@ -532,15 +532,15 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbidx.h>
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbidx.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C     
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ,NZ,*)
@@ -651,15 +651,15 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbidx.h>
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbidx.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C     
       DIMENSION GUINT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
@@ -716,15 +716,15 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbidx.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcbidx.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
 C     
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
@@ -778,15 +778,15 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbidx.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcbidx.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
 C     
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
@@ -821,9 +821,9 @@ C     N{1,2}MO. Only zero out the quaternion blocks with symmetry IREPIJ.
 C
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
       DIMENSION AMAT(NRDIM,NCDIM,NZ)
       DIMENSION J1MO(NFSYM), N1MO(NFSYM)
@@ -852,9 +852,9 @@ C     N{1,2}MO. Only zero out the quaternion blocks with symmetry IREPIJ.
 C
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
       DIMENSION AMAT(NRDIM,NCDIM,NZ)
       DIMENSION JMO(NFSYM), NMO(NFSYM)
@@ -887,7 +887,7 @@ C     Written by J. Thyssen - Nov 23 2000
 C     July 2002 hjaaj: nothing CIPRG specific here!
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CIVEC(NZCONF,*)
       DIMENSION IP(4)
@@ -942,13 +942,13 @@ C   MAXLIN    : max. lines of output with vector elements
 C   LUOUT     : output unit
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(NDIM*INCVEC,NZ)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       PARAMETER (D1LOW = D1 - 1.0D-10, D1HGH = D1 + 1.0D-10)
       LOGICAL   VSCALE
       DIMENSION IPQ(4)
-#include <dcbqal.h>
+#include "dcbqal.h"
 C
 C     Test input
 C
@@ -1101,17 +1101,17 @@ C
 C     Written by J. Thyssen - Jan 13 2001
 C
 C*****************************************************************************
-#include <priunit.h>
-#include <implicit.h>
+#include "priunit.h"
+#include "implicit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcbbas.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcborb.h>
-#include <dcbgen.h>
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcborb.h"
+#include "dcbgen.h"
 C
       DIMENSION CMO(*)
       DIMENSION IBOSYM(*)
@@ -1119,9 +1119,9 @@ C
 C
       DIMENSION WEIGHT(8)
 C
-#include <sdpre.h>
-#include <ibtfun.h>
-#include <memint.h>
+#include "sdpre.h"
+#include "ibtfun.h"
+#include "memint.h"
 C
 C     Matrix to hold orbitals.
 C
@@ -1200,20 +1200,20 @@ C
 C     Written by J. Thyssen - Jan 23 2001
 C
 C*****************************************************************************
-#include <priunit.h>
-#include <implicit.h>
+#include "priunit.h"
+#include "implicit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 C
       DIMENSION CMO(*)
       DIMENSION WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('RGMCMO')
 C
@@ -1261,11 +1261,11 @@ C
 C     Written by J. Thyssen - Jan 23 2001
 C
 C*****************************************************************************
-#include <priunit.h>
-#include <implicit.h>
+#include "priunit.h"
+#include "implicit.h"
 C
-#include <thrzer.h>
-#include <consts.h>
+#include "thrzer.h"
+#include "consts.h"
       PARAMETER (THRRND = 0.9D0, THNORM = 1.0D-6)
 C
       DIMENSION S(NBASI,NBASI)
@@ -1372,14 +1372,14 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
 C     
       DIMENSION FQ(NORBT,NASHT,NZ)
       DIMENSION DV(NASHT,NASHT,NZ)
@@ -1387,7 +1387,7 @@ C
       DIMENSION WORK(*)
       CHARACTER CTL*1
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('APPFQ')
 C
@@ -1498,13 +1498,13 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION DC(NORBT,NORBT,NZ)
 C
@@ -1531,8 +1531,8 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION AMAT(NRA,NCA,NZ)
       DIMENSION BMAT(NRB,NCB,NZ)
@@ -1563,8 +1563,8 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION AMAT(NRA,NCA,NZ)
       DIMENSION BMAT(NRB,NCB,NZ)
@@ -1596,14 +1596,14 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbidx.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dcbidx.h"
+#include "dgroup.h"
+#include "dcborb.h"
 C
       CHARACTER C*1
       DIMENSION FC(*)
@@ -1612,7 +1612,7 @@ C
 C
       DIMENSION NFC(2), IFC(2), IU(2)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('ROTFC')
 C
@@ -1660,23 +1660,23 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcbidx.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbidx.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       CHARACTER C*1
       DIMENSION FC(*), FCOLD(*)
       DIMENSION U(*)
       DIMENSION WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
 c     write(6,*) 'rotfc1 trans. mat'
 c     call prqmat(u,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
@@ -1710,12 +1710,12 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbopt.h>
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbopt.h"
 C
       CHARACTER C*1
       DIMENSION FQ(NORBT,NASHT,*)
@@ -1724,7 +1724,7 @@ C
 C
       DIMENSION NFC(2), IFC(2), IU(2)
 C
-#include <memint.h>
+#include "memint.h"
 C
       IF (MCTYPE .LT. JMCMIN) RETURN
 C     ... return if second-order HF
@@ -1775,17 +1775,17 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcbbas.h>
-#include <dcbidx.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dcbbas.h"
+#include "dcbidx.h"
+#include "dgroup.h"
+#include "dcborb.h"
 C
       CHARACTER C*1
       DIMENSION CMO(*)
@@ -1794,7 +1794,7 @@ C
 C
       DIMENSION NFC(2), IFC(2), IU(2)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('ROTFC')
 C

@@ -21,14 +21,14 @@ C     Written by J. Thyssen - Nov 3 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D00)
 C
-#include <dcbopt.h>
-#include <dcbkrmc_itinfo.h>
-#include <dgroup.h>
+#include "dcbopt.h"
+#include "dcbkrmc_itinfo.h"
+#include "dgroup.h"
 C
       DIMENSION GCI(NZCONF,*),GOEE(NZHOPE,*),GOEP(NZXOPP,*)
 C
@@ -79,15 +79,15 @@ C     Written by J. Thyssen - Nov 20 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER ( THRSML = 1.0D-8 )
       PARAMETER ( THRZER = 1.0D-12 )
 C
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION CREF(*)
       DIMENSION FCAC(*)
@@ -153,16 +153,16 @@ C     Written by J. Thyssen - Nov 20 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
-#include <thrzer.h>
+#include "consts.h"
+#include "thrzer.h"
 C
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbgen.h>
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
 C
       DIMENSION CREF(NZCONF,*), GCI(NZCONF,*)
       DIMENSION FCAC(*), H2AC(*)
@@ -390,8 +390,8 @@ C     Last revision :
 C
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION G(NZHOPE,*)
       DIMENSION GR(*)
@@ -435,8 +435,8 @@ C     Last revision :
 C
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION G(NZHOPE,*)
       DIMENSION GR(*)

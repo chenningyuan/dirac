@@ -11,14 +11,14 @@ C         Max. no. of active orbitals only for GOSCI
 C                T. Fleig   - May 24, 2002
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
 C
-C#include <mxcent.h>
-C#include <mxorb.h>
-C#include <symmet.h>
+C#include "mxcent.h"
+C#include "mxorb.h"
+C#include "symmet.h"
 C
       PARAMETER (NTABLE = 30)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
@@ -30,14 +30,14 @@ C
 C
       INTEGER IKWSET(NTABLE)
 C
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcbham.h>
-#include <dcborb.h>
-#include <dcbkrmc.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <pgroup.h>
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dcbkrmc.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "pgroup.h"
 C
       SAVE SET
       DATA TABLE /'.THRESH','.PRINT ','.MAX MA','.MAX MI','.NR ALW',
@@ -49,10 +49,10 @@ C
       DATA SET/.FALSE./
 C
 C
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
+#include "sdpre.h"
 C
-#include <memint.h>
+#include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -547,20 +547,20 @@ C     Written by J. Thyssen - Nov 11 1998
 C     Last revision: 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dummy.h>
+#include "dummy.h"
       PARAMETER (NTABLE = 16)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
-#include <dcbgen.h>
-#include <dcbopt.h>
+#include "dcbgen.h"
+#include "dcbopt.h"
 C
       SAVE SET
       DATA TABLE /'.DAMPIN','.MAX DA','.MIN DA','.NO EXT','.GOOD R',
@@ -569,8 +569,8 @@ C
      &            '.THQKVA'/
       DATA SET/.FALSE./
 C
-#include <sdpre.h>
-#include <memint.h>
+#include "sdpre.h"
+#include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -711,17 +711,17 @@ C     Last revision: 17.05.2002
 C                    Added CI keyword CIROOT. Timo Fleig
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (NTABLE = 16)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
-#include <dcbgen.h>
-#include <dcbopt.h>
+#include "dcbgen.h"
+#include "dcbopt.h"
 C
       SAVE SET
       DATA TABLE /'.MAX CI','.IOPTST','.TRACI ','.NO TRA','.NATONL',
@@ -730,8 +730,8 @@ C
      &            '.KTRLVL'/
       DATA SET/.FALSE./
 C
-#include <sdpre.h>
-#include <memint.h>
+#include "sdpre.h"
+#include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -968,10 +968,10 @@ C     Written by J. Thyssen - Nov 11 1998
 C     Last revision: 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbopt.h>
+#include "dcbopt.h"
 C
 C     Initialize parameter info  pointers to negative value (for "not defined")
 C

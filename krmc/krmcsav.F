@@ -43,15 +43,15 @@ C     Written by J. Thyssen - Nov 26 1998
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbopt.h>
-#include <dcbgen.h>
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcbgen.h"
 C
       DIMENSION CMO(*), CREF(*)
       DIMENSION WORK(*)

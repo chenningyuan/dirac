@@ -42,24 +42,24 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
       CHARACTER WFTYP*(*)
       DIMENSION WORK(LWORK)
 C
-#include <dcbidx.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbopt.h>
-#include <dcbgen.h>
+#include "dcbidx.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcbgen.h"
 C
       LOGICAL EX
       INTEGER RENAME
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('PSIOPT')
 C
@@ -219,20 +219,20 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
 C
-#include <consts.h>
-#include <thrzer.h>
+#include "consts.h"
+#include "thrzer.h"
 C
-#include <dcbnrt.h>
-#include <dcbpsi.h>
-#include <dcbkrmc_itinfo.h>
-#include <dcbgen.h>
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <frame.h>
+#include "dcbnrt.h"
+#include "dcbpsi.h"
+#include "dcbkrmc_itinfo.h"
+#include "dcbgen.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "frame.h"
 C
       DIMENSION WORK(*)
       DIMENSION CMO(*),DV(*),FC(*),FV(*),FQ(*),FCAC(*),CREF(*),
@@ -676,10 +676,10 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
       DIMENSION GCI(*),DV(*),FC(*),FV(*),FQ(*),PV(*)
       DIMENSION JXOPE(*),JXOPP(*),GOEE(*),GOEP(*)
@@ -692,10 +692,10 @@ C
 C
       LOGICAL FND,FNDLAB,SAVEDFGEN
 C
-#include <dcbopt.h>
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbopt.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       CALL QENTER('RGRAD')
       CALL RTKTIME(.TRUE.,9)
@@ -935,15 +935,15 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : 24.01.2001, T. Fleig
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-10 )
 C
-#include <dcborb.h>
-#include <dcbgen.h>
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcbqal.h>
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcbqal.h"
 C
       LOGICAL CALCDV, CALCPV
       DIMENSION DV(*), PV(*), CREF(*), WORK(*)
@@ -1099,8 +1099,8 @@ C     Written by J. Thyssen - Dec 21 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION DV(*)
       DIMENSION WORK(*)
@@ -1132,8 +1132,8 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION AMAT(NDIM1,NDIM1,NDIM2,NZ,3)
       CHARACTER M(4)*2
@@ -1201,28 +1201,28 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcbfir.h>
-#include <blocks.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <cbihr2.h>
+#include "dcbfir.h"
+#include "blocks.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "cbihr2.h"
       DIMENSION DV(*),CMO(*),FC(*),FV(*)
       DIMENSION WORK(LWORK)
       LOGICAL NOFV
       DIMENSION IQBF(4)
 C
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('RFCKMAT')
       CALL RTKTIME(.TRUE.,12)
@@ -1442,28 +1442,28 @@ C     Written by J. Thyssen - June 30 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcbfir.h>
-#include <blocks.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <frame.h>
-#include <cbihr2.h>
+#include "dcbfir.h"
+#include "blocks.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "frame.h"
+#include "cbihr2.h"
       LOGICAL   TOFILE
       DIMENSION CMO(*),FC(*), WORK(LWORK)
       DIMENSION IQBF(4)
 C
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('RGETFC')
 C
@@ -1602,13 +1602,13 @@ C     Written by J. Thyssen - Oct 26 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <priunit.h>
-#include <implicit.h>
+#include "priunit.h"
+#include "implicit.h"
 C
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <cbihr1.h>
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "cbihr1.h"
 C
       DIMENSION H1AO(*), WORK(*)
       LOGICAL   EX
@@ -1672,17 +1672,17 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : July 2002 hjaaj
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbbos.h>
-#include <dcbnrt.h>
-#include <dcbidx.h>
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbbos.h"
+#include "dcbnrt.h"
+#include "dcbidx.h"
 C
       DIMENSION WORK(*)
 C
@@ -1832,15 +1832,15 @@ C
 C     Extracted from RSETWOP 9-Jul-2002 hjaaj
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbgen.h>
-#include <dgroup.h>
-#include <dcbopt.h>
-#include <dcborb.h>
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcborb.h"
 C
       DIMENSION WORK(*)
       DIMENSION ITMP(9)
@@ -1931,8 +1931,8 @@ C
 C     Extracted from RSETWOP 9-Jul-2002 by HJAaJ.
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C Used from common blocks:
 C  dcbgen: LUKRMC
@@ -1940,10 +1940,10 @@ C  dgroup: NZ
 C  dcbopt: NZCONF,NZCONFQ,KZCONF,IOPT_SYMMETRY,LZCONF
 C  dcborb: NAELEC,NASHT
 C
-#include <dcbgen.h>
-#include <dgroup.h>
-#include <dcbopt.h>
-#include <dcborb.h>
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcborb.h"
 C
       CHARACTER*(*) USE_CIPROGRAM
       DIMENSION WORK(*)
@@ -2070,13 +2070,13 @@ C     Written by J. Thyssen - Oct 29 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION FC(*),FCAC(*)
 C
@@ -2133,8 +2133,8 @@ C     Written by J. Thyssen - Oct 29 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C
       DIMENSION FCAC(NASHT,NASHT,NZ),FC(NORBT,NORBT,NZ)
@@ -2175,16 +2175,16 @@ C     Written by J. Thyssen - Oct 29 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbidx.h>
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbidx.h"
 C
       DIMENSION DV(*),FCAC(*),FQ(NORBT,NASHT,NZ)
 C
@@ -2259,10 +2259,10 @@ C     Written by J. Thyssen - Oct 29 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
       DIMENSION FQ(NORBT,INASH)
 C
@@ -2293,14 +2293,14 @@ C     Written by J. Thyssen - Nov 3 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 C
       DIMENSION CMO(*)
       LOGICAL NOSTOP
@@ -2385,19 +2385,19 @@ C     Written by J. Thyssen - Nov 17 1998
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcbbos.h>
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbnrt.h>
+#include "dcbbos.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbnrt.h"
 C
       LOGICAL EX, FNDLAB
       DIMENSION WORK(*)
@@ -2680,12 +2680,12 @@ C     Written by J. Thyssen - Jun 27 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbopt.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbopt.h"
 C
       DIMENSION CMO(*), CREF(*), WORK(*)
 C
@@ -2777,18 +2777,18 @@ C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Nov 17 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
 C
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
 C
-#include <dcbnrt.h>
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbkrmc_itinfo.h>
+#include "dcbnrt.h"
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbkrmc_itinfo.h"
 C
       LOGICAL OPTRST,OPTNRM,OPTDIH,OPTSTERN
       DIMENSION CREF(*),GCI(*),DV(*),FC(*),FV(*),
@@ -3050,10 +3050,10 @@ C
 C     Written by J. Thyssen - Nov 19 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbxrs.h>
+#include "dcbxrs.h"
 C
       LOGICAL OPTRST,OPTNRM,OPTDIH,OPTSTERN,OPT_NOPFQ,OPT_NOFQX
       DIMENSION ITRINT_MIC(2),CNVINT_MIC(2)
@@ -3167,19 +3167,19 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       PARAMETER ( D1 = 1.0D00 )
       PARAMETER ( THRTT = 1.0D-4 )
-#include <thrzer.h>
+#include "thrzer.h"
 C
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbgen.h>
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbgen.h"
 C
       DIMENSION CMO(*), WORK(*), IBTYP(2,*), IBCVC(*),
      &          IBEVC(*),IBPVC(*), EVECR(*)
@@ -3308,7 +3308,7 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION XKAPEE(NZXOPE,NZ),XKAPEP(NZXOPP,NZ),
      &          JXOPE(2,NZXOPE),JXOPP(2,NZXOPP),IP(4)
@@ -3362,10 +3362,10 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8,C(4)*8
@@ -3403,10 +3403,10 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       DIMENSION IVECTOR(ISIZE)
       CHARACTER LABEL*8,C(4)*8
@@ -3446,8 +3446,8 @@ C
 C     Written by J. Thyssen - Dec 28 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C
       CHARACTER LABEL*8
@@ -3497,10 +3497,10 @@ C
 C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8,C(4)*8
@@ -3539,10 +3539,10 @@ C
 C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       DIMENSION IVECTOR(ISIZE)
       CHARACTER LABEL*8,C(4)*8
@@ -3583,10 +3583,10 @@ C
 C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8,C(4)*8
@@ -3650,8 +3650,8 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION WOPEE(NZXOPE,NZ),WOPEP(NZXOPP,NZ),
      &          UNWOP(NORBT,NORBT,NZ),JXOPE(2,*),JXOPP(2,*)
@@ -3705,10 +3705,10 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <thrzer.h>
+#include "thrzer.h"
 C
       PARAMETER (D1 = 1.00 D00, D0 = 0.00 D00, DM1 = -D1)
       PARAMETER (DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00)
@@ -3718,7 +3718,7 @@ C
      &          IP(4), WORK(*)
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('ROTCMO')
       CALL GETTIM(CPU1,WALL1)
@@ -3995,7 +3995,7 @@ C
       RETURN
       END
       DOUBLE PRECISION FUNCTION DABSMAXDIFF(A,B,N)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D00 )
       DOUBLE PRECISION A(N),B(N)
       DMX = D0
@@ -4030,14 +4030,14 @@ C
 C     Written by J. Thyssen - Nov 27 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (THDE = 1.0D-10, DP1 = 0.1 D00)
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcbopt.h>
-#include <dcbkrmc_itinfo.h>
+#include "dcbopt.h"
+#include "dcbkrmc_itinfo.h"
 C
       DIMENSION CMO(*), CREF(*), WORK(*)
       LOGICAL   NOREJT
@@ -4173,16 +4173,16 @@ C
 C     Written by J. Thyssen - Nov 27 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbgen.h>
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbgen.h"
 C
       DIMENSION WORK(*),FMO(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       REWIND(LUKRM3)
       CALL MOLLAB('FC      ',LUKRM3,LUPRI)
@@ -4207,13 +4207,13 @@ C     Written by J. Thyssen - Nov 27 1998
 C     Last revision : 
 C       
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C         
       PARAMETER (DP5 = 0.50D00, D0 = 0.00D00, DP25 = 0.25D00)
 C         
-#include <dcbopt.h>
-#include <dcbibn.h>
+#include "dcbopt.h"
+#include "dcbibn.h"
 C           
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),EVECR(NREDM)
       DIMENSION IBTYP(2,*)
@@ -4292,15 +4292,15 @@ C     Written by J. Thyssen - Nov 22 2000
 C     Last revision : 
 C       
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C         
-#include <dcbidx.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbopt.h>
+#include "dcbidx.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbopt.h"
 C
 C
       IORBI = 0
@@ -4415,16 +4415,16 @@ C     Written by J. Thyssen - Nov 22 2000
 C     Last revision : 
 C       
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <consts.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "consts.h"
 C
       PARAMETER (DLVLSTEP = 0.2D0)
 C         
-#include <dgroup.h>
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dcbkrmc_itinfo.h>
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dcbkrmc_itinfo.h"
 C
       DIMENSION REDE(NREDM,NREDM), REDS(NREDM,NREDM)
       DIMENSION REDGP(NREDM), EVECR(NREDM)
@@ -4527,13 +4527,13 @@ C     Written by J. Thyssen - Dec 12 2000
 C     Last revision : 
 C      
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <consts.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "consts.h"
       PARAMETER (THQCXX = 0.10D0, RTTHRG = 4.00D0)
       PARAMETER (THGFAC = 0.98D0, THGFC2 = 0.70D0)
 C
-#include <dcbopt.h>
+#include "dcbopt.h"
 C
 C     Heuristics ripped from Dalton (CNVTHR, sirneo.F)
 C
@@ -4589,15 +4589,15 @@ C     Written by J. Thyssen - Dec 14 2000
 C     Last revision : 
 C       
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
-#include <thrzer.h>
+#include "consts.h"
+#include "thrzer.h"
       PARAMETER ( THRTT = 1.0D-4 )
 C
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcbopt.h"
+#include "dgroup.h"
 C
       DIMENSION CREF(NZCONF,*)
 C
@@ -4640,10 +4640,10 @@ C     Written by J. Thyssen - Dec 22 2000
 C     Last revision : 
 C       
 C***********************************************************************
-#include <priunit.h>
-#include <implicit.h>
+#include "priunit.h"
+#include "implicit.h"
 C
-#include <dcbopt.h>
+#include "dcbopt.h"
 C
       LOGICAL TFLAG
 C
@@ -4704,13 +4704,13 @@ C     Written by J. Thyssen - Dec 28 2000
 C     Last revision : 
 C       
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbgen.h>
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbgen.h"
 C
       DIMENSION WORK(*)
       DIMENSION CMO(*), CREF(*)
@@ -4824,10 +4824,10 @@ C     Written by J. Thyssen - Dec 28 2000
 C     Last revision : 
 C       
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
+#include "dcbgen.h"
 C
       DIMENSION REDE(*), REDGP(*)
       DIMENSION IBTYP(2,*), IBEVC(*), IBPVC(*), IBCVC(*)
@@ -4863,10 +4863,10 @@ C     Written by J. Thyssen - Dec 28 2000
 C     Last revision : 
 C       
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
+#include "dcbgen.h"
 C
       DIMENSION REDE(*), REDGP(*)
       DIMENSION IBTYP(2,*), IBEVC(*), IBPVC(*), IBCVC(*)
@@ -4901,14 +4901,14 @@ C     Written by J. Thyssen - Jan 18 2000
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
-#include <dcbidx.h>
-#include <dcborb.h>
-#include <dcbopt.h>
+#include "dcbidx.h"
+#include "dcborb.h"
+#include "dcbopt.h"
 C
       IF (MCTYPE .EQ. JDHF .OR. MCTYPE .EQ. JODHF) THEN
          CALL TITLER('QC-DHF wave function optimization','*',110)
@@ -4970,10 +4970,10 @@ C     Written by J. Thyssen - Feb 2 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
+#include "dcborb.h"
 C
       DIMENSION DCAO(*), DVAO(*)
       DIMENSION WORK(*)
@@ -4997,18 +4997,18 @@ C     Written by J. Thyssen - Mar 3 2001
 C     Last revision : 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 C
       DIMENSION CMO(*)
       DIMENSION WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('RH1DIAG')
 C
@@ -5095,11 +5095,11 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,DC = 100.0D0)
 C
-#include <dgroup.h>
+#include "dgroup.h"
 C
       DIMENSION GPOE(*),GPOP(*)
       DIMENSION WORK(*)
@@ -5221,19 +5221,19 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <consts.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION GOEE(*),GOEP(*)
       DIMENSION WORK(*)
       DIMENSION JXOPE(2,*),JXOPP(2,*)
       DIMENSION NOROT(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('FSMROT')
 C
@@ -5278,15 +5278,15 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <consts.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "consts.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <dcbidx.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbidx.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION NOROT(*),GRAD(NORBT,NORBT,*)
 C
@@ -5315,20 +5315,20 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <consts.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "consts.h"
       PARAMETER( DC = 1.0D2 )
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION GOEE(*),GOEP(*)
       DIMENSION WORK(*)
       DIMENSION JXOPE(2,*),JXOPP(2,*)
       DIMENSION NOROT(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('RMROT')
 C
@@ -5440,17 +5440,17 @@ C
 C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcbnrt.h>
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbnrt.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
 C
       DIMENSION GOEE(NXOPE,*), GOEP(NXOPP,*), JXOPE(*), JXOPP(*)
       DIMENSION FC(*), FV(*), CMO(*), FQ(NORBT,NASHT,*), DV(*)
@@ -5459,7 +5459,7 @@ C
       DIMENSION JMO(2), NMO(2)
       DIMENSION DFAC(2)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('SVLDEG')
 C
@@ -5604,14 +5604,14 @@ C
 C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       CHARACTER*1 C
       LOGICAL DOGRAD, DOTRI
@@ -5621,7 +5621,7 @@ C
       DIMENSION NOROT(*)
       DIMENSION WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('SVLDE1')
 C
@@ -5676,17 +5676,17 @@ C
 C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <consts.h>
-#include <thrzer.h>
+#include "consts.h"
+#include "thrzer.h"
 C
-#include <dcborb.h>
-#include <dcbidx.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dcbidx.h"
+#include "dgroup.h"
 C
       CHARACTER*1 C
       LOGICAL DOGRAD, DOTRI
@@ -5697,7 +5697,7 @@ C
       DIMENSION VEC(NR,NC,NZ)
       DIMENSION WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('SVLDE2')
 C

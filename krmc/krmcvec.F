@@ -9,24 +9,24 @@ C     Originally written by panor 1998
 C     Modified by jth Nov 24 1998: write to LUKRMC instead.
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C     
-#include <consts.h>
+#include "consts.h"
 C     
-#include <dummy.h>
-#include <dcbxrs.h>
-#include <dcbibn.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbgen.h>
+#include "dummy.h"
+#include "dcbxrs.h"
+#include "dcbibn.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
 C     
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),
      &     IBPVC(*),EVALR(*),EVECR(NREDM,*),DKAPPA(*)
       DIMENSION CREF(*)
       DIMENSION WORK(*)
 C     
-#include <memint.h>
+#include "memint.h"
 C     
       CALL QENTER('KRMCVEC')
 C     
@@ -107,15 +107,15 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <dcbxrs.h>
-#include <dcbibn.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "dcbxrs.h"
+#include "dcbibn.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
-#include <dcbxpr.h>
+#include "dcbxpr.h"
 C
       CHARACTER FILNAM*6,FILRSP*8,TYP*1,RSPTYP*5
       DIMENSION IBTYP(2,*),IBVEC(*),EVALR(*),EVECR(NREDM,*),
@@ -178,8 +178,8 @@ C     Written by panor 1998
 C
 C*****************************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER ( NCOL=5 )
       DIMENSION VEC(*)

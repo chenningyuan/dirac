@@ -51,16 +51,16 @@ C     Written by J. Thyssen - Dec 21 2000
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <consts.h>
-#include <thrzer.h>
+#include "consts.h"
+#include "thrzer.h"
 C
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dcbbas.h"
+#include "dgroup.h"
 C
       DIMENSION CREF(*)
       DIMENSION OCCNO(*), UNO(NASHT,NASHT,*)
@@ -266,19 +266,19 @@ C     Written by J. Thyssen - Mar 4 2000
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <consts.h>
-#include <thrzer.h>
+#include "consts.h"
+#include "thrzer.h"
 C
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcbidx.h>
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbidx.h"
 C
       DIMENSION CREF(*)
       DIMENSION CMO(*)
@@ -599,24 +599,24 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:37:10 "MET 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <consts.h>
+#include "consts.h"
 C
-#include <dcbidx.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbidx.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
 C
       CHARACTER C*1
       DIMENSION FD(NORBT,NORBT,NZ)
       DIMENSION U(*)
       DIMENSION WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('CANORB')
 C
