@@ -3960,7 +3960,7 @@ C.......Yalpha
         PFAC(2) = CVAL
 C.......Zalpha
         IOP(3) = 4
-        PFAC(2) = CVAL
+        PFAC(3) = CVAL
 C
         NPCOMP    = 1
         DO 110 IATOM = 1, NUCIND
