@@ -59,7 +59,7 @@ C  /* Deck opinpu */
 C
       SAVE FIRST
       DATA TABLE /'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC',
-     &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY',
+ 4   &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY',
      &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA',
      &            '.SP BAS', '.PREOPT', '.VISUAL', '.VRML  ',
      &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG',
@@ -230,40 +230,54 @@ C
      &                         '" not recognized in OPINPU.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' INPUT KEYWORDS',LUPRI)
             CALL QUIT('Illegal keyword in OPINPU.')
+C&&&&: PRINT: General print level
  1          READ(LUCMD,*) IPRINT
             GOTO 100
+C&&&&: MAX IT: Maximum number of iterations
  2          READ(LUCMD,*) ITRMAX
             GOTO 100
+C&&&&: TRUSTR: Initial trust radius
  3          READ(LUCMD,*) TRSTRA
             TRSTCH = .TRUE.
             GOTO 100
+C&&&&: TR FAC: Trust radius increment/decrement
  4          READ(LUCMD,*) TRSTIN, TRSTDE
             TRSTCH = .TRUE.
             TRSTFC = .TRUE.
             GOTO 100
+C&&&&: TR LIM: Bad/good predition ration, rejection ration low/high
  5          READ(LUCMD,*) RTENBD, RTENGD, RTRJMN, RTRJMX
             TRSTCH = .TRUE.
             GOTO 100
+C&&&&: MAX RE: Max # of rejected steps
  6          READ(LUCMD,*) MAXREJ
             GOTO 100
+C&&&&: NOTRUS: No trust region to be used for steps
  7          NOTRST = .TRUE.
             GOTO 100
+C&&&&: ENERGY: Convergence threshold for energy
  8          READ(LUCMD,*) THRERG
             CHGRDT = .TRUE.
             GOTO 100
+C&&&&: GRADIE: Convergence threshold for gradient
  9          READ(LUCMD,*) GRDTHR
             CHGRDT = .TRUE.
             GOTO 100
+C&&&&: STEP T: Convergence threshold for step
  10         READ(LUCMD,*) THRSTP
             CHGRDT = .TRUE.
             GOTO 100
+C&&&&: CONDIT: Number of convergence criteria
  11         READ(LUCMD,*) ICONDI
             GOTO 100
+C&&&&: NOBREA: No symmetry breaking during optimization
  12         NOBRKS = .TRUE.
             GOTO 100
+C&&&&: SP BAS: Single point energy calculated using specified basis
  13         READ(LUCMD,*) SPBSTX
             DOSPE = .TRUE.
             GOTO 100
+C&&&&: PREOPT: Preoptimization using specified basis set
  14         READ(LUCMD,*) NUMPRE
             IF ((NUMPRE .LT. 1) .OR. (NUMPRE .GT. MAXPRE)) THEN
                WRITE(LUPRI,'(/,A,I2,A/)')
@@ -277,63 +291,92 @@ C
                DOPRE = .TRUE.
             END IF
             GOTO 100
+C&&&&: VISUAL: Generate VRML-file for visualization
  15         VISUAL = .TRUE.
             GOTO 100
+C&&&&: VRML: VRML-files of initial and final geometries will be created 
  16         VRML = .TRUE.
             GOTO 100
+C&&&&: SYMTHR: Threshold for symmetry break
  17         READ(LUCMD,*) THRSYM
             GOTO 100
+C&&&&: TRSTRG: Use trust region method
  18         TRSTRG = .TRUE.
             GOTO 100
+C&&&&: VR-BON: Draw bonds between nearby atoms
  19         VRBOND = .TRUE.
             GOTO 100
+C&&&&: VR-EIG: Visualize vibrational modes
  20         VREIGV = .TRUE.
             GOTO 100
+C&&&&: INITHE: Calculate initial Hessian
  21         INITHS = .TRUE.
             GOTO 100
+C&&&&: INITEV: Diagonal elements of intial diagonal Hessian matrix
  22         READ(LUCMD,*) EVLINI
             GOTO 100
+C&&&&: HESFIL: Initial Hessian to be read from file
  23         HSFILE = .TRUE.
             GOTO 100
+C&&&&: REJINI: Hessian to be reinitialized after rejected steps
  24         REJINI = .TRUE.
             GOTO 100
+C&&&&: STEEPD: 1order steepest descent method
  25         STEEPD = .TRUE.
             GOTO 100
+C&&&&: RANKON: 1st order method with rank one update will be used
  26         RANKON = .TRUE.
             GOTO 100
+C&&&&: PSB   : Use 1st order method with Powell-symmetric-Boyden (PSB) update
  27         PSB = .TRUE.
             GOTO 100
+C&&&&: DFP   : Use 1st order method with Davidon-Fletcher-Powell (DFP) update
  28         DFP    = .TRUE.
             GOTO 100
+C&&&&: BFGS  : Use 1st order method with Broyden-Fletcher-Goldfarb-Shanno update
  29         BFGS   = .TRUE.
             GOTO 100
+C&&&&: NEWTON:  Use 2nd order Newton method
  30         NEWTON = .TRUE.
             GOTO 100
+C&&&&: QUADSD:  2nd order quadratic steepest descent method will be used
  31         QUADSD = .TRUE.
             GOTO 100
+C&&&&: SCHLEG:  Use 1st order method with Schlegels update
  32         SCHLEG = .TRUE.
             GOTO 100
+C&&&&: HELLMA:  Use the Hellmann-Feynman theorem to calculate derivatives.
  33         HFPROP = .TRUE.
             GOTO 100
+C&&&&: BAKER :  Use Baker''s convergence criteria [J. Comp. Chem. 14(1993) 1085]
  34         BAKER  = .TRUE.
             GOTO 100
+C&&&&: M-BFGS:  Use 1ast order method with "multiple BFGS" update
  35         MULTI  = .TRUE.
             BFGS   = .TRUE.
             GOTO 100
+C&&&&: CARTES:  Use Cartesian coordinates for optimization
  36         CARTCO = .TRUE.
             GOTO 100
+C&&&&: REDINT:  Use redundant internal coordinates for optimization
  37         REDINT = .TRUE.
             GOTO 100
+C&&&&: INIRED:  Initial Hessian diagonal in internal coordinates
  38         INRDHS = .TRUE.
             GOTO 100
+C&&&&: 1STORD:  Use default 1st order method
  39         FSTORD = .TRUE.
             GOTO 100
+C&&&&: 2NDORD:  Use detault 2nd order method
  40         SNDORD = .TRUE.
             GOTO 100
+C&&&&: GRDINI:  Reinitialization of Hessian when increased gradient norm
  41         GRDINI = .TRUE.
             GOTO 100
+C&&&&: DISPLA:  Displacements for numerical gradient
  42         READ (LUCMD,*) DISPLA
             GOTO 100
+C&&&&: CONSTR:  Constrained coordinates
  43         READ (LUCMD,*) NCON
             IF ((NCON .LE. 0) .OR. (NCON .GE. 8*MXCENT)) THEN
                WRITE(LUPRI,'(/,A,I2,A/)')
@@ -353,8 +396,10 @@ C
  443        CONTINUE
             CONOPT = .TRUE.
             GOTO 100
+C&&&&: MODHES:  Use approximate model Hessian defined by Roland Lindh
  44         MODHES = .TRUE.
             GOTO 100
+C&&&&: REMOVE:  Remove coordinates
  45         READ (LUCMD,*) NREM
             IF ((NREM .LE. 0) .OR. (NREM .GE. 8*MXCENT)) THEN
                WRITE(LUPRI,'(/,A,I2,A/)')
@@ -374,47 +419,63 @@ C
  445        CONTINUE
             REMCRD = .TRUE.
             GOTO 100
+C&&&& : INIMOD:  Use approximate model Hessian defined by Roland Lindh as initial Hessian
  46         INMDHS = .TRUE.
             GOTO 100
+C&&&& : FINDRE:  Only determine redundant internal coordinates
  47         FINDRE = .TRUE.
             GOTO 100
+C&&&& : CMBMOD:  Update Hessian 'through a combination of a calculated model Hessian and an BFGS update
+C                of the last Hessian
  48         CMBMOD = .TRUE.
             GOTO 100
+C&&&& : RF    :  Rational function method will be used to control step.
  49         RATFUN = .TRUE.
             GOTO 100
+C&&&& : GDIIS :  Geometrical DIIS will be used to control step.
  50         GDIIS = .TRUE.
             GOTO 100
+C&&&& : DELINT:  Optimization will be performed in delocalized internal coordinates.
  51         DELINT = .TRUE.
             GOTO 100
+C&&&& : NODIHE:  No dihedral angles will be used as coordinates (just bonds and angles).
  52         NODIHE = .TRUE.
             GOTO 100
+C&&&& : VR-COR : Coordinate axes will be visualized
  53         VRCORD = .TRUE.
             GOTO 100
+C&&&& : VR-VIB : Vibrational modes will be visualized
  54         VRVIBA = .TRUE.
             GOTO 100
+C&&&& : VR-SYM : Symmetry elements will be visualized
  55         VRSYMM = .TRUE.
             GOTO 100
+C&&&& : M-PSB  : Use 1st order method with "multiple PSB" update
  56         MULTI = .TRUE.
             PSB = .TRUE.
             GOTO 100
+C&&&& : LINE S : Use partial line search with bound quartic polynomial
  57         LNSRCH = .TRUE.
             GOTO 100
+C&&&& : SADDLE : Saddle point optimization
  58         SADDLE = .TRUE.
             GOTO 100
+C&&&& : MODE   : Reaction mode
  59         READ (LUCMD,*) NSPMOD
             GOTO 100
+C&&&& : BOFILL : Use 1st order method with Bofills update 
  60         BOFILL = .TRUE.
             GOTO 100
-C .LINDH  : use original Roland Lindh r_ref with .MODHES
+C&&&& : LINDH  : use original Roland Lindh r_ref with .MODHES
  61         LINDHD = .TRUE.
             GOTO 100
-C           .NO SKIP: Don't skip SSLL or SSSS gradients when small
+C&&&& : NO SKIP: Don't skip SSLL or SSSS gradients when small
  62         CONTINUE
 #if defined (PRG_DIRAC)
             DOTRCK = .FALSE.
 #endif
             GOTO 100
-C           .GRD INTFLG: INTFLG to pass to gradient routines
+C&&&& : GRD INTFLG: INTFLG to pass to gradient routines
  63         CONTINUE
 #if defined (PRG_DIRAC)
             READ (LUCMD,*) ILL, ILS, ISS
@@ -422,17 +483,19 @@ C           .GRD INTFLG: INTFLG to pass to gradient routines
 #endif
             GOTO 100
  64         CONTINUE
-C           .GRD SCREEN: screening threshold in gradient calc.
+C&&&& : GRD SCREEN: screening threshold in gradient calculation
 #if defined (PRG_DIRAC)
             READ (LUCMD,*) SCRGRD
 #endif
             GOTO 100
+C&&&& : NOAUX : No extra (auxilliary) bonds will be added
  65         NOAUX = .TRUE.
             GOTO 100
+C&&&& : BFGSR1: Use 1st order method with BFGS/rank one combination update
  66         BFGSR1 = .TRUE.
             GOTO 100
  67         CONTINUE
-C NUMGRD: Use numerical gradient
+C&&&& :  NUMGRD: Use numerical gradient
             DONGRD = .TRUE.
             GOTO 100
  68         CONTINUE
