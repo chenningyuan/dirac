@@ -426,6 +426,16 @@ C
       ISYM = IPRPSYM(INDXPR)
       IREP = ISYM - 1
       ITIM = IPRPTIM(INDXPR)
+
+C ... check for anti-/symmetrity of the property matrix
+
+      IF (.NOT.(ITIM.EQ.1.OR.ITIM.EQ.-1)) THEN
+       WRITE(LUPRI,'(2X,I3,1X,A,I2)')
+     &'PRPMA1: Property operator no ',INDXPPR,PRPNAM(INDXPR),
+     & ' is NOT (anti-)hermitian!'
+       CALL QUIT('PRPMA1: Non-hermitian property!')
+      ENDIF
+
 C
 C
 C     Get property matrix in AO-basis
