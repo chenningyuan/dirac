@@ -262,6 +262,7 @@ C---------------Local variables--------------------------------------
 C
        PARAMETER (NIOBUF=4096)
        INTEGER IOBUFFER(NIOBUF)
+       INTEGER*8 JSTART
        DATA IOBUFFER /NIOBUF*0/
 C
 C---------------Executable code--------------------------------------
@@ -349,6 +350,7 @@ C---------------Local variables--------------------------------------
 C
        PARAMETER (NIOBUF=4096)
        INTEGER IOBUFFER(NIOBUF)
+       INTEGER*8 JSTART
        DATA IOBUFFER /NIOBUF*0/
 C
 C---------------Executable code--------------------------------------

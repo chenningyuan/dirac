@@ -1409,7 +1409,7 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 EPSIJK,EIJKABC,VMIN(2)
       REAL*8 CPUDELTA,CPU0,CPU1,CPU2,CPU3,CPUTOT
-
+      INTEGER*8 I8,IT3OFF1,JT3OFF1,KT3OFF1,EBCI,EBCJ,EBCK
 C---------------Executable code--------------------------------------
 C
 C     Initialize the timing.
@@ -1434,15 +1434,17 @@ C
 
 C call SRT23 with appropriate arguments
 
-#if defined (VAR_MPI)
       CALL SRT23 (NREP,MULTB,NVO,NV,NO,NT3VVT,NT3VVVT,KT3VVVOT,
      &            LLT3VVVT,BUF4,VVVO,NVVVOTMX)
-      IF (CARITH) CALL CONJUGA (KT3VVVOT(NREP+1),VVVO,1)
-#else
-      CALL SRT23 (NREP,MULTB,NVO,NV,NO,NVVT,NVVVT,KVVVOT,LLVVVT,
-     &            BUF4,VVVO,NVVVOTMX)
-      IF (CARITH) CALL CONJUGA (KVVVOT(NREP+1),VVVO,1)
-#endif
+      IF (CARITH) THEN
+C
+C      Take complex conjugate. We can not use CONJUGA as the length of this
+C      array may exceed the I4 adressing space.
+C
+         DO I8 = 2, 2*KT3VVVOT(NREP+1), 2
+            VVVO(I8) = - VVVO(I8)
+         ENDDO
+      ENDIF
 C
 C     Put TAU3 in block BUF4 for use in evaluating -T correction
 C
@@ -1485,10 +1487,6 @@ C
       IJOFF3 = IVVOOTT(IJREP) + (IJ-1) * NVVT(IJREP)
       IKOFF3 = IVVOOTT(IKREP) + (IK-1) * NVVT(IKREP)
       JKOFF3 = IVVOOTT(JKREP) + (JK-1) * NVVT(JKREP)
-
-      IOFF1  = KVVVOT(IREP) + (I-1) * NVVVT(IREP)
-      JOFF1  = KVVVOT(JREP) + (J-1) * NVVVT(JREP)
-      KOFF1  = KVVVOT(KREP) + (K-1) * NVVVT(KREP)
 
       IT3OFF1  = KT3VVVOT(IREP) + (I-1) * NT3VVVT(IREP)
       JT3OFF1  = KT3VVVOT(JREP) + (J-1) * NT3VVVT(JREP)
@@ -2057,29 +2055,19 @@ C
       CALL XSCAL (NDIMT2,-A1,T2O,1)
       IF (CARITH) THEN
          CSUM1 = ZSUM (NDIMT1,T1O,1)
-C64B     CSUM1 = CSUM (NDIMT1,T1O,1)
          SUM2 = ZDOTC (NDIMT1,T1O,1,T1O,1)
-C64B     SUM2 = CDOTC (NDIMT1,T1O,1,T1O,1)
          CSUM1 = CSUM1 + ZSUM (NDIMT2,T2O,1)
-C64B     CSUM1 = CSUM1 + CSUM (NDIMT2,T2O,1)
          SUM2 = SUM2 + ZDOTC (NDIMT2,T2O,1,T2O,1)
-C64B     SUM2 = SUM2 + CDOTC (NDIMT2,T2O,1,T2O,1)
          RMS = DCONJG(CSUM1)*CSUM1
-C64B     RMS = CONJG(CSUM1)*CSUM1
       ELSE
          SUM1 = DSUM (NDIMT1,T1O,1)
-C64B     SUM1 = SSUM (NDIMT1,T1O,1)
          SUM2 = DDOT (NDIMT1,T1O,1,T1O,1)
-C64B     SUM2 = SDOT (NDIMT1,T1O,1,T1O,1)
          SUM1 = SUM1 + DSUM (NDIMT2,T2O,1)
-C64B     SUM1 = SUM1 + SSUM (NDIMT2,T2O,1)
          SUM2 = SUM2 + DDOT (NDIMT2,T2O,1,T2O,1)
-C64B     SUM2 = SUM2 + SDOT (NDIMT2,T2O,1,T2O,1)
          RMS = SUM1 * SUM1
       ENDIF
 C
       RMS = SQRT(ABS(SUM2-RMS))
-C64B  RMS = SQRT(ABS(SUM2-RMS))
 C
       SECT1 = (ITC-1)*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1
@@ -2097,16 +2085,11 @@ C
 C
       IF (CARITH) THEN
          CSUM1 = ZDOTC (NDIMT1,T1N,1,T1O,1)
-C64B     CSUM1 = CDOTC (NDIMT1,T1N,1,T1O,1)
          CSUM1 = CSUM1 + ZDOTC (NDIMT2,T2N,1,T2O,1)
-C64B     CSUM1 = CSUM1 + CDOTC (NDIMT2,T2N,1,T2O,1)
          SUM2 = DBLE(CSUM1) + DIMAG(CSUM1)
-C64B     SUM2 = REAL(CSUM1) + AIMAG(CSUM1)
       ELSE
          SUM2 = DDOT (NDIMT1,T1N,1,T1O,1)
-C64B     SUM2 = SDOT (NDIMT1,T1N,1,T1O,1)
          SUM2 = SUM2 + DDOT (NDIMT2,T2N,1,T2O,1)
-C64B     SUM2 = SUM2 + SDOT (NDIMT2,T2N,1,T2O,1)
       ENDIF
 C
       BB2(N,ITC) = SUM2
@@ -2127,13 +2110,10 @@ C
 C  FIND THE MAXIMUM AND SCALE
 C
       XM =  ABS(BB(1,1))
-C64B  XM =  ABS(BB(1,1))
       DO 80 N = 1,IT
       DO 90 M = 1,N
       XFAC =  ABS(BB(N,M))
-C64B  XFAC =  ABS(BB(N,M))
       XMAX =  DMAX1(XM,XFAC)
-C64B  XMAX =  MAX (XM,XFAC)
       XM = XMAX
    90 CONTINUE
    80 CONTINUE
@@ -2176,7 +2156,6 @@ C
       CALL RREAD(ITAPL,T2O,INTOWP(NDIMT2*RCW),SECT2)
 C
       CFAC = DCMPLX(CC(N),AR0)
-C64B  CFAC = CMPLX(CC(N),AR0)
       CALL XAXPY (NDIMT1,CFAC,T1O,1,T1N,1)
       CALL XAXPY (NDIMT2,CFAC,T2O,1,T2N,1)
 C
@@ -2217,7 +2196,6 @@ C---------------Local variables--------------------------------------
 C
       COMPLEX*16 CECC1,CECC2
       COMPLEX*16 ZDOTC
-C64B  COMPLEX*16 CDOTC
       REAL*8 DDOT,SDOT
 C
 C---------------Executable code--------------------------------------
@@ -2227,14 +2205,10 @@ C
 C
       IF (CARITH) THEN
          CECC1 = ZDOTC (NFVO,BUF1,1,T1,1)
-C64B     CECC1 = CDOTC (NFVO,BUF1,1,T1,1)
          IF (ABS(DIMAG(CECC1)).GT.ACCUR) 
      &      WRITE (6,1000) 'T1',DIMAG(CECC1)
-C64B     IF (ABS(AIMAG(CECC1)).GT.ACCUR) 
-C64B &      WRITE (6,1000) 'T1',AIMAG(CECC1)
       ELSE
          ECC = DDOT (NFVO,BUF1,1,T1,1)
-C64B     ECC = SDOT (NFVO,BUF1,1,T1,1)
       ENDIF
 C
 c     print*,'T1 contribution to CC energy',ecc
@@ -2244,16 +2218,11 @@ C
       CALL GETTAU  (T1,T2,BUF2)
       IF (CARITH) THEN
          CECC2 = ZDOTC (NDIMT2,BUF1,1,BUF2,1)
-C64B     CECC2 = CDOTC (NDIMT2,BUF1,1,BUF2,1)
          IF (ABS(DIMAG(CECC2)).GT.ACCUR) 
      &      WRITE (6,1000) 'T2',DIMAG(CECC2)
-C64B     IF (ABS(AIMAG(CECC2)).GT.ACCUR) 
-C64B &      WRITE (6,1000) 'T2',AIMAG(CECC2)
          ECC = DBLE(CECC1 + CECC2)
-C64B     ECC = REAL(CECC1 + CECC2)
       ELSE
          ECC = ECC +  DDOT (NDIMT2,BUF1,1,BUF2,1)
-C64B     ECC = ECC +  SDOT (NDIMT2,BUF1,1,BUF2,1)
       ENDIF
 C
       RETURN
@@ -2300,14 +2269,10 @@ C---------------Executable code--------------------------------------
 C
       IF (CARITH) THEN
          CEMP21 = ZDOTC (NFVO,FVO,1,T1,1)
-C64B     CEMP21 = CDOTC (NFVO,FVO,1,T1,1)
          IF (ABS(DIMAG(CEMP21)).GT.ACCUR) 
      &      WRITE (6,1000) 'T1',DIMAG(CEMP21)
-C64B     IF (ABS(AIMAG(CEMP21)).GT.ACCUR) 
-C64B &      WRITE (6,1000) 'T1',AIMAG(CEMP21)
       ELSE
          EMP2 = DDOT (NFVO,FVO,1,T1,1)
-C64B     EMP2 = SDOT (NFVO,FVO,1,T1,1)
       ENDIF
 C
 c     print*,'T1 contribution to MP2 energy',emp2
@@ -2315,16 +2280,11 @@ C
       CALL GETVVOO(BUF1)
       IF (CARITH) THEN
          CEMP22 = ZDOTC (NDIMT2,BUF1,1,T2,1)
-C64B     CEMP22 = CDOTC (NDIMT2,BUF1,1,T2,1)
          IF (ABS(DIMAG(CEMP22)).GT.ACCUR) 
      &      WRITE (6,1000) 'T2',DIMAG(CEMP22)
-C64B     IF (ABS(AIMAG(CEMP22)).GT.ACCUR) 
-C64B &      WRITE (6,1000) 'T2',AIMAG(CEMP22)
          EMP2 = DBLE(CEMP21 + CEMP22)
-C64B     EMP2 = REAL(CEMP21 + CEMP22)
       ELSE
          EMP2 = EMP2 + DDOT (NDIMT2,BUF1,1,T2,1)
-C64B     EMP2 = EMP2 + SDOT (NDIMT2,BUF1,1,T2,1)
       ENDIF
 C
       RETURN
@@ -2514,18 +2474,14 @@ C
          SUM = SUM + NE(I)
       ENDDO
       RSUM = DBLE(SUM)
-C64B  RSUM = REAL(SUM)
 C
       IF (CARITH) THEN
          DIAG = DBLE(ZDOTC (NDIMT1,BUF1,1,BUF1,1))
-C64B     DIAG = REAL(CDOTC (NDIMT1,BUF1,1,BUF1,1))
       ELSE
          DIAG = DDOT (NDIMT1,BUF1,1,BUF1,1)
-C64B     DIAG = SDOT (NDIMT1,BUF1,1,BUF1,1)
       ENDIF
 C
       DIAG =  SQRT(DIAG/RSUM)
-C64B  DIAG =  SQRT(DIAG/RSUM)
 C
       RETURN
       END
@@ -2676,13 +2632,9 @@ C ** NINT is updated on exit of GETVOVV !
                        CT1 = ZDOTU(NINT,BUF1(CDIK),1,BUF3(AK),NVO(IRP))
                        S1(T1AI) = S1(T1AI) + DBLE(CT1)
                        S1(T1AI+1) = S1(T1AI+1) + DIMAG(CT1)
-C64B                   CT1 = CDOTU(NINT,BUF1(CDIK),1,BUF3(AK),NVO(IRP))
-C64B                   S1(T1AI) = S1(T1AI) + REAL(CT1)
-C64B                   S1(T1AI+1) = S1(T1AI+1) + AIMAG(CT1)
                     ELSE
                        S1(T1AI) = S1(T1AI)
      &                     + DDOT(NINT,BUF1(CDIK),1,BUF3(AK),NVO(IRP))
-C64B &                     + SDOT(NINT,BUF1(CDIK),1,BUF3(AK),NVO(IRP))
                     ENDIF
                  ENDDO
                  DO A = 1, NV(KREP)
@@ -2692,13 +2644,9 @@ C64B &                     + SDOT(NINT,BUF1(CDIK),1,BUF3(AK),NVO(IRP))
                        CT1 = ZDOTU(NINT,BUF1(CDIK),1,BUF3(AI),NVO(IRP))
                        S1(T1AK) = S1(T1AK) - DBLE(CT1)
                        S1(T1AK+1) = S1(T1AK+1) - DIMAG(CT1)
-C64B                   CT1 = CDOTU(NINT,BUF1(CDIK),1,BUF3(AI),NVO(IRP))
-C64B                   S1(T1AK) = S1(T1AK) - REAL(CT1)
-C64B                   S1(T1AK+1) = S1(T1AK+1) - AIMAG(CT1)
                     ELSE
                        S1(T1AK) = S1(T1AK)
      &                     - DDOT(NINT,BUF1(CDIK),1,BUF3(AI),NVO(IRP))
-C64B &                     - SDOT(NINT,BUF1(CDIK),1,BUF3(AI),NVO(IRP))
                     ENDIF
                  ENDDO
               ENDDO
@@ -2835,7 +2783,6 @@ C
 C     Return when we do not do Fock space calculations
 C
       IF (EQNS.NE.'FOCKSP') RETURN
-c     write (6,*) class,dodel
 C
 C     NINDX(1,IREP,INDEX) : Spinors to be kept
 C     NINDX(2,IREP,INDEX) : Additional spinors to be zeroed.
@@ -2956,7 +2903,6 @@ C
 C     Return when we do not do Fock space calculations
 C
       IF (EQNS.NE.'FOCKSP') RETURN
-c     write (6,*) class,dodel
 C
       TRIANG(1) = CLASS(1:1).EQ.CLASS(2:2)
       TRIANG(2) = CLASS(3:3).EQ.CLASS(4:4)

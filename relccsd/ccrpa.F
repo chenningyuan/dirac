@@ -355,7 +355,6 @@ C  Take the lowest diagonal value as start.
 C
       IS = JVOXX(IEXREP) + 1
       INDMIN = IDMIN(MVO(IEXREP),DG(IS),1)
-C64B  INDMIN = ISMIN(MVO(IEXREP),DG(IS),1)
       INDMIN = INDMIN + IS - 1
       CALL XCOPY (NDIMX,A0,0,X1,1)
       CALL XCOPY (NDIMX,A0,0,Y1,1)
@@ -519,7 +518,6 @@ C
             CALL XCOPY (M,A0,0,AA(OFF1),(M+1))
          ELSE
             CALL DCOPY (M,DG(OFF3D),1,AA(OFF1),RCW*(M+1))
-C64B        CALL SCOPY (M,DG(OFF3D),1,AA(OFF1),RCW*(M+1))
          ENDIF
          IF (M.GT.0)
      &   CALL XGEMV ('N',M,K,A1,AA(OFF1),M,X1(OFF2),1,A1,X2(OFF3),1)
@@ -625,35 +623,26 @@ C---------------Executable code--------------------------------------
 C
       IF (CARITH) THEN
          RNORM = ZDOTC (NDIMX,X1,1,X1,1)
-C64B     RNORM = CDOTC (NDIMX,X1,1,X1,1)
       ELSE
          RNORM = DDOT (NDIMX,X1,1,X1,1)
-C64B     RNORM = SDOT (NDIMX,X1,1,X1,1)
       ENDIF
 C
       IF (CARITH) THEN
          RNORM = RNORM + FACTOR * ZDOTC (NDIMX,Y1,1,Y1,1)
-C64B     RNORM = RNORM + FACTOR * CDOTC (NDIMX,Y1,1,Y1,1)
       ELSE
          RNORM = RNORM + FACTOR * DDOT (NDIMX,Y1,1,Y1,1)
-C64B     RNORM = RNORM + FACTOR * SDOT (NDIMX,Y1,1,Y1,1)
       ENDIF
 C
       IF (RNORM.LT.1.D-32) CALL QUIT('RNORM TOO SMALL')
 C
       RNORM = 1.D0 / SQRT(RNORM)
-C64B  RNORM = 1.0 / SQRT(RNORM)
 C
       IF (CARITH) THEN
          CALL ZSCAL (NDIMX,RNORM,X1,1)
          CALL ZSCAL (NDIMX,RNORM,Y1,1)
-C64B     CALL CSCAL (NDIMX,RNORM,X1,1)
-C64B     CALL CSCAL (NDIMX,RNORM,Y1,1)
       ELSE
          CALL DSCAL (NDIMX,RNORM,X1,1)
          CALL DSCAL (NDIMX,RNORM,Y1,1)
-C64B     CALL SSCAL (NDIMX,RNORM,X1,1)
-C64B     CALL SSCAL (NDIMX,RNORM,Y1,1)
       ENDIF
 C
       RETURN
@@ -695,7 +684,6 @@ C
                X1(AI) = X1(AI) / ( DG((AI+1)/2) - EFREQ)
             ELSE
                X1(AI) = X1(AI) * 10.D16
-C64B           X1(AI) = X1(AI) * 10.E16
             ENDIF
             Y1(AI) = Y1(AI) / ( DG((AI+1)/2) + EFREQ)
          ENDDO
@@ -705,7 +693,6 @@ C64B           X1(AI) = X1(AI) * 10.E16
                X1(AI) = X1(AI) / ( DG(AI) - EFREQ)
             ELSE
                X1(AI) = X1(AI) * 10.D16
-C64B           X1(AI) = X1(AI) * 10.E16
             ENDIF
             Y1(AI) = Y1(AI) / ( DG(AI) + EFREQ)
          ENDDO
@@ -785,13 +772,9 @@ C
          CALL QUIT('No complex eigensolver implemented')
       ELSE
          SUM1 = DDOT (NDIMX,X1,1,X2,1)
-C64B     SUM1 = SDOT (NDIMX,X1,1,X2,1)
          SUM1 = SUM1 + DDOT (NDIMX,Y1,1,Y2,1)
-C64B     SUM1 = SUM1 + SDOT (NDIMX,Y1,1,Y2,1)
          SUM2 = DDOT (NDIMX,Y1,1,X2,1)
-C64B     SUM2 = SDOT (NDIMX,Y1,1,X2,1)
          SUM2 = SUM2 + DDOT (NDIMX,X1,1,Y2,1)
-C64B     SUM2 = SUM2 + SDOT (NDIMX,X1,1,Y2,1)
       ENDIF
 C
       HH(2*N-1,2*ITC-1) = SUM1
@@ -812,13 +795,9 @@ C
          CALL QUIT('No complex eigensolver implemented')
       ELSE
          SUM1 = DDOT (NDIMX,X1,1,X2,1)
-C64B     SUM1 = SDOT (NDIMX,X1,1,X2,1)
          SUM1 = SUM1 - DDOT (NDIMX,Y1,1,Y2,1)
-C64B     SUM1 = SUM1 - SDOT (NDIMX,Y1,1,Y2,1)
          SUM2 = DDOT (NDIMX,X1,1,Y2,1)
-C64B     SUM2 = SDOT (NDIMX,X1,1,Y2,1)
          SUM2 = SUM2 - DDOT (NDIMX,Y1,1,X2,1)
-C64B     SUM2 = SUM2 - SDOT (NDIMX,Y1,1,X2,1)
       ENDIF
 C
       SS(2*N-1,2*ITC-1) = SUM1
@@ -879,11 +858,9 @@ C
       CALL RREAD(IOAMPL,Y1,INTOWP(NDIMX*RCW),SECT2)
 C
       CFAC = DCMPLX(CC(2*N-1,1),AR0)
-C64B  CFAC = CMPLX(CC(2*N-1,1),AR0)
       CALL XAXPY (NDIMX,CFAC,X1,1,X2,1)
       CALL XAXPY (NDIMX,CFAC,Y1,1,Y2,1)
       CFAC = DCMPLX(CC(2*N,1),AR0)
-C64B  CFAC = CMPLX(CC(2*N,1),AR0)
       CALL XAXPY (NDIMX,CFAC,Y1,1,X2,1)
       CALL XAXPY (NDIMX,CFAC,X1,1,Y2,1)
 C
@@ -907,11 +884,9 @@ C
       CALL RREAD(IOAMPS,Y1,INTOWP(NDIMX*RCW),SECT2)
 C
       CFAC = DCMPLX(CC(2*N-1,1),AR0)
-C64B  CFAC = CMPLX(CC(2*N-1,1),AR0)
       CALL XAXPY (NDIMX,CFAC,X1,1,X2,1)
       CALL XAXPY (NDIMX,CFAC,Y1,1,Y2,1)
       CFAC = DCMPLX(CC(2*N,1),AR0)
-C64B  CFAC = CMPLX(CC(2*N,1),AR0)
       CALL XAXPY (NDIMX,CFAC,Y1,1,X2,1)
       CALL XAXPY (NDIMX,CFAC,X1,1,Y2,1)
 C
@@ -956,13 +931,9 @@ C
          CALL QUIT('No complex eigensolver implemented')
       ELSE
          SUM1 = DDOT (NDIMX,X1,1,X2,1)
-C64B     SUM1 = SDOT (NDIMX,X1,1,X2,1)
          SUM1 = SUM1 + DDOT (NDIMX,Y1,1,Y2,1)
-C64B     SUM1 = SUM1 + SDOT (NDIMX,Y1,1,Y2,1)
          SUM2 = DDOT (NDIMX,Y1,1,X2,1)
-C64B     SUM2 = SDOT (NDIMX,Y1,1,X2,1)
          SUM2 = SUM2 + DDOT (NDIMX,X1,1,Y2,1)
-C64B     SUM2 = SUM2 + SDOT (NDIMX,X1,1,Y2,1)
       ENDIF
 C
       CALL XAXPY (NDIMX,-SUM1,X1,1,X2,1)
@@ -978,20 +949,15 @@ C     Symmetric orthonormalization of the pair of new expansion vectors
 C
       CALL NORMX (NDIMX,A1,X2,Y2,RNORM)
       SUM2 = 2.D0 * DDOT (NDIMX,Y2,1,X2,1)
-C64B  SUM2 = 2.0 *  SDOT (NDIMX,Y2,1,X2,1)
       ANGLE = DASIN(SUM2)/2
       C1COS = DCOS(ANGLE)
       C1SIN = - DSIN(ANGLE)
       CALL XCOPY (NDIMX,X2,1,X1,1)
       CALL XCOPY (NDIMX,Y2,1,Y1,1)
       CALL DSCAL (RCW*NDIMX,C1COS,X2,1)
-C64B  CALL SSCAL (RCW*NDIMX,C1COS,X2,1)
       CALL DSCAL (RCW*NDIMX,C1COS,Y2,1)
-C64B  CALL SSCAL (RCW*NDIMX,C1COS,Y2,1)
       CALL DAXPY (RCW*NDIMX,C1SIN,Y1,1,X2,1)
-C64B  CALL SAXPY (RCW*NDIMX,C1SIN,Y1,1,X2,1)
       CALL DAXPY (RCW*NDIMX,C1SIN,X1,1,Y2,1)
-C64B  CALL SAXPY (RCW*NDIMX,C1SIN,X1,1,Y2,1)
       CALL NORMX (NDIMX,A1,X2,Y2,RNORM)
 C
       IF (COMPRESS) THEN
@@ -1009,9 +975,7 @@ C
 C  The norm of the solution is in general not equal to 1
 C
       SUM1 = DDOT (2*IT,CC(1,1),1,CC(1,1),1)
-C64B  SUM1 = SDOT (2*IT,CC(1,1),1,CC(1,1),1)
       SUM2 = 2.D0 * DDOT (IT,CC(1,1),2,CC(2,1),2)
-C64B  SUM2 = 2.0  * SDOT (IT,CC(1,1),2,CC(2,1),2)
       SUM2 = SUM2 / SUM1
 C
 C  Combine normalization and symmetric orthogonalization
@@ -1020,7 +984,6 @@ C  multiplied with the one from the symmetric orthonormalization
 C
       SUM1 = SQRT(1.D0/SUM1) 
       SUM1 = SUM1 * SQRT(1.D0/ (1.D0-SUM2*SUM2))
-C64B  SUM1 =  SQRT(1.0 /SUM1) *  SQRT(1.0 / (1.D0-SUM2*SUM2))
       ANGLE = DASIN(SUM2)/2
       C1COS = DCOS(ANGLE)
       C1SIN = - DSIN(ANGLE)
@@ -1043,13 +1006,9 @@ C
       CALL XCOPY (NDIMX,X2,1,X1,1)
       CALL XCOPY (NDIMX,Y2,1,Y1,1)
       CALL DSCAL (RCW*NDIMX,C1COS,X2,1)
-C64B  CALL SSCAL (RCW*NDIMX,C1COS,X2,1)
       CALL DSCAL (RCW*NDIMX,C1COS,Y2,1)
-C64B  CALL SSCAL (RCW*NDIMX,C1COS,Y2,1)
       CALL DAXPY (RCW*NDIMX,C1SIN,Y1,1,X2,1)
-C64B  CALL SAXPY (RCW*NDIMX,C1SIN,Y1,1,X2,1)
       CALL DAXPY (RCW*NDIMX,C1SIN,X1,1,Y2,1)
-C64B  CALL SAXPY (RCW*NDIMX,C1SIN,X1,1,Y2,1)
 C
 C  Write the orthonormalized solution vector to the first record
 C
@@ -1068,13 +1027,9 @@ C
       CALL XCOPY (NDIMX,X2,1,X1,1)
       CALL XCOPY (NDIMX,Y2,1,Y1,1)
       CALL DSCAL (RCW*NDIMX,C1COS,X2,1)
-C64B  CALL SSCAL (RCW*NDIMX,C1COS,X2,1)
       CALL DSCAL (RCW*NDIMX,C1COS,Y2,1)
-C64B  CALL SSCAL (RCW*NDIMX,C1COS,Y2,1)
       CALL DAXPY (RCW*NDIMX,C1SIN,Y1,1,X2,1)
-C64B  CALL SAXPY (RCW*NDIMX,C1SIN,Y1,1,X2,1)
       CALL DAXPY (RCW*NDIMX,C1SIN,X1,1,Y2,1)
-C64B  CALL SAXPY (RCW*NDIMX,C1SIN,X1,1,Y2,1)
 C
       SECT1 = 1
       SECT2 = SECT1 + NST1
@@ -1169,10 +1124,8 @@ C
 C
       IF (CARITH) THEN
          CNV = ZDOTC (NDIMX,X2,1,X2,1) + ZDOTC (NDIMX,Y2,1,Y2,1)
-C64B     CNV = CDOTC (NDIMX,X2,1,X2,1) + CDOTC (NDIMX,Y2,1,Y2,1)
       ELSE
          CNV = DDOT (NDIMX,X2,1,X2,1) + DDOT (NDIMX,Y2,1,Y2,1)
-C64B     CNV = SDOT (NDIMX,X2,1,X2,1) + SDOT (NDIMX,Y2,1,Y2,1)
       ENDIF
 C     
       RETURN
@@ -1216,25 +1169,21 @@ C---------------Executable code--------------------------------------
 C
       IF (CARITH) THEN
          CERPA1 = ZDOTU (NDIMX,AOV,1,X1,1)
-C64B     CERPA1 = CDOTU (NDIMX,AOV,1,X1,1)
       ELSE
          ERPA = DDOT (NDIMX,AOV,1,X1,1)
-C64B     ERPA = SDOT (NDIMX,AOV,1,X1,1)
       ENDIF
 C
       IF (CARITH) THEN
          CERPA2 = ZDOTU (NDIMX,AVO,1,Y1,1)
-C64B     CERPA2 = CDOTU (NDIMX,AVO,1,Y1,1)
          CERPA = APHASE * BPHASE * (CERPA1 + CERPA2)
       ELSE
          ERPA = ERPA + DDOT (NDIMX,AVO,1,Y1,1)
-C64B     ERPA = ERPA + SDOT (NDIMX,AVO,1,Y1,1)
          CERPA = APHASE * BPHASE * ERPA
       ENDIF
-c     print*,"real part aov",ddot(ndimx,aov,2,x1,2)
-c     print*,"imag part aov",ddot(ndimx,aov(2),2,x1(2),2)
-c     print*,"real part avo",ddot(ndimx,avo,2,y1,2)
-c     print*,"imag part avo",ddot(ndimx,avo(2),2,y1(2),2)
+cdebug print*,"real part aov",ddot(ndimx,aov,2,x1,2)
+cdebug print*,"imag part aov",ddot(ndimx,aov(2),2,x1(2),2)
+cdebug print*,"real part avo",ddot(ndimx,avo,2,y1,2)
+cdebug print*,"imag part avo",ddot(ndimx,avo(2),2,y1(2),2)
 C
       RETURN
 1000  FORMAT (/' WARNING : Imaginary contribution to ',A2,
@@ -1288,10 +1237,8 @@ C
       DO I = 1, 2*N
          CALL DGEMV ('N',2*N,2*N,A1,SS,NM,CC(1,I),1,A0,ERS,1)
          RNORM = DDOT (2*N,CC(1,I),1,ERS,1)
-C64B     RNORM = SDOT (2*N,CC(1,I),1,ERS,1)
          IF (RNORM.GT.AR0) THEN
             RNORM = 1.D0 / SQRT(RNORM)
-C64B        RNORM = 1.0 / SQRT(RNORM)
             DO J = 1, NS
                IF (ER(I).LT.ER(IND(J))) THEN
                   DO K = NS+1, J+1, -1
@@ -1311,10 +1258,8 @@ C64B        RNORM = 1.0 / SQRT(RNORM)
       DO I = 1, 2*N
          CALL DGEMV ('N',2*N,2*N,A1,SS,NM,CC(1,I),1,A0,ERS,1)
          RNORM = DDOT (2*N,CC(1,I),1,ERS,1)
-C64B     RNORM = SDOT (2*N,CC(1,I),1,ERS,1)
          IF (RNORM.LT.AR0) THEN
             RNORM = 1.D0 / SQRT(-RNORM)
-C64B        RNORM = 1.0 / SQRT(-RNORM)
             DO J = 1, NS
                IF (ER(I).GT.ER(IND(NSP+J))) THEN
                   DO K = NS+1, J+1, -1
@@ -1393,7 +1338,6 @@ C------------------------------------------------------------------
          M = MVO(IREP)
          OFF2 = JVOXX(IREP) * RCW + 1
          CALL DCOPY (M,AA(OFF1),RCW*(M+1),DG(OFF3),1)
-C64B     CALL SCOPY (M,AA(OFF1),RCW*(M+1),DG(OFF3),1)
          OFF1 = OFF1 + M * M * RCW
          OFF3 = OFF3 + M
       ENDDO

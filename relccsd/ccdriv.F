@@ -39,6 +39,7 @@ C---------------Description--------------------------------------------
 C
 C     Write header for Relativistic Coupled Cluster Program
 C     Keep track of all the modifications made in the program.
+C     Modification record is now obsolete, consult the CVS history !
 C
 C---------------Routines called----------------------------------------
 C
@@ -58,7 +59,8 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      WRITE (IW,1000) "2.2 ","September 2001"
+      WRITE (IW,1000) "2.3 ","September 2002"
+      WRITE (IW,1002)
       CALL DAYTIME (DATEX,TIMEX)
       WRITE (IW,1001) DATEX,TIMEX
 C
@@ -69,8 +71,18 @@ C
      &/" NASA Ames Research Center    (1994)"
      &/" Rijks Universiteit Groningen (1995)"
      &/" Odense Universitet           (1996-1997)" 
-     &/" Vrije Universiteit Amsterdam (1998-2001)")
+     &/" Vrije Universiteit Amsterdam (1998-2002)")
  1001 FORMAT (//" Today is :",T15,A10/" The time is :",T17,A8)
+ 1002 FORMAT (//" This module is documented in"
+     &/"  - Initial implementation :",T30,
+     &"L. Visscher, T.J. Lee and K.G. Dyall, ",
+     &"J. Chem. Phys. 105 (1996) 8769."
+     &/"  - Fock space formalism :",T30,
+     &"L. Visscher, E. Eliav and U. Kaldor, ",
+     &"J. Chem. Phys. 115 (2002) 9720."
+     &/"  - Parallelization :",T30,
+     &"M. Pernpointner and L. Visscher, ",
+     &"J. Comp. Chem. (accepted, will appear in 2002/2003).")
 C
       RETURN
 C---------------Record of modifications made in the code-------------
@@ -630,6 +642,7 @@ C
       CALL CPUUSED(CPU2)
       CPUI = CPUI + CPU2 - CPU1
       CPU1 = CPU2
+      CALL FLSHFO (IW)
 C
 C     Start the calculations
 C     ----------------------
@@ -1271,6 +1284,7 @@ C ** parallel distribution list generator
       CALL DISLIST
 
 C ** set up the remaining arrays for the parallel triples
+C ** Note that these arrays are also used in the serial code !!!
 
       DO IREP=1,NREP
         NT3VVT(IREP)=IDIST(2,2,IREP)-IDIST(1,2,IREP)
@@ -1485,6 +1499,7 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL ALLOC,SRTALL
+      INTEGER*8 NVT
 C
 C---------------Executable code--------------------------------------
 C
@@ -1630,6 +1645,7 @@ C
       REAL*8 EPS(*)
       REAL*8 TOL
       LOGICAL ALLOC
+      INTEGER*8 NV5IRP,NV6IRP,NVIRP
 C
 C---------------Executable code--------------------------------------
 C
@@ -1711,7 +1727,7 @@ C
       T2T   = T2S + IVVOOT(NREP+1)*RCW + RCW
       VVOO  = T2T + LOVVOT(NREP+1)*RCW + RCW
       VVVO  = VVOO + NDIMT2*RCW + RCW
-      BUF1B = VVVO + KVVVOT(NREP+1)*RCW + RCW
+      BUF1B = VVVO + KT3VVVOT(NREP+1)*RCW + RCW
       BUF2B = BUF1B + IVVVTMX*RCW + RCW
       BUF3B = BUF2B + IVVVTMX*RCW + RCW
       BUF4B = BUF3B + IVVVTMX*RCW + RCW
@@ -1820,8 +1836,11 @@ C
          CALL MEMOPT('REAL',T2S,IVVOOT(NREP+1)*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',T2T,LOVVOT(NREP+1)*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',VVOO,NDIMT2*RCW,CC,KFREE,LFREE,ALLOC)
-         CALL MEMOPT('REAL',VVVO,KVVVOT(NREP+1)*RCW,
-     &               CC,KFREE,LFREE,ALLOC)
+C
+C        Convert the integer*8 variable into an integer*4
+C
+         NVOVV = KT3VVVOT(NREP+1)
+         CALL MEMOPT('REAL',VVVO,NVOVV*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',BUF1,IVVVTMX*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',BUF2,IVVVTMX*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',BUF3,IVVVTMX*RCW,CC,KFREE,LFREE,ALLOC)
@@ -2460,6 +2479,7 @@ C
       LOGICAL ALLOC,FOCKSP,REPORT
       INTEGER IFSS(6)
       REAL*8 TOL
+      INTEGER*8 NV5IRP,NV6IRP,NVIRP
 C
 C---------------Executable code--------------------------------------
 C
@@ -3096,6 +3116,10 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 C
+C---------------Local variables--------------------------------------
+C
+      INTEGER*8 JOFF,KOFF
+C
 C---------------Executable code--------------------------------------
 C
 C ********
@@ -3109,10 +3133,6 @@ C
          NBTCH = NTOT / NMPROC
          NREST = MOD(NTOT,NMPROC)
          IOFF = 0
-C        write(IW,*) 'splitting for IREP:',IREP
-C        write(IW,*) 'NVVT(IREP),NBTCH,NREST: ',NVVT(IREP),
-C    &                NBTCH,NREST
-C        write(IW,*) ' '
          DO I = 1, NMPROC
 C
 C           Calculate absolute start address of this batch

@@ -2327,7 +2327,8 @@ C
       INCLUDE 'iterat.inc'
 C
     1 OPEN (MRCONEE,FILE=FNAM(1),FORM='UNFORMATTED')
-      READ (MRCONEE) NORB,BREIT,ECORE
+      READ (MRCONEE) NORB,BREIT,ECORE,NFSYM,NZ,SPINFR
+      REALAR = NZ.EQ.1.OR.SPINFR
       IF (NORB.GT.N3) CALL Q2JOB(3,'P.ORBSIN','N3',NORB)
       READ (MRCONEE) NSYMRP,(REPN(IRP),IRP=1,NSYMRP)
       READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
@@ -2769,6 +2770,12 @@ C
 C
       SUBROUTINE SHUFFLE (RKLR,RKLI,INDK,INDL,TIR,TII)
 C
+C     Modified to read in only real integrals when applicable.
+C     Note that this is not done efficiently as the zero imaginary
+C     parts are still processed. This will have to wait until a more 
+C     general integral face is developed.
+C     LV : 28-6-2002
+C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
       INCLUDE 'param.inc'
@@ -2790,7 +2797,6 @@ C
       CHARACTER*10 DATEX,DATEXB,TIMEX*8,TIMEXB*8
       CHARACTER*8 NEXTFIL
 C
-      REALAR = .TRUE.
       TRESINT = 1.D-12
       NINT = 0
       KLS = 0
@@ -2805,6 +2811,11 @@ C
       OPEN(MDBINT,FILE=FNAM(3),FORM='UNFORMATTED')
       Read (mdbint,err=10001,end=10001) datexb,timexb,nkrb
       IF (NKR.NE.NKRB) CALL QUIT('MDCINT AND MDBINT ARE INCOMPATIBLE')
+      ENDIF
+      IF (REALAR) THEN
+         DO I = 1, M1
+            RKLI(I) = 0.0
+         ENDDO
       ENDIF
       OPEN (MRCTWOE,FILE=FNAM(8),FORM='UNFORMATTED')
    10 REWIND (MDCINT)
@@ -2824,12 +2835,17 @@ C     -------------------------
 C     READ IN COULOMB INTEGRALS
 C     -------------------------
 C
-   30 read (mdcint,ERR=10010,END=10010) ikr,jkr,nz,
-     &             (indk(inz),indl(inz),inz=1,nz),
-     &             (rklr(inz),rkli(inz),inz=1,nz)
-      DO INZ = 1, NZ
-         IF (ABS(RKLI(INZ)).GT.TRESINT) REALAR = .FALSE.
-      ENDDO
+  30  CONTINUE
+      IF (REALAR) THEN
+         read (mdcint,ERR=10010,END=10010) ikr,jkr,nz,
+     &                (indk(inz),indl(inz),inz=1,nz),
+     &                (rklr(inz),inz=1,nz)
+      ELSE
+         read (mdcint,ERR=10010,END=10010) ikr,jkr,nz,
+     &                (indk(inz),indl(inz),inz=1,nz),
+     &                (rklr(inz),rkli(inz),inz=1,nz)
+      ENDIF
+C
       MINT = MINT + NZ
       IF (IKR.EQ.0) THEN
          IF (JKR.EQ.0) THEN
@@ -2967,12 +2983,16 @@ C     -----------------------
 C     READ IN BREIT INTEGRALS
 C     -----------------------
 C
-   50 read (mdbint,ERR=10011,END=10011) ikr,jkr,nz,
-     &             (indk(inz),indl(inz),inz=1,nz),
-     &             (rklr(inz),rkli(inz),inz=1,nz)
-      DO INZ = 1, NZ
-         IF (ABS(RKLI(INZ)).GT.TRESINT) REALAR = .FALSE.
-      ENDDO
+  50  CONTINUE
+      IF (REALAR) THEN
+         read (mdbint,ERR=10010,END=10010) ikr,jkr,nz,
+     &                (indk(inz),indl(inz),inz=1,nz),
+     &                (rklr(inz),inz=1,nz)
+      ELSE
+         read (mdbint,ERR=10010,END=10010) ikr,jkr,nz,
+     &                (indk(inz),indl(inz),inz=1,nz),
+     &                (rklr(inz),rkli(inz),inz=1,nz)
+      ENDIF
       MINTB = MINTB + NZ
       If (ikr.EQ.0) GoTo 60 ! End of File
       i = indmo(kr(ikr))

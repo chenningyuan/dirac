@@ -37,7 +37,6 @@ C     BUFF in the common block IOBUFF should have a length of
 C     at least two times the value used here.
 C
       SEC2I=512*N
-C64B  SEC2I=512*N
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -464,6 +463,7 @@ C
       NGRP = NLEN/MAXLN
       IF(MAXLN*NGRP.NE.NLEN) NGRP = NGRP + 1
 C
+cdebug print*,"calling rwrit with ",itape,nlen,irec
       IF(NGRP.EQ.1) THEN
       NW = (NLEN/SECTOR)*SECTOR
       OFF = FWORD - 1
@@ -476,6 +476,7 @@ C
          CALL QUIT('ccgenp.F line 461')
       END IF
 #else
+cdebug      print*,"calling wrabsf 1 with ",itape,nw,off
       CALL WRABSF(ITAPE,ARRAY,NW,OFF)
 #endif
 C
@@ -494,6 +495,7 @@ C
          CALL QUIT('ccgenp.F line 479')
       END IF
 #else
+cdebug      print*,"calling wrabsf 2 with ",itape,sector,off
       CALL WRABSF(ITAPE,BUFF,SECTOR,OFF)
 #endif
       END IF
@@ -516,6 +518,7 @@ C
          CALL QUIT('ccgenp.F line 500')
       END IF
 #else
+cdebug      print*,"calling wrabsf 3 with ",itape,maxln,off
       CALL WRABSF(ITAPE,ARRAY(IPT),MAXLN,OFF)
 #endif
       FWD = FWD + MAXLN
@@ -532,6 +535,7 @@ C
          CALL QUIT('ccgenp.F line 516')
       END IF
 #else
+cdebug      print*,"calling wrabsf 4 with ",itape,nw,off
       IF(NW.GT.0) CALL WRABSF(ITAPE,ARRAY(IPT),NW,OFF)
 #endif
 C
@@ -685,7 +689,6 @@ C     SOLUTION X WILL BE STORED ON B PART IN DIMENSION A.
 C
       DIMENSION A(IDIM,*)
       PARAMETER (ZERO=0.D0,ONE=1.D0)
-C64B  PARAMETER (ZERO=0.0,ONE=1.0)
 C
       N=IN
       NR=IM
@@ -698,9 +701,7 @@ C M IS THE STAGE OF ELIMINATION
       IF(M.GT.1)A(I,M)=A(I,M)-DOTT(A(I,1),IDIM,A(1,M),1,M-1)
       AVAL=A(I,M)
       IF(ABS(AVAL).LE.TEMP)GOTO 41
-C64B  IF( ABS(AVAL).LE.TEMP)GOTO 41
       TEMP=ABS(AVAL)
-C64B  TEMP= ABS(AVAL)
       IMAX=I
  41   CONTINUE
       IF(TEMP.LE.ZERO)GOTO 999
@@ -748,7 +749,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       DIMENSION A(*),B(*)
       PARAMETER (ZERO=0.D0,ONE=1.D0)
-C64B  PARAMETER (ZERO=0.0,ONE=1.0)
 C
       IAPT=1
       IBPT=1

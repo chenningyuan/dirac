@@ -17,6 +17,7 @@ C
       CHARACTER*4 REPN,REPNA
       COMMON /SYML/ SPFR
       LOGICAL SPFR
+      INTEGER*8 IVVVVTT,NV5,NV6
       COMMON /DIMS/ NDIMT1,NDIMT2,NFOO,NFVO,NFVV,NV1,NV2,NV3,NV4,NV5,NV6
      &              ,NDIMX,NDIMY
 C     Sub dimensions of symmetry packed arrays.
@@ -27,6 +28,7 @@ C     Sub dimensions of symmetry packed arrays.
      & NOOOT(MXREP),NVOOT(MXREP),NVVOT(MXREP),NVVVT(MXREP),NOVO(MXREP),
      & NVOO(MXREP),NOVVT(MXREP),NOOVT(MXREP)
 C     Pointers for symmetry packed arrays.
+      INTEGER*8 JVVVO,IVOVVT,IVVVVTT,KVVVOT,NVVVOTMX,KT3VVVOT
       COMMON /SYMP/ IO(MXREP+1),IV(MXREP+1),IOO(MXREP+1),
      &              IVO(MXREP+1),IVV(MXREP+1),JVOXX(MXREP+1),
      & JOOOO(MXREP+1),JVOOO(MXREP+1),JVVOO(MXREP+1),JVOVO(MXREP+1),

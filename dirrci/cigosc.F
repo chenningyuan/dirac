@@ -706,9 +706,16 @@ C
      &                                 (KR(I),KR(-I),I=1,NKR) 
 C--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       nkrcoul = nkr
-  10  read (mdint,ERR=10010,END=10010) ikr,jkr,nz,
-     &             (indk(inz),indl(inz),inz=1,nz),
-     &             (twoinr(inz),twoini(inz),inz=nuniq+1,nuniq+nz)
+  10  CONTINUE
+      IF (REALAR) THEN
+         read (mdint,ERR=10010,END=10010) ikr,jkr,nz,
+     &                (indk(inz),indl(inz),inz=1,nz),
+     &                (twoinr(inz),inz=nuniq+1,nuniq+nz)
+      ELSE
+         read (mdint,ERR=10010,END=10010) ikr,jkr,nz,
+     &                (indk(inz),indl(inz),inz=1,nz),
+     &                (twoinr(inz),twoini(inz),inz=nuniq+1,nuniq+nz)
+      ENDIF
       If (nuniq+nz.GT.MAXINT) Call Q2Job (3,'P.RDTWO','MAXINT',nuniq+nz)
       If (ikr.EQ.0) GoTo 20 ! End of File
 C-->  Distribute this set and generate time-reversed integrals.
@@ -778,9 +785,16 @@ C--> Particle interchanged and complex conjugated plus time-reversed partners
          Write (6,*) 'Basis set size on Gaunt file :  ',nkr
          Stop 'Gaunt and Coulomb 2-el files incompatible'
       Endif
-  30  read (mdint,ERR=10011,END=10011) ikr,jkr,nz,
-     &             (indk(inz),indl(inz),inz=1,nz),
-     &             (twoinr(inz),twoini(inz),inz=nuniq+1,nuniq+nz)
+  30  CONTINUE
+      IF (REALAR) THEN
+         read (mdint,ERR=10010,END=10010) ikr,jkr,nz,
+     &                (indk(inz),indl(inz),inz=1,nz),
+     &                (twoinr(inz),inz=nuniq+1,nuniq+nz)
+      ELSE
+         read (mdint,ERR=10010,END=10010) ikr,jkr,nz,
+     &                (indk(inz),indl(inz),inz=1,nz),
+     &                (twoinr(inz),twoini(inz),inz=nuniq+1,nuniq+nz)
+      ENDIF
       If (nuniq+nz.GT.N4A) Call Q2Job (3,'P.RDTWO','N4A',nuniq+nz)
       If (ikr.EQ.0) GoTo 40 ! End of File
 C-->  Distribute this set and generate time-reversed integrals.
@@ -858,7 +872,7 @@ C
 C
       CHARACTER*14 REPN(16)
 C
-      LOGICAL TWOC
+      LOGICAL TWOC,SPINFR
       INTEGER REFDET,IRPMO(N1)
       REAL*8 SELPOP
 C
@@ -892,7 +906,8 @@ C
   100 WRITE(6,POPAN)
 C
       OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
-      READ (MRCONEE) NORB,BREIT,ECORE
+      READ (MRCONEE) NORB,BREIT,ECORE,NFSYM,NZ,SPINFR
+      REALAR = NZ.EQ.1.OR.SPINFR
       IF (NORB.GT.N1) CALL Q2JOB(3,'P.READIN','N1',NORB)
       READ (MRCONEE) NSYMRP,(REPN(IRP),IRP=1,NSYMRP)
       READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)

@@ -141,11 +141,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDINTB */
-      SUBROUTINE MDINTB(IPRINT,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,FMAT,
-     &                  NFM,INDK,INDL,RKL)
+      SUBROUTINE MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
+     &                  FMAT,NFM,INDK,INDL,RKL)
 C
 C     Write block of integrals to MDINT file. This is the old MOLFDIR
 C     format and should work with both RELCCSD and DIRRCI.
+C
+C     26-6-2002 : Slightly modified to avoid writing of imaginary zeroes
+C     in case of real groups.
 C
 C     Written by Luuk Visscher, March 1997
 C
@@ -154,9 +157,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
+      INTEGER RCW
       DIMENSION NSTR3(2),NSTR4(2)
-      DIMENSION FMAT(NFM,2),INDK(*),INDL(*)
-      COMPLEX*16 RKL(*)
+      DIMENSION FMAT(NFM,RCW),INDK(*),INDL(*)
+      REAL*8 RKL(*)
 C
       NZKL = 0
       IKR1 = IKR
@@ -174,12 +178,22 @@ C
                   KK = K + NSTR3(1)
                ENDIF
                KL = KL + 1
-               IF (DABS(FMAT(KL,1)).GT.THROUT.OR.
-     &             DABS(FMAT(KL,2)).GT.THROUT) THEN
-                  NZKL = NZKL + 1
-                  INDK(NZKL) = KK
-                  INDL(NZKL) = LL
-                  RKL(NZKL) = DCMPLX(FMAT(KL,1),FMAT(KL,2))
+               IF (RCW.EQ.1) THEN
+                  IF (DABS(FMAT(KL,1)).GT.THROUT) THEN
+                     NZKL = NZKL + 1
+                     INDK(NZKL) = KK
+                     INDL(NZKL) = LL
+                     RKL(NZKL) = FMAT(KL,1)
+                  ENDIF
+               ELSE
+                  IF (DABS(FMAT(KL,1)).GT.THROUT.OR.
+     &                DABS(FMAT(KL,2)).GT.THROUT) THEN
+                     NZKL = NZKL + 1
+                     INDK(NZKL) = KK
+                     INDL(NZKL) = LL
+                     RKL(2*NZKL-1) = FMAT(KL,1)
+                     RKL(2*NZKL)   = FMAT(KL,2)
+                  ENDIF
                ENDIF
             ENDDO
          ENDDO
@@ -224,14 +238,14 @@ C
 C
       WRITE (LUMLF2) IKR1,JKR1,NZKL,
      &               (INDK(INZ),INDL(INZ),INZ=1,NZKL),
-     &               (RKL(INZ),INZ=1,NZKL)
+     &               (RKL(INZ),INZ=1,NZKL*RCW)
 C
 C     We should send in the print flag here, and make this an option.
 C
       IF (IPRINT.GE.5) THEN
          DO INZ = 1, NZKL
             WRITE (LUPRI,'(4I4,2f30.16)') IKR1,JKR1,INDK(INZ),INDL(INZ),
-     &                                    RKL(INZ)
+     &                                   (RKL(RCW*INZ-2+I),I=1,RCW)
          ENDDO
       ENDIF
 C
@@ -256,11 +270,20 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NKL,NZ,NZ,*)
       DIMENSION IREPIJB(2),IREPKLB(2,NKL)
+      INTEGER RCW
 C
-      CALL MEMGET('REAL',KFTMAT,NKL*2,WORK,KFREE,LFREE)
+C     Set parameter to indicate whether the integrals are complex or real.
+C
+      IF (SPINFR.OR.LEVYLE.OR.NZ.EQ.1) THEN
+         RCW = 1
+      ELSE
+         RCW = 2
+      ENDIF
+C
+      CALL MEMGET('REAL',KFTMAT,NKL*RCW,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINDK,NKL,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINDL,NKL,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRKL,2*NKL,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRKL,RCW*NKL,WORK,KFREE,LFREE)
 C
       IF (SPINFR.OR.LEVYLE) THEN
 C
@@ -270,7 +293,7 @@ C     symmetry and can be fed into non-relativistic codes.
 C     Only one class of integrals (all-unbarred) suffices for
 C     this purpose.
 C
-      CALL DZERO(WORK(KFTMAT),2*NKL)
+      CALL DZERO(WORK(KFTMAT),RCW*NKL)
       IREPABR = 0
       DO IREPAB = 0, NBSYM-1
          IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
@@ -307,7 +330,7 @@ C
 C     Only one class remains in the spinfree case
 C
       ICLASS = 1
-      CALL MDINTB(IPRINT,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
+      CALL MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
      &            WORK(KFTMAT),NKL,
      &            WORK(KINDK),WORK(KINDL),
      &            WORK(KRKL))
@@ -315,10 +338,9 @@ C
       ELSE ! spinfree
 C
 C     Real and complex classes
-C     They are always written as complex for MOLFDIR
 C
       DO ICLASS = 1, 4
-         CALL DZERO(WORK(KFTMAT),2*NKL)
+         CALL DZERO(WORK(KFTMAT),RCW*NKL)
          IREPABR = 0
          DO IREPAB = 0, NBSYM-1
             IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
@@ -347,7 +369,7 @@ C
                ENDDO
             ENDIF
          ENDDO
-         CALL MDINTB(IPRINT,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
+         CALL MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
      &                           WORK(KFTMAT),NKL,
      &                           WORK(KINDK),WORK(KINDL),
      &                           WORK(KRKL))
@@ -357,7 +379,7 @@ C     Quaternion classes
 C
       IF (NZ.EQ.4) THEN
          DO ICLASS = 9, 12
-            CALL DZERO(WORK(KFTMAT),2*NKL)
+            CALL DZERO(WORK(KFTMAT),RCW*NKL)
             IREPABR = 0
             DO IREPAB = 0, NBSYM-1
                IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
@@ -384,7 +406,7 @@ C
                   ENDDO
                ENDIF
             ENDDO
-            CALL MDINTB(IPRINT,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
+            CALL MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
      &                  WORK(KFTMAT),NKL,
      &                  WORK(KINDK),WORK(KINDL),
      &                  WORK(KRKL))

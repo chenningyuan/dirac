@@ -23,4 +23,5 @@ C     First index : start, stop of block on node
 C     Second index : integral type (VOVV,VVVV)
 C     Third index : irrep
 C
+      INTEGER*8 NV6PAR,NV5PAR,IDIST
       COMMON/CCPARV/ NV6PAR,NV5PAR,IDIST(6,10,32)

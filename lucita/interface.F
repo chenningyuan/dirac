@@ -7286,7 +7286,7 @@ C
       JKR_SAVE = JKR
       read (LUTWO) IKR,JKR,NZ,
      &             (indk(inz+ISYMOFF),indl(inz+ISYMOFF),inz=1,NZ,1),
-     &             (rklr(inz+ISYMOFF),DUMMY,inz=1,NZ,1)
+     &             (rklr(inz+ISYMOFF),inz=1,NZ,1)
 *
       if (IKR.eq.0) then
         close (LUTWO)

@@ -624,7 +624,7 @@ C
       OPEN (LUMLF1,FILE='MRCONEE',FORM='UNFORMATTED')
 C     Total number of spinors, breit active in DHF ?,
 C     DHF energy, group type (1 real, 2 complex, 4 quat.)
-      WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ
+      WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR.OR.LEVYLE
 C     Number of fermion irreps in parent group, names of these
 C     irreps (gerade, ungerade), number of spinors active
 C     in the transformation, number of occupied frozen spinors,

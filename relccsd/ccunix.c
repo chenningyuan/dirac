@@ -69,7 +69,6 @@ typedef struct
 } FILE_DEFINITION;
 
 FILE_DEFINITION files[MAXUNIT];
-int nwords=0, nio=0;
 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #define MACRO_QUIT QUITC
@@ -158,7 +157,7 @@ void wrabsf_(int* unit, char* a, int* l, off64_t* p)
 void wrabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 #endif
 
-{ off64_t addr; int  m, n;
+{ off64_t addr, m, n, temp;
 #if defined (SYS_CRAY) || defined (SYS_T3D)
   char *a;
 
@@ -175,8 +174,10 @@ void wrabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
           MACRO_QUIT();
           return;
         }
-  addr= *p * WORT;
-  m= *l * WORT;
+  temp = *p;
+  addr= temp * WORT;
+  temp = *l;
+  m= temp * WORT;
 
   if (addr!=files[*unit].addr)
         if (lseek64(files[*unit].fd,addr,0)==-1)
@@ -187,10 +188,9 @@ void wrabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
         }
 
   if ((n=write (files[*unit].fd,a,m))!=m)
-      { fprintf(stderr,"wrabs: Error in writing %d words in file %s with unit %d\n",*p,files[*unit].fname,*unit);
+      { fprintf(stderr,"wrabs: Error in writing %d words in file %s with unit %d\n",*l,files[*unit].fname,*unit);
         MACRO_QUIT();
       }
-  nio++; nwords+= *l;
   files[*unit].addr=addr+n;
 }
 
@@ -200,7 +200,7 @@ void rdabsf_(int* unit, char* a, int* l, off64_t* p)
 void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 #endif
 
-{ off64_t addr; int m, n;
+{ off64_t addr, m, n, temp;
 #if defined (SYS_CRAY) || defined (SYS_T3D)
   char *a;
 
@@ -217,8 +217,10 @@ void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
           MACRO_QUIT();
           return;
         }
-  addr= *p * WORT;
-  m= *l *WORT;
+  temp = *p;
+  addr= temp * WORT;
+  temp = *l;
+  m= temp * WORT;
 
   if (addr!=files[*unit].addr)
         if (lseek64(files[*unit].fd,addr,0)==-1)
@@ -229,10 +231,9 @@ void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
         }
 
   if ((n=read (files[*unit].fd,a,m))!=m)
-      { fprintf(stderr,"rdabs: Error in reading %d words in file %s with unit %d\n",*p,files[*unit].fname,*unit);
+      { fprintf(stderr,"rdabs: Error in reading %d words in file %s with unit %d\n",*l,files[*unit].fname,*unit);
         MACRO_QUIT();
       }
-  nio++; nwords+= *l;
   files[*unit].addr=addr+n;
 }
 

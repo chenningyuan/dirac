@@ -53,7 +53,8 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NVT,NSP
+      INTEGER*8 NVT
+      INTEGER NSP
       INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
       INTEGER INDEX(NSP,NSP,4,*),IBUF(7,*)
       INTEGER IREPSP(NSP,4),IREPSPI(NSP,16,2)
@@ -85,13 +86,21 @@ C
       REAL*8 E0,E1
       CHARACTER*10 DATEX,TIMEX*8
       LOGICAL FOCKSP
+      INTEGER*8 N5F,N5L,N6F,N6L,IND
 C
 C---------------Executable code--------------------------------------
 C
 C
-C     write(iw,*) '********** entering rdints **********'
+      IF (SRTALL) THEN
+      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
+     &                'VOVV',NV5,'VVVV',NV6
+      ELSE
+      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
+     &                'VOVV',NV5
+      ENDIF
+C
+      CALL FLSHFO (IW)
       FOCKSP = EQNS.EQ.'FOCKSP'
-      call memchk ('entering',cc,1)
 C
       IF (FOCKSP) THEN
          CALL FKINDEX (NSP,IREPSP,IREPSPI,INDEX)
@@ -262,14 +271,14 @@ C
       IMSTAT(1) = 3
       CALL CCDUMP
       call memchk ('after first sort',cc,1)
+      WRITE(IW,*)
+      WRITE(IW,*) 'Sorting of first 4 classes done.'
+      CALL FLSHFO (IW)
 C
       NINTSB5 = MAX0(MREMAIN/512,20)
       NINTSB5 = MIN0(NV5*RCW/512+1,NINTSB5)
       CALL RFILE(ITAPT+5,NINTSB5)
       MREMAIN = MREMAIN - (NINTSB5-20)*512
-C
-      NINTSB6 = 20
-      CALL RFILE(ITAPT+6,NINTSB6)
 C
       IF (IMSTAT(2).GT.1.AND..NOT.FOCKSP) THEN
          WRITE (IW,1011)
@@ -283,9 +292,8 @@ C
       NSEC5 = 1
       N5L = 0
       WRITE (IW,1005) NPASS,'VOVV'
+      CALL FLSHFO (IW)
 C
-C
-C     N5CTL=0
 C   start of IPASS loop for the VOVV
 C ----------------------------
       DO IPASS = 1, NPASS
@@ -331,7 +339,7 @@ C             to this node
      &           IND.LE.IDIST(4,2,IREP)) THEN
 
 C                now check relative offset if we need it in
-C                the current path
+C                the current pass
 
                  IND = IND -IDIST(3,2,IREP) + IDIST(5,2,IREP)
                  IF (IND.GE.N5F.AND.IND.LE.N5L) THEN
@@ -373,29 +381,27 @@ C
       CALL RWRIT(ITAPT+5,VVOVV,N5*RCW*IRW,NSEC5)
       NSEC5 = NSEC5 + NSEC
 C
-C    for debugging purposes: count nonzero VOVV ints in this batch.
-C
-C     DO IX=1,N5
-C       IF(VVOVV(1,IX).NE.0.0d0) N5CTL=N5CTL+1
-C     ENDDO
-C
 C  end of IPASS LOOP
 C ----------------------
       ENDDO
 C ----------------------
       WRITE(IW,*) 'VOVV sorting done.'
+      CALL FLSHFO (IW)
 C
       IF (.NOT.SRTALL) GOTO 600
 C
 C     GET THE VVVV INTEGRALS
 C
+      NINTSB6 = 20
+      CALL RFILE(ITAPT+6,NINTSB6)
+C
       NPASS = (NV6PAR-1) / NVT + 1
       NSEC6 = 1
       N6L = 0
       WRITE (IW,1005) NPASS,'VVVV'
+      CALL FLSHFO (IW)
 C
 C    start of IPASS loop for the VVVV
-C     N6CTL=0
 C --------------------------
       DO IPASS = 1, NPASS
 C --------------------------
@@ -432,8 +438,8 @@ C
             I    = IBUF(7,INZE)
             IF (ITYP.EQ.16) THEN       
 C
-C              The integral should go to this node : check the absolute
-C              address to see if it belongs here. 
+C              The integral has the right type : check the absolute
+C              address to see if it belongs to this node. 
 C
                IND = IVVVVTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
                IF (IND.GT.IDIST(3,1,IREP).AND.
@@ -488,7 +494,7 @@ C --------------------------
 C
   500 CLOSE(MDINT)
       WRITE(IW,*) 'VVVV sorting done.'
-
+      CALL FLSHFO (IW)
 C
 C
 C  NOW PASS THE BREIT INTEGRAL FILE IF DESIRED
@@ -519,13 +525,7 @@ C
       CALL CCDUMP
       call memchk ('after second sort',cc,1)
 C
-  600 IF (SRTALL) THEN
-      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
-     &                'VOVV',NV5,'VVVV',NV6
-      ELSE
-      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
-     &                'VOVV',NV5
-      ENDIF
+  600 WRITE (IW,1006)
 C
       CALL GETFM (INDEX,NSP,EPS,BUF1,BUF2,
      &            VVOVO,VVOVOA,FOO,FVO,FVV,E0,E1)
@@ -544,14 +544,15 @@ C
 C
  1000 FORMAT (/' Reading ',A7,' integrals :'/' File date :',T18,A10
      &/' File time :',T20,A8,/' # of integrals',I8)
- 1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
- 1004 FORMAT (/' Expanded and sorted integrals to 6 types :'/
-     & (' Type ',A4,' :',I10,' integrals'))
  1003 FORMAT (//' Nuclear repulsion + core energy :',T40,F25.15
      &/' Zero order electronic energy :',T40,F25.15 
      &/' First order electronic energy :',T40,F25.15 
      &/' Electronic energy :',T40,F25.15 
      &/' SCF energy :',T40,F25.15) 
+ 1004 FORMAT (/' Expanding and sorting integrals to 6 types :'/
+     & (' Type ',A4,' :',I10,' integrals'))
+ 1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
+ 1006 FORMAT (/' Finished sorting of integrals')
  1010 FORMAT (/' Skipping integral sorting step 1')
  1011 FORMAT (/' Skipping integral sorting step 2')
  1012 FORMAT (/' Skipping Fock-matrix build')
@@ -700,7 +701,6 @@ C
             APHASE(1) = AMAXR
             APHASE(2) = AMAXI 
             ANORM = SQRT(AMAXR*AMAXR+AMAXI*AMAXI)
-C64B        ANORM =  SQRT(AMAXR*AMAXR+AMAXI*AMAXI)
             APHASE(1) = APHASE(1) / ANORM
             APHASE(2) = APHASE(2) / ANORM
             PHASE = .TRUE.
@@ -815,12 +815,25 @@ C---------------Executable code--------------------------------------
 C
       FOCKSP = EQNS.EQ.'FOCKSP'
 C
+   1  CONTINUE
       IF (INTERFACE(1:7).NE.'MOLFDIR'.OR.MYPROC.EQ.MASTER) THEN
-   1  IF (CARITH) THEN 
+C
+C     A number of different formats are possible. 
+      IF (CARITH) THEN 
+C     For complex groups we read the real and imaginary part.
          READ (MDINT,END=10010,ERR=10010) IKR,JKR,NZ,
      &        (INDK(INZ),INDL(INZ),INZ=1,NZ),
      &        (CBUF(1,INZ),CBUF(2,INZ),INZ=1,NZ) 
-      ELSE
+      ELSEIF (INTERFACE(1:7).NE.'MOLFDIR') THEN
+C     For real groups we read only the real part in DIRAC format.
+         READ (MDINT,END=10010,ERR=10010) IKR,JKR,NZ,
+     &        (INDK(INZ),INDL(INZ),INZ=1,NZ),
+     &        (CBUF(1,INZ),INZ=1,NZ) 
+cluuk : The old code is given below, use this instead of the line above when restarting from old
+cluuk : MDCINT files.
+cluuk&        (CBUF(1,INZ),RDUM,INZ=1,NZ) 
+      ELSEIF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
+C     For real groups we skip the zero imaginary part in MOLFDIR format.
          READ (MDINT,END=10010,ERR=10010) IKR,JKR,NZ,
      &        (INDK(INZ),INDL(INZ),INZ=1,NZ),
      &        (CBUF(1,INZ),RDUM,INZ=1,NZ) 
@@ -1247,9 +1260,7 @@ C
                ENDIF
             ENDIF
             EPSDIF = ABS(EPS(I)-FOO(II))
-C64B        EPSDIF =  ABS(EPS(I)-FOO(II))
             IF (ABS(FOO(II)).GT.1.D0) EPSDIF = EPSDIF / ABS(FOO(II))
-C64B        IF ( ABS(FOO(II)).GT.1.0 ) EPSDIF = EPSDIF /  ABS(FOO(II))
             IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.1)
      &         WRITE (IW,1002) ORBTYP,J,I,REPNA(IREP),EPS(I),FOO(II)
             IF (.NOT.USEOE) EPS(I) = FOO(II)
@@ -1272,9 +1283,7 @@ C64B        IF ( ABS(FOO(II)).GT.1.0 ) EPSDIF = EPSDIF /  ABS(FOO(II))
                ENDIF
             ENDIF
             EPSDIF = ABS(EPS(I)-FVV(II))
-C64B        EPSDIF =  ABS(EPS(I)-FVV(II))
             IF (ABS(FVV(II)).GT.1.D0) EPSDIF = EPSDIF / ABS(FVV(II))
-C64B        IF ( ABS(FVV(II)).GT.1.0 ) EPSDIF = EPSDIF /  ABS(FVV(II))
             IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.2)
      &         WRITE (IW,1002) ORBTYP,J,I,REPNA(IREP),EPS(I),FVV(II)
             IF (.NOT.USEOE) EPS(I) = FVV(II)

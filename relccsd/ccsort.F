@@ -1105,7 +1105,9 @@ C
       INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
       INTEGER NTRIPL(NREP)
-      INTEGER OFF(NREP+1),OFF1(32,32)
+      INTEGER OFF1(32,32)
+      INTEGER*8 OFF(NREP+1)
+      INTEGER*8 NVVVOTMX
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1117,10 +1119,12 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
       INTEGER ISTART,NINT,MINT
+      INTEGER*8 IKLJ1,JOFF
 C
 C---------------Executable code--------------------------------------
 C
-      CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+      NVVVO = OFF(NREP+1)
+      CALL XCOPY(NVVVO,A0,0,BUF2,1)
       DO KLREP = 1, NREP
        IJREP = KLREP
        M = NPAIR1(IJREP)
