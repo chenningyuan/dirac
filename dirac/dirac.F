@@ -146,12 +146,12 @@ C
 C
       NODWRK = '                    '
       CALL GETENV('DIRAC_NODEWRK',NODWRK)
-      READ (NODWRK,'(I20)',ERR=10) LSWORK
-      GO TO 20
-   10    WRITE (LUERR,*)
+      READ (NODWRK,'(I20)',ERR=11) LSWORK
+      GO TO 21
+   11    WRITE (LUERR,*)
      &   'DIRAC_NODEWRK conversion error; DIRAC_NODEWRK ="',NODWRK,'"'
          LSWORK = 0
-   20 CONTINUE
+   21 CONTINUE
 #endif
 C
 C     If not user specified, use default memory size
