@@ -652,6 +652,12 @@ case $machine in
    mips*-sgi)
       case $machine in
          mips64-sgi) 
+            if [ "$mesp" != "dummy" ]; then
+               echo "WARNING:"
+               echo "   On fyn.mip.ou.dk \"-64 -mips4\" does .NOT. work"
+               echo "   Please substitute with \"-n32 -mips3\" in "
+               echo "   Makefile.config"
+            fi
             opt='-O2 -64 -mips4 -G 0';;
          *)          
             case $os in
@@ -690,7 +696,7 @@ case $machine in
       echo "If your version includes the relativistic coupled cluster"
       echo "you have to get the BLAS routines."
       echo "They are available in a precompiled version from"
-      echo "ftp://sunsite.unc.edu/pub/Linux/devel/fortran/lapack"
+      echo "ftp://sunsite.unc.edu/pub/Linux/devel/fortran/lapack*"
       if [ "$mesp" = "dummy" ]; then
          cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' "
          ccp="-DSYS_LINUX"
@@ -895,3 +901,10 @@ $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
 $tab\$(CC) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
 EOF
 esac
+
+echo "Before you run make, please check Makefile.config and edit"
+echo "   it if you wish."
+echo "   Then run "
+echo "   make depend"
+echo "   make"
+echo "   Then Dirac should be ready to run..."
