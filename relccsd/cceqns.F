@@ -196,6 +196,7 @@ C
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
          FOCKSP = .FALSE.
+#ifdef MOD_FOCKSPCC
       ELSEIF (EQNS.EQ.'FOCKSP') THEN
          TEQ = .TRUE.
          FOCKSP = .TRUE.
@@ -215,6 +216,7 @@ C
          CALL DELFCK ('VO',DELS1,T1)
          CALL DELINT ('VVOO',DELS2,T2,0,0,0)
          CALL DENOMF (EPS,T1,T2,T1,T2,2)
+#endif
       ELSE
          CALL QUIT('Wrong keyword in call to CCEQNS')
       ENDIF
@@ -377,6 +379,7 @@ C
       endif
       CPU4V = CPU4V + CPUDELTA()
 C
+#ifdef MOD_FOCKSPCC
       IF (FOCKSP) THEN
         CALL FOLDED (ICURFSS,T1,T2,BUF1,BUF2,BUF3,S1,S2)     
         if (carith.and.debug) then
@@ -387,6 +390,7 @@ C
         write (iw,111)"s2 after folded",ddot(ndimt2,s2,1,s2,1)
         endif
       ENDIF
+#endif
 C
 C  ADD PARTIAL T1 AND T2 (PARALLEL RUNS)
 C
@@ -400,7 +404,11 @@ C
 C  DIVIDE NEW T1s AND T2s BY EIGENVALUES
 C
       IF (FOCKSP) THEN
+#ifdef MOD_FOCKSPCC
         CALL DENOMF (EPS,S1,S2,S1,S2,1)
+#else
+        CALL QUIT('FOCKSP not in this distibution')
+#endif
       ELSE
         CALL DENOM (EPS,S1,S2,S1,S2)
       ENDIF
@@ -412,6 +420,7 @@ C
       IF (.NOT.FOCKSP) THEN
          CALL DIISX(ITAMPL,ITAMPD,NDIMT1,NDIMT2,T1,S1,T2,S2,IT,
      &              CC1,BB1,ITC,BB2,RMS,NST1,NST2)
+#ifdef MOD_FOCKSPCC
       ELSE
 C
 C     In the Fockspace algorithm we only need to extrapolate the
@@ -453,6 +462,7 @@ C
          CALL DENOMF (EPS,BUF1,BUF2,BUF1,BUF2,2)
          CALL XAXPY(NDIMT1,-A1,BUF1,1,S1,1)
          CALL XAXPY(NDIMT2,-A1,BUF2,1,S2,1)
+#endif
       ENDIF
 C
 C  SYNCHRONIZE T1 AND T2 (PARALLEL RUNS)
@@ -476,11 +486,13 @@ C
 C
 C     Take out the Hamiltonian elements
 C
+#ifdef MOD_FOCKSPCC
       IF (FOCKSP) THEN
         CALL DENOMF (EPS,T1,T2,T1,T2,2)
 C..when debugging print out every iteration
         IF (DEBUG) CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
       ENDIF
+#endif
 C
       CPUE = CPUE + CPUDELTA()
 C
@@ -503,6 +515,7 @@ C
       WRITE(IW,6078) RMS
       WRITE(IW,6079) NIT
 C
+#ifdef MOD_FOCKSPCC
       IF (FOCKSP) THEN
          CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
 C        Now restore the parts that were not calculated in this sector
@@ -515,6 +528,7 @@ C        Now restore the parts that were not calculated in this sector
          CALL XAXPY(NDIMT1,-A1,BUF1,1,S1,1)
          CALL XAXPY(NDIMT2,-A1,BUF2,1,S2,1)
       ENDIF
+#endif
 C
       CALL CPUUSED(CPUTOT)
       CPUTOT = CPUTOT-CPU0
@@ -2309,5 +2323,344 @@ C
  1000 FORMAT (/' Performance of routine BINTM (largest contraction)'
      &        /' MFlop in each iteration : ',T30,F10.2 
      &        /' MFlops (average) : ',T30,F10.2)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DELFCK (CLASS,DODEL,FXX)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Delete integrals that contribute to unphysical excitations
+C     in the Fock space calculations.
+C
+C     The spinors space is arranged as
+C
+C
+C      #       O         V
+C     -----------------------
+C      1      IO        AV
+C      2      AO        IV
+C      3      AV        AO
+C  
+C      This routine deletes the AV integrals in the occupied space if
+C      the integrals is to be used in a contraction over truly O-type
+C      spinor, while in the virtual space it will delete the AO 
+C      class, if desired. The parameter CLASS specifies the type
+C      of the incoming integrals, the parameter DODEL specifies the
+C      indices that are to be cleaned.
+C
+C---------------Routines called----------------------------------------
+C
+C     XCOPY
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 FXX(*)
+      CHARACTER*2 CLASS,DODEL
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "symm.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "param.inc"
+      INCLUDE "eqns.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      DIMENSION NINDX(0:2,8,2)
+C
+C---------------Executable code--------------------------------------
+C
+C     Return when we do not do Fock space calculations
+C
+      IF (EQNS.NE.'FOCKSP') RETURN
+c     write (6,*) class,dodel
+C
+C     NINDX(1,IREP,INDEX) : Spinors to be kept
+C     NINDX(2,IREP,INDEX) : Additional spinors to be zeroed.
+C
+      DO INDEX = 1, 2
+         IF (CLASS(INDEX:INDEX).EQ.'O') THEN
+            DO IREP = 1, NREP
+               IF (DODEL(INDEX:INDEX).EQ.'D') THEN
+                  NINDX(0,IREP,INDEX) = 0
+                  NINDX(1,IREP,INDEX) = NSO(IREP)
+                  NINDX(2,IREP,INDEX) = NO(IREP)
+               ELSE
+                  NINDX(0,IREP,INDEX) = 0
+                  NINDX(1,IREP,INDEX) = NO(IREP)
+                  NINDX(2,IREP,INDEX) = NO(IREP)
+               ENDIF
+            ENDDO
+         ELSEIF (CLASS(INDEX:INDEX).EQ.'V') THEN
+            DO IREP = 1, NREP
+               IF (DODEL(INDEX:INDEX).EQ.'D') THEN
+                  NINDX(0,IREP,INDEX) = 0
+                  NINDX(1,IREP,INDEX) = NSV(IREP)
+                  NINDX(2,IREP,INDEX) = NV(IREP)
+               ELSE
+                  NINDX(0,IREP,INDEX) = 0
+                  NINDX(1,IREP,INDEX) = NV(IREP)
+                  NINDX(2,IREP,INDEX) = NV(IREP)
+               ENDIF
+            ENDDO
+         ELSE
+            CALL QUIT ('DELFCK integral class ')
+         ENDIF
+      ENDDO
+C
+      IJ = 1
+C
+C     Loop over J : irrep, spinor class, spinors
+C
+      DO 10 JREP = 1, NREP
+         IREP = JREP
+         DO JC =  1, 2
+         DO J =  NINDX(JC-1,JREP,2)+1, NINDX(JC,JREP,2)
+C
+C    Loop over I : (irrep fixed via JREP), spinor class
+C    The loop over spinors is done within XCOPY
+C
+            DO IC = 1, 2
+               IMIN = NINDX(IC-1,IREP,1)+1
+               LNGTH=NINDX(IC,IREP,1)-IMIN+1
+               IDEL = IC + JC
+C
+C              Only when IDEL = 2 all indices are allowed
+C
+               IF (LNGTH.GT.0.AND.IDEL.GT.2) 
+     &            CALL XCOPY (LNGTH,A0,0,FXX(IJ),1)
+               IF (LNGTH.GT.0) IJ = IJ + RCW * LNGTH
+            ENDDO    ! IC
+C
+         ENDDO    ! J
+         ENDDO    ! JC
+ 10   CONTINUE ! JREP
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DELINT (CLASS,DODEL,VXXXX,IREPVV,ISTART,NINT)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Delete integrals that contribute to unphysical excitations
+C     in the Fock space calculations.
+C
+C     The spinors space is arranged as
+C
+C
+C      #       O         V
+C     -----------------------
+C      1      IO        AV
+C      2      AO        IV
+C      3      AV        AO
+C  
+C      This routine deletes the AV integrals in the occupied space if
+C      the integrals is to be used in a contraction over truly O-type
+C      spinor, while in the virtual space it will delete the AO 
+C      class, if desired. The parameter CLASS specifies the type
+C      of the incoming integrals, the parameter DODEL specifies the
+C      indices that are to be cleaned.
+C
+C---------------Routines called----------------------------------------
+C
+C     XCOPY
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 VXXXX(*)
+      CHARACTER*4 CLASS,DODEL
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "symm.inc"
+      INCLUDE "param.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "eqns.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      DIMENSION NINDX(0:2,8,4)
+      LOGICAL TRIANG(2),ALLOWED,ALLOW1,ALLOW2
+C
+C---------------Executable code--------------------------------------
+C
+C     Return when we do not do Fock space calculations
+C
+      IF (EQNS.NE.'FOCKSP') RETURN
+c     write (6,*) class,dodel
+C
+      TRIANG(1) = CLASS(1:1).EQ.CLASS(2:2)
+      TRIANG(2) = CLASS(3:3).EQ.CLASS(4:4)
+C
+C     NINDX(1,IREP,INDEX) : Spinors to be kept
+C     NINDX(2,IREP,INDEX) : Additional spinors to be zeroed.
+C
+      INDEXS = 1
+      INDEXE = 2
+      DO INDEXP = 1, 2
+      DO INDEX = INDEXS, INDEXE
+         IF (CLASS(INDEX:INDEX).EQ.'O') THEN
+            DO IREP = 1, NREP
+               IF (DODEL(INDEX:INDEX).EQ.'D') THEN
+                  NINDX(0,IREP,INDEX) = 0
+                  NINDX(1,IREP,INDEX) = NSO(IREP)
+                  NINDX(2,IREP,INDEX) = NO(IREP)
+               ELSE
+                  NINDX(0,IREP,INDEX) = 0
+                  NINDX(1,IREP,INDEX) = NO(IREP)
+                  NINDX(2,IREP,INDEX) = NO(IREP)
+               ENDIF
+C
+C              Triangular arrays need special treatment, we can have the
+C              case that out to be deleted index is related by anti-
+C              symmetry to the index to be kept. 
+C              We treat this as the condition 'DD'to have the proper
+C              loop structure but modify the delete condition somewhat
+C    
+               IF (TRIANG(INDEXP).AND.
+     &             (DODEL(INDEXS:INDEXE).EQ.'DK'.OR.
+     &              DODEL(INDEXS:INDEXE).EQ.'KD')) THEN
+                  NINDX(0,IREP,INDEX) = 0
+                  NINDX(1,IREP,INDEX) = NSO(IREP)
+                  NINDX(2,IREP,INDEX) = NO(IREP)
+               ENDIF
+            ENDDO
+         ELSEIF (CLASS(INDEX:INDEX).EQ.'V') THEN
+            DO IREP = 1, NREP
+               IF (DODEL(INDEX:INDEX).EQ.'D') THEN
+                  NINDX(0,IREP,INDEX) = 0
+                  NINDX(1,IREP,INDEX) = NSV(IREP)
+                  NINDX(2,IREP,INDEX) = NV(IREP)
+               ELSE
+                  NINDX(0,IREP,INDEX) = 0
+                  NINDX(1,IREP,INDEX) = NV(IREP)
+                  NINDX(2,IREP,INDEX) = NV(IREP)
+               ENDIF
+C
+C              The same treatment for the triangular condition as above
+C    
+               IF (TRIANG(INDEXP).AND.
+     &             (DODEL(INDEXS:INDEXE).EQ.'DK'.OR.
+     &              DODEL(INDEXS:INDEXE).EQ.'KD')) THEN
+                  NINDX(0,IREP,INDEX) = 0
+                  NINDX(1,IREP,INDEX) = NSV(IREP)
+                  NINDX(2,IREP,INDEX) = NV(IREP)
+               ENDIF
+            ENDDO
+         ELSE
+            CALL QUIT ('DELINT integral class ')
+         ENDIF
+      ENDDO
+      INDEXS = INDEXS + 2
+      INDEXE = INDEXE + 2
+      ENDDO
+C
+      IJKL = 1
+C
+C     Loop over compound irreps
+C
+      DO 40 KLREP = 1, NREP
+         KL = 0
+C
+C        Loop over L : irrep, spinor classes, spinors
+C
+         DO 30 LREP = 1, NREP
+         KREP = MULTB(LREP,KLREP+NREP,2)
+         IF (TRIANG(2).AND.KREP.LT.LREP) GOTO 30
+            
+         DO LC = 1, 2
+         DO L =  NINDX(LC-1,LREP,4)+1, NINDX(LC,LREP,4)
+C
+C           Loop over K: irrep(fixed by KLREP,JREP),spinor class,spinors
+C
+            DO KC =  1, 2
+            KMIN = NINDX(KC-1,KREP,3)+1
+            IF (KREP.EQ.LREP.AND.TRIANG(2)) KMIN = MAX0(KMIN,L+1)
+C
+C           Condition for keep/delete of this index pair
+C
+            IF (KC+LC.EQ.2) THEN
+               ALLOW2 = .TRUE.
+            ELSEIF (KC+LC.EQ.3.AND.TRIANG(2).AND.
+     &             (DODEL(3:4).EQ.'DK'.OR.
+     &              DODEL(3:4).EQ.'KD')) THEN
+               ALLOW2 = .TRUE.
+            ELSE
+               ALLOW2 = .FALSE.
+            ENDIF
+C
+            DO 20 K = KMIN, NINDX(KC,KREP,3)
+C
+C           For the VOVV and VVVV integrals we have only a batch in
+C           memory, jump out if we are outside this area
+C
+            KL = KL + 1
+            IF (CLASS.EQ.'VOVV'.OR.CLASS.EQ.'VVVV') THEN
+               IF (KLREP.NE.IREPVV) GOTO 40
+               IF (KL.LE.ISTART.OR.KL.GT.ISTART+NINT) GOTO 20
+            ENDIF
+C
+C    Loop over J : irrep, spinor class, spinors
+C
+               DO 10 JREP = 1, NREP
+               IREP = MULTB(JREP,KLREP+NREP,2)
+               IF (IREP.LT.JREP.AND.TRIANG(1)) GOTO 10
+C
+               DO JC =  1, 2
+               DO J =  NINDX(JC-1,JREP,2)+1, NINDX(JC,JREP,2)
+C
+C    Loop over I : (irrep fixed via KLREP and JREP), spinor class
+C    The loop over spinors is done within XCOPY
+C
+                  DO IC = 1, 2
+                     IMIN = NINDX(IC-1,IREP,1)+1
+                     IF (IREP.EQ.JREP.AND.TRIANG(1)) IMIN=MAX0(IMIN,J+1)
+                     LNGTH=NINDX(IC,IREP,1)-IMIN+1
+C
+C                    Condition for keep/delete of this index pair
+C
+                     IF (IC+JC.EQ.2) THEN
+                        ALLOW1 = .TRUE.
+                     ELSEIF (IC+JC.EQ.3.AND.TRIANG(1).AND.
+     &                      (DODEL(1:2).EQ.'DK'.OR.
+     &                       DODEL(1:2).EQ.'KD')) THEN
+                        ALLOW1 = .TRUE.
+                     ELSE
+                        ALLOW1 = .FALSE.
+                     ENDIF
+C
+                     ALLOWED = ALLOW1.AND.ALLOW2
+                     IF (LNGTH.GT.0.AND.(.NOT.ALLOWED))
+     &                  CALL XCOPY (LNGTH,A0,0,VXXXX(IJKL),1)
+                     IF (LNGTH.GT.0) IJKL = IJKL + RCW * LNGTH
+                  ENDDO    ! IC
+C
+               ENDDO    ! J
+               ENDDO    ! JC
+ 10            CONTINUE ! JREP
+C                    
+ 20         CONTINUE ! K
+            ENDDO ! KC
+C
+         ENDDO    ! L
+         ENDDO    ! LC
+ 30      CONTINUE ! LREP
+C
+ 40   CONTINUE ! KLREP
+C
       RETURN
       END
