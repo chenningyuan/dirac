@@ -159,7 +159,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dcbqal.h>
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      PARAMETER(D1=1.0D0)
 C
 C     Global variables
 C
@@ -340,7 +340,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dcbqal.h>
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      PARAMETER(D1=1.0D0)
 C
 C     Global variables
 C
@@ -515,7 +515,6 @@ C       Last revision : Nov 15 1994 - tsaue
 C*****************************************************************************
 C
 #include <implicit.h>
-      PARAMETER(DM1 = -1.0D0)
       DIMENSION A(LRA,LCA,NZ),EIG(N),VEC(LRV,LCV,NZ),WORK(LWORK)
       CALL QENTER('QDIAG')
 #include <memint.h>
@@ -885,7 +884,7 @@ C  /* Deck qhtrbk */
       SUBROUTINE QHTRBK(A,N,LRA,LCA,TAU,Z,M,LRZ,LCZ)
 C
 #include <implicit.h>
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+      PARAMETER(D0 = 0.0D0)
       DIMENSION A(LRA,LCA,4),TAU(4,N),Z(LRZ,LCZ,4)
 C*****************************************************************************
 C
@@ -1166,7 +1165,6 @@ C  /* Deck fulmat */
       SUBROUTINE FULMAT(MATTYP,LDA,NDIM,A)
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D0 = 0.0D0,DM1 = -1.D0)
       CHARACTER MATTYP*1
       DIMENSION A(LDA,NDIM)
 C*SYMM  : Real symmetric matrix
@@ -1412,7 +1410,7 @@ C  /* Deck unfldr */
       SUBROUTINE UNFLDR(MATTYP,LDA,NDIM,A)
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
+      PARAMETER(D0 = 0.0D0)
       CHARACTER*4 MATTYP
       DIMENSION A(LDA,NDIM)
 C*SYMM  : Real symmetric matrix
@@ -1429,7 +1427,7 @@ C   ON OUTPUT:A - full matrix
       ELSEIF(MATTYP.EQ.'ASYM') THEN
       DO 30 J = 1,NDIM
         DO 40 I = (J+1),NDIM
-          A(J,I) = DM1*A(I,J)
+          A(J,I) = -A(I,J)
    40     CONTINUE
         A(J,J) = D0
    30   CONTINUE
@@ -2059,7 +2057,6 @@ C          Last revision: Aug 26 1996 - tsaue
 C
 C*****************************************************************************
 #include <implicit.h>
-      PARAMETER(DM1 = -1.0D0)
       DIMENSION EVEC(*),EVAL(*)
       IF (N.LE.1.OR.IJOB.EQ.0) RETURN
       II = IJOB + 3
@@ -2184,7 +2181,6 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(DP5 = 0.5D0)
 C
       DIMENSION A(*),B(*),IND(*)
 C
@@ -2714,7 +2710,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dcbqal.h>
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      PARAMETER(D0=0.0D0)
 C
 C     Global variables
 C
@@ -2820,7 +2816,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dcbqal.h>
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      PARAMETER(D0=0.0D0)
 C
 C     Global variables
 C
@@ -3298,7 +3294,7 @@ C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dcbqal.h>
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      PARAMETER(D0=0.0D0)
       DIMENSION X(LRX,LCX,NZX),Y(LRY,LCY,NZY),S(LDS,NY),P(NZP),
      &          IQPP(NZP),IQPX(NZX),IQPY(NZY)
       CHARACTER  FX*1,FY*1
@@ -3395,7 +3391,7 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D1 = 1.0D0,DM1=-1.0D0,D0=0.0D0)
+      PARAMETER(D1=1.0D0, D0=0.0D0)
       DIMENSION A(LRA,LCA,NZ),D(N),B(LRB,LCB,NZ),X(LRX,LCX,NZ),
      &          IPIVOT(*),W(*)
       DIMENSION P(4),IQA(4),IQB(4)
@@ -3447,7 +3443,7 @@ C
       ENDDO
       DO I = (NEFF-1),1,-1
         P(2) = D1/D(I)
-        P(1) = DM1*P(2)
+        P(1) = -P(2)
         NELM = NEFF-I
         KINT = I+1
         CALL QGEMM(1,NSIM,NELM,P(1),
@@ -3671,7 +3667,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION XN(NORDER,NPOINTS,X)
 #include <implicit.h>
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      PARAMETER(D0 = 0.0D0)
       DIMENSION X(NPOINTS)
       XN = D0
       DO 10 I = 1,NPOINTS
@@ -3681,7 +3677,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION XNY(NORDER,NPOINTS,X,Y)
 #include <implicit.h>
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      PARAMETER(D0 = 0.0D0)
       DIMENSION X(NPOINTS),Y(NPOINTS)
       XNY = D0
       FAC = NORDER
@@ -3709,14 +3705,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION POLDER(NORDER,B,XVAL)
 #include <implicit.h>
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      PARAMETER(D0 = 0.0D0)
       DIMENSION B(NORDER+1)
       IF(NORDER.LT.1) THEN
         POLDER = D0
         RETURN
       ENDIF
       POLDER = B(2)
-      XBUF = D1
       DO 10 I = 2,NORDER
         POLDER = POLDER + (XVAL**(I-1))*I*B(I+1)
    10 CONTINUE     
@@ -3724,14 +3719,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION POL2DER(NORDER,B,XVAL)
 #include <implicit.h>
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0,D2 = 2.0D0)
+      PARAMETER(D0 = 0.0D0,D2 = 2.0D0)
       DIMENSION B(NORDER+1)
       IF(NORDER.LT.2) THEN
         POL2DER = D0
         RETURN
       ENDIF
       POL2DER = D2*B(3)
-      XBUF = D1
       DO 10 I = 3,NORDER
         POL2DER = POL2DER + (XVAL**(I-2))*I*(I-1)*B(I+1)
    10 CONTINUE     
@@ -3739,14 +3733,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION POL3DER(NORDER,B,XVAL)
 #include <implicit.h>
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0,D6 = 6.0D0)
+      PARAMETER(D0 = 0.0D0,D6 = 6.0D0)
       DIMENSION B(NORDER+1)
       IF(NORDER.LT.3) THEN
         POL3DER = D0
         RETURN
       ENDIF
       POL3DER = D6*B(4)
-      XBUF = D1
       DO 10 I = 4,NORDER
         POL3DER = POL3DER + (XVAL**(I-3))*(I-2)*(I-1)*I*B(I+1)
    10 CONTINUE     
@@ -3754,7 +3747,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION POLNDER(NORDER,B,XVAL,N)
 #include <implicit.h>
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0,D6 = 6.0D0)
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION B(NORDER+1)
       IF(NORDER.LT.N) THEN
         POLNDER = D0
@@ -3765,7 +3758,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         FAC = FAC*J
       ENDDO
       POLNDER = FAC*B(N+1)
-      XBUF = 1
       DO 10 I = N+1,NORDER
         FAC = I
         DO J = 1,N-1
