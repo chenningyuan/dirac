@@ -1,5 +1,8 @@
 #
-# $Id$
+# VERSION : $Revision$
+# DATE    : $Date$
+# FILE    : configure.in
+# SOURCE  : $Source$
 #
 #
 # Shell script for configuring Makefile.config needed to build
