@@ -1061,12 +1061,12 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
         LSCR2 = MAX(LSCR2,MXCJ,MXCIJA,MXCIJB)
         LCJRES = LSCR2
 *. Note : LCJRES and MXADKBLK are being save in /CICISP/
-        IF(IPRCIX.GE.2) THEN
+C!!     IF(IPRCIX.GE.2) THEN
           WRITE(6,*) 'GET_3BL: MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
      &                         MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
           WRITE(6,*) 'GET_3BL: MXADKBLK ', MXADKBLK
           WRITE(6,*) ' Space for resolution matrices ',LSCR2
-        END IF
+C!!     END IF
       END DO
 *     ^ End loop over MK2 values
 *

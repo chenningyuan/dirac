@@ -1393,7 +1393,7 @@ C            WRT_SPOX_TP(IEX_TP,NEX_TP)
      &           KJA,XKJA,KJB,XKJB,KIA,XKIA,KIB,XKIB,
      &           KJAD,XKJAD,KJBD,XKJBD,KIAD,XKIAD,KIBD,XKIBD,
      &           ITDIAG,ITABTRNSP,IC_RESTRICT,IS_RESTRICT,
-     &           SIGN_EXTERNAL,IPRS,IPRD)
+     &           SIGN_EXTERNAL,IPRS,IPRD,ISMDST)
 *
 * Sigma routine and density routine for for general operator 
 *
@@ -1434,6 +1434,7 @@ C            WRT_SPOX_TP(IEX_TP,NEX_TP)
 *             cont´d, 11th of July, Mallorca, around noon (I´m crazy)
 *                     15th of July
 *                     August 2001
+*                     August 2003, ISMDST 
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
@@ -1479,6 +1480,7 @@ C            WRT_SPOX_TP(IEX_TP,NEX_TP)
       DIMENSION I1(*),XI1S(*),I2(*),XI2S(*)
       DIMENSION I3(*),XI3S(*),I4(*),XI4S(*)
       DIMENSION TBSUB(*)
+      DIMENSION ISMDST(*)
       INTEGER KJA(MAXLB),KJB(MAXLB),KIA(MAXLB),KIB(MAXLB)
       DIMENSION XKJA(MAXLB),XKJB(MAXLB),XKIA(MAXLB),XKIB(MAXLB)
       INTEGER KJAD(MAXLB),KJBD(MAXLB),KIAD(MAXLB),KIBD(MAXLB)
@@ -1621,22 +1623,22 @@ C             Z_TCC_OFF(IBT,NCA,NCB,NAA,NAB,ITSYM,NSMST)
        END DO
        ONE = 1.0D0
 * CA : KA => IA mappings in 1
-C           MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,SCLFAC,IAB)
+C           MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,SCLFAC,ISMDST,IAB)
        IAB_MAP = 1
        CALL MAP_EXSTR(ICA_EXP,IAC_AR,NCA_OP,IAOC,I1,XI1S,
-     &                NIKAINTM,IB_CA,ONE,IAB_MAP)
+     &                NIKAINTM,IB_CA,ONE,ISMDST,IAB_MAP)
 * CB : KB => IB     
        IAB_MAP = 2
        CALL MAP_EXSTR(ICB_EXP,IAC_AR,NCB_OP,IBOC,I2,XI2S,
-     &                NIKBINTM,IB_CB,ONE,IAB_MAP)
+     &                NIKBINTM,IB_CB,ONE,ISMDST,IAB_MAP)
 * AA : KA => JA
        IAB_MAP = 1
        CALL MAP_EXSTR(IAA_EXP,IAC_AR,NAA_OP,JAOC,I3,XI3S,
-     &                NJKAINTM,IB_AA,ONE,IAB_MAP)
+     &                NJKAINTM,IB_AA,ONE,ISMDST,IAB_MAP)
 * AB : KB => JB
        IAB_MAP = 2
        CALL MAP_EXSTR(IAB_EXP,IAC_AR,NAB_OP,JBOC,I4,XI4S,
-     &                NJKBINTM,IB_AB,ONE,IAB_MAP)
+     &                NJKBINTM,IB_AB,ONE,ISMDST,IAB_MAP)
 *. Loop over symmetry-blocks of C and Sigma
        DO IASM = 1, NSMST 
         IBSM = IDBGMULT(ISSM,INVELM(IASM))
@@ -2302,7 +2304,8 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IBX,SCLFAC,IAB)
+      SUBROUTINE MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IBX,SCLFAC,
+     &                     ISMDST,IAB)
 
 * Information for mapping |Kstr> = IOP |Irefoc>
 *
@@ -2311,6 +2314,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *     Jeppe Olsen, Summer of 99
 *     Timo Fleig, summer of 2001, mod. for rel. case
 *                 IAB added for alpha (unbarred) and beta (barred)
+*                 ISMDST added Aug. 2003
 *
 #include "implicit.inc"
 #include "mxpdim.inc"
@@ -2329,6 +2333,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       DIMENSION SX(*)
 *. Local Scratch
       INTEGER KOC(MXPNGAS),KGRP(MXPNGAS)
+      INTEGER ISMDST(*)
 *. IBX(ISM,JSM,JOP) : Start of map in JX for orbitals of symmetry ISM,
 *.                    input strings of symmetry JSM for operator JOP
 *. Notice at each level N the mapping is from !K(N)> to !K(N-1)> 
@@ -2381,10 +2386,10 @@ CTF
          IBX(JSMOB,KSMSPGP,JOP) = IOFF
          CALL ADAST_GAS_REL(JSMOB,JGAS,NGAS,KGRP,JSMSPGP,
      &                  IX(IOFF),SX(IOFF),NKSTR,IEND,
-     &                  IFRST,KFRST,KACT,SCLFAC,JAC_ADJ,IAB)
+     &                  IFRST,KFRST,KACT,SCLFAC,JAC_ADJ,ISMDST,IAB)
 C             ADAST_GAS_REL(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
 C    &                  I1,XI1S,NKSTR,IEND,
-C    &                  IFRST,KFRST,KACT,SCLFAC,IAC,IAB)
+C    &                  IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
          NK(KSMSPGP,JOP) = NKSTR
          if (IAB.eq.1) then
            IOFF = IOFF + NOBPTS(JGAS,JSMOB)*NKSTR
@@ -3348,6 +3353,8 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
       call memmar(KLZSCR,LZSCR,'ADDL  ',2,'KLZSCR')
       call memmar(KLSPOBEX_FRZ,NSPOBEX_TP,'ADDL  ',1,'SPOBFR')
 *
+      CALL MEMMAR(KLISMDST,MAX_NSYMDIST,'ADDL  ',2,'ISMDST')
+*
       CALL SIGDEN_REL4(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,WORK(KVEC3),
      &     WORK(KNSTSO(IASTP)),WORK(KNSTSO2(IBSTP)),
      &     WORK(KNSTSO(IACTP)),WORK(KNSTSO2(IBCTP)),
@@ -3365,7 +3372,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
      &     WORK(KI3G),WORK(KXI3G), WORK(KI4G),WORK(KXI4G),
      &     WORK(KI1GE),WORK(KXI1GE), WORK(KI2GE),WORK(KXI2GE),
      &     WORK(KI3GE),WORK(KXI3GE), WORK(KI4GE),WORK(KXI4GE),
-     &     WORK(KSIGNNHX),WORK(KLSPOBEX_FRZ))
+     &     WORK(KSIGNNHX),WORK(KLSPOBEX_FRZ),WORK(KLISMDST))
 *. Eliminate local memory
       IDUM = 0
       call memmar(IDUM ,IDUM,'FLUSM ',2,'SIGDE3')
@@ -3391,7 +3398,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
      &           TOCC1,TOCC2,TOCC3,TOCC4,
      &           I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,XI4G,
      &           I1GE,XI1GE,I2GE,XI2GE,I3GE,XI3GE,I4GE,XI4GE,
-     &           SIGN_NHX,ISPOBEX_FRZ)
+     &           SIGN_NHX,ISPOBEX_FRZ,ISMDST)
 *
 *
 * Jeppe Olsen, Summer of 1999
@@ -3403,6 +3410,8 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
 *                  Modifications for relativistic CI
 *             Aug. 2002
 *                  Real/Imag. factor fixed for S_r (Jeppe + Timo)
+*             Aug. 2003
+*                  ISMDST added 
 *                                 
 *
 * =====
@@ -3454,6 +3463,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
       DIMENSION XINT(*)
       DIMENSION I1(*),I2(*),I3(*),I4(*)
       DIMENSION XI1S(*),XI2S(*),XI3S(*)
+      DIMENSION ISMDST(*)
 *
       DIMENSION CJRES(*),SIRES(*)
 *. T-coefficients
@@ -3619,7 +3629,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
      &                  I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,XI4G,
      &                  I1GE,XI1GE,I2GE,XI2GE,I3GE,XI3GE,I4GE,XI4GE,
      &                  ITDIAG,ITABTRNSP,ICRESTRICT,ISRESTRICT,
-     &                  SIGN_EXTERNAL,IPRS,IPRD)
+     &                  SIGN_EXTERNAL,IPRS,IPRD,ISMDST)
                END IF
 *              ^ End if connection 
  8000       CONTINUE

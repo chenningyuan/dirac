@@ -3824,7 +3824,7 @@ C                CALL REO4MT(SCR,XINT,IILEN,IREO,ONE,ONE)
      &     MXSXBL,MXSXST,IPRNT,ISPINFREE,
      &     IPTSPC,JPTSPC,IJOP,SCLFAC,
      &     IRI,IRICO,IELCI,
-     &     MXTSOB,SOMESCR,XIJILS)
+     &     MXTSOB,SOMESCR,XIJILS,ISMDST)
 *
 *     Contributions to sigma block (iasm iatp, ibsm ibtp ) from
 *     C block (jasm jatp , jbsm, jbtp)
@@ -3909,6 +3909,7 @@ CTF DELTA_MK2 should be an integer!!
       dimension CB(*)
 *     Input (from WORK(KPICI1) in ... sblock)
       dimension ONEINTS(INTSPACE)
+      INTEGER ISMDST(*)
 *
 *     . Output
       DIMENSION SB(*)
@@ -4044,7 +4045,7 @@ C?          WRITE(6,*) 'Do memory check ...before dmk0one'
      &           NSMOB,NSMST,MOCAA,
      &           SCLFAC,
      &           ONEINTS,INTSPACE,
-     &           IRI,IRICO,IPM1,IUB,NTEST)
+     &           IRI,IRICO,IPM1,IUB,ISMDST,NSMST)
 *
             IF(NTEST.GE.500) THEN
                WRITE(6,*) ' SB after dmk0one'
@@ -4135,7 +4136,7 @@ C?             call memchk
      &              NSMOB,NSMST,MOCAA,
      &              SCLFAC,
      &              ONEINTS,INTSPACE,
-     &              IRI,IRICO,IPM1,IUB,NTEST)
+     &              IRI,IRICO,IPM1,IUB,ISMDST,NTEST)
 *
                IF(NTEST.GE.500) THEN
                   WRITE(6,*) ' SB transposed  after dmk0one'
@@ -4237,7 +4238,7 @@ C?          call memchk
      &           SSCR,CSCR,I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &           XINT,NSMOB,NSMST,NSMSX,NSMDX,
      &           IUSEAB,ICJKAIB,CJRES,SIRES,C2,SCLFAC,NTEST,
-     &           NSEL2E,ISEL2E,IRI_INT,SOMESCR)
+     &           NSEL2E,ISEL2E,IRI_INT,SOMESCR,ISMDST)
          end if
       END IF
 *     ^End of delta_mk2 = 0 part
@@ -4288,7 +4289,7 @@ C?       call memchk
      &        SSCR,CSCR,I1,XI1S,I2,XI2S,
      &        XINT,NSMOB,NSMST,
      &        ONEINTS,INTSPACE,SCLFAC,
-     &        IRI,IRICO,IPM1,IUB,NTEST)
+     &        IRI,IRICO,IPM1,IUB,ISMDST,NTEST)
 *
 C?       WRITE(6,*) 'Do memory check ...after dmk1one'
 C?       call memchk
@@ -4468,7 +4469,7 @@ C?       call memchk
      &        SSCR,CSCR,I1,XI1S,I2,XI2S,
      &        XINT,NSMOB,NSMST,
      &        ONEINTS,INTSPACE,SCLFAC,
-     &        IRI,IRICO,IPM1,IUB,NTEST)
+     &        IRI,IRICO,IPM1,IUB,ISMDST,NTEST)
 *
          if (NTEST.ge.500) then
             if (IPM1.eq.-1) write(6,*) 'MARKER-1'
@@ -4921,6 +4922,9 @@ CTF setting this undefined variable to two:
       END DO
       call memmar(KLZSCR,LZSCR,'ADDL  ',1,'KLZSCR')
 *
+* Allocate memory for one array of symmetrydistributions
+      CALL MEMMAR(KLISMDST,MAX_NSYMDIST,'ADDL  ',1,'ISMDST')
+*
 * Fed in directly from common block oper.inc.
 * Set in readin !!
       IF(IHAM12.EQ.2) THEN
@@ -4959,7 +4963,8 @@ CTF setting this undefined variable to two:
      &            LUCBLK,IPERTOP,IH0INSPC,ISPINFREE,
 CTI  &            WORK(KLH0SPC),
      &            ICBAT_RES,ICBAT_INI,ICBAT_END,
-     &            IRELACI,IRIS,IRIC,I_DO_TRNSP,IELCI)
+     &            IRELACI,IRIS,IRIC,I_DO_TRNSP,IELCI,
+     &            WORK(KLISMDST) )
 *
 C?    write(6,*) 'Checking IDC  ',IDC
       IF(IDC.EQ.2) THEN
@@ -5009,13 +5014,16 @@ C?    write(6,*) 'Checking IDC  ',IDC
      &                LUCBLK,IPERTOP,IH0INSPC,ISPINFREE,
 CTF  &                IH0SPC,
      &                ICBAT_RES,ICBAT_INI,ICBAT_END,
-     &                IRELACI,IRIS,IRIC,I_DO_TRNSP,IELCI)
+     &                IRELACI,IRIS,IRIC,I_DO_TRNSP,IELCI,
+     &                ISMDST)
 *
 * Direct RAS routine employing combined MOC/n-1 resolution method
 *
 * Jeppe Olsen , Winter of 1991
 *
 * Modified for NO-PAIR DBG CI , T.F + J.O, March 21 98
+*
+* ISMDST added, Aug. 2003
 *
 * =====
 * Input
@@ -5089,6 +5097,7 @@ CTF  &                IH0SPC,
       DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
       dimension ISTRFL(12)
       DIMENSION SCLFAC(*)
+      INTEGER ISMDST(*)
 *
       REAL * 8 INPROD
 *
@@ -5368,7 +5377,7 @@ C    &                 MXTSOB,SOMESCR,XIJILS)
      &                  MXSXBL,MXSXST,IPRNT,ISPINFREE,
      &                  IPTSPC,JPTSPC,IJOP,SCLFAC,
      &                  IRIS,IRIC,IELCI,
-     &                  MXTSOB,SOMESCR,XIJILS)
+     &                  MXTSOB,SOMESCR,XIJILS,ISMDST)
 C                   WRITE(6,*) 'before CB(19) = ', CB(19)
                   else
                     write(6,*) 'Something is wrong in SBLOCKS'

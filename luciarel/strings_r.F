@@ -231,7 +231,7 @@ C?    WRITE(6,*) '  IOBPTS(JOBTP,JOBSM) ',  IOBPTS(JOBTP,JOBSM)
 ***********************************************************************
       SUBROUTINE ADAST_GAS_REL(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
      &                     I1,XI1S,NKSTR,IEND,
-     &                     IFRST,KFRST,KACT,SCLFAC,IAC,IAB)
+     &                     IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
 *
 *
 * Obtain creation or annihilation mapping
@@ -260,6 +260,7 @@ C?    WRITE(6,*) '  IOBPTS(JOBTP,JOBSM) ',  IOBPTS(JOBTP,JOBSM)
 *               October 96   : Improved version
 *               September 97 : annihilation mappings added
 *                              I groups defined by IGRP
+*               Aug  03      : ISMDST from the outside added 
 *
 * Timo Fleig, extensions for relativistic calculations,
 *         - IAB added (1=alpha/unbarred, 2=beta/barred)
@@ -292,6 +293,8 @@ C?    WRITE(6,*) '  IOBPTS(JOBTP,JOBSM) ',  IOBPTS(JOBTP,JOBSM)
       INTEGER IISTSGP(MXPNSMST,MXPNGAS)
       INTEGER KGRP(MXPNGAS)
       INTEGER IACIST(MXPNSMST), NACIST(MXPNSMST)
+*. Scratch through the argument list
+      INTEGER ISMDST(*)
 *. Temporary solution ( for once )
       PARAMETER(LOFFI=8*8*8*8*8)
 CTF   DIMENSION IOFFI(LOFFI)
@@ -335,7 +338,7 @@ CTF   DIMENSION IOFFI(LOFFI)
 *
       END IF
 *
-      call memmar(IDUM,IDUM,'MARK  ',IDUM,'ADASTG')
+C!    call memmar(IDUM,IDUM,'MARK  ',IDUM,'ADASTG')
 *. A few preparations
       if (IAB.eq.1) then
         NORBTS= NOBPTS(IOBTP,IOBSM)
@@ -446,9 +449,11 @@ CTF  &               NSMST,NKSTR,NKDIST)
 *. I Strings
 * ==============
 *. Generate symmetry distributions of I strings with given symmetry
-      call memmar(KIOFFI,LOFFI,'ADDL  ',1,'IOFFI ')
+C!!   call memmar(KIOFFI,LOFFI,'ADDL  ',1,'IOFFI ')
+C     CALL TS_SYM_PNT2_REL(IGRP,NIGRP,MXVLI,MNVLI,ISPGPSM,
+C    &                     WORK(KIOFFI),LOFFI,IAB)
       CALL TS_SYM_PNT2_REL(IGRP,NIGRP,MXVLI,MNVLI,ISPGPSM,
-     &                     WORK(KIOFFI),LOFFI,IAB)
+     &                     ISMDST,LOFFI,IAB)
 *. Offset and dimension for active group in I strings
       if (IAB.eq.1) then
         CALL ICOPVE2(WORK(KISTSGP(1)),(IGRP(IACGRP)-1)*NSMST+1,NSMST,
@@ -508,7 +513,7 @@ COLD  CALL SETVEC(XI1S,ZERO,NORBTS*NKSTR)
 C       CALL SYMCOM_REL(3,1,IOBSM,ISMFGS(IOBTP),IACSM)
         CALL SYMCOM_REL(3,1,IOBSM,ISMFGS(IACGRP),IACSM)
         ISMFGS(IACGRP) = IACSM
-        IBSTRINI = IOFF_SYM_DIST(ISMFGS,NIGASL,WORK(KIOFFI),MXVLI,MNVLI)
+        IBSTRINI = IOFF_SYM_DIST(ISMFGS,NIGASL,ISMDST,MXVLI,MNVLI)
         ISMFGS(IACGRP) = ISAVE
 C?      WRITE(6,*) ' IOBSM, KACSM IACSM ',
 C?   &               IOBSM,ISAVE, IACSM  
@@ -576,7 +581,8 @@ C       IF(NGASL-1.GT.0) GOTO 1000
         GOTO 1000
  1001 CONTINUE
 *
- 9999 call memmar(IDUM,IDUM,'FLUSM ',IDUM,'ADASTG')
+ 9999 CONTINUE
+C!    call memmar(IDUM,IDUM,'FLUSM ',IDUM,'ADASTG')
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Output from ADAST_GAS '
@@ -3368,6 +3374,9 @@ C
 *   Creation maps only if ISTTYPC.GE.1
 *
 *    Timo Fleig, Jan. 2001
+*
+* call to MAX_NSYMDIST_DBG added, Aug. 2003
+*
 *--------------------------------------------
 *
 * =====
@@ -3776,6 +3785,10 @@ C     CALL IWRTMA(ISMFTO,1,NTOOB,1,NTOOB)
 *
 C?    WRITE(6,*) ' Matrix NSTFSMSPGP '
 C?    CALL IWRTMA(NSTFSMSPGP,NSMST,NTSPGP,MXPNSMST,NTSPGP)
+*
+* Largest number of symmetrydistributions for any given supergroup
+C           FUNCTION MAX_NSYMDIST_DBG(NSPGRP,ISPGRP,NGAS,NSMST)
+      MAX_NSYMDIST = MAX_NSYMDIST_DBG(NTSPGP,ISPGPFTP,NGAS,NSMST)
 *
 *
 * Possible occupation classes
@@ -4602,3 +4615,51 @@ C    &             INUMAP(MXPSTT),INDMAP(MXPSTT)
 *
       RETURN
       END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*                                                                     *
+***********************************************************************
+      FUNCTION MAX_NSYMDIST_DBG(NSPGRP,ISPGRP,NGAS,NSMST)
+*
+* Obtain largest number of symmetrydistributions of 
+* any given supergroup.
+*
+* Timo and Jeppe, Odense, August 2003 
+* ( to avoid that memmar takes 78 % of all time in a test ....)
+*
+*. Input
+* NSPGRP : Number of supergroups
+* ISPGRP : The groups of the various supergroups
+* NGAS   : Number of GAS spaces
+* NSTFSMGP : Number of strings of given sym for given group
+* NSMST    : Number of string-symmetries 
+*
+*
+#include "implicit.inc"
+*. Input
+      INTEGER ISPGRP(NGAS,NSPGRP)
+*
+      MAXX = -1
+      DO IAB = 1, 2
+       DO JSPGRP = 1, NSPGRP
+        CALL NST_SPGRP_DBG(NGAS,ISPGRP(1,JSPGRP),1,NSMST,
+     &                     NJSTR,NJDIST,IAB)
+C       call nst_spgrp_dbg(NIGRP,KGRP,KSM,NSMST,NKSTR,NKDIST,IAB)
+        MAXX = MAX(MAXX,NJDIST)
+       END DO
+      END DO
+*
+      MAX_NSYMDIST_DBG = MAXX
+*
+      NTEST = 100
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Largest number of symmetrydistributions ',
+     &  MAXX
+      END IF
+*
+      RETURN
+      END
+
+
+      
