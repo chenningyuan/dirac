@@ -635,7 +635,7 @@ C
 #if defined (VAR_PVM)
           write pvm code
 #endif
-          IF (MYTID.EQ.PARID) THEN
+          IF (MYTID.EQ.MPARID) THEN
              CALL SYMFINT(IPRINT,IREPIJ,IJ,IKR,JKR,NSTR3,NSTR4,NKL,
      &                     WORK(KHMATS),IPQTOQ,WORK,KFREE,LFREE)
 ctest&                     WORK(KHMATS),IQMO,WORK,KFREE,LFREE)
