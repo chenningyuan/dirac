@@ -1248,6 +1248,42 @@ C
      &               '* No eigenvalues.'
             ENDIF
          END DO
+C
+C        Print occupation string for each fermion symmetry
+C
+         DO IFSYM = 1, NFSYM
+            WRITE(LUPRI,'(/2A)')
+     &           '* Occupation in fermion symmetry ',FREP(IFSYM)
+            IF (NISH(IFSYM) .GT. 0) THEN
+               WRITE(LUPRI,'(2X,A)')
+     &              '* Inactive orbitals'
+               JST = IORB(IFSYM) + NPSH(IFSYM)
+               WRITE(LUPRI,'(4X,18A4)')
+     &              (REP(IBEIG(I)),I=JST+1,JST+NISH(IFSYM))
+            END IF
+            IF (NASH(IFSYM) .GT. 0) THEN
+               WRITE(LUPRI,'(2X,A)')
+     &              '* Active orbitals'
+               JST = IORB(IFSYM) + NPSH(IFSYM) + NISH(IFSYM)
+               WRITE(LUPRI,'(4X,18A4)')
+     &              (REP(IBEIG(I)),I=JST+1,JST+NASH(IFSYM))
+            END IF
+            IF (NSSH(IFSYM) .GT. 0) THEN
+               WRITE(LUPRI,'(2X,A)')
+     &              '* Virtual orbitals'
+               JST = IORB(IFSYM) + NPSH(IFSYM)
+     &              + NISH(IFSYM) + NASH(IFSYM)
+               WRITE(LUPRI,'(4X,18A4)')
+     &              (REP(IBEIG(I)),I=JST+1,JST+NSSH(IFSYM))
+            END IF
+            IF (PRPOS .AND. NPSH(IFSYM) .GT. 0) THEN
+               WRITE(LUPRI,'(2X,A)')
+     &              '* Positronic orbitals'
+               JST = IORB(IFSYM)
+               WRITE(LUPRI,'(4X,18A4)')
+     &              (REP(IBEIG(I)),I=JST+1,JST+NPSH(IFSYM))
+            END IF
+         END DO
       END IF
       WRITE(LUPRI,'(/)')
       RETURN
