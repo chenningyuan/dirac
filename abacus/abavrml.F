@@ -37,7 +37,7 @@ C#include <single.h>
 960319-vebjornb: New module for visualization with VRML models.
 #endif
 C  /* Deck mkvrml */
-      SUBROUTINE MKVRML(LAST, ATMARR, EDIM, EVEC, EVC1, EVC2)
+      SUBROUTINE MKVRML(LAST, ATMARR, IEDIM, EVEC, EVC1, EVC2)
 C     
 C     Punch out geometry to VRML-file
 C
@@ -53,7 +53,7 @@ C
 #include <priunit.h>
 #include <symmet.h>
       LOGICAL LAST
-      DIMENSION ATMARR(MXCENT,8), EVEC(EDIM,EDIM)
+      DIMENSION ATMARR(MXCENT,8), EVEC(IEDIM,IEDIM)
       DIMENSION EVC1(MXCOOR), EVC2(MXCOOR)
       CHARACTER*12 FILENM
 #include <ibtfun.h>

@@ -2574,7 +2574,7 @@ C
 C     
       IF (INCLGT) THEN
          DO 10 IC = 1, IINTCR
-            CALL GTDWL0(MXRCRD,IC,TMP MAT,ATMARR,WILBMT,BMTRAN,
+            CALL GTDWL0(MXRCRD,IC,TMPMAT,ATMARR,WILBMT,BMTRAN,
      &           WORK,LWORK)
             DO 12 I = 1, ICRTCR
                DO 14 J = 1, ICRTCR
