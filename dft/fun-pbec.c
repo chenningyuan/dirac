@@ -73,13 +73,13 @@ K(rhoa,grada,rhob,gradb,gradab):=(rhoa+rhob)*(eps(rhoa,rhob)+H(d(rhoa,rhob,grada
 /* INTERFACE PART */
 static int pbec_isgga(void) { return 1; } /* FIXME: detect! */
 static int pbec_read(const char *conf_line);
-static real pbec_energy(DftDensProp* dp);
-static void pbec_first(FirstFuncDrv *ds,   real factor,
-                       DftDensProp* dp);
-static void pbec_second(SecondFuncDrv *ds, real factor,
-                        DftDensProp* dp);
-static void pbec_third(ThirdFuncDrv *ds,   real factor,
-                         DftDensProp* dp);
+static real pbec_energy(const FunDensProp* dp);
+static void pbec_first(FunFirstFuncDrv *ds,   real factor,
+                         const FunDensProp* dp);
+static void pbec_second(FunSecondFuncDrv *ds, real factor,
+                          const FunDensProp* dp);
+static void pbec_third(FunThirdFuncDrv *ds,   real factor,
+                         const FunDensProp* dp);
  
 Functional PbecFunctional = {
   "Pbec",       /* name */
@@ -96,12 +96,12 @@ Functional PbecFunctional = {
 static int
 pbec_read(const char *conf_line)
 {
-    dft_set_hf_weight(0);
+    fun_set_hf_weight(0);
     return 1;
 }
 
 static real
-pbec_energy(DftDensProp *dp)
+pbec_energy(const FunDensProp *dp)
 {
     real res;
     real rhoa = dp->rhoa, rhob = dp->rhob;
@@ -132,7 +132,7 @@ pbec_energy(DftDensProp *dp)
 }
 
 static void
-pbec_first(FirstFuncDrv *ds, real factor, DftDensProp *dp)
+pbec_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 {
     real dfdra, dfdrb, dfdga, dfdgb, dfdgab;
     real rhoa = dp->rhoa, rhob = dp->rhob;
@@ -213,7 +213,7 @@ pbec_first(FirstFuncDrv *ds, real factor, DftDensProp *dp)
 }
 
 static void
-pbec_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
+pbec_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real dfdra, dfdrb, dfdga, dfdgb, dfdgab;
     real d2fdrara, d2fdrarb, d2fdraga, d2fdragb, d2fdrbrb, d2fdraab, 
@@ -427,7 +427,7 @@ pbec_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
 }
 
 static void
-pbec_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
+pbec_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real dfdra, dfdrb, dfdga, dfdgb, dfdgab;
     real d2fdrara, d2fdrarb, d2fdraga, d2fdragb, d2fdrbrb, d2fdraab, 

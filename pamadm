@@ -494,9 +494,26 @@ dft/dftaux.o dft/grtest.o dft/Lebedev-Laikov.o dft/dftac.o
 # dft files written in C:
 
 DFTOBJS_C = \\
-dft/functionals.o dft/emb-functional.o dft/fun-slater.o dft/fun-vwn.o dft/fun-becke.o \
-dft/fun-lyp.o dft/fun-pw86x.o dft/fun-p86c.o dft/fun-kin_tf.o dft/fun-kin_vw.o dft/fun-lb94.o \
-dft/fun-pbex.o dft/fun-pbec.o dft/fun-pw91c.o dft/fun-pw92.o dft/fun-pz81.o
+    dft/functionals.o \\
+    dft/fun-becke.o \\
+    dft/fun-cam-b3lyp.o \\
+    dft/fun-gga.o   \\
+    dft/fun-kin_tf.o dft/fun-kin_vw.o\\
+    dft/fun-kt.o        \\
+    dft/fun-lb94.o      \\
+    dft/fun-lyp.o	\\
+    dft/fun-optx.o      \\
+    dft/fun-p86c.o	\\
+    dft/fun-pbex.o       \\
+    dft/fun-pbec.o       \\
+    dft/fun-pw86x.o	\\
+    dft/fun-pw91c.o  \\
+    dft/fun-pw91x.o  \\
+    dft/fun-pz81.o	\\
+    dft/fun-slater.o \\
+    dft/fun-vwn.o \\
+    dft/general.o
+
 EOF
 fi
 #

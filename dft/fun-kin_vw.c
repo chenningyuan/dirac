@@ -59,13 +59,13 @@
 
 /* INTERFACE PART */
 static int kin_vw_read(const char* conf_line);
-static real kin_vw_energy(DftDensProp* dp);
-static void kin_vw_first(FirstFuncDrv *ds, real factor, 
-                       DftDensProp* dp);
-static void kin_vw_second(SecondFuncDrv *ds, real factor,
-                        DftDensProp* dp);
-static void kin_vw_third(ThirdFuncDrv *ds, real factor,
-                       DftDensProp* dp);
+static real kin_vw_energy(const FunDensProp* dp);
+static void kin_vw_first(FunFirstFuncDrv *ds, real factor, 
+                         const FunDensProp* dp);
+static void kin_vw_second(FunSecondFuncDrv *ds, real factor,
+                        const FunDensProp* dp);
+static void kin_vw_third(FunThirdFuncDrv *ds, real factor,
+                       const FunDensProp* dp);
 
 Functional VW_KinFunctional = {
   "kin_vw",
@@ -82,13 +82,13 @@ Functional VW_KinFunctional = {
 static int
 kin_vw_read(const char* conf_line)
 {
-    dft_set_hf_weight(0);
+    fun_set_hf_weight(0);
     return 1;
 }
 
 
 static real
-kin_vw_energy(DftDensProp* dp)
+kin_vw_energy(const FunDensProp* dp)
 {
     real t1;
 
@@ -103,7 +103,7 @@ kin_vw_energy(DftDensProp* dp)
 }
 
 static void
-kin_vw_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
+kin_vw_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t1, t2, t3;
 
@@ -120,7 +120,7 @@ kin_vw_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 }
 
 static void
-kin_vw_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
+kin_vw_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[11];
     real dfdra, dfdrb, dfdga, dfdgb, dfdab;
@@ -178,7 +178,7 @@ kin_vw_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
 }
 
 static void
-kin_vw_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
+kin_vw_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[16];
     real dfdra, dfdrb, dfdga, dfdgb, dfdab;

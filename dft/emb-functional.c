@@ -252,7 +252,7 @@ emb_report (void)
 }
 
 static real
-emb_energy (DftDensProp *dp)
+emb_energy (const FunDensProp *dp)
 {
 	/* the total density is frozen, so we know it and the corresponding KS-orbitals 
 	   The total energy is just the DFT-energy of rho_total, we dont need any embedding here! */
@@ -261,7 +261,7 @@ emb_energy (DftDensProp *dp)
 }
 
 static void
-emb_first (FirstFuncDrv *ds, real factor, DftDensProp *dp)
+emb_first (FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 	if (!dp->subsystem[0]) {
 		fort_print ("emb_first called but dp->subsystem[0] not initialized\n");
@@ -282,13 +282,13 @@ emb_first (FirstFuncDrv *ds, real factor, DftDensProp *dp)
 }
 
 static void
-emb_second (SecondFuncDrv *ds, real factor, DftDensProp *dp)
+emb_second (FunSecondFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 	quit_ ("Second functional derivatives for embedding are not implemented yet\n");
 }
 
 static void
-emb_third (ThirdFuncDrv *ds, real factor, DftDensProp *dp)
+emb_third (FunThirdFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 	quit_ ("Third functional derivatives for embedding are not implemented yet\n");
 }
@@ -330,7 +330,7 @@ embint_report (void)
 }
 
 static real
-embint_energy (DftDensProp *dp)
+embint_energy (const FunDensProp *dp)
 {
 	real energy = 0;
 
@@ -362,7 +362,7 @@ embint_energy (DftDensProp *dp)
 }
 
 static void
-embint_first (FirstFuncDrv *ds, real factor, DftDensProp *dp)
+embint_first (FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 	if (!dp->subsystem[0] || !dp->subsystem[1]) {
 		fort_print ("embint_first called but dp->subsystem_dp not initialized\n");
@@ -385,15 +385,17 @@ embint_first (FirstFuncDrv *ds, real factor, DftDensProp *dp)
 }
 
 static void
-embint_second (SecondFuncDrv *ds, real factor, DftDensProp *dp)
+embint_second (FunSecondFuncDrv *ds, real factor, const FunDensProp *dp)
 {
-	quit_ ("Second functional derivatives for embedding are not implemented yet\n");
+	quit_ ("Second functional derivatives for embedding "
+               "are not implemented yet\n");
 }
 
 static void
-embint_third (ThirdFuncDrv *ds, real factor, DftDensProp *dp)
+embint_third (FunThirdFuncDrv *ds, real factor, const FunDensProp *dp)
 {
-	quit_ ("Third functional derivatives for embedding are not implemented yet\n");
+	quit_ ("Third functional derivatives for embedding "
+               "are not implemented yet\n");
 }
 
 Functional EmbInteractionFunctional = {

@@ -18,18 +18,18 @@
 /* INTERFACE PART */
 static int  lb94_isgga(void) { return 1; }
 static int  lb94_read(const char* conf_line);
-static real lb94_energy(DftDensProp* dens_prop);
-static void lb94_first(FirstFuncDrv *ds, real factor, 
-                       DftDensProp* dens_prop);
-static void lb94_second(SecondFuncDrv *ds, real factor,
-                        DftDensProp* dens_prop);
+static real lb94_energy(const FunDensProp* dens_prop);
+static void lb94_first(FunFirstFuncDrv *ds, real factor, 
+                       const FunDensProp* dens_prop);
+static void lb94_second(FunSecondFuncDrv *ds, real factor,
+                        const FunDensProp* dens_prop);
 
-static void lb94_third(ThirdFuncDrv *ds, real factor,
-                       DftDensProp* dens_prop);
+static void lb94_third(FunThirdFuncDrv *ds, real factor,
+                       const FunDensProp* dens_prop);
 
 #ifdef FOURTH_ORDER_DERIVATIVES
-static void lb94_fourth(FourthFuncDrv *ds, real factor,
-                        const DftDensProp* dens_prop);
+static void lb94_fourth(FunFourthFuncDrv *ds, real factor,
+                        const const FunDensProp* dens_prop);
 #endif
 
 Functional LB94Functional = {"LB94",      /* name */
@@ -50,7 +50,7 @@ Functional LB94Functional = {"LB94",      /* name */
 static int
 lb94_read(const char* conf_line)
 {
-    dft_set_hf_weight(0.0);
+    fun_set_hf_weight(0.0);
     return 1;
 }
 
@@ -63,13 +63,13 @@ static const real LB94_THRESHOLD = 1e-14;
 static const real BETA = 0.05;
 
 static real
-lb94_energy(DftDensProp* dp)
+lb94_energy(const FunDensProp* dp)
 {
     return SlaterFunctional.func(dp)+VWNFunctional.func(dp);
 }
 
 static void
-lb94_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
+lb94_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   real vx;
 
@@ -93,10 +93,10 @@ lb94_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 }
 
 void
-lb94pot_(FirstDrv *ds, const real* weight, const real* rho, const real* grad)
+lb94pot_(real *ds, const real* weight, const real* rho, const real* grad)
 {
-    FirstFuncDrv drvs;
-    DftDensProp dp;
+    FunFirstFuncDrv drvs;
+    FunDensProp dp;
     /* HP does not grok C99's { *rhoa, *rhob, *grada, *gradb }; */
     dp.rhoa  = dp.rhob  = *rho  *0.5;
     dp.grada = dp.gradb = *grad *0.5;
@@ -106,12 +106,12 @@ lb94pot_(FirstDrv *ds, const real* weight, const real* rho, const real* grad)
     lb94_first(&drvs, *weight, &dp);
     /* we should really use a separate structure here
      * but this time, we cheat */
-    ds->fR = drvs.df1000;
-    ds->fZ = drvs.df0010 + 0.5*drvs.df00001* *grad;
+    ds[0] = drvs.df1000;
+    ds[1] = drvs.df0010 + 0.5*drvs.df00001* *grad;
 }
 
 static void
-lb94_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
+lb94_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
 /* according to the authors, it is equivalent to ALDA for LR and higher.
  * See comments in Gisbergen et al, JCP 105(8) 3142. */
@@ -157,7 +157,7 @@ lb94_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
 
  
 static void
-lb94_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
+lb94_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     SlaterFunctional.third(ds, factor, dp);
     VWNFunctional.third(ds,   factor, dp);
@@ -165,7 +165,7 @@ lb94_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
 
 #ifdef FOURTH_ORDER_DERIVATIVES  
 static void
-lb94_fourth(FourthFuncDrv *ds, real factor, const DftDensProp* dp)
+lb94_fourth(FourthFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     SlaterFunctional.fourth(ds, factor, dp);
     VWNFunctional.fourth(ds,   factor, dp);

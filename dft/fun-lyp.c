@@ -54,10 +54,10 @@
 /* INTERFACE PART */
 static int lyp_isgga(void) { return 1; }
 static int lyp_read(const char* conf_line);
-static real lyp_energy(DftDensProp* dp);
-static void lyp_first(FirstFuncDrv *ds, real factor, DftDensProp* dp);
-static void lyp_second(SecondFuncDrv *ds, real factor, DftDensProp* dp);
-static void lyp_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp);
+static real lyp_energy(const FunDensProp* dp);
+static void lyp_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void lyp_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void lyp_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 Functional LYPFunctional = {
     "LYP",      /* name */
@@ -74,7 +74,7 @@ Functional LYPFunctional = {
 static int
 lyp_read(const char* conf_line)
 {
-    dft_set_hf_weight(0.0);
+    fun_set_hf_weight(0.0);
     return 1;
 }
 
@@ -85,7 +85,7 @@ lyp_read(const char* conf_line)
    important than you think).
 */
 static real
-lyp_energy(DftDensProp* dp)
+lyp_energy(const FunDensProp* dp)
 {
     const real A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
     const real CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);
@@ -129,7 +129,7 @@ lyp_energy(DftDensProp* dp)
    See Doc/dft/functionals.tex for details.
 */
 static void
-lyp_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
+lyp_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     const real A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
     const real CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);
@@ -214,7 +214,7 @@ lyp_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
    alpha density and gradient.
 */
 static void
-lyp_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
+lyp_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     const real A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
     const real CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);
@@ -390,7 +390,7 @@ lyp_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
 }
 
 static void
-lyp_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
+lyp_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     const real A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
     const real CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);

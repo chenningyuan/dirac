@@ -54,13 +54,13 @@
 
 /* INTERFACE PART */
 static int kin_tf_read(const char* conf_line);
-static real kin_tf_energy(DftDensProp* dp);
-static void kin_tf_first(FirstFuncDrv *ds, real factor, 
-                       DftDensProp* dp);
-static void kin_tf_second(SecondFuncDrv *ds, real factor,
-                        DftDensProp* dp);
-static void kin_tf_third(ThirdFuncDrv *ds, real factor,
-                       DftDensProp* dp);
+static real kin_tf_energy(const FunDensProp* dp);
+static void kin_tf_first(FunFirstFuncDrv *ds, real factor, 
+                         const FunDensProp* dp);
+static void kin_tf_second(FunSecondFuncDrv *ds, real factor,
+                          const FunDensProp* dp);
+static void kin_tf_third(FunThirdFuncDrv *ds, real factor,
+                         const FunDensProp* dp);
 
 Functional TF_KinFunctional = {
   "kin_tf",
@@ -77,18 +77,18 @@ Functional TF_KinFunctional = {
 static int
 kin_tf_read(const char* conf_line)
 {
-    dft_set_hf_weight(0);
+    fun_set_hf_weight(0);
     return 1;
 }
 
 static real
-kin_tf_energy(DftDensProp* dp)
+kin_tf_energy(const FunDensProp* dp)
 {
     return 2.871234000188191 * pow(dp->rhob+dp->rhoa, 5.0/3.0);
 }
 
 static void
-kin_tf_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
+kin_tf_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t;
     
@@ -100,7 +100,7 @@ kin_tf_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 }
 
 static void
-kin_tf_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
+kin_tf_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t1, t2, t3;
 
@@ -116,7 +116,7 @@ kin_tf_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
 }
 
 static void
-kin_tf_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
+kin_tf_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t1, t2, t3, t4;
  
