@@ -177,6 +177,7 @@ C*****************************************************************************
 C
 #include <dcbbas.h>
 #include <dcborb.h>
+#include <dcbham.h>
 #include <dgroup.h>
 #include <dcbdhf.h>
 C
@@ -311,6 +312,9 @@ C
             IOFF2 = IOFF2 + NZ*NFBAS(I,0)*NORB(I)
             IOFF = IOFF + NORB(I)*NORB(I)*NZ
  10      CONTINUE     
+#ifdef MOD_SPF
+        IF (SPINFR) CALL SPFSCF(EVEC,WORK,LWORK)
+#endif
 C
 C        The error vector is now 0.25 as in SIRIUS, so multiply with 4
 C        But in SIRIUS the norm is taken of the triangular matrix
