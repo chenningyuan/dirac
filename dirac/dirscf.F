@@ -1980,58 +1980,78 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck EXTRSB */
-      SUBROUTINE EXTRSB (IMODE,I,ISYM,JSYM,ICOMP,JCOMP,IZS,IZE,
+      SUBROUTINE EXTRSB (IMODE,I,NORB_SUB_L,M_SUB_BL_L,N_SUB_BL_L,
+     &                   NORB_SUB_R,M_SUB_BL_R,N_SUB_BL_R,
+     &                   ISUB,JSUB,ICOMP,JCOMP,IZS,IZE,
      &                   FSUB,MSUB,NSUB,NZS,
-     &                   FFUL,MFUL,NFUL)
+     &                   FFUL,MFUL,NFUL,NZ)
 C**********************************************************************
 C     PURPOSE:
-C        Extract or insert a sub block out of the full matrix 
-C        that is ordered on boson irreps for both the left and 
-C        the right index
+C        Extract or insert blocks out of (into) a full matrix 
 C
-C        Written by L. Visscher
-C        August 2000
+C        General parameters :
+C        IMODE                 - 1 : extract, 2 : insert
+C        I                     Parity (fermion irrep)
+C        IZS                   First quaternion unit
+C        IZE                   Last quaternion unit
+C        NZ                    Number of quaternion units
+C        NZS                   Number of active quaternion units
+C
+C        Left index :
+C        NORB_SUB_L            Block dimensions left index
+C        M_SUB_BL_L            First dimension of NORB_SUB_L
+C        N_SUB_BL_L            Number of blocks left index
+C        ISUB                  Active block left (zero : all blocks)
+C        ICOMP                 Active component left (zero : all comp.)
+C
+C        Right index :
+C        NORB_SUB_R            Block dimensions right index
+C        M_SUB_BL_R            First dimension of NORB_SUB_R
+C        N_SUB_BL_R            Number of blocks right index
+C        JSUB                  Active block right (zero : all blocks)
+C        JCOMP                 Active component right (zero : all comp.)
+C
+C        Input and output :
+C        FSUB                  Sub matrix
+C        FFUL                  Full matrix
+C
+C        Written for for boson symmetry (august 2000
+C        Generalized to subblocks (november 2003)
+C        L. Visscher
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION FSUB(MSUB,NSUB,NZS),FFUL(MFUL,NFUL,NZ)
+      DIMENSION NORB_SUB_L(M_SUB_BL_L,2,0:2)
+      DIMENSION NORB_SUB_R(M_SUB_BL_R,2,0:2)
       LOGICAL SUBI, SUBJ
 C
-C     Calculate number of boson symmetries : the full matrix is ordered
-C     as (function index, component type, boson irrep), the submatrix
-C     should be ordered as (function index, boson irrep)
+C     The full matrix is ordered as (function index, component type, sub block),
+C     the submatrix should be ordered as (function index, sub blocK)
 C
-      NBRP = 4 / NZ
+C     if isub is zero we extract blocks from all sub blocks with parity I
+C     if isub has a non-zero value we just extract the block of this type.
 C
-C     When isym is zero we extract blocks from all boson irreps that
-C     have the right parity, if isym has a non-zero value we just extract
-C     the block of this symmetry.
-C
-      IF (ISYM.EQ.0) THEN
+      IF (ISUB.EQ.0) THEN
          ISS = 1
-         ISE = 4 / NZ
+         ISE = N_SUB_BL_L
       ELSE
-         ISS = ISYM
-         ISE = ISYM
+         ISS = ISUB
+         ISE = ISUB
       ENDIF
 C
-      IF (JSYM.EQ.0) THEN
+      IF (JSUB.EQ.0) THEN
          JSS = 1
-         JSE = 4 / NZ
+         JSE =  N_SUB_BL_R
       ELSE
-         JSS = JSYM
-         JSE = JSYM
+         JSS = JSUB
+         JSE = JSUB
       ENDIF
 C
-C     Extract the subblock by looping over both indices in 
-C     the right order
-C     while using different counting variables for the full 
-C     and the sub matrices
+C     Extract the subblock by looping over both indices in the right order
+C     while using different counting variables for the full and the sub matrices
 C     Whenever we encounter a block that fulfills the criteria 
 C     we copy it into or out from the subbblock.
 C
@@ -2039,18 +2059,18 @@ C
         JXF = 0
         JXS = 0
 C
-C       Loop over the boson irreps for the right index.
+C       Loop over all blocks for the right index.
 C
-        DO JS = 1, NBRP
+        DO JS = 1, N_SUB_BL_R
 C
 C         The small component functions come first, loop from S to L
 C
           DO JC = 2, 1, -1
             SUBJ = JC.EQ.JCOMP.AND.JS.GE.JSS.AND.JS.LE.JSE
-            DO 100 JX = 1, NBORB(JS,I,JC)
+            DO 100 JX = 1, NORB_SUB_R(JS,I,JC)
               JXF = JXF + 1
               IF (SUBJ) THEN
-C                Only when we are in a subblock we update this pointer
+C                Only when we are in a selected block we update this pointer
                  JXS = JXS + 1
               ELSE
 C
@@ -2063,15 +2083,15 @@ C
               IXF = 0
               IXS = 0
 C
-C             Loop over the boson irreps for the left index.
+C             Loop over all blocks for the left index.
 C
-              DO IS = 1, NBRP
+              DO IS = 1, N_SUB_BL_L
 C
 C               Loop from S to L for the left index.
 C
                 DO IC = 2, 1, -1
                   SUBI = IC.EQ.ICOMP.AND.IS.GE.ISS.AND.IS.LE.ISE
-                  DO IX = 1, NBORB(IS,I,IC)
+                  DO IX = 1, NORB_SUB_L(IS,I,IC)
                     IXF = IXF + 1
 C
 C                   Check the criteria and fill in
@@ -2210,10 +2230,12 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selbos */
-      SUBROUTINE SELBOS (IFRP,NO,INDX,EIG,IBEIG,EVEC,RDUM,IDUM)
+      SUBROUTINE SELBOS (NO,INDX,EIG,IBEIG,EVEC,RDUM,IDUM)
 C***********************************************************************
 C     PURPOSE:
-C        Sort eigenvectors from boson ordering to energy ordering
+C        Sort eigenvectors from block ordering to energy ordering
+C        On entry one should provide an array IBEIG with identification
+C        of the spinors.
 C
 C        Written by L. Visscher
 C        April 1999
@@ -2221,9 +2243,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
       DIMENSION EIG(NO),INDX(NO),IBEIG(NO),IDUM(NO)
       DIMENSION EVEC(NO,NO),RDUM(NO,NO)
 C
@@ -2231,22 +2250,14 @@ C     Establish the order
 C
       CALL INDEXX (NO,EIG,INDX)
 C
-C     Sort the eigenvalues
+C     Sort the eigenvalues and their IDs
 C
       DO J = 1, NO
          RDUM(J,1) = EIG(INDX(J))
+         IDUM(J) = IBEIG(INDX(J))
       ENDDO
       CALL DCOPY(NO,RDUM,1,EIG,1)
-C
-C     Fill an array with the identification of the boson irreps
-C
-      CALL INIBOS(IDUM,IFRP)
-C
-C     Sort this array
-C
-      DO J = 1, NO
-         IBEIG(J) = IDUM(INDX(J))
-      ENDDO
+      CALL ICOPY(NO,IDUM,1,IBEIG,1)
 C
 C     Sort the eigenvectors
 C
@@ -2954,17 +2965,19 @@ C
 C
 C     Check for special cases :
 C     - Spinfree or Levy-Leblond; diagonalize boson irreps (subblocks)
+C     - Linear symmetry; diagonalize Omega irreps (subblocks)
 C     - ZORA; first diagonalize SS-block, than form and diagonalize
 C       modified large component block
 C
-      SPECIAL = (ZORA.OR.SPINFR.OR.LEVYLE)
+      SPECIAL = (ZORA.OR.SUB_BL)
       CALL DZERO(FAO,N2BBASXQ)
+      NBRP = 4 / NZ
 C
       DO 30 I = 1,NFSYM
 C
         IF(NORB(I).EQ.0) GOTO 30
 C
-C       The next array is used in spinfree calcs, initialize to zero.
+C       The next array is used in subblock calcs, initialize to zero.
 C
         DO J = 1, NORB(I)
           IBEIG(IORB(I)+J) = 0
@@ -2988,29 +3001,29 @@ C
           ENDIF
 C
 C
-C       2 : Levy-Leblond or spinfree, use matrix as supplied by dfsolv,
-C           but diagonalize blockwise
+C       2 : Subblock diagonalization (e.g. Levy-Leblond, spinfree, linear symmetry)
+C           use matrix as supplied by dfsolv but diagonalize blockwise
 C
         ELSEIF (.NOT.ZORA) THEN
 C
 C         Spinfree calculations can use the boson blocking of the
 C         Fock matrix. For quaternion groups we use the fact that
-C         the matrix becomes real.
+C         the matrix becomes real. For linear symmetry we also have
+C         real matrices, but a blocking given by another array.
 C         Initialize FAO to zero.
 C         --------------------------------------------------------
 C
           NORB2 = NORB(I)*NORB(I)
           CALL DZERO(FAO(1+I2ORBT(I)),NORB2*NZ)
 C
-          NBRP  = 4/NZ
           IBO = 0
-          DO ISYM = 1, NBRP
-           NBO = NBORB(ISYM,I,0)
+          DO ISUB = 1, N_SUB_BL(I)
+           NBO = NORB_SUB(ISUB,I,0)
            IF(NBO.GT.0) THEN
             IMAT = I2ORBT(I) + (NORB(I)+1)*IBO + 1
             IEIG = IORB(I) + IBO + 1
 C
-C           Diagonalize the block of symmetry isym (and parity i)
+C           Diagonalize the isub'th block of parity i
 C
             IF (DOJACO) THEN
               CALL RSJACO(NORB(I),NBO,NBO,FMO(IMAT),
@@ -3021,30 +3034,25 @@ C
      &                   EIG(IEIG),1,FAO(IMAT),NORB(I),NORB(I),
      &                   WORK(KFREE),LFREE,IERR)
             ENDIF
-            IBO = IBO + NBORB(ISYM,I,0)
+            IBO = IBO + NORB_SUB(ISUB,I,0)
            ENDIF
           ENDDO
 C
-C           Sort the eigenvalues according to energy : keep track of
-C           the boson symmetry. (Use FMO as scratch space for the
-C           vector sort)
+C         Sort the eigenvalues according to energy : keep track of
+C         the block identification. (Use FMO as scratch space for the
+C         vector sort)
 C
-          IF (NZ.EQ.4) THEN
-            DO J = 1, NORB(I)
-              IBEIG(IORB(I)+J) = I - 1
-            ENDDO
-          ELSE
-            CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
-            CALL SELBOS (I,NORB(I),WORK(KINDX),EIG(IORB(I)+1),
-     &                   IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
-     &                   FMO(I2ORBT(I)+1),WORK(KIDUM))
-            CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
-          ENDIF
+          CALL INIBOS(IBEIG(IORB(I)+1),I)
+          CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
+          CALL SELBOS (NORB(I),WORK(KINDX),EIG(IORB(I)+1),
+     &                 IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
+     &                 FMO(I2ORBT(I)+1),WORK(KIDUM))
+          CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
 C
 C       3 : ZORA; diagonalize modified LL block
 C
-        ELSEIF (ZORA.AND.(.NOT.SPINFR)) THEN
+        ELSEIF (ZORA.AND.(.NOT.SUB_BL)) THEN
 C
 C         Set dimensions
 C
@@ -3073,14 +3081,20 @@ C
           CALL MEMGET('REAL',KWSS,NZ*NSS,WORK,KFREE,LFREE)
 C
 C         Extract LL block of Fock matrix
-          CALL EXTRSB (1,I,0,0,1,1,1,NZ,WORK(KFLL),NL,NL,NZ,
-     &                 FMO(I2ORBT(I)+1),NT,NT)
+          CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &                 0,0,1,1,1,NZ,
+     &                 WORK(KFLL),NL,NL,NZ,
+     &                 FMO(I2ORBT(I)+1),NT,NT,NZ)
 C         Extract LS block of Fock matrix
-          CALL EXTRSB (1,I,0,0,1,2,1,NZ,WORK(KFLS),NL,NS,NZ,
-     &                 FMO(I2ORBT(I)+1),NT,NT)
+          CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &                 0,0,1,2,1,NZ,
+     &                 WORK(KFLS),NL,NS,NZ,
+     &                 FMO(I2ORBT(I)+1),NT,NT,NZ)
 C         Extract SS block of Fock matrix
-          CALL EXTRSB (1,I,0,0,2,2,1,NZ,WORK(KFSS),NS,NS,NZ,
-     &                 FMO(I2ORBT(I)+1),NT,NT)
+          CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &                 0,0,2,2,1,NZ,
+     &                 WORK(KFSS),NS,NS,NZ,
+     &                 FMO(I2ORBT(I)+1),NT,NT,NZ)
 C
 C         Do the diagonalization using the ZORA approximation
 C
@@ -3127,17 +3141,16 @@ C
             NT = NORB(I)
             NTT = NT * NT
 C
-            NBRP = 4 / NZ
             IEIGP = IORB(I) + 1
-            DO 21 ISYM = 1, NBRP
+            DO 21 ISUB = 1, N_SUB_BL(I)
 C
 C             Set dimensions within the boson subblock
 C
-              NBO = NBORB(ISYM,I,0)
+              NBO = NORB_SUB(ISUB,I,0)
               IF (NBO.EQ.0) GOTO 21
               NBO2 = NBO * NBO
-              NL = NBORB(ISYM,I,1)
-              NS = NBORB(ISYM,I,2)
+              NL = NORB_SUB(ISUB,I,1)
+              NS = NORB_SUB(ISUB,I,2)
               NLL = NL * NL
               NLS = NL * NS
               NSS = NS * NS
@@ -3159,14 +3172,20 @@ C
               CALL MEMGET('REAL',KWSS,NZ*NSS,WORK,KFREE,LFREE)
 C
 C             Extract LL block of Fock matrix
-              CALL EXTRSB (1,I,ISYM,ISYM,1,1,1,NZS,WORK(KFLL),NL,NL,NZS,
-     &                     FMO(I2ORBT(I)+1),NT,NT)
+              CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &                     ISUB,ISUB,1,1,1,NZS,
+     &                     WORK(KFLL),NL,NL,NZS,
+     &                     FMO(I2ORBT(I)+1),NT,NT,NZ)
 C             Extract LS block of Fock matrix
-              CALL EXTRSB (1,I,ISYM,ISYM,1,2,1,NZS,WORK(KFLS),NL,NS,NZS,
-     &                     FMO(I2ORBT(I)+1),NT,NT)
+              CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &                     ISUB,ISUB,1,2,1,NZS,
+     &                     WORK(KFLS),NL,NS,NZS,
+     &                     FMO(I2ORBT(I)+1),NT,NT,NZ)
 C             Extract SS block of Fock matrix
-              CALL EXTRSB (1,I,ISYM,ISYM,2,2,1,NZS,WORK(KFSS),NS,NS,NZS,
-     &                     FMO(I2ORBT(I)+1),NT,NT)
+              CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &                     ISUB,ISUB,2,2,1,NZS,
+     &                     WORK(KFSS),NS,NS,NZS,
+     &                     FMO(I2ORBT(I)+1),NT,NT,NZ)
 C
 C             Do the diagonalization using the ZORA approximation
 C
@@ -3181,15 +3200,27 @@ C             electron solutions are calculated (and stored in FAO(LL),
 C             FAO(SL)) but we put the eigenvectors of the equation
 C             (VSS-2C^2) CS = E CS in the SS block and zero the LS block.
 C
-              CALL EXTRSB (2,I,ISYM,ISYM,1,1,1,NZS,WORK(KVLL),NL,NL,NZS,
-     &                     FAO(I2ORBT(I)+1),NT,NT)
-              CALL EXTRSB (2,I,ISYM,ISYM,2,1,1,NZS,WORK(KVSL),NS,NL,NZS,
-     &                     FAO(I2ORBT(I)+1),NT,NT)
-              CALL EXTRSB (2,I,ISYM,ISYM,2,2,1,NZS,WORK(KVSS),NS,NS,NZS,
-     &                     FAO(I2ORBT(I)+1),NT,NT)
+C             Insert LL block of Fock matrix
+              CALL EXTRSB (2,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &                     ISUB,ISUB,1,1,1,NZS,
+     &                     WORK(KVLL),NL,NL,NZS,
+     &                     FAO(I2ORBT(I)+1),NT,NT,NZ)
+C             Insert SL block of Fock matrix
+              CALL EXTRSB (2,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &                     ISUB,ISUB,2,1,1,NZS,
+     &                     WORK(KVSL),NS,NL,NZS,
+     &                     FAO(I2ORBT(I)+1),NT,NT,NZ)
+C             Insert SS block of Fock matrix
+              CALL EXTRSB (2,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &                     ISUB,ISUB,2,2,1,NZS,
+     &                     WORK(KVSS),NS,NS,NZS,
+     &                     FAO(I2ORBT(I)+1),NT,NT,NZ)
+C             Insert LS block of Fock matrix
               CALL DZERO (WORK(KWLS),NZ*NLS)
-              CALL EXTRSB (2,I,ISYM,ISYM,1,2,1,NZS,WORK(KWLS),NL,NS,NZS,
-     &                     FAO(I2ORBT(I)+1),NT,NT)
+              CALL EXTRSB (2,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &                     ISUB,ISUB,1,2,1,NZS,
+     &                     WORK(KWLS),NL,NS,NZS,
+     &                     FAO(I2ORBT(I)+1),NT,NT,NZ)
 C
 C             Done; release the extra memory used in ZORA
 C
@@ -3204,9 +3235,10 @@ C           Sort the eigenvalues according to energy : keep track of
 C           the boson symmetry. (Use FMO as scratch space for the
 C           vector sort)
 C
+            CALL INIBOS(IBEIG(IORB(I)+1),I)
             CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
-            CALL SELBOS (I,NORB(I),WORK(KINDX),EIG(IORB(I)+1),
+            CALL SELBOS (NORB(I),WORK(KINDX),EIG(IORB(I)+1),
      &                   IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
      &                   FMO(I2ORBT(I)+1),WORK(KIDUM))
             CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
@@ -3222,7 +3254,7 @@ C
 C       Do an approximate identification of the spinors by their
 C       boson character for use in the CI.
 C
-        IF (.NOT.SPINFR .AND. .NOT.LEVYLE) THEN
+        IF (.NOT.SPINFR .AND. .NOT.LEVYLE .AND. .NOT.SUB_BL) THEN
            CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
            CALL MEMGET('REAL',KRDUM,4*NORB(I),WORK,KFREE,LFREE)
            CALL APPBOS (I,NORB(I),WORK(KINDX),
@@ -3362,20 +3394,20 @@ C
 C     Fill an array with boson irrep identification
 C
 C     A Saue cut and paste job, thanks to Luuk ...April 2003
+C     Generalized to general subblocks
 C
 C***********************************************************************
-#include "dcbbas.h"
-#include "dgroup.h"
+#include "dcborb.h"
       DIMENSION IBOS(*)
 C
-      NBRP = 4/NZ
+      NSUB = N_SUB_BL(IFRP)
       IX = 1
-      DO ISYM = 1, NBRP
-        IREP = JFSYM(ISYM,IFRP) - 1
+      DO ISUB = 1, NSUB
+        ID = ID_SUB_BL(ISUB,IFRP)
         DO IC = 2, 1, -1
-          NBO = NBORB(ISYM,IFRP,IC)
+          NBO = NORB_SUB(ISUB,IFRP,IC)
           IF(NBO.GT.0) THEN
-            CALL ICOPY(NBO,IREP,0,IBOS(IX),1)
+            CALL ICOPY(NBO,ID,0,IBOS(IX),1)
             IX = IX + NBO
           ENDIF
         ENDDO

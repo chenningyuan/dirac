@@ -50,22 +50,6 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER*8 NVT
-      INTEGER NSP
-      INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
-      INTEGER INDEX(NSP,NSP,4,*),IBUF(7,*)
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,16,2)
-      REAL*8 FOO(*),FVO(*),FVV(*)
-      REAL*8 VOOOO(RCW,*),VOOOOA(RCW,*),VVOOO(RCW,*),VVOOOA(RCW,*)
-      REAL*8 VVVOO(RCW,*),VVVOOA(RCW,*),VVOVO(RCW,*),VVOVOA(RCW,*)
-      REAL*8 VVOVV(RCW,*),VVOVVA(RCW,*),VVVVV(RCW,*),VVVVVA(RCW,*)
-      REAL*8 BUF1(*),BUF2(*),CBUF(RCW,*)
-      REAL*8 EPS(*)
-      LOGICAL BREIT,SRTALL
-      CHARACTER*10 INTERFACE
-C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
@@ -80,6 +64,22 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER*8 NVT
+      INTEGER NSP
+      INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
+      INTEGER INDEX(NSP,NSP,4,*),IBUF(7,*)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
+      REAL*8 FOO(*),FVO(*),FVV(*)
+      REAL*8 VOOOO(RCW,*),VOOOOA(RCW,*),VVOOO(RCW,*),VVOOOA(RCW,*)
+      REAL*8 VVVOO(RCW,*),VVVOOA(RCW,*),VVOVO(RCW,*),VVOVOA(RCW,*)
+      REAL*8 VVOVV(RCW,*),VVOVVA(RCW,*),VVVVV(RCW,*),VVVVVA(RCW,*)
+      REAL*8 BUF1(*),BUF2(*),CBUF(RCW,*)
+      REAL*8 EPS(*)
+      LOGICAL BREIT,SRTALL
+      CHARACTER*10 INTERFACE
 C
 C---------------Local variables--------------------------------------
 C
@@ -572,15 +572,6 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER NSP,IREPSPI(NSP,16,2)
-      REAL*8 AVO(*),AOV(*),AOO(*),AVV(*)
-      REAL*8 PROP(2,NSP,NSP)
-      REAL*8 APHASE(2)
-      CHARACTER*8 NAMEA
-      LOGICAL RDDIAG,PHASE
-C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
@@ -592,6 +583,15 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER NSP,IREPSPI(NSP,MXREP,2)
+      REAL*8 AVO(*),AOV(*),AOO(*),AVV(*)
+      REAL*8 PROP(2,NSP,NSP)
+      REAL*8 APHASE(2)
+      CHARACTER*8 NAMEA
+      LOGICAL RDDIAG,PHASE
 C
 C---------------Local variables--------------------------------------
 C
@@ -1443,14 +1443,14 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,16,2),INDEX(NSP,NSP,4)
-C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "symm.inc"
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),INDEX(NSP,NSP,4)
 C
 C---------------Local variables--------------------------------------
 C
@@ -1604,14 +1604,14 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,16,2),INDEX(NSP,NSP,4,4)
-C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "symm.inc"
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),INDEX(NSP,NSP,4,4)
 C
 C---------------Local variables--------------------------------------
 C

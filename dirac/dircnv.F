@@ -354,8 +354,7 @@ C
      &                FAO,N2BBASXQ,IPRSCF)
             ENDIF
 C
-            IF (ZORA) CALL ZRDIIS (I,NZ,NPSH(I),NESH(I),
-     &          EVEC(1+IOFF),NORB(I),NORB(I),WORK,KFREE,LFREE)
+            IF (ZORA) CALL ZRDIIS (I,EVEC(1+IOFF),WORK,KFREE,LFREE)
 C
             IF ( IPRSCF .GE. 10 ) THEN
                WRITE(CTMP,'(I1)') I
@@ -437,8 +436,7 @@ C
      &                     NZ,IPQTOQ(1,0),LUPRI)
             ENDIF
 C
-           IF (ZORA) CALL ZRDIIS (I,NZ,NPSH(I),NESH(I),
-     &         EVEC(1+IOFF),NORB(I),NORB(I),WORK,KFREE,LFREE)
+            IF (ZORA) CALL ZRDIIS (I,EVEC(1+IOFF),WORK,KFREE,LFREE)
 C
             CALL DIFMMH(EVEC(IOFF+1),NORB(I),NZ,NORB(I),NORB(I))
             IF(IPRSCF.GE.5) THEN
@@ -919,7 +917,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck zrdiis */
-      SUBROUTINE ZRDIIS(I,NZ,NS,NL,EVEC,N1,N2,WORK,KFREE,LFREE)
+      SUBROUTINE ZRDIIS(I,EVEC,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Modify DIIS matrix to account for ZORA
@@ -929,23 +927,35 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       PARAMETER(D0=0.0D0)
-      DIMENSION EVEC(N1,N2,NZ),WORK(*)
+      DIMENSION EVEC(*),WORK(*)
+C
+      NBRP = 4/NZ
+      NL = NESH(I)
+      NS = NPSH(I)
 C
 C     We get a chunk of memory, fill it with zeroes and insert it in
 C     the full matrix so that the SS block becomes zero.
 C
       CALL MEMGET('REAL',KESS,NZ*NS*NS,WORK,KFREE,LFREE)
       CALL DZERO (WORK(KESS),NZ*NS*NS)
-      CALL EXTRSB (2,I,0,0,2,2,1,NZ,WORK(KESS),NS,NS,NZ,EVEC,N1,N2)
+      CALL EXTRSB (2,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &             0,0,2,2,1,NZ,
+     &             WORK(KESS),NS,NS,NZ,
+     &             EVEC,NORB(I),NORB(I),NZ)
       CALL MEMREL('ZRDIIS',WORK,KESS,KESS,KFREE,LFREE)
 C
 C     Same procedure for LS block
 C
       CALL MEMGET('REAL',KELS,NZ*NL*NS,WORK,KFREE,LFREE)
       CALL DZERO (WORK(KELS),NZ*NL*NS)
-      CALL EXTRSB (2,I,0,0,1,2,1,NZ,WORK(KELS),NL,NS,NZ,EVEC,N1,N2)
+      CALL EXTRSB (2,I,NBORB,4,NBRP,NBORB,4,NBRP,
+     &             0,0,1,2,1,NZ,
+     &             WORK(KELS),NS,NS,NZ,
+     &             EVEC,NORB(I),NORB(I),NZ)
       CALL MEMREL('ZRDIIS',WORK,KELS,KELS,KFREE,LFREE)
 C
       RETURN

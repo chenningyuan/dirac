@@ -448,7 +448,7 @@ C
       REAL*8 CC(MAXCORE)
 #endif
       PARAMETER (MAXSP=1000)
-      INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*16*2)
+      INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC,CA
       REAL*8 CPU0,CPU1,CPU2,CPUTOT,CPUI,CPUS
@@ -819,13 +819,6 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,16,2)
-      INTEGER NELEC(16),NFROZ(16),NINACT(16),NACT(16)
-      REAL*8 EPS1(*),EPS(*)
-      LOGICAL FOCKSP,REPORT
-C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
@@ -836,11 +829,22 @@ C
 #include "ihm.inc"
 #include "ccpar.inc"
 C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
+      INTEGER NELEC(16),NFROZ(16),NINACT(16),NACT(16)
+      REAL*8 EPS1(*),EPS(*)
+      LOGICAL FOCKSP,REPORT
+C
 C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       INTEGER NVIRT(16)
       INTEGER NOOOT2(MXREP),NVVVT2(MXREP)
+      CHARACTER*4 REPNA_ACT(MXREP)
+      INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
+      INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
+      INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP)
 C
 C---------------Executable code--------------------------------------
 C
@@ -1054,15 +1058,25 @@ C
          WRITE (IW,1000) (REPN(I),I=1,NSYMRP)
          WRITE (IW,1002) 'occupied',(NELEC(I),I=1,NSYMRP)
          WRITE (IW,1002) 'virtual ',(NVIRT(I),I=1,NSYMRP)
-         IF (SPFR) THEN
+         IF (NREP.GT.8) THEN
+C           Write only active irreps (NO or NV > 0)
+            NACT_REP = 0
+            DO I = 1, NREP
+               IF (NO(I)+NV(I).GT.0) THEN
+                  NACT_REP = NACT_REP + 1
+                  NO_ACT(NACT_REP) = NO(I)
+                  NV_ACT(NACT_REP) = NV(I)
+                  REPNA_ACT(NACT_REP) = REPNA(I)
+               ENDIF
+            ENDDO
             NREP1 = 1
-            NREP2 = MIN(NREP/2,8)
-  10        WRITE (IW,1001) (REPNA(I),I=NREP1,NREP2)
-            WRITE (IW,1002) 'occupied',(NO(I),I=NREP1,NREP2)
-            WRITE (IW,1002) 'virtual ',(NV(I),I=NREP1,NREP2)
+            NREP2 = MIN(NACT_REP,8)
+  10        WRITE (IW,1001) (REPNA_ACT(I),I=NREP1,NREP2)
+            WRITE (IW,1002) 'occupied',(NO_ACT(I),I=NREP1,NREP2)
+            WRITE (IW,1002) 'virtual ',(NV_ACT(I),I=NREP1,NREP2)
             NREP1 = NREP1 + 8
-            NREP2 = MIN(NREP/2,NREP2+8)
-            IF (NREP1.LE.NREP/2) GOTO 10
+            NREP2 = MIN(NACT_REP,NREP2+8)
+            IF (NREP1.LE.NACT_REP) GOTO 10
          ELSE
             WRITE (IW,1001) (REPNA(I),I=1,NREP)
             WRITE (IW,1002) 'occupied',(NO(I),I=1,NREP)
@@ -1088,17 +1102,29 @@ C
      &                   (NINACT(I)+NACT(I)-NELEC(I),I=1,NSYMRP)
          WRITE (IW,1002) 'inactive virtual ',(NELEC(I)+NVIRT(I)-
      &                    NINACT(I)-NACT(I),I=1,NSYMRP)
-         IF (SPFR) THEN
+         IF (NREP.GT.8) THEN
+C           Write only active irreps (NO or NV > 0)
+            NACT_REP = 0
+            DO I = 1, NREP
+               IF (NIO(I)+NAO(I)+NAV(I)+NIV(I).GT.0) THEN
+                  NACT_REP = NACT_REP + 1
+                  NIO_ACT(NACT_REP) = NIO(I)
+                  NAO_ACT(NACT_REP) = NAO(I)
+                  NAV_ACT(NACT_REP) = NAV(I)
+                  NIV_ACT(NACT_REP) = NIV(I)
+                  REPNA_ACT(NACT_REP) = REPNA(I)
+               ENDIF
+            ENDDO
             NREP1 = 1
-            NREP2 = MIN(NREP/2,8)
-   11       WRITE (IW,1001) (REPNA(I),I=NREP1,NREP2)
-            WRITE (IW,1002) 'inactive occupied',(NIO(I),I=NREP1,NREP2)
-            WRITE (IW,1002) 'active occupied  ',(NAO(I),I=NREP1,NREP2)
-            WRITE (IW,1002) 'active virtual   ',(NAV(I),I=NREP1,NREP2)
-            WRITE (IW,1002) 'inactive virtual ',(NIV(I),I=NREP1,NREP2)
+            NREP2 = MIN(NACT_REP,8)
+  11      WRITE (IW,1001) (REPNA_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'inactive occupied',(NIO_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'active occupied',(NAO_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'active virtual ',(NAV_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'inactive virtual ',(NIV_ACT(I),I=NREP1,NREP2)
             NREP1 = NREP1 + 8
-            NREP2 = MIN(NREP/2,NREP2+8)
-            IF (NREP1.LE.NREP/2) GOTO 11
+            NREP2 = MIN(NACT_REP,NREP2+8)
+            IF (NREP1.LE.NACT_REP) GOTO 11
           ELSE
             WRITE (IW,1001) (REPNA(I),I=1,NREP)
             WRITE (IW,1002) 'inactive occupied',(NIO(I),I=1,NREP)
@@ -1534,12 +1560,6 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
-C---------------Calling variables--------------------------------------
-C
-      REAL*8 CC(*)
-      REAL*8 EPS(*)
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,16,2)
-C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
@@ -1549,6 +1569,12 @@ C
 #include "eqns.inc"
 #include "waio.h"
 #include "complex.inc"
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 CC(*)
+      REAL*8 EPS(*)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
 C
 C---------------Local variables--------------------------------------
 C

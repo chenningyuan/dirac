@@ -551,8 +551,10 @@ C
 #include "dcbrkb.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
+#include "dgroup.h"
 #else
 #include "gnrinf.h"
+      LOGICAL LINEAR
 #endif
 #include "ibtfun.h"
       ZMAT = .FALSE.
@@ -681,9 +683,11 @@ C     ***** Add symmetry to molecule if requested *****
 C     *****   Returns CLASS, the full symmetry    *****
 C     *************************************************
 C
+      LINEAR = .FALSE.
       CLASS = 'N/A'
-      IF (ADDSYM .AND. (.NOT. DIRAC)) THEN
+      IF (ADDSYM) THEN
          CALL SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,CLASS)
+         IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
 C
 C     ****************************************************

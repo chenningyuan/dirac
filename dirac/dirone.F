@@ -1045,10 +1045,8 @@ C     Last revision: Sep 12 1995
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C Used from COMMON blocks:
-C  DCBBAS: NTBAS,NFORB
-C
 #include "dcbbas.h"
+#include "dcborb.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION VBUF(NBAST,*)
@@ -1289,6 +1287,12 @@ C   PAMIOU: LUTMAT
       CALL QENTER('GMOTRA')
 #include "memint.h"
 C
+C     By default we do not partition the space. This may be
+C     modified if we have linear symmetry or approximate the
+C     Hamiltonian : Levy-Leblond, Spinfree, ..
+C
+      SUB_BL = .FALSE.
+C
 C     Make one-center projection matrix
 C     =================================
 C
@@ -1357,6 +1361,26 @@ C
           NORB(IFRP) = NTMO(IFRP) + NFRO(IFRP)
         ENDDO
         CALL SETDC2(0)
+      ENDIF
+C
+C     Copy information from NBORB to the subblock array if we have not
+C     partioned the orbital space otherwise.
+C
+      IF (.NOT.SUB_BL) THEN
+         DO IFRP = 1, NFSYM
+            N_SUB_BL(IFRP) = 4 / NZ
+            DO IB = 1, N_SUB_BL(IFRP) 
+              NORB_SUB(IB,IFRP,0) = NBORB(IB,IFRP,0)
+              NORB_SUB(IB,IFRP,1) = NBORB(IB,IFRP,1)
+              NORB_SUB(IB,IFRP,2) = NBORB(IB,IFRP,2)
+              IREP = JFSYM(IB,IFRP) - 1
+              ID_SUB_BL(IB,IFRP) = IREP
+            ENDDO
+         ENDDO
+      ENDIF
+C
+      IF (LEVYLE.OR.SPINFR) THEN
+         SUB_BL = .TRUE.
       ENDIF
 C
 C     Output
@@ -4858,4 +4882,463 @@ C
 C
       RETURN
       END
-C***********************************************************************
+C*****************************************************************************
+C  /* Deck glinsm */
+      SUBROUTINE GLINSM(WORK,LWORK)
+C*****************************************************************************
+C
+C     This routine makes an additional transformation from the
+C     matrix supplied by GMOTRA to a basis that is diagonal in
+C     one component of angular momentum (j in general, l for spinfree
+C     and Levy-Leblond). This can be used for systems that posess
+C     linear symmetry.
+C
+C     Written by L. Visscher october/november 2003
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dcbgen.h>
+#include <dcbham.h>
+#include <cbihr1.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dgroup.h>
+      DIMENSION WORK(LWORK)
+      CALL QENTER('GLINSM')
+#include <memint.h>
+C
+      IF (URKBAL) THEN
+         WRITE (LUPRI,1000) "unrestricted kinetic balance"
+         RETURN
+      ENDIF
+C
+      IF (LEVYLE.OR.SPINFR) THEN
+         WRITE (LUPRI,1000) "spinfree or Levy-Leblond"
+         LINEAR = .FALSE.
+         CALL QEXIT('GLINSM')
+         RETURN
+      ENDIF
+C
+      IF (ZORA) THEN
+         WRITE (LUPRI,1000) "ZORA"
+         LINEAR = .FALSE.
+         CALL QEXIT('GLINSM')
+         RETURN
+      ENDIF
+C
+C     Get old transformation matrix
+C     =============================
+C
+      CALL MEMGET('REAL',KVMAT,N2TMT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMAT,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTBUF,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+C
+      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+      CALL READT(LUTMAT,N2TMT,WORK(KVMAT))
+C
+      CALL LINSYM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
+     &            WORK(KFREE),LFREE)
+C
+C     Construct right index transformed overlap matrix Saomo = Sao C
+C
+      CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),IPRONE,WORK(KFREE),LFREE)
+C
+C     Write the new transformation matrix.
+C
+      REWIND (LUTMAT)
+      CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
+      CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
+      CLOSE(LUTMAT,STATUS='KEEP')
+C
+C     We need to diagonalize blockwise in the SCF step 
+C
+      SUB_BL = .TRUE.
+C
+C     Memory deallocation
+      CALL MEMREL('GLINSM',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('GLINSM')
+      RETURN
+C
+ 1000 FORMAT (//" WARNING : linear symmetry is not implemented for ",
+     &A," yet" /"           continue calculation in lower symmetry")
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck linsym */
+      SUBROUTINE LINSYM(TMAT,VMAT,TBUF,EIG,WORK,LWORK)
+C*****************************************************************************
+C
+C     Construct matrix J(x,y,z) and transform to eigenvectors of this operator
+C     Routine based on DELPOS and parts of the ZORA diagonalization routine
+C
+C     Written by L.Visscher, october 2003
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0)
+C
+C Used from COMMON blocks
+C  CBIPAM:
+C  DHFCAL:
+C  DCBBAS:
+C  DCBORB:
+C  DGROUP:
+#include <dcbgen.h>
+#include <dcbham.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dgroup.h>
+#include <cbihr1.h>
+C
+      DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
+      DIMENSION IQBF(4),IQW(4)
+#include <memint.h>
+C
+      CALL HEADER('Output from LINSYM',-1)
+      NBRP = 4 / NZ
+C
+C     Construct mj matrix
+C
+      CALL AMJMAT(TBUF,IPRONE,WORK,LWORK)
+C
+C     Transform to MO-basis
+C     =====================
+C
+C Note : It's tempting to use I2ORBT to find the start of a block, but this is not
+C possible as this array is not yet set (is done in dirset). Took me half an hour to
+C figure this one out (LV).
+C
+      IOFT = 1
+      IOFV = 1
+      DO 10 I = 1,NFSYM
+        IF(NORB(I).EQ.0) GOTO 10
+        IOFTB = I2BASX(I,I) + 1
+        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &            NORB(I),NORB(I),
+     &            TBUF(IOFTB),NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
+     &            TMAT(IOFT),NORB(I),NORB(I),1,IPQTOQ(1,0),
+     &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
+     &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
+     &            WORK,LWORK,IPRGEN)
+        IOFT = IOFT + NORB(I)*NORB(I)
+        IOFV = IOFV + NORB(I)*NFBAS(I,0)
+   10 CONTINUE
+C
+C     Initialize TBUF to zero (we will fill in parts later and its easier to initialize
+C     the rest here). Also initialize the array that counts the number of functions for 
+C     each Mj value.
+C
+      CALL DZERO (TBUF,N2TMT)
+      CALL IZERO (NORB_SUB,MAX_SUB_BL*3*2)
+      WRITE (LUPRI,1000)
+C
+      IOFT = 1
+      DO 20 I = 1,NFSYM
+C
+        IF(NORB(I).EQ.0) GOTO 20
+C         
+C       Set dimensions
+C
+        NL = NESH(I) 
+        NS = NPSH(I)
+        NT = NORB(I)
+        NLL = NL * NL
+        NSS = NS * NS
+        NTT = NT * NT
+        IEIGP = IORB(I) + 1
+        IEIGE = IEIGP + NS
+C
+C       Allocate memory for the diagonalization. We want to
+C       have the LL and SS blocks in separate blocks.
+C
+        CALL MEMGET('REAL',KFLL,NLL,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KFSS,NSS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
+C
+C       Extract LL block of Jz matrix
+C
+        CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,0,0,1,1,1,NZ,
+     &               WORK(KFLL),NL,NL,1,
+     &               TMAT(IOFT),NT,NT,NZ)
+C
+C       Find eigenvalues of Jz
+C
+        IF (NL.GT.0) THEN
+           CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
+     &                EIG(IEIGE),1,
+     &                WORK(KVLL),NL,NL,
+     &                WORK(KFREE),LFREE,IERR)
+        ENDIF
+C
+C       Extract SS block of Jz matrix
+C
+        CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,0,0,2,2,1,NZ,
+     &               WORK(KFSS),NS,NS,1,
+     &               TMAT(IOFT),NT,NT,NZ)
+C
+        IF (NS.GT.0) THEN
+           CALL QDIAG(1,NS,WORK(KFSS),NS,NS,
+     &                EIG(IEIGP),1,
+     &                WORK(KVSS),NS,NS,
+     &                WORK(KFREE),LFREE,IERR)
+        ENDIF
+C
+C       Count the Mj-values.
+C       We will either find a negative or a positive value for each MJ.
+C
+        MJMAX = 0
+        DO IX = IEIGE, IEIGE+NL-1
+           MJ = NINT(D2*EIG(IX))
+           MJABS = (ABS(MJ)+1)/2
+           ID_SUB_BL(MJABS,I)  = MJ
+           NORB_SUB(MJABS,I,1) = NORB_SUB(MJABS,I,1) + 1
+           NORB_SUB(MJABS,I,0) = NORB_SUB(MJABS,I,0) + 1
+           MJMAX = MAX(MJABS,MJMAX)
+        ENDDO
+C
+        DO IX = IEIGP, IEIGP+NS-1
+           MJ = NINT(D2*EIG(IX))
+           MJABS = (ABS(MJ)+1)/2
+           IF (MJABS.GT.MAX_SUB_BL) CALL QUIT ("increase max_sub_bl")
+           ID_SUB_BL(MJABS,I)  = MJ
+           NORB_SUB(MJABS,I,2) = NORB_SUB(MJABS,I,2) + 1
+           NORB_SUB(MJABS,I,0) = NORB_SUB(MJABS,I,0) + 1
+           MJMAX = MAX(MJABS,MJMAX)
+        ENDDO
+C
+        N_SUB_BL(I) = MJMAX
+C
+C       Write information to output
+C
+        DO MJABS = 1, MJMAX
+           WRITE (LUPRI,1010) 3-2*I,ID_SUB_BL(MJABS,I),
+     &                       (NORB_SUB(MJABS,I,IC),IC=0,2)
+        ENDDO
+C
+C       We need to be careful now. In making NORB_SUB we chose to
+C       use the absolute value of MJ because this gives the most logical
+C       block structure. The eigenvectors and solutions are, however,
+C       still ordered by the signed value. Reorder them first before
+C       continuing.
+C
+        DO IX = IEIGP, IEIGP+NS-1
+           EIG(IX) = ABS(EIG(IX))
+        ENDDO
+C
+C       The SELBOS routine does just the reordering that we want,
+C       use work(kfss) as scratch, and allocate a few other small
+C       scratch arrays. The IBEIG part will not be used but we will
+C       initialize it to prevent problems with uninitialized data while
+C       sorting it.
+C
+        CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
+        MJ = 0
+        CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
+        CALL SELBOS (NS,WORK(KINDX),EIG(IEIGP),
+     &               WORK(KIBEI),WORK(KVSS),
+     &               WORK(KFSS),WORK(KIDUM))
+        CALL MEMREL('LINSYM',WORK,KINDX,KINDX,KFREE,LFREE)
+C
+C       Same thing for the positive energy solutions
+C
+        DO IX = IEIGE, IEIGE+NL-1
+           EIG(IX) = ABS(EIG(IX))
+        ENDDO
+        CALL MEMGET('INTE',KINDX,NL,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIDUM,NL,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIBEI,NL,WORK,KFREE,LFREE)
+        MJ = 0
+        CALL ICOPY (NL,MJ,0,WORK(KIBEI),1)
+        CALL SELBOS (NL,WORK(KINDX),EIG(IEIGE),
+     &               WORK(KIBEI),WORK(KVLL),
+     &               WORK(KFLL),WORK(KIDUM))
+        CALL MEMREL('LINSYM',WORK,KINDX,KINDX,KFREE,LFREE)
+C
+C       Put the MO vectors in TBUF
+C
+C       We now have the solutions ordered on on the right index 
+C       by absolute mj-value and at the left index on boson irreps.
+C       Keep this ordering when inserting into the full matrix so
+C       that the new transformation matrix (generated below) will
+C       give an ordering on MJ values.
+C
+        CALL EXTRSB (2,I,NBORB,4,NBRP,
+     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(I),0,0,1,1,1,NZ,
+     &               WORK(KVLL),NL,NL,1,
+     &               TBUF(IOFT),NT,NT,NZ)
+        CALL EXTRSB (2,I,NBORB,4,NBRP,
+     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(I),0,0,2,2,1,NZ,
+     &               WORK(KVSS),NS,NS,1,
+     &               TBUF(IOFT),NT,NT,NZ)
+C
+C       Done; release the extra memory used for diagonalization
+C
+        CALL MEMREL('LINSYM',WORK,KFLL,KFLL,KFREE,LFREE)
+C
+C       Update offset
+C
+        IOFT = IOFT + NORB(I)*NORB(I)
+C
+   20 CONTINUE
+C
+C     Generate transformation matrix in non-orthogonal basis
+C     ======================================================
+C
+      IOFT = 1
+      IOFU = 1
+      IOFV = 1
+      DO 30 I = 1,NFSYM
+        IF(NORB(I).EQ.0) GOTO 30
+        IF (IPRHAM.GE.5) THEN
+           CALL HEADER('Transformation matrix in orthon. basis',-1)
+           CALL PRQMAT(TBUF(IOFU),NORB(I),NORB(I),NORB(I),
+     &                 NORB(I),1,IPQTOQ(1,0),LUPRI)
+        ENDIF
+C
+C       Backtransform all solutions
+C       ===========================
+C
+        CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB(I),
+     &              TBUF(IOFU),NORB(I),NORB(I),
+     &              NORB(I),1,
+     &              NORB(I),1,NFBAS(I,0),
+     &              VMAT(IOFV),NFBAS(I,0),NORB(I),1,
+     &              IPRHAM)
+        IOFT = IOFT + NFBAS(I,0)*NORB(I)
+        IOFU = IOFU + NORB(I)*NORB(I)
+        IOFV = IOFV + NORB(I)*NFBAS(I,0)
+   30 CONTINUE
+C
+      CALL FLSHFO(LUPRI)
+      RETURN
+ 1000 FORMAT 
+     & (/' Parity   MJ  Functions(total) Functions(LC) Functions(SC)')
+ 1010 FORMAT (T5,I2,T9,I3,'/2',T20,I5,T33,I5,T46,I5)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck amjmat */
+      SUBROUTINE AMJMAT(FOCK,IPRINT,WORK,LWORK)
+C*****************************************************************************
+C     Generate one-electron matrix of Jz
+C
+C     Written by Luuk Visscher, oct 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <cbihr1.h>
+      DIMENSION FOCK(*),WORK(LWORK)
+C
+      CALL QENTER('AMJMAT')
+#include <memint.h>
+C
+C     Memory allocation
+C
+      CALL MEMGET('REAL',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KONEIN,   NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
+C
+C     ************************************************
+C     ****** Construct one-electron Fock matrix ******
+C     ************************************************
+C
+      CALL AMJMA1(FOCK,WORK(KFTRI),WORK(KONEIN),WORK(KFIRST),
+     &            WORK,KFREE,LFREE,IPRINT)
+C
+C     Memory deallocation
+      CALL MEMREL('AMJMAT',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('AMJMAT')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck amjma1 */
+      SUBROUTINE AMJMA1(FOCK,FTRI,OP1INT,FIRST,WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C     Generate one-electron matrix of Jz
+C
+C     Written by Luuk Visscher, oct 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <dcbgen.h>
+#include <dcbham.h>
+C
+      PARAMETER (HALF=0.5D0, D1=1.0D0)
+      LOGICAL FIRST
+      DIMENSION FOCK(N2BBASX),FTRI(NNBBASX),OP1INT(NNBBASX),
+     &          WORK(*)
+C
+C     Sanity check : linear symmetry requires use of real groups (C2v or D2h)
+C
+      IF (NZ.NE.1) CALL QUIT ("Linear symmetry requires NZ=1")
+C
+#if defined (SYS_IBM)
+         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='APROPER')
+#else
+         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='AOPROPER')
+#endif
+C
+C     Get integrals of component of angular momentum that we want to
+C     quantize on.
+C
+      FIRST = .TRUE.
+      IOP =  IPANGMOM
+      CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
+      CALL DSPTSI(NTBAS(0),FTRI,FOCK)
+C     
+C     Get the spin-z operator
+C     =======================
+C     
+      FIRST = .TRUE.
+      IOP =  IPSPNMOM
+      CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
+      CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
+      CALL DSPTSI(NTBAS(0),FTRI,WORK(KBUF))
+C     
+C     Make the Jz operator (in case of spinfree we make Lz)
+C     =====================================================
+C     
+      IF (.NOT.(SPINFR.OR.LEVYLE))
+     &   CALL DAXPY (N2BBASX,D1,WORK(KBUF),1,FOCK,1)
+C
+C     Release memory & close AOPROPER
+C
+      CALL MEMREL('AMJMA1',WORK,KBUF,KBUF,KFREE,LFREE)
+      CLOSE(LU1INT,STATUS = 'KEEP')
+C
+C     Reindex to sorted basis
+C     =======================
+C
+      CALL BUTOBS(FOCK,1,WORK(KFREE),LFREE)
+C
+C     Output section
+C     ==============
+C
+      IF(IPRHAM.GE.4) THEN
+        CALL HEADER('One-electron MJ matrix',-1)
+        DO 10 I = 1,NFSYM
+          IF(NFBAS(I,0).EQ.0) GOTO 10
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          CALL PRQMAT(FOCK(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
+     &                NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
+   10   CONTINUE
+      ENDIF
+C     
+      RETURN
+      END

@@ -3204,6 +3204,8 @@ C
 C     Process input for COMMON  /CBIHAM/
 C     ==================================
 C
+C     Keep track of number of changes and added finite field operators
+      I_FINFIELD = 0
       ICHANG  = 0
   100 CONTINUE
       READ (LUCMD, '(A7)') WORD
@@ -3249,6 +3251,7 @@ C&&&& OPERATOR: Read in operator
            ENDIF
            IPR1OP(N1OPER) = INDXPR
            ICHANG = ICHANG + 1
+           I_FINFIELD = I_FINFIELD + 1
            GO TO 100
   104    CONTINUE
 C&&&& GAUNT: Gaunt operator
@@ -3286,10 +3289,13 @@ C&&& NOSMLV: Turn off small nuclear attraction integrals
   112      CONTINUE
 C&&& LEVYLE : Use Levy-Leblond Hamiltonian
              LEVYLE = .TRUE.
+C            Levy-Leblond implies also spinfree, specify that
+             SPINFR = .TRUE.
              NOSMLV = .TRUE.
              SSMTRC = D0
-             IF (NPRPS.GT.4) 
-     &          CALL QUIT ('give .LEVY-LE option before .OPERAT')
+C            Check that we have not defined operators yet, as they need to be modified in Levy-Leblond calcs.
+             IF (I_FINFIELD.GT.0) 
+     &          CALL QUIT ('give .LEVY-LEBLOND option before .OPERAT')
 C            No modifications of Hamiltonian, only new definition
 C            ICHANG = ICHANG + 1
              GO TO 100
@@ -3871,6 +3877,7 @@ C***********************************************************************
       PARAMETER(D1=1.0D0,DM2 = -2.0D0,DHALF=0.5D0)
 C
 #include "dcbgen.h"
+#include "dgroup.h"
 #include "dcbham.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),WORK(LWORK)
@@ -3926,6 +3933,29 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
       IPKINERG         = INDXPR
+      IF (LINEAR) THEN
+C
+C        Angular momentum integrals (used in case of atomic or linear symmetry !)
+C        ========================================================================
+C
+         PNAME            = 'Orbital z-momentum'
+         IPTYP            = 1
+         NPCOMP           = 1
+         PFAC(1)          = -D1
+         PLABEL(1)        = 'ZANGMOM '
+         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                  INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+         IPANGMOM         = INDXPR
+C
+         PNAME            = 'Spin z-momentum'
+         IPTYP            = 12     
+         NPCOMP           = 1
+         PFAC(1)          = DHALF
+         PLABEL(1)        = 'OVERLAP '
+         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                  INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+         IPSPNMOM         = INDXPR
+      ENDIF
 C
       RETURN
       END

@@ -89,7 +89,7 @@ C
       ILSINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
       IGTINT = IBTAND(INTGEN/8,1)
-      THROUT = 1.0D-16
+      THROUT = 1.0D-15
 C     Default orbital strings is all occupied and all virtuals
       DO I = 1,NFSYM
         MP2_INDSTR(1,I) = ' '
@@ -472,7 +472,7 @@ C     aug 2001 hjaaj TODO : disabled this option because only true implemented
       RCORBS = .FALSE.
       NOMDCINT = .FALSE.
       MDCSCAT = .FALSE.
-      THROUT = 1.0D-16
+      THROUT = 1.0D-15
       SCRTRA = -1.0D0
 C
 C     Process input for MOLTRA

@@ -47,22 +47,11 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbgen.h"
+#include "dgroup.h"
 #include "cbihr1.h"
 #include "infpar.h"
 C
       DIMENSION WORK(LWORK)
-C
-C     Set DCB common blocks - first time
-C     ==================================
-C
-CX    CALL SETDC1(IPREAD) ! moved to PAMINP
-C
-C
-C     Make primitive labels and use label
-C     information to list SO-basis
-C     ===================================
-C
-CX    CALL GETLAB(WORK,LWORK,IPRGEN) ! moved to PAMINP
 C
 C     Generate all one-electron integrals
 C     ===================================
@@ -75,6 +64,11 @@ C     Generate MO-transformation matrix and write to file
 C     ===================================================
 C
       CALL GMOTRA(WORK,LWORK)
+C
+C     Use supersymmetry for linear molecules
+C     ======================================
+C
+      IF (LINEAR) CALL GLINSM(WORK,LWORK)
 C
 C     Set DCB common blocks - second time
 C     ===================================

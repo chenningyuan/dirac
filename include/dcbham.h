@@ -12,6 +12,8 @@ C     IPOVERLAP  - Pointer to overlap in DCBXPR
 C     IPBETAMT   - Pointer to beta matrix in DCBXPR
 C     IPMOLFLD   - Pointer to nuclear attraction in DCBXPR
 C     IPKINERG   - Pointer to kinetic energy in DCBXPR
+C     IPANGMOM   - Pointer to z-component of angular momentum in DCBXPR
+C     IPSPNMOM   - Pointer to z-component of spin in DCBXPR
 C     N1OPER     - Number of additional operators (finite field calculations)
 C     IPR1OP     - Pointer to DCBXPR for additional operators
 C     QED        - use QED Hamiltonian (filled positronic levels)
@@ -21,6 +23,7 @@ C     VEXTPJ     - Hamiltonian embedded in molecular field projections
 C     NOSMLV     - No small nuclear attraction integrals
 C     URKBAL     - Unrestricted kinetic balance
 C     LEVYLE     - Levy-Leblond Hamiltonian
+C     SUB_BL     - Diagonalize Hamiltonian blockwise (neglect couplings)
 C     SSMTRC     - Scaling factor for SS overlap matrix
 C     SPINFR     - Neglect spin-orbit coupling
 C     SPINFR2    - Neglect 2-electron spin-orbit coupling
@@ -36,17 +39,17 @@ C                  Correction made to two-electron Fock-matrix.
 C     ONECOFF    - internal flag for turning off ONECAP
 C
       PARAMETER(MAX1OPER=10)
-      COMMON/DCIHAM/IPRHAM,IPOVRLAP,IPBETAMT,IPMOLFLD,IPKINERG,
-     &              N1OPER,IPR1OP(MAX1OPER),LSOLMX,IPRSOL,
+      COMMON/DCIHAM/IPRHAM,IPOVRLAP,IPBETAMT,IPMOLFLD,IPKINERG,IPANGMOM,
+     &              IPSPNMOM,N1OPER,IPR1OP(MAX1OPER),LSOLMX,IPRSOL,
      &              ICTLV1C(2)
       EQUIVALENCE (INTV1C, ICTLV1C(1))
-      LOGICAL QED,ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
-     &        INERSI,INERSF,SPINFR,SPINFR2,ZORA,ZORA4,ZORASC,
+      LOGICAL QED,ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SUB_BL,
+     &        SOLVEN,INERSI,INERSF,SPINFR,SPINFR2,ZORA,ZORA4,ZORASC,
      &        PROJEC,PROOWN,DFTHAM,SMLV1C,ONECAP,ONECOFF
-      PARAMETER (NDCLHAM=17)
+      PARAMETER (NDCLHAM=18)
       COMMON/DCLHAM/
-     &        QED,ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
-     &        INERSI,INERSF,SPINFR,SPINFR2,ZORA,ZORA4,ZORASC,
+     &        QED,ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SUB_BL,
+     &        SOLVEN,INERSI,INERSF,SPINFR,SPINFR2,ZORA,ZORA4,ZORASC,
      &        PROJEC,PROOWN,DFTHAM,SMLV1C,ONECAP,ONECOFF
       COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV,HFXFAC,ONECNV
 #else  /* __CVERSION__ */

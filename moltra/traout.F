@@ -247,6 +247,49 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck LINZERO */
+      SUBROUTINE LINZERO(ICLASS,IREPIJB,IREPKLB,NKL,FMAT)
+C
+C     Zero integrals that should be zero due to symmetry
+C     This means that the MJ values stored in IREPIJB and IREPKLB should match.
+C
+C     Written by Luuk Visscher, November 2003
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+      DIMENSION FMAT(NKL)
+      DIMENSION IREPIJB(2),IREPKLB(2,NKL)
+C
+C     To determine the MJ value we need to know the classes :
+C     Class 1 : (i    j    | k    l   )
+C     Class 2 : (i    j    | kbar lbar)
+C     Class 3 : (i    jbar | k    lbar)
+C     Class 4 : (ibar j    | k    lbar)
+C
+      IF (ICLASS.LE.2) THEN
+         MIJ = - IREPIJB(1) + IREPIJB(2)
+      ELSEIF (ICLASS.EQ.3) THEN
+         MIJ = - IREPIJB(1) - IREPIJB(2)
+      ELSE
+         MIJ =   IREPIJB(1) + IREPIJB(2)
+      ENDIF
+C
+      DO I = 1, NKL
+         IF (ICLASS.EQ.1) THEN
+            MKL = - IREPKLB(1,I) + IREPKLB(2,I)
+         ELSEIF (ICLASS.EQ.2) THEN
+            MKL =   IREPKLB(1,I) - IREPKLB(2,I)
+         ELSE
+            MKL = - IREPKLB(1,I) - IREPKLB(2,I)
+         ENDIF
+         IF (MIJ+MKL.NE.0) FMAT(I) = 0.D0
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SYMFINT */
       SUBROUTINE SYMFINT(IPRINT,IREPIJ,IREPIJB,IREPKLB,IJ,IKR,JKR,
      &                   NSTR3,NSTR4,NKL,FMAT,WORK,KFREE,LFREE)
@@ -330,7 +373,7 @@ C
      &            WORK(KINDK),WORK(KINDL),
      &            WORK(KRKL))
 C
-      ELSE ! spinfree
+      ELSE ! not spinfree
 C
 C     Real and complex classes
 C
@@ -364,6 +407,12 @@ C
                ENDDO
             ENDIF
          ENDDO
+C
+C        Take out integrals that should be zero due to the linear symmetry (can be non-zero due to noise)
+C
+         IF (LINEAR)
+     &   CALL LINZERO (ICLASS,IREPIJB,IREPKLB,NKL,WORK(KFTMAT))
+
          CALL MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
      &                           WORK(KFTMAT),NKL,
      &                           WORK(KINDK),WORK(KINDL),
@@ -638,31 +687,40 @@ C
                     IF (IREPI.EQ.2) IREPIB = IBE21(I)
                     IF (IREPJ.EQ.1) IREPJB = IBE12(J)
                     IF (IREPJ.EQ.2) IREPJB = IBE22(J)
+C                   The extra label may be due to linearity or due to the spinfree option
+                    IF (LINEAR) THEN
 C
-C                   The compound boson irrep can be obtained
-C                   by an xor operation.
+C                      Store the MJ values in the INDXB array
 C
-                    IREPIJB = IBTXOR(IREPIB,IREPJB)
-                    INDXB(1,IJ) = IREPIJB
+                       INDXB(1,IJ) = IREPIB
+                       INDXB(2,IJ) = IREPJB
+                    ELSE
 C
-C                   We first determine which quaternion phase
-C                   factors the individual functions receive and
-C                   than obtain the compound phase factor by
-C                   quaternion multiplication.
+C                      The compound boson irrep can be obtained
+C                      by an xor operation.
 C
-                    IQI = IPQTOQ(1,IREPIB)
-                    IQJ = IPQTOQ(1,IREPJB)
+                       IREPIJB = IBTXOR(IREPIB,IREPJB)
+                       INDXB(1,IJ) = IREPIJB
 C
-C                   The sign of the quaternion multiplication is given by iqphase,
-C                   but since IQJ is conjugated (backtransform !) we also have to 
-C                   multiply by IQSIGN (-1 for q-imaginary, 1 for real)
+C                      We first determine which quaternion phase
+C                      factors the individual functions receive and
+C                      than obtain the compound phase factor by
+C                      quaternion multiplication.
 C
-                    INDXB(2,IJ) = IQPHASE(IQI,IQJ,1)*IQSIGN(IQJ,2,1)
+                       IQI = IPQTOQ(1,IREPIB)
+                       IQJ = IPQTOQ(1,IREPJB)
+C
+C                      The sign of the quaternion multiplication is given by iqphase,
+C                      but since IQJ is conjugated (backtransform !) we also have to 
+C                      multiply by IQSIGN (-1 for q-imaginary, 1 for real)
+C
+                       INDXB(2,IJ) = IQPHASE(IQI,IQJ,1)*IQSIGN(IQJ,2,1)
+                    ENDIF
                  ENDDO
               ENDDO
             ELSEIF (IREPI.EQ.IREPJ) THEN
 C
-C             Same procedure for lower trangular case..
+C             Same procedure for lower trangular gg or uu case..
 C
               DO J = 1, NSTR(IREPJ,0,2)
                  DO I = J, NSTR(IREPI,0,1)
@@ -671,11 +729,16 @@ C
                     IF (IREPI.EQ.2) IREPIB = IBE21(I)
                     IF (IREPJ.EQ.1) IREPJB = IBE12(J)
                     IF (IREPJ.EQ.2) IREPJB = IBE22(J)
-                    IREPIJB = IBTXOR(IREPIB,IREPJB)
-                    INDXB(1,IJ) = IREPIJB
-                    IQI = IPQTOQ(1,IREPIB)
-                    IQJ = IPQTOQ(1,IREPJB)
-                    INDXB(2,IJ) = IQPHASE(IQI,IQJ,1)*IQSIGN(IQJ,2,1)
+                    IF (LINEAR) THEN
+                       INDXB(1,IJ) = IREPIB
+                       INDXB(2,IJ) = IREPJB
+                    ELSE
+                       IREPIJB = IBTXOR(IREPIB,IREPJB)
+                       INDXB(1,IJ) = IREPIJB
+                       IQI = IPQTOQ(1,IREPIB)
+                       IQJ = IPQTOQ(1,IREPJB)
+                       INDXB(2,IJ) = IQPHASE(IQI,IQJ,1)*IQSIGN(IQJ,2,1)
+                    ENDIF
                  ENDDO
               ENDDO
             ENDIF

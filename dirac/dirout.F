@@ -1111,6 +1111,7 @@ C
       DIMENSION EIG(*),IBEIG(*),EIGBUF(*),
      &          IFIRST(*),NMULT(*)
       CHARACTER FMTE*6,FMTP*6,MXFORM*6
+      CHARACTER*4 NAME_SUB (-MAX_SUB_BL:MAX_SUB_BL)
       DIMENSION IOFF(2),ISS(0:7)
       LOGICAL   PRPOS
 C
@@ -1139,7 +1140,7 @@ C
       END DO
       FMTP = MXFORM(EIGMAX,18)
 C
-      IF (.NOT. (LEVYLE .OR. SPINFR) ) THEN
+      IF (.NOT. SUB_BL ) THEN
 C
 C        Print eigenvalues
 C
@@ -1191,93 +1192,96 @@ C
          END DO
       ELSE
 C
-C        Levy-Leblond or spin-free.
+         DO IFSYM = 1, NFSYM
+            DO ISUB = 1, N_SUB_BL(IFSYM)
 C
+C               Write identification of the blocks. At the moment we have only
+C               the spinfree or the linear symmetry case.
 C
-C        Set up array: ISYM --> IFSYM
+                ID = ID_SUB_BL(ISUB,IFSYM)
+                IF (LEVYLE .OR. SPINFR) THEN
+                   WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ID)
+                   NAME_SUB(ID) = REP(ID)
+                ELSE
+                   WRITE(LUPRI,'(/A,I4,3A,I2,A)')
+     &                 '* Block',ISUB,' in ',FREP(IFSYM),
+     &                 ':  Omega = ',ABS(ID),'/2'
+                   WRITE (NAME_SUB(ID),'(I2,"/2")') ABS(ID)
+                ENDIF
 C
-         NBRP = 4 / NZ
-         DO IFSYM = 1,NFSYM
-            DO IBSYM = 1,NBRP
-               ISS(JFSYM(IBSYM,IFSYM)-1) = IFSYM
-            END DO
-         END DO
+                NTOT = 0
 C
+C               Closed shell eigenvalues
 C
-         DO ISYM = 0,NBSYM-1
-            NTOT = 0
-            WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ISYM)
-            IFSYM = ISS(ISYM)
+C               Pick eigenvalues of symmetry ISYM
 C
-C           Closed shell eigenvalues
+                CALL PCKEIG(EIG,
+     &                      IORB(IFSYM)+NPSH(IFSYM)+1,
+     &                      IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM),
+     &                      IBEIG,ID,NEIG,EIGBUF)
 C
-C           Pick eigenvalues of symmetry ISYM
+                IF (NEIG .GT. 0) THEN
+                   NTOT = NTOT + NEIG
+                   WRITE(LUPRI,'(2X,A,F6.4)') '* Closed shell, f = ',
+     &                                        DF(0)
+                   CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
+                END IF
 C
-            CALL PCKEIG(EIG,
-     &                  IORB(IFSYM)+NPSH(IFSYM)+1,
-     &                  IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM),
-     &                  IBEIG,ISYM,NEIG,EIGBUF)
+C               Open shell eigenvalues
 C
-            IF (NEIG .GT. 0) THEN
-               NTOT = NTOT + NEIG
-               WRITE(LUPRI,'(2X,A,F6.4)') '* Closed shell, f = ',DF(0)
-               CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
-            END IF
+                IOFF(IFSYM) = IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)
+                DO IOPEN = 1,NOPEN
+                   CALL PCKEIG(EIG,
+     &                  IOFF(IFSYM)+1,IOFF(IFSYM)+NACSH(IFSYM,IOPEN),
+     &                  IBEIG,ID,NEIG,EIGBUF)
 C
-C           Open shell eigenvalues
-C
-            IOFF(IFSYM) = IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)
-            DO IOPEN = 1,NOPEN
+                   IF (NEIG .GT. 0) THEN
+                      NTOT = NTOT + NEIG
+                      WRITE(LUPRI,'(2X,A,I1,A,F6.4)')
+     &                   '* Open shell #',IOPEN,', f = ',DF(IOPEN)
+                      CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
+                      IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
+                   END IF
+               END DO
+C    
+C              Virtual eigenvalues
+C           
+C              Pick eigenvalues of symmetry ISYM
+C    
                CALL PCKEIG(EIG,
-     &                     IOFF(IFSYM)+1,IOFF(IFSYM)+NACSH(IFSYM,IOPEN),
-     &                     IBEIG,ISYM,NEIG,EIGBUF)
-C
-               IF (NEIG .GT. 0) THEN
-                  NTOT = NTOT + NEIG
-                  WRITE(LUPRI,'(2X,A,I1,A,F6.4)')
-     &               '* Open shell #',IOPEN,', f = ',DF(IOPEN)
-                  CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
-                  IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
-               END IF
-            END DO
-C
-C           Virtual eigenvalues
-C
-C           Pick eigenvalues of symmetry ISYM
-C
-            CALL PCKEIG(EIG,
-     &                  IORB(IFSYM)+NPSH(IFSYM)+NOCC(IFSYM)+1,
-     &                  IORB(IFSYM)+NORB(IFSYM),
-     &                  IBEIG,ISYM,NEIG,EIGBUF)
-C
-            IF (NEIG .GT. 0) THEN
-               NTOT = NTOT + NEIG
-               WRITE(LUPRI,'(2X,A,F6.4)')
-     &            '* Virtual eigenvalues, f = ',D0
-               CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
-            END IF
-C
-C           Positronic eigenvalues
-C
-C           Pick eigenvalues of symmetry ISYM
-C
-            IF (PRPOS .AND. NPSH(IFSYM) .GT.0) THEN
-               CALL PCKEIG(EIG,
-     &                     IORB(IFSYM)+1,
-     &                     IORB(IFSYM)+NPSH(IFSYM),
-     &                     IBEIG,ISYM,NEIG,EIGBUF)
-C
+     &                     IORB(IFSYM)+NPSH(IFSYM)+NOCC(IFSYM)+1,
+     &                     IORB(IFSYM)+NORB(IFSYM),
+     &                     IBEIG,ID,NEIG,EIGBUF)
+C           
                IF (NEIG .GT. 0) THEN
                   NTOT = NTOT + NEIG
                   WRITE(LUPRI,'(2X,A,F6.4)')
-     &               '* Positronic eigenvalues, f = ',DF(0)
-                  CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTP)
+     &               '* Virtual eigenvalues, f = ',D0
+                  CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
+               END IF  
+C           
+C              Positronic eigenvalues
+C        
+C              Pick eigenvalues of symmetry ISYM
+C     
+               IF (PRPOS .AND. NPSH(IFSYM) .GT.0) THEN
+                  CALL PCKEIG(EIG,
+     &                        IORB(IFSYM)+1,
+     &                        IORB(IFSYM)+NPSH(IFSYM),
+     &                        IBEIG,ID,NEIG,EIGBUF)
+C
+                  IF (NEIG .GT. 0) THEN
+                     NTOT = NTOT + NEIG
+                     WRITE(LUPRI,'(2X,A,F6.4)')
+     &                  '* Positronic eigenvalues, f = ',DF(0)
+                     CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTP)
+                  END IF
                END IF
-            END IF
-            IF(NTOT.EQ.0) THEN
-               WRITE(LUPRI,'(2X,A)')
-     &               '* No eigenvalues.'
-            ENDIF
+               IF(NTOT.EQ.0) THEN
+                  WRITE(LUPRI,'(2X,A)')
+     &                  '* No eigenvalues.'
+               ENDIF
+            END DO
          END DO
 C
 C        Print occupation string for each fermion symmetry
@@ -1291,14 +1295,14 @@ C
      &              '* Inactive orbitals'
                JST = IORB(IFSYM) + NPSH(IFSYM)
                WRITE(LUPRI,'(4X,18A4)')
-     &              (REP(IBEIG(I)),I=JST+1,JST+NISH(IFSYM))
+     &              (NAME_SUB(IBEIG(I)),I=JST+1,JST+NISH(IFSYM))
             END IF
             IF (NASH(IFSYM) .GT. 0) THEN
                WRITE(LUPRI,'(2X,A)')
      &              '* Active orbitals'
                JST = IORB(IFSYM) + NPSH(IFSYM) + NISH(IFSYM)
                WRITE(LUPRI,'(4X,18A4)')
-     &              (REP(IBEIG(I)),I=JST+1,JST+NASH(IFSYM))
+     &              (NAME_SUB(IBEIG(I)),I=JST+1,JST+NASH(IFSYM))
             END IF
             IF (NSSH(IFSYM) .GT. 0) THEN
                WRITE(LUPRI,'(2X,A)')
@@ -1306,14 +1310,14 @@ C
                JST = IORB(IFSYM) + NPSH(IFSYM)
      &              + NISH(IFSYM) + NASH(IFSYM)
                WRITE(LUPRI,'(4X,18A4)')
-     &              (REP(IBEIG(I)),I=JST+1,JST+NSSH(IFSYM))
+     &              (NAME_SUB(IBEIG(I)),I=JST+1,JST+NSSH(IFSYM))
             END IF
             IF (PRPOS .AND. NPSH(IFSYM) .GT. 0) THEN
                WRITE(LUPRI,'(2X,A)')
      &              '* Positronic orbitals'
                JST = IORB(IFSYM)
                WRITE(LUPRI,'(4X,18A4)')
-     &              (REP(IBEIG(I)),I=JST+1,JST+NPSH(IFSYM))
+     &              (NAME_SUB(IBEIG(I)),I=JST+1,JST+NPSH(IFSYM))
             END IF
           END DO
          END IF

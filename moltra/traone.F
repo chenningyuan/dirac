@@ -454,15 +454,19 @@ C
 #include "dcbtra.h"
 #include "dgroup.h"
 C
+C     NORDER gives the order of the Abelian subgroup used linear molecules. 
+C    NORDER=16 (default) uses C_16_h for D_inf_h and C_32 for C_inf_v.
+C
+      PARAMETER (NORDER=16)
       LOGICAL BREIT,FORWARD
       CHARACTER*14 REPN(8)
-      CHARACTER*4 REPA(64)
+      CHARACTER*4 REPA(4*NORDER)
       DIMENSION FMO(NORBT,NORBT,NZ),ORBE(NSTRT),IBORB(NSTRT)
       DIMENSION FMOM(NSTRT*2,NSTRT*2,2),WORK(*)
       DIMENSION IRPMO(NSTRT*2),IRPAMO(NSTRT*2)
       DIMENSION ORBMO(NSTRT*2),IBSPI(NSTRT*2)
       DIMENSION NSTR(2),IPHS(4),NAEL(8),NSPC(2,0:2)
-      DIMENSION MULTB(64,64)
+      DIMENSION MULTB(64,64), MJ_TO_REP(-2*NORDER:2*NORDER,2)
       DATA IPHS/ 1,-1,-1, 1/
 C
 C
@@ -518,6 +522,8 @@ C     Get multiplication table for the abelian subgroup
 C
       IF (SPINFR.OR.LEVYLE) THEN
          CALL GMULTSF (NSYMRPA,REPA,MULTB)
+      ELSEIF (LINEAR) THEN
+         CALL GMULTLN (NSYMRPA,REPA,MJ_TO_REP,MULTB,NORDER)
       ELSE
          CALL GMULTA (NZ,NFSYM,NSYMRPA,REPA,MULTB)
       ENDIF
@@ -546,6 +552,11 @@ C
             IRPMO(II)  = IREP
             IF (SPINFR.OR.LEVYLE) THEN
                IRPAMO(II) = IBORB(IK) + 1
+            ELSEIF (LINEAR) THEN
+               MJ = IBORB(IK)
+               IF (MJ.GT. 2*NORDER/NFSYM) MJ = MJ - 4*NORDER/NFSYM
+               IF (MJ.LT.-2*NORDER/NFSYM) MJ = MJ + 4*NORDER/NFSYM
+               IRPAMO(II) = MJ_TO_REP(MJ,I)
             ELSE
                IRPAMO(II) = IREPA
             ENDIF
@@ -561,6 +572,11 @@ C
             IRPMO(II)  = IREP
              IF (SPINFR.OR.LEVYLE) THEN
                IRPAMO(II) = IBORB(IK) + NBSYM + 1
+            ELSEIF (LINEAR) THEN
+               MJ = -IBORB(IK)
+               IF (MJ.GT. 2*NORDER/NFSYM) MJ = MJ - 4*NORDER/NFSYM
+               IF (MJ.LT.-2*NORDER/NFSYM) MJ = MJ + 4*NORDER/NFSYM
+               IRPAMO(II) = MJ_TO_REP(MJ,I)
             ELSE
                IRPAMO(II) = IREPA
             ENDIF
@@ -745,6 +761,192 @@ C
          ENDDO
       ENDDO
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck gmultln */
+      SUBROUTINE GMULTLN (NSYMRPA,REPA,MJ_TO_REP,MULTB,NORDER)
+C*****************************************************************************
+C
+C     We make the multiplication table for linear molecules where we have
+C     used the mj quantum number to identify blocks. Here the full point group
+C     is the non-Abelian Dinfh or Cinfv and we use the Abelian Cinfh or Cinf, 
+C     respectively. Since the Cinfh and Cinv have an infinite number of irreps 
+C     and we use a finite multiplication table to store the coupling information
+C     we need to truncate at some point. We do this at mj=15/2 in Cinfh and 
+C     mj=31/2 in Cinf so that we can keep MULTB dimensioned at 64 like before. 
+C     In fact this means that we'll be using the subgroups C8h and C16 respectively.
+C     This can be easily extended or decreased using the input parameter NORDER
+C     that indicates how large MULTB may become.
+C
+C     Luuk Visscher, Nov 03 2003
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+C
+      CHARACTER*4 REPA(4*NORDER)
+      CHARACTER PARITY
+      DIMENSION MULTB(64,64), MJ_TO_REP(-2*NORDER:2*NORDER,2)
+C
+#include "dcbibt.h"
+C
+      IF (4*NORDER.GT.64) CALL QUIT ("increase dimension of multb")
+      NSYMRPA = 2*NORDER
+C
+      IF (NFSYM.EQ.1) THEN
+C
+C        Start by specifying the names of the irreps
+C        and making the array MJ_TO_REP.
+C
+         IREP = 0
+C
+C        Fermion (half-integer) irreps
+C
+         DO MJ = 1, 2*NORDER-1, 2
+            IREP = IREP+1
+            WRITE (REPA(IREP),1000) MJ
+            MJ_TO_REP(MJ,1) = IREP
+            IREP = IREP+1
+            WRITE (REPA(IREP),1000) -MJ
+            MJ_TO_REP(-MJ,1) = IREP
+         ENDDO
+C
+C        Boson (integer) irreps
+C
+         MJ = 0
+         IREP = IREP + 1
+         WRITE (REPA(IREP),1000) MJ
+         MJ_TO_REP(MJ,1) = IREP
+         DO MJ = 2, 2*NORDER-2, 2
+            IREP = IREP+1
+            WRITE (REPA(IREP),1000) MJ
+            MJ_TO_REP(MJ,1) = IREP
+            IREP = IREP+1
+            WRITE (REPA(IREP),1000) -MJ
+            MJ_TO_REP(-MJ,1) = IREP
+         ENDDO
+         MJ = 2*NORDER
+         IREP = IREP + 1
+         WRITE (REPA(IREP),1000) MJ
+         MJ_TO_REP( MJ,1) = IREP
+         MJ_TO_REP(-MJ,1) = IREP
+C
+C        The multiplication table is straigthforward since 
+C        the product irrep is given by the sum of Mj values.
+C        The only complication is the finite range of irreps so
+C        we may need to add or subtract something, e.g. :
+C        MJ = 33/2 -> MJ = -31/2 in the C16 subgroup.
+C        (formulated in another way MJ = +/- 16 transforms
+C         according to  the totally symmetric irrep in C16)
+C        
+          DO MJ = -2*NORDER, 2*NORDER, 1
+             DO MI = -2*NORDER, 2*NORDER, 1
+                MIJ = MI + MJ 
+C               Map Cinf to C16
+                IF (MIJ.LT.-2*NORDER) MIJ = MIJ + 4*NORDER
+                IF (MIJ.GT. 2*NORDER) MIJ = MIJ - 4*NORDER
+                IF (MIJ.EQ.-2*NORDER) MIJ = 2*NORDER
+                IREP = MJ_TO_REP(MI,1)
+                JREP = MJ_TO_REP(MJ,1)
+                IJREP = MJ_TO_REP(MIJ,1)
+                MULTB(IREP,JREP) = IJREP
+             ENDDO
+          ENDDO
+C
+      ELSE
+C
+C        Same procedure but we now also have inversion symmetry
+C
+C        Fermion (half-integer) irreps
+C
+         IREP = 0
+         DO IFSYM = 1, NFSYM
+            IF (IFSYM.EQ.1) THEN
+               PARITY = 'g'
+            ELSE
+               PARITY = 'u'
+            ENDIF
+            DO MJ = 1, NORDER-1, 2
+               IREP = IREP+1
+               WRITE (REPA(IREP),1001) MJ,PARITY
+               MJ_TO_REP(MJ,IFSYM) = IREP
+               IREP = IREP+1
+               WRITE (REPA(IREP),1001) -MJ,PARITY
+               MJ_TO_REP(-MJ,IFSYM) = IREP
+            ENDDO
+         ENDDO
+C
+C        Boson (integer) irreps
+C
+         DO IFSYM = 1, NFSYM
+            IF (IFSYM.EQ.1) THEN
+               PARITY = 'g'
+            ELSE
+               PARITY = 'u'
+            ENDIF
+            MJ = 0
+            IREP = IREP + 1
+            WRITE (REPA(IREP),1001) MJ,PARITY
+            MJ_TO_REP(MJ,IFSYM) = IREP
+            DO MJ = 2, NORDER-2, 2
+               IREP = IREP+1
+               WRITE (REPA(IREP),1001) MJ,PARITY
+               MJ_TO_REP(MJ,IFSYM) = IREP
+               IREP = IREP+1
+               WRITE (REPA(IREP),1001) -MJ,PARITY
+               IF (MJ.NE.0) MJ_TO_REP(-MJ,IFSYM) = IREP
+            ENDDO
+C           For MJ = 16 we will not distinguish between positive and negative MJ
+            MJ = NORDER
+            IREP = IREP + 1
+            WRITE (REPA(IREP),1001) MJ,PARITY
+            MJ_TO_REP( MJ,IFSYM) = IREP
+            MJ_TO_REP(-MJ,IFSYM) = IREP
+         ENDDO
+C
+C        The multiplication table is rather straigthforward since 
+C        the product irrep is the one with the sum of Mj values.
+C        The only complication is the finite range of irreps so
+C        we may need to add or subtract something, e.g. :
+C        MJ = 17/2 -> MJ = -15/2 in the C8h subgroup.
+C        (formulated in another way MJ = +/- 8 transforms
+C         according to Ag or Au in C8h)
+C        
+          DO MJ = -NORDER, NORDER, 1
+             DO MI = -NORDER, NORDER, 1
+                MIJ = MI + MJ 
+C               Map Cinfh to C8h
+                IF (MIJ.LT.-NORDER) MIJ = MIJ + 2*NORDER
+                IF (MIJ.GT. NORDER) MIJ = MIJ - 2*NORDER
+                IF (MIJ.EQ.-NORDER) MIJ = NORDER
+C               The gg-part
+                IREP = MJ_TO_REP(MI,1)
+                JREP = MJ_TO_REP(MJ,1)
+                IJREP = MJ_TO_REP(MIJ,1)
+                MULTB(IREP,JREP) = IJREP
+C               The ug-part
+                IREP = MJ_TO_REP(MI,2)
+                JREP = MJ_TO_REP(MJ,1)
+                IJREP = MJ_TO_REP(MIJ,2)
+                MULTB(IREP,JREP) = IJREP
+C               The gu-part
+                IREP = MJ_TO_REP(MI,1)
+                JREP = MJ_TO_REP(MJ,2)
+                IJREP = MJ_TO_REP(MIJ,2)
+                MULTB(IREP,JREP) = IJREP
+C               The uu-part
+                IREP = MJ_TO_REP(MI,2)
+                JREP = MJ_TO_REP(MJ,2)
+                IJREP = MJ_TO_REP(MIJ,1)
+                MULTB(IREP,JREP) = IJREP
+             ENDDO
+          ENDDO
+      ENDIF
+C
+ 1000 FORMAT (I4)
+ 1001 FORMAT (I3,A)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
