@@ -93,7 +93,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER(D0 = 0.0D0,MREFS=10)
+      PARAMETER(D0 = 0.0D0,DTOL=1.0D-16)
 C
       LOGICAL FIRST(NZ),LEXPST(2,*),FILEX
       DIMENSION EXPVAL(*),CMO(*),DMAT(*),PMAT(*),PTRI(NNBBASX,NZ),
@@ -232,6 +232,8 @@ C
           NTOT = NREFS + 1
           NFDIM = NTOT*NTOT
           CALL MEMGET('REAL',KFMAT,NFDIM,WORK,KFREE,LFREE)
+C.........Calculate density matrix in fragment basis
+          CALL PRJEX4(WORK(KDFMT),WORK(KBVEC),NP(1,0),NP(1,2),IPREXP)
         ENDIF
       ELSE
         KRVEC = KFREE
@@ -249,23 +251,24 @@ C
         CALL PRSYMB(LUPRI,'-',76,0)
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
+C.........generate property matrix in SO-basis
           CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
      &                IREP,ITIM,PTRI,PMAT,FIRST,
      &                WORK(KFREE),LFREE,IPREXP)
           IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
+C.............calculate expectation value
           CALL PRPEX3(EXPVAL(I),IREP,ITIM,
      &        DMAT,PMAT,PTRI,FIRST,ORBANA,
      &        WORK(KFREE),LFREE,IPREXP)
           IF(PRJANA) THEN
+CTROND            CALL PRJEXP(WORK(KPFMT),PTRI,PMAT,WORK(KRVEC),
+CTROND     &                  WORK(KDFMT),INDXPR,IREP,ITIM,FIRST,
+CTROND     &                  NP(1,0),NP(1,2),NTOT,IPREXP,
+CTROND     &                  WORK,KFREE,LFREE)
 C.........Transform property matrix to fragment orbital basis
             CALL PRJEX1(WORK(KPFMT),PTRI,PMAT,WORK(KRVEC),
      &                  INDXPR,IREP,ITIM,NP(1,0),FIRST,IPREXP,
      &                  WORK,KFREE,LFREE)
-C.........Make generalized population matrix
-            CALL PRJEX2(PTRI,WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
-     &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
-     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KINDX),
-     &                  IPREXP,PMAT,WORK,KFREE,LFREE)
           ENDIF
  30       CONTINUE
           FMT = MXFORM(EXPVAL(I),15)
@@ -273,6 +276,13 @@ C.........Make generalized population matrix
      &       PRPNAM(INDXPR),' : ',EXPVAL(I),'a.u.',
      &       LEXPST(1,I),LEXPST(2,I)
           CALL FLSHFO(LUPRI)
+          IF(PRJANA.AND.ABS(EXPVAL(I)).GT.DTOL) THEN
+            CALL PRJEX2(PTRI,WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
+     &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
+     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KINDX),
+     &                  IPREXP,PMAT,WORK,KFREE,LFREE)
+            CALL PRSYMB(LUPRI,'-',76,0)
+          ENDIF
         ENDDO
         CALL PRSYMB(LUPRI,'-',76,0)
         WRITE(LUPRI,'(4X,A)')
@@ -295,6 +305,7 @@ C
           EXPVAL(I) = D0
           DO 10 IFRP = 1,NFSYM
             IF(NORB(IFRP).EQ.0) GOTO 10
+C.........generate property matrix in SO-basis
             CALL PRPEX2(LU1INT,INDXPR,EXPBUF,LEXPST(1,I),
      &                  IREP,ITIM,PTRI,PMAT,FIRST,
      &                  WORK(KFREE),LFREE,IPREXP)
@@ -302,6 +313,7 @@ C
             DO J = 1,NOCC(IFRP)
               CALL DENORB(DMAT,J,1,IFRP,CMO,IPREXP)
               EXPBUF = D0
+C.............calculate expectation value
               CALL PRPEX3(EXPBUF,IREP,ITIM,
      &          DMAT,PMAT,PTRI,FIRST,ORBANA,
      &          WORK(KFREE),LFREE,IPREXP)
@@ -318,10 +330,6 @@ C...........Transform property matrix to fragment orbital basis
             CALL PRJEX1(WORK(KPFMT),PTRI,PMAT,WORK(KRVEC),
      &                  INDXPR,IREP,ITIM,NP(1,0),FIRST,IPREXP,
      &                  WORK,KFREE,LFREE)
-            CALL PRJEX2(PTRI,WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
-     &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
-     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KINDX),
-     &                  IPREXP,PMAT,WORK,KFREE,LFREE)
             ENDIF
  10       CONTINUE
  20       CONTINUE
@@ -331,6 +339,13 @@ C...........Transform property matrix to fragment orbital basis
      &     'Total : ',EXPVAL(I),'a.u.',
      &     LEXPST(1,I),LEXPST(2,I)
           CALL PRSYMB(LUPRI,'-',60,4)
+          IF(PRJANA.AND.ABS(EXPVAL(I)).GT.DTOL) THEN
+            CALL PRJEX2(PTRI,WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
+     &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
+     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KINDX),
+     &                  IPREXP,PMAT,WORK,KFREE,LFREE)
+            CALL PRSYMB(LUPRI,'-',76,0)
+          ENDIF
         ENDDO
 C        CALL PRSYMB(LUPRI,'-',76,0)
         WRITE(LUPRI,'(4X,A)')
@@ -572,7 +587,6 @@ C
 C     Make density matrix in fragment orbitals
 C
       IPD = 1
-      IPB = 1
       DO 10 IFRP = 1,NFSYM
         IF(NMO(IFRP).EQ.0) GOTO 10
         II = 0
@@ -587,20 +601,9 @@ C
           II = II + 1
           INDX(II) = I
         ENDDO
-        CALL DENST1(DFO(IPD),NCNT(IFRP),NCNT(IFRP),
-     &              BVEC(IPB),NCNT(IFRP),NMO(IFRP),
-     &              1,NMO(IFRP),NCNT(IFRP))  
-        IF(IPRINT.GE.5) THEN
-          WRITE(LUPRI,'(A,I3)')
-     &    'Density matrix in fragment basis..',IFRP
-          CALL PRQMAT(DFO(IPD),NCNT(IFRP),NCNT(IFRP),
-     &         NCNT(IFRP),NCNT(IFRP),NZ,
-     &         IPQTOQ(1,0),LUPRI)
-        ENDIF
         CALL PRJEX3(EXPVAL,PTRI,PFO(IPD),DFO(IPD),NCNT(IFRP),
      &              IBUF,PBUF,FMAT,INDX,NTOT,INDXPR,IPRINT)
         IPD = IPD + NCNT(IFRP)*NCNT(IFRP)*NZ
-        IPB = IPB + NCNT(IFRP)*NMO(IFRP)*NZ
  10   CONTINUE
 C
 C     Give fragment contributions
@@ -1176,4 +1179,41 @@ C
       ENDDO
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck prjex4 */
+      SUBROUTINE PRJEX4(DFO,BVEC,NCNT,NMO,IPRINT)
+C*****************************************************************************
+C
+C     Make density matrix in fragment basis
+C
+C     Written by Trond Saue Oct 21 2003 
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D1=1.0D0,D2=2.0D0)
+C
+#include "dgroup.h"
+      DIMENSION DFO(*),NCNT(*),NMO(*),BVEC(*)
+C
+C     Make density matrix in fragment orbitals
+C
+      IPD = 1
+      IPB = 1
+      DO 10 IFRP = 1,NFSYM
+        IF(NMO(IFRP).EQ.0) GOTO 10
+        CALL DENST1(DFO(IPD),NCNT(IFRP),NCNT(IFRP),
+     &              BVEC(IPB),NCNT(IFRP),NMO(IFRP),
+     &              1,NMO(IFRP),NCNT(IFRP))  
+        IF(IPRINT.GE.5) THEN
+          WRITE(LUPRI,'(A,I3)')
+     &    'Density matrix in fragment basis..',IFRP
+          CALL PRQMAT(DFO(IPD),NCNT(IFRP),NCNT(IFRP),
+     &         NCNT(IFRP),NCNT(IFRP),NZ,
+     &         IPQTOQ(1,0),LUPRI)
+        ENDIF
+        IPD = IPD + NCNT(IFRP)*NCNT(IFRP)*NZ
+        IPB = IPB + NCNT(IFRP)*NMO(IFRP)*NZ
+ 10   CONTINUE
+      RETURN
+      END
