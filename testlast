@@ -105,6 +105,10 @@ done
 #
 # Define the output and log files
 #
+errfile=${testdir}/logs/lastrun
+if [ -e $errfile ]; then
+   rm $errfile
+fi
 if [  -z "$tests" ]; then
    run=default_test;
    tests=short;
@@ -209,22 +213,18 @@ else
 fi
 EOF
 if [ "${queue}" = "none" ]; then
+# The tests are default run interactively on the same machine as the cvs and make command is run.
 echo ' Starting test calculations interactively ... '
 chmod u+x job
 job
 else
 #
-# The tests are default run interactively on the same machine as the cvs and make command is run.
-# Below is also a script that works with the pbs (qsub) batch environment that we use on our
+# Below is a script that works with the pbs (qsub) batch environment that we use on our
 # Linux cluster. It should be relatively easy to adapt this to other queue systems.
 # (LV, June 04, 2002)
 #
 echo " Submitting test calculations to queue $queue ... "
 echo " When they are done please check the results in the directory ${testdir}/logs. "
-errfile=${testdir}/logs/lastrun
-if [ -e $errfile ]; then
-   rm $errfile
-fi
 /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=24:00:00,nodes=1:$queue -q ${queue} -V job
 fi
 rm job
