@@ -1161,7 +1161,7 @@ C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*DFTCAL',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.DFT   ','.LVCORR',
-     &             '.TSCORR','.RELCCS','.XXXXXX','.XXXXXX'/
+     &             '.TSCORR','.RELCCS','.DIRRCI','.XXXXXX'/
 C
       NJOBS = 0
 C
