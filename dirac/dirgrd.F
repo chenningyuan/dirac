@@ -1877,11 +1877,11 @@ C
          CALL OPNFIL(IUNIT,FILENAME,'UNKNOWN','DELFILE')
          CLOSE(IUNIT,STATUS='DELETE')
          INQUIRE(FILE=FILENAME,EXIST=EX)
-         IF ( EX ) WRITE(LUPRI,'(//1X,3A//)') 'WARNING: ',
-     &      FILENAME,' could .NOT. be deleted!' 
-      ELSE
-         WRITE(LUPRI,'(//1X,3A//)')
-     &      'WARNING from DELFILE!!! File ',FILENAME,' does not exist.'
+         IF ( EX ) THEN
+            WRITE(LUPRI,'(//1X,3A//)') 'WARNING: ',
+     &         FILENAME,' could .NOT. be deleted!' 
+            CALL QUIT('DELFILE: file could not be deleted.')
+         END IF
       END IF
 C
 C
