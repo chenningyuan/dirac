@@ -1,4 +1,4 @@
-C
+
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -998,7 +998,7 @@ C
      & 'NUMLST2: Error reading energy criteria, the string is ',A(1:NA)
       CALL QUIT('NUMLST2: Error in Input')
  1000 FORMAT (5X,'Energy selection of active orbitals :',
-     & F8.2,' < Eps. < ',F8.2,' with a mininum gap of ',F8.4,' au.')
+     & F10.2,' < Eps. < ',F8.2,' with a mininum gap of ',F8.4,' au.')
  1001 FORMAT (/' Changed ',A7,' energy for active orbital range to ',
      & F10.4,' because of near-degeneracies.')
       END
