@@ -1119,12 +1119,13 @@ C*****************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 #include <blocks.h>
-#include <ibtfun.h>
 C
       DIMENSION NSPCK(0:7,0:2),ISPCK(0:7,0:7,2)
       DIMENSION NBBASA(0:7,0:2),NBBASB(0:7,0:2)
       DIMENSION IBBASA(0:7,0:2),IBBASB(0:7,0:2)
       DIMENSION IBASA(2),IBASB(2)
+C
+#include <ibtfun.h>
 C
 C     Find out to which component these shells belong
 C
