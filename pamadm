@@ -498,10 +498,11 @@ if [ -n "$ERIMOD" ]; then
 cat <<EOF>> Makefile
 
 ERIOBJS = \\
-eri/eri2cft.o       eri/eri2her.o       eri/eri2sym.o \\
-eri/eri2aob.o       eri/eri2dis.o       eri/eri2odb.o     eri/eri2vec.o \\
-eri/eri2car1.o      eri/eri2drv.o       eri/eri2out.o \\
-eri/eri2car2.o      eri/eri2fck.o       eri/eri2sph.o
+eri/fck3aob.o eri/fck3drv.o eri/fck3ftuv.o eri/fck3mom.o eri/fck3odb.o 
+#eri/eri2aob.o eri/eri2ave.o eri/eri2car1.o eri/eri2car2.o eri/eri2cft.o \
+#eri/eri2dis.o eri/eri2drv.o eri/eri2fck.o eri/eri2her.o eri/eri2odb.o  \
+#eri/eri2out.o eri/eri2par.o eri/eri2pro.o eri/eri2sph.o eri/eri2sym.o \
+#eri/eri2vec.o eri/eriprg.o  eri/erisph.o 
 EOF
 fi
 #
@@ -864,7 +865,7 @@ while [ -n "$1" ]; do
          XQRMOD=1
          ;;
       -eri|-er|-e)
-         ERIMOD=0
+         ERIMOD=1
          ;;
       -krmc|-krm|-kr|-k)
          KRMCMOD=1
