@@ -640,7 +640,8 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
       PARAMETER (NTABLE = 30)
-      PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
+      PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
+     &           DTHRS=1.0D-13)
 C
       LOGICAL SET, NEWDEF, LBIT, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -2430,8 +2431,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
       PARAMETER (NTABLE = 16,NDIR = 8)
-      PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00,
-     &           DTHRS = 1.0D-13)
+      PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include <dcbgen.h>
 #include <dcbham.h>
