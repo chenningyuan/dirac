@@ -1,23 +1,15 @@
-C
 
-CMI from dalton...para.h param.h  dofuc.h  ired.h alphac.h Regge.h datapow.h
 
 CMI AMFI include files:
-C=======================
-C   amfi.o : amfi.F \
-C ../include/alphac.h  ../include/datapow.h \
-C  ../include/dofuc.h  ../include/dummy.h \
-C ../include/implicit.h  ../include/ired.h \
-C  ../include/para.h  ../include/param.h \
-C ../include/pi.h  ../include/priunit.h \
-C  ../include/Regge.h
-Csymtra.o : symtra.F \
-C  ../include/dummy.h  ../include/implicit.h \
-C  ../include/para.h  ../include/priunit.h
-CMI
+C=====================================================================================
+C in AMFI directory: 
+C   alphac.h  datapow.h  dofuc.h  ired.h  para.h  param.h  Regge.h  scfarr.h  
+C
+C in DIRAC include directory:
+C     dummy.h implicit.h pi.h priunit.h 
 
       Subroutine amfi(IN,LUPROP,OLDNRM,BREIT,FINITE,EXP_FIN,
-     *                IC_AMFI,WRK,LFREE)            
+     *                IC_AMFIX,IACH,WRK,LFREE)            
 CBS
 CBS IN:  Input file, to be replaced by direct reading from DALTON arrays..
 CBS LUPROP: Unit for writing the atomic integrals 
@@ -28,7 +20,9 @@ CB  EXP_FIN: the finite nucleus exponent (if required)
 CBS WRK, KFREE,LFREE standard work-array parameters in DALTON
 CBS
 CBS
-CMI  IC_AMFI ... specify what SO to include:
+CMI  IC_AMFIX ... specify what SO to include:
+CMI  IACH     ... charge (int) of the nucleus - for modification of the occupation numbers in relscf !
+CMI
 CMI
 CMI=====================================================================
 #include "implicit.h"
@@ -137,41 +131,11 @@ CBS                        schemes are used
       logical FINITE
 
       logical ADDSO1  ! Add also one-electron SO integrals
+      LOGICAL DOEXIT ! Exit AMFi when charge in readbas is 0
       character*4  symmetry  
 #include "datapow.h"
       common ipowxyz(3,-Lmax:Lmax,0:Lmax)
       dimension WRK(LFREE)
-
-CMI    set the oneonly option !!
-       WRITE(LUPRI,*) 'AMFI: IC_AMFI=',IC_AMFI
-       IF (IC_AMFI.EQ.1) THEN
-        oneonly=.true.
-        ADDSO1=.TRUE.
-        WRITE(LUPRI,*) 'AMFI: ONLY SO1!' 
-       ELSE IF (IC_AMFI.EQ.2) THEN
-        oneonly=.false.
-        sameorb=.true.   
-        ADDSO1=.FALSE.
-        WRITE(LUPRI,*) 'AMFI: ONLY MFSSO2 !' 
-       ELSE IF (IC_AMFI.EQ.3) THEN
-        oneonly=.false.
-        sameorb=.false.   
-        ADDSO1=.FALSE.
-        WRITE(LUPRI,*) 'AMFI: ONLY MFSO2 !' 
-       ELSE IF (IC_AMFI.EQ.4) THEN
-        oneonly=.false.
-        sameorb=.true.   
-        ADDSO1=.TRUE.
-        WRITE(LUPRI,*) 'AMFI: SO1 + MFSSO2 !' 
-       ELSE IF (IC_AMFI.EQ.5) THEN
-        oneonly=.false.
-        sameorb=.false.   
-        ADDSO1=.TRUE.
-        WRITE(LUPRI,*) 'AMFI: SO1 + MFSO2 !' 
-       ELSE
-        CALL QUIT('AMFI: IC_AMFI out of range')
-       ENDIF    
-
 
 c##########################################################################
 cbs  #####################################################################
@@ -212,7 +176,45 @@ cbs   move some powers of x,y,z to the right place   END
 cbs   read the input 
       call readbas(Lhigh,makemean,bonn,breit,
      *symmetry,sameorb,AIMP,oneonly,ncont4,numballcart,IN,
-     *ifinite,EXP_FIN) 
+     *ifinite,EXP_FIN,DOEXIT) 
+
+CMI    set the oneonly option !!
+       IC_AMFI = IC_AMFIX
+       WRITE(LUPRI,*) 'AMFI: IC_AMFI=',IC_AMFI
+       WRITE(LUPRI,*) 'AMFI: charge of atom IACH=',IACH
+       IF (DOEXIT) THEN
+        IC_AMFI = 1
+        WRITE(LUPRI,*) 'The charge read in MNF.INP is ZERO!'//
+     &  ' IC_AMFI set to 1 !'
+       ENDIF
+       IF (IC_AMFI.EQ.1) THEN
+        oneonly=.true.
+        ADDSO1=.TRUE.
+        WRITE(LUPRI,*) 'AMFI: ONLY SO1!' 
+        IF (DOEXIT) WRITE(LUPRI,*) 'AMFI: charge=0! Zero integrals!'
+       ELSE IF (IC_AMFI.EQ.2) THEN
+        oneonly=.false.
+        sameorb=.true.   
+        ADDSO1=.FALSE.
+        WRITE(LUPRI,*) 'AMFI: ONLY MFSSO2 !' 
+       ELSE IF (IC_AMFI.EQ.3) THEN
+        oneonly=.false.
+        sameorb=.false.   
+        ADDSO1=.FALSE.
+        WRITE(LUPRI,*) 'AMFI: ONLY MFSO2 !' 
+       ELSE IF (IC_AMFI.EQ.4) THEN
+        oneonly=.false.
+        sameorb=.true.   
+        ADDSO1=.TRUE.
+        WRITE(LUPRI,*) 'AMFI: SO1 + MFSSO2 !' 
+       ELSE IF (IC_AMFI.EQ.5) THEN
+        oneonly=.false.
+        sameorb=.false.   
+        ADDSO1=.TRUE.
+        WRITE(LUPRI,*) 'AMFI: SO1 + MFSO2 !' 
+       ELSE
+        CALL QUIT('AMFI: IC_AMFI out of range')
+       ENDIF    
 
 cbs
  123  if (ifinite.eq.2) call finsub  
@@ -233,7 +235,7 @@ cbs   and renormalizes them
       enddo 
 
       if (makemean.and.(.not.oneonly).and.ifinite.le.1) 
-     *call getAOsx(Lhigh)
+     *call getAOsx(Lhigh,IACH)
 
 
 cbs                        

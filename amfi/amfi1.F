@@ -2,7 +2,7 @@
 
       subroutine readbas(Lhigh,makemean,bonn,breit,
      *symmetry,sameorb,AIMP,oneonly,ncont4,numballcart,IN,ifinite,
-     *EXP_FIN) 
+     *EXP_FIN,DOEXIT) 
 cbs   suposed to read the maximum of l-values, the number of primitive and contracted 
 cbs   functions, the exponents and contraction coefficients
 #include "implicit.h"
@@ -19,7 +19,7 @@ cbs   functions, the exponents and contraction coefficients
       character*32 Nofcont
       character*76 Stars                  
       logical makemean,bonn,breit,
-     *sameorb,AIMP,oneonly  
+     *sameorb,AIMP,oneonly,DOEXIT  
       common /nucleus/ charge,Exp_finite 
       Integer ibeginIRED(8),idelpersym(8) 
       dimension INOFT(Mxcart),INOFF(MxCart)
@@ -83,7 +83,7 @@ CBS   write(LUPRI,*) 'check whether order of IRs is correct!!!'
 CMI ... reading in  
       read(IN,*) charge,Lhigh
       if (Lhigh.gt.Lmax) then 
-      write(LUPRI,*) 'Sorry, so far this code deals only ',
+      write(LUPRI,*) 'readbas: Sorry, so far this code deals only ',
      *'with maximum l-values of ',Lmax
       CALL QUIT('Too high angular momentum values in AMFI')            
       endif  
@@ -349,6 +349,12 @@ CBS   write(LUPRI,*) stars
       nmax=max(nmax,ncontrac(lrun))
       enddo
       ncont4=nmax*nmax*nmax*nmax
+CMI   ... the case of DOEXIT
+      DOEXIT=.FALSE.
+      If (charge.eq.0.D0) THEN 
+       DOEXIT=.TRUE.
+       write(lupri,*) 'raedbas: charge=0!'
+      ENDIF
       return 
 777   format('ORBITAL NUMBER ',I4,' IS THE ',I3,'TH of L-value ',I3,
      *' IT WILL BE REMOVED !!!')  

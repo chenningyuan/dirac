@@ -152,8 +152,8 @@ C       ... compare eigenvalues of 4c and 2c 1-el.Hamiltonians
 C    ... transformation cartesian -> spherical, calling the AMFI stuff,
 C        fitting AMFI integrals in the DIRAC order, saving to the BSSMAT
        IF (SPINFR.AND.ELIM_SF) SPINFR=.FALSE.
-       CALL AMFI_STUFF(WORK(KTMAT),VMAT,ONLYSO1,
-     &                 ONLYTRA,IC_AMFI,WORK(KFREE),LFREE)
+       CALL AMFI_STUFF(WORK(KTMAT),VMAT,ONLYSO1,ONLYTRA,IC_AMFI,
+     &                 WORK(KFREE),LFREE,IPRHAM,IMFCH)
       ENDIF
 
 C ============================================================
@@ -3681,9 +3681,9 @@ C       ... update the offsets...
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck amfiin */
       SUBROUTINE AMFIIN(H2SAO,NB,NTNUC,IPTYPAO,INDXLM,IPNUC,IZTNUCS,
-     &                  IPTA,INDXLMA,IAMFU,IANUCS,ISTNUCTYP,
+     &                  IPTA,INDXLMA,IAMFU,IANUCS,ISTNUCTYP,CHPNUC,
      &                   NSPH,LABINT,ONLYSO1,ONLYTRA,
-     &                 IMFCH,IC_AMFI,IPRINT,WORK,LWORK)    
+     &                 IMFCHA,IC_AMFI,IPRINT,WORK,LWORK)    
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C 
 C  Interface to B.Schimmelpfennig's atomic mean-field integral code, AMFI   
@@ -3709,8 +3709,8 @@ C
 C             LABINT - spherical AO labels
 C             ONLYSO1 - is .true. do only comparison of SO1 BSS/AMFI integrals 
 C
-C          ... for AMFI
-C              IFMCH
+C          ... for AMFI program (subroutine)
+C              IMFCHA
 C              IC_AMFI
 C
 C On output: H2SAO with mean-field contributions (only if wished)
@@ -3722,17 +3722,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(THRNULL=1.0D-7,D0=0.00D00)
-C#include "dcbgen.h"
-C#include "dcbbas.h"
-C#include "dcborb.h"
-C#include "dgroup.h"
-C#include "dcbqal.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dummy.h"
 #include "nuclei.h"
-C#include "aosotr.h"
 #include "shells.h"
 #include "dcbsph.h"
 #include "chrnos.h"
@@ -3742,7 +3736,7 @@ C
       DIMENSION WORK(LWORK),H2SAO(NB,NB,4)  
       DIMENSION IPTYPAO(NSPH),INDXLM(NSPH),IPNUC(NSPH),
      &       IPTA(*),INDXLMA(*),IAMFU(NSPH),ISTNUCTYP(NSPH,2),
-     &       IZTNUCS(NTNUC),IANUCS(NTNUC)
+     &       IZTNUCS(NTNUC),IANUCS(NTNUC),CHPNUC(NTNUC)
       DIMENSION ncontrac(0:4)
 
       CHARACTER LABINT(MXQN**2)*4
@@ -3759,10 +3753,8 @@ C
       write(lupri,*) 'nuc_deg:',(nucdeg(i),i=1,nucind)
       write(lupri,*) 'Total number of centers:',NTNUC
 
-C  ... this failes !!!
-C     CALL MEMCHK('AMFIIN 1 ',WORK,1)
 
-C   ... fill IZTNUCS
+C   ... fill IZTNUCS - LIST OF ALL NUCLEIS
       WRITE(LUPRI,'(2X,A)') 'Total list of nucleis:'
       IX = 1
       DO I=1,NUCIND
@@ -3949,17 +3941,6 @@ C ... rearange INDXLM for splitted basis sets...
         CALL PRQMAT(H2SAO,NB,NB,NB,NB,4,IQDEF,LUPRI)    
       ENDIF
 
-C       ... failes !!
-C     CALL MEMCHK('before AMFI2',WORK,1)
-C ... TODO: find out the "best" optimal allocation for AMFI !
-C     LAMFI = N2BBASXQ*N2BBASXQ
-C     LAMFI = N2BBASXQ*4
-C      .... this worked before.... with dcbbas.h
-CMI   LAMFI = N2BBASXQ*32
-C     CALL MEMGET('REAL',KAMFI,LAMFI,WORK,KFREE,LFREE)
-C        ... this works ONLY AFTER MEMGET !!
-C     CALL MEMCHK('before AMFI 3',WORK,1)
-
 C     Open Mean-field input file generated in READIN      
       LUTMP2 = 0
       MNFPRP = 0
@@ -3968,6 +3949,53 @@ C     Open Mean-field input file generated in READIN
 
       OLDNRM=.FALSE.
       BREIT = .FALSE.
+
+C  ++++ Find out individual charges
+      IF (IMFCHA.NE.0) THEN
+
+C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
+        IMINCHA=IZTNUCS(1)
+        INDXMINCH=1
+        ISUMCH=0
+        DO I = 1, NTNUC
+C        .... NOTE: The minimal charge MUST NOT be zero !
+         IF ( (IMINCHA.GT.IZTNUCS(I).AND.IZTNUCS(I).NE.0)
+     &        .OR.(IMINCHA.EQ.0)) THEN
+             IMINCHA=IZTNUCS(I)
+             INDXMINCH = I
+         ENDIF
+         ISUMCH = ISUMCH + IZTNUCS(I)
+        ENDDO
+
+        IF (ISUMCH.GE.ABS(IMFCHA)) THEN
+           WRITE(LUPRI,*) 'Total sum of nucl.charges:',ISUMCH,
+     &   ' IMFCHA is',IMFCHA,
+     &  ' WARNING, charge too high!'
+        ENDIF
+
+C     .... find out the individual charges on atoms
+          WRITE(LUPRI,*)
+     &     'The total nonzero charge of the system:',IMFCHA
+           CHSUM = D0
+          DO I=1,NTNUC
+            CHPNUC(I)=DFLOAT(IZTNUCS(I))/DFLOAT(IZTNUCS(INDXMINCH))
+            CHSUM=CHSUM+CHPNUC(I)
+C           write(lupri,*) I,' -',CHPNUC(I)
+          ENDDO
+          FACCHA=DFLOAT(IMFCHA)/CHSUM
+          write(lupri,*) ' factor is :',FACCHA
+          CHSUM = D0
+          DO I=1,NTNUC
+            CHPNUC(I)=FACCHA*CHPNUC(I)
+            CHSUM = CHSUM + CHPNUC(I)
+            write(lupri,*) I,'.atom-nucleus charge:',IZTNUCS(I),
+     &      '  partial charge:',CHPNUC(I)
+          ENDDO
+          write(lupri,*) '     Sum of all charges (real):',CHSUM
+          write(lupri,*) 'Total charge of the system is :',IMFCHA
+          IF (NINT(CHSUM).NE.IMFCHA) CALL 
+     &      QUIT('AMFIIN: error in partial charges !')
+      ENDIF
 
 C ===================================
 C     We loop over unique centers
@@ -3987,10 +4015,11 @@ C     ... read number of unique nuclei
 
       DO IATOM = 1, NUNUC
 
-      write(lupri,*) 'AMFI - calculating unique nucleus no:',IATOM
+        write(lupri,*) 'AMFI - calculating unique nucleus no:',IATOM
 
-      READ(LUTMP2,*) ICHARGE
-      write(lupri,*) 'AMFI - charge of nucleus (inty) :',ICHARGE
+        READ(LUTMP2,*) ICHARGE
+        write(lupri,*) 'AMFI - charge of nucleus (integ) :',ICHARGE
+
 C     ... file name for AMFI integrals of center
        IF (ICHARGE.LT.10) THEN
         AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE)
@@ -4004,7 +4033,7 @@ C     ... file name for AMFI integrals of center
          CALL QUIT('AMFIIN: charge > 1000!')
        ENDIF
 
-       write(lupri,*) 'AMFI file:',AFN
+       write(lupri,*) 'AMFI file name:',AFN
        CALL GPOPEN(MNFPRP,AFN,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
 
@@ -4029,15 +4058,29 @@ CMI   ... gauss.nucleus (for SO1) does not work in AMFI !!!!
         ENDIF
        ENDIF
 
-C         ... works !
-C     CALL MEMCHK('before AMFI',WORK,1)
+C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
+        NICHARGE = 0
+        INDXMINCH=0
+        DO I = 1, NTNUC
+         IF (IZTNUCS(I).EQ.ICHARGE) THEN
+          NICHARGE=NICHARGE+1
+          INDXMINCH=I
+         ENDIF
+        ENDDO
+        IF (NICHARGE.EQ.0) THEN
+         CALL QUIT('AMFIIN: The nucleus does not exist is system!')
+        ENDIF  
+        write(lupri,*) 'The AMFI unique nuclei ',ICHARGE,
+     &              ' index=',INDXMINCH,
+     &              ' is degenerate: ',NICHARGE
+        write(lupri,*) ' partial charge is (real):',CHPNUC(INDXMINCH)
+        IACHNUC=NINT(CHPNUC(INDXMINCH))
+        write(lupri,*) ' partial charge is (round int):',IACHNUC
 
-       CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM1),
-C    &             IC_AMFI,WORK(KAMFI),LAMFI)
-     &             IC_AMFI,WORK(KFREE),LFREE)
+C     .... call the AMFI program of B.Schimmelpfennig
+        CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM1),
+     &             IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
-C      ...... this works...
-C     CALL MEMCHK('after AMFI',WORK,1)
 
 C      ... read AOPROPER.MNF file...
 C    numballcart... total no of functions per centre...
@@ -4046,7 +4089,7 @@ C    numballcart... total no of functions per centre...
       READ(MNFPRP) xa
       READ(MNFPRP) numballcart
 
-      write(lupri,*) 'numballcart=',numballcart
+C     write(lupri,*) 'numballcart=',numballcart
 
 C  ... allocate memmory for this AMFI center
       length3=((numballcart*numballcart)+numballcart)/2
@@ -4056,25 +4099,26 @@ C  ... allocate memmory for this AMFI center
 
       CALL MEMCHK('after AMFI 2',WORK,1)
 
+      WRITE(LUPRI,'(/,2X,A)')
+     & 'AMFI order of (centre specific) basis function: '
       DO I=1,numballcart
         READ(MNFPRP) IPTA(I),INDXLMA(I)
-       write(lupri,*) 'from amfi:',I,' ',LABINT(IPTA(I)),' ',INDXLMA(I)
+        write(lupri,*) ' amfi fu no:',I,' type(indx)',LABINT(IPTA(I)),
+     &                '(',INDXLMA(I),')'
       ENDDO
 
       READ(MNFPRP)  Lhigh,(ncontrac(I),I=0,Lhigh) 
-        write(lupri,*) 'Lhigh=',Lhigh,' ncontrac:',
-     &     (ncontrac(I),I=0,Lhigh)
 
-C     ... find out degeneracy of that nuclei IATOM
-        NICHARGE = 0
-        DO I = 1, NTNUC
-         IF (IZTNUCS(I).EQ.ICHARGE) NICHARGE=NICHARGE+1
-        ENDDO
-        IF (NICHARGE.EQ.0) THEN
-         CALL QUIT('AMFIIN: The nucleus does not exist is system!')
-        ENDIF  
-        write(lupri,*) 'AMFI nuclei ',ICHARGE,
-     &                 ' is degenerate ',NICHARGE
+       write(lupri,*) 'Lhigh=',Lhigh,' ncontrac:',
+     &     (ncontrac(I),I=0,Lhigh)
+       iscontr=0
+       DO I=0,Lhigh
+        iscontr=iscontr+(ncontrac(I)*(I+I+1))
+       ENDDO
+       IF (iscontr.NE.numballcart) THEN
+         write(lupri,*) 'iscontr,numballcart:',iscontr,numballcart
+         CALL QUIT('AMFIIN: iscontr <> numballcart!!')
+       ENDIF
 
 C        ... find NICHARGE centers on IZTNUCS of H2CAO with ICHARGE !
 C          use IANUCS(1-NTNUC)
@@ -4092,7 +4136,8 @@ C          use IANUCS(1-NTNUC)
         write(lupri,*) 'corresponding H2CAO nuclei:',
      &    (IANUCS(I),I=1,NICHARGE)
 
-C       ... prepare the mapping array...
+
+C       ... prepare the mapping array AMFI-H2C basis functions...
         CALL IZERO(IAMFU,NSPH)
         DO I=1, NICHARGE
         DO J=1, numballcart
@@ -4441,7 +4486,7 @@ C     ... when indexes are changed, print them out....
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck amfi_stuff */
       SUBROUTINE AMFI_STUFF(H2CAO,VMAT,ONLYSO1,
-     &                      ONLYTRA,IC_AMFI,WORK,LWORK)
+     &                      ONLYTRA,IC_AMFI,WORK,LWORK,IPRINT,IMFCHA)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C    PURPOSE: 
@@ -4453,6 +4498,7 @@ C On input: H2CAO - entering 2c integrals...
 C           ONLYSO1 - flag for making AMFI-SO1 and BSS-SO1 integrals comparison
 C           ONLYTRA - flag announcing only CSC transformation (testing purposes)
 C           IC_AMFI - flag for the AMFI stuff
+C           IMFCHA  - total charge of the system - important for the mean-field summation
 C
 C On output: H2CAO - CSC trasformed (+ AMFI, if wished) 2c SA-AO integrals.
 C
@@ -4466,7 +4512,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbqal.h"
-#include "dcbham.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -4478,6 +4523,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       CALL QENTER('AMFI_STUFF')
 #include "memint.h"
+
+C        ... no dcbham.h common block !
+       IPRHAM=IPRINT
 
        IF (IPRHAM.GE.5) THEN
 C    ... print out H2c matrix in AO "xhi" basis
@@ -4570,14 +4618,16 @@ C      ... find out total number of atomic centers of the system
 
        CALL MEMGET('INTE',KZTNUCS,NTNUC,WORK,KFREE,LFREE)
        CALL MEMGET('INTE',KANUCS,NTNUC,WORK,KFREE,LFREE)
+C      .... charges per nucleis
+       CALL MEMGET('REAL',KCHPNUC,NTNUC,WORK,KFREE,LFREE)
+       CALL DZERO(WORK(KCHPNUC),NTNUC)
 
-       IMFCH=0
        CALL MEMCHK('before AMFI2',WORK,1)
 
        CALL AMFIIN(WORK(KBUF2),NB,NTNUC,WORK(KIPTYPAO),WORK(KHINLM),
      &  WORK(KIPNUC),WORK(KZTNUCS),WORK(KAIPT),WORK(KAILM),WORK(KAMFU),
-     &  WORK(KANUCS),WORK(KSTNUCTYP),
-     &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCH,IC_AMFI,
+     &  WORK(KANUCS),WORK(KSTNUCTYP),WORK(KCHPNUC),
+     &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCHA,IC_AMFI,
      &  IPRHAM,WORK(KFREE),LFREE)
 
       CALL MEMCHK('before S->C',WORK,1)

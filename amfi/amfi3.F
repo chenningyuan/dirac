@@ -1775,7 +1775,7 @@ cbs   now transform by rootovlp*dummy*rootovlp
       end  
 
 CMI ..................................
-      subroutine getAOsx(lhigh)                  
+      subroutine getAOsx(lhigh,IACH)                  
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1790,7 +1790,7 @@ cbs   get expansions of atomic orbitals in contracted functions
       Inquire(File='AO-expansion',exist=EX) 
       if (.not.EX)  then
 CBS   write(6,*) 'get occupations from DATA-block'
-      call getAOs2(lhigh)
+      call getAOs2(lhigh,IACH)
       return
       endif 
       LUAOEX = 0
@@ -1820,7 +1820,7 @@ CBS   write(6,*) 'get occupations from DATA-block'
       end 
 
 
-      subroutine getAOs2(lhigh)
+      subroutine getAOs2(lhigh,IACH)
 #include "implicit.h"
 #include "priunit.h"
 #include "para.h"
@@ -1839,7 +1839,7 @@ cbs   get expansions of atomic orbitals in contracted functions
       null=0
       ione=1   
 
-      call getocc_ao(int(charge),closedshells,openshells)
+      call getocc_ao(int(charge),IACH,closedshells,openshells)
 
       occtext='OCCUPATION: '
       do lrun=0,lhigh
@@ -1873,8 +1873,9 @@ CMI   endif
       write(17,'(4(E20.14,X))') ((exponents(irun,L),irun=1,
      *nprimit(l)),l=0,Lmax_occ)
       rewind(17)
+
 CMI   call system('relscf < TOSCF > scf.out')
-CMI ... run integrnal atomic SCF code which reads TOSCF input file
+CMI ... run internal atomic SCF code which reads TOSCF input file
       CALL INT_AT_SCF
 
       open(unit=7,file='fort.7',form='formatted',
@@ -1999,7 +2000,7 @@ CBS   enddo
       return
       end
 cbs
-      subroutine getocc_ao(icharge,iclosed,iopen)
+      subroutine getocc_ao(icharge,IACH,iclosed,iopen)
 #include "implicit.h"
 #include "priunit.h"
 #include "para.h"
@@ -2012,7 +2013,8 @@ cbs
       dimension iclosed(0:LMAX),iopen(0:LMAX)
       data (occtxt(i),i=0,96) /
      *'dummy atom (no integrals)     ',
-     *' H: no mean-field             ',
+CMI  *' H: no mean-field             ',
+     *' H: 1s^1                      ',
      *'He: 1s^2                      ',
      *'Li: [He]2s^1                  ',
      *'Be: [He]2s^2                  ',
@@ -2219,7 +2221,8 @@ cbs
       data ((iopocc(i,j),i=0,LMAX_occ),j=0,ichargemax) /
      & 0 , 0, 0, 0,    !0 
 c
-     & 0 , 0, 0, 0,    ! 1  
+CMI  & 0 , 0, 0, 0,    ! 1  
+     & 1 , 0, 0, 0,    ! 1  
      & 0 , 0, 0, 0,    ! 2 
      & 1 , 0, 0, 0,    ! 3 
      & 0 , 0, 0, 0,    ! 4  
@@ -2328,10 +2331,14 @@ cbs
       if (icharge.gt.ichargemax) then
          CALL QUIT('occupations not implemented')
       endif
-      write(LUPRI,'(A32,A30)') txt,occtxt(icharge)
+CMI   write(LUPRI,'(A32,A30)') txt,occtxt(icharge)
+      write(LUPRI,*) ' charge of the atom:',IACH
+      write(LUPRI,'(A32,A30)') txt,occtxt(icharge-IACH)
       do irun=0,min(lmax,lmax_occ)
-         iclosed(irun)=iclocc(irun,icharge)
-         iopen(irun)=iopocc(irun,icharge)
+CMI      iclosed(irun)=iclocc(irun,icharge)
+         iclosed(irun)=iclocc(irun,icharge-IACH)
+CMI      iopen(irun)=iopocc(irun,icharge)
+         iopen(irun)=iopocc(irun,icharge-IACH)
       end do
       do irun=min(lmax,lmax_occ)+1,lmax
          iclosed(irun)=0
