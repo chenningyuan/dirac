@@ -364,7 +364,7 @@ C
          CLOSE (LUMLF2, STATUS='KEEP')
 C
       END IF
-      IF (.NOT.PARCAL) CALL MDSCRF
+      CALL MDSCRF
 C
 C     Print timing report
 C
