@@ -1,7 +1,7 @@
 CTSAUE Modififed 240996
 CLVisscher Split in real and integer part
 C     Keep parameters with length of common block up to date !
-      PARAMETER (NSYMMET=513+MXQN*MXAQN+62*MXCENT+9*MXCORB)
+      PARAMETER (NSYMMTI=513+MXQN*MXAQN+62*MXCENT+9*MXCORB)
       COMMON /SYMMTI/ MAXREP, MAXOPR, MULT(0:7),
      &                ISYMAX(3,2), ISYMAO(MXQN,MXAQN), NPARSU(8),
      &                NAOS(8), NPARNU(8,8), IPTSYM(MXCORB,0:7),
