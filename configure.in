@@ -508,9 +508,9 @@ else
    echo '      PROGRAM GNYF' >  gnyf.F
    echo '      END         ' >> gnyf.F
    $F77 gnyf.F -o gnyf.x -l$LIB 2> /dev/null || \
-      echo  $LIB' is not a legal library.'; \
-      rm -f gnyf.F gnyf.x gnyf.o ; \
-      exit 1 
+      ( echo  $LIB' is not a legal library.'; \
+        rm -f gnyf.F gnyf.x gnyf.o ; \
+        exit 1 )
    rm -f gnyf.F gnyf.x gnyf.o
 fi
 
