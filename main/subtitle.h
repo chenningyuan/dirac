@@ -26,7 +26,7 @@ char *strsubtitle = "\
 *    Jon K. Laerdahl,         University of Auckland,           New Zealand  *\n\
 *    Kenneth Ruud,            University of Oslo,               Norway       *\n\
 *    Joern Thyssen,           Odense University,                Denmark      *\n\
-*    Luuk Visscher,           Vrije Universiteit, Amsterdam,    Holland      *\n\
+*    Luuk Visscher,           Vrije Universiteit, Amsterdam,    Netherlands  *\n\
 *                                                                            *\n\
 *                                                                            *\n\
 * Note:                                                                      *\n\
