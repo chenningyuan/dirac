@@ -26,6 +26,7 @@ C****************************************************************************
 #include <dcborb.h>
 #include <dgroup.h>
 #include <dcbham.h>
+#include <dcbgen.h>
 
         DIMENSION VMAT(*),WORK(LWORK)
         CALL QENTER('MAKE_BSS')
