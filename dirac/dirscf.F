@@ -2131,8 +2131,10 @@ C
         IREP = JFSYM(ISYM,IFRP) - 1
         DO IC = 2, 1, -1
           NBO = NBORB(ISYM,IFRP,IC)
-          CALL ICOPY(NBO,IREP,0,IDUM(IX),1)
-          IX = IX + NBO
+          IF(NBO.GT.0) THEN
+            CALL ICOPY(NBO,IREP,0,IDUM(IX),1)
+            IX = IX + NBO
+          ENDIF
         ENDDO
       ENDDO
 C
