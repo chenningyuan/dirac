@@ -778,6 +778,7 @@ C  /* Deck sleb */
      &RNODE,RBRAGG)
 #include <implicit.h> 
 #include <priunit.h> 
+#include <prune.h>
       PARAMETER (MAXNUM=975,MAXCLS=32)
       DIMENSION WTNEW(MAXNUM),XNEW(MAXNUM),YNEW(MAXNUM),ZNEW(MAXNUM),
      &WT(MAXNUM),X(MAXNUM),Y(MAXNUM),Z(MAXNUM),
@@ -810,7 +811,7 @@ C     Chose the Lebedev grid to use as a function of the radius (rnode)
 C     closer to the nuclei scale the number of angular points as
 
       NOLD=NSCHEME
-      IF (NSCHEME.GT.9.AND.RNODE.LT.RBRAGG) THEN
+      IF (NSCHEME.GT.9.AND.RNODE.LT.RBRAGG.AND..NOT.NOPRUN) THEN
          IANG=NINT(NTOT*RNODE/RBRAGG)
          NTOT=MIN(NTOT,IANG)
          NSCHEME=NLEBSET2(NTOT)
@@ -818,14 +819,14 @@ C     closer to the nuclei scale the number of angular points as
       ENDIF
       
       DO K=1,NTOT
-       X(K)=0.0D0
-       Y(K)=0.0D0
-       Z(K)=0.0D0
-       WT(K)=0.0D0
-       XNEW(K)=0.0D0
-       YNEW(K)=0.0D0
-       ZNEW(K)=0.0D0
-       WTNEW(K)=0.0D0
+         X(K)=0.0D0
+         Y(K)=0.0D0
+         Z(K)=0.0D0
+         WT(K)=0.0D0
+         XNEW(K)=0.0D0
+         YNEW(K)=0.0D0
+         ZNEW(K)=0.0D0
+         WTNEW(K)=0.0D0
       ENDDO
        
 
@@ -1642,8 +1643,8 @@ C6
 
 
       IF (NTOT.NE.NCOUNT) THEN
-       WRITE(LUPRI,*)'Want',NTOT,', but get',ncount
-       CALL QUIT('Error 1 in subroutine_SLEB, get Aaron.')
+         WRITE(LUPRI,*)'Want',NTOT,', but get',ncount
+         CALL QUIT('Error 1 in subroutine_SLEB, get Aaron.')
       ENDIF
        
 
@@ -1656,17 +1657,17 @@ C     the surface of the unit sphere. It is then divided by NCOUNT.
       EABS=0.0D0
       WTERROR=1.0D0
       DO I=1,NCOUNT
-       XDEV=DABS(1-DSQRT(x(I)**2+y(I)**2+z(I)**2))
-       EABS=EABS+XDEV
-       IF (XDEV.GT.1D-8) THEN
-       WRITE(LUPRI,*) 'NODE ERROR(1) AT I',I,' deviation ',xdev
-       CALL QUIT('Error 2 in subroutine_SLEB, get Aaron.')
-       ENDIF
-       IF (DABS(WT(I)).LT.1D-5) THEN
-        WTERROR=0
-        WRITE(LUPRI,*) 'BWGHT ERROR(1) AT I',I,' weight ',wt(I)
-        CALL QUIT('Error 3 in subroutine_SLEB, get Aaron.')
-       ENDIF
+         XDEV=DABS(1-DSQRT(x(I)**2+y(I)**2+z(I)**2))
+         EABS=EABS+XDEV
+         IF (XDEV.GT.1D-8) THEN
+            WRITE(LUPRI,*) 'NODE ERROR(1) AT I',I,' deviation ',xdev
+            CALL QUIT('Error 2 in subroutine_SLEB, get Aaron.')
+         ENDIF
+         IF (DABS(WT(I)).LT.1D-5) THEN
+            WTERROR=0
+            WRITE(LUPRI,*) 'BWGHT ERROR(1) AT I',I,' weight ',wt(I)
+            CALL QUIT('Error 3 in subroutine_SLEB, get Aaron.')
+         ENDIF
       ENDDO
       EABS=EABS/NCOUNT
       IF (EABS.LT.1D-15) EABS=1.0D-15
@@ -1701,25 +1702,26 @@ C     the surface of the unit sphere. It is then divided by NCOUNT.
       EABS=0.0D0
       WTERROR=0.0D0
       DO I=1,NNEQV
-       XDEV=DABS(1-DSQRT(xnew(I)**2+ynew(I)**2+znew(I)**2))
-       EABS=EABS+XDEV
-       WTERROR=WTERROR+WTNEW(I)
-       IF (XDEV.GT.1D-8) THEN
-        WRITE(LUPRI,*) 'NODE ERROR(2) AT I',I,' deviation ',xdev
-        CALL QUIT('NODE ERROR')
-       ENDIF
+         XDEV=DABS(1-DSQRT(xnew(I)**2+ynew(I)**2+znew(I)**2))
+         EABS=EABS+XDEV
+         WTERROR=WTERROR+WTNEW(I)
+         IF (XDEV.GT.1D-8) THEN
+            WRITE(LUPRI,*) 'NODE ERROR(2) AT I',I,' deviation ',xdev
+            CALL QUIT('NODE ERROR')
+         ENDIF
       ENDDO
       XDEV=DABS(WTERROR/4.0D0/PI-1.0D0)
       IF (XDEV.GT.1D-9) THEN
-       WRITE(LUPRI,*) 'SUM OF WEIGHTS NOT EQUAL TO 1',XDEV
-       CALL QUIT('SUM OF WEIGHTS IN LEBEDEV NOT EQUAL TO 1')
+         WRITE(LUPRI,*) 'SUM OF WEIGHTS NOT EQUAL TO 1',XDEV
+         CALL QUIT('SUM OF WEIGHTS IN LEBEDEV NOT EQUAL TO 1')
       ENDIF
       EABS=EABS/NCOUNT
       IF (EABS.LT.1D-15) THEN
-       EABS=1.0D-15
-       ENDIF
-
+         EABS=1.0D-15
+      ENDIF
+      
       NSCHEME=NOLD
+
       RETURN
       END
 C  /* Deck bweght */

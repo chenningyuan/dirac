@@ -254,13 +254,13 @@ C
 C     Print section
 C
       IF (IPRINT .GE. 2) THEN 
-         WRITE (LUPRI,'(/2X,A,I20)')
+         WRITE (LUPRI,'(/2X,A,I24)')
      &      ' Number of quadrature points:       ', NPNTS
-         WRITE (LUPRI,'( 2X,A,F20.12)')
+         WRITE (LUPRI,'( 2X,A,F24.16)')
      &      ' Number of electrons:               ', ELCTRN
          IF (DOERG) THEN
 CPAWSA            CALL DFT_ENE_REPORT()
-            WRITE (LUPRI,'(2X,A,28X,F14.6)') 
+            WRITE (LUPRI,'(2X,A,13X,F14.6)') 
      &          ' DFT exchange-correlation energy:', 
      &          DENERGY
          END IF

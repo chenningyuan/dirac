@@ -28,10 +28,11 @@ C
 #include <dftcom.h>
 #include <functionals.h>
 #include <gridtest.h>
+#include <prune.h>
 C
       SAVE SET
       DATA TABLE /'.DFTFUN','.FROMVX','.QUADRA','.DFTAC ','.RADINT',
-     &            '.PRINT ','.INTCHK','.XXXXXX'/
+     &            '.PRINT ','.INTCHK','.NOPRUN'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -56,6 +57,7 @@ C
       DFTPOT = .FALSE.
       DFTORD = .FALSE.
       DFTASC = .FALSE.
+      NOPRUN = .FALSE.
       RADINT = 1.0D-8
       INTCHK = 0
 C
@@ -128,6 +130,8 @@ C&&& INTCHK: Test grid by analyzing numerical SMAT
               READ(LUCMD,*) INTCHK
                  GO TO 100
  8            CONTINUE
+C&&& NOPRUN: Turn off pruning of angular grid.
+              NOPRUN = .TRUE.
                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

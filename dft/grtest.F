@@ -252,10 +252,10 @@ C
      &      ' Absolute average SMAT error      : ', ERRAB      
       WRITE (LUPRI,'( 2X,A,E10.4)')
      &      ' Largest error                    : ', ERRMX
-      WRITE (LUPRI,'( 2X,A,2X,A,I4,A,I4,A)')
+      WRITE (LUPRI,'( 2X,A,A,I4,A,I4,A)')
      &      ' Position of largest error        : ', 
      &      '(',MAXI,',',MAXJ,')'
-      WRITE (LUPRI,'( 2X,A,2X,A,A12,A,A12,A)')
+      WRITE (LUPRI,'( 2X,A,A,A12,A,A12,A)')
      &      ' Labels for largest error integral: ', 
      &      '(',MXLB1,',',MXLB2,')'
 C
