@@ -3362,6 +3362,7 @@ C
 #include <infpar.h>
 #include <parint.h>
 #include <blocks.h>
+#include <twosta.h>
 C
       LOGICAL ANTIS,LMP2,NSAME
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
@@ -3469,9 +3470,15 @@ C
       NUMELM = 8
       CALL MPI_BCAST(ICMOQR,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-#endif
 C
-#if defined (VAR_MPI)
+C
+C     HERMIT memory estimates
+C     -----------------------
+C
+      CALL MPI_BCAST(MXHERMEM,4,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+C
+C
       IF (MYTID.EQ.MPARID) THEN
 C
 C     *************************
