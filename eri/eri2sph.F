@@ -34,13 +34,13 @@ C
 C
 C$Id$
 C
-#include <single.h>
+#include "single.h"
 C  /* Deck cr1sph */
       SUBROUTINE CR1SPH(HCCONT,HCINT,FCINT,HCSINT,FCSINT,CSQ1,CSQ2,
      &                  IODDHC,IPNTUV,IODDKC,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER TUV
       LOGICAL   FCSINT(NTUV34,KHKT2),
@@ -53,9 +53,9 @@ C  /* Deck cr1sph */
      &          IODDHC(NRTOP),
      &          IPNTUV(KC2MAX,0:NRDER,2),
      &          IODDKC(KC2MAX)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1SPH','*',103)
 C
@@ -211,8 +211,8 @@ C  /* Deck cr2sph */
      &                  CSQ3,CSQ4,CSA3,CSA4,CSV3,CSV4,BDER3,BDER4,
      &                  NCENTR,IODDCC,IPNTUV,IODDKC,INDX,IODX,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL   FCSINT(KHKT12,KHKT4),
      &          FAOINT(KHKT12,KHKT34),
      &          FLEVEL, BDER3, BDER4
@@ -225,10 +225,10 @@ C
      &          IODDCC(NRTOP), NCENTR(NPQBCX,2),
      &          IPNTUV(KC2MAX,0:NRDER,2),
      &          IODDKC(KC2MAX)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
       IF (BDER3.OR.BDER4) THEN
          CALL CR2SVC(CSQ3,CSA3,CSV3,NCENTR(1,1),NCENTR(1,2),
@@ -245,15 +245,15 @@ C
       END
 C  /* Deck cr2svc */
       SUBROUTINE CR2SVC(CSQ,CSA,CSV,NCNT1,NCNT2,KHKTX,KCKTX)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION CSQ(NCSQ1,NCSQ2), CSA(KHKTX,KCKTX), 
      &          CSV(NCTFPQ,NPQBCX,KHKTX,KCKTX), 
      &          NCNT1(NPQBCX), NCNT2(NPQBCX)
-#include <ericom.h>
-#include <nuclei.h>
+#include "ericom.h"
+#include "nuclei.h"
       IADR = 1
       DO ICMP = 1, KCKTX
       DO IKMP = 1, KHKTX
@@ -276,8 +276,8 @@ C  /* Deck cr2sph */
      &                  CSQ3,CSQ4,CSV3,CSV4,BDER3,BDER4,
      &                  IODDCC,IPNTUV,IODDKC,INDX,IODX,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL   FCSINT(KHKT12,KHKT4),
      &          FAOINT(KHKT12,KHKT34),
@@ -290,10 +290,10 @@ C
      &          IODDCC(NRTOP),
      &          IPNTUV(KC2MAX,0:NRDER,2),
      &          IODDKC(KC2MAX)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
       PATH1 = IPATH .EQ. 1
 C
@@ -551,19 +551,19 @@ C  /* Deck eribun */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.5D0)
       DIMENSION AOINT(NCCT,KHKTAB,KHKTCD,6), AOINT0(NCCT,KHKTAB,KHKTCD), 
      &          COORAO(NPQBCX,3,4),
      &          IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2)
 
-#include <ericom.h>
-#include <orgcom.h>
-#include <eriao.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "orgcom.h"
+#include "eriao.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from ERIBUN','*',103)
 C

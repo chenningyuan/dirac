@@ -33,16 +33,16 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
 C
-#include <single.h>
+#include "single.h"
 C  /* Deck eriexp */
       SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,RODPE1,RODPE2,IPNTPP,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0)
       INTEGER AB, CD, PQ, RST
       DIMENSION EXPAB(NPQBCS,MLTPZ,NPRFAB,3),
@@ -51,13 +51,13 @@ C  /* Deck eriexp */
      &          FACPQ(NPQBCS,NPRFPQ),
      &          RODPE1(NODPP1,  2), RODPE2(NODPP2,  2),
      &          IPNTPP(MAXBCH,2)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERIEXP','*',103)
@@ -131,22 +131,22 @@ C
       END
 C  /* Deck ericor */
       SUBROUTINE ERICOR(COORTR,IPNTCR,CORBCH,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       INTEGER PQ
       DIMENSION COORTR(NPQBCS,3,4),
      &          IPNTCR(MAXBCH,4), CORBCH(NPQBCS,3)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       DO IATOM = 1,4
 #if defined (VAR_CRY)
@@ -183,22 +183,22 @@ C
       END
 C  /* Deck erisso */
       SUBROUTINE ERISSO(IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0)
       INTEGER PQ, R, S, T, RST, X
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <symmet.h>
-#include <erisop.h>
-#include <ibtfun.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "symmet.h"
+#include "erisop.h"
+#include "ibtfun.h"
       XPAR(I) = PT(IBTAND(ISYMAX(1,1),I))
       YPAR(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZPAR(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -257,12 +257,12 @@ C
 C  /* Deck eripfs */
       SUBROUTINE ERIPFS(FACINT,FACPQ,RODAB,RODCD,RODPF1,RODPF2,IPNTPP,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       INTEGER AB, CD, PQ, RST
       DIMENSION FACINT(NPQBCS,MLTPZ,NPRFPQ),
      &          FACPQ(NPQBCS,NPRFPQ), 
@@ -270,13 +270,13 @@ C  /* Deck eripfs */
      &          RODCD(NPQBCS,MLTPZ,NPRFCD),
      &          RODPF1(MAXOPR+1,*), RODPF2(MAXOPR+1,*),
      &          IPNTPP(MAXBCH,2)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <erisop.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "erisop.h"
+#include "symmet.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERIPFS','*',103)
@@ -331,14 +331,14 @@ C
       END
 C  /* Deck ericrs */
       SUBROUTINE ERICRS(COORAO,COORTR,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER PQ, RST, X
       DIMENSION COORTR(NPQBCS,12),
      &          COORAO(NPQBCS,MLTPZ,12)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erisop.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erisop.h"
 C
       DO X = 1, 12
          DO RST = 1, MLTPZ
@@ -365,8 +365,8 @@ C
       END
 C  /* Deck erivcs */
       SUBROUTINE ERIVCS(EXPAB,EXPCD,COORAO,COORAB,COORCD,COORPQ,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER X
       DIMENSION COORAO(NPQBCX,3,4),
      &          EXPAB (NPQBCX,NPRFAB,3), 
@@ -374,11 +374,11 @@ C  /* Deck erivcs */
      &          COORAB(NPQBCX,NPRFAB,3,2), 
      &          COORCD(NPQBCX,NPRFCD,3,2), 
      &          COORPQ(NPQBCX,NPRFAB,NPRFCD,3)
-#include <ericom.h>
-#include <eriao.h>
-#include <erithr.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "erithr.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
 C     AB coordinates
 C     ==============
@@ -499,12 +499,12 @@ C
       END
 C  /* Deck locsym */
       SUBROUTINE LOCSYM(VECTOR,NINNER,NDIM,I0,IXYZ)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER X
       DIMENSION VECTOR(NINNER,NDIM,3), I0(3)
-#include <erithr.h>
-#include <cbieri.h>
+#include "erithr.h"
+#include "cbieri.h"
 C
       IF (NOLOCS) THEN
          I0(1) = 0
@@ -544,13 +544,13 @@ C
       END
 C  /* Deck locsyb */
       SUBROUTINE LOCSYB(COORAO,I0,IXYZ)
-#include <implicit.h>
+#include "implicit.h"
       INTEGER X
       DIMENSION COORAO(NPQBCX,3), I0(3)
-#include <orgcom.h>
-#include <erithr.h>
-#include <cbieri.h>
-#include <ericom.h>
+#include "orgcom.h"
+#include "erithr.h"
+#include "cbieri.h"
+#include "ericom.h"
 C
       IF (.NOT.NOLOCS) THEN
          DO X = 1, 3
@@ -571,19 +571,19 @@ C  /* Deck ericnt */
 C
 C     tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       INTEGER RST, PQ, A
       DIMENSION NCENTR(MLTPZ,NPQBCS,4), IPNTCR(MAXBCH,4)
-#include <nuclei.h>
-#include <aobtch.h>
-#include <ericom.h>
-#include <erisop.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "aobtch.h"
+#include "ericom.h"
+#include "erisop.h"
+#include "ibtfun.h"
       IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
 C
       IF (IPRINT .GT. 10) THEN
@@ -620,7 +620,7 @@ C  /* Deck erfciv */
 C
 C     tuh
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, THRMAX = 1.0D-15)
       DIMENSION ERFCI(0:15)
       DATA (ERFCI(I),I=0,15)/0.00000D0, 1.16309D0, 1.82139D0, 2.32675D0, 
@@ -637,12 +637,12 @@ C  /* Deck ericls */
 C
 C     tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL CLSALL, CLSONE
       LOGICAL CLSINT(NCTFD,NCTFC,NCTFB,NCTFA,NPQBCX)
@@ -654,15 +654,15 @@ C
      &          EXPCD (NPQBCX,NPRFCD,3),
      &          CMATA (NPRFA,NCTFA), CMATB (NPRFB,NCTFB),
      &          CMATC (NPRFC,NCTFC), CMATD (NPRFD,NCTFD)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <erisop.h>
-#include <erithr.h>
-#include <symmet.h>
-#include <clsfmm.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "erisop.h"
+#include "erithr.h"
+#include "symmet.h"
+#include "clsfmm.h"
 C
       IF (IPRINT .GT. 10) CALL TITLER('Output from ERICLS','*',103)
 C
@@ -785,23 +785,23 @@ C  /* Deck erigsg */
 C
 C     tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION FACAB (NPQBCX,NDIM), EXPAB (NPQBCX,NDIM,3)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <erisop.h>
-#include <erithr.h>
-#include <symmet.h>
-#include <clsfmm.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "erisop.h"
+#include "erithr.h"
+#include "symmet.h"
+#include "clsfmm.h"
 C
       SM = D0 
       AM = D0
@@ -825,24 +825,24 @@ C  /* Deck eriggn */
 C
 C     tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION FACAB(NPQBCX,NDIMA*NDIMB), EXPAB(NPQBCX,NDIMA*NDIMB,3),
      &          CMATA(NDIMA), CMATB(NDIMB)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <erisop.h>
-#include <erithr.h>
-#include <symmet.h>
-#include <clsfmm.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "erisop.h"
+#include "erithr.h"
+#include "symmet.h"
+#include "clsfmm.h"
 C
       SM = D0 
       AM = D0
@@ -872,22 +872,22 @@ C  /* Deck erizer */
 C
 C     tuh
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER A, B, C, D
       LOGICAL CLSINT(NCTFD,NCTFC,NCTFB,NCTFA,NPQBCX)
       DIMENSION AO(NCTFD,NCTFC,NCTFB,NCTFA,NPQBCX,KHKTAB,KHKTCD),
      &          IPNTUV(KC2MAX,0:NRDER,2), IODDCC(NRTOP)
-#include <ericom.h>
-#include <symmet.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "symmet.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPATH.EQ.2) THEN
          WRITE (LUPRI,'(2X,A)') ' ERIZER not implemented for IPATH = 2.' 

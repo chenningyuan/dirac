@@ -91,15 +91,15 @@ C -------------------------------------------------------------
      &                    WORK,LWORK,NPARFTUV_KSTARTODCLS,
      &                    NPARFTUV_NSTEPODCLS,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3mem.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3mem.h"
 C
       DIMENSION DMAT(NBASE,NBASE,NDMAT),ISYMDM(NDMAT),WORK(LWORK),
      &          IODBCLS(5,*),IODBTCH(2,*)
@@ -213,17 +213,17 @@ C
      &                    DMAT,ISYMDM,NDMAT,INDHER,LMNPWR,LMNSYM,CSQ, 
      &                    NPARFTUV_KSTARTODCLS,NPARFTUV_NSTEPODCLS,
      &                    IELECTR,WORK,LWORK,IPRINT                    )
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3thr.h>
-#include <fck3mem.h>
-#include <cbifck3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3thr.h"
+#include "fck3mem.h"
+#include "cbifck3.h"
       DIMENSION IFTUVCL(10,*),RFTUVCL(4,*),IFTUV(*),RFTUV(*),FTUV(*),
      &          RFBTCH(5,*),IFBTCH(2,*),IODBCLS(5,*),IODBTCH(2,*),
      &          DMAT(*),CSQ(NCSQ1,NCSQ2),WORK(*),
@@ -412,16 +412,16 @@ C     &               NTUV,NTFTUVPRIM,NTFTUVBTCH,IPRINT)
 
       SUBROUTINE GETMAXSIZEFTUV(MAXSUMPRF,MAXSIZEFTUV,IODBCLS,IODBTCH,
      &                    NPARFTUV_KSTARTODCLS,NPARFTUV_NSTEPODCLS)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <cbifck3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "cbifck3.h"
       DIMENSION IODBCLS(5,*),IODBTCH(2,*) 
 
       MAXFCLSPRF  = 0
@@ -471,14 +471,14 @@ C     &               NTUV,NTFTUVPRIM,NTFTUVBTCH,IPRINT)
      &                   COOR12,EXP12,HPI,P1,P2,
      &                   NPRF1,NHKT1,JMAX1,NPRF2,NHKT2,JMAX2,
      &                   NPRF12,NHKT12,IELECTR,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
       DIMENSION ETIJ(*),PREF12(NPRF12),
      &          COOR12(NPRF12,3),EXP12(NPRF12,3), 
      &          HPI(*), P1(NPRF12,3), P2(NPRF12,3),R12(3),I120(3),
@@ -553,12 +553,12 @@ C
       SUBROUTINE SETDMATCP(DMATCP,DMAT,IAOB1,IAOB2,ISPCOMP1,ISPCOMP2,
      &              CSQ1,CSQ2,IPR12,CCF1,CCF2,DMATSP,DTMP,KCKT1,KCKT2,
      &              KHKT1,KHKT2,NPRF1,NPRF2,NCTF1,NCTF2,NPRF12,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
 
       DIMENSION DMAT(NBASE,NBASE),
      &          DMATCP(KCKT1,KCKT2,NPRF12),
@@ -663,10 +663,10 @@ C
       SUBROUTINE CONTRACTDMATE(FTUVTMP,DMATCP,ETIJ,PREF12,INDHER,LMNPWR,
      &                      KCKT1,KCKT2,J1,J2,JMAX1,JMAX2,JMAX12,NPRF12,
      &                      NTUV,IPRINT)
-#include<implicit.h>
-#include<priunit.h>
-#include<fck3odb.h>
-#include<cbifck3.h>
+#include"implicit.h"
+#include"priunit.h"
+#include"fck3odb.h"
+#include"cbifck3.h"
  
       DIMENSION FTUVTMP(NTUV,NPRF12),
      &          ETIJ(NPRF12,0:JMAX12,0:JMAX1,0:JMAX2,3),
@@ -738,7 +738,7 @@ C
       END
 
       SUBROUTINE SETJKKK( J, KCSQ, KCKT, KHKT, ICOMP )
-#include <implicit.h>
+#include "implicit.h"
    
       J    = ICOMP - 1
       KCSQ = KSQADR(J,0,0,0,0)
@@ -750,8 +750,8 @@ C
 
       SUBROUTINE SETRFTUV(IFTUV,RFTUV,COOR1,COOR2,EXPBT1,EXPBT2,
      &                    IPR12,NPRF12,IBTCH,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 
       DIMENSION IFTUV(2,NPRF12),RFTUV(7,NPRF12),COOR1(3),COOR2(3),
      &          EXPBT1(*),EXPBT2(*),IPR12(2,*)
@@ -789,8 +789,8 @@ C
 
       SUBROUTINE SORTFTUV(FTUV0,RFTUV,FTUVTMP,RFTUVTMP,RFBTCH,
      &                    IFBTCH,NTUV,NTFTUVPRIM,NTFTUVBTCH,IPRINT)
-#include<implicit.h>
-#include<priunit.h>
+#include"implicit.h"
+#include"priunit.h"
       DIMENSION FTUV0(NTFTUVPRIM,NTUV),FTUVTMP(NTUV,NTFTUVPRIM),
      &          RFTUV(7,*),RFTUVTMP(7,*),RFBTCH(5,*),IFBTCH(2,*)
 
@@ -892,20 +892,20 @@ C
       SUBROUTINE CHECKNUCATR(IFTUVCL,RFTUV,FTUV,DMAT,INDHER,JTOP,
      &                       NDMT,NCLS,WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <ericom.h>
-#include <cbieri.h>
-#include <aobtch.h>
-#include <symmet.h>
-#include <odbtch.h>
-#include <odclss.h>
-#include <eriao.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "ericom.h"
+#include "cbieri.h"
+#include "aobtch.h"
+#include "symmet.h"
+#include "odbtch.h"
+#include "odclss.h"
+#include "eriao.h"
 
       DIMENSION IFTUVCL(10,*),RFTUV(*),FTUV(*),DMAT(*),WORK(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP)
@@ -946,7 +946,7 @@ C
       END
 
       FUNCTION ADDRNAI2(RNAI, FTUV, INDHER, JTOP, NPP12, JMAX12 )
-#include <implicit.h>
+#include "implicit.h"
 C
       INTEGER T,U,V,TUV
       DIMENSION RNAI(NPP12,0:JMAX12,0:JMAX12,0:JMAX12),

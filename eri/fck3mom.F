@@ -1,17 +1,17 @@
       SUBROUTINE SETMM(DMAT,NDMAT,IODBCLS,IODBTCH,RODBTCH,
      &                 WORK,LWORK,IPRINT1)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h> 
-#include <maxorb.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <cbifmm.h> 
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h" 
+#include "maxorb.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "cbifmm.h" 
+#include "nuclei.h"
+#include "inforb.h"
 
       DIMENSION DMAT(*),IODBCLS(5,*),IODBTCH(2,*),RODBTCH(5,*),WORK(*)
 
@@ -108,16 +108,16 @@ C
      &                  DMAT,NDMAT,IODBCLS,IODBTCH,RODBTCH,CSQ,
      &                  CSQE,ICSQADR,LMNPWR,LNMSYM,MAXMMNHK,MAXMMKCK,
      &                  WORK,LWORK,LUINTM,IPRINT1)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3thr.h>
-#include <cbifmm.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3thr.h"
+#include "cbifmm.h"
 
       DIMENSION DMAT(*),IODBCLS(5,*),IODBTCH(2,*),RODBTCH(5,*),WORK(*),
      &          LMNPWR(MAXMMKCK,MAXMMNHK,3),
@@ -266,18 +266,18 @@ C
      &                   J1,JMAX1,KHKT1,KCKT1,NPRF1,NCTF1,
      &                   J2,JMAX2,KHKT2,KCKT2,NPRF2,NCTF2,
      &                   JMAXE,JMAX12,NPRF12,NCTF12,IPRINT1)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <cbifmm.h>
-#include <pi.h>
-#include <xyzpow.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "cbifmm.h"
+#include "pi.h"
+#include "xyzpow.h"
 
       DIMENSION SMMSC(NCTF1,NCTF2,KHKT1,KHKT2,*),
      &          SMMCC(NCTF1,NCTF2,KCKT1,KCKT2,*),
@@ -516,8 +516,8 @@ C
       SUBROUTINE MMCAR2MMSPH(SMMSC,SMMCC,CSQ1,CSQ2,CSQE,
      &                       KHKT1,KHKT2,KHKTE,
      &                       KCKT1,KCKT2,KCKTE,NCTF12,IPRINT1 )
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 
       DIMENSION SMMSC(NCTF12,KHKT1,KHKT2,KHKTE),
      &          SMMCC(NCTF12,KCKT1,KCKT2,KCKTE),
@@ -568,14 +568,14 @@ C
       SUBROUTINE PRINTMM(SMMSC,DMAT,NDMAT,RODP,INDDSTR,
      &       IAOB1,IAOB2,J1,J2,JMAX1,JMAX2,JMAXE,NCTF1,NCTF2,
      &       ISPCOMP1,ISPCOMP2,IBTCH,NDISTR,NMOM,LUINTM,IPRINT1)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3thr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3thr.h"
 
       DIMENSION SMMSC(NCTF1,NCTF2,2*J1+1,2*J2+1,*),
      &          INDDSTR(NCTF1,NCTF2,2*J1+1,2*J2+1),
@@ -664,8 +664,8 @@ C     &            RODP(1),RODP(2),RODP(3),-SPHINT, DEN12
 
       SUBROUTINE SETCSQE( ICSQADR, CSQE, LMAX,
      &                    WORK,LWORK,IPRINT1)
-#include<implicit.h>
-#include<priunit.h>
+#include"implicit.h"
+#include"priunit.h"
       DIMENSION ICSQADR(0:LMAX),CSQE(*),WORK(*)
 
       KOFF = 1 

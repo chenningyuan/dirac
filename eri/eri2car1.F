@@ -34,15 +34,15 @@ C
 C
 C$Id$
 C
-#include <single.h>
+#include "single.h"
 C  /* Deck cr1drv */
       SUBROUTINE CR1DRV(HERINT,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
      &                  LMNPWR,IPNTUV,COOR12,EXP12,CSQ,CCFBT,
      &                  WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       LOGICAL DOREC, FRSTAO, CONTRA
       DIMENSION HERINT(*), HCINT(*),
@@ -50,10 +50,10 @@ C
      &          LMNPWR(*), IPNTUV(*), 
      &          COOR12(NPP12,3), EXP12(NPP12,3), CSQ(*), CCFBT(*),
      &          WORK(LWORK)
-#include <cbieri.h>
-#include <ericom.h>
-#include <eriao.h>
-#include <ibtfun.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eriao.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1DRV','*',103)
 C
@@ -150,9 +150,9 @@ C  /* Deck cr1two */
      &                  HCINT,FCINT,HCPRIM,FRSTUV,HCCONT,
      &                  HCSINT,FCSINT,CPINT,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
       INTEGER TUV
       LOGICAL CONTRA, FRSTUV(NTUV34),
@@ -179,11 +179,11 @@ C
 C
      &          HCSINT(NCCPP,NTUV34,KHKT2)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1TWO','*',103)
 C
@@ -337,17 +337,17 @@ C
       END
 C  /* Deck hcprint */
       SUBROUTINE HCPRINT(HCINT,IODDHC,IPNTUV,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (NHCTYP = 1)
       INTEGER TUV
       DIMENSION HCINT(NCTF12,NPQBCX,NPRF34,NTUV34,KHKT12,NHCTYP),
      &          IODDHC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
 C     Print Hermite-Spherical integrals
 C     =================================
@@ -393,9 +393,9 @@ C  /* Deck cr1und */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
       INTEGER T, U, V, TUV
       LOGICAL FRSTUV(NTUV34)
@@ -407,11 +407,11 @@ C
      &          ETUV(NPP12), EUV(NPP12),
      &          HCPRIM(NPP12,NPRF34,NTUV34)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1UND','*',103)
 C
@@ -482,8 +482,8 @@ C
 C  /* Deck erict1 */
       SUBROUTINE ERICT1(PPINT,CCINT,CMAT1,CMAT2,CPINT,IODDHC,IODKC,
      &                  FRSTUV,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER TUV
       LOGICAL FRSTUV(NTUV34)
@@ -493,9 +493,9 @@ C  /* Deck erict1 */
       DIMENSION CPINT(NCTF1,NPQBCX,NPRF2)
       DIMENSION CCINT(NCTF12*NPQBCX,NPRF34,NTUV34)
       DIMENSION IODDHC(NRTOP)
-#include <hertop.h>
-#include <ericom.h>
-#include <eriao.h>
+#include "hertop.h"
+#include "ericom.h"
+#include "eriao.h"
 C
       IF (IPRINT .GT. 25) THEN
          CALL HEADER('Output from ERICT1',-1)

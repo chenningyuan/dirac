@@ -34,25 +34,25 @@ C
 C
 C$Id$
 C
-#include <single.h>
+#include "single.h"
 C  /* Deck erisym */
       SUBROUTINE ERISYM(AO,SO,IATOM,ICRB,IODDCC,IPNTUV,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER R, S, T
       DIMENSION AO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD),
      &          SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD),
      &          RMAT(64,0:7), SMAT(64,0:7), TMAT(64,0:7),
      &          IPNTUV(KC2MAX,0:NRDER,2), IODDCC(NRTOP)
-#include <ericom.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Output from ERISYM',-1)
@@ -192,14 +192,14 @@ C
       END
 C  /* Deck eritra */
       SUBROUTINE ERITRA(RMAT,MLTPX,ISTBLX)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION RMAT(64,0:7)
-#include <maxorb.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "maxorb.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IRED = 0
       DO 100 I = 0, MAXOPR

@@ -33,17 +33,17 @@ C
 C
 C$Id$
 C
-#include <single.h>
+#include "single.h"
 C  /* Deck fmmgam */
       SUBROUTINE FMMGAM(RJ000,FACINT,ALPHA,COORPQ,WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       DIMENSION RJ000(NPPX,0:JMAX), FACINT(NPPX),
      &          ALPHA(NPPX), COORPQ(NPPX,3),
      &          WORK(LWORK)
-#include <ericom.h>
+#include "ericom.h"
 C-----------------------------------------------------------------------
 C
 C     Allocate FMMGAM
@@ -65,18 +65,18 @@ C  /* Deck fmmga1 */
       SUBROUTINE FMMGA1(RJ000,FACINT,ALPHA,COORPQ,TALPHA,
      &                  WVALU,INDADR,WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0)
 C
       DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
      &          COORPQ(NPPX,3),TALPHA(NPPX),
      &          WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
-#include <ericom.h>
-#include <erithr.h>
-#include <sdpre.h>
+#include "ericom.h"
+#include "erithr.h"
+#include "sdpre.h"
 C-----------------------------------------------------------------------
 C
 C     One-center Integrals
@@ -165,13 +165,13 @@ C
 C  /* Deck erigam */
       SUBROUTINE ERIGAM(RJ000,FACINT,ALPHA,COORPQ,WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       DIMENSION RJ000(NPPX,0:JMAX), FACINT(NPPX),
      &          ALPHA(NPPX), COORPQ(NPPX,3),
      &          WORK(LWORK)
-#include <ericom.h>
+#include "ericom.h"
 C-----------------------------------------------------------------------
 C
 C     Allocate ERIGAM
@@ -193,21 +193,21 @@ C  /* Deck eriga1 */
       SUBROUTINE ERIGA1(RJ000,FACINT,ALPHA,COORPQ,TALPHA,
      &                  WVALU,INDADR,WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, DP5 = -0.5D0)
 C
       DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
      &          COORPQ(NPPX,3),TALPHA(NPPX),
      &          WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
-#include <ericom.h>
-#include <erithr.h>
+#include "ericom.h"
+#include "erithr.h"
 CMAW
-#include <cbieri.h>
-#include <clsfmm.h>
-#include <sdpre.h>
+#include "cbieri.h"
+#include "clsfmm.h"
+#include "sdpre.h"
 C-----------------------------------------------------------------------
 C
 C     One-center Integrals
@@ -311,14 +311,14 @@ C  /* Deck erituv */
       SUBROUTINE ERITUV(HERINT,RJ000,COORPQ,INDHER,IODDHR,
      &                  WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER T, U, V, TUV
       DIMENSION HERINT(NPPX,NTUV), RJ000(NPPX,0:JMAX), COORPQ(NPPX,3),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), IODDHR(NRTOP),
      &          WORK(LWORK)
-#include <ericom.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "hertop.h"
 C
 C     The final R(T,U,V) integrals are arranged as follows:
 C
@@ -395,18 +395,18 @@ C  /* Deck erihrc */
       SUBROUTINE ERIHRC(CUR,OLD,JVAL,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                  MAXDER,NPPX,NTUV,IPQX,IPQY,IPQZ)
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0
       DIMENSION CUR(NPPX,NTUV), OLD(NPPX,NTUV),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          PQX(NPPX), PQY(NPPX), PQZ(NPPX),
      &          RJ000(NPPX,0:JMAX)
-#include <doxyz.h>
-#include <hertop.h>
+#include "doxyz.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
+#include "sdpre.h"
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -556,14 +556,14 @@ C
 C  /* Deck eriswp */
       SUBROUTINE ERISWP(HEROLD,HERNEW,INDHER,IODDHR,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER T, U, V, TUV
       DIMENSION INDHER(0:JTOP,0:JTOP,0:JTOP), IODDHR(NRTOP)
       DIMENSION HEROLD(NPQBCX,NPRFAB,NPRFCD,NTUV),
      &          HERNEW(NPQBCX,NPRFCD,NPRFAB,NTUV)
-#include <ericom.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "hertop.h"
 C
       DO 100 J = 0, JMAX
          DO 110 T = J, 0, -1

@@ -31,20 +31,20 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
+#include "single.h"
 C  /* Deck sphmat */
       SUBROUTINE SPHMAT(CSQ,NROWS,NCOLS,NDER,GDER,WORK,LWORK,IPRINT)
 C
 C     T. Helgaker
 C 
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       INTEGER C, D, E, F, G, X, Y, Z
       LOGICAL GDER
-#include <nuclei.h>
-#include <ccom.h>
+#include "nuclei.h"
+#include "ccom.h"
       DIMENSION CSQ(NROWS,NCOLS), WORK(LWORK)
 C
       IF (DOCART) THEN
@@ -133,22 +133,22 @@ C     Order of spherical harmonics:         L, M
 C     Order of geometry derivatives:        I, J, K
 C     Order of magnetic field derivatives:  E, F, G 
 C       
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       PARAMETER (DM1 = -1.0D0, D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
-#include <ccom.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <nuclei.h>
+#include "ccom.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "nuclei.h"
       INTEGER A, B, C, E, F, G, EE, FF, GG, P, Q, R,
      &        T, U, V, X, Y, Z, V0, ALPHA, TOT, POS, PX, PY, PZ,
      &        BX, BY, BZ
       DIMENSION CSQ(NROWS,NCOLS)
       PWD(I,J)   = FACULT(I)/FACULT(I-J)
       HCF(I,J,K) = FACULT(I)/(FACULT(J)*FACULT(K/2)*FACULT(I-J-K))
-#include<ibtfun.h>
+#include"ibtfun.h"
 C
       M = M1 - L
       IF (L.EQ.1) THEN
@@ -256,9 +256,9 @@ C                    ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
       END
 C  /* Deck nspher */
       FUNCTION NSPHER(L,X,Y,Z)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <ccom.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "ccom.h"
       INTEGER D, X, Y, Z 
 C
       D = X + Y + Z 
@@ -276,17 +276,17 @@ C
       END 
 C  /* Deck lspher */
       FUNCTION LSPHER(NDER)
-#include <implicit.h>
+#include "implicit.h"
       LSPHER = NSPHER(0,NDER+1,0,0) - 1
       RETURN
       END 
 C  /* Deck sphdim */
       SUBROUTINE SPHDIM
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <ericom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "ericom.h"
       NCSQ1 = NSPHER(0,MAXDER+1,0,0) - 1
       IF (BDER) THEN
          NCSQ2 = NATOMS
@@ -297,7 +297,7 @@ C  /* Deck sphdim */
       END
 C  /* Deck nsphad */
       FUNCTION NSPHAD(L,LEVEL,NDER)
-#include <implicit.h>
+#include "implicit.h"
       NSPHAD = ((LEVEL + NDER)*(1 + 2*L)*(2 + LEVEL**2 
      &        + NDER**2 + 6*L + 3*L**2 - 3*NDER*(1 + L) 
      &        + LEVEL*(3 - NDER + 3*L)))/6
@@ -305,25 +305,25 @@ C  /* Deck nsphad */
       END
 C  /* Deck ncrt */
       FUNCTION NCRT(I,J,K)
-#include <implicit.h>
+#include "implicit.h"
       NCRT = 1 + J + 2*K + (J + K)*(J + K - 1)/2
       RETURN
       END 
 C  /* Deck lmcrt */
       FUNCTION LMCRT(L,M,I,J,K)
-#include <implicit.h>
+#include "implicit.h"
       LMCRT = (2*L+1)*(NCRT(I,J,K) - 1) + L + M + 1
       RETURN
       END 
 C  /* Deck sphadr */
       FUNCTION KSQADR(L,X,Y,Z,C)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxdr.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxdr.h"
       LOGICAL FIRST
       INTEGER A, B, C, D, X, Y, Z
       INTEGER ACOEF(0:MXQN-1,0:MXDR), BCOEF(0:MXQN-1,0:MXDR)
-#include <ccom.h>
+#include "ccom.h"
 C
       SAVE FIRST, ACOEF, BCOEF, NHOLD
       DATA FIRST /.TRUE./
@@ -346,10 +346,10 @@ C
       END
 C  /* Deck sphab */
       SUBROUTINE SPHAB(L,D,A,B)
-#include <implicit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "maxaqn.h"
       INTEGER D, A, B
-#include <ccom.h>
+#include "ccom.h"
       LX = NHTYP - 1
       A = 24 +  2*(1+2*D)*L*(-2+(3+2*D+2*D**2)*L+8*L**2+3*L**3)
      &       +  (D*(2+3*D + D**2)*(1+LX)*

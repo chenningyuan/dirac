@@ -33,9 +33,9 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
       PROGRAM NODPRG
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mtags.h"
       PARAMETER (MWORK = 10 000 000)
       DIMENSION WORK(MWORK)
 C

@@ -32,26 +32,26 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-#include <single.h>
+#include "single.h"
 C
 C  Definition of the FCK3AOB - ao batches structure...
 C  
 
       SUBROUTINE SETAOBTCH(SPEXP,CONTRACTED,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       DIMENSION WORK(LWORK)
       LOGICAL SPEXP, CONTRACTED
-#include <shells.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <fck3aob.h>
-#include <fck3mem.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "fck3aob.h"
+#include "fck3mem.h"
+#include "ibtfun.h"
 C
 C     Calculate the memory requirements of the fck3aob common block arrays
 C ( Note that EXPBTCH and CCFBTCH can be considerably reduced in size if
@@ -211,11 +211,11 @@ C ---------------------------------------------------------------
 C
 
       SUBROUTINE AOBTCH1(IORB,NB,ISHELL,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       DIMENSION WORK(LWORK)
-#include <shells.h>
+#include "shells.h"
 C
       NUCA  = NUCO(ISHELL)
       NRCA  = NRCO(ISHELL)
@@ -243,22 +243,22 @@ C
 
       SUBROUTINE AOBTCH2(NB,NMAT,MAT,NUCA,NRCA,JSTRA,IDONE,NDIMP,
      &                   NDIMC,IPNTC,IPNTP,ISHELL,IORB,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
       PARAMETER (THR = 1.0D-17)
 C
       DIMENSION MAT(NUCA,NRCA), IDONE(NUCA), NDIMP(NUCA), NDIMC(NUCA),
      &          IPNTC(NUCA,NRCA),IPNTP(NUCA,NUCA)
 C
-#include <symmet.h>
-#include <fck3aob.h>
-#include <shells.h>
-#include <primit.h>
-#include <nuclei.h>
+#include "symmet.h"
+#include "fck3aob.h"
+#include "shells.h"
+#include "primit.h"
+#include "nuclei.h"
 C
       SAVE IADRP, IADRC, IADRO, NBTCH
 C
@@ -427,12 +427,12 @@ C ---------------------------------------------------------------
 C
 
       SUBROUTINE SETAOCLS(IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
 
       ICLS = 1 
       KSTAOB = 1
@@ -473,13 +473,13 @@ C ---------------------------------------------------------------
 C
 
       SUBROUTINE SETSPEXP(IPRINT)
-#include<implicit.h>
-#include<priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
-#include <fck3thr.h>
+#include"implicit.h"
+#include"priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
+#include "fck3thr.h"
 
       IAOBLASTS = 1
       IAOBLAST  = 0
@@ -534,13 +534,13 @@ C
       END
 
       SUBROUTINE CHECKSPEXP(NTYP, IAOB1, IAOB2)
-#include<implicit.h>
-#include<priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
-#include <fck3thr.h>
+#include"implicit.h"
+#include"priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
+#include "fck3thr.h"
 
       NPRF1 = NPRFBTCH( IAOB1 )
       NCTF1 = NCTFBTCH( IAOB1 )
@@ -576,12 +576,12 @@ C
 
       SUBROUTINE GETAOB(NPRF,NCTF,NTYP,NHKT,JMAX,KHKT,KCKT,
      &                  KCSQ,KEXP,KCCF,IAOB )
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
       DIMENSION KCCF(2)
 
       NPRF  = NPRFBTCH( IAOB )
@@ -603,13 +603,13 @@ C
 
 
       SUBROUTINE DECONTRACTAO(WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
+#include "iratdef.h"
       DIMENSION WORK(LWORK)
 
       KKNDXTMP = 1 
@@ -638,13 +638,13 @@ C
 
       SUBROUTINE DECONTRACTAO1( KNDXTMP, NHKTTMP, KEXPTMP,
      &                          KCCFTMP, NTYPTMP, IPRINT )
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
+#include "iratdef.h"
       DIMENSION KNDXTMP(2,MXAOBTCH),NHKTTMP(MXAOBTCH),
      &          KEXPTMP(MXAOBTCH),KCCFTMP(2,MXAOBTCH),
      &          NTYPTMP(MXAOBTCH)

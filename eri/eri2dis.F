@@ -34,31 +34,31 @@ C
 C
 C$Id$
 C
-#include <single.h>
+#include "single.h"
 C  /* Deck eridi1 */
       SUBROUTINE ERIDI1(KODCL1,KODCL2,
      &                  KODBC1,KODBC2,KRDBC1,KRDBC2,
      &                  KODPP1,KODPP2,KRDPP1,KRDPP2,
      &                  KFREE,LFREE,KEND,CCFBT,INDXBT,
      &                  WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
-#include <ccom.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <odbtch.h>
-#include <symmet.h>
-#include <iratdef.h>
-#include <inftap.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "odbtch.h"
+#include "symmet.h"
+#include "iratdef.h"
+#include "inftap.h"
 C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
@@ -130,14 +130,14 @@ C  /* Deck eridi2 */
      &                  IODBC1,IODBC2,RODBC1,RODBC2,
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
      &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <eridst.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "eridst.h"
+#include "dummy.h"
       CHARACTER*8 FAODER
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
@@ -145,20 +145,20 @@ C  /* Deck eridi2 */
      &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          INDEXA(*), CCFBT(*), INDXBT(*), WORK(LWORK)
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <odbtch.h>
-#include <nuclei.h>
-#include <chrnos.h>
-#include <odclss.h>
-#include <symmet.h>
-#include <iratdef.h>
-#include <inftap.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "odbtch.h"
+#include "nuclei.h"
+#include "chrnos.h"
+#include "odclss.h"
+#include "symmet.h"
+#include "iratdef.h"
+#include "inftap.h"
 C
       IPRINT = IPRERI
 C
@@ -285,14 +285,14 @@ C  /* Deck eridid */
      &                  IODCL1,IODCL2,IODBC1,IODBC2,RODBC1,RODBC2,
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
      &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <eridst.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "eridst.h"
+#include "dummy.h"
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
      &          RODBC1(NODBC1,NRTBC), RODBC2(NODBC2,NRTBC),
@@ -300,17 +300,17 @@ C  /* Deck eridid */
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          CCFBT(*), INDXBT(*), WORK(LWORK)
       DIMENSION D2MAT(*), ID2MAT(*)
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <odbtch.h>
-#include <odclss.h>
-#include <symmet.h>
-#include <eribuf.h>
-#include <iratdef.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "odbtch.h"
+#include "odclss.h"
+#include "symmet.h"
+#include "eribuf.h"
+#include "iratdef.h"
 C
       IPRINT = IPRERI
 C
@@ -379,17 +379,17 @@ C
 C  /* Deck eriact */
       SUBROUTINE ERIACT(NACTOD,SCREEN,RODBCH,IODBCH,NODBCH,IODCLS,
      &                  NODCLS,ODTRI,IELCTR,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL ODTRI
       DIMENSION NACTOD(NODCLS), IODCLS(NODCLS),
      &          SCREEN(NODBCH), RODBCH(NODBCH), IODBCH(NODBCH,*)
-#include <aobtch.h>
+#include "aobtch.h"
 C
       IF (IELCTR .EQ. 1) THEN
          IA = 1
@@ -447,14 +447,14 @@ C
       END
 C  /* Deck pickao */
       SUBROUTINE PICKAO(IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <erisel.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "erisel.h"
+#include "aobtch.h"
 C
       DO J = 1, 4
       DO I = 1, NAOBCH
@@ -495,23 +495,23 @@ C
       END
 C  /* Deck eridsi */
       SUBROUTINE ERIDSI(INDXBT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
 C
       LOGICAL FIRST
       DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
 C
-#include <cbieri.h>
-#include <eridst.h>
-#include <erisel.h>
-#include <aobtch.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "eridst.h"
+#include "erisel.h"
+#include "aobtch.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (DODIST) THEN
          NDISTR = 0
@@ -599,20 +599,20 @@ C
       END
 C  /* Deck getdst */
       SUBROUTINE GETDST(ICLX1,ICLX2,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <eridst.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "eridst.h"
 C
       LOGICAL AOBTGT
 C
-#include <cbieri.h>
-#include <erisel.h>
-#include <distcl.h>
-#include <aobtch.h>
+#include "cbieri.h"
+#include "erisel.h"
+#include "distcl.h"
+#include "aobtch.h"
 C
 C
 C     ICLX .EQ. 0: initialization call
@@ -766,18 +766,18 @@ C
 C  /* Deck er2dis */
       SUBROUTINE ER2DIS(WORK,LWORK)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
 C
       DIMENSION INDEXA(MXCORB), WORK(LWORK)
 C
-#include <cbieri.h>
-#include <distcl.h>
+#include "cbieri.h"
+#include "distcl.h"
 C
       KCCFB1 = 1
       KINDXB = KCCFB1 + MXPRIM*MXCONT
@@ -813,26 +813,26 @@ C
       END
 C  /* Deck eriidx */
       SUBROUTINE ERIIDX(ICALL,INDEXA,NUMDIS,INDXBT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <eridst.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "eridst.h"
+#include "dummy.h"
       DIMENSION INDEXA(*), INDXBT(*)
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <odbtch.h>
-#include <odclss.h>
-#include <symmet.h>
-#include <eribuf.h>
-#include <iratdef.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "odbtch.h"
+#include "odclss.h"
+#include "symmet.h"
+#include "eribuf.h"
+#include "iratdef.h"
 C
       CALL GETDST(ICALL,0,IPRINT)
 C

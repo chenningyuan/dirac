@@ -1,20 +1,20 @@
       SUBROUTINE FCK3DRV( FMAT, DMAT, NDMT, WORK, LWORK )
-#include <implicit.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <cbihr2.h>
-#include <cbieri.h>
-#include <cbione.h>
-#include <cbifck3.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3thr.h>
-#include <fck3mem.h>
-#include <erithr.h>
-#include <clsfmm.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "cbihr2.h"
+#include "cbieri.h"
+#include "cbione.h"
+#include "cbifck3.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3thr.h"
+#include "fck3mem.h"
+#include "erithr.h"
+#include "clsfmm.h"
 
       DIMENSION TIMFCK3(5),FMAT(*), DMAT(*), WORK(*)
 C
@@ -195,14 +195,14 @@ C      RETURN
       SUBROUTINE GETFCK3(FMAT,NDMAT,IODBCLS,IODBTCH,RODBTCH,
      &                   IFTUVCLS,RFTUVCLS,IFTUV,RFTUV,FTUV,RFBTCH,
      &                   IFBTCH,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
       DIMENSION IODBCLS(5,*),IODBTCH(2,*),RODBTCH(5,*),
      &          IFTUVCLS(10,*),RFTUVCLS(4,*),IFTUV(*),RFTUV(*),
      &          FTUV(*),RFBTCH(5,*),IFBTCH(2,*),WORK(*)     
@@ -267,17 +267,17 @@ C     ============================
      &                   IFTUVCLS,RFTUVCLS,IFTUV,RFTUV,FTUV,RFBTCH,
      &                   IFBTCH,INDHER,IODDHR,LMNPWR,LMNSYM,
      &                   CSQ,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3thr.h>
-#include <fck3mem.h>
-#include <cbifck3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3thr.h"
+#include "fck3mem.h"
+#include "cbifck3.h"
       DIMENSION IODBCLS(5,*), IODBTCH(2,*), RODBTCH(5,*),
      &          IFTUVCLS(10,*),RFTUVCLS(4,*),IFTUV(*),RFTUV(*),
      &          RFBTCH(5,*),IFBTCH(2,*),FTUV(*),CSQ(NCSQ1,NCSQ2),
@@ -562,9 +562,9 @@ C
 
       SUBROUTINE SETP( DATAP, IPRAB, COORA, COORB,EXPBTA, EXPBTB, 
      &                 NPRFA, NPRFB, NPRFAB, IPRINT )
-#include<implicit.h>
-#include<priunit.h>
-#include<pi.h>
+#include"implicit.h"
+#include"priunit.h"
+#include"pi.h"
       DIMENSION DATAP(6,NPRFAB), IPRAB(2,NPRFAB), COORA(3),COORB(3),
      &          EXPBTA(NPRFA), EXPBTB(NPRFB)
 
@@ -598,16 +598,16 @@ C
       SUBROUTINE SETPQ( FACINT, ALPHA, COORPQ, NPRF, IPQXYZ,
      &                  DATAP, RODP, IFTUV, RFTUV, RODQ, 
      &                  NODQ, NPRFAB, NPRFCD, JMAX, NTYP, NTUV )
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <cbifck3.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3thr.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "cbifck3.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3thr.h"
 C      DIMENSION COORAB(3,NPRFAB),EXPABP(3,NPRFAB),
 C     &          RFTUV(7,NPRFCD),IFTUV(2,NPRFCD),COORPQ(NPRF,3),
 C     &          FACINT(*),ALPHA(*),RODP(4),RODQ(4,*),IPQ0(3)
@@ -683,9 +683,9 @@ C
 
       SUBROUTINE SETNPRF(NPRF,RODBTCH,IFBTCH,RFBTCH,
      &                   NPRFAB,NFBTCH)
-#include <implicit.h>
-#include <priunit.h>
-#include <fck3thr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "fck3thr.h"
       DIMENSION RODBTCH(4),IFBTCH(2,*),RFBTCH(5,*)
 
       NPRFCDSUM = 0 
@@ -724,16 +724,16 @@ C
      &             IPQXYZ,FTUV1,DATAP,RODBTCH,IFTUV,RFTUV,
      &             IFBTCH,RFBTCH,NPRFAB, NFBTCH, JMAX, NTYP, LSIZE,
      &             NTUV )
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <cbifck3.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3thr.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "cbifck3.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3thr.h"
       DIMENSION COORAB(3,NPRFAB),EXPABP(3,NPRFAB),COORPQ(NPRF,3),
      &   RFTUV(7,NPRFCD_TOT),IFTUV(2,NPRFCD_TOT),FACINT(*),ALPHA(*),
      &   RODBTCH(4),IFBTCH(2,*),RFBTCH(5,*),IPQ0(3),
@@ -836,16 +836,16 @@ C
      &             IPQXYZ,DATAP,RODBTCH,IFTUV,RFTUV,
      &             IFBTCH,RFBTCH,NPRFAB, NFBTCH, JMAX, NTYP, LSIZE,
      &             NTUV )
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <cbifck3.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3thr.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "cbifck3.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3thr.h"
       DIMENSION COORAB(3,NPRFAB),EXPABP(3,NPRFAB),COORPQ(NPRF,3),
      &   RFTUV(7,NPRFCD_TOT),IFTUV(2,NPRFCD_TOT),FACINT(*),ALPHA(*),
      &   RODBTCH(4),IFBTCH(2,*),RFBTCH(5,*),IPQ0(3),
@@ -937,8 +937,8 @@ C   --------------------------------------------------------------
 C
 
       SUBROUTINE PUT2HERTOP(JTOPVAL,NRTOPVAL)
-#include<implicit.h>
-#include<hertop.h>
+#include"implicit.h"
+#include"hertop.h"
 
       JTOP  = JTOPVAL
       NRTOP = NRTOPVAL
@@ -949,8 +949,8 @@ C
 
       SUBROUTINE PUT2ERICOM2( NPPXVAL, IPQ0VAL, IPQXYZVAL,
      &                        JMAXVAL, NTUVVAL )
-#include<implicit.h>
-#include<ericom.h>
+#include"implicit.h"
+#include"ericom.h"
       DIMENSION IPQ0VAL(3)
 
       NPPX    = NPPXVAL
@@ -971,7 +971,7 @@ C
       SUBROUTINE HR2FTUV( HRINT, HRINT1, FTUV,  INDHER, IODDHR, NDMAT,
      &                    JMAXAB, JMAXCD, NTUVAB, NTUVCD, NTUV, 
      &                    NPRFAB, NPRFCD, NPRFCD_TOT,NPRF, JTOP )
-#include <implicit.h>
+#include "implicit.h"
 
       INTEGER TAB,UAB,VAB,TUVAB,TCD,UCD,VCD,TUVCD,TUV
       DIMENSION HRINT(NPRFAB,NTUVAB,NDMAT),HRINT1(NPRF,NTUV),
@@ -1028,7 +1028,7 @@ C
       SUBROUTINE HR2FTUV1( HRINT, HRINT1, FTUV,  INDHER, IODDHR, NDMAT,
      &                    JMAXAB, JMAXCD, NTUVAB, NTUVCD, NTUV, 
      &                    NPRFAB, NPRFCD, NPRFCD_TOT,NPRF, JTOP )
-#include <implicit.h>
+#include "implicit.h"
 
       INTEGER TAB,UAB,VAB,TUVAB,TCD,UCD,VCD,TUVCD,TUV
       DIMENSION HRINT(NPRFAB,NTUVAB,NDMAT),HRINT1(NPRF,NTUV),
@@ -1085,7 +1085,7 @@ C
       SUBROUTINE HR2FTUV2( HRINT, HRINT1, FTUV,  INDHER, IODDHR, NDMAT,
      &                    JMAXAB, JMAXCD, NTUVAB, NTUVCD, NTUV, 
      &                    NPRFAB, NPRFCD, NPRFCD_TOT,NPRF, JTOP )
-#include <implicit.h>
+#include "implicit.h"
 
       INTEGER TAB,UAB,VAB,TUVAB,TCD,UCD,VCD,TUVCD,TUV
       DIMENSION HRINT(NPRFAB,NTUVAB,NDMAT),HRINT1(NPRF,NTUV),
@@ -1142,7 +1142,7 @@ C
       SUBROUTINE HR2FTUVNCL1(HRINT,HRINT1,FTUV,INDHER,IODDHR,NDMAT,
      &                    JMAXAB, JMAXCD, NTUVAB, NTUVCD, NTUV,
      &                    NPRFAB, NPRFCD, NPRFCD_TOT,NPRF, JTOP )
-#include <implicit.h>
+#include "implicit.h"
 
       INTEGER TAB,UAB,VAB,TUVAB,TCD,UCD,VCD,TUVCD,TUV
       DIMENSION HRINT(NPRFAB,NTUVAB,NDMAT),HRINT1(NPRF,NTUV),
@@ -1197,7 +1197,7 @@ C
       SUBROUTINE HR2FTUVNCL2(HRINT,HRINT1,FTUV,INDHER,IODDHR,NDMAT,
      &                    JMAXAB, JMAXCD, NTUVAB, NTUVCD, NTUV,
      &                    NPRFAB, NPRFCD, NPRFCD_TOT,NPRF, JTOP )
-#include <implicit.h>
+#include "implicit.h"
 
       INTEGER TAB,UAB,VAB,TUVAB,TCD,UCD,VCD,TUVCD,TUV
       DIMENSION HRINT(NPRFAB,NTUVAB,NDMAT),HRINT1(NPRF,NTUV),
@@ -1263,13 +1263,13 @@ C
      &        KHKTA, KHKTB, KCKTA, KCKTB,
      &        KCKMAX, NHKMAX,IAOBA,IAOBB,IPRINT )
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
 C
       INTEGER T,U,V,TUV
       DIMENSION FMAT(NBASE,NBASE,NDMAT),FMATCP(KCKTA,KCKTB,NPRFAB),
@@ -1406,8 +1406,8 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
 
       SUBROUTINE SCREENFBTCH( NACTFTUVPRIM, IFBTCH, RFBTCH, 
      &                        THRSCRF, NFBTCH )
-#include<implicit.h>
-#include<priunit.h>
+#include"implicit.h"
+#include"priunit.h"
       DIMENSION IFBTCH(2,NFBTCH), RFBTCH(5,NFBTCH)
 
       IBTCH         = 1
@@ -1424,9 +1424,9 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
       END
 
       SUBROUTINE FCK3INI
-#include <implicit.h>
-#include <cbifck3.h>
-#include <fck3thr.h>
+#include "implicit.h"
+#include "cbifck3.h"
+#include "fck3thr.h"
 
       CHCKNAI   = .FALSE.
       OLDFCK3   = .FALSE.
@@ -1457,9 +1457,9 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
       END
 
       SUBROUTINE FCK3INP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <cbifck3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cbifck3.h"
       PARAMETER ( NTABLE = 15 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DATA TABLE /'.FIXTHR','.CHCKNA','.OLDFCK','.PRINT ','.NOSPEX',
@@ -1567,7 +1567,7 @@ C  for the use in ERIGAM subroutine
 C
 
       SUBROUTINE SETBFCFMM( BRFREE )
-#include <cbieri.h> 
+#include "cbieri.h" 
       LOGICAL BRFREE
 
       BFCFMM = BRFREE

@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
 C
-#include <single.h>
+#include "single.h"
 C  /* Deck pardrv */
       SUBROUTINE PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WORK,NSTAT,
      &                  HESSEE,LWORK,ITYPE,MAXDIF,IATOM,NODV,NOPV,
@@ -41,10 +41,10 @@ C  /* Deck pardrv */
      &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
      &                  DINTSKP)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME
       DIMENSION FMAT(*),DMAT(*),ISYMDM(*),IFCTYP(*),WORK(LWORK),
      &          NSTAT(NODTOT), HESSEE(*)
@@ -58,8 +58,8 @@ C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : MASTER, NODTOT, IPRPAR, MAXTSK, NCODE, DEBUG
 C GNRINF : BASDIR, LENBAS
 C
-#include <infpar.h>
-#include <gnrinf.h>
+#include "infpar.h"
+#include "gnrinf.h"
       DATA TOTWAL /0./
       SAVE TOTWAL
 C
@@ -134,9 +134,9 @@ C
 C  /* Deck rvtim */
       SUBROUTINE RVTIM(NSTAT,CPUS,WALLS,NODNAM,NODTOT,IPRPAR,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mtags.h"
       CHARACTER*20 NAME, NODNAM(NODTOT)
       DIMENSION NSTAT(NODTOT),CPUS(NODTOT),WALLS(NODTOT)
       DIMENSION TMGARR(2)
@@ -218,10 +218,10 @@ C      70 - Receive fock matrix from nodes if MEMOK
 C      80 - Receive overall timings
 C      
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "iratdef.h"
 C
       LOGICAL FIRST
       DIMENSION FMAT(*), DMAT(*), ISYMDM(*), IFCTYP(*),
@@ -235,10 +235,10 @@ C SIRIPC : NEWGEO
 C INFORB : N2BASX
 C INFPAR : NODEID(), NODTOT, NCODE, NTASK
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "inforb.h"
+#include "infpar.h"
 C
       SAVE FIRST
       DATA FIRST/.TRUE./
@@ -307,8 +307,8 @@ C
 C  /* Deck eri_conchk */
       SUBROUTINE ERI_CONCHK(NDMAT,ISYMDM,IFCTYP)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION ISYMDM(NDMAT), IFCTYP(NDMAT)
 C
@@ -339,11 +339,11 @@ C
 C  /* Deck eri_sdinit */
       SUBROUTINE ERI_SDINIT(DMAT,ISYMDM,NDMT,IFCTYP,FIRST,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
       LOGICAL FIRST
       DIMENSION DMAT(*), ISYMDM(NDMT), IFCTYP(NDMT)
@@ -360,11 +360,11 @@ C INFORB : *
 C INFPAR : *
 C CBIERI : *
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <molinp.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "molinp.h"
+#include "inforb.h"
+#include "infpar.h"
 #if defined (SYS_T3D)
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER on
@@ -373,8 +373,8 @@ C
       DIMENSION ITMP(4000)
       EQUIVALENCE (ITMP,MLINE)
 #endif
-#include <cbieri.h>
-#include <clsfmm.h>
+#include "cbieri.h"
+#include "clsfmm.h"
 C
       NDMAT = NDMT
 C
@@ -454,16 +454,16 @@ C
 C  /* Deck eri_rvcls */
       SUBROUTINE ERI_RVCLS(NODCLS,IPRINT)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
 C Used from common blocks
 C
 C  MXORB : MXSHEL (for INFPAR)
 C  INFPAR: NODEID(1), NTASK
 C
-#include <infpar.h>
+#include "infpar.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_RVCLS','*',103)
 C
@@ -484,10 +484,10 @@ C  /* Deck eri_pardr1 */
      &                      IWHICH,CLSCPU,WORK,LWORK,NINDEX,
      &                      MXCLS2,FIRST,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
       LOGICAL FIRST
       DIMENSION FMAT(*), DMAT(*), NSTAT(NODTOT), TMPMAT(*),
@@ -501,9 +501,9 @@ C GNRINF : NEWBAS
 C SIRIPC : NEWGEO
 C INFPAR : NODTOT, NTASK, TIMING, MAXCL2
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <infpar.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "infpar.h"
 C
 C     NPOS must be saved and therefore statically allocated.
 C
@@ -549,10 +549,10 @@ C
 C  /* Deck dopar */
       SUBROUTINE DOPAR(INDEX,MXBTCH,NBATCH,NSTAT,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
       LOGICAL DONE
       DIMENSION INDEX(MXBTCH), NSTAT(NODTOT)
@@ -562,7 +562,7 @@ C
 C  MXORB  : MXSHEL (for INFPAR)
 C  INFPAR : NODTOT, NODEID(), NTASK, NCODE
 C
-#include <infpar.h>
+#include "infpar.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from DOPAR','*',103)
 C
@@ -636,10 +636,10 @@ C  /* Deck eri_rvres */
       SUBROUTINE ERI_RVRES(FMAT,TMPMAT,MXCLS2,TIMES,IWHICH,CLSCPU,
      &                     IPRINT)
 C
-#include <implicit.h>
-#include <mtags.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "mtags.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER (D0=0.0D0,D1 = 1.0D0)
       LOGICAL NOTMEM
       DIMENSION FMAT(N2BASX), TMPMAT(N2BASX), TIMES(MXCLS2),
@@ -652,9 +652,9 @@ C INFPAR : NODTOT
 C INFORB : N2BASX
 C ERIMEM : *
 C
-#include <infpar.h>
-#include <inforb.h>
-#include <erimem.h>
+#include "infpar.h"
+#include "inforb.h"
+#include "erimem.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_RVRES','*',103)
 C
@@ -759,9 +759,9 @@ C  /* Deck node */
 #if defined (VAR_MPI)
       SUBROUTINE NODSTR(WORK,MWORK,MASTER,MYNUM)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mtags.h"
       DIMENSION WORK(MWORK)
 C
 C     Get calculation type (iprtyp)
@@ -796,12 +796,12 @@ C
 C  /* Deck sendname */
       SUBROUTINE SENDNAME(NASTER,NYTID)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
-#include <infpar.h>
+#include "infpar.h"
 C
       MASTER = NASTER
       MYTID  = NYTID 
@@ -834,12 +834,12 @@ C
 C  /* Deck recvnames */
       SUBROUTINE RECVNAMES
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
       CHARACTER NAME*20 
-#include <infpar.h>
+#include "infpar.h"
 C
 #if defined (VAR_PVM)
 C
@@ -882,11 +882,11 @@ C
 C  /* Deck eri_nodstr */
       SUBROUTINE ERI_NODSTR(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
       PARAMETER (MXDMAT = 100)
       DIMENSION WORK(LWORK), ISYMDM(MXDMAT), IFCTYP(MXDMAT)
@@ -897,11 +897,11 @@ C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : SLAVE
 C INFORB : N2BASX
 C
-#include <infpar.h>
-#include <inforb.h>
-#include <veclen.h>
+#include "infpar.h"
+#include "inforb.h"
+#include "veclen.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_NODSTR','*',103)
 C
@@ -964,11 +964,11 @@ C  /* Deck eri_rvinit */
       SUBROUTINE ERI_RVINIT(JSTRSH,NPRIMS,NCONTS,IORBSH,JORBSH,KORBSH,
      &                      ISYMDM,IFCTYP,WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
       LOGICAL FIRST
       DIMENSION JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(*), 
@@ -987,12 +987,12 @@ C INFORB : *
 C INFPAR : *
 C CBIERI : *
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <molinp.h>
-#include <infpar.h>
-#include <inforb.h>
-#include <cbieri.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "molinp.h"
+#include "infpar.h"
+#include "inforb.h"
+#include "cbieri.h"
 #if defined (SYS_T3D)
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER
@@ -1108,11 +1108,11 @@ C
 C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : MASTER, MYNUM, NCODE
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mtags.h"
       DIMENSION TMGARR(2)
-#include <infpar.h>
+#include "infpar.h"
 C 
       IF (IPRINT .GT. 3) CALL TITLER('Output from SDTIM','*',103)
 C
@@ -1144,33 +1144,33 @@ C  /* Deck eri_noddrv */
      &                      BUF,IBUF,
      &                      CLSCPU,IWHICH,IJS,MXCLS2,
      &                      CCFBT,INDXBT,NCOUNT,CSQ,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <eribuf.h>
-#include <dummy.h>
-#include <mtags.h>
-#include <cbieri.h>
-#include <erithr.h>
-#include <odclss.h>
-#include <ccom.h>
-#include <aobtch.h>
-#include <doxyz.h>
-#include <ericom.h>
-#include <erimem.h>
-#include <erista.h>
-#include <hertop.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "eribuf.h"
+#include "dummy.h"
+#include "mtags.h"
+#include "cbieri.h"
+#include "erithr.h"
+#include "odclss.h"
+#include "ccom.h"
+#include "aobtch.h"
+#include "doxyz.h"
+#include "ericom.h"
+#include "erimem.h"
+#include "erista.h"
+#include "hertop.h"
+#include "symmet.h"
 C
 C Used from common blocks
 C
 C INFPAR: MYNUM, NTASK, TIMING
 C
-#include <infpar.h>
+#include "infpar.h"
       LOGICAL DONE
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
@@ -1188,7 +1188,7 @@ C
      &          CCFBT(*), INDXBT(*),
      &          CLSCPU(MXCLS2), IWHICH(MXCLS2), IJS(NTASK),
      &          NCOUNT(*), CSQ(NCSQ1,NCSQ2), WORK(LWORK)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_NODDRV','*',103)
 C
@@ -1584,16 +1584,16 @@ C
 C  /* Deck eri_sdcls */
       SUBROUTINE ERI_SDCLS(NODCLS,IPRINT)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
 C Used from common blocks
 C
 C  MXORB : MXSHEL (for INFPAR)
 C  INFPAR: MASTER
 C
-#include <infpar.h>
+#include "infpar.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_SDCLS','*',103)
 C
@@ -1614,10 +1614,10 @@ C  /* Deck sdres */
       SUBROUTINE ERI_SDRES(DMAT,FMAT,NBASE,CLSCPU,IWHICH,IJSTOT,
      &                     LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
       DIMENSION DMAT(*), FMAT(*), CLSCPU(IJSTOT), IWHICH(IJSTOT)   
 C
@@ -1628,9 +1628,9 @@ C  INFPAR : NCODE, MASTER, MYNUM, TIMING
 C  ERIMEM : *
 C  CBIERI : NDMAT
 C
-#include <infpar.h>
-#include <erimem.h>
-#include <cbieri.h>
+#include "infpar.h"
+#include "erimem.h"
+#include "cbieri.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_SDRES','*',103)
 C

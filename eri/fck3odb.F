@@ -30,21 +30,21 @@ C      3 - z-coodinate of the center
 C      4 - non-classical extent (from the center)
 C      5 - Cauchy screening parameter
 
-#include <single.h>
+#include "single.h"
       SUBROUTINE SETODBTCH(KIODBCLS,KIODBTCH,KRODBTCH,
      &                KFREE,LFREE,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION WORK(*)
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3thr.h>
-#include <pi.h>
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3thr.h"
+#include "pi.h"
 
 C
 C  MAXODNHK is the JMAX12+1 for overlap distribution
@@ -147,16 +147,16 @@ C ------------------------------------------------------
 C
       SUBROUTINE SETODBTCH1(IODBCLS,IODBTCH,RODBTCH,
      &                      WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       DIMENSION IODBCLS(5,*),IODBTCH(2,*),RODBTCH(5,*),WORK(*),
      &          KCCF(2,2)
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3thr.h>
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3thr.h"
 C
 C     In the construction of the classes 
 C     we use the fact that AO batches are  
@@ -244,14 +244,14 @@ C -----------------------------------------------------
 C
 
       SUBROUTINE GETMAXODBCLS(MAXODBCLS,MAXODBTCH,IPRINT)
-#include <implicit.h>
-#include <priunit.h> 
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <fck3thr.h>
+#include "implicit.h"
+#include "priunit.h" 
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3thr.h"
 
       EXPMUMIN = EXPAOMIN/2 
       COEFMAX = R2PI52 / EXPAOMIN * CCFAOMAX * CCFAOMAX 
@@ -290,13 +290,13 @@ C -----------------------------------------------------
 C
 
       SUBROUTINE PRINTODBTCH( IODBCLS, IODBTCH, IPRINT )
-#include <implicit.h>
-#include <priunit.h> 
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
+#include "implicit.h"
+#include "priunit.h" 
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
 
       DIMENSION IODBCLS( 5, * ), IODBTCH( 2, * )
 
@@ -341,9 +341,9 @@ C
      &                        NPRF1,NCTF1,NTYP1,NPRF2,NCTF2,NTYP2,
      &                        EXPBT1,EXPBT2,CCF11,CCF21,CCF12,CCF22,
      &                        R122,COOR1,COOR2,IPRINT)
-#include<implicit.h>
-#include<priunit.h>
-#include<fck3thr.h>
+#include"implicit.h"
+#include"priunit.h"
+#include"fck3thr.h"
       DIMENSION IPR12(2,NPRF1*NPRF2),RODBTCH(5),
      &          COOR1(3),COOR2(3),EXPBT1(NPRF1),EXPBT2(NPRF2),
      &          CCF11(NPRF1,NCTF1),CCF21(NPRF1,NCTF1),
@@ -461,14 +461,14 @@ C
 
       SUBROUTINE GETR12( NSYMOP1, NSYMOP2, 
      &                   ICENT1, ICENT2, NACTCENT )
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "nuclei.h"
 
       COOR1(1,0) = CORD(1,ICENT1)
       COOR1(2,0) = CORD(2,ICENT1)
@@ -492,8 +492,8 @@ C -----------------------------------------------------
 C
 
       SUBROUTINE PUT2ERICOM(MAXODNHK,MAXODKCK,NCSQ1VAL,NCSQ2VAL)
-#include<implicit.h>
-#include<ericom.h>
+#include"implicit.h"
+#include"ericom.h"
 
       NHKMAX = MAXODNHK
       KCKMAX = MAXODKCK

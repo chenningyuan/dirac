@@ -34,7 +34,7 @@ C
 C
 C$Id$
 C
-#include <single.h>
+#include "single.h"
 C  /* Deck cr2drv */
       SUBROUTINE CR2DRV(AOINT,HCINT,INDHER,IODDHC,IODD34,IODDCC,
      &                  LMNPWR,IPNTUV,COOR34,EXP34,CSQ,CCFBT,NCENTR,
@@ -43,9 +43,9 @@ C
 C     A. Halkier & T. Helgaker 4/2 1999. Modified to do
 C     derivative integrals as well, as determined by MAXDER.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION AOINT(NCCT,KHKTAB,KHKTCD,NDIMD),
      &          HCINT(NCCPP,NTUV34,KHKT12),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
@@ -54,11 +54,11 @@ C
      &          COOR34(NPP34,3), EXP34(NPP34,3), CSQ(*), CCFBT(*),
      &          NCENTR(NPQBCX,2),
      &          WORK(LWORK)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR2DRV','*',103)
 C
@@ -201,9 +201,9 @@ C  /* Deck cr2two */
 C
 C     tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL FLEVEL, FRSTUV(KHKT12),
      &        FAOINT(KHKT12,KHKT34), FCSINT(KHKT12,KHKT4),
      &        BDER3, BDER4
@@ -223,10 +223,10 @@ C
      &          CSA3(KHKT3,KCKT3), CSV3(NCCCC,KHKT3,KCKT3), 
      &          CSA4(KHKT4,KCKT4), CSV4(NCCCC,KHKT4,KCKT4),
      &          CCFBT(*), CPINT(*)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR2TWO','*',103)
 C
@@ -412,9 +412,9 @@ C     coefficients for undifferentiated integrals.
 C
 C     Based on old ERI/HERMIT routines
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       INTEGER T, U, V
       LOGICAL FRSTUV(KHKT12)
       DIMENSION HCINT(NCTF12,NPP34,NTUV34,KHKT12),
@@ -424,10 +424,10 @@ C
      &          ECOEF(NPP34,0:JMXD3+JMXD4,0:JMXD3,0:JMXD4,3),
      &          EUV(NPP34), ETUV(NPP34),
      &          IPNTUV(KC2MAX,0:NRDER,2)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR2UND','*',103)
 C
@@ -523,8 +523,8 @@ C
 C  /* Deck erict2 */
       SUBROUTINE ERICT2(PPINT,CCINT,CMAT3,CMAT4,CPINT,NDIM1,NDIM2,
      &                  IODDCC,IPNTUV,IODKC,FRSTUV,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL FRSTUV(KHKT12)
       DIMENSION CMAT3(NPRF3,NCTF3)
@@ -533,9 +533,9 @@ C  /* Deck erict2 */
       DIMENSION CCINT(NDIM1,NDIM2,KHKT12)
       DIMENSION CPINT(NCTF3,NCTF12*NPQBCX,NPRF4)
       DIMENSION IPNTUV(KC2MAX,0:NRDER,2), IODDCC(NRTOP)
-#include <hertop.h>
-#include <ericom.h>
-#include <eriao.h>
+#include "hertop.h"
+#include "ericom.h"
+#include "eriao.h"
 C
       NCC12 = NCTF12*NPQBCX
 C

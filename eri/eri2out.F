@@ -34,27 +34,27 @@ C
 C
 C$Id$
 C
-#include <single.h>
+#include "single.h"
 C  /* Deck eriout */
       SUBROUTINE ERIOUT(SO,ITYPE,IPNTCR,IODDCC,IPNTUV,BUF,IBUF,INDXBT,
      &                  NCOUNT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <eridst.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "eridst.h"
       DIMENSION SO(NAOINT,*), 
      &          IPNTCR(MAXBCH,4), IPNTUV(KC2MAX,0:NRDER,2),
      &          WORK(LWORK), IODDCC(NRTOP), BUF(*), IBUF(*),
      &          NINTS(MXDIST), NCOUNT(*), INDXBT(*)
-#include <cbieri.h>
-#include <ericom.h>
-#include <eribuf.h>
-#include <symmet.h>
-#include <hertop.h>
-#include <inftap.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eribuf.h"
+#include "symmet.h"
+#include "hertop.h"
+#include "inftap.h"
 C
 C     Allocation for ERIOUT
 C
@@ -150,14 +150,14 @@ C  /* Deck eriou1 */
      &                  INDXTR,IPNTCR,IODDCC,IPNTUV,NINTS,NCOUNT,
      &                  BIN,IBIN,LBIN,BUF,IBUF,JCMPAB,JCMPCD,JADDAB,
      &                  JADDCD,IOFCMP,INDXBT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       DIMENSION SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,*), SOPRT(*),
      &          INDORB(LBIN,NIBUF), IPNBCH(*), INDALL(NCCS,2), 
      &          INDXTR(*), LABEL(*), IPNTCR(MAXBCH,4),
@@ -167,15 +167,15 @@ C  /* Deck eriou1 */
      &          NINTS(NDISTR), NCOUNT(NDISTR,0:NCORS), 
      &          JCMPAB(*), JCMPCD(*),
      &          JADDAB(*), JADDCD(*), IOFCMP(*), INDXBT(*)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <nuclei.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <eridst.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "nuclei.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "eridst.h"
+#include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIOU1',-1)
 C
@@ -288,32 +288,32 @@ C
 C  /* Deck eriwrt */
       SUBROUTINE ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN,LBIN,BUF,IBUF,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
-#include <eridst.h>
+#include "eridst.h"
       CHARACTER*8 FAODER
       DIMENSION BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
      &          BIN(LBIN), IBIN(LBIN,NIBUF),
      &          NINTS(NDISTR), NCOUNT(NDISTR,0:NCORS)
-#include <cbieri.h>
-#include <chrnos.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <inftap.h>
+#include "cbieri.h"
+#include "chrnos.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "inftap.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIWRT',-1)
 C
@@ -526,13 +526,13 @@ C
 C  /* Deck ericlt */
       SUBROUTINE ERICLT(SO,ITYPE,INDORB,IPNTCR,IODDCC,IPNTUV,
      &                  BIN,IBIN,INT,LBIN,NIBUF,INDXBT,NBITS,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.0D0, TEN14 = 1.1D14)
       INTEGER A, B, C, D, I, A1, B1, C1, D1, AB, CD, R, S, T
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, CTRIAC, CTRIBD, CTRIPQ
@@ -544,14 +544,14 @@ C  /* Deck ericlt */
      &          BIN(LBIN), IBIN(LBIN,NIBUF),
      &          IPNRST(0:7,3), INDXBT(MXSHEL*MXCONT,0:7),
      &          IADCMP(MXAQN,MXAQN,2)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERICLT',-1)
@@ -968,15 +968,15 @@ C  /* Deck erilbl */
 C
 C     constructs INDORB
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
-#include <eridst.h>
+#include "eridst.h"
       INTEGER A, B, C, D, AB, CD, R, S, T
       DIMENSION INDORB(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,NIBUF),
      &          INDALL(NCCS), INDCD(NCCS), INDXTR(NCCS,MAXREP+1,4),
@@ -987,14 +987,14 @@ C
      &          JADDAB(MXAQN**2,0:7,0:7), JADDCD(MXAQN**2,0:7,0:7),
      &          NCMPAB(0:7,0:7), NCMPCD(0:7,0:7), 
      &          INDXBT(MXSHEL*MXCONT,0:7)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERILBL',-1)
 C
@@ -1160,15 +1160,15 @@ C  /* Deck erisrt */
       SUBROUTINE ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SO,IPNTCR,IODDCC,
      &                  IPNTUV,IPNBCH,NBITS,NINTS,IOFCMP,INDXBT,ICART,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
-#include <eridst.h>
+#include "eridst.h"
       DIMENSION BIN(LBIN), IBIN(LBIN,NIBUF),
      &          INDORB(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,NIBUF),
      &          SO    (NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD),
@@ -1178,10 +1178,10 @@ C
      &          NBTCHX(MXDIST), LBTCHX(MXDIST),
      &          IPNBCH(NCTFA*MLTPX*KHKTB*KHKTCD,*), NINTS(NDISTR)
       DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
-#include <cbieri.h>
-#include <ericom.h>
-#include <aobtch.h>
-#include <hertop.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "aobtch.h"
+#include "hertop.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERISRT',-1)
 C
@@ -1232,19 +1232,19 @@ C  /* Deck erichn */
       SUBROUTINE ERICHN(INDORB,NBTCHX,LBTCHX,IPNBCH,NBCHS,NDST,NCCFST,
      &                  NCCDST,IODDCC,IPNTUV,NBITS,NIBUF,IOFCMP,ICART,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <eridst.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "eridst.h"
       DIMENSION NBTCHX(*), LBTCHX(*), 
      &          IPNBCH(NCTFA*MLTPX*KHKTB*KHKTCD,*),
      &          NCCFST(*), NCCDST(*), IODDCC(*), 
      &          IPNTUV(KC2MAX,0:NRDER,2),
      &          IOFCMP(MXAQN**4), INDORB(NCCS,*)
-#include <ericom.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "ibtfun.h"
 C
       NCMPX = 0
       MLTAB = MLTPX
@@ -1300,12 +1300,12 @@ C
 C  /* Deck eritrf */
       SUBROUTINE ERITRF(BIN,IBIN,NTOT,SO,INDORB,NBTCH,LBTCH,IPNBCH,
      &                  NDISTR,LBIN,NIBUF)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION BIN(LBIN), IBIN(LBIN,NIBUF), IPNBCH(*),
      &          SO(*), INDORB(LBIN,NIBUF)
-#include <cbieri.h>
-#include <erithr.h>
+#include "cbieri.h"
+#include "erithr.h"
 C
       IF (COMPRS) THEN
          IF (NIBUF.EQ.1) THEN
@@ -1368,13 +1368,13 @@ C
 C  /* Deck erilbd */
       SUBROUTINE ERILBD(LABEL,INDORB,IPNTCR,IODDCC,IPNTUV,INDXBT,
      &                  IPOINT,IREPE,ITYPE,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D2=2.0D0, D1=1.0D0)
       INTEGER A, B, C, D, AB, CD, R, S, T
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, DCD
@@ -1385,16 +1385,16 @@ C  /* Deck erilbd */
      &          IADCMP(MXAQN,MXAQN,2),
      &          LABEL(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,4),
      &          INDORB(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,NIBUF)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <eridst.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "eridst.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
 C
@@ -1574,23 +1574,23 @@ C
 C  /* Deck eribrc */
       SUBROUTINE ERIBRC(IA,IB,IC,ID,LABEL,INDORB,IPOINT,NINTS,
      &                  DFAC,IODDAB,IODXYZ,DCD,IBIT1,IBIT2,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (DP5 = 0.5D0, D4 = 4.0D0)
       LOGICAL DCD, DOXYZ
       DIMENSION LABEL(NAOINT,4), INDORB(NAOINT,2),
      &          IPOINT(NCCS,4), IODXYZ(0:3)
-#include <cbieri.h>
-#include <ericom.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "nuclei.h"
+#include "symmet.h"
 C    
       DOXYZ = IODDAB.EQ.IODXYZ(1) .OR. IODDAB.EQ.IODXYZ(2) 
      &                            .OR. IODDAB.EQ.IODXYZ(3)
@@ -1622,19 +1622,19 @@ C  /* Deck erigdr */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
-#include <aobtch.h>
-#include <symmet.h>
+#include "aobtch.h"
+#include "symmet.h"
       DIMENSION SOPRT(NAOINT), SO(NAOINT,3,4), LABEL(NAOINT,4)
-#include <ericom.h>
-#include <eribuf.h>
-#include <erithr.h>
+#include "ericom.h"
+#include "eribuf.h"
+#include "erithr.h"
 C
       DO I = 1, NAOINT
          GINT = D0 
@@ -1652,19 +1652,19 @@ C  /* Deck eribdr */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0)
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aobtch.h>
-#include <symmet.h>
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aobtch.h"
+#include "symmet.h"
       DIMENSION SOPRT(NAOINT), SO(NAOINT,6)
-#include <ericom.h>
-#include <eribuf.h>
-#include <erithr.h>
+#include "ericom.h"
+#include "eribuf.h"
+#include "erithr.h"
 C
       IF (NCTFAB.EQ.1 .OR. NCTFCD.EQ.1) THEN
          IF (ISCOOR .LE. 3) THEN
@@ -1733,15 +1733,15 @@ C
       END
 C  /* Deck prprep */
       SUBROUTINE PRPREP(DOREP,NHKTA,KHKTA,ISTBLA)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER A
       LOGICAL DOREP(0:7)
-#include <symmet.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "ibtfun.h"
 C
       DO A = 0, MAXREP
          DOREP(A) = .FALSE.
@@ -1759,9 +1759,9 @@ C
       END
 C  /* Deck cmpadr */
       SUBROUTINE CMPADR(IADCMP,KHKTA,KHKTB,TKMPAB)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL TKMPAB
       DIMENSION IADCMP(MXAQN,MXAQN)
 C
@@ -1779,15 +1779,15 @@ C
       END
 C  /* Deck getrst */
       SUBROUTINE GETRST(IPNRST,ISTBLR)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER R, R1, X
       DIMENSION IPNRST(0:7)
-#include <symmet.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "ibtfun.h"
       DO X = 0, MAXREP
          R1 = 0
          DO R = 0, MAXREP
@@ -1807,11 +1807,11 @@ C  /* Deck getcmp */
       SUBROUTINE GETCMP(JCMPAB,JADDAB,NCMPAB,IBITA,IBITB,
      &                  NHKTA,NHKTB,KHKTA,KHKTB,ISTBLA,ISTBLB,TKMPAB,
      &                  NREP,IPNREP,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER A, B
       LOGICAL TKMPAB
       DIMENSION JCMPAB(MXAQN**2,0:7,0:7),
@@ -1819,9 +1819,9 @@ C  /* Deck getcmp */
      &          NCMPAB(0:7,0:7), NCMP(8,2), JCMP(MXAQN,8,2),
      &          IADCMP(MXAQN,MXAQN),
      &          NREP(2), IPNREP(8,2)
-#include <symmet.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
       CALL CMPADR(IADCMP,KHKTA,KHKTB,TKMPAB)
 C
@@ -1874,16 +1874,16 @@ C
       END
 C  /* Deck getrep */
       SUBROUTINE GETREP(NREP,IPNREP,NHKTA,KHKTA,ISTBLA)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER A
       LOGICAL DOREP(0:7)
       DIMENSION NREP(1), IPNREP(8)
-#include <symmet.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "ibtfun.h"
 C
       DO A = 0, MAXREP
          DOREP(A) = .FALSE.
@@ -1910,18 +1910,18 @@ C
       END
 C  /* Deck eripnt */
       SUBROUTINE ERIPNT(IPOINT,A,B,C,D,IPNTCR,INDXBT,ITYPE)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       INTEGER A,B,C,D
       DIMENSION IPOINT(NCCS,5), 
      &          IPNTCR(MAXBCH,4), INDXBT(MXSHEL*MXCONT,0:7)
-#include <cbieri.h>
-#include <ericom.h>
-#include <aobtch.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "aobtch.h"
 C
       IADR = 0
       DO N = 1, NPQBCS
@@ -1982,13 +1982,13 @@ C
       END
 C  /* Deck nrdint */
       FUNCTION NRDINT(INDEX,DAB,DCD,DPQ)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       LOGICAL NRDINT, DAB, DCD, DPQ
-#include <eribuf.h>
-#include <ibtpar.h>
-#include <ibtfun.h>
+#include "eribuf.h"
+#include "ibtpar.h"
+#include "ibtfun.h"
       IBIT1 = 2**NBITS - 1
       I = IBTAND(IBTSHR(INDEX,3*NBITS),IBIT1)
       J = IBTAND(IBTSHR(INDEX,2*NBITS),IBIT1)
@@ -2003,11 +2003,11 @@ C  /* Deck nrdint */
       END
 C  /* Deck erican */
       SUBROUTINE ERICAN(IBIN,INTS,LBIN,NIBUF,NBITS)
-#include <implicit.h>
-#include <priunit.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ibtpar.h"
       DIMENSION IBIN(LBIN,NIBUF)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IBIT1 = 2**   NBITS  - 1
       IBIT2 = 2**(2*NBITS) - 1
@@ -2039,11 +2039,11 @@ C
 C  /* Deck eripri */
       SUBROUTINE ERIPRI(BUF,IBUF,NDIM,NIBUF,ICOUNT,NBITS,NDISTR,IDIST,
      &                  ISCOOR)
-#include <implicit.h>
-#include <priunit.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ibtpar.h"
       DIMENSION BUF(NDIM), IBUF(NDIM,NIBUF)
-#include <ibtfun.h>
+#include "ibtfun.h"
       IBIT1 = 2**NBITS - 1
       DO INT = 1, ICOUNT
          IF (NIBUF .EQ. 1) THEN
