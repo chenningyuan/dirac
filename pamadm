@@ -145,7 +145,7 @@ backup()
               cd backup
               if [ -f "${i}.1" ]; then mv -f "${i}.1" "${i}.2"; fi
               if [ -f "${i}.0" ]; then mv -f "${i}.0" "${i}.1"; fi
-              if [ -f ../"${i}" ]; then mv -f ../"${i}" "${i}.0" ; fi
+              if [ -f ../"${i}" ]; then cp -f ../"${i}" "${i}.0" ; fi
               cd ..
           fi
       done
