@@ -358,6 +358,7 @@ C
 #include <dcbgen.h>
 #include <dcbfir.h>
 #include <dcbdhf.h>
+#include <dcbham.h>
 #include <blocks.h>
 #include <dgroup.h>
 #include <dcbbas.h>
@@ -431,6 +432,15 @@ C       Hermitian operator
           FIRST3 = BF3
         ENDIF
       ENDIF
+C
+C     3a. Solvent: get solvent contribution
+C     =====================================
+C
+      IF(SOLVEN) THEN
+C        CALL DENSTY(FAO,CMO,IPRINT)        
+        NF = 1
+        CALL SOLFCK(FMO,FAO,NF,ESOLVE,ESOLVN,WORK(KFREE),LFREE,IPRSOL)
+      ENDIF           
 C
 C     3. Get one-electron Fock matrix
 C     ===============================
@@ -719,8 +729,7 @@ C     Allocate buffer areas
 C     =====================
 C
       CALL MEMGET('INTE',KIND ,MXFBAS*NTYP*NFSYM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNIND,2*NTYP*2         ,WORK,KFREE,LFREE)
-      CALL DEFOR1(IORBCL,NTYP,INDSTR,WORK(KIND),WORK(KNIND),
+      CALL DEFOR1(IORBCL,NIND,NTYP,INDSTR,WORK(KIND),
      &            WORK,KFREE,LFREE,IPRINT)
       CALL MEMREL('DEFORB',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('DEFORB')
@@ -728,7 +737,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck DEFOR1 */
-      SUBROUTINE DEFOR1(IORBCL,NTYP,INDSTR,IND,NIND,
+      SUBROUTINE DEFOR1(IORBCL,NIND,NTYP,INDSTR,IND,
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -769,7 +778,7 @@ C
           IOFF = NPSH(IFRP) + 1 + IORB(IFRP)
           DO I = 1,NIND(1,ITYP,IFRP)
             J           = IOFF + IND(I,ITYP,IFRP)
-            IORBCL(1,J) = -ITYP
+            IORBCL(1,J) = ITYP
             IORBCL(2,J) = KOFF + I
           ENDDO
           KOFF = KOFF + NIND(1,ITYP,IFRP)
