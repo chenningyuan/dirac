@@ -2127,7 +2127,6 @@ C
 #include "../luciarel/cstate.inc"
 C
       CIRUN = 'CIINII'
-      MZ = MIN(NZ,2)
 C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
