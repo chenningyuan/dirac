@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : pamxlr.F
+C SOURCE  : $Source$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRPXLR */
       SUBROUTINE PRPXLR(ABLRF,RCNV,WORK,KFREE,LFREE)
@@ -269,6 +275,7 @@ C
 #include <dcbxlr.h>
 #include <dcborb.h>
 #include <dcbbas.h>
+#include <dcbham.h>
 #include <dgroup.h>
 #include <pgroup.h>
 #include <dcbxpr.h>
@@ -317,6 +324,7 @@ C
       MAXRM      = 20
       ITRXLR     = 30
       INTXLR     = ILLINT + 2*ISLINT + 4*ISSINT
+      IF (LEVYLE) INTXLR = ILLINT
       ITRILR(1)  = 1
       ITRILR(2)  = 1
       NLRAPT     = 0

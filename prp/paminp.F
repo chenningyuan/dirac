@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : paminp.F
+C SOURCE  : $Source$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpinp */
       SUBROUTINE PRPINP(WRDSRC,WORK,LWORK)
@@ -6,7 +12,7 @@ C
 C <<< Property Input for DIRAC >>>
 C
 C
-C	Written by Trond Saue and Hans J.Aa.Jensen
+C       Written by Trond Saue and Hans J.Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
 C*****************************************************************************
@@ -839,6 +845,7 @@ C  XCBPRP: everything
 C  XCBPRI: LUPRI,NINFO
 C
 #include <dcbxpr.h>
+#include <dcbham.h>
 C
       CHARACTER*4 PCOMB
 C
@@ -861,6 +868,7 @@ C
          PCOMB = 'FFFT'
       ELSEIF (IPTYP .EQ. 1) THEN
          PCOMB = 'TFFT'
+         IF (LEVYLE) PCOMB = 'TFFF'
       ELSE
          PCOMB = 'FTTF'
       END IF
@@ -1843,6 +1851,7 @@ C
 #include <mxcent.h>
 C
 #include <dcbgrd.h>
+#include <dcbham.h>
 #include <dcbprp.h>
 C
 C     Initialize /CBIGRD/
@@ -1856,6 +1865,10 @@ C
       DO2GRD(1) = .TRUE.
       DO2GRD(2) = .TRUE.
       DO2GRD(3) = .TRUE.
+      IF (LEVYLE) THEN
+         DO2GRD(2) = .FALSE.
+         DO2GRD(3) = .FALSE.
+      ENDIF
       DOTRCK    = .FALSE.
       GRADRE    = .FALSE.
 C
