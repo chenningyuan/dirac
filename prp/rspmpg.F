@@ -1061,9 +1061,9 @@ C     Written by Joost van Stralen september 2003.
 C
 C     PURPOSE : Calculate D_ji' and D_b'a
 C
-C               D_ji' = L_i'j/(eig_j - eig_i')
+C               D_ji' = (L_i'j)^*/(eig_j - eig_i')
 C
-C               D_b'a = L_ab'/(eig_b' - eig_a)
+C               D_b'a = (L_ab')^*/(eig_b' - eig_a)
 C
 C     Input :  XMO - The Lagrangian (L)
 C
