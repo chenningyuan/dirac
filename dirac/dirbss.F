@@ -881,8 +881,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         N2TMOTQ = 0
 
         DO 40 I = 1,NFSYM
+C  ... set the charge conjugation symmetry
           NESH(I)  = NFORB(I,1) 
-          NPSH(I)  = NFORB(I,1) ! Charge conjugation symmetry
+          NPSH(I)  = NFORB(I,1)
           NORB(I)  = NESH(I) + NPSH(I)
 CMI ... these variables are needed  for DFDIAG routine!!!
           NTMO(I)  = NORB(I)
@@ -1074,7 +1075,8 @@ C  ...  THRNULL is round off error with 15 digits relative to 2c^2 = 3.7D4
         I2TMT(I) = N2TMT
         N2TMT    = N2TMT + NFORB(I,0)*NORB(I)*NZ
         IORB(I)  = NORBT
-        NORBT    = NORBT  + NORB(I) ! Count total number of orbitals...
+C          ....  Count total number of orbitals...
+        NORBT    = NORBT  + NORB(I)
         I2ORBT(I)= N2ORBT*NZ
         N2ORBT   = N2ORBT + NORB(I)*NORB(I)
       ENDDO
@@ -1234,9 +1236,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "memint.h"    
 
 
-      NZEKIN = 1 ! Td_kin is set to be pure real matrix !
+C  ... Td_kin is set to be pure real matrix !
+      NZEKIN = 1 
       NZSAVE = NZ
-      NZ = NZEKIN ! Set only real part of matrix for diagonalization
+      NZ = NZEKIN 
 
 C     note: DFDIAG zeroes all of TBUF, even if NZ is reset to 1
 C     (it uses N2BBASXQ); so we can continue with the quaternion TBUF afterwards.
@@ -1377,8 +1380,8 @@ C   ... copy the result into the TMAT
         CALL DCOPY(N2TMT,WORK(IBUF),1,TMAT(I2TMT(I)+1),1)
 
 
-        IMAT = IMAT + NORB(I)*NORB(I)*NZ ! Set up offset !!!
-        IBUF = IBUF + IMAT  ! Upgrade the IBUF !
+        IMAT = IMAT + NORB(I)*NORB(I)*NZ 
+        IBUF = IBUF + IMAT 
 
  60   CONTINUE  
 
@@ -1387,7 +1390,8 @@ C   ... copy the result into the TMAT
 
 C   Obtain overlap integrals in SO basis 'xhi' into WORK(KBUF)
       CALL MEMGET('REAL',KKUN,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KKUN),N2BBASXQ) ! Store here Ad^2 diagonal matrix
+C     .... Store here Ad^2 diagonal matrix
+      CALL DZERO(WORK(KKUN),N2BBASXQ) 
 
       CALL GTOVLT(WORK(KBUF),D1,WORK(KFREE),LFREE)
       IMAT = 1
@@ -1481,7 +1485,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         CALL GTOVLT(WORK(KBUF),D0,WORK(KFREE),LFREE)
 
         CALL MEMGET('REAL',KKUN,N2BBASXQ,WORK,KFREE,LFREE)
-C       CALL DZERO(WORK(KKUN),N2BBASXQ) ! Store here Ad^2 diagonal matrix
 
       CVAL2 = CVAL*CVAL
 
@@ -1820,8 +1823,10 @@ C       ... factor 2 for Omega+
 
 C           -- make A matrix
        CALL DZERO(WORK(KAMAT),N2REFQ)
-       CALL DUNIT(WORK(KAMAT),NREF)   ! A := 1
-       CALL QGEMM(NREF,NREF,NREF,DM1, ! A := A - Yp*(Yp)+
+C          ... set A := 1
+       CALL DUNIT(WORK(KAMAT),NREF)  
+C          ... do A := A - Yp*(Yp)+
+       CALL QGEMM(NREF,NREF,NREF,DM1, 
      &      'N','N',IPQTOQ(1,0),WORK(JVECP),NORB(I),NORB(I),NZ,
      &      'H','N',IPQTOQ(1,0),WORK(JVECP),NORB(I),NORB(I),NZ,
      &       D1,IPQTOQ(1,0),WORK(KAMAT),NREF,NREF,NZ)
@@ -1834,7 +1839,8 @@ C           -- make A matrix
      &                 NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
-       CALL MEMGET('REAL',KA,N2REFQ,WORK,KFREE,LFREE) ! For A mtx
+C       ... For A mtx
+       CALL MEMGET('REAL',KA,N2REFQ,WORK,KFREE,LFREE) 
        CALL DCOPY(N2REFQ,WORK(KAMAT),1,WORK(KA),1)
 
 C         -- make b matrix (store in X); b := Yp * (Ye)+
@@ -1851,7 +1857,8 @@ C         -- make b matrix (store in X); b := Yp * (Ye)+
      &              NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
-       CALL MEMGET('REAL',KB,N2REFQ,WORK,KFREE,LFREE) ! For B mtx
+C       ....  For B mtx
+       CALL MEMGET('REAL',KB,N2REFQ,WORK,KFREE,LFREE) 
        DO IZ = 1, NZ
        DO IE = 1, NESH(I)
          CALL DCOPY(NREF,
@@ -1902,7 +1909,8 @@ C ...find Omega+ matrix and multiply it into WORK(KXMAT)
 C=====================================================================
             CALL MEMGET('REAL',KH1AO,N2EQ,WORK,KFREE,LFREE)
 
-            CALL QGEMM(NREF,NREF,NREF2,D1,  ! R+.R = H1AO
+C            ...  R+.R = H1AO 
+            CALL QGEMM(NREF,NREF,NREF2,D1, 
      &          'H','N',IPQTOQ(1,0),WORK(KXMAT),NREF2,NREF,NZ,
      &          'N','N',IPQTOQ(1,0),WORK(KXMAT),NREF2,NREF,NZ,
      &          D0,IPQTOQ(1,0),WORK(KH1AO),NREF,NREF,NZ)
@@ -1952,14 +1960,15 @@ C=====================================================================
             DO IZ = 1, NZ
             DO J = 1,NREF
               FAC = D1 / SQRT(WORK(JH1VEC-1+J))
-              CALL DSCAL(NREF,FAC,WORK(JEVEC),1) ! d^-1/2 * U(IZ)
+C              ....  d^-1/2 * U(IZ)
+              CALL DSCAL(NREF,FAC,WORK(JEVEC),1)
               JEVEC = JEVEC + NREF 
             ENDDO
             ENDDO
 
 C           now generate Omega+ = (X+ * X)^(-1/2) in WORK(KH1AO)
-
-            CALL QGEMM(NREF,NREF,NREF,D1,  ! U * d^-1/2 * U+
+C           .... U * d^-1/2 * U+ 
+            CALL QGEMM(NREF,NREF,NREF,D1,  
      &          'N','N',IPQTOQ(1,0),WORK(KAMAT1),NREF,NREF,NZ,
      &          'H','N',IPQTOQ(1,0),WORK(KAMAT),NREF,NREF,NZ,
      &          D0,IPQTOQ(1,0),WORK(KH1AO),NREF,NREF,NZ)
@@ -2233,15 +2242,20 @@ C .... save here the fermion symmetry
 C     ... this is the dimension...
       N2EQ = NESH(I)*NESH(I)*NZ
 
-      CALL MEMGET('REAL',KHPPR,N2EQ,WORK,KFREE,LFREE) ! For H(pp)*R
-      CALL MEMGET('REAL',KRHEE,N2EQ,WORK,KFREE,LFREE) ! For R*H(ee)
-      CALL MEMGET('REAL',KHEP,N2EQ,WORK,KFREE,LFREE)  ! For H(ep)
-      CALL MEMGET('REAL',KRHPER,N2EQ,WORK,KFREE,LFREE)! For R*H(pe)*R 
-      CALL MEMGET('REAL',K1,N2EQ,WORK,KFREE,LFREE)!  Help array 1
-      CALL MEMGET('REAL',K2,N2EQ,WORK,KFREE,LFREE)!  Help array 2
+C    ... For H(pp)*R
+      CALL MEMGET('REAL',KHPPR,N2EQ,WORK,KFREE,LFREE)
+C     .... For R*H(ee)
+      CALL MEMGET('REAL',KRHEE,N2EQ,WORK,KFREE,LFREE)
+C     ...  For H(ep) 
+      CALL MEMGET('REAL',KHEP,N2EQ,WORK,KFREE,LFREE) 
+C      ...  For R*H(pe)*R
+      CALL MEMGET('REAL',KRHPER,N2EQ,WORK,KFREE,LFREE)
+C     ...  Help array 1 
+      CALL MEMGET('REAL',K1,N2EQ,WORK,KFREE,LFREE)
+C      ... Help array 2
+      CALL MEMGET('REAL',K2,N2EQ,WORK,KFREE,LFREE)
 
 C     Do   WORK(K2) = A * R
-
       CALL QGEMM(NESH(I),NESH(I),NESH(I),D1,
      &         'N','N',IPQTOQ(1,0),A(1),
      &         NESH(I),NESH(I),NZ,
@@ -2250,7 +2264,8 @@ C     Do   WORK(K2) = A * R
      &         D0,IPQTOQ(1,0),WORK(K2),
      &         NESH(I),NESH(I),NZ)
 
-      CALL DAXPY(N2EQ,DM1 , B(1),  1,WORK(K2),1) !  A * R - B = 0
+C      ....  A * R - B = 0
+      CALL DAXPY(N2EQ,DM1 , B(1),  1,WORK(K2),1) 
       ARMBNULLNORM =  DNRM2(N2EQ,WORK(K2),1)
 
       WRITE(LUPRI,'(2X,A,I1,A,I1,A,D13.6)')
@@ -2269,7 +2284,8 @@ C .... check the Barysz "R-condition" equation
 
       DO IZ=1,NZ
       DO IE=1,NESH(I)
-        CALL DCOPY(NESH(I),  ! Store H(ep)
+C          ....  Store H(ep)
+        CALL DCOPY(NESH(I), 
      &    HK(1+ NORB(I)*NESH(I) +
      &        (IZ-1)*NORB(I)*NORB(I)+
      &       (IE-1)*NORB(I) ),  1,
@@ -2382,10 +2398,14 @@ C      WORK(K1)= WORK(KHPPR) + WORK(KHEP) - WORK(KRHEE) - WORK(KRHPER)
 C
 
       CALL DZERO(WORK(K1),N2EQ)
-      CALL DAXPY(N2EQ,D1 ,WORK(KHPPR),  1,WORK(K1),1) ! + WORK(KHPPR)
-      CALL DAXPY(N2EQ,D1 ,WORK(KHEP),   1,WORK(K1),1) ! + WORK(KHEP)
-      CALL DAXPY(N2EQ,DM1,WORK(KRHEE),  1,WORK(K1),1) ! - WORK(KRHEE)
-      CALL DAXPY(N2EQ,DM1,WORK(KRHPER), 1,WORK(K1),1) ! - WORK(KRHPER)
+C      .... + WORK(KHPPR) 
+      CALL DAXPY(N2EQ,D1 ,WORK(KHPPR),  1,WORK(K1),1)
+C     ....  + WORK(KHEP)
+      CALL DAXPY(N2EQ,D1 ,WORK(KHEP),   1,WORK(K1),1)
+C      ....  - WORK(KRHEE)
+      CALL DAXPY(N2EQ,DM1,WORK(KRHEE),  1,WORK(K1),1)
+C      ....  - WORK(KRHPER)
+      CALL DAXPY(N2EQ,DM1,WORK(KRHPER), 1,WORK(K1),1) 
 
       RNULLNORM =  DNRM2(N2EQ,WORK(K1),1)
 
@@ -2457,7 +2477,8 @@ C
 #include "memint.h"
 C
 C
-      ISIZE = 0 ! Calculate total size of tranf. matrix
+C    .... Calculate total size of tranf. matrix  
+      ISIZE = 0 
       DO I = 1,NFSYM
        ISIZE = ISIZE + NZ*NFBAS(I,0)*NESH(I)
       END DO
@@ -3212,15 +3233,15 @@ C =============================================================
         
 C      ... do the diagonalization and compare eigenvalues ....
 
-        CALL QDIAG(NZ,NORB(I),H1FP(IH1FP),NORB(I),NORB(I),   ! Diagonalize
-     &             EIG(1),0,          ! Eigenvalues
-     &             DUMMY,NORB(I),       ! Eigenvectors not necessary
+        CALL QDIAG(NZ,NORB(I),H1FP(IH1FP),NORB(I),NORB(I), 
+     &             EIG(1),0,          
+     &             DUMMY,NORB(I),       
      &             NORB(I),WORK(KFREE),LFREE,IERR)
         IF (IERR.NE.0) CALL QUIT('CMP_EIGVAL: FAILED QDIAG 1...')
 
-        CALL QDIAG(NZ,NESH(I),WORK(IH2MO),NESH(I),NESH(I),   ! Diagonalize
-     &             TBUF(1),0,          ! Eigenvalues
-     &             DUMMY,NESH(I),       ! Eigenvectors not necessary
+        CALL QDIAG(NZ,NESH(I),WORK(IH2MO),NESH(I),NESH(I),  
+     &             TBUF(1),0,         
+     &             DUMMY,NESH(I),      
      &             NESH(I),WORK(KFREE),LFREE,IERR)
         IF (IERR.NE.0) CALL QUIT('CMP_EIGVAL: FAILED QDIAG 2...')
 
@@ -3312,7 +3333,7 @@ C
       CVAL2 = CVAL*CVAL
       JOFT1 = 1
       JBUF  = 1
-      DO  I = 1,NFSYM  ! Run big cycle over the fermion symmetries
+      DO  I = 1,NFSYM  
       IF(NORB(I).GT.0) THEN
 
         N2T    = NORB(I)*NORB(I)
@@ -3327,11 +3348,12 @@ C
            DO IP = 1, NPSH(I)
 C ... eig_p and eig_e are separated by 2c^2; use rather average
 C ... eig(p) = -eig(e) - 2c^2
-             EIG_P = ! Calculate the average value
+C         .... Calculate the average value
+             EIG_P = 
      & ((-EIG(NORB(I)-IP+1+IORB(I))-(D2*CVAL2)) + 
      &   EIG(IP+IORB(I)))/D2
 
-             EIG_E = ! Calculate the average value
+             EIG_E =
      & ( EIG(IE+IORB(I)) + 
      &   (-EIG(NORB(I)-IE+1+IORB(I))-(D2*CVAL2)) )/D2
 
