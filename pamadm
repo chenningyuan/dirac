@@ -113,7 +113,7 @@ setup()
       LUCIARELOBJ='$(LUCIARELOBJS)'
       LUCIARELMAK=LUCIAREL_OBJ
       KRMCTAR=1
-      echo " - KR-MCSCF and LUJCAREL modules (KRMC)"
+      echo " - KR-MCSCF and LUCIAREL modules (KRMC)"
    fi
    #
    #  ERI two-electron integral module
