@@ -473,7 +473,7 @@ cat <<EOF>> Makefile
 
 DFTOBJS = \\
 dft/pamdft.o dft/dftden.o      dft/dftdrv.o     dft/dftgrd.o \
-dft/dftaux.o
+dft/dftaux.o dft/grtest.o
 
 # dft files written in C:
 

@@ -1,7 +1,7 @@
 
 include ../Makefile.config
 
-F_OBJS = pamdft.o dftden.o dftdrv.o dftfun.o dftgrd.o dftaux.o
+F_OBJS = pamdft.o dftden.o dftdrv.o dftfun.o dftgrd.o dftaux.o grtest.o
 
 C_OBJS = functionals.o fun-slater.o fun-becke.o fun-vwn.o fun-lyp.o \
 	fun-pw86x.o fun-p86c.o

@@ -27,10 +27,11 @@ C
 #include <dfterg.h>
 #include <dftcom.h>
 #include <functionals.h>
+#include <gridtest.h>
 C
       SAVE SET
       DATA TABLE /'.DFTFUN','.FROMVX','.QUADRA','.DFTAC ','.RADINT',
-     &            '.PRINT ','.XXXXXX','.XXXXXX'/
+     &            '.PRINT ','.INTCHK','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -56,6 +57,7 @@ C
       DFTORD = .FALSE.
       DFTASC = .FALSE.
       RADINT = 1.0D-8
+      INTCHK = 0
 C
 C     Process input for DFTCAL
 C     ========================
@@ -122,6 +124,8 @@ C&&& PRINT: Print level for DFT-module
                  READ(LUCMD,*) IPRDFT
                  GO TO 100
  7            CONTINUE
+C&&& INTCHK: Test grid by analyzing numerical SMAT
+              READ(LUCMD,*) INTCHK
                  GO TO 100
  8            CONTINUE
                  GO TO 100
@@ -154,6 +158,10 @@ C
      &  '  Precision of radial quadrature set to: ', RADINT
       WRITE(LUPRI,'(A)')
      &  '* Angular quadrature accroding to Lebedev scheme.'
+      IF (INTCHK.GT.0) THEN
+         WRITE(LUPRI,'(A)')
+     &        '* Numerical integration will be tested.'
+      END IF
 C
   999 CONTINUE
       RETURN

@@ -12,6 +12,7 @@ C
 #include <mxorb.h>
 #include <nuclei.h>
 #include <dftcom.h>
+#include <gridtest.h>
 #include <symmet.h>
 #include <ccom.h>
 C
@@ -142,6 +143,15 @@ C     =================
 C
 C     CLOSE(LUQUAD,STATUS='KEEP')
 C
+
+C
+C     Check accuracy of numerical integration
+C     =======================================
+C
+      IF (INTCHK .GT.0) THEN
+         CALL GRTEST(WORK(LFREE),LFREE,JPRINT)
+      END IF
+
       TIMGRD = SECOND() - TIMSTR
       WRITE (LUPRI,'(1X)')
       CALL TIMTXT('>>>> Time used in DFTGRD:',TIMGRD,LUPRI)
@@ -417,7 +427,7 @@ C
          DO 20 IR = 1, NR
             RWT   = RADWT(IR)
             RNODE = RADNDE(IR)
-            IF (RNODE.GT.RNDMAX) GOTO 20
+COLAV            IF (RNODE.GT.RNDMAX) GOTO 20
 C 
 C           angular abscissas and weights for this radial point
 C           ===================================================
@@ -799,16 +809,14 @@ C*******************************************************************
 C     Chose the Lebedev grid to use as a function of the radius (rnode)
 C     closer to the nuclei scale the number of angular points as
 
-       NOLD=NSCHEME
+      NOLD=NSCHEME
       IF (NSCHEME.GT.9.AND.RNODE.LT.RBRAGG) THEN
-       IANG=NINT(NTOT*RNODE/RBRAGG)
-      NTOT=MIN(NTOT,IANG)
-
-       NSCHEME=NLEBSET2(NTOT)
-       NTOT=NLEB(NSCHEME)
-
+         IANG=NINT(NTOT*RNODE/RBRAGG)
+         NTOT=MIN(NTOT,IANG)
+         NSCHEME=NLEBSET2(NTOT)
+         NTOT=NLEB(NSCHEME)  
       ENDIF
-
+      
       DO K=1,NTOT
        X(K)=0.0D0
        Y(K)=0.0D0
