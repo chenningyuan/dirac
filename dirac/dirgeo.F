@@ -56,7 +56,7 @@ C     Determine whether analytical or numerical gradient is to
 C     be used...
 C
       IF(.NOT.DONGRD) THEN
-        DONGRD = DOCCM.OR.DOMP2.OR.(DODHF.AND.SPINFR)
+        DONGRD = DOCCM.OR.DOMP2.OR.(DODHF.AND.(SPINFR.OR.ZORA))
       ENDIF
       WRKDLM = 0.0D00
       IWOFF  = 0
