@@ -5123,19 +5123,20 @@ C       We will either find a negative or a positive value for each Mj.
 C
         MJMAX = 0
         DO IX = IEIGE, IEIGE+NL-1
-           MJ2 = ABS( NINT(D2*EIG(IX)) )
-           MJABS = (MJ2+1)/2
-           ID_SUB_BL(MJABS,I)  = MJ2
+           MJ = NINT(D2*EIG(IX))
+           MJABS = (ABS(MJ)+1)/2
+           IF (MJABS.GT.MAX_SUB_BL) CALL QUIT ("increase max_sub_bl")
+           ID_SUB_BL(MJABS,I)  = MJ
            NORB_SUB(MJABS,I,1) = NORB_SUB(MJABS,I,1) + 1
            NORB_SUB(MJABS,I,0) = NORB_SUB(MJABS,I,0) + 1
            MJMAX = MAX(MJABS,MJMAX)
         ENDDO
 C
         DO IX = IEIGP, IEIGP+NS-1
-           MJ2 = ABS( NINT(D2*EIG(IX)) )
-           MJABS = (MJ2+1)/2
+           MJ = NINT(D2*EIG(IX))
+           MJABS = (ABS(MJ)+1)/2
            IF (MJABS.GT.MAX_SUB_BL) CALL QUIT ("increase max_sub_bl")
-           ID_SUB_BL(MJABS,I)  = MJ2
+           ID_SUB_BL(MJABS,I)  = MJ
            NORB_SUB(MJABS,I,2) = NORB_SUB(MJABS,I,2) + 1
            NORB_SUB(MJABS,I,0) = NORB_SUB(MJABS,I,0) + 1
            MJMAX = MAX(MJABS,MJMAX)
@@ -5495,4 +5496,3 @@ C
 C
       RETURN
       END
-
