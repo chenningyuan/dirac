@@ -421,10 +421,7 @@ C
       KBLCK  = KIQM   +  KATOM*2
       KJCO   = KBLCK  +  KATOM*2
       KJCO2  = KJCO   +  KATOM*KANG*2
-      KBASRF = KJCO2  +  KATOM*KANG
-C     The BASREF array is a character array but we use the integer
-C     length to avoid alignment problems
-      KLAST = KBASRF  +  KATOM*10*80
+      KLAST  = KJCO2  +  KATOM*KANG
 C hjj: take as many blocks as fit in memory
 C      (to be able to run tests with memory < 1 mio DP words)
       LWRK   = LWORK  -  KLAST + 1
@@ -455,7 +452,7 @@ C     ***** Read input file and process data *****
 C     ********************************************
 C
       CALL READI1(LUINFO,WORK(KLAST),LWRK,WORK(KNONT),WORK(KIQM),
-     &            WORK(KBLCK),WORK(KJCO),WORK(KJCO2),WORK(KBASRF),
+     &            WORK(KBLCK),WORK(KJCO),WORK(KJCO2),
      &            WORK(KNUC),WORK(KNRC),WORK(KSEG),WORK(KA),
      &            WORK(KC),WORK(KCC),KATOM,KANG,KBLOCK,KPRIM, HERMIT)
 C     CALL RDLINE(LUINFO)
@@ -478,8 +475,8 @@ C5030 CONTINUE
       END
 C  /* Deck readi1 */
       SUBROUTINE READI1(LUINFO,WORK,LWORK,NONT,IQM,NBLCK,JCO,JCO2,
-     &          BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
-     &          KPRIM,HERMIT)
+     &                  NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &                  KATOM,KANG,KBLOCK,KPRIM,HERMIT)
 C******************************************************************************
 C
 C     Reads and processes input file of molecular data
@@ -532,9 +529,10 @@ C******************************************************************************
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),
      &          WORK(LWORK)
-      CHARACTER*80 BASREF(10,KATOM)
 C
 C       Local variables
+C
+      CHARACTER*80 BASREF(10,MXCENT)
 C
       CHARACTER*1 KASYM(3,3),ID3,SPDCAR,CRT
       CHARACTER*72 TTITLE(2)
@@ -2706,9 +2704,9 @@ C
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *   ' >>> ORBPRO error, '//
      *   'no. of contracted functions per AO-block',NCONT,
-     *   '                  '//
-     *   ' current maximum number                  ',MXCONT
-      CALL QUIT('Too many contracted per AO-block')
+     *   '                   '//
+     *   'current maximum number                  ',MXCONT
+      CALL QUIT('Too many contracted functions per AO-block')
       END
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
@@ -3678,50 +3676,45 @@ C     *********************************
 C
       IF (IPREAD .GT. 0) THEN
          CALL HEADER('Cartesian Coordinates',1)
-         WRITE (LUPRI,'(1X,A,I3,//)') ' Total number of coordinates:',
-     &                                NCOOR
-      END IF
-      ICRX = 1
-      ICRY = 2
-      ICRZ = 3
-      DO 100 ICENT = 1, NUCIND
-         MULCNT = ISTBNU(ICENT)
-         NAME   = NAMEX(3*ICENT)(1:4)
-         IF (MULT(MULCNT) .EQ. 1) THEN
-            IF (IPREAD .GT. 0) THEN
-               WRITE (LUPRI,'(1X,I3,3X,A,5X,A,3X,F15.10)')
+         WRITE (LUPRI,'(A,I3//)')'  Total number of coordinates:',NCOOR
+         ICRX = 1
+         ICRY = 2
+         ICRZ = 3
+         DO 100 ICENT = 1, NUCIND
+            MULCNT = ISTBNU(ICENT)
+            NAME   = NAMEX(3*ICENT)(1:4)
+            IF (MULT(MULCNT) .EQ. 1) THEN
+               WRITE (LUPRI,'(I4,3X,A,5X,A,3X,F15.10)')
      *               ICRX, NAME,CHRXYZ(-1), CORD(1,ICENT)
-               WRITE (LUPRI,'(1X,I3,12X,A,3X,F15.10)')
+               WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
      *               ICRY, CHRXYZ(-2), CORD(2,ICENT)
-               WRITE (LUPRI,'(1X,I3,12X,A,3X,F15.10,/)')
+               WRITE (LUPRI,'(I4,12X,A,3X,F15.10,/)')
      *               ICRZ, CHRXYZ(-3), CORD(3,ICENT)
-            END IF
-            ICRX = ICRX + 3
-            ICRY = ICRY + 3
-            ICRZ = ICRZ + 3
-         ELSE
-            JATOM = 0
-            DO 200 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-                  JATOM = JATOM + 1
-                  IF (IPREAD .GT. 0) THEN
-                     WRITE (LUPRI,'(1X,I3,3X,A,I2,3X,A,3X,F15.10)')
+               ICRX = ICRX + 3
+               ICRY = ICRY + 3
+               ICRZ = ICRZ + 3
+            ELSE
+               JATOM = 0
+               DO 200 ISYMOP = 0, MAXOPR
+                  IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                     JATOM = JATOM + 1
+                     WRITE (LUPRI,'(I4,3X,A,I2,3X,A,3X,F15.10)')
      *                     ICRX, NAME,JATOM,CHRXYZ(-1),
      *                     PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-                     WRITE (LUPRI,'(1X,I3,12X,A,3X,F15.10)')
+                     WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
      *                     ICRY,CHRXYZ(-2),
      *                     PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-                     WRITE (LUPRI,'(1X,I3,12X,A,3X,F15.10,/)')
+                     WRITE (LUPRI,'(I4,12X,A,3X,F15.10,/)')
      *                     ICRZ,CHRXYZ(-3),
      *                     PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+                     ICRX = ICRX + 3
+                     ICRY = ICRY + 3
+                     ICRZ = ICRZ + 3
                   END IF
-                  ICRX = ICRX + 3
-                  ICRY = ICRY + 3
-                  ICRZ = ICRZ + 3
-               END IF
-  200       CONTINUE
-         END IF
-  100 CONTINUE
+  200          CONTINUE
+            END IF
+  100    CONTINUE
+      END IF
 C
 C     ********************************
 C     ***** Symmetry Coordinates *****
@@ -3778,15 +3771,13 @@ C
       END IF
       CALL MEMREL('PRICAR',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-C     Print internuclear distances
+C     Print internuclear distances (if not an atom)
 C
-      IF (IPREAD .GT. 0) CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
-     &                               WORK,LWORK)
+      IF (IPREAD .GT. 0 .AND. NUCDEP .GT. 1)
+     &   CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,WORK,LWORK)
 C
-      IF (IPREAD .GT. 0) THEN
-         WRITE(LUPRI,'(1X,A,F18.12)')' Nuclear repulsion energy :',
-     &                               POTNUC
-      END IF
+      IF (IPREAD .GT. 0) WRITE(LUPRI,'(A,F18.12)')
+     &   '  Nuclear repulsion energy :',POTNUC
       RETURN
       END
 C  /* Deck priord */
