@@ -32,7 +32,7 @@ C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAONE */
-      SUBROUTINE TRAONE(WORK,LWORK)
+      SUBROUTINE TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
 C***********************************************************************
 C
 C     Driver routine for 2-index transformations
@@ -52,18 +52,16 @@ C
 #include <mxorb.h>
 #include <infpar.h>
 #include <dcbtra.h>
+#include <dcbtr3.h>
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
 #include <dcbgen.h>
       LOGICAL TOBE,TRASAM
-      DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KVEC(2,2),KQ(2,2),
-     &          IR(2,2),NR(2),NQ(2,2),NQT(2),
-     &          NSPC(2,0:2),KQC(2),KE(2,2)
-      DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NDMOQC(2,2),ICMOQC(2)
+      DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KQ(2,2),
+     &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,4)
 C
       CALL QENTER('TRAONE')
-#include <memint.h>
       KFRSAV = KFREE
 C
 C     Get hold of the slaves if we run in parallel.
@@ -79,208 +77,6 @@ C
       ENDIF
 C
       CALL TRAHI(IPRTRA,2)
-C
-C     Set up index arrays for core orbitals
-C     =====================================      
-C
-      IC   = 1
-      DO I = 1,NFSYM
-        NR(I)   = NESH(I)
-        IR(1,I) = 1
-        IR(2,I) = NESH(I)
-      ENDDO
-C
-      DO IFRP = 1,NFSYM
-        CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
-        NSPC(IFRP,0) = 1
-        CALL  NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,1)),
-     &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &               NSPC(IFRP,0),WORK(KFREE),LFREE)
-        CALL ORBCNT(WORK(KVEC(IFRP,1)),NSPC(IFRP,0),IFRP,
-     &              NSPC(IFRP,2),NSPC(IFRP,1))
-        NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
-        CALL MEMREL('TRAONE',WORK,KFRSAV,KVEC(IFRP,1),KFREE,LFREE)
-        CALL MEMGET('INTE',KVEC(IFRP,1),NSPC(IFRP,0),
-     &              WORK,KFREE,LFREE)
-        NDMOQC(1,IFRP) = NFBAS(IFRP,0)
-        NDMOQC(2,IFRP) = NSPC(IFRP,0)
-      ENDDO
-C
-C     Print section
-C     =============
-C
-      DO I = 1, NFSYM
-         CALL TRAPRI(1,I,WORK(KVEC(I,1)),DUM,DUM,DUM,NSPC)
-      ENDDO
-C
-C     Calculate dimensions of the coefficient array
-C
-C     ICMOQC : Index to start of representation in the coefficient array
-C
-      NQT(1) = 0
-      ICMOQC(1) = 1
-      DO IFRP = 1, NFSYM
-         NQ(IFRP,1) = NFBAS(IFRP,0)*NSPC(IFRP,0)*NZ
-         NQT(1) = NQT(1) + NQ(IFRP,1)
-         IF (IFRP.LT.NFSYM) ICMOQC(IFRP+1) = ICMOQC(IFRP) + NQ(IFRP,1)
-      ENDDO
-C
-C     Allocate the memory for the coefficients
-C
-      CALL MEMGET('REAL',KQC(1),NQT(1),WORK,KFREE,LFREE)
-      KQC(2) = KQC(1) + NQ(1,1)
-C
-C     Get all coefficients
-C
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(A)') 'Coefficient file not present'
-         CALL QUIT('TRAPAM: No coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAONE')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,2)
-      ENDIF
-C
-C     Select the set that we need
-C
-      DO IFRP = 1, NFSYM
-         CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
-     &                NSPC(IFRP,0),WORK(KVEC(IFRP,1)),
-     &                NSPC(IFRP,2),NSPC(IFRP,1),
-     &                NFBAS(IFRP,0),NORB(IFRP))
-      ENDDO
-C
-C     Throw away the complete set, keep only the selected sets
-C
-      CALL MEMREL('TRAONE',WORK,KFRSAV,KCMO,KFREE,LFREE)
-C
-C     =======================================      
-C     Set up index arrays for active orbitals
-C     =======================================      
-C
-      IF(NOPAIR) THEN
-        IC   = 1
-        DO I = 1,NFSYM
-          NR(I)   = NESH(I)
-          IR(1,I) = 1
-          IR(2,I) = NESH(I)
-        ENDDO
-      ELSE
-        IC   = 0
-        DO I = 1,NFSYM
-          NR(I)   =  NORB(I)
-          IR(1,I) = -NPSH(I)
-          IR(2,I) =  NESH(I)
-        ENDDO
-      ENDIF
-C
-      DO I = 1,2
-        NSTRT(I) = 0
-        DO IFRP = 1,NFSYM
-          CALL MEMGET('INTE',KVEC(IFRP,I),NR(IFRP),WORK,KFREE,LFREE)
-          NSTR(IFRP,0,I) = 1
-          CALL  NUMLST(TRA2_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
-     &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                 NSTR(IFRP,0,I),WORK(KFREE),LFREE)
-          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
-     &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-          NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
-          NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
-          CALL MEMREL('TRAONE',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
-     &                WORK,KFREE,LFREE)
-        ENDDO
-      ENDDO      
-C
-C     Print section
-C     =============
-C
-      DO I = 1, NFSYM
-         CALL TRAPRI(2,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),DUM,DUM,NSTR)
-      ENDDO
-C
-C     Calculate dimensions of coefficient arrays
-C     The coefficients are stored as 2 arrays of two matrices each
-C     They may share the same memory if the transformation ranges
-C     are identical
-C
-C     NDMOQR : 1st dimension row/column dimension of coefficient array
-C              2nd dimension fermion irrep
-C              3rd dimension transformation index
-C
-C     ICMOQR : Index to start of representation in the coefficient array
-C
-      DO I = 1, 2
-         NQT(I) = 0
-         ICMOQR(1,I) = 1
-         DO IFRP = 1, NFSYM
-            NDMOQR(1,IFRP,I) = NFBAS(IFRP,0)
-            NDMOQR(2,IFRP,I) = NSTR(IFRP,0,I)
-            NQ(IFRP,I) = NFBAS(IFRP,0)*NSTR(IFRP,0,I)*NZ
-            NQT(I) = NQT(I) + NQ(IFRP,I)
-            IF (IFRP.LT.NFSYM) 
-     &         ICMOQR(IFRP+1,I) = ICMOQR(IFRP,I) + NQ(IFRP,I)
-         ENDDO
-      ENDDO
-C
-C     Allocate the memory for the coefficients, check their relations
-C
-      DO I = 1, 2
-C
-         DO J = I, 1, -1
-            IF (TRASAM(WORK(KVEC(1,I)),WORK(KVEC(2,I)),
-     &                 WORK(KVEC(1,J)),WORK(KVEC(2,J)),
-     &          NSTR(1,0,I),NSTR(1,0,J))) ISAME(I) = J
-         ENDDO
-C
-         IF (ISAME(I).NE.I) THEN
-            KQ(1,I) = KQ(1,ISAME(I))
-            KE(1,I) = KE(1,ISAME(I))
-         ELSE
-            CALL MEMGET('REAL',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KE(1,I),NSTRT(I),WORK,KFREE,LFREE)
-         ENDIF
-         KQ(2,I) = KQ(1,I) + NQ(1,I)
-         KE(2,I) = KE(1,I) + NSTR(1,0,I)
-C
-      ENDDO
-C
-C     Get all coefficients and eigenvalues
-C
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(A)') 'Coefficient file not present'
-         CALL QUIT('TRAPAM: No coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAONE')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,2)
-      ENDIF
-C
-C     Select the set that we need
-C
-      DO I = 1, 2
-         DO IFRP = 1, NFSYM
-            CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
-     &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
-     &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
-     &                   NFBAS(IFRP,0),NORB(IFRP))
-            CALL SELEIG (WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
-     &                   WORK(KVEC(IFRP,I)),
-     &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-         ENDDO
-      ENDDO
-C
-C     Throw away the complete set, keep only the selected sets
-C
-      CALL MEMREL('TRAONE',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
 C     Transform core-fock matrix to active MO basis
 C     ---------------------------------------------
