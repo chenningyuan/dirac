@@ -1028,7 +1028,7 @@ case $machine in
             done
             def='dirac.x'
          else
-            cpp="-DPRG_DIRAC -DSYS_IRIX -DVAR_SIRBIG -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+            cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
             ccp="-DSYS_IRIX"
             for mod in $MODS; do
                cpp=`echo $cpp $mod`
