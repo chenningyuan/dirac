@@ -85,6 +85,7 @@ c
          WORK(KXGEXP-1+I) = GNUEXP(I)
          IF (ICTLV1C(2) .EQ. 2) THEN
 c          ... Simulate terms neglected in Luuk's original model
+c              (simulate the projection scheme)
             IF (IOFF .GT. NUCDEP)
      &          CALL QUIT('TYPE1DRV : IOFF .GT. NUCDEP')
 c          ... Q    =   - q^L - q^S
@@ -212,13 +213,26 @@ C                             evaluation has been omitted in this iteration.
                IOFF = IOFF + FMULT(ISTBNU(I))
             ENDDO
          END IF
+      ELSE IF(DOINT(2,2).AND.OMITVNUC.EQ.'TTFF') THEN
+c        Estimate the error of this model <A | q_B^L + q_B^S - Z_B | C>
+         IOFF = 1
+         DO I = 1,NUCIND
+            IF (IOFF .GT. NUCDEP) 
+     &          CALL QUIT('TYPE2DRV : IOFF .GT. NUCDEP')
+            DO J = 1,NUCDEP
+               WORK(KCHRG-1+I) = WORK(KCHRG-1+I) 
+     &                           + QMAT(J,IOFF,1) + QMAT(J,IOFF,2)
+            END DO
+            IOFF = IOFF + FMULT(ISTBNU(I))
+            WORK(KCHRG-1+I) = WORK(KCHRG-1+I) + CHARGE(I)
+         ENDDO
       ELSE 
 C        ... Calculate terms to cancel SC nuclear attraction terms (previouly calculated)
 C
          DO I = 1,NUCIND
 C            ... Test adding penalty function :
 C                <S_A | (-X/r_C) | S_B>
-             IF (ICTLV1C(2).EQ.2.AND.OMITVNUC.EQ.'TTFF') THEN
+             IF (ICTLV1C(2).EQ.3.AND.OMITVNUC.EQ.'TTFF') THEN
                 WORK(KCHRG-1+I) = -5.0D0
              ELSE
                 WORK(KCHRG-1+I) = -CHARGE(I)
@@ -952,7 +966,9 @@ C
       CALL MEMGET('REAL',KONEMT,N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KONEIN,NNBBASX,WORK,KFREE,LFREE)
 C
-C     ... Which integral classes are needed in CATCORR
+C     ============================================
+C     Which integral classes are needed in CATCORR
+C     ============================================
 C
       ILLINT=0
       ISLINT=0
@@ -966,7 +982,9 @@ C
      & CALL QUIT('  ** ERROR IN CATCORR : '//
      &     'Called wihout any integral-classes specified !')
 C
-c     ... Get matrix of small- and large-component charges
+C     ================================================
+c     Get matrix of small- and large-component charges
+C     ================================================
 C
       DOLSQ=(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.2).OR.
      &      (INTV1C.EQ.2.AND.ICTLV1C(2).NE.1).OR.
@@ -997,21 +1015,18 @@ c     (see CATNUC-routine (ababus/her1cat.F) for detail.)
 c
       OMITVNUC    = 'FFFF'
 c
+c     ===============
 c     Determine model
 c     ===============
 c
       IF (ONECAP) THEN
          IF (INTV1C .EQ. 1) THEN
-c           ... Model 1 (for ICTLV1C(2) .EQ.2 we approximate 
-c                        Luuk's projection scheme).
-c           ... we need to correct < X | V_C | Y > type integrals, X.ne.Y
-c           ... correct SS-type integrals
-c
+c           ==============================================
+c           Model 1 
+c           Correct < X | V_C | Y > type integrals, X.ne.Y
+c           ==============================================
             DOINT(2,2) = .TRUE.
             OMITVNUC    = 'TTFF'
-c
-c           ... calculate energy correction due to q_s
-c
             WRITE(LUPRI,'(//1X,A)')
      &      '<<<  ENTERING TYPE1DRV FOR SS-TYPE INTEGRALS  >>>'
             CALL TYPE1DRV(WORK(KONEIN),WORK(KFREE),LFREE,DOINT,
@@ -1024,11 +1039,10 @@ c           ... If smlv1c we dont have dmat at this point
                CALL EONECAP(WORK(KONEMT),DMAT,WORK(KFREE),LFREE,2)
             ENDIF
          ELSE IF (INTV1C .EQ. 2) THEN
-c           ... Model 2
-c           ... we need to correct all but < C | V_C | C > type integrals
-c
-c           ... correct <L|Vnuc|L> LL-type integrals
-c
+c           ==============================================
+c           Model 2
+c           Correct all but < C | V_C | C > type integrals
+c           ==============================================
             DOINT(1,1)  = .TRUE.
             WRITE(LUPRI,'(//1X,A)') 
      & '<<<  ENTERING TYPE2DRV FOR APPROXIMATE LLSS-TYPE INTEGRALS  >>>'
@@ -1081,7 +1095,10 @@ c
             CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
             CALL EONECAP(WORK(KONEMT),DMAT,WORK(KFREE),LFREE,2)
 c
-            IF (ICTLV1C(2).EQ.2) THEN
+            IF (ICTLV1C(2).EQ.3) THEN
+c
+c           Testing the addition of a penalty function (see type2drv)
+c
                OMITVNUC = 'TTFF'
                CALL TYPE2DRV(WORK(KONEIN2),WORK(KFREE),LFREE,DOINT,
      &                       OMITVNUC,WORK(KQMAT),IPRINT)
@@ -1090,21 +1107,39 @@ c
                CALL EONECAP(WORK(KONEMT),DMAT,WORK(KFREE),LFREE,2)
             ENDIF
             CALL DAXPY(NNBBASX,D1,WORK(KONEIN2),1,WORK(KONEIN),1)
+c
+            IF (ICTLV1C(2).EQ.2) THEN
+c
+c           Estimate the error on Energy of this model <A | q_B^L + q_B^S - Z_B | C>
+c
+               DOINT(1,1)  = .FALSE.
+               DOINT(2,2)  = .TRUE.
+               OMITVNUC = 'TTFF'
+               CALL TYPE2DRV(WORK(KONEIN2),WORK(KFREE),LFREE,DOINT,
+     &                       OMITVNUC,WORK(KQMAT),IPRINT)
+               CALL DSPTSI(NTBAS(0),WORK(KONEIN2),WORK(KONEMT))
+               CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
+               CALL EONECAP(WORK(KONEMT),DMAT,WORK(KFREE),LFREE,3)
+            ENDIF
+C           ... Make full matrix of LL and SS corrections.
             CALL DSPTSI(NTBAS(0),WORK(KONEIN),WORK(KONEMT))
             CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
             CALL MEMREL('CATCORR.ONECAP2',WORK,KWORK,KONEIN2,KFREE,
      &                   LFREE)
          ELSE IF (INTV1C .EQ. 3) THEN
-c           ... ONECAP type 3
-c           ... we need to correct all but < C | V_C | C > type integrals
-c           ... correct <L|Vnuc|L> LL-type integrals
+c           ==============================================
+c           ONECAP type 3
+c           Correct all but < C | V_C | C > type integrals
+c           ==============================================
             OMITVNUC = 'TFFF'
             DOINT(1,1)  = .TRUE.
             DOINT(2,2)  = .FALSE.
             ADDQIC(1) = .FALSE.
             ADDQIC(2) = .TRUE.
             WRITE(LUPRI,'(//1X,A)') 
+C
      &      '<<<  ENTERING TYPE3DRV FOR LL-TYPE INTEGRALS  >>>'
+C
             CALL TYPE3DRV(WORK(KONEIN),WORK(KFREE),LFREE,DOINT,
      &                  ADDQIC,OMITVNUC,IPRINT,WORK(KQMAT))
 c
@@ -1113,7 +1148,7 @@ c
             CALL DSPTSI(NTBAS(0),WORK(KONEIN),WORK(KONEMT))
             CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
             CALL EONECAP(WORK(KONEMT),DMAT,WORK(KFREE),LFREE,1)
-c           ... correct <S|Vnuc|S> SS-type integrals
+c           
             OMITVNUC = 'TFFF'
             DOINT(1,1)  = .FALSE.
             DOINT(2,2)  = .TRUE.
@@ -1121,7 +1156,9 @@ c           ... correct <S|Vnuc|S> SS-type integrals
             ADDQIC(2) = .TRUE.
             CALL MEMGET('REAL',KONEIN2,NNBBASX,WORK,KFREE,LFREE)
             WRITE(LUPRI,'(//1X,A)') 
+C
      &      '<<<  ENTERING TYPE3DRV FOR SS-TYPE INTEGRALS  >>>'
+C
             CALL TYPE3DRV(WORK(KONEIN2),WORK(KFREE),LFREE,DOINT,
      &                  ADDQIC,OMITVNUC,IPRINT,WORK(KQMAT))
 c
@@ -1139,9 +1176,11 @@ c
             CALL MEMREL('CATCORR.TYPE3',WORK,KWORK,KONEIN2,KFREE,
      &                   LFREE)
          ELSE IF (INTV1C .EQ. 4) THEN
-c           ... ONECAP type 4
-c               we approximate all LS and SS class integrals
-c               with < A | V_C | B > type integrals
+c           ==============================================
+c           ONECAP type 4
+c           we approximate all LS and SS class integrals
+c           with < A | V_C | B > type integrals
+c           ==============================================
 c
             DOINT(1,1)  = .TRUE.
             WRITE(LUPRI,'(//1X,A)') 
@@ -1202,7 +1241,10 @@ c     &                  OMITVNUC,IPRINT)
       ELSE
          CALL QUIT('CATCORR not implemented for .not. ONECAP')
       END IF
-C      IF(IPRINT.GE.6) THEN
+C     ====================
+C     Print section
+C     ====================
+      IF(IPRINT.GE.6) THEN
          IF (INTV1C .EQ. 1) THEN
              CALL HEADER('CATCORR: ONECAP type 1 correction to '//
      &                    'nuclear attraction integrals',-1)
@@ -1215,8 +1257,9 @@ C      IF(IPRINT.GE.6) THEN
          END IF
          CALL PRQMAT(WORK(KONEMT),NTBAS(0),NTBAS(0),
      &                NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
-C      ENDIF
+      ENDIF
 C
+C     =============================
 C     Add correction to Fock-matrix
 C     =============================
 C
@@ -1238,11 +1281,11 @@ c        ... Correct one-electron Fock-matrix
             END IF
          ELSE
             CALL DAXPY(N2BBASX,D1,WORK(KONEMT),1,F1MAT,1)
-C            IF(IPRINT.GE.6) THEN
+            IF(IPRINT.GE.6) THEN
                CALL HEADER('CATCORR: ONECAP corrected F1MAT',-1)
                CALL PRQMAT(F1MAT,NTBAS(0),NTBAS(0),
      &                     NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
-C            END IF
+            END IF
          ENDIF
 	  ELSE
 	     CALL QUIT('Unknown .ONECAP type (INTV1C)')

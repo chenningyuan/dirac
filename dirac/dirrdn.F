@@ -1808,7 +1808,11 @@ C
              ELSE IF (ICTLV1C(2) .EQ. 1) THEN
                 WRITE(LUPRI,'(1X,A)')
      &          '  - Using tabulated small component charges.'
-             ELSE IF (ICTLV1C(2) .EQ. 2) THEN
+             ELSE IF(ICTLV1C(2) .EQ. 2) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Using Mulliken small component charges.',
+     &          '  - Estimating error associated with this model.'
+             ELSE IF (ICTLV1C(2) .EQ. 3) THEN
                 WRITE(LUPRI,'(1X,A)')
      &          '  - Testing HJJs penalty suggestion.'
              ELSE

@@ -1273,7 +1273,7 @@ C           ... the rest
 C
 C     2) Write the full matrix of charges or dipole moment integrals.
 C
-         IF(IPRINT.GE.3) THEN
+         IF(IPRINT.GE.4) THEN
            DO IC = 1,2
               IF ( IC .EQ. 1) THEN
                  WRITE(LUPRI,'(/A,A/)') 

@@ -3216,6 +3216,9 @@ C
       ELSE IF (IQ .EQ. 2) THEN
          WRITE(LUPRI,'(A,'//FMT//')')
      &  'ONECAP correction to SS-Nuc att.  :  ',ECORR
+      ELSE IF (IQ .EQ. 3) THEN
+         WRITE(LUPRI,'(A,'//FMT//')')
+     &  'Estimation of error on the energy in this model :  ',ECORR
       END IF
 C
       CALL QEXIT('EONECAP')
