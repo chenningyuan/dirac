@@ -680,7 +680,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
       PARAMETER (DP5 = 0.5 D00)
-      LOGICAL SECDER, DODERM
+      LOGICAL SECDER
       DIMENSION STDER0(KCKTAB,2),
      &          STDER1(KCKTAB,6,2), 
 #ifdef PRG_DIRAC
