@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : labread.f
-C SOURCE  : $Source$
 C
       PROGRAM READLABL
 C
