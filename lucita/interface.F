@@ -457,15 +457,6 @@ C
          IRSTRT = IRSTLT
       end if
 *
-* 20: Maximum number of subspace CI vectors
-*
-      if (IMOKW(20).eq.0) then
-         MXCIVL = 0
-         IMOKW(20) = 2
-      else if (IMOKW(20).eq.1) then
-         MXCIVL = MXCIVE
-      end if
-*
 *
 *-----------------------------------------------------------------*
 *  Print section
@@ -590,14 +581,6 @@ C
       if (IRSTRT.eq.1) then
         write(6,'(A42,A3)')
      &    ' Restarted calculation from file ...... ','YES'
-        write(6,*)
-      end if
-*
-* 20: Maximum number of subspace vectors specified
-*
-      if (IMOKW(20).eq.1) then
-        write(6,'(A42,1I3)')
-     &    ' Reset no. of subspace vectors to ..... ',MXCIVL
         write(6,*)
       end if
 *
@@ -4076,7 +4059,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
      &                   MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
      &                   IRREP,NROOT,MULTIP,MS2,NELGS,MACHINE,
      &                   TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
-     &                   IUSE_PH,IDEMOL,IRSTRT,IDBGRP,MXCIVL,
+     &                   IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
      &                   IPRSTR,IPRCIX,IPRORB,IPRDIA,
      &                   IPRXT,IPRRSP,IPRDEN,IPROCC)
 *
@@ -4165,11 +4148,6 @@ CTF      write(*,'(X,A6)') MACHINE
                end if
             end do
          end do
-*
-         if (MXCIVL.ne.0) then
-           write(*,'(A5)') 'MXCIV'
-           write(*,'(X,I3)') MXCIVL
-         end if
 *
          write(*,'(A6)') 'RESTRT'
          write(*,'(X,I3)') IRSTRT
@@ -4299,11 +4277,6 @@ CTF      write(LUINP,'(X,A6)') MACHINE
                end if
             end do
          end do
-*
-         if (MXCIVL.ne.0) then
-           write(LUINP,'(A5)') 'MXCIV'
-           write(LUINP,'(X,I3)') MXCIVL
-         end if
 *
          if (IRSTRT.eq.1) then
            write(LUINP,'(A6)') 'RESTRT'
@@ -5497,6 +5470,10 @@ CC        IVFLEV = 1               ! could be made more flexible
           do ISYM=1,NSYM,1
             NSHPGS(4,ISYM) = NORB(ISYM) - NINOBS(ISYM) -
      &                       NSHPGS(2,ISYM) - NSHPGS(3,ISYM)
+            if (NSHPGS(4,ISYM).gt.MXTSOB) then
+              call gassplit(NSHPGS(1,ISYM),4,MXPNGAS,
+     &                      MXTSOB,NGAS,IPRT)
+            end if
           end do
         else
           NGAS = 5
@@ -5506,6 +5483,10 @@ CC        IVFLEV = 1               ! could be made more flexible
             NSHPGS(5,ISYM) = NORB(ISYM) - NINOBS(ISYM) -
      &                       NSHPGS(2,ISYM) - NSHPGS(3,ISYM)
      &                       - NSHPGS(4,ISYM)
+            if (NSHPGS(5,ISYM).gt.MXTSOB) then
+              call gassplit(NSHPGS(1,ISYM),5,MXPNGAS,
+     &                      MXTSOB,NGAS,IPRT)
+            end if
           end do
         end if
 *
@@ -5534,12 +5515,12 @@ CC        IVFLEV = 1               ! could be made more flexible
 *
         NFMN = 2*NSUM
         NFMX = 2*NSUM
-        NIMN = max(min(NACTEL,2*NSUM + MXELR1) - MXHOL1,0)
-        NIMX = min(NACTEL,2*NSUM + MXELR1)
-        NAMN = min(NIMX + MXELR2,NACTEL - MXELR3)
-        NAMX = min(NACTEL,NIMX + MXELR2)
-        NEMN = NACTEL
-        NEMX = NACTEL
+        NIMX = MXELR1 + NFMX
+        NIMN = NIMX - MXHOL1
+        NEMN = NACTEL + NFMX
+        NEMX = NACTEL + NFMX
+        NAMX = NEMX
+        NAMN = NAMX - MXELR3
 *
         do ICISPC=1,NCISPC,1
           NELGS(1,1,ICISPC) = NFMN
@@ -5551,11 +5532,13 @@ CC        IVFLEV = 1               ! could be made more flexible
           NELGS(4,1,ICISPC) = NEMN
           NELGS(4,2,ICISPC) = NEMX
           if (NGAS.eq.5) then
-            NELGS(4,1,ICISPC) = NACTEL - MXELR3
-            NELGS(5,1,ICISPC) = NACTEL
-            NELGS(5,2,ICISPC) = NACTEL
+            do IGAS = 5,NGAS,1
+              NELGS(IGAS,1,ICISPC) = NACTEL + NFMX
+              NELGS(IGAS,2,ICISPC) = NACTEL + NFMX
+            end do
           end if
         end do
+        NACTEL = NACTEL+NFMX
         if (NACTEL.ne.NELGS(NGAS,2,NCISPC)) then
           write(6,*) 'I am sure that fascinating discussions about'
           write(6,*) 'the energy of such a wave function exist,'
@@ -5751,7 +5734,7 @@ CC        IVFLEV = 1               ! could be made more flexible
      &             MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
      &             IRREP,NROOT,MULTIP,MS2,NELGS,MACHINE,
      &             TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
-     &             IUSE_PH,IDEMOL,IRSTRT,IDBGRP,MXCIVL,
+     &             IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
      &             IPRSTR,IPRCIX,IPRORB,IPRDIA,IPRXT,IPRRSP,
      &             IPRDEN,IPROCC)
 *
