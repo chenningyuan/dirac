@@ -73,6 +73,12 @@ C
       DOJACO = DOJACO.AND.(NZ.EQ.1)
       CALL SETDC1(IPREAD)
 C
+C     Make primitive labels and use label
+C     information to list SO-basis
+C     ===================================
+C
+      CALL GETLAB(WORK,LWORK,IPREAD)
+C
 C     Define Hamiltonian
 C     Redefine INTGEN if e.g. Levy-Leblond
 C

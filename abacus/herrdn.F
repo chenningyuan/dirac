@@ -1795,7 +1795,7 @@ C*****************************************************************************
 C
 C     Symmetry basis:
 C
-      IF (MAXREP.GT.0.AND.IPREAD.GT.0) CALL SYMOUT
+      IF (MAXREP.GT.0.AND.IPREAD.GT.2) CALL SYMOUT
 C
 C     Symmetrized magnetic moments
 C
@@ -5819,7 +5819,7 @@ C
      &               NRC(IBLOCK,1),SEG(IBLOCK,1),
      &               ALPHA(1,IBLOCK,1),
      &               CPRIM(1,1,IBLOCK,1),CPRIMU(1,1,IBLOCK,1),
-     &               NBLOCK,KAOVEC,KPRIM,CHARGE(IATOM - 1),J,DSM)
+     &               NBLOCK,ISGEN,KAOVEC,KPRIM,CHARGE(IATOM - 1),J,DSM)
          NBLCK(I,1) = NBLOCK
          IBLOCK = IBLOCK + NBLCK(I,1)
          NOORBTS = NOORBTS .AND. IQM(I,1).EQ.0
@@ -6139,6 +6139,9 @@ C
 C
          NUC(NBLOCK,ICP) = NUCIJ
          NRC(NBLOCK,ICP) = NRCIJ
+CTROND
+      WRITE(LUPRI,'(A,6I5)') 'Block:',NBLOCK,NUC(NBLOCK,ICP),
+     &       NRC(NBLOCK,ICP)
          NBLOCK = NBLOCK + 1
          ICONS = ICONE + 1
   501 CONTINUE
