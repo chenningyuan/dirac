@@ -3523,8 +3523,6 @@ C       Generate standard density matrix
         CALL DFTRPA(WORK(KBUF),FMO,FAO,NOSIM,IREPOP,
      &              IPRXRS,WORK,KFREE,LFREE)
         CALL MEMREL('GMOLI1.dft',WORK,1,KBUF,KFREE,LFREE)
-CTROND
-        WRITE(LUPRI,*) 'TROND: So I passed this test....'
       ENDIF
 #endif
 C
