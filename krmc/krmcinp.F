@@ -745,7 +745,7 @@ C
 C     Initialization
 C     --------------
 C
-      MAXCIT = 8
+      MAXCIT = 4
       MXCIV = 0
       IOPTST = 1515
       KTRLVL = 3

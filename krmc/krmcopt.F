@@ -4942,15 +4942,15 @@ C
      &     ////,
      &     3X,'``Aha!''''                             ',
      &     '- Fysiska poem, Linkoepings Universitet',///,
-     &     1X,78('*'),//)
+     &     1X,78('*'),/)
 *
       WRITE(LUPRI,9110)
  9110 FORMAT(/,
-     &     1X,'This module is published in:',/,
+     &     1X,'This module is published in:',//,
      &     4X,'KRMC-GOSCI: J Thyssen, H J Aa Jensen, and T Fleig',/,
      &     7X,'         manuscript, (J Chem Phys, 2003)',/,
      &     4X,'DIRAC-LUCIAREL: T Fleig, J Olsen, and L Visscher',/,
-     &     7X,'                manuscript, (subm. J Chem Phys, 2003)',/,
+     &     7X,'                J Chem Phys, 119 (2003)',/,
      &     4X,'                T Fleig, J Olsen, and C M Marian',/,
      &     7X,'                JCP 114,11 (2001) 4775-4790 ',/,
      &     4X,'KRMC-LUCIAREL: T Fleig, L Visscher, J Olsen,',/,
@@ -5678,7 +5678,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck svlde2 */
       SUBROUTINE SVLDE2(C,DOGRAD,DOTRI,
-     &     GO,BO,JXOP,NXOP,U,NOROT,VEC,NR,NC,WORK,LWORK)
+     &                  GO,BO,JXOP,NXOP,U,NOROT,VEC,NR,NC,WORK,LWORK)
 C***********************************************************************
 C
 C     Do singular value decomposition of gradient.

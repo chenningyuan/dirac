@@ -2960,7 +2960,7 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
         WRITE(6,*) ' Number of GAS spaces included ', LCMBSPC
         WRITE(6,*) ' GAS spaces included ',(ICMBSPC(II),II=1,LCMBSPC)
         WRITE(6,*)
-        IF(NTEST.GE.20) THEN
+        IF(NTEST.GE.40) THEN
           WRITE(6,*) ' IOCA and IOCB '
           CALL IWRTMA(IOCA,NGAS,NOCTPA,MXPNGAS,NOCTPA)
           CALL IWRTMA(IOCB,NGAS,NOCTPB,MXPNGAS,NOCTPB)
@@ -2992,7 +2992,7 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
    90   CONTINUE
   100 CONTINUE
 *
-      IF ( NTEST .GE. 10 ) THEN
+      IF ( NTEST .GE. 30 ) THEN
         WRITE(6,*)
         WRITE(6,*) ' Matrix giving allowed combinations of types '
         WRITE(6,*)

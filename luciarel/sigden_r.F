@@ -2858,10 +2858,6 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 *
       CALL REWINO(LLUC)
       CALL REWINO(LLUHC)
-* FIXME: Only real density working currently.
-*        Problem with sigma vector reading of imaginary part.
-*        ???? Still a problem ???? Check !!!!
-*        Probably not.
       IRILP = 2
 * LUCIAREL is a relativistic CI program. Spinfree formalism not
 *          supported, only for testing purposes. Therefore:
@@ -3053,6 +3049,7 @@ C FIXME: Debug me !!
 *.Scratch
       DIMENSION SB(*),CB(*)
       dimension T(*)
+      dimension SCR(1000)
 *
       CALL QENTER('SIGD2')
 *
@@ -3074,6 +3071,11 @@ C FIXME: Debug me !!
 *
       if (ISIGDEN.eq.2) then
         if (IRIC.eq.1.and.IMK2_C.eq.1) then
+C DEBUG
+C           print*,'BRUTAL TEST:'
+C           call rdvcdc(SB,SCR,LUHC,-1,10)
+C           stop
+C DEBUG
           do ISBLK = I1BATS(JBATABS),I1BATS(JBATABS) + LBATS(JBATABS)-1
             ISATP = IBATS(1,ISBLK)
             ISBTP = IBATS(2,ISBLK)

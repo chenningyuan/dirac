@@ -308,7 +308,7 @@ C  avoid unit 66. Used in DALTON
 *
       dimension VECT(*)
 *
-      NTESTL = 00
+      NTESTL = 000
       NTEST = max(NTESTL,IPRNT)
 *
       if (NTEST.ge.5) then
@@ -332,7 +332,6 @@ C  avoid unit 66. Used in DALTON
       end if
 *
       JOFF = 1
-      IRIOFF = 0
       LENGTH = 0
       IRILP = 2
       DO IRI = 1,IRILP,1
@@ -358,11 +357,10 @@ C  avoid unit 66. Used in DALTON
               WRITE(6,*) ' * Array containing current batch *'
               WRITE(6,*) ' **********************************'
               CALL WRTMAT(VECT(JOFF),1,LS,1,LS)
-              JOFF = JOFF + LS
             end if
             KBATSEND = I1BATS_MC(JBATABS) + LBATS_MC(JBATABS)
             do ISBLK = I1BATS_MC(JBATABS),KBATSEND-1,1
-              IOFF = IRIOFF + IBATS_MC(6,ISBLK)
+              IOFF = IBATS_MC(6,ISBLK)
               LEN_V = IBATS_MC(8,ISBLK)
               if (NTEST.ge.100) then
                 write(6,*) '    Saving block no. ',ISBLK
@@ -370,19 +368,19 @@ C  avoid unit 66. Used in DALTON
                 write(6,*) '     Block length:   ',LEN_V
               end if
               call itods(LEN_V,1,-1,LU)
-              call todsc(VECT(IOFF),LEN_V,-1,LU)
+              call todsc(VECT(JOFF+IOFF-1),LEN_V,-1,LU)
             end do
+            JOFF = JOFF + LS
 *
           end do
 *         ^ End loop over S batches of given MK2 value
-        END DO
+        end do
 *       ^ End of loop over IMK2
 *
 * Write end of vector mark between real and imaginary part.
         call itods(-1,1,-1,LU)
 *
-        IRIOFF = LENGTH
-      END DO
+      end do
 *     ^ End of loop over IRI
 * Write end of vector mark.
       call itods(-1,1,-1,LU)

@@ -125,6 +125,7 @@ C            Timo
       IPRXT  = 0 * IPROPT
       IPROCC = 2 * IPROPT
       IPRDEN = 2 * IPROPT
+CDEBUGIPRDEN = 100 * IPROPT
       IPRSIG = 10 * IPROPT
       IPRTRA = 1 * IPROPT
       IPRHAM = 100 * IPROPT
@@ -1735,7 +1736,11 @@ C     Call LUCIAREL
       CALL KRMC_LUCI(WORK(KFCACM),WORK(KMUUUU),WORK(KFREE),LFREE,CIRUN)
 C
       IF (NCIROOT.GE.2) THEN
-         CALL QUIT (' I am not allowed to do multi-root MCSCF, yet.')
+         IF (MAXCIT.GT.4.OR.MAXCIT.LT.0) THEN
+           CALL QUIT (' Normal STOP after LUCIAREL CI.')
+         ELSE
+           CALL QUIT (' I am not allowed to do multi-root MCSCF, yet.')
+         END IF
       END IF
 C
 C     Read CI vector from LUCIARELs file

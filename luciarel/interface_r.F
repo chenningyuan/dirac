@@ -1238,7 +1238,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * dimensioned outside as integers MX_ST_TSOSO_BLK_MX
       dimension ISTR_CA(*),ISTR_CB(*),ISTR_AA(*),ISTR_AB(*)
 *
-      NTESTL = 00
+      NTESTL = 01
       NTEST = max(NTESTL,IPRNT)
 *
 * Double group type
@@ -8521,21 +8521,9 @@ Cjan      end do
       NTESTL = 100
       NTEST = max(IPRNT,NTESTL)
 *
-      NINT_TOT = N1ELINT + N2ELINT
-*
-      if (NTEST.ge.100) then
-        write(6,*) 'INPUT DENSITIES:'
-        write(6,*) ' One-particle'
-        do I1P = 1,N1ELINT
-          write(6,*) I1P,F1(I1P)
-        end do
-        write(6,*) ' Two-particle'
-        do I2P = 1,N2ELINT
-          write(6,*) I2P,F2(I2P)
-        end do
-      end if
-*
       NTEST = 10  ! forced
+*
+      NINT_TOT = N1ELINT + N2ELINT
 *
       if (ISF.eq.1.or.NZ.eq.1) then
         IRILP = 1
