@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_AIX)
+#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_AIX) || defined (SYS_HPUX)
 
 #define cgendet     cgendet_
 
