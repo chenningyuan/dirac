@@ -1,3 +1,12 @@
+* September 23 1999
+
+  - Open shell RPA (jth)
+
+* August 26 1999
+
+  - New routine for printing eigenvalues (jth)
+  - Removed debug print statements from SUBR REORD (jth)
+
 * August 13 1999
 
   - SUBR REORD (either .REORDER MO's or .POST DHF REORDER) now also reorders
