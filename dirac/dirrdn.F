@@ -3045,47 +3045,47 @@ C         Operator must be symmetric under time reversal
         WRITE(LUPRI,'(1X,A,A)')
      &      '* Variational space reduced by projection',
      &      '  using a set of reference orbitals.'
+        WRITE(LUPRI,'(3X,A,D12.4)') '- Smallest norm accepted: ',PRJTHR
         IF(PROOWN) THEN
-          WRITE(LUPRI,'(1X,A)') 
-     &     '* Reference orbitals are obtained from local bases !',
-     &     '    The indexing of reference spinor sets is assumed ',
-     &     '    to follow list of symmetry independent nuclei.'
+          WRITE(LUPRI,'(3X,A)') 
+     &     '- Reference orbitals are obtained from local bases !',
+     &     '  The indexing of reference spinor sets is assumed ',
+     &     '  to follow list of symmetry independent nuclei.'
           DO J = 1,NPRJREF
-            WRITE(LUPRI,'(1X,A,I3,A,A4)') '* Reference spinor set ',J,
+            WRITE(LUPRI,'(3X,A,I3,A,A4)') '- Reference spinor set ',J,
      &             ' --> ',NAMN(J)
-            WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',PRJFIL(J)
+            WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
             DO I = 1,NFSYM
               NVEC = 0
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
      &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
               IF(NVEC.EQ.0) THEN
-                WRITE(LUPRI,'(4X,A,A3)') 
+                WRITE(LUPRI,'(7X,A,A3)') 
      &             '- No orbitals in fermion ircop ',FREP(I)
               ELSE
-                WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+                WRITE(LUPRI,'(7X,A,A3,A,A72)') 
      &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
               ENDIF
             ENDDO
           ENDDO
         ELSE
           DO J = 1,NPRJREF
-            WRITE(LUPRI,'(1X,A,I3)') '* Reference spinor set ',J
-            WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',PRJFIL(J)
+            WRITE(LUPRI,'(3X,A,I3)') '- Reference spinor set ',J
+            WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
             DO I = 1,NFSYM
               NVEC = 0
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
      &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
               IF(NVEC.EQ.0) THEN
-                WRITE(LUPRI,'(4X,A,A3)') 
+                WRITE(LUPRI,'(7X,A,A3)') 
      &             '- No orbitals in fermion ircop ',FREP(I)
               ELSE
-                WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+                WRITE(LUPRI,'(7X,A,A3,A,A72)') 
      &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
               ENDIF
             ENDDO
           ENDDO
         ENDIF
-        WRITE(LUPRI,'(1X,A,D12.4)') '* Smallest norm accepted: ',PRJTHR
       ENDIF
       IF (NOINPUT) GOTO 500
 C

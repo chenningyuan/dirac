@@ -1353,12 +1353,21 @@ C
         CALL DELPOS(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
      &            WORK(KFREE),LFREE)
       ENDIF
+      N2TMT = 0
+      DO IFRP = 1,NFSYM
+        I2TMT(IFRP) = N2TMT
+        N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
+      ENDDO
+C
+C     Construct right index transformed overlap matrix Saomo = Sao C
+C
+      CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),IPRONE,WORK(KFREE),LFREE)
 C
 C     If requested, reduce transformation matrix by projection with
 C     respect to a set of reference orbitals
 C
       IF(PROJEC) THEN
-        CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),WORK,KFREE,LFREE)
+        CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),IPRONE,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Output
@@ -1398,19 +1407,10 @@ C
       END IF
 C
 C
-C     Write the transformation matrix.
+C     Write transformation matrices
 C
-      N2TMT = 0
-      DO IFRP = 1,NFSYM
-        I2TMT(IFRP) = N2TMT
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
-      ENDDO
       CALL OPNFIL(LUTMAT,'DFTMAT','UNKNOWN','GMOTRA')
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
-C
-C     Construct right index transformed overlap matrix Saomo = Sao C
-C
-      CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),IPRONE,WORK(KFREE),LFREE)
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
       CLOSE(LUTMAT,STATUS='KEEP')
 C
@@ -3017,7 +3017,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiprj */
-      SUBROUTINE PSIPRJ(TMAT,TBUF,WORK,KFREE,LFREE)
+      SUBROUTINE PSIPRJ(TMAT,TINV,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Written by T.Saue March 26 1999
@@ -3033,13 +3033,11 @@ C
 #include <dcbbas.h>
 #include <dcbham.h>
 C
-      CHARACTER SECTID*12, CPUTID*12
       LOGICAL TOBE
-      DIMENSION TMAT(*),TBUF(*),WORK(*)
+      DIMENSION TMAT(*),TINV(*),WORK(*)
       DIMENSION NSTR(2,0:2,MPRJREF),KVEC(2,MPRJREF),
      &          KQ(2),NVECS(2),NQ(2)
 C
-      CALL GETTIM(CPU1,WALL1)
       KFRSAV = KFREE
       CALL TITLER('Reduction of variational space by projection',
      &     '*',125)
@@ -3142,12 +3140,6 @@ C     =======================================================
 C
       CALL MEMREL('PSIPRJ.cfs',WORK,KCMO,KCMO,KFREE,LFREE)
 C
-C     Get metric (symmetry packed overlap matrix)
-C
-      CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
-      CALL GTOVLT(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
-
-C
 C     If more than one set of reference orbitals, they must be orthogonalized !
 C     
 C
@@ -3155,40 +3147,55 @@ C     Reduce variational space by projection using the reference orbitals
 C     ===================================================================
 C
 C     Do projection
+      TOBE = .FALSE.
       N2TMT = 0
-      NYTMT = 0
-      ISOFF = 0
       DO 20 IFRP = 1,NFSYM
-        I2TMT(IFRP) = N2TMT
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
-        IF(NORB(IFRP).EQ.0) GOTO 20
-        CALL MEMGET('INTE',NQ(IFRP),NORB(IFRP),WORK,KFREE,LFREE)
-        CALL ICOPY (NORB(IFRP),1,0,WORK(NQ(IFRP)),1) 
-        CALL PRJOUT(TMAT(I2TMT(IFRP)+1),WORK(KQ(IFRP)),PRJTHR,THRMAX,
-     &              WORK(KSMAT+ISOFF),TBUF,WORK(NQ(IFRP)),
-     &              NFBAS(IFRP,0),NORB(IFRP),NVECS(IFRP),NDEL,IPRHAM)
         WRITE(LUPRI,'(A,A3)') '* Fermion ircop ',FREP(IFRP)        
+C       Transform reference coefficients to orthonormal basis
+        NREF = NORB(IFRP)*NVECS(IFRP)*NZ
+        NPRJ = NORB(IFRP)*NORB(IFRP)*NZ
+        NBUF = MAX(NREF,NPRJ)
+        CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIND,NORB(IFRP),WORK,KFREE,LFREE)
+        CALL QGEMM(NORB(IFRP),NVECS(IFRP),NFBAS(IFRP,0),D1,
+     &            'H','N',IPQTOQ(1,0),TINV(I2TMT(IFRP)+1),
+     &                    NFBAS(IFRP,0),NORB(IFRP),NZ,
+     &            'N','N',IPQTOQ(1,0),WORK(KQ(IFRP)),
+     &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
+     &            D0,IPQTOQ(1,0),WORK(KBUF),NORB(IFRP),NVECS(IFRP),NZ)
+        CALL DCOPY(NREF,WORK(KBUF),1,WORK(KQ(IFRP)),1)
+C       Initialize index array to monitor projection
+        CALL ICOPY (NORB(IFRP),1,0,WORK(KIND),1) 
+C       Initialize unit matrix (transformation matrix in MO-basis)
+        CALL DUNIT2(WORK(KBUF),NORB(IFRP),NORB(IFRP),NORB(IFRP),NZ)
+C       Do projection
+        CALL PRJORT(WORK(KBUF),WORK(KQ(IFRP)),PRJTHR,THRMAX,
+     &              WORK(KIND),NORB(IFRP),NORB(IFRP),
+     &              NVECS(IFRP),NDEL,IPRHAM)
         WRITE(LUPRI,'(2X,A,I6)') '- Number of orbitals deleted: ',NDEL
         NEFF = NORB(IFRP)-NDEL
-        JTMAT = NYTMT + 1
-        CALL PRJCNT(WORK(NQ(IFRP)),IFRP,NFBAS(IFRP,0),
-     &                TMAT(I2TMT(IFRP)+1),NORB(IFRP),
-     &                TBUF(JTMAT),NEFF)
-        NYTMT = NYTMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
-        ISOFF = ISOFF + N2BAS(IFRP)
+        IEFF = I2TMT(IFRP)+1
+        I2TMT(IFRP) = N2TMT
+        N2TMT = N2TMT + NFBAS(IFRP,0)*NEFF*NZT
+        IF(NDEL.GT.0) THEN
+C         Backtransform to SO-basis
+          NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT
+          CALL DCOPY(NDIM,TMAT(IEFF),1,TINV(IEFF),1)
+          CALL PRJCNT(WORK(KBUF),TMAT(I2TMT(IFRP)+1),
+     &                NORB(IFRP),NFBAS(IFRP,0),NEFF,
+     &                WORK(KIND),TINV(IEFF))
+CTROND: This must be worked on !!!!
+          NESH(IFRP) = NESH(IFRP)-NDEL
+          NPSH(IFRP) = NPSH(IFRP)
+          NORB(IFRP) = NESH(IFRP) + NPSH(IFRP)
+          TOBE = .TRUE.       
+        ENDIF
+        CALL MEMREL('PSIPRJ.prj',WORK,KBUF,KBUF,KFREE,LFREE)
  20   CONTINUE
-      IF(NYTMT.NE.N2TMT) CALL DCOPY(NYTMT,TBUF,1,TMAT,1)
+      IF(TOBE) CALL MKSAOMO(TINV,TMAT,IPRINT,WORK(KFREE),LFREE)
  30   CONTINUE
       CALL MEMREL('PSIPRJ',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
-      CALL GETTIM(CPU2,WALL2)
-      CPU  = CPU2 - CPU1
-      WALL = WALL2 - WALL1
-      CPUTID = SECTID(WALL)
-      WRITE(LUPRI,'(A,A12)')
-     &   '>>>> Total wall time used in  PSIPRJ:', CPUTID
-      CPUTID = SECTID(CPU)
-      WRITE(LUPRI,'(A,A12)')
-     &   '>>>> Total CPU time used in  PSIPRJ:', CPUTID
+C
       RETURN
       END
 C
@@ -3331,8 +3338,8 @@ C
 CTROND      IF(IROUND.GT.0) THEN
 CTROND         IROUND = 0
          IF (ITURN.EQ.1) THEN
-           WRITE(LUPRI,'(A)') 
-     &     '* PRJORT: Second round of orthonormalization !'
+CTROND           WRITE(LUPRI,'(A)') 
+CTROND     &     '* PRJORT: Second round of orthonormalization !'
            GO TO 10
          ENDIF
 CTROND         CALL QUIT(
@@ -3342,9 +3349,162 @@ C
       RETURN
 C
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck PRJORT */
+      SUBROUTINE PRJORT(VECS,VREF,THRLDP,THRMAX,IVECS,
+     &                  NVDIM,NVECS,NVREF,NDEL,IPRINT)
+C*****************************************************************************
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1=-1.0D0)
+      PARAMETER (T1MIN = 1.0D-8, THRRND = 1.0D-4)
+C
+#include <dgroup.h>
+      DIMENSION VECS(NVDIM,NVECS,NZ),VREF(NVDIM,NVREF,NZ),
+     &          IVECS(NVECS)
+      DIMENSION P(4)
+C
+      THRMAX = D0
+      NDEL   = 0
+      N2VECS = NVDIM*NVECS
+      N2VREF = NVDIM*NVREF
+      IROUND = 0
+      ITURN  = 0
+ 10   CONTINUE
+      ITURN  = ITURN + 1
+C
+C     First project out reference vectors
+C     ===================================
+C
+      DO IREF = 1,NVREF
+        IF(IPRINT.GE.2) THEN
+          CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
+     &           'H',IPQTOQ(1,0),VREF(1,IREF,1),N2VREF,NZ,1,
+     &           'N',IPQTOQ(1,0),VREF(1,IREF,1),N2VREF,NZ,1)
+          VNRM=SQRT(VNRM)
+          WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
+     &      'Reference vector no.',IREF,' Norm: ',VNRM
+        ENDIF
+        DO 100 IVEC = 1,NVECS
+          IF(IVECS(IVEC).EQ.0) GOTO 100
+C
+C         Form -<VREF|IVEC>
+C
+          CALL QDOT(P,IPQTOQ(1,0),NZ,NVDIM,
+     &         'H',IPQTOQ(1,0),VREF(1,IREF,1),N2VREF,NZ,1,
+     &         'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
+          DO IZ = 1,NZ
+            P(IZ) = -P(IZ)
+          ENDDO
+C
+C         Form VECS = VECS -VREF<VREF|VECS>
+C
+          CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
+     &                VREF(1,IREF,1),N2VREF,1,IPQTOQ(1,0),NZ,
+     &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
+ 100    CONTINUE
+      ENDDO
+C
+C     Next commence internal orthogonalization
+C     =========================================
+C
+      DO 200 IVEC = 1,NVECS
+        IF(IVECS(IVEC).EQ.0) GOTO 200
+C
+C       Check size of norm
+C       ==================
+C
+        CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
+     &           'H',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1,
+     &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
+        VNRM=SQRT(VNRM)
+        THRMAX=MAX(THRMAX,VNRM)
+        IF(VNRM.LT.THRLDP) THEN
+          WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5)')
+     &      'Vector no.',IVEC,' removed. Linear dependence: ',VNRM
+          IVECS(IVEC) = 0
+          NDEL = NDEL + 1
+          GOTO 200
+        ELSE
+          IF(IPRINT.GE.2) WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
+     &      'Vector no.',IVEC,' Norm: ',VNRM
+          IF(VNRM.LT.THRRND.AND.ITURN.EQ.1) IROUND=IROUND+1
+          IF(VNRM.LT.T1MIN) THEN
+            VNRM = D1/VNRM
+            DO IZ = 1,NZ
+              CALL DSCAL(NVDIM,VNRM,VECS(1,IVEC,IZ),1)
+            ENDDO
+            CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
+     &           'H',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1,
+     &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
+          END IF
+          VNRM = D1 / VNRM
+          DO IZ = 1,NZ
+            CALL DSCAL(NVDIM,VNRM,VECS(1,IVEC,IZ),1)
+          ENDDO
+        ENDIF
+        DO 300 JVEC = (IVEC+1),NVECS
+          IF(IVECS(JVEC).EQ.0) GOTO 300
+C
+C         Form -<IVEC|JVEC>
+C
+          CALL QDOT(P,IPQTOQ(1,0),NZ,NVDIM,
+     &         'H',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1,
+     &         'N',IPQTOQ(1,0),VECS(1,JVEC,1),N2VECS,NZ,1)
+          DO IZ = 1,NZ
+            P(IZ) = -P(IZ)
+          ENDDO
+C
+C         Form JVEC = JVEC -IVEC<IVEC|JVEC>
+C
+          CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
+     &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ,
+     &                VECS(1,JVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
+ 300    CONTINUE
+ 200  CONTINUE
+      IF (ITURN.EQ.1) THEN
+        GO TO 10
+      ENDIF
+C
+      RETURN
+C
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck prjcnt */
-      SUBROUTINE PRJCNT(IVEC,IFRP,NBAS,TMAT,NMAT,TBUF,NBUF)
+      SUBROUTINE PRJCNT(VMO,VAO,NMO,NAO,NEFF,IVEC,TMAT)
+C***********************************************************************
+C
+C     After a projection step, update dimension arrays in 
+C     COMMON blocks DCBBAS and DCBORB
+C     Written by T.Saue Jan 31 2001
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+C
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dgroup.h>
+      DIMENSION VMO(NMO,NMO,NZ),VAO(NAO,NEFF,NZ),IVEC(*),
+     &          TMAT(NAO,NMO,NZ)
+      II = 0
+      DO I = 1,NMO
+      IF(IVEC(I).EQ.1) THEN
+        II = II + 1
+        CALL QGEMM(NAO,1,NMO,D1,
+     &          'N','N',IPQTOQ(1,0),TMAT,NAO,NMO,NZ,
+     &          'N','N',IPQTOQ(1,0),VMO(1,I,1), NMO,NMO,NZ,
+     &          D0,IPQTOQ(1,0),VAO(1,II,1),NAO,NEFF,NZ)
+      ENDIF
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck prjcnt2 */
+      SUBROUTINE PRJCNT2(IVEC,IFRP,NBAS,TMAT,NMAT,TBUF,NBUF)
 C***********************************************************************
 C
 C     After a projection step, update dimension arrays in 
@@ -3385,3 +3545,4 @@ C
       NORB(IFRP) = NESH(IFRP) + NPSH(IFRP)
       RETURN
       END
+
