@@ -1174,6 +1174,7 @@ C
 C
 C
          DO ISYM = 0,NBSYM-1
+            NTOT = 0
             WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ISYM)
             IFSYM = ISS(ISYM)
 C
@@ -1187,6 +1188,7 @@ C
      &                  IBEIG,ISYM,NEIG,EIGBUF)
 C
             IF (NEIG .GT. 0) THEN
+               NTOT = NTOT + NEIG
                WRITE(LUPRI,'(2X,A,F6.4)') '* Closed shell, f = ',DF(0)
                CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
             END IF
@@ -1200,6 +1202,7 @@ C
      &                     IBEIG,ISYM,NEIG,EIGBUF)
 C
                IF (NEIG .GT. 0) THEN
+                  NTOT = NTOT + NEIG
                   WRITE(LUPRI,'(2X,A,I1,A,F6.4)') 
      &               '* Open shell #',IOPEN,', f = ',DF(IOPEN)
                   CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
@@ -1217,6 +1220,7 @@ C
      &                  IBEIG,ISYM,NEIG,EIGBUF)
 C
             IF (NEIG .GT. 0) THEN
+               NTOT = NTOT + NEIG
                WRITE(LUPRI,'(2X,A,F6.4)') 
      &            '* Virtual eigenvalues, f = ',D0
                CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
@@ -1233,11 +1237,16 @@ C
      &                     IBEIG,ISYM,NEIG,EIGBUF)
 C
                IF (NEIG .GT. 0) THEN
+                  NTOT = NTOT + NEIG
                   WRITE(LUPRI,'(2X,A,F6.4)') 
      &               '* Positronic eigenvalues, f = ',DF(0)
                   CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
                END IF
             END IF
+            IF(NTOT.EQ.0) THEN
+               WRITE(LUPRI,'(2X,A)') 
+     &               '* No eigenvalues.'
+            ENDIF
          END DO
       END IF
       WRITE(LUPRI,'(/)')
@@ -1325,9 +1334,14 @@ C
 C     Check HOMO-LUMO gap and check for negative virtuals
 C
       ELUMO = EIG(1+NPSH(1)+NOCC(1))
-      ILUMO = 1
       EHOMO = EIG(1+NPSH(1))
-      IHOMO = 1
+      IF (LEVYLE .OR. SPINFR) THEN
+        ILUMO = IBEIG(IORB(1)+NPSH(1)+NOCC(1)+1)
+        IHOMO = IBEIG(IORB(1)+NPSH(1)+1)
+      ELSE
+        ILUMO = 1
+        IHOMO = 1
+      ENDIF
       DO I = 1,NFSYM
          DO J = 1,NSSH(I)
             IF (ELUMO .GT. EIG(IORB(I)+NPSH(I)+NOCC(I)+J)) THEN
