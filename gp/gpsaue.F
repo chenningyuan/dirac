@@ -3531,7 +3531,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck curve */
-      SUBROUTINE CURVE(NORDER,NPOINTS,A,B,X,Y,AVDEV,KVPT)
+      SUBROUTINE CURVE(NORDER,NPOINTS,A,B,X,Y,CHISQ,KVPT)
+C***********************************************************************
+C
+C     Least square polynomial fit solving normal equations
+C     Written by T.Saue
+C
+C***********************************************************************
 #include <implicit.h>
       PARAMETER (D0=0.0D0)
       DIMENSION A(*),B(*),KVPT(*)
@@ -3552,7 +3558,6 @@ C* Calculate upper triangle column packed matrix A :
         DO 20 I = 1,J
           IOFF = IOFF + 1
           IORDER = I + J - 2
-CTROND          A(I,J) = XN(IORDER,NPOINTS,X)
           A(IOFF) = XN(IORDER,NPOINTS,X)
    20 CONTINUE
    10 CONTINUE  
@@ -3567,8 +3572,75 @@ C* Solve linear equations
         Y(I) = Y(I) + YMEAN
       ENDDO
       B(1) = B(1) + YMEAN
-C*    Estimate fit
-      AVDEV = DFIT(NPOINTS,NORDER,X,Y,B)
+C*    Calculate chisquare
+      CHISQ = D0
+      DO I = 1,NPOINTS
+        DIFF  = Y(I) - POLVAL(NORDER,B,X(I))
+        CHISQ = CHISQ + DIFF*DIFF
+      ENDDO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Polsvd */
+      SUBROUTINE POLSVD(ND,NP,A,B,X,Y,W,RV,CHISQ,ISKIP)
+C***********************************************************************
+C
+C     Least square polynomial fit using singular value decomposition
+C     Written by T.Saue
+C
+C***********************************************************************
+#include <implicit.h>
+      PARAMETER(D0=0.0D0,D1=1.0D0,TOL=1.0D-12)
+      DIMENSION A(NP,ND),B(NP),X(NP),Y(NP),W(ND),RV(ND)
+C
+      NORDER = ND-1
+C* Stabilize by subtracting mean from Y-vector:
+      YMEAN = D0
+      DO I = 1,NP
+        YMEAN = YMEAN + Y(I)
+      ENDDO
+      YMEAN = YMEAN/NP
+      DO I = 1,NP
+        Y(I) = Y(I) - YMEAN
+      ENDDO
+C     Set up design matrix A 
+      CALL DCOPY(NP,D1,0,A(1,1),1)
+      CALL DCOPY(NP,X,1,A(1,2),1)
+      DO J = 3,ND
+        DO I = 1,NP
+          A(I,J)=A(I,J-1)*A(I,2)
+        ENDDO
+      ENDDO
+C     Set up response vector B
+      CALL DCOPY(NP,Y,1,B,1)
+C     Perform singular value decomposition
+      CALL MINFIT(NP,NP,ND,A,W,1,B,IERR,RV)
+C     Edit the singular values: Note that this is done to B !!
+      WA = D0
+      DO I = 1,ND
+        IF(W(I).GT.WA) WA=W(I)
+      ENDDO
+      WA = TOL*WA*ND
+      ISKIP = 0
+      DO I = 1,ND
+        IF(W(I).LT.WA) THEN
+          B(I)=D0
+          ISKIP = ISKIP + 1
+        ELSE
+          B(I)=B(I)/W(I)
+        ENDIF
+      ENDDO
+C     Backsubsitution to get parameters      
+      CALL DGEMV('N',ND,ND,D1,A,NP,B,1,D0,W,1)
+      DO I = 1,NP
+        Y(I) = Y(I) + YMEAN
+      ENDDO
+      W(1) = W(1) + YMEAN
+C     Calculate chisquare
+      CHISQ = D0
+      DO I = 1,NP
+        DIFF  = Y(I) - POLVAL(NORDER,W,X(I))
+        CHISQ = CHISQ + DIFF*DIFF
+      ENDDO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NEWRAP(NORDER,DTOL,B,XVAL,NITER,IERR)
@@ -3577,8 +3649,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION B(NORDER + 1)
       IERR = 0
       NSTEP = 0
-CTROND      WRITE(LUPRI,'(A,E12.6,A,E8.2)') 'NEWTON: Start value:',XVAL,
-CTROND     +   '   Tolerance:  ',DTOL
    10 CONTINUE
       NSTEP = NSTEP + 1
       XOLD = XVAL  
@@ -3707,22 +3777,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         ENDIF
    10 CONTINUE
       END      
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      FUNCTION DFIT(NPOINTS,NORDER,X,Y,B)
-C     Calculate average deviation
-#include <implicit.h>
-      PARAMETER(D0=0.0D0,DM=1.0D2)
-      DIMENSION B(NORDER+1)
-      DIMENSION X(NPOINTS),Y(NPOINTS)
-      DFIT = D0
-      DOBS = D0
-      DO 10 I = 1,NPOINTS
-        DIFF = Y(I) - POLVAL(NORDER,B,X(I))
-        DFIT = DFIT + DIFF*DIFF
-        DOBS = DOBS + Y(I)*Y(I)
-   10 CONTINUE     
-      DFIT = DM*SQRT(DFIT/DOBS)
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETMSS(IZ,DMASS,ABUND,INFO)
 C***********************************************************************

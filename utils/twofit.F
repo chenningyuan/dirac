@@ -26,8 +26,8 @@ C
       PARAMETER(D2PI = D2*PI,D4=4.0D0,CENT=1.0D2)
       PARAMETER(NITER=10)
       PARAMETER(MORDER=10,MP=50,MXPRP=5)
-      PARAMETER(MDIM=MORDER+1,MNDIM=(MDIM*(MDIM+1)/2))
-      DIMENSION A(MNDIM),B(MDIM),BP(MDIM),IBUF(MDIM)
+      PARAMETER(MDIM=MORDER+1)
+      DIMENSION A(MP,MDIM),B(MP),C(MDIM),D(MDIM)
       DIMENSION X(MP),Y(MP),P(MP,MXPRP)
       CHARACTER POTFIL*6,RESFIL*10,REPLY*1
 C
@@ -157,7 +157,6 @@ C
  60   CONTINUE
       WRITE(LUPRI,'(/A/)') '** SPECTROSCOPIC CONSTANTS:'
       WRITE(ILOGG,'(/A/)') '** SPECTROSCOPIC CONSTANTS:'
-CTROND      NORDER = 4
       WRITE(LUPRI,'(A)') 
      &  'Polynomial fit: Give order of polynomial (.ge.4)'
       READ(LUCMD,*) NORDER
@@ -175,24 +174,28 @@ CTROND      NORDER = 4
         STOP 'Order to large ....'
       ENDIF
       NDIM = NORDER + 1
-      CALL CURVE(NORDER,NP,A,B,X,Y,VAR,IBUF)
+      CALL POLSVD(NDIM,NP,A,B,X,Y,C,D,CHISQ,ISKIP)
 C* Estimate fit:
       WRITE(LUPRI,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
       WRITE(LUPRI,'(3X,A)') '* Coefficients:'
       WRITE(LUPRI,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
-     &      B(I),I=1,NDIM)  
-      WRITE(LUPRI,'(3X,A,E9.4)') '* Average deviation :  ',VAR      
+     &      C(I),I=1,NDIM)  
+      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
+      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
+      WRITE(LUPRI,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
 C
       WRITE(ILOGG,'(72A1)') ('=',I=1,72)
       WRITE(ILOGG,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
       WRITE(ILOGG,'(3X,A)') '* Coefficients:'
       WRITE(ILOGG,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
-     &      B(I),I=1,NDIM)  
+     &      C(I),I=1,NDIM)  
       DO I = 1,NP
-        YP = (POLVAL(NORDER,B,X(I))-Y(I))/Y(I)
+        YP = (POLVAL(NORDER,C,X(I))-Y(I))/Y(I)
         WRITE(LUPRI,'(3X,F6.3,4X,E12.4)') XTANG*X(I),YP
       ENDDO
-      WRITE(ILOGG,'(3X,A,E9.4)') '* Average deviation :  ',VAR      
+      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
+      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
+      WRITE(ILOGG,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
 C
 C     Find minimum
 C     ============
@@ -201,12 +204,12 @@ C* Find smallest y-value and take corresponding x-value as start value
 C* for Newton-Raphsons method      
       IYOPT = IDMIN(NP,Y,1)
       XOPT = X(IYOPT)
-      CALL NEWRAP(NORDER,DTOL,B,XOPT,NITER,IERR)
+      CALL NEWRAP(NORDER,DTOL,C,XOPT,NITER,IERR)
       IF(IERR.EQ.1) THEN
         WRITE(ILOGG,'(A)') 'Newtons method failed'
         STOP 'Did not find minimum. Newtons method failed...'
       ELSE
-        YOPT = POLVAL(NORDER,B,XOPT)
+        YOPT = POLVAL(NORDER,C,XOPT)
         TEMP = XOPT*XTANG
         WRITE(LUPRI,'(A,F18.5,A)') 
      &    '* Local minimum   :',TEMP,' Angstroms'
@@ -221,17 +224,17 @@ C
 C     Harmonic constant
 C     ==================
 C
-      FORCE = POL2DER(NORDER,B,XOPT)
+      FORCE = POL2DER(NORDER,C,XOPT)
       TEMP  = FORCE*XTJ/XTM/XTM
       WRITE(LUPRI,'(A,1P,E18.4,A)') 
      &   '* Force constant  :',TEMP, ' N/m'
       WRITE(ILOGG,'(A,1P,E18.4,A)') 
      &   '* Force constant  :',TEMP, ' N/m'
       OMEGA = SQRT(FORCE/UM)
-      WRITE(LUPRI,'(A,1P,E10.3,A)') 
+      WRITE(LUPRI,'(A,1P,E12.5,A)') 
      &   '* Frequency       :',OMEGA*XTHZ,' Hz',
      &   '                   ',OMEGA*XTCM,' cm-1'
-      WRITE(ILOGG,'(A,1P,E10.3,A)') 
+      WRITE(ILOGG,'(A,1P,E12.5,A)') 
      &   '* Frequency       :',OMEGA*XTHZ,' Hz',
      &   '                   ',OMEGA*XTCM,' cm-1'
       XDEV=D1/SQRT(D2*UM*OMEGA)
@@ -264,14 +267,14 @@ C
 C     Anharmonic constant
 C     ===================
 C
-      V3 = POLNDER(NORDER,B,XOPT,3)
-      V4 = POLNDER(NORDER,B,XOPT,4)
+      V3 = POLNDER(NORDER,C,XOPT,3)
+      V4 = POLNDER(NORDER,C,XOPT,4)
       TEMP = D1/UM/OMEGA
       T2   = TEMP*TEMP
       WXE = (5.0D0*TEMP*T2*V3*V3/48.0D0/OMEGA)-(V4*T2/16.0D0)
-      WRITE(LUPRI,'(A,1P,E10.3,A)') 
+      WRITE(LUPRI,'(A,1P,E12.5,A)') 
      &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
-      WRITE(ILOGG,'(A,1P,E10.3,A)') 
+      WRITE(ILOGG,'(A,1P,E12.5,A)') 
      &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
       DE = OMEGA*OMEGA/WXE/D4
       WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, 'eV'
@@ -296,11 +299,11 @@ C
       UMS= SQRT(UM)
       AA = D1/D4/UMS
       DO IT = 1,MAXIT
-        V1 = POLNDER(NORDER,B,XEFF,1)
-        V2 = POLNDER(NORDER,B,XEFF,2)
+        V1 = POLNDER(NORDER,C,XEFF,1)
+        V2 = POLNDER(NORDER,C,XEFF,2)
         V2S= SQRT(V2)
-        V3 = POLNDER(NORDER,B,XEFF,3)
-        V4 = POLNDER(NORDER,B,XEFF,4)
+        V3 = POLNDER(NORDER,C,XEFF,3)
+        V4 = POLNDER(NORDER,C,XEFF,4)
         F0 = V1+ AA*V3/V2S
         F1 = V2 + AA*V4/V2S - AA*V3*V3/V2/V2S/D2
         DX = F0/F1
@@ -314,7 +317,7 @@ C
      &    '* Effective geometry  :',TEMP,' Angstroms'
       WRITE(ILOGG,'(A,F18.4,A)') 
      &    '* Effective geometry  :',TEMP,' Angstroms'
-      FORCE = POL2DER(NORDER,B,XEFF)
+      FORCE = POL2DER(NORDER,C,XEFF)
       OMEFF = SQRT(FORCE/UM)
       WRITE(LUPRI,'(A,1P,E18.3,A)') 
      &   '* Effective frequency  :',OMEFF*XTHZ,' Hz',
@@ -328,33 +331,37 @@ C     Zero-point vibrational averages
         WRITE(LUPRI,'(/A,I3/)') '** PROPERTY NO. ',IPRP
         WRITE(ILOGG,'(/A,I3/)') '** PROPERTY NO. ',IPRP
 C       Do polynomial fit
-        CALL CURVE(NORDER,NP,A,BP,X,P(1,IPRP),VAR,IBUF)
+        CALL POLSVD(NDIM,NP,A,B,X,P(1,IPRP),C,D,CHISQ,ISKIP)
 C* Estimate fit:
-        WRITE(*,'(/A,E9.4/)') '* Fit :  ',VAR      
+        WRITE(*,'(/A,E9.4/)') '* Chi square :  ',CHISQ
         WRITE(LUPRI,'(A,I3)') '* Polynomial fit of order:',NORDER
         WRITE(LUPRI,'(A)') '* Coefficients:'
         WRITE(LUPRI,'(A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
-     &        BP(I),I=1,NDIM)  
-        WRITE(LUPRI,'(A,E9.4)') '* Fit :  ',VAR      
+     &        C(I),I=1,NDIM)  
+        WRITE(LUPRI,'(A,E9.4)') '* Chi square :  ',CHISQ
+        WRITE(LUPRI,'(3X,A,I3)') 
+     &    '* Number of singularities(SVD): ',ISKIP
 C
         WRITE(ILOGG,'(72A1)') ('=',I=1,72)
         WRITE(ILOGG,'(A,I3)') '* Polynomial fit of order:',NORDER
         WRITE(ILOGG,'(A)') '* Coefficients:'
         WRITE(ILOGG,'(A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
-     &        BP(I),I=1,NDIM)  
-        WRITE(ILOGG,'(A,E9.4)') '* Fit :  ',VAR      
+     &        C(I),I=1,NDIM)  
+        WRITE(ILOGG,'(A,E9.4)') '* Chi square :  ',CHISQ
+        WRITE(ILOGG,'(3X,A,I3)') 
+     &    '* Number of singularities(SVD): ',ISKIP
 C
-        PMIN = POLVAL(NORDER,BP,XOPT)
+        PMIN = POLVAL(NORDER,C,XOPT)
         WRITE(LUPRI,'(A,1P,E18.10)') 
      &    '* Expectation value at local minimum     : ', PMIN
         WRITE(ILOGG,'(A,1P,E18.10)') 
      &    '* Expectation value at local minimum     : ', PMIN
-        PEFF = POLVAL(NORDER,BP,XEFF)
+        PEFF = POLVAL(NORDER,C,XEFF)
         WRITE(LUPRI,'(A,1P,E18.10)') 
      &    '* Expectation value at effective geometry: ', PEFF
         WRITE(ILOGG,'(A,1P,E18.10)') 
      &    '* Expectation value at effective geometry: ', PEFF
-        P2EFF = POL2DER(NORDER,BP,XEFF)
+        P2EFF = POL2DER(NORDER,C,XEFF)
         PZPV = PEFF + (P2EFF/D4/UM/OMEFF)
         WRITE(LUPRI,'(A,1P,E18.10)') 
      &    '* Zero-point vibrational average         : ', PZPV
