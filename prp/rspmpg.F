@@ -65,11 +65,11 @@ C
       nbfreq    = 1             !number of frequencies
       bfreq(1)  = 0.d0
       allcmb    = .false.       !generate all operator combinations
-      skipep    = .false.       !do include e-p orbital rotations
-      skipee    = .false.       !do include e-e orbital rotations
+      xlr_skipep= .false.       !do include e-p orbital rotations
+      xlr_skipee= .false.       !do include e-e orbital rotations
       qedrun    = .TRUE.       !this isn't a QED run
-      lsfg(1)   = .true.        !Generate G-matrix in MO basis
-      lsfg(2)   = .true.        !Generate G-matrix in MO basis
+      xlr_lsfg(1) = .true.        !Generate G-matrix in MO basis
+      xlr_lsfg(2) = .true.        !Generate G-matrix in MO basis
       xlrnrm    = .true.        !normalize solutionvector
       xLRDIH    = .TRUE.        !pre-conditioning of trail vectors
 C                                
@@ -136,22 +136,22 @@ C{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{
       nrspf=nlrbpt*nbfreq
       if(orbxlr)then
          call memget('INTE',klro,2*norb(ifrp),work,kfree,lfree)
-         call deforb(work(klro),ncls,3,xlr_indstr,
+         call deforb(work(klro),ncls_xlr,3,xlr_indstr,
      &        work,kfree,lfree,iprxlr)
          ni=0
          do i=1,nfsym
-            ni=ni+ncls(1,1,i)+ncls(2,1,i)
+            ni=ni+ncls_xlr(1,1,i)+ncls_xlr(2,1,i)
          enddo
       else
          ni=0
          klrorb=kfree
       endif
-      if(skipee)then
+      if(xlr_skipee)then
          nee=0
       else
          nee=ni+1
       endif
-      if(skipep)then
+      if(xlr_skipep)then
          nep=0
       else
          nep=ni+1
@@ -262,7 +262,8 @@ C
 C     Initialize orbital parameters
 C     =============================
 C
-               call xlrpar(work,kfree,lfree,IPRINT)
+               call xrspar(xlr_indstr,xlr_skipee,xlr_skipep,
+     &                     work,kfree,lfree,IPRINT)
 C
 C     Property gradient
 C     =================
@@ -361,8 +362,8 @@ C     Transfer information
 C     ====================
 C
       lineq     = .true.
-      lsvcfg(1) = lsfg(1)
-      lsvcfg(2) = lsfg(2)
+      lsvcfg(1) = xlr_lsfg(1)
+      lsvcfg(2) = xlr_lsfg(2)
       tknorm    = xlrnrm
       diaghe    = xlrdih
       iprxrs    = iprxlr
