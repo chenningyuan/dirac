@@ -121,10 +121,6 @@ C
 C
  30   CONTINUE
 C
-C     Set IMOTYP from dcbitypmo.h (type and symmetry of MO orbitals)
-C
-      CALL SET_ITYPMO(WORK(KIBUF),NSTR,IPRINT)
-C
       CALL QEXIT('SETXOP')
       RETURN
       END
@@ -902,62 +898,5 @@ C
      &     I = 1,NORB(IFRP))
         ENDDO
       ENDIF
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck set_itypmo */
-      SUBROUTINE SET_ITYPMO(IND,NIND,IPRINT)
-C*****************************************************************************
-C
-C     Set ITYPMO in dcbitypmo.h
-C
-C     Written by J. Thyssen - Feb 23 1999
-C     Last revision :
-C
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-C
-#include <mxorb.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbitypmo.h>
-C
-      DIMENSION IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
-C
-      CALL IZERO(ITYPMO,MXCORB)
-      DO IFSYM = 1,NFSYM
-         DO JTYP = 1,4
-            IF (JTYP .NE. 4) THEN
-               ITYP = JTYP
-               IST  = NIND(1,ITYP,IFSYM) + 1
-               IEND = NIND(1,ITYP,IFSYM) + NIND(2,ITYP,IFSYM)
-            ELSE
-               IST  = 1
-               ITYP = 3
-               IEND = NIND(1,ITYP,IFSYM)
-            END IF
-            DO I = IST,IEND
-               IDX = IND(I,ITYP,IFSYM)
-               ITYPMO(IDX,1) = JTYP
-               ITYPMO(IDX,2) = IFSYM
-            END DO
-         END DO
-C
-C        Print section
-C
-         IF (IPRINT .GE. 5) THEN
-            CALL HEADER('Type of MO-orbitals for symmetry '//
-     &                  CHAR(IFSYM+48),-1)
-            WRITE(LUPRI,'(1X,A4,2X,A,2X,A)')
-     &            'mo #','t','s'
-            DO I = 1,NORB(IFSYM)
-               WRITE(LUPRI,'(1X,I4,2X,I1,2X,I1)')
-     &            I,ITYPMO(I,1),ITYPMO(I,2)
-            END DO
-         END IF
-      END DO
-
       RETURN
       END
