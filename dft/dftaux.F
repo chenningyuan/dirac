@@ -29,8 +29,8 @@ C       Insert half-phases
            DO IM = 1,NXCMAT
             DO IZ = 1,NZ
               IQ = IPQTOQ(IZ,IREPOP)
-              CALL Q2PHASE('D',IQ,1,DTRMAT(1,IZ,IM))
-              CALL Q2PHASE('F',IQ,1,EXCMAT(1,IZ,IM))
+              CALL Q2BPHASE('D',IQ,1,DTRMAT(1,IZ,IM))
+              CALL Q2BPHASE('F',IQ,1,EXCMAT(1,IZ,IM))
             ENDDO
           ENDDO
         ENDIF
@@ -59,8 +59,8 @@ C       Insert half-phases
            DO IM = 1,NXCMAT
             DO IZ = 1,NZ
               IQ = IPQTOQ(IZ,IREPOP)
-              CALL Q2PHASE('D',IQ,1,DTRMAT(1,IZ,IM))
-              CALL Q2PHASE('F',IQ,1,EXCMAT(1,IZ,IM))
+              CALL Q2BPHASE('D',IQ,1,DTRMAT(1,IZ,IM))
+              CALL Q2BPHASE('F',IQ,1,EXCMAT(1,IZ,IM))
             ENDDO
           ENDDO
         ENDIF
