@@ -645,10 +645,10 @@ C        The slaves may also have timers that master does not have, let
 C        the primus inter pares report.
 C
          DO I = 1, MXTIMF
-           SLAVE = MPARID+1
+           SPARTACUS = MPARID+1
            T_REPORT = CPUTT(I)
            CALL MPI_BCAST (T_REPORT,30,MPI_CHARACTER,
-     &                     SLAVE,MPI_COMM_WORLD,IERR)
+     &                     SPARTACUS,MPI_COMM_WORLD,IERR)
            TIMERN = -1
            DO J = 1, MXTIMF
               IF (T_REPORT.EQ.CPUTT(J)) TIMERN = J
