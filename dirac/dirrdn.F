@@ -742,7 +742,7 @@ C***********************************************************************
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
-      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC, INTSET
+      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER CTEMP*72, LINE*80, TEXT*20
       DIMENSION WORK(LWORK)
@@ -1273,9 +1273,9 @@ C
                DALPHA(IOPEN) = (D1-DA(IOPEN))/(D1-DF(IOPEN))
             END IF
          ENDDO
-         NASHT = NASH(1) + NASH(2)
-         NFROT = NFRO(1) + NFRO(2)
-         NELECT  = NELEC(1) + NELEC(2)
+         NASHT  = NASH(1)  + NASH(2)
+         NFROT  = NFRO(1)  + NFRO(2)
+         NELECT = NELEC(1) + NELEC(2)
       END IF
 C
 C     If no DIIS set MXDIIS to zero
@@ -1285,20 +1285,17 @@ C
         MXDIIS = 0
       ENDIF
 C
-      IF(DOLVC .AND. .NOT.(ONECAP.AND.INTV1C.EQ.2
-     &                .OR. ONECAP.AND.INTV1C.EQ.3)) ISSINT = 0
+      IF(DOLVC .AND.
+     &   .NOT.(ONECAP.AND.(INTV1C.EQ.2.OR.INTV1C.EQ.3)) ) ISSINT = 0
       IF (LEVYLE) THEN
         ISLINT = 0
         ISSINT = 0
+        IGTINT = 0
       ENDIF
       IF (ZORA.AND..NOT.ZORA4) THEN
         ISSINT = 0
       ENDIF
       INTDEF = ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
-      IF (ONECAP.AND.(INTV1C.EQ.4)) THEN
-         INTSET = .TRUE.
-         INTDEF = 1
-      END IF
       IF(CNVINT(1).LT.DUMMY) ITRINT(1) = 1
       IF(CNVINT(2).LT.DUMMY) ITRINT(2) = 1
 C
@@ -1307,30 +1304,31 @@ C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(DFTHAM) THEN
-        WRITE(LUPRI,'(1X,A)') 
-     &   'DHFINP: Set-up for Kohn-Sham calculation:'
+        WRITE(LUPRI,'(A)') 
+     &   ' DHFINP: Set-up for Kohn-Sham calculation:'
       ELSE
-        WRITE(LUPRI,'(1X,A)') 
-     &   'DHFINP: Set-up for Dirac-Hartree-Fock calculation:'
+        WRITE(LUPRI,'(A)') 
+     &   ' DHFINP: Set-up for Hartree-Fock calculation:'
       ENDIF 
       CALL PRSYMB(LUPRI,'=',75,0)
 c
-c     We disable evaluation of LS and SS integrals in 
+c     We disable evaluation of LS, SS, and GT integrals in 
 c     One-center app. type 4 /jkp
 c
-      IF (ONECAP.AND.(INTV1C.EQ.4).AND.INTSET) THEN
-           WRITE(LUPRI,'(A)') 
-     &     ' * INTFLG reset to `1 0 0` since ONECAP type 4 has '//
+      IF (ONECAP.AND.(INTV1C.EQ.4).AND.INTDEF.NE.1) THEN
+         INTDEF = 1
+         WRITE(LUPRI,'(A)') 
+     &     ' * INTFLG reset to `1 0 0 0` since ONECAP type 4 has '//
      &     'been specified'
-      ENDIF
+      END IF
 C
 C     Print info about #electrons etc.
 C
-      WRITE(LUPRI,'(1X,A,I1)') '* Number of fermion irreps: ',NFSYM
+      WRITE(LUPRI,'(A,I1)') ' * Number of fermion irreps: ',NFSYM
 C
       IF (.NOT. INIOCC) CALL PROCC()
       IF(NFROT.GT.0) THEN
-        WRITE(LUPRI,'(1X,A)') '* Number of frozen shells:'
+        WRITE(LUPRI,'(A)') ' * Number of frozen shells:'
         WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
      &   ('Fermion irrep ',I,':',NFRO(I),I=1,NFSYM)
       ENDIF
