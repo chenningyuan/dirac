@@ -166,7 +166,7 @@ C
 #include <dcbcls.h>
 #include <dcbprl.h>
 C
-      DATA TABDIR /'*END OF','*XXXXXX','*XXXXXX','*XXXXXX',
+      DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.INTFLG','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
@@ -425,6 +425,9 @@ C
          CALL QUIT('Program stopped in GENINP, error in prompt.')
       END IF
     2 CONTINUE
+#if defined (VAR_MPI)
+      CALL PRLINP(WORD)
+#endif
         GO TO 200
     3 CONTINUE
         GO TO 200
