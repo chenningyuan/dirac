@@ -176,7 +176,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      LOGICAL USEDZ
+      LOGICAL USEDZ,RIGHT
       real*8 ddot
 C
 C---------------Executable code--------------------------------------
@@ -212,24 +212,9 @@ C------------------------------------
       N = MVO(1)
       IF (N.EQ.0) RETURN
       USEDZ = .FALSE.
-
-
-C... This is the old code that uses a large scratch array...
-cluuk IF (NBUF3.LT.JVVVO(2)) THEN
-cluuk    CALL QUIT(" OUT OF CORE STEP IN GV NOT IMPLEMENTED")
-cluuk ENDIF
-cluuk CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
-cluuk&            JJVO,BUF2,NBUF2,BUF3,USEDZ)
-cluuk CALL XGEMV ('N',M,N,A1,BUF3,M,T1,1,A1,GV,1)
-C... This is the new code, reasonably well tested, but not yet for
-C... memory intense runs. Delete the old code when the new works
-C... satisfactory.
+      RIGHT = .TRUE.
       CALL SRT20D(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
-     &            JJVO,BUF2,NBUF2,T1,GV,USEDZ)
-C... End of new code (11-02-00)
-C
-
-
+     &            JJVO,BUF2,NBUF2,T1,GV,USEDZ,RIGHT)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1327,8 +1312,12 @@ C----------------------------------------------------
          IF (NVO(IRP).EQ.0) GOTO 30
          DONE = .FALSE.
          ISTART = 0
-         NINT = NBUF3/NVO(IRP)
-  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+         MINT = NBUF3/NVO(IRP)
+Clv : Check this code : it probably does not work after the
+Clv : parallelization. Does not matter because these lambda routines
+Clv : were not completed or used anyway. Comments holds also for next
+Clv : GETVOVV calls that adddress the distributed integrals
+  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
          M = NVO (IRP)
          N = NOOT(IRP)
          K = NINT
@@ -1475,9 +1464,9 @@ C
       CALL GETTAU (T1,T2,BUF1)
       DO 50 IRP = 1, NREP
          IF (NOV(IRP).EQ.0.OR.NVVT(IRP).EQ.0) GOTO 50
-         NINT = MIN0(NBUF3/NVVT(IRP),NBUF2/NVO(IRP))
+         MINT = MIN0(NBUF3/NVVT(IRP),NBUF2/NVO(IRP))
          ISTART = 0
- 10      CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF2)
+ 10      CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF2,MINT)
 C----------------------------------------------
 C D(CJ,AB) =  VVOVV(CJ,AB) + T*(J,D) * W(CD,AB)
 C----------------------------------------------
@@ -1784,8 +1773,8 @@ C------------------------------------------------------------------
          IF (NVO(IRP).EQ.0) GOTO 30
          DONE = .FALSE.
          ISTART = 0
-         NINT = NBUF3/NVO(IRP)
-  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+         MINT = NBUF3/NVO(IRP)
+  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
          CD = 0
          DO 20 DREP = 1, NREP
            CREP = MULTB(DREP,IRP+NREP,2)
@@ -1800,7 +1789,7 @@ C                   -----------------------
 C                   We need the next buffer
 C                   -----------------------
                     ISTART = ISTART + NINT
-                    CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+                    CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
                     CD = 1
                  ENDIF
                  AKCD = (CD-1)*NVO(IRP)*RCW+1
@@ -1909,8 +1898,8 @@ C------------------------------------------------------------------
          IF (NVO(IRP).EQ.0) GOTO 30
          DONE = .FALSE.
          ISTART = 0
-         NINT = NBUF3/NVO(IRP)
-  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+         MINT = NBUF3/NVO(IRP)
+  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
          CD = 0
          DO 20 DREP = 1, NREP
            CREP = MULTB(DREP,IRP+NREP,2)
@@ -1925,7 +1914,7 @@ C                   -----------------------
 C                   We need the next buffer
 C                   -----------------------
                     ISTART = ISTART + NINT
-                    CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+                    CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
                     CD = 1
                  ENDIF
                  AKCD = (CD-1)*NVO(IRP)*RCW+1
@@ -1957,16 +1946,3 @@ C------------------------------------------------------------------
 C
       RETURN
       END
-C
-      subroutine xgemm1 (ta,tb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
-      real*8 alpha,beta,a(lda,k),b(ldb,n),c(ldc,n)
-      character*1 ta,tb
-      do i = 1, m
-      do j = 1, n
-      do k1 = 1, k
-      c(i,j) = alpha*a(i,k1)*b(k1,j) + beta*c(i,j)
-      enddo
-      enddo
-      enddo
-      return
-      end

@@ -184,11 +184,15 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*8 NAME
       COMPLEX*16 EPHASE(MAXOP)
-      LOGICAL BDONE,USEDZ
+      LOGICAL BDONE,USEDZ,RIGHT
 C
 C---------------Executable code--------------------------------------
 C
       IF (IOPT.LT.1) RETURN
+C
+C     No relaxation if there are no virtuals within the right irrep
+C
+      IF (NFVO.EQ.0) RETURN
 C
 C     Calculate X-intermediate
 C
@@ -217,14 +221,13 @@ C X(A,I) = X(A,I) + W(CI,DA) * D(C,D)
 C------------------------------------
       M = NFVV
       N = NFVO
-      IF (N.EQ.0) RETURN
       USEDZ = .FALSE.
-      IF (NBUF3.LT.JVVVO(2)) THEN
-         CALL QUIT(" OUT OF CORE STEP IN GV NOT IMPLEMENTED")
-      ENDIF
-      CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
-     &            JJVO,BUF2,NBUF2,BUF3,USEDZ)
-      CALL XGEMV ('C',M,N,A1,BUF3,M,DVV,1,A1,XVO,1)
+      RIGHT = .FALSE.
+      CALL SRT20D(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
+     &            JJVO,BUF2,NBUF2,XVO,DVV,USEDZ,RIGHT)
+C
+C In parallel runs we probably need to synchronize here to account for the missing
+C contributions coming from the last term, to be checked and implemented !!!
 C
       CALL XSCAL(NDIMX,-A1,XVO,1)
       CALL XCOPY (NDIMX,XVO,1,XOV,1)
@@ -292,10 +295,8 @@ C---------------Executable code--------------------------------------
 C
       IF (CARITH) THEN
          CEXPA = ZDOTU (NFVO,EOV,1,DVO,1)
-c        print*,' Relaxation contribution 1',cexpa
       ELSE
          EXPA = DDOT (NFVO,EOV,1,DVO,1)
-c        print*,' Relaxation contribution 1',expa
       ENDIF
 C
       IF (CARITH) THEN

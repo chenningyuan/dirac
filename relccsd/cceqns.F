@@ -684,7 +684,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      LOGICAL DONE,TEQ,USEDZ
+      LOGICAL DONE,TEQ,USEDZ,RIGHT
       REAL*8 SDOT,DDOT
       COMPLEX*16 CDOTU,ZDOTU
 C
@@ -849,12 +849,6 @@ C--------------------------------------
       OFF2 = IDIST(3,3,1)
       CALL XGEMV ('N',M,K,-A1,BUF2(OFF1),M,T1(OFF2),1,A1,S1,1)
       CALL XTIME(9,2,' ** T1EQNS VOVO * T(C,K)     ')
-
-
-C     M    = MVO(1)
-C     K    = MVO(1)
-C     CALL XGEMV ('N',M,K,-A1,BUF2,M,T1,1,A1,S1,1)
-
 C------------------------------------
 C Terms specific for Lambda1 equations
 C------------------------------------
@@ -904,9 +898,11 @@ C--------------------------------------
          CALL QUIT(" OUT OF CORE STEP IN GV NOT IMPLEMENTED")
       ENDIF
       USEDZ = .TRUE.
-      CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
-     &            JJVO,BUF2,NBUF2,BUF3,USEDZ)
-      CALL XGEMV ('C',M,N,-A1,BUF3,M,GVV,1,A1,S1,1)
+      RIGHT = .FALSE.
+clv : changed to SRT20D, untested as the rest of the lambda code
+clv : addition should be supplied with a minus sign
+      CALL SRT20D (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
+     &             JJVO,BUF2,NBUF2,S1,GVV,USEDZ,RIGHT)
 C--------------------------------------
 C S(A,I) = S(A,I) + W(A,K,L,I) * G(K,L)
 C--------------------------------------
@@ -919,9 +915,9 @@ C---------------------------------------------------
 C S(A,I) = S(A,I) + G(C,B) * W(B,K,C,D) * T(A,D,K,I)
 C---------------------------------------------------
       USEDZ = .FALSE.
-      CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
-     &            JJVO,BUF2,NBUF2,BUF3,USEDZ)
-      CALL XGEMV ('C',M,N,A1,BUF3,M,GVV,1,A1,BUF1,1)
+      RIGHT = .FALSE.
+      CALL SRT20D (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
+     &            JJVO,BUF2,NBUF2,BUF1,GVV,USEDZ,RIGHT)
       CALL GETAMPT (BUF3,BUF2)
       CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,
      &              MVO,JVOVO,JJVO,JJVO,BUF2,BUF3)
@@ -2525,6 +2521,7 @@ C     ENDDO
 
 C***
 C*** original CNTRCT call in serial version
+C*** since parallel code (above) is not debugged
 C***
 C
       CALL CNTRCT ('N','N',NV,NO,NVOOT,A1,BUF1,BUF2,A1,S1,NREP)

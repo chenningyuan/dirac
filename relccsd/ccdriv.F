@@ -666,14 +666,17 @@ C
       IF (DOCCSD) CALL RCLOSE(ITAPT+6,JCODE)
 C
       CALL CCSUMM
+      CALL FLSHFO (IW)
 C   
 C     Print timings (second XTIME parameter has to be 4)
 C
       CALL XTIME(1,4,' ')
+      CALL FLSHFO (IW)
       CALL CPUUSED(CPUTOT)
       CPUTOT = CPUTOT-CPU0
       CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO
       WRITE(IW,1010) CPU0,CPUI,CPUS,CPUE,CPUFO,CPUSO,CPUVAR,CPUTOT
+      CALL FLSHFO (IW)
 C
       RETURN
 C
@@ -1659,11 +1662,6 @@ C     Check the minimum size for the general use of this array
 C
       NBUF3 = MAX0(NBUF1,NBUF3)
 C
-C     Check the minimum size for the incore sort in GVINTM
-C
-Cluuk.. BUF3 is not used anymore with the new routine SRT20D
-Cluuk NBUF3 = MAX0(JVVVO(2),NBUF3)
-C
 C     Allocate the work array
 C
       CALL MEMOPT('REAL',BUF3,NBUF3*RCW,CC,KFREE,LFREE,ALLOC)
@@ -1884,6 +1882,11 @@ C
       INCLUDE "results.inc"
       INCLUDE "symm.inc"
       INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -1896,13 +1899,18 @@ C
 C---------------Executable code--------------------------------------
 C
       if (doccsdg) then
-         print*
-         print*,' CCSD gradient not yet implemented,'
+         WRITE (IW,*) ' CCSD gradient not yet implemented,'
      &         ,' calculate MP2 gradient instead'
-         print*
          doccsdg = .false.
          domp2g = .true.
       endif
+#if defined (VAR_MPI)
+      IF (NMPROC.GT.1.AND.DOMP2G) THEN
+         WRITE (IW,*) ' parallel MP2 gradient not yet implemented,'
+     &         ,' calculate HF gradient'
+         domp2g = .false.
+      ENDIF
+#endif
       ALLOC = ICALC.GE.2
       IF (ICALC.LE.0) RETURN
 C
@@ -1971,10 +1979,6 @@ C
 C     Check the minimum size for the general use of this array
 C
       NBUF3 = MAX0(NBUF1,NBUF3)
-C
-C     Check the minimum size for the incore sort in GVINTM
-C
-      NBUF3 = MAX0(JVVVO(2),NBUF3)
 C
 C     Allocate the work array
 C
@@ -2508,10 +2512,6 @@ C
 C     Check the minimum size for the general use of this array
 C
       NBUF3 = MAX0(NBUF1,NBUF3)
-C
-C     Check the minimum size for the incore sort in GVINTM
-C
-      NBUF3 = MAX0(JVVVO(2),NBUF3)
 C
 C     Allocate the work array
 C

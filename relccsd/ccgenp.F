@@ -156,11 +156,9 @@ C             WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
      &          CPUTMA(I),CPUTAV(I)/DBLE(NMPROC)
             ENDDO
           ELSE
-            DO I=1,MXTIMF
-              CALL MPI_SEND(CPUTFT,MXTIMF,MPI_DOUBLE_PRECISION,
+            CALL MPI_SEND(CPUTFT,MXTIMF,MPI_DOUBLE_PRECISION,
      &          MASTER,TITAG,MPI_COMM_WORLD,IERR)
-              IF(IERR.NE.0) CALL QUIT('MPI ERROR in XTIME')
-            ENDDO
+            IF(IERR.NE.0) CALL QUIT('MPI ERROR in XTIME')
           ENDIF
         ENDIF
         WRITE(IW,350)
@@ -169,7 +167,7 @@ C             WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
         DO I=1,MXTIMF
           IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
         ENDDO
-C       WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
+        WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
 #endif
       ELSE
         WRITE(IW,135)
