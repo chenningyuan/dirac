@@ -93,18 +93,22 @@ include "huckel.h"
 include "gencon.h"
 include "dcbgen.h"
 include "ibtfun.h"
-      CNTBAS = .FALSE.
+!
+!     Initialize variables that regard the whole basis set
+!     e.g. whether it is contracted or not.
+!
       NUCIND = 0
       NHTYP  = 0
       CALL IZERO (NBLCK,KATOM*KSETS)
+      DO ISET = 1, KSETS
+         DIRCON(ISET) = .FALSE.
+         IBLCK(ISET) = 1
+      END DO
 !
 !     Run over atomic centers
 !     =======================
 !
       DO I = 1, NONTYP
-        DO ISET = 1, NSETS
-           IBLCK(ISET) = NBLCK(I,ISET) + 1 ! start of orbital blocks
-        END DO
 !
 !*****************************************************************************
 !       Card 6: ATOMIC DATA
@@ -120,8 +124,8 @@ include "ibtfun.h"
 !       Read/process data on centers/blocks
 !       ===================================
 !
-!       QEXP = D0
-!       READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)')  Q,NONT(I),QEXP
+        QEXP = D0
+        READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)')  Q,NONT(I),QEXP
 !
 !       Read/process data on symmetry independent centers
 !       =================================================
@@ -144,13 +148,14 @@ include "ibtfun.h"
 !          Tell the routine we're calling how many blocks remain.
            KAOVEC = KBLOCK - NBLCK(I,ISET)
            IBLOCK = IBLCK(ISET)
-           CALL READ_BASIS (LUINFO,WORK,LWRK,                           &
-     &          IQM(I,ISET),NBLCK(I,ISET),JCO(1,I,ISET),                &
+           CALL READ_BASIS (LUINFO,WORK,LWRK,Q,                         &
+     &          IQM(I,ISET),NBLCK(I,ISET),CNTBAS,JCO(1,I,ISET),         &
      &          BASREF(1,I,ISET),                                       &
      &          NUC(IBLOCK,ISET),NRC(IBLOCK,ISET),SEG(IBLOCK,ISET),     &
      &          ALPHA(1,IBLOCK,ISET),CPRIM(1,1,IBLOCK,ISET),            &
      &          CPRIMU(1,1,IBLOCK,ISET),ISGEN(IBLOCK,ISET),             &
      &          KANG,ISET,KAOVEC,KPRIM,GENERATE)
+           DIRCON(ISET) = DIRCON(ISET) .OR. CNTBAS
 !
 !          A set might be generated from a previous set for this atom type.
 !
@@ -171,7 +176,26 @@ include "ibtfun.h"
 !                 TO DO : automatic generation of fit set ?
                END IF
            END IF
+           print*,"Read basis set",iset,"for atom",i
+           print*,"iqm",iqm(i,iset)
+           print*,"iblock",iblock
+           print*,"nblck",nblck(i,iset)
+           print*,"generate",generate
+           do ibx = 1, nblck(i,jset)
+              print*,jset,ibx,"nuc",nuc(ibx,iset)
+              print*,jset,ibx,"nrc",nrc(ibx,iset)
+              print*,jset,ibx,"seg",seg(ibx,iset)
+              print*,jset,ibx,"isgen",isgen(ibx,iset)
+           enddo
         END DO
+!
+!       Update pointer to begin of set for the next atom
+!
+        IF (I.LT.NONTYP) THEN
+           DO ISET = 1, KSETS
+              IBLCK(ISET) = NBLCK(I,ISET) + 1
+           END DO
+        END IF
 !
 !     End of loop over unique atom types
       END DO
@@ -180,7 +204,7 @@ include "ibtfun.h"
       END
 !------------------------------------------------------------------------------------
 !  /* Deck READ_BASIS */
-      SUBROUTINE READ_BASIS (LUINFO,WORK,LWORK,IQM,NBLCK,               &
+      SUBROUTINE READ_BASIS (LUINFO,WORK,LWORK,Q,IQM,NBLCK,CNTBAS,      &
      &           JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,       &
      &           KANG,ISET,KAOVEC,KPRIM,GENERATE)
 !*****************************************************************************
@@ -205,7 +229,7 @@ include "maxaqn.h"
       PARAMETER (DSM = 1.0D-30)
 include "cbirea.h"
       DIMENSION WORK(LWORK)
-      LOGICAL SEG,NOORBTS,CNTBAS
+      LOGICAL SEG,NOORBTS
       DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
      &          SEG(KAOVEC),                                            &
      &          ALPHA(KPRIM,KAOVEC),                                    &
@@ -219,7 +243,6 @@ include "cbirea.h"
 include "molinp.h"
 include "nuclei.h"
 include "huckel.h"
-include "gencon.h"
 include "dcbgen.h"
 !
 include "ibtfun.h"
@@ -294,18 +317,30 @@ include "ibtfun.h"
          IF (.NOT.BASIS) THEN
 !           With no general default one should always specify 
 !           the large component basis
-            WRITE(LUPRI,'(A,I5,A,/,A)')'Expected LARGE keyword, read',  &
-     &      ' line no. :',NMLINE,':',MLINE(NMLINE)
+            WRITE(LUPRI,'(A,A,I5/A)')'Expected LARGE keyword, read',    &
+     &      ' line no. :',NMLINE,MLINE(NMLINE)
            CALL QUIT('Error reading keyword in BASINP')
          END IF
-      ELSE IF (JSET.LT.ISET) THEN
-          WRITE(LUPRI,'(A,A)')'Wrong order of keywords, specify',       &
-     &    ' them in the order LARGE SMALL FTSET/FTLRG FTSML'
-          CALL QUIT ('BASINP : Keywords in wrong order')
+      END IF
+!
+      IF (JSET.GT.0) THEN
+!        Correct format, but it may not be the set we're looking for..
+         IF (JSET.LT.ISET) THEN
+            WRITE(LUPRI,'(A,A)')'Wrong order of keywords, specify',     &
+     &      ' them in the order LARGE SMALL FTSET/FTLRG FTSML'
+            CALL QUIT ('BASINP : Keywords in wrong order')
+         ELSEIF (JSET.GT.ISET) THEN
+!           We will handle this in a later call, make the select treat this as wrong line
+            BSKEYWORD = "LATER"
+         ENDIF
       END IF
 !
 !     Initialize basis set flag
 !
+      IBLANK = INDEX(BSKEYWORD," ")
+      IF (IBLANK.NE.0) BSKEYWORD = BSKEYWORD(1:IBLANK-1)
+!
+      print*,bskeyword
       SELECT CASE (BSKEYWORD)
       CASE ("INTGRL")
            IBSFLAG = 1
@@ -410,7 +445,6 @@ include "ibtfun.h"
           KBFCO = KBFPR + KPRIM
           KLAST = KBFCO + KPRIM*KPRIM
           IF (KLAST.GT.LWORK) CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
-          DIRCON(1) = .TRUE.
           CALL BFGINP(I,ISET,WORK(KBFPR),WORK(KBFCO),                   &
      &        IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                   &
      &        NBLCK,ISGEN,KATOM,KANG,KAOVEC,KPRIM,BASFIL,               &
@@ -440,9 +474,9 @@ include "ibtfun.h"
 !
 !         Read more than one Dalton type basis set
 !
-          CALL MULTI_BASIS(IQM,JCO,NUC,NRC,SEG,                         &
+          CALL MULTI_BASIS(Q,IQM,JCO,NUC,NRC,SEG,                       &
      &         NFILES,BSFILES,ALPHA,CPRIM,CPRIMU,                       &
-     &         NBLOCK,KAOVEC,KANG,KPRIM,Q,BASREF)
+     &         NBLOCK,KAOVEC,KANG,KPRIM,BASREF)
           
       CASE (6)
 !
@@ -461,16 +495,13 @@ include "ibtfun.h"
           IF(NHTYP.GT.MXQN) GOTO 5000
       END IF
 !
-!     Check if basis set is contracted
-!     ============================================
+!     Check whether basis set is contracted
+!     =====================================
 !
       DO JBLCK = 1, NBLOCK
          IF ((NUC(JBLCK).NE.NRC(JBLCK)).AND.                            &
      &       (NRC(JBLCK).GT.0)) CNTBAS = .TRUE.
       END DO
-      IF ( CNTBAS .AND. (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
-         DIRCON = .TRUE.
-      END IF
 !
       RETURN
 !
@@ -486,16 +517,16 @@ include "ibtfun.h"
         CALL QUIT('Too high angular specified in input.')
  9000 CONTINUE
       WRITE(LUPRI,'(A,/,A,I3,/,A)')                                     &
-     &     '*** ERROR in READIN ***',                                   &
+     &     '*** ERROR in READ_BASIS ***',                               &
      &     'Error reading line ',NMLINE,                                &
      &     MLINE(NMLINE)
          CALL QUIT('*** ERROR in READIN ***')
       END
 !------------------------------------------------------------------------------------
 !  /* Deck MULTI_BASIS */
-      SUBROUTINE MULTI_BASIS(IQM,JCO,NUC,NRC,SEG,                       &
+      SUBROUTINE MULTI_BASIS(Q,IQM,JCO,NUC,NRC,SEG,                     &
      &  NFILES,BSFIL,ALPHA,CPRIM,CPRIMU,                                &
-     &  NBLOCK,ISGEN,KAOVEC,KANG,KPRIM,Q,BASREF)
+     &  NBLOCK,ISGEN,KAOVEC,KANG,KPRIM,BASREF)
 !*****************************************************************************
 !
 !       Driver to read a number of expansion sets. 
@@ -525,7 +556,6 @@ include "cbirea.h"
 include "molinp.h"
 include "nuclei.h"
 include "huckel.h"
-include "gencon.h"
 include "dcbgen.h"
 !     Scratch arrays needed for MULTIBASIS option
 !     Should changed into allocatable arrays (either using fortran 90 allocate or

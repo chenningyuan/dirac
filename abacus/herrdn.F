@@ -670,12 +670,19 @@ C     ***** Read orbital and geometry input data *****
 C     ************************************************
 C
       KISGEN = 1
-      KLAST  = KISGEN + KBLOCK
+      KLAST  = KISGEN + KBLOCK*KSETS
       LWRK   = LWORK  -  KLAST + 1
-      CALL BASINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NSYMOP,NONT,
+#if !defined (MOD_DNF)
+      CALL BASINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NONT,
      &            IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
      &            KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG,ZMAT)
+#else
+      CALL CENINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NONT,
+     &            IQM,NBLCK,JCO,BASREF,
+     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
+     &            KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG)
+#endif
 C
 C     *************************************************
 C     ***** Process ZMAT coordinates if requested *****
@@ -819,7 +826,7 @@ C
 C
       END
 C  /* Deck basinp */
-      SUBROUTINE BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,
+      SUBROUTINE BASINP(LUINFO,WORK,LWORK,NONTYP,NONT,IQM,NBLCK,
      &                  JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG,ZMTTST)
 C*****************************************************************************
