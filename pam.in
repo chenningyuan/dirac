@@ -1,0 +1,483 @@
+#!/bin/csh -f
+#
+set SCR_DEFAULT = /scr
+set BIN_DIR     = /assens/Dirac/bin
+set SRC_DIR     = /assens/jth/prog/Dirac-jth
+#
+# Shell Script for running Dirac
+#
+#
+#
+# Should we use echo or echo -n
+#
+set LOC = `pwd`
+set argv_save = "$argv"
+if ( "	" == "`echo '\t'`" ) then
+   set _echo = echo
+else
+   set _echo = echo -c
+endif
+#
+# Print usage
+#
+if ($#argv == 0) then
+      echo 'Usage: '$0' [flags] mol[.mol] menu[.inp]'
+      echo '   Flags:'
+      echo '     -copy "file1 file2 .." : Copy files to work area'
+      echo '     -debug                 : Run dirac in debugger'
+      echo '     -get "file1 file2 .."  : Get files from work area'
+      echo '     -incmo                 : Copy DFCOEF to   work area'
+      echo '     -utcmo                 : Save DFCOEF from work area'
+      echo '     -infck                 : Copy DFFCK2 to   work area'
+      echo '     -utfck                 : Save DFFCK2 from work area'
+      echo '     -inxvc                 : Copy PAMXV1 to   work area'
+      echo '     -utxvc                 : Save PAMXV1 from work area'
+      echo '     -mw mem                : Set memory(in megawords)  '
+      echo '     -rmscr                 : Remove work area before calculation'
+      echo '     -rmwrk                 : Remove work area after calculation'
+      echo '     -run name              : File suffix for output    '
+      echo '     -scr name              : Directory name for scratch  '
+      echo '     -mpi n                 : Run MPI with n nodes'
+      echo '     -nonice                : Do not execute with nice'
+      echo '     -notify                : Notify user'
+      echo '     -user                  : Which user to notify'
+      echo '     -dirac dirac_cmd       : Use dirac_cmd instead for default'
+      echo '                              dirac'
+      goto exit0
+endif
+#
+# Allow deletion of files when piping
+# Unalias rm
+#
+unset noclobber
+unalias rm
+#
+# Set default values
+#
+set COPY_FILES = 
+
+set DEBUG      = 0
+
+set GET_FILES  =
+
+set INCMO      = 0
+set UTCMO      = 0
+set INFCK      = 0
+set UTFCK      = 0
+set INXVC      = 0
+set UTXVC      = 0
+
+set MEMORY     =
+
+set RMSCR      = 0
+set RMWRK      = 0
+
+set RUN        = 'out'
+
+set SCR        = $SCR_DEFAULT/$USER
+
+set SCR_DIR    =
+
+set MPI_NPROC  = 
+
+set NICE       = 1
+
+set NOTIFY     = 0
+set NOTIFY_USER =
+
+set ALT_DIRAC  =
+#
+# Parse arguments
+#
+while($#argv)
+   switch($argv[1])
+      case -copy:
+         shift
+         set COPY_FILES = $argv[1]
+         breaksw
+      case -debug:
+         set DEBUG = 1
+         breaksw
+      case -get:
+         shift
+         set GET_FILES = $argv[1]
+         breaksw
+      case -infck:
+         set INFCK = 1
+         breaksw
+      case -utfck:
+         set UTFCK = 1
+         breaksw
+      case -incmo:
+         set INCMO = 1
+         breaksw
+      case -utcmo:
+         set UTCMO = 1
+         breaksw
+      case -mw:
+         shift
+         @ MEMORY = $argv[1] * 1000000
+         breaksw
+      case -rmscr:
+         set RMSCR = 1
+         breaksw
+      case -rmwrk:
+         set RMWRK = 1
+         breaksw
+      case -run:
+         shift
+         set RUN = $argv[1]
+         breaksw
+      case -scr:
+         shift
+         set SCR_DIR = $argv[1]
+         breaksw
+      case -mpi:
+         shift
+         @ MPI_NPROC = $argv[1] + 1
+         breaksw
+      case -nonice:
+         set NICE = 0
+         breaksw
+      case -notify
+         set NOTIFY = 1
+         breaksw
+      case -user
+         set NOTIFY = 1
+         shift
+         set NOTIFY_USER = $argv[1]
+         breaksw
+      case -dirac
+         shift
+         set ALT_DIRAC = $argv[1]
+         breaksw
+      case -*:
+         echo $argv[1] 'not recognized'
+         goto exit1
+         breaksw
+      case  *:
+         set MOL = $argv[1]
+         if ( "$MOL:e" == "mol" ) then
+            set MOL = $MOL:r.mol
+         else
+            set MOL = $MOL.mol
+         endif
+         if ($#argv>1) shift
+         set MENU = $argv[1]
+         if ( "$MENU:e" == "inp" ) then
+            set MENU = $MENU:r.inp
+         else
+            set MENU = $MENU.inp
+         endif
+         breaksw
+   endsw
+   shift
+end
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SET WORKING DIRECTORY
+#
+#
+if ( "$SCR_DIR" != "" ) then
+   set WRK = $SCR/$SCR_DIR
+else
+   set WRK = $SCR/{$MOL:r}
+endif
+#
+# Make $WRK if non-existing
+# The -p switch makes all parent directories first
+#
+if ( ! -d $WRK ) then
+   mkdir -p $WRK || goto exit1
+endif
+#
+# Remove contents for $WRK if requested ( RMSCR )
+if ( $RMSCR ) then
+   rm -f $WRK/* >& /dev/null || goto exit1
+endif
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SET WORKING MEMORY
+#
+#
+if ( "$MEMORY" != "" ) then
+   setenv DIRWRK "$MEMORY"
+endif
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SOME TEXT ...
+#
+echo "   ****************************************"
+echo "   **** OUTPUT FROM DIRAC SHELL SCRIPT ****"
+echo "   ****************************************"
+echo
+echo '   $REVISION$'
+echo "   Host        : `hostname`"
+echo "   Date        : `date`"
+echo "   PID         : $$"
+echo "   Input dir   : `pwd`"
+echo "   Work dir    : $WRK"
+echo
+echo
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# COPY MOLECULE AND MENU FILE
+#
+#
+cd $WRK
+$_echo "   Copying $LOC/$MOL to working directory : \c"
+if ( -e $LOC/$MOL ) then
+   cp $LOC/$MOL MOLECULE.INP || goto exit1
+   echo "ok"
+else
+   echo "not found"
+   goto exit1
+endif
+$_echo "   Copying $LOC/$MENU to working directory : \c"
+if ( -e $LOC/$MENU ) then
+   cp $LOC/$MENU DIRAC.INP || goto exit1
+   echo "ok"
+else
+   echo "not found"
+   goto exit1
+endif
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# COPY REQUESTED FILES TO WORKING DIRECTORY
+#
+#
+#
+# Coefficients
+#
+if($INCMO) then
+   $_echo "   Copying $LOC/DFCOEF to working directory : \c"
+   if ( -e $LOC/DFCOEF ) then
+      cp $LOC/DFCOEF . || goto exit1
+      echo "ok"
+   else
+      echo "not found"
+   endif
+endif
+#
+# Two-electron fock matrix
+#
+if($INFCK) then
+   $_echo "   Copying $LOC/DFFCK2 to working directory : \c"
+   if ( -e $LOC/DFFCK2 ) then
+      cp $LOC/DFFCK2 . || goto exit1
+      echo "ok"
+   else
+      echo "not found"
+   endif
+endif
+#
+# The rest
+#
+if ( "$COPY_FILES" != "" ) then
+   foreach file $COPY_FILES
+      $_echo "   Copying $LOC/$file to working directory : \c"
+      if ( -e $LOC/$file ) then
+         cp $LOC/$file . || goto exit1
+         echo "ok"
+      else
+         echo "not found"
+      endif
+   end
+endif
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SAVE OLD OUTPUT FILE
+#
+#
+set OUTPUT_FILE = {$LOC}/{$MENU:r}_{$MOL:r}.{$RUN}
+if ( -f $OUTPUT_FILE ) then
+   $_echo "   Existing file $OUTPUT_FILE:t renamed to $OUTPUT_FILE:t.bak : \c"
+   mv $OUTPUT_FILE $OUTPUT_FILE.bak
+   echo "ok"
+endif
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SET UP COMMAND TO RUN
+#
+#
+# Nice ?
+#
+if ( $NICE ) then
+   if ( "`uname`" == "IRIX" ) then
+      set NICE_CMD = "npri -h129"
+   else
+      set NICE_CMD = "nice -20"
+   endif
+else
+   set NICE_CMD = 
+endif
+#
+# Mpi ?
+#
+if ( "$ALT_DIRAC" != "" ) then
+   set DIRAC = $ALT_DIRAC:t
+   set BIN_DIR = $ALT_DIRAC:h
+else
+   if ( "$MPI_NPROC" != "" ) then
+      set DIRAC = "dirmpi.x"
+   else
+      set DIRAC = "dirac.x"
+   endif
+endif
+if ( "$MPI_NPROC" != "" ) then
+   set DIRAC_CMD = "mpiexe -np $MPI_NPROC $DIRAC"
+else
+   set DIRAC_CMD = "$DIRAC"
+endif
+#
+# Debug
+#
+if ( $DEBUG ) then
+   set DIRAC_CMD = "dbx -I $SRC_DIR/abacus -I $SRC_DIR/dirac -I $SRC_DIR/prp "
+   set DIRAC_CMD = "$DIRAC_CMD -I $SRC_DIR/prp/rsp -I $SRC_DIR/dirac/open "
+   set DIRAC_CMD = "$DIRAC_CMD -I $SRC_DIR/gp -I $SRC_DIR/pdpack "
+   set DIRAC_CMD = "$DIRAC_CMD -I $SRC_DIR/moltra -I $SRC_DIR/relccsd "
+   set DIRAC_CMD = "$DIRAC_CMD -I $SRC_DIR/eri $DIRAC"
+endif
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# EXECUTE DIRAC
+$_echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
+if ( -e $BIN_DIR/$DIRAC ) then
+   cp $BIN_DIR/$DIRAC . || goto exit1
+   echo "ok"
+else
+   echo "not found"
+   goto exit1
+endif
+echo "   Executing: $NICE_CMD $DIRAC_CMD"
+if ( $DEBUG ) then
+   $NICE_CMD $DIRAC_CMD
+else
+   $NICE_CMD $DIRAC_CMD > $OUTPUT_FILE || goto exit1
+endif
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SAVE REQUESTED FILES
+#
+#
+# Coefficients
+#
+if ( $UTCMO ) then
+   $_echo "   Saving $WRK/DFCOEF : \c"
+   if ( -e $WRK/DFCOEF ) then
+      cp $WRK/DFCOEF $LOC
+      echo "ok"
+   else
+      echo "not found"
+   endif
+endif
+#
+# Two-electron Fock matrix
+#
+if ( $UTFCK ) then
+   $_echo "   Saving $WRK/DFFCK2 : \c"
+   if ( -e $WRK/DFFCK2 ) then
+      cp $WRK/DFFCK2 $LOC
+      echo "ok"
+   else
+      echo "not found"
+   endif
+endif
+if ( "$GET_FILES" != "" ) then
+   foreach file $GET_FILES
+      $_echo "   Saving $WRK/$file : \c"
+      if ( -e $WRK/$file ) then
+         cp $WRK/$file $LOC
+         echo "ok"
+      else
+         echo "not found"
+      endif
+   end
+endif
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# REMOVE WORK DIRECTORY
+#
+#
+if ( $RMWRK ) then
+   cd ..
+   rm -fr $WRK
+endif
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+echo 
+echo "   Exit date: `date`"
+echo "   *** NORMAL EXIT"
+set return = exit0
+set exit_status = 0
+if ( $NOTIFY ) goto sub_notify
+exit0:
+exit 0
+
+exit1:
+echo
+echo "   Exit date: `date`"
+echo "   *** ABNORMAL EXIT"
+set return = ab_exit
+set exit_status = 1
+if ( $NOTIFY ) goto sub_notify
+ab_exit:
+exit 1
+
+sub_notify:
+
+if ( "$NOTIFY_USER" != "" ) then
+   set TO = $NOTIFY_USER
+else
+   set TO = "$USER@`hostname`"
+endif
+
+#echo $TO
+#cat <<EOF
+mail $TO <<EOF
+
+Your job has has returned with exit status: $exit_status
+
+Command      : $0 $argv_save
+Hostname     : `hostname`
+Input dir    : $LOC
+Menu file    : $MENU
+Molecule file: $MOL
+Output file  : $OUTPUT_FILE
+
+EOF
+goto $return
