@@ -267,7 +267,7 @@ case $machine in
       complist='fc f77 f90';;
 
    *-hp)
-      liblist='libblas'
+      liblist='libveclib libblas'
       complist='f77 fort77 f90';;
 
    i860-intel-osf1)
