@@ -898,7 +898,7 @@ C
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftres */
-      SUBROUTINE DFTRES(EXCMAT,NXCMAT,WORK,LWORK,IPRINT)
+      SUBROUTINE DFTRES(EXCMAT,NFMAT,WORK,LWORK,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Send receive DFTresults
@@ -926,9 +926,9 @@ C
       DIMENSION EXCMAT(*),WORK(*)
 C
 #include "memint.h"
-      LEXCMAT = N2BBASX*NXCMAT*NZ
+      LFMAT = N2BBASX*NXCMAT*NZ
       IF (MYTID.EQ.0) THEN
-        CALL MEMGET('REAL',KFBUF,LEXCMAT,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KFBUF,LFMAT,WORK,KFREE,LFREE)
 C
 C     **************************
 C     ***** Master receive *****
@@ -947,9 +947,9 @@ C
           CALL MPI_RECV(TEMP,1,MPI_DOUBLE_PRECISION,NWHO,40,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
           EDFTY = EDFTY + TEMP
-          CALL MPI_RECV(WORK(KFBUF),LEXCMAT,MPI_DOUBLE_PRECISION,NWHO,45,
+          CALL MPI_RECV(WORK(KFBUF),LFMAT,MPI_DOUBLE_PRECISION,NWHO,45,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-          CALL DAXPY(LEXCMAT,D1,WORK(KFBUF),1,EXCMAT,1)
+          CALL DAXPY(LFMAT,D1,WORK(KFBUF),1,EXCMAT,1)
         ENDDO
         CALL MEMREL('DFTRES',WORK,KWORK,KWORK,KFREE,LFREE)
       ELSE 
@@ -962,7 +962,7 @@ C
      &                 MPI_COMM_WORLD,IERR)
          CALL MPI_SEND(EDFTY,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(EXCMAT,LEXCMAT,MPI_DOUBLE_PRECISION,MPARID,45,
+         CALL MPI_SEND(EXCMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,45,
      &                 MPI_COMM_WORLD,IERR)
       ENDIF
       RETURN
