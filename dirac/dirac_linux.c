@@ -57,9 +57,9 @@ void main()
    printf("work %i %i \n",work,lwork);
    if ( work == NULL )
    {
-      fprintf(stderr,"\n\nSEVERE ERROR\n");
-      fprintf(stderr,"  REQUESTED MEMORY COULD NOT BE ALLOCATED.\n\n");
-      _exit(-1);
+      fprintf(stderr,"\n\n  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---\n");
+      fprintf(stderr," MEMORY ALLOCATION ERROR.\n\n");
+      return;
    }
 
    str_dirwrk[0] = (int) dirwrk;

@@ -1450,6 +1450,7 @@ C       Memory allocation
         CALL MEMGET('INTE',KCSEL,NESH(I),WORK,KFREE,LFREE)
         CALL SMOSE2(I,CFU(I2ORBT(I)+1),SMO(ISMOQ(I)+1),WORK(KSBUF),
      &              WORK(KCBUF),WORK(KCSEL),ISELM,
+     &              NORB(IFRP),NOCC(IFRP),NESH(IFRP),
      &              WORK(KFREE),LFREE)
 C     Memory deallocation
       CALL MEMREL('SMOSE1.SMOSE2',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1460,13 +1461,14 @@ C     Memory deallocation
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smose2 */
-      SUBROUTINE SMOSE2(IFRP,CFU,SMO,SBUF,CBUF,ICSEL,ISELM,WORK,LWORK)
+      SUBROUTINE SMOSE2(IFRP,CFU,SMO,SBUF,CBUF,ICSEL,ISELM,
+     &                  KNORB,KNOCC,KNESH,WORK,LWORK)
 C*****************************************************************************
 C
 C     Select vectors based on overlap
 C
 C     Written by T.Saue Nov 11 1995
-C     Last revision Nov 11 1995 - tsaue
+C     Last revision: Jan 7 1998 - jth NORB(IFRP) etc. is now parameter
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
@@ -1478,12 +1480,17 @@ C
 #include <dgroup.h>
 #include <dcbgen.h>
 #include <dcbdhf.h>
+C
+C     KNORB = NORB(IFRP)
+C     KNOCC = NOCC(IFRP)
+C     KNESH = NESH(IFRP)
+C
       CHARACTER FSYM*2
-      DIMENSION CFU(NORB(IFRP),NORB(IFRP),NZ),
-     &          SMO(NORB(IFRP),NOCC(IFRP),NZ),
-     &          SBUF(NESH(IFRP),NOCC(IFRP),NZ),
-     &          CBUF(NORB(IFRP),NESH(IFRP),NZ),
-     &          ICSEL(NESH(IFRP)),WORK(LWORK)
+      DIMENSION CFU(KNORB,KNORB,NZ),
+     &          SMO(KNORB,KNOCC,NZ),
+     &          SBUF(KNESH,KNOCC,NZ),
+     &          CBUF(KNORB,KNESH,NZ),
+     &          ICSEL(KNESH),WORK(LWORK)
 C
 C     Form product CFU * (SMAT * COCC)
 C
