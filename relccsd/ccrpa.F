@@ -754,7 +754,7 @@ C
       CALL RREAD(IOAMPS,Y2,INTOWP(NDIMX*RCW),SECT2)
 C
       IF (CARITH) THEN
-         CALL QUTI('No complex eigensolver implemented')
+         CALL QUIT('No complex eigensolver implemented')
       ELSE
          SUM1 = DDOT (NDIMX,X1,1,X2,1)
 C64B     SUM1 = SDOT (NDIMX,X1,1,X2,1)
