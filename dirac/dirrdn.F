@@ -1,4 +1,3 @@
-C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -1931,113 +1930,6 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
       IF(DOCIM) WRITE(LUPRI,'(A)') ' * Run DIRRCI CI code'
       IF(DOLUCT)WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
 C
-C   ... Check that the selected One-center model is reasonable,
-C       and write appropriate output.
-C   LV: This part has nothing to do with the wave function and should go
-C       under Hamiltonian or General (TODO)
-C
-      IF(.NOT.LEVYLE .AND. ONECAP) THEN
-         IF (INTV1C .LE. 0 .OR. INTV1C .GT. 4) THEN
-            CALL QUIT('  Invalid one-center model specified.')
-         END IF
-         IF(INTV1C.EQ.1) THEN
-            WRITE(LUPRI,'(A)')
-     &      ' * Only one-center SS parts of the e-e repulsion and n-e'//
-     &      ' attraction are calculated explicitly.'
-            IF (ICTLV1C(2) .EQ. 1)
-     &          WRITE(LUPRI,'(3X,A)')
-     &       '- Using a projection scheme for the multicenter parts.'
-            IF (ICTLV1C(2) .EQ. 2)
-     &          WRITE(LUPRI,'(3X,A)')
-     &       '- Testing the simulation of terms neglected in this'//
-     &       ' way (cheap alternative to Luuk`s projection scheme)'
-             ELSE IF (INTV1C .EQ. 2) THEN
-                WRITE(LUPRI,'(1X,A/3X,A)')
-                WRITE(LUPRI,'(A)')
-     &          '* One-center approximation (model 2):',
-     &          '- Multicenter SS and LS integrals are modelled by'//
-     &          ' classical interaction of atomic charges'
-             IF(ICTLV1C(2) .EQ. 0) THEN
-                WRITE(LUPRI,'(3X,A)')
-     &          '- Using Mulliken small component charges.'
-             ELSE IF (ICTLV1C(2) .EQ. 1) THEN
-                WRITE(LUPRI,'(3X,A)')
-     &          '- Using tabulated small component charges.'
-             ELSE IF(ICTLV1C(2) .EQ. 2) THEN
-                WRITE(LUPRI,'(3X,A)')
-     &          '- Using Mulliken small component charges.',
-     &          '- Estimating error associated with this model.'
-             ELSE IF (ICTLV1C(2) .EQ. 3) THEN
-                WRITE(LUPRI,'(3X,A)')
-     &          '- Testing HJJs penalty suggestion.'
-             ELSE
-                WRITE(LUPRI,'(/A,I10/)') 
-     &          'ERROR: Wrong one-center model specification :',
-     &          ICTLV1C(2)
-                CALL QUIT('ERROR in one-center model spec.')
-             END IF
-         ELSE IF(INTV1C.EQ.3) THEN
-             WRITE(LUPRI,'(1X,A,2(/3X,A))')
-     &       '* One-center approximation (model 3):',
-     &       '- Multicenter SS and LS modelled by Coulomb repulsion'//
-     &          ' integrals',
-     &       '  using large and small component charges'//
-     &          ' based on the density matrix.'
-             IF(ICTLV1C(2) .EQ. 0) THEN
-                WRITE(LUPRI,'(3X,A)')
-     &    '- Charges are distributed on the nuclei and on points',
-     &    '  between the nuclei where the contribution to the',
-     &    '  interaction from the dipole moment is zero.'
-             ELSE IF(ICTLV1C(2) .EQ. 1) THEN
-                WRITE(LUPRI,'(3X,A)')
-     &          '- Option not available'//
-     &          ' (no tabulated large component charges).'
-               CALL QUIT('    .ONECAP specification error')
-             ELSE IF(ICTLV1C(2) .EQ. 2) THEN
-                WRITE(LUPRI,'(1X,A)')
-     &    '  - Using atomic centered Mulliken large and small'//
-     &        ' component charges.'
-             ELSE IF(ICTLV1C(2) .EQ. 3) THEN
-                WRITE(LUPRI,'(1X,A)')
-     &    '  - Charges are distributed on the nuclei and on the ',
-     &    '    midpoints between the nuclei.'
-             ELSE
-                WRITE(LUPRI,'(1X,/A/)') 
-     &          '    Invalid one-center model specified !'
-                CALL QUIT('    .ONECAP specification error')
-             END IF
-         ELSE IF(INTV1C.EQ.4) THEN
-             WRITE(LUPRI,'(1X,A)')
-     &       '* One-center approximation (model 4):',
-     &    '  - All SS and LS integrals modelled by Coulomb repulsion',
-     &    '    integrals using small component atomic charges'
-             IF(ICTLV1C(2) .EQ. 0) THEN
-                WRITE(LUPRI,'(1X,A)')
-     &          '  - Using Mulliken small component charges.'
-             ELSE IF (ICTLV1C(2) .EQ. 1) THEN
-                WRITE(LUPRI,'(1X,A)')
-     &          '  - Using tabulated small component charges.'
-             ELSE
-                WRITE(LUPRI,'(1X,/A/)') 
-     &          '    Wrong ONECAP type 4 specification !'
-                CALL QUIT('    .ONECAP specification error')
-             END IF
-         END IF
-         IF (.NOT.DIRSET .AND. INTV1C.NE.2) THEN
-             WRITE(LUPRI,'(1X,A)')
-     &    '  - Default direct evaluation of all integrals changed',
-     &    '    by ONECAP since nothing was specified in **GENEREL.',
-     &    '    -->  LS and SS integrals are written to disk.'
-         END IF
-         IF(ONECNV .GT. D0) THEN
-           WRITE(LUPRI,'(1X,A,/1X,A,1P,D15.6)')
-     &  '  - One-center app. will be turned off when wavefunction is',
-     &  '    converged beyond the specified threshold of : ONECNV = ',
-     &       ONECNV
-         END IF
-C
-      END IF
-C
 C     Process input for various program sections
 C     ==========================================
 C
@@ -3431,6 +3323,8 @@ C&&& ALDA   : Kohn-Sham (DFT) Hamiltonian w/ LDA functional for LR.
   117      CONTINUE
 C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
              DFTHAM = .TRUE.
+Chjaaj: functional ought to be defined here instead of in DFTINP
+CJuly2003
             GO TO 100
   118     CONTINUE
 C&&& HFXFAC: weight of pure exchange
@@ -3448,29 +3342,31 @@ C&&& ONECNV: Set threshold for turning off ONECAP model
   121     CONTINUE
 C&&& ONECAP : Approximate potential for off-diagonal SS-blocks
 C             if no model specified, goto 199, choose onecap 2
-             READ(LUCMD,*,ERR=199) JNTV1C
-             INTV1C = MOD(JNTV1C,10)
-             ICTLV1C(2) = JNTV1C / 10
-             GOTO 198
-  199        INTV1C = 2
-             ICTLV1C(2) = 0
-             BACKSPACE LUCMD
-  198        CONTINUE
-             ONECAP  = .TRUE.
+            READ(LUCMD,'(I10)',END=199,ERR=199) JNTV1C
+            INTV1C = MOD(JNTV1C,10)
+            ICTLV1C(2) = JNTV1C / 10
+            GOTO 198
+  199       INTV1C = 2
+            ICTLV1C(2) = 0
+            BACKSPACE LUCMD
+  198       CONTINUE
+            ONECAP  = .TRUE.
+            IF(INTV1C.EQ.2) DOLVC = .TRUE.
 C
 C   ... Whether to evaluate integrals in a direct or concentional
 C       matter has not been specified in **GENEREL
 C       We write LS and SS integrals to disk by default in the
 C       ONECAP type 2 & 3 model.            /jkp
 C
-C       (Is switched off in this version [DIRSET .EQ. TRUE])
-             IF (.NOT.DIRSET .AND. INTV1C.NE.2) THEN
-                ILLDIR = 1
-                ISLDIR = 0
-                ISSDIR = 0
-                IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR
-             END IF
-             ICHANG = ICHANG + 1
+C       Switched off in this version [DIRSET = .TRUE.]
+C       - even one-center integrals become quite numerous in some cases!!!
+            IF (.NOT.DIRSET .AND. INTV1C.NE.2) THEN
+               ILLDIR = 1
+               ISLDIR = 0
+               ISSDIR = 0
+               IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR
+            END IF
+            ICHANG = ICHANG + 1
             GO TO 100
   122     CONTINUE
 C&&& SPINFR2 : debug: Zero out 2-electron spin-orbit terms
@@ -3632,6 +3528,109 @@ C
          WRITE(LUPRI,'(3X,A)') '- 2-el. spin-orbit terms zeroed out '//
      &      '(NB : ONLY in the DHF calculation !!)'
       END IF
+C
+C   ... Check that the selected One-center model is reasonable,
+C       and write appropriate output.
+C
+      IF(.NOT.LEVYLE .AND. ONECAP) THEN
+         IF (INTV1C .LE. 0 .OR. INTV1C .GT. 4) THEN
+            CALL QUIT('  Invalid one-center model specified.')
+         END IF
+         IF(INTV1C.EQ.1) THEN
+            WRITE(LUPRI,'(1X,A)')
+     &      '* Only one-center SS parts of the e-e repulsion and n-e',
+     &      '  attraction are calculated explicitly.'
+            IF (ICTLV1C(2) .EQ. 1)
+     &          WRITE(LUPRI,'(1X,A)')
+     &       '  - Using a projection scheme for the multicenter parts.'
+            IF (ICTLV1C(2) .EQ. 2)
+     &          WRITE(LUPRI,'(1X,A)')
+     &       '  - Testing the simulation of terms neglected in this',
+     &       '    way (cheap alternative to Luuk`s projection scheme)'
+         ELSE IF (INTV1C .EQ. 2) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '* One-center approximation (model 2):',
+     &          '  - Multicenter SS and LS integrals are modelled by',
+     &          '    classical interaction of atomic charges'
+             IF(ICTLV1C(2) .EQ. 0) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Using Mulliken small component charges.'
+             ELSE IF (ICTLV1C(2) .EQ. 1) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Using tabulated small component charges.'
+             ELSE IF(ICTLV1C(2) .EQ. 2) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Using Mulliken small component charges.',
+     &          '  - Estimating error associated with this model.'
+             ELSE IF (ICTLV1C(2) .EQ. 3) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Testing HJJs penalty suggestion.'
+             ELSE
+                WRITE(LUPRI,'(1X,/A/)') 
+     &          '    Wrong one-center model specification !'
+                CALL QUIT('    HERRDN : ERROR in readin. ')
+             END IF
+         ELSE IF(INTV1C.EQ.3) THEN
+             WRITE(LUPRI,'(1X,A)')
+     &       '* One-center approximation (model 3):',
+     &    '  - Multicenter SS and LS modelled by Coulomb attraction',
+     &    '    integrals using large and small component charges',
+     &    '    based on the density matrix.'
+             IF(ICTLV1C(2) .EQ. 0) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &    '  - Charges are distributed on the nuclei and on points',
+     &    '    between the nuclei where the contribution to the',
+     &    '    interaction from the dipole moment is zero.'
+             ELSE IF(ICTLV1C(2) .EQ. 1) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &    '  - Option not available (no tabulated large component '//
+     &         'charges).'
+               CALL QUIT('    HERRDN : ERROR in readin. ')
+             ELSE IF(ICTLV1C(2) .EQ. 2) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &    '  - Using atomic centered Mulliken large and small'//
+     &        ' component charges.'
+             ELSE IF(ICTLV1C(2) .EQ. 3) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &    '  - Charges are distributed on the nuclei and on the ',
+     &    '    midpoints between the nuclei.'
+             ELSE
+                WRITE(LUPRI,'(1X,/A/)') 
+     &          '    Invalid one-center model specified !'
+                CALL QUIT('    ONECAP : ERROR in readin. ')
+             END IF
+         ELSE IF(INTV1C.EQ.4) THEN
+             WRITE(LUPRI,'(1X,A)')
+     &       '* One-center approximation (model 4):',
+     &    '  - All SS and LS integrals modelled by Coulomb attraction',
+     &    '    integrals using small component atomic charges'
+             IF(ICTLV1C(2) .EQ. 0) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Using Mulliken small component charges.'
+             ELSE IF (ICTLV1C(2) .EQ. 1) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Using tabulated small component charges.'
+             ELSE
+                WRITE(LUPRI,'(1X,/A/)') 
+     &          '    Wrong ONECAP type 4 specification !'
+                CALL QUIT('    HERRDN : ERROR in readin. ')
+             END IF
+         END IF
+         IF (.NOT.DIRSET .AND. INTV1C.NE.2) THEN
+             WRITE(LUPRI,'(1X,A)')
+     &    '  - Default direct evaluation of all integrals changed',
+     &    '    by ONECAP since nothing was specified in **GENEREL.',
+     &    '    -->  LS and SS integrals are written to disk.'
+         END IF
+         IF(ONECNV .GT. D0) THEN
+           WRITE(LUPRI,'(1X,A,/1X,A,1P,D15.6)')
+     &  '  - One-center app. will be turned off when wavefunction is',
+     &  '    converged beyond the specified threshold of : ONECNV = ',
+     &       ONECNV
+         END IF
+C
+      END IF
+C
       IF(N1OPER.GT.0) THEN
         WRITE(LUPRI,'(3X,A)') '- The following one-electron '//
      &    'operators have been added:'
@@ -3837,6 +3836,12 @@ C       if *DFT in input but MOD_DFT not defined !!!
         GO TO 200
 C
     1 CONTINUE
+C
+#if defined (MOD_DFT)
+Chjaaj: we need to be sure DFT is initialized (and SET reset for geom.opt.)
+CJuly2003
+      CALL DFTINP(WORD,.TRUE.,WORK,LWORK)
+#endif
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
 C
  500  CONTINUE
