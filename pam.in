@@ -589,7 +589,7 @@ initialize()
 
    EXIT=0
 
-   RMWRK=0
+   RMWRK=1
    RMSCR=
 
    COPY_FILES=
