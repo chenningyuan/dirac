@@ -820,6 +820,34 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck LFNAM */
+      CHARACTER*10 FUNCTION LFNAM (FILNAM)
+C     
+C     Add the node identification to the file name for shared disk systems
+C     Written by Luuk Visscher, February 1998
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+#include "implicit.h"
+#include "dcbgen.h"
+#include "infpar.h"
+      CHARACTER*5  FILNAM
+      CHARACTER*10 LFILNAM
+      NODE = MYTID
+C     ... MYTID will be zero if this is a sequential version of Dirac
+C
+ 1000 FORMAT (A5,I5)
+C
+      WRITE (LFILNAM,1000) FILNAM,NODE
+      DO I = 6, 10
+         IF (LFILNAM(I:I).EQ.' ') LFILNAM(I:I) = 'X'
+      ENDDO
+C
+      LFNAM = LFILNAM
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUFFER_FILE_INFO (NBUF,NSIZE)
 C     
 C     Report the maximum number of buffer and record size that 
