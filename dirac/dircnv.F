@@ -1,11 +1,12 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfcnv */
-      SUBROUTINE DHFCNV(FOCK,EVEC,FBUF,TMAT,BMAT,CHKCNV,WORK,LWORK)
+      SUBROUTINE DHFCNV(FMO,FAO,DMAT,EVEC,FBUF,TMAT,BMAT,
+     &                  CHKCNV,SMOAO,WORK,LWORK)
 C*****************************************************************************
 C     Driver routine for checking convergence etc.
 C
 C     Written by T.Saue October 1995
-C     Last revision March 12 1996  - tsaue
+C     Last revision 971028-jth: Lot of changes to make one open shell work.
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -22,18 +23,23 @@ C
 #include <dcborb.h>
 #include <dgroup.h>
       LOGICAl CHKCNV
-      DIMENSION FOCK(*),EVEC(*),FBUF(*),BMAT(*),TMAT(*),WORK(LWORK)
+      DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
+     &          DMAT(*),SMOAO(*),WORK(LWORK), FAO(*)
 C
 C     Calculate error vector for this iteration
 C     =========================================
-C             FOCK  - Fock matrix in MO-basis
-C             TMAT - MO-transformation matrix
+C             FMO   - Fock matrix in MO-basis 
+C             FAO   - Fock matrix in AO-basis (FDao and FVao)
+C             DMAT  - Density matrix in AO-basis (DCao and DVao)
+C             TMAT  - MO-transformation matrix
+C             SMOAO - Left index transformed overlap matrix
 C             FBUF  - work area
 C
-      IF(CHKCNV) CALL DIISER(EVEC,FOCK,FBUF,TMAT,WORK,LWORK)
+      IF(CHKCNV) CALL DIISER(EVEC,FMO,FAO,DMAT,SMOAO,
+     &                       FBUF,TMAT,WORK,LWORK)
 C
 C
-C     Read Fock matrix from previous cycle into FBUF...
+C     Read MO Fock matrix from previous cycle into FBUF...
 C     =================================================
 C
       IF(CHKCNV) THEN
@@ -45,25 +51,25 @@ C
         CALL READAC(LUFOCK,N2ORBTQ,FBUF,IREC)
       ENDIF
 
-C     ...and write current Fock matrix to file
+C     ...and write current MO Fock matrix to file
 C     ==============================================
 C
       IF(MXDIIS.EQ.0) THEN
         IREC = 1
-        CALL WRTDAC(LUFOCK,N2ORBTQ,FOCK,IREC)
+        CALL WRTDAC(LUFOCK,N2ORBTQ,FMO,IREC)
       ELSE
         IREC = MOD(NITER-1,MXDIIS-1) + 1
-        CALL WRTDAC(LUFOCK,N2ORBTQ,FOCK,IREC)
+        CALL WRTDAC(LUFOCK,N2ORBTQ,FMO,IREC)
       ENDIF
 C
 C     If no check on convergence, then return here...
 C
       IF(.NOT.CHKCNV) RETURN
 C
-C     Calculate largest change in Fock matrix for this iteration
-C     ==========================================================
+C     Calculate largest change in AO Fock matrix for this iteration
+C     =============================================================
 C
-      CALL FCKCMP(FOCK,FBUF,WORK,LWORK)
+      CALL FCKCMP(FMO,FBUF,WORK,LWORK)
 C
 C     Check convergence
 C     =================
@@ -83,14 +89,27 @@ C     Convergence acceleration
 C     ========================
 C
       CACC = '        '
-      DIISON = DODIIS.AND.ABS(EVCVAL).LE.DIISTH.AND.INTFLG.EQ.INTBUF
+C     I (jth) want DIIS from iteration no. 2 and no damping.
+C     hjj has done non-relativistic tests of DIIS, and it was
+C     never found that DIIS slowed things down; in the worst
+C     cases there was the same number of iterations.
+C
+      DIISON = DODIIS.AND.ABS(EVCVAL).LE.DIISTH
+C
+C     If change in which integral classes included (LL, LS, SS),
+C     then we must restart DIIS
+C
+      IF (INTFLG.NE.INTBUF) THEN
+        IF(ITDIIS.GT.0) CLOSE(LUDIIS,STATUS='DELETE')
+        ITDIIS = 0
+      END IF
 C
 C     DIIS --- Direct Inversion of Iterative Subspace
 C     ===============================================
 C
       IF(DIISON) THEN
         ITDIIS = ITDIIS + 1
-        CALL DIISDR(BMAT,EVEC,FOCK,FBUF,IBSTAT,WORK,LWORK)
+        CALL DIISDR(BMAT,EVEC,FMO,FBUF,IBSTAT,WORK,LWORK)
         IF(IBSTAT.EQ.1) THEN
           DIISON = .FALSE.
 C
@@ -105,14 +124,14 @@ C
           CACC(1:4) = 'DIIS'
           WRITE(CACC(5:8),'(I4)') NELMBM
           IF(IPRSCF.GE.5) THEN
-            CALL HEADER('DHFCNV: Fock matrix after DIIS:',-1)
-            CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-          ENDIF
+             DO I = 1,NFSYM
+                WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+                CALL HEADER('DHFCNV: MO Fock matrix after DIIS:',-1)
+                CALL PRQMAT(FMO(I2ORBT(I)+1),NORB(I),NORB(I),
+     &                   NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+             END DO
+          END IF 
         ENDIF
-      ELSE
-        IF(ITDIIS.GT.0) CLOSE(LUDIIS,STATUS='DELETE')
-        ITDIIS = 0
       ENDIF
 C
 C     Damping of total Fock matrix
@@ -123,28 +142,32 @@ C
         CACC(1:4) = 'DAMP'
         WRITE(CACC(5:8),'(F4.2)') DAMPFC
         DNEW = D1 - DAMPFC
-        CALL DSCAL(N2ORBTQ,DNEW  ,FOCK,1)
-        CALL DAXPY(N2ORBTQ,DAMPFC,FBUF,1,FOCK,1)
+        CALL DSCAL(N2ORBTQ,DNEW  ,FMO,1)
+        CALL DAXPY(N2ORBTQ,DAMPFC,FBUF,1,FMO,1)
         IF(IPRSCF.GE.5) THEN
           DO I = 1,NFSYM
-            WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-            CALL HEADER('DHFCNV: Fock matrix after DAMP:',-1)
-            CALL PRQMAT(FOCK(I2ORBT(I)+1),NORB(I),NORB(I),
-     &                  NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-          ENDDO
+             WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+             CALL HEADER('DHFCNV: MO Fock matrix after DAMP:',-1)
+             CALL PRQMAT(FMO(I2ORBT(I)+1),NORB(I),NORB(I),
+     &                   NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+          END DO
         ENDIF
       ENDIF
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck diiser */
-      SUBROUTINE DIISER(EVEC,FOCK,EBUF,TMAT,WORK,LWORK)
+      SUBROUTINE DIISER(EVEC,FMO,FAO,DMAT,SMOAO,EBUF,TMAT,WORK,LWORK)
 C****************************************************************************
+C
+C     Last revision 971029-jth
 C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2 = 2.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2 = 2.0D0, DM1 = -1.00D00, 
+     &          D4 = 4.00D00, DP5 = 0.50D00)
 C
 #include <dcbbas.h>
 #include <dcborb.h>
@@ -156,64 +179,200 @@ C    DCBBAS: N2BBASX,NTBAS(0)
 C    DCBORB: NFORB,
 C    DGROUP: NZ,NFSYM
 C
-      DIMENSION FOCK(*),EVEC(*),EBUF(*),TMAT(*),EMAX(2),
-     &          WORK(LWORK)
+C     Note that EBUF has dimension NFMAT*N2BBASXQ
+C 
+      DIMENSION FAO(*),DMAT(*),EVEC(*),EBUF(*),TMAT(*),
+     &          SMOAO(*),WORK(LWORK), FMO(*)
+      CHARACTER*1 CTMP
+C
+#include <memint.h>
+C
 C
       CALL QENTER('DIISER')
 C
-C       Construct density matrix in MO-basis
-C       ====================================
 C
-      REWIND LUCMOS
-      CALL READT(LUCMOS,N2ORBTQ,EVEC)
-      DO 10 I = 1,NFSYM
-        IF(NOCC(I).EQ.0) GOTO 10
-        IOFF = I2ORBT(I)+NORB(I)*NPSH(I)+1
-        CALL QGEMM(NORB(I),NORB(I),NISH(I),D1,
-     &     'N','N',IPQTOQ(1,0),EVEC(IOFF),NORB(I),NORB(I),NZ,
-     &     'H','N',IPQTOQ(1,0),EVEC(IOFF),NORB(I),NORB(I),NZ,
-     &          D0,IPQTOQ(1,0),EBUF(I2ORBT(I)+1),NORB(I),NORB(I),NZ)
-      IF(IPRSCF.GE.5) THEN
-        WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-        CALL HEADER('DIISER:Density matrix in MO-basis',-1)
-        CALL PRQMAT(EBUF(I2ORBT(I)+1),NORB(I),NORB(I),
-     &                NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-      ENDIF
- 10   CONTINUE
+      IF (DIISAO.OR.(NASHT.GT.0)) THEN
 C
-C     Form error vector and find max element EVCVAL
-C     =============================================
+         CALL DZERO(EBUF,NFMAT*N2BBASXQ)
+         CALL DZERO(EVEC,N2EVECTQ)
 C
-      IOFF = 0
-      EMAX(1) = D0
-      EMAX(2) = D0
-      EVCVAL = D0
-      DO 20 I = 1,NFSYM
-        IF(NOCC(I).EQ.0) GOTO 20
-        CALL QGEMM(NORB(I),NORB(I),NORB(I),D1,
-     &      'N','N',IPQTOQ(1,0),FOCK(I2ORBT(I)+1),NORB(I),NORB(I),NZ,
-     &      'N','N',IPQTOQ(1,0),EBUF(I2ORBT(I)+1),NORB(I),NORB(I),NZ,
+         IOFF = 0
+         IOFF2 = 1
+         EVCVAL = D0
+C
+C        The gradient is
+C           g = DCao * FDao + f_o DVao * (FDao + (a_o-1) QVao) + H.C.
+C             = (DCao+f_o DVao) FDao + f_o (a_o-1) DVao QVao + H.C.
+C
+C   
+         IF (NASHT.GT.0) THEN
+C
+C           Construct total density matrix
+C
+            DO IOPEN = 1,NOPEN
+               CALL DAXPY(N2BBASXQ,DF(IOPEN),DMAT(1+N2BBASXQ*IOPEN),1,
+     &                                       DMAT,1)
+            END DO
+         END IF
+         DO 10 I = 1,NFSYM
+            IF (NOCC(I).EQ.0) GOTO 10
+C
+C              (DCao+f_o DVao) FDao
+C
+            CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),D1,
+     &                 'N','N',IPQTOQ(1,0),DMAT(1+I2BASX(I,I)),
+     &                         NTBAS(0),NTBAS(0),NZ,
+     &                 'N','N',IPQTOQ(1,0),FAO(1+I2BASX(I,I)),
+     &                         NTBAS(0),NTBAS(0),NZ,
+     &                 D0,IPQTOQ(1,0),EBUF(1+I2BASX(I,I)),
+     &                         NTBAS(0),NTBAS(0),NZ)
+            IF ( IPRSCF .GE. 10 ) THEN
+               WRITE(CTMP,'(I1)') I
+               CALL HEADER('DIISER: (DCao+DVao) FDao, corep '//CTMP,-1)
+               CALL PRQMAT(EBUF(1+I2BASX(I,I)),
+     &                     NFBAS(I,0),NFBAS(I,0),
+     &                     NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+            END IF
+            IF (NASHT.GT.0) THEN
+               DO 15 IOPEN = 1,NOPEN
+                  IF (NACSH(I,IOPEN).EQ.0) GOTO 15
+C
+C                 (a_o-1) f_o DVao QVao
+C                 The DP5 comes from TWOINT
+C
+                  DSCALE = DP5*DF(IOPEN)*(DA(IOPEN)-D1)
+                  CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),DSCALE,
+     &                 'N','N',IPQTOQ(1,0),
+     &                         DMAT(1+I2BASX(I,I)+N2BBASXQ*IOPEN),
+     &                         NTBAS(0),NTBAS(0),NZ,
+     &                 'N','N',IPQTOQ(1,0),
+     &                         FAO(1+I2BASX(I,I)+N2BBASXQ*IOPEN),
+     &                         NTBAS(0),NTBAS(0),NZ,
+     &                 D1,IPQTOQ(1,0),EBUF(1+I2BASX(I,I)),
+     &                         NTBAS(0),NTBAS(0),NZ)
+                  IF ( IPRSCF .GE. 10 ) THEN
+                     WRITE(CTMP,'(I1)') I
+                     CALL HEADER('DIISER: (DCao+f_o DVao) FDao + '//
+     &                           'f_o (a_o-1) DVao QVao, corep '//
+     &                           CTMP,-1)
+                     CALL PRQMAT(EBUF(1+I2BASX(I,I)),
+     &                           NFBAS(I,0),NFBAS(I,0),
+     &                           NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+                  END IF
+ 15            CONTINUE
+            END IF
+C
+C           Transform to MO-basis.: Ct Sao A C
+C           store in FAO
+C
+            CALL QGEMM(NORB(I),NFBAS(I,0),NFBAS(I,0),D1,
+     &                 'N','N',IPQTOQ(1,0),SMOAO(IOFF2),
+     &                   NORB(I),NFBAS(I,0),NZ,
+     &                 'N','N',IPQTOQ(1,0),EBUF(1+I2BASX(I,I)),
+     &                   NTBAS(0),NTBAS(0),NZ,
+     &                 D0,IPQTOQ(1,0),FAO,
+     &                   NORB(I),NFBAS(I,0),NZ)
+C
+            CALL QGEMM(NORB(I),NORB(I),NFBAS(I,0),D1,
+     &                 'N','N',IPQTOQ(1,0),FAO,
+     &                    NORB(I),NFBAS(I,0),NZ,
+     &                 'N','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
+     &                    NFBAS(I,0),NORB(I),NZT,
+     &                 D0,IPQTOQ(1,0),EVEC(1+IOFF),
+     &                    NORB(I),NORB(I),NZ)
+C
+            IF ( IPRSCF .GE. 10 ) THEN
+               WRITE(CTMP,'(I1)') I
+               CALL HEADER('DIISER: Error vector in MO-basis, corep '
+     &                     //CTMP,-1)
+               CALL PRQMAT(EVEC(1+IOFF),NORB(I),NORB(I),
+     &                     NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+            END IF
+C
+C           Calculate ErrVec - ErrVec(Hermitian conj.)
+C
+            CALL DIFMMH(EVEC(IOFF+1),NORB(I),NZ,NORB(I),NORB(I))
+C
+            IF ( IPRSCF .GE. 10 ) THEN
+               WRITE(CTMP,'(I1)') I
+               CALL HEADER('DIISER: ErrVec - ErrVec(Hermitian conj.)'//
+     &                     ', corep '//CTMP,-1)
+               CALL PRQMAT(EVEC(1+IOFF),NORB(I),NORB(I),
+     &                  NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+            END IF
+C
+            IOFF2 = IOFF2 + NZ*NFBAS(I,0)*NORB(I)
+            IOFF = IOFF + NORB(I)*NORB(I)*NZ
+ 10      CONTINUE     
+C
+C        The error vector is now 0.25 as in SIRIUS, so multiply with 4
+C        But in SIRIUS the norm is taken of the triangular matrix
+C           so we divide by SQRT(2). 
+C
+         EVCVAL = D4*DNRM2(N2EVECTQ,EVEC,1)/SQRT(D2)
+C
+C
+      ELSE
+C
+C        Old DIIS.
+C           Only for closed shell molecules.
+C
+C
+C        Construct density matrix in MO-basis
+C        ====================================
+C
+         REWIND LUCMOS
+         CALL READT(LUCMOS,N2ORBTQ,EVEC)
+         DO 20 I = 1,NFSYM
+            IF(NOCC(I).EQ.0) GOTO 20
+            IOFF = I2ORBT(I)+NORB(I)*NPSH(I)+1
+            CALL QGEMM(NORB(I),NORB(I),NISH(I),D1,
+     &           'N','N',IPQTOQ(1,0),EVEC(IOFF),NORB(I),NORB(I),NZ,
+     &           'H','N',IPQTOQ(1,0),EVEC(IOFF),NORB(I),NORB(I),NZ,
+     &             D0,IPQTOQ(1,0),EBUF(I2ORBT(I)+1),NORB(I),NORB(I),NZ)
+            IF(IPRSCF.GE.5) THEN
+               WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+               CALL HEADER('DIISER:Density matrix in MO-basis',-1)
+               CALL PRQMAT(EBUF(I2ORBT(I)+1),NORB(I),NORB(I),
+     &                   NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+            ENDIF
+ 20      CONTINUE
+C
+C        Form error vector and find max element EVCVAL
+C        =============================================
+C
+         IOFF = 0
+         EVCVAL = D0
+         DO 30 I = 1,NFSYM
+            IF(NOCC(I).EQ.0) GOTO 30
+            CALL QGEMM(NORB(I),NORB(I),NORB(I),D1,
+     &         'N','N',IPQTOQ(1,0),FMO(I2ORBT(I)+1),NORB(I),NORB(I),NZ,
+     &         'N','N',IPQTOQ(1,0),EBUF(I2ORBT(I)+1),NORB(I),NORB(I),NZ,
      &           D0,IPQTOQ(1,0),EVEC(IOFF+1),NORB(I),NORB(I),NZ)
-        IF(IPRSCF.GE.5) THEN
-          CALL HEADER('DIISER:FD matrix',-1)
-          WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-          CALL PRQMAT(EVEC(IOFF+1),NORB(I),NORB(I),NORB(I),NORB(I),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-        CALL DIFMMH(EVEC(IOFF+1),NORB(I),NZ,NORB(I),NORB(I))
-        IF(IPRSCF.GE.5) THEN
-          CALL HEADER('DIISER:Error matrix',-1)
-          WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-          CALL PRQMAT(EVEC(IOFF+1),NORB(I),NORB(I),NORB(I),NORB(I),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-        IOFF = IOFF + NORB(I)*NORB(I)*NZ
-   20 CONTINUE
+            IF(IPRSCF.GE.5) THEN
+               CALL HEADER('DIISER:FD matrix',-1)
+               WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+               CALL PRQMAT(EVEC(IOFF+1),NORB(I),NORB(I),NORB(I),NORB(I),
+     &                     NZ,IPQTOQ(1,0),LUPRI)
+            ENDIF
+            CALL DIFMMH(EVEC(IOFF+1),NORB(I),NZ,NORB(I),NORB(I))
+            IF(IPRSCF.GE.5) THEN
+               CALL HEADER('DIISER:Error matrix',-1)
+               WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+               CALL PRQMAT(EVEC(IOFF+1),NORB(I),NORB(I),NORB(I),NORB(I),
+     &                     NZ,IPQTOQ(1,0),LUPRI)
+            ENDIF
+            IOFF = IOFF + NORB(I)*NORB(I)*NZ
+   30    CONTINUE
 C
-C     Find total max element in EVEC
-C     ===============================
+C        Find total max element in EVEC
+C        ===============================
 C
-      EVCVAL = D2*DNRM2(N2EVECTQ,EVEC,1)
+         EVCVAL = D2*DNRM2(N2EVECTQ,EVEC,1)
+C
+      END IF
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('DIISER')
       RETURN
@@ -232,11 +391,13 @@ C*****************************************************************************
 C
 C Used from COMMON blocks:
 C   DCBORB: N2ORBTQ
+C   DCIDHF: NFMAT
 C   DGROUP: NZ
 C
 #include <dcbdhf.h>
 #include <dcborb.h>
 #include <dgroup.h>
+#include <dcbbas.h>
       DIMENSION FNEW(*),FOLD(*),WORK(LWORK)
 C
       CALL QENTER('FCKCMP')
@@ -379,6 +540,8 @@ C
           ENDDO
           WRITE(LUPRI,'(/A,1P,D9.3/)') '* DIIS coefficients.Sum: ',CFSUM
           IOFF = NITER - NELMBM
+          WRITE(LUPRI,'(5X,A6,4X,1P,D10.3)')
+     &       'lambda',CVEC(1)
           WRITE(LUPRI,'(5X,I5,5X,1P,D10.3)')
      &       (IOFF+I,CVEC(I),I=2,NELMBM)
         ENDIF
@@ -434,7 +597,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(DM1 = -1.0D0)
+      PARAMETER(DM1 = -1.0D0, D0 = 0.00D00)
       DIMENSION BMAT(*),BFAC(*),EVEC(*),EBUF(*),CVEC(*),
      &          KPVT(*),WORK(LWORK)
 C Used from COMMON blocks
@@ -452,11 +615,10 @@ C     Solve DIIS equation
 C     ===================
 C
       IF(IBSTAT.EQ.0) THEN
-        CALL DZERO(CVEC,NELMBM)
-        CVEC(1) = DM1
-        CALL DSPSL(BFAC,NELMBM,KPVT,CVEC)
+         CALL DZERO(CVEC,NELMBM)
+         CVEC(1) = DM1
+         CALL DSPSL(BFAC,NELMBM,KPVT,CVEC)
       ENDIF
-C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -562,7 +724,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D0=0.0D0)
+      PARAMETER(DP5=0.5D00,D8=8.00D00)
 C
 C Used from COMMON blocks:
 C   DHFCAL: N2EVECQ,I2EVECTQ
@@ -574,8 +736,21 @@ C
 #include <dgroup.h>
       DIMENSION EVEC1(*),EVEC2(*)
 C
-      BIJELM = DDOT(N2EVECTQ,EVEC1,1,EVEC2,1)
-      BIJELM = BIJELM + BIJELM
+COld Code
+C
+      IF (DIISMO) THEN
+         BIJELM = DDOT(N2EVECTQ,EVEC1,1,EVEC2,1)
+         BIJELM = BIJELM + BIJELM
+      ELSE
+C   
+C     jth: The new errorvector is half as big as in DALTON
+C       => the trace of two matrices is one fourth as big
+C       => we multiply by four (old code multiplied by two, so
+C                               a total of 8)
+C
+         BIJELM = D8*DDOT(N2EVECTQ,EVEC1,1,EVEC2,1)
+      END IF
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -633,12 +808,13 @@ C*****************************************************************************
 C
 C Used from COMMON blocks:
 C  DHFCAL: LUFOCK,NITER,NELMBM
-C  DCBBAS: N2BBASX
+C  DCIDHF: NFMAT
 C  DGROUP: NZ
 C
 #include <dcbdhf.h>
 #include <dcborb.h>
 #include <dgroup.h>
+#include <dcbbas.h>
       DIMENSION FOCK(*),FBUF(*),CVEC(*)
 C
       CALL DSCAL(N2ORBTQ,CVEC(NELMBM),FOCK,1)
