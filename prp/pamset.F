@@ -61,16 +61,16 @@ C     Written by  Hans Joergen Aa. Jensen and T.Saue 27-Jan-1995
 C     Last revision: July 21 1997 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C Used from common blocks:
 C  DGROUP: NFSYM
 C  DCBORB: IORB,NPSH,NFRO,NISH,NASH
 C
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
 C
       LOGICAL SKIPEP,SKIPEE,QED
       CHARACTER INDSTR(3,2)*72
@@ -134,12 +134,12 @@ C
 C     Written by T.Saue July 18 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
 C
       DIMENSION JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
 C
@@ -253,12 +253,12 @@ C
 C     Written by T.Saue July 21 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
 C
       LOGICAL QED
       DIMENSION JXOPP(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
@@ -341,12 +341,12 @@ C
 C     Written by T.Saue, Sep 16 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       LOGICAL TOBE
       DIMENSION FMO(*),WORK(*)
@@ -413,29 +413,29 @@ C
 C     Written by T.Saue, Sep 16 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
 C
-#include <dcbgen.h>
-#include <dcbfir.h>
-#include <dcbdhf.h>
-#include <dcbham.h>
-#include <blocks.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <cbihr2.h>
+#include "dcbgen.h"
+#include "dcbfir.h"
+#include "dcbdhf.h"
+#include "dcbham.h"
+#include "blocks.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "cbihr2.h"
 #if defined (MOD_DFT)
-#include <dftcom.h>
+#include "dftcom.h"
 #endif
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE,BF1,BF2,BF3
       DIMENSION FMO(*),FAO(*),CMO(*),WORK(*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('GETFC1')
       LUBUF = 22
@@ -647,12 +647,12 @@ C
 C     Written by T.Saue July 19 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>      
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"      
       CHARACTER INDSTR(NTYP,NFSYM)*72
       DIMENSION IND(LIND,NTYP,NFSYM),NIND(2,NTYP,NFSYM),
      &          WORK(*)
@@ -726,12 +726,12 @@ C
 C     Written by T.Saue - July 22 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,DC = 100.0D0)
 C
-#include <dcbxrs.h>
-#include <dgroup.h>
+#include "dcbxrs.h"
+#include "dgroup.h"
       DIMENSION GPCI(*),GPOE(*),GPOP(*),WORK(*),
      &          JCONF(*),JXOPE(2,NZXOPE),JXOPP(2,NZXOPP)
 C
@@ -863,12 +863,12 @@ C
 C     Written by T.Saue Oct 3 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       CHARACTER INDSTR(NTYP,2)*72
       DIMENSION IORBCL(4,NORBT),NIND(2,NTYP,2),WORK(*)
 C
@@ -897,12 +897,12 @@ C
 C     Written by T.Saue Oct 3 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       CHARACTER INDSTR(NTYP,2)*72
       DIMENSION IORBCL(4,NORBT),IND(MXFBAS,NTYP),
      &          NIND(2,NTYP,2),WORK(KFREE)

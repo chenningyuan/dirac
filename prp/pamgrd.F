@@ -45,11 +45,11 @@ C     Written by T.Saue - July 1996
 C     Last revision: Jul 10 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbxpr.h>
+#include "dgroup.h"
+#include "dcbxpr.h"
 C
       DIMENSION GPCI(*),GPOE(*),GPOP(*),JCONF(*),JXOPE(*),JXOPP(*),
      &          WORK(*)
@@ -115,12 +115,12 @@ C     Written by T.Saue - July 1996
 C     Last revision: Jul 10 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbxpr.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbxpr.h"
+#include "dcborb.h"
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),WORK(*)
 C
@@ -171,14 +171,14 @@ C     Written by T.Saue July 1996
 C     Last revision: Feb 17 2000 (hjaaj, new parameter list for PRPMAT)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbgen.h>
-#include <dcbxpr.h>
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dcbxpr.h"
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
      &          PRPMO(NORBT,NORBT,NZ),CMO(*),WORK(*)
@@ -282,13 +282,13 @@ C     Written by T.Saue August 2 1996
 C     Last revision Aug 2 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
 C
       DO IZ = 1,NZ
-#include <ivdep.h>
+#include "ivdep.h"
         DO IXOP = 1,NXOP
           IA = JXOP(1,IXOP)
           IM = JXOP(2,IXOP)
@@ -308,13 +308,13 @@ C     Written by T.Saue August 2 1996
 C     Last revision Aug 2 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
 C
       DO IZ = 1,NZ
-#include <ivdep.h>
+#include "ivdep.h"
         DO IXOP = 1,NXOP
           IA = JXOP(1,IXOP)
           IM = JXOP(2,IXOP)
@@ -336,11 +336,11 @@ C     Revisions:
 C       Feb 17 2000 (hjaaj, IMO(2), NMO(2) parameters for partial MO transf.)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dgroup.h"
 C
       DIMENSION PRPMO(*),CMO(*),IMO(*),NMO(*),WORK(*)
 C
@@ -375,15 +375,15 @@ C     Written by T.Saue July 1996
 C     Last revision: Feb 17 2000 (hjaaj, see PRPMAT)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include <dcbgen.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbxpr.h>
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbxpr.h"
 C
       LOGICAL FIRST(*)
       DIMENSION PRPMO(N2ORBX,NZ),CMO(*),IMO(*),NMO(*),PRPAO(N2BBASX,NZ),
@@ -489,14 +489,14 @@ C     Written by T.Saue - July 1996
 C     Last revision: Jul 10 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbxpr.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbibn.h>
+#include "dgroup.h"
+#include "dcbxpr.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbibn.h"
       DIMENSION GP(*),CMO(*),JXPAR(*),WORK(*)
 C
       CALL QENTER('GPGET')
@@ -576,14 +576,14 @@ C     Written by T.Saue July 1996
 C     Last revision: Feb 17 2000 hjaaj (new parameter list for PRPMAT)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbgen.h>
-#include <dcbxpr.h>
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dcbxpr.h"
 C
       DIMENSION GPO(*),PRPMO(NORBT,NORBT,NZ),CMO(*),
      &          JXOP(NXOP),WORK(*)
@@ -654,12 +654,12 @@ C     Written by J. Thyssen May 7 1999
 C     Last revision 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER ( D2 = 2.0D00, D1 = 1.0D00, DM1 = -1.0D00 )
 C
-#include <dcborb.h>
+#include "dcborb.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ),
      &          DV(*)

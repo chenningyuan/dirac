@@ -42,18 +42,18 @@ C       Written by Trond Saue and Hans J.Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 8, NTABLE = 20)
-#include <mxorb.h>
-#include <mxcent.h>
+#include "mxorb.h"
+#include "mxcent.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, WRDSRC*7
       DIMENSION WORK(LWORK)
 C
-#include <dcbprp.h>
+#include "dcbprp.h"
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA'/
@@ -64,7 +64,7 @@ C
      &             '.EFT   ','.EFTNTL','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('PRPINP')
-#include <memint.h>
+#include "memint.h"
 C
       NJOBS = 0
 C
@@ -76,6 +76,7 @@ C
       DOESR    = .FALSE.
       DOXLR    = .FALSE.
       DOXPP    = .FALSE.
+      DOXQR    = .FALSE.
       DIPOLE   = .FALSE.
       QUADRU   = .FALSE.
       EPOLAR   = .FALSE.
@@ -318,18 +319,18 @@ C
         GO TO 200
 C
     1 CONTINUE
-      CALL EXPINP(WORD,.TRUE.,WORK,LWORK)
-      CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
+      IF(DOEXP) CALL EXPINP(WORD,.TRUE.,WORK,LWORK)
+      IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
       CALL NMRINP(WORD,.TRUE.)
       CALL GRDINP(WORD,.TRUE.)
 #if defined (MOD_XPP)
-CTROND      CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
+      IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 #if defined (MOD_XQR)
-      CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
+      IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 #if defined (MOD_ESR)
-      CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
+      IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 C
 C     Define special operators
@@ -352,19 +353,19 @@ C     Written by T.Saue - May 1996
 C     Last revision: May 26  - 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include <dummy.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "dummy.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 8, DM1 = -1.0D00, D0 = 0.0D00)
 C
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbxpr.h>
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbxpr.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -594,8 +595,8 @@ C     3   Class label
 C     4   Separate factor for each component
 C     5   Common factor for all components
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*7 WORD
 C
       PARAMETER (NTABKW = 23)
@@ -904,8 +905,8 @@ C
 C  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
 C  Revised May 14 1996 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
       DIMENSION PFAC(NPCOMP),WORK(LWORK)
 C
@@ -914,8 +915,8 @@ C  XCBPRP: everything
 C  XCBPRL: PRPLBL()
 C  XCBPRI: LUPRI,NINFO
 C
-#include <dcbxpr.h>
-#include <dcbprl.h>
+#include "dcbxpr.h"
+#include "dcbprl.h"
 C
       CALL QENTER('XPRIND')
       INDXPR = -1
@@ -966,8 +967,8 @@ C  Add property to list of properties in COMMON block XCBPRP
 C  Copyright (c) 6-Feb-1995 Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
       DIMENSION PFAC(NPCOMP),WORK(LWORK)
 C
@@ -975,8 +976,8 @@ C Used from common blocks:
 C  XCBPRP: everything
 C  XCBPRI: LUPRI,NINFO
 C
-#include <dcbxpr.h>
-#include <dcbham.h>
+#include "dcbxpr.h"
+#include "dcbham.h"
 C
       CHARACTER*4 PCOMB
 C
@@ -1086,15 +1087,15 @@ C     If INDXPL .le. 0 then no match was found.
 C
 C     Last revision: May 15 1996 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER PLABEL*8, PCOMB*4,CLASSLB*7
 C
 C Used from common blocks:
 C   XCBPRL : PRPFILE
 C
-#include <dcbprl.h>
-#include <dcbcls.h>
+#include "dcbprl.h"
+#include "dcbcls.h"
 C
       CALL QENTER('INDXPL')
 C
@@ -1167,8 +1168,8 @@ C
 C     Jan-18-1995 - tsaue
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER LABINT*8,CLASSLB*7
 C
 C     Overlap integral
@@ -1547,19 +1548,19 @@ C
 C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
       CHARACTER PLABEL*8,CLASSLB*7,PCOMB*4,LABINT(15*MXCENT)*8
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('XPLDEF')
-#include <memint.h>
+#include "memint.h"
 C
       MAXTYP = 15*MXCENT
       IF ((CLASSLB.EQ.'ELFGRDC').OR.(CLASSLB.EQ.'ELFGRDS')) THEN
@@ -1592,13 +1593,13 @@ C
 C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <dcbprl.h>
-#include <cbiher.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "dcbprl.h"
+#include "cbiher.h"
+#include "nuclei.h"
       LOGICAL ANTI, TRASPH, SOLVNT, SQUARE,LABERR,
      &        DOATOM(*)
       CHARACTER PLABEL*8,CLASSLB*7,LABINT*8,PCOMB*4
@@ -1704,22 +1705,22 @@ C     Written by T.Saue, January 1995
 C     Last revision: tsaue - May 14 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <dcbprl.h>
-#include <dcbxpr.h>
-#include <symmet.h>
-#include <dgroup.h>
-#include <pgroup.h>
+#include "dcbprl.h"
+#include "dcbxpr.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "pgroup.h"
 C
       LOGICAL DIFSYM,DIFTIM
       DIMENSION ICREP(3),ICTIM(3)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Investigate property label no. INDXPR
 C
@@ -1823,14 +1824,14 @@ C     Written by T.Saue - May 1996
 C     Last revision: May 18 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <dcbxpr.h>
-#include <dcbprl.h>
-#include <pgroup.h>
-#include <dgroup.h>
+#include "dcbxpr.h"
+#include "dcbprl.h"
+#include "pgroup.h"
+#include "dgroup.h"
       CHARACTER MXFORM*6,FMT*6,OPTYPE*12,TTYP(-1:1)*2
       SAVE TTYP
       DATA TTYP /'T-','T0','T+'/
@@ -1974,8 +1975,8 @@ C     Written by T.Saue June 28 1996
 C     Last revision: July 8 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER OP1KEY*6
       DIMENSION IPR1OP(MAX1OP)
 C
@@ -2015,14 +2016,14 @@ C     Written by T.Saue June 28 1996
 C     Last revision - June 26 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER OP1KEY*6
       DIMENSION IPOP1U(*),IPOP1S(*),NOP1(8,2),JOP1(8,2),WORK(LWORK)
 C
       CALL QENTER(OP1KEY)
-#include <memint.h>
+#include "memint.h"
       NBUF = NOP1T*8
       CALL MEMGET('INTE',KIBUF,NBUF,WORK,KFREE,LFREE)
       CALL OP1SR1(IPOP1U,IPOP1S,NOP1T,NOP1,JOP1,WORK(KIBUF))
@@ -2041,11 +2042,11 @@ C     Written by T.Saue June 28 1996
 C     Last revision - June 26 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbxpr.h>
-#include <dgroup.h>
+#include "dcbxpr.h"
+#include "dgroup.h"
       DIMENSION IPOP1U(NOP1T),IPOP1S(NOP1T),NOP1(8),
      &          JOP1(8),IBUF(NOP1T,8)
 C
@@ -2088,17 +2089,17 @@ C     Written by J. Thyssen - 1997/09/01
 C     Last revision: jth - 1997/09/01
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <mxorb.h>
-#include <mxcent.h>
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <dcbgrd.h>
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbprp.h>
+#include "dcbgrd.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbprp.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Initialize /CBIGRD/
 C     ===================
@@ -2127,16 +2128,16 @@ C     Written by J. Thyssen - 1997/07/09
 C     Last revision: jth - 1997/07/09
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
-#include <dummy.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "dummy.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 4)
 C
-#include <dcbgrd.h>
-#include <dcbprp.h>
+#include "dcbgrd.h"
+#include "dcbprp.h"
 C
       LOGICAL SET, NEWDEF, RESET, LBIT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
@@ -2265,10 +2266,10 @@ C*****************************************************************************
 C     Calculate specified properties at final, converged geometry
 C     (called when .OPTIMIZE specified if geometry converges)
 C
-#include <implicit.h>
-#include <dcbxpr.h>
-#include <priunit.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "dcbxpr.h"
+#include "priunit.h"
+#include "dcbgen.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL OPEN

@@ -24,11 +24,11 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcborb.h"
 C
       DIMENSION DV(*),FC(*),FV(*),FQ(*),GRD(NXOP,NZ),
      &          JXOP(2,*),FPV(*),DFAC(2),IPQ(*)
@@ -100,11 +100,11 @@ C     Written by J. Thyssen - Oct 29 1998
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       II = I
       ITYP = -1
@@ -152,13 +152,13 @@ C     Written by J. Thyssen - Nov 16 1998
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D1 = 1.00D00, D0 = 0.00D00 )
 C
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcborb.h"
       DIMENSION FC(NORBT,NORBT,NZ),FQ(NORBT,NORBT,NZ),DV(*),
      &          FGEN(NORBT,NASHT,NZ),IPQ(*)
 C
@@ -220,8 +220,8 @@ C     Written by J. Thyssen - Nov 17 1998
 C     Last revision : 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D00, D2 = 2.00D00)
 C

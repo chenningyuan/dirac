@@ -91,13 +91,13 @@ C     Written by Trond Saue and Hans Joergen Aa. Jensen July 1996
 C     Last revision July 9 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbxlr.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbxlr.h"
+#include "dgroup.h"
       DIMENSION WORK(*)
 C
       CALL QENTER('PRPXLR')
@@ -150,17 +150,17 @@ C
 C     Called by PRPXLR (see PRPXLR for description of task)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(GPTHRS = 1.0D-9,D0 = 0.0D0,D2=2.0D0)
 C
-#include <dcbgen.h>
-#include <dcbxlr.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbxrs.h>
+#include "dcbgen.h"
+#include "dcbxlr.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbxrs.h"
 C
       CHARACTER TTYP(-1:1)*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
@@ -340,22 +340,22 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include <dummy.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "dummy.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 32,DRESFAC = 1.0D2)
 C
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcbxlr.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbxlr.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
@@ -373,7 +373,7 @@ C
      &            '.MXLOAD','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -812,7 +812,7 @@ C
       DO J = 1,NBFREQ
         FMT = MXFORM(BFREQ(J),12)
         WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
-      ENDDO        
+      ENDDO 
   999 CONTINUE
       IF (INPERR.GT.0) CALL QUIT('Input error in *LINEAR RESPONSE')
       RETURN
@@ -829,9 +829,9 @@ C     Written by T.Enevoldsen - Nov 1997
 C     Last revision: 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "orgcom.h"
       PARAMETER (NTABLE = 8)
       LOGICAL SET, NEWDEF, RESET, GORG
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -945,15 +945,15 @@ C     Written by T.Saue and H.J.Aa.Jensen July 1996
 C     Last revision: July 9 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include <dgroup.h>
-#include <dcbxlr.h>
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbxrs.h>
+#include "dgroup.h"
+#include "dcbxlr.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbxrs.h"
 C
       LOGICAL TOBE,ORBDEF(3)
       DIMENSION WORK(*),IR(2,2),NR(2)
@@ -1041,16 +1041,16 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include <dcbxrs.h>
-#include <dcbxlr.h>
-#include <dcbibn.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbxrs.h"
+#include "dcbxlr.h"
+#include "dcbibn.h"
+#include "dcborb.h"
+#include "dgroup.h"
       LOGICAL FIRST
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),
@@ -1168,15 +1168,15 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D2 = 2.0D00)
 C
-#include <dcbibn.h>
-#include <dcbxrs.h>
-#include <dcbxlr.h>
-#include <dgroup.h>
-#include <dcbxpr.h>
+#include "dcbibn.h"
+#include "dcbxrs.h"
+#include "dcbxlr.h"
+#include "dgroup.h"
+#include "dcbxpr.h"
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,NFREQ),BBUF(*),
@@ -1186,7 +1186,7 @@ C
       DATA BLANK16/'                  '/
       DATA BLANK2/'  '/
 C
-#include <chrnos.h>
+#include "chrnos.h"
       CALL QENTER('GETLR1')
       KFRSAV = KFREE
       IF(IPRXLR.GE.2) CALL HEADER('Output from GETLR1',-1)
@@ -1342,15 +1342,15 @@ C
 C     Written by T.Saue Oct 31 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER(D0 = 0.0D0)
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxlr.h>
-#include <dcbxrs.h>
-#include <dcbxpr.h>
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxlr.h"
+#include "dcbxrs.h"
+#include "dcbxpr.h"
 C
       CHARACTER MXFORM*6,FMT*6,TTYP(-1:1)*2
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),EIG(*),
@@ -1481,12 +1481,12 @@ C
 C     Written by T.Saue July 18 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbxlr.h>
-#include <dcbxrs.h>
+#include "dgroup.h"
+#include "dcbxlr.h"
+#include "dcbxrs.h"
 C
       DIMENSION WORK(*)
 C
@@ -1534,14 +1534,14 @@ C
 C     Written by Trond Saue July 4 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbxrs.h>
-#include <dcbxlr.h>
-#include <dcborb.h>
-#include <dcbbas.h>
+#include "dgroup.h"
+#include "dcbxrs.h"
+#include "dcbxlr.h"
+#include "dcborb.h"
+#include "dcbbas.h"
       DIMENSION WORK(*)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
       LOGICAL TOBE   
@@ -1684,11 +1684,11 @@ C/* Deck anaxl1 */
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbxlr.h>
+#include "dgroup.h"
+#include "dcbxlr.h"
       DIMENSION JXOP(*),IORBCL(4,*),WORK(*)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
 C
@@ -1739,12 +1739,12 @@ C
 C     Written by T.Saue July 6 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DTOL=1.0D-12,D0=0.0D0,D1=1.0D0,DM=1.0D2)
 C
-#include <dgroup.h>
-#include <pgroup.h>
+#include "dgroup.h"
+#include "pgroup.h"
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
       LOGICAL LFLAG(NVEC)
       DIMENSION BVEC(NBDIM,NZ,NVEC),FREQ(NVEC),RNORM(NVEC),IBTYP(NVEC),

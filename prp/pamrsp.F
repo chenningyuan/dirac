@@ -139,19 +139,19 @@ C     Written by Hans Joergen Aa. Jensen and T.Saue 1996
 C     Last revision: July 30 1996 - tsaue
 C  
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxorb.h"
 C
       DIMENSION GPCI(*), GPOE(*),GPOP(*),
      &          IBTYP(2,NREDM), IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),
      &          RCNV(*),EVALR(*),EVECR(*),WORK(*)         
 C
-#include <dcbgen.h>
-#include <dcbxrs.h>
-#include <blocks.h>
-#include <dcbfir.h>
+#include "dcbgen.h"
+#include "dcbxrs.h"
+#include "blocks.h"
+#include "dcbfir.h"
 C
       CHARACTER*1 TTYPEG, TTYPSG
 C
@@ -352,18 +352,18 @@ C     Written by Hans Joergen Aa. Jensen and T.Saue 1996
 C     Last revision: July 30 1996 - tsaue
 C  
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER(D1 = 1.0D0)
 C
-#include <dcbgen.h>
-#include <dcbxrs.h>
-#include <pgroup.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <cbihr2.h>
-#include <dcbbas.h>
+#include "dcbgen.h"
+#include "dcbxrs.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "cbihr2.h"
+#include "dcbbas.h"
 C
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION GPCI(*), GPOE(*),GPOP(*),
@@ -372,14 +372,14 @@ C
      &          RNORM(NVPAR,NFREQ),IVECS(NFREQ,NVPAR),
      &          ISIM(NVPAR),NPOS(*),WORK(*)
 C
-#include <dcbibn.h>
+#include "dcbibn.h"
       LOGICAL BVLOAD
       CHARACTER LAB123(3)*8,RESTAR*8
 C
       DATA LAB123/'********','********','XRSPONPP'/
       DATA RESTAR/'RESTART '/
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('XRSCT1')
       KFRSAV = KFREE
@@ -743,15 +743,15 @@ C     Written by H.J.Aa.Jensen and T.Saue 1996
 C     Last revision : July 30 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),
      &          GPCI(*),GPOE(*),GPOP(*),
      &          EVALR(*),WORK(*)
 C
-#include <dcbibn.h>
+#include "dcbibn.h"
 C
-#include <dcbxrs.h>
-#include <dgroup.h>
+#include "dcbxrs.h"
+#include "dgroup.h"
 C
       CALL QENTER('XRSST')
       KFRSAV = KFREE
@@ -900,13 +900,13 @@ C     Written by H.J.Aa.Jensen and T.Saue 1996
 C     Last revision : July 30 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbibn.h>
+#include "dcbibn.h"
 C
-#include <dcbxrs.h>
-#include <dgroup.h>
+#include "dcbxrs.h"
+#include "dgroup.h"
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),EVALR(*),
      &          GPCI(*),GPOE(*),GPOP(*),IEVEC(*),IPVEC(*),ICVEC(*),
      &          HEDIAG(*),HPDIAG(*),HCDIAG(*),
@@ -1004,19 +1004,19 @@ C
 C     Written by H.J.Aa.Jensen and T.Saue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbibn.h>
-#include <thrldp.h>
+#include "dcbibn.h"
+#include "thrldp.h"
       DIMENSION BVECS(*),IBVEC(*),IBTYP(2,*),IVECS(*),WORK(*)
 C
 C
 C Used from common blocks:
 C  WRKXRS: LZCONF,LZXOPT,JSYMOP
 C
-#include <dgroup.h>
-#include <dcbxrs.h>
+#include "dgroup.h"
+#include "dcbxrs.h"
 C
       CALL QENTER('XRSORT')
 C
@@ -1078,12 +1078,12 @@ C  /* Deck XRSOR1 */
 C*****************************************************************************
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
       PARAMETER (T1MIN = 1.D-8, THRRND = 1.D-4)
 C
-#include <dcbxrs.h>
+#include "dcbxrs.h"
       DIMENSION BVECS(NBDIM,NBNEW),IBTYP(2,NREDM),IBVEC(NREDM),
      &          BVBUF(NBDIM),IVECS(NBNEW),BVNRM(NBNEW)
       CHARACTER BTYP(-1:2)*1,XTYP(-1:1)*3
@@ -1278,10 +1278,10 @@ C
 C     Written by T.Saue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbxrs.h>
+#include "dcbxrs.h"
       DIMENSION WORK(*)
 C
       CALL QENTER('REABLD')
@@ -1359,10 +1359,10 @@ C
 C     Written by T.Saue Sep 18 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbxrs.h>
+#include "dcbxrs.h"
       DIMENSION SCVEC(*),SEVEC(*),SPVEC(*)
 C
 C       Configurational part
@@ -1466,13 +1466,13 @@ C     Written by H.J.Aa.Jensen and T.Saue
 C     Last revision Sep 19 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <ibndxdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ibndxdef.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include <dcbxrs.h>
-#include <dgroup.h>
+#include "dcbxrs.h"
+#include "dgroup.h"
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),REDS(NREDM,NREDM),
      &          GPCI(*),GPOE(*),GPOP(*),
      &          IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),IBTYP(2,NREDM),
@@ -1603,17 +1603,17 @@ C
 C     Written by T.Saue Oct 15 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       PARAMETER (D1 = 1.0D0)
 C
-#include <dcbibn.h>
+#include "dcbibn.h"
 C
-#include <dcbxrs.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dcbxrs.h"
+#include "dgroup.h"
+#include "dcborb.h"
       DIMENSION WORK(*),REDGP(*), REDS(*), REDE(*), 
      &          GPCI(*),GPOE(*),GPOP(*),
      &          EVECR(NREDM,NFREQ),RNORM(*),RCNV(*)
@@ -1723,11 +1723,11 @@ C
 C     Written by T.Saue Oct 15 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
 C
-#include <dcbxrs.h>
+#include "dcbxrs.h"
 C
       DIMENSION IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),IBTYP(2,NREDM),
      &          BCVEC(NZCONFQ,*),BEVEC(NZXOPEQ,*),BPVEC(NZXOPPQ,*),
@@ -1831,11 +1831,11 @@ C
 C     Written by T.Saue and H.J.Aa.Jensen Sep 29 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
 C
-#include <dcbxrs.h>
+#include "dcbxrs.h"
 C
       DIMENSION IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),IBTYP(2,NREDM),
      &          BCVEC(NZCONFQ,*),BEVEC(NZXOPEQ,*),BPVEC(NZXOPPQ,*),
@@ -1946,12 +1946,12 @@ C
 C     Written by T.Saue Oct 15 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D4=4.0D0)
 C
-#include <dcbxrs.h>
-#include <dgroup.h>
+#include "dcbxrs.h"
+#include "dgroup.h"
 C
       DIMENSION IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),IBTYP(2,NREDM),
      &          BCVEC(NZCONFQ,*),BEVEC(NZXOPEQ,*),BPVEC(NZXOPPQ,*),
@@ -2035,10 +2035,10 @@ C
 C     Written by T.Saue and Hans Joergen Aa. Jensen. 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbxrs.h>
+#include "dcbxrs.h"
 C
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),REDS(NREDM,NREDM),
      &          EVALR(NFREQ),EVECR(NREDM,NFREQ),IBTYP(2,*),RCNV(*),
@@ -2143,8 +2143,8 @@ C
 C     Written by T.Saue Oct 16 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
       DIMENSION AE(LDA,N),AS(LDA,N),G(N),X(N),
@@ -2225,10 +2225,10 @@ C
 C     Written by T.Saue and H.J.Aa.Jensen 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbxrs.h>
+#include "dcbxrs.h"
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),RCNV(*),
      &          EVALR(*),EVECR(NREDM,*),GPCI(*),GPOE(*),GPOP(*),
      &          RNORM(NVPAR,NFREQ),IVECS(NFREQ,NVPAR),WORK(*)
@@ -2322,11 +2322,11 @@ C
 C     Written by T.Saue Oct 24 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbxrs.h>
+#include "dgroup.h"
+#include "dcbxrs.h"
       DIMENSION BVEC(NBDIM,NZ,NBSIM)
 C
       IREP = JSYMOP - 1
@@ -2347,11 +2347,11 @@ C
 C     Written by T.Saue Nov 8 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbxrs.h>
-#include <dcbibn.h>
+#include "dcbxrs.h"
+#include "dcbibn.h"
       DIMENSION IBTYP(2,*),ISIM(*)
 C
 C     Initialize
@@ -2396,8 +2396,8 @@ C
 C     Written by T.Saue Nov 11 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER BEGIN
       DIMENSION REDMAT(LDA,NCOL),IBTYP(2,NRED)
@@ -2448,8 +2448,8 @@ C
 C     Written by T.Saue Nov 11 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION REDVEC(NRED),IBTYP(2,NRED)
       CHARACTER BTP(-1:2)*1,HTP(-1:1)*1,PFMT*26
@@ -2498,10 +2498,10 @@ C
 C     Written by T.Saue Nov 19 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbxrs.h>
+#include "dcbxrs.h"
 C
       CHARACTER CPUTID*12,WORD*3
       DIMENSION RNORM(NVPAR,NFREQ),EVALR(NFREQ),ISIM(*),
@@ -2600,10 +2600,10 @@ C
 C     Written by T.Saue 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbxrs.h>
+#include "dcbxrs.h"
       DIMENSION HEDIAG(*),HPDIAG(*),HCDIAG(*),
      &          SEDIAG(*),SPDIAG(*),WORK(*)
 C
@@ -2641,16 +2641,16 @@ C
 C     Written by T.Saue Dec 1 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DM2 = -2.0D0)
 C
-#include <dcbgen.h>
-#include <dcbxrs.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbibn.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbxrs.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbibn.h"
+#include "dgroup.h"
 C
       DIMENSION HEDIAG(*),HPDIAG(*),JXOPE(2,*),JXOPP(2,*),
      &          SEDIAG(*),SPDIAG(*),WORK(*)
@@ -2725,13 +2725,13 @@ C
 C     Written by T.Saue Dec 1 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C     
       PARAMETER(D2 = 2.0D0, DP5 = 0.5D0)
 C     
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION HODIAG(NXOP),FMO(NORBT,NORBT,NZ,2),
      &          JXOP(2,NXOP),DV(*)
 C
@@ -2800,13 +2800,13 @@ C
 C     Written by J. Thyssen - Jun 1 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C     
       PARAMETER(D2 = 2.0D0)
 C     
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION SODIAG(NXOP),JXOP(2,NXOP),DV(*)
 C
 C
@@ -2847,26 +2847,26 @@ C
 C     Written by T.Saue Dec 1 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2 = 2.0D0)
-#include <dcbibn.h>
+#include "dcbibn.h"
 C
 C Used from include files:
 C  dcborb.h : NASHT
 C  dcbxrs.h : several
 C  dgroup.h : NZ, ?
 C
-#include <dcborb.h>
-#include <dcbxrs.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dcbxrs.h"
+#include "dgroup.h"
 C
       CHARACTER*1 TYP
       DIMENSION BVEC(NVAR,NZ,*),GP(NVAR,NZ),HDIAG(NVAR),SDIAG(NVAR),
      &          EVALR(NFREQ),IBTYP(2,*),IBVEC(*),IVEC(*),
      &          WORK(*)
       LOGICAL FNDRSP
-#include <chrnos.h>
+#include "chrnos.h"
 C
       NVARQ = NVAR*NZ
       IF(NBTYP.EQ.JBENDX) THEN
@@ -3115,11 +3115,11 @@ C   Write response vectors
 C   Written by T.Saue and P.Norman Aug 23 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dcbbas.h"
+#include "dcborb.h"
       LOGICAL FNDLAB16
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
       DIMENSION RSPVEC(LEN)
@@ -3151,11 +3151,11 @@ C   Read response vectors
 C   Written by T.Saue and P.Norman Aug 23 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dcbbas.h"
+#include "dcborb.h"
       CHARACTER*16 LAB1,LAB2,XLAB1,XLAB2
       CHARACTER*2 TYP1,TYP2,XTYP1,XTYP2
       DIMENSION RSPVEC(LEN)
@@ -3208,12 +3208,12 @@ C     Scan file for response vectors
 C     Written by T.Saue and P.Norman Aug 23 2000
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C     
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <pgroup.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "pgroup.h"
       CHARACTER*16 LAB1,LAB2,XLAB1,XLAB2
       CHARACTER*2 TYP1,TYP2,XTYP1,XTYP2
       DIMENSION RSPVEC(LEN)

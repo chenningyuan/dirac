@@ -48,18 +48,18 @@ C     Written by  Hans Joergen Aa. Jensen and T.Saue 27-Jan-1995
 C     Last revision: July 21 1997 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
 C
       CHARACTER COPT*(*), CCOPT*8,LABEL*8
       DIMENSION DMAT(*),WORK(*)
       LOGICAL   FEXIST, FOPEN, FNDLAB
 C
-#include <memint.h>
+#include "memint.h"
       CALL QENTER('GETMAT')
 C
       IUNIT = 40
@@ -202,10 +202,10 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8,C(4)*8
@@ -266,19 +266,19 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision :
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D00, D0 = 0.0D00)
 C
-#include <dcborb.h>
-#include <dcbgen.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dgroup.h"
 C
       DIMENSION CREF(*),DV(*),PV(*),INDXCI(*)
       DIMENSION WORK(LWORK)
 C
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('RMAKDM')
 C

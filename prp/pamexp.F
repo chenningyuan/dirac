@@ -41,19 +41,19 @@ C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
       DIMENSION EXPVAL(*),WORK(LWORK)
 C
-#include <dcbexp.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbexp.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       CALL QENTER('PRPEXP')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
@@ -90,9 +90,9 @@ C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
       LOGICAL FIRST(NZ),LEXPST(2,*),FILEX
@@ -101,20 +101,20 @@ C
       CHARACTER MXFORM*6,FMT*6
       INTEGER   GETIOPEN
 C
-#include <dgroup.h>
+#include "dgroup.h"
 ctec dcborb included
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbexp.h>
-#include <dcbgen.h>
-#include <dcbxpr.h>
-#include <dcbprp.h>
-#include <dcbdhf.h>
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbexp.h"
+#include "dcbgen.h"
+#include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbdhf.h"
 C
 C
 C     Initialize
 C
-#include <memint.h>
+#include "memint.h"
 #if defined (SYS_IBM)
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='APROPER')
@@ -231,16 +231,16 @@ C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include <mxcent.h>
-#include <dcbxpr.h>
-#include <dcbexp.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "mxcent.h"
+#include "dcbxpr.h"
+#include "dcbexp.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcborb.h"
 C
       LOGICAL FIRST(NZ),LEXPST(2),ORBFLG
       DIMENSION DMAT(N2BBASX,NZ,*),PMAT(N2BBASX,NZ),
@@ -308,19 +308,19 @@ C     Written by T.Enevoldsen  - Sep 1996
 C     Last revision by W.A. de Jong - April 1999
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
       PARAMETER (D3 = 3.0D0)
       DIMENSION  TMP(3), ITMP(3), PVAL(9),
      &     AXIS(3,3,MXCENT),GEOM(3*8*MXCENT)
       LOGICAL    DOATOM(*)
-#include <nuclei.h>
-#include <symmet.h>
-#include <nqcc.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "nqcc.h"
+#include "ibtfun.h"
 C
 C     Initialization of GEOM
 C     (copied from abacus/hergp.F:CMMASS)
@@ -438,10 +438,10 @@ C
 C     Written by J. Thyssen - Feb 11 1999
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
+#include "dcborb.h"
       IF (IORBITAL .LT. 1) 
      &   CALL QUIT('illegal value in GETIOPEN(neg)')
 C

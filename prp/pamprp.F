@@ -59,20 +59,20 @@ C     Written by T.Saue June 24 1996
 C     The last revision: 1997/09/15 - jth (addition of gradient code)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <dcbesr.h>
-#include <dcbxlr.h>
-#include <dcborb.h>
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbesr.h"
+#include "dcbxlr.h"
+#include "dcborb.h"
 C
       DIMENSION WORK(LWORK)
       CALL QENTER('PAMPRP')
-#include <memint.h>
+#include "memint.h"
 C
       CALL TITLER('Property module','*',125)
       WRITE (LUPRI,'(A,//,T26,A,/,2(/T12,A))')
@@ -81,7 +81,7 @@ C
      *   ' written by',
      *   ' Hans Joergen Aa. Jensen, University of Odense, Denmark',
      *   ' Trond Saue,              University of Oslo,   Norway.'
-#include <dcbver.h>
+#include "dcbver.h"
 C
 C*****************************************************************************
 C*****  M O L E C U L A R    G R A D I E N T *********************************
@@ -170,12 +170,12 @@ C     Written by T.Saue - May 1996
 C     Last revision: May 27 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER(DM1 = -1.0D0)
-#include <dcbexp.h>
-#include <dcbxpr.h>
+#include "dcbexp.h"
+#include "dcbxpr.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
 C
@@ -232,12 +232,12 @@ C     Written by T.Saue - May 1996
 C     Last revision: May 27 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
-#include <dcbxpr.h>
-#include <dcbexp.h>
+#include "dcbxpr.h"
+#include "dcbexp.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
 C
@@ -326,15 +326,15 @@ C     Written by T.Saue - June 28 1996
 C     Last revision: June 28 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
-#include <dcbprp.h>
-#include <dcbxlr.h>
+#include "dcbprp.h"
+#include "dcbxlr.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
       PNAME     = 'X-Dipole length '
       IPTYP     = 1
@@ -385,15 +385,15 @@ C     Written by T.Saue Feb 19 1997
 C     Last revision: J. Thyssen - Oct 13 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
 C
-#include <memint.h>
+#include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     EFGINT: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
       CALL SETATM(WORK(KDATOM),NATOM,30)
@@ -412,24 +412,24 @@ C     Written by T.Enevoldsen - Sep 1996
 C     Last revision: J. Thyssen - Oct 13 1998
 
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
       LOGICAL   DOATOM(NUCIND)
-#include <dcbxpr.h>
-#include <dcbexp.h>
+#include "dcbxpr.h"
+#include "dcbexp.h"
 Ctec
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
 Ctec
       ITYP = 0
       IPTYP     = 1
@@ -482,15 +482,15 @@ C
 C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
 C
-#include <memint.h>
+#include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     PVC: INTTYP = 62
       CALL SETATM(WORK(KDATOM),NATOM,62)
@@ -509,24 +509,24 @@ C
 C     Written by J. Thyssen - Oct 7 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
       LOGICAL   DOATOM(NUCIND)
-#include <dcbxpr.h>
-#include <dcbexp.h>
+#include "dcbxpr.h"
+#include "dcbexp.h"
 C
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
 C
       ITYP = 0
       IPTYP     = 9
@@ -576,16 +576,16 @@ C
 C     Written by: J. Thyssen - Sept 30 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
       LOGICAL   TRLESS
 C
-#include <memint.h>
+#include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     EFTINT: INTTYP = 52 or INTTYP = 53
       IF (TRLESS) THEN
@@ -610,25 +610,25 @@ C
 C     Written by: J. Thyssen - Sept 30 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8, 
      &          PNPREFIX*6, PLBNAME*1
       DIMENSION WORK(LWORK),PFAC(3)
       LOGICAL   DOATOM(NUCIND),TRLESS
-#include <dcbxpr.h>
-#include <dcbexp.h>
+#include "dcbxpr.h"
+#include "dcbexp.h"
 Ctec
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
 Ctec
       ITYP = 0
       IPTYP     = 1
@@ -713,15 +713,15 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
 C
-#include <memint.h>
+#include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
       CALL SETATM(WORK(KDATOM),NATOM,29)
@@ -740,25 +740,25 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <symmet.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcbxlr.h>
-#include <chrxyz.h>
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbxlr.h"
+#include "chrxyz.h"
       LOGICAL DOATOM(NUCIND),SAME
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3),IOP(3)
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "chrnos.h"
+#include "ibtfun.h"
 C
 C
       NSCOOR = 3*NUCDEP
@@ -912,14 +912,14 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
-#include <dcbprp.h>
-#include <dcbxlr.h>
-#include <dcbexp.h>
+#include "dcbprp.h"
+#include "dcbxlr.h"
+#include "dcbexp.h"
 C
 C Make sure that the diamagnetic parts are calculated if SKIPEP is true
 C
@@ -1052,11 +1052,11 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION EXPVAL(*),ABLRF(*),ABCNV(*),WORK(*)
-#include <dcbprp.h>
+#include "dcbprp.h"
       CALL PRSYMB(LUPRI,'-',76,0)
 C
 C     Dipole moment
@@ -1140,13 +1140,13 @@ C      Written by T.Saue - May 30 1996
 C      Last revision July 8 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <debye.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "debye.h"
 C
-#include <mxcent.h>
-#include <dipole.h>
-#include <dcbexp.h>
+#include "mxcent.h"
+#include "dipole.h"
+#include "dcbexp.h"
 C
       DIMENSION EXPVAL(*),WORK(*)
 C
@@ -1192,14 +1192,14 @@ C
 C     Written by J. Thyssen - Oct 13 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
-#include <nuclei.h>
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
       DIMENSION EXPVAL(*),WORK(*)
 C
       KFRSAV = KFREE
@@ -1227,22 +1227,22 @@ C      Written by T.Enevoldsen  - Sep 1996
 C      Last revision 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
 C
-#include <dcbprp.h>
-#include <dcbexp.h>
+#include "dcbprp.h"
+#include "dcbexp.h"
       PARAMETER(CONV = 234.9647417D0)
       DIMENSION EXPVAL(*),AXIS(*),TEMP(*),PVAL(9),TMP(3),ITMP(3)
       LOGICAL   DOATOM(*)
       CHARACTER*4 HZUNIT
-#include <nuclei.h>
-#include <symmet.h>
-#include <nqcc.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "nqcc.h"
+#include "ibtfun.h"
 C
       IF (.NOT.EFG) THEN
 C
@@ -1352,20 +1352,20 @@ C     Written by T.Enevoldsen  - Sep 1996
 C     Last revision 
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C     
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <dcbexp.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "dcbexp.h"
       DIMENSION EXPVAL(*), TEMP(3,3,MXCENT), TMP(3), ITMP(3), PVAL(9),
      *     AXIS(3,3,MXCENT)
       LOGICAL DOATOM(*)
-#include <nuclei.h>
-#include <symmet.h>
-#include <nqcc.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "nqcc.h"
+#include "ibtfun.h"
       CALL DZERO(EFGEL,9*MXCENT)
       CALL DZERO(TEMP,9*MXCENT)
       ITYP = 0
@@ -1457,14 +1457,14 @@ C
 C     Written by J. Thyssen - Oct 13 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
-#include <nuclei.h>
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
       DIMENSION EXPVAL(*),WORK(*)
 C
       KFRSAV = KFREE
@@ -1492,20 +1492,20 @@ C     Written by T.Enevoldsen  - Sep 1996
 C     Last revision by J. Thyssen - Oct 13 1998
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C     
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <dcbexp.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "dcbexp.h"
       DIMENSION EXPVAL(*),AXIS(3,3,MXCENT),TEMP(*)
       DIMENSION TMP(3),ITMP(3),PVAL(9)
       LOGICAL   DOATOM(*)
-#include <nuclei.h>
-#include <symmet.h>
-#include <nqcc.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "nqcc.h"
+#include "ibtfun.h"
 C     
 C     
 C     Electronic contribution to dipole moment
@@ -1590,19 +1590,19 @@ C
 C     Written by J. Thyssen - Oct 13 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
-#include <nuclei.h>
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
 C
       DIMENSION EXPVAL(*),WORK(*)
       LOGICAL   TRLESS
 C
-#include <memint.h>
+#include "memint.h"
 C
 C     Allocate memory
 C
@@ -1631,22 +1631,22 @@ C
 C     Written by J. Thyssen - Oct 19 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
       PARAMETER (D0  =  0.0D00, D1 = 1.0D00, D3 = 3.0D00, 
      &           D4  =  4.0D00, D7 = 7.0D00,D27=27.0D00, 
      &           D35 = 35.0D00, DTHR = 1.0D-10)
 C
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
-#include <nuclei.h>
-#include <chrxyz.h>
-#include <symmet.h>
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
+#include "chrxyz.h"
+#include "symmet.h"
       LOGICAL   DOATOM(*), TRLESS
       DIMENSION EXPVAL(*),TEMPEFT(15,*), EFTEL(15,*),
      &          EFTNUC(15,*)
@@ -1658,7 +1658,7 @@ C
      &            5,12,14,
      &            6,13,15/
 C                
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('PRP_EFT')
 C     
@@ -1935,19 +1935,19 @@ C     Written by J. Thyssen - Nov 15 1999
 C     Nuclear contribution to electric field third-derivatives.
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
       PARAMETER (D3 = 3.0D0, D9 = 9.0D00, D15 = 15.0D0,
      &           D45 = 45.0D00, D90 = 90.0D00, D105 = 105.0D00)
       DIMENSION GEOM(3*8*MXCENT), EFTNUC(15,*)
-#include <nuclei.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C
 C     Initialization of GEOM
@@ -2121,14 +2121,14 @@ C
 C     Written by J. Thyssen - Oct 12 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
-#include <nuclei.h>
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
       DIMENSION EXPVAL(*),WORK(*)
 C
       KFRSAV = KFREE
@@ -2157,22 +2157,22 @@ C
 C     Written by J. Thyssen - Oct 12 1999
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C     
       PARAMETER (D0 = 0.0D00, D1 = 1.0D00, D2 = 2.0D00, D4 = 4.0D00)
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <dcbexp.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "dcbexp.h"
       DIMENSION EXPVAL(*),TEMP(*),DMPV(*),QW(*),
      &          IS(*)
       LOGICAL   DOATOM(*)
-#include <nuclei.h>
-#include <symmet.h>
-#include <nqcc.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "nqcc.h"
+#include "ibtfun.h"
 C     
       CALL QENTER('PRP_PVC')
 C
@@ -2266,14 +2266,14 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
-#include <nuclei.h>
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
      &          ABCNV(NBFREQ,NLRBPT),WORK(*)
       KFRSAV = KFREE
@@ -2318,25 +2318,25 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <dummy.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "dummy.h"
+#include "codata.h"
       PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
      &                   *6.5796838999D15)
 C
-#include <dcbprp.h>
-#include <dcbxpr.h>
-#include <dcbprl.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dgroup.h>
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dgroup.h"
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
      &          ABCNV(NBFREQ,NLRBPT),
@@ -2345,7 +2345,7 @@ C
      &          CHESS(3*NUCDEP,3*NUCDEP),
      &          SPNPAR(5,*),IBUF(3*NUCDEP,2),WORK(*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       CALL QENTER('PRP_SPNSP1')
       CALL TITLER
      &    ('DIRAC  - INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS','*',116)
@@ -2567,12 +2567,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck spiana */
       SUBROUTINE SPIANA(PRIBAS,SPNPAR,IATOM1,IATOM2,
      &                  WORK,KFREE,LFREE)
-#include <implicit.h>
-#include <priunit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D1 = 1.0D0)
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION PRIBAS(3*NUCDEP,3*NUCDEP),SPNPAR(5),COUPLM(3,3),
      &          PVAL(3), AXES(3,3), SYM(3,3), ANTI(3,3),WORK(*)
 C
@@ -2626,14 +2626,14 @@ C     Jun 28 1988 tuh - modified for symmetry
 C     Less memory intensive version Feb 1997 - tsaue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
 C
-#include <abainf.h>
-#include <nuclei.h>
+#include "abainf.h"
+#include "nuclei.h"
       CHARACTER*(*) KEY
       DIMENSION SHESS(*),WORK(*)
 C
@@ -2670,21 +2670,21 @@ C     Jun 28 1988 tuh - modified for symmetry
 C     Less memory intensive version Feb 1997 - tsaue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       DIMENSION SHESS(NROW,NROW), CHESS(NROW,NROW)
       DIMENSION WORK(LWORK)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
 C
       INTEGER BEGIN
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('PRIH21')
 C
@@ -2763,15 +2763,15 @@ C     Define diamagnetic spin-orbit operator
 C     Written by T.Saue - Feb 21 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
 C
-#include <memint.h>
+#include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     DSOINT: INTTYP = 12
       CALL SETATM(WORK(KDATOM),NATOM,12)
@@ -2790,26 +2790,26 @@ C     Define diamagnetic spin-orbit operator
 C     Written by T.Saue - Feb 21 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <symmet.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <chrxyz.h>
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "chrxyz.h"
       LOGICAL DOATOM(NUCIND),SAME
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3),IOP(3)
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "chrnos.h"
+#include "ibtfun.h"
 C
       WRITE(LUPRI,'(3X,A,A/A,I5)')
      &  'Diamagnetic spin-orbit integrals are generated by ',
@@ -2883,14 +2883,14 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
-#include <nuclei.h>
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
       DIMENSION EXPVAL(*),WORK(*)
       KFRSAV = KFREE
       NSCOOR  = NUCDEP*3
@@ -2927,24 +2927,24 @@ C     Written by T.Saue Feb 19 1997
 C     Last revised Jan 19 1998 - tsaue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <dummy.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "dummy.h"
+#include "codata.h"
       PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
      &                   *6.5796838999D15)
 C
-#include <dcbprp.h>
-#include <dcbxpr.h>
-#include <dcbprl.h>
-#include <dcbexp.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dgroup.h>
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+#include "dcbexp.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dgroup.h"
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),
      &          IATINF(3,NUCDEP),RATINF(3,5,NUCDEP),
@@ -2952,7 +2952,7 @@ C
      &          CHESS(3*NUCDEP,3*NUCDEP),
      &          SPNPAR(5,*),IBUF(3*NUCDEP,2),WORK(*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       KFRSAV = KFREE
       CALL QENTER('PRP_DSO1')
@@ -3109,14 +3109,14 @@ C     Interface between the old version of TRAHES and the new version.
 C     Written by J. Thyssen - 1997/09/18
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <mxcent.h>
+#include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('TRAHES2')
 C
@@ -3140,14 +3140,14 @@ C
 C     Written by T. Enevoldsen Nov 7 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION WORK(LWORK)
 C
-#include <memint.h>
+#include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
       CALL SETATM(WORK(KDATOM),NATOM,29)
@@ -3167,27 +3167,27 @@ C     Last revision: 7. Nov. 1997
 C                    22. Mar. 2000 (added ESR options, Anette Noerager + HJAaJ)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <gfac.h>
-#include <nuclei.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <symmet.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcbesr.h>
-#include <dcbxlr.h>
-#include <chrxyz.h>
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "gfac.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbesr.h"
+#include "dcbxlr.h"
+#include "chrxyz.h"
       LOGICAL DOATOM(NUCIND)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3),IOP(3)
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "chrnos.h"
+#include "ibtfun.h"
 C
 C
       NSCOOR = 3*NUCDEP
@@ -3403,15 +3403,15 @@ C     Define diamagnetic contribution to shieldings
 C     Written by T. Enevoldsen Oct. 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
 C
-#include <memint.h>
+#include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     NSTDIACGO: INTTYP = 38
       CALL SETATM(WORK(KDATOM),NATOM,38)
@@ -3430,26 +3430,26 @@ C     Define diamagnetic contribution to shieldings
 C     Written by T. Enevoldsen Oct. 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <symmet.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <chrxyz.h>
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "chrxyz.h"
       LOGICAL DOATOM(NUCIND),SAME
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3),IOP(3)
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "chrnos.h"
+#include "ibtfun.h"
 C
       NNSTIN  = 0
       IPTYP   = 1
@@ -3507,14 +3507,14 @@ C
 C     Written by T.Enevoldsen Nov. 7 1997
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C     
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
-#include <nuclei.h>
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
      &     ABCNV(NBFREQ,NLRBPT),WORK(*)
       KFRSAV = KFREE
@@ -3556,16 +3556,16 @@ C     C
 C     Written by T.Enevoldsen Nov. 7 1997
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <dcbprp.h>
-#include <dcbxpr.h>
-#include <dcbprl.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
@@ -3574,9 +3574,9 @@ C***********************************************************************
      &     ANIS(NUCDEP),ASYM(NUCDEP),SKEW(NUCDEP),SPAN(NUCDEP),
      &     IBUFA(3*NUCDEP),IBUFB(3),CSTRA(NUCDEP*NUCDEP*9),
      &     SCTRA(NUCDEP*NUCDEP*9),WORK(*)
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C     
       CALL TITLER('DIRAC  - NMR SHIELDINGS','*',116)
 C     
@@ -3732,17 +3732,17 @@ C
 C     Written by T.Enevoldsen Nov. 14 1997
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <alphac.h>
-#include <dcbxlr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "alphac.h"
+#include "dcbxlr.h"
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       CHARACTER NAME*6, NAMEX(3)*6, SGN*3
       INTEGER Z
       DIMENSION TMAT(3,3), DMAT(3,3), PMAT(3,3), SYM(3,3), ANTI(3,3),
      &          AXES(3,3), PVAL(6), WRK(3), IWRK(3), ABSP(3)
-#include <chrxyz.h>
+#include "chrxyz.h"
 C
       CALL DSCAL(9,FACTOR,TMAT,1)
       CALL DSCAL(9,FACTOR,DMAT,1)
@@ -3858,12 +3858,12 @@ C     Set orbital strings
 C     Stolen by T.Saue Au 24 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbxlr.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbxlr.h"
+#include "dcborb.h"
       LOGICAL ORBDEF(3)
       DIMENSION WORK(*),IR(2,2),NR(2)
 C
