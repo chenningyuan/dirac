@@ -8,10 +8,17 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR4T */
       SUBROUTINE TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,INDX,Q1,Q2,Q3,Q4,E1,E2)
+C***********************************************************************
+C
+C     Driver for scheme 4:
+C
+C     Loop over distributions, transform 2 indices and write
+C     half-transformed integrals (ij|rs) to disk in (rs)-batches.
+C     Parallel scheme.
 C
 C     Written by Luuk Visscher, Februari 1997
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxorb.h>
@@ -406,8 +413,15 @@ C           for GMAT. We assume that HMAT is not more than twice GMAT,
 C           and reserve the same memory also for use in HERMIT.
 C
          NSIZG = LFREE / 3
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+C        CRAYfix:
+C        Opening a direct access files with too long records
+C        generates a crash because the machine tries to keep some
+C        records in memory
+         NSIZG = MIN0(NSIZG,1000000)
+#endif
          NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &                    .FALSE.,INDX,WORK(KDXAB),IJP12,NSIZG,IDUM)
+     &                    .FALSE.,INDX,WORK(KFREE),IJP12,NSIZG,IDUM)
 C
          LDXAB = 5*NINSHA*NINSHB
          CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
@@ -515,11 +529,13 @@ C
       CALL MEMGET('REAL',KQ4T,NQ4T,WORK,KFREE,LFREE)
 C
       DO IFSYM = 1, NFSYM
-         CALL QREDUC (ISHLA,IFSYM,
+        IF(NDMOQR(2,IFSYM,3)*NDMOQS(2,IFSYM,3).NE.0) THEN
+          CALL QREDUC (ISHLA,IFSYM,
      &                Q3(ICMOQR(IFSYM,3)),
      &                NDMOQR(1,IFSYM,3),NDMOQR(2,IFSYM,3),
      &                WORK(KQ3S+ICMOQS(IFSYM,3)-1),
      &                NDMOQS(1,IFSYM,3),NDMOQS(2,IFSYM,3))
+        ENDIF
 c        print*,' q3 '
 c        CALL PRQMAT(Q3(ICMOQR(IFSYM,3)),
 c    &                NDMOQR(1,IFSYM,3),NDMOQR(2,IFSYM,3),
@@ -530,11 +546,13 @@ c        CALL PRQMAT(work(kQ3S+ICMOQS(IFSYM,3)-1),
 c    &                NDMOQS(1,IFSYM,3),NDMOQS(2,IFSYM,3),
 c    &                NDMOQS(1,IFSYM,3),NDMOQS(2,IFSYM,3),
 c    &                NZ,IPQTOQ(1,0),LUPRI)
+        IF(NDMOQR(2,IFSYM,4)*NDMOQT(2,IFSYM,4).NE.0) THEN
          CALL QREDUC (ISHLA,IFSYM,
      &                Q4(ICMOQR(IFSYM,4)),
      &                NDMOQR(1,IFSYM,4),NDMOQR(2,IFSYM,4),
      &                WORK(KQ4T+ICMOQT(IFSYM,4)-1),
      &                NDMOQT(1,IFSYM,4),NDMOQT(2,IFSYM,4))
+        ENDIF
       ENDDO
 C
       CALL MEMCHK('TRDRV4.3',WORK,1)
@@ -625,8 +643,12 @@ C
         DO IJ = 1, NIJ
           IKR = INDXKR(1,IJ+NIJOFF)
           JKR = INDXKR(2,IJ+NIJOFF)
+#if defined (VAR_MPI)
           IF (MYTID.NE.MPARID)
      &    CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),WORK,KFREE,LFREE)
+#else
+          CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),WORK,KFREE,LFREE)
+#endif
 #if defined (VAR_MPI)
           CALL MPI_REDUCE(WORK(KHMAT),WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
      &                    MPI_DOUBLE_PRECISION,MPI_SUM,MPARID,
@@ -635,11 +657,15 @@ C
 #if defined (VAR_PVM)
           write pvm code
 #endif
+#if defined (VAR_MPI)
           IF (MYTID.EQ.MPARID) THEN
+#endif
              CALL SYMFINT(IPRINT,IREPIJ,IJ,IKR,JKR,NSTR3,NSTR4,NKL,
      &                     WORK(KHMATS),IPQTOQ,WORK,KFREE,LFREE)
 ctest&                     WORK(KHMATS),IQMO,WORK,KFREE,LFREE)
+#if defined (VAR_MPI)
           ENDIF
+#endif
         ENDDO
       ELSE
         DO IJ = 1, NIJ

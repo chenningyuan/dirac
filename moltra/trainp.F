@@ -43,9 +43,6 @@ C
 C
       IF (SET) RETURN
       SET = .TRUE.
-CTROND
-      WRITE(LUPRI,'(A)') '* Inside MP2'
-CTROND
 C
 C     Initialize /DCBTRA/
 C     ===================
@@ -699,6 +696,24 @@ C
       WRITE(LUPRI,'(/1X,A)') 
      &   '* Set-up for 4-index transformation'
       WRITE(LUPRI,'(1X,A,I3)') '* Following scheme      : ',ISTRTRA
+      GOTO (501,502,503,504) ISTRTA
+  501 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - all half-transformed integrals (ij|rs) kept in core'
+        GOTO 500
+  502 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - accumulate (ij|ks) in core; calculate MP2 energy'
+        GOTO 500
+  503 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - write half-transformed integrals (ij|rs) to disk'
+        GOTO 500
+  504 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - write (rs)-batches of half-transformed integrals ',
+     &    ' (ij|rs) to disk; parallel scheme'
+  500 CONTINUE
       IF (MOD(ITRA_INTFL4,2).NE.1) WRITE(LUPRI,'(1X,A)') 
      +     '* LL Integrals not transformed'
       IF (MOD(ITRA_INTFL4/2,2).NE.1) WRITE(LUPRI,'(1X,A)') 

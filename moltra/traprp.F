@@ -146,6 +146,7 @@ C
      &                ISYM,ACHAR,LUMLF1)
          CALL MEMREL('TRAPRP',WORK,KPRCMO,KPRCMO,KFREE,LFREE)
       ENDDO
+      CLOSE(LU1INT,STATUS = 'KEEP')
 C
       DO IX = 1, 32
          ACHAR(IX:IX) = '*'

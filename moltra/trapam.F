@@ -143,12 +143,14 @@ C
 C     Select the set that we need
 C
       DO I = 1, 4
-         DO IFRP = 1, NFSYM
-            CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
+        DO IFRP = 1, NFSYM
+          IF(NSTR(IFRP,0,I).GT.0) THEN
+             CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
      &                   WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-         ENDDO
+          ENDIF
+        ENDDO
       ENDDO
 C
 C     Throw away the complete set, keep only the selected sets
@@ -501,7 +503,8 @@ C***********************************************************************
 C
 C     Subdriver for 4index transformation.
 C
-C     IOS*   orbital index arrays for index 1,2,3,4
+C     Qn             - coefficient set for index n
+C     EIG            - eigenvalues (for  MP2 calculation)
 C     NSTR(ifrp,0,i) - total number of orbitals for index i
 C     NSTR(ifrp,1,i) - number of electronic orbitals for index i
 C     NSTR(ifrp,2,i) - number of positronic orbitals for index i
@@ -566,87 +569,6 @@ C
 C
       CALL DEFCL (NCLASS)
 C
-C     Print section
-C     =============
-C
-C     De-activated all coefficient printing : better to use analysis
-C     module of DIRAC
-C
-C     This give the coefficients splitted out to boson character.
-C     We need to think of a nicer format before making this the default.
-C
-C     IF(IPRINT.GE.1) THEN
-C       CALL HEADER('Coefficients in PAMTR1',-1)
-C       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
-C       DO IFRP = 1,NFSYM
-C          IF (NDMOQR(2,IFRP,1).GT.0) THEN
-C             DO IC = 1, 2
-C                DO IREPA = 0, NBSYM-1
-C                  IF (NBBAS(IREPA,IC).GT.0.AND.
-C    &                 JBTOF(IREPA,IC).EQ.IFRP) THEN
-C                     WRITE(LUPRI,'(/3X,A,A3)') 'Fermion ircop ',
-C    &                                           FREP(IFRP)
-C                     WRITE(LUPRI,'(3X,A,I3)')  'Component number ',IC
-C                     WRITE(LUPRI,'(3X,A,I3/)') 'Boson irrep ',IREPA
-C                     KOFF = ICMOQR(IFRP,1) + IBTOF(IREPA,IC)
-C                     IREPAI = IREPA
-C                     IF (IC.EQ.2) IREPAI = IBTXOR(IXYZ,IREPA)
-C                     CALL PRQMAT(Q1(KOFF),
-C    &                            NBBAS(IREPA,IC) ,NDMOQR(2,IFRP,1),
-C    &                            NDMOQR(1,IFRP,1),NDMOQR(2,IFRP,1),
-C    &                            NZ,IPQTOQ(1,IREPAI),LUPRI)
-C                   ENDIF
-C                ENDDO
-C             ENDDO
-C          ENDIF
-C       ENDDO
-C     ENDIF
-C
-C     The quaternion units are arbitrary in the next format !!
-C
-C     IF(IPRINT.GE.3) THEN
-C       CALL HEADER('Coefficients in PAMTR1',-1)
-C       DO IFRP = 1,NFSYM
-C         WRITE(LUPRI,'(/3X,A,A3/)') 'Fermion ircop ',FREP(IFRP)
-C         WRITE(LUPRI,'(/A/)') 'Index 1'
-C         IF (NDMOQR(2,IFRP,1).EQ.0) THEN
-C            WRITE(LUPRI,'(A)') '******* Empty...*******'
-C            GOTO 123
-C         ENDIF
-C         CALL PRQMAT(Q1(ICMOQR(IFRP,1)),
-C    &                NDMOQR(1,IFRP,1),NDMOQR(2,IFRP,1),
-C    &                NDMOQR(1,IFRP,1),NDMOQR(2,IFRP,1),
-C    &                NZ,IPQTOQ(1,0),LUPRI)
-C123      WRITE(LUPRI,'(/A/)') 'Index 2'
-C         IF (NDMOQR(2,IFRP,2).EQ.0) THEN
-C            WRITE(LUPRI,'(A)') '******* Empty...*******'
-C            GOTO 124
-C         ENDIF
-C         CALL PRQMAT(Q2(ICMOQR(IFRP,2)),
-C    &                NDMOQR(1,IFRP,2),NDMOQR(2,IFRP,2),
-C    &                NDMOQR(1,IFRP,2),NDMOQR(2,IFRP,2),
-C    &                NZ,IPQTOQ(1,0),LUPRI)
-C124      WRITE(LUPRI,'(/A/)') 'Index 3'
-C         IF (NDMOQR(2,IFRP,3).EQ.0) THEN
-C            WRITE(LUPRI,'(A)') '******* Empty...*******'
-C            GOTO 125
-C         ENDIF
-C         CALL PRQMAT(Q3(ICMOQR(IFRP,3)),
-C    &                NDMOQR(1,IFRP,3),NDMOQR(2,IFRP,3),
-C    &                NDMOQR(1,IFRP,3),NDMOQR(2,IFRP,3),
-C    &                NZ,IPQTOQ(1,0),LUPRI)
-C125      WRITE(LUPRI,'(/A/)') 'Index 4'
-C         IF (NDMOQR(2,IFRP,4).EQ.0) THEN
-C            WRITE(LUPRI,'(A)') '******* Empty...*******'
-C            GOTO 126
-C         ENDIF
-C         CALL PRQMAT(Q4(ICMOQR(IFRP,4)),
-C    &                NDMOQR(1,IFRP,4),NDMOQR(2,IFRP,4),
-C    &                NDMOQR(1,IFRP,4),NDMOQR(2,IFRP,4),
-C    &                NZ,IPQTOQ(1,0),LUPRI)
-C126   ENDDO
-C     ENDIF
-C
 C
 C     We have three possible strategies : 
 C
@@ -658,6 +580,8 @@ C        Loop over distributions transform 4 indices(rest. ranges first)
 C        Accumulate integrals in memory, calculate MP2 energy
 C     3) Loop over distributions, transform 2 indices and write to disk
 C        Loop over transformed indices and transform last 2 indices
+C     4) Like 3, but 2-index transformed integrals written to disk in
+C        batches; parallel scheme.
 C
 C     In all cases we transform in mulliken notation
 C
@@ -1430,7 +1354,6 @@ C
       DIAGAB1 = SHAEQB1 .AND. .NOT.BIGVEC
 C
       DO IREPAB = 0, NBSYM-1
-CTROND        IJPAIRS(IREPAB) = 0
 C
 C     Loop over components
 C

@@ -375,6 +375,12 @@ C
       CALL QENTER('GTCFC1')
       KFRSAV = KFREE
       LUBUF = 22
+C
+C     Initialize
+C
+      NFMAT = 1
+      NOPEN = 0
+C
 C     Check if we need two-electron part
 C
       NTOT = 0
@@ -402,8 +408,6 @@ C
 C
 C       Closed shell Hartree - Fock
 C       ===========================
-        NFMAT = 1
-        NOPEN = 0
 C       Totally symmetric operator
         ISYMOP(1) = 1
 C       Fock matrix type
@@ -611,8 +615,8 @@ C
          REPN(2) = '  2E          '
       ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.1) THEN
          NSYMRP = 2
-         REPN(1) = '   E  1E          '
-         REPN(2) = '   E  2E          '
+         REPN(1) = '   E  1E      '
+         REPN(2) = '   E  2E      '
       ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.4) THEN
          NSYMRP = 4
          REPN(1) = ' 1AG          '
@@ -627,10 +631,10 @@ C
          REPN(4) = ' 2Eu          '
       ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.1) THEN
          NSYMRP = 4
-         REPN(1) = '  Eg 1Eg          '
-         REPN(2) = '  Eg 2Eg          '
-         REPN(3) = '  Eu 1Eu          '
-         REPN(4) = '  Eu 2Eu          '
+         REPN(1) = '  Eg 1Eg      '
+         REPN(2) = '  Eg 2Eg      '
+         REPN(3) = '  Eu 1Eu      '
+         REPN(4) = '  Eu 2Eu      '
       ELSE
          PRINT*, 'Warning representation name is not defined'
       ENDIF

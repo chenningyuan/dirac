@@ -588,7 +588,7 @@ C
          NCLASS = 16
       ENDIF
 C
-      CALL DEFCL (ICLARR,NCLASS)
+      CALL DEFCL (NCLASS)
 C
 C     Allocate memory for naive antisymmetrize
 C     -> Fully transformed integrals are
@@ -1143,6 +1143,7 @@ C
       IF (LENTSK.NE.IOLD) THEN
          IF (IPRINT.GE.1) THEN
             WRITE(LUPRI,'(/A,I5)') 'Batch Size Shrinked To:', LENTSK
+CTROND: INEED is NOT set !
             WRITE(LUPRI,'(A,I10)') 'Memory Needed In Transformation:',
      &           INEED
          ENDIF
@@ -1405,8 +1406,8 @@ C
          DO ICL = 4,7
             ICL1= ICL*2+1
             ICL2= ICL1+1
-            CALL ENERC2(E,E1,E2,E3,E4,N1,N2,N3,N4,
 c            CALL ENERC1(E,E1,E2,E3,E4,N1,N2,N3,N4,
+            CALL ENERC2(E,E1,E2,E3,E4,N1,N2,N3,N4,
      &           SPMAT(1,1,1,1,ICLDAT(ICL1)),
      &           SPMAT(1,1,1,1,ICLDAT(ICL1)+4),
      &           SPMAT(1,1,1,1,ICLDAT(ICL2)),

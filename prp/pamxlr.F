@@ -435,6 +435,7 @@ C
       ILLINT = 1
       ISLINT = 1
       ISSINT = 1
+      INPERR = 0
 C
 C
 C     Initialize /XCBLR/
