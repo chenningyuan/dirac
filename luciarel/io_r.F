@@ -373,6 +373,10 @@ C  avoid unit 66. Used in DALTON
               call itods(LEN_V,1,-1,LU)
               if (IRI.eq.2.and.IRILP_GLB.ne.IRILP_LOC) then
 * Write zeroes to imaginary vector parts:
+                if (NTEST.ge.10) then
+                  write(6,*) ' Writing zero block of length '
+                  write(6,*) LEN_V,' to vector '
+                end if
                 do ISCR = 1,LEN_V,1
                   SCR(ISCR) = ZERO
                 end do

@@ -28,11 +28,11 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetno */
       SUBROUTINE RGETNO(CREF,OCCNO,UNO,CMO,NATORB,MOISNO,
      &     IPRINT,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Calculate natural orbital occupation numbers and, if NATORB is true,
 C     transform orbital to natural orbitals.
@@ -50,7 +50,7 @@ C
 C     Written by J. Thyssen - Dec 21 2000
 C     Last revision :
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -248,10 +248,10 @@ C
       CALL QEXIT('RGETNO')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmccno */
       SUBROUTINE KRMCCNO(KEYCNO,RTRACI,CREF,CMO,IPRINT,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Transform orbitals to natural and/or Fock type orbitals.
 C
@@ -265,7 +265,7 @@ C
 C     Written by J. Thyssen - Mar 4 2000
 C     Last revision :
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"

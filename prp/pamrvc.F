@@ -3275,6 +3275,7 @@ C
      &           WORK(KDVMOLF),WORK(KPVMOLF),IPRXRS)
          ELSE
 C           LUCIAREL:
+            print*,'LUCI_DENS from pamrvc.'
             CALL LUCI_DENS(.TRUE.,.TRUE.,WORK(KDVMOLF),WORK(KPVMOLF),
      &                     CLREF,CRREF,WORK,KFREE,LFREE)
          END IF

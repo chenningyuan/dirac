@@ -739,11 +739,9 @@ C     ***************************************************
 C     *** Calculate active density matrices *************
 C     ***************************************************
 C
-      call memchk('before CALL RMAKDM',WORK,KFREE)
       IF (NASHT .NE. 0) THEN
          CALL RMAKDM(.TRUE.,.TRUE.,DV,PV,CREF,WORK,KFREE,LFREE)
       END IF
-      call memchk('after CALL RMAKDM',WORK,KFREE)
 C
 C
 C     ***************************************************
@@ -777,8 +775,6 @@ C
 C        Active energy.
 C
          EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
-         print*,'Active energy from densities in RGRAD: ',EMCACT
-c        stop 'In RGRAD.'
 C
       ELSE IF (NASHT. EQ. 1) THEN
          CALL DZERO(FQ,NZ*NASHT*NORBT)
@@ -2591,6 +2587,14 @@ C
                      WRITE(LUPRI,'(/A)')
      $                    ' (ROPTST)  CI start vector read from' //
      $                    ' label CREF on file KRMCSCF'
+                  END IF
+                  IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
+C
+C                   Generate restart and vector blocking information
+C                   for LUCIAREL CI vectors:
+                    CALL QUIT(' Restart with LUCIAREL not yet working ')
+                    CALL LUCI_RSTRMC()
+C
                   END IF
                   GO TO 2000
                END IF

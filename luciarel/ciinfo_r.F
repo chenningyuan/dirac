@@ -3919,8 +3919,8 @@ C             ISM4A(I1SM,I2SM,I3SM) = I4SM
 *
 * Construct accumulated MAX and MIN arrays for a RAS set of strings
 *
-      IMPLICIT REAL*8           ( A-H,O-Z)
-      DIMENSION  MINEL(*),MAXEL(*)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION MINEL(*),MAXEL(*)
 *
       NORB = NORB1 + NORB2 + NORB3
 *. accumulated max and min in each of the three spaces
@@ -3941,13 +3941,12 @@ COLD  MIN1A = MIN1_T
           MAXEL(IORB) = MIN(IORB,MAX1A)
         ELSE IF ( NORB1.LT.IORB .AND. IORB.LE.(NORB1+NORB2)) THEN
           MINEL(IORB) = MAX(MIN2A+IORB-NORB1-NORB2,0)
-          IF(NORB1 .GT. 0 )
-     &    MINEL(IORB) = MAX(MINEL(IORB),MINEL(NORB1))
+          IF (NORB1.GT.0) MINEL(IORB) = MAX(MINEL(IORB),MINEL(NORB1))
           MAXEL(IORB) = MIN(IORB,MAX2A)
         ELSE IF ( IORB .GT. NORB1 + NORB2 ) THEN
           MINEL(IORB) = MAX(MIN3A+IORB-NORB,0)
-          IF(NORB1+NORB2 .GT. 0 )
-     &    MINEL(IORB) = MAX(MINEL(IORB),MINEL(NORB1+NORB2))
+          IF (NORB1+NORB2.GT.0)
+     &        MINEL(IORB) = MAX(MINEL(IORB),MINEL(NORB1+NORB2))
           MAXEL(IORB) = MIN(IORB,MAX3A)
         END IF
   100 CONTINUE
@@ -4443,6 +4442,7 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
       call memmar(KPCIBT ,8*MXNTTS,'ADDL  ',1,'CIBT  ')
       call memmar(KPCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
       call memmar(KPCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
+C     stop 'CHECKING in Z_BLKFO_REL.'
 
 *.    ^ These should be preserved after exit so put mark for 
 *       flushing after

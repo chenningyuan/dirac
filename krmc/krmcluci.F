@@ -753,7 +753,7 @@ C    &    '     Spin multiplicity ....  ', MULTS
       WRITE(LUPRI,'(A)')
      &  '     ==================== '
 *. Subspace Hamiltonian
-      IF(MXP1+MXP2+MXQ .EQ.0) THEN
+      IF (MXP1+MXP2+MXQ .EQ.0) THEN
         WRITE(LUPRI,'(A)')
      &  '        No subspace Hamiltonian '
       ELSE
@@ -1559,7 +1559,8 @@ C
         write(LUPRI,*)
         write(LUPRI,*) ' CIINII flag call '
         write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Determining configurational start guess.'
+        write(LUPRI,*) '   Determining configurational start guess'
+        write(LUPRI,*) '   (or information for restart of MCSCF).'
         write(LUPRI,*)
       else if (CIRUN.eq.'SIGMA ') then
         write(LUPRI,*)
@@ -2097,6 +2098,42 @@ C
       RETURN
       END
 #endif /* NOT_USED_ROUTINE */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LUCI_RSTRMC()      
+C***********************************************************************
+C
+C     Restart information for LUCIAREL in MCSCF runs.
+C
+C     Written by T. Fleig                 - Aug 28, 2003
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+C
+#include "dcbopt.h"
+C
+      CHARACTER*6 CIRUN
+C
+#include "../luciarel/cstate.inc"
+C
+      CIRUN = 'CIINII'
+      MZ = MIN(NZ,2)
+C
+C     Introduce LUCIAREL action
+      CALL LUCI_TASK(CIRUN)
+C
+C     Transfer data to LUCIAREL common blocks.
+      CALL LUCI_TRACOM(CIRUN)
+C
+C     Setup routines for running LUCIAREL
+      CALL LUCI_SETUP()
+C
+      CALL Z_BLKFO(IDC,NMS2VAL,ISPC,ISM,KPCLBT,KPCLEBT,
+     &             KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
+     &             NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
+C
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KR_LUCI_IO(IVA,IVB,II,VA,IDIMA,VB,IDIMB,
      &                      X1,IDIM1,X2,IDIM2,

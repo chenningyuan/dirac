@@ -3415,7 +3415,7 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *
       CALL QENTER('STRIN')
 *
-      NTESTL = 000
+      NTESTL = 001
       NTEST = MAX(NTESTL,IPRNT)
 *
 **.2 : Number of classes per string type and mappings between
@@ -3464,7 +3464,7 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *. Reverse lexical adresing schemes for each group of string
         CALL WEIGHT_REL(STIN(KZ(IGRP)),IEL,NORB1,NORB2,NORB3,
      &              MNRS1X,MXRS1X,MNRS3X,MXRS3X,
-     &              STIN(KFREEL),IPRNT )
+     &              STIN(KFREEL),IPRNT)
 *. Number of strings per symmetry in a given group
         CALL NSTRSO_GAS_REL(IEL,NORB1,NORB2,NORB3,
      &              MNRS1X,MXRS1X,MNRS3X,MXRS3X,
@@ -3489,8 +3489,10 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *
 *. Min and max of sym for each group
 *
-C?    write(6,*) 'NSTFSMGP array:'
-C?    call iwrtma(NSTFSMGP,NSMST,NGRP,MXPNSMST,MXPSTT)
+      if (NTEST.ge.50) then
+        write(6,*) 'NSTFSMGP array:'
+        call iwrtma(NSTFSMGP,NSMST,NGRP,MXPNSMST,MXPSTT)
+      end if
 *
       DO IGP = 1, NGRP
        MX = 1
@@ -3522,8 +3524,11 @@ C?    call iwrtma(NSTFSMGP,NSMST,NGRP,MXPNSMST,MXPSTT)
        ISMFTO(IORB) = ISMFTO2(IORB)
        ISMFTO2(IORB) = ISWAP
       END DO
-C     WRITE(6,*) ' Updated ISMFTO array '
-C     CALL IWRTMA(ISMFTO,1,NTOOB,1,NTOOB)
+*
+      if (NTEST.ge.50) then
+        WRITE(6,*) ' Updated ISMFTO array '
+        CALL IWRTMA(ISMFTO,1,NTOOB,1,NTOOB)
+      end if
 *
       if (NTEST.ge.5) then
         write(6,*) '======================================='
@@ -3552,7 +3557,7 @@ C     CALL IWRTMA(ISMFTO,1,NTOOB,1,NTOOB)
 *. Reverse lexical adresing schemes for each group of string
         CALL WEIGHT_REL(STIN(KZ(IGRP)),IEL,NORB1,NORB2,NORB3,
      &              MNRS1X,MXRS1X,MNRS3X,MXRS3X,
-     &              STIN(KFREEL),IPRNT )
+     &              STIN(KFREEL),IPRNT)
 *. Number of strings per symmetry in a given group
         CALL NSTRSO_GAS_REL(IEL,NORB1,NORB2,NORB3,
      &              MNRS1X,MXRS1X,MNRS3X,MXRS3X,
@@ -3576,7 +3581,7 @@ C     CALL IWRTMA(ISMFTO,1,NTOOB,1,NTOOB)
 *
 *. Min and max of sym for each group
 *
-      if (NTEST.ge.5) then
+      if (NTEST.ge.50) then
         write(6,*) 'NSTFSMGP2 array:'
         call iwrtma(NSTFSMGP2,NSMST,NGRP,MXPNSMST,MXPSTT)
       end if
@@ -3786,8 +3791,10 @@ C     CALL IWRTMA(ISMFTO,1,NTOOB,1,NTOOB)
      & ' Largest number of strings of given supergroup and sym', MXNSTR
       END IF
 *
-C?    WRITE(6,*) ' Matrix NSTFSMSPGP '
-C?    CALL IWRTMA(NSTFSMSPGP,NSMST,NTSPGP,MXPNSMST,NTSPGP)
+      if (NTEST.ge.50) then
+        WRITE(6,*) ' Matrix NSTFSMSPGP '
+        CALL IWRTMA(NSTFSMSPGP,NSMST,NTSPGP,MXPNSMST,NTSPGP)
+      end if
 *
 * Largest number of symmetrydistributions for any given supergroup
 C           FUNCTION MAX_NSYMDIST_DBG(NSPGRP,ISPGRP,NGAS,NSMST)
@@ -4514,7 +4521,7 @@ CTF
 *
 * Reverse lexical ordering is used for restricted space
 *
-      IMPLICIT REAL*8           ( A-H,O-Z)
+      IMPLICIT REAL*8 (A-H,O-Z)
       INTEGER Z(*),ISCR(*)
 *
       NORB = NORB1 + NORB2 + NORB3

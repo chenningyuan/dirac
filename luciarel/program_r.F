@@ -109,7 +109,7 @@
         NVAR = NDET
       ELSE
         NVAR = NCSASM(ISM)
-      END  IF
+      END IF
       IF(IPRNT.GE.5)
      &WRITE(6,*) '  NVAR in GASCI ', NVAR
 *
