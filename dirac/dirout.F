@@ -143,46 +143,22 @@ C
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +     'Total energy            :   ',DHFERG
       ENDIF
-      DO 100 IFRP = 1,NFSYM
-        IF(NORB(IFRP).EQ.0) GOTO 100
-        CALL HEADER('Fermion corep '//FREP(IFRP),-1)
-C
-C      Electron states - eigenvalues
-C      =============================
-C
-      IF(LBIT(IPREIG,1).AND.NESH(IFRP).NE.0) THEN
-        CALL HEADER('ELECTRON STATES - eigenvalues',-1)
-        IVAL = NPSH(IFRP)
-        IF (SPINFR.OR.LEVYLE) THEN
-           CALL PREIGB(EIG(IORB(IFRP)+1),IBEIG(IORB(IFRP)+1),
-     &                 IVAL,NESH(IFRP))
-        ELSE
-           CALL PREIGV(EIG(IORB(IFRP)+1),NESH(IFRP),IVAL,
-     &                 WORK,LWORK)
-        ENDIF
-      ENDIF
-C
-C      Positron states - eigenvalues
-C      =============================
-C
-      IF(LBIT(IPREIG,2).AND.NPSH(IFRP).NE.0) THEN
-        CALL HEADER('POSITRON STATES - eigenvalues',-1)
-        IVAL = 0
-        IF (SPINFR.OR.LEVYLE) THEN
-           CALL PREIGB(EIG(IORB(IFRP)+1),IBEIG(IORB(IFRP)+1),
-     &                 IVAL,NESH(IFRP))
-        ELSE
-           CALL PREIGV(EIG(IORB(IFRP)+1),NPSH(IFRP),IVAL,
-     &                 WORK,LWORK)
-        ENDIF
-      ENDIF
 C
 C     Check that there are no eigenvalues in the gap
 C
       CALL EIGCHK(EIG(IORB(IFRP)+1),NPSH(IFRP))
   100 CONTINUE
 C
-
+C     Print eigenvalues
+C
+      IF(LBIT(IPREIG,1))
+     &   CALL PREIGN(EIG,IBEIG,LBIT(IPREIG,2),WORK,LWORK)
+C
+C     Check HOMO - LUMO gab, and if there are any negative
+C     energy virtuals.
+C
+      CALL CHKHLG(EIG,IBEIG)
+C
       RETURN
 C
  1000 FORMAT(11X,'Energy',15X,'ERGVAL',4X,'FCKVAL',4X,'EVCVAL',6X,
@@ -1047,3 +1023,352 @@ C
       RETURN
       END
 C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck preign */
+      SUBROUTINE PREIGN(EIG,IBEIG,PRPOS,WORK,LWORK)
+C*****************************************************************************
+C
+C     Prints eigenvalues and their degeneracies
+C
+C     Written by J. Thyssen - 26 Aug 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION EIG(*),IBEIG(*),WORK(LWORK)
+      LOGICAL PRPOS
+C
+#include <dcborb.h>
+C
+      CALL QENTER('PREIGN')
+#include <memint.h>
+C
+C     Memory allocation
+      CALL MEMGET('INTE',KFIRST,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNMULT,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIGBF,NORBT,WORK,KFREE,LFREE)
+      CALL PREIGN1(EIG,WORK(KEIGBF),IBEIG,
+     &   WORK(KFIRST),WORK(KNMULT),PRPOS)
+C
+C     Memory deallocation
+      CALL MEMREL('PREIGN',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('PREIGN')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck preign */
+      SUBROUTINE PREIGN1(EIG,EIGBUF,IBEIG,IFIRST,NMULT,PRPOS)
+C*****************************************************************************
+C
+C     Prints eigenvalues - new version.
+C
+C     Written by J. Thyssen - 26 Aug 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0=0.0D0)
+#include <dgroup.h>
+#include <pgroup.h>
+#include <dcborb.h>
+#include <dcbham.h>
+C
+      DIMENSION EIG(*),IBEIG(*),EIGBUF(*),
+     &          IFIRST(*),NMULT(*)
+      CHARACTER FMTE*6,FMTP*6,MXFORM*6
+      DIMENSION IOFF(2),ISS(0:7)
+      LOGICAL   PRPOS
+C
+C
+C     Closed shell eigenvalues
+C
+C
+      CALL HEADER('Eigenvalues',-1)
+C
+C     Find format
+C     - Common format for all electron eigenvalues
+C     - Common format for all positron eigenvalues
+C
+      EIGMAX = D0
+      DO IFSYM = 1,NFSYM
+         DO I = 1,NESH(IFSYM)
+           EIGMAX = MAX(EIGMAX,ABS(EIG(IORB(IFSYM)+NPSH(IFSYM)+I)))
+         ENDDO
+      END DO
+      FMTE = MXFORM(EIGMAX,18)
+      EIGMAX = D0
+      DO IFSYM = 1,NFSYM
+         DO I = 1,NPSH(IFSYM)
+           EIGMAX = MAX(EIGMAX,ABS(EIG(IORB(IFSYM)+I)))
+         ENDDO
+      END DO
+      FMTP = MXFORM(EIGMAX,18)
+C
+      IF (.NOT. (LEVYLE .OR. SPINFR) ) THEN
+C
+C        Print eigenvalues
+C
+         DO IFSYM = 1,NFSYM
+            IOFF(IFSYM) = IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+1
+         END DO
+         DO IFSYM = 1,NFSYM
+            WRITE(LUPRI,'(/2A)') '* Fermion symmetry ',FREP(IFSYM)
+C
+C           Closed shell eigenvalues
+C
+            IF (NISH(IFSYM) .GT. 0) THEN
+               WRITE(LUPRI,'(2X,A,F6.4)') '* Closed shell, f = ',DF(0)
+               CALL PREIGN2(EIG(IORB(IFSYM)+NPSH(IFSYM)+1),
+     &                      IFIRST,NMULT,NISH(IFSYM),FMTE)
+            END IF
+C
+C           Open shell eigenvalues
+C
+            DO IOPEN = 1,NOPEN
+               IF (NACSH(IFSYM,IOPEN) .GT. 0) THEN
+                  WRITE(LUPRI,'(2X,A,I1,A,F6.4)') 
+     &               '* Open shell #',IOPEN,', f = ',DF(IOPEN)
+                  CALL PREIGN2(EIG(IOFF(IFSYM)),
+     &                         IFIRST,NMULT,NACSH(IFSYM,IOPEN),FMTE)
+                  IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
+               END IF
+            END DO
+C
+C           Virtual eigenvalues
+C
+            IF (NSSH(IFSYM) .GT. 0)  THEN
+               WRITE(LUPRI,'(2X,A,F6.4)') 
+     &            '* Virtual eigenvalues, f = ',D0
+               CALL PREIGN2(EIG(IORB(IFSYM)+NPSH(IFSYM)+NOCC(IFSYM)+1),
+     &                      IFIRST,NMULT,NSSH(IFSYM),FMTE)
+            END IF
+C
+C           Positronic eigenvalues
+C
+            IF (PRPOS) THEN
+               IF (NPSH(IFSYM) .GT. 0) THEN
+                  WRITE(LUPRI,'(2X,A,F6.4)') 
+     &               '* Positronic eigenvalues, f = ',D0
+                  CALL PREIGN2(EIG(IORB(IFSYM)+1),
+     &                         IFIRST,NMULT,NPSH(IFSYM),FMTP)
+               END IF
+            END IF
+         END DO
+      ELSE
+C
+C        Levy-Leblond or spin-free.
+C
+C
+C        Set up array: ISYM --> IFSYM
+C
+         NBRP = 4 / NZ
+         DO IFSYM = 1,NFSYM
+            DO IBSYM = 1,NBRP
+               ISS(JFSYM(IBSYM,IFSYM)-1) = IFSYM
+            END DO
+         END DO
+C
+C
+         DO ISYM = 0,NBSYM-1
+            WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ISYM)
+            IFSYM = ISS(ISYM)
+C
+C           Closed shell eigenvalues
+C
+C           Pick eigenvalues of symmetry ISYM
+C
+            CALL PCKEIG(EIG,
+     &                  IORB(IFSYM)+NPSH(IFSYM)+1,
+     &                  IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM),
+     &                  IBEIG,ISYM,NEIG,EIGBUF)
+C
+            IF (NEIG .GT. 0) THEN
+               WRITE(LUPRI,'(2X,A,F6.4)') '* Closed shell, f = ',DF(0)
+               CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
+            END IF
+C
+C           Open shell eigenvalues
+C
+            IOFF(IFSYM) = IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)
+            DO IOPEN = 1,NOPEN
+               CALL PCKEIG(EIG,
+     &                     IOFF(IFSYM)+1,IOFF(IFSYM)+NACSH(IFSYM,IOPEN),
+     &                     IBEIG,ISYM,NEIG,EIGBUF)
+C
+               IF (NEIG .GT. 0) THEN
+                  WRITE(LUPRI,'(2X,A,I1,A,F6.4)') 
+     &               '* Open shell #',IOPEN,', f = ',DF(IOPEN)
+                  CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
+                  IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
+               END IF
+            END DO
+C
+C           Virtual eigenvalues
+C
+C           Pick eigenvalues of symmetry ISYM
+C
+            CALL PCKEIG(EIG,
+     &                  IORB(IFSYM)+NPSH(IFSYM)+NOCC(IFSYM)+1,
+     &                  IORB(IFSYM)+NORB(IFSYM),
+     &                  IBEIG,ISYM,NEIG,EIGBUF)
+C
+            IF (NEIG .GT. 0) THEN
+               WRITE(LUPRI,'(2X,A,F6.4)') 
+     &            '* Virtual eigenvalues, f = ',D0
+               CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
+            END IF
+C
+C           Positronic eigenvalues
+C
+C           Pick eigenvalues of symmetry ISYM
+C
+            IF (PRPOS .AND. NPSH(IFSYM) .GT.0) THEN
+               CALL PCKEIG(EIG,
+     &                     IORB(IFSYM)+1,
+     &                     IORB(IFSYM)+NPSH(IFSYM),
+     &                     IBEIG,ISYM,NEIG,EIGBUF)
+C
+               IF (NEIG .GT. 0) THEN
+                  WRITE(LUPRI,'(2X,A,F6.4)') 
+     &               '* Positronic eigenvalues, f = ',DF(0)
+                  CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
+               END IF
+            END IF
+         END DO
+      END IF
+      WRITE(LUPRI,'(/)')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck preign2 */
+      SUBROUTINE PREIGN2(EIG,IFIRST,NMULT,NSH,FMT)
+C*****************************************************************************
+C
+C     Prints eigenvalues - new version.
+C
+C     Written by J. Thyssen - 26 Aug 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0=0.0D0)
+C
+      DIMENSION EIG(*),IFIRST(*),NMULT(*)
+      CHARACTER FMT*6
+C
+C     Find degeneracies
+C
+      CALL DEGANA(NDEG,NSH,EIG,IFIRST,NMULT)
+C
+C     Print section
+C
+      WRITE(LUPRI,'(5('//FMT//',2X,A1,I2,A1,2X))')
+     &   (EIG(IFIRST(I)),'(',
+     &   2*NMULT(I),')',I=1,NDEG)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck pckeig */
+      SUBROUTINE PCKEIG(EIG,ISTART,IEND,IBEIG,ISYM,NEIG,EIGBUF)
+C*****************************************************************************
+C
+C     Pick all eigenvalues in the from the array EIG(ISTART),...,EIG(IEND)
+C     and put them in EIGBUF
+C
+C     Written by J. Thyssen - 26 Aug 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION EIG(*),IBEIG(*),EIGBUF(*)
+C
+      NEIG = 0
+      DO I = ISTART,IEND
+         IF (IBEIG(I) .EQ. ISYM) THEN
+            NEIG = NEIG + 1
+            EIGBUF(NEIG) = EIG(I)
+         END IF
+      END DO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck eighlc */
+      SUBROUTINE CHKHLG(EIG,IBEIG)
+C*****************************************************************************
+C
+C     Check HOMO-LUMO gab
+C
+C     Written by J. Thyssen - 26 Aug 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      PARAMETER (GAPMIN = 0.1D00)
+C
+      DIMENSION EIG(*),IBEIG(*)
+      CHARACTER CLUMO*3,CHOMO*3
+C
+#include <dgroup.h>
+#include <pgroup.h>
+#include <dcborb.h>
+#include <dcbham.h>
+C
+C
+C     Check HOMO-LUMO gap and check for negative virtuals
+C
+      ELUMO = EIG(1+NPSH(1)+NOCC(1))
+      ILUMO = 1
+      EHOMO = EIG(1+NPSH(1))
+      IHOMO = 1
+      DO I = 1,NFSYM
+         DO J = 1,NSSH(I)
+            IF (ELUMO .GT. EIG(IORB(I)+NPSH(I)+NOCC(I)+J)) THEN
+               ELUMO = EIG(IORB(I)+NPSH(I)+NOCC(I)+J)
+               IF (LEVYLE .OR. SPINFR) THEN
+                  ILUMO = IBEIG(IORB(I)+NPSH(I)+NOCC(I)+J)
+               ELSE
+                  ILUMO = I
+               END IF
+            END IF
+         END DO
+         DO J = 1,NOCC(I)
+            IF (EHOMO .LT. EIG(IORB(I)+NPSH(I)+J)) THEN
+               EHOMO = EIG(IORB(I)+NPSH(I)+J)
+               IF (LEVYLE .OR. SPINFR) THEN
+                  IHOMO = IBEIG(IORB(I)+NPSH(I)+J)
+               ELSE
+                  IHOMO = I
+               END IF
+            END IF
+         END DO
+      END DO
+C
+C     HOMO - LUMO gap
+C
+      IF (LEVYLE .OR. SPINFR) THEN
+         CHOMO = REP(IHOMO)
+         CLUMO = REP(ILUMO)
+      ELSE
+         CHOMO = FREP(IHOMO)
+         CLUMO = FREP(ILUMO)
+      END IF
+      WRITE (LUPRI,'(A)') '* HOMO - LUMO gap:'
+      WRITE (LUPRI,'(2(/A,F15.8,A,A,A)/A/A,F15.8,A/)')
+     &   '    E(LUMO) :',ELUMO,' au (symmetry ',CLUMO,')',
+     &   '  - E(HOMO) :',EHOMO,' au (symmetry ',CHOMO,')',
+     &   '  ------------------------------------------',
+     &   '    gap     :',ELUMO-EHOMO,' au'
+      IF (ELUMO - EHOMO .LT. GAPMIN) THEN
+         WRITE(LUPRI,'(/A)')
+     &   '* INFO: E(LUMO) - E(HOMO) small or negative.'
+      END IF
+C
+      RETURN
+      END
