@@ -1181,7 +1181,7 @@ C                                    to magnetic field.
 C                                8 = Fock matrices derivated with respect
 C                                    to atomic coordinates.
 C           NTASK  - Number of tasks
-C           KPRINT - Print level during parallelization.
+C           IPRPAR - Print level during parallelization.
 C           MAXDIF -
 C           MAXREP -
 C           IREPDM - Symmetries of density matrices

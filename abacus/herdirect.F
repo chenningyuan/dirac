@@ -31,7 +31,7 @@ C
 941206-hjaaj
 HERPAR: new routine for defining parallel hermit calc. of Fock matr.
 HERFCK: call PARDRV if PARCAL true
-        changed STATIS to KPRINT.gt.0 (STATIS missing in newest
+        changed STATIS to IPRPAR.gt.0 (STATIS missing in newest
         aba.cdk from oslo)
 941205-from oslo:
 HERFCK: also IPRINT = IPRFCK for PARCAL true (was = 0)

@@ -13,7 +13,7 @@ C        MYTID  = mpi ID of this process (from MPI_Comm_rank)
       REAL*8 TOTWAL
       LOGICAL PARHER, TIMING, SLAVE, DEBUG
       COMMON /INFPAR/ TOTWAL,
-     &                ICOUNT, KPRINT, MTIDS(MAXNOD), MPARID, MYTID,
+     &                ICOUNT, IPRPAR, MTIDS(MAXNOD), MPARID, MYTID,
      &                NODE, NODES, NUMNOD, NTASK, NCODE, PARHER, TIMING,
      &                SLAVE, NODTOT, NDEGDI, DEBUG
 #endif

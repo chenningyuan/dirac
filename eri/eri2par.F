@@ -66,8 +66,8 @@ C
 #else
 #include "gnrinf.h"
 #endif
-      DATA TOTWAL /0./
-      SAVE TOTWAL
+Cdirac      DATA TOTWAL /0./
+Cdirac      SAVE TOTWAL
 C
       IPRINT = MAX(IPRINT,IPRPAR)
 C

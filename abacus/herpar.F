@@ -92,7 +92,7 @@ C                                    to magnetic field.
 C                                8 = Fock matrices derivated with respect
 C                                    to atomic coordinates.
 C           NTASK  - Number of tasks
-C           KPRINT - Print level during parallelization.
+C           IPRPAR - Print level during parallelization.
 C           MAXDIF -
 C           MAXREP -
 C           IREPDM - Symmetries of density matrices
@@ -155,7 +155,7 @@ C
      &    'limit. Reduce number of nodes or recompile program. ',
      &    'Allocated (NODES) :',NODES,'Limit (MAXNOD) :',MAXNOD
          CALL QUIT('Number of nodes requested/allocated is too large.')
-      ELSE IF (KPRINT .GT. 0) THEN
+      ELSE IF (IPRPAR .GT. 0) THEN
          WRITE(LUPRI,'(/5X,A,I5/)')
      &    'HER_PARDRV: Number of nodes allocated:', NODES
       ENDIF
@@ -248,7 +248,7 @@ C
 C        Kohn-Sham
 #if defined (MOD_DFT)
          CALL DFTEXC(DMAT,1,FMAT,1,.TRUE.,.TRUE.,.FALSE.,
-     &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,KPRINT)
+     &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRPAR)
 #endif
       ELSE
         CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
@@ -273,13 +273,13 @@ C     Sort the integral-calculation times.
 C-----------------------------------------
 C
       IF(TIMING) CALL PARSR2(MTOTTK,NPOS,WORK(KTIMES),
-     &                       WORK(KINDEX),KPRINT)
+     &                       WORK(KINDEX),IPRPAR)
 C
 C-------------------------------------
 C     Get timing results if requested.
 C-------------------------------------
 C
-      IF (KPRINT .GT. 0) CALL TIMRES(WORK(KNSTAT))
+      IF (IPRPAR .GT. 0) CALL TIMRES(WORK(KNSTAT))
 C
       IF (FIRST)  FIRST  = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
@@ -359,7 +359,7 @@ C
       NEACH = NBATCH/NODES
       NREST = NBATCH - NEACH*NODES
 C
-      IF (FIRST .AND. KPRINT .GT. 4) THEN
+      IF (FIRST .AND. IPRPAR .GT. 4) THEN
          WRITE(LUPRI,'(5(/5X,A,I5),2X,A7,I3,A1/)')
      &        'Number of nodes   :',NODES,
      &        'Number of tasks   :',MTOTTK,
@@ -371,7 +371,7 @@ C
 C
 C     Print the index array.
 C
-      IF (KPRINT .GE. 10) THEN
+      IF (IPRPAR .GE. 10) THEN
          WRITE(LUPRI,'(/5X,A/)') 'The order of task-distribution :'
          DO 400 I=1, NBATCH*NTASK
             WRITE(LUPRI,'(5X,A3,I5,A15,I5)')
@@ -465,7 +465,7 @@ C     ... not used any more (was used for PVM)
       JMXDIF = MAXDIF
       JMXREP = MAXREP
       JNODES = NODES
-      JPRINT = KPRINT
+      JPRINT = IPRPAR
       JTASK  = NTASK
       JTYPE  = ITYPE
       JNOCNT = 0
@@ -679,7 +679,7 @@ C
                GO TO 300
             END IF
 C
-            IF (KPRINT .GT. 10) THEN
+            IF (IPRPAR .GT. 10) THEN
                WRITE(LUPRI,'(5X,I5,A10,I5,A8,I4)')
      &              NUMTSK, 'Send task', INDEX(IPLACE), 'to node', NODE
             END IF
@@ -908,7 +908,7 @@ C
          END IF
  100  CONTINUE
 C
-      IF (KPRINT .GE. 10) THEN
+      IF (IPRPAR .GE. 10) THEN
          DO 400 I = 1, ITEMS
             WRITE(LUPRI,'(15X,A10,I5,A9,F8.3)')
      &           'IJ-shell =', NPOS(I), '   time =', SORTED(I)
@@ -965,7 +965,7 @@ C
 C
   100 CONTINUE
 C
-      IF (KPRINT .GT. 2) THEN
+      IF (IPRPAR .GT. 2) THEN
          CALL AROUND('Overall statistics for distribution of batches')
 C
          WRITE(LUPRI,'(11X,5(A,4X))')    'Node',
@@ -1266,7 +1266,7 @@ C------------------------------------
 C
       IATOM  = JATOM
       ITYPE  = JTYPE
-      KPRINT = JPRINT
+      IPRPAR = JPRINT
       LUDASP = JLUDAS
       LUINTA = JLUINT
       LUONEL = JLUONE
@@ -1938,7 +1938,7 @@ C----------------------------------------------
 C     Send general timing results if requested.
 C----------------------------------------------
 C
-      IF (KPRINT .GT. 0) THEN
+      IF (IPRPAR .GT. 0) THEN
          CALL GETTIM(CPU2,WALL2)
 C
          CPU  = CPU2 - CPU1
@@ -1998,7 +1998,7 @@ C
       NODES  = 0
 #endif
       NTASK  = 1
-      KPRINT = 0
+      IPRPAR = 0
       TOTWAL = 0.0D0
 C
       NEWDEF = (WORD .EQ. '*PARALL')
@@ -2032,7 +2032,7 @@ C
                   READ(LUCMD,*) NTASK
                GO TO 100
     3          CONTINUE
-                  READ(LUCMD,*) KPRINT
+                  READ(LUCMD,*) IPRPAR
                GO TO 100
     4          CONTINUE
                GO TO 100
