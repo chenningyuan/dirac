@@ -182,6 +182,20 @@ setup_command()
 execute_dirac()
 {
    echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
+
+   #
+   # Delete $WRK/$DIRAC if the executable is older than the
+   # executable in $BIN_DIR. This is useful when you've compiled
+   # a new executable, but didn't delete your scratch directory
+   # in the previous calculation.
+   #
+
+   if [ -f $WRK/$DIRAC ]; then
+      if [ $WRK/$DIRAC -ot $BIN_DIR/$DIRAC ]; then
+         rm $WKR/$DIRAC
+      fi
+   fi
+
    if [ ! -f $WRK/$DIRAC ]; then
       if [ -x $BIN_DIR/$DIRAC ]; then
          cp $BIN_DIR/$DIRAC . || \
