@@ -412,4 +412,332 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       END
 
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C  /* Deck dftgrd */
+      SUBROUTINE GETWT1(X,Y,Z,WT,IPRINT,WORK,LWORK)
+C                                                                      C
+C     Interface routine for grid points                                C
+C     T. Helgaker                                                      C
+C                                                                      C
+C     Modified for GETW1 by O. Fossgaard - May 2003                    C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "symmet.h"
+#include "ccom.h"
+
+      PARAMETER (MAXCEN=100)
+      PARAMETER (D0=0.0D0)
+      LOGICAL TEST
+      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+
+#include "dftwrk.h"
+
+      DIMENSION WT(NATOMS),WORK(LWORK)
+
+#include "ibtfun.h"
+#include "memint.h"
+
+C
+C     ********************************
+C     ***** Set up common blocks *****
+C     ********************************
+C
+C     INFOA
+C     =====
+CTROND: Modified to handle symmetry dependent atoms
+C       as well
+      NAT = 0
+      NUM = NBASIS
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         ZCNT   = CHARGE(ICENT)
+         IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
+           DO ISYMOP = 0, MAXOPR         
+           IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+             NAT = NAT + 1
+             ZAN(NAT) = ZCNT
+             C(1,NAT) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+             C(2,NAT) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+             C(3,NAT) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+           ENDIF
+           ENDDO
+         ENDIF
+      ENDDO
+C
+C     *******************************************
+C     ***** Prepare arguments for CONSTRUCT *****
+C     *******************************************
+C
+      NNAT  = NAT*(NAT-1)/2
+      N2AT = NAT*NAT 
+
+      CALL MEMGET('REAL',KPSMU ,NAT      ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRJ   ,NAT      ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRIJ  ,NNAT     ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KAIJ  ,NNAT     ,WORK,KFREE,LFREE)
+C
+C     Calculate weights in point (X,Y,Z)
+C     ==================================
+C
+      CALL WT1CON(X,Y,Z,WT,
+     &              WORK(KPSMU),WORK(KRJ),
+     &              WORK(KRIJ),WORK(KAIJ),IPRINT)
+
+C      CALL MEMREL('GETBW1',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C  /* Deck construc */
+      SUBROUTINE WT1CON(X,Y,Z,WT,PSMU,RJ,
+     &                    RIJ,AIJ,IPRINT)
+C                                                                      C
+C      Creates a quadrature grid and writes it to disk                 C
+C      Original version by C.W.Murray. Rewritten by                    C
+C      A.M.Lee and D.J.Tozer.                                          C
+C                                                                      C
+C      Adapted for Dalton by T. Helgaker                               C
+C      Adapted for DIRAC by T.Saue                                     C
+C                                                                      C
+C      Modified for WT1CON by C. Fossgaard - May 2003                  C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+#include "implicit.h" 
+#include "priunit.h" 
+
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0)
+
+      PARAMETER (MAXCEN=100)
+      CHARACTER SPDCAR*1
+
+#include "dftwrk.h"
+
+      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ccom.h"
+
+      DIMENSION PSMU(NAT),RJ(NAT),WT(NATOMS)
+C
+C     CARE: Some equivalencing through argument list!
+C
+      DIMENSION RIJ(NAT*(NAT-1)/2),AIJ(NAT*(NAT-1)/2)
+C
+C     Bragg contains Bragg-Slater radii for atoms. 
+C     Following Becke, the hydrogen radius is 0.35. 
+C     For the noble gases, the values have been guessed.
+C
+      DIMENSION BRAGG(0:103)
+      DIMENSION XPASC(20)
+
+C Trond Saue:
+C     The below data gives atomic radii in Angstroms and stems from table I of 
+C     J.C.Slater: "Atomic Radii in Crystals"
+C     J.Chem.Phys. 41(1964) 3199-3204
+C     Values for elements marked with an asterisk has been
+C     guessed/interpolated
+C
+      DATA BRAGG/ 0.75D0,
+C       H      He*   
+     &  0.35D0,0.35D0,
+C       Li     Be     B      C      N      O      F      Ne*
+     &  1.45D0,1.05D0,0.85D0,0.70D0,0.65D0,0.60D0,0.50D0,0.45D0,
+C     &  1.45D0,1.05D0,0.85D0,0.70D0,0.65D0,0.60D0,0.886403D0,0.45D0,
+C       Na     Mg     Al     Si     P      S      Cl     Ar*
+     &  1.80D0,1.50D0,1.25D0,1.10D0,1.00D0,1.00D0,1.00D0,1.00D0,
+C     &  1.80D0,1.50D0,1.25D0,1.10D0,1.00D0,1.00D0,0.786807D0,1.00D0,
+C       K      Ca     Sc     Ti     V      Cr     Mn     Fe     Co 
+     &  2.20D0,1.80D0,1.60D0,1.40D0,1.35D0,1.40D0,1.40D0,1.40D0,1.35D0,
+C       Ni     Cu     Zn     Ga     Ge     As     Se     Br     Kr*
+     &  1.35D0,1.35D0,1.35D0,1.30D0,1.25D0,1.15D0,1.15D0,1.15D0,1.10D0,
+C       Rb     Sr     Y      Zr     Nb     Mo     Tc     Ru     Rh
+     &  2.35D0,2.00D0,1.80D0,1.55D0,1.45D0,1.45D0,1.35D0,1.30D0,1.35D0,
+C       Pd     Ag     Cd     In     Sn     Sb     Te     I      Xe*
+     &  1.40D0,1.60D0,1.55D0,1.55D0,1.45D0,1.45D0,1.40D0,1.40D0,1.40D0,
+C       Cs     Ba     La    
+     &  2.60D0,2.15D0,1.95D0,
+C       Ce     Pr     Nd     Pm     Sm     Eu     Gd
+     &  1.85D0,1.85D0,1.85D0,1.85D0,1.85D0,1.85D0,1.80D0,
+C       Tb     Dy     Ho     Er     Tm     Yb     Lu
+     &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
+C       Hf     Ta     W      Re     Os     Ir     Pt     Au     Hg
+     &  1.55D0,1.45D0,1.35D0,1.30D0,1.30D0,1.35D0,1.35D0,1.35D0,1.50D0,
+C       Tl     Pb*    Bi     Po     At*    Rn*
+     &  1.90D0,1.75D0,1.60D0,1.90D0,1.50D0,1.50D0,
+C       Fr*    Ra     Ac     
+     &  2.15D0,2.15D0,1.95D0,
+CTROND rad(U): 1.75 --> 1.37D0
+C       Th     Pa     U      Np     Pu     Am     Cm*     
+     &  1.80D0,1.80D0,1.37D0,1.75D0,1.75D0,1.75D0,1.75D0,
+CTROND       Th     Pa     U      Np     Pu     Am     Cm*     
+CTROND     &  1.80D0,1.80D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
+C       Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*
+     &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0/ 
+
+#include "sdpre.h"
+#include "ibtfun.h"
+
+C
+C     USE INPUTTED INFORMATION IN COMMON BLOCK DFTWRK TO DEFINE THE TYPE
+C     OF QUADRATURE
+C
+C     Experimental value of NTRANS
+C
+      NTRANS=10
+C
+C     Form Pascals triangle in XPASC for fuzzy Voronoi polyhedra code
+C
+      ISIGN=-1
+      DO 5 I=NTRANS,1,-1
+         ISIGN=-ISIGN
+         XPASC(I+1) = ISIGN*FACULT(NTRANS)/(FACULT(I)*FACULT(NTRANS-I))
+         XPASC(1)   = 1.0D0
+5     CONTINUE
+
+      APASC=0.0D0
+      DO 6 I=1,NTRANS+1
+         XPASC(I)=XPASC(I)/DBLE(2*I-1)
+         APASC=APASC+XPASC(I)
+6     CONTINUE
+      APASC=0.5D0/APASC
+
+      ITEMP=0
+      DO 7 INA=1,NAT
+      DO 7 JNA=1,INA-1
+          ITEMP=ITEMP+1
+          RIJ(ITEMP) = 1.0D0/(DSQRT((C(1,INA)-C(1,JNA))**2
+     &                             +(C(2,INA)-C(2,JNA))**2
+     &                             +(C(3,INA)-C(3,JNA))**2))
+          CHI=BRAGG(NINT(ZAN(INA)))/BRAGG(NINT(ZAN(JNA)))
+          TEMP=(CHI-1.0D0)/(CHI+1.0D0)
+          AIJ(ITEMP)=TEMP/(TEMP*TEMP-1.0D0)
+          IF (AIJ(ITEMP).GT.0.5D0) AIJ(ITEMP)=0.5D0
+          IF (AIJ(ITEMP).LT.-0.5D0) AIJ(ITEMP)=-0.5D0
+7     CONTINUE
+C
+C     Loop over atoms
+C     ===============
+C 
+      MXOPR = 0 
+      NATOM = 1
+      WEIGHT = 0.0D0
+CTROND: define scaling factor for Bragg: set to one !!!!
+      TFAC = 1.0D0
+
+C      DO 10 IATOM = 1, NUCIND
+      DO 10 IATOM = 1,NATOMS
+C     DO 10 ISYMOP = 0, MXOPR         
+C     IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
+C        NDEG  = MULT(ISTBNU(IATOM))
+         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
+C         MULA  = ISTBNU(IATOM)
+C         NDEG  = MULT(MULA)
+C
+C        Becke partitioning
+C        ==================
+C
+         CALL WGHT1(RJ,PSMU,RIJ,AIJ,APASC,XPASC,
+     &              X,Y,Z,WEIGHT,
+     &              NTRANS,NATOM)
+C         IF(NDEG.GT.0) THEN
+C          Scale weights with multiplicity of center
+C           FAC = SDPRE(NDEG) 
+           WT(NATOM) = WEIGHT
+C           WRITE(6,*) 'WT(',NATOM,') = ', WT(NATOM)
+C         ENDIF
+      
+C      NATOM = NATOM + NDEG
+      NATOM = NATOM + 1
+
+C      END IF
+
+10    CONTINUE
+
+      RETURN
+      END
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C  /* Deck bweght */                                                   C
+      SUBROUTINE WGHT1(RJ,PSMU,RIJ,AIJ,APASC,XPASC,X,Y,Z,WEIGHT,
+     &                 NTRANS,NATOM)
+C                                                                      C
+C      Written by C. W. Murray                                         C
+C      WGHT1 calculates the weights associated with                    C
+C      the Becke partitioning amongst the atoms.                       C
+C                                                                      C         
+C      Modified for WGHT1 by O. Fossgaard - May 2003                   C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+#include "implicit.h" 
+
+      PARAMETER (MAXCEN=100)
+      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+      DIMENSION RJ(NAT),
+     &          PSMU(NAT),
+     &          RIJ(NAT*(NAT-1)/2),
+     &          AIJ(NAT*(NAT-1)/2),
+     &          XPASC(20)
+
+C
+C     WORK OUT THE WEIGHT FUNCTION BY BECKE PARTITIONING
+C
+      DO 100 INA=1,NAT
+         RJ(INA)=DSQRT((C(1,INA)-X)**2
+     &                  +(C(2,INA)-Y)**2
+     &                  +(C(3,INA)-Z)**2)
+         PSMU(INA)=1.0D0
+  100 CONTINUE
+
+      ITEMP=0
+      DO 200 INA=1,NAT
+      DO 200 JNA=1,INA-1
+         ITEMP=ITEMP+1
+            XMU=(RJ(INA)-RJ(JNA))*RIJ(ITEMP)
+            XMUIJ=XMU+AIJ(ITEMP)*(1-XMU*XMU)
+            XMUIJ2=XMUIJ*XMUIJ
+            XMUIJN=XMUIJ
+            ACCUM=0.0D0
+  210    CONTINUE
+         DO 220 I=1,NTRANS+1
+            ACCUM=ACCUM+XPASC(I)*XMUIJN
+            XMUIJN=XMUIJN*XMUIJ2
+  220    CONTINUE
+            PSMU(INA)=PSMU(INA)*(0.5D0-APASC*ACCUM)
+            PSMU(JNA)=PSMU(JNA)*(0.5D0+APASC*ACCUM)
+  230    CONTINUE
+  200 CONTINUE
+
+      ACCUM = 0.0D0
+      DO 300 INA=1,NAT
+         ACCUM=ACCUM+PSMU(INA)
+  300 CONTINUE
+C
+C     Contract ACCUM into PSMU
+C
+      DO 400 INA=1,NAT
+         PSMU(INA)=PSMU(INA)/ACCUM
+C         WRITE(6,*) 'RJ(', INA, ') = ', RJ(INA)
+C         WRITE(6,*) 'PSMU(',INA,') = ', PSMU(INA)
+  400 CONTINUE
+
+      WEIGHT=PSMU(NATOM)
+
+      RETURN
+      END
+
 
