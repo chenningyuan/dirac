@@ -1281,6 +1281,11 @@ C
                WRITE(LUPRI,'(/,6X,A)')
      &            'WARNING! INIOCC assumes 1 electron in 1 open shell!'
             END IF
+C
+C           Since guessing the occupation is difficult, we should allow the programme to change
+C           occupation during the SCF.
+C
+            AUTOCC = .TRUE.
          END IF
       END IF
       IF (.NOT. INIOCC) THEN
