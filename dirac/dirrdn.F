@@ -986,6 +986,10 @@ C
         ENDIF
       ENDIF
       IF(DODIIS) THEN
+         IF (NASHT .GT. 0) THEN
+            DIISAO = .TRUE.
+            DIISMO = .FALSE.
+         ENDIF
          IF (DIISMO) WRITE(LUPRI,'(1X,A)') '* DIIS (dirac-like)'
          IF (DIISAO) WRITE(LUPRI,'(1X,A)') '* DIIS (dalton-like)'
         WRITE(LUPRI,'(1X,A,D8.2)')
@@ -2163,7 +2167,8 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
       PARAMETER (NTABLE = 16)
-      PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
+      PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00,
+     &           DTHRS = 1.0D-13)
 C
 #include <dcbgen.h>
 #include <dcbham.h>
@@ -2177,7 +2182,6 @@ C
       LOGICAL SYMSTP,LBIT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION KSOP(0:7),WORK(LWORK)
-      DIMENSION IN(MXOPEN),ID(MXOPEN)
       CHARACTER A*80
 C
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -2299,9 +2303,12 @@ C&&& ACTIVE SHELLS: read in number of active shells
 C                   and their occupation
 C             Read in number of open shells
 C
+#ifndef MOD_OPEN
+               CALL QUIT('OPEN SHELL NOT AVAILABLE IN THIS VERSION')
+#else
                READ(LUCMD,*) NOPEN
                IF (NOPEN.LE.0.OR.NOPEN.GT.MXOPEN) THEN
-                  WRITE(LUPRI,'(1X,A,I,A,I)') 
+                  WRITE(LUPRI,'(1X,A,I2,A,I2)') 
      &               'HAMINP: NOPEN must be between ',
      &               1,' and ',MXOPEN
                   CALL QUIT('HAMINP ERROR: Open shell error!')
@@ -2312,21 +2319,15 @@ C
                DO IOPEN = 1,NOPEN
                   READ(LUCMD,*) (NACSH(J,IOPEN),J=1,NFSYM)
                   READ(LUCMD,'(A)') A
-                  CALL FRAC2I(A,IN(IOPEN),ID(IOPEN),IERR)
-                  IF (IERR.LT.0) 
-     &               CALL QUIT('HAMINP: Error reading occupation.')
-                  IF (ID(IOPEN).EQ.0) 
-     &               CALL QUIT('HAMINP: Frac. occ. denumerator = 0')
-                  IF (IN(IOPEN).EQ.0) 
-     &               CALL QUIT('HAMINP: Frac. occ. enumerator = 0')
-                  DF(IOPEN) = D1*IN(IOPEN) / (D1*ID(IOPEN))
-                  IF (DF(IOPEN).GT.(D1+1.0D-10)) THEN
-                     WRITE(LUPRI,'(A,I2,A,F,A)')
+                  CALL FRAC2I(DF(IOPEN),A)
+                  IF (DF(IOPEN).GT.(D1+DTHR)) THEN
+                     WRITE(LUPRI,'(A,I2,A,F6.4,A)')
      &                  'HAMINP: Frac. occ. for shell ',IOPEN,
      &                  ' greater than 1 (',DF(IOPEN),')'
                      CALL QUIT('HAMINP ERROR: Open shell error!')
                   END IF
                END DO
+#endif
             GO TO 100
   107     CONTINUE
             GO TO 100
@@ -2387,7 +2388,7 @@ C
          DO IOPEN = 1,NOPEN
             NASH(IFRP)   = NASH(IFRP) + NACSH(IFRP,IOPEN)
             DTEMP        = DTEMP +
-     &                     NACSH(IFRP,IOPEN)*D2*IN(IOPEN)/(D1*ID(IOPEN))
+     &                     NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
          END DO
 C         IF (ABS(MOD(DTEMP,D1)).GE.1.0D-10) THEN
 C            WRITE(LUPRI,'(A,F,A)') 
@@ -2409,7 +2410,7 @@ C        We do     allow fractional occupation of 1
 C           This corresponds to a inactive electron
 C           and gives DALPHA = 0
 C
-         IF (ABS(DF(IOPEN)-D1).LE.1.0D-13) THEN
+         IF (ABS(DF(IOPEN)-D1).LE.DTHR) THEN
             WRITE(LUPRI,'(X,A,I2,A,F6.4)')  
      &         'WARNING: Open shell no. ',IOPEN,
      &         ' has frac. occ. of ',DF(IOPEN)
