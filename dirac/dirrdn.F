@@ -201,6 +201,8 @@ C
       ILSINT = 1
       ISSINT = 1
       IGTINT = 0
+C     TODO : this disables Gaunt integrals completely
+C            reset IGTINT to 1 when Gaunt implemented /hjaaj
       DOLVC  = .FALSE.
       LVNEW  = .FALSE.
       DOTSC  = .FALSE.
@@ -270,7 +272,7 @@ C&&&& CVALUE: Set a different value of light
             READ(LUCMD,*) CVAL
             GO TO 100
   103    CONTINUE
-C&&& INTFLG: Specify what two-itegrals should be included in this run
+C&&& INTFLG: Specify what two-integrals should be included in this run
             IF (IGTINT .EQ. 1) THEN
                READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
             ELSE
@@ -811,7 +813,6 @@ C
       FIXDIF    = .FALSE.
       IF(IDFLAG.GT.0) DODSCF    = .TRUE.
       DODAMP    = .TRUE.
-      DAMPON    = .FALSE.
       DODIIS    = .TRUE.
       DIISON    = .FALSE.
       OVLSEL    = .FALSE.
@@ -1364,10 +1365,10 @@ C
          NELECT_DHF = NELEC_DHF(1) + NELEC_DHF(2)
       END IF
       IF(PROJEC) THEN
-        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A/A,1P,E13.4)')
      &      ' * Variational space reduced by projection'//
-     &      '  using a set of reference orbitals.'
-        WRITE(LUPRI,'(3X,A,E12.4)') '- Smallest norm accepted: ',PRJTHR
+     &          ' using a set of reference orbitals.',
+     &      '   - Smallest norm accepted:',PRJTHR
         IF(PROOWN) THEN
           WRITE(LUPRI,'(3X,A)') 
      &     '- Reference orbitals are obtained from local bases !',
@@ -1526,7 +1527,7 @@ C
         ENDIF
       ENDIF
       IF(DODIIS) THEN
-         IF (DIISAO.OR.(NASHT_DFT.GT.0)) THEN
+         IF (DIISAO .OR. NASHT_DHF.GT.0) THEN
            WRITE(LUPRI,'(A)') ' * DIIS (in AO basis)'
          ELSEIF(DIISMO) THEN
            WRITE(LUPRI,'(A)') ' * DIIS (in MO basis)'
