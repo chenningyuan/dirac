@@ -366,8 +366,6 @@ C           ************************************************************
 C           *** E V A L U A T E   R E S P O N S E   F U N C T I O N  ***
 C           ************************************************************
 C
-CTROND
-            WRITE(LUPRI,'(A,F7.4)') 'beffreq..',WORK(KEVALR)
             CALL GETLRF(ABLRF,WORK(KIBTYP),WORK(KIBCVC),
      &                  WORK(KIBEVC),WORK(KIBPVC),RCNV(1,INDBP),
      &                  WORK(KEVALR),WORK(KEVECR),IORBCL,WORK(KEIG),
