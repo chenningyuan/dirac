@@ -2,6 +2,8 @@ Programmers manual for DIRAC04
 
 Lucas Visscher
 
+some additions by Christoph Jacob
+
 CHAPTER 1 : SCRIPTS AND MAINTENANCE
 
 The DIRAC programme system is maintained using the CVS and contains a number of shell 
@@ -105,18 +107,25 @@ use of #include and preprocessor statments in the old code. A few things to
 make life easier (search also the net typing fortran77 and fortran90 in
 google, you will almost certainly find very relevant websites).
 
-- Use .f90 to identify Fortran90 source code files and use .F for FORTRAN77.
+- The main difference between the old F77 code and new F90 code is the 
+  source code format (the old code uses fixed form, F90 allows to use
+  free form source code). However, it IS possible to use F90 features in
+  fixed form (old F77) code - it only wont compile with a F77 compiler.  
 
-- FORTRAN77 style continuation differs from Fortran90. To keep both compilers happy : 
-  Type an ampersand & in column 73 of the line you want to continue and
-  also one in column 6 of the next. The first is not seen by f77 but read by
-  f90 who then ignores the second. f77 just needs the second & (in column 6).
-  Do not use other continuation characters.
+- Use .F90 to identify free form source code files and use .F for fixed form.
+  If you use F90 features in a .F file add a comment at the beginning of the
+  file.
+  The capital F in the filename extension tells most compilers to preprocess
+  the files (I have tested pgf90 and the Intel compiler).  
 
-- Include works with #include in FORTRAN77 and with include in Fortran90.
-  Make sure to define your include blocks such that they can be used by both
-  f77 and f90. This means : no preprocessor statments and use of continuation
-  as described above.
+- In F90 (and also as extension in g77) there is a INCLUDE keyword that
+  could be used instead of the #include preprocessor statements - but please
+  DO NOT use INCLUDE! The make system (makedepend) needs preprocessor
+  statements to figure out the dependencies correctly !   
+
+- Use IMPLICIT NONE in new code - it is much safer and the resulting code
+  is easier to understand. And when you have to declare all variables 
+  anyway - add a comment that explains what it does
 
 - Do make use of the modularity that Fortran90 offers. We do, however, need
   more discussion to define where best to place common modules. Dirac meeting
@@ -124,6 +133,52 @@ google, you will almost certainly find very relevant websites).
 
 - Look at examples already done in f90 and read a good book to get acquainted
   with the language...
+
+4. Fortran 90 and include files (F77 programmers - please also read this)
+
+- Fortran 90 free form files may have problems with the include files for 
+  several reasons:
+  - comments work different in free form (! instead of something in column 1)
+  - continuation works different (& at the end of the line instead of
+    something in column 6 on the next line)
+  - when you use IMPLICIT NONE, you get problems with undeclared variables 
+    in the include files.
+
+  For that reason:
+  - only use ! to start comments in include files (all F77 compilers 
+    understand this)
+  - continuation use a & in column 73 of the first line and a & (nothing
+    else!) in column 6 of the following line. This will work with both
+    free form and fixed form when the file is included)
+  - declare all variables explicitly, so that they can be used with
+    IMPLICIT NONE
+
+  There is a Python-script "reformat_includes" in the utils directory, that
+  reformats include files according to these rules. When you write new 
+  include files (or move old ones to the 'include' directory), please
+  run this script on the files.     
+
+- When you write new code and use F90, there should be no need to introduce
+  new common blocks (and include files) - use modules instead, they are 
+  much safer.
+
+
+5. Remarks for F77 propgrammers (also applies for F90)
+
+- There is no need mark to empty lines as comments. All Fortran compilers that
+  are less than 20 years old can handle blank lines. 
+
+- There is no need to to stick to 6 letter names anymore - I think all 
+  F77 compilers support longer names as an extension and in a few places,
+  longer names are already used. And when the 6 letter limit is dropped, there
+  is no need to make names as short as possible anymore (the new limit is 31
+  which allow quite long names). Please use this - it makes your code much
+  easier to understand to someone else. 
+
+- The same applies to uppercase/lowercase: It is not neccasary to use only uppercase
+  anymore. Use uppercase and lowercase in a way that makes your code more
+  readable. 
+
 
 END OF DOCUMENTATION
 
