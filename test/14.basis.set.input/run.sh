@@ -13,3 +13,5 @@ time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_temp ch4
 time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_explicit ch4
 time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_family ch4
 time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_dualfamily ch4
+time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG -basdir `pwd` \
+   -basdir `pwd`/../../basis/MOLFDIR/accpvtz ch4_molfbas ch4
