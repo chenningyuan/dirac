@@ -2,7 +2,8 @@ C  /* Deck intexp */
       SUBROUTINE INTEXP(AOINT,DMAT,NDMAT,PSO,PSA,FT,FV,NINDAB,NINDCD,
      &                  NCCINT,NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,THRESH,SYMFAC,
-     &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DDFOCK)
+     &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DDFOCK,
+     &                  DINTSKP)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -10,7 +11,8 @@ C
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
      &          ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
-     &          WORK(LWORK), NINDAB(*), NINDCD(*), FT(*), FV(*)
+     &          WORK(LWORK), NINDAB(*), NINDCD(*), FT(*), FV(*), 
+     &          DINTSKP(*)
 #include <twocom.h>
 #include <twosta.h>
 C
@@ -46,7 +48,8 @@ Cjth - they are now defined always.
      &            NCCINT,NINTYP,ISYMR,ISYMS,ISYMT,
      &            ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &            SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
-     &            NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DDFOCK)
+     &            NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DDFOCK,
+     &            DINTSKP)
       LWTOT  = LWTOT - KLAST
       RETURN
       END
@@ -56,7 +59,7 @@ C  /* Deck intex1 */
      &                  ISYMR,ISYMS,ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,
      &                  THRESH,SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
      &                  NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,
-     &                  DDFOCK)
+     &                  DDFOCK,DINTSKP)
 C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
@@ -85,13 +88,15 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          DMAT(NBASIS,NBASIS,NDMAT), WORK(LWORK),
      &          FT(NBASIS,NBASIS,*), FV(NBASIS,NBASIS,*), DINT(12),
      &          NCART(12), PINT(NCCINT,3), QINT(NCCINT,3),
-     &          DIFAB(3), DIFCD(3)
+     &          DIFAB(3), DIFCD(3), DINTSKP(*)
+      DIMENSION DINTMAX(3)
 #include <twocom.h>
 #include <symmet.h>
 #include <nuclei.h>
 #include <expcom.h>
 #include <dirprt.h>
 #include <dcbgrd.h>
+#include <doxyz.h>
 #include <ibtfun.h>
 Cjth
 C
@@ -100,6 +105,7 @@ C
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 C
+      CALL DZERO(DINTMAX,3) 
       DV = .NOT. NODV
       IF (IPRINT .GT. 9) THEN
          CALL HEADER('Output from INTEXP',-1)
@@ -254,6 +260,24 @@ C
 C
                   INT = IAOFF
 C
+C
+C                 Step 2 screening on gradient
+C
+                  IF (EXPECT .AND. DOSCRN) THEN
+                     AOMAX = D0
+                     DO I = 1,NINTYP
+                        IAOMAX = IDAMAX(NOABCD,AOINT(IAOFF,I),1)-1
+                        AOMAX = MAX(AOMAX,ABS(AOINT(IAOFF+IAOMAX,I)))
+                     END DO
+                     IF (DNSMAX*AOMAX .LT. THRESH) THEN
+                        DO IXYZ = 1,3
+                           IF (DOXYZ(IXYZ))
+     &                        CALL ADDDINT(DINTSKP,NOABCD,ICEN,3,IXYZ)
+                        END DO
+                        GO TO 510
+                     END IF
+                  END IF
+C
 C                 ***** Loop over contracted functions *****
 C
                   DO 500 IORBAB = 1, NORBAB
@@ -296,61 +320,6 @@ C
                            DVBD = DMAT(B,D,2)
                            DVCD = DMAT(C,D,2)
                         END IF
-#else
-                        DTAC1 = DMAT(A,C,1)
-                        DTAC2 = DMAT(A,C,2)
-                        DTAC3 = DMAT(A,C,3)
-                        DTAC4 = DMAT(A,C,4)
-                        IF (DV) THEN
-                           DVAC1 = DMAT(A,C,5)
-                           DVAC2 = DMAT(A,C,6)
-                           DVAC3 = DMAT(A,C,7)
-                           DVAC4 = DMAT(A,C,8)
-                        END IF
-C
-                        DTBC1 = DMAT(B,C,1)
-                        DTBC2 = DMAT(B,C,2)
-                        DTBC3 = DMAT(B,C,3)
-                        DTBC4 = DMAT(B,C,4)
-                        IF (DV) THEN
-                           DVBC1 = DMAT(B,C,5)
-                           DVBC2 = DMAT(B,C,6)
-                           DVBC3 = DMAT(B,C,7)
-                           DVBC4 = DMAT(B,C,8)
-                        END IF
-C
-                        DTAD1 = DMAT(A,D,1)
-                        DTAD2 = DMAT(A,D,2)
-                        DTAD3 = DMAT(A,D,3)
-                        DTAD4 = DMAT(A,D,4)
-                        IF (DV) THEN
-                           DVAD1 = DMAT(A,D,5)
-                           DVAD2 = DMAT(A,D,6)
-                           DVAD3 = DMAT(A,D,7)
-                           DVAD4 = DMAT(A,D,8)
-                        END IF
-C
-                        DTBD1 = DMAT(B,D,1)
-                        DTBD2 = DMAT(B,D,2)
-                        DTBD3 = DMAT(B,D,3)
-                        DTBD4 = DMAT(B,D,4)
-                        IF (DV) THEN
-                           DVBD1 = DMAT(B,D,5)
-                           DVBD2 = DMAT(B,D,6)
-                           DVBD3 = DMAT(B,D,7)
-                           DVBD4 = DMAT(B,D,8)
-                        END IF
-C
-                        DTCD1 = DMAT(C,D,1)
-                        DTCD2 = DMAT(C,D,2)
-                        DTCD3 = DMAT(C,D,3)
-                        DTCD4 = DMAT(C,D,4)
-                        IF (DV) THEN
-                           DVCD1 = DMAT(C,D,5)
-                           DVCD2 = DMAT(C,D,6)
-                           DVCD3 = DMAT(C,D,7)
-                           DVCD4 = DMAT(C,D,8)
-                        END IF
 #endif
                                                        FCD = D1
                         IF (TCONCD.AND.IORBC.NE.IORBD) FCD = D2
@@ -374,25 +343,29 @@ C                             exchange contributions
 C                             For DMAT(2) to DMAT(4) include only
 C                             exchange contributions
 C
-                              PVAL = DTAB1*DTCD1 -
-     &                               DP25*(DTAC1*DTBD1
-     &                                   + DTAD1*DTBC1
-     &                                   + DTAC2*DTBD2 
-     &                                   + DTAD2*DTBC2
-     &                                   + DTAC3*DTBD3 
-     &                                   + DTAD3*DTBC3
-     &                                   + DTAC4*DTBD4
-     &                                   + DTAD4*DTBC4)
+C                             For the sake of optimization only
+C                             DMAT(A,B) is put in a variable.
+C                             the others are not.
+C
+                              PVAL = DTAB1*DMAT(C,D,1) -
+     &                               DP25*(DMAT(C,A,1)*DMAT(D,B,1)
+     &                                   + DMAT(D,A,1)*DMAT(C,B,1)
+     &                                   + DMAT(C,A,2)*DMAT(D,B,2)
+     &                                   + DMAT(D,A,2)*DMAT(C,B,2)
+     &                                   + DMAT(C,A,3)*DMAT(D,B,3)
+     &                                   + DMAT(D,A,3)*DMAT(C,B,3)
+     &                                   + DMAT(C,A,4)*DMAT(D,B,4)
+     &                                   + DMAT(D,A,4)*DMAT(C,B,4))
                               IF (DV) THEN
-                                 PVAL = PVAL - DVAB1*DVCD1 +
-     &                                  DP25*(DVAC1*DVBD1
-     &                                      + DVAD1*DVBC1
-     &                                      + DVAC2*DVBD2
-     &                                      + DVAD2*DVBC2
-     &                                      + DVAC3*DVBD3
-     &                                      + DVAD3*DVBC3
-     &                                      + DVAC4*DVBD4
-     &                                      + DVAD4*DVBC4)
+                                 PVAL = PVAL - DVAB1*DMAT(C,D,5) +
+     &                                  DP25*(DMAT(C,A,5)*DMAT(D,B,5)
+     &                                      + DMAT(D,A,5)*DMAT(C,B,5)
+     &                                      + DMAT(C,A,6)*DMAT(D,B,6)
+     &                                      + DMAT(D,A,6)*DMAT(C,B,6)
+     &                                      + DMAT(C,A,7)*DMAT(D,B,7)
+     &                                      + DMAT(D,A,7)*DMAT(C,B,7)
+     &                                      + DMAT(C,A,8)*DMAT(D,B,8)
+     &                                      + DMAT(D,A,8)*DMAT(C,B,8))
                               END IF
                               IF (.NOT. NOPMAT) THEN
                                  PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
@@ -600,7 +573,7 @@ C
                         INT = INT + 1
   600                CONTINUE
   500             CONTINUE
-                  IAOFF = IAOFF + NOABCD
+  510             IAOFF = IAOFF + NOABCD
   400          CONTINUE
   300       CONTINUE
   200    CONTINUE
