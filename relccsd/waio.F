@@ -195,12 +195,12 @@ C
 C
 C        Read the first partial record  
 C
-         EXTRA = NWORDS_ON_RECORD - OFFB
+         EXTRA = MIN(NWORDS,NWORDS_ON_RECORD-OFFB)
          OFFB = OFFB + 1
          IF (DO_READ) THEN
             READ (ITAPE,REC=IREC) BUFF
-            CALL ICOPY (EXTRA,BUFF(OFFB),1,ARRAY(OFF),1)
 cdbg        print*,"first record",irec,offb,extra,'-->',off 
+            CALL ICOPY (EXTRA,BUFF(OFFB),1,ARRAY(OFF),1)
          ELSE
             IF (IWRIT_WAIO(ITAPE).GE.IREC) THEN
 C              This record has been written before, copy the
@@ -215,8 +215,8 @@ C              them in a random fashion).
                CALL QUIT ('Trying to read from non-existing record')
             ENDIF
             CALL ICOPY (EXTRA,ARRAY(OFF),1,BUFF(OFFB),1)
-            WRITE (ITAPE,REC=IREC) BUFF
 cdbg        print*,"first record",irec,offb,extra,'-->',off 
+            WRITE (ITAPE,REC=IREC) BUFF
          ENDIF
          IREC = IREC + 1
          NWORDS = NWORDS - EXTRA
@@ -230,15 +230,15 @@ C
 C
       IF (DO_READ) THEN
          DO IREC = IREC_FIRST, IREC_LAST 
-            CALL READDI (ITAPE,IREC,NWORDS_ON_RECORD,ARRAY(OFF))
 cdbg     print*,"middle record",irec,1,NWORDS_ON_RECORD,'-->',off 
+            CALL READDI (ITAPE,IREC,NWORDS_ON_RECORD,ARRAY(OFF))
             OFF = OFF + NWORDS_ON_RECORD
             NWORDS = NWORDS - NWORDS_ON_RECORD
          ENDDO
       ELSE
          DO IREC = IREC_FIRST, IREC_LAST 
-            CALL WRITDI (ITAPE,IREC,NWORDS_ON_RECORD,ARRAY(OFF))
 cdbg     print*,"middle record",irec,1,NWORDS_ON_RECORD,'-->',off 
+            CALL WRITDI (ITAPE,IREC,NWORDS_ON_RECORD,ARRAY(OFF))
             OFF = OFF + NWORDS_ON_RECORD
             NWORDS = NWORDS - NWORDS_ON_RECORD
          ENDDO
@@ -251,8 +251,8 @@ C        Copy NWORDS to an integer*4 variable before passing to the read routine
          NWORDS4 = NWORDS
          IREC_LAST = IREC_LAST + 1
          IF (DO_READ) THEN
-            CALL READDI (ITAPE,IREC_LAST,NWORDS4,ARRAY(OFF))
 cdbg        print*,"last record",irec_last,1,nwords,'-->',off 
+            CALL READDI (ITAPE,IREC_LAST,NWORDS4,ARRAY(OFF))
          ELSE
 C           Be careful when writing : the file may already
 C           have information on it.
@@ -268,8 +268,8 @@ C              arbitrary number in BUFF (may be useful for debugging)
                CALL ICOPY (NWORDS_ON_RECORD,INIT_WAIO,0,BUFF,1)
             ENDIF
             CALL ICOPY (NWORDS4,ARRAY(OFF),1,BUFF,1)
-            WRITE (ITAPE,REC=IREC_LAST) BUFF
 cdbg        print*,"last record",irec_last,1,nwords,'-->',off 
+            WRITE (ITAPE,REC=IREC_LAST) BUFF
          ENDIF
       END IF
 C     Update the information about the highest record that is written
