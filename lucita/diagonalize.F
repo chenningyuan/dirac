@@ -3262,6 +3262,7 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
        DIMENSION FINEIG(1)
        LOGICAL CONVER,RTCNV(10)
        REAL*8 INPRDD, INPROD
+       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 *. Notice XJEP is also used for ROOTHOMING, should be allocated
 * outside (for roothoming :dim = 3*MAXVEC )
        DIMENSION XJEP(10000)
@@ -3390,6 +3391,7 @@ CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
 * ======================
 *
  1000 CONTINUE
+        CALL GETTIM(CPUITR1,WALLITR1)
         write(6,*)
         write(6,'(A21,3X,I3)') ' Info from iteration ',ITER
         write(6,*) '_______________________'
@@ -3590,7 +3592,13 @@ C        ITER = ITER-1
       DO IVEC = 1, IADD
         CALL REWINE(LU5,LBLK)
         CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
+* Check timings for sigma vector generation
+C?        CALL GETTIM(CPUSIG1,WALLSIG1)
         CALL MV7(VEC1,VEC2,LU5,LU6)
+C?        CALL GETTIM(CPUSIG2,WALLSIG2)
+C?        CPUTID = SECTID(CPUSIG2-CPUSIG1)
+C?        WALLTID = SECTID(WALLSIG2-WALLSIG1)
+C?        WRITE(6,9400) CPUTID,WALLTID
         CALL REWINE(LU6,LBLK)
         CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
 *.2.2 Augment projected matrix
@@ -4001,6 +4009,12 @@ C      END IF
          write(6,*) ' Overlap matrix    '
          call prsym(xjep,nvec)
        end if
+*
+*  Timing of this iteration
+       CALL GETTIM(CPUITR2,WALLITR2)
+       CPUTID = SECTID(CPUITR2-CPUITR1)
+       WALLTID = SECTID(WALLITR2-WALLITR1)
+       WRITE(6,9300) CPUTID,WALLTID
 *. End of resetting business
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1001 CONTINUE
@@ -4083,6 +4097,8 @@ C      END IF
       RETURN
  1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
  1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
+ 9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
+ 9400 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL: ',A,'(',A,')')
       END
 ***********************************************************************
 *                                                                     *

@@ -2014,7 +2014,7 @@ C
       DATA TABLE /'.TITLE ','.INIWFC','.CITYPE','.NROOTS','.SYMMET',
      &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
-     &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.XXXXXX'/
+     &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2052,7 +2052,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18,19), I
+     &                     11,12,13,14,15,16,17,18,19,20), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -2169,7 +2169,9 @@ C&&& RSTRCI: Restart option from CI vector
                   IMOKW(19) = 1
                GO TO 100
    20          CONTINUE
-C&&& XXXXXX: Free space for additional flag
+C&&& MXCIVE: Maximum number of subspace CI vectors
+                  READ(LUCMD,*) MXCIVE
+                  IMOKW(20) = 1
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

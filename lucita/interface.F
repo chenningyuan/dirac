@@ -457,6 +457,15 @@ C
          IRSTRT = IRSTLT
       end if
 *
+* 20: Maximum number of subspace CI vectors
+*
+      if (IMOKW(20).eq.0) then
+         MXCIVL = 0
+         IMOKW(20) = 2
+      else if (IMOKW(20).eq.1) then
+         MXCIVL = MXCIVE
+      end if
+*
 *
 *-----------------------------------------------------------------*
 *  Print section
@@ -581,6 +590,14 @@ C
       if (IRSTRT.eq.1) then
         write(6,'(A42,A3)')
      &    ' Restarted calculation from file ...... ','YES'
+        write(6,*)
+      end if
+*
+* 20: Maximum number of subspace vectors specified
+*
+      if (IMOKW(20).eq.1) then
+        write(6,'(A42,1I3)')
+     &    ' Reset no. of subspace vectors to ..... ',MXCIVL
         write(6,*)
       end if
 *
@@ -4059,7 +4076,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
      &                   MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
      &                   IRREP,NROOT,MULTIP,MS2,NELGS,MACHINE,
      &                   TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
-     &                   IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
+     &                   IUSE_PH,IDEMOL,IRSTRT,IDBGRP,MXCIVL,
      &                   IPRSTR,IPRCIX,IPRORB,IPRDIA,
      &                   IPRXT,IPRRSP,IPRDEN,IPROCC)
 *
@@ -4148,6 +4165,11 @@ CTF      write(*,'(X,A6)') MACHINE
                end if
             end do
          end do
+*
+         if (MXCIVL.ne.0) then
+           write(*,'(A5)') 'MXCIV'
+           write(*,'(X,I3)') MXCIVL
+         end if
 *
          write(*,'(A6)') 'RESTRT'
          write(*,'(X,I3)') IRSTRT
@@ -4277,6 +4299,11 @@ CTF      write(LUINP,'(X,A6)') MACHINE
                end if
             end do
          end do
+*
+         if (MXCIVL.ne.0) then
+           write(LUINP,'(A5)') 'MXCIV'
+           write(LUINP,'(X,I3)') MXCIVL
+         end if
 *
          if (IRSTRT.eq.1) then
            write(LUINP,'(A6)') 'RESTRT'
@@ -5724,7 +5751,7 @@ CC        IVFLEV = 1               ! could be made more flexible
      &             MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
      &             IRREP,NROOT,MULTIP,MS2,NELGS,MACHINE,
      &             TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
-     &             IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
+     &             IUSE_PH,IDEMOL,IRSTRT,IDBGRP,MXCIVL,
      &             IPRSTR,IPRCIX,IPRORB,IPRDIA,IPRXT,IPRRSP,
      &             IPRDEN,IPROCC)
 *
