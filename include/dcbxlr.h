@@ -1,11 +1,21 @@
 !
-! *** Linear response  <<A,B>>  ***
+! File: dcbxlr.h
+! *** Info for linear response  <<A,B>>, label: "XLR"  ***
 !
-! MAXLLR - max number of operators specified
-! MAXFLR - max number of frequencies specified
+! ----- PARAMETERS:
+!
+! MAXLLR - max number of operators allowed in XLR
+! MAXFLR - max number of frequencies allowed in XLR
+! Note: if you change any of these two parameters, then you
+!       must do a 'make depend' followed by 'make'.
+!
+      INTEGER MAXLLR, MAXFLR
+      PARAMETER (MAXLLR = 40, MAXFLR = 20)
+!
+! ----- VARIABLES:
 !
 ! NLRAP/NLRBP(NBSYM,ITIM) - number of A/B-operators classified 
-!      according to bosonsymmetries and time reversal symmetry
+!      according to boson symmetries and time reversal symmetry
 ! LLRAPU/LLRBPU - pointer to list of A/B - operators (unsorted)
 ! LLRAPS/LLRBPS - pointer to list of A/B - operators sorted on symmetries
 ! JLRAP/JLRBP   - symmetry offsets in LLRAPS/LLRBPS
@@ -20,9 +30,8 @@
 ! XLR_LSFG(1)=T   - call GMOLI in sigma-vector generation
 ! XLR_LSFG(2)=T   - call FMOLI in sigma-vector generation
 !
-      INTEGER MAXLLR, MAXFLR
-      PARAMETER (MAXLLR = 40, MAXFLR = 20)
-
+! N_ORBXLR: number of orbitals to analyze if ORBXLR .true.
+!
       LOGICAL XLR_SKIPEE, XLR_SKIPEP, XLR_LSFG(2), XLRNRM, XLRDIH,      &
      &        ALLCMB, TRIAB, COMPRS, ORBXLR, XSTERN, XLRANA
       COMMON /XCBLLR/ XLR_SKIPEE, XLR_SKIPEP, XLR_LSFG, XLRNRM, XLRDIH, &
@@ -34,11 +43,12 @@
       INTEGER IPRXLR, ITRXLR, NBFREQ, INDBP, MAXRM, MXLOAD,             &
      &        LLRAPU(MAXLLR), LLAPSU(MAXLLR), NLRAPT, NLRAP(8),         &
      &        JLRAP(8), LLRBPU(MAXLLR), LLBPSU(MAXLLR), NLRBPT,         &
-     &        NLRBP(8), JLRBP(8), INTXLR, ITRILR(2), NCLS_XLR(2, 3, 2)
+     &        NLRBP(8), JLRBP(8), INTXLR, ITRILR(2), NCLS_XLR(2, 3, 2), &
+     &        N_ORBXLR
       COMMON /XCBILR/ IPRXLR, ITRXLR, NBFREQ, INDBP, MAXRM, MXLOAD,     &
      &                LLRAPU, LLAPSU, NLRAPT, NLRAP, JLRAP, LLRBPU,     &
      &                LLBPSU, NLRBPT, NLRBP, JLRBP, INTXLR, ITRILR,     &
-     &                NCLS_XLR
+     &                NCLS_XLR, N_ORBXLR
 
       CHARACTER*72 XLR_INDSTR(3, 2)
       CHARACTER*6 XLR_XVCFIL

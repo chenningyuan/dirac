@@ -116,25 +116,26 @@ C
         CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
         CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
      &              WORK,KFREE,LFREE,IPRXLR)
-        NI = 0
+        N_ORBXLR = 0
 C       Number of inactive orbitals
 CTROND  Check out active ones...
+CHJAaJ: N_ORBXLR saved in dcbxlr.h for use elsewhere
         DO I = 1,NFSYM
-          NI = NI + NCLS_XLR(1,1,I) + NCLS_XLR(2,1,I)
+          N_ORBXLR = N_ORBXLR + NCLS_XLR(1,1,I) + NCLS_XLR(2,1,I)
         ENDDO
       ELSE
-        NI = 0
+        N_ORBXLR = 0
         KLRO = KFREE
       ENDIF
       IF(XLR_SKIPEE) THEN
         NEE = 0
       ELSE
-        NEE = NI + 1
+        NEE = N_ORBXLR + 1
       ENDIF
       IF(XLR_SKIPEP) THEN
         NEP = 0
       ELSE
-        NEP = NI + 1
+        NEP = N_ORBXLR + 1
       ENDIF
       NCI = 0
       N2LRF  = NLRAPT*NRSPF*(1+NEE+NEP+NCI)
@@ -190,13 +191,7 @@ C     If orbital analysis; extract relevant orbital energies
 C     ======================================================
 C
       IF(ORBXLR) THEN
-        NI = 0
-C       Number of inactive orbitals
-CTROND  Check out active ones...
-        DO I = 1,NFSYM
-          NI = NI + NCLS_XLR(1,1,I) + NCLS_XLR(2,1,I)
-        ENDDO
-        CALL MEMGET('REAL',KEIG,NI,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIG,N_ORBXLR,WORK,KFREE,LFREE)
         CALL EIGEXT(WORK(KEIG),IORBCL,1,WORK,KFREE,LFREE)
       ELSE
         KEIG = KFREE
@@ -1062,14 +1057,6 @@ C
       CALL QENTER('GETLRF')
       KFRSAV = KFREE
       FIRST = .TRUE.
-      IF(ORBXLR) THEN
-        NI = 0
-        DO I = 1,NFSYM
-          NI = NI + NCLS_XLR(1,1,I) + NCLS_XLR(2,1,I)
-        ENDDO
-      ELSE
-        NI = 0
-      ENDIF
       NRSP = NFREQ*NLRAPT*NLRBPT
 C
 C     First evaluate solution vectors for all frequencies
@@ -1123,7 +1110,7 @@ C
           CALL DAXPY(NRSP,D1,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
         ENDIF
         CALL MEMREL('GETLRF.e-e',WORK,1,KEE,KFREE,LFREE)
-        IOFF = IOFF + NI + 1
+        IOFF = IOFF + N_ORBXLR + 1
       ENDIF
 C
 C     Solution vector - orbital (e-p) part
@@ -1148,7 +1135,7 @@ C
           CALL DAXPY(NRSP,D1,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
         ENDIF
         CALL MEMREL('GETLRF.e-p',WORK,1,KEP,KFREE,LFREE)
-        IOFF = IOFF + NI + 1
+        IOFF = IOFF + N_ORBXLR + 1
       ENDIF
 C
 C     Solution vector - configurational part
@@ -1370,23 +1357,17 @@ C
       DATA TTYP /'T-','T0','T+'/
 C
       IF(ORBXLR) THEN
-        NI = 0
-C       Number of inactive orbitals
-CTROND  Check out active ones...
-        DO I = 1,NFSYM
-          NI = NI + NCLS_XLR(1,1,I) + NCLS_XLR(2,1,I)
-        ENDDO
         IOFF = 1
         NVAR = 0
         IF(.NOT.XLR_SKIPEE) THEN
           NVAR = NVAR + 1
           IBUF(NVAR)  = IOFF+1
-          IOFF = IOFF + NI + 1
+          IOFF = IOFF + N_ORBXLR + 1
         ENDIF
         IF(.NOT.XLR_SKIPEP) THEN
           NVAR = NVAR + 1
           IBUF(NVAR)  = IOFF+1
-          IOFF = IOFF + NI + 1
+          IOFF = IOFF + N_ORBXLR + 1
         ENDIF
       ENDIF
 C

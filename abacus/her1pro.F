@@ -1641,7 +1641,13 @@ C
 #include "cbiher.h"
 C
 #ifdef PRG_DIRAC
-      IF (ALLATM) THEN
+      IF (INTTYP.GT.0 .OR. ALLATM) THEN
+C     ... INTTYP .le. 0 is special flag for properties
+C         to get list of atoms selected with .SELECT.
+C         This is used in prp/pamprp.F; the other 
+C         atoms will still be calculated in PR1IN1
+C         but will not be used in response. /Sep04 hjaaj
+C
 #else
       SPIN = INTTYP .EQ.  9 .OR. INTTYP .EQ. 10 .OR.
      &       INTTYP .EQ. 11 .OR. INTTYP .EQ. 12 .OR. INTTYP .EQ. 13 .OR.

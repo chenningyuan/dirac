@@ -915,7 +915,8 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
-      CALL SETATM(WORK(KDATOM),NATOM,29)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-29)
       CALL DEF_SPNSP1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_SPNSPN',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1048,21 +1049,21 @@ C
 C     Print section
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 'NMR indirect spin-spin coupling:'
+      WRITE(LUPRI,'(A)') ' NMR indirect spin-spin coupling:'
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(TRIAB) THEN
         WRITE(LUPRI,'(A)')
      &    '*** WARNING ! Assuming symmetry J(AB) = J(BA)'
       ENDIF
-      WRITE (LUPRI,'(A,E9.2)')
+      WRITE (LUPRI,'(A,F9.4,A)')
      &   ' Spin-spin couplings printed for atoms with '//
-     &   'abundance greater than :', ABUND
+     &   'abundance greater than', ABUND,' %'
 C
 C     A operators
 C     ===========
 C
       CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(1X,A)') '** A operators **'
+      WRITE(LUPRI,'(A)') ' ** A operators **'
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1,NSCOOR
         INDOP1 = IPSPNSPN(1,I)
@@ -1076,7 +1077,7 @@ C     B operators
 C     ===========
 C
       CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(1X,A)') '** B operators **'
+      WRITE(LUPRI,'(A)') ' ** B operators **'
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1,NSCOOR
 #if defined (XH4)
@@ -1252,10 +1253,9 @@ C     Diamagnetic contribution to shieldings
 C
       IF(NSTDIA) THEN
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE(LUPRI,'(1X,A)')
-     &    'NMR diamagnetic shielding contribution:'
+        WRITE(LUPRI,'(A)')
+     &    ' NMR diamagnetic shielding contribution:'
         CALL PRSYMB(LUPRI,'=',75,0)
-CMI     CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
         CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPREXP)
       ENDIF
 C
@@ -2863,7 +2863,8 @@ C
       CALL MEMGET('REAL',KSPAR,5*NNDEP  ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBUF,NSCOOR*2 ,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,29)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(WORK(KATOM),NATOM,-29)
       CALL PRP_SPNSP1(EXPVAL,ABLRF,ABCNV,
      &                WORK(KATOM),WORK(KIATM),WORK(KRATM),
      &                WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
@@ -2955,7 +2956,6 @@ C
           IATINF(1,NSPEC+1) = IDEP + 1
           IATINF(2,NSPEC+1) = IZ
           IATINF(3,NSPEC+1) = NISO
-C          WRITE(LUPRI,'
           WRITE(LUPRI,
      &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)')
      &       '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
@@ -3341,7 +3341,8 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     DSOINT: INTTYP = 12
-      CALL SETATM(WORK(KDATOM),NATOM,12)
+C     (-12: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-12)
       CALL DEF_DSO1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_DSO',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3471,7 +3472,8 @@ C
       CALL MEMGET('REAL',KSPAR,5*NNDEP  ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBUF,NSCOOR*2 ,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,12)
+C     (-12: accept .SELECT specification)
+      CALL SETATM(WORK(KATOM),NATOM,-12)
       CALL PRP_DSO1(EXPVAL,
      &              WORK(KATOM),WORK(KIATM),WORK(KRATM),
      &              WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
@@ -3718,7 +3720,8 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
-      CALL SETATM(WORK(KDATOM),NATOM,29)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-29)
       CALL DEF_SHIELD1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_SHIELD',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
@@ -3926,9 +3929,9 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(A)') ' NMR shieldings:'
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE (LUPRI,'(A,E9.2)')
+        WRITE (LUPRI,'(A,F9.4,A)')
      &   ' Shieldings printed for atoms with '//
-     &   'abundance greater than :', ABUND
+     &   'abundance greater than', ABUND,' %'
 C
 C     A operators
 C     ===========
@@ -4105,7 +4108,8 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     NSTDIACGO: INTTYP = 38
-      CALL SETATM(WORK(KDATOM),NATOM,38)
+C     (-38: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-38)
       CALL DEF_NSTDIA1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_NSTDIA',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -4212,7 +4216,7 @@ C
       NCMAT =  NUCDEP*9
       CALL MEMGET('REAL',KTMAT,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,NCMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT,2*NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTISO,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDISO,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPISO,NUCDEP,WORK,KFREE,LFREE)
@@ -4224,9 +4228,10 @@ C
       CALL MEMGET('LOGI',KATOM,NUCIND,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCSTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSCTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMPMAT,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMPMAT,2*NCMAT,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,29)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(WORK(KATOM),NATOM,-29)
       CALL PRP_SHIELD1(EXPVAL,ABLRF,WORK(KTMPMAT),WORK(KTMAT),
      &     WORK(KDMAT),WORK(KPMAT),WORK(KTISO),WORK(KDISO),WORK(KPISO),
      &     WORK(KANIS),WORK(KASYM),WORK(KSKEW),WORK(KSPAN),WORK(KIBUF),
@@ -4259,9 +4264,9 @@ C***********************************************************************
 #include "dcbxlr.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL TEST,DOATOM(NUCIND)
-      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
+      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &     TMPMAT(3,*),TMAT(3,3,NUCDEP), DMAT(3,3,NUCDEP),
-     &     PMAT(3,3,NUCDEP),TISO(NUCDEP),DISO(NUCDEP),PISO(NUCDEP),
+     &     PMAT(3,3,NUCDEP,2),TISO(NUCDEP),DISO(NUCDEP),PISO(NUCDEP),
      &     ANIS(NUCDEP),ASYM(NUCDEP),SKEW(NUCDEP),SPAN(NUCDEP),
      &     IBUFA(3*NUCDEP),IBUFB(3),CSTRA(NUCDEP*NUCDEP*9),
      &     SCTRA(NUCDEP*NUCDEP*9),WORK(*)
@@ -4277,10 +4282,10 @@ C
       CALL DZERO(TMPMAT,NCMAT)
       CALL DZERO(DMAT,NCMAT)
 C
-C     Extract Diamagnetic part if e-p rotations are not included
+C     Extract Diamagnetic approximation if calculated
+C     (used for total shielding if e-p rotations are not included)
 C
-      IF(XLR_SKIPEP) THEN
-         CALL DZERO(DMAT(1,1,1),NCMAT)
+      IF(NSTDIA) THEN
          DO I = 1,NNSTIN
             IOP = IPNSTDIA(I)
             IPL = IPRPLBL(1,LEXPP(IOP))
@@ -4328,41 +4333,67 @@ C
      &           '*** Frequency    :',BFREQ(IFREQ),'a.u.'
          ENDIF
 
-         CALL DZERO(TMPMAT,NCMAT)
+         CALL DZERO(TMPMAT,2*NCMAT)
          DO IB = 1,NB
             READ (PRPNAM(LLRBPU(IBUFB(IB))),'(7X,I1)') JB
             KB = IPSHIELD(JB+MXCOOR)
             DO IA = 1,NA
                JA = IBUFA(IA)
                KA = IPSHIELD(JA)
-               TMPMAT(IPTAX(JB,2),JA) = ABLRF(IFREQ,KA,KB)
+C...           First e-e contribution
+               TMPMAT(IPTAX(JB,2),JA) = ABLRF(IFREQ,KA,KB,2)
+C...           then e-p contribution
+               TMPMAT(IPTAX(JB,2),JA+NCMAT)
+     &            = ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
             ENDDO
          ENDDO
 #if defined (XH4)
-         TMPMAT(2,8) = TMPMAT(1,4)
-         TMPMAT(2,9) = TMPMAT(1,6)
+         TMPMAT(2,8)  = TMPMAT(1,4)
+         TMPMAT(2,9)  = TMPMAT(1,6)
          TMPMAT(2,10) = TMPMAT(1,7)
          TMPMAT(2,11) = TMPMAT(1,5)
          TMPMAT(3,12) = TMPMAT(1,4)
          TMPMAT(3,13) = TMPMAT(1,6)
          TMPMAT(3,15) = TMPMAT(1,7)
          TMPMAT(3,14) = TMPMAT(1,5)
+         TMPMAT(2,8+NCMAT)  = TMPMAT(1,4+NCMAT)
+         TMPMAT(2,9+NCMAT)  = TMPMAT(1,6+NCMAT)
+         TMPMAT(2,10+NCMAT) = TMPMAT(1,7+NCMAT)
+         TMPMAT(2,11+NCMAT) = TMPMAT(1,5+NCMAT)
+         TMPMAT(3,12+NCMAT) = TMPMAT(1,4+NCMAT)
+         TMPMAT(3,13+NCMAT) = TMPMAT(1,6+NCMAT)
+         TMPMAT(3,15+NCMAT) = TMPMAT(1,7+NCMAT)
+         TMPMAT(3,14+NCMAT) = TMPMAT(1,5+NCMAT)
 #endif
-         IF (IPRPRP.GE.4) THEN
-            CALL HEADER('Response part of shielding'//
-     &           ' in symmetry coordinates (ppm)',1)
-            CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
-         ENDIF
 C
 C     Transform to non-symmetry basis
 C
-         CALL DZERO(PMAT(1,1,1),NCMAT)
-         CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+         CALL DZERO(PMAT,2*NCMAT)
+         CALL DZERO(TMAT,NCMAT)
+         IF (.NOT. XLR_SKIPEE) THEN
+            IF (IPRPRP.GE.4) THEN
+               CALL HEADER('e-e response part of shielding'//
+     &            ' in symmetry coordinates (ppm)',1)
+               CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
+            ENDIF
+            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+            CALL DAXPY(9*NUCDEP,D1,PMAT,1,TMAT,1)
+         END IF
+         IF (XLR_SKIPEP) THEN
+            CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
+         ELSE
+            IF (IPRPRP.GE.4) THEN
+               CALL HEADER('e-p response part of shielding'//
+     &            ' in symmetry coordinates (ppm)',1)
+               CALL FCPRI (TMPMAT(1,1+NCMAT),'SIGMAS',CSTRA,SCTRA)
+            ENDIF
+            CALL TRADIP(TMPMAT(1,1+NCMAT),PMAT(1,1,1,2),
+     &                  CSTRA,SCTRA,3*NUCDEP,2,2)
+            CALL DAXPY(9*NUCDEP,D1,PMAT(1,1,1,2),1,TMAT,1)
+         END IF
 C
 C     Analyze results
 C
-         CALL DCOPY(9*NUCDEP,PMAT,1,TMAT,1)
-         IF (XLR_SKIPEP) CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
          IATOM = 0
          DO 100 I = 1, NUCIND
             DO 200 ISYMOP = 0, MAXOPR
@@ -4370,7 +4401,8 @@ C
                   IATOM = IATOM + 1
                   IF (DOATOM(I)) THEN
                      CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
-     &                 PMAT(1,1,IATOM),TISO(IATOM),DISO(IATOM),
+     &                 PMAT(1,1,IATOM,1),PMAT(1,1,IATOM,2),
+     &                 TISO(IATOM),DISO(IATOM),
      &                 PISO(IATOM),ANIS(IATOM),ASYM(IATOM),SKEW(IATOM),
      &                 SPAN(IATOM),NAMDEP(IATOM),NAMDPX(3*(IATOM-1)+1),
      &                 IPRPRP)
@@ -4380,10 +4412,10 @@ C
  100     CONTINUE
 C
          CALL AROUND('Summary of chemical shieldings')
-         WRITE (LUPRI,'(1X,A)') 'Definitions from J.Mason, Solid '//
+         WRITE (LUPRI,'(A)') ' Definitions from J.Mason, Solid '//
      &        'state Nuc.Magn.Res. 2 (1993), 285'
          WRITE (LUPRI,'()')
-         WRITE (LUPRI,'(A,/,A,/,A,/,A)')
+         WRITE (LUPRI,'(A/A/A/A)')
      &        '@            isotropic shielding',
      &        '@        ----------------------------',
      &        '@atom       total       dia      para      skew'//
@@ -4413,7 +4445,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck SHIANA */
-      SUBROUTINE SHIANA(TMAT,DMAT,PMAT,AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
+      SUBROUTINE SHIANA(TMAT,DMAT,PMATEE,PMATEP,
+     &                  AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
      &                  SKEW,SPAN,NAME,NAMEX,IPRINT)
 C***********************************************************************
 C
@@ -4426,22 +4459,33 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "codata.h"
+#include "mxcent.h"
+#include "dcbprp.h"
 #include "dcbxlr.h"
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       CHARACTER NAME*6, NAMEX(3)*6, SGN*3
       INTEGER Z
-      DIMENSION TMAT(3,3), DMAT(3,3), PMAT(3,3), SYM(3,3), ANTI(3,3),
-     &          AXES(3,3), PVAL(6), WRK(3), IWRK(3), ABSP(3)
+      DIMENSION TMAT(3,3), DMAT(3,3), PMATEE(3,3), PMATEP(3,3),
+     &          SYM(3,3),  ANTI(3,3), AXES(3,3),
+     &          PVAL(6), WRK(3), IWRK(3), ABSP(3)
 #include "chrxyz.h"
 C
       CALL DSCAL(9,FACTOR,TMAT,1)
       CALL DSCAL(9,FACTOR,DMAT,1)
-      CALL DSCAL(9,FACTOR,PMAT,1)
+      CALL DSCAL(9,FACTOR,PMATEE,1)
+      CALL DSCAL(9,FACTOR,PMATEP,1)
 C
       AVETOT = (TMAT(1,1) + TMAT(2,2) + TMAT(3,3))/D3
-      AVEDIA = (DMAT(1,1) + DMAT(2,2) + DMAT(3,3))/D3
-      AVEPAR = (PMAT(1,1) + PMAT(2,2) + PMAT(3,3))/D3
+      IF (XLR_SKIPEP) THEN
+C        ... use NSTDIA expectation value approximation
+         AVEDIA = (DMAT(1,1) + DMAT(2,2) + DMAT(3,3))/D3
+      ELSE
+C        ... use result of e-p response equations
+         AVEDIA = (PMATEP(1,1) + PMATEP(2,2) + PMATEP(3,3))/D3
+         AVEDIA2 = (DMAT(1,1) + DMAT(2,2) + DMAT(3,3))/D3
+      END IF
+      AVEPAR = (PMATEE(1,1) + PMATEE(2,2) + PMATEE(3,3))/D3
 C
 C     Parameters calculated in accordance with J.Mason, Solid State
 C     Nuc.Magn.Resonance, 2 (1993), 285
@@ -4507,17 +4551,44 @@ C
   400 CONTINUE
 C
       IF (XLR_SKIPEP) THEN
-      CALL HEADER('Diamagnetic and paramagnetic contributions (ppm):',1)
-      WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X),/)')
+         CALL HEADER('Diamagnetic and paramagnetic contributions (ppm):'
+     &      ,1)
+         WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X),/)')
      &    'Bx', 'By', 'Bz', 'Bx','By','Bz'
-      DO 500 ICOOR = 1, 3
-         WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
-     &         (DMAT(K,ICOOR),K=1,3), (PMAT(K,ICOOR),K=1,3)
-  500 CONTINUE
-      WRITE (LUPRI,'(/,1X,A,F14.6,8X,A,F14.6)')
+         DO ICOOR = 1, 3
+            WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
+     &         (DMAT(K,ICOOR),K=1,3), (PMATEE(K,ICOOR),K=1,3)
+         END DO
+         WRITE (LUPRI,'(/A,F14.6,8X,A,F14.6)')
      &          ' Diamagnetic contribution:',AVEDIA,
      &          ' Paramagnetic: ',AVEPAR
+      ELSE
+         CALL HEADER('e-p "diamagnetic" and e-e "paramagnetic"'//
+     &      ' contributions (ppm):',1)
+         WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X)/)')
+     &    'Bx', 'By', 'Bz', 'Bx','By','Bz'
+         DO ICOOR = 1, 3
+            WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
+     &         (PMATEP(K,ICOOR),K=1,3), (PMATEE(K,ICOOR),K=1,3)
+         END DO
+         WRITE (LUPRI,'(/A,F14.6,8X,A,F14.6)')
+     &          ' e-p "diamagnetic" contribution:',AVEDIA,
+     &          ' e-e "paramagnetic": ',AVEPAR
+         IF (NSTDIA) THEN
+            CALL HEADER('.NSTDIA diamagnetic term for comparison'//
+     &         ' with e-p "diamagnetic" term (ppm):',1)
+            WRITE (LUPRI,'(15X,3(A,9X)/)')
+     &       'Bx', 'By', 'Bz'
+            DO ICOOR = 1, 3
+               WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
+     &            (DMAT(K,ICOOR),K=1,3)
+            END DO
+            WRITE (LUPRI,'(/A,F14.6,8X,A,F14.6)')
+     &          ' .NSTDIA diamagnetic contribution, for comparison:',
+     &          AVEDIA2
+         END IF
       END IF
+C
       CALL HEADER
      &   ('Antisymmetric and traceless symmetric parts (ppm):',1)
       WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X),/)')
