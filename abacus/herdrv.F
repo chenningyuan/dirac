@@ -1046,6 +1046,13 @@ C&&& Nuclear model
      &           //' JAB and JBA calculated.'
          END IF
       END IF
+      IF (.NOT. ALLATM) THEN
+            WRITE (LUPRI,'(/A/2A,/)')
+     &         ' For property integrals involving atomic centers',
+     &         '     only integrals involving the following',
+     &         ' nuclei are calculated:'
+            WRITE (LUPRI,'(10X,20I3)') (IPATOM(I),I = 1, NPATOM)
+      END IF
 C
 C     **** Process input for various program sections  *****
 C
