@@ -94,6 +94,31 @@ C        ... is zero but included such that error may be detected.
 C
       RETURN
       END
+C  /* Deck dappge */
+      SUBROUTINE DAPPGE(N,AAP,AGE)
+C
+C  Oct-2001 Hans Joergen Aa. Jensen; based on DAPTGE
+C
+C Purpose: unpack antisymmetric,   packed (lower triangle) matrix AAP
+C              to antisymmetric, unpacked matrix and add to AGE.
+C
+#include <implicit.h>
+      DIMENSION AAP(*), AGE(N,*)
+C
+#include <nosync.h>
+      DO 200 J = 1,N
+         JOFF = (J*J-J)/2
+#include <nosync.h>
+         DO 100 I = 1,J-1
+            AGE(I,J) = AGE(I,J) - AAP(JOFF+I)
+            AGE(J,I) = AGE(J,I) + AAP(JOFF+I)
+  100    CONTINUE
+         AGE(J,J) = AGE(J,J) + AAP(JOFF+J)
+C        ... is zero but included such that error may be detected.
+  200 CONTINUE
+C
+      RETURN
+      END
 C  /* Deck dsptsi */
       SUBROUTINE DSPTSI(N,ASP,ASI)
 C
@@ -119,6 +144,33 @@ C
             ASI(J,I) = ASP(JOFF+I)
   100    CONTINUE
          ASI(J,J) = ASP(JOFF+J)
+  200 CONTINUE
+C
+      RETURN
+      END
+C  /* Deck dsppsi */
+      SUBROUTINE DSPPSI(N,ASP,ASI)
+C
+C  Oct-2001 Hans Joergen Aa. Jensen; based on DSPTSI
+C
+C Purpose: unpack symmetric,   packed matrix ASP
+C              to symmetric, unpacked matrix and add to ASI.
+C
+#include <implicit.h>
+      DIMENSION ASP(*), ASI(N,*)
+C
+      ENTRY      DSPPGE(N,ASP,ASI)
+C     ... equivalent subroutine name
+C
+#include <nosync.h>
+      DO 200 J = 1,N
+         JOFF = (J*J-J)/2
+#include <nosync.h>
+         DO 100 I = 1,J-1
+            ASI(I,J) = ASI(I,J) + ASP(JOFF+I)
+            ASI(J,I) = ASI(J,I) + ASP(JOFF+I)
+  100    CONTINUE
+         ASI(J,J) = ASI(J,J) + ASP(JOFF+J)
   200 CONTINUE
 C
       RETURN
