@@ -108,6 +108,12 @@ Chj: MAXRM, MXLOAD
 C
       CALL QENTER('PRPXPP')
 C
+C     ****************************
+C     *** I N I T I A L I Z E  ***
+C     ****************************
+C
+      CALL SETXPP(WORK,KFREE,LFREE)
+C
       IF (MAXEXC.EQ.0) THEN
         IF(XPPANA) GOTO 10
         CALL QUIT('PRPXPP called for zero excitations!')
@@ -158,6 +164,8 @@ C
      &                        WORK,KFREE,LFREE,IPRXPP)
 C
       CALL MEMCHK('PRPXPP memory check',WORK,1)
+C     ... note: NOT MEMREL here as info is passed to calling
+C         routine in WORK(KPPO), WORK(KPPF), WORK(KCNV), WORK(KOMEGA)
       CALL QEXIT('PRPXPP')
       RETURN
       END
@@ -204,12 +212,6 @@ C     Get hold of the slaves if we run in parallel.
 C        ( ITASK = 1 for Fock matrices )
 C
       IF (PARCAL) CALL DIRAC_PARCTL( 1 )
-C
-C     ****************************
-C     *** I N I T I A L I Z E  ***
-C     ****************************
-C
-      CALL SETXPP(WORK,KFREE,LFREE)
 C
 C     If orbital analysis; extract relevant orbital energies
 C     ======================================================
@@ -830,6 +832,8 @@ C
         LURST = 28
         CALL OPNFIL(LURST,XPPFIL,'OLD','PRPXPP')
       ENDIF
+      IF (KFRSAV .NE. KFREE)
+     &   CALL MEMREL('SETXPP',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('SETXPP')
       RETURN
       END
