@@ -407,7 +407,7 @@ C hjj: take as many blocks as fit in memory
       LWRK   = LWORK  -  KLAST + 1
       LBLOCK = 6 + 2*KPRIM + 4*KCMAT
 C      (we reserve size of one block for later allocations)
-      LRESRV = MAX(LBLOCK, 3*MXAQN+MXCORB) + 10000
+      LRESRV = MAX(LBLOCK, 3*MXAQN+MXCORB) + 20000
 C                          ^- for sympro
       KBLOCK = (LWRK-LRESRV)/LBLOCK
       KBLOCK = MAX(KBLOCK,10)
@@ -1141,13 +1141,13 @@ C
                END IF
 C
 C
-               IF ( IBSFLAG .NE. 4 .AND. ISPHTR .EQ. 3 ) THEN
-                  WRITE(LUPRI,'(1X,A)')
-     &               'INFO: Explicitly given small basis set and '//
-     &               '.SPHTRA 1 1 not implemented,',
-     &               'INFO: .SPHTRA reset to 1 0.'
-                  ISPHTR = 1
-               END IF
+c              IF ( IBSFLAG .NE. 4 .AND. ISPHTR .EQ. 3 ) THEN
+c                 WRITE(LUPRI,'(1X,A)')
+c    &               'INFO: Explicitly given small basis set and '//
+c    &               '.SPHTRA 1 1 not implemented,',
+c    &               'INFO: .SPHTRA reset to 1 0.'
+c                 ISPHTR = 1
+c              END IF
 C
 C
                IF ( IBSFLAG .EQ. 1 ) THEN
@@ -6337,11 +6337,15 @@ C
 C     Routine for Restricted Kinetic Balance (RKB) Relations.
 C     
 C     Generates array IRKB running over shells
-C       For large shells IRKB points to L-1 small partner
-C       For small shells IRKB opints to L-1 large partner
+C       For large shells IRKB points to L+1 small partner
+C       For small shells IRKB points to L-2 small partner
+C       or to the L-1 large partner if the L-2 small partner does
+C       not exist (pointer is negative in this case). 
 C
 C     Written by Jon K. Laerdahl 05.12.1996
 C     Major surgery by T.Saue May 5 1998
+C     Changed definition of IRKB because of problems with contracted sets,
+C     L. Visscher, Nov 16, 2000.
 C
 C******************************************************************************
 #include <implicit.h>
@@ -6353,7 +6357,7 @@ C******************************************************************************
 #include <shells.h>
 #include <dcbbas.h>
 #include <aovec.h>
-      PARAMETER (SML = 1.0D-10)
+      PARAMETER (SML = 1.0D-6)
 #include <primit.h>
 #include <dcbrkb.h>
 C
@@ -6372,91 +6376,88 @@ C
 C
       iPrimLargeTest = 0
 C
-      DO 100 ISHL = 1, NLRGSH 
+      DO 100 ISHL = 1, KMAX 
 C
-         NCENTL = NCENT(ISHL)
-         NHKTL  = NHKT(ISHL)
+         NCENTI = NCENT(ISHL)
+         NHKTI  = NHKT(ISHL)
 C
-         iPrimLargeStart = JSTRT(ISHL) + 1
-         iPrimLargeEnd   = JSTRT(ISHL) + NUCO(ISHL)
+         iPrimStart = JSTRT(ISHL) + 1
+         iPrimEnd   = JSTRT(ISHL) + NUCO(ISHL)
 C
 C        Skip primitives we've already processed.
 C
-         IF (iPrimLargeStart .EQ. iPrimLargeTest) GO TO 100
-         iPrimLargeTest = iPrimLargeStart
+         IF (iPrimStart .EQ. iPrimTest) GO TO 100
+         iPrimTest = iPrimStart
 C
 C        Loop over primitives in this shell.
 C
-         DO 200 IPRIML = iPrimLargeStart, iPrimLargeEnd
-            PRIEXL = PRIEXP(IPRIML)
+         DO 200 IPRIM = iPrimStart, iPrimEnd
+            PRIEXI = PRIEXP(IPRIM)
 C
             ISH2M = 0
-            iPrimSmallTest = 0
+            iPrimTest = 0
 C
 C           Loop over small component shells
 C           Find matching small component basis functions.
 C
-            DO 300 ISHS = NLRGSH+1, KMAX
-               NCENTS = NCENT(ISHS)
-               NHKTS  = NHKT(ISHS)
+            DO 300 JSHL = NLRGSH+1, KMAX
+               NCENTJ = NCENT(JSHL)
+               NHKTJ  = NHKT(JSHL)
 C
 C              Must be on same atomic center.
 C
-               IF ( NCENTS .NE. NCENTL ) GO TO 300
+               IF ( NCENTJ .NE. NCENTI ) GO TO 300
 C
-               iPrimSmallStart = JSTRT(ISHS) + 1
-               iPrimSmallEnd   = JSTRT(ISHS) + NUCO(ISHS)
+               jPrimStart = JSTRT(JSHL) + 1
+               jPrimEnd   = JSTRT(JSHL) + NUCO(JSHL)
 C
 C              Skip primitives we've already processed.
 C
-               IF ( iPrimSmallStart .EQ. iPrimSmallTest) GO TO 300
-               iPrimSmallTest = iPrimSmallStart
+               IF ( jPrimStart .EQ. jPrimTest) GO TO 300
+               jPrimTest = jPrimStart
 C
 C              Loop over primitives.
 C
-               DO 400 IPRIMS = iPrimSmallStart, iPrimSmallEnd
+               DO 400 JPRIM = jPrimStart, jPrimEnd
 C
-                  PRIEXS = PRIEXP(IPRIMS)
+                  PRIEXJ = PRIEXP(JPRIM)
 C
-                  IF ( ABS ( PRIEXS - PRIEXL ) .LT. SML ) THEN
+                  IF ( ABS ((PRIEXJ-PRIEXI)/PRIEXI) .LT. SML ) THEN
 C
 C
 C                    We've got a match: same center, same exponent
 C
 C
-C                    L-1 small function....
+C                    Match small component to L-2 small function....
 C
-                     IF(NHKTS.EQ.NHKTL-1) THEN
+                     IF(NHKTJ.EQ.NHKTI-2.AND.ISHL.GT.NLRGSH) THEN
 C
 C                       Check for two identical functions.
 C                       This should never happen, since GENSML deletes
-C                       functions it already know.
+C                       functions it already knows.
 C
                         IF(ISH2M.NE.0) CALL QUIT
-     &                      ('RKBREL: Error, two identical S functions')
+     &                   ('RKBREL: Error, two identical S.C. functions')
 C
 C                       Note that we use ISHS and not IPRIMS, since RKBLOW
 C                       in dirone.F wants shell number, and not primitive
 C                       number. This is not the same if L Component basis
 C                       set is contracted.
 C
-                        ISH2M = ISHS + (IPRIMS - iPrimSmallStart)
+c                       ISH2M = JSHL + (JPRIM - jPrimStart)
+c                       IRKB(IPRIM) = ISH2M
+                        IRKB(IPRIM) = JPRIM
                      ENDIF
 C
-C                    L+1 small function....
+C                    Match large component to L+1 small function and 
+C                    vice versa. The initialization of the SC is 
+C                    overwritten if an (L-1) SC does also exist. It
+C                    serves to check whether this SC is used to balance
+C                    by itself.
 C
-                     IF(NHKTS.EQ.NHKTL+1) THEN
-                        IF((NHKTL.GT.1).AND.(ISH2M.EQ.0)) THEN
-                           WRITE(LUPRI,'(A/A,I5,F20.10)') 
-     &                         'S Component Function with no Partner '//
-     &                         'at L-2', 'L quantum number, exponent:',
-     &                         NHKTS-1,PRIEXS
-                           CALL QUIT('S Component Function'// 
-     &                          ' with no Partner at L-2')
-                        ELSE
-                           IRKB(IPRIMS) = IPRIML
-                           IRKB(IPRIML) = ISH2M
-                        ENDIF
+                     IF (NHKTJ.EQ.NHKTI+1.AND.ISHL.LE.NLRGSH) THEN
+                        IRKB(IPRIM) = JPRIM
+                        IRKB(JPRIM) = - IPRIM
                      ENDIF
                   ENDIF
  400           CONTINUE

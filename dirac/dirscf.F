@@ -2153,7 +2153,98 @@ C
 C
       RETURN
       END
-            
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck appbos */
+      SUBROUTINE APPBOS (IFRP,NO,INDX,IBEIG,EVEC,RDUM)
+C****************************************************************************
+C     PURPOSE:
+C        Identify vectors by their largest boson character
+C        This approximate labeling can be used in the CI code.
+C
+C        Works only for the modified Dirac equation 
+C        (restricted kinetic balance)
+C
+C        Written by L. Visscher
+C        October 2000
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dgroup.h>
+#include <dcbham.h>
+      DIMENSION IBEIG(NO),INDX(NO)
+      DIMENSION EVEC(NO,NO,NZ),RDUM(NO,4)
+C
+      IF (URKBAL) RETURN
+C
+      NBRP = 4 / NZ
+C
+C     Calculate the weight of each boson irrep in each vector.
+C     Because we work in the orthonormal basis the total weights
+C     add up to one.
+C
+      CALL DZERO(RDUM,4*NO)
+      DO I = 1, NO
+         IBEIG(I) = -1
+      ENDDO
+C
+      IX = 1
+      DO ISYM = 1, NBRP
+        NBO = NBORB(ISYM,IFRP,0)
+        IF (NBO.GT.0) THEN
+          DO IZ = 1, NZ
+             DO I = 1, NO
+                RDUM(I,ISYM) = RDUM(I,ISYM) +
+     &                         DDOT(NBO,EVEC(IX,I,IZ),1,EVEC(IX,I,IZ),1)
+             ENDDO
+          ENDDO
+          IX = IX + NBO
+        ENDIF
+      ENDDO
+C
+      DO ISYM = 1, NBRP
+         IREP = JFSYM(ISYM,IFRP) - 1
+         NBO = NBORB(ISYM,IFRP,0)
+         NSKIP = 0
+C
+C        Establish the order, indexx will give the vectors with the
+C        highest occupation for this boson irreps last
+C
+         CALL INDEXX (NO,RDUM(1,ISYM),INDX)
+C
+C        Label the vectors, skip one if already claimed by another
+C        irrep. This is not fullproof but will at least satisfy the
+C        constraint that every boson irrep gets the correct number
+C        of vectors.
+C
+         DO J = NO, NO-NBO+1, -1
+            IBOLD = IBEIG(INDX(J))
+            IF (IBOLD.EQ.-1) THEN
+               IBEIG(INDX(J)) = IREP
+            ELSE
+               NSKIP = NSKIP + 1
+            ENDIF
+         ENDDO
+C
+         ISKIP = 0
+         DO J = NO-NBO,1,-1
+            IBOLD = IBEIG(INDX(J))
+            IF (IBOLD.EQ.-1.AND.ISKIP.LT.NSKIP) THEN
+               ISKIP = ISKIP + 1
+               IBEIG(INDX(J)) = IREP
+            ENDIF
+         ENDDO
+      ENDDO
+C
+c     do i = no/2+1, no
+c     write (LUPRI,'(3(A,I4),A,4F8.2)')
+c    & 'fermion irrep ',ifrp,' electron function ',i-no/2,' labeled ',
+c    &  ibeig(i),' percentages ',(rdum(i,ix),ix=1,nbrp)
+c     enddo
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mvogen */
       SUBROUTINE MVOGEN(WORK,LWORK)
@@ -2764,6 +2855,16 @@ C
      &                 NORB(I),WORK(KFREE),LFREE,IERR)
           ENDIF
 C
+C         Do an approximate identification of the spinors by their
+C         boson character for use in the CI.
+C
+          CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KRDUM,4*NORB(I),WORK,KFREE,LFREE)
+          CALL APPBOS (I,NORB(I),WORK(KINDX),
+     &                 IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
+     &                 WORK(KRDUM))
+          CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
+
 C
 C       2 : Levy-Leblond or spinfree, use matrix as supplied by dfsolv,
 C           but diagonalize blockwise

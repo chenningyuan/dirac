@@ -1326,6 +1326,9 @@ C
 C     Unrestricted kinetic balance; use Lowdin matrix
 C     ===============================================
 C
+C     LV : The unrestricted procedure should be revised so that
+C     the large components are also sorted on boson irreps !!!
+C
       CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
       IF(.NOT.URKBAL.AND.NTBAS(2).EQ.0) THEN
         URKBAL = .TRUE.
@@ -2737,11 +2740,24 @@ C        Loop over primitives
 C      
          DO 15 JP = JP1, JP2
 C
-C           Look for (L-1) large function;
-C           skip if no partner found
+C           A function can contrinute to kinetic balance in two ways :
+C           a. It balances a (L-1) large component function
+C           b. It balances a (L+1) large component function
 C
-            JL = IRKB(JP)
-            IF(JL.EQ.0) GOTO 15
+C           In case b it needs to be combined with a (L+2) function,
+C           and we take this combination when we enter this (L+2) shell.
+C           This means we can disgard the functions for the moment,
+C           provided that case a. does not apply as well (as may happen
+C           with family-type basis sets).
+C
+C           Look for (L-2) small function. If it does not exist, 
+C           IRKB returns the pointer to (L-1) large component function
+C           (case b). If this is zero it means that we have the
+C           first function for case b and we may skip it.
+C
+            JB = IRKB(JP)
+            IF (JB.EQ.0) GOTO 15
+C
             IROW = NSTRT(JA + JP - JP1) + IFUN(LOFF+1,1)
 C                        ^- to get correct shell number
             IROW = IPTSYM(IROW,IREP) - ISOFF
@@ -2767,6 +2783,7 @@ C
             IF(LRKB) THEN
 C
 C           Possibly generate RKB matrix
+C
 C
                IF(JRKB.EQ.0) THEN
                   JRKB = 1
@@ -2832,7 +2849,6 @@ C
                   ENDIF
                   IOFF = IOFF + KRKB*KLMM2
                ENDIF
-               JB = IRKB(JL)
 C
 C              Copy extra functions for L
 C            
