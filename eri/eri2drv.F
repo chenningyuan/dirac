@@ -93,9 +93,11 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in ER2INP.')
     1          CONTINUE
+C&&&& SKIP  : Do not run ERI code
                   RUNERI = .FALSE.
                GO TO 100
     2          CONTINUE
+C&&&& PRINT : Print levels
                   READ (LUCMD, '(3I5)') IPRERI, IPRNT1, IPRNT2
                   IPRSUM = IPRNT1 + IPRNT2
                   IF (IPRERI .EQ. IPRDEF .AND. IPRSUM .EQ. 0) THEN
@@ -103,106 +105,139 @@ C
                   END IF
                GO TO 100
     3          CONTINUE
+C&&&& TIME  : Detailed timing for two-electron integrals.
                   TIMERI = .TRUE.
                GO TO 100
     4          CONTINUE
+C&&&& RETURN: Program will exit ERIINT after specified shells
                   RTNERI = .TRUE.
                GO TO 100
     5          CONTINUE
+C&&&& AOBTCH: Only integrals with first index belonging to AO batch IAOBCH calculated.
                   READ (LUCMD,'(I5)') IAOBCH
                GO TO 100
     6          CONTINUE
+C&&&& NOPSAB: No permutational symmetry for first electron.
                   PMSAB = .FALSE.
                GO TO 100
     7          CONTINUE
+C&&&& NOPSCD: No permutational symmetry for second electron.
                   PMSCD = .FALSE.
                GO TO 100
     8          CONTINUE
+C&&&& NOPS12: No permutational symmetry between electron 1 and 2. 
                   PMS12 = .FALSE.
                GO TO 100
     9          CONTINUE
+C&&&& OFFCNT: No sorting of one- and two-center ODs.
                   OFFCNT = .TRUE.
                GO TO 100
    10          CONTINUE
+C&&&& NO12GS: No sorting of one- and two-GTO ODs.
                   DIASRT = .FALSE.
                GO TO 100
    11          CONTINUE
+C&&&& NEWCR1: New algorithm for Cartesians on first electron.
                   OLDCR1 = .FALSE.
                GO TO 100
    12          CONTINUE
+C&&&& NONCAN: Indices not sorted in canonical order.
                   CANIND = .FALSE.
                GO TO 100
    13          CONTINUE
+C&&&& WRITEA: Integrals not screened before write.
                   WRTSCR = .FALSE.
                GO TO 100
    14          CONTINUE
+C&&&& NOWRIT: Integrals will not be written to file.
                   NOWRIT = .TRUE.
                GO TO 100
    15          CONTINUE
+C&&&&
                GO TO 100
    16          CONTINUE
+C&&&& EXTPRI: Extra high print for specified OD pair
                   EXTPRI = .TRUE.
                   READ (LUCMD,'(2I5)') IPROD1, IPROD2
                GO TO 100
    17          CONTINUE
+C&&&& SELCT1: Active AO-batches
                   READ (LUCMD,'(  I5)') NSELCT(1)
                   READ (LUCMD,'(15I5)') (NACTAO(I,1),I=1,NSELCT(1))
                GO TO 100
    18          CONTINUE
+C&&&& SELCT2: Active AO-batches
                   READ (LUCMD,'(  I5)') NSELCT(2)
                   READ (LUCMD,'(15I5)') (NACTAO(I,2),I=1,NSELCT(2))
                GO TO 100
    19          CONTINUE
+C&&&& SELCT3: Active AO-batches
                   READ (LUCMD,'(  I5)') NSELCT(3)
                   READ (LUCMD,'(15I5)') (NACTAO(I,3),I=1,NSELCT(3))
                GO TO 100
    20          CONTINUE
+C&&&& SELCT4: Active AO-batches
                   READ (LUCMD,'(  I5)') NSELCT(4)
                   READ (LUCMD,'(15I5)') (NACTAO(I,4),I=1,NSELCT(4))
                GO TO 100
    21          CONTINUE
+C&&&& INTPRI: Integrals will be printed.
                   INTPRI = .TRUE.
                GO TO 100
    22          CONTINUE
+C&&&& DISTRI: Do distributions
                   DODIST = .TRUE.
                GO TO 100
    23          CONTINUE
+C&&&& INTSKI: Integrals (call to ODCDRV) skipped.
                   INTSKP = .TRUE.
                GO TO 100
    24          CONTINUE
+C&&&& BUFFER: Modify buffer length
                   READ (LUCMD,*) LBFINP
                   LBFINP = MAX(1,LBFINP)
                GO TO 100
    25          CONTINUE
+C&&&& MAXDIS: Modify maximum number of distribution in each call
                   READ (LUCMD,'(I5)') MAXDST
                GO TO 100
    26          CONTINUE
+C&&&& DISTST: Distribution test.
                   DISTST = .TRUE.
                GO TO 100
    27          CONTINUE
+C&&&& MXBCH : 
                   READ (LUCMD,'(I5)') MXBCH
                GO TO 100
    28          CONTINUE
+C&&&& NSPMAX: 
                   READ (LUCMD,'(I5)') NSPMAX
                GO TO 100
    29          CONTINUE
+C&&&& NOLOCS: No use of local symmetry.
                   NOLOCS = .TRUE. 
                GO TO 100
    30          CONTINUE
+C&&&& GRDZER: GRADEE is set to zero at each call to ERIGRD.
                   GRDZER = .TRUE. 
                GO TO 100
    31          CONTINUE
+C&&&& 
                GO TO 100
    32          CONTINUE
+C&&&& DOERIP: ERIPRO used instead of TWOINT.
                   DOERIP = .TRUE. 
                GO TO 100
    33          CONTINUE
+C&&&& NOSCRE: No integral screening before write.
                   COMPRS = .FALSE. 
                GO TO 100
    34          CONTINUE
+C&&&& GENCON: All contractions treated as general.
                   GENCON = .TRUE. 
                GO TO 100
    35          CONTINUE
+C&&&& NCLERI: Only nonclassical integrals are calculated.
                   NCLERI = .TRUE. 
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -246,7 +281,7 @@ C
      &         ' No permutational symmetry for first electron.'
             IF (.NOT.PMSCD) WRITE (LUPRI,'(A)')
      &         ' No permutational symmetry for second electron.'
-            IF (.NOT.PMSAB) WRITE (LUPRI,'(A)')
+            IF (.NOT.PMS12) WRITE (LUPRI,'(A)')
      &         ' No permutational symmetry between electron 1 and 2.'
             IF (IAOBCH.NE.0) WRITE (LUPRI,'(A,I4,A)')
      &         ' Only integrals with first index belonging to'//
