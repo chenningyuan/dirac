@@ -1443,7 +1443,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck scrsta */
-      SUBROUTINE SCRSTA(TEXT,DINTSKP)
+      SUBROUTINE SCRSTA(TEXT,DINTSKP,CPUSEC)
 C*****************************************************************************
 C
 C     Provide statistics about screening
@@ -1477,7 +1477,7 @@ C*****************************************************************************
 #include <priunit.h>
       PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION DINTSKP(2,4),DSTEP(4)
-      CHARACTER TEXT*6
+      CHARACTER SECTID*12, INTTID*12,TEXT*9
 C
       CALL DZERO(DSTEP,4)
       IF(DINTSKP(1,1).GT.D0) DSTEP(1) = DINTSKP(2,1)/DINTSKP(1,1)
@@ -1492,11 +1492,12 @@ C
       IF(DINTSKP(1,4).GT.D0) 
      &           DSTEP(4) = (DINTSKP(2,4)/DINTSKP(1,4))*DA
 C
-      WRITE(LUPRI,'(A)') '* Screening statistics:'
-      WRITE(LUPRI,'(6X,4(5X,A8))') 'Step1   ','Step2   ',
-     &  'Coulomb ','Exchange'
-      WRITE(LUPRI,'(A6,4(6X,F6.2,A1))') 
-     &     TEXT,(DSTEP(I),'%',I=1,4)
+      INTTID = SECTID(CPUSEC)
+      WRITE(LUPRI,'(A3,6X,4(5X,A8),3X,A9)') 
+     &  'SCR','Step1   ','Step2   ',
+     &  'Coulomb ','Exchange','CPU-time'
+      WRITE(LUPRI,'(A9,4(6X,F6.2,A1),3X,A12)') 
+     &     TEXT,(DSTEP(I),'%',I=1,4),SECTID(CPUSEC)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1751,6 +1752,7 @@ C
             CALL QUIT('GABGEN: Invalid IJOB')
          ENDIF
       END DO
+      CLOSE(LUPROP,STATUS='KEEP')
       CALL GETDAT(RTNLBL(1),RTNLBL(2))     
 C
 C     Check if file AOPROPER is present
