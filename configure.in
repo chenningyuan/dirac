@@ -242,7 +242,11 @@ fi
 
 $echo "Machine\t\t\t: $machine"
 $echo "Operating system\t: $os"
-
+#
+#  set default C compiler as well...
+#
+cclist='cc'
+ 
 case $machine in
 
    rs6000-ibm)
@@ -393,8 +397,9 @@ if [ "$par" = "yes" ]; then
             ;;
          *-hp)
             parlib='no'
-            parinc='yes'
+            parinc=
             complist='mpif77 mpif90 $complist'
+            cclist='mpicc $cclist' 
             mpirun='mpirun'
             ;;
 	 *-dec)
@@ -526,7 +531,7 @@ echo 'Queuing system: '$queuesys
 echo
 echo 'COMPILER'
 echo
-$echo "\nChecking for compiler ...\c"
+$echo "\nChecking for Fortran compiler ...\c"
 if [ ! -z "$F77" ]; then
    complist=$F77
    F77=
@@ -575,8 +580,36 @@ for comp in $complist; do
 done
 fi
 if test -z "$F77"; then
-    $echo "\n   No compiler found on this computer"
+    $echo "\n   No Fortran compiler found on this computer"
     echo  "   Cannot proceed without a Fortran compiler in path"
+    exit
+fi
+$echo "\nChecking for C compiler ...\c"
+if test -z "$CC"; then
+for comp in $cclist; do
+    set dummy $comp; ac_word=$2
+    $echo " $comp\c"
+    IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+    for ac_dir in $PATH; do
+        test -z "$ac_dir" && ac_dir=.
+        if test -f $ac_dir/$ac_word; then
+            ac_cv_prog_CC=$ac_word
+            break
+        fi
+    done
+    IFS="$ac_save_ifs"
+    test -z "$ac_cv_prog_CC" && ac_cv_prog_CC=""
+    CC="$ac_cv_prog_CC"
+    if test -n "$CC"; then
+        echo
+        $echo "C compiler: $CC"
+        break
+    fi
+done
+fi
+if test -z "$CC"; then
+    $echo "\n   No C compiler found on this computer"
+    echo  "   Cannot proceed without a C compiler in path"
     exit
 fi
 echo
@@ -1165,7 +1198,7 @@ DEPEND_FLAGS= $depend_flags
 CPP_FLAGS   = $cpp
 CCP_FLAGS   = $ccp
 F77         = $F77
-CC          = cc
+CC          = $CC
 RM          = -rm
 AR          = ar
 EOF
