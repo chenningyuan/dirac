@@ -65,6 +65,8 @@ C
 C     Integral and basis input
 C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
+CTROND
+      WRITE(0,*) 'Calling HERINP'
       CALL HERINP(WORK,LWORK)
       CLOSE(LUCMD)
 C
@@ -3152,12 +3154,17 @@ C
 #include "dcbprl.h"
 #include "gencon.h"
 #include "nuclei.h"
+#if defined (MOD_DFT)
+#include "dftcom.h"
+Cdirac#include "functionals.h"
+#endif
 C
-      LOGICAL SYMSTP,NOINPUT
+      LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
-     &          WORD1*7
+     &          WORD1*7, LINE*80
       DIMENSION KSOP(0:7),WORK(LWORK)
 C
+      SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','XXXXXXX',
      &             'XXXXXXX','XXXXXXX','XXXXXXX','XXXXXXX'/
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -3166,6 +3173,7 @@ C
      &            '.SPINFR','.ZORA  ','.SMLV1C','.ALDA  ',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
      &            '.ONECAP','.SPINF2','XXXXXXX','XXXXXXX'/
+      DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
 C
@@ -3202,6 +3210,14 @@ C
       HFXFAC  = D1
       CALL OP1INI(WORK,LWORK)
       NOINPUT = .FALSE.
+#if defined (MOD_DFT)
+C
+C     Initialize from DFTCOM
+C     ----------------------
+C
+      DFTRUN = .FALSE.
+      DFTADD = .FALSE.
+#endif
 C
 C     Read menu file
 C     ==============
@@ -3355,9 +3371,23 @@ C&&& ALDA   : Kohn-Sham (DFT) Hamiltonian w/ LDA functional for LR.
              GOTO 100
   117      CONTINUE
 C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
-             DFTHAM = .TRUE.
-Chjaaj: functional ought to be defined here instead of in DFTINP
-CJuly2003
+#if defined (MOD_DFT)
+               READ(LUCMD,'(A80)') LINE
+               IF (.NOT. SETFUN) THEN
+C              ... hjaaj: DFTINPUT accumulates def. of functional
+C                  so if we call more than once (as in geom.opt.)
+C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
+                  CALL DFTINPUT(LINE, SUCCESS)
+                  IF(.NOT.SUCCESS) THEN
+                     CALL DFTLISTFUNCS
+                     CALL QUIT("DFT FUNCTIONAL Read failed.")
+                  ENDIF
+               END IF
+               DFTHAM = .TRUE.
+               DFTADD = .TRUE.
+               DFTRUN = .TRUE.
+               SETFUN = .TRUE.
+#endif
             GO TO 100
   118     CONTINUE
 C&&& HFXFAC: weight of pure exchange
@@ -3459,6 +3489,24 @@ C
  400  CONTINUE
       WRITE(LUPRI,'(A,I5)') ' * Print level :',IPRHAM
 C
+      IF(LEVYLE) THEN
+        WRITE(LUPRI,'(A)') ' * Levy-Leblond Hamiltonian'
+      ELSE IF (IGTINT .NE. 0) THEN
+        WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
+      ELSE
+        WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
+      ENDIF
+      IF(ICHANG.GT.0) WRITE(LUPRI,'(A)') 
+     &    '   with the following modifications:'
+      IF(SPINFR) THEN
+         WRITE(LUPRI,'(3X,A)') '- Spin-orbit interactions neglected'
+      ELSE IF(SPINFR2) THEN
+         WRITE(LUPRI,'(3X,A)') '- 2-el. spin-orbit terms zeroed out '//
+     &      '(NB : ONLY in the DHF calculation !!)'
+      END IF
+#if defined (MOD_DFT)
+      IF(DFTHAM) CALL DFTREPORT()
+#endif
 C
       WRITE(LUPRI,'(A)') ' * Basis set:'
       IF ( DIRCON(1) ) THEN
@@ -3545,21 +3593,6 @@ C
          CALL QUIT('HAMINP: Invalid ISPHTR!')
       ENDIF
 C
-      IF(LEVYLE) THEN
-        WRITE(LUPRI,'(A)') ' * Levy-Leblond Hamiltonian'
-      ELSE IF (IGTINT .NE. 0) THEN
-        WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
-      ELSE
-        WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
-      ENDIF
-      IF(ICHANG.GT.0) WRITE(LUPRI,'(A)') 
-     &    '   with the following modifications:'
-      IF(SPINFR) THEN
-         WRITE(LUPRI,'(3X,A)') '- Spin-orbit interactions neglected'
-      ELSE IF(SPINFR2) THEN
-         WRITE(LUPRI,'(3X,A)') '- 2-el. spin-orbit terms zeroed out '//
-     &      '(NB : ONLY in the DHF calculation !!)'
-      END IF
 C
 C   ... Check that the selected One-center model is reasonable,
 C       and write appropriate output.
