@@ -995,10 +995,10 @@ c           CALL GOSCI_RMAKDM(CALCDV,CALCPV,WORK(KZCONF),CREF,CREF,
      &           WORK(KDVMOLF),WORK(KPVMOLF),IPROPT)
 C
          ELSE IF (OPT_CIPROGRAM.eq.'LUCIAREL') then
-            CALL LUCI_DENS(CALCDV,CALCPV,WORK(KDVMOLF),WORK(KPVMOLF),
-     &                     CREF,CREF,WORK,KFREE,LFREE)
 C           CALL  LUCI_DENS(CALCR1,CALCR2,RHO1,RHO2,
 C    &                     CREFL,CREFR,WORK,KFREE,LFREE)
+            CALL LUCI_DENS(CALCDV,CALCPV,WORK(KDVMOLF),WORK(KPVMOLF),
+     &                     CREF,CREF,WORK,KFREE,LFREE)
          END IF
 C
 C        Transform to X+, x++ format for DV and PV
@@ -1027,7 +1027,7 @@ C
             CALL QUIT('CALCPV not implemented for NASHT.eq.1')
          END IF
       ELSE
-         CALL QUIT('RMAKDM called with unknown CI program option')
+         CALL QUIT('Unknown OPT_CIPROGRAM: '//OPT_CIPROGRAM)
       END IF
 C
 C
@@ -1037,9 +1037,7 @@ C     IF (... debug check of DV,PV trace ...) THEN
          IF (CALCDV) THEN
             DO IZ = 1, NZ
                DTRCE(IZ) = D0
-            END DO
-            DO I = 1,NASHT
-               DO IZ = 1, NZ
+               DO I = 1,NASHT
                   DTRCE(IZ) = DTRCE(IZ) +
      &                 DV( I + (I-1)*NASHT + (IZ-1)*N2ASHX )
                END DO
@@ -2032,8 +2030,10 @@ C
 C
       CHARACTER*(*) USE_CIPROGRAM
       DIMENSION WORK(*)
+      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 C
       CALL QENTER('RSETCI')
+      CALL GETTIM(CPU1,WLL1)
 C
 C     Check that NAELEC .le. 2 *NASHT
 C     (NAELEC: # of active electrons)
@@ -2070,7 +2070,8 @@ C           HJAaJ TODO: reconsider KALLOC ....
 C               .... size KIASTR ca. sqrt size KIDET ???
 C               .... problem if IRAT .eq. 1 -- more than LFREE used
 C                    (for IRAT .eq. 2 only ca. half of LFREE is used !)
-            KALLOC = LFREE/4
+            KALLOC = MIN(1 000 000,LFREE/4)
+Chj         ... this GOSCI version is not suitable for very big CI spaces
             CALL MEMGET('INTE',KIDET ,2*KALLOC,WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIASTR,KALLOC  ,WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIBSTR,KALLOC  ,WORK,KFREE,LFREE)
@@ -2088,16 +2089,16 @@ C
             IF (KZCONF .NE. KIDET) CALL QUIT(
      &         'KZCONF .ne. KIDET -- indicates programming error!')
 C
-#ifdef UNDEF
+#ifdef MOD_DEBUG
 C
-C           Generate Kramers list...
+C           Generate list of Kramers partners...
 C           This is only used for debugging purposes.
 C
             IF ( MOD(NAELEC,2) .EQ. 0) THEN
-               CALL MEMGET('INTE',KRLIST,NZCONF,WORK,KFREE,LFREE)
-               CALL GOSCI_KRLIST(NZCONF,WORK(KZCONF),WORK(KRLIST))
-               CALL IWRTKRMC(LUKRMC,'KRLIST  ',WORK(KRLIST),NZCONF)
-               CALL MEMREL('RSETCI.KRLIST',WORK,1,KRLIST,KFREE,LFREE)
+              CALL MEMGET('INTE',KRLIST,NZCONF,WORK,KFREE,LFREE)
+              CALL GOSCI_KRLIST(NZCONF,WORK(KZCONF),WORK(KRLIST),IPROPT)
+              CALL IWRTKRMC(LUKRMC,'KRLIST  ',WORK(KRLIST),NZCONF)
+              CALL MEMREL('RSETCI.KRLIST',WORK,1,KRLIST,KFREE,LFREE)
             END IF
 #endif
          ELSE IF ( USE_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
@@ -2113,7 +2114,7 @@ C
             WRITE(LUPRI,'(A/3A)')
      $           '*** ERROR in RSETCI ***',
      $           'Unknown CI program: "',USE_CIPROGRAM,'"'
-            CALL QUIT('*** ERROR in RSETCI ***')
+            CALL QUIT('*** ERROR in RSETCI: Unknown CI program ***')
 C
          END IF
          CALL FLSHFO(LUPRI)
@@ -2129,9 +2130,15 @@ C
       NZCONFQ = NZCONF
       IF ( NZ .GE. 2 ) NZCONFQ = 2 * NZCONF
 C
-      WRITE(LUPRI,'(/A,I10,A,I10,A/)')
-     &        ' (RSETCI) Number of determinants: ',NZCONF,
-     &        ' (dimension ',NZCONFQ,')'
+      CALL GETTIM(CPU2,WLL2)
+      CPUTID  = SECTID(CPU2-CPU1)
+      WALLTID = SECTID(WLL2-WLL1)
+C
+      WRITE(LUPRI,'(/A,I10,A,I10,A//5A)')
+     &      ' (RSETCI) Number of determinants: ',NZCONF,
+     &      ' (dimension ',NZCONFQ,')',
+     &      ' CPU (Wall) time for generation of determinants: ',
+     &      CPUTID,'(',WALLTID,')'
 C
 C
       CALL FLSHFO(LUPRI)
@@ -5029,8 +5036,7 @@ C
      &     3X,'Integral transformation: ',/,
      &     3X,'Luuk Visscher, Jon K. Laerdahl, and Trond Saue',//,
      &     3X,'KRMC-GOSCI CI code: ',/,
-     &     3X,'Joern Thyssen ',
-     &     '(based on ideas from GOSCIP/Molfdir by O. Visser)',//,
+     &     3X,'Joern Thyssen and Hans Joergen Aa. Jensen',//,
      &     3X,'LUCIAREL CI code: ',/,
      &     3X,'Jeppe Olsen and Timo Fleig',/,
      &     ////,
