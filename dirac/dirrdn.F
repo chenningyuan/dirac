@@ -3204,7 +3204,8 @@ C
       ONECNV  = D0
       N1OPER  = 0
       SSMTRC  = D1
-      HFXFAC  = D1
+Ctsaue: Exchange factor must not be reset during geometry optimizations.
+      IF (.NOT. SETFUN) HFXFAC  = D1
 C ... get integral flags in advance
       ILLINT    = IBTAND(INTGEN,1)
       ISLINT    = IBTAND(INTGEN/2,1)
