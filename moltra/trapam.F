@@ -443,6 +443,9 @@ C
           IR(2,IFRP) = NESH(IFRP)
         ELSE
           CALL QUIT('PSIMP2: e-p not implemented !')
+          NR(IFRP)   =  NSSH(IFRP) + NPSH(IFRP)
+          IR(1,IFRP) = -NPSH(IFRP)
+          IR(2,IFRP) =  NESH(IFRP)
         ENDIF
 C     
         CALL MEMGET('INTE',KVEC(IFRP,2),NR(IFRP),WORK,KFREE,LFREE)
@@ -599,9 +602,9 @@ C
 C     Print MP2 energy
 C     ----------------
 C
-      WRITE(LUPRI,'(/15X,A)') '#### Final MP2 energy. ####'
-      WRITE(LUPRI,'(15X,A,F15.10,4X,A)') '####', EMP2, '####'
-      WRITE(LUPRI,'(15X,A,/)') '###########################'
+      WRITE(LUPRI,'(/15X,A)') '######## Final MP2 energy. ########'
+      WRITE(LUPRI,'(15X,A,F23.14,4X,A)') '####', EMP2, '####'
+      WRITE(LUPRI,'(15X,A,/)') '###################################'
       CALL FLSHFO(LUPRI)
 C
 C     Recover information from DCBTRA
@@ -632,16 +635,16 @@ C*****************************************************************************
 C
 #include <dgroup.h>
 #include <dcborb.h>
-      DIMENSION IOS1(*),IOS2(*),NSTR(0:2,2,4)
+      DIMENSION IOS1(*),IOS2(*),NSTR(2,0:2,4)
 C
       WRITE(LUPRI,'(1X,A,A3)') '* Fermion ircop ',FREP(I)
 C
 C     Index 1: Active occupied
 C
-      IF(NSTR(0,I,1).GT.0) THEN
+      IF(NSTR(I,0,1).GT.0) THEN
         WRITE(LUPRI,'(6X,A,I5)') 
-     &     '- Active occupied orbitals:', NSTR(0,I,1)
-        WRITE(LUPRI,1002) (IOS1(K),K=1,NSTR(0,I,1))
+     &     '- Active occupied orbitals:', NSTR(I,0,1)
+        WRITE(LUPRI,1002) (IOS1(K),K=1,NSTR(I,0,1))
       ELSE
         WRITE(LUPRI,'(6X,A)') 
      &     '- No active occupied orbitals'
@@ -649,10 +652,10 @@ C
 C
 C     Index 2: Active virtuals
 C
-      IF(NSTR(0,I,2).GT.0) THEN
+      IF(NSTR(I,0,2).GT.0) THEN
         WRITE(LUPRI,'(6X,A,I5)') 
-     &     '- Active virtual orbitals: ', NSTR(0,I,2)
-        WRITE(LUPRI,1002) (IOS2(K),K=1,NSTR(0,I,2))
+     &     '- Active virtual orbitals: ', NSTR(I,0,2)
+        WRITE(LUPRI,1002) (IOS2(K),K=1,NSTR(I,0,2))
       ELSE
         WRITE(LUPRI,'(6X,A/)') 
      &     '- No active virtual orbitals'
