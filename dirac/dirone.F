@@ -629,7 +629,10 @@ C     Last revision: Nov 23 1994 - tsaue
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <maxaqn.h>
 C
+#include <ccom.h>
+#include <dcbgen.h>
 #include <dcbbas.h>
       DIMENSION VMAT(*),WORK(LWORK)
 C
@@ -638,18 +641,31 @@ C
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KVBUF,N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,MXBBAS ,WORK,KFREE,LFREE)
+      IF(ISPHTR.NE.0) THEN
+        NCSPH = 0
+        DO LL = 1,NHTYP
+          NCSPH = NCSPH + LL*(LL+1)*(2*LL-1)/2
+        ENDDO
+        NICSP = NHTYP
+      ELSE
+        NCSPH = 0
+        NICSP = 0
+      ENDIF
+      CALL MEMGET('INTE',KICSP,NICSP ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCSPH,NCSPH ,WORK,KFREE,LFREE)
 C
 C     Make Lowdin matrix
 C     ==================
 C
-      CALL LOWDI1(VMAT,WORK(KSMAT),WORK(KVBUF),
-     &            WORK(KFREE),LFREE,IPRINT)
+      CALL LOWDI1(VMAT,WORK(KSMAT),WORK(KEIG),WORK(KCSPH),
+     &            WORK(KICSP),WORK(KFREE),LFREE,IPRINT)
 C
 C     Memory deallocation
 C
       CALL MEMREL('LOWDIN.LOWDI1',WORK,KWORK,KWORK,KFREE,LFREE)
+C
 C
       CALL QEXIT('LOWDIN')
       RETURN
@@ -657,7 +673,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lowdi1 */
-      SUBROUTINE LOWDI1(VMAT,SMAT,VBUF,WORK,LWORK,IPRINT)
+      SUBROUTINE LOWDI1(VMAT,SMAT,EIG,CSPH,ICSP,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C     PURPOSE:
 C        Construction of the transformation matrix for Lowdin
@@ -675,14 +691,17 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
+#include <maxaqn.h>
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
+#include <ccom.h>
 #include <dcbgen.h>
+#include <dcborb.h>
 #include <dgroup.h>
 #include <pgroup.h>
 #include <dcbbas.h>
       CHARACTER COMP(2)*1
-      DIMENSION VMAT(*),SMAT(*),VBUF(*),WORK(LWORK)
+      DIMENSION VMAT(*),SMAT(*),EIG(*),CSPH(*),ICSP(*),WORK(LWORK)
       LOGICAL LBIT
 C
       CALL QENTER('LOWDI1')
@@ -690,116 +709,88 @@ C
       COMP(1) = 'L'
       COMP(2) = 'S'
 C
-C     Get overlap matrix and transform to AO-basis
-C     ==================================================
+C     Get overlap matrix packed on fermion irreps
+C     ===========================================
 C
-      CALL GTOVLP(SMAT,D1,WORK,LWORK)
-      IF(NBSYM.GT.1) THEN
-        CALL MTBSBU(SMAT,VMAT)
-        CALL MTSOAO(VMAT,SMAT,NTBAS(0),0,IPRINT)
-      ENDIF
-      IF(IPRINT.GE.6) THEN
-        CALL HEADER('LOWGEN: Overlap matrix',-1)
-        CALL OUTPUT(SMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),
-     &              1,LUPRI)
-      ENDIF
+      CALL GTOVLT(SMAT,D1,WORK,LWORK)
+C
+C     If spherical transformations, get general transformation matrix
+C     ===============================================================
+C
+      IF(ISPHTR.NE.0) CALL GETSPH(CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
 C
 C     Initialize Lowdin matrix
 C     ========================
 C
       CALL DZERO(VMAT,N2BBASX)
+      NBRP = 4/NZ
+      ISOFF = 1
+      IVOFF = 1
+      CALL HEADER('Generating Lowdin matrix:',-1)
+      DO IFRP = 1,NFSYM
+        JSOFF = ISOFF
+        JVOFF = IVOFF
 C
-C     Large components
-C     ================
+C       Large components
+C       ----------------
 C
-      NLEFF = 0
-      IF(NTBAS(1).EQ.0) GOTO 10
-      IF(LBIT(ISPHTR,1)) THEN
-        CALL SPHLOW(1,SMAT,VMAT,NTBAS(0),NLEFF,STOL(1),NDEL,
-     &              IPRINT,WORK,LWORK)
-      ELSE
-        CALL LOWGEN(1,SMAT,VMAT,NTBAS(0),NTBAS(1),NLEFF,
-     &              STOL(1),IPRINT,WORK,LWORK)
-        NDEL = NTBAS(1) - NLEFF
-      ENDIF
-      IF(NDEL.GT.0) THEN
-         WRITE(LUPRI,'(A,I5)')
-     &  '*** WARNING *** Eigenvalues below threshold removed from'//
-     &  ' large component overlap matrix:',NDEL
-         IF (ISPHTR.EQ.3) WRITE(LUPRI,'(A)')
-     &   '*** CARAMBA *** THIS MAY VERY WELL NOT GIVE CORRECT RKB!!'
-      ENDIF
-C     
-C     Small components
-C     ================
+        IC = 1
+        NFORB(IFRP,IC) = 0
+        IP    = MOD(IFRP+IC,NFSYM) + 1
+        DO JSYM = 1,NBRP
+          IREP = JFSYM(JSYM,IP) - 1
+          IF(NBBAS(IREP,IC).GT.0) THEN
+            IF(LBIT(ISPHTR,IC)) THEN
+              CALL SPHLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
+     &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
+     &                    CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
+            ELSE
+              CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
+     &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
+     &                     STOL(IC),IPRINT,EIG,WORK,LWORK)
+            ENDIF
+            NFORB(IFRP,IC) = NFORB(IFRP,IC) + NEFF
+            JSOFF = JSOFF + (NFBAS(IFRP,0)+1)*NBBAS(IREP,IC)
+            JVOFF = JVOFF + NFBAS(IFRP,0)*NEFF+NBBAS(IREP,IC)
+            NDEL  = NBBAS(IREP,IC) - NEFF
+            WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)') 
+     &        COMP(IC),REP(IREP),'* Deleted: ',NDEL
+          ENDIF
+        ENDDO
 C
- 10   CONTINUE
-      NSEFF = 0
-      IF(NTBAS(2).EQ.0) GOTO 20
-      IOFF = NTBAS(0)*NTBAS(1) + NTBAS(1) + 1
-      JOFF = NTBAS(0)*NLEFF    + NTBAS(1) + 1
-      IF(ISPHTR.EQ.3) THEN
-         CALL RKBLOW(2,SMAT(IOFF),VMAT(JOFF),NTBAS(0),NSEFF,
-     &        STOL(2),NDEL,IPRINT,WORK,LWORK)
-      ELSEIF(ISPHTR.EQ.2) THEN
-         CALL SPHLOW(2,SMAT(IOFF),VMAT(JOFF),NTBAS(0),NSEFF,
-     &        STOL(2),NDEL,IPRINT,WORK,LWORK)
-      ELSE
-         CALL LOWGEN(2,SMAT(IOFF),VMAT(JOFF),NTBAS(0),NTBAS(2),
-     &        NSEFF,STOL(2),IPRINT,WORK,LWORK)
-         NDEL = NTBAS(2) - NSEFF
-      ENDIF
-      IF(NDEL.GT.0) THEN
-         WRITE(LUPRI,'(A,I5)')
-     &  '*** WARNING *** Eigenvalues below threshold removed from'//
-     &  ' small component overlap matrix:',NDEL
-         IF (ISPHTR.EQ.3) WRITE(LUPRI,'(A)')
-     &  '*** CARAMBA *** THIS MAY VERY WELL NOT GIVE CORRECT RKB!!'
-      ENDIF
+C       Small components
+C       ----------------
 C
-C     Backsort to SO-basis
-C     ====================
-C
- 20   CONTINUE
-      IF(NBSYM.EQ.1) THEN
-        NFORB(1,1) = NLEFF
-        NFORB(1,2) = NSEFF
-        NFORB(1,0) = NFORB(1,1) + NFORB(1,2)
-        N2VMT      = NFORB(1,0)*NFBAS(1,0)
-      ELSE
-        NTEFF = NLEFF + NSEFF
-        CALL VTAOSO(VMAT,VBUF,NTBAS(0),NTEFF,IPRINT)
-        CALL VTBUBS(VBUF,VMAT,NTEFF)
-C
-C       Shuffle on fermion symmetries
-C       =============================
-C
-        IF(NFSYM.EQ.1) THEN
-          NFORB(1,1) = NLEFF
-          NFORB(1,2) = NSEFF
-          NFORB(1,0) = NFORB(1,1) + NFORB(1,2)
-          N2VMT      = NFORB(1,0)*NFBAS(1,0)
-        ELSE
-          CALL DCOPY(NTEFF*NTBAS(0),VMAT,1,VBUF,1)
-          CALL VFSORT(NLEFF,NSEFF,VMAT,VBUF,WORK,LWORK)
-          N2VMT = NFORB(1,0)*NFBAS(1,0) + NFORB(2,0)*NFBAS(2,0)
-        ENDIF
-      ENDIF
-C
-C     Output section
-C     ==============
-C
-      IF(IPRINT.GE.5) THEN
-        CALL HEADER('Lowdin matrix',-1)
-        IOFF = 1
-        DO 100 I = 1,NFSYM
-          IF(NFORB(I,0).EQ.0) GOTO 100
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
-          CALL OUTPUT(VMAT(IOFF),1,NFBAS(I,0),1, NFORB(I,0),
-     &                NFBAS(I,0),NFORB(I,0),1,LUPRI)
-          IOFF = IOFF + NFBAS(I,0)*NFORB(I,0)
-  100   CONTINUE
-      ENDIF
+        IC = 2
+        NFORB(IFRP,IC) = 0
+        IP    = MOD(IFRP+IC,NFSYM) + 1
+        DO JSYM = 1,NBRP
+          IREP = JFSYM(JSYM,IP) - 1
+          IF(NBBAS(IREP,IC).GT.0) THEN
+            IF(LBIT(ISPHTR,IC)) THEN
+              CALL RKBLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
+     &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
+     &                    CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
+            ELSE
+              CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
+     &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
+     &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
+            ENDIF
+            NFORB(IFRP,IC) = NFORB(IFRP,IC) + NEFF
+            JSOFF = JSOFF + (NFBAS(IFRP,0)+1)*NBBAS(IREP,IC)
+            JVOFF = JVOFF + NFBAS(IFRP,0)*NEFF+NBBAS(IREP,IC)
+            NDEL  = NBBAS(IREP,IC) - NEFF
+            WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)') 
+     &        COMP(IC),REP(IREP),'* Deleted: ',NDEL
+          ENDIF
+        ENDDO
+        NFORB(IFRP,0) = NFORB(IFRP,1) + NFORB(IFRP,2)
+        WRITE(LUPRI,'(A,I2)') '* Lowdin matrix for ifrep = ',IFRP
+        CALL OUTPUT(VMAT(IVOFF),1,NFBAS(IFRP,0),1, NFORB(IFRP,0),
+     &                NFBAS(IFRP,0),NFORB(IFRP,0),1,LUPRI)
+        ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
+        IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
+      ENDDO
       CALL QEXIT('LOWDI1')
       RETURN
 C
@@ -1572,12 +1563,13 @@ C     Found label SRCLBL on LU; check COMB
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gtovlp */
-      SUBROUTINE GTOVLP(SMAT,SSMETR,WORK,LWORK)
+C  /* Deck gtovlx */
+      SUBROUTINE GTOVLX(SMAT,SSMETR,WORK,LWORK)
 C*****************************************************************************
 C
 C     Get overlap matrix from file AOPROPER
 C     The SS block is scaled by the factor SSMETR
+C     No symmetry packing
 C
 C     Written by T.Saue May 26 1996
 C     Last revision: Jan 20 1998 - L. Visscher
@@ -1585,13 +1577,14 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER(D1 = 1.0D0)
 C
 #include <dcbgen.h>
 #include <cbihr1.h>
 #include <dcbbas.h>
 #include <dgroup.h>
       DIMENSION SMAT(N2BBASX),WORK(LWORK)
-      CALL QENTER('GTOVLP')
+      CALL QENTER('GTOVLX')
 #include <memint.h>
 C      
 C     Allocate integral buffer
@@ -1620,7 +1613,7 @@ C
 C     Memory deallocation
 C     ===================
 C
-      CALL MEMREL('GTOVLP',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('GTOVLX',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C     Reindex to sorted basis
 C     =======================
@@ -1630,18 +1623,117 @@ C
 C     Scale SS-block
 C     ==============
 C
+      IF(SSMETR.NE.D1) THEN
+        DO I = 1,NFSYM
+           JJ =  I2BASX(I,I) + (NFBAS(I,1) * NTBAS(0)) + NFBAS(I,1) + 1
+           DO J = 1, NFBAS(I,2)
+              CALL DSCAL (NFBAS(I,2),SSMETR,SMAT(JJ),1)
+              JJ = JJ + NTBAS(0)
+           ENDDO
+        ENDDO
+      ENDIF
+C
+      CALL QEXIT('GTOVLX')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gtovlt */
+      SUBROUTINE GTOVLT(SMAT,SSMETR,WORK,LWORK)
+C*****************************************************************************
+C
+C     Get overlap matrix from file AOPROPER
+C     The SS block is scaled by the factor SSMETR
+C     Packed on fermion irreps
+C
+C     Written by T.Saue May 26 1996
+C     Last revision: Jan 20 1998 - L. Visscher
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D1 = 1.0D0)
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+C
+#include <dcbgen.h>
+#include <cbihr1.h>
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <symmet.h>
+      DIMENSION SMAT(*),WORK(LWORK)
+      CALL QENTER('GTOVLT')
+#include <memint.h>
+C      
+C     Allocate integral buffer
+C     ========================
+C
+      CALL MEMGET('REAL',KSTRI,NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSBUF,N2BBASX,WORK,KFREE,LFREE)
+C
+C     Read integral from file
+C     =======================
+C
+#if defined (SYS_IBM)
+      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='APROPER')
+#else
+      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='AOPROPER')
+#endif
+      CALL PRPREA(LU1INT,'OVERLAP ','TFFT',WORK(KSTRI),NNBBASX,IPRONE)
+      CLOSE(LU1INT,STATUS = 'KEEP')
+C
+C     Make full matrix
+C     ================
+C
+      CALL DSPTSI(NTBAS(0),WORK(KSTRI),WORK(KSBUF))
+C
+      CALL DZERO(SMAT,N2BAST)
+      NBRP     = 4/NZ
+      IOFF = 0
       DO I = 1,NFSYM
-         JJ =  I2BASX(I,I) + (NFBAS(I,1) * NTBAS(0)) + NFBAS(I,1) + 1
-cdebug   print*,'ifsym :',i
-cdebug   print*,'nfbas(i,2) :',nfbas(i,2)
-         DO J = 1, NFBAS(I,2)
-cdebug      print*,'jj :',jj
-            CALL DSCAL (NFBAS(I,2),SSMETR,SMAT(JJ),1)
-            JJ = JJ + NTBAS(0)
-         ENDDO
+        DO IC = 1,2
+          IP    = MOD(I+IC,NFSYM) + 1
+          DO JSYM = 1,NBRP
+            ISYM           = JFSYM(JSYM,IP)
+            IREP           = ISYM - 1
+            IF(NBBAS(IREP,IC).GT.0) THEN
+              ISOFF = IOFF + (IBBAS(IREP,IC)-IBAS(I))*(NFBAS(I,0)+1)
+              IUOFF = ICOS(ISYM,IC)*(NTBAS(0)+1)
+              DO J = 1,NBBAS(IREP,IC)
+                CALL DCOPY(NBBAS(IREP,IC),WORK(KSBUF+IUOFF),1,
+     &                                    SMAT(1+ISOFF)    ,1)
+                IUOFF = IUOFF + NTBAS(0)
+                ISOFF = ISOFF + NFBAS(I,0)
+              ENDDO
+            ENDIF
+          ENDDO
+        ENDDO
+        IOFF = IOFF + N2BAS(I)
       ENDDO
 C
-      CALL QEXIT('GTOVLP')
+C     Scale SS-block
+C     ==============
+C
+      IF(SSMETR.NE.D1) THEN
+        IOFF = 1
+        DO I = 1,NFSYM
+          JJ = IOFF + NFBAS(I,1)*(NFBAS(I,0)+1)
+          DO J = 1, NFBAS(I,2)
+            CALL DSCAL (NFBAS(I,2),SSMETR,SMAT(JJ),1)
+            JJ = JJ + NFBAS(I,0)
+          ENDDO
+          IOFF = IOFF + N2BAS(I)
+        ENDDO
+      ENDIF
+C
+C
+C     Memory deallocation
+C     ===================
+C
+      CALL MEMREL('GTOVLX',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('GTOVLT')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1882,402 +1974,615 @@ C  /* Deck reno */
       ENDDO
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck sphlow */
-      SUBROUTINE SPHLOW(LCOMP,SMAT,VMAT,LDM,NEFF,STOL,NDEL,IPRINT,
-     &                  WORK,LWORK)
-C*****************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck sphlow */
+      SUBROUTINE SPHLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,
+     &                  EIG,CSPH,ICSP,LMAX,WORK,LWORK,IPRINT)
+C***********************************************************************
 C
-C     Generate Lowdin matrix with spherical transformation embedded
+C     Generate Lowdin matrix with spherical transformation embedded.
 C
-C     Written by T.Saue Sep 22 1995
-C     Last revision Sep 22 1995 - tsaue
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
+C
 #include <dcbbas.h>
-      DIMENSION SMAT(*),VMAT(*),WORK(LWORK)
+#include <dgroup.h>
+      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
+     &          CSPH(*),ICSP(*),WORK(*)
 C
       CALL QENTER('SPHLOW')
 #include <memint.h>
-C     Memory allocation
-      NDIM = NTBAS(LCOMP)
-      NSPH = NSPHCM(LCOMP)
-      N2SPH = NSPH*NSPH
-      CALL MEMGET('REAL',KSSPH,N2SPH,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVSPH,N2SPH,WORK,KFREE,LFREE)
-      CALL SPHLO1(LCOMP,SMAT,VMAT,NDIM,NEFF,LDM,STOL,NDEL,
-     &            WORK(KSSPH),WORK(KVSPH),
-     &            NSPH,IPRINT,WORK(KFREE),LFREE)
-      CALL MEMREL('SPHLOW.SPHLO1',WORK,KWORK,KWORK,KFREE,LFREE)
+      NXYZ = (LMAX*(LMAX+1))/2
+      NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
+      NCBUF = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
+      NCAR = NBBAS(IREP,IC)
+      NMAT = NBBAS(IREP,IC)*NBBAS(IREP,IC)
+      CALL MEMGET('REAL',KTMAT,NMAT  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCBUF,NCBUF ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KICBF,3*LMAX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
+      CALL SPHLO1(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,EIG,NCAR,
+     &            CSPH,ICSP,LMAX,NXYZ,NFUN,WORK(KTMAT),WORK(KCBUF),
+     &            WORK(KICBF),WORK(KIFUN),
+     &            WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('SPHLOW',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('SPHLOW')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck sphlo1 */
-      SUBROUTINE SPHLO1(LCOMP,SMAT,VMAT,NDIM,NEFF,LDM,STOL,NDEL,
-     &                  SSPH,VSPH,NSPH,IPRINT,WORK,LWORK)
-C*****************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck sphlo1 */
+      SUBROUTINE SPHLO1(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,EIG,NCAR,
+     &                  CSPH,ICSP,LMAX,MXYZ,NFUN,TMAT,CBUF,ICBF,
+     &                  IFUN,WORK,LWORK,IPRINT)
+C***********************************************************************
 C
-C     Generate Lowdin matrix with spherical transformation embedded
+C     Generate Lowdin matrix with spherical transformation embedded.
 C
-C     Written by T.Saue Sep 22 1995
-C     Last revision Sep 22 1995 - tsaue
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION SMAT(LDM,NDIM) ,VMAT(LDM,NDIM),
-     &          SSPH(NSPH,NSPH),VSPH(NSPH,NSPH),
-     &          WORK(LWORK)
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D6=6.0D0,D4=4.0D0)
 C
-C     Transform overlap matrix to spherical basis
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxaqn.h>
 C
-      CALL MTAOCS(SMAT,LDM,SSPH,NSPH,LCOMP,WORK,LWORK,IPRINT)
+#include <ccom.h>
+#include <symmet.h>
+#include <pgroup.h>
+#include <shells.h>
+#include <nuclei.h>
+#include <dgroup.h>
+#include <dcbrkb.h>
+      CHARACTER COMP(2)*1
+      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),IQBF(4),
+     &          CSPH(*),ICSP(LMAX),IFUN(NFUN,3),
+     &          TMAT(NCAR,NCAR),CBUF(*),ICBF(3,LMAX),
+     &          WORK(*)
+      DATA COMP/'L','S'/
+#include <sdpre.h>
+#include <ibtfun.h>
 C
-C     Generate spherical Lowdin matrix
+C**************************************************
+C***  Generate spherical transformation matrix  ***
+C**************************************************
 C
-      CALL LOWGEN(LCOMP,SSPH,VSPH,NSPH,NSPH,NEFF,STOL,IPRINT,
-     &            WORK,LWORK)
-      NDEL = NSPH - NEFF
+C     Initialize
+C     ==========
 C
-C     Backtransform rows of Lowdin matrix
-C      --> totally symmetric contributions are projected out
+      IF(IC.EQ.1) THEN
+        JA1 = 1
+        JA2 = NLRGSH
+      ELSEIF(IC.EQ.2) THEN
+        JA1 = NLRGSH+1
+        JA2 = KMAX
+      ENDIF
+      N2MAT = NCAR*NCAR
+      CALL DZERO(TMAT,N2MAT)
 C
-      CALL VTCSAO(VSPH,NSPH,VMAT,LDM,NEFF,LCOMP,IPRINT)
+C     Initial print section
+C     =====================
 C
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A,A3,2X,A1)') 
+     &    'SPHLOW: Transformation matrix for ',REP(IREP),COMP(IC)
+      ENDIF
+C
+C     Loop over shells
+C     ================
+C
+      ISOFF = ICOS(IREP+1,IC)
+      NAORB = NSTRT(JA1)
+      INUC = 0
+      IROW = 0
+      ICOL = 0
+      DO 10 JA = JA1,JA2
+        JNUC = NCENT(JA)
+C
+C       New center; check out allowed symmetries
+C       ----------------------------------------
+        IF(JNUC.NE.INUC) THEN
+          MULA = ISTBNU(JNUC)
+          INUC = JNUC
+          ILL  = 0
+          IOFF = 0
+        ENDIF
+        LL  = NHKT(JA)
+C
+C       New L-value; extract relevant transformation matrix
+C       ---------------------------------------------------
+        IF(LL.NE.ILL) THEN
+          ILL  = LL
+          L    = LL - 1
+          NLM  = 2*L + 1
+          NXYZ = (LL*(LL+1))/2
+          LOFF = NHKOFF(LL)
+C
+C         Cartesian functions
+C
+          KXYZ = 0
+          DO ICMP = 1,NXYZ
+            IVARB = IBTXOR(IREP,ISYMAO(LL,ICMP))
+            IF(IBTAND(MULA,IVARB).EQ.0) THEN
+              KXYZ              = KXYZ + 1
+              IFUN(LOFF+KXYZ,1) = ICMP
+              IFUN(LOFF+ICMP,3) = KXYZ
+            ENDIF
+            ICBF(1,LL) = KXYZ
+          ENDDO
+C
+C         Solid harmonic functions
+C
+          KLM = 0
+          DO ICMP = 1,NLM
+            IVARB = IBTXOR(IREP,IREPLM(L,ICMP-LL))
+            IF(IBTAND(MULA,IVARB).EQ.0) THEN
+              KLM               = KLM + 1
+              IFUN(LOFF+KLM,2)  = ICMP
+            ENDIF
+            ICBF(2,LL) = KLM
+          ENDDO
+C
+C         Extract spherical transformation matrix
+C
+          ICBF(3,LL) = IOFF
+          IF(KLM.GT.0) THEN
+            JOFF = ICSP(LL)
+            CALL EXTELM('N',CSPH(JOFF+1),NXYZ,NLM,
+     &                      CBUF(IOFF+1),KXYZ,KXYZ,KLM,
+     &                      IFUN(LOFF+1,1),IFUN(LOFF+1,2))
+            JOFF = IOFF
+            DO J = 1,KLM
+              FAC = D1/DNRM2(KXYZ,CBUF(JOFF+1),1)
+              CALL DSCAL(KXYZ,FAC,CBUF(JOFF+1),1)
+              JOFF = JOFF + KXYZ
+            ENDDO
+            IOFF = IOFF + KXYZ*KLM
+          ENDIF
+          IF(IPRINT.GE.4) THEN
+            KOFF = ICBF(3,LL)
+            WRITE(LUPRI,'(A,I3)')
+     &       ' * Center : ',JNUC,
+     &       ' * L-value: ',L
+            IF(KLM.GT.0) THEN
+              CALL OUTPUT(CBUF(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,1,LUPRI)
+            ELSE
+              WRITE(LUPRI,'(A)') ' - no functions - '
+            ENDIF
+          ENDIF
+        ENDIF
+C
+C       Expand transformation matrix
+C       ============================
+C
+        IF(KLM.EQ.0) GOTO 10
+        KOFF = ICBF(3,LL)+1
+        DO J = 1,KLM
+          CALL DCOPY(KXYZ,CBUF(KOFF),1,
+     &                TMAT(IROW+1,ICOL+J),1)   
+          KOFF = KOFF + KXYZ
+        ENDDO
+        IROW = IROW + KXYZ
+        ICOL = ICOL + KLM
+   10 CONTINUE
+C
+C     Final print section
+C
+      IF(IPRINT.GE.3) THEN
+        CALL PRSYMB(LUPRI,'-',40,0)
+        CALL OUTPUT(TMAT,1,IROW,1,ICOL,NCAR,ICOL,1,LUPRI)
+      ENDIF
+C
+C*********************************************************
+C***  Transform overlap matrix to spherical basis and  ***
+C***  generate Lowdin matrix                           ***
+C*********************************************************
+C
+      NSPH = ICOL
+      CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
+     &            SMAT,LDM ,NCAR,1,IPQTOQ(1,0),
+     &            VMAT,LDM ,NSPH,1,IQBF,
+     &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
+     &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
+     &            WORK,LWORK,IPRINT)
+      CALL LOWGEN(VMAT,NSPH,SMAT,NEFF,LDM,STOL,IPRINT,
+     &            EIG,WORK,LWORK)
+      CALL DGEMM('N','N',NCAR,NEFF,NSPH,D1,TMAT,NCAR,
+     &           SMAT,LDM,D0,VMAT,LDM)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck rkblow */
+      SUBROUTINE RKBLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,
+     &                  EIG,CSPH,ICSP,LMAX,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Generate Lowdin matrix with RKB transformation embedded.
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbbas.h>
+#include <dgroup.h>
+      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
+     &          CSPH(*),ICSP(*),WORK(*)
+C
+      CALL QENTER('RKBLOW')
+#include <memint.h>
+      NXYZ = (LMAX*(LMAX+1))/2
+      NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
+      NCBUF = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
+      IF(LMAX.GE.3) THEN
+        L2    = LMAX - 2
+        NCBUF = NCBUF + ((L2+2)*(L2+1)*(3*L2**2+6*L2+1)*L2)/60
+      ENDIF
+      NCAR = NBBAS(IREP,IC)
+      NMAT = NBBAS(IREP,IC)*NBBAS(IREP,IC)
+      CALL MEMGET('REAL',KTMAT,NMAT  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCBUF,NCBUF ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KICBF,3*LMAX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
+      CALL RKBLO1(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,EIG,NCAR,
+     &            CSPH,ICSP,LMAX,NXYZ,NFUN,WORK(KTMAT),WORK(KCBUF),
+     &            WORK(KICBF),WORK(KIFUN),
+     &            WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('RKBLOW',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('RKBLOW')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck rkblo1 */
+      SUBROUTINE RKBLO1(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,EIG,NCAR,
+     &                  CSPH,ICSP,LMAX,MXYZ,NFUN,TMAT,CRED,IRED,
+     &                  IFUN,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Generate Lowdin matrix with RKB transformation embedded.
+C
+C     Spherical transformation matrix:
+C       CSPH - for each L value it has the dimension CSPH(NLM,NXYZ,*)
+C       ICSP - gives offsets to each L value in spherical 
+C              transformation matrix CSPH
+C     For each center and L value a transformation matrix is extracted
+C     from CSPH according to allowed symmetries.
+C       IFUN(*,1) - points to Cartesian component in full list
+C       IFUN(*,2) - points to spherical component in full list
+C       IFUN(*,3) - points to Cartesian comp. in symmetry-reduced list
+C     The symmetry-reduced spherical transformation matrix is
+C     stored in CRED
+C     For each L value
+C       IRED(1,*) - gives number of symmetry-reduced Cartesians KXYZ
+C       IRED(2,*) - gives number of symmetry-reduced sphericals KLM
+C       IRED(3,*) - gives offsets to each L value
+C     For each L value CRED has the dimension CRED(KXYZ,KLM)
+C     The RKB part is adjoined to CRED and has the dimension
+C        CRED(KRKB,KLMM2) where KRKB = KXYZ+KXYZM2
+C     KXYZM2 and KLMM2 are the number of symmetry-reduced Cartesian
+C     and spherical components, respectively, of the L-2 partner.
+C
+C      
+
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D6=6.0D0,D4=4.0D0)
+C
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxaqn.h>
+C
+#include <ccom.h>
+#include <symmet.h>
+#include <pgroup.h>
+#include <shells.h>
+#include <nuclei.h>
+#include <dgroup.h>
+#include <dcbrkb.h>
+      LOGICAL LRKB
+      CHARACTER COMP(2)*1
+      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),IQBF(4),
+     &          CSPH(*),ICSP(LMAX),IFUN(NFUN,3),
+     &          TMAT(NCAR,NCAR),CRED(*),IRED(3,LMAX),
+     &          WORK(*)
+      DATA COMP/'L','S'/
+#include <sdpre.h>
+#include <ibtfun.h>
+C
+C**************************************************
+C***  Generate spherical transformation matrix  ***
+C**************************************************
+C
+C     Initialize
+C     ==========
+C
+      IF(IC.EQ.1) THEN
+        JA1 = 1
+        JA2 = NLRGSH
+      ELSEIF(IC.EQ.2) THEN
+        JA1 = NLRGSH+1
+        JA2 = KMAX
+      ENDIF
+      N2MAT = NCAR*NCAR
+      CALL DZERO(TMAT,N2MAT)
+C
+C     Initial print section
+C     =====================
+C
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A,A3,2X,A1)') 
+     &    'SPHLOW: Transformation matrix for ',REP(IREP),COMP(IC)
+      ENDIF
+C
+C     Loop over shells
+C     ================
+C
+C     Offset in SO-basis:
+      ISOFF = ICOS(IREP+1,IC)
+C     Offset in AO-basis:
+      NAORB = NSTRT(JA1)
+C
+      INUC = 0
+      ICOL = 0
+      DO 10 JA = JA1,JA2
+        JNUC = NCENT(JA)
+C
+C       New center; check out allowed symmetries
+C       ----------------------------------------
+        IF(JNUC.NE.INUC) THEN
+          MULA = ISTBNU(JNUC)
+          INUC = JNUC
+          ILL  = 0
+          IOFF = 0
+        ENDIF
+        LL  = NHKT(JA)
+C
+C       New L-value; extract relevant transformation matrix
+C       ---------------------------------------------------
+        IF(LL.NE.ILL) THEN
+          ILL  = LL
+          L    = LL - 1
+          NLM  = 2*L + 1
+          NXYZ = (LL*(LL+1))/2
+          LOFF = NHKOFF(LL)
+C
+C         Cartesian functions
+C
+          KXYZ = 0
+          DO ICMP = 1,NXYZ
+            IVARB = IBTXOR(IREP,ISYMAO(LL,ICMP))
+            IF(IBTAND(MULA,IVARB).EQ.0) THEN
+              KXYZ              = KXYZ + 1
+              IFUN(LOFF+KXYZ,1) = ICMP
+              IFUN(LOFF+ICMP,3) = KXYZ
+            ENDIF
+            IRED(1,LL) = KXYZ
+          ENDDO
+C
+C         Solid harmonic functions
+C
+          KLM = 0
+          DO ICMP = 1,NLM
+            IVARB = IBTXOR(IREP,IREPLM(L,ICMP-LL))
+            IF(IBTAND(MULA,IVARB).EQ.0) THEN
+              KLM               = KLM + 1
+              IFUN(LOFF+KLM,2)  = ICMP
+            ENDIF
+            IRED(2,LL) = KLM
+          ENDDO
+C
+C         Extract spherical transformation matrix
+C
+          IRED(3,LL) = IOFF
+          IF(KLM.GT.0) THEN
+            JOFF = ICSP(LL)
+            CALL EXTELM('N',CSPH(JOFF+1),NXYZ,NLM,
+     &                      CRED(IOFF+1),KXYZ,KXYZ,KLM,
+     &                      IFUN(LOFF+1,1),IFUN(LOFF+1,2))
+            JOFF = IOFF
+            DO J = 1,KLM
+              FAC = D1/DNRM2(KXYZ,CRED(JOFF+1),1)
+              CALL DSCAL(KXYZ,FAC,CRED(JOFF+1),1)
+              JOFF = JOFF + KXYZ
+            ENDDO
+            IOFF = IOFF + KXYZ*KLM
+C
+            LRKB = L.GE.2
+            IF(LRKB) THEN
+              LLM2   = LL-2
+              KLMM2  = IRED(2,LLM2)
+              LRKB   = LRKB.AND.KLMM2.GT.0
+            ENDIF
+            IF(LRKB) THEN
+              NXYZM2 = (LLM2*(LLM2+1))/2
+              NLMM2  = 2*LLM2-1
+              KXYZM2 = IRED(1,LLM2)                            
+              KRKB   = KXYZ + KXYZM2
+              IM2    = IOFF + KXYZ
+              LM2F   = NHKOFF(LLM2)
+              CALL DZERO(CRED(IOFF+1),KRKB*KLMM2)
+C
+C             First extract spherical transformation matrix 
+C             for L-2 partner
+              JM2    = ICSP(LLM2)
+              CALL EXTELM('N',CSPH(JM2+1) ,NXYZM2,NLMM2,
+     &                        CRED(IM2+1),KRKB,KXYZM2,KLMM2,
+     &                        IFUN(LM2F+1,1),IFUN(LM2F+1,2))
+C
+C             Then fill in corresponding number for r**2
+C
+              DO K = 1,KXYZM2
+                IJ = IFUN(LM2F+K,1)
+                IA = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
+                IB = IJ - IA*(IA-1)/2
+C**             x**2: (ia  ,ib  )
+                IJX  = (IA*(IA-1))/2 + IB
+                KOFF = IOFF + IFUN(LOFF+IJX,3)
+                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                              CRED(KOFF),KRKB)
+C**             y**2: (ia+2,ib  )
+                IJY = ((IA+2)*(IA+1))/2 + IB
+                KOFF = IOFF + IFUN(LOFF+IJY,3)
+                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                              CRED(KOFF),KRKB)
+C**             z**2: (ia+2,ib+2)
+                IJZ = ((IA+2)*(IA+1))/2 + IB + 2
+                KOFF = IOFF + IFUN(LOFF+IJZ,3)
+                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                              CRED(KOFF),KRKB)
+              ENDDO
+C
+C             Scale matrix for L-2 partner
+C
+              FAC =  D6-D4*SDPRE(LL)
+              KOFF = IM2+1
+              DO K = 1,KLMM2
+                CALL DSCAL(KXYZM2,FAC,CRED(KOFF),1)
+                KOFF = KOFF + KRKB
+              ENDDO
+C
+C             Normalize...
+C
+              KOFF = IOFF+1
+              DO J = 1,KLMM2
+                FAC = D1/DNRM2(KRKB,CRED(KOFF),1)
+                CALL DSCAL(KRKB,FAC,CRED(KOFF),1)
+                KOFF = KOFF + KRKB
+              ENDDO
+              IOFF = IOFF + KRKB*KLMM2
+            ENDIF
+          ENDIF
+          IF(IPRINT.GE.4) THEN
+            KOFF = IRED(3,LL)
+            WRITE(LUPRI,'(A,I3)')
+     &       ' * Center : ',JNUC,
+     &       ' * L-value: ',L
+            IF(KLM.GT.0) THEN
+              CALL OUTPUT(CRED(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,1,LUPRI)
+              IF(LRKB) THEN
+                WRITE(LUPRI,'(A)') '* RKB part:'
+                KOFF = KOFF + KXYZ*KLM
+                CALL OUTPUT(CRED(KOFF+1),1,KRKB,1,KLMM2,
+     &                                   KRKB,KLMM2,1,LUPRI)
+              ENDIF
+            ELSE
+              WRITE(LUPRI,'(A)') ' - no functions - '
+            ENDIF
+          ENDIF
+        ENDIF
+C
+C       Expand transformation matrix
+C       ============================
+C
+        IF(KLM.EQ.0) GOTO 10
+C
+C       Look for (L-1) large function;
+C       skip if no partner found
+C
+        JL = IRKB(JA)
+        IF(JL.EQ.0) GOTO 10
+        IROW = NSTRT(JA) + IFUN(LOFF+1,1)
+        IROW = IPTSYM(IROW,IREP) - ISOFF
+C
+C       Fill in standard spherical transformation matrix
+C
+        KOFF = IRED(3,LL)+1
+        DO J = 1,KLM
+          CALL DCOPY(KXYZ,CRED(KOFF),1,
+     &               TMAT(IROW,ICOL+J),1)   
+          KOFF = KOFF + KXYZ
+        ENDDO
+        ICOL = ICOL + KLM
+C
+C       Possibly add RKB part
+C
+        IF(LRKB) THEN
+          JB = IRKB(JL)
+C
+C         Copy extra functions for L
+C            
+          IRM2 = NSTRT(JB) + IFUN(LM2F+1,1)
+          IRM2 = IPTSYM(IRM2,IREP) - ISOFF
+          DO J = 1,KLMM2
+            CALL DCOPY(KXYZ,CRED(KOFF),1,
+     &                 TMAT(IROW,ICOL+J),1)   
+            KOFF = KOFF + KXYZ
+            CALL DCOPY(KXYZM2,CRED(KOFF),1,
+     &                 TMAT(IRM2,ICOL+J),1)   
+            KOFF = KOFF + KXYZM2
+          ENDDO
+          IROW = IROW + KXYZ
+          ICOL = ICOL + KLMM2
+        ENDIF
+   10 CONTINUE
+C
+C     Final print section
+C
+      IF(IPRINT.GE.3) THEN
+        CALL PRSYMB(LUPRI,'-',40,0)
+        CALL OUTPUT(TMAT,1,NCAR,1,ICOL,NCAR,ICOL,1,LUPRI)
+      ENDIF
+C
+C*********************************************************
+C***  Transform overlap matrix to spherical basis and  ***
+C***  generate Lowdin matrix                           ***
+C*********************************************************
+C
+      NSPH = ICOL
+      CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
+     &            SMAT,LDM ,NCAR,1,IPQTOQ(1,0),
+     &            VMAT,LDM ,NSPH,1,IQBF,
+     &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
+     &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
+     &            WORK,LWORK,IPRINT)
+      CALL LOWGEN(VMAT,NSPH,SMAT,NEFF,LDM,STOL,IPRINT,
+     &            EIG,WORK,LWORK)
+      CALL DGEMM('N','N',NCAR,NEFF,NSPH,D1,TMAT,NCAR,
+     &           SMAT,LDM,D0,VMAT,LDM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lowgen */
-      SUBROUTINE LOWGEN(LCOMP,SMAT,VMAT,LDM,NDIM,NEFF,STOL,IPRINT,
-     &     WORK,LWORK)
+      SUBROUTINE LOWGEN(SMAT,NS,VMAT,NV,LDM,STOL,IPRINT,
+     &                  EIG,WORK,LWORK)
 C*****************************************************************************
 C
 C     Generate Lowdin matrix
 C
 C     Written by T.Saue Sep 11 1995
-C     Last revision Sep 19 1995 - tsaue
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-C
-      DIMENSION SMAT(LDM,NDIM),VMAT(LDM,NDIM),WORK(LWORK)
-C
-      CALL QENTER('LOWGEN')
-#include <memint.h>
-C     Memory allocation
-      CALL MEMGET('REAL',KEIG ,NDIM  ,WORK,KFREE,LFREE)
-      CALL LOWGE1(LCOMP,SMAT,VMAT,NDIM,NEFF,LDM,STOL,WORK(KEIG),
-     &            IPRINT,WORK(KFREE),LFREE)
-      CALL MEMREL('LOWGEN.LOWGE1',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      CALL QEXIT('LOWGEN')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck lowge1 */
-      SUBROUTINE LOWGE1(LCOMP,SMAT,VMAT,NDIM,NEFF,LDM,STOL,EIG,IPRINT,
-     &                  WORK,LWORK)
-C*****************************************************************************
-C
-C     Generate Lowdin matrix
-C
-C     Written by T.Saue Sep 11 1995
-C     Last revision Sep 19 1995
+C     Last revision Apr 1 1998 - tsaue
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
-C Used from COMMON blocks
-C  DCBBAS: NTBAS,NFBAS
-C  DHFCAL: STOL
-C  DGROUP: NFSYM,NBSYM
+      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),WORK(LWORK)
 C
-#include <dgroup.h>
-      DIMENSION SMAT(LDM,NDIM),VMAT(LDM,NDIM),EIG(NDIM),
-     &          WORK(LWORK)
-      NTOT = (NDIM-1)*LDM + NDIM
+      CALL QENTER('LOWGEN')
 C
 C     Diagonalize overlap matrix
 C
-C     IJOB   =  1: Eigenvalues and eigenvectors
-C     IORDER = -1: Sort eigenvalues and eigenvectors in descending order
-C     IPACK  =  0: Full overlap matrix given
-C
-      CALL RSJACO(LDM,NDIM,NDIM,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
-C      Avoid Householder; it mixes symmetries !!!
-C      CALL RS(LDM,NDIM,SMAT,EIG,1,VMAT,BUF(1,1),BUF(1,2),IERR)
-C
-C     DLIMIT Should be set to ca. 1.0D-05 in final version!
-C
-      DLIMIT = 1.0D-02
-      IF((IPRINT.GE.1).AND.(EIG(NDIM).LT.DLIMIT)) THEN
-         CALL HEADER('Generating AO-MO Transformation',-1)
-         WRITE(LUPRI,'(/3X,A,X,E6.1)') 
-     &        '*** Eigenvalues of overlap matrix below', DLIMIT
-         IF (LCOMP.EQ.1) THEN
-            WRITE(LUPRI,'(3X,A/)') 
-     &        '    Large component basis:'
-         ELSEIF(LCOMP.EQ.2) THEN
-            WRITE(LUPRI,'(3X,A/)') 
-     &        '    Small component basis:'
-         ELSE
-            CALL QUIT('LOWGEN: Undefined LCOMP')
-         ENDIF
-         DO I = NDIM,1,-1
-            IF (EIG(I).LT.DLIMIT) WRITE(LUPRI,'(I5,F16.9)') I,EIG(I)
-         ENDDO
-      ENDIF
-      IF(IPRINT.GE.4) THEN
-        CALL HEADER('LOWGEN: All Eigenvalues of overlap matrix:',-1)
-        WRITE(LUPRI,'(I5,F16.9)') (I,EIG(I),I=1,NDIM)
-      ENDIF
-      IF(IPRINT.GE.6) THEN
-        CALL HEADER('LOWGEN: Eigenvectors of overlap matrix:',-1)
-        CALL OUTPUT(VMAT,1,NDIM,1,NDIM,LDM,NDIM,1,LUPRI)
-      ENDIF
-      NEFF = 0
-      DO J = 1,NDIM
-        IF(EIG(J).LE.STOL) GOTO 10
-        NEFF = NEFF + 1
-        FAC   = D1/SQRT(EIG(J))
-        CALL DSCAL(NDIM,FAC,VMAT(1,J),1)
+      CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
+      NV = 0
+      DO I = 1,NS
+        IF(EIG(I).LE.STOL) GOTO 10
+        NV  = NV + 1
+        FAC = D1/SQRT(EIG(I))
+        CALL DSCAL(NS,FAC,VMAT(1,I),1)
       ENDDO
  10   CONTINUE
 C
-C     Zero the columns that are to be deleted
-C
-      NDEL = NDIM - NEFF
-      IF(NDEL.GE.1) THEN
-        CALL HEADER('WARNING from LOWGEN',-1)
-        IF(IPRINT.GE.3) THEN
-           WRITE(LUPRI,'(I5,A,1P,E9.3)')
-     &     NDEL,' eigenvalues of overlap matrix below threshold ',
-     &     STOL
-          WRITE(LUPRI,'(3X,A)')
-     &      'Eigenvectors of AO-overlap matrix deleted:'
-          CALL OUTPUT(VMAT,(NEFF+1),NDIM,1,NDIM,LDM,NDIM,1,LUPRI)
-        ENDIF
-        DO J = 1,NDEL
-          CALL DZERO(VMAT(1,NEFF+J),NDIM)
-        ENDDO
-      ENDIF
-      IF(IPRINT.GE.6) THEN
-        CALL HEADER('LOWGEN: Lowdin matrix:',-1)
-        CALL OUTPUT(VMAT,1,NDIM,1,NEFF,LDM,NDIM,1,LUPRI)
-      ENDIF
-C
-      CALL FLSHFO(LUPRI)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rkblow */
-      SUBROUTINE RKBLOW(LCOMP,SMAT,VMAT,LDM,NEFF,STOL,NDEL,IPRINT,
-     &                  WORK,LWORK)
-C*****************************************************************************
-C
-C     Generate Lowdin matrix for S components with RKB transformation embedded
-C
-C                          J.K. Laerdahl May 08 1996
-C                          Modification of T. Saue's SPHLOW
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-C
-#include <dcbbas.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <dcbrkb.h>
-      DIMENSION SMAT(*),VMAT(*),WORK(LWORK)
-C
-      CALL QENTER('RKBLOW')
-#include <memint.h>
-C     Memory allocation
-      NDIM = NTBAS(LCOMP)
-      NRKB = NRKBSF
-      N2RKB = NRKB*NRKB
-      CALL MEMGET('REAL',K1RKB,N2RKB,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',K2RKB,N2RKB,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',NTRRKB,NRKB*NDIM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',NTRRKB2,NRKB*NDIM,WORK,KFREE,LFREE)
-      CALL RKBLO1(LCOMP,SMAT,VMAT,NDIM,NEFF,LDM,STOL,NDEL,
-     &            WORK(K1RKB),WORK(K2RKB),
-     &            WORK(NTRRKB),WORK(NTRRKB2),
-     &            NRKB,IPRINT,WORK(KFREE),LFREE)
-      CALL MEMREL('RKBLOW.RKBLO1',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      CALL QEXIT('RKBLOW')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rkblo1 */
-      SUBROUTINE RKBLO1(LCOMP,SMAT,VMAT,NDIM,NEFF,LDM,STOL,NDEL,
-     &                  SRKB,VRKB,TRNMA1,TRNMA2,NRKB,IPRINT,WORK,LWORK)
-C*****************************************************************************
-C
-C     Generate Lowdin matrix with RKB transformation embedded
-C     Written by J.K. Laerdahl 1996
-C
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-      DIMENSION SMAT(LDM,NDIM) ,VMAT(LDM,NDIM),
-     &     SRKB(NRKB,NRKB),VRKB(NRKB,NRKB),
-     &     TRNMA1(NRKB,NDIM),TRNMA2(NDIM,NRKB),
-     &     WORK(LWORK)
-      PARAMETER(D1=1.0D0, D0=0.0D0)
-C     
-C     Construct Transformation matrices
-C     
-      CALL RKBTRN(TRNMA1,TRNMA2,NRKB,NDIM,LCOMP,IPRINT)
-C
-C     Transform overlap matrix to RKB basis
-C     
-#include <memint.h>
-      NWRK = NRKB*NDIM
-      CALL MEMGET('REAL',KW1,NWRK,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KW2,NWRK,WORK,KFREE,LFREE)
-      CALL DGEMM('N','N',NRKB,NDIM,NDIM,D1,TRNMA1,NRKB,
-     &               SMAT,LDM,D0,WORK(KW1),NRKB)
-C
-C     Transpose and transform columns
-C
-      CALL MTRSP(NRKB,NDIM,WORK(KW1),NRKB,WORK(KW2),NDIM)
-      CALL DGEMM('N','N',NRKB,NRKB,NDIM,D1,TRNMA1,NRKB,
-     &               WORK(KW2),NDIM,D0,WORK(KW1),NRKB)
-C
-C     Backtranspose to obtain final matrix
-C
-      CALL MTRSP(NRKB,NRKB,WORK(KW1),NRKB,SRKB,NRKB)
-C
-      IF (IPRINT.GT.4) THEN
-         CALL HEADER('SRKB: Transformed matrix:',-1)
-         CALL OUTPUT(SRKB,1,NRKB,1,NRKB,NRKB,NRKB,1,LUPRI)
-      ENDIF
-C
-C     Generate RKB Lowdin matrix
-C      
-      CALL LOWGEN(LCOMP,SRKB,VRKB,NRKB,NRKB,NEFF,STOL,IPRINT,
-     &     WORK,LWORK)
-      NDEL = NRKB - NEFF
-C     
-C     Backtransform rows of Lowdin matrix
-C     
-      CALL DGEMM('N','N',NDIM,NRKB,NRKB,D1,TRNMA2,NDIM,
-     &     VRKB,NRKB,D0,VMAT,LDM)
-C     
-      CALL MEMREL('RKBLO1.RKBTRN',WORK,KWORK,KWORK,KFREE,LFREE)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rkbtrn */
-      SUBROUTINE RKBTRN(TRNMA1,TRNMA2,ND1,NDIM,LCOMP,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-      PARAMETER(D6=6.0D0,D4=4.0D0,D1=1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbbas.h>
-#include <dcbrkb.h>
-      LOGICAL FOUND
-      DIMENSION TRNMA1(ND1,NDIM),TRNMA2(NDIM,ND1)
-C
-      CALL DZERO(TRNMA1,ND1*NDIM)
-C     
-      IF (IPRINT.GE.5) CALL HEADER('RKBTRN: Building TRNMA1',1)
-      IOFFI = 0
-      IOFFJ = 0
-C
-C     Loop over Shells of S comp functions
-C
-      DO 210 ISHELL = NLRGSH+1,KMAX
-         L     = NHKT(ISHELL)
-         NLM   = 2*(L-1) + 1
-         NRKB  = NLM
-         NXYZ  = L*(L+1)/2
-         NDEG   = NUCDEG(NCENT(ISHELL))
-         IF (L.GE.3) THEN
-            NRKB = NRKB + 2*(L-2)-1
-            NXYZM2 = (L-2)*(L-1)/2
-            NLMM2  = 2*(L-2)-1
-C     
-C     Scaling factor for S comp L-2 partner 
-C     Independent of Alpha because of
-C     normalization constant
-C
-            DLM2SC = (-D4*DFLOAT(L)+D6)
-         ENDIF
-         ICNTL = ISTRT(ISHELL) + 1
-         FOUND = .FALSE.
-         IXX = 0
- 50      IXX = IXX + 1
-         IF (IXX.GT.IRKBLE) GOTO 55
-         IF (ICNTL.EQ.IRKBLS(IXX)) THEN
-            FOUND = .TRUE.
-            GOTO 55
-         ENDIF
-         GOTO 50
- 55      CONTINUE
-C
-C     Loop over degenerate centers
-C
-         DO IDEG = 1,NDEG
-            IF (FOUND) THEN
-               NRKB = 0
-               GOTO 111
-            ENDIF
-            DO I = 1, NRKB
-               DO J = 1, NXYZ
-                  TRNMA1(IOFFI+I,IOFFJ+J) = CRKB(ISRKB(L)
-     &                 +NRKB*(J-1)+I-1)
-                  IF(IPRINT.GE.10)
-     &                 WRITE(LUPRI,'(A,2I5,F15.8)') '#', I,J, 
-     &                 TRNMA1(IOFFI+I,IOFFJ+J)
-               ENDDO
-C     
-C     Contract with L-2 partner
-C     
-               IF (I.GT.NLM) THEN
-                  IDEGP = (IDEG-1)*KHKT(IRKBPT(ISHELL,2))
-                  LM2 = I - NLM
-                  DO IM2 = 1, NXYZM2
-                     ELEMNT = CSP(ISPADR(L-2)+(IM2-1)*NLMM2+LM2-1)
-                     IF(IPRINT.GE.10) THEN
-                        WRITE(LUPRI,'(A,2I5,F15.8,7I6)') '###', 
-     &                       I,IM2,ELEMNT, ISPADR(L-2),NXYZM2,LM2, 
-     &                       IOFFI+I,IOFFJ+J,IRKBPT(ISHELL,1),IDEGP
-                     ENDIF
-                     IPUT=IRKBPT(ISHELL,1)+IDEGP+IM2-NTBAS(1)-1 
-                     TRNMA1(IOFFI+I,IPUT) = DLM2SC*ELEMNT
-                  ENDDO
-               ENDIF
-            ENDDO
- 111        CONTINUE
-            IOFFI = IOFFI + NRKB
- 200        IOFFJ = IOFFJ + NXYZ
-         ENDDO
- 210     CONTINUE
-C     
 C     Print section
 C
-      IF(IPRINT.GE.5) THEN
-         CALL HEADER('TRNMA1:',-1)
-         CALL OUTPUT(TRNMA1,1,ND1,1,NDIM,ND1,NDIM,1,LUPRI)
-      ENDIF
-C
-C      It is NOT necessary to Normalize matrix
-C
-      CALL MTRSP(ND1,NDIM,TRNMA1,ND1,TRNMA2,NDIM) 
       IF(IPRINT.GE.6) THEN
-         CALL HEADER('TRNMA2:',-1)
-         CALL OUTPUT(TRNMA2,1,NDIM,1,ND1,NDIM,ND1,1,LUPRI)
+        CALL HEADER('LOWGEN: Lowdin matrix:',-1)
+        CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,1,LUPRI)
       ENDIF
+      CALL QEXIT('LOWGEN')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
