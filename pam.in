@@ -402,7 +402,7 @@ distribute_work_dir()
 #  This routine is only called when local disks
 #  The list of machines available to dirac.x
 #
-   if [ -n "$MACH_FILE" ]; then
+   if [ -z "$MACH_FILE" ]; then
 #     Serial run of parallel program
       echo `hostname` > dirac_machines 
    else
