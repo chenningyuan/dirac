@@ -2249,7 +2249,7 @@ C    &     LUC,LUHC)
      &      WRITE(6,*) ' allowed IATP,IBTP', IATP,IBTP
             MXA = 0
             DO ISM = 1, NSMST
-              MXA =MAX(MXA,NSTFSMSPGP(ISM,IATPABS))
+              MXA = MAX(MXA,NSTFSMSPGP(ISM,IATPABS))
             END DO
             IF(NTEST.GE.100) WRITE(6,*) ' MXA = ', MXA
             DO IOBTP = 1, NTPOB
@@ -2385,7 +2385,7 @@ C               LCJBLK = MXSOB*MXKB*MXB
               IF(K1BTP.GT.0) THEN
                 MXISOB = 0
                 DO ISMOB = 1, NSMOB
-                  MXISOB = MAX(MXISOB,NTSOB(IOBTP,ISMOB))
+                  MXISOB = MAX(MXISOB,NTSOB2(IOBTP,ISMOB))
                 END DO
                 IF(NTEST.GE.100) WRITE(6,*) ' MXISOB = ', MXISOB
                 DO JOBTP = 1, NTPOB
@@ -2560,7 +2560,7 @@ C               LCJBLK = MXSOB*MXKB*MXB
 *. Number of possible choices of J orbitals
             MXJOB = 0
             DO JSMOB = 1, NSMOB
-               MXJOB = MAX(MXJOB,NTSOB(JOBTP,JSMOB))
+               MXJOB = MAX(MXJOB,NTSOB2(JOBTP,JSMOB))
             END DO
             MXJOB = MIN(MXJOB,NEL1234(JOBTP,IBTP))
             IF(NTEST.GE.100) WRITE(6,*) ' MXJOB = ', MXJOB
@@ -2568,13 +2568,13 @@ C               LCJBLK = MXSOB*MXKB*MXB
             DO IOBTP = 1, NTPOB
 *  Allowed ?
               CALL NEWTYP_REL(KBTP,2,IOBTP,1,JBTP)
-              IF(JATP.GT.0) THEN
+              IF(JBTP.GT.0) THEN
                 MXIOB = 0
                 DO ISMOB = 1, NSMOB
                   MXIOB = MAX(MXIOB,NTSOB2(IOBTP,ISMOB))
                 END DO
 *
-                MXSXBL = MAX(MXSXBL,MXIOB*MXJOB*MXIA)
+                MXSXBL = MAX(MXSXBL,MXIOB*MXJOB*MXIB)
               END IF
             END DO
           END IF
