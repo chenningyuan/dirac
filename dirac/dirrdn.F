@@ -2266,9 +2266,9 @@ C
 #include "dcbana.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
-     &             '*RHO1  ','*DENSIT','*WT1   ','*XXXXXX'/
+     &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALY'/
       DATA TABLE  /'.MULPOP','.PROJEC','.PRIVEC','.RHO1  ',
-     &             '.DENSIT','.WT1   ','.XXXXXX','.XXXXXX'/
+     &             '.DENSIT','.WT1   ','.LOCALY','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
 #include "memint.h"
@@ -2284,6 +2284,7 @@ C
       DO1RHO  = .FALSE.
       DO3RHO  = .FALSE.
       DO1WT   = .FALSE.
+      DOLOC   = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -2363,6 +2364,8 @@ C&&&& RHO1: Punch Becke integration weights along the lines between atomic cente
             NJOBS = NJOBS +1
             GO TO 100
   107    CONTINUE
+C&&&& LOCALYSE : Molecular orbital localization
+            DOLOC = .TRUE.
             GO TO 100
   108    CONTINUE
             GO TO 100
@@ -2393,6 +2396,8 @@ C
      &     '* Punch density along lines between nuclear centers'
       IF(DO1WT) WRITE(LUPRI,'(1X,A)')
      &     '* Punch Becke weights along lines between nuclear centers'
+      IF(DOLOC) WRITE(LUPRI,'(1X,A)')
+     S     '* Molecular orbital localization'
 C
 C
 C     Process input for various program sections
@@ -2439,6 +2444,7 @@ C
 #endif
         GO TO 200
     8 CONTINUE
+        CALL LOCINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
 C
     1 CONTINUE
@@ -2450,6 +2456,7 @@ C
 #if defined (MOD_DFT)
       IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
 #endif
+      IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
 C
       CALL QEXIT('ANWINP')
       RETURN
@@ -4387,6 +4394,8 @@ C
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
+#include "dcbana.h"
+#include "dgroup.h"
       LOGICAL SS_COR, SS_COR_NEEDED
 #include "ibtfun.h"
 C
@@ -4426,6 +4435,16 @@ C
       IF (PARCAL .AND. DOKRMC) THEN
          IF (KRMC_CIPROGRAM .EQ. 'LUCIAREL')
      &   CALL QUIT ('LUCIAREL cannot run in parallel mode')
+      ENDIF
+C
+C     Check for C1 symmetry if localization requested
+C
+      IF(DOLOC .AND. (NBSYM .GT. 1)) THEN
+         WRITE (*,'(A,A)') ' * WARNING : Orbital localization not yet',
+     S   ' implemented'
+         WRITE (*,'(A)') '             for other groups than C1 !!!'
+         WRITE (*,'(A)') '   -> LOCALYSE ignored'
+         DOLOC = .FALSE.
       ENDIF
 C
       RETURN
@@ -4874,3 +4893,209 @@ C
 C
       END
 #endif
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck locinp */
+      SUBROUTINE LOCINP(WORD,RESET,WORK,LWORK)
+C***********************************************************************
+C
+C     Input section for Molecular orbital localization
+C
+C     Written by S. Dubillard - January 2004
+C     Last revision:
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      PARAMETER (NTABLE = 8)
+C
+#include "dcbgen.h"
+#include "dcbana.h"
+#include "dcbprj.h"
+#include "dcbloc.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "nuclei.h"
+C
+      LOGICAL SET, NEWDEF,ORBDEF, RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,LINE*72
+      DIMENSION WORK(LWORK)
+C
+      SAVE SET
+      DATA TABLE /'.PRINT ','.PRJLOC','.THRESH','.MAXITR',
+     &            '.VECPRJ','.VECREF','.OWNBAS','.XXXXXX'/
+      DATA SET/.FALSE./
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+#include "memint.h"
+C
+C
+C     Initialize /CBILOC/
+C     ===================
+C
+      PRJLOC = .FALSE. 
+      THRLOC = 1.0D-6      
+      ITRLOC = 100
+      IPRLOC = IPRGEN
+C
+C     Process input from CBILOC
+C     =========================
+C
+      NEWDEF = (WORD .EQ. '*LOCALY')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+ 100         CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1,2,3,4,5,6,7,8), I
+                  END IF
+ 200                        CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in ANWINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in POPINP.')
+ 1                       CONTINUE
+C   Print level
+                  READ(LUCMD,*) IPRLOC
+               GO TO 100
+ 2                       CONTINUE
+C   Do localisation from projection analysis
+                  PRJLOC = .TRUE.
+               GO TO 100
+ 3                       CONTINUE
+C   Threshold
+                  READ(LUCMD,*) THRLOC
+               GO TO 100
+ 4                       CONTINUE
+C   Maximum number of iterations
+                  READ(LUCMD,*) ITRLOC
+               GO TO 100
+ 5                       CONTINUE
+C   VECPRJ: Spinors to project onto reference vectors
+                  READ(LUCMD,'(A72)') (VECPRJ(I),I=1,NFSYM)
+                  ORBDEF = .FALSE.
+               GO TO 100
+ 6                       CONTINUE
+C   VECREF: Reference vectors
+                  READ(LUCMD,*) NREFS
+                  IF(NREFS.GT.MAXREF) THEN
+                    WRITE(LUPRI,'(A,I5)')
+     &         '* Number of reference fragments specified:',NREFS,
+     &         '* Current maximum                        :',MAXREF
+                    CALL QUIT('PRJINP:Too many fragments !')
+                  ENDIF
+                  DO J = 1,NREFS
+                    READ(LUCMD,'(A6)') REFFIL(J)
+                    READ(LUCMD,'(A72)') (VECREF(I,J),I=1,NFSYM)
+                  ENDDO
+               GO TO 100
+ 7                       CONTINUE
+C   OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis sets
+               OWNBAS = .TRUE.
+               GO TO 100
+ 8                       CONTINUE
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in ANWINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in ANWINP.')
+            END IF
+      END IF
+ 300   CONTINUE
+C
+C     Print section
+C     =============
+C
+      IF(.NOT. DOLOC) GOTO 999
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 
+     S 'LOCINP: Molecular orbital localization (Pipek-Mezey criterion)'
+      CALL PRSYMB(LUPRI,'=',75,0)
+      IF(PRJLOC) THEN
+         WRITE(LUPRI,'(1X,A)') 
+     S      '* Molecular orbital localization from projection analysis'
+      ELSE
+         WRITE(LUPRI,'(1X,A)')
+     S      '* Molecular orbital localization from Mulliken analysis'
+      ENDIF
+      WRITE(LUPRI,'(1X,A,D9.2)')
+     S     '* Threshold for convergence of the localization process :',
+     S     THRLOC
+      WRITE(LUPRI,'(1X,A)')
+     S     '  (based on the inverse mean delocalization)'
+      WRITE(LUPRI,'(1X,A,I6)')
+     S     '* Maximum number of iterations :',ITRLOC
+      IF(PRJLOC) THEN
+         IF(OWNBAS) THEN
+            WRITE(LUPRI,'(1X,A)') 
+     S   '* Fragments are calculated in their individual bases !',
+     S   '    The indexing of reference spinor sets is assumed ',
+     S   '    to follow list of symmetry independent nuclei.'
+            DO J = 1,NREFS
+              WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Reference spinor set ',J,
+     S              ' --> ',NAMDEP(J)
+              WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
+              DO I = 1,NFSYM
+                 NVEC = 0
+                 CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
+     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+                 IF(NVEC.EQ.0) THEN
+                    WRITE(LUPRI,'(4X,A,A3)') 
+     S                   '- No orbitals in fermion ircop ',FREP(I)
+                 ELSE
+                    WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+     S           '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
+                 ENDIF
+              ENDDO
+           ENDDO
+        ELSE
+           DO J = 1,NREFS
+              WRITE(LUPRI,'(1X,A,I3)') '* Reference spinor set ',J
+              WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
+              DO I = 1,NFSYM
+                 NVEC = 0
+                 CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
+     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+                 IF(NVEC.EQ.0) THEN
+                    WRITE(LUPRI,'(4X,A,A3)') 
+     S                   '- No orbitals in fermion ircop ',FREP(I)
+                 ELSE
+                    WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+     S          '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
+                 ENDIF
+              ENDDO
+           ENDDO
+        ENDIF
+      ENDIF
+      WRITE(LUPRI,'(1X,A)') 
+     S     '* Localised MO are written in file DFCOEF !!!'
+      WRITE(LUPRI,'(1X,A,I5)') '* Print level :',IPRLOC
+ 999   CONTINUE
+      RETURN
+C
+      END

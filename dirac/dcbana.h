@@ -5,7 +5,8 @@ C  DOVEC - print MO-coefficients
 C  DORHO1 - density plot in one dimension
 C  DO3RHO - write density to unformatted file (Gaussian cube format)
 C           for visualization
+C  DOLOC - perform orbital localization
 C
-      LOGICAL DOPOP,DOPRJ,DOVEC,DO1RHO,DO3RHO,DO1WT
-      COMMON/DCLPRP/DOPOP,DOPRJ,DOVEC,DO1RHO,DO3RHO,DO1WT
+      LOGICAL DOPOP,DOPRJ,DOVEC,DO1RHO,DO3RHO,DO1WT,DOLOC
+      COMMON/DCLPRP/DOPOP,DOPRJ,DOVEC,DO1RHO,DO3RHO,DO1WT,DOLOC
 
