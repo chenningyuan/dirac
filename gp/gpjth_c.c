@@ -98,7 +98,7 @@ int l;
 }
 
 
-void sysinf()
+void sysinf(int parcal)
 
 {
    struct utsname *un;
@@ -118,7 +118,10 @@ void sysinf()
       printf( " Operating system  : %s %s\n" , un->sysname, un->release);
       printf( " Machine           : %s\n" , un->machine);
    }
-
+   if ( ! parcal )
+      printf( " Run               : Sequential\n");
+   else
+      printf( " Run               : Parallel\n");
    free(un);
 }
 
