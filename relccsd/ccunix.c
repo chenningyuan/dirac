@@ -134,6 +134,8 @@ void wrabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 
 { off64_t addr, m, n, temp;
 
+ int pi;
+
   if (*unit>MAXUNIT || *unit<0)
         { fprintf(stderr,"wrabs: Unit number out of range (%d)\n",*unit);
           MACRO_QUIT();
@@ -149,9 +151,11 @@ void wrabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
   temp = *l;
   m= temp * INTEGER_WORD;
 
+  pi = (long int) p;
+
   if (addr!=files[*unit].addr)
         if (lseek64(files[*unit].fd,addr,0)==-1)
-        { fprintf(stderr,"wrabs: Error in lseek64 of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,p);
+        { fprintf(stderr,"wrabs: Error in lseek64 of (%d:%s) -> pointer=%XH\n",*unit,files[*unit].fname,pi);
           files[*unit].addr= -1;
           MACRO_QUIT();
           return;
@@ -171,6 +175,7 @@ void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 #endif
 
 { off64_t addr, m, n, temp;
+  int pi;
 
   if (*unit>MAXUNIT || *unit<0)
         { fprintf(stderr,"rdabs: Unit number out of range (%d)\n",*unit);
@@ -186,10 +191,12 @@ void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
   addr= temp * INTEGER_WORD;
   temp = *l;
   m= temp * INTEGER_WORD;
+ 
+  pi = (long int)p; // Convert for displaying the address p is pointing to
 
   if (addr!=files[*unit].addr)
         if (lseek64(files[*unit].fd,addr,0)==-1)
-        { fprintf(stderr,"rdabs: Error in lseek64 of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,p);
+        { fprintf(stderr,"rdabs: Error in lseek64 of (%d:%s) -> pointer=%XH\n",*unit,files[*unit].fname,pi);
           files[*unit].addr= -1;
           MACRO_QUIT();
           return;
