@@ -350,7 +350,7 @@ C
       CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
 C
-      IF (DIISAO) THEN
+      IF (DIISAO .OR. NASHT .GT. 0) THEN
 C
 C        Construct left index transformed density matrix: Smoao = Ct Sao
 C        and save it as rec. #2 on LUTMAT.
@@ -379,11 +379,20 @@ C     1) - using trial vectors
 C     -------------------------
 C
       IF(TRIVEC) THEN
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,TOTERG,2)
 C
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,TOTERG,2)
 C        Reorder orbitals if requested
 C
-         IF (LMOORD) CALL REORD(CMO,WORK(KFREE),LFREE)
+         IF (LMOORD) THEN
+            CALL REORD(CMO,WORK(KFREE),LFREE)
+C         
+C           Make sure that reordered coefficients are written to back
+C           to file.
+C 
+            CALL WRICMO(LUCOEF,CMO,EIG,TOTERG)
+         END IF
+C
+C
 C
 C        Generate density matrix
 C        Be aware: Both density matrices are normed to 1
@@ -499,8 +508,10 @@ C     **************************************************************************
 C
 C
       IF (TRIVEC) THEN
+C
          CALL DFSOLV(CMO,EIG,FOCK,DMAT,BMAT,CHKCNV,
      &               DOSEL,WORK(KFREE),LWORK)
+C
       ELSE
 Cjth     CALL DCOPY(NCMOTQ,WORK(KTMAT),1,CMO,1)
 Cjth 980406 skal vistnok ikke bruges ?? (TRIFCK du'r ikke for nasht>0)
@@ -695,6 +706,12 @@ C     Write untransformed coefficients
       CALL WRITT(LUCMOS,N2ORBTQ,FAO)
 C     Write transformed coefficients
       CALL WRICMO(LUCOEF,FMO,EIG,DHFERG)
+C
+C
+C     Dynamic update of overlap selection matrix
+C
+      IF (DYNSEL) 
+     &   CALL SMOGEN(FMO,WORK(KTMAT),WORK(KFREE),LFREE)
 C
       RETURN
 C
@@ -1513,6 +1530,7 @@ C
 C     Written by T.Saue Nov 11 1995
 C     Last revision: Jan 7 1998 - jth NORB(IFRP) etc. is now parameter
 C*****************************************************************************
+C
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
@@ -1542,7 +1560,7 @@ C
      &                NORB(IFRP),NORB(IFRP),NZ,
      &       'N','N',IPQTOQ(1,0),SMO,NORB(IFRP),NOCC(IFRP),NZ,
      &       D0,IPQTOQ(1,0),SBUF,NESH(IFRP),NOCC(IFRP),NZ)
-      IF(IPRSCF.GE.4) THEN
+      IF(IPRSCF.GE.10) THEN
         CALL HEADER('SMOSE1: SBUF-matrix',-1)
         CALL PRQMAT(SBUF,NESH(IFRP),NOCC(IFRP),NESH(IFRP),NOCC(IFRP),
      &              NZ,IPQTOQ(1,0),LUPRI)
