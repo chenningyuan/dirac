@@ -2,6 +2,9 @@
 Makefile
 configure
 pam
+export
+dirac.x
+Makefile.config
 *.o
 *.i
 *.bak
