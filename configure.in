@@ -1145,7 +1145,7 @@ case $machine in
          cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
          ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
 	  def='dirmpi.x'
-          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+          mpi_inc="-I$INCLUDE_DIR -I\$(MPI_INCLUDE_DIR)"
       fi
       for mod in $MODS; do
          cpp=`echo $cpp $mod`
