@@ -23,7 +23,8 @@ OBJS =	dircnv.o \
 	dirspf.o \
 	diropen.o \
 	dirgeo.o \
-        diraos.o
+  diraos.o \
+	dirpsi.o
 
 all:	$(OBJS)
 
