@@ -978,7 +978,10 @@ C/* Deck Ostring */
 C***********************************************************************
 C
 C     Set orbital strings         
-C     Stolen by T.Saue Aug 24 2000, revised Aug 2002 hjaaj
+C     Stolen by T.Saue Aug 24 2000
+C
+C      Revisions: Aug 2002 hjaaj
+C                 May 2003 MI
 C
 C***********************************************************************
 #include "implicit.h"
@@ -990,6 +993,8 @@ C
       CHARACTER*72 INDSTR(3,2)
       LOGICAL SKIPEE,SKIPEP,ORBDEF(3)
       DIMENSION WORK(*),IR(2,2),NR(2)
+
+      CALL QENTER('OSTRING')
 C
       DO I = 1,3
          ORBDEF(I) = .FALSE.
@@ -1004,7 +1009,8 @@ C
          DO I = 1,NFSYM
             INDSTR(1,I) = ' '
             IF (NISH(I).GT.0) THEN
-               WRITE(INDSTR(1,I),'(I4,A2,I4)') 1,'..',NISH(I)
+CMI            WRITE(INDSTR(1,I),'(I4,A2,I4)') 1,'..',NISH(I)
+               WRITE(INDSTR(1,I),'(I6,A2,I6)') 1,'..',NISH(I)
             ENDIF
          ENDDO
       END IF
@@ -1015,7 +1021,8 @@ C
          DO I = 1,NFSYM
             INDSTR(2,I) = ' '
             IF (NASH(I).GT.0) THEN
-               WRITE(INDSTR(2,I),'(I4,A2,I4)')
+CMI            WRITE(INDSTR(2,I),'(I4,A2,I4)')
+               WRITE(INDSTR(2,I),'(I6,A2,I6)')
      &               NISH(I)+1,'..',NISH(I)+NASH(I)
             ENDIF
          ENDDO
@@ -1032,14 +1039,16 @@ C
             DO I = 1,NFSYM
                INDSTR(3,I) = ' '
                IF (NSSH(I).GT.0) THEN
-                  WRITE(INDSTR(3,I),'(I4,A2,I4)')
+CMI               WRITE(INDSTR(3,I),'(I4,A2,I4)')
+                  WRITE(INDSTR(3,I),'(I6,A2,I6)')
      &                  NOCC(I)+1,'..',NESH(I)
                ENDIF
             ENDDO
          ELSEIF (SKIPEE) THEN
             DO I = 1,NFSYM
                INDSTR(3,I) = ' '
-               WRITE(INDSTR(3,I),'(I4,A2,I4)')
+CMI            WRITE(INDSTR(3,I),'(I4,A2,I4)')
+               WRITE(INDSTR(3,I),'(I6,A2,I6)')
      &             -NPSH(I),'..',-1
             ENDDO
          ELSE
@@ -1047,20 +1056,24 @@ C
                INDSTR(3,I) = ' '
                IF (NSSH(I).GT.0) THEN
                   IF (NPSH(I) .GT. 0) THEN
-                     WRITE(INDSTR(3,I),'(I4,A5,I4,A2,I4)')
-     &                     -NPSH(I),'..-1,',NOCC(I)+1,'..',NESH(I)
+CMI                  WRITE(INDSTR(3,I),'(I4,A5,I4,A2,I4)')
+                     WRITE(INDSTR(3,I),'(I6,A5,I6,A2,I6)')
+     &                   -NPSH(I),'..-1,',NOCC(I)+1,'..',NESH(I)
                   ELSE
-                     WRITE(INDSTR(3,I),'(I4,A2,I4)')
+CMI                  WRITE(INDSTR(3,I),'(I4,A2,I4)')MI
+                     WRITE(INDSTR(3,I),'(I6,A2,I6)')
      &                     NOCC(I)+1,'..',NESH(I)
                   END IF
                ELSE
                   IF (NPSH(I) .GT. 0) THEN
-                     WRITE(INDSTR(3,I),'(I4,A2)') -NPSH(I),'..-1'
+CMI                  WRITE(INDSTR(3,I),'(I4,A2)') -NPSH(I),'..-1'
+                     WRITE(INDSTR(3,I),'(I6,A2)') -NPSH(I),'..-1'
                   END IF
                END IF
             ENDDO
          ENDIF
       END IF
+C
 C
 C
 C      Definition of orbital classes
@@ -1122,5 +1135,6 @@ C
         ENDIF
       ENDDO
 C
+      CALL QEXIT('OSTRING')
       RETURN
       END
