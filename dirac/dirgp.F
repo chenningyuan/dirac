@@ -621,7 +621,7 @@ C           DFCOEF does not (yet) exist, put IP = - 666, which makes
 C           NUMLS2 return with an empty list
 C
             IP = - 666
-            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KEIG+IOFF))
+            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KEIG))
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
             CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBG),DUM,5,
