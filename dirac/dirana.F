@@ -393,6 +393,7 @@ C
       CALL QENTER('MULPO2')
 #include <memint.h>
 C
+      N2LAB = NPOPLAB*NPOPLAB
       NVEC = NPVEC + NEVEC
       DO I = 1,NVEC
         IF(I.GT.NPVEC) THEN
