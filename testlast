@@ -141,7 +141,7 @@ fi
 #
 cvslog=cvs_log;
 makelog=make_log;
-runlog=run_log;
+runlog=${run}_run.log;
 txtlog=${run}_dif.txt;
 htmlog=${run}_dif.htm;
 #
@@ -226,13 +226,15 @@ cd ${testdir};
 }
 if [ -e logs/$txtlog ]; then
    if [ -s logs/$txtlog ]; then
-      echo " Calculations completed at \`date\` : an error has been detected"
+      echo " Calculations completed at \`date\` with one or more errors"
+      echo " Below follows the list of tests that failed :"
+      cat logs/$txtlog
     else
       echo " Calculations completed at \`date\` : no errors were detected"
     fi
 else
     echo ' Calculations were not completed : the run_log follows'
-    cat $runlog
+    cat logs/$runlog
 fi
 EOF
 if [ "${queue}" = "none" ]; then
