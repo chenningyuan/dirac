@@ -725,10 +725,18 @@ esac
 # 
 #  Make Makefile.config
 #
+#  To avoid problems with make depend, substitute all , with spaces
+#
+if [ "$mesp" != "dummy" ]; then 
+   depend_flags=`echo $cpp $inc | sed -e 's/,/\ /g'`
+else
+   depend_flags=`echo $cpp $inc $parinc | sed -e 's/,/\ /g'`
+fi
 cat <<EOF > Makefile.config
 ARCH        = $guess
 #
 #
+DEPEND_FLAGS= $depend_flags
 CPP_FLAGS   = $cpp
 CCP_FLAGS   = $ccp
 F77         = $F77
