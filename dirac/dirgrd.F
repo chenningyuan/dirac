@@ -76,13 +76,18 @@ C
       LUMGRD = 80
       CALL OPNFIL(LUMGRD,'RMOLGRD','NEW','RMOLGRD')
 C
-      IF (DODHF) THEN
+      IF (DODHF .OR. .NOT. (DOMP2 .OR. DODFT) ) THEN
 C
 C        Initialize some variables
 C
 C        If calculation of gradient requested without
 C        calculating the wavefunction SETDHF must be called -
 C        so we call it anyway.
+C
+         IF (.NOT. DODHF) THEN
+            WRITE(LUPRI,'()')
+     &         'WARNING: Assuming DHF wave function!'
+         END IF
 C
          CALL SETDHF(IPRGRD)
 C
@@ -95,6 +100,8 @@ C
          WRITE(LUPRI,'(/A,/,A)')
      $        '*** ERROR in RMOLGRD ***',
      $        'Molecular gradient only implemented for DHF'
+         CALL QUIT('*** ERROR in RMOLGRD: ' // 
+     &             'Molecular gradient only implemented for DHF')
 C
       END IF
 C
