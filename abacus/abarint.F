@@ -1719,7 +1719,7 @@ C
 #include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
       DIMENSION WILBMT(MXRCRD,MXCOOR)
-      DIMENSION VEC1(0:4),VEC2(0:4),VEC3(0:4),VEC4(3),VEC5(3)
+      DIMENSION VEC1(3),VEC2(3),VEC3(3),VEC4(3),VEC5(3)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
       CALL DZERO(DWILBM,MXCOOR*MXCOOR)
@@ -1896,7 +1896,7 @@ C
 C     For some of the elements we need the third Cartesian direction,
 C     that is k =/ i,j.
 C
-                  KK = 6-II-JJ
+                  KK = MAX(1,MIN(6-II-JJ,3))
 C
 C     With the following "building blocks" all expressions can be constructed:
 C
