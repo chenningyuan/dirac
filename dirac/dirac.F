@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : dirac.F
+C SOURCE  : $Source$
+C
 C  /* Deck dirac */
 #ifndef VAR_G77
       PROGRAM DIRAC
