@@ -86,7 +86,7 @@ notify_user()
          TO="$LOGNAME@`hostname`"
       fi
    fi
-   #mail $TO <<EOF
+   mail $TO <<EOF
    cat <<EOF
 
 Your job has has returned with exit status: $EXIT
