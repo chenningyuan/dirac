@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : cidirr.F
+C SOURCE  : $Source$
+C
       SUBROUTINE PAMCIM (CI,MCORE)
 C
       IMPLICIT REAL*8 (A-H, O-Z)

@@ -1,4 +1,10 @@
 C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : cigenp.F
+C SOURCE  : $Source$
+C
+C
       SUBROUTINE ZZERO (LV,VECTOR)
 C
       IMPLICIT REAL*8 (A-H, O-Z)

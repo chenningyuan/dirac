@@ -1,4 +1,10 @@
 C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : param.inc
+C SOURCE  : $Source$
+C
+C
 C     DEFINITION OF PARAMETERS DIRRCI
 C
 C     N2  MAXIMUM NUMBER OF VECTORS

@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : iterat.inc
+C SOURCE  : $Source$
+C
       COMMON/DAVIDC/DCORR(N8)
       COMMON/EIVALS/EIGEN(N2),EIGEN1(N8),EIGEN2(N8),CONV(N8),
      &              RESIDU(N8),REFVEC(N8),REFRDU(N8),ECORE
