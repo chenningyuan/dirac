@@ -286,7 +286,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      COMPLEX*16 CDOTU,ZDOTU,CDOTC,ZDOTC
+      COMPLEX*16 CDOTU,ZDOTU
       REAL*8 DDOT,ZDOT
 C
 C---------------Executable code--------------------------------------
@@ -304,13 +304,13 @@ C
       ENDIF
 C
       IF (CARITH) THEN
-         CEXPA = CEXPA + ZDOTC (NFOO,EOO,1,DOO,1)
+         CEXPA = CEXPA + ZDOTU (NFOO,EOO,1,DOO,1)
       ELSE
          EXPA = EXPA + DDOT (NFOO,EOO,1,DOO,1)
       ENDIF
 C
       IF (CARITH) THEN
-         CEXPA = CEXPA + ZDOTC (NFVV,EVV,1,DVV,1)
+         CEXPA = CEXPA + ZDOTU (NFVV,EVV,1,DVV,1)
       ELSE
          EXPA = EXPA + DDOT (NFVV,EVV,1,DVV,1)
       ENDIF
@@ -320,7 +320,7 @@ C
       II = 1
       DO IREP = 1, NREP
          IF (CARITH) THEN
-            CEXPA = CEXPA + ZDOTC (NO(IREP),EOO(II),NO(IREP)+1,A1,0)
+            CEXPA = CEXPA + ZDOTU (NO(IREP),EOO(II),NO(IREP)+1,A1,0)
          ELSE
             EXPA = EXPA + DDOT (NO(IREP),EOO(II),NO(IREP)+1,A1,0)
          ENDIF
