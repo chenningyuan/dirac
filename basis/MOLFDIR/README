@@ -1,0 +1,18 @@
+Notes on the Dyall basis sets as distributed with MOLFDIR.
+
+These basis set are based on the basis sets published by Dyall, 
+(Dyall, TCA 99 (1998), 366-371). The recontraction was done by
+Bert de Jong (Wibe.DeJong@pnl.gov) with a modified version of GRASP
+that produces basis sets in MOLFDIR format. Since the MOLFDIR input is
+based on the quantum number l and not on the more appropriate 
+quantum number j, we chose to orthogonalize the radial parts of 
+the spinors np1/2 and np3/2 pairwise, keeping both orthogonal functions
+if the lowest eigenvalue of the overlap matrix is above treshold (1.D-6),
+and deleting the differential function otherwise. 
+To the occupied spinors we added furthermore diffuse and correlating 
+functions as described in the header of the files.
+The abbreviation nr in the basis set means that the sets were obtained
+with a large value of c. The large component basis sets of this set should
+be suitable for Levy-Leblond calculations.
+
+Luuk Visscher, 27-09-00
