@@ -1352,7 +1352,7 @@ C
 C
       IF (GENCD) THEN
          LCONTC = 2*NORBC*NUCC*NODCCD
-         LCONTB = 2*NORBD*NUCD*NODCCD
+         LCONTD = 2*NORBD*NUCD*NODCCD
          LPNTCD = 2*LUUCD
          LREDCD = NORBC*NORBD
          LNCSCD = 0
@@ -1642,6 +1642,7 @@ C  /* Deck symlop */
 #include <twosta.h>
 #ifdef PRG_DIRAC
 #include <dcbgrd.h>
+#include <dcbham.h>
 #else
 #include <energy.h>
 #endif
@@ -2078,6 +2079,17 @@ C              e) none of the directions are requested
 C                 or all directions screened away
 C
                IF (.NOT. (DOX .OR. DOY .OR. DOZ)) GO TO 300
+C
+Cluuk : testing negelct of off-diagonal Coulomb elements
+C
+C              f) Skip two-center SS contributions if requested
+C
+               IF (SMLV1C) THEN
+                  IF ((ICENTA.NE.ICENTB.AND.LCLASH(ISHELA).EQ.2
+     &               .AND.LCLASH(ISHELB).EQ.2).OR.(ICENTC.NE.ICENTD
+     &               .AND.LCLASH(ISHELC).EQ.2.AND.LCLASH(ISHELD).EQ.2))
+     &               GO TO 300
+               ENDIF
 C
 C              Integral contributes
 C              ====================
