@@ -227,6 +227,7 @@ C
       OPT_SKIPEE     = DHF_SKIPEE
       OPT_SKIPEP     = DHF_SKIPEP
       OPT_NOPFQ      = .FALSE.
+      OPT_NOCI       = .FALSE.
 C
 C
       CALL QEXIT('TDHFORB')
@@ -318,6 +319,11 @@ C
       OPT_SKIPEE     = KRMC_SKIPEE
       OPT_SKIPEP     = KRMC_SKIPEP
       OPT_NOPFQ      = KRMC_NOPFQ
+      OPT_NOCI       = KRMC_NOCI
+C
+      DO I = 1, NOPTFLAGS
+         FLAG(I) = MCFLAG(I)
+      END DO
 C
 C     Set common block DCCOPT
 C
