@@ -34,6 +34,10 @@ C
 C#include "single.h"
 #ifdef REVLOG
 $Log$
+Revision 1.15  2003/12/10 09:50:25  tsaue
+tsaue: Modified JCO(IQM) to JCO(*) i routine BASLIB to avoid stop
+due to array bounds check
+
 Revision 1.14  2003/12/10 08:41:01  luuk
 LV: Bugfixes related to the renaming of common blocks that was done yesterday.
 Mainly insertion of the renamed block mx2orb.h in places where MAXORB is required.
@@ -5974,6 +5978,7 @@ C
 #include "inftap.h"
 #include "nuclei.h"
 #include "infdim.h"
+#include "mx2orb.h"
 #include "infvar.h"
 #include "inforb.h"
 #include "infopt.h"
@@ -6172,6 +6177,7 @@ C
       LOGICAL MCOK, TEST
       DIMENSION STPCAR(NCORD), WRK(LWRK)
 C
+#include "mx2orb.h"
 #include "infvar.h"
 C
       KSTPMC = 1
@@ -6253,6 +6259,7 @@ C
 #include "nuclei.h"
 #include "dorps.h"
 #include "anrinf.h"
+#include "mx2orb.h"
 #include "infvar.h"
 #include "infdim.h"
 #include "priunit.h"

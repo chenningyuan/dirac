@@ -62,12 +62,12 @@ C*     BASREF - documentation lines for basis set            *
 C*************************************************************
 C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
-     &                   CPRIMU, NBLOCK, ISGEN, KAOVEC, KPRIM, Q,
-     &                   ISET, DSM, BASREF)
+     &                   CPRIMU, NBLOCK, ISGEN, KAOVEC, KPRIM, 
+     &                   Q, ISET, DSM, BASREF)
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL SEG
-      DIMENSION JCO(IQM), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
+      DIMENSION JCO(*), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
      +          ALPHA(KPRIM, KAOVEC), CPRIMU(KPRIM, KPRIM, KAOVEC), 
      +          CPRIM(KPRIM,KPRIM, KAOVEC), ISGEN(KAOVEC)
 #include "cbirea.h"

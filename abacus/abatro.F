@@ -141,6 +141,7 @@ C
 #include "mxcent.h"
 #include "abainf.h"
 #include "cbitro.h"
+#include "mx2orb.h"
 #include "infinp.h"
 C
       IPRINT = IPRDEF
