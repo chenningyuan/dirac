@@ -287,7 +287,7 @@ endif
 # The rest
 #
 if ( "$COPY_FILES" != "" ) then
-   foreach file $COPY_FILES
+   foreach file ( $COPY_FILES )
       $_echo "   Copying $LOC/$file to working directory : \c"
       if ( -e $LOC/$file ) then
          cp $LOC/$file . || goto exit1
@@ -410,7 +410,7 @@ if ( $UTFCK ) then
    endif
 endif
 if ( "$GET_FILES" != "" ) then
-   foreach file $GET_FILES
+   foreach file ( $GET_FILES )
       $_echo "   Saving $WRK/$file : \c"
       if ( -e $WRK/$file ) then
          cp $WRK/$file $LOC
