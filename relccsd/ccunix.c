@@ -81,7 +81,8 @@ void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
           return;
         }
   cp=fname+strlen(fname)-1;
-  if (*cp==' ') { while (*cp--==' '); *(cp+2)=NULL; }
+ /*  if (*cp==' ') { while (*cp--==' '); *(cp+2)=NULL; }  */
+  if (*cp==' ') { while (*cp--==' '); *(cp+2)='\0'; }
   if (strlen(fname)-1>MAXLENGTH) fprintf(stderr,"openc: filename too int >15\n");
        /*  Get alternate file name from environment, 
            if it exists, use it, if not, use program supplied name 
@@ -118,7 +119,8 @@ void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
                           exit(1);
 }
   files[*unit].size= *size;
-  strncpy(files[*unit].fname,fname,14); *(files[*unit].fname+14)=NULL;
+  /* strncpy(files[*unit].fname,fname,14); *(files[*unit].fname+14)=NULL;  */
+  strncpy(files[*unit].fname,fname,14); *(files[*unit].fname+14)='\0';
   *size=(lseek64(files[*unit].fd,0L,2)+511)/512;
   files[*unit].addr= -1;
 
@@ -149,7 +151,7 @@ void wrabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 
   if (addr!=files[*unit].addr)
         if (lseek64(files[*unit].fd,addr,0)==-1)
-        { fprintf(stderr,"wrabs: Error in lseek64 of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,*p);
+        { fprintf(stderr,"wrabs: Error in lseek64 of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,p);
           files[*unit].addr= -1;
           MACRO_QUIT();
           return;
@@ -187,7 +189,7 @@ void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 
   if (addr!=files[*unit].addr)
         if (lseek64(files[*unit].fd,addr,0)==-1)
-        { fprintf(stderr,"rdabs: Error in lseek64 of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,*p);
+        { fprintf(stderr,"rdabs: Error in lseek64 of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,p);
           files[*unit].addr= -1;
           MACRO_QUIT();
           return;
@@ -214,7 +216,8 @@ void closec(unit) int *unit;
   if (files[*unit].fd)
         { close(files[*unit].fd);
           files[*unit].fd=files[*unit].addr=files[*unit].size=0;
-          *files[*unit].fname=NULL;
+          /* *files[*unit].fname=NULL; */
+          *files[*unit].fname='\0';
         }
   return;
 }
