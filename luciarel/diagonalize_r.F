@@ -712,7 +712,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
       end if
 *
       write(6,*)
-      write(6,*) ' Nuclear repulsion energy: ',EIGSHF
+      write(6,*) ' Nuclear repulsion + core energy: ',EIGSHF
 *
        IF( MAXVEC .LT. 2 * NROOT ) THEN
          WRITE(6,*) ' Sorry CMICDV wounded , MAXVEC .LT. 2*NROOT '
