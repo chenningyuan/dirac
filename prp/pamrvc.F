@@ -560,6 +560,7 @@ C     ********************************
 C     *** Generate FQT, FQX, H2XAC ***
 C     ********************************
 C
+#ifdef MOD_KRMC
       IF ( NASHT .GT. 1 ) THEN
          CALL MEMGET('REAL',KFQT,NCSIM * NASHT * NORBT * NZ,
      &        WORK,KFREE,LFREE)
@@ -598,12 +599,11 @@ C     *******************************************************
 C
 C
       IF ( NCSIM .GT. 0 ) THEN
-#ifdef MOD_KRMC
          CALL RSIGOC(SEVEC,SPVEC,WORK(KDVT),WORK(KF),WORK(KFQT),
      &        WORK(KZXOPE),NZXOPE,WORK(KZXOPP),NZXOPP,
      &        IBCVC,IBTYP,WORK(KFREE),LFREE)
-#endif /* MOD_KRMC */
       END IF
+#endif /* MOD_KRMC */
 C
 C
 C     *********************************************************
@@ -2798,6 +2798,7 @@ C                both the X(+) and the X(-) vectors to keep the paired structure
                END IF
             END IF
          ELSE
+#ifdef MOD_KRMC
 C
 C           **** KRMCSCF code **** (FKRMC is .true.)
 C
@@ -2825,6 +2826,7 @@ C              if less than a fraction (0.2) of convergence threshold.
      &                 D5*RNORM(I,IFREQ).LE.THCXRS) IVECS(IFREQ,I) = 0
                ENDDO
             ENDIF
+#endif /* MOD_KRMC */
          ENDIF
          WRITE(LUPRI,'(F15.8,1P,11(2X,E8.2))')
      &        EVALR(IFREQ),THCXRS,RTNORM,(RNORM(I,IFREQ),I=1,NVPAR)
@@ -3413,11 +3415,13 @@ C
      &               IOPT,WORK,KFREE,LFREE)
          CLOSE(LUBUF,STATUS='KEEP')
       ELSE
+#ifdef MOD_KRMC
 C
 C        We are doing a KRMCSCF opt. Read orbitals from KRMCSCF
 C
          JRDMO = 1
          CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+#endif /* MOD_KRMC */
       ENDIF
 C
 C     Print MO coefficients ?
@@ -5146,6 +5150,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrsappfq */
+#ifdef MOD_KRMC
       SUBROUTINE XRSAPPFQ(FQX,FX,DV,FQT,FVT,DVT,WORK,LWORK)
 C***********************************************************************
 C
@@ -5195,3 +5200,4 @@ C
       CALL QEXIT('XRSAPPFQ')
       RETURN
       END
+#endif /* MOD_KRMC */
