@@ -2911,7 +2911,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
           NOCTPA_S = NOCTYP(IASTP)
           NOCTPB_S = NOCTYP(IBSTP)
 *. Arrays giving allowed type combinations (of alpha and beta)
-      call memmar(KSIOIO,NOCTPA_S*NOCTPB_S,'ADDL  ',2,'SIOIO ')
+          call memmar(KSIOIO,NOCTPA_S*NOCTPB_S,'ADDL  ',2,'SIOIO ')
           CALL IAIBCM_REL(ISSPC,IASTP,IBSTP,WORK(KSIOIO))
 *. Arrays giving block type
           KSVST = 1
@@ -3476,9 +3476,10 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
 * Set undefined array to zero to avoid possible initialization 
 * crashes. (JEPPE: What is this array supposed for?) FIXME.
 * I assume no densities from frozen orbitals!
+      call isetvc(ISPOBEX_FRZ,IZERO,NSPOBEX_TP)
+*
       ONEM = -1.0D0
       IZERO = 0
-      call isetvc(ISPOBEX_FRZ,IZERO,NSPOBEX_TP)
 *
       NTESTL = 000
       NTEST = MAX(NTESTL,max(IPRS,IPRD))
@@ -3807,7 +3808,7 @@ C     CALL RMEMCHK
          DO ISM_CA = 1, NSMST
            ISM_CB = IDBGMULT(ISM_C,IADJSYM(ISM_CA))
            DO ISM_AA = 1, NSMST
-             ISM_AB =  IDBGMULT(ISM_A,IADJSYM(ISM_AA))
+          B  ISM_AGM=  IDBM_ULT(ISSYA,IADJAAM(ISM_  ))
 C?           WRITE(6,*) ' ISM_AB = ', ISM_AB
              LCA = NCA(ISM_CA)
              LCB = NCB(ISM_CB)
