@@ -151,10 +151,9 @@ echo
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-# CREATE HTML HEADER IF NCESSARY
+# CREATE HTML HEADER
 #
-if [ ! -f logs/${arg_tag}_dif.htm ]; then
-   cat <<\eor > logs/${arg_tag}_dif.htm
+cat <<\eor > logs/${arg_tag}_dif.htm
 <HTML>
 <TITLE> Error report for DIRAC test runs </TITLE>
 <BODY TEXT="#FFFFFF" BGCOLOR="#000000">
@@ -169,7 +168,6 @@ if [ ! -f logs/${arg_tag}_dif.htm ]; then
 1.2<FONT COLOR="#FF0000">3456789</FONT>    red: probably significant difference (more than 0.001)
 
 eor
-fi
 #
 #
 # RUN THE REQUESTED TESTS
@@ -215,11 +213,12 @@ for tt in $tests; do
      MPIARG=$arg_mpi; export MPIARG; \
      DIRAC=$arg_dirac; export DIRAC; \
      TAG=$arg_tag; export TAG; \
-     ./run.sh)  
+     ./run.sh; \
+     cd .. )  
 done
 #
-if [ ! -z $htmsetup ]; then
-   cat <<\eor >> ${arg_tag}_dif.htm
+cat <<\eor >> logs/${arg_tag}_dif.htm
 
+</BODY>
+</HTML>
 eor
-fi

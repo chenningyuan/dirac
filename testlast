@@ -36,7 +36,9 @@ usage='Usage: '$0'\n'\
 '--branch=BRANCH\n'\
 '\tBranch that is to be tested\n'\
 '--tests=TESTS\n'\
-'\tThe tests that should be run\n'
+'\tThe tests that should be run\n'\
+'--testdir=TESTDIR\n'\
+'\tDirectory in which the tests should be run\n'
 
 while [ $# != 0 ]; do
    arg="$1"; shift
@@ -85,16 +87,18 @@ while [ $# != 0 ]; do
    esac
 done
 #
-# Define the logfiles
+# Define the output and log files
 #
 if [  -z "$tests" ]; then
    run=default_test;
+   tests=short;
 else
    run=user_test;
 fi
 #
-makelog=make_log;
 cvslog=cvs_log;
+makelog=make_log;
+runlog=run_log;
 txtlog=${run}_dif.txt;
 htmlog=${run}_dif.htm;
 #
@@ -108,7 +112,7 @@ fi
 #
 echo " Saving old log files ..." 
 cd ${testdir}/logs;
-for i in $makelog $cvslog $txtlog $htmlog ; do
+for i in $makelog $cvslog $runlog $txtlog $htmlog ; do
     if [ -f "${i}" ]; then
         if [ -f "${i}.6" ]; then mv -f "${i}.6" "${i}.7"; fi
         if [ -f "${i}.5" ]; then mv -f "${i}.5" "${i}.6"; fi
@@ -124,17 +128,33 @@ cd ${pampath};
 #
 if [  -z "$branch" ]; then 
    echo ' Starting CVS Update ... ' ;
-   cvs update -P -d >& ${testdir}/logs/$cvslog || ( echo " CVS update failed"; exit 1 ) ;
+   cvs update -P -d > ${testdir}/logs/$cvslog 2>&1 || \
+{ echo " CVS update failed" ; \
+  echo " now we are here" ; \
+  exit 1 ;\
+}
 else
    echo " Switching working copy to branch $branch and updating ..."
-   cvs update -P -d -r $branch >& ${testdir}/logs/$cvslog || ( echo " CVS update failed"; exit 1 ) ;
+   cvs update -P -d -r $branch > ${testdir}/logs/$cvslog 2>&1 || \
+{ echo " CVS update failed" ; \
+  echo " Please check the logfile ${testdir}/logs/$cvslog" ; \
+  exit 1 ;\
+}
 fi
 #
 echo ' Recompiling ... '
-make >& ${testdir}/logs/$makelog || ( echo " Make failed"; exit 1 ) ;
+make > ${testdir}/logs/$makelog 2>&1 || \
+{ echo " Make failed" ; \
+  echo " Please check the logfile ${testdir}/logs/$makelog" ; \
+  exit 1 ;\
+}
 echo ' Starting test calculations ... '
 cd ${testdir};
-./runtest --tests=short --pampath=$pampath --dirac=$dirac --run=$run || ( echo " runtest failed"; exit 1 ; ) ;
+./runtest --tests=$tests --pampath=$pampath --dirac=$dirac --run=$run > ${testdir}/logs/$runlog 2>&1 || \
+{ echo " Make failed" ; \
+  echo " Please check the logfile ${testdir}/logs/$runlog" ; \
+  exit 1 ;\
+}
 #
 # The tests are default run interactively on the same machine as the cvs and make command is run. I have not
 # attempted to make a generic batch script as batch environments vary wildly. The lines below work on

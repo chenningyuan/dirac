@@ -21,8 +21,13 @@ fi
 if [ -z "$TAG" ]; then
    TAG=out
 fi
-NEWOUT=${MENU}_${MOL}.${TAG}
-OLDOUT=${MENU}_${MOL}.out 
+if [ "$MOL" = "$MENU" ]; then
+   NEWOUT=${MENU}.${TAG}
+   OLDOUT=${MENU}.out 
+else
+   NEWOUT=${MENU}_${MOL}.${TAG}
+   OLDOUT=${MENU}_${MOL}.out 
+fi
 #
 # Run calculation (pass on additional arguments for pam that are supplied by the caller)
 #
