@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : diropen.F
+C SOURCE  : $Source$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKMOFK */
       SUBROUTINE MKMOFK(FMO,FAO,DMAT,TMAT,CMO,SMOAO,DTEMP1,DTEMP2,
@@ -307,7 +313,7 @@ C
 C     Get AO overlap matrix
 C
       CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
-      CALL GTOVLP(WORK(KSAO),SSMTRC,WORK(KFREE),LFREE)
+      CALL GTOVLX(WORK(KSAO),SSMTRC,WORK(KFREE),LFREE)
 C
       IOFF = 1
       DO I = 1,NFSYM
