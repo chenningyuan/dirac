@@ -1628,7 +1628,7 @@ C
               KAOVEC = KBLOCK + 1 - IBLOCK(ISET)
               CALL FAMBAS(LUINFO,IQM(I,ISET),JCO(1,I,ISET),
      &             NUC(IBLOCK(ISET),ISET),
-     &             NRC(IBLOCK(1),ISET),SEG(IBLOCK(ISET),ISET),
+     &             NRC(IBLOCK(ISET),ISET),SEG(IBLOCK(ISET),ISET),
      &             ALPHA(1,IBLOCK(ISET),ISET),
      &             CPRIM(1,1,IBLOCK(ISET),ISET),
      &             CPRIMU(1,1,IBLOCK(ISET),ISET),
@@ -2137,9 +2137,11 @@ C
      &                   'L  - ',TSTRING(1)
                   WRITE(LUPRI,'(23X,2I8,6X,2A)')
      &                  NPRIM(2),NBAS(2),'S  - ',TSTRING(2)
-                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
+                  IF (NPRIM(3).GT.0)
+     &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
      &                  NPRIM(3),NBAS(3),'FL - ',TSTRING(3)
-                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
+                  IF (NPRIM(4).GT.0)
+     &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
      &                  NPRIM(4),NBAS(4),'FS - ',TSTRING(4)
                ELSE
                   WRITE (LUPRI,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
