@@ -2467,9 +2467,9 @@ C  /* Deck bcktra */
      &                  NVEC,JVEC,NBAS,TMAT,LR1,LC1,NZT,IPRINT)
 C*****************************************************************************
 C
-C     PURPOSE:
+C     PURPOSE: Transform vectors (basis) from one-representation to the other
 C
-C     METHOD:
+C     METHOD: Uses blas routine QGEMM
 C
 C     INPUT:
 C	NORB - number of vectors to be tranformed
@@ -2488,22 +2488,25 @@ C
 #include "dgroup.h"
       DIMENSION COFU(LRU,LCU,NZC),COFT(LRT,LCT,NZC),
      &          TMAT(LR1,LC1,NZT)
+
+C   ...Define internal print level 
+      IBPRNT = 12 
 C
       IF(NVEC.EQ.0) RETURN
-      IF(IPRINT.GE.5) THEN
-        CALL HEADER('BCKTRA:Nontransformed coefficients',-1)
+      IF(IPRINT.GE.IBPRNT) THEN
+        CALL HEADER('BCKTRA: Nontransformed coefficients',-1)
         WRITE(LUPRI,'(2(3X,A,I5))')
      +    'Start index: ',JVEC,'No. of vectors:',NVEC
         CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZC,IPQTOQ(1,0),LUPRI)
-        CALL HEADER('BCKTRA:Transformation matrix:',-1)
+        CALL HEADER('BCKTRA: Transformation matrix:',-1)
         CALL PRQMAT(TMAT,NBAS,NORB,LR1,LC1,NZT,IPQTOQ(1,0),LUPRI)
       ENDIF
       CALL QGEMM(NBAS,NVEC,NORB,D1,
      &           'N','N',IPQTOQ(1,0),TMAT,LR1,LC1,NZT,
      &           'N','N',IPQTOQ(1,0),COFU(1,JVEC,1),LRU,LCU,NZC,
      &                D0,IPQTOQ(1,0),COFT,LRT,LCT,NZC)
-      IF(IPRINT.GE.5) THEN
-        CALL HEADER('BCKTRA:Backtransformed coefficients',-1)
+      IF(IPRINT.GE.IBPRNT) THEN
+        CALL HEADER('BCKTRA: Backtransformed coefficients',-1)
         WRITE(LUPRI,'(2(3X,A,I5))')
      +    'Start index: ',JVEC,'No. of vectors:',NVEC
         CALL PRQMAT(COFT,NBAS,NVEC,LRT,LCT,NZC,IPQTOQ(1,0),LUPRI)
