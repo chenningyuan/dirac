@@ -658,6 +658,7 @@ C
      &        (FREP(I),(NFBAS(I,J),J=0,2),I = 1,NFSYM)
       ENDIF
 C
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -703,6 +704,7 @@ C
      &        (FREP(I),(NFBAS(I,J),J=0,2),I = 1,NFSYM)
       ENDIF
 C
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
