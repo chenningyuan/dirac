@@ -206,11 +206,33 @@ C
       CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,WORK,KFREE,LFREE,IPRINT)
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
+C     Hermicity of operator
+C     =====================
+C
+      ITIM = IPRPTIM(INDXPR)
+      IREP = IPRPSYM(INDXPR) - 1
+      IQ   = IPQTOQ(1,IREP)
+      IH   = IHQMAT(IQ,ITIM)
+C
+C
+C
 C     Construct gradient - electronic part
 C     ====================================
 C
+      KFRSAV = KFREE
+      IF (NASHT .GT. 0) THEN
+         CALL MEMGET('REAL',KDV,N2ASHT*NZ,WORK,KFREE,LFREE)
+         CALL GETMAT('DVMO',WORK(KDV),IPRINT,WORK(KFREE),LFREE)
+      ELSE
+         CALL MEMGET('REAL',KDV,0,WORK,KFREE,LFREE)
+      END IF
       IF(NXOPE.GT.0) THEN
-        CALL XOPGAT(GPOE,JXOPE,NXOPE,PRPMO,NORBT,NZ)
+C
+C
+        CALL DZERO(GPOE,NZ*NXOPE)
+        CALL PRPORB(GPOE,JXOPE,NXOPE,PRPMO,NORBT,WORK(KDV),NZ,IH)
+
+c       no scaling
         CALL DSCAL(NZ*NXOPE,DM1,GPOE,1)
       ENDIF
 C
@@ -218,9 +240,12 @@ C     Construct gradient - positronic part
 C     ====================================
 C
       IF(NXOPP.GT.0) THEN
-        CALL XOPGAT(GPOP,JXOPP,NXOPP,PRPMO,NORBT,NZ)
+         CALL DZERO(GPOP,NZ*NXOPP)
+        CALL PRPORB(GPOP,JXOPP,NXOPP,PRPMO,NORBT,WORK(KDV),NZ,IH)
+c       no scaling
         CALL DSCAL(NZ*NXOPP,DM1,GPOP,1)
       ENDIF
+      CALL MEMREL('GRDOR1',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C     Print section
 C     =============
@@ -561,7 +586,7 @@ C
       DIMENSION GPO(*),PRPMO(NORBT,NORBT,NZ),CMO(*),
      &          JXOP(NXOP),WORK(*)
 C
-      CALL QENTER('GRDOR1')
+      CALL QENTER('GPOGET')
 C
 C     Get property matrix and scale by factor -1
 C     ==========================================
@@ -577,8 +602,124 @@ C
 #endif
       CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,WORK,KFREE,LFREE,IPRINT)
       CLOSE(LU1INT,STATUS = 'KEEP')
-      CALL XOPGAT(GPO,JXOP,NXOP,PRPMO,NORBT,NZ)
+C
+C     Hermicity of operator
+C     =====================
+C
+      ITIM = IPRPTIM(INDXPR)
+      IREP = IPRPSYM(INDXPR) - 1
+      IQ   = IPQTOQ(1,IREP)
+      IH   = IHQMAT(IQ,ITIM)
+C
+C
+C
+C     Construct gradient - electronic part
+C     ====================================
+C
+      KFRSAV = KFREE
+      IF (NASHT .GT. 0) THEN
+         CALL MEMGET('REAL',KDV,N2ASHT*NZ,WORK,KFREE,LFREE)
+         CALL GETMAT('DVMO',WORK(KDV),IPRINT,WORK(KFREE),LFREE)
+      ELSE
+         CALL MEMGET('REAL',KDV,0,WORK,KFREE,LFREE)
+      END IF
+      CALL DZERO(GPO,NZ*NXOP)
+      CALL PRPORB(GPO,JXOP,NXOP,PRPMO,NORBT,WORK(KDV),NZ,IH)
+C
+      CALL MEMREL('GPOGET',WORK,1,KFRSAV,KFREE,LFREE)
+c       no scaling
       CALL DSCAL(NZ*NXOP,DM1,GPO,1)
-      CALL QEXIT ('GRDOR1')
+      CALL QEXIT ('GPOGET')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prporb */
+      SUBROUTINE PRPORB(QVEC,JXOP,NXOP,QMAT,NDIM,DV,NZ,IH)
+C*****************************************************************************
+C
+C     Construct 1-eletron property gradient
+C
+C     Input:
+C        JXOP    - list of orbital rotations
+C        QMAT    - one-electron property matrix
+C        UDV     - active density matrix (symmetry packed)
+C        IH      - hermicity
+C           IH = 1: g(k,l) = sum_m Dlq Qkq - ( sum_m Dmk Qml )^*
+C           IH = 2: g(k,l) = sum_m Dlq Qkq + ( sum_m Dmk Qml )^*
+C
+C     Written by J. Thyssen May 7 1999
+C     Last revision 
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      PARAMETER ( D2 = 2.0D00, D1 = 1.0D00, DM1 = -1.0D00 )
+C
+#include <dcborb.h>
+C
+      DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ),
+     &          DV(*)
+C
+C
+      IF (IH .EQ. 1) THEN
+         DS = D1
+      ELSE IF (IH. EQ. 2) THEN
+         DS = DM1
+      END IF
+C
+      DO IG = 1,NXOP
+         K = JXOP(1,IG)
+         L = JXOP(2,IG)
+         CALL IOBTYP(K,ITYPK,ISYMK)
+         CALL IOBTYP(L,ITYPL,ISYML)
+C
+C        First index:
+C
+         IF (ITYPK .EQ. 2) THEN
+C
+C        ...inactive
+C
+            QVEC(IG,1) = QVEC(IG,1) + D2 * QMAT(L,K,1)
+            DO IZ = 2,NZ
+               QVEC(IG,IZ) = QVEC(IG,IZ) - D2 * QMAT(L,K,IZ)
+            END DO
+C
+         ELSE IF (ITYPK .EQ. 3) THEN
+C
+C        ...active
+C
+            KDV = K - (NPSH(ISYMK) + NISH(ISYMK)) - IORB(ISYMK)
+            JDV = I2ASHT(ISYMK) + (KDV-1)*NASH(ISYMK) + 1
+            QVEC(IG,1) = QVEC(IG,1) 
+     &         + DDOT(NASH(ISYMK),DV(JDV),1,QMAT(L,K,1),1)
+            DO IZ = 2,NZ
+               JDV = JDV + N2ASH(ISYMK)
+               QVEC(IG,IZ) = QVEC(IG,IZ) 
+     &            - DDOT(NASH(ISYMK),DV(JDV),1,QMAT(L,K,IZ),1)
+            END DO
+C
+         END IF
+C
+C        Second index:
+C
+         IF (ITYPL .EQ. 3) THEN
+C
+C           ...active
+C
+            KDV = L - (NPSH(ISYML) + NISH(ISYML)) - IORB(ISYML)
+            JDV = I2ASHT(ISYML) + (KDV-1)*NASH(ISYML) + 1
+            QVEC(IG,1) = QVEC(IG,1) 
+     &         - DS * DDOT(NASH(ISYML),DV(JDV),1,QMAT(K,L,1),1)
+            DO IZ = 2,NZ
+               JDV = JDV + N2ASH(ISYML)
+               QVEC(IG,IZ) = QVEC(IG,IZ) 
+     &            - DS * DDOT(NASH(ISYML),DV(JDV),1,QMAT(K,L,IZ),1)
+            END DO
+C
+         END IF
+C
+
+      END DO
       RETURN
       END

@@ -431,10 +431,10 @@ C
 #include <pgroup.h>
 #include <dcbxpr.h>
 C
-      LOGICAL SET, NEWDEF,ORBDEF(3), RESET
+      LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
      &          MXFORM*6,FMT*6
-      DIMENSION WORK(LWORK),IR(2,2),NR(2)
+      DIMENSION WORK(LWORK)
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.A OPER','.B OPER','.OPERAT',
@@ -493,13 +493,15 @@ C
       LSFG(2)    = .TRUE.
       XLRNRM     = .FALSE.
       XLRDIH     = .TRUE.
-      ORBDEF(1)  = .TRUE.
-      ORBDEF(2)  = .TRUE.
-      ORBDEF(3)  = .TRUE.
       TRIAB      = .FALSE.
       XVCFIL     = 'NORXVC'
       ORBXLR     = .FALSE.
       XSTERN     = .FALSE.
+      DO I = 1,NFSYM
+         XLR_INDSTR(2,I) = ''
+         XLR_INDSTR(1,I) = ''
+         XLR_INDSTR(3,I) = ''
+      ENDDO
 C
 C     Initialize user-defined linear response properties
 C     ==================================================
@@ -641,21 +643,18 @@ C&&&& OCCUP: String of inactive orbitals in XLR module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') XLR_INDSTR(1,I)
                   ENDDO
-                  ORBDEF(1) = .FALSE.
                GO TO 100
  18            CONTINUE
 C&&&& VIRTUA: String of secondary orbitals in XLR module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') XLR_INDSTR(3,I)
                   ENDDO
-                  ORBDEF(3) = .FALSE.
                GO TO 100
  19            CONTINUE
 C&&&& ACTIVE: String of active orbitals in XLR module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') XLR_INDSTR(2,I)
                   ENDDO
-                  ORBDEF(2) = .FALSE.
                GO TO 100
  20            CONTINUE
 C&&&& COMPRESS: Compress number of orbital variations by checking 
@@ -715,72 +714,6 @@ C
       MAXRM  = 2*MXREDZ
       IF(QEDRUN) SKIPEP = .FALSE.      
 C
-C     Initialize orbital strings, if undefined
-C
-      IF(ORBDEF(1)) THEN
-        DO I = 1,NFSYM
-          XLR_INDSTR(1,I) = ' '
-          IF(NISH(I).GT.0) THEN
-            IF(NISH(I).EQ.1) THEN
-              WRITE(XLR_INDSTR(1,I),'(I4)') 1
-            ELSE
-              WRITE(XLR_INDSTR(1,I),'(I4,A2,I4)') 1,'..',NISH(I)
-            ENDIF
-          ENDIF
-        ENDDO
-      ENDIF
-      IF(ORBDEF(2)) THEN
-        DO I = 1,NFSYM
-          XLR_INDSTR(2,I) = ' '
-          IF(NASH(I).GT.0) THEN
-            IF(NASH(I).EQ.1) THEN
-              WRITE(XLR_INDSTR(1,I),'(I4)') NISH(I)+1
-            ELSE
-              WRITE(XLR_INDSTR(1,I),'(I4,A2,I4)') 
-     &          NISH(I)+1,'..',NISH(I)+NASH(I)
-            ENDIF
-          ENDIF
-        ENDDO
-      ENDIF
-      IF(ORBDEF(3)) THEN
-        IF(SKIPEP.AND.SKIPEE) THEN
-          DO I = 1,NFSYM
-            XLR_INDSTR(3,I) = ' '
-          ENDDO
-        ELSEIF(SKIPEP) THEN
-          DO I = 1,NFSYM
-            XLR_INDSTR(3,I) = ' '
-            IF(NFBAS(I,1).GT.NOCC(I)) THEN
-              IF((NFBAS(I,1)-NOCC(I)).EQ.1) THEN
-                WRITE(XLR_INDSTR(3,I),'(I4)') NFBAS(I,1)
-              ELSE
-                WRITE(XLR_INDSTR(3,I),'(I4,A2,I4)') 
-     &             NOCC(I)+1,'..',NFBAS(I,1)
-              ENDIF
-            ENDIF
-          ENDDO
-        ELSEIF(SKIPEE) THEN
-          DO I = 1,NFSYM
-            XLR_INDSTR(3,I) = ' '
-            WRITE(XLR_INDSTR(3,I),'(I4,A2,I4)') 
-     &          -NFBAS(I,2),'..',-1
-          ENDDO
-        ELSE
-          DO I = 1,NFSYM
-            XLR_INDSTR(3,I) = ' '
-            IF(NFBAS(I,1).GT.NOCC(I)) THEN
-              IF((NFBAS(I,1)-NOCC(I)).EQ.1) THEN
-                WRITE(XLR_INDSTR(3,I),'(I4,A2,I4,A1,I4)') 
-     &          -NFBAS(I,2),'..',-1,',',NFBAS(I,1)
-              ELSE
-                WRITE(XLR_INDSTR(3,I),'(I4,A2,I4,A1,I4,A2,I4)') 
-     &           -NFBAS(I,2),'..',-1,',',NOCC(I)+1,'..',NFBAS(I,1)
-              ENDIF
-            ENDIF
-          ENDDO
-        ENDIF
-      ENDIF
-C
 C     Print section
 C     =============
 C      
@@ -814,65 +747,6 @@ C
         WRITE(LUPRI,'(4X,A)') 
      &    '* Approximating diagonal Hessian for ep-rotations by -2mc^2'
       ENDIF
-C
-C      Definition of orbital classes
-C      -----------------------------
-C
-      WRITE(LUPRI,'(4X,A)') '* Orbital classes:'
-      DO I = 1,NFSYM
-        IF(SKIPEP) THEN
-          NR(I)   = NFBAS(I,1)
-          IR(1,I) = 1
-          IR(2,I) = NFBAS(I,1)
-        ELSE
-          NR(I)   =  NFBAS(I,0)
-          IR(1,I) = -NFBAS(I,2)
-          IR(2,I) =  NFBAS(I,1)
-        ENDIF
-        WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
-C
-C       Inactive orbitals
-C       -----------------
-C
-        NVEC = 0
-        CALL  NUMLST(XLR_INDSTR(1,I),IDUMMY,NR(I),
-     &             IR(1,I),IR(2,I),NVEC,WORK,LWORK)
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') 
-     &       '- Inactive orbitals : No electrons'
-        ELSE
-          WRITE(LUPRI,'(4X,A,A72)') 
-     &       '- Inactive orbitals : ', XLR_INDSTR(1,I)
-        ENDIF
-C
-C       Active orbitals
-C       ---------------
-C
-        NVEC = 0
-        CALL  NUMLST(XLR_INDSTR(2,I),IDUMMY,NR(I),
-     &             IR(1,I),IR(2,I),NVEC,WORK,LWORK)
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') 
-     &       '- Active orbitals : No electrons'
-        ELSE
-          WRITE(LUPRI,'(4X,A,A72)') 
-     &       '- Active orbitals : ', XLR_INDSTR(2,I)
-        ENDIF
-C
-C       Secondary orbitals
-C       ------------------
-C
-        NVEC = 0
-        CALL  NUMLST(XLR_INDSTR(3,I),IDUMMY,NR(I),
-     &            IR(1,I),IR(2,I),NVEC,WORK,LWORK)
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') 
-     &       '- Secondary orbitals : No electrons'
-        ELSE
-          WRITE(LUPRI,'(4X,A,A72)') 
-     &       '- Secondary orbitals : ', XLR_INDSTR(3,I)
-        ENDIF
-      ENDDO
       IF(SKIPEE) THEN
         WRITE(LUPRI,'(1X,A)') 
      &     '* NB!!! No e-e rotations'
@@ -1108,9 +982,132 @@ C
 #include <dcbxrs.h>
 C
       LOGICAL TOBE
-      DIMENSION WORK(*)
+      DIMENSION WORK(*),IR(2,2),NR(2)
       CALL QENTER('SETXLR')
       KFRSAV = KFREE
+C
+C     ************************************
+C     *** Set orbital strings          ***
+C     ************************************
+C
+C
+C     Inactive orbitals...
+C
+      DO I = 1,NFSYM
+         XLR_INDSTR(1,I) = ' '
+         IF (NISH(I).GT.0) THEN
+            WRITE(XLR_INDSTR(1,I),'(I4,A2,I4)') 1,'..',NISH(I)
+         ENDIF
+      ENDDO
+C
+C     Inactive orbitals...
+C
+      DO I = 1,NFSYM
+         XLR_INDSTR(2,I) = ' '
+         IF (NASH(I).GT.0) THEN
+            WRITE(XLR_INDSTR(2,I),'(I4,A2,I4)')
+     &            NISH(I)+1,'..',NISH(I)+NASH(I)
+         ENDIF
+      ENDDO
+C
+C     Secondary orbitals...
+C
+      IF (SKIPEP.AND.SKIPEE) THEN
+         DO I = 1,NFSYM
+            XLR_INDSTR(3,I) = ' '
+         ENDDO
+      ELSEIF (SKIPEP) THEN
+         DO I = 1,NFSYM
+            XLR_INDSTR(3,I) = ' '
+            IF (NSSH(I).GT.0) THEN
+               WRITE(XLR_INDSTR(3,I),'(I4,A2,I4)')
+     &               NOCC(I)+1,'..',NESH(I)
+            ENDIF
+         ENDDO
+      ELSEIF (SKIPEE) THEN
+         DO I = 1,NFSYM
+            XLR_INDSTR(3,I) = ' '
+            WRITE(XLR_INDSTR(3,I),'(I4,A2,I4)')
+     &          -NPSH(I),'..',-1
+         ENDDO
+      ELSE
+         DO I = 1,NFSYM
+            XLR_INDSTR(3,I) = ' '
+            IF (NSSH(I).GT.0) THEN
+               IF (NPSH(I) .GT. 0) THEN
+                  WRITE(XLR_INDSTR(3,I),'(I4,A5,I4,A2,I4)')
+     &                  -NPSH(I),'..-1,',NOCC(I)+1,'..',NESH(I)
+               ELSE
+                  WRITE(XLR_INDSTR(3,I),'(I4,A2,I4)')
+     &                  NOCC(I)+1,'..',NESH(I)
+               END IF
+            ELSE
+               IF (NPSH(I) .GT. 0) THEN
+                  WRITE(XLR_INDSTR(3,I),'(I4,A2)') -NPSH(I),'..-1'
+               END IF
+            END IF
+         ENDDO
+      ENDIF
+C
+C
+C      Definition of orbital classes
+C      -----------------------------
+C
+      WRITE(LUPRI,'(4X,A)') '* Orbital classes:'
+      DO I = 1,NFSYM
+        IF(SKIPEP) THEN
+          NR(I)   = NESH(I)
+          IR(1,I) = 1
+          IR(2,I) = NESH(I)
+        ELSE
+          NR(I)   =  NORB(I)
+          IR(1,I) = -NPSH(I)
+          IR(2,I) =  NESH(I)
+        ENDIF
+        WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
+C
+C       Inactive orbitals
+C       -----------------
+C
+        NVEC = 0
+        CALL  NUMLST(XLR_INDSTR(1,I),IDUMMY,NR(I),
+     &             IR(1,I),IR(2,I),NVEC,WORK(KFREE),LFREE)
+        IF(NVEC.EQ.0) THEN
+          WRITE(LUPRI,'(4X,A)') 
+     &       '- Inactive orbitals : No electrons'
+        ELSE
+          WRITE(LUPRI,'(4X,A,A56)') 
+     &       '- Inactive orbitals : ', XLR_INDSTR(1,I)
+        ENDIF
+C
+C       Active orbitals
+C       ---------------
+C
+        NVEC = 0
+        CALL  NUMLST(XLR_INDSTR(2,I),IDUMMY,NR(I),
+     &             IR(1,I),IR(2,I),NVEC,WORK(KFREE),LFREE)
+        IF(NVEC.EQ.0) THEN
+          WRITE(LUPRI,'(4X,A)') 
+     &       '- Active orbitals : No electrons'
+        ELSE
+          WRITE(LUPRI,'(4X,A,A56)') 
+     &       '- Active orbitals : ', XLR_INDSTR(2,I)
+        ENDIF
+C
+C       Secondary orbitals
+C       ------------------
+C
+        NVEC = 0
+        CALL  NUMLST(XLR_INDSTR(3,I),IDUMMY,NR(I),
+     &            IR(1,I),IR(2,I),NVEC,WORK(KFREE),LFREE)
+        IF(NVEC.EQ.0) THEN
+          WRITE(LUPRI,'(4X,A)') 
+     &       '- Secondary orbitals : No electrons'
+        ELSE
+          WRITE(LUPRI,'(4X,A,A56)') 
+     &       '- Secondary orbitals : ', XLR_INDSTR(3,I)
+        ENDIF
+      ENDDO
 C
 C     ************************************
 C     *** Sort operators on symmetries ***
@@ -1313,7 +1310,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D4 = 4.0D0,D0 = 0.0D0,DM4 = -4.0D0)
+      PARAMETER(D4 = 4.0D0,D0 = 0.0D0,DM4 = -4.0D0, D2 = 2.0D00)
 C
 #include <dcbibn.h>
 #include <dcbxrs.h>
@@ -1397,7 +1394,8 @@ C
 C     Print section
 C     -------------
 C
-      IF(IPRXLR.GE.10) THEN
+Cjth   IF(IPRXLR.GE.10) THEN
+      IF(IPRXLR.GE.3) THEN
         WRITE(LUPRI,'(/1X,A1,3A,I3,A)') TYP,'-type X(',TTYPXV(IROUND),
      &    ') part of solution vectors for',NFREQ,' frequencies:'
         CALL PRBVEC(LUPRI,XPO,NFREQ,NXPAR)
@@ -1434,7 +1432,7 @@ C         ----------------------------
 C
           DO IFREQ = 1,NFREQ
             IF (KTIMOP .EQ. ITIM) ABLRF(IFREQ,INDAP,INDBP,1)  =
-     &        D4*DDOT(NBDIM,GPO,1,XPO(1,1,IFREQ),1)
+     &        D2*DDOT(NBDIM,GPO,1,XPO(1,1,IFREQ),1)
             IF(IPRXLR.GE.2) THEN
               FREQ = EVALR(IFREQ)
               WRITE(LUPRI,1000) 

@@ -14,7 +14,7 @@ C...
 C...   In particular, no part of the source code or compiled modules may 
 C...   be distributed outside the research group of the licence holder. 
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
+C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence. 
 C...
@@ -48,6 +48,7 @@ C     Ordering is:
 C       e-e rotations: (skipped if SKIPEE = T)
 C          IA : inactive-active   
 C          IS : inactive-secondary
+C          AB : active-active
 C          AS : active-secondary
 C       e-p rotations: (skipped if SKIPEP = T)
 C          IP : inactive-positronic
@@ -119,6 +120,11 @@ C
       CALL MEMGET('INTE',KXOPP,2*NXOPP,WORK,KFREE,LFREE)
 C
  30   CONTINUE
+C
+C     Set IMOTYP from dcbitypmo.h (type and symmetry of MO orbitals)
+C
+      CALL SET_ITYPMO(WORK(KIBUF),NSTR,IPRINT)
+C
       CALL QEXIT('SETXOP')
       RETURN
       END
@@ -186,12 +192,26 @@ C       Inactive-secondary elements
 C       ===========================
 C
  200    CONTINUE
-        IF (NIND(2,1,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 300
+        IF (NIND(2,1,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 250
         DO IN = ISTI,IENDI
           DO JS = JSTS,JENDS
             NXOPE          = NXOPE + 1
             JXOPE(1,NXOPE) = IND(IN,1,ISYM)
             JXOPE(2,NXOPE) = IND(JS,3,JSYM)
+          ENDDO
+        ENDDO
+C
+C       Active-active elements
+C       ===========================
+C
+ 250    CONTINUE
+        GOTO 300
+        IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 300
+        DO IA = ISTA,IENDA
+          DO JA = JSTA,JENDA
+            NXOPE          = NXOPE + 1
+            JXOPE(1,NXOPE) = IND(IA,2,ISYM)
+            JXOPE(2,NXOPE) = IND(JA,2,JSYM)
           ENDDO
         ENDDO
 C
@@ -203,7 +223,7 @@ C
         DO IA = ISTA,IENDA
           DO JS = JSTS,JENDS
             NXOPE          = NXOPE+1
-            JXOPE(1,NXOPE) = IND(IN,2,ISYM)
+            JXOPE(1,NXOPE) = IND(IA,2,ISYM)
             JXOPE(2,NXOPE) = IND(JS,3,JSYM)
           ENDDO
         ENDDO
@@ -273,7 +293,7 @@ C
         DO IA = ISTA,IENDA
           DO JP = 1,NIND(1,3,JSYM)
             NXOPP          = NXOPP+1
-            JXOPP(1,NXOPP) = IND(IA,1,ISYM)
+            JXOPP(1,NXOPP) = IND(IA,2,ISYM)
             JXOPP(2,NXOPP) = IND(JP,3,JSYM)
           ENDDO
         ENDDO
@@ -338,27 +358,44 @@ C
       INQUIRE(FILE='PAMFCK',EXIST=TOBE)
       IF(TOBE) THEN
         CALL OPNFIL(LUBUF,'PAMFCK','OLD','GETFC1')
+C
+C       Read FCmo and FVmo
+C
         CALL READT(LUBUF,N2ORBXQ,FMO)
+        IF (NASHT .GT. 0)
+     &     CALL READT(LUBUF,N2ORBXQ,FMO(1+N2ORBXQ))
         CLOSE(LUBUF,STATUS='KEEP')
       ELSE
-        CALL MEMGET('REAL',KFAO,N2BBASXQ,WORK,KFREE,LFREE)      
-        CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
 C
-        CALL GETFC1(FMO,WORK(KFAO),WORK(KCMO),
-     &            IPRINT,WORK,KFREE,LFREE)
+         IF (NASHT .EQ. 0) THEN
+            CALL MEMGET('REAL',KFAO,N2BBASXQ,WORK,KFREE,LFREE)      
+         ELSE
+            CALL MEMGET('REAL',KFAO,2*N2BBASXQ,WORK,KFREE,LFREE)      
+         END IF
+         CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
 C
-        CALL OPNFIL(LUBUF,'PAMFCK','NEW','GETFC1')
-        CALL WRITT(LUBUF,N2ORBXQ,FMO)
-        CLOSE(LUBUF,STATUS='KEEP')
-        CALL MEMREL('GETFCK',WORK,1,KFRSAV,KFREE,LFREE)
+         CALL GETFC1(FMO,WORK(KFAO),WORK(KCMO),
+     &             IPRINT,WORK,KFREE,LFREE)
+C
+         CALL OPNFIL(LUBUF,'PAMFCK','NEW','GETFC1')
+         CALL WRITT(LUBUF,N2ORBXQ,FMO)
+         IF (NASHT .GT. 0) 
+     &      CALL WRITT(LUBUF,N2ORBXQ,FMO(1+N2ORBXQ))
+         CLOSE(LUBUF,STATUS='KEEP')
+         CALL MEMREL('GETFCK',WORK,1,KFRSAV,KFREE,LFREE)
       ENDIF
 C
 C     Print section
 C
       IF(IPRINT.GE.5) THEN
-          CALL HEADER('GETFCK:Total Fock matrix in MO-basis',-1)
+          CALL HEADER('GETFCK:Fock (FCmo) matrix in MO-basis',-1)
           CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,
      &                NZ,IPQTOQ(1,0),LUPRI)
+          IF (NASHT .GT. 0) THEN
+             CALL HEADER('GETFCK:Fock (FVmo) matrix in MO-basis',-1)
+             CALL PRQMAT(FMO(1+N2ORBXQ),NORBT,NORBT,NORBT,NORBT,
+     &                   NZ,IPQTOQ(1,0),LUPRI)
+          END IF
       ENDIF
 C
       CALL QEXIT('GETFCK')
@@ -378,7 +415,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <aovec.h>
 #include <mxorb.h>
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00)
 C
 #include <dcbgen.h>
 #include <dcbfir.h>
@@ -404,6 +441,8 @@ C
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETFC1')
       CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IDUM,TOTERG,4)
       CLOSE(LUBUF,STATUS='KEEP')
+      NFMAT = 1
+      IF (NASHT .GT. 0) NFMAT = 2
 C
 C     1. Get two-electron Fock matrix in AO-basis
 C     ===========================================
@@ -411,7 +450,11 @@ C
       INQUIRE(FILE='DFFCK2',EXIST=TOBE)   
       IF(TOBE) THEN
         CALL OPNFIL(LUBUF,'DFFCK2','OLD','GETFC1')
-        CALL REAFCK(LUBUF,FMO,.TRUE.,1)
+        IF (NASHT .EQ. 0) THEN
+           CALL REAFCK(LUBUF,FMO,.TRUE.,1)
+         ELSE
+           CALL REAFCK(LUBUF,FMO,.TRUE.,2)
+         END IF
         CLOSE(LUBUF,STATUS='KEEP')
       ELSE
         WRITE(LUPRI,'(A)')
@@ -430,24 +473,30 @@ C
         ENDIF
         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 C
-C       Closed shell Hartree - Fock
-C       ===========================
+C       Closed shell Hartree - Fock or open shell Hartree-Fock
+C       ======================================================
 CTROND: This must be generalized !!!
-        NFMAT = 1
-C       Totally symmetric operator
-        ISYMOP(1) = 1
-C       Fock matrix type
-        IFCKOP(1) = 1
-C       Hermitian operator
-        IHRMOP(1) = 1
+C       Consider it done...
+        DO IMAT = 1,NFMAT
+C          Totally symmetric operator
+           ISYMOP(IMAT) = 1
+C          Fock matrix type
+           IFCKOP(IMAT) = 1
+C          Hermitian operator
+           IHRMOP(IMAT) = 1
+         END DO
         INQUIRE(FILE='DFDENS',EXIST=TOBE)
         IF(TOBE) THEN
           CALL OPNFIL(LUBUF,'DFDENS','OLD','GETFC1')
           CALL READNS(LUBUF,FAO)
           CLOSE(LUBUF,STATUS='KEEP')
         ELSE
-          CALL DENSTY(FAO,CMO,IPRINT)        
+c         CALL DENSTY(FAO,CMO,IPRINT)        
+          CALL GENDEN(FAO,CMO,1,IPRINT)
+          IF (NASHT .GT. 0) 
+     &       CALL GENDEN(FAO(1+N2BBASXQ),CMO,2,IPRINT)
         ENDIF
+CJTH    should INTFLG always be 7???
         INTFLG = 7
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,FAO,NFMAT,
      &       WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
@@ -463,6 +512,7 @@ C     =====================================
 C
       IF(SOLVEN) THEN
 C        CALL DENSTY(FAO,CMO,IPRINT)        
+CJTH check this
         NF = 1
         CALL SOLFCK(FMO,FAO,NF,ESOLVE,ESOLVN,WORK(KFREE),LFREE,IPRSOL)
       ENDIF           
@@ -485,23 +535,42 @@ C     4. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================
 C
       CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
-      CALL DZERO(FMO,N2ORBXQ)
+      IF (NASHT .GT. 0) THEN
+         CALL DCOPY(N2BBASXQ,FMO(1+N2BBASXQ),1,FAO(1+N2BBASXQ),1)
+C
+C        Scale active Fock matrix with 0.5 (all Fock matrices are
+C        (multiplied with 2 in TWOFCK)
+C
+         CALL DSCAL(N2BBASXQ,DP5,FAO(1+N2BBASXQ),1)
+      END IF
+      IOFF_MO = 0
+      IOFF_AO = 0
+      DO IMAT = 1,NFMAT
+         CALL DZERO(FMO(1+IOFF_MO),N2ORBXQ)
       DO 10 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 10
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
-     &              FAO(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,
+     &              FAO(I2BASX(I,I)+1+IOFF_AO),NTBAS(0),NTBAS(0),NZ,
      &              IPQTOQ(1,0),
-     &              FMO(I2ORBX(I,I)+1),NORBT,NORBT,NBF,IQBF,
+     &              FMO(I2ORBX(I,I)+1+IOFF_MO),NORBT,NORBT,NBF,IQBF,
      &              CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &              CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &              WORK(KFREE),LFREE,IPRINT)
         IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
      &     '*** WARNING *** GETFC1: NBF.NE.NZ !'
  10   CONTINUE
+         IOFF_MO = IOFF_MO + N2ORBXQ
+         IOFF_AO = IOFF_AO + N2BBASXQ
+      END DO
       IF(IPRINT.GE.5) THEN
-        CALL HEADER('GETFC1:Total Fock matrix in MO-basis',-1)
+        CALL HEADER('GETFC1:Fock (FCmo) matrix in MO-basis',-1)
         CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,NZ,
      &    IPQTOQ(1,0),LUPRI)
+        IF (NASHT .GT. 0) THEN
+           CALL HEADER('GETFC1:Fock (FVmo) matrix in MO-basis',-1)
+           CALL PRQMAT(FMO(1+N2ORBXQ),NORBT,NORBT,NORBT,NORBT,NZ,
+     &       IPQTOQ(1,0),LUPRI)
+        END IF
       ENDIF
 C
       CALL QEXIT('GETFC1')
@@ -833,5 +902,62 @@ C
      &     I = 1,NORB(IFRP))
         ENDDO
       ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck set_itypmo */
+      SUBROUTINE SET_ITYPMO(IND,NIND,IPRINT)
+C*****************************************************************************
+C
+C     Set ITYPMO in dcbitypmo.h
+C
+C     Written by J. Thyssen - Feb 23 1999
+C     Last revision :
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <mxorb.h>
+#include <dgroup.h>
+#include <dcborb.h>
+#include <dcbbas.h>
+#include <dcbitypmo.h>
+C
+      DIMENSION IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
+C
+      CALL IZERO(ITYPMO,MXCORB)
+      DO IFSYM = 1,NFSYM
+         DO JTYP = 1,4
+            IF (JTYP .NE. 4) THEN
+               ITYP = JTYP
+               IST  = NIND(1,ITYP,IFSYM) + 1
+               IEND = NIND(1,ITYP,IFSYM) + NIND(2,ITYP,IFSYM)
+            ELSE
+               IST  = 1
+               ITYP = 3
+               IEND = NIND(1,ITYP,IFSYM)
+            END IF
+            DO I = IST,IEND
+               IDX = IND(I,ITYP,IFSYM)
+               ITYPMO(IDX,1) = JTYP
+               ITYPMO(IDX,2) = IFSYM
+            END DO
+         END DO
+C
+C        Print section
+C
+         IF (IPRINT .GE. 5) THEN
+            CALL HEADER('Type of MO-orbitals for symmetry '//
+     &                  CHAR(IFSYM+48),-1)
+            WRITE(LUPRI,'(1X,A4,2X,A,2X,A)')
+     &            'mo #','t','s'
+            DO I = 1,NORB(IFSYM)
+               WRITE(LUPRI,'(1X,I4,2X,I1,2X,I1)')
+     &            I,ITYPMO(I,1),ITYPMO(I,2)
+            END DO
+         END IF
+      END DO
+
       RETURN
       END

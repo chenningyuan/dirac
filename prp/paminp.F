@@ -644,7 +644,7 @@ C&&&&    One component: DIAGONAL, XALPHA, YALPHA, ZALPHA
 C&&&&    Two components: XAVECTOR,YAVECTOR,ZAVECTOR
     2    CONTINUE
            NPCOMP = 2
-           PFAC(2) = -D1
+c          PFAC(2) = -D1
          GO TO 300
 C&&&&    Three components: ALPHADOT
     3    CONTINUE

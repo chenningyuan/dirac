@@ -247,42 +247,36 @@ C
 C     1. Generate two-electron Fock matrices
 C     ======================================
 C
-      CALL MEMGET('REAL',KFMO,NOSIM*N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFMO,NOSIM*N2BBASXQ*NFOCKMAT,WORK,KFREE,LFREE)
 C
 C     1. Generate G-matrix
 C     ====================
 C
+      CALL DZERO(WORK(KFMO),NOSIM*N2BBASXQ*NFOCKMAT)
       IF(LSVCFG(1)) THEN
         CALL GMOLI(WORK(KFMO),BEVEC,BPVEC,IBEVC,IBPVC,IBTYP,
      &           NPOS,WORK,KFREE,LFREE)
       ELSE
-        CALL DZERO(WORK(KFMO),NOSIM*N2BBASXQ)
+c       CALL DZERO(WORK(KFMO),NOSIM*N2BBASXQ*NFOCKMAT)
       ENDIF
 C
 C     2) Add one-index transformed Fock-matrices
 C     ==========================================
 C
       IF (LSVCFG(2)) CALL FMOLI(WORK(KFMO),BEVEC,BPVEC,
-     &                          WORK,KFREE,LFREE)
+     &                          IBEVC,IBPVC,IBTYP,WORK,KFREE,LFREE)
 C
-C     3) Gather contributions to electronic sigma-vectors
+C     3) Gather contributions to sigma-vectors
 C     ===================================================
 C
       IF(NZXOPE.GT.0) THEN
-        CALL SMOLI(SEVEC,WORK(KFMO),WORK(KZXOPE),NZXOPE,NTSIM)
+        CALL SMOLI(SEVEC,SPVEC,WORK(KFMO),
+     &             WORK(KZXOPE),NZXOPE,WORK(KZXOPP),NZXOPP,
+     &             IBEVC,IBPVC,IBTYP,WORK(KFREE),LFREE)
         IF(IPRXRS.GE.5) THEN
           WRITE(LUPRI,'(/I5,A)') NTSIM,
      &          ' orbital (e-e) sigma vectors'
           CALL PRBVEC(LUPRI,SEVEC,NTSIM,NZXOPE)
-        ENDIF
-      ENDIF
-C
-C     4) Gather contributions to positronic sigma-vectors
-C     ===================================================
-C
-      IF(NZXOPP.GT.0) THEN
-        CALL SMOLI(SPVEC,WORK(KFMO),WORK(KZXOPP),NZXOPP,NTSIM)
-        IF(IPRXRS.GE.5) THEN
           WRITE(LUPRI,'(/I5,A)') NTSIM,
      &          ' orbital (e-p) sigma vectors'
           CALL PRBVEC(LUPRI,SPVEC,NTSIM,NZXOPP)
@@ -326,10 +320,10 @@ C
       KFRSAV = KFREE
       NDMAT  = NOSIM*NZ
       CALL MEMGET('REAL',KCMO ,NCMOTQ       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFAO ,NDMAT*N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KSYM ,NOSIM        ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KHRM ,NOSIM        ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KFCK ,NOSIM        ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFAO ,NDMAT*N2BBASX*NFOCKMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KSYM ,NOSIM*NFOCKMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KHRM ,NOSIM*NFOCKMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KFCK ,NOSIM*NFOCKMAT,WORK,KFREE,LFREE)
 C
       CALL GMOLI1(FMO,BEVEC,BPVEC,IBEVC,IBPVC,IBTYP,
      &            WORK(KCMO),WORK(KFAO),WORK(KSYM),
@@ -375,17 +369,17 @@ C
       LUBUF = 1
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','DMOLI2')
+      CALL OPNFIL(LUBUF,'DFCOEF','OLD','GMOLI1')
       CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,DUM,TOTERG,4)
-      CLOSE(LUBUF,STATUS='KEEP')
       IF (IPRXRS .GE. 10) THEN
          CALL HEADER('MO Coefficients',-1)
          DO I = 1, NFSYM
-            WRITE(LUPRI,'(/1X,A,I/)') '*** Symmetry ',I
+            WRITE(LUPRI,'(/1X,A,I1/)') '*** Symmetry ',I
             CALL PRQMAT(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &         NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
       END IF
+      CLOSE(LUBUF,STATUS='KEEP')
 C
 C     b) Set arrays of IHRMOP,IFCKOP,ISYMOP
 C     =====================================
@@ -404,13 +398,13 @@ C     b) Accumulate two-electron Fock matrices
 C     ----------------------------------------
 C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,
-     &            FAO,FMO,NOSIM,NPOS,INTFLG,
+     &            FAO,FMO,NOSIM*NFOCKMAT,NPOS,INTFLG,
      &            IPRTWO,WORK(KFREE),LFREE)
 C
 C     If solvent; get contribution
 C     ============================
 C
-      IF(SOLVEN) CALL SOLFCK(FAO,FMO,NOSIM,ESOLVE,ESOLVN,
+      IF(SOLVEN) CALL SOLFCK(FAO,FMO,NOSIM*NFOCKMAT,ESOLVE,ESOLVN,
      &                       WORK(KFREE),LFREE,IPRSOL)
 C
       IM = 0
@@ -418,47 +412,96 @@ C
 C     c) Transform to MO-basis; e-e rotations
 C     ---------------------------------------
 C
-      ITYP  = 1
       DO I = 1,NESIM
-          IM = IM + 1
-          CALL GMOLI3(ITYP,FMO(1,IM),CMO,FAO(1,IM),
-     &         WORK,KFREE,LFREE)
-C         Print section
-          IF(IPRXRS.GE.8) THEN
-            IREP = JSYMOP - 1
-            WRITE(LUPRI,'(A,I5)') 
-     &        '* GMOLI2: (e-e) G-matrix (AO-basis) no.:',I
-            CALL PRQMAT(FAO(1,IM),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NTBAS(0),NZ,
-     &                  IPQTOQ(1,IREP),LUPRI)
-            WRITE(LUPRI,'(A,I5)') 
-     &        '* GMOLI2: (e-e) G-matrix (MO-basis) no.:',I
-            CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
-     &                  IPQTOQ(1,IREP),LUPRI)
+C
+C         Inactive part...
+C
+          IF (NISHT .GT. 0) THEN
+             ITYP  = 0*1 + 0*2
+             IM = IM + 1
+             CALL GMOLI3(ITYP,FMO(1,IM),CMO,FAO(1,IM),
+     &            WORK,KFREE,LFREE)
+C            Print section
+             IF(IPRXRS.GE.8) THEN
+               IREP = JSYMOP - 1
+               WRITE(LUPRI,'(A,I5)') 
+     &           '* GMOLI2: inactive (e-e) G-matrix (AO-basis) no.:',I
+               CALL PRQMAT(FAO(1,IM),NTBAS(0),NTBAS(0),
+     &                     NTBAS(0),NTBAS(0),NZ,
+     &                     IPQTOQ(1,IREP),LUPRI)
+               WRITE(LUPRI,'(A,I5)') 
+     &           '* GMOLI2: inactive (e-e) G-matrix (MO-basis) no.:',I
+               CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
+     &                     IPQTOQ(1,IREP),LUPRI)
+             ENDIF
+          END IF
+C
+C         Active part...
+C
+          IF (NASHT .GT. 0) THEN
+             ITYP  = 0*1 + 1*2
+             IM = IM + 1
+             CALL GMOLI3(ITYP,FMO(1,IM),CMO,FAO(1,IM),
+     &            WORK,KFREE,LFREE)
+C            Print section
+             IF(IPRXRS.GE.8) THEN
+               IREP = JSYMOP - 1
+               WRITE(LUPRI,'(A,I5)') 
+     &           '* GMOLI2: active (e-e) G-matrix (AO-basis) no.:',I
+               CALL PRQMAT(FAO(1,IM),NTBAS(0),NTBAS(0),
+     &                     NTBAS(0),NTBAS(0),NZ,
+     &                     IPQTOQ(1,IREP),LUPRI)
+               WRITE(LUPRI,'(A,I5)') 
+     &           '* GMOLI2: active (e-e) G-matrix (MO-basis) no.:',I
+               CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
+     &                     IPQTOQ(1,IREP),LUPRI)
+             ENDIF
           ENDIF
       ENDDO
 C
 C     d) Transform to MO-basis; e-p rotations
 C     ---------------------------------------
 C
-      ITYP  = 2
       DO I = 1,NPSIM
-        IM = IM + 1
-        CALL GMOLI3(ITYP,FMO(1,IM),CMO,FAO(1,IM),
-     &         WORK,KFREE,LFREE)
-C         Print section
-          IF(IPRXRS.GE.8) THEN
-            IREP = JSYMOP - 1
-            WRITE(LUPRI,'(A,I5)') 
-     &        '* GMOLI2: (e-p) G-matrix (AO-basis) no.:',I
-            CALL PRQMAT(FAO(1,IM),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NTBAS(0),NZ,
-     &                  IPQTOQ(1,IREP),LUPRI)
-            WRITE(LUPRI,'(A,I5)') 
-     &        '* GMOLI2: (e-p) G-matrix (MO-basis) no.:',I
-            CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
-     &                  IPQTOQ(1,IREP),LUPRI)
-          ENDIF
+C
+        IF (NISHT .GT. 0) THEN
+           IM = IM + 1
+           ITYP  = 1*1 + 0*2
+           CALL GMOLI3(ITYP,FMO(1,IM),CMO,FAO(1,IM),
+     &            WORK,KFREE,LFREE)
+C            Print section
+             IF(IPRXRS.GE.8) THEN
+               IREP = JSYMOP - 1
+               WRITE(LUPRI,'(A,I5)') 
+     &           '* GMOLI2: (e-p) G-matrix (AO-basis) no.:',I
+               CALL PRQMAT(FAO(1,IM),NTBAS(0),NTBAS(0),
+     &                     NTBAS(0),NTBAS(0),NZ,
+     &                     IPQTOQ(1,IREP),LUPRI)
+               WRITE(LUPRI,'(A,I5)') 
+     &           '* GMOLI2: (e-p) G-matrix (MO-basis) no.:',I
+               CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
+     &                     IPQTOQ(1,IREP),LUPRI)
+             ENDIF
+        ENDIF
+        IF (NASHT .GT. 0) THEN
+           IM = IM + 1
+           ITYP  = 1*1 + 1*2
+           CALL GMOLI3(ITYP,FMO(1,IM),CMO,FAO(1,IM),
+     &            WORK,KFREE,LFREE)
+C            Print section
+             IF(IPRXRS.GE.8) THEN
+               IREP = JSYMOP - 1
+               WRITE(LUPRI,'(A,I5)') 
+     &           '* GMOLI2: (e-p) G-matrix (AO-basis) no.:',I
+               CALL PRQMAT(FAO(1,IM),NTBAS(0),NTBAS(0),
+     &                     NTBAS(0),NTBAS(0),NZ,
+     &                     IPQTOQ(1,IREP),LUPRI)
+               WRITE(LUPRI,'(A,I5)') 
+     &           '* GMOLI2: (e-p) G-matrix (MO-basis) no.:',I
+               CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
+     &                     IPQTOQ(1,IREP),LUPRI)
+             ENDIF
+         ENDIF
       ENDDO
       RETURN
  1000 CONTINUE
@@ -515,6 +558,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <dummy.h>
 C
 #include <dcbxrs.h>
 #include <dcborb.h>
@@ -525,62 +569,199 @@ C
      &          BMAT(*),IHRMOP(*),WORK(*)
 C
       IM = 0
+      IREP = JSYMOP - 1
 C
 C     Generate modified density matrices ; e-e rotations
 C     ===================================================
 C
-      ITYP  = 1
       IBOFF = 1
       DO I = 1,NESIM
-        IM = IM + 1
-C       Scatter BVEC into BMAT
-        CALL DZERO(BMAT,N2ORBXQ)
-        CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,BMAT,NORBT,NZ)
-        IBOFF = IBOFF + NZXOPEQ
-C       Construct modified density matrix
-        CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT,
-     &                WORK,KFREE,LFREE)
-C       Print section
-        IF(IPRXRS.GE.8) THEN
-          IREP = JSYMOP - 1
-          WRITE(LUPRI,'(A,I5)') 
-     &      '* DMOLI: Scattered (e-e) trial vector no.:',I
-          CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
-     &                IPQTOQ(1,IREP),LUPRI)
-          WRITE(LUPRI,'(A,I5)') 
-     &      '* DMOLI: Modified (e-e) matrix no.:',I
-          CALL PRQMAT(DMAT(1,IM),NTBAS(0),NTBAS(0),
-     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-        ENDIF
+C
+C        Inactive...
+C
+         IF (NISHT .GT. 0) THEN
+         ITYP  = 0*1+0*2
+         IM = IM + 1
+C        Scatter BVEC into BMAT
+         CALL DZERO(BMAT,N2ORBXQ)
+         CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,BMAT,NORBT,NZ)
+C
+C        Take symmetric/antisymmetric combinations to form BMAT
+C        ======================================================
+C
+C        Dette skal vaere modsat af DMAT (i DMOLI3)
+C
+         IH = IHRMOP(IM)
+         IZOFF = 1
+         DO IZ = 1,NZ
+           IQ = IPQTOQ(IZ,IREP)
+           IS = IHQMAT(IQ,IH)
+           IF(IS.EQ.1) THEN
+             CALL FULMAT('A',NORBT,NORBT,BMAT(IZOFF))
+           ELSEIF(IS.EQ.2) THEN
+             CALL FULMAT('S',NORBT,NORBT,BMAT(IZOFF))
+           ENDIF
+           IZOFF = IZOFF + N2ORBX
+         ENDDO
+C
+C        Construct modified density matrix
+         CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT,
+     &                 WORK,KFREE,LFREE)
+C        Print section
+         IF(IPRXRS.GE.8) THEN
+            WRITE(LUPRI,'(A,I5)') 
+     &         '* DMOLI: Scattered inactive (e-e) trial vector no.:',I
+            CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
+     &                  IPQTOQ(1,IREP),LUPRI)
+            WRITE(LUPRI,'(A,I5)') 
+     &         '* DMOLI: Modified inactive (e-e) matrix no.:',I
+            CALL PRQMAT(DMAT(1,IM),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+         END IF
+         END IF
+C
+         IF (NASHT .GT. 0) THEN
+C
+C        Active...
+C
+         ITYP  = 0*1+1*2
+         IM = IM + 1
+C        Scatter BVEC into BMAT
+         CALL DZERO(BMAT,N2ORBXQ)
+         CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,BMAT,NORBT,NZ)
+C
+C        Take symmetric/antisymmetric combinations to form BMAT
+C        ======================================================
+C
+C        Dette skal vaere modsat af DMAT (i DMOLI3)
+C
+         IH = IHRMOP(IM)
+         IZOFF = 1
+         DO IZ = 1,NZ
+           IQ = IPQTOQ(IZ,IREP)
+           IS = IHQMAT(IQ,IH)
+           IF(IS.EQ.1) THEN
+             CALL FULMAT('A',NORBT,NORBT,BMAT(IZOFF))
+           ELSEIF(IS.EQ.2) THEN
+             CALL FULMAT('S',NORBT,NORBT,BMAT(IZOFF))
+           ENDIF
+           IZOFF = IZOFF + N2ORBX
+         ENDDO
+C        Construct modified density matrix
+         CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT,
+     &                 WORK,KFREE,LFREE)
+C        Print section
+         IF(IPRXRS.GE.8) THEN
+            WRITE(LUPRI,'(A,I5)') 
+     &         '* DMOLI: Scattered active (e-e) trial vector no.:',I
+            CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
+     &                  IPQTOQ(1,IREP),LUPRI)
+            WRITE(LUPRI,'(A,I5)') 
+     &         '* DMOLI: Modified active (e-e) matrix no.:',I
+            CALL PRQMAT(DMAT(1,IM),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+         END IF
+         END IF
+         IBOFF = IBOFF + NZXOPEQ
+C
       ENDDO
 C
 C     Generate modified density matrices ; e-p rotations
 C     ===================================================
 C
-      ITYP  = 2
       IBOFF = 1
       DO I = 1,NPSIM
-        IM = IM + 1
-C       Scatter BVEC into BMAT
-        CALL DZERO(BMAT,N2ORBXQ)
-        CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,BMAT,NORBT,NZ)
-        IBOFF = IBOFF + NZXOPPQ
-C       Construct modified density matrix
-        CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT,
-     &              WORK,KFREE,LFREE)
-C       Print section
-        IF(IPRXRS.GE.8) THEN
-          IREP = JSYMOP - 1
-          WRITE(LUPRI,'(A,I5)') 
-     &      '* DMOLI: Scattered (e-p) trial vector no.:',I
-          CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
-     &                IPQTOQ(1,IREP),LUPRI)
-          WRITE(LUPRI,'(A,I5)') 
-     &      '* DMOLI: Modified (e-p) matrix no.:',I
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
-          CALL PRQMAT(DMAT(1,IM),NTBAS(0),NTBAS(0),
-     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-        ENDIF
+C
+         IF (NISHT .GT. 0) THEN
+C
+C        Inactive...
+C
+         ITYP = 1*1 + 0*2
+         IM = IM + 1
+C        Scatter BVEC into BMAT
+         CALL DZERO(BMAT,N2ORBXQ)
+         CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,BMAT,NORBT,NZ)
+C
+C        Take symmetric/antisymmetric combinations to form BMAT
+C        ======================================================
+C
+C        Dette skal vaere modsat af DMAT (i DMOLI3)
+C
+         IH = IHRMOP(IM)
+         IZOFF = 1
+         DO IZ = 1,NZ
+           IQ = IPQTOQ(IZ,IREP)
+           IS = IHQMAT(IQ,IH)
+           IF(IS.EQ.1) THEN
+             CALL FULMAT('A',NORBT,NORBT,BMAT(IZOFF))
+           ELSEIF(IS.EQ.2) THEN
+             CALL FULMAT('S',NORBT,NORBT,BMAT(IZOFF))
+           ENDIF
+           IZOFF = IZOFF + N2ORBX
+         ENDDO
+C
+C        Construct modified density matrix
+         CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT,
+     &               WORK,KFREE,LFREE)
+C        Print section
+         IF(IPRXRS.GE.8) THEN
+            WRITE(LUPRI,'(A,I5)') 
+     &         '* DMOLI: Scattered inactive (e-p) trial vector no.:',I
+            CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
+     &                  IPQTOQ(1,IREP),LUPRI)
+            WRITE(LUPRI,'(A,I5)') 
+     &         '* DMOLI: Modified active (e-p) matrix no.:',I
+            CALL PRQMAT(DMAT(1,IM),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+         END IF
+         END IF
+C
+         IF (NASHT .GT. 0) THEN
+C
+C        Active...
+C
+         ITYP = 1*1 + 1*2
+         IM = IM + 1
+C        Scatter BVEC into BMAT
+         CALL DZERO(BMAT,N2ORBXQ)
+         CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,BMAT,NORBT,NZ)
+C
+C        Take symmetric/antisymmetric combinations to form BMAT
+C        ======================================================
+C
+C        Dette skal vaere modsat af DMAT (i DMOLI3)
+C
+         IH = IHRMOP(IM)
+         IZOFF = 1
+         DO IZ = 1,NZ
+           IQ = IPQTOQ(IZ,IREP)
+           IS = IHQMAT(IQ,IH)
+           IF(IS.EQ.1) THEN
+             CALL FULMAT('A',NORBT,NORBT,BMAT(IZOFF))
+           ELSEIF(IS.EQ.2) THEN
+             CALL FULMAT('S',NORBT,NORBT,BMAT(IZOFF))
+           ENDIF
+           IZOFF = IZOFF + N2ORBX
+         ENDDO
+C
+C        Construct modified density matrix
+         CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT,
+     &               WORK,KFREE,LFREE)
+C        Print section
+         IF(IPRXRS.GE.8) THEN
+            WRITE(LUPRI,'(A,I5)') 
+     &         '* DMOLI: Scattered inactive (e-p) trial vector no.:',I
+            CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
+     &                  IPQTOQ(1,IREP),LUPRI)
+            WRITE(LUPRI,'(A,I5)') 
+     &         '* DMOLI: Modified active (e-p) matrix no.:',I
+            CALL PRQMAT(DMAT(1,IM),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+         END IF
+         END IF
+         IBOFF = IBOFF + NZXOPPQ
+C
+C
       ENDDO
 C
       RETURN
@@ -594,12 +775,14 @@ C
 C     Generate modified density matrix for use in generation of
 C     sigma vectors
 C
-C     ITYP = 1   e-e  rotations in BMAT
-C     ITYP = 2   e-p  rotations in BMAT
+C     Bit 1 of ITYP = 0   e-e  rotations in BMAT
+C                     1   e-p rotations in BMAT
+C     Bit 2 of ITYP = 0   inactive density matrix
+C                     1   active density matrix
 C
 C     We define: DB_{ab} = c_{as}B_{si}c_{bi}^*
 C                a,b - AO-indices
-C                s   - secondary index
+C                s   - all indeces (electronic or positronic)
 C                i   - inactive index
 C
 C     IH   = 1        Hermitian density matrix:  DMAT = -[DB + DB^+]
@@ -617,7 +800,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dcbqal.h>
-      PARAMETER(D0 = 0.0D0)
+      PARAMETER(D0 = 0.0D0, DP5 = 0.5D00)
 C
 #include <dcborb.h>
 #include <dcbbas.h>
@@ -626,6 +809,7 @@ C
 C
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),BMAT(NORBT,NORBT,NZ),WORK(*)
       DIMENSION IQBF(4)
+      LOGICAL   LBIT
 C
       EXTERNAL BDQALGEBRA
 C
@@ -649,13 +833,19 @@ C
       DO 10 I1 = 1,NFSYM
         I2  = MOD(I1+JOPSY,2) + 1
 C
-C       Parameters for secondary index
+C       Parameters for first index
 C
-        IF    (ITYP.EQ.1) THEN
-          NS = NSSH(I1)
-          IS = IORB(I1) + NPSH(I1) + NOCC(I1) + 1
-          JS = ICMOQ(I1) + (NPSH(I1)+NOCC(I1))*NFBAS(I1,0) + 1
-        ELSEIF(ITYP.EQ.2) THEN
+        IF (.NOT. LBIT(ITYP,1)) THEN
+C
+C         electronic indeces...
+C
+          NS = NORB(I1)
+          IS = IORB(I1) + NPSH(I1) + 1
+          JS = ICMOQ(I1) + NPSH(I1)*NFBAS(I1,0) + 1
+        ELSE
+C
+C         or positronic indeces...
+C
           NS = NPSH(I1)
           IS = IORB(I1) + 1
           JS = ICMOQ(I1) + 1
@@ -663,21 +853,52 @@ C
 C
 C       Parameters for inactive index
 C
-        NI  = NISH(I2) - NFRO(I2)
-        II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
-        JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1
+         IF (.NOT. LBIT(ITYP,2)) THEN
 C
-C       Generate modified density matrix as transformation MO to AO
+C           inactive density matrix...
 C
-        IF(NI.EQ.0.OR.NS.EQ.0) GOTO 10
-        CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),NS,NI,
-     &              DMAT(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NBF,IQBF,
-     &              BMAT(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-     &              CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-     &              CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
-     &              WORK(KFREE),LFREE,IPRXRS)
-        IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &     '*** WARNING *** DFSOLV: DMOLI3.NE.NZ !'
+            NI  = NISH(I2) - NFRO(I2)
+            II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
+            JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1
+C
+C          Generate modified density matrix as transformation MO to AO
+C
+           IF(NI.EQ.0.OR.NS.EQ.0) GOTO 10
+            CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),NS,NI,
+     &                  DMAT(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),
+     &                     NBF,IQBF,
+     &                  BMAT(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+     &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &                  WORK(KFREE),LFREE,IPRXRS)
+             IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
+     &          '*** WARNING *** DMOLI3: NBF.NE.NZ !'
+C
+         ELSE
+C
+C           or active density matrix...
+C
+            NI  = NASH(I2)
+            II  = IORB(I2) + NPSH(I2) + NISH(I2) + 1
+            JI  = ICMOQ(I2) + 
+     &               (NPSH(I2)+ NISH(I2))*NFBAS(I2,0) + 1
+C
+C
+C          Generate modified density matrix as transformation MO to AO
+C
+           IF(NI.EQ.0.OR.NS.EQ.0) GOTO 10
+            CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),NS,NI,
+     &                  DMAT(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),
+     &                     NBF,IQBF,
+     &                  BMAT(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+     &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &                  WORK(KFREE),LFREE,IPRXRS)
+             IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
+     &          '*** WARNING *** DMOLI3: NBF.NE.NZ !'
+C
+C
+         END IF
  10   CONTINUE
       IF(IPRXRS.GE.5) THEN
         CALL HEADER('DMOLI3: Non-symmetrized density matrix',-1)
@@ -685,6 +906,17 @@ C
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
       ENDIF
+C
+      IF (LBIT(ITYP,2)) THEN
+C
+C        For active density matrices scale the density matrix by
+C        1/2 because all Fock matrices are multiplied with 2 in
+C        TWOFCK.
+C
+         CALL DSCAL(N2BBASXQ,DP5,DMAT,1)
+C
+      END IF
+C
 C
 C     Take symmetric/antisymmetric combinations to form DMAT
 C     ======================================================
@@ -711,7 +943,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Fmoli */
-      SUBROUTINE FMOLI(FMO,BEVEC,BPVEC,WORK,KFREE,LFREE)
+      SUBROUTINE FMOLI(FMO,BEVEC,BPVEC,IBEVC,IBPVC,IBTYP,
+     &                 WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     FMO contains G-matrix; add one-index transformed Fock-matrix
@@ -725,21 +958,28 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dcbxrs.h>
-      DIMENSION FMO(*),BEVEC(*),BPVEC(*),WORK(*)
+      DIMENSION FMO(*),BEVEC(*),BPVEC(*),IBTYP(*),
+     &          IBEVC(*),IBPVC(*),WORK(*)
 C
       CALL QENTER('FMOLI')
       KFRSAV = KFREE
       CALL MEMGET('REAL',KBMAT,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFBUF,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFBUF,N2BBASXQ*NFOCKMAT,WORK,KFREE,LFREE)
 C
-C     Get total Fock matrix in MO-basis
+C     Get Fock matrices in MO-basis (FCmo and FVmo)
+C     =============================================
 C
-      CALL GETFCK(WORK(KFBUF),IPRXRS,WORK,KFREE,LFREE)
+      IF (NASHT .GT. 0) THEN
+         CALL GETMAT('FCMO+FVMO',WORK(KFBUF),IPRXRS,WORK(KFREE),LFREE)
+      ELSE
+         CALL GETMAT('FCMO',WORK(KFBUF),IPRXRS,WORK(KFREE),LFREE)
+      END IF
+c     CALL GETFCK(WORK(KFBUF),IPRXRS,WORK,KFREE,LFREE)
 C
 C     Do one-index transformation
 C
       CALL FMOLI2(FMO,WORK(KFBUF),WORK(KBMAT),BEVEC,BPVEC,
-     &            WORK,KFREE,LFREE)
+     &            IBEVC,IBPVC,IBTYP,WORK,KFREE,LFREE)
 C
       CALL MEMREL('FMOLI',WORK,1,KFRSAV,KFREE,LFREE)      
       CALL QEXIT('FMOLI')      
@@ -747,7 +987,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Fmoli2 */
-      SUBROUTINE FMOLI2(FMO,FBUF,BMAT,BEVEC,BPVEC,WORK,KFREE,LFREE)
+      SUBROUTINE FMOLI2(FMO,FBUF,BMAT,BEVEC,BPVEC,IBEVC,IBPVC,IBTYP,
+     &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     FMO contains G-matrix; add one-index transformed Fock-matrix
@@ -762,58 +1003,204 @@ C
 #include <dcbxrs.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      DIMENSION FMO(N2ORBXQ,*),FBUF(*),BMAT(*),BEVEC(*),BPVEC(*),
-     &          WORK(*)
+      DIMENSION FMO(N2ORBXQ,*),FBUF(*),BMAT(*),BEVEC(*),
+     &          BPVEC(*),IBEVC(*),IBPVC(*),IBTYP(2,*),WORK(*)
 C
       IM = 0
+      IVEC = 0
+      IREP = JSYMOP-1
+C
+cjth  IF (IPRXRS .GE. 10) THEN
+cjth     KFRSAV = KFREE
+cjth     CALL MEMGET('REAL',KTEMP,N2ORBXQ,WORK,KFREE,LFREE)
+cjth  END IF
 C
 C     Add one-index tranformed Fock-matrices; e-e rotations
 C     =====================================================
 C
-      ITYP  = 1
       IBOFF = 1
       DO I = 1,NESIM
-        IM = IM + 1
-C       Scatter BVEC into BMAT
-        CALL DZERO(BMAT,N2ORBXQ)
-        CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,BMAT,NORBT,NZ)
-C       Print section
-        IF(IPRXRS.GE.6) THEN
-          IREP = JSYMOP - 1
-          WRITE(LUPRI,'(A,I5)') 
-     &      '* FMOLI: Scattered (e-e) trial vector no.:',I
-          CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
-     &                IPQTOQ(1,IREP),LUPRI)
-        ENDIF
-        IBOFF = IBOFF + NZXOPEQ
-C       Add one-index transformed Fock-matrix
-        CALL FMOLI3(ITYP,FMO(1,IM),BMAT,FBUF,
-     &                WORK,KFREE,LFREE)
+C
+         IVEC = IVEC + 1
+         IH   = IBEVC(NERED+IVEC)
+         IH = IBTYP(2,IH)
+         IF (NISHT .GT. 0) THEN
+C
+C        Inactive...
+C
+         ITYP  = 0*1 + 0*2
+         IM = IM + 1
+C        Scatter BVEC into BMAT
+         CALL DZERO(BMAT,N2ORBXQ)
+         CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,BMAT,NORBT,NZ)
+C
+C        Construct full BMAT
+C        ===================
+C
+         IOFF = 1
+         DO IZ = 1,NZ
+           IQ = IPQTOQ(IZ,IREP)
+           IS = IHQMAT(IQ,IH)
+           IF(IS.EQ.1) THEN
+             CALL FULMAT('A',NORBT,NORBT,BMAT(IOFF))
+           ELSEIF(IS.EQ.2) THEN
+             CALL FULMAT('S',NORBT,NORBT,BMAT(IOFF))
+           ENDIF
+           IOFF = IOFF + N2ORBX
+         ENDDO
+C
+C        Print section
+         IF(IPRXRS.GE.6) THEN
+           WRITE(LUPRI,'(A,I5)') 
+     &       '* FMOLI: Scattered inactive (e-e) trial vector no.:',I
+           CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
+     &                 IPQTOQ(1,IREP),LUPRI)
+         ENDIF
+C
+cjth     IF (IPRXRS .GE. 10) THEN
+cjth        CALL DCOPY(N2ORBXQ,FMO(1,IM),1,WORK(KTEMP),1)
+cjth     END IF
+C        Add one-index transformed Fock-matrix
+         CALL FMOLI3(ITYP,FMO(1,IM),BMAT,FBUF,
+     &                 WORK,KFREE,LFREE)
+cjth     IF (IPRXRS .GE. 10) THEN
+cjth        CALL DAXPY(N2ORBXQ,-1.0D00,FMO(1,IM),1,WORK(KTEMP),1)
+cjth        CALL DSCAL(N2ORBXQ,-1.0D00,WORK(KTEMP),1)
+cjth        WRITE(LUPRI,'(A,I5)') 
+cjth &        '* FMOLI: Inactive 1-index transformed Fock matrix:',I
+cjth        CALL PRQMAT(WORK(KTEMP),NORBT,NORBT,NORBT,NORBT,NZ,
+cjth &                  IPQTOQ(1,IREP),LUPRI)
+cjth     END IF
+         END IF
+C
+         IF (NASHT .GT. 0) THEN
+C
+C        active...
+C
+         ITYP  = 0*1 + 1*2
+         IM = IM + 1
+C        Scatter BVEC into BMAT
+         CALL DZERO(BMAT,N2ORBXQ)
+         CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,BMAT,NORBT,NZ)
+C
+C        Construct full BMAT
+C        ===================
+C
+         IOFF = 1
+         DO IZ = 1,NZ
+           IQ = IPQTOQ(IZ,IREP)
+           IS = IHQMAT(IQ,IH)
+           IF(IS.EQ.1) THEN
+             CALL FULMAT('A',NORBT,NORBT,BMAT(IOFF))
+           ELSEIF(IS.EQ.2) THEN
+             CALL FULMAT('S',NORBT,NORBT,BMAT(IOFF))
+           ENDIF
+           IOFF = IOFF + N2ORBX
+         ENDDO
+C        Print section
+         IF(IPRXRS.GE.6) THEN
+           WRITE(LUPRI,'(A,I5)') 
+     &       '* FMOLI: Scattered active (e-e) trial vector no.:',I
+           CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
+     &                 IPQTOQ(1,IREP),LUPRI)
+         ENDIF
+C        Add one-index transformed Fock-matrix
+         CALL FMOLI3(ITYP,FMO(1,IM),BMAT,FBUF(1+N2ORBXQ),
+     &                 WORK,KFREE,LFREE)
+C
+         END IF
+         IBOFF = IBOFF + NZXOPEQ
       ENDDO
 C
 C     Add one-index tranformed Fock-matrices; e-p rotations
 C     =====================================================
 C
-      ITYP  = 2
       IBOFF = 1
+      IVEC = 0
       DO I = 1,NPSIM
-        IM = IM + 1
-C       Scatter BVEC into BMAT
-        CALL DZERO(BMAT,N2ORBXQ)
-        CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,BMAT,NORBT,NZ)
-C       Print section
-        IF(IPRXRS.GE.6) THEN
-          IREP = JSYMOP - 1
-          WRITE(LUPRI,'(A,I5)') 
-     &      '* FMOLI: Scattered (e-p) trial vector no.:',I
-          CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
-     &                IPQTOQ(1,IREP),LUPRI)
-        ENDIF
-        IBOFF = IBOFF + NZXOPPQ
-C       Add one-index transformed Fock-matrix
-        CALL FMOLI3(ITYP,FMO(1,IM),BMAT,FBUF,
-     &              WORK,KFREE,LFREE)
+C
+         IVEC = IVEC + 1
+         IH   = IBPVC(NPRED+IVEC)
+         IH = IBTYP(2,IH)
+         IF (NISHT .GT. 0) THEN
+C
+C        Inactive...
+C
+         ITYP  = 1*1 + 0*2
+         IM = IM + 1
+C        Scatter BVEC into BMAT
+         CALL DZERO(BMAT,N2ORBXQ)
+         CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,BMAT,NORBT,NZ)
+C
+C        Construct full BMAT
+C        ===================
+C
+         IOFF = 1
+         DO IZ = 1,NZ
+           IQ = IPQTOQ(IZ,IREP)
+           IS = IHQMAT(IQ,IH)
+           IF(IS.EQ.1) THEN
+             CALL FULMAT('A',NORBT,NORBT,BMAT(IOFF))
+           ELSEIF(IS.EQ.2) THEN
+             CALL FULMAT('S',NORBT,NORBT,BMAT(IOFF))
+           ENDIF
+           IOFF = IOFF + N2ORBX
+         ENDDO
+C
+C        Print section
+         IF(IPRXRS.GE.6) THEN
+            WRITE(LUPRI,'(A,I5)') 
+     &         '* FMOLI: Scattered inactive (e-p) trial vector no.:',I
+            CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
+     &                  IPQTOQ(1,IREP),LUPRI)
+         ENDIF
+C        Add one-index transformed Fock-matrix
+         CALL FMOLI3(ITYP,FMO(1,IM),BMAT,FBUF,
+     &               WORK,KFREE,LFREE)
+         END IF
+C
+         IF (NASHT .GT. 0) THEN
+C
+C        Active...
+C
+         ITYP  = 1*1 + 1*2
+         IM = IM + 1
+C        Scatter BVEC into BMAT
+         CALL DZERO(BMAT,N2ORBXQ)
+         CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,BMAT,NORBT,NZ)
+C
+C        Construct full BMAT
+C        ===================
+C
+         IOFF = 1
+         DO IZ = 1,NZ
+           IQ = IPQTOQ(IZ,IREP)
+           IS = IHQMAT(IQ,IH)
+           IF(IS.EQ.1) THEN
+             CALL FULMAT('A',NORBT,NORBT,BMAT(IOFF))
+           ELSEIF(IS.EQ.2) THEN
+             CALL FULMAT('S',NORBT,NORBT,BMAT(IOFF))
+           ENDIF
+           IOFF = IOFF + N2ORBX
+         ENDDO
+C
+C        Print section
+         IF(IPRXRS.GE.6) THEN
+            WRITE(LUPRI,'(A,I5)') 
+     &         '* FMOLI: Scattered active (e-p) trial vector no.:',I
+            CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
+     &                  IPQTOQ(1,IREP),LUPRI)
+         ENDIF
+C        Add one-index transformed Fock-matrix
+         CALL FMOLI3(ITYP,FMO(1,IM),BMAT,FBUF(1+N2ORBXQ),
+     &               WORK,KFREE,LFREE)
+C
+         END IF
+         IBOFF = IBOFF + NZXOPPQ
       ENDDO
+cjth  IF (IPRXRS .GE. 10) THEN
+cjth     CALL MEMREL('GMOLI',WORK,1,KFRSAV,KFREE,LFREE)
+cjth  END IF
 C
       RETURN
 C
@@ -826,8 +1213,11 @@ C
 C     Generate one-index transformed Fock-matrices
 C     for use in generation of sigma vectors
 C
-C     ITYP = 1   e-e  rotations in BMAT
-C     ITYP = 2   e-p  rotations in BMAT
+C
+C     Bit 1 of ITYP = 0   e-e  rotations in BMAT
+C                     1   e-p rotations in BMAT
+C     Bit 2 of ITYP = 0   inactive density matrix
+C                     1   active density matrix
 C
 C     FMO_{si} = BMAT_{sj}FBUF_{ji} - FBUF^t_{sj}Z_{ji}
 C
@@ -846,7 +1236,7 @@ C
 #include <dgroup.h>
 #include <dcbxrs.h>
 C
-      LOGICAL EPMIX
+      LOGICAL EPMIX,LBIT
       DIMENSION FMO(NORBT,NORBT,NZ),FBUF(NORBT,NORBT,NZ),
      &          BMAT(NORBT,NORBT,NZ),WORK(*)
 C
@@ -855,14 +1245,10 @@ C
 C     Initialization
 C     ==============
 C
-      IF(ITYP.EQ.1)     THEN
+      IF(.NOT. LBIT(ITYP,1))     THEN
         EPMIX = NZXOPP.GT.0
-      ELSEIF(ITYP.EQ.2) THEN
-        EPMIX = NZXOPE.GT.0
       ELSE
-        WRITE(LUPRI,'(A,I5)') 
-     &    '*** ERROR *** FMOLI3: Unknown ITYP :',ITYP
-        CALL QUIT('FMOLI3: Unknown ITYP !')
+        EPMIX = NZXOPE.GT.0
       ENDIF
       IREP = JSYMOP-1
 C
@@ -872,23 +1258,49 @@ C
       DO 10 I1 = 1,NFSYM
         I2  = MOD(I1+JOPSY,2) + 1
 C
-C       Parameters for secondary index
+C       Parameters for first index
 C
-        IF    (ITYP.EQ.1) THEN
-          NS = NSSH(I1)
-          IS = IORB(I1) + NPSH(I1) + NOCC(I1) + 1
-        ELSEIF(ITYP.EQ.2) THEN
+        IF (.NOT. LBIT(ITYP,2) ) THEN
+C
+C          Inactive...
+C
+           NI  = NISH(I2) - NFRO(I2)
+           II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
+C
+         ELSE
+C
+C          Active...
+C
+           NI  = NASH(I2)
+           II  = IORB(I2) + NPSH(I2) + NISH(I2) + 1
+C
+         END IF
+CJTH    NI = NOCC(I2) - NFRO(I2)
+CJTH    II = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
+c       NI = NESH(I2)
+c       II = IORB(I2) + NPSH(I2) + 1
+        NI = NOCC(I2) - NFRO(I2)
+        II = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
+C
+C       Parameters for second index
+C
+        IF    (.NOT. LBIT(ITYP,1)) THEN
+C
+C         Electronic...
+C
+          NS = NESH(I1)
+          IS = IORB(I1) + NPSH(I1) + 1
+C
+        ELSE
+C
+C         Positronic...
+C
           NS = NPSH(I1)
           IS = IORB(I1) + 1
+C
         ENDIF
-        IF(NS.EQ.0) GOTO 10
 C
-C       Parameters for inactive index
-C
-        NI  = NISH(I2) - NFRO(I2)
-        II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
-C
-        IF(NI.NE.0) THEN
+        IF (NI.NE.0 .AND. NS.NE.0) THEN
 C
 C         First part: FMO_{si} = -FMO_{si} + BMAT_{sj}FBUF_{ji}
 C
@@ -912,12 +1324,12 @@ C
 C
 C           Parameters for secondary index(note the switch...)
 C
-            IF    (ITYP.EQ.1) THEN
+            IF    (.NOT. LBIT(ITYP,1)) THEN
               NT = NPSH(I1)
               IT = IORB(I1) + 1
-            ELSEIF(ITYP.EQ.2) THEN
-              NT = NSSH(I1)
-              IT = IORB(I1) + NPSH(I1) + NOCC(I1) + 1
+            ELSE
+              NT = NESH(I1)
+              IT = IORB(I1) + NPSH(I1) + 1
             ENDIF
             IF(NT.NE.0) CALL QGEMM(NT,NI,NS,DM1,
      &          'N','N',IPQTOQ(1,0),
@@ -927,6 +1339,7 @@ C
      &          DM1,IPQTOQ(1,IREP),FMO(IT,II,1),NORBT,NORBT,NZ)
           ENDIF
         ENDIF
+C
  10   CONTINUE
 C
 C     Print section
@@ -945,6 +1358,11 @@ C*****************************************************************************
 C
 C     Transform the G-matrix to MO-basis, but only the blocks needed
 C
+C     Bit 1 of ITYP = 0   e-e  rotations in BMAT
+C                     1   e-p rotations in BMAT
+C     Bit 2 of ITYP = 0   inactive density matrix
+C                     1   active density matrix
+C
 C     Written by T.Saue Sep 18 1996
 C
 C*****************************************************************************
@@ -956,7 +1374,7 @@ C
 #include <dcbbas.h>
 #include <dcbxrs.h>
 #include <dgroup.h>
-      LOGICAL EPMIX
+      LOGICAL EPMIX,LBIT
       DIMENSION FMO(NORBT,NORBT,NZ),CMO(*),
      &          FAO(N2BBASXQ),WORK(*),IQBF(4)
 C
@@ -964,37 +1382,58 @@ C
 C     Transform only blocks of right symmetry combination
 C     ===================================================
 C
-      IF(ITYP.EQ.1)     THEN
+      IF(.NOT. LBIT(ITYP,1))     THEN
         EPMIX = NZXOPP.GT.0
-      ELSEIF(ITYP.EQ.2) THEN
-        EPMIX = NZXOPE.GT.0
       ELSE
-        WRITE(LUPRI,'(A,I5)') 
-     &    '*** ERROR *** GMOLI: Unknown ITYP :',ITYP
-        CALL QUIT('GMOLI3: Unknown ITYP !')
+        EPMIX = NZXOPE.GT.0
       ENDIF
       IREP  = JSYMOP-1
       ITIM  = JTIMOP
       DO 10 I1 = 1,NFSYM
         I2  = MOD(I1+JOPSY,2) + 1
 C
-C       Parameters for secondary index
+C       Parameters for first index
 C
-        IF    (ITYP.EQ.1) THEN
-          NS = NSSH(I1)
-          IS = IORB(I1) + NPSH(I1) + NOCC(I1) + 1
-          JS = ICMOQ(I1) + (NPSH(I1)+NOCC(I1))*NFBAS(I1,0) + 1
-        ELSEIF(ITYP.EQ.2) THEN
+        IF (.NOT. LBIT(ITYP,1)) THEN
+C
+C         electronic indeces...
+C
+          NS = NORB(I1)
+          IS = IORB(I1) + NPSH(I1) + 1
+          JS = ICMOQ(I1) + NPSH(I1)*NFBAS(I1,0) + 1
+        ELSE
+C
+C         or positronic indeces...
+C
           NS = NPSH(I1)
           IS = IORB(I1) + 1
           JS = ICMOQ(I1) + 1
         ENDIF
 C
-C       Parameters for inactive index
+C       Parameters for second index
 C
-        NI  = NISH(I2)-NFRO(I2)
-        II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
-        JI  = ICMOQ(I2) + (NPSH(I2)+NFRO(I2))*NFBAS(I2,0) + 1
+         IF (.NOT. LBIT(ITYP,2)) THEN
+C
+C           inactive density matrix...
+C
+            NI  = NISH(I2) - NFRO(I2)
+            II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
+            JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1
+C
+         ELSE
+C
+C           or active density matrix...
+C
+            NI  = NASH(I2)
+            II  = IORB(I2) + NPSH(I2) + NFRO(I2) + NISH(I2) + 1
+            JI  = ICMOQ(I2) + 
+     &               (NPSH(I2)+ NFRO(I2) + NISH(I2))*NFBAS(I2,0) + 1
+C
+         END IF
+c        NI = NESH(I2)
+         NI = NOCC(I2)
+         II = IORB(I2) + NPSH(I2) + 1
+         JI = ICMOQ(I2) + NPSH(I2) * NFBAS(I2,0) + 1
 C
         IF(NS.NE.0.AND.NI.NE.0) THEN
           CALL QTRANS('AOMO','S',D0,NFBAS(I1,0),NFBAS(I2,0),NS,NI,
@@ -1015,15 +1454,24 @@ C
 C
 C         Parameters for secondary index(note the switch...)
 C
-          IF    (ITYP.EQ.1) THEN
-            NS = NPSH(I1)
-            IS = IORB(I1) + 1
-            JS = ICMOQ(I1) + 1
-          ELSEIF(ITYP.EQ.2) THEN
-            NS = NSSH(I1)
-            IS = IORB(I1) + NPSH(I1) + NOCC(I1) + 1
-            JS = ICMOQ(I1) + (NPSH(I1)+NOCC(I1))*NFBAS(I1,0) + 1
-          ENDIF
+C
+C       Parameters for first index
+C
+        IF (.NOT. LBIT(ITYP,1)) THEN
+C
+C         or positronic indeces...
+C
+          NS = NPSH(I1)
+          IS = IORB(I1) + 1
+          JS = ICMOQ(I1) + 1
+        ELSE
+C
+C         electronic indeces...
+C
+          NS = NORB(I1)
+          IS = IORB(I1) + NPSH(I1) + 1
+          JS = ICMOQ(I1) + NPSH(I1)*NFBAS(I1,0) + 1
+        ENDIF
           IF(NS.NE.0.AND.NI.NE.0) THEN
             CALL QTRANS('AOMO','S',D0,NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &                FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
@@ -1042,7 +1490,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Smoli */
-      SUBROUTINE SMOLI(SVEC,FMO,JXOP,NXOP,NFMAT)
+      SUBROUTINE SMOLI(SEVEC,SPVEC,FMO,
+     &                 JXOPE,NXOPE,JXOPP,NXOPP,
+     &                 IBEVC,IBPVC,IBTYP,WORK,LWORK)
 C*****************************************************************************
 C
 C     Gather contribution into sigma-vector
@@ -1058,13 +1508,89 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dcbxrs.h>
-      DIMENSION SVEC(NXOP,NZ,*),FMO(N2ORBXQ,*),JXOP(*)
-      NXOPQ = NXOP*NZ
+      DIMENSION SEVEC(NXOPE,NZ,*),SPVEC(NXOPP,NZ,*),
+     &          FMO(N2ORBXQ,*),JXOPE(*),JXOPP(*)
+      DIMENSION WORK(*), DFAC(2)
+      DIMENSION IBEVC(*),IBPVC(*),IBTYP(2,*)
+Cold code
+c     NXOPQ = NXOP*NZ
 CTROND We assume first all NESIM and then all NPSIM.
-      DO I = 1,NFMAT
-        CALL XOPGAT(SVEC(1,1,I),JXOP,NXOP,FMO(1,I),NORBT,NZ)
-        CALL DSCAL(NXOPQ,DM1,SVEC(1,1,I),1)
-      ENDDO
+c     DO I = 1,NFMAT
+c       CALL XOPGAT(SVEC(1,1,I),JXOP,NXOP,FMO(1,I),NORBT,NZ)
+c       CALL DSCAL(NXOPQ,DM1,SVEC(1,1,I),1)
+c     ENDDO
+Cnew code
+#include <memint.h>
+      LFPV = NZ*NASHT*NORBT
+      CALL MEMGET('REAL',KFPV,LFPV,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KFPV),LFPV)
+C
+      IF (NASHT .GT. 0) THEN
+         CALL MEMGET('REAL',KDV,N2ASHT*NZ,WORK,KFREE,LFREE)
+         CALL GETMAT('DVMO',WORK(KDV),IPRXRS,WORK(KFREE),LFREE)
+      ELSE
+         CALL MEMGET('REAL',KDV,0,WORK,KFREE,LFREE)
+      END IF
+C
+      IREP = JSYMOP - 1
+      IM = 0
+C
+C
+C     Calculate trial vectors
+C     =======================
+C
+      DO I = 1,NTSIM
+C
+C
+C        Hermicity (used in RORBGRD)
+C        ---------------------------
+C
+         IF ( I .LE. NESIM ) THEN
+            IS = IBEVC(NERED+I)
+            IS = IBTYP(2,IS)
+            DFAC(1) = -1.0D00
+            IF (IS .EQ. -1) THEN
+               DFAC(2) = -1.0D00
+            ELSE
+               DFAC(2) = +1.0D00
+            END IF
+         ELSE
+            IS = IBPVC(NPRED+I-NESIM)
+            IS = IBTYP(2,IS)
+            DFAC(1) = -1.0D00
+            IF (IS .EQ. -1) THEN
+               DFAC(2) = -1.0D00
+            ELSE
+               DFAC(2) = +1.0D00
+            END IF
+         END IF
+
+C
+C
+C        Calculate orbital sigma vector
+C        ------------------------------
+C
+         IF (NISHT .GT. 0) IM = IM + 1
+C
+C        Electronic
+C
+         IF (NXOPE .GT. 0) THEN
+            CALL RORBGRD(WORK(KDV),FMO(1,IM),FMO(1,IM+1),DUM,
+     &                   SEVEC(1,1,I),JXOPE,NXOPE,WORK(KFPV),DFAC,
+     &                   IPQTOQ(1,IREP),IPRXRS)
+         END IF
+C
+C        Positronic
+C
+         IF (NXOPP .GT. 0) THEN
+            CALL RORBGRD(WORK(KDV),FMO(1,IM),FMO(1,IM+1),DUM,
+     &                   SPVEC(1,1,I),JXOPP,NXOPP,WORK(KFPV),DFAC,
+     &                   IPQTOQ(1,IREP),IPRXRS)
+         END IF
+         IF (NASHT .GT. 0) IM = IM + 1
+      END DO
+C
+      CALL MEMREL('RORBGRD.KFPV',WORK,KFPV,KFPV,KFREE,LFREE)
 C
       RETURN
       END
@@ -1090,26 +1616,35 @@ C
 C
       IM = 0      
 C
+C
+C
 C     e-e rotations
 C     =============
 C      
       DO I = 1,NESIM
-        IS = IBEVC(NERED+I)
-        IHRMOP(IM+I) = IBTYP(2,IS)
-        IFCKOP(IM+I) = 1
-        ISYMOP(IM+I) = JSYMOP
-      ENDDO
+         DO IMAT = 1,NFOCKMAT
+           IM = IM + 1
+           IS = IBEVC(NERED+I)
+           IHRMOP(IM) = IBTYP(2,IS)
+           IFCKOP(IM) = 1
+           ISYMOP(IM) = JSYMOP
+         ENDDO
+      END DO
+C
+C
 C
 C     e-p rotations
 C     =============
 C
-      IM = NESIM
       DO I = 1,NPSIM
-        IS = IBPVC(NPRED+I)
-        IHRMOP(IM+I) = IBTYP(2,IS)
-        IFCKOP(IM+I) = 1
-        ISYMOP(IM+I) = JSYMOP
-      ENDDO
+         DO IMAT = 1,NFOCKMAT
+           IM = IM + 1
+           IS = IBPVC(NPRED+I)
+           IHRMOP(IM) = IBTYP(2,IS)
+           IFCKOP(IM) = 1
+           ISYMOP(IM) = JSYMOP
+         ENDDO
+      END DO
 C
       RETURN
       END
@@ -1119,7 +1654,7 @@ C  /* Deck xrstvc */
      &                  BPVEC,IBPVC,NBPVC,IPOFF,
      &                  BCVEC,IBCVC,NBCVC,ICOFF,
      &                  TEVEC,TPVEC,TCVEC,NBTOT,ITOFF,
-     &                  WORK,KFREE,LFREE)
+     &                  IBTYP,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Generate tau vectors : metric S[2] times trial vector B(I)
@@ -1144,6 +1679,7 @@ C
       DIMENSION BCVEC(*),BEVEC(*),BPVEC(*),
      &          TCVEC(*),TEVEC(*),TPVEC(*),
      &          IBCVC(*),IBEVC(*),IBPVC(*),
+     &          IBTYP(*),
      &          WORK(*)
 C
 #include <dcbxrs.h>
@@ -1165,7 +1701,8 @@ chj   IF (.NOT.RSPCI) THEN
           CALL XRSTEP(BEVEC,IBEVC,NBEVC,IEOFF,
      &                BPVEC,IBPVC,NBPVC,IPOFF,
      &                BCVEC,IBCVC,NBCVC,ICOFF,
-     &                TEVEC,TPVEC,NBTOT,ITOFF,WORK,KFREE,LFREE)
+     &                TEVEC,TPVEC,NBTOT,ITOFF,
+     &                IBTYP,WORK,KFREE,LFREE)
 chj   END IF
 C
 C     Construct configurational part of linear transformed vectors
@@ -1212,7 +1749,8 @@ C  /* Deck xrstov */
       SUBROUTINE XRSTEP(BEVEC,IBEVC,NBEVC,IEOFF,
      &                  BPVEC,IBPVC,NBPVC,IPOFF,
      &                  BCVEC,IBCVC,NBCVC,ICOFF,
-     &                  TEVEC,TPVEC,NBTOT,ITOFF,WORK,KFREE,LFREE)
+     &                  TEVEC,TPVEC,NBTOT,ITOFF,
+     &                  IBTYP,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Construct upper orbital part of tau vectors
@@ -1251,44 +1789,173 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D1 = 1.0D0, DM1 = -1.0D00)
       DIMENSION BEVEC(NZXOPEQ,*),IBEVC(*),
      &          BPVEC(NZXOPPQ,*),IBPVC(*),
      &          BCVEC(NZCONFQ,*),IBCVC(*),
      &          TEVEC(NZXOPEQ,*),TPVEC(NZXOPPQ,*),
-     &          WORK(*)
+     &          IBTYP(2,*),WORK(*)
+      CHARACTER SSTR(2)*1
 C
 #include <dcborb.h>
 #include <dcbbas.h>
 #include <dgroup.h>
 #include <dcbxrs.h>
 C
-      IF (IPRXRS .GE. 10) THEN
-         CALL HEADER('Output from XRSTEP',-1)
-      END IF
-      IF(NASHT.EQ.0) THEN
-        DO I = 1,NBEVC
-          J  = IBEVC(I+IEOFF) - ITOFF
-          CALL DAXPY(NZXOPEQ,D1,BEVEC(1,I),1,TEVEC(1,J),1)
-          IF (IPRXRS .GE. 10) THEN
-             WRITE(LUPRI,'(2X,A,I3)') 
-     &           'Orbital electronic tau vector no. ',J
-             CALL PRBVEC(LUPRI,TEVEC(1,J),1,NZXOPE)
-          END IF
-        ENDDO
-        DO I = 1,NBPVC
-          J  = IBPVC(I+IPOFF) - ITOFF
-          CALL DAXPY(NZXOPPQ,D1,BPVEC(1,I),1,TPVEC(1,J),1)
-          IF (IPRXRS .GE. 10) THEN
-             WRITE(LUPRI,'(2X,A,I3)') 
-     &           'Orbital positronic tau vector no. ',J
-             CALL PRBVEC(LUPRI,TPVEC(1,J),1,NZXOPP)
-          END IF
-        ENDDO
+      DATA SSTR /'S','A'/
+C
+C
+C     Hermicity of operator
+C     =====================
+C
+C
+C     Allocate memory and get active density matrix
+C     =============================================
+C
+      IREP = JSYMOP - 1
+      KFRSAV = KFREE
+      MNZXOP = MAX(NZXOPEQ,NZXOPPQ)
+      CALL MEMGET('REAL',KUBVEC,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KOP   ,MNZXOP ,WORK,KFREE,LFREE)
+      IF (NASHT .GT. 0) THEN
+         CALL MEMGET('REAL',KDV,N2ASHT*NZ,WORK,KFREE,LFREE)
+         CALL GETMAT('DVMO',WORK(KDV),IPRXRS,WORK(KFREE),LFREE)
       ELSE
-        WRITE(LUPRI,'(A)') 'XRSTOV: Open shell code not written !'
-        CALL QUIT('XRSTEP: Open shell code not written !')
-      ENDIF
+         CALL MEMGET('REAL',KDV,0,WORK,KFREE,LFREE)
+      END IF
+C
+C     Calculate tau vectors
+C     =====================
+C
+C     Electronic...
+C
+      DO I = 1,NBEVC
+         IH = IBEVC(I+IEOFF)
+         IH = IBTYP(2,IH)
+         IF (IH .EQ. -1) THEN
+            IH  = 1
+            IHH = 1
+         ELSE IF (IH .EQ. 1) THEN
+            IH  = -1
+            IHH =  2
+         ELSE
+            CALL QUIT('argh ralle ralle')
+         END IF
+C
+C        Construct full matrix
+C        ---------------------
+C
+         CALL DZERO(WORK(KUBVEC),N2ORBXQ)
+         CALL XOPSCT(BEVEC(1,I),WORK(KZXOPE),NZXOPE,
+     &               WORK(KUBVEC),NORBT,NZ)
+
+         IF (IPRXRS .GE. 100) THEN
+            WRITE(LUPRI,'(1X,A,I3)') 
+     &         'XRSTEP: Scattered trial vector no. ',I
+            CALL PRQMAT(WORK(KUBVEC),NORBT,NORBT,NORBT,NORBT,
+     &                  NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+C
+         IZOFF = 0
+         DO IZ = 1,NZ
+            IQ = IPQTOQ(IZ,IREP)
+            IS = IHQMAT(IQ,IH)
+            CALL FULMAT(SSTR(IS),NORBT,NORBT,WORK(KUBVEC+IZOFF))
+            IZOFF = IZOFF + N2ORBX
+         END DO
+         IF (IPRXRS .GE. 100) THEN
+            WRITE(LUPRI,'(1X,A,I3)') 
+     &         'XRSTEP: Full trial vector no. ',I
+            CALL PRQMAT(WORK(KUBVEC),NORBT,NORBT,NORBT,NORBT,
+     &                  NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+C
+C        Calculate contribution to tau vector
+C        ------------------------------------
+C
+         CALL DZERO(WORK(KOP),NZXOPEQ)
+         CALL PRPORB(WORK(KOP),WORK(KZXOPE),NZXOPE,WORK(KUBVEC),
+     &               NORBT,WORK(KDV),NZ,IHH)
+C
+C
+         J  = IBEVC(I+IEOFF) - ITOFF
+         IF (IPRINT .GE. 20) THEN
+             WRITE(LUPRI,'(A,I2)') 'XRSTEP: contribution to J = ',J
+             WRITE(LUPRI,'(I5,3X,1P,E18.10)')
+     &         (K,WORK(KOP+K-1), K = 1,NZXOPE)
+         END IF
+C
+C
+         CALL DAXPY(NZXOPEQ,D1,WORK(KOP),1,TEVEC(1,J),1)
+C
+      END DO
+C
+C
+C     Positronic...
+C
+      DO I = 1,NBPVC
+         IH = IBPVC(I+IPOFF)
+         IH = IBTYP(2,IH)
+         IF (IH .EQ. -1) THEN
+            IH  = 1
+            IHH = 1
+         ELSE IF (IH .EQ. 1) THEN
+            IH  = -1
+            IHH =  2
+         ELSE
+            CALL QUIT('argh ralle ralle')
+         END IF
+C
+C        Construct full matrix
+C        ---------------------
+C
+         CALL DZERO(WORK(KUBVEC),N2ORBXQ)
+         CALL XOPSCT(BPVEC(1,I),WORK(KZXOPP),NZXOPP,
+     &               WORK(KUBVEC),NORBT,NZ)
+
+         IF (IPRXRS .GE. 100) THEN
+            WRITE(LUPRI,'(1X,A,I3)') 
+     &         'XRSTEP: Scattered trial vector no. ',I
+            CALL PRQMAT(WORK(KUBVEC),NORBT,NORBT,NORBT,NORBT,
+     &                  NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+C
+         IZOFF = 0
+         DO IZ = 1,NZ
+            IQ = IPQTOQ(IZ,IREP)
+            IS = IHQMAT(IQ,IH)
+            CALL FULMAT(SSTR(IS),NORBT,NORBT,WORK(KUBVEC+IZOFF))
+            IZOFF = IZOFF + N2ORBX
+         END DO
+         IF (IPRXRS .GE. 100) THEN
+            WRITE(LUPRI,'(1X,A,I3)') 
+     &         'XRSTEP: Full trial vector no. ',I
+            CALL PRQMAT(WORK(KUBVEC),NORBT,NORBT,NORBT,NORBT,
+     &                  NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+C
+C        Calculate contribution to tau vector
+C        ------------------------------------
+C
+         CALL DZERO(WORK(KOP),NZXOPPQ)
+         CALL PRPORB(WORK(KOP),WORK(KZXOPP),NZXOPP,WORK(KUBVEC),
+     &               NORBT,WORK(KDV),NZ,IHH)
+C
+C
+         J  = IBPVC(I+IPOFF) - ITOFF
+         IF (IPRINT .GE. 20) THEN
+             WRITE(LUPRI,'(A,I2)') 'XRSTEP: contribution to J = ',J
+             WRITE(LUPRI,'(I5,3X,1P,E18.10)')
+     &         (K,WORK(KOP+K-1), K = 1,NZXOPP)
+         END IF
+C
+C
+         CALL DAXPY(NZXOPPQ,D1,WORK(KOP),1,TPVEC(1,J),1)
+C
+      END DO
+      CALL MEMREL('XRSTEP',WORK,1,KFRSAV,KFREE,LFREE)
+
+Cnew code
       RETURN
 C
       END
@@ -1450,7 +2117,7 @@ C
      &                BPPVC(1,I),1,NBPVC,0,
      &                BCPVC(1,I),1,NBCVC,0,
      &                BEBUF,BPBUF,BCBUF,1,0,
-     &                WORK,KFREE,LFREE)
+     &                IBTYP,WORK,KFREE,LFREE)
 C
 C         Accumulate T(+) = S[2}X(-) in b(+)
 C         ------------------------------------
@@ -1459,7 +2126,7 @@ C
      &                BPMVC(1,I),1,NBPVC,0,
      &                BCMVC(1,I),1,NBCVC,0,
      &                BEPVC(1,I),BPPVC(1,I),BCPVC(1,I),1,0,
-     &                WORK,KFREE,LFREE)
+     &                IBTYP,WORK,KFREE,LFREE)
 C
 C         Scale T = S[2]X with negative frequency
 C         ---------------------------------------
@@ -2329,14 +2996,21 @@ C
       KPDIAH = KFREE
       KCDIAH = KFREE
       IF(DIAGHE.AND.(.NOT.USEXVC)) THEN
-        IF(NZXOPE.GT.0) 
-     &    CALL MEMGET('REAL',KEDIAH,NZXOPE,WORK,KFREE,LFREE)
-        IF(NZXOPP.GT.0) 
-     &    CALL MEMGET('REAL',KPDIAH,NZXOPP,WORK,KFREE,LFREE)
-        IF(NZCONF.GT.0) 
-     &    CALL MEMGET('REAL',KCDIAH,NZCONF,WORK,KFREE,LFREE)
-        CALL E2DIAG(WORK(KEDIAH),WORK(KPDIAH),WORK(KCDIAH),
-     &              WORK,KFREE,LFREE)
+         IF (NZXOPE.GT.0) THEN
+            CALL MEMGET('REAL',KEDIAH,NZXOPE,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KEDIAS,NZXOPE,WORK,KFREE,LFREE)
+         END IF
+         IF (NZXOPP.GT.0) THEN
+            CALL MEMGET('REAL',KPDIAH,NZXOPP,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KPDIAS,NZXOPP,WORK,KFREE,LFREE)
+         END IF
+         IF (NZCONF.GT.0) THEN
+            CALL MEMGET('REAL',KCDIAH,NZCONF,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KCDIAS,NZCONF,WORK,KFREE,LFREE)
+         END IF
+         CALL E2DIAG(WORK(KEDIAH),WORK(KPDIAH),WORK(KCDIAH),
+     &               WORK(KEDIAS),WORK(KPDIAS),WORK(KCDIAS),
+     &               WORK,KFREE,LFREE)
       ENDIF
       IF(USEXVC) THEN
         IBOFF  = 0

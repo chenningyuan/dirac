@@ -796,17 +796,24 @@ C
       KPDIAH = KFREE
       KCDIAH = KFREE
       IF(DIAGHE) THEN
-        IF(NZXOPE.GT.0) 
-     &    CALL MEMGET('REAL',KEDIAH,NZXOPE,WORK,KFREE,LFREE)
-        IF(NZXOPP.GT.0) 
-     &    CALL MEMGET('REAL',KPDIAH,NZXOPP,WORK,KFREE,LFREE)
-        IF(NZCONF.GT.0) 
-     &    CALL MEMGET('REAL',KCDIAH,NZCONF,WORK,KFREE,LFREE)
+         IF (NZXOPE.GT.0) THEN
+            CALL MEMGET('REAL',KEDIAH,NZXOPE,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KEDIAS,NZXOPE,WORK,KFREE,LFREE)
+         END IF
+         IF (NZXOPP.GT.0) THEN
+            CALL MEMGET('REAL',KPDIAH,NZXOPP,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KPDIAS,NZXOPP,WORK,KFREE,LFREE)
+         END IF
+         IF (NZCONF.GT.0) THEN
+            CALL MEMGET('REAL',KCDIAH,NZCONF,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KCDIAS,NZCONF,WORK,KFREE,LFREE)
+         END IF
       ENDIF
-      CALL  XRSST1(BINMEM,MAXSIM,IBTYP,IBCVC,IBEVC,IBPVC,
+      CALL XRSST1(BINMEM,MAXSIM,IBTYP,IBCVC,IBEVC,IBPVC,
      &                 WORK(KEVEC),WORK(KPVEC),WORK(KCVEC),
      &                 GPCI,GPOE,GPOP,EVALR,
      &                 WORK(KEDIAH),WORK(KPDIAH),WORK(KCDIAH),
+     &                 WORK(KEDIAS),WORK(KPDIAS),WORK(KCDIAS),
      &                 WORK,KFREE,LFREE)
       NOSIM = NESIM + NPSIM
       NTSIM = NCSIM + NOSIM
@@ -853,7 +860,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck XRSST1 */
       SUBROUTINE XRSST1(BINMEM,MAXSIM,IBTYP,IBCVC,IBEVC,IBPVC,
      &                 IEVEC,IPVEC,ICVEC,GPCI,GPOE,GPOP,EVALR,
-     &                 HEDIAG,HPDIAG,HCDIAG,WORK,KFREE,LFREE)
+     &                 HEDIAG,HPDIAG,HCDIAG,SEDIAG,SPDIAG,SCDIAG,
+     &                 WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Generate start vectors in RSP
@@ -871,14 +879,16 @@ C
       LOGICAL   BINMEM
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),EVALR(*),
      &          GPCI(*),GPOE(*),GPOP(*),IEVEC(*),IPVEC(*),ICVEC(*),
-     &          HEDIAG(*),HPDIAG(*),HCDIAG(*),WORK(*)
+     &          HEDIAG(*),HPDIAG(*),HCDIAG(*),
+     &          SEDIAG(*),SPDIAG(*),SCDIAG(*),WORK(*)
 C
       CALL QENTER('XRSST1')
       KFRSAV = KFREE
 C
 C     If requested, get diagonal elements of Hessian (approximate)
+C        and metric.
 C
-      IF(DIAGHE) CALL E2DIAG(HEDIAG,HPDIAG,HCDIAG,
+      IF(DIAGHE) CALL E2DIAG(HEDIAG,HPDIAG,HCDIAG,SEDIAG,SPDIAG,SCDIAG,
      &                       WORK,KFREE,LFREE)
 C
 C
@@ -892,7 +902,8 @@ C     Orbtial (e-e) type trial vector
 C     -------------------------------
 C
       IF(NZXOPE.GT.0) THEN
-        CALL XRSST2('E',WORK(KBOE),GPOE,HEDIAG,EVALR,IBTYP,IBEVC,IEVEC,
+        CALL XRSST2('E',WORK(KBOE),GPOE,HEDIAG,SEDIAG,EVALR,
+     &              IBTYP,IBEVC,IEVEC,
      &              JBENDX,NESIM,IND,NERED,NZXOPE,WORK,KFREE,LFREE)
         IND = IND + NESIM
       END IF
@@ -901,7 +912,8 @@ C     Orbital (e-p) type trial vector
 C     -------------------------------
 C
       IF(NZXOPP.GT.0) THEN
-        CALL XRSST2('P',WORK(KBOP),GPOP,HPDIAG,EVALR,IBTYP,IBPVC,IPVEC,
+        CALL XRSST2('P',WORK(KBOP),GPOP,HPDIAG,SPDIAG,EVALR,
+     &              IBTYP,IBPVC,IPVEC,
      &              JBPNDX,NPSIM,IND,NPRED,NZXOPP,WORK,KFREE,LFREE)
         IND = IND + NPSIM
       END IF
@@ -910,7 +922,8 @@ C     Configurational type trial vector
 C     ---------------------------------
 C
       IF(NZCONF.GT.0) THEN
-        CALL XRSST2('C',WORK(KBCI),GPCI,HCDIAG,EVALR,IBTYP,IBCVC,ICVEC,
+        CALL XRSST2('C',WORK(KBCI),GPCI,HCDIAG,SCDIAG,
+     &              EVALR,IBTYP,IBCVC,ICVEC,
      &              JBCNDX,NCSIM,IND,NCRED,NZCONF,WORK,KFREE,LFREE)
         IND = IND + NCSIM
       END IF
@@ -1493,7 +1506,7 @@ C
      &              BPVEC,IBPVC,NPSIM,IPRED,
      &              BCVEC,IBCVC,NCSIM,ICRED,
      &              SEVEC,SPVEC,SCVEC,NTSIM,IZRED,
-     &              WORK,KFREE,LFREE)
+     &              IBTYP,WORK,KFREE,LFREE)
 C
 C       Extend reduced S-matrix
 C       -----------------------
@@ -1543,6 +1556,7 @@ C
 #include <dcbfir.h>
 #include <dcbxrs.h>
 #include <dgroup.h>
+#include <dcborb.h>
       LOGICAL   BINMEM
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),
      &          GPCI(*),GPOE(*),GPOP(*), WORK(*),
@@ -1610,6 +1624,13 @@ C
       FIRST1 = .TRUE.
       FIRST2 = .TRUE.
       FIRST3 = .TRUE.
+C
+      NFOCKMAT = 0
+      IF (NISHT .GT. 0) NFOCKMAT = NFOCKMAT + 1
+      IF (NASHT .GT. 0) NFOCKMAT = NFOCKMAT + 1
+      IF (NFOCKMAT .EQ. 0) THEN
+         CALL QUIT('XRSINI: Neither inactive nor active orbitals!')
+      END IF
 C
 C     Determine integral contribution
 C     ===============================
@@ -1964,7 +1985,7 @@ C
      &          EVALR(NFREQ),EVECR(NREDM,NFREQ),IBTYP(2,*),RCNV(*),
      &          WORK(*)
 C
-      PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , D2 = 2.0D0 )
+      PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , D2 = 2.0D0 , DP5 = 0.5D0)
       PARAMETER ( DRTEST = 1.0D-5 )
 C
       CALL QENTER('XRSSOL')
@@ -2014,7 +2035,8 @@ C
            WRITE(LUPRI,'(/A,I4)') '<<B;B>> at iteration: ',ITMIC
            CALL PRSYMB(LUPRI,'-',44,0)
            DO IFREQ = 1,NFREQ
-           VLRF = DDOT(NZRED,REDGP,1,EVECR(1,IFREQ),1)
+           VLRF = DP5*DDOT(NZRED,REDGP,1,EVECR(1,IFREQ),1)
+cjth       VLRF = DDOT(NZRED,REDGP,1,EVECR(1,IFREQ),1)
            IF(RCNV(IFREQ).GT.THCXRS) THEN
              WRITE(LUPRI,'(3X,A,F15.8,5X,F15.8)')
      &         'Freq.:',EVALR(IFREQ),VLRF
@@ -2546,7 +2568,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck E2DIAG */
-      SUBROUTINE E2DIAG(HEDIAG,HPDIAG,HCDIAG,WORK,KFREE,LFREE)
+      SUBROUTINE E2DIAG(HEDIAG,HPDIAG,HCDIAG,SEDIAG,SPDIAG,SCDIAG,
+     &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Get diagonal elements of Hessian(approximate)
@@ -2558,26 +2581,28 @@ C*****************************************************************************
 #include <priunit.h>
 C
 #include <dcbxrs.h>
-      DIMENSION HEDIAG(*),HPDIAG(*),HCDIAG(*),WORK(*)
+      DIMENSION HEDIAG(*),HPDIAG(*),HCDIAG(*),
+     &          SEDIAG(*),SPDIAG(*),SCDIAG(*),WORK(*)
 C
 C     Orbital part
 C
       IF((NZXOPE.GT.0).OR.(NZXOPP.GT.0)) THEN
-        CALL E2ODIA(HEDIAG,HPDIAG,WORK(KZXOPE),WORK(KZXOPP),
-     &              WORK,KFREE,LFREE)
+        CALL E2ODIA(HEDIAG,HPDIAG,SEDIAG,SPDIAG,
+     &              WORK(KZXOPE),WORK(KZXOPP),WORK,KFREE,LFREE)
       ENDIF
 C
 C     Configurational part
 C
       IF(NZCONF.GT.0) THEN
-C        CALL E2CDIA(HCDIAG,WORK,KFREE,LFREE)
+C        CALL E2CDIA(HCDIAG,SCDIAG,WORK,KFREE,LFREE)
       ENDIF
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck E2ODIA */
-      SUBROUTINE E2ODIA(HEDIAG,HPDIAG,JXOPE,JXOPP,WORK,KFREE,LFREE)
+      SUBROUTINE E2ODIA(HEDIAG,HPDIAG,SEDIAG,SPDIAG,
+     &                  JXOPE,JXOPP,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Get orbital part of diagonal hessian elements
@@ -2600,57 +2625,75 @@ C
 #include <dcbgen.h>
 #include <dcbxrs.h>
 #include <dcbbas.h>
+#include <dcborb.h>
 #include <dcbibn.h>
+#include <dgroup.h>
 C
-      DIMENSION HEDIAG(*),HPDIAG(*),JXOPE(2,*),JXOPP(2,*),WORK(*)
+      DIMENSION HEDIAG(*),HPDIAG(*),JXOPE(2,*),JXOPP(2,*),
+     &          SEDIAG(*),SPDIAG(*),WORK(*)
 C
       KFRSAV = KFREE
-      CALL MEMGET('REAL',KFMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFMO,NFOCKMAT*N2BBASXQ,WORK,KFREE,LFREE)
 C
 C     Get total Fock matrix in MO-basis
 C
-      CALL GETFCK(WORK(KFMO),IPRXRS,WORK,KFREE,LFREE)
+      IF (NASHT .GT. 0) THEN
+         CALL MEMGET('REAL',KDV,N2ASHT*NZ,WORK,KFREE,LFREE)
+         CALL GETMAT('FCMO+FVMO',WORK(KFMO),IPRXRS,WORK(KFREE),LFREE)
+         CALL GETMAT('DVMO'     ,WORK(KDV) ,IPRXRS,WORK(KFREE),LFREE)
+      ELSE
+         CALL MEMGET('REAL',KDV,0,WORK,KFREE,LFREE)
+         CALL GETMAT('FCMO',WORK(KFMO),IPRXRS,WORK(KFREE),LFREE)
+      END IF
 C
 C     Electronic part
 C
       IF(NZXOPE.GT.0) THEN
-        IF(STERNH) THEN
-          FAC = DM2*CVAL*CVAL
-          CALL DCOPY(NZXOPE,FAC,0,HEDIAG,1)
-        ELSE
-          CALL E2ODI1(HEDIAG,WORK(KFMO),JXOPE,NZXOPE)
-        ENDIF
-        IF(IPRXRS.GE.5) THEN
-          WRITE(LUPRI,'(/A)') '** E2ODIA: Diagonal Hessian (e-e):'
-          WRITE(LUPRI,'(2I5,3X,1P,E18.10)')
-     &      (JXOPE(1,I),JXOPE(2,I),HEDIAG(I), I = 1,NZXOPE)
-        ENDIF
+         IF(STERNH) THEN
+            FAC = DM2*CVAL*CVAL
+            CALL DCOPY(NZXOPE,FAC,0,HEDIAG,1)
+         ELSE
+            CALL E2ODI1(HEDIAG,WORK(KFMO),WORK(KDV),JXOPE,NZXOPE)
+         ENDIF
+         CALL S2ODI1(SEDIAG,WORK(KDV),JXOPE,NZXOPE)
+         IF(IPRXRS.GE.5) THEN
+            WRITE(LUPRI,'(/A)') '** E2ODIA: Diagonal Hessian (e-e):'
+            WRITE(LUPRI,'(2I5,3X,1P,E18.10)')
+     &         (JXOPE(1,I),JXOPE(2,I),HEDIAG(I), I = 1,NZXOPE)
+            WRITE(LUPRI,'(/A)') '** E2ODIA: Diagonal metric (e-e):'
+            WRITE(LUPRI,'(2I5,3X,1P,E18.10)')
+     &         (JXOPE(1,I),JXOPE(2,I),SEDIAG(I), I = 1,NZXOPE)
+         ENDIF
       ENDIF
 C
 C     Positronic part
 C
       IF(NZXOPP.GT.0) THEN
-        IF(STERNH) THEN
-          FAC = DM2*CVAL*CVAL
-          CALL DCOPY(NZXOPP,FAC,0,HPDIAG,1)
-        ELSE
-          CALL E2ODI1(HPDIAG,WORK(KFMO),JXOPP,NZXOPP)
-        ENDIF
-        IF(IPRXRS.GE.5) THEN
-          WRITE(LUPRI,'(/A)') '** E2ODIA: Diagonal Hessian (e-p):'
-          WRITE(LUPRI,'(2I5,3X,1P,E18.10)')
-     &      (JXOPP(1,I),JXOPP(2,I),HPDIAG(I), I = 1,NZXOPP)
-        ENDIF
+         IF(STERNH) THEN
+            FAC = DM2*CVAL*CVAL
+            CALL DCOPY(NZXOPP,FAC,0,HPDIAG,1)
+         ELSE
+            CALL E2ODI1(HPDIAG,WORK(KFMO),WORK(KDV),JXOPP,NZXOPP)
+         ENDIF
+         CALL S2ODI1(SPDIAG,WORK(KDV),JXOPE,NZXOPE)
+         IF(IPRXRS.GE.5) THEN
+            WRITE(LUPRI,'(/A)') '** E2ODIA: Diagonal Hessian (e-p):'
+            WRITE(LUPRI,'(2I5,3X,1P,E18.10)')
+     &         (JXOPP(1,I),JXOPP(2,I),HPDIAG(I), I = 1,NZXOPP)
+            WRITE(LUPRI,'(/A)') '** E2ODIA: Diagonal metric (e-p):'
+            WRITE(LUPRI,'(2I5,3X,1P,E18.10)')
+     &         (JXOPP(1,I),JXOPP(2,I),SPDIAG(I), I = 1,NZXOPP)
+         ENDIF
       ENDIF
 C
 C
-      CALL MEMREL('XRSSEP',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('E2ODIA',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck E2ODI1 */
-      SUBROUTINE E2ODI1(HODIAG,FMO,JXOP,NXOP)
+      SUBROUTINE E2ODI1(HODIAG,FMO,DV,JXOP,NXOP)
 C*****************************************************************************
 C
 C     Get orbital part of diagonal hessian elements
@@ -2669,22 +2712,112 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C     
+      PARAMETER(D2 = 2.0D0, DP5 = 0.5D0)
+C     
 #include <dcborb.h>
 #include <dgroup.h>
-      DIMENSION HODIAG(NXOP),FMO(NORBT,NORBT,NZ),
-     &          JXOP(2,NXOP)
+      DIMENSION HODIAG(NXOP),FMO(NORBT,NORBT,NZ,2),
+     &          JXOP(2,NXOP),DV(*)
+C
 C
       DO IXOP = 1,NXOP
-        IS = JXOP(2,IXOP)
-        II = JXOP(1,IXOP)
-        HODIAG(IXOP) = FMO(IS,IS,1) - FMO(II,II,1)
+         IS = JXOP(2,IXOP)
+         II = JXOP(1,IXOP)
+         CALL IOBTYP(IS,ITYPS,ISYMS)
+         CALL IOBTYP(II,ITYPI,ISYMI)
+C
+C        II: inactive
+C        ------------
+C
+C        E[2}_{si,si} ~ ( FC_{ss} + FV_{ss} ) - ( FC_{ii} + FV_{ii} )
+C        E[2}_{ai,ai} ~ ( FC_{aa} + FV_{aa} + D_{aa} FC_{ii} - F_{aa} )
+C                         -  ( FC_{ii} + FV_{ii} )
+C
+         IF (ITYPI .EQ. 2) THEN
+            HODIAG(IXOP) = - D2 * FMO(II,II,1,1) 
+            IF (NASHT .GT. 0) THEN
+               HODIAG(IXOP) = HODIAG(IXOP) - D2 * FMO(II,II,1,2)
+            END IF
+            IF (ITYPS .EQ. 1 .OR. ITYPS .EQ. 4) THEN
+               HODIAG(IXOP) = HODIAG(IXOP) + D2 * FMO(IS,IS,1,1)
+               IF (NASHT .GT. 0) THEN
+                  HODIAG(IXOP) = HODIAG(IXOP) + D2 * FMO(IS,IS,1,2) 
+               END IF
+            ELSE
+CJTH MAERKE
+C 1.0D00 skal byttes ud med DV elementer...
+               HODIAG(IXOP) = HODIAG(IXOP) + 
+     &             ( D2 * (FMO(IS,IS,1,1) + FMO(IS,IS,1,2)) + 
+     &              1.0D00 * FMO(II,II,1,1) - 1.00 * FMO(IS,IS,1,1) )
+            END IF
+         ELSE IF (ITYPI .EQ. 3) THEN
+C
+C        II: active
+C        ----------
+C
+            HODIAG(IXOP) = FMO(IS,IS,1,1) - FMO(II,II,1,1)
+         END IF
+C
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck S2ODI1 */
+      SUBROUTINE S2ODI1(SODIAG,DV,JXOP,NXOP)
+C*****************************************************************************
+C
+C     Get orbital part of diagonal metric elements
+C
+C     The diagonal elements are given by:
+C
+C       S[2]_{pq,pq} = <0| [Qp,Pq] |0>
+C                    = Dpp - Dqq
+C     
+C     Only real part is stored. What about MCSCF?
+C    
+C
+C     Written by J. Thyssen - Jun 1 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C     
+      PARAMETER(D2 = 2.0D0)
+C     
+#include <dcborb.h>
+#include <dgroup.h>
+      DIMENSION SODIAG(NXOP),JXOP(2,NXOP),DV(*)
+C
+C
+      DO IXOP = 1,NXOP
+         IS = JXOP(2,IXOP)
+         II = JXOP(1,IXOP)
+         CALL IOBTYP(IS,ITYPS,ISYMS)
+         CALL IOBTYP(II,ITYPI,ISYMI)
+C
+C
+         IF (ITYPI .EQ. 2) THEN
+            SODIAG(IXOP) = D2
+         ELSE IF (ITYPI .EQ. 3) THEN
+            IV = II - ( IORB(ISYMI) + NPSH(ISYMI) + NISH(ISYMI) )
+            IOFFIV = IV + (IV-1)*NASH(ISYMI)
+            SODIAG(IXOP) = DV(IOFFIV)
+         END IF
+C
+         IF (ITYPS .EQ. 3) THEN
+            IV = IS - ( IORB(ISYMS) + NPSH(ISYMS) + NISH(ISYMS) )
+            IOFFIV = IV + (IV-1)*NASH(ISYMS)
+            SODIAG(IXOP) = SODIAG(IXOP) - DV(IOFFIV)
+         END IF
+C
       ENDDO
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XRSST2 */
-      SUBROUTINE XRSST2(TYP,BVEC,GP,HDIAG,EVALR,IBTYP,IBVEC,IVEC,
+      SUBROUTINE XRSST2(TYP,BVEC,GP,HDIAG,SDIAG,EVALR,IBTYP,IBVEC,IVEC,
      &                  JBTYP,NBVEC,IBOFF,NBPREV,NVAR,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -2702,7 +2835,7 @@ C
 C
       LOGICAL FNDXLB
       CHARACTER TYP*1
-      DIMENSION BVEC(NVAR,NZ,*),GP(NVAR,NZ),HDIAG(NVAR),
+      DIMENSION BVEC(NVAR,NZ,*),GP(NVAR,NZ),HDIAG(NVAR),SDIAG(NVAR),
      &          EVALR(NFREQ),IBTYP(2,*),IBVEC(*),IVEC(*),
      &          WORK(*)
 #include <chrnos.h>
@@ -2826,9 +2959,10 @@ C
               CALL DCOPY(NVARQ,GP,1,BVEC(1,1,IM),1)
               DO IZ = 1,NZ
                 DO IVAR = 1,NVAR
-                  FAC = (FREQ**2-HDIAG(IVAR)**2)
+                  FAC = ( (FREQ*SDIAG(IVAR))**2-HDIAG(IVAR)**2)
                   BVEC(IVAR,IZ,IP) = (HDIAG(IVAR)/FAC)*BVEC(IVAR,IZ,IP)
-                  BVEC(IVAR,IZ,IM) = (FREQ/FAC)*BVEC(IVAR,IZ,IM)
+                  BVEC(IVAR,IZ,IM) = 
+     &               (FREQ*SDIAG(IVAR)/FAC)*BVEC(IVAR,IZ,IM)
                 ENDDO
               ENDDO
               IBTYP(1,IBOFF+IP)     = JBTYP
