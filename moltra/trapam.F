@@ -724,10 +724,11 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "mp1stpr.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TRASAM,ACTIVE
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
-     &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
+     &          IR(2,2),NR(2),NQ(2,4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
 C     
       CALL QENTER('LAGTAU')
@@ -741,6 +742,13 @@ C
 C     Define number of double quaternionic classes
 C     
       NQQCLASS = NZ * NZ * NBSYM / NFSYM
+C
+      print*,'jvs:WAARSCHUWING: tijdelijk met de hand de orbital 
+     & string, later via input'
+      MPR_INDSTR(1,1) = '1..1'
+      MPR_INDSTR(2,1) = '2..3'
+      MPR_INDSTR(3,1) = '2..3'
+      MPR_INDSTR(4,1) = '2..3'
 C     
 C     +-----------------------------------------+
 C     | Set up index arrays for active orbitals |
@@ -762,7 +770,7 @@ C
 C
         CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
         NSTR(IFRP,0,1) = - 1
-        CALL NUMLST(TRA4_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
+        CALL NUMLST(MPR_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &              IFRP,NSTR(IFRP,0,1),WORK(KFREE),LFREE)
         CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),IFRP,
@@ -787,7 +795,7 @@ C
 C
         CALL MEMGET('INTE',KVEC(IFRP,2),NR(IFRP),WORK,KFREE,LFREE)
         NSTR(IFRP,0,2) = - 1
-        CALL NUMLST(TRA4_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
+        CALL NUMLST(MPR_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &              IFRP,NSTR(IFRP,0,2),WORK(KFREE),LFREE)
         CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),IFRP,
@@ -812,7 +820,7 @@ C
 C
         CALL MEMGET('INTE',KVEC(IFRP,3),NR(IFRP),WORK,KFREE,LFREE)
         NSTR(IFRP,0,3) = - 1
-        CALL NUMLST(TRA4_INDSTR(3,IFRP),WORK(KVEC(IFRP,3)),
+        CALL NUMLST(MPR_INDSTR(3,IFRP),WORK(KVEC(IFRP,3)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &              IFRP,NSTR(IFRP,0,3),WORK(KFREE),LFREE)
         CALL ORBCNT(WORK(KVEC(IFRP,3)),NSTR(IFRP,0,3),IFRP,
@@ -837,7 +845,7 @@ C
 C    
         CALL MEMGET('INTE',KVEC(IFRP,4),NR(IFRP),WORK,KFREE,LFREE)
         NSTR(IFRP,0,4) = - 1
-        CALL NUMLST(TRA4_INDSTR(4,IFRP),WORK(KVEC(IFRP,4)),
+        CALL NUMLST(MPR_INDSTR(4,IFRP),WORK(KVEC(IFRP,4)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &              IFRP,NSTR(IFRP,0,4),WORK(KFREE),LFREE)
         CALL ORBCNT(WORK(KVEC(IFRP,4)),NSTR(IFRP,0,4),IFRP,
@@ -873,7 +881,7 @@ C
             NDMOQR(1,IFRP,I) = NFBAS(IFRP,0)
             NDMOQR(2,IFRP,I) = NSTR(IFRP,0,I)
             NQ(IFRP,I) = NFBAS(IFRP,0)*NSTR(IFRP,0,I)*NZ
-            NDIM = NQT(I) + NQ(IFRP,I)
+            NDIM = NDIM + NQ(IFRP,I)
             IF (IFRP.LT.NFSYM)
      &         ICMOQR(IFRP+1,I) = ICMOQR(IFRP,I) + NQ(IFRP,I)
          ENDDO
@@ -922,6 +930,7 @@ C
 C     Select the set that we need
 C        
       DO I = 1, 4
+        ISAME(I)   = I
         DO IFRP = 1, NFSYM
           IF(NSTR(IFRP,0,I).GT.0) THEN
              CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
