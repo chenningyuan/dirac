@@ -63,7 +63,7 @@ usage ()
    echo '     -nice                  : execute Dirac with nice/npri'
    echo '     -notify                : Notify user'
    echo '     -user                  : Which user to notify'
-   echo '     -basdir directory      : Set basis set directory'
+   echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
    echo '     -dirac dirac_cmd       : Use dirac_cmd instead for default'
    echo '                              dirac'
    echo '     -multi "config file"   : Run MPI on MULTI NODEs'
@@ -134,7 +134,7 @@ setup_command()
       DIRAC=${ALT_DIRAC##*/}
       BIN_DIR=${ALT_DIRAC%/*}
    else
-      DIRAC=./dirac.x
+      DIRAC=dirac.x
    fi
    #
    # MPI?
@@ -146,7 +146,7 @@ setup_command()
          DIRAC_CMD="$MPIRUN -np $MPI_NPROC $DIRAC"
       fi
    else
-      DIRAC_CMD="$DIRAC"
+      DIRAC_CMD="./$DIRAC"
    fi
    #
    # Debug
@@ -554,7 +554,7 @@ while [ -n "$1" ]; do
    case $1 in
       -basdir)
          shift
-         BASDIR="${BASDIR}:$1"; export BASDIR
+         BASDIR="$1:${BASDIR}"; export BASDIR
          ;;
       -copy)
          shift
