@@ -271,6 +271,7 @@ C
          CALL GETTIM(CSTR,WSTR)
          DOLOGO = .TRUE.
          CALL LOGO(DOLOGO)
+         CALL SYSINF()
          CALL TIMDAT
          IF (LMWORK .LE. 0) THEN
             WRITE (LUPRI,*) 'DIRAC: default work memory size used.'
@@ -340,6 +341,7 @@ C
       CALL GETTIM(CSTR,WSTR)
       DOLOGO = .TRUE.
       CALL LOGO(DOLOGO)
+      CALL SYSINF()
       CALL TIMDAT
       IF (LMWORK .LE. 0) THEN
          WRITE (LUPRI,*) 'DIRAC: default work memory size used.'
