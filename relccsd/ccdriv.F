@@ -398,7 +398,7 @@ C
       CALL MEMOPT('REAL',FOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',FVO,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',FVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
-C
+C 
       MXCORR1 = 0
       CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,MREMAIN,EPS,
      &             NSP,IREPSP,IREPSPI,CC(FOO),CC(FVO),CC(FVV))
@@ -480,16 +480,6 @@ C
 #endif
 #endif
 C
-      NINTSB = MAX0(MREMAIN/512,20)
-      NINTSB  = MIN0(MXDIMCC*(NV3*RCW/512+FVO*RCW/512+2),NINTSB)
-CTROND      CALL RFILE(ITAMPL,NINTSB)
-CTROND      MREMAIN = MREMAIN - (NINTSB-20)*512
-C
-      NINTSB = MAX0(MREMAIN/512,20)
-      NINTSB  = MIN0(MXDIMCC*(NV3*RCW/512+FVO*RCW/512+2),NINTSB)
-CTROND      CALL RFILE(ITAMPD,NINTSB)
-CTROND      MREMAIN = MREMAIN - (NINTSB-20)*512
-C
 C     Start the calculations
 C     ----------------------
 C
@@ -534,9 +524,9 @@ C
       JCODE = 3
       CALL RCLOSE(ITAPT+4,JCODE)
       JCODE = 3
-      CALL RCLOSE(ITAPT+5,JCODE)
+      IF (DOCCSD.OR.DOCCSDT) CALL RCLOSE(ITAPT+5,JCODE)
       JCODE = 3
-      CALL RCLOSE(ITAPT+6,JCODE)
+      IF (DOCCSD) CALL RCLOSE(ITAPT+6,JCODE)
 C
       CALL CCSUMM
 C
@@ -1029,7 +1019,7 @@ C
 C
 C     The remaining space is
 C
-      NVF = (LFREE-2) / (2 * RCW )
+      NVF = (LFREE-4) / (2 * RCW )
 C
       IF (NVT.LT.NVF) THEN
          NBUF = NVT / MINBUF + 1
@@ -1150,7 +1140,7 @@ C
       DO IRP = 1, NREP
          NV4IRP = MAX0(NV4IRP,NVV(IRP)*NVVT(IRP))
       ENDDO
-      NBUF2 = (LFREE - 2) / (2 * RCW)
+      NBUF2 = (LFREE - 4) / (2 * RCW)
       IF (NBUF2.GT.NV4IRP) NBUF2 = NV4IRP
       NBUF2 = MAX0(NBUF1,NBUF2)
       NBUF3 = NBUF2
@@ -1368,6 +1358,7 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
+      INCLUDE "param.inc"
       INCLUDE "files.inc"
       INCLUDE "iobuf.inc"
       INCLUDE "diis.inc"
@@ -1443,7 +1434,7 @@ C
       DO IRP = 1, NREP
          NV4IRP = MAX0(NV4IRP,NVV(IRP)*NVVT(IRP))
       ENDDO
-      NBUF2 = (LFREE - 2) / (2 * RCW)
+      NBUF2 = (LFREE - 4) / (2 * RCW)
       IF (NBUF2.GT.NV4IRP) NBUF2 = NV4IRP
       NBUF2 = MAX0(NBUF1,NBUF2)
       NBUF3 = NBUF2
@@ -1742,6 +1733,7 @@ C
          ENDDO
       ENDDO
 C
+
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
 1009  FORMAT (//" Propagator (RPA) module"
