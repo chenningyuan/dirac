@@ -5,7 +5,8 @@ C FILE    : dcborb.h
 C SOURCE  : $Source$
 C
 C*** Dimensions for MO-basis ***
-      PARAMETER( MXOPEN = 10 )
+Cjth: Due to bug MXOPEN reset to one      PARAMETER( MXOPEN = 10 )
+      PARAMETER( MXOPEN = 1 )
       COMMON/DCBORB/
      +              DF(0:MXOPEN),DA(0:MXOPEN),DALPHA(0:MXOPEN),
      +              NACSH(2,MXOPEN),NOPEN,
