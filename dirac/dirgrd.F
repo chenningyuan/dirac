@@ -46,7 +46,9 @@ C
 C
 C     Save DO2GRD
 C
-      CALL DCOPY(3,DO2GRD,1,LSAVE,1)
+      DO I = 1,3 
+         LSAVE(I) = DO2GRD(I)
+      END DO
 C
 C
 C     Memory allocation
@@ -95,7 +97,9 @@ C
 C
 C     Restore DO2GRD
 C
-      CALL DCOPY(3,LSAVE,1,DO2GRD,1)
+      DO I = 1,3 
+         DO2GRD(I) = LSAVE(I)
+      END DO
 C
 C     Memory deallocation
       CALL MEMREL('PSIGRD.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)
