@@ -304,7 +304,10 @@ case $machine in
 
    *)
       echo "System $guess is currently .NOT. supported"
-      echo "Please report the following to dirac-admin@chem.sdu.dk:"
+      echo "First try to update config.guess and config.sub "
+      echo "  check libtools at http://www.gnu.org"
+      echo "Then please report to dirac-admin@chem.sdu.dk"
+      echo "Also include the command: "
       $echo "\t\`uname -m\` , \`uname -r\` , \`uname -s\` and \`uname -v\` "
       $echo "\tYou may also recommend compilerflags," 
       $echo "\tpreferred fortran compiler and mathematical libraries" \
@@ -1250,9 +1253,7 @@ esac
 #  Add VAR_G77 is compiler is g77
 #  and add INSTALL_WRKMEM to the ccp-flags.
 #
-echo "F77 $F77"
 if [ "$F77" = "g77" ]; then
-echo "F77 $F77"
    cpp="$cpp -DVAR_G77"
    ccp="$ccp -DVAR_G77"
 fi
@@ -1575,8 +1576,8 @@ echo "ok"
 echo
 #
 echo
-echo "Before you run make, please check Makefile.config and edit"
-echo "it if you wish."
+echo "Before you run make, please check the Makefile.config and "
+echo "pam files and edit them if you wish."
 echo
 echo "Please check 'Known issues and problems' at"
 echo "   http://dirac.chem.sdu.dk"
