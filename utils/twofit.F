@@ -97,61 +97,6 @@ C
        X(I) = X(I)/XTANG
       ENDDO
 C
-C     Get masses
-C     ==========
-C
- 10   CONTINUE
-      WRITE(LUPRI,'(A)')
-     &  'Select one of the following:',
-     &  '  1. Select masses of the most abundant isotopes.',
-     &  '  2. Employ user-defined atomic masses.',
-     &  '  3. Normal modes: Give reduced mass.'
-      READ(LUCMD,*) I
-      IF(I.EQ.1) THEN
-        WRITE(LUPRI,'(A)') '* Give charge of atom A:'
-        READ(LUCMD,*) IZ
-        CALL GETMSS(IZ,AM,ABUND,INFO)
-        IF(INFO.EQ.0) THEN
-          WRITE(LUPRI,'(A,F12.4)') 
-     &    '* Mass     :', AM,
-     &    '* Abundance:', ABUND
-        ELSE
-          WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
-          READ(LUCMD,*) AM
-        ENDIF
-        WRITE(LUPRI,'(A)') '* Give charge of atom B :'
-        READ(LUCMD,*) IZ
-        CALL GETMSS(IZ,BM,ABUND,INFO)
-        IF(INFO.EQ.0) THEN
-          WRITE(LUPRI,'(A,F12.4)') 
-     &    '* Mass     :', BM,
-     &    '* Abundance:', ABUND
-        ELSE
-          WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
-          READ(LUCMD,*) BM
-        ENDIF
-      ELSEIF(I.EQ.2) THEN
-        WRITE(LUPRI,'(A)') '* Give mass of atom A in Daltons:'
-        READ(LUCMD,*) AM
-        WRITE(LUPRI,'(A)') '* Give mass of atom B in Daltons:'
-        READ(LUCMD,*) BM
-      ELSEIF(I.EQ.3) THEN
-        WRITE(LUPRI,'(A)') '* Give reduced mass in Daltons:'
-        READ(LUCMD,*) UM
-        GOTO 50
-      ELSE
-        WRITE(LUPRI,'(A)') ' You stupid fart ! Try again !'
-        GOTO 10
-      ENDIF
-      UM = D1/(D1/AM + D1/BM)
-      WRITE(ILOGG,'(A)') '* MASSES:'
-      WRITE(ILOGG,'(3X,A,F8.4)') 'Atom A      :',AM
-      WRITE(ILOGG,'(3X,A,F8.4)') 'Atom B      :',BM
- 50   CONTINUE
-      WRITE(ILOGG,'(3X,A,F8.4)') 'Reduced mass:',UM
-      WRITE(ILOGG,'(72A1)') ('-',I=1,72)
-      UM = XFAMU*UM
-C
 C     Polynomial fit
 C     ==============
 C
@@ -226,6 +171,61 @@ C* for Newton-Raphsons method
      &    '* Expected energy :',YOPT,' Hartrees'
       ENDIF
 C
+C     Get masses
+C     ==========
+C
+ 10   CONTINUE
+      WRITE(LUPRI,'(A)')
+     &  'Select one of the following:',
+     &  '  1. Select masses of the most abundant isotopes.',
+     &  '  2. Employ user-defined atomic masses.',
+     &  '  3. Normal modes: Give reduced mass.'
+      READ(LUCMD,*) I
+      IF(I.EQ.1) THEN
+        WRITE(LUPRI,'(A)') '* Give charge of atom A:'
+        READ(LUCMD,*) IZ
+        CALL GETMSS(IZ,AM,ABUND,INFO)
+        IF(INFO.EQ.0) THEN
+          WRITE(LUPRI,'(A,F12.4)') 
+     &    '* Mass     :', AM,
+     &    '* Abundance:', ABUND
+        ELSE
+          WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
+          READ(LUCMD,*) AM
+        ENDIF
+        WRITE(LUPRI,'(A)') '* Give charge of atom B :'
+        READ(LUCMD,*) IZ
+        CALL GETMSS(IZ,BM,ABUND,INFO)
+        IF(INFO.EQ.0) THEN
+          WRITE(LUPRI,'(A,F12.4)') 
+     &    '* Mass     :', BM,
+     &    '* Abundance:', ABUND
+        ELSE
+          WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
+          READ(LUCMD,*) BM
+        ENDIF
+      ELSEIF(I.EQ.2) THEN
+        WRITE(LUPRI,'(A)') '* Give mass of atom A in Daltons:'
+        READ(LUCMD,*) AM
+        WRITE(LUPRI,'(A)') '* Give mass of atom B in Daltons:'
+        READ(LUCMD,*) BM
+      ELSEIF(I.EQ.3) THEN
+        WRITE(LUPRI,'(A)') '* Give reduced mass in Daltons:'
+        READ(LUCMD,*) UM
+        GOTO 50
+      ELSE
+        WRITE(LUPRI,'(A)') ' You stupid fart ! Try again !'
+        GOTO 10
+      ENDIF
+      UM = D1/(D1/AM + D1/BM)
+      WRITE(ILOGG,'(A)') '* MASSES:'
+      WRITE(ILOGG,'(3X,A,F8.4)') 'Atom A      :',AM
+      WRITE(ILOGG,'(3X,A,F8.4)') 'Atom B      :',BM
+ 50   CONTINUE
+      WRITE(ILOGG,'(3X,A,F8.4)') 'Reduced mass:',UM
+      WRITE(ILOGG,'(72A1)') ('-',I=1,72)
+      UM = XFAMU*UM
+C
 C     Harmonic constant
 C     ==================
 C
@@ -281,7 +281,7 @@ C
      &   '* Third derivative                   : ', V3,
      &   '* Fourth derivative                  : ', V4
       WRITE(ILOGG,'(A,D20.10, F9.2,A)')
-     &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \%'
+     &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \\%'
       TEMP = D1/UM/OMEGA
       T2   = TEMP*TEMP
       WXE = (5.0D0*TEMP*T2*V3*V3/48.0D0/OMEGA)-(V4*T2/16.0D0)
@@ -334,7 +334,7 @@ C
      &   '* Third derivative                   : ', V3N,
      &   '* Fourth derivative                  : ', V4N
         WRITE(ILOGG,'(A,D20.10, F9.2,A)')
-     &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \%'
+     &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \\%'
         TEMP = D1/UM/OMEGA
         T2   = TEMP*TEMP
         WXE = (5.0D0*TEMP*T2*V3N*V3N/48.0D0/OMEGA)-(V4N*T2/16.0D0)
@@ -409,9 +409,9 @@ C
      &    '* Zero-point vibrational average         : ', PZPV
         PVIB = CENT*(PZPV-PMIN)/PZPV
         WRITE(LUPRI,'(A,F6.2,A)') 
-     &   '* Vibrational effect                      : ',PVIB, ' \%'
+     &   '* Vibrational effect                      : ',PVIB, ' \\%'
         WRITE(ILOGG,'(A,F6.2,A)') 
-     &   '* Vibrational effect                      : ',PVIB, ' \%'
+     &   '* Vibrational effect                      : ',PVIB, ' \\%'
       ENDDO
  666  CONTINUE
       END
