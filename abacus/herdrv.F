@@ -1334,7 +1334,8 @@ C
       ENDIF
       ICDIFF = 1
       IEDIFF = 1
-      SCRFCK = 1.0D-9
+      USRSCR = .FALSE.
+      SCRFCK = 1.0D-12
       THRFAC(1) = D1
       THRFAC(2) = D1
 C
@@ -1401,6 +1402,7 @@ C&&&& in direct SCF
     8          CONTINUE
 C&&&& Screening threshold in direct construction of Fock matrices
                   READ (LUCMD,*) SCRFCK
+                  USRSCR = .TRUE.
                GO TO 100
     9          CONTINUE
 C&&& THRFAC: Factors to multiply LL-integral threshold for SL- and SS - integrals
@@ -1449,9 +1451,15 @@ CTROND      IF (ICHANG .EQ. 0) RETURN
      &            '* Direct calculation of Fock matrices in AO-basis.' 
               ENDIF
               IF(SCRFCK.GT.D0) THEN
-                WRITE(LUPRI,'(1X,A,A,1P,E8.2)') 
-     &          '* Screening threshold in direct Fock ',
-     &          'matrix construction: ',SCRFCK
+                IF (USRSCR) THEN
+                  WRITE(LUPRI,'(1X,A,A,1P,E8.2)') 
+     &            '* User specified screening threshold in direct Fock',
+     &            ' matrix construction: ',SCRFCK
+                ELSE
+                  WRITE(LUPRI,'(1X,A,A,1P,E8.2)') 
+     &            '* Default screening threshold in direct Fock',
+     &            ' matrix construction: ',SCRFCK
+                END IF
                 IF(ICDIFF.EQ.1) WRITE(LUPRI,'(1X,A)')
      &    '* Separate density screening of Coulomb integral batches'
                 IF(IEDIFF.EQ.1) WRITE(LUPRI,'(1X,A)')
