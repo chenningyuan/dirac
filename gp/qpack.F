@@ -1,8 +1,44 @@
+C
+C...   Copyright (c) 1997 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of 
+C...   "Dalton, an ab initio electronic structure program, Release 1.0
+C...   (1997), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, T. Andersen, K. L. Bak, V. Bakken,
+C...   O. Christiansen, P. Dahle, E. K. Dalskov, T. Enevoldsen,
+C...   H. Heiberg, D. Jonsson, S. Kirpekar, R. Kobayashi, H. Koch,
+C...   K. V. Mikkelsen, P. Norman, M. J. Packer, T.Saue,
+C...   P. R. Taylor, and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be 
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may 
+C...   be distributed outside the research group of the licence holder. 
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence. 
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
+C
+C
+C$Id$
+C
 #ifdef UNDEF
 /* Comdeck qpack_log */
- 1-Mar-1989 Hans Joergen Aa. Jensen
+ 1-Mar-1989 (c) Copyright Hans Joergen Aa. Jensen
  Package for trace back, and maybe later call trees and timing
  statistics.
+ 24-Aug-1998 hjaaj: string operations take too much time, have modified QENTER
+  (see "Chj1"), have disabled LQTREE counting because not used in this version
+  (see "Chj2")
 
  Modules:
  QDUMP(LUPRI)
@@ -63,6 +99,10 @@ C  /* Deck qpackage */
       SUBROUTINE QENTER(IDENT)
 C
 C  1-Mar-1989 Hans Joergen Aa. Jensen
+C  l.r. 980824-hjaaj: removed slow blank fill of QNAMES
+C    because of many system routine calls (marked "chj1"),
+C    test on IRIX shows this is automatically done,
+C    disabled LQTREE (marked "Chj2"), not used in this version
 C
 C  Package for tracebacks and statistics.
 C
@@ -72,30 +112,30 @@ C
 C
       COMMON /QSTACK/ LEVELQ, LQTREE
       PARAMETER (MXQLVL = 100)
-      CHARACTER*8   QNAMES(MXQLVL), IDENT8, BLANK8
-      PARAMETER (BLANK8 = '        ')
+      CHARACTER*8  QNAMES(MXQLVL)
       COMMON /QSTACC/ QNAMES
 C
-      LOGICAL FIRST
-      SAVE    FIRST
-      DATA    FIRST /.TRUE./
+Chj1  CHARACTER*8  IDENT8, BLANK8
+Chj1  PARAMETER (BLANK8 = '        ')
 C
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-         LEVELQ = 0
-         LQTREE = 0
-      END IF
+C     Initialize common blocks in BLOCK DATA QBDINIT
+C
+      EXTERNAL QBDINIT
+C
       LEVELQ = LEVELQ + 1
-      LQTREE = LQTREE + 1
+Chj2  LQTREE = LQTREE + 1
       IF (LEVELQ .LE. MXQLVL) THEN
-         IDENT8 = IDENT//BLANK8
-         QNAMES(LEVELQ) = IDENT8
+Chj1     IDENT8 = IDENT//BLANK8
+Chj1     QNAMES(LEVELQ) = IDENT8
+Chj1 980824-hjaaj: these string operations take too long time!
+         QNAMES(LEVELQ) = IDENT
       END IF
       RETURN
 C
       ENTRY QEXIT(IDENT)
-      IDENT8 = IDENT//BLANK8
-      IF (QNAMES(LEVELQ) .EQ. IDENT8) THEN
+Chj1  IDENT8 = IDENT//BLANK8
+Chj1  IF (QNAMES(LEVELQ) .EQ. IDENT8) THEN
+      IF (QNAMES(LEVELQ) .EQ. IDENT) THEN
          LEVELQ = LEVELQ - 1
       ELSE
          WRITE (LUPRI,'(//A/A,I6,2(/2A),//A)')
@@ -110,11 +150,25 @@ C
       RETURN
 C
       ENTRY QINIT
+C     reinitalize Q package:
       LEVELQ = 0
       LQTREE = 0
       FIRST  = .FALSE.
+      DO I = 1,MXQLVL
+         QNAMES(I) = '-noname-'
+      END DO
       RETURN
 C
+      END
+C  /* Deck qbdinit */
+      BLOCK DATA QBDINIT
+      COMMON /QSTACK/ LEVELQ, LQTREE
+      PARAMETER (MXQLVL = 100)
+      CHARACTER*8  QNAMES(MXQLVL)
+      COMMON /QSTACC/ QNAMES
+C
+      DATA LEVELQ, LQTREE /0, 0/
+      DATA QNAMES /MXQLVL*'-noname-'/
       END
 C  /* Deck qdump */
       SUBROUTINE QDUMP(LUPRI)
@@ -125,6 +179,8 @@ C
       COMMON /QSTACC/ QNAMES
 C
       IF (LEVELQ .GT. 0) THEN
+         WRITE (LUPRI,'(//A)')
+     &      ' QDUMP calls QTRACE for dump of internal trace stack'
          CALL QTRACE(LUPRI)
       END IF
       RETURN
@@ -142,7 +198,7 @@ C
       COMMON /QSTACC/ QNAMES
 C
       IF (LEVELQ .EQ. 0) GO TO 9000
-      WRITE (LUPRI,'(//A)') ' QTRACE dump of trace stack'
+      WRITE (LUPRI,'(//A)') ' QTRACE dump of internal trace stack'
       WRITE (LUPRI,'(3(/A))')
      *   ' ====================',
      *   '      level    module',
