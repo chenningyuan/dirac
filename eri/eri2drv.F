@@ -282,11 +282,7 @@ C&&&& NCLERI: Only nonclassical integrals are calculated.
      &         ' No permutational symmetry for first electron.'
             IF (.NOT.PMSCD) WRITE (LUPRI,'(A)')
      &         ' No permutational symmetry for second electron.'
-#ifndef PRG_DIRAC
-            IF (.NOT.PMSAB) WRITE (LUPRI,'(A)')
-#else /* PRG_DIRAC */
             IF (.NOT.PMS12) WRITE (LUPRI,'(A)')
-#endif /* PRG_DIRAC */
      &         ' No permutational symmetry between electron 1 and 2.'
             IF (IAOBCH.NE.0) WRITE (LUPRI,'(A,I4,A)')
      &         ' Only integrals with first index belonging to'//
@@ -370,14 +366,10 @@ C  /* Deck er2ini */
 #include "eribuf.h"
 #include "ericom.h"
 #ifdef PRG_DIRAC
-#ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#endif /* PRG_DIRAC */
 #include "gnrinf.h"
-#ifdef PRG_DIRAC
 #endif
-#endif /* PRG_DIRAC */
 C
 C     Initialize /CBIERI/
 C
@@ -434,12 +426,9 @@ C  /* Deck er2int */
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "dummy.h"
-#ifndef PRG_DIRAC
-      DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK), CSMAT(NBAST,NBAST)
-      LOGICAL WRTINT_SAVE
-#else /* PRG_DIRAC */
       DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
-#endif /* PRG_DIRAC */
+CTROND: check this !, CSMAT(NBAST,NBAST)
+      LOGICAL WRTINT_SAVE
 #include "ccom.h"
 #include "cbieri.h"
 #include "ericom.h"
@@ -455,11 +444,7 @@ C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
 C
-#ifndef PRG_DIRAC
 C     CALL ER2INI
-#else /* PRG_DIRAC */
-      CALL ER2INI
-#endif /* PRG_DIRAC */
 C
 C     Memory
 C
@@ -679,11 +664,7 @@ C
       KCOUNT = KCSQ   + NCSQ1*NCSQ2
       KLAST  = KCOUNT + (NDISTR*NCORS - 1)/IRAT + 1
 C
-#ifndef PRG_DIRAC
       IF (KLAST .GT. LWORK) CALL STOPIT('ODCDRV','HERPRP',KLAST,LWORK)
-#else /* PRG_DIRAC */
-      IF (KLAST .GT. LWORK) CALL STOPIT('ODCDRV','HERPRP',KLAST,LWORK)     
-#endif /* PRG_DIRAC */
       LWRK   = LWORK - KLAST + 1
 C
       IF (SLAVE) THEN
@@ -953,11 +934,7 @@ C
 C     Arrays for Hermite integrals
 C     ============================
 C
-#ifndef PRG_DIRAC
-      CALL HERPRP(INDHER,INDHSQ,IODDHR,IPRINT)
-#else /* PRG_DIRAC */
       CALL HERPRP(INDHER,INDHSQ,IODDHR)
-#endif /* PRG_DIRAC */
       CALL LMNPRP(LMNPWR,LMNSYM,IPRINT)
 C
 C     Active/inactive batches
@@ -1059,13 +1036,11 @@ C
             NPRFCD = IODCL2(IODCD,11)
             NCTFCD = IODCL2(IODCD,12)
             NCNTCD = IODCL2(IODCD,13)
-#ifndef PRG_DIRAC
 Cfp+tuh
 C To avoid artificial many contributions from the same atom in DensFit
          IF (IFITDM.EQ.-2 .AND. NCNTCD.EQ.2) GO TO 1917
          IF (IFITDM.EQ. 2 .AND. NCNTCD.EQ.1) GO TO 1917
 C
-#endif /* ! PRG_DIRAC */
             NGTOCD = IODCL2(IODCD,14)
             NPRFC  = IODCL2(IODCD,15)
             NPRFD  = IODCL2(IODCD,16)
@@ -1281,9 +1256,7 @@ C
      &                     CCFBT,INDXBT,NCOUNT,CSQ,WORK(KLAST),
      &                     LWRK,IPRINT)
             END IF
-#ifndef PRG_DIRAC
  1917       CONTINUE
-#endif /* ! PRG_DIRAC */
          END IF
          END IF
  1918    CONTINUE

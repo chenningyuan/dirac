@@ -61,13 +61,9 @@ C
 #include "erithr.h"
 #include "erimem.h"
 #include "aobtch.h"
-#ifdef PRG_DIRAC
 #if defined (VAR_VECTOR)
-#endif /* PRG_DIRAC */
 #include "veclen.h"
-#ifdef PRG_DIRAC
 #endif
-#endif /* PRG_DIRAC */
 #include "odbtch.h"
 #include "symmet.h"
 #include "infpar.h"
