@@ -922,7 +922,7 @@ C
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
             CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,DUM,TOTERG,0,
-        &               DUM,IDUM,IDUM)
+     &                  DUM,IDUM,IDUM)
             CLOSE(LUCOEF,STATUS='KEEP')
          ENDIF
       END IF
