@@ -73,7 +73,7 @@ C
      &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE',
      &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ',
      &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL',
-     &            '.XXXXXX', '.NO SKI', '.GRD IN', '.GRD SC',
+     &            '.LINDH ', '.NO SKI', '.GRD IN', '.GRD SC',
      &            '.NOAUX ', '.BFGSR1', '.XXXXXX', '.XXXXXX'/
 C
       DATA FIRST /.TRUE./
@@ -163,6 +163,7 @@ C
       BAKER  = .FALSE.
       NOAUX  = .FALSE.
       NODIHE = .FALSE.
+      LINDHD = .FALSE.
       ITRNMR = 0
       ITRMAX = ITRMX
       MAXREJ = MXREJ
@@ -404,7 +405,8 @@ C
             GOTO 100
  60         BOFILL = .TRUE.
             GOTO 100
- 61         NOAUX = .TRUE.
+C .LINDH  : use original Roland Lindh r_ref with .MODHES
+ 61         LINDHD = .TRUE.
             GOTO 100
 C           .NO SKIP: Don't skip SSLL or SSSS gradients when small
  62         CONTINUE
@@ -686,20 +688,22 @@ C
      &     (EVLINI .GT. -0.9D0))) THEN
          IF (SADDLE) THEN
 #ifdef PRG_DIRAC
-            INRDHS = .TRUE.
-C           INMDHS = .TRUE.
+Cnov02      INRDHS = .TRUE.
+            INMDHS = .TRUE.
 C           TODO: the model hessian is currently not appropriate for
 C           heavy elements /hjaaj May 2002
+C           hjaaj nov 2002: let us try if it works now
 #else
             INITHS = .TRUE.
 #endif
             NOAUX  = .TRUE.
          ELSE
 #ifdef PRG_DIRAC
-            INRDHS = .TRUE.
-C           INMDHS = .TRUE.
+Cnov02      INRDHS = .TRUE.
+            INMDHS = .TRUE.
 C           TODO: the model hessian is currently not appropriate for
 C           heavy elements /hjaaj May 2002
+C           hjaaj nov 2002: let us try if it works now
 #else
             INMDHS = .TRUE.
 #endif
@@ -748,10 +752,13 @@ C
             WRITE(LUPRI,'(A)') ' Keyword ignored.'
             MODHES = .FALSE.
          ELSE
-            WRITE(LUPRI,'(A)')
-     &           ' An approximate model Hessian will be used.'
+            WRITE(LUPRI,'(A)') ' The approximate model Hessian'/
+     &          /' defined by Roland Lindh will be used.'
             WRITE(LUPRI,'(A)') ' The model Hessian ' //
-     &           'parameters of Roland Lindh will be used.'
+     &           'parameters of Roland Lindh will be used'
+            IF (.NOT.LINDHD) WRITE(LUPRI,'(A)')
+     &           ' except that reference distance is calculated from'/
+     &          /' covalent/metallic radii'
             IF (.NOT. DELINT) REDINT = .TRUE.
          END IF
       END IF
@@ -769,10 +776,13 @@ C
             WRITE(LUPRI,'(A)') ' Keyword ignored.'
             CMBMOD = .FALSE.
          ELSE
-            WRITE(LUPRI,'(A)')
-     &           ' An approximate model Hessian will be used,'
-            WRITE(LUPRI,'(A)') ' with the model Hessian ' //
-     &           'parameters of Roland Lindh.'
+            WRITE(LUPRI,'(A)') ' The approximate model Hessian'/
+     &         /' defined by Roland Lindh will be used.'
+            WRITE(LUPRI,'(A)') ' The model Hessian ' //
+     &           'parameters of Roland Lindh will be used'
+            IF (.NOT.LINDHD) WRITE(LUPRI,'(A)')
+     &           ' except that reference distance is calculated from'/
+     &          /' covalent/metallic radii'
             WRITE(LUPRI,'(A)') ' The Hessian will be updated ' //
      &           'through a combination of a calculated'
             WRITE(LUPRI,'(A)') ' model Hessian and an BFGS ' //
@@ -798,12 +808,16 @@ C
      &           ' .INIMOD has no effect when .INITHE ' //
      &           'has been specified.'
             WRITE(LUPRI,'(A)') ' Keyword ignored.'
-            INRDHS = .FALSE.
+            INMDHS = .FALSE.
          ELSE
-            WRITE(LUPRI,'(A)')
-     &           ' Model Hessian will be used as initial Hessian.'
+            WRITE(LUPRI,'(A/A)')
+     &         ' The approximate model Hessian defined by Roland Lindh',
+     &         ' will be used as initial Hessian.'
             WRITE(LUPRI,'(A)') ' The model Hessian ' //
-     &           'parameters of Roland Lindh will be used.'
+     &           'parameters of Roland Lindh will be used'
+            IF (.NOT.LINDHD) WRITE(LUPRI,'(A)')
+     &           ' except that reference distance is calculated from'/
+     &          /' covalent/metallic radii'
          END IF
       END IF
       IF (INRDHS) THEN

@@ -11,7 +11,8 @@ C
      &                INRDHS, FSTORD, SNDORD, REJINI, GRDINI, MULTI,
      &                CHGRDT, CONOPT, MODHES, INMDHS, FINDRE, TRSTRG,
      &                RATFUN, GDIIS,  DELINT, RSTARR, LNSRCH, SADDLE,
-     &                REBILD, CMBMOD, HFPROP, CONFRM, NOAUX,  NODIHE
+     &                REBILD, CMBMOD, HFPROP, CONFRM, NOAUX,  NODIHE,
+     &                LINDHD
       COMMON /OPTINF/ TRSTRA, TRSTIN, TRSTDE, RTENBD, RTENGD, RTRJMN,
      &                RTRJMX, ENERGY, ERGOLD, ERGPRD, ERGPRO, STPNRM,
      &                STPNRO, GRADNM, THRERG, GRDTHR, THRSTP, THRSYM,
@@ -35,4 +36,4 @@ C
      &                MULTI,  CHGRDT, CONOPT, MODHES, INMDHS, FINDRE,
      &                TRSTRG, RATFUN, GDIIS,  DELINT, RSTARR, LNSRCH,
      &                SADDLE, REBILD, BOFILL, CMBMOD, HFPROP, CONFRM,
-     &                NOAUX,  NODIHE
+     &                NOAUX,  NODIHE, LINDHD
