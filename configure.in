@@ -1166,6 +1166,18 @@ case $machine in
 	  def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR -I\$(MPI_INCLUDE_DIR)"
       fi
+#
+# Ask user whether the large file option can be set
+#
+      $echo 'Can your Linux system handle files longer than 2 GB ? y/[n] \c'
+      read largefiles
+      case "$largefiles" in
+      "yes" | "y" | "Y" )
+          ;;
+       *)
+         ccp="$cpp -DSMALL_CFILES"
+         ;;
+      esac
       for mod in $MODS; do
          cpp=`echo $cpp $mod`
       done
