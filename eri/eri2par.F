@@ -33,7 +33,9 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
 C
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
 C  /* Deck pardrv */
       SUBROUTINE PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WORK,NSTAT,
      &                  HESSEE,LWORK,ITYPE,MAXDIF,IATOM,NODV,NOPV,

@@ -33,7 +33,9 @@ C
 C
 C$Id$
 C
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
 C  /* Deck fmmgam */
       SUBROUTINE FMMGAM(RJ000,FACINT,ALPHA,COORPQ,WORK,LWORK,IPRINT)
 C

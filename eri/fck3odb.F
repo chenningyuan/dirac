@@ -30,7 +30,9 @@ C      3 - z-coodinate of the center
 C      4 - non-classical extent (from the center)
 C      5 - Cauchy screening parameter
 
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
       SUBROUTINE SETODBTCH(KIODBCLS,KIODBTCH,KRODBTCH,
      &                KFREE,LFREE,WORK,LWORK,IPRINT)
 #include "implicit.h"

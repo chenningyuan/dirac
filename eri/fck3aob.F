@@ -32,7 +32,9 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
 C
 C  Definition of the FCK3AOB - ao batches structure...
 C  

@@ -31,7 +31,9 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
 C  /* Deck sphmat */
       SUBROUTINE SPHMAT(CSQ,NROWS,NCOLS,NDER,GDER,WORK,LWORK,IPRINT)
 C

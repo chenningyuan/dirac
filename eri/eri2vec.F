@@ -33,7 +33,9 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
 C
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
 C  /* Deck eriexp */
       SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,RODPE1,RODPE2,IPNTPP,
      &                  IPRINT)

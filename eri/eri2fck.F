@@ -34,7 +34,9 @@ C
 C
 C$Id$
 C
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
 C  /* Deck erifck */
       SUBROUTINE HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      *                  CCFBT,INDXBT,FCKTMP,WORK,LWORK)

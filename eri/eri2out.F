@@ -34,7 +34,9 @@ C
 C
 C$Id$
 C
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
 C  /* Deck eriout */
       SUBROUTINE ERIOUT(SO,ITYPE,IPNTCR,IODDCC,IPNTUV,BUF,IBUF,INDXBT,
      &                  NCOUNT,WORK,LWORK,IPRINT)

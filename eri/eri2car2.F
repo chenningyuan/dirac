@@ -34,7 +34,9 @@ C
 C
 C$Id$
 C
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
 C  /* Deck cr2drv */
       SUBROUTINE CR2DRV(AOINT,HCINT,INDHER,IODDHC,IODD34,IODDCC,
      &                  LMNPWR,IPNTUV,COOR34,EXP34,CSQ,CCFBT,NCENTR,

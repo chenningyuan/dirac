@@ -33,7 +33,9 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
 C
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
 C  /* Deck er2inp */
       SUBROUTINE ER2INP(WORD)
 #include "implicit.h"

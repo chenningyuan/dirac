@@ -34,7 +34,9 @@ C
 C
 C$Id$
 C
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
 C  /* Deck erisym */
       SUBROUTINE ERISYM(AO,SO,IATOM,ICRB,IODDCC,IPNTUV,IPRINT)
 #include "implicit.h"

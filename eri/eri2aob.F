@@ -34,7 +34,9 @@ C
 C
 C$Id$
 C
+#if defined (VAR_SINGLE)
 #include "single.h"
+#endif
 C  /* Deck setaob */
       SUBROUTINE SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
 #include "implicit.h"
