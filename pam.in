@@ -649,7 +649,7 @@ initialize()
 
    MPI_NPROC=
    DIRPAR=0 # initialize to sequential
-   MPIARG =
+   MPIARG=
 
    NICE=
    SSRUN=
@@ -824,7 +824,7 @@ print_header
 copy_files
 save_old_output
 setup_command
-if [ "$LOCALDISKS" = "yes" ]; 
+if [ "$LOCALDISKS" = "yes" ]; then
   distribute_work_dir 
 fi
 make_mpi_config
