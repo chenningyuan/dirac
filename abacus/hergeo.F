@@ -598,6 +598,6 @@ C     based on van der Waals radii. Returns -1 where data is inavailable
 C
       VRADI = RAD(NCHARGE)
       IF (VRADI .GT. 0.0D0) VDWRAD = (0.01D0 * VRADI)
-      VDWRAD = (0.01 * RAD(NCHARGE))
+      VDWRAD = (0.01D0 * RAD(NCHARGE))
       RETURN
       END

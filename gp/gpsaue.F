@@ -961,7 +961,7 @@ C  /* Deck fulmat */
       SUBROUTINE FULMAT(MATTYP,LDA,NDIM,A)
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D0 = 0.0,DM1 = -1.D0)
+      PARAMETER(D0 = 0.0D0,DM1 = -1.D0)
       CHARACTER MATTYP*1
       DIMENSION A(LDA,NDIM)
 C*SYMM  : Real symmetric matrix

@@ -76,7 +76,7 @@ C ***********************************************************
          DIMENSION TMP2AR(5,0:MXCENT), NONT(KATOM)
 	 LOGICAL TETRA
          PARAMETER (D0 = 0.0D0)
-         CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*40
+         CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41
          CHARACTER SYMM*9, TMPLN*80
 	 TETRA = .FALSE.
          I = 1
