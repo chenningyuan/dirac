@@ -143,7 +143,7 @@ C
 #endif
 #endif
 #if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
- || defined (SYS_DEC)  || defined (SYS_LINUX) || (SYS_ALLIANT)
+ || defined (SYS_DEC)  || defined (SYS_LINUX) || (SYS_ALLIANT) || defined (SYS_SX)
       real*4  etime, tarray(2)
 C
       TIMCPU = etime(tarray)
@@ -179,6 +179,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif
       Character*10 Datum,Tijd*8,String*26
       external time
+#if defined (SYS_DEC)
+      integer*4 stime, tarray(9), time
+      external ltime
+#endif
       Datum = '          '
       Tijd  = '        '
 #if defined (SYS_CRAY) || defined (SYS_T3D)
@@ -193,13 +197,25 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_HPUX)
       Call Date(Datum)
       Call Time(Tijd)
-#else 
+#else
+#if defined (SYS_SX)
+      call datim(Datum,Tijd,1)
+#else
+#if defined (SYS_DEC)
+      stime = time()
+      call ltime( stime, tarray )
+      write(Tijd, '(i2,a1,i2,a1,i2)') 
+     &tarray(3),':', tarray(2),':', tarray(1)
+      Call Date(Datum)
+#else
 #if defined (SYS_AIX) 
       Call fdate_ (String)
       Datum = String(1:10)
       Tijd  = String(12:19)
 #else
       Date and time on your computer???
+#endif
+#endif
 #endif
 #endif
 #endif

@@ -291,7 +291,7 @@ C     ... rewind
       END IF
       IF(MOD(IFUN,5).LE.2.AND.LBUF.LE.0) GOTO 905
       IF(OPEN(LU).EQ.0) THEN
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || defined (SYS_SX)
 C        IRIX (SGI) counts recl in *4 bytes
          LURECL = LRECL(LU) / 4
 #else
@@ -495,7 +495,7 @@ C***********************************************************************
       IF(.NOT.(1.LE.LU.AND.LU.LE.MAXLU)) GOTO 903
       IF(OPEN(LU).NE.0) GOTO 912
       NAME(LU)=PARM1
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || defined (SYS_SX)
 C     IRIX (SGI) counts recl in *4 bytes
       LURECL = LRECL(LU) / 4
 #else
@@ -518,7 +518,7 @@ C***********************************************************************
       IF(.NOT.(1.LE.LU.AND.LU.LE.MAXLU)) GOTO 903
       IF(OPEN(LU).NE.0) GOTO 912
       NAME(LU)=PARM1
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || defined (SYS_SX)
 C     IRIX (SGI) counts recl in *4 bytes
       LURECL = LRECL(LU) / 4
 #else
@@ -565,7 +565,7 @@ C***********************************************************************
       ID='DATEMP'
 400   IF(.NOT.(1.LE.LU.AND.LU.LE.MAXLU)) GOTO 903
       IF(OPEN(LU).NE.0) GOTO 913
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || defined (SYS_SX)
 C     IRIX (SGI) counts recl in *4 bytes
       LURECL = LRECL(LU) / 4
 #else
@@ -803,7 +803,7 @@ C*  ERROR HANDLING SECTION                                             *
 C*                                                                     *
 C***********************************************************************
 900   CONTINUE
-#if defined (SYS_IBM)
+#if defined (SYS_IBM) || defined (SYS_SX)
       ISTEOF = 232
 #endif
 #if defined (SYS_ALLIANT) || defined (SYS_AIX) || defined (SYS_CONVEX)
@@ -813,7 +813,7 @@ C***********************************************************************
 C     eof value for Cray from Trygve Sep.93 /hjaaj
       ISTEOF = 2
 #endif
-#if !defined (SYS_IBM) && !defined (SYS_ALLIANT) && !defined (SYS_AIX) && !defined (SYS_CONVEX) && !defined (SYS_CRAY)
+#if !defined (SYS_IBM) && !defined (SYS_ALLIANT) && !defined (SYS_AIX) && !defined (SYS_CONVEX) && !defined (SYS_CRAY) && !defined (SYS_SX)
       CALL QUIT('FASTIO ERROR: ISTEOF has not been '//
      &          'defined for this computer')
 #endif

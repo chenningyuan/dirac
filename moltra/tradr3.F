@@ -1263,7 +1263,6 @@ C
 #endif
       CHARACTER*5  FILNAM
       CHARACTER*10 LFILNAM
-C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
          NODE = MYTID
@@ -1275,10 +1274,17 @@ C
 #endif
 C
  1000 FORMAT (A5,I5)
+#if defined (VAR_MPI)
       WRITE (LFILNAM,1000) FILNAM,NODE
       DO I = 6, 10
          IF (LFILNAM(I:I).EQ.' ') LFILNAM(I:I) = 'X'
       ENDDO
+#else
+      WRITE (LFILNAM,1000) FILNAM,NODE
+      DO I = 6, 10
+         IF (LFILNAM(I:I).EQ.' ') LFILNAM(I:I) = 'X'
+      ENDDO
+#endif
 C
       LFNAM = LFILNAM
 C

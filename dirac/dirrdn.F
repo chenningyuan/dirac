@@ -1165,20 +1165,20 @@ C              This corresponds to a inactive electron
 C              and gives DALPHA = 0
 C   
             IF (ABS(DF(IOPEN)-D1).LE.DTHRS) THEN
-               WRITE(LUPRI,'(X,A,I2,A,F6.4)')  
+               WRITE(LUPRI,'(1X,A,I2,A,F6.4)')  
      &            'WARNING: Open shell no. ',IOPEN,
      &            ' has frac. occ. of ',DF(IOPEN)
-               WRITE(LUPRI,'(X,2A)')
+               WRITE(LUPRI,'(1X,2A)')
      &            'This corresponds to an inactive shell. So ALPHA and',
      &            ' A is reset.'
                DA(IOPEN)     = D1
                DF(IOPEN)     = D1
                DALPHA(IOPEN) = D0
             ELSE IF (ABS(DF(IOPEN)) .LE. DTHRS) THEN
-               WRITE(LUPRI,'(X,A,I2,A,F6.4)')  
+               WRITE(LUPRI,'(1X,A,I2,A,F6.4)')  
      &            'WARNING: Open shell no. ',IOPEN,
      &            ' has frac. occ. of ',DF(IOPEN)
-               WRITE(LUPRI,'(X,2A)')
+               WRITE(LUPRI,'(1X,2A)')
      &            'This corresponds to an secondary shell. So ALPHA',
      &            ' and A is reset.'
                DA(IOPEN)     = D0

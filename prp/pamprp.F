@@ -1652,8 +1652,9 @@ C
           IATINF(1,NSPEC+1) = IDEP + 1
           IATINF(2,NSPEC+1) = IZ
           IATINF(3,NSPEC+1) = NISO
-          WRITE(LUPRI,'
-     &      (A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+C          WRITE(LUPRI,'
+          WRITE(LUPRI,
+     &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
      &       '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
           DO J = 2,NISO
             WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
@@ -2261,8 +2262,9 @@ C
           IATINF(1,NSPEC+1) = IDEP + 1
           IATINF(2,NSPEC+1) = IZ
           IATINF(3,NSPEC+1) = NISO
-          WRITE(LUPRI,'
-     &      (A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+C          WRITE(LUPRI,'
+          WRITE(LUPRI,
+     &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
      &       '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
           DO J = 2,NISO
             WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 

@@ -485,7 +485,7 @@ C
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       IRECL = 8 * NREAL + 8 * NINTE + 8 * NLOGI
 #else
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || defined (SYS_SX) || defined (SYS_DEC)
 C     SGI IRIX counts recl in *4 words
       IRECL = 2 * NREAL + 1 * NINTE + 1 * NLOGI
 #else

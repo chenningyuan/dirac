@@ -312,7 +312,7 @@ C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
 #if defined (CC_ALONE)
-#if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_T3D)
+#if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_T3D) || defined (SYS_SX)
       POINTER (ICC,CC(1))
       REAL*8 CC
 #else
@@ -477,7 +477,7 @@ C
       ICC =  MALLOC (%VAL(MXCORR*8))
       IF (ICC.EQ.0) IERR = 1
 #endif
-#if defined (SYS_IRIX) || defined (SYS_HPUX)
+#if defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_SX)
       ICC =  MALLOC (MXCORR*8)
       IF (ICC.EQ.0) IERR = 1
 #endif

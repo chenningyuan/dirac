@@ -806,7 +806,11 @@ C
 C     .. Data Statements ..
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       DATA  SMALL /4503599627370496/
-#else
+#endif
+#if defined (SYS_SX)
+      DATA  SMALL /X'10000000000000'/
+#endif
+#if !defined (SYS_CRAY) && !defined (SYS_T3D) && !defined (SYS_SX)
       DATA  SMALL /'10000000000000'X/
 #endif
 C     .. Executable Statements ..

@@ -1057,7 +1057,7 @@ C Used from COMMON blocks:
 C  DCBBAS: NTBAS,NFORB
 C
 #include <dcbbas.h>
-#ifdef VAR_G77
+#if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION VBUF(NBAST,*)
 #else

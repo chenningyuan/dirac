@@ -58,7 +58,7 @@ C function of the close is that it empties the output buffer.
      X      INITIALSIZE=24,EXTENDSIZE=24,
      X      ACCESS='APPEND',SHARED,CARRIAGECONTROL='FORTRAN')
 #endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN)
+#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_SX)
 C
 C     Force transfer of all buffered output to the file or device
 C     associated with logical unit IUNIT.
@@ -100,7 +100,7 @@ C
 #else
 #if defined (SYS_ALLIANT) || defined (SYS_CONVEX)  || defined (SYS_DEC) \
    || defined (SYS_IRIX)    || defined (SYS_PARAGON) || defined (SYS_SUN) \
-   || defined (SYS_LINUX) || defined(SYS_HPUX)
+   || defined (SYS_LINUX) || defined(SYS_HPUX) || defined (SYS_SX)
       CHARACTER*(24) FFDATE, FDATE
       FFDATE = FDATE()
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
@@ -176,28 +176,48 @@ C
       TIMWAL = DP001 * ( TIMEF() - TWALL0 )
 #endif
 #if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
- || defined (SYS_DEC)  || defined (SYS_LINUX)
+ || defined (SYS_DEC)  || defined (SYS_LINUX) || defined (SYS_SX)
 #if defined (SYS_IRIX) || defined (SYS_SUN)  || defined (SYS_SUN) \
- || defined (SYS_DEC)
+ || defined (SYS_DEC) || defined (SYS_SX)
 C...  SGI IRIX code
-      external time
+C      external time
+      DOUBLE PRECISION TIMCPU, TIMWAL
+      EXTERNAL TIME
 C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
 #else
 C...  HP-UX code
 #endif
-      integer time
-      real*4  etime, tarray(2)
-      logical first
-      save    first,iwall0
-      data    first /.true./
+C      integer*4 time
+C      real*4  etime, tarray(2)
+C      logical first
+C      save    first,iwall0
+C      data    first /.true./
 C
-      if (first) then
-         first = .false.
-         iwall0 = time()
-      end if
-      TIMCPU = etime(tarray)
-      itimwl = time() - iwall0
-      TIMWAL = itimwl
+      INTEGER*4 TIME
+      REAL*4 ETIME, TARRAY(2)
+      LOGICAL FIRST
+      SAVE    FIRST,IWALL0
+      DATA    FIRST /.TRUE./
+C
+C      if (first) then
+C         first = .false.
+C         iwall0 = time()
+C      end if
+C      write(mydebugfile,*) 'after if'
+C      TIMCPU = etime(tarray)
+C      write(mydebugfile,*) 'TIMCPU : ', TIMCPU
+C      itimwl = time() - iwall0
+C      TIMWAL = itimwl
+C      write(mydebugfile,*) 'TIMWAL : ', TIMWAL
+C      close(mydebugfile)
+C
+      IF (FIRST) THEN
+         FIRST = .FALSE.
+         IWALL0 = TIME()
+      END IF
+      TIMCPU = ETIME(TARRAY)
+      ITIMWL = TIME() - IWALL0
+      TIMWAL = ITIMWL
 #endif
 #if defined (SYS_CONVEX)
 C...  CONVEX code
@@ -273,7 +293,7 @@ C     iwall = elapsed time, itime(1:2) = system and user time
  && !defined (SYS_CONVEX) && !defined (SYS_IBM)  && !defined (SYS_AIX) \
  && !defined (SYS_HPUX)   && !defined (SYS_IRIX) && !defined (SYS_PARAGON) \
  && !defined (SYS_T3D)    && !defined (SYS_SUN)  && !defined (SYS_LINUX) \
- && !defined (SYS_DEC)
+ && !defined (SYS_DEC)    && !defined (SYS_SX)
       PARAMETER (D0 = 0.0D0)
       TIMCPU = SECOND()
 C insert appropriate routine to get elapsed real time (wall time)
@@ -435,7 +455,7 @@ C
 #if defined (SYS_IBM)
       CHARACTER CDATE*8,CTIME*8,DAOFWK*9
 #endif
-#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN)
+#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX)
       CHARACTER*(24) FDATE
       CHARACTER*(40) HSTNAM
 #endif
@@ -489,7 +509,10 @@ C
 #if defined (SYS_PARAGON)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Paragon): ',FDATE()
 #endif
-#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN)
+#if defined (SYS_SX)
+      WRITE (LUPRIN,'(T6,2A)') 'Data and time (SX)     : ',FDATE()
+#endif
+#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX)
       CALL HOSTNM(HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
@@ -653,7 +676,7 @@ C  /* Deck trace */
 C
 C Written 4-Dec-1983 hjaaj
 C
-#if !defined (SYS_VAX) && !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_IBM) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_IRIX) && !defined (SYS_PARAGON) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX)
+#if !defined (SYS_VAX) && !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_IBM) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_IRIX) && !defined (SYS_PARAGON) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) && !defined(SYS_DEC) && !defined (SYS_SX)
       INTEGER A,B,C
       SAVE    A,B,C
       DATA    A/1/,B/0/,C/0/
@@ -689,6 +712,10 @@ C
 #if defined (SYS_HPUX)
       CALL QTRACE(6)
       WRITE(*,*) 'HP_UX has no obvious system traceback facility.'
+#endif
+#if defined (SYS_SX)
+      CALL QTRACE(6)
+      WRITE(*,*) 'SX has no obvious system traceback facility.'
 #endif
 #if defined (SYS_CONVEX)
       CALL QTRACE(6)
@@ -782,7 +809,8 @@ C
 C   Subroutine DZERO sets a real array of length *LENGTH*
 C   to zero.
 C...................................................................
-      DIMENSION DX(*)
+C      DIMENSION DX(*)
+      DIMENSION DX(LENGTH)
 C
       IF (LENGTH.LE.0) RETURN
 C
@@ -1654,7 +1682,7 @@ C     idum = elapsed time, itime(1:2) = system and user time
          SECOND = CPUA
       END IF
 #endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX)
+#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX)
 #include <implicit.h>
       real*4 etime,tarray(2)
 #if !defined (SYS_T3D)

@@ -91,7 +91,7 @@ void closec();
 
 
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX)
+#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX)
 void openc_(unit,fname,size,status) int *unit, *size, *status; char *fname;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
 void openc(unit,fcd,size,status) int *unit, *status, *size; _fcd fcd;
@@ -151,7 +151,7 @@ void openc(unit,fname,size,status) int *unit, *size, *status; char *fname;
   files[*unit].addr= -1;
 }
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX)
+#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX) 
 void wrabsf_(unit,a,l,p) int *unit, *l, *p; char *a;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
 void wrabsf(unit,fcd,l,p) int *unit,*p, *l; _fcd fcd;
@@ -190,7 +190,7 @@ void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
   files[*unit].addr=addr+n;
 }
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX)
+#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX)
 void rdabsf_(unit,a,l,p) int *unit, *l, *p; char *a;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
 void rdabsf(unit,fcd,l,p) int *unit, *p, *l; _fcd fcd;
@@ -229,7 +229,7 @@ void rdabsf(unit,a,l,p) int *unit, *l, *p; char *a;
   files[*unit].addr=addr+n;
 }
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX)
+#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX)
 void closec_(unit) int *unit;
 #elif defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_AIX) || defined (SYS_HPUX)
 void closec(unit) int *unit;

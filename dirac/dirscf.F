@@ -1108,7 +1108,11 @@ C
             END IF
             DO IOPEN = 1,NOPEN
                CALL HEADER('Total FV matrix',-1)
+#if defined (SYS_SX)
+               WRITE(LUPRI,'(1X,A,I2)') 'Matrix number ',IOPEN
+#else
                WRITE(LUPRI,'(X,A,I2)') 'Matrix number ',IOPEN
+#endif
                CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
      &                     NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
             END DO

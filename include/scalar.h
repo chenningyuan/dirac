@@ -7,3 +7,6 @@ C$DIR SCALAR
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 CDIR$ NEXTSCALAR
 #endif
+#if defined (SYS_SX)
+*VDIR NOVECTOR
+#endif

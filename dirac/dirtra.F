@@ -393,7 +393,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#ifdef VAR_G77
+#if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
 #else
@@ -442,7 +442,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#ifdef VAR_G77
+#if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
 #else
@@ -491,7 +491,7 @@ C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C     DCBBAS:  NTBAS(0),N2BBASX
 C
-#ifdef VAR_G77
+#if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
 #else
@@ -540,7 +540,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#ifdef VAR_G77
+#if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
 #else
@@ -1347,7 +1347,7 @@ C
 #include <dgroup.h>
 #include <symmet.h>
 C
-#ifdef VAR_G77
+#if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION VBU(NBAST,NVEC),VBS(NBAST,NVEC)
 #else
@@ -1392,7 +1392,7 @@ C
 #include <dgroup.h>
 #include <symmet.h>
 C
-#ifdef VAR_G77
+#if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION VBS(NBAST,NVEC),VBU(NBAST,NVEC)
 #else
@@ -1995,7 +1995,7 @@ C  /* Deck sphts1 */
 #include <priunit.h>
 C
 #include <dcbbas.h>
-#ifdef VAR_G77
+#if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION AMAT(NBAST,NBAST),BMAT(NSPH,NBAST),WORK(LWORK)
 #else

@@ -11,6 +11,9 @@ C$DIR NO_RECURRENCE
 Cvectorization note: ignore vector dependence
 C*VDIR: IGNORE RECRDEPS
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_IBM) && !defined (SYS_CONVEX) && !defined (SYS_T3D)
+#if defined (SYS_SX)
+*VDIR NODEP
+#endif
+#if !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_IBM) && !defined (SYS_CONVEX) && !defined (SYS_T3D) && !defined (SYS_SX)
 Cvectorization note: ignore vector dependence
 #endif

@@ -242,7 +242,7 @@ C
      &   'Special information about calculation ',
      &   'of the molecular gradient:'
       IF (LEVYLE) THEN
-         WRITE(LUPRI,'(/X,A,2(/,4X,A))') 
+         WRITE(LUPRI,'(/1X,A,2(/,4X,A))') 
      &      'Levy-Leblond Hamiltonian: ',
      &      '- No small-small nuclear attraction integrals.',
      &      '- No small-small reorthonormalization gradient'
@@ -265,10 +265,10 @@ C
 C
       IF ( DOLVC .AND. DO2GRD(3) ) THEN
          DO2GRD(3) = .FALSE.
-         WRITE(LUPRI,'(/X,A)')'INFO: LVCORR used in wavefunction, but'//
-     &                        ' not in gradient =>'
-         WRITE(LUPRI,'(X,A/)') 'LVCORR gradient used (SS-gradient is'//
-     &                        ' not calculated)'
+         WRITE(LUPRI,'(/1X,A)')
+     &      'INFO: LVCORR used in wavefunction, but not in gradient =>'
+         WRITE(LUPRI,'(1X,A/)') 
+     &      'LVCORR gradient used (SS-gradient is not calculated)'
          NOINFO = .FALSE.
       END IF
       IF (NOINFO) WRITE(LUPRI,'(1X,A)') 'No special information.'

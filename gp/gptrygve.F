@@ -141,6 +141,11 @@ C#endif
       WRITE(LUPRI,100) DAOFWK, LDATE, LTIME
   100 FORMAT(/,'  Date and time (IBM) : ',A9,2X,A8,2X,A8)
 #endif
+#if defined (SYS_SX)
+      CHARACTER*(24) FDATE
+      WRITE (LUPRI,100) FDATE()
+  100 FORMAT(/,' Date and time (SX)   : ',A)
+#endif
       RETURN
       END
 C  /* Deck timpri */
@@ -256,7 +261,7 @@ C  /* Deck quit */
      *   '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---'
       CALL TIMDAT
       WRITE (LUPRI,'(1X,A)') TEXT
-#if defined (SYS_CRAY) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_PARAGON) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX)
+#if defined (SYS_CRAY) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_PARAGON) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_SX)
 C     Write to stderr
       WRITE (0,'(/A/1X,A)')
      *   '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
@@ -406,7 +411,7 @@ C
          OLDDX = .FALSE.
   600  CONTINUE
 #endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_LINUX) || defined (SYS_SUN)
+#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_SX)
 C
 C     Alliant version -- 9-Dec-1987 hjaaj; recl in bytes
 C     Assume same for CONVEX --  1-Nov-1989 hjaaj
@@ -418,7 +423,7 @@ C     Assume same for PARAGON-- 13-Oct-1994 hjaaj
 C
       NBDX   = 1
       LRDX   = NELEM
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || defined (SYS_SX)
       LRECL  = LRDX
 #else
       LRECL  = 4*LRDX
@@ -445,7 +450,7 @@ C
          OLDDX = .FALSE.
   600  CONTINUE
 #endif
-#if !defined (SYS_VAX) && !defined (SYS_CRAY) && !defined (SYS_IBM) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_PARAGON) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN)
+#if !defined (SYS_VAX) && !defined (SYS_CRAY) && !defined (SYS_IBM) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_PARAGON) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_SX)
  >>>>> insert appropriate OPEN statements in OPENDX.
 #endif
       RETURN
