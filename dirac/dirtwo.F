@@ -1451,7 +1451,7 @@ C
 C     LL - integrals
 C
  10   CONTINUE
-      IF(.NOT.LBIT(IDFLAG,1).AND..NOT.LBIT(INTGEN,1)) THEN
+      IF(.NOT.LBIT(IDFLAG,1).AND.LBIT(INTGEN,1)) THEN
 C
 C       Check for restart
 C
@@ -1490,7 +1490,7 @@ C
 C     SL - integrals
 C
  20   CONTINUE
-      IF(.NOT.LBIT(IDFLAG,2).AND..NOT.LBIT(INTGEN,2)) THEN
+      IF(.NOT.LBIT(IDFLAG,2).AND.LBIT(INTGEN,2)) THEN
 C
 C       Check for restart
 C
@@ -1532,7 +1532,7 @@ C
 C     SS - integrals
 C
  30   CONTINUE
-      IF(.NOT.LBIT(IDFLAG,3).AND..NOT.LBIT(INTGEN,3)) THEN
+      IF(.NOT.LBIT(IDFLAG,3).AND.LBIT(INTGEN,3)) THEN
 C
 C       Check for restart
 C
