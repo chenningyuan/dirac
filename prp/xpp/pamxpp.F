@@ -94,17 +94,17 @@ C     Written by Hans Joergen Aa. Jensen, 2000
 C     Based on PRPXLR
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbxpp.h>
-#include <dcbxlr.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbxpp.h"
+#include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
-#include <dgroup.h>
+#include "dgroup.h"
       DIMENSION WORK(*)
 C
       CALL QENTER('PRPXPP')
@@ -175,21 +175,21 @@ C     RCNV   : residual error for each excitation
 C     IORBCL : for orbital analysis
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D2=2.0D0)
 C
-#include <dcbgen.h>
-#include <dcbxpp.h>
-#include <dcbxlr.h>
+#include "dcbgen.h"
+#include "dcbxpp.h"
+#include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
-#include <dcborb.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbxrs.h>
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbxrs.h"
 C
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
      &          RCNV(MAXEXC,NBSYM), IORBCL(2,*),WORK(*)
@@ -354,26 +354,26 @@ C     Written by H.J.Aa.Jensen 2000
 C     Based on XLRINP
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include <dummy.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "dummy.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 32,DRESFAC = 1.0D2)
 C
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcbxpp.h>
-#include <dcbxlr.h>
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbxpp.h"
+#include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -390,7 +390,7 @@ C
      &            '.RESFAC','.ORBANA','-------','.SKIPEE',
      &            '.MXLOAD','-------','-------','-------'/
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -744,19 +744,19 @@ C     Written by H.J.Aa.Jensen 2000
 C     Based on SETXLR
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include <dgroup.h>
-#include <dcbxpp.h>
-#include <dcbxlr.h>
+#include "dgroup.h"
+#include "dcbxpp.h"
+#include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbxrs.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbxrs.h"
 C
       LOGICAL TOBE,ORBDEF(3)
       DIMENSION WORK(*),IR(2,2),NR(2)
@@ -845,20 +845,20 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on GETLRF
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include <dcbxrs.h>
-#include <dcbxpp.h>
-#include <dcbxlr.h>
+#include "dcbxrs.h"
+#include "dcbxpp.h"
+#include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
-#include <dcbibn.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbibn.h"
+#include "dcborb.h"
+#include "dgroup.h"
       LOGICAL FIRST
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(2,*),
@@ -982,15 +982,15 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on GETLR1
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D2 = 2.0D00)
 C
-#include <dcbibn.h>
-#include <dcbxrs.h>
-#include <dcbxpp.h>
-#include <dgroup.h>
-#include <dcbxpr.h>
+#include "dcbibn.h"
+#include "dcbxrs.h"
+#include "dcbxpp.h"
+#include "dgroup.h"
+#include "dcbxpr.h"
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,MAXEXC),BBUF(*),
@@ -1000,7 +1000,7 @@ C
       DATA BLANK16/'                  '/
       DATA BLANK2/'  '/
 C
-#include <chrnos.h>
+#include "chrnos.h"
       CALL QENTER('GETPP1')
       KFRSAV = KFREE
       IF(IPRXPP.GE.3) CALL HEADER('Output from GETPP1',-1)
@@ -1135,20 +1135,20 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on XLROUT
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
 C
       PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpp.h>
-#include <dcbxlr.h>
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpp.h"
+#include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
-#include <dcbxrs.h>
-#include <dcbxpr.h>
+#include "dcbxrs.h"
+#include "dcbxpr.h"
 C
       CHARACTER MXFORM*6,PFMT*15,TTYP(-1:1)*2
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
@@ -1353,16 +1353,16 @@ C
 C     Written by T.Saue July 18 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbxpp.h>
-#include <dcbxlr.h>
+#include "dgroup.h"
+#include "dcbxpp.h"
+#include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
-#include <dcbxrs.h>
+#include "dcbxrs.h"
 C
       DIMENSION WORK(*)
 C
@@ -1411,15 +1411,15 @@ C     Written by T.Saue Oct 16 1996
 C     Rewritten Dec. 2000 by H.J.Aa.Jensen
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
 C
 C     DIMENSION AE(LDA,N),AS(LDA,N),W(N),X(LDA,N),
       DIMENSION AE(*),AS(*),W(N),X(*),
      &          WORK(*),ISNDX(3)
 C
-#include <dcbxrs.h>
+#include "dcbxrs.h"
 C
       CALL QENTER('EIGRED')
 C
@@ -1494,8 +1494,8 @@ C
 C 13. Dec. 2000 HJAaJ
 C Based on RSPORD (JO 1984-11-8)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION SRED(LDA,LDA), EIVEC(LDA,LDA)
       DIMENSION WRK1(KZYRED,KZYRED), WRK2(KZYRED,KZYRED)
