@@ -35,5 +35,5 @@ CTSAUE Modififed 240996
      &                SPHRA, SPHRB, SPHRC, SPHRD, SPHRAB, SPHRCD,
      &                IASMAX,IBSMAX,ICSMAX,IDSMAX,
      &                IASTRT,IBSTRT,ICSTRT,IDSTRT,
-     &                DIRAC
+     &                DIRAC, ICEN
       COMMON/SCREEN/FCKTHR,DNSMAX,ICEFLG,NEM,NCM,DOSCRN
