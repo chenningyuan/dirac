@@ -728,8 +728,13 @@ case $machine in
       echo "aaarggh"
       exit 1
 esac
-                  
-         
+#
+#  Add VAR_G77 is compiler is g77
+#
+if [ "$F77" = "g77" ]; then
+   cpp="$cpp -DVAR_G77"
+   ccp="$ccp -DVAR_G77"
+fi
 # 
 #  Make Makefile.config
 #
