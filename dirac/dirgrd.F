@@ -65,9 +65,14 @@ C
 C     Memory allocation
 C
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,       WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,NTBAS(0),       WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,N2BBASX*4*NFMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,N2BBASX*4*NFMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMAT,N2TMT          ,WORK,KFREE,LFREE)
+      N2GAB = NSYMBL*NSYMBL
+      CALL MEMGET('REAL',KDMRAO,4*NFMAT*N2GAB,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGABRA,4*N2GAB,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KFCTYP,4*NFMAT,WORK,KFREE,LFREE)
 C
       CALL TITLER('Calculation of molecular gradient','*',110)
 C
@@ -86,7 +91,8 @@ C
 C     Calculate gradient
 C
       CALL DHFGRD(WORK(KCMO),WORK(KDMAT),WORK(KFOCK),
-     &            WORK(KTMAT),WORK(KFREE),LFREE,IPRGRD)
+     &            WORK(KTMAT),WORK(KGABRA),WORK(KDMRAO),
+     &            WORK(KFCTYP),WORK(KFREE),LFREE,IPRGRD)
 C
 C     Release the slaves if we run in parallel.
 C
@@ -122,7 +128,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfgrd */
-      SUBROUTINE DHFGRD(CMO,DMAT,FOCK,TMAT,WORK,LWORK,IPRINT)
+      SUBROUTINE DHFGRD(CMO,DMAT,FOCK,TMAT,GABRAO,DMRAO,
+     &                  IFCTYP,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     Calculate molecular gradient
@@ -143,14 +150,17 @@ C*****************************************************************************
       PARAMETER(D0 = 0.0D0)
 C
       DIMENSION FOCK(*),CMO(*),TMAT(*),
-     &          DMAT(N2BBASX,NZ,NFMAT),WORK(LWORK)
-      DIMENSION DNTSKP(8)
+     &          DMAT(N2BBASX,NZ,NFMAT),WORK(LWORK),
+     &          GABRAO(*),DMRAO(*)
+      DIMENSION DNTSKP(3,14,3)
       DIMENSION IQBF(4)
+      DIMENSION IFCTYP(4*NFMAT)
       CHARACTER*1 CTMP
       CHARACTER*3 STR
+      CHARACTER*8 GABLAB
       LOGICAL   DOINT(2,2)
       LOGICAL   DOLS,DOSS,LBIT
-      LOGICAL   NODV,NOPV,FIRST,NOCONT
+      LOGICAL   NODV,NOPV,FIRST,NOCONT,ICEDIF
 C     Timing variables
       DOUBLE PRECISION DPRTIM(4,2)
       SAVE DPRTIM
@@ -176,6 +186,7 @@ C two el. part
 C
 #include <exeinf.h>
 #include <symmet.h>
+#include <chrxyz.h>
 C
       CALL QENTER('DHFGRD')
 C
@@ -196,6 +207,8 @@ C
       WLLTLS = D0
       WLLTSS = D0
       WLLTOT = D0
+      CPUGAB = D0
+      WLLGAB = D0
 C
 C    
       DO I = 1,2
@@ -206,15 +219,14 @@ C
 C
       IF ( DOLVC .AND. DO2GRD(3) ) THEN
          DO2GRD(3) = .FALSE.
-         WRITE(LUPRI,'(/XA)') 'INFO: LVCORR used in wavefunction, but'//
+         WRITE(LUPRI,'(/X,A)')'INFO: LVCORR used in wavefunction, but'//
      &                        ' not in gradient =>'
-         WRITE(LUPRI,'(XA/)') 'LVCORR gradient used (SS-gradient is'//
+         WRITE(LUPRI,'(X,A/)') 'LVCORR gradient used (SS-gradient is'//
      &                        ' not calculated)'
       END IF
 C
-C     Do totally symmetric contributions
-      DOREPS(0) = .TRUE.
-      CALL SETSYM
+C     Do totally symmetric contributions (RSETSYM(.FALSE.)
+C     and calculate translation/rotation invariance
 C
       DO I = 1, 3*MXCENT
          DOPERT(I,1) = .TRUE.
@@ -222,7 +234,8 @@ C
       END DO
       FTRONV = .TRUE.
       RELGRD = .TRUE.
-      CALL TROINI
+      CALL RSETSYM(.FALSE.)
+      CALL RTROINI(.FALSE.)
       CALL TROINV(WORK(KFREE),LWORK)
       RELGRD = .FALSE.
 C
@@ -233,6 +246,21 @@ C
       CALL NUCINI
       CALL NUCREP
       RELGRD = .FALSE.
+C
+C     Set IFCTYP
+C     ==========
+C
+      IOFF = 0
+      DO IMAT = 1,NFMAT
+C        Density matrix 1: Coulomb and Exchange
+         IFCTYP(1+IOFF) = 13
+C        Density matrix 2-4: Only Exchange
+         IFCTYP(2+IOFF) = 22
+         IFCTYP(3+IOFF) = 22
+         IFCTYP(4+IOFF) = 22
+         IOFF = IOFF + 4
+      END DO
+C
 C
 C     "SS-integral contribution by classical repulsion of 
 C      small component atomic charges"-gradient
@@ -285,7 +313,7 @@ C
       CALL ONEDR1(WORK(KSTHMA),DMAT,FOCK,WORK(KFACIN),
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KNCENT),WORK(KJSYMC),
      &            WORK(KJCENT),WORK(KGEXP),DUMMY,WORK(KFREE),LWRK,
-     &            IPRINT,.TRUE.,1,.TRUE.,.TRUE.,.FALSE.,NTBAS(0),
+     &            IPRONE,.TRUE.,1,.TRUE.,.TRUE.,.FALSE.,NTBAS(0),
      &            NNBBASX,NNBBAST,DOINT,.FALSE.)
 C
 C     Dispose temp. memory
@@ -319,36 +347,103 @@ C     Get contravariant density matrix, no folding
 C
       CALL GTCNVD(DMAT,CMO,IPRINT,WORK(KFREE),LWORK)
 C
+      CALL GETTIM(CPU1,WALL1)
+      IF (IGTHRS .GT. 0) THEN
 C
 C     Prepare screening
+C        =================
 C
-C     AO-integrals
-CC      IJOB   = 0
-CC      IGTYP  = 1
+C        CAll RTROINI with COMPAR true to get necessary gab-integrals.
+C
+         DO I = 1, 3*MXCENT
+            DOPERT(I,1) = .TRUE.
+            DOPERT(I,2) = .TRUE.
+         END DO
+         FTRONV = .TRUE.
+         RELGRD = .TRUE.
+         CALL RSETSYM(.TRUE.)
+         CALL RTROINI(.TRUE.)
+         CALL TROINV(WORK(KFREE),LWORK)
+         RELGRD = .FALSE.
+C        Make GAB matrices
+C
 C     Differentiated integrals
-CC      ITYPE  = 2
-CC      MAXDIF = 1
+         IJOB   = 0
+         IGTYP  = 1
+         ITYPE  = 10
+         MAXDF  = 2
 C     Misc.
-CC      JATOM  = 0
-CC      NOCONT = .FALSE.
-CC      CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,JATOM,NOCONT,
-CC     &            100,WORK(KFREE),LFREE)
-CCC     &            IPRINT,WORK(KFREE),LFREE)
+         JATOM  = 0
+         NOCONT = .FALSE.
+         CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDF,JATOM,NOCONT,
+     &               IPRINT,WORK(KFREE),LFREE)
 C
-      IF ( DO2GRD(1) .AND. .NOT. LBIT(INTFLG,1)) THEN
-         WRITE(LUPRI,'(/1X,A/)') 'WARNING: LL-integrals not used in '//
-     &                  ' SCF calculation => '//
-     &                  ' LL-Two-electron gradient .NOT. calculated!'
-         DO2GRD(1) = .FALSE.
+C        Also undifferentiated integrals are necessary
+C        So first call GABGEN to produce these, if they are
+C           not already existing.
+C
+C        Undifferentiad integrals
+         IJOB   = 0
+         IGTYP  = 1
+         ITYPE  = 0
+         MAXDF  = 0
+         JATOM  = 0
+         NOCONT = .FALSE.
+         CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDF,JATOM,NOCONT,
+     &               IPRINT,WORK(KFREE),LFREE)
+C
+C        Read in GAB matrices
+C
+         N2GAB   = NSYMBL*NSYMBL
+         IOFF = 1
+         GABLAB = 'GABAOXXX'
+         CALL GETGAB(GABRAO(IOFF),GABLAB,N2GAB,WORK(KFREE),LFREE)
+         IOFF = IOFF + N2GAB
+         DO I = 1,3
+            GABLAB = 'GABAOX2'//CHRXYZ(-I)
+            CALL GETGAB(GABRAO(IOFF),GABLAB,N2GAB,WORK(KFREE),LFREE)
+            IF (IPRINT.GE.10) THEN
+               CALL HEADER('DHFGRD: GABRAO-matrix ('//CHRXYZ(I)//')',-1)
+               CALL OUTPUT(GABRAO(IOFF),1,NSYMBL,1,NSYMBL,
+     &                     NSYMBL,NSYMBL,1,LUPRI)
+            END IF
+            IOFF = IOFF + N2GAB
+         END DO
+C
+C        Make reduced density matrices
+C
+         CALL MKDRAO(DMAT,DMRAO,4*NFMAT,WORK(KFREE),LFREE,IPRINT)
+C
+C        Restore translation/rotation invariance for gradient calc.
+C
+         DO I = 1, 3*MXCENT
+            DOPERT(I,1) = .TRUE.
+            DOPERT(I,2) = .TRUE.
+         END DO
+         FTRONV = .TRUE.
+         RELGRD = .TRUE.
+         CALL RSETSYM(.FALSE.)
+         CALL RTROINI(.FALSE.)
+         CALL TROINV(WORK(KFREE),LWORK)
+         RELGRD = .FALSE.
+C
       END IF
+      CALL GETTIM(CPU2,WALL2)
+      CPUGAB = CPU2 - CPU1
+      WLLGAB = WALL2 - WALL1
+      WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
+     &      'Time for GAB matrix                       :',
+     &      CPUGAB,' seconds.'
 C
+C
+C
+      CALL HEADER('DHFGRD: LL-Two-electron part',-1)
       CALL CYESNO(STR,DO2GRD(1))
       WRITE(LUPRI,'(1X,2A/)') 'Calculate LL-Two-electron gradient: ',
      &                        STR
 C
 C
       IF ( DO2GRD(1) ) THEN
-         CALL HEADER('DHFGRD: LL-Two-electron part',-1)
          IF ( DPRTIM(2,1) .GT. D0 ) THEN
             CALL TIMDAT
             WRITE(LUPRI,'(/1X,A,F10.4,A)') 
@@ -380,42 +475,37 @@ C     NPOS   = IDUMMY
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       I2TYP  = 1
       INTCLASS  = 0
-      ICEDIF = 0
+      ICEDIF = .FALSE.
 C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C
-C
-      RELGRD = .TRUE.
       NEWBAS = .TRUE. 
+      RELGRD = .TRUE.
       NDMAT   = NFMAT*4
-      NDMRAO  = NSYMBL*NSYMBL*NDMAT
-      CALL MEMGET('REAL',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
-      LWRK = LWORK - KFREE + 1
-      CALL DZERO(DNTSKP,8)
+      CALL DZERO(DNTSKP,3*14*3)
+      CALL FLSHFO(LUPRI)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
-         CALL PARDRV(WORK(KFREE),LWRK,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
+         CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
      &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
-     &               IFTHRS,DUMMY,WORK(KDMRAO),DUMMY,DNTSKP)
+     &               IGTHRS,GABRAO,DMRAO,DUMMY,DNTSKP)
       ELSE
 #endif
-         CALL TWOINT(WORK(KFREE),LWRK,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
+         CALL TWOINT(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
-     &               NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
-     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
-     &               DUMMY,WORK(KDMRAO),DUMMY,DNTSKP,RELCAL)
+     &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IGTHRS,
+     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
       RELGRD = .FALSE.
 C
-C
 C     Dispose memory
 C
       CALL MEMREL('DHFGRD',WORK,KWORK,KWORK,KFREE,LFREE)
-C
 C
 C     Symmetrization of GRADEE
 C
@@ -443,6 +533,7 @@ C
          CPUTLL = MAX(CPUTLL,DMXCPT)
          WLLTLL = MAX(WLLTLL,DMXWLT)
       END IF
+      IF (IGTHRS .GT. 0) CALL SCRGDS('SCR:LL',DNTSKP,IPRINT)
       WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
      &      'Time for LL-two-electron part of gradient :',
      &      CPUTLL,' seconds.'
@@ -455,24 +546,16 @@ C     Calculate estimated LS- and SS- gradient and skip if
 C     they seem unnecessary.
 C
 C
+      CALL HEADER('DHFGRD: LS-Two-electron part',-1)
       IF ( DOTRCK ) THEN
          CALL ESTGLS(DOLS)
          DO2GRD(2) = DO2GRD(2) .AND. DOLS
-      END IF
-C
-C     Some output...
-      IF ( DO2GRD(2) .AND. .NOT. LBIT(INTFLG,2) ) THEN
-         WRITE(LUPRI,'(/1X,A/)') 'WARNING: LS-integrals not used in '//
-     &                  ' SCF calculation => '//
-     &                  ' LS-Two-electron gradient .NOT. calculated!'
-         DO2GRD(2) = .FALSE.
       END IF
       CALL CYESNO(STR,DO2GRD(2))
       WRITE(LUPRI,'(/1X,2A/)') 'Calculate LS-Two-electron gradient: ',
      &                        STR
 C
       IF ( DO2GRD(2) ) THEN
-         CALL HEADER('DHFGRD: LS-Two-electron part',-1)
          IF ( DPRTIM(3,1) .GT. D0 ) THEN
             CALL TIMDAT
             WRITE(LUPRI,'(/1X,A,F10.4,A)') 
@@ -486,8 +569,8 @@ C
       END IF
       CALL GETTIM(CPU1,WALL1)
 C
-C     LS-gradient
 C
+C     LS-gradient
 C     IREPDM = IDUMMY
       ITYPE  = 2
 C     GMAT   = DUMMY
@@ -503,35 +586,33 @@ C     NPOS   = IDUMMY
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       I2TYP  = 2
       INTCLASS  = 1
-      ICEDIF = 0
+      ICEDIF = .FALSE.
 C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C
       NEWBAS = .TRUE.
       RELGRD = .TRUE.
       NDMAT   = NFMAT*4
-      NDMRAO  = NSYMBL*NSYMBL*NDMAT
-      CALL MEMGET('REAL',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
-      LWRK = LWORK - KFREE + 1
-      CALL DZERO(DNTSKP,8)
+      CALL DZERO(DNTSKP,3*14*3)
       CALL FLSHFO(LUPRI)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
-         CALL PARDRV(WORK(KFREE),LWRK,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
+         CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
      &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
-     &               IFTHRS,DUMMY,WORK(KDMRAO),DUMMY,DNTSKP)
+     &               IGTHRS,GABRAO,DMRAO,DUMMY,DNTSKP)
       ELSE
 #endif
-         CALL TWOINT(WORK(KFREE),LWRK,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
+         CALL TWOINT(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
-     &               NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
-     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
-     &               DUMMY,WORK(KDMRAO),DUMMY,DNTSKP,RELCAL)
+     &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IGTHRS,
+     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
+      CALL FLSHFO(LUPRI)
       RELGRD = .FALSE.
 C
 C     Dispose memory
@@ -546,6 +627,7 @@ C
       CALL MEMGET('INTE',KPOINT,3*NUCDEP*(MAXREP+1),WORK,KFREE,LFREE)
       CALL SKLEXP(WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),WORK(KPOINT),
      &               MAXDER,IPRINT)
+C
 C     Copy LS-GRADEE gradient to GRADER(1,2)
 C
       CALL DCOPY(MXCOOR,GRADEE,1,GRADER(1,2),1)
@@ -563,6 +645,7 @@ C
          CPUTLS = MAX(CPUTLS,DMXCPT)
          WLLTLS = MAX(WLLTLS,DMXWLT)
       END IF
+      IF (IGTHRS .GT. 0) CALL SCRGDS('SCR:LS',DNTSKP,IPRINT)
       WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
      &      'Time for LS-two-electron part of gradient :',
      &      CPUTLS,' seconds.'
@@ -573,6 +656,7 @@ C
       CALL FLSHFO(LUPRI)
  200  CONTINUE
 C
+      CALL HEADER('DHFGRD: SS-Two-electron part',-1)
       IF ( DOTRCK .AND. .NOT. DOLVC) THEN
          CALL ESTGSS(DOSS)
          DO2GRD(3) = DOSS .AND. DO2GRD(3)
@@ -588,7 +672,6 @@ C
      &                        STR
 C
       IF ( DO2GRD(3) ) THEN
-         CALL HEADER('DHFGRD: SS-Two-electron part',-1)
          IF ( DPRTIM(4,1) .GT. D0 ) THEN
             CALL TIMDAT
             WRITE(LUPRI,'(/1X,A,F10.4,A)') 
@@ -620,36 +703,33 @@ C     NPOS   = IDUMMY
       MTOTTK = NSMLBL*(NSMLBL+1)/2
       I2TYP  = 3
       INTCLASS  = 2
-      ICEDIF = 0
+      ICEDIF = .FALSE.
 C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C
-C
-      RELGRD = .TRUE.
       NEWBAS = .TRUE.
+      RELGRD = .TRUE.
       NDMAT   = NFMAT*4
-      NDMRAO  = NSYMBL*NSYMBL*NDMAT
-      CALL MEMGET('REAL',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
-      LWRK = LWORK - KFREE + 1
-      CALL DZERO(DNTSKP,8)
+      CALL DZERO(DNTSKP,3*14*3)
       CALL FLSHFO(LUPRI)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
-         CALL PARDRV(WORK(KFREE),LWRK,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
+         CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
      &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
-     &               IFTHRS,DUMMY,WORK(KDMRAO),DUMMY,DNTSKP)
+     &               IGTHRS,GABRAO,DMRAO,DUMMY,DNTSKP)
       ELSE
 #endif
-         CALL TWOINT(WORK(KFREE),LWRK,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
+         CALL TWOINT(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
-     &               NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
-     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
-     &               DUMMY,WORK(KDMRAO),DUMMY,DNTSKP,RELCAL)
+     &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IGTHRS,
+     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
+      CALL FLSHFO(LUPRI)
       RELGRD = .FALSE.
 C
 C     Dispose memory
@@ -664,6 +744,7 @@ C
       CALL MEMGET('INTE',KPOINT,3*NUCDEP*(MAXREP+1),WORK,KFREE,LFREE)
       CALL SKLEXP(WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),WORK(KPOINT),
      &               MAXDER,IPRINT)
+C
 C     Copy SS-GRADEE gradient to GRADER(1,3)
 C
       CALL DCOPY(MXCOOR,GRADEE,1,GRADER(1,3),1)
@@ -685,12 +766,16 @@ C
          CPUTSS = MAX(CPUTSS,DMXCPT)
          WLLTSS = MAX(WLLTSS,DMXWLT)
       END IF
+      IF (IGTHRS .GT. 0) CALL SCRGDS('SCR:SS',DNTSKP,IPRINT)
       WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
      &      'Time for SS-two-electron part of gradient :',
      &      CPUTSS,' seconds.'
 C
       CALL FLSHFO(LUPRI)
  300  CONTINUE
+C
+C
+C
 C
 C
 C     Output of timings
@@ -700,6 +785,10 @@ C
      &     'One-electron part of gradient    CPU  :',CPUONE,' seconds.'
       WRITE(LUPRI,'(1X,A,F10.4,A)') 
      &     '                                 WALL :',WLLONE,' seconds.'
+      WRITE(LUPRI,'(/1X,A,F10.4,A)') 
+     &     'GAB matrix for screening         CPU  :',CPUGAB,' seconds.'
+      WRITE(LUPRI,'(1X,A,F10.4,A)') 
+     &     '                                 WALL :',WLLGAB,' seconds.'
       IF ( DO2GRD(1) ) THEN
          WRITE(LUPRI,'(1X,A,F10.4,A)') 
      &      'LL-Two-electron part of gradient CPU  :',CPUTLL,' seconds.'
@@ -729,13 +818,13 @@ C
       END IF
       WRITE(LUPRI,'(1X,A,F10.4,A)') 
      &      'Total two-electron part of grad. CPU  :',
-     &      CPUTSS+CPUTLS+CPUTLL,' seconds.'
+     &      CPUTSS+CPUTLS+CPUTLL+CPUGAB,' seconds.'
       WRITE(LUPRI,'(1X,A,F10.4,A/)') 
      &      '                                 WALL :',
-     &      WLLTSS+WLLTLS+WLLTLL,' seconds.'
+     &      WLLTSS+WLLTLS+WLLTLL+WLLGAB,' seconds.'
       CALL GETTIM(CPUTO2,WLLTO2)
       CPUTOT = CPUTO2 - CPUTO1
-      WLLTOT = WLLTO2 - WLLTO2
+      WLLTOT = WLLTO2 - WLLTO1
       WRITE(LUPRI,'(1X,A,F10.4,A)') 
      &      'Total time in DHFGRD                  :',
      &      CPUTOT,' seconds.'
@@ -762,8 +851,8 @@ C
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck setsym */
-      SUBROUTINE SETSYM
+C  /* Deck rsetsym */
+      SUBROUTINE RSETSYM(ALLSYM)
 C*****************************************************************************
 C
 C     Temporary subroutine: sets DOSYM-array from abainf.h
@@ -775,8 +864,13 @@ C*****************************************************************************
 #include <priunit.h>
 #include <mxcent.h>
 #include <abainf.h>
-      DO I=1,8
-         DOSYM(I) = .TRUE.
+      LOGICAL ALLSYM
+C      DO I=1,8
+C         DOSYM(I) = .TRUE.
+C      END DO
+      DOSYM(1) = .TRUE.
+      DO I=2,8
+         DOSYM(I) = ALLSYM
       END DO
       RETURN
       END
@@ -2175,6 +2269,8 @@ C
 C
 C     Jun 29 1988 tuh
 C     Slight modified Feb 17 1998 jth
+C     Copied from abacus/abatro.F (TROINI)
+C     and modified for use in Dirac./jth 1998-02-04
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -2204,4 +2300,38 @@ C
       WRITE (LUPRI,'(//)')
       RETURN
       END
-
+C  /* Deck troini */
+      SUBROUTINE RTROINI(LCOMPA)
+C
+C     Initialize /CBITRO/
+C
+C     Copied from abacus/abatro.F (TROINI)
+C     and modified for use in Dirac./jth 1998-02-04
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <cbitro.h>
+#include <abainf.h>
+#include <dcbgen.h>
+      LOGICAL LCOMPA
+C
+      IPRINT = IPRGEN
+      THRESH = 0.1D00
+      COMPAR = LCOMPA
+c      SKIP   = .NOT. ((RELGRD .OR. MOLGRD .OR. MOLHES .OR. DIPDER)
+c     &                .AND. DOSYM(1))
+      SKIP   = .FALSE.
+      CUT    = .FALSE.
+      NOROT  = .FALSE.
+      HESTRO = .TRUE.
+      GDALL  = .FALSE.
+      GDTRO  = .FALSE.
+      RDTRO  = .FALSE.
+c      TROGRD = MOLGRD .OR. RELGRD
+      TROGRD = .TRUE.
+c      TROHES = MOLHES
+      TROHES = .FALSE.
+c      TRODIP = DIPDER
+      TRODIP = .FALSE.
+      RETURN
+      END
