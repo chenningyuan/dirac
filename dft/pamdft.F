@@ -165,6 +165,7 @@ C
 C     Print section
 C     =============
 C
+      IF(.NOT.DODFT) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 
      &   'DFTINP: Set-up for Kohn-Sham calculation:'
