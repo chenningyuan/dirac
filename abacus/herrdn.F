@@ -6002,9 +6002,8 @@ C     NUNC   = # number of uncontracted functions
 C     ===============================================
 C
   301 CONTINUE
-      READ (LUBFIL,'(A80)',END=5021) TEXT
-      IF (TEXT(1:5).EQ.'     ') GOTO 390
-      READ (TEXT,'(6I4)',END=390)
+      READ (LUBFIL,'(A80)',END=390) TEXT
+      READ (TEXT,'(6I4)',END=5021)
      &      ICOMP,ITYP,NPRIM,NCONTR,IDUM,NUNC
 C
 C     Skip large component lines which we don't need in the small
