@@ -1420,8 +1420,8 @@ C
          IHRMOP(IM) = IBTYP(2,IS)
          IFCKOP(IM) = 1
 #if defined (MOD_DFT)
-C        For anti-Hermitian trial vectors turn off exchange !
-         IF(DFTADD.AND.IHRMOP(IM).EQ.-1) IFCKOP(IM)=2
+C        For anti-Hermitian trial vectors or ALDA turn off exchange !
+         IF(DFTADD.AND.(ALDAON.OR.IHRMOP(IM).EQ.-1)) IFCKOP(IM)=2
 #endif
          ISYMOP(IM) = JSYMOP
       END DO
@@ -1436,8 +1436,8 @@ C
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
 #if defined (MOD_DFT)
-C        For anti-Hermitian trial vectors turn off exchange !
-         IF(DFTADD.AND.IHRMOP(IM).EQ.-1) IFCKOP(IM)=2
+C        For anti-Hermitian trial vectors or ALDA turn off exchange !
+         IF(DFTADD.AND.(ALDAON.OR.IHRMOP(IM).EQ.-1)) IFCKOP(IM)=2
 #endif
            ISYMOP(IM) = JSYMOP
          ENDDO
@@ -1455,8 +1455,8 @@ C
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
 #if defined (MOD_DFT)
-C        For anti-Hermitian trial vectors turn off exchange !
-         IF(DFTADD.AND.IHRMOP(IM).EQ.-1) IFCKOP(IM)=2
+C        For anti-Hermitian trial vectors or ALDA turn off exchange !
+         IF(DFTADD.AND.(ALDAON.OR.IHRMOP(IM).EQ.-1)) IFCKOP(IM)=2
 #endif
            ISYMOP(IM) = JSYMOP
          ENDDO
