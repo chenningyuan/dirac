@@ -159,7 +159,7 @@ C
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),CMO(*),TMAT(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
-     &          SMOAO(*),NPOS(*),WORK(LWORK) 
+     &          SMOAO(*),NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
 C
 #include <memint.h>
@@ -399,17 +399,17 @@ C
                    DVOVLP(IOPEN) = D1
                 ELSE
                    DVOVLP(IOPEN) = 
-                      DDOT(N2BBASXQ,FOCK(1+N2BBASXQ*IOPEN),1,
+     &                DDOT(N2BBASXQ,FOCK(1+N2BBASXQ*IOPEN),1,
      &                              FOCK(1+N2BBASXQ*IOPEN),1)
-                   DVOVLP = 
-                      DDOT(N2BBASXQ,DMAT(1+N2BBASXQ*IOPEN),1,
+                   DVOVLP(IOPEN) = 
+     &                DDOT(N2BBASXQ,DMAT(1+N2BBASXQ*IOPEN),1,
      &                FOCK(1+N2BBASXQ*IOPEN),1) / DVOVLP(IOPEN)
                 END IF
                 WRITE(LUPRI,'(I5,A,I2,A,F6.4)') NITER,
      &             ' *** Differential density matrix. DVOVLP(',
      &             IOPEN,') =',DVOVLP(IOPEN)
                 CALL DSCAL(N2BBASXQ,(-DVOVLP(IOPEN)),
-                   FOCK(1+N2BBASXQ*IOPEN),1)
+     &             FOCK(1+N2BBASXQ*IOPEN),1)
                 CALL DAXPY(N2BBASXQ,D1,DMAT(1+N2BBASXQ*IOPEN),1,
      &                                 FOCK(1+N2BBASXQ*IOPEN),1)
              END DO
@@ -419,12 +419,12 @@ C
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LWORK)
           CALL REAFCK(LUFCK2,FOCK,.FALSE.,NFMAT)
           IF (NISHT.GT.0)
-             CALL DAXPY(N2BBASXQ,DCOVLP,FOCK,1,WORK(KDTMP),1)
+     &       CALL DAXPY(N2BBASXQ,DCOVLP,FOCK,1,WORK(KDTMP),1)
           IF (NASHT.GT.0) THEN
              DO IOPEN = 1,NOPEN
                 CALL DAXPY(N2BBASXQ,DVOVLP(IOPEN),
-                   FOCK(1+N2BBASXQ*IOPEN),1,
-                   WORK(KDTMP+N2BBASXQ*IOPEN),1)
+     &             FOCK(1+N2BBASXQ*IOPEN),1,
+     &             WORK(KDTMP+N2BBASXQ*IOPEN),1)
              END DO
           END IF
         ELSE
@@ -827,7 +827,6 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-#include <dcbloop.h>
       LOGICAL TOBE
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),CMO(*),DMAT(*),DTMP(*),
