@@ -681,25 +681,10 @@ C
           ENDIF
         ENDIF
 C
+C       Check if positronic eigenvalues are below -2mc^2
+C
         IF(IPRSCF.GE.2) CALL EIGCHK(EIG(IORB(I)+1),NPSH(I))
-        IF(IPRSCF.GE.3) THEN
-            CALL HEADER('ELECTRON STATES - eigenvalues',-1)
-            IF (NESH(I) .GT. 0) THEN
-               IVAL = NPSH(I)
-               CALL PREIGV(EIG(IORB(I)+1),NESH(I),IVAL,
-     &                     WORK(KFREE),LFREE)
-            ELSE
-               WRITE(LUPRI,'(/5X,A/)') 'No electron eigenvalues'
-            END IF
-            IF (NPSH(I) .GT. 0) THEN
-               CALL HEADER('POSITRON STATES - eigenvalues',-1)
-               IVAL = 0
-               CALL PREIGV(EIG(IORB(I)+1),NPSH(I),IVAL,
-     &                     WORK(KFREE),LFREE)
-            ELSE
-               WRITE(LUPRI,'(/5X,A/)') 'No positron eigenvalues'
-            END IF
-        ENDIF
+C
  30   CONTINUE
       TDDG = SECOND() - TDDG
 C
@@ -758,6 +743,11 @@ C
 C     Overlap selection
 C
       IF(DOSEL) CALL SMOSEL(FAO,WORK(KFREE),LFREE)
+C
+C     Print eigenvalues
+C
+      IF (IPRSCF .GE. 3)
+     &   CALL PREIGN(EIG,IBEIG,(IPRSCF .GE. 4),WORK(KFREE),LFREE)
 C
       DO 40 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 40
@@ -1872,8 +1862,6 @@ C
       CALL QENTER('REORD')
 C
    
-      IPRJTH = IPRSCF
-      IPRSCF = 10
       DO 10 I = 1,NFSYM
          IF (IREORD(I).EQ.0) GOTO 10
          IF (IPRSCF.GE.10) THEN
@@ -1925,7 +1913,6 @@ C
      &                  NESH(I),1,1,LUPRI)
          END IF
  10   CONTINUE
-      IPRSCF = IPRJTH
       CALL FLSHFO(LUPRI)
       CALL QEXIT('REORD')
       RETURN
@@ -1965,7 +1952,6 @@ C
 C
 C              Copy eigenvalue and boson classification
 C
-               write(6,*) 'jth d,s',iorb_d,iorb_s,eigbck(iorb_s)
                EIG(IORB_D)   = EIGBCK(IORB_S)
                IBEIG(IORB_D) = IBEIGBCK(IORB_S)
             END IF
