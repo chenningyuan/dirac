@@ -737,7 +737,7 @@ C
      &            '.FCKCNV','.NODSCF','.PHCOEF','.FIXDIF','.NODAMP',
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.TRIVEC','.TRIFCK','.CLOSED','.EIGPRI','.OPEN S',
-     &            '.AUTOCC','.XXXXXX','.XXXXXX','.DIISTH','.DAMPFC',
+     &            '.AUTOCC','.NOSTOP','.XXXXXX','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
      &            '.POST D'/
       DATA SET/.FALSE./
@@ -784,6 +784,7 @@ C
       DIISAO    = .FALSE.
       DIISMO    = .TRUE.
       AUTOCC    = .FALSE.
+      NOSTOP    = .FALSE.
       INIOCC    = .TRUE.
 C
 C     Initialize /CBIDHF/
@@ -1038,6 +1039,8 @@ C&&& AUTOCC: Automatic DHF occupation
                   AUTOCC = .TRUE.
                GO TO 100
    22          CONTINUE
+C    NOSTOP: If convergence conditions are not fullfiled, do not stop dirac run!
+                  NOSTOP = .TRUE.
                GO TO 100
    23          CONTINUE
                GO TO 100
@@ -1430,6 +1433,12 @@ C
       IF(IPREIG.EQ.3) WRITE(LUPRI,'(1X,A)')
      +  '* Both electron and positron component eigenvalues '
      &  //'written out.'
+
+      IF (NOSTOP) THEN
+       WRITE(LUPRI,'(1X,A)') '*** NOSTOP activated ! ****'
+       WRITE(LUPRI,'(2X,A)')
+     & 'Dirac continues with post-SCF calculations!'
+      ENDIF
 C
   999 CONTINUE
       RETURN

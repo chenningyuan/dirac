@@ -101,9 +101,16 @@ C
 C
       IF (.NOT. WFCONV) THEN
 C        ... DHF not converged;
-         WRITE (LUPRI,'(//A)')
-     &      ' ERROR, Dirac-Hartree-Fock not converged, Dirac stops!'
-         CALL QUIT('Dirac-Hartree-Fock not converged')
+         IF (.NOT.NOSTOP) THEN
+          WRITE (LUPRI,'(//A)')
+     &    ' ERROR, Dirac-Hartree-Fock not converged, Dirac stops!'
+          CALL QUIT('Dirac-Hartree-Fock not converged')
+         ELSE
+          WRITE (LUPRI,'(//A)')
+     &    'WARNING, DHF not converged, post-SCF run is continuing !'
+          WRITE (LUPRI,'(A)')
+     &    'Check the MO convergence!'
+         ENDIF
       END IF
 C
       CALL FLSHFO(LUPRI)
