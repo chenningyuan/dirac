@@ -3547,9 +3547,9 @@ C
       INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
 C
       IF(URKBAL) THEN
-        WRITE(LUPRI,'(A)') ' * Unrestricted kinetic balance'
+        WRITE(LUPRI,1000) 'unrestricted'
       ELSE
-        WRITE(LUPRI,'(A)') ' * Restricted kinetic balance'
+        WRITE(LUPRI,1000) 'restricted'
       ENDIF
 C
 C     Projections on basis set
@@ -3558,38 +3558,42 @@ C
          IF(.NOT.URKBAL) THEN
             WRITE(LUPRI,'(A)')
      &      ' * Default RKB projection:',
-     &      '   1: Pre-projection on scalar basis',
-     &      '   2: Removing unphysical solutions for no external field'
+     &      '   1: Pre-projection in scalar basis',
+     &      '   2: Removal of unphysical solutions'//
+     &      ' (via diagonalization of free particle Hamiltonian)'
          ELSE
             WRITE(LUPRI,'(A)')
-     &      ' *** WARNING **** RKB pre-projection on scalar basis',
+     &      ' * RKB pre-projection in scalar basis',
      &      '  without removing unphysical'//
      &      ' solutions for no external field',
-     &      '  I HOPE YOU KNOW WHAT YOU ARE DOING!'
+     &      '  This gives extended kinetic balance and is'//
+     &      '  only recommended for CONTRACTED LC basis sets'
          ENDIF
       ELSEIF(ISPHTR.EQ.1) THEN
          IF(.NOT.URKBAL) THEN
             WRITE(LUPRI,'(A)')
      &      ' * RKB projection:',
-     &      '   1: No Pre-projection on scalar basis',
-     &      '   2: Removing unphysical solutions for no external field',
-     &      ' *** WARNING ****, Ok, but may give severe linear',
-     &      '   dependence problems for large basis sets'
+     &      '   1: No Pre-projection in scalar basis',
+     &      '   2: Removal of unphysical solutions'//
+     &      ' (via diagonalization of free particle Hamiltonian)',
+     &      ' *** WARNING **** This procedure may give severe linear' 
+     &    //'  dependence problems for large basis sets'
          ELSE
             WRITE(LUPRI,'(A)')
-     &      ' *** WARNING ****',
      &      '  Spherical large component basis and Cartesian'//
-     &           ' small components',
-     &      '  I HOPE YOU KNOW WHAT YOU ARE DOING!'
+     &           ' small components ',
+     &      ' *** WARNING **** This procedure may give severe linear' 
+     &    //'  dependence problems for large basis sets'
          ENDIF
       ELSEIF(ISPHTR.EQ.0) THEN
          IF(.NOT.URKBAL) THEN
             WRITE(LUPRI,'(A)')
-     &      ' * RKB projection:',
+     &      ' * Non-standard RKB projection:',
      &      '   1: Cartesian large components',
-     &      '   2: Removing unphysical solutions for no external field'
+     &      '   2: Removal of unphysical solutions'//
+     &      ' (via diagonalization of free particle Hamiltonian)'
          ELSE
-            WRITE(LUPRI,'(A)') ' * Unresticted Cartesian basis'
+            WRITE(LUPRI,'(A)') ' * Unrestricted Cartesian basis'
          ENDIF
       ELSE
          WRITE(LUPRI,'(/A,I5)')
@@ -3919,6 +3923,7 @@ C
 C
       RETURN
 C
+ 1000 FORMAT (//' Information about the ',A,' kinetic balance scheme:')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4048,14 +4053,15 @@ C
       DIMENSION WORK(LWORK)
       LOGICAL LBIT,DIRFCK
 C
+      CALL TITLER('Memory required by HERMIT','*',127)      
       CALL PAOVEC(WORK,LWORK,0,IPRTWO)
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)') 
-     &   ' Maximum memory load for two-integral processing in HERMIT:'
+     &   ' Maximum memory load for two-electron integral processing:'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
 C     always DIRFCK false to calculate memory for SO-integrals
-C     which is what we nomally use in Dirac (both SOFOCK for
+C     which is what we normally use in Dirac (both SOFOCK for
 C     Fock matrices and for MOLTRA). DIRFCK true will calculate
 C     the correct for AOFOCK only. /hjaaj May 2001
 C
