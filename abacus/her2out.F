@@ -669,7 +669,7 @@ C
 C         ... no Coulomb term for antisymmetric density matrix
           IF (HFXFAC.EQ.D0) IE = 0
 C
-          IF(IPREDM(K).GE.0 .AND. IREPAB.NE.IREPDM(K)) IC = 0
+          IF(IREPDM(K).GE.0 .AND. IREPAB.NE.IREPDM(K)) IC = 0
 C         ... IREPDM(K) is either the symmetry of the density matrix
 C             or - in Dirac with NZ .lt. 4 and packed matrices (SOFOCK) -
 C             the symmetry of the only symmetry block of the density matrix
