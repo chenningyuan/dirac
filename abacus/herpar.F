@@ -260,7 +260,7 @@ C      and let them return to main menu.
 C--------------------------------------
 C
       CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
-     &           NUMGRA,NUMHES,WORK(KTIMES),DINTSKP,LDINTSKP)
+     &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
       ITASK = -1
 #if defined (VAR_MPI)
       CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
@@ -827,7 +827,7 @@ C
       END
 C  /* Deck rvres */
       SUBROUTINE RVRES(WORK,FMAT,ITYPE,MTOTTK,NREQUI,
-     &                 NUMGRA,NUMHES,TIMES,DINTSKP,LDINTSKP)
+     &                 NUMGRA,NUMHES,MAXDIF,TIMES,DINTSKP,LDINTSKP)
 C
 C     Written by Henrik Koch and Paal Dahle July-1994
 C
