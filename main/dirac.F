@@ -482,28 +482,21 @@ C
 #else
       CALL GETENV ('BASDIR',BASDIR)
 #endif
-      LENBAS = 0
+      LENBAS = LBASDIR
  10   CONTINUE
-      IF ( LENBAS .LT. 58 ) THEN
-         IF ( BASDIR(LENBAS+1:LENBAS+1) .NE. ' ' ) THEN
-            LENBAS = LENBAS + 1
+      IF ( LENBAS .GT. 0 ) THEN
+         IF ( BASDIR(LENBAS:LENBAS) .EQ. ' ' ) THEN
+            LENBAS = LENBAS - 1
             GOTO 10
          END IF
       END IF
 C
-C     Add a trailing slash if necesary
+C     If string is empty add current directory 
 C
-      IF ( LENBAS .GT. 0 ) THEN
-         IF ( BASDIR(LENBAS:LENBAS) .NE. '/' ) THEN
-            LENBAS = LENBAS + 1
-            BASDIR(LENBAS:LENBAS) = '/'
-         END IF
-      ELSE
+      IF ( LENBAS .EQ. 0 ) THEN
 C
-C        Use current directory as basis set directory
-C
-         BASDIR(LENBAS+1:LENBAS+2) = './'
-         LENBAS = LENBAS+2
+         BASDIR(1:1) = '.'
+         LENBAS = 1
 C
       END IF
 C
