@@ -408,4 +408,17 @@ C
  999  CALL QEXIT('DIRNOD')
       END
 #endif
-
+C
+#ifdef SYS_SX
+C
+C     Small dummy program that calls the main c-routine, because
+C     some linkers are worthless (eg. NEC SX).
+C     If you call the linker through the fortran compiler the 'main'
+C     program has one name, and if you call the linker through the C
+C     compiler it has another name. Marvellous work!
+C
+      PROGRAM SXMAIN
+      CALL C_MAIN
+      STOP
+      END
+#endif

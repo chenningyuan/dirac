@@ -38,6 +38,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "alloc_mem.head"
  ;
@@ -56,7 +57,13 @@
  ;
 #include "mpi_errtrap.h"
 
+#if defined (SYS_DEC)
+void MAIN__()
+#elif defined (SYS_SX)
+void c_main_()
+#else
 void main()
+#endif
 
 {
 
@@ -69,8 +76,14 @@ void main()
     * Start timing
     */
 
+#if defined (SYS_SX)
+   gt_first = (get_time_struct *) malloc(sizeof(get_time_struct));
+   gt_last  = (get_time_struct *) malloc(sizeof(get_time_struct));
+#else
    gt_first = (get_time_struct *) diracmalloc(sizeof(get_time_struct));
    gt_last  = (get_time_struct *) diracmalloc(sizeof(get_time_struct));
+#endif
+
    get_time(gt_first);
 
    /*
