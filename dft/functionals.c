@@ -88,11 +88,23 @@ dftisgga_(void)
     return selected_func->is_gga();
 }
 
+void
+dft_set_hf_weight(real hfxfac)
+{
+#ifndef NO_BACKWARD_COMP
+  dcrham_.hfxfac = hfxfac;
+#endif
+}
+
 real
 dftenergy_(const real* rho, const real* grad)
 {
-    real res = selected_func->func(*rho*0.5, *rho*0.5, *grad*0.5, *grad*0.5);
-    return res;
+    DftDensProp dp;
+    /* HP does not grok { *rho*0.5, *rho*0.5, *grad*0.5, *grad*0.5 }; */
+    dp.rhoa  = dp.rhob  = *rho *0.5;
+    dp.grada = dp.gradb = *grad*0.5; 
+    dp.gradab= dp.grada * dp.gradb;
+    return selected_func->func(&dp);
 }
 
 void
@@ -191,75 +203,91 @@ dftinput_(char* line, int* success, int len)
 void
 dftpot0_(FirstDrv *ds, const real* weight, const real* rho, const real* grad)
 {
+    DftDensProp dp;
+    /* HP does not grok C99's { *rhoa, *rhob, *grada, *gradb }; */
+    dp.rhoa  = dp.rhob  = *rho  *0.5;
+    dp.grada = dp.gradb = *grad *0.5;
+    dp.gradab = dp.grada * dp.gradb;
     drv1_clear(ds);
-    selected_func->first(ds, *weight, *rho*0.5, *rho*0.5, 
-                         *grad*0.5, *grad*0.5);
+    selected_func->first(ds,*weight, &dp);
+    /* we should really use a separate structure here
+     * but this time, we cheat */
+    ds->df0010 += 0.5*ds->df00001* *grad;
 }
 
 void
 dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
          const int* triplet)
 {
-    SecondFuncDrv drvs = { 0 };
-
-    selected_func->second(&drvs, *w, *rho*0.5, *rho*0.5,
-                          *grad*0.5, *grad*0.5);
+    SecondFuncDrv drvs;
+    DftDensProp dp;
+    drv2_clear(&drvs);
+    /* HP does not grok C99's { *rho*0.5, *rho*0.5, *grad*0.5, *grad*0.5 }; */
+    dp.rhoa  = dp.rhob  = *rho *0.5;
+    dp.grada = dp.gradb = *grad*0.5; 
+    dp.gradab = dp.grada * dp.gradb;
+    selected_func->second(&drvs, *w, &dp);
          
     ds->fR  = 0; /* NOT USED */
-    ds->fZ  = drvs.df0010;
+    ds->fZ  = drvs.df0010 + 0.5*drvs.df00001* *grad;
     ds->fRR = 0.5*(drvs.df2000 + drvs.df1100);
-    ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001);
-    ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011);
+    ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001 + drvs.df10001* *grad);
+    ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011 + drvs.df00001);
 }
 
 /* dftpot2_:
    computes third order derivatives of selected functional with respect
    to rho and zeta=|\nabla\rho|
 */
+#ifdef TESTED_THE_CODE_BELOW
 void
 dftpot2_(ThirdDrv *ds, real factor, real rho, real grad, int isgga)
 {
     ThirdFuncDrv drvs;
+    DftDensProp dp;
+    /* HP does not grok { *rho*0.5, *rho*0.5, *grad*0.5, *grad*0.5 }; */
+    dp.rhoa  = dp.rhob  = rho *0.5;
+    dp.grada = dp.gradb = grad*0.5; 
+    dp.gradab = dp.grada * dp.gradb;
 
     drv3_clear(&drvs);
-    selected_func->third(&drvs, factor, rho*0.5, rho*0.5, 
-                         grad*0.5, grad*0.5);
+    selected_func->third(&drvs, factor, &dp);
     /* transform to density from density_alpha derivatives below */
     /* This could be a separate function. */
     /* we treat singlet here */
     ds->fR   = (drvs.df1000);
     ds->fRR  = (drvs.df2000 + drvs.df1100);
-    ds->fRR  = (drvs.df2000 - drvs.df1100);
     ds->fRRR = (drvs.df3000 + 3*drvs.df2100);
-    ds->fRRR = (drvs.df3000 - drvs.df2100);
 
     if(isgga) { /* FORMULAE seem ok but were never really tested */
         real grada = 0.5*grad;
         real grada2= grada*grada;
         real grada3= grada2*grada;
-        
-        /* transform to closed shell, second time. Oh, I love this mess. */
-
-        /* drvs.df1010 = drvs.df1010 + drvs.df1001; */
-        /* drvs.df0020 = drvs.df0020 + drvs.df0011; */
-        /* drvs.df2010 = drvs.df2010 + drvs.df2001 + 2*drvs.df1110; */
-        /* drvs.df1020 = drvs.df1020 + drvs.df0120 + 2*drvs.df1011; */
-        /* drvs.df0030 = drvs.df0030 + 3*drvs.df0021; */
-
-        ds->fZ  = drvs.df0010/(2*grada) ;
-        ds->fZZ = (drvs.df0020 + drvs.df0011)/(4*grada2) -drvs.df0010/(4*grada3);
+	/* transform to closed shell, second time. Oh, I love this mess. */
+        ds->fZ  = drvs.df0010/(2*grada)
+            + drvs.df00001;
+        ds->fZZ  = (drvs.df0020 + drvs.df0011)/(4*grada2) 
+	    -drvs.df0010/(4*grada3);
         ds->fRZ  = (drvs.df1010 + drvs.df1001)/(2*grada);
+        ds->fRG  = 2*drvs.df10001;
         ds->fRRZ = (drvs.df2010+drvs.df2001+2*drvs.df1110)/(2*grada);
-        ds->fRZZ = (drvs.df1020+drvs.df0120-2*drvs.df1011)/(4*grada2) 
+        ds->fRRG = drvs.df20001+drvs.df11001;
+        ds->fRRGX = 2*(drvs.df20001+drvs.df11001);
+         
+        ds->fRZZ = (drvs.df1020+drvs.df0120+2*drvs.df1011)/(4*grada2) 
                       - (drvs.df1010+drvs.df1001)/(4*grada3);
         ds->fZZZ = ((drvs.df0030 + 3*drvs.df0021)/grada3 
                    -3*(drvs.df0020 + drvs.df0011)/(grada2*grada2)
                    +3*drvs.df0010/(grada3*grada2))/8.0; 
     } else {
-        ds->fZ = ds->fZZ = ds->fRZ =  ds->fRRZ = ds->fRZZ = ds->fZZZ = 0;
+        ds->fZ = ds->fZZ = ds->fRZ = 0;
+        ds->fRRZ  = 0;
+        ds->fZZZ  = 0; 
+        ds->fG    = ds->fRG = ds->fRRG = 0;
+        ds->fRRGX = 0;  
     }
 }
-
+#endif
 /* MIXED FUNCTIONALS */
 typedef struct FuncList_ FuncList;
 
@@ -412,40 +440,37 @@ gga_report(void)
 }
 
 static real
-gga_energy(real rhoa, real rhob, real grada, real gradb)
+gga_energy(DftDensProp* dp)
 {
     real res = 0;
     FuncList* lst;
     for(lst=gga_fun_list; lst; lst=lst->next) 
-        res += lst->weight*lst->func->func(rhoa, rhob, grada, gradb);
+        res += lst->weight*lst->func->func(dp);
     return res;
 }
 
 static void
-gga_first(FirstDrv *ds, real factor, 
-          real rhoa, real rhob, real grada, real gradb)
+gga_first(FirstDrv *ds, real factor, DftDensProp* dp) 
 {
     FuncList* lst;
     for(lst=gga_fun_list; lst; lst=lst->next) 
-        lst->func->first(ds, factor*lst->weight, rhoa, rhob, grada, gradb);
+        lst->func->first(ds, factor*lst->weight, dp);
 }
 
 static void
-gga_second(SecondFuncDrv *ds, real factor,
-           real rhoa, real rhob, real grada, real gradb)
+gga_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
 {
     FuncList* lst;
     for(lst=gga_fun_list; lst; lst=lst->next) 
-        lst->func->second(ds, factor*lst->weight, rhoa, rhob, grada, gradb);
+        lst->func->second(ds, factor*lst->weight, dp);
 }
 
 static void
-gga_third(ThirdFuncDrv *ds, real factor,
-           real rhoa, real rhob, real grada, real gradb)
+gga_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
 {
     FuncList* lst;
     for(lst=gga_fun_list; lst; lst=lst->next) 
-        lst->func->third(ds, factor*lst->weight, rhoa, rhob, grada, gradb);
+        lst->func->third(ds, factor*lst->weight, dp);
 }
 
 Functional XAlphaFunctional = {

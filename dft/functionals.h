@@ -18,6 +18,17 @@
 /* define the basic floating-point variable type used by the Fortran code */
 typedef double real;
 
+/* DftDensProp structure contains properties of the density that are
+   needed for functional evaluation and possibly other purposes.
+*/
+typedef struct DftDensProp_ DftDensProp;
+struct DftDensProp_ {
+    real rhoa,  rhob;
+    real grada, gradb; /* norms of the density gradient, not squares */
+    real gradab;       /* scalar product of grada and gradb */
+    /* real current[3] or something may come in the future :-) */
+};
+
 typedef struct Functional_ Functional;
 extern Functional* selected_func;
 typedef struct FirstDrv_  FirstDrv;
@@ -34,7 +45,10 @@ typedef struct ThirdFuncDrv_  ThirdFuncDrv;
  */
 struct FirstDrv_ {
     real df1000;  /* d/drho F     */
+    real df0100;
     real df0010;  /* d/zeta F     */
+    real df0001;
+    real df00001;
 };
 
 /* SecondDrv:  matrix  of  second  order functional  derivatives  with
@@ -54,14 +68,25 @@ struct SecondDrv_ {
  * evaluation procedures. Do not include "triplet" transformation.
  */
 struct SecondFuncDrv_ {
-    real df1000;  /* d/drho F          */
-    real df0010;  /* d/|zeta| F        */
-    real df2000;  /* d/drho_alpha^2 F  */
+    real df1000;  /* d/drho_alpha F               */
+    real df0100;  /* d/drho_beta F                */
+    real df0010;  /* d/|zeta_alpha| F             */
+    real df0001;  /* d/|zeta_beta| F              */
+    real df00001;
+    real df2000;  /* d/drho_alpha^2 F             */
+    real df0200;  /* d/drho_beta^2 F              */
+    real df0020;  /* d/dzeta_alpha^2 F          */
+    real df0002;  /* d/dzeta_beta^2 F             */
+    real df00002;
     real df1100;  /* d/(drho_alpha drho_beta) F   */
+    real df0011;  /* d2/dzeta_a zeta_b F          */
     real df1010;  /* d/drho_alpha d/dzeta_alpha F */
     real df1001;  /* d/drho_alpha d/dzeta_beta F  */
-    real df0020;  /* d/dzeta^2 F                  */
-    real df0011;  /* d2/dzeta_a zeta_b F          */
+    real df10001;
+    real df0110;  /* d/drho_beta d/dzeta_alpha F  */ 
+    real df0101;  /* d/drho_beta d/dzeta_beta F   */
+    real df01001;
+  /* df00101 and df00011 not included */ 
 };
 
 /* ThirdDrv: matrix of third derivatives with respect to two parameters:
@@ -85,25 +110,51 @@ struct ThirdDrv_ {
 */
 
 struct ThirdFuncDrv_ {
-    real df1000;  /* d/drho F          */
-    real df0010;  /* d/|zeta| F        */
+    real df1000;   /* d/drho F          */
+    real df0100; 
+    real df0010;   /* d/|zeta| F        */
+    real df0001;
+    real df00001;
+     
     real df2000;  /* d/drho_alpha^2 F  */
+    real df0200; 
     real df1100;  /* d/(drho_alpha drho_beta) F   */
     real df1010;  /* d/drho_alpha d/dzeta_alpha F */
     real df1001;  /* d/drho_alpha d/dzeta_beta F  */
+    real df0101;
+    real df0110;
+    real df10001;
+    real df01001;   
     real df0020;  /* d/dzeta^2 F                  */
+    real df0002;
     real df0011;  /* d2/dzeta_a zeta_b F          */
 
     real df3000; /* d/drho_alpha^3 F              */
+    real df0300; 
     real df2100; /* d/d(rho_alpha^2rho_beta) F    */
+    real df1200;
     real df2010; /* d/drhoa^2 d/dzetaa F */
+    real df2001;
+    real df0201; 
+    real df0210;     
     real df1110; /* d/drho^2 d/dzeta F */
-    real df2001; /* d/drhoa^2 d/dzetab F */
+    real df1101;
     real df1020; /* d/drho d/dzeta^2 F */
-    real df0120; /* d/drho d/dzeta^2 F */
+    real df1002;
+    real df0102;
+    real df0120; 
     real df0030; /* d/dzeta^3 F        */
+    real df0003;
     real df1011;
+    real df0111;
     real df0021;
+    real df0012;
+    real df20001;
+    real df02001;
+    real df11001;  
+  /* most derivatives for fith variable not included *
+   * this makes functionals valid only to square grad rho 
+   */
 };
 
 /* EnergyFunc: the function returning the energy for given densities
@@ -113,15 +164,14 @@ struct ThirdFuncDrv_ {
 typedef int (*IsGGAFunc)(void);
 typedef int (*ReadInputFunc)(const char* conf_string);
 typedef void (*ReportFunc)(void);
-typedef real (*EnergyFunc)(real rhoa, real rhob, real grada, real gradb);
-typedef void (*FirstOrderFun)(FirstDrv *ds, real factor, 
-                              real rhoa, real rhob, real ngrada, real ngradb);
+typedef real (*EnergyFunc)(DftDensProp* dens_prop);
+typedef void (*FirstOrderFun)(FirstDrv *ds, real factor, DftDensProp* dns_prp);
 
 typedef void (*SecondOrderFun)(SecondFuncDrv *ds, real factor,
-                               real rhoa, real rhob, real ngrada, real ngradb);
+                               DftDensProp* dens_prop);
 
 typedef void (*ThirdOrderFun)(ThirdFuncDrv *ds, real factor,
-                              real rhoa, real rhob, real ngrada, real ngradb);
+                              DftDensProp* dens_prop);
 
 struct Functional_ {
     const char* name; /* descriptive functional name (usually 5 characters) */
@@ -156,9 +206,12 @@ extern Functional SlaterFunctional;
 extern Functional VWNFunctional;
 extern Functional B88CorrFunctional;
 extern Functional BeckeFunctional;
+extern Functional LB94Functional;
 extern Functional LYPFunctional;
+extern Functional PBEFunctional;
 extern Functional PW86xFunctional;
 extern Functional P86cFunctional;
+extern Functional PW92Functional;
 
 /* mixed functionals */
 extern Functional XAlphaFunctional;

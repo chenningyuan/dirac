@@ -5,24 +5,27 @@
    Reference: Phys. Rev. B 33. 8800 (1986)
 */
 
+#if !defined(SYS_DEC)
+/* XOPEN compliance is missing on old Tru64 4.0E Alphas and pow() prototype
+ * is not specified. */
+#define _XOPEN_SOURCE          500
+#define _XOPEN_SOURCE_EXTENDED 1
+#endif
+
 #include <math.h>
 #include <stdio.h>
 
 #define __CVERSION__
 
 #include "functionals.h"
-#include "dcbham.h"
 
 /* INTERFACE PART */
 static int pw86x_isgga(void) { return 1; }
 static int pw86x_read(const char* conf_line);
-static real pw86x_energy(real rhoa, real rhob, real grada, real gradb);
-static void pw86x_first(FirstDrv *ds, real factor, 
-                        real rhoa, real rhob, real ngrada, real ngradb);
-static void pw86x_second(SecondFuncDrv *ds, real factor,
-                         real rhoa, real rhob, real ngrada, real ngradb);
-static void pw86x_third(ThirdFuncDrv *ds, real factor,
-                        real rhoa, real rhob, real ngrada, real ngradb);
+static real pw86x_energy(DftDensProp* dp);
+static void pw86x_first (FirstDrv *ds,      real factor, DftDensProp* dp);
+static void pw86x_second(SecondFuncDrv *ds, real factor, DftDensProp* dp);
+static void pw86x_third (ThirdFuncDrv *ds,  real factor, DftDensProp* dp);
 
 Functional PW86xFunctional = {
   "PW86x",       /* name */
@@ -39,12 +42,12 @@ Functional PW86xFunctional = {
 static int
 pw86x_read(const char* conf_line)
 {
-  dcrham_.hfxfac = 0;
- return 1;
+  dft_set_hf_weight(0);
+  return 1;
 }
 
 static real
-pw86x_energy(real rhoa, real rhob, real grada, real gradb)
+pw86x_energy(DftDensProp* dp)
 {
 /* Use density functional form. In case of spin polarization,
    this function will have to be called twice with arguments
@@ -56,7 +59,7 @@ pw86x_energy(real rhoa, real rhob, real grada, real gradb)
   const real c = 14.0;
   const real d = 0.20;
 /* Closed shell (See eq. (25) in reference) */
-  real rho = rhoa+rhob, grad = grada+gradb;
+  real rho = dp->rhoa+dp->rhob, grad = dp->grada+dp->gradb;
 
   const real Ax = -pow(3.0/M_PI,1.0/3.0)*3.0/4.0;
   const real kf = pow(3.0*pow(M_PI,2.0)*rho,1.0/3.0);
@@ -66,8 +69,7 @@ pw86x_energy(real rhoa, real rhob, real grada, real gradb)
 }
 
 static void
-pw86x_first(FirstDrv *ds, real factor, 
-            real rhoa, real rhob, real grada, real gradb)
+pw86x_first(FirstDrv *ds, real factor, DftDensProp* dp)
 {
 /* The energy expression is the integral int(Ax*rho**(4/3)*F). We first 
    calculate d(F)/d(rho) and d(F)/d(grad_rho) and differentiate the
@@ -78,7 +80,7 @@ pw86x_first(FirstDrv *ds, real factor,
   const real c = 14.0;
   const real d = 0.20;
 /* Closed shell (See eq. (25) in reference) */
-  real rho = rhoa+rhob, grad = grada+gradb;
+  real rho = dp->rhoa+dp->rhob, grad = dp->grada+dp->gradb;
 
   const real Ax= -pow(3.0/M_PI,1.0/3.0)*3.0/4.0;
   const real kf= pow(3.0*M_PI*M_PI*rho,1.0/3.0);
