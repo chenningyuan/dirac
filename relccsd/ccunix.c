@@ -37,6 +37,7 @@ Bit routines:   popcnt(pat)
                 leadz(pat)
                         as documented for cray, except operating on 32 bit word
         */
+#include <unistd.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -76,7 +77,7 @@ FILE_DEFINITION files[MAXUNIT];
 int nwords=0, nio=0;
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
-    defined (SYS_SUN)
+    defined (SYS_SUN) || defined (SYS_DARWIN)
 void openc_();
 void wrabsf_();
 void rdabsf_();
@@ -93,7 +94,7 @@ void closec();
 
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
-    defined (SYS_SUN)
+    defined (SYS_SUN) || defined (SYS_DARWIN)
 void openc_(unit,fname,size,status) int *unit, *size, *status; char *fname;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
 void openc(unit,fcd,size,status) int *unit, *status, *size; _fcd fcd;
@@ -151,10 +152,11 @@ void openc(unit,fname,size,status) int *unit, *size, *status; char *fname;
   strncpy(files[*unit].fname,fname,14); *(files[*unit].fname+14)=NULL;
   *size=(lseek(files[*unit].fd,0L,2)+511)/512;
   files[*unit].addr= -1;
+
 }
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
-    defined (SYS_SUN)
+    defined (SYS_SUN) || defined (SYS_DARWIN)
 void wrabsf_(unit,a,l,p) int *unit, *l, *p; char *a;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
 void wrabsf(unit,fcd,l,p) int *unit,*p, *l; _fcd fcd;
@@ -181,12 +183,14 @@ void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
         }
   addr= *p * WORT;
   m= *l * WORT;
+
   if (addr!=files[*unit].addr)
         if (lseek(files[*unit].fd,addr,0)==-1)
         { fprintf(stderr,"wrabs: Error in lseek of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,*p);
           files[*unit].addr= -1;
           return;
         }
+
   if ((n=write (files[*unit].fd,a,m))!=m)
         fprintf(stderr,"wrabs: Error in writing %d words in file %s with unit %d\n",*p,files[*unit].fname,*unit);
   nio++; nwords+= *l;
@@ -194,7 +198,7 @@ void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 }
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
-    defined (SYS_SUN)
+    defined (SYS_SUN) || defined (SYS_DARWIN)
 void rdabsf_(unit,a,l,p) int *unit, *l, *p; char *a;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
 void rdabsf(unit,fcd,l,p) int *unit, *p, *l; _fcd fcd;
@@ -221,12 +225,14 @@ void rdabsf(unit,a,l,p) int *unit, *l, *p; char *a;
         }
   addr= *p * WORT;
   m= *l *WORT;
+
   if (addr!=files[*unit].addr)
         if (lseek(files[*unit].fd,addr,0)==-1)
         { fprintf(stderr,"rdabs: Error in lseek of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,*p);
           files[*unit].addr= -1;
           return;
         }
+
   if ((n=read (files[*unit].fd,a,m))!=m)
         fprintf(stderr,"rdabs: Error in reading %d words in file %s with unit %d\n",*p,files[*unit].fname,*unit);
   nio++; nwords+= *l;
@@ -234,7 +240,7 @@ void rdabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 }
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
-    defined (SYS_SUN)
+    defined (SYS_SUN) || defined (SYS_DARWIN)
 void closec_(unit) int *unit;
 #elif defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_AIX) || defined (SYS_HPUX)
 void closec(unit) int *unit;

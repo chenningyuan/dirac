@@ -201,7 +201,7 @@ C
 C     SGI IRIX counts recl in *4 words
       IRECL = 2 * NREAL + 1 * NINTE + 1 * NLOGI
 #else
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_HPUX) || defined (SYS_LINUX)
+#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_DARWIN)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
 #else
 #if defined (SYS_IBM) || defined (SYS_SUN)
@@ -331,7 +331,7 @@ C
 #endif
 #endif
 #if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
- || defined (SYS_DEC)  || defined (SYS_LINUX) || (SYS_ALLIANT)
+ || defined (SYS_DEC)  || defined (SYS_LINUX) || (SYS_ALLIANT) || (SYS_DARWIN)
       real*4  etime, tarray(2)
 C
       TIMCPU = etime(tarray)
@@ -362,7 +362,7 @@ C
       End
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Subroutine DayTime (Datum,Tijd)
-#if defined (SYS_HPUX) || (SYS_LINUX)
+#if defined (SYS_HPUX) || (SYS_LINUX) || (SYS_DARWIN)
       CHARACTER FDATE*24
 #endif
       Character*10 Datum,Tijd*8,String*24
@@ -373,7 +373,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Call Date(Datum)
       Call Clock(Tijd)
 #endif
-#if defined (SYS_HPUX) || defined (SYS_LINUX)
+#if defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_DARWIN)
       STRING = FDATE()
       DATUM = STRING(1:10)
       TIJD  = STRING(12:19)

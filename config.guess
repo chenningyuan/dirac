@@ -614,6 +614,9 @@ EOF
     p*:CYGWIN*:*)
 	echo powerpcle-unknown-cygwin
 	exit 0 ;;
+    *:Darwin*:*)
+	echo Power-Macintosh-Darwin
+	exit 0 ;;
     prep*:SunOS:5.*:*)
 	echo powerpcle-unknown-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;

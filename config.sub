@@ -55,6 +55,7 @@ then
 fi
 
 # First pass through any local machine types.
+echo $1
 case $1 in
 	*local*)
 		echo $1
@@ -94,8 +95,8 @@ case $os in
 	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | -hitachi* |\
 	-c[123]* | -convex* | -sun | -crds | -omron* | -dg | -ultra | -tti* | \
 	-harris | -dolphin | -highlevel | -gould | -cbm | -ns | -masscomp | \
-	-apple)
-		os=
+	-apple -Darwin)
+		os=Darwin
 		basic_machine=$1
 		;;
 	-sim | -cisco | -oki | -wec | -winbond)
@@ -1208,7 +1209,7 @@ case $basic_machine in
 			-hms*)
 				vendor=hitachi
 				;;
-			-mpw* | -macos*)
+			-mpw* | -macos* | -Darwin)
 				vendor=apple
 				;;
 			-*mint | -*MiNT)

@@ -60,7 +60,8 @@ void *pointer;
 
 #if defined (SYS_AIX)  || defined (SYS_IRIX)  || defined (SYS_SUN) \
  || defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_CRAY) \
- || defined (SYS_T3D)  || defined (SYS_DEC)   || defined (SYS_SX)
+ || defined (SYS_T3D)  || defined (SYS_DEC)   || defined (SYS_SX) \
+ || defined (SYS_DARWIN)
    pointer = malloc(size);
    if ( pointer == NULL )
    {

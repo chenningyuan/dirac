@@ -118,6 +118,11 @@ C     AIX XL FORTRAN version 2.3+
       WRITE (LUPRI,100) FDATE()
   100 FORMAT(/,' Date and time (Linux) : ',A)
 #endif
+#if defined (SYS_DARWIN)
+      CHARACTER*(24) FDATE
+      WRITE (LUPRI,100) FDATE()
+  100 FORMAT(/,' Date and time (Darwin) : ',A)
+#endif
 #if defined (SYS_SX)
       CHARACTER*(24) FDATE
       WRITE (LUPRI,100) FDATE()
@@ -262,7 +267,7 @@ C
       WRITE (LUPRI,'(/A)') STRING
       CALL TIMDAT
       WRITE (LUPRI,'(1X,A)') TEXT
-#if defined (SYS_CRAY) || defined (SYS_CONVEX) || defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_SX)
+#if defined (SYS_CRAY) || defined (SYS_CONVEX) || defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_SX) || defined (SYS_DARWIN)
 C     Write to stderr
       WRITE (0,'(/A/1X,A)') STRING, TEXT
 #endif
@@ -360,7 +365,7 @@ C
          ENDIF
   600 CONTINUE
 #endif
-#if defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL)
+#if defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_DARWIN)
 C
 C     Assume same for CONVEX --  1-Nov-1989 hjaaj
 C     Assume same for IBM-AIX--  1-Oct-1990 hjaaj
@@ -405,7 +410,7 @@ C
          OLDDX = .FALSE.
   600  CONTINUE
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90)
+#if !defined (SYS_CRAY) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90) && !defined(SYS_DARWIN)
  >>>>> insert appropriate OPEN statements in OPENDX.
 #endif
       RETURN

@@ -97,7 +97,7 @@ C
 #else
 #if defined (SYS_ALLIANT) || defined (SYS_CONVEX)  || defined (SYS_DEC) \
    || defined (SYS_IRIX)    || defined (SYS_PARAGON) || defined (SYS_SUN) \
-   || defined (SYS_LINUX) || defined(SYS_HPUX) || defined (SYS_SX)
+   || defined (SYS_LINUX) || defined(SYS_HPUX) || defined (SYS_SX) || defined (SYS_DARWIN)
       CHARACTER*(24) FFDATE, FDATE
       FFDATE = FDATE()
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
