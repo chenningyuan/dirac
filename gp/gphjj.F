@@ -283,8 +283,16 @@ C
 #if defined (SYS_AIX) || defined (SYS_PARAGON)
 C 900521-hjaaj timer for IBM AIX operating system
 C 941013-hjaaj: and for Intel PARAGON
-      integer*4 itime(4),times,iwall
-      iwall = times(itime)
+C 010309-lv : modified because AIX times gives uptime of the machine
+      integer*4 itime(4),times,iwall,IWALL0
+      LOGICAL FIRST
+      SAVE IWALL0, FIRST
+      DATA FIRST /.TRUE./
+      IF (FIRST) THEN
+         FIRST = .FALSE.
+         IWALL0 = TIMES(ITIME)
+      ENDIF
+      iwall = times(itime) - IWALL0
 C     iwall = elapsed time, itime(1:2) = system and user time
       TIMWAL = dfloat (iwall) * 0.01d0
       TIMCPU = dfloat (itime(1) + itime(2)) * 0.01d0
