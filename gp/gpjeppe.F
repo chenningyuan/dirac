@@ -244,11 +244,31 @@ C
 C
 C C(*) = FACA*A(*) + FACB*B(*)
 C
-      DIMENSION C(NDIM),A(NDIM),B(NDIM)
-C
-      DO 100 I =1,NDIM
-         C(I) = FACA*A(I) + FACB*B(I)
-  100 CONTINUE
+      DIMENSION A(NDIM),B(NDIM),C(NDIM)
+*
+      IF(FACA.NE.0.0D0.AND.FACB.NE.0.0D0) THEN
+        DO 100 I=1,NDIM
+          S=FACA*A(I)+FACB*B(I)
+          C(I)=S
+  100   CONTINUE
+*
+      ELSE IF(FACA.EQ.0.0D0.AND.FACB.NE.0.0D0) THEN
+        DO 200 I=1,NDIM
+          S=FACB*B(I)
+          C(I)=S
+  200   CONTINUE
+*
+      ELSE IF(FACA.NE.0.0D0.AND.FACB.EQ.0.0D0) THEN
+        DO 300 I=1,NDIM
+          S=FACA*A(I)
+          C(I)=S
+  300   CONTINUE
+*
+      ELSE IF(FACA.EQ.0.0D0.AND.FACB.EQ.0.0D0) THEN
+        DO 400 I=1,NDIM
+          C(I)=0.0D0
+  400   CONTINUE
+      END IF
 C
       RETURN
       END
