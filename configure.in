@@ -1,4 +1,6 @@
 #
+# $Id$
+#
 # Shell script for configuring Makefile.config needed to build 
 # the DIRAC relativistic molecular code.
 # The shell script is a modified version of the script used for DALTON
