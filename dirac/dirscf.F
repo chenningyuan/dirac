@@ -174,7 +174,7 @@ C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
-      CALL DHFTST(BARNUC,DSCFON,CHKCNV,IPRINT)
+      CALL DHFTST(BARNUC,DSCFON,CHKCNV,BMAT,IPRINT)
       IF(.NOT.ONESYS) THEN
 C
 C       Initiate SCF cycle
@@ -2638,7 +2638,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Dhftst */
-      SUBROUTINE DHFTST(BARNUC,DSCFON,CHKCNV,IPRINT)
+      SUBROUTINE DHFTST(BARNUC,DSCFON,CHKCNV,BMAT,IPRINT)
 C***********************************************************************
 C
 C     Restart checks etc. for DHF-cycle
@@ -2655,6 +2655,7 @@ C
 #include <dcborb.h>
 #include <dcbham.h>
 C
+      DIMENSION BMAT(MXDIIS,MXDIIS)
       LOGICAL TOBE,CHKCNV,DSCFON,BARNUC
 C
       BARNUC  = .TRUE.
