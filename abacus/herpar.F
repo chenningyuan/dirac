@@ -116,13 +116,12 @@ C           NDMAT  - Number of density-matrices
 C           DMAT   - Density-matrices.
 C
 C
-#if defined (VAR_MPI)
 #include <implicit.h>
+C
+#if defined (VAR_MPI)
 #include <infmpi.h>
       INCLUDE 'mpif.h'
 #else
-#include <implicit.h>
-C
 #include <fpvm3h.h>
 #endif
 C
@@ -202,13 +201,14 @@ C
       LDINTSKP = 8
       IF (ITYPE .EQ. 2) THEN
          NUMGRA = MXCOOR
-         NUMHES = NUMGRA*NUMGRA
          LDINTSKP = 3*3*14
-#ifdef PRG_DIRAC
-         NREQUI = NUMGRA
-#else
-         NREQUI = NUMGRA + NUMHES
-#endif
+         IF (MAXDIF .GT. 1) THEN
+            NUMHES = NUMGRA*NUMGRA
+            NREQUI = NUMGRA + NUMHES
+         ELSE
+            NUMHES = 0
+            NREQUI = NUMGRA
+         END IF
       ELSE IF (ITYPE .EQ. 3) THEN
          NREQUI = NDMAT*N2BASX 
       ELSE IF (ITYPE .EQ. 9) THEN
@@ -848,9 +848,8 @@ C     Clean matrices.
 C
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,NUMGRA)
-#ifndef PRG_DIRAC
-         CALL DZERO(HESSEE,NUMHES)
-#endif
+         IF (MAXDIF .GT. 1)
+     &      CALL DZERO(HESSEE,NUMHES)
 CTROND      ELSE IF (ITYPE .EQ. 3) THEN
 CTROND         CALL DZERO(FMAT,NREQUI)
       ELSE IF (ITYPE .EQ. -5) THEN
@@ -880,7 +879,7 @@ C
      &           NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
          ENDIF
 C
-Cjth & trond - this is bit risky
+Cjth & trond - this is a bit risky
 C
          CALL MPI_RECV(WORK,NREQUI,MPI_DOUBLE_PRECISION,NWHO,40,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
@@ -912,9 +911,8 @@ C
             DO J = 1,LDINTSKP
               DINTSKP(J) = DINTSKP(J) + DNSKBF(J)
             ENDDO
-#ifndef PRG_DIRAC
-            CALL DAXPY(NUMHES,D1,WORK(NUMGRA+1),1,HESSEE,1)
-#endif
+            IF (MAXDIF .GT. 1)
+     &         CALL DAXPY(NUMHES,D1,WORK(NUMGRA+1),1,HESSEE,1)
 C
          ELSE IF (ITYPE .EQ. 3.OR.ITYPE.EQ.9) THEN
             CALL DAXPY(NREQUI,D1,WORK,1,FMAT,1)
@@ -1241,12 +1239,17 @@ C
 C
       IF (ITYPE .EQ. 2) THEN
          NUMGRA = MXCOOR
-         NUMHES = NUMGRA*NUMGRA
-         NREQUI = NUMGRA + NUMHES
+         IF (MAXDIF .GT. 1) THEN
+            NUMHES = NUMGRA*NUMGRA
+            NREQUI = NUMGRA + NUMHES
+         ELSE
+            NUMHES = 0
+            NREQUI = NUMGRA
+         END IF
          LFMAT  = 0
       ELSE IF (ITYPE .EQ.3.OR.ITYPE.EQ.9) THEN
-         LFMAT  = NFMAT*N2BASX
          NREQUI = 0
+         LFMAT  = NFMAT*N2BASX
       ELSE IF (ITYPE .EQ. -5) THEN
          NUMSUS = 9
          NREQUI = 3*NNBASX + NUMSUS
@@ -1254,6 +1257,9 @@ C
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
          LFMAT  = 0
+      ELSE
+         WRITE (LUPRI,*) ' ERROR in HERNOD: unknown ITYPE:',ITYPE
+         CALL QUIT('Unknown ITYPE in HERNOD')
       END IF
 C
 C     Determine total number of tasks - MTOTTK.
@@ -1280,9 +1286,7 @@ C
       CALL DZERO(WORK(KFMAT),LFMAT)
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,NUMGRA)
-#ifndef PRG_DIRAC
-         CALL DZERO(HESSEE,NUMHES)
-#endif
+         IF (MAXDIF.GT.1) CALL DZERO(HESSEE,NUMHES)
       ELSE IF (ITYPE .EQ. -5) THEN
          CALL DZERO(SUS2EL,NUMSUS)
       END IF
