@@ -3284,7 +3284,9 @@ C
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DUMMY,DNTSKP,.TRUE.)
            CALL TIMER('DIRSCF(LL)',TIMSTR,TIMEND)
+#if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
+#endif
         CALL SCRSTA('SCR:LL',DNTSKP)
         IF(IPRINT.GE.5) THEN
            DO I = 1,NFMAT
@@ -3293,9 +3295,7 @@ C
      &             ),4,IQMULT,LUPRI)
            ENDDO
         ENDIF
-#if defined (VAR_MPI) || defined (VAR_PVM)
       ENDIF
-#endif
       KPOS = KPOS + MTOTTK
 C
 C     SL - integrals
@@ -3348,7 +3348,9 @@ C
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DUMMY,DNTSKP,.TRUE.)
            CALL TIMER('DIRSCF(SL)',TIMSTR,TIMEND)
+#if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
+#endif
         CALL SCRSTA('SCR:SL',DNTSKP)
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
@@ -3359,9 +3361,7 @@ C
         ENDIF
         THRS = THRBUF
         CALL FLSHFO(LUPRI)
-#if defined (VAR_MPI) || defined (VAR_PVM)
       ENDIF
-#endif
       KPOS = KPOS + MTOTTK
 C
 C     SS - integrals
@@ -3420,7 +3420,9 @@ C
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DUMMY,DNTSKP,.TRUE.)
            CALL TIMER('DIRSCF(SS)',TIMSTR,TIMEND)
+#if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
+#endif
         CALL SCRSTA('SCR:SS',DNTSKP)
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
@@ -3431,9 +3433,7 @@ C
         ENDIF
         CALL FLSHFO(LUPRI)
         THRS = THRBUF
-#if defined (VAR_MPI) || defined (VAR_PVM)
       ENDIF
-#endif
       KPOS = KPOS + MTOTTK
 C
 C     Symmetrize Fock matrix
@@ -3858,12 +3858,12 @@ C
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.)
+#if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
+#endif
         CALL TIMER('DIRSOF(LL)',TIMSTR,TIMEND)
         CALL SCRSTA('SCR:LL',DNTSKP)
-#if defined (VAR_MPI) || defined (VAR_PVM)
       ENDIF
-#endif
       KPOS = KPOS + MTOTTK
 C
 C     SL - integrals
@@ -3911,14 +3911,14 @@ C
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.)
+#if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
+#endif
         CALL TIMER('DIRSOF(SL)',TIMSTR,TIMEND)
         CALL SCRSTA('SCR:SL',DNTSKP)
         THRS = THRBUF
         CALL FLSHFO(LUPRI)
-#if defined (VAR_MPI) || defined (VAR_PVM)
       ENDIF
-#endif
       KPOS = KPOS + MTOTTK
 C
 C     SS - integrals
@@ -3965,14 +3965,14 @@ C
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.)
+#if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
+#endif
         CALL TIMER('DIRSOF(SS)',TIMSTR,TIMEND)
         CALL SCRSTA('SCR:SS',DNTSKP)
         CALL FLSHFO(LUPRI)
         THRS = THRBUF
-#if defined (VAR_MPI) || defined (VAR_PVM)
       ENDIF
-#endif
       KPOS = KPOS + MTOTTK
 C     
 C     Scale matrices
