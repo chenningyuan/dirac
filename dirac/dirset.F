@@ -59,10 +59,11 @@ C
 C      CALL SETDC1(IPREAD)
 C
 C
-C     Make primitive labels
-C     =====================
+C     Make primitive labels and use label
+C     information to list SO-basis
+C     ===================================
 C
-      CALL GETLAB(WORK,LWORK,IPRGEN)
+C      CALL GETLAB(WORK,LWORK,IPRGEN)
 C
 C     Generate all one-electron integrals
 C     ===================================
