@@ -115,6 +115,7 @@ C     Get all coefficients and eigenvalues
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
          WRITE(LUPRI,'(A)') 'Coefficient file not present'
@@ -122,7 +123,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAONE')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               TOTERG,2)
+     &               WORK(KIBEIG),TOTERG,2)
       ENDIF
 C
 C     Transform property matrices to MO basis
