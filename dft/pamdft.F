@@ -181,7 +181,8 @@ C&&& ERRELS: Threshold for accepted error in integrated number of electrons
  12              CONTINUE
 C&&& GRAC: gradient regulated asymptotic correction
                  DFTGRAC = .TRUE.
-                 READ(LUCMD,*) GRACDELT, GRACALPHA, GRACBETA
+                 GRACON = .FALSE.
+                 READ(LUCMD,*) GRACIP, GRACALPHA, GRACBETA
                  GO TO 100
  13              CONTINUE
                  GO TO 100
@@ -232,7 +233,7 @@ C
       IF(dftgrac) THEN
          WRITE(lupri,'(1x,a)') 
      >          '* Gradient regulated asymptotic correction:'
-         WRITE(lupri,'(3x,a,f12.6)') 'shift=',GRACDELT
+         WRITE(lupri,'(3x,a,f12.6)') 'I.P.= ',GRACIP
          WRITE(lupri,'(3x,a,f12.6)') 'alpha=',GRACALPHA
          WRITE(lupri,'(3x,a,f12.6)') 'beta= ',GRACBETA
       ENDIF

@@ -918,7 +918,13 @@ C
 C     Start cycle
 C
       CALL FLSHFO(LUPRI)
+*grac 
+      eigmax_previous=0d0
+*grac   
       DO 10 ITER = 2,MAXITR
+*grac   
+         IF(.NOT.GRACON) CALL HOMO(EIG,IBEIG,eigmax_previous)
+*grac
          NITER  = NITER + 1
          KITER  = KITER + 1
          CALL GTINFO(DAYTID)
@@ -3790,6 +3796,64 @@ C.....Secondary positive-energy orbitals:
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck homo */
+      SUBROUTINE HOMO(EIG,IBEIG,eigmax_previous)
+C**********************************************************************
+C     PURPOSE:
+C        Check for homo orbital eigenvalue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D2=2.0D0)
+C
+#include "mxcent.h"
+#include "frame.h"
+#include "nuclei.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+#include "dftbuf.h"
+#include "dftcom.h"
+      CHARACTER FMT*6,MXFORM*6
+      DIMENSION EIG(*)
+C
+      CALL QENTER('HOMO')
+      write(lupri,*) 'Enter HOMO'
+C
+      eigmax=-1d4
+      DO IFRP = 1,NFSYM
+        IF(NOCC(IFRP).GT.0) THEN
+           IF (NISHT .GT. 0) THEN
+              do i=1,NISH(IFRP)
+                 eps=EIG(IORB(IFRP)+NPSH(IFRP)+i)
+                 write(lupri,'(2i6,f16.8)') IFRP,i,eps
+                 if(eps.gt.eigmax) eigmax=eps
+              enddo
+           END IF
+           IF (NASHT .GT. 0) THEN
+             IDX = IORB(IFRP)+NPSH(IFRP)+NISH(IFRP)+1
+             DO IOPEN = 1,NOPEN
+                E1PART = E1PART + D2*DF(IOPEN)*DSUM(NACSH(IFRP,IOPEN),
+     &                    EIG(IDX),1)
+                IDX = IDX + NACSH(IFRP,IOPEN)
+             END DO
+           END IF
+        ENDIF
+      ENDDO
 
+      write(lupri,'(1x,a,f16.8)') 'HOMO eigenvalue: ',eigmax
+      if(eigmax_previous.ne.0d0) then
+         delta_eig=eigmax-eigmax_previous
+         write(lupri,'(1x,a,f16.8)') 'Delta(HOMO):     ',delta_eig
+         if(abs(delta_eig).lt.1d-4) GRACON=.TRUE.
+      endif
+      eigmax_previous=eigmax
+C
+      CALL QEXIT('HOMO')
+      RETURN
+C
+      END
 
 

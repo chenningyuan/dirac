@@ -107,8 +107,8 @@ c         dF/drho quantity WHILE dF/dzeta is scaled with
 c         switch function
 #include "implicit.h"
 #include "dcbham.h"
-#include "dftbuf.h"
 #include "dftcom.h"
+#include "dftbuf.h"
 #include "functionals.h"
 #include "priunit.h"
       PARAMETER (b=0.05d0)
@@ -174,6 +174,8 @@ c see: M. Gr\"uning et al. JCP 114 (2001) p. 652
 
       IF(gracalpha.EQ.0d0) gracalpha=p1
       IF(gracbeta.EQ.0d0)  gracbeta=p2
+      gracdelta=gracip+eigmax
+c      write(lupri,'(1x,a,f16.8)') 'dft_grac',gracdelta
 
       rho43=rho*rho13
 
@@ -195,7 +197,7 @@ c...shape correction
       d=1d0/(1d0+EXP(-gracalpha*(x-gracbeta)))
 c      write(lupri,'(5e13.5)') r,d,vxac(fr0),
 c     >      (vx(fr0)-wght*gracdelt),vx(fr0)
-      vx(fr0)=(1d0-d)*(vx(fr0)-wght*gracdelt)+d*(1d0-hfxfac)*vxac(fr0)
+      vx(fr0)=(1d0-d)*(vx(fr0)-wght*gracdelta)+d*(1d0-hfxfac)*vxac(fr0)
       vx(fz0)=(1d0-d)*vx(fz0)
 c      write(lupri,'(5e13.5)') r,vx(fr0),vx(fz0)
 
