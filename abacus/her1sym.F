@@ -35,7 +35,7 @@ C  /* Deck onesop */
       SUBROUTINE ONESOP(STHMAT,DENMAT,FOCMAT,FACINT,COORC,WORK,LWORK,
      &                  IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
-     &                  JCENTC,NCENTC,SIGNC,GNUEXP,NNBASX,FCM,TLMD)
+     &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,FCM,TLMD)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
@@ -44,7 +44,7 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION STHMAT(NNBASX,3), DENMAT(*), FOCMAT(*),
      &          FACINT(*), COORC(3,*), JSYMC(*),
-     &          JCENTC(*), NCENTC(*), SIGNC(3,*),GNUEXP(*),
+     &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          FCM(*), TLMD(*)
 #include <cbisol.h>
 #include <onecom.h>
@@ -103,7 +103,7 @@ C
      &            DENMAT,FOCMAT,FACINT,COORC,WORK(KLAST),LWRK,IPRINT,
      &            PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,CORBZ0,DIFDIP,
      &            SECDER,NATOMC,TOLOG,TOLS,JSYMC,JCENTC,NCENTC,SIGNC,
-     &            GNUEXP,NNBASX,WORK(KDSHEL),WORK(KFSHEL),WORK(KRLMNT),
+     &            GEXP,NNBASX,WORK(KDSHEL),WORK(KFSHEL),WORK(KRLMNT),
      &            WORK(KRLMTB),FCM,TLMD,WORK(KLMNO))
       RETURN
       END
@@ -112,7 +112,7 @@ C  /* Deck oneso1 */
      &                  DINT1,DENMAT,FOCMAT,FACINT,COORC,WORK,LWORK,
      &                  IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
-     &                  JCENTC,NCENTC,SIGNC,GNUEXP,NNBASX,DSHELL,FSHELL,
+     &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO)
 #include <implicit.h>
 #include <mxcent.h>
@@ -132,7 +132,7 @@ C
      &          DENMAT(*),FOCMAT(*),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          FACINT(*), COORC(3,*), JSYMC(*),
-     &          JCENTC(*), NCENTC(*), SIGNC(3,*),GNUEXP(*),
+     &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
 #else 
       DIMENSION STHMAT(NNBASX,3), STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
@@ -141,7 +141,7 @@ C
      &          DENMAT(NNBASX),FOCMAT(NNBASX),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          FACINT(*), COORC(3,*), JSYMC(*),
-     &          JCENTC(*), NCENTC(*), SIGNC(3,*),GNUEXP(*),
+     &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
 #endif
 #include <ccom.h>
@@ -196,7 +196,7 @@ C
          CALL ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,DINT1,
      &               RLMINT,RLMTAB,FCM,WORK,LWORK,IPRINT,PROPTY,MAXDIF,
      &               NATOMC,TOLOG,TOLS,SECDER,DIFDIP,FACINT,COORC,
-     &               GNUEXP,JCENTC,NCENTC)
+     &               GEXP,JCENTC,NCENTC)
 C
 C        *************************************************
 C        ***** Transform to spherical harmonic basis *****
