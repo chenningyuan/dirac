@@ -591,7 +591,6 @@ C*****************************************************************************
       IF (IPREAD .GT. 0) THEN
          CALL HEADER('Title Cards',1)
          WRITE (LUPRI,'(2X,A,/,2X,A)') TTITLE(1),TTITLE(2)
-         WRITE (66,'(2X,A,/,2X,A)') TTITLE(1),TTITLE(2)
       END IF
 C*****************************************************************************
 C     Card 4:
@@ -717,7 +716,7 @@ C     ***** Process orbital and geometry input data *****
 C     ****************************************************
 C
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
-     &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
+     &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
      &            DOOWN)
 C
 C     *************************************************
@@ -725,7 +724,7 @@ C     ***** Print orbital and geometry input data *****
 C     *************************************************
 C
       CALL BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
-     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
+     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
      &            KBLOCK,KPRIM,HERMIT)
 C
       IF (IPREAD .GE. 2) THEN
@@ -847,7 +846,7 @@ C*****************************************************************************
      &          ALPHA(KPRIM,KBLOCK,KSETS),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS),ISGEN(KBLOCK)
-      CHARACTER SPDCAR*1,BSET*5,FBSET*6,ZMATL*1,BASFIL*20,BSKEYWORD*14
+      CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
 #include "molinp.h"
@@ -887,7 +886,9 @@ C
       NHTYP  = 0
       IBLOCK(1) = 1
       IBLOCK(2) = 1
-      CALL IZERO(IQM,KATOM*2)
+      IBLOCK(3) = 1
+      IBLOCK(4) = 1
+      CALL IZERO(IQM,KATOM*4)
       DIRCON(1) = .FALSE.
       DIRCON(2) = .FALSE.
 C
@@ -1489,24 +1490,31 @@ C
 C       End of switch DALTON/DIRAC
         END IF 
 C
+        DO ISET = 3, 4
+C
 C       Read basis sets for density fitting
 C       ===================================
 C
 C       The following possibilities exist:
 C
-C       FITSET INTGRL     2    1    1  (IBSFLAG = 1)
-C       FITSET     2    1    1 (IBSFLAG = 1)
-C       FITSET DEFAULT (IBSFLAG = 2)
-C       FITSET basisset (IBSFLAG = 3)
-C       FITSET GEOM alpha beta N 2 1 1 (IBSFLAG = 4)
-C       FITSET EVENTEMP alpha beta N 2 1 1 (IBSFLAG = 4)
-c               (alias for FITSET GEOM)
-C       FITSET WELLTEMP alpha beta gamma delta N 2 1 1 (IBSFLAG = 4)
-C       FITSET FAMILY    N    2    1    1 (IBSFLAG = 4)
-C       FITSET DUALFAMILY    N    2    1    1 (IBSFLAG = 4)
+C       FTSET INTGRL     2    1    1  (IBSFLAG = 1)
+C       FTSET     2    1    1 (IBSFLAG = 1)
+C       FTSET DEFAULT (IBSFLAG = 2)
+C       FTSET basisset (IBSFLAG = 3)
+C       FTSET GEOM alpha beta N 2 1 1 (IBSFLAG = 4)
+C       FTSET EVENTEMP alpha beta N 2 1 1 (IBSFLAG = 4)
+c               (alias for FTSET GEOM)
+C       FTSET WELLTEMP alpha beta gamma delta N 2 1 1 (IBSFLAG = 4)
+C       FTSET FAMILY    N    2    1    1 (IBSFLAG = 4)
+C       FTSET DUALFAMILY    N    2    1    1 (IBSFLAG = 4)
+C 
+C       We also distinguish between the keywords :
+C       FTSET : fitset to be used for both large and small component densities
+C       FTLRG : fitset to be used for only the large component density
+C       FTSML : fitset to be used for only the small component density
 C
         CALL RDLINE(LUINFO)
-        READ (MLINE(NMLINE),'(A6,X,A14)') FBSET,BSKEYWORD
+        READ (MLINE(NMLINE),'(A5,X,A14)') BSET,BSKEYWORD
 C
 C       Initialize basis set flag
 C
@@ -1514,9 +1522,9 @@ C
 C
 C       Check whether the fit function set is specified in input
 C                 
-        IF ( FBSET .NE. 'FITSET' ) THEN
+        IF ( BSET .NE. 'FTSET' ) THEN
 C
-C          No 'FITSET' keyword given.
+C          No 'FTSET' keyword given.
 C          Take standard set
 C
 C          Discard the line we just read.
@@ -1530,124 +1538,132 @@ C          Check what kind of basis set we have
 C
            IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
               IBSFLAG = 1
-              READ (MLINE(NMLINE),'(13X,12I5)')
-     &             IQM(I,3),(JCO(K,I,3),K=1,IQM(I,3))
+              READ (MLINE(NMLINE),'(12X,12I5)')
+     &             IQM(I,ISET),(JCO(K,I,ISET),K=1,IQM(I,ISET))
            ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
               IBSFLAG = 1
-              READ (MLINE(NMLINE),'(15X,12I5)')
-     &             IQM(I,3),(JCO(K,I,3),K=1,IQM(I,3))
+              READ (MLINE(NMLINE),'(14X,12I5)')
+     &             IQM(I,ISET),(JCO(K,I,ISET),K=1,IQM(I,ISET))
            ELSE IF ( BSKEYWORD(1:7) .EQ. 'DEFAULT') THEN
               IBSFLAG = 2
            ELSE IF ( BSKEYWORD(1:5) .EQ. 'BASIS') THEN
               IBSFLAG = 3
-              READ (MLINE(NMLINE),'(13X,A20)') BASFIL
+              READ (MLINE(NMLINE),'(12X,A20)') BASFIL
            ELSE IF ( BSKEYWORD(1:8) .EQ. 'WELLTEMP' ) THEN
               IBSFLAG = 4
-              READ (MLINE(NMLINE)(17:),*,ERR=9000)
+              READ (MLINE(NMLINE)(16:),*,ERR=9000)
      $             (FAMPAR(K),K=1,4),NFAMEXP(1),
-     $             IQM(I,3), (JCO(K,I,3),K=1,IQM(I,3))
+     $             IQM(I,ISET), (JCO(K,I,ISET),K=1,IQM(I,ISET))
               CALL GENFAMEXP(LUINFO,0)
            ELSE IF ( BSKEYWORD(1:8) .EQ. 'EVENTEMP' ) THEN
               IBSFLAG = 4
-              READ (MLINE(NMLINE)(17:),*,ERR=9000)
+              READ (MLINE(NMLINE)(16:),*,ERR=9000)
      $             (FAMPAR(K),K=1,2),NFAMEXP(1),
-     $             IQM(I,3), (JCO(K,I,3),K=1,IQM(I,3))
+     $             IQM(I,ISET), (JCO(K,I,ISET),K=1,IQM(I,ISET))
               CALL GENFAMEXP(LUINFO,0)
            ELSE IF ( BSKEYWORD(1:4) .EQ. 'GEOM' ) THEN
               IBSFLAG = 4
-              READ (MLINE(NMLINE)(12:),*,ERR=9000)
+              READ (MLINE(NMLINE)(11:),*,ERR=9000)
      $             (FAMPAR(K),K=1,2),NFAMEXP(1),
-     $             IQM(I,3), (JCO(K,I,3),K=1,IQM(I,3))
+     $             IQM(I,ISET), (JCO(K,I,ISET),K=1,IQM(I,ISET))
               FAMPAR(3) = D0
               FAMPAR(4) = D0
               CALL GENFAMEXP(LUINFO,0)
            ELSE IF ( BSKEYWORD(1:6) .EQ. 'FAMILY') THEN
               IBSFLAG = 4
-              READ (MLINE(NMLINE),'(12X,12I5)',ERR=9000)
-     $             NFAMEXP(1), IQM(I,3), (JCO(K,I,3),K=1,IQM(I,3))
+              READ (MLINE(NMLINE),'(11X,12I5)',ERR=9000)
+     $        NFAMEXP(1), IQM(I,ISET), (JCO(K,I,ISET),K=1,IQM(I,ISET))
               CALL GENFAMEXP(LUINFO,1)
            ELSE IF ( BSKEYWORD(1:10) .EQ. 'DUALFAMILY') THEN
               IBSFLAG = 4
-              READ (MLINE(NMLINE),'(16X,12I5)',ERR=9000)
+              READ (MLINE(NMLINE),'(15X,12I5)',ERR=9000)
      $             NFAMEXP(1), NFAMEXP(2),
-     &             IQM(I,3), (JCO(K,I,3),K=1,IQM(I,3))
+     &             IQM(I,ISET), (JCO(K,I,ISET),K=1,IQM(I,ISET))
               CALL GENFAMEXP(LUINFO,2)
 C
            ELSE
-C             Assume it is 'FITSET   2    1....'
+C             Assume it is 'FTSET   2    1....'
               IBSFLAG = 1
               READ (MLINE(NMLINE),'(5X,12I5)')
-     &             IQM(I,3),(JCO(K,I,3),K=1,IQM(I,3))
+     &             IQM(I,ISET),(JCO(K,I,ISET),K=1,IQM(I,ISET))
            END IF
 C
            IF ( IBSFLAG .EQ. 1 ) THEN
 C
 C             Read explicitly given basis set.
 C
-              KAOVEC = KBLOCK + 1 - IBLOCK(3)
-              CALL GTOINP(LUINFO,IQM(I,3),JCO(1,I,3),
-     &             NUC(IBLOCK(3),3),NRC(IBLOCK(3),3),
-     &             SEG(IBLOCK(3),3),
-     &             ALPHA(1,IBLOCK(3),3),CPRIM(1,1,IBLOCK(3),3),
-     &             CPRIMU(1,1,IBLOCK(3),3),ISGEN(IBLOCK(3)),
-     &             NBLOCK,KAOVEC,KPRIM)
-              NBLCK(I,3) = NBLOCK
-              BASREF(1,I,3) = 
+              KAOVEC = KBLOCK + 1 - IBLOCK(ISET)
+              CALL GTOINP(LUINFO,IQM(I,ISET),JCO(1,I,ISET),
+     &          NUC(IBLOCK(ISET),ISET),NRC(IBLOCK(ISET),ISET),
+     &          SEG(IBLOCK(ISET),ISET),
+     &          ALPHA(1,IBLOCK(ISET),ISET),CPRIM(1,1,IBLOCK(ISET),ISET),
+     &          CPRIMU(1,1,IBLOCK(ISET),ISET),ISGEN(IBLOCK(ISET)),
+     &          NBLOCK,KAOVEC,KPRIM)
+              NBLCK(I,ISET) = NBLOCK
+              BASREF(1,I,ISET) = 
      &        "Fit set typed explicitly in input file   "
 C
            ELSE IF ( IBSFLAG .EQ. 2 ) THEN
-              BASREF(1,I,3) = ' Default fit function set    '
+              BASREF(1,I,ISET) = ' Default fit function set    '
 C
            ELSE IF ( IBSFLAG .EQ. 3 ) THEN
 C
               BASNAM = BASFIL
 C
-              KAOVEC = KBLOCK + 1 - IBLOCK(3)
-
-              CALL BASLIB(IQM(I,3),JCO(1,I,3),NUC(IBLOCK(3),3),
-     &             NRC(IBLOCK(1),3),SEG(IBLOCK(1),3),
-     &             ALPHA(1,IBLOCK(3),3),
-     &             CPRIM(1,1,IBLOCK(3),3),CPRIMU(1,1,IBLOCK(3),3),
-     &             NBLOCK,ISGEN(IBLOCK(3)),KAOVEC,KPRIM,Q,1,DSM,
-     &             BASREF(1,I,3))
-              NBLCK(I,3) = NBLOCK
+              KAOVEC = KBLOCK + 1 - IBLOCK(ISET)
+              CALL BASLIB(IQM(I,ISET),JCO(1,I,ISET),
+     &             NUC(IBLOCK(ISET),ISET),
+     &             NRC(IBLOCK(1),ISET),SEG(IBLOCK(ISET),ISET),
+     &             ALPHA(1,IBLOCK(ISET),ISET),
+     &             CPRIM(1,1,IBLOCK(ISET),ISET),
+     &             CPRIMU(1,1,IBLOCK(ISET),ISET),
+     &             NBLOCK,ISGEN(IBLOCK(ISET)),KAOVEC,KPRIM,Q,1,DSM,
+     &             BASREF(1,I,ISET))
+              NBLCK(I,ISET) = NBLOCK
 C
            ELSE IF ( IBSFLAG .EQ. 4 ) THEN
 C
 C             Generate well-temperered/family basis set
 C
-              KAOVEC = KBLOCK + 1 - IBLOCK(1)
-              CALL FAMBAS(LUINFO,IQM(I,3),JCO(1,I,3),
-     &             NUC(IBLOCK(3),3),NRC(IBLOCK(3),3),
-     &             SEG(IBLOCK(3),3),
-     &             ALPHA(1,IBLOCK(3),3),CPRIM(1,1,IBLOCK(3),3),
-     &             CPRIMU(1,1,IBLOCK(3),3),ISGEN(IBLOCK(3)),
+              KAOVEC = KBLOCK + 1 - IBLOCK(ISET)
+              CALL FAMBAS(LUINFO,IQM(I,ISET),JCO(1,I,ISET),
+     &             NUC(IBLOCK(ISET),ISET),
+     &             NRC(IBLOCK(1),ISET),SEG(IBLOCK(ISET),ISET),
+     &             ALPHA(1,IBLOCK(ISET),ISET),
+     &             CPRIM(1,1,IBLOCK(ISET),ISET),
+     &             CPRIMU(1,1,IBLOCK(ISET),ISET),
+     &             ISGEN(IBLOCK(ISET)),
      &             NBLOCK,KAOVEC,KPRIM)
-              NBLCK(I,3) = NBLOCK
-              BASREF(1,I,3) = 
+              NBLCK(I,ISET) = NBLOCK
+              BASREF(1,I,ISET) = 
      &   "Well-tempered fit set typed explicitly in input file "
 C
            ENDIF
 C
 C          Print out fit set
 C
-           NOFITFS  = NOFITFS.AND.IQM(I,3).EQ.0
-           IF (IQM(I,3).GT.0) THEN
+           NOFITFS  = NOFITFS.AND.IQM(I,ISET).EQ.0
+           IF (IQM(I,ISET).GT.0) THEN
               IF(INPTST) THEN
                  WRITE(LUPRI,'(3X,A)') 'Density fit set:'
                  WRITE(LUPRI,'(6X,A,I5,A,12I5)')
-     &                'Max.ang.quantum no.:',(IQM(I,3)-1),
-     &                '  Blocks:',(JCO(K,I,3), K=1,IQM(I,3))
+     &                'Max.ang.quantum no.:',(IQM(I,ISET)-1),
+     &                '  Blocks:',(JCO(K,I,ISET), K=1,IQM(I,ISET))
               ENDIF
-              NHTYPF    = MAX(NHTYPF,IQM(I,3))
+              NHTYPF    = MAX(NHTYPF,IQM(I,ISET))
 C             Since it's the density the angular momentum may be twice
 C             the maximum value for the orbitals : 2 * MXQN - 2
               IF(NHTYPF-1.GT.2*MXQN-2) GOTO 5001
            ENDIF
 C
-C       (no need to check whether the set is contracted, so code differsC        from analogous basis set read : this is not an error !)
+C       (no need to check whether the set is contracted, so code differs
+C        from analogous basis set read : this is not an error !)
 C
         ENDIF
+        IBLOCK(ISET)  = IBLOCK(ISET) + NBLCK(I,ISET)
+C
+C       End of loop over small/large fitsets.
+        ENDDO
 C
 C     End of loop over unique atom types
   100 CONTINUE
@@ -1808,7 +1824,7 @@ C
       END
 C  /* Deck baspro */
       SUBROUTINE BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
-     &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
+     &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
      &                  KBLOCK,KPRIM,DOOWN)
 C
 C*****************************************************************************
@@ -1828,11 +1844,11 @@ C
 #include "dcbgen.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
-      DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
-     &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),
-     &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
+      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
+     &     NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
+     &     SEG(KBLOCK,KSETS),
+     &     ALPHA(KPRIM,KBLOCK,KSETS),CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
+     &     CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       CHARACTER*1 SPDCAR
 #include "ccom.h"
 #include "nuclei.h"
@@ -1936,6 +1952,47 @@ C
          NPSHEL  = IPRIM
          NPSSH   = IPRIM - NPLSH
       END IF
+C*****************************************************************************
+C       Process fit set data for first (LL or LL+SS) density fitset
+C*****************************************************************************
+      LCOMP_FIT  = 1
+      ISHELL_FIT = 0
+      IPRIM_FIT  = 0
+      IPRIMD_FIT = 0
+      IORB_FIT   = 0
+      IORBD_FIT  = 0
+      CALL FITPRO(NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),NUC(1,3),
+     &            NRC(1,3),SEG(1,3),
+     &            ALPHA(1,1,3),CPRIM(1,1,1,3),CPRIMU(1,1,1,3),
+     &            KATOM,KANG,KBLOCK,KPRIM,
+     &            ISHELL_FIT,IPRIM_FIT,IPRIMD_FIT,
+     &            IORB_FIT,IORBD_FIT,LCOMP_FIT)
+      NLRGSH_FIT = ISHELL_FIT
+      NLARGE_FIT = IORBD_FIT
+      NORBL_FIT  = IORB_FIT
+      NPLRG_FIT  = IPRIMD_FIT
+      NPLSH_FIT  = IPRIM_FIT
+C*****************************************************************************
+C       Process fit set data for secundary (SS) density fitset
+C*****************************************************************************
+      LCOMP_FIT = 2
+      CALL FITPRO(NONTYP,NONT,IQM(1,4),NBLCK(1,4),JCO(1,1,4),NUC(1,4),
+     &            NRC(1,4),SEG(1,4),
+     &            ALPHA(1,1,4),CPRIM(1,1,1,4),CPRIMU(1,1,1,4),
+     &            KATOM,KANG,KBLOCK,KPRIM,
+     &            ISHELL_FIT,IPRIM_FIT,IPRIMD_FIT,
+     &            IORB_FIT,IORBD_FIT,LCOMP_FIT)
+      IF (ISHELL_FIT.GT. MXSHEL) GOTO 5000
+      IF (IORBD_FIT .GT. MXCORB) GOTO 5010
+      IF (IPRIM_FIT .GT. MXPRIM) GOTO 5020
+      KMAX_FIT   = ISHELL_FIT
+      NSMLSH_FIT = KMAX_FIT - NLRGSH_FIT
+      NBASIS_FIT = IORBD_FIT
+      NSMALL_FIT = NBASIS_FIT - NLARGE_FIT
+      NPBAS_FIT  = IPRIMD_FIT
+      NPSML_FIT   = IPRIMD_FIT - NPLRG_FIT
+      NPSHEL_FIT  = IPRIM_FIT
+      NPSSH_FIT   = IPRIM_FIT - NPLSH_FIT
 C
 C     ***************************************
 C     ***** Orbital Symmetry Processing *****
@@ -1983,7 +2040,7 @@ C
       END
 C  /* Deck basout */
       SUBROUTINE BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
-     &                  NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
+     &                  NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
      &                  KBLOCK,KPRIM,HERMIT)
 C*****************************************************************************
 C
@@ -2001,13 +2058,17 @@ C*****************************************************************************
 #include "dcbgen.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,HERMIT,NRMPRI
-      DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
-     &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),
-     &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
-      CHARACTER SPDCAR*1,TSTRING*(6*MXQN+3),TSTRIN2*(6*MXQN+3)
-      CHARACTER*80 BASREF(10,KATOM)
+      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
+     &     NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
+     &     SEG(KBLOCK,KSETS),
+     &     ALPHA(KPRIM,KBLOCK,KSETS),CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
+     &     CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
+      CHARACTER SPDCAR
+      CHARACTER*(6*MXQN+3) TSTRING(MXBSETS)
+      CHARACTER*80 BASREF(10,KATOM,KSETS)
+      CHARACTER*31 SET_TYPE(MXBSETS)
+      DIMENSION NPRIM(MXBSETS),NBAS(MXBSETS)
+      DIMENSION IBLOCK(MXBSETS)
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
@@ -2015,6 +2076,16 @@ C*****************************************************************************
 #include "symmet.h"
 #include "aosotr.h"
 #include "ibtfun.h"
+C
+      IF(DIRAC) THEN
+         SET_TYPE(1) = 'large component basis functions'
+         SET_TYPE(2) = 'small component basis functions'
+      ELSE
+         SET_TYPE(1) = 'basis functions                '
+         SET_TYPE(2) = 'auxiliary basis functions      '
+      ENDIF
+      SET_TYPE(3) = 'primary density fit functions  '
+      SET_TYPE(4) = 'secundary density fit functions'
 C
 C     ******************************************
 C     ***** Printing of basis information  *****
@@ -2024,49 +2095,37 @@ C
          CALL HEADER('Atoms and basis sets',1)
          WRITE (LUPRI,'(1X,A,I5  )') ' Number of atom types: ',NONTYP
          WRITE (LUPRI,'(1X,A,I5,/)') ' Total number of atoms:',NUCDEP
-         WRITE (66,'(1X,A,I5  )') ' Number of atom types: ',NONTYP
-         WRITE (66,'(1X,A,I5,/)') ' Total number of atoms:',NUCDEP
       END IF
 C
-      IBLOCK = 1
-      IBLCKS = 1
+      DO ISET = 1, KSETS
+         IBLOCK(ISET) = 1
+      ENDDO
       ICENT  = 0
       IF (IPREAD .GT. 0) THEN
          WRITE (LUPRI,'(2X,A)')
      &        'label    atoms   charge   prim    cont     basis   '
          WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
-         WRITE (66,'(2X,A)')
-     &        'label    atoms   charge   prim    cont     basis   '
-         WRITE (66,'(2X,70A1)') ('-',I=1,70)
       END IF
       NCHTOT = 0
       DO 100 I = 1,NONTYP
-         TSTRING = ' '
-         TSTRIN2 = ' '
-         NPRIM = 0
-         NBAS  = 0
-         IF (IQM(I,1).GT.0) THEN
-            CALL BASTYP(IQM(I,1),JCO(1,I,1),NRC(IBLOCK,1),
-     &                  NUC(IBLOCK,1),
-     &                  NPRIM,NBAS,TSTRING,1,I)
-         ELSE
-            IF (IPREAD .GT. 0) THEN
-               WRITE (LUPRI,'(10X,A)') 'No large orbitals attached.'
+C
+C        Convert information to a string that can be understood by the innocent user
+C
+         DO ISET = 1, KSETS
+            TSTRING(ISET) = ' '
+            IF (IQM(I,ISET).GT.0) THEN
+               CALL BASTYP(IQM(I,ISET),JCO(1,I,ISET),
+     &                     NRC(IBLOCK(ISET),ISET),
+     &                     NUC(IBLOCK(ISET),ISET),
+     &                     NPRIM(ISET),NBAS(ISET),TSTRING(ISET))
+            ELSE
+               TSTRING(ISET) = 'No '//SET_TYPE(ISET)//' attached'
+               NPRIM(ISET) = 0
+               NBAS(ISET) = 0
             END IF
-         END IF
-         NPRIMS = 0
-         NBASS = 0
-         IF (IQM(I,2).GT.0) THEN
-            CALL BASTYP(IQM(I,2),JCO(1,I,2),NRC(IBLCKS,2),
-     +                  NUC(IBLCKS,2),NPRIMS,NBASS,TSTRIN2,2,I)
-         ELSE IF (DIRAC) THEN
-            IF (IPREAD .GT. 0) THEN
-               WRITE (LUPRI,'(10X,A)') 'No small orbitals attached.'
-            END IF
-            IF (IPREAD .GT. 0) THEN
-               WRITE (LUPRI,'(10X,A)') 'No small orbitals attached.'
-            END IF
-         END IF
+            IBLOCK(ISET) = IBLOCK(ISET) + NBLCK(I,ISET)
+         END DO
+C
          DO 20 N = 1,NONT(I)
             ICENT  = ICENT + 1
             NCHARG = NINT(CHARGE(ICENT))
@@ -2074,19 +2133,24 @@ C
             IF (IPREAD .GT. 0) THEN
                IF(DIRAC) THEN
                   WRITE (LUPRI,'(2X,A4,1X,4I8,6X,2A)') NAMN(ICENT),
-     &                   NUCDEG(ICENT),NCHARG,NPRIM,NBAS,'L - ',TSTRING
+     &                   NUCDEG(ICENT),NCHARG,NPRIM(1),NBAS(1),
+     &                   'L  - ',TSTRING(1)
                   WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIMS,NBASS,'S - ',TSTRIN2
+     &                  NPRIM(2),NBAS(2),'S  - ',TSTRING(2)
+                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &                  NPRIM(3),NBAS(3),'FL - ',TSTRING(3)
+                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &                  NPRIM(4),NBAS(4),'FS - ',TSTRING(4)
                ELSE
                   WRITE (LUPRI,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
-     &                   NUCDEG(ICENT),NCHARG,NPRIM,NBAS,TSTRING
-                  WRITE (66,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
-     &                   NUCDEG(ICENT),NCHARG,NPRIM,NBAS,TSTRING
+     &                 NUCDEG(ICENT),NCHARG,NPRIM(1),NBAS(1),TSTRING(1)
+                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &                  NPRIM(3),NBAS(2),'Aux - ',TSTRING(2)
+                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &                  NPRIM(3),NBAS(3),'Fit - ',TSTRING(3)
                ENDIF
             END IF
    20    CONTINUE
-         IBLOCK = IBLOCK + NBLCK(I,1)
-         IBLCKS = IBLCKS + NBLCK(I,2)
   100 CONTINUE
       IF (IPREAD .GT. 0) THEN
          IF(DIRAC) THEN
@@ -2099,15 +2163,11 @@ C
          CALL PRSYMB(LUPRI,'-',70,2)
          WRITE (LUPRI,'(2X,A,I7,3I8,6X,/)')
      &         'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
-         WRITE (66,'(2X,A,I7,3I8,6X,/)')
-     &         'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
          IF (NHTYP .GT. 2) THEN
             IF(DOCART) THEN
                WRITE (LUPRI,'(2X,A)') 'Cartesian basis used.'
-               WRITE (66,'(2X,A)') 'Cartesian basis used.'
             ELSE
                WRITE (LUPRI,'(2X,A)') 'Spherical harmonic basis used.'
-               WRITE (66,'(2X,A)') 'Spherical harmonic basis used.'
             ENDIF
          END IF
          WRITE (LUPRI,'(1X,A,1P,D10.2)') ' Threshold for integrals:',
@@ -2184,8 +2244,7 @@ C
       CALL AOTOAO(IAOAO,IPREAD)
       END
 C  /* Deck bastyp */
-      SUBROUTINE BASTYP(IQM,JCO,NRC,NUC,NPRIM,NBAS,TSTRING,ICP,
-     &                  IATM)
+      SUBROUTINE BASTYP(IQM,JCO,NRC,NUC,NPRIM,NBAS,TSTRING)
 C*****************************************************************************
 C
 C     Generate string : Uncontracted/contracted basis functions
@@ -3040,6 +3099,139 @@ C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *   ' >>> ORBPRO error, '//
+     *   'no. of contracted functions per AO-block',NCONT,
+     *   '                   '//
+     *   'current maximum number                  ',MXCONT
+      CALL QUIT('Too many contracted functions per AO-block')
+      END
+C  /* Deck fitpro */
+      SUBROUTINE FITPRO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+     &           ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
+     &           ISHELL_FIT,IPRIM_FIT,IPRIMD_FIT,
+     &           IORB_FIT,IORBD_FIT,LCOMP_FIT)
+C******************************************************************************
+C
+C     Process basis data
+C     written by Luuk Visscher, trivial modification of orbpro
+C
+C******************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
+      PARAMETER (D0 = 0.0D0)
+C
+#include "cbirea.h"
+      LOGICAL SEG,SPHER
+      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
+     &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
+     &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
+#include "ccom.h"
+#include "nuclei.h"
+#include "fitprimit.h"
+#include "fitshells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
+C
+#include "ibtfun.h"
+      ICENT  = 0
+      IBLOCK = 0
+      DO 10 I = 1,NONTYP
+         DO 20 N = 1,NONT(I)
+            ICENT = ICENT + 1
+            KBCH = IBLOCK
+            NDEG = NUCDEG(ICENT)
+            DO 30 J = 1,IQM(I)
+               KKK = 0
+               NCOMP = KHK(J)
+               NCCMP = KCK(J)
+               SPHER = SPH(J)
+               DO 40 K = 1, JCO(J,I)
+                  KBCH = KBCH + 1
+                  NCONT = NRC(KBCH)
+                  IF(NCONT.GT.MXCONT) GOTO 5000
+C                 ...  dimension PRICCF(MXPRIM,MXCONT)
+                  DO 50 KK = 1, NCONT
+                     KKK = KKK + 1
+                     ISHELL_FIT = ISHELL_FIT + 1
+C*****************************************************************************
+C     Data on the AO-block associated with a given shell(ISHELL):
+C       NUCO    - number of uncontracted functions
+C       NRCO    - number of contracted functions
+C     Data on a given shell in an AO-block:
+C       NCENT   - index of symmetry independent center
+C       NUMCF   - index of shell in AO-block
+C       NBCH    - index of block in AO-vector
+C       ISTBAO  - stabiliser: basic sym. op. that do not move center
+C       NHKT    - angular quantum number (s=1,p=2,d=3 etc.)
+C       KHKT    - number of spherical (Cartesian) components
+C       KCKT    - number of Cartesian components
+C       SEGM    - segmented contraction
+C       LCLASS  - component: large(1) or small(0)
+C       CENT    - coordinates of center
+C*****************************************************************************
+                     NUCO_FIT  (ISHELL_FIT) = NUC(KBCH)
+                     NRCO_FIT  (ISHELL_FIT) = NCONT
+                     JSTRT_FIT (ISHELL_FIT) = IPRIM_FIT
+                     NSTRT_FIT (ISHELL_FIT) = IORB_FIT
+                     KSTRT_FIT (ISHELL_FIT) = IORBD_FIT
+                     NCENT_FIT (ISHELL_FIT) = ICENT
+                     NUMCF_FIT (ISHELL_FIT) = KK
+                     NUMCFT_FIT(ISHELL_FIT) = KKK
+                     NBCH_FIT  (ISHELL_FIT) = KBCH
+                     SHARE_FIT (ISHELL_FIT) = .FALSE.
+                     ISTBAO_FIT(ISHELL_FIT) = ISTBNU(ICENT)
+                     NHKT_FIT  (ISHELL_FIT) = J
+                     KHKT_FIT  (ISHELL_FIT) = NCOMP
+                     SPHR_FIT  (ISHELL_FIT) = SPHER
+                     KCKT_FIT  (ISHELL_FIT) = NCCMP
+                     SEGM_FIT  (ISHELL_FIT) = SEG(KBCH)
+                     LCLASS_FIT(ISHELL_FIT) = LCOMP_FIT
+                     CENT_FIT(ISHELL_FIT,1,1) = CORD(1,ICENT)
+                     CENT_FIT(ISHELL_FIT,2,1) = CORD(2,ICENT)
+                     CENT_FIT(ISHELL_FIT,3,1) = CORD(3,ICENT)
+                     IORB_FIT  = IORB_FIT  + NCOMP
+                     IORBD_FIT = IORBD_FIT + NCOMP*NDEG
+   50             CONTINUE
+                  DO 60 L = 1, NUC(KBCH)
+                     IPRIM_FIT = IPRIM_FIT + 1
+C*****************************************************************************
+C       PRIEXP  - exponent of primitive shell
+C       PRICCF  - normalized contraction coefficient
+C       PRICRX  - x-coordinate of center
+C       PRICRY  - y-coordiante of center
+C       PRICRZ  - z-coordinate of center
+C*****************************************************************************
+                     PRIEXP_FIT(IPRIM_FIT) = ALPHA(L,KBCH)
+                     DO 70  M = 1, NCONT
+                        PRICCF_FIT(IPRIM_FIT,M) = CPRIM(L,M,KBCH)
+   70                CONTINUE
+                     PRICRX_FIT(IPRIM_FIT) = CORD(1,ICENT)
+                     PRICRY_FIT(IPRIM_FIT) = CORD(2,ICENT)
+                     PRICRZ_FIT(IPRIM_FIT) = CORD(3,ICENT)
+                     IPRIMD_FIT = IPRIMD_FIT + NCOMP*NDEG
+   60             CONTINUE
+   40          CONTINUE
+   30       CONTINUE
+   20    CONTINUE
+         IBLOCK = IBLOCK + NBLCK(I)
+   10 CONTINUE
+      RETURN
+C
+C       Error messages:
+C
+ 5000 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6)')
+     *   ' >>> FITPRO error, '//
      *   'no. of contracted functions per AO-block',NCONT,
      *   '                   '//
      *   'current maximum number                  ',MXCONT
@@ -5155,12 +5347,9 @@ C       Group name
 C
         IF (CLASS(1:3) .EQ. 'N/A') THEN
            WRITE(LUPRI,'(A,A3)') 'Point group: ',GROUP
-           WRITE(66,'(A,A3)') 'Point group: ',GROUP
         ELSE
            WRITE(LUPRI,'(A,A)') 'Full group is:  ',CLASS
            WRITE(LUPRI,'(A,A3)') 'Represented as: ',GROUP
-           WRITE(66,'(A,A)') 'Full group is:  ',CLASS
-           WRITE(66,'(A,A3)') 'Represented as: ',GROUP
         END IF
 C
 C       Group generators
