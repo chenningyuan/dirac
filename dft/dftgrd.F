@@ -362,7 +362,7 @@ C        Grid spacing....
            L = LL-1
            NBAS=NUCORB(LL,1,IATOM)+NUCORB(LL,2,IATOM)
            IF(NBAS.GT.0) THEN
-             CALL DISERR(RADERR,HTMP,L)
+             HTMP = DISERR(RADERR,L)
              H = MIN(H,HTMP)
              IF(IPRINT.GE.3) THEN
                WRITE(LUPRI,'(3X,A1,A,F6.3)')
@@ -389,7 +389,7 @@ C...     Outer point
            IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
            IF(AL.LT.DUMMY) THEN
              AL = AL+AL
-             CALL OUTERR(RHTMP,AL,L,RADERR)           
+             RHTMP = OUTERR(AL,L,RADERR)           
              RH=MAX(RH,RHTMP)
              IF(IPRINT.GE.3) THEN
                WRITE(LUPRI,'(3X,A1,A,F6.3)')
@@ -1785,90 +1785,6 @@ C
 
       RETURN
       END
-      SUBROUTINE DISERR(RD,H,L)
-#include <implicit.h>
-      PARAMETER(ACC=1.0D-6)
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
-      PARAMETER (PI = 3.14159 26535 89793 D00)
-      PARAMETER(MXIT=8)
-C
-C     Initialization
-C
-      H = 0.15D0
-      PITOSQ = SQRT(D2*PI)
-      PIL = D1
-      IFAC = 1
-      TOLTO = D2*D2
-      DO I = 1,L
-        TOLTO = TOLTO*D2
-        IFAC  = IFAC*(2*I+1)
-        PIL   = PIL*PI
-      ENDDO
-      FAC = DFLOAT(IFAC)
-      DL1 = DFLOAT(L+1)
-      A = TOLTO*PITOSQ*PIL/FAC
-      ALN = LOG(A)
-      RLN = LOG(RD)
-C     Newton-Raphson searc
-      DO IT = 1,MXIT
-        HL = H
-        PIH = PI/H
-        PIHL = D1
-        PIEX = PI*PIH/D2
-        DO I = 1,L
-          HL = HL*H
-          PIHL = PIHL*PIH
-        ENDDO
-        F0HLN = ALN-PIEX-DL1*LOG(H)-RLN
-        F1HLN = (PIEX-DL1)/H
-        DX = F0HLN/F1HLN
-        H = H - DX
-        IF(ABS(DX).LT.ACC) RETURN
-      ENDDO
-      STOP 'Error in DISERR'
-      END
-      SUBROUTINE OUTERR(RH,AL,L,RD)
-#include <implicit.h>
-      PARAMETER(ACC=1.0D-6)
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
-      PARAMETER (PI = 3.14159 26535 89793 D00)
-      PARAMETER(MXIT=8)
-C
-C     Initialization
-C
-      TOLEN = D2
-      IFAC = 1
-      DO I = 1,L
-        TOLEN = TOLEN*D2
-        IFAC  = IFAC*(2*I+1)
-      ENDDO
-      FAC = DFLOAT(IFAC)
-      EXPL = DFLOAT(2*L+1)/D2
-      A = SQRT(PI)*FAC/TOLEN
-      ALN = LOG(A)
-      RLN = LOG(RD)
-C
-C     The cutoff error has a maximum in RMAX;
-C     starting point must be well to the right
-C
-      RMAX = SQRT(EXPL/AL)
-      RH = RMAX + TI
-      INS = 1
-C     Newton-Raphson searc
-      DO IT = 1,MXIT
-        VAR = AL*RH*RH
-        F0HLN = ALN+EXPL*LOG(VAR)-VAR-RLN
-        F1HLN = D2*(EXPL-VAR)/RH
-        DX = F0HLN/F1HLN
-        RH = RH - DX
-        IF(ABS(DX).LT.ACC) RETURN
-        IF(RH.LT.RMAX) THEN
-          INS = INS + 1
-          RH = RMAX + INS*TI
-        ENDIF
-      ENDDO
-      STOP 'Error in OUTERR'
-      END
 C  /* Deck cmprsq */
       SUBROUTINE CMPRSQ(X,Y,Z,WT,NPOINT,KPOINT)
 C
@@ -1926,5 +1842,117 @@ C
          IF(LBTAX(I,2) .AND. PY.LT.-A0) MLTPNT = 0
          IF(LBTAX(I,3) .AND. PZ.LT.-A0) MLTPNT = 0
       END DO
+      RETURN
+      END
+      FUNCTION DISERR(RD,L)
+C***********************************************************************
+C
+C     Provide grid spacing h for given angular momentum L
+C     and discretization error RD
+C
+C     Based on eqs. (17) and (18) of
+C       R. Lindh, P.-Aa. Malmqvist and L. Gagliardi
+C       "Molecular integrals by numerical quadrature",
+C       Theor. Chem. Acc. 106 (2001) 178-187
+C     
+C     The array CF(4,L) contains coefficients of a 3rd order
+C     polynomial fit to provide start values for the
+C     determination of H by a Newton-Raphson search.
+C
+C     Written by T. Saue July 2002
+C
+C***********************************************************************
+      IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+      PARAMETER(ACC=1.0D-5)
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
+      PARAMETER (PI = 3.14159 26535 89793 D00)
+      PARAMETER(MXIT=20)
+      DIMENSION CF(4,0:4)
+      DATA CF/0.91570D0,0.78806D-1,0.28056D-2,3.4197D-05,
+     &        0.74912D0,0.61502D-1,0.21558D-2,2.6100D-05,
+     &        0.65449D0,0.52322D-1,0.18217D-2,2.2004D-05,
+     &        0.59321D0,0.46769D-1,0.16261D-2,1.9649D-05,
+     &        0.55125D0,0.43269D-1,0.15084D-2,1.8270D-05/
+C
+C     Initialization
+C
+      FAC  = SQRT(D2)*D2*D2
+      IFAC = 1
+      DO I = 1,L
+        FAC   = FAC*D2
+        IFAC  = IFAC*(2*I+1)
+      ENDDO
+      FAC = FAC/IFAC
+      LM = MIN(L,4)
+      RDLOG = LOG(RD)
+      DISERR = POLVAL(3,CF(1,LM),RDLOG)
+      HTLOG = LOG(DISERR)
+C     Newton-Raphson search
+      DO IT = 1,MXIT
+        PIH  = PI/DISERR
+        PIHL = PIH
+        PIEX = PI*PIH/D2
+        DO I = 1,L
+          PIHL = PIHL*PIH
+        ENDDO
+        U0   = FAC*PIHL*EXP(-PIEX)
+        U1   = U0*((PIEX/DISERR)-(L+1)/PIH)
+        F0   = LOG(U0)-RDLOG
+        F1   = DISERR*U1/U0
+        DX = F0/F1
+        HTLOG = HTLOG - DX
+        DISERR = EXP(HTLOG)
+        IF(ABS(DX).LT.ACC) RETURN
+      ENDDO
+      STOP 'Error in DISERR'
+      RETURN
+      END
+      FUNCTION OUTERR(AL,L,RD)
+C***********************************************************************
+C
+C     Provide outer grid point for given angular momentum L
+C     outer exponent AL and discretization error RD
+C
+C     Based on eq. (19) of
+C       R. Lindh, P.-Aa. Malmqvist and L. Gagliardi
+C       "Molecular integrals by numerical quadrature",
+C       Theor. Chem. Acc. 106 (2001) 178-187
+C     
+C     The variable U = AL*R*R is found by a Newton-Raphson search.
+C
+C     Written by T. Saue July 2002
+C
+C***********************************************************************
+      IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+      PARAMETER(ACC=1.0D-6)
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
+      PARAMETER (PI = 3.14159 26535 89793 D00)
+      PARAMETER(MXIT=8)
+C
+C     Initialization
+C
+      TOLEN = D2
+      FAC = D1
+      DO I = 1,L
+        TOLEN = TOLEN*D2
+        FAC   = FAC*(2*I+1)
+      ENDDO
+      EXPL = (2*L+1)/D2
+      A = SQRT(PI)*FAC/TOLEN
+      ALN = LOG(A)
+      RLN = LOG(RD)
+      U = 35.0D0
+C     Newton-Raphson search
+      DO IT = 1,MXIT
+        F0HLN = ALN+EXPL*LOG(U)-U-RLN
+        F1HLN = EXPL/U-D1
+        DX = F0HLN/F1HLN
+        U = U - DX
+        IF(ABS(DX).LT.ACC) THEN
+          OUTERR = SQRT(U/AL)
+          RETURN
+        ENDIF
+      ENDDO
+      STOP 'Error in OUTERR'
       RETURN
       END
