@@ -1265,7 +1265,7 @@ C
 C
 C     Print section
 C
-      WRITE(LUPRI,'(5('//FMT//',2X,A1,I2,A1,2X))')
+      WRITE(LUPRI,'(5('//FMT//',2X,A1,I2,A1,3X))')
      &   (EIG(IFIRST(I)),'(',
      &   2*NMULT(I),')',I=1,NDEG)
 C
