@@ -1367,7 +1367,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ENDDO
 C
  123  CONTINUE
-      IF ((TESTLS).OR.(TESTSL)) THEN
+      IF (TESTLS.OR.TESTSL) THEN
          WRITE(LUPRI,'(A)') 
      &        '(LL|SS)- or (SS|LL)-ONLY test does only work without'
          WRITE(LUPRI,'(A)') 
@@ -1383,8 +1383,8 @@ C
       DO ICL = 0,3
          ICL1= ICL*2+1
          ICL2= ICL1+1
-         CALL ENERC2(E,E1,E2,E3,E4,N1,N2,N3,N4,
 c         CALL ENERC1(E,E1,E2,E3,E4,N1,N2,N3,N4,
+         CALL ENERC2(E,E1,E2,E3,E4,N1,N2,N3,N4,
      &        SPMAT(1,1,1,1,ICLDAT(ICL1)),
      &        SPMAT(1,1,1,1,ICLDAT(ICL1)+4),
      &        SPMAT(1,1,1,1,ICLDAT(ICL2)),

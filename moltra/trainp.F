@@ -286,7 +286,8 @@ C*****************************************************************************
       PARAMETER (NDIR = 4, NTABLE = 20)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
-      CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
+     &          WORD1*7
       CHARACTER*7 LINE
       DIMENSION WORK(LWORK),IR(2,2),NTVEC(4)
 C
