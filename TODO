@@ -127,3 +127,18 @@
   stinf.inc  : ISTAC
   strbas.inc : KSTSTM
   (total roughly 30.000 integers)
+
+*********************************************
+*** Two-component calculations with Dirac ***
+***             HJAaJ & MI                ***
+*********************************************
+
+- include resources for generation of matrix elements
+of transformed two-component relativistic Hamiltonians (DK1,DK2,DKinf=BSS;
+scalar or spin-free); check the performance in SCF and correlated calculations (CC,CI)
+
+- continue with RPA picture change transformed calculations of properties
+
+- try to interface DKn(n=1,2,inf) with the DFT to run two-component DFT
+  (similar to the ADF or PARAGAUSS implementations) 
+
