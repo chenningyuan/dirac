@@ -4268,7 +4268,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.NCUBE ','.PRINT ','.CUBADJ','.XXXXXX',
+      DATA TABLE /'.NCUBE ','.PRINT ','.CUBADJ','.DOCUBE',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -4286,6 +4286,7 @@ C
 C     Initialize /DCBRHO1/
 C     ===================
 C
+      ILSCUB = 3
       IPRRHO = 0
       NCUBE(1) = 80
       NCUBE(2) = 80
@@ -4335,6 +4336,9 @@ C&&&&         CUBADJ(2) : adjust stepvectors of cube
                READ(LUCMD,*)  CUBADJ(1), CUBADJ(2)
                GO TO 100
     4          CONTINUE
+C&&&  DOCUBE: Specify generation of cube-file for L- and S-comp.
+               READ(LUCMD,*) ILC,ISC
+               ILSCUB = ILC + 2*ISC
                GO TO 100
     5          CONTINUE
                GO TO 100

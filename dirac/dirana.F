@@ -1880,7 +1880,7 @@ C***********************************************************************
 #include "mxcent.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      LOGICAL TOBE
+      LOGICAL TOBE,LBIT
       DIMENSION WORK(LWORK),CUBE(3,0:4),LUCUBE(2)
 #include "dcbgen.h"
 #include "dcbrho.h"
@@ -1889,27 +1889,35 @@ C
 #include "nuclei.h"
 C
       CALL QENTER('GT3RHO')
+c
+c     Start timer
+c
+      TIMSTR = SECOND()
 #include "memint.h"
 C
       CALL TITLER('3-dimensional density plot','*',122)
 C
-      LUCUBE(1) = 11
-      OPEN(LUCUBE(1),FILE='rhoL.cube',STATUS='NEW',
-     &     ACCESS='SEQUENTIAL',FORM='FORMATTED')   
-      IF(LEVYLE) THEN
-        MC = 1      
-      ELSE
-        MC = 2
-        LUCUBE(2) = 12
-        OPEN(LUCUBE(2),FILE='rhoS.cube',STATUS='NEW',
-     &       ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+      IF(LEVYLE) ILSCUB = 1
+      IF(LBIT(ILSCUB,1)) THEN
+         WRITE(LUPRI,'(A)') 
+     &   ' GT3RHO : Gaussian cube file generated for large component.'
+         LUCUBE(1) = 11
+         OPEN(LUCUBE(1),FILE='rhoL.cube',STATUS='NEW',
+     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+      ENDIF
+      IF (LBIT(ILSCUB,2)) THEN
+         WRITE(LUPRI,'(A)') 
+     &   ' GT3RHO : Gaussian cube file generated for small component.'
+         LUCUBE(2) = 12
+         OPEN(LUCUBE(2),FILE='rhoS.cube',STATUS='NEW',
+     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')   
       ENDIF
       CALL MEMGET('REAL',KATOM,4*NUCDEP,WORK,KFREE,LFREE)
 C     Get cube parameters
       CALL CUBPAR(CUBE,WORK(KATOM))
 C     Write header for cube file
-      DO IC = 1,MC
-        CALL CUBHED(LUCUBE(IC),CUBE,WORK(KATOM))
+      DO IC = 1,2
+        IF(LBIT(ILSCUB,IC)) CALL CUBHED(LUCUBE(IC),CUBE,WORK(KATOM))
       ENDDO
 C
 C     Check if coefficients are on file
@@ -1938,17 +1946,24 @@ CTROND        CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRSCF)
 CTROND      END DO
 C     Coeffients may now be deallocated.....
       CALL MEMREL('GT3RHO.cmo',WORK,KCMO,KCMO,KFREE,LFREE)
-      CALL MEMGET('REAL',KRHO,NCUBE(3)*MC,WORK,KFREE,LFREE)
+C
+      CALL MEMGET('REAL',KRHO,NCUBE(3)*2,WORK,KFREE,LFREE)
       CALL GT3RH1(LUCUBE,CUBE,WORK(KRHO),
      &            WORK(KDMAT),WORK(KGAOS),WORK(KBUF),
      &            WORK,KFREE,LFREE)
 C
-      DO IC = 1,MC
-        CLOSE(LUCUBE(IC),STATUS='KEEP')
+      DO IC = 1,2
+        IF(LBIT(ILSCUB,IC)) CLOSE(LUCUBE(IC),STATUS='KEEP')
       ENDDO
 C     Memory deallocation
       CALL MEMREL('GT3RHO',WORK,KWORK,KWORK,KFREE,LFREE)
 C
+c    
+c     Stop timer
+c           
+      TIMEND = SECOND()
+      TIME   = TIMEND - TIMSTR
+      CALL TIMTXT('>>> Time used in GT3RHO is',TIME,LUPRI)
       CALL QEXIT('GT3RHO')
       RETURN
  1000 CONTINUE
@@ -1971,6 +1986,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
+      LOGICAL LBIT
       DIMENSION LUCUBE(*),CUBE(3,0:3),RHO(2,*),DMAT(*),GAO(*),
      &          BUF(*),WORK(*)
 #include "dcbbas.h"
@@ -1978,10 +1994,7 @@ C
 #include "dcbrho.h"
 C
 #include "sdpre.h"
-      MC = 2
-      IF(LEVYLE) MC = 1      
 C     
-      
       DO I1 = 1,NCUBE(1)
         DO I2 = 1,NCUBE(2)
           DO I3 = 1,NCUBE(3)
@@ -1998,14 +2011,17 @@ C           Get value of SOs at (PX,PY,PZ)
             CALL GETSOS(GAO,TEMP,TEMP,TEMP,TEMP,PX,PY,PZ,
      &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,IPRRHO)
 C           Get density in this point
-            DO IC = 1,MC
-              RHO(IC,I3) = D0
-              CALL GETRH1(RHO(IC,I3),IC,0,GAO,DMAT,BUF)
+            DO IC = 1,2
+              IF(LBIT(ILSCUB,IC)) THEN
+                RHO(IC,I3) = D0
+                CALL GETRH1(RHO(IC,I3),IC,0,GAO,DMAT,BUF)
+              ENDIF
             ENDDO
           ENDDO
 C         Write buffer
-          DO IC = 1,MC
-            WRITE(LUCUBE(IC),'(6E13.5)') (RHO(IC,I),I=1,NCUBE(3))
+          DO IC = 1,2
+            IF(LBIT(ILSCUB,IC))
+     &      WRITE(LUCUBE(IC),'(6E13.5)') (RHO(IC,I),I=1,NCUBE(3))
           ENDDO
         ENDDO
       ENDDO
