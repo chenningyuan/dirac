@@ -1,5 +1,5 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RDINTS(NSP,INDEX,KR,INDK,INDL,CBUF,IBUF,NBUF,
+      SUBROUTINE RDINTS(NSP,INDEX,KR,INDK,INDL,CBUF,IBUF,NVT,
      &                  BUF1,BUF2,IREPSP,IREPSPI,
      &                  VOOOO,VOOOOA,VVOOO,VVOOOA,VVVOO,VVVOOA,
      &                  VVOVO,VVOVOA,VVOVV,VVOVVA,VVVVV,VVVVVA,
@@ -22,7 +22,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NBUF,NSP
+      INTEGER NVT,NSP
       INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
       INTEGER INDEX(NSP,NSP,4),IBUF(16,6,*)
       INTEGER IREPSP,IREPSPI
@@ -52,13 +52,14 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+      call memchk ('Entering rdints',foo(0),1)
       CALL MKINDEX (NSP,IREPSP,IREPSPI,INDEX)
 C
       NSPQ = NSP*NSP
 C
 C  Check buffer size for passing of VOVV and VVVV integrals
 C
-      IF (MOD(NBUF*IRW*RCW,SEC2I(1)).NE.0)
+      IF (MOD(NVT*IRW*RCW,SEC2I(1)).NE.0)
      &    STOP "INVALID BUFFER SIZE IN RDINTS"
 C
 C  GET THE NUCLEAR REPULSION ENERGY
@@ -275,14 +276,14 @@ C
 C
 C     GET THE VOVV INTEGRALS
 C
-      NPASS = (NV5-1) / NBUF + 1
+      NPASS = (NV5-1) / NVT + 1
       NSEC5 = 1
       N5L = 0
       WRITE (IW,1005) NPASS,'VOVV'
 C
       DO IPASS = 1, NPASS
       N5F = N5L + 1
-      N5L = MIN0(N5L+NBUF,NV5)
+      N5L = MIN0(N5L+NVT,NV5)
       N5 = N5L - N5F + 1
       NSEC = N5*IRW*RCW / SEC2I(1)
       IF (MOD(N5*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
@@ -339,14 +340,14 @@ C
 C
 C     GET THE VVVV INTEGRALS
 C
-      NPASS = (NV6-1) / NBUF + 1
+      NPASS = (NV6-1) / NVT + 1
       NSEC6 = 1
       N6L = 0
       WRITE (IW,1005) NPASS,'VVVV'
 C
       DO IPASS = 1, NPASS
       N6F = N6L + 1
-      N6L = MIN0(N6L+NBUF,NV6)
+      N6L = MIN0(N6L+NVT,NV6)
       N6 = N6L - N6F + 1
       NSEC = N6*IRW*RCW / SEC2I(1)
       IF (MOD(N6*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
@@ -437,13 +438,7 @@ C
 C  FORM FOCK MATRIX; ADD TWO-ELECTRON PART
 C  CALCULATE THE SCF (OR REFERENCE) ENERGY
 C
-      IF (MAX(NV1,NV2,NV4).EQ.NV4) THEN
-         CALL MAKEFM (VVOVO,VVOVOA,FOO,FVO,FVV,E0,E1)
-      ELSEIF (MAX(NV1,NV2,NV4).EQ.NV2) THEN
-         CALL MAKEFM (VVOOO,VVOOOA,FOO,FVO,FVV,E0,E1)
-      ELSE
-         CALL MAKEFM (VOOOO,VOOOOA,FOO,FVO,FVV,E0,E1)
-      ENDIF
+      CALL MAKEFM (VVOVO,VVOVOA,FOO,FVO,FVV,E0,E1)
 C
 C     Write the Fock matrix to file
 C
@@ -851,7 +846,7 @@ C     Generates Fock matrix. Calculates E0 and E1
 C
 C---------------Routines called----------------------------------------
 C
-C     GETOOOO, GETVOOO, GETVOVO, SRT1, SRT2
+C     GETOOOO, GETVOOO, GETVOVO, SRT1TT4, SRT1ST4, SRT1SS4
 C
 C---------------Last modified------------------------------------------
 C
@@ -879,8 +874,8 @@ C
       E1 = AR0
 C
       CALL GETOOOO (BUF1)
-      CALL SRT1 (NREP,MULTB,NO,NO,NO,NO,MOO,JOOOO,JJOO,JJOO,
-     &           BUF1,BUF2,BUF1,BUF2)
+      CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NO,NO,NO,NO,MOO,JOOOO,JJOO,JJOO,
+     &              BUF1,BUF2)
       KK = 1
       DO KREP = 1, NREP
          DO K = 1, NO(KREP)
@@ -911,8 +906,8 @@ C---------------------------------------------------------------------
       ENDDO
 C
       CALL GETVOOO (BUF1)
-      CALL SRT2 (NREP,MULTB,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
-     &           BUF1,BUF2)
+      CALL SRT1ST4 (NREP,MULTB,LTR,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
+     &              BUF1,BUF2)
       KK = 1
       DO KREP = 1, NREP
          DO K = 1, NO(KREP)
@@ -926,8 +921,8 @@ C---------------------------------------------------------------------
       ENDDO
 C
       CALL GETVOVO (BUF1)
-      CALL SRT3 (NREP,MULTB,NV,NO,NV,NO,MVV,JVVOO,JJVV,JJOO,
-     &           BUF1,BUF2,BUF1,BUF2)
+      CALL SRT1SS4 (NREP,MULTB,NV,NO,NV,NO,MVV,JVVOO,JJVV,JJOO,
+     &              BUF1,BUF2)
       KK = 1
       DO KREP = 1, NREP
          DO K = 1, NO(KREP)

@@ -74,7 +74,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #else
 #include <fpvm3h.h>
 #endif
-#include <dcbgen.h>
+#include <gnrinf.h>
 #include <infpar.h>
 C
       IF (.NOT.PARCAL) RETURN
@@ -105,7 +105,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #else
 #include <fpvm3h.h>
 #endif
-#include <dcbgen.h>
+#include <gnrinf.h>
 #include <infpar.h>
 C
       IF (.NOT.PARCAL) RETURN
@@ -142,7 +142,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #else
 #include <fpvm3h.h>
 #endif
-#include <dcbgen.h>
+#include <gnrinf.h>
 #include <infpar.h>
 C
       DIMENSION WORK(LWORK)

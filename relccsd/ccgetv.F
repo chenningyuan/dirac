@@ -164,7 +164,6 @@ C
       INCLUDE "files.inc"
       INCLUDE "complex.inc"
       INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
       INCLUDE "iobuf.inc"
 C
 C---------------Local variables--------------------------------------
@@ -175,12 +174,6 @@ C
        EQUIVALENCE (RDUM,IOBUFFER)
 C
 C---------------Executable code--------------------------------------
-C
-c     IF (EQNS.EQ.'AMPLTD') THEN
-         ITAP = ITAPT
-c     ELSEIF (EQNS.EQ.'LAMBDA') THEN
-c        ITAP = ITAPL
-c     ENDIF
 C
       IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
          PRINT*,"CHANGE NIOBUF IN GETVOVV TO MINIMALLY",MINBUF*RCW*IRW
@@ -209,7 +202,7 @@ C
       IF (JINT1.NE.0) THEN
          JINT2 = MIN0(MINBUF-JINT1,JINT)
          JINT3 = JINT1 + JINT2
-         CALL RREAD(ITAP+5,IOBUFFER,JINT3*RCW*IRW,JSEC)
+         CALL RREAD(ITAPT+5,IOBUFFER,JINT3*RCW*IRW,JSEC)
          JINT1 = JINT1*RCW*IRW + 1
          CALL XCOPY (JINT2,IOBUFFER(JINT1),1,VVOVV,1)
          JSEC = JSEC + MINSEC
@@ -219,7 +212,7 @@ C     Read remaining integrals
 C
       JINT = JINT - JINT2
       JINT2 = JINT2*RCW + 1
-      IF (JINT.GT.0) CALL RREAD(ITAP+5,VVOVV(JINT2),JINT*IRW*RCW,JSEC)
+      IF (JINT.GT.0) CALL RREAD(ITAPT+5,VVOVV(JINT2),JINT*IRW*RCW,JSEC)
 C
 C     Are we done with this IRREP ?
 C
@@ -258,7 +251,6 @@ C
       INCLUDE "files.inc"
       INCLUDE "complex.inc"
       INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
       INCLUDE "iobuf.inc"
 C
 C---------------Local variables--------------------------------------
@@ -269,12 +261,6 @@ C
        EQUIVALENCE (RDUM,IOBUFFER)
 C
 C---------------Executable code--------------------------------------
-C
-c     IF (EQNS.EQ.'AMPLTD') THEN
-         ITAP = ITAPT
-c     ELSEIF (EQNS.EQ.'LAMBDA') THEN
-c        ITAP = ITAPL
-c     ENDIF
 C
       IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
          PRINT*,"CHANGE NIOBUF IN GETVVVV TO MINIMALLY",MINBUF*RCW*IRW
@@ -302,7 +288,7 @@ C
       IF (JINT1.NE.0) THEN
          JINT2 = MIN0(MINBUF-JINT1,JINT)
          JINT3 = JINT1 + JINT2
-         CALL RREAD(ITAP+6,IOBUFFER,JINT3*RCW*IRW,JSEC)
+         CALL RREAD(ITAPT+6,IOBUFFER,JINT3*RCW*IRW,JSEC)
          JINT1 = JINT1*RCW*IRW + 1
          CALL XCOPY (JINT2,IOBUFFER(JINT1),1,VVVVV,1)
          JSEC = JSEC + MINSEC
@@ -312,7 +298,7 @@ C     Read remaining integrals
 C
       JINT = JINT - JINT2
       JINT2 = JINT2*RCW + 1
-      IF (JINT.GT.0) CALL RREAD(ITAP+6,VVVVV(JINT2),JINT*IRW*RCW,JSEC)
+      IF (JINT.GT.0) CALL RREAD(ITAPT+6,VVVVV(JINT2),JINT*IRW*RCW,JSEC)
 C
 C     Are we done with this IRREP ?
 C
@@ -321,13 +307,13 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PUTVOVV (IREP,ISTART,NINT,DONE,VVOVV)
+      SUBROUTINE PUTDZ (IREP,ISTART,NINT,DONE,DZ)
 C
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
 C
-C     Put VOVV part of two-electron integrals
+C     Puts D intermediate to file
 C     Representation 			IREP
 C     Start address of integrals 	ISTART 
 C     Number of integrals in batch 	NINT
@@ -341,7 +327,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 VVOVV(*)
+      REAL*8 DZ(*)
       INTEGER IREP,ISTART,NINT
       LOGICAL DONE
 C
@@ -362,15 +348,96 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      IF (EQNS.EQ.'AMPLTD') THEN
-         ITAP = ITAPT
-      ELSEIF (EQNS.EQ.'LAMBDA') THEN
-         ITAP = ITAPL
+      IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
+         PRINT*,"CHANGE NIOBUF IN PUTDZ TO MINIMALLY",MINBUF*RCW*IRW
+         STOP "UPDATE PUTDZ"
       ENDIF
 C
+      DONE = .FALSE.
+      MTOT = NVO(IREP)
+      NTOT = NVVT(IREP)
+      NINT = MIN0(NINT,NTOT-ISTART)
+C
+C     Calculate absolute starting address
+C
+      JSTART = IVOVVT(IREP) + ISTART * MTOT
+      JINT = MTOT * NINT
+      JSEC = (JSTART / MINBUF) * MINSEC + 1
+C
+C     Read partial batch from first record
+C     JINT : Total number of integrals to be read
+C     JINT1: Number of integrals of previous batch on first record
+C     JINT2: Number of integrals of current batch on first record
+C     JINT3: Total number of integrals on first record
+C
+      JINT1 = MOD (JSTART,MINBUF)
+      JINT2 = 0
+      IF (JINT1.NE.0) THEN
+         JINT2 = MIN0(MINBUF-JINT1,JINT)
+         JINT3 = JINT1 + JINT2
+         CALL RREAD(ITAPL,IOBUFFER,JINT3*RCW*IRW,JSEC)
+         JINT1 = JINT1*RCW*IRW + 1
+         CALL XCOPY (JINT2,IOBUFFER(JINT1),1,DZ,1)
+         JSEC = JSEC + MINSEC
+      ENDIF
+C
+C     Read remaining integrals
+C
+      JINT = JINT - JINT2
+      JINT2 = JINT2*RCW + 1
+      IF (JINT.GT.0) CALL RREAD(ITAPL,DZ(JINT2),JINT*IRW*RCW,JSEC)
+C
+C     Are we done with this IRREP ?
+C
+      IF (ISTART+NINT.EQ.NTOT) DONE = .TRUE.
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GETDZ (IREP,ISTART,NINT,DONE,DZ)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Gets D intermediate from file
+C     Representation 			IREP
+C     Start address of integrals 	ISTART 
+C     Number of integrals in batch 	NINT
+C     
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 DZ(*)
+      INTEGER IREP,ISTART,NINT
+      LOGICAL DONE
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "files.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "symm.inc"
+      INCLUDE "eqns.inc"
+      INCLUDE "iobuf.inc"
+C
+C---------------Local variables--------------------------------------
+C
+       PARAMETER (NIOBUF=2048)
+       INTEGER IOBUFFER(NIOBUF)
+       REAL*8 RDUM
+       EQUIVALENCE (RDUM,IOBUFFER)
+C
+C---------------Executable code--------------------------------------
+C
       IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
-         PRINT*,"CHANGE NIOBUF IN GETVOVV TO MINIMALLY",MINBUF*RCW*IRW
-         STOP "UPDATE GETVOVV"
+         PRINT*,"CHANGE NIOBUF IN GETDZ TO MINIMALLY",MINBUF*RCW*IRW
+         STOP "UPDATE GETDZ"
       ENDIF
 C
       DONE = .FALSE.
@@ -395,104 +462,10 @@ C
       IF (JINT1.NE.0) THEN
          JINT2 = MIN0(MINBUF-JINT1,JINT)
          JINT3 = JINT1 + JINT2
-         CALL RREAD(ITAP+5,IOBUFFER,JINT1*RCW*IRW,JSEC)
+         CALL RREAD(ITAPL,IOBUFFER,JINT1*RCW*IRW,JSEC)
          JINT1 = JINT1*RCW*IRW + 1
-         CALL XCOPY (JINT2,VVOVV,1,IOBUFFER(JINT1),1)
-         CALL RWRIT(ITAP+5,IOBUFFER,JINT3*RCW*IRW,JSEC)
-         JSEC = JSEC + MINSEC
-      ENDIF
-C
-C     Read remaining integrals
-C
-      JINT = JINT - JINT2
-      JINT2 = JINT2*RCW + 1
-      IF (JINT.GT.0) CALL RWRIT(ITAP+5,VVOVV(JINT2),JINT*IRW*RCW,JSEC)
-C
-C     Are we done with this IRREP ?
-C
-      IF (ISTART+NINT.EQ.NTOT) DONE = .TRUE.
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PUTVVVV (IREP,ISTART,NINT,DONE,VVVVV)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Put VVVV part of two-electron integrals
-C     Representation 			IREP
-C     Start address of integrals 	ISTART
-C     Number of integrals in batch 	NINT (updated on output)
-C     Done with this representation ?	DONE
-C     
-C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-      REAL*8 VVVVV(*)
-      INTEGER IREP,ISTART,NINT
-      LOGICAL DONE
-C
-C---------------Common Blocks--------------------------------------
-C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
-      INCLUDE "iobuf.inc"
-C
-C---------------Local variables--------------------------------------
-C
-       PARAMETER (NIOBUF=2048)
-       INTEGER IOBUFFER(NIOBUF)
-       REAL*8 RDUM
-       EQUIVALENCE (RDUM,IOBUFFER)
-C
-C---------------Executable code--------------------------------------
-C
-      IF (EQNS.EQ.'AMPLTD') THEN
-         ITAP = ITAPT
-      ELSEIF (EQNS.EQ.'LAMBDA') THEN
-         ITAP = ITAPL
-      ENDIF
-C
-      IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
-         PRINT*,"CHANGE NIOBUF IN GETVVVV TO MINIMALLY",MINBUF*RCW*IRW
-         STOP "UPDATE GETVVVV"
-      ENDIF
-      DONE = .FALSE.
-      MTOT = NVVT(IREP)
-      NTOT = NVVT(IREP)
-      NINT = MIN0(NINT,NTOT-ISTART)
-C
-C     Calculate absolute starting address
-C
-      JSTART = IVVVVTT(IREP) + ISTART * MTOT
-      JINT = MTOT * NINT
-      JSEC = (JSTART / MINBUF) * MINSEC + 1
-C
-C     Read partial batch from first record and extend with new integrals
-C     JINT : Total number of integrals to be written
-C     JINT1: Number of integrals of previous batch on first record
-C     JINT2: Number of integrals of current batch on first record
-C     JINT3: Total number of integrals on first record
-C
-      JINT1 = MOD (JSTART,MINBUF)
-      JINT2 = 0
-      IF (JINT1.NE.0) THEN
-         JINT2 = MIN0(MINBUF-JINT1,JINT)
-         JINT3 = JINT1 + JINT2
-         CALL RREAD(ITAP+6,IOBUFFER,JINT1*RCW*IRW,JSEC)
-         JINT1 = JINT1*RCW*IRW + 1
-         CALL XCOPY (JINT2,VVVVV,1,IOBUFFER(JINT1),1)
-         CALL RWRIT(ITAP+6,IOBUFFER,JINT3*RCW*IRW,JSEC)
+         CALL XCOPY (JINT2,DZ,1,IOBUFFER(JINT1),1)
+         CALL RWRIT(ITAPL,IOBUFFER,JINT3*RCW*IRW,JSEC)
          JSEC = JSEC + MINSEC
       ENDIF
 C
@@ -500,7 +473,7 @@ C     Write remaining integrals
 C
       JINT = JINT - JINT2
       JINT2 = JINT2*RCW + 1
-      IF (JINT.GT.0) CALL RWRIT(ITAP+6,VVVVV(JINT2),JINT*IRW*RCW,JSEC)
+      IF (JINT.GT.0) CALL RWRIT(ITAPL,DZ(JINT2),JINT*IRW*RCW,JSEC)
 C
 C     Are we done with this IRREP ?
 C

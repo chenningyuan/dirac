@@ -6,3 +6,5 @@
       PARAMETER (A0=(0.0,0.0),A1=(1.0,0.0),AP5=(0.50,0.0))
       PARAMETER (A2=(2.0,0.0))
       PARAMETER (A1I=(0.0,1.0))
+      LOGICAL LTR,LFA
+      PARAMETER (LTR=.TRUE.,LFA=.FALSE.)

@@ -10,6 +10,7 @@ C     Define the unit numbers
       PARAMETER (IOAMPL  = 28) ! Orbital gradients
       PARAMETER (IOAMPS  = 29) ! Sigma vector for orbital gradients
       PARAMETER (ITAPT   = 40) ! Sorted integral files
+      PARAMETER (ITAPL   = 50) ! DZ intermediate for Lambda equations
 C     The standard input and output units may be redefined in the code
       COMMON /FILES/ IN,IW
 C     Length of the records (integer words) on the restart file

@@ -83,22 +83,22 @@ C
 C
       CALL RPAVAL (X1,Y1,AVO,AOV,APHASE,BPHASE,CERPA)
 C
-      if (debug) then
-      if (carith) then
-      do i = 1, ndimx
-      if (abs(avo(2*i-1)).gt.1d-10) print*,'real avo',i,avo(2*i-1)
-      if (abs(avo(2*i)).gt.1d-10) print*,'imag avo',i,avo(2*i)
-      if (abs(aov(2*i-1)).gt.1d-10) print*,'real aov',i,aov(2*i-1)
-      if (abs(aov(2*i)).gt.1d-10) print*,'imag aov',i,aov(2*i)
-      enddo
-      do i = 1, ndimx
-      if (abs(bvo(2*i-1)).gt.1d-10) print*,'real bvo',i,bvo(2*i-1)
-      if (abs(bvo(2*i)).gt.1d-10) print*,'imag bvo',i,bvo(2*i)
-      if (abs(bov(2*i-1)).gt.1d-10) print*,'real bov',i,bov(2*i-1)
-      if (abs(bov(2*i)).gt.1d-10) print*,'imag bov',i,bov(2*i)
-      enddo
-      endif
-      endif
+c     if (debug) then
+c     if (carith) then
+c     do i = 1, ndimx
+c     if (abs(avo(2*i-1)).gt.1d-10) print*,'real avo',i,avo(2*i-1)
+c     if (abs(avo(2*i)).gt.1d-10) print*,'imag avo',i,avo(2*i)
+c     if (abs(aov(2*i-1)).gt.1d-10) print*,'real aov',i,aov(2*i-1)
+c     if (abs(aov(2*i)).gt.1d-10) print*,'imag aov',i,aov(2*i)
+c     enddo
+c     do i = 1, ndimx
+c     if (abs(bvo(2*i-1)).gt.1d-10) print*,'real bvo',i,bvo(2*i-1)
+c     if (abs(bvo(2*i)).gt.1d-10) print*,'imag bvo',i,bvo(2*i)
+c     if (abs(bov(2*i-1)).gt.1d-10) print*,'real bov',i,bov(2*i-1)
+c     if (abs(bov(2*i)).gt.1d-10) print*,'imag bov',i,bov(2*i)
+c     enddo
+c     endif
+c     endif
 C
       NIT = 0
       RMS = 1.D0
@@ -110,16 +110,16 @@ C
 C  START ITERATIVE PROCEDURE
 C
  1000 CONTINUE
-      if (debug) then
-      if (carith) then
-      do i = 1, ndimx
-      if (abs(x1(2*i-1)).gt.1d-10) print*,'real x1',i,x1(2*i-1)
-      if (abs(x1(2*i)).gt.1d-10) print*,'imag x1',i,x1(2*i)
-      if (abs(y1(2*i-1)).gt.1d-10) print*,'real y1',i,y1(2*i-1)
-      if (abs(y1(2*i)).gt.1d-10) print*,'imag y1',i,y1(2*i)
-      enddo
-      endif
-      endif
+c     if (debug) then
+c     if (carith) then
+c     do i = 1, ndimx
+c     if (abs(x1(2*i-1)).gt.1d-10) print*,'real x1',i,x1(2*i-1)
+c     if (abs(x1(2*i)).gt.1d-10) print*,'imag x1',i,x1(2*i)
+c     if (abs(y1(2*i-1)).gt.1d-10) print*,'real y1',i,y1(2*i-1)
+c     if (abs(y1(2*i)).gt.1d-10) print*,'imag y1',i,y1(2*i)
+c     enddo
+c     endif
+c     endif
       NIT = NIT + 1
       IF (NIT.GT.MAXIT) THEN
          IF (IPRNT.GE.0) WRITE (IW,6004) RMS
@@ -129,7 +129,7 @@ C
 C  GET THE CONTRIBUTIONS TO X2
 C
       CALL XCOPY (NDIMX,A0,0,X2,1)
-      CALL DOAX (BUF1,DG,X1,BUF2,X2,.TRUE.)
+      CALL DOAX (BUF1,DG,X1,BUF2,X2,LTR)
       CALL DOBY (BUF1,Y1,BUF2,X2)
       CALL XAXPY (NDIMX,A1,BVO,1,X2,1)
 C
@@ -142,7 +142,7 @@ C
       ENDIF
 C
       CALL XCOPY (NDIMX,A0,0,Y2,1)
-      CALL DOAX (BUF1,DG,Y1,BUF2,Y2,.TRUE.)
+      CALL DOAX (BUF1,DG,Y1,BUF2,Y2,LTR)
       CALL DOBY (BUF1,X1,BUF2,Y2)
       CALL XAXPY (NDIMX,A1,BOV,1,Y2,1)
 C
@@ -157,7 +157,7 @@ C
       if (carith.and.debug) then
       write (iw,111)"x1",zdotc(ndimx,x1,1,x1,1)
       write (iw,111)"y1",zdotc(ndimx,y1,1,y1,1)
-      write (iw,111)"dg",zdotc(ndimx,dg,1,dg,1)
+      write (iw,111)"dg",ddot (ndimx,dg,1,dg,1)
       write (iw,111)"x2",zdotc(ndimx,x2,1,x2,1)
       write (iw,111)"y2",zdotc(ndimx,y2,1,y2,1)
       elseif (debug) then
@@ -344,7 +344,7 @@ C
 C  GET THE CONTRIBUTIONS TO X2
 C
       CALL XCOPY (NDIMX,A0,0,X2,1)
-      CALL DOAX (BUF1,DG,X1,BUF2,X2,.FALSE.)
+      CALL DOAX (BUF1,DG,X1,BUF2,X2,LFA)
       CALL DOBY (BUF1,Y1,BUF2,X2)
 C
 C  GET THE CONTRIBUTIONS TO Y2*
@@ -355,7 +355,7 @@ C
       ENDIF
 C
       CALL XCOPY (NDIMX,A0,0,Y2,1)
-      CALL DOAX (BUF1,DG,Y1,BUF2,Y2,.FALSE.)
+      CALL DOAX (BUF1,DG,Y1,BUF2,Y2,LFA)
       CALL DOBY (BUF1,X1,BUF2,Y2)
 C
       IF (CARITH) THEN
@@ -462,8 +462,8 @@ C---------------------------------------------------------------------
 C------------------------------------------------------------------
 C Now sort AA(AK,CI) to AA(AI,CK)
 C------------------------------------------------------------------
-      CALL SRT16 (NREP,MULTB,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
-     &            BUF1,AA,BUF1,AA)
+      CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
+     &            BUF1,AA)
 C------------------------------------------------------------------
 C X2(AI) = X2(AI) + AA(AI,CK) * X1(CK)
 C------------------------------------------------------------------
@@ -478,7 +478,7 @@ C
          K = MVO(JREP)
          OFF2 = JVOXX(IREP) * RCW + 1
          IF (LINRES) THEN
-            CALL XCOPY (M,A0,0,AA(OFF1),RCW*(M+1))
+            CALL XCOPY (M,A0,0,AA(OFF1),(M+1))
          ELSE
             CALL DCOPY (M,DG(OFF3D),1,AA(OFF1),RCW*(M+1))
 C64B        CALL SCOPY (M,DG(OFF3D),1,AA(OFF1),RCW*(M+1))
@@ -529,8 +529,8 @@ C---------------------------------------------------------------------
 C------------------------------------------------------------------
 C Now sort (AC,IK) to (AI,CK)
 C------------------------------------------------------------------
-      CALL SRT17 (NREP,MULTB,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,BUF1,BB,
-     &            BUF1,BB)
+      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+     &              BUF1,BB)
 C------------------------------------------------------------------
 C X2(AI) = X2(AI) + BB(AI,CK) * Y1(CK)
 C Note that we started with (AC, IK) instead of (AC, KI), so we need
@@ -653,7 +653,7 @@ C---------------Executable code--------------------------------------
 C
       IF (CARITH) THEN
          DO AI = 1, 2 * NDIMX
-            IF (EFREQ - DG(AI).NE.0.D0) THEN
+            IF (EFREQ - DG((AI+1)/2).NE.0.D0) THEN
                X1(AI) = X1(AI) / ( DG((AI+1)/2) - EFREQ)
             ELSE
                X1(AI) = X1(AI) * 10.D16
@@ -1340,7 +1340,7 @@ C---------------------------------------------------------------------
 C------------------------------------------------------------------
 C Now sort AA(AK,CI) to AA(AI,CK)
 C------------------------------------------------------------------
-      CALL SRT16 (NREP,MULTB,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
+      CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
      &            BUF1,AA,BUF1,AA)
 C------------------------------------------------------------------
 C DG(AI) = X2(AI) + AA(AI,AI)

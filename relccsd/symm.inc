@@ -7,15 +7,18 @@ C     The essential double group symmetry information.
 C     Sub dimensions of symmetry packed arrays.
       COMMON /SYMD/ NO(8),NV(8),NC(8),MOO(8),MVO(8),MVV(8),
      & NOO(8),NOV(8),NVO(8),NVV(8),NOOT(8),NVVT(8),
-     & NOOOT(8),NVOOT(8),NVVOT(8),NVVVT(8),NOVO(8),NVOO(8),NOVVT(8)
+     & NOOOT(8),NVOOT(8),NVVOT(8),NVVVT(8),NOVO(8),NVOO(8),NOVVT(8),
+     & NOOVT(8)
 C     Pointers for symmetry packed arrays.
       COMMON /SYMP/ IO(9),IV(9),IOO(9),IVO(9),IVV(9),JVOXX(9),
      & JOOOO(9),JVOOO(9),JVVOO(9),JVOVO(9),JVVVO(9),J2VOVO(9),J2VOOO(9),
      & IOOOOTT(9),IVOOOT(9),IVVOOTT(9),IVOVO(9),IVOVVT(9),IVVVVTT(9),
      & IVVOO(9),IVVOOT(9),KVVOOT(9),KOOOVT(9),KVOOV(9),KVOOO(9),
-     & KOOOOT(9),LVVOOT(9),LOVOOT(9),LVOOOT(9),LOOVO(9),LVOVO(9),
-     & LOVVOT(9),KVVVOT(9),
+     & KOOOOT(9),KOOVVT(9),KOOVOT(9),KVVVOT(9),
+     & LOOOOT(9),LVVOOT(9),LOVOOT(9),LVOOOT(9),LOOVO(9),LVOVO(9),
+     & LOVVOT(9),
      & IIOOT(8,8),IIOV(8,8),IIVO(8,8),IIVV(8,8),IIVVT(8,8),
      & JJOO(8,8),JJVO(8,8),JJVV(8,8),KKOOOT(8,8),KKVVOT(8,8),
-     & KKVOO(8,8),LLVOOT(8,8),LLOVO(8,8),LLOVVT(8,8),LLVVVT(8,8),
+     & KKVOO(8,8),KKOOVT(8,8),
+     & LLOOOT(8,8),LLVOOT(8,8),LLOVO(8,8),LLOVVT(8,8),LLVVVT(8,8),
      & IVVVT(9,8),JVVVT(9,8),IVVVTMX,NVVVOTMX
