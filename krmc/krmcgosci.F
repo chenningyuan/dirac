@@ -2488,7 +2488,7 @@ C
          NGTOT = NGTOT + NGSHT(I)
          NGSPC(J) = MAX(0,NGSP(1,I) - NGTOT)
          NGSPC(J+1) = MIN(NGSP(2,I),NGTOT)
-         write(6,*) 'gosci_genstr: ngspc: ',ngspc(J),ngspc(j+1)
+C        write(6,*) 'gosci_genstr: ngspc: ',ngspc(J),ngspc(j+1)
          J = J + 2
       END DO
 C

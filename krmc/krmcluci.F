@@ -1833,11 +1833,11 @@ C     Later: Read sigma vector on file to SB array.
 C
       IF (SAVDIA) THEN
         CALL MEMGET('REAL',KDIAG,2*NZCONF,WORK,KFREE,LFREE)
-        CALL KR_LUCI_IO(1,0,0,
-     &                  WORK(KDIAG),2*NZCONF,DUMMY,1,
+        CALL KR_LUCI_IO(0,1,0,
+     &                  DUMMY,1,WORK(KDIAG),2*NZCONF,
      &                  DUMMY,1,DUMMY,1,
      &                  WORK(KRSCR),IDUMMY,1,
-     &                  LUDIA,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+     &                  IDUMMY,LUDIA,IDUMMY,IDUMMY,IPROPT)
         CALL DCOPY(NZCONF,WORK(KDIAG),1,DIAG,1)
       END IF
 C

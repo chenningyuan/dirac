@@ -96,8 +96,10 @@ C     *** Open files needed *****************************
 C     ***************************************************
 C
 C     Units 50-59 are reserved for KRMC.
-C     Units 50-56 are opened here, 57-58 in krmctra.F,
-C     and 59 is not used currently (hjaaj March 2002).
+C     Units 50-56 are opened here, 57-58 in krmctra.F.
+C     (hjaaj March 2002).
+C     59 is currently used for KRMCOLD, restarting option.
+C     (tf August 2003)
 C     LUKRMC = 50 is also used in ESR_RESOLVE
 C
 C     If old KRMCSCF exists rename it to KRMCOLD.
@@ -127,6 +129,10 @@ C
 C
       LUITFO = 56
       CALL OPNFIL(LUITFO,'KRMC_ITINFO','UNKNOWN','PSIOPT')
+C
+      LUKRM5 = 59
+      CALL OPNFIL(LUKRM5,'KRMCOLD','UNKNOWN','PSIOPT')
+      REWIND LUKRM5
 C
 C
 C     ***************************************************
@@ -758,6 +764,8 @@ C
 C        Active energy.
 C
          EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
+         print*,'Active energy from densities in RGRAD: ',EMCACT
+C        stop 'In RGRAD.'
 C
       ELSE IF (NASHT. EQ. 1) THEN
          CALL DZERO(FQ,NZ*NASHT*NORBT)
@@ -2470,7 +2478,7 @@ C
          END IF
       END IF
 C
-C     (1.2) Read from label OLDORD on KRMCSCF
+C     (1.2) Read from label OLDORB on KRMCSCF
 C     
       IF (LBIT(IROST,2)) THEN
          INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
@@ -4947,6 +4955,9 @@ C
       WRITE(LUPRI,9110)
  9110 FORMAT(/,
      &     1X,'This module is published in:',//,
+     &     4X,'KRMC THEORY: H J Aa Jensen, K G Dyall, T Saue,',/,
+     &     7X,'          and K Faegri Jr.',/,
+     &     7X,'             JCP 104,11 (1995) 4083',/,
      &     4X,'KRMC-GOSCI: J Thyssen, H J Aa Jensen, and T Fleig',/,
      &     7X,'         manuscript, (J Chem Phys, 2003)',/,
      &     4X,'DIRAC-LUCIAREL: T Fleig, J Olsen, and L Visscher',/,
