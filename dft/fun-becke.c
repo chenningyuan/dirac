@@ -154,7 +154,7 @@ b88corr_second(SecondFuncDrv *ds, real factor,
                real rhoa, real rhob, real grada, real gradb)
 {
     const real BETA = 0.0042, BETA2 = BETA*BETA;
-    real alpha, a2, a3, a4, asha, asha2, sq1a2;
+    real alpha, a2, a3, a4, asha, sq1a2;
     real denom, denom2, denom3;
     real alpha10, alpha20, alpha01, alpha11, alpha10_2;
     real ff, ff1, ff2;
@@ -170,7 +170,6 @@ b88corr_second(SecondFuncDrv *ds, real factor,
     a3 = alpha*a2;
     a4 = alpha*a3;
     asha = asinh(alpha);
-    asha2= asha*asha;
     alpha10 = -4.0/3.0*alpha/rhoa;   /* dalpha/drhoa   */
     alpha20 = -7.0/3.0*alpha10/rhoa; /* d²alpha/drhoa² */
     alpha01 = pow(rhoa,-4.0/3.0);    /* dalpha/dgrho  */
