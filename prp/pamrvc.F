@@ -356,7 +356,6 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <dummy.h>
 C
 #include <cbihr2.h>
 #include <dcbxrs.h>
@@ -377,7 +376,7 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','DMOLI2')
-      CALL REACMO(LUBUF,'DFCOEF',CMO,DUMMY,TOTERG,3)
+      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,TOTERG,3)
       CLOSE(LUBUF,STATUS='KEEP')
 C
 C     b) Set arrays of IHRMOP,IFCKOP,ISYMOP
@@ -508,7 +507,6 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <dummy.h>
 C
 #include <dcbxrs.h>
 #include <dcborb.h>

@@ -32,8 +32,8 @@ C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR2T */
-      SUBROUTINE TRDR2T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,
-     &                  NSTR,ANTIS,LMP2,INDX,Q1,Q2,Q3,Q4,E1,E2)
+      SUBROUTINE TRDR2T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOBF,ICMOIJ,
+     &                  NSTR,ANTIS,LMP2,EMP2,KINDX,KQ,KE,DINTSKP)
 C
 C     Written by Luuk Visscher, Februari 1997
 C     Modifications: Jon K. Laerdahl, June 1997
@@ -41,13 +41,29 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER(D0=0.0D0)
+#include <mxorb.h>
+#include <aovec.h>
+C
+#if defined (VAR_MPI)
+#include <infmpi.h>
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#else
+#include <fpvm3h.h>
+#endif
+#include <infpar.h>
+#include <dcbgen.h>
+#include <dcbbas.h>
 #include <dgroup.h>
+#include <blocks.h>
+#include <dcbtra.h>
+#include <dcbtr3.h>
       LOGICAL ANTIS,LMP2
-      DIMENSION NSTR(2,0:2,4),INDX(3,*),NSTRT(4)
-      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
-      DIMENSION Q1(*),Q2(*),Q3(*),Q4(*)
-      DIMENSION E1(*),E2(*)
-      DIMENSION WORK(*)
+      DIMENSION NSTRT(4),KQ(2,4),KE(2,2)
+      DIMENSION NSTR(2,0:2,4),NDMOBF(2,2,4)
+      DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4)
+      DIMENSION WORK(*),DINTSKP(*)
 C
       CALL QENTER('TRDR2T')
       KFRSAV = KFREE
@@ -59,197 +75,194 @@ C     what one is doing...
 C                                     Jon
 C
       DO IND = 1,4
-         DO IF = 1,NFSYM
-            IF (NSTR(IF,2,IND).NE.0) 
-     &           CALL QUIT
-     &           ('TRDR2T: Negative energy solutions in active space!')
-         ENDDO
-      ENDDO
-C
-      DO I = 1,4
-         NSTRT(I) = 0
-         DO IFRP = 1, NFSYM
-            NSTRT(I) = NSTRT(I) + NSTR(IFRP,0,I)
-         ENDDO
+        NSTRT(IND) = 0
+        DO IFRP = 1,NFSYM
+          IF (NSTR(IFRP,2,IND).NE.0) 
+     &      CALL QUIT
+     &      ('TRDR2T: Negative energy solutions in active space!')
+            NSTRT(IND) = NSTRT(IND) + NSTR(IFRP,0,IND)
+        ENDDO
       ENDDO
       IF (NSTRT(1).NE.NSTRT(3)) CALL QUIT
      &     ('TRD2T: Different number of active for index 1 and 3!')
       IF (NSTRT(2).NE.NSTRT(4)) CALL QUIT
      &     ('TRD2T: Different number of active for index 2 and 4!')
-C     
-C     Divide index transformation in tasks with different batches
-C     of spinors. First find number of tasks.
 C
-      CALL TSKCHK(MAXTSK,NSTR,LFREE,LENTSK,NSTRT,IPRINT)
-      CALL MEMGET('INTE',K1,MAXTSK*2*3*4,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',K2,MAXTSK*2*4,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',K3,MAXTSK*4,WORK,KFREE,LFREE)
+C     Initialize
 C
-      CALL TRDR22(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,
-     &     NSTR,ANTIS,LMP2,INDX,Q1,Q2,Q3,Q4,E1,E2,
-     &     WORK(K1),WORK(K2),MAXTSK,LENTSK,NSTRT,WORK(K3))
+      CALL ICOPY(16,NDMOBF,1,NDMOQR,1)
+      CALL ICOPY( 8,ICMOIJ,1,ICMOQR,1)
+C
+C     Zero MP2 energy and start looping over tasks
+C
+      IF (LMP2) THEN
+         WRITE(LUPRI,'(/,15X,A,/)') '**** Calculating MP2 energy. ****'
+         EMP2 = D0
+      ENDIF
+C
+C     Get Cauchy-Schwartz integrals if screening
+C
+      IF(SCRTRA.GT.D0) THEN
+        N2GAB   = NSYMBL*NSYMBL
+        CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
+        CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
+        CALL DZERO(DINTSKP,8)
+      ELSE
+        KGAB = KFREE
+      ENDIF
+C
+C     *******************************************
+C     ****** P A R A L L E L L    C O D E  ******
+C     *******************************************
+C
+#if defined (VAR_MPI)
+      IF (PARCAL) THEN
+C
+C       Get hold of the slaves
+C
+        ITASK = 2
+        CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+C       
+C       Initialize
+C
+        NTIM = 7*NODES
+        CALL MEMGET ('REAL',KTIM,NTIM,WORK,KFREE,LFREE)
+        CALL DZERO(WORK(KTIM),NTIM)
+        KDRIJ = KFREE
+        CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,
+     &               KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C     
+C       Divide index transformation in tasks with different batches
+C       of spinors. First find number of tasks.
+C
+        CALL TSKCHK(MAXTSK,LENTSK,NSTR,LFREE,NODES,NSTRT,IPRINT)
+C
+C       Start loop over tasks
+C
+        DO IJTSK = 1, MAXTSK
+          CALL MPI_RECV(NODE,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+     &                  MPI_COMM_WORLD,ISTAT,IERR)
+          IF(IPRINT.GE.1) THEN
+            WRITE(LUPRI,'(A,I5)') 
+     &        '* Sending to node: ',NODE,
+     &        '  IJTSK  = ',IJTSK,
+     &        '  LENTSK = ',LENTSK
+          ENDIF
+          CALL MPI_SEND(IJTSK,1,MPI_INTEGER,NODE,30,
+     &                  MPI_COMM_WORLD,IERR)
+          CALL MPI_SEND(LENTSK,1,MPI_INTEGER,NODE,30,
+     &                  MPI_COMM_WORLD,IERR)
+        ENDDO
+C
+C       Get the slaves out of the transformation loop
+C       and receive final results
+C
+        CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,EMP2,
+     &              WORK(KTIM))
+C
+C       Timing information
+C
+        CALL TR2TIM(WORK(KTIM),NODES,LMP2)
+C
+C     Release the slaves...
+C
+         ITASK = -1
+         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      ELSE
+#endif
+C
+C     *************************************
+C     ****** S E R I A L    C O D E  ******
+C     *************************************
+C     
+C       Initialize timing
+C
+        CALL MEMGET ('REAL',KTIM,7,WORK,KFREE,LFREE)
+        CALL DZERO(WORK(KTIM),7)
+C
+C       Divide index transformation in tasks with different batches
+C       of spinors. First find number of tasks.
+C
+        CALL TSKCHK(MAXTSK,LENTSK,NSTR,LFREE,1,NSTRT,IPRINT)
+C
+C       Start loop over tasks
+C
+        DO IJTSK = 1, MAXTSK
+          CALL UNPKIJ(IJTSK,ISPNR,JSPNR)
+          CALL TSKARR(ISPNR,JSPNR,LENTSK,NSTRT,
+     &               NSTR,NSTRIJ,ICMOQR,ICMOIJ,
+     &               IPRINT) 
+         CALL TRDR23(WORK,KFREE,LFREE,IPRINT,
+     &         EMP2,ISPNR,JSPNR,LENTSK,
+     &         INTFLG,NDMOQR,ICMOIJ,NSTRIJ,
+     &         ANTIS,LMP2,WORK(KINDX),KQ,KE,
+     &         DINTSKP,WORK(KGAB),WORK(KTIM))
+C
+        ENDDO
+C
+C       Timing information
+C
+        CALL TR2TIM(WORK(KTIM),1,LMP2)
+#if defined (VAR_MPI)
+      ENDIF
+#endif
+C
+C     Screening statistics
+C
+      IF(SCRTRA.GT.D0) THEN
+        CALL ST4SCR(DINTSKP)
+      ENDIF
+C
       CALL MEMREL('TRDR2T',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRDR2T')
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck TRDR22 */
-      SUBROUTINE TRDR22(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,
-     &     NSTR,ANTIS,LMP2,INDX,Q1,Q2,Q3,Q4,E1,E2,
-     &     NSTR1,NSTRS,MAXTSK,LENTSK,NSTRT,NOCC)
+C/* Deck Tr2tim */
+      SUBROUTINE TR2TIM(TIM1,NDIM,LMP2)
+C***********************************************************************
 C
-C     Written by Luuk Visscher, Februari 1997
-C     and Jon K Laerdahl, June 1997 (A VERY warm day in Oslo..)
+C     Timing information from scheme 2.
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     Written by T.Saue Sep 18 1998
+C
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+C
 #include <dcbgen.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbmp2.h>
-      LOGICAL ANTIS,LMP2
-      LOGICAL IBEQJB
-      DIMENSION NSTR(2,0:2,4),NSTR1(2,0:2,4,MAXTSK),NSTRS(2,4,MAXTSK)
-      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTRT(4),INDX(3,*)
-      DIMENSION ICMOQR1(2,4),NOCC(MAXTSK,4)
-      DIMENSION Q1(*),Q2(*),Q3(*),Q4(*)
-      DIMENSION E1(*),E2(*)
-      DIMENSION WORK(*),TIM1(7)
+      LOGICAL LMP2
+      DIMENSION TIM1(7,NDIM)
 C
-      CALL QENTER('TRDR22')
-C     
-      CALL IZERO(NSTR1,MAXTSK*2*3*4)
-      CALL IZERO(NSTRS,MAXTSK*2*4)
-      DO 100 IJTSK = 1,MAXTSK
-         CALL UNPKIJ(IJTSK,ISPNR,JSPNR)
-         NOCC(IJTSK,1) = (ISPNR-1)*LENTSK + 1
-         NOCC(IJTSK,3) = (JSPNR-1)*LENTSK + 1
-         NOCC(IJTSK,2) = ISPNR*LENTSK
-         NOCC(IJTSK,4) = JSPNR*LENTSK
-C     Last Batch of Kramers pairs?         
-         IF (NOCC(IJTSK,2).GT.NSTRT(1)) NOCC(IJTSK,2)=NSTRT(1)
-         IF (NOCC(IJTSK,4).GT.NSTRT(3)) NOCC(IJTSK,4)=NSTRT(3)
-         IF(IPRINT.GE.1) THEN
-            WRITE(LUPRI,'(A,3I5)') 'Task-info 1:',IJTSK,ISPNR,JSPNR
-            WRITE(LUPRI,'(12X,4I5)') (NOCC(IJTSK,I),I=1,4)
-         ENDIF
-         IF(IPRINT.GE.1) WRITE(LUPRI,'(A)') 'Task-info 2:'
-         DO IN = 0,1
-            IND1=IN*2+1
-            IND2=IN*2+2
-            LSTIR1 = NSTR(1,0,IND1)
-C     
-C     Whole batch in irrep 1
-C     
-            IF((NOCC(IJTSK,IND1).LE.LSTIR1).AND.
-     &           (NOCC(IJTSK,IND2).LE.LSTIR1)) THEN
-               NSTRS(1,IND1,IJTSK)=NOCC(IJTSK,IND1)
-               NSTR1(1,0,IND1,IJTSK)=
-     &              NOCC(IJTSK,IND2)-NOCC(IJTSK,IND1)+1
-               NSTRS(2,IND1,IJTSK)=-1
-               NSTR1(2,0,IND1,IJTSK)=0
-C     
-C     Batch contributions from both irreps
-C     
-            ELSEIF((NOCC(IJTSK,IND1).LE.LSTIR1).AND.
-     &              (NOCC(IJTSK,IND2).GT.LSTIR1)) THEN
-               NSTRS(1,IND1,IJTSK)=NOCC(IJTSK,IND1)
-               NSTR1(1,0,IND1,IJTSK)=LSTIR1-NOCC(IJTSK,IND1)+1
-               NSTRS(2,IND1,IJTSK)=1
-               NSTR1(2,0,IND1,IJTSK)=NOCC(IJTSK,IND2)-LSTIR1
-C     
-C     Whole batch in irrep 2
-C         
-            ELSE
-               NSTRS(1,IND1,IJTSK)=-1
-               NSTR1(1,0,IND1,IJTSK)=0
-               NSTRS(2,IND1,IJTSK)=NOCC(IJTSK,IND1)-LSTIR1
-               NSTR1(2,0,IND1,IJTSK)=
-     &              NOCC(IJTSK,IND2)-NOCC(IJTSK,IND1)+1
-            ENDIF
-         ENDDO
-C     
-         CALL ICOPY (6,NSTR(1,0,2),1,NSTR1(1,0,2,IJTSK),1)
-         CALL ICOPY (6,NSTR(1,0,4),1,NSTR1(1,0,4,IJTSK),1)
-         NSTRS(1,2,IJTSK) = 1
-         NSTRS(1,4,IJTSK) = 1
-         NSTRS(2,2,IJTSK) = 1
-         NSTRS(2,4,IJTSK) = 1
-         DO IN = 0,1
-            IND = IN*2+1
-            DO IF = 1,NFSYM
-               NSTR1(IF,1,IND,IJTSK) = NSTR1(IF,0,IND,IJTSK)
-               NSTR1(IF,2,IND,IJTSK) = 0
-               IF(IPRINT.GE.1) 
-     &              WRITE(LUPRI,'(7I8)') IF,IND,IJTSK, 
-     &              NSTRS(IF,IND,IJTSK),NSTR1(IF,0,IND,IJTSK),
-     &              NSTR1(IF,1,IND,IJTSK),NSTR1(IF,2,IND,IJTSK)
-            ENDDO
-         ENDDO
- 100  CONTINUE
-C     
-C
-C     Zero MP2 energy and start looping over tasks
-C
-      IF (LMP2) THEN
-         WRITE(LUPRI,'(/,15X,A,/)') '**** Calculating MP2 energy. ****'
-         EMP2 = 0.0D00
-         CALL DZERO(TIM1,7)
+      IF(PARCAL) THEN
+        DO I = 1,NDIM
+          WRITE(LUPRI,'(A,I4)') '** Node :',I
+          CALL TIMTXT('Time used in CALDIS is: ',TIM1(1,I),LUPRI)
+          CALL TIMTXT('Time used in MS4IN1 is: ',TIM1(2,I),LUPRI)
+          CALL TIMTXT('Time used in TQTRNS is: ',TIM1(3,I),LUPRI)
+          CALL TIMTXT('Time used in LQTRNS is: ',TIM1(4,I),LUPRI)
+          IF(LMP2) THEN
+            CALL TIMTXT('Time used in MP2CAL is: ',TIM1(5,I),LUPRI)
+          ENDIF
+        ENDDO
+      ELSE
+          CALL TIMTXT('Time used in CALDIS is: ',TIM1(1,1),LUPRI)
+          CALL TIMTXT('Time used in MS4IN1 is: ',TIM1(2,1),LUPRI)
+          CALL TIMTXT('Time used in TQTRNS is: ',TIM1(3,1),LUPRI)
+          CALL TIMTXT('Time used in LQTRNS is: ',TIM1(4,1),LUPRI)
+          IF(LMP2) THEN
+            CALL TIMTXT('Time used in MP2CAL is: ',TIM1(5,1),LUPRI)
+          ENDIF
       ENDIF
-      DO ITASK = 1, MAXTSK
 C
-         WRITE(LUPRI,'(A,I3,A,I3)') 'Doing IJ-batch ',ITASK,
-     &        ' of ',MAXTSK
-
-C     
-C     Give relative offset for the coefficients
-C     
-         DO INDEX = 1, 4
-            DO I = 1, NFSYM
-               ICMOQR1(I,INDEX) = ICMOQR(I,INDEX)
-     &              + (NSTRS(I,INDEX,ITASK)-1)*NFBAS(I,0)
-            ENDDO
-         ENDDO
-         IOFF1 = NOCC(ITASK,1)
-         IOFF2 = NOCC(ITASK,3)
-C     
-C     I and J same range -> IBEQJB = .TRUE.
-C     
-         IBEQJB = .FALSE.
-         IBEQJB = IOFF1.EQ.IOFF2
-         CALL TRDR23(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR1,
-     &        NSTR1(1,0,1,ITASK),ANTIS,LMP2,INDX,Q1,Q2,Q3,Q4,
-     &        E1(IOFF1),E2,E1(IOFF2),E2,IBEQJB,TIM1)
-C
-      ENDDO
-      IF (LMP2) THEN
-         WRITE(LUPRI,'(/)') 
-         CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(1X,A)') 
-     &        'Final Relativistic Direct MP2 results:'
-         CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(/15X,A,F20.10)') '@ MP2 energy       :', EMP2
-         WRITE(LUPRI,'(15X,A,F20.10)')  '  DHF energy       :', DHFEMP
-         WRITE(LUPRI,'(15X,A,F20.10,/)') '@ Total MP2 energy :', 
-     &        DHFEMP+EMP2
-         CALL TIMTXT('Time used in MP2CAL is: ',TIM1(5),LUPRI)
-      ENDIF
-      CALL TIMTXT('Time used in CALDIS is: ',TIM1(1),LUPRI)
-      CALL TIMTXT('Time used in MS4IN1 is: ',TIM1(2),LUPRI)
-      CALL TIMTXT('Time used in TQTRNS is: ',TIM1(3),LUPRI)
-      CALL TIMTXT('Time used in LQTRNS is: ',TIM1(4),LUPRI)
-C
-      CALL QEXIT('TRDR22')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR23 */
-      SUBROUTINE TRDR23(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,
-     &     NSTR,ANTIS,LMP2,INDX,Q1,Q2,Q3,Q4,E1,E2,E3,E4,IBEQJB,TIM1)
+      SUBROUTINE TRDR23(WORK,KFREE,LFREE,IPRINT,
+     &     EMP2,ISPNR,JSPNR,LENTSK,INTFLG,NDMOQR,ICMOQR,
+     &     NSTR,ANTIS,LMP2,INDX,KQ,KE,DINTSKP,GABAO,TIM1)
 C
 C     Written by Luuk Visscher, December 1996
 C     Modifications by Jon Laerdahl, June 1997
@@ -268,20 +281,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <symmet.h>
-      LOGICAL ANTIS, LMP2, NODV, NOPV,L2TYP(0:3),IBEQJB
-      DIMENSION NSTR(2,0:2,4),INDX(3,*)
-      DIMENSION NSTRT(4), ITQMT(0:7,0:7,2)
-      DIMENSION IQMO(4,0:7),NZMO(0:7)
-      DIMENSION IQP34(4,0:7),NZ34(0:7)
-      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
-      DIMENSION IJP12(0:7)
-      DIMENSION IJP34(2)
-      DIMENSION NFPCK12(2),IFPCK12(2,2)
-      DIMENSION NFPCK34(2),IFPCK34(2,2)
-      DIMENSION IHM(0:7)
-      DIMENSION Q1(*),Q2(*),Q3(*),Q4(*)
-      DIMENSION E1(*),E2(*),E3(*),E4(*)
-      DIMENSION WORK(*),TIM1(7)
+      LOGICAL ANTIS, LMP2, NODV, NOPV,L2TYP(0:3),IBEQJB,TRIAN(2)
+      DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),INDX(3,*),
+     &          NSTRT(4), ITQMT(0:7,0:7,2),IQMO(4,0:7),NZMO(0:7),
+     &          IQP34(4,0:7),NZ34(0:7),NDMOQR(2,2,4),ICMOQR(2,4),
+     &          IJP12(0:7),IJP34(2),IHM(0:7),
+     &          TIM1(7),DINTSKP(*),GABAO(*),WORK(*)
+      DIMENSION ISAMEIJ(4)
 C
 #include <ibtfun.h>
 C
@@ -296,72 +302,30 @@ C     routine for MOLFIR integrals ready. Use this..
 C
       CALL QENTER('TRDR23')
       KFRSAV = KFREE
+      DO I = 1,4
+        NSTRT(I) = 0
+        DO IFRP = 1, NFSYM
+          NSTRT(I) = NSTRT(I) + NSTR(IFRP,0,I)
+        ENDDO
+      ENDDO
 C
 C     Define the packing of the 2-index transformed integrals
-C     We do not consider sorting of positronic and electronic
-C     spinors at this point.
 C
-      DO IREPIJ =1, NFSYM
-         NFPCK12(IREPIJ) = 0
-         NFPCK34(IREPIJ) = 0
-         DO IREPJ = 1, NFSYM
-            IREPI = MOD(IREPJ+IREPIJ,2) + 1
-            IFPCK12(IREPI,IREPJ) = NFPCK12(IREPIJ)
-            IFPCK34(IREPI,IREPJ) = NFPCK34(IREPIJ)
-            NFPCK12(IREPIJ) = NFPCK12(IREPIJ) +
-     &                        NSTR(IREPI,0,1)*NSTR(IREPJ,0,2)
-            NFPCK34(IREPIJ) = NFPCK34(IREPIJ) +
-     &                        NSTR(IREPI,0,3)*NSTR(IREPJ,0,4)
-         ENDDO
-      ENDDO
+      TRIAN(1) = ISAME(2).EQ.ISAME(1)
+      TRIAN(2) = .FALSE.
+      CALL PCK2IN(NSTR,TRIAN,IPRINT)
 C
-      IF(IPRINT.GE.1) THEN
-         WRITE(LUPRI,'(A,2I8)') 'NFPCK12',(NFPCK12(I), I=1,NFSYM)
-         WRITE(LUPRI,'(A,2I8)') 'NFPCK34',(NFPCK34(I), I=1,NFSYM)
-         WRITE(LUPRI,'(A,4I8)') 'IFPCK12',
-     &        ((IFPCK12(I,J), I=1,NFSYM), J=1,NFSYM)
-         WRITE(LUPRI,'(A,4I8)') 'IFPCK34',
-     &        ((IFPCK34(I,J), I=1,NFSYM), J=1,NFSYM)
-      ENDIF
+C     Define the packing of the 3-index transformed integrals
 C
-C     Make index array for 3/4-transformed integrals
-C
-      NTQMT = 0
-      CALL IZERO(ITQMT,8*2*8)
-      DO IREPRS = 0, NBSYM-1
-         IREPIJ = JBTOF(IREPRS,1) ! Get parity of rs 
-         NIJ = NFPCK12(IREPIJ)  ! Number of ij pairs 
-         DO IREPS = 0, NBSYM-1
-            DO 11 IC = 1,2
-               IREPR = IBTXOR(IREPRS,IREPS)
-               NR = NBBAS(IREPR,IC) ! Number of r functs
-               ITQMT(IREPRS,IREPS,IC) = NTQMT ! Pointers
-               IREPL = JBTOF(IREPS,IC) ! Parity that s contributes to
-               NS = NBBAS(IREPS,IC) ! Number of s functs
-               IF (IREPIJ.EQ.1) THEN
-                  IREPK=IREPL
-               ELSE
-                  IREPK=3-IREPL
-               ENDIF
-c              WRITE(LUPRI,'(A,I10,10I6)') 
-c    &              'NTQMT',NTQMT,NZ,NS,NIJ,NSTR(IREPK,0,3),IREPK,
-c    &              IREPIJ,IREPS,IREPRS,NR,IREPR
-               IF (NR.EQ.0) GOTO 11
-               NTQMT = NTQMT + NIJ*NSTR(IREPK,0,3)*NS*NZ*NZ
- 11         CONTINUE
-         ENDDO
-      ENDDO
-C
-C
-C     Allocate memory for 3/4 Transformed integrals
+      CALL PCK3IN(ITQMT,NTQMT,NSTR,IPRINT)
 C
       IF (IPRINT .GE. 1) WRITE (LUPRI,1000) NTQMT*8./(1024.*1024.)
 C
       IF (LFREE.LT.NTQMT) THEN
             WRITE(LUPRI,'(/A,/A,/A)') 
-     &           '### Not enough memory for 3/4 transf. matrix.   ###',
-     &           '### Reduce memory requirements by setting       ###',
-     &           '### .IJTSK to a lower value!                    ###'
+     &       '### Not enough memory for 3-index transf. matrix.   ###',
+     &       '### Reduce memory requirements by setting           ###',
+     &       '### .IJTSK to a lower value!                        ###'
 C
       ENDIF
       CALL MEMGET('REAL',KTQMAT,NTQMT,WORK,KFREE,LFREE)
@@ -372,7 +336,21 @@ C
       IF (TESTLS) WRITE(LUPRI,'(/A)') 'YES: Doing (LL|SS) ONLY.'
       IF (TESTSL) WRITE(LUPRI,'(/A)') 'YES: Doing (SS|LL) ONLY.'
 C
-c     print*,'LFREE',LFREE
+C     Get screening matrices
+C
+      IF(SCRTRA.GT.0) THEN
+CTROND  Not using sameness relations...
+CTROND  ...this may be improved
+        DO I = 1,4
+          ISAMEIJ(I) = I
+        ENDDO
+        CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
+     &              WORK(KQ(1,1)),WORK(KQ(1,2)),
+     &              WORK(KQ(1,3)),WORK(KQ(1,4)),
+     &              NDMOQR,ICMOQR,NSTR,ISAMEIJ,IPRINT)
+      ELSE 
+        KDRIJ = KFREE
+      ENDIF
 C
 C     ----------------
       DO 100 IC = 1, 2 
@@ -445,8 +423,8 @@ C
             NSIZH = 0
             DO IREPAB = 0, NBSYM-1
                IHM(IREPAB) = NSIZH
-               IREPIJ = JBTOF(IREPAB,1)
-               NSIZH = NSIZH + IJP12(IREPAB)*NFPCK12(IREPIJ)
+               IREPIJ      = JBTOF(IREPAB,1)
+               NSIZH       = NSIZH + IJP12(IREPAB)*NFPCK12(IREPIJ)
             ENDDO
 C
             CALL MEMGET('REAL',KHMAT,NSIZH*NZ,WORK,KFREE,LFREE)
@@ -506,7 +484,8 @@ C
 C
             CALL TIMEC('START ',TIMSTR,TIMEND)
             CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),
-     &                  NODV,NOPV,WORK(KFREE),LFREE,IPRINT)
+     &                  NODV,NOPV,GABAO,WORK(KDRIJ),DINTSKP,SCRTRA,
+     &                  WORK(KFREE),LFREE,IPRINT)
 C
             CALL TIMEC('CALDIS',TIMSTR,TIMEND) 
             TIM1(1) = TIM1(1) + TIMEND - TIMSTR
@@ -525,15 +504,12 @@ C
             CALL TIMEC('START ',TIMSTR,TIMEND)
             CALL MS4IN1E(WORK,KFREE,LFREE,IPRINT,WORK(KALGREC),ICS,ICF,
      &                   NSTR(1,0,1),NSTR(1,0,2),
-     &                   NFPCK12,IFPCK12,NDMOQR,ICMOQR,WORK(KIJPASS),
-     &                   Q1,Q2,WORK(KGMAT),NSIZG,NZMO,IQMO,
+     &                   NDMOQR,ICMOQR,WORK(KIJPASS),
+     &                   WORK(KQ(1,1)),WORK(KQ(1,2)),
+     &                   WORK(KGMAT),NSIZG,NZMO,IQMO,
      &                   WORK(KHMAT)) 
             CALL TIMEC('MS4IN1',TIMSTR,TIMEND) 
             TIM1(2) = TIM1(2) + TIMEND - TIMSTR
-c           write (LUPRI,'(//A)') ' The 2/4 transformed integrals:'
-c           do ix = 1, NSIZH
-c              print*,ix,work(KHMAT+ix-1)
-c           enddo
 C
             CALL MEMREL('TRDRV3.2',WORK,1,KGMAT,KFREE,LFREE)
 C
@@ -548,9 +524,9 @@ C     3/4 transformation
 C
             CALL TIMEC('START ',TIMSTR,TIMEND)
             CALL TQTRNS (WORK,KFREE,LFREE,IPRINT,IC,IHM,
-     &           INDX,WORK(KDXAB),NFPCK12,WORK(KHMAT),ITQMT,
+     &           INDX,WORK(KDXAB),WORK(KHMAT),ITQMT,
      &           ICMOQR(1,3),NDMOQR(1,1,3),WORK(KTQMAT),NSTR(1,0,3),
-     &           IQP34,NZ34,Q3)
+     &           IQP34,NZ34,WORK(KQ(1,3)))
 C
             CALL TIMEC('TQTRNS',TIMSTR,TIMEND) 
             TIM1(3) = TIM1(3) + TIMEND - TIMSTR
@@ -600,9 +576,9 @@ C
 C
       CALL TIMEC('START ',TIMSTR,TIMEND)
       CALL LQTRNS (WORK,KFREE,LFREE,IPRINT,
-     &     NFPCK12,NFPCK34,ITQMT,ICMOQR(1,4),NDMOQR(1,1,4),
+     &     ITQMT,ICMOQR(1,4),NDMOQR(1,1,4),
      &     IQMO,NZMO,WORK(KTQMAT),NSTR(1,0,3),NSTR(1,0,4),
-     &     IQP34,NZ34,Q4,WORK(K4QMAT),IFPCK34,ICS2,ICF2)
+     &     IQP34,NZ34,WORK(KQ(1,4)),WORK(K4QMAT),ICS2,ICF2)
       CALL TIMEC('TQTRNS',TIMSTR,TIMEND) 
       TIM1(4) = TIM1(4) + TIMEND - TIMSTR
 C     
@@ -612,17 +588,6 @@ c         print*,ix,work(k4qmat+ix-1)
 c      enddo
 C
       CALL TIMEC('START ',TIMSTR,TIMEND)
-      DO I = 1,4
-         NSTRT(I) = 0
-         DO IFRP = 1, NFSYM
-            NSTRT(I) = NSTRT(I) + NSTR(IFRP,0,I)
-         ENDDO
-      ENDDO
-      IF (IPRINT.GE.2) THEN
-         WRITE(LUPRI,'(A)') 'Eigenvalues used in MP2:'
-         CALL PRIEIN(E1,E2,E3,E4,
-     &        NSTRT(1),NSTRT(2),NSTRT(3),NSTRT(4),NSTR)
-      ENDIF
 C
       IF (NZ.EQ.1) THEN
          NCLASS = 4
@@ -667,7 +632,6 @@ C     but slower than kl within gg/uu
 C
       IOFF3 = 0
       DO IREPKL = 1,NFSYM
-c       print*,' Fermion symmetry :',irepkl
          CALL MEMGET('REAL',KFTMAT,2*NFPCK12(IREPKL),WORK,KFREE,LFREE)
          LKR = 0
          DO IREPL = 1, NFSYM
@@ -682,7 +646,6 @@ C     Offset for k and l symmetry (i.e. for Pkl=g, offset for uu)
                   ELSE
                      KKR = NSTR(1,0,3) + K
                   ENDIF
-c     print*,' Batch labels (KKR,LKR):',kkr,lkr
 C     
 C     Real and complex classes
 C     
@@ -811,8 +774,14 @@ C
          IOFF3=ICNT1
       ENDDO
 C
-      CALL CONMP2(WORK(KANT),E1,E2,E3,E4,NSTRT(1),NSTRT(2),
-     &     NSTRT(3),NSTRT(4),NSTR,IBEQJB,IPRINT)
+      I1 = KE(1,1) + (ISPNR-1)*LENTSK
+      I2 = KE(1,2)
+      I3 = KE(1,1) + (JSPNR-1)*LENTSK
+      I4 = KE(1,2)
+      CALL CONMP2(EMP2,WORK(KANT),
+     &            WORK(I1),WORK(I2),WORK(I3),WORK(I4),
+     &            NSTRT(1),NSTRT(2),NSTRT(3),NSTRT(4),
+     &            NSTR,ISPNR,JSPNR,IPRINT)
       CALL TIMEC('CONMP2',TIMSTR,TIMEND) 
       TIM1(5) = TIM1(5) + TIMEND - TIMSTR
 C     
@@ -824,7 +793,7 @@ C
 C
       RETURN
 C
- 1000 FORMAT (/' Storing all 34-transformed integrals to memory',
+ 1000 FORMAT (/' Storing all 3-index transformed integrals to memory',
      & /' Memory requirements ',F10.3,' Megabytes')
  1001 FORMAT (/' Storing all fully-transformed integrals to memory',
      & /' Memory requirements ',F10.3,' Megabytes')
@@ -834,7 +803,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TQTRNS */
       SUBROUTINE TQTRNS (WORK,KFREE,LFREE,IPRINT,IC,IHM,
-     &     INDX,INDXAB,NFPCK12,HMAT,ITQMT,ICMOQR,NDMOQR,
+     &     INDX,INDXAB,HMAT,ITQMT,ICMOQR,NDMOQR,
      &     TQMAT,NSTR3,IQP34,NZ34,Q3)
 C
 C     Written by Jon Laerdahl, June 1997
@@ -854,7 +823,7 @@ C
       INTEGER   NSTR3(2)
       DIMENSION NDMOQR(2,2),ICMOQR(2)
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5)
-      DIMENSION NFPCK12(2),IQP12(4),ITQMT(0:7,0:7,2)
+      DIMENSION IQP12(4),ITQMT(0:7,0:7,2)
       DIMENSION IQP34(4,0:7),NZ34(0:7)
       DIMENSION IHM(0:7)
       DIMENSION HMAT(*),TQMAT(*),Q3(*),QCOF(4)
@@ -1005,8 +974,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LQTRNS */
       SUBROUTINE LQTRNS (WORK,KFREE,LFREE,IPRINT,
-     &     NFPCK12,NFPCK34,ITQMT,ICMOQR,NDMOQR,IQMO,NZMO,
-     &     TQMAT,NSTR3,NSTR4,IQP34,NZ34,Q4,FQMAT,IFPCK,
+     &     ITQMT,ICMOQR,NDMOQR,IQMO,NZMO,
+     &     TQMAT,NSTR3,NSTR4,IQP34,NZ34,Q4,FQMAT,
      &     ICS,ICF)
 C
 C     Written by Jon Laerdahl, June 1997
@@ -1019,12 +988,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <mxorb.h>
 #include <maxaqn.h>
 #include <dcbbas.h>
+#include <dcbtra.h>
 #include <symmet.h>
 C
       PARAMETER (D0 = 0.0D00, D1=1.0D00)
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION NDMOQR(2,2),ICMOQR(2)
-      DIMENSION NFPCK12(2),NFPCK34(2),ITQMT(0:7,0:7,2),IFPCK(2,2)
+      DIMENSION ITQMT(0:7,0:7,2)
       DIMENSION IQP34(4,0:7),NZ34(0:7)
       DIMENSION IQMO(4,0:7),NZMO(0:7)
       DIMENSION TQMAT(*),Q4(*),FQMAT(*)
@@ -1063,7 +1033,7 @@ C
 C     Offset for FQMAT.
 C     
                      IOFF1 = IOFF + 
-     &                    IFPCK(IREPK,IREPL)*NFPCK12(IREPIJ)*NZ**2
+     &                    IFPCK34(IREPK,IREPL)*NFPCK12(IREPIJ)*NZ**2
 C
 C     Offset for Coeffs
 C     
@@ -1142,7 +1112,6 @@ c               WRITE(LUPRI,'(I4,A,4I4,2X,F20.10)')
 c     &              ICLASS,'##',II,JJ,KKR,LKR,FMAT(M,1)
                SPMAT(II,JJ,KKR,LKR,ICLASS)  =FMAT(M,1)
                SPMAT(II,JJ,KKR,LKR,ICLASS+4)=FMAT(M,2)
-c               print*,'MP2AA',FMAT(M,1),FMAT(M,2),II,JJ,KKR,LKR,ICLASS
             ENDDO
          ENDDO
       ENDDO
@@ -1167,16 +1136,19 @@ C        CALL TIMTXT(' Time used in '//TEXT//' is',TIME, LUPRI)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck tskchk */
-      SUBROUTINE TSKCHK(MAXTSK,NSTR,LWORK,LENTSK,NSTRT,IPRINT)
+      SUBROUTINE TSKCHK(MAXTSK,LENTSK,NSTR,LWORK,NODES,NSTRT,IPRINT)
 C
 C     Written by Jon Laerdahl, June 1997
+C     Parallell polish by T.Saue Sep 18 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER(D8=8.0D0,D1=1.0D0,D2=2.0D0)
 #include <dgroup.h>
 #include <dcbmpt.h>
       DIMENSION NSTRT(4),NSTR(2,0:2,4)
+#include <sdpre.h>
 C
 C     Maximum number of active occupied spinors in each
 C     task is either set in input (IJTSK) or
@@ -1186,25 +1158,30 @@ C
      &     'Memory available for Direct MP2 is (Words):',
      &     LWORK
       IF (IJTSK.GT.0) THEN
-         LENTSK = IJTSK
-         IF(IJTSK.GT.NSTRT(1)) LENTSK = NSTRT(1)
-         IF (IPRINT.GE.0) THEN
-            WRITE(LUPRI,'(A,/A,I10)') 
-     &           'Maximum number of occupied spinors I and J in batch',
-     &           'set in input:', IJTSK
-         ENDIF
+        LENTSK = MIN(IJTSK,NSTRT(1))
+        IF (IPRINT.GE.0) THEN
+           WRITE(LUPRI,'(A,/A,I10)') 
+     &          'Maximum number of occupied spinors I and J in batch',
+     &          'set in input:', IJTSK
+        ENDIF
       ELSE
-         LENTSK = NSTRT(1)
-         WRITE(LUPRI,'(A,/A,I6,A)') 
-     &        'Maximum number of occupied spinors in batch not set'//
-     &        ' in input.', 
-     &        'Testing ALL spinors :',NSTRT(1),' in batch.'
-         IF (IPRINT.GE.1) THEN
-            WRITE(LUPRI,'(/A,/A,/A)') 
-     &           '### If not enough memory is avaliable:          ###',
-     &           '### Reduce memory requirements by setting       ###',
-     &           '### .IJTSK to a lower value                     ###'
-         ENDIF
+        IF(NODES.GT.1) THEN
+          FAC = (SQRT(D1+D8*SDPRE(NODES))-D1)/D2
+          FAC = SDPRE(NSTRT(1))/FAC
+          LENTSK = MAX(1,INT(FAC))
+        ELSE
+          LENTSK = NSTRT(1)
+        ENDIF 
+        WRITE(LUPRI,'(A,/A,I6,A)') 
+     &     'Maximum number of occupied spinors in batch not set'//
+     &     ' in input.', 
+     &     'Testing ALL spinors :',NSTRT(1),' in batch.'
+        IF (IPRINT.GE.1) THEN
+          WRITE(LUPRI,'(/A,/A,/A)') 
+     &         '### If not enough memory is avaliable:          ###',
+     &         '### Reduce memory requirements by setting       ###',
+     &         '### .IJTSK to a lower value                     ###'
+        ENDIF
       ENDIF
       IOLD = LENTSK
 C
@@ -1218,12 +1195,6 @@ c            WRITE(LUPRI,'(A,I10)') 'Memory Needed In Transformation:',
 c     &           INEED
 c         ENDIF
 c      ENDIF
-      IF (IPRINT.EQ.1) THEN
-         WRITE(LUPRI,'(/A,I5)') 
-     &        'Total Number of Active Occupied Spinors:', NSTRT(1)
-         WRITE(LUPRI,'(A,I5)') 
-     &        'Number in Max Batch:', LENTSK
-      ENDIF
       IF ((MOD(NSTRT(1),LENTSK)).EQ.0) THEN
          NUM = NSTRT(1)/LENTSK
          IF (IPRINT.GE.1) 
@@ -1235,16 +1206,16 @@ c      ENDIF
       ENDIF
       MAXTSK = NUM*(NUM+1)/2
       IF (IPRINT.GE.1) THEN
-         WRITE(LUPRI,'(/A,I5)')'Number of tasks:', MAXTSK
-         WRITE(LUPRI,'(A,I5)') 'Number of Batches of I:', NUM
+         WRITE(LUPRI,'(/A,I5)')'Number of tasks    :', MAXTSK
+         WRITE(LUPRI,'(A,I5)') 'Number in Max Batch:', LENTSK
+         CALL FLSHFO(LUPRI)
       ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN1E*/
       SUBROUTINE MS4IN1E(WORK,KFREE,LFREE,IPRINT,LGREC,ICS,ICF,
-     &                   NSTR1,NSTR2,NFPCK12,IFPCK12,
-     &                   NDMOQR,ICMOQR,IJPASS,Q1,Q2,
+     &                   NSTR1,NSTR2,NDMOQR,ICMOQR,IJPASS,Q1,Q2,
      &                   GMAT,NSIZG,NZMO,IQMO,HMAT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -1291,7 +1262,6 @@ C
       INTEGER   NSTR1(2),NSTR2(2)
       DIMENSION WORK(*)
       DIMENSION Q1(*),Q2(*),GMAT(NSIZG)
-      DIMENSION NFPCK12(2),IFPCK12(2,2)
       DIMENSION IJPASS(0:7,NPASS)
       DIMENSION IQAO(4),IQMO(4,0:7),NZMO(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
@@ -1341,7 +1311,7 @@ C        Do first step of 4-index transformation :
 C        Transform first pair of indices
 C
          CALL MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,
-     &                .FALSE.,NSTR1,NSTR2,NFPCK12,IFPCK12,NDMOQR,
+     &                .FALSE.,NSTR1,NSTR2,NDMOQR,
      &                ICMOQR,IJPASS(0,IPASS),Q1,Q2,
      &                GMAT,HMAT(IHOFF),NZMO,IQMO)
          IHOFF = IHOFF + NSIZH*NZ
@@ -1396,21 +1366,23 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck CONMP2 */
-      SUBROUTINE CONMP2(SPMAT,E1,E2,E3,E4,N1,N2,N3,N4,NSTR,
-     &     IBEQJB,IPRINT)
+      SUBROUTINE CONMP2(EMP2,SPMAT,
+     &                  E1,E2,E3,E4,N1,N2,N3,N4,
+     &                  NSTR,ISPNR,JSPNR,IPRINT)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER(D0=0.0D0)
 #include <dgroup.h>
-#include <dcbmp2.h>
 #include <dcbmpt.h>
       LOGICAL IBEQJB
       DIMENSION NSTR(2,0:2,4)
       DIMENSION E1(N1),E2(N2),E3(N3),E4(N4)
       DIMENSION SPMAT(N1,N2,N3,N4,16)
       DIMENSION ICLDAT(16)
-      DATA (ICLDAT(I),I=1,16) /1,1,2,4,3,3,4,2,9,9,10,12,11,11,12,10/
+      DATA ICLDAT/1,1,2,4,3,3,4,2,9,9,10,12,11,11,12,10/
+C
       IF (IPRINT.LT.10) GOTO 123
       DO ICL = 1,4
          WRITE(LUPRI,'(/A,I5/)') 'CLASS:', ICL
@@ -1444,6 +1416,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ENDDO
 C
  123  CONTINUE
+      IBEQJB = ISPNR.EQ.JSPNR
+      IF (IPRINT.GE.2) THEN
+         WRITE(LUPRI,'(A)') 'MP2 Eigenvalues:'
+         CALL PRIEIN(E1,E2,E3,E4,N1,N2,N3,N4,NSTR)
+      ENDIF
       IF (TESTLS.OR.TESTSL) THEN
          WRITE(LUPRI,'(A)') 
      &        '(LL|SS)- or (SS|LL)-ONLY test does only work without'
@@ -1456,7 +1433,7 @@ C
 C     
 C     Real and complex groups, Class 1..8
 C     
-      EC = 0d00
+      EC = D0
       DO ICL = 0,3
          ICL1= ICL*2+1
          ICL2= ICL1+1
@@ -1586,7 +1563,189 @@ C
      &     WRITE(LUPRI,'(A,D25.16)')  'MP2-energy, 1/4 matrix    :',E
       RETURN
       END
-
-
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Tskarr */
+      SUBROUTINE TSKARR(ISPNR,JSPNR,LENTSK,NSTRT,
+     &               NSTR,NSTRIJ,ICMOQR,ICMOIJ,
+     &               IPRINT)
+C***********************************************************************
+C
+C     Set-up routine of defining arrays for given IJ-batch
+C
+C     Written by T.Saue Sep 9, based on previous code
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbbas.h>
+#include <dgroup.h>
+C     Global variables
+      DIMENSION NSTR(2,0:2,4),  ICMOQR(2,4)
+      DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4)
+      DIMENSION NSTRT(4)
+C     Local variables
+      DIMENSION NSTRS(2,4),NOCC(4)
+C
+C     Initialization
+C
+      CALL ICOPY( 8,-1,0,NSTRS,1)
+      CALL ICOPY(24, 0,0,NSTRIJ,1)
+C
+      NOCC(1) = (ISPNR-1)*LENTSK + 1
+      NOCC(2) = MIN(ISPNR*LENTSK,NSTRT(1))
+      NOCC(3) = (JSPNR-1)*LENTSK + 1
+      NOCC(4) = MIN(JSPNR*LENTSK,NSTRT(3))
+      DO IN = 0,1
+        IND1=IN*2+1
+        IND2=IN*2+2
+        LSTIR1 = NSTR(1,0,IND1)
+C     
+C       Whole batch in irrep 1
+C     
+        IF((NOCC(IND1).LE.LSTIR1).AND.
+     &     (NOCC(IND2).LE.LSTIR1)) THEN
+          NSTRS(1,IND1)    = NOCC(IND1)
+          NSTRIJ(1,0,IND1) = NOCC(IND2)-NOCC(IND1) + 1
+C     
+C       Batch contributions from both irreps
+C     
+        ELSEIF((NOCC(IND1).LE.LSTIR1).AND.
+     &         (NOCC(IND2).GT.LSTIR1)) THEN
+          NSTRIJ(1,0,IND1) = LSTIR1-NOCC(IND1)+1
+          NSTRIJ(2,0,IND1) = NOCC(IND2)-LSTIR1
+          NSTRS(1,IND1)   = NOCC(IND1)
+          NSTRS(2,IND1)   = 1
+C     
+C       Whole batch in irrep 2
+C         
+        ELSE
+          NSTRS(2,IND1)   = NOCC(IND1) - LSTIR1
+          NSTRIJ(2,0,IND1) = NOCC(IND2) - NOCC(IND1) + 1
+        ENDIF
+        NSTRIJ(1,1,IND1) = NSTRIJ(1,0,IND1)
+        NSTRIJ(1,2,IND1) = 0
+        NSTRIJ(2,1,IND1) = NSTRIJ(2,0,IND1)
+        NSTRIJ(2,2,IND1) = 0
+      ENDDO
+C     
+      CALL ICOPY (6,NSTR(1,0,2),1,NSTRIJ(1,0,2),1)
+      CALL ICOPY (6,NSTR(1,0,4),1,NSTRIJ(1,0,4),1)
+      NSTRS(1,2) = 1
+      NSTRS(1,4) = 1
+      NSTRS(2,2) = 1
+      NSTRS(2,4) = 1
+C     
+C     Give relative offset for the coefficients
+C     
+      DO I = 1, 4
+        DO IFRP = 1, NFSYM
+          ICMOIJ(IFRP,I) = ICMOQR(IFRP,I)
+     &              + (NSTRS(IFRP,I)-1)*NFBAS(IFRP,0)
+        ENDDO
+      ENDDO
+C
+C     Print section
+C
+      IF(IPRINT.GE.1) THEN
+        WRITE(LUPRI,'(A)') 'Task-info 2:'
+        WRITE(LUPRI,'(A,3I5)') 'I/J:',ISPNR,JSPNR,LENTSK
+        WRITE(LUPRI,'(12X,4I5)') (NOCC(I),I=1,4)
+        DO IFRP = 1,NFSYM
+          WRITE(LUPRI,'(A,A3)') '** Fermion ircop ',FREP(IFRP)
+          DO K = 1,4
+            WRITE(LUPRI,'(3X,A,I3,2(A,I5))')
+     &       '* Index:',K,' - offset :',NSTRS(IFRP,K),
+     &                 ' - vectors:',NSTRIJ(IFRP,0,K)
+          ENDDO
+        ENDDO
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C Start of parallel section : activitate compilation only when necessary
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#if defined (VAR_PVM) || defined (VAR_MPI)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Tr2par */
+      SUBROUTINE TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,
+     &        KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,
+     &        EMP2,DINTSKP,TIM1)
+C***********************************************************************
+C
+C     Slave driver for scheme 2.
+C
+C     Written by T.Saue Sep 17 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0=0.0D0)
+C
+#include <mxorb.h>
+#if defined (VAR_MPI)
+#include <infmpi.h>
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#else
+#include <fpvm3h.h>
+#endif
+#include <infpar.h>
+#include <dcbgen.h>
+#include <dcborb.h>
+#include <dcbtra.h>
+#include <dcbtr3.h>
+#include <dcbbas.h>
+#include <dgroup.h>
+      LOGICAL ANTIS,LMP2
+      DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),NSTRT(4)
+      DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4),TRIAN(2)
+      DIMENSION WORK(*),TIM1(7),DINTSKP(8)
+C
+C     Initialization
+C
+      IF (LMP2) THEN
+         EMP2 = D0
+         CALL DZERO(TIM1,7)
+      ENDIF
+      DO IND = 1,4
+        NSTRT(IND) = 0
+        DO IFRP = 1,NFSYM
+          NSTRT(IND) = NSTRT(IND) + NSTR(IFRP,0,IND)
+        ENDDO
+      ENDDO
+C
+C     Wait for tasks until we receive the end message
+C
+  100 CONTINUE
+#if defined (VAR_MPI)
+         CALL MPI_SEND(MYTID,1,MPI_INTEGER,MPARID,20,
+     &                 MPI_COMM_WORLD,IERR)
+         CALL MPI_RECV(IJTSK,1,MPI_INTEGER,MPARID,30,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         IF (IJTSK.EQ.-1) GOTO 200
+         CALL MPI_RECV(LENTSK,1,MPI_INTEGER,MPARID,30,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+#endif
+         CALL UNPKIJ(IJTSK,ISPNR,JSPNR)
+         CALL TSKARR(ISPNR,JSPNR,LENTSK,NSTRT,
+     &               NSTR,NSTRIJ,ICMOQR,ICMOIJ,
+     &               IPRINT)
+         CALL TRDR23(WORK,KFREE,LFREE,IPRINT,
+     &        EMP2,ISPNR,JSPNR,LENTSK,
+     &        INTFLG,NDMOQR,ICMOIJ,NSTRIJ,
+     &        ANTIS,LMP2,WORK(KINDX),KQ,KE,
+     &        DINTSKP,WORK(KGAB),TIM1)
+         GOTO 100
+  200 CONTINUE
+C
+C     send whatever results we have
+C
+      CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,EMP2,TIM1)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C& End of parallel section : activitate compilation only when necessary
+#endif
 

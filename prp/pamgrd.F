@@ -173,7 +173,6 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <dummy.h>
       PARAMETER(DM1 = -1.0D0)
 C
 #include <dgroup.h>
@@ -191,7 +190,7 @@ C     =================
 C
       IOPT = 3
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,TOTERG,IOPT)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,TOTERG,IOPT)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get property matrix and scale by factor -1
@@ -310,7 +309,6 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <dummy.h>
 C
 #include <dcbbas.h>
 #include <dgroup.h>
@@ -350,7 +348,6 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <dummy.h>
       PARAMETER(D0 = 0.0D0)
 C
 #include <dcbgen.h>
@@ -554,7 +551,6 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <dummy.h>
       PARAMETER(DM1 = -1.0D0)
 C
 #include <dgroup.h>

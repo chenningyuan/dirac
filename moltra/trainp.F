@@ -44,6 +44,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
 #include <mxorb.h>
+      PARAMETER(D0 = 0.0D0)
       PARAMETER (NTABLE = 15)
 C
       LOGICAL SET, NEWDEF
@@ -63,7 +64,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.OCCUP ','.VIRTUA','.INTFLG','.MSOUT ',
      &            '.POSITR','.SCHEME','.THROUT','.SPECIA','.VIRTHR',
-     &            '.IJTSK ','.SCLMEM','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.IJTSK ','.SCLMEM','.SCREEN','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 #include <memint.h>
 C
@@ -78,7 +79,7 @@ C
       ILLINT = 1
       ILSINT = 1
       ISSINT = 1
-      THROUT = 1.D-16
+      THROUT = 1.0D-16
 C     Default orbital strings is all occupied and all virtuals 
       DO I = 1,NFSYM
         MP2_INDSTR(1,I) = ' '
@@ -92,12 +93,13 @@ C     Default orbital strings is all occupied and all virtuals
       IF (LEVYLE) MP2_INTFLG = ILLINT
       MP2_ANTIS  = .TRUE.
       MP2_MSOUT  = .FALSE.
-      NOPAIR = .TRUE.
+      MP2NOP = .TRUE.
       TESTLS = .FALSE.
       TESTSL = .FALSE.
-      DMP2_VIRTHR = -1d20
+      DMP2_VIRTHR = DUMMY
       IJTSK = 0
       MAXSCL = 0
+      SCRMP2 = -1.0D0
 C
 C     Process input for MP2CAL
 C     ========================
@@ -154,7 +156,7 @@ C&&&& Write 4-index transformed integrals to file
                GO TO 100
     6          CONTINUE
 C&&&& POSITR: Allow positronic orbitals
-                  NOPAIR = .FALSE.
+                  MP2NOP = .FALSE.
                GO TO 100
     7          CONTINUE
 C&&&& SCHEME - Choose transformation scheme
@@ -194,6 +196,8 @@ C&&&& SCLMEM: Max internal memory available for scalar integrals
                READ(LUCMD,*) MAXSCL
                GO TO 100
    13          CONTINUE
+C&&&& SCREEN: Screening threshold for 4-index transformation
+               READ(LUCMD,*) SCRMP2
                GO TO 100
    14          CONTINUE
                GO TO 100
@@ -237,6 +241,11 @@ C
       ENDIF
 C
       IF (LEVYLE) MP2_INTFLG = ILLINT
+      IF(SCRMP2.GT.D0) THEN
+        WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold : ',SCRMP2
+      ELSE 
+        WRITE(LUPRI,'(1X,A)') '* No screening.'
+      ENDIF
       IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)') 
      +     '* LL Integrals Not included.'
       IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)') 
@@ -252,7 +261,7 @@ C
       ENDIF
 C     Active occupied and virtual space: only electrons allowed
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
-      IF(NOPAIR) THEN
+      IF(MP2NOP) THEN
         WRITE(LUPRI,'(1X,A)') '* Electronic orbitals only.'
         IC   = 1
         DO I = 1,NFSYM
@@ -278,7 +287,7 @@ C     Active occupied and virtual space: only electrons allowed
           WRITE(LUPRI,'(4X,A,A72)') 
      &       '- Occupied space : ', MP2_INDSTR(1,I)
         ENDIF
-        IF(DMP2_VIRTHR.GT.-1d10) MP2_INDSTR(2,I) = 'all '
+        IF(DMP2_VIRTHR.NE.DUMMY) MP2_INDSTR(2,I) = 'all '
         NVEC = 0
         CALL  NUMLST(MP2_INDSTR(2,I),IDUMMY,NFBAS(I,IC),
      &               IR(1,I),IR(2,I),NVEC,WORK,LWORK)
@@ -291,7 +300,7 @@ C     Active occupied and virtual space: only electrons allowed
         ENDIF
       ENDDO
 C
-      IF(DMP2_VIRTHR.GT.-1d10) WRITE(LUPRI,'(1X,A,F7.2,A)') 
+      IF(DMP2_VIRTHR.NE.DUMMY) WRITE(LUPRI,'(1X,A,F7.2,A)') 
      &     '* Only virtuals with energy below ', DMP2_VIRTHR,
      &     ' a.u. included in active space.'
       IF(MAXSCL.NE.0) WRITE(LUPRI,'(2(1X,A),I10,F10.3,A)') 
@@ -318,6 +327,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
 #include <mxorb.h>
+      PARAMETER(D0=0.0D0)
       PARAMETER (NDIR = 4, NTABLE = 20)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
@@ -340,7 +350,7 @@ C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','.ANTIS ','.4INDEX',
      &            '.MSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
-     &            '.PRPTRA','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.PRPTRA','.SCREEN','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -357,7 +367,7 @@ C     Initialize /DCBTRA/
 C     ===================
 C
       IPRTRA  = 0
-      ISTRTRA = 1
+      ISTRAT = 1
       ITRA_INTFLG = 7
       ITRA_INTFL2 = -8
       ITRA_INTFL4 = -8
@@ -377,7 +387,8 @@ C
       NO4IND = .FALSE.
       NOPAIR = .TRUE.
       PRPTRA = .FALSE.
-      THROUT = 1.D-16
+      THROUT = 1.0D-16
+      SCRTRA = -1.0D0
 C
 C     Process input for MOLTRA
 C     ========================
@@ -496,7 +507,7 @@ C&&&& Range of CORE orbitals in 2-index transformation module
                GO TO 100
     9          CONTINUE
 C&&&& SCHEME - choose method in 4-index transformation
-                  READ(LUCMD,*) ISTRTRA
+                  READ(LUCMD,*) ISTRAT
                GO TO 100
    10          CONTINUE
 C&&&& THROUT - Treshold for output integrals
@@ -552,6 +563,8 @@ C&&&& PRPTRA - Transform property integrals to MO basis
                   PRPTRA = .TRUE.
                GO TO 100
    17          CONTINUE
+C&&&& SCREEN - Screening threshold
+                  READ(LUCMD,*) SCRTRA
                GO TO 100
    18          CONTINUE
                GO TO 100
@@ -649,6 +662,7 @@ C
 C     Print section
 C     =============
 C
+      WRITE (LUPRI,'(//)')
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 
      &   'TRAINP: Set-up for index transformation'
@@ -723,8 +737,8 @@ C
 C
       WRITE(LUPRI,'(/1X,A)') 
      &   '* Set-up for 4-index transformation'
-      WRITE(LUPRI,'(1X,A,I3)') '* Following scheme      : ',ISTRTRA
-      GOTO (501,502,503,504) ISTRTRA
+      WRITE(LUPRI,'(1X,A,I3)') '* Following scheme      : ',ISTRAT
+      GOTO (501,502,503,504) ISTRAT
   501 CONTINUE
         WRITE(LUPRI,'(A)')
      &    ' - all half-transformed integrals (ij|rs) kept in core'
@@ -742,6 +756,11 @@ C
      &    ' - write (rs)-batches of half-transformed integrals ',
      &    ' (ij|rs) to disk; parallel scheme'
   500 CONTINUE
+      IF(SCRTRA.GT.D0) THEN
+        WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold :',SCRTRA
+      ELSE   
+        WRITE(LUPRI,'(1X,A)') '* No screening.'
+      ENDIF
       IF (MOD(ITRA_INTFL4,2).NE.1) WRITE(LUPRI,'(1X,A)') 
      +     '* LL Integrals not transformed'
       IF (MOD(ITRA_INTFL4/2,2).NE.1) WRITE(LUPRI,'(1X,A)') 
@@ -777,7 +796,6 @@ C
       ENDDO
 C
   999 CONTINUE
-      CALL FLSHFO(LUPRI)
       RETURN
  1010 CONTINUE
       WRITE(LUPRI,'(A)') 'TRAINP: Error in reading .INDEX'
@@ -799,6 +817,7 @@ C*****************************************************************************
 #include <priunit.h>
       PARAMETER(D1 = 1.0D0)
 #include <dummy.h>
+
 #include <mxorb.h>
 #include <mxcent.h>
       PARAMETER (NTABLE = 8)
@@ -907,6 +926,7 @@ C
       WRITE(LUPRI,'(1X,A)') 'TRPINP: Property integral transformation'
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(ICHANG.GT.0) THEN
+        WRITE(LUPRI,'(1X,A,I5)') '* Print level:',IPRTRP
         WRITE(LUPRI,'(1X,A)') 
      &  '*The following operators will be transformed:'
       ENDIF
@@ -939,4 +959,162 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck resinp */
+      SUBROUTINE RESINP(WORD,WORK,LWORK)
+C*****************************************************************************
+C
+C     Input section for MP2-module
+C
+C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxorb.h>
+      PARAMETER(D0 = 0.0D0)
+      PARAMETER (NTABLE = 5)
+C
+      LOGICAL SET, NEWDEF
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER*2 WS
+C
+#include <dcbgen.h>
+#include <dcbpsi.h>
+#include <dcborb.h>
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <dcbres.h>
+#include <dcbham.h>
+      DIMENSION WORK(LWORK),IR(2,2)
+C
+      SAVE SET
+      DATA TABLE /'.PRINT ','.INTFLG','.SCREEN','.SCHEME','.THROUT'/
+      DATA SET/.FALSE./
+#include <memint.h>
+C
+      IF (SET) RETURN
+      SET = .TRUE.
+C
+C     Initialize /DCBRES/
+C     ===================
+C
+      ISTRES = 4
+      IPRRES = 0
+      ILLINT = 1
+      ILSINT = 1
+      ISSINT = 1
+      SCRRES = -1.0D0
+      RESOUT = 1.D-16
+C
+C     Process input for RESOLV
+C     ========================
+C
+      NEWDEF = (WORD .EQ. '*RESOLV')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5),I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in RESINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in RESINP.')
+    1          CONTINUE
+C&&&& PRINT - print level in resolve module
+                  READ(LUCMD,*) IPRRES
+               GO TO 100
+    2          CONTINUE
+C&&&& Integral classes included in 4-indextransformation
+                  READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+               GO TO 100
+    3          CONTINUE
+C&&&& SCREEN: Screening threshold for 4-index transformation
+               READ(LUCMD,*) SCRRES
+               GO TO 100
+    4          CONTINUE
+C&&&& SCHEME - Choose transformation scheme
+                  READ(LUCMD,*) ISTRES
+               GO TO 100
+    5          CONTINUE
+C&&&& THROUT - Treshold for output integrals
+                  READ(LUCMD,*) SCROUT
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in RESINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in RESINP.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+C     Processing section
+C     ------------------
+C
+      IF (LEVYLE) THEN
+        ISLINT = 1
+        ISSINT = 1
+      ENDIF
+      INTRES = ILLINT + 2*ILSINT + 4*ISSINT
+C
+C     Print section
+C     =============
+C
+      IF(.NOT.DORES) GOTO 999
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 
+     &   'RESINP: Set-up for resolution of open-shell states:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A,I3)') '* General print level   : ',IPRRES
+      WRITE(LUPRI,'(1X,A,I3)') 
+     &  '* 4-index transformation follows scheme      : ',ISTRES
+      GOTO (501,502,503,504) ISTRES
+  501 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - all half-transformed integrals (ij|rs) kept in core'
+        GOTO 500
+  502 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - accumulate (ij|ks) in core; calculate MP2 energy'
+        GOTO 500
+  503 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - write half-transformed integrals (ij|rs) to disk'
+        GOTO 500
+  504 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - write (rs)-batches of half-transformed integrals ',
+     &    ' (ij|rs) to disk; parallel scheme'
+  500 CONTINUE
+      IF(SCRRES.GT.D0) THEN
+        WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold : ',SCRRES
+      ELSE 
+        WRITE(LUPRI,'(1X,A)') '* No screening.'
+      ENDIF
+      IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* LL Integrals Not included.'
+      IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* LS Integrals Not included.'
+      IF (ISSINT.NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* SS Integrals Not included.'
+ 999  CONTINUE
+      RETURN
+      END
 

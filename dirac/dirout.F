@@ -145,7 +145,7 @@ C
       ENDIF
       DO 100 IFRP = 1,NFSYM
         IF(NORB(IFRP).EQ.0) GOTO 100
-        CALL HEADER('Fermion irrep '//FREP(IFRP),-1)
+        CALL HEADER('Fermion corep '//FREP(IFRP),-1)
 C
 C      Electron states - eigenvalues
 C      =============================
@@ -450,11 +450,11 @@ C
 C
 C     KNFBAS = NFBAS(IFRP,0)
 C
-      DIMENSION CMO(KNFBAS,NVEC,NZ),
-     &          CBUF(KNFBAS,NVEC,4)
+      DIMENSION CMO(KNFBAS,NVEC,NZ),CBUF(KNFBAS,NVEC,4)
       EXTERNAL BDQALGEBRA
 #include <dcbibt.h>
 C
+      IF(NVEC.EQ.0) RETURN
       IXYZ  = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
       NDIM  = NFBAS(IFRP,0)
       NTOT  = NVEC*NDIM

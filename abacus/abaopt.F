@@ -75,7 +75,7 @@ C
      &            '.NOREIN', '.BAKER ', '.M-BFGS', '.CARTES',
      &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD',
      &            '.GRDINI', '.DISPLA', '.DOTRCK', '.TWOGRD',
-     &            '.SCREEN', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
+     &            '.SCREEN', '.NUMGRD', '.XXXXXX', '.XXXXXX'/
 C
       DATA FIRST /.TRUE./
 C
@@ -331,10 +331,10 @@ Cjth - removed ??            GOTO 100
              END DO
              GOTO 100
  45         CONTINUE
-                  READ (LUCMD,*) DTEMP
-                  IGTHRS = -NINT(LOG10(DTEMP))
+            READ(LUCMD,*) SCRGRD
             GOTO 100
  46         CONTINUE
+            DONGRD = .TRUE.
             GOTO 100
  47         CONTINUE
             GOTO 100
@@ -734,12 +734,12 @@ C
       CALL CYESNO(STR,DOTRCK)
       WRITE(LUPRI,'(1X,A,A)') 'Skip LS/SS-two-el. grd. if small  : ',
      &                           STR
-      DTMP = 10.0D00**(-IGTHRS)
-      WRITE(LUPRI,'(1X,A,1P,E8.2)')
-     &   'Screening threshold in gradient calculation ',DTMP
-      IF (IGTHRS .GE. 16) THEN
+      IF (SCRGRD.LT.D0) THEN
          WRITE(LUPRI,'(1X,A,1P,E8.2)')
      &      'WARNING: Screening turned off...'
+      ELSE
+        WRITE(LUPRI,'(1X,A,1P,E8.2)')
+     &   'Screening threshold in gradient calculation ',SCRGRD
       END IF
 #endif
 C
@@ -1849,6 +1849,7 @@ C
 Cjth
 #ifdef PRG_DIRAC
 #include <dcbgrd.h>
+#include <dcbham.h>
 #include <dcbdhf.h>
 #include <dcbgen.h>
 #include <dcbmp2.h>
@@ -1873,15 +1874,11 @@ C
 C
 C     Calculate gradient
 C
-      IF (DOCCM) THEN
+      IF(DONGRD) THEN
          CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
-      ELSE IF (DOMP2) THEN
-         CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
-      ELSE IF (DODHF) THEN
-         CALL PSIGRD(WORK(IWOFF+1),LWORK)
       ELSE
-         call quit('no wave function...')
-      END IF
+         CALL PSIGRD(WORK(IWOFF+1),LWORK)
+      ENDIF       
 C
       EXABA = .TRUE.
 C     Non-relativistic:...
@@ -5042,6 +5039,8 @@ C
          ECORR = RGETCCSD()
       ELSE IF (DOMP2) THEN
          ECORR = DHFERG+EMP2 
+      ELSE IF (DODHF) THEN
+         ECORR = DHFERG
       ELSE
          call quit('unknown wave function...')
       END IF
@@ -5158,6 +5157,8 @@ C
             ECORR = RGETCCSD()
          ELSE IF (DOMP2) THEN
             ECORR = DHFERG+EMP2 
+         ELSE IF (DODHF) THEN
+            ECORR = DHFERG
          ELSE
             call quit('unknown wave function...')
          END IF

@@ -146,6 +146,7 @@ C       0 - read only title
 C       1 - read coefficients and eigenvalues
 C       2 - read coefficients and eigenvalues - give restart info
 C       3 - read coefficients only - give info
+C       4 - read only eigenvalues
 C
 C     IDIM(1,J) - number of positronic solutions
 C     IDIM(2,J) - number of electronic solutions
@@ -160,22 +161,31 @@ C
 #include <dcborb.h>
 #include <dcbbas.h>
 #include <dgroup.h>
+      LOGICAL INFO,LBIT
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
       DIMENSION CMO(NCMOTQ),EIG(NORBT)
       DIMENSION IDIM(3,2)
 C
+      INFO = IOPT.EQ.2.OR.IOPT.EQ.3.OR.IOPT.EQ.0
       REWIND IUNIT
-      READ (IUNIT,END=10,ERR=20) 
-     &      TEXT,NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+      IF(IOPT.EQ.4) THEN
+        READ(IUNIT)
+        READ(IUNIT)
+        READ (IUNIT,END=50,ERR=60) EIG
+        RETURN
+      ENDIF
 C
-      IF(IOPT.EQ.0) THEN
+      READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
+     &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+C
+      IF(INFO) THEN
         FMT = MXFORM(TOTERG,20)
         WRITE(LUPRI,'(A,I5,3X,A,'//FMT//')')
      &   'REACMO: Coefficients read from unit',IUNIT,
      &   '- Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
-        RETURN
       ENDIF
+      IF(IOPT.EQ.0) RETURN
 C
 C     Read coefficients
       READ (IUNIT,END=30,ERR=40) CMO
@@ -237,7 +247,7 @@ C
      +     ACCESS='SEQUENTIAL')
       READ (LUCOEF,'(A74)') TEXT
       READ (LUCOEF,'(I4,6I10)') NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM)
-      READ (LUCOEF,'(E20.16)') TOTERG
+      READ (LUCOEF,'(D24.16)') TOTERG
       READ (LUCOEF,'(6F22.16)') (CMO(I),I=1,NCMOTQ)
       READ (LUCOEF,'(6D22.12)') (EIG(I),I=1,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
@@ -304,7 +314,7 @@ C
       CALL GTINFO(TEXT(51:74))
       WRITE(LUCOEF,'(A74)') TEXT
       WRITE(LUCOEF,'(I4,6I10)') NFSYM,((IDIM(I,J),I = 1,3),J=1,NFSYM)
-      WRITE(LUCOEF,'(E20.16)') TOTERG
+      WRITE(LUCOEF,'(D24.16)') TOTERG
       WRITE(LUCOEF,'(6F22.16)') (CMO(I),I=1,NCMOTQ)
       WRITE(LUCOEF,'(6D22.12)') (EIG(I),I=1,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
@@ -536,8 +546,6 @@ C
       NA   = LEN(A)
       IF(NA.GT.72) GOTO 940
       IF(NA.GE.3) THEN
-C       IF(A(1:3).EQ.'all') THEN
-Chj: modified 981103
         IF( INDEX(A(1:NA),'all') .GT. 0) THEN
           IC = 0
           IF(IP.EQ.0) THEN

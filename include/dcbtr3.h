@@ -9,8 +9,6 @@ C
      &              IBBAS1(0:7,0:2),IBBAS2(0:7,0:2),
      &              IBBAS3(0:7,0:2),IBBAS4(0:7,0:2),
      &              IBAS1(2),IBAS2(2),IBAS3(2),IBAS4(2),
-     &              NFPCK12(2),NFPCK34(2),NFPCK12T,NFPCK34T,
-     &              IFPCK12(2,2),IFPCK34(2,2),
      &              NDMOQC(2,2,2),ICMOQC(2,2),
      &              NDMOQR(2,2,4),ICMOQR(2,4),
      &              NDMOQS(2,2,4),ICMOQS(2,4),

@@ -90,11 +90,9 @@ C     Call PSIINP always to get wave function information for
 C     other modules. This could be change if wave function information
 C     is saved on file. 
 C
-CCCC     IF(DOPSI.OR.MINIMI) THEN
-         OPEN(LUCMD,FILE = 'DIRAC.INP')
-         CALL PSIINP(WORK,LWORK)
-         CLOSE(LUCMD)
-CCCC     ENDIF
+      OPEN(LUCMD,FILE = 'DIRAC.INP')
+      CALL PSIINP(WORK,LWORK)
+      CLOSE(LUCMD)
 C
 C     Input of wave function analysis module
 C
@@ -164,9 +162,7 @@ C
 #include <dcbcls.h>
 #include <dcbprl.h>
 C
-#include <ibtfun.h>
-C
-      DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
+      DATA TABDIR /'*END OF','*XXXXXX','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.XXXXXX','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
@@ -179,7 +175,6 @@ C     Initialise NOGENINP
 C     NOGENINP is set, if there is no **GENERAL
 C
       NOGENINP = .FALSE.
-C
 C
 C     Read menu file
 C     ==============
@@ -348,9 +343,9 @@ C
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
      +    'the following two-electron integrals:'
-        IF(IBTAND(IDFLAG,1).NE.0) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
-        IF(IBTAND(IDFLAG,2).NE.0) WRITE(LUPRI,'(3X,A)') '- SL-integrals'
-        IF(IBTAND(IDFLAG,4).NE.0) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
+        IF(ILLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
+        IF(ISLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SL-integrals'
+        IF(ISSDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
       ENDIF
       IF(LBIT(ISPHTR,1)) THEN
         WRITE(LUPRI,'(1X,A)')
@@ -406,9 +401,6 @@ C
          CALL QUIT('Program stopped in GENINP, error in prompt.')
       END IF
     2 CONTINUE
-#if defined (VAR_MPI) || defined (VAR_PVM)
-        CALL PRLINP(WORD)
-#endif
         GO TO 200
     3 CONTINUE
         GO TO 200
@@ -888,7 +880,7 @@ C&&& TRIFCK: Start on two-electron Fock matrix read from file
                GO TO 100
    18          CONTINUE
 C&&&& number of closed shell electrons
-            READ (LUCMD,*) (NELEC(I),I=1,NFSYM)
+                  READ (LUCMD,*) (NELEC(I),I=1,NFSYM)
                GO TO 100
    19          CONTINUE
 C&&&& EIGPRI: Print control for electron and positron solutions
@@ -991,7 +983,7 @@ C            (new overlap selection matrix formed in each iteration)
    28          CONTINUE
 C&&& LMOORD: Reorder MO orbitals (only on restart on coefficients)
 C                 First read the number of orbital reorderings
-C                    in each fermion irrep.
+C                 in each fermion corep.
 C
                   LMOORD = .TRUE.
                   IREORD(1) = 0
@@ -1086,9 +1078,12 @@ C
         MXDIIS = 0
       ENDIF
 C
-C
+      IF(DOLVC) ISSINT = 0
+      IF (LEVYLE) THEN
+        ISLINT = 0
+        ISSINT = 0
+      ENDIF
       INTDEF = ILLINT + 2*ISLINT + 4*ISSINT
-      IF (LEVYLE) INTDEF = ILLINT
       IF(CNVINT(1).LT.DUMMY) ITRINT(1) = 1
       IF(CNVINT(2).LT.DUMMY) ITRINT(2) = 1
 C
@@ -1242,7 +1237,7 @@ C
          WRITE(LUPRI,'(1X,A)') '* Reorder orbitals...'
          WRITE(LUPRI,'(3X,A)') '- new ordering of orbitals...'
          DO I = 1,NFSYM
-            WRITE(LUPRI,'(4X,A,I1)') 'Fermion irrep. ',I
+            WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
             IF (IREORD(I) .GT. 0) THEN
                WRITE(LUPRI,'(5X,50(I3,A))') 
      &            (IMOORD(J,I),',',J=1,IREORD(I))
@@ -1396,7 +1391,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 8, NTABLE = 8)
+      PARAMETER (NDIR = 8, NTABLE = 12)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -1406,9 +1401,10 @@ C
 #include <dcbpsi.h>
 C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*DFTCAL',
-     &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
+     &             '*MVOCAL','*RESOLV','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.DFT   ','.LVCORR',
-     &             '.TSCORR','.RELCCS','.DIRRCI','.XXXXXX'/
+     &             '.TSCORR','.RELCCS','.DIRRCI','.MVO   ',
+     &             '.RESOLV','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       NJOBS = 0
 C
@@ -1421,6 +1417,7 @@ C
       DODFT   = .FALSE.
       DOLVC   = .FALSE.
       DOTSC   = .FALSE.
+      DORES   = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -1453,7 +1450,8 @@ C
       ELSE IF (PROMPT .EQ. '.') THEN
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GO TO (101,102,103,104,105,106,107,108),I
+               GO TO (101,102,103,104,105,106,107,108,
+     &                109,110,111,112),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1501,6 +1499,20 @@ C&&&& DIRRCI: Perform CISD or COSCI
             NJOBS = NJOBS + 1
             GO TO 100
   108    CONTINUE
+C&&&& MVO: Calculate modified virtual orbitals
+            DOMVO = .TRUE.
+            NJOBS = NJOBS + 1
+            GO TO 100
+  109    CONTINUE
+C&&&& RESOLVE: Resolve open-shell states
+            DORES = .TRUE.
+            NJOBS = NJOBS + 1
+            GO TO 100
+  110    CONTINUE
+            GO TO 100
+  111    CONTINUE
+            GO TO 100
+  112    CONTINUE
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -1519,9 +1531,13 @@ C
         WRITE(LUPRI,'(1X,A)') 'Jobs in this run:'
       ENDIF
       IF(DODHF) WRITE(LUPRI,'(1X,A)') '* Dirac-Hartree-Fock calculation'
+      IF(DOMVO) WRITE(LUPRI,'(1X,A)') 
+     &   '* Generate modified virtual orbitals'
       IF(DODFT) WRITE(LUPRI,'(1X,A)') '* Density functional '//
      &    'calculation (Panas method)'
 #if defined (MOD_TRA)
+      IF(DORES) WRITE(LUPRI,'(1X,A)') 
+     &   '* Resolution of open-shell states'
       IF(DOMP2) WRITE(LUPRI,'(1X,A)') '* MP2 calculation'
 #endif
 #if defined (MOD_CC)
@@ -1582,8 +1598,12 @@ C
 C        CALL DFTINP(WORD)
         GO TO 200
     5 CONTINUE
+        CALL MVOINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     6 CONTINUE
+#if defined (MOD_TRA)
+        CALL RESINP(WORD,WORK,LWORK)
+#endif
         GO TO 200
     7 CONTINUE
         GO TO 200
@@ -1596,7 +1616,9 @@ C     for zero electrons if user has forgotten to specify
 C     wave function
 Cjth  IF (DODHF) CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
       CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
+      IF (DOMVO) CALL MVOINP(WORD,.TRUE.,WORK,LWORK)
 #if defined (MOD_TRA)
+      IF (DORES) CALL RESINP(WORD,WORK,LWORK)
       IF (DOMP2) CALL MP2INP(WORD,WORK,LWORK)
 #endif
 #if defined (MOD_CC)
@@ -2462,7 +2484,8 @@ C
 #include <dcbprl.h>
 C
       LOGICAL SYMSTP,LBIT, NOINPUT
-      CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
+     &          WORD1*7
       DIMENSION KSOP(0:7),WORK(LWORK)
       CHARACTER A*80
 C
@@ -2471,7 +2494,7 @@ C
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
      &            'XXXXXXX','XXXXXXX','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
-     &            '.SPINFR','XXXXXXX','XXXXXXX','XXXXXXX'/
+     &            '.SPINFR','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       SYMSTP = .FALSE.
       CALL TITLER('Hamiltonian defined','*',127)      
@@ -2709,7 +2732,7 @@ C
       ELSE
         WRITE(LUPRI,'(1X,A)') '* Levy-Leblond Hamiltonian'
       ENDIF
-      IF(ICHANG.GT.0) WRITE(LUPRI,'(/1X,A)') 
+      IF(ICHANG.GT.0) WRITE(LUPRI,'(1X,A)') 
      &    'with the following modifications:'
       IF(SPINFR) THEN
          WRITE(LUPRI,'(1X,A,A)') '* Spin-orbit terms zeroed out ',
@@ -3029,4 +3052,187 @@ C*****************************************************************************
       string(72:72) = char(0)
       call creadreorder(string,ireord,imoord,mxreord)
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck mvoinp */
+      SUBROUTINE MVOINP(WORD,RESET,WORK,LWORK)
+C*****************************************************************************
+C
+C     Input section for generation of modified virtual orbitals
+C
+C     Written by T.Saue - June 1998
+C     Last revision: June 16 1998
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+      PARAMETER (NTABLE = 8)
+C
+#include <dcbgen.h>
+#include <dcbpsi.h>
+#include <dcborb.h>
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <dcbmvo.h>
+C
+      LOGICAL SET, NEWDEF, RESET,LBIT
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      DIMENSION WORK(LWORK)
+C
+      SAVE SET
+      DATA TABLE /'.VECMVO','.PRINT ','.INTFLG','.F2CONT',
+     &            '.ADDREP','.IONMVO','.POTMVO','.XXXXXX'/
+      DATA SET/.FALSE./
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C
+C     Initialize /CBIMVO/
+C     ===================
+C
+      IPRMVO = 0
+      ILLINT = 1
+      ISLINT = 1
+      ISSINT = 1
+      IFCMVO = 1
+      IFEMVO = 1
+      ADDREP = .FALSE.
+      IONMVO = .TRUE.
+      DO I = 1,NFSYM
+        VECMVO(I) = ' '
+        IF(NOCC(I).EQ.0) THEN
+          WRITE(VECMVO(I),'(I1)') 1
+        ELSEIF(NOCC(I).GT.0) THEN
+          WRITE(VECMVO(I),'(I1,A2,I4)') 1,'..',NOCC(I)
+        ENDIF
+      ENDDO
+C
+C     Process input from CBIMVO
+C     =========================
+C
+      NEWDEF = (WORD .EQ. '*MVOCAL')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1,2,3,4,5,6,7,8), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in MVOINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in MVOINP.')
+    1          CONTINUE
+C&&&& VECMVO: Spinors defining potential
+                  READ(LUCMD,'(A72)') (VECMVO(I),I=1,NFSYM)
+               GO TO 100
+    2          CONTINUE
+C&&&& PRINT: General print level
+                  READ(LUCMD,*) IPRMVO
+               GO TO 100
+    3          CONTINUE
+C&&& INTFLG: Specify what two-itegrals should be included in this run
+                  READ(LUCMD,*) ILLINT,ISLINT,ISSINT
+               GO TO 100
+    4          CONTINUE
+C&&& F2CONT: Specify Coulomb/exchange contributions
+                  READ(LUCMD,*) IFCMVO,IFEMVO
+               GO TO 100
+    5          CONTINUE
+C&&& ADDREP: Add remaining occupied orbitals as repulsion
+                  ADDREP = .TRUE.
+               GO TO 100
+    6          CONTINUE
+C&&& IONMVO: Generate MVOS by ionic Fock operator
+                  IONMVO = .TRUE.
+               GO TO 100
+    7          CONTINUE
+C&&& POTMVO: Generate MVOS from Dirac-Hartree-Fock potential
+                  IONMVO = .FALSE.
+               GO TO 100
+    8          CONTINUE
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in MVOINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in MVOINP.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+C     Process section
+C
+      INTMVO = ILLINT + 2*ISLINT + 4*ISSINT
+      IF2MVO = IFCMVO + 2*IFEMVO
+C
+C     Print section
+C     =============
+C
+      IF(.NOT.DOMVO) GOTO 999
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 'MVOGEN: Modified virtual orbitals'
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A,I3)') '* General print level:',IPRMVO
+      IF(IONMVO) THEN
+        WRITE(LUPRI,'(1X,A)') '* MVOs generated by ionic Fock operator'
+      ELSE
+        WRITE(LUPRI,'(1X,A)') '* MVOs generated by from DHF potential:'
+      ENDIF
+      WRITE(LUPRI,'(1X,A)') '* Vectors defining the DHF potential:'
+      NTOT = 0
+      DO I = 1,NFSYM
+        NVEC = 0
+        CALL  NUMLST(VECMVO(I),IDUMMY,NFBAS(I,0),
+     &            -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+        IF(NVEC.EQ.0) THEN
+          WRITE(LUPRI,'(4X,A,A3)') 
+     &       '- No orbitals in fermion ircop ',FREP(I)
+        ELSE
+          NTOT = NTOT + NVEC
+          WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+     &    '- Orbitals in fermion ircop ',FREP(I),' :',VECMVO(I)
+        ENDIF
+      ENDDO
+      IF(ADDREP.AND..NOT.IONMVO) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &     '* Remaining occupied orbitals added as repulsion.'
+      ENDIF
+      IF(ILLINT.EQ.0) WRITE(LUPRI,'(1X,A)') '* No LL contributions'
+      IF(ISLINT.EQ.0) WRITE(LUPRI,'(1X,A)') '* No SL contributions'
+      IF(ISSINT.EQ.0) WRITE(LUPRI,'(1X,A)') '* No SS contributions'
+      IF(IF2MVO.NE.3) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &   '* Two-electron contributions restricted to:'
+        IF(LBIT(IF2MVO,1)) WRITE(LUPRI,'(3X,A)')
+     &     '+ direct contribution'
+        IF(LBIT(IF2MVO,2)) WRITE(LUPRI,'(3X,A)')
+     &     '+ exchange contribution'
+      ENDIF
+  999 CONTINUE
+      RETURN
+C
       END

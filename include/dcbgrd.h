@@ -5,7 +5,6 @@ C FILE    : dcbgrd.h
 C SOURCE  : $Source$
 C
 C*** RELGRD is true if we want to calculate a relativistic gradient
-      LOGICAL RELGRD,DOTRCK,DO2GRD(3),DODERM,GRD_NOSMLV,GRD_NOSMLS
 C     DO2GRD    : Do LL (1), LS(2) and SS(3) gradient.
 C     DOTRCK    : Estimate LS and SS gradient and skip them if "small"
 C                 Default for gradient calculation is: .FALSE.
@@ -29,14 +28,16 @@ C
 C     DMXWLT: Max wall time for slaves
 C     DMXCPT: Max cpu time for slaves
 C
-      COMMON /CBIGRD/ IPRGRD,INTCLASS,IGTHRS
-      COMMON /CBLGRD/ RELGRD,DO2GRD,DOTRCK,DODERM,
-     &                GRD_NOSMLV,GRD_NOSMLS
+      LOGICAL RELGRD,DOTRCK,DO2GRD(3),DODERM,GRD_NOSMLV,
+     &        GRD_NOSMLS,DONGRD
+      COMMON /CBIGRD/ IPRGRD,INTCLASS
+      COMMON /CBLGRD/ RELGRD,DO2GRD,DOTRCK,DODERM,GRD_NOSMLV,
+     &                GRD_NOSMLS,DONGRD
       COMMON /CBRGRD/ GRADKN(MXCOOR,0:2),
      &                GRADNU(MXCOOR,0:2),
      &                GRADRO(MXCOOR,0:2),
      &                GRADER(MXCOOR,0:3),
      &                GRADLV(MXCOOR),
      &                GRADEE(MXCOOR),
-     &                GRADNN(MXCOOR)
+     &                GRADNN(MXCOOR), SCRGRD
       COMMON /CBDGRT/ DMXWLT,DMXCPT

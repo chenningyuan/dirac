@@ -306,7 +306,6 @@ C                          (eg. when using Levy-Leblond Hamiltonian)
 C              GRD_NOSMLS: No small-small reorthonormalization term
 C                          (eg. when using Levy-Leblond Hamiltonian)
 C
-C
                IF ( ONECEN ) THEN
 C
 C                 Derivatives of the nuclear attraction, one center case

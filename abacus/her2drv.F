@@ -35,8 +35,9 @@ C  /* Deck twoint */
       SUBROUTINE TWOINT(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,GMAT,
      &               INDX,INDXAB,ITYPE,MAXDIF,JATOM,NODV,
      &               NOPV,NOCONT,TTIME,JPRINT,IPRNTA,IPRNTB,IPRNTC,
-     &               IPRNTD,RETUR,ISHLA,I2TYP,ICEDIF,IFTHRS,
-     &               GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
+     &               IPRNTD,RETUR,ISHLA,I2TYP,ICEDIF,SCREEN,
+     &               GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &               INDEX,TIMES)
 C
 C     Trygve Helgaker, University of Oslo, Norway, 1984
 C
@@ -64,14 +65,13 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <dummy.h>
       PARAMETER (D0 = 0.00 D00)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,
      &        ADISTR, SOFOCK, RELCAL
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDX(2,*),INDXAB(*), WORK(LWORK),DINTSKP(*),
-     &        GABRAO(*),DMRAO(*),DMRSO(*)
+     &        GABRAO(*),DMRAO(*),DMRSO(*),INDEX(*),TIMES(*)
 #include <ccom.h>
 #include <symmet.h>
 #include <nuclei.h>
@@ -162,8 +162,8 @@ C
      &            SPNORB,SUSCEP,PERTUR,IATOM,MULE,MULTE,NODV,NOPV,
      &            NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &            SQ12EL,RETUR,NHTYP,IREPDM,IFCTYP,
-     &            ISHLA,ADISTR,I2TYP,ICEDIF,IFTHRS,DINTSKP,
-     &            GABRAO,DMRAO,DMRSO,RELCAL)
+     &            ISHLA,ADISTR,I2TYP,ICEDIF,SCREEN,DINTSKP,
+     &            GABRAO,DMRAO,DMRSO,RELCAL,INDEX,TIMES)
       T2INT = SECOND() - T2INT
 C
 C     *******************
@@ -245,21 +245,23 @@ C  /* Deck twocal */
      &                 LONDON,SPNORB,SUSCEP,PERTUR,IATOM,MULE,MULTE,
      &                 NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,
      &                 IPRNTC,IPRNTD,SQ12EL,RETUR,NHTYP,
-     &                 IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,ICEDIF,IFTHRS,
-     &                 DINTSKP,GABRAO,DMRAO,DMRSO,RELCAL)
+     &                 IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,ICEDIF,SCREEN,
+     &                 DINTSKP,GABRAO,DMRAO,DMRSO,RELCAL,INDEX,TIMES)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxorb.h>
 #include <maxaqn.h>
+#include <aovec.h>
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
      &        NOCONT, LONDON, SPNORB, DISTRI, SQ12EL, SUSCEP, ADISTR,
      &        SOFOCK,RELCAL
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDX(2,*),INDXAB(*), GABRAO(*),DMRAO(*), DMRSO(*),
-     &        DINTSKP(*), WORK(LWORK)
+     &        DINTSKP(*), INDEX(*),TIMES(*),WORK(LWORK)
 #include <hertop.h>
 #include <infpar.h>
 #include <twosta.h>
+#include <blocks.h>
 C
       CALL QENTER('TWOCAL')
 #include <memint.h>
@@ -285,7 +287,7 @@ C        Distributions
 C        =============
 C
          CALL TWODIS(WORK(KFREE),LFREE,FMAT,DMAT,NDMAT,GMAT,
-     &               INDX,INDXAB,
+     &               INDX,INDXAB,GABRAO,DMRAO,DINTSKP,SCREEN,
      &               MAXDER,EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,
      &               SOFOCK,DISTRI,LONDON,SPNORB,PERTUR,IATOM,
      &               MULE,MULTE,NODV,NOPV,
@@ -318,8 +320,9 @@ C
      &           SPNORB,PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,
      &           THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &           SQ12EL,WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
-     &           IREPDM,IFCTYP,ADISTR,I2TYP,ICEDIF,IFTHRS,
-     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
+     &           IREPDM,IFCTYP,ADISTR,I2TYP,ICEDIF,SCREEN,
+     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &           INDEX,TIMES)
          ELSE
 #endif
             CALL TWOLOP(WORK(KFREE),LFREE,FMAT,DMAT,NDMAT,GMAT,MAXDER,
@@ -328,7 +331,7 @@ C
      &                SPNORB,PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,
      &                THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &                SQ12EL,WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
-     &                IREPDM,IFCTYP,ADISTR,I2TYP,ICEDIF,IFTHRS,
+     &                IREPDM,IFCTYP,ADISTR,I2TYP,ICEDIF,SCREEN,
      &                GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
          END IF
 #if defined (VAR_MPI) || defined (VAR_MPI)
@@ -346,7 +349,7 @@ C  /* Deck twolop */
      &                  NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,
      &                  IPRNTB,IPRNTC,IPRNTD,RETUR,
      &                  SQ12EL,INDHER,INDHSQ,IODDHR,IREPDM,IFCTYP,
-     &                  ADISTR,I2TYP,ICEDIF,IFTHRS,
+     &                  ADISTR,I2TYP,ICEDIF,SCREEN,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
 C
 #include <implicit.h>
@@ -355,7 +358,7 @@ C
 #include <mxcent.h>
 #include <aovec.h>
 #include <mxorb.h>
-#include <dummy.h>
+      PARAMETER(D0 = 0.0D0)
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
@@ -394,7 +397,7 @@ C
       END IF
 C
 C     For direct contributions: some parameters
-C       FCKTHR is threshold for screening
+C       SCREEN is threshold for screening
 C       ICEFLG gives information about separate screening of
 C              Coulomb/exchange for each DMAT
 C       NCM    is the number of DMAT requiring Coulomb-contributions
@@ -432,15 +435,14 @@ C          DINTSKP(2,I,3) - number of integrals skipped, z direction
 C
       DOSCRN = .FALSE.
       IF(DIRFCK.OR.SOFOCK.OR.(EXPECT.AND.MAXDER.EQ.1))  THEN
-         IF (DIRFCK.OR.SOFOCK) THEN
-           CALL DZERO(DINTSKP,8)
-         ELSE
-           CALL DZERO(DINTSKP,3*14*3)
-         END IF
-        IF(IFTHRS.LT.16) THEN
+        IF (DIRFCK.OR.SOFOCK) THEN
+          CALL DZERO(DINTSKP,8)
+        ELSE
+          CALL DZERO(DINTSKP,3*14*3)
+        END IF
+        IF(SCREEN.GT.D0) THEN
           DOSCRN = .TRUE.
-          FCKTHR = -IFTHRS
-          FCKTHR = 10.0D0**FCKTHR
+          SCRTHR = SCREEN
           ICEFLG = ICEDIF
           NCM = 0
           NEM = 0
@@ -638,8 +640,8 @@ C
      &                        DIRFCK,SOFOCK,DISTRI,IATOM,MULE,MULTE,
      &                        MAXDER,NOCONT,NODV,NOPV,THRESH,IPRINT,
      &                        FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
-     &                        ADISTR,DUMMY,ICEDIF,IFTHRS,DINTSKP,
-     &                        GABRAO,DMRAO,DMRSO,IREPDM,IDUMMY,IDUMMY)
+     &                        ADISTR,DUM,ICEDIF,DINTSKP,
+     &                        GABRAO,DMRAO,DMRSO,IREPDM,IDUM,IDUM)
 C
                   IF (RETUR) THEN
                      IF (ISHELA .EQ. IPRNTA .AND.
@@ -655,7 +657,7 @@ C
 C     Symmetrize skeleton Fock matrices
 C     =================================
 C
-CTROND      IF (DIRFCK .OR. DDFOCK .OR. EXPECT) THEN
+CDIRAC      IF (DIRFCK .OR. DDFOCK .OR. EXPECT) THEN
       IF (DDFOCK) THEN
          CALL SKLFCK(FMAT,WORK,LWORK,JPRINT,DIRFCK,DDFOCK,EXPECT,PERTUR,
      &               NODV,MAXDER,LONDON,NDMAT,IREPDM,IFCTYP,IATOM)
@@ -746,7 +748,6 @@ C
 #include <mxcent.h>
 #include <aovec.h>
 #include <mxorb.h>
-#include <dummy.h>
       PARAMETER (LUPAS = 27, LUPAO = 29)
       PARAMETER (LBUF = 600)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
@@ -817,7 +818,7 @@ C     Allocation of memory for integral buffers.
 C     Addresses are save in COMMON /DISBUF/
 C
       DOINDX = .FALSE.
-      CALL AINDEX(ISHLA,NDIST,IDUMMY,DOINDX,IPRINT)
+      CALL AINDEX(ISHLA,NDIST,IDUM,DOINDX,IPRINT)
       LDSBUF = LBUF
       CALL MEMGET('REAL',KDSBUF,  NDIST*LDSBUF,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KDSIBF,2*NDIST*LDSBUF,WORK,KFREE,LFREE)
@@ -955,8 +956,8 @@ C
      &                     DIRFCK,SOFOCK,DISTRI,IATOM,MULE,MULTE,
      &                     MAXDER,NOCONT,NODV,NOPV,THRESH,IPRINT,FIRST,
      &                     SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,ADISTR,
-     &                     WORK(KDSBUF),IDUMMY,IDUMMY,IDUMMY,
-     &                     DUMMY,DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY)
+     &                     WORK(KDSBUF),IDUM,DUM,
+     &                     DUM,DUM,DUM,IDUM,IDUM,IDUM)
 C
                IF (RETUR) THEN
                   IF (ISHELA .EQ. IPRNTA .AND.
@@ -974,6 +975,7 @@ C
       END
 C  /* Deck twodis */
       SUBROUTINE TWODIS(WORK,LWORK,FMAT,DMAT,NDMAT,GMAT,INDX,INDXAB,
+     &                GABRAO,DMRAO,DINTSKP,SCREEN,
      &                MAXDER,EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,
      &                DISTRI,LONDON,SPNORB,PERTUR,IATOM,MULE,MULTE,
      &                NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,
@@ -991,6 +993,7 @@ C
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, FIRST,
      &        DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR, SOFOCK, RELCAL
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IFCTYP(*),
+     &      GABRAO(*),DMRAO(NSYMBL,NSYMBL,*),DINTSKP(*),
      &      INDX(2,*), INDXAB(*), INDHSQ(*), IODDHR(*), WORK(LWORK)
 #include <blocks.h>
 #include <twocom.h>
@@ -1054,7 +1057,8 @@ C
       SHAEQB = ISHELA .EQ. ISHELB
       DIAGAB = SHAEQB .AND. .NOT.BIGVEC
 C
-      CALL DISLOP(GMAT,FMAT,DMAT,NDMAT,WORK,LWORK,MAXDER,EXPECT,
+      CALL DISLOP(GMAT,FMAT,DMAT,NDMAT,GABRAO,DMRAO,DINTSKP,SCREEN,
+     &            WORK,LWORK,MAXDER,EXPECT,
      &            SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,
      &            DISTRI,LONDON,SPNORB,
      &            PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,THRESH,
@@ -1066,7 +1070,8 @@ C
       RETURN
       END
 C  /* Deck dislop */
-      SUBROUTINE DISLOP(GMAT,FMAT,DMAT,NDMAT,WORK,LWORK,MAXDER,EXPECT,
+      SUBROUTINE DISLOP(GMAT,FMAT,DMAT,NDMAT,GABRAO,DMRAO,DINTSKP,
+     &                  SCREEN,WORK,LWORK,MAXDER,EXPECT,
      &                  SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,
      &                  DISTRI,LONDON,SPNORB,PERTUR,IATOM,MULE,MULTE,
      &                  NODV,NOPV,NOCONT,
@@ -1076,16 +1081,20 @@ C  /* Deck dislop */
 C
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER(D0=0.0D0)
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <mxorb.h>
-#include <dummy.h>
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, FIRST,
      &        SQ12EL, DISTRI, LONDON, SUSCEP, ADISTR, SOFOCK
       DIMENSION GMAT(*), DMAT(*), FMAT(*), IFCTYP(*), INDX(2,*),
+     &          GABRAO(*),DMRAO(*),DINTSKP(*),
      &          INDXAB(*), INDHSQ(*), IODDHR(*), INDHER(*), WORK(LWORK)
+      DIMENSION IDIS(2,2,2,2)
+      DATA IDIS/1,5,5,2,5,4,4,5,5,4,4,5,2,5,5,3/
+      SAVE IDIS
 #include <twocom.h>
 #include <nuclei.h>
 #ifdef PRG_DIRAC
@@ -1136,11 +1145,22 @@ C
         WRITE(LUPRI,'(A,I5)') 'DISLOP: Unknown I2TYP =' ,I2TYP
       ENDIF
 C
+C     Initialize screening
+C     ********************
+C
+      ICA = LCLASH(ISHELA)
+      ICB = LCLASH(ISHELB)
+      DOSCRN = .FALSE.
+      IF(SCREEN.GT.D0) THEN
+        DOSCRN = .TRUE.
+        SCRTHR = SCREEN
+      ENDIF
 C     *****************************
 C     ***** Third Shell Index *****
 C     *****************************
 C
       DO 100 ISHELC = ICSTRT, ICSMAX
+         ICC    = LCLASH(ISHELC)
          NHKTC  = NHKTSH(ISHELC)
          KHKTC  = KHKTSH(ISHELC)
          KCKTC  = KCKTSH(ISHELC)
@@ -1168,6 +1188,7 @@ C
          IF ((I2TYP.EQ.12).AND.(ISHELC.GT.NLRGBL))
      &      IDSTRT1 = NLRGBL + 1
          DO 200 ISHELD = IDSTRT1, ISHELC
+            ICD    = LCLASH(ISHELD)
             NHKTD  = NHKTSH(ISHELD)
             KHKTD  = KHKTSH(ISHELD)
             KCKTD  = KCKTSH(ISHELD)
@@ -1183,6 +1204,7 @@ C
                CORDY0 = CENTSH(ISHELD,2)
                CORDZ0 = CENTSH(ISHELD,3)
             END IF
+            JDIS = IDIS(ICA,ICB,ICC,ICD)
             GENCD = .NOT.(SEGMSH(ISHELC) .AND. SEGMSH(ISHELD))
             IGENCD = 1
             IF (.NOT.GENCD) IGENCD = 2
@@ -1207,9 +1229,8 @@ C
      &                  LONDON,SPNORB,EXPECT,SUSCEP,DDFOCK,DIRFCK,
      &                  SOFOCK,DISTRI,IATOM,MULE,MULTE,MAXDER,NOCONT,
      &                  NODV,NOPV,THRESH,IPRINT,FIRST,SQ12EL,INDHSQ,
-     &                  IODDHR,INDHER,IFCTYP,ADISTR,DUMMY,IDUMMY,
-     &                  IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,IDUMMY,INDX,
-     &                  INDXAB)
+     &                  IODDHR,INDHER,IFCTYP,ADISTR,DUM,IDUM,
+     &                  DINTSKP,GABRAO,DMRAO,DUM,JDIS,INDX,INDXAB)
   200    CONTINUE
   100 CONTINUE
  999  CONTINUE
@@ -1222,8 +1243,7 @@ C  /* Deck twoods */
      &                  SOFOCK,DISTRI,IATOM,MULE,MULTE,MAXDER,NOCONT,
      &                  NODV,NOPV,THRESH,IPRINT,FIRST,SQ12EL,INDHSQ,
      &                  IODDHR,INDHER,IFCTYP,ADISTR,WRKBUF,ICEDIF,
-     &                  IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,IREPDM,INDX,
-     &                  INDXAB)
+     &                  DINTSKP,GABRAO,DMRAO,DMRSO,IREPDM,INDX,INDXAB)
 #include <implicit.h>
 #include <priunit.h>
 #include <aovec.h>
@@ -1611,7 +1631,7 @@ C  /* Deck symlop */
      &          NPNTAB(NUCA*NUCB,2,NODCAB), NPNTCD(NUCC*NUCD,2,NODCCD),
      &          NREDAB(*), NREDCD(*), WRKBUF(*),
      &          IEFFB(0:7), IEFFC(0:7), IEFFD(0:7),
-     &          GABRAO(NSYMBL,NSYMBL,0:7),DMRAO(NSYMBL,NSYMBL,NDMAT),
+     &          GABRAO(NSYMBL,NSYMBL,0:7),DMRAO(NSYMBL,NSYMBL,*),
      &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,*),IREPDM(*),
      &          INDX(2,*),INDXAB(*)
 #include <twocom.h>
@@ -1652,6 +1672,7 @@ C
         NCCINT = NORBAB*NORBCD*KHKTAB*KHKTCD
       END IF
 C
+      IF(DISTRI) JDIS = IREPDM(1)
       IF(DIRAC) THEN
         COMP(1) = 'L'
         COMP(2) = 'S'
@@ -1862,7 +1883,7 @@ C Largest exchange contribution
                         DNSMAX = MAX(DNSMAX,DNSBUF(1,I),DNSBUF(2,I))
                       ENDDO
                       FCKMAX = DNSMAX*ULINT
-                      IF(FCKMAX.LT.FCKTHR) THEN
+                      IF(FCKMAX.LT.SCRTHR) THEN
                         DINTSKP(2,1) = DINTSKP(2,1) + NCCINT
                         IF(IPRINT.GE.2) THEN
                    WRITE(LUPRI,
@@ -1876,6 +1897,41 @@ C Largest exchange contribution
      &        SPDCAR(NHKTSH(ISHELC)-1),')',
      &        ISHELD,'(',NAMDEP(ICENTD),COMP(LCLASH(ISHELD)),
      &        SPDCAR(NHKTSH(ISHELD)-1),')'
+                        ENDIF
+                        GOTO 300
+                      ENDIF
+                    ENDIF
+                  ENDIF
+                  IF(DISTRI) THEN
+                    DINTSKP(1,JDIS) = DINTSKP(1,JDIS) + NCCINT
+                    IF(DOSCRN) THEN
+                      ULINT = GABRAO(ISYBLA,ISYBLB,0)*
+     &                        GABRAO(ISYBLC,ISYBLD,0)
+                      DNSMAX = D0
+                      IOFF = NDMAT
+                      DO I = 1,NDMAT
+                        FAC = DMRAO(ISYBLC,ISYBLD,I)*
+     &                        DMRAO(ISYBLA,ISYBLB,I+IOFF)
+                        DNSMAX = MAX(DNSMAX,FAC)
+                      ENDDO
+CTROND                      FAC = KHKTAB*NORBAB*KHKTCD*NORBCD
+                      FAC = D1
+CTROND                      FAC = NORBAB*NORBCD
+                      DISMAX = FAC*DNSMAX*ULINT
+                      IF(DISMAX.LT.SCRTHR) THEN
+                        DINTSKP(2,JDIS) = DINTSKP(2,JDIS) + NCCINT
+                        IF(IPRINT.GE.2) THEN
+                   WRITE(LUPRI,
+     &              '(A,1P,D8.2,4(I4,A1,A6,1X,3A1),I3)')
+     &        '*Skip: ',FCKMAX,
+     &        ISHELA,'(',NAMDEP(ICENTA),COMP(LCLASH(ISHELA)),
+     &        SPDCAR(NHKTSH(ISHELA)-1),')',
+     &        ISHELB,'(',NAMDEP(ICENTB),COMP(LCLASH(ISHELB)),
+     &        SPDCAR(NHKTSH(ISHELB)-1),')',
+     &        ISHELC,'(',NAMDEP(ICENTC),COMP(LCLASH(ISHELC)),
+     &        SPDCAR(NHKTSH(ISHELC)-1),')',
+     &        ISHELD,'(',NAMDEP(ICENTD),COMP(LCLASH(ISHELD)),
+     &        SPDCAR(NHKTSH(ISHELD)-1),')',JDIS
                         ENDIF
                         GOTO 300
                       ENDIF
@@ -1982,7 +2038,7 @@ c    &                                       DMRAO(ISYBLB,ISYBLC,I))
 c                       DNSMAX = MAX(DNSMAX,DNSBUF(1,I),DNSBUF(2,I))
                      ENDDO
 Cjth - we may introduce a expectation value threshold later
-                     EXPTHR = FCKTHR
+                     EXPTHR = SCRTHR
 C
                      DO 20 I = 1,3
 C

@@ -1481,11 +1481,12 @@ C
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(A,E9.2)') 'LL-int - threshhold:',THRS
         CALL TIMER('START ',TIMSTR,TIMEND)
-        CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,1,IDUMMY,IDUMMY,DUMMY,
-     &              IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,
+        CALL TWOINT(WORK,LWORK,DUM,DUM,1,IDUM,IDUM,DUM,
+     &              IDUM,IDUM,IRNTYP,MAXDIF,JATOM,
      &              .TRUE.,.TRUE.,.FALSE.,TKTIME,IPRTWO,
-     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUMMY,I2TYP,
-     &              IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,IDUMMY,.TRUE.)
+     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUM,I2TYP,
+     &              IDUM,IDUM,DUM,DUM,DUM,IDUM,.TRUE.,
+     &              IDUM,DUM)
         CALL TIMER('LL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
@@ -1521,11 +1522,12 @@ C
      +     WRITE(LUPRI,'(A,E9.2)') 'SL-int - threshhold:',THRS
         CALL OPNFIL(LUINTA,'DFTWSL','UNKNOWN','TWOGE1')          
         CALL TIMER('START ',TIMSTR,TIMEND)
-        CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,1,IDUMMY,IDUMMY,DUMMY,
-     &              IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,
+        CALL TWOINT(WORK,LWORK,DUM,DUM,1,IDUM,IDUM,DUM,
+     &              IDUM,IDUM,IRNTYP,MAXDIF,JATOM,
      &              .TRUE.,.TRUE.,.FALSE.,TKTIME,IPRTWO,
-     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUMMY,I2TYP,
-     &              IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,IDUMMY,.TRUE.)
+     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUM,I2TYP,
+     &              IDUM,IDUM,DUM,DUM,DUM,IDUM,.TRUE.,
+     &              IDUM,DUM)
         CALL TIMER('SL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         THRS = THRBUF
@@ -1562,11 +1564,12 @@ C
      +     WRITE(LUPRI,'(A,E9.2)') 'SS-int - threshhold:',THRS
         CALL OPNFIL(LUINTA,'DFTWSS','UNKNOWN','TWOGE1')          
         CALL TIMER('START ',TIMSTR,TIMEND)
-        CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,1,IDUMMY,IDUMMY,DUMMY,
-     &              IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,
+        CALL TWOINT(WORK,LWORK,DUM,DUM,1,IDUM,IDUM,DUM,
+     &              IDUM,IDUM,IRNTYP,MAXDIF,JATOM,
      &              .TRUE.,.TRUE.,.FALSE.,TKTIME,IPRTWO,
-     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUMMY,I2TYP,
-     &              IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,IDUMMY,.TRUE.)
+     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUM,I2TYP,
+     &              IDUM,IDUM,DUM,DUM,DUM,IDUM,.TRUE.,
+     &              IDUM,DUM)
         CALL TIMER('SS-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         THRS = THRBUF
@@ -3251,7 +3254,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D2 = 2.0D0,D10 = 10.0D0)
+      PARAMETER(D0 = 0.0D0,D2 = 2.0D0,D10 = 10.0D0)
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxorb.h>
@@ -3272,6 +3275,9 @@ C
 #include <shells.h>
 #include <blocks.h>
 #include <dcbqal.h>
+#if defined (VAR_MPI)
+#include <infpar.h>
+#endif
       LOGICAL PERTUR, EXPECT, UNDIFF, SPNORB, DIRFCK, DISTRI, SQ12EL,
      &        LONDON, SUSCEP, DDFOCK, ADISTR, LBIT, FIRST
       CHARACTER SECTID*12, TOTTID*12, WALLTID*12, CPUTID*12
@@ -3290,19 +3296,21 @@ Ctec Is FIRST needed???
       N2GAB   = NSYMBL*NSYMBL
       CALL SETFCK(IFCTYP,IREPDM,NFMAT,4,ISYMOP,IHRMOP,IFCKOP,IPRINT)
       CALL DZERO(DNTSKP,8)
+      IF(SCRFCK.GT.D0) THEN
 C
-C     Get G(ab)-matrix from AOPROPER
-C     ==============================
-C     GAB is already present i GABRAO
+C       Get G(ab)-matrix from AOPROPER
+C       ==============================
+C       GAB is already present i GABRAO
 C
 #ifdef UNDEF
-      CALL GETGAB(GABRAO         ,'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
+        CALL GETGAB(GABRAO         ,'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
 #endif 
 C
-C     Make reduced density matrix for screening
-C     =========================================
+C       Make reduced density matrix for screening
+C       =========================================
 C
-      CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
+        CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
+      ENDIF
 C
 C     ****************************
 C     **** Process integrals *****
@@ -3313,6 +3321,7 @@ C
       MAXDIF = 0
       JATOM  = 0
       KPOS   = 1
+      CALL SCRSTA('Header',DUM,DUM)
 C
 C initialize MTOTTK
 C
@@ -3325,11 +3334,10 @@ C
         IF (PARCAL) THEN
 C
            CALL GETTIM(CPU1,WALL1)
-           CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,
+           CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,IFTHRS,GABRAO,DMRAO,DUMMY,
-     &          DNTSKP)
+     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
 C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
@@ -3351,11 +3359,11 @@ C
         ELSE
 #endif
            CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,DUMMY,
-     &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
+           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
+     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
-     &          GABRAO,DMRAO,DUMMY,DNTSKP,.TRUE.)
+     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
+     &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
@@ -3382,11 +3390,10 @@ C
         IF (PARCAL) THEN
 C
            CALL GETTIM(CPU1,WALL1)
-           CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,
+           CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,IFTHRS,GABRAO,DMRAO,DUMMY,
-     &          DNTSKP)
+     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
 C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
@@ -3409,11 +3416,11 @@ C
         ELSE
 #endif
            CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,DUMMY,
-     &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
+           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
+     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
-     &          GABRAO,DMRAO,DUMMY,DNTSKP,.TRUE.)
+     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
+     &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
@@ -3442,11 +3449,10 @@ C
         IF (PARCAL) THEN
 C
            CALL GETTIM(CPU1,WALL1)
-           CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,
+           CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,IFTHRS,GABRAO,DMRAO,DUMMY,
-     &          DNTSKP)
+     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
            IF (IPRINT .GT. 0) THEN
@@ -3467,11 +3473,11 @@ C
         ELSE
 #endif
            CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,DUMMY,
-     &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
+           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
+     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
-     &          GABRAO,DMRAO,DUMMY,DNTSKP,.TRUE.)
+     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
+     &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
@@ -3494,7 +3500,7 @@ C     ======================
 C
       CALL SKLFCK(FAO,WORK,LWORK,IPRINT,.TRUE.,.FALSE.,.FALSE.,
      &            .FALSE.,.TRUE.,0,.FALSE.,NDMAT,IREPDM,
-     &            IFCTYP,IDUMMY)
+     &            IFCTYP,IDUM)
 C
       CALL QEXIT('DIRSC1')
       RETURN
@@ -3681,10 +3687,10 @@ C     External variables
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT)
 C     Local variables
       SAVE IPFCK,HTYP
-      DIMENSION IPFCK(4,1),IRFCK(4),IQFCK(4)
+      DIMENSION IPFCK(4,3),IRFCK(4),IQFCK(4)
       CHARACTER HTYP(0:2)*1
       DATA HTYP /'X','S','A'/
-      DATA IPFCK/3,2,2,2/
+      DATA IPFCK/3,2,2,2,1,0,0,0,2,2,2,2/
 #include <ibtfun.h>
 C
       IF(IPRINT.GE.2) THEN
@@ -3823,7 +3829,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D2 = 2.0D0,D4 = 4.0D0,D8 = 8.0D0)
+      PARAMETER(D2 = 2.0D0,D4 = 4.0D0,D8 = 8.0D0,D0=0.0D0)
 #include <dummy.h>
 #include <maxaqn.h>
 C
@@ -3835,6 +3841,9 @@ C
 #include <dcbbas.h>
 #include <ccom.h>
 #include <blocks.h>
+#if defined (VAR_MPI)
+#include <infpar.h>
+#endif
       LOGICAl LBIT
       CHARACTER SECTID*12, INTTID*12, TOTTID*12, CPUTID*12, WALLTID*12
       DIMENSION FSO(N2BBASX,*),DSO(N2BBASX,*),
@@ -3854,11 +3863,12 @@ C
 C
 C     Make reduced density matrix for screening
 C     =========================================
-C     in SO-basis
-
-      CALL MKDRSO(DSO,DMRSO,NDMAT,WORK,LWORK,IPRINT)
-C     in AO-basis
-      CALL MKDRQO(DSO,DMRAO,NFMAT,ISYMOP,WORK,LWORK,IPRINT)
+      IF(SCRFCK.GT.D0) THEN
+C       in SO-basis
+        CALL MKDRSO(DSO,DMRSO,NDMAT,WORK,LWORK,IPRINT)
+C       in AO-basis
+        CALL MKDRQO(DSO,DMRAO,NFMAT,ISYMOP,WORK,LWORK,IPRINT)
+      ENDIF
 C
 C     ****************************
 C     **** Process integrals *****
@@ -3869,8 +3879,7 @@ C
       MAXDIF = 0
       JATOM  = 0
       KPOS   = 1
-C
-
+      CALL SCRSTA('Header',DUM,DUM)
 C
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
@@ -3882,8 +3891,7 @@ C
            CALL PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &          DNTSKP)
+     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
            IF (IPRINT .GT. 0) THEN
@@ -3904,11 +3912,11 @@ C
         ELSE
 #endif
            CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUMMY,
-     &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
+           CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUM,
+     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
-     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.)
+     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
+     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
@@ -3931,8 +3939,7 @@ C
            CALL PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &          DNTSKP)
+     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
            IF (IPRINT .GT. 0) THEN
@@ -3953,11 +3960,11 @@ C
         ELSE
 #endif
            CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUMMY,
-     &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
+           CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUM,
+     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
-     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.)
+     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
+     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
@@ -3984,8 +3991,7 @@ C
            CALL PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &          DNTSKP)
+     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
 C
            IF (IPRINT .GT. 0) THEN
               CALL GETTIM(CPU2,WALL2)
@@ -4007,11 +4013,11 @@ C
         ELSE
 #endif
            CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUMMY,
-     &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
+           CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUM,
+     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
-     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.)
+     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
+     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF

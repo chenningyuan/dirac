@@ -376,7 +376,6 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <dummy.h>
 #include <aovec.h>
 #include <mxorb.h>
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
@@ -403,7 +402,7 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETFC1')
-      CALL REACMO(LUBUF,'DFCOEF',CMO,DUMMY,TOTERG,3)
+      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,TOTERG,3)
       CLOSE(LUBUF,STATUS='KEEP')
 C
 C     1. Get two-electron Fock matrix in AO-basis

@@ -319,7 +319,7 @@ C
          RADJ = RADIUS(ICHARG(J))
          DO 20, I= 1, J-1
             RADI = RADIUS(ICHARG(I))
-            IF (RADI .LT. 0 .OR. RADJ .LT. 0) THEN
+            IF (RADI .LT. D0 .OR. RADJ .LT. D0) THEN
                WRITE(LUPRI,*) 'RADII FOR ATOMS WITH EITHER/OR ATOMIC'
      &              //' NUMBER ', ICHARG(I), ' OR ', ICHARG(J),
      &              ' ARE UNAVAILABLE '
@@ -537,67 +537,57 @@ C
 C  /* Deck radius */
       FUNCTION RADIUS(NCHARGE)
 #include <implicit.h>
-C     based on covalent radii and metallic radii. Returns -1 where
-C     data is inavailable
-      PARAMETER ( DPH = 1.0D-02 )
-      DIMENSION RAD(100)
-      DATA (RAD(I), I = 1, 100)/
-     &        30.,  155.,  160.,  110.,
-     & 90.,   80.,   70.,   68.,   65.,
-     &154.,  190.,  160.,  140.,  110.,
-     &110.,  105.,  105.,  190.,  238.,
-     &200.,  165.,  145.,  135.,  130.,
-     &125.,  125.,  125.,  125.,  125.,
-     &140.,  140.,  130.,  120.,  120.,
-     &120.,  200.,  255.,  215.,  180.,
-     &160.,  145.,  140.,  135.,  130.,
-     &130.,  135.,  140.,  155.,  160.,
-     &160.,  140.,  140.,  140.,  220.,
-     &270.,  220.,  185.,  180.,  180.,
-     &180.,  180.,  180.,  200.,  180.,
-     &175.,  175.,  175.,  175.,  170.,
-     &170.,  170.,  155.,  145.,  140.,
-     &135.,  135.,  135.,  135.,  145.,
-     &155.,  170.,  175.,  170.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1./
+C     based on covalent radii and metallic radii. 
+C     Returns radius of MAXCHR when data not available.
+C     Revision March 17 1999 - Trond Saue
+      PARAMETER ( DPH = 1.0D-02,MAXCHR=83)
+      DIMENSION RAD(MAXCHR)
+      DATA (RAD(I), I = 1, MAXCHR)/
+     & 30.D0,  155.D0,  160.D0,  110.D0,   90.D0,
+     & 80.D0,   70.D0,   68.D0,   65.D0,  154.D0,
+     &190.D0,  160.D0,  140.D0,  110.D0,  110.D0,
+     &105.D0,  105.D0,  190.D0,  238.D0,  200.D0,
+     &165.D0,  145.D0,  135.D0,  130.D0,  125.D0,
+     &125.D0,  125.D0,  125.D0,  125.D0,  140.D0,
+     &140.D0,  130.D0,  120.D0,  120.D0,  120.D0,
+     &200.D0,  255.D0,  215.D0,  180.D0,  160.D0,
+     &145.D0,  140.D0,  135.D0,  130.D0,  130.D0,
+     &135.D0,  140.D0,  155.D0,  160.D0,  160.D0,
+     &140.D0,  140.D0,  140.D0,  220.D0,  270.D0,
+     &220.D0,  185.D0,  180.D0,  180.D0,  180.D0,
+     &180.D0,  180.D0,  200.D0,  180.D0,  175.D0,
+     &175.D0,  175.D0,  175.D0,  170.D0,  170.D0,
+     &170.D0,  155.D0,  145.D0,  140.D0,  135.D0,
+     &135.D0,  135.D0,  135.D0,  145.D0,  155.D0,
+     &170.D0,  175.D0,  170.D0/
+
 C
-      RADI = RAD(NCHARGE)
-      IF (RADI .GT. 0.0D0) RADIUS = (DPH * RADI)
+      IF(NCHARGE.GT.MAXCHR) THEN
+        RADIUS = DPH*RAD(MAXCHR)
+      ELSE
+        RADIUS = DPH*RAD(NCHARGE)
+      ENDIF
       RETURN
       END
 C  /* Deck vdwrad */
       FUNCTION VDWRAD(NCHARGE)
 #include <implicit.h>
-C     based on van der Waals radii. Returns -1 where data is inavailable
-      DIMENSION RAD(100)
-      DATA (RAD(I), I = 1, 100)/
-     &       110.,  220.,  122.,   63.,
-     &155.,  155.,  140.,  135.,  130.,
-     &154.,  190.,  160.,  140.,  110.,
-     &202.,  220.,  150.,  150.,  220.,
-     &188.,  181.,  175.,  277.,  239.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1.,   -1.,   -1.,   -1.,   -1.,
-     & -1./
+C     based on van der Waals radii. 
+C     returns radius of MAXCHR when data not available
+C     Revised by T.Saue March 17 1999
+      PARAMETER ( DPH = 1.0D-02,MAXCHR=24)
+      DIMENSION RAD(MAXCHR)
+      DATA (RAD(I), I = 1, MAXCHR)/
+     &110.,  220.,  122.,   63.,  155.,
+     &155.,  140.,  135.,  130.,  154.,
+     &190.,  160.,  140.,  110.,  202.,
+     &220.,  150.,  150.,  220.,  188.,
+     &181.,  175.,  277.,  239./
 C
-      VRADI = RAD(NCHARGE)
-      IF (VRADI .GT. 0.0D0) VDWRAD = (0.01D0 * VRADI)
-      VDWRAD = (0.01D0 * RAD(NCHARGE))
+      IF(NCHARGE.GT.MAXCHR) THEN
+        VDWRAD = DPH*RAD(MAXCHR)
+      ELSE
+        VDWRAD = DPH*RAD(NCHARGE)
+      ENDIF
       RETURN
       END

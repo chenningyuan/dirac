@@ -186,11 +186,9 @@ C
 C     Call driver for 4-index transformation
 C     --------------------------------------
 C
-      CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,ISTRTRA,
-     &            WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &            WORK(KQ(1,3)),WORK(KQ(1,4)),DUM,DUM,
-     &            NDMOQR,ICMOQR,NSTR,.FALSE.,TRA_MSOUT,TRA_ANTIS,
-     &            ITRA_INTFL4)
+      CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,IDUM,
+     &            NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &            TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
 C
 C      Print timing information
 C
@@ -234,88 +232,99 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <dummy.h>
 C
 #include <dcbmp2.h>
+#include <dcbtra.h>
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
 #include <dcbgen.h>
-      LOGICAL TOBE,TRASAM
-      DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,2),KQ(2,2),
+      LOGICAL TOBE,TRANOP
+      DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,2),KQ(2,4),
      &          NR(2),IR(2,2),NQ(2),KE(2,2)
-      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NTHREI(2)
+      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
 C
       CALL QENTER('PSIMP2')
 #include <memint.h>
       KFRSAV = KFREE
       CALL MP2HI(IPRMP2)
-C     
-C     Get the position of the largest eigenvalue below the
-C     energy threshold DMP2_VIRTHR
-C     
-      IF(DMP2_VIRTHR.GT.-1d10) THEN
-         CALL PCKTOP(DMP2_VIRTHR,NTHREI,IPRMP2,WORK,LWORK)
-         IF(NTHREI(1).LT.0) CALL QUIT
-     &        ('No Eigenvalues below threshold DMP2_VIRTHR.')
-         IF((NTHREI(2).LT.0).AND.(NFSYM.EQ.2)) CALL QUIT
-     &        ('No Eigenvalues below threshold DMP2_VIRTHR.')
+C
+C     Check to see if coefficients are there
+C     ======================================
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+        WRITE(LUPRI,'(A)') 'Coefficient file not present'
+        CALL QUIT('PSIMP2: No coefficients !')
+      ELSE
+        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
       ENDIF
 C
-C     Set up index arrays for active orbitals
-C     =======================================      
+C     Transfer information from DCBMP2 to DCBTRA
+C     ==========================================
 C
-      DO I = 1,2
-         DO IFRP = 1,NFSYM
-            IF (I.EQ.1) THEN
-               IF(NOPAIR) THEN
-                  NR(IFRP)   =  NISH(IFRP)
-                  IR(1,IFRP) =  1
-                  IR(2,IFRP) =  NISH(IFRP)
-               ELSE
-                  NR(IFRP)   =  NISH(IFRP) + NPSH(IFRP)
-                  IR(1,IFRP) = -NPSH(IFRP)
-                  IR(2,IFRP) =  NISH(IFRP)
-               ENDIF
-            ELSE
-               NVIR = NESH(IFRP)
-               IF(DMP2_VIRTHR.GT.-1d10) NVIR = NTHREI(IFRP)
-               IF(NOPAIR) THEN
-                  NR(IFRP)   = NVIR - NISH(IFRP)
-                  IR(1,IFRP) = NISH(IFRP) + 1
-                  IR(2,IFRP) = NVIR
-               ELSE
-                  NR(IFRP)   = NVIR - NISH(IFRP) + NPSH(IFRP) 
-                  IR(1,IFRP) = NISH(IFRP) + 1
-                  IR(2,IFRP) = NVIR
-               ENDIF
-            ENDIF
+      TRANOP = NOPAIR
+      NOPAIR = MP2NOP
+      SCRBUF = SCRTRA
+      SCRTRA = SCRMP2
+      IPRBUF = IPRTRA
+      IPRTRA = IPRMP2
+      ISTBUF = ISTRAT
+      ISTRAT = ISTRMP2
+C
+C     Set up index arrays for active occupieds
+C     ========================================     
+C
+      DO IFRP = 1,NFSYM
+        IF(NOPAIR) THEN
+          NR(IFRP)   =  NOCC(IFRP)
+          IR(1,IFRP) =  1
+          IR(2,IFRP) =  NOCC(IFRP)
+        ELSE
+          CALL QUIT('PSIMP2: e-p not implemented !')
+          NR(IFRP)   =  NOCC(IFRP) + NPSH(IFRP)
+          IR(1,IFRP) = -NPSH(IFRP)
+          IR(2,IFRP) =  NOCC(IFRP)
+        ENDIF
 C     
-            CALL MEMGET('INTE',KVEC(IFRP,I),NR(IFRP),WORK,KFREE,LFREE)
-            NSTR(IFRP,0,I) = 1
-            CALL  NUMLST(MP2_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
-     &           NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &           NSTR(IFRP,0,I),WORK(KFREE),LFREE)
-            CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
-     &           NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-            NSTR(IFRP,0,I)   = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
-            NSTR(IFRP,0,I+2) = NSTR(IFRP,0,I)
-            NSTR(IFRP,1,I+2) = NSTR(IFRP,1,I)
-            NSTR(IFRP,2,I+2) = NSTR(IFRP,2,I)
-            CALL MEMREL('PSIMP2',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
-            CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
-     &           WORK,KFREE,LFREE)
-         ENDDO
+        CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
+        NSTR(IFRP,0,1) = 1
+        CALL NUMLST(MP2_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
+     &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &              NSTR(IFRP,0,1),WORK(KFREE),LFREE)
+        CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),IFRP,
+     &              NSTR(IFRP,2,1),NSTR(IFRP,1,1))
+        NSTR(IFRP,0,1)   = NSTR(IFRP,1,1) + NSTR(IFRP,2,1)
       ENDDO
 C
-C     Print section
-C     =============
+C     Set up index arrays for active virtuals
+C     ========================================     
 C
-      IF (IPRMP2.GE.0) THEN
-         WRITE(LUPRI,'(/1X,A/)') '* Active MP2 space:'
-         DO I = 1, NFSYM
-            CALL MP2PRI(I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),NSTR)
-         ENDDO
-      ENDIF
+      DO IFRP = 1,NFSYM
+        IF(NOPAIR) THEN
+          NR(IFRP)   = NSSH(IFRP)
+          IR(1,IFRP) = NOCC(IFRP) + 1
+          IR(2,IFRP) = NESH(IFRP)
+        ELSE
+          CALL QUIT('PSIMP2: e-p not implemented !')
+        ENDIF
+C     
+        CALL MEMGET('INTE',KVEC(IFRP,2),NR(IFRP),WORK,KFREE,LFREE)
+        NSTR(IFRP,0,2) = 1
+        CALL  NUMLST(MP2_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
+     &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &               NSTR(IFRP,0,2),WORK(KFREE),LFREE)
+        CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),IFRP,
+     &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
+        NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)
+      ENDDO
+C
+C     If energy threshold, truncate virtual space
+C     ===========================================
+C
+      IF(DMP2_VIRTHR.NE.DUMMY) CALL VIRTHR(WORK,KFREE,LFREE,
+     &     LUCOEF,NSTR(1,0,2),KVEC(1,2),DMP2_VIRTHR)
 C
 C     Calculate dimensions of coefficient arrays
 C     The coefficients are stored as 2 arrays of two matrices each
@@ -326,89 +335,131 @@ C              3rd dimension transformation index
 C
 C     ICMOQR : Index to start of representation in the coefficient array
 C
+C
+C     Selected eigenvalues
+C
       DO I = 1,2
-         NSTRT = 0
-         DO IFRP = 1, NFSYM
-            NSTRT = NSTRT + NSTR(IFRP,0,I)
-         ENDDO
-         CALL MEMGET('REAL',KE(1,I),NSTRT,WORK,KFREE,LFREE)
-         KE(2,I) = KE(1,I) + NSTR(1,0,I)
+        NDIM = 0
+        DO IFRP = 1, NFSYM
+          NDIM = NDIM + NSTR(IFRP,0,I)
+        ENDDO
+        CALL MEMGET('REAL',KE(1,I),NDIM,WORK,KFREE,LFREE)
+        KE(2,I) = KE(1,I) + NSTR(1,0,I)
       ENDDO
 C
-      DO I = 1,2
-         NQTOT = 0
-         ICMOQR(1,I)   = 1
-         DO IFRP = 1, NFSYM
-            NDMOQR(1,IFRP,I) = NFBAS(IFRP,0)
-            NDMOQR(2,IFRP,I) = NSTR(IFRP,0,I)
-            NQ(IFRP)         = NFBAS(IFRP,0)*NSTR(IFRP,0,I)*NZ
-            NQTOT            = NQTOT + NQ(IFRP)
-            IF (IFRP.LT.NFSYM) THEN
-               ICMOQR(IFRP+1,I) = ICMOQR(IFRP,I) + NQ(IFRP)
-            ENDIF
+C     Selected coefficients
 C
-            ICMOQR(IFRP,I+2)   = ICMOQR(IFRP,I)
-            NDMOQR(1,IFRP,I+2) = NDMOQR(1,IFRP,I)
-            NDMOQR(2,IFRP,I+2) = NDMOQR(2,IFRP,I)
-         ENDDO
-         CALL MEMGET('REAL',KQ(1,I),NQTOT,WORK,KFREE,LFREE)
-         KQ(2,I) = KQ(1,I) + NQ(1)
+      DO I = 1,2
+        NDIM = 0
+        DO IFRP = 1, NFSYM
+          NDMOQR(1,IFRP,I) = NFBAS(IFRP,0)
+          NDMOQR(2,IFRP,I) = NSTR(IFRP,0,I)
+          ICMOQR(IFRP,I)   = NDIM + 1
+          NQ(IFRP)         = NFBAS(IFRP,0)*NSTR(IFRP,0,I)*NZ
+          NDIM             = NDIM + NQ(IFRP)
+        ENDDO
+        CALL MEMGET('REAL',KQ(1,I),NDIM,WORK,KFREE,LFREE)
+        KQ(2,I)   = KQ(1,I) + NQ(1)
       ENDDO
 C
 C     Get all coefficients and eigenvalues
+C     ====================================
 C
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT ,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(A)') 'Coefficient file not present'
-         CALL QUIT('PSIMP2: No coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
-         IP=2
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),DHFEMP,IP)
-         CLOSE(LUCOEF,STATUS='KEEP')
-         WRITE(LUPRI,'(A,F18.10,/)') 
-     &        'Coefficients imported. Total DHF energy:', DHFEMP
-      ENDIF
+      KBUF = KFREE
+      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &            DHFEMP,2)
+      CLOSE(LUCOEF,STATUS='KEEP')
+      WRITE(LUPRI,'(A,F18.10,/)') 
+     &  'Coefficients imported. Total DHF energy:', DHFEMP
 C     
 C     Select the set that we need
 C
       DO I = 1, 2
-         DO IFRP = 1, NFSYM
-            CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),
-     &           IFRP,WORK(KQ(IFRP,I)),WORK(KVEC(IFRP,I)),
-     &           NSTR(IFRP,2,I),NSTR(IFRP,1,I),
-     &           NFBAS(IFRP,0),NORB(IFRP))
-            CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
-     &        WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+        ISAME(I)   = I
+        DO IFRP = 1, NFSYM
+          CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),
+     &         IFRP,WORK(KQ(IFRP,I)),WORK(KVEC(IFRP,I)),
+     &         NSTR(IFRP,2,I),NSTR(IFRP,1,I),
+     &         NFBAS(IFRP,0),NORB(IFRP))
+          CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+     &         WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
         ENDDO
       ENDDO
 C
-      IF (IPRMP2.GE.1) THEN
-         WRITE(LUPRI,'(A)') 'Active Eigenvals:'
-         DO I = 1, 2
+C     Copy for indices 3 and 4
+C
+      DO I = 1,2
+        KQ(1,I+2) = KQ(1,I)
+        KQ(2,I+2) = KQ(2,I)
+        ISAME(I+2) = I
+        DO IFRP = 1,NFSYM
+          NSTR(IFRP,0,I+2) = NSTR(IFRP,0,I)
+          NSTR(IFRP,1,I+2) = NSTR(IFRP,1,I)
+          NSTR(IFRP,2,I+2) = NSTR(IFRP,2,I)
+          NDMOQR(1,IFRP,I+2) = NDMOQR(1,IFRP,I)
+          NDMOQR(2,IFRP,I+2) = NDMOQR(2,IFRP,I)
+          ICMOQR(IFRP,I+2)   = ICMOQR(IFRP,I)   
+        ENDDO
+      ENDDO
+C
+C     If necessary recanonize virtual orbitals
+C     ========================================
+C
+      CALL VIRCAN(WORK,KFREE,LFREE,IPRMP2,KQ(1,2),KE(1,2),
+     &            NDMOQR(1,1,2),ICMOQR(1,2),
+     &            WORK(KCMO),WORK(KEIG))
+C
+C     Throw away the full coefficients and eigenvalues
+C     ================================================
+C
+      CALL MEMREL('PSIMP2.cfs',WORK,KBUF,KBUF,KFREE,LFREE)
+C
+C
+C     Print section
+C     =============
+C
+      IF (IPRMP2.GE.0) THEN
+        WRITE(LUPRI,'(/1X,A/)') '* Active MP2 space:'
+        DO I = 1, NFSYM
+          CALL MP2PRI(I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),NSTR)
+        ENDDO
+        IF (IPRMP2.GE.1) THEN
+          WRITE(LUPRI,'(A)') 'Active Eigenvals:'
+          DO I = 1, 2
             DO IFRP = 1,NFSYM
-               WRITE(LUPRI,'(/2I8)') I, IFRP
-               WRITE(LUPRI,'(5D15.8)') 
-     &              (WORK(KE(IFRP,I)+IXX-1), IXX=1,NSTR(IFRP,0,I))
+              WRITE(LUPRI,'(/2I8)') I, IFRP
+              WRITE(LUPRI,'(5D15.8)') 
+     &             (WORK(KE(IFRP,I)+IXX-1), IXX=1,NSTR(IFRP,0,I))
             ENDDO
-         ENDDO
+          ENDDO
+        ENDIF
       ENDIF
-C
-C     Throw away the complete set, keep only the selected sets
-C
-      CALL MEMREL('PSIMP2',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
 C     Call driver for 4-index transformation
 C     --------------------------------------
 C
-      CALL PAMTR1(WORK,KFREE,LFREE,IPRMP2,ISTRMP2,
-     &            WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &            WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &            WORK(KE(1,1)),WORK(KE(1,2)),
-     &            NDMOQR,ICMOQR,NSTR,.TRUE.,MP2_MSOUT,MP2_ANTIS,
-     &            MP2_INTFLG)
+      CALL PAMTR1(WORK,KFREE,LFREE,IPRMP2,KQ,KE,
+     &            NDMOQR,ICMOQR,NSTR,.TRUE.,EMP2,
+     &            MP2_MSOUT,MP2_ANTIS,MP2_INTFLG)
+C
+C     Print MP2 energy
+C     ----------------
+C
+      WRITE(LUPRI,'(/15X,A)') '#### Final MP2 energy. ####'
+      WRITE(LUPRI,'(15X,A,F15.10,4X,A)') '####', EMP2, '####'
+      WRITE(LUPRI,'(15X,A,/)') '###########################'
+      CALL FLSHFO(LUPRI)
+C
+C     Recover information from DCBTRA
+C
+      NOPAIR = TRANOP
+      SCRTRA = SCRBUF
+      IPRTRA = IPRBUF
+      ISTRAT = ISTBUF
+C
+      CALL MEMREL('PSIMP2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('PSIMP2')
 C
@@ -451,12 +502,11 @@ C
      &     '- Active virtual orbitals: ', NSTR(0,I,2)
         WRITE(LUPRI,1002) (IOS2(K),K=1,NSTR(0,I,2))
       ELSE
-        WRITE(LUPRI,'(6X,A)') 
+        WRITE(LUPRI,'(6X,A/)') 
      &     '- No active virtual orbitals'
       ENDIF
-      WRITE(LUPRI,'(/)')
 C
- 1002 FORMAT (6X,10I5)
+ 1002 FORMAT (6X,10I5/)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -525,15 +575,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PAMTR1 */
-      SUBROUTINE PAMTR1(WORK,KFREE,LFREE,IPRINT,ISTRA,
-     &                  Q1,Q2,Q3,Q4,EIG1,EIG2,NDMOQR,ICMOQR,NSTR,
-     &                  LMP2,MSOUT,ANTIS,INTFLG)
+      SUBROUTINE PAMTR1(WORK,KFREE,LFREE,IPRINT,KQ,KE,
+     &           NDMOQR,ICMOQR,NSTR,LMP2,EMP2,MSOUT,ANTIS,INTFLG)
 C***********************************************************************
 C
 C     Subdriver for 4index transformation.
 C
-C     Qn             - coefficient set for index n
-C     EIG            - eigenvalues (for  MP2 calculation)
+C     KQ(ifrp,n)     - adresses of coefficient set for index n
+C     KE(ifrp,2)     - adresses of eigenvalues (for MP2 calculation)
 C     NSTR(ifrp,0,i) - total number of orbitals for index i
 C     NSTR(ifrp,1,i) - number of electronic orbitals for index i
 C     NSTR(ifrp,2,i) - number of positronic orbitals for index i
@@ -560,14 +609,14 @@ C
 #include <dgroup.h>
 C
       LOGICAL MSOUT,ANTIS,LMP2
-      DIMENSION WORK(*),NSTR(2,0:2,4)
-      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
-      DIMENSION Q1(*),Q2(*),Q3(*),Q4(*)
-      DIMENSION EIG1(*),EIG2(*)
+      DIMENSION NSTR(2,0:2,4),NDMOQR(2,2,4),ICMOQR(2,4),
+     &          KQ(2,4),KE(2,2),DINTSKP(4,2),WORK(*)
 C
 #include <dcbibt.h>
 C
       KFRSAV = KFREE
+CTROND: Is this good ?
+CTROND
 C
 C     Set up symmetry packing information.
 C
@@ -588,7 +637,7 @@ C
       CALL DEFCL (NCLASS)
 C
 C
-C     We have three possible strategies : 
+C     We have four possible strategies : 
 C
 C     1) In-core test version : half- and fully-transformed integrals
 C        should fit in memory
@@ -598,28 +647,29 @@ C        Loop over distributions transform 4 indices(rest. ranges first)
 C        Accumulate integrals in memory, calculate MP2 energy
 C     3) Loop over distributions, transform 2 indices and write to disk
 C        Loop over transformed indices and transform last 2 indices
-C     4) Like 3, but 2-index transformed integrals written to disk in
+C     4) Like 3, but 2-index transformed integrals written to disk in 
 C        batches; parallel scheme.
 C
 C     In all cases we transform in mulliken notation
 C
       CALL QENTER('PAMTR1')
 C
-      IF (ISTRA.EQ.1) THEN
+      IF (ISTRAT.EQ.1) THEN
           CALL TRDR1T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,NSTR,
-     &                ANTIS,LMP2,WORK(KINDX),Q1,Q2,Q3,Q4,EIG1,EIG2)
-      ELSEIF (ISTRA.EQ.2) THEN
+     &                ANTIS,LMP2,KINDX,KQ,KE,DINTSKP)
+      ELSEIF (ISTRAT.EQ.2) THEN
           CALL TRDR2T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,NSTR,
-     &                ANTIS,LMP2,WORK(KINDX),Q1,Q2,Q3,Q4,EIG1,EIG2)
-      ELSEIF (ISTRA.EQ.3) THEN
+     &                ANTIS,LMP2,EMP2,KINDX,KQ,KE,DINTSKP)
+      ELSEIF (ISTRAT.EQ.3) THEN
           CALL TRDR3T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
-     &                ANTIS,LMP2,WORK(KINDX),Q1,Q2,Q3,Q4,EIG1,EIG2)
-      ELSEIF (ISTRA.EQ.4) THEN
+     &                ANTIS,LMP2,WORK(KINDX),KQ,KE,DINTSKP)
+      ELSEIF (ISTRAT.EQ.4) THEN
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
-     &                ANTIS,LMP2,WORK(KINDX),Q1,Q2,Q3,Q4,EIG1,EIG2)
+     &                ANTIS,LMP2,KINDX,KQ,KE,DINTSKP)
       ELSE
-         WRITE(LUPRI,'(A)') 'PAMTR1: Strategy ',ISTRA,' not implemented'
-         CALL QUIT('PAMTR1: Unknown strategy !')
+        WRITE(LUPRI,'(A)') 
+     &        'PAMTR1: Strategy ',ISTRAT,' not implemented'
+        CALL QUIT('PAMTR1: Unknown strategy !')
       ENDIF
       CALL QEXIT('PAMTR1')
 C
@@ -658,7 +708,6 @@ C
      &        (FREP(I),(NFBAS(I,J),J=0,2),I = 1,NFSYM)
       ENDIF
 C
-      CALL FLSHFO(LUPRI)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -704,13 +753,12 @@ C
      &        (FREP(I),(NFBAS(I,J),J=0,2),I = 1,NFSYM)
       ENDIF
 C
-      CALL FLSHFO(LUPRI)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN1 */
       SUBROUTINE MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,TRIAN,
-     & NSTR1,NSTR2,NFPCK,IFPCK,NDMOQR,ICMOQR,IJPAIRS,Q1,Q2,GMAT,
+     & NSTR1,NSTR2,NDMOQR,ICMOQR,IJPAIRS,Q1,Q2,GMAT,
      & HMAT,NZMO,IQMO)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -727,8 +775,8 @@ C     - ICL          Last class of integrals
 C     - TRIAN        Store the transformed integrals as a lower triangle
 C     - NSTR1        Number of active spinors for index 1
 C     - NSTR2        Number of active spinors for index 2
-C     - NFPCK        Number of spinor pairs for each compound symmetry
-C     - IFPCK        Pointers to spinor pairs
+C     - NFPCK12        Number of spinor pairs for each compound symmetry
+C     - IFPCK12        Pointers to spinor pairs
 C     - NDMOQR       Dimensions of the coefficient array
 C     - ICMOQR       Pointers to coefficients
 C     - IJPAIRS      Number of blocks for each boson symmetry
@@ -750,7 +798,6 @@ C
       INTEGER   NSTR1(2),NSTR2(2)
       DIMENSION WORK(*)
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
-      DIMENSION NFPCK(2),IFPCK(2,2)
       DIMENSION IJPAIRS(0:7)
       DIMENSION IQAO(4),IQMO(4,0:7),NZMO(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
@@ -789,8 +836,8 @@ C        Allocate memory for temporary storage of unsorted block of
 C        half-transformed integrals. Allocate absolute maximum instead
 C        of the exact maximum size.
 C
-         CALL MEMGET ('REAL',KHTMP,NFPCK(IREPIJ)*NZ,WORK,KFREE,LFREE)
-         CALL DZERO (WORK(KHTMP),NFPCK(IREPIJ)*NZ)
+         CALL MEMGET ('REAL',KHTMP,NFPCK12(IREPIJ)*NZ,WORK,KFREE,LFREE)
+         CALL DZERO (WORK(KHTMP),NFPCK12(IREPIJ)*NZ)
 C
 C        Loop over the distributions with this boson symmetry in this
 C        shell-block batch
@@ -855,8 +902,8 @@ C                      Order the integrals with NKL as first and IZ
 C                      as second index
 C
                        DO IZ = 1, NZ
-                          JOFF1 = JOFF + (IZ-1)*NFPCK(IREPIJ) +
-     &                                   IFPCK(IREPI,IREPJ)
+                          JOFF1 = JOFF + (IZ-1)*NFPCK12(IREPIJ) +
+     &                                   IFPCK12(IREPI,IREPJ)
                           JOFF2 = KHTMP + (IZ-1)*NI*NJ
                           CALL DAXPY(NI*NJ,D1,WORK(JOFF2),1,
      &                               HMAT(JOFF1),1)
@@ -886,8 +933,8 @@ C                      Order the integrals with NKL as first and IZ
 C                      as second index
 C
                        DO IZ = 1, NZ
-                          JOFF1 = JOFF + (IZ-1)*NFPCK(IREPIJ) +
-     &                                   IFPCK(IREPI,IREPJ)
+                          JOFF1 = JOFF + (IZ-1)*NFPCK12(IREPIJ) +
+     &                                   IFPCK12(IREPI,IREPJ)
                           JOFF2 = KHTMP + (IZ-1)*NI*(NI+1)/2
                           CALL DAXPY(NI*(NI+1)/2,D1,WORK(JOFF2),1,
      &                               HMAT(JOFF1),1)
@@ -897,7 +944,7 @@ C
                   IOFF = IOFF + NP * NQ
                ENDDO
             ENDDO
-            JOFF = JOFF + NFPCK(IREPIJ)*NZ
+            JOFF = JOFF + NFPCK12(IREPIJ)*NZ
          ENDDO
          CALL MEMREL('MS4IN1',WORK,KFRSAV,KHTMP,KFREE,LFREE)
       ENDDO
@@ -909,8 +956,8 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck caldis */
-      SUBROUTINE CALDIS(I2TYP,GMAT,INDX,INDXAB,
-     &                  NODV,NOPV,WORK,LWORK,IPRINT)
+      SUBROUTINE CALDIS(I2TYP,GMAT,INDX,INDXAB,NODV,NOPV,
+     &                  GABRAO,DRIJ,DINTSKP,SCRTRA,WORK,LWORK,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Luuk Visscher 22-10-1996
@@ -927,14 +974,15 @@ C
 #include <comdis.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-      DIMENSION GMAT(*),INDX(3,*),INDXAB(*)
-      DIMENSION WORK(LWORK)
+      DIMENSION GMAT(*),INDX(3,*),INDXAB(*),GABRAO(*),DRIJ(*)
+      DIMENSION WORK(LWORK),DINTSKP(*)
 #include <cbihr2.h>
 #include <dorps.h>
 #include <ccom.h>
 #include <dcborb.h>
+#include <dgroup.h>
 C
-      LOGICAL NODV, NOPV, RETUR, NOCONT
+      LOGICAL NODV, NOPV, NOCONT
 C
 C
 C-------------------------------------------------------------
@@ -964,11 +1012,11 @@ C
       IF (NPASS.GT.1) CALL INITGBF(LGFIL,NGBFSZ,NPASS,IRECG,
      &                             GMAT(KLGREC),GMAT(KLGBUF))
 C
-      CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,0,IDUMMY,IDUMMY,GMAT,INDX,
+      CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,NFSYM,IDUMMY,IDUMMY,GMAT,INDX,
      &            INDXAB,ITYPE,MAXDIF,0,NODV,NOPV,NOCONT,
      &            TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,
-     &            IDUMMY,I2TYP,IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &            .TRUE.)
+     &            IDUMMY,I2TYP,IDUMMY,SCRTRA,GABRAO,DRIJ,DUMMY,DINTSKP,
+     &            .TRUE.,DUMMY,DUMMY)
 C
 C     Finish buffer file if necessary
 C
@@ -1260,9 +1308,9 @@ C
                      I = I + 1
                      IIREP(IREPA1) = IIREP(IREPA1) + 1
                      IF (ISHELA.EQ.0) THEN
-                         INDX(1,INDA) = I
-                         INDX(2,INDA) = IREPA1
-                         INDX(3,INDA) = IIREP(IREPA1)
+                       INDX(1,INDA) = I
+                       INDX(2,INDA) = IREPA1
+                       INDX(3,INDA) = IIREP(IREPA1)
                      ENDIF
                   ENDDO
                END IF
@@ -1527,7 +1575,6 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
-      LOGICAl LBUF
       DIMENSION IOS1(*),IOS2(*),IBUF(*)
 C
       CALL IZERO(IBUF,NBUF)
@@ -1688,74 +1735,1814 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PCKTOP(EIGTHR,NTHREI,IPRINT,WORK,LWORK)
+C/* Deck mkdrij */
+      SUBROUTINE MKDRIJ(DRIJ,SAME,IPRINT,
+     &                  Q1,NDMOQ1,ICMOQ1,NSTR1,
+     &                  Q2,NDMOQ2,ICMOQ2,NSTR2,
+     &                  WORK,KFREE,LFREE)
 C***********************************************************************
-C     Finds the position of the lagest element below
-C     the threshold EIGTHR in the list of eigenvalues.
+C     
+C     This routine does the following:
+C       1) Transform vector sets 1 and 2 to AO-basis
+C       2) For given AO-indices p and q find the largest
+C          product (c_1*c_2)
+C       3) Reduce the corresponding matrix to block indices
 C
-C     Written by Jon K. Laerdahl 1997
+C       Q1/Q2       - vector sets 1 and 2
+C       NDMOQn(2,ifrp) : row/column dimensions of coefficient n
+C       ICMOQn(ifrp)   : offsets for coefficient n
+C       NSTRn(ifrp,0:2): number of vectors
+C         0 - total
+C         1 - electronic
+C         2 - positronic
+C       SAME=.TRUE. - the vector sets are identical
 C
-C*****************************************************************************
+C     Written by T.Saue - Aug 19 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxorb.h>
+#include <aovec.h>
+C
+#include <blocks.h>
+#include <dgroup.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+      LOGICAL SAME
+      DIMENSION DRIJ(NSYMBL,NSYMBL,*),WORK(*),
+     &          Q1(*),NDMOQ1(2,2),ICMOQ1(2),NSTR1(2,0:2),
+     &          Q2(*),NDMOQ2(2,2),ICMOQ2(2),NSTR2(2,0:2),
+     &          IV(2,2)
+C
+C     Initialize
+C
+      KFRSAV = KFREE
+      NDIM   = NSYMBL*NSYMBL*NFSYM
+      CALL DZERO(DRIJ,NDIM)
+C
+C     Make index array from AOs to blocks
+C
+      CALL MEMGET('INTE',KINRAO,NTBAS(0),WORK,KFREE,LFREE)
+      CALL PTRDAO(WORK(KINRAO))
+C
+C     Get maximal elements for vector set 1 in AO-basis
+C     =================================================
+C
+      NRV1 = 0
+      DO IFRP = 1,NFSYM
+        IV(IFRP,1) = NRV1
+        NRV1       = NRV1 + NSTR1(IFRP,0)*NSYMBL
+      ENDDO
+      CALL MEMGET('REAL',KNRV1,NRV1,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KNRV1),NRV1)
+      CALL GETCFB(WORK(KNRV1),WORK(KINRAO),Q1,NDMOQ1,ICMOQ1,NSTR1,
+     &            IPRINT,WORK,KFREE,LFREE)
+C
+C     If not same as vector set 1,
+C     get maximal elements for vector set 2 in AO-basis
+C     =================================================
+C
+      IF(SAME) THEN
+        KNRV2 = KNRV1
+        NRV2  = NRV1
+        DO IFRP = 1,NFSYM
+          IV(IFRP,2) = IV(IFRP,1)
+        ENDDO
+      ELSE
+        NRV2 = 0
+        DO IFRP = 1,NFSYM
+          IV(IFRP,2) = NRV2
+          NRV2       = NRV2 +  NSTR2(IFRP,0)*NSYMBL
+        ENDDO
+        CALL MEMGET('REAL',KNRV2,NRV2,WORK,KFREE,LFREE)
+        CALL DZERO(WORK(KNRV2),NRV2)
+        CALL GETCFB(WORK(KNRV2),WORK(KINRAO),Q2,NDMOQ2,ICMOQ2,NSTR2,
+     &            IPRINT,WORK,KFREE,LFREE)
+      ENDIF
+C
+C     Construct the density screening matrix
+C
+      DO IREPIJ = 1,NFSYM
+        DO IREPJ = 1,NFSYM
+          IREPI = MOD(IREPJ+IREPIJ,2) + 1
+          JOFF = IV(IREPJ,2) + KNRV2  - 1
+          DO JC = 1,NSTR2(IREPJ,0)
+            DO JR = 1,NSYMBL
+              IOFF = IV(IREPI,1) + KNRV1 - 1
+              DO IC = 1,NSTR1(IREPI,0)
+                DO IR = 1,NSYMBL
+                  A = WORK(JOFF+JR)*WORK(IOFF+IR)
+                  DRIJ(IR,JR,IREPIJ) = MAX(DRIJ(IR,JR,IREPIJ),A)
+                ENDDO
+                IOFF = IOFF + NSYMBL
+              ENDDO
+            ENDDO
+            JOFF = JOFF + NSYMBL
+          ENDDO
+        ENDDO
+      ENDDO
+C
+C     Print section
+C
+      IF(IPRINT.GE.3) THEN
+        DO I = 1,NFSYM
+          WRITE(LUPRI,'(A,A3)') '*MKDRIJ: Screening matrix ',FREP(I)
+          CALL OUTPUT(DRIJ(1,1,I),1,NSYMBL,1,NSYMBL,
+     &                NSYMBL,NSYMBL,1,LUPRI)
+        ENDDO
+      ENDIF
+      CALL MEMREL('MKDRIJ.AO',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck getcao */
+      SUBROUTINE GETCAO(CAO,Q,IFRP,NVEC,NSEL,ISEL,
+     &                  IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Get vectors in AO-basis
+C
+C     Written by T.Saue August 20 1998
+C
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
 #include <dgroup.h>
 #include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbgen.h>
-      LOGICAL TOBE
-      CHARACTER*18 STR(2)
-      DIMENSION WORK(*),NTHREI(2)
+      DIMENSION CAO(*),Q(*),WORK(*)
+      IF(NSEL.EQ.NVEC) THEN
 C
+C       The whole vector set is selected
+C
+        IF(NBSYM.EQ.1) THEN
+          CALL CFSORT(CAO,Q(ISEL),NSEL,IFRP,NFBAS(IFRP,0))
+        ELSE
+          NCBF = NFBAS(IFRP,0)*NSEL*4
+          CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+          CALL CFSORT(WORK(KCBF),Q(ISEL),NSEL,IFRP,NFBAS(IFRP,0))
+          CALL WTSOAO(WORK(KCBF),CAO,IFRP,NFBAS(IFRP,0),
+     &                NTBAS(0),NSEL*4,IPRINT)
+          CALL MEMREL('GETCAO.AO',WORK,KCBF,KCBF,KFREE,LFREE)
+        ENDIF
+      ELSE
+C
+C       Only some vectors are selected
+C
+        NCBF = NTBAS(0)*NSEL*4
+        CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+        NDSEL = NSEL*NFBAS(IFRP,0)
+        NDVEC = NVEC*NFBAS(IFRP,0)
+        IF(NBSYM.EQ.1) THEN
+          IOFF = ISEL
+          JOFF = KCBF
+          DO IZ = 1,NZ
+            CALL DCOPY(NDSEL,Q(IOFF),1,WORK(JOFF),1)
+            IOFF = IOFF + NDVEC
+            JOFF = JOFF + NDSEL
+          ENDDO
+          CALL CFSORT(CAO,WORK(KCBF),NSEL,IFRP,NFBAS(IFRP,0))
+        ELSE
+          IOFF = ISEL+1
+          JOFF = 1
+          DO IZ = 1,NZ
+            CALL DCOPY(NDSEL,Q(IOFF),1,CAO(JOFF),1)
+            IOFF = IOFF + NDVEC
+            JOFF = JOFF + NDSEL
+          ENDDO
+          CALL CFSORT(WORK(KCBF),CAO,NSEL,IFRP,NFBAS(IFRP,0))
+          CALL WTSOAO(WORK(KCBF),CAO,IFRP,NFBAS(IFRP,0),NTBAS(0),
+     &                NSEL*4,IPRINT)
+        ENDIF
+        CALL MEMREL('GETCAO.AO',WORK,KCBF,KCBF,KFREE,LFREE)
+      ENDIF
+C
+      RETURN       
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck getcfb */
+      SUBROUTINE GETCFB(QB,IND,Q,NDMOQR,ICMOQR,NSTR,IPRINT,
+     &                  WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     For vector set Q return vector set in AO-basis compressed
+C     on block indices
+C       Q      - coefficient
+C       NDMOQR(2,ifrp) : row/column dimensions of coefficient set
+C       ICMOQR(ifrp)   : offsets for coefficient set
+C       NSTR(ifrp,0:2): number of vectors
+C         0 - total
+C         1 - electronic
+C         2 - positronic
+C
+C***********************************************************************
+#include <priunit.h>
+#include <implicit.h>
+      PARAMETER(D1 = 1.0D0)
+C
+#include <mxorb.h>
+#include <aovec.h>
+C
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dgroup.h>
+#include <blocks.h>
+      DIMENSION QB(*),Q(*),NDMOQR(2,2),ICMOQR(2),NSTR(2,0:2),
+     &          IND(*),WORK(*)
+C
+      KFRSAV = KFREE
+      KOFF = 1
+      DO 10 IFRP = 1,NFSYM
+        IF(NDMOQR(2,IFRP).EQ.0) GOTO 10 
+C
+C       1. Transform to AO-basis
+C 
+        NCAO  = NTBAS(0)*NSTR(IFRP,0)
+        NCAOQ = NCAO*4
+        CALL MEMGET('REAL',KCAO,NCAOQ,WORK,KFREE,LFREE)
+        CALL GETCAO(WORK(KCAO),Q,IFRP,NDMOQR(2,IFRP),
+     &              NSTR(IFRP,0),ICMOQR(IFRP),
+     &              IPRINT,WORK,KFREE,LFREE)
+C
+C       2. Square all elements, sum up and take square root
+C
+        KEND = KCAO + NCAOQ - 1
+        DO I = KCAO,KEND
+          WORK(I) = WORK(I)*WORK(I)
+        ENDDO
+        DO I = 1,3
+          IOFF = KCAO + NCAO
+          CALL DAXPY(NCAO,D1,WORK(IOFF),1,WORK(KCAO),1)
+        ENDDO
+        KEND = KCAO + NCAO - 1
+        DO I = KCAO,KEND
+          WORK(I) = SQRT(WORK(I))
+        ENDDO
+C
+C       3. Reduce vector set to block indices..
+C
+        CALL GATVCC(0,NSTR(IFRP,0),WORK(KCAO),NTBAS(0),
+     &              QB(KOFF),IND,NSYMBL)
+        IF(IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(A,A3)') 
+     &      '* GETCFB: Vector set on block indices. Fermion ircop ',
+     &      FREP(IFRP)
+          CALL OUTPUT(QB(KOFF),1,NSYMBL,1,NSTR(IFRP,0),
+     &                NSYMBL,NSTR(IFRP,0),1,LUPRI)
+        ENDIF
+        KOFF = KOFF + NSYMBL*NSTR(IFRP,0)
+        CALL MEMREL('GETCFB.AO',WORK,KCAO,KCAO,KFREE,LFREE)
+ 10     CONTINUE
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck pr4scr */
+      SUBROUTINE PR4SCR(KGAB,KDRIJ,WORK,KFREE,LFREE,DINTSKP,
+     &                  Q1,Q2,Q3,Q4,NDMOQR,ICMOQR,NSTR,
+     &                  ISAME,IPRINT)
+C***********************************************************************
+C
+C     Prepare for 4-index screening
+C
+C     Written by T.Saue Sep 8 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxorb.h>
+#include <aovec.h>
+C
+#include <dgroup.h>
+#include <blocks.h>
+C
+      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTR(2,0:2,4),ISAME(4),
+     &          Q1(*),Q2(*),Q3(*),Q4(*),WORK(*),DINTSKP(2,4)
+C
+C     Initialize
+C
+      N2GAB   = NSYMBL*NSYMBL
+      NDRIJ   = N2GAB*NFSYM
+      CALL DZERO(DINTSKP,8)
+C
+C     Get Cauchy-Schwartz integrals
+C
+      CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
+      CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
+C
+C     Get screening matrices
+C
+      CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,WORK(KGAB),
+     &                  Q1,Q2,Q3,Q4,NDMOQR,ICMOQR,NSTR,
+     &                  ISAME,IPRINT)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck pr4sc1 */
+      SUBROUTINE PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
+     &                  Q1,Q2,Q3,Q4,NDMOQR,ICMOQR,NSTR,
+     &                  ISAME,IPRINT)
+C***********************************************************************
+C
+C     Prepare for 4-index screening
+C
+C     Written by T.Saue Sep 8 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxorb.h>
+#include <aovec.h>
+C
+#include <dgroup.h>
+#include <blocks.h>
+C
+      LOGICAL SAME
+      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTR(2,0:2,4),ISAME(4),
+     &          Q1(*),Q2(*),Q3(*),Q4(*),WORK(*),DINTSKP(2,4)
+      DIMENSION GABAO(*)
+C
+C     Initialize
+C
+      N2GAB   = NSYMBL*NSYMBL
+      NDRIJ   = N2GAB*NFSYM
+C      CALL DZERO(DINTSKP,8)
+      IF(IPRINT.GE.3) THEN
+        DO I = 1,NFSYM
+          WRITE(LUPRI,'(A,A3)') '*MKDRIJ: GAB-matrix ',FREP(I)
+          CALL OUTPUT(GABAO,1,NSYMBL,1,NSYMBL,
+     &                NSYMBL,NSYMBL,1,LUPRI)
+        ENDDO
+      ENDIF
+C
+C     Get screening matrices
+C
+      CALL MEMGET('REAL',KDRIJ,NDRIJ*2,WORK,KFREE,LFREE)
+C
+C     Screening matrix for electron 1 ; vectors 3 and 4 !
+C
+      IOFF = KDRIJ
+      SAME = ISAME(3).EQ.ISAME(4)
+      CALL MKDRIJ(WORK(IOFF),SAME,IPRINT,
+     &                  Q3,NDMOQR(1,1,3),ICMOQR(1,3),NSTR(1,0,3),
+     &                  Q4,NDMOQR(1,1,4),ICMOQR(1,4),NSTR(1,0,4),
+     &                  WORK,KFREE,LFREE)
+C
+C     Screening matrix for electron 2 ; vectors 1 and 2 !
+C     Check for sameness relations
+C      
+      IOFF = KDRIJ + NDRIJ
+      IF(ISAME(3).EQ.ISAME(1).AND.ISAME(4).EQ.ISAME(2)) THEN
+        CALL DCOPY(NDRIJ,WORK(KDRIJ),1,WORK(IOFF),1)
+      ELSE
+        SAME = ISAME(1).EQ.ISAME(2)
+        CALL MKDRIJ(WORK(IOFF),SAME,IPRINT,
+     &                  Q1,NDMOQR(1,1,1),ICMOQR(1,1),NSTR(1,0,1),
+     &                  Q2,NDMOQR(1,1,2),ICMOQR(1,2),NSTR(1,0,2),
+     &                  WORK,KFREE,LFREE)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck St4scr */
+      SUBROUTINE ST4SCR(DINTSKP)
+C***********************************************************************
+C
+C     Screening statistics for 4-index transformations
+C
+C     Written by T.Saue Sep 8 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
+C
+      DIMENSION DINTSKP(2,4)
+C
+      DDEL = D0
+      DTOT = D0
+      WRITE(LUPRI,'(A)') '* Screening statistics:'
+      IF(DINTSKP(1,1).GT.D0) THEN
+        DDEL  = DDEL + DINTSKP(2,1)
+        DTOT  = DTOT + DINTSKP(1,1)
+        DSTEP = DC*(DINTSKP(2,1)/DINTSKP(1,1))
+        WRITE(LUPRI,500) '(LL|LL)ints : ',DSTEP,'%'
+      ENDIF
+      IF(DINTSKP(1,2).GT.D0) THEN
+        DDEL  = DDEL + DINTSKP(2,2)
+        DTOT  = DTOT + DINTSKP(1,2)
+        DSTEP = DC*(DINTSKP(2,2)/DINTSKP(1,2))
+        WRITE(LUPRI,500) '(SS|LL)ints : ',DSTEP,'%'
+      ENDIF
+      IF(DINTSKP(1,3).GT.D0) THEN
+        DDEL  = DDEL + DINTSKP(2,3)
+        DTOT  = DTOT + DINTSKP(1,3)
+        DSTEP = DC*(DINTSKP(2,3)/DINTSKP(1,3))
+        WRITE(LUPRI,500) '(SS|SS)ints : ',DSTEP,'%'
+      ENDIF
+      IF(DINTSKP(1,4).GT.D0) THEN
+        DDEL  = DDEL + DINTSKP(2,4)
+        DTOT  = DTOT + DINTSKP(1,4)
+        DSTEP = DC*(DINTSKP(2,4)/DINTSKP(1,4))
+        WRITE(LUPRI,500) '(SL|SL)ints : ',DSTEP,'%'
+      ENDIF
+      IF(DTOT.GT.D0) THEN
+        DSTEP = DC*(DDEL/DTOT)
+        WRITE(LUPRI,500) 'Total       : ',DSTEP,'%'
+      ENDIF
+  500 FORMAT(3X,A,F6.2,A1)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck pck2in */
+      SUBROUTINE PCK2IN(NSTR,TRIAN,IPRINT)
+C***********************************************************************
+C
+C     Define the packing of the 2-index transformed integrals
+C
+C     Written by T.Saue Sep 16 , based on existing code by Luuk
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbtra.h>
+#include <dgroup.h>
+      LOGICAL TRIAN(2)
+      DIMENSION NSTR(2,0:2,4)
+C
+      NFPCK12T = 0
+      NFPCK34T = 0
+      DO IREPIJ =1, NFSYM
+         NFPCK12(IREPIJ) = 0
+         NFPCK34(IREPIJ) = 0
+         DO IREPJ = 1, NFSYM
+            IREPI = MOD(IREPJ+IREPIJ,2) + 1
+C
+C           Packing can be triangular (i=>j) or square.
+C
+            IF (.NOT.TRIAN(1).OR.(TRIAN(1).AND.IREPI.GT.IREPJ)) THEN
+               IFPCK12(IREPI,IREPJ) = NFPCK12(IREPIJ)
+               NFPCK12(IREPIJ)      = NFPCK12(IREPIJ) +
+     &                        NSTR(IREPI,0,1)*NSTR(IREPJ,0,2)
+            ELSEIF (TRIAN(1).AND.IREPI.EQ.IREPJ) THEN
+               IFPCK12(IREPI,IREPJ) = NFPCK12(IREPIJ)
+               NFPCK12(IREPIJ)      = NFPCK12(IREPIJ) +
+     &                        NSTR(IREPI,0,1)*(NSTR(IREPI,0,1)+1)/2
+            ELSE
+               IFPCK12(IREPI,IREPJ) = - 1
+            ENDIF
+            IF (.NOT.TRIAN(2).OR.(TRIAN(2).AND.IREPI.GT.IREPJ)) THEN
+               IFPCK34(IREPI,IREPJ) = NFPCK34(IREPIJ)
+               NFPCK34(IREPIJ)      = NFPCK34(IREPIJ) +
+     &                        NSTR(IREPI,0,3)*NSTR(IREPJ,0,4)
+            ELSEIF (TRIAN(2).AND.IREPI.EQ.IREPJ) THEN
+               IFPCK34(IREPI,IREPJ) = NFPCK34(IREPIJ)
+               NFPCK34(IREPIJ)      = NFPCK34(IREPIJ) +
+     &                        NSTR(IREPI,0,3)*(NSTR(IREPI,0,3)+1)/2
+            ELSE
+               IFPCK34(IREPI,IREPJ) = - 1
+            ENDIF
+         ENDDO
+         NFPCK12T = NFPCK12T + NFPCK12(IREPIJ)
+         NFPCK34T = NFPCK34T + NFPCK34(IREPIJ)
+      ENDDO
+C
+      IF(IPRINT.GE.2) THEN
+         WRITE(LUPRI,'(A,2I8)') 'NFPCK12',(NFPCK12(I), I=1,NFSYM)
+         WRITE(LUPRI,'(A,2I8)') 'NFPCK34',(NFPCK34(I), I=1,NFSYM)
+         WRITE(LUPRI,'(A,4I8)') 'IFPCK12',
+     &        ((IFPCK12(I,J), I=1,NFSYM), J=1,NFSYM)
+         WRITE(LUPRI,'(A,4I8)') 'IFPCK34',
+     &        ((IFPCK34(I,J), I=1,NFSYM), J=1,NFSYM)
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck pck3in */
+      SUBROUTINE PCK3IN(ITQMT,NTQMT,NSTR,IPRINT)
+C***********************************************************************
+C
+C     Define the packing of the 2-index transformed integrals
+C
+C     Written by T.Saue Sep 16 , based on existing code by Luuk
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbtra.h>
+#include <dgroup.h>
+#include <dcbbas.h>
+      DIMENSION ITQMT(0:7,0:7,2),NSTR(2,0:2,4)
+C
+#include <ibtfun.h>
+C
+C     Initialize
+C
+      NTQMT = 0
+      CALL IZERO(ITQMT,128)
+C
+      DO IREPRS = 0, NBSYM-1
+        IREPIJ = JBTOF(IREPRS,1)             ! Get parity of rs 
+        NIJ    = NFPCK12(IREPIJ)             ! Number of ij pairs 
+        DO IREPS = 0, NBSYM-1
+          DO 11 IC = 1,2
+            IREPR = IBTXOR(IREPRS,IREPS)
+            NR = NBBAS(IREPR,IC)             ! Number of r functs
+            ITQMT(IREPRS,IREPS,IC) = NTQMT   ! Pointers
+            IREPL = JBTOF(IREPS,IC)          ! Parity that s contributes to
+            NS = NBBAS(IREPS,IC)             ! Number of s functs
+            IF (IREPIJ.EQ.1) THEN
+              IREPK=IREPL
+            ELSE
+              IREPK=3-IREPL
+            ENDIF
+c              WRITE(LUPRI,'(A,I10,10I6)') 
+c    &              'NTQMT',NTQMT,NZ,NS,NIJ,NSTR(IREPK,0,3),IREPK,
+c    &              IREPIJ,IREPS,IREPRS,NR,IREPR
+            IF (NR.EQ.0) GOTO 11
+            NTQMT = NTQMT + NIJ*NSTR(IREPK,0,3)*NS*NZ*NZ
+11        CONTINUE
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck vircan */
+      SUBROUTINE VIRCAN(WORK,KFREE,LFREE,IPRINT,KQ,KE,NDMOQR,ICMOQR,
+     &                  CMO,EIG)
+C***********************************************************************
+C
+C     Check for canonical virtuals; if not, recanonize
+C
+C     Written by T.Saue Sep 30 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#if defined (VAR_MPI)
+#include <infmpi.h>
+      INCLUDE 'mpif.h'
+#endif
+#if defined (VAR_PVM)
+#include <fpvm3h.h>
+#endif
+#include <dummy.h>
+#include <aovec.h>
+#include <mxorb.h>
+C
+#include <dcbgen.h>
+#include <dgroup.h>
+#include <dcborb.h>
+#include <dcbbas.h>
+#include <dcbdhf.h>
+#include <blocks.h>
+#if defined (VAR_MPI) || defined (VAR_PVM)
+#include <infpar.h>
+#endif
+      LOGICAL RECAN
+      DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),
+     &          CMO(*),EIG(*),WORK(*)
+      DIMENSION NFMO(2,2),IFMO(2)
+C
+      CALL QENTER('VIRCAN')
+      KFRSAV = KFREE
+C
+C     Scan through active virtual eigenvalues to see if 
+C     recanonization is necessary
+C     
+      RECAN = .FALSE.
+      DO IFRP = 1,NFSYM
+        DO J = 0,NDMOQR(2,IFRP)-1
+          RECAN = RECAN.OR.(WORK(KE(IFRP)+J).EQ.DUMMY)
+        ENDDO
+      ENDDO
+C     
+C     Recanonization
+C     ==============
+C     Note that closed shells are assumed !
+C
+      IF(RECAN) THEN
+        CALL HEADER('Recanonization of virtual orbitals',-1)
+C
+C     Get hold of the slaves if we run in parallel.
+C
+      IF (PARCAL) THEN
+         ITASK = 1
+#if defined (VAR_MPI)
+         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+#endif
+#if defined (VAR_PVM)
+         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
+#endif
+      ENDIF
+        NELM = 0
+        DO IFRP = 1,NFSYM
+          IFMO(IFRP) = NELM
+          NFMO(1,IFRP) = NDMOQR(2,IFRP)
+          NFMO(2,IFRP) = NDMOQR(2,IFRP)
+          NELM = NELM + NDMOQR(2,IFRP)*NDMOQR(2,IFRP)*NZ
+        ENDDO
+        CALL MEMGET('REAL',KFMO,NELM    ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KFAO,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL VIRCA1(WORK,KFREE,LFREE,IPRINT,KQ,KE,NDMOQR,ICMOQR,
+     &       INTDEF,CMO,EIG,WORK(KFMO),NFMO,IFMO,WORK(KFAO))
+        CALL MEMREL('VIRCAN',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+C     Release the slaves if we run in parallel.
+C
+      IF (PARCAL) THEN
+         ITASK = -1
+#if defined (VAR_MPI)
+         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+#endif
+#if defined (VAR_PVM)
+         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
+#endif
+      ENDIF
+      ENDIF
+C
+      CALL QEXIT('VIRCAN')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck virca1 */
+      SUBROUTINE VIRCA1(WORK,KFREE,LFREE,IPRINT,KQ,KE,NDMOQR,ICMOQR,
+     &              INTDHF,CMO,EIG,FMO,NFMO,IFMO,FAO)
+C***********************************************************************
+C
+C     Recanonize virtual orbitals...
+C     NB!! For the moment this routine assumes closed shell !!!!
+C     Written by T.Saue Jan 11 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+      PARAMETER(D0=0.0D0)
+C
+#include <dcbgen.h>
+#include <dgroup.h>
+#include <dcborb.h>
+#include <dcbbas.h>
+CTROND#include <dcbdhf.h>
+#include <dcbham.h>
+      DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),
+     &          CMO(*),EIG(*),FAO(*),FMO(*),WORK(*)
+      DIMENSION NFMO(2,2),IFMO(2)
+C
+C     Get Fock-matrix in active orbitals
+C     ==================================
+C
+      CALL GTVFCK(FMO,NFMO,IFMO,INTDHF,CMO,FAO,
+     &            WORK(KQ(1)),NDMOQR,ICMOQR,WORK(KQ(1)),NDMOQR,ICMOQR,
+     &            IPRINT,WORK,KFREE,LFREE)
+#ifdef MOD_SPF
+      IF (SPINFR) THEN
+        CALL QUIT('Recanonization not defined for spinfree !')
+C       CALL SPFSCF(FMO,WORK(KFREE),LFREE)
+      ENDIF
+#endif
+C
+C     Diagonalize Fock-matrix
+C     =======================
+C
+      DO 30 I = 1,NFSYM
+        IF(NFMO(1,I).EQ.0) GOTO 30
+        CALL QDIAG(NZ,NFMO(1,I),FMO(IFMO(I)+1),
+     &             NFMO(1,I),NFMO(2,I),
+     &             WORK(KE(I)),1,
+     &             FAO(IFMO(I)+1),NFMO(1,I),NFMO(2,I),
+     &             WORK(KFREE),LFREE,IERR)
+   30 CONTINUE
+C
+C     Backtransform coefficients
+C     ==========================
+C
+      DO 40 I = 1,NFSYM
+        IF(NFMO(1,I).EQ.0) GOTO 40
+        CALL BCKTRA(CMO(ICMOQR(I)),NDMOQR(1,I),NDMOQR(2,I),
+     &              FAO(IFMO(I)+1),NDMOQR(2,I),NDMOQR(2,I),
+     &              NDMOQR(2,I),NZ,IPQTOQ(1,0),
+     &              NDMOQR(2,I),1,NDMOQR(1,I),
+     &              WORK(KQ(I)),NDMOQR(1,I),NDMOQR(2,I),NZ,
+     &              IPQTOQ(1,0),IPRINT)
+        NELM = NDMOQR(1,I)*NDMOQR(2,I)*NZ
+        CALL DCOPY(NELM,CMO(ICMOQR(I)),1,WORK(KQ(I)),1)
+ 40   CONTINUE
+C
+C     Print section
+C
+      IF(IPRINT.GE.1) THEN
+        WRITE(LUPRI,'(A)')
+     &   '* Eigenvalues of recanonized orbitals:'
+        DO IFRP = 1,NFSYM
+          WRITE(LUPRI,'(A,A3)') '* Fermion ircop ',FREP(IFRP)
+          WRITE(LUPRI,'(5D15.8)') 
+     &             (WORK(KE(IFRP)+IXX), IXX=0,(NFMO(1,IFRP)-1))
+        ENDDO
+        IF(IPRINT.GE.5) THEN
+        WRITE(LUPRI,'(A)')
+     &   '* Coefficients of recanonized orbitals:'
+          DO I = 1,NFSYM
+            WRITE(LUPRI,'(A,A3)') '* Fermion ircop ',FREP(I)
+            CALL PRQMAT(WORK(KQ(I)),NDMOQR(1,I),NDMOQR(2,I),
+     &                  NDMOQR(1,I),NDMOQR(2,I),NZ,IPQTOQ(1,0),LUPRI)
+          ENDDO
+        ENDIF
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck eigtst */
+      SUBROUTINE EIGTST(EIG,NVEC,IVEC,VAL,TESTOK)
+C***********************************************************************
+C
+C     Written by T.Saue Sep 29 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      LOGICAL TESTOK
+      DIMENSION EIG(*),IVEC(*)
+C
+      DO I = 1,NVEC
+        TESTOK = TESTOK.AND.(EIG(IVEC(I)).NE.VAL)
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck eigthr */
+      SUBROUTINE EIGTHR(EIG,NVEC,NSEL,IVEC,IBUF,THRESH)
+C***********************************************************************
+C
+C     Written by T.Saue Sep 29 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION EIG(*),IVEC(*),IBUF(*)
+C
+      DO I = 1,NVEC
+      IF(EIG(IVEC(I)).LE.THRESH) THEN
+        NSEL       = NSEL + 1
+        IBUF(NSEL) = IVEC(I)
+      ENDIF
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck virthr */
+      SUBROUTINE VIRTHR(WORK,KFREE,LFREE,LUCOEF,NSTR,KVEC,
+     &                  THRESH)
+C***********************************************************************
+C
+C     Truncate virtual space using eigenvalue threshold THRESH
+C
+C     Written by T.Saue Sep 30 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcborb.h>
+      DIMENSION WORK(*),NSTR(2,0:2),KVEC(*)
+      KFRSAV = KFREE
+C
+C     Read and check eigenvalues
+C
+      CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,4)
+      DO IFRP = 1,NFSYM
+        NSEL = 0
+        NDEL = 0
+        CALL MEMGET('INTE',KBUF,NSTR(IFRP,1),WORK,KFREE,LFREE)
+        IOFF = NPSH(IFRP) + IORB(IFRP)
+        CALL EIGTHR(WORK(KEIG+IOFF),NSTR(IFRP,1),NSEL,
+     &              WORK(KVEC(IFRP)),WORK(KBUF),THRESH)
+        IF(NSEL.LT.NSTR(IFRP,1)) THEN
+          NDEL = NSTR(IFRP,1) - NSEL
+          NSTR(IFRP,1) = NSEL
+          NSTR(IFRP,0) = NSTR(IFRP,1) + NSTR(IFRP,2)
+          CALL ICOPY(NSEL,WORK(KBUF),1,WORK(KVEC(IFRP)),1)
+        ENDIF
+        WRITE(LUPRI,'(A,A3,A,I5)')
+     &      '* Fermion ircop ',FREP(IFRP),'- Virtuals deleted: ',NDEL
+      ENDDO
+      CALL MEMREL('VIRTHR',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck GTVFCK */
+      SUBROUTINE GTVFCK(FMO,NFMO,IFMO,INTDHF,CMO,FAO,
+     &                  Q1,NCMO1,ICMO1,Q2,NCMO2,ICMO2,
+     &                  IPRINT,WORK,KFREE,LFREE)
+C*****************************************************************************
+C     
+C     Get a block of the MO Fock-matrix; CMO is destroyed in the process.
+C
+C     Written by T.Saue, Jan 12 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <aovec.h>
+#include <mxorb.h>
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+C
+#include <dcbgen.h>
+#include <dcbfir.h>
+#include <dcbdhf.h>
+#include <dcbham.h>
+#include <blocks.h>
+#include <dgroup.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <cbihr2.h>
+CTOBS: Note the use of dhfcal ! Should be generalized !!!
+      LOGICAL TOBE,BF1,BF2,BF3
+      DIMENSION FMO(*),NFMO(2,2),IFMO(2),FAO(*),CMO(*),Q1(*),Q2(*),
+     &          NCMO1(2,2),NCMO2(2,2),ICMO1(2),ICMO2(2),
+     &          WORK(*),IQBF(4)
+C
+      CALL QENTER('GTVFCK')
+      KFRSAV = KFREE
+      LUBUF = 22
+C
+C     1. Get two-electron Fock matrix in AO-basis
+C     ===========================================
+C
+      INQUIRE(FILE='DFFCK2',EXIST=TOBE)   
+      IF(TOBE) THEN
+        CALL OPNFIL(LUBUF,'DFFCK2','OLD','GETFC1')
+        CALL REAFCK(LUBUF,CMO,.TRUE.,1)
+        CLOSE(LUBUF,STATUS='KEEP')
+      ELSE
+        WRITE(LUPRI,'(A)')
+     &    '*** WARNING *** GETFCK: No 2-Fock found. Regenerating.'
+        NPOS = 0
+        IF(PARCAL) THEN
+          BF1  = FIRST1
+          BF2  = FIRST2
+          BF3  = FIRST3
+          FIRST1 = .TRUE.
+          FIRST2 = .TRUE.
+          FIRST3 = .TRUE.
+          NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
+          NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
+          NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
+        ENDIF
+        CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+C
+C       Closed shell Hartree - Fock
+C       ===========================
+CTROND: This must be generalized !!!
+        NFMAT = 1
+C       Totally symmetric operator
+        ISYMOP(1) = 1
+C       Fock matrix type
+        IFCKOP(1) = 1
+C       Hermitian operator
+        IHRMOP(1) = 1
+        INQUIRE(FILE='DFDENS',EXIST=TOBE)
+        IF(TOBE) THEN
+          CALL OPNFIL(LUBUF,'DFDENS','OLD','GETFC1')
+          CALL READNS(LUBUF,FAO)
+          CLOSE(LUBUF,STATUS='KEEP')
+        ELSE
+          CALL DENSTY(FAO,CMO,IPRINT)        
+        ENDIF
+        CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,CMO,FAO,NFMAT,
+     &       WORK(KPOS),INTDHF,IPRINT,WORK(KFREE),LFREE)
+        IF(PARCAL) THEN
+          FIRST1 = BF1
+          FIRST2 = BF2
+          FIRST3 = BF3
+        ENDIF
+      ENDIF
+C
+C     3a. Solvent: get solvent contribution
+C     =====================================
+C
+      IF(SOLVEN) THEN
+C        CALL DENSTY(FAO,CMO,IPRINT)        
+        NF = 1
+        CALL SOLFCK(CMO,FAO,NF,ESOLVE,ESOLVN,WORK(KFREE),LFREE,IPRSOL)
+      ENDIF           
+C
+C     3. Get one-electron Fock matrix
+C     ===============================
+C
+      INQUIRE(FILE='DFFCK1',EXIST=TOBE)
+      IF(TOBE) THEN
+        CALL OPNFIL(LUBUF,'DFFCK1','OLD','GETFC1')
+        CALL REAFCK(LUBUF,FAO,.TRUE.,1)
+        CLOSE(LUBUF,STATUS='KEEP')
+      ELSE
+        WRITE(LUPRI,'(A)')
+     &    '*** WARNING *** GETFCK: No 1-Fock found. Regenerating.'
+        CALL ONEFCK(FAO,IPRINT,WORK(KFREE),LFREE)
+      ENDIF
+C
+C     4. Add 1- and 2-electron matrix and transform to MO-basis
+C     =========================================================
+C
+      CALL DAXPY(N2BBASXQ,D1,CMO,1,FAO,1) 
+CTROND      CALL DZERO(FMO,N2ORBXQ)
+      DO 10 I = 1,NFSYM
+        N2FMO = NFMO(1,I)*NFMO(2,I)
+        IF(N2FMO.EQ.0) GOTO 10
+        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &              NFMO(1,I),NFMO(2,I),
+     &              FAO(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,
+     &              IPQTOQ(1,0),
+     &              FMO(IFMO(I)+1),NFMO(1,I),NFMO(2,I),NBF,IQBF,
+     &              Q1(ICMO1(I)),NCMO1(1,I),NCMO1(2,I),NZ,IPQTOQ(1,0),
+     &              Q2(ICMO2(I)),NCMO2(1,I),NCMO2(2,I),NZ,IPQTOQ(1,0),
+     &              WORK(KFREE),LFREE,IPRINT)
+        IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
+     &     '*** WARNING *** GETFC1: NBF.NE.NZ !'
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('GTVFC1:MO Fock matrix '//FREP(I),-1)
+        CALL PRQMAT(FMO(IFMO(I)+1),NFMO(1,I),NFMO(2,I),
+     &              NFMO(1,I),NFMO(2,I),NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
+ 10   CONTINUE
+      CALL MEMREL('GTVFCK',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+      CALL QEXIT('GTVFCK')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck RESOLV */
+      SUBROUTINE RESOLV(WORK,LWORK)
+C***********************************************************************
+C
+C     Driver routine for 4-index transformation for 
+C     resolution of electronic states within open-shell manifold
+C
+C     Based on TRAPAM
+C     Written by T.Saue Jan 18 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#if defined (VAR_MPI)
+#include <infmpi.h>
+      INCLUDE 'mpif.h'
+#endif
+#if defined (VAR_PVM)
+#include <fpvm3h.h>
+#endif
+C
+#include <mxorb.h>
+#include <dcbtra.h>
+#include <dcbtr3.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dgroup.h>
+#include <dcbres.h>
+#include <dcbgen.h>
+#if defined (VAR_MPI) || defined (VAR_PVM)
+#include <infpar.h>
+#endif
+      CHARACTER DAYTID*24,SECTID*12,CPUTID*12
+      LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
+      DIMENSION WORK(*),NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
+     &          KVEC(2,2),KQ(2,4),KE(2,2),NQ(2),KQC(2)
+C
+      CALL QENTER('RESOLV')
 #include <memint.h>
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT ,WORK,KFREE,LFREE)
+      KFRSAV = KFREE
+      CALL TITLER('Resolution of open-shell states','*',120)
+C
+C     Determine number of active electrons
+C
+      IF(NAELEC.EQ.0) RETURN
+C
+C     Check for necessary files:
+C       MRCONEE - one-electron integrasls and other information
+C       MDCINT  - two-electron integrals
+C
+      INQUIRE(FILE='MRCONEE',EXIST=SKPONE)
+      IF(SKPONE) THEN
+        WRITE(LUPRI,'(A)') 
+     & '*WARNING: MRCONEE found. Skipping 2-index transformation.'
+      ENDIF 
+      INQUIRE(FILE='MDCINT',EXIST=SKPTWO)
+      IF(SKPTWO) THEN
+        WRITE(LUPRI,'(A)') 
+     & '*WARNING: MDCINT found. Skipping 4-index transformation.'
+      ENDIF 
+      IF(SKPONE.AND.SKPTWO) GOTO 10
+C
+C     Transfer information from DCBMP2 to DCBTRA
+C     ==========================================
+C
+      TRANOP = NOPAIR
+      NOPAIR = .TRUE.
+      SCRBUF = SCRTRA
+      SCRTRA = SCRRES
+      IPRBUF = IPRTRA
+      IPRTRA = IPRRES
+      ISTBUF = ISTRAT
+      ISTRAT = ISTRES
+      THRBUF = THROUT
+      THROUT = RESOUT
+C
+C     Set up index arrays for active orbitals;
+C     =======================================      
+C
+      NQT  = 0
+      ISAME(1) = 1
+      NSTRT(1) = 0
+      DO IFRP = 1,NFSYM
+        CALL MEMGET('INTE',KVEC(IFRP,1),NASH(IFRP),WORK,KFREE,LFREE)
+        CALL INDARR(WORK(KVEC(IFRP,1)),NISH(IFRP),NASH(IFRP),IPRINT)
+        NSTR(IFRP,1,1) = NASH(IFRP)
+        NSTR(IFRP,2,1) = 0
+        NSTR(IFRP,0,1) = NSTR(IFRP,1,1) + NSTR(IFRP,2,1)
+        NDMOQR(1,IFRP,1) = NFBAS(IFRP,0)
+        NDMOQR(2,IFRP,1) = NASH(IFRP)
+        ICMOQR(IFRP,1) = NQT + 1
+        NSTRT(1) = NSTRT(1) +  NSTR(IFRP,0,1)
+C
+        NQ(IFRP) = NFBAS(IFRP,0)*NASH(IFRP)*NZ
+        NQT      = NQT + NQ(IFRP)
+      ENDDO      
+      CALL MEMGET('REAL',KQ(1,1),NQT,WORK,KFREE,LFREE)
+      KQ(2,1) = KQ(1,1) + NQ(1)
+      CALL MEMGET('REAL',KE(1,1),NSTRT(1),WORK,KFREE,LFREE)
+      KE(2,1) = KE(1,1) + NSTR(1,0,1)
+C
+C     Copy for indices 2..4
+C
+      DO I = 2,4
+        ISAME(I) = 1
+        DO IFRP = 1,NFSYM
+          KQ(IFRP,I)     = KQ(IFRP,1)
+          NSTR(IFRP,0,I) = NSTR(IFRP,0,1)
+          NSTR(IFRP,1,I) = NSTR(IFRP,1,1)
+          NSTR(IFRP,2,I) = NSTR(IFRP,2,1)
+          NDMOQR(1,IFRP,I) = NDMOQR(1,IFRP,1)
+          NDMOQR(2,IFRP,I) = NDMOQR(2,IFRP,1)
+          ICMOQR(IFRP,I)   = ICMOQR(IFRP,1)   
+        ENDDO
+      ENDDO
+C
+      KTEMP = KFREE
+      IF(.NOT.SKPONE) THEN
+C
+C       Set up index arrays for core orbitals
+C       =======================================      
+        NQT  = 0
+        DO IFRP = 1,NFSYM
+          CALL MEMGET('INTE',KVEC(IFRP,2),NISH(IFRP),WORK,KFREE,LFREE)
+          CALL INDARR(WORK(KVEC(IFRP,2)),0,NISH(IFRP),IPRINT)
+          NSPC(IFRP,1) = NISH(IFRP)
+          NSPC(IFRP,2) = 0
+          NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
+          NDMOQC(1,IFRP,1) = NFBAS(IFRP,0)
+          NDMOQC(2,IFRP,1) = NISH(IFRP)
+          ICMOQC(IFRP,1) = NQT + 1
+          NQ(IFRP) = NFBAS(IFRP,0)*NISH(IFRP)*NZ
+          NQT      = NQT + NQ(IFRP)
+          KE(IFRP,2) = KE(IFRP,1)
+        ENDDO      
+        CALL MEMGET('REAL',KQC(1),NQT,WORK,KFREE,LFREE)
+        KQC(2) = KQC(1) + NQ(1)
+        NSTRT(2) = NSTRT(1)
+      ENDIF
+C
+      WRITE(LUPRI,'(A,I5)') '- Number of active electrons:',NAELEC
+      WRITE(LUPRI,'(A)')    '- Active orbitals:'
+      DO I = 1, NFSYM
+         CALL TRAPRI(1,I,WORK(KVEC(I,1)),IDUM,IDUM,IDUM,NSTR)
+      ENDDO
+      WRITE(LUPRI,'(A)')    '- Core orbitals:'
+      DO I = 1, NFSYM
+         CALL TRAPRI(1,I,WORK(KVEC(I,2)),IDUM,IDUM,IDUM,NSPC)
+      ENDDO
+C
+C     Allocate buffer spaced for coefficients AND core Fock matrix
+C
+      CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+C
+C     Get all coefficients and eigenvalues
+C     ====================================
+C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
          WRITE(LUPRI,'(A)') 'Coefficient file not present'
-         CALL QUIT('PCKTOP: No coefficients !')
+         CALL QUIT('RESOLV: No coefficients !')
       ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),TOTERG,1)
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),
+     &               TOTERG,2)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
-      DO IFRP = 1,NFSYM
-         IOFF = KEIG+NPSH(IFRP)+IORB(IFRP)-1
-         ISTR = NISH(IFRP)+1
-         IEND = NESH(IFRP)
-         NTHREI(IFRP) = -1
-         EIGP = -1.0D20
-         DO I = ISTR,IEND
-            IF(WORK(IOFF+I).LT.EIGP) THEN
-               WRITE(LUPRI,'(A)') 
-     &              'Not INCREASING order in Eigenvalues!'
-               CALL QUIT('PCKTOP: Eigenvalues Decreasing with N!')
-            ENDIF
-            IF(WORK(IOFF+I).LT.EIGTHR) NTHREI(IFRP) = I
-            EIGP = WORK(IOFF+I)
-         ENDDO
+C     
+C     Select active orbitals
+C     ======================
+C
+      DO IFRP = 1, NFSYM
+        CALL SELCFS (WORK(KBUF+ICMOQ(IFRP)),
+     &       IFRP,WORK(KQ(IFRP,1)),WORK(KVEC(IFRP,1)),
+     &       NSTR(IFRP,2,1),NSTR(IFRP,1,1),
+     &       NFBAS(IFRP,0),NORB(IFRP))
+        CALL SELEIG (WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,1)),
+     &               WORK(KVEC(IFRP,1)),NSTR(IFRP,2,1),NSTR(IFRP,1,1))
+        KQ(IFRP,2) = KQ(IFRP,1)
+        KE(IFRP,2) = KE(IFRP,1)
       ENDDO
-      IF(IPRINT.GE.1) THEN
-         STR(1) = 'Fermion irrep. 1  '
-         STR(2) = 'Fermion irrep. 2  '
-         WRITE(LUPRI,'(/X,A)') '* Eigenvalue of highest virtual'//
-     &        ' Kramers pair included:'
-         
-         WRITE(LUPRI,'(8X,2A)') (STR(I),I=1,NFSYM)
-         WRITE(LUPRI,'(4X,2F18.8)') 
-     &        (WORK(KEIG+NPSH(I)+IORB(I)+NTHREI(I)-1),I=1,NFSYM)
-         WRITE(LUPRI,'(/X,A)') '* Position of highest virtual'//
-     &        ' Kramers pair included:'
-         WRITE(LUPRI,'(8X,2A)') (STR(I),I=1,NFSYM)
-         WRITE(LUPRI,'(8X,2I18)') 
-     &        (NTHREI(I),I=1,NFSYM)
+      IF(.NOT.SKPONE) THEN
+C     
+C       Select core orbitals
+C       ======================
+C
+        DO IFRP = 1, NFSYM
+          CALL SELCFS (WORK(KBUF+ICMOQ(IFRP)),
+     &         IFRP,WORK(KQC(IFRP)),WORK(KVEC(IFRP,2)),
+     &         NSPC(IFRP,2),NSPC(IFRP,1),
+     &         NFBAS(IFRP,0),NORB(IFRP))
+        ENDDO
+C
+C       2-index transformation
+C       ======================
+C
+        CALL TRAHI(IPRRES,2)  
+C
+C       Get hold of the slaves if we run in parallel.
+C
+        IF (PARCAL) THEN
+           ITASK = 1
+#if defined (VAR_MPI)
+         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+#endif
+#if defined (VAR_PVM)
+           CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
+#endif
+        ENDIF
+C
+C       Transform core-fock matrix to active MO basis
+C       ---------------------------------------------
+C
+        CALL GTCFCK(WORK(KBUF),IPRRES,WORK(KQ(1,1)),WORK(KQ(1,2)),
+     &              WORK(KQC(1)),NDMOQR,ICMOQR,NSTR(1,0,1),
+     &              NDMOQC,ICMOQC,NSPC(1,0),
+     &              INTRES,WORK,KFREE,LFREE)
+C
+C       Write MOLFDIR file MRCONEE
+C       --------------------------
+C
+        CALL MRCONE(WORK(KBUF),WORK(KE(1,1)),NSTR,NSTRT,IPRRES,
+     &              WORK,KFREE,LFREE)
+C
+C       Release the slaves if we run in parallel.
+C
+        IF (PARCAL) THEN
+          ITASK = -1
+#if defined (VAR_MPI)
+         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+#endif
+#if defined (VAR_PVM)
+          CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
+#endif
+        ENDIF
       ENDIF
-      CALL MEMREL('PCKTOP',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+C     Release buffer memory
+C     ---------------------
+C
+      CALL MEMREL('PAMTRA.buf',WORK,KFRSAV,KTEMP,KFREE,LFREE)
+C
+C     4-index transformation
+C     ======================
+C
+      IF(.NOT.SKPTWO) THEN
+        CALL GETTIM(CPU1,WALL1)
+        CALL TRAHI(IPRRES,3)
+C
+C       Call driver for 4-index transformation
+C       --------------------------------------
+C
+        CALL PAMTR1(WORK,KFREE,LFREE,IPRRES,KQ,IDUM,
+     &              NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &              .FALSE.,.FALSE.,INTRES)
+C
+C        Print timing information
+C
+        CALL GETTIM(CPU2,WALL2)
+        WALL   = WALL2 - WALL1
+        CPU    = CPU2 - CPU1
+        CPUTID = SECTID(WALL)
+        WRITE(LUPRI,'(//A,A12)')
+     &      ' Total wall time used in RESOLV :',CPUTID
+        CPUTID = SECTID(CPU)
+        WRITE(LUPRI,'(A,A12)')
+     &        ' Total CPU  time used in RESOLV :',CPUTID
+C
+        WRITE(LUPRI,'(/A,F20.6)')
+        CALL GTINFO(DAYTID)
+        WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
+      ENDIF
+C
+C     Release all memory
+C     ------------------
+C
+      CALL MEMREL('PAMTRA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+C     Do full CI in open-shell manifold
+C     =================================
+C
+ 10   CONTINUE
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+      IERR = 0
+      CALL ASNUNIT(5,'-Yon',IERR)
+      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
+#endif
+      OPEN (5,FILE='DIRAC.INP')
+      CALL PAMGOS(WORK(KFREE),LFREE,NAELEC)
+C
+C     Restore DCBTRA information
+C
+      NOPAIR = TRANOP
+      SCRTRA = SCRBUF
+      IPRTRA = IPRBUF
+      ISTRAT = ISTBUF
+      THROUT = THRBUF
+C
+      CALL QEXIT('RESOLV')
+C
+      RETURN
+      END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck indarr */
+      SUBROUTINE INDARR(IVEC,IOFF,NVEC,IPRINT)
+C***********************************************************************
+C
+C     Make index array 
+C
+C     Written by T.Saue Jan 18 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcborb.h>
+      DIMENSION IVEC(*)
+      DO I = 1,NVEC
+        IVEC(I) = IOFF + I
+      ENDDO
+C
       RETURN
       END
-
-
-
-
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C Start of parallel section : activitate compilation only when necessary
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#if defined (VAR_PVM) || defined (VAR_MPI)
+C/* Deck TRAPARI*/
+      SUBROUTINE TRAPARI(WORK,KFREE,LFREE,KQ,KE,
+     &                   KINDX,KGABAO,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Luuk Visscher (based on HERNOD) August 1997
+C     Polish by T.Saue Sep 8 1998
+C
+C    *******************************************************************
+C    *   Initializes the nodes for the parallel 4-index transformation *
+C    *******************************************************************
+C
+#include <implicit.h>
+      PARAMETER(D0=0.0D0)
+C
+#if defined (VAR_MPI)
+#include <infmpi.h>
+      INCLUDE 'mpif.h'
+#else
+#include <fpvm3h.h>
+#endif
+C
+#include <priunit.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <dcbgen.h>
+C
+#include <dorps.h>
+#include <dcborb.h>
+#include <infpar.h>
+#include <dcbtra.h>
+#include <dgroup.h>
+#include <cbihr2.h>
+C
+      LOGICAL ANTIS,LMP2
+      DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,2),
+     &          WORK(*)
+      LOGICAL NODV,NOPV,NOCONT,RETUR,NEWGEO,FINISH
+C
+      CALL QENTER('TRAPARI')
+C
+      KFRSAV = KFREE
+      PARHER = .TRUE.
+      PARCAL = .TRUE.
+C
+      FINISH = .FALSE.
+C
+#if defined (VAR_PVM)
+      CALL PVMFMYTID(MYTID)
+      IF (MYTID .LT. 0) CALL PFAIL(MYTID)
+C
+      CALL PVMFPARENT(MPARID)
+      IF (MPARID .LT. 0) CALL PFAIL(MPARID)
+C
+#endif
+      IF (MYTID.EQ.0) THEN
+C
+C        **********************************************************
+C        ***** Send HERMIT initialization data to the other nodes *
+C        **********************************************************
+C
+C----------------------------------------------------------------
+C        Setup information for the two-electron integralroutines.
+C----------------------------------------------------------------
+C
+         NODV = .FALSE.
+         NOPV = .FALSE.
+         IF (NASHT .EQ. 0) NODV = .TRUE.
+         IF (NASHT .LT. 2) NOPV = .TRUE.
+         IPRALL =  0
+         DO 100 I = 0,7
+            DOREPS(I) = .TRUE.
+  100    CONTINUE
+         DO 110 I = 1,MXCENT
+            DOCOOR(1,I) = .TRUE.
+            DOCOOR(2,I) = .TRUE.
+            DOCOOR(3,I) = .TRUE.
+  110    CONTINUE
+         NOCONT = .FALSE.
+C
+         MAXDIF = 0
+         ITYPE  = 4
+         IF(SCRTRA.GT.D0) THEN
+           NDMAT = 2*NFSYM
+         ELSE   
+           NDMAT = 0
+         ENDIF
+C
+C        I2TYP will defined at each node
+         CALL SDINIT(DUMMY,NDMAT,IDUMMY,IDUMMY,ITYPE,MAXDIF,IDUMMY,
+     &               NODV,NOPV,NOCONT,TKTIME,RTNTWO,IDUMMY,
+     &               IDUMMY,SCRTRA,WORK(KGABAO),WORK(KDRIJ),DUMMY)
+C
+      ELSE 
+C
+C        **********************************************************
+C        ***** Receive HERMIT initialization data from master *****
+C        **********************************************************
+C
+         CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
+     &               IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
+     &               TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCRTRA,
+     &               KFMAT,KDMAT,KIFC,KIRD,KDRIJ,KGABAO,KDMRSO)
+      ENDIF
+C
+C        *****************************************************
+C        ***** Send or receive DIRAC initialization data *****
+C        *****************************************************
+C
+      CALL TRAPRD(WORK,KFREE,LFREE,KQ,KE,KINDX,
+     &            KGABAO,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+C
+C     Do not call MEMREL since the variable size arrays are represented
+C     as pointers when the routine is called from a slave
+C
+      CALL QEXIT('TRAPARI')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck traprd */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE TRAPRD (WORK,KFREE,LFREE,KQ,KE,KINDX,
+     &                   KGABAO,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+C
+C     Communicate DIRAC common blocks for parallel 4-index transform.
+C     Communicate arguments received from main program
+C
+C     Common blocks initialized : dcborb, dcbbas, dgroup, dcbtri,
+C                                 dcbtr3, comdis and symmet
+C
+C     Written by Luuk Visscher, august 1997.
+C
+#include <implicit.h>
+      PARAMETER(D0=0.0D0)
+C
+#if defined (VAR_MPI)
+#include <infmpi.h>
+      INCLUDE 'mpif.h'
+#else
+#include <fpvm3h.h>
+#endif
+#include <priunit.h>
+#include <mxorb.h>
+#include <aovec.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <dcborb.h>
+#include <dcbtra.h>
+#include <dcbtr3.h>
+#include <dcbbas.h>
+#include <symmet.h>
+#include <dgroup.h>
+#include <infpar.h>
+#include <parint.h>
+#include <blocks.h>
+C
+      LOGICAL ANTIS,LMP2,NSAME
+      DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,2)
+      DIMENSION WORK(*)
+C
+#if defined (VAR_PVM)
+      CALL PVMFMYTID(MYTID)
+      IF (MYTID .LT. 0) CALL PFAIL(MYTID)
+C
+      CALL PVMFPARENT(MPARID)
+      IF (MPARID .LT. 0) CALL PFAIL(MPARID)
+C
+#endif
+#if defined (VAR_MPI)
+C
+C     ********************************
+C     ****** Send COMMON blocks ******
+C     ********************************
+C
+      NUMELM = NDCBORB
+      CALL MPI_BCAST(NORB,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = NDCBBAS
+      CALL MPI_BCAST(NBBAS,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = NDGROUP
+      CALL MPI_BCAST(NZ,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = NDCBTRI
+      CALL MPI_BCAST(IPRTRA,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = NCOMDIS
+      CALL MPI_BCAST(NSPCK,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = NSYMMTI
+      CALL MPI_BCAST(MAXREP,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = NSYMMTR
+      CALL MPI_BCAST(FMULT,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 1
+      CALL MPI_BCAST(INTFLG,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 1
+      CALL MPI_BCAST(ANTIS,NUMELM,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 1
+      CALL MPI_BCAST(LMP2,NUMELM,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 24
+      CALL MPI_BCAST(NSTR,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 16
+      CALL MPI_BCAST(NDMOQR,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 8
+      CALL MPI_BCAST(ICMOQR,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+#endif
+#if defined (VAR_PVM)
+C
+C     ********************************
+C     ****** Send COMMON blocks ******
+C     ********************************
+C
+      NUMELM = NDCBORB
+      CALL PVMFPACK(INTEGER4,NORB,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = NDCBBAS
+      CALL PVMFPACK(INTEGER4,NBBAS,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = NDGROUP
+      CALL PVMFPACK(INTEGER4,NZ,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = NDCBTRI
+      CALL PVMFPACK(INTEGER4,IPRTRA,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = NCOMDIS
+      CALL PVMFPACK(INTEGER4,NSPCK,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = NSYMMTI
+      CALL PVMFPACK(INTEGER4,MAXREP,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = NSYMMTR
+      CALL PVMFPACK(REAL8,FMULT,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = 1
+      CALL PVMFPACK(INTEGER4,INTFLG,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = 1
+      CALL PVMFPACK(LOGICAL,ANTIS,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = 1
+      CALL PVMFPACK(LOGICAL,LMP2,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = 24
+      CALL PVMFPACK(INTEGER4,NSTR,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = 16
+      CALL PVMFPACK(INTEGER4,NDMOQR,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+      NUMELM = 8
+      CALL PVMFPACK(INTEGER4,ICMOQR,NUMELM,1,INFO)
+      IF (INFO .LT. 0) CALL PFAIL(INFO)
+#endif
+C
+#if defined (VAR_MPI)
+      IF (MYTID.EQ.MPARID) THEN
+C
+C     *************************
+C     ****** MASTER send ******
+C     *************************
+C
+C       Symmetry packing information
+        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,MPI_INTEGER,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
+C       Coefficients; use sameness relations to compress
+        DO I = 1,4
+          NSAME = .TRUE.
+          DO K = (I-1),1,-1
+          IF(ISAME(I).EQ.ISAME(K)) THEN
+            NSAME = .FALSE.
+            JSAME = K
+          ENDIF
+          ENDDO
+          IF(NSAME) THEN
+            NSIZE = 0
+            DO J = 1, NFSYM
+              NSIZE = NSIZE + NDMOQR(1,J,I)*NDMOQR(2,J,I)*NZ
+            ENDDO
+            CALL MPI_BCAST(WORK(KQ(1,I)),NSIZE,MPI_DOUBLE_PRECISION,
+     &                 MPARID,MPI_COMM_WORLD,IERR)
+          ENDIF
+        ENDDO
+C       If MP2 calculation send orbital energies
+        IF(LMP2) THEN
+          DO I = 1,2
+            NSIZE = 0
+            DO J = 1,NFSYM
+              NSIZE = NSIZE + NSTR(J,0,I)
+            ENDDO
+            CALL MPI_BCAST(WORK(KE(1,I)),NSIZE,MPI_DOUBLE_PRECISION,
+     &                     MPARID,MPI_COMM_WORLD,IERR)
+          ENDDO
+        ENDIF
+C       If screening send GAB-matrix and screening matrix
+        IF(SCRTRA.GT.D0) THEN
+          N2GAB   = NSYMBL*NSYMBL
+          NDRIJ   = N2GAB*NFSYM*2
+          CALL MPI_BCAST(WORK(KGABAO),N2GAB,MPI_DOUBLE_PRECISION,
+     &                   MPARID,MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(WORK(KDRIJ),NDRIJ,MPI_DOUBLE_PRECISION,
+     &                   MPARID,MPI_COMM_WORLD,IERR)
+        ENDIF
+      ELSE
+C
+C     **************************
+C     ****** SLAVE receive *****
+C     **************************
+C
+C       Symmetry packing information
+        CALL MEMGET('INTE',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
+        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,MPI_INTEGER,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+C       Coefficients; use sameness relations to compress
+        DO I = 1,4
+          NSAME = .TRUE.
+          DO K = (I-1),1,-1
+          IF(ISAME(I).EQ.ISAME(K)) THEN
+            NSAME = .FALSE.
+            JSAME = K
+          ENDIF
+          ENDDO
+          IF(NSAME) THEN
+            NSIZE = 0
+            DO J = 1, NFSYM
+              NSIZE = NSIZE + NDMOQR(1,J,I)*NDMOQR(2,J,I)*NZ
+            ENDDO
+            CALL MEMGET('REAL',KQ(1,I),NSIZE,WORK,KFREE,LFREE)
+            KQ(2,I) = KQ(1,I) + NDMOQR(1,1,I)*NDMOQR(2,1,I)*NZ
+            CALL MPI_BCAST(WORK(KQ(1,I)),NSIZE,
+     &              MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+          ELSE
+            KQ(1,I) = KQ(1,JSAME)
+            KQ(2,I) = KQ(2,JSAME)
+          ENDIF
+        ENDDO
+C       If MP2 calculation receive orbital energies
+        IF(LMP2) THEN
+          DO I = 1,2
+            NSIZE = 0
+            DO J = 1,NFSYM
+              NSIZE = NSIZE + NSTR(J,0,I)
+            ENDDO
+            CALL MEMGET('REAL',KE(1,I),NSIZE,WORK,KFREE,LFREE)
+            KE(2,I) = KE(1,I) + NSTR(1,0,I)
+            CALL MPI_BCAST(WORK(KE(1,I)),NSIZE,MPI_DOUBLE_PRECISION,
+     &                     MPARID,MPI_COMM_WORLD,IERR)
+          ENDDO
+        ENDIF
+C       If screening receive GAB-matrix and screening matrix
+        IF(SCRTRA.GT.D0) THEN
+          N2GAB   = NSYMBL*NSYMBL
+          NDRIJ   = N2GAB*NFSYM*2
+          CALL MEMGET('REAL',KGABAO,N2GAB,WORK,KFREE,LFREE)
+          CALL MPI_BCAST(WORK(KGABAO),N2GAB,MPI_DOUBLE_PRECISION,
+     &                   MPARID,MPI_COMM_WORLD,IERR)
+          CALL MEMGET('REAL',KDRIJ,NDRIJ,WORK,KFREE,LFREE)
+          CALL MPI_BCAST(WORK(KDRIJ),NDRIJ,MPI_DOUBLE_PRECISION,
+     &                   MPARID,MPI_COMM_WORLD,IERR)
+        ENDIF
+      ENDIF
+#endif
+#if defined (VAR_PVM)
+      write pvm code for this part
+#endif
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck TRANOD*/
+      SUBROUTINE TRANOD(WORK,LWORK)
+C
+C     Written by Luuk Visscher, August 1997
+C     Extensions by T.Saue Sep 1998
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include <implicit.h>
+#include <priunit.h>
+#include <mxorb.h>
+#if defined (VAR_MPI)
+#include <infmpi.h>
+      INCLUDE 'mpif.h'
+#else
+#include <fpvm3h.h>
+#endif
+#include <infpar.h>
+#include <dcbgen.h>
+#include <dcborb.h>
+#include <dcbtra.h>
+#include <dcbtr3.h>
+#include <dcbbas.h>
+#include <dgroup.h>
+      LOGICAL ANTIS,LMP2
+      DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,2),IQMO(4,0:7)
+      DIMENSION WORK(*),DINTSKP(8),TIM1(7)
+C
+      CALL QENTER('TRANOD')
+#include <memint.h>
+      KFRSAV = KFREE
+C
+C     Initialize the common blocks.
+C
+      IPRINT = -1
+      CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,
+     &             KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+C
+      IF (ISTRAT.EQ.1) THEN
+         WRITE(LUPRI,'(A)') 
+     &     'TRANOD: Strategy ',ISTRAT,' not implemented in parallell.'
+         CALL QUIT('TRANOD: No parallell strategy !')
+      ELSEIF (ISTRAT.EQ.2) THEN
+          CALL TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,
+     &         KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,EMP2,
+     &         DINTSKP,TIM1)
+      ELSEIF (ISTRAT.EQ.3) THEN
+         WRITE(LUPRI,'(A)') 
+     &     'TRANOD: Strategy ',ISTRAT,' not implemented in parallell.'
+         CALL QUIT('TRANOD: No parallell strategy !')
+      ELSEIF (ISTRAT.EQ.4) THEN
+          CALL TR4PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,
+     &             KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,
+     &             LMP2,EMP2,DINTSKP)
+      ELSE
+         WRITE(LUPRI,'(A)') 
+     &     'TRANOD: Strategy ',ISTRAT,' not implemented'
+         CALL QUIT('PAMTR1: Unknown strategy !')
+      ENDIF
+C
+C     We check whether all the work is done and return to the 
+C     main slave menu.
+C
+      CALL MPI_BCAST(NTEST,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      IF (NTEST.NE.-1) CALL QUIT('Received wrong message')
+C
+      CALL MEMREL('TRANOD',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('TRANOD')
+C
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck TRARES*/
+      SUBROUTINE TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,EMP2,TIM1)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Trond Saue Sep 15 1998
+C     
+C     Slave --> Master:
+C       - Screening information
+C       - MP2 results
+C***********************************************************************
+#include <implicit.h>
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+C
+#if defined (VAR_MPI)
+#include <infmpi.h>
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#else
+#include <fpvm3h.h>
+#endif
+C
+#include <priunit.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <dcbgen.h>
+C
+#include <dorps.h>
+#include <dcborb.h>
+#include <infpar.h>
+#include <dcbtra.h>
+#include <dgroup.h>
+C
+      LOGICAL LMP2
+      DIMENSION DINTSKP(8),TIM1(7,*),WORK(*)
+C
+      KFRSAV = KFREE
+      IF (MYTID.EQ.0) THEN
+C
+C     **************************
+C     ***** Master receive *****
+C     **************************
+C
+        IF(LMP2) EBUF = D0
+        CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
+        NTEST = -1
+        DO I = 1,NODES
+          CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+     &                  MPI_COMM_WORLD,ISTAT,IERR)
+          NWHO = ISTAT(MPI_SOURCE)
+          CALL MPI_SEND(NTEST,1,MPI_INTEGER,NWHO,30,
+     &                    MPI_COMM_WORLD,IERR)
+          CALL MPI_RECV(WORK(KBUF),8,MPI_DOUBLE_PRECISION,
+     &          NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
+          CALL DAXPY(8,D1,WORK(KBUF),1,DINTSKP,1)
+          IF(LMP2) THEN
+            CALL MPI_RECV(EBUF,1,MPI_DOUBLE_PRECISION,
+     &            NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
+            EMP2 = EMP2 + EBUF
+            CALL MPI_RECV(TIM1(1,NODE),7,MPI_DOUBLE_PRECISION,
+     &            NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
+          ENDIF
+        ENDDO
+        CALL MEMREL('TRARES',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      ELSE 
+C
+C     ***********************
+C     ***** Slave send  *****
+C     ***********************
+C
+        CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,
+     &          MPARID,40,MPI_COMM_WORLD,IERR)
+        IF(LMP2) THEN
+          CALL MPI_SEND(EMP2,1,MPI_DOUBLE_PRECISION,
+     &          MPARID,40,MPI_COMM_WORLD,IERR)
+          CALL MPI_SEND(TIM1,7,MPI_DOUBLE_PRECISION,
+     &          MPARID,40,MPI_COMM_WORLD,IERR)
+        ENDIF
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C& End of parallel section : activitate compilation only when necessary
+#endif
 

@@ -89,7 +89,7 @@ C     saves quite a bit of memory
 C
       NBUF = 0
       IF(DOSCRN) THEN
-        FCKTOL = MAX((FCKTHR/DNSMAX),1.00D-15)
+        FCKTOL = MAX((SCRTHR/DNSMAX),1.00D-15)
       ELSE
         FCKTOL = 1.00D-15
       ENDIF
@@ -404,12 +404,12 @@ C
         IC = MOD(IY,2)
         IE = IY - IC
 C       Screening on Coulomb contributions
-        IF(DOC.AND.IC.EQ.1.AND.FCM.LT.FCKTHR) THEN
+        IF(DOC.AND.IC.EQ.1.AND.FCM.LT.SCRTHR) THEN
           IC = 0
           DINTSKP(2,3) = DINTSKP(2,3) + NBUF
         ENDIF
 C       Screening on exchange contributions
-        IF(DOE.AND.IE.EQ.2.AND.FEM.LT.FCKTHR) THEN
+        IF(DOE.AND.IE.EQ.2.AND.FEM.LT.SCRTHR) THEN
           IE = 0
           DINTSKP(2,4) = DINTSKP(2,4) + NBUF
         ENDIF
@@ -670,7 +670,6 @@ C*****************************************************************************
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxorb.h>
-#include <dummy.h>
 #include <mxcent.h>
 #include <iratdef.h>
       LOGICAL DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
@@ -701,7 +700,7 @@ C
          CALL MEMGET('INTE',KPOINT,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)         
          IXYZ = 0
          CALL SKLFC1(FMAT,WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
-     &               WORK(KPOINT),DUMMY,DUMMY,DUMMY,IDUMMY,IXYZ,
+     &               WORK(KPOINT),DUM,DUM,DUM,IDUM,IXYZ,
      &               NMAT,ISYMDM,IFCTYP,IPRINT)
       END IF
 C

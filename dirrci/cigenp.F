@@ -382,7 +382,7 @@ C     .. Array Arguments ..
       DOUBLE PRECISION  AI(IAI,N), AR(IAR,N), VI(IVI,N), VR(IVR,N),
      *                  WK1(N), WK2(N), WK3(N), WR(N)
 C     .. Local Scalars ..
-      DOUBLE PRECISION  A, B, MAX, SQ, SUM, XXXX
+      DOUBLE PRECISION  A, B, MAX, SQ, SUM
       INTEGER           I, ISAVE, J
 C     .. Local Arrays ..
       CHARACTER*1       P01REC(1)

@@ -1895,6 +1895,7 @@ C
 C     RELGRD is used in DHFGRD to control integrals
 C
       RELGRD = .FALSE.
+      DONGRD = .FALSE.
       DO2GRD(1) = .TRUE.
       DO2GRD(2) = .TRUE.
       DO2GRD(3) = .TRUE.
@@ -1903,7 +1904,7 @@ C
          DO2GRD(3) = .FALSE.
       ENDIF
       DOTRCK    = .FALSE.
-      IGTHRS    = 17
+      SCRGRD    = -1.0D0      
 C
       RETURN
       END
@@ -1920,7 +1921,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D1 = 1.0D0,D0=0.0D0)
 #include <dummy.h>
 #include <mxorb.h>
 #include <mxcent.h>
@@ -2004,8 +2005,7 @@ C&&&& TWOGRD: Which two-electron gradient to calculate
                GO TO 100
     4          CONTINUE
 C&&&& IGTHRS: Threshold for screening on the gradient
-               READ (LUCMD,*) DTEMP
-               IGTHRS = -NINT(LOG10(DTEMP))
+               READ (LUCMD,*) SCRGRD
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -2039,12 +2039,12 @@ C     =============
          CALL CYESNO(STR,DOTRCK)
          WRITE(LUPRI,'(1X,A,A)') 'Skip LS/SS-two-el. grd. if small  : ',
      &                           STR
-         DTMP = 10.0D00**(-IGTHRS)
-         WRITE(LUPRI,'(1X,A,1P,E8.2)')
-     &      '* Screening threshold in gradient calculation ',DTMP
-         IF (IGTHRS .GE. 16) THEN
+         IF(SCRGRD.GT.D0) THEN
+           WRITE(LUPRI,'(1X,A,1P,E8.2)')
+     &       '* Screening threshold in gradient calculation ',SCRGRD
+         ELSE
             WRITE(LUPRI,'(1X,A,1P,E8.2)')
-     &         'WARNING: Screening turned off...'
+     &       'WARNING: Screening turned off...'
          END IF
          CALL PRSYMB(LUPRI,'-',75,0)
       END IF

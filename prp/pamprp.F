@@ -374,7 +374,7 @@ C
 C     Define electric field gradient
 C     Written by T.Enevoldsen - Sep 1996
 C     Last revision: J. Thyssen - Oct 13 1998
-C
+
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
@@ -2218,7 +2218,7 @@ C
       WRITE(LUPRI,'(1X,A)') 'NMR shieldings:'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE (LUPRI,'(A,E9.2)')
-     &   ' Shiledings printed for atoms with '//
+     &   ' Shieldings printed for atoms with '//
      &   'abundance greater than :', ABUND
 C
 C     A operators

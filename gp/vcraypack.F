@@ -43,6 +43,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
 #endif
       SUBROUTINE VSADD(A,LA,S,C,LC,N)
 #include <implicit.h>
+      PARAMETER(D0=0.0D0)
       DIMENSION A(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)+S
@@ -134,11 +135,12 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
 #endif
       SUBROUTINE MXMA(A,ICA,IRA,B,ICB,IRB,C,ICC,IRC,NROW,NSUM,NCOL)
 #include <implicit.h>
+      PARAMETER(D0=0.0D0)
       DIMENSION A(*),B(*),C(*)
 #if !defined (VAR_ESSL) 
       DO 100 IROW=0,NROW-1
       DO 100 ICOL=0,NCOL-1
-         SUM=0.0
+         SUM=D0
          DO 110 ISUM=0,NSUM-1
             SUM=SUM +
      &          A(1+IROW*ICA+ISUM*IRA) *
@@ -199,7 +201,7 @@ C     RETURN
  
  400  DO 520 IROW=0,NROW-1
         DO 520 ICOL=0,NCOL-1
-          T=0.0D00
+          T=D0
           DO 510 ISUM=0,NSUM-1
             T=T+A(1+IROW*ICA+ISUM*IRA)*B(1+ISUM*ICB+ICOL*IRB)
  510      CONTINUE
@@ -216,11 +218,12 @@ C     RETURN
       END
       SUBROUTINE MXMAA(A,ICA,IRA, B,ICB,IRB, C,ICC,IRC, NROW,NSUM,NCOL)
 #include <implicit.h>
+      PARAMETER(D0=0.0D0)
       DIMENSION A(*),B(*),C(*)
  
       DO 100 IROW=0,NROW-1
       DO 100 ICOL=0,NCOL-1
-         SUM=0.0
+         SUM=D0
          DO 110 ISUM=0,NSUM-1
             SUM=SUM +
      &          A(1+IROW*ICA+ISUM*IRA) *
@@ -233,11 +236,12 @@ C     RETURN
       END
       SUBROUTINE MXMAM(A,ICA,IRA, B,ICB,IRB, C,ICC,IRC, NROW,NSUM,NCOL)
 #include <implicit.h>
+      PARAMETER(D0=0.0D0)
       DIMENSION A(*),B(*),C(*)
  
       DO 100 IROW=0,NROW-1
       DO 100 ICOL=0,NCOL-1
-         SUM=0.0
+         SUM=D0
          DO 110 ISUM=0,NSUM-1
             SUM=SUM +
      &          A(1+IROW*ICA+ISUM*IRA) *
@@ -250,11 +254,12 @@ C     RETURN
       END
       SUBROUTINE MXMT(A,ICA,IRA, B,ICB,IRB, C, NROW,NSUM)
 #include <implicit.h>
+      PARAMETER(D0=0.0D0)
       DIMENSION A(*),B(*),C(*)
       IND=0
       DO 100 IROW=0,NROW-1
       DO 100 ICOL=0,IROW
-         SUM=0.0
+         SUM=D0
          DO 110 ISUM=0,NSUM-1
             SUM=SUM +
      &          A(1+IROW*ICA+ISUM*IRA) *

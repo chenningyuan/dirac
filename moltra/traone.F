@@ -60,7 +60,7 @@ C
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KVEC(2,2),KQ(2,2),
      &          IR(2,2),NR(2),NQ(2,2),NQT(2),
      &          NSPC(2,0:2),KQC(2),KE(2,2)
-      DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),ICMOQC(2)
+      DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NDMOQC(2,2),ICMOQC(2)
 C
       CALL QENTER('TRAONE')
 #include <memint.h>
@@ -102,6 +102,8 @@ C
         CALL MEMREL('TRAONE',WORK,KFRSAV,KVEC(IFRP,1),KFREE,LFREE)
         CALL MEMGET('INTE',KVEC(IFRP,1),NSPC(IFRP,0),
      &              WORK,KFREE,LFREE)
+        NDMOQC(1,IFRP) = NFBAS(IFRP,0)
+        NDMOQC(2,IFRP) = NSPC(IFRP,0)
       ENDDO
 C
 C     Print section
@@ -254,7 +256,8 @@ C
          CALL QUIT('TRAPAM: No coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAONE')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),TOTERG,2)
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &               TOTERG,2)
       ENDIF
 C
 C     Select the set that we need
@@ -280,7 +283,7 @@ C     ---------------------------------------------
 C
       CALL MEMGET('REAL',KFMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL GTCFCK(WORK(KFMO),IPRTRA,WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &            WORK(KQC(1)),NDMOQR,ICMOQR,NSTR,ICMOQC,NSPC,
+     &            WORK(KQC(1)),NDMOQR,ICMOQR,NSTR,NDMOQC,ICMOQC,NSPC,
      &            ITRA_INTFL2,WORK,KFREE,LFREE)
 C
 C     Write MOLFDIR file MRCONEE
@@ -308,8 +311,8 @@ C
       END      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gtcfck */
-      SUBROUTINE GTCFCK(FMO,IPRINT,Q1,Q2,QCO,NDMOQR,ICMOQR,NSTR,ICMOQC,
-     &                  NSPC,INTFLG2,WORK,KFREE,LFREE)
+      SUBROUTINE GTCFCK(FMO,IPRINT,Q1,Q2,QCO,NDMOQR,ICMOQR,NSTR,
+     &                  NDMOQC,ICMOQC,NSPC,INTFLG2,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
@@ -329,7 +332,7 @@ C
       LOGICAL TOBE
       DIMENSION FMO(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
-      DIMENSION ICMOQC(2),NSPC(2,0:2)
+      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
       DIMENSION Q1(*),Q2(*),QCO(*)
 C
       CALL QENTER('GTCFCK')
@@ -343,7 +346,7 @@ C
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)      
 C
       CALL GTCFC1(FMO,WORK(KFAO),WORK(KDMAT),Q1,Q2,QCO,NDMOQR,ICMOQR,
-     &            NSTR,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
+     &            NSTR,NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
 C
 C     Print section
 C
@@ -368,7 +371,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GTCFC1 */
       SUBROUTINE GTCFC1(FMO,FAO,DMAT,Q1,Q2,QCO,NDMOQR,ICMOQR,NSTR,
-     &                  ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
+     &                  NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
@@ -395,7 +398,7 @@ C
       LOGICAL TOBE,BF1,BF2,BF3
       DIMENSION FMO(*),FAO(*),DMAT(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
-      DIMENSION ICMOQC(2),NSPC(2,0:2),IQBF(4)
+      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),IQBF(4)
       DIMENSION Q1(*),Q2(*),QCO(*)
 C
       CALL QENTER('GTCFC1')
@@ -441,7 +444,7 @@ C       Fock matrix type
 C       Hermitian operator
         IHRMOP(1) = 1
 C       Get core density matrix
-        CALL CDENS(DMAT,QCO,ICMOQC,NSPC,IPRINT)        
+        CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)        
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
      &       WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
         IF(PARCAL) THEN
@@ -516,7 +519,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck CDENS */
-      SUBROUTINE CDENS(DMAT,QCO,ICMOQC,NSPC,IPRINT)
+      SUBROUTINE CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)
 C*****************************************************************************
 C
 C*****************************************************************************
@@ -524,7 +527,7 @@ C*****************************************************************************
 #include <priunit.h>
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION DMAT(*),QCO(*)
-      DIMENSION NSPC(2,0:2),ICMOQC(2)
+      DIMENSION NSPC(2,0:2),NDMOQC(2,2),ICMOQC(2)
 #include <dgroup.h>
 #include <dcbbas.h>
 #include <dcborb.h>
@@ -533,7 +536,7 @@ C
       DO 10 I = 1,NFSYM
         IF(NSPC(I,0).EQ.0) GOTO 10
         CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),
-     &              QCO(ICMOQC(I)),NFBAS(I,0),NSPC(I,0),
+     &              QCO(ICMOQC(I)),NDMOQC(1,I),NDMOQC(2,I),
      &              1,NSPC(I,0),NFBAS(I,0))
    10 CONTINUE
 C

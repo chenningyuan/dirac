@@ -33,50 +33,15 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR3T */
       SUBROUTINE TRDR3T(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                  NSTR,ANTIS,LMP2,INDX,Q1,Q2,Q3,Q4,E1,E2)
-C
-C     Written by Luuk Visscher, Februari 1997
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <dcbgen.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-      LOGICAL ANTIS,LMP2,TRIAN(2)
-      DIMENSION NSTR(2,0:2,4),INDX(3,*)
-      DIMENSION Q1(*),Q2(*),Q3(*),Q4(*)
-      DIMENSION E1(*),E2(*)
-      DIMENSION WORK(*)
-C
-      CALL QENTER('TRDR3T')
-      KFRSAV = KFREE
-C
-      TRIAN(1) = ISAME(2).EQ.ISAME(1)
-      TRIAN(2) = .FALSE.
-      CALL TRDRV3(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &            NSTR,ANTIS,LMP2,INDX,TRIAN,
-     &            Q1,Q2,Q3,Q4,E1,E2)
-C
-      CALL MEMREL('TRDR3T',WORK,1,KFRSAV,KFREE,LFREE)
-      CALL QEXIT('TRDR3T')
-C
-      RETURN
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck TRDRV3 */
-      SUBROUTINE TRDRV3(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                  NSTR,ANTIS,LMP2,INDX,TRIAN,Q1,Q2,Q3,Q4,E1,E2)
+     &                  NSTR,ANTIS,LMP2,INDX,KQ,KE,DINTSKP)
 C
 C     Written by Luuk Visscher, december 1996
+C     Screening introduced by T.Saue Sep 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER(D0=0.0D0)
 #include <iratdef.h>
 #include <mxorb.h>
 #include <dcbgen.h>
@@ -87,11 +52,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dgroup.h>
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
-      DIMENSION IQMO(4,0:7),NZMO(0:7)
+      DIMENSION IQMO(4,0:7),NZMO(0:7),KQ(2,4),KE(2,2)
       DIMENSION IJP12(0:7)
       DIMENSION IJP34(2)
       DIMENSION IHTM(0:7),IHM(0:7),IFM(0:7),MHTM(2),NHTM(2)
-      DIMENSION Q1(*),Q2(*),Q3(*),Q4(*),E1(*),E2(*)
       DIMENSION IRECC(2),NBFSZ(2),NBUF(2),NIJBUF(2),NHTIM(2),IBOFF(2)
       DIMENSION WORK(*)
 C
@@ -99,45 +63,10 @@ C
       KFRSAV = KFREE
 C
 C     Define the packing of the 2-index transformed integrals
-C     We do not consider sorting of positronic and electronic
-C     spinors at this point.
 C
-      NFPCK12T = 0
-      NFPCK34T = 0
-      DO IREPIJ =1, NFSYM
-         NFPCK12(IREPIJ) = 0
-         NFPCK34(IREPIJ) = 0
-         DO IREPJ = 1, NFSYM
-            IREPI = MOD(IREPJ+IREPIJ,2) + 1
-C
-C           Packing can be triangular (i=>j) or square.
-C
-            IF (.NOT.TRIAN(1).OR.(TRIAN(1).AND.IREPI.GT.IREPJ)) THEN
-               IFPCK12(IREPI,IREPJ) = NFPCK12(IREPIJ)
-               NFPCK12(IREPIJ) = NFPCK12(IREPIJ) +
-     &                           NSTR(IREPI,0,1)*NSTR(IREPJ,0,2)
-            ELSEIF (TRIAN(1).AND.IREPI.EQ.IREPJ) THEN
-               IFPCK12(IREPI,IREPJ) = NFPCK12(IREPIJ)
-               NFPCK12(IREPIJ) = NFPCK12(IREPIJ) +
-     &                           NSTR(IREPI,0,1)*(NSTR(IREPI,0,1)+1)/2
-            ELSE
-               IFPCK12(IREPI,IREPJ) = - 1
-            ENDIF
-            IF (.NOT.TRIAN(2).OR.(TRIAN(2).AND.IREPI.GT.IREPJ)) THEN
-               IFPCK34(IREPI,IREPJ) = NFPCK34(IREPIJ)
-               NFPCK34(IREPIJ) = NFPCK34(IREPIJ) +
-     &                           NSTR(IREPI,0,3)*NSTR(IREPJ,0,4)
-            ELSEIF (TRIAN(2).AND.IREPI.EQ.IREPJ) THEN
-               IFPCK34(IREPI,IREPJ) = NFPCK34(IREPIJ)
-               NFPCK34(IREPIJ) = NFPCK34(IREPIJ) +
-     &                           NSTR(IREPI,0,3)*(NSTR(IREPI,0,3)+1)/2
-            ELSE
-               IFPCK34(IREPI,IREPJ) = - 1
-            ENDIF
-         ENDDO
-         NFPCK12T = NFPCK12T + NFPCK12(IREPIJ)
-         NFPCK34T = NFPCK34T + NFPCK34(IREPIJ)
-      ENDDO
+      TRIAN(1) = ISAME(2).EQ.ISAME(1)
+      TRIAN(2) = .FALSE.
+      CALL PCK2IN(NSTR,TRIAN,IPRINT)
 C
       CALL ICOPY (24,NSPCK,1,NSPCK12,1)
       CALL ICOPY (24,NSPCK,1,NSPCK34,1)
@@ -252,7 +181,18 @@ C
       CALL MEMGET('INTE',KLBUF1,NSIZET,WORK,KFREE,LFREE)
 C
       CALL INITBUF (IRECC,NBFSZ,NBUF,WORK(KJBOFF))
-      CALL MEMCHK('TRDRV3.1',WORK,1)
+C
+C     Prepare for screening
+C
+      IF(SCRTRA.GT.D0) THEN
+        CALL PR4SCR(KGAB,KDRIJ,WORK,KFREE,LFREE,DINTSKP,
+     &              WORK(KQ(1,1)),WORK(KQ(1,2)),
+     &              WORK(KQ(1,3)),WORK(KQ(1,4)),
+     &              NDMOQR,ICMOQR,NSTR,ISAME,IPRINT)
+      ELSE
+        KDRIJ = KFREE
+        KGAB  = KFREE
+      ENDIF
 C
 C     Loop over (XX|LL) and (XX|SS) integrals
 C
@@ -300,7 +240,8 @@ C
             LDXAB = 5*NINSHA*NINSHB
             CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
             NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &                       .FALSE.,INDX,WORK(KDXAB),IJP12,NSIZG,IDUM)
+     &                       .FALSE.,INDX,WORK(KDXAB),
+     &                       IJP12,NSIZG,IDUM)
 C
 C
             CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
@@ -308,7 +249,7 @@ C
 C           Set INDXAB and INDPASS
 C
             NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,
-     &                       INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+     &               INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
 C
             IF (IPRINT .GE. 3) THEN
                WRITE (LUPRI,'(//,4(1X,A,2I4,/))')
@@ -358,7 +299,8 @@ C
             NODV = NASHT.EQ.0
             NOPV = NASHT.LT.2
             CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),
-     &                  NODV,NOPV,WORK(KFREE),LFREE,IPRINT)
+     &               NODV,NOPV,WORK(KGAB),WORK(KDRIJ),DINTSKP,SCRTRA,
+     &               WORK(KFREE),LFREE,IPRINT)
 C
 C           Do the transformation of the first index pair and sort the
 C           half-transformed integrals to file.
@@ -374,8 +316,9 @@ C
             CALL MS4IN1D(WORK,KFREE,LFREE,IPRINT,.FALSE.,.FALSE.,
      &                  WORK(KALGREC),ICS,ICF,
      &                  IC,TRIAN(1),NSTR(1,0,1),NSTR(1,0,2),
-     &                  WORK(KIJPASS),Q1,Q2,WORK(KGMAT),NSIZG,NZMO,IQMO,
-     &                  MHTM,IHTM,INDX,WORK(KDXAB),IRECC,WORK(KJBOFF),
+     &                  WORK(KIJPASS),WORK(KQ(1,1)),WORK(KQ(1,2)),
+     &                  WORK(KGMAT),NSIZG,NZMO,IQMO,
+     &           MHTM,IHTM,INDX,WORK(KDXAB),IRECC,WORK(KJBOFF),
      &                  IBOFF,NBUF,NIJBUF,NBFSZ,WORK(KRBUF),
      &                  WORK(KLBUF1))
 C
@@ -389,11 +332,16 @@ C
 C
          ENDDO
          ENDDO
-      CALL MEMCHK('TRDRV3.2',WORK,1)
 C
 C----------------
  100     CONTINUE
 C----------------
+C
+C     Screening statistics
+C
+      IF(SCRTRA.GT.0) THEN
+        CALL ST4SCR(DINTSKP)
+      ENDIF
 C
 C     Write out last set of buffers
 C     De-allocate buffer space
@@ -414,8 +362,11 @@ C
       ICS = 1
       ICF = 2
       CALL MS4IN2D(WORK,KFREE,LFREE,IPRINT,ICS,ICF,
-     &             NSTR(1,0,3),NSTR(1,0,4),Q3,Q4,Q3,Q4,NZMO,
-     &             IQMO,IRECC,NBFSZ,NBUF,NIJBUF,MHTM,WORK(KDXKR12))
+     &             NSTR(1,0,3),NSTR(1,0,4),
+     &             WORK(KQ(1,3)),WORK(KQ(1,4)),
+     &             WORK(KQ(1,3)),WORK(KQ(1,4)),
+     &             NZMO,IQMO,IRECC,NBFSZ,NBUF,NIJBUF,MHTM,
+     &             WORK(KDXKR12))
 C
 C     Delete half-transformed integral files
 C
@@ -521,6 +472,7 @@ C           Number of pairs in one buffer
 C
             NIJ  = NIJBUF(IREPIJ)
             NIJL = NFPCK12(IREPIJ) - NIJ*(NBUF(IREPIJ)-1)
+            IF(NIJL.EQ.0) GOTO 10
 C
             DO IZ = 1, NZ
                IJOFF = 0
@@ -904,12 +856,12 @@ C
 C       We can symmetrize the integral here or write it to a
 C       scratch file.
 C
-        IF (ISTRTRA.EQ.3) THEN
+        IF (ISTRAT.EQ.3) THEN
            IKR = INDXKR(1,IJ)
            JKR = INDXKR(2,IJ)
            CALL SYMFINT(IPRINT,IREPIJ,IJ,IKR,JKR,NSTR3,NSTR4,NKL,
      &                  WORK(KHMAT),IQMO,WORK,KFREE,LFREE)
-        ELSEIF (ISTRTRA.EQ.4) THEN
+        ELSEIF (ISTRAT.EQ.4) THEN
            CALL MDSCRU(IPRINT,IREPIJ,IJS+IJ,NKL,WORK(KHMAT)
      &                 ,WORK,KFREE,LFREE)
         ENDIF
@@ -1165,7 +1117,7 @@ C        Do first step of 4-index transformation :
 C        Transform first pair of indices
 C 
          CALL MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,
-     &                TRIAN,NSTR1,NSTR2,NFPCK12,IFPCK12,NDMOQR,
+     &                TRIAN,NSTR1,NSTR2,NDMOQR,
      &                ICMOQR,IJPASS(0,IPASS),Q1,Q2,
      &                GMAT,WORK(KHMAT),NZMO,IQMO)
 C

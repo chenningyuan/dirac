@@ -468,7 +468,7 @@ C
         CALL HEADER('One-electron Fock matrix',-1)
         DO 10 I = 1,NFSYM
           IF(NFBAS(I,0).EQ.0) GOTO 10
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion irrep ',I
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
           CALL PRQMAT(FOCK(I2BASX(I,I)+1,1),NFBAS(I,0),NFBAS(I,0),
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    10   CONTINUE
@@ -771,20 +771,21 @@ C
               CALL SPHLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
      &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
      &                    CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
+              NDEL  = NBBAS(IREP,IC) - NEFF
             ELSE
               CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                     STOL(IC),IPRINT,EIG,WORK,LWORK)
+              NDEL  = NBBAS(IREP,IC) - NEFF
+              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)') 
+     &          COMP(IC),REP(IREP),'* Deleted: ',NDEL
             ENDIF
-            NDEL  = NBBAS(IREP,IC) - NEFF
-            WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)') 
-     &        COMP(IC),REP(IREP),'* Deleted: ',NDEL
 C
 C           Zero columns of Lowdin matrix that are to be deleted
 C
             IF(NDEL.GT.0) THEN
               J = JVOFF + NFBAS(IFRP,0)*NEFF 
-              DO I = 1,NEFF
+              DO I = 1,NDEL
                 CALL DZERO(VMAT(J),NBBAS(IREP,IC))
                 J = J + NFBAS(IFRP,0)
               ENDDO
@@ -810,20 +811,21 @@ C
               CALL RKBLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
      &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
      &                    CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
+              NDEL  = NBBAS(IREP,IC) - NEFF
             ELSE
               CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
+              NDEL  = NBBAS(IREP,IC) - NEFF
+              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)') 
+     &           COMP(IC),REP(IREP),'* Deleted: ',NDEL
             ENDIF
-            NDEL  = NBBAS(IREP,IC) - NEFF
-            WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)') 
-     &        COMP(IC),REP(IREP),'* Deleted: ',NDEL
 C
 C           Zero columns of Lowdin matrix that are to be deleted
 C
             IF(NDEL.GT.0) THEN
               J = JVOFF + NFBAS(IFRP,0)*NEFF 
-              DO I = 1,NEFF
+              DO I = 1,NDEL
                 CALL DZERO(VMAT(J),NBBAS(IREP,IC))
                 J = J + NFBAS(IFRP,0)
               ENDDO
@@ -1249,7 +1251,7 @@ C
         CALL HEADER('One-electron free particle matrix',-1)
         DO 10 I = 1,NFSYM
           IF(NFBAS(I,0).EQ.0) GOTO 10
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion irrep ',I
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
           CALL PRQMAT(FOCK(I2BASX(I,I)+1,1),NFBAS(I,0),NFBAS(I,0),
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    10   CONTINUE
@@ -1294,7 +1296,6 @@ C     =================
 C
       CALL MEMGET('REAL',KVMAT,N2BBASX,WORK,KFREE,LFREE)
       CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRONE)
-
 C
 C     Unrestricted kinetic balance; use Lowdin matrix
 C     ===============================================
@@ -1585,7 +1586,7 @@ C
           IOFF = IEIG + NFORB(I,1)
           NDIM = MIN(NFORB(I,1),NFORB(I,2))
           NDEL = NFORB(I,2) - NDIM
-          WRITE(LUPRI,'(3X,A,I2,A,I5)') '*** Fermion irrep ',I,
+          WRITE(LUPRI,'(3X,A,I2,A,I5)') '*** Fermion corep ',I,
      &         ', Number of spinors deleted: ',NDEL
           IF(IPRGEN.GE.0) THEN
              IF(((DABS(EIG(IOFF+1)-FAC)).GT.1D-07).
@@ -2311,6 +2312,12 @@ C
      &            EIG,WORK,LWORK)
       CALL DGEMM('N','N',NCAR,NEFF,NSPH,D1,TMAT,NCAR,
      &           SMAT,LDM,D0,VMAT,LDM)
+      NA = NCAR - NSPH
+      NB = NSPH - NEFF 
+      ND = NA + NB
+      WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A)') 
+     &           COMP(IC),REP(IREP),'* Deleted: ',ND,
+     &           '(Proj: ',NA,', Lindep: ',NB,')'
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2464,6 +2471,7 @@ C       New L-value; extract relevant transformation matrix
 C       ---------------------------------------------------
         IF(LL.NE.ILL) THEN
           ILL  = LL
+          JRKB = 0
           L    = LL - 1
           NLM  = 2*L + 1
           NXYZ = (LL*(LL+1))/2
@@ -2510,70 +2518,6 @@ C
             ENDDO
             IOFF = IOFF + KXYZ*KLM
 C
-            LRKB = L.GE.2
-            IF(LRKB) THEN
-              LLM2   = LL-2
-              KLMM2  = IRED(2,LLM2)
-              LRKB   = LRKB.AND.KLMM2.GT.0
-            ENDIF
-            IF(LRKB) THEN
-              NXYZM2 = (LLM2*(LLM2+1))/2
-              NLMM2  = 2*LLM2-1
-              KXYZM2 = IRED(1,LLM2)                            
-              KRKB   = KXYZ + KXYZM2
-              IM2    = IOFF + KXYZ
-              LM2F   = NHKOFF(LLM2)
-              CALL DZERO(CRED(IOFF+1),KRKB*KLMM2)
-C
-C             First extract spherical transformation matrix 
-C             for L-2 partner
-              JM2    = ICSP(LLM2)
-              CALL EXTELM('N',CSPH(JM2+1) ,NXYZM2,NLMM2,
-     &                        CRED(IM2+1),KRKB,KXYZM2,KLMM2,
-     &                        IFUN(LM2F+1,1),IFUN(LM2F+1,2))
-C
-C             Then fill in corresponding number for r**2
-C
-              DO K = 1,KXYZM2
-                IJ = IFUN(LM2F+K,1)
-                IA = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
-                IB = IJ - IA*(IA-1)/2
-C**             x**2: (ia  ,ib  )
-                IJX  = (IA*(IA-1))/2 + IB
-                KOFF = IOFF + IFUN(LOFF+IJX,3)
-                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
-     &                              CRED(KOFF),KRKB)
-C**             y**2: (ia+2,ib  )
-                IJY = ((IA+2)*(IA+1))/2 + IB
-                KOFF = IOFF + IFUN(LOFF+IJY,3)
-                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
-     &                              CRED(KOFF),KRKB)
-C**             z**2: (ia+2,ib+2)
-                IJZ = ((IA+2)*(IA+1))/2 + IB + 2
-                KOFF = IOFF + IFUN(LOFF+IJZ,3)
-                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
-     &                              CRED(KOFF),KRKB)
-              ENDDO
-C
-C             Scale matrix for L-2 partner
-C
-              FAC =  D6-D4*SDPRE(LL)
-              KOFF = IM2+1
-              DO K = 1,KLMM2
-                CALL DSCAL(KXYZM2,FAC,CRED(KOFF),1)
-                KOFF = KOFF + KRKB
-              ENDDO
-C
-C             Normalize...
-C
-              KOFF = IOFF+1
-              DO J = 1,KLMM2
-                FAC = D1/DNRM2(KRKB,CRED(KOFF),1)
-                CALL DSCAL(KRKB,FAC,CRED(KOFF),1)
-                KOFF = KOFF + KRKB
-              ENDDO
-              IOFF = IOFF + KRKB*KLMM2
-            ENDIF
           ENDIF
           IF(IPRINT.GE.4) THEN
             KOFF = IRED(3,LL)
@@ -2582,12 +2526,6 @@ C
      &       ' * L-value: ',L
             IF(KLM.GT.0) THEN
               CALL OUTPUT(CRED(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,1,LUPRI)
-              IF(LRKB) THEN
-                WRITE(LUPRI,'(A)') '* RKB part:'
-                KOFF = KOFF + KXYZ*KLM
-                CALL OUTPUT(CRED(KOFF+1),1,KRKB,1,KLMM2,
-     &                                   KRKB,KLMM2,1,LUPRI)
-              ENDIF
             ELSE
               WRITE(LUPRI,'(A)') ' - no functions - '
             ENDIF
@@ -2619,13 +2557,87 @@ C
 C
 C       Possibly add RKB part
 C
+        LRKB = L.GE.2
         IF(LRKB) THEN
+          LLM2   = LL-2
+          KLMM2  = IRED(2,LLM2)
+          LRKB   = KLMM2.GT.0
+        ENDIF
+        IF(LRKB) THEN
+C
+C         Possibly generate RKB matrix
+C
+          IF(JRKB.EQ.0) THEN
+            JRKB = 1
+            NXYZM2 = (LLM2*(LLM2+1))/2
+            NLMM2  = 2*LLM2-1
+            KXYZM2 = IRED(1,LLM2)                            
+            KRKB   = KXYZ + KXYZM2
+            IM2    = IOFF + KXYZ
+            LM2F   = NHKOFF(LLM2)
+            CALL DZERO(CRED(IOFF+1),KRKB*KLMM2)
+C
+C           First extract spherical transformation matrix 
+C           for L-2 partner
+            JM2    = ICSP(LLM2)
+            CALL EXTELM('N',CSPH(JM2+1) ,NXYZM2,NLMM2,
+     &                      CRED(IM2+1),KRKB,KXYZM2,KLMM2,
+     &                      IFUN(LM2F+1,1),IFUN(LM2F+1,2))
+C
+C           Then fill in corresponding number for r**2
+C
+            DO K = 1,KXYZM2
+              IJ = IFUN(LM2F+K,1)
+              IA = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
+              IB = IJ - IA*(IA-1)/2
+C**           x**2: (ia  ,ib  )
+              IJX  = (IA*(IA-1))/2 + IB
+              KOFF = IOFF + IFUN(LOFF+IJX,3)
+              CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                            CRED(KOFF),KRKB)
+C**           y**2: (ia+2,ib  )
+              IJY = ((IA+2)*(IA+1))/2 + IB
+              KOFF = IOFF + IFUN(LOFF+IJY,3)
+              CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                            CRED(KOFF),KRKB)
+C**           z**2: (ia+2,ib+2)
+              IJZ = ((IA+2)*(IA+1))/2 + IB + 2
+              KOFF = IOFF + IFUN(LOFF+IJZ,3)
+              CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                            CRED(KOFF),KRKB)
+            ENDDO
+C
+C           Scale matrix for L-2 partner
+C
+            FAC =  D6-D4*SDPRE(LL)
+            KOFF = IM2+1
+            DO K = 1,KLMM2
+              CALL DSCAL(KXYZM2,FAC,CRED(KOFF),1)
+              KOFF = KOFF + KRKB
+            ENDDO
+C
+C           Normalize...
+C
+            KOFF = IOFF+1
+            DO J = 1,KLMM2
+              FAC = D1/DNRM2(KRKB,CRED(KOFF),1)
+              CALL DSCAL(KRKB,FAC,CRED(KOFF),1)
+              KOFF = KOFF + KRKB
+            ENDDO
+            IF(IPRINT.GE.4) THEN
+              WRITE(LUPRI,'(A)') '* RKB part:'
+              CALL OUTPUT(CRED(IOFF+1),1,KRKB,1,KLMM2,
+     &                                   KRKB,KLMM2,1,LUPRI)
+            ENDIF
+            IOFF = IOFF + KRKB*KLMM2
+          ENDIF
           JB = IRKB(JL)
 C
 C         Copy extra functions for L
 C            
           IRM2 = NSTRT(JB) + IFUN(LM2F+1,1)
           IRM2 = IPTSYM(IRM2,IREP) - ISOFF
+          KOFF = IRED(3,LL)+KXYZ*KLM+1
           DO J = 1,KLMM2
             CALL DCOPY(KXYZ,CRED(KOFF),1,
      &                 TMAT(IROW,ICOL+J),1)   
@@ -2666,6 +2678,13 @@ C
      &            EIG,WORK,LWORK)
       CALL DGEMM('N','N',NCAR,NEFF,NSPH,D1,TMAT,NCAR,
      &           SMAT,LDM,D0,VMAT,LDM)
+      NA = NCAR - NSPH
+      NB = NSPH - NEFF 
+      ND = NA + NB
+      WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A)') 
+     &           COMP(IC),REP(IREP),'* Deleted: ',ND,
+     &           '(Proj: ',NA,', Lindep: ',NB,')'
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

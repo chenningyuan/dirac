@@ -335,7 +335,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDSCRI */
-      SUBROUTINE MDSCRI(WORK,KFREE,LFREE,NFPCK12,NFPCK34,NODE)
+      SUBROUTINE MDSCRI(WORK,KFREE,LFREE,NODE)
 C
 C     Initialize MDINT scratch files
 C     Written by Luuk Visscher, May 1997
@@ -346,7 +346,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dcbtra.h>
 #include <dgroup.h>
       DIMENSION WORK(*)
-      DIMENSION NFPCK12(2),NFPCK34(2)
       CHARACTER*10 FNODE,LFNAM,FNAM*5
 C
 C     Open direct access scratch file for 4-indexed transformed integrals

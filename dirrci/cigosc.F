@@ -30,7 +30,7 @@ C DATE    : $Date$
 C FILE    : cigosc.F
 C SOURCE  : $Source$
 C
-      SUBROUTINE PAMGOS(CI,MAXCORE)
+      SUBROUTINE PAMGOS(CI,MAXCORE,NELECT)
 C     ===============================================================
 C     SMALL CI PROGRAM TO PERFORM COMPLETE OPEN SHELL CI CALCULATIONS
 C     METHOD DESCRIBED IN JCP 96, 2910, (1992).
@@ -49,7 +49,7 @@ C
       CALL DAYTIME(DATEX,TIMEX)
       WRITE(6,1000) DATEX,TIMEX
       CALL CPUUSED(SEC)
-      CALL READGOS
+      CALL READGOS(NELECT)
 C
 C     Set pointers to allocate blocks in memory
 C
@@ -161,8 +161,6 @@ C
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
       INCLUDE 'goscom.inc'
 C
-c jth N2 is not the correct dimension
-c     REAL*8 E(N2),EE(N2,2)
       REAL*8 E(N2),EE(N2*N2,2)
 C
       CALL CRDIAG (NDET,NDET,HR,HI,D(1,IRP),EE(1,1),EE(1,2),E,E,EE,IERR)
@@ -843,7 +841,7 @@ C--> Particle interchanged and complex conjugated plus time-reversed partners
       END
 C
 C     =================
-      SUBROUTINE READGOS
+      SUBROUTINE READGOS(NELECT)
 C     =================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -867,7 +865,9 @@ C
       REFDET=0
       IREFE=0
       READ (5,GOSCIP,END=200)
-  200 IREF=REFDET
+  200 CONTINUE
+      NELEC = MAX(NELEC,NELECT)
+      IREF=REFDET
       IF (IREFE.LE.0) IREFE = NBITS(IREF)
       TWOC=.FALSE.
       REWIND(5)
@@ -975,7 +975,7 @@ C
 C
       IF (NDET.EQ.0) RETURN
       DEGEN = 1.D-10
-      NVEC = N2
+      NVEC = 5
       REWIND(5)
       READ (5,CIVEC,END=1,ERR=1)
     1 CONTINUE

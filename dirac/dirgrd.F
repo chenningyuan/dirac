@@ -402,12 +402,12 @@ C
       CALL GTCNVD(DMAT,CMO,IPRINT,WORK(KFREE),LFREE)
 C
       CALL GETTIM(CPU1,WALL1)
-      IF (IGTHRS .LT. 16) THEN
+      IF (SCRGRD .GT. D0) THEN
 C
 C     Prepare screening
-C        =================
+C     =================
 C
-C        CAll RTROINI with COMPAR true to get necessary gab-integrals.
+C     CAll RTROINI with COMPAR true to get necessary gab-integrals.
 C
          DO I = 1, 3*MXCENT
             DOPERT(I,1) = .TRUE.
@@ -543,14 +543,14 @@ C
          CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
      &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
-     &               IGTHRS,GABRAO,DMRAO,DUMMY,DNTSKP)
+     &               SCRGRD,GABRAO,DMRAO,DUMMY,DNTSKP)
       ELSE
 #endif
          CALL TWOINT(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
      &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IGTHRS,
-     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL)
+     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
+     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL,DUMMY,DUMMY)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
@@ -586,7 +586,7 @@ C
          CPUTLL = MAX(CPUTLL,DMXCPT)
          WLLTLL = MAX(WLLTLL,DMXWLT)
       END IF
-      CALL SCRGDS('SCR:LL',DNTSKP,IPRINT)
+      IF (SCRGRD .GT. D0) CALL SCRGDS('SCR:LL',DNTSKP,IPRINT)
       WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
      &      'Time for LL-two-electron part of gradient :',
      &      CPUTLL,' seconds.'
@@ -653,14 +653,14 @@ C
          CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
      &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
-     &               IGTHRS,GABRAO,DMRAO,DUMMY,DNTSKP)
+     &               SCRGRD,GABRAO,DMRAO,DUMMY,DNTSKP)
       ELSE
 #endif
          CALL TWOINT(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
      &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IGTHRS,
-     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL)
+     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
+     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL,DUMMY,DUMMY)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
@@ -697,7 +697,7 @@ C
          CPUTLS = MAX(CPUTLS,DMXCPT)
          WLLTLS = MAX(WLLTLS,DMXWLT)
       END IF
-      CALL SCRGDS('SCR:LS',DNTSKP,IPRINT)
+      IF (SCRGRD .GT. D0) CALL SCRGDS('SCR:LS',DNTSKP,IPRINT)
       WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
      &      'Time for LS-two-electron part of gradient :',
      &      CPUTLS,' seconds.'
@@ -769,14 +769,14 @@ C
          CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
      &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
-     &               IGTHRS,GABRAO,DMRAO,DUMMY,DNTSKP)
+     &               SCRGRD,GABRAO,DMRAO,DUMMY,DNTSKP)
       ELSE
 #endif
          CALL TWOINT(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
      &               DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
      &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IGTHRS,
-     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL)
+     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
+     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL,DUMMY,DUMMY)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
@@ -817,17 +817,13 @@ C
          CPUTSS = MAX(CPUTSS,DMXCPT)
          WLLTSS = MAX(WLLTSS,DMXWLT)
       END IF
-      CALL SCRGDS('SCR:SS',DNTSKP,IPRINT)
+      IF (SCRGRD .GT. D0) CALL SCRGDS('SCR:SS',DNTSKP,IPRINT)
       WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
      &      'Time for SS-two-electron part of gradient :',
      &      CPUTSS,' seconds.'
 C
       CALL FLSHFO(LUPRI)
  300  CONTINUE
-C
-C
-C
-C
 C
 C     Output of timings
 C
@@ -1010,14 +1006,14 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
 C
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
 #include <dcbbas.h>
 #include <dcbdhf.h>
 #include <dcborb.h>
 #include <dgroup.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxaqn.h>
+#include <symmet.h>
 #include <dcbqal.h>
 #include <dcbgen.h>
       PARAMETER ( D0 = 0.0 D00, D1 = 1.0 D00, D2 = 2.0 D00 ,

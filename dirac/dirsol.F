@@ -145,10 +145,9 @@ C
       CALL DCOPY(3,CAVORG,1,DIPORG,1)
 C     
 C     Reindex real part of density matrix to unsorted basis
-C     and insert hal-phases
+C
       DO I = 1,NFMAT
         CALL BSTOBU(DMAT(1,1,I),1,WORK,LWORK)
-        IF(NZ.LT.4) CALL Q2PHASE('D',1,1,DMAT(1,1,I))
         CALL BSTOBU(FOCK(1,1,I),1,WORK,LWORK)
       ENDDO
 C
@@ -171,15 +170,14 @@ C
           MVAR = MOD(MVALUE(ICMP),2)*ISYMAX(2,1)
           NVAR = MOD(NVALUE(ICMP),2)*ISYMAX(3,1)
           IREP = IBTXOR(LVAR,IBTXOR(MVAR,NVAR))
-CTROND
-          WRITE(7,'(A,3I5)') '* Sol = ',L,ICMP,IREP
-CTROND
           IF(IREP.EQ.0) THEN
-            KXYZ         = KXYZ + 1
+            KXYZ       = KXYZ + 1
             IFUN(KXYZ) = ICMP
           ENDIF
         ENDDO
-        IF(KXYZ.EQ.0) GOTO 100
+        IF(KXYZ.EQ.0) GOTO 110
+        ESOLLE = D0
+        ESOLLN = D0
 C
 C       F_l factor
 C
@@ -216,7 +214,7 @@ C       =============================================
 C
         DO ILM = 1,NLM
           M = ILM - LL
-C          IF(IREPLM(L,M).EQ.0) THEN
+          IF(IREPLM(L,M).EQ.0) THEN
 C
 C             Spherical transformation
 C             ------------------------
@@ -240,6 +238,8 @@ C
 C
 C            Expand matrices
 C            ---------------
+C
+            CALL QNPHASE(1,0,RLMTRI,DOINT)
             CALL DSPTSI(NTBAS(0),RLMTRI,RLMMAT)
 C
 C            Scale with expectation value ++
@@ -249,8 +249,8 @@ C
               RLMELC = DM2*DDOT(N2BBASX,DMAT(1,1,I),1,RLMMAT,1) 
               RLMTOT = RLMELC + RLMNUC(IOFF+ILM)
               FAC = DM2*RFL*RLMTOT
-              ESOLVE = ESOLVE + RFL*RLMTOT*RLMELC
-              ESOLVN = ESOLVN + RFL*RLMTOT*RLMNUC(IOFF+ILM)
+              ESOLLE = ESOLLE + RFL*RLMTOT*RLMELC
+              ESOLLN = ESOLLN + RFL*RLMTOT*RLMNUC(IOFF+ILM)
               IF(IPRINT.GE.3) THEN
                  WRITE(LUPRI,'(A,I2,A1,I2,A1)') 
      &           '** Solvent contributions for (l,m) = (',
@@ -280,8 +280,20 @@ C              ------------------
 C
               CALL DAXPY(N2BBASX,FAC,RLMMAT,1,FOCK(1,1,I),1)
             ENDDO
-C          ENDIF
+          ENDIF
         ENDDO
+        IOFF = IOFF + NLM
+        ESOLVE = ESOLVE + ESOLLE
+        ESOLVN = ESOLVN + ESOLLN
+        IF(IPRINT.GE.3) THEN
+           WRITE(LUPRI,'(A,I2)') 
+     &     '*** Total Solvent contributions for L = ',L
+           WRITE(LUPRI,'(3X,A,F20.12)')
+     &           '* Solvent energy                 : ',ESOLLE+ESOLLN,
+     &           '    - nuclear contribution       : ',ESOLLN,
+     &           '    - electronic contribution    : ',ESOLLE
+        ENDIF
+  110   CONTINUE
         IOFF = IOFF + NLM
   100 CONTINUE
       CALL DCOPY(3,RLMORI,1,DIPORG,1)
@@ -290,7 +302,6 @@ C     Reindex to sorted basis
 C     -----------------------
 C
       DO I = 1,NFMAT
-        IF(NZ.LT.4) CALL Q2PHASE('D',1,1,DMAT(1,1,I))
         CALL BUTOBS(DMAT(1,1,I),1,WORK,LWORK)
         CALL BUTOBS(FOCK(1,1,I),1,WORK,LWORK)
       ENDDO

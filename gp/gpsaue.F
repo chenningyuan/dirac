@@ -2461,6 +2461,55 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gatvcc */
+      SUBROUTINE GATVCC(IOPT,NVEC,A,N,B,IND,NIND)
+C*****************************************************************************
+C
+C     This routine will collect columns elements of vector A
+C     in groups based on pointer index IND.
+C     IOPT discerns two options:
+C	IOPT = 0	pick out the elements of largest absolute value
+C	IOPT = 1        sum up elements
+C
+C	Written by T.Saue, June 1994
+C	Last revision: October 9 1995 - tsaue
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION A(N,NVEC),B(NIND,NVEC),IND(N)
+CTROND No initialization !!!!      CALL DZERO(B,NIND*NIND)
+C
+C     Pick out largest elements for each group
+C     ========================================
+C
+      IF    (IOPT.EQ.0) THEN
+        DO J = 1,NVEC
+          DO I = 1,N
+            II = IND(I)
+            B(II,J) = MAX(B(II,J),ABS(A(I,J)))
+          ENDDO
+        ENDDO
+C
+C     Sum up elements within each group
+C     =================================
+C
+      ELSEIF(IOPT.EQ.1) THEN
+        DO J = 1,N
+          DO I = 1,N
+            II = IND(I)
+            B(II,J) = B(II,J) + A(I,J)
+          ENDDO
+        ENDDO
+      ELSE
+        CALL QUIT('GATVCC:Unknown option IOPT!')
+      ENDIF
+C
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qaxpy */
       SUBROUTINE QAXPY(N,FA,TA,A,IQPA,NZA,
      &                 X,NX,INCX,IQPX,NZX,Y,NY,INCY,IQPY,NZY)

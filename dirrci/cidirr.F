@@ -104,14 +104,14 @@ C     NOVERI  :   CALCULATES N OVER I
 C
 C     FILES :
 C
-C      7 (MRCONEE)  : 1-ELECTRON INTEGRALS
-C      8 (MDCINT)   : 2-ELECTRON COULOMB INTEGRALS
-C      9 (MDBINT)   : 2-ELECTRON BREIT INTEGRALS 
-C     10 (MRCTRIV)  : TRIAL VECTORS
-C     11 (MRCFINV)  : FINAL VECTORS
-C     12 (MRCEXCS)  : COUPLING COEFFICIENTS (TEMPORARY FILE)
-C     13 (MRCVECS)  : EXPANSION VECTORS (TEMPORARY FILE)
-C     14 (MRCTWOE)  : SORTED TWO-ELECTRON INTEGRALS (TEMPORARY FILE)
+C      8 (MRCONEE)  : 1-ELECTRON INTEGRALS
+C      9 (MDCINT)   : 2-ELECTRON COULOMB INTEGRALS
+C     10 (MDBINT)   : 2-ELECTRON BREIT INTEGRALS 
+C     11 (MRCTRIV)  : TRIAL VECTORS
+C     12 (MRCFINV)  : FINAL VECTORS
+C     13 (MRCEXCS)  : COUPLING COEFFICIENTS (TEMPORARY FILE)
+C     14 (MRCVECS)  : EXPANSION VECTORS (TEMPORARY FILE)
+C     15 (MRCTWOE)  : SORTED TWO-ELECTRON INTEGRALS (TEMPORARY FILE)
 C
 C     =======================================================================
 C
@@ -435,12 +435,12 @@ C     -----------------------------
       ENDIF
 C
       DO 30 I = 0, NORB
-      DO 20 J = MAX0(IORBR(I)-1,0), MIN0(NELEC,I+1)
-      DO 10 IR = 1, NREP
-      IVDET(IR,I,J) = 0
-      JVDET(IR,I,J) = 0
-   10 CONTINUE
-   20 CONTINUE
+        DO 20 J = MAX0(IORBR(I)-1,0), MIN0(NELEC,I+1)
+          DO 10 IR = 1, NREP
+            IVDET(IR,I,J) = 0
+            JVDET(IR,I,J) = 0
+   10     CONTINUE
+   20   CONTINUE
    30 CONTINUE
 C
       IVDET(LSYM,NORB,NELEC) = 0
@@ -682,6 +682,7 @@ C     -------------------------------
       I = IHEAD - 1
       JDET = 0
       IVERT = 0
+      IF(I.EQ.IANNI) GOTO 5300
       JMIN = IORBR(I)
       JMIN = MAX0(NELEC+I-NORB,0)
       JMAX = MIN0(NELEC-1,I)
@@ -689,27 +690,27 @@ C     -----------------------------------------------------
 C     LOOP OVER VERTICES : CHECK IF THE CLOSURE IS POSSIBLE
 C     -----------------------------------------------------
       DO 5200 J = JMAX, JMIN, -1
-      JLMIN = (NREP / 2 * MOD(J+1,2)) + 1
-      JLMAX = JLMIN + (NREP / 2) - 1
-      DO 5100 JLR = JLMIN, JLMAX
-      ILR = MULTB(IRPAMO(I+1),JLR)
-      IF (IVWU(JLR,I,J).NE.0.AND.JVDET(ILR,I+1,J+1).NE.0
-     &    .AND.I.NE.IANNI) THEN
-C        ----------------------------------------
-C        MAKE DETERMINANTS WHICH PASS THIS VERTEX
-C        ----------------------------------------
-         IVERT = IVERT + 1
-         JVECL(1,IVERT) = JDET
-         JVECL(2,IVERT) = IVWU(JLR,I,J)
-         DO 5060 K = IVDET(ILR,I+1,J+1)+1,
-     &               IVDET(ILR,I+1,J+1)+JVDET(ILR,I+1,J+1)
-         JDET = JDET + 1
-         JLIND(JDET) = ILIND(K) + IVWU(ILR,I,J+1)
-         JRIND(JDET) = JLIND(JDET)
- 5060    CONTINUE
-      ENDIF
- 5100 CONTINUE
+        JLMIN = (NREP / 2 * MOD(J+1,2)) + 1
+        JLMAX = JLMIN + (NREP / 2) - 1
+        DO 5100 JLR = JLMIN, JLMAX
+          ILR = MULTB(IRPAMO(I+1),JLR)
+          IF (IVWU(JLR,I,J).NE.0.AND.JVDET(ILR,I+1,J+1).NE.0) THEN
+C           ----------------------------------------
+C           MAKE DETERMINANTS WHICH PASS THIS VERTEX
+C           ----------------------------------------
+            IVERT = IVERT + 1
+            JVECL(1,IVERT) = JDET
+            JVECL(2,IVERT) = IVWU(JLR,I,J)
+            KOFF = IVDET(ILR,I+1,J+1)
+            DO K = 1,JVDET(ILR,I+1,J+1)
+              JLIND(JDET+K) = ILIND(KOFF+K) + IVWU(ILR,I,J+1)
+              JRIND(JDET+K) = JLIND(JDET+K)
+            ENDDO
+            JDET = JDET + JVDET(ILR,I+1,J+1)
+          ENDIF
+ 5100   CONTINUE
  5200 CONTINUE
+ 5300 CONTINUE
       IVERT = IVERT + 1
       JVECL(1,IVERT) = JDET
       JVECL(2,IVERT) = 0
@@ -1217,7 +1218,8 @@ C     -------------------------------------------
 C         --------------------------------
 C         START "WHILE LOOP" OVER VERTICES
 C         --------------------------------
-   30       IVERT = IVERT + 1
+   30       CONTINUE
+            IVERT = IVERT + 1
             JD1 = JVECL(1,IVERT) + 1 + ICOREX
             JD2 = JVECL(1,IVERT+1) + ICOREX
             NDH = IABS(JVECL(2,IVERT))
@@ -1347,7 +1349,7 @@ C
 C
       DATA EIGEN1/N8 * 0.D0/
       DATA MRCONEE,MDCINT,MDBINT,MRCTRIV,MRCFINV,MRCEXCS,MRCVECS,
-     &     MRCTWOE /7,8,9,10,11,12,13,14/
+     &     MRCTWOE /8,9,10,11,12,13,14,15/
       DATA FNAM /'MRCONEE','MDCINT','MDBINT','MDTRIV','MRCFINV',
      &     'MRCEXCS','MRCVECS','MRCTWOE'/
 C
@@ -1376,7 +1378,6 @@ C
       DIMENSION DR(MDET,*),DI(MDET,*),VECTR(NDET,*),VECTI(NDET,*)
       DIMENSION SIGMAR(NDET,*),SIGMAI(NDET,*),TINTR(*),TINTI(*)
       DIMENSION GMATR(*),GMATI(*)
-      real*8  cpui
       LOGICAL ENDFIL
 C
       INTERN = NORBR(1) + NORBR(2)
@@ -1844,9 +1845,6 @@ C
 C
       DIMENSION GMATR(*),GMATI(*),TINTR(*),TINTI(*),IJEX(*)
       LOGICAL ENDFIL
-C
-      COMPLEX*16 ONE,RPHASE(N3)
-      CHARACTER*10 DATEX,TIMEX*8
 C
       OPEN (MRCONEE,FILE=FNAM(1),FORM='UNFORMATTED')
       REWIND (MRCONEE)
@@ -3340,7 +3338,7 @@ C
       REWIND (5)
       READ (5,GOSCIP,END=10,ERR=10)
    10 IF (NELEC.NE.0) THEN
-         CALL PAMGOS(CI,MAXCORE)
+         CALL PAMGOS(CI,MAXCORE,NELEC)
          DONE = .TRUE.
          RETURN
       ELSE
@@ -3391,6 +3389,8 @@ C     --------------------------------------
          IREP1 = 1
          IREP2 = IRA1 - 1
       ENDIF
+      WRITE(6,'(A)') '* List of allowed representations:'
+      WRITE(6,'(3X,A4)') (REPNA(IREP),IREP = IREP1,IREP2)
       DO 220 IREP = IREP1, IREP2
          VECFIL = FNAM(4)(1:6)//'_'//REPNA(IREP)
          IF (VECFIL(8:8).EQ.'''') VECFIL(8:8) = '1'

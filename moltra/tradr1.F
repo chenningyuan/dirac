@@ -33,7 +33,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR1T */
       SUBROUTINE TRDR1T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,
-     &                  NSTR,ANTIS,LMP2,INDX,Q1,Q2,Q3,Q4,E1,E2)
+     &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,DINTSKP)
 C
 C     Written by Luuk Visscher, Februari 1997
 C
@@ -47,12 +47,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dgroup.h>
       PARAMETER (MAXTSK=1)
       LOGICAL ANTIS,LMP2
-      DIMENSION NSTR(2,0:2,4),NSTR1(2,0:2,4,MAXTSK),INDX(3,*)
-      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
+      DIMENSION NSTR(2,0:2,4),NSTR1(2,0:2,4,MAXTSK)
+      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),KQ(2,4),KE(2,2)
       DIMENSION NSTRS(2,4,MAXTSK),ICMOQR1(2,4)
-      DIMENSION Q1(*),Q2(*),Q3(*),Q4(*)
-      DIMENSION E1(*),E2(*)
-      DIMENSION WORK(*)
+      DIMENSION WORK(*),DINTSKP(*)
 C
       CALL QENTER('TRDR1T')
       KFRSAV = KFREE
@@ -90,8 +88,8 @@ C
          ENDDO
 C
          CALL TRDRV1(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR1,
-     &               NSTR1(1,0,1,ITASK),ANTIS,LMP2,INDX,Q1,Q2,Q3,Q4,
-     &               E1,E2)
+     &               NSTR1(1,0,1,ITASK),ANTIS,LMP2,WORK(KINDX),KQ,KE,
+     &               DINTSKP)
 C
       ENDDO
 C
@@ -104,13 +102,14 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDRV1 */
       SUBROUTINE TRDRV1(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,
-     &                  NSTR,ANTIS,LMP2,INDX,Q1,Q2,Q3,Q4,E1,E2)
+     &                  NSTR,ANTIS,LMP2,INDX,KQ,KE,DINTSKP)
 C
 C     Written by Luuk Visscher, december 1996
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER(D0=0.0D0)
 C
 #include <mxorb.h>
 #include <dcbgen.h>
@@ -118,38 +117,24 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      LOGICAL ANTIS, LMP2, NOPV, NODV
-      DIMENSION NSTR(2,0:2,4),INDX(3,*)
+      LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
+      DIMENSION NSTR(2,0:2,4),INDX(3,*),KQ(2,4),KE(2,2)
       DIMENSION IQMO(4,0:7),NZMO(0:7)
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
       DIMENSION IJP12(0:7)
       DIMENSION IJP34(2)
-      DIMENSION NFPCK12(2),IFPCK12(2,2)
-      DIMENSION NFPCK34(2),IFPCK34(2,2)
       DIMENSION IHTM(0:7),IHM(0:7),IFM(0:7),NHTM(2)
-      DIMENSION Q1(*),Q2(*),Q3(*),Q4(*),E1(*),E2(*)
-      DIMENSION WORK(*)
+      DIMENSION WORK(*),DINTSKP(*)
 C
       CALL QENTER('TRDRV1')
       KFRSAV = KFREE
 C
 C     Define the packing of the 2-index transformed integrals
-C     We do not consider sorting of positronic and electronic
-C     spinors at this point.
 C
-      DO IREPIJ =1, NFSYM
-         NFPCK12(IREPIJ) = 0
-         NFPCK34(IREPIJ) = 0
-         DO IREPJ = 1, NFSYM
-            IREPI = MOD(IREPJ+IREPIJ,2) + 1
-            IFPCK12(IREPI,IREPJ) = NFPCK12(IREPIJ)
-            IFPCK34(IREPI,IREPJ) = NFPCK34(IREPIJ)
-            NFPCK12(IREPIJ) = NFPCK12(IREPIJ) +
-     &                        NSTR(IREPI,0,1)*NSTR(IREPJ,0,2)
-            NFPCK34(IREPIJ) = NFPCK34(IREPIJ) +
-     &                        NSTR(IREPI,0,3)*NSTR(IREPJ,0,4)
-         ENDDO
-      ENDDO
+CTROND      TRIAN(1) = ISAME(2).EQ.ISAME(1) - can we use this ?
+      TRIAN(1) = .FALSE.
+      TRIAN(2) = .FALSE.
+      CALL PCK2IN(NSTR,TRIAN,IPRINT)
 C
 C     Make index array for half-transformed integrals
 C
@@ -171,6 +156,18 @@ C
       IF (IPRINT .GE. 0) WRITE (LUPRI,1000) NHTMT*8./(1024.*1024.)
       CALL MEMGET('REAL',KHTMAT,NHTMT,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHTMAT),NHTMT)
+C
+C     Prepare for screening
+C
+      IF(SCRTRA.GT.D0) THEN
+        CALL PR4SCR(KGAB,KDRIJ,WORK,KFREE,LFREE,DINTSKP,
+     &              WORK(KQ(1,1)),WORK(KQ(1,2)),
+     &              WORK(KQ(1,3)),WORK(KQ(1,4)),
+     &              NDMOQR,ICMOQR,NSTR,ISAME,IPRINT)
+      ELSE
+        KDRIJ = KFREE
+        KGAB  = KFREE
+      ENDIF
 C
 C     Loop over (XX|LL) and (XX|SS) integrals
 C
@@ -241,20 +238,22 @@ C
             NODV = NASHT.EQ.0
             NOPV = NASHT.LT.2
             CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),
-     &                  NODV,NOPV,WORK(KFREE),LFREE,IPRINT)
+     &               NODV,NOPV,WORK(KGAB),WORK(KDRIJ),DINTSKP,
+     &               SCRTRA,WORK(KFREE),LFREE,IPRINT)
 C
 C           Do first step of 4-index transformation :
 C           Transform first pair of indices
 C 
             CALL MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,.FALSE.,
      &                   NSTR(1,0,1),NSTR(1,0,2),
-     &                   NFPCK12,IFPCK12,NDMOQR,ICMOQR,IJP12,Q1,Q2,
+     &                   NDMOQR,ICMOQR,IJP12,
+     &                   WORK(KQ(1,1)),WORK(KQ(1,2)),
      &                   WORK(KGMAT),WORK(KHMAT),NZMO,IQMO)
 C
 C           Scatter half-transformed integrals to the right position
 C
             CALL MS4INS (WORK,KFREE,LFREE,IPRINT,IC,IHM,NHTM,IHTM,INDX,
-     &                   WORK(KDXAB),NFPCK12,WORK(KHMAT),WORK(KHTMAT))
+     &                   WORK(KDXAB),WORK(KHMAT),WORK(KHTMAT))
 C
             CALL MEMREL('TRDRV1',WORK,1,KFRSAV3,KFREE,LFREE)
 C
@@ -265,7 +264,14 @@ C----------------
  100     CONTINUE
 C----------------
 C
+C
+C     Screening statistics
+C
+      IF(SCRTRA.GT.D0) THEN
+        CALL ST4SCR(DINTSKP)
+      ENDIF
       NSIZF = 0
+C
       DO IREPAB = 0, NBSYM-1
          IREPIJ = JBTOF(IREPAB,1)
          NSIZF = NSIZF + NFPCK34(IREPIJ)*NZ*NZ*NFPCK12(IREPIJ)
@@ -292,8 +298,8 @@ c        print*,ix,work(khtmat+ix-1)
       ICF = 2
       CALL MS4IN2 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,
      &             NSTR(1,0,3),NSTR(1,0,4),
-     &             NFPCK34,IFPCK34,NDMOQR(1,1,3),ICMOQR(1,3),
-     &             NFPCK12,Q3,Q4,
+     &             NDMOQR(1,1,3),ICMOQR(1,3),
+     &             NFPCK12,WORK(KQ(1,3)),WORK(KQ(1,4)),
      &             WORK(KHTMAT),WORK(KFMAT),NZMO,IQMO)
 c     write (LUPRI,'(//A)') ' The fully transformed integrals'
 c     do ix = 1, nsizf
@@ -303,7 +309,7 @@ C
 c     IF (ANTIS) WRITE(LUPRI,'(A)') 'Antisymmetrizing'
 c     IF (LMP2) THEN
 c        WRITE(LUPRI,'(A)') 'DOING MP2'
-C         CALL MP2SEC(E1,E2,NSTR)
+C         CALL MP2SEC(WORK(KE(1,1)),WORK(KE(1,2)),NSTR)
 c     ENDIF
 C
 C     Initialize MOLFDIR integral file
@@ -364,7 +370,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MS4INS*/
       SUBROUTINE MS4INS (WORK,KFREE,LFREE,IPRINT,IC,IHM,NHTM,IHTM,
-     &                   INDX,INDXAB,NFPCK12,HMAT,HTMAT)
+     &                   INDX,INDXAB,HMAT,HTMAT)
 C
 C     Sort half-transformed integrals
 C
@@ -382,7 +388,6 @@ C
 #include <dcbbas.h>
 C
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,4)
-      DIMENSION NFPCK12(2),IFPCK12(2,2)
       DIMENSION IHTM(0:7),IHM(0:7),NHTM(2)
       DIMENSION HMAT(*),HTMAT(*)
       DIMENSION WORK(*)
@@ -446,7 +451,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN2 */
       SUBROUTINE MS4IN2 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,NSTR1,NSTR2,
-     & NFPCK,IFPCK,NDMOQR,ICMOQR,IJPAIRS,Q1,Q2,GMAT,HMAT,NZMO,IQMO)
+     & NDMOQR,ICMOQR,IJPAIRS,Q1,Q2,GMAT,HMAT,NZMO,IQMO)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher January 1997.
@@ -486,7 +491,6 @@ C
       INTEGER   NSTR1(2),NSTR2(2)
       DIMENSION WORK(*)
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
-      DIMENSION NFPCK(2),IFPCK(2,2)
       DIMENSION IJPAIRS(2)
       DIMENSION IQAO(4),IQMO(4,0:7),NZMO(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
@@ -514,8 +518,8 @@ C
       IOFF = 1
       JOFF = 1
       DO IREPIJ = 1, NFSYM
-        CALL MEMGET ('REAL',KHTMP,NFPCK(IREPIJ)*NZ,WORK,KFREE,LFREE)
-        CALL DZERO (WORK(KHTMP),NFPCK(IREPIJ)*NZ)
+        CALL MEMGET ('REAL',KHTMP,NFPCK34(IREPIJ)*NZ,WORK,KFREE,LFREE)
+        CALL DZERO (WORK(KHTMP),NFPCK34(IREPIJ)*NZ)
         DO IJ = 1, IJPAIRS(IREPIJ)
           DO IREPPQ = 0, NBSYM-1
           IF (IREPIJ.EQ.JBTOF(IREPPQ,1)) THEN
@@ -558,8 +562,8 @@ C                      Order the integrals with NKL as first and IZ2
 C                      as second index
 C
                        DO IZ2 = 1, NZ
-                          JOFF1 = JOFF + (IZ2-1)*NFPCK(IREPIJ) +
-     &                                   IFPCK(IREPI,IREPJ)
+                          JOFF1 = JOFF + (IZ2-1)*NFPCK34(IREPIJ) +
+     &                                   IFPCK34(IREPI,IREPJ)
                           JOFF2 = KHTMP + (IZ2-1)*NI*NJ
                           CALL DAXPY(NI*NJ,D1,WORK(JOFF2),1,
      &                               HMAT(JOFF1),1)
@@ -568,7 +572,7 @@ C
                      IOFF = IOFF + NP * NQ
                   ENDDO
                ENDDO
-               JOFF = JOFF + NFPCK(IREPIJ)*NZ
+               JOFF = JOFF + NFPCK34(IREPIJ)*NZ
             ENDDO
           ENDIF
           ENDDO

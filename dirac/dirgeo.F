@@ -43,10 +43,21 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <mxcent.h>
 C
+#include <dcbham.h>
+#include <dcbgen.h>
+#include <dcbpsi.h>
+#include <dcbgrd.h>
 C
       CALL QENTER('PAMGEO')
 C
+C     Determine whether analytical or numerical gradient is to 
+C     be used...
+C
+      IF(.NOT.DONGRD) THEN
+        DONGRD = DOCCM.OR.DOMP2.OR.(DODHF.AND.(SPINFR.OR.LEVYLE))
+      ENDIF
       WRKDLM = 0.0D00
       IWOFF  = 0
       CALL OPTMIN(WORK,LWORK,IWOFF,WRKDLM)

@@ -64,7 +64,7 @@ C
       CALL QENTER('TRAPRP')
 #include <memint.h>
       KFRSAV = KFREE
-      CALL TRAHI(IPRTRA,1)
+      CALL TRAHI(IPRTRP,1)
 C
 C     =======================================      
 C     Set up index arrays for active orbitals
@@ -121,7 +121,8 @@ C
          CALL QUIT('TRAPAM: No coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAONE')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),TOTERG,2)
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &               TOTERG,2)
       ENDIF
 C
 C     Transform property matrices to MO basis
@@ -143,7 +144,7 @@ C
          ACHAR(25:32) = PRPNAM(INDXPR)(1:8)
          CALL MEMGET('REAL',KPRPMO,N2ORBXQ,WORK,KFREE,LFREE)
          CALL PRPMAT(INDXPR,IOPSY,WORK(KPRPMO),WORK(KCMO),
-     &               WORK,KFREE,LFREE,IPRTRA)
+     &               WORK,KFREE,LFREE,IPRTRP)
 C
 C        Select the set that we need
 C
@@ -167,7 +168,7 @@ C
          ENDDO
          CALL MEMREL('TRAPRP',WORK,KPRPMO,KPRPMO,KFREE,LFREE)
          CALL MEMGET('REAL',KPRCMO,NSTRT(1)*NSTRT(2)*8,WORK,KFREE,LFREE)
-         CALL PRPMLF (WORK(KPRCMO),WORK(KPROPMO),IPRTRA,NSTR,
+         CALL PRPMLF (WORK(KPRCMO),WORK(KPROPMO),IPRTRP,NSTR,
      &                NSTRT(1),NSTRT(2),
      &                ISYM,ACHAR,LUMLF1)
          CALL MEMREL('TRAPRP',WORK,KPRCMO,KPRCMO,KFREE,LFREE)

@@ -2344,22 +2344,24 @@ C
      &          TMAT(LR1,LC1,NZT),IQC(NZ),IQT(NZT)
 C
       IF(NVEC.EQ.0) RETURN
-C      IF(IPRINT.GE.5) THEN
-C        CALL HEADER('BCKTRA:Nontransformed coefficients',-1)
-C        WRITE(LUPRI,'(2(3X,A,I5))')
-C     +    'Start index: ',JVEC,'No. of vectors:',NVEC
-C        CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZ,IPQTOQ(1,0,1),LUPRI)
-C      ENDIF
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('BCKTRA:Nontransformed coefficients',-1)
+        WRITE(LUPRI,'(2(3X,A,I5))')
+     +    'Start index: ',JVEC,'No. of vectors:',NVEC
+        CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZ,IQC,LUPRI)
+        CALL HEADER('BCKTRA:Transformation matrix:',-1)
+        CALL PRQMAT(TMAT,NBAS,NORB,LR1,LC1,NZT,IQC,LUPRI)
+      ENDIF
       CALL QGEMM(NBAS,NVEC,NORB,D1,
      &           'N','N',IQT,TMAT,LR1,LC1,NZT,
      &           'N','N',IQC,COFU(1,JVEC,1),LRU,LCU,NZ,
      &                  D0,IQC,COFT,LRT,LCT,NZ)
-C      IF(IPRINT.GE.5) THEN
-C        CALL HEADER('BCKTRA:Backtransformed coefficients',-1)
-C        WRITE(LUPRI,'(2(3X,A,I5))')
-C     +    'Start index: ',JVEC,'No. of vectors:',NVEC
-C        CALL PRQMAT(COFT,NBAS,NVEC,LRT,LCT,NZ,IPQTOQ(1,0,1),LUPRI)
-C      ENDIF
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('BCKTRA:Backtransformed coefficients',-1)
+        WRITE(LUPRI,'(2(3X,A,I5))')
+     +    'Start index: ',JVEC,'No. of vectors:',NVEC
+        CALL PRQMAT(COFT,NBAS,NVEC,LRT,LCT,NZ,IQC,LUPRI)
+      ENDIF
 C
       RETURN
 C

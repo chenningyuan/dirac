@@ -1,3 +1,4 @@
+
 C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
@@ -492,7 +493,7 @@ C Largest exchange contribution
         DINTSKP(2,2) = DINTSKP(2,2) + NSOINT
         RETURN
       ENDIF
-      FCKTOL = MAX((FCKTHR/DNSMAX),1.00D-15)
+      FCKTOL = MAX((SCRTHR/DNSMAX),1.00D-15)
       NOTEST = .NOT.(SHAEQB .OR. SHCEQD .OR. SHABAB)
       DO I = 1, NINTS
         NBUF   = 0
@@ -669,13 +670,13 @@ C         Screening on Coulomb contributions
           FCM = DNSBUF(1,K)*SOMAX
           IF(IREPAB.NE.IREPDM(K).AND.DIRAC) IC = 0
 c          IF(IREPA.NE.IREPB) IC = 0
-          IF(DOC.AND.FCM.LT.FCKTHR) THEN
+          IF(DOC.AND.FCM.LT.SCRTHR) THEN
             IF(IC.NE.0) DINTSKP(2,3) = DINTSKP(2,3) + NBUF
             IC = 0
           ENDIF
 C         Screening on exchange contributions
           FEM = DNSBUF(2,K)*SOMAX
-          IF(DOE.AND.FEM.LT.FCKTHR) THEN
+          IF(DOE.AND.FEM.LT.SCRTHR) THEN
             IF(IE.NE.0) DINTSKP(2,4) = DINTSKP(2,4) + NBUF
             IE = 0
           ENDIF

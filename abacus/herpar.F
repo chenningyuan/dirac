@@ -65,8 +65,7 @@ C  /* Deck pardrv */
       SUBROUTINE PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
      &                  TKTIME,RETUR,FIRST,NPOS,MTOTTK,I2TYP,
-     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                  DINTSKP)
+     &                  ICEDIF,SCREEN,GABRAO,DMRAO,DMRSO,DINTSKP)
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993 -> Okt-1994
 C     Extended with I2TYP Oct 1 1996 by T.Saue 
@@ -244,7 +243,7 @@ C     Send initialization data to nodes.
 C---------------------------------------
 C
       CALL SDINIT(DMAT,NDMAT,IREPDM,IFCTYP,ITYPE,MAXDIF,IATOM,NODV,
-     &            NOPV,NOCONT,TKTIME,RETUR,I2TYP,ICEDIF,IFTHRS,
+     &            NOPV,NOCONT,TKTIME,RETUR,I2TYP,ICEDIF,SCREEN,
      &            GABRAO,DMRAO,DMRSO)
 C
 C-----------------------
@@ -398,7 +397,7 @@ C
 C  /* Deck sdinit */
       SUBROUTINE SDINIT(DMAT,NDMAT,IREPDM,IFCTYP,ITYPE,MAXDIF,IATOM,
      &                  NODV,NOPV,NOCONT,TKTIME,RETUR,I2TYP,
-     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO)
+     &                  ICEDIF,SCREEN,GABRAO,DMRAO,DMRSO)
 C
 C     Written by Henrik Koch and Paal Dahle
 C
@@ -435,9 +434,10 @@ C
 #include <cbisol.h>
 #include <siripc.h>
 C
+      LOGICAL NODMAT,NOFMAT
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
-     &          DMRAO(NSYMBL,NSYMBL,NDMAT),GABRAO(NSYMBL,NSYMBL,*),
-     &          DMRSO(MAXSHL,MAXSHL,NDMAT)
+     &          DMRAO(NSYMBL,NSYMBL,*),GABRAO(NSYMBL,NSYMBL,*),
+     &          DMRSO(MAXSHL,MAXSHL,*)
       LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR
 C
 C--------------------------------------
@@ -494,7 +494,6 @@ C
       IF (RELCAL) JRELCL = 1
       J2TYP  = I2TYP
       JCEDIF = ICEDIF
-      JFTHRS = IFTHRS
 C
       CALL IZERO(JDOSYM,8)
       CALL IZERO(JDOREP,8)
@@ -527,32 +526,43 @@ C
          CALL MPI_BCAST(NFINIS,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       END IF
 C
-      NUMELM = 40 + MAXNOD + MXCOOR
+      NUMELM = 39 + MAXNOD + MXCOOR
 C     Send Panas value
       CALL MPI_BCAST(PANAS,1,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+C     Send screening threshold
+      CALL MPI_BCAST(SCREEN,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
       CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
+      IF(NDMAT.GT.0.OR.ITYPE.NE.4) THEN
+        CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+      ENDIF
 C
       CALL MPI_BCAST(NFMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IREPDM,NDMAT,MPI_INTEGER,MPARID,
+      IF(NFMAT.GT.0) THEN
+        CALL MPI_BCAST(IREPDM,NDMAT,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      IF (ITYPE.EQ.2) THEN
-         CALL MPI_BCAST(IFCTYP,NDMAT,MPI_INTEGER,MPARID,
+      ENDIF
+      IF(ITYPE.NE.4) THEN
+        IF (ITYPE.EQ.2) THEN
+          CALL MPI_BCAST(IFCTYP,NDMAT,MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
-      ELSE
-         CALL MPI_BCAST(IFCTYP,NFMAT,MPI_INTEGER,MPARID,
+        ELSE
+          CALL MPI_BCAST(IFCTYP,NFMAT,MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
+        ENDIF
       END IF
 C
 C     ITYPE = 3 : direct SCF (AO-basis)
 C     ITYPE = 9 : direct SCF (SO-basis)
+C     ITYPE = 2 : gradient
+C     ITYPE = 4 : (rs|**)-distributions
 C
-      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2) THEN
+      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
         N2RED = NSYMBL*NSYMBL
         CALL MPI_BCAST(N2RED,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(DMRAO,N2RED*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
@@ -1169,11 +1179,13 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <mxorb.h>
+#include <aovec.h>
 C
 #include <suscpt.h>
 #include <inforb.h>
 #include <infpar.h>
 #include <molinp.h>
+#include <blocks.h>
 #if defined (PRG_DIRAC)
 #include <dcbgen.h>
 #include <dcbgrd.h>
@@ -1217,7 +1229,7 @@ C     ***************************************************
 C
       CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &            IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
-     &            TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,IFTHRS,
+     &            TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCREEN,
      &            KFMAT,KDMAT,KIFC,KIRD,KDMRAO,KGABAO,KDMRSO)
 C
       IF (FINISH) GOTO 999
@@ -1243,6 +1255,23 @@ C
          NREQUI = 3*NNBASX
          LFMAT  = 0
       END IF
+C
+C     Determine total number of tasks - MTOTTK.
+CTROND: This is now reduced to consistency check !
+      IF    (I2TYP.EQ.0) THEN
+        NTOTTK = MAXSHL*(MAXSHL+1)/2
+      ELSEIF(I2TYP.EQ.1) THEN
+        NTOTTK = NLRGBL*(NLRGBL+1)/2
+      ELSEIF(I2TYP.EQ.2) THEN
+        NTOTTK = NLRGBL*(NLRGBL+1)/2
+      ELSEIF(I2TYP.EQ.3) THEN
+        NTOTTK = NSMLBL*(NSMLBL+1)/2
+      ELSE
+        WRITE(LUPRI,'(A,I5)') 'HERNOD: Unknown I2TYP =' ,I2TYP
+        CALL QUIT('Unknown I2TYP !!!')
+      ENDIF
+      CALL MEMGET('INTE',KINDEX,NTOTTK,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTIMES,NTOTTK,WORK,KFREE,LFREE)
 C
 C     ********************************
 C     ***** Initialize workspace *****
@@ -1274,15 +1303,17 @@ C
      &     WORK(KIRD),WORK(KIFC),GMAT,IDUMMY,IDUMMY,ITYPE,
      &     MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,JPRINT,
      &     IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,ISHLA,I2TYP,
-     &     ICEDIF,IFTHRS,WORK(KGABAO),
-     &     WORK(KDMRAO),WORK(KDMRSO),DINTSKP,RELCAL)
+     &     ICEDIF,SCREEN,WORK(KGABAO),
+     &     WORK(KDMRAO),WORK(KDMRSO),DINTSKP,RELCAL,
+     &     WORK(KINDEX),WORK(KTIMES))
 C
 C     ****************************************
 C     ***** Send final results to master *****
 C     ****************************************
 C
       CALL SDRES(WORK(KFMAT),LFMAT,NUMGRA,
-     &     NUMHES,NUMSUS,CPU1,WALL1,ITYPE,DINTSKP)
+     &     NUMHES,NUMSUS,CPU1,WALL1,ITYPE,DINTSKP,
+     &     WORK(KINDEX),WORK(KTIMES))
 C
 C     We want the slave program to go until there is nothing
 C     more to calculate, K.Ruud, May-95
@@ -1302,7 +1333,7 @@ C
 C  /* Deck rvinit */
       SUBROUTINE RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &                  IATOM,MAXDIF,MYTI,NODV,NOPV,NOCONT,RETUR,
-     &                  TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,IFTHRS,
+     &                  TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCREEN,
      &                  KFMAT,KDMAT,KIFC,KIRD,KDMRAO,KGABAO,KDMRSO)
 C
 C     Written by Henrik Koch and Paal Dahle
@@ -1362,9 +1393,12 @@ C
          NEWGEO = .FALSE.
       END IF
 C
-      NUMELM = 40 + MAXNOD + MXCOOR
+      NUMELM = 39 + MAXNOD + MXCOOR
 C
       CALL MPI_BCAST(PANAS,1,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+C     Receive screening threshold
+      CALL MPI_BCAST(SCREEN,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
       CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
@@ -1434,7 +1468,6 @@ C
       I2TYP  = J2TYP
       RELCAL = JRELCL .EQ. 1
       ICEDIF = JCEDIF
-      IFTHRS = JFTHRS
 C
       CALL IZERO(MTIDS,MAXNOD)
       CALL ICOPY(NODES,JTIDS,1,MTIDS,1)
@@ -1495,26 +1528,37 @@ C
 C
 #if defined (VAR_MPI)
       CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      LDMAT = NDMAT*N2BASX
-      CALL MEMGET('REAL',KDMAT,LDMAT,WORK,KFREE,LFREE)
-      CALL MPI_BCAST(WORK(KDMAT),LDMAT,MPI_DOUBLE_PRECISION,
+      IF(NDMAT.GT.0.OR.ITYPE.NE.4) THEN
+        LDMAT = NDMAT*N2BASX
+        CALL MEMGET('REAL',KDMAT,LDMAT,WORK,KFREE,LFREE)
+        CALL MPI_BCAST(WORK(KDMAT),LDMAT,MPI_DOUBLE_PRECISION,
      &               MPARID,MPI_COMM_WORLD,IERR)
+      ELSE 
+        KDMAT = KFREE
+      ENDIF
       CALL MPI_BCAST(NFMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       LFMAT = NFMAT*N2BASX
-      CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIRD,NDMAT,WORK,KFREE,LFREE)
-      CALL MPI_BCAST(WORK(KIRD),NDMAT,MPI_INTEGER,MPARID,
+      IF(NFMAT.GT.0) THEN
+        CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIRD,NDMAT,WORK,KFREE,LFREE)
+        CALL MPI_BCAST(WORK(KIRD),NDMAT,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      IF (ITYPE.EQ.2) THEN
-         CALL MEMGET('INTE',KIFC,NDMAT,WORK,KFREE,LFREE)
-         CALL MPI_BCAST(WORK(KIFC),NDMAT,MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+      ELSE  
+        KFMAT = KFREE
+        KIRD  = KFREE
+      ENDIF
+      IF(ITYPE.EQ.4) THEN
+        KIFC = KFREE
+      ELSEIF (ITYPE.EQ.2) THEN
+        CALL MEMGET('INTE',KIFC,NDMAT,WORK,KFREE,LFREE)
+        CALL MPI_BCAST(WORK(KIFC),NDMAT,MPI_INTEGER,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
       ELSE
-         CALL MEMGET('INTE',KIFC,NFMAT,WORK,KFREE,LFREE)
-         CALL MPI_BCAST(WORK(KIFC),NFMAT,MPI_INTEGER,MPARID,
+        CALL MEMGET('INTE',KIFC,NFMAT,WORK,KFREE,LFREE)
+        CALL MPI_BCAST(WORK(KIFC),NFMAT,MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
       END IF
-      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2) THEN
+      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
         CALL MPI_BCAST(N2RED,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
         LDMRAO = NDMAT*N2RED
         CALL MEMGET('REAL',KDMRAO,LDMRAO,WORK,KFREE,LFREE)
@@ -1614,8 +1658,9 @@ C  /* Deck parlop */
      &     SPNORB,PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,
      &     THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &     SQ12EL,INDHER,INDHSQ,IODDHR,
-     &     IREPDM,IFCTYP,ADISTR,I2TYP,ICEDIF,IFTHRS,
-     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
+     &     IREPDM,IFCTYP,ADISTR,I2TYP,ICEDIF,SCREEN,
+     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &     INDEX,TIMES)
 C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
@@ -1637,6 +1682,7 @@ C
 #include <mxorb.h>
 #include <dummy.h>
       PARAMETER (LUPAS = 27, LUPAO = 29)
+      PARAMETER(D0=0.0D0)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, RELCAL,
@@ -1644,7 +1690,7 @@ C
       DIMENSION DMAT(*), FMAT(*), GMAT(*), INDHSQ(*), IODDHR(*),
      &          INDHER(*), WORK(LWORK), IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*),
-     &          IJSHEL(2)
+     &          IJSHEL(2),INDEX(*),TIMES(*)
 C
 #include <cbisol.h>
 #include <twocom.h>
@@ -1683,10 +1729,9 @@ C
          ELSE
            CALL DZERO(DINTSKP,3*14*3)
          END IF
-        IF(IFTHRS.LT.16) THEN
+        IF(SCREEN.GT.D0) THEN
           DOSCRN = .TRUE.
-          FCKTHR = -IFTHRS
-          FCKTHR = 10.0D0**FCKTHR
+          SCRTHR = SCREEN
           ICEFLG = ICEDIF
           NCM = 0
           NEM = 0
@@ -1914,7 +1959,7 @@ C
      &              DIRFCK,SOFOCK,DISTRI,IATOM,MULE,MULTE,MAXDER,
      &              NOCONT,NODV,NOPV,THRESH,IPRINT,FIRST,
      &              SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
-     &              ADISTR,DUMMY,ICEDIF,IFTHRS,DINTSKP,
+     &              ADISTR,DUMMY,ICEDIF,DINTSKP,
      &              GABRAO,DMRAO,DMRSO,IREPDM,IDUMMY,IDUMMY)
 C
                IF (RETUR) THEN
@@ -1931,8 +1976,8 @@ C
             CPUTSK = CPUTK2 - CPUTK1
             IPLACE = ICOUNT + I
 C
-            IWHICH(IPLACE) = IJSHEL(2)
-            TSKCPU(IPLACE) = CPUTSK
+            INDEX(IPLACE) = IJSHEL(2)
+            TIMES(IPLACE) = CPUTSK
          END IF
  200  CONTINUE
 C
@@ -2028,7 +2073,7 @@ C
 C  /* Deck sdres */
       SUBROUTINE SDRES(FMAT,LFMAT,NUMGRA,
      &                 NUMHES,NUMSUS,CPU1,WALL1,ITYPE,
-     &                 DINTSKP)
+     &                 DINTSKP,INDEX,TIMES)
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993.
 C
@@ -2050,7 +2095,7 @@ C
 #include <infpar.h>
 #include <inforb.h>
 C
-      DIMENSION FMAT(LFMAT), DINTSKP(*)
+      DIMENSION FMAT(LFMAT), DINTSKP(*),INDEX(*),TIMES(*)
 #if defined (VAR_MPI)
       DIMENSION RBUF(2)
 #endif
@@ -2089,9 +2134,9 @@ C
       IF (TIMING) THEN
          DO 200, I = 1, ICOUNT
 C
-            CALL MPI_SEND(IWHICH(I),1,MPI_INTEGER,MPARID,40,
+            CALL MPI_SEND(INDEX(I),1,MPI_INTEGER,MPARID,40,
      &                    MPI_COMM_WORLD,IERR)
-            CALL MPI_SEND(TSKCPU(I),1,MPI_DOUBLE_PRECISION,MPARID,40,
+            CALL MPI_SEND(TIMES(I),1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                    MPI_COMM_WORLD,IERR)
 C
   200    CONTINUE
@@ -2123,10 +2168,10 @@ C
       IF (TIMING) THEN
          DO 200, I = 1, ICOUNT
 C
-            CALL PVMFPACK(INTEGER4,IWHICH(I),1,1,INFO)
+            CALL PVMFPACK(INTEGER4,INDEX(I),1,1,INFO)
             IF (INFO .LT. 0) CALL PFAIL(INFO)
 C
-            CALL PVMFPACK(REAL8,TSKCPU(I),1,1,INFO)
+            CALL PVMFPACK(REAL8,TIMES(I),1,1,INFO)
             IF (INFO .LT. 0) CALL PFAIL(INFO)
 C
   200    CONTINUE

@@ -104,6 +104,7 @@ C
 #include <dgroup.h>
 ctec dcborb included
 #include <dcborb.h>
+#include <dcbbas.h>
 #include <dcbexp.h>
 #include <dcbgen.h>
 #include <dcbxpr.h>
@@ -141,11 +142,11 @@ C     Expectation values normal procedure
 C    ************************************
 C
       IF(.NOT.ORBANA) THEN
-c       CALL DENSTY(DMAT,CMO,IPREXP)
         CALL GENDEN(DMAT,CMO,1,IPREXP)
         DO IOPEN = 1,NOPEN
            CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPREXP)
         END DO
+        CALL DENSTY(DMAT,CMO,IPREXP)
         CALL TITLER('Expectation values','*',127)
         WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
         CALL PRSYMB(LUPRI,'-',76,0)
@@ -170,7 +171,7 @@ C    ************************************
 C
       ELSE
         CALL TITLER('Expectation values','*',127)
-        WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
+        WRITE(LUPRI,'(51X,2(A2,1X))') 't0','s0'
         CALL PRSYMB(LUPRI,'-',76,0)
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
@@ -280,7 +281,7 @@ C
         ENDIF
         CALL BUTOBS(PMAT(1,IZ),1,WORK,LWORK)
         IF (ORBFLG) THEN
-           DO IOPEN = 0,OPEN
+           DO IOPEN = 0,NOPEN
               EXPVAL = EXPVAL + DF(IOPEN)
      &           *DDOT(N2BBASX,DMAT(1,IZ,IOPEN+1),1,PMAT(1,IZ),1)
             END DO
