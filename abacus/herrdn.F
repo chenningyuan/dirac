@@ -840,7 +840,6 @@ C*****************************************************************************
 #include "aosotr.h"
 #include "gencon.h"
 #include "dcbgen.h"
-#include "ibtfun.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
       PARAMETER (MAXBSFIL=5,KNG=MXAQN,KBLK=500,KPRM=30)
@@ -861,6 +860,7 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
+#include "ibtfun.h"
       CNTBAS = .FALSE.
       NUCIND = 0
       NHTYP  = 0
@@ -1140,15 +1140,11 @@ C
                   IBLOCK1 = 1
                   MAXIQM  = 0
 C
-C we make sure we don't kave any junk on the temporary variables 
+C we make sure we don't have any junk on the temporary variables 
 C
-                     DO 461 R=1,KNG
-                        JCOT(R,M) = 0
-  461                CONTINUE
-                     DO 462 R=1,KBLK
-                        NUCT(R) = 0
-                        NRCT(R) = 0
-  462                CONTINUE
+                  CALL IZERO(JCOT,KNG*NFILES)
+                  CALL IZERO(NUCT,KBLK)
+                  CALL IZERO(NRCT,KBLK)
 C
                   BASREF(1,I) =
      &            "Basis set read from multiple files"
@@ -1177,8 +1173,8 @@ C temp storage
 C 
                      IDBLK = IBLOCK1
                      IDANG = 1
-                     DO 464 RR=1,IQMT
-                        DO 465 RS=1,JCOT(RR,M)
+                     DO 464 IRR=1,IQMT
+                        DO 465 IRS=1,JCOT(IRR,M)
                            IBLKAGNMOM(IDBLK) = IDANG
                            IDBLK = IDBLK + 1
   465                   CONTINUE 
@@ -1213,11 +1209,11 @@ C
                               SEG(KT,1)  = SEGT(IR)
                               ISGEN(KT)  = ISGENT(IR)
 
-                              DO 468 SI=1, NUCT(IR)
-                                 ALPHA(SI,KT,1)      =  ALPHAT(SI,IR)
-                                 DO 468 SJ=1, NRCT(IR) 
-                                   CPRIM(SI,SJ,KT,1) =  CPRIMT(SI,SJ,IR)
-                                   CPRIMU(SI,SJ,KT,1)= CPRIMUT(SI,SJ,IR)
+                              DO 468 IX=1, NUCT(IR)
+                                 ALPHA(IX,KT,1)      =  ALPHAT(IX,IR)
+                                 DO 468 JX=1, NRCT(IR) 
+                                  CPRIM(IX,JX,KT,1) =  CPRIMT(IX,JX,IR)
+                                  CPRIMU(IX,JX,KT,1)= CPRIMUT(IX,JX,IR)
   468                         CONTINUE
                               KT = KT + 1
                            ENDIF 
