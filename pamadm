@@ -64,11 +64,11 @@ setup()
       echo " - DIRAC administrator ..."
    fi
    if [ -n "$CCFOCKSPMOD" ]; then
-      CCFOCKSPFLG='-DMOD_CCFOCKSP'
+      CCFOCKSPFLG='-DMOD_FOCKSPCC'
       CCFOCKSPOBJ='$(CCFOCKSPOBJS)'
       CCFOCKSPMAK=CCFOCKSP_OBJ
       CCFOCKSPTAR=1
-      echo " - Fock space CC module (CCFOCKSP)"
+      echo " - Fock space CC module (FOCKSPCC)"
    fi
    #
    #  DFT
