@@ -1583,7 +1583,7 @@ C
      &          CFU(KNORB,KNORB,NZ),
      &          SMO(KNORB,KNOCC,NZ),
      &          SBUF(KNESH,KNOCC,NZ),
-     &          EBUF(KNORB),IBEBUF(KNORB),
+     &          EBUF(KNESH),IBEBUF(KNESH),
      &          CBUF(KNORB,KNESH,NZ),
      &          RCSEL(KNESH),ICSEL(KNESH),
      &          WORK(LWORK)
@@ -1635,8 +1635,8 @@ C
       DO IZ = 1,NZ
         CALL DCOPY(N2DIM,CFU(1,NPSH(IFRP)+1,IZ),1,CBUF(1,1,IZ),1)
       ENDDO
-      CALL DCOPY(KNORB,EIG,1,EBUF,1)
-      CALL ICOPY(KNORB,IBEIG,1,IBEBUF,1)
+      CALL DCOPY(KNESH,EIG(NPSH(IFRP)+1),1,EBUF,1)
+      CALL ICOPY(KNESH,IBEIG(NPSH(IFRP)+1),1,IBEBUF,1)
       ISELM = 0
       DO J = 1,NOCC(IFRP)
         JJ = NPSH(IFRP) + J
@@ -1904,8 +1904,8 @@ C
       ICHK_S = 0
       ICHK_D = 0
       DO I = 1,NORDER
-         IORB_S = I+NPOSITRON
-         IORB_D = IORDER(I)+NPOSITRON
+         IORB_S = IORDER(I)+NPOSITRON
+         IORB_D = I+NPOSITRON
          IF (IORB_D .GT. NELECTRON+NPOSITRON) THEN
             CALL QUIT('REOR1 reordering to non-existent orbital')
          ELSE
@@ -1966,7 +1966,7 @@ C*****************************************************************************
 C
 #include <memint.h>
 C
-      CALL QENTER('MKMOFK')
+      CALL QENTER('MKMOFK2')
 C
 C     Transform FD to MO-basis
 C
@@ -1992,7 +1992,7 @@ C
         END IF
       END IF
       END DO
-      CALL QEXIT('MKMOFK')
+      CALL QEXIT('MKMOFK2')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3010,8 +3010,8 @@ C
           NBRP  = 4/NZ
           IBO = 0
           DO ISYM = 1, NBRP
-          NBO = NBORB(ISYM,I,0)
-          IF(NBO.GT.0) THEN
+           NBO = NBORB(ISYM,I,0)
+           IF(NBO.GT.0) THEN
             IMAT = I2ORBT(I) + (NORB(I)+1)*IBO + 1
             IEIG = IORB(I) + IBO + 1
 C
@@ -3027,7 +3027,7 @@ C
      &                   WORK(KFREE),LFREE,IERR)
             ENDIF
             IBO = IBO + NBORB(ISYM,I,0)
-          ENDIF
+           ENDIF
           ENDDO
 C
 C           Sort the eigenvalues according to energy : keep track of
