@@ -326,7 +326,7 @@ endif
 # Nice ?
 #
 if ( $NICE ) then
-   if ( "`uname`" == "IRIX" ) then
+   if ( ( "`uname`" == "IRIX" ) || ( "`uname`" == "IRIX64" ) ) then
       set NICE_CMD = "npri -h129"
    else
       set NICE_CMD = "nice -20"
