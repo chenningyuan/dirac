@@ -9,6 +9,9 @@ C  DOPIN - read MO-coefficients from formatted file and write them to
 C          unformatted
 C  DOPUT - write MO-coefficients to formatted file
 C
+C  INTGEN: Give top level integral flag
+C          Should be pased on to every module
+C
       CHARACTER TITLE*50
       COMMON/CBCPAM/TITLE
       LOGICAL FAMILY,INPTES,VACUUM,NUCVAC,DOPSI,DOTRA,
@@ -20,7 +23,8 @@ C
      &              DOCCM,DOCIM,MINIMI,
      &              HRINPC, RDINPC, PARCAL, DIRCAL,SEGBAS,
      &              NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN
-      COMMON/GNIPAM/IPRGEN,ISPHTR,IDFLAG,LENBAS,IPRUSR,KCHARG
+      COMMON/GNIPAM/IPRGEN,ISPHTR,IDFLAG,LENBAS,IPRUSR,KCHARG,
+     &              INTGEN
       COMMON/GNRPAM/CVAL,STOL(2),PANAS
       COMMON/PAMIOU/LUCOEF,LUOVLP,LUTMAT,LU1INT
       CHARACTER*60 BASDIR

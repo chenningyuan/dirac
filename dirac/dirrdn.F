@@ -168,7 +168,7 @@ C
 C
       DATA TABDIR /'*END OF','*XXXXXX','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
-      DATA TABLE  /'.DIRECT','.CVALUE','.XXXXXX','.DOJACO',
+      DATA TABLE  /'.DIRECT','.CVALUE','.INTFLG','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.VACUUM','.NUCVAC','.FAMILY',
@@ -179,6 +179,9 @@ C     Initialise NOGENINP
 C     NOGENINP is set, if there is no **GENERAL
 C
       NOGENINP = .FALSE.
+      ILLINT = 1
+      ILSINT = 1
+      ISSINT = 1
 C
 C     Read menu file
 C     ==============
@@ -243,6 +246,8 @@ C&&&& CVALUE: Set a different value of light
             READ(LUCMD,*) CVAL
             GO TO 100
   103    CONTINUE
+C&&& INTFLG: Specify what two-itegrals should be included in this run
+            READ(LUCMD,*) ILLINT,ISLINT,ISSINT
             GO TO 100
   104    CONTINUE
 C&&& DOJACO: Do Jacobi diagonalization if real group
@@ -331,6 +336,11 @@ ctec we require that it is a direct calculation
          IDFLAG = 7
       ENDIF
 C
+C     Set integral flags
+C
+      INTGEN = 1*ILLINT + 2*ILSINT + 4*ISSINT
+C
+C
 C     Print section
 C     =============
 C
@@ -351,6 +361,16 @@ C
         IF(ISLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SL-integrals'
         IF(ISSDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
       ENDIF
+C
+C     Write information about default integrals flags
+C
+      WRITE(LUPRI,9001) '* Default integral flags passed to all modules'
+      WRITE(LUPRI,9002) '- LL-integrals: ',ILLINT
+      WRITE(LUPRI,9002) '- LS-integrals: ',ILSINT
+      WRITE(LUPRI,9002) '- SS-integrals: ',ISSINT
+ 9001 FORMAT(1X,A)
+ 9002 FORMAT(3X,A,L1)
+C
       IF(LBIT(ISPHTR,1)) THEN
         WRITE(LUPRI,'(1X,A)')
      &   '* Spherical transformation embedded in MO-transformation',
@@ -675,6 +695,7 @@ C
       DATA SET/.FALSE./
 C
 #include <sdpre.h>
+#include <ibtfun.h>
 #include <memint.h>
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -726,9 +747,9 @@ C
       MXDIIS    = 10
       NBELM     = 1
       ITDIIS    = 0
-      ILLINT    = 1
-      ISLINT    = 1
-      ISSINT    = 1
+      ILLINT    = IBTAND(INTGEN,1)
+      ISLINT    = IBTAND(INTGEN/2,1)
+      ISSINT    = IBTAND(INTGEN/4,1)
       INTBUF    = 0
       INTFLG    = 0
       ITRINT(1) = 1
@@ -954,7 +975,8 @@ C
                      CALL QUIT('ERROR: Number of spinors must be '//
      &                         'a positive even number')
                   END IF
-                  IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
+c                 IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
+                  IF (IELEC .LT. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
                      WRITE(LUPRI,'(A,I3,A,I3)')
      &                  'ERROR: Number of electrons (',IELEC,
      &                  ') must be a positive even number less than',
@@ -1151,6 +1173,16 @@ C
      &            ' A is reset.'
                DA(IOPEN)     = D1
                DF(IOPEN)     = D1
+               DALPHA(IOPEN) = D0
+            ELSE IF (ABS(DF(IOPEN)) .LE. DTHRS) THEN
+               WRITE(LUPRI,'(X,A,I2,A,F6.4)')  
+     &            'WARNING: Open shell no. ',IOPEN,
+     &            ' has frac. occ. of ',DF(IOPEN)
+               WRITE(LUPRI,'(X,2A)')
+     &            'This corresponds to an secondary shell. So ALPHA',
+     &            ' and A is reset.'
+               DA(IOPEN)     = D0
+               DF(IOPEN)     = D0
                DALPHA(IOPEN) = D0
             ELSE
                DM        = D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))
@@ -2505,6 +2537,7 @@ C
       NEWPRP = .TRUE.
       BASDIR = 'Not implemented !!!!'            
       RELCAL = .TRUE.
+      INTGEN = 7
 C
 C     Initialize SIPIPC from DALTON
 C
