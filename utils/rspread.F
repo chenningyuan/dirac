@@ -43,7 +43,7 @@ C
      &           ' Irrep: ',JSYMOP1,' Trev: ',JTIMOP1
            LBUF = LAB1
          ENDIF
-         WRITE(LUPRI,'(I3,A,A2,A,F9.4,A,E10.2,A,I10)')
+         WRITE(LUPRI,'(I3,A,A2,A,F12.6,A,E10.2,A,I10)')
      &     IVEC, ' Type : ',TYP1,' Freq.: ',FREQ1,
      &     ' Rnorm: ',RNORM,' Length:', LEN
          READ(LUINP,END=3,ERR=2)
