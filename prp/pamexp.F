@@ -149,6 +149,7 @@ C
 C     Generate density matrix
 C     =======================
 C
+      print*,'Wave Function ',WF
       IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
          INQUIRE(FILE='DFCOEF',EXIST=FILEX)
          IF(.NOT.FILEX) GOTO 1000
@@ -165,6 +166,7 @@ C
          END IF
 #ifdef MOD_KRMC
       ELSE IF (WF .EQ. 'KRMC') THEN
+        print*,'Entering KRMC part.'
 C
          IF (ORBANA) 
      &        CALL QUIT('*** ERROR in PRPEX1 *** '
@@ -469,11 +471,11 @@ C
       CALL QEXIT('PRPEX2')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex3 */
       SUBROUTINE PRPEX3(EXPVAL,INDXPR,IREP,ITIM,
      &           DMAT,PMAT,PTRI,FIRST,ORBFLG,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
 C
@@ -482,7 +484,7 @@ C     Last revision May 27 1996 - tsaue
 C
 C     MI entry for LAO-project,  May 2003
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -656,18 +658,18 @@ C
       ENDIF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjex2 */
       SUBROUTINE PRJEX2(EXPVAL,PTRI,PFO,DFO,BVEC,IBUF,INDXPR,NCNT,NMO,
      &                  NR,NTOT,PM,FMAT,INDX,
      &                  IPRINT,PBUF,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Make generalized population matrix
 C
 C     Written by Trond Saue Apr 27 2003 
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,D2=2.0D0)
@@ -889,10 +891,10 @@ C
       CALL QUIT('illegal value in GETIOPEN(pos)')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpexp_mp2 */
       SUBROUTINE PRPEXP_MP2(DMO,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Calculate correlation contribution to static first order properties
 C     defined in /CBIEXP/
@@ -903,7 +905,7 @@ C     INPUT:   DMO - second order density matrix
 C
 C     Written by Joost van Stralen, april 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -954,14 +956,14 @@ C     -------------------
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1_mp2 */
       SUBROUTINE PRPEX1_MP2(EXPVAL,LEXPST,CMO,EIG,DMAT,PMAT,PTRI,
      &                      OP1INT,DMO,FIRST,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
-C     Calculate correlation contribution to static first order properties
-C     defined in /CBIEXP/
+C     Calculate correlation contribution to static 
+C     first order properties defined in /CBIEXP/
 C
 C     Based on PRPEXP1
 C
@@ -970,7 +972,7 @@ C     INPUT:   DMO - second order density matrix
 C
 C     Written by Joost van Stralen, april 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1081,16 +1083,16 @@ C
       CALL QUIT('PRPEXP_MP2: Coefficients not found !')
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wexpvtof */
       SUBROUTINE WEXPVTOF(EXPVAL)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Write expectation values to file
 C
 C     Written by Joost van Stralen, June 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1108,16 +1110,16 @@ C
       CALL QEXIT('WEXPVTOF')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readexpv */
       SUBROUTINE READEXPV(EXPVAL,TOBE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     read expectation values from file
 C
 C     Written by Joost van Stralen, June 2002
 C     
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1147,16 +1149,16 @@ C
      &/" did you remember to specify DOFOPR=T in RELCCSD ?"//)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck exptot */
       SUBROUTINE EXPTOT(EXPVAL,EXP_CORR,EXP_TOT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     put HF and correlation contribution to expectation value together
 C
 C     Written by Joost van Stralen, June 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1176,10 +1178,10 @@ C
       CALL QEXIT('EXPTOT')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck nuc_nef */
       SUBROUTINE NUC_EFN(IPRINT,DOATOM,EFNNUC,GEOM)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Calculates nuclear contribution to the electric field at 
 C     individual nuclei
@@ -1187,7 +1189,7 @@ C
 C     Based on NUC_EFG
 C     Written by T.Saue  - Feb 2003
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1259,7 +1261,7 @@ C
  10   CONTINUE
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck prjex3 */
       SUBROUTINE PRJEX3(EXPVAL,PTRI,PFO,DFO,NCNT,NR,NMO,IBUF,PBUF,
      &                  FMAT,PM,INDX,NTOT,INDXPR,IPRINT)
@@ -1345,13 +1347,13 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjex4 */
       SUBROUTINE PRJEX4(DFO,BVEC,NCNT,NMO,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Make density matrix in fragment basis
 C
 C     Written by Trond Saue Oct 21 2003 
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,D2=2.0D0)

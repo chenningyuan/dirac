@@ -3376,7 +3376,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
 *
       call memmar(KI4GE  ,LSCR4,'ADDL  ',1,'I4GE  ')
       call memmar(KXI4GE,LSCR4,'ADDL  ',2,'XI4GE ')
-*.TTS arrays  for partitioning of vector 
+*.TTS arrays for partitioning of vector 
       NTTS = MXNTTS
       call memmar(KLLBT ,NTTS  ,'ADDL  ',1,'LBTC  ')
       call memmar(KLLEBT,NTTS  ,'ADDL  ',1,'LECTC ')
@@ -3583,7 +3583,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
         I1C = I1CBLOCK(JCBATCH)
 *
 *. Loop over TT blocks of sigma and C in batches and 
-*  obtain  contributions 
+*  obtain contributions 
         DO 9000 ICTT_BLK = 1, NCTT_BLK
           IREAD = 0
 *. first block of next TT block of C    
@@ -3981,7 +3981,6 @@ C?           WRITE(6,*) ' ISM_AB = ', ISM_AB
         JSM = IDBGMULT(INVELM(ISM),IHSM)
         NI = NRPSM(ISM)
         NJ = NCPSM(JSM)
-        print*,'JSM,NJ',JSM,NJ
         IF(ISYM.EQ.0.OR.ISM.GT.JSM) THEN
 *. Complete block
           WRITE(6,*) ' Block with symmetry ISM, JSM ',ISM,JSM

@@ -40,11 +40,11 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetno */
       SUBROUTINE RGETNO(CREF,OCCNO,UNO,CMO,NATORB,MOISNO,
-     &     IPRINT,WORK,KFREE,LFREE)
+     &                  IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Calculate natural orbital occupation numbers and, if NATORB is true,
-C     transform orbital to natural orbitals.
+C     Calculate natural orbital occupation numbers and, 
+C     if NATORB is true, transform orbital to natural orbitals.
 C
 C     Input:
 C        CREF - CI reference vector
@@ -108,7 +108,7 @@ C
          MOISNO = .TRUE.
          IF (IPRINT .GE. 2) THEN
             WRITE(LUPRI,'(1X,A)')
-     &           '(RGETNO) The orbital are already natural orbitals.'
+     &           '(RGETNO) The orbitals are already natural orbitals.'
          END IF
          CALL DZERO(UNO,N2ASHXQ)
          CALL DUNIT(UNO,NASHT)

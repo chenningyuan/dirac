@@ -21,7 +21,7 @@ C     PARAMETER (MXPR4T = -2 )
       PARAMETER (MXPXT = 25)
       PARAMETER (MXPICI = 10)
       parameter (MXROOT = 30)
-      PARAMETER (MXPSTT = 2500)
+      PARAMETER (MXPSTT = 4254)
 *  !! Has to be increased when larger systems are being treated !! (e.g. Tl)
 *
       PARAMETER (MXPCSM = 20)

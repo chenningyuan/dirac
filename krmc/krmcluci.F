@@ -160,17 +160,29 @@ C            new (when implemented) print flag system in the
 C            KRMC! The current is for interface debugging only.
 C            Timo
       CALL LUCI_TRAVA(CIRUN,'IPROPT',IPROPT,DUMMY)
-      IPRSTR = 1 * IPROPT
-      IPRCIX = 0 * IPROPT
-      IPRORB = 1 * IPROPT
-      IPRDIA = 5 * IPROPT
-      IPRXT  = 0 * IPROPT
-      IPROCC = 2 * IPROPT
-      IPRDEN = 2 * IPROPT
-CdebugIPRDEN = 10 * IPROPT
-      IPRSIG = 10 * IPROPT
-      IPRTRA = 1 * IPROPT
-      IPRHAM = 100 * IPROPT
+      IF (IPROPT.EQ.1) THEN
+         IPRSTR = 0 * IPROPT
+         IPRCIX = 0 * IPROPT
+         IPRORB = 0 * IPROPT
+         IPRDIA = 0 * IPROPT
+         IPRXT  = 0 * IPROPT
+         IPROCC = 0 * IPROPT
+         IPRDEN = 0 * IPROPT
+         IPRSIG = 0 * IPROPT
+         IPRTRA = 0 * IPROPT
+         IPRHAM = 0 * IPROPT
+      ELSE
+         IPRSTR = 1 * IPROPT
+         IPRCIX = 0 * IPROPT
+         IPRORB = 1 * IPROPT
+         IPRDIA = 5 * IPROPT
+         IPRXT  = 0 * IPROPT
+         IPROCC = 2 * IPROPT
+         IPRDEN = 2 * IPROPT
+         IPRSIG = 10 * IPROPT
+         IPRTRA = 1 * IPROPT
+         IPRHAM = 100 * IPROPT
+      END IF
 C
 C 33: Maximum number of CI vectors
       CALL LUCI_TRAVA(CIRUN,'MXCIV ',MXCIV,DUMMY)
@@ -1530,6 +1542,7 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
 *
 *=============================================================
 *
+                print*,'CIRUN before GASCI: ',CIRUN
                 CALL GASCI_REL(F1,F2,
      &                         INTSPACE,IREFSM,JCMBSPC,IPRDIA,
      &                         EREF,ECORE_KRMC,CIRUN)
@@ -1626,7 +1639,6 @@ C
         write(LUPRI,*) ' DENS1  flag call '
         write(LUPRI,*) ' ------           '
         write(LUPRI,*) '   Computing only 1-particle density matrices.'
-        call quit('NOT IMPLEMENTED YET!')
         write(LUPRI,*)
       else if (CIRUN.eq.'DENS2 ') then
         write(LUPRI,*)
@@ -1950,6 +1962,7 @@ C
 C     Written by T. Fleig                  - Jan 24 2001
 C     Last revision : KR_LUCI_IO calls     - Dec 04 2001    T. Fleig
 C                     CREF added           - Mar 17 2002    T. Fleig
+C                     Only R1 possible     - Feb 01 2005    T. Fleig
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1992,9 +2005,11 @@ C     Setup routines for running LUCIAREL
 C
 C     Initialize density matrices to zero
       L1 = (2*NASHT)**2 * MZ
-      L2 = (2*NASHT)**4 * MZ
       CALL DZERO(RHO1,L1)
-      CALL DZERO(RHO2,L2)
+      if (CALCR2) then
+        L2 = (2*NASHT)**4 * MZ
+        CALL DZERO(RHO2,L2)
+      end if
 C
 C     Write current CI vector(s) to file
       IO_DENS_IN = 1

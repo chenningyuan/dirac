@@ -1013,7 +1013,7 @@ C               MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
            CALL REWINE(LU5,LBLK)
            ONEM = -1.0D0
            CALL VECSMD(VEC1,VEC2,SCALE,ONEM,LU3,LU4,LU5,0,LBLK)
-*. Imag part of othogonal vector
+*. Imag part of orthogonal vector
            DO JVEC = 1, NVEC+IADD-1
              BUF = WORK(2*(JVEC-1)+1)
              WORK(2*(JVEC-1)+1) = - WORK(2*(JVEC-1)+2)
