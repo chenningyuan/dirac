@@ -1060,6 +1060,7 @@ C
 C     This is a slave in a parallel run
 C
       SLAVE = .TRUE.
+      DEBUG  = .FALSE.
 C
 C
 C     ***************************************************
