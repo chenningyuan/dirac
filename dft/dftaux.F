@@ -5,7 +5,7 @@ C***********************************************************************
 C
 C     Prepare for DFT response....
 C
-C     Written byu T.Saue May 11 2001
+C     Written by T.Saue May 11 2001
 C
 C***********************************************************************
 #include "implicit.h"
