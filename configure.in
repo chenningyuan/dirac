@@ -309,12 +309,6 @@ echo
 # PARALLEL
 #
 #
-if [ -z "$PARFLG" ]; then
-   PARFLG=0
-fi
-if [ $PARFLG = 0 ]; then
-   par="no"
-fi
 echo
 echo 'PARALLEL'
 echo
