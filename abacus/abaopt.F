@@ -54,11 +54,11 @@ Cjth
 #endif
       PARAMETER (NTABLE = 48, ITRMX = 25, MXREJ = 5, D0 = 0.0D0,
      &                              DEFTHR = 1.0D-6, DEFDSP = 1.0D-3)
-      LOGICAL NEWDEF, TRSTCH, FIRST
+      LOGICAL NEWDEF, TRSTCH, FIRST, BEENHERE
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, STR*3
       DIMENSION II(3)
 C
-      SAVE FIRST
+      SAVE FIRST, BEENHERE
       DATA TABLE /'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC',
      &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY',
      &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA',
@@ -73,7 +73,13 @@ C
      &            '.IGTHRS', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
 C
       DATA FIRST /.TRUE./
+      DATA BEENHERE /.FALSE./
 C
+      IF (BEENHERE) THEN
+         RETURN
+      ELSE
+         BEENHERE = .TRUE.
+      END IF
       IF (.NOT. FIRST) THEN
          IF ((WORD .NE. '*END OF') .AND. (WORD(1:2) .NE. '**')) THEN
  969        READ(LUCMD, '(A7)') WORD
@@ -1463,28 +1469,37 @@ C
 C
 C     We check to see if there is any properties to be calculated
 C
-Cjth - no we don't!!
-Cjth         WRINDX = .TRUE.
-Cjth         CALL ABAINP('**FINAL',WORK(IWOFF + 2),LWORK)
-Cjth         CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
-CjthC
-CjthC     We also check to see if we have requested a RESPONSE calculations
-CjthC
-Cjth         REWIND (LUCMD)
-CjthC
-CjthC     Let us first see if we can find any **RESPONS input
-CjthC
-Cjth 133     CONTINUE
-Cjth         READ (LUCMD,'(A7)',END=134,ERR=134) WRDRSP
-Cjth         IF (WRDRSP .EQ. '**RESPO') THEN
-Cjth            REWIND (LUCMD)
-Cjth            RNRESP = .TRUE.
-Cjth            CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
-Cjth            CALL RSPDRV(WORK(IWOFF + 2),LWORK)
-Cjth         ELSE
-Cjth            GOTO 133
-Cjth         END IF
-Cjth 134     CONTINUE
+#ifndef PRG_DIRAC
+         WRINDX = .TRUE.
+         CALL ABAINP('**FINAL',WORK(IWOFF + 2),LWORK)
+         CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
+C
+C     We also check to see if we have requested a RESPONSE calculations
+C
+         REWIND (LUCMD)
+C
+C     Let us first see if we can find any **RESPONS input
+C
+ 133     CONTINUE
+         READ (LUCMD,'(A7)',END=134,ERR=134) WRDRSP
+         IF (WRDRSP .EQ. '**RESPO') THEN
+            REWIND (LUCMD)
+            RNRESP = .TRUE.
+            CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
+            CALL RSPDRV(WORK(IWOFF + 2),LWORK)
+         ELSE
+            GOTO 133
+         END IF
+ 134     CONTINUE
+#else /* PRG_DIRAC */
+C
+C        Do wave function analysis and properties
+C        at converged geometry.
+C
+         CALL MINANA(WORK(IWOFF+2),LWORK)
+         CALL MINPRP(WORK(IWOFF+2),LWORK)
+C
+#endif /* PRG_DIRAC */
 C
 C     Single point energy is calculated if requested.
 C
@@ -1708,6 +1723,8 @@ C
 #ifdef PRG_DIRAC
 #include <dcbdhf.h>
 #include <dcbgen.h>
+#include <dcbmp2.h>
+#include <dcbpsi.h>
 #else
 #include <gnrinf.h>
 #include <infinp.h>
@@ -1722,7 +1739,15 @@ C     Integral and basis input
 C
       IF ( .NOT. EXSIR ) THEN
          CALL EXEDIR(WORK(IWOFF+1),LWORK)
-         ENERGY = DHFERG
+         IF (DOCCM) THEN
+            ENERGY = RGETCCSD()
+         ELSE IF (DOMP2) THEN
+            ENERGY = EMP2+DHFERG
+         ELSE IF (DODHF) THEN
+            ENERGY = DHFERG
+         ELSE
+            call quit('no wave function...???')
+         END IF
          EXHER = .TRUE.
          EXSIR = .TRUE.
       END IF
@@ -1821,6 +1846,8 @@ Cjth
 #include <dcbgrd.h>
 #include <dcbdhf.h>
 #include <dcbgen.h>
+#include <dcbmp2.h>
+#include <dcbpsi.h>
 #else
 #include <gnrinf.h>
 #include <infinp.h>
@@ -1838,14 +1865,20 @@ C
 C     Get gradient
 C
       CALL DZERO(EGRAD,MXCOOR)
-      CALL DZERO(EGRAD,MXCOOR)
 C
 C     Calculate gradient
 C
-      CALL PSIGRD(WORK(IWOFF+1),LWORK)
+      IF (DOCCM) THEN
+         CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
+      ELSE IF (DOMP2) THEN
+         CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
+      ELSE IF (DODHF) THEN
+         CALL PSIGRD(WORK(IWOFF+1),LWORK)
+      ELSE
+         call quit('no wave function...')
+      END IF
 C
       EXABA = .TRUE.
-      ENERGY = DHFERG
 C     Non-relativistic:...
 C      CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
 CC
@@ -4959,7 +4992,6 @@ C
  10   CONTINUE
       RETURN
       END
-#ifndef PRG_DIRAC
 C  /* Deck numgrd */
       SUBROUTINE NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
 C
@@ -4983,19 +5015,32 @@ C
       PARAMETER (LUMOL = 9, DP5 = 0.50D0, D100=100.0D0)
       LOGICAL EXHER, EXSIR, EXABA, BIG
       DIMENSION WORK(LWORK), COOR(3,MXCENT)
+      DIMENSION CSTRA(9*MXCOOR*MXCOOR),SCTRA(9*MXCOOR*MXCOOR)
 C
 #include <molinp.h>
 #include <taymol.h>
 #include <symmet.h>
 #include <nuclei.h>
 #ifdef PRG_DIRAC
+#include <dcbdhf.h>
 #include <dcbgen.h>
+#include <dcbmp2.h>
+#include <dcbpsi.h>
 #else
 #include <gnrinf.h>
 #endif
 #include <optinf.h>
 #include <infopt.h>
 C
+#ifdef PRG_DIRAC
+      IF (DOCCM) THEN
+         ECORR = RGETCCSD()
+      ELSE IF (DOMP2) THEN
+         ECORR = DHFERG+EMP2 
+      ELSE
+         call quit('unknown wave function...')
+      END IF
+#endif
       ESTART = ECORR
       NCART  = NCRREP(0,1)
       NCRIND = 3*NUCIND
@@ -5042,6 +5087,9 @@ C
                GRDMOL(I) = DP5*(GRDMOL(I) 
      &                   - SCLFCK*(ECORR - ESTART)/DISPLA)
             END IF
+            write(6,'(A,3E)') 
+     &         'jth ECOOR,ESTART,DISPLA',ECORR,ESTART,DISPLA
+            write(6,*) 'jth GRDMOL(',I,')',GRDMOL(I)
          END IF
          CALL WLKINC(WORK(KSTPSY),WORK(KSTPCA),COOR,DISPLA,NCART,
      &               NCRIND,IPOINT,IPRINT)
@@ -5071,7 +5119,8 @@ C Punch MOLECULE input with updated coordinates to LUMOL
 C
 #if    defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) \
     || defined (SYS_PARAGON) || defined (SYS_CRAY)   || defined (SYS_IRIX) \
-    || defined (SYS_SUN)     || definbed(SYS_LINUX)  || defined (SYS_HPUX) 
+    || defined (SYS_SUN)     || defined (SYS_LINUX)  || defined (SYS_HPUX) \
+    || defined (SYS_T3D)
 #define SYS_MANY
 #endif
 #if defined (SYS_VAX)
@@ -5099,6 +5148,21 @@ C
          EXABA = .FALSE.
          RDINPC = .FALSE.
          CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+#ifdef PRG_DIRAC
+         IF (DOCCM) THEN
+            ECORR = RGETCCSD()
+         ELSE IF (DOMP2) THEN
+            ECORR = DHFERG+EMP2 
+         ELSE
+            call quit('unknown wave function...')
+         END IF
+#endif
+      END DO
+      CALL HEADE2('Total finite-field (approximate) molecular '//
+     &            'gradient','@',-1)
+      
+      DO I = 1,NCRREP(0,1)
+         WRITE(6,*) 'Gradient ',I,'   ',GRDMOL(I)
       END DO
 C
  9100 FORMAT (A4)
@@ -5110,4 +5174,27 @@ C
 #endif
       RETURN
       END   
-#endif
+C  /* Deck rgetccsd */
+      FUNCTION RGETCCSD()
+#include <implicit.h>
+#include <priunit.h>
+C
+C     Get energy from RELCCSD
+C
+      CHARACTER CENERGY*40
+#include "../relccsd/results.inc" 
+#include "../relccsd/inpt.inc" 
+      IF (DOCCSDT) THEN
+         CENERGY = 'CCSD(T) energy from RELCCSD'
+      ELSE IF (DOCCSD) THEN
+         CENERGY = 'CCSD energy from RELCCSD'
+      ELSE IF (DOMP2) THEN
+         CENERGY = 'MP2 energy from RELCCSD'
+      ELSE 
+         call quit('no energy from RELCCSD')
+      END IF
+      WRITE(LUPRI,'(2A,1P,E20.10)')
+     &   CENERGY,' = ',ETOT
+      RGETCCSD = ETOT
+      RETURN
+      END

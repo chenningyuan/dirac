@@ -1452,8 +1452,7 @@ C
          GRADKN(I,0) = GRADKN(I,1) + GRADKN(I,2)
       END DO
 C
-      IPRINT = 2
-      IF ( IPRINT .GE. 2 ) THEN
+      IF ( IPRINT .GE. 1 ) THEN
 C
 C       Kinetic energy
 C       ==============
@@ -1861,7 +1860,7 @@ C*****************************************************************************
 C
 C     (c) 1997/07/09 by J. Thyssen
 C
-C     EXEcute DIRac; Calculate wavefunction
+C     EXEcute DIRac; Based on PAMDRV with a few modifications.
 C
 C     Last revision: 1997/07/08 jth
 C
@@ -1879,32 +1878,68 @@ C
       CALL QENTER('EXEDIR')
 C
 C     Delete DFCYCL so we don't restart DIIS
+C     also delete MCCRES to avoid restarting in relccsd.
 C     
       CALL DELFILE(LUCYCL,'DFCYCL')
+      CALL DELFILE(16,'MCCRES')
 C
 C     To avoid readin twice in the 0. iteration skip
-C     the first time
+C     the readin/setup.
 C
 C     Input and initialization
 C
       IF ( FIRST ) THEN
          FIRST = .FALSE.
       ELSE
+C
+C***********************************************************************
+C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
+C***********************************************************************
+C
          CALL PAMINP(WORK,LWORK)
+C
+C*****************************************************************************
+C*****  S E T U P  -  M O D U L E  *******************************************
+C*****************************************************************************
+C
          CALL PAMSET(WORK,LWORK)
       END IF
-C     
-C     Get wavefunction
+C
+C
+C******************************************************************************
+C*****  G E T    W A V E    F U N C T I O N   *********************************
+C******************************************************************************
+C
+C
+      IF(DOPIN) CALL PCMOIN(WORK,LWORK)
+C
+C     Since there is no fun in doing a geometry optimization
+C     without a wave function, PAMPSI is always called.
 C
       CALL PAMPSI(WORK,LWORK)
+      IF(DOPUT) CALL PCMOUT(WORK,LWORK)
 C
-C     Calculate properties
+C
+C*****************************************************************************
+C*****  A N A L Y S I S    M O D U L E  **************************************
+C*****************************************************************************
+C
+      IF(DOANA) CALL PAMANA(WORK,LWORK)
+C
+C
+C*****************************************************************************
+C*****  R E S P O N S E    M O D U L E  **************************************
+C*****************************************************************************
+C
 C
       IF (DOPRP) CALL PAMPRP(WORK,LWORK)
 C
-C     Analyze wavefunction
+C*****************************************************************************
+C***** H E I N Z *************************************************************
+C*****************************************************************************
 C
-      IF(DOANA) CALL PAMANA(WORK,LWORK)
+      IF(DOHEINZ) CALL HEINZ(WORK,LWORK)
+C
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('EXEDIR')
@@ -1936,6 +1971,9 @@ C
          INQUIRE(FILE=FILENAME,EXIST=EX)
          IF ( EX ) WRITE(LUPRI,'(//1X,3A//)') 'WARNING: ',
      &      FILENAME,' could .NOT. be deleted!' 
+      ELSE
+         WRITE(LUPRI,'(//1X,3A//)')
+     &      'WARNING from DELFILE!!! File ',FILENAME,' does not exist.'
       END IF
 C
 C
