@@ -1091,8 +1091,8 @@ C     Processing section
 C     ------------------
 C
       IF (LEVYLE) THEN
-        ISLINT = 1
-        ISSINT = 1
+        ILSINT = 0
+        ISSINT = 0
       ENDIF
       INTRES = ILLINT + 2*ILSINT + 4*ISSINT
 C

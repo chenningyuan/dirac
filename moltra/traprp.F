@@ -32,7 +32,7 @@ C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAPRP */
-      SUBROUTINE TRAPRP(WORK,LWORK)
+      SUBROUTINE TRAPRP(WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Driver routine for property integral transformations
@@ -62,7 +62,6 @@ C
       CHARACTER*32 ACHAR
 C
       CALL QENTER('TRAPRP')
-#include <memint.h>
       KFRSAV = KFREE
       CALL TRAHI(IPRTRP,1)
 C

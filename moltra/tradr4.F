@@ -685,22 +685,29 @@ C
 #else
           CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),WORK,KFREE,LFREE)
 #endif
-#if defined (VAR_MPI)
-          CALL MPI_REDUCE(WORK(KHMAT),WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
-     &                    MPI_DOUBLE_PRECISION,MPI_SUM,MPARID,
-     &                    MPI_COMM_WORLD,IERR)
-#endif
 #if defined (VAR_PVM)
           write pvm code
 #endif
 #if defined (VAR_MPI)
+          CALL MPI_REDUCE(WORK(KHMAT),WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
+     &                    MPI_DOUBLE_PRECISION,MPI_SUM,MPARID,
+     &                    MPI_COMM_WORLD,IERR)
+Clv This version gives MDCINT on all nodes or on one node depending on:
+Clv if (all nodes) include :
+Clv       CALL MPI_BCAST(WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
+Clv  &                   MPI_DOUBLE_PRECISION,MPARID,
+Clv  &                   MPI_COMM_WORLD,IERR)
+Clv else include # one node
           IF (MYTID.EQ.MPARID) THEN
+Clv end if
 #endif
              CALL SYMFINT(IPRINT,IREPIJ,IREPIJB,INDXB34(1+NKLOFF),
      &                    IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMATS),
      &                    IPQTOQ,WORK,KFREE,LFREE)
 #if defined (VAR_MPI)
+Clv if (one node) include
           ENDIF
+Clv endif
 #endif
         ENDDO
       ELSE
@@ -869,6 +876,13 @@ C
      &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
      &              TRIAN(2),WORK(KDXB34))
 C
+C     Initialize MOLFDIR integral file
+C
+      CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
+      CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
+      CALL MEMREL('TRDR4T',WORK,1,KIKRA,KFREE,LFREE)
+C
       NIJOFF = 0
       NKLOFF = 0
       DO IREPIJ = 1, NFSYM
@@ -881,8 +895,9 @@ C
          NKLOFF = NKLOFF + NKL
       ENDDO
 C
-C     Delete direct access file
+C     Close MOLFDIR integral file and delete direct access file
 C
+      CALL MDINTF
       CALL MDSCRF
 C
       CALL MEMREL('TR4PAR',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
