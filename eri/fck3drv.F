@@ -77,7 +77,6 @@ CTROND...IFTHRS is not set, but I set FIXTHR to true
       THRPOD   = THRSH
       THRCOD   = THRSH
       THRNCL   = THRSH 
-
       IF ( NOSCRPRIM ) THRPOD = 0.0D0
 
 #ifdef (MOD_FMM)
@@ -87,8 +86,8 @@ CTROND...IFTHRS is not set, but I set FIXTHR to true
       END IF
 
       CALL SETBFCFMM( BRFREE ) 
-#endif
       FACCLS=ERFCIV(THRCLS)
+#endif
 
       IF ( NDMT .NE. 1 ) THEN 
         CALL QUIT('In FCK3 internally is not implemented NDMT > 1') 
@@ -1501,16 +1500,19 @@ Cdirac ..setting this true since IFTHRS is not set
 #include "priunit.h"
 #include "cbifck3.h"
       PARAMETER ( NTABLE = 12 )
+      LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DATA TABLE /'.FIXTHR','.PRINT ','.NOSPEX','.NOSCRP',
      &            '.NOSKCL','.NOSKCS','.SCRFBT','.NOPACK',
      &            '.NOSKAL','.FULL_J','.UNCONT','.BRFREE'/
 C
-      WORD1 = WORD
 C
 CTROND
       WRITE(6,*) '..inside FCK3INP'      
       IPRINT=IPRFCK3
+      NEWDEF = (WORD .EQ. '*JENGIN')
+      IF(NEWDEF) THEN
+        WORD1 = WORD
  100    CONTINUE
             READ (LUCMD, '(A7)') WORD
             PROMPT = WORD(1:1)
@@ -1590,6 +1592,7 @@ C &&& BRFREE: Branch-free FMM
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  CALL QUIT('Illegal keyword in FCK3INP.')
             END IF
+      ENDIF
  300  CONTINUE
 
       CALL HEADER('Settings for FCK3 calculation:',0)
