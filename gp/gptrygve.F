@@ -1109,11 +1109,7 @@ C     /SIRTAP/
 C
       LUINTM = 0
       LUIT1  = 0
-      LUIT2  = 0
-      LUIT3  = 0
-      LUIT5  = 0
       LUINF = 0
-      LUH2AC = 0
       LUSIFC = 0
 C
       FNSOL  = 'AOSOLINT'
