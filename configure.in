@@ -445,6 +445,7 @@ if [ "$machine" = "rs6000-ibm" ]; then
    echo '       either reinstall an older compiler or turn off all optimization'
 fi
 
+
 case $machine in
 #
 #  HEWLETT - PACKARD
@@ -662,19 +663,19 @@ case $machine in
                     prc="non-10000"
             if [ "$prc" = "non-10000" ]; then
                echo "Non R10000 IRIX64"
-               opt='-O2 -n32 -mips3 -G 0'
+               opt='-O2 -n32 -mips3 -G 0 -woff 2290'
             else
                echo "R10000 IRIX64"
-               opt='-O2 -64 -mips4 -G 0'
+               opt='-O2 -64 -mips4 -G 0 -woff 2290'
             fi;;
          *)          
             case $os in
                irix6.4)
-                  opt='-O2 -64 -mips4 -G 0';;
+                  opt='-O2 -64 -mips4 -G 0 -woff 2290';;
                irix6.[2-3])
-                  opt='-O2 -n32 -mips3 -G 0';;
+                  opt='-O2 -n32 -mips3 -G 0 -woff 2290';;
                *)
-                  opt='-O2 -32 -mips2 -G 0';;
+                  opt='-O2 -32 -mips2 -G 0 -woff 2290';;
             esac
          esac
          if [ "$mesp" = "dummy" ]; then
@@ -706,7 +707,7 @@ case $machine in
       echo "http://assens.chem.ou.dk/Dirac"
       if [ "$mesp" = "dummy" ]; then
          cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' "
-         ccp="-DSYS_LINUX"
+         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=$memsiz'"
          def='dirac.x'
       else
          cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D$parop"
@@ -918,8 +919,13 @@ EOF
 esac
 
 echo "Before you run make, please check Makefile.config and edit"
-echo "   it if you wish."
-echo "   Then run "
+echo "it if you wish."
+echo
+echo "Please check 'Known issues and problems' at"
+echo "   http://assens.chem.ou.dk/Dirac"
+echo "to see hints or/and problems concerning your platform."
+echo
+echo "Then run "
 echo "   make depend"
 echo "   make"
-echo "   Then Dirac should be ready to run..."
+echo "Then Dirac should be ready to run..."
