@@ -45,6 +45,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
+      PARAMETER(D0=0.0D0)
 C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
