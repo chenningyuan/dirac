@@ -7,6 +7,12 @@ if [ ! -z "$RUNTYPE" ]; then
       "short")
          MENU=ccsd.small
          ;;
+      "medium")
+         MENU=ccsd
+         ;;
+      "long")
+         MENU=ccsd
+         ;;
    esac
 else
    MENU=ccsd;
