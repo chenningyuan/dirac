@@ -4268,7 +4268,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.NCUBE ','.PRINT ','.XXXXXX','.XXXXXX',
+      DATA TABLE /'.NCUBE ','.PRINT ','.CUBADJ','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -4290,6 +4290,8 @@ C
       NCUBE(1) = 80
       NCUBE(2) = 80
       NCUBE(3) = 80
+      CUBADJ(1) = 5.0D0
+      CUBADJ(2) = 5.0D0
 C
 C     Process input from DCBRHO
 C     =========================
@@ -4327,6 +4329,10 @@ C&&&& PRINT: Print level
                   READ(LUCMD,*) IPRRHO
                GO TO 100
     3          CONTINUE
+C&&&& CUBADJ: Adjust size of cube to hopefully include 'most' density.
+C&&&&         CUBADJ(1) : adjust startpoint of cube
+C&&&&         CUBADJ(2) : adjust stepvectors of cube
+               READ(LUCMD,*)  CUBADJ(1), CUBADJ(2)
                GO TO 100
     4          CONTINUE
                GO TO 100

@@ -39,15 +39,6 @@ fi
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-# Does 'echo' understand backslash commands
-#
-if [ "	" != "`echo '\t'`" ]; then
-   echo='echo -e'
-fi
-#
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
 #
 # Function usage
 #    - prints usage to stdout

@@ -2076,13 +2076,13 @@ C        Loop over all centers
          ENDIF
          ENDDO
       ENDDO      
-C     Add some space, calculate step sizes and convert to Angstrom
+C     Add some space, calculate step sizes and convert step vectors to Angstrom
       DO I = 1,3
-        CUBE(I,0) = CUBE(I,0) - 5.0D0
-        CUBE(I,I) = CUBE(I,I) + 5.0D0
+        CUBE(I,0) = CUBE(I,0) - CUBADJ(1)
+        CUBE(I,I) = (CUBE(I,I) + CUBADJ(2))*XTANG
         CUBE(I,I) = (CUBE(I,I)-CUBE(I,0))/(NCUBE(I)-1)
       ENDDO
-      CALL DSCAL(12,XTANG,CUBE,1)
+C      CALL DSCAL(12,XTANG,CUBE,1)
 C
       RETURN
       END
