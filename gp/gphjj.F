@@ -650,40 +650,50 @@ C
       DATA    A/1/,B/0/,C/0/
       C = C + A/B
 #endif
-      CALL QTRACE(6)
 #if defined (SYS_ALLIANT)
+      CALL QTRACE(6)
       WRITE(*,*) 'Alliant does not provide a system traceback facility.'
 #endif
 #if defined (SYS_IRIX)
+      CALL QTRACE(6)
       WRITE(*,*) 'IRIX has no obvious system traceback facility.'
 #endif
 #if defined (SYS_SUN)
+      CALL QTRACE(6)
       WRITE(*,*) 'SUN has no obvious system traceback facility.'
 #endif
 #if defined (SYS_PARAGON)
+      CALL QTRACE(6)
       WRITE (*,*) 'PARAGON has no obvious system traceback facility.'
 #endif
 #if defined (SYS_LINUX)
+      CALL QTRACE(6)
       WRITE(*,*) 'Linux has no obvious system traceback facility.'
 #endif
 #if defined (SYS_HPUX)
+      CALL QTRACE(6)
       WRITE(*,*) 'HP_UX has no obvious system traceback facility.'
 #endif
 #if defined (SYS_CONVEX)
+      CALL QTRACE(6)
       CALL TRACEBACK
 #endif
 #if defined (VAR_SECSEC)
+      CALL QTRACE(6)
       CALL STRACE
 #endif
 #if defined (SYS_CRAY) || defined (SYS_T3D)
+      CALL QTRACE(6)
       CALL TRBK()
 #endif
 #if defined (SYS_VAX)
 C Revised 12-Jan-1984 hjaaj (use LIB$SIGNAL for VAX,
 C                            traceback without exit)
+      CALL QTRACE(6)
       CALL LIB$SIGNAL(%VAL(0))
 #endif
 #if defined (SYS_IBM)
+      CALL QTRACE(6)
       CALL ERRTRA
 #endif
 #if defined (SYS_AIX)
@@ -696,6 +706,7 @@ C
       save i,j
       data i,j /1,0/
 C
+      CALL QTRACE(6)
       call SIGNAL(SIGTRAP,xl__trce)
       i = i/j
 #endif
