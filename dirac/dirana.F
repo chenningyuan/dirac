@@ -1158,7 +1158,7 @@ C
 C     Positrons
 C
       IP = 2      
-      DO J = 1,NSTR(IFRP,2,0)
+      DO J = 1,NSTR(IFRP,2,I)
         JREF(1,IVEC+J) = NPSH(IFRP)+1+KREF(J)
         JREF(2,IVEC+J) = IP
         JREF(3,IVEC+J) = I
