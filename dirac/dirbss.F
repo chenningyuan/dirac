@@ -1736,23 +1736,19 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 
 C First get the bare nucleus Dirac Hamiltonian (BNDH) in the SO-basis "xhi"
-C in WORK(KBUF)
+C into HDAO(1) array
 
-      CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE) 
       BSS=.FALSE.
-      CALL ONEFCK(WORK(KBUF),IPRHAM,WORK(KFREE),LFREE) 
+      CALL ONEFCK(HDAO,IPRHAM,WORK(KFREE),LFREE) 
       BSS=.TRUE.
-
-C   ... store the  bare nucleus Dirac Hamiltonian
-      CALL DCOPY(N2BBASXQ,WORK(KBUF),1,HDAO,1)
 
 C
 C    transform the BNDH from its SO-basis "xhi" to the ON basis "|k>"
 C    (reuse TBUF)
 C  where H is the bare nucleus Hamiltonian in the SO basis "xhi"
 C
-C                            TBUF = TMAT+ * H  * TMAT; 
-C                      H1(in |k>) =   U1+ * H0 * U1
+C        TBUF = TMAT+ * HDAO  * TMAT; 
+C  H1(in |k>) =   U1+ * H0 * U1 (notation in our paper)
 C
 C  if desired, eliminate spin-orbit components from H1 in C1 symmetry
 C  - spin-free at the "beginning"
@@ -1768,7 +1764,7 @@ C
       IF(NORB(I).EQ.0) GOTO 85
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
      &       NORB(I),NORB(I),
-     &       WORK(KBUF+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &       HDAO(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &       TBUF(IOFT),NORB(I),NORB(I),MZ,IPQTOQ(1,0),
      &       TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &       TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
@@ -1803,8 +1799,6 @@ C       ... update the offset
         IOFT = IOFT + NORB(I)*NORB(I)*NZ
 
    85 CONTINUE
-
-      CALL MEMREL('DKH',WORK,KWORK,KBUF,KFREE,LFREE)
 
       CALL QEXIT('GET_H1_FPM')
       RETURN
@@ -2291,9 +2285,9 @@ C    ==========
 C     Check the: 
 C                a) A.R = B condition for getting R
 C
-C                b)  R-condition for BSS infinite order:
+C                b)  R-condition for the BSS infinite order (see our paper):
 C
-C                    H(pp)*R = -H(pe) + R*H(ee) + R*H(pp)*R
+C                    H(pp)*R = -H(pe) + R*H(ee) + R*H(ep)*R
 C
 C    On input:  HK  - bare nucleus Hamiltonian matrix in the ON |k> basis
 C                R  - the R matrix in |k> basis
@@ -2303,7 +2297,7 @@ C
 C   Output:  just check and print the result of the R-condition
 C
 C   Written:  M.Ilias, Odense, 2002,
-C            last revison MI,february 2005,Strasburg
+C            last revison MI,february 2005, Strasburg
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -2359,14 +2353,6 @@ C .... save here the fermion symmetry
 C     ... this is the dimension...
       N2EQ = NESH(I)*NESH(I)*NZ
 
-C    ... For H(pp)*R
-      CALL MEMGET('REAL',KHPPR,N2EQ,WORK,KFREE,LFREE)
-C     .... For R*H(ee)
-      CALL MEMGET('REAL',KRHEE,N2EQ,WORK,KFREE,LFREE)
-C     ...  For H(ep) 
-      CALL MEMGET('REAL',KHEP,N2EQ,WORK,KFREE,LFREE) 
-C      ...  For R*H(pe)*R
-      CALL MEMGET('REAL',KRHPER,N2EQ,WORK,KFREE,LFREE)
 C     ...  Help array 1 
       CALL MEMGET('REAL',K1,N2EQ,WORK,KFREE,LFREE)
 C      ... Help array 2
@@ -2396,19 +2382,24 @@ C      ....  A * R - B = 0
      &               NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 
+C =====================================================
+C .... check the validity of the Barysz "R"-equation
+C =====================================================
 
-C .... check the Barysz "R-condition" equation
-
+C    .... reuse the WORK(K2) allocated array...
+C     CALL DZERO(WORK(K2),N2EQ)
       DO IZ=1,NZ
       DO IE=1,NESH(I)
-C          ....  Store H(ep)
+C          ....  Copy the H(pe)
         CALL DCOPY(NESH(I), 
-     &    HK(1+ NORB(I)*NESH(I) +
+     &    HK(1+ (NORB(I)*NESH(I)) +
      &        (IZ-1)*NORB(I)*NORB(I)+
      &       (IE-1)*NORB(I) ),  1,
-     &   WORK(KHEP+(IE-1)*NESH(I)+(IZ-1)*NESH(I)*NESH(I)),1)
+     &   WORK(K2+((IE-1)*NESH(I))+((IZ-1)*NESH(I)*NESH(I))),1)
       ENDDO
       ENDDO
+C       ... do the scaling by -1
+      CALL DSCAL(N2EQ,DM1,WORK(K2),1)
 
       IF ( IPRHAM .GE. 5 ) THEN
         CALL HEADER(
@@ -2425,53 +2416,54 @@ C          ....  Store H(ep)
      &         NZ,IPQTOQ(1,0),LUPRI)
 
         CALL HEADER(
-     & 'CHECK_R: Bare nucleus matrix - ep part in |k> basis',-1)
+     & 'CHECK_R: Bare nucleus matrix: -H(pe) part in |k> basis',-1)
         WRITE(LUPRI,'(3X,A,I1,A,I1)')
      & '*** Fermion corep ',I,'/',NFSYM
-        CALL PRQMAT(WORK(KHEP),NESH(I),NESH(I),NESH(I),NESH(I),
+        CALL PRQMAT(WORK(K2),NESH(I),NESH(I),NESH(I),NESH(I),
      &              NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
-C   H(pp) * R = WORK(KHPPR)
-
-      CALL QGEMM(NESH(I),NESH(I),NESH(I),D1,
+C
+C  Add -H(pp)*R into WORK(K2)  (left side of R-equation)
+C
+      CALL QGEMM(NESH(I),NESH(I),NESH(I),DM1,
      &         'N','N',IPQTOQ(1,0),HK(1),
      &         NORB(I),NORB(I),NZ,
      &         'N','N',IPQTOQ(1,0),
      &         R(1),2*NESH(I),NESH(I),NZ,          
-     &         D0,IPQTOQ(1,0),WORK(KHPPR),
+     &         D1,IPQTOQ(1,0),WORK(K2),
      &         NESH(I),NESH(I),NZ)
 
       IF ( IPRHAM .GE. 5 ) THEN
         CALL HEADER(
-     & 'CHECK_R: H(pp)*R matrix',-1)
+     & 'CHECK_R: -H(pp)*R - H(pe) matrix',-1)
         WRITE(LUPRI,'(3X,A,I1,A,I1)')
      & '*** Fermion corep ',I,'/',NFSYM
-        CALL PRQMAT(WORK(KHPPR),NESH(I),NESH(I),NESH(I),NESH(I),
+        CALL PRQMAT(WORK(K2),NESH(I),NESH(I),NESH(I),NESH(I),
      &         NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
-C    R * H(ee) = WORK(KRHEE)
+C   Add : R * H(ee) into WORK(K2)
 
       CALL QGEMM(NESH(I),NESH(I),NESH(I),D1,
      &         'N','N',IPQTOQ(1,0),R(1),
      &         2*NESH(I),NESH(I),NZ,
      &         'N','N',IPQTOQ(1,0),
-     &  HK(1+NORB(I)*NPSH(I)+NPSH(I)),NORB(I),NORB(I),NZ,          
-     &         D0,IPQTOQ(1,0),
-     &         WORK(KRHEE),
+     &  HK(1+(NORB(I)*NPSH(I))+NPSH(I)),NORB(I),NORB(I),NZ,          
+     &         D1,IPQTOQ(1,0),
+     &         WORK(K2),
      &         NESH(I),NESH(I),NZ)
 
       IF ( IPRHAM .GE. 5 ) THEN
         CALL HEADER(
-     & 'CHECK_R: R*H(ee) matrix',-1)
+     & 'CHECK_R: -H(pp)*R - H(pe) + R*H(ee) matrix',-1)
         WRITE(LUPRI,'(3X,A,I1,A,I1)')
      & '*** Fermion corep ',I,'/',NFSYM
-        CALL PRQMAT(WORK(KRHEE),NESH(I),NESH(I),NESH(I),NESH(I),
+        CALL PRQMAT(WORK(K2),NESH(I),NESH(I),NESH(I),NESH(I),
      &         NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
-C    H(pe) * R = WORK(K1)
+C    H(ep) * R = WORK(K1)
 
       CALL QGEMM(NESH(I),NESH(I),NESH(I),D1,
      &         'N','N',IPQTOQ(1,0),
@@ -2483,61 +2475,46 @@ C    H(pe) * R = WORK(K1)
 
       IF ( IPRHAM .GE. 5 ) THEN
         CALL HEADER(
-     & 'CHECK_R: H(pe)*R matrix',-1)
+     & 'CHECK_R: H(ep)*R matrix',-1)
         WRITE(LUPRI,'(3X,A,I1,A,I1)')
      & '*** Fermion corep ',I,'/',NFSYM
         CALL PRQMAT(WORK(K1),NESH(I),NESH(I),NESH(I),NESH(I),
      &         NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
-C    R* WORK(K1) = WORK(KRHPER)  ... R*H(pe)*R
+C    R* WORK(K1) add into WORK(K2)  ... R*H(pe)*R
 
       CALL QGEMM(NESH(I),NESH(I),NESH(I),D1,
      &         'N','N',IPQTOQ(1,0),R(1),
      &         2*NESH(I),NESH(I),NZ,
      &         'N','N',IPQTOQ(1,0),
      &         WORK(K1),NESH(I),NESH(I),NZ,          
-     &         D0,IPQTOQ(1,0),WORK(KRHPER),
+     &         D1,IPQTOQ(1,0),WORK(K2),
      &         NESH(I),NESH(I),NZ)
 
       IF ( IPRHAM .GE. 5 ) THEN
         CALL HEADER(
-     & 'CHECK_R: R*H(pe)*R matrix',-1)
+     & 'CHECK_R: -H(pp).R -H(pe) + R.H(ee) + R*H(pe)*R matrix',-1)
         WRITE(LUPRI,'(3X,A,I1,A,I1)')
      & '*** Fermion corep ',I,'/',NFSYM
-        CALL PRQMAT(WORK(KRHPER),NESH(I),NESH(I),NESH(I),NESH(I),
+        CALL PRQMAT(WORK(K2),NESH(I),NESH(I),NESH(I),NESH(I),
      &         NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
-C
-C DO:  WORK(K1)= H(pp)*R + H(ep) - R*H(ee) - R*H(pe)*R
-C      WORK(K1)= WORK(KHPPR) + WORK(KHEP) - WORK(KRHEE) - WORK(KRHPER)
-C
-
-      CALL DZERO(WORK(K1),N2EQ)
-C      .... + WORK(KHPPR) 
-      CALL DAXPY(N2EQ,D1 ,WORK(KHPPR),  1,WORK(K1),1)
-C     ....  + WORK(KHEP)
-      CALL DAXPY(N2EQ,D1 ,WORK(KHEP),   1,WORK(K1),1)
-C      ....  - WORK(KRHEE)
-      CALL DAXPY(N2EQ,DM1,WORK(KRHEE),  1,WORK(K1),1)
-C      ....  - WORK(KRHPER)
-      CALL DAXPY(N2EQ,DM1,WORK(KRHPER), 1,WORK(K1),1) 
-
-      RNULLNORM =  DNRM2(N2EQ,WORK(K1),1)
+      RNULLNORM =  DNRM2(N2EQ,WORK(K2),1)
 
       WRITE(LUPRI,'(2X,A,I1,A,I1,A,D13.6)')
-     & 'Norm of the R-condition, H(pp)*R+H(ep)-R*H(ee)-R*H(pe)*R'//
+     & 'Norm of the R-condition, -H(pp)*R - H(pe)+R*H(ee)+R*H(ep)*R'//
      & ' (ifsym ',I,'/',NFSYM,'):',RNULLNORM
 
       IF ( IPRHAM .GE. 5 ) THEN
        CALL HEADER(
-     &   'CHECK_R: Final R-condition matrix '//
-     &  ' H(pp)*R+H(ep)-R*H(ee)-R*H(pe)*R ',-1)
+     &  'CHECK_R: Final R-condition matrix '//
+     &  '-H(pp)*R - H(pe) + R*H(ee) + R*H(ep)*R ',-1)
       WRITE(LUPRI,'(7X,A,I1,A,I1,3X,A,D17.12)')
      &' Fermion corep ',I,'/',NFSYM,
      & '* norm: ',RNULLNORM
-        CALL PRQMAT(WORK(K1),NESH(I),NESH(I),NESH(I),NESH(I),
+        CALL PRQMAT(WORK(K2),NESH(I),NESH(I),NESH(I),NESH(I),
      &               NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 
