@@ -129,7 +129,7 @@ setup_command()
       DIRAC=${ALT_DIRAC##*/}
       BIN_DIR=${ALT_DIRAC%/*}
    else
-      DIRAC=dirac.x
+      DIRAC=./dirac.x
    fi
    #
    # MPI?
