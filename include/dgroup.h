@@ -17,11 +17,14 @@ C     IRQMAT(4,IBRP)    - irrep of matrix
 C
       CHARACTER FREP*3
       COMMON/DNAME/FREP(2)
-      PARAMETER (NDGROUP=192)
-      COMMON/DGROUP/NZ,NFSYM,NBSYM,IFDIRP(4,2),JBTOF(0:7,2),
+      PARAMETER (NDGROUP=207)
+      COMMON/DGROUP/I1_DGROUP,
+     &              NZ,NFSYM,NBSYM,IFDIRP(4,2),JBTOF(0:7,2),
      &              JMROI(4),JSPINR(4,2,2),JQBAS(0:7,2),JFSYM(4,2),
      &              IPQTOQ(4,0:7),IQTOPQ(4,0:7),IQPH(4,2),
-     &              IHQMAT(4,-1:1),IRQMAT(4,0:7),IQDEF(4),ITOT
+     &              IHQMAT(4,-1:1),IRQMAT(4,0:7),IQDEF(4),ITOT,
+     &              I2_DGROUP
+C     Do NOT add any variables after the end tag !
       LOGICAL LINEAR
       COMMON/DGRPL/LINEAR
 C

@@ -107,7 +107,6 @@ C           TIMING - Take time for each integralbatch IJ
 C           DOREPS -
 C           DOSYM  -
 C           DOCOOR -
-C           MULD2H - Start address for common block INFORB.
 C           NMLINE - Number of lines in MOLECULE.INP
 C           MLINE  - MOLECULE.INP as internal file
 C           NDMAT  - Number of density-matrices
@@ -258,11 +257,7 @@ C     Release nodes from this task
 C      and let them return to main menu.
 C--------------------------------------
 C
-      ITASK = -1
-#if defined (VAR_MPI)
-      CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-
+      CALL DIRAC_PARCTL( -1 )
 C
 C-----------------------------------------
 C     Sort the integral-calculation times.
@@ -508,8 +503,13 @@ C
          CALL MPI_BCAST(NMLINE,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(MLINE,80*NMLINE,MPI_CHARACTER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MULD2H,338,MPI_DOUBLE_PRECISION,MPARID,
+C........inforb.h
+         NUMELM=ICOMMSIZE(I1_INFORB,I2_INFORB)
+         CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(I1_INFORB,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
      &                  MPI_COMM_WORLD,IERR)
+C
          CALL MPI_BCAST(UNCONT,1,MPI_LOGICAL,MPARID,
      &                  MPI_COMM_WORLD,IERR)
          NEWGEO = .FALSE.
@@ -533,9 +533,11 @@ C     Send SMLV1C and ONECAP,INTV1C
      &               MPI_COMM_WORLD,IERR)
 #endif
 C
-C     Send common PARINT
-      NUMELM = 40 + MAXNOD + MXCOOR
-      CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
+C     Send parint.h
+      NUMELM = ICOMMSIZE(I1_PARINT,I2_PARINT)
+      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(I1_PARINT,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       ISEND(1) = NDMAT
       ISEND(2) = NFMAT
@@ -1040,16 +1042,6 @@ C
      &            KFMAT,KDMAT,KIFC,KIRD,KDMRAO,KGABAO,KDMRSO)
 C
       IF (FINISH) GOTO 999
-#if defined (MOD_DFT)
-      IF (ITYPE.EQ.7) THEN
-        JPRINT = 0
-        CALL DFTPAR(WORK(KDMAT),DUM,WORK(KFMAT),NFMAT,
-     &              .TRUE.,.FALSE.,.FALSE.,.FALSE.,
-     &              WORK(KFREE),LFREE,JPRINT)
-        CALL DFTRES(WORK(KFMAT),NFMAT,WORK(KFREE),LFREE,JPRINT)
-        GOTO 20
-      ENDIF
-#endif
 C
 C     ***************************
 C     ***** Allocate memory *****
@@ -1198,8 +1190,12 @@ C
       ELSE IF (NMLINE .GT. 0) THEN
          CALL MPI_BCAST(MLINE,80*NMLINE,MPI_CHARACTER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MULD2H,338,MPI_DOUBLE_PRECISION,MPARID,
+C........inforb.h
+         CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(I1_INFORB,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
      &                  MPI_COMM_WORLD,IERR)
+C........
          CALL MPI_BCAST(UNCONT,1,MPI_LOGICAL,MPARID,
      &                  MPI_COMM_WORLD,IERR)
          NEWGEO = .TRUE.
@@ -1221,9 +1217,10 @@ C     Receive SMLV1C and ONECAP,INTV1C
       CALL MPI_BCAST(INTV1C,1,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #endif
-C
-      NUMELM = 40 + MAXNOD + MXCOOR
-      CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
+C.....receive parint.h
+      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(I1_PARINT,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #endif
 C
@@ -1313,35 +1310,6 @@ C
       CALL PAOVEC(WORK(KFREE),LFREE,0,0)
 C
 #if defined (VAR_MPI)
-#if defined (MOD_DFT)
-C
-      IF(ITYPE.EQ.7) THEN
-C       Various common blocks
-        CALL DFTPRD
-C       Receive some dftcom variables
-        CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-        DFTADD = LSEND(1)
-        GRDONE = LSEND(2)
-        DFTRUN = LSEND(3)
-        DFTPOT = LSEND(4)
-        DFTORD = LSEND(5)
-        DFTASC = LSEND(6)
-C       Receive functionals
-        CALL DFTSYNCFUNC(0)
-C       Receive density matrix (scaled by a factor two!)
-        CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        NDMAT = ISEND(1)
-        NFMAT = ISEND(2)
-        LDMAT = NDMAT*N2BASX*NZ
-        CALL MEMGET('REAL',KDMAT,LDMAT,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KDMAT),LDMAT,MPI_DOUBLE_PRECISION,
-     &               MPARID,MPI_COMM_WORLD,IERR)
-        LFMAT = NDMAT*N2BASX*NZ
-        CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
-        RETURN
-      ENDIF
-C
-#endif
       CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       NDMAT = ISEND(1)
       NFMAT = ISEND(2)

@@ -615,6 +615,7 @@ C
       IF (NEWTASK) THEN
          CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
       ELSE
          CALL SLEEP(1)
          GO TO 100
@@ -655,7 +656,7 @@ C
          CALL CCNOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 4) THEN
 C
-C        Start calculating integrals for Fock matrices.
+C        Enter the DFT module
 C
          CALL DFTNOD(WORK,LWORK)
       ELSE
@@ -760,7 +761,7 @@ C        slave should be in main menu, ready to receive task
             CALL MPI_SEND(ITASK,1,MPI_INTEGER,NODE,27,
      &                 MPI_COMM_WORLD,IERR)
          END DO
-C        should call wait or barrier here
+         CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
       END IF
 
 #else /* not VAR_MPI */
@@ -769,6 +770,5 @@ C        should call wait or barrier here
      &   'but this is a sequential Dirac version !')
 
 #endif /* VAR_MPI */
-
       RETURN
       END

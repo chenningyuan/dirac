@@ -6,8 +6,8 @@ C
 C*** Dimensions for MO-basis ***
 C     Length of common block : keep up to date !!
 #include "mxmcgas.h"
-      PARAMETER (NDCBORB=129+4*MXMCGAS)
-      COMMON/DCBORB/
+      PARAMETER (NDCBORB=142+4*MXMCGAS)
+      COMMON/DCBORB/I1_DCBORB,
      &     NORB(2),N2ORB(2),NORBT,N2ORBT,N2ORBX,
      &     NBORB(4,2,0:2),NFORB(2,0:2),NTORB(0:2),             
      &     N2ORBTQ,N2ORBXQ,
@@ -29,7 +29,9 @@ C     Length of common block : keep up to date !!
      &     NAOCC(2),NAOCCT,
      &     NIOCC(2),NIOCCT,
      &     NAVIR(2),NAVIRT,
-     &     NIVIR(2),NIVIRT
+     &     NIVIR(2),NIVIRT,
+     &     I2_DCBORB
+C Do NOT place any more variables after the end tag !!!
 C     Information on orbital subblocks. Used at the moment only for linear symmetry
 C     but can be generalized to eliminate couplings between orbital spaces.
       PARAMETER (MAX_SUB_BL=16)
