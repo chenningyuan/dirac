@@ -150,10 +150,9 @@ C
 C***********************************************************************
 C*****  A N A L Y S I S    M O D U L E  ********************************
 C***********************************************************************
-C     (Nov. 2002: current PAMANA only analyzes SCF functions, and it
-C      is done inside PAMPSI if DOSCF.AND.DOPSI true)
 C
-      IF(DOANA .AND. .NOT.(DOSCF.AND.DOPSI)) CALL PAMANA(WORK,LWORK)
+      IF(DOANA .AND. .NOT.((DOSCF.AND.DOPSI).OR.(DOKRMC.AND.DOPSI))) 
+     &   CALL PAMANA(WORK,LWORK)
 C
 C
 C***********************************************************************
@@ -200,6 +199,7 @@ C
 C HJAaJ Nov. 2002 TODO: PAMANA only works for closed shell SCF now
 C (DHF or DFT), not for other wave functions.
 C It ought to be implemented for other wave function types as well.
+C TF, Nov. 2003:  Done for KRMC. 
 C
 C***********************************************************************
 C***** D I R A C - H A R T R E E - F O C K *****************************
