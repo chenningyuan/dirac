@@ -175,7 +175,8 @@ abacus/hersym.o     abacus/hertst.o     abacus/her2gab.o    abacus/hermem.o\
 abacus/abanuc.o abacus/abaopt.o abacus/abaortvec.o abacus/abarint.o\
 abacus/abatro.o abacus/abavrml.o abacus/abawalk.o\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\
-gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o\
+gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \
+gp/gpjth.o \
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \
 prp/pamgrd.o 
 
