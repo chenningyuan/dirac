@@ -276,7 +276,6 @@ C
      &              IPQTOQ(1,0),LUPRI)
       ENDIF
 C
-#ifdef MOD_SPF
       IF (SPINFR) CALL SPFAO (FMO,FAO,WORK(KFREE),LFREE)
 C
       IF(IPRINT.GE.5.AND.SPINFR) THEN
@@ -284,7 +283,6 @@ C
         CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &              IPQTOQ(1,0),LUPRI)
       ENDIF
-#endif
 C
       CALL DZERO(FMO,N2ORBXQ)
       DO 10 I = 1,NFSYM
