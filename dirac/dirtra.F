@@ -3264,3 +3264,32 @@ C
 C
       END
 C***********************************************************************
+      SUBROUTINE DTSOUAO(DMAT,SDMAT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Density transform: Dirac sorted SO-basis to Hermit sorted AO-basis
+C     Can be made more efficient by combining routines BSTOBU and DSOTAO 
+C
+C     Written by L. Visscher november 2003 (based on part of LSQMAT)
+C
+C***********************************************************************
+#include "implicit.h"
+#include "mxorb.h"
+#include "dcbbas.h"
+      DIMENSION DMAT(*), SDMAT(*)
+      DIMENSION WORK(*)
+#include "dgroup.h"
+C
+      IPRINT = -10
+      IF(NBSYM.GT.1) THEN
+        CALL MEMGET('REAL',KBUF ,N2BBASX ,WORK,KFREE,LFREE)
+        CALL DCOPY(N2BBASX,DMAT,1,WORK(KBUF),1)
+        CALL BSTOBU(WORK(KBUF),NZ,WORK(KFREE),LFREE)
+        CALL DTSOAO(WORK(KBUF),SDMAT,NTBAS(0),0,IPRINT)
+        CALL MEMREL('DSOUAO',WORK,KBUF,KBUF,KFREE,LFREE)
+      ELSE
+        CALL DCOPY(N2BBASX,DMAT,1,SDMAT,1)
+      ENDIF
+C
+      RETURN
+      END

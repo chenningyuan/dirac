@@ -1160,19 +1160,10 @@ C         If necessary, backtransform
 C         real part of density matrix to AO-basis
 C
       CALL MEMGET('REAL',KDAO ,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
-      IF(NBSYM.GT.1) THEN
 C
 C     ... transform density matrix
 C
-        CALL MEMGET('REAL',KBUF ,N2BBASX ,WORK,KFREE,LFREE)
-        CALL DCOPY(N2BBASX,DMAT,1,WORK(KBUF),1)
-        CALL BSTOBU(WORK(KBUF),NZ,WORK(KFREE),LFREE)
-        CALL DTSOAO(WORK(KBUF),WORK(KDAO),NTBAS(0),0,IPRINT)
-C
-        CALL MEMREL('LSQMAT.DAOMAT',WORK,KWORK,KBUF,KFREE,LFREE)
-      ELSE
-        CALL DCOPY(N2BBASX,DMAT,1,WORK(KDAO),1)
-      ENDIF
+      CALL DTSOUAO(DMAT,WORK(KDAO),WORK,KFREE,LFREE)
 C
 C     ... Calculate dipole moment integrals (stored on LU1INT)
 C
