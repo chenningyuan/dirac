@@ -1497,7 +1497,7 @@ C
      &  'SCR','Step1   ','Step2   ',
      &  'Coulomb ','Exchange','CPU-time'
       WRITE(LUPRI,'(A9,4(6X,F6.2,A1),3X,A12)') 
-     &     TEXT,(DSTEP(I),'%',I=1,4),SECTID(CPUSEC)
+     &     TEXT,(DSTEP(I),'%',I=1,4),INTTID
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
