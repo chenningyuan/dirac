@@ -428,6 +428,9 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <cbihr2.h>
+#if defined (MOD_DFT)
+#include <dftcom.h>
+#endif
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE,BF1,BF2,BF3
       DIMENSION FMO(*),FAO(*),CMO(*),WORK(*)
@@ -527,6 +530,36 @@ c         CALL DENSTY(FAO,CMO,IPRINT)
           FIRST3 = BF3
         ENDIF
       ENDIF
+#if defined (MOD_DFT)
+C        Construct Kohn-Sham contribution
+C        ================================
+         IF(DFTADD) THEN
+           CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
+           CALL DCOPY(N2BBASX,FAO,1,WORK(KBUF),1)           
+           IOFF = 1
+           DO ISHELL = 1, NOPEN
+             IOFF = IOFF + N2BBASXQ
+             CALL DAXPY(N2BBASX,DF(ISHELL),FAO(IOFF),1,WORK(KBUF),1)
+           ENDDO
+           CALL DSCAL(N2BBASX,D2,WORK(KBUF),1)
+#if defined (VAR_MPI)
+           IF(PARCAL) THEN
+             IRNTYP = 7
+             CALL HER_PARDRV(WORK(KFREE),LFREE,FMO,WORK(KBUF),NFMAT,
+     &          IDUM,IDUM,
+     &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
+     &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
+     &          IDUM,DUM,DUM,DUM,DUM,DUM)
+           ELSE
+#endif
+             CALL DFTEXC(WORK(KBUF),DUM,FMO,1,0,.TRUE.,.FALSE.,
+     &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRINT)
+#if defined (VAR_MPI)
+           ENDIF
+#endif
+           CALL MEMREL('GETFC1.dft',WORK,KBUF,KBUF,KFREE,LFREE)
+         ENDIF
+#endif
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================

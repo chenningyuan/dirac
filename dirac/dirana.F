@@ -1604,4 +1604,212 @@ C
       RETURN
 C
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gt1rho  */
+      SUBROUTINE GT1RHO(WORK,LWORK)
+C***********************************************************************
+C
+C     Get density in one dimension, that is along bonds
+C     (ghost centers may be defined to get other lines)
+C
+C     Written by Trond Saue May 9 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxorb.h>
+C
+      LOGICAL TOBE
+      DIMENSION WORK(LWORK)
+#include <dcbrho1.h>
+#include <dcbbas.h>
+C
+      CALL QENTER('GT1RHO')
+#include <memint.h>
+C
+      CALL TITLER('Density along bonds','*',122)
+C
+C     Check if coefficients are on file
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) GOTO 1000
+C     Memory allocation
+CTROND: Consider open shell ! (NFMAT...)
+      CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGAOS ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF  ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCOOR ,6       ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+C
+C     Read coefficients
+C
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
+     &            TOTERG,4)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     Generate density matrix
+C     Be aware: Both density matrices are normed to 1
+C     Coeffients may now be deallocated.....
+C
+      CALL GENDEN(WORK(KDMAT),WORK(KCMO),1,IPRHO1)
+CTROND      DO IOPEN = 1,NOPEN
+CTROND        CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRSCF)
+CTROND      END DO
+      CALL GT1RH1(WORK(KDMAT),WORK(KGAOS),WORK(KCOOR),WORK(KBUF),
+     &            IPRHO1,WORK,KFREE,LFREE)
+C
+C     Memory deallocation
+      CALL MEMREL('GT1RHO',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('GT1RHO')
+      RETURN
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'GT1RHO: Coefficient file not found !'
+      CALL QUIT('GT1RHO: Coefficients not found !')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gt1rh1 */
+      SUBROUTINE GT1RH1(DMAT,GAO,COORD,BUF,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Get density in one dimension, that is along bonds
+C     (ghost centers may be defined to get other lines)
+C
+C     Written by Trond Saue May 9 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+C
+#include <symmet.h>
+#include <nuclei.h>
+      DIMENSION DMAT(*),GAO(*),COORD(3,2),BUF(*),WORK(*)
+      CHARACTER FILNAM*10
+#include <ibtfun.h>
+C
+      LURHO = 1
+C
+C     Loop over pairs of nuclear centers
+C
+      DO ICENTA = 1, NUCIND
+         MULA  = ISTBNU(ICENTA)
+         IDEGA = 1
+         COORD(1,1) = CORD(1,ICENTA)
+         COORD(2,1) = CORD(2,ICENTA)
+         COORD(3,1) = CORD(3,ICENTA)
+         DO ICENTB = ICENTA+1, NUCIND
+           MULB = ISTBNU(ICENTB)
+           IDEGB = 0 
+           DO ISYMOP = 0, MAXOPR
+             IF (IBTAND(ISYMOP,MULB) .EQ. 0) THEN
+               IDEGB = IDEGB + 1
+               COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTB)
+               COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTB)
+               COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTB)
+               WRITE(FILNAM,'(A2,2(A3,I1)))') 
+     &           'RH',NAMN(ICENTA),IDEGA,NAMN(ICENTB),IDEGB
+               DO I = 1,10
+                 IF(FILNAM(I:I).EQ.' ') FILNAM(I:I)='_'
+               ENDDO
+               OPEN(LURHO,FILE =FILNAM,STATUS='NEW',
+     &              ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
+               CALL GT1RH2(DMAT,GAO,COORD,BUF,LURHO,
+     &             IPRINT,WORK,KFREE,LFREE)
+               CLOSE(LURHO,STATUS='KEEP')
+             ENDIF
+           ENDDO
+         ENDDO
+         IF (MULT(MULA).GT.1) THEN
+           IDEGB = 1
+           DO ISYMOP = 1, MAXOPR
+             IF (IBTAND(ISYMOP,MULA) .EQ. 0) THEN
+               IDEGB = IDEGB + 1
+               COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTA)
+               COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTA)
+               COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTA)
+               WRITE(FILNAM,'(A2,2(A3,I1)))') 
+     &           'RH',NAMN(ICENTA),IDEGA,NAMN(ICENTA),IDEGB
+               DO I = 1,10
+                 IF(FILNAM(I:I).EQ.' ') FILNAM(I:I)='_'
+               ENDDO
+               OPEN(LURHO,FILE =FILNAM,STATUS='NEW',
+     &              ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
+               CALL GT1RH2(DMAT,GAO,COORD,BUF,LURHO,
+     &                     IPRINT,WORK,KFREE,LFREE)
+               CLOSE(LURHO,STATUS='KEEP')
+              ENDIF
+           ENDDO
+         ENDIF 
+      ENDDO
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Gt1rh2 */
+      SUBROUTINE GT1RH2(DMAT,GAO,COORD,BUF,LURHO,
+     &                  IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Get density in one dimension, that is along bonds
+C     (ghost centers may be defined to get other lines)
+C
+C     Written by Trond Saue May 9 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0=0.0D0,D2=2.0D0)
+C
+#include <codata.h>
+      DIMENSION DMAT(*),GAO(*),COORD(3,2),RHO(0:2),BUF(*),WORK(*)
+#include <dcbbas.h>
+#include <dcbham.h>
+#include <dcbrho1.h>
+C
+#include <sdpre.h>
+      MC = 2
+      IF(LEVYLE) MC = 1      
 
+C
+C     Calculate distance between centers
+C
+      DX = (COORD(1,2)-COORD(1,1))
+      DY = (COORD(2,2)-COORD(2,1))
+      DZ = (COORD(3,2)-COORD(3,1))
+      DISTAN = SQRT(DX*DX+DY*DY+DZ*DZ)
+      DX     = DX/DISTAN
+      DY     = DY/DISTAN
+      DZ     = DZ/DISTAN
+      ASTEP  = DSTEP/XTANG
+      NPOINT = INT(DISTAN/ASTEP)
+      IF(MOD(NPOINT,2).EQ.1) NPOINT = NPOINT+1
+      ASTEP  = DISTAN/SDPRE(NPOINT)
+C
+C     Calculate density along between centers:
+C     If bond distance is 2R, then points are calculated between (-R,3R)
+C 
+      IP1 = -NPOINT/2
+      IP2 = NPOINT - IP1 
+      DO IP = IP1,IP2
+        PP  = SDPRE(IP)*ASTEP
+        PX  = COORD(1,1) + PP*DX
+        PY  = COORD(2,1) + PP*DY
+        PZ  = COORD(3,1) + PP*DZ
+C       Get value of SOs at (PX,PY,PZ)
+        CALL GETSOS(GAO,TEMP,TEMP,TEMP,TEMP,PX,PY,PZ,
+     &              BUF,WORK,LWORK,NTBAS(0),0,.FALSE.,IPRINT)
+C       Get density in this point
+        RHO(0) = D0
+        DO IC = 1,MC
+          CALL GETRH1(RHO(IC),IC,0,GAO,DMAT,BUF)
+          RHO(0) = RHO(0) + RHO(IC)
+        ENDDO
+        PP = XTANG*PP
+        WRITE(LURHO,'(F10.6,3E20.10)') PP,(RHO(I),I=0,MC)
+      ENDDO
+C
+      END

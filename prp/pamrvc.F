@@ -256,8 +256,6 @@ C
       IF(LSVCFG(1)) THEN
         CALL GMOLI(WORK(KFMO),BEVEC,BPVEC,IBEVC,IBPVC,IBTYP,
      &           NPOS,WORK,KFREE,LFREE)
-      ELSE
-c       CALL DZERO(WORK(KFMO),NOSIM*N2BBASXQ*NFOCKMAT)
       ENDIF
 C
 C     2) Add one-index transformed Fock-matrices
@@ -357,6 +355,9 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
 #include <dcbham.h>
+#if defined (MOD_DFT)
+#include <dftcom.h>
+#endif
       LOGICAL TOBE
       DIMENSION FMO(N2ORBXQ,*),FAO(N2BBASXQ,*),
      &          BEVEC(*),BPVEC(*),IBEVC(*),IBPVC(*),IBTYP(2,*),
@@ -401,6 +402,43 @@ C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,
      &            FAO,FMO,NOSIM*NFOCKMAT,NPOS,INTFLG,
      &            IPRTWO,WORK(KFREE),LFREE)
+#if defined (MOD_DFT)
+C
+C     Construct Kohn-Sham contribution
+C     ================================
+      IF(DFTADD) THEN
+C       Generate standard density matrix
+        CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
+        CALL GENDEN(WORK(KBUF),CMO,1,IPRXRS)
+CTROND        CALL DCOPY(N2BBASX,DMAT,1,CMO,1)           
+CTROND        IOFF = 1
+CTROND        DO ISHELL = 1, NOPEN
+CTROND          IOFF = IOFF + N2BBASXQ
+CTROND          CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(IOFF),1,CMO,1)
+CTROND        ENDDO
+        CALL DSCAL(N2BBASX,D2,WORK(KBUF),1)
+#if defined (VAR_MPI)
+        IF(PARCAL) THEN
+CTROND: This must be fixed !
+          CALL QUIT('Not yet implemented !')
+          IRNTYP = 7
+          CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
+     &          IDUM,IDUM,
+     &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
+     &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
+     &          IDUM,DUM,DUM,DUM,DUM,DUM)
+        ELSE
+#endif
+          IREPOP = JSYMOP-1
+          CALL DFTEXC(WORK(KBUF),FMO,FAO,NOSIM,IREPOP,
+     &               .FALSE.,.FALSE.,.FALSE.,.TRUE.,
+     &               WORK(KFREE),LFREE,IPRXRS)
+#if defined (VAR_MPI)
+        ENDIF
+#endif
+        CALL MEMREL('GMOLI1.dft',WORK,KBUF,KBUF,KFREE,LFREE)
+      ENDIF
+#endif
 C
 C     If solvent; get contribution
 C     ============================

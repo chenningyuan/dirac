@@ -443,7 +443,7 @@ if [ -n "$DFTMOD" ]; then
 cat <<EOF>> Makefile
 
 DFTOBJS = \\
-dft/pamdft.o    dft/dftden.o    dft/dftdrv.o    dft/dftfun.o    dft/dftgrd.o 
+dft/pamdft.o    dft/dftden.o    dft/dftdrv.o    dft/dftfun.o    dft/dftgrd.o dft/dftaux.o
 EOF
 fi
 #

@@ -333,16 +333,15 @@ C        ================================
              CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
      &          IDUM,IDUM,
      &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
-     &          .FALSE.,.FALSE.,FIRST,IDUM,IDUM,IDUM,
+     &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
      &          IDUM,DUM,DUM,DUM,DUM,DUM)
            ELSE
 #endif
-             CALL DFTEXC(CMO,1,FOCK,1,.TRUE.,.TRUE.,.FALSE.,
+             CALL DFTEXC(CMO,DUM,FOCK,1,0,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
 #if defined (VAR_MPI)
            ENDIF
 #endif
-           CALL DSCAL(N2BBASX,DP5,DMAT,1)
          ENDIF
 #endif
 C
@@ -976,11 +975,11 @@ C        ================================
              CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
      &          IDUM,IDUM,
      &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
-     &          .FALSE.,.FALSE.,FIRST,IDUM,IDUM,IDUM,
+     &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
      &          IDUM,DUM,DUM,DUM,DUM,DUM)
            ELSE
 #endif
-           CALL DFTEXC(CMO,1,FOCK,1,.TRUE.,.TRUE.,.FALSE.,
+           CALL DFTEXC(CMO,DUM,FOCK,1,0,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
 #if defined (VAR_MPI)
            ENDIF

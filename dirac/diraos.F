@@ -1,6 +1,6 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck getrho */
-      SUBROUTINE GETRHO(RHO,GAO,DMAT,BUF)      
+C /* Deck getrho */
+      SUBROUTINE GETRHO(RHO,IREPOP,GAO,DMAT,BUF)
 C***********************************************************************
 C
 C     Get density in point (PX,PY,PZ).
@@ -11,48 +11,71 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D0=0.0D0,D2=2.0D0)
+      PARAMETER(D0=0.0D0)
 C
 #include <dcbham.h>
 #include <dgroup.h>
 #include <dcbbas.h>
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION RHO(0:2),GAO(NBAST),DMAT(NBAST,NBAST),BUF(*)
+      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),BUF(*)
 #else
-      DIMENSION RHO(0:2),GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
+      DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
 #endif
-C      
+      RHO = D0
       MC = 2
       IF(LEVYLE) MC = 1      
-      NBRP = 4/NZ
-      RHO(1) = D0
-      RHO(2) = D0
-      DO IFRP = 1,NFSYM
-        DO IC = 1,MC
-          IP = MOD(IFRP+IC,NFSYM) + 1
-          DO JSYM = 1,NBRP
-            IREP = JFSYM(JSYM,IP) - 1
-            IF(NBBAS(IREP,IC).GT.0) THEN
-              JJ = IBBAS(IREP,IC)
-              DO J = 1, NBBAS(IREP,IC)
-                BUF(J) = DDOT(NBBAS(IREP,IC),
-     &                        DMAT(JJ+1,JJ+J),1,GAO(JJ+1),1)
-              ENDDO
-              RHO(IC) = RHO(IC) + DDOT(NBBAS(IREP,IC),BUF,1,GAO(JJ+1),1)
-            ENDIF
-          ENDDO
-        ENDDO
+      DO IC = 1,MC
+         CALL GETRH1(RHO,IC,IREPOP,GAO,DMAT,BUF)      
       ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck getrh1 */
+      SUBROUTINE GETRH1(RHO,IC,IREPOP,GAO,DMAT,BUF)      
+C***********************************************************************
 C
-C     Total density
+C     Get density in point (PX,PY,PZ).
+C     Gets values of AOs in this point from GAO
 C
-      RHO(0) = RHO(1) + RHO(2)
+C     Written by T.Saue and T.Helgaker
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
+C
+#include <dcbham.h>
+#include <dgroup.h>
+#include <dcbbas.h>
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),BUF(*)
+#else
+      DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
+#endif
+C
+#include <ibtfun.h>
+C      
+      DO 10 IRP1 = 0,NBSYM-1
+        NB1 = NBBAS(IRP1,IC)
+        IF(NB1.EQ.0) GOTO 10
+        JB1 = IBBAS(IRP1,IC)+1
+        DO 20 IRP2 = 0,NBSYM-1
+          IF(IBTXOR(IRP1,IRP2).NE.IREPOP) GOTO 20
+          NB2 = NBBAS(IRP2,IC)
+          IF(NB2.EQ.0) GOTO 20
+          JB2 = IBBAS(IRP2,IC)+1
+          CALL DGEMV('N',NBBAS(IRP1,IC),NBBAS(IRP2,IC),D1,
+     &                 DMAT(JB1,JB2),NTBAS(0),GAO(JB2),1,D0,BUF,1)
+          RHO = RHO + DDOT(NBBAS(IRP1,IC),GAO(JB1),1,BUF,1)
+   20   CONTINUE
+   10 CONTINUE
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getgrho */
-      SUBROUTINE GETGRHO(RHX,RHY,RHZ,GAO,GAO1,DMAT,BUF)      
+      SUBROUTINE GETGRHO(RHG,GAO,GAO1,DMAT,BUF)      
 C***********************************************************************
 C
 C     Get gradient of density in point (PX,PY,PZ).
@@ -76,10 +99,11 @@ C
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &          BUF(NTBAS(0)),GAO1(NTBAS(0),3)
 #endif
+      DIMENSION RHG(3)
 C      
-      RHX = D0
-      RHY = D0
-      RHZ = D0
+      DO I = 1,3
+        RHG(I) = D0
+      ENDDO
 C
       MC = 2
       IF(LEVYLE) MC = 1      
@@ -95,16 +119,16 @@ C
                     BUF(J) = DDOT(NBBAS(IREP,IC),
      &                        DMAT(JJ+1,JJ+J),1,GAO(JJ+1),1)
               ENDDO
-              RHX = RHX + DDOT(NBBAS(IREP,IC),BUF,1,GAO1(JJ+1,1),1)
-              RHY = RHY + DDOT(NBBAS(IREP,IC),BUF,1,GAO1(JJ+1,2),1)
-              RHZ = RHZ + DDOT(NBBAS(IREP,IC),BUF,1,GAO1(JJ+1,3),1)
+              DO I = 1,3
+                RHG(I)=RHG(I)+DDOT(NBBAS(IREP,IC),BUF,1,GAO1(JJ+1,I),1)
+              ENDDO
             ENDIF
           ENDDO
         ENDDO
       ENDDO
-      RHX = RHX + RHX
-      RHY = RHY + RHY
-      RHZ = RHZ + RHZ
+      DO I = 1,3
+        RHG(I) = RHG(I)+RHG(I)
+      ENDDO
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
