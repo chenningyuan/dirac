@@ -58,11 +58,11 @@
 #include "mpi_errtrap.h"
 
 #if defined (SYS_DEC)
-void MAIN__()
+extern int MAIN__()
 #elif defined (SYS_SX)
-void c_main_()
+extern int c_main_()
 #else
-void main()
+extern int main()
 #endif
 
 {
