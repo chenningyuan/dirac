@@ -2938,7 +2938,7 @@ C
 C
 C     Print section
 C
-      IF(IPRINT.GE.1) WRITE(LUPRI,'(/A,1P,D8.1)')
+      IF(IPRINT.GE.2) WRITE(LUPRI,'(7X,A,1P,D8.1)')
      &   'LOWGEN: Smallest ".LINDEP" test value of a kept orbital:',
      &   EIG(NV)
       IF(IPRINT.GE.6) THEN
