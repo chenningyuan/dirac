@@ -1485,10 +1485,10 @@ C*****************************************************************************
      &            ALPHA(1,1,2),CPRIM(1,1,1,2),CPRIMU(1,1,1,2),
      &            KATOM,KANG,KBLOCK,KPRIM,
      &            ISHELL,IPRIM,IPRIMD,IORB,IORBD,LCOMP)
+      IF (ISHELL.GT. MXSHEL) GOTO 5000
+      IF (IORBD .GT. MXCORB) GOTO 5010
+      IF (IPRIM .GT. MXPRIM) GOTO 5020
       IF (ADDSTO) THEN
-         IF (ISHELL .GT. MXSHEL) GOTO 5000
-         IF (IORBD .GT. MXCORB) GOTO 5010
-         IF (IPRIMD .GT. MXPRIM) GOTO 5020
          NSMLSH = ISHELL - NLRGSH
          NORBS  = IORB
          NSMALL = IORBD - NLARGE
@@ -1502,9 +1502,9 @@ C
          NHUCSH = NSMLSH
          NHUCBA = NSMALL
          NHUCNP = NPSML
+C
       ELSE
          KMAX   = ISHELL
-         IF(KMAX.GT.MXSHEL) GOTO 5000
          NSMLSH = KMAX - NLRGSH
          NORBS  = IORB
          NBASIS = IORBD
@@ -1512,11 +1512,9 @@ C
             WRITE(LUPRI,'(A)') 'PRIEXP:'
             WRITE(LUPRI,'(I5,F15.5)') (KK,PRIEXP(KK),KK=1,IPRIM)
          END IF
-         IF (NBASIS .GT. MXCORB) GOTO 5010
          NSMALL = NBASIS - NLARGE
          NPBAS  = IPRIMD
          NPSML   = IPRIMD - NPLRG
-         IF (NPBAS .GT. MXPRIM)  GOTO 5020
          NPSHEL  = IPRIM
          NPSSH   = IPRIM - NPLSH
       END IF
@@ -1544,20 +1542,19 @@ C       Error messages:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, number of shells                    ',KMAX,
-     *  '                   current maximum number (MXSHEL)     ',MXSHEL
-        CALL QUIT('BASPRO: Too many shells')
+     *  ' >>> BASPRO error, number of contracted shells      ',ISHELL,
+     *  '                   current maximum number (MXSHEL)  ',MXSHEL
+        CALL QUIT('BASPRO: Too many contracted shells')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, number of contracted basis functions',
-     *  NBASIS,
+     *  ' >>> BASPRO error, number of contracted basis functions',IORBD,
      *  '                   current maximum number (MXCORB)     ',MXCORB
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, number of primitive basis functions',NPBAS,
+     *  ' >>> BASPRO error, number of primitive basis shells   ',IPRIM,
      *  '                   current maximum number (MXPRIM)    ',MXPRIM
-        CALL QUIT('BASPRO: Too many primitives')
+        CALL QUIT('BASPRO: Too many primitive shells')
  5030 CONTINUE
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
       END
@@ -5500,7 +5497,7 @@ C
 C  /* Deck buildz */
       SUBROUTINE BUILDZ(IPRINT,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &                  SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
-     &                  KPRIM,KAOVEC,DOOWN)
+     &                  KPRIM,DOOWN)
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
@@ -5762,6 +5759,7 @@ C
 C
 C     Add basis set to newly order atomic set
 C
+         KAOVEC = KBLOCK + 1 - IBLOCK
          CALL BASLIB(IQM(I,1),JCO(1,I,1),NUC(IBLOCK,1),
      &               NRC(IBLOCK,1),SEG(IBLOCK,1),
      &               ALPHA(1,IBLOCK,1),
