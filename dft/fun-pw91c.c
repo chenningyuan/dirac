@@ -51,9 +51,10 @@
     >> 
 */
 
-// add "extern Functional pw91cFunctional;" to 'functionals.h'
+/* add "extern Functional pw91cFunctional;" to 'functionals.h'
 // add "&pw91cFunctional," to 'functionals.c'
 // add "fun-pw91c.c" to 'Makefile.in'
+*/
 
 #include <math.h>
 #include <stddef.h>
