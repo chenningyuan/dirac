@@ -116,6 +116,7 @@ C
 C
 C     Calculate gradient
 C
+      write(6,*) 'jth.PSIGRD - NFMAT',NFMAT
       CALL DHFGRD(WORK(KCMO),WORK(KDMAT),WORK(KFOCK),
      &            WORK(KTMAT),WORK(KGABRA),WORK(KDMRAO),
      &            WORK(KFCTYP),WORK(KFREE),LFREE,IPRGRD)
@@ -1009,6 +1010,10 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
 C
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxaqn.h>
+#include <symmet.h>
 #include <dcbbas.h>
 #include <dcbdhf.h>
 #include <dcborb.h>
@@ -1237,10 +1242,10 @@ C     ======================================
 C
       CALL DZERO(FOCK,4*N2BBASX)
       IOFF = 0
-      IPAR = JBTOF(0,1)
+      IPR = JBTOF(0,1)
       DO IZ = 1,4
          IREPD = IRQMAT(IZ,0)
-         IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+         IQ    = IQMULT(1,JQBAS(IREPD,IPR),IZ)
          IPQ   = IQTOPQ(IQ,0)
          IF(IPQ.GT.NZ) CALL QUIT('GTCNV1.FOCK: IPQ.GT.NZ !')
          IF(IPQ.LE.0 ) CALL QUIT('GTCNV1.FOCK: IPQ.LE.0 !')
@@ -1333,12 +1338,14 @@ C
 C       Transform density matrix from QO to AO
 C       ======================================
 C
+#ifdef OLD_QOAO
+990316-jth: this code is not working
       CALL DZERO(DMAT,4*N2BBASX)
       IOFF = 0
-      IPAR = JBTOF(0,1)
+      IPR = JBTOF(0,1)
       DO IZ = 1,4
          IREPD = IRQMAT(IZ,0)
-         IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+         IQ    = IQMULT(1,JQBAS(IREPD,IPR),IZ)
          IPQ   = IQTOPQ(IQ,0)
          IF(IPQ.GT.NZ) CALL QUIT('GTCNV1.DENSTY: IPQ.GT.NZ !')
          IF(IPQ.LE.0 ) CALL QUIT('GTCNV1.DENSTY: IPQ.LE.0 !')
@@ -1346,12 +1353,59 @@ C
      &              NTBAS(0),IREPD,IPRINT)
          IOFF = IOFF + N2BBASX
       ENDDO
+#endif
+C
+C     Note ad Imaginary part of the density matrix:
+C     ---------------------------------------------
+C
+C     In the AVEMOM routine X, Y-, and Z-derivates are multiplied 
+C     with the k-part, j-part, and the i-part, respectively.
+C     
+C
+C     The real part:
+C     --------------
+C
+      CALL DZERO(DMAT,4*N2BBASX)
+      CALL DSYM1R(DTMP2(1,1,1),DMAT,NTBAS(0),0,IPRINT)
+C
+C     The imaginary parts:
+C     --------------------
+C
+      IC = 2
+C
+      DO I = 2,4
+C
+C        Direction:
+C        IDIR = 1(X), 2(Y), or 3(Z)
+C
+         IDIR = 5-I
+C
+C        Symmetry of axis:
+C
+         ISYM = ISYMAX(IDIR,1)
+C
+C        Output goes to...
+C
+         IZ = JM4POS(I-1)
+C
+C        from...
+C
+         IQ = IQMULT(1,JQBAS(ISYM,IC),IZ)
+         IQP = IQTOPQ(IQ,0)
+         IREPD = IRQMAT(IZ,0)
+C
+         IOFF = (I-1)*N2BBASX
+c        IOFF = (IZ-1)*N2BBASX
+         CALL DSYM1R(DTMP2(1,IQP,1),DMAT(IOFF+1),
+     &              NTBAS(0),IREPD,IPRINT)
+C
+      END DO
 C
 C
 C
 C     Final print section
 C
-      IF ( IPRINT .GE. 10 ) THEN
+      IF ( IPRINT .GE. 5 ) THEN
          CALL HEADER('GTCNV1: Final matrices.',-1)
          CALL HEADER('Density matrix:',-1)
          CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
@@ -1637,6 +1691,12 @@ C
       DO IMAT = 1,NFMAT
          IBIT = IBTSHL(1,IMAT-1)
          CALL GENDEN(WORK(KTMP),CMO,IBIT,IPRINT)
+         IF (IPRINT .GE. 5) THEN
+            CALL HEADER('GTCNVD: DMAT from GENDEN',-1)
+            CALL PRQMAT(WORK(KTMP),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NTBAS(0),NZ,
+     &                  IPQTOQ(1,0),LUPRI)
+         END IF
 C
 C        Scale inactive density matrix with D2 (= occupation)
 C
@@ -1655,6 +1715,11 @@ C
      &                  NTBAS(0),NTBAS(0),NZ,
      &                  IPQTOQ(1,IREP),LUPRI)
          END IF
+c           CALL PYTHONMATRIX(WORK(KTMP),NTBAS(0),NTBAS(0),
+c    &                  NTBAS(0),NTBAS(0),'DEN.GRD.RE')
+c           CALL PYTHONMATRIX(WORK(KTMP+N2BBASX),NTBAS(0),NTBAS(0),
+c    &                  NTBAS(0),NTBAS(0),'DEN.GRD.IM')
+c        CALL QUIT('dooo')
 C
 C
 C        Insert half-phases
@@ -1662,9 +1727,11 @@ C        ==================
 C
          IREP = ISYMOP(IMAT)-1
          IF(NZ.LT.4) THEN
+            IOFF = 0
             DO IZ = 1,NZ
                IQ = IPQTOQ(IZ,IREP)
-               CALL Q2PHASE('D',IQ,1,WORK(KTMP))
+               CALL Q2PHASE('D',IQ,1,WORK(KTMP+IOFF))
+               IOFF = IOFF + N2BBASX
             ENDDO
             IF(IPRINT.GE.5) THEN
                CALL HEADER('Unsorted DMAT with half-phases inserted',-1)
