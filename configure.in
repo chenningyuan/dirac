@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # VERSION : $Revision$
 # DATE    : $Date$
@@ -27,8 +28,11 @@
 # Remember last config by Joern Thyssen - Jan 28 1998
 #
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
 #
 # Does 'echo' understand escapes?
+#
 #
 if [ "	" = "`echo '\t'`" ]; then
    echo="echo"
@@ -36,6 +40,107 @@ else
    echo="echo -e"
 fi
 #
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# CHECK OPTIONS
+#
+#
+usage=
+while [ $# != 0 ]; do
+   arg="$1"; shift
+   case "${arg}" in
+      -*=*)
+         opt=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*\([^=]*\)=.*$:\1:'`
+         val=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*[^=]*=\(.*\)$:\1:'`
+         valomitted=no
+         ;;
+      -*)
+         opt=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*\(.*\)$:\1:'`
+         val="yes"
+         valomitted=yes
+         ;;
+      *)
+         $echo $usage
+   esac
+   optname="${opt}"
+   opt="`echo '' ${opt} | sed -e 's:^ ::' | tr - _`"
+   case "${opt}" in
+      "system")
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         guess="$val"
+         ;;
+      "parallel" | "par")
+         case "$val" in
+         "no" | "yes" )
+            par="$val"
+            ;;
+         *)
+            echo 'Syntax error: Value "'${val}'" is not allowed to option' \
+                 '"-'${optname}'"'
+            echo 'Legal values: [yes,no]'
+            exit 1
+            ;;
+         esac
+         ;;
+      "parallel_message" | "par_mesg")
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         mesp="$val"
+         ;;
+      "mathematical_libraries" | "math_lib" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         LIB="$val"
+         ;;
+      "memory_size" | "memory" | "mem" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         memdef="$val"
+         ;;
+      "install_dir" | "inst_dir" | "install" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         INSTALL_DIR="$val"
+         ;;
+      "scratch_directory" | "scr_dir" | "scratch_dir" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         worksp="$val"
+         ;;
+      *)
+         echo  'Unknown option: '$opt''
+         $echo $usage
+         exit 1
+         ;;
+   esac
+done
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# GUESS SYSTEM
 #
 #
 echo
@@ -48,26 +153,20 @@ dirlist='/lib /usr/lib /usr/local/lib'
 #
 # GUESS SYSTEM
 #
-guess=`./config.guess`
-if [ "$guess" = "" ]; then
-   guess=`./config.status ARCH`
-fi
-$echo "Enter system:"
-$echo "\tExamples:"
-$echo "\tmips-sgi"
-$echo "\tmips-sgi-irix6.2"
-$echo "\tmips64-sgi-irix"
-$echo "\trs6000-ibm-aix3.2"
-$echo "\tsparc-sun-solaris"
-$echo "\tsparc-sun-sunos"
-$echo "\tm68k-sun-sunos"
-$echo "\tc2-convex-bsd"
-$echo "\tSee the file system.text for other choices."
-$echo "System [$guess]: \c"
-read answer
+echo
+echo 'SYSTEM'
+echo
+if [ -z "${guess}" ]; then
+   guess=`./config.guess`
+   if [ "$guess" = "" ]; then
+      guess=`./config.status ARCH`
+   fi
+   $echo "System [$guess]: \c"
+   read answer
 
-if [ "$answer" != "" ]; then
-   guess=$answer
+   if [ "$answer" != "" ]; then
+      guess=$answer
+   fi
 fi
 
 guess=`./config.sub $guess 2>/dev/null` 
@@ -129,43 +228,87 @@ case $machine in
       echo "System $guess is currently .NOT. supported"
       echo "Please report the following to jth@chem.ou.dk:"
       $echo "\t\`uname -m\` , \`uname -r\` , \`uname -s\` and \`uname -v\` "
-      $echo "\tYou may also recommend compilerflags." 
+      $echo "\tYou may also recommend compilerflags," 
+      $echo "\tpreferred fortran compiler and mathematical libraries" \
+            "available."
       exit 1
 
 esac
-
-   
-mesp='dummy'
-$echo 'Do you want to install the program in a parallel version? y/[n] \c'
-read answer
-if [ "$answer" = "" ]; then
-   answer="n"
-fi
-
-if [ "$answer" = "y" ]; then
-
+echo
 #
-#   Parallel architectures are difficult, better warn the user
 #
-
-   echo 
-   echo "Makefiles for parallel architecture are defficult to guess"
-   $echo "Please always compare the generated Makefile.config with local documentation.\n"
-
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-# Determine message passing protocol to be used
 #
-
-   mesp=
-   while [ "$mesp" != "mpi" -a "$mesp" != "pvm" ]
-   do
-      $echo 'Do you want to use "mpi" or "pvm" for message passing? \c'
-      read mesp
+# PARALLEL
+#
+#
+echo
+echo 'PARALLEL'
+echo
+if [ -z "${par}" ]; then
+   ok=
+   while [ -z "$ok" ]; do
+      ok=1
+      $echo 'Do you want to install the program in a parallel version? y/[n] \c'
+      read par
+      case "$par" in
+      "yes" | "y" )
+         par="yes"
+         ;;
+      "no" | "n" | "" )
+         par="no"
+         ;;
+      *)
+         ok=
+         ;;
+      esac
    done
+fi
+echo 'Parallel version: '${par}''
+
+if [ "$par" = "yes" ]; then
+#
+#  Parallel architectures are difficult, better warn the user
+#
+   echo 
+   echo  "Makefiles for parallel architecture are defficult to guess"
+   $echo "Please always compare the generated Makefile.config with" \
+         "local documentation.\n"
 
 #
-# The only computer I can think of with a separate compiler for parallel
-# MPI code is IBMs xlf
+#  Determine message passing protocol to be used
+#
+   if [ -z "${mesp}" ]; then
+      ok=
+      while [ -z "$ok" ]; do
+         ok=1
+         $echo 'Message passing [mpi]/pvm: \c'
+         read mesp
+         case "$mesp" in
+         "mpi" | "pvm" )
+            ;;
+         "" )
+            mesp="mpi"
+            ;;
+         *)
+            ok=
+            ;;
+         esac
+      done
+   fi
+   echo 'Parallel message passing: '$mesp
+#
+#  Abort if PVM
+#
+   if [ "$mesp" = "pvm" ]; then
+      echo "I don't think PVM is working..."
+      echo "configure aborted..."
+      exit 1
+   fi
+#
+#  The only computer I can think of with a separate compiler for parallel
+#  MPI code is IBMs xlf
 #
    if [ "$mesp" = "mpi" -a "$machine" = "rs6000-ibm" ]; then
       complist='mpxlf'
@@ -179,7 +322,7 @@ if [ "$answer" = "y" ]; then
    pardir=dirlist
    incdir='/usr/include /usr/local/include /local/include'
 #
-#   Modify for SGI that may have both 32 and 64 bit architectures
+#  Modify for SGI that may have both 32 and 64 bit architectures
 #
    if [ "$machine" = "mips64-sgi" ]; then
       pardir="$dirlist /usr/lib64"
@@ -188,14 +331,12 @@ if [ "$answer" = "y" ]; then
    fi
    parinc=
    parlibp=
-
 #
-#   MPI settings, first we do the mpi-library
+#  MPI settings, first we do the mpi-library
 #
-   if [ $parlib = 'yes' -a $mesp = 'mpi' ]; then
+   if [ "$parlib" = "yes" -a "$mesp" = "mpi" ]; then
       parlib=
       tmplib='libmpi.a libmpi.so'
-      incfile='mpif.h'
       for testdir in $pardir; do
          for testlib in $tmplib; do
             if test -f $testdir/$testlib; then
@@ -206,48 +347,65 @@ if [ "$answer" = "y" ]; then
          done
          test -n "$parlib" && break
       done
-#
-#   Now we try to find an include directory
-#
-   for testdir in $incdir; do
-      if test -f $testdir/$incfile; then
-         parinc=-I$testdir
-         break
+      if [ -z "$parlib" ]; then
+         echo 'Parallel library: none'
+      else
+         echo 'Parallel library: '$parlib
       fi
-   done
-   if [ "$parinc" = "-I" ]; then
-      parinc=
-   fi
 #
-#   PVM settings, we need two PVM library files
+#     Now we try to find an include directory
 #
-   elif [ $parlib = 'yes' -a $mesp = 'pvm' ]; then
-      parlib=
-      tmplib='libpvm3.a libfpvm3.a'
-      for testdir in $pardir; do
-         for testlib in $tmplib; do
-            if test -f $testdir/$parlib; then
-               if [ $parlib = 'libpvm3.a']; then
-                  parlib="$parlib -lpvm3"
-               else
-                  parlib="$parlib -lfpvm3"
-               fi
-             fi
-          done
-       done
-    fi
-    if [ "$parlib" = "no" ]; then
+      incfile='mpif.h'
+      for testdir in $incdir; do
+         if test -f $testdir/$incfile; then
+            parinc=-I$testdir
+            break
+         fi
+      done
+      if [ "$parinc" = "-I" ]; then
+         parinc=
+      fi
+      if [ -z "$parinc" ]; then
+         echo 'Parallel include: none'
+      else
+         echo 'Parallel include:'$parinc
+      fi
+#
+#     PVM settings, we need two PVM library files
+#
+      elif [ $parlib = 'yes' -a $mesp = 'pvm' ]; then
          parlib=
-    fi
+         tmplib='libpvm3.a libfpvm3.a'
+         for testdir in $pardir; do
+            for testlib in $tmplib; do
+               if test -f $testdir/$parlib; then
+                  if [ $parlib = 'libpvm3.a']; then
+                     parlib="$parlib -lpvm3"
+                  else
+                     parlib="$parlib -lfpvm3"
+                  fi
+                fi
+             done
+          done
+       fi
+       if [ "$parlib" = "no" ]; then
+            parlib=
+       fi
+else
+   mesp='dummy'
 fi
+echo
 #
 #
-# Parallel information finished setting
-#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
 # Test for the existence of the compiler
 #
+#
+echo
+echo 'COMPILER'
+echo
 $echo "\nChecking for compiler ...\c"
 if [ "$mesp" = "mpi" -a "$machine" = "rs6000-ibm" ]; then
     set dummy $comp; ac_word=$2
@@ -264,7 +422,8 @@ if [ "$mesp" = "mpi" -a "$machine" = "rs6000-ibm" ]; then
     test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
     F77="$ac_cv_prog_F77"
     if test -n "$F77"; then
-        $echo "\n   Compiler $F77 found"
+        echo
+        $echo "Fortran compiler: $F77"
         break
     fi
 fi
@@ -284,94 +443,135 @@ for comp in $complist; do
     test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
     F77="$ac_cv_prog_F77"
     if test -n "$F77"; then
-        $echo "\n   Compiler $F77 found"
+        echo
+        $echo "Fortran compiler: $F77"
         break
     fi
 done
 fi
 if test -z "$F77"; then
     $echo "\n   No compiler found on this computer"
-    echo "   Cannot proceed without a Fortran compiler in path"
+    echo  "   Cannot proceed without a Fortran compiler in path"
     exit
 fi
-
+echo
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Mathematical libraries
+#
 #
 # Check out mathematical libraries. May have to expand library list?
 #
 # For rs6000 we first try ESSL, then BLAS
 #
+echo
+echo 'MATHEMATICAL LIBRARIES'
+echo
 
-LIB=''
-for testdir in $dirlist; do
-  if [ -n "$liblist" ]; then
-    for testlib in $liblist; do
-      if test -f $testdir/$testlib; then
-         case $testlib in
-            libesslp2.a) LIB='-lesslp2';;
-            libessl.a) LIB='-lessl';;
-            libblas.a) LIB='-lblas';;
-            libcomplib.sgimath.a) LIB='-lcomplib.sgimath';;
-            libveclib.a) LIB='-lveclib';;
-            libmath.a) LIB='-lmath -lm -nx';;
-         esac
-         break
-      fi
-    done
-    test -n "$LIB" && break
-  fi
-done
+if [ -z "$LIB" ]; then
+   LIB=''
+   for testdir in $dirlist; do
+     if [ -n "$liblist" ]; then
+       for testlib in $liblist; do
+         if test -f $testdir/$testlib; then
+            case $testlib in
+               libesslp2.a) LIB='-lesslp2';;
+               libessl.a) LIB='-lessl';;
+               libblas.a) LIB='-lblas';;
+               libcomplib.sgimath.a) LIB='-lcomplib.sgimath';;
+               libveclib.a) LIB='-lveclib';;
+               libmath.a) LIB='-lmath -lm -nx';;
+            esac
+            break
+         fi
+       done
+       test -n "$LIB" && break
+     fi
+   done
+else
+   rm -f gnyf.F
+   echo '      PROGRAM GNYF' >  gnyf.F
+   echo '      END         ' >> gnyf.F
+   $F77 gnyf.F -o gnyf.x -l$LIB 2> /dev/null || \
+      echo  $LIB' is not a legal library.'; \
+      rm -f gnyf.F gnyf.x ; \
+      exit 1 
+   rm -f gnyf.F gnyf.x
+fi
 
 if [ -z "$LIB" -a -n "$liblist" ]; then
-    echo '   No mathematical libraries seem to be available'
-    $echo '   I will proceed without them\n'
+    echo 'Mathematical libraries: none'
 elif [ -n "$LIB" ]; then
-    $echo '   I have found the following mathematical library(ies): '$LIB'\n'
+    echo 'Mathematical libraries: '$LIB
 fi
+echo
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 # DETERMINE MEMORY SIZE
 #
-memdef=`./config.status WRKMEM`
+echo
+echo 'MEMORY SIZE'
+echo
 if [ -z "$memdef" ]; then
-   memdef=10000000
-fi
-echo 'DIRAC uses approximately 800000 words of static allocations'
-echo 'How many words to use as default for scratch memory ?'
-echo '(we do not recommend going below 1000000 words)'
-$echo 'Note that scratch memory can be changed through the shell variable WRKMEM\n'
-$echo 'Memory size ['$memdef'] \c'
-read memsiz
-if [ -z "$memsiz" ]; then
+   memdef=`./config.status WRKMEM`
+   if [ -z "$memdef" ]; then
+      memdef=10000000
+   fi
+   echo 'DIRAC uses approximately 800000 words of static allocations'
+   echo 'How many words to use as default for scratch memory ?'
+   echo '(we do not recommend going below 1000000 words)'
+   $echo 'Note that scratch memory can be changed through the shell variable WRKMEM\n'
+   $echo 'Memory size ['$memdef'] \c'
+   read memsiz
+   if [ -z "$memsiz" ]; then
+      memsiz=$memdef
+   fi
+else
    memsiz=$memdef
 fi
-$echo '   Program will be installed with a default scratch memory of '$memsiz' words\n'
+$echo 'Default memory size: '$memsiz
+echo
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 # Determine location for executable and run script
 #
-INSTALL_DIR=
-while [ -z "$INSTALL_DIR" ]
-do
-   curr=`./config.status INSTALLDIR`
-   if [ -z "$curr" ]; then
-      curr=`pwd`
-   fi
-   INCLUDE_DIR=include
-   $echo 'Directory for installation of binaries and scripts ['$curr'] \c'
-   read INSTALL_DIR
-   if [ -z "$INSTALL_DIR" ]; then
-      INSTALL_DIR=$curr
-   fi
-   $echo '\n   Dirac executable and script will be placed in '$INSTALL_DIR' directory\n'
+echo 
+echo 'INSTALL DIRECTORY'
+echo
+if [ -z "$INSTALL_DIR" ]; then
+   INSTALL_DIR=
+   while [ -z "$INSTALL_DIR" ]
+   do
+      curr=`./config.status INSTALLDIR`
+      if [ -z "$curr" ]; then
+         curr=`pwd`
+      fi
+      INCLUDE_DIR=include
+      $echo 'Directory for installation of binaries and scripts ['$curr'] \c'
+      read INSTALL_DIR
+      if [ -z "$INSTALL_DIR" ]; then
+         INSTALL_DIR=$curr
+      fi
+      if [ ! -d "$INSTALL_DIR" ]; then
+         echo "ERROR: $INSTALL_DIR does not exist"
+         INSTALL_DIR=
+      fi
+   done
+else
    if [ ! -d "$INSTALL_DIR" ]; then
       echo "ERROR: $INSTALL_DIR does not exist"
-      INSTALL_DIR=
+      exit 1
    fi
-done
+fi
+$echo 'Install directory for executable and script: '$INSTALL_DIR
+echo
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -380,35 +580,45 @@ done
 # Determine default scratch disk space for calculations
 #
 #
-worksp=
-while [ -z "$worksp" ]
-do
-   if [ -d '/work' ]; then
-      worksp='/work'
-   elif [ -d '/scratch' ]; then
-      worksp='/scratch'
-   elif [ -d '/scr' ]; then
-      worksp='/scr'
-   elif [ -d '/temp' ]; then
-      worksp='/temp'
-   elif [ -d '/tmp' ]; then
-      worksp='/tmp'
-   else
-      worksp=
-   fi
+echo 
+echo 'SCRATCH DIRECTORY'
+echo
+if [ -z "$worksp" ]; then
+   worksp=
+   while [ -z "$worksp" ]
+   do
+      if [ -d '/work' ]; then
+         worksp='/work'
+      elif [ -d '/scratch' ]; then
+         worksp='/scratch'
+      elif [ -d '/scr' ]; then
+         worksp='/scr'
+      elif [ -d '/temp' ]; then
+         worksp='/temp'
+      elif [ -d '/tmp' ]; then
+         worksp='/tmp'
+      else
+         worksp=
+      fi
 
-   $echo 'Default scratch space in script ['$worksp'] \c'
-   read answer
-   if [ ! -z "$answer" ]; then
-      worksp=$answer
-   fi
-   $echo '\n   Job specific directories under '$worksp'/$USER'
-   $echo 'will be used for temporary files when running dhf\n'
+      $echo 'Default scratch space in script ['$worksp'] \c'
+      read answer
+      if [ ! -z "$answer" ]; then
+         worksp=$answer
+      fi
+      if [ ! -d $worksp ]; then
+         echo 'Scratch directory '$worksp' does not exist!'
+         worksp=
+      fi
+   done
+else
    if [ ! -d $worksp ]; then
       echo 'Scratch directory '$worksp' does not exist!'
-      worksp=
+      exit 1
    fi
-done
+fi
+echo 'Scratch directory: '$worksp'/$USER$'
+echo
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -418,23 +628,26 @@ done
 #
 # We will now dump machine specific things to Makefile.config
 #
-
-$echo '\n   Updating Makefile.config'
+echo
+echo 'MAKING MAKEFILE.CONFIG'
+echo
 if [ -f Makefile.config ]; then
-   echo 'Ooops. Makefile.config exists. I take a backup as Makefile.config.orig'
+   echo 'Makefile.config exists. I will take a backup as Makefile.config.orig'
    if [ -f Makefile.config.orig -a ! -w Makefile.config.orig ]; then
       echo 'Makefile.config.orig is write-protetcted.'
       answer=
       while [ "$answer" != "y" -a "$answer" != "n" ]
       do
-         $echo 'Do you want me to overwrite Makefile.config.orig anyway? [y]/n\c'
+         $echo 'Do you want me to overwrite' \
+               'Makefile.config.orig anyway? [y]/n\c'
          read answer
-	 if [ -z "$answer" ]; then
-	    answer="y"
-	 fi
+         if [ -z "$answer" ]; then
+            answer="y"
+         fi
       done
       if [ "$answer" = "n" ];  then
-         echo 'I do not take a backup of Makefile.config. This file will be overwritten'
+         echo 'I do not take a backup of Makefile.config. \
+              'This file will be overwritten'
       else
          exec `chmod u+w Makefile.config.orig`
          exec `mv Makefile.config Makefile.config.orig`
