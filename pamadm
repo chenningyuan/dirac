@@ -347,7 +347,7 @@ moltra/traprp.o \\
 relccsd/ccpam.o  relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o \\
-dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o dirrci/cimain.o
+dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o 
 
 C_OBJS = \\
 main/alloc_mem.o    main/csectid.o \\
@@ -361,11 +361,15 @@ relccsd/ccunix.o
 RELCCSD_OBJS = \\
 relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
-relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o relccsd/ccmain.o \\
+relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o  \\
 relccsd/ccunix.o
 
+RELCCSD_MAIN = relccsd/ccmain.o
+
 DIRRCI_OBJS = \\
-dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o dirrci/cimain.o
+dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o 
+
+DIRRCI_MAIN = dirrci/cimain.o
 
 GP_OBJS = \\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
@@ -436,7 +440,7 @@ cat <<EOF>> Makefile
 
 OBJSMXM = gp/mxmpack.o
 
-TOTOBJS = \$(OBJS) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \$(ERIOBJS) \$(XPPOBJS)
+TOTOBJS = \$(OBJS) \$(DIRRCI_MAIN) \$(RELCCSD_MAIN) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \$(ERIOBJS) \$(XPPOBJS) 
 
 NOCPPFS = \$(TOTOBJS:.o=.i)
 
@@ -474,14 +478,14 @@ cat <<EOF>> Makefile
 relccsd.x: GP_OBJ PD_OBJ \\
 	CCM_OBJ $CCFOCKSPMAK
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/relccsd.x \\
-	\$(RELCCSD_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
+	\$(RELCCSD_MAIN) \$(RELCCSD_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
 	$CCFOCKSPOBJ \\
 	\$(LIB_LIST) \$(PDLIB)
 
 mpiccsd.x: GP_OBJ PD_OBJ \\
 	CCM_OBJ $CCFOCKSPMAK
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/relccsd.x \\
-	\$(RELCCSD_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
+	\$(RELCCSD_MAIN) \$(RELCCSD_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
 	$CCFOCKSPOBJ \\
 	\$(LIB_LIST) \$(PDLIB) \\
 	\$(MPI_LIB_PATH) \$(MPI_LIB)
@@ -494,7 +498,7 @@ cat <<EOF>> Makefile
 dirrci.x: GP_OBJ PD_OBJ \\
 	CI_OBJ
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirrci.x \\
-	\$(DIRRCI_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
+	\$(DIRRCI_MAIN) \$(DIRRCI_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
 	\$(LIB_LIST) \$(PDLIB)
 
 EOF
