@@ -467,7 +467,7 @@ C
             IF (MEMCK(1) .NE. MEMID(1)) GO TO 8002
             IF (MEMCK(2) .NE. 0) GO TO 8003
 C
- 8013       WORK(KFREE-LENID) = WMEMID(1)
+            WORK(KFREE-LENID) = WMEMID(1)
             IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
          ELSE
             IF (LREAL+2*LENID .GT. LFREE) GO TO 8001
@@ -482,7 +482,7 @@ C
             LFREE = LFREE - LENID
          END IF
       END IF
-      KBASE  = KFREE
+ 8013 KBASE  = KFREE
       KFREE  = KBASE + (LREAL + LENID)
       LFREE  = LFREE - (LREAL + LENID)
       MEMID(2) = 0
@@ -547,6 +547,9 @@ C
             CALL QTRACE(LUEMEM)
          END IF
          CALL QEXIT('MEMOPT  ')
+C        Warning issued, do the assignment now and continue
+         WORK(KFREE-LENID) = WMEMID(1)
+         IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
          GO TO 8013
 C
 C     end of MEMOPT
