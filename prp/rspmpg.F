@@ -43,13 +43,6 @@ C
 C
       CALL TITLER('Solving Z-vector equation','*',123)
 C
-C     Initialization - from xlrinp
-C     ============================
-C
-      illint = 1
-      islint = 1
-      issint = 0
-C
 C     Initialize /XCBLR/
 C     ==================
 C
@@ -61,8 +54,7 @@ C
       cnvxlr(2) = 1.d-2
       MAXRM     = 200           
       itrxlr    = 100
-      intxlr    = illint+2*islint+4*issint
-      if(levyle) intxlr = illint
+      intxlr    = intgen
       itrilr(1) = 1
       itrilr(2) = 1
       nlrapt    = 0             !number of A operators
@@ -130,12 +122,8 @@ C     ---Right side operator
 C
       pfac(1)=-1.d0
       plabel(1)='OVERLAP'
-c     write(lupri,'(a,6i4)') 'XPRIND',iptyp,npcomp,indxpr,isyxpr,itrxpr,
-c    &     iprxlr
       call xprind('Lagrangian rhs. ',iptyp,npcomp,pfac,plabel,
      &     indxpr,isyxpr,itrxpr,work(kfree),lfree,iprxlr)
-c     write(lupri,'(a,6i4)') 'XPRIND',iptyp,npcomp,indxpr,isyxpr,itrxpr,
-c    &     iprxlr
       call op1ind('NLRBPT',ind1op,llrbpu,nlrbpt,indxpr,maxllr)
 C
 C     Allocate memory
