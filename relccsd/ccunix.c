@@ -75,7 +75,7 @@ typedef struct
 FILE_DEFINITION files[MAXUNIT];
 int nwords=0, nio=0;
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX) 
+#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_SUN)
 void openc_();
 void wrabsf_();
 void rdabsf_();
