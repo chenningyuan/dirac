@@ -3416,6 +3416,7 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
+#include "dgroup.h"
       LOGICAL TEST
       DIMENSION EIG(*)
       DIMENSION NISHOLD(2),NASHOLD(2)
