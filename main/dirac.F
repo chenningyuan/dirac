@@ -371,7 +371,7 @@ C
          NISH(I) = NISH_DHF(I)
          NASH(I) = NASH_DHF(I)
          NASHT   = NASHT + NASH(I)
-         NOCC(I) = NOCC_DHF(I)
+         NOCC(I) = NISH(I) + NASH(I)
          NSSH(I) = NSSH_DHF(I)
 c         NESH(I) = NESH_DHF(I)
 c         NPSH(I) = NPSH_DHF(I)
@@ -488,7 +488,7 @@ C
             NGSH(I,J) = NKRMCGSH(I,J)
             NGSHT(J) = NGSHT(J) + NGSH(I,J)
          END DO
-         NOCC(I) = NKRMCOCC(I)
+         NOCC(I) = NISH(I) + NASH(I)
          NSSH(I) = NKRMCSSH(I)
 c         NESH(I) = NKRMCESH(I)
 c         NPSH(I) = NKRMCPSH(I)

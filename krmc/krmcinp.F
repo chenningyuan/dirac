@@ -143,7 +143,6 @@ C
       DO I = 1,2
          NKRMCISH(I) = 0
          NKRMCASH(I) = 0
-         NKRMCOCC(I) = 0
          NKRMCSSH(I) = 0
          NKRMCPSH(I) = 0
          NKRMCFRO(I) = 0
@@ -397,10 +396,6 @@ C
      &        NTEST, ' -- max is ',MAXASH
          CALL QUIT('*** ERROR in KRMCINP *** To many active orbitals!')
       END IF
-C
-      DO I = 1,NFSYM
-         NKRMCOCC(I) = NKRMCISH(I) + NKRMCASH(I)
-      END DO
 C
 C     Use boson symmetry for CI expansion for the spin-free and
 C     the Levy-Leblond Hamiltonian.

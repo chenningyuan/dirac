@@ -1308,7 +1308,6 @@ C
      &         CALL QUIT('DHFINP: odd number of '//
      &                   'closed shell electrons!')
             NISH_DHF(IFRP)  = NELEC_DHF(IFRP)/2
-            NOCC_DHF(IFRP)  = NISH_DHF(IFRP) + NASH_DHF(IFRP)
          END DO
          NAELEC_DHF = NINT(DTEMP)
          DO IOPEN = 1,NOPEN

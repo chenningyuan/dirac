@@ -30,7 +30,7 @@ C     PROJEC     - any projection, defined by a set of coefficients
      &              DAMPFC,DIISTH,BMCOND,CNVINT(2),
      &              SCFTID(0:7),ESOLVE,ESOLVN,PRJTHR
       COMMON/DCODHF/DF(0:MXOPEN),DA(0:MXOPEN),DALPHA(0:MXOPEN),
-     +              NISH_DHF(2),NASH_DHF(2),NOCC_DHF(2),NSSH_DHF(2),
+     +              NISH_DHF(2),NASH_DHF(2),NSSH_DHF(2),
      +              NESH_DHF(2),NPSH_DHF(2),NFRO_DHF(2),
      +              NELEC_DHF(2),NELECT_DHF,NAELEC_DHF,
      +              NACSH(2,MXOPEN),NOPEN
