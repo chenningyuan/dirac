@@ -50,7 +50,7 @@ C***********************************************************************
 C
       PARAMETER ( LUCMO = 22 )
       DIMENSION RES_LR(3,MAXLQR,MAXLQR,MAXFQR)
-      DIMENSION RES_TPA(3,NBSYM,MAXLQR,MAXLQR,MAXFQR)
+      DIMENSION RES_TPA(3,8,MAXLQR,MAXLQR,MAXFQR)
       DIMENSION WORK(*)
 C
       CALL QENTER('PRPTPA')
@@ -154,7 +154,7 @@ C***********************************************************************
 #include "pgroup.h"
 #include "dcbxpr.h"
 C
-      DIMENSION RCNV(MAXFQR,NBSYM)
+      DIMENSION RCNV(MAXFQR,8)
       DIMENSION WORK(*)
       LOGICAL DOEXC
 C
@@ -485,7 +485,7 @@ C
       DIMENSION VECAEE(MZYEE,NZ),VECBEE(MZYEE,NZ),VECEEE(MZYEE,NZ),
      &          VECAEP(MZYEP,NZ),VECBEP(MZYEP,NZ),VECEEP(MZYEP,NZ)
       DIMENSION CMO(*),IBEIG(*),WORK(*)
-      DIMENSION RESULT(3,NBSYM,MAXLQR,MAXLQR,MAXFQR)
+      DIMENSION RESULT(3,8,MAXLQR,MAXLQR,MAXFQR)
 C
 #include "ibtfun.h"
       MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
@@ -506,7 +506,7 @@ C
      &         FILE='AOPROPER')
 #endif
 C     
-      CALL DZERO(RESULT,3*NBSYM*MAXLQR*MAXLQR*MAXFQR)
+      CALL DZERO(RESULT,3*8*MAXLQR*MAXLQR*MAXFQR)
 C
       IQRF = 0
       NFC  = NBSYM/NFSYM
@@ -637,7 +637,7 @@ C
      &            D2 = 2.0D0, D4 = 4.0D0 )
       CHARACTER PFMT*6,MXFORM*6,ALAB*8,BLAB*8
       DIMENSION RES_LR(3,MAXLQR,MAXLQR,MAXFQR)
-      DIMENSION RES_TPA(3,NBSYM,MAXLQR,MAXLQR,MAXFQR)
+      DIMENSION RES_TPA(3,8,MAXLQR,MAXLQR,MAXFQR)
       DIMENSION WORK(*)
 C
 #include "ibtfun.h"
