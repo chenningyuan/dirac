@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/sh
 #
 # Generic place for the log-file
 #
