@@ -2,8 +2,8 @@ C*** Symmetry packing information for 4-index transformation program **
 C
 C  NSPCK and ISPCK in common block COMDIS
 C
-      COMMON/DCBTR3/NSPCK12(0:7,0:2),NSPCK34(0:7,0:2),
-     &              ISPCK12(0:7,0:7,2),ISPCK34(0:7,0:7,2),
+      COMMON/DCBTR3/NSPCK12(0:7,0:3),NSPCK34(0:7,0:3),
+     &              ISPCK12(0:7,0:7,3),ISPCK34(0:7,0:7,3),
      &              NBBAS1(0:7,0:2),NBBAS2(0:7,0:2),
      &              NBBAS3(0:7,0:2),NBBAS4(0:7,0:2),
      &              IBBAS1(0:7,0:2),IBBAS2(0:7,0:2),

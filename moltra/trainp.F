@@ -88,6 +88,7 @@ C
       ILLINT = IBTAND(INTGEN,1)
       ILSINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
+      IGTINT = IBTAND(INTGEN/8,1)
       THROUT = 1.0D-16
 C     Default orbital strings is all occupied and all virtuals 
       DO I = 1,NFSYM
@@ -98,7 +99,7 @@ C     Default orbital strings is all occupied and all virtuals
         ENDIF
         WRITE(MP2_INDSTR(2,I),'(I4,A2,I4)') NOCC(I)+1,'..',NFBAS(I,1)
       ENDDO
-      MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
+      MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
       IF (LEVYLE) MP2_INTFLG = ILLINT
 C     MP2_ANTIS  = .TRUE.
       MP2_ANTIS  = .FALSE.
@@ -160,7 +161,7 @@ C&&&& String of active virtual pairs in MP2 module
     4          CONTINUE
 C&&&& Integral classes not included in 4-index transformation
                   READ(LUCMD,*) ILLINT,ILSINT,ISSINT
-                  MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
+                  MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
     5          CONTINUE
 C&&&& Write 4-index transformed integrals to file
@@ -241,7 +242,7 @@ C
          ILLINT = 0
          ISSINT = 0
          ILSINT = 1
-         MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
+         MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
          WRITE(LUPRI,'(1X,A)') 
      +     '* Testing (LL|SS) ONLY in MP2.'
       ENDIF
@@ -249,7 +250,7 @@ C
          ILLINT = 0
          ISSINT = 0
          ILSINT = 1
-         MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
+         MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
          WRITE(LUPRI,'(1X,A)') 
      +     '* Testing (SS|LL) ONLY in MP2.'
       ENDIF
@@ -483,7 +484,7 @@ C&&&& Range of ACTIVE orbitals in 4-index transformation module
     3          CONTINUE
 C&&&& INTFLG - Integral classes not included in transformation
                   READ(LUCMD,*) ILLINT,ILSINT,ISSINT
-                  ITRA_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
+                  ITRA_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
     4          CONTINUE
 C&&&& Anti-Symmetrize integrals 
@@ -581,12 +582,12 @@ C
    14          CONTINUE
 C&&&& INTFL2 - Integral classes not included in 2-index transformation
                   READ(LUCMD,*) ILLINT,ILSINT,ISSINT
-                  ITRA_INTFL2 = ILLINT + 2*ILSINT + 4*ISSINT
+                  ITRA_INTFL2 = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
    15          CONTINUE
 C&&&& INTFL4 - Integral classes not included in 4-index transformation
                   READ(LUCMD,*) ILLINT,ILSINT,ISSINT
-                  ITRA_INTFL4 = ILLINT + 2*ILSINT + 4*ISSINT
+                  ITRA_INTFL4 = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
    16          CONTINUE
 C&&&& PRPTRA - Transform property integrals to MO basis
@@ -757,6 +758,9 @@ C
      +     '* LS Integrals not included in core Fock-matrix'
       IF (MOD(ITRA_INTFL2/4,2).NE.1) WRITE(LUPRI,'(1X,A)') 
      +     '* SS Integrals not included in core Fock-matrix'
+CLuuk : activate output when Gaunt is ready and active
+CLuuk IF (MOD(ITRA_INTFL2/8,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+CLuuk+     '* Gaunt Integrals not included in core Fock-matrix'
 C
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
       CALL IZERO (NTVEC,2)
@@ -809,6 +813,9 @@ C
      +     '* LS Integrals not transformed.'
       IF (MOD(ITRA_INTFL4/4,2).NE.1) WRITE(LUPRI,'(1X,A)') 
      +     '* SS Integrals not transformed.'
+CLuuk : activate output when Gaunt is ready and active
+Cluuk IF (MOD(ITRA_INTFL4/8,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+Cluuk+     '* Gaunt Integrals not transformed.'
       IF (TRA_ANTIS) WRITE(LUPRI,'(1X,A)') 
      +     '* Calculating Anti-symmetrized integrals.'
       IF (TRA_MSOUT) WRITE(LUPRI,'(1X,A)') 
@@ -1063,6 +1070,7 @@ C
       ILLINT = IBTAND(INTGEN,1)
       ILSINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
+      IGTINT = IBTAND(INTGEN/8,1)
       SCRRES = -1.0D0
       RESOUT = 1.D-16
 C

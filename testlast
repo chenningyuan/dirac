@@ -163,8 +163,15 @@ if [ "${cvs}" = "yes" ]; then
   fi
 fi
 #
+#
+echo ' Checking dependencies ... '
+make depend > ${testdir}/logs/$makelog 2>&1 || \
+{ echo " Make depend failed" ; \
+  echo " Please check the logfile ${testdir}/logs/$makelog" ; \
+  exit 1 ;\
+}
 echo ' Recompiling ... '
-make > ${testdir}/logs/$makelog 2>&1 || \
+make >> ${testdir}/logs/$makelog 2>&1 || \
 { echo " Make failed" ; \
   echo " Please check the logfile ${testdir}/logs/$makelog" ; \
   exit 1 ;\

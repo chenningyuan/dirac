@@ -1310,12 +1310,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <blocks.h>
 #include <dcbbas.h>
 C
-      LOGICAL L2TYP(0:3),LBIT
+      LOGICAL L2TYP(0:4),LBIT
 C
       L2TYP(0) = INTFLG.EQ.0
       L2TYP(1) = LBIT(INTFLG,1)
       L2TYP(2) = LBIT(INTFLG,2)
       L2TYP(3) = LBIT(INTFLG,3)
+      L2TYP(4) = LBIT(INTFLG,4)
 C
       IF (IC.EQ.1) THEN
          IASTRT = 1     
@@ -1346,7 +1347,7 @@ C           No valid class of integrals for this value of IC
             IBSMAX = 0
             I2TYP = -1
          ENDIF
-      ELSE
+      ELSEIF (IC.EQ.2) THEN
          IASTRT = NLRGBL + 1     
          IBSTRT = NLRGBL + 1     
          IASMAX = MAXSHL
@@ -1363,6 +1364,22 @@ C           (SS|LL) - integrals
          ELSEIF (L2TYP(3)) THEN
             I2TYP = 2
 C           (SS|SS) - integrals
+         ELSE
+C           No valid class of integrals for this value of IC
+            IASTRT = 1     
+            IBSTRT = 1     
+            IASMAX = 0
+            IBSMAX = 0
+            I2TYP = -1
+         ENDIF
+      ELSEIF (IC.EQ.3) THEN
+         IASTRT = NLRGBL + 1     
+         IBSTRT = 1     
+         IASMAX = MAXSHL
+         IBSMAX = NLRGBL
+         IF (L2TYP(4)) THEN
+C           Gaunt integrals
+            I2TYP = 4
          ELSE
 C           No valid class of integrals for this value of IC
             IASTRT = 1     
@@ -1393,7 +1410,7 @@ C*****************************************************************************
 #include <aovec.h>
 #include <blocks.h>
 C
-      DIMENSION NSPCK(0:7,0:2),ISPCK(0:7,0:7,2)
+      DIMENSION NSPCK(0:7,0:3),ISPCK(0:7,0:7,3)
       DIMENSION NBBASA(0:7,0:2),NBBASB(0:7,0:2)
       DIMENSION IBBASA(0:7,0:2),IBBASB(0:7,0:2)
       DIMENSION IBASA(2),IBASB(2)
@@ -1473,10 +1490,16 @@ C
 C
 C     We generate the boson symmetry packing, based on square matrices.
 C
-      CALL IZERO(NSPCK,24)
-      CALL IZERO(ISPCK,128)
+      CALL IZERO(NSPCK,32)
+      CALL IZERO(ISPCK,192)
 C
       DO IREPAB = 0, NBSYM-1
+C
+C        Dimensions for the Coulomb type integrals are
+C        in IC=1 (LL), 2 (SS); the ones for the Gaunt
+C        are in IC=3 (SL), they are not added to the total
+C        in IC=0.
+C
          DO IC = 1, 2
             DO IREPB = 0, NBSYM-1
                IREPA = IBTXOR(IREPAB,IREPB)
@@ -1496,6 +1519,26 @@ C
                NSPCK(IREPAB,IC) = NSPCK(IREPAB,IC) + NBAB
             ENDDO
          ENDDO
+C
+C        The Gaunt type integrals
+C
+            DO IREPB = 0, NBSYM-1
+               IREPA = IBTXOR(IREPAB,IREPB)
+               ISPCK(IREPA,IREPB,3) = NSPCK(IREPAB,3)
+               IF (ISHELA.EQ.0) THEN
+                  NBA = NBBAS(IREPA,2)
+               ELSE
+                  NBA = NBBASA(IREPA,2)
+               ENDIF
+               IF (ISHELBS.EQ.0) THEN
+                  NBB = NBBAS(IREPB,1)
+               ELSE
+                  NBB = NBBASB(IREPB,1)
+               ENDIF
+               NBAB = NBA * NBB
+               NSPCK(IREPAB,3) = NSPCK(IREPAB,3) + NBAB
+            ENDDO
+C
       ENDDO
 C
       RETURN
@@ -1679,6 +1722,8 @@ C
 C
       IF (I2TYP.EQ.1) THEN
          IC = 1
+      ELSEIF (I2TYP.EQ.4) THEN
+         IC = 3
       ELSE
          IC = 0
       ENDIF

@@ -1154,6 +1154,11 @@ C
         IDSTRT = 1
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
+      ELSEIF(I2TYP.EQ.4) THEN
+        ICSTRT = NLRGBL+1
+        IDSTRT = 1
+        ICSMAX = MAXSHL
+        IDSMAX = NLRGBL
       ELSE
         WRITE(LUPRI,'(A,I5)') 'DISLOP: Unknown I2TYP =' ,I2TYP
       ENDIF
@@ -1194,11 +1199,13 @@ C        ******************************
 C        ***** Fourth Shell Index *****
 C        ******************************
 C
-         IDMAX = ISHELC
+         IDSMAX1 = ISHELC
          IDSTRT1 = IDSTRT
          IF ((I2TYP.EQ.12).AND.(ISHELC.GT.NLRGBL))
      &      IDSTRT1 = NLRGBL + 1
-         DO 200 ISHELD = IDSTRT1, ISHELC
+         IF (I2TYP.EQ.4)
+     &      IDSMAX1 = NLRGBL
+         DO 200 ISHELD = IDSTRT1, IDSMAX1
             ICD    = LCLASH(ISHELD)
             NHKTD  = NHKTSH(ISHELD)
             KHKTD  = KHKTSH(ISHELD)
