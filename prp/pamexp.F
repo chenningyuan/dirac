@@ -587,13 +587,6 @@ C
           II = II + 1
           INDX(II) = I
         ENDDO
-CTROND
-        WRITE(6,*) 'Solution vector read...',NMO(IFRP),NCNT(IFRP)
-            CALL PRQMAT(BVEC(IPB),
-     &           NCNT(IFRP),NMO(IFRP),
-     &           NCNT(IFRP),NMO(IFRP),
-     &           NZ,IPQTOQ(1,0),LUPRI)
-
         CALL DENST1(DFO(IPD),NCNT(IFRP),NCNT(IFRP),
      &              BVEC(IPB),NCNT(IFRP),NMO(IFRP),
      &              1,NMO(IFRP),NCNT(IFRP))  

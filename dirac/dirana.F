@@ -1099,13 +1099,6 @@ C
       POLT = D0
       DO IFRP = 1,NFSYM
         CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
-CTROND
-        WRITE(6,*) 'Coefficients..'
-            CALL PRQMAT(WORK(KQ(IFRP,1)),
-     &           NFBAS(IFRP,0),NVECS(IFRP,0),
-     &           NFBAS(IFRP,0),NVECS(IFRP,0),
-     &           NZ,IPQTOQ(1,0),LUPRI)
-CTROND
         KBUF   = KFREE
         NMOL   = NVECS(IFRP,2)
         NREF   = NVECS(IFRP,1)
@@ -1142,18 +1135,6 @@ C
 C       Add polarization contribution to expansion coefficients
         CALL DUNIT2(WORK(KBV(IFRP)+NVECS(IFRP,1)),NVECS(IFRP,2),
      &              NVECS(IFRP,0),NVECS(IFRP,2),NZ)
-CTROND
-      WRITE(6,*) 'Solution vector after..'
-            CALL PRQMAT(WORK(KBV(IFRP)),
-     &           NVECS(IFRP,0),NVECS(IFRP,2),
-     &           NVECS(IFRP,0),NVECS(IFRP,2),
-     &           NZ,IPQTOQ(1,0),LUPRI)
-CTROND
-        WRITE(6,*) 'Polarization generated..'
-            CALL PRQMAT(WORK(KQ(IFRP,1)),
-     &           NFBAS(IFRP,0),NVECS(IFRP,0),
-     &           NFBAS(IFRP,0),NVECS(IFRP,0),
-     &           NZ,IPQTOQ(1,0),LUPRI)
         IS = IS + N2BAS(IFRP)
         CALL MEMREL('PRJANA.loop',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDDO
