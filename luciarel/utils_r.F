@@ -191,7 +191,7 @@ C     PARAMETER(IRAT = 2 )
 *  INDFAC: Multiply indices by this factor (usually +-1)
 *  IFLOC: Input symmetry factor for this exchange
 *
-      include 'implicit.inc'
+#include "implicit.inc"
 *
       NTESTL = 0
       if (NTESTL.ge.1) then

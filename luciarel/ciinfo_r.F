@@ -4697,7 +4697,7 @@ C    &                 ICOMP,ITTSS_ORD)
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 *. Input
-      include 'SysDef.inc'
+#include "SysDef.inc"
 #include "machine.inc"
 *. Output
 #include "irat.inc"

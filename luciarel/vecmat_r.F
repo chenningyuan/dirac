@@ -1295,7 +1295,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 *
 * Complex version      Timo Fleig, Dec 04, 2001
 *
-      include 'implicit.inc'
+#include "implicit.inc"
 *. Output
       DIMENSION VE(*),SCR(*)
 *

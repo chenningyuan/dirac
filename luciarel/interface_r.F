@@ -4836,7 +4836,7 @@ C. Interface to LUCAS integrals
       Implicit Real*8 (A-H,O-Z)
 #include "ipoist8.inc"
 *
-      Include 'SysDef.inc'
+#include "SysDef.inc"
 *
       Parameter( mxOrb = 510 )
       Parameter( LuOne = 14  )
@@ -5557,7 +5557,7 @@ C!    stop ' Jeppe forced my to stop in INTIM '
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 
-      Include 'SysDef.inc'
+#include "SysDef.inc"
 
 *.ORBINP
 #include "mxpdim.inc"
@@ -6296,7 +6296,7 @@ C Not required in DIRAC environment.
 #include "mxpdim.inc"
 #include "coeff.inc"
 #include "input.inc"
-      include 'SysDef.inc'
+#include "SysDef.inc"
 *
 *   Coefficient common block especially for Jeppe's routines
 *
