@@ -149,7 +149,7 @@ while [ $# != 0 ]; do
          fi
          memdef="$val"
          ;;
-      "install_dir" | "inst_dir" | "install" )
+      "install_dir" | "inst_dir" | "install" | "install_directory" )
          if [ "${valomitted}" = "yes" ]; then
             echo  'Syntax error: Option "'${optname}'" is not allowed' \
                   'without an argument'
