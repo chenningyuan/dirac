@@ -268,15 +268,15 @@ C
             IF(NBSYM.EQ.1) THEN
               NCBF1 = NTBAS(0)*NVEC*4
               CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
-     &                    NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,
+     &                    IFRP,NFBAS(IFRP,0))
             ELSE
               NCBF1 = NTBAS(0)*NVEC*4
               NCBF2 = NFBAS(IFRP,0)*NVEC*4
               CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
-     &                    NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,
+     &                    IFRP,NFBAS(IFRP,0))
               CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
      &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRPOP)
               CALL MEMREL('MULPO1.AO',WORK,1,KCBF2,KFREE,LFREE)
@@ -291,14 +291,14 @@ C
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
      &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
      &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
-     &                    NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,
+     &                    IFRP,NFBAS(IFRP,0))
             ELSE
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF1),
      &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
      &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,IFRP,
-     &                    NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,
+     &                    IFRP,NFBAS(IFRP,0))
               CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
      &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRPOP)
             ENDIF
@@ -313,8 +313,8 @@ C
             NCBF  = NFBAS(IFRP,0)*NVEC
             NCBF1 = NCBF*4
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
-     &                  NFBAS(IFRP,0))
+            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,
+     &                  IFRP,NFBAS(IFRP,0))
           ELSE
             NCBF  = NFBAS(IFRP,0)*NVEC
             NCBF1 = NCBF*4
@@ -343,7 +343,7 @@ C
         CALL MEMREL('MULPO1',WORK,1,KWORK,KFREE,LFREE)
  10   CONTINUE
 C
-C     Write out total poulations
+C     Write out total populations
 C     ==========================
 C
       IF(NFSYM.GT.1) THEN
@@ -487,11 +487,11 @@ C
         ENDIF
       ENDDO
 C
-C     Write out total poulations
+C     Write out total populations
 C     ==========================
 C
       IF(NFSYM.EQ.1) THEN
-        WRITE(LUPRI,'(//A)') '*** Total gross poulation ***'
+        WRITE(LUPRI,'(//A)') '*** Total gross population ***'
       ELSE
         WRITE(LUPRI,'(//A,A3,A)') 
      &    '** Total gross population of fermion ircop ',
@@ -500,7 +500,7 @@ C
       CALL WRPOPT(PGTOT(1,IFRP),POPLAB,NPOPLAB,IEFF)                
       IF(DONETP) THEN
         IF(NFSYM.EQ.1) THEN
-          WRITE(LUPRI,'(//A)') '*** Total net poulation ***'
+          WRITE(LUPRI,'(//A)') '*** Total net population ***'
         ELSE
           WRITE(LUPRI,'(//A,A3,A)') 
      &      '** Total net population of fermion ircop ',
