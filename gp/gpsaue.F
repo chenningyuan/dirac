@@ -3079,10 +3079,13 @@ C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
-      DIMENSION A(LRA,LCA,NZ),D(N),IPIVOT(*),P(4)
+      DIMENSION A(LRA,LCA,NZ),D(N),IPIVOT(*),P(4),IP(4)
 C
 C     Initialization
 C
+      DO IZ = 1,NZ
+        IP(IZ) = IZ
+      ENDDO
       NA = LRA*LCA
       NEFF = 0
       J = 1
@@ -3102,12 +3105,17 @@ C
         ENDDO
         DO J = 2,N
           KMAX = J-1
-          D(J) = A(J,J,1) - QNRM2(KMAX,NZ,A(1,J,1),NA,1)
+          CALL QDOT(D(J),IP,1,KMAX,
+     &               'H',IP,A(1,J,1),NA,NZ,1,
+     &               'N',IP,A(1,J,1),NA,NZ,1)
+          D(J) = A(J,J,1) - D(J)
           IF(D(J).LE.STOL) RETURN
           NEFF = J
           D(J) = SQRT(D(J))
           DO I = (J+1),N
-            CALL QDOT(P,KMAX,NZ,'H',A(1,I,1),NA,1,'N',A(1,J,1),NA,1)
+            CALL QDOT(P,IP,NZ,KMAX,
+     &               'H',IP,A(1,I,1),NA,NZ,1,
+     &               'N',IP,A(1,J,1),NA,NZ,1)
             A(J,I,1) = (A(I,J,1)-P(1))/D(J)
             DO IZ = 2,NZ
               A(J,I,IZ) = (P(IZ)-A(I,J,IZ))/D(J)
@@ -3161,10 +3169,14 @@ C...iterate
 C...      generate diagonal elements of Cholesky matrix
 C...      and find largest element
           JJ = IPIVOT(J)
-          D(J) = A(JJ,JJ,1) - QNRM2(KMAX,NZ,A(1,J,1),NA,1)
+          CALL QDOT(D(J),IP,1,KMAX,'H',IP,A(1,J,1),NA,NZ,1,
+     &                             'N',IP,A(1,J,1),NA,NZ,1)
+          D(J) = A(JJ,JJ,1) - D(J)
           DO K = (J+1),N
             KK = IPIVOT(K)
-            D(K) = A(KK,KK,1) - QNRM2(KMAX,NZ,A(1,K,1),NA,1)
+            CALL QDOT(D(K),IP,1,KMAX,'H',IP,A(1,K,1),NA,NZ,1,
+     &                               'N',IP,A(1,K,1),NA,NZ,1)
+            D(K) = A(KK,KK,1) - D(K)
             IF(D(K).GT.D(J)) THEN
               D(J) = D(K)
               JJ   = K
@@ -3186,7 +3198,9 @@ C...      generate elements of Cholesky matrix
           D(J) = SQRT(D(J))
           DO I = (J+1),N
             II = IPIVOT(I)
-            CALL QDOT(P,KMAX,NZ,'H',A(1,I,1),NA,1,'N',A(1,J,1),NA,1)
+            CALL QDOT(P,IP,NZ,KMAX,
+     &               'H',IP,A(1,I,1),NA,NZ,1,
+     &               'N',IP,A(1,J,1),NA,NZ,1)
             IF(II.GE.JJ) THEN
               A(J,I,1) = (A(II,JJ,1)-P(1))/D(J)
               DO IZ = 2,NZ
@@ -3205,7 +3219,8 @@ C...      generate elements of Cholesky matrix
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qdot */
-      SUBROUTINE QDOT(P,N,NZ,FX,X,NX,INCX,FY,Y,NY,INCY)
+      SUBROUTINE QDOT(P,IQPP,NZP,N,FX,IQPX,X,LRX,NZX,INCX,
+     &                             FY,IQPY,Y,LRY,NZY,INCY)
 C***********************************************************************
 C
 C     Performs generally real,complex or quaternion dot product
@@ -3219,9 +3234,11 @@ C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dcbqal.h>
-      PARAMETER(D0=0.0D0,D1=1.0D0)
-      DIMENSION X(NX,NZ),Y(NY,NZ),P(NZ)
+      PARAMETER(D0=0.0D0)
+      DIMENSION X(LRX,NZX),Y(LRY,NZY),P(NZP),
+     &          IQPX(NZX),IQPY(NZY),IQPP(NZP)
       CHARACTER  FX*1,FY*1
+      DIMENSION IPY(4)
 C
       EXTERNAL BDQALGEBRA
 C
@@ -3231,23 +3248,34 @@ C
       IF(FX.EQ.'H') IFX = 2
       IFY = 1
       IF(FY.EQ.'H') IFY = 2
-      DO I = 1,NZ
-        P(I) = D0
+C
+C     Make pointer IPY
+C     ================
+C
+      CALL IZERO(IPY,4)
+      DO IZY = 1,NZY
+        IPY(IQPY(IZY)) = IZY
       ENDDO
 C
-      DO IZX = 1,NZ
-        DO IZY = 1,NZ
-          IZP = IQMULT(IZX,IZY,1)
-          FAC = IQSIGN(IZX,IFX,1)*IQSIGN(IZY,IFY,1)*IQPHASE(IZX,IZY,1)
+      DO IZP = 1,NZP
+        IQP = IQPP(IZP)
+        P(IZP) = D0
+        DO 10 IZX = 1,NZX
+          IQX = IQPX(IZX)
+          IQY = IQMULT(IQX,IQP,1)
+          IZY = IPY(IQY)
+          IF(IZY.EQ.0) GOTO 10
+          FAC = IQSIGN(IQX,IFX,1)*IQSIGN(IQY,IFY,1)*IQPHASE(IQX,IQY,1)
           P(IZP) = P(IZP) + FAC*DDOT(N,X(1,IZX),INCX,Y(1,IZY),INCY)
-        ENDDO
+ 10     CONTINUE
       ENDDO
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qdotm */
-      SUBROUTINE QDOTM(P,NZ,NX,NY,FX,X,LX,FY,Y,LY,S,LDS)
+      SUBROUTINE QDOTM(P,IQPP,NZP,FX,IQPX,X,NX,LRX,LCX,NZX,INCX,
+     &                            FY,IQPY,Y,NY,LRY,LCY,NZY,INCY,S,LDS)
 C***********************************************************************
 C
 C     Performs generally real,complex or quaternion dot product
@@ -3263,8 +3291,10 @@ C***********************************************************************
 #include <priunit.h>
 #include <dcbqal.h>
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      DIMENSION X(LX,NZ),Y(LY,NZ),S(LDS,NY),P(NZ)
+      DIMENSION X(LRX,LCX,NZX),Y(LRY,LCX,NZY),S(LDS,NY),P(NZP),
+     &          IQPP(NZP),IQPX(NZX),IQPY(NZY)
       CHARACTER  FX*1,FY*1
+      DIMENSION IPY(4)
 C
       EXTERNAL BDQALGEBRA
 C
@@ -3274,16 +3304,26 @@ C
       IF(FX.EQ.'H') IFX = 2
       IFY = 1
       IF(FY.EQ.'H') IFY = 2
-      DO I = 1,NZ
-        P(I) = D0
-      ENDDO
 C
-      DO IZX = 1,NZ
-        DO IZY = 1,NZ
-          IZP = IQMULT(IZX,IZY,1)
-          FAC = IQSIGN(IZX,IFX,1)*IQSIGN(IZY,IFY,1)*IQPHASE(IZX,IZY,1)
-          P(IZP) = P(IZP) + FAC*DDOTM(NX,NY,LDS,X(1,IZX),S,Y(1,IZY))
-        ENDDO
+C
+C     Make pointer IPY
+C     ================
+C
+      CALL IZERO(IPY,4)
+      DO IZY = 1,NZY
+        IPY(IQPY(IZY)) = IZY
+      ENDDO
+      DO IZP = 1,NZP
+        IQP = IQPP(IZP)
+        P(IZP) = D0
+        DO 10 IZX = 1,NZX
+          IQX = IQPX(IZX)
+          IQY = IQMULT(IQX,IQP,1)
+          IZY = IPY(IQY)
+          IF(IZY.EQ.0) GOTO 10
+          FAC = IQSIGN(IQX,IFX,1)*IQSIGN(IQY,IFY,1)*IQPHASE(IQX,IQY,1)
+          P(IZP) = P(IZP)+FAC*DDOTM(NX,NY,LDS,X(1,1,IZX),S,Y(1,1,IZY))
+ 10     CONTINUE
       ENDDO
       RETURN
 C
@@ -3375,7 +3415,9 @@ C
         ENDDO
         DO I = 2,NEFF
           KMAX = I-1
-          CALL QDOT(P,KMAX,NZ,'H',A(1,I,1),NA,1,'N',X(1,J,1),NX,1)
+            CALL QDOT(P,IQA,NZ,KMAX,
+     &               'H',IQA,A(1,I,1),NA,NZ,1,
+     &               'N',IQA,X(1,J,1),NX,NZ,1)
           DO IZ = 1,NZ
             X(I,J,IZ) = (B(I,J,IZ)-P(IZ))/D(I)
           ENDDO
@@ -3448,6 +3490,7 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE QSWAP(N,DX,ISYMX,FAC,DAGGER)
 C*****************************************************************************
 C

@@ -983,7 +983,7 @@ C
         IF(IPRPRJ.GE.4) WRITE(LUPRI,'(A,A6)') 
      &       '* Coefficients for reference ',REFFIL(I)
         IF(OWNBAS) THEN
-          CALL SELOWN(WORK(KCMO),WORK(KEIG),I,LUCOEF,REFFIL(I),NE,NQ,
+          CALL SELOWN(2,WORK(KCMO),WORK(KEIG),I,LUCOEF,REFFIL(I),NE,NQ,
      &                NVECS(1,2),KVEC(1,I),
      &                NSTR(1,0,I),WORK,KFREE,LFREE)
           DO IFRP = 1, NFSYM

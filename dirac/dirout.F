@@ -1395,12 +1395,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selown */
-      SUBROUTINE SELOWN(CMO,EIG,INUC,IUNIT,CMOFIL,NE,NQ,NVECS,
+      SUBROUTINE SELOWN(IOPT,CMO,EIG,INUC,IUNIT,CMOFIL,NE,NQ,NVECS,
      &                  KVEC,NSTR,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Select coeffiecients for symmetry independent nucleus INUC
 C     calculated in its own basis
+C      IOPT=1 - Select coefficients only
+C      IOPT=2 - Select coeffcicients AND eigenvalues
 C
 C     Written by T.Saue Sep 25 2000
 C
@@ -1440,7 +1442,7 @@ C
 C     Read coefficients
       CALL READT(IUNIT,NCDIM,CMO)
 C     Read eigenvalues
-      CALL READT(IUNIT,NEDIM,EIG)
+      IF(IOPT.EQ.2) CALL READT(IUNIT,NEDIM,EIG)
       IEIG = 1
       ICMO = 1
       DO IFRP = 1,NFSYM
@@ -1457,7 +1459,8 @@ C       Select coefficients
      &              NSTR(IFRP,2),NSTR(IFRP,1))
         ICMO = ICMO + NVEC*IDIM(3,IFRP)*NZ
 C       Select eigenvalues
-        CALL SELOW3(EIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),WORK(NE(IFRP)),
+        IF(IOPT.EQ.2) CALL SELOW3(EIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
+     &              WORK(NE(IFRP)),
      &              WORK(KVEC(IFRP)),NSTR(IFRP,2),NSTR(IFRP,1))
         IEIG = IEIG + NVEC
         CALL MEMREL('SELOWN.loop',WORK,KBAS,KBAS,KFREE,LFREE)

@@ -17,6 +17,7 @@ C     IPR1OP     - Pointer to DCBXPR for additional operators
 C     ONESYS     - No two-electron operators
 C     FREEPJ     - Hamiltonian embedded in free particle projections
 C     VEXTPJ     - Hamiltonian embedded in molecular field projections
+C     PROJEC     - any projection, defined by a set of coefficients
 C     NOSMLV     - No small nuclear attraction integrals
 C     URKBAL     - Unrestricted kinetic balance
 C     LEVYLE     - Levy-Leblond Hamiltonian
@@ -26,11 +27,16 @@ C     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 C     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
 C     SMLV1C     - Neglect two-center blocks of VSS
 C
-      PARAMETER(MAX1OPER=10)
+      PARAMETER(MAX1OPER=10,MPRJREF=6)
+      CHARACTER PRJFIL*6,VCPROJ*72
+      COMMON/DCCHAM/PRJFIL(MPRJREF),VCPROJ(2,MPRJREF)
       COMMON/DCIHAM/IPRHAM,IPOVRLAP,IPBETAMT,IPMOLFLD,IPKINERG,
-     &              N1OPER,IPR1OP(MAX1OPER),LSOLMX,IPRSOL
+     &              N1OPER,IPR1OP(MAX1OPER),LSOLMX,IPRSOL,
+     &              NPRJREF
       LOGICAL ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
-     &        INERSI,INERSF,SPINFR,ZORA,ZORA4,ZORASC,SMLV1C
+     &        INERSI,INERSF,SPINFR,ZORA,ZORA4,ZORASC,SMLV1C,
+     &        PROJEC,PROOWN
       COMMON/DCLHAM/ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
-     &              INERSI,INERSF,SPINFR,ZORA,ZORA4,ZORASC,SMLV1C
-      COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV
+     &        INERSI,INERSF,SPINFR,ZORA,ZORA4,ZORASC,SMLV1C,PROJEC,
+     &        PROOWN
+      COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV,PRJTHR

@@ -2100,7 +2100,6 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <mxorb.h>
 #include <mxcent.h>
       PARAMETER (NTABLE = 8)
 C
@@ -2585,10 +2584,12 @@ C*****************************************************************************
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include <maxaqn.h>
+#include <mxorb.h>
 #include <mxcent.h>
 C
 #include <dcbgen.h>
 #include <dcbham.h>
+#include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
 #include <pgroup.h>
@@ -2596,6 +2597,7 @@ C
 #include <dcbxpr.h>
 #include <dcbprl.h>
 #include <gencon.h>
+#include <nuclei.h>
 C
       LOGICAL SYMSTP,NOINPUT
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
@@ -2605,9 +2607,9 @@ C
       DATA TABDIR /'*END OF','*SOLVEN','XXXXXXX','XXXXXXX',
      &             'XXXXXXX','XXXXXXX','XXXXXXX','XXXXXXX'/
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
-     &            'XXXXXXX','XXXXXXX','.SOLVEN','.FREEPJ',
+     &            '.PROJEC','.OWNBAS','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
-     &            '.SPINFR','.ZORA  ','.SMLV1C','XXXXXXX'/
+     &            '.SPINFR','.ZORA  ','.SMLV1C','.PRJTHR'/
 C
 #include <ibtfun.h>
 C
@@ -2623,6 +2625,8 @@ C
       ONESYS  = .FALSE.
       FREEPJ  = .FALSE.
       VEXTPJ  = .FALSE.
+      PROJEC  = .FALSE.
+      PROOWN  = .FALSE.
       URKBAL  = .FALSE.
       NOSMLV  = .FALSE.
       LEVYLE  = .FALSE.
@@ -2634,6 +2638,7 @@ C
       SMLV1C  = .FALSE.
       N1OPER  = 0
       SSMTRC  = D1
+      PRJTHR  = 1.0D-10
       CALL OP1INI(WORK,LWORK)
       NOINPUT = .FALSE.
 C
@@ -2712,8 +2717,23 @@ CTROND          Must be implemented......
             CALL QUIT('.GAUNT not implemented')
             GO TO 100
   105     CONTINUE
+C&&&& PROJECtion: Reduce transformation matrix by projection
+              PROJEC = .TRUE.
+              READ(LUCMD,*) NPRJREF
+              IF(NPRJREF.GT.MPRJREF) THEN
+                WRITE(LUPRI,'(A,I5)')
+     &         '* Number of reference fragments specified:',NPRJREF,
+     &         '* Current maximum                        :',MPRJREF
+                CALL QUIT('PRJINP:Too many fragments !')
+              ENDIF
+              DO J = 1,NPRJREF
+                READ(LUCMD,'(A6)') PRJFIL(J)
+                READ(LUCMD,'(A72)') (VCPROJ(I,J),I=1,NFSYM)
+              ENDDO
             GO TO 100
   106     CONTINUE
+C&&&& OWNBASis: Use local basis for projection
+              PROOWN = .TRUE.
             GO TO 100
   107     CONTINUE
 C&&& SOLVENT: Solvent effects modelled by spherical cavity in dielectric medium
@@ -2770,6 +2790,8 @@ C&&& SMLV1C : Neglect potential for off-diagonal SS-blocks
              ICHANG = ICHANG + 1
              GO TO 100
   116      CONTINUE
+C&&& PRJTHR: Smallest norm accepted in projection step
+              READ(LUCMD,*) PRJTHR
               GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -2969,6 +2991,52 @@ C         Operator must be symmetric under time reversal
      &      '* No nuclear attraction integrals for small components !'
          IF(SMLV1C) WRITE(LUPRI,'(1X,A)')
      &      '* Only one-center contributions to Vss !'
+      ENDIF
+      IF(PROJEC) THEN
+        WRITE(LUPRI,'(1X,A,A)')
+     &      '* Variational space reduced by projection',
+     &      '  using a set of reference orbitals.'
+        IF(PROOWN) THEN
+          WRITE(LUPRI,'(1X,A)') 
+     &     '* Reference orbitals are obtained from local bases !',
+     &     '    The indexing of reference spinor sets is assumed ',
+     &     '    to follow list of symmetry independent nuclei.'
+          DO J = 1,NPRJREF
+            WRITE(LUPRI,'(1X,A,I3,A,A4)') '* Reference spinor set ',J,
+     &             ' --> ',NAMN(J)
+            WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',PRJFIL(J)
+            DO I = 1,NFSYM
+              NVEC = 0
+              CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
+     &                  -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+              IF(NVEC.EQ.0) THEN
+                WRITE(LUPRI,'(4X,A,A3)') 
+     &             '- No orbitals in fermion ircop ',FREP(I)
+              ELSE
+                WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+     &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
+              ENDIF
+            ENDDO
+          ENDDO
+        ELSE
+          DO J = 1,NPRJREF
+            WRITE(LUPRI,'(1X,A,I3)') '* Reference spinor set ',J
+            WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',PRJFIL(J)
+            DO I = 1,NFSYM
+              NVEC = 0
+              CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
+     &                  -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+              IF(NVEC.EQ.0) THEN
+                WRITE(LUPRI,'(4X,A,A3)') 
+     &             '- No orbitals in fermion ircop ',FREP(I)
+              ELSE
+                WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+     &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
+              ENDIF
+            ENDDO
+          ENDDO
+        ENDIF
+        WRITE(LUPRI,'(1X,A,D12.4)') '* Smallest norm accepted: ',PRJTHR
       ENDIF
       IF (NOINPUT) GOTO 500
 C
