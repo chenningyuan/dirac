@@ -2508,7 +2508,7 @@ C
 #if defined (SYS_IBM)
       CHARACTER DAOFWK*9
 #endif
-#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SX)
+#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SX) || defined (SYS_LINUX)
       CHARACTER*(24) FDATE
 #endif
 C
@@ -2525,7 +2525,7 @@ C
       WRITE(TEXT(1:8),'(A8)') DATE()
       WRITE(TEXT(12:19),'(A8)') CLOCK()
 #endif
-#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SX)
+#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SX) || defined (SYS_LINUX)
       TEXT = FDATE()
 #endif
 C
