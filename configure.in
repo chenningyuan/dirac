@@ -46,7 +46,31 @@ fi
 # CHECK OPTIONS
 #
 #
-usage=
+quick=0
+usage='Usage: '$0'\n'\
+'--help\n'\
+'\tPrint this\n'\
+'--quick\n'\
+'\tDo not prompt user\n'\
+'--version\n'\
+'\tPrint version of configure\n'\
+'--system=SYSTEM-ID\n'\
+'\tSet system to SYSTEM-id\n'\
+'--parallel[=(yes|no)]\n'\
+'\tParallel version of Dirac\n'\
+'--parallel-message=(mpi|pvm)\n'\
+'\tParallel message passing\n'\
+'--mathematical-libraries=MATH-LIB\n'\
+'\tChoose the math. lib. MATH-LIB\n'\
+'--memory-size=MEM-SIZE\n'\
+'\tSet memory size to MEM-SIZE words\n'\
+'--install-directory=INST-DIR\n'\
+'\tSet install directory to INST-DIR\n'\
+'--scratch-directory=SCR-DIR\n'\
+'\tSet work directory to SCR-DIR\n'\
+'--f77=F77\n'\
+'\tSet fortran compiler to F77\n'
+
 while [ $# != 0 ]; do
    arg="$1"; shift
    case "${arg}" in
@@ -62,16 +86,24 @@ while [ $# != 0 ]; do
          ;;
       *)
          $echo $usage
+         exit 
    esac
    optname="${opt}"
    opt="`echo '' ${opt} | sed -e 's:^ ::' | tr - _`"
    case "${opt}" in
+      "help")
+         $echo $usage
+         exit
+         ;;
+      "quick")
+         quick=1
+         ;;
       "version")
-	 echo $0
-	 echo '$Revision$'
-	 echo '$Date$'
-	 exit 
-	 ;;
+         echo $0
+         echo '$Revision$'
+         echo '$Date$'
+         exit 
+         ;;
       "system")
          if [ "${valomitted}" = "yes" ]; then
             echo  'Syntax error: Option "'${optname}'" is not allowed' \
@@ -174,8 +206,12 @@ if [ -z "${guess}" ]; then
    if [ "$guess" = "" ]; then
       guess=`./config.status ARCH`
    fi
-   $echo "System [$guess]: \c"
-   read answer
+   if [ $quick = 0 ]; then
+      $echo "System [$guess]: \c"
+      read answer
+   else
+      answer=
+   fi
 
    if [ "$answer" != "" ]; then
       guess=$answer
@@ -256,6 +292,12 @@ echo
 # PARALLEL
 #
 #
+if [ -z "$PARFLG" ]; then
+   PARFLG=0
+fi
+if [ $PARFLG = 0 ]; then
+   par="no"
+fi
 echo
 echo 'PARALLEL'
 echo
@@ -263,8 +305,13 @@ if [ -z "${par}" ]; then
    ok=
    while [ -z "$ok" ]; do
       ok=1
-      $echo 'Do you want to install the program in a parallel version? y/[n] \c'
-      read par
+      if [ $quick = 0 ]; then
+	 $echo 'Do you want to install the program'\
+	       'in a parallel version? y/[n] \c'
+	 read par
+      else
+	 par=no
+      fi
       case "$par" in
       "yes" | "y" )
          par="yes"
@@ -296,8 +343,12 @@ if [ "$par" = "yes" ]; then
       ok=
       while [ -z "$ok" ]; do
          ok=1
-         $echo 'Message passing [mpi]/pvm: \c'
-         read mesp
+	 if [ $quick = 0 ]; then
+	    $echo 'Message passing [mpi]/pvm: \c'
+	    read mesp
+	 else
+	    mesp=mpi
+	 fi
          case "$mesp" in
          "mpi" | "pvm" )
             ;;
@@ -543,9 +594,14 @@ if [ -z "$memdef" ]; then
    echo 'DIRAC uses approximately 800000 words of static allocations'
    echo 'How many words to use as default for scratch memory ?'
    echo '(we do not recommend going below 1000000 words)'
-   $echo 'Note that scratch memory can be changed through the shell variable WRKMEM\n'
-   $echo 'Memory size ['$memdef'] \c'
-   read memsiz
+   $echo 'Note that scratch memory can be changed' \
+	 'through the shell variable WRKMEM\n'
+   if [ $quick = 0 ]; then
+      $echo 'Memory size ['$memdef'] \c'
+      read memsiz
+   else
+      memsiz=
+   fi
    if [ -z "$memsiz" ]; then
       memsiz=$memdef
    fi
@@ -571,8 +627,16 @@ if [ -z "$INSTALL_DIR" ]; then
       if [ -z "$curr" ]; then
          curr=`pwd`
       fi
-      $echo 'Directory for installation of binaries and scripts ['$curr'] \c'
-      read INSTALL_DIR
+      if [ ! -d "$curr" ]; then
+         curr=`pwd`
+      fi
+      if [ $quick = 0 ]; then
+	 $echo 'Directory for installation of' \
+	       'binaries and scripts ['$curr'] \c'
+	 read INSTALL_DIR
+      else
+	 INSTALL_DIR=
+      fi
       if [ -z "$INSTALL_DIR" ]; then
          INSTALL_DIR=$curr
       fi
@@ -617,9 +681,12 @@ if [ -z "$worksp" ]; then
       else
          worksp=
       fi
-
-      $echo 'Default scratch space in script ['$worksp'] \c'
-      read answer
+      if [ $guess = 0 ]; then
+	 $echo 'Default scratch space in script ['$worksp'] \c'
+	 read answer
+      else
+	 answer=
+      fi
       if [ ! -z "$answer" ]; then
          worksp=$answer
       fi
@@ -655,9 +722,13 @@ if [ -f Makefile.config ]; then
       answer=
       while [ "$answer" != "y" -a "$answer" != "n" ]
       do
-         $echo 'Do you want me to overwrite' \
-               'Makefile.config.orig anyway? [y]/n \c'
-         read answer
+	 if [ $quick = 0 ]; then
+	    $echo 'Do you want me to overwrite' \
+		  'Makefile.config.orig anyway? [y]/n \c'
+	    read answer
+	 else
+	    answer=
+	 fi
          if [ -z "$answer" ]; then
             answer="y"
          fi
@@ -1231,7 +1302,10 @@ if [ $OPENFLG != 0 ]; then
 fi
 for makefile in $dirs; do
    echo "Making $makefile/Makefile from $makefile/Makefile.in"
-   cp -f $makefile/Makefile.in $makefile/Makefile
+   if [ -f $makefile/Makefile ]; then
+      rm -f $makefile/Makefile
+   fi
+   cp $makefile/Makefile.in $makefile/Makefile
 done
 echo
 #
@@ -1239,7 +1313,9 @@ echo
 #
 for link in $dirs; do
    echo "Making link from include to $link/include"
-   rm -f $link/include
+   if [ -d $link/include ]; then
+      rm -f $link/include
+   fi
    ln -sf ../include $link/include
 done
 echo
