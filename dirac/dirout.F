@@ -1393,3 +1393,200 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck selown */
+      SUBROUTINE SELOWN(CMO,EIG,INUC,IUNIT,CMOFIL,NE,NQ,NVECS,
+     &                  KVEC,NSTR,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Select coeffiecients for symmetry independent nucleus INUC
+C     calculated in its own basis
+C
+C     Written by T.Saue Sep 25 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dgroup.h>
+#include <dcbbas.h>
+      DIMENSION EIG(*),CMO(*),NSTR(2,0:2),KVEC(2),NVECS(2),
+     &          NQ(2),NE(2),WORK(*)
+C     Local variables
+      CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
+      DIMENSION IDIM(3,2)
+C
+      KFRSAV = KFREE
+      REWIND IUNIT
+      READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
+     &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+      FMT = MXFORM(TOTERG,20)
+      WRITE(LUPRI,'(/A,A6,3X,A,'//FMT//')')
+     &   'SELOWN: Coefficients read from file ',CMOFIL,
+     &   '- Total energy: ',TOTERG
+        WRITE(LUPRI,'(2A)') '* Heading :',TEXT
+        WRITE(LUPRI,'(A,2I8)')
+     &   '- Positrons : ',(IDIM(1,I),I=1,NFSYM)
+        WRITE(LUPRI,'(A,2I8)')
+     &   '- Electrons : ',(IDIM(2,I),I=1,NFSYM)
+        WRITE(LUPRI,'(A,2I8)')
+     &   '- SO-basis  : ',(IDIM(3,I),I=1,NFSYM)
+      NCDIM = 0
+      NEDIM = 0
+      DO IFRP = 1,NFSYM
+        NEDIM = NEDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))
+        NCDIM = NCDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))*IDIM(3,IFRP)
+      ENDDO
+      NCDIM = NCDIM*NZ
+C     Read coefficients
+      CALL READT(IUNIT,NCDIM,CMO)
+C     Read eigenvalues
+      CALL READT(IUNIT,NEDIM,EIG)
+      IEIG = 1
+      ICMO = 1
+      DO IFRP = 1,NFSYM
+      IF(NSTR(IFRP,0).GT.0) THEN
+        NVEC = IDIM(1,IFRP)+IDIM(2,IFRP)
+C       Generate pointer array for bases
+        CALL MEMGET('INTE',KBAS,IDIM(3,IFRP),WORK,KFREE,LFREE)
+        CALL SELOW4(INUC,IFRP,WORK(KBAS))
+C       Select coefficients
+        CALL SELOW2(INUC,CMO(ICMO),IDIM(3,IFRP),NVEC,
+     &              IDIM(1,IFRP),IDIM(2,IFRP),
+     &              WORK(NQ(IFRP)),NFBAS(IFRP,0),NVECS(IFRP),
+     &              WORK(KVEC(IFRP)),WORK(KBAS),
+     &              NSTR(IFRP,2),NSTR(IFRP,1))
+        ICMO = ICMO + NVEC*IDIM(3,IFRP)*NZ
+C       Select eigenvalues
+        CALL SELOW3(EIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),WORK(NE(IFRP)),
+     &              WORK(KVEC(IFRP)),NSTR(IFRP,2),NSTR(IFRP,1))
+        IEIG = IEIG + NVEC
+        CALL MEMREL('SELOWN.loop',WORK,KBAS,KBAS,KFREE,LFREE)
+      ENDIF
+      ENDDO
+      RETURN
+ 10   CONTINUE
+      CALL QUIT('SELOWN: END reading TEXT')
+ 20   CONTINUE
+      CALL QUIT('SELOWN: ERROR reading TEXT')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck selow2 */
+      SUBROUTINE SELOW2(INUC,CMO,KBAS,KORB,KPSH,KESH,
+     &                  CBUF,MBAS,MORB,
+     &                  JVEC,JBAS,NPVEC,NEVEC)
+C***********************************************************************
+C     Pick out a set of vectors from CMO according to array JVEC
+C
+C     Written by T.Saue 1997
+C     Last revision Jan 8 1997
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+C
+      DIMENSION CMO(KBAS,KORB,NZ),CBUF(MBAS,MORB,NZ),JVEC(*),
+     &          JBAS(*)
+C
+      NVEC = NPVEC + NEVEC
+      NTOT = NVEC*MBAS
+      DO IZ = 1,NZ
+        CALL DZERO(CBUF(1,1,IZ),NTOT)
+C
+C       Positronic vectors
+C
+        DO I = 1,NPVEC
+          II = KPSH+1+JVEC(I)
+          DO J = 1,KBAS
+            CBUF(JBAS(J),I,IZ) = CMO(J,II,IZ)
+          ENDDO
+        ENDDO
+C
+C       Electronic vectors
+C
+        DO I = NPVEC+1,NVEC
+          II = KPSH+JVEC(I)
+          DO J = 1,KBAS
+            CBUF(JBAS(J),I,IZ) = CMO(J,II,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck selow3 */
+      SUBROUTINE SELOW3(EIG,KPSH,KESH,EBUF,JVEC,NPVEC,NEVEC)
+C***********************************************************************
+C     Pick out a set of eigenvalues from EIG according to array JVEC
+C
+C     Written by L. Visscher 1997
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+Cjth - linux      DIMENSION EIG(NFBAS(IFRP,0)),
+      DIMENSION EIG(*),
+     &          EBUF(NPVEC+NEVEC),
+     &          JVEC(*)
+C
+      NVEC = NPVEC + NEVEC
+C
+C
+C     Positronic eigenvalues
+C
+      DO I = 1,NPVEC
+        II = KPSH+1+JVEC(I)
+        EBUF(I) = EIG(II)
+      ENDDO
+C
+C     Electronic eigenvalues
+C
+      DO I = NPVEC+1,NVEC
+        II = KPSH+JVEC(I)
+        EBUF(I) = EIG(II)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck selow4 */
+      SUBROUTINE SELOW4(INUC,IFRP,JBAS)
+C***********************************************************************
+C
+C     Make index array pointing from basis functions of
+C     symmetry independent center INUC to the full
+C     molecular basis
+C
+C     Written by T.Saue Sep 25 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxorb.h>
+C
+#include <dcbbas.h>
+#include <dcblab.h>
+      DIMENSION JBAS(*)
+C
+#include <dcbibt.h>
+      NSBAS = 0
+      DO I = 1,NFBAS(IFRP,0)
+        II = IBAS(IFRP) + I
+        ILAB = IPLAB(II,2)
+        ICENT = JGET(IATTR(ILAB,2))
+        IF(ICENT.EQ.INUC) THEN
+          NSBAS = NSBAS + 1
+          JBAS(NSBAS) = I
+        ENDIF
+      ENDDO
+C
+      RETURN
+      END
