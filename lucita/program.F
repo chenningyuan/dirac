@@ -479,6 +479,16 @@ CTF
 *
       CALL REWINO(LUC)
       DO JROOT = 1, NROOT
+        if (IPRNCIV.ge.1) then
+          WRITE(6,*)
+          WRITE(6,'(1H ,A,I3)')
+     &    ' **************************************************'
+          WRITE(6,'(1H ,A,I3)')
+     &    ' Analysis of occupation for ROOT = ',JROOT
+          WRITE(6,'(1H ,A,I3)')
+     &    ' **************************************************'
+          WRITE(6,*)
+        end if
         if (IPRDEN.ge.1) then
           WRITE(6,*)
           WRITE(6,'(1H ,A,I3)')

@@ -4592,7 +4592,7 @@ CTF      write(LUINP,'(X,A6)') MACHINE
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = 100
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
           MAXIT = 50
@@ -4931,7 +4931,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = 100
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
           MAXIT = 50
@@ -5269,7 +5269,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = 100
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
           MAXIT = 50
@@ -5419,7 +5419,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = 100
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
           MAXIT = 50
@@ -5615,7 +5615,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = 100
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
           MAXIT = 50
