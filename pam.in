@@ -83,6 +83,7 @@ endif
 set SCR_DIR    =
 
 set MPI_NPROC  = 
+set PARCAL     =
 
 set NICE       = 1
 
@@ -143,6 +144,7 @@ while($#argv)
       case -mpi:
          shift
          @ MPI_NPROC = $argv[1] + 1
+         set PARCAL = 1
          breaksw
       case -nonice:
          set NICE = 0
@@ -218,11 +220,14 @@ endif
 # SET WORKING MEMORY FOR MASTER AND NODE
 #
 #
+if ($PARCAL) then
+   setenv DIRPAR 1
+endif
 if ( "$MEMORY" != "" ) then
    setenv DIRWRK "$MEMORY"
 endif
 if ( "$NODE_MEMORY" != "" ) then
-   setenv DIRAC_NODEWRK "$NODE_MEMORY"
+   setenv DIRNOD "$NODE_MEMORY"
 endif
 #
 #
@@ -359,13 +364,9 @@ if ( "$ALT_DIRAC" != "" ) then
    set DIRAC = $ALT_DIRAC:t
    set BIN_DIR = $ALT_DIRAC:h
 else
-   if ( "$MPI_NPROC" != "" ) then
-      set DIRAC = "dirmpi.x"
-   else
-      set DIRAC = "dirac.x"
-   endif
+   set DIRAC = "dirac.x"
 endif
-if ( "$MPI_NPROC" != "" ) then
+if ($PARCAL) then
    set DIRAC_CMD = "mpirun -np $MPI_NPROC $DIRAC"
 else
    set DIRAC_CMD = "$DIRAC"
