@@ -2362,6 +2362,8 @@ C&&& LEVYLE : Use Levy-Leblond Hamiltonian
              LEVYLE = .TRUE.
              NOSMLV = .TRUE.
              SSMTRC = D0
+             IF (NPRPS.GT.4) 
+     &          CALL QUIT ('give .LEVY-LE option before .OPERAT')
              ICHANG = ICHANG + 1
              GO TO 100
   113      CONTINUE
