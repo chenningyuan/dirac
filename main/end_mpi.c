@@ -38,6 +38,13 @@
    }
 
    /*
+    * Free MPI error handler
+    */
+
+   if (  ( ierr = MPI_Errhandler_free(&errhandler)) )
+      printf("MPI_Errhandler_Free error %i in end_mpi()\n",ierr);
+
+   /*
     *  Finalize MPI
     */
       
@@ -48,12 +55,6 @@
    if ( ( ierr = MPI_Finalize()) )
       printf("MPI_Finalize error %i in end_mpi()\n",ierr);
 
-   /*
-    * Free MPI error handler
-    */
-
-   if (  ( ierr = MPI_Errhandler_free(&errhandler)) )
-      printf("MPI_Errhandler_Free error %i in end_mpi()\n",ierr);
 
 #endif  /* VAR_MPI */
 }
