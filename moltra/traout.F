@@ -316,7 +316,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDSCRI */
-      SUBROUTINE MDSCRI(WORK,KFREE,LFREE,NFPCK12,NFPCK34)
+      SUBROUTINE MDSCRI(WORK,KFREE,LFREE,NFPCK12,NFPCK34,NODE)
 C
 C     Initialize MDINT scratch files
 C     Written by Luuk Visscher, May 1997
