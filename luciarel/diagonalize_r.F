@@ -27,8 +27,6 @@
       DIMENSION IPNTR(*),ISCR1(*)
       dimension PEIGVC(*),SCR1(*),SCR2(*)
 *
-c     PARAMETER( LLWRK = 70000 )
-c     COMMON/SCRR/SCR1(LLWRK),ISCR1(LLWRK)
 *. Output from Subspace dagonalization
 *.
       DIMENSION EROOT(NROOT)

@@ -23,7 +23,7 @@
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION VEC1(*),VEC2(*)
 C     DIMENSION INIDET(100)
-      PARAMETER( LLWRK =18000 )
+      PARAMETER( LLWRK =100000)
       COMMON/SCR/SCR1(LLWRK),ISCR1(LLWRK)
 *. Output from Subspace dagonalization
       DIMENSION H0(*),IPNTR(*),H0SCR(*),PEIGVC(*)

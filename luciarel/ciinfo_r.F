@@ -4582,8 +4582,10 @@ C    &                 ICOMP,ITTSS_ORD)
 *
 * Transfer information to common block for KRMC - LUCIAREL
 * communication:
-      call civcinf_mc(WORK(KPCIBT),WORK(KPCLBT),WORK(KPCI1BT),
-     &                WORK(KPCLEBT),NBAT_MS2,NMS2VAL,NBLOCK)
+      if (INTIMP.eq.6.or.INTIMP.eq.7) then
+        call civcinf_mc(WORK(KPCIBT),WORK(KPCLBT),WORK(KPCI1BT),
+     &                  WORK(KPCLEBT),NBAT_MS2,NMS2VAL,NBLOCK)
+      end if
 *
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLKF')
       RETURN
