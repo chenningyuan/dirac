@@ -1588,7 +1588,6 @@ C***********************************************************************
 #include <maxaqn.h>
 #include <dummy.h>
 #include <codata.h>
-#include <alphac.h>
       PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
      &                   *6.5796838999D15)
@@ -1834,7 +1833,6 @@ C  /* Deck spiana */
 #include <implicit.h>
 #include <priunit.h>
 #include <codata.h>
-#include <alphac.h>
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D1 = 1.0D0)
 #include <mxcent.h>
 #include <nuclei.h>
@@ -2199,7 +2197,6 @@ C***********************************************************************
 #include <maxaqn.h>
 #include <dummy.h>
 #include <codata.h>
-#include <alphac.h>
       PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
      &                   *6.5796838999D15)
