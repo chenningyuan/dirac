@@ -1946,4 +1946,100 @@ C
      &     ' Center-of-mass coordinates (A):',(ORIGIN(K),K=1,3)
       RETURN
       END
-
+      SUBROUTINE TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,IPRINT)
+C
+C     Sets up transformation matrices between Cartesian and symmetry
+C     nuclear coordinates
+C
+C     tuh Jun 29 1988
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+      PARAMETER (D0 = 0.0D0)
+C
+#include <nuclei.h>
+#include <symmet.h>
+C
+      DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
+C
+#include <ibtfun.h>
+C
+      CALL DZERO(CSTRA,NCOOR*NCOOR)
+      CALL DZERO(SCTRA,NCOOR*NCOOR)
+C
+C     *****************************************************************
+C     **** Transformation matrix Cartesian to symmetry coordinates ****
+C     *****************************************************************
+C
+      DO 100 IREP = 0, MAXREP
+         NCRREP(IREP,ITYPE) = 0
+         DO 110 ICENT = 1, NUCIND
+            MULCNT = ISTBNU(ICENT)
+            DO 120 ICOOR = 1, 3
+               IF (ITYPE .EQ. 1) THEN
+                  ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
+                  IF (ISCOOR .GT. 0) THEN
+                     NCRREP(IREP,1) = NCRREP(IREP,1) + 1
+                     IVAR = IBTXOR(IREP,ISYMAX(ICOOR,1))
+                     DO 130 ISYMOP = 0, MAXOPR
+                        IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                           ICCOOR = 3*(NUCNUM(ICENT,ISYMOP+1) - 1)+ICOOR
+                           CSTRA(ISCOOR,ICCOOR)=PT(IBTAND(ISYMOP,IVAR))
+                        END IF
+ 130                 CONTINUE
+                  END IF
+               ELSE
+                  LSCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,2)
+                  IF (LSCOOR .GT. 0) THEN
+                     NCRREP(IREP,2) = NCRREP(IREP,2) + 1
+                     IVAR = IBTXOR(IREP,ISYMAX(ICOOR,2))
+                     DO 140 ISYMOP = 0, MAXOPR
+                        IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                           ICCOOR = 3*(NUCNUM(ICENT,ISYMOP+1) - 1)+ICOOR
+                           CSTRA(LSCOOR,ICCOOR)=PT(IBTAND(ISYMOP,IVAR))
+                        END IF
+ 140                 CONTINUE
+                  END IF
+               END IF
+ 120        CONTINUE
+ 110     CONTINUE
+ 100  CONTINUE
+      IF (IPRINT .GE. 20) THEN
+         IF (ITYPE .EQ. 1) THEN
+            WRITE (LUPRI,'(/,1X,A,8I3,/)')
+     *           ' Number of coordinates in each symmetry: ',
+     *           (NCRREP(I,1),I=0,MAXREP)
+            CALL HEADER('Transformation from Cartesian to symmetry '
+     *                //'coordinates',-1)
+         ELSE
+            CALL HEADER('Transformation from rotational cartesian '//
+     &                  'to symmetry coordinates',-1)
+         END IF
+         DO 200 ISYM = 1, NCOOR
+            WRITE (LUPRI,'(9F6.2)') (CSTRA(ISYM,J),J=1,NCOOR)
+ 200     CONTINUE
+      END IF
+C
+C     Inverted matrix
+C
+      DO 210 I = 1, NCOOR
+         DO 220 J = 1, NCOOR
+           SCTRA(I,J) = CSTRA(J,I)
+  220    CONTINUE
+  210 CONTINUE
+      DO 230 ICOL = 1, NCOOR
+         SUM1 = D0
+         SUM2 = D0
+         DO 240 IROW = 1, NCOOR
+            SUM1 = SUM1 + ABS(SCTRA(IROW,ICOL))
+  240    CONTINUE
+         DO 250 IROW = 1, NCOOR
+            SCTRA(IROW,ICOL) = SCTRA(IROW,ICOL)/SUM1
+  250    CONTINUE
+  230 CONTINUE
+C
+      RETURN
+      END
