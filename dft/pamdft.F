@@ -30,7 +30,7 @@ C
       SAVE SET
       DATA TABLE /'.DFTFUN','.FROMVX','.DFTAC ','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
-     &            '.ANGMIN','.ATSIZE','.DFTELS','.XXXXXX'/
+     &            '.ANGMIN','.ATSIZE','.ERRELS','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -138,7 +138,7 @@ C            to the density.
                  ATSIZE = .TRUE.
                  GO TO 100
  11              CONTINUE
-C&&& DFTELS: Threshold for accepted error in integrated number of electrons
+C&&& ERRELS: Threshold for accepted error in integrated number of electrons
                  READ(LUCMD,*) DFTELS
                  GO TO 100
  12              CONTINUE
