@@ -1472,7 +1472,7 @@ C     Orbital parameters
 C     ==================
 C
       CALL SETXOP(XLR_INDSTR,JOPSY,NZXOPE,KZXOPE,NZXOPP,KZXOPP,
-     &            WORK,KFREE,LFREE,SKIPEP,SKIPEP,QEDRUN,IPRXLR)      
+     &            WORK,KFREE,LFREE,SKIPEP,SKIPEE,QEDRUN,IPRXLR)      
       NZXOPEQ  = NZXOPE *NZ
       NZXOPPQ  = NZXOPP *NZ
       NZXOPT   = NZXOPE + NZXOPP

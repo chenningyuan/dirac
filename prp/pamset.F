@@ -1,3 +1,6 @@
+C
+C $Id$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setxop */
       SUBROUTINE SETXOP(INDSTR,IOPSY,NXOPE,KXOPE,NXOPP,KXOPP,
@@ -67,7 +70,7 @@ C     *** Electron-electron rotations ***
 C     ***********************************
 C      
  10   CONTINUE
-      IF(SKIPEP) GOTO 20
+      IF(SKIPEE) GOTO 20
       CALL SETXEE(WORK(KBUF),IOPSY,NXOPE,WORK(KIBUF),NSTR,IPRINT)
       IF(NXOPE.GT.0) THEN
         CALL MEMREL('SETXOP.e-e',WORK,1,KBUF,KFREE,LFREE)
