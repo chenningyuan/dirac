@@ -564,7 +564,7 @@ C           ...(SS|LL) + (SS|SS) integrals
             MWHER = MAX(MXHERMEM(2),MXHERMEM(3))
          END IF
       ELSE
-         CALL QUIT('argh, ralle ralle')
+         CALL QUIT('TRDRV4: unknown I2TYP')
       END IF
 C
 C     Loop over the shells
@@ -575,6 +575,8 @@ C
          KFRSAV3 = KFREE
          NINSHA  = NINSH(ISHLA,-1,INDX,IPRINT)
          NINSHB  = NINSH(ISHLB,-1,INDX,IPRINT)
+         IF (IPRINT .GE. 3) WRITE(LUPRI,'(/A,2I3)')
+     &      '    ---> TRDRV4 : integrals for shell A/B',ISHLA,ISHLB
 C
          LDXAB = 5*NINSHA*NINSHB
          CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
@@ -602,12 +604,10 @@ C
 C        (2) We must be able to hold
 C            (a) GMAT + HERMIT
 C            (b) GMAT + HMAT
-C            simultaniously in memory.
+C            simultaneously in memory.
 C 
 C
-         IF (MWHER .GT. MFREE) THEN
-            CALL QUIT('Not enough memory for HERMIT')
-         END IF
+         IF (MWHER .GT. MFREE) CALL QUIT('Not enough memory for HERMIT')
 C            
          MWHMAT = 0
          IT = 0
@@ -641,14 +641,14 @@ C           -----------------
 C
             MWHMAT = MWHMATCALC(WORK(KIJPASS),NPASS,NFPCK12)
 C
-            CALL MEMREL('bla bla',WORK,1,KIJPASS,KFREE,LFREE)
+            CALL MEMREL('TRDRV4.mwhmat calc',WORK,1,KIJPASS,KFREE,LFREE)
 C
 C           Check that we fit in memory
 C           ---------------------------
 C
             IF (IPRINT .GE. 3) THEN
-               WRITE(LUPRI,'(A,I3,A,4(A,I9))')
-     &         '       - Memory estimate iteration no. ',IT,' : ',
+               WRITE(LUPRI,'(A,I3,A/4(A,I9))')
+     &         '       - TRDRV4 memory estimate iteration no. ',IT,' :',
      &         '         Free: ',MFREE,', Hermit: ',MWHER,
      &         ', HMAT ',MWHMAT,', GMAT ',NSIZG
             END IF

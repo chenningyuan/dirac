@@ -443,7 +443,7 @@ C
 C
 C     Loop over the functions inside the shell-block.
 C     We do it this way rather than just over the boson irreps of the
-C     density and than over the pairs within that irrep, because we
+C     density and then over the pairs within that irrep, because we
 C     need to access the information in INDXAB. The alternative gives
 C     less jumping through memory, but requires introduction of a new
 C     n^2 type array in which indab is stored.

@@ -635,12 +635,12 @@ C
          IF (WORD(1:2) .EQ. '**') GO TO 400
          WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal directory in PRPINP.')
+         CALL QUIT('Illegal directory in TRAINP.')
       ELSE
          WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal or',
      *                        ' out of order.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Program stopped in PRPINP, error in prompt.')
+         CALL QUIT('Program stopped in TRAINP, error in prompt.')
       END IF
   312 CONTINUE
         CALL TRPINP(WORD,.FALSE.,WORK,LWORK)
@@ -817,7 +817,7 @@ C
 C
 C     Batch size of strategy 4.
 C
-      WRITE(LUPRI,'(1X,A,I4)')
+      IF (PARCAL) WRITE(LUPRI,'(1X,A,I4)')
      &   '* Size of batches for strategy 4 (parallel only): ', IPAR4BS
 C
   999 CONTINUE
@@ -989,7 +989,7 @@ C  /* Deck resinp */
       SUBROUTINE RESINP(WORD,RESET,WORK,LWORK)
 C*****************************************************************************
 C
-C     Input section for MP2-module
+C     Input section for RESOLVE module (GOSCI)
 C
 C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
 C
