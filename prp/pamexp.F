@@ -114,6 +114,7 @@ C
 C
 C     Initialize
 C
+#include <memint.h>
 #if defined (SYS_IBM)
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='APROPER')
@@ -135,7 +136,8 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(.NOT.FILEX) GOTO 1000
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,1)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,1,
+     &            WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Expectation values normal procedure

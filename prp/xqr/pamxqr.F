@@ -384,7 +384,8 @@ C     Get the MO coefficients
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCMO,'DFCOEF','OLD','LRCALC')
-      CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,4)
+      CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,4,
+     &            WORK,KFREE,LFREE)
       CLOSE(LUCMO,STATUS='KEEP')
 C
 C     Set up the linear response equations to be solved.

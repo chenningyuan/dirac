@@ -122,7 +122,7 @@ C     Read coefficients
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &            TOTERG,2)
+     &            TOTERG,2,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get labels for population analysis
@@ -953,7 +953,7 @@ C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRJANA')
       IF(IPRPRJ.GE.4) WRITE(LUPRI,'(A)') '* Molecular coefficients:'
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,
-     &            TOTERG,ICFS)
+     &            TOTERG,ICFS,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
       DO IFRP = 1, NFSYM
         IF(NSTR(IFRP,0,0).GT.0) THEN
@@ -994,7 +994,7 @@ C
          ENDDO
         ELSE
           CALL REACMO(LUCOEF,REFFIL(I),WORK(KCMO),WORK(KEIG),
-     &                IDUM,TOTERG,ICFS)
+     &                IDUM,TOTERG,ICFS,WORK,KFREE,LFREE)
           DO IFRP = 1, NFSYM
             IF(NSTR(IFRP,0,I).GT.0) THEN
               CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(NQ(IFRP)),
@@ -1490,7 +1490,7 @@ C     Read coefficients
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &            TOTERG,2)
+     &            TOTERG,2,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 
       CALL PRCOEF(WORK(KCMO),WORK(KEIG),VECPRI,IPRCMP,ILABDF,IPRVEC,

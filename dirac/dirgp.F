@@ -141,7 +141,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reacmo */
-      SUBROUTINE REACMO(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
+      SUBROUTINE REACMO(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT,
+     &                   WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Read DHF-coefficients and eigenvalues from unformatted file
@@ -167,19 +168,13 @@ C
 #include <dcborb.h>
 #include <dcbbas.h>
 #include <dgroup.h>
-      LOGICAL INFO,LBIT
+      LOGICAL INFO,LBIT,TEST
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
       DIMENSION IDIM(3,2)
 C
       INFO = IOPT.EQ.3.OR.IOPT.EQ.0.OR.IOPT.EQ.4
       REWIND IUNIT
-      IF(IOPT.EQ.5) THEN
-        READ(IUNIT)
-        READ(IUNIT)
-        READ (IUNIT,END=50,ERR=60) EIG
-        RETURN
-      ENDIF
 C
       READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
@@ -193,14 +188,64 @@ C
       ENDIF
       IF(IOPT.EQ.0) RETURN
 C
+C     Compatibility test
+      IF(NSYM.NE.NFSYM) 
+     &   CALL QUIT('REACMO: Incompatible number of fermion ircops')
+      TEST = .FALSE.
+      NC = 0
+      NO = 0
+      DO IFRP = 1,NFSYM
+        IF(IDIM(3,IFRP).NE.NFBAS(IFRP,0)) 
+     &    CALL QUIT('REACMO: Incompatible number of basis functions')
+        IDIM(3,IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
+        IF(IDIM(3,IFRP).NE.NORB(IFRP)) TEST=.TRUE.
+        NC = NC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
+        NO = NO + IDIM(3,IFRP)
+      ENDDO
+C
 C     Read coefficients
-      READ (IUNIT,END=30,ERR=40) CMO
+      IF(IOPT.EQ.5) THEN
+        READ(IUNIT)
+      ELSEIF(TEST) THEN
+        CALL MEMGET('REAL',KC,NC,WORK,KFREE,LFREE)
+        CALL READT(IUNIT,NC,WORK(KC))
+        JC = KC + 1
+        DO IFRP = 1,NFSYM
+          CALL ADACMO(NFBAS(IFRP,0),NZ,
+     &         CMO(ICMOQ(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &         WORK(JC),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+          JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
+        ENDDO
+        CALL MEMREL('REACMO.cf',WORK,KWORK,KWORK,KFREE,LFREE)
+      ELSE
+        READ (IUNIT,END=30,ERR=40) CMO
+      ENDIF
       IF(IOPT.EQ.4 .OR. IOPT.EQ.6) RETURN
 C     Read eigenvalues
-      READ (IUNIT,END=50,ERR=60) EIG
+      IF(TEST) THEN
+        CALL MEMGET('REAL',KO,NO,WORK,KFREE,LFREE)
+        CALL READT(IUNIT,NO,WORK(KO))
+        JO = KO + 1
+        DO IFRP = 1,NFSYM
+          CALL ADAEIG(
+     &         EIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &         WORK(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+          JC = JC + IDIM(3,IFRP)
+        ENDDO
+        CALL MEMREL('REACMO.eig',WORK,KWORK,KWORK,KFREE,LFREE)
+      ELSE
+        READ (IUNIT,END=50,ERR=60) EIG
+      ENDIF
       IF(IOPT.NE.2) RETURN
 C     Read single group irrep (spinfree and Levy-Leblond calcs)
-      READ (IUNIT,END=70,ERR=80) IBEIG
+      IF(TEST) THEN
+        CALL MEMGET('INTE',KO,NO,WORK,KFREE,LFREE)
+        CALL READI(IUNIT,NO,WORK(KO))
+        CALL ADAIBP(IBEIG,WORK(KO),IDIM)
+        CALL MEMREL('REACMO.ibos',WORK,KWORK,KWORK,KFREE,LFREE)
+      ELSE
+        READ (IUNIT,END=70,ERR=80) IBEIG
+      ENDIF
 C
       RETURN
 C
@@ -303,6 +348,7 @@ C
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
       DIMENSION IDIM(3,2)
+#include <memint.h>
 C
 C     Get coefficients from DFCOEF
 C
@@ -313,7 +359,8 @@ C
           CALL QUIT('PCMOUT: Unformatted file DFCOEF not found !')
       ENDIF
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')        
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,2)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,2,
+     &            WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Write coefficients to DFPCMO
@@ -803,7 +850,7 @@ C
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
       CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
-     &            TOTERG,IOPT)
+     &            TOTERG,IOPT,WORK,KFREE,LFREE)
       CLOSE(LUBUF,STATUS='KEEP')
       DO I = 1,NORBT
       IF(IORBCL(1,I).EQ.ITYP) THEN
@@ -812,6 +859,148 @@ C
       ENDIF
       ENDDO
       CALL MEMREL('EIGEXT',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Adacmo */
+      SUBROUTINE ADACMO(NB,NZ,CF1,NO1,NP1,NE1,CF2,NO2,NP2,NE2)
+C***********************************************************************
+C
+C     Adapt coefficients CF2 to current dimensions CF1
+C     Written by T.Saue
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      DIMENSION CF1(NB,NO1,NZ),CF2(NB,NO2,NZ)
+C     Positronic part
+      IV1 = 1
+      IV2 = 1
+      NC = MIN(NP1,NP2)
+      NR = NP1-NP2
+      IF(NR.GT.0) THEN
+        NN = NB*NR
+        DO IZ = 1,NZ
+          CALL DZERO(CF1(1,IV1,IZ),NN)
+        ENDDO
+        IV1 = IV1 + NR
+      ENDIF
+      NN = NB*NC
+      DO IZ = 1,NZ
+        CALL DCOPY(NN,CF2(1,IV2,IZ),1,CF1(1,IV1,IZ),1)        
+      ENDDO
+C     Electronic part
+      IV1 = NP1 + 1
+      IV2 = NP2 + 1
+      NC = MIN(NE1,NE2)
+      NR = NE1-NE2
+      NN = NB*NC
+      DO IZ = 1,NZ
+        CALL DCOPY(NN,CF2(1,IV2,IZ),1,CF1(1,IV1,IZ),1)        
+      ENDDO
+      IF(NR.GT.0) THEN
+        NN = NB*NR
+        DO IZ = 1,NZ
+          CALL DZERO(CF1(1,IV1,IZ),NN)
+        ENDDO
+        IV1 = IV1 + NR
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Adaeig */
+      SUBROUTINE ADAEIG(EIG1,NO1,NP1,NE1,EIG2,NO2,NP2,NE2)
+C***********************************************************************
+C
+C     Adapt eigenvalues EIG2 to current dimensions EIG1
+C     Written by T.Saue
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      DIMENSION EIG1(NO1),EIG2(NO2)
+C     Positronic part
+      IV1 = 1
+      IV2 = 1
+      NC = MIN(NP1,NP2)
+      NR = NP1-NP2
+      IF(NR.GT.0) THEN
+        CALL DZERO(EIG1(IV1),NR)
+        IV1 = IV1 + NR
+      ENDIF
+      CALL DCOPY(NC,EIG2(IV2),1,EIG1(IV1),1)        
+C     Electronic part
+      IV1 = NP1 + 1
+      IV2 = NP2 + 1
+      NC = MIN(NE1,NE2)
+      NR = NE1-NE2
+      CALL DCOPY(NC,EIG2(IV2),1,EIG1(IV1),1)        
+      IF(NR.GT.0) THEN
+        CALL DZERO(EIG1(IV1),NR)
+        IV1 = IV1 + NR
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Adaibp */
+      SUBROUTINE ADAIBP(IBO1,IBO2,IDIM)
+C***********************************************************************
+C
+C     Pre-routine to adaibo
+C     Written by T.Saue Feb 1 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcborb.h>
+#include <dgroup.h>
+      DIMENSION IBO1(*),IBO2(*),IDIM(3,2)
+      I2 = 1
+      DO IFRP = 1,NFSYM
+        CALL ADAIBO(
+     &         IBO1(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &         IBO2(I2),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+          I2 = I2 + IDIM(3,IFRP)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Adaibo */
+      SUBROUTINE ADAIBO(IBO1,NO1,NP1,NE1,IBO2,NO2,NP2,NE2)
+C***********************************************************************
+C
+C     Adapt boson irrep array IBO2 to current dimensions IBO1
+C     Written by T.Saue
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      DIMENSION IBO1(NO1),IBO2(NO2)
+C     Positronic part
+      IV1 = 1
+      IV2 = 1
+      NC = MIN(NP1,NP2)
+      NR = NP1-NP2
+      IF(NR.GT.0) THEN
+        CALL IZERO(IBO1(IV1),NR)
+        IV1 = IV1 + NR
+      ENDIF
+      CALL ICOPY(NC,IBO2(IV2),1,IBO1(IV1),1)        
+C     Electronic part
+      IV1 = NP1 + 1
+      IV2 = NP2 + 1
+      NC = MIN(NE1,NE2)
+      NR = NE1-NE2
+      CALL ICOPY(NC,IBO2(IV2),1,IBO1(IV1),1)        
+      IF(NR.GT.0) THEN
+        CALL IZERO(IBO1(IV1),NR)
+        IV1 = IV1 + NR
+      ENDIF
 C
       RETURN
       END

@@ -190,7 +190,8 @@ C     =================
 C
       IOPT = 4
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,IOPT)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,IOPT,
+     &            WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get property matrix and scale by factor -1

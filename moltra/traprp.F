@@ -123,7 +123,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAONE')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,2)
+     &               WORK(KIBEIG),TOTERG,2,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Transform property matrices to MO basis
