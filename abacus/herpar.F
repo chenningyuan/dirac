@@ -172,8 +172,11 @@ C
       IF (ITYPE .EQ. 2) THEN
          NUMGRA = MXCOOR
          NUMHES = NUMGRA*NUMGRA
-Cjth         NREQUI = NUMGRA + NUMHES
-         NREQUI = NUMGRA 
+#ifdef PRG_DIRAC
+         NREQUI = NUMGRA
+#else
+         NREQUI = NUMGRA + NUMHES
+#endif
       ELSE IF (ITYPE .EQ. 3) THEN
          NREQUI = NDMAT*N2BASX 
       ELSE IF (ITYPE .EQ. 9) THEN
@@ -771,7 +774,11 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <mxorb.h>
+#ifdef PRG_DIRAC
+#include <dcbgrd.h>
+#else
 #include <energy.h>
+#endif
 #include <suscpt.h>
 #include <inforb.h>
 #include <infpar.h>
@@ -783,7 +790,9 @@ C     Clean matrices.
 C
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,NUMGRA)
+#ifndef PRG_DIRAC
          CALL DZERO(HESSEE,NUMHES)
+#endif
 CTROND      ELSE IF (ITYPE .EQ. 3) THEN
 CTROND         CALL DZERO(FMAT,NREQUI)
       ELSE IF (ITYPE .EQ. -5) THEN
@@ -842,7 +851,9 @@ C        Add results to final matrices.
 C
          IF (ITYPE .EQ. 2) THEN
             CALL DAXPY(NUMGRA,D1,WORK,1,GRADEE,1)
-Cjth            CALL DAXPY(NUMHES,D1,WORK(NUMGRA+1),1,HESSEE,1)
+#ifndef PRG_DIRAC
+            CALL DAXPY(NUMHES,D1,WORK(NUMGRA+1),1,HESSEE,1)
+#endif
 C
          ELSE IF (ITYPE .EQ. 3.OR.ITYPE.EQ.9) THEN
             CALL DAXPY(NREQUI,D1,WORK,1,FMAT,1)
@@ -1108,15 +1119,16 @@ C
 #include <mxcent.h>
 #include <mxorb.h>
 C
-#include <energy.h>
 #include <suscpt.h>
 #include <inforb.h>
 #include <infpar.h>
 #include <molinp.h>
 #if defined (PRG_DIRAC)
 #include <dcbgen.h>
+#include <dcbgrd.h>
 #else
 #include <gnrinf.h>
+#include <energy.h>
 #endif
 C
       DIMENSION WORK(MWORK),DINTSKP(2,4)
@@ -1183,7 +1195,9 @@ C
       CALL DZERO(WORK(KFMAT),LFMAT)
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,NUMGRA)
+#ifndef PRG_DIRAC
          CALL DZERO(HESSEE,NUMHES)
+#endif
       ELSE IF (ITYPE .EQ. -5) THEN
          CALL DZERO(SUS2EL,NUMSUS)
       END IF
@@ -1565,7 +1579,11 @@ C
 #include <cbisol.h>
 #include <twocom.h>
 #include <nuclei.h>
+#ifdef PRG_DIRAC
+#include <dcbgrd.h>
+#else
 #include <energy.h>
+#endif
 #include <taymol.h>
 #include <taysol.h>
 #include <suscpt.h>
@@ -1949,7 +1967,11 @@ C
 #endif
 #include <mxcent.h>
 #include <mxorb.h>
+#ifdef PRG_DIRAC
+#include <dcbgrd.h>
+#else
 #include <energy.h>
+#endif
 #include <suscpt.h>
 #include <infpar.h>
 #include <inforb.h>
@@ -2000,6 +2022,7 @@ C
       END IF
 C
 #else
+PVM (I think) does not work
       CALL PVMFINITSEND(NCODE,MBUFID)
       IF (MBUFID .LT. 0) CALL PFAIL(MBUFID)
 C
