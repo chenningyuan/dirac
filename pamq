@@ -1,0 +1,159 @@
+#!/bin/sh
+#
+# Submit pam job to the queue.
+# Written by Luuk Visscher - 2002
+#
+# Set defaults
+#
+# These should be set manually at the moment, one should write an installer
+# for this purpose to make this better maintainable.
+#
+LOC=`pwd`
+PAMDIR=~/bin
+MEMORY=100
+QUEUE=ppwr4
+MPI_NPROC=4
+TIME=15m
+#
+# Process relevant arguments
+all_arguments="$*"
+while [ $# != 2 ]; do
+   argv="$1"; shift
+   case "${argv}" in
+      -mw)
+         let MEMORY=$1*1000000
+         shift
+         ;;
+       -mpi)
+         MPI_NPROC=$1
+         shift
+         ;;
+      -q)
+         QUEUE=$1
+         shift
+         ;;
+      -t)
+         TIME=$1
+         shift
+         ;;
+   esac
+done
+argv="$1";shift; MOL=$argv
+argv="$1";shift; MENU=$argv
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+# Convert time to proper units
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+case $TIME in
+  *m)
+   wallt="0:`basename $TIME m`:0"
+  ;;
+  *h)
+   wallt="`basename $TIME h`:0:0"
+  ;;
+  *)
+   echo "Wallclock time incorrect";
+   exit 1
+  ;;
+esac
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Create job file
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+jobname=${MENU}_${MOL}
+jobinp=job_$$
+jobout=$jobname.$$.log
+#### IBM's loadleveller ########
+set JTYPE=parallel
+set REQUIRE=""
+set CLASS=""
+case $QUEUE in
+  ppwr4)
+    REQUIRE="(OpSys == \"AIX51\")"
+    CLASS="ppwr4"
+  ;;
+  p-test)
+    REQUIRE="(OpSys == \"AIX51\")"
+    CLASS="p-test"
+  ;;
+  *)
+    echo " unknown queue $QUEUE"
+    exit 1
+  ;;
+esac
+if [ $MPI_NPROC -le 32 ]; then
+   NNODE=1;
+elif [ $MPI_NPROC -le 64 ]; then
+   NNODE=2
+elif [ $MPI_NPROC -le 96 ]; then
+   NNODE=3
+elif [ $MPI_NPROC -le 128 ]; then
+   NNODE=4
+else
+  echo "Too many nodes requested!"
+  exit
+fi
+#
+#  Create jobinp file
+#
+cat <<EOJ >$jobinp
+#
+# loadl stuff
+#
+# @ shell = /bin/sh
+# @ initialdir = $LOC
+# @ output = $jobout
+# @ error = $jobout
+# @ job_type = parallel
+# @ node = $NNODE
+# @ total_tasks = $MPI_NPROC
+# @ requirements = $REQUIRE
+EOJ
+
+if [ -z "$CLASS" ]; then
+cat <<EOJ >>$jobinp
+# @ class = $CLASS
+EOJ
+fi
+
+if test "$QUEUE" = "p-test"
+then
+cat <<EOJ >>$jobinp
+# @ class = $CLASS
+EOJ
+fi
+
+cat <<EOJ >> $jobinp
+# @ wall_clock_limit = $wallt
+# @ environment = LLSHELL=$SHELL;ENVIRONMENT=BATCH;
+# @ notification = never
+# @ queue
+
+#
+# change to original directory
+#
+cd $LOC
+
+#
+# execute pam shell script
+#
+export XLFRTEOPTS="namelist=old"
+$PAMDIR/pam $all_arguments
+
+EOJ
+llsubmit $jobinp
+#################### End of Load leveller specific code #####
+#
+# Clean up : remove the job
+#
+/usr/bin/rm -f $jobinp
+
