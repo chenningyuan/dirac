@@ -313,8 +313,10 @@ C
       IF (NZS.EQ.4) THEN
          DO ICLASS = 9, 12
             CALL DZERO(WORK(KFTMAT),2*NKL)
+            IREPABR = 0
             DO IREPAB = 0, NBSYM-1
                IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
+                  IREPABR = IREPABR + 1
                   DO IZ1 = 1, NZS
                      IQ1 = IPQTOQ(IZ1,IREPAB)
                      DO IZ2 = 1, NZS
