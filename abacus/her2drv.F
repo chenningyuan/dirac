@@ -678,7 +678,8 @@ C     Symmetrize skeleton Fock matrices
 C     =================================
 C
 CDIRAC      IF (DIRFCK .OR. DDFOCK .OR. EXPECT) THEN
-      IF (DDFOCK) THEN
+CMI   IF (DDFOCK) THEN
+      IF (DDFOCK.AND.(.NOT.LONDON)) THEN
          CALL SKLFCK(FMAT,WORK,LWORK,JPRINT,DIRFCK,DDFOCK,EXPECT,PERTUR,
      &               NODV,MAXDER,LONDON,NDMAT,IREPDM,IFCTYP,IATOM)
       END IF

@@ -147,6 +147,10 @@ C     (OV 08.03.90)
 C
 C     Solvent flag (22.01.91/HJAAJ+KM) (SOLVENT)
 C
+C     Added relativistic London atomic integral, INTTYP 203
+C     (TEC)+MI+HJAaJ,2002-2003)
+C
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -202,7 +206,8 @@ C
      &                       .OR.(INTTYP .EQ. 10).OR.(INTTYP .EQ. 11)
      &                       .OR.(INTTYP .EQ. 13).OR.(INTTYP .EQ. 17)
      &                       .OR.(INTTYP .EQ. 18).OR.(INTTYP .EQ. 42)
-     &                       .OR.(INTTYP .EQ. 20)) THEN
+     &                       .OR.(INTTYP .EQ. 20).OR.(INTTYP .EQ. 203)
+     &                             ) THEN
             IADR = KSOINT
             DO 1010 ICOMP = 1, NCOMP
                IF (TRIANG) THEN
@@ -272,6 +277,15 @@ C     (OV 08.03.90)
 C
 C     Solvent flag (22.01.91/HJAAJ+KM) (SOLVENT)
 C
+C     All special 4-component operators (for PRG_DIRAC) have INTTYP
+C     starting with number 201 to ease merge with Dalton changes,
+C     and such that the value of INTTYP also signals if it is a
+C     4-comp. operator. (March 2003 hjaaj)
+C
+C  MI(+HJ),2003...last added operators are for relativistic  NMR shielding
+C          and magnetizabilities when using London atomic orbitals,
+C          in total 8 new integrals
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -280,7 +294,8 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
-      PARAMETER (NTABLE = 58)
+C     PARAMETER (NTABLE = 58)
+      PARAMETER (NTABLE = 66)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -308,7 +323,12 @@ C
      &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP',
      &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ', 
      &            'S1ELB  ', 'ONEELD ', 'PVC    ', 'EFT    ',
-     &            'EFTNTL ', 'NUCFIEL'/
+     &            'EFTNTL ', 'NUCFIEL',
+     &            'RM1H3  ', 'RM1RN  ', 'RM1H2  ',
+     &            'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 'RM2H3  ',
+     &            'RM2H2  '
+     &                         /
+
 C
 #include "ibtfun.h"
 C
@@ -325,7 +345,8 @@ C
             GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
-     &             49,50,51,52,53,54,55,56,57,58), I
+     &             49,50,51,52,53,54,55,56,57,58,
+     &              59,60,61,62,63,64,65,66), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1422,6 +1443,283 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
+C     Contribution from Hd to magnetic properties (Thomas Enevoldsen)
+C     ------------------------------------------------------------------
+CMI      integrals (RM1H3)  i c Qmn < r (alpha.p) >
+C
+C
+ 59   CONTINUE
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &'PR1DIR: Calculation of icQmn<r(alp.p)>, RM1H3'
+         INTTYP = 201
+         NOPTYP = 9
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'XRM1H3X '
+         INTREP(1) = IBTXOR(ISYMAX(1,2),ISYMAX(1,1))  ! Rx.x
+         LABINT(2) = 'XRM1H3Y '
+         INTREP(2) = IBTXOR(ISYMAX(1,2),ISYMAX(2,1))  ! Rx.y
+         LABINT(3) = 'XRM1H3Z '
+         INTREP(3) = IBTXOR(ISYMAX(1,2),ISYMAX(3,1))  ! Rx.z
+         LABINT(4) = 'YRM1H3X '
+         INTREP(4) = IBTXOR(ISYMAX(2,2),ISYMAX(1,1))  ! Ry.x
+         LABINT(5) = 'YRM1H3Y '
+         INTREP(5) = IBTXOR(ISYMAX(2,2),ISYMAX(2,1))  ! Ry.y
+         LABINT(6) = 'YRM1H3Z '
+         INTREP(6) = IBTXOR(ISYMAX(2,2),ISYMAX(3,1))  ! Ry.z
+         LABINT(7) = 'ZRM1H3X '
+         INTREP(7) = IBTXOR(ISYMAX(3,2),ISYMAX(1,1))  ! Rz.x
+         LABINT(8) = 'ZRM1H3Y '
+         INTREP(8) = IBTXOR(ISYMAX(3,2),ISYMAX(2,1))  ! Rz.y
+         LABINT(9) = 'ZRM1H3Z '
+         INTREP(9) = IBTXOR(ISYMAX(3,2),ISYMAX(3,1))  ! Rz.z
+         ANTI = .FALSE.
+         SQUARE = .TRUE. ! True specification
+      GO TO 200
+C
+C      Lodnon contribution from r_N to magnetic properties, RM1RN
+C      (Thomas Enevoldsen)
+C     --------------------------------------------------------------------
+CMI          integral  (c/2).< r_n x alpha >
+C
+ 60   CONTINUE
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &'PR1DIR: Calculation of dipole moment around orbitals.'
+         INTTYP = 202
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'XRM1RN  '
+         LABINT(2) = 'YRM1RN  '
+         LABINT(3) = 'ZRM1RN  '
+         INTREP(1) = ISYMAX(1,1) ! x
+         INTREP(2) = ISYMAX(2,1) ! y
+         INTREP(3) = ISYMAX(3,1) ! z
+         ANTI = .FALSE.
+         SQUARE = .TRUE. ! Try what happens !
+      GO TO 200
+C
+C     London orbital contribution to the potential V (Thomas Enevoldsen)
+C    ----------------------------------------------------------------------
+CMI   integral i Q_MN < r_vec V >  (RM1H2)
+C
+ 61   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &'PR1DIR: Calculation of London orbital contrib. from V'
+         INTTYP = 203
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'XRM1H2  '
+         LABINT(2) = 'YRM1H2  '
+         LABINT(3) = 'ZRM1H2  '
+         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1)) ! yz = x
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1)) ! xz = y
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1)) ! xy = z
+         ANTI = .TRUE. ! Truly antisymmetric !
+      GO TO 200
+C
+C    London Relativistic Orbital contribution to expect. value of
+C    NMR shield. tensor, RNST (Thomas Enevoldsen)
+C    ------------------------------------------------------------------
+CMI       integrals i/c Qmn <r (r_k x alp/r_k**3) >
+C
+ 62   CONTINUE
+         INTTYP = 204
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A,A/)')
+     &'PR1DIR:Calculation of relativ. London contrib.',
+     &' to the expect. value of NMR shielding.'
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'RNST',
+     &               INTADR)
+         ANTI = .TRUE.
+         SQUARE = .TRUE. ! Specify it truly!
+      GOTO 200
+C
+C     London Relativistic Orbital contribution to Diamagnetic
+C     Susceptibility tensor  'RDSUSNL' (analogous to nonrel. 'DSUSNL')
+C     -------------------------------------------------------------------
+C     MI, jan.2003
+C
+ 63   CONTINUE
+         INTTYP = 205
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &'PR1DIR: RDSUSNL-contrib. to LAO diamag. suscept.'
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'XXRDSUNL'
+         LABINT(2) = 'XYRDSUNL'
+         LABINT(3) = 'XZRDSUNL'
+         LABINT(4) = 'YYRDSUNL'
+         LABINT(5) = 'YZRDSUNL'
+         LABINT(6) = 'ZZRDSUNL'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1)) ! x.y
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1)) ! x.z
+         INTREP(4) = 0
+         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1)) ! y.z
+         INTREP(6) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+C     London Relativistic Orbital contribution to Diamagnetic
+C     susceptibilty tensor  'RDSUSLL' (analogous to nonrel. 'DSUSLL')
+C
+C                 integrals i c Qmn < r (r_n x alpha) >
+C     -------------------------------------------------------------------
+C     MI, jan.2003
+C
+ 64   CONTINUE
+         INTTYP = 206
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &'PR1DIR: RDSUSLL - ang. contrib. to LAO diamag. sus'
+         NOPTYP = 18
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+C ...  3x3x2=18 unique terms!
+         LABINT( 1) = 'XXRDSULY'
+         INTREP( 1) = IBTXOR(ISYMAX(1,2),ISYMAX(2,1)) ! Rx.y
+         LABINT( 2) = 'XXRDSULZ'
+         INTREP( 2) = IBTXOR(ISYMAX(1,2),ISYMAX(3,1)) ! Rx.z
+         LABINT( 3) = 'XYRDSULZ'
+         INTREP( 3) = IBTXOR(ISYMAX(1,2),ISYMAX(3,1)) ! Rx.z
+         LABINT( 4) = 'XYRDSULX'
+         INTREP( 4) = IBTXOR(ISYMAX(1,2),ISYMAX(1,1)) ! Rx.x
+         LABINT( 5) = 'XZRDSULX'
+         INTREP( 5) = IBTXOR(ISYMAX(1,2),ISYMAX(1,1)) ! Rx.x
+         LABINT( 6) = 'XZRDSULY'
+         INTREP( 6) = IBTXOR(ISYMAX(1,2),ISYMAX(2,1)) ! Rx.y
+         LABINT( 7) = 'YXRDSULY'
+         INTREP( 7) = IBTXOR(ISYMAX(2,2),ISYMAX(2,1)) ! Ry.y
+         LABINT( 8) = 'YXRDSULZ'
+         INTREP( 8) = IBTXOR(ISYMAX(2,2),ISYMAX(3,1)) ! Ry.z
+         LABINT( 9) = 'YYRDSULZ'
+         INTREP( 9) = IBTXOR(ISYMAX(2,2),ISYMAX(3,1)) ! Ry.z
+         LABINT(10) = 'YYRDSULX'
+         INTREP(10) = IBTXOR(ISYMAX(2,2),ISYMAX(1,1)) ! Ry.x
+         LABINT(11) = 'YZRDSULX'
+         INTREP(11) = IBTXOR(ISYMAX(2,2),ISYMAX(1,1)) ! Ry.x
+         LABINT(12) = 'YZRDSULY'
+         INTREP(12) = IBTXOR(ISYMAX(2,2),ISYMAX(2,1)) ! Ry.y
+         LABINT(13) = 'ZXRDSULY'
+         INTREP(13) = IBTXOR(ISYMAX(3,2),ISYMAX(2,1)) ! Rz.y
+         LABINT(14) = 'ZXRDSULZ'
+         INTREP(14) = IBTXOR(ISYMAX(3,2),ISYMAX(3,1)) ! Rz.z
+         LABINT(15) = 'ZYRDSULZ'
+         INTREP(15) = IBTXOR(ISYMAX(3,2),ISYMAX(3,1)) ! Rz.z
+         LABINT(16) = 'ZYRDSULX'
+         INTREP(16) = IBTXOR(ISYMAX(3,2),ISYMAX(1,1)) ! Rz.x
+         LABINT(17) = 'ZZRDSULX'
+         INTREP(17) = IBTXOR(ISYMAX(3,2),ISYMAX(1,1)) ! Rz.x
+         LABINT(18) = 'ZZRDSULY'
+         INTREP(18) = IBTXOR(ISYMAX(3,2),ISYMAX(2,1)) ! Rz.y
+         ANTI   = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+C     London Relativistic Orbital contribution to the
+C     susceptibilty tensor of RM2H3 term:
+C
+C               Qmn<r.r~(c alph.p)>Qmn
+C     -------------------------------------------------------------------
+C     MI, march 2003
+C
+ 65   CONTINUE
+         INTTYP = 207
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &'PR1DIR: RM2H3 - ang. contrib. to LAO diamag. sus'
+         NOPTYP = 18
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT( 1) = 'XXRM2H3X'
+         INTREP( 1) =
+     &    IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(1,2)),ISYMAX(1,1)) ! Rx.Rx.x
+         LABINT( 2) = 'XXRM2H3Y'
+         INTREP( 2) =
+     &    IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(1,2)),ISYMAX(2,1)) ! Rx.Rx.y
+         LABINT( 3) = 'XXRM2H3Z'
+         INTREP( 3) =
+     &    IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(1,2)),ISYMAX(3,1)) ! Rx.Rx.z
+         LABINT( 4) = 'XYRM2H3X'
+         INTREP( 4) =
+     &    IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(2,2)),ISYMAX(1,1))
+         LABINT( 5) = 'XYRM2H3Y'
+         INTREP( 5) =
+     &    IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(2,2)),ISYMAX(2,1))
+         LABINT( 6) = 'XYRM2H3Z'
+         INTREP( 6) =
+     &       IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(2,2)),ISYMAX(3,1))
+         LABINT( 7) = 'XZRM2H3X'
+         INTREP( 7) =
+     &       IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(3,2)),ISYMAX(1,1))
+         LABINT( 8) = 'XZRM2H3Y'
+         INTREP( 8) =
+     &       IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(3,2)),ISYMAX(2,1))
+         LABINT( 9) = 'XZRM2H3Z'
+         INTREP( 9) =
+     &       IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(3,2)),ISYMAX(3,1))
+         LABINT(10) = 'YYRM2H3X'
+         INTREP(10) =
+     &       IBTXOR(IBTXOR(ISYMAX(2,2),ISYMAX(2,2)),ISYMAX(1,1)) ! Ry.Ry.x
+         LABINT(11) = 'YYRM2H3Y'
+         INTREP(11) =
+     &       IBTXOR(IBTXOR(ISYMAX(2,2),ISYMAX(2,2)),ISYMAX(2,1)) ! Ry.Ry.y
+         LABINT(12) = 'YYRM2H3Z'
+         INTREP(12) =
+     &       IBTXOR(IBTXOR(ISYMAX(2,2),ISYMAX(2,2)),ISYMAX(3,1)) ! Ry.Ry.z
+         LABINT(13) = 'YZRM2H3X'
+         INTREP(13) =
+     &        IBTXOR(IBTXOR(ISYMAX(2,2),ISYMAX(3,2)),ISYMAX(1,1)) ! Ry.Rz.x
+         LABINT(14) = 'YZRM2H3Y'
+         INTREP(14) =
+     &        IBTXOR(IBTXOR(ISYMAX(2,2),ISYMAX(3,2)),ISYMAX(2,1)) ! Ry.Rz.y
+         LABINT(15) = 'YZRM2H3Z'
+         INTREP(15) =
+     &        IBTXOR(IBTXOR(ISYMAX(2,2),ISYMAX(3,2)),ISYMAX(3,1)) ! Ry.Rz.z
+         LABINT(16) = 'ZZRM2H3X'
+         INTREP(16) =
+     &        IBTXOR(IBTXOR(ISYMAX(3,2),ISYMAX(3,2)),ISYMAX(1,1)) ! Rz.Rz.x
+         LABINT(17) = 'ZZRM2H3Y'
+         INTREP(17) =
+     &        IBTXOR(IBTXOR(ISYMAX(3,2),ISYMAX(3,2)),ISYMAX(2,1)) ! Rz.Rz.y
+         LABINT(18) = 'ZZRM2H3Z'
+         INTREP(18) =
+     &        IBTXOR(IBTXOR(ISYMAX(3,2),ISYMAX(3,2)),ISYMAX(3,1)) ! Rz.Rz.z
+        ANTI = .FALSE.
+        SQUARE = .TRUE.
+      GOTO 200
+C
+C     London Relativistic Orbital contribution to Diamagnetic
+C     Susceptibilty tensor  'RM2H2' -
+C     -------------------------------------------------------------------
+C    integrals   Qmn <mi_M | r.r~ V_nuc | ni_N> Qmn
+C           MI & HJAaJ, march 2003
+C
+ 66   CONTINUE
+         INTTYP = 208
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &'PR1DIR: RM2H2-Vnuc contrib. to LAO exp.val of suscp.'
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'XXRM2H2'
+         INTREP(1) = IBTXOR(ISYMAX(1,2),ISYMAX(1,2)) ! Rx.Rx
+         LABINT(2) = 'XYRM2H2'
+         INTREP(2) = IBTXOR(ISYMAX(1,2),ISYMAX(2,2)) ! Rx.Ry
+         LABINT(3) = 'XZRM2H2'
+         INTREP(3) = IBTXOR(ISYMAX(1,2),ISYMAX(3,2)) ! Rx.Rz
+         LABINT(4) = 'YYRM2H2'
+         INTREP(4) = IBTXOR(ISYMAX(2,2),ISYMAX(2,2)) ! Ry.Ry
+         LABINT(5) = 'YZRM2H2'
+         INTREP(5) = IBTXOR(ISYMAX(2,2),ISYMAX(3,2)) ! Ry.Rz
+         LABINT(6) = 'ZZRM2H2'
+         INTREP(6) = IBTXOR(ISYMAX(3,2),ISYMAX(3,2)) ! Rz.Rz
+         SQUARE = .FALSE.
+         ANTI = .FALSE.
+      GOTO 200
+C
 C
 C
 C
@@ -1430,10 +1728,11 @@ C
 C     ***** Print section *****
 C
       IF (IPRINT .GT. 5) THEN
-         WRITE (LUPRI,'(/,A,I5)') ' Integral type:', INTTYP
-         WRITE (LUPRI,'(/,A,L5)') ' TRASPH:', TRASPH
-         WRITE (LUPRI,'(/,A,L5)') ' SQUARE:', SQUARE
-         WRITE (LUPRI,'(/,A,L5)') ' SOLVNT:', SOLVNT
+         WRITE (LUPRI,'(3X,A)') '**** PR1DIR output ****'
+         WRITE (LUPRI,'(A,I5)') ' Integral type:', INTTYP
+         WRITE (LUPRI,'(A,L5)') ' TRASPH:', TRASPH
+         WRITE (LUPRI,'(A,L5)') ' SQUARE:', SQUARE
+         WRITE (LUPRI,'(A,L5)') ' SOLVNT:', SOLVNT
          WRITE (LUPRI,'(A,I5)') ' Number of operator components:',NOPTYP
          DO 300 I = 1, NOPTYP
             WRITE (LUPRI,'(2A)')   ' Molecule label: ', LABINT(I)
@@ -1629,6 +1928,7 @@ C  /* Deck ioden */
       END
 C  /* Deck setatm */
       SUBROUTINE SETATM(DOATOM,NATOM,INTTYP)
+C  MI,HJ(TEC) - minor modification for LAO integral types
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1652,7 +1952,8 @@ C
       SPIN = INTTYP .EQ.  9 .OR. INTTYP .EQ. 10 .OR.
      &       INTTYP .EQ. 11 .OR. INTTYP .EQ. 12 .OR. INTTYP .EQ. 13 .OR.
      &       INTTYP .EQ. 26 .OR. INTTYP .EQ. 27 .OR. INTTYP .EQ. 28 .OR.
-     &       INTTYP .EQ. 34 .OR. INTTYP .EQ. 38 .OR. INTTYP .EQ. 48
+     &       INTTYP .EQ. 34 .OR. INTTYP .EQ. 38 .OR. INTTYP .EQ. 48 .OR.
+     &       INTTYP .EQ. 204
       IF (.NOT.SPIN .OR. ALLATM) THEN
 #endif
          NATOM = NUCDEP
@@ -1907,6 +2208,7 @@ C  /* Deck frmtyp */
       END
 C  /* Deck nsttyp */
       SUBROUTINE NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,LABEL,INTADR)
+C    MI/HJaJ - extended for LAO integral
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1928,13 +2230,24 @@ C  /* Deck nsttyp */
             IF (DOATOM(IATOM)) THEN
                DO 300 LCOOR = 1, 3
                   ISCOOR = IPTCNT(3*(IATOM - 1) + LCOOR, IREP,2)
+                  IF (ISCOOR .GT. 99)
+     &   CALL QUIT('NSTTYP error: not implemented for > 99 coords!')
                   IF (ISCOOR .GT. 0) THEN
                      DO 400 ICOOR = 1, 3
                         ITYP = ITYP + 1
                         LABINT(ITYP) = CHRNOS(ISCOOR/10)//
      &                                 CHRNOS(MOD(ISCOOR,10))//LABEL//
      &                                 ' '//CHRXYZ(ICOOR)
-                        INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,2))
+CMI whether conventional or London orbitals, specify the symmetry
+                        IF (LABEL.EQ.'RNST') THEN
+c                          ICOOR2 = MOD(2+ISCOOR,3)+1
+c                          INTREP(ITYP) = IBTXOR(ISYMAX(ICOOR2,1)
+c    &                          ,ISYMAX(ICOOR,2))
+                         INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,1))
+C TODO HJAaJ: this may be wrong ????? 5. Nov. 2002
+                        ELSE
+                         INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,2))
+                        ENDIF
                         LSCOOR = 3*(ISCOOR - 1) + ICOOR
                         INTADR(LSCOOR) = ITYP
                         NOPTYP = NOPTYP + 1
