@@ -103,6 +103,7 @@ C     *****************************
 C     ***** First Shell Index *****
 C     *****************************
 C
+      KBUF = KFREE
       DO 100 ISHELA = 1,MAXSHL
 C
         ICA    = LCLASH(ISHELA)
@@ -314,6 +315,7 @@ C               Electron 2:
      &          WORK(KCONTD),WORK(KNPCOC),WORK(KNPCOD),WORK(KNCSCD),
      &          WORK(KJSTRC),WORK(KJSTRD),WORK(KINDCD),WORK(KPNTCD),
      &          WORK(KREDCD))
+         CALL MEMREL('GABDRV',WORK,KWORK,KBUF,KFREE,LFREE)
   200    CONTINUE
   100 CONTINUE
 C
