@@ -2,8 +2,7 @@
 #
 # Set up calculation
 #
-MENU=HBr;
-MOL=HBr;
-export MENU;
-export MOL;
+MENU=HBr; export MENU;
+MOL=HBr; export MOL;
+DIRWRK=60000000; export DIRWRK
 ../run.sh
