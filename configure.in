@@ -399,7 +399,7 @@ if [ "$par" = "yes" ]; then
          *-hp)
             parlib='no'
             parinc='yes'
-            complist='mpif77 mpif90 $complist'
+            complist='mpif90 mpif77 $complist'
             cclist='mpicc $cclist' 
             mpirun='mpirun'
             ;;
