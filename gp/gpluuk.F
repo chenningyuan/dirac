@@ -870,7 +870,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BUFFER_FILE_INIT (I_FILE,IROWS,NROWS)
+      SUBROUTINE BUFFER_FILE_INIT (I_FILE)
 C     
 C     Initialize a buffer file to transpose a large matrix that is generated in parts
 C     Currently used in MOLTRA for the halftransformed two-electron
@@ -879,16 +879,15 @@ C
 C     Calling parameters
 C     
 C     I_FILE   : Bucket sort indentifier (we may have more than one active)
-C     IROWS    : Pointer from rows to buffer and position therein
-C     NROWS    : Number of rows
-C
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
-      DIMENSION IROWS(3,NROWS)
+#if defined (VAR_MPI)
+#include "mpif.h"
+#endif
       CHARACTER*10 NAME*5,FNODE,LFNAM
 C
 C     The record size needs to be NGBFSZ real + (2*NGBFSZ + 2) integer
@@ -911,17 +910,23 @@ C
       CALL IZERO(LGREC(1,I_FILE),N_BUFFER)
       CALL IZERO(LGBUF(1,I_FILE),N_BUFFER)
 C
+#if defined (VAR_MPI)
+      DO I = 1, MAX_SEND_BUFFERS
+         IREQ(I) = MPI_REQUEST_NULL
+      ENDDO
+#endif
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BUFFER_FILE_WRITE (I_FILE,RGBUF,IGBUF,IROWS,
-     &                              A,NROWS,ICOL,TRESHOLD)                              
+      SUBROUTINE BUFFER_FILE_OUT (I_FILE,RGBUF,IGBUF,IROWS,
+     &                            A,NROWS,ICOL,TRESHOLD)                              
 C     
 C     Scatter row of matrix A over the buffers, flush them if necessary
 C     
 C     Calling parameters
 C     
-C     LGFIL    : File unit
+C     I_FILE   : File unit
 C     RGBUF    : Real data in buffers
 C     IGBUF    : Integer data data in buffers
 C     IROWS    : Pointer from the rows to buffer
@@ -936,37 +941,69 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
+#include "infpar.h"
       REAL*8 RGBUF(NGBFSZ,*), A(NROWS)
       DIMENSION IGBUF(2,NGBFSZ,*)
       DIMENSION IROWS(3,NROWS)
-C
-C     Get the information stored in the common block 
-C
-      LGFIL    = I_BF_UNIT+I_FILE
-      IREC     = I_BF_REC(I_FILE) 
 C
 C     Loop through the row and check if the data need be stored
 C
       DO I = 1, NROWS
          IBUF = IROWS(1,I)
          IF (IBUF.GT.0.AND.ABS(A(I)).GT.TRESHOLD) THEN
-            IROW = IROWS(2,I)
             N = LGBUF(IBUF,I_FILE) + 1
             RGBUF(N,IBUF) = A(I)
             IGBUF(1,N,IBUF) = ICOL
-            IGBUF(2,N,IBUF) = IROW
+            IGBUF(2,N,IBUF) = IROWS(2,I)
             IF (N.GE.NGBFSZ) THEN 
-               IREC = IREC + 1
-               WRITE (LGFIL,REC=IREC) LGREC(IBUF,I_FILE),N,
-     &               (RGBUF(JBUF,IBUF),JBUF=1,NGBFSZ),
-     &               ((IGBUF(IX,JBUF,IBUF),IX=1,2),JBUF=1,NGBFSZ)
-               LGREC(IBUF,I_FILE) = IREC
+               INODE = IROWS(3,I)
+               IF (INODE.NE.MYTID) THEN
+                   CALL BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF(1,IBUF),
+     &              IGBUF(1,1,IBUF),N,INODE)
+               ELSE
+                   CALL BUFFER_FILE_WRITE (I_FILE,IBUF,RGBUF(1,IBUF),
+     &              IGBUF(1,1,IBUF),N)
+               ENDIF
                N = 0
             ENDIF
             LGBUF(IBUF,I_FILE) = N
         ENDIF
       ENDDO
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_WRITE (I_FILE,IBUF,RGBUF,IGBUF,N)
+C     
+C     Write local integrals
+C     
+C     Calling parameters
+C     
+C     I_FILE   : File unit
+C     IBUF     : Buffer number
+C     RGBUF    : One buffer with real data
+C     IGBUF    : One buffer with integer data
+C     N        : Actual size of the buffer
+C
+C     Written by Luuk Visscher, August 2004
+C     
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+#include "infpar.h"
+      REAL*8 RGBUF(NGBFSZ)
+      DIMENSION IGBUF(2,NGBFSZ)
+C
+C     Get file unit number and file pointer
+C
+      LGFIL    = I_BF_UNIT+I_FILE
+      IREC     = I_BF_REC(I_FILE) + 1
+      WRITE (LGFIL,REC=IREC) LGREC(IBUF,I_FILE),N,RGBUF,IGBUF
+C
+C     Update file pointers
+C
+      LGREC(IBUF,I_FILE) = IREC
       I_BF_REC(I_FILE) = IREC
 C
       RETURN
@@ -981,7 +1018,7 @@ C
 C     LGFIL    : File unit
 C     RBUF     : Real data in buffers
 C     IBUF     : Integer data data in buffers
-C     IROWS    : Pointer from rows to buffer and position therein
+C     IROWS    : Pointer from rows to buffer and node
 C     NROWS    : Number of rows
 C     
 C     Written by Luuk Visscher, August 2004
@@ -990,32 +1027,29 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
+#include "infpar.h"
       REAL*8 RGBUF(NGBFSZ,*)
       DIMENSION IGBUF(2,NGBFSZ,*)
       DIMENSION IROWS(3,NROWS)
 C
-C     Get the information stored in the common block 
-C
-      LGFIL    = I_BF_UNIT+I_FILE
-      IREC     = I_BF_REC(I_FILE) 
-C
-C     Loop through the rows and check if the data need be flushed
+C     Loop through the rows and check whether the data is to be flushed
 C
       DO I = 1, NROWS
          IBUF = IROWS(1,I)
          N = LGBUF(IBUF,I_FILE)
          IF (IBUF.GT.0.AND.N.GT.0) THEN 
-            IREC = IREC + 1
-            WRITE (LGFIL,REC=IREC) LGREC(IBUF,I_FILE),N,
-     &            (RGBUF(JBUF,IBUF),JBUF=1,NGBFSZ),
-     &            ((IGBUF(IX,JBUF,IBUF),IX=1,2),JBUF=1,NGBFSZ)
-            LGREC(IBUF,I_FILE) = IREC
+            INODE = IROWS(3,I)
+            IF (INODE.NE.MYTID) THEN
+                CALL BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF(1,IBUF),
+     &           IGBUF(1,1,IBUF),N,INODE)
+            ELSE
+                CALL BUFFER_FILE_WRITE (I_FILE,IBUF,RGBUF(1,IBUF),
+     &           IGBUF(1,1,IBUF),N)
+            ENDIF
             N = 0
          ENDIF
          LGBUF(IBUF,I_FILE) = N
       ENDDO
-C
-      I_BF_REC(I_FILE) = IREC
 C
       RETURN
       END
@@ -1030,6 +1064,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
+#include "infpar.h"
       REAL*8 RGBUF(NGBFSZ),A(NROW)
       DIMENSION IGBUF(2,NGBFSZ)
 C
@@ -1042,14 +1077,14 @@ C
 C
 C     Read a batch and the link to the previous record.
 C
-      READ (LGFIL,REC=IREC) IRECN,NABFSZ,RGBUF,IGBUF
+      READ (LGFIL,REC=IREC) IRECN,N,RGBUF,IGBUF
       IREC = IRECN
 C
 C     Pick out the integrals that we need.
 C
-      DO JBUF = 1, NABFSZ
-         IF (IGBUF(2,JBUF).EQ.ICOL) THEN
-            A(IGBUF(1,JBUF)) = RGBUF(JBUF)
+      DO I = 1, N
+         IF (IGBUF(2,I).EQ.ICOL) THEN
+            A(IGBUF(1,I)) = RGBUF(I)
          ENDIF
       ENDDO
 C
@@ -1059,185 +1094,219 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     The following routines are only needed in parallel runs, they take
+C     care of the communication between the nodes
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BUFFER_FILE_DIST (I_FILE_1,IROWS,NROWS)    
+      SUBROUTINE BUFFER_FILE_FREE (IFREE)
 C     
-C     Send the buffers to the correct place
+C     Check the status of buffers that were sent via a nonblocking send
 C     
 C     Calling parameters
 C     
-C     LGFIL    : File unit
-C     IROWS    : Pointer from rows to buffer and position therein
-C     NROWS    : Number of rows
+C     IFREE    : Contains on output the first free send buffer or zero
+C                if none is free.
+C
+C     Written by Luuk Visscher, October 2004
 C     
-C     Written by Luuk Visscher, August 2004
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "bucket_sort.h"
+      INCLUDE 'mpif.h'
+#include "infpar.h"
+      LOGICAL READY
+C
+      IFREE = 0
+      DO I = 1, MAX_SEND_BUFFERS
+         CALL MPI_TEST(IREQ(I), READY, MPI_STATUS_IGNORE, IERR)
+         IF (READY) THEN
+            IFREE = I
+            RETURN
+         ENDIF
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF,IGBUF,N,INODE)
+C     
+C     Send buffer IBUF to node INODE 
+C     
+C     Calling parameters
+C
+C     I_FILE   : File unit
+C     IBUF     : Buffer number
+C     RGBUF    : One buffer with real data
+C     IGBUF    : One buffer with integer data
+C     N        : Actual size of the buffer
+C     INODE    : Node where the buffer should go
+C
+C     Written by Luuk Visscher, October 2004
 C     
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
       INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE),ISTATS(MPI_STATUS_SIZE,3)
 #include "infpar.h"
-      REAL*8 RGBUF(NGBFSZ),RHBUF(NGBFSZ)
-      DIMENSION IGBUF(2,NGBFSZ),IHBUF(2,NGBFSZ)
-      DIMENSION IROWS(3,NROWS)
-      INTEGER INFO(2),JNFO(2),IREQ(4)
-      LOGICAL NEWMAIL, READY
+      REAL*8 RGBUF(NGBFSZ)
+      DIMENSION IGBUF(2,NGBFSZ)
 C
-C     Open a new file for the redistributed integrals
+C     Loop until we find a free send buffer IFREE
+    1 CONTINUE
+         CALL BUFFER_FILE_FREE(IFREE)
+C        Check for incoming buffers
+         CALL BUFFER_FILE_RECV()
+         IF (IFREE.EQ.0) GOTO 1
+C     Pack all data in the integer array ISGBUF
+      ISGBUF(1,IFREE) = N
+      ISGBUF(2,IFREE) = IBUF
+      ISGBUF(3,IFREE) = I_FILE
+      ISGBUF(4,IFREE) = IFREE
+      CALL ICOPY (2*N,IGBUF,1,ISGBUF(5,IFREE),1)
+      CALL DCOPY (N,RGBUF,1,ISGBUF(5+2*N,IFREE),1)
+      CALL MPI_ISEND(ISGBUF(1,IFREE),4*NGBFSZ+4,MPI_INTEGER,INODE,95,
+     &               MPI_COMM_WORLD,IREQ(IFREE),IERR)
 C
-      I_FILE_2 = I_FILE_1 + 1
-      CALL BUFFER_FILE_INIT (I_FILE_2,IROWS,NROWS)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_RECV ()
 C     
-C     Get the file units of the old and new file
-C
-      LGFIL_1   = I_BF_UNIT + I_FILE_1
-      LGFIL_2   = I_BF_UNIT + I_FILE_2
-C
-C     Get the start record for the new file
-C
-      IREC_2    = I_BF_REC(I_FILE_2) 
-C
-C     Put all local integrals that should stay on this node on the new file
-C
-      DO I = 1, NROWS
-         IBUF = IROWS(1,I)
-         IPOS = IROWS(2,I)
-         IF (IPOS.EQ.1) THEN
-            IBUF_PREVIOUS = IBUF
-            JNOD = IROWS(3,I)
-            IF (JNOD.EQ.MYTID) THEN
-C
-C              Read the integrals
-C
-               IREC_1 = LGREC(IBUF,I_FILE_1)
-    1          IF (IREC_1.EQ.0) GOTO 10
-               READ (LGFIL_1,REC=IREC_1) IRECN,N,RGBUF,IGBUF
-C
-C              Write to the new file
-C
-               IREC_2 = IREC_2 + 1
-               WRITE (LGFIL_2,REC=IREC_2) LGREC(IBUF,I_FILE_2),N,
-     &                                    RGBUF,IGBUF
-               LGREC(IBUF,I_FILE_2) = IREC_2
-               IREC_1 = IRECN
-               GOTO 1
-   10          CONTINUE
-            ENDIF
-         ENDIF
-      ENDDO
-C
-C     Send all other local integrals to their destination and receive them from the others
+C     Receive and write buffers that were sent to this node 
 C     
-      DO IR = 1, 4
-         IREQ(IR) = MPI_REQUEST_NULL
-      ENDDO
+C     Calling parameters
 C
-      DO I = 1, NROWS 
-         IBUF = IROWS(1,I)
-         IPOS = IROWS(2,I)
-         IF (IPOS.EQ.1) THEN
-            IBUF_PREVIOUS = IBUF
-            JNOD = IROWS(3,I)
-            IF (JNOD.NE.MYTID) THEN
-C           
-C              Read the integrals
-C              
-               IREC_1 = LGREC(IBUF,I_FILE_1)
-   11          IF (IREC_1.EQ.0) GOTO 20
+C     Written by Luuk Visscher, October 2004
+C     
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "infpar.h"
+      LOGICAL NEWMAIL
+      DIMENSION IHBUF(4*NGBFSZ+4)
 C
-C              Check whether the previous send has completed
+C     Check whether there are any messages waiting
 C
-   12          CALL MPI_TESTALL(3, IREQ, READY, ISTATS, IERR)
-               IF (.NOT.READY) THEN
-C
-C                 We use the waiting time to receive integrals from the others
-C
-                  CALL MPI_IPROBE(MPI_ANY_SOURCE,95,
-     &                            MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
-                  IF (NEWMAIL) THEN 
-                     INOD = ISTAT(MPI_SOURCE)
-                     CALL MPI_RECV(JNFO,2,MPI_INTEGER,INOD,95,
-     &                             MPI_COMM_WORLD,ISTAT,IERR)
-                     M    = JNFO(1)
-                     JBUF = JNFO(2)
-                     CALL MPI_RECV(IHBUF,2*M,MPI_INTEGER,INOD,96,
-     &                             MPI_COMM_WORLD,ISTAT,IERR)
-                     CALL MPI_RECV(RHBUF,M,MPI_DOUBLE_PRECISION,INOD,97,
-     &                             MPI_COMM_WORLD,ISTAT,IERR)
-                     IREC_2 = IREC_2 + 1
-                     WRITE (LGFIL_2,REC=IREC_2) LGREC(JBUF,I_FILE_2),M,
-     &                                          RHBUF,IHBUF
-                     LGREC(JBUF,I_FILE_2) = IREC_2
-                  ENDIF
-                  GOTO 12
-               ENDIF
-C
-C              Our read buffer is free, read integrals
-C
-               READ (LGFIL_1,REC=IREC_1) IRECN,N,RGBUF,IGBUF
-C              
-C              Send them to their destination
-C
-               INFO(1) = N
-               INFO(2) = IBUF
-               CALL MPI_ISEND(INFO,2,MPI_INTEGER,JNOD,95,
-     &                        MPI_COMM_WORLD,IREQ(1),IERR)
-               CALL MPI_ISEND(IGBUF,2*N,MPI_INTEGER,JNOD,96,
-     &                        MPI_COMM_WORLD,IREQ(2),IERR)
-               CALL MPI_ISEND(RGBUF,N,MPI_DOUBLE_PRECISION,JNOD,97,
-     &                        MPI_COMM_WORLD,IREQ(3),IERR)
-C
-               IREC_1 = IRECN
-               GOTO 11
-   20          CONTINUE
-            ENDIF
-         ENDIF
-      ENDDO
-C
-C     We have sent all our integrals, tell the others
-C
-      DO INOD = 0, NODES
-         IF (INOD.NE.MYTID) CALL MPI_ISEND(1,1,MPI_INTEGER,INOD,98,
-     &                        MPI_COMM_WORLD,IREQ(4),IERR)
-      ENDDO
-C
-C     Go into loop to wait for integrals and completion signals
-C
-      IDONE = 0
-  100 CONTINUE
-      CALL MPI_IPROBE(MPI_ANY_SOURCE,95,
+   1  CALL MPI_IPROBE(MPI_ANY_SOURCE,95,
      &                MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
-      IF (NEWMAIL) THEN 
-         INOD = ISTAT(MPI_SOURCE)
-         CALL MPI_RECV(JNFO,2,MPI_INTEGER,INOD,95,
+      IF (NEWMAIL) THEN
+C        Find out who was sending this
+         INODE = ISTAT(MPI_SOURCE)
+C        Receive the buffer
+         CALL MPI_RECV(IHBUF,4*NGBFSZ+4,MPI_INTEGER,INODE,95,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-         M    = JNFO(1)
-         JBUF = JNFO(2)
-         CALL MPI_RECV(IHBUF,2*M,MPI_INTEGER,INOD,96,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-         CALL MPI_RECV(RHBUF,M,MPI_DOUBLE_PRECISION,INOD,97,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-         IREC_2 = IREC_2 + 1
-         WRITE (LGFIL_2,REC=IREC_2) LGREC(JBUF,I_FILE_2),M,
-     &                              RHBUF,IHBUF
-         LGREC(JBUF,I_FILE_2) = IREC_2
+C        Decode the information and determine where the buffer should go
+         N      = IHBUF(1)
+         IBUF   = IHBUF(2)
+         I_FILE = IHBUF(3)
+         IFREE  = IHBUF(4)
+C        Write the buffers 
+         CALL BUFFER_FILE_WRITE (I_FILE,IBUF,IHBUF(5+2*N),IHBUF(5),N)
+C        There may be more messages still waiting, go back to the start
+         NEWMAIL = .FALSE.
+         GOTO 1
       ENDIF
-      CALL MPI_IPROBE(MPI_ANY_SOURCE,98,
-     &                MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
-      IF (NEWMAIL) THEN 
-         IDONE = IDONE + 1
-         INOD = ISTAT(MPI_SOURCE)
-         CALL MPI_RECV(M,1,MPI_INTEGER,INOD,98,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_END ()
+C     
+C     Monitor status of our own pending messages and
+C     stay in receiving mode until master tells us to stop 
+C     
+C     Calling parameters
+C
+C     Written by Luuk Visscher, October 2004
+C     
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "infpar.h"
+      LOGICAL NEWMAIL
+      INTEGER IEND
+      LOGICAL READY, ALLRECV
+C
+C     The actual value of IEND does not matter, we need to send 
+C     something.
+C
+      IEND = 1
+C
+C     The code for the slaves
+C
+      IF (MYTID.NE.MPARID) THEN
+C
+C     Start loop that will only end when master sends the termination
+C     signal.
+C
+   1  CONTINUE
+C     Verify status of our own messages
+      IF (.NOT.ALLRECV) THEN
+         CALL MPI_TESTALL(MAX_SEND_BUFFERS,IREQ, ALLRECV,
+     &                    MPI_STATUSES_IGNORE, IERR)
+C        Tell master in case all our messages were received
+         IF (ALLRECV) CALL MPI_ISEND(IEND,1,MPI_INTEGER,MPARID,98,
+     &               MPI_COMM_WORLD,IREQ(1),IERR)
       ENDIF
-      IF (IDONE.LT.NODES) GOTO 100
+C     Check for end signal
+      CALL MPI_IPROBE(MPARID,99,MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
+      IF (NEWMAIL) THEN
+C        Receive the end signal message and return
+         CALL MPI_RECV(IEND,1,MPI_INTEGER,MPARID,99,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         RETURN
+      ELSE
+C        There are still buffers waiting out there, see if we get some
+         CALL BUFFER_FILE_RECV ()
+         GOTO 1
+      ENDIF
 C
-      I_BF_REC(I_FILE_2) = IREC_2
+C     The code for the master
 C
-      CLOSE (LGFIL_1,STATUS='DELETE')
+      ELSE
+C
+      NREADY = 0
+    2 CONTINUE
+C
+C     Check for ready signals from the slaves
+C
+      CALL MPI_IPROBE (MPI_ANY_SOURCE,98,MPI_COMM_WORLD,NEWMAIL,
+     &                 ISTAT,IERR)
+      IF (NEWMAIL) THEN
+C        Find out who was sending this
+         INODE = ISTAT(MPI_SOURCE)
+C        Receive this signal
+         CALL MPI_RECV(IEND,1,MPI_INTEGER,INODE,98,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         NREADY = NREADY + 1
+      ENDIF
+C
+C     Send out end signal when all nodes are ready
+C
+      IF (NREADY.EQ.NODES) THEN
+         DO INODE = 1, NODES
+            CALL MPI_SEND(IEND,1,MPI_INTEGER,INODE,99,
+     &                    MPI_COMM_WORLD,IERR)
+         ENDDO
+         RETURN
+      ELSE
+C        There are still buffers waiting out there, see if we get some
+         CALL BUFFER_FILE_RECV ()
+         GOTO 2
+      ENDIF
+C
+C     End of master-slave branching
+C
+      ENDIF
 C
       RETURN
       END

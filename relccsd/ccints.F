@@ -97,6 +97,7 @@ C
       CHARACTER*10 DATEX,TIMEX*8
       LOGICAL FOCKSP
       INTEGER*8 N5F,N5L,N6F,N6L,IND
+      CHARACTER*10 FNODE,LFNAM
 C
 C---------------Executable code--------------------------------------
 C
@@ -124,7 +125,12 @@ C
 C
 C  INITIALIZE READING OF COULOMB INTEGRALS
 C
-      OPEN(MDINT,FILE='MDCINT',FORM='UNFORMATTED')
+      IF (MYTID.EQ.0) THEN
+         FNODE = 'MDCINT    '
+      ELSE
+         FNODE = LFNAM('MDCINT')
+      ENDIF
+      OPEN(MDINT,FILE=FNODE,FORM='UNFORMATTED')
       REWIND(MDINT)
       IF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
          IF (MYPROC.EQ.MASTER) THEN
@@ -145,10 +151,11 @@ C           The newer MOLFDIR file format = identical to older DIRAC
          END IF
 #endif
       ELSEIF (INTERFACE(1:5).EQ.'DIRAC') THEN
-         IF (MYPROC.EQ.MASTER) THEN
+         IF (MYPROC.EQ.MASTER.OR.INTERFACE(6:6).EQ.'6') THEN
          READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
      &                                    (KR(I),KR(-I),I=1,NKR)
          ENDIF
+         MREADER = MASTER
 #if defined (VAR_MPI)
          IF (NMPROC .GT. 1) THEN
             CALL MPI_BCAST(NKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
@@ -194,7 +201,7 @@ C
 C
       call memchk ('after initialization',cc,1)
   100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
-     &               NONZR,NZE,CBUF,IBUF)
+     &               NONZR,NZE,CBUF,IBUF,MREADER)
       IF (NONZR.LT.0) GOTO 110
       ICOUNT = ICOUNT + NONZR
       DO 102 INZE = 1, NZE
@@ -308,21 +315,22 @@ C ----------------------------
       NSEC = N5*IRW*RCW / NWORDS_ON_RECORD
       IF (MOD(N5*IRW*RCW,NWORDS_ON_RECORD).NE.0) NSEC = NSEC + 1
 C
-      IF (MYPROC.EQ.MASTER) THEN
+      IF (MYPROC.EQ.MASTER.OR.INTERFACE(6:6).EQ.'6') THEN
          CLOSE (MDINT,STATUS='KEEP')
          IF (BREIT.AND.ITRSGN.EQ.-1) THEN
              OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
          ELSE
-             OPEN(MDINT,FILE='MDCINT',FORM='UNFORMATTED')
+             OPEN(MDINT,FILE=FNODE,FORM='UNFORMATTED')
          ENDIF
          READ (MDINT)
+         MREADER = MASTER
       ENDIF
 C
       CALL XCOPY (N5,A0,0,VVOVV,1)
       CALL XCOPY (N5,A0,0,VVOVVA,1)
 C
   200 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,14,INDK,INDL,
-     &               NONZR,NZE,CBUF,IBUF)
+     &               NONZR,NZE,CBUF,IBUF,MREADER)
       IF (NONZR.LT.0) GOTO 210
       DO 202 INZE = 1, NZE
             ITYP = IBUF(1,INZE)
@@ -412,21 +420,22 @@ C --------------------------
       NSEC = N6*IRW*RCW / NWORDS_ON_RECORD
       IF (MOD(N6*IRW*RCW,NWORDS_ON_RECORD).NE.0) NSEC = NSEC + 1
 C
-      IF (MYPROC.EQ.MASTER) THEN
+      IF (MYPROC.EQ.MASTER.OR.INTERFACE(6:6).EQ.'6') THEN
          CLOSE (MDINT,STATUS='KEEP')
          IF (BREIT.AND.ITRSGN.EQ.-1) THEN
              OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
          ELSE
-             OPEN(MDINT,FILE='MDCINT',FORM='UNFORMATTED')
+             OPEN(MDINT,FILE=FNODE,FORM='UNFORMATTED')
          ENDIF
          READ (MDINT)
+         MREADER = MASTER
       ENDIF
 C
       CALL XCOPY (N6,A0,0,VVVVV,1)
       CALL XCOPY (N6,A0,0,VVVVVA,1)
 C
   300 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,16,INDK,INDL,
-     &               NONZR,NZE,CBUF,IBUF)
+     &               NONZR,NZE,CBUF,IBUF,MREADER)
       IF (NONZR.LT.0) GOTO 310
       DO 302 INZE = 1, NZE
             ITYP = IBUF(1,INZE)
@@ -761,7 +770,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,IATYP,INDK,INDL,
-     &                     NONZR,NZE,CBUF,IBUF)
+     &                     NONZR,NZE,CBUF,IBUF,MREADER)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -815,8 +824,12 @@ C---------------Executable code--------------------------------------
 C
       FOCKSP = EQNS.EQ.'FOCKSP'
 C
+C     Depending on the MOLTRA transformation algorithm the integrals may 
+C     be distributed over the nodes or only on the master
+C     They will always need to be dsitributed at this point
+C 
    1  CONTINUE
-      IF (MYPROC.EQ.MASTER) THEN
+      IF (MYPROC.EQ.MREADER) THEN
 C
 C     A number of different formats are possible. 
       IF (CARITH) THEN 
@@ -829,9 +842,6 @@ C     For real groups we read only the real part in DIRAC format.
          READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
      &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
      &        (CBUF(1,INZ),INZ=1,NONZR) 
-cluuk : The old code is given below, use this instead of the line above when restarting from old
-cluuk : MDCINT files.
-cluuk&        (CBUF(1,INZ),RDUM,INZ=1,NONZR) 
       ELSEIF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
 C     For real groups we skip the zero imaginary part in MOLFDIR format.
          READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
@@ -851,18 +861,25 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
       ENDIF
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1 ) THEN
-      CALL MPI_BCAST(IKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(JKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NONZR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IKR,1,MPI_INTEGER,MREADER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(JKR,1,MPI_INTEGER,MREADER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NONZR,1,MPI_INTEGER,MREADER,MPI_COMM_WORLD,IERR)
       IF (NONZR.GT.0) THEN
-       CALL MPI_BCAST(INDK,NONZR,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-       CALL MPI_BCAST(INDL,NONZR,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-       CALL MPI_BCAST(CBUF,NONZR*RCW,MPI_DOUBLE_PRECISION,
-     &                MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(INDK,NONZR,MPI_INTEGER,MREADER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(INDL,NONZR,MPI_INTEGER,MREADER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(CBUF,NONZR*RCW,MPI_DOUBLE_PRECISION,
+     &                MREADER,MPI_COMM_WORLD,IERR)
+      ELSEIF (NONZR.LT.0) THEN
+C      We are done with this node, go to the next
+       IF (MREADER.LT.NMPROC-1.AND.INTERFACE(6:6).EQ.'6') THEN
+           MREADER = MREADER + 1
+           GOTO 1
+       ENDIF
       ENDIF
       ENDIF
 #endif
       IF (NONZR.EQ.-1) RETURN
+         
       IJSIGN = SIGN(1,IKR*JKR) * ITRSGN
 C
 C     Expand to the full list

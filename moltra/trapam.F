@@ -1273,9 +1273,8 @@ C
           CALL QUIT('PAMTR1: strategy 5 can only do lagrangians')
       ELSEIF (ISTRAT.EQ.6) THEN
 c..not yet activated
-          call quit ('strategy 6 is not yet fully tested & implemented')
-c         CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
-c    &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
+          CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
+     &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
         WRITE(LUPRI,'(A)')
      &        'PAMTR1: Strategy ',ISTRAT,' not implemented'
@@ -3207,7 +3206,6 @@ C
       CALL GTVFCK(FMO,NFMO,IFMO,INTDHF,CMO,FAO,
      &            WORK(KQ(1)),NDMOQR,ICMOQR,WORK(KQ(1)),NDMOQR,ICMOQR,
      &            IPRINT,WORK,KFREE,LFREE)
-      call memchk ('na gtvfck',work,1)
 C
 C     Diagonalize Fock-matrix
 C     =======================
@@ -3232,7 +3230,6 @@ C
            CALL MEMREL('VIRCA1',WORK,KIBEIG2,KIBEIG2,KFREE,LFREE)
         ENDIF
    30 CONTINUE
-      call memchk ('na diago',work,1)
 C
 C     Backtransform coefficients
 C     ==========================
@@ -3444,7 +3441,6 @@ C       Hermitian operator
           FIRST3 = BF3
         ENDIF
       ENDIF
-      call memchk ('na cmo',work,1)
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================
@@ -3468,7 +3464,6 @@ C
      &    '*** WARNING *** GETFCK: No 1-Fock found. Regenerating.'
         CALL ONEFCK(FAO,IPRINT,WORK(KFREE),LFREE)
       ENDIF
-      call memchk ('na fao',work,1)
 C
 C     4. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================
@@ -4349,9 +4344,8 @@ C
      &     'TRANOD: Strategy 5 not implemented in parallel.'
          CALL QUIT('TRANOD: No parallel strategy 5 (yet)!')
       ELSEIF (ISTRAT.EQ.6) THEN
-          call quit ('strategy 6 is not yet fully tested & implemented')
-c         CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
-c    &              NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
+          CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
+     &              NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
          WRITE(LUPRI,'(A,I10,A)')
      &     'TRANOD: Strategy ',ISTRAT,' not implemented'

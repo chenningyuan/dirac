@@ -136,7 +136,7 @@ C
 C
 C     Initialize the buffer files for the halftransformed integrals
 C
-      CALL BUFFER_FILE_INIT (1,WORK(KLSORT),NFPCK12T*NBSYM)
+      CALL BUFFER_FILE_INIT (1)
 C
 C     Prepare for screening
 C
@@ -183,7 +183,7 @@ C
      &  WALLST-WALLBEF,' seconds'
          CALL FLSHFO(LUPRI)
          CALL XTIME(4,1,' Integral redistribution       ')
-         CALL BUFFER_FILE_DIST (1,WORK(KLSORT),NFPCK12T*NBSYM)
+         CALL BUFFER_FILE_END ()
          CALL XTIME(4,2,' Integral redistribution       ')
          CALL GETTIM(CPUST,WALLST)
          IF (MYTID.EQ.0)
@@ -455,6 +455,7 @@ C
               IBUFMPI(5) = IBEND
 C
               CALL XTIME(2,1,' Slave requesting task from master')
+              CALL BUFFER_FILE_RECV ()
               CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                      MPI_COMM_WORLD,ISTAT,IERR)
               CALL XTIME(2,2,' Slave requesting task from master')
@@ -649,8 +650,6 @@ C                    .. and its relative position therein
                      LSORT(2,KL,IREPRS) = IN_BUF    
 C                    .. and the node to which it is assigned
                      LSORT(3,KL,IREPRS) = LDIST(L)
-C                    place all of them on the master until the new integral interface is ready
-c                    lsort(3,kl,ireprs) = 0
                  ENDIF
                  ENDDO
               ENDDO
@@ -1098,7 +1097,7 @@ C              Write the block of transformed integrals to disk
 C
                JOFF = KHMAT
                DO IZ = 1, NZ
-                  CALL BUFFER_FILE_WRITE (1,RGBUF,IGBUF,
+                  CALL BUFFER_FILE_OUT (1,RGBUF,IGBUF,
      &                 LSORT(1,1,IREPPQ),
      &                 WORK(JOFF),NFPCK12(IREPIJ),
      &                 IRS_IZ,TRESHOLD)
@@ -1155,6 +1154,7 @@ C
       DIMENSION IJPAIRS(2)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
+      LOGICAL INIT
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1175,30 +1175,30 @@ C
       NIJOFF = 0
       NKLOFF = 0
       DO IREPIJ = 1, NFSYM
-        CALL MEMGET('REAL',KHMAT,NFPCK34(IREPIJ)*NZ*NZ*NBSYM,
+C       Allocate space for sorted and unsorted fully transformed integrals
+        CALL MEMGET('REAL',KHMAT,NFPCK34(IREPIJ)*NZ*4,
      &               WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KHTMP,NFPCK34(IREPIJ)*NZ,WORK,KFREE,LFREE)
+C       Loop over index pairs in the MO-basis
         DO 100 IJ = 1, IJPAIRS(IREPIJ)
-          CALL DZERO (WORK(KHMAT),NFPCK34(IREPIJ)*NZ*NZ*NBSYM)
           JOFF = KHMAT
+          INIT = .FALSE.
           DO IREPPQ = 0, NBSYM-1
-          IF (IREPIJ.EQ.JBTOF(IREPPQ,1)) THEN
+            IF (IREPIJ.EQ.JBTOF(IREPPQ,1)) THEN
+            IBUF = LSORT(1,IJ,IREPPQ)
+            INOD = LSORT(3,IJ,IREPPQ)
+            IF (INOD.EQ.MYTID) THEN
+C           Initialize the array for the fully transformed integrals
+            IF (.NOT.INIT) THEN
+               CALL DZERO (WORK(KHMAT),NFPCK34(IREPIJ)*NZ*4)
+               INIT = .TRUE.
+            ENDIF
+C           Allocate space to read halftransformed integrals
             CALL MEMGET('REAL',KGMAT,NZ*NSPCK(IREPPQ,0),
      &                   WORK,KFREE,LFREE)
-            IBUF = LSORT(1,IJ,IREPPQ)
             ICOL = LSORT(2,IJ,IREPPQ)
-            INOD = LSORT(3,IJ,IREPPQ)
-            IF (NODES.GE.1) THEN
-C              Parallel run : we only take the integrals assigned to this node
-               IF (INOD.NE.MYTID) GOTO 100
-C              Read from sorted file
-               CALL BUFFER_FILE_READ (2,IBUF,WORK(KGMAT),
-     &              NZ*NSPCK(IREPPQ,0),ICOL)
-            ELSE
-C              Read from unsorted file
-               CALL BUFFER_FILE_READ (1,IBUF,WORK(KGMAT),
-     &              NZ*NSPCK(IREPPQ,0),ICOL)
-            ENDIF
+            CALL BUFFER_FILE_READ (1,IBUF,WORK(KGMAT),
+     &                             NZ*NSPCK(IREPPQ,0),ICOL)
             CALL GMAT_SYM (IREPPQ,WORK(KGMAT),NSPCK(IREPPQ,0),ICS,ICF)
             IOFF = KGMAT
             DO IZ = 1, NZ
@@ -1250,14 +1250,20 @@ C
                   ENDDO
                ENDDO
                JOFF = JOFF + NFPCK34(IREPIJ) * NZ
+C...........End of loop over IZ (for the first transformed density)
             ENDDO
             CALL MEMREL('MS6IN2',WORK,KGMAT,KGMAT,KFREE,LFREE)
+C.........End of if clause for task on node
           ENDIF
+C.........End of if clause for parity
+          ENDIF
+C.........End of loop over IREPPQ
           ENDDO
           NKL = NFPCK34(IREPIJ)
           IKR = INDXKR(1,IJ+NIJOFF)
           JKR = INDXKR(2,IJ+NIJOFF)
-          CALL SYMFINT(IPRINT,IREPIJ,
+C         Only call SYMFINT if this matrix was formed
+          IF (INIT) CALL SYMFINT(IPRINT,IREPIJ,
      &                 INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
      &                 IJ,IKR,JKR,NSTR(1,0,3),NSTR(1,0,4),NKL,
      &                 WORK(KHMAT),WORK,KFREE,LFREE)

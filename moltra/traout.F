@@ -54,6 +54,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dgroup.h"
       DIMENSION NSTR(2),IKRA(*),IKRB(*)
       CHARACTER*8 CDATE,TIMEX,DATEX*10
+      CHARACTER*10 FNODE,LFNAM
+C
+C     Define a unique name for MDCINT. For backwards compatibility we name 
+C     the file  on the master node simply MDCINT
+C
+      IF (MYTID.EQ.0) THEN
+         FNODE = 'MDCINT    '
+      ELSE
+         FNODE = LFNAM('MDCINT')
+      ENDIF
 C
 C     The date is kept in a 10-character variable in RELCCSD
 C
@@ -72,7 +82,7 @@ C
          JJ = JJ + NSTR(IFSYM)
       ENDDO
 C           
-      OPEN (LUMLF2,FILE='MDCINT',FORM='UNFORMATTED')
+      OPEN (LUMLF2,FILE=FNODE,FORM='UNFORMATTED')
       WRITE (LUMLF2) DATEX,TIMEX,II,(IKRA(I),IKRB(I),I=1,II)
       NTKL = 0
       N2EFIL = 0
@@ -118,7 +128,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
-      CHARACTER*8 NEXTFIL
+      CHARACTER*5 NEXTFIL
+      CHARACTER*10 FNODE,LFNAM
 C
       NTKL = NTKL + NZKL
 C     Every integral takes at most 32 bytes on 4 byte integer machines
@@ -127,16 +138,17 @@ C     This solves the 2Gb problem on Linux.
       IF (NTKL.GT.60 000 000) THEN
          N2EFIL = N2EFIL + 1
          IF (N2EFIL.LT.10) THEN
-            WRITE (NEXTFIL,'(A7,I1)') 'MDCINT0',N2EFIL
+            WRITE (NEXTFIL,'(A7,I1)') 'MDC0',N2EFIL
          ELSEIF (N2EFIL.LT.100) THEN
-            WRITE (NEXTFIL,'(A6,I2)') 'MDCINT',N2EFIL
+            WRITE (NEXTFIL,'(A6,I2)') 'MDC',N2EFIL
          ELSE
             STOP "100 integral files is enough !"
          ENDIF
+         FNODE = LFNAM(NEXTFIL)
          WRITE (LUMLF2) 0,N2EFIL,0
-         WRITE (LUMLF2) NEXTFIL
+         WRITE (LUMLF2) FNODE
          CLOSE (LUMLF2,STATUS='KEEP')
-         OPEN (LUMLF2,FILE=NEXTFIL,FORM='UNFORMATTED')
+         OPEN (LUMLF2,FILE=FNODE,FORM='UNFORMATTED')
          NTKL = 0
       ENDIF
 C
