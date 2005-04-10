@@ -7,6 +7,10 @@ C  How to compile it:
 C
 C GNU: g77 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals relscf.f
 C
+C
+C NOTE: Previous NDIMPQ value was 500000. Replaced by a parameter in scfarr.h, NDIMPQPAR.
+C Increasing was needed to run the Rn atom. 
+C
 
 
 
@@ -517,7 +521,8 @@ C
      *       ' *** HAVE ',I10,' IBM+ WORDS'/,                           
      *       ' *** NEED ',I10,' K WORDS MORE'/,                         
      *       ' ***')                                                    
-      STOP 99                                                           
+CMI   STOP 99                                                           
+      CALL QUIT('relscf/CHECK: error 99....')                                                           
 C                                                                       
 C     PRINTOUT,ENDE ODER RETURN?                                        
 C                                                                       
@@ -755,6 +760,7 @@ C     COMPILER (XM=3)
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
       IMPLICIT REAL*8 (A-H,O-Z)                                         
 #include"priunit.h"
+#include"scfarr.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -785,7 +791,8 @@ C     THIS PART SETS UP THE COEFFICIENTS LAMBDA,P,Q,AND MU,R,S
 C                                                                       
       J=0                                                               
       KMX=0                                                             
-      IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+CMI   IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+      IF(NDIMPQ.NE.NDIMPQPAR) REWIND IDATA                                 
       IPQ=0                                                             
       DO 100 I=1,NSYM                                                   
       KIN=KMX+1                                                         
@@ -991,7 +998,8 @@ C     OPEN SHELLS
   100 CONTINUE                                                          
       DO 105 I=1,NSYM                                                   
   105 NBAS(I)=NBCON(I)                                                  
-      IF(NDIMPQ.EQ.500000) RETURN                                       
+CMI   IF(NDIMPQ.EQ.500000) RETURN                                       
+      IF(NDIMPQ.EQ.NDIMPQPAR) RETURN                                       
       WRITE (IDATA) (P(LIE),LIE=1,NDIMPQ),(Q(LIE),LIE=1,NDIMPQ)         
       REWIND IDATA                                                      
       RETURN                                                            
@@ -1581,6 +1589,7 @@ C     ONE CONFIGURATION
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
 #include"priunit.h"
+#include"scfarr.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -1601,7 +1610,8 @@ C
       POA=0.0D0                                                         
       POTA=0.0D0                                                        
       CIA=0.0D0                                                         
-      IF(NDIMPQ.EQ.500000) GO TO 30                                     
+CMI   IF(NDIMPQ.EQ.500000) GO TO 30                                     
+      IF(NDIMPQ.EQ.NDIMPQPAR) GO TO 30                                     
       REWIND IDATA                                                      
       READ (IDATA)(P(L),L=1,NDIMPQ),(Q(L),L=1,NDIMPQ)                   
 C                                                                       
@@ -1621,7 +1631,8 @@ C
    20 CIA=CIA+T(I)*ENCOR                                                
       POA=POA-ZN*POTA                                                   
       ENCOR=CIA+POA-ENERG                                               
-      IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+CMI   IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+      IF(NDIMPQ.NE.NDIMPQPAR) REWIND IDATA                                 
 C                                                                       
       RETURN                                                            
       END                                                               
@@ -1800,6 +1811,7 @@ C     TEST CONVERGENCE
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
 #include"priunit.h"
+#include"scfarr.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -1821,9 +1833,11 @@ C
       POT=0.D0                                                          
       POTN=0.D0                                                         
       CIN=0.D0                                                          
-      IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+CMI   IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+      IF(NDIMPQ.NE.NDIMPQPAR) REWIND IDATA                                 
       IPQ=NDIMPQ                                                        
-      IF(NDIMPQ.EQ.500000) IPQ=0                                        
+CMI   IF(NDIMPQ.EQ.500000) IPQ=0                                        
+      IF(NDIMPQ.EQ.NDIMPQPAR) IPQ=0                                        
 C                                                                       
       K=0                                                               
 CICI
@@ -1870,7 +1884,8 @@ CV 15 POT=POT+TERM
         VIR=POT/CIN                                                       
       EndIf
 **
-      IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+CMI   IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+      IF(NDIMPQ.NE.NDIMPQPAR) REWIND IDATA                                 
 C                                                                       
       IF (NUMVAR.EQ.0) RETURN                                           
 C$C   I=SYS$GETTIME(CPU,CLK)                                            
@@ -2563,6 +2578,7 @@ C     ONE CONFIGURATION
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
 #include"priunit.h"
+#include"scfarr.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),                THRE(2),EPS(2),       
@@ -2592,10 +2608,16 @@ C     COMPUTE QCAP AND PCAP
       NSTEP1=NBAS1*(NBAS1+1)/2                                          
       N1T=N1T+NSTEP1                                                    
     5 N1(I)=NSTEP1                                                      
-      IF (NDIMPQ.NE.500000) STOP 'NDIMPQ'                               
+CMI   IF (NDIMPQ.NE.500000) STOP 'NDIMPQ'                               
+      IF (NDIMPQ.NE.NDIMPQPAR) THEN
+        write(lupri,*) 'HAMIL: NDIMPQ=',NDIMPQ
+          CALL QUIT('HAMIL: NDIMPQ.NE.NDIMPQPAR!')                               
+      ENDIF
+
 C$    IF(NDIMPQ.NE.100000) REWIND IDATA                                 
 C$    IPQ=NDIMPQ                                                        
-      IF(NDIMPQ.EQ.500000) IPQ=0                                        
+CMI   IF(NDIMPQ.EQ.500000) IPQ=0                                        
+      IF(NDIMPQ.EQ.NDIMPQPAR) IPQ=0                                        
       DO 3 I=1,N1T                                                      
       PCAP(I)=0.D0                                                      
     3 QCAP(I)=0.D0                                                      
@@ -2635,7 +2657,11 @@ C
       PCAP(I)=TEMP1+P(IPQ)*DT(I)                                        
       QCAP(I)=TEMP2+Q(IPQ)*DOS(I)                                       
    35 CONTINUE                                                          
-36    IF (IPQ.GT.NDIMPQ) STOP 'NDIMPQ'                                  
+CMI36    IF (IPQ.GT.NDIMPQ) STOP 'NDIMPQ'                                  
+36    IF (IPQ.GT.NDIMPQ) THEN
+         write(LUPRI,*)'relscf/HAMIL: IPQ,NDIMPQ:',IPQ,NDIMPQ
+         CALL QUIT('relscf/HAMIL: NDIMPQ < IPQ !')
+      ENDIF                                 
 C                                                                       
 C      COMPUTES SMIN AND GMIN                                           
       NSTEP1=0                                                          
@@ -2728,7 +2754,8 @@ CICI  951 CONTINUE
       FO(K)=HPPC-QCAP(K)+TERM1*OCCUCS(I)/FACT1                          
   100 K=K+1                                                             
   105 NSTEP=NSTEP+NSH                                                   
-      IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+CMI   IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+      IF(NDIMPQ.NE.NDIMPQPAR) REWIND IDATA                                 
       RETURN                                                            
       END                                                               
 
@@ -3467,7 +3494,8 @@ C
       NPBAFI=0                                                          
       NPCOFI=0                                                          
       IDATA=2                                                           
-      NDIMPQ=500000                                                     
+CMI   NDIMPQ=500000                                                     
+      NDIMPQ=NDIMPQPAR
     3 DO 10 I=1,12                                                      
    10 NAME(I)=NBLANK                                                    
       DO 1 I=1,4                                                        
@@ -3859,7 +3887,8 @@ C
  2000 NOR=NSHT                                                          
       NBF=NBAST                                                         
       LQM=LPQ*(LPQ+1)/2                                                 
-      IF(NDIMPQ.NE.500000) LQM=NDIMPQ                                   
+CMI   IF(NDIMPQ.NE.500000) LQM=NDIMPQ                                   
+      IF(NDIMPQ.NE.NDIMPQPAR) LQM=NDIMPQ                                   
       J=0                                                               
       IF(NFLAG2.NE.3) GO TO 31                                          
       J=NGAUSS*NBLOCK                                                   
@@ -4954,7 +4983,8 @@ C
    31 IPQ=IPQ+1                                                         
    33 WRITE(6,40)IBLK,(P(I),I=1,IPQ)                                    
       WRITE(6,45)IBLK,(Q(I),I=1,IPQ)                                    
-      IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+CMI   IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+      IF(NDIMPQ.NE.NDIMPQPAR) REWIND IDATA                                 
 C                                                                       
       WRITE(6,60)    (S(I),I=1,N1T)                                     
    60 FORMAT ('1'//,5X,'FINAL MATRICES'//5X,'S MATRIX'/(6X,10F12.6))    
@@ -5917,6 +5947,7 @@ C     EXPONENTIATIONS REMOVED (F FUNCTIONS ONLY)
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
 #include"priunit.h"
+#include"scfarr.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -5942,7 +5973,8 @@ C     THIS PART SETS UP THE COEFFICIENTS LAMBDA,P,Q,AND MU,R,S
 C                                                                       
       J=0                                                               
       KMX=0                                                             
-      IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+CMI   IF(NDIMPQ.NE.500000) REWIND IDATA                                 
+      IF(NDIMPQ.NE.NDIMPQPAR) REWIND IDATA                                 
       DO 100 I=1,NSYM                                                   
       KIN=KMX+1                                                         
       KMX=KIN+NBAS(I)-1                                                 
@@ -6148,7 +6180,8 @@ C
 C     AJMN(11) IS THE PARAMETER J(D,P,2) OCCURRING IF BOTH P AND D ARE  
 C     OPEN SHELLS                                                       
   100 CONTINUE                                                          
-      IF(NDIMPQ.EQ.500000) RETURN                                       
+CMI   IF(NDIMPQ.EQ.500000) RETURN                                       
+      IF(NDIMPQ.EQ.NDIMPQPAR) RETURN                                       
       WRITE (IDATA) (P(LIE),LIE=1,NDIMPQ),(Q(LIE),LIE=1,NDIMPQ)         
       REWIND IDATA                                                      
       RETURN                                                            
@@ -6164,6 +6197,7 @@ C     MAXIMUM PRINCIPAL QUANTUM NUMBER =5
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
 #include"priunit.h"
+#include"scfarr.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -6465,7 +6499,8 @@ C#    WRITE (6,780) P(J),Q(J),GJ0,GK0
 C#780 FORMAT(' TENEW PR=',D20.10,' QR=',D20.10,' GJ0=',F10.5,' GK0=',   
 C#   *F10.5)                                                            
   100 CONTINUE                                                          
-      IF(NDIMPQ.EQ.500000) RETURN                                       
+CMI   IF(NDIMPQ.EQ.500000) RETURN                                       
+      IF(NDIMPQ.EQ.NDIMPQPAR) RETURN                                       
       WRITE (IDATA) (P(LIE),LIE=1,NDIMPQ),(Q(LIE),LIE=1,NDIMPQ)         
       REWIND IDATA                                                      
       RETURN                                                            
@@ -6933,10 +6968,15 @@ C.......................................................................
                         PJ = X0-Y0*FF0-Y2*FF2-Y4*FF4-Y6*FF6 
                         QJ = -Y0*AJMN(17)-Y2*AJMN(18)-Y4*AJMN(19) 
      X                         -Y6*AJMN(20) 
+
                         if(ipq.gt.ndimpq) then
-                            write(6,*) ' ipq too large in teig'
-                            stop
+CMI                         write(6,*) ' ipq too large in teig'
+CMI                         stop
+                         WRITE(LUPRI,*)
+     &                    'relscf/TEIG: ipq, ndimpq:',ipq, ndimpq 
+                         CALL QUIT('relscf/TEIG: ipq too large!') 
                         endif
+
   440                   CONTINUE
                         P(IPQ)=PJ
                         Q(IPQ)=QJ
@@ -7038,8 +7078,4 @@ CBS         READ(5,200)(AJMN(J),J=JCOUNT+1,JCOUNT+IM-1)
   140 FORMAT(5D21.8)                                                    
       RETURN 
       END 
-
-
-
-
 
