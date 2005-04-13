@@ -3722,7 +3722,7 @@ C     CHARACTER LABINT(MXQN**2)*4
       CHARACTER*(*) LABINT(*)
       character*8 xa,ya,za
       DIMENSION xa(4),ya(4),za(5)
-      CHARACTER*15 AFN
+      CHARACTER*16 AFN
 
       CALL QENTER('AMFIIN')
 #include "memint.h"
@@ -4008,7 +4008,9 @@ C     ... file name for AMFI integrals of center
        ELSE IF (ICHARGE.LT.1000) THEN
         AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE/100)//
      &                       CHRNOS(MOD(ICHARGE,100)/10)//
-     &                       CHRNOS(MOD(MOD(ICHARGE,100),10))
+     &                       CHRNOS(MOD( MOD(ICHARGE,100), 10) )
+C        write(LUPRI,*) CHRNOS(ICHARGE/100),CHRNOS(MOD(ICHARGE,100)/10),
+C    &      CHRNOS(MOD( MOD(ICHARGE,100), 10) ) 
        ELSE
          CALL QUIT('AMFIIN: charge > 1000!')
        ENDIF
