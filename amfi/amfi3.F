@@ -2004,14 +2004,14 @@ cbs
 #include "implicit.h"
 #include "priunit.h"
 #include "para.h"
-      parameter (ichargemax=96)
+      parameter (ichargemax=118)
       dimension iclocc(0:Lmax_occ,0:ichargemax)
       dimension iopocc(0:Lmax_occ,0:ichargemax)
-      character*30 occtxt(0:96) 
+      character*30 occtxt(0:ichargemax) 
       character*32 txt  
       data txt/'SO-integrals are calculated for '/
       dimension iclosed(0:LMAX),iopen(0:LMAX)
-      data (occtxt(i),i=0,96) /
+      data (occtxt(i),i=0,ichargemax) /
      *'dummy atom (no integrals)     ',
 CMI  *' H: no mean-field             ',
      *' H: 1s^1                      ',
@@ -2109,7 +2109,29 @@ CMI  *' H: no mean-field             ',
      *'Np: [Rn]7s^2 6d^1 5f^4        ',
      *'Pu: [Rn]7s^2 6d^0 5f^6        ',
      *'Am: [Rn]7s^2 6d^0 5f^7        ',
-     *'Cm: [Rn]7s^2 6d^0 5f^8        '/
+     *'Cm: [Rn]7s^2 6d^0 5f^8        ',  ! 96
+     *'Bk: [Rn]7s^2 6d^0 5f^9        ',  ! 97
+     *'Cf: [Rn]7s^2 6d^0 5f^10       ',  ! 98
+     *'Es: [Rn]7s^2 6d^0 5f^11       ',  ! 99
+     *'Fm: [Rn]7s^2 6d^0 5f^12       ',  ! 100
+     *'Md: [Rn]7s^2 6d^0 5f^13       ',  ! 101
+     *'No: [Rn]7s^2 6d^0 5f^14       ',  ! 102
+     *'Lr: [Rn]7s^2 7p^1 6d^0 5f^14  ',  ! 103
+     *'Rf: [Rn]7s^2 7p^0 6d^2 5f^14  ',  ! 104
+     *'Db: [Rn]7s^2 7p^0 6d^3 5f^14  ',  ! 105
+     *'Sg: [Rn]7s^2 7p^0 6d^4 5f^14  ',  ! 106
+     *'Bh: [Rn]7s^2 7p^0 6d^5 5f^14  ',  ! 107
+     *'Hs: [Rn]7s^2 7p^0 6d^6 5f^14  ',  ! 108
+     *'Mt: [Rn]7s^2 7p^0 6d^7 5f^14  ',  ! 109
+     *'Ds: [Rn]7s^1 7p^0 6d^9 5f^14  ',  ! 110
+     *'Rg: [Rn]7s^1 7p^0 6d^10 5f^14 ',  ! 111
+     *'Uub:[Rn]7s^2 7p^0 6d^10 5f^14 ',  ! 112
+     *'Uut:[Rn]7s^2 7p^1 6d^10 5f^14 ',  ! 113
+     *'Uuq:[Rn]7s^2 7p^2 6d^10 5f^14 ',  ! 114
+     *'Uup:[Rn]7s^2 7p^3 6d^10 5f^14 ',  ! 115
+     *'Uuh:[Rn]7s^2 7p^4 6d^10 5f^14 ',  ! 116
+     *'Uus:[Rn]7s^2 7p^5 6d^10 5f^14 ',  ! 117
+     *'Uuo:[Rn]7s^2 7p^6 6d^10 5f^14 '/  ! 118
       data ((iclocc(i,j),i=0,LMAX_occ),j=0,ichargemax) /
      & 0 , 0, 0, 0,       !0
      & 0 , 0, 0, 0,       !1
@@ -2216,7 +2238,29 @@ c
      & 7 , 5, 3, 1,       !93  
      & 7 , 5, 3, 1,       !94  
      & 7 , 5, 3, 1,       !95 
-     & 7 , 5, 3, 1/       !96 
+     & 7 , 5, 3, 1,       !96 
+     & 7 , 5, 3, 1,       !97 
+     & 7 , 5, 3, 1,       !98 
+     & 7 , 5, 3, 1,       !99 
+     & 7 , 5, 3, 1,       !100
+     & 7 , 5, 3, 1,       !101
+     & 7 , 5, 3, 2,       !102
+     & 7 , 5, 3, 2,       !103
+     & 7 , 5, 3, 2,       !104
+     & 7 , 5, 3, 2,       !105
+     & 7 , 5, 3, 2,       !106
+     & 7 , 5, 3, 2,       !107
+     & 7 , 5, 3, 2,       !108
+     & 7 , 5, 3, 2,       !109
+     & 6 , 5, 3, 2,       !110
+     & 6 , 5, 4, 2,       !111, cs+os
+     & 7 , 5, 4, 2,       !112, cs
+     & 7 , 5, 4, 2,       !113, cs+os
+     & 7 , 5, 4, 2,       !114, cs+os
+     & 7 , 5, 4, 2,       !115, cs+os
+     & 7 , 5, 4, 2,       !116, cs+os
+     & 7 , 5, 4, 2,       !117, cs+os
+     & 7 , 6, 4, 2/       !118, cs
 cbs
       data ((iopocc(i,j),i=0,LMAX_occ),j=0,ichargemax) /
      & 0 , 0, 0, 0,    !0 
@@ -2326,7 +2370,29 @@ c
      & 0 , 0, 1, 4,    ! 93  
      & 0 , 0, 0, 6,    ! 94  
      & 0 , 0, 0, 7,    ! 95  
-     & 0 , 0, 0, 8/    ! 96   
+     & 0 , 0, 0, 8,    ! 96   
+     & 0 , 0, 0, 9,    ! 97   
+     & 0 , 0, 0,10,    ! 98   
+     & 0 , 0, 0,11,    ! 99   
+     & 0 , 0, 0,12,    ! 100  
+     & 0 , 0, 0,13,    ! 101  
+     & 0 , 0, 0, 0,    ! 102  
+     & 0 , 1, 0, 0,    ! 103  
+     & 0 , 0, 2, 0,    ! 104  
+     & 0 , 0, 3, 0,    ! 105  
+     & 0 , 0, 4, 0,    ! 106  
+     & 0 , 0, 5, 0,    ! 107  
+     & 0 , 0, 6, 0,    ! 108  
+     & 0 , 0, 7, 0,    ! 109  
+     & 1 , 0, 9, 0,    ! 110  
+     & 1 , 0, 0, 0,    ! 111  
+     & 0 , 0, 0, 0,    ! 112  
+     & 0 , 1, 0, 0,    ! 113  
+     & 0 , 2, 0, 0,    ! 114  
+     & 0 , 3, 0, 0,    ! 115  
+     & 0 , 4, 0, 0,    ! 116  
+     & 0 , 5, 0, 0,    ! 117  
+     & 0 , 0, 0, 0/    ! 118  
 cbs
       if (icharge.gt.ichargemax) then
          CALL QUIT('occupations not implemented')

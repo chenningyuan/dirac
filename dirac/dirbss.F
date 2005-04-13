@@ -1846,7 +1846,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CALL QENTER('GET_HINF_FPM')
 #include "memint.h"         
 
-C diagonalize the BNDH in "k" basis
+C ===========================================
+C     diagonalize the BNDH in "k" basis
+C ===========================================
 
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
 C        ... the size must be NTBAS(0) !
@@ -1884,7 +1886,7 @@ C      ... off-set for the eigenvectors...
        IF(IPRHAM.GE.4) THEN
 C          ... Write out the eigenvalues in the |k> basis
         CALL HEADER(
-     &    'MAKE_DKH: Bare nucleus eigenvalues:',-1)
+     & 'GET_HINF_FPM: Bare nucleus eigenvalues:',-1)
         WRITE(LUPRI,'(3X,A,I1,A,I1,4X,A)')
      &    '*** Fermion corep ',I,'/',NFSYM,'boson irrep'
         WRITE(LUPRI,'(I5,F25.10,I5)')
@@ -1894,7 +1896,7 @@ C          ... Write out the eigenvalues in the |k> basis
        IF(IPRHAM.GE.7) THEN
 C          ... Write out the eigenvectors in the |k> basis
        CALL HEADER(
-     &'MAKE_DKH: Bare nucleus eigenvectors |v> in the |k> basis',-1)
+     &'GET_HINF_FPM: Bare nucleus eigenvectors |v> in the |k> basis',-1)
        WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &    '*** Fermion corep ',I,'/',NFSYM
        CALL PRQMAT(WORK(JH1VEC),NORB(I),NORB(I),
@@ -1943,7 +1945,7 @@ C          ... do A := A - Yp*(Yp)+
      &       D1,IPQTOQ(1,0),WORK(KAMAT),NREF,NREF,NZ)
 
        IF (IPRHAM.GE.7) THEN
-         CALL HEADER( 'MAKE_DKH: A matrix for getting R',-1)
+         CALL HEADER( 'GET_HINF_FPM: A matrix for getting R',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
          CALL PRQMAT(WORK(KAMAT),NREF,NREF,NREF,NREF,
@@ -1990,11 +1992,11 @@ C              D(*) vector in Choleskyl decomp.
      &                       WORK(KXMAT),NREF2,NREF,
      &           JOB,WORK(KIPVT),WORK(JDVEC+NREF))
        IF(NEFF.LT.NREF) THEN
-              WRITE(LUPRI,'(/2A)') '* MAKE_DKH WARNING: ',
+              WRITE(LUPRI,'(/2A)') '* GET_HINF_FPM WARNING: ',
      &         ' linear dependencies detected in Cholesky decomposition'
               WRITE(LUPRI,'(11X,A,I5,A,I5)')
      &         ' Reduced dimensionality: ',NREF,' --> ',NEFF
-              CALL QUIT('MAKE_DKH: Cholesky problems...')
+              CALL QUIT('GET_HINF_FPM: Cholesky decompos.problem !')
        ENDIF
 
 C=============================================================================
@@ -3699,24 +3701,25 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(THRNULL=1.0D-7,D0=0.00D00)
-#include "maxaqn.h"
+C#include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dummy.h"
 #include "nuclei.h"
 #include "shells.h"
-#include "dcbsph.h"
+C#include "dcbsph.h"
 #include "chrnos.h"
 
 C
-      LOGICAL BREIT,PROPRI,OLDNRM,ISONLIST,ONLYSO1,ONLYTRA
+      LOGICAL BREIT,PROPRI,OLDNRM,ISONLIST,ONLYSO1,ONLYTRA,EXAMF
       DIMENSION WORK(LWORK),H2SAO(NB,NB,4)  
       DIMENSION IPTYPAO(NSPH),INDXLM(NSPH),IPNUC(NSPH),
      &       IPTA(*),INDXLMA(*),IAMFU(NSPH),ISTNUCTYP(NSPH,2),
      &       IZTNUCS(NTNUC),IANUCS(NTNUC),CHPNUC(NTNUC)
       DIMENSION ncontrac(0:4)
 
-      CHARACTER LABINT(MXQN**2)*4
+C     CHARACTER LABINT(MXQN**2)*4
+      CHARACTER*(*) LABINT(*)
       character*8 xa,ya,za
       DIMENSION xa(4),ya(4),za(5)
       CHARACTER*15 AFN
@@ -4010,9 +4013,20 @@ C     ... file name for AMFI integrals of center
          CALL QUIT('AMFIIN: charge > 1000!')
        ENDIF
 
-       write(lupri,*) 'AMFI file name:',AFN
-       CALL GPOPEN(MNFPRP,AFN,'UNKNOWN',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
+       WRITE(LUPRI,'(2X,A,A)')
+     &  'AMFIIN: The file name with AMFI integrals: ',AFN
+       INQUIRE(FILE=AFN,EXIST=EXAMF)
+       IF (.NOT.EXAMF) THEN
+         WRITE(LUPRI,'(4X,A)')
+     &  '...this file does not exist, AMFI is utilized ! '
+         CALL GPOPEN(MNFPRP,AFN,'UNKNOWN',' ','UNFORMATTED',
+     &             IDUMMY,.FALSE.)
+       ELSE
+         WRITE(LUPRI,'(4X,A)')
+     &  '...this file does exist, AMFI is not utilized ! '
+         CALL GPOPEN(MNFPRP,AFN,'OLD',' ','UNFORMATTED',
+     &             IDUMMY,.FALSE.)
+       ENDIF
 
 C      ... find out the correct index of nuclear exponent
        IF (GAUNUC) THEN
@@ -4054,10 +4068,10 @@ C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
         IACHNUC=NINT(CHPNUC(INDXMINCH))
         write(lupri,*) ' partial charge is (round int):',IACHNUC
 
-C     .... call the AMFI program of B.Schimmelpfennig
-        CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM1),
-     &             IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
-
+C     .... call the AMFI program of B.Schimmelpfennig 
+C               if no file with integrals is present
+         CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM1),
+     &             EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
 C      ... read AOPROPER.MNF file...
 C    numballcart... total no of functions per centre...

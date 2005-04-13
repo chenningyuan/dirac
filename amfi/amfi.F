@@ -9,7 +9,7 @@ C in DIRAC include directory:
 C     dummy.h implicit.h pi.h priunit.h 
 
       Subroutine amfi(IN,LUPROP,OLDNRM,BREIT,FINITE,EXP_FIN,
-     *                IC_AMFIX,IACH,WRK,LFREE)            
+     *                 EXAMF,IC_AMFIX,IACH,WRK,LFREE)            
 CBS
 CBS IN:  Input file, to be replaced by direct reading from DALTON arrays..
 CBS LUPROP: Unit for writing the atomic integrals 
@@ -132,6 +132,7 @@ CBS                        schemes are used
 
       logical ADDSO1  ! Add also one-electron SO integrals
       LOGICAL DOEXIT ! Exit AMFi when charge in readbas is 0
+      LOGICAL EXAMF ! if .true., leave AMFI after readbas
       character*4  symmetry  
 #include "datapow.h"
       common ipowxyz(3,-Lmax:Lmax,0:Lmax)
@@ -177,6 +178,14 @@ cbs   read the input
       call readbas(Lhigh,makemean,bonn,breit,
      *symmetry,sameorb,AIMP,oneonly,ncont4,numballcart,IN,
      *ifinite,EXP_FIN,DOEXIT) 
+
+      IF (EXAMF) THEN
+       WRITE(LUPRI,*)
+     & 'Leaving the AMFI, because AOPROPER_MNF.xx file exist!'
+       RETURN
+      ENDIF
+
+CMI    .... when AOPROPER file exit, leave the AMFI !
 
 CMI    set the oneonly option !!
        IC_AMFI = IC_AMFIX
