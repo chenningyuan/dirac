@@ -3718,11 +3718,13 @@ C
       IF(LEVYLE) THEN
         WRITE(LUPRI,'(A)') ' * Levy-Leblond Hamiltonian'
       ELSE IF (BSS) THEN
-        WRITE(LUPRI,'(1X,A,I3)')
+        WRITE(LUPRI,'(1X,A,I5)')
      &' * Barysz-Sadlej-Snijders Hamiltonian. Type code:',IBSS
-        WRITE(LUPRI,'(1X,A,I4)')
-     &' * If wished, mean-field AMFI summation for the charge: ',
+        IF (IBSS.GT.999) THEN
+          WRITE(LUPRI,'(1X,A,I4)')
+     &' * If wished, mean-field AMFI summation is for the charge: ',
      &   IMFCH
+        ENDIF
       ELSE IF (IGTINT .NE. 0) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE
