@@ -694,7 +694,7 @@ cbs #####################################################################
       enddo
       enddo
 cbs   loop over all possible < l1 l2, l3 l4 > blocks
-CBS   write(6,'(A)') '   L1   L2   L3   L4' 
+      write(6,'(A)') '   L1   L2   L3   L4' 
       do l1=0,Lhigh   ! improving is probably possible...
       do l2=0,Lhigh
       do l3=0,l1
@@ -712,7 +712,7 @@ cbs   a difference of two means two spin flips and is therefore not allowed
 cbs   additional check for mean-field
       if ((l1.eq.l3.and.l2.eq.l4).or.(l1.eq.l2.and.l3.eq.l4)) then
       if (l1+l3.ne.0) then
-CBS   write(6,'(4I5)') l1,l2,l3,l4
+      write(6,'(4I5)') l1,l2,l3,l4
 CBS   now I determine the size of the angular integral arrays
         jblock=0
         do m1=-l1,l1
