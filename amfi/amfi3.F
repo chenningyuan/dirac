@@ -1881,6 +1881,7 @@ CMI   endif
       write(17,'(4(E20.14,X))') ((exponents(irun,L),irun=1,
      *nprimit(l)),l=0,Lmax_occ)
       rewind(17)
+      close(17,status='keep')
 
 CMI   call system('relscf < TOSCF > scf.out')
 CMI ... run internal atomic SCF code which reads TOSCF input file
@@ -1888,7 +1889,7 @@ CMI ... run internal atomic SCF code which reads TOSCF input file
 
       open(unit=7,file='fort.7',form='formatted',
      *status='unknown')
-      close(17)
+CMI   close(17)
       rewind(7)
 cbs   set the ocupation numbers 
       do lrun=0,lhigh
