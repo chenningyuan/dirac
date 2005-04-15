@@ -2344,6 +2344,8 @@ cbs
       endif
 CMI   write(LUPRI,'(A32,A30)') txt,occtxt(icharge)
       write(LUPRI,*) ' charge of the atom:',IACH
+      write(LUPRI,*) ' Mean-field summation for # of electrons:',
+     &                 icharge-IACH
       write(LUPRI,'(A32,A30)') txt,occtxt(icharge-IACH)
       do irun=0,min(lmax,lmax_occ)
 CMI      iclosed(irun)=iclocc(irun,icharge)

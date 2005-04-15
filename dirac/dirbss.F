@@ -3662,7 +3662,7 @@ C  /* Deck amfiin */
       SUBROUTINE AMFIIN(H2SAO,NB,NTNUC,IPTYPAO,INDXLM,IPNUC,IZTNUCS,
      &                  IPTA,INDXLMA,IAMFU,IANUCS,ISTNUCTYP,CHPNUC,
      &                   NSPH,LABINT,ONLYSO1,ONLYTRA,
-     &                 IMFCHA,IC_AMFI,IPRINT,WORK,LWORK)    
+     &                 IMFCHA,IC_AMFI,CVAL_AMFI,IPRINT,WORK,LWORK)    
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C 
 C  Interface to B.Schimmelpfennig's atomic mean-field integral code, AMFI   
@@ -3691,6 +3691,8 @@ C
 C          ... for AMFI program (subroutine)
 C              IMFCHA
 C              IC_AMFI
+C              CVAL (from dcbgen.h) - actual speed of light
+C
 C
 C On output: H2SAO with mean-field contributions (only if wished)
 C            - only comparison made
@@ -4073,7 +4075,7 @@ C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
 C     .... call the AMFI program of B.Schimmelpfennig 
 C               if no file with integrals is present
          CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM1),
-     &             EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
+     &           CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
 C      ... read AOPROPER.MNF file...
 C    numballcart... total no of functions per centre...
@@ -4617,11 +4619,13 @@ C      .... charges per nucleis
 
        CALL MEMCHK('before AMFI2',WORK,1)
 
+       CVAL_AMFI = CVAL
+
        CALL AMFIIN(WORK(KBUF2),NB,NTNUC,WORK(KIPTYPAO),WORK(KHINLM),
      &  WORK(KIPNUC),WORK(KZTNUCS),WORK(KAIPT),WORK(KAILM),WORK(KAMFU),
      &  WORK(KANUCS),WORK(KSTNUCTYP),WORK(KCHPNUC),
      &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCHA,IC_AMFI,
-     &  IPRHAM,WORK(KFREE),LFREE)
+     &  CVAL_AMFI,IPRHAM,WORK(KFREE),LFREE)
 
       CALL MEMCHK('before S->C',WORK,1)
 

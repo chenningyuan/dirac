@@ -9,7 +9,7 @@ C in DIRAC include directory:
 C     dummy.h implicit.h pi.h priunit.h 
 
       Subroutine amfi(IN,LUPROP,OLDNRM,BREIT,FINITE,EXP_FIN,
-     *                 EXAMF,IC_AMFIX,IACH,WRK,LFREE)            
+     *                 CVEL_AMFI,EXAMF,IC_AMFIX,IACH,WRK,LFREE) 
 CBS
 CBS IN:  Input file, to be replaced by direct reading from DALTON arrays..
 CBS LUPROP: Unit for writing the atomic integrals 
@@ -22,11 +22,13 @@ CBS
 CBS
 CMI  IC_AMFIX ... specify what SO to include:
 CMI  IACH     ... charge (int) of the nucleus - for modification of the occupation numbers in relscf !
-CMI
+CMI  CVEL     ... speed of light (in au) entering from DIRAC
+CMI              (is in alphac.h )
 CMI
 CMI=====================================================================
 #include "implicit.h"
 #include "priunit.h"
+#include "alphac.h"
 c###########################################################################
 c
 c          A M F I 
@@ -138,6 +140,12 @@ CBS                        schemes are used
       common ipowxyz(3,-Lmax:Lmax,0:Lmax)
       dimension WRK(LFREE)
 
+CMI   ... when we have CVEL, do calculate ALPHAC, ALPHA2
+      CVEL = CVEL_AMFI
+      ALPHAC = 1.0D0/CVEL
+      ALPHA2 = ALPHAC*ALPHAC
+      speed2=CVEL*CVEL
+      speed4=speed2*speed2
 c##########################################################################
 cbs  #####################################################################
 cbs         version with all angular integrals in memory 
@@ -191,6 +199,7 @@ CMI    set the oneonly option !!
        IC_AMFI = IC_AMFIX
        WRITE(LUPRI,*) 'AMFI: IC_AMFI=',IC_AMFI
        WRITE(LUPRI,*) 'AMFI: charge of atom IACH=',IACH
+       WRITE(LUPRI,'(A,F18.7)') 'AMFI: the speed of light:',CVEL
        IF (DOEXIT) THEN
         IC_AMFI = 1
         WRITE(LUPRI,*) 'The charge read in MNF.INP is ZERO!'//
