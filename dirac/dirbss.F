@@ -3729,6 +3729,8 @@ C     CHARACTER LABINT(MXQN**2)*4
       CALL QENTER('AMFIIN')
 #include "memint.h"
 
+      CALL HEADER('*** Output from AMFIIN ***',-1)
+
       write(lupri,*) 'NUCIND=',NUCIND
       write(lupri,*) 'NLRGSH=',NLRGSH
       write(lupri,*) 'charge:',(charge(i),i=1,nucind)
@@ -3742,7 +3744,7 @@ C   ... fill IZTNUCS - LIST OF ALL NUCLEIS
       DO I=1,NUCIND
       DO J=1,NUCDEG(I)
        IZTNUCS(IX) = NINT(CHARGE(I))
-       write(lupri,*) IX,'. nuclei:',IZTNUCS(IX) 
+       write(lupri,*) IX,'. nuclei of charge:',IZTNUCS(IX) 
        IX = IX + 1
       ENDDO
       ENDDO
@@ -3781,7 +3783,6 @@ C        ... find out the nuclei
      &  ' IDEG/NDEG=',IDEG,'/',NUCDEG(ICENT),' centre=',INUCPOS,
      &  ' INDXLM=',INDX
          ENDIF
-
         
 C      ... specify IPTYPAO,  INDX_L_ML and center
         IF (L.EQ.1) THEN
@@ -3904,11 +3905,8 @@ C          write(lupri,*) 'IX set to:',IX
       ENDDO
       ENDDO
 
-C       .... fails !
-C     CALL MEMCHK('before A',WORK,1)
-
       IF ((IX-1).NE.NSPH) THEN
-        write(lupri,*) 'AMFFIN: IX-1=',IX-1, 'NSPH=',NSPH
+        write(lupri,*) 'AMFIIN error: IX-1=',IX-1, 'NSPH=',NSPH
         CALL QUIT('AMFIIN: IX-1<>NSPH ! CHECK IT !')
       ENDIF
 
@@ -3916,12 +3914,12 @@ C ... rearange INDXLM for splitted basis sets...
       CALL UNITE_INDXS(NSPH,LABINT,IPNUC,IPTYPAO,
      &                   INDXLM,ISTNUCTYP,IPRINT)
 
-
-      IF (IPRINT.GE.6) THEN
-        CALL HEADER(
-     &'AMFIIN: TOTAL H(2c)_LL in "xhi" S AO basis ' ,-1)
-        CALL PRQMAT(H2SAO,NB,NB,NB,NB,4,IQDEF,LUPRI)    
-      ENDIF
+C  ... cancel control print out as IQDEF is def. in dgroup.h
+C     IF (IPRINT.GE.6) THEN
+C       CALL HEADER(
+C    &'AMFIIN: TOTAL H(2c)_LL in "xhi" S AO basis ' ,-1)
+C       CALL PRQMAT(H2SAO,NB,NB,NB,NB,4,IQDEF,LUPRI)    
+C     ENDIF
 
 C     Open Mean-field input file generated in READIN      
       LUTMP2 = 0
@@ -3997,10 +3995,11 @@ C     ... read number of unique nuclei
 
       DO IATOM = 1, NUNUC
 
-        write(lupri,*) 'AMFI - calculating unique nucleus no:',IATOM
+       READ(LUTMP2,*) ICHARGE
 
-        READ(LUTMP2,*) ICHARGE
-        write(lupri,*) 'AMFI - charge of nucleus (integ) :',ICHARGE
+       WRITE(LUPRI,'(2X,A,I2,A,I5)')
+     &   '>>> AMFI is about to calculate ',
+     &   IATOM,'. unique nucleus of charge ',ICHARGE
 
 C     ... file name for AMFI integrals of center
        IF (ICHARGE.LT.10) THEN
@@ -4011,26 +4010,29 @@ C     ... file name for AMFI integrals of center
         AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE/100)//
      &                       CHRNOS(MOD(ICHARGE,100)/10)//
      &                       CHRNOS(MOD( MOD(ICHARGE,100), 10) )
-C        write(LUPRI,*) CHRNOS(ICHARGE/100),CHRNOS(MOD(ICHARGE,100)/10),
-C    &      CHRNOS(MOD( MOD(ICHARGE,100), 10) ) 
        ELSE
-         CALL QUIT('AMFIIN: charge > 1000!')
+        CALL QUIT('AMFIIN: nucl.charge > 1000! This is not supported!')
        ENDIF
 
        WRITE(LUPRI,'(2X,A,A)')
      &  'AMFIIN: The file name with AMFI integrals: ',AFN
+
+
+C      ... decide whether to calculate or not the AOPROPER_MNF.XY file
        INQUIRE(FILE=AFN,EXIST=EXAMF)
-       IF (.NOT.EXAMF) THEN
-         WRITE(LUPRI,'(4X,A)')
+
+        IF (.NOT.EXAMF) THEN
+          WRITE(LUPRI,'(4X,A)')
      &  '...this file does not exist, AMFI is utilized ! '
-         CALL GPOPEN(MNFPRP,AFN,'UNKNOWN',' ','UNFORMATTED',
+          CALL GPOPEN(MNFPRP,AFN,'UNKNOWN',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
-       ELSE
-         WRITE(LUPRI,'(4X,A)')
+        ELSE
+          WRITE(LUPRI,'(4X,A)')
      &  '...this file does exist, AMFI is not utilized ! '
-         CALL GPOPEN(MNFPRP,AFN,'OLD',' ','UNFORMATTED',
+          CALL GPOPEN(MNFPRP,AFN,'OLD',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
-       ENDIF
+        ENDIF
+
 
 C      ... find out the correct index of nuclear exponent
        IF (GAUNUC) THEN
@@ -4046,7 +4048,8 @@ C      ... find out the correct index of nuclear exponent
      &   ' nucl. exponent:',GNUEXP(IATOM1)
         ENDIF
 
-CMI   ... gauss.nucleus (for SO1) does not work in AMFI !!!!
+C     ... gauss.nucleus (for SO1) does not work in AMFI !!!!
+C     ... Bernd Schim., help us !
         IF (IC_AMFI.EQ.1.OR.IC_AMFI.EQ.4.OR.IC_AMFI.EQ.5) THEN
           CALL
      &  QUIT('AMFIIN: GNUC is not working in AMFI!')
@@ -4065,7 +4068,7 @@ C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
         IF (NICHARGE.EQ.0) THEN
          CALL QUIT('AMFIIN: The nucleus does not exist is system!')
         ENDIF  
-        write(lupri,*) 'The AMFI unique nuclei ',ICHARGE,
+        write(lupri,*) 'The AMFI unique nuclei Z=',ICHARGE,
      &              ' index=',INDXMINCH,
      &              ' is degenerate: ',NICHARGE
         write(lupri,*) ' partial charge is (real):',CHPNUC(INDXMINCH)
@@ -4073,7 +4076,7 @@ C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
         write(lupri,*) ' partial charge is (round int):',IACHNUC
 
 C     .... call the AMFI program of B.Schimmelpfennig 
-C               if no file with integrals is present
+C     ... if file with integrals is present, return back without calcul.
          CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM1),
      &           CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
@@ -4162,18 +4165,22 @@ C           write(lupri,*) 'stored k=',K,' at pos:',JI
         ENDDO
 
 C   ... write out mapping function correspondance....
-      IF (IPRINT.GE.2) THEN
+      IF (IPRINT.GE.3) THEN
         write(lupri,*) '*** Mapping AMFI - H2CAO *** '
        IX = 0
        DO I=1,NICHARGE
        DO J=1,numballcart
          IX = IX + 1
-        write(lupri,*) 'amfi nuc:',IANUCS(I),
+        write(lupri,*) 'amfi nuc, charge:',IANUCS(I),ICHARGE,
      &    ' amfi fu:',LABINT(IPTA(J)),'(',
      &                INDXLMA(J),')',
-     &   '  H2CAO: pos= ',IAMFU(IX), ' nucl:',
-     &      IPNUC(IAMFU(IX)),' fu:',LABINT(IPTYPAO(IAMFU(IX))),
+     &   '  H2CAO: pos= ',IAMFU(IX), ' nucl, charge:',
+     &      IPNUC(IAMFU(IX)),IZTNUCS(IPNUC(IAMFU(IX))),
+     &   ' fu:',LABINT(IPTYPAO(IAMFU(IX))),
      &      '(',INDXLM(IAMFU(IX)),')'
+        IF (ICHARGE.NE.IZTNUCS(IPNUC(IAMFU(IX)))) THEN
+         CALL QUIT('AMFIIN: Different charges !')
+        ENDIF
        ENDDO
        ENDDO
         write(lupri,*)
@@ -4201,6 +4208,12 @@ C     ... do comparison of SO1 integrals if wished (ONLYSO1=.true.)
 C       or add AMFI contributions into H2CAO
 C ************************************************************************
 
+      IF (ONLYSO1.AND.ICHARGE.GT.0) THEN
+       WRITE(LUPRI,'(/2X,A,I5/)') 
+     & 'AMFIIN:  Doing comparison of SO1 integrals for'//
+     & '  nucleus of charge ',ICHARGE
+      ENDIF
+
       DO IANUC=1,NICHARGE
       IX = 0
       DO  I = 1, numballcart
@@ -4227,7 +4240,9 @@ C      ... indexes of H2CAO(I1,J1,2-4)
 
 
 C    ... do only comparison of between AMFI SO1 - BSS SO1 integrals
-      IF (ONLYSO1) THEN
+C   ... only for nucleis with charge > 0 !!!
+      IF (ONLYSO1.AND.ICHARGE.GT.0) THEN
+C     IF (ONLYSO1) THEN
 
        DIFSOX = SOXINT-H2SAO(I1,J1,4)
        DIFSOY = SOYINT-H2SAO(I1,J1,3)
@@ -4341,9 +4356,9 @@ C       write(lupri,*) ITD,'>>>',TOTDIFX,TOTDIFY,TOTDIFZ
         TOTDIFY=TOTDIFY/DFLOAT(ITD)
         TOTDIFZ=TOTDIFZ/DFLOAT(ITD)
 
-        WRITE(LUPRI,'(/A/)')
+        WRITE(LUPRI,'(/3X,A/)')
      &  '**** AMFIIN: average differences between AMFI and '//
-     &  'BSS SO1 spin-orbit integrals ****'
+     &  'BSS:SO1 spin-orbit integrals (point nucleus) ****'
         WRITE(LUPRI,'(2X,A,D20.10)') '....for SO1X integrals:',TOTDIFX
         WRITE(LUPRI,'(2X,A,D20.10)') '....for SO1Y integrals:',TOTDIFY
         WRITE(LUPRI,'(2X,A,D20.10)') '....for SO1Z integrals:',TOTDIFZ
