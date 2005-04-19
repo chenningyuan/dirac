@@ -2491,6 +2491,7 @@ C
       DIMENSION ISYMOP(6),IHRMOP(6),IFCKOP(6),MTOTTK(3)
       LOGICAL   LBIT,NODV,NOPV,NOCONT,RETUR,
      &          FCKDDR,DDFOCK,FIRST,SUSCEP
+      LOGICAL PARCAL_SAVE
 
       CALL QENTER('SUSC2EL')
 #include <memint.h>
@@ -2546,6 +2547,12 @@ C
       FIRST2 = .TRUE.
       FIRST3 = .TRUE.
 #endif
+CLV   ... temporary fix for parallel runs...
+      PARCAL_SAVE = PARCAL
+      IF (PARCAL) PARCAL = .FALSE.
+      IF (PARCAL_SAVE) WRITE (LUPRI,*) 
+     &   " WARNING: Running in serial, parallel code not ready yet"
+
       CALL GETTIM(CPU1,WALL1)
       DO I2TYP = 1,3
          IF (LBIT(INTNMR,I2TYP)) THEN
@@ -2574,6 +2581,8 @@ CMI      .... replace PARDRV by HER_PARDRV and IFTHRS by SCRFCK
          ENDIF
       END DO
       CALL GETTIM(CPU2,WALL2)
+C
+      PARCAL = PARCAL_SAVE
 C
       CPUTOT = CPU2 - CPU1
       WLLTOT = WALL2 - WALL1
