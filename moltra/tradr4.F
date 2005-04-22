@@ -84,6 +84,7 @@ C***********************************************************************
 #include "aovec.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
+      LOGICAL LBIT
       DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
 #include "infpar.h"
@@ -173,6 +174,7 @@ C
 C
         CALL GETTIM(CPUBEF,WALLBEF)
         DO IC = 3, 1, -1
+        IF(LBIT(INTFLG,IC)) THEN
            WRITE(LUPRI,'(A,I2,2A)') ' - Integral class',IC,' : ',CIC(IC)
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            IBUFMPI(1) = IC
@@ -225,6 +227,7 @@ C             ... slave wants to lock or free file
               END IF
            ENDDO
            ENDDO
+        ENDIF
         ENDDO
 C
 C       Get the slaves out of the transformation loop
@@ -248,6 +251,7 @@ C
         CALL XTIME(5,1,' Computing+transform. integrals')
         CALL GETTIM(CPUBEF,WALLBEF)
         DO IC = 1, 3
+        IF(LBIT(INTFLG,IC)) THEN
            WRITE(LUPRI,'(A,I2,2A)') ' - Integral class',IC,' : ',CIC(IC)
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
@@ -272,6 +276,7 @@ C
      &                   KQ,KE,KIBE,IC,I2TYP,IBSTRT,IBEND,
      &                   WORK(KDRIJ),WORK(KGAB),DINTSKP)
            ENDDO
+        ENDIF
         ENDDO
         CALL XTIME(5,2,' Computing+transform. integrals')
 #if defined (VAR_MPI)
