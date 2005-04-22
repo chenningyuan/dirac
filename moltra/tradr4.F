@@ -86,7 +86,6 @@ C***********************************************************************
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
-      LOGICAL LBIT
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -96,7 +95,7 @@ C***********************************************************************
 #include "dgroup.h"
 
 #include "blocks.h"
-      LOGICAL ANTIS,LMP2,TRIAN(2)
+      LOGICAL ANTIS,LMP2,TRIAN(2),LBIT
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
       CHARACTER*7 CIC(3)
