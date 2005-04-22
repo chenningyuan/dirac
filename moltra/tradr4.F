@@ -84,9 +84,9 @@ C***********************************************************************
 #include "aovec.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
-      LOGICAL LBIT
       DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
+      LOGICAL LBIT
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"
