@@ -253,6 +253,8 @@ C
         IF(LBIT(INTFLG,IC)) THEN
            WRITE(LUPRI,'(A,I2,2A)') ' - Integral class',IC,' : ',CIC(IC)
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
+CTROND
+           WRITE(6,*) IASTRT,IBSTRT,IASMAX,IBSMAX
            DO ISHLA = IASTRT, IASMAX
               CALL GETTIM(CPUST,WALLST)
               IF (IC.LE.2) THEN
@@ -408,6 +410,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "iratdef.h"
 #include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+C
 #include "dcbgen.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -415,13 +420,18 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcborb.h"
 #include "dgroup.h"
 #include "twosta.h"
+#include "blocks.h"
+#include "nuclei.h"
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
+      CHARACTER SPDCAR*1,COMP(2)*1
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION IJP12(0:7)
       DIMENSION IHTM(0:7),MHTM(2),NHTM(2), IOFFB(0:7)
       DIMENSION IRECC(2),NBFSZ(2),NBUF(2),NIJBUF(2),NHTIM(2),IBOFF(2)
       DIMENSION WORK(*),GABRAO(*),DRIJ(*),DINTSKP(*)
+C
+      DATA COMP/'L','S'/
 C
       CALL QENTER('TRDRV4')
       KFRSAV = KFREE
@@ -640,8 +650,19 @@ C
          KFRSAV3 = KFREE
          NINSHA  = NINSH(ISHLA,-1,INDX,IPRINT)
          NINSHB  = NINSH(ISHLB,-1,INDX,IPRINT)
-         IF (IPRINT .GE. 3) WRITE(LUPRI,'(/A,2I3)')
-     &      '    ---> TRDRV4 : integrals for shell A/B',ISHLA,ISHLB
+         IF (IPRINT .GE. 3) THEN
+            NCENTA = NCNTSH(ISHLA)   
+            NCENTB = NCNTSH(ISHLB)   
+            ICA    = LCLASH(ISHLA)
+            ICB    = LCLASH(ISHLB)
+
+            WRITE(LUPRI,'(/A,2(I4,A1,A4,1X,3A1))')
+     &      '    ---> TRDRV4 : integrals for shell A/B:',
+     &        ISHLA,'(',NAMN(NCENTA),COMP(ICA),
+     &        SPDCAR(NHKTSH(ISHLA)-1),')',
+     &        ISHLB,'(',NAMN(NCENTB),COMP(ICB),
+     &        SPDCAR(NHKTSH(ISHLB)-1),')'
+         ENDIF
 C
          LDXAB = 5*NINSHA*NINSHB
          CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
