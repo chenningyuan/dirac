@@ -201,6 +201,10 @@ CMI    set the oneonly option !!
        WRITE(LUPRI,*) 'AMFI: charge of atom IACH=',IACH
        WRITE(LUPRI,'(A,F18.7)') 'AMFI: the speed of light:',CVEL
        IF (DOEXIT) THEN
+        IF (IC_AMFI.EQ.2.OR.IC_AMFI.EQ.3.OR.
+     &      IC_AMFI.EQ.4.OR.IC_AMFI.EQ.5)  THEN
+         WRITE(LUPRI,*) '...zero charge, so no mean-field orbitals !'
+        ENDIF
         IC_AMFI = 1
         WRITE(LUPRI,*) 'The charge read in MNF.INP is ZERO!'//
      &  ' IC_AMFI set to 1 !'
