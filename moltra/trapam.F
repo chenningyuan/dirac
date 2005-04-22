@@ -2694,7 +2694,7 @@ C
 C
 C     Print section
 C
-      IF(IPRINT.GE.3) THEN
+      IF(IPRINT.GE.5) THEN
         DO I = 1,NFSYM
           WRITE(LUPRI,'(A,A3)') '*MKDRIJ: Screening matrix ',FREP(I)
           CALL OUTPUT(DRIJ(1,1,I),1,NSYMBL,1,NSYMBL,
