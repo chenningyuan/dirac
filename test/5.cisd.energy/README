@@ -1,4 +1,14 @@
 !
 ! This test calculates the spin-orbit components of the 2P state of Fluorine,
 ! using a CISD wavefunction.
+! 
+! Three different Hamiltonians are used: the four-comonent Dirac-Coulomb (DC) one,
+! the two-component infinite order (BSS) one and two-component mean-field screened
+! infinite order (BSS+MFSSO) Hamiltonian.
+!
+!  Hamiltonian     The calculated splittings(in cm-1)
+! ==========================================================
+!       DC                45.42
+!    BSS+MFSSO            47.52
+!      BSS               192.83
 !
