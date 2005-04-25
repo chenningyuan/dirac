@@ -1,0 +1,16 @@
+!   
+!     NMR shieldings of the LiH molecule.
+! 
+!  Four different Hamiltonians are used.
+! 
+!  Hamiltonian    Li       H
+!  ====================================
+!   DC           85.5649    24.7024
+!  BSS+MFSSO     85.5648    24.7064 
+!   BSS          85.5643    24.7042
+!  LevyLe        85.4852    24.6942
+!
+!
+!
+!
+
