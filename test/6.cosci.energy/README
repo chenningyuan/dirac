@@ -1,4 +1,15 @@
 !
 ! This test calculates the spin-orbit components of the 2P state of Fluorine,
-! using a COSCI wavefunction.
+! using a COSCI wavefunction and few different Hamiltonians.
+!
+!
+!      Hamiltonian        Splitting/cm-1
+!   ====================================
+!         DC               434.511758
+!       BSS+MFSSO          438.792872 <--- The best
+!      DKH2+MFSSO          438.792782
+!         BSS              583.459766
+!         DKH2             583.459700
+!      DKH2_SO1            583.536036
+!
 !
