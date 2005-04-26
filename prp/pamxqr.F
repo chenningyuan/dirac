@@ -2329,10 +2329,11 @@ C
 C     Construct the Fock matrices in AO basis. 
 C
       CALL E3FCK(ISYMOP,IHRMOP,IFCKOP,ISYMB,ISYMC,ISYMA,
-     &     ITIMB,ITIMC,ITIMB*ITIMC,IFERB,IFERC,IFERA)
+     &     ITIMB,ITIMC,ITIMB*ITIMC,IFERB,IFERC,IFERA,NPOS)
+      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,WORK(KF1AO),WORK(KD1AO),3,
-     &     IDUM,INTFLG,IPRXQR,WORK(KFREE),LFREE)
+     &     WORK(KPOS),INTFLG,IPRXQR,WORK(KFREE),LFREE)
 C
 C     Scale all Fock matrices with a factor 4 to agree with
 C     convention used in TWOFCK as of Aug 2004.
@@ -2836,7 +2837,7 @@ C
       RETURN
       END
       SUBROUTINE E3FCK(ISYMOP,IHRMOP,IFCKOP,ISYM1,ISYM2,ISYM3,
-     &     ITIM1,ITIM2,ITIM3,IFER1,IFER2,IFER3)
+     &     ITIM1,ITIM2,ITIM3,IFER1,IFER2,IFER3,NPOS)
 C*****************************************************************************
 C
 C     Set up the integer arrays that are used by TWOFCK in the 
@@ -2849,6 +2850,11 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dcbxrs.h"
 #include "dcbxqr.h"
+#include "dcbgen.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "blocks.h"
+#include "dcbfir.h"
 C
       DIMENSION ISYMOP(3), IHRMOP(3), IFCKOP(3)
 C
@@ -2876,6 +2882,18 @@ C
       IF (INTFLG.LE.0) THEN
          WRITE(LUPRI,'(2(/A),/)') ' *** WARNING ****',
      &        ' No integrals included in Fock matrix construction'
+      END IF
+C
+C Settings for parallel calculation
+C
+      NPOS = 0
+      IF (PARCAL) THEN
+         FIRST1 = .TRUE.
+         FIRST2 = .TRUE.
+         FIRST3 = .TRUE.         
+         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
+         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
+         NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
       END IF
 C
 C Print
@@ -2922,15 +2940,12 @@ C
       KFREE = 1 
       LFREE = LWRK
 C
-      T(1)='S'
-      T(-1)='A'
-C
       CALL DZERO(FMO,N2ORBXQ)
 C
       DO I1=1,NFSYM
          I2 = MOD(I1+IFER,2) + 1
          IF(NORB(I1).GT.0 .AND. NORB(I2).GT.0) THEN
-            CALL QTRANS('AOMO',T(ITIM),
+            CALL QTRANS('AOMO','S',
      &           D0,NFBAS(I1,0),NFBAS(I2,0),NORB(I1),NORB(I2),
      &           FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,ISYM-1),
