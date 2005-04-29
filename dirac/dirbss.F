@@ -589,7 +589,7 @@ C     ... save the IBSS
       ENDIF
 
       IF (IPRINT.GE.3) THEN
-       WRITE (LUPRI,'(/A,I3,A,3I2)')
+       WRITE (LUPRI,'(/A,I5,A,3I2)')
      &'EXTR_DIG: IBSS=axyz=',IBSS_SAVE,
      &'extracted digits  a,x,y,z:',IPA,IPX,IPY,IPZ
       ENDIF
@@ -3662,7 +3662,7 @@ C  /* Deck amfiin */
       SUBROUTINE AMFIIN(H2SAO,NB,NTNUC,IPTYPAO,INDXLM,IPNUC,IZTNUCS,
      &                  IPTA,INDXLMA,IAMFU,IANUCS,ISTNUCTYP,CHPNUC,
      &                   NSPH,LABINT,ONLYSO1,ONLYTRA,
-     &                 IMFCHA,IC_AMFI,CVAL_AMFI,IPRINT,WORK,LWORK)    
+     &             IMFCHA,IC_AMFI,IQPOS,CVAL_AMFI,IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C 
 C  Interface to B.Schimmelpfennig's atomic mean-field integral code, AMFI   
@@ -3714,7 +3714,7 @@ C#include "dcbsph.h"
 
 C
       LOGICAL BREIT,PROPRI,OLDNRM,ISONLIST,ONLYSO1,ONLYTRA,EXAMF
-      DIMENSION WORK(LWORK),H2SAO(NB,NB,4)  
+      DIMENSION WORK(LWORK),H2SAO(NB,NB,4),IQPOS(1:8)  
       DIMENSION IPTYPAO(NSPH),INDXLM(NSPH),IPNUC(NSPH),
      &       IPTA(*),INDXLMA(*),IAMFU(NSPH),ISTNUCTYP(NSPH,2),
      &       IZTNUCS(NTNUC),IANUCS(NTNUC),CHPNUC(NTNUC)
@@ -4131,8 +4131,9 @@ C          use IANUCS(1-NTNUC)
         IF (IX.NE.NICHARGE) THEN
           CALL QUIT('AMFIIN: nuclei do not correspond !')
         ENDIF
-        write(lupri,*) 'corresponding H2CAO nuclei:',
-     &    (IANUCS(I),I=1,NICHARGE)
+
+        WRITE(LUPRI,'(/2X,A,$)') 'AMFIIN: corresponding H2CAO nuclei:'
+        WRITE(LUPRI,*) (IANUCS(I),I=1,NICHARGE)
 
 
 C       ... prepare the mapping array AMFI-H2C basis functions...
@@ -4174,7 +4175,7 @@ C   ... write out mapping function correspondance....
         write(lupri,*) 'amfi nuc, charge:',IANUCS(I),ICHARGE,
      &    ' amfi fu:',LABINT(IPTA(J)),'(',
      &                INDXLMA(J),')',
-     &   '  H2CAO: pos= ',IAMFU(IX), ' nucl, charge:',
+     &   '  H2CAO: pos= ',IAMFU(IX), ' nucl. charge:',
      &      IPNUC(IAMFU(IX)),IZTNUCS(IPNUC(IAMFU(IX))),
      &   ' fu:',LABINT(IPTYPAO(IAMFU(IX))),
      &      '(',INDXLM(IAMFU(IX)),')'
@@ -4214,21 +4215,31 @@ C ************************************************************************
      & '  nucleus of charge ',ICHARGE
       ENDIF
 
+      IXPOS=IQPOS(4)
+      IYPOS=IQPOS(3)
+      IZPOS=IQPOS(2)
+
+      write(lupri,*) '...quaternions x,y,z:',IQPOS(4),IQPOS(3),IQPOS(2)
+      IF (IXPOS.EQ.IYPOS.OR.IXPOS.EQ.IZPOS.OR.IYPOS.EQ.IZPOS.OR.
+     & (IXPOS+IYPOS+IZPOS).NE.9) THEN
+        CALL QUIT('AMFIIN: Wrong x,y,z quaternions !')
+      ENDIF   
+
       DO IANUC=1,NICHARGE
       IX = 0
       DO  I = 1, numballcart
       DO  J = 1, I
 
-C       ... get SO integrals from AMFI
-       SOXINT=-WORK(KSOX+IX)
-       SOYINT=-WORK(KSOY+IX)
-       SOZINT=-WORK(KSOZ+IX)
+C       ... get SO integrals from AMFI  
+         SOXINT=-WORK(KSOX+IX)
+         SOYINT=-WORK(KSOY+IX)
+         SOZINT=-WORK(KSOZ+IX)
 
 C      ... indexes of H2CAO(I1,J1,2-4)
        I1 = IAMFU(I+(numballcart*(IANUC-1)))
        J1 = IAMFU(J+(numballcart*(IANUC-1)))
 
-       IF (IPRINT.GE.5) THEN
+       IF (IPRINT.GE.4) THEN
        write(lupri,*) 'amfi: <',LABINT(IPTA(I)),'(',INDXLMA(I),')',
      &  '[',IANUCS(IANUC),']','|O|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
      &   '[',IANUCS(IANUC),']> H2CAO: <',LABINT(IPTYPAO(I1)),
@@ -4244,9 +4255,12 @@ C   ... only for nucleis with charge > 0 !!!
       IF (ONLYSO1.AND.ICHARGE.GT.0) THEN
 C     IF (ONLYSO1) THEN
 
-       DIFSOX = SOXINT-H2SAO(I1,J1,4)
-       DIFSOY = SOYINT-H2SAO(I1,J1,3)
-       DIFSOZ = SOZINT-H2SAO(I1,J1,2)
+C      DIFSOX = SOXINT-H2SAO(I1,J1,4)
+       DIFSOX = SOXINT-H2SAO(I1,J1,IXPOS)
+C      DIFSOY = SOYINT-H2SAO(I1,J1,3)
+       DIFSOY = SOYINT-H2SAO(I1,J1,IYPOS)
+C      DIFSOZ = SOZINT-H2SAO(I1,J1,2)
+       DIFSOZ = SOZINT-H2SAO(I1,J1,IZPOS)
      
        TOTDIFX=TOTDIFX + DABS(DIFSOX)
        TOTDIFY=TOTDIFY + DABS(DIFSOY)
@@ -4280,9 +4294,12 @@ C     IF (ONLYSO1) THEN
 
          IF (I1.NE.J1) THEN
 
-            DIFSOX = SOXINT+H2SAO(J1,I1,4)
-            DIFSOY = SOYINT+H2SAO(J1,I1,3)
-            DIFSOZ = SOZINT+H2SAO(J1,I1,2)
+C           DIFSOX = SOXINT+H2SAO(J1,I1,4)
+            DIFSOX = SOXINT+H2SAO(J1,I1,IXPOS)
+C           DIFSOY = SOYINT+H2SAO(J1,I1,3)
+            DIFSOY = SOYINT+H2SAO(J1,I1,IYPOS)
+C           DIFSOZ = SOZINT+H2SAO(J1,I1,2)
+            DIFSOZ = SOZINT+H2SAO(J1,I1,IZPOS)
 
             TOTDIFX=TOTDIFX + DABS(DIFSOX)
             TOTDIFY=TOTDIFY + DABS(DIFSOY)
@@ -4322,13 +4339,19 @@ C  ==================================================
 C      ... add AMFI contribution to the H2CAO
 C        when onlytra=.false.
 C  ==================================================
-        H2SAO(I1,J1,2) = H2SAO(I1,J1,2) + SOZINT 
-        H2SAO(I1,J1,3) = H2SAO(I1,J1,3) + SOYINT 
-        H2SAO(I1,J1,4) = H2SAO(I1,J1,4) + SOXINT 
+C       H2SAO(I1,J1,2) = H2SAO(I1,J1,2) + SOZINT 
+        H2SAO(I1,J1,IZPOS) = H2SAO(I1,J1,IZPOS) + SOZINT 
+C       H2SAO(I1,J1,3) = H2SAO(I1,J1,3) + SOYINT 
+        H2SAO(I1,J1,IYPOS) = H2SAO(I1,J1,IYPOS) + SOYINT 
+C       H2SAO(I1,J1,4) = H2SAO(I1,J1,4) + SOXINT 
+        H2SAO(I1,J1,IXPOS) = H2SAO(I1,J1,IXPOS) + SOXINT 
 
-        H2SAO(J1,I1,2) = H2SAO(J1,I1,2) - SOZINT 
-        H2SAO(J1,I1,3) = H2SAO(J1,I1,3) - SOYINT 
-        H2SAO(J1,I1,4) = H2SAO(J1,I1,4) - SOXINT 
+C       H2SAO(J1,I1,2) = H2SAO(J1,I1,2) - SOZINT 
+        H2SAO(J1,I1,IZPOS) = H2SAO(J1,I1,IZPOS) - SOZINT 
+C       H2SAO(J1,I1,3) = H2SAO(J1,I1,3) - SOYINT 
+        H2SAO(J1,I1,IYPOS) = H2SAO(J1,I1,IYPOS) - SOYINT 
+C       H2SAO(J1,I1,4) = H2SAO(J1,I1,4) - SOXINT 
+        H2SAO(J1,I1,IXPOS) = H2SAO(J1,I1,IXPOS) - SOXINT 
        ENDIF
        IX = IX + 1
       ENDDO
@@ -4594,9 +4617,9 @@ C      ... transform C AO, WORK(KBUF1) -> S AO, WORK(KBUF2)
      &         WORK(KFREE),LFREE,IPRHAM)
       ENDDO
 
-      IF (IPRHAM.GE.5) THEN
+      IF (IPRHAM.GE.3) THEN
         CALL HEADER(
-     &'AMFI_STUFF: TOTAL H(2c)_LL in "xhi" S AO basis ' ,-1)
+     &'AMFI_STUFF: TOTAL ENTERING H(2c)_LL in "xhi" S AO basis ' ,-1)
         CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
       ENDIF
 
@@ -4639,10 +4662,19 @@ C      .... charges per nucleis
        CALL AMFIIN(WORK(KBUF2),NB,NTNUC,WORK(KIPTYPAO),WORK(KHINLM),
      &  WORK(KIPNUC),WORK(KZTNUCS),WORK(KAIPT),WORK(KAILM),WORK(KAMFU),
      &  WORK(KANUCS),WORK(KSTNUCTYP),WORK(KCHPNUC),
-     &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCHA,IC_AMFI,
+     &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCHA,IC_AMFI,JM4POS,
      &  CVAL_AMFI,IPRHAM,WORK(KFREE),LFREE)
 
       CALL MEMCHK('before S->C',WORK,1)
+
+      IF (IPRHAM.GE.3) THEN
+        CALL HEADER(
+     &  'AMFI_STUFF: TOTAL H(2c)_LL (after AMFIIN)'//
+     &  ' in "xhi" S AO basis' ,-1)
+        CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
+      ENDIF
+
+C     write(lupri,*) '>>>>>  IQDEF:',(IQDEF(i),i=1,4)
 
 C ===================================================================
 C     now transform back: S AO, WORK(KBUF2) -> C AO, WORK(KBUF1) 
@@ -4700,10 +4732,13 @@ C        ... and from S to C
       ENDIF
 
 C ============================================================
-C   ... FINALLY: transform BACK from AO to the SA-AO basis
+C   ... FINALLY: transform BACK from C AO(BU) to the SA-AO (BS) basis
 C            WORK(KBUF1) -> H2CAO(1)
 C ============================================================
       CALL DZERO(H2CAO,N2BBASXQ)
+      IREP=0
+      IPAR = JBTOF(IREP,1)
+      NB = NTBAS(0)
       DO IZ = 1, 4
          IREPD = IRQMAT(IZ,IREP)
          IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
@@ -4714,6 +4749,7 @@ C ============================================================
       ENDDO
 
       CALL BUTOBS(H2CAO,NZ,WORK(KFREE),LFREE) 
+
       IF(NZ.LT.4) THEN                              
         DO IZ = 1,NZ                                
           IQ = IPQTOQ(IZ,IREP)                    
