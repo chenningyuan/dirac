@@ -63,6 +63,8 @@ C
 *
 * Modified Jan 1997
 * SIGDEN_ROUTE SIGDEN added by Timo Fleig, May-June 2001
+*  Allocation of T (KT_CC) now optimized, done in itrctl
+*     Timo Fleig, April 2005
 
 *. Input
       IMPLICIT REAL*8(A-H,O-Z)
@@ -184,8 +186,8 @@ c                   IBU = 2
             NINT_CC = NINT_CC + 2 * L2D(IL2)
           end do
 *
-          call memmar(KT_CC,NINT_CC,'ADDS  ',2,'KT_CC ')
-          print*,'Allocating KT_CC : ',NINT_CC
+C         call memmar(KT_CC,NINT_CC,'ADDS  ',2,'KT_CC ')
+          print*,'Formerly allocating KT_CC : ',NINT_CC
 C FIXME: Add symmetry savings
           write(6,*) 'NOTE:'
           write(6,*) 'Allocation should be modified to account '

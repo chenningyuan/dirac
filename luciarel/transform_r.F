@@ -1813,6 +1813,17 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
         call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
         call memmar(KPOSDIA,NDIAMINT,'ADDS  ',1,'POSDIA')
         write(6,*) ' Allocating for ',NDIAMINT,' diagonal integrals.'
+*
+* Allocate for required integrals/densities only
+        if (NZ.eq.1.or.ISPINFREE.eq.1) then
+          IRIMLT = 1
+        else
+          IRIMLT = 2
+        end if
+        IRIMLT = 2
+* !! Still enforced
+        NALLINT = LEN_T_VEC * IRIMLT
+        call memmar(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
       end if
 *
 *
@@ -2412,6 +2423,7 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
             call memmar(KISTR_CB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_CB')
             call memmar(KISTR_AA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AA')
             call memmar(KISTR_AB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AB')
+*
             call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                            WORK(KLSOBEX),WORK(KT_CC),
      &                            WORK(KISTR_CA),WORK(KISTR_CB),
@@ -2428,7 +2440,7 @@ C    &                            INDEX,
 C                                 NASHT,F1,F2,IBOSYM,
 C    &                            IBSPOBEX_TP,IHINDX,
 C                                 LABEL,CIRUN,IPRNT)
-c           stop 'AFTER DIST_INTS_SIGDEN.'
+C           stop 'AFTER DIST_INTS_SIGDEN.'
           end if
         end if
       else
@@ -2440,7 +2452,7 @@ c           stop 'AFTER DIST_INTS_SIGDEN.'
 *
       if (SIGDEN_ROUTE.eq.'SIGDEN') then
         write(6,*)
-        write(6,*) ' Number of integrals/CC amplitudes: ',2*NALLINT
+        write(6,*) ' Number of integrals/CC amplitudes: ',NALLINT
         write(6,*) ' (including imaginary parts) '
       end if
 *

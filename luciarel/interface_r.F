@@ -1252,7 +1252,6 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *
       subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,ISOBEX,T,
      &                            ISTR_CA,ISTR_CB,ISTR_AA,ISTR_AB,
-C    &                            INDEX,
      &                            NASHT,F1,F2,MDIASV,IPOSDIA,IBOSYM,
      &                            IBSPOBEX_TP,LABEL,CIRUN,IPRNT)
 *
@@ -1273,7 +1272,6 @@ C    &                            INDEX,
       dimension NICA_STR(MXPNGAS),NICB_STR(MXPNGAS),
      &          NIAA_STR(MXPNGAS),NIAB_STR(MXPNGAS)
       dimension ISOBEX(NGAS,4,NSPOBEX_TP),
-C    &          INDEX(4,NINT_CC),
      &          IBSPOBEX_TP(NSPOBEX_TP),LABEL(4,NSPOBEX_TP)
       dimension I_ADD(4),INDEX(4),IND_SAVE(4),
      &          MDIASV(4,*),IPOSDIA(*)
@@ -1281,13 +1279,13 @@ C    &          INDEX(4,NINT_CC),
 * Group notation of the strings:
       dimension IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS),
      &          IGRP_AA(MXPNGAS),IGRP_AB(MXPNGAS)
-      dimension T(NINT_CC)
+      dimension T(NALLINT)
 *
 * Space for the construction of SUBSTRINGS
 * dimensioned outside as integers MX_ST_TSOSO_BLK_MX
       dimension ISTR_CA(*),ISTR_CB(*),ISTR_AA(*),ISTR_AB(*)
 *
-      NTESTL = 0
+      NTESTL = 1
       NTEST = max(NTESTL,IPRNT)
 *
 * Constants
@@ -1321,23 +1319,25 @@ C       call reo_info_molcas()
      &                      SYDI,DOUGRP,WORK(KISREO),WORK(KINVREO),
      &                      INVSYM,IDGTYP,ISPINFREE,IPRNT)
 *
-        IRILP = 2
-C  FIXME !!
-C   Enforced. Make more efficient !
-      else if (INTIMP.eq.7) then
-        call reo_info_dirac(NDIM_TOT,NIRR_PN,SYMDIM,IBOSYM,
-     &                      SYDI,DOUGRP,WORK(KISREO),WORK(KINVREO),
-     &                      INVSYM,IDGTYP,ISPINFREE,IPRNT)
-        if (ISPINFREE.eq.1) then
+        if (ISPINFREE.eq.1.or.IDGTYP.eq.1) then
           IRILP = 1
         else
           IRILP = 2
         end if
-        IRILP = 2    
-C  FIXME !!
-C   Enforced. Make more efficient for real groups and SPINFREE
-C   formalism !
+      IRILP = 2
+* !! Still enforced
+      else if (INTIMP.eq.7) then
+        call reo_info_dirac(NDIM_TOT,NIRR_PN,SYMDIM,IBOSYM,
+     &                      SYDI,DOUGRP,WORK(KISREO),WORK(KINVREO),
+     &                      INVSYM,IDGTYP,ISPINFREE,IPRNT)
+        if (ISPINFREE.eq.1.or.IDGTYP.eq.1) then
+          IRILP = 1
+        else
+          IRILP = 2
+        end if
       end if
+      IRILP = 2
+* !! Still enforced
 *
 * Open ASCII unit for checking integral sorting information
       if (NTEST.ge.1) then
@@ -1372,7 +1372,8 @@ C   formalism !
         end if
         ITPSV = 0
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-          if (NTEST.ge.1) write(LUINGR,'(A)') 'INTEGRAL FILE'
+          if (NTEST.ge.1) 
+     &      write(LUINGR,'(A)') 'INTEGRAL FILE'
         end if
 *
 * Loop over excitation types
@@ -1399,7 +1400,8 @@ C   formalism !
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
             if (NTEST.ge.1) 
      &          call integral_type(ISOBEX(1,1,IXTP),NGAS,ITPSV,LUINGR)
-            if (NTEST.ge.1) write(LUINGR,'(A,I5)') 'Type ',IXTP
+            if (NTEST.ge.1) 
+     &        write(LUINGR,'(A,I5)') 'Type ',IXTP
           end if
 *
 *. Change from Occupation to group notation of strings
@@ -1503,6 +1505,7 @@ C   formalism !
                     do I_AA=1,NSTR_AA,1
                       do I_CB=1,NSTR_CB,1
                         do I_CA=1,NSTR_CA,1
+*
 * Notes: 
 *  1) Standard notation in second quantization for 2-el. ints is:
 *     a+I a+K_ aL aJ_ (IJ|KL) = - a+I a+K_ aJ_ aL (IJ|KL)
@@ -8967,8 +8970,8 @@ Cjan      end do
 #include "dgroup.h"
 *
       dimension F1(*),F2(*)
-      dimension DENS(NINT_CC),SIGN(NSPOBEX_TP),SIGN_OPREO(NSPOBEX_TP)
-      dimension INDEX(4,NINT_CC),ICSAVE(4),INDEX_L(4),IND_R(4)
+      dimension DENS(NALLINT),SIGN(NSPOBEX_TP),SIGN_OPREO(NSPOBEX_TP)
+      dimension INDEX(4,NALLINT),ICSAVE(4),INDEX_L(4),IND_R(4)
       dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),IOFFKF(MXPIRR,MXPNGAS,2),
      &          IREOKF(MXPORB)
@@ -9210,8 +9213,8 @@ Cjan      end do
 #include "glbbas.inc"
 #include "ctcc.inc"
 *
-      dimension DENS(NINT_CC),SIGN(NSPOBEX_TP)
-      dimension INDEX(4,NINT_CC),IND_R(4),IHINDX(4,NSPOBEX_TP),
+      dimension DENS(NALLINT),SIGN(NSPOBEX_TP)
+      dimension INDEX(4,NALLINT),IND_R(4),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),LABEL(4,NSPOBEX_TP),
      &          SIGN_REO(NSPOBEX_TP)
 *

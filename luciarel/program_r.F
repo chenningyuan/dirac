@@ -409,7 +409,7 @@ c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,LBLK)
           else if (SIGDEN_ROUTE.eq.'SIGDEN') then
 * Erase T amplitudes from sigma calculation
             ZERO = 0.D0
-            call setvec(WORK(KT_CC),ZERO,NINT_CC)
+            call setvec(WORK(KT_CC),ZERO,NALLINT)
 *
 * Compute density matrix elements
             call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),LUSC61,LUSC62,
