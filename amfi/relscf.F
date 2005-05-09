@@ -2453,8 +2453,11 @@ C$F   INTEGER   LOCS(16)/1,2,4,7,11,16,22,29,37,47,59,73,89,109,133,165/
       L1 = LOCS(I)                                                      
       IF (N.EQ.NS(I)) GO TO 200                                         
   100 CONTINUE                                                          
+
       WRITE (6,1) N                                                     
-      CALL EXIT                                                         
+CMI   CALL EXIT                                                         
+      CALL QUIT('relscf/GAUSS: error exit')                                                 
+
   200 L2 = (N + 1) / 2 - 1 + L1                                         
       N1 = 1                                                            
       N2 = N                                                            
