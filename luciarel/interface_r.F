@@ -1285,7 +1285,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * dimensioned outside as integers MX_ST_TSOSO_BLK_MX
       dimension ISTR_CA(*),ISTR_CB(*),ISTR_AA(*),ISTR_AB(*)
 *
-      NTESTL = 1
+      NTESTL = 0
       NTEST = max(NTESTL,IPRNT)
 *
 * Constants
@@ -1900,15 +1900,18 @@ C    &             ' at ',ICOUNT
 *       ^ End loop over excitation types
       end do
 *     ^ End loop over real/imaginary
-      if (NTEST.ge.1) close(LUINGR)
+      if (NTEST.ge.1.and.(CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 '))
+     &   close(LUINGR)
       close(LUINSV)
       NALLINT = ICOUNT - 1
 *
-      write(6,*) ' DIST_INTS_SIGDEN reporting   : '
-      write(6,*) '  Total number of integrals   : ',NALLINT
-      write(6,*) '  Number of diagonal integrals: ',NDIAINT
-      write(6,*) '    Number of diagonal 1-el. integrals: ',N1DIAINT
-      write(6,*) '    Number of diagonal 2-el. integrals: ',N2DIAINT
+      if (NTEST.ge.1) then
+        write(6,*) ' DIST_INTS_SIGDEN reporting   : '
+        write(6,*) '  Total number of integrals   : ',NALLINT
+        write(6,*) '  Number of diagonal integrals: ',NDIAINT
+        write(6,*) '    Number of diagonal 1-el. integrals: ',N1DIAINT
+        write(6,*) '    Number of diagonal 2-el. integrals: ',N2DIAINT
+      end if
 *
       return
       end

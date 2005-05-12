@@ -951,7 +951,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-10 )
+      PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-9 )
 C
 #include "dcborb.h"
 #include "dcbgen.h"

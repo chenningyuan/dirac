@@ -1542,7 +1542,6 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
 *
 *=============================================================
 *
-                print*,'CIRUN before GASCI: ',CIRUN
                 CALL GASCI_REL(F1,F2,
      &                         INTSPACE,IREFSM,JCMBSPC,IPRDIA,
      &                         EREF,ECORE_KRMC,CIRUN)

@@ -1122,6 +1122,10 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'GET_3B')
 *
+      write(6,*)
+      write(6,*) ' Allocating LCSBLK (krmcluci) in GET_3BLKS_REL: ',
+     &             LBLOCK
+      write(6,*)
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
       call memmar(KC2,LSCR12,'ADDS  ',2,'C2    ')

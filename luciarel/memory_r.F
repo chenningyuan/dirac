@@ -187,11 +187,7 @@ c                   IBU = 2
           end do
 *
 C         call memmar(KT_CC,NINT_CC,'ADDS  ',2,'KT_CC ')
-          print*,'Formerly allocating KT_CC : ',NINT_CC
-C FIXME: Add symmetry savings
-          write(6,*) 'NOTE:'
-          write(6,*) 'Allocation should be modified to account '
-          write(6,*) 'for possible symmetry savings.'
+C   Done dynamically in itrctl using LEN_T_VEC
         end if
       end if
 *
