@@ -5400,7 +5400,8 @@ C     write(lupri,*) 'maximum number of iterations:',MAXITER
 
 CC *********************************************************************************
 
-C ==== Finished === if full diagonalization, sort eigenvalues on the main diagonal...
+C ==== Finished === 
+C ===  if full diagonalization, do sort eigenvalues on the main diagonal...
        IF (NBL.EQ.0) THEN
           DO I=1,N-1
             APPR = A(I,I,1)
@@ -5422,14 +5423,14 @@ C              ... swich I-J columns and I-J rows as well
                  A(K,J,IZ)=APPI
                ENDDO
                ENDDO
-
+               APPR = A(I,I,1)
 C            ... switch I,J columns of P(eigenvectors) !
               IF (DOEVE) THEN
                DO K=1,N
                 DO IZ=1,NZ
-                 APPR = EV(K,I,IZ)
+                 APQR = EV(K,I,IZ)
                  EV(K,I,IZ) = EV(K,J,IZ)
-                 EV(K,J,IZ) = APPR
+                 EV(K,J,IZ) = APQR
                 ENDDO
                ENDDO
               ENDIF
