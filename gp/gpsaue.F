@@ -4264,11 +4264,16 @@ C**************************************************************************
 
       DIMENSION IBL(NBL,1:4), SUMSQA(2)
 
-      LOGICAL DOEVE, FINISHED
+      LOGICAL DOEVE, FINISHED, WASELIM, ELIM(2)
       CHARACTER*9 FILENAME
 
       DATA DIAGTHRS / 1.0D-22   /
-      DATA ZEROTHRS / 1.0D-13  /
+C     DATA DIAGTHRS / 1.0D0   /
+
+      DATA ZEROTHRS / 1.0D-12  /
+C     DATA ZEROTHRS / 1.0D-15  /
+C     DATA ZEROTHRS / 0.0D0  /
+
       DATA ZEROTHRS1 / 1.0D-9  /
 C        .... file number and file name of the check file
       DATA LUF / 33  /
@@ -4288,6 +4293,7 @@ C     ... do always test the blocks
 
       CALL FINDSUMBL(A,N,NZ,NBL,IBL,IP,IQ,SUMSQ,IPRINT)
       SUMSQA(1)=SUMSQ
+      SUMSQA(2)=SUMSQ
 
 C      ... do make unit matrixes of future eigenvector
       IF (DOEVE) THEN
@@ -4333,6 +4339,9 @@ C  ... format of elements in the file...
   
          FINISHED = .false.
          ITER = 0
+         WASELIM = .FALSE.
+         ELIM(1) = .FALSE.
+         ELIM(2) = .FALSE.
 C *****************************************************************
 C ***
 C ***
@@ -4370,16 +4379,31 @@ C           ... write out the A_pq  elements !
            IF (DABS(APQR).GT.ZEROTHRS) THEN
 
             ITER = ITER + 1
+            WASELIM = .TRUE.
 
             APPR =  A(IP,IP,1)
             AQQR =  A(IQ,IQ,1)
 
-C         ... do calculate Cu,Su...
-            BDA =  D2*APQR/(AQQR-APPR)
+            APQSQR = APQR*APQR
 
-            PHI = DP5*DATAN(BDA)
-            CU = DCOS(PHI)
-            SU = DSIN(PHI)
+            DIFF = APPR - AQQR
+            SIGROT = D1
+            IF (DIFF.LT.D0) THEN
+             SIGROT = -SIGROT
+             DIFF = -DIFF
+            ENDIF
+            TEMP = DIFF + DSQRT(DIFF*DIFF + 4.0*APQSQR)
+            TANA = D2*SIGROT*APQR/TEMP
+C          ... an alternative to the calculation using function DATAN ...
+            CU =  D1/DSQRT(D1+TANA*TANA)
+            SU = -CU*TANA
+
+C         ... do calculate Cu,Su...
+C           BDA =  D2*APQR/(AQQR-APPR)
+C           PHI = DP5*DATAN(BDA)
+C           CU1 = DCOS(PHI)
+C           SU1 = DSIN(PHI)
+
             CU2 = CU*CU
             SU2 = SU*SU
             CUSU = CU*SU
@@ -4480,6 +4504,7 @@ C           ... write out the A_pq  elements !
            IF (DABS(APQR).GT.ZEROTHRS) THEN
 
             ITER = ITER + 1
+            WASELIM = .TRUE.
 
             APPR =  A(IP,IP,1)
             AQQR =  A(IQ,IQ,1)
@@ -4586,6 +4611,7 @@ C     =========================================
            IF (DABS(APQI).GT.ZEROTHRS) THEN
 
             ITER = ITER + 1
+            WASELIM = .TRUE.
 
             APPR =  A(IP,IP,1)
             AQQR =  A(IQ,IQ,1)
@@ -4730,6 +4756,7 @@ C           ... write out the A_pq  elements !
            IF (DABS(APQR).GT.ZEROTHRS) THEN
 
             ITER = ITER + 1
+            WASELIM = .TRUE.
 
             APPR =  A(IP,IP,1)
             AQQR =  A(IQ,IQ,1)
@@ -4866,6 +4893,7 @@ C     =========================================
            IF (DABS(APQI).GT.ZEROTHRS) THEN
 
             ITER = ITER + 1
+            WASELIM = .TRUE.
 
             APPR =  A(IP,IP,1)
             AQQR =  A(IQ,IQ,1)
@@ -5029,6 +5057,7 @@ C     =========================================
           IF (DABS(APQJ).GT.ZEROTHRS) THEN
 
             ITER = ITER + 1
+            WASELIM = .TRUE.
 
             APPR =  A(IP,IP,1)
             AQQR =  A(IQ,IQ,1)
@@ -5193,6 +5222,7 @@ C     =========================================
           IF (DABS(APQK).GE.ZEROTHRS) THEN
 
            ITER = ITER + 1
+            WASELIM = .TRUE.
 
            APPR =  A(IP,IP,1)
            AQQR =  A(IQ,IQ,1)
@@ -5351,7 +5381,7 @@ C              ... print out actual P eigenvector matrix
           ENDIF
 
 C .... If wished, print out whole matrix 
-           IF (IPRINT.GE.5) THEN
+           IF (IPRINT.GE.5.AND.WASELIM) THEN
              write(lupri,'(/A,2I5)')
      & "Whole matrix A AFTER elimination of Apq,Aqp elements, p,q=",
      &  IP,IQ
@@ -5364,7 +5394,7 @@ C .... If wished, print out whole matrix
             write(lupri,*)
            ENDIF
 
-           IF (IPRINT.GE.6) THEN
+           IF (IPRINT.GE.6.AND.WASELIM) THEN
 C              ... print out actual P eigenvector matrix
              write(lupri,'(/2X,A)')
      &       'Actual eigenvectors after the Apq elimination:'
@@ -5378,26 +5408,33 @@ C              ... print out actual P eigenvector matrix
           ENDIF
 
 C        ... after elimination of Apq find indexes of the next largest element
-          CALL FINDSUMBL(A,N,NZ,NBL,IBL,IP,IQ,SUMSQ,IPRINT)
-          IF (ITER.EQ.1) THEN
-           SUMSQA(2)=SUMSQ
-          ELSE
+          IF (WASELIM) THEN
+           CALL FINDSUMBL(A,N,NZ,NBL,IBL,IP,IQ,SUMSQ,IPRINT)
            SUMSQA(1)=SUMSQA(2)
            SUMSQA(2)=SUMSQ
           ENDIF
+
+          ELIM(1) = ELIM(2)
+          ELIM(2) = WASELIM 
+          WASELIM = .FALSE.
 
           IF (IPRINT.GE.3) THEN
             write(lupri,*) ' ... ITER=',ITER, ' SUMSQ=',SUMSQ
           ENDIF
 C         ... find out the end of oterations...
-          IF ((SUMSQA(1).LE.ZEROTHRS1.AND.SUMSQA(2).LE.ZEROTHRS1).AND.
-     &         DABS(SUMSQA(1)-SUMSQA(2)).LE.DIAGTHRS)
-     &        FINISHED=.TRUE.
+C         IF ((SUMSQA(1).LE.ZEROTHRS1.AND.SUMSQA(2).LE.ZEROTHRS1).AND.
+C    &         DABS(SUMSQA(1)-SUMSQA(2)).LE.DIAGTHRS.AND.ITER.GE.2)
+C    &        FINISHED=.TRUE.
+          IF (.NOT.ELIM(1).AND..NOT.ELIM(2)) FINISHED=.TRUE.
 
       IF (.NOT.FINISHED) GOTO 10
 
-C     write(lupri,*) 'maximum number of iterations:',MAXITER
-
+      IF (IPRINT.EQ.2) THEN
+       write(lupri,'(/2X,A,I7)') '>>>> finished, # of iterations: ',ITER
+       write(lupri,'(2X,A,2D12.5,/,2X,A,D12.5)')
+     &      ' last 2 sums of largets elements: ',SUMSQA(2),SUMSQA(1),
+     &      ' "zero" off-diag elem. threshold: ',ZEROTHRS
+      ENDIF
 CC *********************************************************************************
 
 C ==== Finished === 
