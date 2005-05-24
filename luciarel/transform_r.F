@@ -1809,11 +1809,6 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
       end if
 *
       if (SIGDEN_ROUTE.eq.'SIGDEN') then
-        NDIAMINT = 2*NDIM_TOT + 3*((2*NDIM_TOT)**2)
-        call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
-        call memmar(KPOSDIA,NDIAMINT,'ADDS  ',1,'POSDIA')
-        write(6,*) ' Allocating for ',NDIAMINT,' diagonal integrals.'
-*
 * Allocate for required integrals/densities only
         if (NZ.eq.1.or.ISPINFREE.eq.1) then
           IRIMLT = 1
@@ -1823,7 +1818,14 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
         IRIMLT = 2
 * !! Still enforced
         NALLINT = LEN_T_VEC * IRIMLT
+        write(6,*) ' Allocating for ',NALLINT,' integrals.'
         call memmar(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
+*
+* Diagonal integrals
+        NDIAMINT = 2*NDIM_TOT + 3*((2*NDIM_TOT)**2)
+        call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
+        call memmar(KPOSDIA,NDIAMINT,'ADDS  ',1,'POSDIA')
+        write(6,*) ' Allocating for ',NDIAMINT,' diagonal integrals.'
       end if
 *
 *
