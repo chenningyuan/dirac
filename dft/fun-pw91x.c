@@ -51,7 +51,7 @@ static void pw91x_third(FunThirdFuncDrv *ds, real factor,
 
 static int fun_true(void) { return 1; }
 Functional PW91xFunctional = {
-  "pw91x",
+  "PW91x",
   fun_true,
   pw91x_read,
   NULL,
