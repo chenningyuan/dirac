@@ -54,6 +54,16 @@ C
       dimension IBATS(8,NBLOCK),LBATS(NBLOCK),I1BATS(NBLOCK),
      &          LEBATS(NBLOCK),NBAT_MS2(NMS2VAL)
 *
+      if ((NBLOCK.gt.MXNTTS_MC).or.(NMS2VAL.gt.MXMKSTA)) then
+        write(6,*) ' Problem in civcinf_mc ! '
+        if (NBLOCK.gt.MXNTTS_MC) then
+          write(6,*) ' Increase MXNTTS_MC to ',NBLOCK
+        else if (NMS2VAL.gt.MXMKSTA) then
+          write(6,*) ' Increase MXMKSTA   to ',NMS2VAL
+        end if
+        call quit(' Integer information overflow.' )
+      end if
+*
       do ITP = 1,NBLOCK,1
         LBATS_MC(ITP) = LBATS(ITP)
         I1BATS_MC(ITP) = I1BATS(ITP)
