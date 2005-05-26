@@ -1123,8 +1123,9 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'GET_3B')
 *
       write(6,*)
-      write(6,*) ' Allocating LCSBLK (krmcluci) in GET_3BLKS_REL: ',
-     &             LBLOCK
+      write(6,*) 
+     &' Allocating LBLOCK (set in LCISPC_REL) in GET_3BLKS_REL: '
+     &  ,LBLOCK
       write(6,*)
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
@@ -1999,13 +2000,13 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
           KLCVST = 1
           DO  ISYM = 1, NSMCI
             CALL ZBLTP_REL(ISMOST(1,ISYM),NSMST,IDC,WORK(KLBLTP))
-            CALL NGASDT_REL(IGSOCCX(1,1,ICI),IGSOCCX(1,2,ICI),NGAS,ISYM,
-     &           NSMST,NOCTPA,NOCTPB,WORK(KNSTSO(IATP)),
-     &           WORK(KNSTSO2(IBTP)),
-     &           ISPGPFTP(1,IBSPGPFTP(IATP)),
-     &           ISPGPFTP(1,IBSPGPFTP(IBTP)),MXPNGAS,NELFGP,
-     &           NCOMB,XNCOMB,MXS,MXSOO,WORK(KLBLTP),NTTSBL,
-     &           LCOL,WORK(KLIOIO))
+            CALL NGASDT_REL(IGSOCCX(1,1,ICI),IGSOCCX(1,2,ICI),
+     &                      NGAS,ISYM,NSMST,NOCTPA,NOCTPB,
+     &                      WORK(KNSTSO(IATP)),WORK(KNSTSO2(IBTP)),
+     &                      ISPGPFTP(1,IBSPGPFTP(IATP)),
+     &                      ISPGPFTP(1,IBSPGPFTP(IBTP)),MXPNGAS,NELFGP,
+     &                      NCOMB,XNCOMB,MXS,MXSOO,WORK(KLBLTP),NTTSBL,
+     &                      LCOL,WORK(KLIOIO))
 *
             IF(IMS2.EQ.1) THEN
               XISPSM(ISYM,ICI) = XNCOMB
@@ -2024,6 +2025,12 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
 *       ^ End of loop over CI spaces
       END DO
 *     ^ End of loop over MS2 spaces
+*
+* Setting size of resolution matrices to no. od determinants:
+      LCSBLK = INT(XISPSM(ISYM_KRMC,1))
+      write(6,*) '  Set LCSBLK to ',LCSBLK
+      write(6,*) '  FIXME: Max. resolution space possible. '
+      write(6,*) '         Savings in large calculations.  '
 *
 * Check for minimum size of resolution matrices:
       if (MXSB.gt.LCSBLK) then

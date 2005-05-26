@@ -221,7 +221,8 @@ C 62: No combinations of degenerate initial vectors
       INIDEG = 0
 C
 C 64: Length of batches of C vectors
-      LCSBLK = 1 000 000
+C     LCSBLK = 40 000 000  
+C Now calculated and set in LCISPC_REL (ciinfo_r.F)
 C
 C 74: Density matrices requested
       CALL LUCI_TRAVA(CIRUN,'DENSI ',IDENSI,DUMMY)
@@ -254,7 +255,7 @@ C
 C 91: COMHAM option
       IF (ISEQCI(1,1) .LT. 0) THEN
 C        ISEQCI(1,1) = MAXCIT from krmc (number 54 above)
-C        MAXCIT .lt. 0 is krmc code for doing full CI
+C        MAXCIT .lt. 0 is krmc code for doing CI
 C        with explicit CI Hamiltonian (not iterative);
 C        however, ISEQCI must be .gt. 0 for luciarel to work
          IDCOMH = 1
@@ -1685,6 +1686,7 @@ C
       DIMENSION WORK(*)
 C
       CIRUN = 'NDET  '
+      ISYM_KRMC = ISYM
 C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
@@ -1698,7 +1700,7 @@ C
 C     Compute the number of determinants for this setup and return.
       CALL KRMC_LUCI(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
 C
-      NDET = INT(XISPSM(ISYM,1))
+      NDET = INT(XISPSM(ISYM_KRMC,1))
 C
       RETURN
       END

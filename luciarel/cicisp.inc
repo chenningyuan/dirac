@@ -7,6 +7,7 @@
      &              NBELCI(MXPICI),XISPSM(MXPCSM,MXPICI),
      &              ISMOST(MXPCSM,MXPCSM),MXSB,MXSOOB,
      &              NBLKIC(MXPCSM,MXPICI),LCOLIC(MXPCSM,MXPICI),
-     &              IR04SPC(2,MXPICI),MXNTTS,LCJRES,MXADKBLK
+     &              IR04SPC(2,MXPICI),MXNTTS,LCJRES,MXADKBLK,
+     &              ISYM_KRMC
 
       

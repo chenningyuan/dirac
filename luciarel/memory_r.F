@@ -339,7 +339,7 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 *
       IF(TASK(1:5).EQ.'PRINT') THEN
         IPRNTMP = 1
-        NSNLI= NS + NL
+        NSNLI = NS + NL
 *
       ELSE IF(TASK(1:3).EQ.'INI') THEN
 *
@@ -351,7 +351,6 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
         NM = 0
         KFREES = KBASE
         KFREEL = KBASE
-*       NWORD = MXPWRD
 *
 *       Compute pointer to end element
 *
@@ -362,8 +361,8 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 ** First free word
 *
       ELSE IF (TASK(1:4).EQ.'FREE') THEN
-       KBASE = KFREEL
-       NSNLI = NS+NL
+        KBASE = KFREEL
+        NSNLI = NS+NL
 *
 **. Static memory
 *
