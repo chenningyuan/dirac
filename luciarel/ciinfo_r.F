@@ -2034,9 +2034,10 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
 *
 * Check for minimum size of resolution matrices:
       if (MXSB.gt.LCSBLK) then
-        write(6,*) ' Exceeds space for resolution matrices: ',LCSBLK
-        write(6,*) ' Increase LCSBLK (in krmcluci) to at least ',MXSB
-        call quit ('Stop in LCISPC_REL.')
+        write(6,*) ' WARNING: Resetting LCSBLK to: ',MXSB
+        LCSBLK = MXSB
+C?      write(6,*) ' Exceeds space for resolution matrices: ',LCSBLK
+C?      write(6,*) ' Increase LCSBLK (in krmcluci) to at least ',MXSB
       end if
 *
       if (NTEST.ge.1) then
