@@ -73,9 +73,11 @@ lb94_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   real vx;
 
-    real rho    = dp->rhoa + dp->rhob;
+  /*real rho    = dp->rhoa + dp->rhob;*/
+    real rho    = dp->rhoa;
     real rho13 = pow(rho, 1.0/3.0);
-    real grad = dp->grada + dp->gradb;
+  /*real grad = dp->grada + dp->gradb;*/
+    real grad = dp->grada;
     real rho43=rho*rho13;
     real scaled_grad, sg2;
     scaled_grad = grad/(rho43>1e-13 ? rho43 : 1e-13);

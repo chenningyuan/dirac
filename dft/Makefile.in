@@ -15,6 +15,7 @@ C_OBJS = general.o	\
 	fun-gga.o	\
 	fun-kt.o	\
 	fun-lb94.o	\
+	fun-lbalpha.o	\
 	fun-lyp.o	\
 	fun-optx.o	\
 	fun-p86c.o	\
@@ -46,7 +47,7 @@ dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
 
 fun-tester: fun-tester.c fun-slater.c fun-vwn.c fun-becke.c fun-lyp.c functionals.c fun-lb94.c \
-	emb-functional.c fun-p86c.c fun-pw86x.c fun-kin_tf.c fun-kin_vw.c
+	fun-lbalpha.c emb-functional.c fun-p86c.c fun-pw86x.c fun-kin_tf.c fun-kin_vw.c
 	$(CC) -g -O -I../include -DNO_BACKWARD_COMP $^ -o $@  -lm
 
 depend:
