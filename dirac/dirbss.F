@@ -32,7 +32,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbdhf.h"
 
         DIMENSION VMAT(*),WORK(LWORK)
-        LOGICAL DK2SO1,ONLYSO1,SF_BEG,
+        LOGICAL ONLYSO1,SF_BEG,LSF_BEG,
      &         GETPCTM,ADD_AMFI,ONLYTRA,ELIM_SF
 
         CALL QENTER('MAKE_BSS')
@@ -45,14 +45,14 @@ C
 
 C    ... refrence
       WRITE(LUPRI,'(2X,A/,A/,A/)')
-     & 'Jensen H.-J.Aa., Ilias M., "Two-component'//
+     & 'H. J. Aa. Jensen and M. Ilias, "Two-component'//
      & ' relativistic methods based on the quaternion modified',
      & '  dirac equation: from the Douglas--Kroll to the'//
      & ' Barysz--Sadlej--Snijders infinite order";',
      & '  in preparation (2005)'
 
 C extract information about the BSS Hamiltonian 
-      CALL EXTR_BSS_INFO(IBSS,IPZ,SPINFR,DK2SO1,ADD_AMFI,
+      CALL EXTR_BSS_INFO(IBSS,IPZ,IPY,SPINFR,ADD_AMFI,
      &         ONLYSO1,ONLYTRA,SF_BEG,ELIM_SF,IC_AMFI,IPRHAM)
 
 C generate free particle one-electron matrix in Lowdin-basis "Theta"
@@ -87,8 +87,11 @@ C get A factors
 
 C get H1 (Dirac bare nucleus) Hamiltonian in the FP ON "k" basis 
       CALL MEMGET('REAL',KHDAO,N2BBASXQ,WORK,KFREE,LFREE)
+      LSF_BEG = SF_BEG .AND. IPY.EQ.0
+C     .. only eliminate SO terms if spin-free
+C        (SF_BEG can be true for DKH2sfB+SO1)
       CALL GET_H1_FPM(WORK(KTBUF),WORK(KTMAT),WORK(KIBEIG),
-     &              WORK(KHDAO),SF_BEG,WORK(KFREE),LFREE)
+     &              WORK(KHDAO),LSF_BEG,WORK(KFREE),LFREE)
 C    ... save H1 in "k" basis for the last comparison of eigenvalues...
       CALL MEMGET('REAL',KH1FP,N2BBASXQ,WORK,KFREE,LFREE)
       CALL DCOPY(N2BBASXQ,WORK(KTBUF),1,WORK(KH1FP),1)
@@ -98,12 +101,12 @@ C ... allocate accurate memmory space for H2c in FP "k" basis
       IF (NFSYM.EQ.2) NH2FP=NH2FP+NESH(2)*NESH(2)*NZ
       CALL MEMGET('REAL',KH2FP,NH2FP,WORK,KFREE,LFREE)
 
-C get H2C Hamiltonian(inf,DK2,DK2SO1,DK1)  in FP k basis 
+C get H2C Hamiltonian(inf,DK2,DK1)  in FP k basis 
 
 C     ... by default do prepare the picture change transformation matrix...
       GETPCTM=.FALSE.
       IF (IPZ.EQ.9) THEN
-C       ... infinite irder ... get also picture change transformation matrix
+C       ... infinite order ... get also picture change transformation matrix
         CALL MEMGET('REAL',KPCTM,N2BBASXQ,WORK,KFREE,LFREE)
 
 C       ... for the infinite order, do always prepare pict.change transf.matrix
@@ -114,13 +117,12 @@ C       ... for the infinite order, do always prepare pict.change transf.matrix
       ELSE IF (IPZ.EQ.2) THEN
 C       ... second order DKH
         CALL GET_HDK2_FPM(WORK(KH2FP),WORK(KTBUF),WORK(KEIG),
-     &                    WORK(KIBEIG),DK2SO1,
+     &                    WORK(KIBEIG),IPY,SF_BEG,
      &                    IPRHAM,WORK(KFREE),LFREE)
       ELSE
 C       ...and very rough first order, or SO1 integrals only...
         CALL GET_HDK1_FPM(WORK(KH2FP),WORK(KTBUF),WORK(KH1FP),
-     &                   WORK(KIBEIG),
-     &                    ONLYSO1,IPRHAM,WORK(KFREE),LFREE)
+     &                    WORK(KIBEIG),ONLYSO1,IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 
 C  Make contravariant transformation matrix
@@ -157,7 +159,7 @@ C        fitting AMFI integrals in the DIRAC order, saving to the BSSMAT
       ENDIF
 
 C ============================================================
-C  Finally set up number of positronic shells equal to zero
+C  Finally reset number of positronic shells to zero
 C ============================================================
       NSYM = 4/NZ
       DO I=1,NFSYM
@@ -175,8 +177,8 @@ C ******************************************************************************
 C    ... Number of transf. matrixes is set to 1 - it is only the Lowdin AO->MO
       NZT = 1
 C **********************************************************************************
-      WRITE(LUPRI,'(2X,A)') 
-     &'MAKE_BSS: Two-component BSS mode - positronic shells deleted !'
+      WRITE(LUPRI,'(A)') 
+     &'  MAKE_BSS: Two-component BSS mode - positronic shells deleted !'
 
       CALL MEMREL('MAKE_BSS',WORK,KWORK,KWORK,KFREE,LFREE)
 
@@ -386,8 +388,8 @@ C****************************************************************************
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck EXTR_BSS_INFO */
-      SUBROUTINE EXTR_BSS_INFO(IBSS,IPZ,SPINFR,DK2SO1,ADD_AMFI,
-     &                    ONLYSO1,ONLYTRA,SF0,ELIM_SF,IC_AMFI,IPRINT)
+      SUBROUTINE EXTR_BSS_INFO(IBSS,IPZ,IPY,SPINFR,ADD_AMFI,
+     &                    ONLYSO1,ONLYTRA,SF_BEG,ELIM_SF,IC_AMFI,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C PURPOSE:
@@ -396,13 +398,13 @@ C     Set control variables based on IBSS coding
 C     IBSS = axyz
 C
 C        a - 1 to 6, defines AMFI flags..
-C        x - .ne. 0: define spinfree before (as 4-comp)
-C            .eq. 0: define spinfree at end
+C        x - .ne. 0: define spin-free before (as 4-comp)
+C            .eq. 0: define spin-free at end
 C            ... x is active with the SPINFREE option only !!!
 C           
 C        y - order of spin-orbit term:
-C            0 - spinfree, 1 - first order for DK2, 2+ - full.
-C         z - order of Douglas-Kroll transformation
+C            0 - spin-free, 1 - first order for DK2, 2+ - full.
+C        z - order of Douglas-Kroll transformation
 C            (0, 1, 2, or 9), where 9 is full.
 C
 C     Pick up the x,y,z variables from IBSS = xyz
@@ -410,7 +412,8 @@ C
 C On input: IBSS, SPINFR, IPRINT
 C
 C On output: IPZ - order of Hamiltonian
-C            DK2SO1,SF0
+C            IPY - order of spin-orbit term
+C            SF_BEG - spin-free "Beginning"
 C            ONLYSO1 - flagfo BSS-DKH-SO1 integrals to be compared with AMFI DKH-SO1 integrals
 C            ONLYTRA - flag for C->S->C transformation
 C            ELIM_SF
@@ -421,52 +424,67 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
-      LOGICAL SPINFR,DK2SO1,SF0,ONLYSO1,ONLYTRA,ADD_AMFI,ELIM_SF
+      LOGICAL SPINFR,SF_BEG,ONLYSO1,ONLYTRA,ADD_AMFI,ELIM_SF
       CALL QENTER('EXTR_BSS_INFO')
 
       CALL EXTR_DIG(IBSS,IPA,IPX,IPY,IPZ,IPRINT)
 
-      WRITE (LUPRI,'(A,I2)')
-     &  '* Order of Barysz-Sadlej_Snijders transformation :',IPZ
+      IF (IPZ .GE. 9) THEN
+         WRITE (LUPRI,'(A,I2)')
+     &   '* IOPT - infinite order BSS/DKH transformation'
+      ELSE
+         WRITE (LUPRI,'(A,I2)')
+     &   '* Order of Douglas-Kroll-Hess transformation :',IPZ
+      END IF
+
+      IF (IPY .EQ. 0) THEN
+         WRITE (LUPRI,'(A)')
+     &   '  with no spin-orbit terms (spin-free)'
+      ELSE IF (IPY .LT. IPZ) THEN
+         WRITE (LUPRI,'(A,I2)')
+     &   '  with a lower order of one-electron spin orbit term :',IPY
+         IF (IPZ .NE. 2)
+     &   CALL QUIT('Lower order spin-orbit only defined for DKH2')
+      END IF
+
+      IF (SPINFR .AND. IPY.GT.0) THEN 
+         WRITE(LUPRI,'(A)')
+     &   '* INFO: ".SPINFR" option, spin-orbit terms eliminated!' 
+         IPY=0
+      ENDIF
+
+      IF (IPX .NE. 0 .AND. IPY .LT. IPZ) THEN  
+C        .. IPY .LT. IPZ includes spin-free
+         SF_BEG = .TRUE.
+         WRITE (LUPRI,'(A)')
+     & '* Elimination of spin-orbit terms from the Dirac bare '//
+     & 'nuclei in "k" basis (spin-free "BEFORE / AT THE BEGINNING")' 
+         IF (IPY .EQ. 1) WRITE(LUPRI,'(A)')
+     & '  However, first order one-electron spin-orbit terms (SO1) kept'
+      ELSE
+         SF_BEG = .FALSE.
+         IF (IPY .LT. IPZ .AND. IPZ .EQ. 2) WRITE (LUPRI,'(A)')
+     & '* Elimination of spin-orbit terms from the 2-comp.Ham. in "k"'//
+     & ' basis (spin-free "AFTER / AT THE END")'
+         IF (IPY .EQ. 1 .AND. IPZ .EQ. 2) WRITE(LUPRI,'(A)')
+     & '  However, first order one-electron spin-orbit terms (SO1) kept'
+      ENDIF
 
       ELIM_SF=.FALSE.
-      IF (SPINFR.AND.IPY.GE.1) THEN 
-       WRITE(LUPRI,'(A)') '* "SPINFR" option, no spin-orbit terms!' 
-       IPY=0
-      ENDIF
       IF (IPY .EQ. 0) THEN
+C        spin-free
          IF (.NOT.SPINFR.AND.IPA.EQ.0) CALL QUIT(
      & 'You forgot to specify .SPINFR in the Hamiltonian input!')
-         DK2SO1 = .FALSE.
          IF (SPINFR.AND.IPA.GT.0) CALL QUIT(
      & 'Wrong .SPINFR in the Hamiltonian input with AMFI on!')
          IF (.NOT.SPINFR.AND.IPA.GT.0) THEN
           SPINFR=.TRUE.
           ELIM_SF=.TRUE.
          ENDIF
-      ELSE IF (IPY .EQ. 1 .AND. IPZ .EQ. 2 .AND.(.NOT.SPINFR)) THEN
-C        ... DKH2sfB + SO1
-         DK2SO1 = .TRUE.
-         WRITE (LUPRI,'(A)')
-     &   '* spin-orbit terms only to the first order -'//
-     &   ' DKH2sfB+SO1 Hamiltonian'
       ELSE IF (.NOT.SPINFR) THEN
-         DK2SO1 = .FALSE.
          WRITE (LUPRI,'(A)')
      &   '* all spin-orbit terms included (full relativity)'
       END IF
-
-      IF (IPX .GE. 1 .AND. SPINFR) THEN  
-         SF0 = .TRUE.
-         WRITE (LUPRI,'(A)')
-     & '* Elimination of spin-orbit terms from the Dirac bare '//
-     & 'nuclei in "k" basis (spinfree "BEFORE / AT THE BEGINNING")' 
-      ELSE
-         SF0 = .FALSE.
-         IF (SPINFR) WRITE (LUPRI,'(A)')
-     & '* Elimination of spin-orbit terms from the 2comp.Ham. in "k"'//
-     & ' basis (spinfree "AFTER / AT THE END")'
-      ENDIF
 
       IF (ELIM_SF) WRITE (LUPRI,'(A)')                                
      & '* SPIN-FREE flag on only for BSS Hamiltonain, later removed'//
@@ -589,9 +607,9 @@ C     ... save the IBSS
       ENDIF
 
       IF (IPRINT.GE.3) THEN
-       WRITE (LUPRI,'(/A,I5,A,3I2)')
-     &'EXTR_DIG: IBSS=axyz=',IBSS_SAVE,
-     &'extracted digits  a,x,y,z:',IPA,IPX,IPY,IPZ
+       WRITE (LUPRI,'(/A,BZ,I4,A,BN,4I2)')
+     &'EXTR_DIG: IBSS = axyz = ',IBSS_SAVE,
+     &' extracted digits  a,x,y,z:',IPA,IPX,IPY,IPZ
       ENDIF
 
 C     ... restore the IBSS
@@ -1715,8 +1733,8 @@ C    TMAT - transformation matrix "xhi" -> "k"
 C   IBEIG - boson info on MO shells (needed for the spin-free case)
 C                                                         
 C  On output:
-C    TBUF - H1 Hamiltonian in the FP ON "k" basis (spin-free,if SF_BEG .true.)                                            
-C     HDAO - bare nucleus Dirac Ham; in SAO-basis "xhi"                                                         
+C    TBUF - H1 Hamiltonian in the FP ON "k" basis (spin-free, if SF_BEG .true.)                                            
+C    HDAO - bare nucleus Dirac Ham; in SAO-basis "xhi"                                                         
 C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C
@@ -1782,7 +1800,7 @@ C
 
         IF (SF_BEG) THEN
          CALL SPF_HK( TBUF(IOFT),.TRUE.,IBEIG(IORB(I)+1),
-     &                 IBEIG(IORB(I)+1),
+     &                IBEIG(IORB(I)+1),
      &                NORB(I),NORB(I),NORB(I),NORB(I),NZ,IPRHAM )
          IF(IPRHAM.GE.5) THEN
           CALL HEADER(
@@ -2217,12 +2235,12 @@ C  ... do the picture change transformation 4c Dirac Ham. "xhi" -> H2c in "k"
      &  '*** Fermion corep ',I,'/',NFSYM
         CALL PRQMAT(WORK(KA),NREF,NREF,NREF,NREF,
      &               NZ,IPQTOQ(1,0),LUPRI)
-           ENDIF
+       ENDIF
 
        IF (SF_BEG) THEN
         CALL SPF_HK(WORK(KA),.TRUE.,IBEIG(IORB(I)+1+NPSH(I)),
      &            IBEIG(IORB(I)+1+NPSH(I)),
-     &             NREF,NREF,NREF,NREF,NZ,IPRHAM)
+     &            NREF,NREF,NREF,NREF,NZ,IPRHAM)
 
         IF (IPRHAM.GE.5) THEN
           CALL HEADER(
@@ -2669,7 +2687,7 @@ C               SAOMO_Le = SAOMO_Le * Ad^-1
             CALL FLSHFO(LUPRI)
           END IF
 
-C     ... take care of pict.change transf.matrixes if spinfree from "beginning"
+C     ... take care of pict.change transf.matrixes if spin-free from "beginning"
         IF (SPFR.AND.SPFR_BEG.AND.GETPCTM) THEN
 
          IF ( IPRINT .GE. 5 ) THEN
@@ -3398,7 +3416,7 @@ C       ... offset for Lowdin matrix
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck get_hdk2_fpm */      
       SUBROUTINE GET_HDK2_FPM(H2FP,TBUF,EIG,IBEIG,
-     &                     DK2SO1,IPRINT,WORK,LWORK)
+     &                     IPY,SF_BEG,IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C    PURPOSE:
@@ -3408,7 +3426,7 @@ C   trasnform each to the ON basis and do the diagonalization
 C
 C  On input:  TBUF H1 in "k" basis
 C             EIG - free particle eigenvalues needed for denominators
-C             IBEIG - boson irreps if spin-free, or DK2SO1
+C             IBEIG - boson irreps if spin-free, or SF_BEG
 C                                                         
 C  On output: H2FP(*) - the desired DK2 Hamiltonian in "k" basis
 C                                                         
@@ -3425,7 +3443,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
    
       DIMENSION H2FP(*),TBUF(*),EIG(*),IBEIG(*),WORK(LWORK)
 
-      LOGICAL SPFR_BEG, DK2SO1
+      LOGICAL SF_BEG
 
       CALL QENTER('GET_HDK2_FPM')
 #include "memint.h"         
@@ -3489,12 +3507,12 @@ C         .... Calculate the average value
           JH1EP = JOFT1 + NPSH(I)
  
 C ----------------------------------------------------------------------------y
-C  If desired, eliminate SO1 terms from both H1_ep and R_pe - DK2SO1 approach
+C  If desired, eliminate SO1 terms from both H1_ep and R_pe
 C -----------------------------------------------------------------------------
-          IF (DK2SO1) THEN
+          IF (SF_BEG) THEN
             IF (IPRINT.GE.2) THEN
               WRITE(LUPRI,'(3X,A)')
-     & 'DK2SO1 - elim. spin-orbit effects from H1(ep) and R(pe)'
+     & 'DKH2sfB+SO1 - elim. spin-orbit effects from H1(ep) and R(pe)'
             ENDIF
            CALL SPF_HK( TBUF(JH1EP),.TRUE.,IBEIG(IORB(I)+NPSH(I)+1),
      &                 IBEIG(IORB(I)+1),
@@ -3539,7 +3557,13 @@ C
           ENDIF
 *  Add to first order (ee-blocks!): H_1(ee) =  H_1(ee) + X
 
-          DO IZ = 1,NZ
+          IF (IPY .LE. 1) THEN
+C            only add second order correction to spin-free part
+             IZ_END = 1
+          ELSE
+             IZ_END = NZ
+          END IF
+          DO IZ = 1,IZ_END
             IBUF  = JBUF + (IZ-1)*N2ESHI
             JH1EE = JOFT1 + NPSH(I)*NORB(I) + NPSH(I)
      &            + (IZ-1)*NORB(I)*NORB(I)
