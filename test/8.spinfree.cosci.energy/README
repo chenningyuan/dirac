@@ -1,4 +1,9 @@
 !
 ! This test calculates the 2P state of Fluorine,
-! using the spinfree formalism.
+! using the spinfree formalism different Hamiltonians.
+!
+! The DKH2sfB Hamiltonian test is given here in the form 
+! to be comparable with the DALTON open-shell counterpart.
+! It utilizes the BOSONSELECTION to have identical open-shell
+! occupation with the DALTON.
 !
