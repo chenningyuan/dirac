@@ -1349,6 +1349,9 @@ C   PAMIOU: LUTMAT
       DIMENSION WORK(LWORK)
       CALL QENTER('GMOTRA')
 #include "memint.h"
+
+
+C      IF (DO4C2C.AND.
 C
 C     By default we do not partition the space. This may be
 C     modified if we have linear symmetry or approximate the
@@ -1365,7 +1368,9 @@ C
 C     Get Lowdin matrix
 C     =================
 C
-      CALL MEMGET('REAL',KVMAT,N2BBASX,WORK,KFREE,LFREE)
+CMI   CALL MEMGET('REAL',KVMAT,N2BBASX,WORK,KFREE,LFREE)
+CMI ... extend size because matrix is beeing reused in MAKE_BSS
+      CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
       CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRONE)
 C
 C     Unrestricted kinetic balance; use Lowdin matrix
@@ -1389,11 +1394,22 @@ C
           NTMO(IFRP)  = NORB(IFRP)
         ENDDO
         KTMAT = KVMAT
+C     ELSE IF (BSS.AND..NOT.DO4C2C) THEN
       ELSE IF (BSS) THEN
-         CALL MAKE_BSS(WORK(KVMAT),WORK(KFREE),LFREE)
+        CALL MAKE_BSS(WORK(KVMAT),WORK(KFREE),LFREE)
 C     ... transformation matrix is the Le part of the Lowdin matrix
-         KTMAT = KVMAT
+        KTMAT = KVMAT
       ELSE
+
+C      IF (BSS.AND.DO4C2C.AND..NOT.USEDF) THEN
+C        ... prepare pict.change trasf.matrix using h_D(USEFD=.FALSE)
+C        CALL MAKE_BSS(WORK(KVMAT),WORK(KFREE),LFREE)
+C        ... do not modify the Lowdin matrix - for 2c calculations is saved into BSSMAT
+C        BSS=.FALSE.
+C        write(lupri,*)
+C    &  'BSS tranformation of the Dirac bare nucleus done,'//
+C    &  ' continuing with the DC_rkb Hamiltonian !'
+C      ENDIF
 C
 C     Transformation matrix with modified Dirac equation embedded
 C     ===========================================================
@@ -1401,7 +1417,7 @@ C
         CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
-     &            WORK(KFREE),LFREE)
+     &             .FALSE.,WORK(KFREE),LFREE)
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
       ENDIF
       N2TMT   = 0
@@ -1495,7 +1511,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck modham */
-      SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,WORK,LWORK)
+      SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,WORK,LWORK)
 C*****************************************************************************
 C
 C     Generate transformation matrix to MO-basis with the modified
@@ -1528,6 +1544,7 @@ C  DGROUP:
 #include "cbihr1.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
+      LOGICAL SLGROUP
 #include "memint.h" 
 C
       FAC = DM2*CVAL*CVAL
@@ -1545,6 +1562,7 @@ C
       IOFV = 1
       DO 10 I = 1,NFSYM
         IF(NFORB(I,0).EQ.0) GOTO 10
+CMI      ... transform to the Lowdin basis "Theta"
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
      &                         NFORB(I,0),NFORB(I,0),
      &            TBUF(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
@@ -1554,9 +1572,11 @@ C
      &            WORK,LWORK,IPRGEN)
         IF (IPRHAM.GE.6) THEN
            IF(VEXTPJ) THEN
-             CALL HEADER('Bare nucleus matrix in orthon. L basis',-1)
+             CALL HEADER(
+     &     'MODHAM: Bare nucleus matrix in orthon. L basis',-1)
            ELSE
-             CALL HEADER('Free particle matrix in orthon. L basis',-1)
+             CALL HEADER(
+     &     'MODHAM: Free particle matrix in orthon. L basis',-1)
            ENDIF
            WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
            CALL PRQMAT(TMAT(IOFT),NFORB(I,0),NFORB(I,0),NFORB(I,0),
@@ -1807,7 +1827,7 @@ C
         WRITE(LUPRI,'(A)') '* Applied strict kinetic balance !'
       ENDIF
       IF(IPRHAM.GE.5) THEN
-        CALL HEADER('Final transformation matrix ',-1)
+        CALL HEADER('MODHAM: Final transformation matrix 4c AO->MO ',-1)
         IMAT = 1
         DO 80 I = 1,NFSYM
         IF(NORB(I).GT.0) THEN
@@ -1818,7 +1838,86 @@ C
         ENDIF
  80     CONTINUE
       ENDIF
+
+CMI ... for RKB & BSS do resort columns of transformation matrix that
+CMI     they are S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of S1 L1 S2 L2 ...
+      IF (SLGROUP.AND.NSYM.GT.1) THEN
+       CALL MEMCHK('MODHAM, SL resort',WORK,1)
+       CALL MEMGET('REAL',KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
+       IMAT = 1
+       IBUF = KBUF
+       DO I=1,NFSYM
+       IF (NORB(I).GT.0) THEN
+
+        IBUF1 = IBUF
+        IBMAT = IMAT
+        DO ISYM = 1,NSYM
+        IF (NBORB(ISYM,I,0).GT.0.AND.NSYM.GT.1) THEN
+        DO IZ=1,NZ
+C       ... co copy S columns first
+          NBS = NFBAS(I,0)*NBORB(ISYM,I,1)
+          CALL DCOPY(NBS,
+     &         TMAT(IBMAT),1,WORK(IBUF),1)
+
+            IBUF = IBUF + NFBAS(I,0)*NBORB(ISYM,I,2) +
+     &              (IZ-1)*NORB(I)*NFBAS(I,0)
+            IBMAT = IBMAT + NFBAS(I,0)*NBORB(ISYM,I,0) +
+     &              (IZ-1)*NORB(I)*NFBAS(I,0)
+        ENDDO
+        ENDIF
+        ENDDO
+
+C .. then do copy L columns
+C       IBMAT = IMAT + NFBAS(I,0)*NBORB(1,I,1)
+        IBMAT = IMAT
+        DO ISYM = 1,NSYM
+        IF (NBORB(ISYM,I,0).GT.0.AND.NSYM.GT.1) THEN
+        DO IZ=1,NZ
+
+          NBS = NFBAS(I,0)*NBORB(ISYM,I,1)
+
+C        ... skip S
+          IBMAT = IBMAT + NFBAS(I,0)*NBORB(ISYM,I,2) +
+     &             (IZ-1)*NORB(I)*NFBAS(I,0)
+
+          CALL DCOPY(NBS,
+     &         TMAT(IBMAT),1,WORK(IBUF),1)
+
+          IBUF = IBUF + NFBAS(I,0)*NBORB(ISYM,I,1) +
+     &             (IZ-1)*NORB(I)*NFBAS(I,0)
+
+C        ... skip L
+          IBMAT = IBMAT + NFBAS(I,0)*NBORB(ISYM,I,1) +
+     &             (IZ-1)*NORB(I)*NFBAS(I,0)
+
+        ENDDO
+        ENDIF
+        ENDDO
+         IF (IPRHAM.GE.5) THEN
+          CALL HEADER('MODHAM: Sorted final transformation matrix'//
+     &   ' 4c AO->MO ',-1)
+          WRITE(LUPRI,'(/A,I1,A,I1)')
+     &   '* Fermion ircop no.',I,'/',NFSYM
+          CALL PRQMAT(WORK(IBUF1),NFBAS(I,0),NORB(I),
+     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         ENDIF
+
+         IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+
+       ENDIF
+       ENDDO
+
+       IF (NSYM.GT.1) THEN
+         ISIZE = NFBAS(1,0)*NORB(1)*NZ
+         IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ
+         CALL DCOPY(ISIZE,WORK(KBUF),1,TMAT(1),1)
+       ENDIF
+CMI ... has to be fixed....
+C      CALL MEMREL('SLGROUP',WORK,KBUF,KBUF,KFREE,LFREE)
+      ENDIF
+
       CALL FLSHFO(LUPRI)
+C     CALL QUIT('In MODHAM')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3749,6 +3848,7 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
+#include "dummy.h"
 C
       LOGICAL TOBE
       DIMENSION TMAT(*),TINV(*),WORK(*)
@@ -3923,7 +4023,7 @@ C       Initialize unit matrix (transformation matrix in MO-basis)
         IF(SPINFR.OR.LEVYLE) THEN
 C         Spin-free case: Fill array with boson irrep info
           CALL INISUB
-          CALL INIBOS(WORK(KIBOS),IFRP)
+          CALL INIBOS(WORK(KIBOS),IFRP,.FALSE.,0)
         ELSE
 C         Spin-orbit coupling: Fill array with zeros..
           CALL ICOPY (NORB(IFRP),0,0,WORK(KIBOS),1) 
@@ -5547,9 +5647,11 @@ C
      &       WORK(KFREE),LFREE,IPRHAM)
         IF (IPRHAM.GE.6) THEN
           IF(VEXTPJ) THEN
-            CALL HEADER('Bare nucleus matrix in mod.MO-basis',-1)
+            CALL HEADER(
+     &       'DELPOS: Bare nucleus matrix in mod.MO-basis',-1)
           ELSE
-            CALL HEADER('Free particle matrix in mod.MO-basis',-1)
+            CALL HEADER(
+     &      'DELPOS: Free particle matrix in mod.MO-basis',-1)
           ENDIF
           CALL PRQMAT(FMAT(1+I2TMOT(I)),NTMO(I),NTMO(I),
      &              NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
@@ -5561,7 +5663,7 @@ C       get full transformation as well !
      &              VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,
      &              IPRHAM)
         IF (IPRHAM.GE.6) THEN
-          CALL HEADER('Transformation matrix',-1)
+          CALL HEADER('DELPOS: Transformation matrix',-1)
           CALL PRQMAT(TMAT(1+I2ORBT(I)),NFBAS(I,0),NTMO(I),
      &                NFBAS(I,0),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
@@ -5579,7 +5681,7 @@ C
       DO 20 I = 1,NFSYM
         IF(NESH(I).EQ.0) GOTO 20
           IF(IPRHAM.GE.5) THEN
-            CALL HEADER('Eigenvalues',-1)
+            CALL HEADER('DELPOS: Eigenvalues',-1)
             WRITE(LUPRI,'(I5,E16.8)') (J,EIG(IORB(I)+J),J=1,NTMO(I))
           ENDIF
           CALL BCKTR1(FMAT(IBUF),NFBAS(I,0),NESH(I),

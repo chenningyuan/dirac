@@ -72,6 +72,9 @@ C
 C     Generate MO-transformation matrix and write to file
 C     ===================================================
 C
+CMI ... to be polished !!!!
+      IF (BSS.AND.DO4C2C.AND..NOT.DO2C4C.AND.USEDF) BSS=.FALSE.
+
       CALL GMOTRA(WORK,LWORK)
 C
 C     Use supersymmetry for linear molecules

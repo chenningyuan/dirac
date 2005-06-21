@@ -435,7 +435,7 @@ DIRRCI_MAIN = dirrci/cimain.o
 GP_OBJS = \\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
-gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpc.o
+gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpc.o  
 
 EOF
 #
@@ -637,6 +637,8 @@ utils	: GP_OBJ PD_OBJ UTIL_OBJ
 	utils/rspread.o 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/polfit.x \\
 	utils/polfit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
+	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/qjaco.x \\
+	utils/qjaco.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 
 EOF
 #

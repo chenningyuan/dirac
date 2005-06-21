@@ -44,7 +44,16 @@
 !     IBSS       - what kind of BSS Hamiltonian(1.,2. or infinite order; scalar of full
 !                  relativity)
 !     IMFCH      - charge for the mean-field summation in the AMFI
-
+!     NOPRTR     - do not do the preliminary transformation to the ON basis in 2c mode
+!                  (only for infinite ordern Trond's approach), if .false., we do the preliminary
+!                  transformation to the free-particle basis or to the Vext-particle ON basis
+!     BLOCKD     - do the block diagonalization (only for infinite order !)
+!     DO2C4C     - run SCF first in 2c mode, then continue in the 4-component mode
+!     DO4C2C     - after finishing 4c SCF do block diagonalize 4c Fock and continue 
+!                  at the 2c level
+!     USEDF      - if DO4C2C=.true, use Dirac-Fock operator to be block-diagonalized
+!
+!
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
 
@@ -61,14 +70,16 @@
       LOGICAL QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL, LEVYLE,      &
      &        SUB_BL, SOLVEN, INERSI, INERSF, SPINFR, SPINFR2, ZORA,    &
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
-     &        ONECOFF, NOSPIN, BSS
+     &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1,              &
+     &        DO2C4C, DO4C2C, USEDF                                     &
       INTEGER NDCLHAM
       PARAMETER (NDCLHAM = 18)
 
       COMMON /DCLHAM/ QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
-     &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS
+     &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
+     &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF      &
 
       REAL*8 SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
       COMMON /DCRHAM/ SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV

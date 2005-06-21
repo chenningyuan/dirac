@@ -3279,7 +3279,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 28,NDIR = 8)
+      PARAMETER (NTABLE = 32,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -3315,8 +3315,9 @@ C
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.SPINFR','.ZORA  ','.SMLV1C','.ALDA  ',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
-     &            '.ONECAP','.SPINF2','.NOSPIN','.XXXXXX',
-     &            '.INTFLG','.BSS   ','.AMFICH','.XXXXXX'/
+     &            '.ONECAP','.SPINF2','.NOSPIN','.USE_DF',
+     &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
+     &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -3358,6 +3359,17 @@ C
       BSS     = .FALSE.
       IBSS    = -1
       IMFCH   = 0
+C      ... default - do always the preliminary free particle basis transformation
+      NOPRTR  = .FALSE.
+C      ... for the infinite order do solve R-equation 2
+      YREQ1   = .FALSE.
+C      ... default - do not do block diagonalization !
+      BLOCKD  = .FALSE.
+C     ... trasfer 2c-> 4c and 4c->2c
+      DO2C4C  = .FALSE.
+      DO4C2C  = .FALSE.
+      USEDF   = .FALSE.
+C     ... default L&S components... needs discussion about relation to DO2C4C/DO4C2C
       MC      = 2
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
       IF (.NOT. SETFUN) HFXFAC  = D1
@@ -3416,7 +3428,7 @@ C     Keep track of number of changes and added finite field operators
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
-     &                121,122,123,124,125,126,127,128),I
+     &                121,122,123,124,125,126,127,128,129,130,131,132),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -3606,6 +3618,9 @@ C&&& NOSPIN: Take out all spin-interactions
              ICHANG = ICHANG + 1
             GO TO 100
   124     CONTINUE
+C&&  USEDF: Do block-diagonalization of the converged Fock-Dirac operator
+C     (and after that continue in two-component mode with non-canonical orbitals)
+            USEDF = .TRUE.
             GO TO 100
   125     CONTINUE
 C&&& INTFLG: Specify what two-integrals should be included in this run
@@ -3636,6 +3651,24 @@ C          ... read integer number
              READ(LUCMD,*) IMFCH
             GO TO 100
   128     CONTINUE
+C&&&&   Do solve R-equation 1
+            YREQ1 = .TRUE.
+            GO TO 100
+  129     CONTINUE
+C&&&&  Do NOT do preliminary free-particle transformation ...
+            NOPRTR = .TRUE.
+            GO TO 100
+  130     CONTINUE
+C&&&    Do use block diagonalization
+             BLOCKD = .TRUE.
+            GO TO 100
+  131     CONTINUE
+C&&&  jump to 4c level after few 2c iterations...
+            DO2C4C = .TRUE.  
+            GO TO 100
+  132     CONTINUE
+C&&&  jump to 2c level after finishing 4c SCF !...
+            DO4C2C = .TRUE.  
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -3683,6 +3716,11 @@ C
 
 CMI          Remove inconsistencies for the BSS option
 C     =====================================================
+      IF ((DO2C4C.OR.DO4C2C.OR.USEDF).AND..NOT.BSS) THEN
+          CALL QUIT(
+     &'HAMINP: DO2C4C/DO4C2C/USEDF options require BSS keyword !')
+      ENDIF
+
       IF (BSS) THEN
         IF (LEVYLE.OR.FREEPJ.OR.VEXTPJ) THEN
           CALL QUIT(
@@ -3725,6 +3763,13 @@ C
      &' * If wished, mean-field AMFI summation is for the charge: ',
      &   IMFCH
         ENDIF
+        IF (DO2C4C) WRITE(LUPRI,'(1X,A)')
+     & '* after (few) two-component SCF iterations do'//
+     & ' jump at the four-component level ! '
+        IF (DO4C2C) WRITE(LUPRI,'(1X,A)')
+     & '* after finishing four-component SCF procedure '//
+     & ' perform BSS transformation of Dirac-Fock operator'//
+     & ' and continue at the 2comp. level ! '
       ELSE IF (IGTINT .NE. 0) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE
@@ -3794,9 +3839,11 @@ C
          WRITE(LUPRI,'(A)')'   - contracted large component basis set'
 CMI ... contracted L comp. basis set in NOT for generated matrix elemensts
 CMI     but for precursive four-component matrix elements !!!
-         IF (BSS) WRITE(LUPRI,'(2X,A)') 
+         IF (BSS.OR.DO2C4C.OR.DO4C2C) WRITE(LUPRI,'(2X,A)') 
      & 'WARNING: for BSS transformation the contracted'//
-     & ' L comp.basis is wrong!'
+     & ' L component basis is not implemented!'
+        CALL QUIT('HAMINIP: contracted basis not implemented'//
+     &   ' for BSS/DO2C4C/DO4C2C')
       ELSE
          WRITE(LUPRI,'(A)')'   - uncontracted large component basis set'
       END IF

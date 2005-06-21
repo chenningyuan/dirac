@@ -1746,7 +1746,7 @@ C
 C
 C       Diagonalize ATRI
 C
-        CALL JACO2(WORK(KATRI),EVEC,NDIM,NDIM,NROWE,LDM,
+        CALL JACO2(WORK(KATRI),EVEC,NDIM,NDIM,NEVEC,NROWE,LDM,
      &            WORK(KBUF),WORK(KIBUF))
 C
 C       Extract eigenvalues from ATRI
@@ -1836,7 +1836,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck jaco2 */
-      SUBROUTINE JACO2(F,V,NB,NMAX,NROWV,LDM,BIG,JBIG)
+      SUBROUTINE JACO2(F,V,NB,NMAX,NROWV,NEVEC,LDM,BIG,JBIG)
 C
 C Revisions:
 C
@@ -1862,6 +1862,8 @@ C     Jun-1992 ov     Parameters for 0.5, 1.5, ... (for Cray)
 C  20-Jul-1992 hjaaj  Changed C1,C2 to THRZER
 C  30-oct-1992 hjaaj  zero f(ab) to avoid round-off errors
 C                     absolute conv.threshold SD=C1
+C
+C jun 2005,MI : Added NEVEC to decide whether to calculate eigenvectors
 C
 #include "implicit.h"
       DIMENSION F(*),V(*)
@@ -2041,10 +2043,14 @@ Cwas         JBB=(IB-1)*NROWV
          JAA=(IA-1)*LDM
          JBB=(IB-1)*LDM
 #include "ivdep.h"
+CMI ... ensure that no mem-error happens when we do not want 
+CMI     to calculate eigenvectors!!
+       IF (NEVEC.GT.0) THEN
          DO 400 I=1,NROWV
             T=V(JBB+I)*SX
             V(JBB+I)=-V(JAA+I)*SX + V(JBB+I)*CX
   400       V(JAA+I)= V(JAA+I)*CX + T
+       ENDIF
       GO TO 410
   420 RETURN
       END
@@ -4234,7 +4240,7 @@ C             DOEVE ... if .true., do calculate eigenvectors,
 C                   and for IPRINT.GE.2 do the consistency check 
 C
 C             IPRINT - print level 
-C
+C  1 ... print timing and basic info
 C  2 ... print out entering matrix into text file, reconstruct it
 C        back at using eigenvalues and eigenvectors
 C  3 ... + print out entering and final matrix, print out result fo Ph*P,P*Ph,
@@ -4246,12 +4252,10 @@ C  7 ... + do print Ppq
 C                       
 C
 C  On output: A - diagonal (NBL=0) or block diagonal (NBL>1) matrix
-C             NBL - if 0, do full diagonalization
-C             EV(N,N,NZ) - matrix of eigenvectors
+C             EV(N,N,NZ) - matrix of eigenvectors if DOEVE=.TRUE.
 C
 C
 C  Written: M Ilias, Strasbourg, May 2005
-C      
 C      
 C**************************************************************************
 #include"implicit.h"
@@ -4266,24 +4270,28 @@ C**************************************************************************
 
       LOGICAL DOEVE, FINISHED, WASELIM, ELIM(2)
       CHARACTER*9 FILENAME
-
-      DATA DIAGTHRS / 1.0D-22   /
-C     DATA DIAGTHRS / 1.0D0   /
+      CHARACTER SECTID*12,WALLTID*12, CPUTID*12
 
       DATA ZEROTHRS / 1.0D-12  /
 C     DATA ZEROTHRS / 1.0D-15  /
 C     DATA ZEROTHRS / 0.0D0  /
 
-      DATA ZEROTHRS1 / 1.0D-9  /
+C     DATA ZEROTHRS1 / 1.0D-9  /
 C        .... file number and file name of the check file
       DATA LUF / 33  /
       DATA FILENAME / 'QJACO.MTX' /
 
-      IF (IPRINT.GE.2) THEN
+      IF (IPRINT.GE.1) THEN
        CALL HEADER(
-     &'QJACOBI - selective diagonalization of quatenion matrix.',-1)
-       write(lupri,*) '  NZ=',NZ,' PRINT LEVEL:',IPRINT
+     &'QJACOBI, selective diagonalization of the quaternion matrix.',-1)
        write(lupri,*)
+     &  'size of the square hermitian/real symmetric matrix, N=',N
+       write(lupri,*)
+     &  'type of matrix {real(1), complex(2) or quaternion(4)}, NZ=',NZ
+       write(lupri,*)
+     &  'PRINT level:',IPRINT
+       CALL FLSHFO(LUPRI)
+       CALL GETTIM(CPU1,WALL1)
       ENDIF
 
 C     ... do always test the blocks
@@ -4384,25 +4392,24 @@ C           ... write out the A_pq  elements !
             APPR =  A(IP,IP,1)
             AQQR =  A(IQ,IQ,1)
 
-            APQSQR = APQR*APQR
-
-            DIFF = APPR - AQQR
-            SIGROT = D1
-            IF (DIFF.LT.D0) THEN
-             SIGROT = -SIGROT
-             DIFF = -DIFF
-            ENDIF
-            TEMP = DIFF + DSQRT(DIFF*DIFF + 4.0*APQSQR)
-            TANA = D2*SIGROT*APQR/TEMP
 C          ... an alternative to the calculation using function DATAN ...
-            CU =  D1/DSQRT(D1+TANA*TANA)
-            SU = -CU*TANA
+C           APQSQR = APQR*APQR
+C           DIFF = APPR - AQQR
+C           SIGROT = D1
+C           IF (DIFF.LT.D0) THEN
+C            SIGROT = -SIGROT
+C            DIFF = -DIFF
+C           ENDIF
+C           TEMP = DIFF + DSQRT(DIFF*DIFF + 4.0*APQSQR)
+C           TANA = D2*SIGROT*APQR/TEMP
+C           CU =  D1/DSQRT(D1+TANA*TANA)
+C           SU = -CU*TANA
 
 C         ... do calculate Cu,Su...
-C           BDA =  D2*APQR/(AQQR-APPR)
-C           PHI = DP5*DATAN(BDA)
-C           CU1 = DCOS(PHI)
-C           SU1 = DSIN(PHI)
+            BDA =  D2*APQR/(AQQR-APPR)
+            PHI = DP5*DATAN(BDA)
+            CU = DCOS(PHI)
+            SU = DSIN(PHI)
 
             CU2 = CU*CU
             SU2 = SU*SU
@@ -5429,11 +5436,21 @@ C    &        FINISHED=.TRUE.
 
       IF (.NOT.FINISHED) GOTO 10
 
-      IF (IPRINT.EQ.2) THEN
-       write(lupri,'(/2X,A,I7)') '>>>> finished, # of iterations: ',ITER
+      IF (IPRINT.GE.1) THEN
+       CALL GETTIM(CPU2,WALL2)
+       CPU    = CPU2 - CPU1
+       WALL   = WALL2 - WALL1
+       CPUTID = SECTID(CPU)
+       WALLTID = SECTID(WALL)
+       write(lupri,'(/2X,A,I7)')
+     &  '>>>> QJACOBI finished, # of iterations: ',ITER
        write(lupri,'(2X,A,2D12.5,/,2X,A,D12.5)')
      &      ' last 2 sums of largets elements: ',SUMSQA(2),SUMSQA(1),
      &      ' "zero" off-diag elem. threshold: ',ZEROTHRS
+       WRITE(LUPRI,'(A,A12,A1,A12)')
+     &        '>>>> CPU/wall  time used in QJACOBI:',
+     &             CPUTID,'/',WALLTID
+       CALL FLSHFO(LUPRI)
       ENDIF
 CC *********************************************************************************
 
@@ -6145,12 +6162,12 @@ C****************************************************************************
       BAD = .FALSE.
 
 C       ... print info on blocks first
-      IF (IPRINT.GE.2) THEN
+      IF (IPRINT.GE.1) THEN
         write(lupri,*) 'QJACOBI(TESTBLOCKS): # of subblocks=',NBL
         IF (NBL.GT.0) THEN
          DO I=1, NBL
-          write(lupri,*) I,'. block; start point',
-     &    IBL(I,1),IBL(I,2),' end.point:',IBL(I,3),IBL(I,4)
+          write(lupri,*) I,'. block; left upper point',
+     &    IBL(I,1),IBL(I,2),' right bottom point:',IBL(I,3),IBL(I,4)
          ENDDO    
         ENDIF
         write(*,*)
@@ -6185,7 +6202,7 @@ C     ... do own check
       IF (BAD) THEN
        CALL QUIT('BAD BLOCKS !')
       ELSE
-       IF (IPRINT.GE.2) THEN
+       IF (IPRINT.GE.1) THEN
        write(lupri,'(/2X,A)')
      &' The off-elements (indexes) to be diagonalized are OK:'
        ENDIF
