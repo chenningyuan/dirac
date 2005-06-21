@@ -117,10 +117,21 @@ C     Output section
 C
       CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &            LFREE,IPRINT)
+
+
 C
 C     Memory deallocation
 C
       CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      IF (DO4C2C) THEN
+        write(lupri,*) 'PSIDHF: jump  2c - > 4c !!!'
+        BSS=.TRUE.
+        CALL GMOTRA(WORK(KFREE),LFREE)
+        IF (LINEAR) CALL GLINSM(WORK,LWORK)
+      ENDIF
+
+
 C
 C     Check if DHF/DFT is converged (to hard or soft threshold):
 C
@@ -632,7 +643,8 @@ C     Diagonalize Fock matrix
 C     =======================
 C
       TDDG = SECOND()
-      CALL DFDIAG (FMO,EIG,IBEIG,FAO,.FALSE.,WORK,KFREE,LFREE)
+CMI   CALL DFDIAG (FMO,EIG,IBEIG,FAO,.FALSE.,WORK,KFREE,LFREE)
+      CALL DFDIAG (FMO,EIG,IBEIG,FAO,.TRUE.,WORK,KFREE,LFREE)
       TDDG = SECOND() - TDDG
 C
 C
@@ -3194,6 +3206,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
       LOGICAL SPECIAL,DODBG
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
@@ -3255,7 +3268,15 @@ C
      &     'DFDIAG: Eigenvalues (.NOT.SPECIAL) :'
           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
-          WRITE(LUPRI,'(I5,F25.10)') (J,EIG(IORB(I)+J),J=1,NORB(I)) 
+          WRITE(LUPRI,'(I5,F25.10)') (J,EIG(IORB(I)+J),J=1,NTMO(I)) 
+
+          WRITE(LUPRI,'(/2X,A)')
+     &     'DFDIAG: Eigenvectors :'
+          WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+           CALL PRQMAT(FAO(1+I2TMOT(I)),
+     &     NTMO(I),NTMO(I),NTMO(I),NTMO(I),
+     &     NZ,IPQTOQ(1,0),LUPRI)
          ENDIF 
 C
 C
@@ -3282,7 +3303,7 @@ C
             IEIG = IORB(I) + IBO + 1
 
             IF (DODBG) THEN
-             WRITE(LUPRI,'(2X,A,A,I1,A,I1,A,I2,A,I2)')
+             WRITE(LUPRI,'(/2X,A,A,I1,A,I1,A,I2,A,I2)')
      &       'DFDIAG: SPECIAL', 
      &       ' IFSYM=',I,'/',NFSYM,
      &       ' ISUB=',ISUB,'/',N_SUB_BL(I) 
@@ -3306,10 +3327,10 @@ C
             ENDIF
 
             IF (DODBG.AND.IPRHAM.GE.8) THEN
-             WRITE(LUPRI,'(2X,A)') 'DFDIAG: Eigenvalues(subbblock):'
+             WRITE(LUPRI,'(/2X,A)') 'DFDIAG: Eigenvalues(subbblock):'
              WRITE(LUPRI,'(6(I3,A,D14.6))')
      &         (IX,'-',EIG(IX),IX=IEIG,IEIG+NBO-1)
-             WRITE(LUPRI,'(2X,A)') 'DFDIAG: Eigenvectors(subblock):'
+             WRITE(LUPRI,'(/2X,A)') 'DFDIAG: Eigenvectors(subblock):'
              CALL PRQMAT(FAO(IMAT),
      &          NBO,NBO,NTMO(I),NTMO(I),
      &          1,IPQTOQ(1,0),LUPRI)
@@ -3323,7 +3344,7 @@ C         Sort the eigenvalues according to energy : keep track of
 C         the block identification. (Use FMO as scratch space for the
 C         vector sort)
 C
-          CALL INIBOS(IBEIG(IORB(I)+1),I)
+          CALL INIBOS(IBEIG(IORB(I)+1),I,.FALSE.,0)
           CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
           CALL SELBOS (NTMO(I),WORK(KINDX),EIG(IORB(I)+1),
@@ -3516,7 +3537,7 @@ C           Sort the eigenvalues according to energy : keep track of
 C           the boson symmetry. (Use FMO as scratch space for the
 C           vector sort)
 C
-            CALL INIBOS(IBEIG(IORB(I)+1),I)
+            CALL INIBOS(IBEIG(IORB(I)+1),I,.FALSE.,0)
             CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
             CALL SELBOS (NORB(I),WORK(KINDX),EIG(IORB(I)+1),
@@ -3670,19 +3691,30 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck inibos */
-      SUBROUTINE INIBOS(IBOS,IFRP)
+      SUBROUTINE INIBOS(IBOS,IFRP,SORTLS,IPRINT)
 C***********************************************************************
 C
-C     Fill an array with boson irrep identification
+C     Fill an array IBOS(*) with boson irrep identification
+C     for a given irep IFRP
+C
+C     SORTLS - 
 C
 C     A Saue cut and paste job, thanks to Luuk ...April 2003
 C     Generalized to general subblocks
 C
+C     last revison: june, 2005 M.ILIAS
+C
 C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C#include "dgroup.h"
 #include "dcborb.h"
       DIMENSION IBOS(*)
+      LOGICAL SORTLS
 C
       NSUB = N_SUB_BL(IFRP)
+
+      IF (.NOT.SORTLS) THEN
       IX = 1
       DO ISUB = 1, NSUB
         ID = ID_SUB_BL(ISUB,IFRP)
@@ -3690,12 +3722,52 @@ C
           NBO = NORB_SUB(ISUB,IFRP,IC)
           IF(NBO.GT.0) THEN
             CALL ICOPY(NBO,ID,0,IBOS(IX),1)
+C           write(lupri,*)'IX=',IX, 
+C    &       ' IBOS(J),J=IX,IX+NBO:',(IBOS(J),J=IX,IX+NBO-1)
             IX = IX + NBO
           ENDIF
         ENDDO
       ENDDO
+
+      ELSE
+C     ...  
+      IX = 1
+      DO ISUB = 1, NSUB
+        ID = ID_SUB_BL(ISUB,IFRP)
+          IC = 2
+          NBO = NORB_SUB(ISUB,IFRP,IC)
+          IF(NBO.GT.0) THEN
+            CALL ICOPY(NBO,ID,0,IBOS(IX),1)
+C           write(lupri,*)'IX=',IX, 
+C    &       ' IBOS(J),J=IX,IX+NBO:',(IBOS(J),J=IX,IX+NBO-1)
+            IX = IX + NBO
+          ENDIF
+      ENDDO
+
+      DO ISUB = 1, NSUB
+        ID = ID_SUB_BL(ISUB,IFRP)
+          IC = 1
+          NBO = NORB_SUB(ISUB,IFRP,IC)
+          IF(NBO.GT.0) THEN
+            CALL ICOPY(NBO,ID,0,IBOS(IX),1)
+C           write(lupri,*)'IX=',IX, 
+C    &       ' IBOS(J),J=IX,IX+NBO:',(IBOS(J),J=IX,IX+NBO-1)
+            IX = IX + NBO
+          ENDIF
+      ENDDO
+
+      ENDIF
+
+   
+      IF (IPRINT.GE.2) THEN
+       CALL HEADER('*** Output from INIBOS ***',-1)
+       write(lupri,*) 'IBOS for IFRP=:',IFRP,' NORB(IFRP)=',NORB(IFRP)
+       write(lupri,*) 'boson irreps of each MO:',
+     &                (IBOS(J),J=1,NORB(IFRP))
+C     call quit('ibos')
+      ENDIF
+
       RETURN
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck detocc */
