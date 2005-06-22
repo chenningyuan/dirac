@@ -20,3 +20,9 @@ echo "BSS+MFSSO Hamiltonian"
 MENU=bss+mfsso.spsp;
 export MENU;
 ../run.sh
+#################################
+echo "BSS_rkb+MFSSO Hamiltonian"
+MENU=bss_rkb+mfsso.spsp;
+export MENU;
+../run.sh
+#################################
