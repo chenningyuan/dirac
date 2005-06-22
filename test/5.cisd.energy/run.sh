@@ -34,3 +34,33 @@ MENU=F.bss_rkb+mfsso.cisd;
 export MENU;
 ../run.sh
 ###############################
+echo "BSSsfESO1+MFSSO cisd run"
+MENU=F.bss_sfEso1+mfsso.cisd;
+export MENU;
+../run.sh
+###############################
+echo "BSSsfESO1 cisd run"
+MENU=F.bss_sfEso1.cisd;
+export MENU;
+../run.sh
+###############################
+echo "BSSsfBSO1 cisd run"
+MENU=F.bss_sfBso1.cisd;
+export MENU;
+../run.sh
+###############################
+echo "DKH2sfBSO1 cisd run"
+MENU=F.dkh2_sfBso1.cisd;
+export MENU;
+../run.sh
+###############################
+echo "DKH2sfESO1 cisd run"
+MENU=F.dkh2_sfEso1.cisd;
+export MENU;
+../run.sh
+###############################
+echo "DKH2sfESO1+MFSSO cisd run"
+MENU=F.dkh2_sfEso1+mfsso.cisd;
+export MENU;
+../run.sh
+###############################
