@@ -3839,11 +3839,13 @@ C
          WRITE(LUPRI,'(A)')'   - contracted large component basis set'
 CMI ... contracted L comp. basis set in NOT for generated matrix elemensts
 CMI     but for precursive four-component matrix elements !!!
-         IF (BSS.OR.DO2C4C.OR.DO4C2C) WRITE(LUPRI,'(2X,A)') 
+         IF (BSS.OR.DO2C4C.OR.DO4C2C) THEN
+             WRITE(LUPRI,'(2X,A)') 
      & 'WARNING: for BSS transformation the contracted'//
      & ' L component basis is not implemented!'
         CALL QUIT('HAMINIP: contracted basis not implemented'//
      &   ' for BSS/DO2C4C/DO4C2C')
+         ENDIF
       ELSE
          WRITE(LUPRI,'(A)')'   - uncontracted large component basis set'
       END IF
