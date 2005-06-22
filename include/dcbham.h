@@ -45,7 +45,7 @@
 !                  relativity)
 !     IMFCH      - charge for the mean-field summation in the AMFI
 !     NOPRTR     - do not do the preliminary transformation to the ON basis in 2c mode
-!                  (only for infinite ordern Trond's approach), if .false., we do the preliminary
+!                  (only for infinite order Tronds approach), if .false., we do the preliminary
 !                  transformation to the free-particle basis or to the Vext-particle ON basis
 !     BLOCKD     - do the block diagonalization (only for infinite order !)
 !     DO2C4C     - run SCF first in 2c mode, then continue in the 4-component mode
@@ -62,7 +62,7 @@
      &        ICTLV1C(2), IBSS, MC, I2_HAM, IMFCH
       COMMON /DCIHAM/ I1_HAM,IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,      &
      &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
-     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC, I2_HAM, IMFCH
+     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC, I2_HAM, IMFCH  &
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
