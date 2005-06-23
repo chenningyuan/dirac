@@ -80,4 +80,50 @@ MENU=dkh2sfEso1.ci;
 export MENU;
 ../run.sh
 ######################################"
+### Heavy F analogue
+######################################"
+MOL=Z86_Flike;
+export MOL;
+######################################"
+echo "DC Hamiltonian, Rn(77+)"
+MENU=ci;
+export MENU;
+../run.sh
+######################################"
+echo "BSS Hamiltonian, Rn(77+)"
+MENU=bss.ci;
+export MENU;
+../run.sh
+######################################"
+echo "DKH2 Hamiltonian, Rn(77+)"
+MENU=dkh2.ci;
+export MENU;
+../run.sh
+######################################"
+echo "BSS_RKB (TROND) Hamiltonian, Rn(77+)"
+MENU=bss_rkb.ci;
+export MENU;
+../run.sh
+######################################"
+echo "DKH2+MFSSO Hamiltonian, Rn(77+)"
+MENU=dkh2+mfsso_Flike.ci;
+export MENU;
+../run.sh
+######################################"
+echo "DKH2sfBSO1 Hamiltonian, Rn(77+)"
+MENU=dkh2sfBso1.ci;
+export MENU;
+../run.sh
+######################################"
+echo "DKH2sfBSO1+MFSSO Hamiltonian, Rn(77+)"
+MENU=dkh2sfBso1+mfsso.ci_Flike;
+export MENU;
+../run.sh
+######################################"
+echo "BSS+MFSSO Hamiltonian, Rn(77+)"
+MENU=bss+mfsso.ci_Flike;
+export MENU;
+../run.sh
+######################################"
+
 
