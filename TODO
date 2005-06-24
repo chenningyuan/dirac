@@ -5,7 +5,20 @@
   FILE    : TODO
  
  */
+ --- Geometry optimization problems still to be solved
 
+ Problems occur if automatic symmetry recognition is on. Reason is that the compressing routine (reducing the
+ number of atom types) is taken from DALTON that has one line less for each center. A related problem occurs
+ when using MOLFDIR type basis files. The part read from that file is copied into the internal memory copy of the
+ input so that the slaves can also access it. This gives a problem when a new geometry MOLECULE.INP file is 
+ contructed from the internal copy because it writes then too many lines for each center. 
+
+ Both problems will be solved if we decouple the basis set information from the center information as is desirable
+ for other reasons as well. If we have one block defining coordinates and atom types and another giving for each
+ atom type the information needed (basis set, possibly atomic start information) we will have something that is
+ easier to maintain and extend to larger molecules.
+
+ (LV, 24-6-2005)
 
  --- List of known problems with Dirac04 (that can be fixed upon installation)  ---
 
