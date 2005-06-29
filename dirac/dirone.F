@@ -3225,7 +3225,8 @@ C
 C     Initialization (calculate LL and SS)
 C
       DOINT(1,1) = .TRUE.
-      IF (NOSMLV.OR.BSS) THEN
+CMI   IF (NOSMLV.OR.BSS) THEN
+      IF (NOSMLV) THEN
          DOINT(2,2) = .FALSE.
          IF (IPRINT.GE.2) THEN
           WRITE(LUPRI,'(2X,/,A)')
@@ -3326,10 +3327,19 @@ C
       CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
 C
       IF(IPRINT.GE.11) THEN
-         CALL HEADER('BNCORR correction FMAT',-1)
+         CALL HEADER('BNCORR correction for DC FMAT',-1)
          CALL OUTPUT(WORK(KONEMT),1,NTBAS(0),1,NTBAS(0),
      &        NTBAS(0),NTBAS(0),1,LUPRI)
       END IF
+
+      IF (BSS) THEN
+        CALL DOPCTRA(-1,WORK(KONEMT),1,'S',WORK(KFREE),LFREE)
+        IF(IPRINT.GE.11) THEN
+          CALL HEADER('BNCORR correction (pctra) for BSS FMAT',-1)
+          CALL OUTPUT(WORK(KONEMT),1,NTBAS(0),1,NTBAS(0),
+     &        NTBAS(0),NTBAS(0),1,LUPRI)
+        END IF
+      ENDIF
 C
 C     Add correction to Fock-matrix
 C

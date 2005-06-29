@@ -909,21 +909,27 @@ C****************************************************************************
 #include "dcbxpr.h"
 
       DIMENSION WORK(*),PRPAO(*)
-      LOGICAL FNDLAB
+      LOGICAL FNDLAB,DOTR
       CHARACTER  PROPNAME*16,TREV*1
 
       CALL QENTER('DOPCTRA')
 #include "memint.h"
 
-C ... check if one needs to do the pic.change transf.
-      IF (.NOT.DOPCT) GOTO 789
+      DOTR=(INDXPR.EQ.-1)
 
+C ... check if one needs to do the pic.change transf.
+      IF (.NOT.DOPCT.AND..NOT.DOTR) GOTO 789
+
+      IF (.NOT.DOTR) THEN
       IPRINT = IPRPRP
       IREP = IPRPSYM(INDXPR) - 1
-
 C ... determine the time reversal symmetry
 C     of the property operator
       ITIM = IPRPTIM(INDXPR)
+      ELSE
+       IREP=0
+      ENDIF
+
 
 C ,,, read (load) the picture change transformation matrix:
 C       4c AO-> 2c AO(LL)
@@ -942,16 +948,34 @@ C       CALL READT(LUBSS,N2BBASXQ,WORK(KPCTM))
         IF (IPRPRP.GE.2) WRITE(LUPRI,'(/2X,A)')
      &   'DOPCTRA: Picture change transformation matrix was read.'
       ELSE
-        CALL QUIT('DOPCTRA:Error, U_PICTRM not found in BSSMAT file!')
+        IF (DOTR) THEN
+          write(lupri,*) 'DOPCTRA: U_PICTRM not found in BSSMAT file!' 
+          write(lupri,*)
+     &      'deleting the SS block of entering matrix only...' 
+          CLOSE (LUBSS,STATUS='KEEP')
+          DO I = 1, NFSYM
+             IS1 = 1 + (NTBAS(0)*NFBAS(I,1))+NFBAS(I,1) +
+     &                  I2BASX(I,I)
+            DO J = 1, NFBAS(I,2)
+              ISS = IS1 + (J-1)*NTBAS(0)
+              CALL DZERO(PRPAO(ISS),NFBAS(I,2))
+            ENDDO
+          ENDDO
+          GOTO 789
+        ELSE
+          CALL QUIT('DOPCTRA:Error, U_PICTRM not found in BSSMAT file!')
+        ENDIF
       END IF
       CLOSE (LUBSS,STATUS='KEEP')
 
       IF (IPRINT.GE.5) THEN
        CALL HEADER('Output from DOPCTRA',-1)
+       IF (.NOT.DOTR) THEN
        WRITE(LUPRI,'(A,A16,/,10X,A,I2,A,I1)')
      & 'Total entering FOUR-COMPONENT AO-matrix of property ',
      & PRPNAM(INDXPR),' time rev.symm:',ITIM,
      & ' number of matrixes:',MZ
+       ENDIF
        CALL PRQMAT(PRPAO(1),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),MZ,
      &            IPQTOQ(1,IREP),LUPRI)
 
@@ -1002,20 +1026,30 @@ C ----------------------------------------------------------
 
 C .... control output
        IF (IPRINT.GE.5) THEN
-
+        IF (.NOT.DOTR) THEN
         WRITE(LUPRI,'(/A,1X,A16,/,10X,A,I2,A,I1)')
      &'Symm. blocked FOUR-COMPONENT AO-matrix of property',
      &  PRPNAM(INDXPR),' time reversal symm:',ITIM,
      &  ' number of matrixes: ',MZ
+        ELSE
+        WRITE(LUPRI,'(/A,1X,A,I1)')
+     &'Symm. blocked FOUR-COMPONENT AO-matrix ',
+     &  ' number of matrixes: ',MZ
+        ENDIF
        WRITE(LUPRI,'(5X,A,I1,A,I1)')
      &    '*** Fermion corep ',I1,'/',NFSYM
        CALL PRQMAT(PRPAO(1+I2BASX(I1,I2)),NFBAS(I1,0),NFBAS(I2,0),
      &        NTBAS(0),NTBAS(0),MZ,IPQTOQ(1,IREP),LUPRI)
 
+        IF (.NOT.DOTR) THEN
         WRITE(LUPRI,'(/A,1X,A16,/,10X,A,I2,A,I1)')
      &'Symm. blocked TRANSFORMED TWO-COMPONENT AO-matrix of property',
      &  PRPNAM(INDXPR),' time reversal symm:',ITIM,
      &  ' number of matrixes: ',MZ
+        ELSE
+        WRITE(LUPRI,'(/A)')
+     &'Symm. blocked TRANSFORMED FOUR-COMPONENT AO-matrix '
+        ENDIF
        WRITE(LUPRI,'(5X,A,I1,A,I1)')
      &    '*** Fermion corep ',I1,'/',NFSYM
        CALL PRQMAT(WORK(KPCTO+I2BASX(I1,I2)),NFBAS(I1,1),NFBAS(I2,1),
@@ -1028,9 +1062,14 @@ C .... control output
       ENDDO 
 
       IF (IPRPRP.GE.5) THEN
+       IF (.NOT.DOTR) THEN
        WRITE(LUPRI,'(/A,1X,A16)')
      &'Total (blocked) TRANSFORMED TWO-COMPONENT AO-matrix of property',
      &  PRPNAM(INDXPR)
+        ELSE
+       WRITE(LUPRI,'(/A)')
+     &'Total (blocked) TRANSFORMED TWO-COMPONENT AO-matrix: '
+        ENDIF
        CALL PRQMAT(WORK(KPCTO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),MZ,
      &          IPQTOQ(1,IREP),LUPRI)
       ENDIF
