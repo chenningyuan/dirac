@@ -132,7 +132,7 @@ case $TIME in
   ;;
   *h)
    wallt_ll="`basename $TIME h`:0:0"
-   wallt_bsub="`basename $TIME h`:0:0"
+   wallt_bsub="`basename $TIME h`:0"
    wallt_qsub="`basename $TIME h`:0:0"
   ;;
   *)
