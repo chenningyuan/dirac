@@ -575,6 +575,7 @@ C     ... for lower orders do always use the FP "k"- basis !
       ENDIF
 
       DK2SO1 = .FALSE.
+         SF0 = .FALSE.
       IF (IPY .EQ. 0) THEN
          IF (.NOT.SPINFR.AND.IPA.EQ.0) CALL QUIT(
      & 'You forgot to specify .SPINFR in the Hamiltonian input!')
