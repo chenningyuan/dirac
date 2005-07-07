@@ -187,6 +187,7 @@ extern Functional ExampleFunctional;
 extern Functional KTFunctional;
 extern Functional LB94Functional;
 extern Functional LBalphaFunctional;
+extern Functional GLLBholeFunctional;
 extern Functional LYPFunctional;
 extern Functional OPTXFunctional;
 extern Functional P86cFunctional;

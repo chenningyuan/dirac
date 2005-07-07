@@ -504,6 +504,7 @@ DFTOBJS_C = \\
     dft/fun-kt.o        \\
     dft/fun-lb94.o      \\
     dft/fun-lbalpha.o   \\
+    dft/fun-gllb_hole.o \\
     dft/fun-lyp.o	\\
     dft/fun-optx.o      \\
     dft/fun-p86c.o	\\

@@ -16,6 +16,7 @@ C_OBJS = general.o	\
 	fun-kt.o	\
 	fun-lb94.o	\
 	fun-lbalpha.o	\
+	fun-gllb_hole.o	\
 	fun-lyp.o	\
 	fun-optx.o	\
 	fun-p86c.o	\
