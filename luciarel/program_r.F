@@ -272,7 +272,12 @@ C           call wrtvcdc(WORK(KVEC2),LUHC,1,-1)
       NFINDM = min(NVAR,4*NROOT)
       call memmar(KFINDMR,4*NFINDM+1,'ADDL  ',2,'FINDMR')
       call memmar(KFINDMI,4*NFINDM+1,'ADDL  ',1,'FINDMI')
-      call memmar(KSCR2,MXROOT,'ADDL  ',2,'SCR2S ')
+      if (NROOT.gt.MXROOT) then
+        write(6,*) ' Too many roots. '
+        write(6,*) ' Increase MXROOT to ',NROOT
+        call quit('Stop in LUCIAREL.')
+      end if
+      call memmar(KSCR2,NROOT,'ADDL  ',2,'SCR2S ')
 *
       CALL CIEIG5_REL(MV7_REL,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
      &     MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,
