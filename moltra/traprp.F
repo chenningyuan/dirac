@@ -151,7 +151,6 @@ C
 C
 C     Get the boson symmetries of the transformed spinors
 C
-      CALL DCOPY(4,KFREE,0,KIBE,1)
       DO I = 1,2
        DO IFRP = 1, NFSYM
         CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
@@ -159,6 +158,9 @@ C
      &                WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
        ENDDO
+       IF (NFSYM.EQ.1) CALL MEMGET('INTE',KIBE(2,I),0,WORK,KFREE,LFREE)
+C      ... always define KIBE(2,*) for PRPMLF call below
+C          so we don't get undefined address
       ENDDO
 C
 C
