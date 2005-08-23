@@ -130,7 +130,7 @@ typedef struct
 
 int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[]);
 int read_dyall_atom (FILE *file, ATOOM *atom);
-int read_dyall_additional (FILE *file, ATOOM *atom, int l_max, int n_extra[]);
+int read_dyall_additional (FILE *file, ATOOM *atom, int l_max, int l_skip, int n_extra[]);
 void read_block (FILE *file, int n_exp, int n_orbs, double *exponent, double *coefficient);
 int move_to_section (FILE *file, const char text[], int skip_rewind);
 int end_of_section (LINE line, const char text[]);
@@ -175,11 +175,11 @@ int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[])
     int l_max, n_extra[MAX_LVALUE+1];
     
     /* Open the file */ 
-    dyall_file = fopen("Dyall.tz", "r");        
+    dyall_file = fopen("Dyall.qz", "r");        
     if (dyall_file == NULL) return 1;
     
     /* Initialize the fixed elements for this basis */
-    strcpy(basis_set->name,"Dyall.VTZ");
+    strcpy(basis_set->name,"Dyall.VQZ");
     basis_set->type = non_family;
     basis_set->contraction = general;
     basis_set->number_of_atoms = 0; 
@@ -238,7 +238,30 @@ int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[])
         };
     } while ( end_of_section (line,"RELATIVISTIC") == 0 && feof(dyall_file) == 0);
 
-    /* Read two blocks of correlating exponents */
+    /* Read the outer core correlation exponents */
+    move_to_section (dyall_file,"OUTCOR_RELATIVISTIC",0);
+    fscanf (dyall_file,"%i",&l_max);
+
+    /* Read the number of extra functions for each l value */
+    for  (l=0; l<=l_max; l++) 
+        fscanf (dyall_file,"%i",&n_extra[l]);
+ 
+    /* Start loop over lines with additional exponents */
+    fscanf (dyall_file,"%s",&line);
+    while ( end_of_section (line,"OUTCOR_RELATIVISTIC") == 0 && feof(dyall_file) == 0)
+    {
+        /* Read the element symbol and find the corresponding atom, no match : store in new atom */
+        printf ("Outer core correlation functions for %s \n",line);
+        for (element=0; element<=basis_set->number_of_atoms; element++)
+            if (strcmp(atoms[element].symbol,line) == 0) break;
+
+        read_dyall_additional (dyall_file, &atoms[element], l_max, 0, n_extra);
+
+        /* Prepare for the next element */
+        fscanf (dyall_file,"%s",&line);
+    }
+
+    /* Read two blocks of valence correlating exponents */
     for (i=0; i<2; i++)
     {
     /* Read the valence correlating exponents */
@@ -254,16 +277,40 @@ int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[])
     while ( end_of_section (line,"VALCORR_RELATIVISTIC") == 0 && feof(dyall_file) == 0)
     {
         /* Read the element symbol and find the corresponding atom, no match : store in new atom */
-        printf ("Polarization functions for %s \n",line);
+        printf ("Correlation functions for %s \n",line);
         for (element=0; element<=basis_set->number_of_atoms; element++)
             if (strcmp(atoms[element].symbol,line) == 0) break;
 
-        read_dyall_additional (dyall_file, &atoms[element], l_max, n_extra);
+        read_dyall_additional (dyall_file, &atoms[element], l_max, 3, n_extra);
 
         /* Prepare for the next element */
         fscanf (dyall_file,"%s",&line);
     }
     }
+
+    /* Read the valence polarization exponents */
+    move_to_section (dyall_file,"VALPOL_RELATIVISTIC",0);
+    fscanf (dyall_file,"%i",&l_max);
+
+    /* Read the number of extra functions for each l value */
+    for  (l=0; l<=l_max; l++) 
+        fscanf (dyall_file,"%i",&n_extra[l]);
+ 
+    /* Start loop over lines with additional exponents */
+    fscanf (dyall_file,"%s",&line);
+    while ( end_of_section (line,"VALPOL_RELATIVISTIC") == 0 && feof(dyall_file) == 0)
+    {
+        /* Read the element symbol and find the corresponding atom, no match : store in new atom */
+        printf ("Polarization functions for %s \n",line);
+        for (element=0; element<=basis_set->number_of_atoms; element++)
+            if (strcmp(atoms[element].symbol,line) == 0) break;
+
+        read_dyall_additional (dyall_file, &atoms[element], l_max, 0, n_extra);
+
+        /* Prepare for the next element */
+        fscanf (dyall_file,"%s",&line);
+    }
+
     return 0;
 }
 /* ============================================================================================================== */
@@ -356,9 +403,10 @@ void read_block (FILE *file, int n_exp, int n_orbs, double *exponent, double *co
 }
 /* ============================================================================================================== */
 
-int read_dyall_additional (FILE *file, ATOOM *atom, int l_max, int n_extra[])
+int read_dyall_additional (FILE *file, ATOOM *atom, int l_max, int l_skip, int n_extra[])
 
 /* Read additional (polarization/correlating functions) that are on one line */
+/* l_skip indicates the l-value up to which functions should be skipped (they are already in the scf-section) */
 
 {
     int i, j, l, lj, element, block;
@@ -381,7 +429,7 @@ int read_dyall_additional (FILE *file, ATOOM *atom, int l_max, int n_extra[])
 
         /* Fix for uncontracted sets as combine_blocks will not detect identical exponents
            Do not take the polarization functions into account if they are already in the original set */
-          if ( atom->n_block[0][l][0] > 0 && ! (l == 3 && atom->number >= 81) ) continue;
+          if ( atom->n_block[0][l][0] > 0 &&  l <= l_skip ) continue;
 
         for (lj=0; lj<2; lj++)
         {
