@@ -288,7 +288,8 @@ case $machine in
    *apple*)
       liblist="$liblist libesslp2 libessl"
       complist='xlf g77'
-      cclist='xlc gcc cc'
+# temporary fix forr macosx 10.4 (Tiger) : xlf does yet (aug 05) not work with gcc-4.0 !
+      cclist='xlc gcc-3.3 gcc cc'
       debug='gdb';;
 
    sparc-sun|m68k-sun)  
