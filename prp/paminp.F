@@ -1213,7 +1213,10 @@ CMI ... pilot Dirac bare nucleus (from subroutine OP1INI)
         IF (LEVYLE.AND.PLABEL(1).NE.'OVERLAP '
      &       .AND.PLABEL(1).NE.'MOLFIELD'.AND.
      &       PLABEL(1).NE.'BETAMAT ' ) PCOMB(4:4) = '0'
-
+CLV ... same thing for ZORA!
+        IF ((ZORA.AND..NOT.ZORA4).AND.PLABEL(1).NE.'OVERLAP '
+     &       .AND.PLABEL(1).NE.'MOLFIELD'.AND.
+     &       PLABEL(1).NE.'BETAMAT ' ) PCOMB(4:4) = '0'
       END IF
 
 CMI ... inform about the assigned PCOMB
