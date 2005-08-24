@@ -1,7 +1,5 @@
 $ Dyall.pvqz
 $
-$ K. G. Dyall Theor. Chem. Acc. (2004), 112:403-409
-$
 $ Description
 $
 $ Available from the Dirac web site, http://dirac.chem.sdu.dk.
@@ -13,6 +11,8 @@ $ Title: Relativistic finite nucleus double-, triple-, and quadruple-zeta
 $        basis sets for the 5d elements Hf-Hg.
 $ 
 $ Author: Kenneth G. Dyall
+$
+$ Reference: K. G. Dyall Theor. Chem. Acc. (2004), 112:403-409
 $ 
 $ Date: 23 June 2003
 $ 
@@ -198,7 +198,7 @@ $    basis sets.
 $ 
 $
 $  REFERENCE
-$  K. G. Dyall Theor. Chem. Acc. (2004), 112:403-409, ibid. (2005) 
+$ 6p-block: K. G. Dyall, TCA (2004), 112:403. 5d-block: TCA in press. 
 a 72
 $  ** Hf **
 $ S-TYPE FUNCTIONS
