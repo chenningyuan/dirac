@@ -921,6 +921,8 @@ C****************************************************************************
 C ... check if one needs to do the pic.change transf.
       IF (.NOT.DOPCT.AND..NOT.DOTR) GOTO 789
 
+      IPRINT = IPRPRP
+
       IF (.NOT.DOTR) THEN
       IPRINT = IPRPRP
       IREP = IPRPSYM(INDXPR) - 1
@@ -1083,7 +1085,7 @@ C ... it woould be useful to test the pict change transformed operator...
 C .... NFBAS(I1,1) x NFBAS(I2,1) blocks are non-zero,
 C     while all others are zero
       PROPNAME=PRPNAM(INDXPR)
-      CALL CHECK_PCTOP(IREP,IOPSY,PROPNAME,PRPAO,MZ,IPRINT)
+      CALL CHECK_PCTOP(IREP,IOPSY,PROPNAME,PRPAO,MZ,IPRPRP)
 
 C     Memory deallocation - release the used block
 
@@ -1119,7 +1121,7 @@ C**************************************************************************
 
       IF (IPRINT.GE.6) THEN
         WRITE(LUPRI,'(/A,1X,A16)')
-     & '*** CHECK_PCTO: Total AO-matrix of 2comp. transf. property',
+     & '*** CHECK_PCTOP: Total AO-matrix of 2comp. transf. property',
      &   PROPNAME 
        CALL PRQMAT(PRPAO(1,1,1),NTBAS(0),NTBAS(0),
      &   NTBAS(0),NTBAS(0),MZ, IPQTOQ(1,IREP),LUPRI)
