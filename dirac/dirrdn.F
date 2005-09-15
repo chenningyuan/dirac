@@ -284,6 +284,10 @@ C            (to avoid mixing of symmetries)
   105    CONTINUE
 C&&&& PRINT : General print level
             READ(LUCMD,*) IPRGEN
+C           transfer IPRGEN to IPRUSR originally defined in Dalton
+C           and used in some abacus routines. /hjaaj aug 2005
+            IPRUSR = IPRGEN
+            USRIPR = .TRUE.
             GO TO 100
   106    CONTINUE
 C&&&& PCMOIN: Read coefficients from formatted DFPCMO and
