@@ -290,17 +290,17 @@ C
              CALL GETTIM(CPUST,WALLST)
              IF (IC.LE.2) THEN
                 IBEND = ISHLA
-                WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A/32X,A,F10.2,A)') 
-     &             '- Beginning with task',ISHLA,' of',IASMAX,
-     &             ' after',WALLST-WALLBEF,' seconds',
-     &             'and after',CPUST-CPUBEF,' CPU-seconds'
+                WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A,F10.2,A)') 
+     &             '- Beginning task',ISHLA,' of',IASMAX,
+     &             ' after',WALLST-WALLBEF,' seconds and',
+     &             CPUST-CPUBEF,' CPU-seconds'
              ELSE
                 IBEND = IBSMAX
-                WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A/32X,A,F10.2,A)') 
-     &             '- Beginning with Gaunt task',ISHLA-IASTRT+1,
+                WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A,F10.2,A)') 
+     &             '- Beginning Gaunt task',ISHLA-IASTRT+1,
      &             ' of',IASMAX-IASTRT+1,
-     &             ' after',WALLST-WALLBEF,' seconds',
-     &             'and after',CPUST-CPUBEF,' CPU-seconds'
+     &             ' after',WALLST-WALLBEF,' seconds and',
+     &             CPUST-CPUBEF,' CPU-seconds'
              ENDIF
              CALL FLSHFO(LUPRI)
              CALL TRDRV6(WORK,KFREE,LFREE,IPRINT,INTFLG,

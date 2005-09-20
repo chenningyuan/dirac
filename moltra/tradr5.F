@@ -164,10 +164,10 @@ C
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
               CALL GETTIM(CPUST,WALLST)
-              WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A/32X,A,F10.2,A)')
-     &           '- Beginning with task',ISHLA,' of',IASMAX,
-     &           ' after',WALLST-WALLBEF,' seconds',
-     &        'and after',CPUST-CPUBEF,' CPU-seconds'
+              WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A,F10.2,A)')
+     &           '- Beginning task',ISHLA,' of',IASMAX,
+     &           ' after',WALLST-WALLBEF,' seconds and',
+     &           CPUST-CPUBEF,' CPU-seconds'
               CALL FLSHFO(LUPRI)
               CALL TRDRV5(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                   NSTR,WORK(KINDX),TRIAN,
