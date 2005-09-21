@@ -375,22 +375,20 @@ C
               II = NPSH(IFRP)+JVEC(I)
               FMT = MXFORM(EIG(II),16)
               WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
-     +         '* Electronic eigenvalue nr.',JVEC(I),': ',
-     &         EIG(II)
+     +         '* Electronic eigenvalue no.',JVEC(I),': ', EIG(II)
             ELSE
               WRITE(LUPRI,'(/A,I3)')
-     +         '* Electronic eigenvalue nr.',JVEC(I)
+     +         '* Electronic orbital no.',JVEC(I)
             END IF
           ELSE
             IF (IPREIG .EQ. 1) THEN
               II = NPSH(IFRP)+1+JVEC(I)
               FMT = MXFORM(EIG(II),16)
               WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
-     +         '* Positronic eigenvalue nr.',II,': ',
-     &         EIG(II)
+     +         '* Positronic eigenvalue no.',II,': ', EIG(II)
             ELSE
               WRITE(LUPRI,'(/A,I3)')
-     +         '* Positronic eigenvalue nr.',JVEC(I)
+     +         '* Positronic orbital no.',JVEC(I)
             END IF
           ENDIF
           CALL PRSYMB(LUPRI,'=',52,0)
@@ -421,22 +419,20 @@ C
               II = NPSH(IFRP)+JVEC(I)
               FMT = MXFORM(EIG(II),16)
               WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
-     +         '* Electronic eigenvalue nr.',JVEC(I),': ',
-     &         EIG(II)
+     +         '* Electronic eigenvalue no.',JVEC(I),': ', EIG(II)
             ELSE
               WRITE(LUPRI,'(/A,I3)')
-     +         '* Electronic eigenvalue nr.',JVEC(I)
+     +         '* Electronic orbital no.',JVEC(I)
             END IF
           ELSE
             IF (IPREIG .EQ. 1) THEN
               II = NPSH(IFRP)+1+JVEC(I)
               FMT = MXFORM(EIG(II),16)
               WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
-     +         '* Positronic eigenvalue nr.',II,': ',
-     &         EIG(II)
+     +         '* Positronic eigenvalue no.',II,': ', EIG(II)
             ELSE
               WRITE(LUPRI,'(/A,I3)')
-     +         '* Positronic eigenvalue nr.',JVEC(I)
+     +         '* Positronic orbital no.',JVEC(I)
             ENDIF
           ENDIF
           CALL PRSYMB(LUPRI,'=',52,0)
