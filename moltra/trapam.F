@@ -2821,7 +2821,7 @@ C
           WORK(I) = WORK(I)*WORK(I)
         ENDDO
         DO I = 1,3
-          IOFF = KCAO + NCAO
+          IOFF = KCAO + NCAO * I
           CALL DAXPY(NCAO,D1,WORK(IOFF),1,WORK(KCAO),1)
         ENDDO
         KEND = KCAO + NCAO - 1
