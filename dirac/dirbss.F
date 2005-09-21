@@ -52,7 +52,7 @@ C    ... reference
      & 'H. J. Aa. Jensen and M. Ilias,',
      & '  "Two-component relativistic methods based on the quaternion'//
      &   ' modified Dirac equation. I:',
-     & '   from Douglas-Kroll-He{\ss} second order method to the infi'//
+     & '   from Douglas-Kroll-Hess second order method to the infi'//
      &   'nite order two-component method.",',
      & '  J. Chem. Phys., submitted (2005).'
 
