@@ -130,7 +130,7 @@ C
          JRDMO = -1
          CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
          IF (JRDMO .EQ. 0) THEN
-            IF (IPRINT .GE. 0) THEN
+            IF (IPRTRP .GE. 0) THEN
                WRITE(LUPRI,'(/A)')
      &              ' (TRAPRP)  Orbitals read from' //
      &              ' label NEWORB on file KRMCSCF'

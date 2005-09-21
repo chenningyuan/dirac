@@ -203,7 +203,7 @@ C
          JRDMO = -1
          CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
          IF (JRDMO .EQ. 0) THEN
-            IF (IPRINT .GE. 0) THEN
+            IF (IPRTRA .GE. 0) THEN
                WRITE(LUPRI,'(/A)')
      &              ' (PAMTRA)  Orbitals read from' //
      &              ' label NEWORB on file KRMCSCF'
@@ -369,7 +369,7 @@ C
          JRDMO = -1
          CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
          IF (JRDMO .EQ. 0) THEN
-            IF (IPRINT .GE. 0) THEN
+            IF (IPRTRA .GE. 0) THEN
                WRITE(LUPRI,'(/A)')
      &              ' (PAMTRA)  Orbitals read from' //
      &              ' label NEWORB on file KRMCSCF'
