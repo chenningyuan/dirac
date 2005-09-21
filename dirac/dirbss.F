@@ -47,13 +47,14 @@ C     Print section
 C
       CALL HEADER('*** Output from MAKE_BSS ***',-1)
 
-C    ... refrence
-      WRITE(LUPRI,'(2X,A/,A/,A/)')
-     & 'Jensen H.-J.Aa., Ilias M., "Two-component'//
-     & ' relativistic methods based on the quaternion modified',
-     & '  dirac equation: from the Douglas--Kroll to the'//
-     & ' Barysz--Sadlej--Snijders infinite order";',
-     & '  in preparation (2005)'
+C    ... reference
+      WRITE(LUPRI,'(A)')
+     & 'H. J. Aa. Jensen and M. Ilias,',
+     & '  "Two-component relativistic methods based on the quaternion'//
+     &   ' modified Dirac equation. I:',
+     & '   from Douglas-Kroll-He{\ss} second order method to the infi'//
+     &   'nite order two-component method.",',
+     & '  J. Chem. Phys., submitted (2005).'
 
 C extract information about the BSS Hamiltonian 
       CALL EXTR_BSS_INFO(IBSS,IPZ,SPINFR,DK2SO1,SAVESO1,ADD_AMFI,
@@ -194,7 +195,7 @@ C    ... that is  the RKB  or FP "k" basis; WORK(KTMAT) entering ... !
      &                   SF_BEG,FPB,SAVESO1,WORK(KFREE),LFREE)
 
 
-C get H2C Hamiltonian(inf,DK2,DK2SO1,DK1)  in FP k basis 
+C get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in FP k basis 
 
 C     ... by default do prepare the picture change transformation matrix...
 C     GETPCTM=.FALSE.
@@ -280,7 +281,7 @@ C       ... do read back VMAT 2c from the file !
        REWIND LUBSS
        IF (FNDLAB('VMAT2C  ',LUBSS)) THEN
          CALL READT(LUBSS,N2BBASX,VMAT)
-         IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
+         IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')
      &  'MAKE_BSS: VMAT2C read into VMAT.'
        ELSE
         CALL QUIT(
@@ -321,11 +322,11 @@ C   ... release the rest of allocted memmory ...
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck ini_sf_rkb */
-C****************************************************************************
-C   Do initialize the IBEIG(*) array with boson info for 2-component
-C calculations.
-C****************************************************************************
       SUBROUTINE INI_SF_RKB(IBEIG,IPRINT)
+C****************************************************************************
+C   Initialize the IBEIG(*) array with boson info for 2-component
+C   calculations.
+C****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -333,8 +334,8 @@ C****************************************************************************
       DIMENSION IBEIG(*)
 
       DO I = 1, NFSYM
-       CALL INISUB
-       CALL INIBOS(IBEIG(1+IORB(I)),I,.TRUE.,IPRINT)
+        CALL INISUB
+        CALL INIBOS(IBEIG(1+IORB(I)),I,.TRUE.,IPRINT)
       ENDDO
 
       RETURN
@@ -360,9 +361,9 @@ C****************************************************************************
       SUM_DEN = SUM_DE/DFLOAT(N)
       SUM_ODE = SUM_OFFDIAG_EL(S,N,LR,LC,NZ)
 
-      WRITE(LUPRI,'(/2X,A,D12.5)') 
-     &'Sum of diagonal elements /N:',SUM_DEN
-      WRITE(LUPRI,'(2X,A,D12.5)') 
+      WRITE(LUPRI,'(/2X,A,1P,D12.5)') 
+     &'Sum of diagonal elements /N  :',SUM_DEN
+      WRITE(LUPRI,'(2X,A,1P,D12.5)') 
      &'Sum of off-diagonal elements :',SUM_ODE 
 
       IF (DABS(SUM_DEN-D1).GT.THRNULL) 
@@ -522,16 +523,17 @@ C     ... do extract a,x,y,z digits of the entering IBSS=axyz value
 
 
       WRITE (LUPRI,'(A)')
-     & '* Order of the Barysz-Sadlej-Snijders transformation :'
+     & ' * Order of the Douglas-Kroll-Hess transformation :'
 
       IF (IPZ.EQ.9) THEN
-       write(lupri,'(5X,A)') '...infinite order !'
+       write(lupri,'(5X,A/)')
+     &   '...infinite order ! ( IOTC = BSSinf = DKHinf )'
       ELSE IF (IPZ.EQ.2) THEN
-       write(lupri,'(5X,A)') '...second order !'
+       write(lupri,'(5X,A/)') '...second order ! ( DKH2 )'
       ELSE IF (IPZ.EQ.1) THEN
-       write(lupri,'(5X,A)') '...first order !'
+       write(lupri,'(5X,A/)') '...first order ! ( DKH1 )'
       ELSE IF (IPZ.EQ.0) THEN
-       write(lupri,'(5X,A)')
+       write(lupri,'(5X,A/)')
      & '...only testing of the SO1 approach, then quit ...'
       ELSE
        write(lupri,*) 'IPZ=',IPZ
@@ -539,7 +541,6 @@ C     ... do extract a,x,y,z digits of the entering IBSS=axyz value
        CALL QUIT('MAKE_BSS: EXTR_BSS_INFO: Wrong value of'//
      &           ' IZ (should be 0,1,2,9) !')
       ENDIF
-      write(lupri,*)
 
 C      ... treat the NOFPB & BLOCKD
       IF (IPZ.EQ.9) THEN
@@ -570,7 +571,7 @@ C     ... for lower orders do always use the FP "k"- basis !
 
       ELIM_SF=.FALSE.
       IF (SPINFR.AND.IPY.GE.1) THEN 
-       WRITE(LUPRI,'(A)') '* "SPINFR" option, no spin-orbit terms!' 
+       WRITE(LUPRI,'(A)') ' * "SPINFR" option, no spin-orbit terms!' 
        IPY=0
       ENDIF
 
@@ -591,28 +592,28 @@ C     ... for lower orders do always use the FP "k"- basis !
 C        ... DKH2sfB + SO1
         DK2SO1 = .TRUE.
         WRITE (LUPRI,'(A)')
-     &  '* spin-orbit terms only to the first order -'//
+     &  ' * spin-orbit terms only to the first order -'//
      &  ' (within the DKH2 Hamilt. generation)'//
      &  ' - DKH2sfBSO1 Hamiltonian'
       ELSE IF (.NOT.SPINFR) THEN
          DK2SO1 = .FALSE.
          WRITE (LUPRI,'(A)')
-     &   '* all spin-orbit terms included (full relativity)'
+     &   ' * all spin-orbit terms included (full relativity)'
       END IF
 
       IF (IPX .GE. 1 .AND. SPINFR) THEN  
          SF0 = .TRUE.
          WRITE (LUPRI,'(A)')
-     & '* Elimination of spin-orbit terms from the Dirac bare '//
+     & ' * Elimination of spin-orbit terms from the Dirac bare '//
      & 'nuclei in RKB/"k" basis (spinfree "BEFORE / AT THE BEGINNING")' 
       ELSE IF(IPX .EQ. 0 .AND. SPINFR) THEN
          SF0 = .FALSE.
          IF (SPINFR) WRITE (LUPRI,'(A)')
-     & '* Elimination of spin-orbit terms from the 2comp.Ham. '//
+     & ' * Elimination of spin-orbit terms from the 2comp.Ham. '//
      & ' in RKB/"k" basis (spinfree "AFTER / AT THE END")'
       ENDIF
 
-C     ... by default do not include SO1 addition to spin-free Hamiltonians DK2,BSS
+C     ... by default do not include SO1 addition to spin-free Hamiltonians DKH2,BSS
       SAVESO1 = .FALSE.
       IF (IPY.EQ.1.AND..NOT.SPINFR.AND..NOT.DK2SO1
      &            .AND.IPZ.GT.1.AND..NOT.NOFPB) THEN
@@ -624,20 +625,19 @@ C     ... by default do not include SO1 addition to spin-free Hamiltonians DK2,B
      & ' Addition of SO1 terms (extracted from H1_ONB)'//
      & ' to the desired spin-free Hamiltonian !'
         IF (IPZ.EQ.2.AND.SF0) THEN
-          write(lupri,'(5X,A)') 'DK2sfB + SO1 Hamiltonian'
+          write(lupri,'(5X,A/)') 'DKH2sfB + SO1 Hamiltonian'
         ELSE IF (IPZ.EQ.2.AND..NOT.SF0) THEN
-          write(lupri,'(5X,A)') 'DK2sfE + SO1 Hamiltonian'
+          write(lupri,'(5X,A/)') 'DKH2sfE + SO1 Hamiltonian'
         ELSE IF (IPZ.GT.2.AND.SF0) THEN
-          write(lupri,'(5X,A)') 'BSSsfB + SO1 Hamiltonian'
+          write(lupri,'(5X,A/)') 'IOTCsfB + SO1 Hamiltonian'
         ELSE IF (IPZ.GT.2.AND..NOT.SF0) THEN
-          write(lupri,'(5X,A)') 'BSSsfE + SO1 Hamiltonian'
+          write(lupri,'(5X,A/)') 'IOTCsfE + SO1 Hamiltonian'
         ENDIF
-         write(lupri,*)
       ENDIF
 
       IF (ELIM_SF) WRITE (LUPRI,'(A)')                                
-     & '* SPIN-FREE flag is valid only for the generation of the BSS'//
-     & ' Hamiltonain, later removed '//
+     & ' * SPIN-FREE flag is valid only for the generation of the BSS'//
+     & ' Hamiltonian, later removed '//
      & ' due to the AMFI spin-orbit integrals.'
      
 C      .... flag IBSS=010 - activate the ONLYSO1 flag
@@ -645,7 +645,7 @@ C      .... flag IBSS=010 - activate the ONLYSO1 flag
       ADD_AMFI=.FALSE.
       IF (IPX.EQ.0.AND.IPY.EQ.1.AND.IPZ.EQ.0) THEN
          WRITE (LUPRI,'(/A)')
-     &  '* only SO1 terms (for comparison with AMFI, then quit)'
+     &  ' * only SO1 terms (for comparison with AMFI, then quit)'
         ONLYSO1=.TRUE.
 C       ... AMFI gives only SO1 integrals
         IC_AMFI = 1
@@ -660,38 +660,38 @@ C     ... AMFI gives SO1+MFSO2 integrals,
 C        but these are added to the Hamiltionian with ZERO weight
         IC_AMFI = 3
         WRITE(LUPRI,'(/A)')
-     &'* C->S->C transformation + AMFI run(test), but no adding'//
-     &' of AMFI integrals.'  
+     &  ' * C->S->C transformation + AMFI run(test), but no adding'//
+     &  ' of AMFI integrals.'  
       ELSE IF (IPA.EQ.2) THEN
         ADD_AMFI=.TRUE.
         IC_AMFI = 2
         WRITE(LUPRI,'(/A)')
-     &'* AMFI: MFSSO2 terms (spin-same orbit only) added.'  
+     &  ' * AMFI: MFSSO2 terms (spin-same orbit only) added.'  
       ELSE IF (IPA.EQ.3) THEN
         ADD_AMFI=.TRUE.
         IC_AMFI = 3
         WRITE(LUPRI,'(/A)')
-     &'* AMFI: MFSO2 terms (both spin-same&spin-other orbit) added.'  
+     &  ' * AMFI: MFSO2 terms (both spin-same&spin-other orbit) added.'
       ELSE IF (IPA.EQ.4) THEN
         ADD_AMFI=.TRUE.
         IC_AMFI = 4
         WRITE(LUPRI,'(/A)')
-     &'* AMFI: SO1+MFSSO2 terms (only spin-same orbit) added.'
+     &  ' * AMFI: SO1+MFSSO2 terms (only spin-same orbit) added.'
       ELSE IF (IPA.EQ.5) THEN
         ADD_AMFI=.TRUE.
         IC_AMFI = 5
         WRITE(LUPRI,'(/A)')
-     &'* AMFI: SO1+MFSO2 terms (spin-same&spin-other orbit) added.'  
+     &  ' * AMFI: SO1+MFSO2 terms (spin-same&spin-other orbit) added.'
       ELSE IF (IPA.EQ.6) THEN
         ADD_AMFI=.TRUE.
         IC_AMFI = 1
         WRITE(LUPRI,'(/A)')
-     &'* AMFI: SO1 terms added.'  
+     &  ' * AMFI: SO1 terms added.'  
       ENDIF
 
       IF (.NOT.ADD_AMFI) THEN
         WRITE (LUPRI,'(A/)')
-     &  '* AMFI contribution is NOT included.'
+     &  ' * AMFI contribution is NOT included.'
       ENDIF
 
 C ... treat the GETPCTM flag
@@ -710,7 +710,7 @@ C =========================================================================
       IF (IPY.GT.0.AND.(IPA.EQ.6.OR.IPA.EQ.5.OR.IPA.EQ.4)) THEN
        write(lupri,*)
        WRITE(LUPRI,*) 'EXTR_BSS_INFO: IPY=',IPY,' IPA=',IPA
-       WRITE(LUPRI,*) 'EXTR_BSS_INFO: Doubled inclusion of 1el'//
+       WRITE(LUPRI,*) 'EXTR_BSS_INFO: Double inclusion of 1el'//
      & ' SO terms - AMFI & BSS Ham. '
        CALL  QUIT('EXTR_BSS_INFO: Double inclusion of 1el SO terms! ')
       ENDIF
