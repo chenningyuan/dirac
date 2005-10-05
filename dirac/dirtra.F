@@ -3335,16 +3335,16 @@ C
       DIMENSION IQW(4)
 C
 #include "ibtfun.h"
-      CALL QENTER('QTRANS')
+      CALL QENTER('QBTRANS')
 C
 C     Add the results on to the contents of the MO matrix ?
 C
 #ifdef DEBUG
-      print*, 'QTRANS: The AO matrix'
+      print*, 'QBTRANS: The AO matrix'
       CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM1'
+      print*, 'QBTRANS: The transformation matrix TM1'
       CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM2'
+      print*, 'QBTRANS: The transformation matrix TM2'
       CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
 #endif
       IF((NCMO.EQ.0).OR.(NRMO.EQ.0)) GOTO 999
@@ -3356,7 +3356,7 @@ C
       ELSEIF(TREV.EQ.'A') THEN
         TRA = 'I'
       ELSE
-        CALL QUIT('QTRANS: Unknown keyword TREV '//TREV)
+        CALL QUIT('QBTRANS: Unknown keyword TREV '//TREV)
       ENDIF
 C
 C     *******************************************************
@@ -3378,7 +3378,7 @@ C
           NBUF = NRAO*NCMO*NZW
           IF(NBUF.GT.LBUF) THEN
              WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   ' >>> QBTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
           ENDIF
 C
@@ -3453,7 +3453,7 @@ C
           NBUF = NRMO*NCAO*NZW
           IF(NBUF.GT.LBUF) THEN
              WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   ' >>> QBTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
           ENDIF
 
@@ -3539,7 +3539,7 @@ C
           NBUF = NRMO*NCAO*NZW
           IF(NBUF.GT.LBUF) THEN
              WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   ' >>> QBTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
           ENDIF
 C
@@ -3561,7 +3561,7 @@ C
           NBUF = NRAO*NCMO*NZW
           IF(NBUF.GT.LBUF) THEN
              WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   ' >>> QBTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
           ENDIF
 C
@@ -3584,11 +3584,11 @@ C          CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
 C          CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IPQTOQ(1,0,1),LUPRI)
 C        ENDIF
       ELSE
-        CALL QUIT('FTRANS: Unknown keyword TYP '//TYP)
+        CALL QUIT('QBTRANS: Unknown keyword TYP '//TYP)
       ENDIF
 C
  999  CONTINUE
-      CALL QEXIT('QTRANS')
+      CALL QEXIT('QBTRANS')
       RETURN
 C
       END
