@@ -400,7 +400,7 @@ C     Print list of eigenvalues from different symmetries, sorted on
 C     increasing energy value.
 C 
 C     An offset is added to this value so that e.g. the constant
-C     CCSD energy can be added to the Fockspace eigenvalues.
+C     CCSD nergy can be added to the Fockspace eigenvalues.
 C
 C     The routine is based on an older routine in GOSCIP but changed
 C     to get rid of the common blocks.
@@ -468,7 +468,7 @@ C
         AVER=AVER+E
         IF (ABS(E-EW).GT.DEGEN) THEN
           IF (NEW.NE.0)
-     &      WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
+     &      WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW, EW+E_OFF,NEW
           ILEVEL=ILEVEL+1
           NEW=1
           EW=E
@@ -478,7 +478,7 @@ C
         ENDIF
       ENDDO
       IF (NEW.NE.0)
-     &WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
+     &WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW, EW+E_OFF,NEW
       WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
 C
       DO IRP1 = 1, N_IRPS, 8
@@ -520,14 +520,234 @@ C
  1008 FORMAT(17X,I8,2X,16(A1),F16.8)
  1005 FORMAT(//' Energy eigenvalues in atomic units'
      +            //' Level   Rel eigenvalue     ',
-     +            'Abs eigenvalue  Degeneracy'/)
- 1010 FORMAT(I5,F17.12,F20.12,' (',I4,' * )')
+     +            'Abs eigenvalue      CCSD Energy    Degeneracy'/)
+ 1010 FORMAT(I5,F17.12,F20.12,F20.12' (',I4,' * )')
  1020 FORMAT(//' Total average: ',F20.10)
  1025 FORMAT(//' Relative eigenvalues in other units;'/' Symmetry',
      +       ' Classification in the Abelian subgroup',
      +       //' Level  eigenvalue (eV) ',
      +      ' Eigenvalue (cm-1)',2X,8A4/)
  1030 FORMAT(I5,F19.9,F18.6,8(I4))
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PRT_EV_VEC (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,EV,
+     &                       INDX,IRPS,IND,VEC,LBL_SEC1,LBL_SEC2,
+     &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV, 
+     &                       TSHOLD)
+C 
+#include "implicit.h"
+C
+C---------------Description--------------------------------------------
+C
+C     Print list of eigenvalues from different symmetries, sorted on
+C     increasing energy value.
+C 
+C     An offset is added to this value so that e.g. the constant
+C     CCSD energy can be added to the Fockspace eigenvalues.
+C
+C     The routine is based on an older routine in GOSCIP but changed
+C     to get rid of the common blocks.
+C
+C     Parameters :
+C     - LUPRI   : Output unit
+C     - N_IRPS  : Number of irrep
+C     - N_EV    : Number of eigenvalues in each irrep
+C     - REPNA   : Name of each irrep after adding particles   
+C     - REPNAO  : Name of each irrep before adding particles 
+C     - E_OFF   : Energy offset
+C     - EV      : Eigenvalues
+C     - VEC     : Eigenvectors
+C     - NACTV   : Number of active virtual for each irrep
+C     - LBL_SEC1: Sector 1 spinor for eigenvectors in each irrep
+C     - LBL_SEC2: Sector 2 spinor for eigenvectors in each irrep
+C     - IRSEC1  : Sector 1 irrep for eigenvectors in each irrep
+C     - IRSEC2  : Sector 2 irrep for eigenvectors in each irrep
+C     - IRSEC12 : Bosono mult sector 1  sector 2
+C     - INDX    : Work array of the same length as EV
+C     - IRPS    : Work array of the same length as EV
+C     - IND     : Work array of length N_IRPS
+C
+C---------------Routines called----------------------------------------
+C
+C     INDEXX
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Ivan Infante, september 2005
+C
+C---------------Calling variables--------------------------------------
+C
+      DIMENSION N_EV(*),INDX(*), INDXV(600)
+      DIMENSION EV(*), VEC(*), VEC_TMP(600*600) 
+      DIMENSION LBL_SEC1(*), LBL_SEC2(*) 
+      DIMENSION IRSEC1(*), IRSEC2(*), IRSEC12(*) 
+      DIMENSION LSEC1(600*600), LSEC2(600*600) 
+      DIMENSION IRPSEC1(600*600), IRPSEC2(600*600), IRPSEC12(600*600) 
+      DIMENSION N_TOT_EV(64), N_TOT_VEC(64), NACTV(*) 
+      DIMENSION IRPS(*),IND(*)
+      CHARACTER*4 REPNA(*), REPNAO(*)
+      INTEGER TSHOLD 
+      REAL*8 E_OFF
+
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "codata.h"
+C
+C---------------Local variables--------------------------------------
+C
+      PARAMETER (DEGEN=1.D-9)
+C
+C---------------Executable code----------------
+C     
+C     Compute the total number of eigenvalues and fill
+C     the array with the identication
+C     Select total number of eigenvectors to use like offset later
+C
+      N_TOTAL = 0
+      N_TOT_EV(1) = 0 
+      N_TOT_VEC(1) = 0 
+      DO IRP = 1, N_IRPS
+         CALL ICOPY(N_EV(IRP),IRP,0,IRPS(N_TOTAL+1),1)
+         N_TOTAL = N_TOTAL + N_EV(IRP)
+         N_TOT_EV(IRP+1) = N_TOT_EV(IRP) + N_EV(IRP) 
+         N_TOT_VEC(IRP+1) = N_TOT_VEC(IRP) + N_EV(IRP)* N_EV(IRP) 
+      ENDDO
+C
+      IF (N_TOTAL.EQ.0) RETURN
+C     
+C
+C
+C     Sort them from low to high
+C
+      CALL INDEXX(N_TOTAL,EV,INDX)
+C
+      WRITE (LUPRI,1005)
+      ILEVEL=0
+      EW=0.0D0
+      EWF=EV(INDX(1))
+      NEW=0
+      AVER=0.0D0
+      DO I=1,N_TOTAL
+        E = EV(INDX(I))
+        AVER=AVER+E
+        IF (ABS(E-EW).GT.DEGEN) THEN
+          IF (NEW.NE.0)
+     &      WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+          ILEVEL=ILEVEL+1
+          NEW=1
+          EW=E
+        ELSE
+          NEW=NEW+1
+          EW=((NEW-1)*EW+E)/DBLE(NEW)
+        ENDIF
+      ENDDO
+      IF (NEW.NE.0)
+     &WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+      WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
+C
+      DO IRP1 = 1, N_IRPS, 8
+        IRP2 = MIN0(N_IRPS,IRP1+7)
+        WRITE(LUPRI,1025) (REPNA(I),I=IRP1,IRP2)
+        ILEVEL=0
+        EW=0.0D0
+        EWF=EV(INDX(1))
+        NEW=0
+        DO JRP = IRP1, IRP2
+           IND(JRP) = 0
+        END DO
+        DO 140 I=1,N_TOTAL
+          E=EV(INDX(I))
+          IVEC = (INDX(I)-N_TOT_EV(IRPS(INDX(I)))-1)*N_EV(IRPS(INDX(I))) 
+     &            + N_TOT_VEC(IRPS(INDX(I))) + 1  
+          IF (ABS(E-EW).GT.DEGEN) THEN
+             IF (NEW.NE.0) THEN
+               WRITE(LUPRI,1030) ILEVEL,
+     &                       XTEV*(EW-EWF),XTKAYS*(EW-EWF),
+     &                      (IND(JRP),JRP=IRP1,IRP2)
+             ENDIF
+             DO JRP = IRP1, IRP2
+                IND(JRP) = 0
+             ENDDO
+             ILEVEL = ILEVEL + 1
+             IND(IRPS(INDX(I))) = 1
+             NEW=1
+             EW=E
+          ELSE
+             NEW=NEW+1
+             IND(IRPS(INDX(I))) = IND(IRPS(INDX(I))) + 1
+             EW=((NEW-1)*EW+E)/DBLE(NEW)
+          ENDIF
+ 140     CONTINUE
+         IF (NEW.NE.0) THEN 
+             WRITE(LUPRI,1030) ILEVEL,
+     &                XTEV*(EW-EWF),XTKAYS*(EW-EWF),
+     &                (IND(JRP),JRP=IRP1,IRP2)
+         ENDIF
+      ENDDO
+C
+C     New part (I.I.):
+C     Print composition of each excited state
+C     PS: It should be generalized for other sectors
+C 
+      ILEVEL=1
+      EWF=EV(INDX(1))
+      LBL = 0
+      WRITE(LUPRI,1080)
+      DO IRP = 1, N_IRPS
+         DO I = 1, NACTV(IRP)
+            LBL = LBL + 1 
+            WRITE(LUPRI,1085) LBL, REPNAO(IRP) 
+         ENDDO
+      ENDDO
+      DO I=1,N_TOTAL
+        E = EV(INDX(I))
+        IVEC = (INDX(I)-N_TOT_EV(IRPS(INDX(I)))-1)*N_EV(IRPS(INDX(I))) 
+     &          + N_TOT_VEC(IRPS(INDX(I))) + 1  
+        WRITE(LUPRI,1055) ILEVEL,E-EWF,XTEV*(E-EWF),XTKAYS*(E-EWF)
+        WRITE(LUPRI,1090) E_OFF + E 
+        CALL DCOPY(N_EV(IRPS(INDX(I))),VEC(IVEC),1,VEC_TMP,1)
+        CALL ICOPY(N_EV(IRPS(INDX(I))),LBL_SEC1(IVEC),1,LSEC1,1)
+        CALL ICOPY(N_EV(IRPS(INDX(I))),LBL_SEC2(IVEC),1,LSEC2,1)
+        CALL ICOPY(N_EV(IRPS(INDX(I))),IRSEC1(IVEC),1,IRPSEC1,1)
+        CALL ICOPY(N_EV(IRPS(INDX(I))),IRSEC2(IVEC),1,IRPSEC2,1)
+        CALL ICOPY(N_EV(IRPS(INDX(I))),IRSEC12(IVEC),1,IRPSEC12,1)
+        WRITE(LUPRI,1060)
+        DO J = 1, N_EV(IRPS(INDX(I)))
+          VEC_TMP(J) =  VEC_TMP(J)*VEC_TMP(J)*100 
+          IF (VEC_TMP(J).GT.TSHOLD) THEN
+           WRITE(LUPRI,1065) LSEC2(J),REPNAO(IRPSEC2(J)), 
+     &                       LSEC1(J),REPNAO(IRPSEC1(J)),
+     &                       REPNA(IRPSEC12(J)),VEC_TMP(J)  
+           ENDIF
+        ENDDO
+        ILEVEL=ILEVEL+1
+      ENDDO
+C
+ 1000 FORMAT(F17.8)
+ 1008 FORMAT(17X,I8,2X,16(A1),F16.8)
+ 1005 FORMAT(//' Energy eigenvalues in atomic units'
+     +            //' Level   Rel eigenvalue     ',
+     +            'Abs eigenvalue      CCSD Energy    Degeneracy'/)
+ 1010 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' (',I4,' * )')
+ 1015 FORMAT(I5,F17.12,F19.9,F18.6)
+ 1020 FORMAT(//' Total average: ',F20.10)
+ 1025 FORMAT(//' Relative eigenvalues in other units;'/' Symmetry',
+     +       ' Classification in the Abelian subgroup',
+     +       //' Level  eigenvalue (eV) ',
+     +      ' Eigenvalue (cm-1)',2X,8A4/)
+ 1030 FORMAT(I5,F19.9,F18.6,8(I4))
+ 1035 FORMAT(/'Real Vector:',/(1x,6f12.7))
+ 1055 FORMAT(//'Energy ',I5,':',F12.9,' (au)',3X,F12.5,' (eV)',3X,F19.5
+     +       ,' (cm-1)')
+ 1060 FORMAT(/,6x,'Composition:'/,11x,'Spinor 2',2x,'Rep',6x,'Spinor 1',
+     +       2x,'Rep',5x,'Tot Rep',3x,'weight (%)') 
+ 1065 FORMAT(10x,I5,4x,A4,7x,I5,4x,A4,5x,A4,5x,F10.5) 
+ 1080 FORMAT(/,2x,'Composition of all excited states in (0h,2p) sector' 
+     +        /'  Active Spinor',5x,'Abelian'/)
+ 1085 FORMAT(4x,I5,9x,A6) 
+ 1090 FORMAT('Total CCSD energy + affinity: ',F20.12)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

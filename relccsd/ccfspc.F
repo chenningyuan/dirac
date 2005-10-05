@@ -292,14 +292,20 @@ C
 #include "files.inc"
 C
 C---------------Local variables -----------------------------------
-      PARAMETER (NDIMH=300,NDIMH2=NDIMH*NDIMH)
+      PARAMETER (NDIMH=600,NDIMH2=NDIMH*NDIMH)
       REAL*8 EV(NDIMH),EVI(NDIMH),HR(NDIMH2),HI(NDIMH2)
       REAL*8 SCR(3*NDIMH),VEC(NDIMH2),VECI(NDIMH2)
-      REAL*8 EV_ALL(NDIMH*MXREP)
+      REAL*8 EV_ALL(NDIMH*MXREP), VEC_ALL(NDIMH2*MXREP)
+      REAL*8 VECI_ALL(NDIMH2*MXREP)
       DIMENSION INDX_ALL(NDIMH*MXREP),IRPS_ALL(NDIMH*MXREP)
-      DIMENSION NDT_ALL(MXREP),IND(MXREP)
+      DIMENSION NDT_ALL(MXREP),IND(MXREP) 
       REAL*8 FNOR,E_OFF
-      INTEGER INDX(NDIMH)
+      INTEGER INDX(NDIMH), IRP_SEC12(NDIMH)
+      INTEGER IRP_SEC1(NDIMH2), IRP_SEC2(NDIMH2)
+      INTEGER IREP_SEC1(NDIMH2), IREP_SEC2(NDIMH2), IREP_SEC12(NDIMH2)
+      INTEGER SEC1_ALL(NDIMH2*MXREP), SEC2_ALL(NDIMH2*MXREP)
+      INTEGER IRSEC1_ALL(NDIMH2*MXREP), IRSEC2_ALL(NDIMH2*MXREP)
+      INTEGER IRSEC12_ALL(NDIMH2*MXREP)
 C---------------Executable code--------------------------------------
 C-------------------------------------------
 C (0,1)  Sector
@@ -409,7 +415,19 @@ C       Sort the matrix to ordering 4 to diagonalize it.
       ENDIF
 C   
       NDT_TOT = 0
+      NDT2_TOT = 0
       IOFF = 1
+C
+C .....labling of each representation  
+C
+      LABEL=0 
+      DO IRP = 1, NREP 
+        DO I = 1, NAV(IRP)
+           LABEL = LABEL + 1
+           IRP_SEC12(LABEL) = IRP
+        ENDDO
+      ENDDO 
+C
       DO 100 IRP=1,NREP
          IF (ICURFSS.EQ.1) THEN
           NDT = NAV(IRP)
@@ -467,11 +485,28 @@ C          Normalize
            FNOR = DDOT (NDT,VEC(IVEC),1,VEC(IVEC),1)
            IF (CARITH) FNOR = FNOR + DDOT(NDT,VECI(IVEC),1,VECI(IVEC),1)
            FNOR = A1 / DSQRT(FNOR)
-           CALL DSCAL (NDT,FNOR,VEC(IVEC),1)
+            CALL DSCAL (NDT,FNOR,VEC(IVEC),1)
            IF (CARITH) CALL DSCAL (NDT,FNOR,VECI(IVEC),1)
-           IF (IPR.GT.1) 
-     &         WRITE (IW,8400) I,EV(INDX(I)),(VEC(IVEC+J-1),J=1,NDT)
-           IF (CARITH.AND.IPR.GT.1) 
+           IF (IPR.GT.1)  
+     &       WRITE (IW,8400) I,EV(INDX(I)),(VEC(IVEC+J-1),J=1,NDT)
+           IF (IPR.GT.0) THEN  
+             IF (ICURFSS.EQ.2) THEN
+                IJ = 0 
+                DO JJ = 1, LABEL-1
+                   DO 80 II = JJ+1, LABEL 
+                      IF (MULTB(IRP_SEC12(II),IRP_SEC12(JJ),1).NE.IRP)
+     &                     GOTO 80
+                      IRP_SEC1(IVEC + IJ) = II
+                      IREP_SEC1(IVEC + IJ) = IRP_SEC12(II)
+                      IRP_SEC2(IVEC + IJ) = JJ 
+                      IREP_SEC2(IVEC + IJ) = IRP_SEC12(JJ)
+                      IREP_SEC12(IVEC + IJ)  = IRP 
+                      IJ = IJ + 1 
+80                 CONTINUE
+                ENDDO
+             ENDIF 
+           ENDIF
+           IF (CARITH.AND.IPR.GT.0) 
      &         WRITE (IW,8401) I,EVI(INDX(I)),(VECI(IVEC+J-1),J=1,NDT)
          ENDDO
          IOFF=IOFF+NDT2*RCW
@@ -479,20 +514,38 @@ C
 C........Store the eigenvalues for later processing by PRT_EV
 C
          CALL DCOPY (NDT,EV,1,EV_ALL(NDT_TOT+1),1)
+C
+C........Store the eigenvectors for later processing by PRT_EV_VEC
+C
+         CALL DCOPY (NDT2,VEC,1,VEC_ALL(NDT2_TOT+1),1)
+         IF (CARITH)
+     &      CALL DCOPY (NDT2,VECI,1,VECI_ALL(NDT2_TOT+1),1)
+         CALL ICOPY (NDT2,IRP_SEC1,1,SEC1_ALL(NDT2_TOT+1),1)
+         CALL ICOPY (NDT2,IRP_SEC2,1,SEC2_ALL(NDT2_TOT+1),1)
+         CALL ICOPY (NDT2,IREP_SEC1,1,IRSEC1_ALL(NDT2_TOT+1),1)
+         CALL ICOPY (NDT2,IREP_SEC2,1,IRSEC2_ALL(NDT2_TOT+1),1)
+         CALL ICOPY (NDT2,IREP_SEC12,1,IRSEC12_ALL(NDT2_TOT+1),1)
+C
          NDT_TOT = NDT_TOT + NDT
- 100  CONTINUE
+         NDT2_TOT = NDT2_TOT + NDT2
+100   CONTINUE
 C
 C     Print an ordered list of eigenvalues to which the ccsd energy is
 C     added.
 C
       E_OFF = ESCF + ECCSD
-      e_off = 0.d0
       IF (ICURFSS.EQ.1.OR.ICURFSS.EQ.10) THEN
          CALL PRT_EV (IW,NREP,NDT_ALL,REPNA,E_OFF,EV_ALL,
      &                INDX_ALL,IRPS_ALL,IND)
       ELSE
-         CALL PRT_EV (IW,NREP,NDT_ALL,REPNA(NREP+1),E_OFF,EV_ALL,
-     &                INDX_ALL,IRPS_ALL,IND)
+         IF (IPR.EQ.0) THEN
+            CALL PRT_EV (IW,NREP,NDT_ALL,REPNA(NREP+1),E_OFF,EV_ALL,
+     &                  INDX_ALL,IRPS_ALL,IND)
+         ELSE
+            CALL PRT_EV_VEC (IW,NREP,NDT_ALL,REPNA(NREP+1),E_OFF,EV_ALL,
+     &               INDX_ALL,IRPS_ALL,IND,VEC_ALL,SEC1_ALL,SEC2_ALL,
+     &               IRSEC1_ALL,IRSEC2_ALL,IRSEC12_ALL,REPNA,NAV,LTSHFS)
+         ENDIF
       ENDIF
 C
 8300  FORMAT (//1x,'Diagonalization of ',A40,' irrep =',I2/

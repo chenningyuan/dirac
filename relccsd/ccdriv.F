@@ -164,6 +164,7 @@ C
 #include "inpt.inc"
 #include "ihm.inc"
 #include "complex.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -182,7 +183,7 @@ C
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
       NAMELIST/CCFSPC/ DOEA,DOIE,FSSECT,NACTH,NACTP,
-     &                 MAXIT,MAXDIM,NTOL,DOIH
+     &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD
       NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX
       NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
@@ -303,6 +304,7 @@ C
       MAXDIM = 8
       MAXIT = 30
       NTOL = 12
+      TSHOLD = 0
       DO I = 1, 16
          NACTH(I) = 0
          NACTP(I) = 0
@@ -324,6 +326,7 @@ C
       MXDIMFS = MAXDIM
       MXITFS = MAXIT
       NTOLFS = NTOL
+      LTSHFS = TSHOLD
       DO I = 1, 16
          NINACT(I) = NELEC(I) - NACTH(I)
          NACT(I) = NACTH(I) + NACTP(I)
