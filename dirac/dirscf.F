@@ -3555,8 +3555,10 @@ C
 C
 C       Do an approximate identification of the spinors by their
 C       boson character for use in the CI.
-C
-        IF (.NOT.SPINFR .AND. .NOT.LEVYLE .AND. .NOT.SUB_BL) THEN
+Ctsaue Oct 5 2005:
+C      De-activated this for frozen orbitals since NBORB can not be
+C      trusted
+        IF (.NOT.SPINFR .AND. .NOT.SUB_BL .AND. NFROT.EQ.0) THEN
            CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
            CALL MEMGET('REAL',KRDUM,4*NORB(I),WORK,KFREE,LFREE)
            CALL APPBOS (I,NTMO(I),WORK(KINDX),

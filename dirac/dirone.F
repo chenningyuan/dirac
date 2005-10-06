@@ -1431,12 +1431,13 @@ C
         N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
       ENDDO
 C
-C     Construct right index transformed overlap matrix Saomo = Sao C
+C     Construct right index transformed overlap matrix Saomo = Sao T
+C     Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
 C
       CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),IPRONE,WORK(KFREE),LFREE)
 C
 C     If requested, reduce transformation matrix by projection with
-C     respect to a set of reference orbitals
+C     respect to a set of fragment orbitals
 C
       IF(PROJEC) THEN
         CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),IPRONE,WORK,KFREE,LFREE)
@@ -1453,7 +1454,7 @@ C     Copy information from NBORB to the subblock array if we have not
 C     partioned the orbital space otherwise.
 C
       IF (.NOT.SUB_BL) CALL INISUB
-      IF (LEVYLE.OR.SPINFR) THEN
+      IF (SPINFR) THEN
          SUB_BL = .TRUE.
       ENDIF
 C
@@ -3843,7 +3844,7 @@ C  /* Deck psiprj */
       SUBROUTINE PSIPRJ(TMAT,TINV,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Eliminate a set of reference orbitals from the variational space;
+C     Eliminate a set of fragment orbitals from the variational space;
 C     this is done by projecting them out of the MO transformation matrix
 C     Written by T.Saue March 26 1999
 C
@@ -3862,18 +3863,18 @@ C
 C
       LOGICAL TOBE
       DIMENSION TMAT(*),TINV(*),WORK(*)
-      DIMENSION NSTR(2,0:2,MPRJREF),KVEC(2,MPRJREF),
+      DIMENSION NSTR(2,0:2,MFRAG),KVEC(2,MFRAG),
      &          KQ(2),KI(2),NVECS(2),NQ(2)
 C
       KFRSAV = KFREE
       CALL TITLER('Reduction of variational space by projection',
      &     '*',125)
 C
-C     Find total number of reference orbitals
-C     AND normal coefficients
+C     Set dimensions for coefficients
+C     ===============================
+C
       NORBT = 0
       NCMOT  = 0
-      NVECT = 0
       DO IFRP = 1,NFSYM
         NORBT       = NORBT  + NORB(IFRP)
         ICMO(IFRP)  = NCMOT
@@ -3881,28 +3882,51 @@ C     AND normal coefficients
         NCMO(IFRP)  = NFBAS(IFRP,0)*NORB(IFRP)
         NCMOQ(IFRP) = NCMO(IFRP)*NZ
         NCMOT       = NCMOT + NCMO(IFRP)
+      ENDDO
+      NCMOTQ  = NCMOT*NZ
+C
+C     Find total number of fragment orbitals
+C     =======================================
+C
+C     NFRAG - number of fragments
+C     NSTR(IFRP,IC,IFRAG) 
+C     - number of fragment orbitals of fermion ircop IFRP for fragment IFRAG
+C        IC = 0 total
+C        IC = 1 positive energy
+C        IC = 2 negative energy
+C     NVECS(IFRP) - total number of fragment orbitals in fermion ircop IFRP
+C     NVECT       - total number of fragment orbtials
+C        
+      NVECT = 0
+C.....loop over fermion ircops
+      DO IFRP = 1,NFSYM
         NVECS(IFRP) = 0
-        DO I = 1,NPRJREF
-          CALL MEMGET('INTE',KVEC(IFRP,I),NORB(IFRP),WORK,KFREE,LFREE)
-          NSTR(IFRP,0,I) = 1
-          CALL NUMLST(VCPROJ(IFRP,I),WORK(KVEC(IFRP,I)),
+C.......loop over fragments
+        DO IFRAG = 1,NFRAG
+          CALL MEMGET('INTE',KVEC(IFRP,IFRAG),NORB(IFRP),
+     &                WORK,KFREE,LFREE)
+          NSTR(IFRP,0,IFRAG) = 1
+          CALL NUMLST(VCPROJ(IFRP,IFRAG),WORK(KVEC(IFRP,IFRAG)),
      &              NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
-     &              IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
-          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
-     &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-          NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
-          NVECS(IFRP) = NVECS(IFRP) + NSTR(IFRP,0,I)
-          CALL MEMREL('PSIPRJ',WORK,KVEC(IFRP,I),KVEC(IFRP,I),
+     &              IFRP,NSTR(IFRP,0,IFRAG),WORK(KFREE),LFREE)
+          CALL ORBCNT(WORK(KVEC(IFRP,IFRAG)),NSTR(IFRP,0,IFRAG),IFRP,
+     &                NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
+          NSTR(IFRP,0,IFRAG) = NSTR(IFRP,1,IFRAG) + NSTR(IFRP,2,IFRAG)
+          NVECS(IFRP) = NVECS(IFRP) + NSTR(IFRP,0,IFRAG)
+          CALL MEMREL('PSIPRJ',WORK,KVEC(IFRP,IFRAG),KVEC(IFRP,IFRAG),
      &                KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
+          CALL MEMGET('INTE',KVEC(IFRP,IFRAG),NSTR(IFRP,0,IFRAG),
      &                WORK,KFREE,LFREE)
         ENDDO
         NVECT = NVECT + NVECS(IFRP)
       ENDDO
-      NCMOTQ  = NCMOT*NZ
       IF(NVECT.EQ.0) GOTO 30
 C
-C     Calculate dimensions of reference coefficients array
+C     Calculate dimensions of fragment coefficients array
+C     ====================================================
+C
+C     KQ(IFRP) - start adress for coefficient array
+C     KI(IFRP) - start adress for boson irreps info
 C
       NDIM  = 0
       DO IFRP = 1,NFSYM
@@ -3914,70 +3938,74 @@ C
       CALL MEMGET('REAL',KQ(1),NDIM,WORK,KFREE,LFREE)
       KQ(2)   = KQ(1) + NQ(1)
 C
+C     Select fragment orbitals
+C     =========================
 C
-C     Select reference orbitals
-C
-      IOPT = 3
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-      IF(SPINFR.OR.LEVYLE) THEN
+      IF(SPINFR) THEN
         IOPT = 11
         CALL MEMGET('REAL',KIBE,NORBT,WORK,KFREE,LFREE)
       ELSE
+        IOPT = 3
         KIBE = KFREE
       ENDIF
       DO IFRP = 1,NFSYM
         NQ(IFRP) = KQ(IFRP)
       ENDDO
-      II = 1
-      DO 10 I = 1,NPRJREF
+      INUC = 1
+C.....loop over fragments
+      DO 10 IFRAG = 1,NFRAG
         NVECT = 0
         DO IFRP = 1,NFSYM
-          NVECT = NVECT + NSTR(IFRP,0,I)
+          NVECT = NVECT + NSTR(IFRP,0,IFRAG)
         ENDDO
         IF(NVECT.EQ.0) THEN
           WRITE(LUPRI,'(A,A6)') 
-     &       '* No coefficients selected for reference ',PRJFIL(I)
+     &       '* No coefficients selected for fragment ',PRJFIL(IFRAG)
           GOTO 10
         ENDIF
-        INQUIRE(FILE=PRJFIL(I),EXIST=TOBE)
+        INQUIRE(FILE=PRJFIL(IFRAG),EXIST=TOBE)
         IF (.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,A6,A)') 
-     &     'Reference coefficient file ',PRJFIL(I),' not present'
-           CALL QUIT('PSIPRJ: No reference coefficients !')
+     &     'Fragment coefficient file ',PRJFIL(IFRAG),' not present'
+           CALL QUIT('PSIPRJ: No fragment coefficients !')
         ENDIF
-        CALL OPNFIL(LUCOEF,PRJFIL(I),'OLD','PSIPRJ')
+        CALL OPNFIL(LUCOEF,PRJFIL(IFRAG),'OLD','PSIPRJ')
         WRITE(LUPRI,'(A,A6)') 
-     &       '* Coefficients for reference ',PRJFIL(I)
+     &       '* Coefficients for fragment ',PRJFIL(IFRAG)
+C.......Fragment orbitals in own basis
         IF(PROOWN) THEN
           CALL SELOWN(IOPT,WORK(KCMO),DUM,WORK(KIBE),
-     &                II, NPRJNUC(I),LUCOEF,PRJFIL(I),NQ,IDUM,KI,
-     &                NVECS,KVEC(1,I),NSTR(1,0,I),WORK,KFREE,LFREE)
+     &                INUC, NPRJNUC(IFRAG),LUCOEF,PRJFIL(IFRAG),
+     &                NQ,IDUM,KI,NVECS,KVEC(1,IFRAG),NSTR(1,0,IFRAG),
+     &                WORK,KFREE,LFREE)
           DO IFRP = 1, NFSYM
-            IF(NSTR(IFRP,0,I).GT.0) THEN
-              NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,I)*NFBAS(IFRP,0)
+            IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
+              NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,IFRAG)*NFBAS(IFRP,0)
             ENDIF
-         ENDDO
+          ENDDO
+C.......Fragment orbitals in molecular basis
         ELSE
-          CALL REACMO(LUCOEF,PRJFIL(I),WORK(KCMO),DUM,WORK(KIBE),TOTERG,
-     &                IOPT,WORK,KFREE,LFREE)
+          CALL REACMO(LUCOEF,PRJFIL(IFRAG),WORK(KCMO),DUM,WORK(KIBE),
+     &                TOTERG,IOPT,WORK,KFREE,LFREE)
           DO IFRP = 1, NFSYM
-            IF(NSTR(IFRP,0,I).GT.0) THEN
+            IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
               CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(NQ(IFRP)),
-     &                       NVECS(IFRP),WORK(KVEC(IFRP,I)),
-     &                       NSTR(IFRP,2,I),NSTR(IFRP,1,I),
+     &                       NVECS(IFRP),WORK(KVEC(IFRP,IFRAG)),
+     &                       NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG),
      &                       NFBAS(IFRP,0),NORB(IFRP))
-              NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,I)*NFBAS(IFRP,0)
-              IF(SPINFR.OR.LEVYLE) THEN
+              NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,IFRAG)*NFBAS(IFRP,0)
+              IF(SPINFR) THEN
 C               Spin-free case: Fill array with boson irrep info
                 CALL SELIBEIG(WORK(KIBE),IORB(IFRP),IFRP,
-     &                         WORK(KI(IFRP)),WORK(KVEC(IFRP,I)),
-     &                         NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+     &                         WORK(KI(IFRP)),WORK(KVEC(IFRP,IFRAG)),
+     &                         NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
               ENDIF
             ENDIF
           ENDDO
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
-        II = II + NPRJNUC(I)
+        INUC = INUC + NPRJNUC(IFRAG)
  10   CONTINUE
 C
 C     Throw away the full set of coefficients and eigenvalues
@@ -3985,52 +4013,36 @@ C     =======================================================
 C
       CALL MEMREL('PSIPRJ.cfs',WORK,KCMO,KCMO,KFREE,LFREE)
 C
-C     If frozen orbitals, save to file
-C     ================================
-C
-      IF(NFROT.GE.0) THEN
-        CALL OPNFIL(LUCOEF,'DFFROZ','UNKNOWN','PSIPRJ')
-        DO IFRP = 1,NFSYM
-        IF(NFRO(IFRP).GT.0) THEN
-          NBUF = NFBAS(IFRP,0)*NZ
-          CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
-          CALL WRIFRZ(LUCOEF,IFRP,WORK(KQ(IFRP)),WORK(KSEL),
-     &                WORK(KBUF),WORK(KIND),NVECS(IFRP))
-          CALL MEMREL('PSIPRJ.froz',WORK,KSEL,KSEL,KFREE,LFREE)       
-        ENDIF
-        ENDDO
-        CLOSE(LUCOEF,STATUS='KEEP')
-      ENDIF
-C
-C     Reduce variational space by projection using the reference orbitals
+C     Reduce variational space by projection using the fragment orbitals
 C     ===================================================================
-C     If more than one set of reference orbitals, they must be orthogonalized !
+C     If more than one set of fragment orbitals, they must be orthogonalized !
 C
 C     Do projection
+      IF(NFROT.GE.0) CALL OPNFIL(LUCOEF,'DFFROZ','UNKNOWN','PSIPRJ')
       TOBE = .FALSE.
       N2TMT = 0
       DO 20 IFRP = 1,NFSYM
-        WRITE(LUPRI,'(A,A3)') '* Fermion ircop ',FREP(IFRP)        
-C       Transform reference coefficients to orthonormal basis
+        WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
+C       Transform fragment coefficients to orthonormal basis
         NDEL = 0
-        IF(NFRO(IFRP).EQ.0) GOTO 21
+        NQ(1) = 0
+        NQ(2) = 0
+CTROND        IF(NFRO(IFRP).EQ.0) GOTO 21
+        IF(NVECS(IFRP).EQ.0) GOTO 21
         NREF = NORB(IFRP)*NVECS(IFRP)*NZ
         NPRJ = NORB(IFRP)*NORB(IFRP)*NZ
-        NBUF = MAX(NREF,NPRJ)
-        CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIBOS,NORB(IFRP),WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
         CALL QGEMM(NORB(IFRP),NVECS(IFRP),NFBAS(IFRP,0),D1,
      &            'H','N',IPQTOQ(1,0),TINV(I2TMT(IFRP)+1),
      &                    NFBAS(IFRP,0),NORB(IFRP),NZ,
      &            'N','N',IPQTOQ(1,0),WORK(KQ(IFRP)),
      &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
-     &            D0,IPQTOQ(1,0),WORK(KBUF),NORB(IFRP),NVECS(IFRP),NZ)
-        CALL DCOPY(NREF,WORK(KBUF),1,WORK(KQ(IFRP)),1)
+     &            D0,IPQTOQ(1,0),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ)
 C       Initialize unit matrix (transformation matrix in MO-basis)
         CALL DUNIT2(WORK(KBUF),NORB(IFRP),NORB(IFRP),NORB(IFRP),NZ)
-        IF(SPINFR.OR.LEVYLE) THEN
+        IF(SPINFR) THEN
 C         Spin-free case: Fill array with boson irrep info
           CALL INISUB
           CALL INIBOS(WORK(KIBOS),IFRP,.FALSE.,0)
@@ -4039,12 +4051,27 @@ C         Spin-orbit coupling: Fill array with zeros..
           CALL ICOPY (NORB(IFRP),0,0,WORK(KIBOS),1) 
         ENDIF
 C       Do projection
-        CALL PRJORT(WORK(KBUF),WORK(KIBOS),
-     &              WORK(KQ(IFRP)),WORK(KI(IFRP)),
+        IREF  = 1
+        DO IFRAG = 1,NFRAG
+          DO IP = 2,1,-1
+            NREF = NSTR(IFRP,IP,IFRAG)        
+            IF(NREF.GT.0) THEN
+              CALL PRJORT(WORK(KBUF),WORK(KIBOS),
+     &              WORK(KREF),WORK(KI(IFRP)),IREF,NREF,
      &              PRJTHR,THRMAX,NORB(IFRP),NORB(IFRP),
-     &              NVECS(IFRP),NDEL,IPRHAM)
+     &              NVECS(IFRP),NDEL,IP,IPRHAM)
+              IREF = IREF + NREF
+              NQ(IP) = NQ(IP) + NDEL
+            ENDIF
+          ENDDO
+        ENDDO
+        CALL MEMREL('PSIPRJ.prjort',WORK,KREF,KREF,KFREE,LFREE)
+        NDEL = NQ(1) + NQ(2)
+        WRITE(LUPRI,'(2X,A,I6)') 
+     &     '- Total number of orbitals deleted: ',NDEL,
+     &     '       - positive energy solutions: ',NQ(1),
+     &     '       - negative energy solutions: ',NQ(2)
  21     CONTINUE
-        WRITE(LUPRI,'(2X,A,I6)') '- Number of orbitals deleted: ',NDEL
         NTMO(IFRP) = NORB(IFRP)-NDEL
         IEFF       = I2TMT(IFRP)+1
         I2TMT(IFRP) = N2TMT
@@ -4071,9 +4098,25 @@ C         Backtransform to SO-basis
           CALL PRJCNT(WORK(KBUF),TMAT(I2TMT(IFRP)+1),
      &                IFRP,NORB(IFRP),NFBAS(IFRP,0),
      &                NTMO(IFRP),WORK(KIBOS),TINV(IEFF))
-CTROND: It is assumed that the orbitals projected out belong to the electronic
-CTROND: space. This must be worked on !!!!
-          NESH(IFRP) = NESH(IFRP)-NDEL+NFRO(IFRP)
+          CALL MEMREL('PSIPRJ.prj',WORK,KBUF,KBUF,KFREE,LFREE)
+C
+C         If frozen orbitals, save to file
+C
+          IF(NFRO(IFRP).GT.0) THEN
+            NBUF = NFBAS(IFRP,0)*NZ
+            CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
+            CALL WRIFRZ(LUCOEF,IFRP,WORK(KQ(IFRP)),WORK(KSEL),
+     &                WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
+            CALL MEMREL('PSIPRJ.froz',WORK,KBUF,KBUF,KFREE,LFREE)       
+          ENDIF
+C
+C         Adjust number of positive and negative energy solutions
+C         Note that an adjustment for frozen orbitals takes place
+C         in WRIFRZ
+          NESH(IFRP) = NESH(IFRP)-NQ(1)
+          NPSH(IFRP) = NPSH(IFRP)-NQ(2)
           TOBE = .TRUE.       
         ELSEIF((I2TMT(IFRP)+1).NE.IEFF) THEN
 C         Move transformation matrix if columns was deleted in previous
@@ -4081,10 +4124,8 @@ C         irrep ...
           NDIM = NFBAS(IFRP,0)*NTMO(IFRP)*NZT
           CALL DCOPY(NDIM,TMAT(IEFF),1,TMAT(I2TMT(IFRP)+1),1)
         ENDIF
-        IF(NFRO(IFRP).GT.0) THEN
-          CALL MEMREL('PSIPRJ.prj',WORK,KBUF,KBUF,KFREE,LFREE)
-        ENDIF
  20   CONTINUE
+      IF(NFROT.GE.0) CLOSE(LUCOEF,STATUS='KEEP')
       IF(IPRHAM.GE.5) THEN
         CALL HEADER('PSIPRJ: Final transformation matrix ',-1)
         DO 80 I = 1,NFSYM
@@ -4095,9 +4136,15 @@ C         irrep ...
         ENDIF
  80     CONTINUE
       ENDIF
-      IF(TOBE) CALL MKSAOMO(TINV,TMAT,IPRINT,WORK(KFREE),LFREE)
+      IF(TOBE) THEN
+C
+C       Construct right index transformed overlap matrix Saomo = Sao T
+C       Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
+C
+        CALL MKSAOMO(TINV,TMAT,IPRINT,WORK(KFREE),LFREE)
+      ENDIF
  30   CONTINUE
-      CALL MEMREL('PSIPRJ',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('PSIPRJ.final',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
       RETURN
       END
@@ -4128,7 +4175,7 @@ C
  10   CONTINUE
       ITURN  = ITURN + 1
 C
-C     First project out reference vectors
+C     First project out fragment vectors
 C     ===================================
 C
       DO IREF = 1,NVREF
@@ -4142,7 +4189,7 @@ C
      &           'N',IPQTOQ(1,0),VREF(1,IREF,1),N2VREF,NZ,1)
           VNRM=SQRT(VNRM)
           WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
-     &      'Reference vector no.',IREF,' Norm: ',VNRM
+     &      'Fragment vector no.',IREF,' Norm: ',VNRM
         ENDIF
         DO 100 IVEC = 1,NVECS
           IF(IVECS(IVEC).LT.0) GOTO 100
@@ -4183,8 +4230,10 @@ C
         VNRM=SQRT(VNRM)
         THRMAX=MAX(THRMAX,VNRM)
         IF(VNRM.LT.THRLDP) THEN
-          WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
+          IF(IPRINT.GE.1) THEN
+            WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
      &      'Vector no.',IVEC,' removed. Linear dependence: ',VNRM
+          ENDIF
           IVECS(IVEC) = -1
           NDEL = NDEL + 1
           GOTO 200
@@ -4254,9 +4303,19 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PRJORT */
-      SUBROUTINE PRJORT(VECS,IBVEC,VREF,IBREF,THRLDP,THRMAX,
-     &                  NVDIM,NVECS,NVREF,NDEL,IPRINT)
+      SUBROUTINE PRJORT(VECS,IBVEC,VREF,IBREF,IREF,NREF,
+     &                  THRLDP,THRMAX,NVDIM,NVECS,NVREF,NDEL,IP,IPRINT)
 C*****************************************************************************
+C
+C     On input:
+C        VECS  - unit matrix (transformation matrix in MO-basis)
+C        IBVEC - integer array with boson irrep info for transformation matrix
+C        VREF  - fragment vectors in MO-basis
+C        IBREF - integer array with boson irrep info for fragment vectors
+C        NREF  - number of fragment vectors to project out
+C        IREF  - starting adress of fragment vectors to project out
+C        
+C     Written by T. Saue
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -4281,26 +4340,28 @@ C
       ITURN  = 0
  10   CONTINUE
       ITURN  = ITURN + 1
+      IF(IPRINT.GE.2) WRITE(6,'(A,I5)') '* Projection turn :',ITURN
 C
-C     First project out reference vectors
+C     First project out fragment vectors
 C     ===================================
 C
-      DO IREF = 1,NVREF
+      JTOP = IREF+NREF-1
+      DO JREF = IREF,JTOP
         IF(IPRINT.GE.2) THEN
           CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
-     &           'H',IPQTOQ(1,0),VREF(1,IREF,1),N2VREF,NZ,1,
-     &           'N',IPQTOQ(1,0),VREF(1,IREF,1),N2VREF,NZ,1)
+     &           'H',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1,
+     &           'N',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1)
           VNRM=SQRT(VNRM)
           WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
-     &      'Reference vector no.',IREF,' Norm: ',VNRM
+     &      'Fragment vector no.',JREF,' Norm: ',VNRM
         ENDIF
         DO 100 IVEC = 1,NVECS
-          IF(IBVEC(IVEC).NE.IBREF(IREF)) GOTO 100
+          IF(IBVEC(IVEC).NE.IBREF(JREF)) GOTO 100
 C
 C         Form -<VREF|IVEC>
 C
           CALL QDOT(P,IPQTOQ(1,0),NZ,NVDIM,
-     &         'H',IPQTOQ(1,0),VREF(1,IREF,1),N2VREF,NZ,1,
+     &         'H',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1,
      &         'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
           DO IZ = 1,NZ
             P(IZ) = -P(IZ)
@@ -4309,7 +4370,7 @@ C
 C         Form VECS = VECS -VREF<VREF|VECS>
 C
           CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
-     &                VREF(1,IREF,1),N2VREF,1,IPQTOQ(1,0),NZ,
+     &                VREF(1,JREF,1),N2VREF,1,IPQTOQ(1,0),NZ,
      &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
  100    CONTINUE
       ENDDO
@@ -4329,9 +4390,13 @@ C
         VNRM=SQRT(VNRM)
         THRMAX=MAX(THRMAX,VNRM)
         IF(VNRM.LT.THRLDP) THEN
-          WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5)')
-     &      'Vector no.',IVEC,' removed. Linear dependence: ',VNRM
-          IBVEC(IVEC) = -1-IBVEC(IVEC)
+          IF(IPRINT.GE.1) THEN
+            WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5)')
+     &        'Vector no.',IVEC,' removed. Linear dependence: ',VNRM
+          ENDIF
+CTROND          IBVEC(IVEC) = -1-IBVEC(IVEC)
+C         Store information about irrep and neg/pos solution
+          IBVEC(IVEC) = -(IP*10+IBVEC(IVEC))
           NDEL = NDEL + 1
           GOTO 200
         ELSE
@@ -4421,11 +4486,11 @@ C
      &          'N','N',IPQTOQ(1,0),VMO(1,I,1), NMO,NMO,NZ,
      &          D0,IPQTOQ(1,0),VAO(1,II,1),NAO,NEFF,NZ)
       ELSE
-        IF(SPINFR.OR.LEVYLE) THEN
-C         tsaue: I assume that electronic orbitals are projected out...
-          IREP = -1-IVEC(I)
+        IF(SPINFR) THEN
+          IREP = -MOD(IVEC(I),10)
+          IP   = -(IVEC(I)+IREP)/10
           ISYM = IBOS(IREP)
-          NBORB(ISYM,IFRP,1) = NBORB(ISYM,IFRP,1) - 1
+          NBORB(ISYM,IFRP,IP) = NBORB(ISYM,IFRP,IP) - 1
         ENDIF
       ENDIF
       ENDDO
@@ -5042,8 +5107,8 @@ C
          RETURN
       ENDIF
 C
-      IF (LEVYLE.OR.SPINFR) THEN
-         WRITE (LUPRI,1000) "spinfree or Levy-Leblond"
+      IF (SPINFR) THEN
+         WRITE (LUPRI,1000) "spinfree"
          LINEAR = .FALSE.
          CALL QEXIT('GLINSM')
          RETURN
@@ -5454,7 +5519,7 @@ C
 C     Make the Jz operator (in case of spinfree we make Lz)
 C     =====================================================
 C     
-      IF (.NOT.(SPINFR.OR.LEVYLE))
+      IF (.NOT.SPINFR)
      &   CALL DAXPY (N2BBASX,D1,WORK(KBUF),1,FOCK,1)
 C
 C     Release memory & close AOPROPER
@@ -5484,7 +5549,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Wrifrz */
-      SUBROUTINE WRIFRZ(IUNIT,IFRP,VECS,IVEC,BUF,IBUF,NVEC)
+      SUBROUTINE WRIFRZ(IUNIT,IFRP,VECS,IVEC,BUF,IBUF,NVEC,NDEL)
 C***********************************************************************
 C
 C     Dump frozen orbitals to file
@@ -5498,9 +5563,9 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-      DIMENSION VECS(*),BUF(*),IVEC(*),IBUF(*)
+      DIMENSION VECS(*),BUF(*),IVEC(*),IBUF(*),NDEL(2)
 C
-C     Get index array for frozen orbitals; 
+C     Get index array for frozen orbitals;
 C
       NTOT=1
       CALL NUMLS3(VCFROZ(IFRP),IVEC,NFBAS(IFRP,0),
@@ -5518,6 +5583,8 @@ C     Write compressed index array to file
 C
 C     We recompute NASHMFT as this value may change if there are frozen open shells
 C
+      NE = 0
+      NP = 0
       NASHMFT = 0
       II = 0
       DO I = 1,NTOT
@@ -5527,11 +5594,14 @@ C
         IBUF(II)=I        
 C       Positronic position
         IF(IP.LT.0.AND.IP.GE.(-NPSH(IFRP))) THEN
-          CALL QUIT('WRIFRZ: Positronic frozen orbitals not allowed !')
-          IVEC(II)=NPSH(IFRP)+1+IP
+CTROND          IVEC(II)=NPSH(IFRP)+1+IP
+          IVEC(II)=1+IP
+          NP = NP + 1
 C       Electronic position
         ELSEIF (IP.GT.0.AND.IP.LE.NESH(IFRP)) THEN
-          IVEC(II)=NPSH(IFRP)+IP
+CTROND          IVEC(II)=NPSH(IFRP)+IP
+          IVEC(II)=IP
+          NE = NE + 1
 C         Check if orbital belongs to closed or open shells.
 C         If so, subtract from occupation number
           IF(IP.GT.0.AND.IP.LE.NISH(IFRP)) THEN
@@ -5556,6 +5626,17 @@ C         If so, subtract from occupation number
         NOCCMF(IFRP) = NOCCMF(IFRP) + NACSHMF(IFRP,IOPEN)
         NASHMFT = NASHMFT + NACSHMF(IFRP,IOPEN)
       ENDDO
+C
+C     Final adjustments
+C
+      NPSH(IFRP) = NPSH(IFRP) + NP
+      NESH(IFRP) = NESH(IFRP) + NE
+      DO I = 1,NFRO(IFRP)
+        IVEC(I) = IVEC(I) + NPSH(IFRP) - NDEL(2)
+      ENDDO
+C
+C     Write index array to file
+C
       CALL WRITI(IUNIT,NFRO(IFRP),IVEC)
 C
 C     Write coefficients to file

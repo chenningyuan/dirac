@@ -894,14 +894,14 @@ C
     1          CONTINUE
 C&&&& PROJECtion: Reduce transformation matrix by projection
                PROJEC = .TRUE.
-               READ(LUCMD,*) NPRJREF
-               IF(NPRJREF.GT.MPRJREF) THEN
+               READ(LUCMD,*) NFRAG
+               IF(NFRAG.GT.MFRAG) THEN
                  WRITE(LUPRI,'(A,I5)')
-     &           '* Number of reference fragments specified:',NPRJREF,
-     &           '* Current maximum                        :',MPRJREF
+     &           '* Number of fragments specified:',NFRAG,
+     &           '* Current maximum              :',MFRAG
                  CALL QUIT('DHFINP:Too many fragments !')
                ENDIF
-               DO J = 1,NPRJREF
+               DO J = 1,NFRAG
                  READ(LUCMD,'(A6)') PRJFIL(J)
                  READ(LUCMD,'(I6)') NPRJNUC(J)
                  READ(LUCMD,'(A72)') (VCPROJ(I,J),I=1,NFSYM)
@@ -1350,15 +1350,15 @@ C
       IF(PROJEC) THEN
         WRITE(LUPRI,'(A/A,1P,E13.4)')
      &      ' * Variational space reduced by projection'//
-     &          ' using a set of reference orbitals.',
+     &          ' using a set of fragment orbitals.',
      &      '   - Smallest norm accepted:',PRJTHR
         IF(PROOWN) THEN
           WRITE(LUPRI,'(3X,A)') 
-     &     '- Reference orbitals are obtained from local bases !',
-     &     '  The indexing of reference spinor sets is assumed ',
+     &     '- Fragment orbitals are obtained from local bases !',
+     &     '  The indexing of fragment spinor sets is assumed ',
      &     '  to follow list of symmetry independent nuclei.'
-          DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3,A,A4)') '- Reference spinor set ',J,
+          DO J = 1,NFRAG
+            WRITE(LUPRI,'(3X,A,I3,A,A4)') '- Fragment spinor set ',J,
      &             ' --> ',NAMN(J)
             WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
             DO I = 1,NFSYM
@@ -1375,8 +1375,8 @@ C
             ENDDO
           ENDDO
         ELSE
-          DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3)') '- Reference spinor set ',J
+          DO J = 1,NFRAG
+            WRITE(LUPRI,'(3X,A,I3)') '- Fragment spinor set ',J
             WRITE(LUPRI,'(3X,A,A6)') '  read from file ',PRJFIL(J)
             DO I = 1,NFSYM
               NVEC = 0
@@ -2813,7 +2813,7 @@ C     Initialize /CBIPRJ/
 C     ===================
 C
       IPRPRJ   = 0
-C     Default is to project all occupied vectors onto all reference vectors
+C     Default is to project all occupied vectors onto all fragment vectors
       ORBDEF = .TRUE.
       NREFS    = 0
       PROTHR   = 1.0D-3
@@ -2856,17 +2856,17 @@ C&&&& PROTHR: Threshold for printout of projection coefficients
                  READ(LUCMD,*) PROTHR
                GO TO 100
     3          CONTINUE
-C&&&& VECPRJ: Spinors to project onto reference vectors
+C&&&& VECPRJ: Spinors to project onto fragment vectors
                   READ(LUCMD,'(A72)') (VECPRJ(I),I=1,NFSYM)
                   ORBDEF = .FALSE.
                GO TO 100
     4          CONTINUE
-C&&&& VECREF: Reference vectors
+C&&&& VECREF: Fragment vectors
                   READ(LUCMD,*) NREFS
                   IF((NREFS+1).GT.MAXREF) THEN
                     WRITE(LUPRI,'(A,I5)')
-     &         '* Number of reference fragments specified:',NREFS,
-     &         '* Current maximum                        :',MAXREF
+     &         '* Number of fragment specified:',NREFS,
+     &         '* Current maximum             :',MAXREF
                     CALL QUIT('PRJINP:Too many fragments !')
                   ENDIF
                   DO J = 1,NREFS
@@ -2939,10 +2939,10 @@ C
       IF(OWNBAS) THEN
         WRITE(LUPRI,'(1X,A)') 
      &   '* Fragments are calculated in their individual bases !',
-     &   '    The indexing of reference spinor sets is assumed ',
+     &   '    The indexing of fragment spinor sets is assumed ',
      &   '    to follow list of symmetry independent nuclei.'
         DO J = 1,NREFS
-          WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Reference spinor set ',J,
+          WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
      &           ' --> ',NAMDEP(J)
           WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
           DO I = 1,NFSYM
@@ -2960,7 +2960,7 @@ C
         ENDDO
       ELSE
         DO J = 1,NREFS
-          WRITE(LUPRI,'(1X,A,I3)') '* Reference spinor set ',J
+          WRITE(LUPRI,'(1X,A,I3)') '* Fragment spinor set ',J
           WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
           DO I = 1,NFSYM
             NVEC = 0
@@ -4102,15 +4102,15 @@ C
       IF(PROJEC) THEN
         WRITE(LUPRI,'(A)')
      &      ' * Variational space reduced by projection'//
-     &      '  using a set of reference orbitals.'
+     &      '  using a set of fragment orbitals.'
         WRITE(LUPRI,'(3X,A,D12.4)') '- Smallest norm accepted: ',PRJTHR
         IF(PROOWN) THEN
           WRITE(LUPRI,'(3X,A)') 
-     &     '- Reference orbitals are obtained from local bases !',
-     &     '  The indexing of reference spinor sets is assumed ',
+     &     '- Fragment orbitals are obtained from local bases !',
+     &     '  The indexing of fragment spinor sets is assumed ',
      &     '  to follow list of symmetry independent nuclei.'
-          DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3,A,A6)') '- Reference spinor set ',J,
+          DO J = 1,NFRAG
+            WRITE(LUPRI,'(3X,A,I3,A,A6)') '- Fragment spinor set ',J,
      &             ' --> ',NAMDEP(J)
             WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
             DO I = 1,NFSYM
@@ -4127,8 +4127,8 @@ C
             ENDDO
           ENDDO
         ELSE
-          DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3)') '- Reference spinor set ',J
+          DO J = 1,NFRAG
+            WRITE(LUPRI,'(3X,A,I3)') '- Fragment spinor set ',J
             WRITE(LUPRI,'(3X,A,A6)') '  read from file ',PRJFIL(J)
             DO I = 1,NFSYM
               NVEC = 0
@@ -4148,15 +4148,15 @@ C
       IF(PROJEC) THEN
         WRITE(LUPRI,'(1X,A,A)')
      &      '* Variational space reduced by projection',
-     &      '  using a set of reference orbitals.'
+     &      '  using a set of fragment orbitals.'
         WRITE(LUPRI,'(3X,A,D12.4)') '- Smallest norm accepted: ',PRJTHR
         IF(PROOWN) THEN
           WRITE(LUPRI,'(3X,A)') 
-     &     '- Reference orbitals are obtained from local bases !',
-     &     '  The indexing of reference spinor sets is assumed ',
+     &     '- Fragment orbitals are obtained from local bases !',
+     &     '  The indexing of fragment spinor sets is assumed ',
      &     '  to follow list of symmetry independent nuclei.'
-          DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3,A,A6)') '- Reference spinor set ',J,
+          DO J = 1,NFRAG
+            WRITE(LUPRI,'(3X,A,I3,A,A6)') '- Fragment spinor set ',J,
      &             ' --> ',NAMDEP(J)
             WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
             DO I = 1,NFSYM
@@ -4173,8 +4173,8 @@ C
             ENDDO
           ENDDO
         ELSE
-          DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3)') '- Reference spinor set ',J
+          DO J = 1,NFRAG
+            WRITE(LUPRI,'(3X,A,I3)') '- Fragment spinor set ',J
             WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
             DO I = 1,NFSYM
               NVEC = 0
@@ -5321,17 +5321,17 @@ C   Maximum number of iterations
                   READ(LUCMD,*) ITRLOC
                GO TO 100
  5                       CONTINUE
-C   VECPRJ: Spinors to project onto reference vectors
+C   VECPRJ: Spinors to project onto fragment vectors
                   READ(LUCMD,'(A72)') (VECPRJ(I),I=1,NFSYM)
                   ORBDEF = .FALSE.
                GO TO 100
  6                       CONTINUE
-C   VECREF: Reference vectors
+C   VECREF: Fragment vectors
                   READ(LUCMD,*) NREFS
                   IF(NREFS.GT.MAXREF) THEN
                     WRITE(LUPRI,'(A,I5)')
-     &         '* Number of reference fragments specified:',NREFS,
-     &         '* Current maximum                        :',MAXREF
+     &         '* Number of fragments specified:',NREFS,
+     &         '* Current maximum              :',MAXREF
                     CALL QUIT('PRJINP:Too many fragments !')
                   ENDIF
                   DO J = 1,NREFS
@@ -5388,10 +5388,10 @@ C
          IF(OWNBAS) THEN
             WRITE(LUPRI,'(1X,A)') 
      S   '* Fragments are calculated in their individual bases !',
-     S   '    The indexing of reference spinor sets is assumed ',
+     S   '    The indexing of fragment spinor sets is assumed ',
      S   '    to follow list of symmetry independent nuclei.'
             DO J = 1,NREFS
-              WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Reference spinor set ',J,
+              WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
      S              ' --> ',NAMDEP(J)
               WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
               DO I = 1,NFSYM
@@ -5409,7 +5409,7 @@ C
            ENDDO
         ELSE
            DO J = 1,NREFS
-              WRITE(LUPRI,'(1X,A,I3)') '* Reference spinor set ',J
+              WRITE(LUPRI,'(1X,A,I3)') '* Fragment spinor set ',J
               WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
               DO I = 1,NFSYM
                  NVEC = 0
