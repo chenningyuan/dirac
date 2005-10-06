@@ -1255,18 +1255,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,m3,m4,cheater) 
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+      if (Lfirst(3).lt.Kfirst) then 
+      do L=Lfirst(3),Kfirst,2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,m3,m4,cheater) 
+      enddo 
+      Kfirst=Lfirst(3)
+      endif 
+      if (Llast(3).gt.Klast) then 
+      do L=Klast,Llast(3),2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,m3,m4,cheater)
+      enddo 
+      Klast=Llast(3)
+      endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0)  then
@@ -1318,19 +1318,19 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,
+      if (Lfirst(2).lt.Kfirst) then 
+      do L=Lfirst(2),Kfirst,2
+      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,
      *                 m3,m4,Cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+      enddo 
+      Kfirst=Lfirst(2)
+      endif 
+      if (Llast(2).gt.Klast) then 
+      do L=Klast,Llast(2),2
+      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+      enddo 
+      Klast=Llast(2)
+      endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0)  then
@@ -1382,18 +1382,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+      if (Lfirst(2).lt.Kfirst) then 
+      do L=Lfirst(2),Kfirst,2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+      enddo 
+      Kfirst=Lfirst(2)
+      endif 
+      if (Llast(2).gt.Klast) then 
+      do L=Klast,Llast(2),2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+      enddo 
+      Klast=Llast(2)
+      endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0)  then
@@ -1412,18 +1412,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+      if (Lfirst(3).lt.Kfirst) then 
+      do L=Lfirst(3),Kfirst,2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+      enddo 
+      Kfirst=Lfirst(3)
+      endif 
+      if (Llast(3).gt.Klast) then 
+      do L=Klast,Llast(3),2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+      enddo 
+      Klast=Llast(3)
+      endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0) then 
@@ -1442,18 +1442,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(4).gt.0) then 
       M=m2-m4
-	      if (Lfirst(4).lt.Kfirst) then 
-	      do L=Lfirst(4),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(4)
-	      endif 
-	      if (Llast(4).gt.Klast) then 
-	      do L=Klast,Llast(4),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Klast=Llast(4)   
-	      endif 
+      if (Lfirst(4).lt.Kfirst) then 
+      do L=Lfirst(4),Kfirst,2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+      enddo 
+      Kfirst=Lfirst(4)
+      endif 
+      if (Llast(4).gt.Klast) then 
+      do L=Klast,Llast(4),2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+      enddo 
+      Klast=Llast(4)   
+      endif 
       Lrun=1
       do L=Lfirst(4),Llast(4),2  
       if (dummy(L).ne.0d0) then 
@@ -1535,18 +1535,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+      if (Lfirst(3).lt.Kfirst) then 
+      do L=Lfirst(3),Kfirst,2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1,m2,m3-1,m4,cheater)
+      enddo 
+      Kfirst=Lfirst(3)
+      endif 
+      if (Llast(3).gt.Klast) then 
+      do L=Klast,Llast(3),2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1,m2,m3-1,m4,cheater)
+      enddo 
+      Klast=Llast(3)
+      endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0)  then 
@@ -1598,18 +1598,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+      if (Lfirst(2).lt.Kfirst) then 
+      do L=Lfirst(2),Kfirst,2
+      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+      enddo 
+      Kfirst=Lfirst(2)
+      endif 
+      if (Llast(2).gt.Klast) then 
+      do L=Klast,Llast(2),2
+      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+      enddo 
+      Klast=Llast(2)
+      endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0)  then
@@ -1661,18 +1661,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+      if (Lfirst(2).lt.Kfirst) then 
+      do L=Lfirst(2),Kfirst,2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+      enddo 
+      Kfirst=Lfirst(2)
+      endif 
+      if (Llast(2).gt.Klast) then 
+      do L=Klast,Llast(2),2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+      enddo 
+      Klast=Llast(2)
+      endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0) then 
@@ -1691,18 +1691,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+      if (Lfirst(3).lt.Kfirst) then 
+      do L=Lfirst(3),Kfirst,2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+      enddo 
+      Kfirst=Lfirst(3)
+      endif 
+      if (Llast(3).gt.Klast) then 
+      do L=Klast,Llast(3),2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+      enddo 
+      Klast=Llast(3)
+      endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0)  then 
@@ -1721,18 +1721,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(4).gt.0) then 
       M=m2-m4
-	      if (Lfirst(4).lt.Kfirst) then 
-	      do L=Lfirst(4),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(4)
-	      endif 
-	      if (Llast(4).gt.Klast) then 
-	      do L=Klast,Llast(4),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(4)   
-	      endif 
+      if (Lfirst(4).lt.Kfirst) then 
+      do L=Lfirst(4),Kfirst,2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+      enddo 
+      Kfirst=Lfirst(4)
+      endif 
+      if (Llast(4).gt.Klast) then 
+      do L=Klast,Llast(4),2
+      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+      enddo 
+      Klast=Llast(4)   
+      endif 
       Lrun=1
       do L=Lfirst(4),Llast(4),2  
       if (dummy(L).ne.0d0) then 
