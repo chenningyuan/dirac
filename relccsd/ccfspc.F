@@ -533,7 +533,7 @@ C
 C     Print an ordered list of eigenvalues to which the ccsd energy is
 C     added.
 C
-      E_OFF = ESCF + ECCSD
+      e_off = 0.d0
       IF (ICURFSS.EQ.1.OR.ICURFSS.EQ.10) THEN
          CALL PRT_EV (IW,NREP,NDT_ALL,REPNA,E_OFF,EV_ALL,
      &                INDX_ALL,IRPS_ALL,IND)
@@ -542,6 +542,7 @@ C
             CALL PRT_EV (IW,NREP,NDT_ALL,REPNA(NREP+1),E_OFF,EV_ALL,
      &                  INDX_ALL,IRPS_ALL,IND)
          ELSE
+            E_OFF = ESCF + ECCSD
             CALL PRT_EV_VEC (IW,NREP,NDT_ALL,REPNA(NREP+1),E_OFF,EV_ALL,
      &               INDX_ALL,IRPS_ALL,IND,VEC_ALL,SEC1_ALL,SEC2_ALL,
      &               IRSEC1_ALL,IRSEC2_ALL,IRSEC12_ALL,REPNA,NAV,LTSHFS)
