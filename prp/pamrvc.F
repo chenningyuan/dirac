@@ -775,7 +775,7 @@ C
      &                  WORK(KFREE),LFREE,IPRXRS)
 C
          ELSE
-D           write(lupri,*) 'active DMOLI3'
+C           write(lupri,*) 'active DMOLI3'
 C
 C           or active density matrix...
 C
