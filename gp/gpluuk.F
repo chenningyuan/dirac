@@ -468,7 +468,7 @@ C
         AVER=AVER+E
         IF (ABS(E-EW).GT.DEGEN) THEN
           IF (NEW.NE.0)
-     &      WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW, EW+E_OFF,NEW
+     &      WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
           ILEVEL=ILEVEL+1
           NEW=1
           EW=E
@@ -478,7 +478,7 @@ C
         ENDIF
       ENDDO
       IF (NEW.NE.0)
-     &WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW, EW+E_OFF,NEW
+     &WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
       WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
 C
       DO IRP1 = 1, N_IRPS, 8
@@ -520,8 +520,8 @@ C
  1008 FORMAT(17X,I8,2X,16(A1),F16.8)
  1005 FORMAT(//' Energy eigenvalues in atomic units'
      +            //' Level   Rel eigenvalue     ',
-     +            'Abs eigenvalue      CCSD Energy    Degeneracy'/)
- 1010 FORMAT(I5,F17.12,F20.12,F20.12' (',I4,' * )')
+     +            'Abs eigenvalue  Degeneracy'/)
+ 1010 FORMAT(I5,F17.12,F20.12,' (',I4,' * )')
  1020 FORMAT(//' Total average: ',F20.10)
  1025 FORMAT(//' Relative eigenvalues in other units;'/' Symmetry',
      +       ' Classification in the Abelian subgroup',
@@ -729,7 +729,7 @@ C
  1008 FORMAT(17X,I8,2X,16(A1),F16.8)
  1005 FORMAT(//' Energy eigenvalues in atomic units'
      +            //' Level   Rel eigenvalue     ',
-     +            'Abs eigenvalue      CCSD Energy    Degeneracy'/)
+     +            'Abs eigenvalue      Total Energy    Degeneracy'/)
  1010 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' (',I4,' * )')
  1015 FORMAT(I5,F17.12,F19.9,F18.6)
  1020 FORMAT(//' Total average: ',F20.10)
