@@ -752,7 +752,7 @@ C
 C       Parameters for inactive index
 C
          IF (.NOT. LBIT(ITYP,2)) THEN
-D           write(lupri,*) 'inactive DMOLI3'
+C           write(lupri,*) 'inactive DMOLI3'
 C
 C           inactive density matrix...
 C
