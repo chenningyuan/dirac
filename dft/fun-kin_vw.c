@@ -92,10 +92,6 @@ kin_vw_energy(const FunDensProp* dp)
 {
     real t1;
 
-    real grada = dp->grada;
-    real gradb = dp->gradb;
-    real gradab = dp->gradab;
-
     t1 = dp->rhob + dp->rhoa;
     return 2.871234000188191 * pow(t1, 5.0/3.0) + 
            (1.0/72.0)*(  dp->grada*dp->grada + dp->gradb*dp->gradb + 2.0*dp->gradab ) / t1;

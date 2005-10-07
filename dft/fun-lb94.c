@@ -8,6 +8,7 @@
    (c) P. Salek, oct 2003 - the working implementation.
 */
 
+#define _ISOC99_SOURCE 1
 #include <math.h>
 #include <stddef.h>
 

@@ -374,6 +374,7 @@ camb3lyp_b_third_medium(real a)
          +(4*(-t2/a+t8*t2/2-4*a*t6)+2*a*t7+2*t8*t2-t5*t2/2));
 }
 
+#if 0
 static real
 camb3lyp_b_fourth_medium(real a)
 {
@@ -403,6 +404,7 @@ camb3lyp_b_fourth_medium(real a)
         -32*(6*(-t1*t2-2*t9*t2+0.25*t7*t2-4.0*(t2-1))+2*a*t8-6*t9*t2
              +7*t7*t2/2-t6*t2/4)/3;
 }
+#endif
 
 #define FAC M_SQRT2
 #define EVALUATOR(a,type) \
@@ -706,7 +708,7 @@ camb3lyp_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 /* ===================================================================
    TEST CODE
    =================================================================== */
-#ifdef TEST
+#ifdef _TEST_CODE_
 #include <stdio.h>
 #include <stdlib.h>
 int main(int argc, char *argv[])
@@ -725,7 +727,7 @@ int main(int argc, char *argv[])
     fun_a_first(1,1,&fa);
     printf("fun a derivatives: %g %g\n", fa.df10, fa.df01);
     for(a=0.1; a<10; a += 0.1) {
-        bfactor_first  = camb3lyp_b_second_medium(a*FAC);//EVALUATOR(a, second);
+        bfactor_first  = camb3lyp_b_second_medium(a*FAC);/*EVALUATOR(a, second);*/
         real b1 = EVALUATOR((a+1e-6), first);
         real b2 = EVALUATOR((a-1e-6), first);
         printf("%20.15g %20.15g %20.15g %20.15g\n", a,
@@ -737,6 +739,6 @@ int main(int argc, char *argv[])
 void dftsethf_(real* s) {}
 void dftsetcam_(real* s, real *b) {}
 void fun_printf(const char *fmt, ...){}
-#endif
+#endif /* _TEST_CODE_ */
 
 

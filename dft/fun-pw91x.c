@@ -28,6 +28,7 @@
     >> K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb)/2;
 */
 
+#define _ISOC99_SOURCE 1
 #include <math.h>
 #include <stddef.h>
 
@@ -49,7 +50,6 @@ static void pw91x_second(FunSecondFuncDrv *ds, real factor,
 static void pw91x_third(FunThirdFuncDrv *ds, real factor,
                         const FunDensProp* dp);
 
-static int fun_true(void) { return 1; }
 Functional PW91xFunctional = {
   "PW91x",
   fun_true,

@@ -12,6 +12,7 @@
  *
  */
 
+#define _ISOC99_SOURCE 1
 #include <math.h>
 #include <stddef.h>
 

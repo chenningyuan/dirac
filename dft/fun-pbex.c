@@ -81,7 +81,7 @@ pbex_energy(const FunDensProp *dp)
 {
     real res;
     real rhoa = dp->rhoa, rhob = dp->rhob;
-    real grada = dp->grada, gradb = dp->gradb, gradab = dp->gradab;
+    real grada = dp->grada, gradb = dp->gradb;
 
 
     real t1;

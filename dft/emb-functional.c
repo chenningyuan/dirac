@@ -42,12 +42,15 @@
  */
 
 
-/* FIXME: portability issues with the str... functions */
+/* FIXME: portability issues with the str... functions. Some libc
+   provide them only for BSD compatibility */
+#define _BSD_SOURCE 1
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 
 #define __CVERSION__
+#include "general.h"
 #include "functionals.h"
 
 /* 
@@ -99,7 +102,7 @@
  * As for the embedding, I havent thougt about the second and third 
  * order terms yet.
  */
-
+extern void quit_(const char* str);
 static Functional   *embedding_xc_functional = &LDAFunctional;          /* the XC-functional  */
 static Functional   *embedding_kin_functional = &TF_KinFunctional;      /* the kinetic energy functional */
 
@@ -133,7 +136,7 @@ static int
 emb_read (const char *conf_line)
 {
 	char *line;                                 /* a copy of the conf_line */
-	char *kin_line, *xc_line;                   /* the KIN=... and XC=... lines, without prefix */
+	char *kin_line = NULL, *xc_line = NULL;     /* the KIN=... and XC=... lines, without prefix */
 	const char *kin_pos, *xc_pos;               /* pointers to "KIN=" and "XC=" */
 
 	char *pos;

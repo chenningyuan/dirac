@@ -16,6 +16,7 @@
 
 #include <math.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 #define __CVERSION__
 
@@ -31,6 +32,9 @@ static int  gllbhole_isgga(void) { return 1; }
 static int  gllbhole_read(const char* conf_line);
 static real gllbhole_energy(const FunDensProp* dens_prop);
 static void gllbhole_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dens_prop);
+static void gllbhole_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+
+static void gllbhole_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp);
 
 Functional GLLBholeFunctional = {
   "GLLBhole",       /* name */
@@ -38,7 +42,9 @@ Functional GLLBholeFunctional = {
   gllbhole_read,    /* set common blocks */
   NULL,             /* reporter */
   gllbhole_energy,
-  gllbhole_first
+  gllbhole_first,
+  gllbhole_second,
+  gllbhole_third
 };
 
 /*

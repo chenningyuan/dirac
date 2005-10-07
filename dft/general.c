@@ -203,6 +203,7 @@ dalton_quit(const char* format, ...)
 }
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */
+extern void fortwrt_(const char *line, const int *linelen);
 int
 fort_print(const char* format, ...)
 {

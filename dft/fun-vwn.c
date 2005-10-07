@@ -46,6 +46,7 @@
 #endif
 #include <math.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 #define __CVERSION__
 
@@ -589,8 +590,7 @@ spni_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp,
     real delta, ep_p[3], ep_f[3];
     real rhoa = dp->rhoa, rhob = dp->rhob, rho = dp->rhoa + dp->rhob;
     real rho2 = rho*rho;
-    real rho3 = rho*rho2;
-    real vcf2, fac2, vap2, del2, ef0, ef1, ef2;
+    real vcf2, fac2, vap2, ef0, ef1, ef2;
     real zA, zB, zAAr, zABr, zBBr;
 
     vwn_en_pot(ep_p, rho, 2, para);
