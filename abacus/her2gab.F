@@ -125,6 +125,11 @@ C
         DOINT(2,1) = .FALSE.
         DOINT(1,2) = .FALSE.
         DOINT(2,2) = .TRUE.
+      ELSEIF(IGTYP.EQ.2) THEN
+        DOINT(1,1) = .TRUE.
+        DOINT(2,1) = .TRUE.
+        DOINT(1,2) = .FALSE.
+        DOINT(2,2) = .TRUE.
       ELSE
         WRITE(LUPRI,'(A,I5)') 'GABDRV:Unknown IGTYP ',IGTYP
         CALL QUIT('GABDRV:Unknown IGTYP !')

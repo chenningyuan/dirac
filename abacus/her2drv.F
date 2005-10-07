@@ -470,6 +470,7 @@ C           ... no Coulomb term for antisymmetric density matrix
       ENDIF
 C
       IF(I2TYP.EQ.0) THEN
+C       Non-relativistic: all integrals (ab|cd) with (ab).ge.(cd)
         IASTRT = 1
         IBSTRT = 1
         ICSTRT = 1
@@ -479,6 +480,7 @@ C
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
       ELSEIF(I2TYP.EQ.1) THEN
+C       Coulomb integral class (LL|LL)
         IASTRT = 1
         IBSTRT = 1
         ICSTRT = 1
@@ -488,6 +490,7 @@ C
         ICSMAX = NLRGBL
         IDSMAX = NLRGBL
       ELSEIF(I2TYP.EQ.2) THEN
+C       Coulomb integral class (SS|LL)
         IASTRT = NLRGBL+1
         IBSTRT = NLRGBL+1
         ICSTRT = 1
@@ -497,6 +500,7 @@ C
         ICSMAX = NLRGBL
         IDSMAX = NLRGBL
       ELSEIF(I2TYP.EQ.3) THEN
+C       Coulomb integral class (SS|SS)
         IASTRT = NLRGBL+1
         IBSTRT = NLRGBL+1
         ICSTRT = NLRGBL+1
@@ -505,6 +509,16 @@ C
         IBSMAX = MAXSHL
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
+      ELSEIF(I2TYP.EQ.4) THEN
+C       Gaunt integral class (SL|SL)
+        IASTRT = NLRGBL+1
+        IBSTRT = 1
+        ICSTRT = NLRGBL+1
+        IDSTRT = 1
+        IASMAX = MAXSHL
+        IBSMAX = NLRGBL
+        ICSMAX = MAXSHL
+        IDSMAX = NLRGBL
       ELSE
         WRITE(LUPRI,'(A,I5)') 'TWOLOP: Unknown I2TYP =' ,I2TYP
         CALL QUIT('Unknown I2TYP !!!')
@@ -538,7 +552,9 @@ C        ******************************
 C        ***** Second Shell Index *****
 C        ******************************
 C
-         DO 200 ISHELB = IBSTRT,ISHELA
+         IBMAX = ISHELA
+         IF (I2TYP.EQ.4) IBMAX = NLRGBL
+         DO 200 ISHELB = IBSTRT,IBMAX
 C
             ICB    = LCLASH(ISHELB)
 C
@@ -610,6 +626,8 @@ C              ***** Fourth Shell Index *****
 C              ******************************
 C
                IDMAX = ISHELC
+C              Note the order of these tests : can not be changed !
+               IF (I2TYP.EQ.4) IDMAX = NLRGBL
                IF (.NOT.SPNORB.AND.(ISHELA.EQ.ISHELC)) IDMAX = ISHELB
                DO 400 ISHELD = IDSTRT,IDMAX
 C

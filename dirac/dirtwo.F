@@ -1659,7 +1659,25 @@ C
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
+C
+C     Gaunt - integrals
+C
  40   CONTINUE
+      IF(.NOT.LBIT(IDFLAG,4).AND.LBIT(INTGEN,4)) THEN
+C
+C       Generate integrals
+C
+        I2TYP  = 4
+        IF(IPRTWO.GE.2)
+     +     WRITE(LUPRI,'(A,E9.2)') 'GT-int - threshhold:',THRS
+        CALL GPOPEN(LUINTA,'DFTWGT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
+        CALL TIMER('GT-int',TIMSTR,TIMEND)
+        CALL FLSHFO(LUPRI)
+        CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
+      ENDIF
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3226,6 +3244,7 @@ C*****************************************************************************
 C
       PARAMETER ( D0 = 0.0D0 )
 C
+      LOGICAL LBIT
 #include "maxorb.h"
 #include "aovec.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
@@ -3258,7 +3277,12 @@ C
 C
          IJOB   = 0
          ITYPE  = 0
-         IGTYP  = 1
+         IGTYP  = 0
+C        IGTYP 0 gives just the LL integrals
+C        IGTYP 1 will add the SS type integrals
+         IF(LBIT(INTFLG,2).OR.LBIT(INTFLG,3)) IGTYP = 1
+C        IGTYP 2 will add also the SL (Gaunt) type integrals
+         IF(LBIT(INTFLG,4)) IGTYP = 2
          MAXDIF = 0
          CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
      &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
@@ -3998,7 +4022,8 @@ C
 #include "infpar.h"
 #endif
       LOGICAl LBIT
-      CHARACTER SECTID*12, INTTID*12, TOTTID*12, CPUTID*12, WALLTID*12
+      CHARACTER SECTID*12, INTTID*12, TOTTID*12, CPUTID*12, WALLTID*12,
+     &          SOTEXT*9
       DIMENSION FSO(N2BBASX,*),DSO(N2BBASX,*),
      &          IFCTYP(*),IREPDM(*),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
@@ -4032,15 +4057,40 @@ C
       MAXDIF = 0
       JATOM  = 0
       KPOS   = 1
+      THRSBUF = THRS
       IF (PARCAL) THEN
          CALL SCRSTA('MPIHeader',DUM,DUM)
       ELSE
          CALL SCRSTA('Header',DUM,DUM)
       END IF
 C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
-      IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
-        I2TYP = 1
+C....> Start looping over the four possible integral classes
+C
+      DO I2TYP = 1, 4
+C
+C....> Set the parameters that are special for each class
+C
+      IF (I2TYP.EQ.1) THEN
+         MTOTTK = NLRGBL*(NLRGBL+1)/2
+         THRS   = THRSBUF
+         SOTEXT = 'SOfock:LL'
+      ELSEIF (I2TYP.EQ.2) THEN
+         MTOTTK = NLRGBL*(NLRGBL+1)/2
+         THRS   = THRSBUF*THRFAC(1)
+         SOTEXT = 'SOfock:SL'
+      ELSEIF (I2TYP.EQ.3) THEN
+         MTOTTK = NSMLBL*(NSMLBL+1)/2
+         THRS   = THRS*THRFAC(2)
+         SOTEXT = 'SOfock:SS'
+      ELSEIF (I2TYP.EQ.4) THEN
+         MTOTTK = NSMLBL*NLRGBL
+         THRS   = THRS*THRFAC(1)
+         SOTEXT = 'SOfock:GT'
+      ENDIF
+C
+C....> Check whether the class is active
+C
+      IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
 #if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
@@ -4058,7 +4108,7 @@ C
            CPU    = CPU2 - CPU1
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('SOfock:LL',DNTSKP,WALL)
+           CALL SCRSTA(SOTEXT,DNTSKP,WALL)
            IF (IPRINT .GT. 0) THEN
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
@@ -4081,131 +4131,20 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
-           CALL SCRSTA('SOfock:LL',DNTSKP,CPU)
+           CALL SCRSTA(SOTEXT,DNTSKP,CPU)
 #if defined (VAR_MPI)
         ENDIF
 #endif
       ENDIF
+C
+C---> Update the offset
+C
       KPOS = KPOS + MTOTTK
 C
-C     SL - integrals
+C.... End of loop over integral classes
 C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
-      IF(LBIT(INTFLG,2).AND.LBIT(IDFLAG,2)) THEN
-        I2TYP  = 2
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(1)
-#if defined (VAR_MPI)
-        IF (PARCAL) THEN
+      ENDDO
 C
-C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
-C
-           CALL DIRAC_PARCTL( 1 )
-C
-           CALL GETTIM(CPU1,WALL1)
-           CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
-     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
-C
-           CALL GETTIM(CPU2,WALL2)
-           CPU    = CPU2 - CPU1
-           WALL   = WALL2 - WALL1
-           TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('SOfock:SL',DNTSKP,WALL)
-           IF (IPRINT .GT. 0) THEN
-              TOTTID = SECTID(TOTWAL)
-              WRITE(LUPRI,'(A,A12)')
-     &             '>>>> Total wall time used in HER_PARDRV so far   :',
-     &             TOTTID
-              IF (IPRINT .GT. 2) THEN
-                 CPUTID = SECTID(CPU)
-                 WALLTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12,A1,A12)')
-     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
-     &         CPUTID,'/',WALLTID
-              END IF
-           END IF
-        ELSE
-#endif
-           CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUM,
-     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
-     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
-           CPU = SECOND() - CPU
-           CALL SCRSTA('SOfock:SL',DNTSKP,CPU)
-#if defined (VAR_MPI)
-        ENDIF
-#endif
-        THRS = THRBUF
-        CALL FLSHFO(LUPRI)
-      ENDIF
-      KPOS = KPOS + MTOTTK
-C
-C     SS - integrals
-C
-      MTOTTK = NSMLBL*(NSMLBL+1)/2
-      IF(LBIT(INTFLG,3).AND.LBIT(IDFLAG,3)) THEN
-        I2TYP  = 3
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(2)
-        CALL TIMER('START ',TIMSTR,TIMEND)
-#if defined (VAR_MPI)
-        IF (PARCAL) THEN
-C
-C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
-C
-           CALL DIRAC_PARCTL( 1 )
-C
-           IF (IPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
-C
-           CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
-     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
-           CALL GETTIM(CPU2,WALL2)
-           CPU    = CPU2 - CPU1
-           WALL   = WALL2 - WALL1
-           TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('SOfock:SS',DNTSKP,WALL)
-C
-           IF (IPRINT .GT. 0) THEN
-              TOTTID = SECTID(TOTWAL)
-              WRITE(LUPRI,'(A,A12)')
-     &             '>>>> Total wall time used in HER_PARDRV so far   :',
-     &             TOTTID
-C     
-              IF (IPRINT .GT. 2) THEN
-                 INTTID = SECTID(CPU)
-                 WRITE(LUPRI,'(A,A12)')
-     &            '>>>> CPU  time used in HER_PARDRV last iteration :',
-     &            INTTID
-                 INTTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12)')
-     &            '>>>> Wall time used in HER_PARDRV last iteration :',
-     &            INTTID
-              END IF
-           END IF
-        ELSE
-#endif
-           CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUM,
-     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
-     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
-           CPU = SECOND() - CPU
-           CALL SCRSTA('SOfock:SS',DNTSKP,CPU)
-#if defined (VAR_MPI)
-        ENDIF
-#endif
-        CALL FLSHFO(LUPRI)
-        THRS = THRBUF
-      ENDIF
-      KPOS = KPOS + MTOTTK
-C     
 C     Scale matrices
 C
       DO I = 1,NDMAT

@@ -32,7 +32,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
-#ifdef (MOD_FMM)
+#ifdef MOD_FMM
       SUBROUTINE SETMM(DMAT,NDMAT,IODBCLS,IODBTCH,RODBTCH,
      &                 WORK,LWORK,IPRINT1)
 #include "implicit.h"

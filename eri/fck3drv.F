@@ -79,7 +79,7 @@ CTROND...IFTHRS is not set, but I set FIXTHR to true
       THRNCL   = THRSH 
       IF ( NOSCRPRIM ) THRPOD = 0.0D0
 
-#ifdef (MOD_FMM)
+#ifdef MOD_FMM
       IF (DOFMM) THEN
         NCLFCK3 = .TRUE.
         THRCLS  = THRNCL
@@ -113,7 +113,7 @@ C
       CALL SETODBTCH(KIODBCLS,KIODBTCH,KRODBTCH,
      &               KFREE,LFREE,WORK,LWORK,IPRFCK3)
       MEMODB = LWORK - LFREE
-#ifdef (MOD_FMM)
+#ifdef MOD_FMM
       IF ( DOFMM ) THEN 
         CALL SETMM(DMAT,NDMAT,WORK(KIODBCLS),WORK(KIODBTCH),
      &             WORK(KRODBTCH),WORK(KFREE),LFREE,IPRFCK3)

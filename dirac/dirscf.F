@@ -865,9 +865,12 @@ C
       CALL MEMGET('REAL',KBMAT,MXDIIS*MXDIIS,WORK,KFREE,LFREE)
       NPOS = 0
       IF(PARCAL) THEN
+C       We will always allocate the maximum size, even if some 
+C       integral classes are inactive (keep the code simple)
         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
         NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
+        NPOS = NPOS + NSMLBL*NLRGBL
       ENDIF
       CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 C

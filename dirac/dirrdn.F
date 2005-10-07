@@ -262,7 +262,7 @@ C
   101    CONTINUE
 C&&&& DIRECT: Direct calculation
                  READ(LUCMD,*) ILLDIR,ISLDIR,ISSDIR
-                 IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR
+                 IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR+8*IGTDIR
                  DIRSET = .TRUE.
                  IF(IDFLAG.GT.0) THEN
                    DIRCAL = .TRUE.
@@ -364,8 +364,8 @@ ctec we require that it is a direct calculation
          ILLDIR = 1
          ISLDIR = 1
          ISSDIR = 1
-         IGTDIR = 0
-         IDFLAG = 7
+         IGTDIR = 1
+         IDFLAG = 15
       ENDIF
 C
 C
@@ -3178,7 +3178,7 @@ C
       ILLDIR = 1
       ISLDIR = 1
       ISSDIR = 1
-      IGTDIR = 0
+      IGTDIR = 1
       ILLINT = 1
       ISLINT = 1
       ISSINT = 1
@@ -3207,8 +3207,8 @@ C
       DENSFIT  = .FALSE.
       IPRGEN   = 0
       ISPHTR   = ILSPH+2*ISSPH
-      IDFLAG   = ILLDIR+2*ISLDIR+4*ISSDIR+4*IGTDIR
-      INTGEN   = ILLINT+2*ISLINT+4*ISSINT+4*IGTINT
+      IDFLAG   = ILLDIR+2*ISLDIR+4*ISSDIR+8*IGTDIR
+      INTGEN   = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
       CVAL     = CVEL
       STOL(1)  = 1.0D-6
       STOL(2)  = 1.0D-8
@@ -3306,7 +3306,7 @@ C
 Cdirac#include "functionals.h"
 #endif
 C
-      LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS
+      LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS, GAUNT
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
      &          WORD1*7, LINE*80
       DIMENSION KSOP(0:7),WORK(LWORK)
@@ -3470,8 +3470,8 @@ C&&&& OPERATOR: Read in operator
            GO TO 100
   104    CONTINUE
 C&&&& GAUNT: Gaunt operator
-CTROND          Must be implemented......                  
-            CALL QUIT('.GAUNT not implemented')
+            GAUNT = .TRUE.
+c           CALL QUIT('.GAUNT not implemented')
             GO TO 100
   105     CONTINUE
 C&&&& LVCORR: Model interatomic SS-integral contribution by classical
@@ -3606,7 +3606,7 @@ C       - even one-center integrals become quite numerous in some cases!!!
                ILLDIR = 1
                ISLDIR = 0
                ISSDIR = 0
-               IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR
+               IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR+8*IGTDIR
             END IF
             ICHANG = ICHANG + 1
             GO TO 100
@@ -3774,7 +3774,7 @@ C
      & '* after finishing four-component SCF procedure '//
      & ' perform BSS transformation of Dirac-Fock operator'//
      & ' and continue at the 2comp. level ! '
-      ELSE IF (IGTINT .NE. 0) THEN
+      ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
@@ -3865,6 +3865,12 @@ CMI     but for precursive four-component matrix elements !!!
          CALL QUIT('*** ERROR in HAMINP ****')
       END IF
 C
+C     If Gaunt is set we always want to include these integrals
+C
+      IF (GAUNT) THEN
+        IGTINT = 1
+      ENDIF
+C
 C     Remove integral classes not needed for this Hamiltonian
 C
       IF (LEVYLE.OR.BSS) THEN
@@ -3874,6 +3880,7 @@ C
       ENDIF
       IF (ZORA.AND..NOT.ZORA4) THEN
         ISSINT = 0
+        IGTINT = 0
       ENDIF
       INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
 C
