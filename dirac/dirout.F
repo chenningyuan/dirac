@@ -120,7 +120,7 @@ C
      +       '* No convergence after',NITER,' iterations'
         ENDIF
         WRITE(LUPRI,'(A)') '* Average elapsed time per iteration: '
-        DHF_INTTYP = 'No 2-ints'
+        DHF_INTTYP = 'No 2-ints   '
         IF(ITRSCF(0).GT.0) THEN
           SCFTID(0) = SCFTID(0)/ITRSCF(0)
           CPUTID    = SECTID(SCFTID(0))
@@ -130,10 +130,11 @@ C
         IF(ITRSCF(I).GT.0) THEN
           SCFTID(I) = SCFTID(I)/ITRSCF(I)
           CPUTID    = SECTID(SCFTID(I))
-          DHF_INTTYP= '         '
+          DHF_INTTYP= '            '
           IF(LBIT(I,1)) DHF_INTTYP(1:2) = 'LL'
           IF(LBIT(I,2)) DHF_INTTYP(4:5) = 'SL'
           IF(LBIT(I,3)) DHF_INTTYP(7:8) = 'SS'
+          IF(LBIT(I,4)) DHF_INTTYP(10:11) = 'GT'
           WRITE(LUPRI,'(6X,A,A,3X,A12)') DHF_INTTYP,' :',CPUTID
         ENDIF
         ENDDO

@@ -523,7 +523,7 @@ C
  666  CONTINUE
       CALL QEXIT('PREDHF')
       RETURN
- 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
+ 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1238,7 +1238,7 @@ C
 C
       CALL QEXIT('SCFCY1')
       RETURN
- 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
+ 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1433,9 +1433,9 @@ C***********************************************************************
 #include "dummy.h"
 C
       LOGICAL LBIT
-      CHARACTER INTTYP*9
+      CHARACTER INTTYP*12
       DIMENSION CNVINT(2),ITRINT(2)
-      INTTYP = '         '
+      INTTYP = '            '
 C
 C     LL-integrals
 C     ============
@@ -1472,10 +1472,26 @@ C
         ISSINT = 0
       ENDIF
 C
+C     Gaunt-integrals
+C     ===============
+C
+      IF(LBIT(INTDEF,4)) THEN
+        IGTINT = 1
+        IF(.NOT.LBIT(INTOLD,4)) THEN
+C         Activate at the same point as the SS for the moment
+C         One could als put it with SL, comes in that order
+          IF(ABS(CNV).GT.CNVINT(2)) IGTINT = 0
+          IF(ITR     .LT.ITRINT(2)) IGTINT = 0
+        ENDIF
+      ELSE
+        IGTINT = 0
+      ENDIF
+C
       IF(ILLINT.EQ.1) INTTYP(1:3) = 'LL '
       IF(ISLINT.EQ.1) INTTYP(4:6) = 'SL '
       IF(ISSINT.EQ.1) INTTYP(7:9) = 'SS '
-      INTFLG= ILLINT + 2*ISLINT + 4*ISSINT
+      IF(IGTINT.EQ.1) INTTYP(10:11) = 'GT '
+      INTFLG= ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
 C
       RETURN
 C
@@ -2973,7 +2989,7 @@ C         jth April 98
       IF(TRIFCK) THEN
         INQUIRE(FILE='DFFCK2',EXIST=TOBE)
         IF(TOBE) THEN
-          DHF_INTTYP = 'Old FOCK2'
+          DHF_INTTYP = 'Old FOCK2   '
           BARNUC = .FALSE.
         ELSE
           WRITE(LUPRI,'(/A/)')
@@ -3033,7 +3049,9 @@ C        at the end of the file
         IF(DHF_INTTYP(4:5).EQ.'SL') ISLINT = 1
         ISSINT = 0
         IF(DHF_INTTYP(7:8).EQ.'SS') ISSINT = 1
-        INTBUF = ILLINT + 2*ISLINT + 4*ISSINT
+        IGTINT = 0
+        IF(DHF_INTTYP(10:11).EQ.'GT') IGTINT = 1
+        INTBUF = ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
         NITER = NITER + 1
         CALL INTCON(INTFLG,INTBUF,INTDEF,
      &            ERGVAL,CNVINT,NITER,ITRINT,DHF_INTTYP)
@@ -3091,8 +3109,8 @@ C     If (oldfmo) we can check all convergence criteria
 C
       IF (OLDFMO) ICHKCNV = 1
       RETURN
- 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
- 1020 FORMAT(4X,    I3,   G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
+ 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
+ 1020 FORMAT(4X,    I3,   G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C     ... 1020 is used for reading, thus no '1P' !!! /hjaaj
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

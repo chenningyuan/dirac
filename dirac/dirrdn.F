@@ -747,7 +747,7 @@ C
 C 1.  Initialize /DCCDHF/
 C     ===================
 C
-      DHF_INTTYP= '         '
+      DHF_INTTYP= '            '
       CACC      = '        '
 C
 C 2.  Initialize /DCLDHF/
@@ -810,7 +810,7 @@ C
       ITRINT(1) = 1
       ITRINT(2) = 1
       IPREIG    = 1
-      DHF_INTTYP= 'Bare nuc.'
+      DHF_INTTYP= 'Bare nuclei '
       NEWOCC  = 0
       MXMACRO = 25
       MXMICRO = 25
@@ -3751,6 +3751,12 @@ CMI  &'HAMINP: .BSS not yet implemented for properties!')
         ENDIF
       ENDIF
 C
+C     If Gaunt is set we always want to include these integrals
+C
+      IF (GAUNT) THEN
+        IGTINT = 1
+      ENDIF
+C
 C     Print section
 C     =============
 C
@@ -3864,12 +3870,6 @@ CMI     but for precursive four-component matrix elements !!!
      &      'and restricted kinetic balance is not implemented.'
          CALL QUIT('*** ERROR in HAMINP ****')
       END IF
-C
-C     If Gaunt is set we always want to include these integrals
-C
-      IF (GAUNT) THEN
-        IGTINT = 1
-      ENDIF
 C
 C     Remove integral classes not needed for this Hamiltonian
 C

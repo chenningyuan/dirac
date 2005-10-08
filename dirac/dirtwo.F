@@ -202,7 +202,7 @@ C     **********************************************
 C     *****  C o n v e n t i o n a l    S C F  *****
 C     **********************************************
 C
-      IF(IDFLAG.NE.7) THEN
+      IF(IDFLAG.NE.15) THEN
         IF(HFXFAC.NE.D1 .AND. HFXFAC.NE.D0) 
      &       CALL QUIT('HFXFAC not implemented in CONSCF !')
 C       hjaaj July 2004: HFXFAC .eq. D0 is defined through SETFCK
@@ -3943,6 +3943,7 @@ C
 C
 #include "maxorb.h"
 #include "aovec.h"
+      LOGICAL LBIT
 Ctec Is FIRST needed??
       LOGICAL FIRST
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
@@ -3976,8 +3977,12 @@ C
       IF (SCRFCK .GT. D0) THEN
          IJOB   = 0
          ITYPE  = 0
-         IGTYP  = 1
          MAXDIF = 0
+         IGTYP  = 1
+C        IGTYP 1 gives LL + SS type integrals
+         IF(LBIT(INTFLG,2).OR.LBIT(INTFLG,3)) IGTYP = 1
+C        IGTYP 2 will add also the SL (Gaunt) type integrals
+         IF(LBIT(INTFLG,4)) IGTYP = 2
          CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
      &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
 C
