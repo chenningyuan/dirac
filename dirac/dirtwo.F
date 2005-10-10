@@ -3399,8 +3399,9 @@ C
 #endif
       LOGICAL PERTUR, EXPECT, UNDIFF, SPNORB, DIRFCK, DISTRI, SQ12EL,
      &        LONDON, SUSCEP, DDFOCK, ADISTR, LBIT, FIRST
-      CHARACTER SECTID*12, TOTTID*12, WALLTID*12, CPUTID*12
-      DIMENSION FAO(N2BBASX*4,NFMAT),DAO(*),
+      CHARACTER SECTID*12, TOTTID*12, WALLTID*12, CPUTID*12,
+     &          AOTEXT*9
+      DIMENSION FAO(N2BBASX*4,NFMAT),DAO(N2BBASX*4,NFMAT),
      &          IFCTYP(4,NFMAT),IREPDM(4,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
      &          NPOS(*),DMRAO(*),GABRAO(*),WORK(LWORK),DNTSKP(8)
@@ -3432,19 +3433,47 @@ C
       MAXDIF = 0
       JATOM  = 0
       KPOS   = 1
+      THRBUF = THRS
       IF (PARCAL) THEN
          CALL SCRSTA('MPIHeader',DUM,DUM)
       ELSE
          CALL SCRSTA('Header',DUM,DUM)
       END IF
 C
-C initialize MTOTTK
+C....> Start looping over the four possible integral classes
 C
-C     LL - integrals
+      DO I2TYP = 1, 4
 C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
-      IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
-        I2TYP = 1
+C....> Set the parameters that are special for each class
+C
+      IF (I2TYP.EQ.1) THEN
+         MTOTTK = NLRGBL*(NLRGBL+1)/2
+         THRS   = THRSBUF
+         AOTEXT = 'AOfock:LL'
+      ELSEIF (I2TYP.EQ.2) THEN
+         MTOTTK = NLRGBL*(NLRGBL+1)/2
+         THRS   = THRSBUF*THRFAC(1)
+         AOTEXT = 'AOfock:SL'
+      ELSEIF (I2TYP.EQ.3) THEN
+         MTOTTK = NSMLBL*(NSMLBL+1)/2
+         THRS   = THRSBUF*THRFAC(2)
+         AOTEXT = 'AOfock:SS'
+      ELSEIF (I2TYP.EQ.4) THEN
+         MTOTTK = NSMLBL*NLRGBL
+         THRS   = THRSBUF*THRFAC(1)
+         AOTEXT = 'AOfock:GT'
+Cluuk: scale real part by factor 3 and eliminate Coulomb
+         factor = -3.d0
+         DO IFMAT = 1, NFMAT
+            CALL DSCAL(N2BBASX,factor,DAO(1,IFMAT),1)
+            IFCTYP(1,IFMAT)=IFCTYP(1,IFMAT)+4
+         ENDDO
+      ENDIF
+C
+C....> Check whether the class is active
+C
+      IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
+C
 #if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
@@ -3462,7 +3491,7 @@ C
            CPU    = CPU2 - CPU1
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('AOfock:LL',DNTSKP,WALL)
+           CALL SCRSTA(AOTEXT,DNTSKP,WALL)
            IF (IPRINT .GT. 0) THEN
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
@@ -3485,148 +3514,29 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
-           CALL SCRSTA('AOfock:LL',DNTSKP,CPU)
+           CALL SCRSTA(AOTEXT,DNTSKP,CPU)
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        IF(IPRINT.GE.5) THEN
-           DO I = 1,NFMAT
-              CALL HEADER('Skeleton LL-FOCK',-1)
-              WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
-              CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0
-     &             ),4,IQMULT,LUPRI)
-           ENDDO
-        ENDIF
       ENDIF
+C
+cluuk correct for scaling
+      IF (I2TYP.EQ.4) THEN
+         factor = 1.d0/factor
+         DO IFMAT = 1, NFMAT
+            CALL DSCAL(N2BBASX,factor,DAO(1,IFMAT),1)
+            IFCTYP(1,IFMAT)=IFCTYP(1,IFMAT)-4
+         ENDDO
+      ENDIF
+C
+C---> Update the offset
+C
       KPOS = KPOS + MTOTTK
 C
-C     SL - integrals
+C.... End of loop over integral classes
 C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
-      IF(LBIT(INTFLG,2).AND.LBIT(IDFLAG,2)) THEN
-        I2TYP  = 2
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(1)
-#if defined (VAR_MPI)
-        IF (PARCAL) THEN
+      ENDDO
 C
-C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
-C
-           CALL DIRAC_PARCTL( 1 )
-C
-           CALL GETTIM(CPU1,WALL1)
-           CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
-     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
-C
-           CALL GETTIM(CPU2,WALL2)
-           CPU    = CPU2 - CPU1
-           WALL   = WALL2 - WALL1
-           TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('AOfock:SL',DNTSKP,WALL)
-           IF (IPRINT .GT. 0) THEN
-              TOTTID = SECTID(TOTWAL)
-              WRITE(LUPRI,'(A,A12)')
-     &         '>>>> Total wall time used in HER_PARDRV so far   :',
-     &         TOTTID
-              IF (IPRINT .GT. 2) THEN
-                 CPUTID = SECTID(CPU)
-                 WALLTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12,A1,A12)')
-     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
-     &         CPUTID,'/',WALLTID
-              END IF
-           END IF
-        ELSE
-#endif
-           CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
-     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
-     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
-           CPU = SECOND() - CPU
-           CALL SCRSTA('AOfock:SL',DNTSKP,CPU)
-#if defined (VAR_MPI)
-        ENDIF
-#endif
-        IF(IPRINT.GE.5) THEN
-          DO I = 1,NFMAT
-            CALL HEADER('Skeleton LL+SL-FOCK',-1)
-            WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
-            CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  4,IQMULT,LUPRI)
-          ENDDO
-        ENDIF
-        THRS = THRBUF
-        CALL FLSHFO(LUPRI)
-      ENDIF
-      KPOS = KPOS + MTOTTK
-C
-C     SS - integrals
-C
-      MTOTTK = NSMLBL*(NSMLBL+1)/2
-      IF(LBIT(INTFLG,3).AND.LBIT(IDFLAG,3)) THEN
-        I2TYP  = 3
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(2)
-#if defined (VAR_MPI)
-        IF (PARCAL) THEN
-C
-C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
-C
-           CALL DIRAC_PARCTL( 1 )
-C
-           CALL GETTIM(CPU1,WALL1)
-           CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
-     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
-C
-           CALL GETTIM(CPU2,WALL2)
-           CPU    = CPU2 - CPU1
-           WALL   = WALL2 - WALL1
-           TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('AOfock:SS',DNTSKP,WALL)
-           IF (IPRINT .GT. 0) THEN
-              TOTTID = SECTID(TOTWAL)
-              WRITE(LUPRI,'(A,A12)')
-     &             '>>>> Total wall time used in HER_PARDRV so far   :',
-     &             TOTTID
-              IF (IPRINT .GT. 2) THEN
-                 CPUTID = SECTID(CPU)
-                 WALLTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12,A1,A12)')
-     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
-     &         CPUTID,'/',WALLTID
-              END IF
-           END IF
-        ELSE
-#endif
-           CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
-     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
-     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
-           CPU = SECOND() - CPU
-           CALL SCRSTA('AOfock:SS',DNTSKP,CPU)
-#if defined (VAR_MPI)
-        ENDIF
-#endif
-        IF(IPRINT.GE.5) THEN
-          DO I = 1,NFMAT
-            CALL HEADER('Skeleton LL+SL+SS-FOCK',-1)
-            WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
-            CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  4,IQMULT,LUPRI)
-          ENDDO
-        ENDIF
-        CALL FLSHFO(LUPRI)
-        THRS = THRBUF
-      ENDIF
-      KPOS = KPOS + MTOTTK
 C
 C     Symmetrize Fock matrix
 C     ======================
@@ -3635,7 +3545,7 @@ C
      &            .FALSE.,.TRUE.,0,.FALSE.,NDMAT,IREPDM,IFCTYP,IDUM)
       IF(IPRINT.GE.5) THEN
         DO I = 1,NFMAT
-          CALL HEADER('Symmetrized skeleton LL+SL+SS-FOCK',-1)
+          CALL HEADER('Symmetrized skeleton FOCK',-1)
           WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
           CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                4,IQMULT,LUPRI)
@@ -4094,7 +4004,7 @@ C
 Cluuk: scale real part by factor 3 and eliminate Coulomb
          factor = -3.d0
          CALL DSCAL(N2BBASX,factor,DSO,1)
-         ifctyp(1)=12
+         IFCTYP(1)=IFCTYP(1)+4
       ENDIF
 C
 C....> Check whether the class is active

@@ -408,12 +408,29 @@ C
       DO 400 I = 1,NDMAT
         FCM = DNSBUF(1,I)*AOMAX
         FEM = DNSBUF(2,I)*AOMAX
-        IY = MOD(IFCTYP(I),10)
+C       Unpack the bitcode
         IX = IFCTYP(I)/10
-        IC = MOD(IY,2)
-        IE = IY - IC
-        IF (IX.EQ.2) IC = 0
-C       ... no Coulomb term for antisymmetric density matrix
+        IY = MOD(IFCTYP(I),10)
+        IG = IY/4
+C       We can build Coulomb and Gaunt type matrices by specifying the
+C       appropriate multiplication factors.
+        IF (IG.EQ.0) THEN
+C..........Coulomb interaction
+           IC = MOD(IY,2)
+           IE = IY - IC
+           IF (IX.EQ.2) IC = 0
+C          ... no direct term for antisymmetric density matrix
+        ELSE
+C..........Gaunt interaction
+           IY = IY-4
+           IC = MOD(IY,2)
+           IE = IY - IC
+           IF (IX.EQ.1) IC = 0
+C          ... no direct term for symmetric density matrix
+        ENDIF
+C
+C       Exchange may be switched off in DFT calculations
+C
         IF (HFXFAC.EQ.D0) IE = 0
 C       Screening on Coulomb contributions
         IF(DOC.AND.IC.EQ.1.AND.FCM.LT.SCRTHR) THEN

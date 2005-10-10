@@ -467,9 +467,6 @@ C
          WRITE (LUPRI,'(2X,A,2L5)') 'SHAEQB/CD', SHAEQB, SHCEQD
          WRITE (LUPRI,'(2X,A, L5)') 'SHABAB', SHABAB
       END IF
-C2TST
-C2TST      INTCLS = 5
-C2TST
 C
 C     Initialize screening
 C     ====================
@@ -514,6 +511,8 @@ C Largest exchange contribution
         IREPAB = IBTXOR(IREPA,IREPB)
         IREPC  = IPNTRP(3,I)
         IREPD  = IBTXOR(IREPAB,IREPC)
+        IREPAC = IBTXOR(IREPA,IREPC)
+        IREPAD = IBTXOR(IREPA,IREPD)
         IF(NOTEST) THEN
           INT = 0
           SOMAX = D0
@@ -531,9 +530,6 @@ C Largest exchange contribution
                 ID = KHKTD*(NINDCD(ICD,2) - 1)
                 INDC = IPTSYM(NSTRNC + IC,IREPC)
                 INDD = IPTSYM(NSTRND + ID,IREPD)
-C2TST
-C2TST                IF(TST2IN(INDA,INDB,INDC,INDD,INTCLS)) THEN
-C2TST
                 NBUF = NBUF + 1
                 SOMAX = MAX(SOMAX,ABS(SOINT))
                 SO(NBUF,I)   = SOINT
@@ -541,9 +537,6 @@ C2TST
                 IBUF(2,NBUF) = INDB
                 IBUF(3,NBUF) = INDC
                 IBUF(4,NBUF) = INDD
-C2TST
-C2TST                ENDIF
-C2TST
               ENDIF
             ENDDO
           ENDDO
@@ -590,9 +583,6 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
                 NTOT  = NTOT + 1
                 SOINT = SO(INT,I)
                 IF (ABS(SOINT) .GT. FCKTOL) THEN
-C2TST
-C2TST                IF(TST2IN(INDA,INDB,INDC,INDD,INTCLS)) THEN
-C2TST
                   NBUF         = NBUF + 1
                   SOMAX        = MAX(SOMAX,ABS(SOINT))
                   SO(NBUF,I)   = FABCD*SOINT
@@ -600,9 +590,6 @@ C2TST
                   IBUF(2,NBUF) = INDB
                   IBUF(3,NBUF) = INDC
                   IBUF(4,NBUF) = INDD
-C2TST
-C2TST                ENDIF
-C2TST
                 END IF
   310         CONTINUE
             ELSE
@@ -621,9 +608,6 @@ C2TST
                 NTOT = NTOT + 1
                 SOINT = SO(INT,I)
                 IF (ABS(SOINT) .GT. FCKTOL) THEN
-C2TST
-C2TST                IF(TST2IN(INDA,INDB,INDC,INDD,INTCLS)) THEN
-C2TST
                   NBUF         = NBUF + 1
                   SO(NBUF,I)   = FABCD*SOINT
                   SOMAX        = MAX(SOMAX,ABS(SOINT))
@@ -631,9 +615,6 @@ C2TST
                   IBUF(2,NBUF) = INDB
                   IBUF(3,NBUF) = INDC
                   IBUF(4,NBUF) = INDD
-C2TST
-C2TST                ENDIF
-C2TST
                 END IF
   320         CONTINUE
             ENDIF
@@ -664,22 +645,31 @@ C             X = 1 Symmetric
 C             X = 2 Anti-symmetric
 C             X = 3 Some blocks symmetric and some antisymmetric
 C           Y indicates contributions
-C             Y = 1 Coulomb
+C             Y = 1 Direct
 C             Y = 2 Exchange
-C             Y = 3 Coulomb + Exchange
+C             Y = 3 Direct + Exchange
+C           G indicates whether we should build with the density (Coulomb)
+C           or the current density matrix (Gaunt)
+C             G = 0 Coulomb
+C             G = 1 Gaunt
 C
         DO 400 K = 1,NDMAT
           IF(IFCTYP(K). EQ. 0) GOTO 400
-          IY = MOD(IFCTYP(K),10)
+C         Unpack the bitcode
           IX = IFCTYP(K)/10
-          IC = MOD(IY,2)
-          IE = IY - IC
-          IF (IX.EQ.2) IC = 0
-C         ... no Coulomb term for antisymmetric density matrix
-          IF (HFXFAC.EQ.D0) IE = 0
+          IY = MOD(IFCTYP(K),10)
+          IG = IY/4
+C         We can build Coulomb and Gaunt type matrices by specifying the
+C         appropriate multiplication factors. 
+          IF (IG.EQ.0) THEN
+C............Coulomb interaction
+             IC = MOD(IY,2)
+             IE = IY - IC
+             IF (IX.EQ.2) IC = 0
+C            ... no direct term for antisymmetric density matrix
 C
-          IF(IREPDM(K).GE.0 .AND. IREPAB.NE.IREPDM(K)) IC = 0
-C         ... IREPDM(K) is either the symmetry of the density matrix
+             IF(IREPDM(K).GE.0 .AND. IREPAB.NE.IREPDM(K)) IC = 0
+C            ... IREPDM(K) is either the symmetry of the density matrix
 C             or - in Dirac with NZ .lt. 4 and packed matrices (SOFOCK) -
 C             the symmetry of the only symmetry block of the density matrix
 C             which gives a Coulomb contribution (for IX .eq. 3 this will
@@ -688,7 +678,20 @@ C             in quadratic response all blocks are unsymmetric but only
 C             the block of symmetry IREPDM(K) shall give a Coulomb contribution).
 C             / hjaaj July 2004
 C
-C         Screening on Coulomb contributions
+          ELSE
+C............Gaunt interaction
+             IY = IY-4
+             IC = MOD(IY,2)
+             IE = IY - IC
+             IF (IX.EQ.1) IC = 0
+C            ... no direct term for symmetric density matrix
+          ENDIF
+C
+C         Exchange may be switched off in DFT calculations
+C
+          IF (HFXFAC.EQ.D0) IE = 0
+C
+C         Screening on direct contributions
           IF(DOC.AND.IC.NE.0) THEN
             FCM = DNSBUF(1,K)*SOMAX
             IF(FCM.LT.SCRTHR) THEN
@@ -705,8 +708,9 @@ C         Screening on exchange contributions
             END IF
           ENDIF
           IY = IE + IC
-          IF(IY.EQ.0) GOTO 400
-          IF    (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
+          IF (IY.EQ.0) GOTO 400
+          IF (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
+            DIRFAC = D1
             EXCFAC = DMP25*HFXFAC
 C
 C           Symmetric singlet Fock matrix
@@ -720,10 +724,11 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
+                DINT = DIRFAC*SO(INT,I)
                 EINT = EXCFAC*SO(INT,I)
 C...............Direct contributions
-                FMAT(A,B,K) = FMAT(A,B,K) + SO(INT,I)*DMAT(C,D,K)
-                FMAT(C,D,K) = FMAT(C,D,K) + SO(INT,I)*DMAT(A,B,K)
+                FMAT(A,B,K) = FMAT(A,B,K) + DINT*DMAT(C,D,K)
+                FMAT(C,D,K) = FMAT(C,D,K) + DINT*DMAT(A,B,K)
 C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
@@ -765,8 +770,9 @@ C
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
 C...............Direct contributions
-                FMAT(A,B,K) = FMAT(A,B,K) + SO(INT,I)*DMAT(C,D,K)
-                FMAT(C,D,K) = FMAT(C,D,K) + SO(INT,I)*DMAT(A,B,K)
+                DINT = DIRFAC*SO(INT,I)
+                FMAT(A,B,K) = FMAT(A,B,K) + DINT*DMAT(C,D,K)
+                FMAT(C,D,K) = FMAT(C,D,K) + DINT*DMAT(A,B,K)
               ENDDO
 C
             ELSE
@@ -778,6 +784,7 @@ C
      &          'ERROR in FCKOU1: specified IFCTYP not implemented.')
             ENDIF
           ELSEIF(IX.EQ.0) THEN
+            DIRFAC = D1
             EXCFAC = DMP5*HFXFAC
 C
 C           General singlet case - no permutational symmetry
@@ -791,11 +798,12 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
+                DINT = DIRFAC*SO(INT,I)
 C...............Direct contributions
-                GCD  = SO(INT,I)*(DMAT(C,D,K) + DMAT(D,C,K))
+                GCD  = DINT*(DMAT(C,D,K) + DMAT(D,C,K))
                 FMAT(A,B,K) = FMAT(A,B,K) + GCD
                 FMAT(B,A,K) = FMAT(B,A,K) + GCD
-                GAB  = SO(INT,I)*(DMAT(A,B,K) + DMAT(B,A,K))
+                GAB  = DINT*(DMAT(A,B,K) + DMAT(B,A,K))
                 FMAT(C,D,K) = FMAT(C,D,K) + GAB
                 FMAT(D,C,K) = FMAT(D,C,K) + GAB
                 EINT = EXCFAC*SO(INT,I)
@@ -846,11 +854,12 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
+                DINT = DIRFAC*SO(INT,I)
 C...............Direct contributions
-                GCD  = SO(INT,I)*(DMAT(C,D,K) + DMAT(D,C,K))
+                GCD  = DINT*(DMAT(C,D,K) + DMAT(D,C,K))
                 FMAT(A,B,K) = FMAT(A,B,K) + GCD
                 FMAT(B,A,K) = FMAT(B,A,K) + GCD
-                GAB  = SO(INT,I)*(DMAT(A,B,K) + DMAT(B,A,K))
+                GAB  = DINT*(DMAT(A,B,K) + DMAT(B,A,K))
                 FMAT(C,D,K) = FMAT(C,D,K) + GAB
                 FMAT(D,C,K) = FMAT(D,C,K) + GAB
               ENDDO
