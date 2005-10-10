@@ -4091,10 +4091,10 @@ C
          MTOTTK = NSMLBL*NLRGBL
          THRS   = THRSBUF*THRFAC(1)
          SOTEXT = 'SOfock:GT'
-Cluuk: test scale real part by factor 3 and eliminate Coulomb
-c        factor = -0.000000003d0
-c        CALL DSCAL(N2BBASX,factor,DSO,1)
-c        ifctyp(1)=12
+Cluuk: scale real part by factor 3 and eliminate Coulomb
+         factor = -3.d0
+         CALL DSCAL(N2BBASX,factor,DSO,1)
+         ifctyp(1)=12
       ENDIF
 C
 C....> Check whether the class is active
@@ -4146,10 +4146,10 @@ C
 #endif
       ENDIF
 cluuk correct for scaling
-c     IF (I2TYP.EQ.4) THEN
-c        factor = 1.d0/factor
-c        CALL DSCAL(N2BBASX,factor,DSO,1)
-c     ENDIF
+      IF (I2TYP.EQ.4) THEN
+         factor = 1.d0/factor
+         CALL DSCAL(N2BBASX,factor,DSO,1)
+      ENDIF
 C
 C---> Update the offset
 C
