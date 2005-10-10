@@ -442,12 +442,15 @@ C
               C = IND(3,INT)
               D = IND(4,INT)
               EINT = EXCFAC*AOINT(INT)
+C...............Direct contributions
               FMAT(A,B,I) = FMAT(A,B,I) + AOINT(INT)*DMAT(C,D,I)
               FMAT(C,D,I) = FMAT(C,D,I) + AOINT(INT)*DMAT(A,B,I)
+C...............Exchange (LL or SS for Gaunt)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
+              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
+C...............Exchange (LS or SL for Gaunt)
               FMAT(D,A,I) = FMAT(D,A,I) + EINT*DMAT(C,B,I)
               FMAT(C,B,I) = FMAT(C,B,I) + EINT*DMAT(D,A,I)
-              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
             ENDDO
 C
 C         Antisymmetric singlet Fock matrix OR
@@ -464,10 +467,12 @@ C
               C = IND(3,INT)
               D = IND(4,INT)
               EINT = EXCFAC*AOINT(INT)
+C...............Exchange (LL or SS for Gaunt)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
+              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
+C...............Exchange (LS or SL for Gaunt)
               FMAT(D,A,I) = FMAT(D,A,I) + EINT*DMAT(C,B,I)
               FMAT(C,B,I) = FMAT(C,B,I) + EINT*DMAT(D,A,I)
-              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
             ENDDO
 C
 C         Coulomb contributions only
@@ -480,6 +485,7 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
+C...............Direct contributions
               FMAT(A,B,I) = FMAT(A,B,I) + AOINT(INT)*DMAT(C,D,I)
               FMAT(C,D,I) = FMAT(C,D,I) + AOINT(INT)*DMAT(A,B,I)
             ENDDO
@@ -505,6 +511,7 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
+C...............Direct contributions
               GCD  = AOINT(INT)*(DMAT(C,D,I) + DMAT(D,C,I))
               FMAT(A,B,I) = FMAT(A,B,I) + GCD
               FMAT(B,A,I) = FMAT(B,A,I) + GCD
@@ -512,14 +519,16 @@ C
               FMAT(C,D,I) = FMAT(C,D,I) + GAB
               FMAT(D,C,I) = FMAT(D,C,I) + GAB
               EINT = EXCFAC*AOINT(INT)
+C...............Exchange (LL or SS for Gaunt)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
+              FMAT(A,C,I) = FMAT(A,C,I) + EINT*DMAT(B,D,I)
+              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
+              FMAT(B,D,I) = FMAT(B,D,I) + EINT*DMAT(A,C,I)
+C...............Exchange (LS or SL for Gaunt)
               FMAT(D,A,I) = FMAT(D,A,I) + EINT*DMAT(C,B,I)
               FMAT(C,B,I) = FMAT(C,B,I) + EINT*DMAT(D,A,I)
-              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
-              FMAT(A,C,I) = FMAT(A,C,I) + EINT*DMAT(B,D,I)
               FMAT(A,D,I) = FMAT(A,D,I) + EINT*DMAT(B,C,I)
               FMAT(B,C,I) = FMAT(B,C,I) + EINT*DMAT(A,D,I)
-              FMAT(B,D,I) = FMAT(B,D,I) + EINT*DMAT(A,C,I)
             ENDDO
 C
 C         General triplet case - no permutational symmetry
@@ -534,14 +543,16 @@ C
               C = IND(3,INT)
               D = IND(4,INT)
               EINT = EXCFAC*AOINT(INT)
+C...............Exchange (LL or SS for Gaunt)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
+              FMAT(A,C,I) = FMAT(A,C,I) + EINT*DMAT(B,D,I)
+              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
+              FMAT(B,D,I) = FMAT(B,D,I) + EINT*DMAT(A,C,I)
+C...............Exchange (LS or SL for Gaunt)
               FMAT(D,A,I) = FMAT(D,A,I) + EINT*DMAT(C,B,I)
               FMAT(C,B,I) = FMAT(C,B,I) + EINT*DMAT(D,A,I)
-              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
-              FMAT(A,C,I) = FMAT(A,C,I) + EINT*DMAT(B,D,I)
               FMAT(A,D,I) = FMAT(A,D,I) + EINT*DMAT(B,C,I)
               FMAT(B,C,I) = FMAT(B,C,I) + EINT*DMAT(A,D,I)
-              FMAT(B,D,I) = FMAT(B,D,I) + EINT*DMAT(A,C,I)
             ENDDO
 C
 C         General Coulomb case - no permutational symmetry
@@ -555,6 +566,7 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
+C...............Direct contributions
               GCD  = AOINT(INT)*(DMAT(C,D,I) + DMAT(D,C,I))
               FMAT(A,B,I) = FMAT(A,B,I) + GCD
               FMAT(B,A,I) = FMAT(B,A,I) + GCD
