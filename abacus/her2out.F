@@ -721,19 +721,15 @@ C
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
                 EINT = EXCFAC*SO(INT,I)
+C...............Direct contributions
                 FMAT(A,B,K) = FMAT(A,B,K) + SO(INT,I)*DMAT(C,D,K)
                 FMAT(C,D,K) = FMAT(C,D,K) + SO(INT,I)*DMAT(A,B,K)
-CTROND      This is a quick and dirty alternative to nsym
-CTROND              CINT = DP5*SO(INT,I)
-CTROND              FMAT(A,B,K) = FMAT(A,B,K) + CINT*
-CTROND     &                      (DMAT(C,D,K)+DMAT(D,C,K))
-CTROND              FMAT(C,D,K) = FMAT(C,D,K) + CINT*
-CTROND     &                      (DMAT(A,B,K)+DMAT(B,A,K))
-CTROND
+C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
+                FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
+C...............Exchange (LS or SL for Gaunt)
                 FMAT(D,A,K) = FMAT(D,A,K) + EINT*DMAT(C,B,K)
                 FMAT(C,B,K) = FMAT(C,B,K) + EINT*DMAT(D,A,K)
-                FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
               ENDDO
 C
 C           Antisymmetric singlet Fock matrix OR
@@ -750,10 +746,12 @@ C
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
                 EINT = EXCFAC*SO(INT,I)
+C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
+                FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
+C...............Exchange (LS or SL for Gaunt)
                 FMAT(D,A,K) = FMAT(D,A,K) + EINT*DMAT(C,B,K)
                 FMAT(C,B,K) = FMAT(C,B,K) + EINT*DMAT(D,A,K)
-                FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
               ENDDO
 C
 C           Coulomb contributions only
@@ -766,6 +764,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
+C...............Direct contributions
                 FMAT(A,B,K) = FMAT(A,B,K) + SO(INT,I)*DMAT(C,D,K)
                 FMAT(C,D,K) = FMAT(C,D,K) + SO(INT,I)*DMAT(A,B,K)
               ENDDO
@@ -792,6 +791,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
+C...............Direct contributions
                 GCD  = SO(INT,I)*(DMAT(C,D,K) + DMAT(D,C,K))
                 FMAT(A,B,K) = FMAT(A,B,K) + GCD
                 FMAT(B,A,K) = FMAT(B,A,K) + GCD
@@ -799,14 +799,16 @@ C
                 FMAT(C,D,K) = FMAT(C,D,K) + GAB
                 FMAT(D,C,K) = FMAT(D,C,K) + GAB
                 EINT = EXCFAC*SO(INT,I)
+C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
-                FMAT(D,A,K) = FMAT(D,A,K) + EINT*DMAT(C,B,K)
-                FMAT(C,B,K) = FMAT(C,B,K) + EINT*DMAT(D,A,K)
-                FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
                 FMAT(A,C,K) = FMAT(A,C,K) + EINT*DMAT(B,D,K)
-                FMAT(A,D,K) = FMAT(A,D,K) + EINT*DMAT(B,C,K)
-                FMAT(B,C,K) = FMAT(B,C,K) + EINT*DMAT(A,D,K)
+                FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
                 FMAT(B,D,K) = FMAT(B,D,K) + EINT*DMAT(A,C,K)
+C...............Exchange (LS or SL for Gaunt)
+                FMAT(D,A,K) = FMAT(D,A,K) + EINT*DMAT(C,B,K)
+                FMAT(A,D,K) = FMAT(A,D,K) + EINT*DMAT(B,C,K)
+                FMAT(C,B,K) = FMAT(C,B,K) + EINT*DMAT(D,A,K)
+                FMAT(B,C,K) = FMAT(B,C,K) + EINT*DMAT(A,D,K)
               ENDDO
 C
 C           General triplet case - no permutational symmetry
@@ -821,14 +823,16 @@ C
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
                 EINT = EXCFAC*SO(INT,I)
+C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
-                FMAT(D,A,K) = FMAT(D,A,K) + EINT*DMAT(C,B,K)
-                FMAT(C,B,K) = FMAT(C,B,K) + EINT*DMAT(D,A,K)
-                FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
                 FMAT(A,C,K) = FMAT(A,C,K) + EINT*DMAT(B,D,K)
-                FMAT(A,D,K) = FMAT(A,D,K) + EINT*DMAT(B,C,K)
-                FMAT(B,C,K) = FMAT(B,C,K) + EINT*DMAT(A,D,K)
+                FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
                 FMAT(B,D,K) = FMAT(B,D,K) + EINT*DMAT(A,C,K)
+C...............Exchange (LS or SL for Gaunt)
+                FMAT(D,A,K) = FMAT(D,A,K) + EINT*DMAT(C,B,K)
+                FMAT(A,D,K) = FMAT(A,D,K) + EINT*DMAT(B,C,K)
+                FMAT(C,B,K) = FMAT(C,B,K) + EINT*DMAT(D,A,K)
+                FMAT(B,C,K) = FMAT(B,C,K) + EINT*DMAT(A,D,K)
               ENDDO
 C
 C           General Coulomb case - no permutational symmetry
@@ -842,6 +846,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
+C...............Direct contributions
                 GCD  = SO(INT,I)*(DMAT(C,D,K) + DMAT(D,C,K))
                 FMAT(A,B,K) = FMAT(A,B,K) + GCD
                 FMAT(B,A,K) = FMAT(B,A,K) + GCD
