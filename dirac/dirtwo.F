@@ -4085,12 +4085,16 @@ C
          SOTEXT = 'SOfock:SL'
       ELSEIF (I2TYP.EQ.3) THEN
          MTOTTK = NSMLBL*(NSMLBL+1)/2
-         THRS   = THRS*THRFAC(2)
+         THRS   = THRSBUF*THRFAC(2)
          SOTEXT = 'SOfock:SS'
       ELSEIF (I2TYP.EQ.4) THEN
          MTOTTK = NSMLBL*NLRGBL
-         THRS   = THRS*THRFAC(1)
+         THRS   = THRSBUF*THRFAC(1)
          SOTEXT = 'SOfock:GT'
+Cluuk: test scale real part by factor 3 and eliminate Coulomb
+c        factor = -0.000000003d0
+c        CALL DSCAL(N2BBASX,factor,DSO,1)
+c        ifctyp(1)=12
       ENDIF
 C
 C....> Check whether the class is active
@@ -4141,6 +4145,11 @@ C
         ENDIF
 #endif
       ENDIF
+cluuk correct for scaling
+c     IF (I2TYP.EQ.4) THEN
+c        factor = 1.d0/factor
+c        CALL DSCAL(N2BBASX,factor,DSO,1)
+c     ENDIF
 C
 C---> Update the offset
 C
