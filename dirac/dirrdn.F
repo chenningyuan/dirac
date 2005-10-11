@@ -3326,6 +3326,7 @@ C
 C
 #include "ibtfun.h"
 C
+      GAUNT = .FALSE.
       SYMSTP = .FALSE.
       INPERR = 0
       CALL TITLER('Hamiltonian defined','*',127)      
