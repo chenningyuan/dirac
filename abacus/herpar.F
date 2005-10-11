@@ -317,8 +317,6 @@ C     If new run, make initial guess as to run times
 C
       DOFIRST = .FALSE.
 C
-CLuuk: Think there is an old bug here FIRST1 etc. are never set
-CLuuk: Just extended it for Gaunt but should be looked at
       IF (RELCAL) THEN
          IF (I2TYP.EQ.1.AND.FIRST1) THEN
             DOFIRST = .TRUE.
@@ -2122,7 +2120,7 @@ C        ******************************
 C
          IBMAX = ISHELA
          IF (I2TYP.EQ.4) IBMAX = NLRGBL
-         DO 200 ISHELB = IBSTRT,ISHELA
+         DO 200 ISHELB = IBSTRT,IBMAX
 C
             ICB    = LCLASH(ISHELB)
             NCENTB = NCNTSH(ISHELB)
