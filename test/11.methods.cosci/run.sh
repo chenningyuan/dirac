@@ -2,6 +2,23 @@
 #
 # Set up calculation
 #
+
+if [ ! -z "$RUNTYPE" ]; then
+   case "${RUNTYPE}" in
+      "short"|"medium"|"long")
+#        MENU=cc
+         ;;
+      *)
+      echo "we do not run the benchmark with runtype $RUNTYPE" 
+         exit
+         ;;
+   esac
+else
+   echo "we do not run this test if the runtype is not specified !" 
+   exit
+fi
+
+
 MOL=O;
 export MOL;
 ###############################
@@ -14,6 +31,14 @@ echo "Dirac-Coulomb spin-free Hamiltonian "
 MENU=ci.2;
 export MENU;
 ../run.sh -utcmo
+###############################
+###############################
+if [ "$RUNTYPE" = "short" ]; then
+   echo
+   echo "Completed short test"
+   echo "<-----"
+   exit
+fi
 ###############################
 echo "Dirac-Coulomb Hamiltonian using spin-free MO in CI"
 MENU=ci.3;

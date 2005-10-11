@@ -2,6 +2,23 @@
 #
 # Set up calculation
 #
+
+if [ ! -z "$RUNTYPE" ]; then
+   case "${RUNTYPE}" in
+      "short"|"medium"|"long")
+#        MENU=cc
+         ;;
+      *)
+      echo "we do not run the benchmark with runtype $RUNTYPE" 
+         exit
+         ;;
+   esac
+else
+   echo "we do not run this test if the runtype is not specified !" 
+   exit
+fi
+
+
 MOL=LiH.lsym.dir;
 FILTER=filter;
 export FILTER;
@@ -16,6 +33,14 @@ echo "bss NMR shieldings with LAO"
 MENU=LiH.bss.shield_lao_go=cm;
 export MENU;
 ../run.sh
+###############################
+###############################
+if [ "$RUNTYPE" = "short" ]; then
+   echo
+   echo "Completed short test"
+   echo "<-----"
+   exit
+fi
 ###############################
 echo "bss+mfsso NMR shieldings with LAO"
 MENU=LiH.bss+mfsso.shield_lao_go=cm;
