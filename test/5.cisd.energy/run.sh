@@ -2,17 +2,48 @@
 #
 # Set up calculation
 #
+# MI: There are too many two-component Hamiltonians,
+# resort tests into 3 main groups to reduce the computer time
+#
+
+if [ ! -z "$RUNTYPE" ]; then
+   case "${RUNTYPE}" in
+      "short"|"medium"|"long")
+#        MENU=cc
+         ;;
+      *)
+      echo "we do not run the benchmark with runtype $RUNTYPE" 
+         exit
+         ;;
+   esac
+else
+   echo "we do not run this test if the runtype is not specified !" 
+   exit
+fi
 
 MOL=F;
 export MOL;
 FILTER=filter
 export FILTER;
-
 ###############################
 echo "DC cisd run"
 MENU=cisd;
 export MENU;
 ../run.sh
+###############################
+echo "BSS+MFSSO cisd run"
+MENU=F.bss+mfsso.cisd;
+export MENU;
+../run.sh
+###############################
+###############################
+if [ "$RUNTYPE" = "short" ]; then
+   echo
+   echo "Completed short test"
+   echo "<-----"
+   exit
+fi
+###############################
 ###############################
 echo "BSS cisd run"
 MENU=F.bss.cisd;
@@ -24,10 +55,14 @@ MENU=F.bss_rkb.cisd;
 export MENU;
 ../run.sh
 ###############################
-echo "BSS+MFSSO cisd run"
-MENU=F.bss+mfsso.cisd;
-export MENU;
-../run.sh
+
+###############################
+if [ "$RUNTYPE" = "medium" ]; then
+   echo
+   echo "Completed medium test"
+   echo "<-----"
+   exit
+fi
 ###############################
 echo "BSS_RKB+MFSSO cisd run"
 MENU=F.bss_rkb+mfsso.cisd;
@@ -64,3 +99,12 @@ MENU=F.dkh2_sfEso1+mfsso.cisd;
 export MENU;
 ../run.sh
 ###############################
+###############################
+if [ "$RUNTYPE" = "long" ]; then
+   echo
+   echo "Completed long test"
+   echo "<-----"
+   exit
+fi
+###############################
+
