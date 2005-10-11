@@ -3462,11 +3462,18 @@ C
          MTOTTK = NSMLBL*NLRGBL
          THRS   = THRSBUF*THRFAC(1)
          AOTEXT = 'AOfock:GT'
-Cluuk: scale real part by factor 3 and eliminate Coulomb
-         factor = -3.d0
+C        Inform the Fock matrix builder that we're going to do Gaunt
          DO IFMAT = 1, NFMAT
-            CALL DSCAL(N2BBASX,factor,DAO(1,IFMAT),1)
-            IFCTYP(1,IFMAT)=IFCTYP(1,IFMAT)+4
+C           The real matrix can only have an exchange contribution
+            IX = IFCTYP(1,IFMAT)/10
+            IY = MOD(IFCTYP(1,IFMAT),10)
+	    IC = MOD(IY,2)
+	    IE = (IY-IC)/2
+            IFCTYP(1,IFMAT)=10*IX+4+IE
+C           For the imaginary parts we'll just add 6 to signal that it is Gaunt
+            IFCTYP(2,IFMAT)=IFCTYP(2,IFMAT)+6
+            IFCTYP(3,IFMAT)=IFCTYP(3,IFMAT)+6
+            IFCTYP(4,IFMAT)=IFCTYP(4,IFMAT)+6
          ENDDO
       ENDIF
 C
@@ -3520,12 +3527,15 @@ C
 #endif
       ENDIF
 C
-cluuk correct for scaling
+C     Restore IFCTYP to the old value (even though we'll not need
+C     it anymore)
       IF (I2TYP.EQ.4) THEN
          factor = 1.d0/factor
          DO IFMAT = 1, NFMAT
-            CALL DSCAL(N2BBASX,factor,DAO(1,IFMAT),1)
-            IFCTYP(1,IFMAT)=IFCTYP(1,IFMAT)-4
+            IFCTYP(1,IFMAT)=10*(IFCTYP(1,IFMAT)/10)+IY
+            IFCTYP(2,IFMAT)=IFCTYP(2,IFMAT)-6
+            IFCTYP(3,IFMAT)=IFCTYP(3,IFMAT)-6
+            IFCTYP(4,IFMAT)=IFCTYP(4,IFMAT)-6
          ENDDO
       ENDIF
 C

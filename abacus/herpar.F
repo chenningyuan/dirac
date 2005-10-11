@@ -317,6 +317,8 @@ C     If new run, make initial guess as to run times
 C
       DOFIRST = .FALSE.
 C
+CLuuk: Think there is an old bug here FIRST1 etc. are never set
+CLuuk: Just extended it for Gaunt but should be looked at
       IF (RELCAL) THEN
          IF (I2TYP.EQ.1.AND.FIRST1) THEN
             DOFIRST = .TRUE.
@@ -327,7 +329,9 @@ C
          ELSEIF (I2TYP.EQ.3.AND.FIRST3) THEN
             DOFIRST = .TRUE.
             FIRST3 = .FALSE.
-         ELSE
+         ELSEIF (I2TYP.EQ.4.AND.FIRST4) THEN
+            DOFIRST = .TRUE.
+            FIRST4 = .FALSE.
          ENDIF
       ENDIF
 C
@@ -1477,8 +1481,10 @@ C
             IY  = MOD(IFCTYP(I),10)
             IC  = MOD(IY,2)
             IE  = (IY - IC)/2
-            IF (IX.EQ.2) IC = 0
-C           ... no Coulomb term for antisymmetric density matrix
+C           ... no direct Coulomb term for antisymmetric density matrix
+            IF (I2TYP.LT.4.AND.IX.EQ.2) IC = 0
+C           ... no direct Gaunt term for symmetric density matrix
+            IF (I2TYP.EQ.4.AND.IX.EQ.1) IC = 0
             NCM = NCM + IC
             NEM = NEM + IE
           ENDDO
@@ -1504,6 +1510,11 @@ C           ... no Coulomb term for antisymmetric density matrix
         IDSTRT = NLRGBL+1
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
+      ELSEIF(I2TYP.EQ.4) THEN
+        ICSTRT = NLRGBL+1
+        IDSTRT = 1
+        ICSMAX = MAXSHL
+        IDSMAX = NLRGBL
       ENDIF
 C
 C     ***********************************
@@ -1631,6 +1642,8 @@ C           ***** Fourth Shell Index *****
 C           ******************************
 C
             IDMAX = ISHELC
+C           Note the order of these tests : can not be changed !
+            IF (I2TYP.EQ.4) IDMAX = NLRGBL
             IF (.NOT.SPNORB.AND.(ISHELA.EQ.ISHELC)) IDMAX = ISHELB
             DO 500 ISHELD = IDSTRT,IDMAX
 C
@@ -2083,6 +2096,11 @@ C
         IBSTRT = NLRGBL+1
         IASMAX = MAXSHL
         IBSMAX = MAXSHL
+      ELSEIF(I2TYP.EQ.4) THEN
+        IASTRT = NLRGBL+1
+        IBSTRT = 1
+        IASMAX = MAXSHL
+        IBSMAX = NLRGBL
       ELSE
         WRITE(LUPRI,'(A,I5)') 'DET_TOTTK: Unknown I2TYP =' ,I2TYP
         CALL QUIT('Unknown I2TYP !!!')
@@ -2102,6 +2120,8 @@ C        ******************************
 C        ***** Second Shell Index *****
 C        ******************************
 C
+         IBMAX = ISHELA
+         IF (I2TYP.EQ.4) IBMAX = NLRGBL
          DO 200 ISHELB = IBSTRT,ISHELA
 C
             ICB    = LCLASH(ISHELB)

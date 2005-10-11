@@ -140,7 +140,8 @@ C*****************************************************************************
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0)
+      PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0,
+     &          DM1=-1.D0, DM3=-3.D0)
       INTEGER A,B,C,D
       LOGICAL NODV, SUSCEP, NOTEST,LBIT,DOC,DOE
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
@@ -297,13 +298,6 @@ C
                         IND(2,NBUF) = B
                         IND(3,NBUF) = ICORBC(IORBC) + ICOMPC
                         IND(4,NBUF) = ICORBD(IORBD) + ICOMPD
-CTROND
-CTS                      C = IND(3,NBUF)
-CTS                      D = IND(4,NBUF)
-CTS          IF((A.EQ.C.AND.B.EQ.D).OR.(A.EQ.D.AND.B.EQ.C))
-CTS     &     WRITE (LUPRI,'(1X,A,F16.12,4I5)')
-CTS     &      'GINT,A,B,C,D',AINT*SYMFAC,A,B,C,D
-CTROND
                       ENDIF
                     ENDDO
                     IOFF = IOFF + NORBCD
@@ -351,13 +345,6 @@ CTROND
                         IND(2,NBUF) = B
                         IND(3,NBUF) = ICORBC(IORBC) + ICOMPC
                         IND(4,NBUF) = ICORBD(IORBD) + ICOMPD
-CTROND
-CTS                      C = IND(3,NBUF)
-CTS                      D = IND(4,NBUF)
-CTS          IF((A.EQ.C.AND.B.EQ.D).OR.(A.EQ.D.AND.B.EQ.C))
-CTS     &     WRITE (LUPRI,'(1X,A,F16.12,4I5)')
-CTS     &      'GINT,A,B,C,D',AINT*SYMFAC,A,B,C,D
-CTROND
                       ENDIF
                     ENDDO
                     IOFF = IOFF + NORBCD
@@ -399,10 +386,29 @@ C           X = 0 General: no symmetry
 C           X = 1 Symmetric
 C           X = 2 Anti-symmetric
 C           X = 3 Mixed: some blocks symmetric and some antisymmetric
-C         Y indicates contributions
-C           Y = 1 Coulomb
+C         G indicates whether we build Coulomb or Gaunt
+C           G = 0 Coulomb
+C           G = 1 Gaunt
+C
+C         Y indicates contributions (Direct and Exchange)
+C
+C         For Coulomb they have the following meaning:
+C           Y = 0 Nothing (neither direct nor exchange)
+C           Y = 1 Direct
 C           Y = 2 Exchange
-C           Y = 3 Coulomb + Exchange
+C           Y = 3 Direct + Exchange
+C
+C         For Gaunt we need to distinguish between real and imag. matrices
+C         See the note on the implementation of Gaunt:
+C         There is never a direct contribution for IZ=1.
+C         The exchange part for IZ=1 scales by 3, not -1.
+C
+C           Y = 4 Nothing           for IZ = 1
+C           Y = 5 Exchange          for IZ = 1
+C           Y = 6 Nothing           for IZ > 1
+C           Y = 7 Direct            for IZ > 1
+C           Y = 8 Exchange          for IZ > 1
+C           Y = 9 Direct + Exchange for IZ > 1
 C
       TFCK = SECOND()
       DO 400 I = 1,NDMAT
@@ -418,21 +424,28 @@ C       appropriate multiplication factors.
 C..........Coulomb interaction
            IC = MOD(IY,2)
            IE = IY - IC
-           IF (IX.EQ.2) IC = 0
 C          ... no direct term for antisymmetric density matrix
+           IF (IX.EQ.2) IC = 0
         ELSE
 C..........Gaunt interaction
-           IY = IY-4
-           IC = MOD(IY,2)
-           IE = IY - IC
-           IF (IX.EQ.1) IC = 0
+           IF (IY.LE.5) THEN
+              IZ = 1
+              IC = 0
+              IE = 2*MOD(IY-4,2)
+           ELSE
+              IZ = 2 ! It could also be 3 or 4, makes no difference
+              IY = IY-6
+              IC = MOD(IY,2)
+              IE = IY - IC
+           ENDIF
 C          ... no direct term for symmetric density matrix
+           IF (IX.EQ.1) IC = 0
         ENDIF
 C
 C       Exchange may be switched off in DFT calculations
 C
         IF (HFXFAC.EQ.D0) IE = 0
-C       Screening on Coulomb contributions
+C       Screening on direct contributions
         IF(DOC.AND.IC.EQ.1.AND.FCM.LT.SCRTHR) THEN
           IC = 0
           DINTSKP(2,3) = DINTSKP(2,3) + NBUF
@@ -445,7 +458,20 @@ C       Screening on exchange contributions
         IY = IC + IE
         IF(IY.EQ.0) GOTO 400
         IF(IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
-          EXCFAC = DMP25*HFXFAC
+          IF (IG.EQ.0) THEN
+C............Coulomb multiplication factors
+             DIRFAC = D1
+             EXCFAC = DMP25*HFXFAC
+          ELSE
+C............Gaunt multiplication factors
+             IF (IZ.EQ.1) THEN
+                DIRFAC = D0
+                EXCFAC = DM3*DMP25*HFXFAC
+             ELSE
+                DIRFAC = DM1
+                EXCFAC = DMP25*HFXFAC
+             ENDIF
+          ENDIF
 C
 C         Symmetric singlet Fock matrix
 C         =============================
@@ -458,10 +484,11 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
+              DINT = DIRFAC*AOINT(INT)
               EINT = EXCFAC*AOINT(INT)
 C...............Direct contributions
-              FMAT(A,B,I) = FMAT(A,B,I) + AOINT(INT)*DMAT(C,D,I)
-              FMAT(C,D,I) = FMAT(C,D,I) + AOINT(INT)*DMAT(A,B,I)
+              FMAT(A,B,I) = FMAT(A,B,I) + DINT*DMAT(C,D,I)
+              FMAT(C,D,I) = FMAT(C,D,I) + DINT*DMAT(A,B,I)
 C...............Exchange (LL or SS for Gaunt)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
               FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
@@ -502,9 +529,10 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
+              DINT = DIRFAC*AOINT(INT)
 C...............Direct contributions
-              FMAT(A,B,I) = FMAT(A,B,I) + AOINT(INT)*DMAT(C,D,I)
-              FMAT(C,D,I) = FMAT(C,D,I) + AOINT(INT)*DMAT(A,B,I)
+              FMAT(A,B,I) = FMAT(A,B,I) + DINT*DMAT(C,D,I)
+              FMAT(C,D,I) = FMAT(C,D,I) + DINT*DMAT(A,B,I)
             ENDDO
           ELSE
             WRITE (LUPRI,'(/A,2(/A,I10))')
@@ -528,11 +556,12 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
+              DINT = DIRFAC*AOINT(INT)
 C...............Direct contributions
-              GCD  = AOINT(INT)*(DMAT(C,D,I) + DMAT(D,C,I))
+              GCD  = DINT*(DMAT(C,D,I) + DMAT(D,C,I))
               FMAT(A,B,I) = FMAT(A,B,I) + GCD
               FMAT(B,A,I) = FMAT(B,A,I) + GCD
-              GAB  = AOINT(INT)*(DMAT(A,B,I) + DMAT(B,A,I))
+              GAB  = DINT*(DMAT(A,B,I) + DMAT(B,A,I))
               FMAT(C,D,I) = FMAT(C,D,I) + GAB
               FMAT(D,C,I) = FMAT(D,C,I) + GAB
               EINT = EXCFAC*AOINT(INT)
@@ -583,11 +612,12 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
+              DINT = DIRFAC*AOINT(INT)
 C...............Direct contributions
-              GCD  = AOINT(INT)*(DMAT(C,D,I) + DMAT(D,C,I))
+              GCD  = DINT*(DMAT(C,D,I) + DMAT(D,C,I))
               FMAT(A,B,I) = FMAT(A,B,I) + GCD
               FMAT(B,A,I) = FMAT(B,A,I) + GCD
-              GAB  = AOINT(INT)*(DMAT(A,B,I) + DMAT(B,A,I))
+              GAB  = DINT*(DMAT(A,B,I) + DMAT(B,A,I))
               FMAT(C,D,I) = FMAT(C,D,I) + GAB
               FMAT(D,C,I) = FMAT(D,C,I) + GAB
             ENDDO
