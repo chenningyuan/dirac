@@ -1218,6 +1218,7 @@ C  ...  THRNULL is round off error with 15 digits relative to 2c^2 = 3.7D4
 
 
 C ... get FP matrix in SA-AO into TBUF
+      IPRINT = IPRHAM
       CALL FREEMT(TBUF,IPRINT,WORK(KFREE),LFREE) 
 
 C         Transform the free particle matrix
