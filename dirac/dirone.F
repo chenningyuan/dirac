@@ -3962,7 +3962,7 @@ C.....loop over fragments
         IF(NVECT.EQ.0) THEN
           WRITE(LUPRI,'(A,A6)') 
      &       '* No coefficients selected for fragment ',PRJFIL(IFRAG)
-          GOTO 10
+          GOTO 12
         ENDIF
         INQUIRE(FILE=PRJFIL(IFRAG),EXIST=TOBE)
         IF (.NOT.TOBE) THEN
@@ -4005,6 +4005,7 @@ C               Spin-free case: Fill array with boson irrep info
           ENDDO
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
+ 12     CONTINUE
         INUC = INUC + NPRJNUC(IFRAG)
  10   CONTINUE
 C
