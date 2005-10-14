@@ -594,10 +594,11 @@ C >>>  THIS MUST BE CHANGED FOR MCSCF !!!!
 C
         ILLINT = IBTAND(INTFLG,1)
         ISLINT = IBTAND(INTFLG/2,1)
-        ISSINT = IBTAND(INTFLG/4,1)
-        WRITE(LUPRI,'(/A,3I2)')
+        ISSINT = IBTAND(INTFLG/3,1)
+        IGTINT = IBTAND(INTFLG/4,1)
+        WRITE(LUPRI,'(/A,4I2)')
      &    '*** WARNING *** GETFCK: No 2-Fock found.'//
-     &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT
+     &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT
         NPOS = 0
         IF(PARCAL) THEN
           BF1  = FIRST1

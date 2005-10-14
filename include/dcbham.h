@@ -52,6 +52,7 @@
 !     DO4C2C     - after finishing 4c SCF do block diagonalize 4c Fock and continue 
 !                  at the 2c level
 !     USEDF      - if DO4C2C=.true, use Dirac-Fock operator to be block-diagonalized
+!     GAUNT      - Include Gaunt interaction in the 2-e operator
 !
 !
       INTEGER MAX1OPER
@@ -71,15 +72,16 @@
      &        SUB_BL, SOLVEN, INERSI, INERSF, SPINFR, SPINFR2, ZORA,    &
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1,              &
-     &        DO2C4C, DO4C2C, USEDF                                     &
+     &        DO2C4C, DO4C2C, USEDF, GAUNT                              &
       INTEGER NDCLHAM
-      PARAMETER (NDCLHAM = 18)
+      PARAMETER (NDCLHAM = 31)
 
       COMMON /DCLHAM/ QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
      &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
-     &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF      &
+     &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
+     &                GAUNT                                             &
 
       REAL*8 SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
       COMMON /DCRHAM/ SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV

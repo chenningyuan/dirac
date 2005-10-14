@@ -2344,6 +2344,7 @@ C***********************************************************************
 #include "mxcent.h"
       PARAMETER (NTABLE = 5)
 C
+#include "dcbham.h"
 #include "dcbgrd.h"
 #include "dcbprp.h"
 C
@@ -2406,8 +2407,13 @@ C&&&& PRINT:  Print level
                GO TO 100
     2          CONTINUE
 C&&&& INTFLG: Which two-electron gradient to calculate
+                  IF (GAUNT) THEN 
+                     READ(LUCMD,*) ILL,ISL,ISS,IGT
+                  ELSE
+                     READ(LUCMD,*) ILL,ISL,ISS
+                  END IF
                   READ(LUCMD,*) ILL, ILS, ISS
-                  IGRD_INTFLG = ILL + 2 * ILS + 4 * ISS
+                  IGRD_INTFLG = ILL + 2 * ILS + 4 * ISS + 8 * IGT
                GO TO 100
     3          CONTINUE
 C&&&& TRICK : Skip LS- and SS- integrals if contribution negligible
@@ -2466,6 +2472,15 @@ C     =============
      &            '- SS-integrals (skipped if estimated to be small).'
             ELSE
                WRITE(LUPRI,'(3X,A)') '- SS-integrals.'
+            END IF
+         END IF
+         IF ( LBIT( IGRD_INTFLG, 4 ) ) THEN
+            IF ( DOTRCK ) THEN
+               WRITE(LUPRI,'(3X,A)')
+     &            '- GT-integrals (skipped if estimated to be small).'
+            ELSE
+               WRITE(LUPRI,'(3X,A)') 
+     &         '- GT-integrals (WARNING: gradient not tested yet)'
             END IF
          END IF
          IF(SCRGRD.GT.D0) THEN

@@ -412,6 +412,7 @@ C
       ILLINT = IBTAND(INTGEN,1)
       ISLINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
+      IGTINT = IBTAND(INTGEN/8,1)
 C
 C
 C     Initialize /XCBLR/
@@ -426,7 +427,7 @@ C
       MAXRM      = -1
       MXLOAD     = 0
       ITRXLR     = 50
-      INTXLR     = ILLINT + 2*ISLINT + 4*ISSINT
+      INTXLR     = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
 CMI ... set up only LL class of integrals 
 C        as the default for LevyLe/BSS
       IF (LEVYLE.OR.BSS) INTXLR = ILLINT
@@ -585,8 +586,13 @@ C&&&& ONLYSG: Only generate G matrix (Fock-matrix of modified density)
                GOTO 100
 C&&&& INTFLG: specify what two-electron integrals to include
  15            CONTINUE
-                  READ(LUCMD,*) ILLINT,ISLINT,ISSINT
-                  INTXLR = ILLINT + 2*ISLINT + 4*ISSINT
+                  IF (GAUNT) THEN
+                     READ(LUCMD,*) ILLINT,ISLINT,ISSINT,IGTINT
+                     INTXLR = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
+                  ELSE
+                     READ(LUCMD,*) ILLINT,ISLINT,ISSINT
+                     INTXLR = ILLINT+2*ISLINT+4*ISSINT
+                  ENDIF
                GOTO 100
  16            CONTINUE
 C&&&& NOPREC: no preconditioning of initial trial vectors
@@ -779,6 +785,7 @@ C
      & 'Only LL integrals are allowed for LevyLe/BSS!'
         ISLINT=0
         ISSINT=0
+        IGTINT=0
         INTXLR=1
       ENDIF
       IF(ISLINT.EQ.1) THEN

@@ -3306,7 +3306,7 @@ C
 Cdirac#include "functionals.h"
 #endif
 C
-      LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS, GAUNT
+      LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
      &          WORD1*7, LINE*80
       DIMENSION KSOP(0:7),WORK(LWORK)
@@ -3472,7 +3472,6 @@ C&&&& OPERATOR: Read in operator
   104    CONTINUE
 C&&&& GAUNT: Gaunt operator
             GAUNT = .TRUE.
-c           CALL QUIT('.GAUNT not implemented')
             GO TO 100
   105     CONTINUE
 C&&&& LVCORR: Model interatomic SS-integral contribution by classical
@@ -4716,6 +4715,9 @@ C
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbana.h"
+#include "cbihr2.h"
+#include "mxcent.h"
+#include "dcbprp.h"
 #include "dgroup.h"
       LOGICAL SS_COR, SS_COR_NEEDED
 #include "ibtfun.h"
@@ -4772,6 +4774,18 @@ C
          WRITE (LUPRI,'(A)') '   -> LOCALIZE ignored'
          DOLOC = .FALSE.
       ENDIF
+C
+C     Checks related to Gaunt
+C
+      IF (GAUNT.AND.SOFOCK) THEN
+         WRITE (LUPRI,'(/2A)') 
+     &   'Gaunt only implemented for AO Fock builder',
+     &   ' ---> switched to AOFOCK'
+         SOFOCK = .FALSE.
+      ENDIF
+C
+      IF (GAUNT.AND.LONDON)
+     & CALL QUIT ('London orbitals are not implemented for GAUNT')
 C
       RETURN
  1000 FORMAT (/' **** WARNING **** ',A,' not tested.')

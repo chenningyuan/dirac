@@ -4012,6 +4012,9 @@ C
          THRS   = THRSBUF*THRFAC(1)
          SOTEXT = 'SOfock:GT'
 Cluuk: scale real part by factor 3 and eliminate Coulomb
+Cluuk: this code does only work for C1 and Ci, use AOFOCK
+        IF (LBIT(INTFLG,4).AND.NZ.LT.4) 
+     &     call quit ('Gaunt not implemented for SOFOCK')
          factor = -3.d0
          CALL DSCAL(N2BBASX,factor,DSO,1)
          IFCTYP(1)=IFCTYP(1)+4

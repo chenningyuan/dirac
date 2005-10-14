@@ -105,8 +105,6 @@ C
       ISLINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
       IGTINT = IBTAND(INTGEN/8,1)
-      IF (IGTINT .NE. 0) CALL QUIT('ABORT reading *QUADRA input: '//
-     &   ' Gaunt integrals not implemented in QR yet')
 C
 C ------------------------------------------------------------------------
 C     Initialize dcbxqr.h
@@ -131,7 +129,7 @@ C
       CNVXQR(2) = DUMMY
       MAXQRM = 400
       ITRXQR = 30
-      INTXQR = ILLINT + 2*ISLINT + 4*ISSINT
+      INTXQR = ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
       ITRIQR(1) = 1
       ITRIQR(2) = 1
       XQRNRM = .FALSE.
@@ -277,8 +275,13 @@ C
             GOTO 100
 C     Specify what two-electron integrals to include
  15         CONTINUE
-            READ(LUCMD,*) ILLINT,ISLINT,ISSINT
-            INTXQR = ILLINT + 2*ISLINT + 4*ISSINT
+            IF (GAUNT) THEN
+               READ(LUCMD,*) ILLINT,ISLINT,ISSINT,IGTINT
+               INTXQR = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
+            ELSE
+               READ(LUCMD,*) ILLINT,ISLINT,ISSINT
+               INTXQR = ILLINT+2*ISLINT+4*ISSINT
+            ENDIF
             GOTO 100
  16         CONTINUE
 C     No preconditioning of initial trial vectors
@@ -400,6 +403,7 @@ C
       IF (ILLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
       IF (ISLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LS-integrals'
       IF (ISSINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
+      IF (IGTINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- GT-integrals'
       IF (XQRNRM) WRITE(LUPRI,'(A)')
      &     ' * Trial vectors will be normalized.'
       IF (XQRDIH) THEN
