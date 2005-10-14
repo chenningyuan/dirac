@@ -6112,11 +6112,12 @@ C
 
          CALL DZERO(TMPMAT,2*NCMAT)
          DO IB = 1,NB
+           IBINDEX = LLRBPU(IPSHIELD(MXCOOR+IBUFB(IB)))
            IF (LONDON) THEN
-             READ (PRPNAM(LLRBPU(IBUFB(IB))),'(4X,A1)') CJB
+             READ (PRPNAM(IBINDEX),'(4X,A1)') CJB
              JB = ICONVXYZ(CJB)
            ELSE
-            READ (PRPNAM(LLRBPU(IBUFB(IB))),'(7X,I1)') JB
+            READ (PRPNAM(IBINDEX),'(7X,I1)') JB
            ENDIF
             KB = IPSHIELD(JB+MXCOOR)
             DO IA = 1,NA
