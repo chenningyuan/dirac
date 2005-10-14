@@ -5,6 +5,12 @@
 !
 !*** Dirac-Fock calculations ***
 !     PROJEC     - any projection, defined by a set of coefficients
+!     ... (descriptions are to be added)
+!
+!     ERGCNV2, EVCCNV2, FCKCNV2, MAXITR2 - related to the preliminary
+!     BSS-SCF (...MI/sept05 - can be extended by more SCF control flags )
+!
+
 
       INTEGER MFMAT, MXOPEN
       PARAMETER (MFMAT = 10, MXOPEN = 10)
@@ -22,35 +28,47 @@
       LOGICAL DHFCONV(2), DHFEXIT, TRIVEC, TRIFCK, ERGCNV, EVCCNV,      &
      &        FCKCNV, DODSCF, DODAMP, DODIIS, DIISON, PHCOEF, FIXDIF,   &
      &        DIISAO, DIISMO, OVLSEL, DYNSEL, DOBOSSEL, AUTOCC, INIOCC, &
-     &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC
+     &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,                     &
+     &                 ERGCNV2, EVCCNV2, FCKCNV2                        &
+
       COMMON /DCLDHF/ ERGCNV, EVCCNV, FCKCNV, DHFCONV, DHFEXIT, TRIVEC, &
      &                TRIFCK, DODSCF, DODAMP, DODIIS, DIISON, OVLSEL,   &
      &                PHCOEF, FIXDIF, DIISAO, DIISMO, DYNSEL, DOBOSSEL, &
      &                AUTOCC, INIOCC, DHF_SKIPEE, DHF_SKIPEP, NOQCDHF,  &
-     &                AOC
+     &                AOC,                          ERGCNV2, EVCCNV2,   &
+     &                FCKCNV2
 
       INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
-     &        INTDEF, INTFLG, INTBUF, ITRINT(2), IPREIG, NEVEC(2),      &
+     &        INTDEF, INTDEF_SAVE, INTFLG,                              &
+     &                        INTBUF, ITRINT(2), IPREIG, NEVEC(2),      &
      &        N2EVECQ(2), I2EVECTQ(2), N2EVECTQ, NSMOTQ, ISMOQ(2),      &
-     &        ITRSCF(0:15), NFMAT, ISYMOP(MFMAT), IFCKOP(MFMAT),         &
+     &        ITRSCF(0:15), NFMAT, ISYMOP(MFMAT), IFCKOP(MFMAT),        &
      &        IHRMOP(MFMAT), NEWOCC, MXMACRO, MXMICRO, MAXBCK, NFRAG,   &
      &        NTMO(2), I2TMOT(2), N2TMOTQ, NISHMF(2),                   &
-     &        NACSHMF(2, MXOPEN), NASHMFT, NOCCMF(2), NPRJNUC(MFRAG)
+     &        NACSHMF(2, MXOPEN), NASHMFT, NOCCMF(2), NPRJNUC(MFRAG),   &
+     &               MAXITR2                                            &
+
       COMMON /DCIDHF/ NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS,     &
-     &                NELMBM, INTDEF, INTFLG, INTBUF, ITRINT, IPREIG,   &
+     &                NELMBM, INTDEF, INTDEF_SAVE, INTFLG,              &
+     &                                        INTBUF, ITRINT, IPREIG,   &
      &                NEVEC, N2EVECQ, I2EVECTQ, N2EVECTQ, NSMOTQ, ISMOQ,&
      &                ITRSCF, NFMAT, ISYMOP, IFCKOP, IHRMOP, NEWOCC,    &
-     &                MXMACRO, MXMICRO, MAXBCK, NFRAG, NTMO, I2TMOT,    &
-     &                N2TMOTQ, NISHMF, NACSHMF, NASHMFT, NOCCMF, NPRJNUC
+     &                MXMACRO, MXMICRO, MAXBCK, NFRAG,   NTMO, I2TMOT,  &
+     &                N2TMOTQ, NISHMF,                                  &
+     &                NACSHMF, NASHMFT, NOCCMF, NPRJNUC,                &
+     &                       MAXITR2                                    &
+
 !..number of closed and open shell orbitals with frozen ones subtracted
 
       REAL*8 SCFCNV(2), ERGVAL, EVCVAL, FCKVAL, DHFERG, ELERGY, E1PART, &
      &       E2PART, ERGBUF, CONVRG, TDF2, TDDG, DNSDHF, DAMPFC, DIISTH,&
-     &       BMCOND, CNVINT(2), SCFTID(0:15), ESOLVE, ESOLVN, PRJTHR
+     &       BMCOND, CNVINT(2), SCFTID(0:15), ESOLVE, ESOLVN, PRJTHR,   &
+     &       SCFCNV2(2)                                                 &  
+
       COMMON /DCRDHF/ SCFCNV, ERGVAL, EVCVAL, FCKVAL, DHFERG, ELERGY,   &
      &                E1PART, E2PART, ERGBUF, CONVRG, TDF2, TDDG,       &
      &                DNSDHF, DAMPFC, DIISTH, BMCOND, CNVINT, SCFTID,   &
-     &                ESOLVE, ESOLVN, PRJTHR
+     &                ESOLVE, ESOLVN, PRJTHR, SCFCNV2                   &
 
       REAL*8 DF(0:MXOPEN), DA(0:MXOPEN), DALPHA(0:MXOPEN)
       INTEGER MAX_BOS_BL
