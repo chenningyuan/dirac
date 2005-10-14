@@ -6,21 +6,6 @@
 # resort tests into 3 main groups to reduce the computer time
 #
 
-if [ ! -z "$RUNTYPE" ]; then
-   case "${RUNTYPE}" in
-      "short"|"medium"|"long")
-#        MENU=cc
-         ;;
-      *)
-      echo "we do not run the benchmark with runtype $RUNTYPE" 
-         exit
-         ;;
-   esac
-else
-   echo "we do not run this test if the runtype is not specified !" 
-   exit
-fi
-
 MOL=F;
 export MOL;
 FILTER=filter
