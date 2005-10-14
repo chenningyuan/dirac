@@ -158,10 +158,13 @@ C     Check convergence : we have two tresholds, the first one
 C     is the desired treshold, the second one is the allowed
 C     upper limit for proceeding with post-HF calculations.
 C
+CMI ... when continuing the BSS-SCF after the DC-SCF,
+CMI      we have to reset the DHFCONV/DHFEXIT values before !
       IF(ABS(CONVRG).LT.SCFCNV(1)) DHFCONV(1) = .TRUE.
       IF(ABS(CONVRG).LT.SCFCNV(2)) DHFCONV(2) = .TRUE.
       IF(DHFCONV(1).OR.(KITER.GT.MAXITR)) DHFEXIT = .TRUE.
-C
+
+C     
 C     If wave function converged or DHFEXIT is true, then
 C     return to avoid an extra diagonalization of the Fock matrix.
 C

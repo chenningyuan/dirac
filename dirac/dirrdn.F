@@ -686,6 +686,8 @@ C  /* Deck dhfinp */
 C***********************************************************************
 C
 C     Input section for DHF-module
+C    
+CMI ... it's called always after the HAMINP
 C
 C     Written by T.Saue - November 1992
 C     Last revision: 1997/09/15 - jth
@@ -699,7 +701,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 45)
+      PARAMETER (NTABLE = 65)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -726,7 +728,12 @@ C
      &            '.OVLSEL','.NODYNS','.XXXXXX','.DIISMO','.DIISAO',
      &            '.XXXXXX','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',
-     &            '.MJSELE','.AOC   ','.FOCC  ','.XXXXXX','.XXXXXX'/
+     &            '.MJSELE','.AOC   ','.FOCC  ','.XXXXXX','.MAXIT2',
+     &            '.ERGCN2','.EVCCN2','.FCKCN2','.XXXXXX','.XXXXXX', 
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', 
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', 
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' 
+     &                                                               /
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -754,8 +761,11 @@ C 2.  Initialize /DCLDHF/
 C     ===================
 C
       ERGCNV    = .FALSE.
+      ERGCNV2   = .FALSE.
       EVCCNV    = .TRUE.
+      EVCCNV2   = .TRUE.
       FCKCNV    = .FALSE.
+      FCKCNV2   = .FALSE.
       DHFCONV(1)= .FALSE.
       DHFCONV(2)= .FALSE.
       DHFEXIT   = .FALSE.
@@ -797,6 +807,8 @@ C 3.  Initialize /DCIDHF/
 C     ===================
 C
       MAXITR    = 50
+CMI  ... reduce the number iterations for preliminary BSS-SCF ...
+      MAXITR2   = 25
       IPRSCF    = IPRGEN
       MXDIIS    = 10
       NBELM     = 1
@@ -819,8 +831,11 @@ C
 C 4.  Initialize /DCRDHF/
 C     ===================
 C
-      SCFCNV(1) = 1.0D-7
-      SCFCNV(2) = 1.0D-6
+       SCFCNV(1) = 1.0D-7
+       SCFCNV(2) = 1.0D-6
+CMI   ... criteria of convergence for prelim.BSS-SCF
+      SCFCNV2(1) = 1.0D-5
+      SCFCNV2(2) = 1.0D-4
       ERGVAL    = DUMMY
       EVCVAL    = D0
       FCKVAL    = D0
@@ -880,7 +895,7 @@ C
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
-     &                     41,42,43,44,45), I
+     &                     41,42,43,44,45,46,47,48,49,50), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -930,11 +945,11 @@ C&&& ERGCNV: Convergence on energy difference
     5          CONTINUE
 C&&& EVCCNV: Convergence on approximate gradient (error vector)
                   READ(LUCMD,'(A80)') LINE
-                  READ(LINE,*,END=51,ERR=51) SCFCNV(1),SCFCNV(2)
-                  GOTO 52
-   51             READ(LINE,*) SCFCNV(1)
+                  READ(LINE,*,END=501,ERR=501) SCFCNV(1),SCFCNV(2)
+                  GOTO 502
+  501             READ(LINE,*) SCFCNV(1)
                   SCFCNV(2) = SCFCNV(1)
-   52             CONTINUE
+  502             CONTINUE
                   EVCCNV = .TRUE.
                   ERGCNV = .FALSE.
                   FCKCNV = .FALSE.
@@ -942,11 +957,11 @@ C&&& EVCCNV: Convergence on approximate gradient (error vector)
     6          CONTINUE
 C&&& FCKCNV: Convergence on total Fock matrix
                   READ(LUCMD,'(A80)') LINE
-                  READ(LINE,*,END=61,ERR=61) SCFCNV(1),SCFCNV(2)
-                  GOTO 62
-   61             READ(LINE,*) SCFCNV(1)
+                  READ(LINE,*,END=601,ERR=601) SCFCNV(1),SCFCNV(2)
+                  GOTO 602
+  601             READ(LINE,*) SCFCNV(1)
                   SCFCNV(2) = SCFCNV(1)
-   62             CONTINUE
+  602             CONTINUE
                   EVCCNV = .FALSE.
                   ERGCNV = .FALSE.
                   FCKCNV = .TRUE.
@@ -1198,8 +1213,75 @@ C&&& FOCC: Fractional Occupation
                AOC = .FALSE.
                GOTO 100
  44            CONTINUE
+C&&& Specify the type of restarting the 4c SCF from the previous 2c BSS-SCF
+CMI Sept.2005
+C              IF (DO2C4C) THEN
+C               START2C = .TRUE.
+C               READ(LUCMD,*) INI2C
+C              ENDIF
                GOTO 100
  45            CONTINUE
+CMI&&& Specify the maximum number of preliminary BSS-SCF iterations
+               IF (DO2C4C) THEN
+                READ(LUCMD,*) MAXITR2
+               ENDIF
+               GOTO 100
+ 46            CONTINUE
+CMI&&& Specify the ERGCNV2
+C&&& ERGCNV2: Convergence on energy difference in preliminary BSS-SCF
+               IF (DO2C4C) THEN
+                  READ(LUCMD,'(A80)') LINE
+                  READ(LINE,*,END=403,ERR=403) SCFCNV2(1),SCFCNV2(2)
+                  GOTO 404
+  403             READ(LINE,*) SCFCNV2(1)
+                  SCFCNV2(2) = SCFCNV2(1)
+  404             CONTINUE
+                  EVCCNV2 = .FALSE.
+                  ERGCNV2 = .TRUE.
+                  FCKCNV2 = .FALSE.
+               ENDIF
+               GOTO 100
+ 47            CONTINUE
+CMI&& Specify the EVCCNV2
+C&&& EVCCNV: Convergence on approximate gradient (error vector)
+               IF (DO2C4C) THEN
+                  READ(LUCMD,'(A80)') LINE
+                  READ(LINE,*,END=503,ERR=503) SCFCNV2(1),SCFCNV2(2)
+                  GOTO 504
+  503             READ(LINE,*) SCFCNV2(1)
+                  SCFCNV2(2) = SCFCNV2(1)
+  504             CONTINUE
+                  EVCCNV2 = .TRUE.
+                  ERGCNV2 = .FALSE.
+                  FCKCNV2 = .FALSE.
+               ENDIF
+               GOTO 100
+ 48            CONTINUE
+CMI&& Specify the FCKCNV2
+C&&& FCKCNV2: Convergence on total Fock matrix
+               IF (DO2C4C) THEN
+                  READ(LUCMD,'(A80)') LINE
+                  READ(LINE,*,END=603,ERR=603) SCFCNV2(1),SCFCNV2(2)
+                  GOTO 604
+  603             READ(LINE,*) SCFCNV2(1)
+                  SCFCNV2(2) = SCFCNV2(1)
+  604             CONTINUE
+                  EVCCNV2 = .FALSE.
+                  ERGCNV2 = .FALSE.
+                  FCKCNV2 = .TRUE.
+               ENDIF
+               GOTO 100
+ 49            CONTINUE
+               GOTO 100
+ 50            CONTINUE
+               GOTO 100
+ 51            CONTINUE
+               GOTO 100
+ 52            CONTINUE
+               GOTO 100
+ 53            CONTINUE
+               GOTO 100
+ 54            CONTINUE
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1405,7 +1487,9 @@ C
      &   .NOT.(ONECAP.AND.(INTV1C.EQ.2.OR.INTV1C.EQ.3)) ) ISSINT = 0
 C   .... discard calculation of LS/SS/GT integrals
 C          for the LevyLe/BSS Hamiltonians
-      IF (LEVYLE.OR.BSS) THEN
+CMI   IF (LEVYLE.OR.BSS) THEN
+CMI ... setting if SL,SS integrals in MAKE_BSS routine!
+      IF (LEVYLE) THEN
         ISLINT = 0
         ISSINT = 0
         IGTINT = 0
@@ -1704,6 +1788,80 @@ C
      &   '                     ONECNV re-initialized to SCFCNV(1)'
          ONECNV = SCFCNV(1)
       END IF
+
+CMI  ... print out info on restarting 4c DC-SCF from previous 2c DC-SCF
+CMI =====================================================================
+      IF (DO2C4C.AND.START2C) THEN
+       WRITE(LUPRI,'(A)')
+     &  ' ***** Restarting four-component DC-SCF'//
+     &  ' from two-component BSS-SCF *****'
+       WRITE(LUPRI,*) '...restaring code INI2C=',INI2C,
+     &  ' This means restart from:'
+       IF (INI2C.EQ.1) THEN
+         write(lupri,*)
+     &   ' Fock MO matrix (backtransformed FD2C_EE+H1_PP)'
+       ELSE IF (INI2C.EQ.2) THEN
+         write(lupri,*)
+     & ' Fock MO matrix (backtransformed FD2C_EE)'
+       ELSE IF (INI2C.EQ.3) THEN
+         write(lupri,*)
+     &  ' backtransformed (electronic) MOs - THE BEST CHOICE (default)'
+       ELSE IF (INI2C.EQ.4) THEN
+         write(lupri,*)
+     &  ' untransformed 2-component (electronic) MOs'
+       ELSE
+        CALL QUIT('DHFINP: wrong value of INI2C (nor 1/2/3/4)!')
+       ENDIF
+
+      WRITE(LUPRI,'(A,I4)')
+     &' * Maximum number of preliminary BSS-SCF iterations  : ',
+     &  MAXITR2 
+
+      WRITE(LUPRI,'(A)')
+     & ' ***** CONVERGENCE CRITERIA ON PRELIMINARY BSS-SCF *****'
+      IF(ERGCNV2) THEN
+        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+     &    ' * Convergence on total energy.',
+     &    '   Desired convergence:',SCFCNV2(1),
+     &    '   Allowed convergence:',SCFCNV2(2)
+      ELSEIF(FCKCNV2) THEN
+        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+     &    ' * Convergence on total Fock matrix.',
+     &    '   Desired convergence:',SCFCNV2(1),
+     &    '   Allowed convergence:',SCFCNV2(2)
+      ELSEIF(EVCCNV2) THEN
+        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+     &    ' * Convergence on norm of error vector (gradient).',
+     &    '   Desired convergence:',SCFCNV2(1),
+     &    '   Allowed convergence:',SCFCNV2(2)
+      ENDIF
+      ENDIF
+
+      IF (DO4C2C) THEN
+       WRITE(LUPRI,'(A)')
+     &  ' ***** After DC-SCF turn into BSS-SCF *****'
+       WRITE(LUPRI,*) '...restaring code I2CHAM=',I2CHAM,
+     &  ' THIS means...'
+       IF (USEDF) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &   '...using the (converged) Fock-Dirac matrix for the infinite'//
+     &   ' order transformation (not h_D(1)).'
+       ELSE
+         WRITE(LUPRI,'(2X,A)')
+     &   '...using the picture change tranf.matrix from h_D(1) for '//
+     &   'the infinite-order transformation of the Fock-Dirac matrix.'
+       ENDIF
+       IF (CONT2C) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &   '...continue with two-component SCF iterations'//
+     &   '.'
+       ELSE
+         WRITE(LUPRI,'(2X,A)')
+     &   '...do only 1 SCF iteration'//
+     &   ' .'
+       ENDIF
+       WRITE(LUPRI,*)
+      ENDIF
 C
       WRITE(LUPRI,'(A)') ' ***** OUTPUT CONTROL *****'
       IF(IPREIG.EQ.0) WRITE(LUPRI,'(A)')
@@ -3283,7 +3441,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 32,NDIR = 8)
+      PARAMETER (NTABLE = 36,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -3321,7 +3479,8 @@ C
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
      &            '.ONECAP','.SPINF2','.NOSPIN','.USE_DF',
      &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
-     &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C'/
+     &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C',
+     &            '.CONT2C','.BEG_2C','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -3372,8 +3531,12 @@ C      ... default - do not do block diagonalization !
       BLOCKD  = .FALSE.
 C     ... trasfer 2c-> 4c and 4c->2c
       DO2C4C  = .FALSE.
+      START2C = .FALSE.
+      INI2C   = -1
       DO4C2C  = .FALSE.
       USEDF   = .FALSE.
+      CONT2C  = .FALSE.
+      I2CHAM  = -1
 C     ... default L&S components... needs discussion about relation to DO2C4C/DO4C2C
       MC      = 2
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
@@ -3433,7 +3596,8 @@ C     Keep track of number of changes and added finite field operators
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
-     &                121,122,123,124,125,126,127,128,129,130,131,132),I
+     &                121,122,123,124,125,126,127,128,129,130,
+     &                131,132,133,134,135,136),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -3623,7 +3787,8 @@ C&&& NOSPIN: Take out all spin-interactions
             GO TO 100
   124     CONTINUE
 C&&  USEDF: Do block-diagonalization of the converged Fock-Dirac operator
-C     (and after that continue in two-component mode with non-canonical orbitals)
+C     (and after that continue in two-component mode with non-canonical orbitals,
+C       or do continue SCF proces to get cannonical orbitals.)
             USEDF = .TRUE.
             GO TO 100
   125     CONTINUE
@@ -3640,7 +3805,9 @@ C       transformed relativistic Hamiltonian
              BSS = .TRUE.
 C        ... read 3-digit number 
              READ(LUCMD,*) IBSS
-             SSMTRC = D0 ! Is it necessary ?
+CMI .... problem for open-shell dc2bss scf procedure !!!!
+CMI ...it's used in CALL GTOVLX(SMAT,SSMTRC,WORK,LWORK) ...
+C            SSMTRC = D0 ! Is it necessary ?
 C    Check that we have not defined operators yet,
 C      as they need to be modified within BSS transformations
              IF (I_FINFIELD.GT.0) THEN
@@ -3659,20 +3826,40 @@ C&&&&   Do solve R-equation 1
             YREQ1 = .TRUE.
             GO TO 100
   129     CONTINUE
-C&&&&  Do NOT do preliminary free-particle transformation ...
+C&&&&  Do NOT do preliminary free-particle transformation
+CMI ...this is Trond's one step approch to the infinite order transformation ...
             NOPRTR = .TRUE.
             GO TO 100
   130     CONTINUE
 C&&&    Do use block diagonalization
+CMI      ... not active yet (planned to be used within UKBAL for the infinite order)
              BLOCKD = .TRUE.
             GO TO 100
   131     CONTINUE
 C&&&  jump to 4c level after few 2c iterations...
-            DO2C4C = .TRUE.  
+             DO2C4C = .TRUE.  
+            START2C = .TRUE.
+            INI2C   = 3
             GO TO 100
   132     CONTINUE
-C&&&  jump to 2c level after finishing 4c SCF !...
-            DO4C2C = .TRUE.  
+C&&&  descend to the 2c level after 4c DC-SCF ...
+            DO4C2C = .TRUE. 
+            GO TO 100
+  133     CONTINUE
+C&&&  after 4c DC-SCF continue with BSS using picture-change transformed Fock-Dirac operator !
+            CONT2C = .TRUE.
+C          ... read the specification of 2c 1el Hamiltonian (3,4,5)
+            READ(LUCMD,*) I2CHAM
+            GO TO 100
+  134     CONTINUE
+C&&& specify INI2C when DO2C4C is on
+            START2C = .TRUE.
+            DO2C4C = .TRUE.
+            READ(LUCMD,*) INI2C
+            GO TO 100
+  135     CONTINUE
+            GO TO 100
+  136     CONTINUE
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -3717,7 +3904,6 @@ C
         CALL QUIT('Conflicting options : VEXTPJ and FREEPJ !')
       ENDIF
 
-
 CMI          Remove inconsistencies for the BSS option
 C     =====================================================
       IF ((DO2C4C.OR.DO4C2C.OR.USEDF).AND..NOT.BSS) THEN
@@ -3726,6 +3912,10 @@ C     =====================================================
       ENDIF
 
       IF (BSS) THEN
+C       IF (NOPRTR.AND.USEDF) THEN
+C        CALL QUIT(
+C    &'HAMINP: "k" basis transf.is required for BSS-post-DHF process!')
+C       ENDIF
         IF (LEVYLE.OR.FREEPJ.OR.VEXTPJ) THEN
           CALL QUIT(
      &'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS !')
@@ -3738,17 +3928,34 @@ C     =====================================================
           CALL QUIT(
      &'HAMINP:Conflicting options URKBAL/SPINFR2 & BSS!')
         ENDIF
-CMI ... DIRCON(1) means contracted L component basis set
+CMI ... DIRCON(1) means contracted L component basis set !
 CMI     IF (ZORA.OR.PROJEC) THEN
         IF (ZORA.OR.PROJEC.OR.DIRCON(1)) THEN
           CALL QUIT(
      &'HAMINP: Conflicting options ZORA/PROJEC/DIRCON(1) & BSS !')
 CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
         ENDIF
+
+        IF (.NOT.(DO4C2C.AND.CONT2C)) CONT2C=.FALSE. 
+CMI     ... set up the default value, when BSS-postDC-SCF is on
+        IF (DO4C2C.AND.I2CHAM.EQ.-1) I2CHAM=3
+        IF (CONT2C) THEN
+         IF (I2CHAM.NE.3.AND.I2CHAM.NE.4.AND.I2CHAM.NE.5) THEN
+           write(lupri,*) 'HAMINP: wrong value of I2CHAM=',I2CHAM
+          CALL QUIT('wrong value of I2CHAM !') 
+         ENDIF
+        ENDIF
+
+CMO     IF (DO4C2C.AND.SPINFR) THEN
+CMI       CALL QUIT(
+CMI  &'HAMINP: Conflicting options DO4C2C & SPINFR !')
+CMI     ENDIF              
+
         IF (DOPRP) THEN
 CMI       CALL QUIT(
 CMI  &'HAMINP: .BSS not yet implemented for properties!')
         ENDIF
+
       ENDIF
 C
 C     If Gaunt is set we always want to include these integrals
@@ -3773,13 +3980,14 @@ C
      &' * If wished, mean-field AMFI summation is for the charge: ',
      &   IMFCH
         ENDIF
-        IF (DO2C4C) WRITE(LUPRI,'(1X,A)')
+        IF (DO2C4C) WRITE(LUPRI,'(1X,A,I1)')
      & '* after (few) two-component SCF iterations do'//
-     & ' jump at the four-component level ! '
-        IF (DO4C2C) WRITE(LUPRI,'(1X,A)')
+     & ' jump at the four-component level ! Code INI2C=',INI2C
+        
+        IF (DO4C2C) WRITE(LUPRI,'(1X,A,I3)')
      & '* after finishing four-component SCF procedure '//
      & ' perform BSS transformation of Dirac-Fock operator'//
-     & ' and continue at the 2comp. level ! '
+     & ' and continue at the 2comp. level ! Code I2CHAM= ',I2CHAM
       ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE
@@ -3807,7 +4015,8 @@ C     ENDIF
 C
 C     Reset MC if necessary
 C
-      IF(LEVYLE.OR.BSS) MC = 1
+      IF(LEVYLE) MC = 1
+CMI   IF(LEVYLE.OR.BSS) MC = 1
 C
 C     Set integral flags
 C

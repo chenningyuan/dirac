@@ -387,8 +387,8 @@ C
 C MI&HJAaJ (2003): If BSS=.TRUE., read the TWO-COMPONENT
 C                   relativistic bare nuclei(in AO basis) from the file
 C                   BSSMAT (label='H1AO_DK')
-C MI, 2005,Strasbourg - added new label='H1AO_DK2' containing
-C  modified (CSC transformed) atomic integrals.
+C   MI, 2005,Strasbourg - added new labels containing
+C        various modified atomic integrals of H2c AO
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -400,41 +400,55 @@ C
 #include "dcbgen.h"
 #include "cbihr1.h"
       DIMENSION FOCK(*),WORK(LWORK)
-      LOGICAL FNDLAB,IS_READ
+      LOGICAL FNDLAB
+      CHARACTER*8 HAM2CL
 C
       CALL QENTER('ONEFCK')
 #include "memint.h"
 
 CMI...   If BSS is active read one-electron
-CMI     DKn(BSS) AO integrals from the file BSSMAT(lu=LUBSS)
+CMI     DKn(BSS) AO integrals from the BSSMAT file (lu=LUBSS)
       IF (BSS) THEN
-         IS_READ=.FALSE.
-         CALL OPNFIL(LUBSS,'BSSMAT','OLD','ONEFCK')
-         REWIND LUBSS
-         IF (FNDLAB('H1AO_DK2',LUBSS)) THEN
-          CALL READT(LUBSS,N2BBASXQ,FOCK)
-          IF (IPRHAM.GE.2)
-     &    WRITE(LUPRI,'(/2X,A,A)')
-     & 'ONEFCK: BSS2 transformed one-electron relativistic',
-     & ' integrals were read from the file BSSMAT.'
-          IS_READ=.TRUE.
+         IF      (I2COFK.EQ.1) THEN
+CMI        .... h2c from h_D(1)_4C ... DEFAULT ...
+           HAM2CL = 'H1AO_DK '
+         ELSE IF (I2COFK.EQ.2) THEN
+CMI      .... h2c_CSC(+AMFI if present) from hD(1)_4C
+           HAM2CL = 'H1AO_DK2'
+CMI      ... these are post-DC-SCF two-component Hamiltonians ...
+C     =============================================================
+         ELSE IF (I2COFK.EQ.3) THEN
+CMI .... h2c(1) from FD4C - one electron terms !
+CMI ...  WE MAY WISH TO PERFORM ONLY ONE SCF ITERATION HERE !
+           HAM2CL = 'FD1AO_DK'
+         ELSE IF (I2COFK.EQ.4) THEN
+CMI .... full Fock_2c transformed from FD4C
+           HAM2CL = 'FDAO_DK '
+         ELSE IF (I2COFK.EQ.5) THEN
+CMI .... f2c(=h1+u1_so, spin-free terms are removed from u1) from FD_4C term
+           HAM2CL = 'FD2C_USO'
+         ELSE
+          write(lupri,*) 'ONEFCK: I2CHAM=',I2CHAM
+          CALL QUIT('ONEFCK: Wrong value of I2CHAM!') 
          ENDIF
 
+         CALL OPNFIL(LUBSS,'BSSMAT','OLD','ONEFCK')
          REWIND LUBSS
-         IF (FNDLAB('H1AO_DK ',LUBSS)) THEN
-           IF (.NOT.IS_READ) THEN 
-             CALL READT(LUBSS,N2BBASXQ,FOCK)
-             IF (IPRHAM.GE.2)
-     &         WRITE(LUPRI,'(/2X,A,A)')
-     & 'ONEFCK: BSS transformed one-electron relativistic',
+         IF (FNDLAB(HAM2CL,LUBSS)) THEN
+          CALL READT(LUBSS,N2BBASXQ,FOCK)
+          IF (IPRHAM.GE.2) THEN
+           WRITE(LUPRI,'(/2X,A,A,A)')
+     & 'ONEFCK: ',HAM2CL,' transformed one-electron relativistic'//
      & ' integrals were read from the file BSSMAT.'
-           ENDIF
-         ELSE IF (.NOT.IS_READ) THEN
-          CALL QUIT(
-     &      'ONEFCK: Error, H1AO_DK/H1AO_DK2 not found in BSSMAT !')
-         END IF
+          ENDIF
+         ELSE
+           WRITE(LUPRI,'(/2X,A,A,I3)')
+     & 'ONEFCK: ',HAM2CL,' transformed one-electron relativistic'//
+     & ' integrals NOT FOUND in the file BSSMAT ! I2CHAM=',I2CHAM
+          CALL QUIT('ONEFCK: integrals NOT FOUND in the file BSSMAT!') 
+         ENDIF
+C        ... close the file ...
          CLOSE(LUBSS,STATUS='KEEP')
-
       ELSE
 C
 C     Memory allocation
@@ -1350,7 +1364,6 @@ C   PAMIOU: LUTMAT
 #include "memint.h"
 
 
-C      IF (DO4C2C.AND.
 C
 C     By default we do not partition the space. This may be
 C     modified if we have linear symmetry or approximate the
@@ -1393,22 +1406,13 @@ C
           NTMO(IFRP)  = NORB(IFRP)
         ENDDO
         KTMAT = KVMAT
-C     ELSE IF (BSS.AND..NOT.DO4C2C) THEN
       ELSE IF (BSS) THEN
-        CALL MAKE_BSS(WORK(KVMAT),WORK(KFREE),LFREE)
-C     ... transformation matrix is the Le part of the Lowdin matrix
+        CALL MAKE_DKH(WORK(KVMAT),WORK(KFREE),LFREE)
+CMI     ... transformation matrix is the Le part of the adapted Lowdin matrix
+C      ... when linear symmetry is on, it is later adapted for linear symmetry...
         KTMAT = KVMAT
       ELSE
 
-C      IF (BSS.AND.DO4C2C.AND..NOT.USEDF) THEN
-C        ... prepare pict.change trasf.matrix using h_D(USEFD=.FALSE)
-C        CALL MAKE_BSS(WORK(KVMAT),WORK(KFREE),LFREE)
-C        ... do not modify the Lowdin matrix - for 2c calculations is saved into BSSMAT
-C        BSS=.FALSE.
-C        write(lupri,*)
-C    &  'BSS tranformation of the Dirac bare nucleus done,'//
-C    &  ' continuing with the DC_rkb Hamiltonian !'
-C      ENDIF
 C
 C     Transformation matrix with modified Dirac equation embedded
 C     ===========================================================
@@ -1416,7 +1420,7 @@ C
         CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
-     &             .FALSE.,WORK(KFREE),LFREE)
+     &             .FALSE.,.FALSE.,WORK(KFREE),LFREE)
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
       ENDIF
       N2TMT   = 0
@@ -1433,7 +1437,9 @@ C
 C     Construct right index transformed overlap matrix Saomo = Sao T
 C     Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
 C
-      CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),IPRONE,WORK(KFREE),LFREE)
+CMI   CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),IPRONE,WORK(KFREE),LFREE)
+      CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),.FALSE.,
+     &              IPRHAM,WORK(KFREE),LFREE)
 C
 C     If requested, reduce transformation matrix by projection with
 C     respect to a set of fragment orbitals
@@ -1495,7 +1501,7 @@ C
 C
 C
 C     Write transformation matrices
-CMI/2004 Note: These matrixes may be later overwritten in the GLINSM
+CMI/2004 Note: These transformation matrixes may be later overwritten by the GLINSM
 C   routine when the linear symmetry in on (LINSYM=.true.)
       CALL OPNFIL(LUTMAT,'DFTMAT','UNKNOWN','GMOTRA')
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
@@ -1511,22 +1517,45 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck modham */
-      SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,WORK,LWORK)
+      SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,LSYMAD,WORK,LWORK)
 C*****************************************************************************
 C
 C     Generate transformation matrix to MO-basis with the modified
 C     Dirac equation embedded.
+
+C     Extended (MI) for linear symmmetry (flag LSYMAD)
+C     and for S-L resorting of columns (flag SLGROUP).
 C
-C     On input: 
-C       VMAT - Lowdin transformation matrix for canonical orthonormalization 
+C     On input:
+C   ============= 
 C
-C     Written by T.Saue, October 1995
-C     Modified by L. Visscher, Jan 20, 1998 to include Levy-Leblond 
+C     VMAT - 4comp Lowdin transformation matrix for canonical orthonormalization
+C            (is destroyed!)
+C
+C     SLGROUP - if .true. (=Trond's 2comp.approach-one step BSS transformation)
+C                do resort columns of the transformation matrix into S-L order)
+C     LSYMAD  - if .true., do apply the LINSYM procedure for adaptation
+C               of the transformation matrix for the linear symmetry...
+C        
+C     On output:
+C   ==============
+C
+C  TMAT - total 4c AO -> MO transformation matrix (may be also linear-symmetry adapted!)
+C
+C  TBUF - if linear symmetry (LSYMAD) is on, it contains the transformation matrix from non-linear MO
+C         to the linear MO
+C
+C  VMAT - if SLGROUP=.true., then it contains the standard (ALWAYS non-linear symmetry) transformation
+C         matrix with SL-resorted columns
+C     
+C   Written by T.Saue, October 1995
+C   Modified by L. Visscher, Jan 20, 1998 to include Levy-Leblond 
+C            M.Ilias, 2005, to include LINAD, SLGROUP
 C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,DM2 = -2.0D0,D0 = 0.0D0)
+      PARAMETER(D1 = 1.0D0, DM2 = -2.0D0, D0 = 0.0D0)
 C
 C Used from COMMON blocks
 C  CBIPAM:
@@ -1544,9 +1573,17 @@ C  DGROUP:
 #include "cbihr1.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
-      LOGICAL SLGROUP
+      LOGICAL SLGROUP,LSYMAD
+      CALL QENTER('MODHAM')
 #include "memint.h" 
 C
+
+CMI  ... check of keywords..
+      IF ( (SLGROUP.OR.LSYMAD).AND.(VEXTPJ.OR.FREEPJ.OR.LEVYLE)) 
+     &  CALL QUIT('MODHAM: SLGROUP/LSYMAD not correspond with'//
+     &'VEXTPJ/FREEPJ/LEVYLE flags!')
+
+      
       FAC = DM2*CVAL*CVAL
       NSYM = 4/NZ
 C
@@ -1772,7 +1809,9 @@ C
           IMAT = IMAT + NFORB(I,0)*NFORB(I,0)*NZ
           IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
    40   CONTINUE
+       CALL MEMCHK('MODHAM 0.1',WORK,1)
         CALL MEMREL('MODHAM',WORK,KSMT,KSMT,KFREE,LFREE)
+       CALL MEMCHK('MODHAM 0.2',WORK,1)
 C
         IF(VEXTPJ.OR.FREEPJ) THEN
 C       These variables are later set by SETDC2, but needed here...
@@ -1816,7 +1855,9 @@ C
             IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
    70     CONTINUE
         ENDIF
-      ENDIF      
+      ENDIF   
+       CALL MEMCHK('MODHAM 0.3',WORK,1)
+
 C
 C     Print section
 C
@@ -1827,97 +1868,131 @@ C
         WRITE(LUPRI,'(A)') '* Applied strict kinetic balance !'
       ENDIF
       IF(IPRHAM.GE.5) THEN
-        CALL HEADER('MODHAM: Final transformation matrix 4c AO->MO ',-1)
+        CALL HEADER(
+     &    'MODHAM: Actual transformation matrix 4c AO->MO ',-1)
         IMAT = 1
         DO 80 I = 1,NFSYM
         IF(NORB(I).GT.0) THEN
-          WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',I
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM
           CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
      &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
           IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
         ENDIF
  80     CONTINUE
       ENDIF
+       CALL MEMCHK('MODHAM 0.4',WORK,1)
+
 
 CMI ... for RKB & BSS do resort columns of transformation matrix that
 CMI     they are S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of S1 L1 S2 L2 ...
-      IF (SLGROUP.AND.NSYM.GT.1) THEN
-       CALL MEMCHK('MODHAM, SL resort',WORK,1)
-       CALL MEMGET('REAL',KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
-       IMAT = 1
-       IBUF = KBUF
-       DO I=1,NFSYM
-       IF (NORB(I).GT.0) THEN
+      IF (SLGROUP) THEN
 
-        IBUF1 = IBUF
-        IBMAT = IMAT
-        DO ISYM = 1,NSYM
-        IF (NBORB(ISYM,I,0).GT.0.AND.NSYM.GT.1) THEN
-        DO IZ=1,NZ
-C       ... co copy S columns first
-          NBS = NFBAS(I,0)*NBORB(ISYM,I,1)
-          CALL DCOPY(NBS,
-     &         TMAT(IBMAT),1,WORK(IBUF),1)
+        ISIZE = NFBAS(1,0)*NORB(1)*NZ
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
 
-            IBUF = IBUF + NFBAS(I,0)*NBORB(ISYM,I,2) +
-     &              (IZ-1)*NORB(I)*NFBAS(I,0)
-            IBMAT = IBMAT + NFBAS(I,0)*NBORB(ISYM,I,0) +
-     &              (IZ-1)*NORB(I)*NFBAS(I,0)
-        ENDDO
-        ENDIF
-        ENDDO
-
-C .. then do copy L columns
-C       IBMAT = IMAT + NFBAS(I,0)*NBORB(1,I,1)
-        IBMAT = IMAT
-        DO ISYM = 1,NSYM
-        IF (NBORB(ISYM,I,0).GT.0.AND.NSYM.GT.1) THEN
-        DO IZ=1,NZ
-
-          NBS = NFBAS(I,0)*NBORB(ISYM,I,1)
-
-C        ... skip S
-          IBMAT = IBMAT + NFBAS(I,0)*NBORB(ISYM,I,2) +
-     &             (IZ-1)*NORB(I)*NFBAS(I,0)
-
-          CALL DCOPY(NBS,
-     &         TMAT(IBMAT),1,WORK(IBUF),1)
-
-          IBUF = IBUF + NFBAS(I,0)*NBORB(ISYM,I,1) +
-     &             (IZ-1)*NORB(I)*NFBAS(I,0)
-
-C        ... skip L
-          IBMAT = IBMAT + NFBAS(I,0)*NBORB(ISYM,I,1) +
-     &             (IZ-1)*NORB(I)*NFBAS(I,0)
-
-        ENDDO
-        ENDIF
-        ENDDO
-         IF (IPRHAM.GE.5) THEN
-          CALL HEADER('MODHAM: Sorted final transformation matrix'//
-     &   ' 4c AO->MO ',-1)
-          WRITE(LUPRI,'(/A,I1,A,I1)')
-     &   '* Fermion ircop no.',I,'/',NFSYM
-          CALL PRQMAT(WORK(IBUF1),NFBAS(I,0),NORB(I),
-     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-         ENDIF
-
-         IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
-
-       ENDIF
-       ENDDO
-
-       IF (NSYM.GT.1) THEN
-         ISIZE = NFBAS(1,0)*NORB(1)*NZ
-         IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ
-         CALL DCOPY(ISIZE,WORK(KBUF),1,TMAT(1),1)
-       ENDIF
-CMI ... has to be fixed....
-C      CALL MEMREL('SLGROUP',WORK,KBUF,KBUF,KFREE,LFREE)
+       CALL MEMCHK('MODHAM 0.5',WORK,1)
+        CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
+       CALL MEMCHK('MODHAM 0.6',WORK,1)
+CMI    ... TMAT remains unchanged, the SL resorted TMAT is in WORK(KBUF)!
+       CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 
+CMI   ... adaptation for the linear symmetry 
+      IF (LSYMAD) THEN
+
+        ISIZE = NFBAS(1,0)*NORB(1)*NZ
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
+
+        CALL MEMCHK('MODHAM, LSYMAD',WORK,1)
+        CALL MEMGET('REAL',KBUF1,ISIZE,WORK,KFREE,LFREE)
+
+        CALL DCOPY(ISIZE,TMAT,1,VMAT,1)
+        CALL DCOPY(ISIZE,TMAT,1,WORK(KBUF1),1)
+
+       IF(IPRHAM.GE.5) THEN
+         CALL HEADER(
+     &  'MODHAM: BEFORE LINSYM final transformation'//
+     &  ' matrix 4c AO->MO, VMAT(copyied from TMAT) ',-1)
+         IMAT = 1
+         DO I = 1,NFSYM
+         IF(NORB(I).GT.0) THEN
+          WRITE(LUPRI,'(/A,I1,A,I1)') 
+     &   '* Fermion ircop no.',I,'/',NFSYM     
+          CALL PRQMAT(VMAT(IMAT),NFBAS(I,0),NORB(I),
+     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+          IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+         ENDIF
+         ENDDO     
+        ENDIF
+
+        CALL DZERO(TMAT,N2BBASXQ)
+        CALL DZERO(TBUF,N2BBASXQ)
+
+        CALL LINSYM(TMAT,VMAT,TBUF,EIG,
+     &            WORK(KFREE),LFREE)
+
+C ... do always return non-linear symmetry adapted transformation matrix :
+        CALL DCOPY(ISIZE,WORK(KBUF1),1,TMAT,1)
+
+C     We need to diagonalize blockwise in the SCF step 
+C      SUB_BL = .TRUE.
+
+       IF(IPRHAM.GE.5) THEN
+         CALL HEADER(
+     &  'MODHAM: AFTER LINSYM final transformation'//
+     &  ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
+         IMAT = 1
+         IBUF = 1
+         DO I = 1,NFSYM
+         IF(NORB(I).GT.0) THEN
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM
+          CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
+     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+
+          WRITE(LUPRI,'(/5X,A/)')
+     &    'MODHAM: 4c ON  RKB "theta" -> LSYM "theta" transformation'//
+     &    '  matrix.'
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM
+          CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),
+     &        NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+
+          IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+          IBUF = IBUF + NORB(I)*NORB(I)*NZ
+
+         ENDIF
+         ENDDO     
+        ENDIF
+
+      ENDIF
+
+      IF (SLGROUP) THEN
+C  ... copy the SL resorted transformation matrix to be exported into VMAT ...
+       CALL DCOPY(ISIZE,WORK(KBUF),1,VMAT,1)
+
+       IF(IPRHAM.GE.5) THEN
+        CALL HEADER(
+     &  'MODHAM: "SL" resorted transformation matrix'//
+     &  ' 4c AO->MO, VMAT(ouput) ',-1)
+        IBUF = 1
+        DO I = 1, NFSYM
+        IF(NORB(I).GT.0) THEN
+         WRITE(LUPRI,'(A,I1,A,I1)')
+     &   '* Fermion ircop no.',I,'/',NFSYM
+         CALL PRQMAT(VMAT(IBUF),NFBAS(I,0),NORB(I),
+     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         IBUF = IBUF + (NFBAS(I,0)*NORB(I)*NZ)
+        ENDIF
+        ENDDO
+       ENDIF
+
+       CALL MEMREL('SLGROUP',WORK,KBUF,KBUF,KFREE,LFREE)
+      ENDIF
       CALL FLSHFO(LUPRI)
-C     CALL QUIT('In MODHAM')
+
+      CALL QEXIT('MODHAM')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2070,6 +2145,8 @@ C     Packed on fermion irreps
 C
 C     Written by T.Saue May 26 1996
 C     Last revision: Jan 20 1998 - L. Visscher
+C
+CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -4141,7 +4218,7 @@ C
 C       Construct right index transformed overlap matrix Saomo = Sao T
 C       Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
 C
-        CALL MKSAOMO(TINV,TMAT,IPRINT,WORK(KFREE),LFREE)
+        CALL MKSAOMO(TINV,TMAT,.FALSE.,IPRINT,WORK(KFREE),LFREE)
       ENDIF
  30   CONTINUE
       CALL MEMREL('PSIPRJ.final',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -5137,7 +5214,8 @@ C
 C
 C     Construct right index transformed overlap matrix Saomo = Sao C
 C
-      CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),IPRONE,WORK(KFREE),LFREE)
+      CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),.FALSE.,
+     &              IPRONE,WORK(KFREE),LFREE)
 C
 C     Write the new transformation matrix.
 C
@@ -5146,9 +5224,16 @@ C
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
       CLOSE(LUTMAT,STATUS='KEEP')
 C
-C     We need to diagonalize blockwise in the SCF step 
+C     We need to diagonalize blockwise in the SCF step
+CMI ... this is done in the DFDIAG routine...
 C
       SUB_BL = .TRUE.
+
+      IF (IPRHAM.GE.2) THEN
+       WRITE(LUPRI,'(/2X,A/)')
+     &'GLINSM: TMAT and Saomo were adapted for the linear symmatry.'
+
+      ENDIF
 C
 C     Memory deallocation
       CALL MEMREL('GLINSM',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -5164,10 +5249,17 @@ C  /* Deck linsym */
       SUBROUTINE LINSYM(TMAT,VMAT,TBUF,EIG,WORK,LWORK)
 C*****************************************************************************
 C
-C     Construct matrix J(x,y,z) and transform to eigenvectors of this operator
+C     Construct matrix Jz(x,y,z) and transform to eigenvectors of this operator
+C
 C     Routine based on MODHAM and parts of the ZORA diagonalization routine
 C
+C     On input:  VMAT 4c AO-MO RKB transformation matrix
+C
+C     On output: TMAT - new 4c AO-MO RKB transf.matrix adapted for the linear symmetry
+C                TBUF - MO to MO transformation matrix adapted for linear symmetry...
+C
 C     Written by L.Visscher, october 2003
+C     Last changes: M.Ilias, Strasbourg, 2005 
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -5194,9 +5286,9 @@ C
       CALL HEADER('Output from LINSYM',-1)
       NBRP = 4 / NZ
 C
-C     Construct mj matrix
+C     Construct mj matrix in AO basis
 C
-      CALL AMJMAT(TBUF,IPRONE,WORK,LWORK)
+      CALL AMJMAT(TBUF,IPRHAM,WORK,LWORK)
 C
 C     Transform to MO-basis
 C     =====================
@@ -5217,6 +5309,30 @@ C
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRGEN)
+
+        IF (IPRHAM.GE.15) THEN
+
+         CALL HEADER(
+     &    'LINSYM: Entering AO->MO transformation matrix',-1) 
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(VMAT(IOFV),NFBAS(I,0),NORB(I),
+     &   NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
+
+         CALL HEADER('LINSYM: MJ matrix in AO basis',-1) 
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IOFTB),NFBAS(I,0),NFBAS(I,0),
+     &   NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
+
+         CALL HEADER('LINSYM: MJ matrix in MO basis',-1) 
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TMAT(IOFT),NORB(I),NORB(I),
+     &   NORB(I),NORB(I),1,IPQTOQ(1,0),LUPRI)
+
+        ENDIF
+
         IOFT = IOFT + NORB(I)*NORB(I)
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
    10 CONTINUE
@@ -5226,6 +5342,9 @@ C     the rest here). Also initialize the array that counts the number of functi
 C     each Mj value.
 C
       CALL DZERO (TBUF,N2TMT)
+CMI   CALL DZERO (TBUF,N2BBASXQ)
+
+
       CALL IZERO (NORB_SUB,MAX_SUB_BL*3*2)
       WRITE (LUPRI,1000)
 C
@@ -5266,6 +5385,14 @@ C
      &                EIG(IEIGE),1,
      &                WORK(KVLL),NL,NL,
      &                WORK(KFREE),LFREE,IERR)
+          IF (IPRHAM.GE.15) THEN
+           CALL HEADER('LINSYM: Jz_LL eigenvalues/eigenvectors',-1) 
+           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+           write(lupri,*) (EIG(IEIGE+II),II=0,NL-1)
+           CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
+     &          IPQTOQ(1,0),LUPRI)
+          ENDIF
         ENDIF
 C
 C       Extract SS block of Jz matrix
@@ -5279,11 +5406,21 @@ C
      &                EIG(IEIGP),1,
      &                WORK(KVSS),NS,NS,
      &                WORK(KFREE),LFREE,IERR)
+
+          IF (IPRHAM.GE.15) THEN
+           CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1) 
+           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+           write(lupri,*) (EIG(IEIGP+II),II=0,NS-1)
+           CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
+     &          IPQTOQ(1,0),LUPRI)
+          ENDIF
         ENDIF
 C
 C       Count the Mj-values.
 C       We will either find a negative or a positive value for each Mj.
 C
+
         MJMAX = 0
         DO IX = IEIGE, IEIGE+NL-1
            MJ = NINT(D2*EIG(IX))
@@ -5345,9 +5482,9 @@ C
         CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
         MJ = 0
         CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
-        CALL SELBOS (NS,WORK(KINDX),EIG(IEIGP),
+        CALL SELBOS (I,NS,WORK(KINDX),EIG(IEIGP),
      &               WORK(KIBEI),WORK(KVSS),
-     &               WORK(KFSS),WORK(KIDUM))
+     &               WORK(KFSS),WORK(KIDUM),IPRHAM)
         CALL MEMREL('LINSYM',WORK,KINDX,KINDX,KFREE,LFREE)
 C
 C       Same thing for the positive energy solutions
@@ -5360,9 +5497,9 @@ C
         CALL MEMGET('INTE',KIBEI,NL,WORK,KFREE,LFREE)
         MJ = 0
         CALL ICOPY (NL,MJ,0,WORK(KIBEI),1)
-        CALL SELBOS (NL,WORK(KINDX),EIG(IEIGE),
+        CALL SELBOS (I,NL,WORK(KINDX),EIG(IEIGE),
      &               WORK(KIBEI),WORK(KVLL),
-     &               WORK(KFLL),WORK(KIDUM))
+     &               WORK(KFLL),WORK(KIDUM),IPRHAM)
         CALL MEMREL('LINSYM',WORK,KINDX,KINDX,KFREE,LFREE)
 C
 C       Put the MO vectors in TBUF
@@ -5373,14 +5510,34 @@ C       Keep this ordering when inserting into the full matrix so
 C       that the new transformation matrix (generated below) will
 C       give an ordering on MJ values.
 C
+
+        CALL DZERO(TBUF(IOFT),NT*NT)
+
         CALL EXTRSB (2,I,NBORB,4,NBRP,
-     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(I),0,0,1,1,1,NZ,
+     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(I),0,0,1,1,1,1,
      &               WORK(KVLL),NL,NL,1,
-     &               TBUF(IOFT),NT,NT,NZ)
+     &               TBUF(IOFT),NT,NT,1)
+
+        IF (IPRHAM.GE.15) THEN
+         CALL HEADER('LINSYM: MO vectors in TBUF,LL',-1) 
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IOFT),NT,NT,NT,NT,1,
+     &   IPQTOQ(1,0),LUPRI)
+        ENDIF
+
         CALL EXTRSB (2,I,NBORB,4,NBRP,
-     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(I),0,0,2,2,1,NZ,
+     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(I),0,0,2,2,1,1,
      &               WORK(KVSS),NS,NS,1,
-     &               TBUF(IOFT),NT,NT,NZ)
+     &               TBUF(IOFT),NT,NT,1)
+
+        IF (IPRHAM.GE.15) THEN
+         CALL HEADER('LINSYM: MO vectors in TBUF,SS',-1) 
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IOFT),NT,NT,NT,NT,1,
+     &   IPQTOQ(1,0),LUPRI)
+        ENDIF
 C
 C       Done; release the extra memory used for diagonalization
 C
@@ -5401,7 +5558,8 @@ C
       DO 30 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 30
         IF (IPRHAM.GE.5) THEN
-           CALL HEADER('Transformation matrix in orthon. basis',-1)
+           CALL HEADER(
+     &  'LINSYM: Transformation matrix in orthon. basis',-1)
            CALL PRQMAT(TBUF(IOFU),NORB(I),NORB(I),NORB(I),
      &                 NORB(I),1,IPQTOQ(1,0),LUPRI)
         ENDIF
@@ -5421,6 +5579,7 @@ C
    30 CONTINUE
 C
       CALL FLSHFO(LUPRI)
+CMI    call quit('linsym')
       RETURN
  1000 FORMAT 
      & (/' Parity   MJ  Functions(total) Functions(LC) Functions(SC)')
@@ -5484,7 +5643,7 @@ C
 C
       PARAMETER (HALF=0.5D0, D1=1.0D0)
       LOGICAL FIRST
-      DIMENSION FOCK(N2BBASX),FTRI(NNBBASX),OP1INT(NNBBASX),
+      DIMENSION FOCK(*),FTRI(NNBBASX),OP1INT(NNBBASX),
      &          WORK(*)
 C
 C     Sanity check : linear symmetry requires use of real groups (C2v or D2h)

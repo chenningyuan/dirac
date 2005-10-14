@@ -72,15 +72,15 @@ C
 C     Generate MO-transformation matrix and write to file
 C     ===================================================
 C
-CMI ... to be polished !!!!
-      IF (BSS.AND.DO4C2C.AND..NOT.DO2C4C.AND.USEDF) BSS=.FALSE.
-
+CMI ... do not perform 2-component calculations if GMOTRA/MAKE_DKH
+      IF (BSS.AND.DO4C2C.AND..NOT.DO2C4C) BSS=.FALSE.
       CALL GMOTRA(WORK,LWORK)
 C
 C     Use supersymmetry for linear molecules
 C     ======================================
 C
-      IF (LINEAR) CALL GLINSM(WORK,LWORK)
+       IF (LINEAR) CALL GLINSM(WORK,LWORK)
+
 C
 C     Set DCB common blocks - second time
 C     ===================================

@@ -3010,12 +3010,24 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKSAOMO */
-      SUBROUTINE MKSAOMO(SAOMO,TMAT,IPRINT,WORK,LWORK)
+      SUBROUTINE MKSAOMO(SAOMO,TMAT,TWOC,IPRINT,WORK,LWORK)
 C**********************************************************************
+C
 C     PURPOSE:
+C   =============
 C        Construct half transformed overlap matrix, Saomo = Sao C
 C
-C        Written by L. Visscher (based on MKSMOAO by J. Thyssen).
+C    On input:  TMAT - transformation matrix, C
+C               TWOC - flag for setting the two-component scheme
+C               note: after MAKE_BSS in GMOTRA we may have anyhow the 2c picture,
+C                      so we use TWOC=.false.
+C
+C   On output:  SAOMO - half transformed overlap matrix
+C
+C    Note(MI,Aug05): It uses NZT,SSMTRC, I2TMT and NTMO !
+C
+C    Written by L. Visscher (based on MKSMOAO by J. Thyssen).
+C   Last modifications: M.Ilias, aug 2005
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3029,15 +3041,43 @@ C***********************************************************************
 #include "dgroup.h"
 C
       DIMENSION SAOMO(*),TMAT(*),WORK(*)
+      LOGICAL TWOC
 C
 #include "memint.h"
 C
       CALL QENTER('MKSAOMO')
 C
-      ISIZE = 0
-      DO I = 1,NFSYM
-         ISIZE = ISIZE + NZ*NFBAS(I,0)*NTMO(I)
-      END DO
+
+      IF (IPRINT.GE.5) THEN
+       CALL HEADER('*** Output from MKSAOMO ***',-1)
+       write(lupri,*) 'NZ=',NZ,' >>>> routine uses NZT=',NZT
+       IF (TWOC) THEN
+         write(lupri,*) 'Hard used two-component mode !'
+       ELSE
+         write(lupri,*) 'Used four-component mode'
+       ENDIF
+      ENDIF
+      
+       ISIZE = 0
+       DO I = 1,NFSYM
+        IF (TWOC) THEN
+          NREF = NESH(I) 
+        ELSE
+          NREF = NTMO(I)
+        ENDIF
+CMI     ... it uses NZT now !
+CMI     ISIZE = ISIZE + NZ*NFBAS(I,0)*NTMO(I)
+CMI     ISIZE = ISIZE + NZT*NFBAS(I,0)*NTMO(I)
+        ISIZE = ISIZE + NZT*NFBAS(I,0)*NREF
+      IF (IPRINT.GE.5) THEN
+        write(lupri,*)
+     &  'ifsym=',I,'/',NFSYM, ' NFBAS(I,0)=',NFBAS(I,0)
+        write(lupri,*) '>>>> NPSH(I)=',NPSH(I),
+     &  ' NESH(I)=',NESH(I),' NTMO(I)=',NTMO(I),
+     &  ' - NORB(I)=',NORB(I),'>>> used NREF=',NREF
+      ENDIF
+      ENDDO
+
       CALL DZERO(SAOMO,ISIZE)
 C
 C     Get AO overlap matrix
@@ -3046,25 +3086,56 @@ C
       CALL GTOVLX(WORK(KSAO),SSMTRC,WORK(KFREE),LFREE)
 C
       IOFF = 1
+      ITMAT = 0
       DO I = 1,NFSYM
-         IF ( NTMO(I) .GT. 0 ) THEN
-            CALL QGEMM(NFBAS(I,0),NTMO(I),NFBAS(I,0),D1,
-     &         'N','N',IPQTOQ(1,0),WORK(KSAO+I2BASX(I,I)),
-     &         NTBAS(0),NTBAS(0),1,
-     &         'N','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
-     &         NFBAS(I,0),NTMO(I),NZT,
-     &         D0,IPQTOQ(1,0),SAOMO(IOFF),
-     &         NFBAS(I,0),NTMO(I),NZT)
-C
+        IF (TWOC) THEN
+          NREF = NESH(I) 
+        ELSE
+          NREF = NTMO(I)
+          ITMAT = I2TMT(I)
+        ENDIF
+        IF ( NREF .GT. 0 ) THEN
+
             IF ( IPRINT .GE. 10 ) THEN
-               CALL HEADER('MKSAOMO: Right index transf. overlap'//
-     &            ' matrix Saomo',-1)
-               CALL PRQMAT(SAOMO(IOFF),NFBAS(I,0),NTMO(I),
-     &            NFBAS(I,0),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+               CALL HEADER('MKSAOMO: Overlap matrix'//
+     &            ' (from GTOVLX)',-1)
+               WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &         '*** Fermion corep ',I,'/',NFSYM 
+               write(lupri,*) ' SSMTRC=',SSMTRC
+               CALL PRQMAT(WORK(KSAO+I2BASX(I,I)),NFBAS(I,0),NFBAS(I,0),
+     &                     NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
+
+               CALL HEADER('MKSAOMO: Entering transformation matrix,'//
+     &            ' TMAT (symm.adapted,NZT)',-1)
+               WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &         '*** Fermion corep ',I,'/',NFSYM 
+               CALL PRQMAT(TMAT(ITMAT+1),NFBAS(I,0),NREF,
+     &            NFBAS(I,0),NREF,NZT,IPQTOQ(1,0),LUPRI)
                CALL FLSHFO(LUPRI)
             END IF
+
+            CALL QGEMM(NFBAS(I,0),NREF,NFBAS(I,0),D1,
+     &         'N','N',IPQTOQ(1,0),WORK(KSAO+I2BASX(I,I)),
+     &         NTBAS(0),NTBAS(0),1,
+     &         'N','N',IPQTOQ(1,0),TMAT(ITMAT+1),
+     &         NFBAS(I,0),NREF,NZT,
+     &         D0,IPQTOQ(1,0),SAOMO(IOFF),
+     &         NFBAS(I,0),NREF,NZT)
+C
+            IF ( IPRINT .GE. 10 ) THEN
+              CALL HEADER('MKSAOMO: Right index transf. overlap'//
+     &          ' matrix SaoCmo, with NZT',-1)
+              WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &        '*** Fermion corep ',I,'/',NFSYM 
+              CALL PRQMAT(SAOMO(IOFF),NFBAS(I,0),NREF,
+     &           NFBAS(I,0),NREF,NZT,IPQTOQ(1,0),LUPRI)
+              CALL FLSHFO(LUPRI)
+            END IF
          END IF
-      IOFF = IOFF + NZ*NFBAS(I,0)*NTMO(I)
+CMI      IOFF = IOFF + NZ*NFBAS(I,0)*NTMO(I)
+CMI      IOFF = IOFF + NZT*NFBAS(I,0)*NTMO(I)
+         IOFF = IOFF + NZT*NFBAS(I,0)*NREF
+         IF (TWOC) ITMAT = ITMAT + (NFBAS(I,0)*NREF*NZT)
       END DO
 C
       CALL MEMREL('SAOMO',WORK,KWORK,KWORK,KFREE,LFREE)

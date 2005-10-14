@@ -363,8 +363,11 @@ C***********************************************************************
 #include "dcbdhf.h"
       DIMENSION DMAT(*),CMO(*)
 C
+      CALL QENTER('DENMAT')
+
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
       CALL GENDEN(DMAT,CMO,1,IPRINT)
+
       IF(AOC) THEN
 C.......Average of Configuration
         DO IOPEN = 1,NOPEN
@@ -377,6 +380,7 @@ C.......Fractional Occupation
         END DO
       ENDIF
 C
+      CALL QEXIT('DENMAT')
       RETURN
       END
 

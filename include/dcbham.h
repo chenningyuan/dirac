@@ -26,6 +26,7 @@
 !     LEVYLE     - Levy-Leblond Hamiltonian
 !     SUB_BL     - Diagonalize Hamiltonian blockwise (neglect couplings)
 !     SSMTRC     - Scaling factor for SS overlap matrix
+!     SSMTRC_SAVE
 !     SPINFR     - Neglect spin-orbit coupling
 !     SPINFR2    - Neglect 2-electron spin-orbit coupling
 !     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
@@ -44,26 +45,41 @@
 !     IBSS       - what kind of BSS Hamiltonian(1.,2. or infinite order; scalar of full
 !                  relativity)
 !     IMFCH      - charge for the mean-field summation in the AMFI
-!     NOPRTR     - do not do the preliminary transformation to the ON basis in 2c mode
+!     NOPRTR     - do not perform the preliminary transformation to the ON basis in 2c mode
 !                  (only for infinite order Tronds approach), if .false., we do the preliminary
 !                  transformation to the free-particle basis or to the Vext-particle ON basis
-!     BLOCKD     - do the block diagonalization (only for infinite order !)
+!     BLOCKD     - do the numerical block diagonalization (only for the infinite order)
+!
 !     DO2C4C     - run SCF first in 2c mode, then continue in the 4-component mode
-!     DO4C2C     - after finishing 4c SCF do block diagonalize 4c Fock and continue 
+!     START2C    - if .true., run preliminary 2com BSS-SCF before 4comp DC-SCF (used together with DO2C4C)
+!     INI2C      - integer number specifying what two-component quantity will be used for (re)starting
+!                  the DC-SCF from previous BSS-SCF 
+!
+!     DO4C2C     - after finishing 4c DC-SCF do block diagonalize 4c Fock and continue 
 !                  at the 2c level
-!     USEDF      - if DO4C2C=.true, use Dirac-Fock operator to be block-diagonalized
+!     USEDF      - if true, use the (converged) Dirac-Fock operator to be block-diagonalized
+!                  (instead of 1 electron Dirac operator)
+!     CONT2C     - continue with 2-component (inf.order) SCF after DC-SCF
+!     I2CHAM     - integer number (1,2...) specifynig post-DC-SCF 2component Hamiltonian type
+!
+!     RESTFCK    - flag to denote restarting DC-SCF from BSS-SCF, or vice versa, from 2c/4c Fock matrix in MO basis
+!
+!     I2COFK     - integer number specifying which 2comp. Hamiltonian (in AO basis) is to be read in ONEFCK
+!
 !     GAUNT      - Include Gaunt interaction in the 2-e operator
-!
-!
+
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
 
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
-     &        ICTLV1C(2), IBSS, MC, I2_HAM, IMFCH
+     &        ICTLV1C(2), IBSS, MC, I2_HAM, IMFCH, I2CHAM, INI2C,       &
+     &        I2COFK                                                    &
+
       COMMON /DCIHAM/ I1_HAM,IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,      &
      &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
-     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC, I2_HAM, IMFCH  &
+     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC, I2_HAM,        &
+     &                IMFCH, I2CHAM, INI2C, I2COFK                      &
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
@@ -72,7 +88,7 @@
      &        SUB_BL, SOLVEN, INERSI, INERSF, SPINFR, SPINFR2, ZORA,    &
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1,              &
-     &        DO2C4C, DO4C2C, USEDF, GAUNT                              &
+     &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT    &
       INTEGER NDCLHAM
       PARAMETER (NDCLHAM = 31)
 
@@ -81,10 +97,11 @@
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
      &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
-     &                GAUNT                                             &
+     &                RESTFCK, CONT2C, START2C, GAUNT                   &
 
-      REAL*8 SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
-      COMMON /DCRHAM/ SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
+      REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
+      COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV,       &
+     &                  HFXFAC, ONECNV
 
 #else  /* __CVERSION__ */
 #define MAX1OPER 10

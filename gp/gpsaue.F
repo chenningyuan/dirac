@@ -2417,6 +2417,43 @@ C
       RETURN
       END
 
+      SUBROUTINE QAHM(AMAT,NDIM,NZ,LRA,LCA)
+C*****************************************************************************
+C
+C   Make -A^(dagger) from A general quanternion matrix
+C
+C   Written by Miro Ilias, August 2005
+C
+C*****************************************************************************
+#include <implicit.h>
+      DIMENSION AMAT(LRA,LCA,NZ)
+C
+C  Generate -A(dagger), where A(dagger)ij = Aji^*
+C
+      DO J = 1, NDIM
+        DO I = 1, (J-1)
+          ZP  =  AMAT(J,I,1)
+          AMAT(J,I,1) = -AMAT(I,J,1)
+          AMAT(I,J,1) = -ZP
+        ENDDO
+        AMAT(J,J,1)=-AMAT(J,J,1)
+      ENDDO
+C  ... quaternion imaginary parts - 
+C  -   only transpose the matrix and preserve the signs
+      DO IZ = 2, NZ
+        DO J = 1,NDIM
+          DO I = 1,(J-1)
+            ZP = AMAT(J,I,IZ)
+            AMAT(J,I,IZ) = AMAT(I,J,IZ)
+            AMAT(I,J,IZ) = ZP
+          ENDDO
+          AMAT(J,J,IZ)= AMAT(J,J,IZ)
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+
       SUBROUTINE QGETAM(AMAT,NDIM,NZ,LRA,LCA,IQSYM)
 C*****************************************************************************
 C
@@ -4136,9 +4173,13 @@ C
 C     IOPT = +1:
 C     Generate the matrix Sqrt(S)
 C
+C     IOPT = +2:
+CMI   Generate the matrix Inv(S)     
+C
 C     NOTE that matrix A gets destroyed in the process !
 C
 C     Written by T. Saue Oct 10 2004
+C     Last changes: M.Ilias, Sept 2005
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4148,7 +4189,10 @@ C
 C     Memory allocation
 C
 #include "memint.h"
-      IF((IOPT*IOPT).NE.1) CALL QUIT('SQSMAT: Invalid IOPT!')
+
+      IF (.NOT.(IOPT.EQ.1.OR.IOPT.EQ.-1.OR.IOPT.EQ.2))
+     &   CALL QUIT('SQSMAT: Invalid IOPT! Must be 1 or -1 or 2 !')
+
       N2DIM = LRA*N*NZA
       CALL MEMGET('REAL',KEVEC,N2DIM,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEVAL,N,WORK,KFREE,LFREE)
@@ -4171,9 +4215,13 @@ C
 C     IOPT = +1:
 C     Generate the matrix Sqrt(S)
 C
+C     IOPT = +2:
+CMI   Generate the matrix Inv(S)     
+C
 C     NOTE that matrix A gets destroyed in the process !
 C
 C     Written by T. Saue Oct 10 2004
+C     Last changes: M.Ilias, Sept 2005
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4194,6 +4242,7 @@ C
 C     Then form Lowdin matrix for canonical orthonormalization
 C     (here one should perhaps introduce a check on linear
 C     dependency)
+
       IF(IOPT.EQ.-1) THEN
         DO J = 1,N
           FAC = D1/SQRT(EVAL(J))
@@ -4201,17 +4250,25 @@ C     dependency)
             CALL DSCAL(N,FAC,EVEC(1,J,JZ),1)
           ENDDO
         ENDDO
-      ELSEIF(IOPT.EQ.1) THEN
+      ELSE IF(IOPT.EQ.1) THEN
         DO J = 1,N
           FAC = SQRT(EVAL(J))
           DO JZ = 1,NZA
             CALL DSCAL(N,FAC,EVEC(1,J,JZ),1)
           ENDDO
         ENDDO
+      ELSE IF(IOPT.EQ.2) THEN
+CMI     ... this is the pure inversion matrix ...
+        DO J = 1,N
+          FAC = D1/(EVAL(J))
+          DO JZ = 1,NZA
+            CALL DSCAL(N,FAC,EVEC(1,J,JZ),1)
+          ENDDO
+        ENDDO
+      ELSE
+       CALL QUIT('SQSTR2: wrong value of IOPT !')       
       ENDIF
 C
-
-
 
 C     Finally get the full matrix
 C
