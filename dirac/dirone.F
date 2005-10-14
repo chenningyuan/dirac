@@ -599,9 +599,6 @@ C     Extract information about property
 C     ==================================
 C
       IOPTYP = IPRPTYP(IOP)
-      ITIMOP = IPRPTIM(IOP)
-      IBRPOP = IPRPSYM(IOP)-1
-      NCMP   = MCMP(IOPTYP)
       IF(IPRINT.GE.3) THEN
         CALL HEADER('Output from PRPMAO',-1)
         WRITE(LUPRI,'(A,A16)')
@@ -611,6 +608,8 @@ C
 C     Loop over components
 C     ====================
 C
+      IBRPOP = IPRPSYM(IOP)-1
+      NCMP   = MCMP(IOPTYP)
       DO 10 I = 1,NCMP
         PFAC  = FACPRP(I,IOP)
         IF(ABS(PFAC).LT.PTOL) GOTO 10

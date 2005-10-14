@@ -749,7 +749,7 @@ C
 #include "priunit.h"
       CHARACTER*7 WORD
 C
-      PARAMETER (NTABKW = 24)
+      PARAMETER (NTABKW = 22)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
@@ -759,12 +759,12 @@ C
       PARAMETER  (D1 = 1.0D0)
       PARAMETER (BLANK8='        ', BLANK16='                ' )
       SAVE TABKW
-      DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'DIAGONAL',
-     &           'XALPHA  ', 'YALPHA  ', 'ZALPHA  ', 'XAVECTOR',
-     &           'YAVECTOR', 'ZAVECTOR', 'ALPHADOT', 'GAMMA5  ',
-     &           'XSIGMA  ', 'YSIGMA  ', 'ZSIGMA  ', 'XBETASIG',
-     &           'YBETASIG', 'ZBETASIG', 'XiBETAAL', 'YiBETAAL',
-     &           'ZiBETAAL', 'BETA    ', 'CFACTORS', 'COMCFACT'/
+      DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'FOCKMAT ',
+     &           'DIAGONAL', 'XALPHA  ', 'YALPHA  ', 'ZALPHA  ',
+     &           'XAVECTOR', 'YAVECTOR', 'ZAVECTOR', 'ALPHADOT',
+     &           'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ', 'ZSIGMA  ',
+     &           'XBETASIG', 'YBETASIG', 'ZBETASIG', 'XiBETAAL',
+     &           'YiBETAAL', 'ZiBETAAL'/
 C
       CALL QENTER('XPRINP')
 C
@@ -867,13 +867,28 @@ C
 C          If keyword defines operator type, then initialize
 C          =================================================
 C
-           IF (I .GT. 3) THEN
-              IPTYP = I - 3
+           IF (I .GT. 4) THEN
+              IPTYP = I - 4
               NLABEL= 0
               NFAC  = 0
               IKW = 2
            END IF
-           GO TO (4,5,6,1,1,1,1,2,2,2,3,1,1,1,1,1,1,1,1,1,1,1), I
+C
+C          If keyword Fock defines matrix read, then initialize
+C          ====================================================
+C          (the matrix is assumed totally symmetric 
+C           under point group and time reversal symmetry)
+C
+           IF (I .EQ. 4) THEN
+              IPTYP = 0
+              NLABEL= 0
+              NFAC  = 0
+              IKW = 2
+              ISYXPR = 1
+              ITRXPR = 1
+           END IF
+           GO TO (4,5,6,1,1,1,1,1,2,2,2,3,
+     &            1,1,1,1,1,1,1,1,1,1), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -882,7 +897,7 @@ C
      &     ' Keyword "'//KEYWD(1:LKW)//'" not recognized.'
          GO TO 300
 C&&&&    One component: DIAGONAL, [XYZ]ALPHA, GAMMA5, [XYZ]SIGMA,
-C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA
+C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT
     1    CONTINUE
            NPCOMP = 1
          GO TO 300
@@ -1102,8 +1117,13 @@ C
      &            WORK,LWORK,IPRINT)
 C
  1000 CONTINUE
-      ISYXPR = IPRPSYM(INDXPR)
-      ITRXPR = IPRPTIM(INDXPR)
+      IF(IPTYP.EQ.0) THEN
+        IPRPSYM(INDXPR) = ISYXPR
+        IPRPTIM(INDXPR) = ITRXPR
+      ELSE
+        ISYXPR = IPRPSYM(INDXPR)
+        ITRXPR = IPRPTIM(INDXPR)
+      ENDIF
       CALL QEXIT('XPRIND')
       RETURN
       END
@@ -1130,6 +1150,7 @@ C  XCBPRP: everything
 C  XCBPRI: LUPRI,NINFO
 C
 #include "dcbxpr.h"
+#include "dcbprl.h"
 #include "dcbham.h"
 C
       CHARACTER*4 PCOMB
@@ -1170,8 +1191,12 @@ C ... fix the LS block for the LevyLe option
         IF (IPRINT.GE.6) WRITE(LUPRI,'(A)')
      & '  Only the LL block for connection matrixes in two-comp.mode!'
       ELSE
-         IF (IPTYP.LT.1 .OR. IPTYP.GT.19)
-     &      CALL QUIT('XPRADD: Illegal IPTYP (not 1-19)!')
+         IF (IPTYP.EQ.0) THEN
+           PCOMB = 'xxxx'
+           GOTO 200           
+         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.19) THEN
+           CALL QUIT('XPRADD: Illegal IPTYP (not 1-19)!')
+         ENDIF
          GO TO (1,2,2,2,2,2,2,2,2,
      &          1,1,1,3,3,3,4,4,4,3),IPTYP
 C
@@ -1226,6 +1251,7 @@ CMI ... inform about the assigned PCOMB
 C
 C     Define property
 C
+ 200  CONTINUE
       NPRPS  = NPRPS + 1
       IF(NPRPS.GT.MAXPRPS) THEN
         WRITE(LUPRI,'(A,I5)') 
@@ -1238,19 +1264,36 @@ C     Property name
 C     Property type
       IPRPTYP(NPRPS) = IPTYP
 C     Pointers to property labels
-      DO 600 J = 1,NPCOMP
-         FACPRP(J,NPRPS)  = PFAC(J)
-         INDX = INDXPL(PLABEL(J),PCOMB,WORK,LWORK,IPRINT)
-         IF (INDX .LE. 0) THEN
+      IF(IPTYP.EQ.0) THEN
+        DO 300 I = 1,NPRPLBL
+C         Check property label
+          IF (PLABEL(1).NE.PRPLBL(I)) GOTO 300
+          IF (PCOMB.NE.PDOINT(I))  GOTO 300
+          INDX = I
+        GO TO 400
+  300   CONTINUE
+        NPRPLBL = NPRPLBL + 1
+        INDX    = NPRPLBL
+  400   CONTINUE      
+        FACPRP(1,NPRPS)  = PFAC(1)
+        IPRPLBL(1,NPRPS) = INDX
+        PRPLBL(INDX) = PLABEL(1)
+        PDOINT(INDX) = PCOMB
+      ELSE
+        DO 600 J = 1,NPCOMP
+          FACPRP(J,NPRPS)  = PFAC(J)
+          INDX = INDXPL(PLABEL(J),PCOMB,WORK,LWORK,IPRINT)
+          IF (INDX .LE. 0) THEN
             INDXPR = -1
             WRITE (LUPRI,'(3A)')
      &      'PLABEL, PCOMB not found in /XCBPRL/ : ', PLABEL(J), PCOMB
-         END IF
-         IPRPLBL(J,NPRPS) = INDX
-  600 CONTINUE
-      IF (INDXPR .EQ. -1) CALL QUIT('XPRADD: PLABEL, PCOMB not found')
-C     Symmetry under time reversal and point group symmetry
-      CALL PRPSYM(INDXPR,IPRINT)
+          END IF
+          IPRPLBL(J,NPRPS) = INDX
+  600   CONTINUE
+        IF (INDXPR .EQ. -1) CALL QUIT('XPRADD: PLABEL, PCOMB not found')
+C       Symmetry under time reversal and point group symmetry
+        CALL PRPSYM(INDXPR,IPRINT)
+      ENDIF
 C
       CALL QEXIT('XPRADD')
       RETURN
@@ -2007,6 +2050,14 @@ C     Operator type
 C     =============
 C
       ITYP = IPRPTYP(INDXPR)
+      IF(ITYP.EQ.0) THEN
+        WRITE(LUPRI,'(6X,A,A8)') 'Operator read from matrix ',
+     &        PRPLBL(IPRPLBL(1,INDXPR))
+        FMT = MXFORM(ABS(FACPRP(1,INDXPR)),16)
+        WRITE(LUPRI,'(6X,A,4X,'//FMT//')')
+     &      'Factor     : ',FACPRP(1,INDXPR)
+      GOTO 30
+      ENDIF
       GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19 ), ITYP
         WRITE(LUPRI,'(6X,A,I5)')
      &  'Program error: unknown operator type:',ITYP
@@ -2114,6 +2165,7 @@ C
      &      FACPRP(I,INDXPR),OPTYPE
         ENDIF
       ENDDO
+ 30   CONTINUE
       CALL PRSYMB(LUPRI,'.',75,0)
 C
       RETURN

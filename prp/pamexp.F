@@ -401,10 +401,11 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0)
+      PARAMETER(D0 = 0.0D0,D1=1.0D0)
 C
 #include "mxcent.h"
 #include "dcbxpr.h"
+#include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -413,8 +414,7 @@ C
 C
       LOGICAL FIRST(NZ),LEXPST(2)
       DIMENSION PTRI(NNBBASX,NZ),PMAT(N2BBASX,NZ),
-     &  OP1INT(*),
-     &          WORK(LWORK)
+     &  OP1INT(*),WORK(LWORK)
 
       CALL QENTER('PRPEX2')
 
@@ -455,11 +455,33 @@ C
 C     Totally symmetric operator ==> proceed
 C
       CALL LSET(NZ,.TRUE.,FIRST)
-      IF (ITIM.EQ.0) THEN
-       CALL PRPMAOSQ(LU1INT,INDXPR,PMAT,OP1INT,
+C
+C     Operator to be read from file
+C     =============================
+C
+      IOPTYP = IPRPTYP(INDXPR)
+      IF(IOPTYP.EQ.0) THEN
+        KLBL  = IPRPLBL(1,INDXPR)
+        INQUIRE(FILE=PRPLBL(KLBL),EXIST=FIRST(1))
+        IF(FIRST(1)) THEN
+          CALL OPNFIL(2,PRPLBL(KLBL),'OLD','PRPMAO')
+          CALL REAFCK(2,PMAT,.FALSE.,1)
+          CLOSE(2,STATUS = 'KEEP')
+          PFAC = FACPRP(1,INDXPR)
+          IF(PFAC.NE.D1) CALL DSCAL(N2BBASXQ,PFAC,PMAT,1)
+          
+          CALL LSET(NZ,.FALSE.,FIRST)
+        ELSE
+          WRITE(LUPRI,'(A,A8,A,A16,A)')
+     &      'Property file ',PRPLBL(KLBL),' for operator ',
+     &      PRPNAM(INDXPR),' not found !'
+          CALL QUIT('PRPMAO: Property file not found !')
+        ENDIF
+      ELSEIF (ITIM.EQ.0) THEN
+        CALL PRPMAOSQ(LU1INT,INDXPR,PMAT,OP1INT,
      &              FIRST,WORK,LWORK,IPRINT)
       ELSE
-       CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,
+        CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,
      &              FIRST,WORK,LWORK,IPRINT)
       ENDIF
 C
@@ -506,6 +528,8 @@ C
 C     Get expectation value, using only the matrices containing
 C     integrals
 C
+      IOPTYP = IPRPTYP(INDXPR)
+      IF(IOPTYP.EQ.0) GOTO 10
 CMI June/2004): After performing the picture change transformation
 C of the four-component  property operator, U+XU, which has certain matrixes zero,
 C the resulting TWO-component property operator has usually all matrixes non-zero as
@@ -528,8 +552,8 @@ CMI ... zeored out non-used quaternionic blocks of property matrixes...
            CALL DZERO(PMAT(1,IZ),N2BBASX)  
          ENDIF
          END DO
-         CALL MEMCHK('PRPEX3 1.0',WORK,1)
-
+ 10      CONTINUE
+CTROND         CALL MEMCHK('PRPEX3 1.0',WORK,1)
          IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/A,A16)')
      & 'PRPEX3: Total AO-matrix of property ',PRPNAM(INDXPR)
@@ -541,9 +565,9 @@ CMI ... do the picture change transformation of ALL operator matrixes
 C   ...  ALL quaternion operator matrixes are in general non-zero
          CALL DOPCTRA(INDXPR,PMAT,NZ,'S',WORK,LWORK)
          IF (DOPCT) THEN
-          DO IZ=1, NZ
-            FIRST(IZ)=.FALSE.
-          ENDDO
+           DO IZ=1, NZ
+             FIRST(IZ)=.FALSE.
+           ENDDO
          ENDIF
 C
 C     Get expectation value, using ONLY the matrices containing
@@ -573,7 +597,7 @@ CMI ... test ouput - print the PMAT and DMAT matrixes
       ENDIF
       ENDDO
       EXPVAL = EXPVAL + EXPVAL
-      CALL MEMCHK('PRPEX3 2.0',WORK,1)
+CTROND      CALL MEMCHK('PRPEX3 2.0',WORK,1)
 C
       CALL QEXIT('PRPEX3')
       RETURN
@@ -601,11 +625,12 @@ C
 #include "dcborb.h"
 C
       LOGICAL FIRST(NZ)
-      DIMENSION PFO(*),PAO(N2BBASX),NCNT(*),
+      DIMENSION PFO(*),PAO(N2BBASX,NZ),NCNT(*),
      &          RVEC(*),PTRI(NNBBASX,NZ),WORK(*)
 C
 C     Transform on the fly
 C
+      IOPTYP = IPRPTYP(INDXPR)
       IPF = 1
       DO IFRP = 1,NFSYM
         NDIM = NCNT(IFRP)*NCNT(IFRP)*NZ
@@ -615,21 +640,26 @@ C
       FADD = D0
       DO IZ = 1,NZ
       IF(.NOT.FIRST(IZ)) THEN
-        IQ = IPQTOQ(IZ,IREP)
-        IH = IHQMAT(IQ,ITIM)
-        IF(IH.EQ.1) THEN
-          CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PAO)
-        ELSEIF(IH.EQ.2) THEN
-          CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PAO)
+        IF(IOPTYP.EQ.0) THEN
+          II = IZ
+        ELSE
+          II = 1
+          IQ = IPQTOQ(IZ,IREP)
+          IH = IHQMAT(IQ,ITIM)
+          IF(IH.EQ.1) THEN
+            CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PAO)
+          ELSEIF(IH.EQ.2) THEN
+            CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PAO)
+          ENDIF
+          CALL BUTOBS(PAO,1,WORK(KFREE),LFREE)
         ENDIF
-        CALL BUTOBS(PAO,1,WORK(KFREE),LFREE)
         IPA = 1
         IPF = 1
         IPR = 1
         DO IFRP = 1,NFSYM
           CALL QTRANS('AOMO','S',FADD,
      &         NFBAS(IFRP,0),NFBAS(IFRP,0),NCNT(IFRP),NCNT(IFRP),
-     &         PAO(IPA),NTBAS(0),NTBAS(0),1,IPQTOQ(IZ,IREP),
+     &         PAO(IPA,II),NTBAS(0),NTBAS(0),1,IPQTOQ(IZ,IREP),
      &         PFO(IPF),NCNT(IFRP),NCNT(IFRP),NZ,IPQTOQ(1,IREP),
      &         RVEC(IPR),NFBAS(IFRP,0),NCNT(IFRP),NZ,IPQTOQ(1,0),
      &         RVEC(IPR),NFBAS(IFRP,0),NCNT(IFRP),NZ,IPQTOQ(1,0),
