@@ -64,7 +64,7 @@
 !
 !     RESTFCK    - flag to denote restarting DC-SCF from BSS-SCF, or vice versa, from 2c/4c Fock matrix in MO basis
 !
-!     I2COFK     - integer number specifying which 2comp. Hamiltonian (in AO basis) is to be read in ONEFCK
+!     I2COFK     - integer number specifying which 2comp. Hamiltonian (in AO basis) is to be read in the ONEFCK routine
 !
 !     GAUNT      - Include Gaunt interaction in the 2-e operator
 
@@ -73,13 +73,13 @@
 
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
-     &        ICTLV1C(2), IBSS, MC, I2_HAM, IMFCH, I2CHAM, INI2C,       &
-     &        I2COFK                                                    &
+     &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
+     &        INI2C, I2COFK                                             &
 
-      COMMON /DCIHAM/ I1_HAM,IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,      &
+      COMMON /DCIHAM/ IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,             &
      &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
-     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC, I2_HAM,        &
-     &                IMFCH, I2CHAM, INI2C, I2COFK                      &
+     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC, I1_HAM,        &
+     &                I2_HAM, IMFCH, I2CHAM, INI2C, I2COFK              &
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
@@ -89,6 +89,7 @@
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1,              &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT    &
+
       INTEGER NDCLHAM
       PARAMETER (NDCLHAM = 31)
 

@@ -1809,9 +1809,7 @@ C
           IMAT = IMAT + NFORB(I,0)*NFORB(I,0)*NZ
           IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
    40   CONTINUE
-       CALL MEMCHK('MODHAM 0.1',WORK,1)
         CALL MEMREL('MODHAM',WORK,KSMT,KSMT,KFREE,LFREE)
-       CALL MEMCHK('MODHAM 0.2',WORK,1)
 C
         IF(VEXTPJ.OR.FREEPJ) THEN
 C       These variables are later set by SETDC2, but needed here...
@@ -1856,7 +1854,6 @@ C
    70     CONTINUE
         ENDIF
       ENDIF   
-       CALL MEMCHK('MODHAM 0.3',WORK,1)
 
 C
 C     Print section
@@ -1881,7 +1878,6 @@ C
         ENDIF
  80     CONTINUE
       ENDIF
-       CALL MEMCHK('MODHAM 0.4',WORK,1)
 
 
 CMI ... for RKB & BSS do resort columns of transformation matrix that
@@ -1891,9 +1887,7 @@ CMI     they are S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of S1 L1 S2 L2 ..
         ISIZE = NFBAS(1,0)*NORB(1)*NZ
         IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
 
-       CALL MEMCHK('MODHAM 0.5',WORK,1)
         CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
-       CALL MEMCHK('MODHAM 0.6',WORK,1)
 CMI    ... TMAT remains unchanged, the SL resorted TMAT is in WORK(KBUF)!
        CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
       ENDIF
@@ -1904,7 +1898,6 @@ CMI   ... adaptation for the linear symmetry
         ISIZE = NFBAS(1,0)*NORB(1)*NZ
         IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
 
-        CALL MEMCHK('MODHAM, LSYMAD',WORK,1)
         CALL MEMGET('REAL',KBUF1,ISIZE,WORK,KFREE,LFREE)
 
         CALL DCOPY(ISIZE,TMAT,1,VMAT,1)

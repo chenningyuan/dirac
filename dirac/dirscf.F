@@ -2934,7 +2934,7 @@ C***********************************************************************
       DIMENSION IBEIG(NO),INDX(NO)
       DIMENSION EVEC(NO,NO,NZ),RDUM(NO,4)
 
-      CALL QENTER('APPBOS') 
+CC    CALL QENTER('APPBOS') 
 C
       IF (URKBAL) RETURN
 C
@@ -3006,7 +3006,7 @@ C
        enddo
       ENDIF
 
-      CALL QEXIT('APPBOS') 
+CC    CALL QEXIT('APPBOS') 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
