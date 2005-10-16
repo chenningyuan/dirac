@@ -73,7 +73,7 @@ C
      &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   ',
      &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
-     &             '.VERDET','.ROTG  ','.MSTDIA','.XXXXXX',
+     &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /
 C
       CALL QENTER('PRPINP')
@@ -84,40 +84,41 @@ C
 C     Initialize /CBIPRP/
 C     ===================
 C
-      IPRPRP   = 0
-      DOEXP    = .FALSE.
-      DOESR    = .FALSE.
-      DOXLR    = .FALSE.
-      DOXPP    = .FALSE.
-      DOXQR    = .FALSE.
-      DOTPA    = .FALSE.
-      DOVER    = .FALSE.
-      DIPOLE   = .FALSE.
-      QUADRU   = .FALSE.
-      EPOLAR   = .FALSE.
-      MSUSCP   = .FALSE.
-      SHIELD   = .FALSE.
-      PVCSHI   = .FALSE.
-      SPNSPN   = .FALSE.
-      EFG      = .FALSE.
-      EFN      = .FALSE.
-      EFT      = .FALSE.
-      EFTNTL   = .FALSE.
-      NQCC     = .FALSE.
-      DSO      = .FALSE.
-      NSTDIA   = .FALSE.
-      MSUSCDIA = .FALSE.
-      ROTG     = .FALSE.
-      LONDON   = .TRUE.
-      PVC      = .FALSE.
-      RHONUC   = .FALSE.
-      ABUND    = D1
-      NDSOINT  = 0
-      MGRAD    = .FALSE.
-      ESRGTENS = .FALSE.
-      ESRANISO = .FALSE.
-      NPRPWF   = 1
-      PRPWF(1) = 'DHF'
+      IPRPRP    = 0
+      DOEXP     = .FALSE.
+      DOESR     = .FALSE.
+      DOXLR     = .FALSE.
+      DOXPP     = .FALSE.
+      DOXQR     = .FALSE.
+      DOTPA     = .FALSE.
+      DOVER     = .FALSE.
+      DIPOLE    = .FALSE.
+      QUADRU    = .FALSE.
+      EPOLAR    = .FALSE.
+      MSUSCP    = .FALSE.
+      SHIELD    = .FALSE.
+      PVCSHI    = .FALSE.
+      PVCSPNSPN = .FALSE.
+      SPNSPN    = .FALSE.
+      EFG       = .FALSE.
+      EFN       = .FALSE.
+      EFT       = .FALSE.
+      EFTNTL    = .FALSE.
+      NQCC      = .FALSE.
+      DSO       = .FALSE.
+      NSTDIA    = .FALSE.
+      MSUSCDIA  = .FALSE.
+      ROTG      = .FALSE.
+      LONDON    = .TRUE.
+      PVC       = .FALSE.
+      RHONUC    = .FALSE.
+      ABUND     = D1
+      NDSOINT   = 0
+      MGRAD     = .FALSE.
+      ESRGTENS  = .FALSE.
+      ESRANISO  = .FALSE.
+      NPRPWF    = 1
+      PRPWF(1)  = 'DHF'
 
 CMI Activate the  picture change transformations
 C   of four-component property matrixes 
@@ -335,7 +336,9 @@ C&&&& MSUSCD diamagnetic contribution to the magnetizabilities
             DOEXP    = .TRUE.
             GO TO 100
   128    CONTINUE 
-C&&&& XXXXXX
+C&&&& PVCSPN: parity-violating contribution to spin-spin coupling
+            DOXLR     = .TRUE.
+            PVCSPNSPN = .TRUE.
             GO TO 100
   129    CONTINUE 
 C&&&& XXXXXX

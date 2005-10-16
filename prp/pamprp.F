@@ -1278,6 +1278,12 @@ C
         CALL DEF_PVCSHI_MEM(WORK,LWORK)
       ENDIF
 C
+C     parity-violating contribution to spin-spin coupling
+C
+      IF(PVCSPNSPN) THEN
+        CALL DEF_PVCSPNSPN_MEM(WORK,LWORK)
+      ENDIF
+C
 C     Diamagnetic contribution to shieldings
 C
       IF(NSTDIA) THEN
@@ -1389,10 +1395,16 @@ C
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
-C     Parity-violating contribution to NMR shielding
+C     parity-violating contribution to NMR shielding
 C
       IF(PVCSHI) THEN
         CALL PRP_PVCSHI_MEM(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+      ENDIF 
+C
+C     parity-violating contribution to spin-spin coupling
+C
+      IF(PVCSPNSPN) THEN
+        CALL PRP_PVCSPNSPN_MEM(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF 
 C
 C     Magnetic susceptibilities
@@ -4323,7 +4335,7 @@ C
 C     release memory
 C     ==============
 C
-      CALL MEMREL('PRP_PVCSHI_MEM',WORK,1,KFREE,KFREE,LFREE)
+      CALL MEMREL('DEF_PVCSHI_MEM',WORK,1,KFREE,KFREE,LFREE)
 C
 C
       RETURN
@@ -4376,6 +4388,9 @@ C
       CALL QENTER('DEF_PVCSHI')
 C
 C
+C     define right hand operators
+C     ===========================
+C
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPPVCSHI,3+MXCOOR)
 C
@@ -4387,14 +4402,6 @@ C     yavector
 C
 C     zavector
       IOP(3) = 7
-C
-      PFAC(1)  = CVAL
-      PFAC(2)  = CVAL
-      NPCOMP   = 2
-C
-C
-C     define right hand operators
-C     ===========================
 C
       NCOMP     = 2
       PFAC(1)   = 0.5D0*CVAL
@@ -4438,7 +4445,6 @@ C
       CALL IZERO(IPPVCSHI,MXCOOR)
       WRITE(LUPRI,'(A)') 'Parity-violating contribution'
       WRITE(LUPRI,'(A)') 'to NMR shielding'
-      ITYP = 0
 C
 C     xalpha
       IOP(1) = 2
@@ -4453,9 +4459,8 @@ C     zalpha
       PFAC(3) = CVAL
 C
 C     this prefactor (CVAL) has to be here to guarantee
-C     the correct non-relativistic limit
+C     to go to the usually employed non-relativistic limit
 C     in the output section we will divide by CVEL
-C     for compensation
 C
 C
 C     if point nucleus
@@ -4470,7 +4475,6 @@ C
         IF(DOATOM(IATOM)) THEN
           DO IREP = 0,MAXREP
             IF(IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
-              ITYP = ITYP+1
 C     
 C             if gaussian model
               IF(GAUNUC) THEN
@@ -4511,6 +4515,240 @@ C
 C
 C
       CALL QEXIT('DEF_PVCSHI')
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck def_pvcspnspn_mem */
+      SUBROUTINE DEF_PVCSPNSPN_MEM(WORK,LWORK)
+C  *********************************************************************
+C  *                                                                   *
+C  *  define operators for parity-violating contribution to            *
+C  *  spin-spin coupling                                               *
+C  *                                                                   *
+C  *********************************************************************
+C  *                            written                   revision     *
+C  *  radovan bast              september 2005            15/10/2005   *
+C  *                                                                   *
+C  *********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+C
+      DIMENSION WORK(LWORK)
+C
+#include "memint.h"
+C
+C
+C     allocate memory
+C     ===============
+C
+      CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
+C
+C
+C     accept .SELECT
+C     ==============
+C
+      CALL SETATM(WORK(KDOATOM),NATOM,-29)
+C
+C
+C     call
+C     ====
+C
+      CALL DEF_PVCSPNSPN(WORK(KDOATOM),WORK(KFREE),LFREE)
+C
+C
+C     release memory
+C     ==============
+C
+      CALL MEMREL('DEF_PVCSPNSPN_MEM',WORK,1,KFREE,KFREE,LFREE)
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck def_pvcspnspn */
+      SUBROUTINE DEF_PVCSPNSPN(DOATOM,WORK,LWORK)
+C  *********************************************************************
+C  *                                                                   *
+C  *  define operators for parity-violating contribution to            *
+C  *  spin-spin coupling                                               *
+C  *                                                                   *
+C  *********************************************************************
+C  *                            written                   revision     *
+C  *  radovan bast              september 2005            15/10/2005   *
+C  *                                                                   *
+C  *********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "gfac.h"
+#include "pi.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbesr.h"
+#include "dcbxlr.h"
+#include "dcbexp.h"
+#include "dcbnmr.h"
+#include "chrxyz.h"
+C
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER PNAME*16,PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+C
+#include "chrnos.h"
+#include "ibtfun.h"
+C
+C
+      CALL QENTER('DEF_PVCSPNSPN')
+C
+C
+C     define left hand operators
+C     ==========================
+C
+      CALL IZERO(IPPVCSPNSPN,2*MXCOOR)
+C
+C     xavector
+      IOP(1) = 5
+C
+C     yavector
+      IOP(2) = 6
+C
+C     zavector
+      IOP(3) = 7
+C
+      PFAC(1)  = -CVAL
+      PFAC(2)  = -CVAL
+C
+      NPCOMP = 2
+      IREP = 0
+      DO IATOM = 1,NUCDEP
+C
+        IF(DOATOM(IATOM)) THEN
+C
+          DO ICOOR = 1,3
+            ISCOOR = IPTCNT(3*(IATOM-1)+ICOOR,IREP,2)
+            IF(ISCOOR.GT.0) THEN
+C
+              PNAME = 'NUCSPI'//CHRNOS(ISCOOR/10)
+     &                        //CHRNOS(MOD(ISCOOR,10))
+     &                        //NAMN(IATOM)
+     &                        //REP(IREP)
+     &                        //CHRXYZ(ICOOR)
+C
+              IPTYP = IOP(ICOOR)
+              IC1   = MOD(ICOOR+1,3)+1
+              IC2   = MOD(ICOOR  ,3)+1
+              IREP1 = IBTXOR(IREP,ISYMAX(IC2,1))
+              IREP2 = IBTXOR(IREP,ISYMAX(IC1,1))
+              IS1   = IPTCNT(3*(IATOM-1)+IC1,IREP1,1)
+              IS2   = IPTCNT(3*(IATOM-1)+IC2,IREP2,1)
+C
+              PLABEL(1) = 'NEF '//CHRNOS(IS1/10)
+     &                          //CHRNOS(MOD(IS1,10))//'  '
+              PLABEL(2) = 'NEF '//CHRNOS(IS2/10)
+     &                          //CHRNOS(MOD(IS2,10))//'  '
+C
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                    INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+              CALL OP1IND('XSPNA',INDEXA,LLRAPU,NLRAPT,INDXPR,MAXLLR)
+              IPPVCSPNSPN(1,ISCOOR) = INDEXA
+              CALL WRIXPR(INDEXA,INDXPR)
+C
+            ENDIF
+          ENDDO
+C
+        ENDIF
+      ENDDO
+C
+C
+C     define right hand operators
+C     ===========================
+C
+      WRITE(LUPRI,'(A)') 'Parity-violating contribution'
+      WRITE(LUPRI,'(A)') 'to spin-spin couplings'
+C
+C     xalpha
+      IOP(1) = 2
+      PFAC(1) = CVAL
+C
+C     yalpha
+      IOP(2) = 3
+      PFAC(2) = CVAL
+C
+C     zalpha
+      IOP(3) = 4
+      PFAC(3) = CVAL
+C
+C     this prefactor (CVAL) has to be here to guarantee
+C     to go to the usually employed non-relativistic limit
+C     in the output section we will divide by CVEL
+C
+C
+C     if point nucleus
+      IF(.NOT.GAUNUC) THEN
+        DO ICOOR = 1,3
+          PFAC(ICOOR) = PFAC(ICOOR)*D3/(D4*GFAC*PI)
+        ENDDO      
+      ENDIF
+C      
+      NPCOMP = 1
+      DO IATOM = 1,NUCDEP
+C       IF(DOATOM(IATOM)) THEN
+          DO IREP = 0,MAXREP
+            IF(IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+C     
+C             if gaussian model
+              IF(GAUNUC) THEN
+                PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+C     
+C             if point nucleus
+              ELSE
+                PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+              ENDIF
+              PNAME = 'PVCa '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                       //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                       //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+C
+              DO ICOOR = 1,3
+C
+                IPTYP = IOP(ICOOR)
+                PNAME(5:5) = CHRNOS(ICOOR)
+                CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+                CALL OP1IND(PNAME(1:6),INDEXB,LLRBPU,NLRBPT,
+     &                      INDXPR,MAXLLR)
+                ISCOOR = IPTCNT(3*(IATOM-1)+ICOOR,IREP,2)
+                IF(ISCOOR.GT.0) THEN
+                  IPPVCSPNSPN(2,ISCOOR) = INDEXB
+                ENDIF
+                CALL WRIXPR(INDEXB,INDXPR)
+C
+              ENDDO
+C
+            ENDIF
+          ENDDO
+C       ENDIF
+      ENDDO
+C
+C
+      CALL QEXIT('DEF_PVCSPNSPN')
 C
 C
       RETURN
@@ -6537,7 +6775,7 @@ C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
      &           GFERMI = 2.22254D-14,STHETAW2 = 0.2319D0)
 C
-      LOGICAL TEST,DOATOM(NUCDEP)
+      LOGICAL TEST,DOATOM(NUCDEP),LZERO(NUCDEP)
 C
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),
@@ -6550,12 +6788,11 @@ C
 #include "ibtfun.h"
 C
 C
-C
       DFAC = -(GFERMI*(D1-D4*STHETAW2)*1.0D6)/(CVEL*SQRT(D2))
 C
 C
       CALL AROUND('Parity-violating contribution to NMR shielding')
-      WRITE(LUPRI,'(A)') 'up to now only for C1 symmetry'
+      WRITE(LUPRI,'(A)') 'WARNING: only for C1 symmetry'
       WRITE(LUPRI,*)
 C
 C
@@ -6624,9 +6861,13 @@ C
       DO INUC = 1,NUCDEP
         IF(DOATOM(INUC)) THEN
           RATIO = GVALMAT(1,INUC)/(D2*XFMP)
-          DO ICOOR = 1,3
-            TEMPMAT(INUC,ICOOR) = TEMPMAT(INUC,ICOOR)/RATIO
-          ENDDO
+          LZERO(INUC) = .FALSE.
+          IF(RATIO.EQ.D0) LZERO(INUC) = .TRUE.
+          IF(.NOT.LZERO(INUC)) THEN
+            DO ICOOR = 1,3
+              TEMPMAT(INUC,ICOOR) = TEMPMAT(INUC,ICOOR)/RATIO
+            ENDDO
+          ENDIF
         ENDIF
       ENDDO
 C
@@ -6672,6 +6913,12 @@ C
       IF(DOATOM(1)) THEN
         WRITE(LUPRI,'(A12,A4,F22.6)') '@   Nucleus ',
      &        NAMDEP(1),GVALMAT(1,1)
+        IF(LZERO(1)) THEN
+          WRITE(LUPRI,'(A20)') 'WARNING:'
+          WRITE(LUPRI,'(A47)') 'division by the (zero) magnetogyric'
+          WRITE(LUPRI,'(A34)') 'ratio for this nucleus'
+          WRITE(LUPRI,'(A30)') 'has been prevented'
+        ENDIF
       ENDIF
 C
       IF(NUCDEP.GE.2) THEN
@@ -6679,6 +6926,277 @@ C
           IF(DOATOM(INUC)) THEN
             WRITE(LUPRI,'(A12,A4,F22.6)') '@           ',
      &            NAMDEP(INUC),GVALMAT(1,INUC)
+          ENDIF
+          IF(LZERO(INUC)) THEN
+            WRITE(LUPRI,'(A20)') 'WARNING:'
+            WRITE(LUPRI,'(A47)') 'division by the (zero) magnetogyric'
+            WRITE(LUPRI,'(A34)') 'ratio for this nucleus'
+            WRITE(LUPRI,'(A30)') 'has been prevented'
+          ENDIF
+        ENDDO
+      ENDIF
+C
+      WRITE(LUPRI,'(A)') '@'
+      WRITE(LUPRI,*)
+      CALL PRSYMB(LUPRI,'-',46,0)
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck prp_pvcspnspn_mem */
+      SUBROUTINE PRP_PVCSPNSPN_MEM(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+C  *********************************************************************
+C  *                                                                   *
+C  *  prepare output for parity-violating contribution to              *
+C  *  spin-spin couplings                                              *
+C  *                                                                   *
+C  *********************************************************************
+C  *                            written                   revision     *
+C  *  radovan bast              september 2005            01/10/2005   *
+C  *                                                                   *
+C  *********************************************************************
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
+C
+      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &          ABCNV(NBFREQ,NLRBPT),WORK(*)
+C
+C
+C     allocate memory
+C     ===============
+C
+      CALL MEMGET('REAL',KTEMPMAT,NUCDEP*NUCDEP*4,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGVALMAT,NUCDEP*5       ,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KDOATOM ,NUCDEP         ,WORK,KFREE,LFREE)
+C
+C
+C     accept .SELECT
+C     ==============
+C
+      CALL SETATM(WORK(KDOATOM),NATOM,-29)
+C
+C
+C     call
+C     ====
+C
+      CALL PRP_PVCSPNSPN(EXPVAL,ABLRF,ABCNV,
+     &                   WORK(KTEMPMAT),WORK(KGVALMAT),WORK(KDOATOM),
+     &                   WORK,KFREE,LFREE)
+C
+C
+C     release memory
+C     ==============
+C
+      CALL MEMREL('PRP_PVCSPNSPN_MEM',WORK,1,KFREE,KFREE,LFREE)
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck prp_pvcspnspn */
+      SUBROUTINE PRP_PVCSPNSPN(EXPVAL,ABLRF,ABCNV,TEMPMAT,GVALMAT,
+     &                         DOATOM,WORK,KFREE,LFREE)
+C  *********************************************************************
+C  *                                                                   *
+C  *  output for parity-violating contribution to                      *
+C  *  spin-spin couplings                                              *
+C  *                                                                   *
+C  *********************************************************************
+C  *                            written                   revision     *
+C  *  radovan bast              september 2005            01/10/2005   *
+C  *                                                                   *
+C  *********************************************************************
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "codata.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+C
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
+     &           GFERMI = 2.22254D-14,
+     &           AU2HZ = 6.579683920721D15,
+     &           STHETAW2 = 0.2319D0)
+C
+      LOGICAL TEST,DOATOM(NUCDEP),LZERO(NUCDEP)
+C
+      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &          ABCNV(NBFREQ,NLRBPT),
+     &          TEMPMAT(NUCDEP,NUCDEP,4),GVALMAT(5,NUCDEP),
+     &          WORK(*)
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "ibtfun.h"
+C
+C
+      DFAC = -(GFERMI*(D1-D4*STHETAW2))/(CVEL*SQRT(D2))
+      DFAC = (DFAC*AU2HZ)/(D2*PI*CVEL*CVEL)
+      DFAC = DFAC*1.0D9
+C
+C
+      CALL AROUND('PV contribution to spin-spin couplings')
+      WRITE(LUPRI,'(A)') 'WARNING: only for C1 symmetry'
+      WRITE(LUPRI,*)
+C
+C
+      IFREQ = 1
+C
+C
+C     fill temporary matrix
+C     =====================
+C
+      CALL DZERO(TEMPMAT,NUCDEP*NUCDEP*4)
+      DO INUC = 1,NUCDEP
+        IF(DOATOM(INUC)) THEN
+          DO JNUC = 1,NUCDEP
+            IF(.NOT.(INUC.EQ.JNUC)) THEN
+              DO ICOOR = 1,3
+                KA = IPPVCSPNSPN(1,(INUC*3)-3+ICOOR)
+                KB = IPPVCSPNSPN(2,(JNUC*3)-3+ICOOR)
+C
+C               e-e
+                TEMPMAT(INUC,JNUC,ICOOR) = ABLRF(IFREQ,KA,KB,2)
+C
+C               don't look for e-p in case of LEVY-LEBLOND
+                IF(.NOT.XLR_SKIPEP) THEN
+C
+C                 e-p
+                  TEMPMAT(INUC,JNUC,ICOOR) = TEMPMAT(INUC,JNUC,ICOOR)
+     &                                   + ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
+                ENDIF
+              ENDDO
+            ENDIF
+          ENDDO
+        ENDIF
+      ENDDO
+C
+C
+C     multiply TEMPMAT with DFAC
+C     ==========================
+C
+      CALL DSCAL(NUCDEP*NUCDEP*4,DFAC,TEMPMAT,1)
+C
+C
+C     extract nuclear g factors for magnetogyric ratios
+C     =================================================
+C
+      CALL DZERO(GVALMAT,NUCDEP*5)
+      DO JNUC = 1,NUCDEP
+        IDEG = NUCDEG(JNUC)
+C       IF(DOATOM(JNUC)) THEN
+        TEST = .FALSE.
+        IZ = NINT(CHARGE(JNUC))
+        NISO = 0
+        DO ISO = 1,5
+          GVAL = DISOTP(IZ,ISO,'GVAL')
+          IF(GVAL.NE.0) THEN
+            ABND = DISOTP(IZ,ISO,'ABUNDANCE')
+            IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
+              TEST = .TRUE.
+              NISO = NISO+1
+              GVALMAT(NISO,JNUC) = GVAL
+            ENDIF
+          ENDIF
+        ENDDO
+C       ENDIF
+      ENDDO
+C
+C
+C     divide x,y,z comonents of TEMPMAT by magnetogyric ratio
+C     =======================================================
+C
+      DO JNUC = 1,NUCDEP
+        RATIO = GVALMAT(1,JNUC)/(D2*XFMP)
+        LZERO(JNUC) = .FALSE.
+        IF(RATIO.EQ.D0) LZERO(JNUC) = .TRUE.
+        IF(.NOT.LZERO(JNUC)) THEN
+          DO INUC = 1,NUCDEP
+            DO ICOOR = 1,3
+              TEMPMAT(INUC,JNUC,ICOOR) = TEMPMAT(INUC,JNUC,ICOOR)*RATIO
+            ENDDO
+          ENDDO
+        ENDIF
+      ENDDO
+C
+C
+C     calculate average of trace
+C     ==========================
+C
+      DO INUC = 1,NUCDEP
+        DO JNUC = 1,NUCDEP
+          TEMPMAT(INUC,JNUC,4) =
+     &                        (TEMPMAT(INUC,JNUC,1)+TEMPMAT(INUC,JNUC,2)
+     &                        +TEMPMAT(INUC,JNUC,3))/D3
+        ENDDO
+      ENDDO
+C
+C
+C     printout
+C     ========
+C
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(A)') '@'
+      WRITE(LUPRI,'(A)') '@   PV contribution to spin-spin couplings'
+      WRITE(LUPRI,'(A)') '@'
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(A52)')
+     &            '@   << PV Operator | nuclear spin >>    trace/(3*pi)'
+      WRITE(LUPRI,'(A)') '@'
+C
+      DO INUC = 1,NUCDEP
+        IF(DOATOM(INUC)) THEN
+          DO JNUC = 1,NUCDEP
+            IF(.NOT.(INUC.EQ.JNUC)) THEN
+              WRITE(LUPRI,'(A10,A4,A11,A4,A8,E17.8,A4)')
+     &                    '@         ',NAMDEP(INUC),'',
+     &                                 NAMDEP(JNUC),'',
+     &                                 TEMPMAT(INUC,JNUC,4), 'nHz'
+            ENDIF
+          ENDDO
+        ENDIF
+      ENDDO
+      WRITE(LUPRI,'(A)') '@'
+      WRITE(LUPRI,*)
+C
+      WRITE(LUPRI,'(A)') '@   following nuclear g factors used:'
+      IF(DOATOM(1)) THEN
+        WRITE(LUPRI,'(A12,A4,F22.6)') '@   Nucleus ',
+     &        NAMDEP(1),GVALMAT(1,1)
+        IF(LZERO(1)) THEN
+          WRITE(LUPRI,'(A20)') 'WARNING:'
+          WRITE(LUPRI,'(A47)') 'multiplication by the (zero)'
+          WRITE(LUPRI,'(A34)') 'magnetogyric ratio for this nucleus'
+          WRITE(LUPRI,'(A30)') 'has been prevented'
+        ENDIF
+      ENDIF
+C
+      IF(NUCDEP.GE.2) THEN
+        DO JNUC = 2,NUCDEP
+          IF(DOATOM(JNUC)) THEN
+            WRITE(LUPRI,'(A12,A4,F22.6)') '@           ',
+     &            NAMDEP(JNUC),GVALMAT(1,JNUC)
+          ENDIF
+          IF(LZERO(JNUC)) THEN
+            WRITE(LUPRI,'(A20)') 'WARNING:'
+            WRITE(LUPRI,'(A47)') 'multiplication by the (zero)'
+            WRITE(LUPRI,'(A34)') 'magnetogyric ratio for this nucleus'
+            WRITE(LUPRI,'(A30)') 'has been prevented'
           ENDIF
         ENDDO
       ENDIF
