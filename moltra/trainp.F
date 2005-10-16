@@ -841,9 +841,8 @@ C
      +     '* LS Integrals not included in core Fock-matrix'
       IF (MOD(ITRA_INTFL2/4,2).NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* SS Integrals not included in core Fock-matrix'
-CLuuk : activate output when Gaunt is ready and active
-CLuuk IF (MOD(ITRA_INTFL2/8,2).NE.1) WRITE(LUPRI,'(1X,A)')
-CLuuk+     '* Gaunt Integrals not included in core Fock-matrix'
+      IF (GAUNT.AND.MOD(ITRA_INTFL2/8,2).NE.1) WRITE(LUPRI,'(1X,A)')
+     +     '* Gaunt Integrals not included in core Fock-matrix'
 C
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
       CALL IZERO (NTVEC,2)

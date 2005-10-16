@@ -718,6 +718,9 @@ C
       ELSEIF (I2TYP.EQ.2) THEN
          ICS12 = 2
          ICF12 = 2
+      ELSEIF (I2TYP.EQ.4) THEN
+         ICS12 = 3
+         ICF12 = 3
       ELSE
          ICS12 = 1
          ICF12 = 2
