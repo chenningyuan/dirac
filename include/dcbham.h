@@ -107,7 +107,7 @@
 #else  /* __CVERSION__ */
 #define MAX1OPER 10
   extern struct common_dcrham {
-    real ssmtrc,epsol,epstat,rsolav,hfxfac;
+    real ssmtrc,ssmtrc_save,epsol,epstat,rsolav,hfxfac,onecnv;
   } dcrham_;
 
 #endif /* __CVERSION__ */
