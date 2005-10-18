@@ -15,6 +15,10 @@
 !  MGRAD - calculate molecular gradient
 !  DOPCT - do perform picture change transformation of four-component
 !          property operators
+!  NOPCT - do NOT perform the picture change transformation when DOPCT is on
+!          - take only LL block of the four-component property operator
+!
+!
            
       INTEGER LUCORP
       PARAMETER (LUCORP = 91)
@@ -23,7 +27,7 @@
      &        SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, PVC, DOESR,     &
      &        ESRGTENS, ESRANISO, EFT, EFTNTL, EFN, RHONUC,             &
      &        DOTPA,DOVER,                                              &
-     &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA,            & 
+     &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
      &        PVCSHI, PVCSPNSPN
 
       INTEGER MXPRPWF
@@ -35,7 +39,7 @@
      &                MSUSCP, SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, &
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
      &                EFN, RHONUC, DOTPA, DOVER,                        &
-     &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,         & 
+     &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
      &                PVCSHI, PVCSPNSPN
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &

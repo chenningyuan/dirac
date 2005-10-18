@@ -74,7 +74,7 @@ C
      &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
      &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
-     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /
+     &             '.NOPCTR','.XXXXXX','.XXXXXX','.XXXXXX' /
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -126,10 +126,15 @@ C   for the two-component (BSS) infinite order.
 C TODO with TS/HJJ: BSS spin-free picture change transformation
       IF (BSS.AND.IBSS.GE.99) THEN
         DOPCT=.TRUE.
+C       ... by default DO the picture change transformation
+        NOPCT = .FALSE.
         WRITE(LUPRI,'(/3X,A/)')
      &'PRPINP: Picture change transformation of properties activated !'
       ELSE
         DOPCT=.FALSE.
+        NOPCT = .TRUE.
+        WRITE(LUPRI,'(/3X,A/)')
+     &'PRPINP: Only LL blocks of propery operators are taken !'
       ENDIF
 C
 C     Read menu file
@@ -342,7 +347,8 @@ C&&&& PVCSPN: parity-violating contribution to spin-spin coupling
             PVCSPNSPN = .TRUE.
             GO TO 100
   129    CONTINUE 
-C&&&& XXXXXX
+C&&&& NOPCT - when DOPCT is .true. do NOT do picture change transformation...
+            NOPCT = .TRUE.
             GO TO 100
   130    CONTINUE 
 C&&&& XXXXXX
@@ -377,6 +383,18 @@ C
      &     '* Operator center:', (ORIGIN(I),I=1,3),
      &     '* Gauge origin   :', (GAGORG(I),I=1,3),
      &     '* Dipole origin  :', (DIPORG(I),I=1,3)
+
+      IF (DOPCT) THEN
+       IF (.NOT.NOPCT) THEN
+         WRITE(LUPRI,'(2X,A/)') 
+     & '...do the picture change transformation of the'//
+     & ' four-comp. property operator'
+       ELSE
+         WRITE(LUPRI,'(2X,A/)') 
+     & '...do NOT do the picture change transformation of the'//
+     & ' four-comp. property operator - take only LL block(s)'
+       ENDIF
+      ENDIF
 C
 C     Process input for various program sections
 C     ==========================================

@@ -1159,13 +1159,12 @@ C     ... eliminate spin-free components
       ENDIF
 
       CALL QEXIT('SPF_HK')
-
       RETURN
       END
 
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck  */
+C  /* Deck dopctra */
       SUBROUTINE DOPCTRA(INDXPR,PRPAO,MZ,TREV,WORK,LWORK)
 C****************************************************************************
 C
@@ -1173,14 +1172,23 @@ C  PURPOSE: Do picture change transformation  of the entering AO
 C           one-electron matrix of some
 C           FOUR-COMPONENT property operator
 C
+C           If NOPCT = .true., do not perform the picture change tranf.,
+C           only take the LL block of a four-component property 
+C           operator (this is not rigorous, but shows how important is
+C           the picture change transfgormation of property operator)
+C
 C  On input: PRPAO 4component operator in AO basis
-C             - either full or 1 comp.
-C            INDXPR - index of property to be transformed 
+C            INDXPR - index of the property operator
+C            to be transformed (if -1, th's diagonal SCF start from BNCORR)
+C            MZ - number of components of the prop.operator
+C            TREV - symmatrix (S) or antisymmetric operator
+C
 C
 C  On output: PRPAO picture change transformed operator 
 C             matrix (LL block) of AO basis
 C
 C  Written: M Ilias, Prievidza, June 2004
+C  Last changes: MI, Strasbourg, October 2005      
 C      
 C****************************************************************************
 #include "implicit.h"
@@ -1209,19 +1217,24 @@ C ... check if one needs to do the pic.change transf.
       IPRINT = IPRPRP
 
       IF (.NOT.DOTR) THEN
-      IPRINT = IPRPRP
-      IREP = IPRPSYM(INDXPR) - 1
-C ... determine the time reversal symmetry
-C     of the property operator
-      ITIM = IPRPTIM(INDXPR)
+        IPRINT = IPRPRP
+          IREP = IPRPSYM(INDXPR) - 1
+C ... determine the time reversal symmetry of the property operator
+          ITIM = IPRPTIM(INDXPR)
       ELSE
        IREP=0
       ENDIF
 
+C  ... keep only LL blocks of the four-component property operator
+      IF (NOPCT.AND..NOT.DOTR) THEN
+        CALL ONLY_LL(PRPAO,PRPNAM(INDXPR),IREP,ITIM,MZ,IPRPRP)
+        GOTO 789
+      ENDIF
 
-C ,,, read (load) the picture change transformation matrix:
+
+C ...  read (load) the picture change transformation matrix:
 C       4c AO-> 2c AO(LL)
-      CALL MEMCHK('in DOPCT',WORK,1)
+C     CALL MEMCHK('in DOPCT',WORK,1)
 
       CALL OPNFIL(LUBSS,'BSSMAT','OLD','DOPCTRA')
 C     ... set up at the beginning of the file
@@ -1231,6 +1244,7 @@ C     ... set up at the beginning of the file
         IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
 C ... array for the picture change transformation matrix (PCTM)...
        CALL MEMGET('REAL',KPCTM,ISIZE,WORK,KFREE,LFREE)
+       CALL MEMCHK('in DOPCT',WORK,1)
         CALL READT(LUBSS,ISIZE,WORK(KPCTM))
 C       CALL READT(LUBSS,N2BBASXQ,WORK(KPCTM))
         IF (IPRPRP.GE.2) WRITE(LUPRI,'(/2X,A)')
@@ -1292,7 +1306,6 @@ C ... prints OK ...
       IPCTM2 = KPCTM
       DO I1 = 1, NFSYM
          I2 = MOD(I1+IOPSY,2) + 1
-
 C ----------------------------------------------------------
 C     Do the picture change transformation X_2c =U+.X_4c.U
 C NOTE: It works only as a symmetric transformation !!!
@@ -1370,7 +1383,7 @@ C ... it woould be useful to test the pict change transformed operator...
 C .... NFBAS(I1,1) x NFBAS(I2,1) blocks are non-zero,
 C     while all others are zero
       PROPNAME=PRPNAM(INDXPR)
-      CALL CHECK_PCTOP(IREP,IOPSY,PROPNAME,PRPAO,MZ,IPRPRP)
+      CALL CHECK_LLOP(IREP,IOPSY,PROPNAME,PRPAO,MZ,IPRPRP)
 
 C     Memory deallocation - release the used block
 
@@ -1383,14 +1396,88 @@ C     CALL QUIT('In DOPCT...')
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck CHECK_PCTOP */
-      SUBROUTINE CHECK_PCTOP(IREP,IOPSY,PROPNAME,PRPAO,MZ,IPRINT)
+C  /* Deck only_ll */
+      SUBROUTINE ONLY_LL(PRPAO,PROPNAME,IREP,ITIM,MZ,IPRINT)
 C**************************************************************************
 C
-C   PURPOSE:  Check the picture change transformed operator 
-C             matrix PRPAO
+C
+C
+C
+C**************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER ( D0 = 0.00D00, D1 = 1.00D00, DEB_THRS=1.0D-7 )
+#include "dgroup.h"
+#include "dcbbas.h"
+
+C     DIMENSION PRPAO(NTBAS(0),NTBAS(0),MZ)
+      DIMENSION PRPAO(*)
+      CHARACTER PROPNAME*16
+
+      CALL QENTER('ONLY_LL')
+
+      IOPSY = JBTOF(IREP,1)
+      DO I1 = 1, NFSYM
+         I2 = MOD(I1+IOPSY,2) + 1
+
+       IF (IPRINT.GE.5) THEN
+        WRITE(LUPRI,'(/A,1X,A16,/,10X,A,I2,A,I1)')
+     &'ONLY_LL: Symm. blocked FOUR-COMPONENT AO-matrix of property "',
+     &  PROPNAME,'" time reversal symm:',ITIM,
+     &  ' number of matrixes: ',MZ
+       WRITE(LUPRI,'(/5X,A,I1,A,I1)')
+     &    '*** Fermion corep ',I1,'/',NFSYM
+       CALL PRQMAT(PRPAO(1+I2BASX(I1,I2)),NFBAS(I1,0),NFBAS(I2,0),
+     &        NTBAS(0),NTBAS(0),MZ,IPQTOQ(1,IREP),LUPRI)
+       ENDIF
+
+C      ... delet all other blocks (SL,LS,SS) except LL
+       DO IZ = 1, MZ
+C          ... first LS block
+         ILS1 = 1 + I2BASX(I1,I2) + NFBAS(I1,1) + 
+     &         ((IZ-1)*NTBAS(0)*NTBAS(0))
+         DO J = 1, NFBAS(I2,1)
+           ILS = ILS1 + ((J-1)*NTBAS(0)) 
+           CALL DZERO(PRPAO(ILS),NFBAS(I1,2))
+         ENDDO
+C          ... then SS,SL blocks
+         ILS1 = 1 + I2BASX(I1,I2) + (NTBAS(0)*NFBAS(I2,1)) +
+     &          ((IZ-1)*NTBAS(0)*NTBAS(0))
+         DO J = 1, NFBAS(I2,2)
+           ILS = ILS1 + ((J-1)*NTBAS(0)) 
+           CALL DZERO(PRPAO(ILS),NFBAS(I1,0))
+         ENDDO
+       ENDDO
+
+       IF (IPRINT.GE.5) THEN
+        WRITE(LUPRI,'(/A,1X,A16,/,10X,A,I2,A,I1)')
+     &'ONLY_LL: LL block of FOUR-COMPONENT AO-matrix of property',
+     &  PROPNAME,' time reversal symm:',ITIM,
+     &  ' number of matrixes: ',MZ
+       WRITE(LUPRI,'(/5X,A,I1,A,I1)')
+     &    '*** Fermion corep ',I1,'/',NFSYM
+       CALL PRQMAT(PRPAO(1+I2BASX(I1,I2)),NFBAS(I1,0),NFBAS(I2,0),
+     &        NTBAS(0),NTBAS(0),MZ,IPQTOQ(1,IREP),LUPRI)
+       ENDIF
+      ENDDO
+
+      CALL CHECK_LLOP(IREP,IOPSY,PROPNAME,PRPAO,MZ,IPRINT)
+
+C      call quit('only_ll')
+      CALL QEXIT('ONLY_LL')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck CHECK_LLOP */
+      SUBROUTINE CHECK_LLOP(IREP,IOPSY,PROPNAME,PRPAO,MZ,IPRINT)
+C**************************************************************************
+C
+C   PURPOSE:  Check whether the (picture change transformed) operator 
+C             matrix PRPAO contains only LL block
 C
 C    Written: M Ilias, Prievidza, June 2004
+C    Last updates: MI, Strasbourg, Oct.2005
 C
 C**************************************************************************
 #include "implicit.h"
@@ -1402,11 +1489,11 @@ C**************************************************************************
       DIMENSION PRPAO(NTBAS(0),NTBAS(0),MZ)
       CHARACTER PROPNAME*16
 
-      CALL QENTER('CHECK_PCTO')
+      CALL QENTER('CHECK_LLOP')
 
       IF (IPRINT.GE.6) THEN
         WRITE(LUPRI,'(/A,1X,A16)')
-     & '*** CHECK_PCTOP: Total AO-matrix of 2comp. transf. property',
+     & '*** CHECK_LLOP: Total AO-matrix of 2comp. (transf.) property ',
      &   PROPNAME 
        CALL PRQMAT(PRPAO(1,1,1),NTBAS(0),NTBAS(0),
      &   NTBAS(0),NTBAS(0),MZ, IPQTOQ(1,IREP),LUPRI)
@@ -1444,19 +1531,19 @@ C ... filled matrix blocke LL
 
       IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/,1X,A,A16,/,A,2D12.7)')
-     &  'CHECK_PCTO:  For property ', PROPNAME,
+     &  'CHECK_LLOP:  For property ', PROPNAME,
      &  'we have (occup, empty): ',DOCCUPB,DEMPTYB   
       ENDIF
 
       IF (DABS(DEMPTYB).GE.DEB_THRS) THEN
        WRITE(LUPRI,'(/,1X,A,A16,/,A,2D12.7)')
-     &  'CHECK_PCTO:  For property ', PROPNAME,
+     &  'CHECK_LLOP:  For property ', PROPNAME,
      &  'we have (occup,empty): ',DOCCUPB,DEMPTYB   
        WRITE(LUPRI,'(2X,A)')
-     & 'WARNING: Non-zero sum of values in empty block!!!'
+     & 'WARNING CHECK_LLOP: Non-zero sum of values in empty block!!!'
       ENDIF
 
-      CALL QEXIT('CHECK_PCTO')
+      CALL QEXIT('CHECK_LLOP')
       RETURN
       END
 
