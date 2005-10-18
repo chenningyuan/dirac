@@ -1465,9 +1465,9 @@ C
 C     Sort eigenvalues and boson irrep info
       DO J = 1,NORBT
         EIG2(J) = EIG1(IBUF(J))
-        IBEIG2(J) = IBEIG1(IBUF(J))
         CALL ACMOU3(CMO1,CMO2,IBUF(J),J,NTBAS(0),NORBT)
       ENDDO
+      CALL IZERO(IBEIG2,NORBT)
 C
 C     Write coefficients etc. to file
 C     ===============================
