@@ -330,27 +330,27 @@ C     reorthonormalization over both p+e shells, or only over
 C     the electronic shells. 
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dgroup.h>
-#include <dcborb.h>   
-#include <dcbbas.h>   
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbprp.h>
-#include <dcbnmr.h>
-#include <dcbxpr.h>
-#include <dcbxlr.h>
-#include <dummy.h>
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcborb.h"   
+#include "dcbbas.h"   
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbprp.h"
+#include "dcbnmr.h"
+#include "dcbxpr.h"
+#include "dcbxlr.h"
+#include "dummy.h"
 
-      PARAMETER(D2 = 2.0D0,D1 = 1.0D0,
-     & D0 = 0.0D0, DM1 = -1.0D0, DM2 = - 2.0D0)
+      PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0, DM1 = -1.0D0, 
+     &          DM2 = - 2.0D0)
 
       DIMENSION W(NORBT,NORBT,NZ,3), ! Array for {T,h(mK)}_ic product
      &         CONMAT(NORBT,NORBT,NZ), ! Array for h(mK) property matrix
@@ -358,7 +358,7 @@ C
      &         ORTO(3,*),WORK(*)
       LOGICAL AH,EPMIX,DOPCTRA_SAVE
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       CALL QENTER('GETCON')
 
       KFRSAV = KFREE
@@ -510,16 +510,16 @@ C     Written by T. Enevoldsen Feb 4 1998
 C     Added by MI & HJAaJ, 2002/2003
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <dcbprp.h>
-#include <dcbbas.h>
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbbas.h"
 C
       DIMENSION CMO(*),IBEIG(*),WORK(LWORK)
       CALL QENTER('TWOLON')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
 C
@@ -557,27 +557,27 @@ C     Written by T. Enevoldsen Feb 4 1998
 C     Added by MI&HJAaJ, 2002
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>  
-#include <dummy.h>   
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <shells.h>
-#include <ccom.h>
-#include <cbihr2.h>
-#include <symmet.h>
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"  
+#include "dummy.h"   
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "shells.h"
+#include "ccom.h"
+#include "cbihr2.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "iratdef.h"
 C
-#include <aovec.h>
-#include <blocks.h>
-#include <dcbgen.h>
-#include <dcbnmr.h>
-#include <dcbfir.h>
+#include "aovec.h"
+#include "blocks.h"
+#include "dcbgen.h"
+#include "dcbnmr.h"
+#include "dcbfir.h"
 C
       DIMENSION FMAT(N2BBASX,4,NCOMP),
      &          FOCK(N2BBASX,NZ),IBEIG(*),
@@ -588,7 +588,7 @@ C
      &         FCKDDR,DDFOCK,LONDON,FIRST,PARCAL_SAVE
 
       CALL QENTER('TWOLO1')
-#include <memint.h>
+#include "memint.h"
 
 C  ... Initialize
 
@@ -863,19 +863,19 @@ C
 C  Written by Miro Ilias (based on TEC's routine TECTRA), august 2003, Odense.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
 C
       LOGICAL EPMIX, AH
       DIMENSION  TMAT(NORBT,NORBT,NZ), 
      &           HMAT(NORBT,NORBT,NZ),
      &          THMAT(NORBT,NORBT,NZ)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       CALL QENTER('TTRA')
 
       IREPT = ISYMT-1
@@ -1447,13 +1447,13 @@ C  Written by Miro Ilias (based on TEC's routine TECTR2),
 C    august 2003, Odense.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbqal.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbqal.h"
       PARAMETER(D0 = 0.0D0,  D2 = 2.0D0)
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),IBEIG(*),
      &          TMAT(NORBT,NORBT,NZ),IQSYM(4),WORK(*)
       LOGICAL EPMIX
@@ -1625,22 +1625,22 @@ C   Written by Thomas Enevoldsen(TEC), 1998
 C       and taken as a black-box by MI &HJAaJ, 2002 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP, X
       DIMENSION FMAT(NBASIS,NBASIS,NDMAT,3), SKLTON(NBASIS,NBASIS),
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
      &          IPOINT(NBASIS,0:MAXREP),ISYMDM(NDMAT)
-#include <nuclei.h>
-#include <pincom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "nuclei.h"
+#include "pincom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "ibtfun.h"
+#include "sdpre.h"
 
       CALL QENTER('RSKLOND')
 C
@@ -1875,10 +1875,10 @@ C Purpose: Transform from SI format to SP format, that is:
 C          copy LOWER triangle of symmetric matrix ASI
 C          to symmetric, packed matrix ASP.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ASI(N,*), ASP(*)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -2145,24 +2145,24 @@ C     Written by T.Saue October 1994
 C     Last revision: May 27 1998 - tec
 C                    Added TYP 'S' for Square matrices, 'L' for lower triangle
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
 C
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <symmet.h>
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "symmet.h"
 C
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbbas.h>
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
       LOGICAL DOINT(2,2),DIAG,SAME
       DIMENSION ONEINT(*)
       EXTERNAL BDQALGEBRA
       CHARACTER TYP*1
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IL = 2
       IR = 1
@@ -2255,24 +2255,24 @@ C                     1998  TEC
 C                     jan.2003 MI 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION WORK(*),DMAT(N2BBASX,4,NFMAT),CMO(*),IBEIG(*)
       LOGICAL FOLD
       PARAMETER ( D1 = 1.0 D00, D2 = 2.0 D00 )
-#include <dcbbas.h>
-#include <dcbgen.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
-#include <dcbqal.h>
-#include <dummy.h>
+#include "dcbbas.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dcbqal.h"
+#include "dummy.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IQOFF(IZ,IMAT) = (IZ-1) * N2BBASX + (IMAT-1) * N2BBASXQ
 C
-#include <memint.h>
+#include "memint.h"
 C
 C
       CALL QENTER('GTCNVD')
@@ -2382,19 +2382,19 @@ C
 C  Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <dcbprp.h>
-#include <dcbbas.h>
-#include <dcbham.h>
-#include <dcbgen.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcbgen.h"
+#include "dummy.h"
 C
       DIMENSION WORK(*)
 
       CALL QENTER('EXPVSUSLO')
-#include <memint.h> 
+#include "memint.h" 
 
 C     WRITE(LUPRI,*) "IN DIASUSLO routine!"
 
@@ -2463,27 +2463,27 @@ C
 C     Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>  
-#include <dummy.h>   
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <dcbbas.h>
-#include <shells.h>
-#include <ccom.h>
-#include <cbihr2.h>
-#include <symmet.h>
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"  
+#include "dummy.h"   
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "shells.h"
+#include "ccom.h"
+#include "cbihr2.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "iratdef.h"
 C
-#include <aovec.h>
-#include <blocks.h>
-#include <dcbgen.h>
-#include <dcbnmr.h>
-#include <dcbprp.h>
-#include <dcbfir.h>
+#include "aovec.h"
+#include "blocks.h"
+#include "dcbgen.h"
+#include "dcbnmr.h"
+#include "dcbprp.h"
+#include "dcbfir.h"
 C
       DIMENSION FMAT(N2BBASX,4,NCOMP),FOCK(N2BBASX,NZ)
       DIMENSION DMAT(N2BBASX*4),CMO(*),IBEIG(*),WORK(*)
@@ -2494,7 +2494,7 @@ C
       LOGICAL PARCAL_SAVE
 
       CALL QENTER('SUSC2EL')
-#include <memint.h>
+#include "memint.h"
 
       NDMAT = 4
       NCOMP = 6
@@ -3666,7 +3666,7 @@ C
       CHARACTER*1 COMP
       DATA THRS / 1.0D-7 /
       DATA LUONELO / 72 /
-#include <ibtfun.h>
+#include "ibtfun.h"
       CALL QENTER('GETDHB')
 
       KFRSAV = KFREE
