@@ -4403,7 +4403,7 @@ C
 C     zavector
       IOP(3) = 7
 C
-      NCOMP     = 2
+      NPCOMP    = 2
       PFAC(1)   = 0.5D0*CVAL
       PFAC(2)   = 0.5D0*CVAL
       PFAC(3)   = 0.5D0*G1FAC
