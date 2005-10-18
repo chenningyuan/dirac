@@ -282,6 +282,7 @@ C&&&& EFTNTL - non-traceless electric field third derivatives
 C&&&& PVCSHI: parity-violating contribution to NMR shielding
             DOXLR  = .TRUE.
             PVCSHI = .TRUE.
+            GOTO 100
   120    CONTINUE
 C&&&& EFN: Electric field at nuclei
             DOEXP = .TRUE.
