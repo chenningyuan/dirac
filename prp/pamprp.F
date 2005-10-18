@@ -4636,7 +4636,7 @@ C
       IREP = 0
       DO IATOM = 1,NUCDEP
 C
-        IF(DOATOM(IATOM)) THEN
+C       IF(DOATOM(IATOM)) THEN
 C
           DO ICOOR = 1,3
             ISCOOR = IPTCNT(3*(IATOM-1)+ICOOR,IREP,2)
@@ -4670,7 +4670,7 @@ C
             ENDIF
           ENDDO
 C
-        ENDIF
+C       ENDIF
       ENDDO
 C
 C
@@ -6973,9 +6973,12 @@ C
 C     allocate memory
 C     ===============
 C
-      CALL MEMGET('REAL',KTEMPMAT,NUCDEP*NUCDEP*4,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGVALMAT,NUCDEP*5       ,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KDOATOM ,NUCDEP         ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTEMPMAT    ,NUCDEP*NUCDEP*3,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTEMPPAIRMAT,NUCDEP*NUCDEP  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPAIRMAT    ,NUCDEP*NUCDEP  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGVALMAT    ,NUCDEP*5       ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRATIO      ,NUCDEP         ,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KDOATOM     ,NUCDEP         ,WORK,KFREE,LFREE)
 C
 C
 C     accept .SELECT
@@ -6988,7 +6991,12 @@ C     call
 C     ====
 C
       CALL PRP_PVCSPNSPN(EXPVAL,ABLRF,ABCNV,
-     &                   WORK(KTEMPMAT),WORK(KGVALMAT),WORK(KDOATOM),
+     &                   WORK(KTEMPMAT),
+     &                   WORK(KTEMPPAIRMAT),
+     &                   WORK(KPAIRMAT),
+     &                   WORK(KGVALMAT),
+     &                   WORK(KRATIO),
+     &                   WORK(KDOATOM),
      &                   WORK,KFREE,LFREE)
 C
 C
@@ -7002,8 +7010,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck prp_pvcspnspn */
-      SUBROUTINE PRP_PVCSPNSPN(EXPVAL,ABLRF,ABCNV,TEMPMAT,GVALMAT,
-     &                         DOATOM,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_PVCSPNSPN(EXPVAL,ABLRF,ABCNV,
+     &                         TEMPMAT,
+     &                         TEMPPAIRMAT,
+     &                         PAIRMAT,
+     &                         GVALMAT,
+     &                         RATIO,
+     &                         DOATOM,
+     &                         WORK,KFREE,LFREE)
 C  *********************************************************************
 C  *                                                                   *
 C  *  output for parity-violating contribution to                      *
@@ -7036,7 +7050,11 @@ C
 C
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),
-     &          TEMPMAT(NUCDEP,NUCDEP,4),GVALMAT(5,NUCDEP),
+     &          TEMPMAT(NUCDEP,NUCDEP,3),
+     &          TEMPPAIRMAT(NUCDEP,NUCDEP),
+     &          PAIRMAT(NUCDEP,NUCDEP),
+     &          GVALMAT(5,NUCDEP),
+     &          RATIO(NUCDEP),
      &          WORK(*)
 C
 #include "nuclei.h"
@@ -7061,47 +7079,39 @@ C
 C     fill temporary matrix
 C     =====================
 C
-      CALL DZERO(TEMPMAT,NUCDEP*NUCDEP*4)
+      CALL DZERO(TEMPMAT,NUCDEP*NUCDEP*3)
       DO INUC = 1,NUCDEP
-        IF(DOATOM(INUC)) THEN
+C       IF(DOATOM(INUC)) THEN
           DO JNUC = 1,NUCDEP
-            IF(.NOT.(INUC.EQ.JNUC)) THEN
-              DO ICOOR = 1,3
-                KA = IPPVCSPNSPN(1,(INUC*3)-3+ICOOR)
-                KB = IPPVCSPNSPN(2,(JNUC*3)-3+ICOOR)
+            DO ICOOR = 1,3
+              KA = IPPVCSPNSPN(1,(INUC*3)-3+ICOOR)
+              KB = IPPVCSPNSPN(2,(JNUC*3)-3+ICOOR)
 C
-C               e-e
-                TEMPMAT(INUC,JNUC,ICOOR) = ABLRF(IFREQ,KA,KB,2)
+C             e-e
+              TEMPMAT(INUC,JNUC,ICOOR) = ABLRF(IFREQ,KA,KB,2)
 C
-C               don't look for e-p in case of LEVY-LEBLOND
-                IF(.NOT.XLR_SKIPEP) THEN
+C             don't look for e-p in case of LEVY-LEBLOND
+C             IF(.NOT.XLR_SKIPEP) THEN
 C
-C                 e-p
-                  TEMPMAT(INUC,JNUC,ICOOR) = TEMPMAT(INUC,JNUC,ICOOR)
-     &                                   + ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
-                ENDIF
-              ENDDO
-            ENDIF
+C               e-p
+C               TEMPMAT(INUC,JNUC,ICOOR) = TEMPMAT(INUC,JNUC,ICOOR)
+C    &                                 + ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
+C             ENDIF
+            ENDDO
           ENDDO
-        ENDIF
+C       ENDIF
       ENDDO
-C
-C
-C     multiply TEMPMAT with DFAC
-C     ==========================
-C
-      CALL DSCAL(NUCDEP*NUCDEP*4,DFAC,TEMPMAT,1)
 C
 C
 C     extract nuclear g factors for magnetogyric ratios
 C     =================================================
 C
       CALL DZERO(GVALMAT,NUCDEP*5)
-      DO JNUC = 1,NUCDEP
-        IDEG = NUCDEG(JNUC)
-C       IF(DOATOM(JNUC)) THEN
+      DO INUC = 1,NUCDEP
+        IDEG = NUCDEG(INUC)
+C       IF(DOATOM(INUC)) THEN
         TEST = .FALSE.
-        IZ = NINT(CHARGE(JNUC))
+        IZ = NINT(CHARGE(INUC))
         NISO = 0
         DO ISO = 1,5
           GVAL = DISOTP(IZ,ISO,'GVAL')
@@ -7110,7 +7120,7 @@ C       IF(DOATOM(JNUC)) THEN
             IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
               TEST = .TRUE.
               NISO = NISO+1
-              GVALMAT(NISO,JNUC) = GVAL
+              GVALMAT(NISO,INUC) = GVAL
             ENDIF
           ENDIF
         ENDDO
@@ -7118,33 +7128,50 @@ C       ENDIF
       ENDDO
 C
 C
-C     divide x,y,z comonents of TEMPMAT by magnetogyric ratio
-C     =======================================================
+C     get magnetogyric ratio
+C     ======================
 C
-      DO JNUC = 1,NUCDEP
-        RATIO = GVALMAT(1,JNUC)/(D2*XFMP)
-        LZERO(JNUC) = .FALSE.
-        IF(RATIO.EQ.D0) LZERO(JNUC) = .TRUE.
-        IF(.NOT.LZERO(JNUC)) THEN
-          DO INUC = 1,NUCDEP
-            DO ICOOR = 1,3
-              TEMPMAT(INUC,JNUC,ICOOR) = TEMPMAT(INUC,JNUC,ICOOR)*RATIO
-            ENDDO
-          ENDDO
-        ENDIF
+      DO INUC = 1,NUCDEP
+        RATIO(INUC) = GVALMAT(1,INUC)/(D2*XFMP)
+        LZERO(INUC) = .FALSE.
+        IF(RATIO(INUC).EQ.D0) LZERO(INUC) = .TRUE.
       ENDDO
 C
 C
 C     calculate average of trace
 C     ==========================
 C
+      CALL DZERO(TEMPPAIRMAT,NUCDEP*NUCDEP)
+      CALL DZERO(PAIRMAT,NUCDEP*NUCDEP)
       DO INUC = 1,NUCDEP
         DO JNUC = 1,NUCDEP
-          TEMPMAT(INUC,JNUC,4) =
-     &                        (TEMPMAT(INUC,JNUC,1)+TEMPMAT(INUC,JNUC,2)
-     &                        +TEMPMAT(INUC,JNUC,3))/D3
+          TEMPPAIRMAT(INUC,JNUC) =
+     &                  (TEMPMAT(INUC,JNUC,1)+TEMPMAT(INUC,JNUC,2)
+     &                  +TEMPMAT(INUC,JNUC,3))/D3
+          IF(.NOT.(LZERO(INUC))) THEN
+            TEMPPAIRMAT(INUC,JNUC) = TEMPPAIRMAT(INUC,JNUC)*RATIO(INUC)
+          ENDIF
         ENDDO
       ENDDO
+      CALL DAXPY(NUCDEP*NUCDEP,D1,TEMPPAIRMAT,1,PAIRMAT,1)
+      CALL DZERO(TEMPPAIRMAT,NUCDEP*NUCDEP)
+      DO INUC = 1,NUCDEP
+        DO JNUC = 1,NUCDEP
+          TEMPPAIRMAT(INUC,JNUC) =
+     &                  (TEMPMAT(JNUC,INUC,1)+TEMPMAT(JNUC,INUC,2)
+     &                  +TEMPMAT(JNUC,INUC,3))/D3
+          IF(.NOT.(LZERO(INUC))) THEN
+            TEMPPAIRMAT(INUC,JNUC) = TEMPPAIRMAT(INUC,JNUC)*RATIO(JNUC)
+          ENDIF
+        ENDDO
+      ENDDO
+      CALL DAXPY(NUCDEP*NUCDEP,D1,TEMPPAIRMAT,1,PAIRMAT,1)
+C
+C
+C     multiply with DFAC
+C     ==================
+C
+      CALL DSCAL(NUCDEP*NUCDEP,DFAC,PAIRMAT,1)
 C
 C
 C     printout
@@ -7155,27 +7182,20 @@ C
       WRITE(LUPRI,'(A)') '@   PV contribution to spin-spin couplings'
       WRITE(LUPRI,'(A)') '@'
       WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A52)')
-     &            '@   << PV Operator | nuclear spin >>    trace/(3*pi)'
-      WRITE(LUPRI,'(A)') '@'
 C
       DO INUC = 1,NUCDEP
-        IF(DOATOM(INUC)) THEN
-          DO JNUC = 1,NUCDEP
-            IF(.NOT.(INUC.EQ.JNUC)) THEN
-              WRITE(LUPRI,'(A10,A4,A11,A4,A8,E17.8,A4)')
-     &                    '@         ',NAMDEP(INUC),'',
-     &                                 NAMDEP(JNUC),'',
-     &                                 TEMPMAT(INUC,JNUC,4), 'nHz'
-            ENDIF
-          ENDDO
-        ENDIF
+        DO JNUC = INUC+1,NUCDEP
+          WRITE(LUPRI,'(A12,A4,A11,A4,A8,E17.8,A4)')
+     &                '@           ',NAMDEP(INUC),' ',
+     &                               NAMDEP(JNUC),' ',
+     &                               PAIRMAT(INUC,JNUC), 'nHz'
+        ENDDO
       ENDDO
       WRITE(LUPRI,'(A)') '@'
       WRITE(LUPRI,*)
 C
       WRITE(LUPRI,'(A)') '@   following nuclear g factors used:'
-      IF(DOATOM(1)) THEN
+C     IF(DOATOM(1)) THEN
         WRITE(LUPRI,'(A12,A4,F22.6)') '@   Nucleus ',
      &        NAMDEP(1),GVALMAT(1,1)
         IF(LZERO(1)) THEN
@@ -7184,15 +7204,15 @@ C
           WRITE(LUPRI,'(A34)') 'magnetogyric ratio for this nucleus'
           WRITE(LUPRI,'(A30)') 'has been prevented'
         ENDIF
-      ENDIF
+C     ENDIF
 C
       IF(NUCDEP.GE.2) THEN
-        DO JNUC = 2,NUCDEP
-          IF(DOATOM(JNUC)) THEN
+        DO INUC = 2,NUCDEP
+C         IF(DOATOM(INUC)) THEN
             WRITE(LUPRI,'(A12,A4,F22.6)') '@           ',
-     &            NAMDEP(JNUC),GVALMAT(1,JNUC)
-          ENDIF
-          IF(LZERO(JNUC)) THEN
+     &            NAMDEP(INUC),GVALMAT(1,INUC)
+C         ENDIF
+          IF(LZERO(INUC)) THEN
             WRITE(LUPRI,'(A20)') 'WARNING:'
             WRITE(LUPRI,'(A47)') 'multiplication by the (zero)'
             WRITE(LUPRI,'(A34)') 'magnetogyric ratio for this nucleus'
