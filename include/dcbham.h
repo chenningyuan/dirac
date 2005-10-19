@@ -39,6 +39,7 @@
 !                  ONECAP type 3 model. One-center (SS|SS) and (LL|SS).
 !                  Correction made to two-electron Fock-matrix.
 !     ONECOFF    - internal flag for turning off ONECAP
+!     VACPOL     - semi-classical QED: vacuum polarization included
 !
 !     BSS        - flag for generating matrix elements of
 !                  Barysz-Sadlej-Snijders transformed two-component Hamiltonians
@@ -75,11 +76,17 @@
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
      &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
      &        INI2C, I2COFK                                             &
-
-      COMMON /DCIHAM/ IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,             &
+!
+!     IMPORTANT !!!
+!     =============
+!     I1_HAM and I2_HAM are tags used to calculate the number of elements
+!     of this COMMON block. Make sure that they are always kept at the 
+!     start and the end !!!
+!
+      COMMON /DCIHAM/ I1_HAM, IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,     &
      &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
-     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC, I1_HAM,        &
-     &                I2_HAM, IMFCH, I2CHAM, INI2C, I2COFK              &
+     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,                &
+     &                IMFCH, I2CHAM, INI2C, I2COFK, I2_HAM              &
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
@@ -88,7 +95,8 @@
      &        SUB_BL, SOLVEN, INERSI, INERSF, SPINFR, SPINFR2, ZORA,    &
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1,              &
-     &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT    &
+     &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
+     &        VACPOL                                                    &
 
       INTEGER NDCLHAM
       PARAMETER (NDCLHAM = 31)
@@ -98,7 +106,7 @@
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
      &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
-     &                RESTFCK, CONT2C, START2C, GAUNT                   &
+     &                RESTFCK, CONT2C, START2C, GAUNT, VACPOL           &
 
       REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
       COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV,       &
