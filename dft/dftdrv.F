@@ -113,7 +113,7 @@ C
 C     Calculate grid
 C
       IF (.NOT.GRDONE) THEN
-         CALL DFTGRD(DMAT,WORK(KFREE),LFREE,1,.FALSE.)
+         CALL DFTGRD(DMAT,WORK(KFREE),LFREE,1)
          GRDONE = .TRUE.
       END IF
 #if defined (VAR_MPI)
@@ -993,6 +993,8 @@ C
      &                    MPI_COMM_WORLD,IERR)
           CALL MPI_RECV(TEMP,1,MPI_DOUBLE_PRECISION,NWHO,40,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
+CTROND
+          WRITE(LUPRI,*) 'Receive....',NWHO,ELCTRN          
           ELCTRN = ELCTRN + TEMP
           IF(DOERG) THEN
             CALL MPI_RECV(TEMP,1,MPI_DOUBLE_PRECISION,NWHO,40,
