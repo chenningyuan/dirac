@@ -8,12 +8,12 @@ if [ ! -z "$RUNTYPE" ]; then
          MOL=Ne.C2
          ;;
       *)
-         MOL=CO.aug-cc-pVTZ
+         MOL=CO.aug-cc-pVDZ
          exit
          ;;
    esac
 else
-   MOL=CO.aug-cc-pVTZ
+   MOL=CO.aug-cc-pVDZ
 fi
 MENU=gaunt;
 export MENU;
