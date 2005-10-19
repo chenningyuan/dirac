@@ -1976,6 +1976,7 @@ C
             DOATOM(IATOM) = .TRUE.
   300    CONTINUE
       END IF
+C
       RETURN
       END
 C  /* Deck ntypts */
