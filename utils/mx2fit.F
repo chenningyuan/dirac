@@ -66,7 +66,7 @@ C
       ILOGG = 2
       WRITE(LUPRI,'(A)') '* Name output file (A6)'
       READ(LUCMD,'(A6)') RESFIL
-      OPEN(ILOGG,NAME=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',
+      OPEN(ILOGG,FILE=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL')
 C
 C
@@ -177,7 +177,7 @@ C
       READ(LUCMD,'(A)') POTFIL
       WRITE(LUPRI,'(A)') 'Format: ',
      &        'lines of  r12(Angstrom)   energy(Hartree)'
-      OPEN(IUNIT,NAME=POTFIL,STATUS='OLD',FORM='FORMATTED',
+      OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=20)
       GOTO 30
  20   CONTINUE
@@ -360,7 +360,7 @@ C
       READ(LUCMD,'(A)') POTFIL
       WRITE(LUPRI,'(A)') 'Format: ',
      &        'lines of  r12(Angstrom)  r32(Angstrom)  energy(Hartree)'
-      OPEN(IUNIT,NAME=POTFIL,STATUS='OLD',FORM='FORMATTED',
+      OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=20)
       GOTO 30
  20   CONTINUE
@@ -551,7 +551,7 @@ C
      &        'lines of  phi(degree)  energy(Hartree)'
       WRITE(LUPRI,'(A)') 'Note that bending angle phi should be',
      &          'in degrees and energies in Hartrees !'
-      OPEN(IUNIT,NAME=POTFIL,STATUS='OLD',FORM='FORMATTED',
+      OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=20)
       GOTO 30
  20   CONTINUE
