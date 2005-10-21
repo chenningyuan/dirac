@@ -1770,9 +1770,10 @@ C
 C     Check what integrals contribute in a given SCF-iteration
 C       CNVINT has precedence over ITRINT !!!
 C       The information is bitpacked in INTDEF:
-C         001   LL-contribution
-C         010   SL-contribution
-C         100   SS-contribution
+C         0001   LL-contribution
+C         0010   SL-contribution
+C         0100   SS-contribution
+C         1000   GT-contribution
 C       and all combinations.....
 C
 C     Written by T.Saue Mar 09 1995
@@ -1841,7 +1842,7 @@ C
       IF(ILLINT.EQ.1) INTTYP(1:3) = 'LL '
       IF(ISLINT.EQ.1) INTTYP(4:6) = 'SL '
       IF(ISSINT.EQ.1) INTTYP(7:9) = 'SS '
-      IF(IGTINT.EQ.1) INTTYP(10:11) = 'GT '
+      IF(IGTINT.EQ.1) INTTYP(10:12) = 'GT '
       INTFLG= ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
 C
       RETURN

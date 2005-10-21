@@ -134,8 +134,6 @@ C
 C
 C     Input of property module
 C
-CTROND
-      WRITE(LUPRI,*) 'Check for DOPRP =',DOPRP
       IF(DOPRP) THEN
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL PRPINP('**PROPE',WORK,LWORK)
@@ -1767,6 +1765,15 @@ C
         ELSE
           WRITE(LUPRI,'(3X,A,I4)')
      +    'SS-integrals from iteration ',ITRINT(2)
+        ENDIF
+      ENDIF
+      IF(LBIT(INTDEF,4)) THEN
+        IF(CNVINT(2).LT.DUMMY) THEN
+          WRITE(LUPRI,'(3X,A,1P,D8.1)')
+     +    'Gaunt integrals  below SCF convergence ',CNVINT(2)
+        ELSE
+          WRITE(LUPRI,'(3X,A,I4)')
+     +    'Gaunt integrals from iteration ',ITRINT(2)
         ENDIF
       ENDIF
 C
@@ -3480,13 +3487,14 @@ C
      &            '.ONECAP','.SPINF2','.NOSPIN','.USE_DF',
      &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
      &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C',
-     &            '.CONT2C','.BEG_2C','.XXXXXX','.XXXXXX'/
+     &            '.CONT2C','.BEG_2C','.VACPOL','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
 C
       GAUNT = .FALSE.
       SYMSTP = .FALSE.
+      GAUNT  = .FALSE.
       INPERR = 0
       CALL TITLER('Hamiltonian defined','*',127)      
 C
@@ -3516,6 +3524,7 @@ C
       ONECAP  = .FALSE.
       SMLV1C  = .FALSE.
       ONECOFF = .FALSE.
+      VACPOL  = .FALSE.
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
@@ -3546,7 +3555,6 @@ C ... get integral flags in advance
       ISLINT    = IBTAND(INTGEN/2,1)
       ISSINT    = IBTAND(INTGEN/4,1)
       IGTINT    = IBTAND(INTGEN/8,1)
-
 CMI ... this routine is beeing called after HAMINP, in PAMINP
 CMI   CALL OP1INI(WORK,LWORK)
       NOINPUT = .FALSE.
@@ -3831,33 +3839,36 @@ CMI ...this is Trond's one step approch to the infinite order transformation ...
             NOPRTR = .TRUE.
             GO TO 100
   130     CONTINUE
-C&&&    Do use block diagonalization
+C&&& BLOCKD:   Do use block diagonalization
 CMI      ... not active yet (planned to be used within UKBAL for the infinite order)
              BLOCKD = .TRUE.
             GO TO 100
   131     CONTINUE
-C&&&  jump to 4c level after few 2c iterations...
+C&&& DO2C4C: jump to 4c level after few 2c iterations...
              DO2C4C = .TRUE.  
             START2C = .TRUE.
             INI2C   = 3
             GO TO 100
   132     CONTINUE
-C&&&  descend to the 2c level after 4c DC-SCF ...
+C&&& DO4C2C:  descend to the 2c level after 4c DC-SCF ...
             DO4C2C = .TRUE. 
             GO TO 100
   133     CONTINUE
-C&&&  after 4c DC-SCF continue with BSS using picture-change transformed Fock-Dirac operator !
+C&&& CONT2C:  after 4c DC-SCF continue with BSS using picture-change transformed Fock-Dirac operator !
             CONT2C = .TRUE.
 C          ... read the specification of 2c 1el Hamiltonian (3,4,5)
             READ(LUCMD,*) I2CHAM
             GO TO 100
   134     CONTINUE
-C&&& specify INI2C when DO2C4C is on
+C&&& BEG_2C: specify INI2C when DO2C4C is on
             START2C = .TRUE.
             DO2C4C = .TRUE.
             READ(LUCMD,*) INI2C
             GO TO 100
   135     CONTINUE
+C&&&& VACPOL: vacuum polarization included
+            VACPOL = .TRUE.
+            GO TO 100
             GO TO 100
   136     CONTINUE
             GO TO 100
@@ -3995,6 +4006,9 @@ C
       ENDIF
       IF(ICHANG.GT.0) WRITE(LUPRI,'(A)') 
      &    '   with the following modifications:'
+      IF(VACPOL) THEN
+         WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
+      ENDIF
       IF(SPINFR) THEN
          WRITE(LUPRI,'(3X,A)') '- Spin-orbit interactions neglected'
       ELSE IF(SPINFR2) THEN
@@ -4614,12 +4628,18 @@ C     Fock matrices and for MOLTRA). DIRFCK true will calculate
 C     the correct for AOFOCK only. /hjaaj May 2001
 C
       DIRFCK = .FALSE.
-      WRITE(LUPRI,'(A)') ' * LL-integrals:'
-      CALL MEMLOP(1,DIRFCK)  
-      WRITE(LUPRI,'(A)') ' * SL-integrals:'
-      CALL MEMLOP(2,DIRFCK)  
-      WRITE(LUPRI,'(A)') ' * SS-integrals:'
-      CALL MEMLOP(3,DIRFCK)  
+      IF(LBIT(INTGEN,1)) THEN
+        WRITE(LUPRI,'(A)') ' * LL-integrals:'
+        CALL MEMLOP(1,DIRFCK)  
+      ENDIF
+      IF(LBIT(INTGEN,2)) THEN
+        WRITE(LUPRI,'(A)') ' * SL-integrals:'
+        CALL MEMLOP(2,DIRFCK)  
+      ENDIF
+      IF(LBIT(INTGEN,3)) THEN
+        WRITE(LUPRI,'(A)') ' * SS-integrals:'
+        CALL MEMLOP(3,DIRFCK)  
+      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

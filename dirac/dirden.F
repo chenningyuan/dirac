@@ -227,7 +227,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D1=1.0D00,D0=0.0 D00)
+      PARAMETER (D1=1.0D00,DM1=-1.0D00,D0=0.0 D00)
 C
       LOGICAL LBIT
       DIMENSION DMAT(*), CMO(*)
@@ -243,7 +243,16 @@ C
       IOFF = 1
       DO 10 I = 1,6
       IF (LBIT(IFLAG,I)) THEN
-        CALL DZERO(DMAT(IOFF),N2BBASXQ)
+        IF(I.EQ.6) THEN
+          LUBVAC = 14
+          CALL OPNFIL(LUBVAC,'DFBVAC','OLD','GENDEN')
+          CALL READT(LUBVAC,N2BBASXQ,DMAT(IOFF))
+          CLOSE(LUBVAC,STATUS='KEEP')
+          FAC    = DM1
+        ELSE
+          CALL DZERO(DMAT(IOFF),N2BBASXQ)
+          FAC    = D0
+        ENDIF
         DO 20 ISYM = 1,NFSYM
           IF (I.EQ.1) THEN
             ITEST  = NISH(ISYM)
@@ -278,7 +287,7 @@ C
           END IF
           IF (ITEST.EQ.0) GOTO 20
           CALL DENST1(DMAT(I2BASX(ISYM,ISYM)+IOFF),NTBAS(0),NTBAS(0),
-     &              D1,D0,CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
+     &              D1,FAC,CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
      &              ISTART,ILOOP,NFBAS(ISYM,0))
           IF (IPRINT.GE.10) THEN
             WRITE(LUPRI,'(/3X,A,I2/)') CHR,ISYM
@@ -359,6 +368,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "dcbham.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
       DIMENSION DMAT(*),CMO(*)
@@ -366,8 +376,9 @@ C
       CALL QENTER('DENMAT')
 
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
-      CALL GENDEN(DMAT,CMO,1,IPRINT)
-
+      IDEN = 1
+      IF(VACPOL) IDEN = 32
+      CALL GENDEN(DMAT,CMO,IDEN,IPRINT)
       IF(AOC) THEN
 C.......Average of Configuration
         DO IOPEN = 1,NOPEN
