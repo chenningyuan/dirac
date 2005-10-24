@@ -3448,7 +3448,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 36,NDIR = 8)
+      PARAMETER (NTABLE = 40,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -3487,7 +3487,8 @@ C
      &            '.ONECAP','.SPINF2','.NOSPIN','.USE_DF',
      &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
      &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C',
-     &            '.CONT2C','.BEG_2C','.VACPOL','.XXXXXX'/
+     &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -3548,6 +3549,8 @@ C     ... trasfer 2c-> 4c and 4c->2c
       I2CHAM  = -1
 C     ... default L&S components... needs discussion about relation to DO2C4C/DO4C2C
       MC      = 2
+C     ... no specifications for AMFI center
+      ALLAMFA = .TRUE.
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
       IF (.NOT. SETFUN) HFXFAC  = D1
 C ... get integral flags in advance
@@ -3605,7 +3608,7 @@ C     Keep track of number of changes and added finite field operators
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,130,
-     &                131,132,133,134,135,136),I
+     &                131,132,133,134,135,136,137,138,139,140),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -3869,9 +3872,24 @@ C&&& BEG_2C: specify INI2C when DO2C4C is on
 C&&&& VACPOL: vacuum polarization included
             VACPOL = .TRUE.
             GO TO 100
-            GO TO 100
   136     CONTINUE
+C&&& specify centers for AMFI which are to be added to the BSS+AMFI Hamiltonian
+            ALLAMFA = .FALSE.
+            READ(LUCMD,*) NAMFA
+            READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
             GO TO 100
+  137     CONTINUE
+C&&& XXXX
+             GO TO 100
+  138     CONTINUE
+C&&& XXXX
+             GO TO 100
+  139     CONTINUE
+C&&& XXXX
+             GO TO 100
+  140     CONTINUE
+C&&& XXXX
+             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
@@ -3987,14 +4005,69 @@ C
         WRITE(LUPRI,'(1X,A,I5)')
      &' * Barysz-Sadlej-Snijders Hamiltonian. Type code:',IBSS
         IF (IBSS.GT.999) THEN
-          WRITE(LUPRI,'(1X,A,I4)')
-     &' * If wished, mean-field AMFI summation is for the charge: ',
-     &   IMFCH
+          IF (IMFCH.NE.0) THEN
+            WRITE(LUPRI,'(1X,A,I4)')
+     &     ' * AMFI mean-field summations on individual atoms'//
+     &     ' are modified due to the total charge of the system:',
+     &     IMFCH
+          ENDIF
+          IF (.NOT.ALLAMFA) THEN
+          WRITE(LUPRI,'(1X,A,I2,A,$)')
+     &' * AMFI contributions NOT calculated for',NAMFA,' centers:'
+          WRITE(LUPRI,*) ( IAMFA(I), I = 1, NAMFA )
+          WRITE(LUPRI,'(4X,A)')
+     &   'List of all nuclei (see "Cartesian Coordinates" above):'
+          IX = 0
+          DO I=1,NUCIND
+          DO J=1,NUCDEG(I)
+           IX = IX + 1
+           write(lupri,'(5X,I2,A,I4,$)')
+     &     IX,'. nuclei, charge:',NINT(CHARGE(I))
+           IZX = 0
+           DO K = 1, NAMFA
+             IF (IAMFA(K).EQ.IX) THEN
+              write(lupri,'(A)')
+     &        ' ... no AMFI contribution from this nuclei '
+              IZX=1
+             ENDIF
+           ENDDO
+           IF (IZX.EQ.0) write(lupri,*)
+          ENDDO
+          ENDDO
+C          ... do some check of entering values of NAMFA,IAMFA
+          IF (NAMFA.GT.IX) THEN
+           write(lupri,*) 'HAMINP: NAMFA=',NAMFA,
+     &     ' is greater than total number of nuclei=',IX
+           CALL QUIT('HAMINP: Wrong value of NAMFA !!!')
+          ENDIF
+          DO K=1,NAMFA
+           IF (IAMFA(K).GT.IX) THEN
+             write(lupri,*)
+     &       K,'. AMFI-banned nucleus has number=',IAMFA(K),
+     &       ' greater than total number of nuclei=',IX
+           CALL QUIT('HAMINP: Wrong value of IAMFA(K) !!!')
+           ENDIF
+          ENDDO
+          IF (NAMFA.GE.2) THEN
+C           ... check on identical nucleus numbers ....
+            DO K=1,NAMFA-1
+              DO L=K+1,NAMFA
+               IF (IAMFA(K).EQ.IAMFA(L)) THEN
+                write(lupri,*) K,'. and ',L,
+     &          '. AMFI-banned nuclei have identical numbers ! =',
+     &           IAMFA(K),IAMFA(L)
+                 CALL QUIT('HAMINP: Found 2 identical values'//
+     &                     ' of IAMFA(K) !!!')
+               ENDIF
+              ENDDO
+            ENDDO
+          ENDIF
+C         write(lupri,*)
+          ENDIF
         ENDIF
         IF (DO2C4C) WRITE(LUPRI,'(1X,A,I1)')
      & '* after (few) two-component SCF iterations do'//
      & ' jump at the four-component level ! Code INI2C=',INI2C
-        
         IF (DO4C2C) WRITE(LUPRI,'(1X,A,I3)')
      & '* after finishing four-component SCF procedure '//
      & ' perform BSS transformation of Dirac-Fock operator'//

@@ -67,6 +67,8 @@
 !
 !     I2COFK     - integer number specifying which 2comp. Hamiltonian (in AO basis) is to be read in the ONEFCK routine
 !
+!     ALLAMFA    - flag about if all atoms are present for the AMFI contributions.
+!
 !     GAUNT      - Include Gaunt interaction in the 2-e operator
 
       INTEGER MAX1OPER
@@ -94,19 +96,20 @@
       LOGICAL QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL, LEVYLE,      &
      &        SUB_BL, SOLVEN, INERSI, INERSF, SPINFR, SPINFR2, ZORA,    &
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
-     &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1,              &
+     &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL                                                    &
 
+! keep and actualize here number of elements in the DCLHAM common block
       INTEGER NDCLHAM
-      PARAMETER (NDCLHAM = 31)
+      PARAMETER (NDCLHAM = 36)
 
       COMMON /DCLHAM/ QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
      &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
-     &                RESTFCK, CONT2C, START2C, GAUNT, VACPOL           &
+     &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL  &
 
       REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
       COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV,       &
