@@ -4106,7 +4106,7 @@ CTROND        IF(NFRO(IFRP).EQ.0) GOTO 21
         CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
         CALL QGEMM(NORB(IFRP),NVECS(IFRP),NFBAS(IFRP,0),D1,
      &            'H','N',IPQTOQ(1,0),TINV(I2TMT(IFRP)+1),
-     &                    NFBAS(IFRP,0),NORB(IFRP),NZ,
+     &                    NFBAS(IFRP,0),NORB(IFRP),NZT,
      &            'N','N',IPQTOQ(1,0),WORK(KQ(IFRP)),
      &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
      &            D0,IPQTOQ(1,0),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ)
@@ -4422,8 +4422,9 @@ C
      &           'H',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1,
      &           'N',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1)
           VNRM=SQRT(VNRM)
-          WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
-     &      'Fragment vector no.',JREF,' Norm: ',VNRM
+          WRITE(LUPRI,'(A,I3,A,1P,D12.5,4X,A,I5)')
+     &      'Fragment vector no.',JREF,' Norm: ',VNRM,
+     &      'Bsym: ',IBREF(JREF)
         ENDIF
         DO 100 IVEC = 1,NVECS
           IF(IBVEC(IVEC).NE.IBREF(JREF)) GOTO 100
@@ -4470,8 +4471,9 @@ C         Store information about irrep and neg/pos solution
           NDEL = NDEL + 1
           GOTO 200
         ELSE
-          IF(IPRINT.GE.2) WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
-     &      'Vector no.',IVEC,' Norm: ',VNRM
+          IF(IPRINT.GE.2) WRITE(LUPRI,'(A,I3,A,1P,D12.5,3X,A,I5)')
+     &      'Vector no.',IVEC,' Norm: ',VNRM,
+     &      'Bsym:',IBVEC(IVEC)
           IF(VNRM.LT.THRRND.AND.ITURN.EQ.1) IROUND=IROUND+1
           IF(VNRM.LT.T1MIN) THEN
             VNRM = D1/VNRM
@@ -5946,5 +5948,3 @@ C         Finish by adjusting the number of positron solutions to zero
 C
       RETURN
       END
-
-
