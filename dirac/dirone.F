@@ -4542,7 +4542,7 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
       DIMENSION VMO(NMO,NMO,NZ),VAO(NAO,NEFF,NZ),IVEC(*),
-     &          TMAT(NAO,NMO,NZ)
+     &          TMAT(NAO,NMO,NZT)
       DIMENSION IBOS(0:7)
       NBRP = 4/NZ
       DO ISYM = 1, NBRP
@@ -4554,7 +4554,7 @@ C
       IF(IVEC(I).GE.0) THEN
         II = II + 1
         CALL QGEMM(NAO,1,NMO,D1,
-     &          'N','N',IPQTOQ(1,0),TMAT,NAO,NMO,NZ,
+     &          'N','N',IPQTOQ(1,0),TMAT,NAO,NMO,NZT,
      &          'N','N',IPQTOQ(1,0),VMO(1,I,1), NMO,NMO,NZ,
      &          D0,IPQTOQ(1,0),VAO(1,II,1),NAO,NEFF,NZ)
       ELSE
