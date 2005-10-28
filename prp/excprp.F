@@ -939,15 +939,10 @@ C     check that this is an A operator
                   IF (MULD2H(opsym2,excsym) .EQ. 1) THEN
                      excop = EXCOPFROMSYM(excsym)
                      rsp = RES_LR(1,iop2,excop,I)
-C                     WRITE(LUPRI,'(/5X,A,A10,F14.6,A)'
                      WRITE(LUPRI,'(/A,A10,F14.6,A)')
      &                    ' Operator, transition moment: ',
      &                    opname2,rsp,' a.u.'
                      oscstr = oscstr + D2R3*rsp*rsp*freq1
-
-                     write(LUPRI,*) 'debug: sym,I,iop2,excop,oscstr',
-     &                    excsym,I,iop2,excop,oscstr
-
                   END IF
                END IF
 C     end loop over A operators
