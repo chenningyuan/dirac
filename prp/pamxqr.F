@@ -57,7 +57,7 @@ C
 #include "dcbxpr.h"
 C
       PARAMETER ( D1=1.0D0, D0=0.0D0 )
-      PARAMETER ( NTABLE=28, DMIL=1.0D3 )
+      PARAMETER ( NTABLE=29, DMIL=1.0D3 )
 C
       LOGICAL SET,NEWDEF,RESET
       CHARACTER PROMPT*1,WORD*7,TABLE(NTABLE)*7,WORD1*7,PNAME*16
@@ -71,7 +71,8 @@ C
      &     '.XXXXXX','.XXXXXX','.INTFLG','.NOPREC',
      &     '.DIPLEN','.OCCUPI','.VIRTUA','.ACTIVE',
      &     '.ITRINT','.CNVINT','.XXXXXX','.XXXXXX',
-     &     '.RESFAC','.ORBANA','.XXXXXX','.SKIPEE'/
+     &     '.RESFAC','.ORBANA','.XXXXXX','.SKIPEE',
+     &     '.EXCPRP'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -112,7 +113,7 @@ C ------------------------------------------------------------------------
 C     Quadratic response calc may also be specified under **PROPERTIES
 C     in which case we should NOT re-initialize some variables
 C
-      IF (.NOT.(DOXQR.OR.DOTPA.OR.DOVER)) THEN
+      IF (.NOT.(DOXQR.OR.DOTPA.OR.DOVER.OR.DOEXCPRP)) THEN
          NAQROP = 0
          NBQROP = 0
          NCQROP = 0
@@ -171,7 +172,7 @@ C
                IF (TABLE(I) .EQ. WORD) THEN
                   GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                  11,12,13,14,15,16,17,18,19,20,
-     &                  21,22,23,24,25,26,27,28), I
+     &                  21,22,23,24,25,26,27,28,29), I
                END IF
  200        CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -347,6 +348,10 @@ C
 C     .SKIPEE Skip all e-e rotations
             XQR_SKIPEE = .TRUE.
             GO TO 100
+ 29         CONTINUE
+C     .EXCPRP compute excited state properties (or matrix elements)
+            CALL EXCPRPINP(2,DOEXCPRP,EXCPRPTYP,WORK(KFREE),LFREE)
+            GO TO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GO TO 300
          ELSE
@@ -363,11 +368,16 @@ C
       IF (CNVXQR(1).LT.DUMMY) ITRIQR(1) = 1
       IF (CNVXQR(2).LT.DUMMY) ITRIQR(2) = 1
 C
+C     Check that the specification of the EXCPRP calculation 
+C     is complete and consistent
+C
+      CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP,WORK(KFREE),LFREE)
+C
 C     Do not set DOXQR if DOTPA is already set.
 C
       DOXQR = (NAQROP.GT.0.AND.NBQROP.GT.0.AND.NCQROP.GT.0).AND.
-     &        (.NOT.DOTPA)
-      IF ( .NOT.(DOXQR.OR.DOTPA) ) GOTO 999
+     &        (.NOT.DOTPA) .AND. (.NOT.DOEXCPRP)
+      IF ( .NOT.(DOXQR.OR.DOTPA.OR.DOEXCPRP) ) GOTO 999
 
 C     Don't do Verdet "optimization" if all combinations are
 C     requested.
@@ -747,6 +757,11 @@ C
       LQROP(NQROP,1)=IPOINT
       LQROP(NQROP,2)=1
       QRFREQ(1,NQROP)=FREQ
+C
+      IF (IPRXQR.GE.2) THEN
+         WRITE(LUPRI,'(/A/,2(A,I5))') 'INDQR: New operator added.',
+     &        '       NQRROP = ', NQROP, 'IPOINT = ', IPOINT
+      END IF
 C
  100  CONTINUE
 C
@@ -1331,7 +1346,7 @@ C     calculations are not of interest since they are just dummies
 C     and thus are given an offset IEXCOFF.
 C         
          IF (IBPT.GE.IEXCOFF) THEN
-            IF (DOTPA) THEN
+            IF (DOTPA .OR. DOEXCPRP) THEN
                ISYMB = IBPT - IEXCOFF
                BLAB = 'EXCLABL '
             ELSE
@@ -2096,6 +2111,11 @@ C
 C
 C     Print section
 C
+      IF(IPRINT.GE.2) THEN
+         CALL QMATNORM('Untransformed matrix',A,NORBT,NORBT,NZ)
+         CALL QMATNORM('Unpacked response vector',W,NORBT,NORBT,NZ)
+         CALL QMATNORM('Transformed matrix',C,NORBT,NORBT,NZ)
+      END IF
       IF(IPRINT.GE.10) THEN
          WRITE(LUPRI,'(A)') 
      &        'One-index transformed matrix in OITMAT'
@@ -2153,6 +2173,10 @@ C
 C
 C     Print section
 C
+      IF (IPRINT.GE.2) THEN
+         CALL QMATNORM('Gradient (e-e) vector',GEE,NZYEE,1,NZ)
+         CALL QMATNORM('Gradient (e-p) vector',GEP,NZYEE,1,NZ)
+      ENDIF
       IF (IPRINT.GE.12) THEN
          WRITE(LUPRI,'(/A)') 'Gradient (e-e) in RSP1GR: Z- and Y-parts'
          CALL PRQMAT(GEE,NZEE,2,NZEE,2,NZ,IPQTOQ(1,ISYMGR-1),LUPRI)
@@ -3071,6 +3095,10 @@ C
 C     Print
 C
       IF (IPRINT.GE.2) THEN
+         CALL QMATNORM('Response (e-e) vector',VECAEE,NZYEE,1,NZ)
+         CALL QMATNORM('Response (e-p) vector',VECAEP,NZYEP,1,NZ)
+         CALL QMATNORM('Gradient (e-e) vector',VECBEE,NZYEE,1,NZ)
+         CALL QMATNORM('Gradient (e-p) vector',VECBEP,NZYEP,1,NZ)
          WRITE(LUPRI,'(/A16,A22,3F16.8,2(/A38,3F16.8))')
      &        TEXT,'contribution (T,Z,Y):',(TEMP(1,I),I=1,3),
      &        'electronic (T,Z,Y):',(TEMP(2,I),I=1,3),

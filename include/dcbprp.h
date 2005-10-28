@@ -11,6 +11,8 @@
 !          (by the polarization propagator method)
 !  DOXQR - do quadratic response
 !  DOTPA - do two-photon absortion calculation
+!  DOEXCPRP - do excited state properties calculation
+!  EXCPRPTYP - type of excited state property calculation
 !  DOVER - do verdet calculations (via DOXQR)
 !  MGRAD - calculate molecular gradient
 !  DOPCT - do perform picture change transformation of four-component
@@ -26,11 +28,11 @@
       LOGICAL DOEXP, DOXLR, DOXPP, DOXQR, DIPOLE, EPOLAR, MSUSCP,       &
      &        SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, PVC, DOESR,     &
      &        ESRGTENS, ESRANISO, EFT, EFTNTL, EFN, RHONUC,             &
-     &        DOTPA,DOVER,                                              &
+     &        DOTPA,DOVER,DOEXCPRP,                                     &
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
      &        PVCSHI, PVCSPNSPN
 
-      INTEGER MXPRPWF
+      INTEGER MXPRPWF,EXCPRPTYP
       PARAMETER (MXPRPWF = 3)
 
       CHARACTER*4 PRPWF(MXPRPWF)
@@ -38,7 +40,7 @@
       COMMON /CBLPRP/ DOXLR, DOXPP, DOEXP, DOXQR, DIPOLE, EPOLAR,       &
      &                MSUSCP, SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, &
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
-     &                EFN, RHONUC, DOTPA, DOVER,                        &
+     &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP, EXCPRPTYP,   &
      &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
      &                PVCSHI, PVCSPNSPN
 

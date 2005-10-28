@@ -74,7 +74,7 @@ C
      &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
      &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
-     &             '.NOPCTR','.XXXXXX','.XXXXXX','.XXXXXX' /
+     &             '.NOPCTR','.EXCDIP','.XXXXXX','.XXXXXX' /
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -92,6 +92,8 @@ C
       DOXQR     = .FALSE.
       DOTPA     = .FALSE.
       DOVER     = .FALSE.
+      DOEXCPRP =  .FALSE.
+      EXCPRPTYP = 0
       DIPOLE    = .FALSE.
       QUADRU    = .FALSE.
       EPOLAR    = .FALSE.
@@ -351,7 +353,13 @@ C&&&& NOPCT - when DOPCT is .true. do NOT do picture change transformation...
             NOPCT = .TRUE.
             GO TO 100
   130    CONTINUE 
-C&&&& XXXXXX
+C&&&& .EXCDIP - Calculates excited state expectation values of dipole op.
+#if defined (MOD_XPP)
+            CALL EXCPRPINP(1,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
+            CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
+#else
+            CALL QUIT('EXCPRP not included in this version')
+#endif
             GO TO 100
   131    CONTINUE 
 C&&&& XXXXXX

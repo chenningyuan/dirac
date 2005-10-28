@@ -231,13 +231,14 @@ C***********************************************************************
 C*****  Q U A D R A T I C   R E S P O N S E  ***************************
 C***********************************************************************
 C
-      IF (DOXQR .OR. DOTPA) THEN
+      IF (DOXQR .OR. DOTPA .OR. DOEXCPRP) THEN
          IF (WF. NE. 'DHF') 
      &        CALL QUIT('*** ERROR in PAMPR1 *** ' //
      &        'Quadratic response not implemented for ' // WF )
          IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)
 #if defined (MOD_XPP)
          IF (DOTPA) CALL PRPTPA(WORK(KFREE),LFREE)
+         IF (DOEXCPRP) CALL EXCPRP(WORK(KFREE),LFREE)
 #endif
       ENDIF
 C

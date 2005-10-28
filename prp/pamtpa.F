@@ -50,7 +50,7 @@ C***********************************************************************
 C
       PARAMETER ( LUCMO = 22 )
       DIMENSION RES_LR(3,MAXLQR,MAXLQR,MAXFQR)
-      DIMENSION RES_TPA(3,8,MAXLQR,MAXLQR,MAXFQR)
+      DIMENSION RES_TPA(3,NBSYM,MAXLQR,MAXLQR,MAXFQR)
       DIMENSION WORK(*)
 C
       CALL QENTER('PRPTPA')
@@ -143,7 +143,7 @@ C***********************************************************************
 C
 C     Calculation of excitation energies.
 C
-C     Written by johhe 2002
+C     Written by johhe 2002  (modified by E.T., aug 2004)
 C
 C***********************************************************************
 #include "implicit.h"
@@ -154,7 +154,6 @@ C***********************************************************************
 #include "pgroup.h"
 #include "dcbxpr.h"
 C
-      DIMENSION RCNV(MAXFQR,8)
       DIMENSION WORK(*)
       LOGICAL DOEXC
 C
@@ -162,6 +161,74 @@ C
       MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
 C
       CALL QENTER('TPAEXC')
+C
+      KFREE = 1
+      LFREE = LWRK
+C
+C     Loop over excitation symmetries
+C     ===============================
+C
+      NFC = NBSYM/NFSYM
+      JTIMOP = 1
+      DO IFERE = 1,NFSYM
+      DO IS = 1,NFC
+         JOPSY  = IFERE
+         JSYMOP = JFSYM(IS,JOPSY)
+C
+C     Check for non-trivial excitations (boson irreps)
+C     ================================================
+C
+         IF (TPACNV(JSYMOP).NE.0) THEN
+            DOEXC = .FALSE.
+            DO IAOP = 1, NAQROP
+            DO IBOP = 1, NBQROP
+               IF (MULD2H(IPRPSYM(LAQROP(IAOP)),
+     &              MULD2H(IPRPSYM(LBQROP(IBOP)),JSYMOP)).EQ.1)
+     &              DOEXC = .TRUE.
+            END DO
+            END DO
+            IF (.NOT.DOEXC) THEN
+               WRITE(LUPRI,*) 'WARNING: TPA cannot be '//
+     &              'calculated in symmetry group no. ', JSYMOP
+               TPACNV(JSYMOP) = 0
+               TPASIM(JSYMOP) = 0
+               TPASTV(JSYMOP) = 0
+            END IF
+         END IF
+      END DO
+      END DO
+C
+C     Symmetry check done; now compute the excitation vectors
+      CALL CALCEXCVEC(WORK(KFREE),LFREE,TPACNV,TPASIM,TPASTV)
+C
+      CALL QEXIT('TPAEXC')
+      RETURN
+      END
+C
+      SUBROUTINE CALCEXCVEC(WORK,LWRK,NEXCSYM,NEXCSIM,NEXCSTV)
+C***********************************************************************
+C
+C     Calculation of excitation vectors and energies.
+C
+C     Written by johhe 2002 (modified by E.T., aug 2004)
+C     Input:  NEXCSYM - number of excited states (in each symmetry)
+C             NEXCSIM - number of simultaneous solutions
+C             NEXCSTV - number of start vectors
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxqr.h"
+#include "dcbxrs.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+C
+      DIMENSION RCNV(MAXFQR,NBSYM)
+      DIMENSION WORK(*)
+      INTEGER NEXCSYM(8),NEXCSIM(8),NEXCSTV(8)
+C
+      CALL QENTER('CALCEXCVEC')
 C
       KFREE = 1
       LFREE = LWRK
@@ -198,14 +265,13 @@ C
          WRITE(LUPRI,'(///A,A3/A,I3,A)')
      &        ' >>>  SOLVING PP EXCITATION ENERGIES - Symmetry: ',
      &        REP(JSYMOP-1),
-     &        '      for the',TPACNV(JSYMOP),
+     &        '      for the',NEXCSYM(JSYMOP),
      &        ' lowest excitation energies.'
 C
 C     Check for excitations
 C     =====================
 C
-         IF (TPACNV(JSYMOP).NE.0) THEN
-            DOEXC = .FALSE.
+         IF (NEXCSYM(JSYMOP).GT.0) THEN
             CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
      &                  WORK,KFREE,LFREE,IPRXQR)
             IF (NZCONF.EQ.0) THEN
@@ -213,83 +279,63 @@ C
             ELSE
                NEXMAX = NZCONF
             END IF
-            IF (TPACNV(JSYMOP) .GT. NEXMAX) THEN
+            IF (NEXCSYM(JSYMOP) .GT. NEXMAX) THEN
                WRITE(LUPRI,'(/A/A,I5)')
      &              ' WARNING: no. of excitation energies exceeds '//
      &              'no. of var. The number is decreased to',NEXMAX
-               TPACNV(JSYMOP) = NEXMAX
+               NEXCSYM(JSYMOP) = NEXMAX
             END IF
-            NEXSIM = MIN(TPASIM(JSYMOP), NEXMAX)
+            NEXSIM = MIN(NEXCSIM(JSYMOP), NEXMAX)
             NFREQ  = NEXSIM
-            NEXSTV = MIN(TPASTV(JSYMOP), NEXMAX)
-C
-C     Check if the transitions are allowed (boson irrep)
-C     ==================================================
-C
-            DO IAOP = 1, NAQROP
-            DO IBOP = 1, NBQROP
-               IF (MULD2H(IPRPSYM(LAQROP(IAOP)),
-     &             MULD2H(IPRPSYM(LBQROP(IBOP)),JSYMOP)).EQ.1)
-     &                DOEXC = .TRUE.
-            END DO
-            END DO
-            IF (.NOT.DOEXC) THEN
-               WRITE(LUPRI,*) 'WARNING: TPA cannot not be '//
-     &              'calculated in symmetry group no. ', JSYMOP
-               TPACNV(JSYMOP) = 0
-               TPASIM(JSYMOP) = 0
-               TPASTV(JSYMOP) = 0
-            ELSE
+            NEXSTV = MIN(NEXCSTV(JSYMOP), NEXMAX)
 C
 C     *******************************************************
 C     *** S O L V E   E I G E N V A L U E   E Q. S Y S T. ***
 C     *******************************************************
 C
-               INDPRP = IEXCOFF + JSYMOP
-               NFREQ  = TPACNV(JSYMOP)
-               NCRED  = 0
-               NERED  = 0
-               NPRED  = 0
-               NZRED  = NCRED + NERED + NPRED
-               RSPLAB = 'PP EXCITATIONS  '
-               PRPNAM(INDPRP) = 'EXCLABL'
-C
+            INDPRP = IEXCOFF + JSYMOP
+            NFREQ  = NEXCSYM(JSYMOP)
+            NCRED  = 0
+            NERED  = 0
+            NPRED  = 0
+            NZRED  = NCRED + NERED + NPRED
+            RSPLAB = 'PP EXCITATIONS  '
+            PRPNAM(INDPRP) = 'EXCLABL'
+C     
 C     Solve for eigenvalues
 C     =====================
-C
-               CALL XRSCTL(DUMMY,DUMMY,DUMMY,
-     &                     WORK(KIBTYP),WORK(KIBCVC),WORK(KIBEVC),
-     &                     WORK(KIBPVC),RCNV(1,JSYMOP),
-     &                     EXCIT(1,JSYMOP),WORK(KEVECR),
-     &                     WORK,KFREE,LFREE)
-C
+C     
+            CALL XRSCTL(DUMMY,DUMMY,DUMMY,
+     &           WORK(KIBTYP),WORK(KIBCVC),WORK(KIBEVC),
+     &           WORK(KIBPVC),RCNV(1,JSYMOP),
+     &           EXCIT(1,JSYMOP),WORK(KEVECR),
+     &           WORK,KFREE,LFREE)
+C     
 C     Initializing indices (record number)  before calling LRVEC
 C     ==========================================================
-C
-               DO IFR=1,NFREQ
-                  CALL INDQR(INDPRP,EXCIT(IFR,JSYMOP),IDUM)
-               END DO
-C
+C     
+            DO IFR=1,NFREQ
+               CALL INDQR(INDPRP,EXCIT(IFR,JSYMOP),IDUM)
+            END DO
+C     
 C     Writing excitation vectors to file
 C     ==================================
-C
-               CALL LRVEC(INDPRP,WORK(KIBTYP),WORK(KIBCVC),
-     &                    WORK(KIBEVC),WORK(KIBPVC),EXCIT(1,JSYMOP),
-     &                    WORK(KEVECR),WORK(KFREE),LFREE)
-            END IF
+C     
+            CALL LRVEC(INDPRP,WORK(KIBTYP),WORK(KIBCVC),
+     &           WORK(KIBEVC),WORK(KIBPVC),EXCIT(1,JSYMOP),
+     &           WORK(KEVECR),WORK(KFREE),LFREE)
          END IF
- 20      CONTINUE
       END DO
       END DO
 C
-      CALL QEXIT('TPAEXC')
+      CALL QEXIT('CALCEXCVEC')
       RETURN
       END
 C
       SUBROUTINE EXCSET(WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Some settings used in TPAEXC.
+C     Some settings used in CALCEXCVEC.
 C
 C     Written by johhe 2002
 C
@@ -306,7 +352,7 @@ C
       LOGICAL EXST
       DIMENSION WORK(*)
 C
-      CALL QENTER('SETEXC')
+      CALL QENTER('EXCSET')
 C
 C     Initiate variables in dcbxqr.h
 C     ==============================
@@ -375,7 +421,7 @@ C
          WRITE(LUQRINFO,'(A16)') ' **End of File**'
       END IF
 C
-      CALL QEXIT('SETEXC')
+      CALL QEXIT('EXCSET')
       RETURN
       END
 C
@@ -485,7 +531,7 @@ C
       DIMENSION VECAEE(MZYEE,NZ),VECBEE(MZYEE,NZ),VECEEE(MZYEE,NZ),
      &          VECAEP(MZYEP,NZ),VECBEP(MZYEP,NZ),VECEEP(MZYEP,NZ)
       DIMENSION CMO(*),IBEIG(*),WORK(*)
-      DIMENSION RESULT(3,8,MAXLQR,MAXLQR,MAXFQR)
+      DIMENSION RESULT(3,NBSYM,MAXLQR,MAXLQR,MAXFQR)
 C
 #include "ibtfun.h"
       MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
@@ -506,7 +552,7 @@ C
      &         FILE='AOPROPER')
 #endif
 C     
-      CALL DZERO(RESULT,3*8*MAXLQR*MAXLQR*MAXFQR)
+      CALL DZERO(RESULT,3*NBSYM*MAXLQR*MAXLQR*MAXFQR)
 C
       IQRF = 0
       NFC  = NBSYM/NFSYM
@@ -637,8 +683,10 @@ C
      &            D2 = 2.0D0, D4 = 4.0D0 )
       CHARACTER PFMT*6,MXFORM*6,ALAB*8,BLAB*8
       DIMENSION RES_LR(3,MAXLQR,MAXLQR,MAXFQR)
-      DIMENSION RES_TPA(3,8,MAXLQR,MAXLQR,MAXFQR)
+      DIMENSION RES_TPA(3,NBSYM,MAXLQR,MAXLQR,MAXFQR)
       DIMENSION WORK(*)
+C
+      INTEGER EXCOPFROMSYM
 C
 #include "ibtfun.h"
       MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
@@ -693,7 +741,8 @@ C
 C     Loop over A- and B-operators
 C     ============================
 C
-            DO IBOP=1,NQROP
+            IBOP = EXCOPFROMSYM(JSYMEX)
+C
             OSCILL = D0
             DO IAOP=IBOP,NQROP
                IAPT  = LQROP(IAOP,1)
@@ -710,12 +759,8 @@ C
 C     Check if it is a transition moment and print if allowed
 C     =======================================================
 C
-               IF (IBPT.GE.IEXCOFF) THEN
-                  DO I=1,LQROP(IBOP,2)
-                     IF (FREQ.EQ.QRFREQ(I,IBOP)) NFR = I
-                  END DO
-                  TRNMOM = RES_LR(1,IAOP,IBOP,NFR)
-                  FREQ = EXCIT(NFR,JSYMEX)
+                  TRNMOM = RES_LR(1,IAOP,IBOP,IFR)
+                  FREQ = EXCIT(IFR,JSYMEX)
 C
                   IF ((TPACNV(JSYMEX).NE.0).AND.
      &                (MULD2H(ISYMA,JSYMEX).EQ.1)) THEN
@@ -725,30 +770,26 @@ C
      &                     ' Operator, transition moment: ',
      &                     ALAB,TRNMOM,' a.u.'
 C
-C     Calculate and oscillator sterngth
+C     Calculate and oscillator strength
 C     =================================
 C
                      OSCILL = OSCILL +
      &                        D2R3*TRNMOM*TRNMOM*FREQ
                   END IF
-               END IF
  110           CONTINUE
             END DO
 C
-C     Print oscillator sterngth
+C     Print oscillator strength
 C     =========================
 C
-            IF ((OSCILL.NE.D0).AND.(IBPT.GE.IEXCOFF)) THEN
-               IF (OSCILL.GE.1.0D-10) THEN
-                  PFMT = MXFORM(OSCILL,12)
-                  WRITE(LUPRI,'(/5X,A,'//PFMT//')')
-     &                  ' Oscillator strength: ',OSCILL
-               ELSE
-                  WRITE(LUPRI,'(/5X,A)')
-     &                 'Forbidden transition'
-               END IF
+            IF (OSCILL.GE.1.0D-10) THEN
+               PFMT = MXFORM(OSCILL,12)
+               WRITE(LUPRI,'(/5X,A,'//PFMT//')')
+     &              ' Oscillator strength: ',OSCILL
+            ELSE
+               WRITE(LUPRI,'(/5X,A)')
+     &              'Forbidden transition'
             END IF
-            END DO
          END DO
       END DO
       END DO
@@ -1055,6 +1096,12 @@ C     ========================
 C
       JSYMOP = JSYM
 C
+      IF (IPRXQR.GE.2) THEN
+         CALL QMATNORM('Response (e-e) vector in EXCINIT',
+     &        VECEE,NZYEE,1,NZ)
+         CALL QMATNORM('Response (e-p) vector in EXCINIT',
+     &        VECEP,NZYEP,1,NZ)
+      END IF
       IF (IPRXQR.GE.10) THEN
          IF (.NOT. XQR_SKIPEE) THEN
             CALL HEADER('VECEE '//LAB//' in EXCINIT',-1)
