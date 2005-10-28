@@ -9,7 +9,7 @@ include ../Makefile.config
 
 F77_OBJS = paminp.o pamprp.o pamexp.o pamgrd.o pamogrd.o pamfck.o pamset.o \
 	   pamxlr.o pamrvc.o pamrsp.o rspmpg.o mp2lag.o pamxqr.o pamtpa.o \
-           pammag.o
+           pammag.o excprp.o
 
 F90_OBJS =
 
