@@ -336,7 +336,8 @@ C
      &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
                END IF
             END IF
-            IOFFSAOMO = IOFFSAOMO + NZ*NORB(I)*NFBAS(I,0)
+CMI         IOFFSAOMO = IOFFSAOMO + NZ*NORB(I)*NFBAS(I,0)
+            IOFFSAOMO = IOFFSAOMO + NZT*NORB(I)*NFBAS(I,0)
  20      CONTINUE
  10   CONTINUE
 C
