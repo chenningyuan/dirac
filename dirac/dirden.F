@@ -290,7 +290,8 @@ C
      &              D1,FAC,CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
      &              ISTART,ILOOP,NFBAS(ISYM,0))
           IF (IPRINT.GE.10) THEN
-            WRITE(LUPRI,'(/3X,A,I2/)') CHR,ISYM
+            WRITE(LUPRI,'(/3X,A,I1,A,I1/)') CHR,ISYM,'/',NFSYM
+C           WRITE(LUPRI,*) CHR,' ',ISYM,'/',NFSYM
             CALL PRQMAT(DMAT(I2BASX(ISYM,ISYM)+IOFF),
      &                  NFBAS(ISYM,0),NFBAS(ISYM,0),
      &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
@@ -342,9 +343,9 @@ CTROND      CALL DZERO(DMAT,N2BBASXQ)
      &              CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
      &              ISTART,ILOOP,NFBAS(ISYM,0))
          IF (IPRINT.GE.10) THEN
-            WRITE(LUPRI,'(/3X,A,I2,A,I2/)') 
+            WRITE(LUPRI,'(/3X,A,I2,A,I1,A,I1/)') 
      &         'ACTDEN: Active density matrix number ',IOPEN,
-     &         ', corep ',ISYM
+     &         ', corep ',ISYM,'/',NFSYM
             CALL PRQMAT(DMAT(I2BASX(ISYM,ISYM)+1),
      &                NFBAS(ISYM,0),NFBAS(ISYM,0),
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)

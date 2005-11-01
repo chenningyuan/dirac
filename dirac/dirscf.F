@@ -823,7 +823,6 @@ C
       CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
 
-C     IF (.NOT.FD2CMO) THEN
       IF (.NOT.RESTFCK) THEN
 
       DODIISAO = DIISAO.OR.(NASHMFT.GT.0.AND.AOC)
@@ -860,21 +859,18 @@ C        NZT is the NZ value for the transformation matrix
      &              DUM,DUM,DUM,WORK(KFREE),LFREE)
       END IF
 
-      END IF ! OF .NOT.FD2CMO
+      END IF ! OF .NOT.RESTFCK
 
       CLOSE(LUTMAT,STATUS='KEEP')
 
 CMI ==================================================================
 CMI  ... do read the 2comp. Fock-Dirac matrix in Lowdin
-CMI        MO basis (from pctra DC-SCF) to restart BSS-SCF ...
-CMI
-CMI  ... of 4comp STARTING Fock-Dirac matrix (from rev.pctra BSS-SCF+H2cPP)
+CMI        MO basis (from pctra DC-SCF) to START 2c BSS-SCF ...
+CMI  ... or the 4comp STARTING Fock-Dirac matrix (from rev.pctra BSS-SCF+H2cPP)
 CMI     in RKB_MO basis to restart DC-SCF
 CMI ==================================================================
-C     IF (FD2CMO) THEN
       IF (RESTFCK) THEN
        CALL OPNFIL(LUBSS,'BSSMAT','OLD','DFSOLV')
-C      IF (START2C) THEN
        IF (DO4C2C) THEN
 C ... do read the FD_2c in Lowdin MO basis from the BSSMAT to 
 C      provide restarting of the postDHF BSS-SCF procedure
@@ -889,7 +885,7 @@ C      provide restarting of the postDHF BSS-SCF procedure
         ELSE
          CALL QUIT('DFSOLV: FD2C_LMO not found !')           
         END IF         
-       ELSE ! START2C=.false., continuing with four-component DC-SCF
+       ELSE ! RESTFCK=.false., continuing with four-component DC-SCF
         IF (FNDLAB('FD4C_RKB',LUBSS)) THEN
          ISIZE = (NORB(1)*NORB(1)*NZ) 
          IF (NFSYM.EQ.2) ISIZE=ISIZE+(NORB(2)*NORB(2)*NZ)
@@ -903,7 +899,6 @@ C      provide restarting of the postDHF BSS-SCF procedure
        END IF         
        CLOSE(LUBSS,STATUS='KEEP')
        DODIISAO = .FALSE.
-C      FD2CMO = .FALSE.
        RESTFCK = .FALSE.
       ENDIF 
 
@@ -1427,21 +1422,20 @@ C
 C
          IF(IPRSCF.GE.5) THEN
            IF (NISHT .GT. 0) THEN
-             CALL HEADER('Total FD matrix',-1)
-             CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                   NZ,IPQTOQ(1,0),LUPRI)
+            CALL HEADER(
+     &      'SCFCY1: Total FD matrix in SA-AO basis',-1)
+            CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NZ,IPQTOQ(1,0),LUPRI)
            END IF
            IF(AOC) THEN
-             DO IOPEN = 1,NOPEN
-               CALL HEADER('Total FV matrix',-1)
-#if defined (SYS_SX)
-                WRITE(LUPRI,'(1X,A,I2)') 'Matrix number ',IOPEN
-#else
-                WRITE(LUPRI,'(X,A,I2)') 'Matrix number ',IOPEN
-#endif
-                CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
-     &                      NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-             END DO
+            DO IOPEN = 1,NOPEN
+             CALL HEADER(
+     &       'SCFCY1: Total FV matrix in SA-AO basis',-1)
+             WRITE(LUPRI,'(5X,A,I1,A,I1)')
+     &       'matrix number ',IOPEN,'/',NOPEN
+             CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+            END DO
            ENDIF
          END IF
 C

@@ -269,8 +269,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck diiser */
       SUBROUTINE DIISER(EVEC,FMO,FAO,DMAT,TINV,EBUF,TMAT,WORK,LWORK)
 C****************************************************************************
+C 
+C  PURPOSE: Calculate the gradient (error) vector.
 C
-C     Last revision 971029-jth
+C  On input: DMAT, FAO, TMAT, TINV
+C
+C  On output: EVCVAL calculated (dcbdhf.h)
+C
+C   Last revision:   971029-jth
+C                    Nov 2005 - MI
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -301,7 +308,7 @@ C
       CALL QENTER('DIISER')
 C
 C
-       IF (DIISAO.OR.(NASHMFT.GT.0.AND.AOC)) THEN
+      IF (DIISAO.OR.(NASHMFT.GT.0.AND.AOC)) THEN
 C
 C        The gradient is
 C           g = DCao * FDao + f_o DVao * (FDao + (a_o-1) QVao) + H.C.
@@ -336,10 +343,25 @@ C
      &                 D0,IPQTOQ(1,0),EBUF(J2BASXI),
      &                         NTBAS(0),NTBAS(0),NZ)
             IF ( IPRSCF .GE. 10 ) THEN
-               WRITE(CTMP,'(I1)') I
-               CALL HEADER('DIISER: DTOTao FDao, corep '//CTMP,-1)
-               CALL PRQMAT(EBUF(J2BASXI),NFBAS(I,0),NFBAS(I,0),
-     &                     NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+
+             CALL HEADER(
+     &       'DIISER: DMAT,total density matrix DTOTao ',-1)
+             WRITE(LUPRI,'(4X,A,I1,A,I1)')
+     &       'fermion symmetry: ', I,'/',NFSYM
+             CALL PRQMAT(DMAT(J2BASXI),NFBAS(I,0),NFBAS(I,0),
+     &                 NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+
+             CALL HEADER('DIISER: Entering FDao matrix ',-1)
+             WRITE(LUPRI,'(2X,A,I1,A,I1)')
+     &       'fermion symmetry: ', I,'/',NFSYM
+             CALL PRQMAT(FAO(J2BASXI),NFBAS(I,0),NFBAS(I,0),
+     &                 NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+
+CMI          ... the result of multiplication ...
+             WRITE(CTMP,'(I1)') I
+             CALL HEADER('DIISER: DTOTao . FDao,  corep '//CTMP,-1)
+             CALL PRQMAT(EBUF(J2BASXI),NFBAS(I,0),NFBAS(I,0),
+     &                   NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
             END IF
             IF (AOC) THEN
                DO 15 IOPEN = 1,NOPEN
@@ -385,7 +407,23 @@ C
      &                            NZT,IPQTOQ(1,0),
      &                TMAT(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
      &                            NZT,IPQTOQ(1,0),
-     &                FAO,N2BBASXQ,IPRSCF)
+     &                WORK(KFREE),LFREE,IPRSCF)
+CMI  &                FAO,N2BBASXQ,IPRSCF)  ! po..naa chyba !
+
+                IF (IPRSCF.GE.10) THEN
+                 CALL HEADER('DIISER: Entering TINV',-1)
+                 WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &           '*** Fermion ircop ',I,'/',NFSYM
+                 CALL PRQMAT(TINV(I2TMT(I)+1),NFBAS(I,0),
+     &           NTMO(I),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),LUPRI)
+
+                 CALL HEADER('DIISER: Entering TMAT',-1)
+                 WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &           '*** Fermion ircop ',I,'/',NFSYM
+                 CALL PRQMAT(TMAT(I2TMT(I)+1),NFBAS(I,0),
+     &           NTMO(I),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),LUPRI)
+                ENDIF
+
             ENDIF
 C
             IF (ZORA) CALL ZRDIIS (I,EVEC(JEVEC),WORK,KFREE,LFREE)
@@ -404,7 +442,8 @@ C
 C
             IF ( IPRSCF .GE. 10 ) THEN
                WRITE(CTMP,'(I1)') I
-               CALL HEADER('DIISER: ErrVec - ErrVec(Hermitian conj.)'//
+               CALL HEADER(
+     &         'DIISER: ErrVec - ErrVec(Hermitian conj.) in MO'//
      &                     ', corep '//CTMP,-1)
                CALL PRQMAT(EVEC(JEVEC),NTMO(I),NTMO(I),
      &                  NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
@@ -438,8 +477,9 @@ CTROND            CALL QGEMM(NTMO(I),NTMO(I),NOCC(I),D1,
      &           'H','N',IPQTOQ(1,0),EVEC(IOFF),NTMO(I),NTMO(I),NZ,
      &             D0,IPQTOQ(1,0),EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ)
             IF(IPRSCF.GE.5) THEN
-               WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
                CALL HEADER('DIISER: Density matrix in MO-basis',-1)
+               WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &          '*** Fermion ircop ',I,'/',NFSYM
                CALL PRQMAT(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                   NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
             ENDIF
@@ -487,7 +527,12 @@ C        --------------------------------------------
 C        total factor to get g norm         sqrt(2)
 C
       EVCVAL = SQRT(D2)*DNRM2(N2EVECTQ,EVEC,1)
-C
+C     
+      IF (IPRSCF.GE.10) THEN
+        CALL HEADER('DIISER: Resulting value of EVCVAL ',-1)
+        WRITE(LUPRI,'(4X,A,D15.6)')
+     &  '>>> EVCVAL = SQRT(D2)*DNRM2(N2EVECTQ,EVEC,1) = ',EVCVAL
+      ENDIF
       CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('DIISER')

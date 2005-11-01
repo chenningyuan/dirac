@@ -96,7 +96,7 @@ C
       DO I = 1,NFMAT
         IREP = ISYMOP(I)-1
         IF(IPRINT.GE.5) THEN
-          CALL HEADER('Unsorted DMAT',-1)
+          CALL HEADER('TWOFCK: Unsorted DMAT',-1)
           WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
           CALL PRQMAT(DMAT(1,1,I),NTBAS(0),NTBAS(0),
      &                NTBAS(0),NTBAS(0),NZ,
@@ -3467,8 +3467,8 @@ C        Inform the Fock matrix builder that we're going to do Gaunt
 C           The real matrix can only have an exchange contribution
             IX = IFCTYP(1,IFMAT)/10
             IY = MOD(IFCTYP(1,IFMAT),10)
-	    IC = MOD(IY,2)
-	    IE = (IY-IC)/2
+            IC = MOD(IY,2)
+            IE = (IY-IC)/2
             IFCTYP(1,IFMAT)=10*IX+4+IE
 C           For the imaginary parts we'll just add 6 to signal that it is Gaunt
             IFCTYP(2,IFMAT)=IFCTYP(2,IFMAT)+6
