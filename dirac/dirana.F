@@ -2474,7 +2474,7 @@ C     PRJLOC = FALSE localization with Mulliken analysis
       ENDIF
       TOBE = .FALSE.
       ITR = 0
-      FLAG = .FALSE.
+      FLAG = .TRUE.
       IF (AUTO) THEN
  100    CONTINUE
       ITR = ITR + 1
