@@ -3,6 +3,11 @@
 # This script was originally written by Olivier Visser
 # Scientific Computing & Modelling NV (SCM) 
 # Modified and ported to DIRAC by Lucas Visscher, January 2002.
+# Modified for $IGNORESIGN by Christoph Jacob, November 2005
+#
+# Known problem: If numbers have a different sign and the sign
+# is ignored, it always colors the whole number, not only the
+# digits that differ
 #
 
 SCRIPT=/tmp/$$.pl
@@ -151,6 +156,7 @@ close (FILE2);
 
 $countline = 0;
 $count = 0;
+$signcheck = 1;
 foreach $thisline (<FILE1>) {
  $countline++;
  if ($countline <= 9) {
@@ -172,6 +178,12 @@ foreach $thisline (<FILE1>) {
        if ($line =~ /^\$ERROR (.*)$/) {
            $small = $1;
        }
+       if ($line =~ /^\$IGNORESIGN/) {
+           $signcheck = 0;
+       }
+       if ($line =~ /^\$SIGNCHECK/) {
+           $signcheck = 1;
+       }
 
        do GetReal ($line);
        while ($real ne "") {
@@ -184,10 +196,29 @@ foreach $thisline (<FILE1>) {
         # -------------------------------
 
         $diff = $real - $R2[$count];
-        if ($real < 0) {$real = -$real;}
+        $posreal = $real;
+        if ($real < 0) {$posreal = -$real;}
         if ($diff < 0) {$diff = -$diff;}
-        if ($real > 1.0) {$diff = $diff / $real;}
-        if ($real < 1.0) {$diff = $diff * $real;}
+        if ($posreal > 1.0) {$diff = $diff / $posreal;}
+        if ($posreal < 1.0) {$diff = $diff * $posreal;}
+
+        if ($signcheck == 0) {
+            
+            # ---------------------------------------------- 
+            # calculate the difference the other way around
+            # ---------------------------------------------- 
+
+            $diff2 = $real + $R2[$count];
+            if ($diff2 < 0) {$diff2 = -$diff2;}
+            if ($posreal > 1.0) {$diff2 = $diff2 / $posreal;}
+            if ($posreal < 1.0) {$diff2 = $diff2 * $posreal;}
+
+            # ---------------------------------------------- 
+            # use the smaller of the two differences
+            # ---------------------------------------------- 
+
+            if ($diff2 < $diff) {$diff = $diff2;}
+        }
 
         # ---------------------------
         # and the corresponding color

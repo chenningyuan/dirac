@@ -84,6 +84,7 @@ sub GetReal {
             if ($astr =~ /^[\-\+]?\d*\.\d*[edED]?[\-\+]?\d*$/) {last;}
             }
         $real = substr ($line, $match, $j);
+        $real =~ s/[dD]/e/;
         $prereal = substr ($line, 0, $match-1);
         $maxlen = length ($line) - $match - $j;
         $postreal = substr ($line, $match+$j, $maxlen);
@@ -139,6 +140,7 @@ open (FILE2, "<$s2") || die "Error opening $s2\n";
 $countline = 0;
 $count = 0;
 $linenumber = 0;
+$signcheck = 1;
 foreach $line1 (<FILE1>) {
   $line2 = <FILE2>;
   $countline++;
@@ -153,6 +155,12 @@ foreach $line1 (<FILE1>) {
     if ($line =~ /^\$ERROR (.*)$/) {
         $small = $1;
     }
+    if ($line =~ /^\$IGNORESIGN/) {
+        $signcheck = 0;
+    }
+    if ($line =~ /^\$SIGNCHECK/) {
+        $signcheck = 1;
+    }
     do GetReal ($line);
     while ($real ne "" && $real ne ".") {
         $line = $postreal;
@@ -164,13 +172,24 @@ foreach $line1 (<FILE1>) {
         # -------------------------------
 
         $diff = $real - $R2[$count];
-        if ($real < 0) {$real = -$real;}
+        $posreal = $real;
+        if ($real < 0) {$posreal = -$real;}
         if ($diff < 0) {$diff = -$diff;}
-        if ($real > 1.0) {$diff = $diff / $real;}
-        if ($real < 1.0) {$diff = $diff * $real;}
+        if ($posreal > 1.0) {$diff = $diff / $posreal;}
+        if ($posreal < 1.0) {$diff = $diff * $posreal;}
 
         if ($diff > $small) {
-            $haserror = 1;
+            if ($signcheck == 0) {
+                $diff = $real + $R2[$count];
+                $posreal = $real;
+                if ($real < 0) {$posreal = -$real;}
+                if ($diff < 0) {$diff = -$diff;}
+                if ($posreal > 1.0) {$diff = $diff / $posreal;}
+                if ($posreal < 1.0) {$diff = $diff * $posreal;}
+                }
+             if ($diff > $small) {
+                $haserror = 1;
+                }
             }
 
         $count++;
