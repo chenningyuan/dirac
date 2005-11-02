@@ -1,5 +1,6 @@
 $ERROR 0.000000001
 Nlines 3:Electronic energy
+$IGNORESIGN
 $ERROR 0.000001
 Nlines 3:Value of electronic part
 
