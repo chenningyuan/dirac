@@ -89,6 +89,8 @@ CMI ... an addition from TEC
      &            SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
      &            NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DDFOCK,
      &            DINTSKP)
+CMI       ... I try this ...
+         LWTOT  = LWTOT - KLAST
       ELSE
          KPINT = KLAST
          KQINT = KLAST
