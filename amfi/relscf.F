@@ -4240,14 +4240,14 @@ C$    DT(IJ)=S(M)
 C$    DT(JI)=S(M)                                                       
 C$  3 JI=JI+NBAS1                                                       
       MM=M                                                              
-CDIR$ SHORTLOOP                                                         
+C  DIR$ SHORTLOOP                                                         
 CVD$ SHORTLOOP                                                         
       DO 3 J=1,I                                                        
       IJ=NSTEP+J                                                        
       MM=MM+1                                                           
 3     DT(IJ)=S(MM)                                                      
       JI=I                                                              
-CDIR$ SHORTLOOP                                                         
+C  DIR$ SHORTLOOP                                                         
 CVD$ SHORTLOOP                                                         
       DO 10 J=1,I                                                       
       M=M+1                                                             
@@ -4265,16 +4265,16 @@ CICI      STOP 'EIGEN'
 CICI      ENDIF                                                             
       CALL JACVAO (DT,NBAS1,EPSI,V,THRSH)          
 C$    INTRODUCE NEW VECTOR LOOP (INTERMEDIATE STORAGE OF TERM)          
-CDIR$ SHORTLOOP                                                         
+C  DIR$ SHORTLOOP                                                         
       DO 17 I=1,NBAS1                                                   
 17    DT(I)=1.D0/DSQRT(EPSI(I))                                          
 C                                                                       
-CDIR$ SHORTLOOP                                                         
+C  DIR$ SHORTLOOP                                                         
 CVD$ SHORTLOOP                                                         
       DO 4 I=1,NBAS1                                                    
       NSTEP=NBAS1*(I-1)                                                 
 C$    TERM=1.D0/SQRT(EPSI(I))                                           
-CDIR$ SHORTLOOP                                                         
+C  DIR$ SHORTLOOP                                                         
 CVD$ SHORTLOOP                                                         
       DO 5 J=1,NBAS1                                                    
       JI=NSTEP+J                                                        
@@ -4339,7 +4339,7 @@ C$    KL=(K-1)*K/2 +L+M1
       KI=NSTEP+K                                                        
 110   TERM=TERM+V(KI)*V(LJ)*FO(KL)                                      
 CVD$ SHORTLOOP                                                         
-CDIR$ SHORTLOOP                                                         
+C  DIR$ SHORTLOOP                                                         
       DO 210 L=K,NBAS1                                                  
 C$    KL=(L-1)*L/2 +K+M1                                                
       KL=IDK(L)+K+M1                                                    
@@ -4361,7 +4361,7 @@ C$    KL=(K-1)*K/2 +L+M1
       KI=NSTEP+K                                                        
 310   TERM=TERM+V(KI)*V(LJ)*FC(KL)                                      
 CVD$ SHORTLOOP                                                         
-CDIR$ SHORTLOOP                                                         
+C  DIR$ SHORTLOOP                                                         
       DO 410 L=K,NBAS1                                                  
 C$    KL=(L-1)*L/2 +K+M1                                                
       KL=IDK(L)+K+M1                                                    
@@ -4391,7 +4391,7 @@ CICI      ENDIF
       NSTEP=NBAS1*(J-1)                                                 
       JI=NSTEP+I                                                        
 CVD$ SHORTLOOP                                                         
-CDIR$ SHORTLOOP                                                         
+C  DIR$ SHORTLOOP                                                         
       DO 13 K=1,NBAS1                                                   
       IK=NBAS1*(K-1)+I                                                  
       KJ=NSTEP+K                                                        
@@ -4421,7 +4421,7 @@ Cc    MIN=ISMIN(NBAS1,EPSI,1)
  28   EPS(NSTEP1)=EPSI(MIN)                                             
       EPSI(MIN)=0.1D+39                                                 
 CVD$ SHORTLOOP                                                         
-CDIR$ SHORTLOOP                                                         
+C  DIR$ SHORTLOOP                                                         
       DO 16 J=1,NBAS1                                                   
       JJ=NBAS1*(MIN-1)+J                                                
    16 C(J,NSTEP1)=DT(JJ)                                                
@@ -5688,7 +5688,8 @@ C
       RETURN                                                            
       END                                                               
 C//SKIPCc                                                               
-      REAL FUNCTION SECONDX()                                            
+CMI   REAL FUNCTION SECONDX()                                            
+      DOUBLE PRECISION FUNCTION SECONDX()                                            
       SECONDX=0.                                                         
       RETURN                                                            
       END                                                               
