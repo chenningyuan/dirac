@@ -599,7 +599,7 @@ C*****************************************************************************
       CALL IZERO(rstate,8)
 !     keyword: .EXCDIP
       IF (KEYWID .eq. 1) THEN
-         SETTINGS = 1;
+         SETTINGS = 1
 !        read excited states (only left states are read, leaving
 !        rstate to contain only zeros; this is as it should be)
          READ(LUCMD,*,END=999,ERR=999) (lstate(I),I=1,NBSYM)
@@ -618,7 +618,7 @@ C*****************************************************************************
          CALL OP1IND('NAQROP',DUMMY,LAQROP,NAQROP,OPINDEX,MAXLQR)
 !     keyword: .EXCPRP
       ELSE IF (KEYWID .eq. 2) THEN
-         SETTINGS = 2;
+         SETTINGS = 2
 !        Read left excited states
          lstateOK = .false.
          READ(LUCMD,*,END=999,ERR=999) (lstate(I),I=1,NBSYM)
