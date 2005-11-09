@@ -994,7 +994,7 @@ CTF
         IORBSM = ISMFTO2(IORB)
       else
         write(6,*) 'IUBSTR out of range in adst_gas ...  ',IUBSTR
-        Call Abend()
+        Call Abend('Quitting')
       end if
 *
       IF(NTEST.GE.100) WRITE(6,*)

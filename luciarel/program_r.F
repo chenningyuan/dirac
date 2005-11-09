@@ -3581,7 +3581,7 @@ C       IDENSI = 1
         WRITE(6,*) ' Set SO-OP to 0 instead.'
         WRITE(6,*)
         WRITE(6,*) '                   Luciarel '
-        Call Abend()
+        Call Abend('Quitting')
       END IF
 *. If relativistic calculation ensure that DBGCI is turned on
       IF(IRELACI.EQ.1.AND.IDBGCI.EQ.0) THEN
@@ -3594,7 +3594,7 @@ C       IDENSI = 1
         WRITE(6,*) ' Please add DBGCI and ensure that '
         WRITE(6,*) ' a double group has been specified as'
         WRITE(6,*) ' symmetrygroup'
-        Call Abend()
+        Call Abend('Quitting')
       END IF
 *
 * 83 : Type of spin orbit operator
@@ -3607,7 +3607,7 @@ C       IDENSI = 1
           WRITE(6,*) ' This is required for relativistic calc'
           WRITE(6,*)
           WRITE(6,*) ' Please add and return '
-          call abend()
+          call abend('Quitting')
         END IF
       END IF
 *
@@ -3662,7 +3662,7 @@ C       IDENSI = 1
             write(6,*)
             write(6,*) ' SP<-RE true spinor expansion from start '
             write(6,*) ' not possible yet.'
-            Call Abend()
+            Call Abend('Quitting')
           else
             ISPEXP_INI = 3
           end if
@@ -3788,7 +3788,7 @@ C       IDENSI = 1
      &  '                                                      '
         WRITE(LUOUT,*)
      &  '                                      Niels Bohr      '
-        Call Abend()
+        Call Abend('Quitting')
       END IF
 *
 *. Open one-electron file to obtain core energy and

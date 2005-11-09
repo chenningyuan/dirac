@@ -1516,7 +1516,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
          CALL TODSC(VEC1,NDIM,-1,LU)
       ELSE
 *. Write the vector with the block format of file LUFORM
-        CALL REWINO(LUFORM,LBLK)
+        CALL REWINO(LUFORM)
         IBOT = 1
 *. Loop over records
  1000   CONTINUE

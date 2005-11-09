@@ -497,7 +497,8 @@ C
 ***********************************************************************
 *  Dummy routine for normal compilations
 *
-      subroutine rightad
+      subroutine rightad(string)
+      character*12 string
       return
       end
 ***********************************************************************
@@ -647,7 +648,9 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
 ***********************************************************************
 *  Dummy routine for normal compilations
 *
-      subroutine stdfmt
+      subroutine stdfmt(char_x,string)
+      CHARACTER*72 CHAR_X
+      CHARACTER*12 STRING
       return
       end
 ***********************************************************************

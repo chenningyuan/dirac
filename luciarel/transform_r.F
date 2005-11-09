@@ -963,10 +963,10 @@ C2011        END DO
           do JGAS=1,NGAS,1
             do IIJUB=1,4,1
               write(6,*) 'IIJUB is  ',IIJUB
-              write(6,'(A,X,I6,I3,I3,A,X,I6)')
+              write(6,'(A,1X,I6,I3,I3,A,1X,I6)')
      &                   'NFCS(',IIJUB,IGAS,JGAS,') = ',
      &                    NFCS(IIJUB,IGAS,JGAS)
-              write(6,'(A,X,I6,I3,I3,A,X,I6)')
+              write(6,'(A,1X,I6,I3,I3,A,1X,I6)')
      &                   'IUBOFF(',IIJUB,IGAS,JGAS,') = ',
      &                    IUBOFF(IIJUB,IGAS,JGAS)
             end do
@@ -1646,7 +1646,8 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
 *
       CALL SPITRA2(I1234,I12,I34,NSMAO,MULTAO,NSMSP,MULTSP,
      &             IOPSMPN,IOPSMDG,NLISTO,I1234O,I12O,I34O,ICCSMO,
-     &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
+C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
+     &             ISPITRA)
       RETURN
       END
 ***********************************************************************

@@ -6307,7 +6307,7 @@ C?        write(6,*) ' JCBLOCK JCOFF ',JCBLOCK,JCOFF
      &         JASM.EQ.IASM.AND.JATP.GT.IATP.OR.
      &         JASM.EQ.IASM.AND.JATP.EQ.IATP.AND.JBTP.GT.IBTP))
      &           GOTO 9000
-            XNORM2 = INPROD(CB(ICOFF),CB(ICOFF),NJA*NJB,NJA*NJB)
+            XNORM2 = INPROD(CB(ICOFF),CB(ICOFF),NJA*NJB)
 C!          XNORM2 = 1.0D0
             IF(XNORM2.NE.0.0D0) THEN
 *. Other symmetry blocks that can be obtained from this block
