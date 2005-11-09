@@ -1138,7 +1138,7 @@ C
          DO IZ = 1, NZ
             TNORM = TNORM + DDOT(NBASI,VC(1,I,IZ),1,SCR1(1,IZ),1)
          END DO
-D        write(lupri,*) 'tnorm = ',tnorm
+C        write(lupri,*) 'tnorm = ',tnorm
          IF (TNORM .LT. THRZER) THEN
             IRETUR = -1
             RETURN
@@ -1202,7 +1202,7 @@ C
          END DO
 C
          IF (ITURN .EQ. 1 .AND. IROUND .GT. 0) THEN
-D           write(LUPRI,*) 'INFO: second round in QNORM'
+C           write(LUPRI,*) 'INFO: second round in QNORM'
             GOTO 1
          END IF
          IF (IROUND .GT. 0) CALL QUIT('QNORM internal error')

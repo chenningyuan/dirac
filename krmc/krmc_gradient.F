@@ -434,8 +434,8 @@ C***********************************************************************
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C
-D     write(6,*) 'gradient on entry'
-D     call output(g,1,nzhope,1,nz,nzhope,nz,1,6)
+C     write(6,*) 'gradient on entry'
+C     call output(g,1,nzhope,1,nz,nzhope,nz,1,6)
 C
       II = 1
       DO IZ = 1, NZ
@@ -447,11 +447,11 @@ C
          II = II + NZHOPE - NZXOPE
       END DO
 C
-D     write(6,*) 'gradient on exit, non-red'
-D     call output(gr,1,nzxope,1,nz,nzxope,nz,1,6)
-D     write(6,*) 'gradient on exit, non-red'
-D     call output(gr(1+nz*nzxope),1,nzhope-nzxope,1,nz,nzhope-nzxope,
-D    &     nz,1,6)
+C     write(6,*) 'gradient on exit, non-red'
+C     call output(gr,1,nzxope,1,nz,nzxope,nz,1,6)
+C     write(6,*) 'gradient on exit, non-red'
+C     call output(gr(1+nz*nzxope),1,nzhope-nzxope,1,nz,nzhope-nzxope,
+C    &     nz,1,6)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -478,11 +478,11 @@ C***********************************************************************
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C
-D     write(6,*) 'gradient on entry, non-red'
-D     call output(gr,1,nzxope,1,nz,nzxope,nz,1,6)
-D     write(6,*) 'gradient on entry, non-red'
-D     call output(gr(1+nz*nzxope),1,nzhope-nzxope,1,nz,nzhope-nzxope,
-D    &     nz,1,6)
+C     write(6,*) 'gradient on entry, non-red'
+C     call output(gr,1,nzxope,1,nz,nzxope,nz,1,6)
+C     write(6,*) 'gradient on entry, non-red'
+C     call output(gr(1+nz*nzxope),1,nzhope-nzxope,1,nz,nzhope-nzxope,
+C    &     nz,1,6)
 C
       II = 1
       DO IZ = 1, NZ
@@ -494,7 +494,7 @@ C
          II = II + NZHOPE - NZXOPE
       END DO
 C
-D     write(6,*) 'gradient on exit'
-D     call output(g,1,nzhope,1,nz,nzhope,nz,1,6)
+C     write(6,*) 'gradient on exit'
+C     call output(g,1,nzhope,1,nz,nzhope,nz,1,6)
       RETURN
       END

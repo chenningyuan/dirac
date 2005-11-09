@@ -715,8 +715,8 @@ C
          END IF
       END IF
 C
-D     write(6,*) 'eigenvalues'
-D     CALL OUTPUT(WORK(KEIG),1,NDIM,1,1,NDIM,1,1,6)
+C     write(6,*) 'eigenvalues'
+C     CALL OUTPUT(WORK(KEIG),1,NDIM,1,1,NDIM,1,1,6)
 C
 c     write(6,*) 'eigenvectors'
 c     CALL PRQMAT(U,NDIM,NDIM,NDIM,NDIM,NZ,IPQTOQ(1,0),LUPRI)

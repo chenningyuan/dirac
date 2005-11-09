@@ -325,7 +325,7 @@ C
 C     Find min and max number of a & b electrons
 C     ------------------------------------------
 C
-D     write(lupri,*) 'maxmk2, minmk2',maxmk2,minmk2
+C     write(lupri,*) 'maxmk2, minmk2',maxmk2,minmk2
       MAXAEL = (MAXMK2 + NAELEC) / 2
       MAXAEL = MIN(MAXAEL,NASHT)
 C
@@ -342,21 +342,21 @@ C
 C     Generate determinants:
 C     -----------------------
 C
-D     write(lupri,*) 'IAEL   IBEL'
+C     write(lupri,*) 'IAEL   IBEL'
       NDET = 0
       DO 10 IAEL = MINAEL, MAXAEL
          IBEL = NAELEC - IAEL
          MK2 = IAEL - IBEL
          IMK2(MK2) = NDET
-D        write(lupri,'(I4,I7)') IAEL,IBEL
-D        call flshfo(lupri)
+C        write(lupri,'(I4,I7)') IAEL,IBEL
+C        call flshfo(lupri)
 C
          CALL GOSCI_GENSTR(IAEL,IASTR,NASTR,MSKGAS,MAXDET)
          IF (NASTR .EQ. 0) GOTO 10
          CALL GOSCI_GENSTR(IBEL,IBSTR,NBSTR,MSKGAS,MAXDET)
          IF (NBSTR .EQ. 0) GOTO 10
-D        write(lupri,'(12X,I8,I11,I11)') NASTR,NBSTR,NDET
-D        call flshfo(lupri)
+C        write(lupri,'(12X,I8,I11,I11)') NASTR,NBSTR,NDET
+C        call flshfo(lupri)
 C
 C HJ TODO : the next can easily be optimized by not redoing the IA
 C           for each IB in GOSCI_GASOK and GOSCI_SYMOK /aug 03
@@ -380,8 +380,8 @@ C
                END IF
             END DO
          END DO
-D        write(LUPRI,'(T32,I11)') NDET
-D        call flshfo(LUPRI)
+C        write(LUPRI,'(T32,I11)') NDET
+C        call flshfo(LUPRI)
          NMK2(MK2) = NDET - IMK2(MK2)
  10   CONTINUE
 C
@@ -602,8 +602,8 @@ C
 C     Anyone who can find with a faster routine?
 C
       ID4 = JDET
-D     write(lupri,*) 'jdet',jdet,' and id4',id4
-D     write(lupri,*) 'id1',id1
+C     write(lupri,*) 'jdet',jdet,' and id4',id4
+C     write(lupri,*) 'id1',id1
       NGOSCI_NBITS
      &     = IBTAB(ID1(1))
      &     + IBTAB(ID1(2))
@@ -2709,7 +2709,7 @@ C
       DO 10 MK2I = MINMK2, MAXMK2, MK2STP
 C        ... MK2 is NAEL - NBEL
          IF (NMK2(MK2I) .EQ. 0) GOTO 10
-D        write(lupri,*) '(GOSCI_CI) MK2I = ',MK2I
+C        write(lupri,*) '(GOSCI_CI) MK2I = ',MK2I
          ISTRT = IMK2(MK2I) + 1
          IEND  = IMK2(MK2I) + NMK2(MK2I)
 C
@@ -2770,8 +2770,8 @@ C           ...only off-diagonal blocks for dens.mat or sigma-vec.
 C
             DO 20 MK2J = MK2JSTRT, MK2JEND, MK2STP
                IF (NMK2(MK2J) .EQ. 0) GOTO 20
-D              write(lupri,*) '(GOSCI_CI) MK2I MK2J = ',MK2I,MK2J
-D              call flshfo(lupri)
+C              write(lupri,*) '(GOSCI_CI) MK2I MK2J = ',MK2I,MK2J
+C              call flshfo(lupri)
 C
                JSTRT = IMK2(MK2J) + 1
                JEND  = IMK2(MK2J) + NMK2(MK2J)
@@ -3087,7 +3087,7 @@ C
       CPUTID  = SECTID(CPU2-CPU1)
       WALLTID = SECTID(WLL2-WLL1)
       CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
-D     write(lupri,*) '#calls to nbits: ',cncalls,fncalls
+C     write(lupri,*) '#calls to nbits: ',cncalls,fncalls
       WRITE(LUPRI,'(/5A)')
      &   ' CPU (Wall) time in GOSCI_CI kernel: ',CPUTID,' (',WALLTID,')'
       IF (NDSKIP .GT. 0) WRITE(LUPRI,'(A,I10,A,I10)')
@@ -3186,7 +3186,7 @@ C
       DO 10 MK2I = MINMK2, MAXMK2, MK2STP
 C        ... MK2 is NAEL - NBEL
          IF (NMK2(MK2I) .EQ. 0) GOTO 10
-D        write(lupri,*) '(GOSCI_CISIG_SCREEN) MK2I = ',MK2I
+C        write(lupri,*) '(GOSCI_CISIG_SCREEN) MK2I = ',MK2I
          ISTRT = IMK2(MK2I) + 1
          IEND  = IMK2(MK2I) + NMK2(MK2I)
 C
@@ -3242,8 +3242,8 @@ C
 C
             DO 20 MK2J = MK2JSTRT, MK2JEND, MK2STP
                IF (NMK2(MK2J) .EQ. 0) GOTO 20
-D           write(lupri,*) '(GOSCI_CISIG_SCREEN) MK2I MK2J = ',MK2I,MK2J
-D              call flshfo(lupri)
+C           write(lupri,*) '(GOSCI_CISIG_SCREEN) MK2I MK2J = ',MK2I,MK2J
+C              call flshfo(lupri)
 C
                JSTRT = IMK2(MK2J) + 1
                JEND  = IMK2(MK2J) + NMK2(MK2J)
@@ -3353,8 +3353,8 @@ C
       CALL GETTIM(CPU2,WLL2)
       CPUTID  = SECTID(CPU2-CPU1)
       WALLTID = SECTID(WLL2-WLL1)
-D     CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
-D     write(lupri,*) '#calls to nbits: ',cncalls,fncalls
+C     CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
+C     write(lupri,*) '#calls to nbits: ',cncalls,fncalls
       WRITE(LUPRI,'(/5A/A,I10,A,I10)')
      &   ' CPU (Wall) time in GOSCI_CISIG_SCREEN kernel: ',CPUTID,' (',
      &   WALLTID,')',' Number of BVEC elements skipped:',NBSKIP,

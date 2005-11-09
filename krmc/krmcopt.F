@@ -4570,8 +4570,8 @@ C
       DO IZ = 2, NZ
          CALL FULMAT('S',NORBT,NORBT,WORK(KGRAD))
       END DO
-D     write(6,*) 'fsmrot full matrix'
-D     call prqmat(work(kgrad),norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),6)
+C     write(6,*) 'fsmrot full matrix'
+C     call prqmat(work(kgrad),norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),6)
 C
       NBEFORE = NORBT - ISUM(NORBT,NOROT,1)
 C
@@ -4611,7 +4611,7 @@ C
 C
       DIMENSION NOROT(*),GRAD(NORBT,NORBT,*)
 C
-D     write(6,*) 'FSMRO1 threshold',thr
+C     write(6,*) 'FSMRO1 threshold',thr
       DO 10 I = 1, NORBT
 C        ...don't remove occupied orbitals.
          IF (IOBTYP(I) .EQ. JTINAC .OR. IOBTYP(I) .EQ. JTACT) GOTO 10
@@ -4620,7 +4620,7 @@ C        ...don't remove occupied orbitals.
             DN = DN + DDOT(NORBT,GRAD(1,I,IZ),1,GRAD(1,I,IZ),1)
          END DO
          DN = SQRT(DN)
-D        write(6,*) 'orbital ',I,' norm = ',dn
+C        write(6,*) 'orbital ',I,' norm = ',dn
          IF (DN .LE. THR) NOROT(I) = 1
  10   CONTINUE
       RETURN
@@ -4786,9 +4786,9 @@ C
 C
 C     Make canonical orbitals for inactive and virtual orbitals
 C     ---------------------------------------------------------
-D     write(lupri,*) 'SVLDEG: fq before trans'
-D     call prqmat(fq,norbt,nasht,norbt,nasht,nz,
-D    &     ipqtoq(1,0),lupri)
+C     write(lupri,*) 'SVLDEG: fq before trans'
+C     call prqmat(fq,norbt,nasht,norbt,nasht,nz,
+C    &     ipqtoq(1,0),lupri)
 C
       CALL MEMGET('REAL',KFD,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KU,N2ORBXQ,WORK,KFREE,LFREE)
@@ -4810,9 +4810,9 @@ C
       CALL ROTFQ('V',WORK(KU),FQ,WORK(KFREE),LFREE)
       CALL ROTORB('V',WORK(KU),CMO,WORK(KFREE),LFREE)
 C
-D     write(lupri,*) 'SVLDEG fq after trans'
-D     call prqmat(fq,norbt,nasht,norbt,nasht,nz,
-D    &     ipqtoq(1,0),lupri)
+C     write(lupri,*) 'SVLDEG fq after trans'
+C     call prqmat(fq,norbt,nasht,norbt,nasht,nz,
+C    &     ipqtoq(1,0),lupri)
 C
 C
 C     Calculate trial vector
@@ -4905,9 +4905,9 @@ C
      &        IPQTOQ(1,0),IPRINT)
       END IF
 C
-D     write(lupri,*) 'SVLDEG: new gradient'
-D     CALL RPRKAP(GOEE,GOEP,JXOPE,NXOPE,JXOPP,NXOPP,
-D    &     NZ,IPQTOQ(1,0),LUPRI)
+C     write(lupri,*) 'SVLDEG: new gradient'
+C     CALL RPRKAP(GOEE,GOEP,JXOPE,NXOPE,JXOPP,NXOPP,
+C    &     NZ,IPQTOQ(1,0),LUPRI)
 C
       CALL MEMREL('SVLDEG',WORK,KWORK,KWORK,KFREE,LFREE)
 C
