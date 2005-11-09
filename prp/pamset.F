@@ -725,6 +725,10 @@ C
       END DO
       IF(IPRINT.GE.5) THEN
         CALL HEADER('GETFC1:Fock (FCmo) matrix in MO-basis',-1)
+        IF (SPINFR) THEN 
+         WRITE(LUPRI,'(4X,A/)') 
+     &   'Applied boson symmetry based AO_to_MO transformation !'
+        ENDIF                       
         CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,NZ,
      &    IPQTOQ(1,0),LUPRI)
         IF (NASHT .GT. 0) THEN

@@ -466,7 +466,7 @@ C
 #include "dcborb.h"
 #include "dcbxpr.h"
 C
-      LOGICAL FIRST(*)
+      LOGICAL FIRST(*),QBTR
       DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),
      &          PRPAO(N2BBASX,NZ),PTRI(NNBBASX,NZ),
      &          OP1INT(NNBBASX),WORK(*)
@@ -543,6 +543,7 @@ C     =================================================================
 C         
       CALL DZERO(PRPMO,N2PMOX*NZ)
       IOPSY = JBTOF(IREP,1)
+      QBTR = .FALSE.
       DO I1 = 1,NFSYM
          I2  = MOD(I1+IOPSY,2) + 1
            IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
@@ -556,6 +557,7 @@ C
      &           CMO(IPCMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           IBEIG(IORB(I2)+1),
      &           WORK(KFREE),LFREE,IPRINT)
+            QBTR = .TRUE.
          ELSE
            CALL QTRANS('AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
@@ -573,8 +575,12 @@ C     =============
 C
       IF(IPRINT.GE.6) THEN
         CALL HEADER('Output from PRPMA1',-1)
+        IF (QBTR) THEN
+         WRITE(LUPRI,'(4X,A/)')
+     &   'Applied boson symmetry based AO_to_MO transformation !'
+        ENDIF
         WRITE(LUPRI,'(A,A16)') 
-     &    '*MO-matrix of property ',PRPNAM(INDXPR)
+     &  '*MO-matrix of property ',PRPNAM(INDXPR)
         CALL PRQMAT(PRPMO,NPMOT,NPMOT,NPMOT,NPMOT,NZ,
      &              IPQTOQ(1,IREP),LUPRI)
         IF(IPRINT.GE.10) THEN
