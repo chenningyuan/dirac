@@ -4138,7 +4138,7 @@ C
       WRITE(LUPRI,9002) '- SS-integrals: ',ISSINT
       WRITE(LUPRI,9002) '- GT-integrals: ',IGTINT
  9001 FORMAT(1X,A)
- 9002 FORMAT(3X,A,L1)
+ 9002 FORMAT(3X,A,I5)
 C
       WRITE(LUPRI,'(A)') ' * Basis set:'
       IF ( DIRCON(1) ) THEN
