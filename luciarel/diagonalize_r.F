@@ -1496,14 +1496,14 @@ C          CEIGEN(HR,HI,NDIM,EIGVAL,EIGVEC,SCR)
       WRITE(6,*) ' Lowest Eigenvalue ', VEC1(1)
       WRITE(6,*) ' All eigenvalues '
       DO I = 1, NVAR_SAVE
-         WRITE(6,'(X,I4,2X,1F18.10)') I,VEC1(I)
+         WRITE(6,'(1X,I4,2X,1F18.10)') I,VEC1(I)
       END DO
 *
 *  Print MXANAVEC eigenvectors
       if (IPRWFC.ge.1) then
         do IANA=1,MXANAVEC,1
           write(6,*)
-          write(6,'(A,X,I4)') ' Eigenvector number ... ',IANA
+          write(6,'(A,1X,I4)') ' Eigenvector number ... ',IANA
         end do
       end if
 *

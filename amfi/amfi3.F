@@ -1878,7 +1878,7 @@ CMI   write(17,'(I5)') null
 CMI   else
       write(17,'(I5)') ione    
 CMI   endif
-      write(17,'(4(E20.14,X))') ((exponents(irun,L),irun=1,
+      write(17,'(4(E20.14,1X))') ((exponents(irun,L),irun=1,
      *nprimit(l)),l=0,Lmax_occ)
       rewind(17)
       close(17,status='keep')

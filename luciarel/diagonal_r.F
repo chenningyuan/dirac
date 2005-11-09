@@ -1181,7 +1181,7 @@ C         L = INDEX(IKPERM(3),INT) * IKFAC
 C           write(6,'(A,X,A,I5,3X,4I3,1F18.10)') 
 C    &            'Diagonal int type ',TYPE,
 C    &             INT,(INDEX(II,INT),II=1,4),XINT(INT)
-            write(6,'(A,X,A,I5,3X,4I3,1F18.10)') 
+            write(6,'(A,1X,A,I5,3X,4I3,1F18.10)') 
      &            'Diagonal int type ',TYPE,
      &             IPOSDIA(INT),(MDIASV(II,IPOSDIA(INT)),II=1,4),
      &             XINT(IPOSDIA(INT))

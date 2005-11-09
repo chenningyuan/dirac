@@ -534,7 +534,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
           end if
           write(6,*)
           write(6,*) '´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´ '
-          write(6,'(A,X,I3,X,I2)')
+          write(6,'(A,1X,I3,1X,I2)')
      &              ' Contrib. Kramers proj., real/im  ',MK2_R,IRIR
           write(6,*) '´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´ '
           NAEL = NELEC(IACTP)
@@ -726,7 +726,7 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
          IBTP = IBLOCK(2,JBLOCK)
          IASM = IBLOCK(3,JBLOCK)
          IBSM = IBLOCK(4,JBLOCK)
-         if (NTEST.ge.5) write(6,'(A,X,I6,I6,I6,I6)')
+         if (NTEST.ge.5) write(6,'(A,1X,I6,I6,I6,I6)')
      &        ' IATP,IBTP,IASM,IBSM = ',IATP,IBTP,IASM,IBSM
 *. Obtain alpha strings of sym IASM and type IATP
          IDUM = 0
@@ -748,7 +748,7 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
 *
          NIA = NSSOA(IASM,IATP)
          NIB = NSSOB(IBSM,IBTP)
-         if (NTEST.ge.5) write(6,'(A,X,I9,I9)')
+         if (NTEST.ge.5) write(6,'(A,1X,I9,I9)')
      &        ' NIA,NIB = ',NIA,NIB
 *
          IMZERO = 0
@@ -910,7 +910,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
  290     CONTINUE
          WACC = WACC + W
          NACC = NACC + N
-         WRITE(6,'(A,I2,A,I2,3X,I9,X,E15.8,3X,E15.8)')
+         WRITE(6,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
      &        '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
  300  CONTINUE
 *

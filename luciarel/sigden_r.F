@@ -364,7 +364,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
   290   CONTINUE
         WACC = WACC + W
         NACC = NACC + N
-        WRITE(6,'(A,I2,A,I2,3X,I9,X,E15.8,3X,E15.8)')
+        WRITE(6,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
      &  '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC           
   300 CONTINUE
 *

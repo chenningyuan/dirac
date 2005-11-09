@@ -4090,11 +4090,11 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
          NTITMN = NTIT
          do I=1,NTITMN,1
             call leftad(TITLE(I))
-            write(*,'(X,A70)') TITLE(I)
+            write(*,'(1X,A70)') TITLE(I)
          end do
 *
 CTF      write(*,'(A7)') 'MACHINE'
-CTF      write(*,'(X,A6)') MACHINE
+CTF      write(*,'(1X,A6)') MACHINE
 *
          if (CALSIZ.eq.'NOR') then
            write(*,'(A6)') 'MEGACI'
@@ -4104,97 +4104,97 @@ CTF      write(*,'(X,A6)') MACHINE
 *
          write(*,'(A6)') 'DIRAC '
 *
-         write(*,'(X,I1)') IDBGRP
+         write(*,'(1X,I1)') IDBGRP
 *
          write(*,'(A3)') 'D2H'
 *
          write(*,'(A6)') 'NIRREP'
-         write(*,'(X,I3)') NSYM
+         write(*,'(1X,I3)') NSYM
 *
          write(*,'(A6)') 'IREFSM'
-         write(*,'(X,I3)') IRREP
+         write(*,'(1X,I3)') IRREP
 *
          write(*,'(A5)') 'GASSH'
-         write(*,'(X,I3)') NGAS
+         write(*,'(1X,I3)') NGAS
 *
          HESTR = ' '
          write (HESTR,'(A,I1,A)') '(X,',NSYM-1,'(I3,A1),I3)'
-         if (NSYM.eq.1) write (HESTR,'(A)') '(X,I3)'
+         if (NSYM.eq.1) write (HESTR,'(A)') '(1X,I3)'
          do IGAS = 1,NGAS,1
             write(*,HESTR)
      &      (NSHPGS(IGAS,ISYM),',',ISYM=1,NSYM-1),NSHPGS(IGAS,NSYM)
          end do
 *
          write(*,'(A6)') 'NACTEL'
-         write(*,'(X,I3)') NACTEL
+         write(*,'(1X,I3)') NACTEL
 *
          write(*,'(A6)') 'GASSPC'
-         write(*,'(X,I3)') NCISPC
+         write(*,'(1X,I3)') NCISPC
          do ISPC=1,NCISPC,1
-            write(*,'(X,2I3)')
+            write(*,'(1X,2I3)')
      &           (NELGS(IGAS,1,ISPC),NELGS(IGAS,2,ISPC),IGAS=1,NGAS)
          end do
 *
          write(*,'(A6)') 'SEQUEN'
          do ICISPC=1,NCISPC,1
-            write(*,'(X,I3)') NSEQ
+            write(*,'(1X,I3)') NSEQ
             do ISEQ=1,NSEQ,1
                if (TYPELUC(ISEQ).eq.'CI') then
-                  write(*,'(X,A3,I3)') 'CI,',MAXIT
+                  write(*,'(1X,A3,I3)') 'CI,',MAXIT
                else if (TYPELUC(ISEQ).eq.'PT') then
-                  write(*,'(X,A6,I3)') 'PERTU,',MAXIT
+                  write(*,'(1X,A6,I3)') 'PERTU,',MAXIT
                else if (TYPELUC(ISEQ).eq.'VF') then
-                  write(*,'(X,A8,I3)') 'VECFREE,',IVFLEV
+                  write(*,'(1X,A8,I3)') 'VECFREE,',IVFLEV
                end if
             end do
          end do
 *
          write(*,'(A6)') 'RESTRT'
-         write(*,'(X,I3)') IRSTRT
+         write(*,'(1X,I3)') IRSTRT
 *
          write(*,'(A5)') 'MULTS'
-         write(*,'(X,I3)') MULTIP
+         write(*,'(1X,I3)') MULTIP
 *
          write(*,'(A3)') 'MS2'
-         write(*,'(X,I3)') MS2
+         write(*,'(1X,I3)') MS2
 *
          if (MSCOMB) then
             write(*,'(A6)') 'MSCOMB'
-            write(*,'(X,F3.1)') SCOMB
+            write(*,'(1X,F3.1)') SCOMB
          end if
 *
          write(*,'(A5)') 'ROOTS'
-         write(*,'(X,I3)') NROOT
+         write(*,'(1X,I3)') NROOT
 *
          write(*,'(A5)') 'DENSI'
-         write(*,'(X,I3)') IDEMOL
+         write(*,'(1X,I3)') IDEMOL
 *
          write(*,'(A5)') 'NOCSF'
 *
          write(*,'(A6)') 'IPRSTR'
-         write(*,'(X,I3)') IPRSTR
+         write(*,'(1X,I3)') IPRSTR
          write(*,'(A6)') 'IPRCIX'
-         write(*,'(X,I3)') IPRCIX
+         write(*,'(1X,I3)') IPRCIX
          write(*,'(A6)') 'IPRORB'
-         write(*,'(X,I3)') IPRORB
+         write(*,'(1X,I3)') IPRORB
          write(*,'(A6)') 'IPRDIA'
-         write(*,'(X,I3)') IPRDIA
+         write(*,'(1X,I3)') IPRDIA
          write(*,'(A5)') 'IPRXT'
-         write(*,'(X,I3)') IPRXT
+         write(*,'(1X,I3)') IPRXT
          write(*,'(A6)') 'IPRRSP'
-         write(*,'(X,I3)') IPRRSP
+         write(*,'(1X,I3)') IPRRSP
          write(*,'(A6)') 'IPRDEN'
-         write(*,'(X,I3)') IPRDEN
+         write(*,'(1X,I3)') IPRDEN
          write(*,'(A6)') 'IPROCC'
-         write(*,'(X,I3)') IPROCC
+         write(*,'(1X,I3)') IPROCC
          write(*,'(A6)') 'PRNCIV'
-         write(*,'(X,I3,A)') IPRNCIV
+         write(*,'(1X,I3,A)') IPRNCIV
 *
          write(*,'(A6)') 'RESDIM'
-         write(*,'(X,I4)') IRESDIM
+         write(*,'(1X,I4)') IRESDIM
 *
          write(*,'(A6)') 'LCSBLK'
-         write(*,'(X,I7)') LCSBLK
+         write(*,'(1X,I7)') LCSBLK
 *
          if (IUSE_PH.eq.1) then
             write(*,'(A6)') 'USE_PH'
@@ -4221,11 +4221,11 @@ CTF      write(*,'(X,A6)') MACHINE
          NTITMN = NTIT
          do I=1,NTITMN,1
             call leftad(TITLE(I))
-            write(LUINP,'(X,A70)') TITLE(I)
+            write(LUINP,'(1X,A70)') TITLE(I)
          end do
 *
 CTF      write(LUINP,'(A7)') 'MACHINE'
-CTF      write(LUINP,'(X,A6)') MACHINE
+CTF      write(LUINP,'(1X,A6)') MACHINE
 *
          if (CALSIZ.eq.'NOR') then
            write(LUINP,'(A6)') 'MEGACI'
@@ -4235,47 +4235,47 @@ CTF      write(LUINP,'(X,A6)') MACHINE
 *
          write(LUINP,'(A6)') 'DIRAC '
 *
-         write(LUINP,'(X,I1)') IDBGRP
+         write(LUINP,'(1X,I1)') IDBGRP
 *
          write(LUINP,'(A3)') 'D2H'
 *
          write(LUINP,'(A6)') 'NIRREP'
-         write(LUINP,'(X,I3)') NSYM
+         write(LUINP,'(1X,I3)') NSYM
 *
          write(LUINP,'(A6)') 'IREFSM'
-         write(LUINP,'(X,I3)') IRREP
+         write(LUINP,'(1X,I3)') IRREP
 *
          write(LUINP,'(A5)') 'GASSH'
-         write(LUINP,'(X,I3)') NGAS
+         write(LUINP,'(1X,I3)') NGAS
 *
          HESTR = ' '
-         write (HESTR,'(A,I1,A)') '(X,',NSYM-1,'(I3,A1),I3)'
-         if (NSYM.eq.1) write (HESTR,'(A)') '(X,I3)'
+         write (HESTR,'(A,I1,A)') '(1X,',NSYM-1,'(I3,A1),I3)'
+         if (NSYM.eq.1) write (HESTR,'(A)') '(1X,I3)'
          do IGAS = 1,NGAS,1
             write(LUINP,HESTR)
      &      (NSHPGS(IGAS,ISYM),',',ISYM=1,NSYM-1),NSHPGS(IGAS,NSYM)
          end do
 *
          write(LUINP,'(A6)') 'NACTEL'
-         write(LUINP,'(X,I3)') NACTEL
+         write(LUINP,'(1X,I3)') NACTEL
 *
          write(LUINP,'(A6)') 'GASSPC'
-         write(LUINP,'(X,I3)') NCISPC
+         write(LUINP,'(1X,I3)') NCISPC
          do ISPC=1,NCISPC,1
-            write(LUINP,'(X,2I3)')
+            write(LUINP,'(1X,2I3)')
      &           (NELGS(IGAS,1,ISPC),NELGS(IGAS,2,ISPC),IGAS=1,NGAS)
          end do
 *
          write(LUINP,'(A6)') 'SEQUEN'
          do ICISPC=1,NCISPC,1
-            write(LUINP,'(X,I3)') NSEQ
+            write(LUINP,'(1X,I3)') NSEQ
             do ISEQ=1,NSEQ,1
                if (TYPELUC(ISEQ).eq.'CI') then
-                  write(LUINP,'(X,A3,I3)') 'CI,',MAXIT
+                  write(LUINP,'(1X,A3,I3)') 'CI,',MAXIT
                else if (TYPELUC(ISEQ).eq.'PT') then
-                  write(LUINP,'(X,A6,I3)') 'PERTU,',MAXIT
+                  write(LUINP,'(1X,A6,I3)') 'PERTU,',MAXIT
                else if (TYPELUC(ISEQ).eq.'VF') then
-                  write(LUINP,'(X,A8,I3)') 'VECFREE,',IVFLEV
+                  write(LUINP,'(1X,A8,I3)') 'VECFREE,',IVFLEV
                end if
             end do
          end do
@@ -4285,48 +4285,48 @@ CTF      write(LUINP,'(X,A6)') MACHINE
          end if
 *
          write(LUINP,'(A5)') 'MULTS'
-         write(LUINP,'(X,I3)') MULTIP
+         write(LUINP,'(1X,I3)') MULTIP
 *
          write(LUINP,'(A3)') 'MS2'
-         write(LUINP,'(X,I3)') MS2
+         write(LUINP,'(1X,I3)') MS2
 *
          if (MSCOMB) then
             write(LUINP,'(A6)') 'MSCOMB'
-            write(LUINP,'(X,F3.1)') SCOMB
+            write(LUINP,'(1X,F3.1)') SCOMB
          end if
 *
          write(LUINP,'(A5)') 'ROOTS'
-         write(LUINP,'(X,I3)') NROOT
+         write(LUINP,'(1X,I3)') NROOT
 *
          write(LUINP,'(A5)') 'DENSI'
-         write(LUINP,'(X,I3)') IDEMOL
+         write(LUINP,'(1X,I3)') IDEMOL
 *
          write(LUINP,'(A5)') 'NOCSF'
 *
          write(LUINP,'(A6)') 'IPRSTR'
-         write(LUINP,'(X,I3)') IPRSTR
+         write(LUINP,'(1X,I3)') IPRSTR
          write(LUINP,'(A6)') 'IPRCIX'
-         write(LUINP,'(X,I3)') IPRCIX
+         write(LUINP,'(1X,I3)') IPRCIX
          write(LUINP,'(A6)') 'IPRORB'
-         write(LUINP,'(X,I3)') IPRORB
+         write(LUINP,'(1X,I3)') IPRORB
          write(LUINP,'(A6)') 'IPRDIA'
-         write(LUINP,'(X,I3)') IPRDIA
+         write(LUINP,'(1X,I3)') IPRDIA
          write(LUINP,'(A5)') 'IPRXT'
-         write(LUINP,'(X,I3)') IPRXT
+         write(LUINP,'(1X,I3)') IPRXT
          write(LUINP,'(A6)') 'IPRRSP'
-         write(LUINP,'(X,I3)') IPRRSP
+         write(LUINP,'(1X,I3)') IPRRSP
          write(LUINP,'(A6)') 'IPRDEN'
-         write(LUINP,'(X,I3)') IPRDEN
+         write(LUINP,'(1X,I3)') IPRDEN
          write(LUINP,'(A6)') 'IPROCC'
-         write(LUINP,'(X,I3)') IPROCC
+         write(LUINP,'(1X,I3)') IPROCC
          write(LUINP,'(A6)') 'PRNCIV'
-         write(LUINP,'(X,I3)') IPRNCIV
+         write(LUINP,'(1X,I3)') IPRNCIV
 *
          write(LUINP,'(A6)') 'RESDIM'
-         write(LUINP,'(X,I4)') IRESDIM
+         write(LUINP,'(1X,I4)') IRESDIM
 *
          write(LUINP,'(A6)') 'LCSBLK'
-         write(LUINP,'(X,I7)') LCSBLK
+         write(LUINP,'(1X,I7)') LCSBLK
 *
          if (IUSE_PH.eq.1) then
             write(LUINP,'(A6)') 'USE_PH'
@@ -7094,7 +7094,7 @@ c     call XFLUSH(6)
       if (NTEST.ge.10) then
         do IND=1,MORB,1
           INOFF = (IND-1)*MORB
-          write(6,'(I4,X,4F18.12)')
+          write(6,'(I4,1X,4F18.12)')
      &          IND,(ONEINT(INOFF+JND),JND=1,MORB,1)
         end do
       end if
@@ -7158,7 +7158,7 @@ c     logical BREIT
         stop 'Quitting.'
       end if
       write(6,*) 'Integrals have been calculated on the'
-      write(6,'(A12,X,A)') '            ',DATEX,' at ',TIMEX
+      write(6,'(A12,1X,A)') '            ',DATEX,' at ',TIMEX
       if (NTEST.ge.5) then
         write(6,*)
         write(6,*) 'Info from MDCINT file'
@@ -7217,10 +7217,10 @@ C
      &        'IOFF12(',KR(IKR),KR(JKR),') = ',IOFF12(KR(IKR),KR(JKR))
         write(6,'(A,2I4,A,I6)')
      &        'NUMINT(',KR(IKR),KR(JKR),') = ',NUMINT(KR(IKR),KR(JKR))
-        write(6,'(A,X,2I6)') 'Integral block: ',KR(IKR),KR(JKR)
+        write(6,'(A,1X,2I6)') 'Integral block: ',KR(IKR),KR(JKR)
         if (NTEST.ge.100) then
           do INT=1,NZ,1
-            write(6,'(A,2I8,X,1F18.12)')
+            write(6,'(A,2I8,1X,1F18.12)')
      &      'Indices K,L ',KR(INDK(INT+ISYMOFF)),KR(INDL(INT+ISYMOFF)),
      &                     RKLR(INT+ISYMOFF)
           end do
@@ -7560,7 +7560,7 @@ c
      &                      (NSSH_L(I),I=1,NBSYM,1)
         write(6,'(A,8I4)') 'Total    orbs per symm : ',
      &                      (NORB_L(I),I=1,NBSYM,1)
-        write(6,'(A,X,I3)') ' Double group ',IDBGRP
+        write(6,'(A,1X,I3)') ' Double group ',IDBGRP
       end if
 *
       if (WAFFCT.eq.'HF_SCF'.and.NAELEC.gt.0) then

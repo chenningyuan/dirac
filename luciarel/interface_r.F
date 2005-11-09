@@ -1878,7 +1878,7 @@ C    &             ' at ',ICOUNT
      &                                       INDEX(3),
      &                                       INDEX(4),T(ICOUNT)
                               else
-                          write(LUINGR,'(I4,4X,4I3,X,A,X,4I3,1F18.10)')
+                        write(LUINGR,'(I4,4X,4I3,1X,A,1X,4I3,1F18.10)')
      &                                ICOUNT,INDEX(1),
      &                                       INDEX(2),
      &                                       INDEX(3),
@@ -2074,7 +2074,7 @@ CC        CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV)
             IRIINT = 1
          else
             write(6,*) 'IRI problem in geth1rel - returning'
-            Call Abend()
+            Call Abend('Quitting')
          end if
 *
          if (ISUMNEW.eq.1.and.ENVIRO(1:6).ne.'DIRAC ') then
@@ -2142,7 +2142,7 @@ CC        CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV)
          if (IPM1.ne.0.and.IJUB.ne.0) then
             write(6,*) 'Combination of IJUB and IPM1 impossible'
             write(6,*) 'I am quitting'
-            Call Abend()
+            Call Abend('Quitting')
          end if
 *
          if (NTEST.ge.5) then
@@ -2172,11 +2172,11 @@ CC        CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV)
                ISEARCH = 4
             else
                write(6,*) 'IJUB out of range. Quitting.'
-               Call Abend()
+               Call Abend('Quitting')
             end if
          else
             write(6,*) 'IPM1 out of range. Quitting.'
-            Call Abend()
+            Call Abend('Quitting')
          end if
          ILEN = IPUBPGS(ISEARCH,ITYP,JTYP,INTLIST)
 *
@@ -3232,7 +3232,7 @@ C     dimension DMFC(*),H2AC(*)
             NZ3TP = 2
             ISEQTP = 6
           end if
-          if (NTEST.ge.2) write(6,'(A,X,4I3)') 
+          if (NTEST.ge.2) write(6,'(A,1X,4I3)') 
      &       '  After 3 list step:', (INDEX_LOC(I),I=1,4,1)
 *
 * Find smallest index and its position in Mulliken notation
@@ -3263,7 +3263,7 @@ C     dimension DMFC(*),H2AC(*)
             call index_exch(INDEX_LOC(1),INDEX_LOC(2),1,1,1)
             call index_exch(INDEX_LOC(3),INDEX_LOC(4),1,1,1)
           end if
-          if (NTEST.ge.2) write(6,'(A,X,4I3)') 
+          if (NTEST.ge.2) write(6,'(A,1X,4I3)') 
      &       '  After posit. step:', (INDEX_LOC(I),I=1,4,1)
 *
 * Determine address in (NZ,3) format
@@ -5455,7 +5455,7 @@ CTF     CALL GETH0(WORK(KINT1))
 * Check read integrals
         if (NTEST.ge.1000) then
           do IINT = 0,NINT2-1,1
-            write(6,'(A4,I3,X,F18.14)') 'No. ',IINT+1,WORK(KINT2+IINT)
+            write(6,'(A4,I3,1X,F18.14)') 'No. ',IINT+1,WORK(KINT2+IINT)
           end do
         end if
 *
@@ -6097,7 +6097,7 @@ c     If ( iRc.ne.0 ) Goto 991
       OneLbl='Coord   '
       Call RdOne(iRc,iOpt,OneLbl,iComp,COOR_SCF,iSyLbl)
       do IATM=1,NATOMS,1
-        write(6,'(A9,I3,A1,X,3F10.6)') 'Atom no. ',IATM,':',
+        write(6,'(A9,I3,A1,1X,3F10.6)') 'Atom no. ',IATM,':',
      &                                 (COOR_SCF(IC,IATM),IC=1,3,1)
       end do
 C     If ( iRc.ne.0 ) Goto 991
@@ -6110,7 +6110,7 @@ C     If ( iRc.ne.0 ) Goto 991
       iSyLbl=1
       OneLbl='PotNuc  '
       Call RdOne(iRc,iOpt,OneLbl,iComp,POTNUC_SCF,iSyLbl)
-      write(6,'(A,X,F18.15)') 'Nuclear repulsion energy: ',POTNUC_SCF
+      write(6,'(A,1X,F18.15)') 'Nuclear repulsion energy: ',POTNUC_SCF
 C     If ( iRc.ne.0 ) Goto 991
 *----------------------------------------------------------------------*
 *     Read overlap integrals                                           *
@@ -6148,7 +6148,7 @@ c     If ( iRc.ne.0 ) Goto 991
 *  Check
       if (NTEST.ge.1) then
         do IINT=1,ITRIASUM,1
-          write(6,'(A,X,I4,A,F20.12)')
+          write(6,'(A,1X,I4,A,F20.12)')
      &          'Symm orb integral ',IINT,':',HONE_SCF(IINT)
         end do
       end if
@@ -6931,7 +6931,7 @@ C?    write(6,*) 'ILEN is    ',ILEN
          end do
       else
          write(6,*) 'rdint: Invalid architecture given. I will stop.'
-         Call Abend()
+         Call Abend('Quitting')
       end if
 *
       if (NTEST.ge.2) then
@@ -7389,7 +7389,7 @@ CTF               ISPQR = IPGMULT(ISPQ,ISR)
       else
          write(6,*) 'Architecture not implemented.'
          write(6,*) 'I am quitting!'
-         Call Abend()
+         Call Abend('Quitting')
       end if
 *
 *  Checking integrals previously read from LU 55 ...
@@ -7683,7 +7683,7 @@ CTF               ISPQR = IPGMULT(ISPQ,ISR)
         Call Abend2( 'Quitting.' )
       else
          write(6,*) 'rdsoint: Invalid architecture given. I will stop.'
-         Call Abend()
+         Call Abend('Quitting')
       end if
 *
       write(6,*)
@@ -8001,7 +8001,7 @@ C994   Call StkA(0,ComLbl)
          end if
       else
          write(6,*) 'rdsoint: Invalid architecture given. I will stop.'
-         Call Abend()
+         Call Abend('Quitting')
       end if
 *
 *  If DOUGRP is C2H, then integrals have to be reordered into
@@ -8071,7 +8071,7 @@ c     logical BREIT
         stop 'Quitting.'
       end if
       write(6,*) 'Integrals have been calculated on the'
-      write(6,'(A12,X,A)') '            ',DATEX,' at ',TIMEX
+      write(6,'(A12,1X,A)') '            ',DATEX,' at ',TIMEX
       if (NTEST.ge.5) then
         write(6,*)
         write(6,*) 'Info from MDCINT file'
@@ -8128,9 +8128,9 @@ C
         write(6,'(A,3I4,A,I6)')
      &        'NUMINT(',KR(IKR),KR(JKR),ITPLOC(KR(IKR),KR(JKR)),') = ',
      &         NUMINT(KR(IKR),KR(JKR),ITPLOC(KR(IKR),KR(JKR)))
-        write(6,'(A,X,2I6)') 'Integral block: ',KR(IKR),KR(JKR)
+        write(6,'(A,1X,2I6)') 'Integral block: ',KR(IKR),KR(JKR)
         do INT=1,NZ,1
-          write(6,'(A,2I8,X,2F18.12)') 
+          write(6,'(A,2I8,1X,2F18.12)') 
      &      'Indices K,L ',KR(INDK(INT+ISYMOFF)),KR(INDL(INT+ISYMOFF)),
      &                     RKLR(INT+ISYMOFF),RKLI(INT+ISYMOFF)
         end do
@@ -9287,7 +9287,7 @@ Cjan      end do
               IND_R(3) = INDEX(3,IRUN)
               IND_R(4) = INDEX(4,IRUN)
             end if
-            write(6,'(X,4I3,2X,1F18.10)') 
+            write(6,'(1X,4I3,2X,1F18.10)') 
      &           (IND_R(I),I=1,4,1),DENS(IRUN+IRIOFF) * SIGN(IXTP)
      &                                                * SIGN_REO(IXTP)
             IRUN = IRUN + 1

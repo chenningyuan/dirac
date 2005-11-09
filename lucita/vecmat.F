@@ -1020,7 +1020,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
   290   CONTINUE
         WACC = WACC + W
         NACC = NACC + N
-        WRITE(6,'(A,I2,A,I2,3X,I9,X,E15.8,3X,E15.8)')
+        WRITE(6,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
      &  '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
   300 CONTINUE
 *
@@ -1503,7 +1503,7 @@ C    &                  NSASO,NSBSO,ISC)
         CALL IWRTMA(IBLOCKIO,8,NBLOCKIO,8,NBLOCKIO)
         WRITE(6,*) ' corresponding vector '
         NELMNTIO = IOFFP - 1
-        CALL WRTMAT(VECIO,NELMNTIO,1,NELMNTIO)
+        CALL WRTMAT(VECIO,1,NELMNTIO,1,NELMNTIO)
       END IF
 *
       RETURN
@@ -2338,7 +2338,7 @@ C    &           LUDIA)
          CALL TODSC(VEC1,NDIM,-1,LU)
       ELSE
 *. Write the vector with the block format of file LUFORM
-        CALL REWINO(LUFORM,LBLK)
+        CALL REWINO(LUFORM)
         IBOT = 1
 *. Loop over records
  1000   CONTINUE

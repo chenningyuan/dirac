@@ -1042,7 +1042,7 @@ C              LARGE FAMILY    N    2    1    1 (IBSFLAG = 4)
 C              LARGE DUALFAMILY    N    2    1    1 (IBSFLAG = 4)
 C
                CALL RDLINE(LUINFO)
-               READ (MLINE(NMLINE),'(A5,X,A14)') BSET,BSKEYWORD
+               READ (MLINE(NMLINE),'(A5,1X,A14)') BSET,BSKEYWORD
 C
                IF ( BSET .NE. 'LARGE') THEN
                   WRITE(LUPRI,'(A,I5,A,/,A)')
@@ -1322,7 +1322,7 @@ C              SMALL MOLFBAS H.bas (IBSFLAG = 2)
 C              SMALL KINBAL (IBSFLAG = 4)
 C
                CALL RDLINE(LUINFO)
-               READ (MLINE(NMLINE),'(A5,X,A7)') BSET,BSKEYWORD
+               READ (MLINE(NMLINE),'(A5,1X,A7)') BSET,BSKEYWORD
 C
 C              Initialize basis set flag
 C
@@ -1533,7 +1533,7 @@ C       FTLRG : fitset to be used for only the large component density
 C       FTSML : fitset to be used for only the small component density
 C
         CALL RDLINE(LUINFO)
-        READ (MLINE(NMLINE),'(A5,X,A14)') BSET,BSKEYWORD
+        READ (MLINE(NMLINE),'(A5,1X,A14)') BSET,BSKEYWORD
 C
 C       Initialize basis set flag
 C
