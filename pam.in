@@ -144,7 +144,7 @@ setup_command()
          BIN_DIR=$LOC
       fi
    else
-      DIRAC=./dirac.x
+      DIRAC=dirac.x
    fi
    #
    # MPI?
@@ -207,7 +207,7 @@ setup_command()
    #
    # Finally append executable
    #
-   DIRAC_CMD="$DIRAC_CMD $DIRAC"
+   DIRAC_CMD="$DIRAC_CMD ./$DIRAC"
    #
    # Delete $WRK/$DIRAC if the executable is older than the
    # executable in $BIN_DIR. This is useful when you've compiled
