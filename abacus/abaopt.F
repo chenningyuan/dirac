@@ -7532,6 +7532,7 @@ C
 C
 C Punch MOLECULE input with updated coordinates to LUMOL
 C
+         LUMOL = 0
          CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND (LUMOL)
