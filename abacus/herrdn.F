@@ -5005,7 +5005,7 @@ C
          CALL QUIT('*** ERROR reading basis')
       ENDIF
       IF (.NOT. PARHER .AND. NMLINE .GT. NMLN_LASTREAD)
-     $     READ (LUINFO,'(A)',END=11) MLINE(NMLINE)
+     $     READ (LUINFO,'(A)',END=11,ERR=11) MLINE(NMLINE)
       IF (NMLINE.GT.KMLINE) THEN
          WRITE (LUPRI,'(//A,/A,I5)')
      &        ' READIN ERROR: Too many lines in input -,',
