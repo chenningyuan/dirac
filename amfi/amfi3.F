@@ -1920,6 +1920,7 @@ CMI ======================================================
       enddo   
       endif   
       enddo   
+      close(7)
       write(LUPRI,*) '-- orbitals read from fort.7' 
       do lrun=0,lhigh
       if (noccorb(lrun).gt.0) then
