@@ -225,7 +225,8 @@ CMI(TEC) NREQUI = 3*NNBASX + NUMSUS
 C
 C     Initialize DINTSKP
 C
-      CALL DZERO(DINTSKP,LDINTSKP)
+CMI ... Thomas deactivated it  ;|
+CMI   CALL DZERO(DINTSKP,LDINTSKP)
 C
 C
       IF (LFREE .LT. NREQUI) THEN
@@ -267,6 +268,7 @@ C     Release nodes from this task
 C      and let them return to main menu.
 C--------------------------------------
 C
+      ITASK = - 1
       CALL DIRAC_PARCTL( -1 )
 C
 C-----------------------------------------
@@ -706,6 +708,8 @@ C  /* Deck rvres */
 C
 C     Written by Henrik Koch and Paal Dahle July-1994
 C
+C   MI: Added TEC changes....
+C
 #include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -737,9 +741,9 @@ C
      &      CALL DZERO(HESSEE,NUMHES)
 CTROND      ELSE IF (ITYPE .EQ. 3) THEN
 CTROND         CALL DZERO(FMAT,NREQUI)
-      ELSE IF (ITYPE .EQ. -5) THEN
+ctec  ELSE IF (ITYPE .EQ. -5) THEN
 CTROND        CALL DZERO(FMAT,3*N2BASX)
-         CALL DZERO(SUS2EL,9)
+c        CALL DZERO(SUS2EL,9)
       ELSE IF (ITYPE .EQ. 8) THEN
          CALL DZERO(FMAT,3*N2BASX)
       END IF
@@ -787,16 +791,19 @@ C
             ENDDO
 C
          ELSE IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
-            DO 200 J = 0, 2
-               LPOS = J*NNBASX + 1
-               MPOS = J*N2BASX + 1
-               CALL DAXPY(NNBASX,D1,WORK(LPOS),1,FMAT(MPOS),1)
- 200        CONTINUE
+CMI    ***  TEC made this part of code inactive ***
+CMI      ... this is added ...
+            CALL DAXPY(NREQUI,D1,WORK,1,FMAT,1)
+C           DO 200 J = 0, 2
+C              LPOS = J*NNBASX + 1
+C              MPOS = J*N2BASX + 1
+C              CALL DAXPY(NNBASX,D1,WORK(LPOS),1,FMAT(MPOS),1)
+C200        CONTINUE
 C
-            IF (ITYPE .EQ. -5) THEN
-               NPOS = 3*NNBASX + 1
-               CALL DAXPY(9,D1,WORK(NPOS),1,SUS2EL,1)
-            END IF
+C           IF (ITYPE .EQ. -5) THEN
+C              NPOS = 3*NNBASX + 1
+C              CALL DAXPY(9,D1,WORK(NPOS),1,SUS2EL,1)
+C           END IF
          END IF
 C
 C        The time each index-pair calculation need is collected in TIMES
@@ -999,6 +1006,7 @@ C    *    This is the node program for the construction of fock-     *
 C    *   matrices, derivated fock-matrices and expectation values.   *
 C    *****************************************************************
 C
+CMI  TEC changes for LAO
 #include "implicit.h"
 C
 #if defined (VAR_MPI)
@@ -1078,9 +1086,10 @@ C
          NREQUI = 0
          LFMAT  = NFMAT*N2BASX
       ELSE IF (ITYPE .EQ. -5) THEN
-         NUMSUS = 9
-         NREQUI = 3*NNBASX + NUMSUS
-         LFMAT  = 0
+CMI      NUMSUS = 9
+CMI      NREQUI = 3*NNBASX + NUMSUS
+CMI      LFMAT  = 0
+         LFMAT  = NFMAT*N2BASX
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
          LFMAT  = 0
@@ -1103,8 +1112,8 @@ C
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,NUMGRA)
          IF (MAXDIF.GT.1) CALL DZERO(HESSEE,NUMHES)
-      ELSE IF (ITYPE .EQ. -5) THEN
-         CALL DZERO(SUS2EL,NUMSUS)
+CMI   ELSE IF (ITYPE .EQ. -5) THEN
+CMI      CALL DZERO(SUS2EL,NUMSUS)
       END IF
 C
 C     ***********************************
@@ -1408,6 +1417,7 @@ C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
 C
+CMI changes from TEC for LAO
 #include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -1736,7 +1746,9 @@ C     This reduces the size of data transferred to Master.
 C     For itypes 2 and 3 this routine is called outside TWOINT,
 C     to avoid doing the same work more than once.
 C
-      IF (DDFOCK) THEN
+CMI      *** TEC entry ***
+CMI   IF (DDFOCK) THEN
+      IF (DDFOCK.AND..NOT.LONDON) THEN
          CALL SKLFCK(FMAT,WORK,LWORK,JPRINT,DIRFCK,DDFOCK,EXPECT,PERTUR,
      &               NODV,MAXDER,LONDON,NDMAT,IREPDM,IFCTYP,IATOM)
       END IF
@@ -1811,6 +1823,8 @@ C  /* Deck sdres */
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993.
 C
+CMi TEC's changes for LAO
+C
 #include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -1840,17 +1854,18 @@ C-------------------------------
 C     Put all results in RESMAT.
 C-------------------------------
 C
-      IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
-         DO 100 J = 0, 2
-            LPOS = J*N2BASX + 1
-            MPOS = J*NNBASX + 1
+CMI TEC entry....deactivated code
+C     IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
+C        DO 100 J = 0, 2
+C           LPOS = J*N2BASX + 1
+C           MPOS = J*NNBASX + 1
 CTROND            CALL DCOPY(NNBASX,FMAT(LPOS),1,RESMAT(MPOS),1)
- 100     CONTINUE
-         IF (ITYPE .EQ. -5) THEN
-            NPOS = 3*NNBASX + 1
+C100     CONTINUE
+C        IF (ITYPE .EQ. -5) THEN
+C           NPOS = 3*NNBASX + 1
 CTROND            CALL DCOPY(NUMSUS,SUS2EL,1,RESMAT(NPOS),1)
-         END IF
-      END IF
+C        END IF
+C     END IF
 C
 #if defined (VAR_MPI)
       CALL MPI_SEND(ICOUNT,1,MPI_INTEGER,MPARID,40,MPI_COMM_WORLD,IERR)
@@ -1880,6 +1895,10 @@ C
          CALL MPI_SEND(DINTSKP,3*3*14,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
          CALL MPI_SEND(GRADEE,NUMGRA,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
+CMI - from TEC code...
+      ELSE IF(ITYPE.EQ.-5) THEN 
+          CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
       ENDIF
 C

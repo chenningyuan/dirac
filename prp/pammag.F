@@ -640,8 +640,8 @@ C
 #endif
 
 CMI   ... fix the parallel run...
-      PARCAL_SAVE = PARCAL
-      PARCAL = .FALSE.
+C     PARCAL_SAVE = PARCAL
+C     PARCAL = .FALSE.
 
       CALL GETTIM(CPU1,WALL1)
       DO I2TYP = 1,3  ! LL,LS,SS
@@ -722,7 +722,13 @@ C ...    transform AO - SO
             CALL MTAOSO(FMAT(1,IZ,I),FOCK(1,IPQ),
      &           NTBAS(0),IREPD,IPRINT)
          ENDDO
+
          IF(IPRINT.GE.5) THEN
+C         CALL HEADER(
+C    &'TWOLO1: Untransformed g(B) matrix in AO basis,FMAT',-1)
+C         WRITE(LUPRI,'(2X,A,I2)') '** component: ',I
+C         CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),NTBAS(0),
+C    &                 NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
           CALL HEADER(
      &'TWOLO1: Transformed g(B) matrix in QO basis',-1)
           WRITE(LUPRI,'(2X,A,I2)') '** component: ',I
