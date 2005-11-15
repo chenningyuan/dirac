@@ -2991,6 +2991,7 @@ C
 #include "dcbxrs.h"
       DIMENSION HEDIAG(*),HPDIAG(*),HCDIAG(*),
      &          SEDIAG(*),SPDIAG(*),WORK(*)
+      CALL QENTER('E2DIAG')
 C
 C     Orbital part
 C
@@ -3005,6 +3006,7 @@ C
          CALL E2CDIA(HCDIAG,WORK,KFREE,LFREE)
       ENDIF
 C
+      CALL QEXIT('E2DIAG')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3024,12 +3026,14 @@ C
 #include "dcbgen.h" 
 C
       DIMENSION HCDIAG(*)
+      CALL QENTER('E2CDIA')
 C
 C
 C     Read Hessian diagonal from file
 C
       CALL REAKRMC(LUKRM3,'E2CDIAG ',HCDIAG,NZCONF)
 C
+      CALL QEXIT('E2CDIA')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3065,6 +3069,8 @@ C
       DIMENSION HEDIAG(*),HPDIAG(*),JXOPE(2,*),JXOPP(2,*),
      &          SEDIAG(*),SPDIAG(*),WORK(*)
 C
+      CALL QENTER('E2ODIA')
+
       KFRSAV = KFREE
       CALL MEMGET('REAL',KFMO,NFOCKMAT*N2BBASXQ,WORK,KFREE,LFREE)
       KFC = KFMO
@@ -3125,6 +3131,7 @@ C
 C
       CALL MEMREL('E2ODIA',WORK,1,KFRSAV,KFREE,LFREE)
 C
+      CALL QEXIT('E2ODIA')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
