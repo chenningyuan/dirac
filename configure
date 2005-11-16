@@ -269,20 +269,20 @@ case $machine in
 
    i[3-6]86-*)
       liblist="$liblist libmkl"
-      complist='ifort ifc g77 pgf90 pgf77 f77'
+      complist='ifort ifc g95 pgf90 pgf77 g77 f77'
       cclist='icc gcc pgcc cc'
       debug='gdb';;
 
     x86_64-*)
 #     liblist=$liblist
-      complist='g77 pgf90 pgf77 pathf90 f77'
+      complist='g95 pgf90 pgf77 pathf90 g77 f77'
       cclist='gcc pgcc pathcc cc'
       debug='gdb';;
 
    ia64-unknown-linux)
       liblist="$liblist libmkl_ipf libmkl_itp"
-      complist='g77 efc f77'
-      cclist='gcc ecc cc'
+      complist='ifort efc g95 g77 f77'
+      cclist='icc ecc gcc cc'
       debug='gdb';;
 
    *apple*)
@@ -1216,6 +1216,8 @@ case $machine in
             F77real=pgf90
          elif "$F77" $mpishowopt | grep -q pgf77; then
             F77real=pgf77
+         elif "$F77" $mpishowopt | grep -q g95; then
+            F77real=g95
          elif "$F77" $mpishowopt | grep -q g77; then
             F77real=g77
          else 
@@ -1229,10 +1231,10 @@ case $machine in
 
 
       case "$F77real" in
-      g77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
+      g95)
+         opt="-O3 -ffast-math -Wno=155"
          ;;
-      f77)
+      g77|f77)
          opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
          ;;
       mpif77)
@@ -1381,10 +1383,10 @@ case $machine in
          ;;
       esac
       case "$F77real" in
-      g77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
+      g95)
+         opt="-O3 -ffast-math -Wno=155"
          ;;
-      f77)
+      g77|f77)
          opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
          ;;
       mpif77)
