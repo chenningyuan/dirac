@@ -66,7 +66,7 @@ C function of the close is that it empties the output buffer.
      X      INITIALSIZE=24,EXTENDSIZE=24,
      X      ACCESS='APPEND',SHARED,CARRIAGECONTROL='FORTRAN')
 #endif
-#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_HPUX)
+#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_HPUX) || defined (SYS_DARWIN)
 C
 C     Force transfer of all buffered output to the file or device
 C     associated with logical unit IUNIT.
@@ -1709,7 +1709,7 @@ C     idum = elapsed time, itime(1:2) = system and user time
          SECOND = CPUA
       END IF
 #endif
-#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX)
+#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX) || defined (SYS_DARWIN)
 #include "implicit.h"
       real*4 etime,tarray(2)
 #if !defined (SYS_T3D)
