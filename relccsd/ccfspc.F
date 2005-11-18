@@ -398,7 +398,7 @@ C  We need to extract the (a=3, b=1; i=2, j=3) part
 C
 C-------------------------------------------
       ELSEIF(ICURFSS.EQ.11) THEN
-        TIT = '(1h,1p) space WARNING: MAYBE INCORRECT'
+        TIT = '(1h,1p) space, excitation energies    '
 C       Make the one electron Hamiltonian parts
         CALL XCOPY (NDIMT1,S1,1,BUF1,1)
         CALL XAXPY (NDIMT1,A1,FVO,1,BUF1,1)
@@ -559,6 +559,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMF (EPS,T1,T2,CT1,CT2,OPTION)
 C
       IMPLICIT INTEGER (A-Z)
@@ -568,13 +569,16 @@ C
 C     Option 1) :
 C     Divide parts of T1 and T2 that correspond to WF by denominators
 C     Parts that correspond to the effective Hamiltonian are untouched.
+C     In the intermediate Hamiltonian IH-2 formalism we zero out Pi->Q
+C     excitations (but keep Pm->Q) and corresponding Hamiltonian parts.
 C
 C     Option 2) :
 C     Delete parts of T1 and T2 that correspond to the Hamiltonian.
 C
 C     Option 3) :
-C     In the intermediate Hamiltonian formalism we zero out Pi->Q
+C     In the intermediate Hamiltonian (IH-2) formalism we zero out Pi->Q
 C     excitations (but keep Pm->Q) and corresponding Hamiltonian parts.
+C     NO division of the T1 and T2 by dets!
 C
 C---------------Routines called----------------------------------------
 C
@@ -601,11 +605,12 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 FAC,FAC1,FAC2,FAC3,VALUE
+      REAL*8 FAC,FAC1,FAC2,FAC3,VALUE,FACIH
       INTEGER IOI(0:3), IVA(0:3)
       INTEGER IOJ(0:3), IVB(0:3)
       CHARACTER*2 CLASS(3,2)
       LOGICAL DENO,ZERO,Z1,Z2,Z3,Z4,IHZERO
+      LOGICAL DOIHDN
 C
 C---------------Executable code--------------------------------------
 C
@@ -644,8 +649,10 @@ c
          Z1 = .FALSE.
          II = II + 1
          FAC1 = EPS(II)
-         IF (DOIH.AND.IPIORB(II).EQ.1) THEN
-             IF (ICO.EQ.3) Z1=.TRUE.
+         ISECTP=0
+         IF (DOIH.AND.ICO.EQ.3) THEN
+             ISECTP=1
+             IF (IPIORB(II).EQ.1) Z1=.TRUE.
          ENDIF
          AOFF = IO(NREP+1) + IV(IRP)
 c
@@ -686,34 +693,69 @@ C
              Z2 = .FALSE.
              AA = AOFF + A
              FAC = FAC1 - EPS(AA)
-             IF (DOIH.AND.IPIORB(AA).EQ.1) THEN
-                IF (ACV.EQ.3) Z2=.TRUE.
+             FACIH = FAC
+             ISECTH=0
+             IF (DOIH.AND.ACV.EQ.3) THEN
+                ISECTH=1
+                IF (IPIORB(AA).EQ.1) Z2=.TRUE.
              ENDIF
              AI = AI + 1
+             DOIHDN=.FALSE.
+             IHZERO=.FALSE.
+             DOIHDN = (Z1.OR.Z2).AND.IHSCHEME.EQ.1
+             IHZERO = (Z1.OR.Z2).AND.IHSCHEME.EQ.2
              IF (DENO) THEN
+               IF (DOIHDN) THEN
+                IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) FACIH=FAC+SHIFT_IH(1,1)
+                IF (ISECTP.EQ.0.AND.ISECTH.EQ.1) FACIH=FAC+SHIFT_IH(1,2)
+               ENDIF
                 IF (CARITH) THEN
-                       CT1(AI) = CT1(AI)/FAC
+                    IF (IHZERO) CT1(AI) = A0
+                    IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                CT1(AI)=CT1(AI)/FACIH
+                      IF (DABS(AIH).GT.1.D-9) THEN
+                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                CT1(AI)=CT1(AI)*
+     x                  (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     x                  (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                       ELSEIF (NIH.GE.100) THEN
+                CT1(AI)=CT1(AI)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                      ENDIF
+                      ENDIF
+                    ELSE
+                    CT1(AI) = CT1(AI)/FAC
+                    ENDIF
                  ELSE
-                       T1(AI) = T1(AI)/FAC
+                    IF (IHZERO) T1(AI) = A0
+                    IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                T1(AI)=T1(AI)/FACIH
+                      IF (DABS(AIH).GT.1.D-9) THEN
+                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                T1(AI)=T1(AI)*
+     x                  (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     x                  (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                       ELSEIF (NIH.GE.100) THEN
+                T1(AI)=T1(AI)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                      ENDIF
+                      ENDIF
+                     ELSE
+                    T1(AI) = T1(AI)/FAC
+                    ENDIF
                 ENDIF
              ENDIF
 C
-             IHZERO = (Z1.OR.Z2).AND.OPTION.EQ.3
-             IF (DOIH.AND.IHZERO) THEN
-                IF (CARITH) THEN
-                       CT1(AI) = A0
-                 ELSE
-                       T1(AI) = A0
-                ENDIF
-             ENDIF
 C
-             IF (ZERO) THEN
+             IF (ZERO.OR.(OPTION.EQ.3.AND.IHZERO)) THEN
                 IF (CARITH) THEN
                    CT1(AI) = A0
                 ELSE
                    T1(AI) = A0
                 ENDIF
              ENDIF
+          ISECTP=0
+          ISECTH=0
          ENDDO
          enddo
       ENDDO
@@ -748,8 +790,10 @@ c
             Z1 = .FALSE.
             JJ = JJ + 1
             FAC1 = EPS(JJ)
-            IF (DOIH.AND.IPIORB(JJ).EQ.1) THEN
-               IF (JCO.EQ.3) Z1 = .TRUE.
+            ISECTP1=0
+            IF (DOIH.AND.JCO.EQ.3) THEN
+                 ISECTP1=1
+                 IF (IPIORB(JJ).EQ.1) Z1 = .TRUE.
             ENDIF
             icomin=1
             IF (IRP.EQ.JRP) icoMIN = jco
@@ -760,8 +804,10 @@ c
                Z2 = .FALSE.
                II = IOFF + I
                FAC2 = EPS(II) + FAC1
-               IF (DOIH.AND.IPIORB(II).EQ.1) THEN
-                  IF (ICO.EQ.3) Z2 = .TRUE.
+               ISECTP2=0
+               IF (DOIH.AND.ICO.EQ.3) THEN
+                  ISECTP2=1
+                  IF (IPIORB(II).EQ.1) Z2 = .TRUE.
                ENDIF
 c
              DO 20 BRP = 1, NREP
@@ -786,8 +832,10 @@ c
                      Z3 = .FALSE.
                      BB = BB + 1
                      FAC3 = FAC2 - EPS(BB)
-                     IF (DOIH.AND.IPIORB(BB).EQ.1) THEN
-                       IF (BCV.EQ.3) Z3 = .TRUE.
+                     ISECTH1=0
+                     IF (DOIH.AND.BCV.EQ.3) THEN
+                       ISECTH1=1
+                       IF (IPIORB(BB).EQ.1) Z3 = .TRUE.
                      ENDIF
                      acvMIN=1
                      IF (ARP.EQ.BRP) acvMIN = Bcv
@@ -801,7 +849,11 @@ C                    leave Hamiltonian matrix elements untouched.
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.1.AND.BCV.EQ.3)
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.1)
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.3)
-     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))
+ceph &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))
+     &            .OR.(             JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.             AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.             AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3             ))
      &                  THEN
                             DENO = .FALSE.
                         ELSE
@@ -819,7 +871,11 @@ C                    This will zero out Hamiltonian elements
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.1.AND.BCV.EQ.3)      ! H2 (EN,GP) (1,1) sector
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.1)      ! H2 (MF,OH) (1,1) sector
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.3)      ! H2 (EN,OH) (1,1) sector
-     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))     ! H2 (MN,GH)  ?
+ceph &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))     ! H2 (MN,GH)  ?
+     &            .OR.(             JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.             AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.             AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3             ))
      &                  THEN
                             ZERO = .TRUE.
                         ELSE
@@ -834,25 +890,83 @@ C                    This will zero out Hamiltonian elements
                            Z4 = .FALSE.
                            AA = AOFF + A
                            FAC = FAC3 - EPS(AA)
-                           IF (DOIH.AND.IPIORB(AA).EQ.1) THEN
-                              IF (ACV.EQ.3) Z4 = .TRUE.
+                           FACIH = FAC
+                           ISECTH2=0
+                           IF (DOIH.AND.ACV.EQ.3) THEN
+                            ISECTH2=1
+                            IF (IPIORB(AA).EQ.1) Z4 = .TRUE.
                            ENDIF
                            ABIJ = ABIJ + 1
-                           IF (DENO) THEN
+                           DOIHDN = .FALSE.
+                           IHZERO = .FALSE.
+                           DOIHDN = (Z1.OR.Z2.OR.Z3.OR.Z4)
+     &                              .AND.IHSCHEME.EQ.1
+                           IHZERO = (Z1.OR.Z2.OR.Z3.OR.Z4)
+     &                              .AND.IHSCHEME.EQ.2
+              ISECTP=ISECTP1+ISECTP2
+              ISECTH=ISECTH1+ISECTH2
+              IF (DENO) THEN
+               IF (DOIHDN) THEN
+                IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) THEN
+                    FACIH=FAC+SHIFT_IH(2,1)
+                ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.1) THEN
+                    FACIH=FAC+SHIFT_IH(2,2)
+                ELSEIF (ISECTP.EQ.2.AND.ISECTH.EQ.0) THEN
+                   FACIH=FAC+SHIFT_IH(2,5)
+                   IF (Z1.AND.Z2) FACIH=FACIH+SHIFTP2
+                ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.2) THEN
+                   FACIH=FAC+SHIFT_IH(2,6)
+                   IF (Z3.AND.Z4) FACIH=FACIH+SHIFTH2
+                ELSEIF (ISECTP.EQ.1.AND.ISECTH.EQ.1) THEN
+                   FACIH=FAC+SHIFT_IH(2,4)
+                   IF ((Z1.AND.Z4).OR.(Z1.AND.Z3).OR.
+     x                 (Z2.AND.Z4).OR.(Z2.AND.Z3)) 
+     x             FACIH=FACIH+SHIFT_IH(2,4)
+                ENDIF
+               ENDIF
 C                            Check for zero denominators
-                             IF (ABS(FAC).LT.1.D-12) THEN
-                                WRITE (IW,1000) IRP,JRP,ARP,BRP,
-     &                          I,J,A,B,
-     &                          CLASS(ICO,1),CLASS(JCO,1),
-     &                          CLASS(ACV,2),CLASS(BCV,2),
-     &                          EPS(II),EPS(JJ),EPS(AA),EPS(BB),FAC
-                                CALL QUIT('Zero denominator in DENOMF')
+                             IF (DABS(FACIH).LT.1.D-9) THEN
+                               WRITE (IW,1000) IRP,JRP,ARP,BRP,
+     &                         I,J,A,B,
+     &                         CLASS(ICO,1),CLASS(JCO,1),
+     &                         CLASS(ACV,2),CLASS(BCV,2),
+     &                         EPS(II),EPS(JJ),EPS(AA),EPS(BB),FAC,FACIH
+                               CALL QUIT('Zero denominator in DENOMF')
                              ENDIF
-                             IF (CARITH) THEN
-                                   CT2(ABIJ) = CT2(ABIJ)/FAC
-                              ELSE
-                                   T2(ABIJ) = T2(ABIJ)/FAC
-                             ENDIF
+               IF (CARITH) THEN
+                IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                CT2(ABIJ)=CT2(ABIJ)/FACIH
+                      IF (DABS(AIH).GT.1.D-9) THEN
+                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                CT2(ABIJ)=CT2(ABIJ)*
+     x           (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                       ELSEIF (NIH.GE.100) THEN
+                CT2(ABIJ)=CT2(ABIJ)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                      ENDIF
+                      ENDIF
+                 ELSE
+                  CT2(ABIJ) = CT2(ABIJ)/FAC
+                 ENDIF
+                ELSE
+                 IF (IHZERO) T2(ABIJ) = A0
+                 IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                 T2(ABIJ)=T2(ABIJ)/FACIH
+                      IF (DABS(AIH).GT.1.D-9) THEN
+                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                 T2(ABIJ)=T2(ABIJ)*
+     x           (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                       ELSEIF (NIH.GE.100) THEN
+                 T2(ABIJ)=T2(ABIJ)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                      ENDIF
+                      ENDIF
+                  ELSE
+                   T2(ABIJ) = T2(ABIJ)/FAC
+                 ENDIF
+                ENDIF
 C-----------------------------------------------------------------------
 CThis may cause large output : activate when debugging..
 C                            Check for large amplitudes
@@ -869,19 +983,10 @@ C    &                          CLASS(ACV,2),CLASS(BCV,2),
 C    &                          EPS(II),EPS(JJ),EPS(AA),EPS(BB),VALUE
 C                            ENDIF
 C-----------------------------------------------------------------------
-                           ENDIF
+              ENDIF
 C
-                           IHZERO = (Z1.OR.Z2.OR.Z3.OR.Z4)
-     &                              .AND.OPTION.EQ.3
-                           IF (DOIH.AND.IHZERO) THEN
-                             IF (CARITH) THEN
-                                CT2(ABIJ) = A0
-                             ELSE
-                                T2(ABIJ) = A0
-                             ENDIF
-                           ENDIF
 C
-                           IF (ZERO) THEN
+                           IF (ZERO.OR.(OPTION.EQ.3.AND.IHZERO)) THEN
                              IF (CARITH) THEN
                                 CT2(ABIJ) = A0
                              ELSE
@@ -909,7 +1014,7 @@ C
      &/' Indices     : ',4I15,
      &/' Classes     : ',4(13X,A2),
      &/' Energies    : ',4F15.5,
-     &/' Denominator : ',E15.5,
+     &/' Denominators: ',2E15.5,
      &//' Please choose a better model space ! We will stop now.')
  1001 FORMAT (//' Large amplitude in DENOMF',
      &/T30,'I',14X,'J',14x,'A',14X,'B',

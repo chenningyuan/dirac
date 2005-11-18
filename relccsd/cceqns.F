@@ -413,8 +413,8 @@ C
 C
  100  CONTINUE
 C
-C     Delete the Pi->Q excitations in case of Int. Ham. CCFS
-      IF (FOCKSP.AND.DOIH) THEN
+C     Delete the Pi->Q excitations in case of Int. Ham. CCFS scheme 2
+      IF (FOCKSP.AND.DOIH.AND.IHSCHEME.EQ.2) THEN
          CALL DENOMF (EPS,S1,S2,S1,S2,3)
       ENDIF
 C
@@ -453,7 +453,6 @@ C
 C       Remove the Hamiltonian elements, T1 and T2 should only contain
 C       the wave function (amplitudes) appropriate for this sector.
         CALL DENOMF (EPS,T1,T2,T1,T2,2)
-        CALL DENOMF (EPS,T1,T2,T1,T2,3)
       ELSE
         CALL DENOM (EPS,T1,T2,T1,T2)
       ENDIF

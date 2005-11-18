@@ -170,6 +170,7 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL REWINP,DOEA,DOIE,DOEA2,DOIE2,DOEXC
       REAL*8 EHMIN,EHMAX,EPMIN,EPMAX
+      REAL*8 SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,SHIFTH12,SHIFTHP,SHIFTP12
 C
       NAMELIST/RELCCSD/ NELEC,NELEC_F1,NELEC_F2,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOFSPC,
@@ -184,7 +185,9 @@ C
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
       NAMELIST/CCFSPC/ DOEA,DOIE,FSSECT,NACTH,NACTP,
      &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD
-      NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX
+      NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
+     &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
+     &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
       NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
@@ -363,7 +366,7 @@ C
          FSSECT(6) = 1
       ENDIF
 C
-C     Input for IH procedure
+C     General input for IH procedure
 C
       EHMIN=1000.D0
       EHMAX=100.D0
@@ -373,15 +376,46 @@ C
          NACTHI(I) = 0
          NACTPI(I) = 0
       ENDDO
+      IHSCHEME=2
+C
+C     Defaults for scheme 1 that shifts the denominators
+C
+      SHIFTH11 =0.D0
+      SHIFTH12 =0.D0
+      SHIFTP11 =0.D0
+      SHIFTP12 =0.D0
+      SHIFTH2 =0.D0
+      SHIFTP2 =0.D0
+      SHIFTHP =0.D0
+      AIH=0.D0
+      NIH=1
       REWIND (IN)
       READ (IN,CCIH,END=22,ERR=21)
       GOTO 22
    21 CALL QUIT('Error exit while reading namelist CCIH')
    22 CONTINUE
+C
+C     Some processing of the input is necessary
+C
       ER_IH(1,1) = EHMIN
       ER_IH(2,1) = EHMAX
       ER_IH(1,2) = EPMIN
       ER_IH(2,2) = EPMAX
+C
+C     XIH energy shift sign definition.
+C     Array with as first dimension 1e/2e shift
+C                   second dimension sector number
+C
+C     Shifts for particles should be negative
+      SHIFT_IH(1,1) = -DABS(SHIFTP11)
+      SHIFT_IH(2,1) = -DABS(SHIFTP12)
+      SHIFT_IH(2,5) = -DABS(SHIFTP2)
+C     Shifts for particles should be positive
+      SHIFT_IH(1,2) =  DABS(SHIFTH11)
+      SHIFT_IH(2,2) =  DABS(SHIFTH12)
+      SHIFT_IH(2,6) =  DABS(SHIFTH2)
+C     Shifts for hole-particle excitations may be either negative or positive
+      SHIFT_IH(2,4) =  SHIFTHP
 C
 C     Input for the sorting routine.
 C
@@ -2732,7 +2766,6 @@ C
       CALL GETVVOO (CC(T2))
       CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),1)
       CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),2)
-      CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),3)
 C     Save the zeroth order wave function
       CALL PUTAMPT (CC(T1),CC(T2))
 C
