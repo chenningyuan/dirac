@@ -913,10 +913,10 @@ ceph &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))     ! H
                     FACIH=FAC+SHIFT_IH(2,2)
                 ELSEIF (ISECTP.EQ.2.AND.ISECTH.EQ.0) THEN
                    FACIH=FAC+SHIFT_IH(2,5)
-                   IF (Z1.AND.Z2) FACIH=FACIH+SHIFTP2
+                   IF (Z1.AND.Z2) FACIH=FACIH+SHIFT_IH(2,5)
                 ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.2) THEN
                    FACIH=FAC+SHIFT_IH(2,6)
-                   IF (Z3.AND.Z4) FACIH=FACIH+SHIFTH2
+                   IF (Z3.AND.Z4) FACIH=FACIH+SHIFT_IH(2,6)
                 ELSEIF (ISECTP.EQ.1.AND.ISECTH.EQ.1) THEN
                    FACIH=FAC+SHIFT_IH(2,4)
                    IF ((Z1.AND.Z4).OR.(Z1.AND.Z3).OR.
