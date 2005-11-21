@@ -2507,10 +2507,17 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readac */
       SUBROUTINE READAC (IT,N,X,IREC)
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION X(N)
       READ (IT, REC=IREC, IOSTAT=IOS, ERR=10) X
       RETURN
  10   CONTINUE
+CMI   ...adding more on error report
+      WRITE(LUPRI,*) '*** Error in READAC ***'
+      write(lupri,*) 'file number IT=',IT
+      write(lupri,*) 'number of elements to be read N=',N
+      write(lupri,*) ' RECORD #: IREC=',IREC
+      write(lupri,*) ' IOSTAT=',IOS
       CALL QUIT('READAC: Error reading file')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
