@@ -184,7 +184,7 @@ cbs   move some powers of x,y,z to the right place   END
       endif 
 cbs   read the input 
       call readbas(Lhigh,makemean,bonn,breit,
-     *symmetry,sameorb,AIMP,oneonly,ncont4,numballcart,IN,
+     *symmetry,AIMP,ncont4,numballcart,IN,
      *ifinite,EXP_FIN,DOEXIT) 
 
       IF (EXAMF) THEN

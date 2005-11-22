@@ -1,7 +1,7 @@
      
 
       subroutine readbas(Lhigh,makemean,bonn,breit,
-     *symmetry,sameorb,AIMP,oneonly,ncont4,numballcart,IN,ifinite,
+     *symmetry,AIMP,ncont4,numballcart,IN,ifinite,
      *EXP_FIN,DOEXIT) 
 cbs   suposed to read the maximum of l-values, the number of primitive and contracted 
 cbs   functions, the exponents and contraction coefficients
@@ -18,8 +18,7 @@ cbs   functions, the exponents and contraction coefficients
       character*28 addtext
       character*32 Nofcont
       character*76 Stars                  
-      logical makemean,bonn,breit,
-     *sameorb,AIMP,oneonly,DOEXIT  
+      logical makemean,bonn,breit, AIMP,DOEXIT  
       common /nucleus/ charge,Exp_finite 
       Integer ibeginIRED(8),idelpersym(8) 
       dimension INOFT(Mxcart),INOFF(MxCart)
@@ -34,9 +33,7 @@ CBS   write(LUPRI,*)
       write(LUPRI,*) 'ATOMIC NO-PAIR SO-MF CODE starts'
 CBS   write(LUPRI,*)                                                      
       bonn=.false.
-CMI   sameorb=.false.
       aimp=.false.
-CMI   oneonly=.false. 
       makemean=.true.
 CBS   write(LUPRI,*) stars                                                
 CBS   write(LUPRI,*) '2e-integrals for the mean-field only'
@@ -70,13 +67,6 @@ CBS   write(LUPRI,*)
       write(LUPRI,*) 'Symmetry is D2H'
 CBS   write(LUPRI,*) 'check whether order of IRs is correct!!!'
       numbofsym=8    
-      if (.not.oneonly) then
-      if (SAMEORB) then 
-      write(LUPRI,*) 'SAME-ORBIT only'
-      else
-      write(LUPRI,*) 'OTHER-ORBIT included' 
-      endif 
-      endif 
       if (AIMP) then 
       write(LUPRI,*) 'CORE removed for use with AIMP' 
       endif
@@ -102,13 +92,13 @@ CMI ... reading in
 cbs   check keywords
 cbs   check maximum numbers
          if (nprimit(Lrun).gt.MxprimL) then 
-            write(LUPRI,*) 'To many primitives for L=',L,
+            write(LUPRI,*) 'To many primitives for L=',Lrun,
      *           ' increase MxprimL in para.h or reduce ',
      *           'the number of primitives to at least ',MxprimL
             CALL QUIT('Too many primitive functions in AMFI')            
          endif   
          if (ncontrac(Lrun).gt.MxcontL) then 
-            write(LUPRI,*) 'To many contracted fncts for L=',L,
+            write(LUPRI,*) 'To many contracted fncts for L=',Lrun,
      *           ' increase MxcontL in para.h or ',
      *           'reduce the number of contracted functions',
      *           'to at most ',MxcontL
@@ -359,6 +349,7 @@ CMI   ... the case of DOEXIT
 777   format('ORBITAL NUMBER ',I4,' IS THE ',I3,'TH of L-value ',I3,
      *' IT WILL BE REMOVED !!!')  
       end 
+C =========================================================================
       double precision function  regge3j(
      *j1,     ! integer  2*j1
      *j2,     ! integer  2*j2

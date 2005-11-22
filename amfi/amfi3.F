@@ -3,6 +3,7 @@
      &  ADDSO1,numballcart,
      *  LUPROP,ifinite,OLDNRM,WRK,LWRK)
 #include "implicit.h"
+#include "priunit.h"
 #include "para.h"
 #include "param.h"
 #include "ired.h"
@@ -122,9 +123,9 @@ cbs     now determine the irreducable representations
 cbs     check out which IR is the lower one. 
       	if (iredfirst.le.iredsec) then 
 cbs     calculate shift to get to the beginning of the block 
-      		iredired=shiftIRIR((iredsec*iredsec-iredsec)/2+iredfirst)
-     *		+incrlm(Mfirst,Lrun)*itotalperIR(iredsec)+
-     *		incrLM(Msec,Lrun)
+      	   iredired=shiftIRIR((iredsec*iredsec-iredsec)/2+iredfirst)
+     *	   +incrlm(Mfirst,Lrun)*itotalperIR(iredsec)+
+     *	   incrLM(Msec,Lrun)
        if (mod(ipowx,2).eq.0.and.mod(ipowy,2).eq.1.and.
      * mod(ipowz,2).eq.1) then  
       		do icartfirst=1,ncontrac(Lrun) ! loop over functions first index
