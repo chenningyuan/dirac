@@ -668,24 +668,24 @@ c#ifdef KRMC_DEBUG
       do i = 1,norbi
       do j = 1,norbi
          if (i.eq.j) then
-            if (work(kcos+ioff)-d1.gt.d_max) then
+            if (abs(work(kcos+ioff)-d1).gt.d_max) then
                i_max = i
                j_max = j
-               d_max = work(kcos+ioff)-d1
+               d_max = abs(work(kcos+ioff)-d1)
             end if
          else
             if (work(kcos+ioff).gt.d_max) then
                i_max = i
                j_max = j
-               d_max = work(kcos+ioff)
+               d_max = abs(work(kcos+ioff))
             end if
          end if
          ioff = ioff + 1
       end do
       end do
-      if (d_max .gt. d0) then
-         write(6,*) 'ROTCMO: maximum deviation from unitary matrix'
-         write(6,*) 'Element ',i_max,j_max,' value :',d_max
+      if (d_max .gt. thrzer) then
+         write(LUPRI,*) 'ROTCMO: maximum deviation from unitary matrix'
+         write(LUPRI,*) 'Element ',j_max,i_max,' value :',d_max
       end if
 C#endif
 C
