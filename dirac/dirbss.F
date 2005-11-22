@@ -5529,7 +5529,10 @@ C    ========
 C
 C  On input:  TBUF -  H1 in "k" basis
 C             IBEIG - boson irreps if pure spin-orbit integrals (ONLYSO1=.true.)
-C             ONLYSO1 - flag for removing all scalar terms from Hamiltonian                                                         
+C             ONLYSO1 - flag for removing all scalar terms from Hamiltonian 
+C
+C    NB: ONLYSO1 is active only for two-step (free particle) type of transformation,
+C                where we can get DKH Hamiltonians.
 C                                                         
 C  On output: TBUF - H2c in "k" basis
 C           ...  the desired DK1 Hamiltonian in "k" basis is written to the file BSSMAT
@@ -5585,7 +5588,7 @@ C      ======================================================================
      &         NESH(I),NESH(I), NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
 
-          CALL SPF_HK(VMAT(JBUF),.TRUE.,IBEIG(IORB(I)+1+NPSH(I)),
+          CALL SPF_HK(VMAT(JBUF),.FALSE.,IBEIG(IORB(I)+1+NPSH(I)),
      &               IBEIG(IORB(I)+1+NPSH(I)),
      &              NESH(I),NESH(I),NESH(I),NESH(I),NZ,IPRINT)
 
