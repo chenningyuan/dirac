@@ -154,13 +154,6 @@ C
 C
       CALL TITLER('End of input processing','*',124)
 C
-C     If input test , exit here
-C     =========================
-C
-CLV   Replaced stop by (not so elegant) QUIT because we otherwise 
-CLV   fail miserably in MPI...
-      IF(INPTES) CALL QUIT('Normal exit, only input check was asked.')
-C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
