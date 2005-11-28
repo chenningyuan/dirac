@@ -11,14 +11,25 @@
 #
 # predefined restricted test sequences:
 # note that the variable RUNTYPE (with values short, medium and long) is also used to 
-# distinguish between different runs residing in one directory. The present definition is coarse grain and serves to
+# distinguish between different runs residing in one directory.
+# The present definition is coarse grain and serves to
 # exclude directories without a short run
 #
-short_test="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short 25.qrpa 30.linear 37.bss.energies 38.london.magn_prop 39.gaunt"
-medium_partest="$short_test 2.nmrspinspin 10.efg 12.zora 13.rpa 19.fockspace 31.symmetry_recognition 32.prjana 33.frozen 36.mp2_properties"
-medium_test="$medium_partest 27.krmc_luciarel 28.luciarel_medium"
-long_partest="$medium_partest 24.lucita_large 26.krmc_gosci 34.rhonuc"
-long_test="$medium_test 24.lucita_large 26.krmc_gosci 34.rhonuc"
+# Some tests do not work in parallel (yet); the "*_partest" are the short, medum
+# and long tests for parallel runs.
+#
+short_partest="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short 25.qrpa 30.linear 37.bss.energies 38.london.magn_prop 39.gaunt"
+short_test="$short_partest"
+
+medium_partest="2.nmrspinspin 10.efg 12.zora 13.rpa 19.fockspace 31.symmetry_recognition 32.prjana 33.frozen 36.mp2_properties"
+medium_test="$short_test $medium_partest 27.krmc_luciarel"
+# 28.luciarel_medium is currently not working ! Nov. 2005 hjaaj
+medium_partest="$short_partest $medium_partest"
+
+long_partest="24.lucita_large 26.krmc_gosci 34.rhonuc"
+long_test="$medium_test $long_partest"
+long_partest="$medium_partest $long_partest"
+
 benchmark_test="29.benchmark_cc"
 # all_test takes all directories (and will fail if filters or output are absent !)
 all_test=
@@ -75,6 +86,7 @@ arg_dirac=
 arg_tag=runtest
 arg_mpi=
 arg_nice=
+RUNTYPE=undefined
 
 while [ $# != 0 ]; do
    arg="$1"; shift
@@ -114,6 +126,14 @@ while [ $# != 0 ]; do
             exit 1
          fi
          arg_tests="$val"
+         ;;
+      "runtype")
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         RUNTYPE="$val" ; export RUNTYPE
          ;;
       "mpi")
          if [ "${valomitted}" = "yes" ]; then
@@ -173,28 +193,48 @@ echo
 if [ ! -z "$arg_tests" ]; then
    case "${arg_tests}" in
       "short")
-         tests=$short_test;
-         RUNTYPE="short"; export RUNTYPE
+         if [ -n "$arg_mpi" ]; then
+            echo "Running <<short>> parallel tests ..."
+            tests=$short_partest;
+         else
+            echo "Running <<short>> sequential tests ..."
+            tests=$short_test;
+         fi
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="short" ; export RUNTYPE; fi
          ;;
       "medium")
          tests=$medium_test;
-         RUNTYPE="medium"; export RUNTYPE
+         if [ -n "$arg_mpi" ]; then
+            echo "Running <<medium>> parallel tests ..."
+            tests=$medium_partest;
+         else
+            echo "Running <<medium>> sequential tests ..."
+            tests=$medium_test;
+         fi
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="medium" ; export RUNTYPE; fi
          ;;
       "long")
          tests=$long_test;
-         RUNTYPE="long"; export RUNTYPE
+         if [ -n "$arg_mpi" ]; then
+            echo "Running <<long>> parallel tests ..."
+            tests=$long_partest;
+         else
+            echo "Running <<long>> sequential tests ..."
+            tests=$long_test;
+         fi
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="long" ; export RUNTYPE; fi
          ;;
       "benchmark")
          tests=$benchmark_test;
-         RUNTYPE="benchmark"; export RUNTYPE
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="benchmark" ; export RUNTYPE; fi
          ;;
       "small_benchmark")
          tests=$benchmark_test;
-         RUNTYPE="small_benchmark"; export RUNTYPE
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="small_benchmark" ; export RUNTYPE; fi
          ;;
       "large_benchmark")
          tests=$benchmark_test;
-         RUNTYPE="large_benchmark"; export RUNTYPE
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="large_benchmark" ; export RUNTYPE; fi
          ;;
       "all")
          tests=$all_test
@@ -222,7 +262,14 @@ if [ ! -z "$arg_tests" ]; then
          ;;
    esac
 else
-   tests=$short_test
+   if [ -n "$arg_mpi" ]; then
+      echo "Running default: <<short>> parallel tests ..."
+      tests=$short_partest;
+   else
+      echo "Running default: <<short>> sequential tests ..."
+      tests=$short_test;
+   fi
+   if [ $RUNTYPE="undefined" ]; then RUNTYPE="short" ; export RUNTYPE; fi
 #  tests=$all_test
 fi
 
@@ -260,7 +307,7 @@ export HOSTS
 echo 
 echo "Running tests on host : $HOSTS ..."
 echo
-$echo " Using tests: $tests \c"
+$echo "Using tests: $tests \c"
 echo
 
 if [ -e logs/${arg_tag}_dif.txt ]; then
@@ -273,7 +320,7 @@ for tt in $tests; do
       exit 1
    fi
    echo
-   echo 'Running test '$tt
+   echo '*****> Running test '$tt
    echo
    if [ -r $tt/README ]; then
       cat $tt/README

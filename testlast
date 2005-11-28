@@ -9,6 +9,7 @@
 pampath=`pwd`
 dirac=`pwd`/dirac.x
 testdir=`pwd`/test
+RUNTYPE="undefined"
 cvs="no"
 mpi=" "
 parallel=" "
@@ -36,7 +37,7 @@ fi
 #
 backup () {
   if [ "$1" = "-v" ]; then ekko=1; shift
-     else ekko=0;
+  else ekko=0;
   fi
   for i in $* ; do
      if [ -f "${i}" ]; then
@@ -64,6 +65,8 @@ usage='Usage: '$0'\n'\
 '--tests=TESTS\n'\
 '\tThe tests that should be run (default: --tests=short)\n'\
 '\tKnown tests: "short", "medium", "long", "all", or the number(s) of some specific tests\n'\
+'--runtype=RUNTYPE\n'\
+'\tshort, medium, etc. (default: undefined)\n'\
 '--testdir=TESTDIR\n'\
 '\tDirectory in which the tests should be run (default: --testdir=test)\n'\
 '--cvs=yes/no\n'\
@@ -107,6 +110,11 @@ while [ $# != 0 ]; do
       "tests")
          if [ "${valomitted}" = "no" ]; then
             tests="$val"
+         fi
+         ;;
+      "runtype")
+         if [ "${valomitted}" = "no" ]; then
+            RUNTYPE="$val"
          fi
          ;;
       "cvs")
@@ -234,7 +242,7 @@ cat <<EOF >job_testlast.sh
 #
 echo " Starting test at \`date\`"
 cd ${testdir};
-./runtest --tests="$tests" --pampath=$pampath $mpi --dirac=$dirac --run=$run > ./logs/$runlog 2>&1 || \
+./runtest --tests="$tests" --runtype="$RUNTYPE" --pampath=$pampath $mpi --dirac=$dirac --run=$run > ./logs/$runlog 2>&1 || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \
