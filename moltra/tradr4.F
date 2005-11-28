@@ -420,6 +420,8 @@ C
 #include "twosta.h"
 #include "blocks.h"
 #include "nuclei.h"
+C     MXGBFSZ determines direct access record lengths, can be used to tune I/O
+      PARAMETER (MXGBFSZ=4096)
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       CHARACTER SPDCAR*1,COMP(2)*1
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
@@ -769,6 +771,12 @@ C           Use the space reserved for GMAT now as buffer storage
 C
             LGFIL = LUTRA2
             NGBFSZ = (IRAT*NSIZG)/((1+IRAT)*NPASS)
+C
+C           The buffer size may give rise to too large record lengths, restrict it to
+C           a size that gives an acceptable performance. Be ware that this is machine
+C           dependent and may be used to tune I/O performance.
+C
+            NGBFSZ = MIN(NGBFSZ,MXGBFSZ)
 C
 C           Allocate the buffer arrays in WORK and set KGMAT to the
 C           start of this allocation section. We now only need to
