@@ -1235,10 +1235,10 @@ case $machine in
          opt="-O3 -ffast-math -Wno=155"
          ;;
       g77|f77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
+         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals"
          ;;
       mpif77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
+         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals"
          echo
          echo WARNING:
          echo   Could not determine which compiler mpif77 is using, assuming it is g77
@@ -1387,10 +1387,10 @@ case $machine in
          opt="-O3 -ffast-math -Wno=155"
          ;;
       g77|f77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
+         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals"
          ;;
       mpif77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
+         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals"
          echo
          echo WARNING:
          echo   Could not determine which compiler mpif77 is using, assuming it is g77
