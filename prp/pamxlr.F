@@ -425,7 +425,7 @@ C
       CNVXLR(1)  = DUMMY
       CNVXLR(2)  = DUMMY
       MAXRM      = -1
-      MXLOAD     = 0
+      MXLOAD     = -1
       ITRXLR     = 50
       INTXLR     = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
 CMI ... set up only LL class of integrals 
@@ -819,7 +819,7 @@ C
         WRITE(LUPRI,'(A)')
      &  ' * No preconditioning of initial trial vectors.'
       ENDIF
-      IF(MXLOAD.NE.0) WRITE(LUPRI,'(A,I5)')
+      IF(MXLOAD.GT.0) WRITE(LUPRI,'(A,I5)')
      &  ' * Maximum number of trial vectors to be loaded'//
      &  ' in each microiteration:', MXLOAD
 C
@@ -1529,9 +1529,9 @@ C/* Deck xrspar */
 C***********************************************************************
 C
 C     Initialize configurational and orbital parameters for
-C     RPA calculation
+C     linear response calculation
 C
-C     Written by T.Saue July 18 1997
+C     Written by T. Saue July 18 1997
 C
 C***********************************************************************
 #include "implicit.h"

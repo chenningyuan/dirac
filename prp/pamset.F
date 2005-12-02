@@ -852,8 +852,10 @@ C     Configurational part
 C     ====================
 C
       IF(NZCONF.GT.0) THEN
-        WRITE(LUPRI,'(A)') '* REDPAR: No configurational code.'
-        CALL QUIT('REDPAR: No conf.code')
+        WRITE(LUPRI,'(A)') '* REDPAR: No configurational code,',
+     &                     '          thus no reduction in conf vector.'
+C hjaaj sep 05: continue with just reduction in orb vector(s)
+C       CALL QUIT('REDPAR: No conf.code')
       ENDIF
 C
 C     e-e orbital rotations
@@ -950,13 +952,13 @@ C
       ENDIF      
 C
       NZXOPT   = NZXOPE + NZXOPP
-      NZXOPTQ  = NZXOPT *NZ
+      NZXOPTQ  = NZXOPT * NZ
 C
 C     Total number of parameters
 C     ==========================
 C
-      NZVAR    = NZCONF + NZXOPT
-      NZVARQ   = NZVAR*NZ
+      NZVAR    = NZCONF  + NZXOPT
+      NZVARQ   = NZCONFQ + NZXOPTQ
       RETURN
       END
       

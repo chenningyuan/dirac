@@ -419,7 +419,7 @@ C
       KCONV = 1
 C
 C     Set up initial trial vectors
-C     ============================     
+C     ============================
 C     NCSIM - number of configurational trial vectors
 C     NESIM - number of orbital trial vectors (e-e rotations)
 C     NPSIM - number of orbital trial vectors (e-p rotations)
@@ -429,8 +429,20 @@ C
       CALL XRSST(IBTYP,IBCVC,IBEVC,IBPVC,
      &           GPCI,GPOE,GPOP,EVALR,
      &           WORK,KFREE,LFREE)
-      IF(MAXSIM.EQ.0) MAXSIM = MAX(NTSIM,NVPAR*NFREQ)
+      IF (MAXSIM.LE.0) THEN
+         MAXSIM1 = MAX(NTSIM,NVPAR*NFREQ)
+         MXBVEC  = MAX(NZCONFQ,NZXOPEQ,NZXOPPQ)
+         MAXSIM2 = (LFREE-100000) / (MXBVEC + NZVARQ + 4*N2BBASXQ)
+C        ... based on rough estimate of memory per vector
+C            (for b-vector, sigma-vector, some Fock/density matrices),
+C            have subtracted 100000 arbitrarily for all other small matrices
+C            /Sep 2005 hjaaj
+         MAXSIM = MIN(MAXSIM1,MAXSIM2)
+         MAXSIM = MAX(1,MAXSIM)
+C        ... always attempt at least one vector
+      END IF
 C
+C     ============================
 C     hjj+panor:
 C     Save screening parameter SCRFCK that is used in the construction
 C     of sigma-vectors. The parameter is before change equal to the 
@@ -551,8 +563,8 @@ C     **********************************************
         JZRED = NZRED
         DO ITLOAD = 1,MTSIM,MAXSIM
           ILOAD = ILOAD + 1
-          IF(BVLOAD) THEN
-C           Trial vectors not in memory; read from file
+          IF (BVLOAD) THEN
+C            Trial vectors not in memory; read from file
              CALL REABLD(NBCSIM,NBESIM,NBPSIM,WORK,KFREE,LFREE)
           ENDIF
           NOSIM = NESIM + NPSIM
@@ -723,7 +735,7 @@ C
          WRITE(LUCYCL,'(A12)') CPUTID
          IF(IPRXRS.GE.1) THEN
            WRITE(LUPRI,'(/A,I5,A,A12)')
-     &       '* END OF MICROITERATION NO.',ITMIC,' IN ',CPUTID
+     &       '* End of microiteration no.',ITMIC,' after ',CPUTID
          ENDIF
          CALL FLSHFO(LUPRI)
 CTROND         OPTORB = OPTSAV
@@ -1681,9 +1693,8 @@ C
             END DO
          END DO
          IF (DAHS .GT. 1.0D-14 .OR. IPRXRS.GE.4) THEN
-            WRITE(LUPRI,'(/A,1P,D10.2)')
-     &        '(XRSRED)  1-norm of anti-symmetry of REDE = ',DAHS
-            WRITE(LUPRI,'(A,1P,D10.2,/,10X,A,0P,I3,A,I3,A,/)')
+            WRITE(LUPRI,'(/A,1P,D10.2/A,D10.2,5X,A,0P,I3,A,I3,A/)')
+     &        '(XRSRED)  1-norm of anti-symmetry of REDE = ',DAHS,
      &        '(XRSRED) oo-norm of anti-symmetry of REDE = ',
      &        DMAH,' (element (',MAHI,',',MAHJ,'))'
          END IF

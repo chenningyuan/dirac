@@ -439,7 +439,7 @@ Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: MAXRM, MXLOAD
       MAXRM      = -1
-      MXLOAD     = 0
+      MXLOAD     = -1
       XPP_SKIPEP = .FALSE.
       XPP_SKIPEE = .FALSE.
       XPP_LSFG(1)= .TRUE.
@@ -702,7 +702,7 @@ C
       ENDIF
       IF(XPPNRM) WRITE(LUPRI,'(A)')
      &     ' * Trial vectors will be normalized.'
-      IF(MXLOAD.NE.0) WRITE(LUPRI,'(A,I5)')
+      IF(MXLOAD.GT.0) WRITE(LUPRI,'(A,I5)')
      &  ' * Maximum number of trial vectors to be loaded'//
      &  ' in each microiteration:', MXLOAD
 C
