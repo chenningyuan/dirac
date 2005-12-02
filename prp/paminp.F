@@ -92,7 +92,7 @@ C
       DOXQR     = .FALSE.
       DOTPA     = .FALSE.
       DOVER     = .FALSE.
-      DOEXCPRP =  .FALSE.
+      DOEXCPRP  = .FALSE.
       EXCPRPTYP = 0
       DIPOLE    = .FALSE.
       QUADRU    = .FALSE.
@@ -127,13 +127,13 @@ C   of four-component property matrixes
 C   for the two-component (BSS) infinite order.
 C TODO with TS/HJJ: BSS spin-free picture change transformation
       IF (BSS.AND.IBSS.GE.99) THEN
-        DOPCT=.TRUE.
+        DOPCT = .TRUE.
 C       ... by default DO the picture change transformation
         NOPCT = .FALSE.
         WRITE(LUPRI,'(/3X,A/)')
      &'PRPINP: Picture change transformation of properties activated !'
       ELSE
-        DOPCT=.FALSE.
+        DOPCT = .FALSE.
         NOPCT = .TRUE.
         WRITE(LUPRI,'(/3X,A/)')
      &'PRPINP: Only LL blocks of propery operators are taken !'
@@ -779,7 +779,7 @@ C
 #include "priunit.h"
       CHARACTER*7 WORD
 C
-      PARAMETER (NTABKW = 22)
+      PARAMETER (NTABKW = 23)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
@@ -794,7 +794,7 @@ C
      &           'XAVECTOR', 'YAVECTOR', 'ZAVECTOR', 'ALPHADOT',
      &           'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ', 'ZSIGMA  ',
      &           'XBETASIG', 'YBETASIG', 'ZBETASIG', 'XiBETAAL',
-     &           'YiBETAAL', 'ZiBETAAL'/
+     &           'YiBETAAL', 'ZiBETAAL', 'BETA    '/
 C
       CALL QENTER('XPRINP')
 C
@@ -918,7 +918,7 @@ C
               ITRXPR = 1
            END IF
            GO TO (4,5,6,1,1,1,1,1,2,2,2,3,
-     &            1,1,1,1,1,1,1,1,1,1), I
+     &            1,1,1,1,1,1,1,1,1,1,1), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -1148,6 +1148,7 @@ C
 C
  1000 CONTINUE
       IF(IPTYP.EQ.0) THEN
+C       ... i.e. FOCKMAT 
         IPRPSYM(INDXPR) = ISYXPR
         IPRPTIM(INDXPR) = ITRXPR
       ELSE
@@ -1222,6 +1223,7 @@ C ... fix the LS block for the LevyLe option
      & '  Only the LL block for connection matrixes in two-comp.mode!'
       ELSE
          IF (IPTYP.EQ.0) THEN
+C          ... for FOCKMAT
            PCOMB = 'xxxx'
            GOTO 200           
          ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.19) THEN
