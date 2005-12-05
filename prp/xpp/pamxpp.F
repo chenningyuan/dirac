@@ -384,7 +384,7 @@ C
      &            '.OCCUP ','.VIRTUA','.ACTIVE','-------',
      &            '.ITRINT','.CNVINT','.REAXVC','-------',
      &            '.RESFAC','.ORBANA','-------','.SKIPEE',
-     &            '.MXLOAD','-------','-------','-------'/
+     &            '.MXLOAD','.ONLYSF','.ONLYSG','-------'/
 C
 #include "ibtfun.h"
 C
@@ -604,8 +604,12 @@ C             in each microiteration
                   READ(LUCMD,*) MXLOAD
                GO TO 100
  30            CONTINUE
+C&&&& ONLYSF: Only generate one-index transformed Fock matrix
+                  XPP_LSFG(1) = .FALSE.
                GO TO 100
  31            CONTINUE
+C&&&& ONLYSG: Only generate G matrix (Fock-matrix of modified density)
+                  XPP_LSFG(2) = .FALSE.
                GO TO 100
  32            CONTINUE
                GO TO 100
@@ -705,6 +709,10 @@ C
       IF(MXLOAD.GT.0) WRITE(LUPRI,'(A,I5)')
      &  ' * Maximum number of trial vectors to be loaded'//
      &  ' in each microiteration:', MXLOAD
+      IF(.NOT.XPP_LSFG(1)) WRITE(LUPRI,'(A)')
+     &     ' * Debug: Only calling FMOLI in sigma-vector routine...'
+      IF(.NOT.XPP_LSFG(2)) WRITE(LUPRI,'(A)')
+     &     ' * Debug: Only calling GMOLI in sigma-vector routine...'
 C
 C     Number of excitations
 C     =====================
