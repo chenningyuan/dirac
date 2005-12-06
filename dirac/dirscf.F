@@ -132,9 +132,10 @@ CMI   starting Fock-Dirac MO matrix for the DC-SCF
 
       ENDIF
 
+CC    IF (.NOT.ONLYDFFCK) THEN
       CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &            WORK(KFREE),LFREE)
-
+CC    ENDIF
 C        CALL MEMCHK('PSIDHF.DHFSCF ',WORK,1)
 C
 C     Memory deallocation of the Fock matrix only...
@@ -144,9 +145,10 @@ C     Output section
 C
 C        CALL MEMCHK('PSIDHF x',WORK,1)
 
+CC    IF (.NOT.ONLYDFFCK) THEN
       CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &            LFREE,IPRINT)
-
+C     ENDIF
 C        CALL MEMCHK('PSIDHF x1',WORK,1)
 
 C     ....  
@@ -268,7 +270,6 @@ C       ENDIF
         DO2C4C = .FALSE.
       ENDIF
 
-
       DO4C2C = DO4C2C_SAVE
       IF (DO4C2C) THEN
         write(lupri,*) 'PSIDHF: transfer  4c - > 2c !!!'
@@ -314,7 +315,8 @@ C         ... need to reset them...
         ENDIF
 
 C       FD2CMO = .TRUE.
-        RESTFCK = .TRUE.
+CMI     RESTFCK = .TRUE.
+C       RESTFCK = .FALSE.
 
         INQUIRE(FILE='DFDIIS',EXIST=EX)
         IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
@@ -322,6 +324,9 @@ C       FD2CMO = .TRUE.
         IF (EX) CALL SYSTEM('/bin/rm DFEVEC')
         INQUIRE(FILE='DFCOEF',EXIST=EX)
         IF (EX) CALL SYSTEM('/bin/rm DFCOEF')
+
+CC      INQUIRE(FILE='DFCYCL',EXIST=EX)
+CC      IF (EX) CALL SYSTEM('/bin/rm DFCYCL')
 
         CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
@@ -452,7 +457,7 @@ C
       CALL FLSHFO(LUPRI)
       CALL GETTIM(CTIDSTR,WTIDSTR)
 
-CMI  ... skip the generation of 2-el.Fock matrix when FD2CMO=.true. (dcbham.h)
+CMI  ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. (dcbham.h)
 
 C
 C     Get 2-electron Fock matrix (save in CMO)
@@ -463,8 +468,8 @@ C     -------------------------
 C
       DOSEL = .FALSE.
       TOBE  = .TRUE.
-C     IF (.NOT.FD2CMO) THEN
       IF (.NOT.RESTFCK) THEN
+
       IF(TRIVEC) THEN
 C
 C       We calculate a regular Fock matrix so we can check convergence ...
@@ -616,17 +621,25 @@ C     Get one-electron Fock matrix (save in FOCK)
 C     ===========================================
 C
       IF(BARNUC) THEN
+CMI     ... get 1-electron Fock matrix into FOCK ...
         CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)        
-        IF(BNCRON .AND. .NOT. ONESYS) THEN
-           CALL BNCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
+        IF(IPRSCF.GE.12) THEN
+         CALL HEADER(
+     &   'PREDHF: Fresh 1-electron Fock matrix within "BARNUC"',-1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
-        IF(IPRSCF.GE.5) THEN
-          CALL HEADER('Total FD matrix',-1)
-          CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NZ,IPQTOQ(1,0),LUPRI)
-        END IF
+        IF(BNCRON .AND. .NOT. ONESYS) THEN
+          CALL BNCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
+          IF(IPRSCF.GE.12) THEN
+           CALL HEADER(
+     & 'PREDHF: 1-electron Fock matrix + BNCORR within "BARNUC"',-1)
+           CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                 NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+        ENDIF
       ELSE
-CMI     ... get 1-electron Fock matrix into CMO...
+CMI     ... get 1-electron Fock matrix into CMO ...
         CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 C        
 C     Calculate correction according to the One-center app. models 
@@ -638,6 +651,8 @@ C
            END IF 
            CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         END IF
+
+CMI      ... add 1-electron Fock matrix into the total Fock matrix ...
         CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
 C
 C       Add active two-electron Fock matrices
@@ -655,13 +670,13 @@ C
 C
         IF(IPRSCF.GE.5) THEN
           IF (NISHT .GT. 0) THEN
-            CALL HEADER('Total FD matrix',-1)
+            CALL HEADER('PREDHF: Total FD matrix in SA-AO basis',-1)
             CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                  NZ,IPQTOQ(1,0),LUPRI)
           END IF
           IF(AOC) THEN
             DO IOPEN = 1,NOPEN
-              CALL HEADER('Total FV matrix',-1)
+              CALL HEADER('PREDHF: Total FV matrix in SA-AO basis',-1)
               WRITE(LUPRI,'(A,I3)') ' Matrix number',IOPEN
               CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
      &                    NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
@@ -674,7 +689,7 @@ C     *************************************************
 C     *****   SOLVE  DHF  EIGENVALUE  PROBLEM    ******
 C     *************************************************
 C
-      ENDIF ! of FD2CMO
+      ENDIF !
 
       DIISAO_SAVE = DIISAO
       DIISAO = .TRUE.
@@ -691,7 +706,8 @@ CMI   IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG,IBEIG)
         IF (.NOT.CONT2C) THEN
         IF (IPRHAM.GE.2) THEN
          write(lupri,'(/2X,A/)')
-     & 'Last calculation of the SCF energy using pctra quantities !'
+     & 'PREDHF: Last calculation of the SCF energy'//
+     & ' using pctra quantities !'
         ENDIF
 CMI       .... SUBROUTINE ERGCAL(F1,F2,DMAT,WORK,LWORK)
 CMI       ....  D(IJ)(*)(F1(IJ)+0.5F2(IJ))
@@ -785,10 +801,16 @@ C  /* Deck dfsolv */
 C*****************************************************************************
 C
 C     Solve Dirac-Fock eigenvalue equation
+C
 C     On input:
+C    ===========
 C       FMO - MO-coefficients from previous iteration
 C       FAO - Fock-matrix in AO-basis
+C       IBEIG - boson specification of molecular spinors
+C       DMAT
+C
 C     On output:
+C    ============
 C       FMO - MO-coefficients from current iteration
 C       EIG - eigenvalues
 C
@@ -796,6 +818,7 @@ C     Input/output:
 C
 C     Written by T.Saue Mar 09 1995
 C     Last revision: Mar 09 1995
+C                    Nov. 2005 - MI
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -821,8 +844,10 @@ C     ==============================================
 C
       CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+CMI   ... read AO2MO transformation matrixe into WORK(KTMAT)...
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
 
+CMI ... perform all this only if we do note restart BSS from DC or vice versa
       IF (.NOT.RESTFCK) THEN
 
       DODIISAO = DIISAO.OR.(NASHMFT.GT.0.AND.AOC)
@@ -869,9 +894,11 @@ CMI        MO basis (from pctra DC-SCF) to START 2c BSS-SCF ...
 CMI  ... or the 4comp STARTING Fock-Dirac matrix (from rev.pctra BSS-SCF+H2cPP)
 CMI     in RKB_MO basis to restart DC-SCF
 CMI ==================================================================
+CMI   RESTFCK = .FALSE.
       IF (RESTFCK) THEN
        CALL OPNFIL(LUBSS,'BSSMAT','OLD','DFSOLV')
        IF (DO4C2C) THEN
+CMI    IF (DO4C2C.AND..NOT.ONLYDFFCK) THEN
 C ... do read the FD_2c in Lowdin MO basis from the BSSMAT to 
 C      provide restarting of the postDHF BSS-SCF procedure
        REWIND LUBSS   
@@ -885,7 +912,8 @@ C      provide restarting of the postDHF BSS-SCF procedure
         ELSE
          CALL QUIT('DFSOLV: FD2C_LMO not found !')           
         END IF         
-       ELSE ! RESTFCK=.false., continuing with four-component DC-SCF
+       ELSE  ! RESTFCK=.false., continuing with four-component DC-SCF
+CMI    ELSE IF (.NOT.ONLYDFFCK) THEN  ! RESTFCK=.false., continuing with four-component DC-SCF
         IF (FNDLAB('FD4C_RKB',LUBSS)) THEN
          ISIZE = (NORB(1)*NORB(1)*NZ) 
          IF (NFSYM.EQ.2) ISIZE=ISIZE+(NORB(2)*NORB(2)*NZ)
@@ -917,16 +945,15 @@ CMI ... here we get the DHFEXIT order...
 
       IF (DHFEXIT) THEN
 C        ... extract diagonal FMO elements to EIG
-C        DO IFSYM = 1,NFSYM
+       IF (IPRSCF.GE.6) THEN
+         DO IFSYM = 1,NFSYM
 C        ... before extracting of EIG print the Fock matrix
-C           IF (IPRSCF.GE.3) THEN
-C             WRITE(LUPRI,'(1X,A)')
-C    &          'DFSOLV: The converged (diagonal) Fock FMO matrix   '
-C             WRITE(LUPRI,'(3X,A,I1,A,I2)')
-C    &          'fermion symmetry: ',IFSYM,'/',NFSYM
-C             CALL PRQMAT(FMO(I2TMOT(IFSYM)+1),NTMO(IFSYM),NTMO(IFSYM),
-C    &                NTMO(IFSYM),NTMO(IFSYM),NZ,IPQTOQ(1,0),LUPRI)
-C           ENDIF
+           CALL HEADER(
+     &    'DFSOLV: The converged Fock FMO matrix ',-1)
+           WRITE(LUPRI,'(3X,A,I1,A,I2)')
+     &    'fermion symmetry: ',IFSYM,'/',NFSYM
+           CALL PRQMAT(FMO(I2TMOT(IFSYM)+1),NTMO(IFSYM),NTMO(IFSYM),
+     &          NTMO(IFSYM),NTMO(IFSYM),NZ,IPQTOQ(1,0),LUPRI)
 C           JFMO = I2TMOT(IFSYM)
 C           JEIG = IORB(IFSYM)
 C           CALL DZERO(EIG(JEIG+1), NORB(IFSYM))
@@ -935,8 +962,9 @@ C           DO J =1,NTMOI
 C              EIG(JEIG+J) = FMO(JFMO + NTMOI*(J-1)+J)
 C              write(lupri,*) 'EIG=',EIG(JEIG+J)
 C           END DO
-C        END DO
-         GO TO 9999
+         ENDDO
+       ENDIF
+       GOTO 9999
       END IF
 C
 C     Diagonalize Fock matrix
@@ -2535,6 +2563,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKMOFK2 */
       SUBROUTINE MKMOFK2(FMO,FAO,TMAT,WORK,LWORK)
 C**********************************************************************
+C
 C     PURPOSE:
 C        Construct MO Fock matrix from Fock matrices in AO-basis
 C     WARNING:
@@ -3730,10 +3759,11 @@ C
             IF (DODBG.AND.IPRHAM.GE.5) THEN
              CALL HEADER(
      &       'DFDIAG:MO matrix (subblocks) to be diagonalized',-1)
-             WRITE(LUPRI,'(/2X,A,A,I1,A,I1,A,I2,A,I2)')
-     &       'DFDIAG: SPECIAL', 
-     &       ' IFSYM=',I,'/',NFSYM,
-     &       ' ISUB=',ISUB,'/',N_SUB_BL(I) 
+              WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &        '*** Fermion corep ',I,'/',NFSYM
+              WRITE(LUPRI,'(3X,A,I3,A,I3/)')
+     &        '*** boson sub-corep ',ISUB,'/',N_SUB_BL(I)
+
              CALL PRQMAT(FMO(IMAT),
      &          NBO,NBO,NTMO(I),NTMO(I),
      &          1,IPQTOQ(1,0),LUPRI)
@@ -3752,10 +3782,14 @@ C
             ENDIF
 
             IF (DODBG.AND.IPRHAM.GE.8) THEN
-             CALL HEADER(
-     &       'DFDIAG: Eigenvalues(special_subbblock)',-1)
-             WRITE(LUPRI,'(6(I3,A,D14.6))')
-     &         (IX,'-',EIG(IX),IX=IEIG,IEIG+NBO-1)
+             WRITE(LUPRI,'(/2X,A)')
+     &       'DFDIAG: Eigenvalues (special_subbblock) :'
+             WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &       '*** Fermion corep ',I,'/',NFSYM
+             WRITE(LUPRI,'(3X,A,I3,A,I3/)')
+     &       '*** boson sub-corep ',ISUB,'/',N_SUB_BL(I)
+             WRITE(LUPRI,'(I5,F25.10)') (IX,EIG(IX),IX=IEIG,IEIG+NBO-1) 
+
              CALL HEADER(
      &       'DFDIAG: Eigenvectors(special_subblock)',-1)
              CALL PRQMAT(FAO(IMAT),

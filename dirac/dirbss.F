@@ -69,14 +69,14 @@ C     IF (DO4C2C.AND..NOT.START2C.AND..NOT.CONT2C) THEN
      &   '... picture change transformation matrix is from'//
      &   ' block-diagonalizations of one-el. Dirac operator.'
         ENDIF
-
        ENDIF
-       ISIZE = NORB(1)
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)   
-       CALL MEMGET('REAL',KIBEIG,ISIZE,WORK,KFREE,LFREE)
-       CALL FDTR2C(VMAT,WORK(KIBEIG),WORK(KFREE),LFREE)
-       CALL MEMREL('MAKE_DKH.FDTR2C',WORK,KWORK,KIBEIG,KFREE,LFREE)
-C      START2C = .TRUE.
+
+        ISIZE = NORB(1)
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)   
+        CALL MEMGET('REAL',KIBEIG,ISIZE,WORK,KFREE,LFREE)
+        CALL FDTR2C(VMAT,WORK(KIBEIG),WORK(KFREE),LFREE)
+        CALL MEMREL('MAKE_DKH.FDTR2C',WORK,KWORK,KIBEIG,KFREE,LFREE)
+
       ENDIF
 
 
@@ -764,7 +764,7 @@ C     ... do extract a,x,y,z digits of the entering IBSS=axyz value
        IF (CONT2C) THEN
          WRITE(LUPRI,'(/2X,A,I1)')
      & '...continuing in two-component (infinite order) SCF'//
-     & ' procedure ... I2CHAM (3,4,5) =',I2CHAM
+     & ' procedure ... I2CHAM (3,4,5,6) =',I2CHAM
        ENDIF
       ELSE
         WRITE(LUPRI,'(2X,A)')
@@ -1000,10 +1000,12 @@ C     ... pure 2c mode after the DC-SCF ...
          I2COFK = 4
        ELSE IF (I2CHAM.EQ.5) THEN
          I2COFK = 5
+       ELSE IF (I2CHAM.EQ.6) THEN
+         I2COFK = 6
        ELSE
          CALL QUIT(
      &   'EXTR_BSS_INFO: I2CHAM parameter '//
-     &   ' is wrong (not 3/4/5) !' )
+     &   ' is wrong (not 3/4/5/6) !' )
        ENDIF
       ENDIF
 
@@ -2254,7 +2256,7 @@ C   TMAT  - "k" eigenvectors in "xhi" (when FPB=.true.), or RKB basis
 C                                                         
 C   FPB  - if .true., the "k" FP ON basis is used, otherwise SL-resorted RKB basis    
 C
-C   LINAD - 
+C   LINAD - flag annoucing additional adaptation due the linear symmetry 
 C
 C  On output:
 C ------------
@@ -2273,9 +2275,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dgroup.h"  
 C ... needed due to the BSS,USEDF 
 #include "dcbham.h"  
-#include "dcbdhf.h"  
+C#include "dcbdhf.h"  
       DIMENSION TBUF(*),TMAT(*),VMAT(*),IBEIG(*),WORK(LWORK)    
-      LOGICAL SF_BEG, SAVESO1, FPB, LINAD, FNDLAB
+      LOGICAL SF_BEG, SAVESO1, FPB, LINAD, FNDLAB, EX
       CHARACTER*8 LBL
 
       CALL QENTER('GET_H1_ONB')
@@ -2298,332 +2300,12 @@ C    &     (DO4C2C.AND..NOT.START2C) ) THEN
      & 'operator in MO basis (file DFFOCK).',-1)
        ENDIF
 
-C ...  read converged Fock-Dirac MO (may be LINSYM!) matrix from the DFFOCK file
-        OPEN (LUFOCK, FILE='DFFOCK',FORM='UNFORMATTED',
-     &        ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='OLD')
-C ... RESORT OF RKB_TMAT IS NEEDED FOR THE RKB based transformation !!!
-       IREC = -1
-       IF(MXDIIS.EQ.0) THEN
-          IREC = 1
-       ELSE
-          IREC = MOD(NITER-2,MXDIIS-1) + 1
-       ENDIF
-       CALL READAC(LUFOCK,N2TMOTQ,VMAT,IREC)
-C      ... we no longer need the DFFOCK file 
-C       as the next BSS-SCF creates own new files
-       CLOSE(LUFOCK,STATUS="DELETE")
-       IF (IPRHAM.GE.2) THEN
-         WRITE(LUPRI,'(/2X,A)')
-     & 'GET_H1_ONB: Fock-Dirac 4c MO (RKB) matrix '//
-     & 'was read from the DFFOCK(deleted afterwards) file into VMAT'
-       ENDIF
- 
-       IF (LINAD) THEN
-C       ... do the transformation back to the nonlinsym RKB_MO basis...
-C   =======================================================================
-        REWIND(LUBSS)
-        IF (FNDLAB('TMAT_LSY',LUBSS)) THEN
-        ISIZE = NORB(1)*NORB(1)
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
-         CALL READT(LUBSS,ISIZE,TMAT)
-         IF (IPRHAM.GE.2) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     & 'GET_H1_ONB: 4c ON "theta"-> 4c ON LINSYM "theta" transf. '//
-     & 'matrix TMAT_LSY was read from the BSSMAT file into TMAT.'
-         ENDIF
-        ELSE
-         CALL QUIT(
-     &  'GET_H1_ONB: Error, EOFLABEL not found in BSSMAT file!')
-        END IF
+C      ... entering transf. marix in TMAT
+       CALL DF2ONB('DFFOCK',TBUF,TMAT,VMAT,LINAD,
+     &             FPB,WORK(KFREE),LFREE,IPRHAM)
 
-C     ... do the reverse transformation (MOAO):  TMAT . VMAT . TMAT + = TBUF
-       IOFT = 1
-       DO I = 1, NFSYM
-       IF (NORB(I).GT.0) THEN
-
-        IF(IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &  'GET_H1_ONB: Read (from DFFOCK) Fock-Dirac matrix in '//
-     &  '4c ON MO basis "theta", VMAT',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(VMAT(IOFT),NORB(I),NORB(I),NORB(I),
-     &              NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-   
-C         ... do transform it to the "k" basis into TBUF !
-        IF(IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &  'GET_H1_ONB: Transformation matrix '//
-     &  ' 4c ON  RKB "theta" -> LSYM "theta", TMAT',-1)
-          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-          CALL PRQMAT(TMAT(IOFT),NORB(I),NORB(I),NORB(I),
-     &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-
-        CALL QTRANS('MOAO','S',D0,NORB(I),NORB(I),
-     &       NORB(I),NORB(I),
-     &       TBUF(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &       VMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &       TMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &       TMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &       WORK(KFREE),LFREE,IPRHAM)
-
-        IF(IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &  'GET_H1_ONB: Dirac-Fock matrix in '//
-     &  '4c ON RKB (non_linear symmetry!) basis, TBUF',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TBUF(IOFT),NORB(I),NORB(I),NORB(I),
-     &              NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-        
-         IOFT = IOFT + NORB(I)*NORB(I)*NZ
-        ENDIF
-        ENDDO
-
-        ISIZE = NORB(1)*NORB(1)
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
-C         VMAT contains FD in ordinary RKB basis ... 
-        CALL DCOPY(ISIZE,TBUF,1,VMAT,1)
-        IF (IPRHAM.GE.2) WRITE(LUPRI,'(2X,A)')
-     &  'GET_H1_ONB: The TBUF was copyied into VMAT'
-      ENDIF
-C   ! end of linear, we have Fock-Dirac nonlinear_MO matrix in VMAT...
-
-C   ... if we are in the "k" basis mode, we need transformation matrix
-C       RKB "theta" -> FPM "k"
-       IF (FPB) THEN
-
-        REWIND(LUBSS)
-        IF (FNDLAB('FPMAT_TH',LUBSS)) THEN
-        ISIZE = NORB(1)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-        CALL READT(LUBSS,ISIZE,TMAT)
-         IF (IPRHAM.GE.2) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     &    'GET_H1_ONB: 4c "k"-> 4c "theta" transf. '//
-     &    '  matrix FPMAT_TH was read from the BSSMAT file into TMAT.'
-         ENDIF
-        ELSE
-         CALL QUIT(
-     &  'GET_H1_ONB: Error, EOFLABEL not found in BSSMAT file!')
-        END IF
-
-C      ELSE IF (DO4C2C.AND.USEDF.AND..NOT.FPB) THEN
-       ELSE 
-C      ... when being in 1.step BSS, we need to transform to the AO basis first
-C       (using "standard" AO-MO transformation matrix) and 
-C       then transform it to the SL-sorted MO basis...
-        REWIND(LUBSS)
-        IF (FNDLAB('TMAT4C  ',LUBSS)) THEN
-        ISIZE = (NORB(1)*NFBAS(1,0)*NZ)
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NFBAS(2,0)*NZ)
-        CALL READT(LUBSS,ISIZE,TMAT)
-         IF (IPRHAM.GE.2) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     &    'GET_H1_ONB: 4c AO -> 4c "theta" transf. '//
-     &    'matrix TMAT4C was read from the BSSMAT file into TMAT.'
-         ENDIF
-        ELSE
-         CALL QUIT(
-     &  'GET_H1_ONB: Error, TMAT4C not found in BSSMAT file!')
-        END IF
-
-         CALL DZERO(TBUF,N2BBASXQ)
-         CALL MKSAOMO(TBUF,TMAT,.FALSE.,IPRHAM,WORK(KFREE),LFREE)
-         CALL DCOPY(N2BBASXQ,TBUF,1,TMAT,1)
-
-C       ... do get AO Fock-Dirac matrix (MOAO): TMAT . VMAT . TMAT^+ = TBUF
-          IBUF = 1
-          IVMAT = 1
-          ITMAT = 1
-          DO I = 1,NFSYM
-          IF (NORB(I).GT.0) THEN
-
-         CALL QTRANS('MOAO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                           NORB(I),NORB(I),
-     &      TBUF(IBUF),NFBAS(I,0),NFBAS(I,0),NZ,IPQTOQ(1,0),
-     &      VMAT(IVMAT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &      TMAT(ITMAT),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &      TMAT(ITMAT),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &       WORK(KFREE),LFREE,IPRHAM)
-
-        IF(IPRHAM.GE.5) THEN
-
-         CALL HEADER(
-     &  'GET_H1_ONB: Dirac-Fock matrix '//
-     &  'in MO basis, VMAT',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(VMAT(IVMAT),NORB(I),NORB(I),
-     &        NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-
-         CALL HEADER(
-     &  'GET_H1_ONB:4c AO -> 4c SAOMO "theta" transf. matrix '//
-     &  ', TMAT',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TMAT(ITMAT),NFBAS(I,0),NORB(I),
-     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-
-
-         CALL HEADER(
-     &  'GET_H1_ONB: Dirac-Fock matrix '//
-     &  'retransformed into 4c SA-AO basis, TBUF',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TBUF(IBUF),NFBAS(I,0),NFBAS(I,0),
-     &        NFBAS(I,0),NFBAS(I,0),NZ,IPQTOQ(1,0),LUPRI)
-
-        ENDIF
-
-            IBUF = IBUF + (NFBAS(I,0)*NFBAS(I,0)*NZ)
-            IVMAT = IVMAT + (NORB(I)*NORB(I)*NZ)
-            ITMAT = ITMAT + (NFBAS(I,0)*NORB(I)*NZ )
-          ENDIF
-          ENDDO
-
-C       ... read SL_TM_4C into TMAT and do TMAT^+ . TBUF . TMAT = VMAT
-         CALL DZERO(TMAT,N2BBASXQ)
-        REWIND(LUBSS)
-        IF (FNDLAB('SL_TM_4C',LUBSS)) THEN
-        ISIZE = (NORB(1)*NFBAS(1,0)*NZ)
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NFBAS(2,0)*NZ)
-        CALL READT(LUBSS,ISIZE,TMAT)
-         IF (IPRHAM.GE.2) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     &    'GET_H1_ONB: 4c AO -> 4c "theta" SL_TM_4C transf. '//
-     &    '  matrix was read from the BSSMAT file into TMAT.'
-         ENDIF
-        ELSE
-         CALL QUIT(
-     &  'GET_H1_ONB: Error, SL_TM_4C not found in BSSMAT file!')
-        END IF
-
-          CALL DZERO(VMAT,N2BBASXQ)
-
-          IBUF = 1
-          IVMAT = 1
-          ITMAT = 1
-          DO I = 1,NFSYM
-          IF (NORB(I).GT.0) THEN
-
-         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                           NORB(I),NORB(I),
-     &      TBUF(IBUF),NFBAS(I,0),NFBAS(I,0),NZ,IPQTOQ(1,0),
-     &      VMAT(IVMAT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &      TMAT(ITMAT),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &      TMAT(ITMAT),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &       WORK(KFREE),LFREE,IPRHAM)
-
-        IF(IPRHAM.GE.5) THEN
-
-         CALL HEADER(
-     &  'GET_H1_ONB:4c AO -> 4c "SL theta" transf. matrix '//
-     &  ', TMAT',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TMAT(ITMAT),NFBAS(I,0),NORB(I),
-     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-
-         CALL HEADER(
-     &  'GET_H1_ONB: Dirac-Fock matrix '//
-     &  'retransformed into 4c SA-AO basis, TBUF',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TBUF(IBUF),NFBAS(I,0),NFBAS(I,0),
-     &        NFBAS(I,0),NFBAS(I,0),NZ,IPQTOQ(1,0),LUPRI)
-
-
-         CALL HEADER(
-     &  'GET_H1_ONB: Dirac-Fock matrix in '//
-     &  '4c "SL-sorted" RKB_MO basis, VMAT',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(VMAT(IVMAT),NORB(I),NORB(I),
-     &        NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-
-          IBUF = IBUF + (NFBAS(I,0)*NFBAS(I,0)*NZ)
-         IVMAT = IVMAT + (NORB(I)*NORB(I)*NZ)
-         ITMAT = ITMAT + (NFBAS(I,0)*NORB(I)*NZ )
-          ENDIF
-          ENDDO
-
-          CALL DCOPY(N2BBASXQ,VMAT,1,TBUF,1)
-
-C         call quit('GET_H1_ONB: not yet done !')
-       ENDIF
-
-       IOFT = 1
-       DO I = 1, NFSYM
-       IF (NORB(I).GT.0) THEN
-
-         IF(IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &  'GET_H1_ONB: Read (from DFFOCK)/retransformed  '//
-     &  'Fock-Dirac matrix in 4c ON MO basis "theta", VMAT',-1)
-          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-          CALL PRQMAT(VMAT(IOFT),NORB(I),NORB(I),NORB(I),
-     &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-          ENDIF
-   
-C         ... do transform it to the "k" basis into TBUF !
-        IF (FPB) THEN
-
-        IF(IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &  'GET_H1_ONB: Transformation matrix '//
-     &  ' 4c ON  RKB "theta" -> FP "k" basis, TMAT',-1)
-          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-          CALL PRQMAT(TMAT(IOFT),NORB(I),NORB(I),NORB(I),
-     &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-
-        CALL QTRANS('AOMO','S',D0,NORB(I),NORB(I),
-     &       NORB(I),NORB(I),
-     &       VMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &       TBUF(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &       TMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &       TMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &       WORK(KFREE),LFREE,IPRHAM)
-
-        IF(IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &  'GET_H1_ONB: Dirac-Fock matrix in '//
-     &  '4c ON FP "k" basis, TBUF',-1)
-          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-          CALL PRQMAT(TBUF(IOFT),NORB(I),NORB(I),NORB(I),
-     &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-
-        ENDIF
-
-        IF (.NOT.FPB.AND.IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &  'GET_H1_ONB: 4c H1/FD1 matrix in '//
-     &  '4c ON RKB/"k" basis, TBUF',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TBUF(IOFT),NORB(I),NORB(I),NORB(I),
-     &                NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-        
-        IOFT = IOFT + NORB(I)*NORB(I)*NZ
-
-       ENDIF
-       ENDDO
-
-C  ==================================================================================
-C     ... do save the total 4c FD in ON RKB/"k" into the BSSMAT file !!!
+C     ... save the total 4c FD in ON RKB/"k" into the BSSMAT file !!!
 C  .... it is prepared for the later for block-diagonalization to the infinite order
-C  ==================================================================================
         REWIND(LUBSS)  
         IF (FNDLAB('EOFLABEL',LUBSS)) THEN
         BACKSPACE(LUBSS)
@@ -2643,6 +2325,55 @@ C  =============================================================================
      &   'GET_H1_ONB: Error, EOFLABEL(for FD4C_ONB) not'//
      &   ' found in BSSMAT file!')
         END IF
+
+C ... now if special case - DFFOCK2 from outside
+        IF (CONT2C.AND.I2CHAM.EQ.6) THEN
+
+C      ... get transf. marix into TMAT
+          IF (FPB) THEN
+            LBL = 'FPMAT4C '
+          ELSE 
+            LBL = 'SL_TM_4C'
+          ENDIF
+
+          REWIND LUBSS 
+          IF (FNDLAB(LBL,LUBSS)) THEN 
+            ISIZE = NFBAS(1,0)*NORB(1)*NZ 
+            IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
+            CALL READT(LUBSS,ISIZE,TMAT)  
+            IF (IPRHAM.GE.3) WRITE(LUPRI,'(/2X,A,A,A)')       
+     &     'GET_H1_ONB: ',LBL,' read from BSSMAT into TMAT.'         
+         ELSE                      
+            CALL QUIT('GET_A_FAC: LBL not found in BSSMAT !') 
+         END IF                                           
+
+         CALL DF2ONB('DFFOCK2',TBUF,TMAT,VMAT,LINAD,
+     &                FPB,WORK(KFREE),LFREE,IPRHAM)
+
+C     ... save the total 4c FD in ON RKB/"k" into the BSSMAT file !!!
+        REWIND(LUBSS)  
+        IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+        BACKSPACE(LUBSS)
+        CALL NEWLAB('FD4CXONB',LUBSS,LUPRI)
+        ISIZE = NORB(1)*NORB(1)*NZ
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+        CALL WRITT(LUBSS,ISIZE,TBUF)
+        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+        IF (IPRHAM.GE.2) THEN
+         WRITE(LUPRI,'(/2X,A)')
+     &  'GET_H1_ONB:Special 4c Fock-Dirac(FD4CXONB)'//
+     &  ' in ON RKB/"k" ready for'//
+     &  ' BSS transformations was written (TBUF)'//
+     &  ' into the BSSMAT file; EOFLABEL was renewed.'
+        ENDIF
+        ELSE
+         CALL QUIT(
+     &   'GET_H1_ONB: Error, EOFLABEL(for FD4CXONB) not'//
+     &   ' found in BSSMAT file!')
+        END IF
+
+C        CALL QUIT('GET_H1_ONB: quit for I2CHAM=6!')
+        ENDIF
 
       ENDIF
 
@@ -2872,11 +2603,394 @@ C ... write the TBUF - H1 ON RKB/"k" to the file...
      & 'GET_H1_ONB:Error, EOFLABEL not found in BSSMAT file!')
       END IF
 
-
 CMI   CALL QUIT('GET_H1_ONB')
       CALL QEXIT('GET_H1_ONB')
       RETURN
       END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
+C  /* Deck  */      
+      SUBROUTINE DF2ONB(DFFNAME,TBUF,TMAT,VMAT,
+     &                 LINAD,FPB,WORK,LWORK,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  Purpose: Read the converged Fock MO matrix from the DFFNAME file,
+C           transform it to the 4c "k"/RKB ON basis to be ready for the block-diagonalization
+C
+C  On input: DFFNAME
+C            LINAD
+C            TMAT  - "k" eigenvectors in "xhi" (when FPB=.true.), or RKB basis
+C
+C  On output: TBUF - resulting 4c matrix in "k"/RKB ON basis
+C
+C
+C  Called from:  GET_H1_ONB
+C
+C  Written by Miro Ilias, dec.2005, Strasbourg
+C  Last changes:
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"                                       
+#include "priunit.h"   
+      PARAMETER( D1 = 1.0D0, DM1= -1.0D0, D0 = 0.0D0,THRNULL = 1.0D-10) 
+#include "dcbgen.h"  
+#include "dcbbas.h"  
+#include "dcborb.h"   
+#include "dgroup.h"   
+#include "dcbdhf.h"
+      DIMENSION TBUF(*),TMAT(*),VMAT(*),WORK(LWORK)
+CMI    ... this must be treated !!!
+CMI   CHARACTER*6 DFFNAME
+      CHARACTER*(*) DFFNAME
+      LOGICAL LINAD,FPB,EX,FNDLAB
+
+      CALL QENTER('DF2ONB')
+#include "memint.h"         
+
+        IPRHAM = IPRINT ! no dcbham.h
+
+C  ... check the presence of DFFOCK !
+       INQUIRE(FILE=DFFNAME,EXIST=EX)
+       IF (.NOT.EX) THEN
+        write(lupri,*) 'DFFNAME=',DFFNAME
+        WRITE(LUPRI,*)
+     &  'DF2ONB: The required ',DFFNAME ,' file for the DC2IOTC'//
+     &  ' transformation is not present !'
+        CALL QUIT('DF2ONB: The file is not present !')
+       ENDIF
+
+C ...  read converged Fock-Dirac MO (may be LINSYM!) matrix from the DFFOCK file
+        OPEN (LUFOCK, FILE=DFFNAME,FORM='UNFORMATTED',
+     &        ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='OLD')
+C ... RESORT OF RKB_TMAT IS NEEDED FOR THE RKB based transformation !!!
+       IREC = -1
+       IF(MXDIIS.EQ.0) THEN
+          IREC = 1
+       ELSE IF (NITER.GT.0) THEN
+          IREC = MOD(NITER-2,MXDIIS-1) + 1
+       ELSE
+          IREC = 1
+       ENDIF
+       IF (IREC.EQ.0) IREC = 1
+       CALL READAC(LUFOCK,N2TMOTQ,VMAT,IREC)
+C      ... we no longer need the DFFOCK file 
+C       as the next BSS-SCF creates own new files
+       CLOSE(LUFOCK,STATUS="DELETE")
+       IF (IPRHAM.GE.2) THEN
+         WRITE(LUPRI,'(/2X,A,A,A)')
+     & 'DF2ONB: Fock-Dirac 4c MO (RKB) matrix '//
+     & 'was read from the ',DFFNAME,
+     & ' file(deleted afterwards) file into VMAT'
+       ENDIF
+ 
+       IF (LINAD) THEN
+C       ... do the transformation back to the nonlinsym RKB_MO basis...
+C   =======================================================================
+        REWIND(LUBSS)
+        IF (FNDLAB('TMAT_LSY',LUBSS)) THEN
+        ISIZE = NORB(1)*NORB(1)
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
+         CALL READT(LUBSS,ISIZE,TMAT)
+         IF (IPRHAM.GE.2) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     & 'DF2ONB: 4c ON "theta"-> 4c ON LINSYM "theta" transf. '//
+     & 'matrix TMAT_LSY was read from the BSSMAT file into TMAT.'
+         ENDIF
+        ELSE
+         CALL QUIT(
+     &  'DF2ONB: Error, EOFLABEL not found in BSSMAT file!')
+        END IF
+
+C     ... do the reverse transformation (MOAO):  TMAT . VMAT . TMAT + = TBUF
+       IOFT = 1
+       DO I = 1, NFSYM
+       IF (NORB(I).GT.0) THEN
+
+        IF(IPRHAM.GE.5) THEN
+         CALL HEADER(
+     &  'DF2ONB: Read (from DFFOCK) Fock-Dirac matrix in '//
+     &  '4c ON MO basis "theta", VMAT',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(VMAT(IOFT),NORB(I),NORB(I),NORB(I),
+     &              NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+   
+C         ... do transform it to the "k" basis into TBUF !
+        IF(IPRHAM.GE.5) THEN
+         CALL HEADER(
+     &  'DF2ONB: Transformation matrix '//
+     &  ' 4c ON RKB "theta" -> LSYM "theta", TMAT',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(TMAT(IOFT),NORB(I),NORB(I),NORB(I),
+     &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+
+        CALL QTRANS('MOAO','S',D0,NORB(I),NORB(I),
+     &       NORB(I),NORB(I),
+     &       TBUF(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &       VMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &       TMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &       TMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &       WORK(KFREE),LFREE,IPRHAM)
+
+        IF(IPRHAM.GE.5) THEN
+         CALL HEADER(
+     &  'DF2ONB: Dirac-Fock matrix in '//
+     &  '4c ON RKB (non_linear symmetry!) basis, TBUF',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IOFT),NORB(I),NORB(I),NORB(I),
+     &              NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+        
+         IOFT = IOFT + NORB(I)*NORB(I)*NZ
+        ENDIF
+        ENDDO
+
+        ISIZE = NORB(1)*NORB(1)
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
+C         VMAT contains FD in ordinary RKB basis ... 
+        CALL DCOPY(ISIZE,TBUF,1,VMAT,1)
+        IF (IPRHAM.GE.2) THEN
+           WRITE(LUPRI,'(2X,A)')
+     &  'DF2ONB: The TBUF was copyied into VMAT'
+        ENDIF
+      ENDIF
+C   ! end of linear, we have Fock-Dirac nonlinear_MO matrix in VMAT...
+
+C   ... if we are in the "k" basis mode, we need transformation matrix
+C       RKB "theta" -> FPM "k"
+       IF (FPB) THEN
+
+        REWIND(LUBSS)
+        IF (FNDLAB('FPMAT_TH',LUBSS)) THEN
+        ISIZE = NORB(1)*NORB(1)*NZ
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+        CALL READT(LUBSS,ISIZE,TMAT)
+         IF (IPRHAM.GE.2) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     &    'DF2ONB: 4c "k"-> 4c "theta" transf. '//
+     &    'matrix FPMAT_TH was read from the BSSMAT file into TMAT.'
+         ENDIF
+        ELSE
+         CALL QUIT(
+     &   'DF2ONB: Error, EOFLABEL not found in BSSMAT file!')
+        END IF
+
+C      ELSE IF (DO4C2C.AND.USEDF.AND..NOT.FPB) THEN
+       ELSE 
+C      ... when being in 1.step BSS, we need to transform to the AO basis first
+C       (using "standard" AO-MO transformation matrix) and 
+C       then transform it to the SL-sorted MO basis...
+        REWIND(LUBSS)
+        IF (FNDLAB('TMAT4C  ',LUBSS)) THEN
+        ISIZE = (NORB(1)*NFBAS(1,0)*NZ)
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NFBAS(2,0)*NZ)
+        CALL READT(LUBSS,ISIZE,TMAT)
+         IF (IPRHAM.GE.2) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     &    'DF2ONB: 4c AO -> 4c "theta" transf. '//
+     &    'matrix TMAT4C was read from the BSSMAT file into TMAT.'
+         ENDIF
+        ELSE
+         CALL QUIT(
+     &  'DF2ONB: Error, TMAT4C not found in BSSMAT file!')
+        END IF
+
+         CALL DZERO(TBUF,N2BBASXQ)
+         CALL MKSAOMO(TBUF,TMAT,.FALSE.,IPRHAM,WORK(KFREE),LFREE)
+         CALL DCOPY(N2BBASXQ,TBUF,1,TMAT,1)
+
+C       ... do get AO Fock-Dirac matrix (MOAO): TMAT . VMAT . TMAT^+ = TBUF
+          IBUF = 1
+          IVMAT = 1
+          ITMAT = 1
+          DO I = 1,NFSYM
+          IF (NORB(I).GT.0) THEN
+
+         CALL QTRANS('MOAO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &                           NORB(I),NORB(I),
+     &      TBUF(IBUF),NFBAS(I,0),NFBAS(I,0),NZ,IPQTOQ(1,0),
+     &      VMAT(IVMAT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &      TMAT(ITMAT),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &      TMAT(ITMAT),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &       WORK(KFREE),LFREE,IPRHAM)
+
+        IF(IPRHAM.GE.5) THEN
+
+         CALL HEADER(
+     &  'DF2ONB: Dirac-Fock matrix '//
+     &  'in MO basis, VMAT',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(VMAT(IVMAT),NORB(I),NORB(I),
+     &        NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+
+         CALL HEADER(
+     &  'DF2ONB:4c AO -> 4c SAOMO "theta" transf. matrix '//
+     &  ', TMAT',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TMAT(ITMAT),NFBAS(I,0),NORB(I),
+     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+
+
+         CALL HEADER(
+     &  'DF2ONB: Dirac-Fock matrix '//
+     &  'retransformed into 4c SA-AO basis, TBUF',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IBUF),NFBAS(I,0),NFBAS(I,0),
+     &        NFBAS(I,0),NFBAS(I,0),NZ,IPQTOQ(1,0),LUPRI)
+
+        ENDIF
+
+            IBUF = IBUF + (NFBAS(I,0)*NFBAS(I,0)*NZ)
+            IVMAT = IVMAT + (NORB(I)*NORB(I)*NZ)
+            ITMAT = ITMAT + (NFBAS(I,0)*NORB(I)*NZ )
+          ENDIF
+          ENDDO
+
+C       ... read SL_TM_4C into TMAT and do TMAT^+ . TBUF . TMAT = VMAT
+         CALL DZERO(TMAT,N2BBASXQ)
+        REWIND(LUBSS)
+        IF (FNDLAB('SL_TM_4C',LUBSS)) THEN
+        ISIZE = (NORB(1)*NFBAS(1,0)*NZ)
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NFBAS(2,0)*NZ)
+        CALL READT(LUBSS,ISIZE,TMAT)
+         IF (IPRHAM.GE.2) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     &    'DF2ONB: 4c AO -> 4c "theta" SL_TM_4C transf. '//
+     &    '  matrix was read from the BSSMAT file into TMAT.'
+         ENDIF
+        ELSE
+          CALL QUIT(
+     &   'DF2ONB: Error, SL_TM_4C not found in BSSMAT file!')
+        END IF
+
+          CALL DZERO(VMAT,N2BBASXQ)
+
+          IBUF = 1
+          IVMAT = 1
+          ITMAT = 1
+          DO I = 1,NFSYM
+          IF (NORB(I).GT.0) THEN
+
+         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &                           NORB(I),NORB(I),
+     &      TBUF(IBUF),NFBAS(I,0),NFBAS(I,0),NZ,IPQTOQ(1,0),
+     &      VMAT(IVMAT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &      TMAT(ITMAT),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &      TMAT(ITMAT),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &       WORK(KFREE),LFREE,IPRHAM)
+
+        IF(IPRHAM.GE.5) THEN
+
+         CALL HEADER(
+     &  'DF2ONB:4c AO -> 4c "SL theta" transf. matrix '//
+     &  ', TMAT',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TMAT(ITMAT),NFBAS(I,0),NORB(I),
+     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+
+         CALL HEADER(
+     &  'DF2ONB: Dirac-Fock matrix '//
+     &  'retransformed into 4c SA-AO basis, TBUF',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IBUF),NFBAS(I,0),NFBAS(I,0),
+     &        NFBAS(I,0),NFBAS(I,0),NZ,IPQTOQ(1,0),LUPRI)
+
+
+         CALL HEADER(
+     &  'DF2ONB: Dirac-Fock matrix in '//
+     &  '4c "SL-sorted" RKB_MO basis, VMAT',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(VMAT(IVMAT),NORB(I),NORB(I),
+     &        NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+
+          IBUF = IBUF + (NFBAS(I,0)*NFBAS(I,0)*NZ)
+         IVMAT = IVMAT + (NORB(I)*NORB(I)*NZ)
+         ITMAT = ITMAT + (NFBAS(I,0)*NORB(I)*NZ )
+          ENDIF
+          ENDDO
+
+          CALL DCOPY(N2BBASXQ,VMAT,1,TBUF,1)
+
+C         call quit('GET_H1_ONB: not yet done !')
+       ENDIF
+
+       IOFT = 1
+       DO I = 1, NFSYM
+       IF (NORB(I).GT.0) THEN
+
+         IF(IPRHAM.GE.5) THEN
+         CALL HEADER(
+     &  'DF2ONB: Read (from DFFOCKx)/retransformed  '//
+     &  'Fock-Dirac matrix in 4c ON MO basis "theta", VMAT',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(VMAT(IOFT),NORB(I),NORB(I),NORB(I),
+     &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+   
+C         ... do transform it to the "k" basis into TBUF !
+        IF (FPB) THEN
+
+        IF(IPRHAM.GE.5) THEN
+         CALL HEADER(
+     &  'DF2ONB: Transformation matrix '//
+     &  ' 4c ON  RKB "theta" -> FP "k" basis, TMAT',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(TMAT(IOFT),NORB(I),NORB(I),NORB(I),
+     &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+
+        CALL QTRANS('AOMO','S',D0,NORB(I),NORB(I),
+     &       NORB(I),NORB(I),
+     &       VMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &       TBUF(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &       TMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &       TMAT(IOFT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &       WORK(KFREE),LFREE,IPRHAM)
+
+        IF(IPRHAM.GE.5) THEN
+         CALL HEADER(
+     &  'DF2ONB: Dirac-Fock matrix in '//
+     &  '4c ON FP "k" basis, TBUF',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(TBUF(IOFT),NORB(I),NORB(I),NORB(I),
+     &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+
+        ENDIF
+
+        IF (.NOT.FPB.AND.IPRHAM.GE.5) THEN
+         CALL HEADER(
+     &  'DF2ONB: 4c Dirac/Fock-Dirac matrix in '//
+     &  '4c ON RKB/"k" basis, TBUF',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IOFT),NORB(I),NORB(I),NORB(I),
+     &                NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+        
+        IOFT = IOFT + NORB(I)*NORB(I)*NZ
+
+       ENDIF
+       ENDDO
+
+      CALL QEXIT('DF2ONB')
+      RETURN
+      END
+
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck get_hinf_bd */      
@@ -5803,7 +5917,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbham.h"    
 
       DIMENSION VMAT(*),IBEIG(*),WORK(LWORK)
-      LOGICAL FNDLAB, FPB, KEEPH1
+      LOGICAL FNDLAB, FPB, KEEPH1, BSS_SAVE
       CHARACTER*8 LABL
 
       CALL QENTER('FDTR2C')
@@ -5814,6 +5928,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       ENDIF
 
       FPB = .NOT.NOPRTR
+
+      CALL MEMGET('REAL',KF1,N2BBASXQ      ,WORK,KFREE,LFREE)
+
+CMI   IF (.NOT.ONLYDFFCK) THEN
 
 C  ... read pict.change transf.matrix into VMAT !
       REWIND LUBSS        
@@ -5845,11 +5963,8 @@ C ... print out symmetry blocked picture change transformation matrix
       ENDIF
 
 C    .. allocate arrays for picture change transformation
-      CALL MEMGET('REAL',KF1,N2BBASXQ      ,WORK,KFREE,LFREE)
+C     CALL MEMGET('REAL',KF1,N2BBASXQ      ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KF2,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
-
-C     CALL DZERO(WORK(KF2),N2BBASXQ*NFMAT)
-C     CALL DZERO(WORK(KF1),N2BBASXQ)
 
       CALL OPNFIL(LUFCK1,'DFFCK1','OLD','FDTR2C')
       CALL REAFCK(LUFCK1,WORK(KF2),.TRUE.,1)
@@ -5889,11 +6004,12 @@ C       ... offset for pict.change transf.matrix 4c AO "xhi" -> 2c  AO "xhi"
          IPCTM1 = IPCTM1 + NFBAS(I,0)*NFBAS(I,1)*NZ
       ENDDO
 
-      IF (IPRHAM.GE.5) THEN
-       CALL HEADER('FDTR2C: Total 2c Fock_1(=h_inf) SA-AO matrix',-1)
-       CALL PRQMAT(WORK(KF1),NTBAS(0),NTBAS(0),
-     &          NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-      ENDIF
+C     IF (IPRHAM.GE.5) THEN
+C      CALL HEADER('FDTR2C: Total 2c Fock_1(=h_inf) SA-AO matrix',-1)
+C      CALL PRQMAT(WORK(KF1),NTBAS(0),NTBAS(0),
+C    &          NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+C     ENDIF
+
       REWIND LUBSS                                                  
       IF (FNDLAB('EOFLABEL',LUBSS)) THEN                             
         BACKSPACE(LUBSS)                                               
@@ -5974,9 +6090,14 @@ C     CALL MEMCHK('FDTR2C 1.1',WORK,1)
       CALL MEMREL('KF2.FDTR2C',WORK,KWORK,KF2,KFREE,LFREE)
 C     CALL MEMCHK('FDTR2C 2',WORK,1)
 
+CC    ENDIF ! end of ONLYDFFCK
 
 C  ===============================================================
-C       ...  prepare h_2c+u2c_SO Hamiltonian (when .NOT.SPINFR!)
+C
+C       ...  prepare h_2c(+u2c_SO) Hamiltonian (when .NOT.SPINFR!)
+C
+C      u2c_SO comes from transformed converged Fock-Dirac Ham.
+C
 C  ===============================================================
       IF (.NOT.SPINFR) THEN
 C     ... read bosonic symmetries on orbitals
@@ -6020,10 +6141,15 @@ C     CALL MEMCHK('FDTR2C 4',WORK,1)
 
 C       ... read the 1el Fock matrix from the file DFFCK1 ...
 C     ==========================================================
-      CALL OPNFIL(LUFCK1,'DFFCK1','OLD','FDTR2C')
-      CALL REAFCK(LUFCK1,WORK(KF1),.TRUE.,1)
-      CLOSE(LUFCK1,STATUS='DELETE')
+C     CALL OPNFIL(LUFCK1,'DFFCK1','OLD','FDTR2C')
+C     CALL REAFCK(LUFCK1,WORK(KF1),.TRUE.,1)
+C     CLOSE(LUFCK1,STATUS='DELETE')
 C     write(lupri,*) 'FDTR2C: 1 el. Fock matrix was read from DFFCK1!'
+
+      BSS_SAVE = BSS
+      BSS = .FALSE.
+      CALL ONEFCK(WORK(KF1),IPRHAM,WORK(KFREE),LFREE)
+      BSS = BSS_SAVE
 
 C     ... read the RKB/"k" transformation matrix from BSSMAT into VMAT ...
       IF (FPB) THEN
@@ -6031,8 +6157,8 @@ C     ... read the RKB/"k" transformation matrix from BSSMAT into VMAT ...
 C     ELSE IF (USEDF.AND.DO4C2C.AND..NOT.FPB) THEN
 C        LABL = 'SL_TM_4C'
       ELSE IF (.NOT.FPB) THEN
-         LABL = 'SL_TM_4C'
-C        LABL = 'TMAT4C  '
+        LABL = 'SL_TM_4C'
+C       LABL = 'TMAT4C  '
       ELSE
          CALL QUIT('FPMAT4C: wrong label !')
       ENDIF
@@ -6047,16 +6173,26 @@ C        LABL = 'TMAT4C  '
         CALL QUIT('FDTR2C: "LABL" not found in BSSMAT!')
       ENDIF
 
-C    ... read FD matrix in the "k" basis from the BSSMAT file ....
+C =======================================================================================
+C    ... read converged Fock-Dirac matrix in the "k" basis from the BSSMAT file ....
+C    ... read the SPECIAL converged Fock-Dirac matrix in the "k" basis from the BSSMAT file ....
+C =======================================================================================
+
+      IF (I2CHAM.EQ.6) THEN
+        LABL = 'FD4CXONB'
+      ELSE
+        LABL = 'FD4C_ONB'
+      ENDIF
+
       REWIND LUBSS
-      IF (FNDLAB('FD4C_ONB',LUBSS)) THEN
+      IF (FNDLAB(LABL,LUBSS)) THEN
         ISIZE = NORB(1)*NORB(1)*NZ
         IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
         CALL READT(LUBSS,ISIZE,WORK(KFDK1))
-        IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')
-     &   'FDTR2C: FD4C_ONB was read from BSSMAT.'
+        IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A,A,A)')
+     &   'FDTR2C: ',LABL,' was read from BSSMAT.'
       ELSE
-        CALL QUIT('FDTR2C: FD4C_ONB was not found in BSSMAT!')
+        CALL QUIT('FDTR2C: FD4C_ONB/FD4CXONB was not found in BSSMAT!')
       ENDIF
 
 C ===============================================================
@@ -6088,7 +6224,7 @@ C ===============================================================
      &       NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
 
          CALL HEADER(
-     &   'Read Dirac bare nucleus matrix (from DFFCK1)'//
+     &   'Read Dirac bare nucleus matrix (from subr.ONEFCK)'//
      &   ' in 4c SO-AO basis "xhi" ',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
@@ -6107,7 +6243,7 @@ C ===============================================================
         IF(IPRHAM.GE.5) THEN
          CALL HEADER(
      &  'FDTR2C: Obtained Dirac H1 matrix in '//
-     &  '4c ON "k" basis',-1)
+     &  '4c ON "k"/RKB basis',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
          CALL PRQMAT(WORK(IFDK),NORB(I),NORB(I),
@@ -6123,7 +6259,8 @@ C ===============================================================
 
 C     CALL MEMCHK('FDTR2C 5',WORK,1)
 
-C       ... do obtain U1=F1-H1 matrix in the ON-MO basis ...
+C    ----------------------------------------------------------
+C       ... get U1=F1-H1 matrix in the ON-MO basis ...
 C    ----------------------------------------------------------
        ISIZE = (NORB(1)*NORB(1)*NZ)
        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
@@ -6159,32 +6296,34 @@ C     CALL MEMCHK('FDTR2C 5.2',WORK,1)
          CALL HEADER(
      &  'FDTR2C: Obtained U1_SO (after elim.of SF terms) matrix in '//
      &  '4c "k"/ON basis',-1)
-          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-          CALL PRQMAT(WORK(IFDK1),NORB(I),NORB(I),NORB(I),
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(WORK(IFDK1),NORB(I),NORB(I),NORB(I),
      &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
 
 C     CALL MEMCHK('FDTR2C 5.2.1',WORK,1)
 
-      KEEPH1=.FALSE.
-      IF (.NOT.KEEPH1) THEN
+C     KEEPH1=.FALSE.
+C     IF (.NOT.KEEPH1) THEN
 C ... add U1_SO to the H1 in symmetry I/NFSYM
-        ISIZE2 = NORB(I)*NORB(I)*NZ
-        CALL DAXPY(ISIZE2,D1,WORK(IFDK1),1,WORK(IFDK),1)
-      ENDIF
+C       ISIZE2 = NORB(I)*NORB(I)*NZ
+C       CALL DAXPY(ISIZE2,D1,WORK(IFDK1),1,WORK(IFDK),1)
+C     ... copy U1_SO into WORK(IDFK1)
+C       CALL DCOPY(ISIZE2,WORK(IFDK1),1,WORK(IFDK),1)
+C     ENDIF
 
 C     CALL MEMCHK('FDTR2C 5.3',WORK,1)
 
-        IF(IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &  'FDTR2C: Obtained "final" F1=H1+U1_SO matrix in '//
-     &  '4c "k"/RKB basis',-1)
-          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-          CALL PRQMAT(WORK(IFDK),NORB(I),NORB(I),NORB(I),
-     &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
+C       IF(IPRHAM.GE.5) THEN
+C        CALL HEADER(
+C    &  'FDTR2C: Obtained "final" F1=H1+U1_SO matrix in '//
+C    &  '4c "k"/RKB basis',-1)
+C        WRITE(LUPRI,'(3X,A,I1,A,I1)')
+C    &  '*** Fermion corep ',I,'/',NFSYM
+C        CALL PRQMAT(WORK(IFDK),NORB(I),NORB(I),NORB(I),
+C    &                NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+C       ENDIF
 
           IFDK  = IFDK  + NORB(I)*NORB(I)*NZ
          IFDK1  = IFDK1 + NORB(I)*NORB(I)*NZ
@@ -6192,6 +6331,18 @@ C     CALL MEMCHK('FDTR2C 5.3',WORK,1)
        ENDIF
        ENDDO 
 C     CALL MEMCHK('FDTR2C 6',WORK,1)
+
+      KEEPH1=.FALSE.
+      IF (.NOT.KEEPH1) THEN
+C ... add U1_SO to the H1 
+        ISIZE2 = NORB(1)*NORB(1)*NZ
+        IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + NORB(2)*NORB(2)*NZ
+        CALL DAXPY(ISIZE2,D1,WORK(KFDK1),1,WORK(KFDK),1)
+C      .. DM1 give surprisings results for B 3s1p atom ...
+C       CALL DAXPY(ISIZE2,DM1,WORK(KFDK1),1,WORK(KFDK),1)
+C     ... copy U1_SO into WORK(IDFK1)
+C       CALL DCOPY(ISIZE2,WORK(IFDK1),1,WORK(IFDK),1)
+      ENDIF
 
 C  =======================================================================
 C  ... do transform F1(=H1+U1_SO) from 4c "k" to 2c SA-AO basis "xhi" ...

@@ -3441,7 +3441,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 40,NDIR = 8)
+      PARAMETER (NTABLE = 48,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -3481,6 +3481,8 @@ C
      &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
      &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C',
      &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
@@ -3601,7 +3603,8 @@ C     Keep track of number of changes and added finite field operators
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,130,
-     &                131,132,133,134,135,136,137,138,139,140),I
+     &                131,132,133,134,135,136,137,138,139,140,
+     &                141,142,143,144,145,146,147,148),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -3872,7 +3875,7 @@ C&&& specify centers for AMFI which are to be added to the BSS+AMFI Hamiltonian
             READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
             GO TO 100
   137     CONTINUE
-C&&& XXXX
+C&&& XXXX  
              GO TO 100
   138     CONTINUE
 C&&& XXXX
@@ -3881,6 +3884,30 @@ C&&& XXXX
 C&&& XXXX
              GO TO 100
   140     CONTINUE
+C&&& XXXX
+             GO TO 100
+  141     CONTINUE
+C&&& XXXX
+             GO TO 100
+  142     CONTINUE
+C&&& XXXX
+             GO TO 100
+  143     CONTINUE
+C&&& XXXX
+             GO TO 100
+  144     CONTINUE
+C&&& XXXX
+             GO TO 100
+  145     CONTINUE
+C&&& XXXX
+             GO TO 100
+  146     CONTINUE
+C&&& XXXX
+             GO TO 100
+  147     CONTINUE
+C&&& XXXX
+             GO TO 100
+  148     CONTINUE
 C&&& XXXX
              GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -3962,9 +3989,10 @@ CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
 CMI     ... set up the default value, when BSS-postDC-SCF is on
         IF (DO4C2C.AND.I2CHAM.EQ.-1) I2CHAM=3
         IF (CONT2C) THEN
-         IF (I2CHAM.NE.3.AND.I2CHAM.NE.4.AND.I2CHAM.NE.5) THEN
+         IF (I2CHAM.NE.3.AND.I2CHAM.NE.4.AND.
+     &       I2CHAM.NE.5.AND.I2CHAM.NE.6) THEN
            write(lupri,*) 'HAMINP: wrong value of I2CHAM=',I2CHAM
-          CALL QUIT('wrong value of I2CHAM !') 
+          CALL QUIT('HAMINP: wrong value of I2CHAM !') 
          ENDIF
         ENDIF
 

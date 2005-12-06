@@ -424,11 +424,12 @@ CMI ...  WE MAY WISH TO PERFORM ONLY ONE SCF ITERATION HERE !
          ELSE IF (I2COFK.EQ.4) THEN
 CMI .... full Fock_2c transformed from FD4C
            HAM2CL = 'FDAO_DK '
-         ELSE IF (I2COFK.EQ.5) THEN
+         ELSE IF (I2COFK.EQ.5.OR.I2COFK.EQ.6) THEN
 CMI .... f2c(=h1+u1_so, spin-free terms are removed from u1) from FD_4C term
            HAM2CL = 'FD2C_USO'
          ELSE
           write(lupri,*) 'ONEFCK: I2CHAM=',I2CHAM
+          write(lupri,*) 'ONEFCK: I2COFK=',I2COFK
           CALL QUIT('ONEFCK: Wrong value of I2CHAM!') 
          ENDIF
 

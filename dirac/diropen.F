@@ -43,11 +43,24 @@ C  /* Deck MKMOFK */
       SUBROUTINE MKMOFK(FMO,FAO,DMAT,TMAT,CMO,SAOMO,DTEMP1,DTEMP2,
      &                  WORK,LWORK)
 C****************************************************************************
+C
 C     PURPOSE:
+C  =============
 C        Construct MO Fock matrix from Fock matrices in AO-basis
+C
+C     On input
+C  FAO
+C  TMAT
+C  DMAT
+C  CMO
+C  SAOMO
+C
+C     On output:
+C  FMO
 C
 C        Written by J. Thyssen
 C        Last revision: Dec 30 1997
+C          Nov.2005 - MI - only print-out info
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -103,12 +116,29 @@ C
      &            TMAT(1+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRSCF)
         ENDIF
+
         IF(IPRSCF.GE.10) THEN
-           WRITE(CTMP,'(I1)') I
-           CALL HEADER('MKMOFK: D Fock matrix in MO-basis'//
-     &                 ', corep '//CTMP,-1)
-           CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
-     &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+CMI         ... more of the output desired
+         CALL HEADER(
+     &    'MKMOFK: Entering Fock AO matrix - closed shell part',-1)
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM                          
+         CALL PRQMAT(FAO(I2BASX(I,I)+1,1),NFBAS(I,0),NFBAS(I,0),
+     &          NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+
+         CALL HEADER(
+     &   'MKMOFK: Entering AO2MO transformation matrix,TMAT(NZT)',-1)
+         WRITE(LUPRI,'(A,I1,A,I1)')
+     &   '* Fermion ircop no.',I,'/',NFSYM                          
+         CALL PRQMAT(TMAT(1+I2TMT(I)),NFBAS(I,0),NTMO(I),
+     &           NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),LUPRI)
+
+         CALL HEADER(
+     &    'MKMOFK: D Fock matrix transformed into MO-basis',-1)
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM                          
+         CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
+     &          NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
         END IF
       END IF
       END DO
@@ -133,7 +163,7 @@ C
 C
          BETA  = DALPHA(IOPEN)*DF(IOPEN)
          GAMMA = DA(IOPEN)-D1
-         IF (IPRSCF.GE.5) THEN
+         IF (IPRSCF.GE.8) THEN
             WRITE(LUPRI,'(A,I1,A,F10.6)') 
      &         'MKMOFK: BETA  factor, open shell ',IOPEN,' : ',BETA
             WRITE(LUPRI,'(A,I1,A,F10.6)') 
@@ -328,10 +358,12 @@ C
      &            IPQTOQ(1,0),NZ,
      &            FMO(1+I2ORBT(I)),N2ORB(I),1,
      &            IPQTOQ(1,0),NZ)
-               IF ( IPRSCF .GE. 10 ) THEN
-                  WRITE(CTMP,'(I1)') I
-                  CALL HEADER('MKMOFK: Total Fock matrix in MO-basis'//
-     &               ', corep '//CTMP,-1)
+
+               IF ( IPRSCF .GE. 7 ) THEN
+                  CALL HEADER(
+     &            'MKMOFK: Total Fock matrix (output) in MO-basis',-1)
+                   WRITE(LUPRI,'(A,I1,A,I1)')
+     &             '* Fermion ircop no.',I,'/',NFSYM 
                   CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
      &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
                END IF
