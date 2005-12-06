@@ -671,7 +671,7 @@ CMI   - Cauchy-Schwarz inequality does not hold for dg(1,2)/dB integrals !
          ENDIF
       ENDDO
 
-      PARCAL = PARCAL_SAVE
+C     PARCAL = PARCAL_SAVE
 
       CALL GETTIM(CPU2,WALL2)
 C
