@@ -4963,9 +4963,10 @@ C
       PARAMETER(DI2 = 0.5D0, DI4=0.25D0, DM1 = -1.0D0,
      &           D2 = 2.0D0, DM2 = -2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
-#include "dcbprp.h"
+
 #include "dcbxlr.h"
 #include "dcbxpr.h"
+#include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbsusc.h"
 #include "dcbham.h"
@@ -4975,16 +4976,16 @@ C
       CALL QENTER('DEF_MSUSCP')
 #include "memint.h"
 
-        CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE(LUPRI,'(1X,A)')
-     &  'Magnetic susceptibility'
-        IF (LONDON) THEN
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)')
+     &  'DEF_MSUSCP: Magnetic susceptibility'
+       IF (LONDON) THEN
           WRITE(LUPRI,'(1X,A)')
      &  '- with London atomic orbitals (LAO).'
-        ELSE  
+       ELSE  
           WRITE(LUPRI,'(1X,A)')
      &  '- with conventional atomic orbitals (CGO)'
-        ENDIF
+       ENDIF
         CALL PRSYMB(LUPRI,'=',75,0)
 C
 C  ** Split for conventional and London orbitals
@@ -5391,8 +5392,8 @@ C -----------------------------------
 
 C ... RDSUSLL terms,  IPDSUSC(19-27)
 C ... off-diagonal terms need to be symmetrized !
-
-        IF (LEVYLE) THEN
+C       IF (LEVYLE) THEN
+        IF (RDSUSLLMOD) THEN
            FACLL = -2.0D0
         ELSE
            FACLL = -1.0D0
@@ -5706,6 +5707,9 @@ C=============================================================================
 C  Call routine for calculation of all remaining exp.value terms
 C  when using London atomic orbitals. 
 C=============================================================================
+      CALL DZERO(SUS2EL,9)
+      CALL DZERO(SUSFSY,9)
+      CALL DZERO(SUSFS,9)
       IF (LONDON) CALL EXPVSUSLO(WORK(KFREE),LFREE)
 
       KFRSAV = KFREE

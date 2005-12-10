@@ -402,7 +402,9 @@ C
       IF (SUSCEP) THEN
          IF (.NOT.NOPV) REWIND LUPAO
          IF (.NOT.NOPV) REWIND LUPAS
-         CALL DZERO(SUS2EL,9)
+CMI ... we are intering more loops (LL,LS,SS integrals) and thus we need
+CMI     to accumulate integral contributions
+CMI      CALL DZERO(SUS2EL,9)
       END IF
 C
 C     For direct contributions: some parameters

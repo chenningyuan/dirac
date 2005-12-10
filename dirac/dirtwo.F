@@ -3731,6 +3731,8 @@ C         1 - Coulomb
 C         2 - Exchange
 C         3 - Coulomb+Exchange
 C
+CMI    IREPDM is set up as well.
+C
 C     For the moment we will assume closed-shell Fock-matrices
 C
 C     Written by T.Saue Sep 4 1996
@@ -3759,6 +3761,13 @@ C
       IF (IPRINT.GE.2) THEN
         CALL HEADER('Output from SETFCK',-1)
         WRITE(LUPRI,'(A,F7.4)') '* Exchange factor: ',HFXFAC
+        IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(3X,A,I2,A,I2)')
+     &   '* Entering parameters:  NFMAT=',NFMAT,' MZ= ',MZ
+         WRITE(LUPRI,*) 'ISYMOP(1:NFMAT) >',(ISYMOP(I),I=1,NFMAT)
+         WRITE(LUPRI,*) 'IHRMOP(1:NFMAT) >',(IHRMOP(I),I=1,NFMAT)
+         WRITE(LUPRI,*) 'IFCKOP(1:NFMAT) >',(IFCKOP(I),I=1,NFMAT)
+        ENDIF
       ENDIF
       CALL IZERO(IFCTYP,MZ*NFMAT)
       DO I = 1,NFMAT

@@ -111,7 +111,7 @@ C
       NSTDIA    = .FALSE.
       MSUSCDIA  = .FALSE.
       ROTG      = .FALSE.
-      LONDON    = .TRUE.
+      LONDON    = .FALSE.
       PVC       = .FALSE.
       RHONUC    = .FALSE.
       ABUND     = D1
@@ -135,8 +135,8 @@ C       ... by default DO the picture change transformation
       ELSE
         DOPCT = .FALSE.
         NOPCT = .TRUE.
-        WRITE(LUPRI,'(/3X,A/)')
-     &'PRPINP: Only LL blocks of propery operators are taken !'
+C       WRITE(LUPRI,'(/3X,A/)')
+C    &'PRPINP: Only LL blocks of propery operators are taken !'
       ENDIF
 C
 C     Read menu file
@@ -1092,6 +1092,7 @@ C  /* Deck xprind */
       SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
 C*********************************************************************** 
+C
 C  Given a 4-component operator this routine returns an index
 C  INDXPR to the list of operators in COMMON block XCBPRP and
 C  returns its symmetry under time reversal(ITRXPR) and its
@@ -1099,6 +1100,9 @@ C  spatial symmetry(ISYXPR)
 C
 C  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
 C  Revised May 14 1996 - tsaue
+C
+CMI This routine is called from many places !
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1112,6 +1116,7 @@ C  XCBPRI: LUPRI,NINFO
 C
 #include "dcbxpr.h"
 #include "dcbprl.h"
+CMIinclude "dcbprp.h"
 C
       CALL QENTER('XPRIND')
       INDXPR = -1
@@ -1167,14 +1172,16 @@ C
 C  Add property to list of properties in COMMON block XCBPRP
 C  Copyright (c) 6-Feb-1995 Hans Joergen Aa. Jensen
 C
+C  Routine is called only from XPRIND.
+C
 C  MI (&HAaaJ), 2003,2004: Extended for LAO integral types
 C               as well as other integrals
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
       DIMENSION PFAC(NPCOMP),WORK(LWORK)
-      LOGICAL DELSS
 C
 C Used from common blocks:
 C  XCBPRP: everything
@@ -1183,6 +1190,8 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcbham.h"
+CMI ...not possible to add ! use dcbham.h for flag modif. operators...
+CMI#include "dcbprp.h"
 C
       CHARACTER*4 PCOMB
 C
@@ -1203,24 +1212,27 @@ C
          WRITE (LUPRI,'(A,3(A8,2X))')
      &   '  PLABEL  =',(PLABEL(I),I=1,NPCOMP)
       END IF
-
 CMI  List of exceptions:
+CMI/Dec.2005 I guess this routine could be reprogrammed as exceptions are before and after cycle.
       IF ((PLABEL(1)(1:7).EQ.'BETAMAT').OR.(PNAME(6:10).EQ.'RM1H1')
-     &      .OR.(PNAME(7:11).EQ.'RM2H1')) THEN
+     &    .OR.(PNAME(7:11).EQ.'RM2H1')) THEN
 CMI (&TEC): RM1H1/RM2H1 is first/second London derivative of BETAMAT
          PCOMB = '000+'
 CMI/HJAaJ
 C ... NEWS for LAO-ccRDSUSLL in Levy-Leblond - cancel the SL(2,1) block
-      ELSE IF (PNAME(7:13).EQ.'RDSUSLL'.AND.LEVYLE) THEN
+C      to get compatibility with DALTON
+C     ELSE IF (PNAME(7:13).EQ.'RDSUSLL'.AND.LEVYLE) THEN
+      ELSE IF (PNAME(7:13).EQ.'RDSUSLL'.AND.RDSUSLLMOD) THEN
 C ... fix the LS block for the LevyLe option
          PCOMB = '00+0'
-        IF (IPRINT.GE.6) WRITE(LUPRI,'(A)')
-     &   '  Only the LS block for the LevyLe-RDSUSLL operator!'
+        IF (IPRINT.GE.6) WRITE(LUPRI,'(/A)')
+     & 'XPRADD: Only the LS block kept for the RDSUSLL operator!'
       ELSE IF ((PNAME(1:5).EQ.'d|S>/'.OR.PNAME(1:3).EQ.'dS/').AND.BSS)
      &     THEN
-         PCOMB='+000'
-        IF (IPRINT.GE.6) WRITE(LUPRI,'(A)')
-     & '  Only the LL block for connection matrixes in two-comp.mode!'
+        PCOMB='+000'
+        IF (IPRINT.GE.6) WRITE(LUPRI,'(/A)')
+     &  'XPRADD: Only the LL block for connection'//
+     &  ' matrixes in two-component mode!'
       ELSE
          IF (IPTYP.EQ.0) THEN
 C          ... for FOCKMAT

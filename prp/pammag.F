@@ -29,15 +29,15 @@ C*****************************************************************************
 C
 
       PARAMETER (NTABLE = 15)
-      LOGICAL SET, NEWDEF, RESET, GORG, LBIT, USECM
+      LOGICAL SET, NEWDEF, RESET, GORG, LBIT, USECM, MODRDSUSLL
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
-     &      PNAME*16, PLABEL(3)*8
+     &          PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK)
 C
       SAVE SET
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.DOEPRN',
-     &            '.NOEPRN','.LONDON','.USECM ','.XXXXXX',
+     &            '.NOEPRN','.LONDON','.USECM ','.MLLSUS',
      &            '.XXXXXX','.XXXXXX','.XXXXXX'   /
       DATA SET/.FALSE./
 C
@@ -60,7 +60,6 @@ C        hjaaj: repeated input sections give infinite loop ...
          SET = .TRUE.
       END IF
 C
-C
 C     Initialize 
 C     ===================
 C
@@ -73,6 +72,12 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       NOONEI = .FALSE.
       GORG   = .FALSE.
       USECM  = .FALSE.
+      IF (LEVYLE) THEN
+       RDSUSLLMOD = .TRUE.
+      ELSE
+       RDSUSLLMOD = .FALSE.
+      ENDIF
+      MODRDSUSLL = .FALSE.
 C ... For the restricted kinetic balance, do not sum
 C     reorthonormalization terms over positronic shells !
       DOEPRN = .FALSE.
@@ -170,6 +175,9 @@ C&&&& USECM: use center of mass as a default gauge origin
                USECM = .TRUE.
                GO TO 100
    12          CONTINUE
+C&&&& MLSUS: Activate the modification of the relativistic RDSUSLL term
+               RDSUSLLMOD = .TRUE.
+               MODRDSUSLL = .TRUE.
                GO TO 100
    13          CONTINUE
                GO TO 100
@@ -297,8 +305,29 @@ C ... call the routine in abacus/hergp.F
          IF(LBIT(INTNMR,2)) WRITE(LUPRI,'(6X,A)') '- SL-integrals'
          IF(LBIT(INTNMR,3)) WRITE(LUPRI,'(6X,A)') '- SS-integrals'
        ENDIF
-C   .... defined conventional atomic orbitals (AO), not London AO
+
+C =========================================================================
+CMI ... for the magnetic susceptibilities do handle the RDSUSLLMOD flag
+C =========================================================================
+       IF (MSUSCP) THEN
+        IF (LEVYLE.AND.MODRDSUSLL) THEN
+         WRITE(LUPRI,'(1X,A)') 
+     &  '...Though the Levy-Lebl mode the full form of the RDSUSLL '//
+     &  'operator used to achieve the compatibility with rel. calcul.'
+          RDSUSLLMOD = .FALSE.
+        ELSE
+          IF (RDSUSLLMOD) THEN
+            WRITE(LUPRI,'(1X,A)') 
+     &  '...SL block only for the RDSUSLL operator used to achieve'//
+     &  ' the non-relativistic limit of the magnetizability !'
+          ELSE
+            WRITE(LUPRI,'(1X,A)') 
+     &  '...Full relativistic form of the RDSUSLL operator used!'
+          ENDIF
+        ENDIF
+       ENDIF
       ELSE 
+C   .... defined conventional atomic orbitals (AO), not London AO
        IF (SHIELD.OR.MSUSCP) THEN
         WRITE(LUPRI,'(1X,A)')
      &': Used conventional atomic orbitals, not London orbitals !'
@@ -616,8 +645,7 @@ C anti hermitisk
 
 C ...  routine in 'dirac/dirtwo.F'
 C      Set up IFCTYP and IREPDM
-      IPRFCK = IPRINT - 3 
-      CALL SETFCK(IFCTYP,IREPDM,NCOMP,4,ISYMOP,IHRMOP,IFCKOP,IPRFCK)
+      CALL SETFCK(IFCTYP,IREPDM,NCOMP,4,ISYMOP,IHRMOP,IFCKOP,IPRINT)
 C
 C     Get contravariant density matrix, no folding
 C  --------------------------------------------------
@@ -2508,18 +2536,14 @@ C
 C     get contavariant density matrixes
       CALL GTCNVD(DMAT,CMO,IBEIG,IPRPRP,WORK,LWORK)
 
-C prepare icftyp and IREPDM
-
+C set up for second derivative g12 over B
       DO I=1,NCOMP
          ISYMOP(I) = 1
-C anti hermitisk
          IHRMOP(I) = 1
          IFCKOP(I) = 1
       END DO
-C       routine in ../dirac/dirtwo.F
-      IPRINT = IPRPRP
-      IPRFCK = IPRPRP
-      CALL SETFCK(IFCTYP,IREPDM,NCOMP,4,ISYMOP,IHRMOP,IFCKOP,IPRFCK)
+C prepare IFCTYP and IREPDM
+      CALL SETFCK(IFCTYP,IREPDM,NCOMP,4,ISYMOP,IHRMOP,IFCKOP,IPRPRP)
 
 C call TWOINT and modify routines inside her2ave
 
@@ -2596,7 +2620,7 @@ C
      &'Cpu time',CPUTOT,'Wall time',WLLTOT,
      &'in call to TWOINT(SUSC2EL).'
       CALL FLSHFO(LUPRI)
-C----------------------------------------------------------------
+
       CALL QEXIT('SUSC2EL')
       RETURN
       END
@@ -3779,10 +3803,10 @@ C   ... accumulate sum of differences
        ENDDO
        DSX = DSX/DFLOAT( ((NORBT*NORBT-NORBT)/2)*NZ)
 
-       IF (IPRINT.GE.2) THEN
+       IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(4X,A,/,A,A,A,1X,D12.5)')
      &'*** GETDHB: The average symmetry of the final dH/dB',
-     &' property matrix ',PRPNAM(INDXPR),
+     &' MO-property matrix ',PRPNAM(INDXPR),
      &' with LAO is: ',DSX
        ENDIF
 

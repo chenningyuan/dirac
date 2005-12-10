@@ -98,7 +98,7 @@
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
-     &        VACPOL                                                    &
+     &        VACPOL, RDSUSLLMOD                                        &
 
 ! keep and actualize here number of elements in the DCLHAM common block
       INTEGER NDCLHAM
@@ -109,7 +109,8 @@
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
      &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
-     &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL  &
+     &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
+     &                RDSUSLLMOD                                        &
 
       REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
       COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV,       &
