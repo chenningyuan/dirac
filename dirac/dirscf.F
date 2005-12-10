@@ -3717,20 +3717,25 @@ C
      &                 NTMO(I),WORK(KFREE),LFREE,IERR)
           ENDIF
 
-         IF (DODBG.AND.IPRHAM.GE.7) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     &     'DFDIAG: Eigenvalues (.NOT.SPECIAL) :'
-          WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+         IF (DODBG) THEN
+          IF (IPRHAM.GE.7) THEN
+           CALL HEADER(
+     &     'DFDIAG: Eigenvalues (normal diagonalization) :',-1)
+           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
-          WRITE(LUPRI,'(I5,F25.10)') (J,EIG(IORB(I)+J),J=1,NTMO(I)) 
+           WRITE(LUPRI,'(I5,F25.10)')
+     &     (J,EIG(IORB(I)+J),J=1,NTMO(I)) 
+          ENDIF
 C
-          WRITE(LUPRI,'(/2X,A)')
-     &     'DFDIAG: Eigenvectors :'
+          IF (IPRHAM.GE.9) THEN
+           CALL HEADER(
+     &     'DFDIAG: Eigenvectors :',-1)
           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
            CALL PRQMAT(FAO(1+I2TMOT(I)),
      &     NTMO(I),NTMO(I),NTMO(I),NTMO(I),
      &     NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
          ENDIF 
 C
 C
@@ -3758,12 +3763,10 @@ C
 
             IF (DODBG.AND.IPRHAM.GE.5) THEN
              CALL HEADER(
-     &       'DFDIAG:MO matrix (subblocks) to be diagonalized',-1)
-              WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &        '*** Fermion corep ',I,'/',NFSYM
-              WRITE(LUPRI,'(3X,A,I3,A,I3/)')
+     &       'DFDIAG: MO matrix (subblocks) to be diagonalized',-1)
+              WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
+     &        '*** Fermion corep ',I,'/',NFSYM,
      &        '*** boson sub-corep ',ISUB,'/',N_SUB_BL(I)
-
              CALL PRQMAT(FMO(IMAT),
      &          NBO,NBO,NTMO(I),NTMO(I),
      &          1,IPQTOQ(1,0),LUPRI)
@@ -3781,20 +3784,26 @@ C
      &                   WORK(KFREE),LFREE,IERR)
             ENDIF
 
-            IF (DODBG.AND.IPRHAM.GE.8) THEN
-             WRITE(LUPRI,'(/2X,A)')
-     &       'DFDIAG: Eigenvalues (special_subbblock) :'
-             WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &       '*** Fermion corep ',I,'/',NFSYM
-             WRITE(LUPRI,'(3X,A,I3,A,I3/)')
+            IF (DODBG) THEN
+             IF (IPRHAM.GE.7) THEN
+             CALL HEADER(
+     &       'DFDIAG: Eigenvalues (special_subbblock) :',-1)
+             WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
+     &       '*** Fermion corep ',I,'/',NFSYM,
      &       '*** boson sub-corep ',ISUB,'/',N_SUB_BL(I)
              WRITE(LUPRI,'(I5,F25.10)') (IX,EIG(IX),IX=IEIG,IEIG+NBO-1) 
+             ENDIF
 
-             CALL HEADER(
+             IF (IPRHAM.GE.9) THEN
+              CALL HEADER(
      &       'DFDIAG: Eigenvectors(special_subblock)',-1)
-             CALL PRQMAT(FAO(IMAT),
-     &          NBO,NBO,NTMO(I),NTMO(I),
-     &          1,IPQTOQ(1,0),LUPRI)
+             WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
+     &       '*** Fermion corep ',I,'/',NFSYM,
+     &       '*** boson sub-corep ',ISUB,'/',N_SUB_BL(I)
+              CALL PRQMAT(FAO(IMAT), NBO,NBO,NTMO(I),NTMO(I),
+     &                   1,IPQTOQ(1,0),LUPRI)
+            ENDIF
+
             ENDIF
 
             IBO = IBO + NORB_SUB(ISUB,I,0)

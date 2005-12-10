@@ -1258,7 +1258,7 @@ C ... array for the picture change transformation matrix (PCTM)...
        CALL MEMCHK('in DOPCT',WORK,1)
         CALL READT(LUBSS,ISIZE,WORK(KPCTM))
 C       CALL READT(LUBSS,N2BBASXQ,WORK(KPCTM))
-        IF (IPRPRP.GE.2) WRITE(LUPRI,'(/2X,A)')
+        IF (IPRPRP.GE.3) WRITE(LUPRI,'(/2X,A)')
      &   'DOPCTRA: Picture change transformation matrix was read.'
       ELSE
         IF (DOTR) THEN
@@ -1540,7 +1540,7 @@ C ... filled matrix blocke LL
       DOCCUPB = DOCCUPB/DFLOAT(IOCCUPB)
       DEMPTYB = DEMPTYB/DFLOAT(IEMPTYB)
 
-      IF (IPRINT.GE.2) THEN
+      IF (IPRINT.GE.3) THEN
        WRITE(LUPRI,'(/,1X,A,A16,/,A,2D12.7)')
      &  'CHECK_LLOP:  For property ', PROPNAME,
      &  'we have (occup, empty): ',DOCCUPB,DEMPTYB   
@@ -1551,7 +1551,8 @@ C ... filled matrix blocke LL
      &  'CHECK_LLOP:  For property ', PROPNAME,
      &  'we have (occup,empty): ',DOCCUPB,DEMPTYB   
        WRITE(LUPRI,'(2X,A)')
-     & 'WARNING CHECK_LLOP: Non-zero sum of values in empty block!!!'
+     & 'WARNING CHECK_LLOP: Non-zero sum of values in a'//
+     & ' presumably zero matrix block!!!'
       ENDIF
 
       CALL QEXIT('CHECK_LLOP')

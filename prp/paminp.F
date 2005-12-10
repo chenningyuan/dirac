@@ -126,7 +126,8 @@ CMI Activate the  picture change transformations
 C   of four-component property matrixes 
 C   for the two-component (BSS) infinite order.
 C TODO with TS/HJJ: BSS spin-free picture change transformation
-      IF (BSS.AND.IBSS.GE.99) THEN
+      NOPCT = .FALSE.
+      IF (BSS.AND.(IBSS.GE.99.OR.IBSS.EQ.009.OR.IBSS.GE.109)) THEN
         DOPCT = .TRUE.
 C       ... by default DO the picture change transformation
         NOPCT = .FALSE.
@@ -134,9 +135,10 @@ C       ... by default DO the picture change transformation
      &'PRPINP: Picture change transformation of properties activated !'
       ELSE
         DOPCT = .FALSE.
-        NOPCT = .TRUE.
-C       WRITE(LUPRI,'(/3X,A/)')
-C    &'PRPINP: Only LL blocks of propery operators are taken !'
+CMI  ... no LL blocks of operators !!!!
+CMI     NOPCT = .TRUE.
+        WRITE(LUPRI,'(/3X,A/)')
+     &'PRPINP: No picture change transformation !'
       ENDIF
 C
 C     Read menu file
