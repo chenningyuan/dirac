@@ -2794,7 +2794,7 @@ C
          CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','PRJANA')
          IF(OWNBAS) THEN
             CALL SELOWN(2,WORK(KCMO),IDUM,IDUM,
-     &           I,LUCOEF,REFFIL(I),NQ,IDUM,IDUM,
+     &           I,1,LUCOEF,REFFIL(I),NQ,IDUM,IDUM,
      &           NVECS(1,1),KVEC(1,I),
      &           NSTR(1,0,I),WORK,KFREE,LFREE)
             IF(IPRLOC .GE. 5) THEN
