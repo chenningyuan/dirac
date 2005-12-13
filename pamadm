@@ -333,8 +333,8 @@ make_makefile()
 {
    echo "*** Making general Makefile"
    echo
-   AUXOBJ="$CCFOCKSPOBJ $ESROBJ $DFTOBJ $DNFOBJ $EMBOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ"
-   AUXMAK="$CCFOCKSPMAK $ESRMAK $DFTMAK $DNFMAK $EMBMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK"
+   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $EMBOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $EMBMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK"
    #
    # Write current Makefile
    #
@@ -563,7 +563,7 @@ cat <<EOF>> Makefile
 
 OBJSMXM = gp/mxmpack.o
 
-TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \$(CCFOCKSPOBJS) \\
+TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
 	\$(DFTOBJS) \$(DNFOBJS) \$(EMBOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS)
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
@@ -680,9 +680,6 @@ fi
 if [ -n "$XPPMOD" ]; then
    echo '	cd prp/xpp   ; $(MAKE) clean' >> Makefile
 fi
-if [ -n "$CCFOCKSPMOD" ]; then
-   echo '	cd relccsd/ccfocksp  ; $(MAKE) clean' >> Makefile
-fi
 if [ -n "$KRMCMOD" ]; then
    echo '	cd krmc ; $(MAKE) clean' >> Makefile
    echo '	cd luciarel ; $(MAKE) clean' >> Makefile
@@ -752,13 +749,6 @@ KRMC_OBJ :
 
 LUCIAREL_OBJ :
 	cd luciarel ; \$(MAKE) all
-EOF
-fi
-if [ -n "$CCFOCKSPMOD" ]; then
-cat <<EOF>> Makefile
-
-CCFOCKSP_OBJ :
-	cd relccsd/ccfocksp ; \$(MAKE) all
 EOF
 fi
 if [ -n "$DFTMOD" ]; then

@@ -215,7 +215,7 @@ setup_command()
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/main "
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/moltra -directory=$SRC_DIR/relccsd "
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/esr -directory=$SRC_DIR/prp/xpp "
-        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/xqr -directory=$SRC_DIR/relccsd/ccfocksp "
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/xqr"
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/pdpack -directory=$SRC_DIR/gp"
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/include"
       else
@@ -223,7 +223,7 @@ setup_command()
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/main "
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/moltra -I $SRC_DIR/relccsd "
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/esr -I $SRC_DIR/prp/xpp "
-        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/xqr -I $SRC_DIR/relccsd/ccfocksp "
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/xqr "
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/pdpack -I $SRC_DIR/gp"
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/include"
       fi
