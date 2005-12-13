@@ -3481,7 +3481,7 @@ C
      &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
      &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C',
      &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.IOTC  ','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
@@ -3490,7 +3490,6 @@ C
 C
       GAUNT = .FALSE.
       SYMSTP = .FALSE.
-      GAUNT  = .FALSE.
       INPERR = 0
       CALL TITLER('Hamiltonian defined','*',127)      
 C
@@ -3528,9 +3527,9 @@ C
       BSS     = .FALSE.
       IBSS    = -1
       IMFCH   = 0
-C      ... default - do always the preliminary free particle basis transformation
+CMI ... default for BSS - do always the preliminary free particle basis transformation
       NOPRTR  = .FALSE.
-C      ... for the infinite order do solve R-equation 2
+C      ... for the infinite order solve the R-equation 2
       YREQ1   = .FALSE.
 C      ... default - do not do block diagonalization !
       BLOCKD  = .FALSE.
@@ -3875,7 +3874,12 @@ C&&& specify centers for AMFI which are to be added to the BSS+AMFI Hamiltonian
             READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
             GO TO 100
   137     CONTINUE
-C&&& XXXX  
+C&&&  new simple keyword .IOTC replacing few others
+CMI  it's BSS_RKB+AMFI; later fix this options when interacting 
+CMI  with other flags...
+             BSS = .TRUE.
+             NOPRTR = .TRUE.
+             IBSS = 2999
              GO TO 100
   138     CONTINUE
 C&&& XXXX
@@ -4006,7 +4010,23 @@ CMI       CALL QUIT(
 CMI  &'HAMINP: .BSS not yet implemented for properties!')
         ENDIF
 
-      ENDIF
+CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR
+        IF (IBSS.EQ.2999.AND.NOPRTR) THEN
+         IF (SPINFR) THEN
+           IBSS = 009
+C          write(lupri,*) '.IOTC for .SPINFR'
+         ENDIF
+         IF (GAUNT) THEN
+CMI        ... AMFI SSO+SOO terms ...
+           GAUNT = .FALSE.
+           IBSS = 3999 
+         ENDIF
+         IF (ONESYS) THEN
+           IBSS = 999   
+         ENDIF
+        ENDIF
+
+      ENDIF ! End of .BSS
 C
 C     If Gaunt is set we always want to include these integrals
 C
@@ -4025,6 +4045,13 @@ C
       ELSE IF (BSS) THEN
         WRITE(LUPRI,'(1X,A,I5)')
      &' * Barysz-Sadlej-Snijders Hamiltonian. Type code:',IBSS
+        IF (NOPRTR) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &' - no preliminary free-particle transformation'
+        ELSE
+        WRITE(LUPRI,'(1X,A)')
+     &' - applied preliminary free-particle transformation'
+        ENDIF
         IF (IBSS.GT.999) THEN
           IF (IMFCH.NE.0) THEN
             WRITE(LUPRI,'(1X,A,I4)')
