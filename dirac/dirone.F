@@ -4111,6 +4111,12 @@ CTROND        IF(NFRO(IFRP).EQ.0) GOTO 21
      &            'N','N',IPQTOQ(1,0),WORK(KQ(IFRP)),
      &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
      &            D0,IPQTOQ(1,0),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ)
+CTROND        IF(IPRINT.GE.5) THEN
+          CALL HEADER('PSIPRJ: Fragment coefs in orthonormal basis',-1)
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',IFRP
+          CALL PRQMAT(WORK(KREF),NORB(IFRP),NVECS(IFRP),
+     &                NORB(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+CTROND        ENDIF
 C       Initialize unit matrix (transformation matrix in MO-basis)
         CALL DUNIT2(WORK(KBUF),NORB(IFRP),NORB(IFRP),NORB(IFRP),NZ)
         IF(SPINFR) THEN
@@ -4460,11 +4466,18 @@ C
      &           'H',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1,
      &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
         VNRM=SQRT(VNRM)
+CTROND
+          IF(IPRINT.GE.2) WRITE(LUPRI,'(A,I3,A,1P,D12.5,3X,A,I5)')
+     &      'Pector no.',IVEC,' Norm: ',VNRM,
+     &      ' Bsym: ',IBVEC(IVEC)
         THRMAX=MAX(THRMAX,VNRM)
         IF(VNRM.LT.THRLDP) THEN
           IF(IPRINT.GE.1) THEN
-            WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5)')
-     &        'Vector no.',IVEC,' removed. Linear dependence: ',VNRM
+CTROND            WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5)')
+CTROND     &        'Vector no.',IVEC,' removed. Linear dependence: ',VNRM
+            WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5,3X,A,I5)')
+     &        'Vector no.',IVEC,' removed. Linear dependence: ',VNRM,
+     &        ' Bsym: ',IBVEC(IVEC)
           ENDIF
 CTROND          IBVEC(IVEC) = -1-IBVEC(IVEC)
 C         Store information about irrep and neg/pos solution
