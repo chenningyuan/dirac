@@ -6931,12 +6931,12 @@ C
           IF(DOATOM(INUC)) THEN
             WRITE(LUPRI,'(A12,A4,F22.6)') '@           ',
      &            NAMDEP(INUC),GVALMAT(1,INUC)
-          ENDIF
-          IF(LZERO(INUC)) THEN
-            WRITE(LUPRI,'(A20)') 'WARNING:'
-            WRITE(LUPRI,'(A47)') 'division by the (zero) magnetogyric'
-            WRITE(LUPRI,'(A34)') 'ratio for this nucleus'
-            WRITE(LUPRI,'(A30)') 'has been prevented'
+            IF(LZERO(INUC)) THEN
+              WRITE(LUPRI,'(A20)') 'WARNING:'
+              WRITE(LUPRI,'(A47)') 'division by the (zero) magnetogyric'
+              WRITE(LUPRI,'(A34)') 'ratio for this nucleus'
+              WRITE(LUPRI,'(A30)') 'has been prevented'
+            ENDIF
           ENDIF
         ENDDO
       ENDIF
@@ -7216,13 +7216,13 @@ C
 C         IF(DOATOM(INUC)) THEN
             WRITE(LUPRI,'(A12,A4,F22.6)') '@           ',
      &            NAMDEP(INUC),GVALMAT(1,INUC)
+            IF(LZERO(INUC)) THEN
+              WRITE(LUPRI,'(A20)') 'WARNING:'
+              WRITE(LUPRI,'(A47)') 'multiplication by the (zero)'
+              WRITE(LUPRI,'(A34)') 'magnetogyric ratio for this nucleus'
+              WRITE(LUPRI,'(A30)') 'has been prevented'
+            ENDIF
 C         ENDIF
-          IF(LZERO(INUC)) THEN
-            WRITE(LUPRI,'(A20)') 'WARNING:'
-            WRITE(LUPRI,'(A47)') 'multiplication by the (zero)'
-            WRITE(LUPRI,'(A34)') 'magnetogyric ratio for this nucleus'
-            WRITE(LUPRI,'(A30)') 'has been prevented'
-          ENDIF
         ENDDO
       ENDIF
 C
