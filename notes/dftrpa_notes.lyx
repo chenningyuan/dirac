@@ -1,0 +1,1121 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass article
+\begin_preamble
+\newcommand{\grho}{q}
+\newcommand{\mb}[1]{\mbox{\boldmath$ #1 $\unboldmath}}
+\newcommand{\D}{\displaystyle}
+\end_preamble
+\language english
+\inputencoding latin1
+\fontscheme default
+\graphics default
+\paperfontsize default
+\spacing single 
+\papersize a4paper
+\paperpackage widemarginsa4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+DFT response
+\layout Author
+
+T.Saue and T.Helgaker
+\layout Section
+
+First approach
+\layout Standard
+
+We write the parametrized exchange-correlation functional 
+\begin_inset Formula $E_{XC}[\rho,\kappa]$
+\end_inset 
+
+ as
+\begin_inset Formula \begin{equation}
+E_{XC}[\rho,\kappa]=\int F(\rho(\mathbf{r},\kappa))d\mathbf{r}\label{eq:Exc_1}\end{equation}
+
+\end_inset 
+
+ where the integrand 
+\begin_inset Formula $F(\rho)$
+\end_inset 
+
+ is a function of the density 
+\begin_inset Formula $\rho$
+\end_inset 
+
+.The parametrized electron density 
+\begin_inset Formula $\rho$
+\end_inset 
+
+ can in the second quantization formalism be expressed as
+\begin_inset Formula \begin{equation}
+\rho(\mathbf{r},\kappa)=\phi_{n}^{\dagger}\phi_{m}D_{nm};\quad D_{nm}=\left\langle \tilde{0}\left|n^{\dagger}m\right|\tilde{0}\right\rangle ;\quad\left|\tilde{0}\right\rangle =\exp[-\hat{\kappa}]\left|0\right\rangle \label{eq:rho_1}\end{equation}
+
+\end_inset 
+
+ The integrand 
+\begin_inset Formula $F(\rho)$
+\end_inset 
+
+ can be Taylor expanded in terms of the variational parameters 
+\begin_inset Formula $\kappa$
+\end_inset 
+
+ 
+\begin_inset Formula \begin{equation}
+F(\rho(\mathbf{r},\kappa))=\left.F\right|_{\kappa=0}+\left.\frac{\partial F}{\partial\rho}\frac{\partial\rho}{\partial\kappa_{pq}}\right|_{\kappa=0}\kappa_{pq}+\frac{1}{2}\left[\frac{\partial^{2}F}{\partial\rho^{2}}\frac{\partial\rho}{\partial\kappa_{pq}}\frac{\partial\rho}{\partial\kappa_{rs}}+\frac{\partial F}{\partial\rho}\frac{\partial^{2}\rho}{\partial\kappa_{pq}\partial\kappa_{rs}}\right]_{\kappa=0}\kappa_{pq}\kappa_{rs}+O(\kappa^{3})\label{eq:Fxc_1}\end{equation}
+
+\end_inset 
+
+ where implicit summation is employed.
+ Inserted into Eq.(
+\begin_inset LatexCommand \ref{eq:Exc_1}
+
+\end_inset 
+
+), we obtain a similar expansion of the exchange-correlation functional
+ which allows us to define its contribution to the gradient, Hessian and
+ higher derivatives.
+ 
+\layout Standard
+
+The density of Eq.(
+\begin_inset LatexCommand \ref{eq:rho_1}
+
+\end_inset 
+
+) can be BCH-expanded as
+\begin_inset Formula \[
+\rho=\phi_{m}\phi_{n}^{*}\left\{ \left\langle 0\left|n^{\dagger}m\right|0\right\rangle +\left\langle 0\left|\left[p^{\dagger}q,n^{\dagger}m\right]\right|0\right\rangle \kappa_{pq}+\frac{1}{2}\left\langle 0\left|\left[p^{\dagger}q,\left[r^{\dagger}s,n^{\dagger}m\right]\right]\right|0\right\rangle \kappa_{pq}\kappa_{rs}+O(\kappa^{3})\right\} \]
+
+\end_inset 
+
+ Insertion into Eq.(
+\begin_inset LatexCommand \ref{eq:Fxc_1}
+
+\end_inset 
+
+) then gives
+\begin_inset Formula \begin{eqnarray*}
+F(\kappa) & = & F[\rho_{0}]+\left.\frac{\partial F}{\partial\rho}\right|_{\kappa=0}\phi_{n}^{\dagger}\phi_{m}\left\langle 0\left|\left[p^{\dagger}q,n^{\dagger}m\right]\right|0\right\rangle \kappa_{pq}\\
+ & + & \frac{1}{2}\left.\frac{\partial F}{\partial\rho}\right|_{\kappa=0}\phi_{n}^{\dagger}\phi_{m}\left\langle 0\left|\left[p^{\dagger}q,\left[r^{\dagger}s,n^{\dagger}m\right]\right]\right|0\right\rangle \kappa_{pq}\kappa_{rs}\\
+ & + & \frac{1}{2}\left.\frac{\partial^{2}F}{\partial\rho^{2}}\right|_{\kappa=0}\phi_{n}^{\dagger}\phi_{m}\phi_{u}^{\dagger}\phi_{t}\left\langle 0\left|\left[p^{\dagger}q,n^{\dagger}m\right]\right|0\right\rangle \left\langle 0\left|\left[r^{\dagger}s,u^{\dagger}t\right]\right|0\right\rangle \kappa_{pq}\kappa_{rs}+O(\kappa^{3})\end{eqnarray*}
+
+\end_inset 
+
+ and the exchange-correlation functional is accordingly expanded as
+\begin_inset Formula \[
+E_{XC}(\kappa)=E_{XC}^{[0]}+E_{XC;pq}^{[1]}\kappa_{pq}+\frac{1}{2}E_{XC;pq,rs}^{[2]}\kappa_{pq}\kappa_{rs}+O(\kappa^{3})\]
+
+\end_inset 
+
+ where we have introduced
+\begin_inset Formula \begin{eqnarray*}
+E_{XC}^{[0]} & = & \int F[\rho_{0}]d\mathbf{r}\\
+\\E_{XC;pq}^{[1]} & = & \left\langle 0\left|\left[p^{\dagger}q,\hat{V}_{XC}\right]\right|0\right\rangle \\
+\\E_{XC;pq,rs}^{[2]} & = & E_{XC1;pq,rs}^{[2]}+E_{XC2;pq,rs}^{[2]}\\
+\\E_{XC1;pq,rs}^{[2]} & = & \left\langle 0\left|\left[p^{\dagger}q,\left[r^{\dagger}s,\hat{V}_{XC}\right]\right]\right|0\right\rangle \\
+\\E_{XC2;pq,rs}^{[2]} & = & W_{XC;nm,ut}\left\langle 0\left|\left[p^{\dagger}q,n^{\dagger}m\right]\right|0\right\rangle \left\langle 0\left|\left[r^{\dagger}s,u^{\dagger}t\right]\right|0\right\rangle \end{eqnarray*}
+
+\end_inset 
+
+ We have furthermore introduced the operator
+\begin_inset Formula \[
+\hat{V}_{XC}=\sum_{nm}V_{XC;nm}n^{\dagger}m\]
+
+\end_inset 
+
+and the integrals
+\begin_inset Formula \[
+V_{XC;mn}=\int\left.\frac{\partial F}{\partial\rho}\right|_{\kappa=0}\phi_{n}^{\dagger}\phi_{m}d\mathbf{r};\quad W_{XC;nm,ut}=\int\left.\frac{\partial^{2}F}{\partial\rho^{2}}\right|_{\kappa=0}\phi_{n}^{\dagger}\phi_{m}\phi_{u}^{\dagger}\phi_{t}d\mathbf{r}\]
+
+\end_inset 
+
+ (they can be seen to be members of a general moment expansion of the integrand
+ F).
+ The contribution of the exchange-correlation energy to the Hessian splits
+ into two contributions.
+ The first constribution has the following structure
+\begin_inset Formula \[
+E_{XC1}^{[2]}=\left[\begin{array}{cc}
+\mathbf{A} & \mathbf{B}\\
+\mathbf{B}^{*} & \mathbf{A}^{*}\end{array}\right];\quad\begin{array}{lcl}
+A_{ai,bj} & = & \left\langle 0\left|\left[-i^{\dagger}a,\left[b^{\dagger}j,\hat{V}_{XC}\right]\right]\right|0\right\rangle \\
+\\B_{ai,bj} & = & \left\langle 0\left|\left[i^{\dagger}a,\left[j^{\dagger}b\hat{,}\hat{V}_{XC}\right]\right]\right|0\right\rangle \end{array}\]
+
+\end_inset 
+
+ For a closed-shell Hartree-Fock wave function we find
+\begin_inset Formula \begin{eqnarray*}
+A_{ai,bj} & =\sum_{nm}V_{XC;nm}\left\{ \delta_{bm}(\delta_{na}D_{ij}-\delta_{ij}D_{na})-\delta_{nj}(\delta_{ba}D_{im}-\delta_{im}D_{ba})\right\}  & =\delta_{ij}V_{XC;ab}-\delta_{ab}V_{XC;ij}^{*}\\
+\\B_{ai,bj} & =\sum_{nm}V_{XC;nm}\left\{ \delta_{nb}(\delta_{ja}D_{im}-\delta_{im}D_{ja})-\delta_{jm}(\delta_{na}D_{ib}-\delta_{ib}D_{na})\right\}  & =0\end{eqnarray*}
+
+\end_inset 
+
+ The second contribution to the Hessian has the idebtical matrix structure.
+ In the case of a closed-shell Hartree-Fock wave function we now find
+\begin_inset Formula \begin{eqnarray*}
+A_{ai,bj} & =\sum_{nm,ut}W_{XC;nm,ut}(\delta_{im}D_{na}-\delta_{na}D_{im})(\delta_{uj}D_{bt}-\delta_{bt}D_{uj}) & =-W_{ai,jb}\\
+\\B_{ai,bj} & =\sum_{nm,ut}W_{XC;nm,ut}(\delta_{na}D_{im}-\delta_{im}D_{na})(\delta_{ub}D_{jt}-\delta_{jt}D_{ub}) & =W_{ai,bj}\end{eqnarray*}
+
+\end_inset 
+
+
+\begin_inset Formula \[
+\]
+
+\end_inset 
+
+We now consider the construction of the sigma-vector
+\begin_inset Formula \[
+\sigma_{i}=\mathbf{E}^{[2]}\mathbf{b}_{i}(h)\]
+
+\end_inset 
+
+ We focus on the construction of the upper segment
+\begin_inset Formula \[
+\sigma_{ai}=\sum_{bj}(A_{ai,bj}b_{bj}+hB_{ai,bj}b_{bj}^{*})=\sum_{bj}(A_{ai,bj}b_{bj}+B_{ai,bj}b_{jb})\]
+
+\end_inset 
+
+ where we have used the relation 
+\begin_inset Formula $b_{jb}=hb_{bj}^{*}$
+\end_inset 
+
+ .
+ From the first exchange-correlation contribution to the Hessian we obtain
+\begin_inset Formula \[
+\sigma_{XC1;ai}=\left\langle 0\left|\left[-q_{ai},\tilde{V}_{XC}\right]\right|0\right\rangle =-\tilde{F}_{XC;ai}=-\tilde{v}_{XC;ai}\]
+
+\end_inset 
+
+ where we have introduced the one-index transformed operator
+\begin_inset Formula \[
+\tilde{V}_{XC}=\sum_{nm}\tilde{v}_{XC;nm}n^{\dagger}m;\quad\tilde{v}_{XC;pq}=\sum_{t}\left(W_{pt}v_{XC;tq}-v_{XC;pt}W_{tq}\right)\]
+
+\end_inset 
+
+The matrix 
+\begin_inset Formula $W$
+\end_inset 
+
+ has elements
+\begin_inset Formula \[
+W_{ii}=W_{ss}=0;\quad W_{ai}=b_{ai};\quad W_{ia}=-b_{ia};\quad W^{\dagger}=-hW\]
+
+\end_inset 
+
+ From the second exchange-correlation contribution to the Hessian we obtain
+\begin_inset Formula \[
+\sigma_{XC2;ai}=-\sum_{nm,bj}\left\langle 0\left|\left[-i^{\dagger}a,n^{\dagger}m\right]\right|0\right\rangle (W_{XC;nm,jb}b_{bj}+W_{XC;nm,bj}b_{jb})=\sum_{bj}\left(W_{ai,jb}b_{bj}+W_{ai,bj}b_{jb}\right)\]
+
+\end_inset 
+
+ This latter expression can be reformulated in terms of a modified AO density
+ matrix
+\begin_inset Formula \[
+\sigma_{XC2;ai}=\tilde{G}_{XC:ai}=\sum_{\kappa\lambda}W_{ai,\kappa\lambda}\tilde{D}_{\lambda\kappa};\quad\tilde{D}_{\lambda\kappa}=\sum_{rs}c_{\lambda r}b_{rs}c_{\kappa s}^{*};\quad\tilde{\mathbf{D}}^{\dagger}=h\tilde{\mathbf{D}}\]
+
+\end_inset 
+
+ In conclusion we can write the exchange-correlation contribution to the
+ sigma-vector as
+\begin_inset Formula \[
+\sigma_{XC;ai}=-(\tilde{F}_{XC;ai}-\tilde{G}_{XC;ai})\]
+
+\end_inset 
+
+ The first part is straightforward since it is added to the regular Fock-matrix.
+ The second part can be calculated in AO-basis
+\begin_inset Formula \[
+\tilde{G}_{\textrm{XC};ai}=\sum_{\mu\nu}c_{\mu a}^{*}\tilde{G}_{\textrm{XC};\mu\nu}c_{\nu i};\quad\tilde{G}_{\textrm{XC};\mu\nu}=\int\chi_{\mu}w(\mathbf{r})\chi_{\nu}d\mathbf{r};\quad w(\mathbf{r})=\left.\frac{\partial^{2}F(\mathbf{r})}{\partial\rho^{2}}\right|_{\kappa=0}\sum_{\kappa\lambda}\chi_{\kappa}\tilde{D}_{\kappa\lambda}\chi_{\lambda}\]
+
+\end_inset 
+
+ 
+\layout Section
+
+GGA
+\layout Standard
+
+We write the parametrized exchange-correlation functional 
+\begin_inset Formula $E_{XC}[\rho,\grho,\kappa]$
+\end_inset 
+
+ as
+\begin_inset Formula \begin{equation}
+E_{XC}[\rho,\grho,\kappa]=\int F(\rho(\mathbf{r},\kappa),\grho(\mathbf{r},\kappa))d\mathbf{r}\label{eq:Exc}\end{equation}
+
+\end_inset 
+
+ where the integrand 
+\begin_inset Formula $F(\rho,\grho)$
+\end_inset 
+
+ is a function of the density 
+\begin_inset Formula $\rho$
+\end_inset 
+
+ and the square of its gradient 
+\begin_inset Formula $\grho$
+\end_inset 
+
+.The parametrized electron density 
+\begin_inset Formula $\rho$
+\end_inset 
+
+ can in the second quantization formalism be expressed as
+\begin_inset Formula \begin{equation}
+\rho(\mathbf{r},\kappa)=\phi_{e}^{\dagger}\phi_{f}D_{ef};\quad D_{ef}=\left\langle \tilde{0}\left|e^{\dagger}f\right|\tilde{0}\right\rangle ;\quad\left|\tilde{0}\right\rangle =\exp[-\hat{\kappa}]\left|0\right\rangle \label{eq:rho}\end{equation}
+
+\end_inset 
+
+ Likewise, the square of the gradient of the density can be expressed as
+\begin_inset Formula \[
+\grho(\mathbf{r},\kappa)={\mb\grho}_{ef}\cdot{\mb\grho}_{gh}D_{ef}D_{gh};\quad{\mb\grho}_{ef}={\mb\nabla}\left(\phi_{e}^{\dagger}\phi_{f}\right)\]
+
+\end_inset 
+
+ The integrand 
+\begin_inset Formula $F(\rho,\grho)$
+\end_inset 
+
+ can be Taylor expanded to second order in terms of the variational parameters
+ 
+\begin_inset Formula $\kappa$
+\end_inset 
+
+ 
+\begin_inset Formula \begin{eqnarray}
+F(\rho,\grho) & = & \left.F\right|_{\kappa=0}+\left.\frac{\partial F}{\partial\rho}\frac{\partial\rho}{\partial\kappa_{pq}}+\frac{\partial F}{\partial\grho}\frac{\partial\grho}{\partial\kappa_{pq}}\right|_{\kappa=0}\kappa_{pq}\\
+ & + & \frac{1}{2}\left.\frac{\partial^{2}F}{\partial\rho^{2}}\frac{\partial\rho}{\partial\kappa_{pq}}\frac{\partial\rho}{\partial\kappa_{rs}}+\frac{\partial F}{\partial\rho}\frac{\partial^{2}\rho}{\partial\kappa_{pq}\partial\kappa_{rs}}+\frac{\partial^{2}F}{\partial\grho^{2}}\frac{\partial\grho}{\partial\kappa_{pq}}\frac{\partial\grho}{\partial\kappa_{rs}}+\frac{\partial F}{\partial\grho}\frac{\partial^{2}\grho}{\partial\kappa_{pq}\partial\kappa_{rs}}+2\frac{\partial^{2}F}{\partial\rho\partial\grho}\frac{\partial\rho}{\partial\kappa_{pq}}\frac{\partial\grho}{\partial\kappa_{rs}}\right|_{\kappa=0}\kappa_{pq}\kappa_{rs}\label{eq:Fxc}\end{eqnarray}
+
+\end_inset 
+
+ where implicit summation is employed.
+ Inserted into Eq.(
+\begin_inset LatexCommand \ref{eq:Exc}
+
+\end_inset 
+
+), we obtain a similar expansion of the exchange-correlation functional
+ which allows us to define its contribution to the gradient, Hessian and
+ higher derivatives.
+ 
+\layout Standard
+
+The density of Eq.(
+\begin_inset LatexCommand \ref{eq:rho}
+
+\end_inset 
+
+) can be BCH-expanded as
+\begin_inset Formula \[
+\rho=\phi_{e}^{\dagger}\phi_{f}\left\{ \left\langle 0\left|e^{\dagger}f\right|0\right\rangle +\left\langle 0\left|\left[p^{\dagger}q,e^{\dagger}f\right]\right|0\right\rangle \kappa_{pq}+\frac{1}{2}\left\langle 0\left|\left[p^{\dagger}q,\left[r^{\dagger}s,e^{\dagger}f\right]\right]\right|0\right\rangle \kappa_{pq}\kappa_{rs}+O(\kappa^{3})\right\} \]
+
+\end_inset 
+
+ Likewise, the gradient can be BCH-expanded as
+\begin_inset Formula \begin{eqnarray*}
+\grho & = & \left({\mb\grho}_{ef}\cdot{\mb\grho}_{gh}\right)\left\{ \left\langle 0\left|e^{\dagger}f\right|0\right\rangle \left\langle 0\left|g^{\dagger}h\right|0\right\rangle +2\left\langle 0\left|\left[p^{\dagger}q,e^{\dagger}f\right]\right|0\right\rangle \left\langle 0\left|g^{\dagger}h\right|0\right\rangle \kappa_{pq}\right|\\
+ & + & \left.\left(\left\langle 0\left|\left[p^{\dagger}q,\left[r^{\dagger}s,e^{\dagger}f\right]\right]\right|0\right\rangle \left\langle 0\left|g^{\dagger}h\right|0\right\rangle +\left\langle 0\left|\left[p^{\dagger}q,e^{\dagger}f\right]\right|0\right\rangle \left\langle 0\left|\left[r^{\dagger}s,g^{\dagger}h\right]\right|0\right\rangle \right)\kappa_{pq}\kappa_{rs}+O(\kappa^{3})\right\} \end{eqnarray*}
+
+\end_inset 
+
+ Insertion into Eq.(
+\begin_inset LatexCommand \ref{eq:Fxc}
+
+\end_inset 
+
+) then gives
+\begin_inset Formula \begin{eqnarray*}
+F(\kappa) & = & F[\rho_{0}]+\left.\frac{\partial F}{\partial\rho}\right|_{\kappa=0}\phi_{n}^{\dagger}\phi_{m}\left\langle 0\left|\left[p^{\dagger}q,n^{\dagger}m\right]\right|0\right\rangle \kappa_{pq}\\
+ & + & \frac{1}{2}\left.\frac{\partial F}{\partial\rho}\right|_{\kappa=0}\phi_{n}^{\dagger}\phi_{m}\left\langle 0\left|\left[p^{\dagger}q,\left[r^{\dagger}s,n^{\dagger}m\right]\right]\right|0\right\rangle \kappa_{pq}\kappa_{rs}\\
+ & + & \frac{1}{2}\left.\frac{\partial^{2}F}{\partial\rho^{2}}\right|_{\kappa=0}\phi_{n}^{\dagger}\phi_{m}\phi_{u}^{\dagger}\phi_{t}\left\langle 0\left|\left[p^{\dagger}q,n^{\dagger}m\right]\right|0\right\rangle \left\langle 0\left|\left[r^{\dagger}s,u^{\dagger}t\right]\right|0\right\rangle \kappa_{pq}\kappa_{rs}+O(\kappa^{3})\end{eqnarray*}
+
+\end_inset 
+
+ and the exchange-correlation functional is accordingly expanded as
+\begin_inset Formula \[
+E_{XC}(\kappa)=E_{XC}^{[0]}+E_{XC;pq}^{[1]}\kappa_{pq}+\frac{1}{2}E_{XC;pq,rs}^{[2]}\kappa_{pq}\kappa_{rs}+O(\kappa^{3})\]
+
+\end_inset 
+
+
+\layout Standard
+
+For a closed-shell Hartree-Fock wave function the gradient is given as
+\begin_inset Formula \begin{eqnarray*}
+E_{ia}^{[1]} & = & \int\left.\frac{\partial F}{\partial\rho}\right|_{\kappa=0}\phi_{e}^{\dagger}\phi_{f}d\mathbf{r}\left\langle 0\left|\left[-i^{\dagger}a,e^{\dagger}f\right]\right|0\right\rangle \\
+ & + & 2\int\left.\frac{\partial F}{\partial\grho}\right|_{\kappa=0}{\mb\grho}_{ef}\cdot{\mb\nabla}\rho_{0}d\mathbf{r}\left\langle 0\left|\left[-i^{\dagger}a,e^{\dagger}f\right]\right|0\right\rangle \\
+ & = & -\left\langle \phi_{a}\left|\left.\frac{\partial F}{\partial\rho}\right|_{\kappa=0}\right|\phi_{i}\right\rangle -2\left\langle \phi_{a}\left|\left.\frac{\partial F}{\partial\grho}\right|_{\kappa=0}\right|{\mb\nabla}\rho_{0}\cdot{\mb\nabla}\phi_{i}\right\rangle \end{eqnarray*}
+
+\end_inset 
+
+ 
+\layout Section
+
+Spin-polarized theory
+\layout Subsection
+
+Collinear approach
+\layout Standard
+
+In non-relativistic theory the spin and spatial degrees of freedom are completel
+y decoupled and the z-axis is chosen as the quantization axis for spin.
+ The magnetization vector is accordingly given as
+\begin_inset Formula \[
+\mathbf{m}=\sum_{is}\left\langle \psi_{is}^{\dagger}\left|{\mb\sigma}\right|\psi_{is}\right\rangle =(0,0,\rho^{\alpha}-\rho^{\beta})\]
+
+\end_inset 
+
+ It can be seen that the 
+\begin_inset Formula $m_{z}$
+\end_inset 
+
+ -component equals the spin density 
+\begin_inset Formula $Q(\mathbf{r})=\rho^{\alpha}-\rho^{\beta}$
+\end_inset 
+
+
+\begin_inset LatexCommand \cite{parr}
+
+\end_inset 
+
+.
+ The spin polarization can be defined as
+\begin_inset Formula \[
+\zeta=\frac{Q}{\rho},\quad-1<\zeta<1\]
+
+\end_inset 
+
+ based on an undirected z-magnetization axis.
+ A more general definition is
+\begin_inset LatexCommand \cite{Eschrig}
+
+\end_inset 
+
+
+\begin_inset Formula \[
+\zeta=\frac{\left|\mathbf{m}\right|}{\rho};\quad0<\zeta<1\]
+
+\end_inset 
+
+ that allows extension to non-collinear approaches.
+ We note the useful relations
+\begin_inset Formula \[
+\rho^{\alpha}=\frac{1}{2}\left[\rho+Q\right]=\frac{1}{2}\rho\left[1+\zeta\right];\quad\rho^{\alpha}=\frac{1}{2}\left[\rho-Q\right]=\frac{1}{2}\rho\left[1-\zeta\right]\]
+
+\end_inset 
+
+ 
+\layout Section
+
+Final approach ?
+\layout Subsection
+
+Expansion of density
+\layout Standard
+
+We write the density as
+\begin_inset Formula \[
+\rho(\mathbf{r},\boldsymbol{\kappa})=\left\langle \tilde{0}(\boldsymbol{\kappa})\left|a_{p}^{\dagger}a_{q}\right|\tilde{0}(\boldsymbol{\kappa})\right\rangle \Omega_{pq}(\mathbf{r})\]
+
+\end_inset 
+
+ which can then be expanded in the variational parameters 
+\begin_inset Formula $\boldsymbol{\kappa}$
+\end_inset 
+
+
+\begin_inset Formula \[
+\rho(\mathbf{r},\boldsymbol{\kappa})=\rho_{0}+\widetilde{\Omega}_{ii}+\frac{1}{2}\widetilde{\widetilde{\Omega}}_{ii}+\ldots\]
+
+\end_inset 
+
+.
+ The zeroth order term is
+\begin_inset Formula \[
+\rho(\mathbf{r},\mathbf{0})=\left\langle 0\left|a_{p}^{\dagger}a_{q}\right|0\right\rangle \Omega_{pq}(\mathbf{r})=\Omega_{ii}.\]
+
+\end_inset 
+
+The first order term is
+\begin_inset Formula \[
+\left\langle 0\left|\left[\widehat{\kappa},\widehat{\rho}\right]\right|0\right\rangle =\left\langle 0\left|\widetilde{\rho}\right|0\right\rangle =\widetilde{\Omega}_{ii};\quad\widetilde{\rho}=\widetilde{\Omega}_{pq}a_{p}^{\dagger}a_{q};\quad\widetilde{\Omega}_{pq}=\kappa_{pt}\Omega_{tq}-\Omega_{pt}\kappa_{tq}\]
+
+\end_inset 
+
+ from which we obtain
+\begin_inset Formula \[
+\D\left.\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\right|_{\boldsymbol{\kappa}=0}=-\D\left.\frac{\partial\rho}{\partial\kappa_{ia}}\right|_{\boldsymbol{\kappa}=0}=-\Omega_{ai}.\]
+
+\end_inset 
+
+ From the second order term we obtain
+\begin_inset Formula \begin{eqnarray*}
+A_{ai,bj} & = & \D\frac{\partial}{\partial\kappa_{bj}}\left[-\widetilde{\Omega}_{ai}\right]=-\left[\delta_{ab}\Omega_{ji}-\delta_{ji}\Omega_{ab}\right]\\
+B_{ai,bj} & = & \D\frac{\partial}{\partial\kappa_{jb}}\left[-\widetilde{\Omega}_{ai}\right]=0\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Subsection
+
+Expansion of gradient of density
+\layout Standard
+
+The 
+\begin_inset Formula $\zeta$
+\end_inset 
+
+-variable can be expanded as
+\begin_inset Formula \begin{eqnarray*}
+\zeta(\mathbf{r},\boldsymbol{\kappa}) & = & \mathbf{q}_{pq}\cdot\mathbf{q}_{rs}\left\langle \tilde{0}(\boldsymbol{\kappa})\left|a_{p}^{\dagger}a_{q}\right|\tilde{0}(\boldsymbol{\kappa})\right\rangle \left\langle \tilde{0}(\boldsymbol{\kappa})\left|a_{r}^{\dagger}a_{s}\right|\tilde{0}(\boldsymbol{\kappa})\right\rangle \\
+ & = & \boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho_{0}+2\boldsymbol{\nabla}\rho_{0}\cdot\widetilde{\mathbf{q}}_{ii}+\widetilde{\mathbf{q}}_{ii}\cdot\widetilde{\mathbf{q}}_{jj}+\boldsymbol{\nabla}\rho_{0}\cdot\widetilde{\widetilde{\mathbf{q}}}_{ii}+\ldots\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Subsection
+
+Gradient
+\layout Standard
+
+We need
+\begin_inset Formula \[
+\D\frac{de_{xc}}{d\kappa_{pq}}=\frac{\partial e_{xc}}{\partial\rho}\frac{\partial\rho}{\partial\kappa_{pq}}+\frac{\partial e_{xc}}{\partial\zeta}\frac{\partial\zeta}{\partial\kappa_{pq}}\]
+
+\end_inset 
+
+The gradient vector is given by
+\begin_inset Formula \[
+\mathbf{E}_{X}^{[1]}=\left[\begin{array}{l}
+\mathbf{g}\\
+\mathbf{g}^{*}\end{array}\right];\quad g_{ai}=\left.\frac{\partial E_{X}}{\partial\kappa_{ai}^{*}}\right|_{{\mb\kappa}=0}=\left\langle 0\left|\left[-i^{\dagger}a,\hat{H}_{X}\right]\right|0\right\rangle =-F_{ai}\]
+
+\end_inset 
+
+ with
+\begin_inset Formula \[
+F_{pq}=h_{pq}+\D\sum\left[\left(pq\left|\right.jj\right)-\gamma\left(pj\left|\right.jq\right)\right]+\int\left(\left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0}\Omega_{pq}+2\left.\frac{\partial e_{xc}}{\partial\zeta}\right|_{0}\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{pq}\right)d\mathbf{r}\]
+
+\end_inset 
+
+
+\layout Standard
+\noindent 
+We furthermore have
+\begin_inset Formula \[
+\D\frac{\partial e_{xc}}{\partial\zeta}=\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{\partial\left|\boldsymbol{\nabla}\rho\right|}{\partial\zeta}=\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{2\left|\boldsymbol{\nabla}\rho\right|}\]
+
+\end_inset 
+
+In 
+\shape smallcaps 
+dirac
+\shape default 
+ the routine 
+\shape smallcaps 
+dftpot1
+\shape default 
+ returns 
+\begin_inset Formula \[
+\textrm{vx(fr0)}=\D\frac{\partial e_{xc}}{\partial\rho};\quad\textrm{vx(fz0)$=\D\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}$}\]
+
+\end_inset 
+
+The latter quantity is then modified to
+\begin_inset Formula \[
+\textrm{vx(fz0)}=\D\frac{2}{\left|\boldsymbol{\nabla}\rho\right|}\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}=4\frac{\partial e_{xc}}{\partial\zeta}\]
+
+\end_inset 
+
+The routine 
+\shape smallcaps 
+doexc2
+\shape default 
+ next constructs the matrix
+\begin_inset Formula \[
+F_{pq}=\int\left(\phi_{p}\left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0}\phi_{q}+4\phi_{p}\left.\frac{\partial e_{xc}}{\partial\zeta}\right|_{0}\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\phi_{q}\right)d\mathbf{r}\]
+
+\end_inset 
+
+ which is then symmetrized to give the desired
+\begin_inset Formula \[
+F_{pq}=\frac{1}{2}\left(F_{pq}+F_{qp}\right)=\int\left(\left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0}\Omega_{pq}+4\left.\frac{\partial e_{xc}}{\partial\zeta}\right|_{0}\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{pq}\right)d\mathbf{r}\]
+
+\end_inset 
+
+
+\layout Subsection
+
+Hessian
+\layout Standard
+
+We have
+\begin_inset Formula \begin{eqnarray*}
+\D\frac{\partial e_{xc}^{2}}{\partial\kappa_{pq}\partial\kappa_{rs}} & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\frac{\partial\rho}{\partial\kappa_{pq}}\frac{\partial\rho}{\partial\kappa_{rs}}+\frac{\partial e_{xc}}{\partial\rho}\frac{\partial^{2}\rho}{\partial\kappa_{pq}\partial\kappa_{rs}}\\
+ & + & \frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left(\frac{\partial\rho}{\partial\kappa_{pq}}\frac{\partial\zeta}{\partial\kappa_{rs}}+\frac{\partial\zeta}{\partial\kappa_{pq}}\frac{\partial\rho}{\partial\kappa_{rs}}\right)+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\frac{\partial\zeta}{\partial\kappa_{pq}}\frac{\partial\zeta}{\partial\kappa_{rs}}+\frac{\partial e_{xc}}{\partial\zeta}\frac{\partial^{2}\zeta}{\partial\kappa_{pq}\partial\kappa_{rs}}\end{eqnarray*}
+
+\end_inset 
+
+from which one obtains
+\begin_inset Formula \begin{eqnarray*}
+\frac{\partial^{2}e_{xc}}{\partial\kappa_{ai}^{*}\partial\kappa_{bj}} & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\Omega_{ai}\Omega_{jb}+\frac{\partial e_{xc}}{\partial\rho}\left[\delta_{ij}\Omega_{ab}-\delta_{ab}\Omega_{ji}\right]\\
+ & + & 2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left[\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{ai}\right)\Omega_{jb}+\Omega_{ai}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{jb}\right)\right]\\
+ & + & 4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{ai}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{jb}\right)+2\frac{\partial e_{xc}}{\partial\zeta}\left[\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\Omega_{jb}+\boldsymbol{\nabla}\rho_{0}\cdot\left(\delta_{ij}\boldsymbol{\nabla}\Omega_{ab}-\delta_{ab}\boldsymbol{\nabla}\Omega_{ji}\right)\right]\\
+\frac{\partial^{2}e_{xc}}{\partial\kappa_{ai}^{*}\partial\kappa_{bj}^{*}} & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\Omega_{ai}\Omega_{bj}\\
+ & + & 2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left[\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{ai}\right)\Omega_{bj}+\Omega_{ai}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{bj}\right)\right]\\
+ &  & 4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{ai}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{bj}\right)+2\frac{\partial e_{xc}}{\partial\zeta}\left[\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\Omega_{bj}\right]\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Standard
+
+We have
+\begin_inset Formula \begin{eqnarray*}
+\D\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}} & = & \frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|^{2}}\frac{1}{4\left|\boldsymbol{\nabla}\rho\right|^{2}}-\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{4\left|\boldsymbol{\nabla}\rho\right|^{3}}\\
+\D\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta} & = & \frac{\partial e_{xc}}{\partial\rho\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{2\left|\boldsymbol{\nabla}\rho\right|}\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Standard
+
+The 
+\begin_inset Formula $\sigma$
+\end_inset 
+
+- vector has elements
+\begin_inset Formula \begin{eqnarray*}
+\sigma_{ai} & = & \D\int\left\{ \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\Omega_{ai}\rho^{(1)}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left[\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho_{0}\right)\rho^{(1)}+\Omega_{ai}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)\right]\right.\\
+ & + & \left.\D4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho_{0}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)+2\frac{\partial e_{xc}}{\partial\zeta}\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)\right\} d\mathbf{r}\\
+ & = & \D\int\left\{ \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\Omega_{ai}\rho^{(1)}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{\left|\boldsymbol{\nabla}\rho\right|}\left[\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho_{0}\right)\rho^{(1)}+\Omega_{ai}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)\right]\right.\\
+ & + & \left.\left[\D\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|^{2}}\frac{1}{\left|\boldsymbol{\nabla}\rho\right|^{2}}-\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{\left|\boldsymbol{\nabla}\rho\right|^{3}}\right]\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho_{0}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)+\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{\left|\boldsymbol{\nabla}\rho\right|}\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)\right\} d\mathbf{r}\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Subsection
+
+Spin-orbital basis
+\layout Standard
+
+In the functional routines of 
+\shape smallcaps 
+dirac
+\shape default 
+ the various derivatives are expressed as
+\begin_inset Formula \[
+\textrm{dPQRST}=\D\left(\frac{\partial}{\partial\rho^{\alpha}}\right)^{P}\left(\frac{\partial}{\partial\rho^{\beta}}\right)^{Q}\left(\frac{\partial}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}\right)^{R}\left(\frac{\partial}{\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\right)^{S}\left(\frac{\partial}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\right)^{T}e_{xc}\]
+
+\end_inset 
+
+In this section we develop rules for expressing derivatives of variables
+ 
+\begin_inset Formula $\rho$
+\end_inset 
+
+and 
+\begin_inset Formula $\left|\boldsymbol{\rho}\right|$
+\end_inset 
+
+ in terms of quantities dPQRST.
+ Consider the quantities
+\begin_inset Formula \begin{eqnarray*}
+\boldsymbol{\nabla}\rho & = & \boldsymbol{\nabla}\rho^{\alpha}+\boldsymbol{\nabla}\rho^{\beta}\\
+\boldsymbol{\nabla}s & = & \boldsymbol{\nabla}\rho^{\alpha}-\boldsymbol{\nabla}\rho^{\beta}\end{eqnarray*}
+
+\end_inset 
+
+from which we obtain
+\begin_inset Formula \begin{eqnarray*}
+\left|\boldsymbol{\nabla}\rho\right|^{2} & = & \left|\boldsymbol{\nabla}\rho^{\alpha}\right|^{2}+\left|\boldsymbol{\nabla}\rho^{\beta}\right|^{2}+2\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\\
+\left|\boldsymbol{\nabla}s\right|^{2} & = & \left|\boldsymbol{\nabla}\rho^{\alpha}\right|^{2}+\left|\boldsymbol{\nabla}\rho^{\beta}\right|^{2}-2\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\\
+2\boldsymbol{\nabla}\rho\cdot\boldsymbol{\nabla}s & = & 2\left(\left|\boldsymbol{\nabla}\rho^{\alpha}\right|^{2}-\left|\boldsymbol{\nabla}\rho^{\beta}\right|^{2}\right)\end{eqnarray*}
+
+\end_inset 
+
+We invert the equations 
+\begin_inset Formula \begin{eqnarray*}
+\left|\boldsymbol{\nabla}\rho^{\alpha}\right| & = & \frac{1}{2}\sqrt{\left|\boldsymbol{\nabla}\rho\right|^{2}+\left|\boldsymbol{\nabla}s\right|^{2}+2\boldsymbol{\nabla}\rho\cdot\boldsymbol{\nabla}s}\\
+\left|\boldsymbol{\nabla}\rho^{\beta}\right| & = & \frac{1}{2}\sqrt{\left|\boldsymbol{\nabla}\rho\right|^{2}+\left|\boldsymbol{\nabla}s\right|^{2}-2\boldsymbol{\nabla}\rho\cdot\boldsymbol{\nabla}s}\\
+\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta} & = & \frac{1}{4}\left(\left|\boldsymbol{\nabla}\rho\right|^{2}-\left|\boldsymbol{\nabla}s\right|^{2}\right)\end{eqnarray*}
+
+\end_inset 
+
+
+\series bold 
+First derivatives
+\series default 
+ are now given by
+\layout Standard
+
+
+\begin_inset Formula \begin{eqnarray*}
+\D\frac{\partial e_{xc}}{\partial\rho} & = & \frac{\partial e_{xc}}{\partial\rho^{\alpha}}\frac{\partial\rho^{\alpha}}{\partial\rho}+\frac{\partial e_{xc}}{\partial\rho^{\beta}}\frac{\partial\rho^{\beta}}{\partial\rho}=\frac{1}{2}\frac{\partial e_{xc}}{\partial\rho^{\alpha}}+\frac{1}{2}\frac{\partial e_{xc}}{\partial\rho^{\beta}}\\
+\D\frac{\partial e_{xc}}{\partial\left|\nabla\rho\right|} & = & \frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}\frac{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}{\partial\left|\boldsymbol{\nabla}\rho\right|}+\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\frac{\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}{\partial\left|\boldsymbol{\nabla}\rho\right|}+\frac{\partial e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\frac{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}{\partial\left|\boldsymbol{\nabla}\rho\right|}\\
+ & = & \frac{1}{4}\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}\frac{\left|\boldsymbol{\nabla}\rho\right|}{\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}+\frac{1}{4}\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\frac{\left|\boldsymbol{\nabla}\rho\right|}{\left|\boldsymbol{\nabla}\rho^{\beta}\right|}+\frac{1}{2}\frac{\partial e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|\\
+\D\frac{\partial e_{xc}}{\partial\left|\nabla s\right|} & = & \frac{1}{4}\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}\frac{\left|\boldsymbol{\nabla}s\right|}{\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}+\frac{1}{4}\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\frac{\left|\boldsymbol{\nabla}s\right|}{\left|\boldsymbol{\nabla}\rho^{\beta}\right|}-\frac{1}{2}\frac{\partial e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}s\right|\end{eqnarray*}
+
+\end_inset 
+
+In the closed-shell case this reduces to
+\begin_inset Formula \begin{eqnarray*}
+\D\frac{\partial e_{xc}}{\partial\rho} & = & \frac{\partial e_{xc}}{\partial\rho^{\alpha}}\\
+\frac{\partial e_{xc}}{\partial\left|\nabla\rho\right|} & = & \frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}+\frac{1}{2}\frac{\partial e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|\\
+\frac{\partial e_{xc}}{\partial\left|\nabla s\right|} & = & \frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}-\frac{1}{2}\frac{\partial e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}s\right|\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Standard
+
+The simplest 
+\series bold 
+second-derivative
+\series default 
+ is
+\begin_inset Formula \[
+\D\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}=\frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha2}}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\rho^{\beta}}+\frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\rho^{\beta2}}\quad\rightarrow\quad\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha2}}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\rho^{\beta}}\quad\textrm{(closed shell)}\]
+
+\end_inset 
+
+Then comes
+\begin_inset Formula \begin{eqnarray*}
+\D\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho\right|^{2}} & = & \frac{1}{16}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|^{2}}\left(\frac{\left|\boldsymbol{\nabla}\rho\right|}{\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}\right)^{2}+\frac{1}{16}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|^{2}}\left(\frac{\left|\boldsymbol{\nabla}\rho\right|}{\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\right)^{2}+\frac{1}{8}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\frac{\left|\boldsymbol{\nabla}\rho\right|}{\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}\frac{\left|\boldsymbol{\nabla}\rho\right|}{\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\\
+ & + & \frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\frac{\left|\boldsymbol{\nabla}\rho\right|^{2}}{\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}+\frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\frac{\left|\boldsymbol{\nabla}\rho\right|^{2}}{\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\\
+ & + & \frac{1}{4}\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}\left(\frac{1}{\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}-\frac{1}{4}\frac{\left|\boldsymbol{\nabla}\rho\right|^{2}}{\left|\boldsymbol{\nabla}\rho^{\alpha}\right|^{3}}\right)+\frac{1}{4}\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\left(\frac{1}{\left|\boldsymbol{\nabla}\rho^{\beta}\right|}-\frac{1}{4}\frac{\left|\boldsymbol{\nabla}\rho\right|^{2}}{\left|\boldsymbol{\nabla}\rho^{\beta}\right|^{3}}\right)\\
+ & + & \frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)^{2}}\left|\boldsymbol{\nabla}\rho\right|^{2}+\frac{1}{2}\frac{\partial e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Standard
+
+In the closed-shell case this reduces to
+\begin_inset Formula \begin{eqnarray*}
+\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho\right|^{2}} & = & \frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|^{2}}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}+\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|\\
+ & + & \frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)^{2}}\left|\boldsymbol{\nabla}\rho\right|^{2}+\frac{1}{2}\frac{\partial e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\end{eqnarray*}
+
+\end_inset 
+
+The mixed second-dervative is given by
+\begin_inset Formula \begin{eqnarray*}
+\D\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho\right|\partial\rho} & = & \frac{1}{8}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}\frac{\left|\boldsymbol{\nabla}\rho\right|}{\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}+\frac{1}{8}\frac{\partial^{2}e_{xc}}{\partial\rho^{\beta}\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\frac{\left|\boldsymbol{\nabla}\rho\right|}{\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\\
+ & + & \frac{1}{8}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}\frac{\left|\boldsymbol{\nabla}\rho\right|}{\left|\boldsymbol{\nabla}\rho^{\beta}\right|}+\frac{1}{8}\frac{\partial^{2}e_{xc}}{\partial\rho^{\beta}\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}\frac{\left|\boldsymbol{\nabla}\rho\right|}{\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}\\
+ & + & \frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|+\frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\rho^{\beta}\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|\end{eqnarray*}
+
+\end_inset 
+
+and reduces in the closed-shell case to
+\begin_inset Formula \[
+\D\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho\right|\partial\rho}=\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|\]
+
+\end_inset 
+
+
+\layout Standard
+
+
+\series bold 
+Third-order derivatives:
+\newline 
+
+\series default 
+First
+\layout Standard
+
+
+\begin_inset Formula \[
+\frac{\partial^{3}e_{xc}}{\partial\rho^{3}}=\frac{1}{8}\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\alpha}\right)^{3}}+\frac{3}{8}\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\alpha}\right)^{2}\partial\rho^{\beta}}+\frac{3}{8}\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left(\rho^{\beta}\right)^{2}}+\frac{1}{8}\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\beta}\right)^{3}}\]
+
+\end_inset 
+
+ In the closed-shell case this reduces to
+\layout Standard
+
+
+\begin_inset Formula \[
+\frac{\partial^{3}e_{xc}}{\partial\rho^{3}}=\frac{1}{4}\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\alpha}\right)^{3}}+\frac{3}{4}\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\alpha}\right)^{2}\partial\rho^{\beta}}\]
+
+\end_inset 
+
+ Second
+\layout Standard
+
+
+\begin_inset Formula \begin{align*}
+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\left|\nabla\rho\right|}= & \frac{1}{2^{4}}\left[\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\alpha}\right)^{2}\partial\left|\nabla\rho^{\alpha}\right|}+2\frac{\partial^{3}e_{ex}}{\partial\rho^{\alpha}\partial\rho^{\beta}\partial\left|\nabla\rho^{\alpha}\right|}+\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\beta}\right)^{2}\partial\left|\nabla\rho^{\alpha}\right|}\right]\frac{\left|\nabla\rho\right|}{\left|\nabla\rho^{\alpha}\right|}\\
+ & +\frac{1}{2^{4}}\left[\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\alpha}\right)^{2}\partial\left|\nabla\rho^{\beta}\right|}+2\frac{\partial^{3}e_{ex}}{\partial\rho^{\alpha}\partial\rho^{\beta}\partial\left|\nabla\rho^{\beta}\right|}+\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\beta}\right)^{2}\partial\left|\nabla\rho^{\beta}\right|}\right]\frac{\left|\nabla\rho\right|}{\left|\nabla\rho^{\beta}\right|}\\
+ & +\frac{1}{2^{3}}\left[\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\alpha}\right)^{2}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}+2\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\rho^{\beta}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}+\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\beta}\right)^{2}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\right]\left|\nabla\rho\right|\end{align*}
+
+\end_inset 
+
+ which in the closed-shell case reduces to
+\layout Standard
+
+
+\begin_inset Formula \begin{align*}
+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\left|\nabla\rho\right|}= & \frac{1}{2^{2}}\left[\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\alpha}\right)^{2}\partial\left|\nabla\rho^{\alpha}\right|}+\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\alpha}\right)^{2}\partial\left|\nabla\rho^{\beta}\right|}+2\frac{\partial^{3}e_{ex}}{\partial\rho^{\alpha}\partial\rho^{\beta}\partial\left|\nabla\rho^{\alpha}\right|}\right]\\
+ & +\frac{1}{2^{2}}\left[\frac{\partial^{3}e_{xc}}{\partial\left(\rho^{\alpha}\right)^{2}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}+\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\rho^{\beta}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\right]\left|\nabla\rho\right|\end{align*}
+
+\end_inset 
+
+ Third
+\layout Standard
+
+
+\begin_inset Formula \begin{align*}
+\frac{\partial^{3}e_{xc}}{\partial\rho\partial\left|\nabla\rho\right|^{2}}= & \frac{1}{2^{5}}\left[\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\alpha}\right|^{2}}+\frac{\partial^{3}e_{xc}}{\partial\rho^{\beta}\partial\left|\nabla\rho^{\alpha}\right|^{2}}\right]\frac{\left|\nabla\rho\right|^{2}}{\left|\nabla\rho^{\alpha}\right|^{2}}\\
+ & +\frac{1}{2^{5}}\left[\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\beta}\right|^{2}}+\frac{\partial^{3}e_{xc}}{\partial\rho^{\beta}\partial\left|\nabla\rho^{\beta}\right|^{2}}\right]\frac{\left|\nabla\rho\right|^{2}}{\left|\nabla\rho^{\beta}\right|^{2}}\\
+ & +\frac{1}{2^{4}}\left[\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\alpha}\right|\partial\left|\nabla\rho^{\beta}\right|}+\frac{\partial^{3}e_{xc}}{\partial\rho^{\beta}\partial\left|\nabla\rho^{\alpha}\right|\partial\left|\nabla\rho^{\beta}\right|}\right]\frac{\left|\nabla\rho\right|^{2}}{\left|\nabla\rho^{\alpha}\right|\left|\nabla\rho^{\beta}\right|}\\
+ & +\frac{1}{2^{3}}\left[\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\alpha}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}+\frac{\partial^{3}e_{xc}}{\partial\rho^{\beta}\partial\left|\nabla\rho^{\alpha}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\right]\frac{\left|\nabla\rho\right|^{2}}{\left|\nabla\rho^{\alpha}\right|}\\
+ & +\frac{1}{2^{3}}\left[\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\beta}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}+\frac{\partial^{3}e_{xc}}{\partial\rho^{\beta}\partial\left|\nabla\rho^{\beta}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\right]\frac{\left|\nabla\rho\right|^{2}}{\left|\nabla\rho^{\beta}\right|}\\
+ & +\frac{1}{2^{3}}\left[\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)^{2}}+\frac{\partial^{3}e_{xc}}{\partial\rho^{\beta}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)^{2}}\right]\left|\nabla\rho\right|^{2}\\
+ & +\frac{1}{2^{3}}\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\alpha}\right|}+\frac{\partial^{2}e_{xc}}{\partial\rho^{\beta}\partial\left|\nabla\rho^{\alpha}\right|}\right]\cdot\left[\frac{1}{\left|\nabla\rho^{\alpha}\right|}-\frac{1}{2²}\frac{\left|\nabla\rho\right|^{2}}{\left|\nabla\rho^{\alpha}\right|^{3}}\right]\\
+ & +\frac{1}{2^{3}}\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\beta}\right|}+\frac{\partial^{2}e_{xc}}{\partial\rho^{\beta}\partial\left|\nabla\rho^{\beta}\right|}\right]\cdot\left[\frac{1}{\left|\nabla\rho^{\beta}\right|}-\frac{1}{2²}\frac{\left|\nabla\rho\right|^{2}}{\left|\nabla\rho^{\beta}\right|^{3}}\right]\\
+ & +\frac{1}{2²}\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}+\frac{\partial^{2}e_{xc}}{\partial\rho^{\beta}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\right]\end{align*}
+
+\end_inset 
+
+ which in the closed-shell case reduces to
+\layout Standard
+\pagebreak_bottom 
+
+\begin_inset Formula \begin{align*}
+\frac{\partial^{3}e_{xc}}{\partial\rho\partial\left|\nabla\rho\right|^{2}}= & \frac{1}{2^{2}}\left[\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\alpha}\right|^{2}}+\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\beta}\right|^{2}}\right]+\frac{1}{2}\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\alpha}\right|\partial\left|\nabla\rho^{\beta}\right|}\\
+ & +\frac{1}{2}\left[\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\alpha}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}+\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\beta}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\right]\left|\nabla\rho\right|\\
+ & +\frac{1}{2^{2}}\frac{\partial^{3}e_{xc}}{\partial\rho^{\alpha}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)^{2}}\left|\nabla\rho\right|^{2}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\end{align*}
+
+\end_inset 
+
+
+\layout Standard
+\noindent 
+Fourth
+\begin_inset Formula \begin{align*}
+\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho\right|^{3}}= & \frac{1}{2^{6}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|^{3}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\alpha}\right|^{3}}+\frac{1}{2^{6}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\beta}\right|^{3}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\beta}\right|^{3}}\\
+ & +\frac{3}{2^{6}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|^{2}\partial\left|\nabla\rho^{\beta}\right|}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\alpha}\right|^{2}\left|\nabla\rho^{\beta}\right|}+\frac{3}{2^{6}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|\partial\left|\nabla\rho^{\beta}\right|^{2}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\alpha}\right|\left|\nabla\rho^{\beta}\right|^{2}}\\
+ & +\frac{3}{2^{5}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|^{2}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\alpha}\right|^{2}}+\frac{3}{2^{5}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\beta}\right|^{2}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\beta}\right|^{2}}\\
+ & +\frac{3}{2^{4}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|\partial\left|\nabla\rho^{\beta}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\alpha}\right|\left|\nabla\rho^{\beta}\right|}\\
+ & +\frac{3}{2^{4}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)^{2}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\alpha}\right|}+\frac{3}{2^{4}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\beta}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)^{2}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\beta}\right|}\\
+ & +\frac{1}{2^{3}}\frac{\partial^{3}e_{xc}}{\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)^{3}}\left|\nabla\rho\right|^{3}\\
+ & +\frac{3}{2^{4}}\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|^{2}}\left[\frac{\left|\nabla\rho\right|}{\left|\nabla\rho^{\alpha}\right|^{2}}-\frac{1}{2^{2}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\alpha}\right|^{4}}\right]+\frac{3}{2^{4}}\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho^{\beta}\right|^{2}}\left[\frac{\left|\nabla\rho\right|}{\left|\nabla\rho^{\beta}\right|^{2}}-\frac{1}{2^{2}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\beta}\right|^{4}}\right]\\
+ & +\frac{3}{2^{3}}\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|\partial\left|\nabla\rho^{\beta}\right|}\left[\frac{\left|\nabla\rho\right|}{\left|\nabla\rho^{\alpha}\right|\left|\nabla\rho^{\beta}\right|}-\frac{1}{2^{3}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\alpha}\right|^{3}\left|\nabla\rho^{\beta}\right|}-\frac{1}{2^{3}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\alpha}\right|\left|\nabla\rho^{\beta}\right|^{3}}\right]\\
+ & +\frac{3}{2^{2}}\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\left[\frac{\left|\nabla\rho\right|}{\left|\nabla\rho^{\alpha}\right|}-\frac{1}{2^{3}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\alpha}\right|^{3}}\right]\\
+ & +\frac{3}{2^{2}}\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho^{\beta}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\left[\frac{\left|\nabla\rho\right|}{\left|\nabla\rho^{\beta}\right|}-\frac{1}{2^{3}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\beta}\right|^{3}}\right]\\
+ & +\frac{3}{2^{2}}\frac{\partial^{2}e_{xc}}{\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)^{2}}\left|\nabla\rho\right|\\
+ & +\frac{3}{2^{4}}\frac{\partial e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|}\left[-\frac{\left|\nabla\rho\right|}{\left|\nabla\rho^{\alpha}\right|^{3}}+\frac{1}{2^{2}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\alpha}\right|^{5}}\right]+\frac{3}{2^{4}}\frac{\partial e_{xc}}{\partial\left|\nabla\rho^{\beta}\right|}\left[-\frac{\left|\nabla\rho\right|}{\left|\nabla\rho^{\beta}\right|^{3}}+\frac{1}{2^{2}}\frac{\left|\nabla\rho\right|^{3}}{\left|\nabla\rho^{\beta}\right|^{5}}\right]\end{align*}
+
+\end_inset 
+
+ which in the closed-shell case reduces to
+\layout Standard
+
+
+\begin_inset Formula \begin{align*}
+\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho\right|^{3}}= & \frac{1}{2^{2}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|^{3}}+\frac{3}{2^{2}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|^{2}\partial\left|\nabla\rho^{\beta}\right|}+\frac{3}{2^{2}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|^{2}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\left|\nabla\rho\right|\\
+ & +\frac{3}{2^{2}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|\partial\left|\nabla\rho^{\beta}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\left|\nabla\rho\right|+\frac{3}{2^{2}}\frac{\partial^{3}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)^{2}}\left|\nabla\rho\right|^{2}\\
+ & +\frac{1}{2^{3}}\frac{\partial^{3}e_{xc}}{\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)^{3}}\left|\nabla\rho\right|^{3}+\frac{3}{2}\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}+\frac{3}{2^{2}}\frac{\partial^{2}e_{xc}}{\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)^{2}}\left|\nabla\rho\right|\end{align*}
+
+\end_inset 
+
+
+\layout Subsection
+\pagebreak_top 
+Expansion of xc energy
+\layout Standard
+
+The third-order contribution to the exchange-correlation energy is formally
+ 
+\layout Itemize
+
+1st order term:
+\begin_inset Formula \[
+\frac{\partial e_{xc}}{\partial\kappa_{pq}}\frac{\partial\kappa_{pq}}{\partial\varepsilon_{A}}=\left(\frac{\partial e_{xc}}{\partial\rho}\frac{\partial\rho}{\partial\kappa_{pq}}+\frac{\delta e_{xc}}{\partial\zeta}\frac{\partial\zeta}{\partial\kappa_{pq}}\right)\kappa_{A;pq}^{(1)}=\frac{\partial e_{xc}}{\partial\rho}\rho_{A}^{(1)}+2\frac{\delta e_{xc}}{\partial\zeta}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{A}^{(1)}\right)\]
+
+\end_inset 
+
+ 
+\layout Itemize
+
+2nd order term:
+\begin_inset Formula \begin{eqnarray*}
+\frac{\partial^{2}e_{xc}}{\partial\kappa_{pq}\partial\kappa_{rs}}\frac{\partial\kappa_{pq}}{\partial\varepsilon_{A}}\frac{\partial\kappa_{rs}}{\partial\varepsilon_{B}} & = & \left\{ \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho_{A}^{(1)}\rho_{B}^{(1)}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left[P_{AB}\rho_{A}^{(1)}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{B}^{(1)}\right)\right]+\right.\\
+ & + & \left.4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{A}^{(1)}\right)\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{B}^{(1)}\right)+\frac{\partial e_{xc}}{\partial\zeta}\left(\boldsymbol{{\nabla}}\rho_{A}^{(1)}\cdot\boldsymbol{{\nabla}}\rho_{B}^{(1)}\right)\right\} \\
+ & + & \left\{ \frac{\partial e_{xc}}{\partial\rho}\rho_{AB}^{(2)}+2\frac{\partial e_{xc}}{\partial\zeta}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{AB}^{(2)}\right)\right\} \end{eqnarray*}
+
+\end_inset 
+
+
+\layout Itemize
+
+3rd order term:
+\begin_inset Formula \begin{eqnarray*}
+\frac{\partial^{3}e_{xc}}{\partial\kappa_{pq}\partial\kappa_{rs}\partial\kappa_{tu}}\frac{\partial\kappa_{pq}}{\partial\varepsilon_{A}}\frac{\partial\kappa_{rs}}{\partial\varepsilon_{B}}\frac{\partial\kappa_{tu}}{\partial\varepsilon_{C}} & = & \left\{ \frac{\partial^{3}e_{xc}}{\partial\rho^{3}}\rho_{A}^{(1)}\rho_{B}^{(1)}\rho_{C}^{(1)}+2\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}P_{ABC}\left[\rho_{A}^{(1)}\rho_{B}^{(1)}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{C}^{(1)}\right)\right]\right.\\
+ & + & 4\frac{\partial^{3}e_{xc}}{\partial\rho\partial\zeta^{2}}P_{ABC}\left[\rho_{A}^{(1)}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{B}^{(1)}\right)\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{C}^{(1)}\right)\right]\\
+ & + & 8\frac{\partial^{3}e_{xc}}{\partial\zeta^{3}}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{A}^{(1)}\right)\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{B}^{(1)}\right)\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{C}^{(1)}\right)\\
+ & + & \frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}P_{ABC}\left[\rho_{A}^{(1)}\left(\boldsymbol{{\nabla}}\rho_{B}^{(1)}\cdot\boldsymbol{{\nabla}}\rho_{C}^{(1)}\right)\right.\\
+ & + & 2\frac{\partial e_{xc}}{\partial\zeta^{2}}P_{ABC}\left[\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{A}^{(1)}\right)\left(\boldsymbol{{\nabla}}\rho_{B}^{(1)}\cdot\boldsymbol{{\nabla}}\rho_{C}^{(1)}\right)\right]\\
+ & + & \left.2\frac{\partial e_{xc}}{\partial\zeta^{2}}P_{ABC}\left[\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{A}^{(1)}\right)\left(\boldsymbol{{\nabla}}\rho_{B}^{(1)}\cdot\boldsymbol{{\nabla}}\rho_{C}^{(1)}\right)\right]\right\} \\
+ & + & \left\{ \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}P_{ABC}\rho_{A}^{(1)}\rho_{BC}^{(2)}\right.\\
+ & + & 2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}P_{ABC}\left[\rho_{AB}^{(2)}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{C}^{(1)}\right)+\rho_{A}^{(1)}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{BC}^{(2)}\right)\right.\\
+ & + & 4\frac{\partial e_{xc}}{\partial\zeta^{2}}P_{ABC}\left[\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{A}^{(1)}\right)\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{BC}^{(2)}\right)\right]\\
+ & + & \left.2\frac{\partial e_{xc}}{\partial\zeta}P_{ABC}\left(\boldsymbol{{\nabla}}\rho_{A}^{(1)}\cdot\boldsymbol{{\nabla}}\rho_{BC}^{(2)}\right)\right\} \\
+ & + & \left\{ \frac{\partial e_{xc}}{\partial\rho}\rho_{ABC}^{(3)}+2\frac{\partial e_{xc}}{\partial\zeta}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho_{ABC}^{(3)}\right)\right\} \end{eqnarray*}
+
+\end_inset 
+
+
+\layout Standard
+
+The contributions have been ordered according to the number of perturbed
+ densities involved.
+ The first-order contribution can be writtten as
+\begin_inset Formula \[
+V_{xc;pq}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau;\quad s=\left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0};\quad\mathbf{v}=2\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho_{0}\]
+
+\end_inset 
+
+ The second-order contribution splits into two terms.
+ The first term may be written
+\begin_inset Formula \[
+V_{xc;pq}^{B}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau;\quad\begin{array}{c}
+s=\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\\
+\\\mathbf{v}=2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho^{B}\boldsymbol{{\nabla}}\rho_{0}+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\boldsymbol{{\nabla}}\rho_{0}+\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho^{B}\end{array}\]
+
+\end_inset 
+
+
+\layout Section
+\pagebreak_top 
+Subroutines for functionals
+\layout Subsection
+
+B88 exchange
+\layout Standard
+
+
+\begin_inset Formula \[
+e_{x}^{B88}=e_{x}^{LDA}+\Delta e_{x}^{B88}\]
+
+\end_inset 
+
+ The B88 correction to the LSDA exchange energy density is
+\begin_inset Formula \begin{eqnarray*}
+\Delta e_{x}^{B88} & = & -\D\sum_{s}\rho_{s}^{4/3}\frac{\beta x_{s}^{2}}{1+\beta x_{s}\sinh^{-1}\left(x_{s}\right)}\\
+ & = & -\D\sum_{s}\left|\boldsymbol{\nabla}\rho_{s}\right|\frac{\beta x_{s}}{1+\beta x_{s}\sinh^{-1}\left(x_{s}\right)}\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Standard
+\noindent 
+where
+\begin_inset Formula \[
+x_{s}=\D\frac{\left|\boldsymbol{\nabla}\rho_{s}\right|}{\rho^{4/3}};\quad\D\frac{\partial x_{s}}{\partial\rho_{s}}=-\frac{4}{3}\frac{x_{s}}{\rho_{s}};\quad\D\frac{\partial x_{s}}{\partial\left|\boldsymbol{\nabla}\rho_{s}\right|}=\D\frac{1}{\rho^{4/3}}.\]
+
+\end_inset 
+
+ First derivatives:
+\begin_inset Formula \begin{eqnarray*}
+\D\frac{\partial e_{x}^{B88}}{\partial x_{s}} & = & \beta\left|\boldsymbol{\nabla}\rho_{s}\right|\frac{6\beta x_{s}^{2}-\sqrt{1+x_{s}^{2}}}{\left[1+\beta x_{s}\sinh^{-1}\left(x_{s}\right)\right]^{2}\sqrt{1+x_{s}^{2}}}\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Section
+
+Subroutines for functionals.old
+\layout Subsection
+
+Dirac exchange
+\layout Standard
+
+The general form of the exhange functional in the local-spin density approximati
+on is
+\begin_inset Formula \[
+E_{X}^{LSDA}\left[\rho_{\alpha},\rho_{\beta}\right]=\int\rho\varepsilon_{X}^{LSDA}(\rho_{\alpha},\rho_{\alpha})d\mathbf{r};\quad C_{X}=\frac{3}{4}\left(\frac{3}{\pi}\right)^{1/3}\]
+
+\end_inset 
+
+ with
+\begin_inset LatexCommand \cite{F.Jensen}
+
+\end_inset 
+
+
+\begin_inset Formula \[
+\varepsilon_{X}^{LSDA}=-\frac{1}{2}C_{X}\rho^{1/3}\left[\left(1+\zeta\right)^{4/3}+\left(1-\zeta\right)^{4/3}\right]\]
+
+\end_inset 
+
+ Observe that with no spin polarization we obtain
+\begin_inset Formula \begin{equation}
+E_{X}^{LSDA}\quad\rightarrow\quad E_{X}^{LDA}=-C_{X}\int\rho^{4/3}d\mathbf{r}\label{eq:LDAx}\end{equation}
+
+\end_inset 
+
+ 
+\layout Subsubsection
+
+Subroutine EDRC
+\layout Standard
+
+The subroutine EDRC calculates the integrand of 
+\begin_inset Formula $E_{X}^{LDA}$
+\end_inset 
+
+ as given in Eq.(
+\begin_inset LatexCommand \ref{eq:LDAx}
+
+\end_inset 
+
+).
+\layout Subsection
+
+Becke exchange (B88)
+\layout Standard
+
+The exchange part of 
+\begin_inset Formula $E_{XC}^{GGA}$
+\end_inset 
+
+ can be written as
+\begin_inset Formula \[
+E_{X}^{GGA}=E_{X}^{LSDA}-\sum_{\sigma}\int F(s_{\sigma})\rho_{\sigma}^{4/3}(\mathbf{r})d\mathbf{r}\]
+
+\end_inset 
+
+ where we have introduced the reduced density gradient for spin 
+\begin_inset Formula $\sigma$
+\end_inset 
+
+
+\begin_inset Formula \[
+s_{\sigma}(\mathbf{r})=\frac{\left|{\nabla}\rho_{\sigma}(\mathbf{r})\right|}{\rho_{\sigma}^{4/3}(\mathbf{r})}\]
+
+\end_inset 
+
+ The Becke exchange functional B88 is given by
+\begin_inset Formula \[
+F^{B88}(s_{\sigma})=\frac{\beta s_{\sigma}^{2}}{1+6\beta s_{\sigma}\sinh^{-1}s_{\sigma}}\]
+
+\end_inset 
+
+ with 
+\begin_inset Formula $\beta$
+\end_inset 
+
+ an empirical parameter fitted to 0.0042.
+ In the case of no spin polarization the GGA exchange reduces to
+\begin_inset Formula \begin{equation}
+E_{X}^{GGA}=E_{X}^{LDA}-\int\left(\frac{1}{3}\right)^{1/3}F^{B88}(x)\rho^{4/3}d\mathbf{r};\quad x=\frac{\left|{\nabla}\rho(\mathbf{r})\right|}{\left(\frac{1}{2}\right)^{1/3}\rho^{4/3}(\mathbf{r})}\label{eq:B88spf}\end{equation}
+
+\end_inset 
+
+
+\layout Subsubsection
+
+Subroutine EBCK 
+\layout Standard
+
+Remembering that
+\begin_inset Formula \[
+\sinh x=\frac{1}{2}\left(e^{x}-e^{-x}\right);\quad\sinh^{-1}y=\ln\left(y+\sqrt{y^{2}+1}\right)\]
+
+\end_inset 
+
+ the subroutine EBCK calculates the (negative) integrand of Eq.(
+\begin_inset LatexCommand \ref{eq:B88spf}
+
+\end_inset 
+
+).
+\layout Subsubsection
+
+Subroutine GBCK
+\layout Standard
+
+Remembering that
+\begin_inset Formula \[
+f(y)=\sinh y\quad\Rightarrow\quad f'(y)=\frac{1}{\sqrt{1+y^{2}}}\]
+
+\end_inset 
+
+ we find that
+\begin_inset Formula \[
+\frac{\partial F(s_{\sigma})}{\partial s_{\sigma}}=\frac{2\beta s_{\sigma}}{1+6\beta s_{\sigma}\sinh^{-1}s_{\sigma}}-\frac{6\beta^{2}s_{\sigma}^{2}(\sinh^{-1}s_{\sigma}+\frac{s}{\sqrt{1+s_{\sigma}^{2}}})}{\left(1+6\beta s_{\sigma}\sinh^{-1}s_{\sigma}\right)^{2}}\]
+
+\end_inset 
+
+
+\layout Bibliography
+\bibitem {parr}
+
+R.G.Parr and W.
+ Yang, 
+\begin_inset Quotes eld
+\end_inset 
+
+Density-Functional Theory of Atoms and Molecules
+\begin_inset Quotes erd
+\end_inset 
+
+, Oxford University Press, New York 1989
+\layout Bibliography
+\bibitem {F.Jensen}
+
+F.Jensen, 
+\begin_inset Quotes eld
+\end_inset 
+
+Introduction to Computational Chemistry
+\begin_inset Quotes erd
+\end_inset 
+
+, Wiley, Chichester 1999
+\layout Bibliography
+\bibitem {Eschrig}
+
+H.Eschrig, 
+\begin_inset Quotes eld
+\end_inset 
+
+The Fundamentals of Density Functional Theory
+\begin_inset Quotes erd
+\end_inset 
+
+, B.G.Teubner Verlagsgesellschaft, Stuttgart 1996
+\layout Bibliography
+\bibitem {Koch&Holthausen}
+
+W.Koch and M.C.
+ Holthausen, 
+\begin_inset Quotes eld
+\end_inset 
+
+A Chemist's Guide to Density Functional Theory
+\begin_inset Quotes erd
+\end_inset 
+
+, Wilecy-VCH,Weinheim 2000
+\the_end
