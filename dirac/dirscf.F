@@ -1244,9 +1244,10 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#if defined (MOD_DFT)
+C#if defined (MOD_DFT)
 #include "dftcom.h"
-#endif
+#include "dftac.h"
+C#endif
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1273,15 +1274,26 @@ C
 C     Start cycle
 C
       CALL FLSHFO(LUPRI)
-*grac 
-      eigmax_previous=0d0
-*grac   
+C
+C     for asymptotic correction
+      EIGMAX_PREVIOUS = D0
+C
+C
       DO 10 ITER = 2,MAXITR
-*grac   
-         IF(DFTGRAC.AND.(.NOT.GRACON)) THEN
-           CALL HOMO(EIG,IBEIG,eigmax_previous)
+C
+C
+C        for asymptotic correction
+C        =========================
+C
+         IF(DOGRAC) THEN
+           CALL DFTAC_ENERGIES(EIG,EIGMAX_PREVIOUS)
          ENDIF
-*grac
+C
+         IF(DOSAOP) THEN
+           CALL DFTAC_ENERGIES(EIG,EIGMAX_PREVIOUS)
+         ENDIF
+C
+C
          NITER  = NITER + 1
          KITER  = KITER + 1
          CALL GTINFO(DAYTID)
@@ -4429,63 +4441,82 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck homo */
-      SUBROUTINE HOMO(EIG,IBEIG,eigmax_previous)
-C**********************************************************************
-C     PURPOSE:
-C        Check for homo orbital eigenvalue
-C
-C***********************************************************************
+C     /* deck dftac_energies */
+      SUBROUTINE DFTAC_ENERGIES(EIG,EIGMAX_PREVIOUS)
+C  .....................................................................
+C  .                                                                   .
+C  .  DFTAC_ENERGIES                                                   .
+C  .  check orbital energy convergence                                 .
+C  .  for asymptotic correction                                        .
+C  .                                                                   .
+C  .  modelled after Andreas Hesselmann's routine HOMO                 .
+C  .  which has been incorporated into this one, so thanks Andreas!    .
+C  .                                                                   .
+C  .....................................................................
+C  .  andreas hesselmann        written                   revision     .
+C  .  radovan bast              january 2005              22/04/2005   .
+C  .....................................................................
+C       
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D2=2.0D0)
 C
-#include "mxcent.h"
-#include "frame.h"
-#include "nuclei.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C
 #include "dcborb.h"
+#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-#include "dftbuf.h"
 #include "dftcom.h"
-      CHARACTER FMT*6,MXFORM*6
+#include "dftac.h"
+C
+      LOGICAL FIRSTTIME
+C
       DIMENSION EIG(*)
 C
-      CALL QENTER('HOMO')
-      write(lupri,*) 'Enter HOMO'
 C
-      eigmax=-1d4
-      DO IFRP = 1,NFSYM
-        IF(NOCC(IFRP).GT.0) THEN
-           IF (NISHT .GT. 0) THEN
-              do i=1,NISH(IFRP)
-                 eps=EIG(IORB(IFRP)+NPSH(IFRP)+i)
-                 write(lupri,'(2i6,f16.8)') IFRP,i,eps
-                 if(eps.gt.eigmax) eigmax=eps
-              enddo
-           END IF
-           IF (AOC) THEN
-             IDX = IORB(IFRP)+NPSH(IFRP)+NISH(IFRP)+1
-             DO IOPEN = 1,NOPEN
-                E1PART = E1PART + D2*DF(IOPEN)*DSUM(NACSH(IFRP,IOPEN),
-     &                    EIG(IDX),1)
-                IDX = IDX + NACSH(IFRP,IOPEN)
-             END DO
-           END IF
-        ENDIF
-      ENDDO
-
-      write(lupri,'(1x,a,f16.8)') 'HOMO eigenvalue: ',eigmax
-      if(eigmax_previous.ne.0d0) then
-         delta_eig=eigmax-eigmax_previous
-         write(lupri,'(1x,a,f16.8)') 'Delta(HOMO):     ',delta_eig
-         if(abs(delta_eig).lt.1d-4) GRACON=.TRUE.
-      endif
-      eigmax_previous=eigmax
+C     get the highest eigenvalue
+C     ==========================
 C
-      CALL QEXIT('HOMO')
+      IF(.NOT.GRACON) THEN
+        EIGMAX = D0
+        FIRSTTIME = .TRUE.
+        DO I = 1,NFSYM
+          IF(NISH(I).GT.0) THEN
+            DO J = 1,NISH(I)
+              E = EIG(J+(I-1)*NORB(1)+NPSH(I))
+              IF(FIRSTTIME) EIGMAX = E
+              FIRSTTIME = .FALSE.
+              IF(E.GT.EIGMAX) EIGMAX = E
+            ENDDO
+          ENDIF
+        ENDDO
+      ENDIF
+C
+C
+C     turn asymptotic correction on
+C     =============================
+C
+      DELTAEIGMAX = ABS(EIGMAX_PREVIOUS-EIGMAX)
+C
+      SAOPON = .TRUE.
+C
+      IF(DELTAEIGMAX.LE.ACTHRESHOLD) THEN
+        IF(DOGRAC.AND.(.NOT.GRACON)) GRACON = .TRUE.
+      ENDIF
+C
+      IF(DOGRAC.AND.GRACON)
+     &                WRITE(LUPRI,*) 'GRAC asymptotic correction active'
+      IF(DOSAOP.AND.SAOPON)
+     &                WRITE(LUPRI,*) 'SAOP asymptotic correction active'
+C
+      IF((DOSAOP.AND.SAOPON).OR.(DOGRAC.AND.GRACON)) THEN
+        ICOUNTAC = ICOUNTAC+1
+      ENDIF
+C
+C     IF(ICOUNTAC.GT.15) DODUMP = .TRUE.
+C
+      EIGMAX_PREVIOUS = EIGMAX
+C
+C
       RETURN
-C
       END
-
-

@@ -45,12 +45,12 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 13)
+      PARAMETER (NTABLE = 16)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
       LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, ACWORD*4
       DIMENSION WORK(LWORK)
 C
 #include "mxcent.h"
@@ -59,14 +59,15 @@ C
 #include "dcbham.h"
 #include "dfterg.h"
 #include "dftcom.h"
+#include "dftac.h"
 #include "dftbuf.h"
 #include "functionals.h"
 C
       SAVE SET
-      DATA TABLE /'.XXXXXX','.FROMVX','.DFTAC ','.RADINT',
+      DATA TABLE /'.XXXXXX','.FROMVX','.XXXXXX','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
-     &            '.XXXXXX'/
+     &            '.SAOP  ','.SAOP! ','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -80,6 +81,7 @@ C
          SET = .TRUE.
       END IF
 C
+C
 C     Initialize /DFTCOM/ and integration parameters
 C     ==============================================
 C
@@ -91,7 +93,6 @@ C          geometry in a geometry optimization) /hjaaj
       DFTPOT = .FALSE.
       DFTORD = .FALSE.
       DFTASC = .FALSE.
-      DFTGRAC= .FALSE.
       RADINT = 1.0D-13
       ANGINT = 41
       INTCHK = 0
@@ -101,6 +102,21 @@ C          geometry in a geometry optimization) /hjaaj
       NOPRUN = .FALSE.
       ANGMIN = 15  
       ATSIZE = .FALSE.
+C
+C
+C     initialize /DFTAC/
+C     ==================
+C
+      DOGRAC     = .FALSE.
+      GRACON     = .FALSE.
+      DOSAOP     = .FALSE.
+      SAOPON     = .FALSE.
+      DORESP     = .FALSE.
+      DOLB94     = .FALSE.
+      DOLBALPHA  = .FALSE.
+      DODUMP     = .FALSE.
+      ICOUNTAC   = 0
+C
 C
 C     Process input for DFTCAL
 C     ========================
@@ -118,7 +134,8 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12),I
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                     11,12,13,14,15,16), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -137,10 +154,6 @@ C&&& DFTPOT: calculate Kohn-Sham matrix directly using v_xc
                  DFTPOT = .TRUE.
                  GO TO 100
  3               CONTINUE
-C&&& DFTAC: asymptotic correction
-                 DFTASC = .TRUE.
-                 DFTPOT = .TRUE.
-                 READ (LUCMD,*) DFTIPT, DFTBR1, DFTBR2
                  GO TO 100
  4               CONTINUE
 C&&& RADINT: Give relative precision of the radial integration
@@ -180,11 +193,47 @@ C&&& ERRELS: Threshold for accepted error in integrated number of electrons
                  GO TO 100
  12              CONTINUE
 C&&& GRAC: gradient regulated asymptotic correction
-                 DFTGRAC = .TRUE.
-                 GRACON = .FALSE.
-                 READ(LUCMD,*) GRACIP, GRACALPHA, GRACBETA
-                 GO TO 100
+                 DOGRAC = .TRUE.
+                 READ(LUCMD,'(A4)') ACWORD
+                 IF(ACWORD.EQ.'LB94') THEN
+                   DOLB94 = .TRUE.
+                 ELSEIF(ACWORD.EQ.'LBAL') THEN
+                   DOLBALPHA = .TRUE.
+                 ELSEIF(ACWORD.EQ.'LBAl') THEN
+                   DOLBALPHA = .TRUE.
+                 ELSEIF(ACWORD.EQ.'LBal') THEN
+                   DOLBALPHA = .TRUE.
+                 ELSE
+C                  panic
+                 ENDIF
+                 READ(LUCMD,*) GRACALPHA, GRACBETA, ACIP, ACTHRESHOLD
+                 GOTO 100
  13              CONTINUE
+C&&& SAOP: statistical averaging of (model) orbital potentials
+                 DOSAOP = .TRUE.
+                 READ(LUCMD,'(A4)') ACWORD
+                 IF(ACWORD.EQ.'LB94') THEN
+                   DOLB94 = .TRUE.
+                 ELSEIF(ACWORD.EQ.'LBAL') THEN
+                   DOLBALPHA = .TRUE.
+                 ELSEIF(ACWORD.EQ.'LBAl') THEN
+                   DOLBALPHA = .TRUE.
+                 ELSEIF(ACWORD.EQ.'LBal') THEN
+                   DOLBALPHA = .TRUE.
+                 ELSE
+C                  panic
+                 ENDIF
+                 GOTO 100
+ 14              CONTINUE
+C&&& SAOP!: "original" SAOP as in JCP 112, 1344 (2000).
+                 DOSAOP      = .TRUE.
+                 DORESP      = .TRUE.
+                 DOLBALPHA   = .TRUE.
+                 ALDAON      = .TRUE.
+                 GOTO 100
+ 15              CONTINUE
+                 GO TO 100
+ 16              CONTINUE
                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -230,14 +279,40 @@ C
 C
   999 CONTINUE
 C
-      IF(dftgrac) THEN
-         WRITE(lupri,'(1x,a)') 
-     >          '* Gradient regulated asymptotic correction:'
-         WRITE(lupri,'(3x,a,f12.6)') 'I.P.= ',GRACIP
-         WRITE(lupri,'(3x,a,f12.6)') 'alpha=',GRACALPHA
-         WRITE(lupri,'(3x,a,f12.6)') 'beta= ',GRACBETA
+C
+      IF(DOGRAC) THEN
+        WRITE(LUPRI,'(A)') 
+     &        ' * Gradient regulated asymptotic correction:'
+        WRITE(LUPRI,'(A,F12.6)') '   alpha = ', GRACALPHA
+        WRITE(LUPRI,'(A,F12.6)') '   beta  = ', GRACBETA
+        WRITE(LUPRI,'(A)') 
+     &        '   threshold for difference in HOMO eigenvalue'
+        WRITE(LUPRI,'(A,E12.6)') 
+     &        '   below which asymptotic correction is switched on: ',
+     &        ACTHRESHOLD
+        WRITE(LUPRI,'(A,E12.6)')
+     &        '   bulk potential will be shifted by (IP): ', ACIP
+      ENDIF
+      IF(DOSAOP) THEN
+        WRITE(LUPRI,'(A)') 
+     &        ' * Statistical averaging of (model) orbital potentials:'
+      ENDIF
+      IF(DORESP) THEN
+        WRITE(LUPRI,'(A)')
+     &        '   original SAOP as in JCP 112, 1344 (2000) chosen'
+        WRITE(LUPRI,'(A)')
+     &        '   this activates ALDA kernel'
+        WRITE(LUPRI,'(A)')
+     &        '   the functional under .DFT is expected to be GLLBhole'
       ENDIF
 C
-      RETURN
+      IF(DOLB94) THEN
+        WRITE(LUPRI,'(A)') '   the asymptotic potential is LB94'
+      ENDIF
+      IF(DOLBALPHA) THEN
+        WRITE(LUPRI,'(A)') '   the asymptotic potential is LBalpha'
+      ENDIF
 C
+C
+      RETURN
       END

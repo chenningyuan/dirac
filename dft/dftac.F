@@ -158,57 +158,171 @@ c      write(lupri,'(5e13.5)') r,vx(fr0),vx(fz0)
       END
 #endif
 c---------------------------------------------------------------------
-      SUBROUTINE dft_grac(vx,wght,rho,rho13,rhogrd,r)
-c---------------------------------------------------------------------
-c written by A. Hesselmann (23.11.2004) in Strasbourg
-c gradient regulated asymptotic correction (closed-shell version)
-c see: M. Gr\"uning et al. JCP 114 (2001) p. 652
-#include "implicit.h"
-#include "dcbham.h"
-#include "dftcom.h"
-#include "dftbuf.h"
-#include "functionals.h"
-#include "priunit.h"
-      PARAMETER(p1=0.5d0,p2=40d0)
-      DIMENSION vx(dervs1),vxac(dervs1)
-
-      IF(gracalpha.EQ.0d0) gracalpha=p1
-      IF(gracbeta.EQ.0d0)  gracbeta=p2
-      gracdelta=gracip+eigmax
-c      write(lupri,'(1x,a,f16.8)') 'dft_grac',gracdelta
-
-      rho43=rho*rho13
-
-      sigma=2d0*rhogrd*rhogrd
-      x=0d0
-      IF(rho43.NE.0d0) THEN
-         x=SQRT(sigma)/rho43
-      ELSE
-         return
-      ENDIF
-
-c...asymptotic potential
-      do i=1,dervs1
-         vxac(i)=0d0
-      enddo      
-      CALL LB94POT(VXAC, WGHT, RHO, RHOGRD)  
-
-c...shape correction
-      d=1d0/(1d0+EXP(-gracalpha*(x-gracbeta)))
-c      write(lupri,'(5e13.5)') r,d,vxac(fr0),
-c     >      (vx(fr0)-wght*gracdelt),vx(fr0)
-      vx(fr0)=(1d0-d)*(vx(fr0)-wght*gracdelta)+d*(1d0-hfxfac)*vxac(fr0)
-      vx(fz0)=(1d0-d)*vx(fz0)
-c      write(lupri,'(5e13.5)') r,vx(fr0),vx(fz0)
-
-      RETURN
-      END
-
-
-c---------------------------------------------------------------------
       REAL*8 FUNCTION asinh(x)
 c---------------------------------------------------------------------
 #include "implicit.h"
       asinh=dlog(x+dsqrt((x*x) + 1d0))
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck dftac */
+      SUBROUTINE DFTAC(VX,WGHT,RHO,RHO13,RHORESP,RHOOUTER,RHOGRD,
+     &                 WORK,LWORK)
+C  .....................................................................
+C  .                                                                   .
+C  .  DFTAC                                                            .
+C  .  common routine for GRAC and SAOP                                 .
+C  .                                                                   .
+C  .  SAOP                                                             .
+C  .  statistical averaging of (model) orbital potentials              .
+C  .  P. R. T. Schipper, O. V. Gritsenko, S. J. A. van Gisbergen, E. J..
+C  .  Baerends, JCP 112, 1344 (2000).                                  .
+C  .                                                                   .
+C  .  GRAC                                                             .
+C  .  gradient regulated asymptotic correction                         .
+C  .  M. Gr\"uning et al. JCP 114, 652 (2001).                         .
+C  .                                                                   .
+C  .  closed-shell version                                             .
+C  .                                                                   .
+C  .  modelled after Andreas Hesselman's DFT_GRAC                      .
+C  .  which was finally eaten by this routine,                         .
+C  .  so many thanks to Andreas!                                       .
+C  .                                                                   .
+C  .....................................................................
+C  .  author:                                          last revision:  .
+C  .  radovan bast                                     october 2005    .
+C  .....................................................................
+C
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+#include "pi.h"
+C
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dftcom.h"
+#include "dftac.h"
+#include "dftbuf.h"
+#include "dgroup.h"
+#include "functionals.h"
+C
+      DIMENSION VX(DERVS1),WORK(LWORK)
+C
+#include "memint.h"
+C
+C
+C     memory allocation
+C     =================
+C
+      CALL MEMGET('REAL',KVXBULK     ,DERVS1,
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KVXOUTER    ,DERVS1,
+     &            WORK,KFREE,LFREE)
+C
+      IF(DORESP) THEN
+        CALL MEMGET('REAL',KVXSLATER ,DERVS1,
+     &              WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KVXRESP   ,DERVS1,
+     &              WORK,KFREE,LFREE)
+      ENDIF
+C
+C
+C     GRAC parameters
+C     ===============
+C
+      IF(DOGRAC) THEN
+        RHO43 = RHO*RHO13
+        SIGMA = D2*RHOGRD*RHOGRD
+        X = D0
+C
+        IF(RHO43.NE.D0) THEN
+           X = SQRT(SIGMA)/RHO43
+        ELSE
+          RETURN
+        ENDIF
+      ENDIF
+C
+C
+C     shift bulk?
+C     ===========
+C
+      IF(DOGRAC) THEN
+        SHIFTBULK = ACIP+EIGMAX
+      ELSE
+        SHIFTBULK = D0
+      ENDIF
+C
+C
+C     bulk potential
+C     ==============
+C
+      IF(DORESP) THEN
+C
+        CALL DZERO(WORK(KVXSLATER),DERVS1)
+        CALL GLLBHOLEPOT(WORK(KVXSLATER),WGHT,RHO,RHOGRD)  
+C
+        CALL DZERO(WORK(KVXRESP),DERVS1)
+        DK = 0.42D0
+        WORK(KVXRESP) = DK*WGHT*RHORESP/RHO
+C
+        CALL DZERO(WORK(KVXBULK),DERVS1)
+        DO I = 1,DERVS1
+          WORK(KVXBULK-1+I) = WORK(KVXSLATER-1+I)+WORK(KVXRESP-1+I)
+        ENDDO
+        WORK(KVXBULK+1) = VX(FZ0)
+C
+      ELSE
+C
+        CALL DZERO(WORK(KVXBULK),DERVS1)
+        DO I = 1,DERVS1
+          WORK(KVXBULK-1+I) = VX(I)
+        ENDDO
+C
+      ENDIF
+C
+C
+C     asymptotic potential
+C     ====================
+C
+      CALL DZERO(WORK(KVXOUTER),DERVS1)
+      IF(DOLBALPHA) THEN
+        CALL LBALPHAPOT(WORK(KVXOUTER),WGHT,RHO,RHOGRD)
+      ENDIF
+      IF(DOLB94) THEN
+        CALL LB94POT(WORK(KVXOUTER),WGHT,RHO,RHOGRD)
+      ENDIF
+C
+C
+C     howto FADE (with D0 .LE. FADE .LE. D1)
+C     ======================================
+C
+      IF(DOSAOP) THEN
+        FADE = RHOOUTER/RHO
+      ENDIF
+      IF(DOGRAC) THEN
+        FADE = D1/(D1+EXP(-GRACALPHA*(X-GRACBETA)))
+      ENDIF
+C     IF(DODUMP) WRITE(0,*) FADE
+C
+C
+C     connection
+C     ==========
+C
+      CALL DZERO(VX,DERVS1)
+C
+      VX(FR0) = (D1-FADE)*(WORK(KVXBULK)-WGHT*SHIFTBULK)
+     &        +     FADE *(D1-HFXFAC)*WORK(KVXOUTER)
+C
+      VX(FZ0) = (D1-FADE)*WORK(KVXBULK+1)
+C
+C
+C     memory release
+C     ==============
+C
+      CALL MEMREL('DFTAC',WORK,KVXBULK,KVXBULK,KFREE,LFREE)
+C
+C
       RETURN
       END
