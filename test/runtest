@@ -18,7 +18,7 @@
 # Some tests do not work in parallel (yet); the "*_partest" are the short, medum
 # and long tests for parallel runs.
 #
-short_partest="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short 25.qrpa 30.linear 37.bss.energies 38.london.magn_prop 39.gaunt"
+short_partest="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short 25.qrpa 30.linear 37.bss.energies 38.london.magn_prop 39.gaunt 40.dft.ac"
 short_test="$short_partest"
 
 medium_partest="2.nmrspinspin 10.efg 12.zora 13.rpa 19.fockspace 31.symmetry_recognition 32.prjana 33.frozen 36.mp2_properties"
