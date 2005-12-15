@@ -521,8 +521,8 @@ F_{pq}=h_{pq}+\D\sum\left[\left(pq\left|\right.jj\right)-\gamma\left(pj\left|\ri
 \layout Standard
 \noindent 
 We furthermore have
-\begin_inset Formula \[
-\D\frac{\partial e_{xc}}{\partial\zeta}=\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{\partial\left|\boldsymbol{\nabla}\rho\right|}{\partial\zeta}=\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{2\left|\boldsymbol{\nabla}\rho\right|}\]
+\begin_inset Formula \begin{equation}
+\D\frac{\partial e_{xc}}{\partial\zeta}=\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{\partial\left|\boldsymbol{\nabla}\rho\right|}{\partial\zeta}=\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{2\left|\boldsymbol{\nabla}\rho\right|}\label{eq:dexc_dzeta}\end{equation}
 
 \end_inset 
 
@@ -535,14 +535,14 @@ dirac
 dftpot1
 \shape default 
  returns 
-\begin_inset Formula \[
-\textrm{vx(fr0)}=\D\frac{\partial e_{xc}}{\partial\rho};\quad\textrm{vx(fz0)$=\D\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}$}\]
+\begin_inset Formula \begin{equation}
+\textrm{vx(fr0)}=\D\frac{\partial e_{xc}}{\partial\rho};\quad\textrm{vx(fz0)$=\D\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}$}\label{eq:vxc_fr0}\end{equation}
 
 \end_inset 
 
 The latter quantity is then modified to
-\begin_inset Formula \[
-\textrm{vx(fz0)}=\D\frac{2}{\left|\boldsymbol{\nabla}\rho\right|}\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}=4\frac{\partial e_{xc}}{\partial\zeta}\]
+\begin_inset Formula \begin{equation}
+\textrm{vx(fz0)}=\D\frac{2}{\left|\boldsymbol{\nabla}\rho\right|}\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}=4\frac{\partial e_{xc}}{\partial\zeta}\label{eq:vxc_fr0_mod}\end{equation}
 
 \end_inset 
 
@@ -590,9 +590,9 @@ from which one obtains
 \layout Standard
 
 We have
-\begin_inset Formula \begin{eqnarray*}
-\D\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}} & = & \frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|^{2}}\frac{1}{4\left|\boldsymbol{\nabla}\rho\right|^{2}}-\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{4\left|\boldsymbol{\nabla}\rho\right|^{3}}\\
-\D\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta} & = & \frac{\partial e_{xc}}{\partial\rho\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{2\left|\boldsymbol{\nabla}\rho\right|}\end{eqnarray*}
+\begin_inset Formula \begin{eqnarray}
+\D\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}} & = & \frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|^{2}}\frac{1}{4\left|\boldsymbol{\nabla}\rho\right|^{2}}-\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{4\left|\boldsymbol{\nabla}\rho\right|^{3}}\label{eq:d2exc_dzeta2}\\
+\D\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta} & = & \frac{\partial^{2}e_{xc}}{\partial\rho\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{2\left|\boldsymbol{\nabla}\rho\right|}\label{eq:d2exc_drhodzeta}\end{eqnarray}
 
 \end_inset 
 
@@ -693,8 +693,8 @@ The simplest
 second-derivative
 \series default 
  is
-\begin_inset Formula \[
-\D\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}=\frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha2}}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\rho^{\beta}}+\frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\rho^{\beta2}}\quad\rightarrow\quad\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha2}}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\rho^{\beta}}\quad\textrm{(closed shell)}\]
+\begin_inset Formula \begin{equation}
+\D\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}=\frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha2}}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\rho^{\beta}}+\frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\rho^{\beta2}}\quad\rightarrow\quad\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha2}}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\rho^{\beta}}\quad\textrm{(closed shell)}\label{eq:d2exc_drho2}\end{equation}
 
 \end_inset 
 
@@ -711,9 +711,18 @@ Then comes
 \layout Standard
 
 In the closed-shell case this reduces to
-\begin_inset Formula \begin{eqnarray*}
-\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho\right|^{2}} & = & \frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|^{2}}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}+\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|\\
- & + & \frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)^{2}}\left|\boldsymbol{\nabla}\rho\right|^{2}+\frac{1}{2}\frac{\partial e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\end{eqnarray*}
+\begin_inset Formula \begin{align}
+\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho\right|^{2}}= & \frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|^{2}}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}+\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|\nonumber \\
+ & +\frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)^{2}}\left|\boldsymbol{\nabla}\rho\right|^{2}+\frac{1}{2}\frac{\partial e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\label{eq:d2exc:dgrdrho2}\\
+= & \mathrm{vxc(fzz)}+2\mathrm{vxc(fzg)}\left|\boldsymbol{\nabla}\rho\right|+\mathrm{vxc(fgg)\left|\boldsymbol{\nabla}\rho\right|^{2}}+\mathrm{vxc(fg0)}\end{align}
+
+\end_inset 
+
+
+\begin_inset Formula \begin{eqnarray}
+\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho\right|^{2}} & = & \frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|^{2}}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}+\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|\nonumber \\
+ & + & \frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)^{2}}\left|\boldsymbol{\nabla}\rho\right|^{2}+\frac{1}{2}\frac{\partial e_{xc}}{\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\label{eq:d2exc_dgrdrho2}\\
+\end{eqnarray}
 
 \end_inset 
 
@@ -726,8 +735,9 @@ The mixed second-dervative is given by
 \end_inset 
 
 and reduces in the closed-shell case to
-\begin_inset Formula \[
-\D\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho\right|\partial\rho}=\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|\]
+\begin_inset Formula \begin{align}
+\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho\right|\partial\rho}= & \frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|\label{eq:d2exc_dgrdrhodrho}\\
+= & \mathrm{vxc(fr0)}+\mathrm{vxc(fr0)\left|\boldsymbol{\nabla}\rho\right|}\nonumber \end{align}
 
 \end_inset 
 
@@ -890,21 +900,179 @@ The third-order contribution to the exchange-correlation energy is formally
 The contributions have been ordered according to the number of perturbed
  densities involved.
  The first-order contribution can be writtten as
-\begin_inset Formula \[
-V_{xc;pq}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau;\quad s=\left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0};\quad\mathbf{v}=2\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho_{0}\]
+\begin_inset Formula \begin{equation}
+V_{xc;pq}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau;\quad s=\left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0};\quad\mathbf{v}=2\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho_{0}\label{eq:Vxc-1order}\end{equation}
 
 \end_inset 
 
  The second-order contribution splits into two terms.
  The first term may be written
-\begin_inset Formula \[
+\begin_inset Formula \begin{equation}
 V_{xc;pq}^{B}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau;\quad\begin{array}{c}
 s=\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\\
-\\\mathbf{v}=2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho^{B}\boldsymbol{{\nabla}}\rho_{0}+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\boldsymbol{{\nabla}}\rho_{0}+\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho^{B}\end{array}\]
+\\\mathbf{v}=2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho^{B}\boldsymbol{{\nabla}}\rho_{0}+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\boldsymbol{{\nabla}}\rho_{0}+\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho^{B}\end{array}\label{eq:Vxc-2order}\end{equation}
 
 \end_inset 
 
 
+\layout Subsection
+
+Implementational details
+\layout Standard
+
+
+\series medium 
+Consider
+\series default 
+ the second-order expressions for 
+\begin_inset Formula $s$
+\end_inset 
+
+ and 
+\begin_inset Formula $\mathbf{v}$
+\end_inset 
+
+ given by 
+\begin_inset LatexCommand \ref{eq:Vxc-2order}
+
+\end_inset 
+
+.
+ Starting with 
+\begin_inset Formula $s$
+\end_inset 
+
+, using first eq.
+ 
+\begin_inset LatexCommand \ref{eq:d2exc_drhodzeta}
+
+\end_inset 
+
+ and then eqs.
+ 
+\begin_inset LatexCommand \ref{eq:d2exc_drho2}
+
+\end_inset 
+
+ and 
+\begin_inset LatexCommand \ref{eq:d2exc_dgrdrhodrho}
+
+\end_inset 
+
+, you get
+\newline 
+
+\begin_inset Formula \begin{align*}
+s= & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)=\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\left|\nabla\rho\right|}\frac{1}{2\left|\nabla\rho\right|}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\\
+= & \left[\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\left(\rho^{\alpha}\right)^{2}}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\rho^{\beta}}\right]\rho^{B}\\
+ & +\left[\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\boldsymbol{\nabla}\rho^{\alpha}\right|}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\boldsymbol{\nabla}\rho^{\beta}\right|}+\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left(\boldsymbol{\nabla}\rho^{\alpha}\cdot\boldsymbol{\nabla}\rho^{\beta}\right)}\left|\boldsymbol{\nabla}\rho\right|\right]\frac{1}{\left|\nabla\rho\right|}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\end{align*}
+
+\end_inset 
+
+Now, we can identify the different terms returned by 
+\shape smallcaps 
+dftpot2.
+\newline 
+
+\begin_inset Formula \begin{align*}
+\mathrm{vxc(fr0)}= & \frac{1}{2}\left[\frac{\partial e_{xc}}{\partial\rho^{\alpha}}+\frac{\partial e_{xc}}{\partial\rho^{\beta}}\right]\\
+\mathrm{vxc(fz0)}= & \frac{\partial e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|}\\
+\mathrm{vxc(frr)}= & \frac{1}{2}\left[\frac{\partial^{2}e_{xc}}{\left(\partial\rho^{\alpha}\right)^{2}}+\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\rho^{\beta}}\right]\\
+\mathrm{vxc(frz)}= & \frac{1}{2}\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\alpha}\right|}+\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left|\nabla\rho^{\beta}\right|}\right]\\
+\mathrm{vxc(fzz)}= & \frac{1}{2}\left[\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|^{2}}+\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|\partial\left|\nabla\rho^{\beta}\right|}\right]\\
+\mathrm{vxc(frg)}= & \frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\rho^{\alpha}\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\\
+\mathrm{vxc(fzg)}= & \frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho^{\alpha}\right|\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\\
+\mathrm{vxc(fgg)}= & \frac{1}{4}\frac{\partial^{2}e_{xc}}{\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)^{2}}\\
+\mathrm{vxc(fg0)}= & \frac{1}{2}\frac{\partial e_{xc}}{\partial\left(\nabla\rho^{\alpha}\cdot\nabla\rho^{\beta}\right)}\end{align*}
+
+\end_inset 
+
+
+\shape default 
+This yields
+\newline 
+
+\begin_inset Formula \[
+s=\mathrm{vxc(frr)}\rho^{B}+\left[\mathrm{vxc(frz)}+\mathrm{vxc(frg)}\left|\nabla\rho\right|\right]\frac{1}{\left|\nabla\rho\right|}\left(\nabla\rho_{0}\cdot\nabla\rho^{B}\right),\]
+
+\end_inset 
+
+which is to be compared to line 106 in 
+\family typewriter 
+dftaux.F
+\family default 
+ and the calculation of 
+\family typewriter 
+SXC
+\family default 
+.
+ If we carry on and identify 
+\begin_inset Formula $\texttt{B0=}\rho^{B}$
+\end_inset 
+
+, 
+\begin_inset Formula $\texttt{RHOGRD}=\left|\nabla\rho\right|$
+\end_inset 
+
+, and 
+\begin_inset Formula $\texttt{BR}=\frac{1}{\left|\nabla\rho\right|}\left(\nabla\rho_{0}\cdot\nabla\rho^{B}\right)$
+\end_inset 
+
+, we get
+\newline 
+
+\begin_inset Formula \[
+\texttt{SXC=vxc(frr)*B0+vxc(frz)*BR+vxc(frg)*RHOGRD*BR}.\]
+
+\end_inset 
+
+A direct comparison show that the last term is missing in the expression
+ coded!
+\layout Standard
+
+Now carry on to consider the expression for 
+\begin_inset Formula $\mathbf{{v}}$
+\end_inset 
+
+.
+\begin_inset Formula \begin{align*}
+\mathbf{{v}=} & 2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho^{B}\boldsymbol{{\nabla}}\rho_{0}+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\boldsymbol{{\nabla}}\rho_{0}+\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho^{B}\\
+= & \frac{\partial^{2}e_{xc}}{\partial\rho\partial\left|\nabla\rho\right|}\frac{1}{\left|\nabla\rho\right|}\rho^{B}\boldsymbol{{\nabla}}\rho_{0}+\left[\frac{\partial^{2}e_{xc}}{\partial\left|\nabla\rho\right|^{2}}\frac{1}{\left|\nabla\rho\right|^{2}}-\frac{\partial e_{xc}}{\partial\left|\nabla\rho\right|}\frac{1}{\left|\nabla\rho\right|^{3}}\right]\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\boldsymbol{{\nabla}}\rho_{0}+\frac{\partial e_{xc}}{\partial\left|\nabla\rho\right|}\frac{1}{2\left|\nabla\rho\right|}\boldsymbol{{\nabla}}\rho^{B}\end{align*}
+
+\end_inset 
+
+Reformulating this using the terms returned by 
+\shape smallcaps 
+dftpot2 
+\shape default 
+and the definition
+\begin_inset Formula \[
+\texttt{FACR=vxc(frz)*B0+}\left(\texttt{vxc(fzz)-vxc(fz0)/RHOGRD}\right)\texttt{*BR}\]
+
+\end_inset 
+
+we arrive at
+\begin_inset Formula \begin{align*}
+\texttt{VT(I)=} & \texttt{FACR*RHG(I)/RHOGRD+0.5*vxc(fz0)*B3(I)/RHOGRD}\\
+ & \texttt{+}\left(\texttt{2*vxc(fzg)+vxc(fgg)}\right)\texttt{*BR*RHG(I)/RHOGRD+vxc(frg)*B0*RHG(I)}\\
+ & \texttt{+0.5*vxc(fg0)*B3(I)}\end{align*}
+
+\end_inset 
+
+This is not the terms implemented in the code! The first two terms above
+ can be identified in the expression for 
+\family typewriter 
+VT(I)
+\family default 
+ on line 108 in 
+\family typewriter 
+dftaux.F
+\family default 
+ with the exception of the multiplicative prefactors.
+ In the implemented code both of these terms have a numerical prefactor
+ 2, whereas in the above expression, the first term has no prefactor and
+ the second one has a factor one half.
+ In addition, the second and third rows are completely missing.
 \layout Section
 \pagebreak_top 
 Subroutines for functionals
