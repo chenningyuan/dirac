@@ -388,6 +388,7 @@ C
       INTDEF = INTXQR
       STERNH = XSTERN
       STATIC = .FALSE.
+      UNCOUP = .FALSE.
 C
 C     Get the maximum length of the response vectors
 C     ==============================================

@@ -815,6 +815,7 @@ C     special variables only for linear equations (LINEQ true):
       NFREQ     = 0
       STERNH    = .FALSE.
       STATIC    = .FALSE.
+      UNCOUP    = .FALSE.
 C
 C     Indicate from vectors are read...
 C

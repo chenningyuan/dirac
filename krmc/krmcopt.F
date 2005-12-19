@@ -3144,6 +3144,7 @@ C
       RSREST = OPTRST
       STATIC = .TRUE.
       LINEQ  = .TRUE.
+      UNCOUP = .FALSE.
       TKNORM = OPTNRM
       DIAGHE = OPTDIH
       LSVCFG(1) = .TRUE.

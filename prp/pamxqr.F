@@ -1046,6 +1046,7 @@ C     LSVCFG(2) = XQR_LSFG(2)
       ITRINT(1) = ITRIQR(1)
       ITRINT(2) = ITRIQR(2)
       INTDEF = INTXQR
+      UNCOUP = .FALSE.
       STERNH = .FALSE.
 C     Sternheimer approx. not implemented for QR /hjaaj Feb 2004
 C     (cannot be implemented in current form, modify? TODO?)
