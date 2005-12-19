@@ -1310,8 +1310,9 @@ C
       IF (.NOT. ORBDEF(1)) THEN
          DO I = 1,NFSYM
             INDSTR(1,I) = ' '
-            IF (NISH(I).GT.0) THEN
-CMI            WRITE(INDSTR(1,I),'(I4,A2,I4)') 1,'..',NISH(I)
+            IF (NISH(I).EQ.1) THEN
+               WRITE(INDSTR(1,I),'(I1)') 1
+            ELSEIF (NISH(I).GT.1) THEN
                WRITE(INDSTR(1,I),'(I6,A2,I6)') 1,'..',NISH(I)
             ENDIF
          ENDDO
@@ -1322,8 +1323,9 @@ C
       IF (.NOT. ORBDEF(2)) THEN
          DO I = 1,NFSYM
             INDSTR(2,I) = ' '
-            IF (NASH(I).GT.0) THEN
-CMI            WRITE(INDSTR(2,I),'(I4,A2,I4)')
+            IF (NASH(I).EQ.1) THEN
+               WRITE(INDSTR(2,I),'(I6)') NISH(I)+1
+            ELSEIF (NASH(I).GT.1) THEN
                WRITE(INDSTR(2,I),'(I6,A2,I6)')
      &               NISH(I)+1,'..',NISH(I)+NASH(I)
             ENDIF
@@ -1333,48 +1335,32 @@ C
 C     Secondary orbitals...
 C
       IF (.NOT. ORBDEF(3)) THEN
-         IF (SKIPEP.AND.SKIPEE) THEN
-            DO I = 1,NFSYM
-               INDSTR(3,I) = ' '
-            ENDDO
-         ELSEIF (SKIPEP) THEN
-            DO I = 1,NFSYM
-               INDSTR(3,I) = ' '
-               IF (NSSH(I).GT.0) THEN
-CMI               WRITE(INDSTR(3,I),'(I4,A2,I4)')
-                  WRITE(INDSTR(3,I),'(I6,A2,I6)')
-     &                  NOCC(I)+1,'..',NESH(I)
-               ENDIF
-            ENDDO
-         ELSEIF (SKIPEE) THEN
-            DO I = 1,NFSYM
-               INDSTR(3,I) = ' '
-CMI            WRITE(INDSTR(3,I),'(I4,A2,I4)')
-               WRITE(INDSTR(3,I),'(I6,A2,I6)')
-     &             -NPSH(I),'..',-1
-            ENDDO
-         ELSE
-            DO I = 1,NFSYM
-               INDSTR(3,I) = ' '
-               IF (NSSH(I).GT.0) THEN
-                  IF (NPSH(I) .GT. 0) THEN
-CMI                  WRITE(INDSTR(3,I),'(I4,A5,I4,A2,I4)')
-                     WRITE(INDSTR(3,I),'(I6,A5,I6,A2,I6)')
-     &                   -NPSH(I),'..-1,',NOCC(I)+1,'..',NESH(I)
-                  ELSE
-CMI                  WRITE(INDSTR(3,I),'(I4,A2,I4)')MI
-                     WRITE(INDSTR(3,I),'(I6,A2,I6)')
-     &                     NOCC(I)+1,'..',NESH(I)
-                  END IF
-               ELSE
-                  IF (NPSH(I) .GT. 0) THEN
-CMI                  WRITE(INDSTR(3,I),'(I4,A2)') -NPSH(I),'..-1'
-                     WRITE(INDSTR(3,I),'(I6,A2)') -NPSH(I),'..-1'
-                  END IF
-               END IF
-            ENDDO
-         ENDIF
-      END IF
+        DO I = 1,NFSYM
+          INDSTR(3,I) = ' '
+          IT=1
+          IF(.NOT.SKIPEP) THEN
+            IF (NPSH(I) .EQ. 1) THEN
+              WRITE(INDSTR(3,I),'(I2)') -1
+              IT=3
+            ELSEIF (NPSH(I) .GT. 1) THEN
+              WRITE(INDSTR(3,I),'(I6,A4)') -NPSH(I),'..-1'
+              IT=11
+            ENDIF
+          ENDIF
+          IF(.NOT.SKIPEE) THEN
+            IF((.NOT.SKIPEP).AND.NSSH(I).GT.0) THEN
+              WRITE(INDSTR(3,I)(IT:IT),'(A1)') ','
+              IT=IT+1
+            ENDIF
+            IF(NSSH(I).EQ.1) THEN
+              WRITE(INDSTR(3,I)(IT:IT),'(I1)') 1
+            ELSEIF(NSSH(I).GT.1) THEN
+              WRITE(INDSTR(3,I)(IT:IT+14),'(I6,A2,I6)')
+     &             NOCC(I)+1,'..',NESH(I)
+            ENDIF
+          ENDIF
+        ENDDO
+      ENDIF
 C
 C
 C
