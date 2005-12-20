@@ -2538,7 +2538,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 8, NTABLE = 8)
+      PARAMETER (NDIR = 12,NTABLE = 12)
 #include "maxorb.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -2547,11 +2547,14 @@ C
 C
 #include "dcblab.h"
 #include "dcbana.h"
+#include "dcbplot.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
-     &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALI'/
+     &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALI',
+     &             '*PLOT  ','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.MULPOP','.PROJEC','.PRIVEC','.RHO1  ',
-     &             '.DENSIT','.WT1   ','.LOCALI','.XXXXXX'/
+     &             '.DENSIT','.WT1   ','.LOCALI','.XXXXXX',
+     &             '.PLOT  ','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
 #include "memint.h"
@@ -2568,6 +2571,13 @@ C
       DO3RHO  = .FALSE.
       DO1WT   = .FALSE.
       DOLOC   = .FALSE.
+C
+C
+C     initialize dcbplot.h
+C     ====================
+C
+      DOPLOT = .FALSE.
+C
 C
 C     Read menu file
 C     ==============
@@ -2605,7 +2615,7 @@ C
       ELSE IF (PROMPT .EQ. '.') THEN
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GO TO (101,102,103,104,105,106,107,108),I
+               GO TO (101,102,103,104,105,106,107,108,109,110,111,112),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2652,6 +2662,16 @@ C&&&& LOCALIZE : Molecular orbital localization
             GO TO 100
   108    CONTINUE
             GO TO 100
+  109    CONTINUE
+            DOPLOT = .TRUE.
+            NJOBS = NJOBS +1
+            GO TO 100
+  110    CONTINUE
+            GO TO 100
+  111    CONTINUE
+            GO TO 100
+  112    CONTINUE
+            GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE
@@ -2693,7 +2713,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2729,6 +2749,15 @@ C
     8 CONTINUE
         CALL LOCINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
+    9 CONTINUE
+        CALL PLOT_INP(WORD,.FALSE.,WORK,LWORK)
+        GO TO 200
+   10 CONTINUE
+        GO TO 200
+   11 CONTINUE
+        GO TO 200
+   12 CONTINUE
+        GO TO 200
 C
     1 CONTINUE
       IF(DOPOP) CALL POPINP(WORD,.TRUE.,WORK,LWORK)
@@ -2740,6 +2769,7 @@ C
       IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
 #endif
       IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
+      IF(DOPLOT) CALL PLOT_INP(WORD,.TRUE.,WORK,LWORK)
 C
       CALL QEXIT('ANWINP')
       RETURN
@@ -5804,4 +5834,165 @@ C
  999   CONTINUE
       RETURN
 C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck plot_inp */
+      SUBROUTINE PLOT_INP(WORD,RESET,WORK,LWORK)
+C  .....................................................................
+C  .  description:                                                     .
+C  .  input section for {1,2,3}-dimensional plot                       .
+C  .  copy-and-paste-and-modify-a-little-job                           .
+C  .  used Trond's respective routines                                 .
+C  .....................................................................
+C  .  author:                                          last revision:  .
+C  .  radovan bast                                     october 2005    .
+C  .....................................................................
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+C
+      PARAMETER (NTABLE = 16)
+C
+#include "dcbgen.h"
+#include "dcbana.h"
+#include "dcbplot.h"
+#include "dgroup.h"
+C
+      LOGICAL   SET,RESET,NEWDEF
+      CHARACTER PROMPT*1,WORD*7,TABLE(NTABLE)*7,WORD1*7
+      DIMENSION WORK(LWORK)
+C
+      SAVE SET
+      DATA TABLE /'.PRINT ','.REAXVC','.1D    ','.2D    ',
+     &            '.3D    ','.DENSIT','.SPIN  ','.CURREN',
+     &            '.ELF   ','.D1DSTE','.D3DSTA','.D3DNOR',
+     &            '.CUBE  ','.LAPLAC','.NXVEC ','.STRING'/
+      DATA SET /.FALSE./
+C
+      IF(SET) THEN
+        IF(RESET) SET = .FALSE.
+        RETURN
+      ENDIF
+      IF(RESET) THEN
+        SET = .FALSE.
+      ELSE
+        SET = .TRUE.
+      ENDIF
+C
+C
+C     initialize dcbplot.h
+C     ====================
+C
+      READXVECFILE       = .FALSE.
+      DO1DPLOT           = .FALSE.
+      DO2DPLOT           = .FALSE.
+      DO3DPLOT           = .FALSE.
+      PLOTDENSITY        = .FALSE.
+      PLOTSPINDENSITY    = .FALSE.
+      PLOTCURRENTDENSITY = .FALSE.
+      PLOTELF            = .FALSE.
+      PLOTLAPLACIAN      = .FALSE.
+C
+      IPLOT              = 0
+      NCUBE(1)           = 80
+      NCUBE(2)           = 80
+      NCUBE(3)           = 80
+      NXVEC              = 1
+C
+      D1DSTEP            = 0.01D0
+      D3DSTART           = 4.0D0
+      D3DNORM            = 8.0D0
+C
+      USEORBSTRING       = .FALSE.
+C
+C
+C     process input
+C     =============
+C
+      NEWDEF = (WORD.EQ.'*PLOT')
+      IF(NEWDEF) THEN
+        WORD1 = WORD
+  100   CONTINUE
+        READ(LUCMD,'(A7)') WORD
+        PROMPT = WORD(1:1)
+        IF(PROMPT.EQ.'!'.OR.PROMPT.EQ.'#') THEN
+          GOTO 100
+        ELSEIF(PROMPT.EQ.'.') THEN
+          DO 200 I = 1,NTABLE
+            IF(TABLE(I).EQ.WORD) THEN
+              GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
+            ENDIF
+  200     CONTINUE
+          IF(WORD.EQ.'.OPTION') THEN
+            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+            GOTO 100
+          ENDIF
+          WRITE(LUPRI,'(/,3A,/)') ' Keyword "', WORD,
+     *                            '" not recognized in PLOT_INP.'
+          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+          CALL QUIT('Illegal keyword in PLOT_INP.')
+    1     CONTINUE
+          READ(LUCMD,*) IPLOT
+          GOTO 100
+    2     CONTINUE
+          READXVECFILE = .TRUE.
+          GOTO 100
+    3     CONTINUE
+          DO1DPLOT = .TRUE.
+          GOTO 100
+    4     CONTINUE
+          DO2DPLOT = .TRUE.
+          GOTO 100
+    5     CONTINUE
+          DO3DPLOT = .TRUE.
+          GOTO 100
+    6     CONTINUE
+          PLOTDENSITY = .TRUE.
+          GOTO 100
+    7     CONTINUE
+          PLOTSPINDENSITY    = .TRUE.
+          GOTO 100
+    8     CONTINUE
+          PLOTCURRENTDENSITY = .TRUE.
+          GOTO 100
+    9     CONTINUE
+          PLOTELF = .TRUE.
+          GOTO 100
+   10     CONTINUE
+          READ(LUCMD,*) D1DSTEP
+          GOTO 100
+   11     CONTINUE
+          READ(LUCMD,*) D3DSTART
+          GOTO 100
+   12     CONTINUE
+          READ(LUCMD,*) D3DNORM
+          GOTO 100
+   13     CONTINUE
+          READ(LUCMD,*) NCUBE(1), NCUBE(2), NCUBE(3)
+          GOTO 100
+   14     CONTINUE
+          PLOTLAPLACIAN = .TRUE.
+          GOTO 100
+   15     CONTINUE
+          READ(LUCMD,*) NXVEC
+          GOTO 100
+   16     CONTINUE
+          READ(LUCMD,'(A)') ORBSTRING1
+          IF(NFSYM.GT.1) READ(LUCMD,'(A)') ORBSTRING2
+          USEORBSTRING = .TRUE.
+          GOTO 100
+        ELSEIF(PROMPT.EQ.'*') THEN
+          GOTO 300
+        ELSE
+          WRITE(LUPRI,'(/,3A,/)') ' Keyword "', WORD,
+     *                            '" not recognized in PLOT_INP.'
+          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+          CALL QUIT('Illegal keyword in PLOT_INP.')
+        ENDIF
+      ENDIF
+  300 CONTINUE
+C     
+C     
+      RETURN
       END

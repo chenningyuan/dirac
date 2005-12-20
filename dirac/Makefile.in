@@ -8,7 +8,7 @@ include ../Makefile.config
 
 F77_OBJS = dircnv.o dirone.o dirout.o dirana.o dirrdn.o dirscf.o dirset.o \
          dirtra.o dirtwo.o dirgp.o  dirgrd.o dirden.o dirsol.o dirspf.o \
-         diropen.o dirgeo.o diraos.o dirv1c.o dirbss.o
+         diropen.o dirgeo.o diraos.o dirv1c.o dirbss.o visual.o
 
 F90_OBJS =
 

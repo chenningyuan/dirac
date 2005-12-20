@@ -350,7 +350,7 @@ include ./Makefile.config
 
 OBJS = \\
 dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o dirac/dirv1c.o \\
-dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \\
+dirac/dirout.o dirac/dirana.o dirac/visual.o dirac/dirrdn.o dirac/dirscf.o \\
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \\
 dirac/dirgrd.o dirac/dirsol.o dirac/dirgeo.o dirac/dirspf.o \\
 dirac/diropen.o dirac/diraos.o  dirac/dirbss.o \\
@@ -369,7 +369,7 @@ amfi/amfi.o         amfi/amfi1.o        amfi/amfi2.o        amfi/amfi3.o \\
 amfi/relscf.o\\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
-gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o \\
+gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpbast.o \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
 prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\

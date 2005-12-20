@@ -104,6 +104,133 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck getcurrentdensity */
+      SUBROUTINE GETCURRENTDENSITY(LCURRENTDENSITY,CURRENTDENSITY,
+     &                             LSPINDENSITY,DMAGNETIZATION,
+     &                             IREPOP,GAO,DMAT,BUF)
+C  .....................................................................
+C  .  description:                                                     .
+C  .  get                                                              .
+C  .      (-1)*current*current                                         .
+C  .  or  (-1)*magnetization*magnetization                             .
+C  .                                       in point                    .
+C  .....................................................................
+C  .  author:                                          last revision:  .
+C  .  radovan bast                                     october 2005    .
+C  .....................................................................
+C
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C
+#include "dcbham.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+C
+      LOGICAL LCURRENTDENSITY,LSPINDENSITY
+C
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAO(NBAST)
+#else
+      DIMENSION GAO(NTBAS(0))
+#endif
+      DIMENSION DMAT(NTBAS(0),NTBAS(0),NZ),BUF(*),
+     &          DMAGNETIZATION(4),
+     &          CURRENTDENSITY(4)
+C
+C
+      IF(LSPINDENSITY) THEN
+        DO I = 1,3
+          DMAGNETIZATION(I) = D0
+          CALL GETCURRENT(DMAGNETIZATION(I),1,1,
+     &                                     IREPOP,GAO,DMAT(1,1,5-I),BUF)
+          BETA = -D1
+          SAVEME = D0
+          CALL GETCURRENT(SAVEME,2,2,IREPOP,GAO,DMAT(1,1,5-I),BUF)
+          DMAGNETIZATION(I) = DMAGNETIZATION(I)+BETA*SAVEME
+        ENDDO
+        DMAGNETIZATION(4) = DDOT(3,DMAGNETIZATION,1,DMAGNETIZATION,1)
+        DMAGNETIZATION(4) = -DMAGNETIZATION(4)
+      ENDIF
+C
+      IF(LCURRENTDENSITY) THEN
+        DO I = 1,3
+          CURRENTDENSITY(I) = D0
+          CALL GETCURRENT(CURRENTDENSITY(I),1,2,
+     &                                     IREPOP,GAO,DMAT(1,1,5-I),BUF)
+          CALL GETCURRENT(CURRENTDENSITY(I),2,1,
+     &                                     IREPOP,GAO,DMAT(1,1,5-I),BUF)
+          CURRENTDENSITY(I) = CURRENTDENSITY(I)*CVAL
+        ENDDO
+        CURRENTDENSITY(4) = DDOT(3,CURRENTDENSITY,1,CURRENTDENSITY,1)
+        CURRENTDENSITY(4) = -CURRENTDENSITY(4)
+      ENDIF
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck getcurrent */
+      SUBROUTINE GETCURRENT(CURRENT,IC1,IC2,IREPOP,GAO,DMAT,BUF)
+C  .....................................................................
+C  .  description:                                                     .
+C  .  get contributions to                                             .
+C  .      i*current or i*magnetization                                 .
+C  .                                   in point                        .
+C  .                                                                   .
+C  .  the "current" above is to be understood as a general thing       .
+C  .....................................................................
+C  .  author:                                          last revision:  .
+C  .  radovan bast                                     october 2005    .
+C  .....................................................................
+C
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+C
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAO(NBAST)
+#else
+      DIMENSION GAO(NTBAS(0))
+#endif
+      DIMENSION DMAT(NTBAS(0),NTBAS(0)),BUF(*)
+C
+#include "ibtfun.h"
+C
+C
+C     IOFF1 = NTBAS(1)*(IC1-1)
+C     IOFF2 = NTBAS(1)*(IC2-1)
+C     DO KAPPA = IOFF1+1,IOFF1+NTBAS(IC1)
+C       DO LAMBDA = IOFF2+1,IOFF2+NTBAS(IC2)
+C         CURRENT = CURRENT-D2*GAO(KAPPA)*GAO(LAMBDA)*DMAT(LAMBDA,KAPPA)
+C       ENDDO
+C     ENDDO
+      DO 10 IRP1 = 0,NBSYM-1
+        NB1 = NBBAS(IRP1,IC1)
+        IF(NB1.EQ.0) GOTO 10
+        JB1 = IBBAS(IRP1,IC1)+1
+        IRP2 = IBTXOR(IRP1,IREPOP)
+        NB2 = NBBAS(IRP2,IC2)
+        IF(NB2.EQ.0) GOTO 10
+        JB2 = IBBAS(IRP2,IC2)+1
+        CALL DGEMV('N',NBBAS(IRP1,IC1),NBBAS(IRP2,IC2),D1,
+     &             DMAT(JB1,JB2),NTBAS(0),GAO(JB2),1,D0,BUF,1)
+        CURRENT = CURRENT-D2*DDOT(NBBAS(IRP1,IC1),GAO(JB1),1,BUF,1)
+   10 CONTINUE
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getgrho */
       SUBROUTINE GETGRHO(RHG,IREPOP,GAO,GAO1,DMAT,BUF)      
 C***********************************************************************
