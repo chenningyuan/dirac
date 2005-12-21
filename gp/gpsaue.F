@@ -6291,3 +6291,112 @@ C     ... do own check
 
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck prdiag */
+      SUBROUTINE PRDIAG(A,LRA,N)
+C***********************************************************************
+C
+C     Print diagonal elements of a matrix
+C
+C     Written by T. Saue Oct 25 2005
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION A(LRA,N)
+C
+      WRITE(LUPRI,'(A,I5)') 'PRDIAG output...',N
+      DO I = 1,N
+        WRITE(LUPRI,*) I,A(I,I)
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck absind */
+      SUBROUTINE ABSIND(N,ARR,INDX)
+C***********************************************************************
+C
+C     This subroutine goes through array ARR and returns the ordering
+C     index array INDX giving indices from smallest to largest
+C     absolute value
+C     Based on Luuk's routine INDEXX
+C
+C***********************************************************************
+      INTEGER N,INDX(N),M,NSTACK
+      REAL*8 ARR(N)
+      PARAMETER (M=7,NSTACK=50)
+      INTEGER I,INDXT,IR,ITEMP,J,JSTACK,K,L,ISTACK(NSTACK)
+      REAL*8 A
+      DO J=1,N
+         INDX(J)=J
+      END DO
+      JSTACK=0
+      L=1
+      IR=N
+ 1    IF(IR-L.GE.M)THEN
+         K=(L+IR)/2
+         ITEMP=INDX(K)
+         INDX(K)=INDX(L+1)
+         INDX(L+1)=ITEMP
+         IF(ABS(ARR(INDX(L+1))).GT.ABS(ARR(INDX(IR))))THEN
+            ITEMP=INDX(L+1)
+            INDX(L+1)=INDX(IR)
+            INDX(IR)=ITEMP
+         ENDIF
+         IF(ABS(ARR(INDX(L))).GT.ABS(ARR(INDX(IR))))THEN
+            ITEMP=INDX(L)
+            INDX(L)=INDX(IR)
+            INDX(IR)=ITEMP
+         ENDIF
+         IF(ABS(ARR(INDX(L+1))).GT.ABS(ARR(INDX(L))))THEN
+            ITEMP=INDX(L+1)
+            INDX(L+1)=INDX(L)
+            INDX(L)=ITEMP
+         ENDIF
+         I=L+1
+         J=IR
+         INDXT=INDX(L)
+         A=ABS(ARR(INDXT))
+ 3       CONTINUE
+         I=I+1
+         IF(ABS(ARR(INDX(I))).LT.A)GOTO 3
+ 4       CONTINUE
+         J=J-1
+         IF(ABS(ARR(INDX(J))).GT.A)GOTO 4
+         IF(J.LT.I)GOTO 5
+         ITEMP=INDX(I)
+         INDX(I)=INDX(J)
+         INDX(J)=ITEMP
+         GOTO 3
+ 5       INDX(L)=INDX(J)
+         INDX(J)=INDXT
+         JSTACK=JSTACK+2
+         IF(JSTACK.GT.NSTACK)
+     $        CALL QUIT('NSTACK TOO SMALL IN INDEXX')
+         IF(IR-I+1.GE.J-L)THEN
+            ISTACK(JSTACK)=IR
+            ISTACK(JSTACK-1)=I
+            IR=J-1
+         ELSE
+            ISTACK(JSTACK)=J-1
+            ISTACK(JSTACK-1)=L
+            L=I
+         ENDIF
+      ELSE
+         DO J=L+1,IR
+            INDXT=INDX(J)
+            A=ABS(ARR(INDXT))
+            DO I=J-1,1,-1
+               IF(ABS(ARR(INDX(I))).LE.A)GOTO 2
+               INDX(I+1)=INDX(I)
+            END DO
+            I=0
+ 2          INDX(I+1)=INDXT
+         END DO
+         IF(JSTACK.EQ.0)RETURN
+         IR=ISTACK(JSTACK)
+         L=ISTACK(JSTACK-1)
+         JSTACK=JSTACK-2
+      ENDIF
+      GOTO 1
+      END
