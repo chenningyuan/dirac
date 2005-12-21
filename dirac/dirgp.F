@@ -916,7 +916,7 @@ C  /* Deck numls2 */
       SUBROUTINE NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
 C*****************************************************************************
 C
-C     Gives the list of oribitals that fulfill the energy criteria
+C     Gives the list of orbitals that fulfill the energy criteria
 C
 C     Input: 
 C           IP = 0: Only IP as OUTPUT
