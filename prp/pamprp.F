@@ -2183,7 +2183,7 @@ C           don't look for e-p in case of XLR_SKIPEP
 C
 C             e-p
               TMPMAT(I,J) = TMPMAT(I,J)
-     &                    - ABLRF(IFREQ,KI,KJ,3+N_ORBXLR)
+     &                    - ABLRF(IFREQ,KI,KJ,3)
             ENDIF
           ENDDO
         ENDDO
@@ -6370,7 +6370,7 @@ C...           First extract the e-e contribution
                TMPMAT(IPTAX(JB,2),JA) = ABLRF(IFREQ,KA,KB,2)
 C...           then extract the e-p "diamagnetic" contribution
                TMPMAT(IPTAX(JB,2),JA+NCMAT)
-     &            = ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
+     &            = ABLRF(IFREQ,KA,KB,3)
             ENDDO
          ENDDO
 #if defined (XH4)
@@ -6822,7 +6822,7 @@ C           don't look for e-p in case of LEVY-LEBLOND
 C
 C             e-p
               TEMPMAT(INUC,ICOOR) = TEMPMAT(INUC,ICOOR)
-     &                            + ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
+     &                            + ABLRF(IFREQ,KA,KB,3)
             ENDIF
           ENDDO
         ENDIF
@@ -7100,7 +7100,7 @@ C             IF(.NOT.XLR_SKIPEP) THEN
 C
 C               e-p
 C               TEMPMAT(INUC,JNUC,ICOOR) = TEMPMAT(INUC,JNUC,ICOOR)
-C    &                                 + ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
+C    &                                 + ABLRF(IFREQ,KA,KB,3)
 C             ENDIF
             ENDDO
           ENDDO
