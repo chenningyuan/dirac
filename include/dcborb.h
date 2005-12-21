@@ -23,6 +23,11 @@
      &        I2ASHX(2, 2), IOCC(2), I2OCCT(2), I2OCCX(2, 2), NAOCC(2), &
      &        NAOCCT, NIOCC(2), NIOCCT, NAVIR(2), NAVIRT, NIVIR(2),     &
      &        NIVIRT, I2_DCBORB
+!
+!     IMPORTANT !!!
+!     I1_DCBORB and I2_DCBORB are tags used to calculate the size of
+!     this COMMON block; must remain at start/end 
+!
       COMMON /DCBORB/ I1_DCBORB, NORB, N2ORB, NORBT, N2ORBT, N2ORBX,    &
      &                NBORB, NFORB, NTORB, N2ORBTQ, N2ORBXQ, NISH,      &
      &                N2ISH, NISHT, N2ISHT, N2ISHX, NASH, N2ASH, NASHT, &
