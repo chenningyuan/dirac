@@ -3676,8 +3676,9 @@ C
 C     INPUT:
 C	NORB - number of vectors to be tranformed
 C	COFU - array of untransformed vectors of dimension (NORB,NORB,NZC)
-C	COFT - array of backtransformed vectors of dimension (NBAS,NVEC,NZC)
 C       TMAT - transformation matrix of dimension (NBAS,NORB,NZT)
+C     On output:
+C	COFT - array of backtransformed vectors of dimension (NBAS,NVEC,NZC)
 C
 C	Written by T.Saue January 1995
 C	LAST VERSION: June 27 1996 - tsaue
