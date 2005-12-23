@@ -212,7 +212,7 @@ C
 C     Print coefficients in
 C       AO-basis  (ILABDF = 1)
 C       SO-basis  (ILABDF = 2)
-C     VECPRI is an character array that contains information about what
+C     VECPRI is an character array that contains information about which
 C     vectors to print.
 C
 C     Written by T.Saue 1996
@@ -430,7 +430,7 @@ C
               II = NPSH(IFRP)+1+JVEC(I)
               FMT = MXFORM(EIG(II),16)
               WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
-     +         '* Positronic eigenvalue no.',II,': ', EIG(II)
+     +         '* Positronic eigenvalue no.',II,': ',EIG(II)
             ELSE
               WRITE(LUPRI,'(/A,I3)')
      +         '* Positronic orbital no.',JVEC(I)
