@@ -374,7 +374,7 @@ C
 C
 C Find reference information for the basis set. 
 C
-      CALL FINREF (BASREF,LUBAS)
+      CALL FINREF (BASREF,LUBAS,BASSAV)
 C
 C Closing file
 C
@@ -1049,16 +1049,16 @@ C
      &     ' is an unsupported element for basis ',BASNAM
       CALL QUIT('Unsupported element in HERBAS')
       END 
+C/* Deck finref */
+      SUBROUTINE FINREF(BASREF, LUBAS, BASNAM)
 C*********************************************************
 C* This is the subroutine that searches through the file *
 C* and finds reference info if available.                *
 C* Based on FINPOS, LV, 14-5-2003                         *
 C*********************************************************
-C/* Deck finref */
-      SUBROUTINE FINREF(BASREF, LUBAS)
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER*80 LINE,BASREF(10)
+      CHARACTER*80 LINE,BASREF(10), BASNAM
 C*********************************************************
 C* Variable declarations:                                *
 C*     SIGN - The first sign in a sentence, to find out  *
@@ -1083,12 +1083,13 @@ C
  20   CONTINUE
       READ (LUBAS, '(A88)', IOSTAT = IOERR, ERR = 1000, END = 200)
      +     STRING
+      IF (IOERR .NE. 0) GO TO 200
       READ (STRING, '(A1)') SIGN
 C
       IF (SIGN .EQ. '$') THEN
          IF (IREF.EQ.0) THEN
 C           Check for start of documentation 
-            DO I = 4, 80
+            DO I = 2, 80
                IF (STRING(I:I+8).EQ.'REFERENCE') IREF = 1
             ENDDO
          ELSE
@@ -1114,9 +1115,12 @@ C No documentation when end of file is found
 C
  200  CONTINUE
  1000 CONTINUE
-      WRITE (LUPRI,'(/A,I5)') 'Error in reading file, your basis '//
-     &     'has no documentation. IOSTAT code:',IOERR
-      CALL QUIT('Incomplete basis set file in HERBAS')
+      WRITE (LUPRI,'(//A,I5/2A/)')
+     &     'Error in reading basis set file, your basis '//
+     &     'has no documentation. IOSTAT code:',IOERR,
+     &     'Basis set: ',BASNAM
+Chj   CALL QUIT('Incomplete basis set file in HERBAS')
+      RETURN
       END
 C*********************************************************	
 C* This is the subroutine that finds out wheter it is a  *
