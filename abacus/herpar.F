@@ -230,9 +230,11 @@ CMI   CALL DZERO(DINTSKP,LDINTSKP)
 C
 C
       IF (LFREE .LT. NREQUI) THEN
-         WRITE(LUPRI,'(/5X,A,/5X,A16,I8,/5X,A16,I8)')
+         WRITE(LUPRI,'(/5X,A,2(/5X,A,I8),/5X,A,2I8)')
      &    'Insufficient work space for subroutine RVRES',
-     &    'Free space     :',LFREE,'Required space :',NREQUI
+     &    'Free space     :',LFREE,
+     &    'Required space :',NREQUI,
+     &    'ITYPE, NDMAT   :',ITYPE,NDMAT
          CALL QUIT('Insufficient work space for RVRES')
       ENDIF
 C
@@ -772,7 +774,6 @@ Cjth & trond - this is a bit risky
 C
          CALL MPI_RECV(WORK,NREQUI,MPI_DOUBLE_PRECISION,NWHO,40,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-#endif
 C
 C        Add results to final matrices.
 C
@@ -811,17 +812,16 @@ C
          IF (TIMING) THEN
             DO 300, K = 1, ITASK
 C
-#if defined (VAR_MPI)
                CALL MPI_RECV(NUMBER,1,MPI_INTEGER,NWHO,40,
      &                       MPI_COMM_WORLD,ISTAT,IERR)
                CALL MPI_RECV(VALUE,1,MPI_DOUBLE_PRECISION,NWHO,40,
      &                       MPI_COMM_WORLD,ISTAT,IERR)
-#endif
 C
                TIMES(NUMBER) = VALUE
 C
   300       CONTINUE
          END IF
+#endif
   100 CONTINUE
 C
       IF (ICOUNT .NE. MTOTTK) THEN
@@ -945,7 +945,6 @@ C
          NODE = ISTAT(MPI_SOURCE)
          CPUS(NODE)  = RBUF(1)
          WALLS(NODE) = RBUF(2)
-#endif
 C
          TSOFAR = TSOFAR + CPUS(NODE)
 #ifdef PRG_DIRAC
@@ -955,17 +954,18 @@ C
          END IF
 #endif
 C
+#endif
   100 CONTINUE
 C
       IF (IPRPAR .GT. 2) THEN
          CALL AROUND('Overall statistics for distribution of batches')
 C
-         WRITE(LUPRI,'(11X,5(A,4X))')    'Node',
+         WRITE(LUPRI,'(11X,5(A,4X))')   'Node',
      &                                  'Batches',
      &                                  'CPU time',
      &                                  'Wall time',
      &                                  'Efficiency'
-         WRITE(LUPRI,'(11X,5(A,4X)/)')   '----',
+         WRITE(LUPRI,'(11X,5(A,4X)/)')  '----',
      &                                  '-------',
      &                                  '--------',
      &                                  '---------',
@@ -1531,9 +1531,9 @@ C     ***********************************
 C
       ICOUNT = 0
 C
+#if defined (VAR_MPI)
   100 CONTINUE
 C
-#if defined (VAR_MPI)
       CALL MPI_SEND(MYTID,1,MPI_INTEGER,MPARID,20,MPI_COMM_WORLD,IERR)
 C
       CALL MPI_RECV(NTEST,1,MPI_INTEGER,MPARID,30,
@@ -1545,7 +1545,6 @@ C
 C
          CALL MPI_RECV(IJSHEL,2,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-#endif
 C
 C        **************************************
 C        ***** Check if it is a null task *****
@@ -1729,6 +1728,7 @@ C
       GOTO 100
 C
  300  CONTINUE
+#endif
 c                 print *,'dmat-start'
 c                 print *, (dmat(ii),ii=1,10)
 c                 print *,'dmat-slutt'
