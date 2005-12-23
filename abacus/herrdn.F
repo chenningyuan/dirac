@@ -273,10 +273,7 @@ C
       PARAMETER (MAXPRD = 30)
 #endif
       LOGICAL RELCAL, TSTINP
-#if defined (VAR_MPI)
 #include "infpar.h"
-      INCLUDE 'mpif.h'
-#endif
 #include "maxaqn.h"
 #include "ccom.h"
 #include "mxsymm.h"
@@ -304,17 +301,12 @@ C     TODO : Check that the other variables are indeed not modified
 C     in DIRAC because the slaves will always get the default, unless
 C     the variable is explictly communicated after reading !!
 C
-#if defined (VAR_MPI)
       IF (MYTID.EQ.MPARID) THEN
 C        This is the master, initialize as usual
 C        Slaves are already initialized before coming here.
          UNCONT = .FALSE.
          MAXPRI = MAXPRD
       ENDIF
-#else
-      UNCONT = .FALSE.
-      MAXPRI = MAXPRD
-#endif
       RETURN
       END
 C  /* Deck readin */
@@ -2202,9 +2194,9 @@ C
 
 
 CMI   ... prepare the MNF.INP file with basis set exponents....
-      CALL MOLOUT(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
+      CALL MNFOUT(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
      &           JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),
-     &            WORK(KIPCON),KATOM,KANG,KBLOCK,
+     &           KATOM,KANG,KBLOCK,
      &           KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
 
 C
@@ -6909,9 +6901,13 @@ C
         IF(J.GT.1) THEN
           DO K = 1,JCO(J-1,I,1)
             IBD = IBD + 1
-            IF(IDOWN(ISGEN(IBD)).EQ.1
-     $           .OR. ISGEN(IBD) .EQ. 0 )  THEN
+            IF(IDOWN(ISGEN(IBD)) .EQ. 1
+     $          .OR. ISGEN(IBD)  .EQ. 0 )  THEN
               IF (CNTBAS) THEN
+C               Collect the uncontracted small component
+C               basis functions in chunks of about 50 basis
+C               functions for higher efficiency in integral
+C               evaluation.
                 MXDUM = 50 - MOD(50, KHK(J))
                 MAXS = MAX((MXDUM/KHK(J)),1)
                 IBJCO=1+(NUC(IBD,1)-1)/MAXS
@@ -6925,7 +6921,7 @@ C
                     JSEND = NUC(IBD,1)
                   ENDIF
                   CALL GENSML(J,IBD,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
+     &                        SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
                 ENDDO
               ELSE
                 JSBEG = 0
@@ -6946,6 +6942,7 @@ C
             IF(IUP(ISGEN(IBU)).EQ.1
      $           .OR. ISGEN(IBU) .EQ. 0 ) THEN
               IF (CNTBAS) THEN
+C               See note above.
                 MXDUM = 50 - MOD(50, KHK(J))
                 MAXS = MAX((MXDUM/KHK(J)),1)
                 IBJCO=1+(NUC(IBU,1)-1)/MAXS
@@ -6959,7 +6956,7 @@ C
                     JSEND = NUC(IBU,1)
                   ENDIF
                   CALL GENSML(J,IBU,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
+     &                        SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
                 ENDDO
               ELSE
                 JSBEG = 0
@@ -7011,11 +7008,24 @@ C
       DO I = JSBEG + 1,JSEND
          ALPTEST = ALPHA(I,IBL,1)
 C
+C        Check previous shells:
+C
          DO J = IBJ+1,IBS-1
             DO IJ = 1,NUC(J,2)
               TEST = ABS(ALPTEST - ALPHA(IJ,J,2))
               IF (TEST .LE. ALPTHR) GO TO 100
             END DO
+         END DO
+C
+C        Check same shell (to eliminate duplication in
+C        same shell as for example for Chlorine in
+C        6-311G* basis set -- where some basis functions
+C        are duplicated in order to have segmented contraction).
+C        /HJAaJ D1c 2005
+C     
+         DO IJ = 1, NUC_IBS
+            TEST = ABS(ALPTEST - ALPHA(IJ,IBS,2))
+            IF (TEST .LE. ALPTHR) GO TO 100
          END DO
 C
          NUC_IBS = NUC_IBS + 1
@@ -7180,8 +7190,16 @@ C                       Check for two identical functions.
 C                       This should never happen, since GENSML deletes
 C                       functions it already knows.
 C
-                        IF(JSH2M.NE.0) CALL QUIT
+                        IF(JSH2M.NE.0) THEN
+                          WRITE(LUPRI,'(/A,2(/A,2I8,F20.10),2(/A,2I8))')
+     &                    'RKBREL: Error, two identical S.C. functions',
+     &                     ' ISHL,IPRIM,PRIEXI :',ISHL,IPRIM,PRIEXI,
+     &                     ' JSHL,JPRIM,PRIEXJ :',JSHL,JPRIM,PRIEXJ,
+     &                     ' NCENTI,NCENTJ     :',NCENTI,NCENTJ,
+     &                     ' NHKTI,NHKTJ       :',NHKTI,NHKTJ
+                          CALL QUIT
      &                   ('RKBREL: Error, two identical S.C. functions')
+                        END IF
 C
 C                       Note that we use JSH2M and not JPRIM, since RKBLOW
 C                       in dirone.F wants shell number, and not primitive
@@ -7515,10 +7533,9 @@ C
       RETURN
       END
 
-
-C  /* Deck molout */
-      SUBROUTINE MOLOUT(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &     IPCON,KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM,
+C  /* Deck mnfout */
+      SUBROUTINE MNFOUT(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM,
      &     NSYMOP)
 C
 C     Now also dumps a file MNF.INP for use for SO mean-field approximation
@@ -7527,36 +7544,29 @@ C
 C     Added and modified by Miro Ilias for the AMFI part
 C      Strasbourg, 2005
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <ccom.h>
-#include <cbirea.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <molinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "ccom.h"
+#include "cbirea.h"
+#include "nuclei.h"
+#include "primit.h"
+#include "molinp.h"
 
-#if defined (VAR_MPI)
-#include "dcbgen.h"
-#include "mpif.h"
 #include "infpar.h"
-#endif
 
       LOGICAL SEG, NRMPRI
       CHARACTER KASYM(3,3)*1, CRT*1
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &     JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &     CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)
-      DIMENSION IPCON(KPRIM)
 
 C     .... only for master or single process !!! 
-#if defined (VAR_MPI)
-      IF ((PARCAL.AND..NOT.SLAVE).OR..NOT.PARCAL) THEN
-#endif
+      IF (MYTID .EQ. MPARID) THEN
 C
       LUTMP2 = 0
       CALL GPOPEN(LUTMP2,'MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
@@ -7653,9 +7663,9 @@ C
      &    'MNF.INP input file (for the AMFI stuff) is ready.'
       CALL FLSHFO(LUPRI)
 
-#if defined (VAR_MPI)
       ENDIF
-#endif
+C     END of IF master (i.e. if MYTID .eq. MPARID)
 
       RETURN
+C     end of SUBROUTINE MNFOUT
       END
