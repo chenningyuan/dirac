@@ -164,7 +164,7 @@ C
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
               CALL GETTIM(CPUST,WALLST)
-              WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A,F10.2,A)')
+              WRITE(LUPRI,'(3X,2(A,I4),A,F8.0,A,F8.0,A)')
      &           '- Beginning task',ISHLA,' of',IASMAX,
      &           ' after',WALLST-WALLBEF,' seconds and',
      &           CPUST-CPUBEF,' CPU-seconds'

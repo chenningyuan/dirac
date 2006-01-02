@@ -257,13 +257,13 @@ C
               CALL GETTIM(CPUST,WALLST)
               IF (IC.LE.2) THEN
                  IBEND = ISHLA
-                 WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A,F10.2,A)') 
+                 WRITE(LUPRI,'(3X,2(A,I4),A,F8.0,A,F8.0,A)') 
      &              '- Beginning task',ISHLA,' of',IASMAX,
      &              ' after',WALLST-WALLBEF,' seconds and',
      &              CPUST-CPUBEF,' CPU-seconds'
               ELSE
                  IBEND = IBSMAX
-                 WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A,F10.2,A)') 
+                 WRITE(LUPRI,'(3X,2(A,I4),A,F8.0,A,F8.0,A)') 
      &              '- Beginning Gaunt task',ISHLA-IASTRT+1,
      &              ' of',IASMAX-IASTRT+1,
      &              ' after',WALLST-WALLBEF,' seconds and',
