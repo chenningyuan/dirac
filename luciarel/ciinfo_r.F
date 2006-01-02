@@ -532,11 +532,10 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
      &      ' MK2/IRI vector of C :  MK2_R, IRIR =', MK2_R,IRIR
             WRITE(6,*)
           end if
-          write(6,*)
-          write(6,*) '´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´ '
-          write(6,'(A,1X,I3,1X,I2)')
-     &              ' Contrib. Kramers proj., real/im  ',MK2_R,IRIR
-          write(6,*) '´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´ '
+          write(6,'(/A/A,I4,I3/A)')
+     &         ' ----------------------------------------------',
+     &         ' Contrib. Kramers proj., real/im  ',MK2_R,IRIR,
+     &         ' ----------------------------------------------'
           NAEL = NELEC(IACTP)
           NBEL = NELEC(IBCTP)
 *
@@ -707,12 +706,9 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
       END IF
       IDET = 0
 *
-      WRITE(6,*)
-      WRITE(6,'(A,E10.4,A,E10.4)')
-     & '  Printout of coefficients in interval  ',XMIN,' to ',XMAX
-      WRITE(6,'(A)')
+      WRITE(6,'(/A,E10.4,A,E10.4/A/)')
+     & '  Printout of coefficients in interval  ',XMIN,' to ',XMAX,
      & '  ========================================================='
-      WRITE(6,*)
 *
       if (NTEST.ge.10) then
          WRITE(6,'(A,I6)') ' GASANAS : NBL_C = ',NBL_C
