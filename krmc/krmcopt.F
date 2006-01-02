@@ -206,7 +206,7 @@ C
       CLOSE(LUKRM3,STATUS='KEEP')
 c     CLOSE(LUKRM3,STATUS='DELETE')
       CLOSE(LUKRM4,STATUS='DELETE')
-      CLOSE(LUKRM5,STATUS='DELETE')
+      IF (LUKRM5.GT.0) CLOSE(LUKRM5,STATUS='DELETE')
       CLOSE(LUITFO,STATUS='DELETE')
 C
       CALL QEXIT('PSIOPT')
@@ -241,7 +241,7 @@ C
 #include "dcborb.h"
 #include "frame.h"
 C
-      LOGICAL   WFCONV
+      LOGICAL   WFCONV, MOISNO
       DIMENSION WORK(*)
       DIMENSION CMO(*),DV(*),FC(*),FV(*),FQ(*),FCAC(*),CREF(*),
      &          H2AC(*),GCI(*),GOEE(*),GOEP(*), PV(*)
@@ -490,9 +490,14 @@ C
      &           ' Total orbital grad.(It. ',I3,') : ',F25.15,/,
      &           ' Total gradient     (It. ',I3,') : ',F25.15,/)
 C
-C        IF (IPROPT .GE. 1) THEN
-Chj Jun 2004  TODO: print NO occ (use RGETNO ?)
-C        END IF
+         IF (IPROPT .GE. 1) THEN
+            IPRNO = 3*IPROPT
+            CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+            CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
+     &                  .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
+            CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
+         END IF
 C
          CALL FLSHFO(LUPRI)
 C
@@ -1273,24 +1278,23 @@ C
 C        1-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
-         EMCMY = D2*DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KH1AO),1)
-         IF (IPROPT .GE. 4)
-     &      WRITE(LUPRI,9000) 1,EMCMY
+         EMCMY1E = D2*DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KH1AO),1)
 C
 C        Add 2-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
          EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
-         IF (IPROPT .GE. 4)
-     &      WRITE(LUPRI,9000) 2,EMCMY2E
-         EMCMY = EMCMY + EMCMY2E
-         IF (IPROPT .GE. 4)
-     &      WRITE(LUPRI,9001) EMCMY
+         EMCMY = EMCMY1E + EMCMY2E
+         IF (IPROPT .GE. 4) THEN
+            WRITE(LUPRI,9000) 1,EMCMY1E
+            WRITE(LUPRI,9000) 2,EMCMY2E
+            WRITE(LUPRI,9001) EMCMY
+         END IF
       ELSE
          EMCMY = D0
       END IF
- 9000 FORMAT (/2X,'rFCKMAT: ',I1,'-electron inactive energy: ',F25.15)
- 9001 FORMAT (/2X,'rFCKMAT: Total inactive energy     : ',F25.15)
+ 9000 FORMAT (/'  rFCKMAT: ',I1,'-electron inactive energy: ',F25.15)
+ 9001 FORMAT (/'  rFCKMAT: Total inactive energy     : ',F25.15)
 C
 C     ***************************************************
 C     *** Add one-electron contribution to FCAO *********
@@ -1839,8 +1843,10 @@ C
             NOROT(IORB(I) + NPSH(I) + NISH(I) + J) = 0
          END DO
       END DO
-      write(LUPRI,*) 'frozen orbitals'
-      CALL IWRTMA(NOROT,NORBT,1,NORBT,1)
+      IF (IPROPT .GT. 4) THEN
+         WRITE(LUPRI,*) 'Orbitals excluded from 4-index transformation:'
+         CALL IWRTMA(NOROT,NORBT,1,NORBT,1)
+      END IF
 C
 C     Evaluate all derived NZX* and NZH* info in dcbopt.h;
 C     write information to LUKRMC
@@ -1891,8 +1897,8 @@ C     ***************************************************
 C     *** Total number of parameters ********************
 C     ***************************************************
 C
-      NZVAR  = NZCONF + NZXOPT
-      NZVARQ = NZVAR *NZ
+      NZVAR  = NZCONF  + NZXOPT
+      NZVARQ = NZCONFQ + NZXOPTQ
 C
 C     Write rotations to file
 C
@@ -2069,8 +2075,8 @@ C
 C
       END IF
 C
-      NZCONFQ = NZCONF
-      IF ( NZ .GE. 2 ) NZCONFQ = 2 * NZCONF
+      MZ = MIN(NZ,2)
+      NZCONFQ = MZ*NZCONF
 C
       CALL GETTIM(CPU2,WLL2)
       CPUTID  = SECTID(CPU2-CPU1)
@@ -2476,10 +2482,10 @@ C     bit 4 of IROST: start on H1DIAG
 C
       IF (IPROPT .GE. 2) THEN
          WRITE(LUPRI,'(4(/A,I4))')
-     &        ' (ROPTST)  Control parameter (ISTART)  =',ISTART,
-     &        '           Orbital start guess (IROST) =',IROST,
-     &        '           Conf. start guess (IRCIST)  =',IRCIST,
-     &        '           Write CMO & CREF (IWRT)     =',IWRT
+     &        ' (ROPTST)  Control parameter   (ISTART) =',ISTART,
+     &        '           Orbital start guess (IROST)  =',IROST,
+     &        '           Config. start guess (IRCIST) =',IRCIST,
+     &        '           Write CMO & CREF (IWRT)      =',IWRT
       END IF
 C
 C
@@ -2489,11 +2495,10 @@ C     *******************************
 C
       IF (IROST .EQ. 0) GOTO 1100
 C
-C     (1.1) Read from label NEWORB on KRMCSCF
+C     (1.1) Read from label NEWORB on KRMCOLD
 C
       IF (LBIT(IROST,1)) THEN
-         INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
-         IF ( EX ) THEN
+         IF ( LUKRM5 .GT. 0 ) THEN
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,1,LUKRM5)
             IF (JRDMO .EQ. 0) THEN
@@ -2507,11 +2512,10 @@ C
          END IF
       END IF
 C
-C     (1.2) Read from label OLDORB on KRMCSCF
+C     (1.2) Read from label OLDORB on KRMCOLD
 C
       IF (LBIT(IROST,2)) THEN
-         INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
-         IF ( EX ) THEN
+         IF ( LUKRM5 .GT. 0 ) THEN
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,2,LUKRM5)
             IF (JRDMO .EQ. 0) THEN
@@ -2601,12 +2605,11 @@ C
 C
       IF ( MCTYPE .GE. JMCMIN ) THEN
 C
-C        (2.1) Read CREF from KRMCSCF
+C        (2.1) Read CREF from KRMCOLD
 C              or restart plain LUCIAREL from CI vector
 C
          IF (LBIT(IRCIST,1)) THEN
-            INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
-            IF ( EX ) THEN
+            IF ( LUKRM5 .GT. 0 ) THEN
                REWIND(LUKRM5)
                IF ( FNDLAB('CREF    ',LUKRM5) ) THEN
                   IF (MOPT_MXMACRO.GT.0) THEN
@@ -2648,11 +2651,10 @@ C
             END IF
          END IF
 C
-C        (2.2) Read CREFOLD from KRMCSCF
+C        (2.2) Read CREFOLD from KRMCOLD
 C
          IF (LBIT(IRCIST,2)) THEN
-            INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
-            IF ( EX ) THEN
+            IF ( LUKRM5 .GT. 0 ) THEN
                IF ( FNDLAB('CREF    ',LUKRM5) ) THEN
                   REWIND(LUKRM5)
                   CALL REAKRMC(LUKRM5,'CREFOLD ',CREF,NZCONFQ)
@@ -2755,9 +2757,11 @@ C
 #include "krmcluci_inf.h"
 C
       DIMENSION CMO(*), CREF(*), WORK(*)
+      LOGICAL   MOISNO
 C
       CALL QENTER('RCIST')
       CALL RTKTIME(.TRUE.,2)
+      KFRSAV = KFREE
 C
 C     Do some (e.g., 3) Davidson CI iterations to get a start vector:
 C
@@ -2800,6 +2804,10 @@ C
 C           CALL GOSCI_STARTVEC(IDET,CMO,CREF,ECI,WORK,KFREE,LFREE)
 C
          END IF
+         IF (IANACI.EQ.1) THEN
+           CALL GOSCI_ANACI(CREF,WORK(KZCONF),WORK(KFREE),LFREE)
+C          CALL GOSCI_ANACI(CREF,IDET,WORK,LWORK)
+         END IF
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
 C
@@ -2818,8 +2826,14 @@ C
          CALL QUIT('*** ERROR in RCIST *** Not implemented')
       END IF
 C
-      WRITE(LUPRI,'(/A,F20.8)')
-     &     ' (RCIST) CI energy:',ECI
+      WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
+C
+      IPRNO = 3*IPROPT
+      CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
+     &            .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
+      CALL MEMREL('RCIST.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL RTKTIME(.FALSE.,2)
       CALL QEXIT('RCIST')
@@ -2984,7 +2998,7 @@ C
          NZXOPT1 = NZXOPT
          NZXOPTQ1 = NZXOPTQ
       ENDIF
-      NZVAR1 = NZCONF1 + NZXOPE1 + NZXOPP
+      NZVAR1  = NZCONF1  + NZXOPE1  + NZXOPP
       NZVARQ1 = NZCONFQ1 + NZXOPEQ1 + NZXOPPQ
 C
 C
@@ -4223,6 +4237,8 @@ C***********************************************************************
 #include "dcbdhf.h"
 #include "dcbgen.h"
 C
+      LOGICAL EX
+C
 C     Needs to be done here as SETDHF is not called in KRMC run:
 C
       LUFCK1 = 10
@@ -4262,9 +4278,14 @@ C
       LUITFO = 56
       CALL OPNFIL(LUITFO,'KRMC_ITINFO','UNKNOWN','PSIOPT')
 C
-      LUKRM5 = 59
-      CALL OPNFIL(LUKRM5,'KRMCOLD','UNKNOWN','PSIOPT')
-      REWIND LUKRM5
+      INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
+      IF (EX) THEN
+         LUKRM5 = 59
+         CALL OPNFIL(LUKRM5,'KRMCOLD','OLD','PSIOPT')
+         REWIND LUKRM5
+      ELSE
+         LUKRM5 = -59
+      END IF
 C
       RETURN
       END

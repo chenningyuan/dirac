@@ -367,11 +367,11 @@ C
                   IF (GOSCI_SYMOK(IASTR(IA),IBSTR(IB))) THEN
                      NDET = NDET + 1
                      IF (NDET .GE. MAXDET) THEN
-                        WRITE(LUPRI,'(2A,I9,A)')
-     &                       ' *** ERROR in GOSCI_GENDET ***',
+                        WRITE(LUPRI,'(/A,I12/A)')
+     &                     ' *** ERROR in GOSCI_GENDET *** '//
      &                       'Maximum number of determinants reached!',
      &                       MAXDET,
-     &                       'Allocate more memory!'
+     &                     'Allocate more memory!'
                         CALL QUIT('*** ERROR in GOSCI_GENDET ***')
                      END IF
                      IDET(1,NDET) = IASTR(IA)
@@ -1656,6 +1656,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
+#include "dcbopt.h"
 C
       LOGICAL   SAVDIA
       DIMENSION DIAG(*), SVEC(*), BVEC(*), HCORE(*), VMUUUU(*)
@@ -1663,21 +1664,21 @@ C
 C
       CALL QENTER('GOSCI_SVC')
 C
-#define xxx
-#ifdef xxx
+      IF (NZCONF .GT. 1000) THEN
 C hj 16-jun-2004 new sigma code with screening
-      THRSCR = 1.0D-10
-      CALL GOSCI_CISIG_SCREEN(SVEC,BVEC,HCORE,VMUUUU,.TRUE.,IDET,THRSCR)
-      IF (SAVDIA) CALL GOSCI_CI(SAVDIA,DIAG,
+         THRSCR = 1.0D-10
+         CALL GOSCI_CISIG_SCREEN(SVEC,BVEC,HCORE,VMUUUU,.TRUE.,
+     &      IDET,THRSCR)
+         IF (SAVDIA) CALL GOSCI_CI(SAVDIA,DIAG,
      &     .FALSE.,SVEC,BVEC,HCORE,VMUUUU,
      &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &     .TRUE.,IDET)
-#else
-      CALL GOSCI_CI(SAVDIA,DIAG,
+      ELSE
+         CALL GOSCI_CI(SAVDIA,DIAG,
      &     .TRUE.,SVEC,BVEC,HCORE,VMUUUU,
      &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &     .TRUE.,IDET)
-#endif
+      END IF
 C
 C     CALL GOSCI_CI(
 C    &     DODIA,DIAG,
@@ -1922,22 +1923,21 @@ c           CALL GOSCI_SVC(.FALSE.,DUMMY,
 c    &           WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
 c    &           IDET,WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
 c    &           WORK(KFCACM),WORK(KMUUUU))
-#define xxx
-#ifdef xxx
+            IF (NZCONF .GT. 1000) THEN
 C hj 16-jun-2004 new sigma code with screening
-            CALL GOSCI_CISIG_SCREEN(
+               CALL GOSCI_CISIG_SCREEN(
      &           WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
      &           WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
      &           WORK(KFCACM),WORK(KMUUUU),
      &           .TRUE.,IDET,THRSCR)
-#else
-            CALL GOSCI_CI(.FALSE.,DUMMY,
+            ELSE
+               CALL GOSCI_CI(.FALSE.,DUMMY,
      &           .TRUE.,WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
      &           WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
      &           WORK(KFCACM),WORK(KMUUUU),
      &           .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &           .TRUE.,IDET)
-#endif
+            END IF
 C           CALL GOSCI_CI(DODIA,DIAG,
 C                         DOSIG,SVEC,BVEC,
 C                         HCORE,VMUUUU,
@@ -3083,16 +3083,23 @@ C
 C
  10   CONTINUE
 C
-      CALL GETTIM(CPU2,WLL2)
-      CPUTID  = SECTID(CPU2-CPU1)
-      WALLTID = SECTID(WLL2-WLL1)
-      CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
-C     write(lupri,*) '#calls to nbits: ',cncalls,fncalls
-      WRITE(LUPRI,'(/5A)')
+      IF (IPROPT .GT. 0) THEN
+         CALL GETTIM(CPU2,WLL2)
+       IF ((WLL2-WLL1)*IPROPT .GT. 5.D0) THEN
+C        ... do not print all the small numbers
+         CPUTID  = SECTID(CPU2-CPU1)
+         WALLTID = SECTID(WLL2-WLL1)
+         WRITE(LUPRI,'(/5A)')
      &   ' CPU (Wall) time in GOSCI_CI kernel: ',CPUTID,' (',WALLTID,')'
-      IF (NDSKIP .GT. 0) WRITE(LUPRI,'(A,I10,A,I10)')
+         IF (NDSKIP .GT. 0) WRITE(LUPRI,'(A,I10,A,I10)')
      &   ' Number of configuration elements skipped:',NDSKIP,
      &   ' out of',NZCONF
+        IF (IPROPT .GT. 2) THEN
+         CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
+         write(lupri,*) '#calls to nbits: ',cncalls,fncalls
+        END IF
+       END IF
+      END IF
 C
       CALL FLSHFO(LUPRI)
       RETURN
@@ -3350,15 +3357,22 @@ C        end loop 100 I and end loop 10 MKI
  100     CONTINUE
  10   CONTINUE
 C
-      CALL GETTIM(CPU2,WLL2)
-      CPUTID  = SECTID(CPU2-CPU1)
-      WALLTID = SECTID(WLL2-WLL1)
-C     CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
-C     write(lupri,*) '#calls to nbits: ',cncalls,fncalls
-      WRITE(LUPRI,'(/5A/A,I10,A,I10)')
+      IF (IPROPT .GT. 0) THEN
+         CALL GETTIM(CPU2,WLL2)
+       IF ((WLL2-WLL1)*IPROPT .GT. 5.D0) THEN
+C        ... do not print all the small numbers
+         CPUTID  = SECTID(CPU2-CPU1)
+         WALLTID = SECTID(WLL2-WLL1)
+         WRITE(LUPRI,'(/5A/A,I10,A,I10)')
      &   ' CPU (Wall) time in GOSCI_CISIG_SCREEN kernel: ',CPUTID,' (',
      &   WALLTID,')',' Number of BVEC elements skipped:',NBSKIP,
      &   ' out of',NZCONF
+        IF (IPROPT .GT. 2) THEN
+         CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
+         write(lupri,*) '#calls to nbits: ',cncalls,fncalls
+        END IF
+       END IF
+      END IF
 C
       CALL FLSHFO(LUPRI)
       RETURN

@@ -55,6 +55,7 @@ C     Output:
 C        OCCNO - natural orbital occupation numbers
 C        UNO   - transformation matrix
 C        MOISNO - MO orbitals was already NO orbitals.
+C        CMO   - if NATORB, then NO orbitals, else unchanged
 C
 C     Written by J. Thyssen - Dec 21 2000
 C     Last revision :
@@ -106,10 +107,8 @@ C
       END DO
       IF (DVMAX .LE. THRZER) THEN
          MOISNO = .TRUE.
-         IF (IPRINT .GE. 2) THEN
-            WRITE(LUPRI,'(1X,A)')
-     &           '(RGETNO) The orbitals are already natural orbitals.'
-         END IF
+         IF (IPRINT .GE. 2) WRITE(LUPRI,'(1X,A)')
+     &      '(RGETNO) The orbitals are already natural orbitals.'
          CALL DZERO(UNO,N2ASHXQ)
          CALL DUNIT(UNO,NASHT)
          DO I = 1, NASHT
@@ -197,12 +196,12 @@ C     -----------------------------
 C
       IF (.NOT. MOISNO) THEN
          IF (.NOT. NATORB) THEN
-            IF ( IPRINT .GE. 5 )
+            IF ( IPRINT .GE. 1 )
      &           WRITE(LUPRI,'(/1X,A)')
      &           '(RGETNO) active orbitals are NOT transformed '//
      &           'to natural orbitals.'
          ELSE
-            IF ( IPRINT .GE. 5 )
+            IF ( IPRINT .GE. 1 )
      &           WRITE(LUPRI,'(/1X,A)')
      &           '(RGETNO) active orbitals are transformed '//
      &           'to natural orbitals.'

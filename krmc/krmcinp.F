@@ -509,6 +509,7 @@ C
 C     Boson symmetry in the CI expansion
 C
       IF ((SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) THEN
+         NREP = NBSYM
          WRITE(LUPRI,'(A)')
      &     ' * Boson spatial spinor symmetry used in CI expansion.'
          WRITE(LUPRI,'(2A)')
@@ -518,6 +519,7 @@ C
      &     ' * Allowed interval of 2 * MS :',
      &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
       ELSE IF (.NOT.(SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) THEN
+         NREP = NBSYM
          WRITE(LUPRI,'(A)') ' * Approximate boson spatial spinor'//
      &     ' symmetry (as non-rel) used in CI expansion.'
          WRITE(LUPRI,'(2A)')
@@ -545,6 +547,12 @@ C
          WRITE(LUPRI,'(A,I4,A,I3)')
      &     ' * Allowed interval of 2 * MK :',
      &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
+      END IF
+      IF (IKRMC_SYMMETRY .GT. NREP) THEN
+         WRITE(LUPRI,'(/A//A,2I3)')
+     &      ' INPUT ERROR, requsted .SYMMETRY is non-existent!',
+     &      ' symmetry, max value of symmetry = ', IKRMC_SYMMETRY, NREP
+         CALL QUIT('INPUT ERROR for *KRMCSCF  .SYMMETRY')
       END IF
 C
 C

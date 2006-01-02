@@ -282,15 +282,17 @@ C
 C        Calculate natural orbital occ.
 C        ------------------------------
 C
-C        Also, transform orbitals to NO.
+C        hjaaj Sep 2005: However, do NOT transform orbitals to NO.
+C        (not yet, because not used now, to do: transform and write to KRMCSCF)
 C
+         IPRGNO = MAX(IPROPT,2)
          CALL RGETNO(WORK(KCREF),WORK(KOCCNO),WORK(KUNO),WORK(KCMO),
-     &               .TRUE.,MOISNO,IPROPT,WORK,KFREE,LFREE)
+     &            .FALSE.,MOISNO,IPRGNO,WORK,KFREE,LFREE)
+C
+C        Write natural orbitals back to KRMCSCF
+C
+C        FIXME: -"-
       END IF
-C
-C     Write orbital back to KRMCSCF
-C
-C     FIXME: -"-
 C
       IF ( IPROPT .GE. 2 ) THEN
 C
@@ -317,17 +319,15 @@ C
          CALL REAKRMC(LUKRMC,'CREF    ',WORK(KCREF),NZCONFQ)
 C
          WRITE(LUPRI,9500)
-         CALL RPRVEC(NZCONF,WORK(KCREF),1,NZ,IPQTOQ(1,0),
-     &        THRPCI,200,LUPRI)
+         IF (IPROPT .GT. 2) CALL RPRVEC(NZCONF,WORK(KCREF),
+     &      1,NZ,IPQTOQ(1,0),THRPCI,200,LUPRI)
+C
+C           Analyze CI vectors
 C
          IF (OPT_CIPROGRAM .EQ. 'GOSCI') THEN
             CALL GOSCI_ANACI(WORK(KCREF),WORK(KZCONF),WORK(KFREE),LFREE)
          ELSE IF (OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
-C
-C           Analyze CI vectors
-C
             CALL LUCI_ANAL(WORK(KCREF),WORK,KFREE,LFREE)
-C
          END IF
 C
          CALL MEMREL('KRMCOU1.CI',WORK,1,KFRSAV,KFREE,LFREE)
@@ -343,7 +343,7 @@ C  /* Deck rprorb */
       SUBROUTINE RPRORB(CMO,PROCC,PRSML)
 C***********************************************************************
 C
-C     Print molecular orbital coefficients.
+C     Print norm of molecular orbital coefficients.
 C
 C     Written by J. Thyssen - Mon Mar 26 11:58:53 MET 2001
 C
@@ -358,51 +358,57 @@ C
 #include "dgroup.h"
 C
       DIMENSION CMO(*)
-      LOGICAL PROCC, PRSML
+      LOGICAL PROCC, PRSML, PRLINE
+      PARAMETER (CMOBSMALL = 0.5D-4)
+C     Do not print lines with only zeroes in F7.4 format
 C
       DIMENSION CMOB(7)
 C
 C
 C *** FORMAT statements
 C
- 2400 FORMAT(/5X,'Molecular orbitals for symmetry species',I4)
+ 2400 FORMAT(/5X,'Molecular orbitals for symmetry species',I4,
+     &       /5X,'-> Norm of each quaternion coefficient is printed.')
+ 2410 FORMAT( 5X,'-> Small component coefficients not printed.')
  2600 FORMAT(/' Orbital  ',4X,7I9)
  2800 FORMAT(I4,2X,A12,7F9.4)
 C
 C *** Print molecular orbitals
 C
       ISTBAS = 0
-      DO 400 ISYM = 1,NFSYM
-         NORBI = NORB(ISYM)
+      DO 400 IFSYM = 1,NFSYM
+         NORBI = NORB(IFSYM)
          IF (PROCC) THEN
-            NENDI = NOCC(ISYM)
+            NENDI = NOCC(IFSYM)
          ELSE
             NENDI = NORBI
          END IF
       IF (NENDI.EQ.0) GO TO 300
-         NBASI = NFBAS(ISYM,0)
+         NBASI = NFBAS(IFSYM,0)
          IF (PRSML) THEN
             IBAEND = NBASI
          ELSE
-            IBAEND = NFBAS(ISYM,1)
+            IBAEND = NFBAS(IFSYM,1)
          END IF
-         WRITE(LUPRI,2400) ISYM
+         WRITE(LUPRI,2400) IFSYM
+         IF (.NOT. PRSML) WRITE(LUPRI,2410)
 C
-         ICMOI = ICMOQ(ISYM)
-         ISTORB = IORB(ISYM)
-         IEND=0
-  100       IST =IEND+1
+         ICMOI  = ICMOQ(IFSYM)
+         ISTORB = IORB(IFSYM)
+         IEND   = 0
+  100       IST  =IEND+1
             ISTMO=IEND*NBASI+ICMOI
-            IEND=IEND+7
+            IEND =IEND+7
             IF(IEND.GT.NENDI) IEND=NENDI
             IEMO=NBASI*(IEND-1)+ICMOI
             WRITE(LUPRI,2600) (I,I=IST,IEND)
-            DO 200 I=1,IBAEND
-               JSMO=ISTMO+I
-               JEMO=IEMO+I
-               JJ = 0
+            DO I=1,IBAEND
+               JSMO = ISTMO+I
+               JEMO = IEMO+I
+               JJ   = 0
+               PRLINE = .FALSE.
                DO J = JSMO, JEMO, NBASI
-                  JJ = JJ + 1
+                  JJ  = JJ + 1
                   JJJ = J
                   CMOB(JJ) = CMO(JJJ)**2
                   DO IZ = 2, NZ
@@ -410,17 +416,18 @@ C
                      CMOB(JJ) = CMOB(JJ) + CMO(JJJ)**2
                   END DO
                   CMOB(JJ) = SQRT(CMOB(JJ))
+                  IF (CMOB(JJ) .GE. CMOBSMALL) PRLINE = .TRUE.
                END DO
-               WRITE(LUPRI,2800) I,PLABEL(IPLAB(I,1),1),
-     *            (CMOB(J),J=1,IEND-IST+1)
-  200       CONTINUE
+               IF (PRLINE) WRITE(LUPRI,2800)
+     *            I,PLABEL(IPLAB(ISTBAS+I,2),2),(CMOB(J),J=1,IEND-IST+1)
+            END DO
          IF (IEND.NE.NENDI) GO TO 100
 C
   300 CONTINUE
         ISTBAS = ISTBAS + NBASI
   400 CONTINUE
 C
-C *** End of subroutine PRORB
+C *** End of subroutine RPRORB
 C
       RETURN
       END

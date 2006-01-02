@@ -78,7 +78,7 @@ C
       CALL QENTER('RTRACTL')
       CALL RTKTIME(.TRUE.,7)
 C
-      IF ( IPROPT .GE. 3 ) THEN
+      IF ( IPROPT .GE. 1 ) THEN
          WRITE(LUPRI,'(/3A,I1,A,2(/A,L1))')
      &        ' (RTRACTL) Integrals in transformation = ',OPT_INTTYP,
      &        ' (INTFLG=',IOPT_INTFLG,')',
@@ -882,28 +882,25 @@ C
 C     Print timing information
 C
       CALL GETTIM(CPU2,WALL2)
-      WALL   = WALL2 - WALL1
 C
-      IMINS  = INT(WALL)/60
-      IHOURS = IMINS/60
-      IMINS  = IMINS - 60*IHOURS
-      ISECS  = NINT(WALL) - 3600*IHOURS - 60*IMINS
-      WRITE(LUPRI,'(/A,I5.2,A,I2.2,A,I2.2)')
-     &      ' (RTRACTL1) Total wall time used :',
-     &      IHOURS,':',IMINS,':',ISECS
+      WALL    = WALL2 - WALL1
+      IWMINS  = INT(WALL)/60
+      IWHOURS = IWMINS/60
+      IWMINS  = IWMINS - 60*IWHOURS
+      IWSECS  = NINT(WALL) - 3600*IWHOURS - 60*IWMINS
 C
-      CPU    = CPU2 - CPU1
-      IMINS  = INT(CPU)/60
-      IHOURS = IMINS/60
-      IMINS  = IMINS - 60*IHOURS
-      ISECS  = NINT(CPU) - 3600*IHOURS - 60*IMINS
-      WRITE(LUPRI,'(A,I5.2,A,I2.2,A,I2.2)')
-     &      ' (RTRACTL1) Total CPU  time used :',
-     &      IHOURS,':',IMINS,':',ISECS
+      CPU     = CPU2 - CPU1
+      ICMINS  = INT(CPU)/60
+      ICHOURS = ICMINS/60
+      ICMINS  = ICMINS - 60*ICHOURS
+      ICSECS  = NINT(CPU) - 3600*ICHOURS - 60*ICMINS
 C
       CALL GTINFO(DAYTID)
-      WRITE(LUPRI,'(/A,A24)')
-     &     ' (RTRACTL1) Transformation ended ',DAYTID
+      WRITE(LUPRI,'(/2(A,I5.2,A,I2.2,A,I2.2),A/A,A24)')
+     &     ' (RTRACTL1) Total CPU (wall) time used :',
+     &      ICHOURS,':',ICMINS,':',ICSECS,
+     & ' (',IWHOURS,':',IWMINS,':',IWSECS,')',
+     &     '            Transformation ended ',DAYTID
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('RTRACTL1')
