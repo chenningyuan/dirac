@@ -20,11 +20,10 @@ C
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
+#include "dcbplot.h"
 #include "maxorb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-C
-#include "dcbplot.h"
 C
       LOGICAL TOBE
 C
@@ -216,18 +215,10 @@ C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C
 #include "dcbgen.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "nuclei.h"
-#include "dgroup.h"
-#include "symmet.h"
-#include "sdpre.h"
-#include "ibtfun.h"
-C
-#include "dcbplot.h"
 C
       CHARACTER PAIRNAMEA(100)*3,PAIRNAMEB(100)*3
+#include "dcbplot.h"
+#include "dcborb.h"
 C
       DIMENSION DMATBF(N2BBASX,NZ),
      &          GAO(*),GAO1(*),GAO2(*),
@@ -242,6 +233,14 @@ Cvorsicht       DENSITY(0:2) war frueher im 1D
      &          DLAPLACIAN(NCUBE(3)),
      &          PAIRCOORA(100,3),PAIRCOORB(100,3),
      &          D3DSTEP(3,0:3),ATOMXYZ(4,NUCDEP)
+C
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "symmet.h"
+#include "sdpre.h"
+#include "ibtfun.h"
 C
 C
       IPRINT = IPLOT
@@ -717,14 +716,13 @@ C
       PARAMETER (D23 = 2.0D0/3.0D0,D53 = 5.0D0/3.0D0)
       PARAMETER (D32 = 3.0D0/2.0D0,D54 = 5.0D0/4.0D0)
 C
+#include "dcbplot.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbxrs.h"
-C
-#include "dcbplot.h"
 C
       DIMENSION DMATBF(N2BBASX,NZ),
      &          GAO(*),GAO1(*),GAO2(*),CMO(*),
