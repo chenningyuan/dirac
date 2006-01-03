@@ -380,9 +380,9 @@ C
       DO IZ = 1,NZ
 #include "ivdep.h"
         DO IXOP = 1,NXOP
-          IA = JXOP(1,IXOP)
-          IM = JXOP(2,IXOP)
-          QMAT(IM,IA,IZ) = QVEC(IXOP,IZ)
+          INDI = JXOP(1,IXOP)
+          INDA = JXOP(2,IXOP)
+          QMAT(INDA,INDI,IZ) = QVEC(IXOP,IZ)
         ENDDO
       ENDDO
       RETURN
