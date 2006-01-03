@@ -623,7 +623,7 @@ s= & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+2\frac{\partial^{2}e_{x
 
 Now, we can identify the different terms returned by 
 \shape smallcaps 
-dftpot2.
+dftpot1.
 \newline 
 
 \begin_inset Formula \begin{align*}
@@ -695,7 +695,7 @@ Now carry on to consider the expression for
 
 Reformulating this using the terms returned by 
 \shape smallcaps 
-dftpot2 
+dftpot1 
 \shape default 
 and the definition
 \begin_inset Formula \[
