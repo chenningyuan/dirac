@@ -34,25 +34,24 @@ C...      http://dirac.chem.sdu.dk
 C 
 C 
       PROGRAM POLFIT
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(MORDER=16,MP=50)
       PARAMETER(MDIM=MORDER+1)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0)
       PARAMETER(NITER=10)
       DIMENSION A(MP,MDIM),B(MDIM),C(MDIM),D(MDIM)
       DIMENSION X(MP),Y(MP)
-      CHARACTER RESFIL*6,REPLY*1,POTFIL*6
+      CHARACTER RESFIL*10,REPLY*1,POTFIL*6
       IUNIT = 1
       ILOGG = 2
-      WRITE(LUPRI,'(A)') '* Name output file (A6)'
-      READ(LUCMD,'(A6)') RESFIL
-      OPEN(ILOGG,FILE=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',
-     &     ACCESS='SEQUENTIAL')
       WRITE(LUPRI,'(A)') 'Name input file with potential curve(A6)'
       READ(LUCMD,'(A)') POTFIL
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=5)
+      RESFIL = POTFIL//'.res'
+      OPEN(ILOGG,FILE=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',
+     &     ACCESS='SEQUENTIAL')
       GOTO 6
  5    CONTINUE
       STOP 'Error opening POTFIL'
@@ -68,7 +67,7 @@ C Read points
       NP = NP-1
       WRITE(LUPRI,'(A,I5)') '* Number of points read:',NP
       WRITE(ILOGG,'(A,A6)') '* Points read from ',POTFIL
-      WRITE(ILOGG,'(3X,F6.3,4X,F20.10)') (X(I),Y(I),I=1,NP)
+      WRITE(ILOGG,'(2(4X,E20.10))') (X(I),Y(I),I=1,NP)
  30   CONTINUE
       WRITE(*,'(A)') 'Give order of polynomial:'
       READ(LUCMD,*) NORDER
@@ -128,15 +127,38 @@ C* Calculate derivatives:
       READ(LUCMD,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 666
       TMP = POLNDER(NORDER,C,XMIN,2)
-      WRITE(LUPRI,'(A,E18.10)') '2nd derivative at minimum: ',TMP
-      WRITE(ILOGG,'(A,E18.10)') '2nd derivative at minimum: ',TMP
+      WRITE(LUPRI,'(A,1P,E18.10)') '2nd derivative at minimum: ',TMP
+      WRITE(ILOGG,'(A,1P,E18.10)') '2nd derivative at minimum: ',TMP
       TMP = POLNDER(NORDER,C,XMIN,3)
-      WRITE(LUPRI,'(A,E18.10)') '3rd derivative at minimum: ',TMP
-      WRITE(ILOGG,'(A,E18.10)') '3rd derivative at minimum: ',TMP
+      WRITE(LUPRI,'(A,1P,E18.10)') '3rd derivative at minimum: ',TMP
+      WRITE(ILOGG,'(A,1P,E18.10)') '3rd derivative at minimum: ',TMP
       TMP = POLNDER(NORDER,C,XMIN,4)
-      WRITE(LUPRI,'(A,E18.10)') '4th derivative at minimum: ',TMP
-      WRITE(ILOGG,'(A,E18.10)') '4th derivative at minimum: ',TMP
+      WRITE(LUPRI,'(A,1P,E18.10)') '4th derivative at minimum: ',TMP
+      WRITE(ILOGG,'(A,1P,E18.10)') '4th derivative at minimum: ',TMP
  666  CONTINUE
+      WRITE(LUPRI,'(A)') 
+     &  '* Do you want derivatives of curve at some point(y/n) ?'
+      READ(LUCMD,'(A1)') REPLY
+      IF(REPLY.NE.'y') GOTO 667
+      WRITE(LUPRI,'(A)') 
+     &  '* Give point:'
+      READ(LUCMD,*) XMIN   
+      WRITE(LUPRI,'(A,1P,E18.10)') 'X = ',TMP
+      WRITE(ILOGG,'(A,1P,E18.10)') 'X = ',TMP
+      TMP = POLNDER(NORDER,C,XMIN,1)
+      WRITE(LUPRI,'(A,1P,E18.10)') '1st derivative : ',TMP
+      WRITE(ILOGG,'(A,1P,E18.10)') '1st derivative : ',TMP
+      TMP = POLNDER(NORDER,C,XMIN,2)
+      WRITE(LUPRI,'(A,1P,E18.10)') '2nd derivative : ',TMP
+      WRITE(ILOGG,'(A,1P,E18.10)') '2nd derivative : ',TMP
+      TMP = POLNDER(NORDER,C,XMIN,3)
+      WRITE(LUPRI,'(A,1P,E18.10)') '3rd derivative : ',TMP
+      WRITE(ILOGG,'(A,1P,E18.10)') '3rd derivative : ',TMP
+      TMP = POLNDER(NORDER,C,XMIN,4)
+      WRITE(LUPRI,'(A,1P,E18.10)') '4th derivative : ',TMP
+      WRITE(ILOGG,'(A,1P,E18.10)') '4th derivative : ',TMP
+      GOTO 666
+ 667  CONTINUE
       WRITE(LUPRI,'(A)') '* Do you want a new polynomial fit ?(y/n)'
       READ(LUCMD,'(A1)') REPLY
       IF(REPLY.EQ.'y') GOTO 30
