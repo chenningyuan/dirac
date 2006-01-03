@@ -38,8 +38,8 @@ C
 C Written by Trond Saue July 4 2001
 C based on program LABREAD
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (LUINP = 1)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16
       INTEGER   NARG,IARG,JARG

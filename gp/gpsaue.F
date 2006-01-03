@@ -3245,9 +3245,12 @@ C     This routine performs upper triangle Cholesky decomposition of
 C         * real symmetric matrices                     NZ = 1
 C         * complex Hermitian matrices                  NZ = 2
 C         * quaternionic Hermitian matrices             NZ = 4
+C                                                (dagger)
+C     Upper triangle Cholesky decomposition: A=UU
+C     where L is an upper triangular matrix.  
 C     On input/output A contains the lower triangle and diagonal of
 C     the Hermitian matrix to be decomposed.
-C     On output the upper triangle of the Cholesky matrix is stored
+C     On output the upper triangle of the Cholesky matrix U is stored
 C     in the upper triangle of A, and the diagonal in D.
 C     With pivoting(JOB.ne.0) the Cholesky matrix has been scrambled
 C     according to the ordering indicated by IPIVOT.

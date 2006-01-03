@@ -50,10 +50,10 @@ C
 C     Written by T. Saue April 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <codata.h>
+#include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
@@ -313,8 +313,8 @@ C
       TEMP = 7.0D0*V3*V3/V2/9.0D0
       T2 = 100.0D0*(TEMP - V4)/V4
       WRITE(ILOGG,'(A,D20.10)')
-     &   '* Third derivative                   : ', V3,
-     &   '* Fourth derivative                  : ', V4
+     &   '* Third derivative  (au)             : ', V3,
+     &   '* Fourth derivative (au)             : ', V4
       WRITE(ILOGG,'(A,D20.10, F9.2,A)')
      &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \\%'
       TEMP = D1/UM/OMEGA
@@ -366,8 +366,8 @@ C
         TEMP = 7.0D0*V3N*V3N/V2N/9.0D0
         T2 = 100.0D0*(TEMP - V4N)/V4N
         WRITE(ILOGG,'(A,D20.10)')
-     &   '* Third derivative                   : ', V3N,
-     &   '* Fourth derivative                  : ', V4N
+     &   '* Third derivative  (au)             : ', V3N,
+     &   '* Fourth derivative (au)             : ', V4N
         WRITE(ILOGG,'(A,D20.10, F9.2,A)')
      &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \\%'
         TEMP = D1/UM/OMEGA
