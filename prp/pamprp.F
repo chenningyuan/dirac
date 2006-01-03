@@ -2133,7 +2133,7 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 C
-      CHARACTER CNVTEXT(3)*16
+      CHARACTER CNVTEXT(3)*17
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
 C
@@ -2193,7 +2193,9 @@ C       check if converged
 C       ==================
 C
         DO J = 1,3
-          IF(ABCNV(IFREQ,J).LE.THCLR) THEN
+          IF(XLR_UNCOUP) THEN
+            CNVTEXT(J) = '(uncoupled calc.)'
+          ELSEIF(ABCNV(IFREQ,J).LE.THCLR) THEN
             CNVTEXT(J) = '(converged)'
           ELSE
             CNVTEXT(J) = '(NOT converged!)'

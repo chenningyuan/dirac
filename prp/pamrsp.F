@@ -427,7 +427,7 @@ C     The vectors are written to direct access files.
 C
       KFRITR = KFREE
       CALL XRSST(IBTYP,IBCVC,IBEVC,IBPVC,
-     &           GPCI,GPOE,GPOP,EVALR,
+     &           GPCI,GPOE,GPOP,EVALR,EVECR,
      &           WORK,KFREE,LFREE)
       IF (MAXSIM.LE.0) THEN
          MAXSIM1 = MAX(NTSIM,NVPAR*NFREQ)
@@ -521,12 +521,13 @@ C     Handle case of zero microiterations
 C     ===================================
 C     Set first coefficient for each frequency equal to one
 C     for getting non-zero respons function with zero
-C     microiterations (used for Sternheimer approx.)
+C     microiterations 
+C     (used for Sternheimer and/or uncoupled approx.)
 C
-      IF(MAXITR.EQ.0) THEN
-        DO I = 1,NFREQ
-          EVECR(1,I) = D1
-        ENDDO
+      IF(MAXITR.EQ.0.OR.UNCOUP) THEN
+CTROND        DO I = 1,NFREQ
+CTROND          EVECR(1,I) = D1
+CTROND        ENDDO
         NZRED  = NTSIM
         NCRED  = NCSIM
         NERED  = NESIM
@@ -812,7 +813,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck XRSST */
       SUBROUTINE XRSST(IBTYP,IBCVC,IBEVC,IBPVC,
-     &                 GPCI,GPOE,GPOP,EVALR,
+     &                 GPCI,GPOE,GPOP,EVALR,EVECR,
      &                 WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -825,7 +826,7 @@ C***********************************************************************
 #include "implicit.h"
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),
      &          GPCI(*),GPOE(*),GPOP(*),
-     &          EVALR(*),WORK(*)
+     &          EVALR(*),EVECR(*),WORK(*)
 C
 #include "dcbibn.h"
 C
@@ -841,7 +842,7 @@ C
 C
       IF(LINEQ) THEN
 C       ... linear response
-        IF(DIAGHE.OR.RSREST) THEN
+        IF(DIAGHE.OR.RSREST.OR.UNCOUP) THEN
           NVEC = NFREQ
         ELSE
           NVEC = 1
@@ -907,7 +908,7 @@ C
       ENDIF
       CALL XRSST1(IBTYP,IBCVC,IBEVC,IBPVC,
      &            WORK(KEVEC),WORK(KPVEC),WORK(KCVEC),
-     &            GPCI,GPOE,GPOP,EVALR,
+     &            GPCI,GPOE,GPOP,EVALR,EVECR,
      &            WORK(KEDIAH),WORK(KPDIAH),WORK(KCDIAH),
      &            WORK(KEDIAS),WORK(KPDIAS),
      &            WORK,KFREE,LFREE)
@@ -969,7 +970,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck XRSST1 */
       SUBROUTINE XRSST1(IBTYP,IBCVC,IBEVC,IBPVC,
-     &                 IEVEC,IPVEC,ICVEC,GPCI,GPOE,GPOP,EVALR,
+     &                 IEVEC,IPVEC,ICVEC,GPCI,GPOE,GPOP,EVALR,EVECR,
      &                 HEDIAG,HPDIAG,HCDIAG,SEDIAG,SPDIAG,
      &                 WORK,KFREE,LFREE)
 C***********************************************************************
@@ -987,7 +988,7 @@ C
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
-      DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),EVALR(*),
+      DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),EVALR(*),EVECR(*),
      &          GPCI(*),GPOE(*),GPOP(*),IEVEC(*),IPVEC(*),ICVEC(*),
      &          HEDIAG(*),HPDIAG(*),HCDIAG(*),
      &          SEDIAG(*),SPDIAG(*),WORK(*)
@@ -1014,7 +1015,7 @@ C     Orbtial (e-e) type trial vector
 C     -------------------------------
 C
       IF(NESIM.GT.0) THEN
-        CALL XRSST2('E',WORK(KBOE),GPOE,HEDIAG,SEDIAG,EVALR,
+        CALL XRSST2('E',WORK(KBOE),GPOE,HEDIAG,SEDIAG,EVALR,EVECR,
      &              IBTYP,IBEVC,IEVEC,
      &              JBENDX,NESIM,IND,NERED,NZXOPE,WORK,KFREE,LFREE)
         IND = IND + NESIM
@@ -1024,7 +1025,7 @@ C     Orbital (e-p) type trial vector
 C     -------------------------------
 C
       IF(NPSIM.GT.0) THEN
-        CALL XRSST2('P',WORK(KBOP),GPOP,HPDIAG,SPDIAG,EVALR,
+        CALL XRSST2('P',WORK(KBOP),GPOP,HPDIAG,SPDIAG,EVALR,EVECR,
      &              IBTYP,IBPVC,IPVEC,
      &              JBPNDX,NPSIM,IND,NPRED,NZXOPP,WORK,KFREE,LFREE)
         IND = IND + NPSIM
@@ -1036,7 +1037,7 @@ C
       IF(NCSIM.GT.0) THEN
         CALL MEMGET('REAL',KCDIAS,0,WORK,KFREE,LFREE)      
         CALL XRSST2('C',WORK(KBCI),GPCI,HCDIAG,WORK(KCDIAS),
-     &              EVALR,IBTYP,IBCVC,ICVEC,
+     &              EVALR,EVECR,IBTYP,IBCVC,ICVEC,
      &              JBCNDX,NCSIM,IND,NCRED,NZCONF,WORK,KFREE,LFREE)
         IND = IND + NCSIM
       END IF
@@ -1052,7 +1053,7 @@ C***********************************************************************
 C
 C     Purpose:
 C     Orthogonalize new b-vectors against all previous b-vectors
-C     and among themselves, and renormalize.
+C     and among themselves, and, if requested, renormalize.
 C
 C     b-vectors generally have the structure
 C
@@ -1351,36 +1352,6 @@ C
          CALL QUIT(
      &        'XRSORT error: IROUND .gt. 0 and ITURN .gt. 1')
       END IF
-C     
-C     Save new vectors on file and update IBCVEC and IBTYP
-C     ====================================================
-C     (is is assumed that all new BVECS are consecutively 
-C     ordered on IBTYP)
-C
-C     For CI record 1 is used for the CI ref. vector.
-C     
-      IF (NBTYP .EQ. JBCNDX) THEN
-         IRECOFF = 1
-      ELSE
-         IRECOFF = 0
-      END IF
-      IREC = NBPREV
-C
-      DO 400 IBNB = 1,NBNEW
-         IB   = IBNB + NBPREV
-         INDB = IBVEC(IB)
-         IF(IVECS(IBNB).EQ.0) GOTO 400
-         IREC = IREC + 1
-         CALL WRTDAC(LUBVEC,NBDIM,BVECS(1,IBNB),IREC+IRECOFF)        
-         IF(IB.NE.IREC) THEN
-            IND          = IBVEC(IREC)
-            IBTYP(1,IND) = IBTYP(1,INDB)
-            IBTYP(2,IND) = IBTYP(2,INDB)
-            IBN          = IREC - NBPREV
-            CALL DCOPY(NBDIM,BVECS(1,IBNB),1,BVECS(1,IBN),1)
-         ENDIF
- 400  CONTINUE
-      NBNEW = IREC - NBPREV
 C     
       RETURN
 C     
@@ -2487,7 +2458,6 @@ C
            CALL PRSYMB(LUPRI,'-',44,0)
            DO IFREQ = 1,NFREQ
            VLRF = DP5*DDOT(NZRED,REDGP,1,EVECR(1,IFREQ),1)
-cjth       VLRF = DDOT(NZRED,REDGP,1,EVECR(1,IFREQ),1)
            IF(RCNV(IFREQ).GT.THCXRS) THEN
              WRITE(LUPRI,'(3X,A,F15.8,5X,F15.8)')
      &         'Freq.:',EVALR(IFREQ),VLRF
@@ -2901,6 +2871,7 @@ C
       DIMENSION RNORM(NVPAR,NFREQ),EVALR(NFREQ),ISIM(*),
      &          RCNV(NFREQ),IBTYP(2,NREDM)
 C
+      IF(UNCOUP) RETURN
       CALL HEADER('Final output from XRSCTL',-1)
 C
 C     Check for state of the calculation
@@ -3331,7 +3302,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck XRSST2 */
       SUBROUTINE XRSST2(TYP,BVEC,GP,HDIAG,SDIAG,
-     &     EVALR,IBTYP,IBVEC,IVEC,
+     &     EVALR,EVECR,IBTYP,IBVEC,IVEC,
      &     NBTYP,NBVEC,IBOFF,NBPREV,NVAR,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
@@ -3359,13 +3330,13 @@ C
 C     
       DIMENSION BVEC(NVAR,NZ,*),GP(NVAR,NZ),HDIAG(NVAR),SDIAG(NVAR),
      &          EVALR(NFREQ),IBTYP(2,*),IBVEC(*),IVEC(*),
-     &          WORK(*)
+     &          EVECR(NREDM,NFREQ),WORK(*)
       LOGICAL FNDRSP
 #include "chrnos.h"
 C
       CALL QENTER('XRSST2')
 C
-      NVARQ = NVAR*NZ
+      NBDIM = NVAR*NZ
       IF (NBTYP.EQ.JBENDX) THEN
          ITYP    = IPEP
          LUBVEC  = LUBOE
@@ -3375,8 +3346,11 @@ C
          LUBVEC  = LUBOP
          IRECOFF = 0
       ELSE IF (NBTYP .EQ. JBCNDX) THEN
-         ITYP   = IPCP
+         ITYP    = IPCP
          LUBVEC  = LUBCI
+C
+C     For CI record 1 is used for the CI ref. vector.
+C     
          IRECOFF = 1
       ELSE
          WRITE(LUPRI,'(A,A,I5)') 'XRSST2 ERROR: ',
@@ -3399,7 +3373,7 @@ C
           IROUND = 1
  10       CONTINUE
           IF(FNDRSP(LURST,BVEC(1,1,NVEC+1),RSPLAB,BVTYP(ITYP),
-     &           '                ','  ',NVARQ)) THEN
+     &           '                ','  ',NBDIM)) THEN
             NVEC = NVEC + 1
             IBTYP(2,IBOFF+NVEC) = IXX
             IBTYP(1,IBOFF+NVEC) = NBTYP
@@ -3429,7 +3403,7 @@ C
           ENDIF
         ENDIF
         IF(DIAGHE) THEN
-          GPTMP = DNRM2(NVARQ,GP,1)
+          GPTMP = DNRM2(NBDIM,GP,1)
           HDTMP = DNRM2(NVAR,HDIAG,1)/NVAR
           IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
      &         'Norm of gradient ratio in XRSST2:',GPTMP/GPTNRM
@@ -3441,6 +3415,9 @@ C
             IBTYP(1,IBOFF+IM)     = NBTYP
             IBTYP(2,IBOFF+IM)     = IMX
             IBVEC(NBPREV+IM)      = IBOFF + IM
+            IF(UNCOUP) THEN
+              EVECR(IBOFF+IP,IP) = D1
+            ENDIF
 C              
 C           hjj+patrick:
 C           If partial gradient (e-e, e-p, or conf) is small compared to the
@@ -3453,8 +3430,8 @@ C
               IVEC(IM) = 0
             ELSE
               FREQ = EVALR(IP)
-C             hj           IF(FREQ.EQ.D0) THEN
-              IF ( FREQ.LT.0.01D0*HDTMP ) THEN
+              IF(FREQ.EQ.D0) THEN
+C              IF ( FREQ.LT.0.01D0*HDTMP ) THEN
                 DO IZ = 1,NZ
                   DO IVAR = 1,NVAR
 c#ifdef NODALTONCMP
@@ -3475,9 +3452,9 @@ c$$$#endif
                   ENDDO
                 ENDDO
 C               tsaue:         retain norm for numerical stability !
-                IF(MAXITR.NE.0) THEN
-                  BNRM = GPTMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
-                  CALL DSCAL(NVARQ,BNRM,BVEC(1,1,IP),1)
+                IF(.NOT.UNCOUP) THEN
+                  BNRM = GPTMP/DNRM2(NBDIM,BVEC(1,1,IP),1)
+                  CALL DSCAL(NBDIM,BNRM,BVEC(1,1,IP),1)
                 ENDIF
                 IVEC(IP) = 1
                 IVEC(IM) = 0
@@ -3491,11 +3468,11 @@ C               tsaue:         retain norm for numerical stability !
                   ENDDO
                 ENDDO
 C               tsaue:         retain norm for numerical stability !
-                IF(MAXITR.NE.0) THEN
-                  BNRM = GPTMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
-                  CALL DSCAL(NVARQ,BNRM,BVEC(1,1,IP),1)
-                  BNRM = GPTMP/DNRM2(NVARQ,BVEC(1,1,IM),1)
-                  CALL DSCAL(NVARQ,BNRM,BVEC(1,1,IM),1)
+                IF(.NOT.UNCOUP) THEN
+                  BNRM = GPTMP/DNRM2(NBDIM,BVEC(1,1,IP),1)
+                  CALL DSCAL(NBDIM,BNRM,BVEC(1,1,IP),1)
+                  BNRM = GPTMP/DNRM2(NBDIM,BVEC(1,1,IM),1)
+                  CALL DSCAL(NBDIM,BNRM,BVEC(1,1,IM),1)
                 ENDIF
                 IVEC(IP) = 1
                 IVEC(IM) = 1
@@ -3516,7 +3493,7 @@ C           Assume it is a `+' type trial vector
             IBTYP(1,IBOFF+NVEC) = NBTYP
             IBVEC(NBPREV+NVEC)  = IBOFF + NVEC
             IVEC(NVEC)          = 1
-            CALL READAC(LUBVEC,NVARQ,BVEC(1,1,NVEC),I+IRECOFF)
+            CALL READAC(LUBVEC,NBDIM,BVEC(1,1,NVEC),I+IRECOFF)
           END DO
           WRITE(LUPRI,'(/,1X,A,I2,3A)')
      &         '(XRSST2)',IXRSTB(NBTYP), ' trial vectors of type ',
@@ -3525,18 +3502,18 @@ C
         ELSE
 C         start wit GP vectors as start vectors
           IF(STATIC) THEN
-            CALL DCOPY(NVARQ,GP,1,BVEC(1,1,1),1)
+            CALL DCOPY(NBDIM,GP,1,BVEC(1,1,1),1)
             IBTYP(1,IBOFF+1) = NBTYP
             IBTYP(2,IBOFF+1) = IPX
             IBVEC(NBPREV+1)  = IBOFF + 1
             IVEC(1)         = 1
           ELSE
-            CALL DCOPY(NVARQ,GP,1,BVEC(1,1,1),1)
+            CALL DCOPY(NBDIM,GP,1,BVEC(1,1,1),1)
             IBTYP(1,IBOFF+1) = NBTYP
             IBTYP(2,IBOFF+1) = IPX
             IBVEC(NBPREV+1)  = IBOFF + 1
             IVEC(1)         = 1
-            CALL DCOPY(NVARQ,GP,1,BVEC(1,1,2),1)
+            CALL DCOPY(NBDIM,GP,1,BVEC(1,1,2),1)
             IBTYP(1,IBOFF+2) = NBTYP
             IBTYP(2,IBOFF+2) = IMX
             IBVEC(NBPREV+2)  = IBOFF + 2
@@ -3581,7 +3558,7 @@ C
             END IF
          END IF
          NBVEC = 2*NEXST2
-         CALL DZERO(BVEC,NBVEC*NVARQ)
+         CALL DZERO(BVEC,NBVEC*NBDIM)
          DO IP = 1,NEXST2
             IM = IP + NEXST2
             IBTYP(1,IBOFF+IP)     = NBTYP
@@ -3601,7 +3578,21 @@ C
 C
       END IF
 C
-      CALL XRSORT(BVEC,NBTYP,NBVEC,NBPREV,
+C     Orthogonalize new b-vectors against all previous b-vectors
+C     and among themselves, and, if requested, renormalize.
+C
+      IF(.NOT.UNCOUP) THEN
+        CALL XRSORT(BVEC,NBTYP,NBVEC,NBPREV,
+     &            IBVEC,IBTYP,IVEC,WORK,KFREE,LFREE)
+      ENDIF
+C
+C     
+C     Save new vectors on file and update IBCVEC and IBTYP
+C     ====================================================
+C     (is is assumed that all new BVECS are consecutively 
+C     ordered on IBTYP)
+C
+      CALL XRSAVE(BVEC,NBTYP,NBDIM,NBVEC,NBPREV,
      &            IBVEC,IBTYP,IVEC,WORK,KFREE,LFREE)
 C
       CALL QEXIT('XRSST2')
@@ -3843,3 +3834,60 @@ C
 C
    10 RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Xrsave */
+      SUBROUTINE XRSAVE(BVEC,NBTYP,NBDIM,NBVEC,NBPREV,
+     &                  IBVEC,IBTYP,IVEC,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Save trial vectors to file and update IBVEC and IBTYP
+C
+C     Written by T. Saue Jan 2 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbibn.h"
+#include "dcbxrs.h"
+      DIMENSION BVEC(NBDIM,*),IBTYP(2,*),IBVEC(*),IVEC(*),WORK(*)
+C
+      IF (NBTYP.EQ.JBENDX) THEN
+         LUBVEC  = LUBOE
+         IRECOFF = 0
+      ELSE IF (NBTYP.EQ.JBPNDX) THEN
+         LUBVEC  = LUBOP
+         IRECOFF = 0
+      ELSE IF (NBTYP .EQ. JBCNDX) THEN
+         LUBVEC  = LUBCI
+C
+C     For CI record 1 is used for the CI ref. vector.
+C     
+         IRECOFF = 1
+      ELSE
+         WRITE(LUPRI,'(A,A,I5)') 'XRSAVE ERROR: ',
+     &        'unknown NBTYP = ',NBTYP
+         CALL QUIT('XRSST2: Unknown NBTYP !')
+      ENDIF
+C
+      IREC = NBPREV
+C
+      DO 10 IBNB = 1,NBVEC
+         IB   = IBNB + NBPREV
+         INDB = IBVEC(IB)
+         IF(IVEC(IBNB).EQ.0) GOTO 10
+         IREC = IREC + 1
+         CALL WRTDAC(LUBVEC,NBDIM,BVEC(1,IBNB),IREC+IRECOFF)        
+         IF(IB.NE.IREC) THEN
+            IND          = IBVEC(IREC)
+            IBTYP(1,IND) = IBTYP(1,INDB)
+            IBTYP(2,IND) = IBTYP(2,INDB)
+            IBN          = IREC - NBPREV
+            CALL DCOPY(NBDIM,BVEC(1,IBNB),1,BVEC(1,IBN),1)
+         ENDIF
+ 10   CONTINUE
+      NBVEC = IREC - NBPREV
+C
+      RETURN
+      END
+

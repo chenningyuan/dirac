@@ -196,7 +196,7 @@ C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
 
-CMI ... when London atomic orbitals are in use...
+C   ... When London atomic orbitals are in use...
       IF (LONDON) THEN
 C   ... allocate memmory for MO coefficients and boson irreps info
 C       (needed dcborb.h, dcbbas.h common blocks)
@@ -383,7 +383,7 @@ C
      &            '.OCCUP ','.VIRTUA','.ACTIVE','.COMPRE',
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
-     &            '.MXLOAD','.A_NOSP','.B_NOSP','xXXXXXX'/
+     &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -443,6 +443,7 @@ C        as the default for LevyLe/BSS
       XLRDIH     = .TRUE.
       TRIAB      = .FALSE.
       XLR_XVCFIL = 'NORXVC'
+      XLR_UNCOUP = .FALSE.
       XLRANA     = .FALSE.
       XSTERN     = .FALSE.
       NOSPIA     = .FALSE.
@@ -661,6 +662,8 @@ C&&&& NOSPIB: Eliminate all spin-dependene of property operator B
                  NOSPIB = .TRUE.
                GO TO 100
  32            CONTINUE
+C&&&& UNCOUP: Uncoupled Hartree-Fock
+                  XLR_UNCOUP = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -692,6 +695,10 @@ C           (see PRPDEF) /hj jan 2001
      &   'QED invalid for Levy-Leblond/no-pair/.SKIPEP'
          INPERR = INPERR + 1
       END IF
+      IF (XLR_UNCOUP) THEN
+        ITRXLR = 0
+        XLRDIH = .TRUE.
+      ENDIF
 C
 C     Print section
 C     =============
@@ -704,6 +711,8 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A,I5)')
      &   ' * Print level                 :',IPRXLR
+      IF(XLR_UNCOUP) WRITE(LUPRI,'(A)') 
+     &  ' * NB !!! Uncoupled calculation.'
       IF(XLRANA) WRITE(LUPRI,'(A)')
      &   ' * Analysis of solution vectors.'
       IF(XSTERN .AND. DOXLR) THEN
@@ -1048,6 +1057,7 @@ C
       N2REDM    = MAXRM*MAXRM
       LOFFTY    = 0
       STATIC    = (NFREQ.EQ.1.AND.BFREQ(1).EQ.D0)
+      UNCOUP    = XLR_UNCOUP
       CNVINT(1) = CNVXLR(1)
       CNVINT(2) = CNVXLR(2)
       ITRINT(1) = ITRILR(1)
@@ -1382,10 +1392,14 @@ C
 C     Print section
 C     -------------
 C
-Cjth   IF(IPRXLR.GE.10) THEN
       IF(IPRXLR.GE.3) THEN
-        WRITE(LUPRI,'(/1X,A2,A,I3,A)') BVTYP(ITYP),
+        IF(NFREQ.EQ.1) THEN
+          WRITE(LUPRI,'(/1X,A2,A)') BVTYP(ITYP),
+     &   '- part of solution vectors for one frequency:'
+        ELSE
+          WRITE(LUPRI,'(/1X,A2,A,I3,A)') BVTYP(ITYP),
      &   '- part of solution vectors for',NFREQ,' frequencies:'
+        ENDIF
         CALL PRBVEC(LUPRI,XPO,NFREQ,NXPAR)
         CALL FLSHFO(LUPRI)
       ENDIF
@@ -1602,7 +1616,13 @@ C
                 CALL PRSYMB(LUPRI,'-',95,0)
                 DO I = 1,NBFREQ
                   FMT = MXFORM(ABLRF(I,INDAP,INDBP,1),15)
-                  IF(RCNV(I,INDBP).LT.THCLR) THEN
+                  IF(UNCOUP) THEN
+                    WRITE(LUPRI,
+     &                '(3X,'//FMT//',A,A,F15.8,A,3X,A)')
+     &                ABLRF(I,INDAP,INDBP,1),' a.u.',
+     &                ' at frequency ',BFREQ(I),' a.u.',
+     &                '--- (uncoupled calculation)'
+                  ELSEIF(RCNV(I,INDBP).LT.THCLR) THEN
                     WRITE(LUPRI,
      &                '(3X,'//FMT//',A,A,F15.8,A,3X,1P,E9.2,3X,A)')
      &                ABLRF(I,INDAP,INDBP,1),' a.u.',
@@ -1791,7 +1811,6 @@ C       New parameter class
         IF(TYP1(1:1).NE.PBUF.OR.LAB1.NE.LBUF) THEN
           IF(TOBE) THEN
 C           Analyze NVEC solution vectors from previous parameter class
-CTROND            NVEC = IVEC+1-IPAR
             NVEC = IVEC-IPAR
             NBDIM = NDIM/NZ
             IF(PBUF.EQ.'E') THEN
