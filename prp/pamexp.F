@@ -672,7 +672,7 @@ C
       ENDIF
       ENDDO
 C
-      IF(IPRINT.GE.5) THEN
+      IF(IPRINT.GE.2) THEN
         IPF = 1
         DO IFRP = 1,NFSYM
           WRITE(LUPRI,'(A,A16,A,I3)')
