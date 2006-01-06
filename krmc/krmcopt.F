@@ -101,6 +101,7 @@ C           ... code for no RTRACI (no RTRACI for SCF)
 C
 C        Delete DFFCK2 if existing, because we will change CMO here ...
 C
+         LUBUF = 1
          INQUIRE(FILE='DFFCK2',EXIST=EX)   
          IF(EX) THEN
             CALL OPNFIL(LUBUF,'DFFCK2','OLD','PSIOPT')
