@@ -3425,7 +3425,7 @@ C           total gradient we assume that it is unnecessary to provide a
 C           corresponding trial vector now. If not then create a trial vector 
 C           from the gradient vector and the diagonal of the Hessian.
 C           
-            IF (GPTMP.LT.0.3D0*GPTNRM) THEN
+            IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
               IVEC(IP) = 0
               IVEC(IM) = 0
             ELSE
