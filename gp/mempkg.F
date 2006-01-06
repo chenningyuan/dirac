@@ -340,9 +340,17 @@ C
       EQUIVALENCE  (MEMID, WMEMID), (MEMCK, WMEMCK)
       SAVE          MEMID
       DATA          MEMID(1) /1234567890/
+
+      LOGICAL DODBG
 C
 Chj1  CALL QENTER('MEMCHK  ')
 C
+
+CMI ... on the debug
+CMI     DODBG = .TRUE.
+        DODBG = .FALSE.
+
+
       KFREE = KFIRST
       IF (KFREE .EQ. 1) KFREE = 1 + LENID
 C
@@ -353,23 +361,33 @@ C
 
 CMI      WMEMCK(1) = WORK(KFREE-LENID)
          INDXL     =  KFREE-LENID
-CMI        write(luwmem,*) 'indxl=',indxl
+
          WMEMCK(1) = WORK(INDXL)
 
          IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
 
-C        write(luwmem,*) 'kfree=',kfree,' indxl=',indxl,
-C    &   ' wmemck=',wmemck(1),wmemck(2),
-C    &   ' memck=',memck(1),memck(2), ' wmemid=',wmemid(1),wmemid(2)
-
          if (indxl.eq.1.AND.wmemck(1).eq.0) then
-CC        WMEMCK(1)=WORK(2)
-CC        WMEMCK(1)=WORK(3)
-CMI       WMEMCK(1)=6.88136594D-312
-          WMEMCK(1)=6.09957582D-315
-C         write(luwmem,*) ' modified wmemck(1):'
-C        write(luwmem,*) 'indxl=',indxl,' wmemck=',wmemck(1),wmemck(2),
-C    &   ' memck=',memck(1),memck(2),' wmemid=',wmemid(1),wmemid(2)
+
+           IF (DODBG) THEN
+         write(luwmem,*) '***********************************'
+         write(luwmem,*) 'indxl=',indxl,' LENID=',lenid
+         write(luwmem,*) 'kfree=',kfree,' indxl=',indxl,
+     &   ' wmemck=',wmemck(1),wmemck(2),
+     &   ' memck=',memck(1),memck(2), ' wmemid=',wmemid(1),wmemid(2)
+           ENDIF
+
+           IF (WMEMCK(2).EQ.0.00D0) THEN
+            WMEMCK(1)=0.314151730071418001D+47
+           ELSE
+            WMEMCK(1)=6.09957582D-315
+           ENDIF
+
+           IF (DODBG) THEN
+          write(luwmem,*) ' modified wmemck(1):'
+         write(luwmem,*) 'indxl=',indxl,' wmemck=',wmemck(1),wmemck(2),
+     &   ' memck=',memck(1),memck(2),' wmemid=',wmemid(1),wmemid(2)
+           ENDIF
+
          endif
 
          IF (MEMCK(1) .NE. MEMID(1)) GO TO 8001
@@ -396,6 +414,8 @@ C
      *      ' KFIRST,KFREE,IALLOC =',KFIRST,KFREE,IALLOC,
      *      ' found memory check :',MEMCK(1),
      *      ' expected           :',MEMID(1)
+
+         write(luwmem,*) 'error branch IF (MEMCK(1) .NE. MEMID(1)) THEN'
 
          write(luwmem,*) 'Equivalence WMEMCK/MEMCK'
          write(luwmem,*) 'WMEMCK(1-2):',WMEMCK(1),WMEMCK(2)
