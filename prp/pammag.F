@@ -459,11 +459,12 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              IF (.NOT.SYMCON) THEN
               IF (ITIM2.NE.0)
      &         CALL QUIT('GETCON: Wrong TR symm. of W(1)!')
-              CALL PRPMATSQ(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
+              CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
      &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
              ELSE
               IF (ITIM2.NE.-1)
      &         CALL QUIT('GETCON: Wrong TR symm. of S(1)!')
+
               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
      &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
              ENDIF
@@ -535,6 +536,10 @@ C     to the property gradient dH~(B)/dB|B=0
 C     of the differentiated Dirac Hamiltonian,dg(B)/dB|B=0,
 C     when using London atomic orbitals.
 C
+C   On input: CMO - MO coefficients
+C             IBEIG - boson info
+C
+C
 C     Written by T. Enevoldsen Feb 4 1998
 C     Added by MI & HJAaJ, 2002/2003
 C
@@ -584,6 +589,7 @@ C     when using London Orbitals, dg(B)/dB(p,q,r,s)_X/Y/Z
 C
 C     Written by T. Enevoldsen Feb 4 1998
 C     Added by MI&HJAaJ, 2002
+C     Last modif: Dec 2005, MI - extended for .SPINFREE case
 C
 C***********************************************************************
 #include "implicit.h"
@@ -594,6 +600,7 @@ C***********************************************************************
 #include "mxcent.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbham.h"
 #include "shells.h"
 #include "ccom.h"
 #include "cbihr2.h"
@@ -1149,15 +1156,9 @@ C     T(1)_ICOMP, in MO basis, into WORK(KTMATC)
        IOPSY(ICOMP)    =  JBTOF(ISYM(ICOMP)-1,1)
        IREP(ICOMP)     =  ISYM(ICOMP) - 1 
        CALL DZERO(WORK(KTMATC),N2ORBXQ)
-C ... call routine generalized for square matrixes too... 
-       IF (ITIM.NE.0) THEN
-         CALL PRPMAT(INDXPR,IOPSY,WORK(KTMATC),CMO,
+C ...      routine generalized for square matrixes too... 
+       CALL PRPMAT(INDXPR,IOPSY,WORK(KTMATC),CMO,
      &           IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
-       ELSE
-         CALL PRPMATSQ(INDXPR,IOPSY,WORK(KTMATC),CMO,
-     &           IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
-       ENDIF
-
        IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &  'RNTLON: T(1)_ic connection matrix in MO basis ',-1)
@@ -1349,7 +1350,8 @@ C  in MO basis when using London orbitals and write it to the DA file ONELON.
 C
 C  Experession:  RM1H1 + RM1H2 + RM1H3(sq) + RM1RN(sq) (x,y,z)
 C
-C  On output: exports MO coefficients and boson irreps info...
+C  On output: CMO exports MO coefficients
+C             IBEIG and boson irreps info...
 C
 C  Written by Miro Ilias, august 2003, Odense  
 C
@@ -1408,14 +1410,8 @@ C Allocate memmory for storing components of dh(B)/dB_c
          INDXPR=IPLONDON(IX,ICOMP)
          ITIM   = IPRPTIM(INDXPR)
          IREP   = IPRPSYM(INDXPR) - 1
-
-         IF (ITIM.NE.0) THEN
-          CALL PRPMAT(INDXPR,IOPSY,WORK(KDHBIX),CMO,
-     &         IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
-         ELSE
-          CALL PRPMATSQ(INDXPR,IOPSY,WORK(KDHBIX),CMO,
-     &         IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
-         ENDIF
+         CALL PRPMAT(INDXPR,IOPSY,WORK(KDHBIX),CMO,
+     &      IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
          IF (IPRPRP.GE.5) THEN
            WRITE(LUPRI,'(/A,A16)') 
      &     'ONELON: *MO-matrix of property ',
@@ -1921,249 +1917,6 @@ C
   200 CONTINUE
 C
       RETURN
-      END
-
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck prpmaosq */
-      SUBROUTINE PRPMAOSQ(LU1INT,IOP,PMAT,OP1INT,FIRST,
-     &                    WORK,LWORK,IPRINT)
-C*****************************************************************************
-C
-C   PURPOSE:
-C  =========
-C     Generates SQUARE matrix of one-electron integrals in AO basis
-C     corresponding to property IOP of COMMON block XCBPRP
-C
-C     Written by Miro Ilias (strongly based on TS and TEC's routines),
-C      Odense, august 2003
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0,PTOL = 1.0D-12)
-C
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbqal.h"
-#include "dcbxpr.h"
-#include "dcbprl.h"
-C
-      CHARACTER MXFORM*6,FMT*6,JCHR*1,RTNLBL(2)*8
-      LOGICAL FIRST(*),DOINT(4) ! MI: From TEC
-      DIMENSION PMAT(N2BBASX,*),OP1INT(N2BBASX),WORK(LWORK), IDOINT(4)
-CMI   DIMENSION PMAT(NNBBASX,*),OP1INT(NNBBASX),WORK(LWORK), IDOINT(4)
-C
-      EXTERNAL BDQALGEBRA
-C
-C
-C     Extract information about property
-C     ==================================
-C
-      IOPTYP = IPRPTYP(IOP)
-      ITIMOP = IPRPTIM(IOP)
-      IBRPOP = IPRPSYM(IOP)-1
-      NCMP   = MCMP(IOPTYP)
-      IF (ITIMOP.NE.0) CALL
-     & QUIT('PRPMAOSQ: TR is not zero !')
-      IF(IPRINT.GE.3) THEN
-        CALL HEADER('Output from PRPMAOSQ',-1)
-        WRITE(LUPRI,'(A,I3,A,A16)')
-     & 'Generating SQUARE AO-matrix for property no:',
-     & IOP,'....',PRPNAM(IOP)
-      ENDIF
-C
-C     Loop over components
-C     ====================
-C
-      DO 10 I = 1,NCMP
-        PFAC  = FACPRP(I,IOP)
-        IF(ABS(PFAC).LT.PTOL) GOTO 10
-C
-C       Extract information about component
-C
-C       SCALAR OPERATOR:
-C       ----------------
-C       KLBL - pointer to list of labels
-C       ISYM - scalar operator is symmetric(1)/antisymmetric(2) about diagonal
-C       IBREP - boson irrep of scalar operator
-C
-C       MATRIX OPERATOR:
-C       ----------------
-C
-C       IM4  - pointer to matrix operator
-C       IFAC - sign of coefficient in linear combination
-C       IFAS - sign of matrix operator
-C         Anti-symmetric scalar operators are provided with an imaginary phase 
-C         in order to retain Hermiticity
-C       IMAT - quaternion position of matrix operator
-C
-        KLBL  = IPRPLBL(I,IOP)
-C
-C       Determine what matrix the operator enters
-C       =========================================
-C
-C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
-        IF(PDOINT(KLBL)(2:3) .EQ. '00') THEN
-          IC = 1
-        ELSE IF((PDOINT(KLBL)(1:1) .EQ. '0') .AND.
-     &          (PDOINT(KLBL)(4:4) .EQ. '0')) THEN 
-          IC = 2
-        ELSE
-          CALL QUIT('PRPMAOSQ: illegal PDOINT!')
-        ENDIF
-        IBRP = IPRLREP(KLBL)
-        IH   = IPRLTYP(KLBL)
-        IM4  = JM4(I,IOPTYP)
-        IZ   = JM4POS(IM4)
-        IQ   = IQMULT(1,JQBAS(IBRP,IC),IZ)
-        IQP  = IQTOPQ(IQ,IBRPOP)
-
-CMI ...what is this ???
-CMI     IF(IQP.LT.0) THEN ! This is bad !
-        IF(IQP.LE.0) THEN
-          WRITE(LUPRI,'(/A)') '***** PRPMAOSQ ERROR *****'
-          WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
-          WRITE(LUPRI,'(A,I2,A)') 'IQP(',IQP,').LE.0'
-          CALL WRIXPR(0,IOP)
-          WRITE(LUPRI,'(A,I5)') 'Q: Scalar :',JQBAS(IBRP,IC)
-          WRITE(LUPRI,'(A,I5)') 'Q: Matrix :',IZ
-          WRITE(LUPRI,'(A,7I5)')
-     &        'IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP :',
-     &         IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP
-          WRITE(LUPRI,'(A)') 'IQTOPQ(1:4,0:NBSYM-1):'
-          DO IZ = 1,4
-             WRITE(LUPRI,'(8I5)') (IQTOPQ(IZ,J),J=0,NBSYM-1)
-          END DO
-          WRITE(LUPRI,'(A)') 'IPQTOQ(1:NZ,0:NBSYM-1):'
-          DO IZ = 1,NZ
-             WRITE(LUPRI,'(8I5)') (IPQTOQ(IZ,J),J=0,NBSYM-1)
-          END DO
-          CALL QUIT('PRPMAOSQ: IQP.LE.0 !!!')
-        END IF
-CMI ...what is this ???
-        IF(IQP.GT.NZ) THEN
-          WRITE(LUPRI,'(/A)') '***** PRPMAOSQ ERROR *****'
-          WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
-          WRITE(LUPRI,'(A,I2,A,I2,A)') 'IQP(',IQP,').GT.NZ(',
-     &          NZ,')'
-          CALL WRIXPR(0,IOP)
-          WRITE(LUPRI,'(A,I5)') 'Q: Scalar :',JQBAS(IBRP,IC)
-          WRITE(LUPRI,'(A,I5)') 'Q: Matrix :',IZ
-          CALL QUIT('PRPMAO: IQP.GT.NZ !!!')
-        ENDIF
-
-        IF(IPRINT.GE.4) THEN
-          WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
-          FMT = MXFORM(PFAC,20)
-          WRITE(LUPRI,'(A,4X,'//FMT//',A,A4)')
-     &      'Factor: ',PFAC,' and PDOINT:',PDOINT(KLBL)
-          WRITE(LUPRI,'(A,I5)') 'Integrals enter matrix :',IQP
-          WRITE(LUPRI,'(A,L1,A,I2)')
-     &    'FIRST = ',FIRST(IQP),' and IC(1 or 2):',IC
-        ENDIF
-C
-C       Get integral from file
-C
-CMI ... routine in dirac/dirone.F
-        CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
-     &              OP1INT,N2BBASX,IPRINT)
-        IF(IPRINT.GE.20) THEN
-           WRITE(LUPRI,'(A)')
-     &     'PRPMAOSQ: * Integrals from AOPROPER *'
-           CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
-     &                 NTBAS(0),NTBAS(0),1,LUPRI)
-
-        ENDIF        
-C
-C       Determine factor to scale matrix with
-C       =====================================
-C
-        IFAC  = JCOM(I,IOPTYP)*JM4FAS(IM4)
-        PFAC  = FACPRP(I,IOP)*IFAC
-        IF(PFAC.NE.D1) THEN
-          CALL DSCAL(N2BBASX,PFAC,OP1INT,1)
-          IF(IPRINT.GE.8) THEN
-             WRITE(LUPRI,'(A,1P,D15.8)')
-     &       'PRPMAOSQ: * Integrals from AOPROPER scaled with',PFAC
-             CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),1,LUPRI)
-          ENDIF
-        ENDIF        
-C
-C       Phase transformation/PDOINT factor if necessary
-C
-Chj     PDOINT is now '+', '-', or '0',
-Chj     corresponding to a factor of +1, -1, or 0 on that block.
-        NM1 = 0
-        DO J = 1,4
-           JCHR = PDOINT(KLBL)(J:J)
-           IF (JCHR .EQ. '0') THEN
-              IDOINT(J) = 0
-              DOINT(J) = .FALSE.
-           ELSE IF (JCHR .EQ. '+') THEN
-              IDOINT(J) = 1
-              DOINT(J) = .TRUE.
-           ELSE IF (JCHR .EQ. '-') THEN
-              NM1 = 1
-              IDOINT(J) = -1
-              DOINT(J) = .TRUE.
-           ELSE
-              CALL QUIT('PRPMAOSQ:Illegal factor in PDOINT')
-           END IF
-        END DO
-C
-        IF (NZ.LT.4 .OR. NM1.GT.0) THEN
-CMI       CALL QNPHASE(IZ,IBRP,OP1INT,IDOINT)
-          CALL QMPHASE('S',IZ,IBRP,OP1INT,DOINT)
-          IF(IPRINT.GE.8) THEN
-             WRITE(LUPRI,'(A/3A)')
-     & 'PRPMAOSQ: * Phase and/or PDOINT transformed integrals:',
-     &          '  ( PDOINT = ',PDOINT(KLBL),' )'
-             CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),1,LUPRI)
-          ENDIF
-        ENDIF
-C
-C       Determine where integrals go and add them on
-C
-Chj     IH = IHQMAT(IQ,1)
-Chj       IF(IH.EQ.1) THEN
-Chj         CALL DSPTSI(NTBAS(0),FTRI(1,IZ),FOCK(1,IZ))
-Chj       ELSEIF(IH.EQ.2) THEN
-Chj         CALL DAPTGE(NTBAS(0),FTRI(1,IZ),FOCK(1,IZ))
-Chj       ENDIF
-Chj
-        IF(FIRST(IQP)) THEN
-Chj       CALL DSPTSI(NTBAS(0),OP1INT,PMAT(1,IQP))
-          CALL DCOPY(N2BBASX,OP1INT,1,PMAT(1,IQP),1)
-          FIRST(IQP) = .FALSE.
-        ELSE
-Chj       CALL DSPPSI(NTBAS(0),OP1INT,PMAT(1,IQP))
-          CALL DAXPY(N2BBASX,D1,OP1INT,1,PMAT(1,IQP),1)
-        ENDIF
- 10   CONTINUE
-      IF(IPRINT.GE.8) THEN
-        DO IZ = 1,NZ
-          WRITE(LUPRI,'(/A,I2,A)')
-     &  'PRPMAOSQ: Square property matrix (IZ=',IZ,')'
-          IF (FIRST(IZ)) THEN
-             WRITE(LUPRI,'(/A)') '  --- zero matrix ---'
-          ELSE
-             CALL OUTPUT(PMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),1,LUPRI)
-          END IF
-        ENDDO
-      ENDIF
-      RETURN
-C
- 1000 CONTINUE
-C
-C     Not able to read IDOINT information from PDOINT
-C
-      WRITE(LUPRI,'(A,A)')'PRPMAOSQ: Class label:',PRPLBL(KLBL)
-      WRITE(LUPRI,'(A,A)') 'PRPMAOSQ ERROR: Not able to read COMB =',
-     &                     PDOINT(KLBL)
-      CALL QUIT('PRPMAOSQ: Not able to read COMB')
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2912,7 +2665,7 @@ C ... it's the natural connection
          CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis ---
          IF (ITIM2.NE.0) CALL QUIT('LORDRNT: Wrong TR symm. of W(1)!')
-         CALL PRPMATSQ(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ELSE
 C ... it's the symmetric connection
@@ -3033,7 +2786,7 @@ C     ====   Get h(1) and 2*u(1) MO terms ====
         CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
         IF (ITIM2.NE.0) CALL QUIT('LORDRNT:Wrong TR of W(1)!')
-        CALL PRPMATSQ(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
      &                 ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
       ELSE
         INDXPR2 = IPCON21(IW1) ! Get index of +S(1)
@@ -3138,7 +2891,7 @@ C ...  get W(1)_icomp(I1) into WORK(KSMAT)
         CALL DZERO(WORK(KSMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KSMAT) ---
         IF (ITIM1.NE.0) CALL QUIT('LORDRNT: Wrong TR symm. of W(1)!')
-        CALL PRPMATSQ(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ELSE
 C ...  get S(1)_icomp(I1) into WORK(KSMAT)
@@ -3823,179 +3576,10 @@ C   ... accumulate sum of differences
       CALL QEXIT('GETDHB')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck prpmatsq */
-      SUBROUTINE PRPMATSQ(INDXPR,IOPSY,PRPMO,CMO,IBEIG,IMO,NMO,
-     &                  WORK,KFREE,LFREE,IPRINT)
-C*****************************************************************************
-C
-C     Construct SQUARE MO-matrix for property INDXPR listed in /XCBXPR/
-C
-C     Written by Miro Ilias (based on TS and TEC's routines) for
-C     getting square matrixes of some properties. Odense, august 2003
-C  
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbxpr.h"
-C
-      DIMENSION PRPMO(*),CMO(*),IBEIG(*),IMO(*),NMO(*),WORK(*)
-      CALL QENTER('PRPMATSQ')
-
-      KFRSAV = KFREE
-
-      IF (IPRPTIM(INDXPR).NE.0)
-     & CALL QUIT('PRPMATSQ: (anti-)symm.proprty,use PRPMAT !')
-
-      CALL MEMGET('REAL',KPRPAO ,N2BBASXQ  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN, N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
-C
-      CALL PRPMATSQ1(INDXPR,PRPMO,CMO,IBEIG,IMO,NMO,
-     &            WORK(KPRPAO),WORK(KPTRI),
-     &            WORK(KONEIN),WORK(KFIRST),
-     &            WORK,KFREE,LFREE,IPRINT)
-
-      CALL MEMREL('PRPMATSQ',WORK,1,KFRSAV,KFREE,LFREE)
-      CALL QEXIT('PRPMATSQ')
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck prpmatsq1 */
-      SUBROUTINE PRPMATSQ1(INDXPR,PRPMO,CMO,IBEIG,IMO,NMO,PRPAO,
-     &                  PTRI,OP1INT,FIRST,WORK,KFREE,LFREE,IPRINT)
-C*****************************************************************************
-C
-C     Construct SQUARE MO-matrix for property INDXPR listed in /XCBXPR/
-C
-C     Written by Miro Ilias (based on TS and TEC's routines) for
-C     getting square matrixes of some properties. Odense, august 2003
-C  
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0 = 0.0D0, D1= 1.0D0)
-#include "dcbgen.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbxpr.h"
-#include "mxcent.h"
-#include "dcbprp.h"
-C#include "dcbnmr.h"
-
-      LOGICAL FIRST(*),REATWO
-      CHARACTER CCOMP*1
-      DIMENSION PRPMO(N2ORBX,NZ),CMO(*),IBEIG(*),IMO(*),NMO(*),
-     &          PRPAO(N2BBASX,NZ),PTRI(NNBBASX,NZ),
-     &          OP1INT(*),WORK(*)
-C
-      CALL QENTER('PRPMATSQ1')
-C
-C     Extract symmetry information
-C     =============================
-C
-      ISYM = IPRPSYM(INDXPR)
-      IREP = ISYM - 1
-      ITIM = IPRPTIM(INDXPR)
-
-      IF (IPRINT.GE.4) THEN
-       WRITE(LUPRI,'(/,2X,A,4I3,1X,A)')
-     & 'PRPMATSQ1:INDXPR,ISYM,IREP,ITIM,PRPNAM:',
-     & INDXPR,ISYM,IREP,ITIM,PRPNAM(INDXPR)
-      ENDIF
-
-C
-C     Get property matrix in AO-basis
-C     ===============================
-C     
-      CALL LSET(NZ,.TRUE.,FIRST)
-      CALL PRPMAOSQ(LU1INT,INDXPR,PRPAO,OP1INT,FIRST,
-     &                WORK(KFREE),LFREE,IPRINT)   
-C
-      DO IZ = 1,NZ
-        IF(FIRST(IZ)) THEN
-          CALL DZERO(PRPAO(1,IZ),N2BBASX)
-        ELSE
-          IQ = IPQTOQ(IZ,IREP)
-          IH = IHQMAT(IQ,ITIM)
-          IF    (IH.EQ.1) THEN
-            CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PRPAO(1,IZ))
-          ELSEIF(IH.EQ.2) THEN
-            CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PRPAO(1,IZ))
-          ENDIF
-        ENDIF
-      ENDDO
-      CALL BUTOBS(PRPAO,NZ,WORK(KFREE),LFREE)
-
-C .. control print out of UNTRANSFORMED four-conmponent
-C    operator in the AO basis
-        IF(IPRINT.GE.7) THEN
-         WRITE(LUPRI,'(/A,A16)') 
-     & 'PRPMATSQ1: *AO-matrix of property ',PRPNAM(INDXPR)
-         CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
-     &                 IPQTOQ(1,IREP),LUPRI)
-        ENDIF
-
-CMI ... do the picture change transformation of the 4comp.
-C    property operator in AO basis specified by the INDXPR 
-      CALL MEMCHK('before call DOPCT',WORK,1)
-      CALL DOPCTRA(INDXPR,PRPAO,NZ,'S',WORK(KFREE),LFREE)
-C
-C     Transform to MO-basis only the blocks of correct fermion symmetry
-C     =================================================================
-C  extend for BOSON irreps! 
-      CALL DZERO(PRPMO,N2ORBXQ)
-      IOPSY = JBTOF(IREP,1)
-      DO I1 = 1,NFSYM
-         I2  = MOD(I1+IOPSY,2) + 1
-         CALL QTRANS('AOMO','S',D0,
-     &           NFBAS(I1,0),NFBAS(I2,0),NMO(I1),NMO(I2),
-     &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
-     &           IPQTOQ(1,IREP),
-     &           PRPMO(I2ORBX(I1,I2)+1,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-     &           CMO(IMO(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-     &           CMO(IMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
-     &           WORK(KFREE),LFREE,IPRINT)
-      ENDDO
-
-C
-C     Print section
-C     =============
-C
-      IF(IPRINT.GE.5) THEN
-        IF(IPRINT.GE.7) THEN
-         WRITE(LUPRI,'(/A,A16)') 
-     &   'PRPMATSQ1: *AO-matrix of property ',PRPNAM(INDXPR)
-         CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
-     &                 IPQTOQ(1,IREP),LUPRI)
-         IF(IPRINT.GE.12) THEN
-          WRITE(LUPRI,'(A)')'PRPMATSQ1: *MO coefficients' 
-          CALL PRQMAT(CMO,NTBAS(0),NORBT,NTBAS(0),NORBT,NZ,
-     &              IPQTOQ(1,0),LUPRI)
-         ENDIF
-        ENDIF
-        WRITE(LUPRI,'(/A,A16)') 
-     & 'PRPMATSQ1: *MO-matrix of property ',PRPNAM(INDXPR)
-        WRITE(LUPRI,'(2X,A,4I3)')
-     &   'with parameters INDXPR,ISYM,IREP,ITIM:',
-     &   INDXPR,ISYM,IREP,ITIM
-        CALL PRQMAT(PRPMO,NORBT,NORBT,NORBT,NORBT,NZ,
-     &              IPQTOQ(1,IREP),LUPRI)
-      ENDIF
-
-      CALL QEXIT('PRPMATSQ1')
-      RETURN
-      END
 
 C******************************************************
 C 
-C   Function that returns 1,2 or 3,
+C   Integer function returning 1,2 or 3,
 C  depending on input(x,y,z)
 C 
 C  Written by M.Ilias, Odense, august 2003

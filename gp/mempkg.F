@@ -318,6 +318,7 @@ C
 C     end of MEMREL
 C
       END
+
 C  /* Deck memchk */
       SUBROUTINE MEMCHK(TEXT,WORK,KFIRST)
 C
@@ -347,12 +348,38 @@ C
 C
       IALLOC = 0
   100 CONTINUE
+
          IALLOC = IALLOC + 1
-         WMEMCK(1) = WORK(KFREE-LENID)
+
+CMI      WMEMCK(1) = WORK(KFREE-LENID)
+         INDXL     =  KFREE-LENID
+CMI        write(luwmem,*) 'indxl=',indxl
+         WMEMCK(1) = WORK(INDXL)
+
          IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
+
+C        write(luwmem,*) 'kfree=',kfree,' indxl=',indxl,
+C    &   ' wmemck=',wmemck(1),wmemck(2),
+C    &   ' memck=',memck(1),memck(2), ' wmemid=',wmemid(1),wmemid(2)
+
+         if (indxl.eq.1.AND.wmemck(1).eq.0) then
+CC        WMEMCK(1)=WORK(2)
+CC        WMEMCK(1)=WORK(3)
+CMI       WMEMCK(1)=6.88136594D-312
+          WMEMCK(1)=6.09957582D-315
+C         write(luwmem,*) ' modified wmemck(1):'
+C        write(luwmem,*) 'indxl=',indxl,' wmemck=',wmemck(1),wmemck(2),
+C    &   ' memck=',memck(1),memck(2),' wmemid=',wmemid(1),wmemid(2)
+         endif
+
          IF (MEMCK(1) .NE. MEMID(1)) GO TO 8001
+
+CMI         .... "naive" fix ...
+         IF (WMEMCK(1).LT.0) WMEMCK(1)=-WMEMCK(1)
+
          LREAL = MEMCK(2)
          IF (LREAL .LT. 0) GO TO 8002
+
          IF (LREAL .GT. 0) THEN
             KFREE = KFREE + LENID + LREAL
             GO TO 100
@@ -369,17 +396,34 @@ C
      *      ' KFIRST,KFREE,IALLOC =',KFIRST,KFREE,IALLOC,
      *      ' found memory check :',MEMCK(1),
      *      ' expected           :',MEMID(1)
-         WRITE (LUWMEM,'(/A/A)')
-     &      ' Dump of allocations before invalid memget id:',
-     &      ' IALLOC #    KBASE         Length'
+
+         write(luwmem,*) 'Equivalence WMEMCK/MEMCK'
+         write(luwmem,*) 'WMEMCK(1-2):',WMEMCK(1),WMEMCK(2)
+         write(luwmem,*) ' MEMCK(1-2):',MEMCK(1),MEMCK(2)
+         write(luwmem,*)
+         write(luwmem,*) 'Equivalence WMEMID/MEMID'
+         write(luwmem,*) 'WMEMID(1-2):',WMEMID(1),WMEMID(2)
+         write(luwmem,*) ' MEMID(1-2):',MEMID(1),MEMID(2)
+         write(luwmem,*) 'MEMCK(1) .NE. MEMID(1) !'
+
+         IF (IALLOC.GT.1) THEN
+          WRITE (LUWMEM,'(/A/A)')
+     &    ' Dump of allocations before invalid memget id:',
+     &    ' IALLOC #    KBASE         Length'
+         ENDIF
+
          KFREE = KFIRST
          IF (KFREE .EQ. 1) KFREE = 1 + LENID
          DO I = 1, IALLOC-1
             WMEMCK(1) = WORK(KFREE-LENID)
             IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
             LREAL = MEMCK(2)
-            WRITE (LUWMEM,'(I5,2I15)') I,KFREE,LREAL
+
+CMI         WRITE (LUWMEM,'(I5,2I15)') I,KFREE,LREAL
+            WRITE (LUWMEM,*) I,KFREE,LREAL
+
             KFREE = KFREE + LENID + LREAL
+
          END DO
          CALL QENTER('MEMCHK  ')
          CALL QTRACE(LUWMEM)

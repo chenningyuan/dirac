@@ -394,6 +394,7 @@ C  /* Deck prpmat */
 C***********************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
+C
 C     -- NPMO(i) is dimension of output property matrix 
 C                in fermion symmetry i
 C     -- IPCMO(i) is off-set to first MO-coeff in fermion symmetry i
@@ -401,10 +402,22 @@ C        NPMO = NORB and IPCMO = ICMOQ gives full PRPMO matrix
 C        NPMO = NASH and IPCMO = xxxxx gives      PRPMO matrix over 
 C                                active orbitals
 C
+C   On input:      INDXPR, IOPSY
+C ============     CMO - molecular orbitals ..
+C                  IBEIG - boson info on orbitals...
+C                  IPCMO, NPMO
+C               
+C
+C  On output:  PRPMO(N2ORBXQ) - resulting operator in MO basis
+C ===========  (taken care of the spin-sfree case!)
+C
+C
 C     Written by T.Saue July 1996
 C     Revisions:
 C       Feb 17 2000 (hjaaj, IPCMO(2), NPMO(2) parameters for 
 C                    partial MO transf.)
+C       Dec 2005, MI - extended for SQUARE property matrixes
+C
 C
 C***********************************************************************
 #include "implicit.h"
@@ -412,29 +425,56 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "dcbxpr.h"
 C
       DIMENSION PRPMO(*),CMO(*),IBEIG(*),IPCMO(*),NPMO(*),WORK(*)
+      LOGICAL   TRIANG
 C
       CALL QENTER('PRPMAT')
       KFRSAV = KFREE
+
+CMI   ... define triangulariry of matrix 
+CMI    ...   - either symmetric or antisymmetric
+      TRIANG =  (IPRPTIM(INDXPR).NE.0)
+
+      NPMOT = NPMO(1)
+      IF (NFSYM.EQ.2) NPMOT = NPMOT + NPMO(2)
+      N2PMOX = NPMOT*NPMOT
+
+      IF (IPRINT .GE. 6) THEN
+        CALL HEADER('Output frol PRPMAT',-1)
+        IF (TRIANG) THEN
+         WRITE(LUPRI,'(4X,A)')
+     & 'PRPMAT: Handling TRIANGULAR matrix of'//
+     & ' the (anti-)symmetric operator'
+        ELSE
+         WRITE(LUPRI,'(4X,A)')
+     & 'PRPMAT: Handling SQUARE matrix of property operator'
+        ENDIF
+        WRITE(LUPRI,'(/A,4I10)')
+     &  ' Input to PRPMAT: IPCMO, NPMO:',
+     &  (IPCMO(I),NPMO(I),I = 1,NFSYM)
+        WRITE(LUPRI,*)' NPMOT,N2PMOX:',NPMOT,N2PMOX
+      ENDIF
+
 C
 C     Memory allocation
 C
       CALL MEMGET('REAL',KPRPAO ,N2BBASXQ  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN ,   NNBBASX,WORK,KFREE,LFREE)
+
+CMI   ... own allocations.... for triangular or square AO matrixes ...
+      IF (TRIANG) THEN
+       CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KONEIN ,   NNBBASX,WORK,KFREE,LFREE)
+       IDIMENS = NNBBASX
+      ELSE
+       CALL MEMGET('REAL',KPTRI  ,NZ*N2BBASX,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KONEIN ,   N2BBASX,WORK,KFREE,LFREE)
+       IDIMENS = N2BBASX
+      ENDIF
       CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
 C
-      NPMOT = NPMO(1)
-      IF (NFSYM.EQ.2) NPMOT = NPMOT + NPMO(2)
-      N2PMOX = NPMOT*NPMOT
-      IF (IPRINT .GE. 5) THEN
-         WRITE(LUPRI,'(/A,4I10)')
-     &      ' Input to PRPMAT: IPCMO, NPMO:',
-     &      (IPCMO(I),NPMO(I),I = 1,NFSYM)
-         WRITE(LUPRI,*)' NPMOT,N2PMOX:',NPMOT,N2PMOX
-      END IF
-      CALL PRPMA1(INDXPR,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,
+      CALL PRPMA1(INDXPR,IDIMENS,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,
      &            WORK(KPRPAO),WORK(KPTRI),WORK(KONEIN),WORK(KFIRST),
      &            WORK,KFREE,LFREE,IPRINT)
 
@@ -445,14 +485,18 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpma1 */
-      SUBROUTINE PRPMA1(INDXPR,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,PRPAO,
+      SUBROUTINE PRPMA1(INDXPR,IDIMENS,PRPMO,CMO,
+     &                  IBEIG,IPCMO,NPMO,N2PMOX,PRPAO,
      &                  PTRI,OP1INT,FIRST,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
 C
+C     IDIMENS = N2BBASX or NNBBASX
+C
 C     Written by T.Saue July 1996
 C     Last revision: Feb 17 2000 (hjaaj, see PRPMAT)
+C     Dec 2005, MI - adapting for both triangular and square operators
 C
 C***********************************************************************
 #include "implicit.h"
@@ -468,8 +512,9 @@ C
 C
       LOGICAL FIRST(*),QBTR
       DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),
-     &          PRPAO(N2BBASX,NZ),PTRI(NNBBASX,NZ),
-     &          OP1INT(NNBBASX),WORK(*)
+     &          PRPAO(N2BBASX,NZ),
+     &          PTRI(IDIMENS,NZ),
+     &          OP1INT(IDIMENS),WORK(*)
       DIMENSION IPMO(2), I2PMOX(2,2)
 C
       CALL QENTER('PRPMA1')
@@ -488,7 +533,7 @@ C
         IOFF = IOFF + NPMO(J)*NPMOT
       END DO
 C
-C     Extract symmetry information
+C     Extract symmetry information - ISYM, IREP, ITIM
 C     =============================
 C
       ISYM = IPRPSYM(INDXPR)
@@ -497,12 +542,12 @@ C
 
 C ... check for anti-/symmetricity of the property matrix/MI
 
-      IF (.NOT.(ITIM.EQ.1.OR.ITIM.EQ.-1)) THEN
-       WRITE(LUPRI,'(/A,I3,1X,2A)')
-     & '  PRPMA1: Property operator no.',INDXPR,PRPNAM(INDXPR),
-     & ' is NOT hermitian nor antihermitian !'
-       CALL QUIT('PRPMA1: Non-hermitian property!')
-      ENDIF
+CMI   IF (.NOT.(ITIM.EQ.1.OR.ITIM.EQ.-1)) THEN
+CMI    WRITE(LUPRI,'(/A,I3,1X,2A)')
+CMI  & '  PRPMA1: Property operator no.',INDXPR,PRPNAM(INDXPR),
+CMI  & ' is SQUARE (not hermitian neither antihermitian) !'
+CMI    CALL QUIT('PRPMA1: Non-hermitian property!')
+CMI   ENDIF
 
 C
 C
@@ -510,7 +555,8 @@ C     Get property matrix in AO-basis
 C     ===============================
 C     
       CALL LSET(NZ,.TRUE.,FIRST)
-      CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,FIRST,WORK(KFREE),
+CMI   ... this routine is adapted for square matrixes !!!
+      CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PTRI,OP1INT,FIRST,WORK(KFREE),
      &           LFREE,IPRINT)   
 C
       DO IZ = 1,NZ
@@ -519,18 +565,26 @@ C
         ELSE
           IQ = IPQTOQ(IZ,IREP)
           IH = IHQMAT(IQ,ITIM)
+CMI       .. for IH = 1 or 2 do unpack triangular matrixes PTRI(1,IZ)
           IF    (IH.EQ.1) THEN
             CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PRPAO(1,IZ))
           ELSEIF(IH.EQ.2) THEN
             CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PRPAO(1,IZ))
+          ELSE
+CMI         ... not symmetric, nor antisymmetric - do copy full PTRI into PRPAO
+            CALL DCOPY(N2BBASX,PTRI(1,IZ),1,PRPAO(1,IZ),1)
           ENDIF
         ENDIF
       ENDDO
+C     ... resort basis
       CALL BUTOBS(PRPAO,NZ,WORK(KFREE),LFREE)
 
+C .. control print out of UNTRANSFORMED four-component
+C    operator in the AO basis
       IF (IPRINT.GE.7) THEN
-         WRITE(LUPRI,'(A,A16)')
-     &'PRPMA1: Four-comp. tot. AO-matrix of property ',PRPNAM(INDXPR)
+        WRITE(LUPRI,'(/A,A16)')
+     &'PRPMA1: Total four-comp. AO-matrix of property ',
+     & PRPNAM(INDXPR)
         CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &            IPQTOQ(1,IREP),LUPRI)
       ENDIF
@@ -546,8 +600,8 @@ C
       QBTR = .FALSE.
       DO I1 = 1,NFSYM
          I2  = MOD(I1+IOPSY,2) + 1
-           IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
-             CALL QBTRANS(IREP,'AOMO','S',D0,
+         IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
+           CALL QBTRANS(IREP,'AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
      &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
@@ -557,7 +611,7 @@ C
      &           CMO(IPCMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           IBEIG(IORB(I2)+1),
      &           WORK(KFREE),LFREE,IPRINT)
-            QBTR = .TRUE.
+           QBTR = .TRUE.
          ELSE
            CALL QTRANS('AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
@@ -568,31 +622,55 @@ C
      &           CMO(IPCMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRINT)
          ENDIF
+
+         IF (IPRINT.GE.7) THEN
+          CALL HEADER('PRPMA1: Symm.blocked AO-matrix',-1)
+          WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
+     &    '* Fermion irps no.',I1,I2,' of ',NFSYM
+          CALL PRQMAT(PRPAO(I2BASX(I1,I2)+1,1),NFBAS(I1,0),NFBAS(I2,0),
+     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+
+          CALL HEADER('PRPMA1: Symm.blocked MO-matrix',-1)
+          WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
+     &    '* Fermion irps no.',I1,I2,' of',NFSYM
+          CALL PRQMAT(PRPMO(I2PMOX(I1,I2)+1,1),NPMO(I1),NPMO(I2),
+     &           NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),LUPRI)
+         ENDIF
+
+         IF (IPRINT.GE.10) THEN
+          CALL HEADER(
+     &    'PRPMA1: Symm.blocked MO-coefficients',-1)
+          WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
+     &    '* Fermion ircop no.',I1,I2,' of',NFSYM
+          CALL PRQMAT(CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),
+     &         NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),LUPRI)
+
+         ENDIF
+         
       ENDDO
 C
 C     Print section
 C     =============
 C
-      IF(IPRINT.GE.6) THEN
-        CALL HEADER('Output from PRPMA1',-1)
+      IF(IPRINT.GE.16) THEN
+        CALL HEADER('PRPMA1: Total MO matrix of property',-1)
         IF (QBTR) THEN
-         WRITE(LUPRI,'(4X,A/)')
-     &   'Applied boson symmetry based AO_to_MO transformation !'
+         WRITE(LUPRI,'(4X,A)')
+     &   'Applied BOSON symmetry based AO_to_MO transformation !'
+        ELSE
+         WRITE(LUPRI,'(4X,A)')
+     &   'Applied FERMION symmetry based AO_to_MO transformation !'
         ENDIF
         WRITE(LUPRI,'(A,A16)') 
      &  '*MO-matrix of property ',PRPNAM(INDXPR)
+        WRITE(LUPRI,'(2X,A,4I3)')
+     &  'with parameters INDXPR,ISYM,IREP,ITIM:',
+     &  INDXPR,ISYM,IREP,ITIM
         CALL PRQMAT(PRPMO,NPMOT,NPMOT,NPMOT,NPMOT,NZ,
      &              IPQTOQ(1,IREP),LUPRI)
-        IF(IPRINT.GE.10) THEN
-          WRITE(LUPRI,'(A,A16)') 
-     &    '*AO-matrix of property ',PRPNAM(INDXPR)
-        CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
-     &              IPQTOQ(1,IREP),LUPRI)
-        ENDIF
       ENDIF
 C
       CALL QEXIT('PRPMA1')
-C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
