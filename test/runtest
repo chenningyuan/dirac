@@ -66,6 +66,9 @@ usage () {
    $echo '\tPrint version of runtest'
    $echo '--tests="tests to run"'
    $echo '\tChoose which tests to run (default: short)'
+   $echo '--runtype="type of tests to run"'
+   $echo '\tWhen tests are specified with number,
+        choose the type (short,medium...) '
    $echo '--pampath="path to pam script"'
    $echo '\tSet path to pam script'
    $echo '--dirac="executable"'
