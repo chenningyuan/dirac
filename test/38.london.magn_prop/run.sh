@@ -47,8 +47,18 @@ MENU=LiH.bss+mfsso.shield_lao_go=cm;
 export MENU;
 ../run.sh
 ###############################
+echo "bss_sfB NMR shieldings with LAO"
+MENU=LiH.bss_sfB.shield_lao_go=cm;
+export MENU;
+../run.sh
+###############################
 echo "dc_rkb NMR shieldings with LAO"
 MENU=LiH.dc_rkb.shield_lao_go=cm;
+export MENU;
+../run.sh
+###############################
+echo "dc_sf NMR shieldings with LAO"
+MENU=LiH.dc_sf.shield_lao_go=cm;
 export MENU;
 ../run.sh
 ###############################
