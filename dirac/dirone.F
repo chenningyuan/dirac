@@ -1263,7 +1263,7 @@ C
 C     Memory allocation
 C
 CMI ... does not work here !!!...
-      CALL MEMCHK('FREEMT 1',WORK,1)
+C     CALL MEMCHK('FREEMT 1',WORK,1)
 
       CALL MEMGET('REAL',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KONEIN,   NNBBASX,WORK,KFREE,LFREE)
@@ -1692,7 +1692,7 @@ C     Generate free particle (or bare nucleus) matrix in Lowdin-basis
 C     ===============================================================
 C
 C     CALL MEMGET('REAL',KVOLACO,1,WORK,KFREE,LFREE)
-      CALL MEMCHK('MODHAM 1',WORK,1)
+C     CALL MEMCHK('MODHAM 1',WORK,1)
 
       IF(VEXTPJ) THEN
 CMI     CALL ONEFCK(TBUF,IPRONE,WORK,LWORK)
