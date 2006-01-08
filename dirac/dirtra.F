@@ -3781,7 +3781,7 @@ C       Insert frozen orbital
           IB = IB + NFBAS(IFRP,0)
           IC = IC + NOFF
         ENDDO
-        EIG(JFRO)=D0
+        READ(IUNIT) EIG(JFRO)
         JOFT = JOFT + 1
       ENDDO
 C

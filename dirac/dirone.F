@@ -4042,7 +4042,7 @@ C
       LOGICAL TOBE
       DIMENSION TMAT(*),TINV(*),WORK(*)
       DIMENSION NSTR(2,0:2,MFRAG),KVEC(2,MFRAG),
-     &          KQ(2),KI(2),NVECS(2),NQ(2)
+     &          KQ(2),KE(2),KI(2),NVECS(2),NQ(2),NE(2),NI(2)
 C
       KFRSAV = KFREE
       CALL TITLER('Reduction of variational space by projection',
@@ -4104,31 +4104,36 @@ C     Calculate dimensions of fragment coefficients array
 C     ====================================================
 C
 C     KQ(IFRP) - start adress for coefficient array
+C     KE(IFRP) - start adress for eigenvalue array
 C     KI(IFRP) - start adress for boson irreps info
 C
-      NDIM  = 0
+      NCDIM  = 0
       DO IFRP = 1,NFSYM
         NQ(IFRP)         = NFBAS(IFRP,0)*NVECS(IFRP)*NZ
-        NDIM             = NDIM + NQ(IFRP)
+        NCDIM            = NCDIM + NQ(IFRP)
+        CALL MEMGET('REAL',KE(IFRP),NVECS(IFRP),WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KI(IFRP),NVECS(IFRP),WORK,KFREE,LFREE)
         CALL IZERO(WORK(KI(IFRP)),NVECS(IFRP))
       ENDDO       
-      CALL MEMGET('REAL',KQ(1),NDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KQ(1),NCDIM,WORK,KFREE,LFREE)
       KQ(2)   = KQ(1) + NQ(1)
 C
 C     Select fragment orbitals
 C     =========================
 C
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
       IF(SPINFR) THEN
-        IOPT = 11
+        IOPT = 15
         CALL MEMGET('REAL',KIBE,NORBT,WORK,KFREE,LFREE)
       ELSE
-        IOPT = 3
+        IOPT = 7
         KIBE = KFREE
       ENDIF
       DO IFRP = 1,NFSYM
         NQ(IFRP) = KQ(IFRP)
+        NE(IFRP) = KE(IFRP)
+        NI(IFRP) = KI(IFRP)
       ENDDO
       INUC = 1
 C.....loop over fragments
@@ -4153,13 +4158,16 @@ C.....loop over fragments
      &       '* Coefficients for fragment ',PRJFIL(IFRAG)
 C.......Fragment orbitals in own basis
         IF(PROOWN) THEN
-          CALL SELOWN(IOPT,WORK(KCMO),DUM,WORK(KIBE),
+          CALL SELOWN(IOPT,WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &                INUC, NPRJNUC(IFRAG),LUCOEF,PRJFIL(IFRAG),
-     &                NQ,IDUM,KI,NVECS,KVEC(1,IFRAG),NSTR(1,0,IFRAG),
+     &                NQ,NE,NI,NVECS,KVEC(1,IFRAG),NSTR(1,0,IFRAG),
      &                WORK,KFREE,LFREE)
           DO IFRP = 1, NFSYM
             IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
               NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,IFRAG)*NFBAS(IFRP,0)
+              NE(IFRP) = NE(IFRP) + NSTR(IFRP,0,IFRAG)
+CTROND...This will not work for integer array !!!!
+              NI(IFRP) = NI(IFRP) + NSTR(IFRP,0,IFRAG)
             ENDIF
           ENDDO
 C.......Fragment orbitals in molecular basis
@@ -4172,9 +4180,14 @@ C.......Fragment orbitals in molecular basis
      &                       NVECS(IFRP),WORK(KVEC(IFRP,IFRAG)),
      &                       NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG),
      &                       NFBAS(IFRP,0),NORB(IFRP))
+              CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(NE(IFRP)),
+     &             WORK(KVEC(IFRP,IFRAG)),
+     &             NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
               NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,IFRAG)*NFBAS(IFRP,0)
+              NE(IFRP) = NE(IFRP) + NSTR(IFRP,0,IFRAG)
               IF(SPINFR) THEN
 C               Spin-free case: Fill array with boson irrep info
+CTROND...error for multiple fragments !
                 CALL SELIBEIG(WORK(KIBE),IORB(IFRP),IFRP,
      &                         WORK(KI(IFRP)),WORK(KVEC(IFRP,IFRAG)),
      &                         NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
@@ -4219,12 +4232,12 @@ CTROND        IF(NFRO(IFRP).EQ.0) GOTO 21
      &            'N','N',IPQTOQ(1,0),WORK(KQ(IFRP)),
      &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
      &            D0,IPQTOQ(1,0),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ)
-CTROND        IF(IPRINT.GE.5) THEN
+        IF(IPRINT.GE.5) THEN
           CALL HEADER('PSIPRJ: Fragment coefs in orthonormal basis',-1)
           WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',IFRP
           CALL PRQMAT(WORK(KREF),NORB(IFRP),NVECS(IFRP),
      &                NORB(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),LUPRI)
-CTROND        ENDIF
+        ENDIF
 C       Initialize unit matrix (transformation matrix in MO-basis)
         CALL DUNIT2(WORK(KBUF),NORB(IFRP),NORB(IFRP),NORB(IFRP),NZ)
         IF(SPINFR) THEN
@@ -4292,8 +4305,8 @@ C
             CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
-            CALL WRIFRZ(LUCOEF,IFRP,WORK(KQ(IFRP)),WORK(KSEL),
-     &                WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
+            CALL WRIFRZ(LUCOEF,IFRP,WORK(KQ(IFRP)),WORK(KE(IFRP)),
+     &                  WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
             CALL MEMREL('PSIPRJ.froz',WORK,KBUF,KBUF,KFREE,LFREE)       
           ENDIF
 C
@@ -5827,7 +5840,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Wrifrz */
-      SUBROUTINE WRIFRZ(IUNIT,IFRP,VECS,IVEC,BUF,IBUF,NVEC,NDEL)
+      SUBROUTINE WRIFRZ(IUNIT,IFRP,VECS,EIG,IVEC,BUF,IBUF,NVEC,NDEL)
 C***********************************************************************
 C
 C     Dump frozen orbitals to file
@@ -5841,7 +5854,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-      DIMENSION VECS(*),BUF(*),IVEC(*),IBUF(*),NDEL(2)
+      DIMENSION VECS(*),BUF(*),IVEC(*),IBUF(*),EIG(*),NDEL(2)
 C
 C     Get index array for frozen orbitals;
 C
@@ -5917,7 +5930,7 @@ C     Write index array to file
 C
       CALL WRITI(IUNIT,NFRO(IFRP),IVEC)
 C
-C     Write coefficients to file
+C     Write coefficients and eigenvalues to file
 C
       IDIM = NFBAS(IFRP,0)*NVEC
       JDIM = NFBAS(IFRP,0)*NZ
@@ -5931,6 +5944,7 @@ C
           JOFF = JOFF + NFBAS(IFRP,0)
         ENDDO
         CALL WRITT(IUNIT,JDIM,BUF)
+        WRITE(IUNIT) EIG(I)
       ENDDO
 C
       RETURN
