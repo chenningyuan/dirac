@@ -105,7 +105,7 @@ C
             FACR = VXC(FRZ)*B0 + (VXC(FZZ)-VXC(FZ0)/RHOGRD)*BR
             SXC = VXC(FRR)*B0 + VXC(FRZ)*BR
             DO I = 1,3
-              VT(I) = D2*(RHG(I)*FACR + VXC(FZ0)*B3(I))/RHOGRD
+              VT(I) = (VXC(FZ0)*B3(I)+FACR*RHG(I))/RHOGRD
             ENDDO
 
 C           Linear transformation

@@ -560,8 +560,9 @@ C
      &   ' Error in the number of electrons:              ',ERROR,
      &   ' Error larger than DFTELS (set input):          ',DFTELS,
      &   ' Calculation aborted.'
-         CALL QUIT
-     &    ('Wrong number of electrons in DFTDRV. Calculation aborted.')
+CTROND         CALL QUIT
+CTROND     &    ('Wrong number of electrons in DFTDRV. Calculation aborted.')
+        WRITE(LUPRI,'(A)') 'WARNING !!!'
       END IF
 C
 C
@@ -735,7 +736,7 @@ C
         IF (DOERG.OR.DOGRD.OR.DOLND) THEN
            CALL DFTPOT0(VX, WGHT, RHO, RHOGRD)
            IF(DOGGA) THEN
-             VX(FZ0) = D2*VX(FZ0)/RHOGRD
+             VX(FZ0) = VX(FZ0)/RHOGRD
            ENDIF
 C
 C
@@ -1054,12 +1055,15 @@ C***********************************************************************
 C
 C     Construct the matrix
 C
-C     E(i,j) = GAO(I)*SXC*GAO(J)+GAO(I)*VXC(K)*GAO1(J,K
-C     E(i,j) = GAO(I)*SXC*GAO(J)+GAO(I)*VXC(K)*nabla[GAO1(J)]
+C     F(i,j) = GAO(I)*SXC*GAO(J)+2*GAO(I)*VXC(K)*nabla[GAO1(J)]
 C
-C     Upon symmetrization later on one obtains
+C     Upon symmetrization 
 C
-C     E(i,j) = GAO(I)*SXC*GAO(J)+(1/2)*VXC(K)*nabla[GAO(I)*GAO(J)]
+C     F(i,j) = (1/2)[F(i,j)+F(j,i)]
+C
+C     later on one obtains
+C
+C     E(i,j) = GAO(I)*SXC*GAO(J)+VXC(K)*nabla[GAO(I)*GAO(J)]
 C
 C     Written by T.Saue and T.Helgaker
 C
@@ -1081,7 +1085,10 @@ C
 #endif
       DIMENSION VXC(3)
 #include "ibtfun.h"
-C      
+C.....Vector part is scaled to get symmetrization right
+      DO I = 1,3
+        VXC(I)=D2*VXC(I)
+      ENDDO
       DO 10 IRP1 = 0,NBSYM-1
         IRP2 = IBTXOR(IRP1,IREPOP)
         DO 20 IC = 1,MC
@@ -1092,10 +1099,8 @@ C
           JB1 = IBBAS(IRP1,IC)
           JB2 = IBBAS(IRP2,IC)
           DO J = 1, NBBAS(IRP2,IC)
-            FC = SXC*GAO(JB2+J)
-            DO I = 1,3
-              FC = FC + VXC(I)*GAO1(JB2+J,I)
-            ENDDO
+            FC = SXC*GAO(JB2+J)      +VXC(1)*GAO1(JB2+J,1)
+     &         + VXC(2)*GAO1(JB2+J,2)+VXC(3)*GAO1(JB2+J,3)
             CALL DAXPY(NBBAS(IRP1,IC),FC,
      &                 GAO(JB1+1),1,EXCMAT(JB1+1,JB2+J),1)            
           ENDDO
