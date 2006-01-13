@@ -229,7 +229,11 @@ C&&& SAOP!: "original" SAOP as in JCP 112, 1344 (2000).
                  DOSAOP      = .TRUE.
                  DORESP      = .TRUE.
                  DOLBALPHA   = .TRUE.
+                 DFTHAM      = .TRUE.
                  ALDAON      = .TRUE.
+#if defined (MOD_DFT)
+                 CALL DOALDA(.TRUE.)
+#endif
                  GOTO 100
  15              CONTINUE
                  GO TO 100
