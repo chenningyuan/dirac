@@ -449,7 +449,7 @@ C
 C     If not totally symmetric, return with zero value
 C
 CMI   IF (LEXPST(1).OR.LEXPST(2)) RETURN
-      IF (LEXPST(1)) GOTO 90 
+      IF (LEXPST(1).AND.(.NOT.PRJANA)) GOTO 90 
 
 C
 C     Totally symmetric operator ==> proceed
