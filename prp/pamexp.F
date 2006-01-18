@@ -758,7 +758,7 @@ C
      &    J,REFFIL(J),TMP,FAC
         WRITE(LUPRI,'(9X,A,E16.8,E16.5)')
      &    '- principal moment: ',PM(J),PM(J)/EXPVAL
-        TMP = TMP - D2*PM(J)
+        TMP = TMP - PM(J)
         WRITE(LUPRI,'(9X,A,E16.8,E16.5)')
      &    '- hybridization   : ',TMP,TMP/EXPVAL
       ENDDO
@@ -1336,6 +1336,7 @@ C
         ENDDO
       ENDDO      
       CALL DSCAL(NTRI,D2,PTRI,1)
+      CALL DSCAL(NTOT,D2,PM,1)
       EXPVAL = DSUM(NTRI,PTRI,1)
       IF(IPRINT.GE.2) THEN
         WRITE(LUPRI,'(A,A16,E16.10)') 
