@@ -277,13 +277,13 @@ C.............calculate expectation value
           CALL PRPEX3(EXPVAL(I),INDXPR,IREP,ITIM,
      &        DMAT,PMAT,PTRI,FIRST,ORBANA,
      &        WORK(KFREE),LFREE,IPREXP)
+ 30       CONTINUE
           IF(PRJANA) THEN
 C.........Transform property matrix to fragment orbital basis
             CALL PRJEX1(WORK(KPFMT),PTRI,PMAT,WORK(KRVEC),
      &                  INDXPR,IREP,ITIM,NP(1,0),FIRST,IPREXP,
      &                  WORK,KFREE,LFREE)
           ENDIF
- 30       CONTINUE
           FMT = MXFORM(EXPVAL(I),15)
           WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
      &       PRPNAM(INDXPR),' : ',EXPVAL(I),'a.u.',
