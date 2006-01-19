@@ -81,13 +81,15 @@ C
         ELSE
            CALL TITLER('Kohn-Sham calculation','*',125)
         ENDIF
+      ELSEIF(ONESYS) THEN
+        CALL TITLER('One-electron system','*',125)
       ELSE
         IF (BSS) THEN
            CALL TITLER(
      &     'Two-component BSS/DKH relativistic HF calculation',
      &     '*',125)
         ELSE
-           CALL TITLER('Dirac-Hartree-Fock calculation','*',125)
+           CALL TITLER('Hartree-Fock calculation','*',125)
         ENDIF
       ENDIF
       CALL FLSHFO(LUPRI)
@@ -252,7 +254,7 @@ C       IF (INI2C.EQ.1.OR.INI2C.EQ.2) FD2CMO = .TRUE.
 
         CALL SETDHF(IPRSCF)
 CMI    ... TODO: it would be good to generalize the title printout (DFT or SCF)
-        CALL TITLER('Dirac-Hartree-Fock calculation','*',125)
+        CALL TITLER('Hartree-Fock calculation','*',125)
 
         CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &        WORK(KFREE),LFREE)
