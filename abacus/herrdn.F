@@ -548,7 +548,7 @@ C
 C
       CHARACTER*1 KASYM(3,3),ID3,SPDCAR,CRT
       CHARACTER*72 TTITLE(2)
-      CHARACTER*2 SYMTXT
+      CHARACTER*11 SYMTXT
       CHARACTER*15 CLASS
       DIMENSION IFXYZ(3)
       LOGICAL ANG, ADDSYM
@@ -609,8 +609,8 @@ C                 specify axis that are reversed under the operation
 C       THRS    - integral threshold
 C***********************************************************************
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)')
-     &     CRT,NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
+      READ (MLINE(NMLINE),'(BN,A1,I4,I3,A11,A1,D10.2,6I5)')
+     &     CRT,NONTYP,KCHARG,SYMTXT,ID3,THRS
       IF(NONTYP.GT.KATOM) GOTO 5000
 C***********************************************************************
 C Check integral threshold: THRS must be .gt. 0
@@ -633,9 +633,12 @@ C***********************************************************************
 C Check if symmetry is to be added automatically
 C       ADDSYM  - flag for automatic determination of symmetry
 C***********************************************************************
-      ADDSYM = (SYMTXT .EQ. '  ')
+      ADDSYM = (SYMTXT(1:2) .EQ. '  ')
+C     Also automatic symmetry detection for Dinfh or Cinfv
+      ADDSYM = (SYMTXT(1:1) .EQ. 'D') .OR. ADDSYM
+      ADDSYM = (SYMTXT(1:1) .EQ. 'C') .OR. ADDSYM
       IF (.NOT. ADDSYM) THEN
-         READ(SYMTXT,'(I2)') NSYMOP
+         READ(SYMTXT,'(BN,I2,9A1)') NSYMOP,((KASYM(I,J),I=1,3),J=1,3)
       ELSE
          NSYMOP = 0
       END IF

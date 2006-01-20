@@ -1,7 +1,7 @@
 INTGRL
 Nitrogen test of linear symmetry (should rotate molecule)                                                
 cc-pVDZ basis
-C   1              A
+C   1   Dinfh      A
         7.    2
 N     -.7 0.0 0.0
 N     0.0 -.6 0.6
