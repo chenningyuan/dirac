@@ -1824,6 +1824,7 @@ C     Define property label: symmetries etc..
 C
 C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1889,6 +1890,10 @@ C
         IF(NPRPLBL.GT.MAXPRPLBL) THEN
           CALL QUIT('XPLDEF:Redimension MAXPRPLBL !!')
         ENDIF
+
+CMI     write(lupri,*) 'PLABEL=',PLABEL
+C       write(lupri,*) 'LABINT(ICMP)=',LABINT(ICMP)
+
         IF(PLABEL.EQ.LABINT(ICMP)) THEN
           LABERR = .FALSE.
           INDX   = NPRPLBL

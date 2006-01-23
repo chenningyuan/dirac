@@ -192,7 +192,7 @@ C
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.XXXXXX','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
-     &             '.SPHTRA','.XXXXXX','.XXXXXX','.XXXXXX',
+     &             '.SPHTRA','.TWOCOM','.XXXXXX','.XXXXXX',
      &             '.ACMOUT','.XXXXXX','.XXXXXX','.FAMILY',
      &             '.DENSFI','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
@@ -201,6 +201,7 @@ C     Initialise NOGENINP
 C     NOGENINP is set, if there is no **GENERAL
 C
       NOGENINP = .FALSE.
+      TWOCOMP  = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -305,6 +306,8 @@ C
             ISPHTR = ILSPH+2*ISSPH
             GO TO 100
   110     CONTINUE
+C&&&&&   TWOCOM - twocomponent mode in DIRAC
+            TWOCOMP = .TRUE.
             GO TO 100
   111     CONTINUE
             GO TO 100
@@ -374,6 +377,9 @@ C
      +   '* The speed of light scaled by ',(CVAL/CVEL),
      +   ' to : ',CVAL
       ENDIF
+    
+      IF (TWOCOMP) 
+     &  WRITE(LUPRI,'(1X,A)') '* Employ pure two-component mode'
 
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
       IF(IDFLAG.GT.0) THEN
@@ -3988,6 +3994,16 @@ C
         CALL QUIT('Conflicting options : VEXTPJ and FREEPJ !')
       ENDIF
 
+CMI     Remove inconsistencies for TWOCOMP option
+      IF (TWOCOMP.AND.(BSS.OR.LEVYLE.OR.SPINFR.OR.
+     &              URKBAL.OR.FREEPJ.OR.VEXTPJ.OR.GAUNT)) THEN
+        WRITE(LUPRI,'(A)') '***** HAMINP ERROR *****'
+        WRITE(LUPRI,'(A)')
+     &  'You cannot specify both TWOCOMP and other otions (see code)!'
+        CALL QUIT(
+     &  'Conflicting options : TWOCOMP and others (see code) !')
+      ENDIF
+
 CMI          Remove inconsistencies for the BSS option
 C     =====================================================
       IF ((DO2C4C.OR.DO4C2C.OR.USEDF).AND..NOT.BSS) THEN
@@ -4153,7 +4169,9 @@ C         write(lupri,*)
      & ' and continue at the 2comp. level ! Code I2CHAM= ',I2CHAM
       ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
-      ELSE
+      ELSE IF (TWOCOMP) THEN
+        WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian'
+      ELSE 
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
       IF(ICHANG.GT.0) WRITE(LUPRI,'(A)') 
@@ -4178,10 +4196,11 @@ C     ENDIF
       IF(DFTHAM) CALL DFTREPORT()
 #endif
       IF(DOLVC) ISSINT = 0
+
 C
 C     Reset MC if necessary
 C
-      IF(LEVYLE) MC = 1
+      IF(LEVYLE.OR.TWOCOMP) MC = 1
 CMI   IF(LEVYLE.OR.BSS) MC = 1
 C
 C     Set integral flags
@@ -4234,6 +4253,9 @@ CMI     but for precursive four-component matrix elements !!!
       ELSE
          WRITE(LUPRI,'(A)')'   - uncontracted large component basis set'
       END IF
+
+CMI ... again TWOCOMP
+      IF (.NOT.TWOCOMP) THEN
       IF ( DIRCON(2) ) THEN
          WRITE(LUPRI,'(A)')'   - contracted small component basis set'
       ELSE
@@ -4244,6 +4266,8 @@ CMI     but for precursive four-component matrix elements !!!
          WRITE(LUPRI,'(A)') 'Contracted small component basis set '//
      &      'and restricted kinetic balance is not implemented.'
          CALL QUIT('*** ERROR in HAMINP ****')
+      END IF
+
       END IF
 C
 C     Remove integral classes not needed for this Hamiltonian
@@ -4258,7 +4282,11 @@ C
         IGTINT = 0
       ENDIF
       INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
-C
+
+
+C     
+      IF (.NOT.TWOCOMP) THEN
+
       IF(URKBAL) THEN
         WRITE(LUPRI,1000) 'unrestricted'
       ELSE
@@ -4415,6 +4443,9 @@ C
      &       ONECNV
          END IF
 C
+      END IF
+
+CMI ... end of (TWOCOMP)
       END IF
 C
       IF(N1OPER.GT.0) THEN
@@ -4648,7 +4679,9 @@ C     Initialize one-electron integrals for standard
 C     Dirac-Coulomb Hamiltonian
 C
 C     Written by T.Saue May 21 1996
-C     Last reviosn : may 21 1996
+C     Last revision : may 21 1996
+C
+CMI   Jan 2006 Add pure nonrelativistic integrals
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4660,6 +4693,10 @@ C
 #include "dcbham.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),WORK(LWORK)
+     
+      CALL QENTER('OP1INI')
+
+CMI ... common for nonrelativistic and Dirac Hamiltonians
 C
 C    Overlap integrals
 C    =================
@@ -4672,6 +4709,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
       IPOVRLAP        = INDXPR
+
 C
 C     Nuclear attraction integrals
 C     ============================
@@ -4684,6 +4722,22 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
       IPMOLFLD         = INDXPR
+
+
+      IF (TWOCOMP) THEN
+CMI   nonrelativistic  kinetic energy integrals ...
+      PNAME            = 'Nonrel. kinetic energy '
+      IPTYP            = 1
+      NPCOMP           = 1
+      PFAC(1)          = D1
+      PLABEL(1)        = 'KINENER'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+CMI    ... use existing ipkinerg  in dcbham.h
+      IPKINERG         = INDXPR
+
+      ELSE
+
 C
 C     Beta matrix integrals
 C     =====================
@@ -4712,6 +4766,9 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
       IPKINERG         = INDXPR
+
+      ENDIF
+
       IF (LINEAR) THEN
 C
 C        Angular momentum integrals (used in case of atomic or linear 
@@ -4737,6 +4794,7 @@ C
          IPSPNMOM         = INDXPR
       ENDIF
 C
+      CALL QEXIT('OP1INI')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4766,6 +4824,7 @@ C
 C
       DIMENSION WORK(LWORK)
       LOGICAL LBIT,DIRFCK
+      CALL QENTER('TWOMEM')
 C
       CALL TITLER('Memory required by HERMIT','*',127)      
       CALL PAOVEC(WORK,LWORK,0,IPRTWO)
@@ -4779,19 +4838,28 @@ C     which is what we normally use in Dirac (both SOFOCK for
 C     Fock matrices and for MOLTRA). DIRFCK true will calculate
 C     the correct for AOFOCK only. /hjaaj May 2001
 C
+
+CMI ... memmory evaluation is based on INTGEN in dcbgen.h
+
       DIRFCK = .FALSE.
       IF(LBIT(INTGEN,1)) THEN
         WRITE(LUPRI,'(A)') ' * LL-integrals:'
         CALL MEMLOP(1,DIRFCK)  
       ENDIF
-      IF(LBIT(INTGEN,2)) THEN
-        WRITE(LUPRI,'(A)') ' * SL-integrals:'
-        CALL MEMLOP(2,DIRFCK)  
+     
+CMI ... evaluate memmory for SL,SS integrals only when not in two-component mode
+      IF (.NOT.TWOCOMP) THEN 
+        IF(LBIT(INTGEN,2)) THEN
+          WRITE(LUPRI,'(A)') ' * SL-integrals:'
+          CALL MEMLOP(2,DIRFCK)  
+        ENDIF
+        IF(LBIT(INTGEN,3)) THEN
+          WRITE(LUPRI,'(A)') ' * SS-integrals:'
+          CALL MEMLOP(3,DIRFCK)  
+        ENDIF
       ENDIF
-      IF(LBIT(INTGEN,3)) THEN
-        WRITE(LUPRI,'(A)') ' * SS-integrals:'
-        CALL MEMLOP(3,DIRFCK)  
-      ENDIF
+
+      CALL QEXIT('TWOMEM')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5104,10 +5172,15 @@ C
 #include "ibtfun.h"
 C
       CALL TITLER('Input consistency checks','*',127)
+
       IF (SPINFR.AND..NOT.LEVYLE.AND.DOMP2)
      &   CALL QUIT ('Spinfree MP2 not implemented')
+
       IF (BSS.AND.DOMP2)
      &   CALL QUIT ('BSS & MP2 not implemented')
+
+      IF (DOPRP.AND.TWOCOMP) 
+     &   CALL QUIT ('Properties & TWOCOMP not implemented')
 
       IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
       IF (DORES .AND.DODFT)

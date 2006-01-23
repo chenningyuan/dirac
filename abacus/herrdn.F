@@ -548,7 +548,7 @@ C
 C
       CHARACTER*1 KASYM(3,3),ID3,SPDCAR,CRT
       CHARACTER*72 TTITLE(2)
-      CHARACTER*11 SYMTXT
+      CHARACTER*2 SYMTXT
       CHARACTER*15 CLASS
       DIMENSION IFXYZ(3)
       LOGICAL ANG, ADDSYM
@@ -570,6 +570,7 @@ C
 #endif
 #include "ibtfun.h"
       ZMAT = .FALSE.
+CTROND: Check this
       CALL IZERO(IRKB,MXPRIM)
 C
 C***********************************************************************
@@ -609,8 +610,8 @@ C                 specify axis that are reversed under the operation
 C       THRS    - integral threshold
 C***********************************************************************
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(BN,A1,I4,I3,A11,A1,D10.2,6I5)')
-     &     CRT,NONTYP,KCHARG,SYMTXT,ID3,THRS
+      READ (MLINE(NMLINE),'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)')
+     &     CRT,NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
       IF(NONTYP.GT.KATOM) GOTO 5000
 C***********************************************************************
 C Check integral threshold: THRS must be .gt. 0
@@ -633,12 +634,9 @@ C***********************************************************************
 C Check if symmetry is to be added automatically
 C       ADDSYM  - flag for automatic determination of symmetry
 C***********************************************************************
-      ADDSYM = (SYMTXT(1:2) .EQ. '  ')
-C     Also automatic symmetry detection for Dinfh or Cinfv
-      ADDSYM = (SYMTXT(1:1) .EQ. 'D') .OR. ADDSYM
-      ADDSYM = (SYMTXT(1:1) .EQ. 'C') .OR. ADDSYM
+      ADDSYM = (SYMTXT .EQ. '  ')
       IF (.NOT. ADDSYM) THEN
-         READ(SYMTXT,'(BN,I2,9A1)') NSYMOP,((KASYM(I,J),I=1,3),J=1,3)
+         READ(SYMTXT,'(I2)') NSYMOP
       ELSE
          NSYMOP = 0
       END IF
@@ -950,6 +948,8 @@ C
             ADDSTO = .FALSE.
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)')
      &            Q,NONT(I),QEXP
+CTROND
+          WRITE(6,*) 'basinp:',MLINE(NMLINE)
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
             IF (ADDSTO) NSETS = 2
@@ -1112,6 +1112,8 @@ C
                ELSE
 C                 Assume it is 'LARGE   2    1....'
                   IBSFLAG = 1
+CTROND
+                  WRITE(6,*) 'large:',MLINE(NMLINE)
                   READ (MLINE(NMLINE),'(5X,12I5)')
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                END IF
@@ -1301,6 +1303,9 @@ C
      $              (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
                   DIRCON(1) = .TRUE.
                END IF
+
+
+               IF (.NOT.TWOCOMP) THEN
 C
 C
 C
@@ -1408,8 +1413,6 @@ C
                   BASREF(1,I,2) = ' Derived from large component'
 C
                ENDIF
-               IBLOCK(1)  = IBLOCK(1) + NBLCK(I,1)
-               IBLOCK(2)  = IBLOCK(2) + NBLCK(I,2)
                NOORBTS    = NOORBTS.AND.IQM(I,2).EQ.0
 C
 C              Print small comp. basis set
@@ -1434,7 +1437,13 @@ C
                END DO
                IF ( CNTBAS .AND. IBSFLAG .NE. 4 ) DIRCON(2) = .TRUE.
 C
+CMI        ... end of small component case ... TWOCOMP
              ENDIF
+
+               IBLOCK(1)  = IBLOCK(1) + NBLCK(I,1)
+               IBLOCK(2)  = IBLOCK(2) + NBLCK(I,2)
+             ENDIF
+
            ELSE
 C
 C            Dalton (NOT DIRAC) case
@@ -1933,6 +1942,7 @@ C*****************************************************************************
      &            ALPHA(1,1,2),CPRIM(1,1,1,2),CPRIMU(1,1,1,2),
      &            KATOM,KANG,KBLOCK,KPRIM,
      &            ISHELL,IPRIM,IPRIMD,IORB,IORBD,LCOMP)
+
       IF (ISHELL.GT. MXSHEL) GOTO 5000
       IF (IORBD .GT. MXCORB) GOTO 5010
       IF (IPRIM .GT. MXPRIM) GOTO 5020
@@ -1966,6 +1976,7 @@ C
          NPSHEL  = IPRIM
          NPSSH   = IPRIM - NPLSH
       END IF
+
 C*****************************************************************************
 C       Process fit set data for first (LL or LL+SS) density fitset
 C*****************************************************************************
@@ -2033,6 +2044,7 @@ C FIXME: ISPHTR if the small component basis set is explicitly given
 C FIXME: (IBSFLAG .NE. 4, see INFO: above)./hjaaj+jth sep 2000
 C
       IF (DIRAC.AND.ISPHTR.EQ.3)
+CMI   IF (DIRAC.AND.ISPHTR.EQ.3.AND..NOT.TWOCOMP)
      $     CALL RKBREL(IPREAD)
 C
       RETURN
@@ -2194,7 +2206,6 @@ C
          WRITE (LUPRI,'(1X,A,1P,D10.2)') ' Threshold for integrals:',
      &                                   THRS
       END IF
-
 
 CMI   ... prepare the MNF.INP file with basis set exponents....
       CALL MNFOUT(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
@@ -3015,6 +3026,9 @@ C  /* Deck orbpro */
 C******************************************************************************
 C
 C     Process basis data
+C
+C
+CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
 #include "implicit.h"
@@ -7645,7 +7659,6 @@ C    &               '  -> NNUCT,NNRCT:',NNUCT,NNRCT
                   IPRIM =  IPRIM + NNUC
                   ITYP = ITYP + 1
                   IPRIMD = IPRIMD + 1
-CMI             ... write out exponents only when N=1 !!!
                   IF (N .EQ. 1) THEN
                      DO 410 M = 1, NNUC
                         IPRIMD = IPRIMD + 1

@@ -153,6 +153,10 @@ C              2 - small
 C
 C     Written by T.Saue - October 1994
 C     Last revision: Nov 23 1994 - tsaue
+C
+CMI/jan.2006 All quantities are constructed from NAOS, NCOS (symmet.h) variables, which
+CMI were set up in READIN
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"

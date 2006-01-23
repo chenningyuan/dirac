@@ -629,10 +629,10 @@ CMI   ... find out type of AO matrix - triangular or square
      &                NNBBASX,N2BBASX,IDIMENS
        call QUIT('PRPMAO: wrong dimension !!!')
       ENDIF
+
 CMI   ... this initialization is needed
       SQUARE = .FALSE.
       SQUARE = (IDIMENS.EQ.N2BBASX)
-
 C
 C
 C     Extract information about property
@@ -641,7 +641,8 @@ C
       IOPTYP = IPRPTYP(IOP)
       IF(IPRINT.GE.3) THEN
         CALL HEADER('Output from PRPMAO',-1)
-        WRITE(LUPRI,'(A,A16)')
+CMI     WRITE(LUPRI,'(A,A16)')
+        WRITE(LUPRI,*)
      & 'Generating property matrix for property ',PRPNAM(IOP)
         IF (SQUARE) THEN
          write(lupri,*)
@@ -882,6 +883,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lowdin */
       SUBROUTINE LOWDIN(VMAT,WORK,LWORK,IPRINT)
 C*****************************************************************************
+C
 C     PURPOSE:
 C        Construction of the transformation matrix for Lowdin
 C        ortogonalization
@@ -892,8 +894,11 @@ C        real it reduces to the transpose:
 C
 C           V+ = TRN(V) = t(s**(-0.5))
 C
+C     Routine is called only from GMOTRA.
+C
 C     Written by T.Saue
 C     Last revision: Nov 23 1994 - tsaue
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -955,6 +960,8 @@ C           V+ = TRN(V) = t(s**(-0.5))
 C
 C        Written by T.Saue
 C        Last revision: Nov 23 1994 - tsaue
+C        Last revision: Jan.2006 modified for pure nonrel.case...
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1044,6 +1051,7 @@ C
 C       Small components
 C       ----------------
 C
+CMI     IF (.NOT.TWOCOMP)
         IC = 2
         NFORB(IFRP,IC) = 0
         IP    = MOD(IFRP+IC,NFSYM) + 1
@@ -1090,6 +1098,8 @@ C
         ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
       ENDDO
+
+
       CALL QEXIT('LOWDI1')
       RETURN
 C
@@ -1460,7 +1470,7 @@ C   PAMIOU: LUTMAT
       CALL QENTER('GMOTRA')
 #include "memint.h"
 
-        CALL MEMCHK('GMOTRA 1',WORK,1)
+      CALL MEMCHK('GMOTRA 1',WORK,1)
 
 C
 C     By default we do not partition the space. This may be
@@ -1482,6 +1492,7 @@ CMI   CALL MEMGET('REAL',KVMAT,N2BBASX,WORK,KFREE,LFREE)
 CMI ... extend size because matrix is beeing reused in MAKE_BSS
       CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
       CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRONE)
+
 C
 C     Unrestricted kinetic balance; use Lowdin matrix
 C     ===============================================
@@ -1490,12 +1501,16 @@ C     LV : The unrestricted procedure should be revised so that
 C     the large components are also sorted on boson irreps !!!
 C
       CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
-      IF(.NOT.URKBAL.AND.NTBAS(2).EQ.0) THEN
+
+CMI   IF(.NOT.URKBAL.AND.NTBAS(2).EQ.0) THEN
+      IF(.NOT.URKBAL.AND.NTBAS(2).EQ.0.AND..NOT.TWOCOMP) THEN
         URKBAL = .TRUE.
         WRITE(LUPRI,'(A)') 
-     &   '*** WARNING *** : No small bases. Setting URKBAL = T !'
+     &  '*** WARNING *** : No small bases. Setting URKBAL = T !'
       ENDIF
-      IF(URKBAL) THEN
+
+CMI   IF(URKBAL) THEN
+      IF (URKBAL.OR.TWOCOMP) THEN
         NZT = 1
         DO IFRP = 1,NFSYM
           NESH(IFRP)  = NFORB(IFRP,1)
@@ -1510,7 +1525,6 @@ CMI     ... transformation matrix is the Le part of the adapted Lowdin matrix
 C      ... when linear symmetry is on, it is later adapted for linear symmetry...
         KTMAT = KVMAT
       ELSE
-
 C
 C     Transformation matrix with modified Dirac equation embedded
 C     ===========================================================
@@ -1533,6 +1547,7 @@ C
         I2TMOT(IFRP) = N2TMOTQ
         N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
       ENDDO
+
 C
 C     Construct right index transformed overlap matrix Saomo = Sao T
 C     Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)

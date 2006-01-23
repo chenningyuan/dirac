@@ -393,7 +393,7 @@ C
 C
       CALL QENTER('TWOLOP')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOLOP','*',103)
-C
+
       FIRST = .TRUE.
       DIRAC = RELCAL
       IF (EXPECT .AND. .NOT.NOPV) THEN
@@ -670,6 +670,7 @@ C
                      IF (NCENTC.NE.NCENTD.AND.ICC.EQ.2.AND.ICD.EQ.2)
      &                  GO TO 400
                   ENDIF
+
 C
 C                 *******************************
 C                 ***** Calculate integrals *****
@@ -682,6 +683,7 @@ C
      &                        FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
      &                        ADISTR,DUM,ICEDIF,DINTSKP,
      &                        GABRAO,DMRAO,DMRSO,IREPDM,IDUM,IDUM)
+
 C
                   IF (RETUR) THEN
                      IF (ISHELA .EQ. IPRNTA .AND.
@@ -697,10 +699,15 @@ C
 C     Symmetrize skeleton Fock matrices
 C     =================================
 C
+
       IF (DDFOCK.AND.(.NOT.LONDON)) THEN
          CALL SKLFCK(FMAT,WORK,LWORK,JPRINT,DIRFCK,DDFOCK,EXPECT,PERTUR,
      &               NODV,MAXDER,LONDON,NDMAT,IREPDM,IFCTYP,IATOM)
       END IF
+
+CMI   ... fix 
+      IPRINT = JPRINT
+
 C
 C     <<<<< Print Section - Gradient and Hessian Elements >>>>>
 C
@@ -758,7 +765,7 @@ C      Eg. GRADNN is not defined in DIRAC
       END IF
 C
 C     Print Fock matrices
-C
+CMI ... IPRINT is fixed
       IF ((DIRFCK.OR.SOFOCK) .AND. IPRINT.GT.3) THEN
          CALL HEADER('Fock matrix in TWOINT',-1)
          DO 700 I = 1, NDMAT

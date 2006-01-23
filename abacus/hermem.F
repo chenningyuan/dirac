@@ -563,6 +563,9 @@ C/* Deck Memlop */
       SUBROUTINE MEMLOP(I2TYP,DIRFCK)
 C***********************************************************************
 C
+C  Print out integral types and count the use of the memmory.
+C
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -593,6 +596,7 @@ C
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
       ELSEIF(I2TYP.EQ.1) THEN
+CMI    ... LL-integrals
         IASTRT = 1
         IBSTRT = 1
         ICSTRT = 1
@@ -602,6 +606,7 @@ C
         ICSMAX = NLRGBL
         IDSMAX = NLRGBL
       ELSEIF(I2TYP.EQ.2) THEN
+CMI   ...  SL-integrals
         IASTRT = NLRGBL+1
         IBSTRT = NLRGBL+1
         ICSTRT = 1
@@ -611,6 +616,7 @@ C
         ICSMAX = NLRGBL
         IDSMAX = NLRGBL
       ELSEIF(I2TYP.EQ.3) THEN
+CMI    ...  SS-integrals
         IASTRT = NLRGBL+1
         IBSTRT = NLRGBL+1
         ICSTRT = NLRGBL+1
