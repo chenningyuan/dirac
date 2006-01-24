@@ -780,9 +780,7 @@ C
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-C        LABINT(1) = 'KINENERG'
-CMI      ... this should work for the non-relativistic mode, I hope...
-         LABINT(1) = 'KINENER'
+         LABINT(1) = 'KINENERG'
          INTREP(1) = 0
          ANTI = .FALSE.
       GO TO 200
