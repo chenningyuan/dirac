@@ -4730,7 +4730,7 @@ CMI   nonrelativistic  kinetic energy integrals ...
       IPTYP            = 1
       NPCOMP           = 1
       PFAC(1)          = D1
-      PLABEL(1)        = 'KINENER'
+      PLABEL(1)        = 'KINENERG'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
 CMI    ... use existing ipkinerg  in dcbham.h
