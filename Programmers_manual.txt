@@ -1,4 +1,4 @@
-Programmers manual for DIRAC04
+Programmers manual for DIRAC
 
 Lucas Visscher
 
@@ -202,6 +202,64 @@ source file apply the gdb command 'source gdb_demo' to reload it.
 
 More GNU/gdb know-how is given at the web-page
 http://sources.redhat.com/gdb/current/onlinedocs/gdb.html.
+
+CHAPTER 4: CHECKING IN NEW CODE AND BUGFIXES
+
+New code should always be checked in using the cvs system. The procedure is
+the following :
+
+1. Program whatever you want to add, taking care that it does not conflict
+   with other functionality (unless you intend to replace e.g. a clumsy input
+   routine by a better one). 
+
+2. Create a test example in the directory tests (including a result directory and
+   filter file). Do not commit this yet.
+
+3. Check that your changed code passes the standard testset using the testlast
+   script. If not go back to 1. or 2. (in rare cases the only change required is
+   to change the input, output or filter file in the testset).
+
+4. Run cvs update so that other peoples changes that have been commited while
+   you were working on points 1-3 are included. These may conflict so you need
+   to recompile and go back to step 3. An easy way to do step 4 is by using
+   testlast -cvs=yes.
+
+5.  If eveything works fine you are almost ready to commit. To keep the code
+    and output clean we, however, also like you to check for debug (print)
+    statements that you may have included. This is done by running cvs diff
+    and verifying that this gives only the lines that you intended to change
+    or add. Remove unwanted statements.
+
+6.  Run commit from the directory in which the changed file(s) are located. If
+    the commit commands tell you that there are changed files that you did
+    not expect (since you did not change them) abort and check whether you
+    really did not change them. The problem is that sometimes you inserted a
+    temporary print statement that was removed later on but still gave the
+    file a new date of creation. If so you can fix this by deleting this file
+    and running cvs update once more. If not you continue the commit by
+    editing the comment file, describing what you have changed. Don't forget
+    to start these comments with your initials so that it is easy to see who
+    did what.
+
+7.  You and all other programmers will receive an email containing the text
+    that you entered under 6. 
+
+8.  The updated version will be run automatically on various platforms which
+    may reveal bugs that you did not detect on your system. In that case one
+    of the other authors will probably contact you to see how this problem
+    (that is not your fault) can be resolved. If you messed up doing steps
+    1. to 6. and created a bug you can also expect email, usually from me (LV).
+
+
+The above is not meant to scare you from adding new functionality in DIRAC or
+to commit bugfixes, just to make sure that everybody knows how one can work
+together on a large program system like DIRAC.
+
+Finally : Bugs are inevitable and will pop up when new types of calculations
+are tried. We keep a database of known but not yet fixed bugs at 
+http://radon.chem.vu.nl/cgi-bin/gnatsweb.pl
+Login accounts are available for all authors, so please use this functionality
+to register any bug that you encounter and - even better - have fixed.
 
 
 END OF DOCUMENTATION
