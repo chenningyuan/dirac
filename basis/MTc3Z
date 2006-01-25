@@ -120,6 +120,7 @@ $ D-TYPE FUNCTIONS
 $ F-TYPE FUNCTIONS
     2    0    0
       3.2790000
+      9.8370000
 
 a 8
 $ OXYGEN       (0s,1p,3d,2f) 
@@ -260,7 +261,7 @@ $ F-TYPE FUNCTIONS
 a 18
 $ ARGON        (0s,1p,3d,2f) 
 $ S-TYPE FUNCTIONS
-    0    5    0
+    0    0    0
 $ P-TYPE FUNCTIONS
     1    0    0
    2285.4000000
@@ -338,7 +339,7 @@ $ D-TYPE FUNCTIONS
   2889.17649000
   8667.52947000
 $ F-TYPE FUNCTIONS
-    1    0    0
+    2    0    0
      1.24740000
      3.74220000
 
@@ -372,7 +373,7 @@ $ D-TYPE FUNCTIONS
   3634.47000000
  10903.41000000
 $ F-TYPE FUNCTIONS
-    1    1    0
+    2    0    0
      1.65450000
      4.96350000
 
@@ -392,7 +393,4 @@ $ F-TYPE FUNCTIONS
     2    0    0
      1.98660000
      5.95980000
-
-
-
 
