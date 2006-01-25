@@ -548,7 +548,7 @@ C
 C
       CHARACTER*1 KASYM(3,3),ID3,SPDCAR,CRT
       CHARACTER*72 TTITLE(2)
-      CHARACTER*2 SYMTXT
+      CHARACTER*11 SYMTXT
       CHARACTER*15 CLASS
       DIMENSION IFXYZ(3)
       LOGICAL ANG, ADDSYM
@@ -570,7 +570,6 @@ C
 #endif
 #include "ibtfun.h"
       ZMAT = .FALSE.
-CTROND: Check this
       CALL IZERO(IRKB,MXPRIM)
 C
 C***********************************************************************
@@ -610,8 +609,8 @@ C                 specify axis that are reversed under the operation
 C       THRS    - integral threshold
 C***********************************************************************
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)')
-     &     CRT,NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
+      READ (MLINE(NMLINE),'(BN,A1,I4,I3,A11,A1,D10.2,6I5)')
+     &     CRT,NONTYP,KCHARG,SYMTXT,ID3,THRS
       IF(NONTYP.GT.KATOM) GOTO 5000
 C***********************************************************************
 C Check integral threshold: THRS must be .gt. 0
@@ -634,9 +633,12 @@ C***********************************************************************
 C Check if symmetry is to be added automatically
 C       ADDSYM  - flag for automatic determination of symmetry
 C***********************************************************************
-      ADDSYM = (SYMTXT .EQ. '  ')
+      ADDSYM = (SYMTXT(1:2) .EQ. '  ')
+C     Also automatic symmetry detection for Dinfh or Cinfv
+      ADDSYM = (SYMTXT(1:1) .EQ. 'D') .OR. ADDSYM
+      ADDSYM = (SYMTXT(1:1) .EQ. 'C') .OR. ADDSYM
       IF (.NOT. ADDSYM) THEN
-         READ(SYMTXT,'(I2)') NSYMOP
+         READ(SYMTXT,'(BN,I2,9A1)') NSYMOP,((KASYM(I,J),I=1,3),J=1,3)
       ELSE
          NSYMOP = 0
       END IF
@@ -948,8 +950,6 @@ C
             ADDSTO = .FALSE.
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)')
      &            Q,NONT(I),QEXP
-CTROND
-CTROND    WRITE(6,*) 'basinp:',MLINE(NMLINE)
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
             IF (ADDSTO) NSETS = 2
@@ -1112,7 +1112,6 @@ C
                ELSE
 C                 Assume it is 'LARGE   2    1....'
                   IBSFLAG = 1
-CTROND
 CTROND            WRITE(6,*) 'large:',MLINE(NMLINE)
                   READ (MLINE(NMLINE),'(5X,12I5)')
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
@@ -1932,7 +1931,6 @@ C*****************************************************************************
       NORBL  = IORB
       NPLRG  = IPRIMD
       NPLSH  = IPRIM
-CTROND      NPLRG  = IPRIM
 C*****************************************************************************
 C       Process orbital data for small components
 C*****************************************************************************
@@ -1981,7 +1979,6 @@ C*****************************************************************************
 C       Process fit set data for first (LL or LL+SS) density fitset
 C*****************************************************************************
       IF (ATOMDF) THEN
-CTROND
       ELSE
         KMAXTOT = KMAX  
       ENDIF   
@@ -4731,7 +4728,6 @@ C
 #include "ibtfun.h"
 C
       IF (NMRISS .AND. MAXREP .GT. 0) THEN
-CTROND         IF (IPREAD .GT. 0) THEN
          IF (IPREAD .GE. 0) THEN
             WRITE (LUPRI,'(/)')
             CALL HEADER('Symmetrized nuclear magnetic moments',1)
@@ -4745,7 +4741,6 @@ CTROND         IF (IPREAD .GT. 0) THEN
  120           CONTINUE
  110        CONTINUE
  100     CONTINUE
-CTROND         IF (IPREAD .GT. 0) THEN
          IF (IPREAD .GE. 0) THEN
             WRITE (LUPRI,'(1X,A,8I3)')
      &           ' Number of components in each symmetry: ',
@@ -4754,7 +4749,6 @@ CTROND         IF (IPREAD .GT. 0) THEN
 C
          DO 200 IREP = 0, MAXREP
          IF (NRTREP(IREP) .GT. 0) THEN
-CTROND            IF (IPREAD .GT. 0) THEN
             IF (IPREAD .GE. 0) THEN
               WRITE (LUPRI,'(//2X,A,2X,A3,A1,I2,A1/)')
      &           'Symmetry',REP(IREP),'(',IREP,')'
@@ -4772,7 +4766,6 @@ CTROND            IF (IPREAD .GT. 0) THEN
                         NBASE(NB) = 3*(NUCNUM(ICENT,ISYMOP+1)-1) + ICOOR
                      END IF
  230                 CONTINUE
-CTROND                     IF (IPREAD .GT. 0) THEN
                      IF (IPREAD .GE. 0) THEN
                         WRITE (LUPRI,
      &                  '(2X,A,I3,3X,A,2X,A,3X,I2,7(2X,A,1X,I2))')
@@ -7605,10 +7598,8 @@ C     write(lupri,*) 'NONTYP=',NONTYP
             ISYCNT = ISYCNT + 1
          END DO
          MNCENT = ICENT + 1
-C     write(lupri,*) 'I(1-NONTYP)=',I,' NONT(I)=',NONT(I)
 C   .... prevent segmentation of L shells...
          DO 110 N = 1, NONT(I)
-C     write(lupri,*) 'N(1-NONT(I))=',N
             ICENT = ICENT + 1
             NDEG  = NUCDEG(ICENT)
             KBCH  = IBLOCK
