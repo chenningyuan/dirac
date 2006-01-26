@@ -1,0 +1,454 @@
+$Basis = MTc5Z
+
+$ Elements supported
+$ H He B C N O F Ne Al Si P S Cl Ar Ca Ga Ge As Se Br Kr
+$
+$  REFERENCE
+$ Martin-Taylor core correlation functions, to be used together with
+$ UNCONTRACTED (aug-)cc-pV5Z basis sets. These are of (1p3d2f1g) type,
+$ and are created by multiplying the largest exponent present in each
+$ angular momentum by 3. For more information see:
+$ J.M.L. Martin and P.R. Taylor, Chem Phys Lett 225 (1994) 473
+$ J.M.L. Martin, Chem Phys Lett 242 (1995) 343
+$
+
+a 1
+$ HYDROGEN     (8s,4p,3d,2f,1g) -> [5s,4p,3d,2f,1g]              
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+     13.5480000
+$ D-TYPE FUNCTIONS
+    3    0    0
+      8.8500000
+     26.5500000
+     79.6500000
+$ F-TYPE FUNCTIONS
+    2    0    0
+      7.5180000
+     22.5540000
+$ G-TYPE FUNCTIONS
+    1    0    0
+      7.0740000
+
+a 2
+$ HELIUM       (8s,4p,3d,2f,1g) -> [5s,4p,3d,2f,1g]              
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+     30.4590000
+$ D-TYPE FUNCTIONS
+    3    0    0
+     22.9980000
+     68.9940000
+    206.9820000
+$ F-TYPE FUNCTIONS
+    2    0    0
+     16.2330000
+     48.6990000
+$ G-TYPE FUNCTIONS
+    1    0    0
+     10.2900000
+
+a 3
+$ LITHIUM      (14s,7p,4d,3f,2g,1h) -> [6s,5p,4d,3f,2g,1h]       
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+     33.7500000
+$ D-TYPE FUNCTIONS
+    3    0    0
+      1.6500000
+      4.9500000
+     14.8500000
+$ F-TYPE FUNCTIONS
+    2    0    0
+      1.0500000
+      3.1500000
+$ G-TYPE FUNCTIONS
+    1    0    0
+      0.9600000
+
+a 5
+$ BORON        (14s,8p,4d,3f,2g,1h) -> [6s,5p,4d,3f,2g,1h]       
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+    199.3200000
+$ D-TYPE FUNCTIONS
+    3    0    0
+      6.0300000
+     18.0900000
+     54.2700000
+$ F-TYPE FUNCTIONS
+    2    0    0
+      3.6450000
+     10.9350000
+$ G-TYPE FUNCTIONS
+    1    0    0
+      3.3720000
+
+a 6
+$ CARBON       (14s,8p,4d,3f,2g,1h) -> [6s,5p,4d,3f,2g,1h]       
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+    305.4000000
+$ D-TYPE FUNCTIONS
+    3    0    0
+      9.4020000
+     28.2060000
+     84.6180000
+$ F-TYPE FUNCTIONS
+    2    0    0
+      6.0180000
+     18.0540000
+$ G-TYPE FUNCTIONS
+    1    0    0
+      5.2590000
+
+a 7
+$ NITROGEN     (14s,8p,4d,3f,2g,1h) -> [6s,5p,4d,3f,2g,1h]       
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+    441.0000000
+$ D-TYPE FUNCTIONS
+    3    0    0
+     13.9410000
+     41.8230000
+    125.4690000
+$ F-TYPE FUNCTIONS
+    2    0    0
+      8.8260000
+     26.4780000
+$ G-TYPE FUNCTIONS
+    1    0    0
+      7.5330000
+
+a 8
+$ OXYGEN       (14s,8p,4d,3f,2g,1h) -> [6s,5p,4d,3f,2g,1h]       
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+    586.5000000
+$ D-TYPE FUNCTIONS
+    3    0    0
+     17.6370000
+     52.9110000
+    158.7330000
+$ F-TYPE FUNCTIONS
+    2    0    0
+     12.0480000
+     36.1440000
+$ G-TYPE FUNCTIONS
+    1    0    0
+     10.0500000
+
+a 9
+$ FLUORINE     (14s,8p,4d,3f,2g,1h) -> [6s,5p,4d,3f,2g,1h]       
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+    725.7000000
+$ D-TYPE FUNCTIONS
+    3    0    0
+     23.2800000
+     69.8400000
+    209.5200000
+$ F-TYPE FUNCTIONS
+    2    0    0
+     16.1940000
+     48.5820000
+$ G-TYPE FUNCTIONS
+    1    0    0
+     13.0140000
+
+a 10
+$ NEON         (14s,8p,4d,3f,2g,1h) -> [6s,5p,4d,3f,2g,1h]       
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+    897.3000000
+$ D-TYPE FUNCTIONS
+    3    0    0
+     29.5110000
+     88.5330000
+    265.5990000
+$ F-TYPE FUNCTIONS
+    2    0    0
+     21.2700000
+     63.8100000
+$ G-TYPE FUNCTIONS
+    1    0    0
+     16.3800000
+
+a 13
+$ ALUMINUM     (20s,12p,4d,3f,2g,1h) -> [7s,6p,4d,3f,2g,1h]      
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+   4383.0000000
+$ D-TYPE FUNCTIONS
+    3    0    0
+      3.9510000
+     11.8530000
+     35.5590000
+$ F-TYPE FUNCTIONS
+    2    0    0
+      1.5390000
+      4.6170000
+$ G-TYPE FUNCTIONS
+    1    0    0
+      1.6290000
+
+a 14
+$ SILICON      (20s,12p,4d,3f,2g,1h) -> [7s,6p,4d,3f,2g,1h]      
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+   5340.0000000
+$ D-TYPE FUNCTIONS
+    3    0    0
+      6.2460000
+     18.7380000
+     56.2140000
+$ F-TYPE FUNCTIONS
+    2    0    0
+      2.0640000
+      6.1920000
+$ G-TYPE FUNCTIONS
+    1    0    0
+      2.1150000
+
+a 15
+$ PHOSPHORUS   (20s,12p,4d,3f,2g,1h) -> [7s,6p,4d,3f,2g,1h]      
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+   6030.0000000
+$ D-TYPE FUNCTIONS
+    3    0    0
+      7.9680000
+     23.9040000
+     71.7120000
+$ F-TYPE FUNCTIONS
+    2    0    0
+      2.7690000
+      8.3070000
+$ G-TYPE FUNCTIONS
+    1    0    0
+      2.7090000
+
+a 16
+$ SULFUR       (20s,12p,4d,3f,2g,1h) -> [7s,6p,4d,3f,2g,1h]      
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+   6600.0000000
+$ D-TYPE FUNCTIONS
+    3    0    0
+      9.6090000
+     28.8270000
+     86.4810000
+$ F-TYPE FUNCTIONS
+    2    0    0
+      3.2880000
+      9.8640000
+$ G-TYPE FUNCTIONS
+    1    0    0
+      3.2130000
+
+a 17
+$ CHLORINE     (20s,12p,4d,3f,2g,1h) -> [7s,6p,4d,3f,2g,1h]      
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+   7644.0000000
+$ D-TYPE FUNCTIONS
+    3    0    0
+     11.3430000
+     34.0290000
+    102.0870000
+$ F-TYPE FUNCTIONS
+    2    0    0
+      4.0350000
+     12.1050000
+$ G-TYPE FUNCTIONS
+    1    0    0
+      3.9060000
+
+a 18
+$ ARGON        (20s,12p,4d,3f,2g,1h) -> [7s,6p,4d,3f,2g,1h]      
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+   8781.0000000
+$ D-TYPE FUNCTIONS
+    3    0    0
+     14.3280000
+     42.9840000
+    128.9520000
+$ F-TYPE FUNCTIONS
+    2    0    0
+      5.0040000
+     15.0120000
+$ G-TYPE FUNCTIONS
+    1    0    0
+      4.6860000
+
+a 20
+$ CALCIUM      (26s,18p,8d,3f,2g,1h) -> [8s,7p,5d,3f,2g,1h]                     
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+  1219059.00000
+$ D-TYPE FUNCTIONS
+    3    0    0
+   118.68840000
+   356.06520000
+  1068.19560000
+$ F-TYPE FUNCTIONS
+    2    0    0
+     2.32230000
+     6.96690000
+$ G-TYPE FUNCTIONS
+    1    0    0
+     0.90690000
+
+a 31
+$ GALLIUM      (26s,17p,13d,3f,2g,1h) -> [8s,7p,5d,3f,2g,1h]                    
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+    96456.57000
+$ D-TYPE FUNCTIONS
+    3    0    0
+  3121.51380000
+  9364.54140000
+ 28093.62420000
+$ F-TYPE FUNCTIONS
+    2    0    0
+     1.78800000
+     5.36400000
+$ G-TYPE FUNCTIONS
+    1    0    0
+     1.84380000
+
+a 32
+$ GERMANIUM    (26s,17p,13d,3f,2g,1h) -> [8s,7p,5d,3f,2g,1h]                    
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+    96944.91000
+$ D-TYPE FUNCTIONS
+    3    0    0
+  3680.39460000
+ 11041.18380000
+ 33123.55140000
+$ F-TYPE FUNCTIONS
+    2    0    0
+     2.01270000
+     6.03810000
+$ G-TYPE FUNCTIONS
+    1    0    0
+     2.11020000
+
+a 33
+$ ARSENIC      (26s,17p,13d,3f,2g,1h) -> [8s,7p,5d,3f,2g,1h]                    
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+   102498.48300
+$ D-TYPE FUNCTIONS
+    3    0    0
+  4273.35180000
+ 12820.05540000
+ 38460.16620000
+$ F-TYPE FUNCTIONS
+    2    0    0
+     2.27970000
+     6.83910000
+$ G-TYPE FUNCTIONS
+    1    0    0
+     2.42760000
+
+a 34
+$ SELENIUM     (26s,17p,13d,3f,2g,1h) -> [8s,7p,5d,3f,2g,1h]                    
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+   109534.01100
+$ D-TYPE FUNCTIONS
+    3    0    0
+  4905.19890000
+ 14715.59670000
+ 44146.79010000
+$ F-TYPE FUNCTIONS
+    2    0    0
+     2.53260000
+     7.59780000
+$ G-TYPE FUNCTIONS
+    1    0    0
+     2.59770000
+
+a 35
+$ BROMINE      (26s,17p,13d,3f,2g,1h) -> [8s,7p,5d,3f,2g,1h]                    
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+   118174.59000
+$ D-TYPE FUNCTIONS
+    3    0    0
+  5551.90620000
+ 16655.71860000
+ 49967.15580000
+$ F-TYPE FUNCTIONS
+    2    0    0
+     2.88810000
+     8.66430000
+$ G-TYPE FUNCTIONS
+    1    0    0
+     2.93040000
+
+a 36
+$ KRYPTON      (26s,17p,13d,3f,2g,1h) -> [8s,7p,5d,3f,2g,1h]                    
+$ S-TYPE FUNCTIONS
+    0    0    0
+$ P-TYPE FUNCTIONS
+    1    0    0
+   128979.16800
+$ D-TYPE FUNCTIONS
+    3    0    0
+  6202.30800000
+ 18606.92400000
+ 55820.77200000
+$ F-TYPE FUNCTIONS
+    2    0    0
+     3.28200000
+     9.84600000
+$ G-TYPE FUNCTIONS
+    1    0    0
+     3.31200000
+
