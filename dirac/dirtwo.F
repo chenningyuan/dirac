@@ -3530,7 +3530,6 @@ C
 C     Restore IFCTYP to the old value (even though we'll not need
 C     it anymore)
       IF (I2TYP.EQ.4) THEN
-         factor = 1.d0/factor
          DO IFMAT = 1, NFMAT
             IFCTYP(1,IFMAT)=10*(IFCTYP(1,IFMAT)/10)+IY
             IFCTYP(2,IFMAT)=IFCTYP(2,IFMAT)-6
