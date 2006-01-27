@@ -3433,7 +3433,7 @@ C
       MAXDIF = 0
       JATOM  = 0
       KPOS   = 1
-      THRBUF = THRS
+      THRSBUF = THRS
       IF (PARCAL) THEN
          CALL SCRSTA('MPIHeader',DUM,DUM)
       ELSE
