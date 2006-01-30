@@ -378,8 +378,13 @@ C
      +   ' to : ',CVAL
       ENDIF
     
-      IF (TWOCOMP) 
-     &  WRITE(LUPRI,'(1X,A)') '* Employ pure two-component mode'
+      IF (TWOCOMP)  THEN
+        WRITE(LUPRI,'(1X,A)') '* Employ pure two-component mode'
+        INTGEN = 1
+        ISLDIR = 0 
+        ISSDIR = 0 
+        IGTDIR = 0 
+      ENDIF
 
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
       IF(IDFLAG.GT.0) THEN
@@ -4205,6 +4210,12 @@ CMI   IF(LEVYLE.OR.BSS) MC = 1
 C
 C     Set integral flags
 C
+      IF (TWOCOMP) THEN
+         ISLINT = 0
+         ISSINT = 0
+         IGTINT = 0
+      ENDIF
+
       INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
 C
 C     Write info about the modelling of SS interactions
@@ -5203,7 +5214,8 @@ C     .. or are computed exactly
       SS_COR_NEEDED = SS_COR_NEEDED.AND.(IBTAND(INTGEN/4,1).EQ.0)
 C     Check for possible ways of correcting..
       SS_COR = DOLVC.OR.DOTSC
-      IF (SS_COR_NEEDED.AND..NOT.SS_COR) THEN
+CMI   IF (SS_COR_NEEDED.AND..NOT.SS_COR) THEN
+      IF (SS_COR_NEEDED.AND..NOT.SS_COR.AND..NOT.TWOCOMP) THEN
          DOLVC = .TRUE.
          WRITE (LUPRI,'(A/A)') 
      &     " * WARNING: User asked for neglect of SS-integrals "//
