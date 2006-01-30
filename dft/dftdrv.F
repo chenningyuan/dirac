@@ -62,7 +62,8 @@ C
 #include "dfterg.h"
 #include "dgroup.h"
 #include "functionals.h"
-      LOGICAL DOERG, DOGRD, DOLND, DOATR, TOBE
+      LOGICAL DOERG, DOGRD, DOLND, DOATR
+      LOGICAL FILEISTHERE, FILEISOPENED
       DIMENSION DMAT(N2BBASX,NZ,*),EXCMAT(N2BBASX,NZ,*),
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &          DTRMAT(N2BBASX,NZ,*),WORK(LWORK)
@@ -143,19 +144,28 @@ C
 C       read coefficients and give info
 C       ===============================
 C
-        INQUIRE(FILE = 'DFCOEF',EXIST = TOBE)
-        IF(.NOT.TOBE) THEN
+        INQUIRE(FILE = 'DFCOEF',EXIST = FILEISTHERE)
+        IF(.NOT.FILEISTHERE) THEN
           WRITE(LUPRI,'(/A)') 'SAOP: Coefficient file DFCOEF not found!'
           CALL QUIT('SAOP: Coefficient file DFCOEF not found!')
         ENDIF
 C
-        LUSAOP = 42
-        CALL OPNFIL(LUSAOP,'DFCOEF','UNKNOWN','SAOP')
+        INQUIRE(FILE = 'DFCOEF',OPENED = FILEISOPENED)
+        IF(FILEISOPENED) THEN
+          INQUIRE(FILE = 'DFCOEF',NUMBER = LUSAOP)
+          REWIND LUSAOP
+        ELSE
+          LUSAOP = 42
+          CALL OPNFIL(LUSAOP,'DFCOEF','UNKNOWN','SAOP')
+        ENDIF
+C
         CALL DZERO(WORK(KSAOPCMO),N2BBASXQ)
         CALL DZERO(WORK(KEIG),NORBT)
         CALL REACMO(LUSAOP,'DFCOEF',WORK(KSAOPCMO),WORK(KEIG),TEMP,
      &              TOTERG,6,WORK,KFREE,LFREE)
-        CLOSE(LUSAOP,STATUS = 'KEEP')
+        IF(.NOT.FILEISOPENED) THEN
+          CLOSE(LUSAOP,STATUS = 'KEEP')
+        ENDIF
 C
 C
 C       calculate energy differences
