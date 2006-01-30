@@ -913,7 +913,7 @@ C
      *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
      *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
-      COMMON /CLOCK/ CPU,CLK
+      COMMON /CLOCKX/ CPU,CLK
 C
       POT=0.D0
       POTN=0.D0
@@ -1820,7 +1820,7 @@ C     MAIN PROGRAM ONE CONFIGURATION LCAO ATOMIC SCF CALCULATION
      *S100(2),T100(2),U100(2),ZADD(MX100,4),
      *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
-      COMMON /CLOCK/ CPU,CLK
+      COMMON /CLOCKX/ CPU,CLK
 
       DIMENSION ZSAV(4),ESAV(4),EOS(3)
       external ALARM
@@ -4049,7 +4049,7 @@ C
      *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
      *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
-      COMMON /CLOCK/ CPU,CLK
+      COMMON /CLOCKX/ CPU,CLK
 C
       IF (NITSCF.EQ.1) THEN
       IF (IPARAM.EQ.0) THEN
@@ -4201,7 +4201,7 @@ C
 
       DIMENSION C(MXBF,1)
       CHARACTER*8 TEXT
-      COMMON /CLOCK/ CPU,CLK
+      COMMON /CLOCKX/ CPU,CLK
       WRITE (6,*) TEXT
       NSTEP2=0
       DO I=1,NSYM
@@ -4763,7 +4763,7 @@ C
      *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
      *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
-      COMMON /CLOCK/ CPU,CLK
+      COMMON /CLOCKX/ CPU,CLK
 C
 C     PROGRAM FOR EXTRAPOLATION OF ORBITAL EXPONENTS
 C     ******************************************************************
