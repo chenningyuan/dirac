@@ -3564,11 +3564,16 @@ C   ... accumulate sum of differences
        ENDIF
 
       IF (DABS(DSX).GE.THRS) THEN
+        WRITE(LUPRI,'(4X,A,/,A,A,A,1X,D12.5)')
+     &'*** GETDHB: The average symmetry of the final dH/dB',
+     &' MO-property matrix ',PRPNAM(INDXPR),
+     &' with LAO is: ',DSX
+
         WRITE(LUPRI,'(A)')
      &'GETDHB:: The total propery gradient'
-     &//'matrix dH/dB for LAO-PDBS is not symmetric !'
-        CALL QUIT(
-     &'GETDHB: The total MO matrix in not symmetric!')
+     &//'matrix dH/dB for LAO-PDBS is not (fully?) symmetric !'
+CMI     CALL QUIT(
+CMI  &'GETDHB: The total MO matrix in not symmetric!')
       ENDIF
 
       CALL MEMREL('GETDHB',WORK,1,KFRSAV,KFREE,LFREE)
