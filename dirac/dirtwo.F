@@ -3849,6 +3849,7 @@ C
      &        IZ,'(',QUNIT(IQ),')',
      &        IFCTYP(IZ,I),HTYP(IH),IC,IE/2,REP(IREPDM(IZ,I))
           ENDDO
+          CALL FLSHFO(LUPRI)
         ENDIF
       ENDDO
 C
