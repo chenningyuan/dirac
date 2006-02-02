@@ -53,6 +53,10 @@ C
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMATBF    ,N2BBASXQ,
      &            WORK,KFREE,LFREE)
+      IF(.NOT.PLOTSKIPEP) THEN
+        CALL MEMGET('REAL',KTMATBF  ,N2BBASXQ,
+     &              WORK,KFREE,LFREE)
+      ENDIF
       CALL MEMGET('REAL',KDMATORB   ,N2ORBXQ,
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KORBSTRING1,NISH(1),
@@ -159,15 +163,21 @@ C
 C     generate density matrix
 C     =======================
 C
-      CALL GENDEN(WORK(KDMATBF),WORK(KCMO),1,IPLOT)
-C
-C     blocked
-C     CALL PERDMAT(WORK(KCMO),WORK(KDMATBF),WORK(KFREE),LFREE)
-C
-      CALL OCCUPYDMATORB(WORK(KDMATORB),
-     &                   WORK(KORBSTRING1),WORK(KORBSTRING2))
-      CALL DMATORB2BF(WORK(KCMO),WORK(KDMATBF),WORK(KDMATORB),
-     &                WORK(KFREE),LFREE)
+C     CALL GENDEN(WORK(KDMATBF),WORK(KCMO),1,IPLOT)
+      IF(READXVECFILE) THEN
+        IF(.NOT.PLOTSKIPEP) THEN
+          CALL PERDMAT(WORK(KCMO),WORK(KDMATBF),WORK(KTMATBF),
+     &                 WORK(KFREE),LFREE)
+        ELSE
+          CALL PERDMAT(WORK(KCMO),WORK(KDMATBF),DUMMY,
+     &                 WORK(KFREE),LFREE)
+        ENDIF
+      ELSE
+        CALL OCCUPYDMATORB(WORK(KDMATORB),
+     &                     WORK(KORBSTRING1),WORK(KORBSTRING2))
+        CALL DMATORB2BF(WORK(KCMO),WORK(KDMATBF),WORK(KDMATORB),
+     &                  WORK(KFREE),LFREE)
+      ENDIF
       CALL DSCAL(N2BBASXQ,D2,WORK(KDMATBF),1)
 C
 C
@@ -596,7 +606,8 @@ C           NCUBE(3) = 1
 C           DO KCUBE = 1,NCUBE(3)
 C             PX = -6.0D0+(ICUBE-1)*(12.0D0/(NCUBE(1)-1))
 C             PY = -6.0D0+(JCUBE-1)*(12.0D0/(NCUBE(2)-1))
-C             PZ = 0.2D0
+C             PZ = 0.0D0
+C             PZ = 1.0D0
 C       xy - plane }
 C     { yz - plane
 C       NCUBE(1) = 1
@@ -866,7 +877,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck perdmat */
-      SUBROUTINE PERDMAT(CMO,DMATBF,WORK,LWORK)
+      SUBROUTINE PERDMAT(CMO,DMATBF,TMATBF,WORK,LWORK)
 C  .....................................................................
 C  .  description:                                                     .
 C  .  fill density matrix                                              .
@@ -893,9 +904,9 @@ C
 C
       LOGICAL TOBE
 C
-      DIMENSION CMO(*),DMATBF(*),WORK(LWORK)
+      DIMENSION CMO(*),DMATBF(*),TMATBF(*),WORK(LWORK)
 C
-      CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
+      CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
 C
 C
       CALL QENTER('PERDMAT')
@@ -906,61 +917,109 @@ C
 C     init
 C     ====
 C
-      NIA    = NESH(1)+NESH(2)
-      NI     = NISH(1)+NISH(2)
-      NP     = NORBT-NIA
-      NA     = NIA-NI
-      NBDIM  = NI*NA
       JSYMOP = 1
       JOPSY  = 1
 C
 C
-C     memory allocation
-C     =================
-C
-      CALL MEMGET('REAL',KBVEC     ,NBDIM*NZ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBMAT     ,N2ORBXQ,
-     &            WORK,KFREE,LFREE)
-C
-C
-C     check if solution vector file is there
-C     ======================================
+C     check if solution vector file is there and open it
+C     ==================================================
 C
       INQUIRE(FILE = 'XVECFILE',EXIST = TOBE)
       IF(.NOT.TOBE) THEN
 C       panic
       ENDIF
-C
-C
-C     open solution vector file
-C     =========================
-C
       LUXVEC = 17
       OPEN(LUXVEC,FILE = 'XVECFILE',STATUS = 'OLD',
      &            ACCESS = 'SEQUENTIAL',FORM = 'UNFORMATTED')
 C
 C
-C     read vectors
+C     scan through
 C     ============
 C
+C     NRECORDS = 0
+C1    CONTINUE
+C     READ(LUXVEC) LAB1
+C     READ(LUXVEC)
+C     IF(.NOT.PLOTSKIPEP) THEN
+C       READ(LUXVEC)
+C       READ(LUXVEC)
+C     ENDIF
+C     IF(LAB1.EQ.'END_OF_THIS_FILE') THEN
+C       GOTO 2
+C     ENDIF
+C     NRECORDS = NRECORDS+1
+C     GOTO 1
+C2    CONTINUE
+C     IF(NXVEC.GT.NRECORDS) WRITE(0,*) 'NXVEC.GT.NRECORDS'
+C
+C
+C     get NBDIMs of record NXVEC
+C     =========================
+C
+      NBDIMEE = 0
+      NBDIMEP = 0
       REWIND LUXVEC
-C
       DO I = 1,NXVEC
-C
         READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
      &               JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
      &               DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
-C
-        CALL DZERO(WORK(KBVEC),NBDIM*NZ)
-        CALL READT(LUXVEC,LEN,WORK(KBVEC))
-C
-        IREP = JSYMOP1-1
-C
+        NBDIMEE = LEN/NZ
+        READ(LUXVEC)
+        IF(.NOT.PLOTSKIPEP) THEN
+          READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
+     &                 JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
+     &                 DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
+          NBDIMEP = LEN/NZ
+          READ(LUXVEC)
+        ENDIF
       ENDDO
-C     WRITE(LUPRI,*) 'inside PERDMAT: BVEC'
-      CALL PRQMAT(WORK(KBVEC),NBDIM,1,NBDIM,1,
-     &            NZ,IPQTOQ(1,IREP),LUPRI)
+C
+C
+C     memory allocation
+C     =================
+C
+      CALL MEMGET('REAL',KBVECEE     ,NBDIMEE*NZ,
+     &            WORK,KFREE,LFREE)
+      IF(.NOT.PLOTSKIPEP) THEN
+        CALL MEMGET('REAL',KBVECEP   ,NBDIMEP*NZ,
+     &              WORK,KFREE,LFREE)
+      ENDIF
+      CALL MEMGET('REAL',KBMAT       ,N2ORBXQ,
+     &            WORK,KFREE,LFREE)
+C
+C
+C     now read the vector
+C     ===================
+C
+      REWIND LUXVEC
+      DO I = 1,NXVEC
+        READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
+     &               JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
+     &               DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
+        IF(I.EQ.NXVEC) THEN
+          CALL DZERO(WORK(KBVECEE),NBDIMEE*NZ)
+          CALL READT(LUXVEC,NBDIMEE*NZ,WORK(KBVECEE))
+C         WRITE(LUPRI,*) 'inside PERDMAT: BVECEE'
+C         CALL PRQMAT(WORK(KBVECEE),NBDIMEE,1,NBDIMEE,1,
+C    &                NZ,IPQTOQ(1,0),LUPRI)
+        ELSE
+          READ(LUXVEC)
+        ENDIF
+        IF(.NOT.PLOTSKIPEP) THEN
+          READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
+     &                 JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
+     &                 DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
+          IF(I.EQ.NXVEC) THEN
+            CALL DZERO(WORK(KBVECEP),NBDIMEP*NZ)
+            CALL READT(LUXVEC,NBDIMEP*NZ,WORK(KBVECEP))
+C           WRITE(LUPRI,*) 'inside PERDMAT: BVECEP'
+C           CALL PRQMAT(WORK(KBVECEP),NBDIMEP,1,NBDIMEP,1,
+C    &                  NZ,IPQTOQ(1,0),LUPRI)
+          ELSE
+            READ(LUXVEC)
+          ENDIF
+        ENDIF
+      ENDDO
 C
 C
 C     close solution vector file
@@ -972,54 +1031,93 @@ C
 C     scatter vector
 C     ==============
 C
+      NE     = NESH(1)+NESH(2)
+      NP     = NORBT-NE
+      NEI    = NISH(1)+NISH(2)
+      NEA    = NE-NEI
+C
       CALL DZERO(WORK(KBMAT),N2ORBXQ)
+      JOFF = 0
       DO IZ = 1,NZ
-        DO II = 1,NI
-          DO IA = 1,NA
-            IOFF = 0
-            IOFF = IOFF+NORBT*NORBT*(IZ-1)
-            IOFF = IOFF+NORBT*NP
-            IOFF = IOFF+NORBT*(II-1)
-            IOFF = IOFF+NP
-            IOFF = IOFF+NI
-            IOFF = IOFF+IA
-            JOFF = 0
-            JOFF = JOFF+NBDIM*(IZ-1)
-            JOFF = JOFF+(II-1)*NA+IA
-            WORK(KBMAT+IOFF) = WORK(KBVEC+JOFF)
+        IOFF = 0
+        IOFF = IOFF+NORBT*NORBT*(IZ-1)
+        IOFF = IOFF+NORBT*NP
+        DO II = 1,NEI
+          IOFF = IOFF+NP+NEI
+          DO IA = 1,NEA
+            WORK(KBMAT+IOFF) = WORK(KBVECEE+JOFF)
+            IOFF = IOFF+1
+            JOFF = JOFF+1
           ENDDO
         ENDDO
       ENDDO
+C
+      IF(PLOTSKIPEE) THEN
+        CALL DZERO(WORK(KBMAT),N2ORBXQ)
+      ENDIF
+C
+      IF(.NOT.PLOTSKIPEP) THEN
+        JOFF = 0
+        DO IZ = 1,NZ
+          IOFF = 0
+          IOFF = IOFF+NORBT*NORBT*(IZ-1)
+          IOFF = IOFF+NORBT*NP
+          DO II = 1,NEI
+            DO IA = 1,NP
+              WORK(KBMAT+IOFF) = WORK(KBVECEP+JOFF)
+              IOFF = IOFF+1
+              JOFF = JOFF+1
+            ENDDO
+            IOFF = IOFF+NE
+          ENDDO
+        ENDDO
+      ENDIF
 C
 C
 C     symmetrize
 C     ==========
 C
-      DO IZ = 1,NZ
-        IOFF = NORBT*NORBT*(IZ-1)
-        CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
-      ENDDO
 C     WRITE(LUPRI,*) 'inside PERDMAT: BMAT'
 C     CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
-C    &            NZ,IPQTOQ(1,IREP),LUPRI)
+C    &            NZ,IPQTOQ(1,0),LUPRI)
+      DO IZ = 1,NZ
+        IOFF = NORBT*NORBT*(IZ-1)
+C       CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF))
+        CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
+      ENDDO
+C     WRITE(LUPRI,*) 'inside PERDMAT: (anti)symmetric BMAT'
+C     CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
+C    &            NZ,IPQTOQ(1,0),LUPRI)
 C
 C
 C     get density matrix
 C     ==================
 C
-C     CALL DMOLI3(0*1+0*2,1,DMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
-      CALL DMOLI3(0*1+0*2,-1,DMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
-C
-C     CALL MATRIXIO(DMATBF,NTBAS(0),NTBAS(0),NZ,.FALSE.,'dmat')
+      IH   = -1
+      ITYP = 0*1+0*2
+      CALL DZERO(DMATBF,N2BBASXQ)
+      CALL DMOLI3(ITYP,IH,DMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
 C     WRITE(LUPRI,*) 'inside PERDMAT: DMATBF'
 C     CALL PRQMAT(DMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-C    &            NZ,IPQTOQ(1,IREP),LUPRI)
+C    &            NZ,IPQTOQ(1,0),LUPRI)
+      IF(.NOT.PLOTSKIPEP) THEN
+        ITYP = 1*1+0*2
+        CALL DZERO(TMATBF,N2BBASXQ)
+        CALL DMOLI3(ITYP,IH,TMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
+C       WRITE(LUPRI,*) 'inside PERDMAT: TMATBF'
+C       CALL PRQMAT(TMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+C    &              NZ,IPQTOQ(1,0),LUPRI)
+        CALL DAXPY(N2BBASXQ,D1,TMATBF,1,DMATBF,1)
+      ENDIF
+C     WRITE(LUPRI,*) 'inside PERDMAT: final DMATBF'
+C     CALL PRQMAT(DMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+C    &            NZ,IPQTOQ(1,0),LUPRI)
 C
 C
 C     release memory
 C     ==============
 C
-      CALL MEMREL('PERDMAT',WORK,KBVEC,KBVEC,KFREE,LFREE)
+      CALL MEMREL('PERDMAT',WORK,KBVECEE,KBVECEE,KFREE,LFREE)
       CALL QEXIT('PERDMAT')
 C
 C

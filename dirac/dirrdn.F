@@ -5938,7 +5938,7 @@ C
 #include "priunit.h"
 #include "dummy.h"
 C
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 20)
 C
 #include "dcbgen.h"
 #include "dcbana.h"
@@ -5953,7 +5953,8 @@ C
       DATA TABLE /'.PRINT ','.REAXVC','.1D    ','.2D    ',
      &            '.3D    ','.DENSIT','.SPIN  ','.CURREN',
      &            '.ELF   ','.D1DSTE','.D3DSTA','.D3DNOR',
-     &            '.CUBE  ','.LAPLAC','.NXVEC ','.STRING'/
+     &            '.CUBE  ','.LAPLAC','.NXVEC ','.STRING',
+     &            '.SKIPEP','.SKIPEE','.XXXXXX','.XXXXXX'/
       DATA SET /.FALSE./
 C
       IF(SET) THEN
@@ -5979,6 +5980,8 @@ C
       PLOTCURRENTDENSITY = .FALSE.
       PLOTELF            = .FALSE.
       PLOTLAPLACIAN      = .FALSE.
+      PLOTSKIPEP         = .FALSE.
+      PLOTSKIPEE         = .FALSE.
 C
       IPLOT              = 0
       NCUBE(1)           = 80
@@ -6007,7 +6010,7 @@ C
         ELSEIF(PROMPT.EQ.'.') THEN
           DO 200 I = 1,NTABLE
             IF(TABLE(I).EQ.WORD) THEN
-              GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), I
             ENDIF
   200     CONTINUE
           IF(WORD.EQ.'.OPTION') THEN
@@ -6067,6 +6070,16 @@ C
           READ(LUCMD,'(A)') ORBSTRING1
           IF(NFSYM.GT.1) READ(LUCMD,'(A)') ORBSTRING2
           USEORBSTRING = .TRUE.
+          GOTO 100
+   17     CONTINUE
+          PLOTSKIPEP = .TRUE.
+          GOTO 100
+   18     CONTINUE
+          PLOTSKIPEE = .TRUE.
+          GOTO 100
+   19     CONTINUE
+          GOTO 100
+   20     CONTINUE
           GOTO 100
         ELSEIF(PROMPT.EQ.'*') THEN
           GOTO 300
