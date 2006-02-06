@@ -57,33 +57,14 @@ We write the density as
 
 
 \begin_inset Formula \[
-\rho(\mathbf{r},\boldsymbol{\kappa})=\rho_{0}+\widetilde{\Omega}_{ii}+\frac{1}{2}\widetilde{\widetilde{\Omega}}_{ii}+\ldots\]
+\rho(\mathbf{r},\boldsymbol{\kappa})=\sum_{n=0}^{\infty}\rho^{(n)},\quad\rho^{(n)}=\frac{1}{n!}\Omega_{ii}^{\{ n\}};\quad\Omega_{pq}^{\{ n\}}=\kappa_{pt}\Omega_{tq}^{\{ n-1\}}-\Omega_{pt}^{\{ n-1\}}\kappa_{tq}\]
 
 \end_inset 
 
-.
- The zeroth order term is
-\begin_inset Formula \[
-\rho(\mathbf{r},\mathbf{0})=\left\langle 0\left|a_{p}^{\dagger}a_{q}\right|0\right\rangle \Omega_{pq}(\mathbf{r})=\Omega_{ii}.\]
-
-\end_inset 
-
-The first order term is
-\begin_inset Formula \[
-\left\langle 0\left|\left[\widehat{\kappa},\widehat{\rho}\right]\right|0\right\rangle =\left\langle 0\left|\widetilde{\rho}\right|0\right\rangle =\widetilde{\Omega}_{ii};\quad\widetilde{\rho}=\widetilde{\Omega}_{pq}a_{p}^{\dagger}a_{q};\quad\widetilde{\Omega}_{pq}=\kappa_{pt}\Omega_{tq}-\Omega_{pt}\kappa_{tq}\]
-
-\end_inset 
-
- from which we obtain
-\begin_inset Formula \[
-\D\left.\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\right|_{\boldsymbol{\kappa}=0}=-\D\left.\frac{\partial\rho}{\partial\kappa_{ia}}\right|_{\boldsymbol{\kappa}=0}=-\Omega_{ai}.\]
-
-\end_inset 
-
- From the second order term we obtain
+ We will need the following derivatives
 \begin_inset Formula \begin{eqnarray*}
-A_{ai,bj} & = & \D\frac{\partial}{\partial\kappa_{bj}}\left[-\widetilde{\Omega}_{ai}\right]=-\left[\delta_{ab}\Omega_{ji}-\delta_{ji}\Omega_{ab}\right]\\
-B_{ai,bj} & = & \D\frac{\partial}{\partial\kappa_{jb}}\left[-\widetilde{\Omega}_{ai}\right]=0\end{eqnarray*}
+\left.\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\right|_{\boldsymbol{\kappa}=\mathbf{0}} & = & -\left.\frac{\partial\rho^{(1)}}{\partial\kappa_{ia}}\right|_{\boldsymbol{\kappa}=\mathbf{0}}=-\Omega_{ai}\\
+\left.\frac{d}{d\varepsilon_{B}}\left[\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\right]\right|_{\boldsymbol{\kappa}=\mathbf{0}} & = & -\left.\frac{d}{d\varepsilon_{B}}\left[\frac{\partial\rho^{(2)}}{\partial\kappa_{ia}}\right]\right|_{\boldsymbol{\kappa}=\mathbf{0}}=\frac{d}{d\varepsilon_{B}}\Omega_{ai}^{\{1\}}\equiv\Omega_{ai}^{B}\end{eqnarray*}
 
 \end_inset 
 
@@ -98,9 +79,24 @@ The
 \end_inset 
 
 -variable can be expanded as
+\begin_inset Formula \[
+\zeta(\mathbf{r},\boldsymbol{\kappa})=\boldsymbol{\nabla}\rho\cdot\boldsymbol{\nabla}\rho=\sum_{n=0}^{\infty}\zeta^{(n)}\]
+
+\end_inset 
+
+ in which appears
 \begin_inset Formula \begin{eqnarray*}
-\zeta(\mathbf{r},\boldsymbol{\kappa}) & = & \mathbf{q}_{pq}\cdot\mathbf{q}_{rs}\left\langle \tilde{0}(\boldsymbol{\kappa})\left|a_{p}^{\dagger}a_{q}\right|\tilde{0}(\boldsymbol{\kappa})\right\rangle \left\langle \tilde{0}(\boldsymbol{\kappa})\left|a_{r}^{\dagger}a_{s}\right|\tilde{0}(\boldsymbol{\kappa})\right\rangle \\
- & = & \boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho_{0}+2\boldsymbol{\nabla}\rho_{0}\cdot\widetilde{\mathbf{q}}_{ii}+\widetilde{\mathbf{q}}_{ii}\cdot\widetilde{\mathbf{q}}_{jj}+\boldsymbol{\nabla}\rho_{0}\cdot\widetilde{\widetilde{\mathbf{q}}}_{ii}+\ldots\end{eqnarray*}
+\zeta^{(0)} & = & \boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho_{0}\\
+\zeta^{(1)} & = & 2\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)\\
+\zeta^{(2)} & = & 2\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{(2)}\right)+\left(\boldsymbol{\nabla}\rho^{(1)}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)\\
+\zeta^{(3)} & = & 2\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{(3)}\right)+2\left(\boldsymbol{\nabla}\rho^{(1)}\cdot\boldsymbol{\nabla}\rho^{(2)}\right)\end{eqnarray*}
+
+\end_inset 
+
+ We will need the following derivatives
+\begin_inset Formula \begin{eqnarray*}
+\left.\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\right|_{\boldsymbol{\kappa}=\mathbf{0}} & = & -2\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{ai}\right)\\
+\left.\frac{d}{d\varepsilon_{B}}\left(\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\right)\right|_{\boldsymbol{\kappa}=\mathbf{0}} & = & -\left[2\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{ai}^{B}\right)+2\left(\boldsymbol{\nabla}\rho^{B}\cdot\boldsymbol{\nabla}\Omega_{ai}\right)\right]\end{eqnarray*}
 
 \end_inset 
 
@@ -112,21 +108,13 @@ Gradient
 
 We need
 \begin_inset Formula \[
-\D\frac{de_{xc}}{d\kappa_{pq}}=\frac{\partial e_{xc}}{\partial\rho}\frac{\partial\rho}{\partial\kappa_{pq}}+\frac{\partial e_{xc}}{\partial\zeta}\frac{\partial\zeta}{\partial\kappa_{pq}}\]
+\left.\frac{\partial E_{xc}}{\partial\kappa_{ai}^{*}}\right|_{\boldsymbol{\kappa}=\mathbf{0}}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\frac{\partial\rho}{\partial\kappa_{ai}^{*}}+\frac{\partial e_{xc}}{\partial\zeta}\frac{\partial\zeta}{\partial\kappa_{pq}}\right]d\tau=-F_{xc;ai}\]
 
 \end_inset 
 
-The gradient vector is given by
+ in which appears the xc-part of the Kohn-Sham matrix
 \begin_inset Formula \[
-\mathbf{E}_{X}^{[1]}=\left[\begin{array}{l}
-\mathbf{g}\\
-\mathbf{g}^{*}\end{array}\right];\quad g_{ai}=\left.\frac{\partial E_{X}}{\partial\kappa_{ai}^{*}}\right|_{{\mb\kappa}=0}=\left\langle 0\left|\left[-i^{\dagger}a,\hat{H}_{X}\right]\right|0\right\rangle =-F_{ai}\]
-
-\end_inset 
-
- with
-\begin_inset Formula \[
-F_{pq}=h_{pq}+\D\sum\left[\left(pq\left|\right.jj\right)-\gamma\left(pj\left|\right.jq\right)\right]+\int\left(\left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0}\Omega_{pq}+2\left.\frac{\partial e_{xc}}{\partial\zeta}\right|_{0}\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{pq}\right)d\mathbf{r}\]
+F_{xc;pq}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\Omega_{pq}+2\frac{\partial e_{xc}}{\partial\zeta}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{pq}\right)\right]d\tau\]
 
 \end_inset 
 
@@ -159,50 +147,34 @@ The latter quantity is then modified to
 
 \end_inset 
 
-The routine 
-\shape smallcaps 
-doexc2
-\shape default 
- next constructs the matrix
-\begin_inset Formula \[
-F_{pq}=\int\left(\phi_{p}\left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0}\phi_{q}+4\phi_{p}\left.\frac{\partial e_{xc}}{\partial\zeta}\right|_{0}\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\phi_{q}\right)d\mathbf{r}\]
-
-\end_inset 
-
- which is then symmetrized to give the desired
-\begin_inset Formula \[
-F_{pq}=\frac{1}{2}\left(F_{pq}+F_{qp}\right)=\int\left(\left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0}\Omega_{pq}+4\left.\frac{\partial e_{xc}}{\partial\zeta}\right|_{0}\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{pq}\right)d\mathbf{r}\]
-
-\end_inset 
-
 
 \layout Subsection
 
-Hessian
+Linear response
 \layout Standard
 
-We have
+We need
 \begin_inset Formula \begin{eqnarray*}
-\D\frac{\partial e_{xc}^{2}}{\partial\kappa_{pq}\partial\kappa_{rs}} & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\frac{\partial\rho}{\partial\kappa_{pq}}\frac{\partial\rho}{\partial\kappa_{rs}}+\frac{\partial e_{xc}}{\partial\rho}\frac{\partial^{2}\rho}{\partial\kappa_{pq}\partial\kappa_{rs}}\\
- & + & \frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left(\frac{\partial\rho}{\partial\kappa_{pq}}\frac{\partial\zeta}{\partial\kappa_{rs}}+\frac{\partial\zeta}{\partial\kappa_{pq}}\frac{\partial\rho}{\partial\kappa_{rs}}\right)+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\frac{\partial\zeta}{\partial\kappa_{pq}}\frac{\partial\zeta}{\partial\kappa_{rs}}+\frac{\partial e_{xc}}{\partial\zeta}\frac{\partial^{2}\zeta}{\partial\kappa_{pq}\partial\kappa_{rs}}\end{eqnarray*}
+\left.\frac{d}{d\varepsilon_{B}}\left[\frac{\partial E_{xc}}{\partial\kappa_{ai}^{*}}\right]\right|_{\boldsymbol{\kappa}=\mathbf{0}} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\frac{d\rho}{d\varepsilon_{B}}+\frac{\partial e_{xc}}{\partial\rho}\frac{d}{d\varepsilon_{B}}\left(\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\right)+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\frac{d\zeta}{d\varepsilon_{B}}\right.\\
+ & = & \left.\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\frac{d\rho}{d\varepsilon_{B}}+\frac{\partial e_{xc}}{\partial\zeta}\frac{d}{d\varepsilon_{B}}\left(\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\right)+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\frac{d\zeta}{d\varepsilon_{B}}\right]d\tau\\
+ & = & -F_{xc;ai}^{B}-G_{xc;ai}\end{eqnarray*}
 
 \end_inset 
 
-from which one obtains
-\begin_inset Formula \begin{eqnarray*}
-\frac{\partial^{2}e_{xc}}{\partial\kappa_{ai}^{*}\partial\kappa_{bj}} & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\Omega_{ai}\Omega_{jb}+\frac{\partial e_{xc}}{\partial\rho}\left[\delta_{ij}\Omega_{ab}-\delta_{ab}\Omega_{ji}\right]\\
- & + & 2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left[\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{ai}\right)\Omega_{jb}+\Omega_{ai}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{jb}\right)\right]\\
- & + & 4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{ai}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{jb}\right)+2\frac{\partial e_{xc}}{\partial\zeta}\left[\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\Omega_{jb}+\boldsymbol{\nabla}\rho_{0}\cdot\left(\delta_{ij}\boldsymbol{\nabla}\Omega_{ab}-\delta_{ab}\boldsymbol{\nabla}\Omega_{ji}\right)\right]\\
-\frac{\partial^{2}e_{xc}}{\partial\kappa_{ai}^{*}\partial\kappa_{bj}^{*}} & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\Omega_{ai}\Omega_{bj}\\
- & + & 2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left[\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{ai}\right)\Omega_{bj}+\Omega_{ai}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{bj}\right)\right]\\
- &  & 4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{ai}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{bj}\right)+2\frac{\partial e_{xc}}{\partial\zeta}\left[\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\Omega_{bj}\right]\end{eqnarray*}
+ in which appears the one-index transformed Kohn-Sham matrix (xc part)
+\begin_inset Formula \[
+F_{xc;pq}^{B}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\Omega_{pq}^{B}+2\frac{\partial e_{xc}}{\partial\zeta}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{pq}^{B}\right)\right]d\tau\]
 
 \end_inset 
 
+ and the matrix
+\begin_inset Formula \begin{eqnarray*}
+G_{xc;pq} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}\Omega_{pq}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left\{ \left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\Omega_{pq}+\rho^{B}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{pq}\right)\right\} \right.\\
+ & + & \left.2\frac{\partial e_{xc}}{\partial\zeta}\left(\boldsymbol{\nabla}\rho^{B}\cdot\boldsymbol{\nabla}\Omega_{pq}\right)+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{pq}\right)\right]d\tau\end{eqnarray*}
 
-\layout Standard
+\end_inset 
 
-We have
+ We have
 \begin_inset Formula \begin{eqnarray}
 \D\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}} & = & \frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|^{2}}\frac{1}{4\left|\boldsymbol{\nabla}\rho\right|^{2}}-\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{4\left|\boldsymbol{\nabla}\rho\right|^{3}}\label{eq:d2exc_dzeta2}\\
 \D\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta} & = & \frac{\partial^{2}e_{xc}}{\partial\rho\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{2\left|\boldsymbol{\nabla}\rho\right|}\label{eq:d2exc_drhodzeta}\end{eqnarray}
@@ -513,18 +485,33 @@ The third-order contribution to the exchange-correlation energy is formally
 
 The contributions have been ordered according to the number of perturbed
  densities involved.
- The first-order contribution can be writtten as
+ The first-order contribution can be writtten on the form (
+\begin_inset LatexCommand \ref{eq:doexc2}
+
+\end_inset 
+
+) in which appears
 \begin_inset Formula \begin{equation}
-V_{xc;pq}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau;\quad s=\left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0};\quad\mathbf{v}=2\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho_{0}\label{eq:Vxc-1order}\end{equation}
+\begin{array}{lclcl}
+s & = & \left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0}\\
+\\\mathbf{v} & = & 2\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho_{0} & = & \frac{\partial e_{\textrm{xc}}}{\partial\left|\boldsymbol{{\nabla}}\rho\right|}\frac{1}{\left|\boldsymbol{{\nabla}}\rho\right|}\end{array}\label{eq:Vxc-1order}\end{equation}
 
 \end_inset 
 
  The second-order contribution splits into two terms.
- The first term may be written
+ The first term may be written on the form (
+\begin_inset LatexCommand \ref{eq:doexc2}
+
+\end_inset 
+
+) in which appears
 \begin_inset Formula \begin{equation}
-V_{xc;pq}^{B}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau;\quad\begin{array}{c}
-s=\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\\
-\\\mathbf{v}=2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho^{B}\boldsymbol{{\nabla}}\rho_{0}+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\boldsymbol{{\nabla}}\rho_{0}+\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho^{B}\end{array}\label{eq:Vxc-2order}\end{equation}
+\begin{array}{lcl}
+s & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\\
+ & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta\left|\boldsymbol{{\nabla}}\rho\right|}\frac{\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)}{\left|\boldsymbol{{\nabla}}\rho\right|}\\
+\\\mathbf{v} & = & 2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho^{B}\boldsymbol{{\nabla}}\rho_{0}+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\boldsymbol{{\nabla}}\rho_{0}+\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho^{B}\\
+ & = & \frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta\left|\boldsymbol{{\nabla}}\rho\right|}\frac{\rho^{B}\boldsymbol{{\nabla}}\rho_{0}}{\left|\boldsymbol{{\nabla}}\rho\right|}+\left[\frac{\partial^{2}e_{\textrm{xc}}}{\partial\left|\boldsymbol{{\nabla}}\rho\right|^{2}}\frac{1}{\left|\boldsymbol{{\nabla}}\rho\right|^{2}}-\frac{\partial e_{\textrm{xc}}}{\partial\left|\boldsymbol{{\nabla}}\rho\right|}\frac{1}{\left|\boldsymbol{{\nabla}}\rho\right|^{3}}\right]\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)\boldsymbol{{\nabla}}\rho_{0}+\frac{\partial e_{\textrm{xc}}}{\partial\left|\boldsymbol{{\nabla}}\rho\right|}\frac{\boldsymbol{{\nabla}}\rho^{B}}{\left|\boldsymbol{{\nabla}}\rho\right|}\\
+ & = & \left\{ \frac{\partial e_{\textrm{xc}}}{\partial\left|\boldsymbol{{\nabla}}\rho\right|}\boldsymbol{{\nabla}}\rho^{B}+\left[\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta\left|\boldsymbol{{\nabla}}\rho\right|}\rho^{B}+\left(\frac{\partial^{2}e_{\textrm{xc}}}{\partial\left|\boldsymbol{{\nabla}}\rho\right|^{2}}-\frac{\partial e_{\textrm{xc}}}{\partial\left|\boldsymbol{{\nabla}}\rho\right|}\frac{1}{\left|\boldsymbol{{\nabla}}\rho\right|}\right)\frac{\left(\boldsymbol{{\nabla}}\rho_{0}\cdot\boldsymbol{{\nabla}}\rho^{B}\right)}{\left|\boldsymbol{{\nabla}}\rho\right|}\right]\right\} \frac{1}{\left|\boldsymbol{{\nabla}}\rho\right|}\end{array}\label{eq:Vxc-2order}\end{equation}
 
 \end_inset 
 
@@ -544,8 +531,8 @@ The routine
 doexc2
 \shape default 
  will construct matrices
-\begin_inset Formula \[
-F_{pq}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau\]
+\begin_inset Formula \begin{equation}
+F_{pq}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau\label{eq:doexc2}\end{equation}
 
 \end_inset 
 
