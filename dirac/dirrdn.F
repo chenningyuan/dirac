@@ -5950,7 +5950,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.REAXVC','.1D    ','.2D    ',
+      DATA TABLE /'.PRINT ','.REAXVE','.1D    ','.2D    ',
      &            '.3D    ','.DENSIT','.SPIN  ','.CURREN',
      &            '.ELF   ','.D1DSTE','.D3DSTA','.D3DNOR',
      &            '.CUBE  ','.LAPLAC','.NXVEC ','.STRING',
@@ -6026,6 +6026,7 @@ C
           GOTO 100
     2     CONTINUE
           READXVECFILE = .TRUE.
+          READ(LUCMD,'(A6)') XVECFILE
           GOTO 100
     3     CONTINUE
           DO1DPLOT = .TRUE.

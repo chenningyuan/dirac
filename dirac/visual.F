@@ -41,39 +41,38 @@ C     =================================
 C
       INQUIRE(FILE = 'DFCOEF',EXIST = TOBE)
       IF(.NOT.TOBE) THEN
-        WRITE(LUPRI,'(/A)') 'PLOT_MEM: Coefficients not found!'
-        CALL QUIT('PLOT_MEM: Coefficients not found!')
+        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+        WRITE(LUPRI,'(A)') 'coefficients not found'
+        CALL QUIT('ERROR in PLOT')
       ENDIF
 C
 C
 C     memory allocation
 C     =================
 C
-      CALL MEMGET('REAL',KCMO       ,N2BBASXQ,
+      CALL MEMGET('REAL',KCMO        ,N2BBASXQ,
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMATBF    ,N2BBASXQ,
+      CALL MEMGET('REAL',KDMATBF     ,N2BBASXQ,
      &            WORK,KFREE,LFREE)
-      IF(.NOT.PLOTSKIPEP) THEN
-        CALL MEMGET('REAL',KTMATBF  ,N2BBASXQ,
-     &              WORK,KFREE,LFREE)
-      ENDIF
-      CALL MEMGET('REAL',KDMATORB   ,N2ORBXQ,
+      CALL MEMGET('REAL',KTMATBF     ,N2BBASXQ,
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KORBSTRING1,NISH(1),
+      CALL MEMGET('REAL',KDMATORB    ,N2ORBXQ,
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KORBSTRING2,NISH(2),
+      CALL MEMGET('REAL',KDORBSTRING1,NISH(1),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO       ,NTBAS(0),
+      CALL MEMGET('REAL',KDORBSTRING2,NISH(2),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO1      ,3*NTBAS(0),
+      CALL MEMGET('REAL',KGAO        ,NTBAS(0),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO2      ,6*NTBAS(0),
+      CALL MEMGET('REAL',KGAO1       ,3*NTBAS(0),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNCNT      ,NTBAS(0),
+      CALL MEMGET('REAL',KGAO2       ,6*NTBAS(0),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCOOR      ,6,
+      CALL MEMGET('INTE',KNCNT       ,NTBAS(0),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF       ,NTBAS(0)*4,
+      CALL MEMGET('REAL',KCOOR       ,6,
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF        ,NTBAS(0)*4,
      &            WORK,KFREE,LFREE)
 C
 C
@@ -89,8 +88,8 @@ C
 C     zero out orbitals?
 C     ==================
 C
-      CALL DFILL(WORK(KORBSTRING1),D1,NISH(1))
-      IF(NFSYM.GT.1) CALL DFILL(WORK(KORBSTRING2),D1,NISH(2))
+      CALL DFILL(WORK(KDORBSTRING1),D1,NISH(1))
+      IF(NFSYM.GT.1) CALL DFILL(WORK(KDORBSTRING2),D1,NISH(2))
       IF(USEORBSTRING) THEN
         IF(ORBSTRING1(4:5).EQ.'..') THEN
           READ(ORBSTRING1(1:3),'(I3)') IORBSTRING1BEGIN
@@ -107,55 +106,57 @@ C
           READ(ORBSTRING1(4:8),'(I3)') IORBSTRING1END
           GOTO 1
         ENDIF
-        WRITE(LUPRI,'(/A)') 'ERROR: wrong orbital string format!'
-        GOTO 2
+        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+        WRITE(LUPRI,'(A)') 'wrong orbital string format'
+        CALL QUIT('ERROR in PLOT')
  1      CONTINUE
 C
         IF(
      &         (.NOT.(IORBSTRING1BEGIN.LE.IORBSTRING1END))
      &     .OR.(.NOT.(IORBSTRING1BEGIN.GE.0))
      &     .OR.(.NOT.(IORBSTRING1END.LE.NISH(1)))) THEN
-          WRITE(LUPRI,'(/A)') 'ERROR: wrong orbital string dimension!'
-          GOTO 2
+          WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+          WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
+          CALL QUIT('ERROR in PLOT')
         ENDIF
-        CALL DFILL(WORK(KORBSTRING1),D0,NISH(1))
+        CALL DFILL(WORK(KDORBSTRING1),D0,NISH(1))
         DO I = IORBSTRING1BEGIN,IORBSTRING1END
-          WORK(KORBSTRING1-1+I) = D1
+          WORK(KDORBSTRING1-1+I) = D1
         ENDDO
- 2      CONTINUE
         
         IF(NFSYM.GT.1) THEN
           IF(ORBSTRING2(4:5).EQ.'..') THEN
             READ(ORBSTRING2(1:3),'(I3)') IORBSTRING2BEGIN
             READ(ORBSTRING2(6:8),'(I3)') IORBSTRING2END
-            GOTO 3
+            GOTO 2
           ENDIF
           IF(ORBSTRING2(3:4).EQ.'..') THEN
             READ(ORBSTRING2(1:2),'(I3)') IORBSTRING2BEGIN
             READ(ORBSTRING2(5:8),'(I3)') IORBSTRING2END
-            GOTO 3
+            GOTO 2
           ENDIF
           IF(ORBSTRING2(2:3).EQ.'..') THEN
             READ(ORBSTRING2(1:1),'(I3)') IORBSTRING2BEGIN
             READ(ORBSTRING2(4:8),'(I3)') IORBSTRING2END
-            GOTO 3
+            GOTO 2
           ENDIF
-          WRITE(LUPRI,'(/A)') 'ERROR: wrong orbital string format!'
-          GOTO 4
- 3        CONTINUE
+          WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+          WRITE(LUPRI,'(A)') 'wrong orbital string format'
+          CALL QUIT('ERROR in PLOT')
+ 2        CONTINUE
 C
           IF(
      &           (.NOT.(IORBSTRING2BEGIN.LE.IORBSTRING2END))
      &       .OR.(.NOT.(IORBSTRING2BEGIN.GE.0))
      &       .OR.(.NOT.(IORBSTRING2END.LE.NISH(2)))) THEN
-            WRITE(LUPRI,'(/A)') 'ERROR: wrong orbital string dimension!'
-            GOTO 4
+            WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+            WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
+            CALL QUIT('ERROR in PLOT')
           ENDIF
-          CALL DFILL(WORK(KORBSTRING2),D0,NISH(2))
+          CALL DFILL(WORK(KDORBSTRING2),D0,NISH(2))
           DO I = IORBSTRING2BEGIN,IORBSTRING2END
-            WORK(KORBSTRING2-1+I) = D1
+            WORK(KDORBSTRING2-1+I) = D1
           ENDDO
- 4        CONTINUE
         ENDIF
       ENDIF
 C
@@ -163,18 +164,13 @@ C
 C     generate density matrix
 C     =======================
 C
-C     CALL GENDEN(WORK(KDMATBF),WORK(KCMO),1,IPLOT)
       IF(READXVECFILE) THEN
-        IF(.NOT.PLOTSKIPEP) THEN
-          CALL PERDMAT(WORK(KCMO),WORK(KDMATBF),WORK(KTMATBF),
-     &                 WORK(KFREE),LFREE)
-        ELSE
-          CALL PERDMAT(WORK(KCMO),WORK(KDMATBF),DUMMY,
-     &                 WORK(KFREE),LFREE)
-        ENDIF
+        CALL PERDMAT(WORK(KCMO),WORK(KDMATBF),WORK(KTMATBF),
+     &               WORK(KDORBSTRING1),WORK(KDORBSTRING2),
+     &               WORK(KFREE),LFREE)
       ELSE
         CALL OCCUPYDMATORB(WORK(KDMATORB),
-     &                     WORK(KORBSTRING1),WORK(KORBSTRING2))
+     &                     WORK(KDORBSTRING1),WORK(KDORBSTRING2))
         CALL DMATORB2BF(WORK(KCMO),WORK(KDMATBF),WORK(KDMATORB),
      &                  WORK(KFREE),LFREE)
       ENDIF
@@ -854,7 +850,7 @@ C       ENDIF
      &                         0,GAO,DMATBF,BUF)
         CURRENTDENSITY = CURRENT(4)
 C       CURRENTDENSITY = CURRENT(1)
-C       IF(ABS(CURRENT(4)).GT.0.0001D0) THEN
+C       IF(ABS(CURRENT(4)).LT.1.000D0) THEN
 C         WRITE(0,'(4F20.6)') PX, PY, (CURRENT(I),I=1,2)
 C         WRITE(0,'(4F20.6)') PY, PZ, (CURRENT(I),I=2,3)
 C       ENDIF
@@ -877,7 +873,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck perdmat */
-      SUBROUTINE PERDMAT(CMO,DMATBF,TMATBF,WORK,LWORK)
+      SUBROUTINE PERDMAT(CMO,DMATBF,TMATBF,DORBSTRING1,DORBSTRING2,
+     &                   WORK,LWORK)
 C  .....................................................................
 C  .  description:                                                     .
 C  .  fill density matrix                                              .
@@ -905,6 +902,7 @@ C
       LOGICAL TOBE
 C
       DIMENSION CMO(*),DMATBF(*),TMATBF(*),WORK(LWORK)
+      DIMENSION DORBSTRING1(*),DORBSTRING2(*)
 C
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
 C
@@ -917,74 +915,132 @@ C
 C     init
 C     ====
 C
-      JSYMOP = 1
-      JOPSY  = 1
+      JSYMOP     = 1
+      JOPSY      = 1
 C
 C
 C     check if solution vector file is there and open it
 C     ==================================================
 C
-      INQUIRE(FILE = 'XVECFILE',EXIST = TOBE)
+      INQUIRE(FILE = XVECFILE,EXIST = TOBE)
       IF(.NOT.TOBE) THEN
 C       panic
       ENDIF
       LUXVEC = 17
-      OPEN(LUXVEC,FILE = 'XVECFILE',STATUS = 'OLD',
+      OPEN(LUXVEC,FILE = XVECFILE,STATUS = 'OLD',
      &            ACCESS = 'SEQUENTIAL',FORM = 'UNFORMATTED')
 C
 C
-C     scan through
-C     ============
-C
-C     NRECORDS = 0
-C1    CONTINUE
-C     READ(LUXVEC) LAB1
-C     READ(LUXVEC)
-C     IF(.NOT.PLOTSKIPEP) THEN
-C       READ(LUXVEC)
-C       READ(LUXVEC)
-C     ENDIF
-C     IF(LAB1.EQ.'END_OF_THIS_FILE') THEN
-C       GOTO 2
-C     ENDIF
-C     NRECORDS = NRECORDS+1
-C     GOTO 1
-C2    CONTINUE
-C     IF(NXVEC.GT.NRECORDS) WRITE(0,*) 'NXVEC.GT.NRECORDS'
-C
-C
 C     get NBDIMs of record NXVEC
-C     =========================
+C     ==========================
 C
-      NBDIMEE = 0
-      NBDIMEP = 0
+      NBDIMEE  = 0
+      NBDIMEP  = 0
+      NREADS   = 0
+      NREADSEE = 0
+      NREADSEP = 0
       REWIND LUXVEC
-      DO I = 1,NXVEC
+ 1    CONTINUE
+      READ(LUXVEC) LAB1
+      BACKSPACE(LUXVEC)
+      IF(LAB1.EQ.'END_OF_THIS_FILE') THEN
+        GOTO 2
+      ENDIF
+      READ(LUXVEC) LAB1, LAB2, TYP1
+      BACKSPACE(LUXVEC)
+C
+      IF(TYP1(1:1).EQ.'E') THEN
+        NREADS   = NREADS+1
+        NREADSEE = NREADSEE+1
+        IF(TYP1(2:2).EQ.'+') THEN
+          IHEE = 1
+        ELSEIF(TYP1(2:2).EQ.'-') THEN
+          IHEE = -1
+        ELSE
+          GOTO 12
+        ENDIF
         READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
      &               JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
      &               DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        NBDIMEE = LEN/NZ
+        IF(NREADSEE.EQ.NXVEC) NBDIMEE = LEN/NZ
         READ(LUXVEC)
-        IF(.NOT.PLOTSKIPEP) THEN
-          READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
-     &                 JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
-     &                 DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
-          NBDIMEP = LEN/NZ
-          READ(LUXVEC)
+C
+      ELSEIF(TYP1(1:1).EQ.'P') THEN
+        NREADS   = NREADS+1
+        NREADSEP = NREADSEP+1
+        IF(TYP1(2:2).EQ.'+') THEN
+          IHEP = 1
+        ELSEIF(TYP1(2:2).EQ.'-') THEN
+          IHEP = -1
+        ELSE
+          GOTO 12
         ENDIF
-      ENDDO
+        READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
+     &               JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
+     &               DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
+        IF(NREADSEP.EQ.NXVEC) NBDIMEP = LEN/NZ
+        READ(LUXVEC)
+C
+      ELSE
+        GOTO 12
+      ENDIF
+      GOTO 1
+ 2    CONTINUE
+C
+C
+C     consistency
+C     ===========
+C
+      IF(NREADS.EQ.0) GOTO 11
+      IF(.NOT.(PLOTSKIPEE).AND.(.NOT.PLOTSKIPEP)) THEN
+        IF(.NOT.(NREADSEE.EQ.NREADSEP)) GOTO 11
+      ENDIF
+      IF((.NOT.PLOTSKIPEP).AND.(NREADSEP.EQ.0)) GOTO 13
+      IF((.NOT.PLOTSKIPEE).AND.(NREADSEE.EQ.0)) GOTO 14
+      IF((.NOT.PLOTSKIPEP).AND.(NREADSEP.LT.NXVEC)) GOTO 11
+      IF((.NOT.PLOTSKIPEE).AND.(NREADSEE.LT.NXVEC)) GOTO 11
+      IF(PLOTSKIPEE.AND.PLOTSKIPEP) GOTO 15
+C
+C
+C     error handling
+C     ==============
+C
+      GOTO 20
+ 11   CONTINUE
+        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+        WRITE(LUPRI,'(A)') 'invalid NXVEC'
+        WRITE(LUPRI,'(A)') 'or solution vector file corrupt'
+        CALL QUIT('ERROR in PLOT')
+ 12   CONTINUE
+        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+        WRITE(LUPRI,'(A)') 'invalid operator label'
+        WRITE(LUPRI,'(A)') 'solution vector file corrupt'
+        CALL QUIT('ERROR in PLOT')
+ 13   CONTINUE
+        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+        WRITE(LUPRI,'(A)') 'EP requested but no EP rotation'
+        WRITE(LUPRI,'(A)') 'on solution vector file'
+        CALL QUIT('ERROR in PLOT')
+ 14   CONTINUE
+        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+        WRITE(LUPRI,'(A)') 'EE requested but no EE rotation'
+        WRITE(LUPRI,'(A)') 'on solution vector file'
+        CALL QUIT('ERROR in PLOT')
+ 15   CONTINUE
+        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+        WRITE(LUPRI,'(A)') 'SKIPEP = SKIPEE = .TRUE.'
+        CALL QUIT('ERROR in PLOT')
+ 20   CONTINUE
 C
 C
 C     memory allocation
 C     =================
 C
-      CALL MEMGET('REAL',KBVECEE     ,NBDIMEE*NZ,
+      CALL MEMGET('REAL',KBVECEE   ,NBDIMEE*NZ,
      &            WORK,KFREE,LFREE)
-      IF(.NOT.PLOTSKIPEP) THEN
-        CALL MEMGET('REAL',KBVECEP   ,NBDIMEP*NZ,
-     &              WORK,KFREE,LFREE)
-      ENDIF
-      CALL MEMGET('REAL',KBMAT       ,N2ORBXQ,
+      CALL MEMGET('REAL',KBVECEP   ,NBDIMEP*NZ,
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBMAT     ,N2ORBXQ,
      &            WORK,KFREE,LFREE)
 C
 C
@@ -993,31 +1049,35 @@ C     ===================
 C
       REWIND LUXVEC
       DO I = 1,NXVEC
-        READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
-     &               JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
-     &               DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        IF(I.EQ.NXVEC) THEN
-          CALL DZERO(WORK(KBVECEE),NBDIMEE*NZ)
-          CALL READT(LUXVEC,NBDIMEE*NZ,WORK(KBVECEE))
-C         WRITE(LUPRI,*) 'inside PERDMAT: BVECEE'
-C         CALL PRQMAT(WORK(KBVECEE),NBDIMEE,1,NBDIMEE,1,
-C    &                NZ,IPQTOQ(1,0),LUPRI)
-        ELSE
+        IF(.NOT.PLOTSKIPEE) THEN
           READ(LUXVEC)
-        ENDIF
-        IF(.NOT.PLOTSKIPEP) THEN
-          READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
-     &                 JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
-     &                 DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
           IF(I.EQ.NXVEC) THEN
-            CALL DZERO(WORK(KBVECEP),NBDIMEP*NZ)
-            CALL READT(LUXVEC,NBDIMEP*NZ,WORK(KBVECEP))
-C           WRITE(LUPRI,*) 'inside PERDMAT: BVECEP'
-C           CALL PRQMAT(WORK(KBVECEP),NBDIMEP,1,NBDIMEP,1,
-C    &                  NZ,IPQTOQ(1,0),LUPRI)
+            CALL DZERO(WORK(KBVECEE),NBDIMEE*NZ)
+            CALL READT(LUXVEC,NBDIMEE*NZ,WORK(KBVECEE))
+            WRITE(LUPRI,*) 'inside PERDMAT: BVECEE'
+            CALL PRQMAT(WORK(KBVECEE),NBDIMEE,1,NBDIMEE,1,
+     &                  NZ,IPQTOQ(1,0),LUPRI)
           ELSE
             READ(LUXVEC)
           ENDIF
+        ELSEIF(NREADSEE.GT.0) THEN
+          READ(LUXVEC)
+          READ(LUXVEC)
+        ENDIF
+        IF(.NOT.PLOTSKIPEP) THEN
+          READ(LUXVEC)
+          IF(I.EQ.NXVEC) THEN
+            CALL DZERO(WORK(KBVECEP),NBDIMEP*NZ)
+            CALL READT(LUXVEC,NBDIMEP*NZ,WORK(KBVECEP))
+            WRITE(LUPRI,*) 'inside PERDMAT: BVECEP'
+            CALL PRQMAT(WORK(KBVECEP),NBDIMEP,1,NBDIMEP,1,
+     &                  NZ,IPQTOQ(1,0),LUPRI)
+          ELSE
+            READ(LUXVEC)
+          ENDIF
+        ELSEIF(NREADSEP.GT.0) THEN
+          READ(LUXVEC)
+          READ(LUXVEC)
         ENDIF
       ENDDO
 C
@@ -1037,23 +1097,23 @@ C
       NEA    = NE-NEI
 C
       CALL DZERO(WORK(KBMAT),N2ORBXQ)
-      JOFF = 0
-      DO IZ = 1,NZ
-        IOFF = 0
-        IOFF = IOFF+NORBT*NORBT*(IZ-1)
-        IOFF = IOFF+NORBT*NP
-        DO II = 1,NEI
-          IOFF = IOFF+NP+NEI
-          DO IA = 1,NEA
-            WORK(KBMAT+IOFF) = WORK(KBVECEE+JOFF)
-            IOFF = IOFF+1
-            JOFF = JOFF+1
+      IF(.NOT.PLOTSKIPEE) THEN
+        JOFF = 0
+        DO IZ = 1,NZ
+          IOFF = 0
+          IOFF = IOFF+NORBT*NORBT*(IZ-1)
+          IOFF = IOFF+NORBT*NP
+          DO II = 1,NEI
+            IOFF = IOFF+NP+NEI
+            DO IA = 1,NEA
+              IF(DORBSTRING1(II).EQ.D1) THEN
+                WORK(KBMAT+IOFF) = WORK(KBVECEE+JOFF)
+              ENDIF
+              IOFF = IOFF+1
+              JOFF = JOFF+1
+            ENDDO
           ENDDO
         ENDDO
-      ENDDO
-C
-      IF(PLOTSKIPEE) THEN
-        CALL DZERO(WORK(KBMAT),N2ORBXQ)
       ENDIF
 C
       IF(.NOT.PLOTSKIPEP) THEN
@@ -1064,7 +1124,9 @@ C
           IOFF = IOFF+NORBT*NP
           DO II = 1,NEI
             DO IA = 1,NP
-              WORK(KBMAT+IOFF) = WORK(KBVECEP+JOFF)
+              IF(DORBSTRING1(II).EQ.D1) THEN
+                WORK(KBMAT+IOFF) = WORK(KBVECEP+JOFF)
+              ENDIF
               IOFF = IOFF+1
               JOFF = JOFF+1
             ENDDO
@@ -1077,9 +1139,9 @@ C
 C     symmetrize
 C     ==========
 C
-C     WRITE(LUPRI,*) 'inside PERDMAT: BMAT'
-C     CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
-C    &            NZ,IPQTOQ(1,0),LUPRI)
+      WRITE(LUPRI,*) 'inside PERDMAT: BMAT'
+      CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
+     &            NZ,IPQTOQ(1,0),LUPRI)
       DO IZ = 1,NZ
         IOFF = NORBT*NORBT*(IZ-1)
 C       CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF))
@@ -1093,17 +1155,18 @@ C
 C     get density matrix
 C     ==================
 C
-      IH   = -1
-      ITYP = 0*1+0*2
       CALL DZERO(DMATBF,N2BBASXQ)
-      CALL DMOLI3(ITYP,IH,DMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
-C     WRITE(LUPRI,*) 'inside PERDMAT: DMATBF'
-C     CALL PRQMAT(DMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-C    &            NZ,IPQTOQ(1,0),LUPRI)
+      IF(.NOT.PLOTSKIPEE) THEN
+        ITYP = 0*1+0*2
+        CALL DMOLI3(ITYP,IHEE,DMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
+C       WRITE(LUPRI,*) 'inside PERDMAT: DMATBF'
+C       CALL PRQMAT(DMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+C    &              NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
       IF(.NOT.PLOTSKIPEP) THEN
         ITYP = 1*1+0*2
         CALL DZERO(TMATBF,N2BBASXQ)
-        CALL DMOLI3(ITYP,IH,TMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
+        CALL DMOLI3(ITYP,IHEP,TMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
 C       WRITE(LUPRI,*) 'inside PERDMAT: TMATBF'
 C       CALL PRQMAT(TMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
 C    &              NZ,IPQTOQ(1,0),LUPRI)
@@ -1177,7 +1240,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck occupydmatorb */
-      SUBROUTINE OCCUPYDMATORB(DMATORB,ORBSTRING1,ORBSTRING2)
+      SUBROUTINE OCCUPYDMATORB(DMATORB,DORBSTRING1,DORBSTRING2)
 C  .....................................................................
 C  .  description:                                                     .
 C  .  occupy orbital density matrix                                    .
@@ -1195,7 +1258,7 @@ C
 #include "dcbbas.h"
 C
 C
-      DIMENSION DMATORB(*),ORBSTRING1(*),ORBSTRING2(*)
+      DIMENSION DMATORB(*),DORBSTRING1(*),DORBSTRING2(*)
 C
 C
       CALL DZERO(DMATORB,N2ORBXQ)
@@ -1209,10 +1272,10 @@ C
             JOFF = JOFF+NORB(1)*(I-1)+NPSH(I)
             JOFF = JOFF+(J-1)*NORBT+J-1
 C
-            IF((I.EQ.1).AND.(ORBSTRING1(J).EQ.D1)) THEN
+            IF((I.EQ.1).AND.(DORBSTRING1(J).EQ.D1)) THEN
               DMATORB(1+JOFF) = D1
             ENDIF
-            IF((I.EQ.2).AND.(ORBSTRING2(J).EQ.D1)) THEN
+            IF((I.EQ.2).AND.(DORBSTRING2(J).EQ.D1)) THEN
               DMATORB(1+JOFF) = D1
             ENDIF
 C
