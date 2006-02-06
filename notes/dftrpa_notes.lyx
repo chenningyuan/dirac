@@ -37,6 +37,14 @@ DFT response
 T.
  Saue and J.
  Henriksson
+\layout Standard
+\pagebreak_bottom 
+
+\begin_inset LatexCommand \tableofcontents{}
+
+\end_inset 
+
+
 \layout Section
 
 Final approach ?
@@ -100,6 +108,48 @@ The
 
 \end_inset 
 
+ as well as
+\begin_inset Formula \begin{eqnarray*}
+\D\frac{\partial e_{xc}}{\partial\zeta} & = & \frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{2\left|\boldsymbol{\nabla}\rho\right|}\\
+\D\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}} & = & \frac{1}{4\left|\boldsymbol{\nabla}\rho\right|^{2}}\left[\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|^{2}}-\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{\left|\boldsymbol{\nabla}\rho\right|}\right]\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Subsection
+
+The routine 
+\shape smallcaps 
+doexc2
+\layout Standard
+
+The routine 
+\shape smallcaps 
+doexc2
+\shape default 
+ will construct matrices
+\begin_inset Formula \begin{equation}
+F_{pq}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau\label{eq:doexc2}\end{equation}
+
+\end_inset 
+
+ In the case of a symmetric operator (and matrix) the routine will construct
+ an intermediate 
+\emph on 
+non-symmetric
+\emph default 
+ matrix
+\begin_inset Formula \[
+H_{pq}=\int\left(\chi_{p}s\chi_{q}+2\chi_{p}\mathbf{v}\cdot\boldsymbol{\nabla}\chi_{q}\right)d\tau\]
+
+\end_inset 
+
+ The final desired matrix is then obtained by symmetrization
+\begin_inset Formula \[
+F_{pq}=\frac{1}{2}\left(H_{pq}+H_{qp}\right)\]
+
+\end_inset 
+
 
 \layout Subsection
 
@@ -118,32 +168,16 @@ F_{xc;pq}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\Omega_{pq}+2\frac{\part
 
 \end_inset 
 
-
-\layout Standard
-\noindent 
-We furthermore have
-\begin_inset Formula \begin{equation}
-\D\frac{\partial e_{xc}}{\partial\zeta}=\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{\partial\left|\boldsymbol{\nabla}\rho\right|}{\partial\zeta}=\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{2\left|\boldsymbol{\nabla}\rho\right|}\label{eq:dexc_dzeta}\end{equation}
+ The matrix has the form (
+\begin_inset LatexCommand \ref{eq:doexc2}
 
 \end_inset 
 
-In 
-\shape smallcaps 
-dirac
-\shape default 
- the routine 
-\shape smallcaps 
-dftpot1
-\shape default 
- returns 
+) in which appears
 \begin_inset Formula \begin{equation}
-\textrm{vx(fr0)}=\D\frac{\partial e_{xc}}{\partial\rho};\quad\textrm{vx(fz0)$=\D\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}$}\label{eq:vxc_fr0}\end{equation}
-
-\end_inset 
-
-The latter quantity is then modified to
-\begin_inset Formula \begin{equation}
-\textrm{vx(fz0)}=\D\frac{2}{\left|\boldsymbol{\nabla}\rho\right|}\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}=4\frac{\partial e_{xc}}{\partial\zeta}\label{eq:vxc_fr0_mod}\end{equation}
+\begin{array}{lclcl}
+s & = & \D\left.\frac{\partial e_{xc}}{\partial\rho}\right|_{0}\\
+\\\mathbf{v} & = & \D2\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{{\nabla}}\rho_{0} & = & \D\frac{\partial e_{\textrm{xc}}}{\partial\left|\boldsymbol{{\nabla}}\rho\right|}\frac{1}{\left|\boldsymbol{{\nabla}}\rho\right|}\end{array}\label{eq:Vxc-1order}\end{equation}
 
 \end_inset 
 
@@ -174,26 +208,16 @@ G_{xc;pq} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}\Om
 
 \end_inset 
 
- We have
-\begin_inset Formula \begin{eqnarray}
-\D\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}} & = & \frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|^{2}}\frac{1}{4\left|\boldsymbol{\nabla}\rho\right|^{2}}-\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{4\left|\boldsymbol{\nabla}\rho\right|^{3}}\label{eq:d2exc_dzeta2}\\
-\D\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta} & = & \frac{\partial^{2}e_{xc}}{\partial\rho\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{2\left|\boldsymbol{\nabla}\rho\right|}\label{eq:d2exc_drhodzeta}\end{eqnarray}
+ The matrix has the form (
+\begin_inset LatexCommand \ref{eq:doexc2}
 
 \end_inset 
 
-
-\layout Standard
-
-The 
-\begin_inset Formula $\sigma$
-\end_inset 
-
-- vector has elements
+) in which appears
 \begin_inset Formula \begin{eqnarray*}
-\sigma_{ai} & = & \D\int\left\{ \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\Omega_{ai}\rho^{(1)}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left[\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho_{0}\right)\rho^{(1)}+\Omega_{ai}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)\right]\right.\\
- & + & \left.\D4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho_{0}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)+2\frac{\partial e_{xc}}{\partial\zeta}\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)\right\} d\mathbf{r}\\
- & = & \D\int\left\{ \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\Omega_{ai}\rho^{(1)}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{\left|\boldsymbol{\nabla}\rho\right|}\left[\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho_{0}\right)\rho^{(1)}+\Omega_{ai}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)\right]\right.\\
- & + & \left.\left[\D\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|^{2}}\frac{1}{\left|\boldsymbol{\nabla}\rho\right|^{2}}-\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{\left|\boldsymbol{\nabla}\rho\right|^{3}}\right]\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho_{0}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)+\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{\left|\boldsymbol{\nabla}\rho\right|}\left(\boldsymbol{\nabla}\Omega_{ai}\cdot\boldsymbol{\nabla}\rho^{(1)}\right)\right\} d\mathbf{r}\end{eqnarray*}
+s & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)=\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+\frac{\partial e_{xc}}{\partial\rho\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)}{\left|\boldsymbol{\nabla}\rho\right|}\\
+\mathbf{v} & = & 2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho^{B}\boldsymbol{\nabla}\rho_{0}+2\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{\nabla}\rho^{B}+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\boldsymbol{\nabla}\rho_{0}\\
+ & = & \left\{ \frac{\partial e_{\textrm{xc}}}{\partial\left|\boldsymbol{{\nabla}}\rho\right|}\boldsymbol{\nabla}\rho^{B}+\left(\frac{\partial e_{xc}}{\partial\rho\partial\left|\boldsymbol{\nabla}\rho\right|}\rho^{B}+\left[\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|^{2}}-\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{\left|\boldsymbol{\nabla}\rho\right|}\right]\frac{\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)}{\left|\boldsymbol{\nabla}\rho\right|}\right)\boldsymbol{\nabla}\rho_{0}\right\} \frac{1}{\left|\boldsymbol{\nabla}\rho\right|}\end{eqnarray*}
 
 \end_inset 
 
@@ -519,41 +543,6 @@ s & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+2\frac{\partial^{2}e
 \layout Subsection
 
 Implementational details
-\layout Subsubsection
-
-The routine 
-\shape smallcaps 
-doexc2
-\layout Standard
-
-The routine 
-\shape smallcaps 
-doexc2
-\shape default 
- will construct matrices
-\begin_inset Formula \begin{equation}
-F_{pq}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau\label{eq:doexc2}\end{equation}
-
-\end_inset 
-
- In the case of a symmetric operator (and matrix) the routine will construct
- an intermediate 
-\emph on 
-non-symmetric
-\emph default 
- matrix
-\begin_inset Formula \[
-H_{pq}=\int\left(\chi_{p}s\chi_{q}+2\chi_{p}\mathbf{v}\cdot\boldsymbol{\nabla}\chi_{q}\right)d\tau\]
-
-\end_inset 
-
- The final desired matrix is then obtained by symmetrization
-\begin_inset Formula \[
-F_{pq}=\frac{1}{2}\left(H_{pq}+H_{qp}\right)\]
-
-\end_inset 
-
-
 \layout Subsubsection
 
 Linear response
