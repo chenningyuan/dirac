@@ -151,8 +151,6 @@ dftpot0_(FirstDrv *ds, const real* weight, const real* rho, const real* grad)
     dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
     drv1_clear(&drvs);
     selected_func->first(&drvs, *weight, &dp);
-    /* we should really use a separate structure here
-     * but this time, we cheat */
     ds->fR = drvs.df1000;
     ds->fZ = drvs.df0010 + 0.5*drvs.df00001* *grad;
 }
@@ -174,15 +172,15 @@ dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
     else
         selected_func->second(&drvs, *w, &dp);
          
-    ds->fR  = 0.5*(drvs.df1000 + drvs.df0100);
-    ds->fZ  = drvs.df0010;
+    ds->fR  = 0; /* NOT USED */
+    ds->fZ  = drvs.df0010 + 0.5*drvs.df00001* *grad;
     ds->fRR = 0.5*(drvs.df2000 + drvs.df1100);
-    ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001);
-    ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011);
-    ds->fRG = 0.5*drvs.df10001;
-    ds->fZG = 0.5*drvs.df00101;
-    ds->fGG = 0.25*drvs.df00002;
-    ds->fG  = 0.5*drvs.df00001;
+    ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001 + drvs.df10001* *grad);
+    ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011 + drvs.df00001) + drvs.df00101* * grad + 0.25*drvs.df00002* *grad* *grad;
+    ds->fRG = 0; /* NOT USED */
+    ds->fZG = 0; /* NOT USED */
+    ds->fGG = 0; /* NOT USED */
+    ds->fG  = 0; /* NOT USED */
 }
 
 
