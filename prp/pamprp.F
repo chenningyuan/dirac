@@ -6273,7 +6273,9 @@ C ------------------------------------------------------
 CMI ... take care of the correct form of PRPLBL(IPL) name
             READ(PRPNAM(IPL)(10:11),'(I2)') IA
             IB = MOD(I+2,3) + 1
-            TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)*D2I
+CMI   ... for compatibility with Dalton exp.values (NSLO) !
+CMI         TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)*D2I
+            TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)
          ENDDO
          IF (IPRPRP.GE.2) THEN
             CALL HEADER('London part of shielding (exp.value)'//

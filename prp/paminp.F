@@ -137,8 +137,8 @@ C       ... by default DO the picture change transformation
         DOPCT = .FALSE.
 CMI  ... no LL blocks of operators !!!!
 CMI     NOPCT = .TRUE.
-        WRITE(LUPRI,'(/3X,A/)')
-     &'PRPINP: No picture change transformation !'
+CMI     WRITE(LUPRI,'(/3X,A/)')
+CMI  &'PRPINP: No picture change transformation !'
       ENDIF
 C
 C     Read menu file
@@ -396,14 +396,18 @@ C
 
       IF (DOPCT) THEN
        IF (.NOT.NOPCT) THEN
-         WRITE(LUPRI,'(2X,A/)') 
+         WRITE(LUPRI,'(2X,A)') 
      & '...do the picture change transformation of the'//
-     & ' four-comp. property operator'
+     & ' four-comp. property operators'
        ELSE
-         WRITE(LUPRI,'(2X,A/)') 
+         WRITE(LUPRI,'(2X,A)') 
      & '...do NOT do the picture change transformation of the'//
-     & ' four-comp. property operator - take only LL block(s)'
+     & ' four-comp. property operators - take only LL block(s)'
        ENDIF
+      ELSE
+        WRITE (LUPRI,'(1X,A)')
+     &  '* do NOT perform the picture change transformation of the'//
+     &  ' four-component property operators'
       ENDIF
 C
 C     Process input for various program sections

@@ -5190,8 +5190,12 @@ C
       IF (BSS.AND.DOMP2)
      &   CALL QUIT ('BSS & MP2 not implemented')
 
-      IF (DOPRP.AND.TWOCOMP) 
-     &   CALL QUIT ('Properties & TWOCOMP not implemented')
+      IF (DOPRP.AND.TWOCOMP) THEN
+       WRITE(LUPRI,'(1X,A/)')
+     & 'NB: Properties & TWOCOMP require non-relativistic'//
+     & ' form of operators !' 
+CMI  &   CALL QUIT ('Properties & TWOCOMP not implemented')
+      ENDIF
 
       IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
       IF (DORES .AND.DODFT)

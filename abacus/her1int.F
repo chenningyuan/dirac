@@ -1652,8 +1652,8 @@ C
            CALL MM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &         AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC,.FALSE.)
 C
-C        relativ. London contrib. to the expect. value of NMR shielding, RNST
-C      -----------------------------------------------------------------------
+C        relativ. London contrib. to the expect. value of NMR shielding, RNST (NSLO)
+C      ---------------------------------------------------------------------------------
 CMI           integrals i/c Q_MN <r (r_K x alp/r_K^3) >
          ELSE IF (INTTYP .EQ. 204) THEN
            CALL RNSLOIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
@@ -5460,12 +5460,15 @@ c$$$ 200     CONTINUE
      &                  SHLINT,NOPTYP,NATOMC,DIFABX,DIFABY,DIFABZ)
 C
 C     Relativistic London orbital contribution to nuclear shielding integrals
+C     ...the relativistic analogue to the NSLO nonrelativ.integrals..
 C
 C     T. Enevoldsen 10. Oct. 1997
+C     MI febr.2006 - added multyplying by 1/2 to make integrals compatible with Dalton NSLO
 C
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
+      PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
 #include "onecom.h"
@@ -5516,23 +5519,24 @@ C
                      AH0V = AHGTF(IOFF + IADRAU + IT + ISTEPV)
 C
                      SHLINT(INT,IXX) = SHLINT(INT,IXX) +
-     &                    AH0T*AH1T
+     &                    AH0T*AH1T*D2INV
                      SHLINT(INT,IYX) = SHLINT(INT,IYX) +
-     &                    AH0T*AH1U
+     &                    AH0T*AH1U*D2INV
                      SHLINT(INT,IZX) = SHLINT(INT,IZX) +
-     &                    AH0T*AH1V
+     &                    AH0T*AH1V*D2INV
                      SHLINT(INT,IXY) = SHLINT(INT,IXY) +
-     &                    AH0U*AH1T
+     &                    AH0U*AH1T*D2INV
                      SHLINT(INT,IYY) = SHLINT(INT,IYY) +
-     &                    AH0U*AH1U
+     &                    AH0U*AH1U*D2INV
                      SHLINT(INT,IZY) = SHLINT(INT,IZY) +
-     &                    AH0U*AH1V
+     &                    AH0U*AH1V*D2INV
                      SHLINT(INT,IXZ) = SHLINT(INT,IXZ) +
-     &                    AH0V*AH1T
+     &                    AH0V*AH1T*D2INV
                      SHLINT(INT,IYZ) = SHLINT(INT,IYZ) +
-     &                    AH0V*AH1U
+     &                    AH0V*AH1U*D2INV
                      SHLINT(INT,IZZ) = SHLINT(INT,IZZ) +
-     &                    AH0V*AH1V
+     &                    AH0V*AH1V*D2INV
+
                      IOFF = IOFF + NAHGTF
  500              CONTINUE
  400           CONTINUE
@@ -5544,6 +5548,8 @@ C
  100  CONTINUE
       RETURN
       END
+
+
       SUBROUTINE RM1H3(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  DIFABX,DIFABY,DIFABZ)
 C
