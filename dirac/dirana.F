@@ -160,7 +160,11 @@ C
 C
 C     Check if coefficients are on file
 C
+#ifdef MOD_KRMC
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+#else
+      TOBEK=.FALSE.
+#endif /* MOD_KRMC */
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF ((.NOT.TOBE).AND.(.NOT.TOBEK)) GOTO 1000
 C     Memory allocation
@@ -171,6 +175,7 @@ C
 C     Read coefficients, eigenvalues and 
 C     irrep identification + restart info
 C
+#ifdef MOD_KRMC
       IF (TOBEK) THEN
          KRMC_FLG = 1
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','MULPOP')
@@ -183,11 +188,14 @@ C
          END IF
          CLOSE (LUKRMC)
       ELSE
+#endif /* MOD_KRMC */
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
      &               TOTERG,14,WORK,KFREE,LFREE)
          CLOSE(LUCOEF,STATUS='KEEP')
+#ifdef MOD_KRMC
       END IF
+#endif /* MOD_KRMC */
 C
 C     Get labels for population analysis
 C
