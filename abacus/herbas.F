@@ -71,7 +71,7 @@ C
      &                   Q, ISET, DSM, BASREF)
 #include "implicit.h"
 #include "priunit.h"
-      LOGICAL SEG
+      LOGICAL SEG, READNU_CALLED
       DIMENSION JCO(*), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
      +          ALPHA(KPRIM, KAOVEC), CPRIMU(KPRIM, KPRIM, KAOVEC), 
      +          CPRIM(KPRIM,KPRIM, KAOVEC), ISGEN(KAOVEC)
@@ -91,7 +91,7 @@ C*     SEGORB - A procedure that checks if the contraction   *
 C*              -coeffecients (for a given (angular quantum  *
 C*              number + 1)) are segmented or not.           *
 C*     NRMORB - Normalizing a matrix with contraction        *
-C*              -coeffecients                                *
+C*              -coefficients                                *
 C*************************************************************
 C
       CHARACTER BASTMP*80, BASSAV*80
@@ -218,7 +218,7 @@ C
 C
 C Finds the number of primitives and columns of contraction coeffecients
 C
-         CALL FINPOS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS)
+         CALL FINPOS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS,IPREAD)
 C     
  10      CONTINUE
 C
@@ -234,6 +234,9 @@ Chj-aug99: MAERKE find out how to implement UNCONT for ano or sadlej !
          END IF
 C
          IF ( .NOT. NEWEL) THEN
+
+            READNU_CALLED=.FALSE.
+
             IQM = IQM + 1
             JCO(IQM) = 1
   11        CONTINUE
@@ -277,12 +280,30 @@ C
      +                     LUBAS)
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1
-                  CALL FINPOS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS)
+                  CALL FINPOS ( NEWEL, INTEXP, INTORB,
+     &                           INTISG, LUBAS, IPREAD)
                   GOTO 10
                END IF
             ELSE
+
+CMI           ... to have INTORB fixed for repeating calls of READNU
+               IF (READNU_CALLED) THEN
+C               INTEXP = INTEXP_SAVE
+                 INTORB = INTORB_SAVE
+                 IF (IPREAD.GE.7) THEN
+                 write(lupri,*) 'restored INTORB=',INTORB
+                 ENDIF
+               END IF
+
+               INTEXP_SAVE = INTEXP
+               INTORB_SAVE = INTORB
+CMI            write(lupri,*) 'saved INTORB=',INTORB_SAVE 
+
                CALL READNU(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU,ALPHA,
-     +                     KPRIM,IAUG,DSM,BASNAM,POLFUN,IPOLST,LUBAS)
+     +                KPRIM,IAUG,DSM,BASNAM,POLFUN,IPOLST,LUBAS,IPREAD)
+
+               READNU_CALLED = .TRUE.
+
             END IF
 C
 C Checking if the matrix, with the contraction-coeffecients, is segmented 
@@ -326,7 +347,7 @@ C
 C
 C Define the type of the next relevant line in file
 C
-            CALL FINPOS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS)
+            CALL FINPOS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPREAD)
             GOTO 10
          END IF
       END IF
@@ -398,7 +419,7 @@ C*************************************************************
 C
 C/* Deck readnu */
       SUBROUTINE READNU(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA, 
-     +                  KPRIM,IAUG,DSM,BASNAM,POLFUN,IPOLST,LUBAS)
+     +            KPRIM,IAUG,DSM,BASNAM,POLFUN,IPOLST,LUBAS,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -426,6 +447,14 @@ C of contraction coeffecients on the next lines.
 C
       INTEGER CONEOR, CONORB
       PARAMETER(CONEOR = 6, CONORB = 7)
+
+      IF (IPRINT.GE.5) THEN
+       CALL HEADER('Output from READNU',-1)
+       write(lupri,*) 'enetering REANU, IPREAD=',IPRINT
+       write(lupri,*) 'NBLOCK,INTORB:',NBLOCK,INTORB
+       write(lupri,*) 'DSM=',DSM
+      ENDIF
+
 C
 C Initializing a counting variable that must be 0 before loop
 C
@@ -455,15 +484,26 @@ C CONLIN returns the number of lines we have the contraction
 C coeffecients written on.
 C
                JNTORB = ABS(INTORB)
-               CALL CONLIN(JNTORB, NUMLIN, DSM)
+
+               CALL CONLIN(JNTORB, NUMLIN, DSM, IPRINT)
+
                IF (INTORB .LE. 0) THEN
 C                 uncontracted basis set
                   READ (STRING, '(F16.9)') ALPHA(J,NBLOCK)
 C                 skip contiuation lines for contraction coeff.
+
                   DO I = 2,NUMLIN
                      READ (LUBAS,*)
                   END DO
+                   
                   CPRIMU(J,J,NBLOCK) = 1.0D0
+
+                  IF (IPRINT.GE.5) THEN
+                    write(lupri,*)
+     &              'read 1 NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)',
+     &              NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)
+                  ENDIF
+
                   GOTO 20
                ELSE
 C     
@@ -480,7 +520,13 @@ C
                   READ (STRING, '(F16.9, 6F12.9)')
      +                 ALPHA(J, NBLOCK), (CPRIMU(J,I,NBLOCK),
      +                 I = 1, KNTORB)
-C     
+
+                  IF (IPRINT.GE.6) THEN
+                    write(lupri,*)
+     &              'read 2 J,NBLOCK,ALPHA(J,NBLOCK)',
+     &              J,NBLOCK,ALPHA(J,NBLOCK)
+                  ENDIF
+C   
 C     If there are more lines with contraction-coeffecients, 
 C     they will be read here.
 C
@@ -548,8 +594,15 @@ C
      &                               *ALPHA(INTEXP-1,NBLOCK)
      &                               /ALPHA(INTEXP-2,NBLOCK)
                CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
+
+             IF (IPRINT.GE.5) THEN
+              write(lupri,*) 'INTEXP,NBLOCK,ALPHA',
+     &         INTEXP,NBLOCK,ALPHA(INTEXP,NBLOCK)
+             ENDIF
+
  199        CONTINUE 
          END IF
+
          IF (POLFUN) THEN
             ISTART = IPOLST
  33         CONTINUE
@@ -562,10 +615,22 @@ C
                   INTORB = INTORB + 1
                   ALPHA(INTEXP,NBLOCK) = EXPON
                   CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
+
+              IF (IPRINT.GE.5) THEN
+             write(lupri,*) 'INTEXP,NBLOCK,ALPHA',
+     &         INTEXP,NBLOCK,ALPHA(INTEXP,NBLOCK)
+              ENDIF
+
                END IF
                GOTO 33
             END IF
          END IF
+
+         IF (IPRINT.GE.4) THEN
+         write(lupri,*) 'READNU...NBLOCK,J=',NBLOCK,J
+         write(lupri,*) (ALPHA(IX,NBLOCK),IX=1,J)
+         ENDIF
+
          RETURN
       END IF
 C
@@ -685,8 +750,9 @@ C*               -coeffecients are written on.               *
 C*************************************************************
 C/* Deck conlin */
 C
-      SUBROUTINE CONLIN(INTORB, NUMLIN, DSM)
+      SUBROUTINE CONLIN(INTORB, NUMLIN, DSM, IPRINT)
 #include "implicit.h"
+#include "priunit.h"
 C      
 C This is the parameters for the number of contraction-coeffecients
 C on 1. and 2. line.
@@ -708,6 +774,15 @@ C
       ELSE
          NUMLIN = (INTORB - CONEOR)/CONORB + 2
       END IF
+
+      IF (IPRINT.GE.10) THEN
+       write(lupri,'(/,2X,A)') '*** CONLIN output ***'
+       write(lupri,*) 'input INTORB=',INTORB
+       write(lupri,*) 'input DSM=',DSM
+       write(lupri,*) 'output NUMLIN=',NUMLIN
+      ENDIF
+
+      RETURN
       END
 C********************************************************
 C* This are the subroutines that  reads  the primitives *
@@ -1135,7 +1210,7 @@ C*                          coeffecients                 *
 C*********************************************************
 C
 C/* Deck finpos */
-      SUBROUTINE FINPOS(NEWEL, INTEXP, INTORB, INTISG, LUBAS)
+      SUBROUTINE FINPOS(NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1170,10 +1245,20 @@ C If STRING is a blank line, then BLANK will return as .TRUE.
             GOTO 20
          ELSE
             READ (STRING, '(BN,3I5)') INTEXP, INTORB, INTISG
+            IF (IPRINT.GE.10) THEN
+             write(lupri,'(/,2X,A)') 'Output from FINPOS...reading'
+             write(lupri,*) 'INTEXP, INTORB, INTISG',
+     &          INTEXP, INTORB, INTISG
+            ENDIF
             RETURN
          END IF
       ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN  
          NEWEL = .TRUE.
+         IF (IPRINT.GE.10) THEN
+            write(lupri,'(/,2X,A)') 'Output from FINPOS'
+            write(lupri,*) 'INTEXP, INTORB, INTISG',
+     &         INTEXP, INTORB, INTISG
+         ENDIF
          RETURN
       ELSE 
          GOTO 20
@@ -1187,6 +1272,13 @@ C
 C
 C NEWEL must be .TRUE. to break the if-loop.
 C
+
+      IF (IPRINT.GE.10) THEN
+        write(lupri,'(/,2X,A)') 'Output from FINPOS'
+        write(lupri,*) 'INTEXP, INTORB, INTISG',
+     &          INTEXP, INTORB, INTISG
+      ENDIF
+
       RETURN
 C
  1000 CONTINUE
