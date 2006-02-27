@@ -10,12 +10,12 @@ C
 C****************************************************
 C
       COMMON /CBLACL/ DOGRAC, GRACON,                                   &
-     &        DOSAOP, SAOPON,                                           &
-     &        DORESP,                                                   &
-     &        DOLB94, DOLBALPHA,                                        &
-     &        DODUMP
+     &                DOSAOP, SAOPON,                                   &
+     &                DORESP,                                           &
+     &                DOLB94, DOLBALPHA,                                &
+     &                DODUMP
 C
       COMMON /CBLACR/ ACIP, ACTHRESHOLD, EIGMAX,                        &
-     &       GRACALPHA, GRACBETA
+     &                      GRACALPHA, GRACBETA
 C
       COMMON /CBLACI/ ICOUNTAC
