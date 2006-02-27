@@ -156,13 +156,27 @@ C
          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6,
      &               WORK,KFREE,LFREE)
          CLOSE(LUCOEF,STATUS='KEEP')
-         IF (.NOT. ORBANA) THEN
+CMI      ... prepare density matrixes for exp.value evaluation
+C ====================================================================
+CMI      IF (.NOT. ORBANA) THEN
+CMI         ... closed-shell part
             CALL GENDEN(DMAT,CMO,1,IPREXP)
             DO IOPEN = 1, NOPEN
-               CALL ACTDEN(DMAT(1+N2BBASXQ),D1,D0,CMO,IOPEN,IPREXP)
-               CALL DAXPY(N2BBASXQ,D1,DMAT(1+N2BBASXQ),1,DMAT,1)
+             IF (.NOT. ORBANA) THEN
+CMI        ... accumulate all densities into DMAT
+               CALL ACTDEN(DMAT,DF(IOPEN),D1,CMO,IOPEN,IPREXP)
+             ELSE
+CMI        ... keep closed- and open-shell densties separated
+
+C              CALL ACTDEN(DMAT,DF(IOPEN),D1,CMO,IOPEN,IPREXP)
+             CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),D0,D1,CMO,IOPEN,IPREXP)
+C              CALL ACTDEN(DMAT(1+N2BBASXQ),D0,DF(IOPEN),CMO,IOPEN,IPREXP)
+C              CALL ACTDEN(DMAT(1+N2BBASXQ),0.50D0,D0,CMO,IOPEN,IPREXP)
+CM             CALL ACTDEN(DMAT(1+N2BBASXQ),D1,D0,CMO,IOPEN,IPREXP)
+C              CALL DAXPY(N2BBASXQ,D1,DMAT(1+N2BBASXQ),1,DMAT,1)
+             ENDIF
             END DO
-         END IF
+C        END IF
 #ifdef MOD_KRMC
       ELSE IF (WF .EQ. 'KRMC') THEN
 C
@@ -500,10 +514,11 @@ C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
 C
+C     On input: ORBFLG ... it's ORBANA
+C
 C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
-C
-C     MI entry for LAO-project,  May 2003
+C     MI entry for LAO-project, May 2003
 C
 C***********************************************************************
 #include "implicit.h"
@@ -570,30 +585,61 @@ C   ...  ALL quaternion operator matrixes are in general non-zero
              FIRST(IZ)=.FALSE.
            ENDDO
          ENDIF
-C
+
+C========================================================================
 C     Get expectation value, using ONLY the matrices containing
 C     integrals (ensured by logical FIRST(1..NZ) )
-C
+C========================================================================
+       SX=0.D0
       DO IZ = 1,NZ
       IF(.NOT.FIRST(IZ)) THEN
-         IF (.NOT. ORBFLG) THEN
+CMI      IF (.NOT. ORBFLG) THEN
+         IF ( ORBFLG) THEN
            DO IOPEN = 0,NOPEN
               EXPVAL = EXPVAL + DF(IOPEN)
      &          *DDOT(N2BBASX,DMAT(1,IZ,IOPEN+1),1,PMAT(1,IZ),1)
+C            do ii = 1, N2BBASX
+C             SX = SX + (DF(IOPEN)*DMAT(ii,IZ,IOPEN+1)*PMAT(ii,IZ))
+C             write(lupri,*) ii,' df=',DF(IOPEN),' dmat=',
+C    &        DMAT(ii,IZ,IOPEN+1),' pmat=',PMAT(ii,IZ),' sum=',SX
+C            enddo
+            IF (IPRINT.GE.5) THEN
+             write(lupri,*)
+             WRITE(LUPRI,*)
+     &       ' == PRPEX3: acummulated EXPVAL after IZ=',IZ,
+     &       '/',NZ,' IOPEN=',IOPEN,'/',NOPEN,' DF(iopen)=',
+     &       DF(IOPEN),' exp.val=',2*EXPVAL
+            ENDIF
            END DO
          ELSE
+CMI          ... summary calculation
            EXPVAL = EXPVAL + DDOT(N2BBASX,DMAT(1,IZ,1),1,PMAT(1,IZ),1)
+           IF (IPRINT.GE.5) THEN
+             write(lupri,*)
+             WRITE(LUPRI,*)
+     &       ' == PRPEX3: acummulated EXPVAL (ORBANA=.false.)'//
+     &       ' after IZ=',IZ,
+     &       '/',NZ,' exp.val=',2*EXPVAL
+           ENDIF
          END IF
 CMI ... test ouput - print the PMAT and DMAT matrixes
          IF (IPRINT.GE.5) THEN
-           WRITE(LUPRI,'(2X,A,I1)') 'PRPEX3: PMAT of IZ=',IZ
+           WRITE(LUPRI,'(/2X,A,I1)') 'PRPEX3: PMAT of IZ=',IZ
            CALL OUTPUT(PMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
      &                   NTBAS(0),NTBAS(0),1,LUPRI)
-           WRITE(LUPRI,'(2X,A,I1)') 'PRPEX3: DMAT of IZ=',IZ
-           CALL OUTPUT(DMAT(1,IZ,1),1,NTBAS(0),1,NTBAS(0),
+
+           DO IOPEN=0,NOPEN
+           WRITE(LUPRI,'(/2X,A,I1,A,I1,A,I1,A,I1)')
+     &     'PRPEX3: DMAT of IZ=',IZ,'/',NZ,' IOPEN=',
+     &     IOPEN,'/',NOPEN
+           CALL OUTPUT(DMAT(1,IZ,IOPEN+1),1,NTBAS(0),1,NTBAS(0),
      &                   NTBAS(0),NTBAS(0),1,LUPRI)
+           ENDDO
+           write(lupri,*)
            WRITE(LUPRI,*)
-     &   ' == PRPEX3: acummulated EXPVAL after IZ',IZ,2*EXPVAL
+     &' == PRPEX3: total acummulated EXPVAL after IZ=',IZ,'/',NZ,
+     &    ' exp.val=',2*EXPVAL
+           CALL FLSHFO(LUPRI)
          ENDIF
       ENDIF
       ENDDO
