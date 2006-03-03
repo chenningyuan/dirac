@@ -3324,14 +3324,14 @@ C
      &              -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A,A3)') 
-     &       '- No orbitals in fermion ircop ',FREP(I)
+     &       '- No orbital string specified in fermion ircop ',FREP(I)
         ELSE
           NTOT = NTOT + NVEC
           WRITE(LUPRI,'(4X,A,A3,A,A72)') 
      &      '- Orbitals in fermion ircop ',FREP(I),' :',VECPRI(I)
         ENDIF
       ENDDO
-      IF(NTOT.EQ.0) IPRCMP = 0
+Cluuk IF(NTOT.EQ.0) IPRCMP = 0
       IF(IPRCMP.EQ.1) WRITE(LUPRI,'(1X,A)')
      +  '* Only large component coefficients written out.'
       IF(IPRCMP.EQ.2) WRITE(LUPRI,'(1X,A)')

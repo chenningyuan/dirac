@@ -541,6 +541,12 @@ C
             CALL QUIT('NOCC>NORB')
          END IF
       END DO
+C
+C     Set a variable so that we may check whether the orbital information
+C     is already defined.
+C
+      I_DCBORB_SET = 1
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -647,10 +647,14 @@ C
 C        Get eigenvalues from DFCOEF
 C
          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF(.NOT.TOBE) THEN
+         IF(.NOT.TOBE.OR.I_DCBORB_SET.NE.1) THEN
 C
 C           DFCOEF does not (yet) exist, put IP = - 666, which makes 
 C           NUMLS2 return with an empty list
+C           Another showstopper occurs if we call this before the 
+C           orbital common block is set (this info is currently needed
+C           to correctly process the orbital energy list), this is
+C           why we check for I_DCBORB_SET as well.
 C
             IP = - 666
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KEIG))
@@ -961,7 +965,25 @@ C
    1  EMIN = 1.E16
       EMAX = - 1.E16
 C
-      DO I = IRNGE1, IRNGE2
+C     Set start and end of search region
+C
+      IF (IRNGE1.LT.0) THEN
+         ISTART = IRNGE1 + 1
+      ELSEIF (IRNGE1.GT.0) THEN
+         ISTART = IRNGE1
+      ELSE
+         CALL QUIT ("Error in energy-based vector selection (NUMLST)")
+      ENDIF
+C
+      IF (IRNGE2.LT.0) THEN
+         IEND = IRNGE2 + 1
+      ELSEIF (IRNGE2.GT.0) THEN
+         IEND = IRNGE2
+      ELSE
+         CALL QUIT ("Error in energy-based vector selection (NUMLST)")
+      ENDIF
+C
+      DO I = ISTART, IEND
         EI = EIG(I)
         IF (EI.GE.ELOW.AND.EI.LE.EHIGH) THEN
            IF (EMIN.GT.EI) EMIN = EI
@@ -972,7 +994,7 @@ C
       CHMIN = .FALSE.
       CHMAX = .FALSE.
 C
-      DO I = IRNGE1, IRNGE2
+      DO I = ISTART, IEND
         EI = EIG(I)
         IF (EI.LT.EMIN.AND.EI.GE.EMIN-EGAP) THEN
            IF (ELOW.GT.EI) ELOW = EI
@@ -992,7 +1014,7 @@ C
 C     Determine the orbitals that fall within this energy range
 C
       ICNT = 0
-      DO I = IRNGE1, IRNGE2
+      DO I = ISTART, IEND
         EI = EIG(I)
         IF (EI.GE.ELOW.AND.EI.LE.EHIGH) THEN
            ICNT = ICNT + 1

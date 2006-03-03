@@ -22,7 +22,7 @@
      &        NCMOT, NCMOTQ, ICMO(2), ICMOQ(2), IASH(2), I2ASHT(2),     &
      &        I2ASHX(2, 2), IOCC(2), I2OCCT(2), I2OCCX(2, 2), NAOCC(2), &
      &        NAOCCT, NIOCC(2), NIOCCT, NAVIR(2), NAVIRT, NIVIR(2),     &
-     &        NIVIRT, I2_DCBORB
+     &        NIVIRT, I_DCBORB_SET, I2_DCBORB
 !
 !     IMPORTANT !!!
 !     I1_DCBORB and I2_DCBORB are tags used to calculate the size of
@@ -39,7 +39,8 @@
      &                NELECT, IORB, I2ORBT, I2ORBX, NCMO, NCMOQ, NCMOT, &
      &                NCMOTQ, ICMO, ICMOQ, IASH, I2ASHT, I2ASHX, IOCC,  &
      &                I2OCCT, I2OCCX, NAOCC, NAOCCT, NIOCC, NIOCCT,     &
-     &                NAVIR, NAVIRT, NIVIR, NIVIRT, I2_DCBORB
+     &                NAVIR, NAVIRT, NIVIR, NIVIRT, I_DCBORB_SET,       &
+     &                I2_DCBORB
 
 ! Do NOT place any more variables after the end tag !!!
 !     Information on orbital subblocks. Used at the moment only for linear symmetry
