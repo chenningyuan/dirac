@@ -26,17 +26,16 @@
       COMMON /DCCDHF/ DHF_INTTYP, CACC, PRJFIL, VCPROJ, VCFROZ
 
       LOGICAL DHFCONV(2), DHFEXIT, TRIVEC, TRIFCK, ERGCNV, EVCCNV,      &
-     &        FCKCNV, DODSCF, DODAMP, DODIIS, DIISON, PHCOEF, FIXDIF,   &
+     &        FCKCNV, DODSCF, DODAMP, DODIIS, DIISON, FIXDIF,           &
      &        DIISAO, DIISMO, OVLSEL, DYNSEL, DOBOSSEL, AUTOCC, INIOCC, &
      &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,                     &
      &                 ERGCNV2, EVCCNV2, FCKCNV2                        &
 
       COMMON /DCLDHF/ ERGCNV, EVCCNV, FCKCNV, DHFCONV, DHFEXIT, TRIVEC, &
      &                TRIFCK, DODSCF, DODAMP, DODIIS, DIISON, OVLSEL,   &
-     &                PHCOEF, FIXDIF, DIISAO, DIISMO, DYNSEL, DOBOSSEL, &
-     &                AUTOCC, INIOCC, DHF_SKIPEE, DHF_SKIPEP, NOQCDHF,  &
-     &                AOC,                          ERGCNV2, EVCCNV2,   &
-     &                FCKCNV2
+     &                FIXDIF, DIISAO, DIISMO, DYNSEL, DOBOSSEL, AUTOCC, &
+     &                INIOCC, DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,     &
+     &                ERGCNV2, EVCCNV2, FCKCNV2
 
       INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
      &        INTDEF, INTDEF_SAVE, INTFLG,                              &

@@ -723,7 +723,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
-     &            '.FCKCNV','.NODSCF','.PHCOEF','.FIXDIF','.NODAMP',
+     &            '.FCKCNV','.NODSCF','.XXXXXX','.FIXDIF','.NODAMP',
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.TRIVEC','.TRIFCK','.CLOSED','.EIGPRI','.OPEN S',
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
@@ -774,7 +774,6 @@ C
       TRIVEC    = .TRUE.
       TRIFCK    = .FALSE.
       DODSCF    = .FALSE.
-      PHCOEF    = .FALSE.
       FIXDIF    = .FALSE.
       IF(IDFLAG.GT.0) DODSCF    = .TRUE.
       DODAMP    = .TRUE.
@@ -974,8 +973,6 @@ C&&&& NODSCF: Do not employ differential matrices in SCF-iterations
                   DODSCF = .FALSE.
                GO TO 100
     8          CONTINUE
-C&&&& PHCOEF: Phase adjustment of coefficients
-                  PHCOEF = .TRUE.
                GO TO 100
     9          CONTINUE
 C&&&& FIXDIF: Use fixed value of DIFDEN
@@ -1984,7 +1981,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 12, NTABLE = 12)
+      PARAMETER (NDIR = 12, NTABLE = 16)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*72
@@ -2002,7 +1999,8 @@ C
      &             '*OPTIMI','XXXXXXX','XXXXXXX','XXXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
-     &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC'/
+     &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
+     &             '.PHCOEF','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       NJOBS = 0
 C
@@ -2019,7 +2017,10 @@ C
       DOLUCT  = .FALSE.
       DOKRMC  = .FALSE.
       DOLUCIAR= .FALSE.
-      DOORBM  = .FALSE.
+      L1ORBM  = .FALSE.
+      L2ORBM  = .FALSE.
+      PHCOEF  = .FALSE.
+
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
@@ -2059,7 +2060,7 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
-     &                109,110,111,112),I
+     &                109,110,111,112,113,114,115,116),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2098,7 +2099,7 @@ C             First read the number of orbital reorderings
 C             in each fermion corep.
 C
             LMOORD = .TRUE.
-            DOORBM = .TRUE.
+            L1ORBM = .TRUE.
             IREORD(1) = 0
             IREORD(2) = 0
             DO I = 1,NFSYM
@@ -2114,6 +2115,7 @@ C           Reorder finished MO orbitals
 C           First read the number of orbital reorderings
 C           in each fermion corep.
 C
+            L2ORBM = .TRUE.
             LMOORF = .TRUE.
             IREORF(1) = 0
             IREORF(2) = 0
@@ -2149,7 +2151,7 @@ C&&&& RESOLVE: Resolve open-shell states
   110    CONTINUE
 C&&&& ORBROT: Rotate orbitals prior to SCF calculations
             ROTORB = .TRUE.
-            DOORBM = .TRUE.
+            L1ORBM = .TRUE.
             READ(LUCMD,*) ROTANG
             READ(LUCMD,'(A72)') (VECROT(I),I=1,NFSYM)            
             GO TO 100
@@ -2162,6 +2164,17 @@ C&&&& LUCIAREL: Call LUCIAREL
 C&&&& KRMCSCF: KR-MCSCF
             DOKRMC = .TRUE.
             NJOBS = NJOBS + 1
+            GO TO 100
+ 113     CONTINUE
+C&&&& PHCOEF: Phase adjustment of coefficients
+            L2ORBM = .TRUE.
+            PHCOEF = .TRUE.
+            GO TO 100
+ 114     CONTINUE
+            GO TO 100
+ 115     CONTINUE
+            GO TO 100
+ 116     CONTINUE
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180

@@ -214,7 +214,7 @@ C It ought to be implemented for other wave function types as well.
 C TF, Nov. 2003:  Done for KRMC. 
 C
 C     Reorder/rotate orbitals prior to SCF-calculations
-      IF(DOORBM) CALL PREORB(WORK,LWORK)
+      IF(L1ORBM) CALL PREORB(WORK,LWORK)
 C
 C***********************************************************************
 C***** D I R A C - H A R T R E E - F O C K *****************************
@@ -261,6 +261,8 @@ C        ... DHF not converged;
             CALL QUIT('SCF not converged')
          END IF
       END IF
+C     Post orbital modifications
+      IF(L2ORBM) CALL PSTORB(WORK,LWORK)
 C
 C***********************************************************************
 C***** R E S O L V E    O P E N - S H E L L  S T A T E S ***************

@@ -160,7 +160,7 @@ C     ....
 C       CALL MEMCHK('CMOTR4C bef',WORK,1)
 
         CALL CMOTR4C(WORK(K1),WORK(K2),WORK(KCMO),WORK(KEIG),
-     &                WORK(KIBRP),WORK(KFREE),LFREE)
+     &                WORK(KIBRP),IPRSCF,WORK(KFREE),LFREE)
 
 C       CALL MEMCHK('CMOTR4C after',WORK,1)
 
@@ -203,7 +203,7 @@ C         .... prepare the DFCOEF file with staring MO's
         CALL MEMGET('REAL',KEIG ,NTBAS(0),   WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIBRP,NTBAS(0),   WORK,KFREE,LFREE)
         CALL CMOINI4C(WORK(KCMO),WORK(K1),WORK(KEIG),
-     &                WORK(KIBRP),WORK(KFREE),LFREE)
+     &                WORK(KIBRP),IPRSCF,WORK(KFREE),LFREE)
         CALL MEMREL('FDTR4C',WORK,KWORK,KIBRP,KFREE,LFREE)
         CALL MEMREL('FDTR4C',WORK,KWORK,KEIG,KFREE,LFREE)
         CALL MEMREL('FDTR4C',WORK,KWORK,K1,KFREE,LFREE)
@@ -1551,34 +1551,6 @@ C     ***** End of SCF-iterations ******
 C     **********************************
 C
  30   CONTINUE
-C
-C     Reorder converged orbitals if requested
-C
-      IF (LMOORF) THEN
-C
-C        It looks like CMO is trashed at this point, so we re-read
-C        the orbitals from DFCOEF:
-C
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,EXXX,14,
-     &               WORK,KFREE,LFREE)
-C
-         CALL REORD(CMO,EIG,IBEIG,IMOORF,IREORF,MXREORD,
-     &        WORK(KFREE),LFREE)
-C
-C        Make sure that reordered coefficients are written back
-C        to file.
-C
-          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
-      END IF
-C
-C     Phase-adjustment of coefficients, if requested...
-C
-      IF(PHCOEF) THEN
-        DO I = 1,NFSYM
-          CALL PHATRA(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ)
-        ENDDO
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
-      ENDIF
 C
 C     Close necessary files
 C

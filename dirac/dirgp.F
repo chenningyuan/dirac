@@ -1860,7 +1860,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck orbmod */
+C/* Deck preorb */
       SUBROUTINE PREORB(WORK,LWORK)
 C***********************************************************************
 C
@@ -1917,4 +1917,91 @@ C
       WRITE(LUPRI,'(A)') 'PREMOD: Coefficient file not found !'
       CALL QUIT('PREMOD: Coefficients not found !')
 C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck pstorb */
+      SUBROUTINE PSTORB(WORK,LWORK)
+C***********************************************************************
+C
+C     Manipulation of DFCOEF after a wave function calculation
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcborb.h"
+      LOGICAL TOBE
+      DIMENSION WORK(LWORK)
+C
+#include "memint.h"
+C
+C     Check if coefficients are on file
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) GOTO 1000
+C     Memory allocation
+      CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBG ,NORBT ,WORK,KFREE,LFREE)
+C
+      CALL PSTOR1(WORK(KCMO),WORK(KEIG),WORK(KIBG),
+     &            WORK(KFREE),LFREE)
+C
+C     Memory deallocation
+      CALL MEMREL('PREMOD',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+C
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'PSTORB: Coefficient file not found !'
+      CALL QUIT('PSTORB: Coefficients not found !')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/*Deck Pstor1 */
+      SUBROUTINE PSTOR1(CMO,EIG,IBEIG,WORK,LWORK)
+C***********************************************************************
+C
+C     Post orbital modifications
+C     Written by T. Saue Jan 27 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbreo.h"
+      DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(*)
+#include "memint.h"
+
+C
+C     Read coefficients, eigenvalues and irrep identification 
+C
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREMOD')
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
+     &            WORK,KFREE,LFREE)
+C
+C     Reorder orbitals
+C
+      IF (LMOORF) CALL REORD(CMO,EIG,IBEIG,IMOORF,IREORF,MXREORD,
+     &                       WORK(KFREE),LFREE)
+C
+C     Phase-adjustment of coefficients, if requested...
+C
+      IF(PHCOEF) THEN
+        DO I = 1,NFSYM
+          CALL PHATRA(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ)
+        ENDDO
+      ENDIF
+C
+C     Write new coefficients
+C
+      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+      RETURN
       END
