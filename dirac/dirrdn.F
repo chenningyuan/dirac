@@ -3008,7 +3008,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
-     &            '.WGPOP','.OWNBAS','.XXXXXX','.XXXXXX'/
+     &            '.WGPOP','.OWNBAS','.PRJADJ','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -3032,6 +3032,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       PROTHR   = 1.0D-3
       LWGPOP = .FALSE.
       OWNBAS = .FALSE.
+      PRJADJ = .FALSE.
 C
 C     Process input from CBIPRJ
 C     =========================
@@ -3098,6 +3099,9 @@ C&&& OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis 
                  OWNBAS = .TRUE.
                GO TO 100
     7          CONTINUE
+C&&& PRJADJ: Phase adjustment according to selected reference orbital
+                  PRJADJ = .TRUE.
+                  READ(LUCMD,*) (IREFADJ(I),I=1,NFSYM)          
                GO TO 100
     8          CONTINUE
                GO TO 100
@@ -3192,6 +3196,12 @@ C
       IF(LWGPOP) WRITE(LUPRI,'(A,A)') '* Overlap densities split ',
      &  'between contributions according to their weight.'
       WRITE(LUPRI,'(1X,A,I5)') '* Print level:',IPRPRJ
+      IF(PRJADJ) THEN
+         WRITE(LUPRI,'(A,A)') 'Molecular coefficients phase adjusted ',
+     &      'according to reference orbitals :'
+         WRITE(LUPRI,'(A,A3,A,I5)')
+     &      ('Fermion ircop ',FREP(I),': ',IREFADJ(I),I=1,NFSYM)
+      ENDIF
   999 CONTINUE
       RETURN
 C

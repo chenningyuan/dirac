@@ -1222,6 +1222,29 @@ C.....Projection coefficients
       CALL WRITT(LUCOEF,NBDIM,WORK(KBV(1)))
       CLOSE(LUCOEF,STATUS='KEEP')
 C
+C     If requested, do phase transformation of molecule coefficients
+C     using a selected reference orbital for alignment
+C     ==============================================================     
+C
+      IF(PRJADJ) THEN
+        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRJANA')
+        CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIBE,NORBT   ,WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBE),
+     &              TOTERG,14,WORK,KFREE,LFREE)
+
+        DO IFRP = 1,NFSYM
+          
+          CALL PRJPHA(IREFADJ(IFRP),IFRP,
+     &                WORK(KCMO+ICMOQ(IFRP)),NFBAS(IFRP,0),NORB(IFRP),
+     &                WORK(KBV(IFRP)),NVECS(IFRP,0),NVECS(IFRP,2),
+     &                WORK(KVEC(IFRP,0)),NSTR(IFRP,2,0),NSTR(IFRP,1,0))
+        ENDDO
+        REWIND LUCOEF
+        CALL WRICMO(LUCOEF,WORK(KCMO),WORK(KEIG),WORK(KIBE),TOTERG)
+        CLOSE(LUCOEF,STATUS='KEEP')
+      ENDIF
       CALL MEMREL('PRJANA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
@@ -3383,4 +3406,104 @@ C
       RETURN
  110  FORMAT(4X,A6,2X,A1,I6,3X,F11.5,5X,E15.8,
      &       2(3X,A1,F5.2,A1,F5.2,A1,3X))
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck prjpha */
+      SUBROUTINE PRJPHA(ISEL,IFRP,CMO,NBAS,NVEC,BVEC,NTOT,NMOL,
+     &                  JVEC,NPVEC,NEVEC)
+C***********************************************************************
+C
+C     Phase adjustment using a selected reference orbital
+C
+C     Written by T. Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+      DIMENSION CMO(NBAS,NVEC,NZ),BVEC(NTOT,NMOL,NZ),JVEC(NMOL)
+C
+C     Positronic vectors
+C
+      DO I = 1,NPVEC
+        II = NPSH(IFRP)+1+JVEC(I)
+        CALL PRJPH1(ISEL,CMO,II,NBAS,NVEC,BVEC,I,NTOT,NMOL)
+      ENDDO
+C
+C     Electronic vectors
+C
+      ITOP = NEVEC+NPVEC
+      DO I = NPVEC+1,ITOP
+        II = NPSH(IFRP)+JVEC(I)
+        CALL PRJPH1(ISEL,CMO,II,NBAS,NVEC,BVEC,(I+NPVEC),NTOT,NMOL)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck prjph1 */
+      SUBROUTINE PRJPH1(ISEL,CMO,IC,NBAS,NVEC,BVEC,IB,NTOT,NMOL)
+C***********************************************************************
+C
+C     Phase adjustment using a selected reference orbital
+C
+C     Written by T. Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0, DM1 = -1.0D0)
+C
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+      DIMENSION CMO(NBAS,NVEC,NZ),BVEC(NTOT,NMOL,NZ),JVEC(NMOL)
+      DIMENSION A(4),B(4)
+      IF(NZ.EQ.1) THEN
+        IF(BVEC(ISEL,IB,1).LT.D0) CALL DSCAL(NBAS,DM1,CMO(1,IC,1),1)        
+      ELSEIF(NZ.EQ.2) THEN
+        DB = PYTHAG(BVEC(ISEL,IB,1),BVEC(ISEL,IB,2))
+        IF(DB.GT.D0) THEN
+          DO IZ = 1,NZ
+            A(IZ) =  BVEC(ISEL,IB,IZ)/DB
+          ENDDO
+          DO IZ = 1,NZ
+            A(IZ) =  VEC(IB,J,IZ)/DB
+          ENDDO
+          DO I = 1,NBAS
+            B(1)        = CMO(I,IC,2)*A(1) - CMO(I,IC,1)*A(2)
+            CMO(I,IC,1) = CMO(I,IC,1)*A(1) + CMO(I,IC,2)*A(2)
+            CMO(I,IC,2) = B(1)
+          ENDDO
+        ENDIF
+      ELSEIF(NZ.EQ.4) THEN
+        DB = PYTHAG(PYTHAG(BVEC(ISEL,IB,1),BVEC(ISEL,IB,2)),
+     &              PYTHAG(BVEC(ISEL,IB,3),BVEC(ISEL,IB,4)))
+        IF(DB.GT.D0) THEN
+          DO IZ = 1,NZ
+            A(IZ) =  BVEC(ISEL,IB,IZ)/DB
+          ENDDO
+          DO I = 1,NBAS
+            B(1)        = CMO(I,IC,2)*A(1) - CMO(I,IC,1)*A(2)
+     &                  + CMO(I,IC,4)*A(3) - CMO(I,IC,3)*A(4)
+            B(2)        = CMO(I,IC,3)*A(1) - CMO(I,IC,4)*A(2)
+     &                  - CMO(I,IC,1)*A(3) + CMO(I,IC,2)*A(4)
+            B(3)        = CMO(I,IC,4)*A(1) + CMO(I,IC,3)*A(2)
+     &                  - CMO(I,IC,2)*A(3) - CMO(I,IC,1)*A(4)
+            CMO(I,IC,1) = CMO(I,IC,1)*A(1) + CMO(I,IC,2)*A(2)
+     &                  + CMO(I,IC,3)*A(3) + CMO(I,IC,4)*A(4)
+            CMO(I,IC,2) = B(1)
+            CMO(I,IC,3) = B(2)
+            CMO(I,IC,4) = B(3)
+          ENDDO
+        ENDIF
+      ELSE
+        WRITE(LUPRI,'(A,I5)') 'PRJPH1: * Unknown NZ = ',NZ
+        CALL QUIT('PRJPH1: Unknown NZ !')
+      ENDIF
+C
+      RETURN
       END
