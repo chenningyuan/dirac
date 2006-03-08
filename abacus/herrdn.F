@@ -659,7 +659,32 @@ C     note: SPHINP will read additional input lines if DOOWN true
 C***********************************************************************
       DOCART = CRT .EQ. 'C' .OR. CRT .EQ. 'c'
       DOOWN  = CRT. EQ. 'X'
-      IF (DIRAC .AND. .NOT. (DOCART .OR. DOOWN)) THEN
+C
+C     aspg, 2006-03-08
+C
+C     initial steps to enabling ERI usage:
+C
+C     1. we define DOSPHE to take the "S"/"s" values in the molecule file
+C        so that DOCART can be made false
+C
+      DOSPHE = CRT .EQ. 'S' .OR. CRT .EQ. 's'
+      IF (DIRAC .AND. DOSPHE) THEN
+         IF (IPREAD .GT. 0) THEN
+            WRITE(LUPRI,*) 'Spherical Gaussians specified'//
+     &                     'the embedded transformation in the',
+     &                     'Lowdin transformation step is off'
+         END IF
+C
+C     2. if we choose the spherical gaussians we switch off the embedded
+C        cartesian to gaussian transformation in LOWDIN()
+C
+         ISPHTR = 0
+C
+C     3. if a blank space is left in the field that sets the preference 
+C     for cartesian/spherical gaussians, we assume the old default
+C     behavior to take the cartesians 
+C
+      ELSE IF (DIRAC .AND. .NOT. (DOCART .OR. DOOWN)) THEN
          IF (IPREAD .GT. 0) THEN
             WRITE(LUPRI,'(/3(A/))')
      &      'WARNING!!! Cartesian Gaussians must be specified',
