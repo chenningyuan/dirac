@@ -3097,7 +3097,8 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
       DO 100 IATP = 1, NOCTPA
          DO 90 IBTP = 1, NOCTPB
 *. is this combination allowed in any of the GAS spaces included
-           INCLUDE = 0
+CMI        INCLUDE = 0
+           INCLUD = 0
            DO JJCMBSPC = 1, LCMBSPC
              JCMBSPC = ICMBSPC(JJCMBSPC)
              IEL = 0
@@ -3109,9 +3110,11 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
      &            IEL.GT.MNMXOC(IGAS,2,JCMBSPC))
      &         IAMOKAY = 0
              END DO
-             IF(IAMOKAY.EQ.1) INCLUDE = 1
+CMI          IF(IAMOKAY.EQ.1) INCLUDE = 1
+             IF(IAMOKAY.EQ.1) INCLUD = 1
            END DO
-           IF(INCLUDE .EQ.1) THEN
+CMI        IF(INCLUDE .EQ.1) THEN
+           IF(INCLUD .EQ.1) THEN
 *. Congratulations , you are allowed
               IOCOC(IATP,IBTP) = 1
           END IF
