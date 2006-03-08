@@ -7568,7 +7568,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
 #include "dcbgen.h" 
 #include "dgroup.h" 
-C#include "dcbdhf.h" 
+#include "dcbdhf.h" 
 #include "dcbham.h" 
 #include "dcbbas.h" 
 #include "dcborb.h" 
@@ -7761,7 +7761,7 @@ C       ... read LS_e initial MO's from BSSMAT file
        ISIZE = (NESH(1)*NFBAS(1,0)*NZ)
        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
        CALL READT(LUBSS,ISIZE,TMAT)
-       IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
+       IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')
      & 'CMOINI4C: CMO_LS_e read from BSSMAT'
        ELSE
         CALL QUIT(
