@@ -2217,7 +2217,8 @@ C     INTEGER IACOC(MXPNGAS)
       DO JOCCLS = 1, NOCCLS
 
 *
-        INCLUDE = 0
+CMI     INCLUDE = 0
+        INCLUD = 0
         DO JJCMBSPC = 1, LCMBSPC(ICISPC)
           JCMBSPC = ICMBSPC(JJCMBSPC,ICISPC)
           I_AM_OK = 1
@@ -2230,10 +2231,12 @@ C     INTEGER IACOC(MXPNGAS)
             IF(IEL.LT.IGSOCCX(IGAS,1,JCMBSPC).OR.
      &      IEL.GT.IGSOCCX(IGAS,2,JCMBSPC)) I_AM_OK = 0
           END DO
-          IF(I_AM_OK .EQ. 1 ) INCLUDE = 1
+CMI       IF(I_AM_OK .EQ. 1 ) INCLUDE = 1
+          IF(I_AM_OK .EQ. 1 ) INCLUD = 1
         END DO
 *
-        IF(INCLUDE.EQ.1) THEN
+CMI     IF(INCLUDE.EQ.1) THEN
+        IF(INCLUD.EQ.1) THEN
           NINCCLS = NINCCLS + 1
           INCCLS(JOCCLS) = 1
         ELSE
