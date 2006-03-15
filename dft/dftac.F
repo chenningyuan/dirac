@@ -234,7 +234,10 @@ C     ===============
 C
       IF(DOGRAC) THEN
         RHO43 = RHO*RHO13
-        SIGMA = D2*RHOGRD*RHOGRD
+C       SIGMA = D2*RHOGRD*RHOGRD
+C
+C       fix:
+        SIGMA = RHOGRD*RHOGRD
         X = D0
 C
         IF(RHO43.NE.D0) THEN
