@@ -190,7 +190,7 @@ Linear response
 We need
 \begin_inset Formula \begin{eqnarray*}
 \left.\frac{d}{d\varepsilon_{B}}\left[\frac{\partial E_{xc}}{\partial\kappa_{ai}^{*}}\right]\right|_{\boldsymbol{\kappa}=\mathbf{0}} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\frac{d\rho}{d\varepsilon_{B}}+\frac{\partial e_{xc}}{\partial\rho}\frac{d}{d\varepsilon_{B}}\left(\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\right)+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\frac{d\zeta}{d\varepsilon_{B}}\right.\\
- & = & \left.\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\frac{d\rho}{d\varepsilon_{B}}+\frac{\partial e_{xc}}{\partial\zeta}\frac{d}{d\varepsilon_{B}}\left(\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\right)+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\frac{d\zeta}{d\varepsilon_{B}}\right]d\tau\\
+ & + & \left.\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\frac{d\rho}{d\varepsilon_{B}}+\frac{\partial e_{xc}}{\partial\zeta}\frac{d}{d\varepsilon_{B}}\left(\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\right)+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\frac{d\zeta}{d\varepsilon_{B}}\right]d\tau\\
  & = & -F_{xc;ai}^{B}-G_{xc;ai}\end{eqnarray*}
 
 \end_inset 
