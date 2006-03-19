@@ -775,7 +775,7 @@ C  .  routine returns one (or two) 4-vectors with                      .
 C  .  density(1) =  density_x                                          .
 C  .  density(2) =  density_y                                          .
 C  .  density(3) =  density_z                                          .
-C  .  density(4) =  density*density (square of its norm)               .
+C  .  density(4) = |density|   (the norm)                              .
 C  .....................................................................
 C  .  author:                                          last revision:  .
 C  .  radovan bast                                     march 2006      .
@@ -870,6 +870,7 @@ C
         CURRENTDENSITY(I) = F*TEMP1+G*TEMP2
       ENDDO
       CURRENTDENSITY(4) = DDOT(3,CURRENTDENSITY,1,CURRENTDENSITY,1)
+      CURRENTDENSITY(4) = DSQRT(CURRENTDENSITY(4))
 C
 C
       RETURN
