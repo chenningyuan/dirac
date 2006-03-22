@@ -158,7 +158,7 @@ Gradient
 
 We need
 \begin_inset Formula \[
-\left.\frac{\partial E_{xc}}{\partial\kappa_{ai}^{*}}\right|_{\boldsymbol{\kappa}=\mathbf{0}}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\frac{\partial\rho}{\partial\kappa_{ai}^{*}}+\frac{\partial e_{xc}}{\partial\zeta}\frac{\partial\zeta}{\partial\kappa_{pq}}\right]d\tau=-F_{xc;ai}\]
+\left.\frac{\partial E_{xc}}{\partial\kappa_{ai}^{*}}\right|_{\boldsymbol{\kappa}=\mathbf{0}}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\frac{\partial\rho}{\partial\kappa_{ai}^{*}}+\frac{\partial e_{xc}}{\partial\zeta}\frac{\partial\zeta}{\partial\kappa_{ai}^{*}}\right]d\tau=-F_{xc;ai}\]
 
 \end_inset 
 
@@ -1076,7 +1076,7 @@ E_{ia}^{[1]} & = & \int\left.\frac{\partial F}{\partial\rho}\right|_{\kappa=0}\p
 Spin-polarized theory
 \layout Subsection
 
-Collinear approach
+Definitions
 \layout Standard
 
 In non-relativistic theory the spin and spatial degrees of freedom are completel
@@ -1123,6 +1123,99 @@ y decoupled and the z-axis is chosen as the quantization axis for spin.
  We note the useful relations
 \begin_inset Formula \[
 \rho^{\alpha}=\frac{1}{2}\left[\rho+Q\right]=\frac{1}{2}\rho\left[1+\zeta\right];\quad\rho^{\alpha}=\frac{1}{2}\left[\rho-Q\right]=\frac{1}{2}\rho\left[1-\zeta\right]\]
+
+\end_inset 
+
+
+\layout Standard
+
+In the follwing we will develop non-collinear theory using the variable
+\begin_inset Formula \[
+M=\mathbf{m}\cdot\mathbf{m}\]
+
+\end_inset 
+
+The 
+\begin_inset Formula $M$
+\end_inset 
+
+-variable can be expanded as
+\begin_inset Formula \[
+M(\mathbf{r},\boldsymbol{\kappa})=\mathbf{m}\cdot\mathbf{m}=\sum_{n=0}^{\infty}M^{(n)}\]
+
+\end_inset 
+
+ in which appears
+\begin_inset Formula \begin{eqnarray*}
+M^{(0)} & = & \mathbf{m}_{0}\cdot\mathbf{m}_{0}\\
+M^{(1)} & = & 2\left(\mathbf{m}_{0}\cdot\mathbf{m}^{(1)}\right)\\
+M^{(2)} & = & 2\left(\mathbf{m}_{0}\cdot\mathbf{m}^{(2)}\right)+\left(\mathbf{m}^{(1)}\cdot\mathbf{m}^{(1)}\right)\\
+M^{(3)} & = & 2\left(\mathbf{m}_{0}\cdot\mathbf{m}^{(3)}\right)+2\left(\mathbf{m}^{(1)}\cdot\mathbf{m}^{(2)}\right)\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Subsection
+
+Gradient
+\layout Standard
+
+We need
+\begin_inset Formula \[
+\left.\frac{\partial E_{xc}}{\partial\kappa_{ai}^{*}}\right|_{\boldsymbol{\kappa}=\mathbf{0}}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\frac{\partial\rho}{\partial\kappa_{ai}^{*}}+\frac{\partial e_{xc}}{\partial M}\frac{\partial M}{\partial\kappa_{ai}^{*}}\right]_{\boldsymbol{\kappa}=\mathbf{0}}d\tau=-F_{xc;ai}\]
+
+\end_inset 
+
+ in which appears the xc-part of the Kohn-Sham matrix
+\begin_inset Formula \[
+F_{xc;pq}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\Omega_{pq}+2\frac{\partial e_{xc}}{\partial M}\left(\mathbf{m}_{0}\cdot\boldsymbol{\mu}{}_{pq}\right)\right]d\tau\]
+
+\end_inset 
+
+ In the closed shell case 
+\begin_inset Formula $\mathbf{m}_{0}=\mathbf{0}$
+\end_inset 
+
+ and so the spin contribution disappears.
+\layout Subsection
+
+Linear response
+\layout Standard
+
+We need
+\begin_inset Formula \begin{eqnarray*}
+\left.\frac{d}{d\varepsilon_{B}}\left[\frac{\partial E_{xc}}{\partial\kappa_{ai}^{*}}\right]\right|_{\boldsymbol{\kappa}=\mathbf{0}} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\frac{d\rho}{d\varepsilon_{B}}+\frac{\partial e_{xc}}{\partial\rho}\frac{d}{d\varepsilon_{B}}\left(\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\right)+\frac{\partial^{2}e_{xc}}{\partial\rho\partial M}\frac{\partial\rho}{\partial\kappa_{ai}^{*}}\frac{dM}{d\varepsilon_{B}}\right.\\
+ & + & \left.\frac{\partial^{2}e_{xc}}{\partial\rho\partial M}\frac{\partial M}{\partial\kappa_{ai}^{*}}\frac{d\rho}{d\varepsilon_{B}}+\frac{\partial e_{xc}}{\partial\zeta}\frac{d}{d\varepsilon_{B}}\left(\frac{\partial M}{\partial\kappa_{ai}^{*}}\right)+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\frac{\partial M}{\partial\kappa_{ai}^{*}}\frac{dM}{d\varepsilon_{B}}\right]d\tau\\
+ & = & -F_{xc;ai}^{B}-G_{xc;ai}\end{eqnarray*}
+
+\end_inset 
+
+ in which appears the one-index transformed Kohn-Sham matrix (xc part)
+\begin_inset Formula \[
+F_{xc;pq}^{B}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\Omega_{pq}^{B}+2\frac{\partial e_{xc}}{\partial M}\left(\mathbf{m}_{0}\cdot\boldsymbol{\mu}{}_{pq}^{B}\right)\right]d\tau\]
+
+\end_inset 
+
+ and the matrix
+\begin_inset Formula \begin{eqnarray*}
+G_{xc;pq} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}\Omega_{pq}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial M}\left\{ \left(\mathbf{m}_{0}\cdot\mathbf{m}^{B}\right)\Omega_{pq}+\rho^{B}\left(\mathbf{m}_{0}\cdot\boldsymbol{\mu}_{pq}\right)\right\} \right.\\
+ & + & \left.2\frac{\partial e_{xc}}{\partial M}\left(\mathbf{m}^{B}\cdot\boldsymbol{\mu}_{pq}\right)+4\frac{\partial^{2}e_{xc}}{\partial M^{2}}\left(\mathbf{m}_{0}\cdot\mathbf{m}^{B}\right)\left(\mathbf{m}_{0}\cdot\boldsymbol{\mu}_{pq}\right)\right]d\tau\end{eqnarray*}
+
+\end_inset 
+
+ In the closed-shell case these expressions reduce to
+\begin_inset Formula \begin{eqnarray*}
+F_{xc;pq}^{B} & = & \int\frac{\partial e_{xc}}{\partial\rho}\Omega_{pq}^{B}d\tau\\
+G_{xc;pq} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}\Omega_{pq}+\frac{\partial^{2}e_{xc}}{\partial s^{2}}\left(\mathbf{m}_{0}\cdot\boldsymbol{\mu}_{pq}^{B}\right)\right]d\tau\end{eqnarray*}
+
+\end_inset 
+
+ where we have used the relation
+\begin_inset Formula \[
+\frac{\partial e_{xc}}{\partial M}=\frac{1}{2s}\frac{\partial e_{xc}}{\partial s}\quad\begin{array}{c}
+s=0\\
+\rightarrow\\
+\end{array}\quad\frac{1}{2}\frac{\partial^{2}e_{xc}}{\partial s^{2}};\quad s=\left|\mathbf{m}\right|\]
 
 \end_inset 
 
