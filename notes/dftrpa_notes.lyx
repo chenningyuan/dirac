@@ -1192,7 +1192,7 @@ We need
 
  in which appears the one-index transformed Kohn-Sham matrix (xc part)
 \begin_inset Formula \[
-F_{xc;pq}^{B}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\Omega_{pq}^{B}+2\frac{\partial e_{xc}}{\partial M}\left(\mathbf{m}_{0}\cdot\boldsymbol{\mu}{}_{pq}^{B}\right)\right]d\tau\]
+F_{xc;pq}^{B}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\Omega_{pq}^{B}+2\frac{\partial e_{xc}}{\partial M}\left(\mathbf{m}_{0}\cdot\boldsymbol{\mu}_{pq}^{B}\right)\right]d\tau\]
 
 \end_inset 
 
@@ -1206,7 +1206,7 @@ G_{xc;pq} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}\Om
  In the closed-shell case these expressions reduce to
 \begin_inset Formula \begin{eqnarray*}
 F_{xc;pq}^{B} & = & \int\frac{\partial e_{xc}}{\partial\rho}\Omega_{pq}^{B}d\tau\\
-G_{xc;pq} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}\Omega_{pq}+\frac{\partial^{2}e_{xc}}{\partial s^{2}}\left(\mathbf{m}_{0}\cdot\boldsymbol{\mu}_{pq}^{B}\right)\right]d\tau\end{eqnarray*}
+G_{xc;pq} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}\Omega_{pq}+\frac{\partial^{2}e_{xc}}{\partial s^{2}}\left(\mathbf{m}^{B}\cdot\boldsymbol{\mu}_{pq}\right)\right]d\tau\end{eqnarray*}
 
 \end_inset 
 
