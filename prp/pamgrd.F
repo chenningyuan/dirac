@@ -509,8 +509,9 @@ C
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
+#include "dummy.h"
 C
-      LOGICAL FIRST(*),QBTR
+      LOGICAL FIRST(*),QBTR, IS_SQUARE
       DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),
      &          PRPAO(N2BBASX,NZ),
      &          PTRI(IDIMENS,NZ),
@@ -549,48 +550,68 @@ CMI  & ' is SQUARE (not hermitian neither antihermitian) !'
 CMI    CALL QUIT('PRPMA1: Non-hermitian property!')
 CMI   ENDIF
 
+      IF (ITIM.EQ.0.AND.IDIMENS.EQ.N2BBASX) THEN
+        IS_SQUARE = .TRUE.
+      ELSE IF (ITIM.NE.0.AND.IDIMENS.EQ.NNBBASX) THEN
+        IS_SQUARE = .FALSE.
+      ELSE
+        write(lupri,*) 'PRPMA1: ITIM,IDIMENS=',ITIM,IDIMENS
+        write(lupri,*) 'PRPMA1: N2BBASX,NNBBASX=',N2BBASX,NNBBASX
+        CALL QUIT('PRPMA1: wrong parameters ! ')
+      ENDIF
+
 C
 C
 C     Get property matrix in AO-basis
 C     ===============================
+      CALL MEMCHK('PRPMA1 1',WORK,1)
+
+      IF (IS_SQUARE) THEN
+       CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PRPAO,OP1INT,FIRST,
+     &       WORK(KFREE),LFREE,IPRINT)
+      ELSE
+       CALL PRPMSAO(INDXPR,IDIMENS,PTRI,PRPAO,OP1INT,FIRST,
+     &       WORK(KFREE),LFREE,IPRINT)
+      ENDIF
+      CALL MEMCHK('PRPMA1 2',WORK,1)
+
 C     
-      CALL LSET(NZ,.TRUE.,FIRST)
+C     CALL LSET(NZ,.TRUE.,FIRST)
 CMI   ... this routine is adapted for square matrixes !!!
-      CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PTRI,OP1INT,FIRST,WORK(KFREE),
-     &           LFREE,IPRINT)   
-C
-      DO IZ = 1,NZ
-        IF(FIRST(IZ)) THEN
-          CALL DZERO(PRPAO(1,IZ),N2BBASX)
-        ELSE
-          IQ = IPQTOQ(IZ,IREP)
-          IH = IHQMAT(IQ,ITIM)
+C     CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PTRI,OP1INT,FIRST,WORK(KFREE),
+C     DO IZ = 1,NZ
+C       IF(FIRST(IZ)) THEN
+C         CALL DZERO(PRPAO(1,IZ),N2BBASX)
+C       ELSE
+C         IQ = IPQTOQ(IZ,IREP)
+C         IH = IHQMAT(IQ,ITIM)
 CMI       .. for IH = 1 or 2 do unpack triangular matrixes PTRI(1,IZ)
-          IF    (IH.EQ.1) THEN
-            CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PRPAO(1,IZ))
-          ELSEIF(IH.EQ.2) THEN
-            CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PRPAO(1,IZ))
-          ELSE
+C         IF    (IH.EQ.1) THEN
+C           CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PRPAO(1,IZ))
+C         ELSEIF(IH.EQ.2) THEN
+C           CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PRPAO(1,IZ))
+C         ELSE
 CMI         ... not symmetric, nor antisymmetric - do copy full PTRI into PRPAO
-            CALL DCOPY(N2BBASX,PTRI(1,IZ),1,PRPAO(1,IZ),1)
-          ENDIF
-        ENDIF
-      ENDDO
+C           CALL DCOPY(N2BBASX,PTRI(1,IZ),1,PRPAO(1,IZ),1)
+C         ENDIF
+C       ENDIF
+C     ENDDO
 C     ... resort basis
-      CALL BUTOBS(PRPAO,NZ,WORK(KFREE),LFREE)
+C     CALL BUTOBS(PRPAO,NZ,WORK(KFREE),LFREE)
 
 C .. control print out of UNTRANSFORMED four-component
 C    operator in the AO basis
       IF (IPRINT.GE.7) THEN
         WRITE(LUPRI,'(/A,A16)')
-     &'PRPMA1: Total four-comp. AO-matrix of property ',
+     &'PRPMA1: Total 4c or 2c matrix (in SA-AO basis) of property ',
      & PRPNAM(INDXPR)
         CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &            IPQTOQ(1,IREP),LUPRI)
       ENDIF
 
-      CALL MEMCHK('before call DOPCT',WORK,1)
-      CALL DOPCTRA(INDXPR,PRPAO,NZ,'S',WORK(KFREE),LFREE)
+C     CALL MEMCHK('before call DOPCT',WORK,1)
+C     CALL DOPCTRA(INDXPR,PRPAO,NZ,'S',WORK(KFREE),LFREE)
+
 C
 C     Transform to MO-basis only the blocks of correct fermion symmetry
 C     =================================================================

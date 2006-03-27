@@ -2210,6 +2210,8 @@ C
       CALL MEMOPT('REAL',BUF1,NBUF1*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',CBUF,2*NSP*NSP,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BUF2,NBUF2*RCW,CC,KFREE,LFREE,ALLOC)
+
+         CALL MEMCHK('mp2g xx',CC,1)
 C
 C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
@@ -2314,20 +2316,45 @@ C
              RETURN
           ENDIF
 #endif
+CMI      CALL MEMCHK('mp2g 0.1',CC,1)
 C
 C        Solve relativistic MP2 lambda equations
 C
          CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
+
+CMI      CALL MEMCHK('mp2g 0.2',CC,1)
 C
 C        Get amplitude part of density matrix
 C
          CALL CCDENSC (1,CC(T1),CC(S1),CC(T2),CC(S2),
      &                 CC(BUF1),CC(BUF2),CC(BUF3),CC(DOO),CC(DVV),
      &                 CC(DVO),CC(DOV),CC(DMO))
+
+         CALL MEMCHK('mp2g 0.3',CC,1)
+         CALL MEMCHK('mp2g 0.3.1',CC,T2)
+         CALL MEMCHK('mp2g 0.3.2',CC,BUF1)
+         CALL MEMCHK('mp2g 0.3.3',CC,BUF2)
+         CALL MEMCHK('mp2g 0.3.4',CC,BUF3)
+         CALL MEMCHK('mp2g 0.3.5',CC,XMO)
+         CALL MEMCHK('mp2g 0.3.6',CC,DMO)
+
 C        Solve Z-vector equations 
 C
          CALL MP2ZVEC(CC(T2),CC(BUF1),CC(BUF2),CC(BUF3),
      &                NBUF3,CC(XMO),CC(DMO))
+
+CMI      ... here it fails in the Levy-Leblond mode....
+         CALL MEMCHK('mp2g 1.1.1',CC,T2)
+         CALL MEMCHK('mp2g 1.1.2',CC,BUF1)
+         CALL MEMCHK('mp2g 1.1.2',CC,BUF2)
+         CALL MEMCHK('mp2g 1.1.3',CC,BUF3)
+         CALL MEMCHK('mp2g 1.1.4',CC,XMO)
+         CALL MEMCHK('mp2g 1.1.5',CC,DMO)
+
+         CALL MEMCHK('mp2g 1.1',CC,1)
+
+CMI       call quit('here in relccsd finished')
+
 C
 C        Create upper triangle of density matrix
 C
@@ -2339,6 +2366,9 @@ C
          KFREE1=1
          LFREE1=NBUF3*RCW
          CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
+
+CMI      CALL MEMCHK('mp2g 2.1',WORK,1)
+         CALL MEMCHK('mp2g 2.1',CC,1)
 C
 C        Release the slaves (in case of parallel runs)
 C

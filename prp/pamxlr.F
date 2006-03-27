@@ -349,6 +349,8 @@ C***********************************************************************
 C
 C     Input section for linear response  <<A;B>>
 C
+C     Called from:  PRPINP
+C
 C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
@@ -388,9 +390,13 @@ C
 C
 #include "ibtfun.h"
 C
+C     IF (SET.AND.(TWOCOMP.AND.BSS)) RETURN
       NEWDEF = (WORD .EQ. '*LINEAR')
       IF (SET) THEN
+C     IF (SET.OR.(TWOCOMP.AND.BSS)) THEN
+C        IF (NEWDEF.AND.(TWOCOMP.AND.BSS)) RETURN
          IF (NEWDEF)
+C        IF (NEWDEF.AND..NOT.(TWOCOMP.AND.BSS))
      &      CALL QUIT('Only one "*LINEAR" input section allowed')
 C        hjaaj: repeated input sections give infinite loop ...
          IF (RESET) SET = .FALSE.

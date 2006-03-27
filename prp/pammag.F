@@ -588,8 +588,11 @@ C     Construct two electron part of differentiated Hamiltonian
 C     when using London Orbitals, dg(B)/dB(p,q,r,s)_X/Y/Z
 C
 C     Written by T. Enevoldsen Feb 4 1998
+C
 C     Added by MI&HJAaJ, 2002
+C
 C     Last modif: Dec 2005, MI - extended for .SPINFREE case
+C                 March 2006,MI
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1649,10 +1652,11 @@ C  /* Deck rsklond */
      &                   NDMAT,ISYMDM,IPRINT)
 C*****************************************************************************
 C
-C   Purpose: Get two-electron Fock London matrixes in SO-AO basis
+C   Purpose: Get two-electron Fock London matrixes in SA-AO basis
 C
 C   Written by Thomas Enevoldsen(TEC), 1998
 C       and taken as a black-box by MI &HJAaJ, 2002 
+C   Last modifications:  MI, March/2006 for pure twocomponent mode
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1823,7 +1827,10 @@ C
 C      Check for relativistic calculation....
 C
 C     IF(KMAX.GT.NLRGSH) RETURN
-      IF(KMAX.GT.NLRGSH) GOTO 134
+CMI   IF(KMAX.GT.NLRGSH) GOTO 134
+CMI   IF(KMAX.GE.NLRGSH) GOTO 134
+      IF(.NOT.(KMAX.GE.NLRGSH)) THEN
+CMI  ... seems that this body is never called....
 C
 C        Transformation to symmetry basis
 C        ================================
@@ -1890,32 +1897,11 @@ CTROND                        NB    = IBTSHR(IPIND(J),4) - IB*16
          END IF
       END IF
 
- 134  CONTINUE ! Needed this statement...
+      ENDIF
+
+C134  CONTINUE ! Needed this statement...
 
       CALL QEXIT('RSKLOND')
-      RETURN
-      END
-
-C  /* Deck dsltsp */
-      SUBROUTINE DSLTSP(N,ASI,ASP)
-C
-C  8-Feb-1987 Hans Joergen Aa. Jensen
-C
-C Purpose: Transform from SI format to SP format, that is:
-C          copy LOWER triangle of symmetric matrix ASI
-C          to symmetric, packed matrix ASP.
-C
-#include "implicit.h"
-      DIMENSION ASI(N,*), ASP(*)
-C
-#include "nosync.h"
-      DO 200 J = 1,N
-         JOFF = (J*J-J)/2
-         DO 100 I = 1,J
-            ASP(JOFF+I) = ASI(J,I)
-  100    CONTINUE
-  200 CONTINUE
-C
       RETURN
       END
 

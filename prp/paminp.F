@@ -46,6 +46,10 @@ C
 C <<< Property Input for DIRAC >>>
 C
 C
+C    Called from:  PAMINP - first reading of the input
+C                  MINPRP - called when optimize is on 
+C                  (properties at final geometry)
+C
 C       Written by Trond Saue and Hans J.Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
@@ -1296,7 +1300,7 @@ CLV ... same thing for ZORA!
 
 CMI ... inform about the assigned PCOMB
       IF (IPRINT .GE. 6) THEN
-         WRITE(LUPRI,'(A,A4)') ' assigned PCOMB:',PCOMB
+         WRITE(LUPRI,'(A,A4)') '  assigned PCOMB:',PCOMB
       END IF
 C
 C     Define property
@@ -1330,6 +1334,7 @@ C         Check property label
         PRPLBL(INDX) = PLABEL(1)
         PDOINT(INDX) = PCOMB
       ELSE
+CMI     ... (IPTYP.NE.0) operator has more components
         DO 600 J = 1,NPCOMP
           FACPRP(J,NPRPS)  = PFAC(J)
           INDX = INDXPL(PLABEL(J),PCOMB,WORK,LWORK,IPRINT)
@@ -1781,8 +1786,11 @@ C***********************************************************************
 C
 C     Define property label: symmetries etc..
 C
+C     Called from: integ.function INDXPL
+C
 C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1945,13 +1953,13 @@ C  /* Deck prpsym */
 C***********************************************************************
 C
 C     This subroutine finds the symmetry of the unique operator no.
-C     INDXPR in COMMON /SCBPRP/.
+C     INDXPR in COMMON /DCBPRP/.
 C
 C     The routine assumes Hermitian operators and will therefore
 C     consider symmetric operators purely real and antisymmetric operators
 C     purely imaginary. Non-symmetric operators results in error and
 C     termination.
-C
+C   
 C     If an operators involves more than one label, the logical variable
 C     SAMSYM is used to check that the components have identical symmetry
 C     under space and time.
@@ -1959,7 +1967,9 @@ C
 C     Written by T.Saue, January 1995
 C     Last revision: tsaue - May 14 1996
 C
-C    MI,HJAaJ(TEC),2003 - added changes for LAO  integrals
+C    MI,HJAaJ(TEC),2003 - added changes for LAO-based  integrals
+C     - routine assumed general operators which can be symmetric, antisymm. 
+C       and square
 C     - removing the program stop when indeterminate symmetry of operator
 C     - print out
 C***********************************************************************

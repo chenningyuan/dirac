@@ -3019,12 +3019,12 @@ C        Construct half transformed overlap matrix, Saomo = Sao C
 C
 C    On input:  TMAT - transformation matrix, C
 C               TWOC - flag for setting the two-component scheme
-C               note: after MAKE_BSS in GMOTRA we may have anyhow the 2c picture,
+C               note: after MAKE_BSS in GMOTRA we may be anyhow the 2c picture,
 C                      so we use TWOC=.false.
 C
 C   On output:  SAOMO - half transformed overlap matrix
 C
-C    Note(MI,Aug05): It uses NZT,SSMTRC, I2TMT and NTMO !
+C   Note(MI,Aug05): It uses NZT,SSMTRC, I2TMT and NTMO variables !
 C
 C    Written by L. Visscher (based on MKSMOAO by J. Thyssen).
 C   Last modifications: M.Ilias, aug 2005
@@ -3050,11 +3050,11 @@ C
 
       IF (IPRINT.GE.5) THEN
        CALL HEADER('*** Output from MKSAOMO ***',-1)
-       write(lupri,*) 'NZ=',NZ,' >>>> routine uses NZT=',NZT
+       write(lupri,*) 'NZ=',NZ,' >>>> Dirac uses NZT=',NZT
        IF (TWOC) THEN
-         write(lupri,*) 'Hard used two-component mode !'
+         write(lupri,*) 'TWOC=.true. => Hard used two-component mode !'
        ELSE
-         write(lupri,*) 'Used four-component mode'
+         write(lupri,*) 'TWOC=.false. => Used four-component mode'
        ENDIF
       ENDIF
       

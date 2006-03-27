@@ -74,7 +74,9 @@ C
       character tmp(4)*4
 
       call qenter('PRPXLR_MPG')
-C
+CMI   .. add this
+      KFRSAV = KFREE
+
       CALL TITLER('Solving Z-vector equation','*',123)
 C
 C     Initialize /XCBLR/
@@ -135,11 +137,13 @@ C
          call num2str(nesh(I),tmp(4))
          xlr_indstr(1,I)='1..'//tmp(1)
          xlr_indstr(2,I)='0'
-         if(levyle)then
+CMI      if(levyle)then
+         if(levyle.or.bss) then
             xlr_indstr(3,I)=tmp(3)//'..'//tmp(4)
          else
             xlr_indstr(3,I)='-'//tmp(2)//'..-1,'//tmp(3)//'..'//tmp(4)
          endif
+
       enddo
 C
 C     Initialize the operators needed
@@ -181,10 +185,15 @@ C
       call memget('REAL',kcnv,nrspf,work,kfree,lfree)
 C
 C
+CMI
+      CALL MEMCHK('prpxlr_mpg 1.00',WORK,1)
+
       CALL FLSHFO(LUPRI)
 C
       call prpxl1_mpg(work(klrf),work(kcnv),DMO,XMO,
      &                work,kfree,lfree)
+
+CMI   CALL MEMCHK('prpxlr_mpg 1.01',WORK,1)
 C
 C     Calculate D_ax
 C     ==============
@@ -195,6 +204,9 @@ C
 C
       ENDIF
 C
+CMI   ... it's good to release the memmory after ...
+      CALL MEMREL('prpxlr_mpg',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+
       call qexit('PRPXLR_MPG')
       return
       end
@@ -343,7 +355,9 @@ C     Final remarks
 C     =============
 C
       close(luxvc,status='KEEP')
+
       call memrel('PRPGR1.FINAL',work,1,kfrsav,kfree,lfree)
+CMI   call memrel('PRPGR1.FINAL',work,kfrsav,kfrsav,kfree,lfree)
 C
       call qexit('PRPXL1_MPG')
       return
@@ -579,7 +593,11 @@ C  /* Deck num2str */
       SUBROUTINE NUM2STR(NUM,RESSTR)
 C***********************************************************************
 C     
-C     Written by C.V. Larsen
+C  PURPOSE: Convert entering integer number NUM (of range 0-9999)
+C           into the 4-byte string RESSTR.
+C     
+C  Written by C.V. Larsen
+C  Last modifications: Miro ILIAS/Strasbourg, March 2006
 C
 C***********************************************************************
 #include "implicit.h"
@@ -589,6 +607,12 @@ C***********************************************************************
 C
       CALL QENTER('NUM2STR')
 C
+      IF (NUM.LT.0.OR.NUM.GT.9999) THEN
+        write(lupri,*)
+     &  'NUM2STR: Entering number ',NUM,' is not in range 0-9999 !'
+        CALL QUIT('NUM2STR: Wrong entering value of integer number !!!')
+      ENDIF
+
       ifac=1000
       istr=1
       inum=num
@@ -600,7 +624,7 @@ C
       if(ifac.ge.1)goto 10
 C
       resstr=str(1)//str(2)//str(3)//str(4)
-c      write(lupri,'(2a)') 'Num2Str: ',resstr
+C     write(lupri,'(2a)') 'Num2Str: ',resstr
 C
       CALL QEXIT('NUM2STR')
 C

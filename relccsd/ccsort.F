@@ -1495,6 +1495,8 @@ C     Information needed to convert the relccsd tau's to the moltra
 C     T's                           
 C
       CALL TAUINFO(INFOT)
+
+CMI   CALL MEMCHK('SRTDIR 1.00',BUF1,1)
 C
       ITDIR = 1 ! the pointer for the T needed in moltra
 C
@@ -1630,6 +1632,7 @@ C     Write the T's to file
 C
 c     CALL WRITETAU(BUF2)
 C
+CMI   CALL MEMCHK('SRTDIR 2.00',BUF1,1)
       RETURN                
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

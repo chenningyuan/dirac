@@ -609,7 +609,7 @@ C     If the string starts with 'all', all elements in the range enters.
 C
 C                           Jon K. Laerdahl 30.12.96
 C     Minor polish T.Saue Jan 7 1997
-
+C
 C     Additional feature (LV, 15-5-2001) : Determine list based on energy or
 C     other criteria. This is more user-friendly for standard cases.
 C
@@ -626,6 +626,8 @@ C
       CHARACTER A*(*)
       DIMENSION ILIST(NLIST),WORK(LWORK)
       LOGICAL TOBE
+
+      CALL QENTER('NUMLST')
 C
 C     Memory initialization
 C     =====================
@@ -670,6 +672,7 @@ C
 C
       CALL MEMREL('NUMLST',WORK,KWORK,KWORK,KFREE,LFREE)
 C
+      CALL QEXIT('NUMLST')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -710,6 +713,8 @@ C
       CHARACTER A*(*),B*(MAXLB)
       CHARACTER*1 TEGN
       DIMENSION ITMPAR(IRNGE1:IRNGE2),ILIST(NLIST)
+
+CMI   CALL QENTER('NUMLS1')
 C
 C     Initialize
 C
@@ -882,7 +887,9 @@ C
       ENDIF
       IP = ICNT
 C
+CMI   CALL QEXIT('NUMLS1')
       RETURN
+
  900  CONTINUE
       WRITE(LUPRI,'(//A,I3//3A/9X,200A1)')
      &     'NUMLS1: Wrong syntax in input at character ',I,

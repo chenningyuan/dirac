@@ -45,9 +45,11 @@ C***********************************************************************
 C
 C     Solve DHF - equations; print results
 C
+C     This routine is called from:  PAMPSI (main/dirac.F)
+C
 C     Written by T.Saue November 1994
 C     Last revision : Sep 11 1995 - tsaue
-C
+C                     2005/6 MI to make BSS2DC/DC2BSS available
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"

@@ -53,6 +53,9 @@ C
 C
       CALL LAGTAU(XMO,TMATRX1,TMATRX2,WORK,LWORK)
 C
+CMI   ... memm check works...
+      CALL MEMCHK('TR5INI 1',WORK,1)
+ 
       CALL QEXIT('TR5INI')
       RETURN
       END
@@ -1595,6 +1598,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "mp1stpr.h"
 C
       DIMENSION TMATRX1(*), TMATRX2(*)
+
+CMI   CALL MEMCHK('SRTT1T2 1.00',TMATRX1,1)
 C
 C     initialize the 2nd T matrix
 C

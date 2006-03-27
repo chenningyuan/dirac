@@ -46,6 +46,9 @@ C
 C     Subroutine for setting dimensions and generate overlap and Lowdin
 C     matrices
 C
+C     Called from:  DIRCTL (after PAMINP)
+C                   EXEDIT ( -||-) - optimization
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -58,6 +61,7 @@ C
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "cbihr1.h"
+#include "cbirea.h"
 #include "infpar.h"
 C
       DIMENSION WORK(LWORK)
@@ -72,9 +76,38 @@ C
 C     Generate MO-transformation matrix and write to file
 C     ===================================================
 C
-CMI ... do not perform 2-component calculations if GMOTRA/MAKE_DKH
+CMI ... in this case do not run 2-component calculations in GMOTRA/MAKE_DKH
       IF (BSS.AND.DO4C2C.AND..NOT.DO2C4C) BSS=.FALSE.
+
+CMI   ... the first calling
+C     IF (BSS.AND.TWOCOMP) TWOCOMPBSS = .TRUE.
+C     ... BSS or TWOCOMP
       CALL GMOTRA(WORK,LWORK)
+
+CMI   ..  when all two-component quantities are ready, switch to the pure
+CMI   two-component level
+      IF (BSS.AND.TWOCOMPBSS) THEN
+C       CALL HEADER('PAMSET: Repeating the input for pure'//
+C    &               ' two-component mode',-1) 
+        CALL TITLER('PAMSET: Repeating the input for pure'//
+     &               ' BSS-two-component mode','=',126) 
+CMI ... new input reading ... TWOCOMP is set to .true. (after HAMINP)
+        CALL PAMINP(.TRUE.,WORK,LWORK)
+CMI ... generated AOPROPER file with integrals of LL-size only !
+        CALL ONEGEN(WORK,LWORK)
+CMI ... prepare here only the 2c_lowdin transformation matrix
+C       TWOCOMP = .TRUE.
+        TWOCOMPBSS = .FALSE.
+        BSS = .FALSE.
+        CALL GMOTRA(WORK,LWORK)
+CMI     ... continue in BSS mode ...
+        BSS = .TRUE.    
+C       TWOCOMP = .FALSE.
+        TWOCOMP = .TRUE.
+
+CMI     ... needed later in BNCORR
+        TWOCOMPBSS = .TRUE.
+      ENDIF
 C
 C     Use supersymmetry for linear molecules
 C     ======================================
@@ -106,8 +139,8 @@ C
       CALL RELINF
 C
       RETURN
-C
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setdc1 */
       SUBROUTINE SETDC1(IPRINT)
@@ -155,7 +188,7 @@ C     Written by T.Saue - October 1994
 C     Last revision: Nov 23 1994 - tsaue
 C
 CMI/jan.2006 All quantities are constructed from NAOS, NCOS (symmet.h) variables, which
-CMI were set up in READIN
+CMI are calculated in READIN
 C
 C***********************************************************************
 #include "implicit.h"

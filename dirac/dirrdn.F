@@ -40,20 +40,31 @@ C FILE    : dirrdn.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck paminp */
-      SUBROUTINE PAMINP(WORK,LWORK)
+      SUBROUTINE PAMINP(DELSMALL,WORK,LWORK)
 C***********************************************************************
 C     
 C     Driver for input module of DIRAC
 C     Written by T.Saue April 26 1996
+C
+C     On input: DELSMALL - flag forcing to delete small component
+C                basis functions in HERINP
+C
+C     Called from:  DIRCTL (1.time in DIRAC run) 
+C                   EXEDIR (during optimization)
+C                   PAMSET (2.time for pure 2comp. mode with DELSMALL=.true.)
+C
 C     Last revision: 260496 - tsaue
+C               Febr.2006 - MI to modify for pure two-comp. mode 
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dgroup.h"
 #include "cbirea.h"
       DIMENSION WORK(*)
+      LOGICAL DELSMALL
 C
 C     Initializations
 C
@@ -66,22 +77,35 @@ C
       CLOSE(LUCMD)
 C
 C     General input 
-C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       CALL GENINP(WORK,LWORK)
       CLOSE(LUCMD)
 C
+C     Define Hamiltonian
+C     Redefine INTGEN if e.g. Levy-Leblond, or BSS
+CMI/Febr.2006 If DELSMALL=.true. and BSS=.true. and TWOCOMP.=.true.
+C     OPEN(LUCMD,FILE='DIRAC.INP')
+C     CALL HAMINP(DELSMALL,WORK,LWORK)
+C     CLOSE(LUCMD)
+
 C     Integral and basis input
-C
+CMI/Febr.06: BASINP may set to pure two-component mode  
+C     only if TWOCOMP = .TRUE.  then all
+C     small-component basis functions will be zeroed out and thus all matrixes
+C     will have the size of LL. In the case of pure two-component BSS
+
+      IF (DELSMALL) TWOCOMP = .TRUE.
+
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       CALL HERINP(WORK,LWORK)
       CLOSE(LUCMD)
+C     TWOCOMP = TWOCOMP_SAVE
 C
       DOJACO = DOJACO.AND.(NZ.EQ.1)
 C
 C     Set DCB common blocks - first time
-C     ==================================
-C     (will be done second time in PAMSET)
+C     ========================================
+C     (will be done the second time in PAMSET)
 C
       CALL SETDC1(IPREAD)
 C
@@ -92,10 +116,10 @@ C
       CALL GETLAB(WORK,LWORK,IPREAD)
 C
 C     Define Hamiltonian
-C     Redefine INTGEN if e.g. Levy-Leblond
-C
+C     Redefine INTGEN if e.g. Levy-Leblond, or BSS
+CMI/Febr.2006 If DELSMALL=.true. and BSS=.true. and TWOCOMP.=.true.
       OPEN(LUCMD,FILE='DIRAC.INP')
-      CALL HAMINP(WORK,LWORK)
+      CALL HAMINP(DELSMALL,WORK,LWORK)
       CLOSE(LUCMD)
 CMI ... instead of calling OP1INI in HAMINP, call it after
       CALL OP1INI(WORK,LWORK)
@@ -134,7 +158,8 @@ C
 C
 C     Input of property module
 C
-      IF(DOPRP) THEN
+C     IF(DOPRP) THEN
+      IF(DOPRP.AND..NOT.DELSMALL) THEN
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL PRPINP('**PROPE',WORK,LWORK)
          CLOSE(LUCMD)
@@ -192,7 +217,7 @@ C
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.XXXXXX','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
-     &             '.SPHTRA','.TWOCOM','.XXXXXX','.XXXXXX',
+     &             '.SPHTRA','.TWOCOM','.2C_REL','.XXXXXX',
      &             '.ACMOUT','.XXXXXX','.XXXXXX','.FAMILY',
      &             '.DENSFI','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
@@ -202,6 +227,7 @@ C     NOGENINP is set, if there is no **GENERAL
 C
       NOGENINP = .FALSE.
       TWOCOMP  = .FALSE.
+      TWOCOMPBSS  = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -310,6 +336,8 @@ C&&&&&   TWOCOM - twocomponent mode in DIRAC
             TWOCOMP = .TRUE.
             GO TO 100
   111     CONTINUE
+C&&&&&   TWOCOMBSS - twocomponent relativistic mode in DIRAC
+            TWOCOMPBSS = .TRUE.
             GO TO 100
   112     CONTINUE
             GO TO 100
@@ -377,9 +405,16 @@ C
      +   '* The speed of light scaled by ',(CVAL/CVEL),
      +   ' to : ',CVAL
       ENDIF
+
+      IF (TWOCOMP.AND.TWOCOMPBSS) THEN
+       WRITE(LUPRI,'(1X,A)') 
+     & ' You can not have activated both .TWOCOM and .2C_REL !'
+       CALL QUIT(
+     & 'GENINP: .TWOCOM and .2C_REL are muttually exclusive !')
+      ENDIF
     
-      IF (TWOCOMP)  THEN
-        WRITE(LUPRI,'(1X,A)') '* Employ pure two-component mode'
+      IF (TWOCOMP.OR.TWOCOMPBSS)  THEN
+        WRITE(LUPRI,'(1X,A)') '* Employing pure two-component mode'
         INTGEN = 1
         ISLDIR = 0 
         ISSDIR = 0 
@@ -1489,7 +1524,10 @@ C   .... discard calculation of LS/SS/GT integrals
 C          for the LevyLe/BSS Hamiltonians
 CMI   IF (LEVYLE.OR.BSS) THEN
 CMI ... setting if SL,SS integrals in MAKE_BSS routine!
-      IF (LEVYLE) THEN
+CMI   IF (LEVYLE) THEN
+C     IF (LEVYLE.OR.TWOCOMPBSS) THEN
+C     IF (LEVYLE.OR.BSS) THEN
+      IF (LEVYLE.OR.BSS.OR.TWOCOMP) THEN
         ISLINT = 0
         ISSINT = 0
         IGTINT = 0
@@ -3494,13 +3532,19 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck haminp */
-      SUBROUTINE HAMINP(WORK,LWORK)
+      SUBROUTINE HAMINP(DELSMALL,WORK,LWORK)
 C***********************************************************************
 C
 C     Input section for modification of Dirac-Coulomb Hamiltonian
 C
+C     On input: DELSMALL - if .true.,this routine is called for second time
+C      when Dirac runs in the pure two-component framework (MI/Febr.2006)
+C
+C     Called from: PAMINP
+C
 C     Written by T.Saue - May 1996
 C     Last revision: May 27 1998 - tsaue and kmi
+C                    2005/06 - MI for 2comp.Hamiltonians
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3529,7 +3573,7 @@ C
 Cdirac#include "functionals.h"
 #endif
 C
-      LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS
+      LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS,DELSMALL
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
      &          WORD1*7, LINE*80
       DIMENSION KSOP(0:7),WORK(LWORK)
@@ -3628,6 +3672,9 @@ C
       DFTRUN = .FALSE.
       DFTADD = .FALSE.
 #endif
+
+CMI   ...two-component_BSS stuff ...
+C     TWOCOMPBSS = .FALSE. 
 C
 C     Read menu file
 C     ==============
@@ -3988,9 +4035,15 @@ C&&& XXXX
         CALL QUIT('Illegal prompt in HAMINP.')
       END IF
   300 CONTINUE
+
+
 C
-C     Remove inconsistencies
+C    Remove inconsistencies
 C     =====================
+C
+      IF (DELSMALL.AND..NOT.TWOCOMP) THEN
+        CALL QUIT('HAMINP: DELSMALL=.true & TWOCOMP=.false. !')
+      ENDIF
 C
       IF (NOSMLV .AND. ONECAP) THEN
         IF(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.1) THEN
@@ -4023,11 +4076,12 @@ C
       ENDIF
 
 CMI     Remove inconsistencies for TWOCOMP option
-      IF (TWOCOMP.AND.(BSS.OR.LEVYLE.OR.SPINFR.OR.
+      IF (TWOCOMP.AND.(LEVYLE.OR.
      &              URKBAL.OR.FREEPJ.OR.VEXTPJ.OR.GAUNT)) THEN
         WRITE(LUPRI,'(A)') '***** HAMINP ERROR *****'
         WRITE(LUPRI,'(A)')
-     &  'You cannot specify both TWOCOMP and other otions (see code)!'
+     &  'You cannot specify both TWOCOMP and other otions '//
+     &  ' (LEVYLE.OR.URKBAL.OR.FREEPJ.OR.VEXTPJ.OR.GAUNT)!'
         CALL QUIT(
      &  'Conflicting options : TWOCOMP and others (see code) !')
       ENDIF
@@ -4037,6 +4091,9 @@ C     =====================================================
       IF ((DO2C4C.OR.DO4C2C.OR.USEDF).AND..NOT.BSS) THEN
           CALL QUIT(
      &'HAMINP: DO2C4C/DO4C2C/USEDF options require BSS keyword !')
+      ENDIF
+      IF (.NOT.BSS.AND..NOT.TWOCOMP.AND.TWOCOMPBSS) THEN
+        CALL QUIT('HAMINP: for not .BSS must be .TWOCOMP in GENINP !')
       ENDIF
 
       IF (BSS) THEN
@@ -4085,6 +4142,19 @@ CMI       CALL QUIT(
 CMI  &'HAMINP: .BSS not yet implemented for properties!')
         ENDIF
 
+CMI ... 2comp_BSS stuff
+C     IF (TWOCOMP.AND..NOT.DELSMALL) THEN
+C       TWOCOMPBSS = .TRUE.
+C       TWOCOMP = .FALSE.
+C       write(LUPRI,'(2X,A)')
+C    & ' TWOCOMPBSS set to .true., TWOCOMP to .false. '
+C     ENDIF
+
+       IF (TWOCOMP.AND..NOT.TWOCOMPBSS) THEN
+        CALL QUIT('HAMINP: for .BSS must be .2C_REL in GENINP !')
+       ENDIF
+
+
 CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR
         IF (IBSS.EQ.2999.AND.NOPRTR) THEN
          IF (SPINFR) THEN
@@ -4120,6 +4190,18 @@ C
       ELSE IF (BSS) THEN
         WRITE(LUPRI,'(1X,A,I5)')
      &' * Barysz-Sadlej-Snijders Hamiltonian. Type code:',IBSS
+        IF (DELSMALL) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &' - already adapted for the pure two-component framework in DIRAC'
+        ELSE
+        WRITE(LUPRI,'(1X,A)')
+     &' - to be generated/used in the four-component DIRAC framework'
+         IF (TWOCOMPBSS) THEN
+           WRITE(LUPRI,'(1X,A)')
+     &     ' - but later to be employed purely in the two-component'//
+     &     ' DIRAC framework'
+         ENDIF
+        ENDIF
         IF (NOPRTR) THEN
         WRITE(LUPRI,'(1X,A)')
      &' - no preliminary free-particle transformation'
@@ -4188,6 +4270,7 @@ C           ... check on identical nucleus numbers ....
 C         write(lupri,*)
           ENDIF
         ENDIF
+
         IF (DO2C4C) WRITE(LUPRI,'(1X,A,I1)')
      & '* after (few) two-component SCF iterations do'//
      & ' jump at the four-component level ! Code INI2C=',INI2C
@@ -4197,11 +4280,12 @@ C         write(lupri,*)
      & ' and continue at the 2comp. level ! Code I2CHAM= ',I2CHAM
       ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
-      ELSE IF (TWOCOMP) THEN
+      ELSE IF (TWOCOMP.AND..NOT.BSS) THEN
         WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian'
       ELSE 
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
+
       IF(ICHANG.GT.0) WRITE(LUPRI,'(A)') 
      &    '   with the following modifications:'
       IF(VACPOL) THEN
@@ -4213,12 +4297,6 @@ C         write(lupri,*)
          WRITE(LUPRI,'(3X,A)') '- 2-el. spin-orbit terms zeroed out '//
      &      '(NB : ONLY in the DHF calculation !!)'
       END IF
-CMI ... info on removing linear symmetry
-C     IF (LINEAR.AND.(LEVYLE.OR.SPINFR)) THEN
-C        WRITE(LUPRI,'(A)')
-C    & 'For Levy-Leblond or spin-free Hamiltonian remove linsym!'
-C       LINEAR = .FALSE.
-C     ENDIF
 
 #if defined (MOD_DFT)
       IF(DFTHAM) CALL DFTREPORT()
@@ -4226,19 +4304,21 @@ C     ENDIF
       IF(DOLVC) ISSINT = 0
 
 C
-C     Reset MC if necessary
+C     Reset MC if necessary 
+CMI/Febr.2006 for BSS/TWOCOMP it is set up later
+      IF(LEVYLE) MC = 1
 C
-      IF(LEVYLE.OR.TWOCOMP) MC = 1
-CMI   IF(LEVYLE.OR.BSS) MC = 1
+C     Remove integral classes not needed for this Hamiltonians
 C
-C     Set integral flags
-C
-      IF (TWOCOMP) THEN
-         ISLINT = 0
-         ISSINT = 0
-         IGTINT = 0
+      IF (LEVYLE.OR.BSS.OR.TWOCOMP) THEN
+        ISLINT = 0
+        ISSINT = 0
+        IGTINT = 0
       ENDIF
-
+      IF (ZORA.AND..NOT.ZORA4) THEN
+        ISSINT = 0
+        IGTINT = 0
+      ENDIF
       INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
 C
 C     Write info about the modelling of SS interactions
@@ -4271,8 +4351,11 @@ C
       WRITE(LUPRI,9002) '- GT-integrals: ',IGTINT
  9001 FORMAT(1X,A)
  9002 FORMAT(3X,A,I5)
-C
+
+
+C ============ Output for the basis set ===============
       WRITE(LUPRI,'(A)') ' * Basis set:'
+C     ... first large component
       IF ( DIRCON(1) ) THEN
          WRITE(LUPRI,'(A)')'   - contracted large component basis set'
 CMI ... contracted L comp. basis set in NOT for generated matrix elemensts
@@ -4288,8 +4371,11 @@ CMI     but for precursive four-component matrix elements !!!
          WRITE(LUPRI,'(A)')'   - uncontracted large component basis set'
       END IF
 
-CMI ... again TWOCOMP
+CMI   ... treat the small component basis set only if not beeing 
+CMI   in the pure two-component mode
       IF (.NOT.TWOCOMP) THEN
+
+C     ... then small component only if not beeing in the two-component mode
       IF ( DIRCON(2) ) THEN
          WRITE(LUPRI,'(A)')'   - contracted small component basis set'
       ELSE
@@ -4301,25 +4387,6 @@ CMI ... again TWOCOMP
      &      'and restricted kinetic balance is not implemented.'
          CALL QUIT('*** ERROR in HAMINP ****')
       END IF
-
-      END IF
-C
-C     Remove integral classes not needed for this Hamiltonian
-C
-      IF (LEVYLE.OR.BSS) THEN
-        ISLINT = 0
-        ISSINT = 0
-        IGTINT = 0
-      ENDIF
-      IF (ZORA.AND..NOT.ZORA4) THEN
-        ISSINT = 0
-        IGTINT = 0
-      ENDIF
-      INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
-
-
-C     
-      IF (.NOT.TWOCOMP) THEN
 
       IF(URKBAL) THEN
         WRITE(LUPRI,1000) 'unrestricted'
@@ -4375,11 +4442,14 @@ C
      &        ' ERROR: ISPHTR not legal:',ISPHTR
          CALL QUIT('HAMINP: Invalid ISPHTR!')
       ENDIF
+     
+      ENDIF
+
 C
-C
+C ==================================================================
 C   ... Check that the selected One-center model is reasonable,
 C       and write appropriate output.
-C
+C ==================================================================
       IF(.NOT.LEVYLE .AND. ONECAP) THEN
          IF (INTV1C .LE. 0 .OR. INTV1C .GT. 4) THEN
             CALL QUIT('  Invalid one-center model specified.')
@@ -4479,8 +4549,6 @@ C
 C
       END IF
 
-CMI ... end of (TWOCOMP)
-      END IF
 C
       IF(N1OPER.GT.0) THEN
         WRITE(LUPRI,'(3X,A)') '- The following one-electron '//
@@ -4710,12 +4778,16 @@ C  /* Deck op1ini */
 C***********************************************************************
 C
 C     Initialize one-electron integrals for standard 
-C     Dirac-Coulomb Hamiltonian
+C     Dirac-Coulomb Hamiltonian and for the non-relativistic 
+C     Hamiltonian as well (MI)
+C
+C     Called from:  PAMINIP
 C
 C     Written by T.Saue May 21 1996
-C     Last revision : may 21 1996
 C
-CMI   Jan 2006 Add pure nonrelativistic integrals
+C     Last revision : may 21 1996
+C        MI/Febr 2006 Added nonrelativistic kinetic
+C                     energy integrals (TWOCOMP=.true)
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4730,7 +4802,17 @@ C
      
       CALL QENTER('OP1INI')
 
-CMI ... common for nonrelativistic and Dirac Hamiltonians
+      IF (IPRHAM.GE.7) THEN
+       IF (TWOCOMP) THEN
+        CALL HEADER(
+     &  'OP1INI: activating non-relativistic 1-el. integrals',-1)
+       ELSE
+        CALL HEADER(
+     &  'OP1INI: activating Dirac Hamiltonian 1-el. integrals',-1)
+       ENDIF
+      ENDIF
+
+CMI ... common for both nonrelativistic and Dirac Hamiltonians
 C
 C    Overlap integrals
 C    =================
@@ -4767,11 +4849,11 @@ CMI   nonrelativistic  kinetic energy integrals ...
       PLABEL(1)        = 'KINENERG'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
-CMI    ... use existing ipkinerg  in dcbham.h
+CMI    ... utilize existing ipkinerg  in dcbham.h
       IPKINERG         = INDXPR
 
       ELSE
-
+CMI  ... pure Dirac Hamiltonian stuff ...
 C
 C     Beta matrix integrals
 C     =====================
@@ -4803,6 +4885,7 @@ C
 
       ENDIF
 
+CMI   ... this is common
       IF (LINEAR) THEN
 C
 C        Angular momentum integrals (used in case of atomic or linear 
@@ -4846,7 +4929,10 @@ C/* Deck TWOMEM */
 C***********************************************************************
 C
 C     Check for memory for processing of two-electron integrals
+C
 C     Written by T.Saue June 12 1997
+C                 MI/Febr.2006 - if TWOCOMP=.true., do not evaluate
+C                 integrals over small comp. basis functions
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4881,8 +4967,9 @@ CMI ... memmory evaluation is based on INTGEN in dcbgen.h
         CALL MEMLOP(1,DIRFCK)  
       ENDIF
      
-CMI ... evaluate memmory for SL,SS integrals only when not in two-component mode
+CMI ... evaluate memmory for SL,SS integrals only if not beeing in two-component mode
       IF (.NOT.TWOCOMP) THEN 
+
         IF(LBIT(INTGEN,2)) THEN
           WRITE(LUPRI,'(A)') ' * SL-integrals:'
           CALL MEMLOP(2,DIRFCK)  
@@ -4891,6 +4978,7 @@ CMI ... evaluate memmory for SL,SS integrals only when not in two-component mode
           WRITE(LUPRI,'(A)') ' * SS-integrals:'
           CALL MEMLOP(3,DIRFCK)  
         ENDIF
+
       ENDIF
 
       CALL QEXIT('TWOMEM')
@@ -5213,7 +5301,7 @@ C
       IF (BSS.AND.DOMP2)
      &   CALL QUIT ('BSS & MP2 not implemented')
 
-      IF (DOPRP.AND.TWOCOMP) THEN
+      IF (DOPRP.AND.TWOCOMP.AND..NOT.BSS) THEN
        WRITE(LUPRI,'(1X,A/)')
      & 'NB: Properties & TWOCOMP require non-relativistic'//
      & ' form of operators !' 

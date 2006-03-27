@@ -16,6 +16,8 @@
 !  BNCRON - Improved screening of nucleus for bare nucleus starting 
 !           guess
 !
+!  TWOCOMP, TWOCOMPBSS - related to the pure two-component mode
+!
 !  These flags should be passed on to every module
 !
 !
@@ -30,14 +32,15 @@
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
-     &        TWOCOMP
+     &        TWOCOMP, TWOCOMPBSS
 
       COMMON /GNLPAM/ FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
      &                NOTRA, DOPRP, DOANA, DOHEINZ, DOHRM, DOJACO,      &
      &                DOFCK3, DOPIN, DOPUT, OPTIMI, HRINPC, RDINPC,     &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
-     &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP
+     &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
+     &                TWOCOMPBSS                                        &
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
      &        ILLDIR, ISLDIR, ISSDIR, IGTDIR

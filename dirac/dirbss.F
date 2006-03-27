@@ -15,7 +15,7 @@ C    During this routine H2c AO matrix elements as well as
 C picture change transformation matrixes are written to the file no=LUBSS 'BSSMAT'
 C
 C  Written by Miro Ilias & Hans Jorgen Aa Jensen, Odense, 2002, 
-C     reprogrammed by Miro Ilias, Strasburg, 2005.
+C     reprogrammed by Miro Ilias, Strasburg, 2005, 2006.
 C
 C****************************************************************************
 C
@@ -41,6 +41,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       CALL QENTER('MAKE_DKH')
 
+C ... verify if we are NOT in the pure two-component mode ...
+      IF (NTBAS(2).EQ.0.OR.TWOCOMP) THEN                     
+       CALL QUIT('MAKE_DKH: BSS & no small component basis sets !')  
+      ENDIF
 C     ...decide whether to run 2comp BSS ....
 C     DOBSS = (USEDF.AND.DO4C2C).OR..NOT.(USEDF.AND.DO4C2C)
 C     IF (DOBSS) THEN
@@ -79,25 +83,25 @@ C     IF (DO4C2C.AND..NOT.START2C.AND..NOT.CONT2C) THEN
 
       ENDIF
 
+CMI   ... store H2c_AO in pure LL form ...
+      IF (TWOCOMPBSS.AND.(I2COFK.EQ.1.OR.I2COFK.EQ.2)) THEN
+        CALL H2CTOLL(I2COFK,VMAT,WORK(KFREE),LFREE,IPRHAM)
+C       call quit('...preparing for TWOCOMP & BSS !!!')
+      ENDIF
+
+CMI   ... for calculating properties in pure 2comp. mode do adapt
+CMI   them 
+      IF (TWOCOMPBSS.AND.DOPRP) THEN
+        CALL PROP2BSS(VMAT,WORK(KFREE),LFREE)
+      ENDIF
 
 C ===============================================================================
 C ... export the Lowdin matrix adapted for 2c calculations,
 C ===============================================================================
-       V2COUT = .TRUE.
-       IF (V2COUT) THEN
-        REWIND LUBSS
-        IF (FNDLAB('VMAT2C  ',LUBSS)) THEN
-         CALL READT(LUBSS,N2BBASX,VMAT)
-         IF (IPRHAM.GE.3) WRITE(LUPRI,'(/2X,A)')
-     &   'MAKE_DKH: VMAT2C read into VMAT to be exported.'
-        ELSE
-         CALL QUIT(
-     &   'MAKE_DKH: VMAT2C is not found in BSSMAT file!')
-        END IF
-       ELSE
-C      ... this is the case when original unmodified 4c VMAT is to be exported
-       ENDIF
-
+      V2COUT = .TRUE.
+      IF (V2COUT) THEN
+        CALL RFBSSMAT('VMAT2C  ','MAKE_DKH',VMAT,N2BBASX,LUBSS,IPRHAM)
+      ENDIF
 C    .. close the BSSMAT file...
       CLOSE(LUBSS,STATUS='KEEP')
 
@@ -137,6 +141,86 @@ C   .... do set up appropriate integrals...
          SSMTRC = 0.0D0
 
       CALL QEXIT('MAKE_DKH')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck geth2cao */
+       SUBROUTINE GETH2CAO(I2COFK,FOCK,WORK,LWORK,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  Purpose: routine read chosen type of the two-component transformed Hamiltonian
+C           depending on the entering I2OFCK value
+C
+C  Called from: ONEFCK (if BSS=.true.)
+C
+C On input :   FOCK - to be used inside
+C =========   I2COFK - determines the integral type
+C             IPRINT - print level
+C
+C On output :     BSSMAT file updated with LL H2c_AO integrals
+C ===========     I2COFK set to 7
+C          
+C Written by Miro Ilias, Strasburg 2006  
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+
+      DIMENSION FOCK(*),WORK(LWORK)
+      LOGICAL FNDLAB
+      CHARACTER*8 HAM2CL
+
+      CALL QENTER('GETH2CAO')
+
+      IF      (I2COFK.EQ.1) THEN       
+CMI        .... h2c from h_D(1)_4C ... DEFAULT ...    
+           HAM2CL = 'H1AO_DK '      
+      ELSE IF (I2COFK.EQ.2) THEN      
+CMI      .... h2c_CSC(+AMFI if present) from hD(1)_4C                                     
+           HAM2CL = 'H1AO_DK2'     
+CMI      ... these are post-DC-SCF two-component Hamiltonians ...                         
+C     =============================================================                       
+      ELSE IF (I2COFK.EQ.3) THEN 
+CMI .... h2c(1) from FD4C - one electron terms !                                          
+CMI ...  WE MAY WISH TO PERFORM ONLY ONE SCF ITERATION HERE !                             
+           HAM2CL = 'FD1AO_DK'    
+      ELSE IF (I2COFK.EQ.4) THEN    
+CMI .... full Fock_2c transformed from FD4C                                               
+           HAM2CL = 'FDAO_DK '   
+      ELSE IF (I2COFK.EQ.5.OR.I2COFK.EQ.6) THEN
+CMI .... f2c(=h1+u1_so, spin-free terms are removed from u1) from FD_4C term              
+           HAM2CL = 'FD2C_USO' 
+      ELSE IF (I2COFK.EQ.7) THEN    
+CMI .... it's H1AO_DK or H1AO_DK2 in LL basis
+           HAM2CL = 'H2CAO_LL' 
+      ELSE     
+CC        write(lupri,*) 'H2CAOLL: I2CHAM=',I2CHAM   
+          write(lupri,*) 'H2CAOLL: I2COFK=',I2COFK   
+          CALL QUIT('ONEFCK: Wrong value of I2CHAM!')    
+      ENDIF                                  
+
+      CALL OPNFIL(LUBSS,'BSSMAT','OLD','ONEFCK')   
+      REWIND LUBSS   
+      IF (FNDLAB(HAM2CL,LUBSS)) THEN   
+          CALL READT(LUBSS,N2BBASXQ,FOCK)    
+          IF (IPRINT.GE.2) THEN    
+           WRITE(LUPRI,'(/2X,A,A,A)')                                  
+     & 'GETH2CAO: ',HAM2CL,' transformed one-electron relativistic'//   
+     & ' integrals were read from the file BSSMAT.'
+          ENDIF  
+      ELSE
+           WRITE(LUPRI,'(/2X,A,A,I3)')   
+     & 'GETH2CAO: ',HAM2CL,' transformed one-electron relativistic'//   
+     & ' integrals NOT FOUND in the file BSSMAT ! I2CHAM=',I2CHAM   
+          CALL QUIT('ONEFCK: integrals NOT FOUND in the file BSSMAT!') 
+      ENDIF  
+C        ... close the file ...                                                           
+      CLOSE(LUBSS,STATUS='KEEP') 
+
+      CALL QEXIT('GETH2CAO')
       RETURN
       END
 
@@ -188,7 +272,7 @@ C    ... refrence
      &   ' modified Dirac equation. I:',
      & '   from Douglas-Kroll-Hess second order method to the infi'//
      &   'nite order two-component method.",',
-     & '  J. Chem. Phys., submitted (hoping 2005) .'
+     & '  J. Chem. Phys., submitted (hoping 2006) .'
 
 C ======================================================================
 C            extract information about the BSS Hamiltonian 
@@ -494,7 +578,6 @@ C      ... consider the spin-free case !!!
      &              IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 
-
 C     ...      before calling AMFI stuff do release ALL
 C     ...    allocated memmory (except entering VMAT)
       CALL MEMREL('AMFI',WORK,KWORK,KFACKIN,KFREE,LFREE)
@@ -516,10 +599,229 @@ C      ... VMAT is reused as helping array...
         I2CHAM = 2
       ENDIF
 
+CMI   ... prepare the screened 2comp. bare nucleus - only for infinite order !
+      IF (BNCRON .AND. .NOT. ONESYS .AND. GETPCTM) THEN
+       CALL MAKEBNCR2C(VMAT,WORK(KFREE),LFREE)
+      ENDIF
+
 C   ... release the rest of allocated memmory ...
       CALL MEMREL('MAKE_BSS',WORK,KWORK,KWORK,KFREE,LFREE)
 
       CALL QEXIT('MAKE_BSS')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck makebncr2c */
+      SUBROUTINE MAKEBNCR2C(VMAT,WORK,LWORK)
+C****************************************************************************
+C
+C   PURPOSE: Do the picture change transformation of the SCREENED
+C            one-electron Fock matrix obtained from the BNCORR routine.
+C
+C   On input: VMAT - only array
+C
+C   On output: VMAT - picture change transformed 2comp. screened bare nucleus
+C
+C   Written by Miro ILIAS, March 2006/Strasbourg
+C
+C****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbham.h"
+      DIMENSION VMAT(*),WORK(LWORK)
+      LOGICAL FNDLAB,BSS_SAVE,TWOCOMP_SAVE
+
+#include "memint.h"
+      CALL QENTER('PREPBNCR')
+      
+      BSS_SAVE = BSS
+      BSS = .FALSE.
+      TWOCOMP_SAVE = TWOCOMP
+      TWOCOMP = .FALSE.
+
+CMI   ... get Dirac 1el matrix
+      CALL ONEFCK(VMAT,IPRHAM,WORK(KFREE),LFREE)
+CMI   ... get screened Dirac bare nucleus
+      CALL BNCORR(VMAT,WORK(KFREE),LFREE,IPRHAM)
+
+      BSS = BSS_SAVE
+      TWOCOMP = TWOCOMP_SAVE
+
+C   ... now do the picture change transformation
+      CALL DOPCTRA(-1,VMAT,1,'S',WORK(KFREE),LFREE)                 
+      IF(IPRHAM.GE.8) THEN                                          
+       CALL HEADER('MAKEBNCR2C: 2c matrix ...',-1) 
+       CALL PRQMAT(VMAT,NTBAS(0),NTBAS(0),                
+     &    NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI) 
+      END IF 
+
+CMI   ... do save it into BSSMAT file ...
+      CALL W2BSSMAT('BNCR2C_4','PREPBNCR',VMAT,N2BBASXQ,LUBSS,IPRHAM)
+
+      CALL QEXIT('PREPBNCR')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck rfbssmat */
+      SUBROUTINE RFBSSMAT(LBL,FROMSUB,TMAT,ISIZE,LUBSS,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  PURPOSE: Read the LBL record from the BSSMAT file into TMAT
+C
+C  On input: LBL - the label of the record
+C            FROMSUB - the name of the routine from where RFBSSMAT is called
+C            TMAT - array
+C            ISIZE - the size of the record
+C            LUBSS - file unit number ...
+C
+C  On output: TMAT
+C
+C  Written by Miro ILIAS, Strasbourg March, 2006,
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION TMAT(*)
+      LOGICAL FNDLAB,IS_HERE,IS_OPEN
+      CHARACTER*8 LBL
+      CHARACTER*(*) FROMSUB
+      
+      CALL QENTER('RFBSSMAT')
+
+      INQUIRE(FILE='BSSMAT',EXIST=IS_HERE,OPENED=IS_OPEN)
+
+      IF (.NOT.IS_HERE) THEN
+       write(lupri,*) 'RFBSSMAT: BSSMAT file is not present !'
+       write(lupri,*) 'RFBSSMAT called from ',FROMSUB
+       CALL QUIT('RFBSSMAT: BSSMAT file is not present !')
+      ENDIF
+
+      IF (.NOT.IS_OPEN) THEN
+       CALL OPNFIL(LUBSS,'BSSMAT','OLD',FROMSUB)
+      ENDIF
+
+      REWIND LUBSS
+      IF (FNDLAB(LBL,LUBSS)) THEN
+        CALL READT(LUBSS,ISIZE,TMAT)
+        IF (IPRINT.GE.2) THEN
+          WRITE(LUPRI,'(/2X,A,A,A,A)')
+     & 'RFBSSMAT: ',LBL,' record'//
+     & ' was read from the file BSSMAT. Called from ',FROMSUB
+        ENDIF
+      ELSE
+         WRITE(LUPRI,'(/2X,A,A,A)')
+     & 'RFBSSMAT: ',LBL,' record was'//
+     & ' NOT FOUND in the file BSSMAT !'
+       CALL QUIT('RFBSSMAT: Record NOT FOUND in the file BSSMAT!') 
+      ENDIF
+
+      CLOSE(LUBSS,STATUS='KEEP')
+      CALL QEXIT('RFBSSMAT')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck rfbssmat */
+      SUBROUTINE W2BSSMAT(LBL,FROMSUB,TMAT,ISIZE,LUBSS,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  PURPOSE: WRITE the LBL record into the BSSMAT file from TMAT
+C
+C  On input: LBL - the label of the record
+C            FROMSUB - the name of the routine from where RFBSSMAT is called
+C            TMAT - array
+C            ISIZE - the size of the record
+C            LUBSS - file unit number ...
+C
+C  On output: none
+C
+C   Written by Miro ILIAS, Strasbourg March, 2006,
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION TMAT(*)
+      LOGICAL FNDLAB,IS_HERE,IS_OPEN
+      CHARACTER*8 LBL
+      CHARACTER*(*) FROMSUB
+      CALL QENTER('W2BSSMAT')
+
+      INQUIRE(FILE='BSSMAT',EXIST=IS_HERE,OPENED=IS_OPEN)
+
+      IF (.NOT.IS_HERE) THEN
+       write(lupri,*) 'W2BSSMAT: BSSMAT file is not present !'
+       write(lupri,*) 'W2BSSMAT was called from ',FROMSUB
+       CALL QUIT('W2BSSMAT: BSSMAT file is not present !')
+      ENDIF
+
+      IF (.NOT.IS_OPEN) THEN
+       CALL OPNFIL(LUBSS,'BSSMAT','OLD',FROMSUB)
+      ENDIF
+
+      REWIND LUBSS                                                    
+      IF (FNDLAB('EOFLABEL',LUBSS)) THEN                            
+       BACKSPACE(LUBSS)                   
+       CALL NEWLAB(LBL,LUBSS,LUPRI)             
+       CALL WRITT(LUBSS,ISIZE,TMAT)                   
+       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)                            
+       IF (IPRINT.GE.2) THEN
+        WRITE(LUPRI,'(/2X,A,A,A,A)')
+     & 'W2BSSMAT: ',LBL,' record '//
+     & 'was WRITTEN inthe file BSSMAT. EOFLABEL was renewed'//
+     & ' at the end. Called from ',FROMSUB
+       ENDIF
+      ELSE                                                       
+       CALL QUIT(                                               
+     & 'W2BSSMAT: Error, EOFLABEL not found in BSSMAT file!')    
+      ENDIF 
+      CLOSE(LUBSS,STATUS='KEEP')
+
+      CALL QEXIT('W2BSSMAT')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck isonbssmat */
+      LOGICAL FUNCTION ISONBSSMAT(LBL,FROMSUB,LUBSS,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C   Written by Miro ILIAS, Strasbourg March, 2006,
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+      LOGICAL FNDLAB,IS_HERE,IS_OPEN
+      CHARACTER*8 LBL
+      CHARACTER*(*) FROMSUB
+      CALL QENTER('ISONBSSMAT')
+
+      INQUIRE(FILE='BSSMAT',EXIST=IS_HERE,OPENED=IS_OPEN)
+
+      IF (.NOT.IS_HERE) THEN
+       write(lupri,*) 'ISONBSSMAT: BSSMAT file is not present !'
+       write(lupri,*) 'ISONBSSMAT was called from ',FROMSUB
+       CALL QUIT('ISONBSSMAT: BSSMAT file is not present !')
+      ENDIF
+
+      IF (.NOT.IS_OPEN) THEN
+       CALL OPNFIL(LUBSS,'BSSMAT','OLD',FROMSUB)
+      ENDIF
+
+      REWIND LUBSS                                                    
+      IF (FNDLAB(LBL,LUBSS)) THEN                            
+         ISONBSSMAT = .TRUE.
+      ELSE
+         ISONBSSMAT = .FALSE.
+      ENDIF
+      CLOSE(LUBSS,STATUS='KEEP')
+
+      CALL QEXIT('ISONBSSMAT')
       RETURN
       END
 
@@ -7841,6 +8143,206 @@ C      call quit('in CMOINI4C !')
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck h2ctoll */
+      SUBROUTINE H2CTOLL(I2COFK,VMAT,WORK,LWORK,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C    PURPOSE: Read the H2c_AO integrals, which are in the BSSMAT file 
+C             and rewrite them packed into the LL-matrix under a new label
+C
+C    Called from: MAKE_DKH
+C
+C    On input:  I2COFK - determines which label from BSSMAT to be read
+C               VMAT - empty field (N2BBASXQ) to be utilized 
+C
+C    On output:  I2COFK set to 7 (see routine GETH2CAO)
+C                BSS/DKn integrals in LL_only matrix added to the BSSMAT
+C            
+C    Written by Miro Ilias, Strasbourg, 2006
+C    Modifications:
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(THRNULL=1.0D-7,D0=0.00D00)
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+C
+      DIMENSION WORK(LWORK),VMAT(*)
+      LOGICAL ISONBSSMAT
+      CHARACTER*8 HAM2CL
+
+      CALL QENTER('H2CTOLL')
+#include "memint.h"
+
+C       ... calculate N2BBASXQ with Lintegrals
+      N2BBASXQ_L = (NTBAS(1)*NTBAS(1)*NZ)
+      CALL MEMGET('REAL',KBSSLL,N2BBASXQ_L,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KBSSLL),N2BBASXQ_L)
+
+C ...; 'H1AO_DK '
+      IF      (I2COFK.EQ.1) THEN
+CMI        .... h2c from h_D(1)_4C ... DEFAULT ...
+         HAM2CL = 'H1AO_DK '
+      ELSE IF (I2COFK.EQ.2) THEN
+CMI      .... h2c_CSC(+AMFI if present) from hD(1)_4C
+         HAM2CL = 'H1AO_DK2'
+      ELSE
+         call quit('H2CTOLL: wrong I2COFK ! Should be 1 or 2 ! ')
+      ENDIF
+
+      CALL RFBSSMAT(HAM2CL,'H2CTOLL',VMAT,N2BBASXQ,LUBSS,IPRINT)
+
+C     ... control output
+      IF (IPRINT.GE.5) THEN
+       CALL HEADER(
+     & 'H2CTOLL: H2C_AO in full block, total matrix in SA-AO',-1)
+       CALL PRQMAT(VMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &            IPQTOQ(1,0),LUPRI)
+      ENDIF
+
+C     ... extract the 2c matrix from VMAT
+      CALL EXTRLL(0,VMAT,WORK(KBSSLL),IPRINT)
+
+      CALL W2BSSMAT('H2CAO_LL','H2CTOLL',WORK(KBSSLL),
+     &                N2BBASXQ_L,LUBSS,IPRINT)      
+
+C     ... control output
+      IF (IPRINT.GE.5) THEN
+       CALL HEADER(
+     & 'H2CAO_LL: H2C_AO in LL block, total matrix in AO',-1)
+       CALL PRQMAT(WORK(KBSSLL),NTBAS(1),NTBAS(1),NTBAS(1),NTBAS(1),NZ,
+     &            IPQTOQ(1,0),LUPRI)
+      ENDIF
+
+      IF (BNCRON.AND.ISONBSSMAT('BNCR2C_4','H2CTOLL',LUBSS,IPRINT)) THEN
+C     ... read 'BNCR2C_4' frol BSSMAT
+       CALL RFBSSMAT('BNCR2C_4','H2CTOLL',VMAT,N2BBASXQ,LUBSS,IPRINT)
+C     ... extract it into 2comp. form
+       CALL EXTRLL(0,VMAT,WORK(KBSSLL),IPRINT)
+C     ... write it to the end of the file ...
+       CALL W2BSSMAT('BNCR2C_2','H2CTOLL',WORK(KBSSLL),
+     &                N2BBASXQ_L,LUBSS,IPRINT)
+      ENDIF
+
+C     ... release the memmory..
+      CALL MEMREL('H2CTOLL',WORK,KBSSLL,KBSSLL,KFREE,LFREE)
+
+C      ... finally set up reading flag...
+      I2COFK = 7
+
+C       call quit('h2ctoll')
+      CALL QEXIT('H2CTOLL')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck extrll */
+      SUBROUTINE EXTRLL(IREP,PMAT4C,PMAT2C,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  PURPOSE: Do extract LL block of 4c PMAT4C into 2c PMAT2C;
+C           we are in the SA-AO basis.
+C
+C  On input:   IREP - irreducible repres. of operator
+C              PMAT4C - four-component matrix
+C
+C  On output:  PMAT2C - two-comp. symm. blocked matrix
+C
+C
+C     Written by Miro Ilias, Strasbourg, March 2006
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+      DIMENSION PMAT4C(*),PMAT2C(*)
+
+      CALL QENTER('EXTRLL')
+
+      IOPSY = JBTOF(IREP,1)
+
+      N2TOT4C = NTBAS(0)*NTBAS(0)
+      N2TOT2C = NTBAS(1)*NTBAS(1)
+
+      DO IZ = 1, NZ
+
+         IZOFF4C = (IZ-1)*N2TOT4C + 1
+         IZOFF2C = (IZ-1)*N2TOT2C + 1
+
+      DO IFS1 = 1, NFSYM
+
+         IFS2 = MOD(IFS1+IOPSY,2) + 1
+
+         IF (IFS1.EQ.1.AND.IFS2.EQ.1) THEN
+           IFS4C = IZOFF4C
+           IFS2C = IZOFF2C
+         ELSE IF (IFS1.EQ.1.AND.IFS2.EQ.2) THEN 
+           IFS4C = IZOFF4C + (NTBAS(0)*NFBAS(1,0))
+           IFS2C = IZOFF2C + (NTBAS(1)*NFBAS(1,1))
+         ELSE IF (IFS1.EQ.2.AND.IFS2.EQ.1) THEN 
+           IFS4C = IZOFF4C + NFBAS(1,0)
+           IFS2C = IZOFF2C + NFBAS(1,1)
+         ELSE IF (IFS1.EQ.2.AND.IFS2.EQ.2) THEN 
+           IFS4C = IZOFF4C + (NTBAS(0)*NFBAS(1,0))+NFBAS(1,0)
+           IFS2C = IZOFF2C + (NTBAS(1)*NFBAS(1,1))+NFBAS(1,1)
+         ELSE
+          write(lupri,*) 'EXTRLL: ifs1,ifs2=',IFS1,IFS2
+          call QUIT('EXTRLL: wrong IFS1,IFS2 !')
+         ENDIF
+
+         DO I = 1, NFBAS(IFS2,1)
+            IPOS4C = IFS4C + (I-1)*NTBAS(0)
+            IPOS2C = IFS2C + (I-1)*NTBAS(1)
+            CALL DCOPY(NFBAS(IFS1,1),PMAT4C(IPOS4C),1,PMAT2C(IPOS2C),1)
+         ENDDO
+
+      ENDDO
+      ENDDO
+
+      IF (IPRINT.GE.12) THEN
+       CALL HEADER('EXTRLL: Total entering 4c SA-AO oper.',-1)
+
+C      write(lupri,*) 'IREP=',IREP
+
+       CALL PRQMAT(PMAT4C,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &            IPQTOQ(1,IREP),LUPRI)
+
+       CALL HEADER('EXTRLL: Total picked LL part of SA-AO oper.',-1)
+       CALL PRQMAT(PMAT2C,NTBAS(1),NTBAS(1),NTBAS(1),NTBAS(1),NZ,
+     &            IPQTOQ(1,IREP),LUPRI)
+
+       IF (IPRINT.GE.16) THEN
+         DO IFS1 = 1, NFSYM
+            IFS2 = MOD(IFS1+IOPSY,2) + 1
+            CALL HEADER(
+     & 'EXTRLL: Entering symm. blocked 2c SA-AO operator/4c metric',-1)
+            WRITE(LUPRI,'(2X,A,I1,A,I1,A,I1)')
+     & 'fermion symm1=',IFS1,' fermion symm2=',IFS2,'/',NFSYM
+            CALL PRQMAT(PMAT4C(1+I2BASX(IFS1,IFS2)),
+     &            NFBAS(IFS1,0),NFBAS(IFS2,0),
+     &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+
+         IFS2C = (IFS2-1)*NFBAS(IFS1,1)*NTBAS(1) +
+     &            (IFS1-1)*NFBAS(IFS1,1)
+
+            CALL HEADER(
+     &  'EXTRLL: Picked symm. blocked 2c SA-AO oper.',-1)
+            WRITE(LUPRI,'(2X,A,I1,A,I1,A,I1)')
+     & 'fermion symm1=',IFS1,' fermion symm2=',IFS2,' of ',NFSYM
+            CALL PRQMAT(PMAT2C(1+IFS2C),
+     &        NFBAS(IFS1,1),NFBAS(IFS2,1),
+     &        NTBAS(1),NTBAS(1),NZ,IPQTOQ(1,IREP),LUPRI)
+         ENDDO
+       ENDIF
+      ENDIF
+
+      CALL QEXIT('EXTRLL')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck amfiin */
       SUBROUTINE AMFIIN(H2SAO,NB,NTNUC,IPTYPAO,INDXLM,IPNUC,IZTNUCS,
      &                  IPTA,INDXLMA,IAMFU,IANUCS,ISTNUCTYP,CHPNUC,
@@ -7932,8 +8434,6 @@ C   ... fill IZTNUCS - LIST OF ALL NUCLEIS
        IX = IX + 1
       ENDDO
       ENDDO
-
-C     CALL QUIT('amfiin')
 
 C    .. make ready the IPTYPAO, INDXLM,IPNUC
       IF (IPRINT.GE.3) THEN
@@ -9007,9 +9507,10 @@ C ...save hamiltonian matrix elements
        BACKSPACE(LUBSS)
        CALL NEWLAB('H1AO_DK2',LUBSS,LUPRI)
        CALL WRITT(LUBSS,N2BBASXQ,H2CAO)
+       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)                            
        WRITE(LUPRI,'(/2X,A)')
-     &'AMFI_STUFF: New BSS2 relativistic atomic integrals'//
-     &' - H1AO_DK2 - are written to the BSSMAT file.'
+     &'AMFI_STUFF: CSC transformed relativistic atomic integrals'//
+     &' were written into the BSSMAT file, EOFLABEL renewed.'
       ELSE
        CALL QUIT(
      &  'AMFI_STUFF: Error, EOFLABEL not found in BSSMAT file!')

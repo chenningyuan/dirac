@@ -331,7 +331,7 @@ C
 C  8-Feb-1987 Hans Joergen Aa. Jensen
 C
 C Purpose: Transform from SI format to SP format, that is:
-C          copy upper triangle of symmetric matrix ASI
+C          copy UPPER triangle of symmetric matrix ASI
 C          to symmetric, packed matrix ASP.
 C
 #include <implicit.h>
@@ -347,6 +347,30 @@ C
 C
       RETURN
       END
+
+C  /* Deck dsltsp */
+      SUBROUTINE DSLTSP(N,ASI,ASP)
+C
+C  8-Feb-1987 Hans Joergen Aa. Jensen
+C
+C Purpose: Transform from SI format to SP format, that is:
+C          copy LOWER triangle of symmetric matrix ASI
+C          to symmetric, packed matrix ASP.
+C
+#include "implicit.h"
+      DIMENSION ASI(N,*), ASP(*)
+C
+#include "nosync.h"
+      DO 200 J = 1,N
+         JOFF = (J*J-J)/2
+         DO 100 I = 1,J
+            ASP(JOFF+I) = ASI(J,I)
+  100    CONTINUE
+  200 CONTINUE
+C
+      RETURN
+      END
+
 C  /* Deck dsifsp */
       SUBROUTINE DSIFSP(N,ASI,ASP)
 C

@@ -1449,7 +1449,7 @@ C
       WRITE(LUPRI,'(14X,A)')
      &     'MP2 expectation values are documented in:',
      &     'J. N. P. van Stralen, L. Visscher, C. V. Larsen',
-     &     'and H. J. Aa Jensen, Chem. Phys. (2004) in press.'
+     &     'and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.'
 C
       KFRSAV=KFREE
 C
@@ -5668,8 +5668,8 @@ C***********************************************************************
 C
 C    PURPOSE: Output routine for magnetic susceptibilities     
 C
-C    It is modelled by TEC's routines
-C    and by the dalton routine 'abacus/abadrv.F/SUSRES' 
+C    It is modelled after TEC's routines
+C    and after the dalton routine 'abacus/abadrv.F/SUSRES' 
 C    
 C    Written by MI, jan. 2003
 C     
@@ -5883,6 +5883,7 @@ C ... extract relaxation part of magnetic susceptibilities...
        DO IB = 1,3
          IF (LONDON) THEN
           READ (PRPNAM(LLRBPU(IB)),'(4X,A1)') JCB
+          write(lupri,*) 'before ICONV...',PRPNAM(LLRBPU(IB))
           JB = ICONVXYZ(JCB)  
          ELSE
           READ (PRPNAM(LLRBPU(IB)),'(7X,I1)') JB
@@ -7737,3 +7738,217 @@ C
       END DO
       RETURN
       END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prop2bss */
+      SUBROUTINE PROP2BSS(VMAT,WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C    PURPOSE: Run the list of four-component property operators in DCBPRP and do the pictre change
+C             transformation of most of them. Do not transform
+C             certain operators (overlap, connection matrixes...)
+C
+C    Called from: MAKE_DKH (if TWOCOMPBSS and DOPRP are true)
+C
+C    On input:  
+C              VMAT - empty field (N2BBASXQ) to be utilized inside
+C
+C    On output: 
+C              BSS/DKn integrals in LL_only matrix written to the BSSMAT file
+C              under the label P2C_xxxx.
+C            
+C    Written by Miro Ilias, Strasbourg, March 2006
+C    Modifications:
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbihr1.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbexp.h"
+#include "dcbgen.h"
+#include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbprl.h"
+#include "dummy.h"
+C#include "dcbdhf.h"
+C#include "dcbprj.h"
+C
+      DIMENSION WORK(LWORK),VMAT(*)
+      LOGICAL FNDLAB, IS_SQUARE
+      CHARACTER*8 PRPLABEL
+      CHARACTER*4 NUMSTR
+
+      CALL QENTER('PROP2BSS')
+#include "memint.h"
+
+          CALL MEMCHK('PROP2BSS 1',WORK,1)
+
+      N2BBASXQ_L = (NTBAS(1)*NTBAS(1)*NZ)                  
+      CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
+
+C     ... BSSMAT file is already open...find end label
+        CLOSE(LUBSS,STATUS='KEEP')
+      CALL OPNFIL(LUBSS,'BSSMAT','OLD','PROP2BSS')
+      REWIND LUBSS                                 
+      IF (FNDLAB('EOFLABEL',LUBSS)) THEN          
+        BACKSPACE(LUBSS)
+        IF (IPRPRP.GE.4) THEN
+        write(lupri,*)
+     &  'BSSMAT ready for saving 2component prop.operators!'
+        ENDIF
+      ELSE
+        CALL QUIT('PRP2BSS: EOFLABEL  not found !')
+      ENDIF
+
+CMI     .... toto funguje !!!!
+C     CALL NEWLAB('xxxxaaaa',LUBSS,LUPRI)
+
+      CALL MEMCHK('PROP2BSS 1.x1',WORK,1)
+
+
+      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
+     &         FILE='AOPROPER')
+      REWIND (LU1INT)
+
+C     CALL NEWLAB('123xaaaa',LUBSS,LUPRI)
+
+      CALL MEMCHK('PROP2BSS 1.x2.1',WORK,1)
+
+C     write(lupri,*) 'NPRPS=',NPRPS
+
+      CALL MEMCHK('PROP2BSS 1.x2.2',WORK,1)
+
+      DO I = 1, NPRPS
+
+        IREP = IPRPSYM(I) - 1
+
+       IF (IPRPRP.GE.3) THEN
+        write(lupri,*) I,' index=',IPRPTYP(I),' name=',
+     &   PRPNAM(I),' tim.rev.=',IPRPTIM(I),' irep=',IREP,
+     &    ' labels:',IPRPLBL(1,I),PRPLBL(IPRPLBL(1,I)),
+     &    ' pdoint=',PDOINT(IPRPLBL(1,I))
+       ENDIF
+
+      IF (IPRPTIM(I).EQ.0) THEN
+       IDIMENS = N2BBASX
+       IS_SQUARE = .TRUE.
+      ELSE IF (IPRPTIM(I).EQ.1.OR.IPRPTIM(I).EQ.-1) THEN
+       IDIMENS = NNBBASX
+       IS_SQUARE = .FALSE.
+      ELSE
+       CALL QUIT('PROP2BSS: wrong parameter ! ')
+      ENDIF
+
+          CALL MEMCHK('PROP2BSS 1.2',WORK,1)
+C
+C     Memory allocation
+C
+C     CALL MEMGET('REAL',KPRPAO ,N2BBASXQ  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
+     
+C      ... done in PRPMSAO ...
+C     CALL LSET(NZ,.TRUE.,WORK(KFIRST)) 
+
+      INDXPR = I
+
+       CALL MEMCHK('PROP2BSS 2',WORK,1)
+
+C     CALL PRPMSAO(LU1INT,INDXPR,IDIMENS,WORK(KPTRI),VMAT,
+
+      IF (IS_SQUARE) THEN
+
+       CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,VMAT,
+     &             WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
+     &             LFREE,IPRPRP)   
+
+      ELSE
+
+       CALL PRPMSAO(INDXPR,IDIMENS,WORK(KPTRI),VMAT,
+     &             WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
+     &             LFREE,IPRPRP)   
+
+      ENDIF
+
+C     ... dealocate the memmory...
+      CALL MEMREL('KFIRST',WORK,KWORK,KFIRST,KFREE,LFREE)
+      CALL MEMREL('KONEIN',WORK,KWORK,KONEIN,KFREE,LFREE)
+      CALL MEMREL('KPTRI',WORK,KWORK,KPTRI,KFREE,LFREE)
+       
+C      ... allocate the memmory for LL block only ...
+C       ... calculate N2BBASXQ with Lintegrals                                                                                      
+C     N2BBASXQ_L = (NTBAS(1)*NTBAS(1)*NZ)                  
+C     CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
+
+C       .. extract from VMAT into WORK(KPRLL)
+        CALL EXTRLL(IREP,VMAT,WORK(KPRLL),IPRPRP)
+
+        CALL MEMCHK('PROP2BSS 4.1',WORK,1)
+
+C      ... save WORK(KPRLL) into BSSMAT under label PRP2Cxxx, with xxx=INDXPR
+        CALL NUM2STR(INDXPR,NUMSTR) 
+         
+       PRPLABEL = 'P2C_'//NUMSTR
+
+C      write(lupri,*) 'num=',NUMSTR,'  label is=',PRPLABEL
+
+      CALL OPNFIL(LUBSS,'BSSMAT','OLD','PROP2BSS')
+      REWIND LUBSS 
+      IF (FNDLAB('EOFLABEL',LUBSS)) THEN          
+        BACKSPACE(LUBSS)
+        IF (IPRHAM.GE.4) THEN
+        write(lupri,*)
+     &  'BSSMAT ready for saving 2component prop.operators!'
+        ENDIF
+      ELSE
+        CALL QUIT('PRP2BSS: EOFLABEL  not found !')
+      ENDIF
+
+C     CALL NEWLAB('xxxxaaaa',LUBSS,LUPRI)
+      CALL NEWLAB(PRPLABEL,LUBSS,LUPRI)
+      CALL WRITT( LUBSS, N2BBASXQ_L, WORK(KPRLL) )
+      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+
+      IF (IPRPRP.GE.3) THEN
+       WRITE(LUPRI,'(/2X,A)')
+     & 'PROP2BSS: Picture change transformed 2comp. operator '//
+     & PRPLABEL//' was written to the BSSMAT file in LL block only.'
+      ENDIF
+
+C     CALL MEMREL('KPRLL',WORK,KWORK,KPRLL,KFREE,LFREE)
+
+C      call quit('prop2bss')
+C     ENDIF
+         CALL MEMCHK('PROP2BSS 5',WORK,1)
+
+      ENDDO
+
+C     IF (DOEXP) THEN
+C       DO I = 1,NEXPP
+C         INDXPR = LEXPP(I)
+C         write(lupri,*) 'exp.value prop.index=',INDXPR,PRPNAM(INDXPR)
+C       ENDDO
+C     ENDIF
+C     IF (DOXLR) THEN
+C         write(lupri,*) 'linear response activated !!!'
+C     ENDIF
+
+      CALL MEMREL('KPRLL',WORK,KWORK,KPRLL,KFREE,LFREE)
+
+C     CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+      IF (IPRPRP.GE.2) THEN
+       WRITE(LUPRI,'(/2X,A)') 
+     & 'PROP2BSS: EOFLABEL was renewed after saving all 2c operators '//
+     & 'into BSSMAT.'
+      ENDIF
+
+C      call quit('prop2bss')
+      CALL QEXIT('PROP2BSS')
+      RETURN
+      END
+
