@@ -7901,7 +7901,7 @@ C      write(lupri,*) 'num=',NUMSTR,'  label is=',PRPLABEL
       REWIND LUBSS 
       IF (FNDLAB('EOFLABEL',LUBSS)) THEN          
         BACKSPACE(LUBSS)
-        IF (IPRHAM.GE.4) THEN
+        IF (IPRPRP.GE.4) THEN
         write(lupri,*)
      &  'BSSMAT ready for saving 2component prop.operators!'
         ENDIF
