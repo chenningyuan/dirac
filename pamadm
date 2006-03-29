@@ -31,6 +31,7 @@ usage()
    echo '     -xpp          : Include PP excitation energy module'
    echo '     -krmc         : Include KR-MCSCF and LUCIAREL modules'
    echo '     -emb          : Include ab initio/DFT-embedding module'
+   echo '     -cdft         : Include CDFT module'
    echo '     tarfile=make  : only generate new Makefile'
    echo '     tarfile=export: Make DIRAC.new.tar.gz'
 }
@@ -135,6 +136,20 @@ setup()
          echo " - ab initio/DFT embedding module"
       else
          echo "ab initio/DFT embedding module not included - depends on DFT module "
+      fi
+   fi
+   #
+   #  CDFT module
+   #
+   if [ -n "$CDFTMOD" ]; then
+      if [ -n "$DFTMOD" ]; then
+         CDFTFLG='-DMOD_CDFT'
+         CDFTOBJ='$(CDFTOBJS)'
+         CDFTMAK=CDFT_OBJ
+         CDFTTAR=1
+         echo " - CDFT module"
+      else
+         echo "CDFT module not included - depends on DFT module "
       fi
    fi
    #
@@ -281,6 +296,11 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/embedding/{*.F,*.F90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
+   if [ "$CDFTTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/cdft/{*.F,*.F90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
    if [ "$ERITAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,*.F90,*.h,Makefile,include} 2>> export.log
@@ -333,8 +353,8 @@ make_makefile()
 {
    echo "*** Making general Makefile"
    echo
-   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $EMBOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ"
-   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $EMBMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK"
+   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $EMBOBJ $CDFTOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $EMBMAK $CDFTMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK"
    #
    # Write current Makefile
    #
@@ -557,6 +577,16 @@ embedding/embedding.o embedding/emb_frozen_orbitals.o embedding/emb_settings.o
 EOF
 fi
 #
+#  Object-files for CDFT module
+#
+if [ -n "$CDFTMOD" ]; then
+cat <<EOF>> Makefile
+
+CDFTOBJS = \\
+cdft/lr.o
+EOF
+fi
+#
 #  The targets
 #
 cat <<EOF>> Makefile
@@ -564,7 +594,7 @@ cat <<EOF>> Makefile
 OBJSMXM = gp/mxmpack.o
 
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
-	\$(DFTOBJS) \$(DNFOBJS) \$(EMBOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS)
+	\$(DFTOBJS) \$(DNFOBJS) \$(EMBOBJS) \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS)
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
@@ -687,6 +717,9 @@ fi
 if [ -n "$EMBMOD" ]; then
    echo '	cd embedding  ; $(MAKE) clean' >> Makefile
 fi
+if [ -n "$CDFTMOD" ]; then
+   echo '	cd cdft  ; $(MAKE) clean' >> Makefile
+fi
 
 
 cat <<EOF>> Makefile
@@ -772,6 +805,13 @@ EMB_OBJ :
 	cd embedding; \$(MAKE) all
 EOF
 fi
+if [ -n "$CDFTMOD" ]; then
+cat <<EOF>> Makefile
+
+CDFT_OBJ :
+	cd cdft; \$(MAKE) all
+EOF
+fi
 if [ -n "$ERIMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -829,6 +869,9 @@ fi
 if [ -n "$EMBMOD" ]; then
    TEMP="$TEMP embedding"
 fi
+if [ -n "$CDFTMOD" ]; then
+   TEMP="$TEMP cdft"
+fi
 
 cat <<EOF>> Makefile
 
@@ -874,8 +917,8 @@ which_modules()
 {
 #  
 #
-MODS="$ERIFLG $DNFFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG"
-MODS_IBM="$ERIFLG,$DNFFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG $EMBFLG"
+MODS="$ERIFLG $DNFFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG"
+MODS_IBM="$ERIFLG,$DNFFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG,$EMBFLG,$CDFTFLG"
 dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
@@ -888,6 +931,9 @@ if [ -n "$DFTFLG" ]; then
 fi
 if [ -n "$EMBFLG" ]; then
    dirs="$dirs embedding"
+fi
+if [ -n "$CDFTFLG" ]; then
+   dirs="$dirs cdft"
 fi
 if [ -n "$KRMCFLG" ]; then
    dirs="$dirs krmc luciarel"
@@ -940,6 +986,9 @@ while [ -n "$1" ]; do
          ;;
       -emb|-embedding)
          EMBMOD=1
+         ;;
+      -cdft)
+         CDFTMOD=1
          ;;
       -*)
          echo "Option \"$1\" not recognized."
