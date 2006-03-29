@@ -66,8 +66,8 @@ C
       DIMENSION B3(3)
 C
       DO IM = 1,NXCMAT      
+      IREPOP = ISYMOP(IM)-1
       IF(IHRMOP(IM).EQ.1) THEN
-        IREPOP = ISYMOP(IM)-1
 C
 C       Get perturbed density
 C       =====================
@@ -114,7 +114,16 @@ C
 CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
           END IF
         END IF
-      END IF
+#if defined (MOD_CDFT)
+      ELSEIF(IHRMOP(IM).EQ.-1) THEN
+        IF(SDFTLR) THEN
+          CALL SDFT_LINTRANS(DTRMAT,EXCMAT,IREPOP,
+     &                       GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+        ENDIF
+      ELSE
+        CALL QUIT('DTRMAT has to be hermitian or antihermitian')
+#endif
+      ENDIF
       ENDDO
       RETURN
       END
