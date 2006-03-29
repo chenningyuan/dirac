@@ -212,9 +212,9 @@ CC        write(lupri,*) 'H2CAOLL: I2CHAM=',I2CHAM
      & ' integrals were read from the file BSSMAT.'
           ENDIF  
       ELSE
-           WRITE(LUPRI,'(/2X,A,A,I3)')   
+           WRITE(LUPRI,'(/2X,A,A)')   
      & 'GETH2CAO: ',HAM2CL,' transformed one-electron relativistic'//   
-     & ' integrals NOT FOUND in the file BSSMAT ! I2CHAM=',I2CHAM   
+     & ' integrals NOT FOUND in the file BSSMAT !'
           CALL QUIT('ONEFCK: integrals NOT FOUND in the file BSSMAT!') 
       ENDIF  
 C        ... close the file ...                                                           
