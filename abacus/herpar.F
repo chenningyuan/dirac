@@ -475,24 +475,37 @@ C     ... not used any more (was used for PVM)
       JPRINT = IPRPAR
       JTASK  = NTASK
       JTYPE  = ITYPE
-      JNOCNT = 0
+
       JNODV  = 0
-      JNOPV  = 0
-      JRETUR = 0
-      JTIMIN = 0
-      JTKTIM = 0
-      JSOLVN = 0
-      JRELCL = 0
-      JLEVYL = 0
       IF (NODV)   JNODV  = 1
+
+      JNOPV  = 0
       IF (NOPV)   JNOPV  = 1
+
+      JNOCNT = 0
       IF (NOCONT) JNOCNT = 1
+
+      JRETUR = 0
       IF (RETUR)  JRETUR = 1
+
+      JTKTIM = 0
       IF (TKTIME) JTKTIM = 1
+
+      JTIMIN = 0
       IF (TIMING) JTIMIN = 1
+
+      JSOLVN = 0
       IF (SOLVNT) JSOLVN = 1
+
+      JRELCL = 0
       IF (RELCAL) JRELCL = 1
+
+      JLEVYL = 0
       IF (LEVYLE) JLEVYL = 1
+
+      JTWOCOMP = 0
+      IF (TWOCOMP) JTWOCOMP = 1
+
       J2TYP  = I2TYP
       JCEDIF = ICEDIF
 C
@@ -1006,7 +1019,9 @@ C    *    This is the node program for the construction of fock-     *
 C    *   matrices, derivated fock-matrices and expectation values.   *
 C    *****************************************************************
 C
-CMI  TEC changes for LAO
+CMI called from DIRNOD,DIRNOD2 (main/dirac.F)
+C
+CMI  TEC changes for LAO (2003,2006)
 #include "implicit.h"
 C
 #if defined (VAR_MPI)
@@ -1085,6 +1100,7 @@ C
       ELSE IF (ITYPE .EQ.3.OR.ITYPE.EQ.9) THEN
          NREQUI = 0
          LFMAT  = NFMAT*N2BASX
+CMI      write(0,*) "node...dimens NFMAT,N2BASX:",NFMAT,N2BASX
       ELSE IF (ITYPE .EQ. -5) THEN
 CMI      NUMSUS = 9
 CMI      NREQUI = 3*NNBASX + NUMSUS
@@ -1277,6 +1293,7 @@ C
       I2TYP  = J2TYP
       RELCAL = JRELCL .EQ. 1
       LEVYLE = JLEVYL .EQ. 1
+      TWOCOMP = JTWOCOMP .EQ. 1
       ICEDIF = JCEDIF
 C
       CALL IZERO(MTIDS,MAXNOD)
@@ -1331,6 +1348,7 @@ C
       IF (NEWGEO) RDINPC = .FALSE.
 C
       CALL SETHER(0,NEWGEO,RELCAL,WORK(KFREE),LFREE)
+CMI   CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
 C
 C     Set common-block BLOCKS
 C
@@ -1887,8 +1905,10 @@ C
       ENDIF
 #endif
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
+CMI    write(0,*) "Node sending dintkip"
          CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
+CMI    write(0,*) "Node sending fmat; N2BASX,LFMAT:",N2BASX,LFMAT
          CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
       ELSE IF (ITYPE.EQ.2) THEN
