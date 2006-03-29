@@ -183,7 +183,38 @@ dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
     ds->fG  = 0; /* NOT USED */
 }
 
+#if defined (MOD_CDFT)
+void
+sdftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad)
+{
+  FunSecondFuncDrv drvs;
+  FunDensProp dp;
 
+  drv2_clear(&drvs);
+
+  dp.rhoa   = dp.rhob  = *rho *0.5;
+  dp.grada  = dp.gradb = *grad*0.5;
+  dp.gradab = dp.grada * dp.gradb;
+
+  dp.subsystem[0] = NULL;
+  dp.subsystem[1] = NULL;
+
+  if(do_alda)
+    LDAFunctional.second(&drvs, *w, &dp);
+  else
+    selected_func->second(&drvs, *w, &dp);
+       
+  ds->fR  = 0; /* NOT USED */
+  ds->fZ  = 0; /* NOT USED */
+  ds->fRR = 0.5*(drvs.df2000 - drvs.df1100);
+  ds->fRZ = 0; /* NOT USED */
+  ds->fZZ = 0; /* NOT USED */
+  ds->fRG = 0; /* NOT USED */
+  ds->fZG = 0; /* NOT USED */
+  ds->fGG = 0; /* NOT USED */
+  ds->fG  = 0; /* NOT USED */
+}
+#endif
 
 extern void quit_(const char* str, int len);
 void
