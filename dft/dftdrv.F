@@ -59,6 +59,7 @@ C
 #include "nuclei.h"
 #include "dftcom.h"
 #include "dftac.h"
+#include "cdft.h"
 #include "dfterg.h"
 #include "dgroup.h"
 #include "functionals.h"

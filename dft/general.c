@@ -183,7 +183,9 @@ dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
     ds->fG  = 0; /* NOT USED */
 }
 
+/*
 #if defined (MOD_CDFT)
+*/
 void
 sdftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad)
 {
@@ -214,7 +216,9 @@ sdftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad)
   ds->fGG = 0; /* NOT USED */
   ds->fG  = 0; /* NOT USED */
 }
+/*
 #endif
+*/
 
 extern void quit_(const char* str, int len);
 void

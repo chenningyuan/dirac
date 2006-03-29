@@ -54,6 +54,7 @@ C
 #include "dftinf.h"
 #endif
 #include "dftcom.h"
+#include "cdft.h"
 #include "functionals.h"
 C
       INTEGER A, B
