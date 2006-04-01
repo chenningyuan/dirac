@@ -5883,7 +5883,7 @@ C ... extract relaxation part of magnetic susceptibilities...
        DO IB = 1,3
          IF (LONDON) THEN
           READ (PRPNAM(LLRBPU(IB)),'(4X,A1)') JCB
-          write(lupri,*) 'before ICONV...',PRPNAM(LLRBPU(IB))
+CMI       write(lupri,*) 'before ICONV...',PRPNAM(LLRBPU(IB))
           JB = ICONVXYZ(JCB)  
          ELSE
           READ (PRPNAM(LLRBPU(IB)),'(7X,I1)') JB
