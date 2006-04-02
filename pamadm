@@ -583,7 +583,7 @@ if [ -n "$CDFTMOD" ]; then
 cat <<EOF>> Makefile
 
 CDFTOBJS = \\
-cdft/lr.o
+cdft/lr.o cdft/current.o
 EOF
 fi
 #

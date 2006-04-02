@@ -836,20 +836,16 @@ C     spin and current
 C     ================
 C
       IF(PLOTSPINDENSITY) THEN
-        CALL GETCURRENTDENSITY(.FALSE.,DUMMY,.TRUE.,SPIN,
-     &                         0,GAO,DMATBF,BUF)
-        SPINDENSITY = SPIN(4)
-C       SPINDENSITY = SPIN(3)
+C       CALL GETCURRENTDENSITY(.FALSE.,DUMMY,.TRUE.,SPIN,
+C    &                         0,GAO,DMATBF,BUF)
 C       IF(ABS(SPIN(4)).GT.0.0001D0) THEN
 C         WRITE(0,'(4F20.6)') PX, PY, (SPIN(I),I=1,2)
 C         WRITE(0,'(4F20.6)') PY, PZ, (SPIN(I),I=2,3)
 C       ENDIF
       ENDIF
       IF(PLOTCURRENTDENSITY) THEN
-        CALL GETCURRENTDENSITY(.TRUE.,CURRENT,.FALSE.,DUMMY,
-     &                         0,GAO,DMATBF,BUF)
-        CURRENTDENSITY = CURRENT(4)
-C       CURRENTDENSITY = CURRENT(1)
+C       CALL GETCURRENTDENSITY(.TRUE.,CURRENT,.FALSE.,DUMMY,
+C    &                         0,GAO,DMATBF,BUF)
 C       IF(ABS(CURRENT(4)).LT.1.000D0) THEN
 C         WRITE(0,'(4F20.6)') PX, PY, (CURRENT(I),I=1,2)
 C         WRITE(0,'(4F20.6)') PY, PZ, (CURRENT(I),I=2,3)
