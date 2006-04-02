@@ -68,7 +68,7 @@ C
       DATA TABLE /'.XXXXXX','.FROMVX','.XXXXXX','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
-     &            '.SAOP  ','.SAOP! ','.SDFTLR','.XXXXXX'/
+     &            '.SAOP  ','.SAOP! ','.SDFT  ','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -122,7 +122,7 @@ C
 C     initialize /SDFT/
 C     =================
 C
-      SDFTLR    = .FALSE.
+      SDFT      = .FALSE.
       COLLINEAR = .FALSE.
 C
 C
@@ -245,7 +245,7 @@ C&&& SAOP!: "original" SAOP as in JCP 112, 1344 (2000).
                  GOTO 100
  15              CONTINUE
 #if defined (MOD_CDFT)
-                 SDFTLR = .TRUE.
+                 SDFT = .TRUE.
 #endif
                  GO TO 100
  16              CONTINUE

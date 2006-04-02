@@ -34,14 +34,85 @@ C...      http://dirac.chem.sdu.dk
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck sdft_lintrans */
-      SUBROUTINE SDFT_LINTRANS(DUMMY)
+      SUBROUTINE SDFT_LINTRANS(DTRMAT,EXCMAT,
+     &                         IREPOP,
+     &                         GAO,GAO1,
+     &                         RHO,RHOGRADNORM,RHOGRAD,WEIGHT,DOGGA,
+     &                         BUF)
 C  .....................................................................
 C  .  description:                                                     .
-C  .                                                                   .
+C  .  lets the "spin density" contribute to linear response            .
+C  .  adaptation of DFTLTR in dftaux.F                                 .
 C  .....................................................................
 C  .  author:                                          last revision:  .
 C  .  radovan bast                                     march 2006      .
 C  .....................................................................
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "dgroup.h"
+#include "dftcom.h"
+#include "cdft.h"
+#include "../dft/functionals.h"
+C
+      LOGICAL DOGGA
+C
+      DIMENSION DTRMAT(*),
+     &          EXCMAT(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          RHOGRAD(3),
+     &          DMAGNETIZATION(3),
+     &          VXC(DERVS2),
+     &          BUF(*)
+C
+#include "ibtfun.h"
+C
+C
+C     get modified magnetization
+C     ==========================
+C
+      CALL GETCURRENTDENSITY(.FALSE.,DUMMY,
+     &                       .TRUE.,DMAGNETIZATION,
+     &                       IREPOP,GAO,DTRMAT,BUF)
+C
+      IF(DOGGA) THEN
+C
+C
+C       G G A
+C       =====
+C
+        CALL QUIT('SDFT linear response not implemented for GGA')
+C
+      ELSE
+C
+C
+C       L D A
+C       =====
+C
+        CALL SDFTPOT1(VXC,WEIGHT,RHO,D0)
+C
+        ITRANSFORM = 2
+C
+        DO I = 1,3
+          IQ = IQTOPQ(5-I,ISYMAX(I,ITRANSFORM))
+          IOFF = NBAST*NBAST
+          IOFF = IOFF*(IQ-1)
+C
+          VXC_S = VXC(FRR)*DMAGNETIZATION(I)
+          MYIREPOP = IBTXOR(IREPOP,ISYMAX(I,ITRANSFORM))
+          CALL DOEXC1(VXC_S,MYIREPOP,EXCMAT(1+IOFF),GAO)
+        ENDDO
+C
+      ENDIF
 C
 C
       RETURN

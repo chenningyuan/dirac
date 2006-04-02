@@ -1,8 +1,8 @@
 C     common block for SDFT/CDFT functionality
 C****************************************************
 C
-      LOGICAL SDFTLR, COLLINEAR
+      LOGICAL SDFT, COLLINEAR
 C
 C****************************************************
 C
-      COMMON /CBLCDL/ SDFTLR, COLLINEAR
+      COMMON /CBLCDL/ SDFT, COLLINEAR

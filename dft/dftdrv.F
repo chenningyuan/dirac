@@ -85,7 +85,7 @@ C     only for Hermitian densities
         IF(IHRMOP(IM).EQ.1) NHM = NHM + 1
       ENDDO
 #if defined (MOD_CDFT)
-      IF(.NOT.(SDFTLR)) THEN
+      IF(.NOT.(SDFT)) THEN
         IF(NHM.EQ.0) GOTO 10
       ENDIF
 #else
