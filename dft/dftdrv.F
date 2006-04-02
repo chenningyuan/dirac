@@ -1531,9 +1531,15 @@ C
 #include "dcbbas.h"
 #include "dftcom.h"
 #include "dftac.h"
+#include "cdft.h"
 #include "dgroup.h"
 C
       LOGICAL DOERG, DOGRD, DOLND, DOATR, LSEND(6), LACBCAST(8)
+C
+#if defined (MOD_CDFT)
+      LOGICAL LCDFTBCAST(2)
+#endif
+C
       DIMENSION EXCMAT(*),DMAT(N2BBASX),
      &          SAOPDMATRESP(*),SAOPDMATOUTER(*),
      &          DTRMAT(N2BBASX,NZ,NXCMAT),
@@ -1573,7 +1579,20 @@ C     Transfer dftcom
       CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
 C
 C
-C     transfer booleans for asymptotic correction
+C     transfer parameters for SDFT/ CDFT
+C     ==================================
+C
+#if defined (MOD_CDFT)
+      LCDFTBCAST(1) = SDFT
+      LCDFTBCAST(2) = COLLINEAR
+      CALL MPI_BCAST(LCDFTBCAST,2,
+     &               MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+#endif
+C
+C
+C     transfer parameters for asymptotic correction
+C     =============================================
+C
       LACBCAST(1) = DOGRAC
       LACBCAST(2) = GRACON
       LACBCAST(3) = DOSAOP
@@ -1669,10 +1688,15 @@ C
 #include "dcbbas.h"
 #include "dftcom.h"
 #include "dftac.h"
+#include "cdft.h"
 #include "infpar.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL DOERG,DOGRD,DOLND,DOATR,LSEND(6),LACBCAST(8)
+C
+#if defined (MOD_CDFT)
+      LOGICAL LCDFTBCAST(2)
+#endif
 C
       CALL QENTER('DFTNOD')
 #include "memint.h"
@@ -1705,7 +1729,20 @@ C     Receive some dftcom variables
       DFTASC = LSEND(6)
 C
 C
+C     receive parameters for SDFT/ CDFT
+C     =================================
+C
+#if defined (MOD_CDFT)
+      CALL MPI_BCAST(LCDFTBCAST,2,
+     &               MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      SDFT      = LCDFTBCAST(1)
+      COLLINEAR = LCDFTBCAST(2)
+#endif
+C
+C
 C     receive parameters for asymptotic correction
+C     ============================================
+C
       CALL MPI_BCAST(LACBCAST,8,
      &               MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
       DOGRAC     = LACBCAST(1)
