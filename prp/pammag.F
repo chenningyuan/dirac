@@ -1,7 +1,7 @@
 C
-C         Na slavu Boziu v Kristu Jezisi !
-C
-C     For the glory of God in Christ Jesus !
+C "For Zion's sake will I not hold my peace, and for Jerusalem's sake I will not rest,
+C  until her righteousness go forth as brightness, and her salvation as a lamp that burneth."
+C                                       (Is 62:1)
 C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2341,9 +2341,9 @@ CMI      .... replace PARDRV by HER_PARDRV and IFTHRS by SCRFCK
 #endif
              CALL TWOINT(WORK(KFREE),LWRK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP
      &        ,DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT
-     &        ,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY
+     &        ,TKTIME,IPRPRP,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY
      &        ,I2TYP,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL,
-     &         IDUM,DUMM)
+     &         IDUMMY,DUMMY)
 #if defined (VAR_MPI) || defined (VAR_PVM)
          ENDIF
 #endif
