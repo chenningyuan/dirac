@@ -71,13 +71,13 @@ A systematic 4-component relativistic study of the parity non-conservation (PNC)
 \end{array}\label{eq:hamiltonian}
 \end{equation}
 
-\noindent Here the indices $i$ and $A$ run over all electrons and nuclei respectively, $G_\text{F} = 2.22254\cdot 10^{-14}E_ha_0^3$ is the Fermi coupling constant, \mbox{$Q_\text{w}(A) = Z_A(1-4\sin^2\theta_\text{W})-N_A$} the weak nuclear charge with $Z_A$ and $N_A$ representing the number of protons and neutrons in nucleus $A$ respectively and $\sin^2\theta_\text{W} = 0.2319$ being the employed Weinberg parameter (the most recent value is $\sin^2\theta_\text{W} = 0.2397(13)$ [\cite{anthony2005physrevlett}]). $\gamma^5$ is one of the Dirac matrices (\ref{eq:gamma5}) with $1_{2\times 2}$ being the $2\times 2$ identity matrix.
+\noindent Here the indices $i$ and $A$ run over all electrons and nuclei respectively, $G_\text{F} = 2.22254\cdot 10^{-14}E_ha_0^3$ is the Fermi coupling constant, \mbox{$Q_\text{w}(A) = Z_A(1-4\sin^2\theta_\text{W})-N_A$} is the weak nuclear charge with $Z_A$ and $N_A$ representing the number of protons and neutrons in nucleus $A$, respectively, and $\sin^2\theta_\text{W} = 0.2319$ being the employed Weinberg parameter (the most recent value is $\sin^2\theta_\text{W} = 0.2397(13)$ [\cite{anthony2005physrevlett}]). $\gamma^5$ is one of the Dirac matrices (\ref{eq:gamma5}) with $1_{2\times 2}$ being the $2\times 2$ identity matrix.
 
 \begin{equation}\label{eq:gamma5}
   \gamma^5 = \begin{pmatrix}0_{2\times 2}&1_{2\times 2}\\1_{2\times 2}&0_{2\times 2}\end{pmatrix} \qquad \boldsymbol{\alpha} = \begin{pmatrix}0_{2\times 2}&\boldsymbol{\sigma}\\\boldsymbol{\sigma}&0_{2\times 2}\end{pmatrix}
 \end{equation}
 
-\noindent $\rho_A$ is the normalized nuclear charge density, and $\lambda_A$ a nucleus-dependent parameter close to unity (REF). $\boldsymbol{\alpha}$ is given in Eq. \ref{eq:gamma5} with $\boldsymbol{\sigma}$ being the Pauli spin matrices. Finally, $\mathbf{I}_A$ is the spin of nucleus $A$. This is only an approximation to the (unknown) nuclear spin density distribution. In the case of a positive experimental measurement the theoretical PNC contribution could be used to reveal or to verify various nuclear spin or charge density distribution models.
+\noindent $\rho_A$ is the normalized nuclear charge density, and $\lambda_A$ a nucleus-dependent parameter close to unity (REF). $\boldsymbol{\alpha}$ is given in Eq. \ref{eq:gamma5} with $\boldsymbol{\sigma}$ being the Pauli spin matrices in the standard representation. Finally, $\mathbf{I}_A$ is the spin of nucleus $A$. This is only an approximation to the (unknown) nuclear spin density distribution. In the case of a positive experimental measurement the theoretical PNC contribution could be used to reveal or to verify various nuclear spin or charge density distribution models.
 
 \par In this paper we will consider only the nuclear spin-dependent part as only the spin-dependent terms $\hat{h}_{\text{pnc},\mathbf{I}}(i)$ will contribute directly to the NMR shielding tensor and therefore we set $\hat{H}_\text{pnc} \equiv \hat{H}_{\text{pnc},\mathbf{I}}$ and obtain our final expression (\ref{eq:hamiltonian3}) by replacing the nuclear spin by the nuclear magnetic moment $\mathbf{M}_A = \gamma_A\mathbf{I}_A$, where $\gamma_A$ is the magnetogyric ratio of nucleus $A$.
 
@@ -87,47 +87,57 @@ A systematic 4-component relativistic study of the parity non-conservation (PNC)
 
 \noindent For comparison with the work of Laubender and Berger [\cite{berger2003chemphyschem}] we have set $\lambda_A \equiv 1.0$. The contribution of the nuclear anapole moment [REF] to the PNC shieldings has been neglected as well.
 
-\par For later discussion it will be instructive to consider the non-relativistic limit (NRL) of Eq. \ref{eq:hamiltonian3}. This can be done by taking into account the NRL of the small component bispinor (\ref{eq:nrl1}).
+\par For later discussion it will be instructive to consider the non-relativistic limit (NRL) of Eq. \ref{eq:hamiltonian3}. We employ the NRL of the small component bispinor (\ref{eq:nrl1}).
 
 \begin{equation}\label{eq:nrl1}
   \lim_{c\rightarrow\infty}c\vert\psi^\text{S}\rangle = \frac{1}{2m}(\boldsymbol{\sigma}\cdot\mathbf{p})\vert\psi^\text{L}\rangle
 \end{equation}
 
-\noindent By replacing the small component $\vert\psi^\text{S}\rangle$ by $(2mc)^{-1}(\boldsymbol{\sigma}\cdot\mathbf{p})\vert\psi^\text{L}\rangle$ one obtains the non-relativistic expression (\ref{eq:nrl2}) taking advantage of the Dirac identity (\ref{eq:diracidentity}) ($\mathbf{P}$ and $\mathbf{Q}$ represent arbitrary vectors).
+as well as the Dirac identity (\ref{eq:diracidentity}) 
 
 \begin{equation}\label{eq:diracidentity}
   (\boldsymbol{\sigma}\cdot\mathbf{P})(\boldsymbol{\sigma}\cdot\mathbf{Q}) = \mathbf{P}\cdot\mathbf{Q}+\text{i}\boldsymbol{\sigma}\cdot(\mathbf{P}\times\mathbf{Q})
 \end{equation}
 
-\begin{align}
-  \langle\psi\vert(\boldsymbol{\alpha}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i))\vert\psi\rangle &= \langle\psi^\text{L}\vert(\boldsymbol{\sigma}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i))\vert\psi^\text{S}\rangle+\langle\psi^\text{S}\vert(\boldsymbol{\sigma}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i))\vert\psi^\text{L}\rangle\\
-  &= \frac{1}{2mc}\bigl\{\langle\psi^\text{L}\vert(\boldsymbol{\sigma}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i))(\boldsymbol{\sigma}\cdot\mathbf{p})\vert\psi^\text{L}\rangle+\langle\psi^\text{L}\vert(\boldsymbol{\sigma}\cdot\mathbf{p})(\boldsymbol{\sigma}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i))\vert\psi^\text{L}\rangle\bigr\}\\
-  \lim_{c\rightarrow\infty}c\hat{H}_\text{pnc} &= -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{2\sqrt{2}m}\sum_{i,A}\frac{1}{\gamma_A}\bigl\{\mathbf{M}_A\cdot[\mathbf{p}_i,\delta^3(\mathbf{r}_{iA})]_+-2\text{i}(\mathbf{S}_i\times\mathbf{M}_A)\cdot[\mathbf{p}_i,\delta^3(\mathbf{r}_{iA})]\bigr\}\label{eq:nrl2}
-\end{align}
+($\mathbf{P}$ and $\mathbf{Q}$ represent arbitrary vectors) to obtain
+\begin{equation}
+\begin{array}{lcl}
+ \langle\psi\vert(\boldsymbol{\alpha}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i))\vert\psi\rangle &=& \langle\psi^\text{L}\vert(\boldsymbol{\sigma}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i))\vert\psi^\text{S}\rangle+\langle\psi^\text{S}\vert(\boldsymbol{\sigma}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i))\vert\psi^\text{L}\rangle\\
+  &=& \frac{1}{2mc}\bigl\{\langle\psi^\text{L}\vert(\boldsymbol{\sigma}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i))(\boldsymbol{\sigma}\cdot\mathbf{p})\vert\psi^\text{L}\rangle+\langle\psi^\text{L}\vert(\boldsymbol{\sigma}\cdot\mathbf{p})(\boldsymbol{\sigma}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i))\vert\psi^\text{L}\rangle\bigr\}.\\
+\end{array}
+\end{equation}
+The NRL is then obtained as
+\begin{equation}
+  \lim_{c\rightarrow\infty}c\hat{H}_\text{pnc} = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{2\sqrt{2}m}\sum_{i,A}\frac{1}{\gamma_A}\bigl\{\mathbf{M}_A\cdot[\mathbf{p}_i,\delta^3(\mathbf{r}_{iA})]_+-2\text{i}(\mathbf{s}_i\times\mathbf{M}_A)\cdot[\mathbf{p}_i,\delta^3(\mathbf{r}_{iA})]\bigr\}\label{eq:nrl2}
+\end{equation}
 
-\noindent Here we have also made the transition from a finite nucleus density $\rho_A(\mathbf{r}_i)$ to a point nucleus contact interaction described by the Dirac distribution $\delta^3(\mathbf{r}_{iA})$ with $\mathbf{r}_{iA} = \mathbf{r}_i-\mathbf{r}_A$. $\mathbf{S} = \boldsymbol{\sigma}/2$ denotes the electron spin, $c$ the speed of light, $[\cdot,\cdot]$ the commutator and $[\cdot,\cdot]_+$ the anticommutator. We have studied the importance of the usually omitted electron spin-dependent term (second term in Eq. \ref{eq:nrl2}), however zero PNC contribution has been observed.
+\noindent Here we have also made the transition from a finite nucleus density $\rho_A(\mathbf{r}_i)$ to a point nucleus contact interaction described by the Dirac distribution $\delta^3(\mathbf{r}_{iA})$ with $\mathbf{r}_{iA} = \mathbf{r}_i-\mathbf{r}_A$. $\mathbf{s} = \boldsymbol{\sigma}/2$ denotes the electron spin, $c$ the speed of light, $[\cdot,\cdot]$ the commutator and $[\cdot,\cdot]_+$ the anticommutator. We have investigated the importance of the usually omitted electron spin-dependent term (second term in Eq. \ref{eq:nrl2}), however zero PNC contribution has been observed.
 
-\par The nuclear magnetic shielding is defined as the second order derivative of the energy with respect to the nuclear magnetic moment $\mathbf{M}_A$ and the external magnetic field $\mathbf{B}_0$ at zero perturbation strength:
+\par The nuclear magnetic shielding is defined as the second order derivative of the energy with respect to the nuclear magnetic moment $\mathbf{M}_A$ and the external uniform magnetic field $\mathbf{B}$ at zero perturbation strength:
 
 \begin{equation}\label{eq:shielding}
-  \sigma_{A,\epsilon\tau} = \frac{\partial^2E(\mathbf{M}_A,\mathbf{B}_0)}{\partial{M_{A,\epsilon}}\partial{B_{0,\tau}}}\biggr|_{\mathbf{M}_A=\mathbf{0},\;\mathbf{B}_0=\mathbf{0}}
+  \sigma_{A,\epsilon\tau} = \frac{\partial^2E(\mathbf{M}_A,\mathbf{B})}{\partial{M_{A,\epsilon}}\partial{B_{0,\tau}}}\biggr|_{\mathbf{M}_A=\mathbf{0},\;\mathbf{B}=\mathbf{0}}
 \end{equation}
 
-\noindent The expression for the PNC shielding tensor within the linear response theory is given by Eq. \ref{eq:pncshielding}.
-
+\noindent At the 4-component relativistic level, the operator associated associated with an external magnetic field is usually chosen as
+\begin{equation}
+\hat{h}_B=-\sum_i\frac{1}{2}\mathbf{B}\left(\boldsymbol{\alpha}\cdot\mathbf{r}_{iG}\right)
+\quad\text{with} \quad \mathbf{r}_{iG} = \mathbf{r}_i-\mathbf{r}_G
+\end{equation}
+where $\mathbf{r}_G$ is the gauge origin. The PNC contribution to the NMR shielding tensor is thereby given by the linear response function
 \begin{equation}\label{eq:pncshielding}
-  \sigma_{A,\epsilon\tau}^\text{pnc} = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{2\gamma_A\sqrt{2}c_0}\langle\langle c\boldsymbol{\alpha}_\epsilon\rho_A(\mathbf{r}_i));c(\boldsymbol{\alpha}\times\mathbf{r}_{iG})_\tau\rangle\rangle_{\omega=0} \quad \text{with} \quad \mathbf{r}_{iG} = \mathbf{r}_i-\mathbf{r}_G
+  \sigma_{A,\epsilon\tau}^\text{pnc} = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{2\gamma_A\sqrt{2}c_0}\langle\langle c\boldsymbol{\alpha}_\epsilon\rho_A(\mathbf{r}_i));c(\boldsymbol{\alpha}\times\mathbf{r}_{iG})_\tau\rangle\rangle_{\omega=0} \text{with} \quad \mathbf{r}_{iG} = \mathbf{r}_i-\mathbf{r}_G
 \end{equation}
 
-\noindent The position of the gauge origin $\mathbf{r}_G$ is chosen for convenience at the center of the nucleus under study ($\mathbf{r}_G \equiv \mathbf{r}_A$). In Eq. \ref{eq:pncshielding} two different $c$ appear ($c$ and $c_0$). By varying $c \rightarrow \infty$ the fixed $c_0 = 137.036$ a.u. guarantees the NRL employed in the literature. We will make use of this technique later in this article. Note, however, that in the strict NRL the PNC contribution (as well as the shielding itself) is zero [REF SAUE].
+\noindent In Eq. \ref{eq:pncshielding} two different $c$ appear ($c$ and $c_0$). By varying $c \rightarrow \infty$ the fixed $c_0 = 137.036$ a.u. guarantees the NRL employed in the literature. We will make use of this technique later in this article. Note, however, that in the strict NRL the PNC contribution (as well as the shielding itself) is zero \cite{saue2005advquantumchem}.
 
-\par The linear response function $\langle\langle\hat{H}_A;\hat{H}_B\rangle\rangle_{\omega=0}$ is constructed from property gradients $\mathbf{E}_A^{[1]}$ and $\mathbf{E}_B^{[1]}$ according to
+\par The static linear response function $\langle\langle\hat{H}_A;\hat{H}_B\rangle\rangle_{\omega=0}$ is constructed from property gradients $\mathbf{E}_A^{[1]}$ and $\mathbf{E}_B^{[1]}$ according to
 
 \begin{equation}
   \langle\langle\hat{H}_A;\hat{H}_B\rangle\rangle_{\omega=0} = -\mathbf{E}_A^{[1]\dag}\bigl(E_0^{[2]}\bigr)^{-1}\mathbf{E}_B^{[1]},
 \end{equation}
 
-\noindent with the electronic Hessian $E_0^{[2]}$. In practice the evaluation of $E_0^{[2]}$ is computationally too demanding and the linear response function is constructed by expanding the solution vector $\mathbf{X}_B$ (\ref{eq:solution}) in trial vectors with a subsequent contraction of $\mathbf{X}_B$ with the property gradient $\mathbf{E}_A^{[1]}$ [REF].
+\noindent with the electronic Hessian $E_0^{[2]}$. In practice the evaluation of $E_0^{[2]}$ is computationally too demanding and the linear response function is constructed by expanding the solution vector $\mathbf{X}_B$ (\ref{eq:solution}) in trial vectors with a subsequent contraction of $\mathbf{X}_B$ with the property gradient $\mathbf{E}_A^{[1]}$ \cite{saue:linres}.
 
 \begin{equation}\label{eq:solution}
   E_0^{[2]}\mathbf{X}_B(\omega) = -\mathbf{E}_B^{[1]}
