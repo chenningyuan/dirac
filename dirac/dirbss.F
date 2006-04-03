@@ -6065,17 +6065,20 @@ C        the "standard" symmetry (ie no linear symmetry)
 C        transformation matrix and when NSYM.GT.1
 C        If NSYM=1 (NZ=4) then only copy TMAT into TBUF.
 C
+C  Called from:  MODHAM/dirone.F
+C
 C  On input: 
 C ===========
 C  TMAT - the transformation matrix (is unchanged!)
 C   which columns are to be resorted into order 
-C   S1S2..S(nbsym) L1L2...L(nbsym) from the original order S1 L1 S2 L2 ...
+C   S1S2..S(nbsym) L1L2...L(nbsym) from the original order S1 L1 S2 L2 ...S(nbsym)L(nbsym)
 C
 C  On output:
 C ============= 
-C  TBUF - contains reordered S1S2..S(nbsym) L1L2...L(nbsym) transformation matrix...
+C  TBUF - contains reordered S1S2..S(nbsym) L1L2...L(nbsym) RKB transformation matrix
 C
-C  Written by Miro Ilias, July, Strasbourg, 2005
+C  Written by Miro Ilias (MI), July2005/Strasbourg
+C  Last modifications:  MI, April2006/Strasbourg
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -6094,8 +6097,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IF (IPRINT.GE.3) THEN
         CALL HEADER('***  Output from SLSORT  ***',-1)
-          write(lupri,*) 'Going to resort to the S-L columns order:'
+        write(lupri,*)
+     &  'Going to resort the RKB transformation matrix to'//
+     &  ' the S-L columns order; NZ=',
+     &   NZ,' NSYM=(4/NZ)=',NSYM,' and NFSYM=',NFSYM
+        write(lupri,*) '============================================='//
+     &  '======================================'
         DO I=1,NFSYM
+          write(lupri,*) '   .....ifs=',I,'/',NFSYM
           write(lupri,*) '  S:',(NBORB(ISYM,I,1),ISYM=1,NSYM)
           write(lupri,*) '  L:',(NBORB(ISYM,I,2),ISYM=1,NSYM)
           write(lupri,*) 'S+L:',(NBORB(ISYM,I,0),ISYM=1,NSYM)
@@ -6105,83 +6114,63 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C     ... this check does not work here !!!
 C     CALL MEMCHK('in SLSORT',WORK,1)
 
+      IPOS_NFSYM = 1
 
-      IF (NSYM.GT.1) THEN
-      IMAT = 1                                                
-      IBUF = 1 
-      DO I=1,NFSYM                      
+      DO I = 1, NFSYM                      
       IF (NORB(I).GT.0) THEN                  
-                                               
-       IBUF1 = IBUF                           
-       IBMAT = IMAT
-                           
-       DO ISYM = 1, NSYM                                
+      DO IZ = 1, NZ                                      
+
+       IPOS_IZ_NFSYM = IPOS_NFSYM + ((IZ-1)*NORB(I)*NFBAS(I,0))
+
+       IPOS_LS = 0
+       IPOS_S  = 0
+       DO ISYM = 1, NSYM 
        IF (NBORB(ISYM,I,0).GT.0) THEN    
-        DO IZ=1,NZ                                      
-
-C       ... do copy S columns first                                                                                                      
           NBS = NFBAS(I,0)*NBORB(ISYM,I,1)               
-
-          CALL DCOPY(NBS, 
-     &         TMAT(IBMAT),1,TBUF(IBUF),1)                
-                                                          
-          IBUF = IBUF + NFBAS(I,0)*NBORB(ISYM,I,2) +    
-     &              (IZ-1)*NORB(I)*NFBAS(I,0)             
-
-          IBMAT = IBMAT + NFBAS(I,0)*NBORB(ISYM,I,0) +  
-     &              (IZ-1)*NORB(I)*NFBAS(I,0)             
-        ENDDO                                            
+          IPOS_LS1 = IPOS_LS + IPOS_IZ_NFSYM   
+          IPOS_S1  = IPOS_S  + IPOS_IZ_NFSYM 
+          CALL DCOPY(NBS,TMAT(IPOS_LS1),1,TBUF(IPOS_S1),1)
+C         ... skip the SL(isym) block
+          IPOS_LS = IPOS_LS + (NFBAS(I,0)*NBORB(ISYM,I,0))
+C         .... accumulate (and skip) S(isym) blocks
+          IPOS_S  = IPOS_S  + (NFBAS(I,0)*NBORB(ISYM,I,1)) 
        ENDIF                                      
        ENDDO                                      
                                                     
-C .. then do copy L columns                                                                                                              
-        IBMAT = IMAT                                 
-        DO ISYM = 1,NSYM                              
-        IF (NBORB(ISYM,I,0).GT.0.AND.NSYM.GT.1) THEN   
-        DO IZ=1,NZ                                
-                                                  
-          NBS = NFBAS(I,0)*NBORB(ISYM,I,1)         
-                                                    
-C        ... skip S                                                                                                                      
-          IBMAT = IBMAT + NFBAS(I,0)*NBORB(ISYM,I,2) + 
-     &             (IZ-1)*NORB(I)*NFBAS(I,0)    
-                                               
-          CALL DCOPY(NBS, 
-     &         TMAT(IBMAT),1,TBUF(IBUF),1)    
-        
-          IBUF = IBUF + NFBAS(I,0)*NBORB(ISYM,I,1) + 
-     &             (IZ-1)*NORB(I)*NFBAS(I,0)
-                                                         
-C        ... skip L                                                                                                                      
-          IBMAT = IBMAT + NFBAS(I,0)*NBORB(ISYM,I,1) +
-     &             (IZ-1)*NORB(I)*NFBAS(I,0)                        
-                                              
-        ENDDO                                                      
-        ENDIF                                                       
-        ENDDO 
+C .. then do copy L columns            
+       IPOS_LS = 0
+       IPOS_L  = IPOS_S
+       DO ISYM = 1, NSYM    
+       IF (NBORB(ISYM,I,0).GT.0) THEN   
+         NBS = NFBAS(I,0)*NBORB(ISYM,I,2)         
+C        ... skip the previous S(isym) block
+         IPOS_LS1 = IPOS_LS + NFBAS(I,0)*NBORB(ISYM,I,1) + IPOS_IZ_NFSYM
+         IPOS_L1  = IPOS_L  + IPOS_IZ_NFSYM
+         CALL DCOPY(NBS,TMAT(IPOS_LS1),1,TBUF(IPOS_L1),1)
+C        ... skip the SL(isym) block
+         IPOS_LS = IPOS_LS + (NFBAS(I,0)*NBORB(ISYM,I,0))
+C         .... accumulate (and skip) L(isym) blocks
+         IPOS_L  = IPOS_L + (NFBAS(I,0)*NBORB(ISYM,I,2)) 
+       ENDIF                                                       
+       ENDDO 
 
-C       IF (IPRINT.GE.5) THEN                                       
-C        CALL HEADER(
-C    &   'SLSORT: "SL" sorted final transformation matrix'//  
-C    &   ' 4c AO-> RKB_MO, TBUF (output) ',-1)           
-C         WRITE(LUPRI,'(/A,I1,A,I1)')                         
-C    &   '* Fermion ircop no.',I,'/',NFSYM                     
-C         CALL PRQMAT(TBUF(IBUF1),NFBAS(I,0),NORB(I),           
-C    &          NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)   
-C       ENDIF                                 
+       ENDDO  ! of IZ
 
-         IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ   
-
+       IF (IPRINT.GE.17) THEN                                       
+         CALL HEADER(
+     &   'SLSORT: "SL" sorted final transformation matrix'//  
+     &   ' 4c SA-AO -> RKB_MO, TBUF (output) ',-1)           
+          WRITE(LUPRI,'(/A,I1,A,I1)')                         
+     &   '* Fermion ircop no.',I,'/',NFSYM                     
+          CALL PRQMAT(TBUF(IPOS_NFSYM),NFBAS(I,0),NORB(I),           
+     &          NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)   
        ENDIF                                   
-       ENDDO  
 
-      ELSE
-C      ... for C1 symmetry only copy TMAT into TBUF...
-         ISIZE = (NFBAS(1,0)*NORB(1)*NZ)   
-         IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NORB(2)*NZ)  
-         CALL DCOPY(ISIZE,TMAT,1,TBUF,1)  
-      ENDIF
-                                               
+       IPOS_NFSYM = IPOS_NFSYM + (NFBAS(I,0)*NORB(I)*NZ)   
+
+      ENDIF                                   
+      ENDDO  
+
       CALL QEXIT('SLSORT')
       RETURN
       END
