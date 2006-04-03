@@ -1,0 +1,13 @@
+#!/bin/bash
+
+what=pncnmr
+
+latex $what.tex
+bibtex $what
+latex $what.tex
+latex $what.tex
+
+dvips -Ppdf $what.dvi -o $what.ps
+ps2pdf $what.ps
+
+exit 0
