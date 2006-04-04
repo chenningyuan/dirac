@@ -38,6 +38,7 @@ $^\star$ {\em\footnotesize Laboratoire de Chimie Quantique, Institut de Chimie d
 
 \noindent $^\dag$ {\em\footnotesize Theoretical and Computational Chemistry Research Centre, Bldg. 44,\\Institute of Fundamental Sciences (IFS), Massey University (Albany Campus),\\Private Bag 102904, North Shore MSC, Auckland, New Zealand}
 \end{center}
+\begin{center}{\bf Manuscript date: \today}\\\end{center}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 A systematic 4-component relativistic study of the parity non-conservation (PNC) contribution to the (isotropic) NMR shielding constants of chiral molecules is presented for the \emph{P}-enantiomers of the series H$_2$X$_2$ (X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po). The PNC contributions are obtained within a linear-response approach at the Hartree-Fock level. The 4-component relativistic results based on the Dirac-Coulomb Hamiltonian are compared to the non-relativistic L\'evy-Leblond results and those obtained by the spin-free modified Dirac equation. The calculations show that spin-orbit coupling plays a substantial role even for a qualitative treatment of H$_2{^{77}}$Se$_2$ and its heavier homologues. Scalar relativistic effects and spin-orbit coupling have opposite effects on the property under study. A careful design of the basis-sets is necessary. The presented formalism is expected to be valuable for future search for suitable candidates for the experimental determination of PNC effects in NMR spectra.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,15 +80,15 @@ A systematic 4-component relativistic study of the parity non-conservation (PNC)
 
 \noindent $\rho_A$ is the normalized nuclear charge density, and $\lambda_A$ a nucleus-dependent parameter close to unity [\cite{cahn1977physlettb,marciano1978physrevd}]. $\boldsymbol{\alpha}$ is given in Eq. \ref{eq:gamma5} with $\boldsymbol{\sigma}$ being the Pauli spin matrices in the standard representation. Finally, $\mathbf{I}_A$ is the spin of nucleus $A$. This is only an approximation to the (unknown) nuclear spin density distribution. In the case of a positive experimental measurement the theoretical PNC contribution could be used to reveal or to verify various nuclear spin or charge density distribution models.
 
-\par In this paper we will consider only the nuclear spin-dependent part as only the spin-dependent terms $\hat{h}_{\text{pnc},\mathbf{I}}(i)$ will contribute directly to the NMR shielding tensor and therefore we set $\hat{H}_\text{pnc} \equiv \hat{H}_{\text{pnc},\mathbf{I}}$ and obtain our final expression (\ref{eq:hamiltonian3}) by replacing the nuclear spin by the nuclear magnetic moment $\mathbf{M}_A = \gamma_A\mathbf{I}_A$, where $\gamma_A$ is the magnetogyric ratio of nucleus $A$.
+\par In this paper we will consider only the nuclear spin-dependent part as only the spin-dependent terms $\hat{h}_{\text{pnc},\mathbf{I}}(i)$ will contribute directly to the NMR shielding tensor and therefore we set $\hat{H}_\text{pnc} \equiv \hat{H}_{\text{pnc},\mathbf{I}}$ and obtain our final expression (\ref{eq:hamiltonianPNC}) by replacing the nuclear spin by the nuclear magnetic moment $\mathbf{M}_A = \gamma_A\mathbf{I}_A$, where $\gamma_A$ is the magnetogyric ratio of nucleus $A$.
 
-\begin{equation}\label{eq:hamiltonian3}
+\begin{equation}\label{eq:hamiltonianPNC}
   \hat{H}_\text{pnc} \equiv \hat{H}_{\text{pnc},\mathbf{I}} = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}}\sum_{i,A}\{\frac{1}{\gamma_A}\boldsymbol{\alpha}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i)\}
 \end{equation}
 
 \noindent For comparison with the work of Laubender and Berger [\cite{berger2003chemphyschem}] we have set the nucleus-dependent parameter $\lambda_A \equiv 1.0$. The contribution of the nuclear anapole moment [REF] to the PNC shieldings has been neglected as well.
 
-\par For later discussion it will be instructive to consider the non-relativistic limit (NRL) of Eq. \ref{eq:hamiltonian3}. We employ the NRL of the small component bispinor (\ref{eq:nrl1}).
+\par For later discussion it will be instructive to consider the non-relativistic limit (NRL) of Eq. \ref{eq:hamiltonianPNC}. We employ the NRL of the small component bispinor (\ref{eq:nrl1}).
 \begin{equation}\label{eq:nrl1}
   \lim_{c\rightarrow\infty}c\vert\psi^\text{S}\rangle = \frac{1}{2m}(\boldsymbol{\sigma}\cdot\mathbf{p})\vert\psi^\text{L}\rangle
 \end{equation}
@@ -117,6 +118,7 @@ The NRL can then expressed as
 
 \noindent At the 4-component relativistic level the operator associated with an external magnetic field is usually chosen as
 \begin{equation}
+\label{eq:hamiltonianB}
 \hat{h}_B=-\sum_i\frac{1}{2}\mathbf{B}\left(\boldsymbol{\alpha}\cdot\mathbf{r}_{iG}\right)
 \quad\text{with} \quad \mathbf{r}_{iG} = \mathbf{r}_i-\mathbf{r}_G
 \end{equation}
@@ -152,9 +154,33 @@ Rotations between positive and negative energy solutions have been suppressed wi
 
 \noindent We have tested our implementation by calculating the PNC contribution to the NMR shielding tensors for the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po in the \emph{P}-enantiomers of H$_2$X$_2$ for the dihedral angle of 45\textsuperscript{o} at the Hartree-Fock level. These results are reported in Table \ref{ang45}. The PNC contribution is studied using the Dirac-Coulomb (DC) Hamiltonian, the spin-free modified Dirac equation, and the L\'evy-Leblond equation.
 
-\par The choice of the basis-sets deserves a detailed discussion. In Table \ref{ang45} results for two different classes of basis-sets are reported. We have used aug-cc-pV\{D,T,Q\}Z basis-sets (using their original contration scheme) in the first instance for comparison with the work of Laubender and Berger [\cite{berger2003chemphyschem}]. We confirm their observation that these basis-sets are not converged without the inclusion of high-exponent \emph{p}-functions. For 4-component relativistic calculations of H$_2{^{33}}$S$_2$ and its heavier homologues these basis-sets are qualitatively inappropriate. Rather than correcting these basis-sets by liberating or adding high exponents to the sets we have chosen even-tempered basis-sets with a common parent set as our reference. These even-tempered basis-sets are unbiased and have a greater flexibility in the core \emph{s}- and \emph{p}-region. The matrix elements containing these spinors are dominant [????] making these basis-sets for this type of calculation superior to aug-cc-pVNZ basis-sets [\cite{peter1999physreva}]. We have observed that the inclusion of polarizing \emph{f}-functions is important. A representative series of results for H$_2{^{77}}$Se$_2$ obtained during the basis-set optimization for Se is given in Table \ref{Sebas}. The basis-sets for the other elements have been obtained in a similar fashion. They can be considered very close to the basis-set limit within Hartree-Fock. For hydrogen going beyond uncontracted aug-cc-pVDZ is not needed.
-
+\par The choice of the basis-sets deserves a detailed discussion. In Table \ref{ang45} results for two different classes of basis-sets are reported. We have used aug-cc-pV\{D,T,Q\}Z basis-sets (using their original contration scheme) in the first instance for comparison with the work of Laubender and Berger [\cite{berger2003chemphyschem}]. We confirm their observation that these basis-sets are not converged without the inclusion of high-exponent \emph{p}-functions. For 4-component relativistic calculations of H$_2{^{33}}$S$_2$ and its heavier homologues these basis-sets are qualitatively inappropriate. Rather than correcting these basis-sets by liberating or adding high exponents to the sets we have chosen even-tempered basis-sets with a common parent set as our reference. These even-tempered basis-sets are unbiased and have a greater flexibility in the core \emph{s}- and \emph{p}-region. The matrix elements containing these spinors are dominant [????] making these basis-sets for this type of calculation superior to aug-cc-pVNZ basis-sets [\cite{peter1999physreva}]. Somewhat to our surprise we have found that the PNC contribution to the NMR shieldings is not converged with the even-tempered basis sets developed by Laerdahl and Schwerdtfeger [\cite{peter1999physreva}] and that in particular the inclusion of polarizing \emph{f}-functions is important. A representative series of results for H$_2{^{77}}$Se$_2$ obtained during the basis-set optimization for Se is given in Table \ref{Sebas}. The basis-sets for the other elements have been obtained in a similar fashion. They can be considered very close to the basis-set limit within Hartree-Fock. 
 \par For the DC calculations two values are given (UKB and RKB) for each combination of molecule and basis-set. The generation of the small component basis-set is usually realized by RKB which is based on the non-relativistic limit of the small component (\ref{eq:nrl1}). Introducing an external vector potential $\mathbf{A}$ alters however the coupling of large and small components and requires 'magnetic balance' [REF] such that the use of a small basis-set generated using RKB may lead to substantial errors for NMR shieldings [\cite{saue2004jchemphys}]. This can be corrected by applying UKB, which considers the three components of $\mathbf{p}$ separately and thus provides more flexibility to ensure that the correct coupling can be attained. The difference between UKB and RKB is known to decrease with an increasing quality of the basis-set. We observe identical results for the best performing even-tempered basis-sets for UKB and RKB.
+
+\par For hydrogen going beyond uncontracted aug-cc-pVDZ is not needed. This to some extent indicates the rather atomic nature of this property. Analysis of the linear response functions contributing to the PNC shielding tensor for selenium in H$_2$Se$_2$ shows that they are dominated by orbital rotations between HOMO-LUMO Kramer's partners. Following the projection analysis described in reference [\cite{saue:TlAt}], the relevant molecular orbitals $\psi^{mol}_k$ may be decomposed into orbitals $\psi^A_i$ calculated for each constituent atom
+\begin{equation}
+\left|{\psi^{mol}_k}\right> = \displaystyle\sum_{Ai}\left|{\psi^A_i}\right>c_{ik}^A
++ \left|{\psi^{pol}_k}\right>
+\end{equation}
+where $\psi^{pol}_k$ is a polarization contribution which by definition is strictly orthogonal to the 
+chosen reference atomic orbitals. Individual gradient elements of a property operator $\hat{\Omega}$ may then be decomposed in intra- and inter-atomic contributions, e.g.
+\begin{equation}
+\left\langle \psi_{HOMO}\left|\hat{\Omega}\right|\psi_{LUMO}\right\rangle =\sum_{iA}\sum_{jB}c_{iA}^{*}c_{jB}\left\langle \psi_{iA}\left|\hat{\Omega}\right|\psi_{jB}\right\rangle +(\textrm{polarization})
+\end{equation}
+We find that the HOMO-LUMO gradient elements of the nuclear spin-dependent PNC operator (\ref{eq:hamiltonianPNC})
+are dominated by intra-atomic contributions from the selected selenium center, in particular the Se 4p$_{1/2}$
+atomic orbitals coupling with Se 4s$_{1/2}$ and inner s$_{1/2}$ AOs. The atomic character of the gradient
+elements can be rationalized from the presence of the nuclear charge density $\rho_{Se}$ in the operator
+which restricts integtration to a small volume around the selected selenium center.
+Perhaps somewhat less intuitive is the observation that the gradient elements of the property operator
+(\ref{eq:hamiltonianB}) associated with the external magnetic field are dominated by intra-atomic contributions
+as well, but this is readily understood by the presence of Dirac $\boldsymbol{\alpha}$ matrices in the operator coupling large
+and small components. Due to the atomic and very local nature of the small components the gradient elements
+are almost exclusively restricted to intra-atomic contributions, but this time from all centers. We find that
+the property gradient elements are dominated by intra-atomic coupling  of 4p$_{3/2}$ orbitals on the two
+selenium centers. Note, however, that gradient elements coupling occupied positive-energy solutions to 
+virtual negative-energy solutions will have a completely different character since the small components
+of negative-energy solutions are in fact large and delocalized.
 
 \par Analyzing the values given in Table \ref{ang45} we state that our L\'evy-Leblond results are in excellent agreement with the NR results reported by Laubender and Berger [\cite{berger2003chemphyschem}]. The L\'evy-Leblond PNC contributions are throughout largest in magnitude for the even-tempered basis-sets and larger than the best (modified 5Z) basis-sets used in Ref. \cite{berger2003chemphyschem} (not shown here). For the NR treatment of H$_2{^{77}}$Se$_2$ we have examined the difference between a point-charge model and a Gaussian model for the nucleus (Table \ref{varang}). The difference is less than 1\%. Table \ref{varang} shows results for the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{135}$Te in H$_2$X$_2$ for various dihedral angles. Only the results for the even-tempered basis-sets are given. The PNC shielding constant is bound to be zero at the dihedral angles 0 $^\circ$ and 180 $^\circ$ due to mirror symmetry. The sinusoidal trait for the dihedral angles between 0 and 180 $^\circ$ is typical and well known also for PNC energy differences or optical rotation. The zero-crossing is usually found near 90 $^\circ$. 
 
