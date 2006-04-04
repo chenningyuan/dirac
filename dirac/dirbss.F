@@ -653,7 +653,7 @@ CMI   ... get screened Dirac bare nucleus
       TWOCOMP = TWOCOMP_SAVE
 
 C   ... now do the picture change transformation
-      CALL DOPCTRA(-1,VMAT,1,'S',WORK(KFREE),LFREE)                 
+      CALL DOPCTRA(-1,VMAT,NZ,'S',WORK(KFREE),LFREE)                 
       IF(IPRHAM.GE.8) THEN                                          
        CALL HEADER('MAKEBNCR2C: 2c matrix ...',-1) 
        CALL PRQMAT(VMAT,NTBAS(0),NTBAS(0),                
