@@ -42,7 +42,6 @@ $^\star$ {\em\footnotesize Laboratoire de Chimie Quantique, Institut de Chimie d
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 A systematic 4-component relativistic study of the parity non-conservation (PNC) contribution to the (isotropic) NMR shielding constants of chiral molecules is presented for the \emph{P}-enantiomers of the series H$_2$X$_2$ (X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po). The PNC contributions are obtained within a linear-response approach at the Hartree-Fock level. A careful design of the basis-sets is necessary. The 4-component relativistic results based on the Dirac-Coulomb Hamiltonian are compared to the non-relativistic L\'evy-Leblond results and those obtained by the spin-free modified Dirac Hamiltonian. The calculations confirm the non-relativistic scaling law $Z^3$ of the PNC shielding with respect to nuclear charge $Z$. However, the calculations also show that the {\it overall} scaling is significantly modified by relativistic effects. The scalar relativistic effect scales as $Z^{4.7}$, whereas the spin-orbit effect, of opposite sign, scales better than $Z^6$ and completely dominates the PNC contribution to the NMR shielding for the heaviest elements. The presented formalism is expected to be valuable for future search for suitable candidates for the experimental determination of PNC effects in NMR spectra.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
 \section{INTRODUCTION}
 
 \noindent Physics is not symmetric under the parity operation. The breakdown of parity symmetry is caused by the so-called parity non-conservation (PNC) of the electroweak interaction mainly between electrons and nucleons. This breakdown of parity symmetry in physics was first postulated by Lee and Yang [\cite{lee1956physrev}] in 1956 and is today well known in nuclear and particle physics. PNC can be observed for instance in the $\beta$-decay under very low temperature in an external magnetic field (as first performed by Wu \emph{et al.} [\cite{wu1957physrev}]) or in the optical rotation in atomic heavy-metal vapors [\cite{macpherson1991physrevlett,meekhof1993physrevlett,edwards1995physrevlett}].
@@ -57,7 +56,7 @@ A systematic 4-component relativistic study of the parity non-conservation (PNC)
 
 \par Here we present a systematic 4-component relativistic study of the PNC contribution to the (isotropic) NMR shielding constants of chiral molecules for the \emph{P}-enantiomers of the series H$_2$X$_2$ (X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po) using a linear-response approach at the Hartree-Fock level. We will give the Hamiltonian employed in this study as well as its non-relativistic limit (NRL) and compare our results with the work of other authors [\cite{berger2003chemphyschem}] and demonstrate where a NR treatment is justified as well as its limitations. At several points we will emphasize various approximations usually introduced in the derivation of the Hamiltonian. The spin-orbit coupling is naturally included in a 4-component relativistic framework - we will assess its effect by deleting the quaternion imaginary parts of matrix representations of the modified Dirac equation and property gradients as described in \mbox{Refs. \cite{saue2000jchemphys} and \cite{saue2005advquantumchem}}, respectively.
 
-\par The chosen set of molecules is \emph{not} suitable for the experimental search of PNC effects since the calculated contributions are several orders of magnitude below the present resolution. However, this model set is very well studied from the theoretical point of view and is ideal for a systematic calibration of our implementation which we expect to be valuable for future search of suitable candidates for the experimental determination of PNC effects in NMR spectra.
+\par The chosen set of molecules is \emph{not} suitable for the experimental search of PNC effects due to stereomutation as already pointed out in Ref. \cite{berger2003chemphyschem}. However, this model set is very well studied from the theoretical point of view and is ideal for a systematic calibration of our implementation which we expect to be valuable for future search of suitable candidates for the experimental determination of PNC effects in NMR spectra.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{FORMALISM}
 
@@ -211,7 +210,7 @@ for small values of $c$. However, this effect is completely quenched by a dramat
 opposite sign under ultra-relativistic conditions ($c$ $<$ 137.036 a.u.). We indeed observe for
 $^{209}$Po that whereas scalar relativistic effects increase the shielding constant from $9.953\times10^{-7 }$ to
 $5.246\times 10^{-6 }$ ppm, spin-orbit coupling amplifies the value by three orders of magnitude to
-$-1.276\times 10^{-3 }$ ppm. We will in a future publication elucidate these mechanisms by means of
+$-1.277\times 10^{-3 }$ ppm. This corresponds to a line-splitting of about 30 mHz at a magnetic field of 1 Tesla. This means a difference larger than the maximal theoretical resolution of 6 mHz [\cite{barra2001chirality}]. We will in a future publication elucidate these mechanisms by means of
 projection analysis.
 \par The opposing trends of scalar relativistic and spin-orbit effects make it difficult to extract 
 an overall scaling of the PNC shielding constant with respect to nuclear charge $Z$. Table \ref{redpar} shows the 
@@ -230,7 +229,7 @@ spin-orbit contribution which scales better than $Z^6$.
 
 \noindent We have studied the importance of relativistic effects on the calculation of the PNC contribution to the NMR shielding constants for the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po in H$_2$X$_2$ at the Hartree-Fock level. Comparing the results obtained within the Dirac-Coulomb formalism and approximate frameworks with either spin-orbit effects or all relativistic effects eliminated it has been observed that spin-orbit effects are substantial even for a qualitative treatment already for H$_2{^{77}}$Se$_2$ causing a sign change of the PNC shielding constant. This dramatic difference will be subject of a detailed analysis in a forthcoming paper where also correlation effects will be addressed.
 
-\par We aim to apply the presented methodology for the study of more realistic systems. While the NMR technique seems to impose more experimental boundary conditions than high-resolution infrared spectroscopy experiments [\cite{barra2001chirality}] it offers a possibly complementary approach for the first experimental verification. The more promising systems are often considerably larger than the presented set of molecules which might require the use of more efficient (two-component) Hamiltonians.
+\par We aim to apply the presented methodology for the study of more realistic systems with more rigid structures [\cite{berger2003chemphyschem}]. Our results point towards heavy-element systems also for PNC NMR experiments. While the NMR technique seems to impose more experimental boundary conditions than high-resolution infrared spectroscopy experiments [\cite{barra2001chirality}] it offers a possibly complementary approach for the first experimental verification. The more promising systems are often considerably larger than the presented set of molecules which might require the use of more efficient (two-component) Hamiltonians.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{ACKNOWLEDGMENT}
 
@@ -450,16 +449,16 @@ Nationale de la Recherche (ANR), France.
       \\
       \hline\hline
       \\
-               &\multicolumn{2}{c}{DC(UKB)}
-               &\multicolumn{2}{c}{SF}
-               &\multicolumn{2}{c}{LL(PC)}\\
+             &\multicolumn{2}{c}{DC(UKB)}
+             &\multicolumn{2}{c}{SF}
+             &\multicolumn{2}{c}{LL(PC)}\\
       \\
       \hline
       \\
-      xx   & 2.094&^{-6 }& 1.830&^{-6 }& 1.310&^{-6 }\\
-      zz   &-1.908&^{-6 }&-1.220&^{-6 }&-8.766&^{-7 }\\
-      xx+zz& 1.867&^{-7 }& 6.105&^{-7 }& 4.330&^{-7 }\\
-      yy   &-2.244&^{-7 }& 2.052&^{-7 }& 1.686&^{-7 }\\
+      $xx$   & 2.094&^{-6 }& 1.830&^{-6 }& 1.310&^{-6 }\\
+      $zz$   &-1.908&^{-6 }&-1.220&^{-6 }&-8.766&^{-7 }\\
+      $xx+zz$& 1.867&^{-7 }& 6.105&^{-7 }& 4.330&^{-7 }\\
+      $yy$   &-2.244&^{-7 }& 2.052&^{-7 }& 1.686&^{-7 }\\
       \\
       \hline\hline
     \end{tabular}
