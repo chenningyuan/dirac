@@ -40,7 +40,7 @@ $^\star$ {\em\footnotesize Laboratoire de Chimie Quantique, Institut de Chimie d
 \end{center}
 \begin{center}{\bf Manuscript date: \today}\\\end{center}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-A systematic 4-component relativistic study of the parity non-conservation (PNC) contribution to the (isotropic) NMR shielding constants of chiral molecules is presented for the \emph{P}-enantiomers of the series H$_2$X$_2$ (X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po). The PNC contributions are obtained within a linear-response approach at the Hartree-Fock level. A careful design of the basis-sets is necessary. The 4-component relativistic results based on the Dirac-Coulomb Hamiltonian are compared to the non-relativistic L\'evy-Leblond results and those obtained by the spin-free modified Dirac Hamiltonian. The calculations confirm the non-relativistic scaling law $Z^3$ of the PNC shielding with respect to nuclear charge $Z$. However, the calculations also show that the {\it overall} scaling is significantly modified by relativistic effects. The scalar relativistic effect scales as $Z^{4.7}$, whereas the spin-orbit effect, of opposite sign, scales better than $Z^6$ and completely dominates the PNC contribution to the NMR shielding for the heaviest elements. The presented formalism is expected to be valuable for future search for suitable candidates for the experimental determination of PNC effects in NMR spectra.
+A systematic 4-component relativistic study of the parity non-conservation (PNC) contribution to the (isotropic) NMR shielding constants of chiral molecules is presented for the \emph{P}-enantiomers of the series H$_2$X$_2$ (X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po). The PNC contributions are obtained within a linear-response approach at the Hartree-Fock level. A careful design of the basis-sets is necessary. The 4-component relativistic results based on the Dirac-Coulomb Hamiltonian are compared to the non-relativistic L\'evy-Leblond results and those obtained by the spin-free modified Dirac Hamiltonian. The calculations confirm the non-relativistic scaling law $Z^3$ of the PNC contribution with respect to nuclear charge $Z$. However, the calculations also show that the {\it overall} scaling is significantly modified by relativistic effects. The scalar relativistic effect scales as $Z^{4.7}$, whereas the spin-orbit effect, of opposite sign, scales better than $Z^6$ and completely dominates the PNC contribution for the heaviest elements. The presented formalism is expected to be valuable for future search for suitable candidates for the experimental determination of PNC effects in NMR spectra.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{INTRODUCTION}
 
@@ -161,13 +161,12 @@ and property gradient vectors.
 
 \par For hydrogen going beyond uncontracted aug-cc-pVDZ is not needed. This to some extent indicates the rather atomic nature of this property. Analysis of the linear response functions contributing to the PNC shielding tensor for selenium in H$_2$Se$_2$ shows that they are dominated by orbital rotations between HOMO-LUMO Kramer's partners. Following the projection analysis described in reference [\cite{saue:TlAt}], the relevant molecular orbitals $\psi^\text{mol}_k$ may be decomposed into orbitals $\psi^A_i$ calculated for each constituent atom
 \begin{equation}
-\left|{\psi^\text{mol}_k}\right> = \displaystyle\sum_{i,A}\left|{\psi^A_i}\right>c_{ik}^A
-+ \left|{\psi^\text{pol}_k}\right>
+\vert\psi^\text{mol}_k\rangle = \sum_{i,A}\vert\psi^A_i\rangle c_{ik}^A+\vert\psi^\text{pol}_k\rangle
 \end{equation}
 where $\psi^\text{pol}_k$ is a polarization contribution which by definition is strictly orthogonal to the 
 chosen reference atomic orbitals. Individual gradient elements of a property operator $\hat{\Omega}$ may then be decomposed in intra- and inter-atomic contributions, e.g.
 \begin{equation}
-\left\langle \psi_\text{HOMO}\left|\hat{\Omega}\right|\psi_\text{LUMO}\right\rangle =\sum_{i,A}\sum_{j,B}c_{iA}^{*}c_{jB}\left\langle \psi_{iA}\left|\hat{\Omega}\right|\psi_{jB}\right\rangle +(\textrm{polarization})
+\langle\psi_\text{HOMO}\vert\hat{\Omega}\vert\psi_\text{LUMO}\rangle =\sum_{i,A}\sum_{j,B}c_{iA}^{*}c_{jB}\langle\psi_{iA}\vert\hat{\Omega}\vert\psi_{jB}\rangle +(\textrm{polarization})
 \end{equation}
 We find that the HOMO-LUMO gradient elements of the nuclear spin-dependent PNC operator (\ref{eq:hamiltonianPNC})
 are dominated by intra-atomic contributions from the selected selenium center, in particular the Se 4$p_{1/2}$
@@ -227,13 +226,13 @@ spin-orbit contribution which scales better than $Z^6$.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{CONCLUSION}
 
-\noindent We have studied the importance of relativistic effects on the calculation of the PNC contribution to the NMR shielding constants for the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po in H$_2$X$_2$ at the Hartree-Fock level. Comparing the results obtained within the Dirac-Coulomb formalism and approximate frameworks with either spin-orbit effects or all relativistic effects eliminated it has been observed that spin-orbit effects are substantial even for a qualitative treatment already for H$_2{^{77}}$Se$_2$ causing a sign change of the PNC shielding constant. This dramatic difference will be subject of a detailed analysis in a forthcoming paper where also correlation effects will be addressed.
+\noindent We have studied the importance of relativistic effects on the calculation of the PNC contribution to the (isotropic) NMR shielding constants for the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po in H$_2$X$_2$ at the Hartree-Fock level. Comparing the results obtained within the Dirac-Coulomb formalism and approximate frameworks with either spin-orbit effects or all relativistic effects eliminated it has been observed that spin-orbit effects are substantial even for a qualitative treatment already for H$_2{^{77}}$Se$_2$ causing a sign change of the PNC contribution. This dramatic difference will be subject of a detailed analysis in a forthcoming paper where also correlation effects will be addressed.
 
-\par We aim to apply the presented methodology for the study of more realistic systems with more rigid structures [\cite{berger2003chemphyschem}]. Our results point towards heavy-element systems also for PNC NMR experiments. While the NMR technique seems to impose more experimental boundary conditions than high-resolution infrared spectroscopy experiments [\cite{barra2001chirality}] it offers a possibly complementary approach for the first experimental verification. The more promising systems are often considerably larger than the presented set of molecules which might require the use of more efficient (two-component) Hamiltonians.
+\par We aim to apply the presented methodology for the study of more realistic systems with more rigid structures (as already discussed by Laubender and Berger [\cite{berger2003chemphyschem}]). While the NMR technique seems to impose more experimental boundary conditions than high-resolution infrared spectroscopy experiments [\cite{barra2001chirality}] it offers a possibly complementary approach for the first experimental verification. Our results encourage to include the NMR spectroscopy in the search for the experimental verification and strongly favor heavy-element containing molecules for such NMR experiments. The more promising systems are often considerably larger than the presented set of molecules which might require the use of more efficient (two-component) Hamiltonians.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{ACKNOWLEDGMENT}
 
-RB gratefully acknowledges financial support by the Conseil R\'egional d'Alsace through the Bourse R\'egionale and by the Fonds der Chemischen Industrie through the Kekul\'e scholarship. TS gratefully acknowledges support from the Royal Society of New Zealand to visit Auckland University. The authors acknowledge valuable discussions with Pekka Manninen and Robert Berger. This work is part of the project {\sc pncmol} funded by the Agence 
+RB gratefully acknowledges financial support by the Conseil R\'egional d'Alsace through the Bourse R\'egionale and by the Fonds der Chemischen Industrie through the Kekul\'e scholarship. TS gratefully acknowledges support from the Royal Society of New Zealand to visit Auckland University. The authors acknowledge valuable discussions with Robert Berger and Pekka Manninen. This work is part of the project {\sc pncmol} funded by the Agence 
 Nationale de la Recherche (ANR), France.
 \end{spacing}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -244,7 +243,19 @@ Nationale de la Recherche (ANR), France.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{table}[h]
   \begin{center}
-    \caption{\label{ang45}\emph{PNC contribution to the (isotropic) NMR shielding constants (in ppm) of the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po in the P-enantiomers of H$_2$X$_2$ for the dihedral angle of 45 \textsuperscript{o}. DC denotes the Dirac-Coulomb Hamiltonian, UKB and RKB the application of unrestricted and restricted kinetic balance respectively, SF the use of the spin-free modified Dirac Hamiltonian, LL the use of the L\'evy-Leblond Hamiltonian. PC denotes a point-charge model for the nucleus.}}
+    \caption{
+    \label{ang45}
+    \emph{
+PNC NMR shielding constants (in ppm)
+of the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po
+in the P-enantiomers of H$_2$X$_2$
+for the dihedral angle of 45 \textsuperscript{o}.
+DC denotes the Dirac-Coulomb Hamiltonian,
+UKB and RKB the application of unrestricted and restricted kinetic balance respectively,
+SF the use of the spin-free modified Dirac Hamiltonian,
+LL the use of the L\'evy-Leblond Hamiltonian.
+PC denotes a point-charge model for the nucleus.
+    }}
     \begin{tabular}{ccr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}z}
       \\
       \hline\hline
@@ -258,36 +269,36 @@ Nationale de la Recherche (ANR), France.
       \hline
       \\
       H$_2{^{17}}$O$_2$
-      &aug-cc-pVDZ          &-3.832&^{-9 }&-4.913&^{-9 }&-3.968&^{-9 }&-3.979&^{-9 }\\
-      &aug-cc-pVTZ          &-4.458&^{-9 }&-4.466&^{-9 }&-4.616&^{-9 }&-4.600&^{-9 }\\
-      &aug-cc-pVQZ          &-4.913&^{-9 }&-4.926&^{-9 }&-5.090&^{-9 }&-5.067&^{-9 }\\
-      &1-25.2-26.20-24.20-24&-6.064&^{-9 }&-6.064&^{-9 }&-6.229&^{-9 }&-6.121&^{-9 }\\
+      &aug-cc-pVDZ          & 3.832&^{-9 }& 4.913&^{-9 }& 3.968&^{-9 }& 3.979&^{-9 }\\
+      &aug-cc-pVTZ          & 4.458&^{-9 }& 4.466&^{-9 }& 4.616&^{-9 }& 4.600&^{-9 }\\
+      &aug-cc-pVQZ          & 4.913&^{-9 }& 4.926&^{-9 }& 5.090&^{-9 }& 5.067&^{-9 }\\
+      &1-25.2-26.20-24.20-24& 6.064&^{-9 }& 6.064&^{-9 }& 6.229&^{-9 }& 6.121&^{-9 }\\
       \\
       \hline
       \\
       H$_2{^{33}}$S$_2$
-      &aug-cc-pVDZ          & 6.348&^{-8 }& 6.460&^{-8 }& 7.011&^{-8 }& 7.100&^{-8 }\\
-      &aug-cc-pVTZ          & 7.187&^{-8 }& 7.351&^{-8 }& 7.948&^{-8 }& 8.036&^{-8 }\\
-      &aug-cc-pVQZ          & 7.235&^{-8 }& 7.525&^{-8 }& 8.141&^{-8 }& 8.215&^{-8 }\\
-      &1-25.2-26.20-24.20-24& 9.977&^{-8 }& 9.977&^{-8 }& 1.049&^{-7 }& 9.748&^{-8 }\\
+      &aug-cc-pVDZ          &-6.348&^{-8 }&-6.460&^{-8 }&-7.011&^{-8 }&-7.100&^{-8 }\\
+      &aug-cc-pVTZ          &-7.187&^{-8 }&-7.351&^{-8 }&-7.948&^{-8 }&-8.036&^{-8 }\\
+      &aug-cc-pVQZ          &-7.235&^{-8 }&-7.525&^{-8 }&-8.141&^{-8 }&-8.215&^{-8 }\\
+      &1-25.2-26.20-24.20-24&-9.977&^{-8 }&-9.977&^{-8 }&-1.049&^{-7 }&-9.748&^{-8 }\\
       \\
       \hline
       \\
       H$_2{^{77}}$Se$_2$
-      &aug-cc-pVDZ          & 2.367&^{-8 }& 2.403&^{-8 }& 1.438&^{-7 }& 1.652&^{-7 }\\
-      &aug-cc-pVTZ          & 2.674&^{-8 }& 2.803&^{-8 }& 1.725&^{-7 }& 1.797&^{-7 }\\
-      &aug-cc-pVQZ          & 2.172&^{-8 }& 2.573&^{-8 }& 1.883&^{-7 }& 1.866&^{-7 }\\
-      &1-25.2-26.15-25.20-24&-1.255&^{-8 }&-1.255&^{-8 }& 2.719&^{-7 }& 2.005&^{-7 }\\
+      &aug-cc-pVDZ          &-2.367&^{-8 }&-2.403&^{-8 }&-1.438&^{-7 }&-1.652&^{-7 }\\
+      &aug-cc-pVTZ          &-2.674&^{-8 }&-2.803&^{-8 }&-1.725&^{-7 }&-1.797&^{-7 }\\
+      &aug-cc-pVQZ          &-2.172&^{-8 }&-2.573&^{-8 }&-1.883&^{-7 }&-1.866&^{-7 }\\
+      &1-25.2-26.15-25.20-24& 1.255&^{-8 }& 1.255&^{-8 }&-2.719&^{-7 }&-2.005&^{-7 }\\
       \\
       \hline
       \\
       H$_2{^{125}}$Te$_2$
-      &1-25.2-26.15-25.19-25& 1.295&^{-6 }& 1.295&^{-6 }&-6.128&^{-7 }&-3.146&^{-7 }\\
+      &1-25.2-26.15-25.19-25&-1.295&^{-6 }&-1.295&^{-6 }& 6.128&^{-7 }& 3.146&^{-7 }\\
       \\
       \hline
       \\
       H$_2{^{209}}$Po$_2$
-      &1-25.2-26.12-25.15-24&-1.277&^{-3 }&-1.276&^{-3 }& 5.246&^{-6 }& 9.953&^{-7 }\\
+      &1-25.2-26.12-25.15-24& 1.277&^{-3 }& 1.276&^{-3 }&-5.246&^{-6 }&-9.953&^{-7 }\\
       \\
       \hline\hline
     \end{tabular}
@@ -296,7 +307,16 @@ Nationale de la Recherche (ANR), France.
 
 \begin{table}[h]
   \begin{center}
-    \caption{\label{Sebas}\emph{Basis-set dependence of the Dirac-Coulomb unrestricted kinetic balance PNC contribution to the (isotropic) NMR shielding constants of the nucleus $^{77}$Se in the P-enantiomer of H$_2{^{77}}$Se$_2$ for the dihedral angle of 45 \textsuperscript{o}. The basis-set 1-25.2-26.15-25.20-24 has been chosen for further calculations.}}
+    \caption{
+    \label{Sebas}
+    \emph{
+Basis-set dependence of the Dirac-Coulomb unrestricted kinetic balance
+PNC NMR shielding constant (in ppm)
+of the nucleus $^{77}$Se
+in the P-enantiomer of H$_2$Se$_2$
+for the dihedral angle of 45 \textsuperscript{o}.
+The basis-set 1-25.2-26.15-25.20-24 has been chosen for further calculations.
+    }}
     \begin{tabular}{lr}
       \\
       \hline\hline
@@ -305,14 +325,14 @@ Nationale de la Recherche (ANR), France.
       \\
       \hline
       \\
-      1-25.2-26.15-25      &-3.156$\times 10^{-8}$ ppm\\
+      1-25.2-26.15-25      & 3.156$\times 10^{-8}$\\
       \\
-      1-25.2-26.15-25.21-23&-1.224$\times 10^{-8}$ ppm\\
-      1-25.2-26.15-25.20-24&-1.255$\times 10^{-8}$ ppm\\
-      1-25.2-26.15-25.19-25&-1.252$\times 10^{-8}$ ppm\\
+      1-25.2-26.15-25.21-23& 1.224$\times 10^{-8}$\\
+      1-25.2-26.15-25.20-24& 1.255$\times 10^{-8}$\\
+      1-25.2-26.15-25.19-25& 1.252$\times 10^{-8}$\\
       \\
-      1-25.2-26.13-25.21-23&-1.223$\times 10^{-8}$ ppm\\
-      1-25.2-26.15-26.21-23&-1.221$\times 10^{-8}$ ppm\\
+      1-25.2-26.13-25.21-23& 1.223$\times 10^{-8}$\\
+      1-25.2-26.15-26.21-23& 1.221$\times 10^{-8}$\\
       \\
       \hline\hline
     \end{tabular}
@@ -321,7 +341,23 @@ Nationale de la Recherche (ANR), France.
 
 \begin{table}[h]
   \begin{center}
-    \caption{\label{varang}\emph{PNC contributions to the (isotropic) NMR shielding constants (in ppm) of the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po in the P-enantiomers of H$_2$X$_2$ for various dihedral angles. DC denotes the Dirac-Coulomb Hamiltonian, UKB the application of unrestricted kinetic balance, LL the use of the L\'evy-Leblond Hamiltonian. PC denotes a point-charge model, GM a Gaussian model for the nucleus. The basis-sets are 1-25.2-26.20-24.20-24 for O, 1-25.2-26.15-25.20-24 for S and Se, 1-25.2-26.15-25.19-25 for Te, and 1-25.2-26.12-25.15-24 for Po.}}
+    \caption{
+    \label{varang}
+    \emph{
+PNC NMR shielding constants (in ppm)
+of the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po
+in the P-enantiomers of H$_2$X$_2$
+for various dihedral angles.
+DC denotes the Dirac-Coulomb Hamiltonian,
+UKB the application of unrestricted kinetic balance,
+LL the use of the L\'evy-Leblond Hamiltonian.
+PC denotes a point-charge model,
+GM a Gaussian model for the nucleus.
+The basis-sets are 1-25.2-26.20-24.20-24 for O,
+1-25.2-26.15-25.20-24 for S and Se,
+1-25.2-26.15-25.19-25 for Te,
+and 1-25.2-26.12-25.15-24 for Po.
+    }}
     \begin{tabular}{cr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}z}
       \\
       \hline\hline
@@ -338,102 +374,102 @@ Nationale de la Recherche (ANR), France.
       H$_2{^{17}}$O$_2$\\
       \\
       DC(UKB)
-             &-5.306&^{-9 }
-             &-6.064&^{-9 }
-             &-5.219&^{-9 }
-             &-1.634&^{-10}
-             & 4.812&^{-9 }
-             & 4.888&^{-9 }\\
+             & 5.306&^{-9 }
+             & 6.064&^{-9 }
+             & 5.219&^{-9 }
+             & 1.634&^{-10}
+             &-4.812&^{-9 }
+             &-4.888&^{-9 }\\
       LL(PC)
-             &-5.355&^{-9 }
-             &-6.121&^{-9 }
-             &-5.272&^{-9 }
-             &-1.652&^{-10}
-             & 4.912&^{-9 }
-             & 5.023&^{-9 }\\
+             & 5.355&^{-9 }
+             & 6.121&^{-9 }
+             & 5.272&^{-9 }
+             & 1.652&^{-10}
+             &-4.912&^{-9 }
+             &-5.023&^{-9 }\\
       \\
       \hline
       \\
       H$_2{^{33}}$S$_2$\\
       \\
       DC(UKB)
-             & 8.336&^{-8 }
-             & 9.977&^{-8 }
-             & 9.532&^{-8 }
-             & 3.977&^{-8 }
-             &-2.477&^{-8 }
-             &-3.806&^{-8 }\\
+             &-8.336&^{-8 }
+             &-9.977&^{-8 }
+             &-9.532&^{-8 }
+             &-3.977&^{-8 }
+             & 2.477&^{-8 }
+             & 3.806&^{-8 }\\
       LL(PC)
-             & 8.251&^{-8 }
-             & 9.748&^{-8 }
-             & 9.170&^{-8 }
-             & 3.533&^{-8 }
-             &-2.884&^{-8 }
-             &-4.158&^{-8 }\\
+             &-8.251&^{-8 }
+             &-9.748&^{-8 }
+             &-9.170&^{-8 }
+             &-3.533&^{-8 }
+             & 2.884&^{-8 }
+             & 4.158&^{-8 }\\
       \\
       \hline
       \\
       H$_2{^{77}}$Se$_2$\\
       \\
       DC(UKB)
-             &-4.690&^{-8 }
-             &-1.255&^{-8 }
-             & 3.458&^{-8 }
-             & 9.935&^{-8 }
-             & 1.502&^{-7 }
-             & 1.738&^{-7 }\\
+             & 4.690&^{-8 }
+             & 1.255&^{-8 }
+             &-3.458&^{-8 }
+             &-9.935&^{-8 }
+             &-1.502&^{-7 }
+             &-1.738&^{-7 }\\
       LL(GM)
-             & 1.694&^{-7 }
-             & 1.993&^{-7 }
-             & 1.841&^{-7 }
-             & 5.595&^{-8 }
-             &-8.602&^{-8 }
-             &-1.091&^{-7 }\\
+             &-1.694&^{-7 }
+             &-1.993&^{-7 }
+             &-1.841&^{-7 }
+             &-5.595&^{-8 }
+             & 8.602&^{-8 }
+             & 1.091&^{-7 }\\
       LL(PC)
-             & 1.704&^{-7 }
-             & 2.005&^{-7 }
-             & 1.852&^{-7 }
-             & 5.629&^{-8 }
-             &-8.653&^{-8 }
-             &-1.098&^{-7 }\\
+             &-1.704&^{-7 }
+             &-2.005&^{-7 }
+             &-1.852&^{-7 }
+             &-5.629&^{-8 }
+             & 8.653&^{-8 }
+             & 1.098&^{-7 }\\
       \\
       \hline
       \\
       H$_2{^{125}}$Te$_2$\\
       \\
       DC(UKB)
-             & 1.420&^{-6 }
-             & 1.295&^{-6 }
-             & 8.249&^{-7 }
-             &-3.879&^{-7 }
-             &-1.590&^{-6 }
-             &-2.008&^{-6 }\\
+             &-1.420&^{-6 }
+             &-1.295&^{-6 }
+             &-8.249&^{-7 }
+             & 3.879&^{-7 }
+             & 1.590&^{-6 }
+             & 2.008&^{-6 }\\
       LL(PC)
-             &-2.675&^{-7 }
-             &-3.146&^{-7 }
-             &-2.915&^{-7 }
-             &-9.472&^{-8 }
-             & 1.250&^{-7 }
-             & 1.640&^{-7 }\\
+             & 2.675&^{-7 }
+             & 3.146&^{-7 }
+             & 2.915&^{-7 }
+             & 9.472&^{-8 }
+             &-1.250&^{-7 }
+             &-1.640&^{-7 }\\
       \\
       \hline
       \\
       H$_2{^{209}}$Po$_2$\\
       \\
       DC(UKB)
-             & 7.244&^{-4 }
-             &-1.277&^{-3 }
-             &-3.043&^{-4 }
-             & 3.086&^{-6 }
-             & 3.395&^{-4 }
-             &-5.709&^{-4 }\\
+             &-7.244&^{-4 }
+             & 1.277&^{-3 }
+             & 3.043&^{-4 }
+             &-3.086&^{-6 }
+             &-3.395&^{-4 }
+             & 5.709&^{-4 }\\
       LL(PC)
-             & 8.694&^{-7 }
-             & 9.953&^{-7 }
-             & 9.422&^{-7 }
-             & 3.130&^{-7 }
-             &-3.932&^{-7 }
-             &-5.248&^{-7 }\\
+             &-8.694&^{-7 }
+             &-9.953&^{-7 }
+             &-9.422&^{-7 }
+             &-3.130&^{-7 }
+             & 3.932&^{-7 }
+             & 5.248&^{-7 }\\
       \\
       \\
       \hline\hline
@@ -444,7 +480,20 @@ Nationale de la Recherche (ANR), France.
 
 \begin{table}[h]
   \begin{center}
-    \caption{\label{parcomp}\emph{Components $\sigma_{ii}^\text{pnc}$ of the PNC shielding tensor (in ppm) of the nucleus $^{77}$Se in the P-enantiomer of H$_2{^{77}}$Se$_2$ for the dihedral angle of 45 \textsuperscript{o}. DC denotes the Dirac-Coulomb Hamiltonian, UKB the application of unrestricted kinetic balance, SF the use of the spin-free modified Dirac Hamiltonian, LL the use of the L\'evy-Leblond Hamiltonian. PC denotes a point-charge model for the nucleus.}}
+    \caption{
+    \label{parcomp}
+    \emph{
+Components $\sigma_{ii}^\text{pnc}$ of the
+PNC NMR shielding tensor (in ppm)
+of the nucleus $^{77}$Se
+in the P-enantiomer of H$_2$Se$_2$
+for the dihedral angle of 45 \textsuperscript{o}.
+DC denotes the Dirac-Coulomb Hamiltonian,
+UKB the application of unrestricted kinetic balance,
+SF the use of the spin-free modified Dirac Hamiltonian,
+LL the use of the L\'evy-Leblond Hamiltonian.
+PC denotes a point-charge model for the nucleus.
+    }}
     \begin{tabular}{cr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}z}
       \\
       \hline\hline
@@ -455,10 +504,10 @@ Nationale de la Recherche (ANR), France.
       \\
       \hline
       \\
-      $xx$   & 2.094&^{-6 }& 1.830&^{-6 }& 1.310&^{-6 }\\
-      $zz$   &-1.908&^{-6 }&-1.220&^{-6 }&-8.766&^{-7 }\\
-      $xx+zz$& 1.867&^{-7 }& 6.105&^{-7 }& 4.330&^{-7 }\\
-      $yy$   &-2.244&^{-7 }& 2.052&^{-7 }& 1.686&^{-7 }\\
+      $xx$   &-2.094&^{-6 }&-1.830&^{-6 }&-1.310&^{-6 }\\
+      $zz$   & 1.908&^{-6 }& 1.220&^{-6 }& 8.766&^{-7 }\\
+      $xx+zz$&-1.867&^{-7 }&-6.105&^{-7 }&-4.330&^{-7 }\\
+      $yy$   & 2.244&^{-7 }&-2.052&^{-7 }&-1.686&^{-7 }\\
       \\
       \hline\hline
     \end{tabular}
@@ -467,7 +516,20 @@ Nationale de la Recherche (ANR), France.
 
 \begin{table}[h]
   \begin{center}
-    \caption{\label{redpar}Reduced PNC shielding constants $\gamma_A\sigma_A^\text{pnc} = \gamma_A(\sigma_{A,xx}^\text{pnc}+\sigma_{A,yy}^\text{pnc}+\sigma_{A,zz}^\text{pnc})/3$ (in ppm \textbf{?????}) of the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po in the P-enantiomers of H$_2$X$_2$ for the dihedral angle of \mbox{45 \textsuperscript{o}}. $Z$ is the number of protons, LL denotes the use of the L\'evy-Leblond Hamiltonian, SR is the contribution of scalar relativity (SF-LL), SO the effect of spin-orbit coupling (DC-SF).}
+    \caption{
+    \label{redpar}
+    \emph{
+Reduced PNC NMR shielding constants
+$\gamma_A\sigma_A^\text{pnc} = \gamma_A(\sigma_{A,xx}^\text{pnc}+\sigma_{A,yy}^\text{pnc}+\sigma_{A,zz}^\text{pnc})/3$
+(in ppm ????????????)
+of the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po
+in the P-enantiomers of H$_2$X$_2$
+for the dihedral angle of 45 \textsuperscript{o}.
+$Z$ is the number of protons,
+LL denotes the use of the L\'evy-Leblond Hamiltonian,
+SR is the contribution of scalar relativity (SF-LL),
+SO the effect of spin-orbit coupling (DC-SF).
+    }}
     \begin{tabular}{cr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}zr@{\hspace{1pt}}!{$\times$10}@{\hspace{1pt}}z}
       \\
       \hline\hline
@@ -479,11 +541,11 @@ Nationale de la Recherche (ANR), France.
       \\
       \hline
       \\
-      8 & 1.263&^{-12}& 2.228&^{-14}&-3.404&^{-14}&-1.176&^{-14}\\
-      16& 1.139&^{-11}& 8.672&^{-13}&-5.996&^{-13}& 2.677&^{-13}\\
-      34& 5.842&^{-11}& 2.081&^{-11}&-8.289&^{-11}&-6.208&^{-11}\\
-      52& 1.522&^{-10}& 1.443&^{-10}&-9.232&^{-10}&-7.789&^{-10}\\
-      84& 4.188&^{-10}& 1.788&^{-09}&-5.395&^{-07}&-5.377&^{-07}\\
+      8 &-1.263&^{-12}&-2.228&^{-14}& 3.404&^{-14}& 1.176&^{-14}\\
+      16&-1.139&^{-11}&-8.672&^{-13}& 5.996&^{-13}&-2.677&^{-13}\\
+      34&-5.842&^{-11}&-2.081&^{-11}& 8.289&^{-11}& 6.208&^{-11}\\
+      52&-1.522&^{-10}&-1.443&^{-10}& 9.232&^{-10}& 7.789&^{-10}\\
+      84&-4.188&^{-10}&-1.788&^{-09}& 5.395&^{-07}& 5.377&^{-07}\\
       \\
       \hline\hline
     \end{tabular}
@@ -492,7 +554,22 @@ Nationale de la Recherche (ANR), France.
 
 \begin{figure}
   \centering\epsfig{figure=cvalue.eps,width=\linewidth}
-  \caption{Dependence of the PNC contribution to the (isotropic) NMR shielding constant of $^{77}$Se in H$_2$Se$_2$ (in ppm) on the speed of light $c$ (in a.u.). The symbols ($\times, \circ,$ and $\triangle$) represent the average trace $\sigma_\text{Se}^\text{pnc} = (\sigma_{\text{Se},xx}^\text{pnc}+\sigma_{\text{Se},yy}^\text{pnc}+\sigma_{\text{Se},zz}^\text{pnc})/3$ , $\sigma_{\text{Se},yy}^\text{pnc}$ , and $(\sigma_{\text{Se},xx}^\text{pnc}+\sigma_{\text{Se},zz}^\text{pnc})/2$ respectively. The dihedral angle is 45 $^\circ$. The vertical dashed line represents the true speed of light of $\approx$ 137 a.u. - the horizontal dashed line shows the non-relativistic limit (1.993$\times 10^{-7}$ ppm).}\label{cvar}
+    \caption{
+    \label{cvar}
+    \emph{
+Dependence of the
+PNC NMR shielding constant (in ppm)
+of the nucleus $^{77}$Se
+in the P-enantiomer of H$_2$Se$_2$
+for the dihedral angle of 45 \textsuperscript{o}
+on the speed of light $c$ (in a.u.).
+The symbols ($\times, \bigcirc,$ and $\triangle$) represent
+the average trace $\sigma^\text{pnc} = (\sigma_{xx}^\text{pnc}+\sigma_{yy}^\text{pnc}+\sigma_{zz}^\text{pnc})/3$,
+$\sigma_{yy}^\text{pnc}$,
+and $(\sigma_{xx}^\text{pnc}+\sigma_{zz}^\text{pnc})/2$ respectively.
+The vertical dashed line represents the true speed of light of $\approx$ 137 a.u.,
+the horizontal dashed line shows the non-relativistic limit (-1.993$\times 10^{-7}$ ppm).
+    }}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \end{document}
