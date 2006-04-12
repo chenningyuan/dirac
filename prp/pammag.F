@@ -2318,16 +2318,16 @@ C
 #endif
 CLV   ... temporary fix for parallel runs...
       PARCAL_SAVE = PARCAL
-      IF (PARCAL) PARCAL = .FALSE.
-      IF (PARCAL_SAVE) WRITE (LUPRI,*) 
-     &   " WARNING: Running in serial, parallel code not ready yet"
+CMI   IF (PARCAL) PARCAL = .FALSE.
+CMI   IF (PARCAL_SAVE) WRITE (LUPRI,*) 
+CMI  &   " WARNING: Running in serial, parallel code not ready yet"
 
       CALL GETTIM(CPU1,WALL1)
       DO I2TYP = 1,3
          IF (LBIT(INTNMR,I2TYP)) THEN
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
-           CALL QUIT('Parallel suscpeptibilities not ready!')
+CMI        CALL QUIT('Parallel suscpeptibilities not ready!')
 
             CALL MEMGET('INTE',KNPOS,MTOTTK(I2TYP),WORK,KFREE,LFREE)
 CMI      .... replace PARDRV by HER_PARDRV and IFTHRS by SCRFCK

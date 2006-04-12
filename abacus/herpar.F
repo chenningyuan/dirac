@@ -746,7 +746,7 @@ C
 #include "infpar.h"
 C
       DIMENSION FMAT(*),WORK(NREQUI),TIMES(MTOTTK),DINTSKP(LDINTSKP),
-     &          DNSKBF(3*3*14)
+     &          DNSKBF(3*3*14),SUS2ELBUF(9)
 C
 C     Clean matrices.
 C
@@ -756,9 +756,10 @@ C
      &      CALL DZERO(HESSEE,NUMHES)
 CTROND      ELSE IF (ITYPE .EQ. 3) THEN
 CTROND         CALL DZERO(FMAT,NREQUI)
-ctec  ELSE IF (ITYPE .EQ. -5) THEN
+      ELSE IF (ITYPE .EQ. -5) THEN
 CTROND        CALL DZERO(FMAT,3*N2BASX)
-c        CALL DZERO(SUS2EL,9)
+CMI      CALL DZERO(SUS2EL,9)
+         CALL DZERO(SUS2ELBUF,9)
       ELSE IF (ITYPE .EQ. 8) THEN
          CALL DZERO(FMAT,3*N2BASX)
       END IF
@@ -814,10 +815,21 @@ C              MPOS = J*N2BASX + 1
 C              CALL DAXPY(NNBASX,D1,WORK(LPOS),1,FMAT(MPOS),1)
 C200        CONTINUE
 C
-C           IF (ITYPE .EQ. -5) THEN
+            IF (ITYPE .EQ. -5) THEN
 C              NPOS = 3*NNBASX + 1
 C              CALL DAXPY(9,D1,WORK(NPOS),1,SUS2EL,1)
-C           END IF
+
+             CALL MPI_RECV(SUS2ELBUF,9,MPI_DOUBLE_PRECISION,NWHO,40,
+     &                MPI_COMM_WORLD,ISTAT,IERR)
+
+CMI         write(0,*) 'RVRES: received two-electron integral'//  
+CMI  &      ' susceptibilities from slaves:'            
+C             CALL OUTPUT(SUS2EL,1,3,1,3,3,3,1,0)               
+CMI           CALL OUTPUT(SUS2ELBUF,1,3,1,3,3,3,1,0)               
+CMI          .... accumulate data from nodes into SUS2EL
+              CALL DAXPY(9,D1,SUS2ELBUF,1,SUS2EL,1)
+
+            END IF
          END IF
 C
 C        The time each index-pair calculation need is collected in TIMES
@@ -1863,7 +1875,7 @@ C
 #include "infpar.h"
 #include "inforb.h"
 C
-      DIMENSION FMAT(LFMAT), DINTSKP(*),INDEX(*),TIMES(*)
+      DIMENSION FMAT(LFMAT), DINTSKP(*),INDEX(*),TIMES(*),SUS2ELBUF(9)
 #if defined (VAR_MPI)
       DIMENSION RBUF(2)
 #endif
@@ -1920,6 +1932,16 @@ CMI - from TEC code...
       ELSE IF(ITYPE.EQ.-5) THEN 
           CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
+
+CMI      write(0,*) 'SDRES: sending two-electron integral'//
+CMI  &               ' susceptibilities to master:' 
+CMI       CALL OUTPUT(SUS2EL,1,3,1,3,3,3,1,0)                        
+          CALL DCOPY(9,SUS2EL,1,SUS2ELBUF,1)
+CMI       CALL OUTPUT(SUS2ELBUF,1,3,1,3,3,3,1,0)                        
+CMI        ... sending to the master...
+          CALL MPI_SEND(SUS2ELBUF,9,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
+
       ENDIF
 C
 C
