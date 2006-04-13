@@ -6798,7 +6798,7 @@ C
 #include "ibtfun.h"
 C
 C
-      DFAC = -(GFERMI*(D1-D4*STHETAW2)*1.0D6)/(CVEL*SQRT(D2))
+      DFAC = (GFERMI*(D1-D4*STHETAW2)*1.0D6)/(CVEL*SQRT(D2))
 C
 C
       CALL AROUND('Parity-violating contribution to NMR shielding')
