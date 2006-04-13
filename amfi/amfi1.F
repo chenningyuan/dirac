@@ -1,4 +1,3 @@
-     
 
       subroutine readbas(Lhigh,makemean,bonn,breit,
      *symmetry,AIMP,ncont4,numballcart,IN,ifinite,
@@ -42,7 +41,12 @@ CBS   write(LUPRI,*) stars
         do i=0,Lmax 
         icore(i)=0
         enddo   
+
+CMI    write(lupri,*) 'ifinite=',ifinite 
+CMI    write(lupri,*) 'Exp_finite,EXP_FIN=',Exp_finite,EXP_FIN
+
        if (ifinite.eq.1) Exp_finite=EXP_FIN
+
       if (BONN) then
 CBS   write(LUPRI,*) 'Bonn-approach for spin-other-orbit part'
       endif 

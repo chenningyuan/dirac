@@ -8762,6 +8762,7 @@ C    &  '...this file does not exist, AMFI is utilized ! '
         ENDIF
 
 C      ... find out the correct index of nuclear exponent
+       EXPNUCL=D0
        IF (GAUNUC) THEN
         IATOM1 = 0
         DO J = 1, NUCIND
@@ -8773,6 +8774,7 @@ C      ... find out the correct index of nuclear exponent
          write(lupri,*) ' indx=',IATOM1,' CHARGE=',
      &        CHARGE(IATOM1),ICHARGE,
      &   ' nucl. exponent:',GNUEXP(IATOM1)
+         EXPNUCL = GNUEXP(IATOM1)
         ENDIF
 
 C     ... gauss.nucleus (for SO1) does not work in AMFI !!!!
@@ -8782,10 +8784,12 @@ C     ... Bernd Schim., help us !
      &  QUIT('AMFIIN: GNUC is not working in AMFI!')
         ENDIF
        ENDIF
+
+
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
-       CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM1),
+       CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
      &          CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
