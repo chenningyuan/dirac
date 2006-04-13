@@ -8,6 +8,7 @@
 \usepackage{setspace}
 \usepackage[ansinew]{inputenc}
 \usepackage[small,nooneline,bf]{caption2}
+\usepackage{ae,aecompl}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \setlength{\parindent}{1cm}
 \setlength{\parskip}{1.5ex}
@@ -41,26 +42,23 @@ $^\star$ {\em\footnotesize Laboratoire de Chimie Quantique, Institut de Chimie d
 \begin{center}{\bf Manuscript date: \today}\\\end{center}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 A systematic 4-component relativistic study of the parity non-conservation (PNC) contribution to the (isotropic) NMR shielding constants of chiral molecules is presented for the \emph{P}-enantiomers of the series H$_2$X$_2$ (X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po). The PNC contributions are obtained within a linear-response approach at the Hartree-Fock level. A careful design of the basis-sets is necessary. The 4-component relativistic results based on the Dirac-Coulomb Hamiltonian are compared to the non-relativistic L\'evy-Leblond results and those obtained by the spin-free modified Dirac Hamiltonian. The calculations confirm the non-relativistic scaling law $Z^{2.4}$ of the PNC contribution with respect to nuclear charge $Z$. However, the calculations also show that the {\it overall} scaling is significantly modified by relativistic effects.
-
-\newpage
-\noindent The scalar relativistic effect scales as $Z^{4.7}$, whereas the spin-orbit effect, of opposite sign, scales better than $Z^6$ and completely dominates the PNC contribution for the heaviest elements. The presented formalism is expected to be valuable for future search for suitable candidates for the experimental determination of PNC effects in NMR spectra.
+\noindent The scalar relativistic effect scales as $Z^{4.7}$ for the selected set of molecules, whereas the spin-orbit effect, of opposite sign, scales better than $Z^6$ and completely dominates the PNC contribution for the heaviest elements. This opens up the intriguing possibility of the experimental observation of PNC effects on NMR parameters of molecules containing heavy atoms. The presented formalism is expected to be valuable in assisting the search for suitable candidate molecules.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{INTRODUCTION}
 
 \noindent Physics is not symmetric under the parity operation. The breakdown of parity symmetry is caused by the so-called parity non-conservation (PNC) of the electroweak interaction mainly between electrons and nucleons. This breakdown of parity symmetry in physics was first postulated by Lee and Yang [\cite{lee1956physrev}] in 1956 and is today well known in nuclear and particle physics. PNC can be observed for instance in the $\beta$-decay under very low temperature in an external magnetic field (as first performed by Wu \emph{et al.} [\cite{wu1957physrev}]) or in the optical rotation in atomic heavy-metal vapors [\cite{macpherson1991physrevlett,meekhof1993physrevlett,edwards1995physrevlett}].
 
 \par The next logical but ambitious step has been to move the attention towards chemical systems. In the realm of molecular physics the inclusion of the electroweak neutral-current interaction leads to a minute energy difference between the two enantiomers of a chiral molecule. The possible connection between this energy difference and the homochirality in biomolecular life is subject to intensive discussion (e.g. Refs. \cite{quack2002angewcheminted,schwerdtfeger:yamagata,schwerdtfeger:salam}). However, an unequivocal experimental determination of this energy difference between two enantiomers has not been achieved so far despite several claims.
 
-\newpage
-\par While the current search for the experimental manifestation of PNC effects in molecules focuses mainly on differences in the infrared and electronic spectra of chiral molecules (see Ref. \cite{berger} for a review and references therein), their influence on NMR parameters like the shielding tensor or spin-spin coupling constants shows an interesting and possibly complementary alternative despite immense technical obstacles [\cite{barra2001chirality}] which shall not be the subject of this article. Barra, Robert, and Wiesenfeld [\cite{barra1986physletta,barra1988europhyslett,barra1996molphys}] were the first to propose a search for PNC effects in the NMR spectra of chiral molecules. They formulated both the theory within the relativistic and the non-relativistic (NR) framework and performed the first calculations using a relativistically parametrized extended H\"uckel method. Since their pioneer work only very recently a few theoretical \emph{ab initio} studies [\cite{berger2003chemphyschem,lazzeretti2003physreva,weijo2000jchemphys}] have been published.
+\par While the current search for the experimental manifestation of PNC effects in molecules focuses mainly on differences in the infrared and electronic spectra of chiral molecules (see Refs. \cite{berger} and \cite{ego:PNCrev} for a review and references therein), their influence on NMR parameters like the shielding tensor or spin-spin coupling constants shows an interesting and possibly complementary alternative despite immense technical obstacles [\cite{barra2001chirality}] which shall not be the subject of this article. Barra, Robert, and Wiesenfeld [\cite{barra1986physletta,barra1988europhyslett,barra1996molphys}] were the first to propose a search for PNC effects in the NMR spectra of chiral molecules. They formulated both the theory within the relativistic and the non-relativistic (NR) framework and performed the first calculations using a relativistically parametrized extended H\"uckel method. Since their pioneer work only very recently a few theoretical \emph{ab initio} studies [\cite{berger2003chemphyschem,lazzeretti2003physreva,weijo2000jchemphys}] have been published.
 
 \par A reinvestigation of this problem by an \emph{ab initio} approach has been deemed necessary since the semi-empirical extended H\"uckel method used by Barra, Robert, and Wiesenfeld [\cite{barra1986physletta,barra1988europhyslett}] is known to underestimate PNC energy differences by about an order of magnitude. Independently Laubender and Berger [\cite{berger2003chemphyschem}] and Soncini \emph{et al.} [\cite{lazzeretti2003physreva}] have published the first \emph{ab initio} calculations of PNC NMR shielding constants - both of them in a NR formalism without the inclusion of spin-orbit coupling. Laubender and Berger [\cite{berger2003chemphyschem}] have studied the chiral series H$_2$X$_2$ (X = $^{17}$O, $^{33}$S, $^{77}$Se) and 2-fluorooxirane. Soncini \emph{et al.} [\cite{lazzeretti2003physreva}] have reported a NR gauge-invariant formalism by calculating the PNC contributions for H$_2{^{33}}$S$_2$ and \mbox{m-1,2 dithiin}, presenting expressions for both diamagnetic and paramagnetic contributions to the NMR shielding tensor. Recently, Weijo \emph{et al.} [\cite{weijo2000jchemphys}] have reported a study of PNC contributions to the (isotropic) NMR shielding constants and indirect spin-spin coupling constants in chiral halomethanes at the level of Hartree-Fock and density-functional theory. They have shown significant effects of electron correlation on the PNC contributions.
 
-\par The mentioned publications of other groups conclude with negative results in the sense that the calculated PNC contributions are several orders of magnitude below the present resolution in NMR spectroscopy [\cite{barra2001chirality}]. However, they constitute a very important theoretical frame\-work for the search of suitable candidates. The motivation of our work is to pursue the development of this theoretical methodology by extending it to a 4-component relativistic framework which offers a solid theoretical basis for the treatment of heavy-element compounds and which is found to be very successful in the calculations of PNC energy differences in the infrared spectra [\cite{schwerdtfeger2000physrevlett,schwerdtfeger2002physreva,schwerdtfeger2003physrevlett,schwerdtfeger2004jamchemsoc}]. This will make it possible to verify the scaling of the PNC contribution with respect to the nuclear charge for a series of homologous molecules. This $Z$-scaling ($Z$ is the number of protons) is expected to be much smaller for the PNC NMR shielding constants ($Z^2$ - $Z^3$) compared to PNC energy differences ($Z^5$ - $Z^6$).
+\par The mentioned publications of other groups conclude with negative results in the sense that the calculated PNC contributions are several orders of magnitude below the present resolution in NMR spectroscopy [\cite{barra2001chirality}]. However, they constitute a very important theoretical frame\-work for the search of suitable candidates. The motivation of our work is to pursue the development of this theoretical methodology by extending it to a 4-component relativistic framework which offers a solid theoretical basis for the treatment of heavy-element compounds and which is found to be very successful in the calculations of PNC energy differences in the infrared spectra [\cite{schwerdtfeger2000physrevlett,schwerdtfeger2002physreva,schwerdtfeger2003physrevlett,schwerdtfeger2004jamchemsoc}]. This will make it possible to verify the scaling of the PNC contribution with respect to the nuclear charge for a series of homologous molecules. This $Z$-scaling ($Z$ is the number of protons) is expected [\cite{berger2003chemphyschem}] to be much smaller for the PNC NMR shielding constants ($Z^2$ - $Z^3$) compared to PNC energy differences ($Z^5$ - $Z^6$). We shall see that this is not the case.
 
 \par Here we present a systematic 4-component relativistic study of the PNC contribution to the (isotropic) NMR shielding constants of chiral molecules for the \emph{P}-enantiomers of the series H$_2$X$_2$ (X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po) using a linear-response approach at the Hartree-Fock level. We will give the Hamiltonian employed in this study as well as its non-relativistic limit (NRL) and compare our results with the work of other authors [\cite{berger2003chemphyschem}] and demonstrate where a NR treatment is justified as well as its limitations. At several points we will emphasize various approximations usually introduced in the derivation of the Hamiltonian. The spin-orbit coupling is naturally included in a 4-component relativistic framework - we will assess its effect by deleting the quaternion imaginary parts of matrix representations of the modified Dirac equation and property gradients as described in \mbox{Refs. \cite{saue2000jchemphys} and \cite{saue2005advquantumchem}}, respectively.
 
-\newpage
 \par The chosen set of molecules is \emph{not} suitable for the experimental search of PNC effects due to stereomutation as already pointed out in Ref. \cite{berger2003chemphyschem}. However, this model set is very well studied from the theoretical point of view and is ideal for a systematic calibration of our implementation which we expect to be valuable for future search of suitable candidates for the experimental determination of PNC effects in NMR spectra.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{FORMALISM}
@@ -74,7 +72,6 @@ A systematic 4-component relativistic study of the parity non-conservation (PNC)
 
 \noindent Here the indices $i$ and $A$ run over all electrons and nuclei respectively, $G_\text{F} = 2.22254\cdot 10^{-14}E_ha_0^3$ is the Fermi coupling constant, \mbox{$Q_{\text{w},A} = Z_A(1-4\sin^2\theta_\text{W})-N_A$} is the weak nuclear charge with $Z_A$ and $N_A$ representing the number of protons and neutrons in nucleus $A$, respectively, and $\sin^2\theta_\text{W} = 0.2319$ being the employed Weinberg parameter (the most recent value is $\sin^2\theta_\text{W} = 0.2397(13)$ [\cite{anthony2005physrevlett}]).
 
-\newpage
 \noindent $\gamma^5$ is one of the Dirac matrices (\ref{eq:gamma5}) with $1_{2\times 2}$ being the $2\times 2$ identity matrix.
 
 \begin{equation}\label{eq:gamma5}
@@ -83,7 +80,7 @@ A systematic 4-component relativistic study of the parity non-conservation (PNC)
 
 \noindent $\rho_A$ is the normalized nuclear charge density, and $\lambda_A$ a nucleus-dependent parameter close to unity [\cite{cahn1977physlettb,marciano1978physrevd,berger}]. $\boldsymbol{\alpha}$ is given in Eq. \ref{eq:gamma5} with $\boldsymbol{\sigma}$ being the Pauli spin matrices in the standard representation. Finally, $\mathbf{I}_A$ is the spin of nucleus $A$. This is only an approximation to the (unknown) nuclear spin density distribution. In the case of a positive experimental measurement the theoretical PNC contribution could be used to reveal or to verify various nuclear spin or charge density distribution models (see e.g. Ref. \cite{mukhamedjanov:solidpnc} and references therein).
 
-\par In this paper we will consider only the nuclear spin-dependent part as only the spin-dependent terms $\hat{h}^\text{pnc}_{\mathbf{I},i}$ will contribute directly to the NMR shielding tensor and therefore we set $\hat{H}^\text{pnc} \equiv \hat{H}^\text{pnc}_\mathbf{I}$ and obtain our final expression (\ref{eq:hamiltonianPNC}) by replacing the nuclear spin by the nuclear magnetic moment $\mathbf{M}_A = \gamma_A\mathbf{I}_A$, where $\gamma_A$ is the magnetogyric ratio of nucleus $A$.
+\par In this paper we will consider only the nuclear spin-dependent part as only the spin-dependent terms $\hat{h}^\text{pnc}_{\mathbf{I},i}$ will contribute directly to the NMR shielding tensor. We therefore set $\hat{H}^\text{pnc} \equiv \hat{H}^\text{pnc}_\mathbf{I}$ and obtain our final expression (\ref{eq:hamiltonianPNC}) by replacing the nuclear spin by the nuclear magnetic moment $\mathbf{M}_A = \gamma_A\mathbf{I}_A$, where $\gamma_A$ is the magnetogyric ratio of nucleus $A$.
 
 \begin{equation}\label{eq:hamiltonianPNC}
   \hat{H}^\text{pnc} \equiv \hat{H}^\text{pnc}_\mathbf{I} = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}}\sum_{i,A}\{\frac{1}{\gamma_A}\boldsymbol{\alpha}\cdot\mathbf{M}_A\rho_A(\mathbf{r}_i)\}
@@ -91,7 +88,6 @@ A systematic 4-component relativistic study of the parity non-conservation (PNC)
 
 \noindent For comparison with the work of Laubender and Berger [\cite{berger2003chemphyschem}] we have set the nucleus-dependent parameter $\lambda_A \equiv 1.0$. The contribution of the nuclear anapole moment [\cite{zeldovic1958sovphys}] to the PNC shieldings has been neglected as well.
 
-\newpage
 \par For later discussion it will be instructive to consider the NRL of Eq. \ref{eq:hamiltonianPNC}. We employ the NRL of the small component bispinor (\ref{eq:nrl1})
 \begin{equation}\label{eq:nrl1}
   \lim_{c\rightarrow\infty}c\vert\psi^\text{S}\rangle = \frac{1}{2m}(\boldsymbol{\sigma}\cdot\mathbf{p})\vert\psi^\text{L}\rangle
@@ -110,9 +106,8 @@ The NRL can then be expressed as
   \lim_{c\rightarrow\infty}c\hat{H}^\text{pnc} = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{2\sqrt{2}m}\sum_{i,A}\frac{1}{\gamma_A}\bigl\{\mathbf{M}_A\cdot[\mathbf{p}_i,\delta^3(\mathbf{r}_{iA})]_+-2\text{i}(\mathbf{s}_i\times\mathbf{M}_A)\cdot[\mathbf{p}_i,\delta^3(\mathbf{r}_{iA})]\bigr\}.\label{eq:nrl2}
 \end{equation}
 
-\noindent Here we have also made the transition from a finite nucleus density $\rho_A(\mathbf{r}_i)$ to a point nucleus contact interaction described by the Dirac distribution $\delta^3(\mathbf{r}_{iA})$ with $\mathbf{r}_{iA} = \mathbf{r}_i-\mathbf{r}_A$. \mbox{$\mathbf{s} = \boldsymbol{\sigma}/2$} denotes the electron spin, $c$ the speed of light, $[\cdot,\cdot]$ the commutator, and $[\cdot,\cdot]_+$ the anti\-commutator. We have investigated the importance of the usually omitted electron spin-dependent term (second term in Eq. \ref{eq:nrl2}), however zero PNC contribution has been observed.
+\noindent Here we have also made the transition from a finite nucleus density $\rho_A(\mathbf{r}_i)$ to a point nucleus contact interaction described by the Dirac distribution $\delta^3(\mathbf{r}_{iA})$ with $\mathbf{r}_{iA} = \mathbf{r}_i-\mathbf{r}_A$. \mbox{$\mathbf{s} = \boldsymbol{\sigma}/2$} denotes the electron spin, $c$ the speed of light, $[\cdot,\cdot]$ the commutator, and $[\cdot,\cdot]_+$ the anti\-commutator. We have investigated the importance of the usually omitted electron spin-dependent term (second term in Eq. \ref{eq:nrl2}), however we observe no PNC contribution.
 
-\newpage
 \par The nuclear magnetic shielding is defined as the second derivative of the energy with respect to the nuclear magnetic moment $\mathbf{M}_A$ and the external uniform magnetic field $\mathbf{B}$ at zero perturbation strength:
 
 \begin{equation}\label{eq:shielding}
@@ -150,8 +145,7 @@ by expanding the solution vector $\mathbf{X}_B$ (\ref{eq:solution}) in trial vec
 
 \noindent All calculations have been carried out at the Hartree-Fock level using a development version of the \textsc{dirac} code [\cite{dirac}]. The molecules H$_2$X$_2$ (X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po) have been investigated at various dihedral angles with the bond lengths and H-X-X angles kept fixed and taken from Refs. \cite{berger2003chemphyschem} and \cite{peter1999physreva} for comparison. The X$_2$ unit was aligned along the $y$-axis with the dihedral angle bisected by the $yz$-plane. We have used both (contracted) \mbox{aug-cc-pV\{D,T,Q\}Z} basis-sets for H, O, S, and Se as well as the even-tempered basis-sets developed by Laerdahl and Schwerdtfeger [\cite{peter1999physreva}] for O, S, Se, Te, and Po together with uncontracted aug-cc-pVDZ for H. The even-tempered parent set consists of 26 exponents. We will denote these basis-sets as ,,$s$.$p$.$d$.$f$\/'' where $s$, $p$, $d$, and $f$ represent the subsets with the respective angular momenta.
 
-\newpage
-\par The gauge origin has been placed at the center of the nucleus under study (O, S, Se, Te, Po). A Gaussian charge distribution has been chosen as the nuclear model for the Dirac-Coulomb and the spin-free calculations [\cite{luuk:gnuc}]. For comparison with the NR calculations by Laubender and Berger [\cite{berger2003chemphyschem}] point-charge nuclei have been used for the L\'evy-Leblond calculations unless otherwise indicated. The small component basis-set for the calculations based on the Dirac-Coulomb Hamiltonian has been generated using separately unrestricted (UKB) and re\-stricted kinetic balance (RKB) respectively for comparison with the spin-free results. In the Dirac-Coulomb and the spin-free calculations the (SS$\vert$SS) integrals have been eliminated in both the SCF and the linear response part. Their contribution to energies has been modeled by classical Coulombic repulsion of small component atomic charges [\cite{visscher1997theorchemacc}]. 
+\par The gauge origin has been placed at the center of the nucleus under study (O, S, Se, Te, Po). A Gaussian charge distribution has been chosen as the nuclear model for the Dirac-Coulomb and the spin-free calculations [\cite{luuk:gnuc}]. For comparison with the NR calculations by Laubender and Berger [\cite{berger2003chemphyschem}] point-charge nuclei have been used for the L\'evy-Leblond calculations (wave function and response) unless otherwise indicated. The small component basis-set for the calculations based on the Dirac-Coulomb Hamiltonian has been generated using separately unrestricted (UKB) and re\-stricted kinetic balance (RKB) respectively for comparison with the spin-free results. In the Dirac-Coulomb and the spin-free calculations the (SS$\vert$SS) integrals have been eliminated in both the SCF and the linear response part. Their contribution to energies has been modeled by classical Coulombic repulsion of small component atomic charges [\cite{visscher1997theorchemacc}]. 
 The response equations (\ref{eq:solution}) have been solved with respect to the property gradient associated 
 with the external magnetic field $\mathbf{B}$. Rotations between positive and negative energy solutions 
 have been suppressed within the linear response module. This approximation implies neglecting the 
@@ -163,7 +157,6 @@ the PNC contribution to the NMR shielding  constant of $^{77}$Se only by 1.3\% (
 We have used the value $1.0\times 10^{-9}$ as threshold for the ratio of norms between the residual 
 and property gradient vectors.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
 \section{RESULTS AND DISCUSSION}
 
 \noindent We have tested our implementation by calculating the PNC contribution to the (isotropic) NMR shielding constants for the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, and $^{209}$Po in the \emph{P}-enantiomers of H$_2$X$_2$ for the dihedral angle of 45\textsuperscript{o} at the Hartree-Fock level. These results are reported in Tab. \ref{ang45}. The PNC contribution is studied using the Dirac-Coulomb (DC) Hamiltonian, the spin-free modified Dirac Hamiltonian, and the L\'evy-Leblond Hamiltonian.
@@ -178,13 +171,12 @@ and property gradient vectors.
 where $\psi^\text{pol}_k$ is a polarization contribution which by definition is strictly orthogonal to the 
 chosen reference atomic orbitals.
 
-\newpage
 \noindent Individual gradient elements of a property operator $\hat{\Omega}$ may then be decomposed in intra- and inter-atomic contributions, e.g.
 \begin{equation}
 \langle\psi_\text{HOMO}\vert\hat{\Omega}\vert\psi_\text{LUMO}\rangle =\sum_{i,A}\sum_{j,B}c_{iA}^{*}c_{jB}\langle\psi_{iA}\vert\hat{\Omega}\vert\psi_{jB}\rangle +(\textrm{polarization}).
 \end{equation}
 We find that the HOMO-LUMO gradient elements of the nuclear spin-dependent PNC operator (\ref{eq:hamiltonianPNC})
-are dominated by intra-atomic contributions from the selected Se center, in particular the Se 4$p_{1/2}$
+are dominated by intra-atomic contributions ($A=B$ above) from the selected Se center, in particular the Se 4$p_{1/2}$
 atomic orbitals coupling with Se 4$s_{1/2}$ and inner Se $s_{1/2}$ atomic orbitals. The atomic character of the gradient
 elements can be rationalized from the presence of the nuclear charge density $\rho_\text{Se}$ in the operator
 which restricts integration to a small volume around the selected Se center.
@@ -198,8 +190,7 @@ Se centers. Note, however, that gradient elements coupling occupied positive-ene
 virtual negative-energy solutions will have a completely different character since the 'small' components
 of negative-energy solutions are in fact large and delocalized.
 
-\newpage
-\par Analyzing the values given in Tab. \ref{ang45} we state that our L\'evy-Leblond results are in excellent agreement with the NR results reported by Laubender and Berger [\cite{berger2003chemphyschem}]. The L\'evy-Leblond PNC contributions are throughout largest in magnitude for the even-tempered basis-sets and larger than the best (modified 5Z) basis-sets used in Ref. \cite{berger2003chemphyschem} (results not shown here). For the NR treatment of H$_2{^{77}}$Se$_2$ we have furthermore examined the difference between a point-charge model and a Gaussian model for the nucleus (Tab. \ref{varang}). The difference is less than 1\%. 
+\par Analyzing the values given in Tab. \ref{ang45} we state that our L\'evy-Leblond results are in excellent agreement with the NR results reported by Laubender and Berger [\cite{berger2003chemphyschem}], except that the latter authors have consistently the wrong sign in their results [\cite{bergercomm}]. The L\'evy-Leblond PNC contributions are throughout largest in magnitude for the even-tempered basis-sets and larger than the best (modified 5Z) basis-sets used in Ref. \cite{berger2003chemphyschem} (results not shown here). For the NR treatment of H$_2{^{77}}$Se$_2$ we have furthermore examined the difference between a point-charge model and a Gaussian model for the nucleus (Tab. \ref{varang}). The difference is less than 1\%. 
 \par Tab. \ref{varang} shows results for the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, and $^{209}$Po in H$_2$X$_2$ for various dihedral angles. Only the results for the even-tempered basis-sets are given. The PNC NMR shielding constant is bound to be zero at the dihedral angles 0 $^\circ$ and 180 $^\circ$ due to mirror symmetry. The sinusoidal trait for the dihedral angles between 0 and 180 $^\circ$ is typical and well known also for PNC energy differences or optical rotation. The zero-crossing is usually found near 90 $^\circ$. 
 
 
@@ -213,10 +204,7 @@ treatment. For $^{77}$Se, $^{125}$Te, and $^{209}$Po a relativistic treatment ev
 of the PNC NMR shielding constant at several dihedral angles, as seen in Tab. \ref{varang}. 
 More insight can be gained by looking at 
 the individual diagonal components of the PNC NMR shielding tensor, as shown for H$_2{^{77}}$Se$_2$ for the
-dihedral angle of 45\textsuperscript{o} in Tab. \ref{parcomp}.
-
-\newpage
-\noindent For all Hamiltonians the $xx$- and $zz$-components
+dihedral angle of 45\textsuperscript{o} in Tab. \ref{parcomp}. For all Hamiltonians the $xx$- and $zz$-components
 have opposite sign. The smaller $yy$-component changes sign upon inclusion of spin-orbit interaction,
 but scalar relativistic effects are non-negligible as well.
 \par In Fig. \ref{cvar} we trace the PNC NMR shielding constant $\sigma^\text{pnc}$, as well 
@@ -236,8 +224,8 @@ PNC contributions to the reduced (isotropic) NMR shielding constants
 $\gamma_A\sigma_A^\text{pnc}$ for the different nuclei. Our values confirm the NR $Z$-scaling law 2-3 
 (here: 2.4) observed by Laubender and Berger [\cite{berger2003chemphyschem}], but the NR
 contribution is soon overtaken by the scalar relativistic contribution scaling as $Z^{4.7}$. For the heavier
-elements the PNC NMR shielding constants are however completely dominated by the large and negative 
-spin-orbit contribution which scales better than $Z^6$.
+elements the PNC NMR shielding constants are however completely dominated by the large 
+spin-orbit contribution, of opposite sign, which scales better than $Z^6$.
 % Comparing DC, SF and LL results we identify spin-orbit effects (difference between DC and SF) as dominating for H$_2{^{77}}$Se$_2$, H$_2{^{125}}$Te$_2$, and H$_2{^{209}}$Po$_2$ and opposite to scalar relativistic effects (SR, difference between SF and LL). To illustrate the contributions due to scalar relativistic effects and due to spin-orbit coupling (SO) Table \ref{redpar} shows the PNC contributions to a $\gamma_A$-isolated (isotropic) NMR shielding constants $\gamma_A\sigma_A^\text{pnc} = \gamma_A(\sigma_{A,xx}^\text{pnc}+\sigma_{A,yy}^\text{pnc}+\sigma_{A,zz}^\text{pnc})/3$ for the different nuclei. The opposing effects of scalar relativity and spin-orbit coupling can be clearly seen. In the case of H$_2{^{33}}$S$_2$ these effects almost cancel. This is not true for the heavier homologues where their sum surpasses the NR value and becomes qualitatively significant. Based on these values we confirm the NR $Z$-scaling law 2-3 (here: 2.4) observed by Laubender and Berger [\cite{berger2003chemphyschem}]. This becomes however rapidly quenched by the pronounced scaling due to relativistic effects (4.7 for SR and 6.??? for SO in the opposite direction).
 
 
@@ -245,9 +233,10 @@ spin-orbit contribution which scales better than $Z^6$.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{CONCLUSION}
 
-\noindent We have studied the importance of relativistic effects on the calculation of the PNC contribution to the (isotropic) NMR shielding constants for the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, and $^{209}$Po in H$_2$X$_2$ at the Hartree-Fock level. Comparing the results obtained within the Dirac-Coulomb formalism and approximate frameworks with either spin-orbit effects or all relativistic effects eliminated it has been observed that spin-orbit effects are substantial even for a qualitative treatment already for H$_2{^{77}}$Se$_2$ causing a sign change of the PNC contribution. This dramatic difference will be subject of a detailed analysis in a forthcoming paper where also correlation effects will be addressed.
+\noindent We have studied the importance of relativistic effects on the calculation of the PNC contribution to the (isotropic) NMR shielding constants for the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, and $^{209}$Po in H$_2$X$_2$ at the Hartree-Fock level. Comparing the results obtained within the Dirac-Coulomb formalism and approximate frameworks with either spin-orbit effects or all relativistic effects eliminated it has been observed that spin-orbit effects are substantial even for a qualitative treatment already for H$_2{^{77}}$Se$_2$ causing a sign change of the PNC contribution. This dramatic difference will be subject of a detailed analysis in a forthcoming paper where also correlation effects will be addressed. One may also consider the extension of the Dirac-Coulomb Hamiltonian by the Gaunt or Breit, thus introducing spin-other
+orbit coupling which may dampen the spin-orbit effect.
 
-\par We have shown that the relativistic enhancement factor [REF] scales
+\par We have shown that the relativistic enhancement factor [\cite{bouchiatPL1974,bouchiatJP1974}] scales
 approximately as $Z^2$ or higher, hence the overall $Z$-scaling is much higher than
 previously anticipated. This scaling raises the hope for detecting parity violation
 effects in NMR properties of chiral molecules including heavy elements.
@@ -270,7 +259,7 @@ Nationale de la Recherche (ANR), France.
 \bibliographystyle{aip}
 \bibliography{pncnmr}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{table}[h]
+\begin{table}[h!]
   \begin{center}
     \caption{
     \label{ang45}
@@ -334,7 +323,7 @@ PC denotes a point-charge model for the nucleus.
   \end{center}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[h!]
   \begin{center}
     \caption{
     \label{Sebas}
@@ -368,7 +357,7 @@ The basis-set 1-25.2-26.15-25.20-24 has been chosen for further calculations.
   \end{center}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[h!]
   \begin{center}
     \caption{
     \label{varang}
@@ -507,7 +496,7 @@ and 1-25.2-26.12-25.15-24 for Po.
 \end{table}
 
 
-\begin{table}[h]
+\begin{table}[h!]
   \begin{center}
     \caption{
     \label{parcomp}
@@ -543,14 +532,14 @@ PC denotes a point-charge model for the nucleus.
   \end{center}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[h!]
   \begin{center}
     \caption{
     \label{redpar}
     \emph{
 Reduced PNC NMR shielding constants
 $\gamma_A\sigma_A^\text{pnc} = \gamma_A(\sigma_{A,xx}^\text{pnc}+\sigma_{A,yy}^\text{pnc}+\sigma_{A,zz}^\text{pnc})/3$
-(in ppm ????????????)
+(in 10$^{-6}$ a.u.)
 of the nuclei X = $^{17}$O, $^{33}$S, $^{77}$Se, $^{125}$Te, $^{209}$Po
 in the P-enantiomers of H$_2$X$_2$
 for the dihedral angle of 45 \textsuperscript{o}.
@@ -580,9 +569,11 @@ SO the effect of spin-orbit coupling (DC-SF).
     \end{tabular}
   \end{center}
 \end{table}
-
-\begin{figure}
-  \centering\epsfig{figure=cvalue.eps,width=\linewidth}
+\clearpage
+\newpage
+\noindent \textbf{FIGURE CAPTIONS}
+\begin{figure}[h!]
+%\centering\epsfig{figure=cvalue.eps,width=\linewidth}
     \caption{
     \label{cvar}
     \emph{
@@ -600,5 +591,12 @@ The vertical dashed line represents the true speed of light $c_0 \approx$ 137 a.
 the horizontal dashed line shows the non-relativistic limit (-1.993$\times 10^{-7}$ ppm).
     }}
 \end{figure}
+\newpage
+\noindent
+\begin{center}
+\centering\epsfig{figure=cvalue.eps,width=\linewidth}
+\end{center}
+\vspace{6cm}
+Figure 1, R. Bast et al. , Journal of Chemical Physics
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \end{document}
