@@ -1909,18 +1909,31 @@ cbs   read the MO coefficients
 CMI ======================================================
       write(LUPRI,*) 'orbitals to be read from fort.7' 
       write(LUPRI,*) 'lhigh = ',lhigh   
+
       do lrun=0,lhigh
-      write(LUPRI,*) 'lrun = ',lrun     
+
+      write(LUPRI,*) 'lrun = ',lrun,
+     & ' nprimit=',nprimit(lrun),' nocc=',noccorb(lrun)
+     
       if (noccorb(lrun).gt.0) then
-       read(7,*) itest1,itest2 
+
+      read(7,*) itest1,itest2 
+
       if (itest1.ne.nprimit(lrun)) stop 'fuck 1' 
       if (itest2.ne.noccorb(lrun)) stop 'fuck 2' 
+
       do irun=1,nprimit(lrun)
-       read(7,*) (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun)) 
+
+CMI    write(lupri,*) '...reading for irun=',irun,'/',nprimit(lrun)
+
+       read(7,*) (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun))
        WRITE(LUPRI,*) (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun)) 
       enddo   
+
       endif   
+
       enddo   
+
       close(7)
       write(LUPRI,*) '-- orbitals read from fort.7' 
       do lrun=0,lhigh

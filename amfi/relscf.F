@@ -3620,7 +3620,9 @@ CBS   Here, the optimized contration coeffs are written
         K=K+NTSHL
       END DO
       close(7)
- 5033 FORMAT(8(F9.6,1X))
+C5033 FORMAT(8(F9.6,1X))
+CMI ... increase format, because some MO coefficients might by .gt. abs(10)
+ 5033 FORMAT(8(F11.6,1X))
 
       IF(NPOEFA.EQ.0) GO TO 101
 C     PUNCH ZETA OR CONTRACTION COEFFICIENTS
