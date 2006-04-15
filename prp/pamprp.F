@@ -6009,9 +6009,14 @@ C
       CALL JACO(PVAL2,DUMMY,3,3,0,WRK,IWRK)
       DIAMAG = -(PVAL1(1) + PVAL1(3) + PVAL1(6))/D3
       PARAMA = -(PVAL2(1) + PVAL2(3) + PVAL2(6))/D3
+
       WRITE (LUPRI,'(2(/1X,A))')
      &      ' Units:  JT**(-2)/(10**(-30))   (SI) ',
      &      '         ppm cm**(3) mol**(-1)  (cgs)'
+
+      write(lupri,'(4X,A,F22.14,A)') '1 au=',CGS,' (cgs).'
+      write(lupri,'(4X,A,F22.14,A/)') '1 au=',SI*1.0D31,' (SI)'
+
       IF (.NOT.LONDON) THEN
          WRITE (LUPRI,'(/,1X,A)')
      &  ' Calculations without London atomic orbitals.'
