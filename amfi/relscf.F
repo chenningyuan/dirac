@@ -3333,7 +3333,8 @@ C     ORBITALS (CLOSED PLUS OPEN)
 C     TO INCREASE DIMENSIONS CHANGE STATEMENTS ENCLOSED BY
 C     C##DIM ... C##
 C
-      PARAMETER (MAINST=1500000)
+CMI   PARAMETER (MAINST=1500000)
+      PARAMETER (MAINST=2400000)
 #include <implicit.h>
 #include <priunit.h>
 
@@ -5121,7 +5122,8 @@ C.......................................................................
                         if(ipq.gt.ndimpq) then
                            WRITE(LUPRI,*)
      &                          'relscf/TEIG: ipq, ndimpq:',ipq, ndimpq
-                           CALL QUIT('relscf/TEIG: ipq too large !')
+                           CALL QUIT(
+     & 'relscf/TEIG: ipq too large ! enlarge ndimpq!')
                         endif
 
  440                    CONTINUE
