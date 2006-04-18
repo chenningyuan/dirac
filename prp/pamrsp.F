@@ -1001,6 +1001,7 @@ C        and metric.
 C
       IF(DIAGHE) CALL E2DIAG(HEDIAG,HPDIAG,HCDIAG,SEDIAG,SPDIAG,
      &                       WORK,KFREE,LFREE)
+
 C
 C
 C

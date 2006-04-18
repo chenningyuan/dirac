@@ -3437,7 +3437,7 @@ C
       NDIM = NTSIM
       IF (NASHT .GT. 0) NDIM = NDIM + NOSIM
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      IF(SPINFR.OR.LEVYLE) THEN
+      IF(SPINFR) THEN
         CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
       ELSE
         KBEIG = KFREE
@@ -3463,7 +3463,7 @@ C
          END IF
          LUBUF = 1
          CALL OPNFIL(LUBUF,'DFCOEF','OLD','GMOLI1')
-         IF(SPINFR.OR.LEVYLE) THEN
+         IF(SPINFR) THEN
            IOPT = 10
          ELSE
            IOPT = 2
@@ -3479,7 +3479,7 @@ C        We are doing a KRMCSCF opt. Read orbitals from KRMCSCF
 C
          JRDMO = 1
          CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
-         IF(SPINFR.OR.LEVYLE) 
+         IF(SPINFR) 
      &     CALL QUIT('GMOLITX: IBEIG must be passed...')
 #endif /* MOD_KRMC */
       ENDIF

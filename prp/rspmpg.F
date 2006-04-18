@@ -707,7 +707,7 @@ C
       call memget('REAL',kcmo,ncmotq,work,kfree,lfree)
       lubuf=22
       call opnfil(lubuf,'DFCOEF','OLD','GETLRF')
-      IF(SPINFR.OR.LEVYLE) THEN
+      IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
      &              TOTERG,11,WORK,KFREE,LFREE)

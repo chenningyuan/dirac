@@ -377,10 +377,8 @@ C
 #include "dcbxpr.h"
 #include "dcbxlr.h"
 #include "dummy.h"
-
-      PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0, DM1 = -1.0D0, 
-     &          DM2 = - 2.0D0)
-
+      PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0)
+      PARAMETER(DM1 = -1.0D0,DM2 = - 2.0D0)
       DIMENSION W(NORBT,NORBT,NZ,3), ! Array for {T,h(mK)}_ic product
      &         CONMAT(NORBT,NORBT,NZ), ! Array for h(mK) property matrix
      &         DMAT(NORBT,NORBT,NZ),  ! Density matrix
@@ -397,7 +395,7 @@ C  ...array for MO coefficients
 C boson irreps identification (read with MO coeff.)
       CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETCON')
-      IF (SPINFR.OR.LEVYLE) THEN
+      IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
      &            TOTERG,IOPT,WORK,KFREE,LFREE)
@@ -1383,7 +1381,7 @@ C***********************************************************************
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ONELON')
 C ... distinguish between spin-free (boson symm.) mode
 C     and the full relativistic (fermion symm.) mode
-      IF (SPINFR.OR.LEVYLE) THEN
+      IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident. 
        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,
      &            TOTERG,IOPT,WORK,KFREE,LFREE)
@@ -1529,7 +1527,6 @@ C  DMAT_{ab} = Sum_{i,o}[ c_{ao} T_{oi} c_{bi}^* ] ... C T(oi) C^+
 C
         IF (EPMIX) THEN ! Run 'o' over both (p+e) shell
           IF (NOCC(I2).GT.0.AND.NORB(I1).GT.0) THEN
-
          CALL QTRANS(
      &    'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
      &                  NORB(I1),NOCC(I2),
@@ -1542,12 +1539,9 @@ C
      &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1), ! C(i,b)
      &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &     WORK(KFREE),LFREE,IPRINT)
-
          ENDIF
         ELSE ! Run o only over electronic states
-
         IF (NOCC(I2).GT.0.AND.NESH(I1).GT.0) THEN
-
       IF (IPRINT.GE.10) THEN
         CALL HEADER(
      &'GETMDM: Before QTRANS whole modified density matrix',-1)
@@ -1558,16 +1552,13 @@ C
         ENDIF
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-
         CALL HEADER(
      &'GETMDM: Before QTRANS BLOCK modified density matrix',-1)
         Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
         CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
      &              NFBAS(I2,0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-
           ENDIF
-
          CALL QTRANS(
      &    'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
      &       NESH(I1),NOCC(I2),
@@ -1580,7 +1571,6 @@ C
      &    CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
      &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &    WORK(KFREE),LFREE,IPRINT)
-
       IF (IPRINT.GE.10) THEN
         CALL HEADER(
      &'GETMDM: Actual WHOLE modified density matrix',-1)
@@ -1591,20 +1581,16 @@ C
         ENDIF
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-
          CALL HEADER(
      &'GETMDM: After QTRANS BLOCK modified density matrix',-1)
          Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
          CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
      &              NFBAS(I2,0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-
           ENDIF
-
           ENDIF
         ENDIF
       ENDDO
-
       IF (IPRINT.GE.6) THEN
         CALL HEADER(
      &'GETMDM: NON-HERMITIAN modified density matrix',-1)
@@ -1628,7 +1614,6 @@ C    =========================================================
       ENDDO
 C  ... in gp/gpsaue.F
       CALL QGETAM(DMAT,NTBAS(0),NZ,NTBAS(0),NTBAS(0),IQSYM)
-
       IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &'GETMDM: Total SYMMETRIZED modified density matrix',-1)
@@ -1641,11 +1626,9 @@ C  ... in gp/gpsaue.F
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
       ENDIF
-
       CALL QEXIT('GETMDM')
       RETURN
       END
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rsklond */
       SUBROUTINE RSKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,
@@ -2195,7 +2178,7 @@ C get MO coefficients and boson irreps info
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXVSUSLO')
 C ... distinguish between spin-free (boson symm.) mode
 C     and the full relativistic (fermion symm.) mode
-      IF (SPINFR.OR.LEVYLE) THEN
+      IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
      &            TOTERG,IOPT,WORK,KFREE,LFREE)
@@ -2672,7 +2655,6 @@ C     otherwise use MULTD2H
 C ...it's based on order of irreps in DALTON (invented by J.Almlof,1970)
 C       so logical function XOR works nice...
          IREP12 = IBTXOR(IREP1,IREP2) ! Direct product of two boson irreps
-
          CALL QGEMM(NORBT,NORBT,NORBT,D1, ! 
      &    'N','N',IPQTOQ(1,IREP1),
      &     WORK(KSMAT),NORBT,NORBT,NZ,
