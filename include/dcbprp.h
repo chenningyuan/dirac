@@ -47,13 +47,13 @@
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &
      &        IPNSTDIA(MXCOOR*3), NNSTIN, IPESR(MXCOOR+3, 2), NPRPWF,   &
-     &        IPROTG(2,3),IPMSUSC(2,3),                                 &
+     &        IPROTG(2,3),IPMSUSC(2,3),IMAGOUT,                         &
      &        IPCON21(3),IPCON22(3),IPCON23(6),                         &
      &        IPLONDON(4,3),IPCON(3),IPRNST(MXCOOR*3),                  &
      &        IPPVCSHI(MXCOOR+3), IPPVCSPNSPN(2,MXCOOR)
       COMMON /CBIPRP/ IPRPRP, IPEPOLAR, IPSPNSPN, IPDSO, NDSOIN,        &
      &                IPSHIELD, IPNSTDIA, NNSTIN, IPESR, NPRPWF,        &
-     &                         IPROTG,IPMSUSC,                          &
+     &                         IPROTG,IPMSUSC,IMAGOUT,                  &
      &                IPCON21,IPCON22,IPCON23,                          &
      &                IPLONDON,IPCON,IPRNST,                            &
      &                IPPVCSHI, IPPVCSPNSPN

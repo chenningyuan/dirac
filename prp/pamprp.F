@@ -4756,58 +4756,7 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck DEF_MSUSCP */
-      SUBROUTINE DEF_MSUSCPX(WORK,LWORK)   
-C***********************************************************************
-C
-C     Define operators for magnetizabilities
-C
-C     T. Saue Jan 20 2004
-CMI discarded, because we have a new DEF_MSUSCP routine that
-C   handles also London orbitals
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbgen.h"
-#include "dcbxlr.h"
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(2)
-C
-      PFAC(1)  = -0.5D0*CVAL
-      PFAC(2)  = -0.5D0*CVAL
-      NPCOMP = 2
-C X component of B-field
-      PNAME     = 'MAGFLDX1'
-      IPTYP     = 5
-      PLABEL(1) = 'ZDIPLEN'
-      PLABEL(2) = 'YDIPLEN'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XMAGNA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
-      CALL OP1IND('XMAGNB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
-C Y component of B-field
-      PNAME     = 'MAGFLDY2'
-      IPTYP     = 6
-      PLABEL(1) = 'XDIPLEN'
-      PLABEL(2) = 'ZDIPLEN'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('YMAGNA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
-      CALL OP1IND('YMAGNB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
-C Z component of B-field
-      PNAME     = 'MAGFLDZ3'
-      IPTYP     = 7
-      PLABEL(1) = 'YDIPLEN'
-      PLABEL(2) = 'XDIPLEN'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('ZMAGNA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
-      CALL OP1IND('ZMAGNB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
-C
-      RETURN
-      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_NSTDIA */
       SUBROUTINE DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
@@ -4954,6 +4903,7 @@ C   Define operators for calculating the magnetic susceptibility
 C   both for response part and the expectation value (& diamagnetic) terms.
 C
 C   Written by MI, jan.2003 (based on old TEC's routines)
+C   Last modifications: MI, April 2006 (for IMAGOUT)
 C
 C****************************************************************************
 #include "implicit.h"
@@ -4988,7 +4938,19 @@ C
           WRITE(LUPRI,'(1X,A)')
      &  '- with conventional atomic orbitals (CGO)'
        ENDIF
-        CALL PRSYMB(LUPRI,'=',75,0)
+       CALL PRSYMB(LUPRI,'=',75,0)
+
+       IF (IMAGOUT.NE.0) THEN
+         IF (IMAGOUT.NE.1.AND.IMAGOUT.NE.2.AND.IMAGOUT.NE.3) THEN
+          WRITE(LUPRI,*)
+     &    '...IMAGOUT=',IMAGOUT,' must be 1/2/3, set to 0'
+          IMAGOUT=0
+         ELSE
+          WRITE(LUPRI,*)
+     &    '...hard setting of the output for magnetizabilities'//
+     &    '...IMAGOUT=',IMAGOUT
+         ENDIF
+       ENDIF
 C
 C  ** Split for conventional and London orbitals
 C
@@ -5672,6 +5634,7 @@ C    It is modelled after TEC's routines
 C    and after the dalton routine 'abacus/abadrv.F/SUSRES' 
 C    
 C    Written by MI, jan. 2003
+C    Last modifications: MI, April 2006     
 C     
 C***********************************************************************
 #include "implicit.h"
@@ -5694,7 +5657,7 @@ C***********************************************************************
 
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &     ABCNV(NBFREQ,NLRBPT),WORK(*)
-      LOGICAL D12, D23
+      LOGICAL D12, D23, MAGOUT1,MAGOUT2,MAGOUT3
       DIMENSION WRK(3), IWRK(3), AXES(3,3), PVAL(6),PVAL1(6),
      &         PVAL2(6),DIASUSC(3,3),PARSUS(3,3)
       DIMENSION SUSREL_EP(3,3,2),SUSDIA_EX(3,3)
@@ -6002,8 +5965,41 @@ C
       PVAL(2) = -PVAL(3)
       PVAL(3) = -PVAL(6)
       CALL ORDER2(AXES,PVAL,3,3)
-      D12 = (ABS(PVAL(1)-PVAL(2)) .LT. THRESHM)
-      D23 = (ABS(PVAL(2)-PVAL(3)) .LT. THRESHM)
+
+      D12DIFF = ABS(PVAL(1)-PVAL(2))
+      D23DIFF = ABS(PVAL(2)-PVAL(3))
+   
+      D12 = (D12DIFF .LT. THRESHM)
+      D23 = (D23DIFF .LT. THRESHM)
+
+      MAGOUT1 = .FALSE.
+      MAGOUT2 = .FALSE.
+      MAGOUT3 = .FALSE.
+      IF (IMAGOUT.EQ.0) THEN
+       MAGOUT1 = D12. AND. D23
+       MAGOUT2 = D12. OR.  D23
+       MAGOUT3 = .TRUE.
+      ELSE
+       write(lupri,*)
+C      write(lupri,*)
+C    & '....forced output, D12DIFF,D23DIFF,THRESHM:',
+C    &  D12DIFF,D23DIFF,THRESHM
+
+       IF (D12.AND.D23) THEN
+         write(lupri,'(3X,A)')
+     &   'forced output, otherwise would be magnetizability output 1'
+       ELSE IF (D12. OR.  D23) THEN
+         write(lupri,'(3X,A)')
+     &   'forced output, otherwise would be magnetizability output 2'
+       ELSE
+         write(lupri,'(3X,A)')
+     &   'forced output, otherwise would be magnetizability output 3'
+       ENDIF
+
+       IF (IMAGOUT.EQ.1) MAGOUT1 = .TRUE.
+       IF (IMAGOUT.EQ.2) MAGOUT2 = .TRUE.
+       IF (IMAGOUT.EQ.3) MAGOUT3 = .TRUE.
+      ENDIF
 C
       CALL JACO(PVAL1,DUMMY,3,3,0,WRK,IWRK)
       CALL JACO(PVAL2,DUMMY,3,3,0,WRK,IWRK)
@@ -6014,18 +6010,23 @@ C
      &      ' Units:  JT**(-2)/(10**(-30))   (SI) ',
      &      '         ppm cm**(3) mol**(-1)  (cgs)'
 
-      write(lupri,'(4X,A,F22.14,A)') '1 au=',CGS,' (cgs).'
-      write(lupri,'(4X,A,F22.14,A/)') '1 au=',SI*1.0D31,' (SI)'
+      write(lupri,'(/4X,A,F18.14,A)') '1 au=',CGS,' (cgs).'
+      write(lupri,'(4X,A,F18.14,A)') '1 au=',SI*1.0D31,' (SI)'
 
       IF (.NOT.LONDON) THEN
          WRITE (LUPRI,'(/,1X,A)')
      &  ' Calculations without London atomic orbitals.'
       ELSE
          WRITE (LUPRI,'(/,1X,A)')
-     &  ' London atomic orbitals used.'
+     &  ' London atomic orbitals used in calculations.'
       END IF
-      IF (D12 .AND. D23) THEN
+
+CMI   ... we have theree defferent types of output !!!
+CMI  =========================================================
+CMI   IF (D12 .AND. D23) THEN
+      IF (MAGOUT1) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
+         write(lupri,'(3X,A)') '...magnetizability output 1...'
          WRITE (LUPRI,'(3(/,1X,A,3(F12.4,A)))')
      &      ' Magnetizability:           ',    AVE,' (au), ',
      &        SI*AVE*1.0D31,' (SI), ', CGS*AVE,' (cgs)',
@@ -6034,7 +6035,8 @@ C
      &      ' Paramagnetic contribution: ',PARAMA,' (au), ',
      &        SI*PARAMA*1.0D31,' (SI), ',CGS*PARAMA,' (cgs)'
          WRITE (LUPRI,'(/,1X,A)') ' Magnetizability is spherical.'
-      ELSE IF (D12 .OR. D23) THEN
+CMI   ELSE IF (D12 .OR. D23) THEN
+      ELSE IF (MAGOUT2) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
          IF (D12) THEN
             PAR = PVAL(3)
@@ -6046,6 +6048,7 @@ C
          ANI = PAR - PER
          CALL HEADER('Magnetizabilities           '
      &             //'         au          SI         cgs',1)
+         write(lupri,'(3X,A)') '...magnetizability output 2...'
          WRITE (LUPRI,'(6(1X,A,3F12.4,/))')
      &      ' Isotropic magnetizability: ',AVE,SI*AVE*1.0D31,CGS*AVE,
      &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
@@ -6062,7 +6065,8 @@ C
      &         ABC(I),PVAL(I),SI*PVAL(I)*1.0D31,CGS*PVAL(I),
      &         (AXES(IPTAX(J,2),I),J=1,3)
  700     CONTINUE
-      ELSE
+CMI   ELSE
+      ELSE IF (MAGOUT3) THEN
          CALL DSWAP(1,PVAL(2),1,PVAL(1),1)
          CALL DSWAP(3,AXES(1,2),1,AXES(1,1),1)
          AVE  = (PVAL(1) + PVAL(2) + PVAL(3))/D3
@@ -6070,6 +6074,7 @@ C
          ANI2 = PVAL(2) - (PVAL(1) + PVAL(3))/D2
          CALL HEADER('Magnetizabilities           '
      &             //'         au          SI         cgs',1)
+         write(lupri,'(3X,A)') '...magnetizability output 3...'
          WRITE (LUPRI,'(5(1X,A,3F12.4,/))')
      &      ' Isotropic magnetizability: ',AVE, SI*AVE*1.0D31, CGS*AVE,
      &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
@@ -6084,6 +6089,9 @@ C
      &         ABC(I),PVAL(I),SI*PVAL(I)*1.0D31,CGS*PVAL(I),
      &         (AXES(IPTAX(J,2),I),J=1,3)
  800     CONTINUE
+      ELSE
+C      call quit('PRP_MSUSCP: blind branch of the output !!!')
+       write(lupri,*) 'PRP_MSUSCP: blind branch of the output !!!'
       END IF
 C
       CALL HEADER('Total magnetizability tensor (au)',-1)

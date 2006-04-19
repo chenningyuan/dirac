@@ -57,7 +57,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 8, NTABLE = 32)
+      PARAMETER (NDIR = 8, NTABLE = 36)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -78,7 +78,8 @@ C
      &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
      &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
-     &             '.NOPCTR','.EXCDIP','.XXXXXX','.XXXXXX' /
+     &             '.NOPCTR','.EXCDIP','.MAGOUT','.XXXXXX', 
+     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -102,6 +103,7 @@ C
       QUADRU    = .FALSE.
       EPOLAR    = .FALSE.
       MSUSCP    = .FALSE.
+      IMAGOUT   = 0
       SHIELD    = .FALSE.
       PVCSHI    = .FALSE.
       PVCSPNSPN = .FALSE.
@@ -185,7 +187,8 @@ C
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
      &                117,118,119,120,121,122,123,124,
-     &                125,126,127,128,129,130,131,132), I
+     &                125,126,127,128,129,130,131,132,
+     &                133,134,135,136), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -368,9 +371,22 @@ C&&&& .EXCDIP - Calculates excited state expectation values of dipole op.
 #endif
             GO TO 100
   131    CONTINUE 
-C&&&& XXXXXX
+C&&&& .MAGOUT - specify the hard-output for the magnetizability
+            READ(LUCMD,*) IMAGOUT
             GO TO 100
   132    CONTINUE 
+C&&&& XXXXXX
+            GO TO 100
+  133    CONTINUE 
+C&&&& XXXXXX
+            GO TO 100
+  134    CONTINUE 
+C&&&& XXXXXX
+            GO TO 100
+  135    CONTINUE 
+C&&&& XXXXXX
+            GO TO 100
+  136    CONTINUE 
 C&&&& XXXXXX
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
