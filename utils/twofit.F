@@ -63,7 +63,7 @@ C
       PARAMETER(MDIM=MORDER+1)
       DIMENSION A(MP,MDIM),B(MP),C(MDIM),D(MDIM)
       DIMENSION X(MP),Y(MP),P(MP,MXPRP)
-      CHARACTER POTFIL*6,RESFIL*10,REPLY*1
+      CHARACTER POTFIL*16,RESFIL*20,REPLY*1
 C
 C     Heading
 C
@@ -81,12 +81,12 @@ C
       READ(LUCMD,*) I
       IF(I.EQ.1) THEN
         WRITE(LUPRI,'(A)') 
-     &    'Name input file with potential curve (A6)'
+     &    'Name input file with potential curve (A16)'
         READ(LUCMD,'(A)') POTFIL
         NPRP = 0
       ELSEIF(I.EQ.2) THEN
         WRITE(LUPRI,'(A)') 
-     &    'Name input file with potential/property curve (A6)'
+     &    'Name input file with potential/property curve (A16)'
         READ(LUCMD,'(A)') POTFIL
         WRITE(LUPRI,'(A)') 
      &    'Give number of property curves'
@@ -103,9 +103,10 @@ C
       WRITE(LUPRI,'(A)') 
      &  'Note that bond lengths should be given in Angstroms',
      &  ' and all other quantities in atomic units !'
+      i=LNBLNK(POTFIL)
+      RESFIL = POTFIL(1:i)//'.res'
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=20)
-      RESFIL = POTFIL//'.res'
       OPEN(ILOGG,FILE=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL')
       GOTO 30
