@@ -39,6 +39,10 @@
  *  Vrije Universiteit Amsterdam
  *  
  *  May 2003
+ *  
+ *  Last modifications: Miro Ilias, April 2006  
+ *  
+ *  
  */
 
 #include <stdio.h>
@@ -96,12 +100,13 @@ typedef char LINE[132];
 
 typedef struct
 {
-    char name[20];                                              /* Every basis has a name */
-    BASIS_TYPE type ;                                           /* Type of basis set */
-    CONTRACTION contraction;                                    /* Type of contraction */
-    LINE documentation[MAX_DOCUMENTATION];                      /* Documentation */
-    LINE reference[MAX_REFERENCE];                              /* Literature references */
-    int number_of_atoms;                                        /* Number of elements for which this basis set is defined */
+    char name[20];                              /* Every basis has a name - it's output file name */
+    char input_filename[20];                    /* Input file name - this file is to be read */
+    BASIS_TYPE type ;                           /* Type of basis set */
+    CONTRACTION contraction;                    /* Type of contraction */
+    LINE documentation[MAX_DOCUMENTATION];      /* Documentation */
+    LINE reference[MAX_REFERENCE];              /* Literature references */
+    int number_of_atoms;                        /* Number of elements for which this basis set is defined */
 }   BASIS;
 
 /* The information for each atom is stored in the struct ATOOM
@@ -128,7 +133,7 @@ typedef struct
 
 /* Function prototypes */
 
-int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[]);
+int read_dyall_stuff (BASIS *basis_set, ATOOM atoms[]);
 int read_dyall_atom (FILE *file, ATOOM *atom);
 int read_dyall_additional (FILE *file, ATOOM *atom, int l_max, int l_skip, int n_extra[]);
 void read_block (FILE *file, int n_exp, int n_orbs, double *exponent, double *coefficient);
@@ -143,15 +148,45 @@ void combine_blocks (ATOOM *atom);
 
 /* ============================================================================================================== */
 
-int main(void)
+//int main(void)
+int main(int argc,char *argv[])
 {
     int ierr = 0;
     BASIS basis_set;
     ATOOM atoms[MAX_ATOMS];
+
+    /* Process the arguments  */
+
+    if (argc == 1) 
+    {
+     printf("Usage: <this_program_exe> <basis_filename_input> (<basis_filename_output_for_DIRAC>)\n");
+     printf("One or two arguments must be given ! Error exit !\n");
+     exit(-1);
+    }
+    else if (argc == 2)
+    {
+     strcpy(basis_set.input_filename , argv[1]); 
+     printf("The one entering argument is the file name to be read: %s\n",basis_set.input_filename);
+     strcpy(basis_set.name,basis_set.input_filename);
+     strcat(basis_set.name,".processed");
+     printf("The output file to be produced is: %s\n",basis_set.name);
+    }
+    else if (argc == 3)
+    {
+     strcpy(basis_set.input_filename , argv[1]); 
+     printf("The first entering argument is the file name to be read : %s\n",basis_set.input_filename);
+     strcpy(basis_set.name,argv[2]);
+     printf("The second entering argument is the output file name : %s\n",basis_set.name);
+    }
+    else
+    {
+     printf("Only 2 arguments are allowed !\n");
+     exit(12);
+    }
     
     /*set_element_name (element_name);*/
     
-    ierr = read_dyall_pVDZ (&basis_set, atoms);
+    ierr = read_dyall_stuff (&basis_set, atoms);
     
     write_dalton_style (basis_set, &atoms[0]);
     printf("Error code %i \n",ierr);
@@ -160,9 +195,9 @@ int main(void)
 }
 /* ============================================================================================================== */
 
-int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[])
+int read_dyall_stuff (BASIS *basis_set, ATOOM atoms[])
 
-/* Function to read the pVDZ basis from the archive file provided by K.G. Dyall 
+/* Function to read the basis from the archive file provided by K.G. Dyall 
    Return values :  0 - Normal completion
                     1 - Error while reading file
  */
@@ -174,12 +209,16 @@ int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[])
     int i, j, l, element;
     int l_max, n_extra[MAX_LVALUE+1];
     
-    /* Open the file */ 
-    dyall_file = fopen("Dyall.qz", "r");        
+    /* Open the file - the input file name is specified in the main routine */ 
+   //  dyall_file = fopen("Dyall.qz", "r");        
+    dyall_file = fopen(basis_set->input_filename, "r");        
+
     if (dyall_file == NULL) return 1;
     
     /* Initialize the fixed elements for this basis */
-    strcpy(basis_set->name,"Dyall.VQZ");
+    // it's already initialized in the main routine...
+    // strcpy(basis_set->name,"Dyall.VQZ");
+
     basis_set->type = non_family;
     basis_set->contraction = general;
     basis_set->number_of_atoms = 0; 
@@ -508,7 +547,6 @@ int end_of_section (LINE line, const char text[])
                     1 - End of section
  */
    
-
 {
     LINE target_line;
     
