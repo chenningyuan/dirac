@@ -56,7 +56,7 @@
 #define MAX_BLOCK   50          /* Maximum number of function blocks of a particular type   */
 #define MAX_EXPONENTS 200       /* Maximum number of different exponents                    */
 #define MAX_COEFFICIENTS 1500   /* Maximum number of different coefficients                 */
-#define MAX_ATOMS  40           /* Maximum number of atoms for a certain basis set type     */
+#define MAX_ATOMS  120           /* Maximum number of atoms for a certain basis set type     */
 
 #define DALTON_NUMBER_FORMAT "%5i%5i%5i\n"
 #define DALTON_EXPONENT_FORMAT "%16.9le"
@@ -160,7 +160,7 @@ int main(int argc,char *argv[])
     if (argc == 1) 
     {
      printf("Usage: <this_program_exe> <basis_filename_input> (<basis_filename_output_for_DIRAC>)\n");
-     printf("One or two arguments must be given ! Error exit !\n");
+     printf("One or two arguments must be given ! Error exit !\n\n");
      exit(-1);
     }
     else if (argc == 2)
@@ -169,19 +169,19 @@ int main(int argc,char *argv[])
      printf("The one entering argument is the file name to be read: %s\n",basis_set.input_filename);
      strcpy(basis_set.name,basis_set.input_filename);
      strcat(basis_set.name,".processed");
-     printf("The output file to be produced is: %s\n",basis_set.name);
+     printf("The output file to be produced is: %s\n\n",basis_set.name);
     }
     else if (argc == 3)
     {
      strcpy(basis_set.input_filename , argv[1]); 
      printf("The first entering argument is the file name to be read : %s\n",basis_set.input_filename);
      strcpy(basis_set.name,argv[2]);
-     printf("The second entering argument is the output file name : %s\n",basis_set.name);
+     printf("The second entering argument is the output file name : %s\n\n",basis_set.name);
     }
     else
     {
-     printf("Only 2 arguments are allowed !\n");
-     exit(12);
+     printf("Only 2 arguments are allowed !\n\n");
+     exit(-1);
     }
     
     /*set_element_name (element_name);*/
@@ -389,6 +389,7 @@ int read_dyall_atom (FILE *file, ATOOM *atom)
         {
             /* We found a block of exponents and coefficients,
                find out which one it is */
+
             fscanf(file,DYALL_NUMBER_FORMAT,
                    &component,&l,&lj,&n_exp,&n_orbs);
 	    if (l > l_max) l_max = l; 
