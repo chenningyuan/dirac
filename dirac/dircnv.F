@@ -308,7 +308,8 @@ C
       CALL QENTER('DIISER')
 C
 C
-      IF (DIISAO.OR.(NASHMFT.GT.0.AND.AOC)) THEN
+CMI   IF (DIISAO.OR.(NASHMFT.GT.0.AND.AOC)) THEN
+      IF (DIISAO.OR.(NASHMFT.GT.0.AND.AOC).OR.AUTOCC) THEN
 C
 C        The gradient is
 C           g = DCao * FDao + f_o DVao * (FDao + (a_o-1) QVao) + H.C.

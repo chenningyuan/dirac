@@ -598,7 +598,7 @@ C                 is generally not integrated
            TMP = DFTELS
            DFTELS = D1
 C          NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-           CALL DFTEXC(DMAT,DUM,FOCK,1,1,1,.TRUE.,.FALSE.,
+           CALL DFTEXC(DMAT,DUMMY,FOCK,1,1,1,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
            DFTELS = TMP
            TDXC = SECOND() - TDXC
@@ -818,7 +818,8 @@ C    ============
 C       FMO - MO-coefficients from current iteration
 C       EIG - eigenvalues
 C
-C     Input/output:
+C     Callef from: PREDHF
+C                  SCFCY1
 C
 C     Written by T.Saue Mar 09 1995
 C     Last revision: Mar 09 1995
@@ -827,6 +828,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -854,7 +856,9 @@ CMI   ... read AO2MO transformation matrixe into WORK(KTMAT)...
 CMI ... perform all this only if we do note restart BSS from DC or vice versa
       IF (.NOT.RESTFCK) THEN
 
-      DODIISAO = DIISAO.OR.(NASHMFT.GT.0.AND.AOC)
+CMI   DODIISAO = DIISAO.OR.(NASHMFT.GT.0.AND.AOC)
+      DODIISAO = DIISAO.OR.(NASHMFT.GT.0.AND.AOC).OR.AUTOCC
+
       IF (DODIISAO) THEN
         CALL MEMGET('REAL',KDTEMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDEVEC,N2BBASXQ      ,WORK,KFREE,LFREE)
@@ -883,9 +887,10 @@ C        NZT is the NZ value for the transformation matrix
      &              WORK(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),
      &              WORK(KFREE),LFREE)
       ELSE
+CMI .... can not be called for open-shell systems...
         KSAOMO = KFREE
-        CALL MKMOFK(FMO,FAO,DUM,WORK(KTMAT),DUM,
-     &              DUM,DUM,DUM,WORK(KFREE),LFREE)
+        CALL MKMOFK(FMO,FAO,DUMMY,WORK(KTMAT),DUMMY,
+     &              DUMMY,DUMMY,DUMMY,WORK(KFREE),LFREE)
       END IF
 
       END IF ! OF .NOT.RESTFCK
@@ -943,8 +948,8 @@ CMI ... here we get the DHFEXIT order...
         CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),WORK(KTMAT),
      &              BMAT,ICHKCNV,WORK(KSAOMO),WORK(KFREE),LFREE)
       ELSE
-        CALL DHFCNV(FMO,DUM,DUM,FAO,DMAT,DUM,BMAT,ICHKCNV,
-     &              DUM,WORK(KFREE),LFREE)
+        CALL DHFCNV(FMO,DUMMY,DUMMY,FAO,DMAT,DUMMY,BMAT,ICHKCNV,
+     &              DUMMY,WORK(KFREE),LFREE)
       ENDIF
 
       IF (DHFEXIT) THEN
@@ -953,11 +958,12 @@ C        ... extract diagonal FMO elements to EIG
          DO IFSYM = 1,NFSYM
 C        ... before extracting of EIG print the Fock matrix
            CALL HEADER(
-     &    'DFSOLV: The converged Fock FMO matrix ',-1)
-           WRITE(LUPRI,'(3X,A,I1,A,I2)')
+     &    'DFSOLV: The converged Fock matrix, FMO ',-1)
+           WRITE(LUPRI,'(2X,A,I1,A,I1)')
      &    'fermion symmetry: ',IFSYM,'/',NFSYM
            CALL PRQMAT(FMO(I2TMOT(IFSYM)+1),NTMO(IFSYM),NTMO(IFSYM),
      &          NTMO(IFSYM),NTMO(IFSYM),NZ,IPQTOQ(1,0),LUPRI)
+           CALL FLSHFO(LUPRI)
 C           JFMO = I2TMOT(IFSYM)
 C           JEIG = IORB(IFSYM)
 C           CALL DZERO(EIG(JEIG+1), NORB(IFSYM))
@@ -1075,6 +1081,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "cbihr1.h"
+
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          WORK(LWORK)
 
@@ -1101,7 +1108,7 @@ C
 C     Solve one-electron system ...
 C     =============================
 C
-        CALL PREDHF(CMO,EIG,IBEIG,FOCK,DUM,DUM,IDUM,WORK,LWORK)
+        CALL PREDHF(CMO,EIG,IBEIG,FOCK,DUMMY,DUMMY,IDUMMY,WORK,LWORK)
         DHFCONV(1) = .TRUE.
         DHFCONV(2) = .TRUE.
       ELSE
@@ -1239,6 +1246,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
       PARAMETER(D0 = 0.0D0,DM1=-1.0D0,D1=1.0D0, DP5 = 0.50D00,
      &          D2 = 2.00D00)
 C
@@ -1413,7 +1421,7 @@ C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
 C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-             CALL DFTEXC(DMAT,DUM,FOCK,1,1,1,.TRUE.,.FALSE.,
+             CALL DFTEXC(DMAT,DUMMY,FOCK,1,1,1,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
          ENDIF
 #endif
@@ -3347,6 +3355,8 @@ C***********************************************************************
 C
       DIMENSION BMAT(MXDIIS*MXDIIS)
       LOGICAL TOBE,OLDFMO,DSCFON,BARNUC
+
+C     CALL QENTER('DHFTST')
 C
       BARNUC  = .TRUE.
       CACC    = '        '
@@ -3641,6 +3651,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -3648,7 +3659,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dummy.h"
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
       LOGICAL SPECIAL,DODBG
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
