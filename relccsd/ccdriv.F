@@ -2210,8 +2210,6 @@ C
       CALL MEMOPT('REAL',BUF1,NBUF1*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',CBUF,2*NSP*NSP,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BUF2,NBUF2*RCW,CC,KFREE,LFREE,ALLOC)
-
-         CALL MEMCHK('mp2g xx',CC,1)
 C
 C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
