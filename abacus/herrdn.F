@@ -3081,6 +3081,7 @@ C
 #endif
 C
 #include "ibtfun.h"
+      IFSTSHAUX = 0
       ICENT  = 0
       IBLOCK = 0
       DO 10 I = 1,NONTYP
@@ -3101,6 +3102,11 @@ C                 ...  dimension PRICCF(MXPRIM,MXCONT)
                   DO 50 KK = 1, NCONT
                      KKK = KKK + 1
                      ISHELL = ISHELL + 1
+                     !set the pointer to the first shell for density-fitting
+                     !auxiliary basis
+                     IF ( (LCOMP.EQ.3) .AND. (IFSTSHAUX.EQ.0) ) THEN
+                        IFSTSHAUX = ISHELL
+                     END IF
 C*****************************************************************************
 C     Data on the AO-block associated with a given shell(ISHELL):
 C       NUCO    - number of uncontracted functions
