@@ -3,6 +3,7 @@
 #
 # Run calculation for oxygen atom
 #
+echo "Four-component relativistic (DC) calculations"
 MOL=O;
 MENU=O;
 export MOL;
@@ -19,3 +20,27 @@ export MOL;
 export MENU;
 ../run.sh -copy DFPROJ 
 rm DFPROJ cf.O
+########################################
+# run 2comp. IOTC calculations
+########################################
+#
+# Run calculation for oxygen atom
+#
+echo "Two-component relativistic (IOTC) calculations"
+MOL=O;
+MENU=O.2c_iotc;
+export MOL;
+export MENU;
+../run.sh -utcmo
+mv DFCOEF cf.O
+ln -s cf.O DFPROJ
+#
+# Run calculation for water
+#
+MOL=H2O;
+MENU=H2O.2c_iotc;
+export MOL;
+export MENU;
+../run.sh -copy DFPROJ 
+rm DFPROJ cf.O
+

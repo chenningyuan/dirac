@@ -12,3 +12,13 @@
 ! At the end of the geometry optimization the bond angle closes, but not all the way to 90
 ! degrees. This is due to Pauli repulsion between the hydrogen atoms, as explained by
 ! Kutlzelnigg in his classic paper in Angew. Chem. Int. Ed. Engl. 23 (1984) 272.
+!
+!
+! MI: Extended for pure two-component IOTC (Trond's one-step approach) calculations.
+!
+!   DC geometry:  d(HO) = 0.970438 A;  angle(HOH)=96.242 deg
+! IOTC geometry:  d(HO) = 0.970450 A;  angle(HOH)=96.243 deg
+!
+! nonrel. geom.:  d(HO) = 0.970412 A;  angle(HOH)=96.268 deg
+!
+
