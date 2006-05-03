@@ -332,11 +332,11 @@ C
             ISPHTR = ILSPH+2*ISSPH
             GO TO 100
   110     CONTINUE
-C&&&&&   TWOCOM - twocomponent mode in DIRAC
+C&&&&&   TWOCOM - two-component  non-relativistic mode in DIRAC / .TWOCOMP
             TWOCOMP = .TRUE.
             GO TO 100
   111     CONTINUE
-C&&&&&   TWOCOMBSS - twocomponent relativistic mode in DIRAC
+C&&&&&   TWOCOMBSS - two-component relativistic mode in DIRAC / .2C_REL
             TWOCOMPBSS = .TRUE.
             GO TO 100
   112     CONTINUE
@@ -410,11 +410,17 @@ C
        WRITE(LUPRI,'(1X,A)') 
      & ' You can not have activated both .TWOCOM and .2C_REL !'
        CALL QUIT(
-     & 'GENINP: .TWOCOM and .2C_REL are muttually exclusive !')
+     & 'GENINP: .TWOCOM and .2C_REL are mutually exclusive !')
       ENDIF
     
       IF (TWOCOMP.OR.TWOCOMPBSS)  THEN
-        WRITE(LUPRI,'(1X,A)') '* Employing pure two-component mode'
+        IF (TWOCOMP) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &  '* Employing pure non-relativistic two-component mode'
+        ELSE
+        WRITE(LUPRI,'(1X,A)')
+     &  '* Employing pure two-component relativistic mode'
+        ENDIF
         INTGEN = 1
         ISLDIR = 0 
         ISSDIR = 0 
@@ -4115,7 +4121,8 @@ C       ENDIF
         ENDIF
 CMI ... DIRCON(1) means contracted L component basis set !
 CMI     IF (ZORA.OR.PROJEC) THEN
-        IF (ZORA.OR.PROJEC.OR.DIRCON(1)) THEN
+CMI     IF (ZORA.OR.PROJEC.OR.DIRCON(1)) THEN
+        IF (ZORA.OR.DIRCON(1)) THEN
           CALL QUIT(
      &'HAMINP: Conflicting options ZORA/PROJEC/DIRCON(1) & BSS !')
 CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')

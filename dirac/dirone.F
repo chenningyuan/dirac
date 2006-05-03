@@ -1905,7 +1905,11 @@ C
 C     If requested, reduce transformation matrix by projection with
 C     respect to a set of fragment orbitals
 C
-      IF(PROJEC) THEN
+CMI   IF(PROJEC) THEN
+CMI .... we need to fix it for PURE two-component mode, either BSS relativistic, or
+CMI   nonrelativistic
+      IF(PROJEC.AND.((BSS.AND..NOT.TWOCOMPBSS).OR.
+     & (.NOT.BSS.AND.TWOCOMP).OR.(.NOT.BSS.AND..NOT.TWOCOMP))) THEN
         CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),IPRONE,WORK,KFREE,LFREE)
         N2TMOTQ = 0
         DO IFRP = 1,NFSYM
