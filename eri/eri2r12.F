@@ -33,6 +33,9 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
 C
+C
+C$Id$
+C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
@@ -60,6 +63,8 @@ C  /* Deck eriher */
      &                  HEXPP,HEXPQ,WORK,LWORK,IPRINT)
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
+C     Gaussian damped r12 integrals added by Simen Reine, 11. jan 2005.
+C
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -72,7 +77,22 @@ C
      &          INDHER(*), IODDHR(*), FACINT(NPPX)
 #include "ericom.h"
 #include "r12int.h"
-      IF (R12EIN) THEN
+C      Gaussian damped r12 integrals, currently not in use. \SR
+       IF (.FALSE.) THEN
+C
+C        1/r12*exp(-a*r12*r12) Hermite integrals
+C        ==============================
+C
+         INTGAC = 1
+         INTGAD = 1
+         CALL COEFF(HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,HPRE3,
+     &        FACINT,HEXPP,HEXPQ,IPRINT)
+         CALL ERIGOM(RO000,RJ000,HARGE,HARGF,COORPQ,
+     &        WORK,LWORK,IPRINT)
+         CALL ERIOMTUV(HRIN2,HRIN3,RO000,RJ000,HARGE,HARGF,
+     &        COORPQ,INDHER,WORK,LWORK,IPRINT)
+         CALL WKER12(HRINT1,HRIN1,HRIN2,HRIN3,HPRE1,HPRE2,HPRE3,IPRINT)
+       ELSE IF (R12EIN) THEN
 C
 C        r12*exp(r12) Hermite integrals
 C        ==============================
@@ -562,23 +582,31 @@ C     (University of Oslo, 29 October 2001).
      &          C(NPPX,NTUV), P1(NPPX), P2(NPPX), P3(NPPX)
 #include "r12int.h"
 #include "ericom.h"
+      IF (INTGAC .EQ. 1) THEN
+        DO J = 1, NTUV
+          DO I = 1, NPPX
+            RES(I,J) = P1(I)*B(I,J)
+          ENDDO
+        ENDDO
+        GOTO 100
+      ENDIF
       DO J = 1, NTUV
          DO I = 1, NPPX
             RES(I,J) = P1(I)*A(I,J)
-         ENDDO      
-      ENDDO  
+         ENDDO
+      ENDDO
       IF (INTGAC .EQ. 2) GOTO 100
       DO J = 1, NTUV
          DO I = 1, NPPX
             RES(I,J) = RES(I,J) + P2(I)*B(I,J)
          ENDDO
-      ENDDO 
+      ENDDO
       IF (INTGAC .EQ. 4) GOTO 100
       DO J = 1, NTUV
          DO I = 1, NPPX
             RES(I,J) = RES(I,J) + P3(I)*C(I,J)
          ENDDO
-      ENDDO 
+      ENDDO
   100 RETURN
       END
 C  /* Deck cr1u12 */
@@ -888,8 +916,11 @@ C
      &          ALPHA(NPPX), BETA(NPPX), PRE1(NPPX),PRE2(NPPX),
      &          PRE3(NPPX), FACINT(NPPX)
 C
-      IF (INTGAC .EQ. 2 .OR. INTGAC .EQ. 3 .OR. INTGAC .EQ. 5) THEN
-         VAR = GAMAC                                         
+      IF (INTGAC .EQ. 1) THEN
+        BETATRY = 0.001d0
+        VAR  = BETATRY
+      ELSE IF (INTGAC .EQ. 2 .OR. INTGAC .EQ. 3 .OR. INTGAC .EQ. 5) THEN
+         VAR = GAMAC
       ELSE IF (INTGAC .EQ. 4 .OR. INTGAC .EQ. 6) THEN
          VAR = GAMAC+GAMAD
          VSQ = GAMAC*GAMAD
@@ -907,7 +938,13 @@ C
 C
 C     Calculate the prefactors
 C
-      IF (INTGAC .EQ. 2) THEN
+      IF (INTGAC .EQ. 1) THEN
+         DO I = 1, NPPX
+            PRE1(I) = FACINT(I)*BETA(I)
+            PRE2(I) = D0
+            PRE3(I) = D0
+         END DO
+      ELSE IF (INTGAC .EQ. 2) THEN
          DO I = 1, NPPX
             PRE1(I) = FACINT(I)*DP05*SQRT(PI*BETA(I)**3/(PP(I)*PQ(I)))
             PRE2(I) = D0
@@ -1024,10 +1061,11 @@ C
      &          ARGEXP(NPPX), ARGF(NPPX),PQXYZ(NPPX,3), WORK(LWORK)
 C
 #include "ericom.h"
+#include "priunit.h"
 C
 C     Allocate ERIGOM
 C
-      KNDADR = 1 
+      KNDADR = 1
       KLAST = KNDADR + NPPX
       IF (KLAST .GT. LWORK) CALL STOPIT('ERIGOM',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
@@ -1035,6 +1073,17 @@ C
       CALL ERIGO(RO000,RM000,PQXYZ,ARGEXP,ARGF,WORK(KNDADR),
      &           WORK(KLAST),LWRK,IPRINT)
 C
+      IF (IPRINT .GT. 20) THEN
+        CALL AROUND('Output from ERIGOM')
+        WRITE(LUPRI,'(3X,3(13X,A5))') 'RO000','RJ000', 'J'
+        DO I = 1, NPPX
+          DO J = 0, JMAX
+            WRITE(LUPRI,'(I3,2F18.12,I18)') I,
+     &           RO000(I,J), RM000(I,J), J
+          END DO
+        END DO
+      ENDIF
+
       RETURN
       END
 C  /* Deck erigo */

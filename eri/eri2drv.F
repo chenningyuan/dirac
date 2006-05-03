@@ -34,6 +34,7 @@ C...      http://dirac.chem.sdu.dk
 C 
 C
 C
+C$Id$
 C
 #if defined (VAR_SINGLE)
 #include "single.h"
@@ -44,6 +45,7 @@ C  /* Deck er2inp */
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
+      PARAMETER (D0 = 0.0D0)
       PARAMETER (NTABLE = 35)
 C
       LOGICAL NEWDEF
@@ -51,6 +53,7 @@ C
 C
 #include "cbiher.h"
 #include "cbieri.h"
+#include "erithr.h"
 #include "erisel.h"
 #include "eribuf.h"
 #ifdef PRG_DIRAC
@@ -64,7 +67,7 @@ C
      &            '.EXTPRI', '.SELCT1', '.SELCT2', '.SELCT3', '.SELCT4',
      &            '.INTPRI', '.DISTRI', '.INTSKI', '.BUFFER', '.MAXDIS',
      &            '.DISTST', '.MXBCH ', '.NSPMAX', '.NOLOCS', '.GRDZER',
-     &            '.XXXXXX', '.DOERIP', '.NOSCRE', '.GENCON', '.NCLERI'/
+     &            '.THREXC', '.DOERIP', '.NOSCRE', '.GENCON', '.NCLERI'/
 C
       NEWDEF = WORD .EQ. '*ER2INT'
       ICHANG = 0
@@ -223,7 +226,8 @@ C&&&& GRDZER: GRADEE is set to zero at each call to ERIGRD.
                   GRDZER = .TRUE. 
                GO TO 100
    31          CONTINUE
-C&&&& 
+C&&&& THRXC1,2,3: values for exchange screening
+                  READ (LUCMD,*) THRXC1, THRXC2, THRXC3
                GO TO 100
    32          CONTINUE
 C&&&& DOERIP: ERIPRO used instead of TWOINT.
@@ -312,13 +316,18 @@ C&&&& NCLERI: Only nonclassical integrals are calculated.
      &         ' All contractions treated as general.' 
             IF (NCLERI) WRITE (LUPRI,'(A)')
      &         ' Only nonclassical integrals are calculated.' 
+            IF (THRXC1.NE.D0.OR.THRXC2.NE.D0.OR.THRXC3.NE.D0) THEN
+               WRITE (LUPRI, '(A,3E10.2)')
+     &         ' Input values for exchange screening',
+     &          THRXC1,THRXC2,THRXC3
+            END IF
             IF (DODIST) THEN
                WRITE (LUPRI, '(A)')
      &         ' Distributions for electron 1.'
                IF (NSELCT(1).EQ.0) THEN
                   WRITE (LUPRI,'(/,A,/A)')
      &            ' Distributions specified but no active '//
-     &            ' orbitals for electron. Use .DISTR1.',
+     &            ' orbitals for electron. Use .DISTR1/.SELCT1??.',
      &            ' Calculation cannot proceed.'
                   CALL QUIT('Inconsistent input in ER2INP.')
                END IF
@@ -357,6 +366,7 @@ C&&&& NCLERI: Only nonclassical integrals are calculated.
 C  /* Deck er2ini */
       SUBROUTINE ER2INI
 #include "implicit.h"
+      PARAMETER (D0 = 0.D0)
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -413,6 +423,12 @@ C
       END DO
       GENCON = .FALSE.
       NCLERI = .FALSE.
+      ATTGAM = .FALSE.
+      ATTEXC = .FALSE.
+      THRXC1 = D0
+      THRXC2 = D0
+      THRXC3 = D0
+C
 
       RETURN
       END
@@ -426,8 +442,20 @@ C  /* Deck er2int */
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "dummy.h"
-      DIMENSION CCFBT(*), INDXBT(*),NCENTS(4),ICENTS(2,4),ICLASSES(4),
-     &          WORK(LWORK),KOD(10)
+C aspg, 2006-04-19:
+C below is the original ERI dimension statement
+C
+      DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK), CSMAT(NBAST,NBAST)
+C
+C and now comes the dimension statement for the class selection
+C used in dirac
+C
+      DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
+      LOGICAL DOEXC
+C
+C for now the CSMAT() thing above is de-commented, but trond's
+C initial comment, below, should be checked...
+C 
 CTROND: check this !, CSMAT(NBAST,NBAST)
       LOGICAL WRTINT_SAVE
 #include "ccom.h"
@@ -438,15 +466,77 @@ CTROND: check this !, CSMAT(NBAST,NBAST)
 #include "aobtch.h"
 #include "odbtch.h"
 #include "symmet.h"
-#ifndef PRG_DIRAC
+C aspg 2006-04-20
+C to make CSMAT compile... the ifndef is commented out
+C#ifndef PRG_DIRAC
 #include "inforb.h"
-#endif /* ! PRG_DIRAC */
+C
+C#endif /* ! PRG_DIRAC */
+#include "shells.h"
 #include "memint.h"
 C
       IPRINT = IPRERI
+C
+C     Set integral threshold
+C     ======================
+C
+      THRSH  = MAX(THRS,1.00D-15)
       WRTINT = .TRUE.
       FCKINT = .FALSE.
-      CALL ERIPRP(CCFBT,INDXBT,KOD,IPRINT,WORK,KFREE,LFREE)
+      EXCINT = .FALSE.
+C
+#ifndef PRG_DIRAC
+C
+C     CALL ER2INI
+C
+C     Memory
+C
+      MEMOK  = .TRUE.
+      MEMADD = 0
+      MODAB  = 0
+      MODCD  = 0
+C
+C     AO batches
+C     ==========
+C
+      CALL SETAOB(CCFBT,INDXBT,KMAX,WORK,LWORK,IPRINT)
+C
+C     OD batches
+C     ==========
+C
+C     This subroutine returns several arrays for each electron
+C     starting at addresses K????1 and K????2. These are to be
+C     transferred to ODCDRV.
+C
+      CALL ODBCHS(KODCL1,KODCL2,
+     &            KODBC1,KODBC2,KRDBC1,KRDBC2,
+     &            KODPP1,KODPP2,KRDPP1,KRDPP2,
+     &            KFREE,LFREE,CCFBT,WORK,
+     &            LWORK,IPRINT)
+C
+      IF (IPRINT .GT. 2) THEN
+         WRITE (LUPRI,'(2(/,2X,A,I10))')
+     &      ' Memory requirements for ODBCHS:',LWORK - LFREE,
+     &      ' Memory left for ODCDRV:        ',LFREE
+      END IF
+C
+#else
+C aspg, 2006-04-21
+C
+C eriprp_ is a function created to set-up the ao batches for dirac
+C so wonder if a general case could be written and incorporated into
+C the original eri code seen above in the ifndef clause
+C
+      DOEXC = .FALSE.
+#if defined (DIRAC_ERI_DEBUG)
+      write (*,*) 'in er2int, calling eriprp'
+      write (*,*) 'kfree:  ',kfree,'  lfree:  ',lfree
+      write (*,*) 'iclasses: ',iclasses(1),' ',iclasses(2),
+     &                         iclasses(3),' ',iclasses(4)
+#endif
+      CALL ERIPRP(DOEXC,CCFBT,INDXBT,KOD,KMAX,IPRINT,WORK,KFREE,LFREE)
+C
+#endif /* ! PRG_DIRAC */
 C
       ICALL = 0
       CALL GETDST(ICALL,ICALL,IPRINT)
@@ -461,33 +551,55 @@ C     ===============================
 C
       CALL ERIDSI(INDXBT,IPRINT)
 C
-C     Set integral threshold
-C     ======================
+C aspg, 2006-04-19
+C included this memory handlinh lines, wonder if this could
+C be made uniform
 C
-      THRSH  = MAX(THRS,1.00D-15)
-
+#ifndef PRG_DIRAC
+      KLAST = KFREE
+      LWRK  = LFREE
+#endif /* ! PRG_DIRAC */
 C
 C     Cauchy-Schwarz factors
 C     ======================
 C
 CTROND      IF (.TRUE.) THEN
+Caspg, 2006-04-30: 
+C come back here to see why setting the condition to true makes dirac
+C crash...
+C
       IF (.FALSE.) THEN
          DGABAB = .TRUE.
          WRTINT_SAVE = WRTINT
          WRTINT = .FALSE.
+#ifndef PRG_DIRAC
+         CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
+     &               WORK(KODBC1),WORK(KODBC2),
+     &               WORK(KRDBC1),WORK(KRDBC2),
+     &               WORK(KODPP1),WORK(KODPP2),
+     &               WORK(KRDPP1),WORK(KRDPP2),
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
+     &               CSMAT,DUMMY,1,IDUMMY,DUMMY,IDUMMY,
+     &               CCFBT,INDXBT,WORK(KLAST),LWRK,IPRINT)
+#else
          CALL ODCDRV(WORK(KOD(1)),WORK(KOD(2)),
      &               WORK(KOD(3)),WORK(KOD(4)),
      &               WORK(KOD(5)),WORK(KOD(6)),
      &               WORK(KOD(7)),WORK(KOD(8)),
      &               WORK(KOD(9)),WORK(KOD(10)),
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &               CSMAT,DUMMY,1,IDUMMY,DUMMY,IDUMMY,
      &               CCFBT,INDXBT,WORK(KFREE),LFREE,IPRINT)
+#endif /* ! PRG_DIRAC */
+C
+         DGABAB = .FALSE.
+         WRTINT = WRTINT_SAVE
 C
          IF (IPRINT.GT.5) THEN
             CALL HEADER('Cauchy-Schwarz matrix in ER2INT',-1)
             CALL OUTPUT(CSMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
          END IF
-         CALL CSMEXT(CSMAT)
+C        CALL CSMEXT(CSMAT,NBAST,CSBCH,1,NAOBCH,NORBBT,IPRINT)
          DGABAB = .FALSE.
          WRTINT = WRTINT_SAVE
       END IF
@@ -496,13 +608,25 @@ C     Calculate integrals
 C     ===================
 C
       IF (.NOT.INTSKP) THEN
+#ifndef PRG_DIRAC
+         CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
+     &               WORK(KODBC1),WORK(KODBC2),
+     &               WORK(KRDBC1),WORK(KRDBC2),
+     &               WORK(KODPP1),WORK(KODPP2),
+     &               WORK(KRDPP1),WORK(KRDPP2),
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,IDUMMY,
+     &               CCFBT,INDXBT,WORK(KLAST),LWRK,IPRINT)
+#else
          CALL ODCDRV(WORK(KOD(1)),WORK(KOD(2)),
      &               WORK(KOD(3)),WORK(KOD(4)),
      &               WORK(KOD(5)),WORK(KOD(6)),
      &               WORK(KOD(7)),WORK(KOD(8)),
      &               WORK(KOD(9)),WORK(KOD(10)),
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &               DUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,IDUMMY,
      &               CCFBT,INDXBT,WORK(KFREE),LFREE,IPRINT)
+#endif /* ! PRG_DIRAC */
 C
 C        Error message in case of insufficient memory
 C
@@ -525,6 +649,7 @@ C  /* Deck odcdrv */
       SUBROUTINE ODCDRV(IODCL1,IODCL2,
      &                  IODBC1,IODBC2,RODBC1,RODBC2,
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
+     &                  DRED,GRED,IDNSCNT,IDNSIDX,ISHLCNT,ISHLIDX,ICLSS,
      &                  FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
      &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
 #include "implicit.h"
@@ -540,6 +665,8 @@ C  /* Deck odcdrv */
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
      &          CCFBT(*), INDXBT(*), WORK(LWORK)
+      DIMENSION DRED(*), GRED(*),
+     &          IDNSCNT(*), IDNSIDX(*), ISHLCNT(*), ISHLIDX(*), ICLSS(*)
 #include "cbieri.h"
 #include "odclss.h"
 #include "ccom.h"
@@ -669,23 +796,13 @@ C
      &                   CCFBT,INDXBT,WORK(KCOUNT),WORK(KCSQ),
      &                   WORK(KLAST),LWRK,IPRINT)
 #else /* PRG_DIRAC */
-Cdiracn         CALL ERI_NODDRV(IODCL1,IODCL2,
-Cdirac     &                   IODBC1,IODBC2,RODBC1,RODBC2,
-Cdirac     &                   IODPP1,IODPP2,RODPP1,RODPP2,
-Cdirac     &                   FMAT, DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
-Cdirac     &                   WORK(KACTAB),WORK(KACTCD),
-Cdirac     &                   WORK(KSCRAB),WORK(KSCRCD),
-Cdirac     &                   WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
-Cdirac     &                   WORK(KLMNVL),WORK(KLMNSM),WORK(KPNTUV),
-Cdirac     &                   WORK(KRBUF), WORK(KIBUF),
-Cdirac     &                   WORK(KCLCPU),WORK(KWHICH),WORK(KIJS),MXCLS2,
-Cdirac     &                   CCFBT,INDXBT,WORK(KCOUNT),WORK(KCSQ),
-Cdirac     &                   WORK(KLAST),LWRK,IPRINT)
+         CALL QUIT('ERI does not yet run in parallel (no eri_noddrv).')
 #endif /* PRG_DIRAC */
       ELSE
          CALL ODCDR1(IODCL1,IODCL2,
      &               IODBC1,IODBC2,RODBC1,RODBC2,
      &               IODPP1,IODPP2,RODPP1,RODPP2,
+     &               DRED,GRED,IDNSCNT,IDNSIDX,ISHLCNT,ISHLIDX,ICLSS,
      &               FMAT, DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
      &               WORK(KACTAB),WORK(KACTCD),
      &               WORK(KSCRAB),WORK(KSCRCD),
@@ -701,6 +818,7 @@ C  /* Deck odcdr1 */
       SUBROUTINE ODCDR1(IODCL1,IODCL2,
      &                  IODBC1,IODBC2,RODBC1,RODBC2,
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
+     &                  DRED,GRED,IDNSCNT,IDNSIDX,ISHLCNT,ISHLIDX,ICLSS,
      &                  FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
      &                  NACTAB,NACTCD,SCRNAB,SCRNCD,
      &                  INDHER,INDHSQ,IODDHR,
@@ -727,6 +845,7 @@ C  /* Deck odcdr1 */
 #include "hertop.h"
 #include "symmet.h"
 #include "r12int.h"
+#include "denfit.h"
 #include "iratdef.h" 
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
@@ -743,6 +862,8 @@ C  /* Deck odcdr1 */
      &          BUF(*), IBUF(*),
      &          CCFBT(*), INDXBT(*), NCOUNT(*),
      &          CSQ(NCSQ1,NCSQ2), WORK(LWORK)
+      DIMENSION DRED(*), GRED(*),
+     &          IDNSCNT(*), IDNSIDX(*), ISHLCNT(*), ISHLIDX(*), ICLSS(*)
 #include "ibtfun.h"
 C
 C     Information in arrays:
@@ -907,7 +1028,7 @@ C
 C     Arrays for Hermite integrals
 C     ============================
 C
-      CALL HERPRP(INDHER,INDHSQ,IODDHR)
+      CALL HERPRP(INDHER,INDHSQ,IODDHR,IPRINT)
       CALL LMNPRP(LMNPWR,LMNSYM,IPRINT)
 C
 C     Active/inactive batches
@@ -988,7 +1109,7 @@ C
 C           Sum of basis-set identifiers for a, b, c and d (WK/UniKA/04-11-2002).
             MBSMCD = MBSMAB + IODCL2(IODCD,21) + IODCL2(IODCD,22)
 C
-         IF (SCRMAB*SCRMCD .GT. THRSH .AND. MBSMCD .LE. MBSMAX) THEN
+         IF (SCRMAB*SCRMCD.GT.THRSH.AND.MBSMCD.LE.MBSMAX.OR.EXCINT) THEN
 C           Only compute integrals for which the sum of basis-set identifiers
 C           is less than its prescribed maximum value MBSMAX (WK/UniKA/04-11-2002).
 C
@@ -1011,8 +1132,9 @@ C
             NCNTCD = IODCL2(IODCD,13)
 Cfp+tuh
 C To avoid artificial many contributions from the same atom in DensFit
-         IF (IFITDM.EQ.-2 .AND. NCNTCD.EQ.2) GO TO 1917
-         IF (IFITDM.EQ. 2 .AND. NCNTCD.EQ.1) GO TO 1917
+C when running diatom scheme
+         IF (DIATOM .AND. IFITDM.EQ.-2 .AND. NCNTCD.EQ.2) GO TO 1917
+         IF (DIATOM .AND. IFITDM.EQ. 2 .AND. NCNTCD.EQ.1) GO TO 1917
 C
             NGTOCD = IODCL2(IODCD,14)
             NPRFC  = IODCL2(IODCD,15)
@@ -1639,8 +1761,13 @@ C     =================================
 C
       CALL ERICOR(COORTR,IPNTCR,ROD1,IPRINT)
 C     HEXPP and HEXPQ have been added (WK/UniKA/12-11-2002).
-      CALL ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,RODPP1,RODPP2,
-     &            IPNTPP,IPRINT)
+      IF (EXCINT) THEN
+         CALL EXIEXP(EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,RODPP1,RODPP2,
+     &               IPNTPP,IPRINT)
+      ELSE
+         CALL ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,RODPP1,RODPP2,
+     &               IPNTPP,IPRINT)
+      END IF
       CALL ERISSO(IPRINT)
       IF (BDER) CALL ERICNT(NCENTR,IPNTCR,IPRINT)
 C
@@ -3114,12 +3241,16 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Eriprp */
-      SUBROUTINE ERIPRP(CCFBT,INDXBT,KOD,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE ERIPRP(DOEXC,CCFBT,INDXBT,KOD,KMXB,IPRINT,WORK,KFREE,
+     &                  LFREE)
 C***********************************************************************
 C
 C     Prepare for ERI run
 C
 C     A cut'n paste job by T. Saue, Nov 2004
+C     added argument to specify whether or not exchange contributions
+C     to be calculated, needs checking. also added the KMXB argument.
+C     aspg, 2006-04-30
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3127,6 +3258,8 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "erimem.h"
+#include "cbieri.h"
+      LOGICAL DOEXC
       DIMENSION CCFBT(*),INDXBT(*),KOD(10),WORK(*)
 C
 C     Memory
@@ -3135,13 +3268,28 @@ C
       MEMADD = 0
       MODAB  = 0
       MODCD  = 0
-      LWORK = LFREE
+      LWORK  = LFREE
 C
+#if defined (DIRAC_ERI_DEBUG)
+      write (*,*) 'in calling eriprp'
+      write (*,*) 'kfree:  ',kfree,'  lfree:  ',lfree,'  lwork:  ',lwork
+CC    write (*,*) 'iclasses: ',iclasses(1),' ',iclasses(2),
+CC   &                         iclasses(3),' ',iclasses(4)
+C
+#endif
 C
 C     AO batches
 C     ==========
 C
-      CALL SETAOB(CCFBT,INDXBT,WORK(KFREE),LFREE,IPRINT)
+#if defined (DIRAC_ERI_DEBUG)
+      write(*,*) 'kmaxtot = ',kmaxtot
+      write(*,*) 'kmaxmx  = ',kmaxmx
+      write(*,*) 'kmax    = ',kmax
+      write(*,*) 'kmxb    = ',kmxb
+      write(*,*) 'kfree   = ',kfree
+      write(*,*) 'lfree   = ',lfree
+#endif
+      CALL SETAOB(CCFBT,INDXBT,KMXB,WORK,LWORK,IPRINT)
 C
 C     OD batches
 C     ==========
@@ -3166,11 +3314,17 @@ C     RODPP1 and RODPP2 give "real" information for each OD
 C     KOD(9)  --> RODPP1
 C     KOD(10) --> RODPP2
 C
+      IF (DOEXC) THEN
+         EXCINT = .TRUE.
+      ENDIF
       CALL ODBCHS(KOD(1),KOD(2),
      &            KOD(3),KOD(4),KOD(5),KOD(6),
      &            KOD(7),KOD(8),KOD(9),KOD(10),
-     &            KFREE,LFREE,CCFBT,WORK(KFREE),
+     &            KFREE,LFREE,CCFBT,WORK,
      &            LWORK,IPRINT)
+      IF (DOEXC) THEN
+         EXCINT = .FALSE.
+      ENDIF
 C
       IF (IPRINT .GT. 2) THEN
          WRITE (LUPRI,'(2(/,2X,A,I10))')
@@ -3180,18 +3334,3 @@ C
 C
       RETURN
       END
-#ifdef PRG_DIRAC
-C  /* Deck erfciv */
-      FUNCTION ERFCIV(THR)
-#include <implicit.h>
-      PARAMETER (D0 = 0.0D0, THRMAX = 1.0D-15)
-      DIMENSION ERFCI(0:15)
-      DATA (ERFCI(I),I=0,15)/0.00000D0, 1.16309D0, 1.82139D0, 2.32675D0, 
-     &                       2.75106D0, 3.12341D0, 3.45891D0, 3.76656D0, 
-     &                       4.05224D0, 4.32001D0, 4.57282D0, 4.81292D0, 
-     &                       5.04203D0, 5.26151D0, 5.47248D0, 5.67585D0/
-      ARG = MAX(MAX(ABS(THR),THRMAX),D0)
-      ERFCIV = ERFCI(-NINT(DLOG10(ARG)))
-      RETURN
-      END 
-#endif /* PRG_DIRAC */

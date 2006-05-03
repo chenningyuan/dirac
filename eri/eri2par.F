@@ -34,10 +34,12 @@ C...      http://dirac.chem.sdu.dk
 C 
 C
 C
+C$Id$
 C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
+C
 C  /* Deck pardrv */
       SUBROUTINE PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WORK,NSTAT,
      &                  HESSEE,LWORK,ITYPE,MAXDIF,IATOM,NODV,NOPV,
@@ -807,6 +809,12 @@ C           CALL GEMNOD(WORK,MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL DFT_KSMSLAVE(WORK,MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.5) THEN
             CALL DFT_CSLAVE(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.6) THEN
+            CALL DFT_GRAD_SLAVE(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.7) THEN
+            CALL DFT_BRHS_SLAVE(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.8) THEN
+            CALL FCK3DRV_SLAVE(WORK,MWORK,IPRINT)
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(NODSTR) ERROR on slave',MYTID,

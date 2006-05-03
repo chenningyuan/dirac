@@ -83,7 +83,7 @@ C
          KIOFCM = 1
          KLAST  = 1
       ELSE IF (GDER .OR. BDER) THEN
-         CALL ERISDS(IPNTCR,INDXBT)
+         CALL ERISDM(IPNTCR,INDXBT)
          LBIN   = NCCT*KHKTA*KHKTB*KHKTC*KHKTD
          KBIN   = 1
          KIBIN  = KBIN   +  LBIN
@@ -100,7 +100,7 @@ C
          KIOFCM = KJADDC + 64*MXAQN*MXAQN
          KLAST  = KIOFCM + MXAQN*MXAQN*MXAQN*MXAQN
       ELSE IF (DODIST) THEN
-         CALL ERISDS(IPNTCR,INDXBT)
+         CALL ERISDM(IPNTCR,INDXBT)
          LBIN   = NCCT*KHKTA*KHKTB*KHKTC*KHKTD
          KBIN   = 1
          KIBIN  = KBIN   +  LBIN
@@ -168,7 +168,6 @@ C  /* Deck eriou1 */
 #include "maxorb.h"
 #include "aovec.h"
 #include "eridst.h"
-#include "eribuf.h"
       DIMENSION SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,*), SOPRT(*),
      &          INDORB(LBIN,NIBUF), IPNBCH(*), INDALL(NCCS,2), 
      &          INDXTR(*), LABEL(*), IPNTCR(MAXBCH,4),
@@ -182,6 +181,7 @@ C  /* Deck eriou1 */
 #include "ericom.h"
 #include "erithr.h"
 #include "nuclei.h"
+#include "eribuf.h"
 #include "aobtch.h"
 #include "hertop.h"
 #include "symmet.h"
@@ -244,9 +244,14 @@ C
 C
 C           sort distributions
 C
-            CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SOPRT,IPNTCR,IODDCC,
-     &                  IPNTUV,IPNBCH,NBITS,NINTS,IOFCMP,INDXBT,
-     &                  ICART,IPRINT)
+            IF (.TRUE.) THEN
+               CALL ERISOR(BIN,IBIN,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
+     &                     IODDCC,IPNTUV,ICART,IPRINT)
+            ELSE
+               CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SOPRT,IPNTCR,
+     &                     IODDCC,IPNTUV,IPNBCH,NBITS,NINTS,IOFCMP,
+     &                     INDXBT,ICART,IPRINT)
+            END IF
 C
 C           write integrals
 C
@@ -267,9 +272,14 @@ C
 C
 C        sort distributions
 C
-         CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SO,
-     &               IPNTCR,IODDCC,IPNTUV,IPNBCH,NBITS,NINTS,
-     &               IOFCMP,INDXBT,0,IPRINT)
+         IF (.TRUE.) THEN
+            CALL ERISOR(BIN,IBIN,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
+     &                  IODDCC,IPNTUV,0,IPRINT)
+         ELSE
+            CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SO,
+     &                  IPNTCR,IODDCC,IPNTUV,IPNBCH,NBITS,NINTS,
+     &                  IOFCMP,INDXBT,0,IPRINT)
+         END IF
 C
 C        write integrals
 C
@@ -325,7 +335,6 @@ C  /* Deck eriwrt */
 #include "aovec.h"
 C
 #include "eridst.h"
-#include "eribuf.h"
       CHARACTER*8 FAODER
       DIMENSION BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
      &          BIN(LBIN), IBIN(LBIN,NIBUF),
@@ -336,6 +345,7 @@ C
 #include "nuclei.h"
 #include "ericom.h"
 #include "erithr.h"
+#include "eribuf.h"
 #include "aobtch.h"
 #include "hertop.h"
 #ifndef PRG_DIRAC
@@ -1215,6 +1225,8 @@ C
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERISRT',-1)
 C
+      CALL ERISDS(IPNTCR,INDXBT)
+C
       CALL ERICHN(INDORB,NBTCHX,LBTCHX,IPNBCH,
      &            IODDCC,IPNTUV,NBITS,NIBUF,IOFCMP,ICART,IPRINT)
 C
@@ -1268,7 +1280,29 @@ C /* Deck erisds */
          END DO
       END DO
       NDST = IDIST
-      LPNBCH = NDST*MLTPX*KHKTAB*KHKTCD
+      RETURN
+      END
+C /* Deck erisdm */
+      SUBROUTINE ERISDM(IPNTCR,INDXBT)
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "eridst.h"
+      DIMENSION IPNTCR(MAXBCH,4)
+      DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
+#include "symmet.h"
+#include "ericom.h"
+#include "aobtch.h"
+C
+      LPNBCH = 0
+      DO IRPDST = 0, MAXREP
+         CALL ERISDS(IPNTCR,INDXBT)
+         LPNBCH = MAX(LPNBCH,NDST)
+      END DO
+      LPNBCH = LPNBCH*MLTPX*KHKTAB*KHKTCD
       RETURN
       END
 C  /* Deck erichn */
@@ -2109,5 +2143,74 @@ C  /* Deck eripri */
       END DO
       WRITE (LUPRI,'(/1X,A,I10)')
      &   'Number of two-electron integrals printed:',ICOUNT
+      RETURN
+      END
+C  /* Deck erisor */
+      SUBROUTINE ERISOR(BIN,IBIN,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
+     &                  IODDCC,IPNTUV,ICART,IPRINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+C
+      DIMENSION BIN(LBIN), IBIN(LBIN,NIBUF),
+     &          INDORB(NCCT,KHKTAB,KHKTCD,NIBUF),
+     &          SO    (NCCT,KHKTAB,KHKTCD),
+     &          IODDCC(*), IPNTUV(KC2MAX,0:NRDER,2)
+      DIMENSION NINTS(NDISTR)
+#include "cbieri.h"
+#include "ericom.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "erithr.h"
+#include "eridst.h"
+C
+#include "ibtfun.h"
+      IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERISRT',-1)
+C
+      IF(.NOT.COMPRS)CALL QUIT('ERITRX not implemented for .NOT.COMPRS')
+      IBIT1 = 2**NBITS - 1
+C
+      INT = 0
+      DO IDIST = 1, NDISTR
+         INT0 = INT
+         DO ICMPCD = 1, KHKTCD
+         DO ICMPAB = 1, KHKTAB
+         IF (IODDCC(IPNTUV(ICMPCD,ICART,2)).EQ.
+     &       IODDCC(IPNTUV(ICMPAB,0,1))) THEN
+            IF (NIBUF.EQ.1) THEN
+               DO I = 1, NCCT
+                  SOINT = SO(I,ICMPAB,ICMPCD)
+                  LABEL = INDORB(I,ICMPAB,ICMPCD,1)
+                  IDSTR = INDXDS(IBTAND(IBTSHR(LABEL,3*NBITS),IBIT1))
+                  IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
+                     INT = INT + 1
+                     BIN (INT)   = SOINT
+                     IBIN(INT,1) = LABEL
+                  END IF
+               END DO
+            ELSE
+               DO I = 1, NCCT
+                  SOINT  = SO(I,ICMPAB,ICMPCD)
+                  LABEL1 = INDORB(I,ICMPAB,ICMPCD,1)
+                  LABEL2 = INDORB(I,ICMPAB,ICMPCD,2)
+                  IDSTR  = INDXDS(IBTAND(IBTSHR(LABEL1,NBITS),IBIT1))
+                  IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
+                     INT = INT + 1
+                     BIN (INT)   = SOINT
+                     IBIN(INT,1) = LABEL1
+                     IBIN(INT,2) = LABEL2
+                  END IF
+               END DO
+            END IF
+         END IF
+         END DO
+         END DO
+         NINTS(IDIST) = INT - INT0
+      END DO
+C
       RETURN
       END

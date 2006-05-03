@@ -39,6 +39,7 @@ C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
+C
 C  /* Deck cr2drv */
       SUBROUTINE CR2DRV(AOINT,HCINT,INDHER,IODDHC,IODD34,IODDCC,
      &                  LMNPWR,IPNTUV,COOR34,EXP34,CSQ,CCFBT,NCENTR,
@@ -346,10 +347,23 @@ C
      &                           NCCT,1,IODDCC,IPNTUV,IODDKC(ICMP34),
      &                           FRSTUV,IPRINT)
                   ELSE
+C
+C aspg, 2006-04-22        
+C first attempted to change AOINT(1,1,ICMP34,1) to AOINT(1,ICMP34,1,1) 
+C following dalton, but then program crashes. the previous version is 
+C thus reinstated until revision... and given the call just above, I
+C wonder if dalton's call is correct... 
+C
                      CALL ERICT2(CCPRIM,AOINT(1,1,ICMP34,1),
      &                           CCFBT(ICMAT3),CCFBT(ICMAT4),CPINT,
      &                           NCCT,KHKT34,IODDCC,IPNTUV,
      &                           IODDKC(ICMP34),FRSTUV,IPRINT)
+C
+C                    CALL ERICT2(CCPRIM,AOINT(1,ICMP34,1,1),
+C    &                           CCFBT(ICMAT3),CCFBT(ICMAT4),CPINT,
+C    &                           NCCT,KHKT34,IODDCC,IPNTUV,
+C    &                           IODDKC(ICMP34),FRSTUV,IPRINT)
+C
                   END IF
   300          CONTINUE
   200       CONTINUE

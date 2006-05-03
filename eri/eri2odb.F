@@ -39,6 +39,7 @@ C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
+C
 C  /* Deck odbchs */
       SUBROUTINE ODBCHS(KODCL1,KODCL2,
      &                  KODBC1,KODBC2,KRDBC1,KRDBC2,
@@ -105,11 +106,18 @@ C
 C     Gab integrals for Cauchy-Schwartz inequality
 C     ============================================
 C
-      KGAB  = 1
-      KLAST = KGAB + NGAB*NGAB
-      LWRK  = LWORK - KLAST + 1
-      IF (KLAST .GT. LWORK) CALL STOPIT('ODBCHS','GAB',KLAST,LWORK)
-      CALL DZERO(WORK(KGAB),NGAB*NGAB)
+      IF (.NOT.EXCINT) THEN
+         KGAB  = 1
+         KLAST = KGAB + NGAB*NGAB
+         LWRK  = LWORK - KLAST + 1
+         IF (KLAST .GT. LWORK) CALL STOPIT('ODBCHS','GAB',KLAST,LWORK)
+         CALL DZERO(WORK(KGAB),NGAB*NGAB)
+      ELSE
+         KGAB  = 1
+         KLAST = KGAB
+         LWRK  = LWORK - KLAST + 1
+         IF (KLAST .GT. LWORK) CALL STOPIT('ODBCHS','GAB',KLAST,LWORK)
+      END IF
 C
 C     CALL GETGAB(WORK(KGAB),LWRK,IPRINT)
 C
@@ -171,7 +179,11 @@ C
       END IF
 C
       KGABX  = KLASTO
-      KODCLX = KGABX  + NGAB*NGAB
+      IF (.NOT.EXCINT) THEN
+         KODCLX = KGABX  + NGAB*NGAB
+      ELSE
+         KODCLX = KGABX
+      END IF
       KODBCX = KODCLX + (NITCL*NODCL1 - 1)/IRAT + 1
       KRDBCX = KODBCX + (NITBC*NODBC1 - 1)/IRAT + 1
       KODPPX = KRDBCX +  NRTBC*NODBC1
@@ -193,7 +205,7 @@ C
 C
 C     We must save GAB for next electron
 C
-      CALL DCOPY(NGAB*NGAB,WORK(KGAB),1,WORK(KGABX),1)
+      IF (.NOT.EXCINT) CALL DCOPY(NGAB*NGAB,WORK(KGAB),1,WORK(KGABX),1)
       KGAB = KGABX
 C
       CALL ICOPY(NITCL*NODCL1,WORK(KODCLX),1,WORK(KODCL1),1)

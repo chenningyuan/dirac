@@ -39,6 +39,7 @@ C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
+C
 C  /* Deck expcft */
       SUBROUTINE EXPCFT(ETIJ,NPP12,JMAX1,JMAX2,COOR12,EXP12,
      &                  IAB0,HPI,PA,PB,IRUTIN,IELCTR,MAX1,MAX2,

@@ -33,6 +33,9 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
 C
+C
+C$Id$
+C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
@@ -47,18 +50,66 @@ C     Two-electron Dirac delta added (WK/UniKA/22-11-2002).
      &          ALPHA(NPPX), COORPQ(NPPX,3),
      &          WORK(LWORK)
 #include "ericom.h"
+C aspg, 2006-04-23
+C
+C the following ifdef was added due to the moving of HFXFAC from dftcom.h
+C to dcbham.h
+C
+#ifdef PRG_DIRAC
+#include "dcbham.h"
+#endif
+C
+#include "dftcom.h"
+#include "cbieri.h"
 #include "drw2el.h"
+      PARAMETER (D1M = -1.D0)
 C-----------------------------------------------------------------------
 C
 C     Allocate ERIGAM
 C
       KWVALU = 1
       KNDADR = KWVALU +  NPPX
-      KLAST  = KNDADR + (NPPX - 1)/IRAT + 1
+      IF (ATTGAM .OR. ATTEXC) THEN
+        NRJ000 = NPPX * ( JMAX + 1 )
+        KRJ0AT = KNDADR + (NPPX - 1)/IRAT + 1
+        KFACCP = KRJ0AT  +  NRJ000
+        KLAST  = KFACCP +  NPPX
+        IF (ATTEXC) OMEGA2 = HFXMU*HFXMU
+      ELSE
+        KLAST  = KNDADR + (NPPX - 1)/IRAT + 1
+      ENDIF
       IF (KLAST .GT. LWORK) CALL STOPIT('ERIGAM',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
 C
-      IF (DO2DAR .OR. S4CENT) THEN
+      IF (ATTGAM .OR. ATTEXC) THEN
+C        Attenuated integrals, operator: erfc(omega r12)/r12
+         CALL DCOPY(NPPX,FACINT,1,WORK(KFACCP),1)
+C        Integrate over 1/r12
+         CALL ERIGA1(RJ000,FACINT,ALPHA,COORPQ,WORK(KWVALU),
+     &               WORK(KNDADR),WORK(KLAST),LWRK,IPRINT)
+C        Integrate over erf(omega r12)/r12
+         CALL ERIGA4(WORK(KRJ0AT),WORK(KFACCP),ALPHA,COORPQ,
+     &               WORK(KWVALU),WORK(KNDADR),WORK(KLAST),LWRK,IPRINT)
+C        Integrals over erfc(omega r12)/r12
+         IF (ATTEXC) THEN
+            FACATN = HFXATT/HFXFAC
+            K = KRJ0AT - 1
+            DO J=0,JMAX
+              DO I=1,NPPX
+                K = K + 1
+                RJ000(I,J) = RJ000(I,J) + FACATN*WORK(K)
+              ENDDO
+            ENDDO
+         ELSE
+            K = KRJ0AT - 1
+            DO J=0,JMAX
+              DO I=1,NPPX
+                K = K + 1
+                RJ000(I,J) = RJ000(I,J) - WORK(K)
+              ENDDO
+            ENDDO
+         END IF
+      ELSE IF (DO2DAR .OR. S4CENT) THEN
          CALL ERIGA3(RJ000,FACINT,ALPHA,COORPQ,WORK(KWVALU),
      &               WORK(KNDADR),WORK(KLAST),LWRK,IPRINT)
       ELSE IF (AD2DAR) THEN
@@ -83,6 +134,7 @@ C
       DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
      &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
+#include "cbieri.h"
 #include "ericom.h"
 #include "erithr.h"
 #include "sdpre.h"
@@ -112,9 +164,11 @@ C     Multicenter Integrals
 C     =====================
 C
       ELSE
+         THRG = THRSH
+         IF (EXCINT) THRG = THRGAM
          NODS  = 0
          DO 600 I = 1, NPPX
-            IF (ABS(FACINT(I)) .GT. THRSH) THEN
+            IF (ABS(FACINT(I)) .GT. THRG) THEN
                NODS = NODS + 1
                WVALU(NODS) = DP5*ALPHA(I)
      &            *(COORPQ(I,1)**2 + COORPQ(I,2)**2 + COORPQ(I,3)**2)
@@ -331,6 +385,122 @@ C
          DO 800 J = 0, JMAX
          DO 800 I = 1, NPPX
             RJ000(I,J) = FACINT(I)*WVALU(I)
+            FACINT(I)  = ALPHA(I)*FACINT(I)
+  800    CONTINUE
+      END IF
+C
+C     *************************
+C     ***** PRINT SECTION *****
+C     *************************
+C
+      IF (IPRINT .GT. 10) THEN
+         CALL HEADER('Output from ERIGAM',-1)
+         WRITE (LUPRI,'(2X,A,I10)') 'JMAX:  ', JMAX
+         WRITE (LUPRI,'(2X,A,I10)') 'NPPX:  ', NPPX
+         WRITE (LUPRI,'(2X,A,I10)') 'IPQXYZ:', IPQXYZ
+         IF (IPRINT .GT. 20) THEN
+            CALL HEADER('COORPQ in ERIGAM',-1)
+            CALL OUTPUT(COORPQ,1,NPPX,1,3,NPPX,3,1,LUPRI)
+            CALL HEADER('Scaled incomplete gamma function in ERIGAM',-1)
+            CALL OUTPUT(RJ000(1,0),1,NPPX,1,JMAX+1,NPPX,JMAX+1,1,LUPRI)
+         END IF
+      END IF
+      RETURN
+      END
+C  /* Deck eriga4 */
+      SUBROUTINE ERIGA4(RJ000,FACINT,ALPHA,COORPQ,
+     &                  WVALU,INDADR,WORK,LWORK,IPRINT)
+C
+C  Two-electron integrals over the operator:
+C           erf(omega r12)/r12
+C  with beta = omega^2/(alpha+omega^2)
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+      PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0)
+C
+      DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
+     &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
+C
+#include "ericom.h"
+#include "erithr.h"
+#include "sdpre.h"
+C-----------------------------------------------------------------------
+C
+C     One-center Integrals
+C     ====================
+C
+C     Note: There should be no testing for small integrals since
+C     this may in the case of one-center integrals introduce
+C     numerical instabilities for large exponents.
+C
+      IF (IPQXYZ.EQ.7) THEN
+         DO 400 I = 1, NPPX
+C          Added for attenuation
+C          NOTE: changes the values of FACINT and ALPHA
+           BETAAT = OMEGA2 / (DP5*ALPHA(I) + OMEGA2)
+           SQBETA = SQRT(BETAAT)
+           FACINT(I) = FACINT(I)*SQBETA
+           ALPHA(I) = ALPHA(I)*BETAAT
+  400    CONTINUE
+         CALL DCOPY(NPPX,FACINT,1,RJ000(1,0),1)
+         IF (JMAX .GT. 0) THEN
+            CALL DCOPY(NPPX,ALPHA,1,FACINT,1)
+            DO 500 J = 1, JMAX
+               FAC = D1/SDPRE(2*J + 1)
+               DO 510 I = 1, NPPX
+                  RJ000(I,J) = FAC*FACINT(I)*RJ000(I,0)
+                  FACINT(I)  = ALPHA(I)*FACINT(I)
+  510          CONTINUE
+  500       CONTINUE
+          END IF
+C
+C     Multicenter Integrals
+C     =====================
+C
+      ELSE
+         NODS  = 0
+         DO 600 I = 1, NPPX
+            IF (ABS(FACINT(I)) .GT. THRSH) THEN
+               NODS = NODS + 1
+c              Added for attenuation
+c              NOTE: changes the values of FACINT and ALPHA
+               BETAAT = OMEGA2 / (DP5*ALPHA(I) + OMEGA2)
+               SQBETA = SQRT(BETAAT)
+               FACINT(I) = FACINT(I)*SQBETA
+               ALPHA(I) = ALPHA(I)*BETAAT
+
+               WVALU(NODS) = DP5*ALPHA(I)
+     &            *(COORPQ(I,1)**2 + COORPQ(I,2)**2 + COORPQ(I,3)**2)
+               INDADR(NODS) = I
+            ELSE
+               FACINT(I) = D0
+               DO J = 0, JMAX
+                  RJ000(I,J) = D0
+               END DO
+            END IF
+  600    CONTINUE
+C
+C        Calculate gamma function
+C        ========================
+C
+C        Allocate GETGAM
+C
+         KINDAD = 1
+         KWVALS = KINDAD + (3*NPPX - 1)/IRAT + 1
+         KFJW   = KWVALS +  3*NPPX
+         KREXPW = KFJW   +    NPPX*(JMAX + 1)
+         KLAST  = KREXPW +    NPPX
+         IF (KLAST .GT. LWORK) CALL STOPIT('ERIGA1',' ',KLAST,LWORK)
+         CALL GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NPPX,WORK(KFJW),
+     &               WORK(KINDAD),WORK(KWVALS),WORK(KREXPW),IPRINT)
+C
+C        Scale gamma function
+C        ====================
+C
+         DO 800 J = 0, JMAX
+         DO 800 I = 1, NPPX
+            RJ000(I,J) = FACINT(I)*RJ000(I,J)
             FACINT(I)  = ALPHA(I)*FACINT(I)
   800    CONTINUE
       END IF

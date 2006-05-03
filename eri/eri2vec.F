@@ -34,10 +34,12 @@ C...      http://dirac.chem.sdu.dk
 C 
 C
 C
+C$Id$
 C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
+C
 C  /* Deck eriexp */
       SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,
      &                  RODPE1,RODPE2,IPNTPP,IPRINT)
@@ -114,6 +116,10 @@ C
             ALFA = D2/(PINV+QINV)
             IF (R12EIN) THEN
                FACPQ(PQ,IJ) = SFAC*SQRT(D2)
+            ELSE IF (EXCINT) THEN
+               FACPQ(PQ,IJ) = SFAC*SQRT(PINV*QINV*ALFA)
+               IF (IPNTPP(PQ,1).EQ.IPNTPP(PQ,2))
+     &           FACPQ(PQ,IJ) = DP5*FACPQ(PQ,IJ)
             ELSE
                FACPQ(PQ,IJ) = SFAC*SQRT(PINV*QINV*ALFA)
             END IF
@@ -694,5 +700,22 @@ C
          CALL OUTPUT(FACINT,1,NPQBCX,1,NPRFPQ,NPQBCX,NPRFPQ,1,LUPRI)
       END IF
 C
+      RETURN
+      END
+C
+C  /* Deck erfciv */
+      FUNCTION ERFCIV(THR)
+C
+C     tuh
+C
+#include <implicit.h>
+      PARAMETER (D0 = 0.0D0, THRMAX = 1.0D-15)
+      DIMENSION ERFCI(0:15)
+      DATA (ERFCI(I),I=0,15)/0.00000D0, 1.16309D0, 1.82139D0, 2.32675D0, 
+     &                       2.75106D0, 3.12341D0, 3.45891D0, 3.76656D0, 
+     &                       4.05224D0, 4.32001D0, 4.57282D0, 4.81292D0, 
+     &                       5.04203D0, 5.26151D0, 5.47248D0, 5.67585D0/
+      ARG = MAX(MAX(ABS(THR),THRMAX),D0)
+      ERFCIV = ERFCI(-NINT(DLOG10(ARG)))
       RETURN
       END

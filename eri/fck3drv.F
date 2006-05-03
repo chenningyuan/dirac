@@ -33,6 +33,9 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
 C
+C
+C$Id$
+C
 C   FCK3: Program for fast evaluation of coulomb contribution to the Fock matrix
 C
 

@@ -39,6 +39,7 @@ C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
+C
 C  /* Deck eridi1 */
       SUBROUTINE ERIDI1(KODCL1,KODCL2,
      &                  KODBC1,KODBC2,KRDBC1,KRDBC2,
@@ -67,6 +68,7 @@ C  /* Deck eridi1 */
 #else
 #include "hrunit.h"
 #endif
+#include "shells.h"
 C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
@@ -86,11 +88,12 @@ C
 C
       WRTINT = .TRUE.
       FCKINT = .FALSE.
+      EXCINT = .FALSE.
 C
 C     AO batches
 C     ==========
 C
-      CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
+      CALL SETAOB(CCFBT,INDXBT,KMAX,WORK,LWORK,IPRINT)
 C
 C     OD batches
 C     ==========
@@ -178,6 +181,7 @@ C
       END IF
       WRTINT = .TRUE.
       FCKINT = .FALSE.
+      EXCINT = .FALSE.
       EXPERI = .FALSE.
       CCRUN  = .TRUE.
       NPDIMA = 0
@@ -328,6 +332,7 @@ C
       BDER   = .FALSE.
       WRTINT = .FALSE.
       FCKINT = .FALSE.
+      EXCINT = .FALSE.
       EXPERI = .TRUE.
       UNDIFF = .FALSE.
       CCRUN  = .TRUE.
@@ -363,6 +368,7 @@ C
          CALL ODCDRV(IODCL1,IODCL2,
      &               IODBC1,IODBC2,RODBC1,RODBC2,
      &               IODPP1,IODPP2,RODPP1,RODPP2,
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &               DUMMY,DUMMY,IDUMMY,IDUMMY,D2MAT,ID2MAT,CCFBT,
      &               INDXBT,WORK,LWORK,IPRINT)
          IF ( IPRINT .GT. 2) CALL TIMER('HERMIT',TIMSTR,TIMEND)

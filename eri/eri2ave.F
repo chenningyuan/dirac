@@ -33,6 +33,13 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
 C
+C
+C$Id$
+C
+#if defined (VAR_SINGLE)
+#include "single.h"
+#endif
+C
 C  /* Deck eriave */
       SUBROUTINE ERIAVE(SO,PMAT,DMAT,D2MAT,ID2MAT,IPNTCR,IODDCC,IPNTUV,
      &                  INDXBT,WORK,LWORK,IPRINT)

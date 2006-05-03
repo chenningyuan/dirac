@@ -33,9 +33,13 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
 C
+C
+C$Id$
+C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
+C
 C  /* Deck sphmat */
       SUBROUTINE SPHMAT(CSQ,NROWS,NCOLS,NDER,GDER,WORK,LWORK,IPRINT)
 C
@@ -154,6 +158,13 @@ C
       HCF(I,J,K) = FACULT(I)/(FACULT(J)*FACULT(K/2)*FACULT(I-J-K))
 #include"ibtfun.h"
 C
+C aspg, 2006-04-21
+C added some variable initialization to make ftnchek happy
+C
+      ALPHA = 0
+      BFAC  = 0
+      IATOM = 0
+C
       M = M1 - L
       IF (L.EQ.1) THEN
         IF (M .EQ. -1) MADR =  0  
@@ -215,6 +226,12 @@ C
                      IADR = IOFF + NSPHAD(L,TOT-L,NDER) +
      &                      (2*L+1)*(NCRT(X,Y,Z)-1) + L + MADR
 #ifndef PRG_DIRAC
+C                    ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
+#else
+C aspg, 2006-04-21
+C added this part for the prg_dirac ifdef, in case it is ever used...
+C the dalton code above is indeed commented out in the eri version
+C being syncronized.
 C                    ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
 #endif /* ! PRG_DIRAC */
                      IF (NCOLS.EQ.1) THEN
@@ -333,6 +350,11 @@ C  /* Deck sphadr */
 C
       SAVE FIRST, ACOEF, BCOEF, NHOLD
       DATA FIRST /.TRUE./
+C
+C aspg, 2006-04-21
+C added some variable initialization to make ftnchek happy
+C
+      NHOLD = 0
 C
       IF (FIRST .OR. NHTYP.NE.NHOLD) THEN
          DO J = 0, MXQN - 1

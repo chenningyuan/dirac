@@ -39,6 +39,7 @@ C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
+C
 C  /* Deck eripro */
       SUBROUTINE ERIPRO(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,DOGDER,DOBDER,
      &                  IPRFCK,CCFBT,INDXBT,WORK,LWORK)
@@ -54,6 +55,10 @@ C
       LOGICAL DOBDER, DOGDER
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK), IFCTYP(NDMT),
      &          ISYMDM(NDMT), CCFBT(*), INDXBT(*)
+C
+      DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
+      LOGICAL DOEXC 
+C
 #include "ccom.h"
 #include "cbieri.h"
 #include "ericom.h"
@@ -63,6 +68,12 @@ C
 #include "odbtch.h"
 #include "symmet.h"
 #include "infpar.h"
+#include "shells.h"
+C
+C aspg, 2006-04-19
+C
+C verify later whether or not ERIPRP should be called here, 
+C on the OD batches below...
 C
       IF (SLAVE) THEN
          IPRINT = 0
@@ -85,6 +96,7 @@ C
       EXPERI = .TRUE.
       UNDIFF = .FALSE.
       WRTINT = .FALSE.
+      EXCINT = .FALSE.
 C
       IF (.NOT. SLAVE) THEN
          IF (NDMT .GT. 1) THEN
@@ -94,6 +106,7 @@ C
             CALL QUIT('NDMT .gt. 1 in ERIPRO')
          END IF
       END IF
+#ifndef PRG_DIRAC
 C
 C     Memory
 C
@@ -105,7 +118,7 @@ C
 C     AO batches
 C     ==========
 C
-      CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
+      CALL SETAOB(CCFBT,INDXBT,KMAX,WORK,LWORK,IPRINT)
 C
 C     OD batches
 C     ==========
@@ -125,6 +138,18 @@ C
      &      ' Memory requirements for ODBCHS:',LWORK - LFREE,
      &      ' Memory left for ODCDRV:        ',LFREE
       END IF
+C
+#else
+C aspg, 2006-04-19
+C
+C eriprp_ is a function created to set-up the ao batches for dirac
+C so wonder if a general case could be written and incorporated into
+C the original eri code seen above in the ifndef clause
+C
+      DOEXC = .FALSE.
+      CALL ERIPRP(DOEXC,CCFBT,INDXBT,KOD,KMAX,IPRINT,WORK,KFREE,LFREE)
+C
+#endif /* ! PRG_DIRAC */
 C
       ICALL = 0
       CALL GETDST(ICALL,ICALL,IPRINT)
@@ -146,22 +171,46 @@ C     Calculate integrals
 C     ===================
 C
       IF (SLAVE) THEN
+#ifndef PRG_DIRAC
          CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
      &               WORK(KODBC1),WORK(KODBC2),
      &               WORK(KRDBC1),WORK(KRDBC2),
      &               WORK(KODPP1),WORK(KODPP2),
      &               WORK(KRDPP1),WORK(KRDPP2),
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &               FMAT,DMAT,IDUMMY,IDUMMY,DUMMY,IDUMMY,CCFBT,INDXBT,
      &               WORK(KLAST),LWRK,IPRFCK)
+#else
+         CALL ODCDRV(WORK(KOD(1)),WORK(KOD(2)),
+     &               WORK(KOD(3)),WORK(KOD(4)),
+     &               WORK(KOD(5)),WORK(KOD(6)),
+     &               WORK(KOD(7)),WORK(KOD(8)),
+     &               WORK(KOD(9)),WORK(KOD(10)),
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,IDUMMY,
+     &               CCFBT,INDXBT,WORK(KFREE),LFREE,IPRINT)
+#endif /* ! PRG_DIRAC */
       ELSE
          IF (.NOT.INTSKP) THEN
+#ifndef PRG_DIRAC
             CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
      &                  WORK(KODBC1),WORK(KODBC2),
      &                  WORK(KRDBC1),WORK(KRDBC2),
      &                  WORK(KODPP1),WORK(KODPP2),
      &                  WORK(KRDPP1),WORK(KRDPP2),
+     &                  DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &                  FMAT,DMAT,IDUMMY,IDUMMY,DUMMY,IDUMMY,CCFBT,
      &                  INDXBT,WORK(KLAST),LWRK,IPRINT)
+#else
+         CALL ODCDRV(WORK(KOD(1)),WORK(KOD(2)),
+     &               WORK(KOD(3)),WORK(KOD(4)),
+     &               WORK(KOD(5)),WORK(KOD(6)),
+     &               WORK(KOD(7)),WORK(KOD(8)),
+     &               WORK(KOD(9)),WORK(KOD(10)),
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,IDUMMY,
+     &               CCFBT,INDXBT,WORK(KFREE),LFREE,IPRINT)
+#endif /* ! PRG_DIRAC */
 C
 C           Error message in case of insufficient memory
 C

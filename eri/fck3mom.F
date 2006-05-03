@@ -32,6 +32,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
+C
+C
+C$Id$
+C
 #ifdef MOD_FMM
       SUBROUTINE SETMM(DMAT,NDMAT,IODBCLS,IODBTCH,RODBTCH,
      &                 WORK,LWORK,IPRINT1)
@@ -716,4 +720,9 @@ C     &            RODP(1),RODP(2),RODP(3),-SPHINT, DEN12
 
       RETURN
       END 
+#else
+C to keep intel compiler happy if FMM is not included
+      SUBROUTINE DUMFCK3MOM
+      RETURN
+      END
 #endif

@@ -39,8 +39,9 @@ C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
+C
 C  /* Deck setaob */
-      SUBROUTINE SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
+      SUBROUTINE SETAOB(CCFBT,INDXBT,KMAXMX,WORK,LWORK,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -59,9 +60,17 @@ C  /* Deck setaob */
 C
 C     Number of basis functions
 C
+C     KMAXMX = KMAXMX2
+#if defined (DIRAC_ERI_DEBUG)
+      write(*,*) 'kmaxtot = ',kmaxtot
+      write(*,*) 'kmaxmx  = ',kmaxmx
+C     write(*,*) 'kmaxmx2 = ',kmaxmx2
+      write(*,*) 'kmax    = ',kmax
+#endif
       NBASE  = 0
       DO K = 0, MAXREP
-      DO I = 1, KMAXTOT
+C     DO I = 1, KMAXMX2
+      DO I = 1, KMAXMX
          IF (IBTAND(K,ISTBAO(I)).EQ.0) NBASE = NBASE + KHKT(I)
       END DO
       END DO
@@ -71,7 +80,8 @@ C
 #endif
 C
       NGAB = 0
-      DO I = 1, KMAXTOT
+C     DO I = 1, KMAXMX2
+      DO I = 1, KMAX
          NGAB = NGAB + MULT(ISTBAO(I))*NUCO(I)
       END DO
 C
@@ -85,7 +95,14 @@ C
       NB = -1
       NC = -1
       ND = -1
-      DO ISHELL = 1, KMAXTOT
+C     DO ISHELL = 1, KMAXMX2
+      DO ISHELL = 1, KMAXMX
+#if defined (DIRAC_ERI_DEBUG)
+         write (*,*) 'ishell = ',ishell
+         write (*,*) 'nbch(',ishell,')   = ',nbch(ishell) 
+         write (*,*) 'ncent(',ishell,')  = ',ncent(ishell) 
+         write (*,*) 'lclass(',ishell,') = ',iclass(ishell) 
+#endif
          IF (NB.NE.NBCH(ISHELL) .OR. NC.NE.NCENT(ISHELL) .OR.
      &       ND.NE.LCLASS(ISHELL) ) THEN
             NB = NBCH(ISHELL)

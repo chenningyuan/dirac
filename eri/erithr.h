@@ -1,1 +1,2 @@
-      COMMON /ERITHR/ THRSH
+      COMMON /ERITHR/ THRSH,  THRXCH, THRGAM,
+     &                THRXC1, THRXC2, THRXC3

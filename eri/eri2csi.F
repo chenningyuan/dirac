@@ -33,6 +33,9 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
 C
+C
+C$Id$
+C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
@@ -417,40 +420,88 @@ C
       RETURN
       END
 C  /* Deck csmext */
-      SUBROUTINE CSMEXT(CSMAT)
+      SUBROUTINE CSMEXT(FMAT,NDIMF,NMATF,RMAT,NDIMR,IPNT,IPRINT)
 C
 C     October 2004 tuh
 C
-#include "implicit.h"
-#include "priunit.h"
+#include <implicit.h>
+#include <priunit.h>
       PARAMETER (D0 = 0.D0)
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-      DIMENSION CSMAT(NBAST,NBAST), CSMSHL(KMAX,KMAX)
-#include "inforb.h"
-#include "shells.h"
-      IOFF = 0
-      DO ISHELL = 1, KMAX
-         JOFF = 0
-         DO JSHELL = 1, KMAX
-            CSMAX = D0
-            DO ICMP = IOFF + 1, IOFF + KHKT(ISHELL)
-               DO JCMP = JOFF + 1, JOFF + KHKT(JSHELL)
-                  CSMAX = MAX(CSMAT(ICMP,JCMP),CSMAX)
-               END DO
-            END DO
-            CSMSHL(ISHELL,JSHELL) = CSMAX
-            JOFF = JOFF + KHKT(JSHELL)
+      DIMENSION FMAT(NDIMF,NDIMF,NMATF), RMAT(NDIMR,NDIMR), IPNT(NDIMR)
+C
+      IF (IPRINT.GT.10) THEN
+         CALL HEADER('Full matrix FMAT',-1)
+         DO N = 1, NMATF
+            CALL OUTPUT(FMAT(1,1,N),1,NDIMF,1,NDIMF,NDIMF,NDIMF,1,LUPRI)
          END DO
-         IOFF = IOFF + KHKT(ISHELL)
+      END IF
+C
+      IOFF = 0
+      DO I = 1, NDIMR
+         JOFF = 0
+         DO J = 1, NDIMR
+            AMAX = D0
+            DO N = 1, NMATF
+            DO L = IOFF + 1, IOFF + IPNT(I)
+            DO K = JOFF + 1, JOFF + IPNT(J)
+               AMAX = MAX(ABS(FMAT(K,L,N)),AMAX)
+            END DO
+            END DO
+            END DO
+            RMAT(I,J) = AMAX
+            JOFF = JOFF + IPNT(J)
+         END DO
+         IOFF = IOFF + IPNT(I)
       END DO
-      IF (.FALSE.) THEN
-         CALL HEADER('Subroutine CSMAT',-1) 
-         CALL OUTPUT(CSMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-         CALL HEADER('Subroutine CSMSHL',-1)
-         CALL OUTPUT(CSMSHL,1,KMAX,1,KMAX,KMAX,KMAX,1,LUPRI)
+C
+      IF (IPRINT.GT.5) THEN
+         CALL HEADER('Reduced matrix',-1)
+         CALL OUTPUT(RMAT,1,NDIMR,1,NDIMR,NDIMR,NDIMR,1,LUPRI)
       END IF
       RETURN
       END
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C aspg, 2006-04-19, merging latest eri code into dirac
+C
+C replacing csmext for its new incarnation, old code follows
+C when i confirm its ok to delete it, it goes away...
+C
+CC  /* Deck csmext */
+C      SUBROUTINE CSMEXT(CSMAT)
+CC
+CC     October 2004 tuh
+CC
+C#include "implicit.h"
+C#include "priunit.h"
+C      PARAMETER (D0 = 0.D0)
+C#include "maxaqn.h"
+C#include "mxcent.h"
+C#include "maxorb.h"
+C#include "aovec.h"
+C      DIMENSION CSMAT(NBAST,NBAST), CSMSHL(KMAX,KMAX)
+C#include "inforb.h"
+C#include "shells.h"
+C      IOFF = 0
+C      DO ISHELL = 1, KMAX
+C         JOFF = 0
+C         DO JSHELL = 1, KMAX
+C            CSMAX = D0
+C            DO ICMP = IOFF + 1, IOFF + KHKT(ISHELL)
+C               DO JCMP = JOFF + 1, JOFF + KHKT(JSHELL)
+C                  CSMAX = MAX(CSMAT(ICMP,JCMP),CSMAX)
+C               END DO
+C            END DO
+C            CSMSHL(ISHELL,JSHELL) = CSMAX
+C            JOFF = JOFF + KHKT(JSHELL)
+C         END DO
+C         IOFF = IOFF + KHKT(ISHELL)
+C      END DO
+C      IF (.FALSE.) THEN
+C         CALL HEADER('Subroutine CSMAT',-1) 
+C         CALL OUTPUT(CSMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+C         CALL HEADER('Subroutine CSMSHL',-1)
+C         CALL OUTPUT(CSMSHL,1,KMAX,1,KMAX,KMAX,KMAX,1,LUPRI)
+C      END IF
+C      RETURN
+C      END
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC

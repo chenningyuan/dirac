@@ -32,7 +32,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
-
+C
+C
+C$Id$
+C
 C --------------------------------------------------------------
 C
 C             Ftuv
