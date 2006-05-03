@@ -4,8 +4,13 @@
      &        NUCO(MXSHEL), JSTRT(MXSHEL), NSTRT(MXSHEL), NCENT(MXSHEL),&
      &        NRCO(MXSHEL), NUMCF(MXSHEL), NBCH(MXSHEL), KSTRT(MXSHEL), &
      &        LCLASS(MXSHEL), IPTSHL(MXSHEL), NUMCFT(MXSHEL), KMAX,     &
-     &        NLRGSH, NSMLSH, NORBS, KMAXTOT
+     &        NLRGSH, NSMLSH, NORBS, KMAXTOT,                           &
+     &        MST(MXSHEL), MBSID(MXSHEL), MBIDBT(MXSHEL),               &
+     &        NAUXSH, KMAXAUX, NORBAUX, IFSTSHAUX
       COMMON /SHELLS/ CENT, NHKT, KHKT, KCKT, ISTBAO, NUCO, JSTRT,      &
      &                NSTRT, NCENT, SHARE, NRCO, NUMCF, NBCH, KSTRT,    &
      &                SEGM, LCLASS, IPTSHL, NUMCFT, SPHR, KMAX, NLRGSH, &
-     &                NSMLSH, NORBS, KMAXTOT
+     &                NSMLSH, NORBS, KMAXTOT,                           &
+     &                MST, MBSID, MBIDBT, NAUXSH, KMAXAUX, NORBAUX,     &
+     &                IFSTSHAUX
+C     MBSID and MBIDBT have been added for multiple basis sets (WK/UniKA/31-10-2002).

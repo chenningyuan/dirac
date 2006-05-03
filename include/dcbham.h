@@ -111,10 +111,17 @@
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD                                        &
-
+C
+C aspg, 2006-04-21
+C checking should be done as to whether or not HFXFAC can leave 
+C DCRHAM and go to DFTCOM in dftcom.h, for now it stays here
+C
       REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
-      COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV,       &
+      COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV,       & 
      &                  HFXFAC, ONECNV
+C     REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, ONECNV
+C     COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, ONECNV
+C
 
 #else  /* __CVERSION__ */
 #define MAX1OPER 10
