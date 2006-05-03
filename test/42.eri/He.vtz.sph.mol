@@ -1,0 +1,8 @@
+WHATEVER
+Test of basis set readin.
+helium
+S   1    0X  Y  Z
+        2.    1
+He            0.00000000          0.00000000          0.00000000
+LARGE BASIS cc-pVTZ
+FINISH
