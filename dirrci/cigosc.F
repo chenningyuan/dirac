@@ -555,6 +555,7 @@ C     =================================
 C     =================================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
+      CHARACTER FMT*2
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
 C
 #include "goscom.inc"
@@ -594,6 +595,7 @@ C
  1006 FORMAT(/' Population analysis for representation ',A4
      +       /'            The first ',I4,' vectors are analyzed'//)
 C
+      WRITE(FMT,'(I2)') N1
       DO 30 I=1,MX
         WRITE(6,1000) D(I,IRP)+ECORE
         DO 40 J=1,NDET
@@ -605,7 +607,8 @@ C
             DO 60 JJ=NORB+1,N1
               N(JJ)=' '
  60           CONTINUE
-            WRITE(6,1008) J,(N(JJ),JJ=1,N1),HR(J,I)
+            WRITE(6,'(17X,I8,2X,'//FMT//'(A1),F16.8)') 
+     &           J,(N(JJ),JJ=1,N1),HR(J,I)
           ENDIF
  40       CONTINUE
  30     CONTINUE
@@ -634,7 +637,6 @@ C        Odd number of electrons, fermion irreps
       ENDIF
 C
  1000 FORMAT(F17.8)
- 1008 FORMAT(17X,I8,2X,16(A1),F16.8)
       RETURN
       END
 C
