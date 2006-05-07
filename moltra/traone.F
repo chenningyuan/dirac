@@ -199,6 +199,7 @@ C
 C
 C     Initialize
 C
+      NOPENBUF = NOPEN
       NFMAT = 1
       NOPEN = 0
 C
@@ -333,6 +334,10 @@ C
      &            Q2(ICMOQR(I,2)),NRQ2,NCQ2,NZ,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRINT)
  10   CONTINUE
+C
+C     Restore NOPEN
+C
+      NOPEN = NOPENBUF
 C
       CALL QEXIT('GTCFC1')
       RETURN
@@ -617,10 +622,14 @@ C     group type (1 real, 2 complex, 4 quat.),spinfree formalism,
 C     total number of orbitals (so including frozen or deleted orbitals)
       WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR.OR.LEVYLE,
      &               NORBT
-C     Number of fermion irreps in parent group, names of these
-C     irreps (gerade, ungerade), number of spinors active
-C     in the transformation, number of occupied frozen spinors,
-C     number of deleted spinors.
+C     NSYMRP        - Number of fermion irreps in parent group
+C     REPN          - names of these irreps (gerade, ungerade)
+C     NAEL          - number of spinors active in the transformation
+C     NSPC          - number of occupied frozen (core) spinors,
+C                     0: total
+C                     1: positive energy
+C                     2: negative energy
+C     NESH-NST-NSPC -number of deleted spinors.
       WRITE (LUMLF1) NSYMRP,(REPN(IRP),IRP=1,NSYMRP),
      &                      (NAEL(IRP),IRP=1,NSYMRP),
      &                      (NSTR(IRP),IRP=1,NFSYM),
