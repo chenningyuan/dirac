@@ -2764,6 +2764,7 @@ C
 C
       DO 20 IROOT = 1, NROOTS
          IF (SELECT) THEN
+CTROND         IF (SELECT.OR.ITER.GT.2) THEN
          OVMAX = 0.D0
          DO 10 I = 1, NVEC
             OV = EVECR(IROOT,I)*EVECR(IROOT,I)
@@ -2811,6 +2812,7 @@ C
       CHARACTER*10 DATEX,DATEXB,TIMEX*8,TIMEXB*8
       CHARACTER*10 NEXTFIL
 C
+CTROND      REALAR = .TRUE.
       TRESINT = 1.D-12
       NINT = 0
       KLS = 0
@@ -3376,10 +3378,12 @@ C
 C
       LOGICAL TOBE,DONE
       CHARACTER*4 IREPNA,VECFIL*11
+CTROND: check this !
       DIMENSION NRAS1(16),NRAS2(16)
+      DIMENSION MINE(16),MAXE(16),IGAS(16),NGASO(256)
 C
-      NAMELIST /GOSCIP/ NELEC
-      NAMELIST /RASORB/ NELEC,NRAS1,NRAS2,MAXH1,MAXE3
+      NAMELIST /GOSGAS/ NELEC,NGAS,MINE,MAXE,NGASO
+      NAMELIST /RASORB/ NELEC,NRAS1,NRAS2,MINH1,MAXH1,MAXE3
       NAMELIST /DIRECT/ MAXITER,CPUMAX,CONVERR,CONVERE,RESTART
       NAMELIST /CIROOT/ NROOTS,NSEL,SELECT,IREPNA,ISTART
       NAMELIST /OPTIM/ IGENEX
@@ -3387,15 +3391,24 @@ C
       NAMELIST /NATURAL/ MAKENAT
 C
       NELEC = 0
+
+ctom---------------------------------------------------------
+ctom
+ctom Modified for gasci in goscip
+ctom Tommi Matila, Apr 26 2000
+ctom
       REWIND (5)
-      READ (5,GOSCIP,END=10,ERR=10)
-   10 IF (NELEC.NE.0) THEN
-         CALL PAMGOS(CI,MAXCORE,NELEC)
-         DONE = .TRUE.
-         RETURN
+      READ (5,GOSGAS,END=10,ERR=10)
+ 10   IF (NELEC.NE.0) THEN
+        CALL PAMGOS(CI,MAXCORE,NELEC,NGAS,IGAS,MINE,MAXE,NGASO)
+        DONE = .TRUE.
+        RETURN         
       ELSE
-         DONE = .FALSE.
+        DONE = .FALSE.
       ENDIF
+ctom
+ctom End of modifications
+ctom---------------------------------------------------------
 C
       NELEC = 0
       DO I = 1, NSYMRP
@@ -3774,3 +3787,4 @@ C
 C
       RETURN
       END
+

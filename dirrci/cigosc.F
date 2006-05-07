@@ -38,25 +38,32 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : cigosc.F
 C
-      SUBROUTINE PAMGOS(CI,MAXCORE,NELECT)
+      SUBROUTINE PAMGOS(CI,MAXCORE,NELECT,NGAS,IGAS,
+     &                  MINE,MAXE,NGASO)
 C     ===============================================================
 C     SMALL CI PROGRAM TO PERFORM COMPLETE OPEN SHELL CI CALCULATIONS
 C     METHOD DESCRIBED IN JCP 96, 2910, (1992).
 C     FIRST VERSION WRITTEN NOVEMBER 1990 BY O. VISSER
 C     THEORETICAL CHEMISTRY DEPARTMENT,
 C     UNIVERSITY OF GRONINGEN (RUG), GRONINGEN,THE NETHERLANDS
+C     Adaption for GAS by Tommi Matila, Apr 27 2000
 C     ==========================================================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
 #include "goscom.inc"
 C
       DIMENSION CI(MAXCORE)
+      DIMENSION MINE (NGAS),MAXE (NGAS),IGAS(NGAS)
+      DIMENSION NGASO(*)
+C
       CHARACTER*8 DATEX*10,TIMEX
 C
-      EXTERNAL BDGOSCI
+      EXTERNAL INIT
       CALL DAYTIME(DATEX,TIMEX)
       WRITE(6,1000) DATEX,TIMEX
       CALL CPUUSED(SEC)
+C
+C     Read namelist input
       CALL READGOS(NELECT)
 C
 C     Set pointers to allocate blocks in memory
@@ -75,10 +82,16 @@ C
       ENDIF
 C
       NDETMX = 1
+C.....Create masks fo GAS spaces
+      CALL GASMASK(NGAS,IGAS,NGASO)
+C.....loop over fermion irreps i Abelian subgroup
       DO IRP=1, NREP
+C.......odd number of electrons: fermion irreps
         IRRP = IRP
+C.......even number of electrons: boson irreps
         IF (MOD(NELEC,2).EQ.0) IRRP = IRP + NREP
-        CALL GENDET(IRP,IRRP)
+C.......Generate list of determinants
+        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
         NDETMX = MAX0(NDETMX,NDET)
       ENDDO
 C
@@ -101,7 +114,9 @@ C
         IRRP = IRP
         IF (MOD(NELEC,2).EQ.0) IRRP = IRP + NREP
 	CALL CPUUSED(SEC0)
-        CALL GENDET(IRP,IRRP)
+ctom
+        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
+ctom
         IF (NDET.EQ.0) GOTO 10
 	CALL CPUUSED(SEC1)
         CALL MAKEH(CI(KHR),CI(KHI),CI(KINDTWR),CI(KINDTWI),
@@ -192,33 +207,51 @@ C
       RETURN
       END
 
-C     ===========================
-      SUBROUTINE GENDET(IRP,IRRP)
-C     ===========================
+C     ==============================================
+      SUBROUTINE GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
+C     ==============================================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
+CTROND: IRP is not used !!!
+CTROND: What is the meaning of IREF and IREFE ?
+CTROND: Convert ibtfun etc....
 #include "goscom.inc"
 C
+      DIMENSION IGAS (NGAS),MINE (NGAS),MAXE (NGAS)
       INTEGER N(N2)
 C
 #include <ibtfun.h>
       IF (IPRNT.GE.10) WRITE(6,1000) REPNA(IRRP)
 C
+c     Loop over ALL possible determinants (ineffective!!)
+c
       NDET = 0
-      DO 10 I = 1, 2 ** NORB
-c       IF ((NBITS(I).EQ.NELEC).AND.(NBITS(I.AND.IREF).EQ.IREFE) 
-        IF ((NBITS(I).EQ.NELEC).AND.(NBITS(IBTAND(I,IREF)).EQ.IREFE)
+      DO 20 I = 1,2**NORB
+C.....check that total number of electrons and symmetry is correct
+      IF ((NBITS(I).EQ.NELEC).AND.(NBITS(IBTAND(I,IREF)).EQ.IREFE)
      +     .AND.(IRPDET(I).EQ.IRRP))  THEN
-          NDET = NDET + 1
-          IF (NDET .GT. N2) CALL QUIT(' GOSCI GENDET: N2 TOO SMALL')
-          IDET (NDET) = I
-          DO 20 J=1,NORB
-            N(J)=0
- 20         IF (IBTAND (I, IBTSHL (1, J - 1)) .NE. 0)  N(J)=1
-          IF (IPRNT.GE.10)
-     +        WRITE(6,1010) NDET,(N(J),J=1,NORB)
-        ENDIF
- 10     CONTINUE
+C.......check that electron occupation in each GAS is correct
+        DO 30 JGAS = 1,NGAS
+          IELGAS = NBITS(IBTAND(I,IGAS(JGAS)))
+          IF ((IELGAS.GT.MAXE(JGAS)).OR.(IELGAS.LT.MINE(JGAS)))
+     &          GOTO 20
+ 30     CONTINUE
+        NDET = NDET + 1
+        IF (NDET .GT. N2) STOP ' N2 TOO SMALL'
+        IDET (NDET) = I
+        DO 40 J=1,NORB
+          N(J)=0
+          IF (IBTAND (I,IBTSHL (1,J-1)).NE.0)  N(J)=1
+ 40     CONTINUE
+        IF (IPRNT.GE.10) WRITE(6,1010) NDET,(N(J),J=1,NORB)
+      ENDIF
+ 20   CONTINUE
+c
+c
+c
+ctom
+ctom End of modifications
+ctom---------------------------------------------------------
       RETURN
  1000 FORMAT(/' List of determinants with symmetry ',A4,':'//)
  1010 FORMAT(I5,32I2)
@@ -452,8 +485,7 @@ C
       END
 C
 C     ===============
-      BLOCK DATA BDGOSCI
-C     was : BLOCK DATA INIT, but INIT is too general a word ...
+      BLOCK DATA INIT
 C     ===============
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -504,16 +536,7 @@ C
           HI (J,I) = -HI (I, J)
         ENDDO
       ENDDO
-C      PRINT*, ' ** HR **'
-C      DO 100 I=1,NDET
-C        WRITE(6,1010) (HR(I,J),J=1,NDET)
-C100     CONTINUE
-C      PRINT*, ' ** HI **'
-C      DO 110 I=1,NDET
-C        WRITE(6,1010) (HI(I,J),J=1,NDET)
-C110   CONTINUE
-CTROND
-C 1010 FORMAT(15F8.4)
+C
       RETURN
       END
 C
@@ -559,6 +582,8 @@ C
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
 C
 #include "goscom.inc"
+C
+      PARAMETER (EVOLT=27.21139590988D0,CM=219474.63068D0)
 C
       CHARACTER*1 N(N1)
 C
@@ -618,6 +643,7 @@ C     ------------------------------------
 C     PRINT COMPRESSED LIST OF EIGENVALUES
 C     ------------------------------------
 C
+#ifndef ego
  110  CONTINUE
 C
       ND = 0
@@ -637,6 +663,70 @@ C        Odd number of electrons, fermion irreps
       ENDIF
 C
  1000 FORMAT(F17.8)
+#else /* ego */
+ 110  CALL SORTEW (DS,NDETT,IRPS)
+      WRITE(6,1005)
+      ILEVEL=1
+      EW=0.0D0
+      EWF=DS(1)
+      NEW=0
+      AVER=0.0D0
+      DO 120 I=1,NDETT
+        AVER=AVER+DS(I)
+        IF (ABS(DS(I)-EW).GT.DEGEN) THEN
+          IF (NEW.NE.0)
+     &      WRITE(6,1010) ILEVEL,EW-EWF,EW+ECORE,NEW
+          ILEVEL=ILEVEL+1
+          NEW=1
+          EW=DS(I)
+        ELSE
+          NEW=NEW+1
+          EW=((NEW-1)*EW+DS(I))/DBLE(NEW)
+        ENDIF
+ 120    CONTINUE
+      IF (NEW.NE.0)
+     &WRITE(6,1010) ILEVEL,EW-EWF,EW+ECORE,NEW
+      WRITE(6,1020) AVER/DBLE(NDETT)+ECORE
+C
+      IF (IRRP.EQ.0) WRITE(6,1025) (REPNA(I),I=NREP+1,2*NREP)
+      IF (IRRP.EQ.1) WRITE(6,1025) (REPNA(I),I=1,NREP)
+      ILEVEL=0
+      EW=0.0D0
+      EWF=DS(1)
+      NEW=0
+      DO 140 I=1,NDETT
+        IF (ABS(DS(I)-EW).GT.DEGEN) THEN
+         IF (NEW.NE.0)
+     &      WRITE(6,1030) ILEVEL,EVOLT*(EW-EWF),CM*(EW-EWF),
+     &                    (IND(JRP),JRP=1,NREP)
+          DO 130 JRP = 1, NREP
+            IND(JRP) = 0
+ 130        CONTINUE
+          ILEVEL = ILEVEL + 1
+          IND(IRPS(I)) = 1
+          NEW=1
+          EW=DS(I)
+        ELSE
+          NEW=NEW+1
+          IND(IRPS(I)) = IND(IRPS(I)) + 1
+          EW=((NEW-1)*EW+DS(I))/DBLE(NEW)
+        ENDIF
+ 140    CONTINUE
+      IF (NEW.NE.0) WRITE(6,1030) ILEVEL,EVOLT*(EW-EWF),CM*(EW-EWF),
+     &              (IND(JRP),JRP=1,NREP)
+ 1000 FORMAT(1X,F16.8)
+ 1008 FORMAT(10X,I8,2X,36(A1),F16.8)
+ 1005 FORMAT(//1X,'ENERGY EIGENVALUES IN ATOMIC UNITS'
+     +            //1X,'LEVEL   REL EIGENVALUE     ',
+     +            'ABS EIGENVALUE  DEGENERACY'/)
+ 1010 FORMAT(1X,I4,1X,F16.12,F20.12,1X,'(',I4,' * )')
+ 1020 FORMAT(//1X,'TOTAL AVERAGE: ',F20.10)
+ 1025 FORMAT(//1X,'RELATIVE EIGENVALUES IN OTHER UNITS;'/' SYMMETRY',
+     +       ' CLASSIFICATION IN THE ABELIAN SUBGROUP',
+     +       //1X,'LEVEL  EIGENVALUE (EV) ',
+     +      ' EIGENVALUE (CM-1)',2X,8A4/)
+ 1030 FORMAT(1X,I4,1X,F18.9,F18.6,1X,8(I3,1X))
+#endif /* ego */
       RETURN
       END
 C
@@ -753,7 +843,6 @@ C--> Particle interchanged and complex conjugated plus time-reversed partners
       Goto 10
  20   Continue
       CLOSE(1)
-C
       Write (6,1000) "Coulomb",datex,timex,nuniq
       IF (IPRNT .GT. 20) THEN
         call header('two electron integrals',-1)
@@ -1044,3 +1133,34 @@ C
  1000 FORMAT (/' Representation ',A4,'; ',I2,
      &' vectors written to file ',A12//' Eigenvalues',(T20,F20.12))
       END
+C     ===================================
+      SUBROUTINE GASMASK(NGAS,IGAS,NGASO)
+C     ===================================
+c     Create 'masks', 
+C     that is a bitstring with ones for each orbital present in the GAS
+C
+C     Written by Tommi Matila, Apr 27 2000
+C     Polish Trond Saue
+C
+      IMPLICIT REAL*8 (A-H, O-Z)
+C
+#include "goscom.inc"
+C
+      DIMENSION IGAS(NGAS),NGASO(NREP,NGAS)
+C
+      CALL IZERO(IGAS,NGAS)
+      IORB = 0
+C.....Loop over fermion irreps of Abelian subgroup
+      DO ISYM = 1,NREP
+C.......Loop over GAS spaces
+        DO JGAS = 1,NGAS
+C.........Loop over orbitals in each irrep/GAS
+          DO IEL = 1,NGASO(ISYM,JGAS)
+            IORB=IORB+1
+            IGAS(JGAS) = IGAS(JGAS) + 2**(IORB-1)
+          ENDDO
+        ENDDO
+      ENDDO
+      RETURN
+      END
+C

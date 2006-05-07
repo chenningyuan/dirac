@@ -3573,10 +3573,13 @@ C
 #include "dgroup.h"
 #include "dcbres.h"
 #include "dcbgen.h"
+#include "dcbdhf.h"
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
       LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
       DIMENSION WORK(*),NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
      &          KVEC(2,2),KQ(2,4),KE(2,4),KIBE(2,4),NQ(2),KQC(2)
+CTROND: to fix !
+      DIMENSION MINE(16),MAXE(16),NGASO(256)
 C
       CALL QENTER('RESOLV')
 #include "memint.h"
@@ -3590,6 +3593,22 @@ C
      &   '*WARNING: No open-shell electrons, no states to resolve!'
          GOTO 9999
       END IF
+CTROND
+      WRITE(6,*) 'GAS setup:', NOPEN
+      IND = 1
+      NGAS = NOPEN
+      NSYMRP = 2*NFSYM
+      DO IOPEN = 1,NOPEN
+        ITEMP = 0
+        DO IFRP = 1,NFSYM
+          NGASO(IND) = NACSH(IFRP,IOPEN)
+          NGASO(IND+1) = NGASO(IND)
+          IND = IND + 2
+          ITEMP = ITEMP + NACSH(IFRP,IOPEN)      
+        ENDDO
+        MINE(IOPEN) = ITEMP
+        MAXE(IOPEN) = MINE(IOPEN)
+      ENDDO
 C
 C     Check for necessary files:
 C       MRCONEE - one-electron integrals and other information
@@ -3832,7 +3851,8 @@ C
       IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
 #endif
       OPEN (5,FILE='DIRAC.INP')
-      CALL PAMGOS(WORK(KFREE),LFREE,NAELEC)
+      CALL GOSRES(WORK(KFREE),LFREE)
+      CLOSE(5,STATUS='KEEP')
 C
 C     Restore DCBTRA information
 C
@@ -4569,5 +4589,115 @@ Cluuk   not yet implemented use value for SS
          CALL QUIT('MXHERMEM: unknown I2TYP')
       END IF
       MXMEMHER = MWHER
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck GOSRES */
+      SUBROUTINE GOSRES(WORK,LWORK)
+C***********************************************************************
+C
+C     Driver routine setting up correctly
+C     the resolution of electronic states within 
+C     open-shell manifold
+C
+C     Written on a rainy day in Nagoya 2006....
+C     Trond Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER (NORDER=16)
+      CHARACTER*4 REPA(4*NORDER)
+#include "dcbtra.h"
+#include "dcbdhf.h"
+      DIMENSION WORK(LWORK)
+#include "memint.h"
+C
+      CALL OPNFIL(LUMLF1,'MRCONEE','OLD','GOSRES')
+      READ(LUMLF1) NORB
+C.....Skip symmetry information for parent group
+      READ(LUMLF1) 
+C.....Read symmetry information for Abelian subgroup
+      READ(LUMLF1) NREP,(REPA(IRP),IRP=1,2*NREP)
+      CLOSE(LUMLF1,STATUS='KEEP')
+
+C.....Allocate memory for orbital symmetry information
+      NDIM = NREP*NOPEN
+      CALL MEMGET('INTE',KGASO,NDIM, WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIELC,NOPEN,WORK,KFREE,LFREE)
+C      
+      CALL MEMGET('INTE',KIRPA,NORB,WORK,KFREE,LFREE)
+      CALL GOSRE1(REPA,NREP,WORK(KIRPA),
+     &            WORK(KGASO),WORK(KIELC),WORK(KFREE),LFREE)
+      CALL MEMREL('GOSRES',WORK,1,KIRPA,KFREE,LFREE)
+C.....Call GOSCIP module
+      CALL MEMGET('INTE',KIGAS,NOPEN,WORK,KFREE,LFREE)
+      CALL PAMGOS(WORK(KFREE),LFREE,NAELEC_DHF,NOPEN,WORK(KIGAS),
+     &            WORK(KIELC),WORK(KIELC),WORK(KGASO))
+      CALL MEMREL('GOSRES',WORK,1,KFREE,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/*   Deck GOSRE1 */
+      SUBROUTINE GOSRE1(REPA,NREP,IRPAMO,NGASO,IELC,WORK,LWORK)
+C***********************************************************************
+C
+C     Driver routine setting up correctly
+C     the resolution of electronic states within 
+C     open-shell manifold
+C
+C     Written on a rainy day in Nagoya 2006....
+C     Trond Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D2=2.0D0)
+      CHARACTER*4 REPA(*)
+#include "dcbtra.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+      DIMENSION IRPAMO(*),NGASO(NREP,*),IELC(*),WORK(LWORK)
+C
+      CALL OPNFIL(LUMLF1,'MRCONEE','OLD','GOSRES')
+      READ (LUMLF1) NORB
+      READ (LUMLF1) 
+      READ (LUMLF1) NREP,(REPA(IRP),IRP=1,2*NREP)
+      READ (LUMLF1) 
+      READ (LUMLF1) (IDUM,IRPAMO(IMO),DUM,IMO=1,NORB)
+      CLOSE(LUMLF1,STATUS='KEEP')
+C
+      NDIM = NREP*NOPEN
+      CALL IZERO(NGASO,NDIM)
+      CALL IZERO(IELC,NOPEN)
+      IORB = 0
+      DO IFRP = 1,NFSYM
+        DO IOPEN = 1,NOPEN
+          IELC(IOPEN) = IELC(IOPEN) + NACSH(IFRP,IOPEN)
+          WRITE(6,*) 'IFRP/GAS:', IFRP,IOPEN,NASH_DHF(IFRP)
+          DO I = 1,NACSH(IFRP,IOPEN)
+            IORB = IORB + 1
+C...........Add orbital to GAS
+            IREP = IRPAMO(IORB)
+            WRITE(6,*) 'A:  ',IREP
+            NGASO(IREP,IOPEN) = NGASO(IREP,IOPEN) + 1
+C...........Add Kramers partner to GAS
+            IREP = IRPAMO(IORB+NASH_DHF(IFRP))
+            WRITE(6,*) 'B:  ',IREP
+            NGASO(IREP,IOPEN) = NGASO(IREP,IOPEN) + 1
+          ENDDO
+        ENDDO
+        IORB = IORB + NASH_DHF(IFRP)
+      ENDDO
+C
+      DO IOPEN = 1,NOPEN
+        IELC(IOPEN) = NINT(DF(IOPEN)*D2*IELC(IOPEN))
+      ENDDO   
+C
+CTROND      WRITE(LUPRI,*) 'Set up the following information:',NREP
+CTROND      DO IOPEN = 1,NOPEN
+CTROND        WRITE(LUPRI,'(8I5)') IELC(IOPEN),(NGASO(IREP,IOPEN),IREP = 1,NREP)
+CTROND      ENDDO
       RETURN
       END
