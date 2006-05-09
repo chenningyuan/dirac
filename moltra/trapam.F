@@ -4694,7 +4694,7 @@ C
       ENDDO   
 C
       WRITE(LUPRI,'(A)') 'GASRES: Set up the following information:'
-      WRITE(LUPRI,'(5X,32(1X,A4)') (REPA(I)=1,NREP)
+      WRITE(LUPRI,'(5X,32(1X,A4))') (REPA(I)=1,NREP)
       DO IOPEN = 1,NOPEN
         WRITE(LUPRI,'(32I5)') 
      &    IELC(IOPEN),(NGASO(IREP,IOPEN),IREP = 1,NREP)
