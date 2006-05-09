@@ -4673,16 +4673,13 @@ C
       DO IFRP = 1,NFSYM
         DO IOPEN = 1,NOPEN
           IELC(IOPEN) = IELC(IOPEN) + NACSH(IFRP,IOPEN)
-          WRITE(6,*) 'IFRP/GAS:', IFRP,IOPEN,NASH_DHF(IFRP)
           DO I = 1,NACSH(IFRP,IOPEN)
             IORB = IORB + 1
 C...........Add orbital to GAS
             IREP = IRPAMO(IORB)
-            WRITE(6,*) 'A:  ',IREP
             NGASO(IREP,IOPEN) = NGASO(IREP,IOPEN) + 1
 C...........Add Kramers partner to GAS
             IREP = IRPAMO(IORB+NASH_DHF(IFRP))
-            WRITE(6,*) 'B:  ',IREP
             NGASO(IREP,IOPEN) = NGASO(IREP,IOPEN) + 1
           ENDDO
         ENDDO
