@@ -50,7 +50,7 @@ C     Adaption for GAS by Tommi Matila, Apr 27 2000
 C     ==========================================================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-#include "goscom.inc"
+#include "goscom.h"
 C
       DIMENSION CI(MAXCORE)
       DIMENSION MINE (NGAS),MAXE (NGAS),IGAS(NGAS)
@@ -84,6 +84,7 @@ C
       NDETMX = 1
 C.....Create masks fo GAS spaces
       CALL GASMASK(NGAS,IGAS,NGASO)
+      WRITE(6,'(A)') 'Number of determinants:'
 C.....loop over fermion irreps i Abelian subgroup
       DO IRP=1, NREP
 C.......odd number of electrons: fermion irreps
@@ -92,6 +93,7 @@ C.......even number of electrons: boson irreps
         IF (MOD(NELEC,2).EQ.0) IRRP = IRP + NREP
 C.......Generate list of determinants
         CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
+        WRITE(6,'(3X,A,A4,A,I10)') 'Symmetry ',REPNA(IRRP),'  : ',NDET
         NDETMX = MAX0(NDETMX,NDET)
       ENDDO
 C
@@ -199,7 +201,7 @@ C     ===========================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
-#include "goscom.inc"
+#include "goscom.h"
 C
       REAL*8 E(N2),EE(N2*N2,2)
 C
@@ -215,7 +217,7 @@ C
 CTROND: IRP is not used !!!
 CTROND: What is the meaning of IREF and IREFE ?
 CTROND: Convert ibtfun etc....
-#include "goscom.inc"
+#include "goscom.h"
 C
       DIMENSION IGAS (NGAS),MINE (NGAS),MAXE (NGAS)
       INTEGER N(N2)
@@ -246,12 +248,6 @@ C.......check that electron occupation in each GAS is correct
         IF (IPRNT.GE.10) WRITE(6,1010) NDET,(N(J),J=1,NORB)
       ENDIF
  20   CONTINUE
-c
-c
-c
-ctom
-ctom End of modifications
-ctom---------------------------------------------------------
       RETURN
  1000 FORMAT(/' List of determinants with symmetry ',A4,':'//)
  1010 FORMAT(I5,32I2)
@@ -266,7 +262,7 @@ C
       DIMENSION TWOINR(0:MAXINT),TWOINI(0:MAXINT)
       DIMENSION INDTWR(NORB,NORB,NORB,NORB),INDTWI(NORB,NORB,NORB,NORB)
       DIMENSION INDGAR(NORB,NORB,NORB,NORB),INDGAI(NORB,NORB,NORB,NORB)
-#include "goscom.inc"
+#include "goscom.h"
 C
 #include <ibtfun.h>
 C
@@ -489,7 +485,7 @@ C     ===============
 C     ===============
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-#include "goscom.inc"
+#include "goscom.h"
 C
       DATA REPNA / N5A * '    ' /
       DATA MULTB / N5B * 0 /
@@ -502,7 +498,7 @@ C     =====================
 C     =====================
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-#include "goscom.inc"
+#include "goscom.h"
 C
       JRRP = 0
       ID=JDET
@@ -526,7 +522,7 @@ C
       DIMENSION TWOINR(0:MAXINT),TWOINI(0:MAXINT)
       DIMENSION INDTWR(NORB,NORB,NORB,NORB),INDTWI(NORB,NORB,NORB,NORB)
       DIMENSION INDGAR(NORB,NORB,NORB,NORB),INDGAI(NORB,NORB,NORB,NORB)
-#include "goscom.inc"
+#include "goscom.h"
 C
       DO I = 1, NDET
         DO J = 1, I
@@ -545,7 +541,7 @@ C     =============================
 C     =============================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-#include "goscom.inc"
+#include "goscom.h"
 C
       ID = JDET
       NB = 0
@@ -561,7 +557,7 @@ C     =====================
 C     =====================
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-#include "goscom.inc"
+#include "goscom.h"
 C
 #include <ibtfun.h>
 C
@@ -581,7 +577,7 @@ C
       CHARACTER FMT*2
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
 C
-#include "goscom.inc"
+#include "goscom.h"
 C
       PARAMETER (EVOLT=27.21139590988D0,CM=219474.63068D0)
 C
@@ -736,7 +732,7 @@ C     ===========================================================
 C     ==========================================================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-#include "goscom.inc"
+#include "goscom.h"
 C
       PARAMETER(D0 = 0.0D0)
       CHARACTER*10 DATEX,TIMEX*8
@@ -958,7 +954,7 @@ C     =================
 C     =================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-#include "goscom.inc"
+#include "goscom.h"
 C
       CHARACTER*14 REPN(16)
 C
@@ -1041,7 +1037,7 @@ C     ==============================================
 C     ==============================================
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-#include "goscom.inc"
+#include "goscom.h"
 C
       REAL*8 DS(N2*N5)
       INTEGER NDETT,IND(N5),IRPS(N2*N5)
@@ -1092,7 +1088,7 @@ C     RECORD 3 : FIRST VECTOR
 C     RECORD 4 : SECOND VECTOR, ETC.
 C
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
-#include "goscom.inc"
+#include "goscom.h"
 C
       CHARACTER*11 VECFIL
       DIMENSION DV (N2)
@@ -1144,7 +1140,7 @@ C     Polish Trond Saue
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-#include "goscom.inc"
+#include "goscom.h"
 C
       DIMENSION IGAS(NGAS),NGASO(NREP,NGAS)
 C
