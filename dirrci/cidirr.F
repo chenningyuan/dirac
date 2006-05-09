@@ -3382,7 +3382,7 @@ CTROND: check this !
       DIMENSION NRAS1(16),NRAS2(16)
       DIMENSION MINE(16),MAXE(16),IGAS(16),NGASO(256)
 C
-      NAMELIST /GOSGAS/ NELEC,NGAS,MINE,MAXE,NGASO
+      NAMELIST /GOSCIP/ NELEC,NGAS
       NAMELIST /RASORB/ NELEC,NRAS1,NRAS2,MINH1,MAXH1,MAXE3
       NAMELIST /DIRECT/ MAXITER,CPUMAX,CONVERR,CONVERE,RESTART
       NAMELIST /CIROOT/ NROOTS,NSEL,SELECT,IREPNA,ISTART
@@ -3390,15 +3390,10 @@ C
       NAMELIST /LEADDET/ GETDET,COMIN
       NAMELIST /NATURAL/ MAKENAT
 C
+      NGAS  = 0
       NELEC = 0
-
-ctom---------------------------------------------------------
-ctom
-ctom Modified for gasci in goscip
-ctom Tommi Matila, Apr 26 2000
-ctom
       REWIND (5)
-      READ (5,GOSGAS,END=10,ERR=10)
+      READ (5,GOSCIP,END=10,ERR=10)
  10   IF (NELEC.NE.0) THEN
         CALL PAMGOS(CI,MAXCORE,NELEC,NGAS,IGAS,MINE,MAXE,NGASO)
         DONE = .TRUE.
@@ -3406,9 +3401,6 @@ ctom
       ELSE
         DONE = .FALSE.
       ENDIF
-ctom
-ctom End of modifications
-ctom---------------------------------------------------------
 C
       NELEC = 0
       DO I = 1, NSYMRP

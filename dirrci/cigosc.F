@@ -215,7 +215,6 @@ C     ==============================================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
 CTROND: IRP is not used !!!
-CTROND: What is the meaning of IREF and IREFE ?
 CTROND: Convert ibtfun etc....
 #include "goscom.h"
 C
@@ -962,7 +961,7 @@ C
       INTEGER REFDET,IRPMO(N1)
       REAL*8 SELPOP
 C
-      NAMELIST/GOSCIP/NELEC,REFDET,IREFE,IPRNT
+      NAMELIST/GOSCIP/NELEC,NGAS,MINE,MAXE,NGASO,REFDET,IREFE,IPRNT
       NAMELIST/GENERAL/TWOC
       NAMELIST/POPAN/THRESH,DEGEN,SELPOP
 C
