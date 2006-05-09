@@ -3593,8 +3593,6 @@ C
      &   '*WARNING: No open-shell electrons, no states to resolve!'
          GOTO 9999
       END IF
-CTROND
-      WRITE(6,*) 'GAS setup:', NOPEN
       IND = 1
       NGAS = NOPEN
       NSYMRP = 2*NFSYM
@@ -4695,9 +4693,11 @@ C
         IELC(IOPEN) = NINT(DF(IOPEN)*D2*IELC(IOPEN))
       ENDDO   
 C
-CTROND      WRITE(LUPRI,*) 'Set up the following information:',NREP
-CTROND      DO IOPEN = 1,NOPEN
-CTROND        WRITE(LUPRI,'(8I5)') IELC(IOPEN),(NGASO(IREP,IOPEN),IREP = 1,NREP)
-CTROND      ENDDO
+      WRITE(LUPRI,'(A)') 'GASRES: Set up the following information:'
+      WRITE(LUPRI,'(5X,32(1X,A4)') (REPA(I)=1,NREP)
+      DO IOPEN = 1,NOPEN
+        WRITE(LUPRI,'(32I5)') 
+     &    IELC(IOPEN),(NGASO(IREP,IOPEN),IREP = 1,NREP)
+      ENDDO
       RETURN
       END
