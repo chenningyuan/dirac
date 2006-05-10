@@ -1000,6 +1000,7 @@ C
       LOGICAL DIFDIP
 #include "abainf.h"
 #include "nuclei.h"
+#include "orgcom.h"
 #include "dipole.h"
 #include "symmet.h"
 #include "dorps.h"
@@ -1014,7 +1015,8 @@ CTROND         IF (ABS(CHA) .LT. D100) THEN
             FAC = FMULT(ISTBNU(IATOM))*CHA
             DO 200 ICOOR = 1, 3
                IF (ISYMAX(ICOOR,1) .EQ. 0) THEN
-                  DIPMN(ICOOR) = DIPMN(ICOOR) + FAC*CORD(ICOOR,IATOM)
+                  DIPMN(ICOOR) = DIPMN(ICOOR) 
+     &                         + FAC*(CORD(ICOOR,IATOM)- DIPORG(ICOOR))
                END IF
   200       CONTINUE
 CTROND         END IF

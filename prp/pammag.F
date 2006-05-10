@@ -86,9 +86,10 @@ C     reorthonormalization terms over positronic shells
 C ... when you want to change the DOEPRN default value in URKBAL,
 C      use the NOEPRN keyword (see below)
       IF (URKBAL) DOEPRN=.TRUE.
-
-      CALL DZERO(GAGORG,3)
-      CALL DZERO(DIPORG,3)
+CTROND: I can not see why these should be set to zero here....!!!
+CTROND  ..they are initialized already in HERINP...
+CTROND      CALL DZERO(GAGORG,3)
+CTROND      CALL DZERO(DIPORG,3)
 
 C INTNMR here in NMRINP is read before INTXLR (in XLRINP), 
 C  so it has its own default value
