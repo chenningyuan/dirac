@@ -240,16 +240,11 @@ C.......check that electron occupation in each GAS is correct
         NDET = NDET + 1
         IF (NDET .GT. N2) STOP ' N2 TOO SMALL'
         IDET (NDET) = I
-        DO 40 J=1,NORB
-          N(J)=0
-          IF (IBTAND (I,IBTSHL (1,J-1)).NE.0)  N(J)=1
- 40     CONTINUE
-        IF (IPRNT.GE.10) WRITE(6,1010) NDET,(N(J),J=1,NORB)
+        IF(IPRNT.GE.10) CALL DETPRI(I,NDET)
       ENDIF
  20   CONTINUE
       RETURN
  1000 FORMAT(/' List of determinants with symmetry ',A4,':'//)
- 1010 FORMAT(I5,32I2)
       END
 C
 C     ===========================================================
@@ -1146,7 +1141,17 @@ C
 C
       CALL IZERO(IGAS,NGAS)
 C.....Construct ordering index
-      CALL INDEXI(NORB,IRPAMO,INDX)
+C.....This one is not particularly elegant, but does the job...
+      II = 0
+      DO ISYM = 1,NREP
+        DO I = 1,NORB
+          IF(IRPAMO(I).EQ.ISYM) THEN
+            II = II + 1
+            INDX(II) = I
+          ENDIF
+        ENDDO
+      ENDDO
+C
       II = 0
 C.....Loop over fermion irreps of Abelian subgroup
       DO ISYM = 1,NREP
@@ -1167,3 +1172,24 @@ C.........Loop over orbitals in each irrep/GAS
       RETURN
       END
 C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Detpri*/
+      SUBROUTINE DETPRI(IIDET,IIREF)
+C***********************************************************************
+C
+C    Print a determinant on bitstring form
+C    A cut and paste job by Trond Saue
+C
+C***********************************************************************
+      IMPLICIT REAL*8 (A-H, O-Z)
+#include "goscom.h"
+      INTEGER N(N2)
+#include <ibtfun.h>
+      DO I=1,NORB
+        N(I)=0
+        IF (IBTAND (IIDET,IBTSHL (1,I-1)).NE.0)  N(I)=1
+      ENDDO
+      WRITE(6,1010) IIREF,(N(I),I=1,NORB)
+      RETURN
+ 1010 FORMAT(I5,32I2)
+      END
