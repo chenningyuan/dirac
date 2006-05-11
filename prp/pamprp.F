@@ -5678,7 +5678,7 @@ C=============================================================================
       IF (LONDON) CALL EXPVSUSLO(WORK(KFREE),LFREE)
 
       KFRSAV = KFREE
-      CALL TITLER('ABACUS - MAGNETIZABILITIES','*',124)
+      CALL TITLER('MAGNETIZABILITIES','*',124)
 
       IF (.NOT.XLR_SKIPEP.AND.MSUSCDIA) THEN
          IF (LONDON) THEN
