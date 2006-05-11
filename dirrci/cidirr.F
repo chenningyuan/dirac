@@ -779,19 +779,27 @@ C
       ENDIF
 C   
       IPIL = IPSI + NDET*MAXC
-      IPIR = IPIL + NDET / INTOWP(1) + MOD(NDET,INTOWP(1))
+      NDIM = NDET / INTOWP(1) + MOD(NDET,INTOWP(1))
+      IPIR = IPIL + NDIM
 C     -----------------------------------------------------------
 C     USE FREE MEMORY TO STORE ONE ELECTRON COUPLING COEFFICIENTS
 C     -----------------------------------------------------------
-      IF ((IPIR+5*(NDET/INTOWP(1)+MOD(NDET,INTOWP(1)))).GT.MAXCORE) 
-     &   CALL Q2JOB (6,'MEMORY PROBLEMS',' ',0)
+      NDIM = 5*NDIM
+      IF ((IPIR+5*NDIM).GT.MAXCORE)  THEN
+        WRITE(6,*) '* NDET/MAXCORE :',NDET,MAXCORE
+        WRITE(6,*) '* Program needs :',5*NDIM+IPIR
+        CALL Q2JOB (6,'MEMORY PROBLEMS',' ',0)
+      ENDIF
 C
       LREST = MAXCORE - (IPIR+5*(NDET/INTOWP(1)+MOD(NDET,INTOWP(1))))
       NORBD = (LREST - MOD(LREST,4)) / 4
       NELEM = NORB * NORB
       LNORBC = (NORBD - MOD(NORBD,NELEM)) / NELEM
       LNORBC = LNORBC * INTOWP(1) 
-      IF (LNORBC.LT.NORB) CALL Q2JOB (6,'MEMORY PROBLEMS',' ',0)
+      IF (LNORBC.LT.NORB) THEN
+         WRITE(6,*) 'LNORBC/NORB :',LNORBC,NORB
+         CALL Q2JOB (6,'MEMORY PROBLEMS',' ',0)
+      ENDIF
 C
       IPJL = IPIR + NDET / INTOWP(1) + MOD(NDET,INTOWP(1))
       IPJR = IPJL + NDET / INTOWP(1) + MOD(NDET,INTOWP(1)) + NORBD
