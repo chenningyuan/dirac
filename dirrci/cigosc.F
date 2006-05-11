@@ -1142,17 +1142,25 @@ C
 #include "goscom.h"
 C
       DIMENSION IGAS(NGAS),NGASO(NREP,NGAS)
+      DIMENSION INDX(N1)
 C
       CALL IZERO(IGAS,NGAS)
-      IORB = 0
+C.....Construct ordering index
+      CALL INDEXI(NORB,IRPAMO,INDX)
+      II = 0
 C.....Loop over fermion irreps of Abelian subgroup
       DO ISYM = 1,NREP
 C.......Loop over GAS spaces
         DO JGAS = 1,NGAS
 C.........Loop over orbitals in each irrep/GAS
           DO IEL = 1,NGASO(ISYM,JGAS)
-            IORB=IORB+1
-            IGAS(JGAS) = IGAS(JGAS) + 2**(IORB-1)
+            II = II + 1
+            IORB = INDX(II)
+            IF(IRPAMO(IORB).EQ.ISYM) THEN
+              IGAS(JGAS) = IGAS(JGAS) + 2**(IORB-1)
+            ELSE
+              CALL QUIT('GASMASK: Error in NGASO')
+            ENDIF
           ENDDO
         ENDDO
       ENDDO
