@@ -1627,31 +1627,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      FUNCTION GAMMLN(XX)
-#include "implicit.h"
-C***********************************************************************C
-C
-C     GAMMALN RETURNS THE NATURAL LOGARITHM OF THE GAMMA FUNCTION       C
-C     (FROM "NUMERICAL RECIPES")                                        C
-C                                                                       C
-C***********************************************************************C
-      DIMENSION COF(6)
-      DATA HALF,ONE,FPF/0.50D0,1.0D0,5.5D0/
-      DATA COF,STP/76.18009173D0,-86.50532033D0,24.01409822D0,
-     1 -1.231739516D0,0.120858002D-2,-0.536382D-5,2.50662827465D0/
-C
-      X=XX-ONE
-      TMP=X+FPF
-      TMP=(X+HALF)*DLOG(TMP)-TMP
-      SER=ONE
-      DO 11 J=1,6
-       X=X+ONE
-       SER=SER+COF(J)/X
-11    CONTINUE
-      GAMMLN=TMP+LOG(STP*SER)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DFACTR
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0)
@@ -6403,3 +6378,74 @@ C***********************************************************************
       ENDIF
       GOTO 1
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Factln */
+      FUNCTION FACTLN(N)
+C***********************************************************************
+C
+C     Returns ln(n!)
+C
+C     From "Numerical Recipies"
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(NDIM=100,DM1=-1.0D0,D1=1.0D0,D0=0.0D0)
+      DIMENSION A(NDIM)
+      SAVE A
+      DATA A/NDIM*DM1/
+      IF(N.LT.0) CALL QUIT('FACTLN: Negative factorial !')
+      IF(N.LE.99) THEN
+         IF(A(N+1).LT.D0) A(N+1)=GAMMLN(N+D1)
+         FACTLN=A(N+1)
+      ELSE
+         FACTLN=GAMMLN(N+D1)
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Gammln */
+      FUNCTION GAMMLN(XX)
+C***********************************************************************
+C
+C     Returns the value ln[Gamma(xx)] for xx > 0
+C
+C     From Numerical Recipies
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.0D0)
+      DIMENSION COF(6)
+      SAVE COF,STP
+      DATA COF,STP/76.18009172947146D0,-86.50532032941677D0,
+     &             24.01409824083091D0,-1.231739572450155D0,
+     &             0.1208650973866179D-2,-0.5395239384953D-5,
+     &             2.5066282746310005D0/
+      X=XX
+      Y=X
+      TMP=X+5.5D0
+      TMP=(X+0.5D0)*LOG(TMP)-TMP
+      SER=1.000000000190015D0
+      DO J = 1,6
+         Y=Y+D1
+         SER=SER+COF(J)/Y
+      ENDDO
+      GAMMLN=TMP+LOG(STP*SER/X)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Bico */
+      FUNCTION BICO(N,K)
+C***********************************************************************
+C
+C     Returns the binomial coefficient (n k) as a floating-point number
+C
+C     From "Numerical Recipies"
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      BICO=NINT(EXP(FACTLN(N)-FACTLN(K)-FACTLN(N-K)))      
+      END
+
