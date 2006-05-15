@@ -694,7 +694,7 @@ C
          ENDIF
          DOCART = .TRUE.
       END IF
-      CALL SPHINP(LUINFO,WORK,LWORK,DOOWN)
+      CALL SPHINP(LUINFO,WORK,LWORK,DOOWN,MXSPD)
 C
 C     ************************************************
 C     ***** Read orbital and geometry input data *****
@@ -4890,9 +4890,13 @@ C
       RETURN
       END
 C  /* Deck sphinp */
-      SUBROUTINE SPHINP(LUINFO,WORK,LWORK,DOOWN)
+C aspg, 2006-05-12
+C updating to dalton's version
+C
+      SUBROUTINE SPHINP(LUINFO,WORK,LWORK,DOOWN,MXSPD)
 C
 C     Calculate spherical harmonic transformation coefficients
+C     or, if DOOWN true, read user specified coefficients.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -4907,10 +4911,15 @@ C
       LOGICAL DOOWN
       DIMENSION WORK(LWORK)
 C
-      IF (IPREAD .GT. 4) THEN
-         WRITE(LUPRI,'(1X,A)') ' Calculation of transformation '
-     &                         //'matrix for spherical integrals.'
+      IF (DOOWN) THEN
+         WRITE(LUPRI,'(/A)') 
+     &   '  Reading user specified transformation matrices for GTOs.'
+      ELSE IF (IPREAD .GT. 4) THEN
+         WRITE(LUPRI,'(/A)') 
+     &   '  Calculation of transformation matrices for spherical GTOs.'
       END IF
+C
+      MXSPD = MXQN
 C
       IOFF = 1
       DO 100 I = 1, MXQN
@@ -4933,7 +4942,6 @@ C
       SPHNRM = .TRUE.
 C
       IF (DOCART) THEN
-         CALL CARPOW
          CALL CARLAB(MXQN-1,GTOTYP)
       ELSE
          CALL DZERO(CSP,NCSP)
@@ -4953,8 +4961,14 @@ C
                   CSP (6) = D1
                   CSP(10) = D1
                ELSE
-                  MINTEG = 1
-                  SPHNRM = .FALSE.
+                  IF (OLDNRM) THEN
+C                    use old Dalton 1.0 normalization
+                     MINTEG = 0
+                     SPHNRM = .FALSE.
+                  ELSE
+C                    generate normalized s,p,d,f,g,h,i GTO's
+                     MINTEG = 2
+                  END IF
                   CALL SPHCOM(LVAL,WORK(KCSPT),NLM,NXYZ,1,MINTEG,
      &                        WORK(KWRK),LWRK,IPREAD)
                   CALL MTRSP(NXYZ,NLM,WORK(KCSPT),NXYZ,
@@ -4963,30 +4977,57 @@ C
   200       CONTINUE
          ELSE
             CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),'(I5)') MAXSPD
+            READ (MLINE(NMLINE),'(BN,I5)') MXSPD
+            IF (MXSPD .GT. MXQN) THEN
+              WRITE (LUPRI,'(/A/I10,A,I4//A//A/A)')
+     &        ' ERROR: specified MXSPD for GTO transformation matrix',
+     &        MXSPD,' is greater than allowed max value of',MXQN,
+     &        ' Dump of last two lines read from .mol file:',
+     &        MLINE(NMLINE-1),MLINE(NMLINE)
+              CALL QUIT('ERROR in reading .mol file, see output')
+            END IF
             IOFF = 1
-            DO 300 I = 1, MAXSPD
+            DO 300 I = 1, MXSPD
                CALL RDLINE(LUINFO)
-               READ (MLINE(NMLINE),'(4X,A1,I5)')  KEY, KHK(I)
+               READ (MLINE(NMLINE),'(BN,4X,A1,I5)')  KEY, KHK(I)
+               IF (KHK(I) .GT. KCK(I)) THEN
+                 WRITE (LUPRI,'(/A,I5,A,I3/A,I5,A//A//A)')
+     &           ' ERROR: you specified',KHK(I),
+     &           ' components for GTO transformation matrix for L =',
+     &           I-1,' and that is greater than',KCK(I),
+     &           ', the number of Cartesian components.',
+     &           ' Dump of last line read from .mol file:',MLINE(NMLINE)
+                 CALL QUIT('ERROR in reading .mol file, see output')
+               END IF
                CALL RDCSP(LUINFO,CSP(ISPADR(I)),GTOTYP(IOFF),
      &           KHK(I),KCK(I))
                IOFF = IOFF + KHK(I)
   300       CONTINUE
          END IF
          IF (DOOWN .OR. IPREAD .GT. 4) THEN
-            CALL HEADER('Cartesian transformation matrix',-1)
-            DO 400 I = 1, MXQN
+            CALL HEADER('Cartesian transformation matrices',-1)
+            IF (DOOWN) THEN
+               WRITE (LUPRI,'(A/)') '  to user specified combinations'
+            ELSE
+               WRITE (LUPRI,'(A/)') '  to spherical harmonics'
+            END IF
+            IOFF = 0
+            DO 400 I = 1, MXSPD
                KHKI = KHK(I)
                KCKI = KCK(I)
-               WRITE (LUPRI,'(1X,A,I5)')
-     &               ' Coefficients for angular quantum number ',I-1
+               WRITE (LUPRI,'(A,I5//A/,(5X,15(A4,1X)))')
+     &            '  Coefficients for angular quantum number ',I-1,
+     &            '  to GTOs with labels:',(GTOTYP(IOFF+J),J=1,KHKI)
+               IOFF = IOFF + KHKI
                CALL OUTPUT(CSP(ISPADR(I)),1,KHKI,1,KCKI,KHKI,KCKI,1,
      &                     LUPRI)
  400        CONTINUE
+            CALL FLSHFO(LUPRI)
          END IF
       END IF
       RETURN
       END
+C
 C  /* Deck rdcsp */
       SUBROUTINE RDCSP(LUINFO,CSP,GTOTYP,KHKI,KCKI)
 #include "implicit.h"
