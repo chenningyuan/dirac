@@ -1,0 +1,8 @@
+WHATEVER
+Test of basis set readin.
+neon
+S   1    0X  Y  Z
+       10.    1
+Ne            0.00000000          0.00000000          0.00000000
+LARGE BASIS STO-6G
+FINISH

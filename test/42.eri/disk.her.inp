@@ -1,0 +1,24 @@
+**DIRAC
+.TITLE
+Water molecule. Restricted kinetic balance. Energies, dipole moment.
+.WAVE F
+#.INPTES
+**HAMILTONIAN
+.PRINT
+ 2
+**GENERAL
+.CVALUE
+10.0D0
+.DIRECT
+ 0 0 0
+**INTEGRALS
+*READIN
+.UNCONT
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.PRINT
+ 3
+*END OF
+
+
