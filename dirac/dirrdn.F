@@ -4134,9 +4134,15 @@ C       ENDIF
 CMI ... DIRCON(1) means contracted L component basis set !
 CMI     IF (ZORA.OR.PROJEC) THEN
 CMI     IF (ZORA.OR.PROJEC.OR.DIRCON(1)) THEN
-        IF (ZORA.OR.DIRCON(1)) THEN
+        IF (ZORA) THEN
           CALL QUIT(
-     &'HAMINP: Conflicting options ZORA/PROJEC/DIRCON(1) & BSS !')
+     &'HAMINP: Conflicting options ZORA & BSS !')
+CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
+        ENDIF
+        IF (DIRCON(1)) THEN
+         CALL QUIT(
+     &  'HAMINP: Can not use the contracted basis set for'//
+     &  ' the BSS Hamiltonian !')
 CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
         ENDIF
 
