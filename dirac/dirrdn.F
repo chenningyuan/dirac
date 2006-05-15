@@ -285,7 +285,7 @@ C                   direct/conventional to zero if all other classes
 C                   are set to zero (direct scf)... this is not the
 C                   most satisfactory solution but at the moment allows
 C                   for the use of conventional scf without changing
-C                   the inputs... it should be made consistent with
+C                   the inputs.. it should be made consistent with
 C                   the INTFLAG definition. 
 C 
                  READ(LUCMD,*) ILLDIR,ISLDIR,ISSDIR
