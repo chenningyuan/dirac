@@ -279,7 +279,19 @@ C
             CALL QUIT('Illegal keyword in GENINP.')
   101    CONTINUE
 C&&&& DIRECT: Direct calculation
+C
+C aspg, 2006-05-15: forcing flag for using gaunt interaction in the
+C                   direct/conventional to zero if all other classes
+C                   are set to zero (direct scf)... this is not the
+C                   most satisfactory solution but at the moment allows
+C                   for the use of conventional scf without changing
+C                   the inputs... it should be made consistent with
+C                   the INTFLAG definition. 
+C 
                  READ(LUCMD,*) ILLDIR,ISLDIR,ISSDIR
+                 IF (ILLDIR.EQ.0.AND.ISLDIR.EQ.0.AND.ISSDIR.EQ.0) THEN
+                    IGTDIR = 0
+                 ENDIF
                  IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR+8*IGTDIR
                  DIRSET = .TRUE.
                  IF(IDFLAG.GT.0) THEN

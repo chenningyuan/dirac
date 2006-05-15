@@ -186,7 +186,13 @@ C     This module has to come before the conventional SCF-module;
 C     otherwise FOCK must be copied into buffer; this stems from
 C     the symmetrization procedure
 C
-      IF(IDFLAG.NE.0) THEN
+C aspg, 2006-05-15: added test so that whenever gaunt integrals
+C       and at least one other type of integral is asked for in
+C       the direct calculation it assumes all other types are also
+C       calculated on the fly. otherwise conventional scf is
+C       performed. 
+C
+      IF(IDFLAG.NE.0.AND.IDFLAG.GT.8) THEN
         IF(SOFOCK) THEN
           CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
@@ -196,13 +202,12 @@ C
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
         ENDIF
-      ENDIF
+      ELSE
 C
 C     **********************************************
 C     *****  C o n v e n t i o n a l    S C F  *****
 C     **********************************************
 C
-      IF(IDFLAG.NE.15) THEN
         IF(HFXFAC.NE.D1 .AND. HFXFAC.NE.D0) 
      &       CALL QUIT('HFXFAC not implemented in CONSCF !')
 C       hjaaj July 2004: HFXFAC .eq. D0 is defined through SETFCK
@@ -3701,6 +3706,15 @@ C
 C     Gaunt-integrals
 C     ===============
 C     to be programmed
+C
+C     aspg, 2006-05-14: added if for gaunt integrals, at present
+C     just makes the program stop if conventional scf is asked
+C     together with gaunt integrals 
+C
+      IF(LBIT(INTFLG,4).AND.(.NOT.LBIT(IDFLAG,4))) THEN
+        WRITE(LUPRI,'(A)') 'CONSCF: Gaunt-integrals not yet implemented'
+        CALL QUIT('*** ERROR in CONSC1 ***') 
+      ENDIF
 C
       RETURN
 C
