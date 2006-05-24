@@ -1942,8 +1942,8 @@ C Largest exchange contribution
                         DINTSKP(2,1) = DINTSKP(2,1) + NCCINT
                         IF(IPRINT.GE.2) THEN
                    WRITE(LUPRI,
-     &              '(A,1P,D8.2,4(I4,A1,A6,1X,3A1))')
-     &        '*Skip: ',FCKMAX,
+     &              '(A,1P,2(D8.2,1X),4(I4,A1,A6,1X,3A1))')
+     &        '*Skip: ',DNSMAX,ULINT,
      &        ISHELA,'(',NAMDEP(ICENTA),COMP(LCLASH(ISHELA)),
      &        SPDCAR(NHKTSH(ISHELA)-1),')',
      &        ISHELB,'(',NAMDEP(ICENTB),COMP(LCLASH(ISHELB)),

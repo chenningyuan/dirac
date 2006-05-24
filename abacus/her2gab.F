@@ -1759,6 +1759,12 @@ C
       CALL QENTER('GABGEN')
       IF (IPRINT .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
 #include "memint.h"
+C
+C     Construct the identifier for this data, should include
+C     - AO or SO type integrals
+C     - regular or derivative type integrals
+C     - active classes (LL, SL, LS and SS,depending on IGTYP)
+C  
       IF(ITYPE.EQ.0) THEN
          NGAB = 1
          GABLAB(1) = 'GABXXXXX'
@@ -1781,6 +1787,11 @@ C
             CALL QUIT('GABGEN: Invalid IJOB')
          ENDIF
       END DO
+C
+      DO I = 1,NGAB
+         WRITE(GABLAB(I)(6:6),'(I1)') IGTYP
+      ENDDO
+C
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
 C
 C     Check if file AOPROPER is present
@@ -1958,6 +1969,10 @@ C
             CALL QUIT('GETGAB: Invalid IJOB')
          ENDIF
       END DO
+C
+      DO I = 1,NGAB
+         WRITE(GABLAB(I)(6:6),'(I1)') IGTYP
+      ENDDO
 C
 C     Check if file AOPROPER is present
 C     ---------------------------------
