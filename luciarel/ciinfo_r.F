@@ -440,9 +440,8 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GASANA_REL(C,NBLOCK,IBLOCK,IBLTP,LUC,LUSCR,
-     &                      ICISTR)
 *
+      SUBROUTINE GASANA_REL(C,NBLOCK,IBLOCK,IBLTP,LUC,LUSCR,ICISTR)
 *
 *
 * Analyze CI vector
@@ -482,7 +481,6 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
       dimension C(*)
 *
       CALL QENTER('ANACI')
-      call memmar(KLOFF,DUMMY,'MARK  ',DUMMY,'GASANA')
 *
 ** Specifications of internal space
 *
@@ -493,10 +491,12 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
       IBOFF = 0
       call rewino(LUSCR)
       call itods(-1,1,-1,LUSCR)
+*
 * Type of alpha and beta strings
       do IRIR = 1,2,1
         if (NTEST.ge.50) write(6,*) 'right r/i is  ',IRIR
         if (IRIR.EQ.2) then
+*
 *. Skip EOV mark between real and imaginary part
           call IFRMDS(IONEM,1,-1,LUC)
         end if
@@ -576,6 +576,10 @@ CTF       IF (ICISTR.NE.1) CALL REWINO(LUC)
           NEL = NAEL + NBEL
           CALL OCCLS_REL(IWAY,NOCCLS,IOCCLS,NEL,NGAS,
      &                   IGSOCC(1,1),IGSOCC(1,2))
+*
+*. MARK for local allocations
+          KDUM = 0
+          call memmar(KDUM,DUMMY,'MARK  ',DUMMY,'GASANA')
 *. and then the occupation classes
           call memmar(KLOCCLS,NGAS*NOCCLS,'ADDL  ',1,'KLOCCL')
           IWAY = 2
@@ -603,10 +607,11 @@ CTF       IF (ICISTR.NE.1) CALL REWINO(LUC)
      &                     IASPGPTP,IBSPGPTP,
      &                     ICISTR,NTOOB,IPRWFC)
 *
+          KDUM = 0
+          call memmar(KDUM,KDUM,'FLUSM',KDUM,'GASANA')
         end do
       end do
 *
-      call memmar(KDUM,IDUM,'FLUSM',IDUM,'GASANA')
       CALL QEXIT('ANACI')
 *
 C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
@@ -976,7 +981,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,KC2,LSCR2)
+      SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,KC2,LSCR2,CIRUN)
 *
 * Allocate the three blocks VEC1, VEC2, C2 used in sigma, densi etc
 *
@@ -987,6 +992,9 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *               Relativistic version, Feb. 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+*
+      character*6 CIRUN
+*
 #include "ipoist8.inc"
 *
 #include "mxpdim.inc"
@@ -1010,8 +1018,8 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *. Common block for communicating with sigma
 #include "cands.inc"
 *
-      IDUM = 1
-      call memmar(KDUM,IDUM,'MARK  ',IDUM,'GET_3B')
+      KDUM = 0
+      call memmar(KDUM,KDUM,'MARK  ',KDUM,'GET_3B')
 *
       NTESTL = 0000
       NTEST = MAX(NTESTL,IPRDIA)
@@ -1116,7 +1124,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
       LBLOCK = MAX(LBLOCK,LCSBLK)
       LSCR12 = MAX(LBLOCK,2*LSCR2)
 *
-      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'GET_3B')
+      call memmar(KDUM,KDUM,'FLUSM ',KDUM,'GET_3B')
 *
       write(6,*)
       write(6,*) 
@@ -1124,8 +1132,10 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
      &  ,LBLOCK
       write(6,*)
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
-      call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
-      call memmar(KC2,LSCR12,'ADDS  ',2,'C2    ')
+      if (CIRUN.ne.'ANALYZ') then
+        call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
+        call memmar(KC2,LSCR12,'ADDS  ',2,'C2    ')
+      end if
 *
       RETURN
       END

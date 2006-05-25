@@ -157,20 +157,13 @@ C
       END IF
 *
       LBLOCK = MAX(LBLOCK,LCSBLK)
+*
 *. Partition CI vector - for all MS2 spaces into batches
 * (*_MS2 arrays are in CSTATE )
       CALL Z_BLKFO_REL(IDC,NMS2VAL,
      &                 ISPC,ISM,KPCLBT,KPCLEBT,KPCI1BT,KPCIBT,KPCBLTP,
      &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
      &                 IBAT_MS2)
-C          Z_BLKFO_REL(ISPC,ISM,KPCLBT,KPCLEBT,
-C    &                 KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
-C    &                 NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
-      if (IMEMCK.gt.0) then
-        write(6,*) ' Memory map after Z_BLKFO_REL in GASCI_REL'
-        IDUM = 0
-        call memmar(KDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
-      end if
 *
 *. Class divisions of dets
       IF(ICLSSEL.EQ.1) THEN
@@ -179,12 +172,13 @@ C    &                 NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
         Call Abend2
      & ( ' GASCI : CLSSEL not implemented for relativistic version' )
       END IF
+*
 *. Allocate memory : 2 vector blocks + 1 vector/scratch blocks
       I_USE_SBLOCK=1
       IF(IDIAG.EQ.2.OR.I_USE_SBLOCK.EQ.1) THEN
-        CALL GET_3BLKS_REL(KVEC1,KVEC2,KVEC3,LSCR2)
+        CALL GET_3BLKS_REL(KVEC1,KVEC2,KVEC3,LSCR2,CIRUN)
 *. LSCR2 : Will be used for resolution matrices, save
-         LCJRES = LSCR2
+        LCJRES = LSCR2
       END IF
 *
 *. CI diagonal - if required
