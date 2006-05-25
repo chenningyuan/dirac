@@ -548,20 +548,28 @@ C
      &     ' * Allowed interval of 2 * MK :',
      &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
       END IF
-      IF (IKRMC_SYMMETRY .GT. NREP) THEN
-         WRITE(LUPRI,'(/A//A,2I3)')
-     &      ' INPUT ERROR, requsted .SYMMETRY is non-existent!',
-     &      ' symmetry, max value of symmetry = ', IKRMC_SYMMETRY, NREP
-         CALL QUIT('INPUT ERROR for *KRMCSCF  .SYMMETRY')
+      IF (KRMC_CIPROGRAM.EQ.'LUCIAREL') THEN
+         WRITE(LUPRI,'(A,I4)')
+     &' * Using symmetry nomenclature for LUCIAREL. '
+         WRITE(LUPRI,'(A,I4)')
+     &'      Boson and Fermion irreps of complex (sub)groups  '
+      ELSE
+         IF (IKRMC_SYMMETRY .GT. NREP) THEN
+            WRITE(LUPRI,'(/A//A,2I3)')
+     &         ' INPUT ERROR, requested .SYMMETRY is non-existent!',
+     &         ' symmetry, max value of symmetry = ', 
+     &           IKRMC_SYMMETRY, NREP
+            CALL QUIT('INPUT ERROR for *KRMCSCF  .SYMMETRY')
+         END IF
       END IF
 C
 C
       WRITE(LUPRI,'(A,I4)')
-     +   ' * Maximum number of macro iterations  : ',MKRMC_MXMACRO
+     &   ' * Maximum number of macro iterations  : ',MKRMC_MXMACRO
       WRITE(LUPRI,'(A,I4)')
-     +   ' * Maximum number of micro iterations  : ',MKRMC_MXMICRO
+     &   ' * Maximum number of micro iterations  : ',MKRMC_MXMICRO
       WRITE(LUPRI,'(A,1P,D10.2)')
-     +   ' * Convergence threshold               : ',DKRMC_THRGRD
+     &   ' * Convergence threshold               : ',DKRMC_THRGRD
       IF (MCFLAG(1) .AND. MCFLAG(2)) MCFLAG(1) = .FALSE.
       IF (MCFLAG(1)) WRITE(LUPRI,'(A)')
      &   ' * Only Newton-Raphson iterations.'
@@ -575,19 +583,19 @@ C
       IF(LBIT(IKRMC_INTDEF,2)) THEN
         IF(DKRMC_CNVINT(1).LT.DUMMY) THEN
           WRITE(LUPRI,'(3X,A,E8.1)')
-     +    'SL-integrals  below KR-MCSCF convergence ',DKRMC_CNVINT(1)
+     &    'SL-integrals  below KR-MCSCF convergence ',DKRMC_CNVINT(1)
         ELSE
           WRITE(LUPRI,'(3X,A,I4)')
-     +    'SL-integrals from iteration ',IKRMC_ITRINT(1)
+     &    'SL-integrals from iteration ',IKRMC_ITRINT(1)
         ENDIF
       ENDIF
       IF(LBIT(IKRMC_INTDEF,3)) THEN
         IF(DKRMC_CNVINT(2).LT.DUMMY) THEN
           WRITE(LUPRI,'(3X,A,E8.1)')
-     +    'SS-integrals  below KR-MCSCF convergence ',DKRMC_CNVINT(2)
+     &    'SS-integrals  below KR-MCSCF convergence ',DKRMC_CNVINT(2)
         ELSE
           WRITE(LUPRI,'(3X,A,I4)')
-     +    'SS-integrals from iteration ',IKRMC_ITRINT(2)
+     &    'SS-integrals from iteration ',IKRMC_ITRINT(2)
         ENDIF
       ENDIF
       IF(KRMC_SKIPEE) WRITE(LUPRI,'(A)')
