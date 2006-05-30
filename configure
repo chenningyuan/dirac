@@ -1260,9 +1260,9 @@ case $machine in
          echo  
          ;;
       ifort)
-         opt="-O3 -ip -w"
+         opt="-O3 -ip -w -assume byterecl"
          ccp="$ccp -DVAR_IFC"
-         ldflag="-O3 -ip -nofor_main"
+         ldflag="-nofor_main"
          ;;
       pathf90)
          ldflag=i"-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
@@ -1412,9 +1412,9 @@ case $machine in
          echo  
          ;;
       ifort)
-         opt="-O3 -ip -w"
+         opt="-O3 -ip -w  -assume byterecl"
          ccp="$ccp -DVAR_IFC"
-         ldflag="-O3 -ip -nofor_main"
+         ldflag="-nofor_main"
          ;;
       pathf90)
          ldflag=i"-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
