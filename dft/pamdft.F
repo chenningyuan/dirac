@@ -264,36 +264,43 @@ C
 C     Print section
 C     =============
 C
-      IF(.NOT.DODFT) GOTO 999
+      IF(.NOT.DFTHAM) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 
      &   'DFTINP: Set-up for Kohn-Sham calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A,I5)') '* Print level: ',IPRDFT
+      WRITE(LUPRI,'(A,I5)') ' * Print level: ',IPRDFT
 C
  90   CONTINUE
       WRITE(LUPRI,'(A)')
-     &     '* Radial quadrature according to ',
-     &     '     R.Lindh, P.-Aa. Malmqvist and L.Gagliardi'
+     &     ' * Radial quadrature according to',
+     &     '          R. Lindh, P.-Aa. Malmqvist and L. Gagliardi'
       WRITE(LUPRI,'(A,E12.5)') 
-     &     '  Precision of radial quadrature set to: ', RADINT
+     &     '   Precision of radial quadrature set to: ', RADINT
       WRITE(LUPRI,'(A,E12.5)') 
-     &     '  Accepted error in integrated number of electrons: ',DFTELS
+     &    '   Accepted error in integrated number of electrons: ',DFTELS
       WRITE(LUPRI,'(A)')
-     &     '* Angular quadrature according to Lebedev scheme.'
+     &     ' * Angular quadrature according to Lebedev scheme.'
       WRITE(LUPRI,'(A,I2)')
-     &     '  Angular integration exact up to order L = ', ANGINT
+     &     '   Angular integration exact up to order L = ', ANGINT
       IF(NOPRUN) THEN
          WRITE(LUPRI,'(A)')
-     &        '* Pruning of angular grid turned off.'
+     &        ' * Pruning of angular grid turned off.'
       END IF
       IF (INTCHK.GT.0) THEN
          WRITE(LUPRI,'(A)')
-     &        '* Numerical integration will be tested.'
+     &        ' * Numerical integration will be tested.'
       END IF
 C
-  999 CONTINUE
-C
+      IF(DFTPOT) THEN
+        WRITE(LUPRI,'(A)')
+     &        ' * Explicit exchange-correlation potential (.FROMVX):'
+        WRITE(LUPRI,'(A)')
+     &        '   WARNING: this option is not available in this version'
+        WRITE(LUPRI,'(A)')
+     &        '   and will be ignored (DFTPOT = .FALSE.)'
+        DFTPOT = .FALSE.
+      ENDIF
 C
       IF(DOGRAC) THEN
         WRITE(LUPRI,'(A)') 
@@ -327,6 +334,8 @@ C
       IF(DOLBALPHA) THEN
         WRITE(LUPRI,'(A)') '   the asymptotic potential is LBalpha'
       ENDIF
+C
+  999 CONTINUE
 C
 C
       RETURN
