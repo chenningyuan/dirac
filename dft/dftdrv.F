@@ -671,20 +671,6 @@ C
       DIMENSION RHG(3),VT(3),RHOOUTERGRD(3)
 C
 C
-C     radovan:
-C   { debug asymptotic correction
-C     IF(DODUMP) THEN
-C       NPOINT = 200
-C       DO I = 1,NPOINT
-C         WEIGHT(I) = D1
-C         CORX(I) = D0
-C         CORY(I) = D0
-C         CORZ(I) = D0+(I-1)*(10.0D0/(NPOINT-1))
-C       ENDDO
-C     ENDIF
-C     debug asymptotic correction }
-C
-C
       DO 300 IPNT = 1, NPOINT
        
         IF (IPRINT .GE. 100) THEN
@@ -760,12 +746,7 @@ C
 C         asymptotic correction
 C         =====================
 C
-C         IF(DODUMP) THEN
-C           WRITE(0,*) CORZ(IPNT)
-C         ENDIF
-C
           IF(DOGRAC.AND.GRACON) THEN
-C           R = SQRT(CORX(IPNT)**2+CORY(IPNT)**2+CORZ(IPNT)**2)
             CALL DFTAC(VX,WGHT,RHO,RHO13,DUMMY,DUMMY,RHOGRD,WORK,LWORK)
           ENDIF
 C
@@ -1534,7 +1515,7 @@ C
 #include "cdft.h"
 #include "dgroup.h"
 C
-      LOGICAL DOERG, DOGRD, DOLND, DOATR, LSEND(6), LACBCAST(8)
+      LOGICAL DOERG, DOGRD, DOLND, DOATR, LSEND(6), LACBCAST(7)
 C
 #if defined (MOD_CDFT)
       LOGICAL LCDFTBCAST(2)
@@ -1600,8 +1581,7 @@ C
       LACBCAST(5) = DORESP
       LACBCAST(6) = DOLB94
       LACBCAST(7) = DOLBALPHA
-      LACBCAST(8) = DODUMP
-      CALL MPI_BCAST(LACBCAST,8,
+      CALL MPI_BCAST(LACBCAST,7,
      &               MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
 C
       IF(GRACON) THEN
@@ -1692,7 +1672,7 @@ C
 #include "infpar.h"
 C
       DIMENSION WORK(LWORK)
-      LOGICAL DOERG,DOGRD,DOLND,DOATR,LSEND(6),LACBCAST(8)
+      LOGICAL DOERG,DOGRD,DOLND,DOATR,LSEND(6),LACBCAST(7)
 C
 #if defined (MOD_CDFT)
       LOGICAL LCDFTBCAST(2)
@@ -1743,7 +1723,7 @@ C
 C     receive parameters for asymptotic correction
 C     ============================================
 C
-      CALL MPI_BCAST(LACBCAST,8,
+      CALL MPI_BCAST(LACBCAST,7,
      &               MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
       DOGRAC     = LACBCAST(1)
       GRACON     = LACBCAST(2)
@@ -1752,7 +1732,6 @@ C
       DORESP     = LACBCAST(5)
       DOLB94     = LACBCAST(6)
       DOLBALPHA  = LACBCAST(7)
-      DODUMP     = LACBCAST(8)
 C
       IF(GRACON) THEN
         CALL MPI_BCAST(GRACALPHA,1,MPI_DOUBLE_PRECISION,

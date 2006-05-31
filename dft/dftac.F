@@ -234,9 +234,6 @@ C     ===============
 C
       IF(DOGRAC) THEN
         RHO43 = RHO*RHO13
-C       SIGMA = D2*RHOGRD*RHOGRD
-C
-C       fix:
         SIGMA = RHOGRD*RHOGRD
         X = D0
 C
@@ -307,7 +304,6 @@ C
       IF(DOGRAC) THEN
         FADE = D1/(D1+EXP(-GRACALPHA*(X-GRACBETA)))
       ENDIF
-C     IF(DODUMP) WRITE(0,*) FADE
 C
 C
 C     connection
