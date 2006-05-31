@@ -1597,11 +1597,6 @@ C
      &                               MPARID,MPI_COMM_WORLD,IERR)
       ENDIF
 C
-      IF(GRACON.OR.SAOPON) THEN
-        CALL MPI_BCAST(ICOUNTAC,1,
-     &                 MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      ENDIF
-C
       IF(DORESP) THEN
         CALL MPI_BCAST(SAOPDMATRESP,N2BBASX,
      &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
@@ -1744,11 +1739,6 @@ C
      &                          MPARID,MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(ACTHRESHOLD,1,MPI_DOUBLE_PRECISION,
      &                               MPARID,MPI_COMM_WORLD,IERR)
-      ENDIF
-C
-      IF(GRACON.OR.SAOPON) THEN
-        CALL MPI_BCAST(ICOUNTAC,1,
-     &                 MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       ENDIF
 C
       IF(DORESP) THEN

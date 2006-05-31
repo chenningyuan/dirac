@@ -17,5 +17,3 @@ C
 C
       COMMON /CBLACR/ ACIP, ACTHRESHOLD, EIGMAX,                        &
      &                      GRACALPHA, GRACBETA
-C
-      COMMON /CBLACI/ ICOUNTAC

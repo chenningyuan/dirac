@@ -115,8 +115,6 @@ C
       DORESP     = .FALSE.
       DOLB94     = .FALSE.
       DOLBALPHA  = .FALSE.
-      DODUMP     = .FALSE.
-      ICOUNTAC   = 0
 C
 C
 C     initialize /SDFT/

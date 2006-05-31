@@ -4495,12 +4495,6 @@ C
       IF(DOSAOP.AND.SAOPON)
      &                WRITE(LUPRI,*) 'SAOP asymptotic correction active'
 C
-      IF((DOSAOP.AND.SAOPON).OR.(DOGRAC.AND.GRACON)) THEN
-        ICOUNTAC = ICOUNTAC+1
-      ENDIF
-C
-C     IF(ICOUNTAC.GT.15) DODUMP = .TRUE.
-C
       EIGMAX_PREVIOUS = EIGMAX
 C
 C
