@@ -231,7 +231,6 @@ C
      &          CMO(*),NCNT(*),COORD(3,2),BUF(*),
      &          WORK(*)
 C
-Cvorsicht       DENSITY(0:2) war frueher im 1D
       DIMENSION DENSITY(0:2,NCUBE(3)),
      &          SPINDENSITY(NCUBE(3)),
      &          CURRENTDENSITY(NCUBE(3)),
@@ -417,14 +416,14 @@ C
 C           get necessary stuff
 C           ===================
 C
-            CALL DOSTUFF(DMATBF,GAO,GAO1,GAO2,CMO,PX,PY,PZ,
-     &                   NCNT,COORD,BUF,IPRINT,
-     &                   DENSITY,
-     &                   SPINDENSITY(1),
-     &                   CURRENTDENSITY(1),
-     &                   ELF(1),
-     &                   DLAPLACIAN(1),
-     &                   WORK,KFREE,LFREE)
+            CALL GETQUANTITY(DMATBF,GAO,GAO1,GAO2,CMO,PX,PY,PZ,
+     &                       NCNT,COORD,BUF,IPRINT,
+     &                       DENSITY,
+     &                       SPINDENSITY(1),
+     &                       CURRENTDENSITY(1),
+     &                       ELF(1),
+     &                       DLAPLACIAN(1),
+     &                       WORK,KFREE,LFREE)
 C
 C
 C           write to file 
@@ -619,14 +618,14 @@ C
 C             get necessary stuff
 C             ===================
 C
-              CALL DOSTUFF(DMATBF,GAO,GAO1,GAO2,CMO,PX,PY,PZ,
-     &                     NCNT,COORD,BUF,IPRINT,
-     &                     DENSITY(0,KCUBE),
-     &                     SPINDENSITY(KCUBE),
-     &                     CURRENTDENSITY(KCUBE),
-     &                     ELF(KCUBE),
-     &                     DLAPLACIAN(KCUBE),
-     &                     WORK,KFREE,LFREE)
+              CALL GETQUANTITY(DMATBF,GAO,GAO1,GAO2,CMO,PX,PY,PZ,
+     &                         NCNT,COORD,BUF,IPRINT,
+     &                         DENSITY(0,KCUBE),
+     &                         SPINDENSITY(KCUBE),
+     &                         CURRENTDENSITY(KCUBE),
+     &                         ELF(KCUBE),
+     &                         DLAPLACIAN(KCUBE),
+     &                         WORK,KFREE,LFREE)
 C
 C
             ENDDO
@@ -700,14 +699,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck dostuff */
-      SUBROUTINE DOSTUFF(DMATBF,GAO,GAO1,GAO2,CMO,PX,PY,PZ,
-     &                   NCNT,COORD,BUF,IPRINT,
-     &                   DENSITY,
-     &                   SPINDENSITY,
-     &                   CURRENTDENSITY,
-     &                   ELF,
-     &                   DLAPLACIAN,
-     &                   WORK,KFREE,LFREE)
+      SUBROUTINE GETQUANTITY(DMATBF,GAO,GAO1,GAO2,CMO,PX,PY,PZ,
+     &                       NCNT,COORD,BUF,IPRINT,
+     &                       DENSITY,
+     &                       SPINDENSITY,
+     &                       CURRENTDENSITY,
+     &                       ELF,
+     &                       DLAPLACIAN,
+     &                       WORK,KFREE,LFREE)
 C  .....................................................................
 C  .  description:                                                     .
 C  .                                                                   .
@@ -836,20 +835,37 @@ C     spin and current
 C     ================
 C
       IF(PLOTSPINDENSITY) THEN
-C       CALL GETCURRENTDENSITY(.FALSE.,DUMMY,.TRUE.,SPIN,
-C    &                         0,GAO,DMATBF,BUF)
-C       IF(ABS(SPIN(4)).GT.0.0001D0) THEN
-C         WRITE(0,'(4F20.6)') PX, PY, (SPIN(I),I=1,2)
-C         WRITE(0,'(4F20.6)') PY, PZ, (SPIN(I),I=2,3)
-C       ENDIF
+#if defined (MOD_CDFT)
+       CALL GETCURRENTDENSITY(.FALSE.,DUMMY,
+     &                        .TRUE.,SPIN,
+     &                        IREPOP,GAO,DMATBF,BUF)
+
+       SPIN(4) = SPIN(1)**D2 + SPIN(2)**D2 + SPIN(3)**D2
+       SPIN(4) = DSQRT(SPIN(4))
+C      IF(ABS(SPIN(4)).GT.0.0001D0) THEN
+C        WRITE(0,'(4F20.6)') PX, PY, (SPIN(I),I=1,2)
+C        WRITE(0,'(4F20.6)') PY, PZ, (SPIN(I),I=2,3)
+C      ENDIF
+#else
+      CALL QUIT('perturbed magnetization density not implemented')
+#endif
       ENDIF
+C
       IF(PLOTCURRENTDENSITY) THEN
-C       CALL GETCURRENTDENSITY(.TRUE.,CURRENT,.FALSE.,DUMMY,
-C    &                         0,GAO,DMATBF,BUF)
-C       IF(ABS(CURRENT(4)).LT.1.000D0) THEN
-C         WRITE(0,'(4F20.6)') PX, PY, (CURRENT(I),I=1,2)
-C         WRITE(0,'(4F20.6)') PY, PZ, (CURRENT(I),I=2,3)
-C       ENDIF
+#if defined (MOD_CDFT)
+       CALL GETCURRENTDENSITY(.TRUE.,CURRENT,
+     &                        .FALSE.,DUMMY,
+     &                        IREPOP,GAO,DMATBF,BUF)
+
+       CURRENT(4) = CURRENT(1)**D2 + CURRENT(2)**D2 + CURRENT(3)**D2
+       CURRENT(4) = DSQRT(CURRENT(4))
+C      IF(ABS(CURRENT(4)).GT.0.0001D0) THEN
+C        WRITE(0,'(4F20.6)') PX, PY, (CURRENT(I),I=1,2)
+C        WRITE(0,'(4F20.6)') PY, PZ, (CURRENT(I),I=2,3)
+C      ENDIF
+#else
+      CALL QUIT('perturbed current density not implemented')
+#endif
       ENDIF
 C
 C
