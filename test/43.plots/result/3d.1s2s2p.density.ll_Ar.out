@@ -128,8 +128,8 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *                                                                            *
 ******************************************************************************
  Version           : Dirac 4.1 (patchlevel 0) 
- Hostname          : compute-0-0.local
- Operating system  : Linux 2.4.21-20.EL
+ Hostname          : compute-0-5.local
+ Operating system  : Linux 2.4.21-20.ELsmp
  Machine           : i686
  Run               : Sequential
  Last compilation  : 21:30:40 Jun  1 2006 (by bast@)
@@ -138,7 +138,7 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  Size of COMMON=         192
  Basis set dir.    : /home/bast/dirac/testing/test/43.plots/:/home/bast/dirac/cvs-snapshot/basis/:/home/bast/dirac/cvs-snapshot/basis_dalton/
 
- Date and time (Linux) : Thu Jun  1 22:18:28 2006
+ Date and time (Linux) : Thu Jun  1 22:42:20 2006
 
 
  **************************************************************************
@@ -661,7 +661,7 @@ Total no. of orbitals      (NORB):     9       9      18
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Thu Jun  1 22:18:28 2006
+########## START ITERATION NO.   1 ##########   Thu Jun  1 22:42:20 2006
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -671,7 +671,7 @@ Total no. of orbitals      (NORB):     9       9      18
        6 orbitals in Fermion irrep 2
 It.   1    -307.0447536588      1.00D+20  0.00D+00  0.00D+00               0.03000000s   Bare nuclei    Thu Jun  1
 
-########## START ITERATION NO.   2##########   Thu Jun  1 22:18:28 2006
+########## START ITERATION NO.   2##########   Thu Jun  1 22:42:20 2006
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
@@ -708,35 +708,35 @@ Ar      1   0.162E-06   0.104E+02   0.117E+00     136   28568
    Number of electrons:                    17.9999999878659835
    DFT exchange-correlation energy:                 -29.2805164695270115
 
- >>>> Time used in DFTDRV:   1.95 seconds
+ >>>> Time used in DFTDRV:   1.96 seconds
 
 >>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.14000000s
+>>> Total CPU-time : 2.16000000s
 
-########## END ITERATION NO.   2 ##########   Thu Jun  1 22:18:28 2006
+########## END ITERATION NO.   2 ##########   Thu Jun  1 22:42:20 2006
 
-It.   2    -525.9059343105      2.19D+02  1.89D+00  4.40D-01               2.14000000s   LL             Thu Jun  1
+It.   2    -525.9059343105      2.19D+02  1.89D+00  4.40D-01               2.16000000s   LL             Thu Jun  1
 
-########## START ITERATION NO.   3##########   Thu Jun  1 22:18:30 2006
+########## START ITERATION NO.   3##########   Thu Jun  1 22:42:22 2006
 
     3 *** Differential density matrix. DCOVLP     = 1.0181
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   54.40%    2.41%    0.00%    0.00%   0.01000000s
+SOfock:LL  1.00D-12   54.40%    2.41%    0.00%    0.00%   0.02000000s
 
    Number of quadrature points:                          28568
    Number of electrons:                    17.9999999890529061
    DFT exchange-correlation energy:                 -29.3024605112910912
 
- >>>> Time used in DFTDRV:   1.98 seconds
+ >>>> Time used in DFTDRV:   1.97 seconds
 
 >>> Total wall time: 2.00000000s
 >>> Total CPU-time : 2.01000000s
 
-########## END ITERATION NO.   3 ##########   Thu Jun  1 22:18:30 2006
+########## END ITERATION NO.   3 ##########   Thu Jun  1 22:42:22 2006
 
 It.   3    -525.9112233106      5.29D-03  3.49D-02  3.99D-02   DIIS   2    2.01000000s   LL             Thu Jun  1
 
-########## START ITERATION NO.   4##########   Thu Jun  1 22:18:32 2006
+########## START ITERATION NO.   4##########   Thu Jun  1 22:42:24 2006
 
     4 *** Differential density matrix. DCOVLP     = 0.9829
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -746,16 +746,16 @@ SOfock:LL  1.00D-12   54.40%    2.41%    0.00%    0.00%   0.02000000s
    Number of electrons:                    17.9999999883701918
    DFT exchange-correlation energy:                 -29.2594376915583254
 
- >>>> Time used in DFTDRV:   1.97 seconds
+ >>>> Time used in DFTDRV:   1.98 seconds
 
 >>> Total wall time: 2.00000000s
 >>> Total CPU-time : 2.01000000s
 
-########## END ITERATION NO.   4 ##########   Thu Jun  1 22:18:32 2006
+########## END ITERATION NO.   4 ##########   Thu Jun  1 22:42:24 2006
 
 It.   4    -525.9113545034      1.31D-04 -4.78D-02  3.45D-02   DIIS   3    2.01000000s   LL             Thu Jun  1
 
-########## START ITERATION NO.   5##########   Thu Jun  1 22:18:34 2006
+########## START ITERATION NO.   5##########   Thu Jun  1 22:42:26 2006
 
     5 *** Differential density matrix. DCOVLP     = 1.0074
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -765,16 +765,16 @@ SOfock:LL  1.00D-12   54.40%    2.41%    0.00%    0.00%   0.02000000s
    Number of electrons:                    17.9999999886787982
    DFT exchange-correlation energy:                 -29.2797535602365215
 
- >>>> Time used in DFTDRV:   1.97 seconds
+ >>>> Time used in DFTDRV:   1.96 seconds
 
 >>> Total wall time: 2.00000000s
 >>> Total CPU-time : 2.00000000s
 
-########## END ITERATION NO.   5 ##########   Thu Jun  1 22:18:34 2006
+########## END ITERATION NO.   5 ##########   Thu Jun  1 22:42:26 2006
 
 It.   5    -525.9116448312      2.90D-04  2.25D-02  2.22D-04   DIIS   4    2.00000000s   LL             Thu Jun  1
 
-########## START ITERATION NO.   6##########   Thu Jun  1 22:18:36 2006
+########## START ITERATION NO.   6##########   Thu Jun  1 22:42:28 2006
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -784,31 +784,31 @@ SOfock:LL  1.00D-12   54.40%    2.41%    0.00%    0.00%   0.02000000s
    Number of electrons:                    17.9999999886806030
    DFT exchange-correlation energy:                 -29.2798048437648717
 
- >>>> Time used in DFTDRV:   1.97 seconds
+ >>>> Time used in DFTDRV:   1.96 seconds
 
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.00000000s
+>>> Total wall time: 3.00000000s
+>>> Total CPU-time : 1.99000000s
 
-########## END ITERATION NO.   6 ##########   Thu Jun  1 22:18:36 2006
+########## END ITERATION NO.   6 ##########   Thu Jun  1 22:42:28 2006
 
-It.   6    -525.9116448373      6.12D-09  6.04D-05  1.04D-06   DIIS   5    2.00000000s   LL             Thu Jun  1
+It.   6    -525.9116448373      6.12D-09  6.04D-05  1.04D-06   DIIS   5    1.99000000s   LL             Thu Jun  1
 
-########## START ITERATION NO.   7##########   Thu Jun  1 22:18:38 2006
+########## START ITERATION NO.   7##########   Thu Jun  1 22:42:31 2006
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   54.40%    2.41%    0.00%    0.00%   0.01000000s
+SOfock:LL  1.00D-12   54.40%    2.41%    0.00%    0.00%   0.02000000s
 
    Number of quadrature points:                          28568
    Number of electrons:                    17.9999999886787201
    DFT exchange-correlation energy:                 -29.2798054242991341
 
- >>>> Time used in DFTDRV:   1.95 seconds
+ >>>> Time used in DFTDRV:   1.96 seconds
 
 >>> Total wall time: 2.00000000s
 >>> Total CPU-time : 1.99000000s
 
-########## END ITERATION NO.   7 ##########   Thu Jun  1 22:18:38 2006
+########## END ITERATION NO.   7 ##########   Thu Jun  1 22:42:31 2006
 
 It.   7    -525.9116448373      4.55D-13  6.42D-07  9.03D-09   DIIS   5    1.99000000s   LL             Thu Jun  1
 
@@ -827,17 +827,17 @@ It.   7    -525.9116448373      4.55D-13  6.42D-07  9.03D-09   DIIS   5    1.990
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
 It.   1    -307.0447536588      1.00D+20  0.00D+00  0.00D+00               0.03000000s   Bare nuclei    Thu Jun  1
-It.   2    -525.9059343105      2.19D+02  1.89D+00  4.40D-01               2.14000000s   LL             Thu Jun  1
+It.   2    -525.9059343105      2.19D+02  1.89D+00  4.40D-01               2.16000000s   LL             Thu Jun  1
 It.   3    -525.9112233106      5.29D-03  3.49D-02  3.99D-02   DIIS   2    2.01000000s   LL             Thu Jun  1
 It.   4    -525.9113545034      1.31D-04 -4.78D-02  3.45D-02   DIIS   3    2.01000000s   LL             Thu Jun  1
 It.   5    -525.9116448312      2.90D-04  2.25D-02  2.22D-04   DIIS   4    2.00000000s   LL             Thu Jun  1
-It.   6    -525.9116448373      6.12D-09  6.04D-05  1.04D-06   DIIS   5    2.00000000s   LL             Thu Jun  1
+It.   6    -525.9116448373      6.12D-09  6.04D-05  1.04D-06   DIIS   5    1.99000000s   LL             Thu Jun  1
 It.   7    -525.9116448373      4.55D-13  6.42D-07  9.03D-09   DIIS   5    1.99000000s   LL             Thu Jun  1
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    7 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL           :    2.00000000s
+      LL           :    2.16666667s
 
 
                                TOTAL ENERGY
@@ -933,10 +933,10 @@ tot.num. of pos.erg shells:    3    3    3    0
 
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -525.911644837286758
-* Heading : plot density in 3D, 1s2s2p occupied              Thu Jun  1 22:18:38 2006
+* Heading : plot density in 3D, 1s2s2p occupied              Thu Jun  1 22:42:31 2006
 
- Date and time (Linux) : Thu Jun  1 22:19:44 2006
+ Date and time (Linux) : Thu Jun  1 22:42:33 2006
 *****************************************************
->>>> Total CPU  time used in DIRAC:  1min16.400s
->>>> Total WALL time used in DIRAC:  1min17.000s
+>>>> Total CPU  time used in DIRAC: 12.39000000s
+>>>> Total WALL time used in DIRAC: 14.00000000s
 ********** E N D   of   D I R A C  output  **********
