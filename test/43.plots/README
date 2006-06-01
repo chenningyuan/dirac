@@ -1,0 +1,4 @@
+! Test for various plots in 1D and 3D using Dirac-Coulomb (dc) and L\'evy-Leblond (ll).
+!
+! We assume that the correlation consistent basis sets are available in your standard path. These sets can be
+! obtained from the DALTON distribution and may later be included in the DIRAC distribution as well.
