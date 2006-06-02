@@ -64,3 +64,15 @@ export MOL
   for file in PLOT*; do
     mv $file $MENU.$MOL.$file
   done
+
+MOL=Ne.C1
+export MOL
+  MENU=polarizability.dc
+  export MENU
+  ../run.sh -get "PAMXVC"
+  MENU=3d.density.reaxvec.dc
+  export MENU
+  ../run.sh -copy "PAMXVC" -get "PLOT*"
+  for file in PLOT*; do
+    mv $file $MENU.$MOL.$file
+  done
