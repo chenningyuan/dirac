@@ -7535,6 +7535,9 @@ c
           write(6,*) ' NOCC_L(ISM) is ',NOCC_L(ISM)
           write(6,*) ' NORB_L(ISM) is ',NORB_L(ISM)
         end do
+        write(6,*) ' Check first whether an input for .DHFCAL '
+        write(6,*) ' exists in your DIRAC.INP file.           '
+        write(6,*) ' This is mandatory even if .DHF is not active! '
         stop 'Quitting.'
       end if
 *
