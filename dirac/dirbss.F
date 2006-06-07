@@ -8939,7 +8939,7 @@ C ************************************************************************
        ELSE
         WRITE(LUPRI,'(/2X,A,I3,A,I3,A/)')
      &  'AMFIIN: going TO ADD the nuclei  ',IANUCS(IANUC),
-     &  ' wich charge ',ICHARGE,' to the BSSn Hamiltonian.'
+     &  ' with charge ',ICHARGE,' to the BSSn Hamiltonian.'
 
         IX = 0
         DO  I = 1, numballcart
