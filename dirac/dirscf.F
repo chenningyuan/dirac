@@ -479,13 +479,10 @@ C
 C       We calculate a regular Fock matrix so we can check convergence ...
 C
         IF (ICHKCNV.EQ.0) ICHKCNV = -1
-        IF(IPRSCF.GE.1) THEN
-          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
+        IOPT = 14
+        IF(IPRSCF.GE.1) IOPT = 15
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT,
      &              WORK,KFREE,LFREE)
-        ELSE
-          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &              WORK,KFREE,LFREE)
-        ENDIF
 C
 C       Determine occupation if this was not given in input
 C
