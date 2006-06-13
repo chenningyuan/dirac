@@ -83,14 +83,13 @@ C     IF (DO4C2C.AND..NOT.START2C.AND..NOT.CONT2C) THEN
 
       ENDIF
 
-CMI   ... store H2c_AO in pure LL form ...
+C ... store H2c_AO in pure LL form ...
       IF (TWOCOMPBSS.AND.(I2COFK.EQ.1.OR.I2COFK.EQ.2)) THEN
         CALL H2CTOLL(I2COFK,VMAT,WORK(KFREE),LFREE,IPRHAM)
 C       call quit('...preparing for TWOCOMP & BSS !!!')
       ENDIF
 
-CMI   ... for calculating properties in pure 2comp. mode do adapt
-CMI   them 
+C ... for calculating properties in pure 2comp. mode do adapt them 
       IF (TWOCOMPBSS.AND.DOPRP) THEN
         CALL PROP2BSS(VMAT,WORK(KFREE),LFREE)
       ENDIF
@@ -154,9 +153,25 @@ C           depending on the entering I2OFCK value
 C
 C  Called from: ONEFCK (if BSS=.true.)
 C
-C On input :   FOCK - to be used inside
-C =========   I2COFK - determines the integral type
-C             IPRINT - print level
+C On input :   
+C ==========
+C  FOCK - to be used inside
+C  I2COFK - determines the integral type
+C  Note that it the temporary default, BSS is really run in 4-component
+C  mode, that is the small components are simply set to zero.
+C  True 2-component mode means that the small components are fully absent.
+C
+C * BSS transformation of one-electron problem:
+C    1 - 2c matrix from 4c
+C    2 - 2c matrix from 4c 
+C * BSS transformation after 4c SCF, that is using the mean-field potential:
+C    3 - 2c one-electron matrix 
+C    4 - 2c full Fock matrix
+C    5 - 
+C    6 -
+C    7 - true 2-component mode
+C
+C  IPRINT - print level
 C
 C On output :     BSSMAT file updated with LL H2c_AO integrals
 C ===========     I2COFK set to 7
@@ -172,36 +187,41 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION FOCK(*),WORK(LWORK)
       LOGICAL FNDLAB
       CHARACTER*8 HAM2CL
-
+C
+C     HAM2CL is the label of the hamiltonian matrix to read
+C     =====================================================
+C
       CALL QENTER('GETH2CAO')
 
       IF      (I2COFK.EQ.1) THEN       
-CMI        .... h2c from h_D(1)_4C ... DEFAULT ...    
-           HAM2CL = 'H1AO_DK '      
+C.... h2c from h_D(1)_4C ... DEFAULT ...    
+        HAM2CL = 'H1AO_DK '      
       ELSE IF (I2COFK.EQ.2) THEN      
-CMI      .... h2c_CSC(+AMFI if present) from hD(1)_4C                                     
-           HAM2CL = 'H1AO_DK2'     
-CMI      ... these are post-DC-SCF two-component Hamiltonians ...                         
+C.... h2c_CSC(+AMFI if present) from hD(1)_4C                                     
+        HAM2CL = 'H1AO_DK2'     
+C.... these are post-DC-SCF two-component Hamiltonians ...                         
 C     =============================================================                       
       ELSE IF (I2COFK.EQ.3) THEN 
-CMI .... h2c(1) from FD4C - one electron terms !                                          
-CMI ...  WE MAY WISH TO PERFORM ONLY ONE SCF ITERATION HERE !                             
-           HAM2CL = 'FD1AO_DK'    
+C.... h2c(1) from FD4C - one electron terms !                                          
+C.... WE MAY WISH TO PERFORM ONLY ONE SCF ITERATION HERE !                             
+        HAM2CL = 'FD1AO_DK'    
       ELSE IF (I2COFK.EQ.4) THEN    
-CMI .... full Fock_2c transformed from FD4C                                               
-           HAM2CL = 'FDAO_DK '   
+C.... full Fock_2c transformed from FD4C                                               
+        HAM2CL = 'FDAO_DK '   
       ELSE IF (I2COFK.EQ.5.OR.I2COFK.EQ.6) THEN
-CMI .... f2c(=h1+u1_so, spin-free terms are removed from u1) from FD_4C term              
-           HAM2CL = 'FD2C_USO' 
+C.... f2c(=h1+u1_so, spin-free terms are removed from u1) from FD_4C term              
+        HAM2CL = 'FD2C_USO' 
       ELSE IF (I2COFK.EQ.7) THEN    
-CMI .... it's H1AO_DK or H1AO_DK2 in LL basis
-           HAM2CL = 'H2CAO_LL' 
+C.... it's H1AO_DK or H1AO_DK2 in LL basis
+        HAM2CL = 'H2CAO_LL' 
       ELSE     
-CC        write(lupri,*) 'H2CAOLL: I2CHAM=',I2CHAM   
-          write(lupri,*) 'H2CAOLL: I2COFK=',I2COFK   
-          CALL QUIT('ONEFCK: Wrong value of I2CHAM!')    
+        WRITE(lupri,*) 'H2CAOLL: I2COFK=',I2COFK   
+        CALL QUIT('ONEFCK: Wrong value of I2CHAM!')    
       ENDIF                                  
-
+C
+C     Read hamiltonian integrals from file
+C     ====================================
+C
       CALL OPNFIL(LUBSS,'BSSMAT','OLD','ONEFCK')   
       REWIND LUBSS   
       IF (FNDLAB(HAM2CL,LUBSS)) THEN   
@@ -217,7 +237,7 @@ CC        write(lupri,*) 'H2CAOLL: I2CHAM=',I2CHAM
      & ' integrals NOT FOUND in the file BSSMAT !'
           CALL QUIT('ONEFCK: integrals NOT FOUND in the file BSSMAT!') 
       ENDIF  
-C        ... close the file ...                                                           
+C     ... close the file ...                                                           
       CLOSE(LUBSS,STATUS='KEEP') 
 
       CALL QEXIT('GETH2CAO')
@@ -2632,7 +2652,7 @@ C  .... it is prepared for the later for block-diagonalization to the infinite o
 C ... now if special case - DFFOCK2 from outside
         IF (CONT2C.AND.I2CHAM.EQ.6) THEN
 
-C      ... get transf. marix into TMAT
+C      ... get transf. matrix into TMAT
           IF (FPB) THEN
             LBL = 'FPMAT4C '
           ELSE 
@@ -7838,7 +7858,7 @@ C      call quit('fdctr4C')
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck cmotr4c */
-      SUBROUTINE CMOTR4C(TBUF,TMAT,CMO,EIG,IBEIG,WORK,LWORK)
+      SUBROUTINE CMOTR4C(TBUF,TMAT,CMO,EIG,IBEIG,IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:   Do the reverse picture change transformation of 2c CMO into 4c CMO
@@ -7876,7 +7896,7 @@ C ================================================================
 C               ... get 2c MO into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-      IF(IPRSCF.GE.1) THEN
+      IF(IPRINT.GE.1) THEN
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
      &              WORK,KFREE,LFREE)
       ELSE
@@ -7898,7 +7918,7 @@ CMI   ... open LUBSS, get the picture change transf.matrix
         IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NFBAS(2,1)*NZ)
 C ... array for the picture change transformation matrix (PCTM)...
         CALL READT(LUBSS,ISIZE,TMAT)
-        IF (IPRSCF.GE.2) WRITE(LUPRI,'(/2X,A)')
+        IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
      &  'CMOTR4C: Picture change transformation'//
      &  ' matrix was read into TMAT.'
        ELSE
@@ -7912,7 +7932,7 @@ C   then TMAT . CMO^ = TBUF
       DO I=1,NFSYM
       IF (NESH(I).GT.0) THEN
 
-       IF (IPRSCF.GE.5) THEN
+       IF (IPRINT.GE.5) THEN
 
         CALL HEADER(
      &  'CMOTR4C: U matrix',-1)
@@ -7940,7 +7960,7 @@ C ===============================================================
      &   D0,IPQTOQ(1,0),TBUF(IMO),
      &   NFBAS(I,0),NESH(I),NZ)
 
-       IF (IPRSCF.GE.5) THEN
+       IF (IPRINT.GE.5) THEN
         CALL HEADER(
      &  'CMOTR4C: U.CMO_2C starting MOs(LS,e), TBUF',-1)
         WRITE(LUPRI,'(A,I1,A,I1)')
@@ -7963,7 +7983,7 @@ C ********************************************************
       ELSE IF (INI2C.EQ.4) THEN
 C    ... read 2c CMO into TBUF ...
        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-       IF(IPRSCF.GE.1) THEN
+       IF(IPRINT.GE.1) THEN
         CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,15,
      &              WORK,KFREE,LFREE)
        ELSE
@@ -7992,7 +8012,7 @@ C =========================================
        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
        CALL WRITT(LUBSS,ISIZE,TBUF)
        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-       IF (IPRSCF.GE.2) WRITE(LUPRI,'(2X,A)') 
+       IF (IPRINT.GE.2) WRITE(LUPRI,'(2X,A)') 
      & 'CMOTR4C: CMO_LS_e starting MO (in TBUF) were'//
      & ' written into the BSSMAT file, EOFLABEL was renewed.'
       ELSE
@@ -8009,8 +8029,8 @@ C     CALL MEMCHK('CMOTR4C e',WORK,1)
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck cmotr4c */
-      SUBROUTINE CMOINI4C(CMO,TMAT,EIG,IBEIG,WORK,LWORK)
+C  /* Deck cmoini4c */
+      SUBROUTINE CMOINI4C(CMO,TMAT,EIG,IBEIG,IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:   Do the reverse picture change transformation of 2c CMO into 4c CMO
@@ -8133,7 +8153,7 @@ C      call quit('in CMOINI4C !')
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck h2ctoll */
-      SUBROUTINE H2CTOLL(I2COFK,VMAT,WORK,LWORK,IPRINT)
+      SUBROUTINE H2CTOLL(I2COFK,HMAT,WORK,LWORK,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C    PURPOSE: Read the H2c_AO integrals, which are in the BSSMAT file 
@@ -8142,7 +8162,7 @@ C
 C    Called from: MAKE_DKH
 C
 C    On input:  I2COFK - determines which label from BSSMAT to be read
-C               VMAT - empty field (N2BBASXQ) to be utilized 
+C               HMAT - empty field (N2BBASXQ) to be utilized 
 C
 C    On output:  I2COFK set to 7 (see routine GETH2CAO)
 C                BSS/DKn integrals in LL_only matrix added to the BSSMAT
@@ -8158,70 +8178,68 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "dgroup.h"
 C
-      DIMENSION WORK(LWORK),VMAT(*)
+      DIMENSION WORK(LWORK),HMAT(*)
       LOGICAL ISONBSSMAT
       CHARACTER*8 HAM2CL
 
       CALL QENTER('H2CTOLL')
 #include "memint.h"
 
-C       ... calculate N2BBASXQ with Lintegrals
-      N2BBASXQ_L = (NTBAS(1)*NTBAS(1)*NZ)
+C.....calculate dimension of (LL block x NZ )
+      N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
       CALL MEMGET('REAL',KBSSLL,N2BBASXQ_L,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KBSSLL),N2BBASXQ_L)
-
-C ...; 'H1AO_DK '
+C
+C     Read original 2c hamiltonian matrix from BSSMAT
+C     ===============================================
+C
+C ....define label for reading hamiltonian integrals from BSSMAT
       IF      (I2COFK.EQ.1) THEN
-CMI        .... h2c from h_D(1)_4C ... DEFAULT ...
+C ...... h2c from h_D(1)_4C ... DEFAULT ...
          HAM2CL = 'H1AO_DK '
       ELSE IF (I2COFK.EQ.2) THEN
-CMI      .... h2c_CSC(+AMFI if present) from hD(1)_4C
+C ...... h2c_CSC(+AMFI if present) from hD(1)_4C
          HAM2CL = 'H1AO_DK2'
       ELSE
          call quit('H2CTOLL: wrong I2COFK ! Should be 1 or 2 ! ')
       ENDIF
-
-      CALL RFBSSMAT(HAM2CL,'H2CTOLL',VMAT,N2BBASXQ,LUBSS,IPRINT)
-
-C     ... control output
+      CALL RFBSSMAT(HAM2CL,'H2CTOLL',HMAT,N2BBASXQ,LUBSS,IPRINT)
       IF (IPRINT.GE.5) THEN
        CALL HEADER(
      & 'H2CTOLL: H2C_AO in full block, total matrix in SA-AO',-1)
-       CALL PRQMAT(VMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+       CALL PRQMAT(HMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &            IPQTOQ(1,0),LUPRI)
       ENDIF
-
-C     ... extract the 2c matrix from VMAT
-      CALL EXTRLL(0,VMAT,WORK(KBSSLL),IPRINT)
-
+C
+C     Extract the LL block and write to file
+C     ======================================
+C
+      CALL EXTRLL(0,HMAT,WORK(KBSSLL),IPRINT)
       CALL W2BSSMAT('H2CAO_LL','H2CTOLL',WORK(KBSSLL),
      &                N2BBASXQ_L,LUBSS,IPRINT)      
-
-C     ... control output
       IF (IPRINT.GE.5) THEN
        CALL HEADER(
      & 'H2CAO_LL: H2C_AO in LL block, total matrix in AO',-1)
        CALL PRQMAT(WORK(KBSSLL),NTBAS(1),NTBAS(1),NTBAS(1),NTBAS(1),NZ,
      &            IPQTOQ(1,0),LUPRI)
       ENDIF
-
+C
+C     In the case of bare nucleus screening correction, 
+C     read matrix of screening integrals, extract LL block
+C     and write to file
+C     ====================================================
+C
       IF (BNCRON.AND.ISONBSSMAT('BNCR2C_4','H2CTOLL',LUBSS,IPRINT)) THEN
-C     ... read 'BNCR2C_4' frol BSSMAT
-       CALL RFBSSMAT('BNCR2C_4','H2CTOLL',VMAT,N2BBASXQ,LUBSS,IPRINT)
-C     ... extract it into 2comp. form
-       CALL EXTRLL(0,VMAT,WORK(KBSSLL),IPRINT)
-C     ... write it to the end of the file ...
+       CALL RFBSSMAT('BNCR2C_4','H2CTOLL',HMAT,N2BBASXQ,LUBSS,IPRINT)
+       CALL EXTRLL(0,HMAT,WORK(KBSSLL),IPRINT)
        CALL W2BSSMAT('BNCR2C_2','H2CTOLL',WORK(KBSSLL),
      &                N2BBASXQ_L,LUBSS,IPRINT)
       ENDIF
-
 C     ... release the memmory..
       CALL MEMREL('H2CTOLL',WORK,KBSSLL,KBSSLL,KFREE,LFREE)
-
 C      ... finally set up reading flag...
       I2COFK = 7
-
-C       call quit('h2ctoll')
+C
       CALL QEXIT('H2CTOLL')
       RETURN
       END
