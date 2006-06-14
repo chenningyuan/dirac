@@ -40,8 +40,8 @@
 !------------------------------------------------------------------------------------
 !  /* Deck ceninp */
       SUBROUTINE CENINP(LUINFO,WORK,LWORK,NONTYP,NONT,IQM,NBLCK,           &
-                        JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,   &
-                        KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG)
+     &                  JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,   &
+     &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG)
 !*****************************************************************************
 !
 !       Loop over expansion centers and read coordinates and basis set information.
@@ -75,15 +75,15 @@
 !       BASREF : Lines of documentation for the basis set
 !
 !*****************************************************************************
-include "implicit.h"
-include "priunit.h"
-include "dummy.h"
-include "mxcent.h"
-include "maxorb.h"
-include "aovec.h"
-include "maxaqn.h"
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
-include "cbirea.h"
+#include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,CNTBAS
       DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),     &
@@ -95,12 +95,12 @@ include "cbirea.h"
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       LOGICAL GENERATE
       DIMENSION IBLCK(MXBSETS)
-include "molinp.h"
-include "nuclei.h"
-include "huckel.h"
-include "gencon.h"
-include "dcbgen.h"
-include "ibtfun.h"
+#include "molinp.h"
+#include "nuclei.h"
+#include "huckel.h"
+#include "gencon.h"
+#include "dcbgen.h"
+#include "ibtfun.h"
 !
 !     Initialize variables that regard the whole basis set
 !     e.g. whether it is contracted or not.
@@ -226,16 +226,16 @@ include "ibtfun.h"
 !       and should be generated (e.g. the small component by the kinetic balance relation)
 !
 !*****************************************************************************
-include "implicit.h"
-include "priunit.h"
-include "dummy.h"
-include "mxcent.h"
-include "maxorb.h"
-include "aovec.h"
-include "maxaqn.h"
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
-include "cbirea.h"
+#include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,NOORBTS
       DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
@@ -248,12 +248,12 @@ include "cbirea.h"
       PARAMETER (MAXBSFIL=5)
       CHARACTER*20 BSFIL(MAXBSFIL)
       LOGICAL GENERATE
-include "molinp.h"
-include "nuclei.h"
-include "huckel.h"
-include "dcbgen.h"
+#include "molinp.h"
+#include "nuclei.h"
+#include "huckel.h"
+#include "dcbgen.h"
 !
-include "ibtfun.h"
+#include "ibtfun.h"
       GENERATE = .FALSE.
       CNTBAS = .FALSE.
       NHTYP  = 0
@@ -462,11 +462,17 @@ include "ibtfun.h"
 !         Dalton basis set
 !
           BASNAM = BASFIL
+#if defined (DIRAC_DENSFIT_DEBUG)
+          write(*,*) 'before call to baslib'
+#endif
           CALL BASLIB(IQM,JCO,NUC,NRC,SEG,                               &
      &         ALPHA,CPRIM,CPRIMU,                                       &
      &         NBLOCK,ISGEN,KAOVEC,KPRIM,Q,1,DSM,                        &
      &         BASREF)
           NBLCK = NBLCK + NBLOCK
+#if defined (DIRAC_DENSFIT_DEBUG)
+          write(*,*) 'after call to baslib'
+#endif
       CASE (4)
 !
 !         Generate well-temperered/family basis set
@@ -541,16 +547,16 @@ include "ibtfun.h"
 !       Original version by Andre Gomes, isolated and reorganized by L. Visscher.
 !
 !*****************************************************************************
-include "implicit.h"
-include "priunit.h"
-include "dummy.h"
-include "mxcent.h"
-include "maxorb.h"
-include "aovec.h"
-include "maxaqn.h"
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
-include "cbirea.h"
+#include "cbirea.h"
       LOGICAL SEG,NOORBTS,CNTBAS
       DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
      &          SEG(KAOVEC),                                            &
@@ -561,10 +567,10 @@ include "cbirea.h"
       CHARACTER*80 BASREF(10)
       CHARACTER*20 BSFIL(NFILES)
       LOGICAL GENERATE
-include "molinp.h"
-include "nuclei.h"
-include "huckel.h"
-include "dcbgen.h"
+#include "molinp.h"
+#include "nuclei.h"
+#include "huckel.h"
+#include "dcbgen.h"
 !     Scratch arrays needed for MULTIBASIS option
 !     Should changed into allocatable arrays (either using fortran 90 allocate or
 !     from work).

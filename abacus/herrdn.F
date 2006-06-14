@@ -2024,6 +2024,16 @@ C*****************************************************************************
       NORBL_FIT  = IORB_FIT
       NPLRG_FIT  = IPRIMD_FIT
       NPLSH_FIT  = IPRIM_FIT
+C aspg debug
+#if defined (DIRAC_DENSFIT_DEBUG)
+      write(*,*) 'DEBUG dfit: large component fit basis'
+      write(*,*) 'DEBUG dfit: NLRGSH_FIT =',NLRGSH_FIT
+      write(*,*) 'DEBUG dfit: NLARGE_FIT =',NLARGE_FIT
+      write(*,*) 'DEBUG dfit: NORBL_FIT  =',NORBL_FIT
+      write(*,*) 'DEBUG dfit: NPLRG_FIT  =',NPLRG_FIT
+      write(*,*) 'DEBUG dfit: NPLSH_FIT  =',NPLSH_FIT
+#endif
+C aspg debug
 C*****************************************************************************
 C       Process fit set data for secundary (SS) density fitset
 C*****************************************************************************
@@ -2045,6 +2055,19 @@ C*****************************************************************************
       NPSML_FIT   = IPRIMD_FIT - NPLRG_FIT
       NPSHEL_FIT  = IPRIM_FIT
       NPSSH_FIT   = IPRIM_FIT - NPLSH_FIT
+C aspg debug
+#if defined (DIRAC_DENSFIT_DEBUG)
+      write(*,*) 'DEBUG dfit: small component fit basis'
+      write(*,*) 'DEBUG dfit: KMAX_FIT   =',KMAX_FIT
+      write(*,*) 'DEBUG dfit: NSMLSH_FIT =',NSMLSH_FIT
+      write(*,*) 'DEBUG dfit: NBASIS_FIT =',NBASIS_FIT
+      write(*,*) 'DEBUG dfit: NSMALL_FIT =',NSMALL_FIT
+      write(*,*) 'DEBUG dfit: NPBAS_FIT  =',NPBAS_FIT
+      write(*,*) 'DEBUG dfit: NPSML_FIT  =',NPSML_FIT
+      write(*,*) 'DEBUG dfit: NPSHEL_FIT =',NPSHEL_FIT
+      write(*,*) 'DEBUG dfit: NPSSH_FIT  =',NPSSH_FIT
+#endif
+C aspg debug
 C
 C     ***************************************
 C     ***** Orbital Symmetry Processing *****
@@ -2211,13 +2234,41 @@ C
          IF(DIRAC) THEN
             CALL PRSYMB(LUPRI,'-',70,2)
             WRITE(LUPRI,'(23X,2I8,3X,A)')
-     &            NPLRG,NLARGE,'L - large components'
+     &            NPLRG,NLARGE,'   L  - large components'
             WRITE(LUPRI,'(23X,2I8,3X,A)')
-     &            NPSML,NSMALL,'S - small components'
+     &            NPSML,NSMALL,'   S  - small components'
+C
+C aspg, 2006-06-13
+C adding printout for the fit basis set cases, based upon the
+C value of KSETS
+C
+            IF (KSETS.EQ.3) THEN
+               WRITE(LUPRI,'(23X,2I8,3X,A)')
+     &            NPLRG_FIT,NLARGE_FIT, '   FL - global components fit'
+            ELSEIF (KSETS.EQ.4) THEN
+               WRITE(LUPRI,'(23X,2I8,3X,A)')
+     &            NPLRG_FIT,NLARGE_FIT, '   FL - large components fit'
+               WRITE(LUPRI,'(23X,2I8,3X,A)')
+     &            NPSML_FIT,NSMALL_FIT, '   FS - small components fit'
+            ENDIF
+C
          ENDIF
          CALL PRSYMB(LUPRI,'-',70,2)
+C     
+C aspg, 2006-06-13
+C adding printout for the fit basis set cases, based upon the
+C value of KSETS  
+C
+         NTPBAS  = NPBAS  + NPBAS_FIT 
+         NTBASIS = NBASIS + NBASIS_FIT
+C        WRITE (LUPRI,'(2X,A,I7,3I8,6X,/)')
+C    &            'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
+C        ELSE
+C           NTPBAS  = NPBAS  + NPBAS_FIT 
+C           NTBASIS = NBASIS + NBASIS_FIT
          WRITE (LUPRI,'(2X,A,I7,3I8,6X,/)')
-     &         'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
+     &         'total:',NUCDEP,NCHTOT,NTPBAS,NTBASIS
+C
          IF (NHTYP .GT. 2) THEN
             IF(DOCART) THEN
                WRITE (LUPRI,'(2X,A)') 'Cartesian basis used.'
@@ -2289,6 +2340,42 @@ C*****************************************************************************
      &                     CPRIMU(1,1,1,2),NRMPRI)
             END IF
          END IF
+      ENDIF
+C 
+C aspg, 2006-06-13
+C adding printout for the fit functions. when things are stable this
+C and the calls to orbout above should be put in a separate function.
+C
+         IF (NLARGE_FIT.GT.0) THEN
+            CALL HEADER('Fit Functions, Global/Large Component',-1)
+            NRMPRI = .FALSE.
+            CALL ORBOUT(3,NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
+     &               NUC(1,3),NRC(1,3),SEG(1,3),
+     &               WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
+     &               CPRIMU(1,1,1,3),NRMPRI)
+            IF (IPREAD .GT. 2) THEN
+               NRMPRI = .TRUE.
+            CALL ORBOUT(3,NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
+     &                  NUC(1,3),NRC(1,3),SEG(1,3),
+     &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
+     &                  CPRIMU(1,1,1,3),NRMPRI)
+            END IF
+            IF (NBASIS_FIT.GT.NLARGE_FIT) THEN 
+               CALL HEADER('Fit Functions, Small Component',-1)
+               NRMPRI = .FALSE.
+               CALL ORBOUT(4,NONTYP,NONT,IQM(1,4),NBLCK(1,4),JCO(1,1,4),
+     &                  NUC(1,4),NRC(1,4),SEG(1,4),
+     &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
+     &                  CPRIMU(1,1,1,4),NRMPRI)
+               IF (IPREAD .GT. 2) THEN
+                  NRMPRI = .TRUE.
+               CALL ORBOUT(4,NONTYP,NONT,IQM(1,4),NBLCK(1,4),JCO(1,1,4),
+     &                     NUC(1,4),NRC(1,4),SEG(1,4),
+     &                     WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
+     &                     CPRIMU(1,1,1,4),NRMPRI)
+               END IF
+            ENDIF
+C
       END IF
 C
 C     Symmetry basis:
@@ -3317,7 +3404,7 @@ C
       END
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &           IPCON,KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
+     &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3331,11 +3418,13 @@ C
 #include "cbirea.h"
 #include "nuclei.h"
 #include "primit.h"
+#include "fitprimit.h"
       CHARACTER CHRSEG*10,DEG*2
       LOGICAL SEG, NRMPRI
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK),
+     &          ALPHA(KPRIM,KBLOCK),
      &          SEG(KBLOCK)
       DIMENSION IPCON(KPRIM)
 C
@@ -3353,9 +3442,15 @@ C
       IF(ICLS.EQ.1) THEN
         IPRIMD = 0
         IPRIM =  0
-      ELSE
+      ELSEIF(ICLS.EQ.2) THEN
         IPRIMD = NPLRG
         IPRIM  = NPLSH
+      ELSEIF(ICLS.EQ.3) THEN
+        IPRIMD = 0
+        IPRIM  = 0
+      ELSEIF(ICLS.EQ.4) THEN
+        IPRIMD = NPLRG_FIT
+        IPRIM  = NPLSH_FIT
       ENDIF
       ICENT  = 0
       IBLOCK = 0
@@ -3397,24 +3492,42 @@ C
                      ITYP = ITYP + 1
                      IPRIMD = IPRIMD + 1
                      IF (IPREAD .GT. 0) THEN
+                       IF (ICLS.LE.2) THEN
                        WRITE (LUPRI,IFMTA) NAMN(ICENT),DEG,
      &                                     GTOTYP(ITYP),
      &                                     IPRIMD,PRIEXP(IPSTRT),
      &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
+                       ELSE
+                       WRITE (LUPRI,IFMTA) NAMN(ICENT),DEG,
+     &                                     GTOTYP(ITYP),
+     &                                     IPRIMD,PRIEXP_FIT(IPSTRT),
+     &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
+                      ENDIF
                      ENDIF
                      IF (NNUC .GT. 1) THEN
                         IPRIMD = IPRIMD + 1
                         IF (IPREAD .GT. 0) THEN
+                           IF (ICLS.LE.2) THEN
                            WRITE (LUPRI,IFMTC) CHRSEG,
      &                                     IPRIMD,PRIEXP(IPSTRT+1),
      &                                     (CPRIMU(2,MM,KBCH),MM=1,NNRC)
+                           ELSE
+                           WRITE (LUPRI,IFMTC) CHRSEG,
+     &                                     IPRIMD,PRIEXP_FIT(IPSTRT+1),
+     &                                     (CPRIMU(2,MM,KBCH),MM=1,NNRC)
+                           ENDIF
                         END IF
                      END IF
                      DO 410 M = 3, NNUC
                         IPRIMD = IPRIMD + 1
                         IF (IPREAD .GT. 0) THEN
-                          WRITE (LUPRI,IFMTD) IPRIMD,PRIEXP(IPSTRT-1+M),
+                      IF (ICLS.LE.2) THEN
+                      WRITE (LUPRI,IFMTD) IPRIMD,PRIEXP(IPSTRT-1+M),
      &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
+                      ELSE
+                      WRITE (LUPRI,IFMTD) IPRIMD,PRIEXP_FIT(IPSTRT-1+M),
+     &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
+                      ENDIF
                        END IF
   410              CONTINUE
   300            CONTINUE
