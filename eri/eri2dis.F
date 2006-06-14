@@ -1,19 +1,18 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -22,19 +21,15 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
+C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
+C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
-C
-C
-C$Id$
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #if defined (VAR_SINGLE)
 #include "single.h"
@@ -237,7 +232,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
+#ifndef PRG_DIRAC
+      CALL PICKAO(IPRINT)
+#else
       CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+#endif
 C
 C     Information about distributions
 C     ===============================
@@ -268,6 +267,7 @@ C
          CALL ODCDRV(IODCL1,IODCL2,
      &               IODBC1,IODBC2,RODBC1,RODBC2,
      &               IODPP1,IODPP2,RODPP1,RODPP2,
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &               DUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,IDUMMY,CCFBT,
      &               INDXBT,WORK,LWORK,IPRINT)
          IF ( IPRINT .GT. 2) CALL TIMER('HERMIT',TIMSTR,TIMEND)
@@ -353,7 +353,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
+#ifndef PRG_DIRAC
+      CALL PICKAO(IPRINT)
+#else
       CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+#endif
 C
 C     Information about distributions
 C     ===============================
@@ -461,18 +465,22 @@ C
       RETURN
       END
 C  /* Deck pickao */
+#ifndef PRG_DIRAC
+      SUBROUTINE PICKAO(IPRINT)
+#else
       SUBROUTINE PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+#endif
 C*****************************************************************************
-C    
+C
 C     Define active batches in call to ERI.
-C        
+C
 C     First written by T. Helgaker
 C     NCENTS,ICENTS,ICLASSES introduced by Luuk Visscher, october 2004
 C     Polish by T. Saue, Nov 2004
-C     
+C
 C     Arrays needed to pick the active batches:
 C     - NCENTS :   the number of active centers for a given index (maximally 2)
-C     - ICENTS :   the corresponding center indices 
+C     - ICENTS :   the corresponding center indices
 C     - ICLASSES : the active class (can only be one at a time).
 C*****************************************************************************
 #include "implicit.h"
@@ -486,6 +494,17 @@ C*****************************************************************************
 #include "erisel.h"
 #include "aobtch.h"
 C
+#ifndef PRG_DIRAC
+      DO J = 1, 4
+      DO I = 1, NAOBCH
+         IF (KCLSBT(I).EQ.1) THEN
+             ACTVBT(I,J) = .TRUE.
+          ELSE
+             ACTVBT(I,J) = .FALSE.
+          ENDIF
+      END DO
+      END DO
+#else
       DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
 C
       DO I = 1, NAOBCH
@@ -510,7 +529,7 @@ C              The center must be active (ncents=0 means all centers active)
             ENDIF
          END DO
       END DO
-C
+#endif
 C     First orbital
 C     CTROND: This must be looked at !
       DO J = 1, 4
@@ -938,7 +957,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
+#ifndef PRG_DIRAC
+      CALL PICKAO(IPRINT)
+#else
       CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+#endif
 C
 C     Information about distributions
 C     ===============================

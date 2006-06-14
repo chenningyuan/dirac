@@ -1,19 +1,18 @@
 C
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -22,19 +21,15 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
+C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
+C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C
-C
-C
-C$Id$
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C  /* Deck eriexc */
       SUBROUTINE ERIEXC(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
@@ -65,17 +60,7 @@ C
 #include "odbtch.h"
 #include "symmet.h"
 #include "infpar.h"
-C
-C aspg 2006-04-21
-C this ifndef has to be later checked as to whether or not it should
-C be activated, given is was made inactive do compile eri2drv.F...
-C it was placed here for consistency... 
-C
-C#ifndef PRG_DIRAC
 #include "inforb.h"
-C
-C#endif /* ! PRG_DIRAC */
-C
 #include "shells.h"
 C aspg, 2006-04-23
 C
@@ -91,7 +76,7 @@ C
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*), 
      &	        FCKTMP(*), IFCSAV(NDMT)
 #include "ibtfun.h"
-C
+C       
 C and now comes the dimension statement for the class selection
 C used in dirac
 C
@@ -99,7 +84,7 @@ C
       DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
       LOGICAL DOEXC
 #endif
-C       
+C
       IF (SLAVE) THEN
          IPRINT = IPRFCK
       ELSE
@@ -193,7 +178,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
+#ifndef PRG_DIRAC
+      CALL PICKAO(IPRINT)
+#else
       CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+#endif
 C
 C     Information about distributions
 C     ===============================
@@ -214,7 +203,6 @@ C
       KLAST   = KCLSS   + (2*NAOBCH**2 + 1)/IRAT + 1
       LWRK    = LFREE   - KLAST + 1
       IF (KLAST .GT. LFREE) CALL STOPIT('ERIEXC','RED',KLAST,LWRK)
-C
 #ifndef PRG_DIRAC
       CALL EXIRED(DMAT,NDMT,WORK(KDAB),WORK(KGAB),
      &            WORK(KDNSCNT),WORK(KDNSIDX),
@@ -267,7 +255,7 @@ C
      &               WORK(KDNSCNT),WORK(KDNSIDX),
      &               WORK(KSHLCNT),WORK(KSHLIDX),WORK(KCLSS),
      &               FCKTMP,DMAT,NDMT,IFCSAV,DUMMY,IDUMMY,CCFBT,
-     &	             INDXBT,WORK(KLAST),LWRK,IPRINT)
+     &               INDXBT,WORK(KLAST),LWRK,IPRINT)
 #endif /* ! PRG_DIRAC */
 C
 #else /* VAR_VECTOR */
@@ -302,7 +290,7 @@ C
 #if defined (VAR_VECTOR)
 C
 #ifndef PRG_DIRAC
-            CALL EXIDRV(WORK(KODCL1),WORK(KODCL2),
+             CALL EXIDRV(WORK(KODCL1),WORK(KODCL2),
      &                  WORK(KODBC1),WORK(KODBC2),
      &                  WORK(KRDBC1),WORK(KRDBC2),
      &                  WORK(KODPP1),WORK(KODPP2),
@@ -322,7 +310,7 @@ C
      &                  WORK(KDNSCNT),WORK(KDNSIDX),
      &                  WORK(KSHLCNT),WORK(KSHLIDX),WORK(KCLSS),
      &                  FCKTMP,DMAT,NDMT,IFCSAV,DUMMY,IDUMMY,CCFBT,
-     &	                INDXBT,WORK(KLAST),LWRK,IPRINT)
+     &                  INDXBT,WORK(KLAST),LWRK,IPRINT)
 #endif /* ! PRG_DIRAC */
 C
 #else /* VAR_VECTOR */
@@ -556,7 +544,7 @@ C  /* Deck exidr1 */
 #include "hertop.h"
 #include "symmet.h"
 #include "r12int.h"
-#include "denfit.h" 
+#include "denfit.h"
 #include "iratdef.h" 
 C
       INTEGER A, B, C, D

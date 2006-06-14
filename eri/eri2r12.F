@@ -1,19 +1,18 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -22,19 +21,15 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
+C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
+C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
-C
-C
-C$Id$
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #if defined (VAR_SINGLE)
 #include "single.h"
@@ -64,7 +59,7 @@ C  /* Deck eriher */
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C     Gaussian damped r12 integrals added by Simen Reine, 11. jan 2005.
-C
+C     
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -586,27 +581,27 @@ C     (University of Oslo, 29 October 2001).
         DO J = 1, NTUV
           DO I = 1, NPPX
             RES(I,J) = P1(I)*B(I,J)
-          ENDDO
+          ENDDO      
         ENDDO
         GOTO 100
       ENDIF
       DO J = 1, NTUV
          DO I = 1, NPPX
             RES(I,J) = P1(I)*A(I,J)
-         ENDDO
-      ENDDO
+         ENDDO      
+      ENDDO  
       IF (INTGAC .EQ. 2) GOTO 100
       DO J = 1, NTUV
          DO I = 1, NPPX
             RES(I,J) = RES(I,J) + P2(I)*B(I,J)
          ENDDO
-      ENDDO
+      ENDDO 
       IF (INTGAC .EQ. 4) GOTO 100
       DO J = 1, NTUV
          DO I = 1, NPPX
             RES(I,J) = RES(I,J) + P3(I)*C(I,J)
          ENDDO
-      ENDDO
+      ENDDO 
   100 RETURN
       END
 C  /* Deck cr1u12 */
@@ -920,7 +915,7 @@ C
         BETATRY = 0.001d0
         VAR  = BETATRY
       ELSE IF (INTGAC .EQ. 2 .OR. INTGAC .EQ. 3 .OR. INTGAC .EQ. 5) THEN
-         VAR = GAMAC
+         VAR = GAMAC                                         
       ELSE IF (INTGAC .EQ. 4 .OR. INTGAC .EQ. 6) THEN
          VAR = GAMAC+GAMAD
          VSQ = GAMAC*GAMAD
@@ -942,7 +937,7 @@ C
          DO I = 1, NPPX
             PRE1(I) = FACINT(I)*BETA(I)
             PRE2(I) = D0
-            PRE3(I) = D0
+            PRE3(I) = D0  
          END DO
       ELSE IF (INTGAC .EQ. 2) THEN
          DO I = 1, NPPX
@@ -1065,7 +1060,7 @@ C
 C
 C     Allocate ERIGOM
 C
-      KNDADR = 1
+      KNDADR = 1 
       KLAST = KNDADR + NPPX
       IF (KLAST .GT. LWORK) CALL STOPIT('ERIGOM',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
@@ -1526,9 +1521,9 @@ C
 C  /* Deck ericrx */
       SUBROUTINE ERICRX(R,S,X,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include"implicit.h"
+#include "implicit.h"
       PARAMETER (D0 = 0D0)
-#include"ericom.h"
+#include "ericom.h"
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX), X(NPPX)
 C
@@ -1558,9 +1553,9 @@ C
 C  /* Deck ericri */
       SUBROUTINE ERICRI(R,S,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include"implicit.h"
+#include "implicit.h"
       PARAMETER (D0 = 0D0)
-#include"ericom.h"
+#include "ericom.h"
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX)
 C
@@ -1590,9 +1585,9 @@ C
 C  /* Deck ericrp */
       SUBROUTINE ERICRP(R,S,X,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include"implicit.h"
+#include "implicit.h"
       PARAMETER (D0 = 0D0)
-#include"ericom.h"
+#include "ericom.h"
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX), X(NPPX)
 C

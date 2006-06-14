@@ -1,19 +1,18 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -22,23 +21,20 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
+C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
+C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
-C
-C
-C$Id$
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
+C
 C  /* Deck erifck */
       SUBROUTINE HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      *                  CCFBT,INDXBT,FCKTMP,WORK,LWORK)
@@ -67,7 +63,7 @@ C
 #include "odbtch.h"
 #include "symmet.h"
 #include "infpar.h"
-#include <shells.h>
+#include "shells.h"
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*), 
      &	        FCKTMP(*)
@@ -140,7 +136,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
+#ifndef PRG_DIRAC
+      CALL PICKAO(IPRINT)
+#else
       CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+#endif
 C
 C     Information about distributions
 C     ===============================
@@ -185,6 +185,7 @@ C
      &                  WORK(KRDBC1),WORK(KRDBC2),
      &                  WORK(KODPP1),WORK(KODPP2),
      &                  WORK(KRDPP1),WORK(KRDPP2),
+     &                  DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &                  FCKTMP,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &	                INDXBT,WORK(KLAST),LWRK,IPRINT)
 #else
@@ -193,6 +194,7 @@ C
      &                  WORK(KRDBC1),WORK(KRDBC2),
      &                  WORK(KODPP1),WORK(KODPP2),
      &                  WORK(KRDPP1),WORK(KRDPP2),
+     &                  DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &                  FMAT,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &                  INDXBT,WORK(KLAST),LWRK,IPRINT)
 #endif
@@ -322,22 +324,12 @@ C
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIFO1',-1)
 C
-C new exchange stuff...
-C
       IF (EXCINT) THEN
          CALL EXINDF(FMAT,DMAT,NDMT,SO,INDEX,IPNTCR,IODDCC,IPNTUV,
      &               INDXBT,IFCTYP,IPRINT)
       ELSE
-C
-C     Collect (non-zero) integrals and attach indices
-C     ===============================================
-C
          CALL ERINDF(SO,INDEX,IPNTCR,IODDCC,IPNTUV,
      &               BIN,IBIN,LBIN,CCFBT,INDXBT,INT,IPRINT)
-C
-C     Construct Fock matrix contribution
-C     ==================================
-C
          CALL FOKDI1(FMAT,DMAT,NDMT,IFCTYP,BIN,IBIN,LBIN,INT,
      &               ABS(IFITDM),IPRINT)
       END IF
@@ -597,11 +589,7 @@ C NECgh980505  FAC = D2
 C NECgh980505  FAC = DP5 
  	       FAC = D1
          ELSE
-C aspg, 2006-04-19 
             FAC = D4
-CC          FAC = D1
-CC          WRITE(LUPRI,*) '*** WARNING!!! This value for IFCTYP is '//
-CC   &               'probably not correctly implemented! 1->4 ***'
          END IF
          IF (IFIT_DMAT.EQ.0) THEN
 C...........Ordinary Fock matrix with exact density
@@ -611,7 +599,7 @@ C...........Ordinary Fock matrix with exact density
 #else
             CALL QUIT('Insert call to ord Fock matrix construction !')
 #endif
-         ELSE
+          ELSE
 #ifndef PRG_DIRAC
 C...........Construction of special Fock matrix for density fitting
 C...........The multiplication factor should be one in this case.
@@ -621,7 +609,7 @@ C...........The multiplication factor should be one in this case.
 #else
             CALL QUIT('Insert call to dfit Fock matrix construction !')
 #endif
-         ENDIF
+          ENDIF
       END DO
       RETURN
       END

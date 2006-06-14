@@ -7,18 +7,20 @@ foreach MOLSTEM ( \
 #                 He.bas1d \
 #                 He7.sto \
 #                 He7.vdz \
-                  He7.vtz \
+#                 He7.vtz \
 #                 Ne.sto \
 #                 Ne.vdz \
 #                 Ne.vtz \
+                  Ne7.vtz \
+#                 He7.vtz \
                 )
 
    foreach INPSTEM ( \
 #                    disk           \
 #                    disk.twocomp   \
 #                    large.disk.twocomp   \
-#                    large.disk.twocomp.contracted \
-                     large.disk.iotc.contracted \
+                     large.disk.twocomp.contracted \
+#                    large.disk.iotc.contracted \
 #                    disk.twocomp.contracted \
 #                    direct         \
 #                    direct.twocomp \
@@ -38,7 +40,7 @@ foreach MOLSTEM ( \
             set INP=$INPSTEM.her
          endif 
 
-         ../../pam $MOL $INP 
+         ../../pam -mw 250 $MOL $INP 
 #        ../../pam $MOL $INP -get gmon.out
 #        mv gmon.out gmon.$MOL.$INP.out
 #        gprof ../../../dirac.x gmon.$MOL.$INP.out > $MOL.$INP.profile

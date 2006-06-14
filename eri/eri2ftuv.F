@@ -1,41 +1,4 @@
-C
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C
-C
-C
-C$Id$
-C
+
 C --------------------------------------------------------------
 C
 C             Ftuv
@@ -53,7 +16,7 @@ C  ( In EXPCFT ). However for the nuclear attraction check
 C  these signs are excluded
 C
 C  - for each total angular momentum in FTUV there is 
-C   maximum NATOMS^2 classes: NFTUVCL "= NATOMS^2*NKHMAX
+C   maximum NATOMS^2 classes: NFTUVCL <= NATOMS^2*NKHMAX
 C   based on one-center/two-center and center of the C
 C   criteria
 C 
@@ -1532,7 +1495,7 @@ C
        CALL DZERO(WORK(KRNAI),NTFTUV*NTUV*NDMT)
 
        CALL GETRNAI(WORK(KRNAI),WORK(KAHGTF),NTFTUV,JMAXF, 
-     &              RFTUV(KRFTUV),IPRINT)
+     &              RFTUV(KRFTUV),7,IPRINT)
 
        IF ( IPRINT .GE. 20 ) THEN
         CALL PRIRNAI(WORK(KRNAI),ICL,NTFTUV,JMAXF)
@@ -1554,7 +1517,7 @@ C
       END
 
       SUBROUTINE GETRNAI( RNAI, AHGTF, NPP12, JMAX12,
-     &                    RFTUV,IPRINT)
+     &                    RFTUV,NRFTUV,IPRINT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1571,7 +1534,7 @@ C
 #include "nuclei.h"
 C
       DIMENSION RNAI(NPP12,0:JMAX12,0:JMAX12,0:JMAX12),
-     &          RFTUV(7,*),AHGTF((1+1)*(JMAX12+1)**3)
+     &          RFTUV(NRFTUV,*),AHGTF((1+1)*(JMAX12+1)**3)
 
       ISTEPU = JMAX12 + 1
       ISTEPV = ISTEPU*ISTEPU

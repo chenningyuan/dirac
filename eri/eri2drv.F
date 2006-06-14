@@ -1,19 +1,18 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -22,23 +21,20 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
+C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
+C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
-C
-C
-C$Id$
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
+C
 C  /* Deck er2inp */
       SUBROUTINE ER2INP(WORD)
 #include "implicit.h"
@@ -96,11 +92,9 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in ER2INP.')
     1          CONTINUE
-C&&&& SKIP  : Do not run ERI code
                   RUNERI = .FALSE.
                GO TO 100
     2          CONTINUE
-C&&&& PRINT : Print levels
                   READ (LUCMD, '(3I5)') IPRERI, IPRNT1, IPRNT2
                   IPRSUM = IPRNT1 + IPRNT2
                   IF (IPRERI .EQ. IPRDEF .AND. IPRSUM .EQ. 0) THEN
@@ -108,141 +102,108 @@ C&&&& PRINT : Print levels
                   END IF
                GO TO 100
     3          CONTINUE
-C&&&& TIME  : Detailed timing for two-electron integrals.
                   TIMERI = .TRUE.
                GO TO 100
     4          CONTINUE
-C&&&& RETURN: Program will exit ERIINT after specified shells
                   RTNERI = .TRUE.
                GO TO 100
     5          CONTINUE
-C&&&& AOBTCH: Only integrals with first index belonging to AO batch IAOBCH calculated.
                   READ (LUCMD,'(I5)') IAOBCH
                GO TO 100
     6          CONTINUE
-C&&&& NOPSAB: No permutational symmetry for first electron.
                   PMSAB = .FALSE.
                GO TO 100
     7          CONTINUE
-C&&&& NOPSCD: No permutational symmetry for second electron.
                   PMSCD = .FALSE.
                GO TO 100
     8          CONTINUE
-C&&&& NOPS12: No permutational symmetry between electron 1 and 2. 
                   PMS12 = .FALSE.
                GO TO 100
     9          CONTINUE
-C&&&& OFFCNT: No sorting of one- and two-center ODs.
                   OFFCNT = .TRUE.
                GO TO 100
    10          CONTINUE
-C&&&& NO12GS: No sorting of one- and two-GTO ODs.
                   DIASRT = .FALSE.
                GO TO 100
    11          CONTINUE
-C&&&& NEWCR1: New algorithm for Cartesians on first electron.
                   OLDCR1 = .FALSE.
                GO TO 100
    12          CONTINUE
-C&&&& NONCAN: Indices not sorted in canonical order.
                   CANIND = .FALSE.
                GO TO 100
    13          CONTINUE
-C&&&& WRITEA: Integrals not screened before write.
                   WRTSCR = .FALSE.
                GO TO 100
    14          CONTINUE
-C&&&& NOWRIT: Integrals will not be written to file.
                   NOWRIT = .TRUE.
                GO TO 100
    15          CONTINUE
-C&&&& GABAB : Only gabab integrals are calculated.
                   DGABAB = .TRUE.
                GO TO 100
    16          CONTINUE
-C&&&& EXTPRI: Extra high print for specified OD pair
                   EXTPRI = .TRUE.
                   READ (LUCMD,'(2I5)') IPROD1, IPROD2
                GO TO 100
    17          CONTINUE
-C&&&& SELCT1: Active AO-batches
                   READ (LUCMD,'(  I5)') NSELCT(1)
                   READ (LUCMD,'(15I5)') (NACTAO(I,1),I=1,NSELCT(1))
                GO TO 100
    18          CONTINUE
-C&&&& SELCT2: Active AO-batches
                   READ (LUCMD,'(  I5)') NSELCT(2)
                   READ (LUCMD,'(15I5)') (NACTAO(I,2),I=1,NSELCT(2))
                GO TO 100
    19          CONTINUE
-C&&&& SELCT3: Active AO-batches
                   READ (LUCMD,'(  I5)') NSELCT(3)
                   READ (LUCMD,'(15I5)') (NACTAO(I,3),I=1,NSELCT(3))
                GO TO 100
    20          CONTINUE
-C&&&& SELCT4: Active AO-batches
                   READ (LUCMD,'(  I5)') NSELCT(4)
                   READ (LUCMD,'(15I5)') (NACTAO(I,4),I=1,NSELCT(4))
                GO TO 100
    21          CONTINUE
-C&&&& INTPRI: Integrals will be printed.
                   INTPRI = .TRUE.
                GO TO 100
    22          CONTINUE
-C&&&& DISTRI: Do distributions
                   DODIST = .TRUE.
                GO TO 100
    23          CONTINUE
-C&&&& INTSKI: Integrals (call to ODCDRV) skipped.
                   INTSKP = .TRUE.
                GO TO 100
    24          CONTINUE
-C&&&& BUFFER: Modify buffer length
                   READ (LUCMD,*) LBFINP
                   LBFINP = MAX(1,LBFINP)
                GO TO 100
    25          CONTINUE
-C&&&& MAXDIS: Modify maximum number of distribution in each call
                   READ (LUCMD,'(I5)') MAXDST
                GO TO 100
    26          CONTINUE
-C&&&& DISTST: Distribution test.
                   DISTST = .TRUE.
                GO TO 100
    27          CONTINUE
-C&&&& MXBCH : 
                   READ (LUCMD,'(I5)') MXBCH
                GO TO 100
    28          CONTINUE
-C&&&& NSPMAX: 
                   READ (LUCMD,'(I5)') NSPMAX
                GO TO 100
    29          CONTINUE
-C&&&& NOLOCS: No use of local symmetry.
                   NOLOCS = .TRUE. 
                GO TO 100
    30          CONTINUE
-C&&&& GRDZER: GRADEE is set to zero at each call to ERIGRD.
                   GRDZER = .TRUE. 
                GO TO 100
    31          CONTINUE
-C&&&& THRXC1,2,3: values for exchange screening
                   READ (LUCMD,*) THRXC1, THRXC2, THRXC3
                GO TO 100
    32          CONTINUE
-C&&&& DOERIP: ERIPRO used instead of TWOINT.
                   DOERIP = .TRUE. 
                GO TO 100
    33          CONTINUE
-C&&&& NOSCRE: No integral screening before write.
                   COMPRS = .FALSE. 
                GO TO 100
    34          CONTINUE
-C&&&& GENCON: All contractions treated as general.
                   GENCON = .TRUE. 
                GO TO 100
    35          CONTINUE
-C&&&& NCLERI: Only nonclassical integrals are calculated.
                   NCLERI = .TRUE. 
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -317,8 +278,8 @@ C&&&& NCLERI: Only nonclassical integrals are calculated.
             IF (NCLERI) WRITE (LUPRI,'(A)')
      &         ' Only nonclassical integrals are calculated.' 
             IF (THRXC1.NE.D0.OR.THRXC2.NE.D0.OR.THRXC3.NE.D0) THEN
-               WRITE (LUPRI, '(A,3E10.2)')
-     &         ' Input values for exchange screening',
+               WRITE (LUPRI, '(A,3E10.2)') 
+     &         ' Input values for exchange screening', 
      &          THRXC1,THRXC2,THRXC3
             END IF
             IF (DODIST) THEN
@@ -455,7 +416,7 @@ C
 C
 C for now the CSMAT() thing above is de-commented, but trond's
 C initial comment, below, should be checked...
-C 
+C
 CTROND: check this !, CSMAT(NBAST,NBAST)
       LOGICAL WRTINT_SAVE
 #include "ccom.h"
@@ -466,20 +427,11 @@ CTROND: check this !, CSMAT(NBAST,NBAST)
 #include "aobtch.h"
 #include "odbtch.h"
 #include "symmet.h"
-C aspg 2006-04-20
-C to make CSMAT compile... the ifndef is commented out
-C#ifndef PRG_DIRAC
 #include "inforb.h"
-C
-C#endif /* ! PRG_DIRAC */
 #include "shells.h"
 #include "memint.h"
 C
       IPRINT = IPRERI
-C
-C     Set integral threshold
-C     ======================
-C
       THRSH  = MAX(THRS,1.00D-15)
       WRTINT = .TRUE.
       FCKINT = .FALSE.
@@ -519,7 +471,6 @@ C
      &      ' Memory requirements for ODBCHS:',LWORK - LFREE,
      &      ' Memory left for ODCDRV:        ',LFREE
       END IF
-C
 #else
 C aspg, 2006-04-21
 C
@@ -544,7 +495,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
+#ifndef PRG_DIRAC
+      CALL PICKAO(IPRINT)
+#else
       CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+#endif
 C
 C     Information about distributions
 C     ===============================
@@ -561,10 +516,9 @@ C
 #endif /* ! PRG_DIRAC */
 C
 C     Cauchy-Schwarz factors
-C     ======================
 C
 CTROND      IF (.TRUE.) THEN
-Caspg, 2006-04-30: 
+Caspg, 2006-04-30:
 C come back here to see why setting the condition to true makes dirac
 C crash...
 C
@@ -591,7 +545,6 @@ C
      &               CSMAT,DUMMY,1,IDUMMY,DUMMY,IDUMMY,
      &               CCFBT,INDXBT,WORK(KFREE),LFREE,IPRINT)
 #endif /* ! PRG_DIRAC */
-C
          DGABAB = .FALSE.
          WRTINT = WRTINT_SAVE
 C
@@ -845,7 +798,7 @@ C  /* Deck odcdr1 */
 #include "hertop.h"
 #include "symmet.h"
 #include "r12int.h"
-#include "denfit.h"
+#include "denfit.h" 
 #include "iratdef.h" 
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
@@ -1131,7 +1084,7 @@ C
             NCTFCD = IODCL2(IODCD,12)
             NCNTCD = IODCL2(IODCD,13)
 Cfp+tuh
-C To avoid artificial many contributions from the same atom in DensFit
+C To avoid artificialy many contributions from the same atom in DensFit
 C when running diatom scheme
          IF (DIATOM .AND. IFITDM.EQ.-2 .AND. NCNTCD.EQ.2) GO TO 1917
          IF (DIATOM .AND. IFITDM.EQ. 2 .AND. NCNTCD.EQ.1) GO TO 1917
@@ -1347,9 +1300,9 @@ C
      &                     INDHER,INDHSQ,IODDHR,
      &                     LMNPWR,LMNSYM,IPNTUV,
      &                     WORK(KPNTCR),WORK(KPNTPP),
-     &                     FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,BUF,IBUF,
-     &                     CCFBT,INDXBT,NCOUNT,CSQ,WORK(KLAST),
-     &                     LWRK,IPRINT)
+     &                     FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
+     &                     BUF,IBUF,CCFBT,INDXBT,NCOUNT,CSQ,
+     &                     WORK(KLAST),LWRK,IPRINT)
             END IF
  1917       CONTINUE
          END IF
