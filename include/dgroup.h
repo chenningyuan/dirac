@@ -28,7 +28,7 @@
      &        I2_DGROUP
       COMMON /DGROUP/ I1_DGROUP, NZ, NFSYM, NBSYM, IFDIRP, JBTOF, JMROI,&
      &                JSPINR, JQBAS, JFSYM, IPQTOQ, IQTOPQ, IQPH,       &
-     &                IHQMAT, IRQMAT, IQDEF, ITOT, I2_DGROUP
+     &                IHQMAT, IRQMAT, IQDEF, ITOT, NZC1, I2_DGROUP
 
 !     Do NOT add any variables after the end tag !
       LOGICAL LINEAR
