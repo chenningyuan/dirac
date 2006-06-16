@@ -4206,13 +4206,13 @@ C
 C
 C     NZ=1 always equal to one 
 C     for 2-component non-relativistic calculations
-C     NZDEF is the NZ value in C1 symmetry
+C     NZC1 is the NZ value in C1 symmetry
 C
       IF (TWOCOMP.AND..NOT.BSS) THEN
-        NZDEF = 1
-        NZ    = 1
+        NZC1 = 1
+        NZ   = 1
       ELSE
-        NZDEF = 4
+        NZC1 = 4
       ENDIF
 C
 C     Print section

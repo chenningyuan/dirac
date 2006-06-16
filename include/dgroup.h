@@ -24,7 +24,7 @@
       INTEGER I1_DGROUP, NZ, NFSYM, NBSYM, IFDIRP(4, 2), JBTOF(0:7, 2), &
      &        JMROI(4), JSPINR(4, 2, 2), JQBAS(0:7, 2), JFSYM(4, 2),    &
      &        IPQTOQ(4, 0:7), IQTOPQ(4, 0:7), IQPH(4, 2),               &
-     &        IHQMAT(4,-1:1), IRQMAT(4, 0:7), IQDEF(4), ITOT, NZDEF,    &
+     &        IHQMAT(4,-1:1), IRQMAT(4, 0:7), IQDEF(4), ITOT, NZC1 ,    &
      &        I2_DGROUP
       COMMON /DGROUP/ I1_DGROUP, NZ, NFSYM, NBSYM, IFDIRP, JBTOF, JMROI,&
      &                JSPINR, JQBAS, JFSYM, IPQTOQ, IQTOPQ, IQPH,       &
