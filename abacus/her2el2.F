@@ -345,7 +345,7 @@ C
          KSCR1  = KCCPRM + LCCPRM
          KSCR2  = KSCR1  + LSCR1
 C
-         KCSINT = KCCONT + LCCONT
+         KCSINT = KBUF
 C
          MWC2HI = MAX(MWC2HI,KFREE)
          LWTOT  = LWTOT + KFREE - 1
