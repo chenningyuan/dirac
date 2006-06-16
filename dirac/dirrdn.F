@@ -4204,6 +4204,13 @@ C
         IGTINT = 1
       ENDIF
 C
+C     NZ=1 always equal to one 
+C     for 2-component non-relativistic calculations
+C
+      IF (TWOCOMP.AND..NOT.BSS) THEN
+        NZ = 1
+      ENDIF
+C
 C     Print section
 C     =============
 C
@@ -4306,7 +4313,8 @@ C         write(lupri,*)
       ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE IF (TWOCOMP.AND..NOT.BSS) THEN
-        WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian'
+        WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian',
+     &       '   - parameter NZ set to one'
       ELSE 
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
