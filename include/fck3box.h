@@ -1,0 +1,11 @@
+C
+C   See the description in fck3box.F
+C
+C
+      PARAMETER ( NIBOX = 4 )
+      PARAMETER ( THRBOX = 1.d-05 )
+C
+      COMMON /FCK3BOX/ RBUFFER, NBOXES, MAXORBBOX, MAXSPLIT
+
+C    COMMON /FCK3BOX/ NBOXES,
+C    &         KNDXBOX(2,MXAOBTCH)
