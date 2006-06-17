@@ -27,6 +27,7 @@ usage()
    echo '     -dft          : Include DFT module'
    echo '     -eri          : Include ERI integral routines'
    echo '     -densfit      : Include density fitting module'
+   echo '     -fmm          : Include fast multipole method'
    echo '     -esr          : Include ESR property module'
    echo '     -xpp          : Include PP excitation energy module'
    echo '     -krmc         : Include KR-MCSCF and LUCIAREL modules'
@@ -118,10 +119,29 @@ setup()
    #  DNF density fitting module
    #
    if [ -n "$DNFMOD" ]; then
+      if [ -n "$ERIMOD" ]; then
+         ERIFLG='-DMOD_ERI'
+         ERIOBJ='$(ERIOBJS)'
+         ERIMAK=ERI_OBJ
+         ERITAR=1
+         echo " - ERI two-electron integral module"
+      else
+         echo "density fitting module not included - depends on ERI module "
+      fi
       DNFFLG='-DMOD_DNF'
       DNFOBJ='$(DNFOBJS)'
       DNFMAK=DNF_OBJ
       DNFTAR=1
+      echo " - DNF density fitting module"
+   fi
+   #
+   #  FMM  module
+   #
+   if [ -n "$FMMMOD" ]; then
+      FMMFLG='-DMOD_FMM'
+      FMMOBJ='$(FMMOBJS)'
+      FMMMAK=FMM_OBJ
+      FMMTAR=1
       echo " - DNF density fitting module"
    fi
    #
@@ -275,7 +295,7 @@ make_export()
 # Now add the standard files from each active directory (module).
    for module in $dirs; do
       MDir=\$szCurrDir/\$module
-      tar rvf \$szCurrDir.tar \$MDir/*.c \$MDir/*.F \$MDir/*.F90 \$MDir/*.inc \$MDir/*.h \$MDir/Makefile \$MDir/include 2>> export.log
+      tar rvf \$szCurrDir.tar \$MDir/*.c \$MDir/*.F \$MDir/*.F90 \$Mdir/*.f90 \$MDir/*.inc \$MDir/*.h \$MDir/Makefile \$MDir/include 2>> export.log
    done
 EOF
    #
@@ -283,43 +303,43 @@ EOF
    #
    if [ "$DFTTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/dft/{*.c,*.F,*.F90,*.h,Makefile,include} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/dft/{*.c,*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$DNFTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/densfit/{*.F,*.F90,*.h,Makefile,include} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/densfit/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$EMBTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/embedding/{*.F,*.F90,*.h,Makefile,include} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/embedding/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$CDFTTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/cdft/{*.F,*.F90,*.h,Makefile,include} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/cdft/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$ERITAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,*.F90,*.h,Makefile,include} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$ESRTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/prp/esr/{*.F,*.F90,*.h,Makefile,include} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/esr/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$XPPTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/prp/xpp/{*.F,*.F90,*.h,Makefile,include} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/xpp/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$KRMCTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/krmc/{*.F,*.F90,Makefile.in} 2>> export.log
-      tar rvf \$szCurrDir.tar \$szCurrDir/luciarel/{*.c,*.F,*.F90,Makefile.in,*.inc,*.c} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/krmc/{*.F,*.F90,*.f90,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/luciarel/{*.c,*.F,*.F90,*.f90,Makefile.in,*.inc,*.c} 2>> export.log
 EOF
    fi
 # A DIRAC administrator should have everything
@@ -353,8 +373,8 @@ make_makefile()
 {
    echo "*** Making general Makefile"
    echo
-   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $EMBOBJ $CDFTOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ"
-   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $EMBMAK $CDFTMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK"
+   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $CDFTOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $CDFTMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK"
    #
    # Write current Makefile
    #
@@ -382,6 +402,7 @@ abacus/her2el2.o    abacus/her2fck.o    abacus/her2her.o    abacus/her2odc.o\\
 abacus/her2out.o    abacus/her2sym.o    abacus/herbas.o\\
 abacus/herdirect.o  abacus/herdrv.o     abacus/hergam.o     abacus/hergeo.o\\
 abacus/hergp.o      abacus/herrdn.o     abacus/hersol.o\\
+abacus/hercen.o \\
 abacus/hersym.o     abacus/hertst.o     abacus/her2gab.o    abacus/hermem.o\\
 abacus/abanuc.o     abacus/abatro.o     abacus/abaortvec.o abacus/abarint.o \\
 abacus/abaopt.o     abacus/abavrml.o abacus/abawalk.o abacus/abaop2.o \\
@@ -548,12 +569,13 @@ if [ -n "$ERIMOD" ]; then
 cat <<EOF>> Makefile
 
 ERIOBJS = \\
-eri/fck3aob.o eri/fck3drv.o eri/fck3ftuv.o eri/fck3mom.o eri/fck3odb.o \
-eri/eri2aob.o  eri/erisph.o eri/eri2ave.o eri/eri2car1.o eri/eri2car2.o \
-eri/eri2cft.o eri/eri2dis.o eri/eri2drv.o eri/eri2fck.o eri/eri2her.o \
-eri/eri2odb.o  eri/eri2out.o eri/eri2pro.o eri/eri2sph.o eri/eri2sym.o \
-eri/eri2vec.o eri/eri2r12.o eri/eri2csi.o eri/eri2exc.o
-#eri/eriprg.o  eri/eri2par.o 
+eri/eri2aob.o   eri/eri2dis.o   eri/eri2her.o  eri/eri2sph.o  eri/fck3box.o \
+eri/fck3odb.o   eri/eri2ave.o   eri/eri2drv.o  eri/eri2odb.o  eri/eri2sym.o \
+eri/fck3drv.o   eri/eri2car1.o  eri/eri2exc.o   eri/eri2out.o  eri/eri2vec.o  \
+eri/fck3ftuv.o  eri/eri2car2.o  eri/fck3int.o  \
+eri/eri2cft.o   eri/eri2fck.o   eri/eri2pro.o  eri/erisph.o   eri/fck3mom.o \
+eri/eri2csi.o   eri/eri2ftuv.o  eri/eri2r12.o  eri/fck3aob.o  eri/fck3mpi.o \
+#eri/eriprg.o  eri/eri2par.o eri/eri2fck3.o 
 EOF
 fi
 #
@@ -563,7 +585,23 @@ if [ -n "$DNFMOD" ]; then
 cat <<EOF>> Makefile
 
 DNFOBJS = \\
-densfit/df_dirac.o   densfit/df_dofit.o 
+densfit/df_dirac.o  densfit/df_dofit.o  densfit/df_fck3.o  densfit/dposv.o densfit/df_utils.o 
+EOF
+fi
+#
+#  Object-files for fmm module
+#
+if [ -n "$FMMMOD" ]; then
+cat <<EOF>> Makefile
+
+FMMOBJS = \\
+fmm/fmmdrv.o             fmm/mm_grid_searcher.o    fmm/mm_sort.o             fmm/mm_tree_T_buffer.o \\
+fmm/mm_box_builder.o     fmm/mm_input.o            fmm/mm_standalone_aux.o    fmm/mm_T_worker.o \\
+fmm/mm_box_processor.o   fmm/mm_interface.o        fmm/mm_standalone_drv.o   fmm/mm_Vff_driver.o \\
+fmm/mm_buffers.o         fmm/mm_io_int.o            fmm/mm_stats.o            fmm/mm_Vff_processor.o \\
+fmm/mm_densfit.o         fmm/mm_map_builder.o      fmm/mm_T_contractors.o    fmm/mm_W_contractors.o \\
+fmm/mm_driver.o          fmm/mm_memory_manager.o   fmm/mm_T_pair_builder.o   fmm/mm_W_pair_builder.o \\
+fmm/mm_global_paras.o    fmm/mm_overlap_tree.o     fmm/mm_T_pair_tests.o     fmm/mm_W_worker.o 
 EOF
 fi
 #
@@ -974,6 +1012,9 @@ while [ -n "$1" ]; do
          ;;
       -xpp|-xp)
          XPPMOD=1
+         ;;
+      -fmm|-fm)
+         FMMMOD=1
          ;;
       -densfit|-dnf)
          DNFMOD=1

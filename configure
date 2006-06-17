@@ -743,7 +743,7 @@ if [ -n "$liblist" ]; then
 #For later use we note that we found an optimized blas library
                libblas) LIB="$LIB -L$testdir -lblas" ;;
 #For Atlas you need to link with lf77blas as well
-               libatlas) LIB="$LIB -L$testdir -lf77blas -latlas";;
+               libatlas) LIB="$LIB -L$testdir -llapack -lf77blas -latlas";;
                libdxml) LIB="$LIB -L$testdir -ldxml";;
                libcomplib.sgimath) LIB="$LIB -L$testdir -lcomplib.sgimath";;
                libveclib) LIB="$LIB -L$testdir -lveclib";;
@@ -1633,7 +1633,7 @@ cat <<EOF>> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .F90 .c .o .a .g .i 
+.SUFFIXES : .F .F90 .f90 .c .o .a .g .i 
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
@@ -1647,6 +1647,12 @@ $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F90
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTGFLAGS) -c \$*.F90
 .F90.i:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTIFLAGS) \$*.F90 > \$*.i
+.f90.o:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -cpp -c \$*.f90
+.f90.g:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTGFLAGS) -cpp -c \$*.f90
+.f90.i:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTIFLAGS) -cpp \$*.f90 > \$*.i
 .c.o:
 $tab\$(CC) \$(C_INCLUDE_DIR) \$(CCP_FLAGS) \$(C_OPTFLAGS) -c \$*.c
 .c.i:
