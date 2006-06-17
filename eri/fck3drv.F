@@ -1,4 +1,6 @@
+#if ! defined (MOD_DNF)
 #define MOD_DNF
+#endif
       SUBROUTINE FCK3DRV( FMAT, DMAT, NDMT, GAB, GABFIT, CFIT, 
      &                    WORK, LWORK )
 #include "implicit.h"

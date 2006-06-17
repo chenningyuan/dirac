@@ -3266,8 +3266,8 @@ C*****************************************************************************
       CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
      &          IFCKOP,IPRINT)
       IF (DOFIT) THEN
-c       CALL LIN_DF_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
-c    &            IPRINT,WORK(KLAST),LWRK)
+        CALL LIN_DF_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
+     &            IPRINT,WORK(KLAST),LWRK)
       ELSE
         CALL FCK_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
      &                   IPRINT,WORK(KLAST),LWRK)
