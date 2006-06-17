@@ -198,7 +198,7 @@ C
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
         ELSE
-          CALL DIRSCF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+          CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
         ENDIF
@@ -3232,8 +3232,217 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dirscf */
-      SUBROUTINE DIRSCF(FMAT,DSO,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+C  /* Deck jengine */
+      SUBROUTINE JENGINE(FMAT,DSO,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &                   NPOS,INTFLG,IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Driver for direct Coulomb-contrubution using the J-engine
+C     Two possible options; with and without desity-fitting.
+C
+C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+      PARAMETER (DP5 = 0.5D0,D2=2.0D0)
+      DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
+     &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
+     &        NPOS(*),WORK(LWORK)
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "densfit.h"
+      NDIM = N2BBASX*NZC1*NFMAT
+      CALL DSCAL(NDIM,D2,DSO,1)
+      NDMAT = NZC1*NFMAT
+      KIFCTP = 1
+      KISYMD = KIFCTP + NDMAT
+      KLAST  = KISYMD + NDMAT
+      LWRK   = LWORK - KLAST + 1
+      IF (KLAST.GT.LWRK) CALL STOPIT('JENGINE','Coulomb',KLAST,
+     &                         LWORK)
+      CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
+     &          IFCKOP,IPRINT)
+      IF (DOFIT) THEN
+c       CALL LIN_DF_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
+c    &            IPRINT,WORK(KLAST),LWRK)
+      ELSE
+        CALL FCK_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
+     &                   IPRINT,WORK(KLAST),LWRK)
+      ENDIF
+      CALL DSCAL(NDIM,DP5,DSO,1)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck FCK_Coulomb */
+      SUBROUTINE FCK_Coulomb(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
+     &                       IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Driver for direct Coulomb-contrubution using the J-engine
+C     without density-fitting
+C
+C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+      DIMENSION FMAT(N2BBASX,NZC1,NDMT),DMAT(N2BBASX,NZC1,NDMT),
+     &        ISYMDM(NZC1,NDMT),IFCTYP(NZC1,NDMT),WORK(LWORK)
+#include "dcbbas.h"
+#include "dgroup.h"
+      DO IDMT=1,NDMT
+        IF ( (MOD(IFCTYP(1,IDMT),10).EQ.1) .OR.
+     &       (MOD(IFCTYP(1,IDMT),10).EQ.3) ) THEN
+          CALL ACT_ALL_BATCHES
+          CALL FCK3DRV(FMAT(1,1,IDMT),DMAT(1,1,IDMT),1,DUMMY,DUMMY,
+     &             DUMMY,WORK,LWORK)
+#ifdef MOD_FMM
+          IF (DOFMM) CALL FMMFCK(FMAT(ISTR),DMAT(ISTR),WORK,LWORK)
+#endif  
+        END IF
+      END DO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck linkdr */
+      SUBROUTINE LINKDR(FMAT,DSO,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &              NPOS,INTFLG,IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Driver for direct LinK exchange
+C
+C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+      PARAMETER(D0=0.0D0,DP5 = 0.5D0,D2=2.0D0)
+      DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
+     &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
+     &        NPOS(*),WORK(LWORK)
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#if defined (VAR_VECTOR)
+#include "veclen.h"
+#endif
+      NDIM = N2BBASX*NZC1*NFMAT
+      CALL DSCAL(NDIM,D2,DSO,1)
+      NDMAT = NFMAT*NZC1
+      IF (HFXFAC.NE.D0) THEN
+        KIFCTP = 1
+        KISYMD = KIFCTP + NDMAT
+        KCCFBT = KISYMD + NDMAT
+        KINDXB = KCCFBT + MXPRIM*MXCONT
+        KFCKTP = KINDXB + 8*MXSHEL*MXCONT
+#if defined (VAR_VECTOR)
+        ICHUNK = MAX(IVECLN/NFMAT,1)
+        KFREE  = KFCKTP + ICHUNK*NFMAT*(NBASIS+NODD)*NBASIS
+#else
+        KFREE  = KFCKTP
+#endif
+        LFREE  = LWORK - KFREE + 1
+        IF (KFREE.GT.LWORK) CALL STOPIT('LINKDR','EXC',KFREE,
+     &                           LWORK)
+        CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
+     &            IFCKOP,IPRINT)
+        CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
+     &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+     &            WORK(KFREE),LFREE)
+      CALL DSCAL(NDIM,DP5,DSO,1)
+      END IF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck fastjk */
+      SUBROUTINE FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &              NPOS,INTFLG,IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Driver for direct construction of skeleton Fock-matrix
+C
+C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+C
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
+      DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
+     &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
+     &        NPOS(*),WORK(LWORK), IFCKOP_TEMP(NFMAT)
+C
+      IF (DOLINK .AND. DOFCK3) THEN
+C
+C       Jengine Coulomb contribution, regular or density-fitted
+        CALL JENGINE(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &             NPOS,INTFLG,IPRINT,WORK,LWORK)
+C       LinK-exchange
+        CALL LINKDR(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &            NPOS,INTFLG,IPRINT,WORK,LWORK)
+C
+      ELSEIF (DOLINK) THEN
+C
+C       Turn off exchange
+        DO IFMAT=1, NFMAT
+          IF (IFCKOP(IFMAT).EQ.1)  THEN
+            IFCKOP_TEMP(IFMAT) = 1
+          ELSEIF (IFCKOP(IFMAT).EQ.3) THEN
+            IFCKOP_TEMP(IFMAT) = 0
+          ELSE
+            IFCKOP_TEMP(IFMAT) = IFCKOP(IFMAT)
+          ENDIF
+        ENDDO
+C       Conventional (via 4-center integrals) AO Coulomb
+      CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &            IFCKOP_TEMP,NPOS,INTFLG,
+     &            IPRINT,WORK,LWORK)
+C       LinK-exchange
+      CALL LINKDR(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &            NPOS,INTFLG,IPRINT,WORK,LWORK)
+C
+      ELSEIF (DOFCK3) THEN
+C
+C       Jengine Coulomb contribution, regular or density-fitted
+        CALL JENGINE(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &               NPOS,INTFLG,IPRINT,WORK,LWORK)
+C       Turn off Coulomb
+        DO IFMAT=1, NFMAT
+          IF (IFCKOP(IFMAT).EQ.1) THEN
+            IFCKOP_TEMP(IFMAT) = 3
+          ELSEIF (IFCKOP(IFMAT).EQ.2) THEN
+            IFCKOP_TEMP(IFMAT) = 0
+          ELSE
+            IFCKOP_TEMP(IFMAT) = IFCKOP(IFMAT)
+          ENDIF
+        ENDDO
+C       Conventional (4-center integrals) AO exchange
+        CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &              IFCKOP_TEMP,NPOS,INTFLG,
+     &              IPRINT,WORK,LWORK)
+C
+      ELSE
+C       Conventional (4-center integrals) AO Coulomb + exchange
+        CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &              IFCKOP,NPOS,INTFLG,
+     &              IPRINT,WORK,LWORK)
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck diraof */
+      SUBROUTINE DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
      &                  NPOS,INTFLG,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
@@ -3252,7 +3461,7 @@ C
       LOGICAL LBIT
 #include "maxorb.h"
 #include "aovec.h"
-      DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
+      DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          NPOS(*),WORK(LWORK)
 #include "dgroup.h"
@@ -3263,11 +3472,11 @@ C
       EXTERNAL BDQALGEBRA
 #include "ibtfun.h"
 C
-      CALL QENTER('DIRSCF')
+      CALL QENTER('DIRAOF')
 #include "memint.h"
 C
 C     Memory allocation
-      NDMAT   = NFMAT*4
+      NDMAT   = NFMAT*NZC1
       N2GAB   = NSYMBL*NSYMBL
       NDMRAO  = N2GAB*NDMAT
       CALL MEMGET('INTE',KIFC  ,NDMAT  ,WORK,KFREE,LFREE)
@@ -3294,7 +3503,7 @@ C        IGTYP 2 will add also the SL (Gaunt) type integrals
 C
       END IF
 C
-      IF(NBSYM.GT.1) THEN
+      IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
 C
@@ -3309,9 +3518,9 @@ C
             IREPD = IRQMAT(IZ,IREP)
             IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)            
             IPQ   = IQTOPQ(IQ,IREP)
-            IF(IPQ.GT.NZ) CALL QUIT('DIRSCF: IPQ.GT.NZ !')
-            IF(IPQ.LE.0 ) CALL QUIT('DIRSCF: IPQ.LE.0 !')
-            CALL DTSOAO(DSO(1,IPQ,I),WORK(KDAO+IOFF),
+            IF(IPQ.GT.NZ) CALL QUIT('DIRAOF: IPQ.GT.NZ !')
+            IF(IPQ.LE.0 ) CALL QUIT('DIRAOF: IPQ.LE.0 !')
+            CALL DTSOAO(DMAT(1,IPQ,I),WORK(KDAO+IOFF),
      &                 NTBAS(0),IREPD,IPRTWO)
             IOFF = IOFF + N2BBASX
           ENDDO
@@ -3328,7 +3537,7 @@ C       Construct Fock matrix
 C       ======================
 C
         CALL DZERO(WORK(KFAO),N2BBASX*NDMAT)
-        CALL DIRSC1(WORK(KFAO),WORK(KDAO),NFMAT,
+        CALL DIRAO1(WORK(KFAO),WORK(KDAO),NFMAT,
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
@@ -3351,23 +3560,23 @@ C
         ENDDO
       ELSE
 C
-C       If there is no symmetry involved the density matrix DSO
-C       is sent to DIRSC1 module:
+C       If there is no symmetry involved the density matrix DMAT
+C       is sent to DIRAO1 module:
 C
-        CALL DIRSC1(FMAT,DSO,NFMAT,
+        CALL DIRAO1(FMAT,DMAT,NFMAT,
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
       ENDIF
-      CALL MEMREL('DIRSCF.DIRSC1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('DIRAOF.DIRAO1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      CALL QEXIT('DIRSCF')
+      CALL QEXIT('DIRAOF')
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dirsc1 */
-      SUBROUTINE DIRSC1(FAO,DAO,NFMAT,
+C  /* Deck dirao1 */
+      SUBROUTINE DIRAO1(FAO,DAO,NFMAT,
      &                  IFCTYP,IREPDM,ISYMOP,IHRMOP,IFCKOP,
      &                  DMRAO,GABRAO,NPOS,INTFLG,
      &                  IPRINT,WORK,LWORK)
@@ -3412,13 +3621,13 @@ C
      &          NPOS(*),DMRAO(*),GABRAO(*),WORK(LWORK),DNTSKP(8)
       EXTERNAL BDQALGEBRA
 C
-      CALL QENTER('DIRSC1')
+      CALL QENTER('DIRAO1')
 #include "memint.h"
 C
 Ctec Is FIRST needed???
       FIRST = .TRUE.
-      NDMAT = NFMAT*4
-      CALL SETFCK(IFCTYP,IREPDM,NFMAT,4,ISYMOP,IHRMOP,IFCKOP,IPRINT)
+      NDMAT = NFMAT*NZC1
+      CALL SETFCK(IFCTYP,IREPDM,NFMAT,NZC1,ISYMOP,IHRMOP,IFCKOP,IPRINT)
       CALL DZERO(DNTSKP,8)
       IF (SCRFCK.GT.D0) THEN
 C
@@ -3566,7 +3775,7 @@ C
         ENDDO
       ENDIF
 C
-      CALL QEXIT('DIRSC1')
+      CALL QEXIT('DIRAO1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3765,10 +3974,12 @@ C     External variables
 C     Local variables
       PARAMETER (D0 = 0.0D0)
       SAVE IPFCK,HTYP
-      DIMENSION IPFCK(4,3),IRFCK(4),IQFCK(4)
+c     DIMENSION IPFCK(4,3),IRFCK(4),IQFCK(4)
+      DIMENSION IPFCK(4,0:3),IRFCK(4),IQFCK(4)
       CHARACTER HTYP(0:3)*1
       DATA HTYP /'G','S','A','M'/
-      DATA IPFCK/3,2,2,2, 1,0,0,0, 2,2,2,2/
+c     DATA IPFCK/3,2,2,2, 1,0,0,0, 2,2,2,2/
+      DATA IPFCK/0,0,0,0, 3,2,2,2, 1,0,0,0, 2,2,2,2/
 #include "ibtfun.h"
 C
       IF (IPRINT.GE.2) THEN
@@ -3795,7 +4006,7 @@ C       (defined in SETGMT(prp/pamrvc.F)). /hjaaj Apr 2002
 C
 C       First determine contributions
 C
-        DO IZ = 1,4
+        DO IZ = 1,NZC1
           IRFCK(IZ) = IRQMAT(IZ,IREP)
           IY        = IPFCK(IZ,IFCK)
           IC        = MOD(IY,2)
@@ -3828,7 +4039,7 @@ C           irrep gives symmetric matrix elements and thus
 C           Coulomb contributions. /hjaaj Apr 2002
 C
           ELSE
-C           ... MZ.eq.4: we are using DIRSCF (not .SOFOCK)
+C           ... MZ.eq.4: we are using DIRAOF (not .SOFOCK)
             IQFCK(IZ)     = IZ
             IFCTYP(IZ,I)  = 10*IH+IY
             IREPDM(IZ,I) =  IRFCK(IZ)
@@ -3842,13 +4053,13 @@ C
      &      '* Fock matrix no.',I,' - ',
      &      'Operator irrep: ',REP(IREP)
           WRITE(LUPRI,'(A,4(2X,A3))')
-     &      'Matrix symmetry:',(REP(IRFCK(IZ)),IZ=1,4)
+     &      'Matrix symmetry:',(REP(IRFCK(IZ)),IZ=1,NZC1)
           IF(MZ.LT.4) THEN
             WRITE(LUPRI,'(A,4(3X,A1,1X))')
-     &        'Packing        :',(QUNIT(IQFCK(IZ)),IZ=1,4)
+     &        'Packing        :',(QUNIT(IQFCK(IZ)),IZ=1,NZC1)
             WRITE(LUPRI,'(A,4(3X,A1,1X))')
      &        'Eff.   packing :',
-     &        (QUNIT(IQTOPQ(IQFCK(IZ),IREP)),IZ=1,4)
+     &        (QUNIT(IQTOPQ(IQFCK(IZ),IREP)),IZ=1,NZC1)
           ENDIF
             WRITE(LUPRI,'(A)') 
      &      '    Mat.  IFC  SYM  Coulomb Exchange Irrep'
@@ -3935,7 +4146,7 @@ C
      &            WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &            WORK(KDMRAO),WORK(KDMRSO),WORK(KGAB),
      &            NPOS,INTFLG,IPRINT,WORK(KFREE),LFREE)
-      CALL MEMREL('DIRSCF.DIRSO1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('DIRSOF.DIRSO1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('DIRSOF')
       RETURN

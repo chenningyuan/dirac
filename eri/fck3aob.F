@@ -1,19 +1,18 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -22,19 +21,16 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
+C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
+C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id$
 C
 #if defined (VAR_SINGLE)
 #include "single.h"
@@ -58,16 +54,18 @@ C
 #include "fck3aob.h"
 #include "fck3mem.h"
 #include "ibtfun.h"
+      CALL QENTER('SETAOBTCH')
 C
 C     Calculate the memory requirements of the fck3aob common block arrays
 C ( Note that EXPBTCH and CCFBTCH can be considerably reduced in size if
 C   we utilize the fact that we usually have (and especially for large 
 C   systems) many atoms sharing the same basis set )
 C
-      MEMAOB = MXPRIM    + MXPRIM*MXCONT 
-     &       + MXSHEL*MXCONT + 3*MXSHEL  + 2*MXAOBTCH +   MXAOBTCH
-     &       + MXAOBTCH  + MXAOBTCH      +   MXAOBTCH + 2*MXAOBTCH
-     &       + MXAOBTCH  + MXAOBTCH
+
+      MEMAOB = MXPRIM        + MXPRIM*MXCONT
+     &       + MXSHEL*MXCONT + 4*MXSHEL      + 2*MXAOBTCH + MXAOBTCH
+     &       + MXAOBTCH      + MXAOBTCH      + MXAOBTCH   + 2*MXAOBTCH
+     &       + MXAOBTCH      + MXAOBTCH      + MXAOBTCH   + 2*MXAOBTCH
 
 C corresponding to arrays:
 C              EXPBTCH       CCFBTCH       
@@ -83,46 +81,57 @@ C
       NBASE  = 0
 
       DO K = 0, MAXREP
+cSimen Should change MAXAONHK to normal and auxilliary part, might 
+cSimen also want NBASE and NBASEAUX
       DO I = 1, KMAX
          IF (IBTAND(K,ISTBAO(I)).EQ.0) NBASE = NBASE + KHKT(I)
+         MAXAONHK = MAX( MAXAONHK,  NHKT(I) )  
+      END DO
+      DO I = KMAX+1, KMAXTOT
          MAXAONHK = MAX( MAXAONHK,  NHKT(I) )  
       END DO
       END DO
 
       MAXAOKCK =     MAXAONHK * ( MAXAONHK + 1 ) / 2 
       MAXAOKHK = 2 * MAXAONHK - 1
- 
+
 C
 C
 C     AO batches
 C     ==========
 C
-C.....Smallest exponent
+
       EXPAOMIN = 1.0D10
-C.....Largest contraction coefficient
       CCFAOMAX = 0.0D0
 
-C.....Largest number of primitives in AO-batch
       MAXAOPRF = 1 
-C.....Largest number of contracted functions in AO-batch
       MAXAOCTF = 1 
       IORB = 1
-      NB = 0
-      NC = 0
+      IAOIND = 1
+      NB = -1
+      NC = -1
+      ND = -1
 
-      DO ISHELL = 1, KMAX
-       IF (NB.NE.NBCH(ISHELL) .OR. NC.NE.NCENT(ISHELL)) THEN
-        NB = NBCH(ISHELL)
-        NC = NCENT(ISHELL)
-        CALL AOBTCH1(IORB,NB,ISHELL,WORK,LWORK,IPRINT)
-       END IF
-       IORB = IORB + KHKT(ISHELL)
+      DO ISHELL = 1, KMAXTOT
+c       to get rid of Huckel-guess shells
+        IF (.NOT.LCLASS(ISHELL).EQ.2) THEN
+          IF (NB.NE.NBCH(ISHELL) .OR. NC.NE.NCENT(ISHELL) .OR.
+     &        ND.NE.LCLASS(ISHELL) ) THEN
+           NB = NBCH(ISHELL)
+           NC = NCENT(ISHELL)
+           ND = LCLASS(ISHELL)
+           
+           CALL AOBTCH1(IORB,IAOIND,NB,ISHELL,WORK,LWORK,IPRINT)
+          END IF
+          IORB = IORB + KHKT(ISHELL)
+       ENDIF 
       END DO
 
 
 C     Check s-p exponents
 C     ===================
 C
+
       IF ( SPEXP ) CALL SETSPEXP(IPRINT)
 C
 C     AO classes
@@ -141,6 +150,7 @@ C
 C     Print section
 C     =============
 C
+
       IF (IPRINT .GT. 2) THEN
        CALL HEADER('AO classes',-1)
 
@@ -213,18 +223,21 @@ C     &        (INDXBTCH(KNDXBTCH(2,I)+J-1),J=1,NCTFBTCH(I))
        END DO
       END IF
 C
+      CALL QEXIT('SETAOBTCH')
       RETURN
       END
 C
 C ---------------------------------------------------------------
 C
 
-      SUBROUTINE AOBTCH1(IORB,NB,ISHELL,WORK,LWORK,IPRINT)
+      SUBROUTINE AOBTCH1(IORB,IAOIND,NB,ISHELL,WORK,LWORK,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
       DIMENSION WORK(LWORK)
 #include "shells.h"
+      CALL QENTER('AOBTCH1')
+
 C
       NUCA  = NUCO(ISHELL)
       NRCA  = NRCO(ISHELL)
@@ -237,12 +250,15 @@ C
       KPNTC  = KDIMC  + NUCA
       KPNTP  = KPNTC  + NUCA*NRCA
       KLAST  = KPNTP  + NUCA*NUCA
+
       IF (KLAST .GT. LWORK) CALL STOPIT('AOBTCH1',' ',KLAST,LWORK)
 C
-      CALL AOBTCH2(NB,NMAT,WORK(KMAT),NUCA,NRCA,JSTRA,WORK(KDONE),
+      CALL AOBTCH2(IAOIND,NB,NMAT,WORK(KMAT),NUCA,NRCA,
+     &             JSTRA,WORK(KDONE),
      &             WORK(KDIMP),WORK(KDIMC),WORK(KPNTC),WORK(KPNTP),
      &             ISHELL,IORB,IPRINT)
 C
+      CALL QEXIT('AOBTCH1')
       RETURN
       END
 
@@ -250,15 +266,8 @@ C
 C -----------------------------------------------------
 C
 
-      SUBROUTINE AOBTCH2(NB,NMAT,MAT,NUCA,NRCA,JSTRA,IDONE,NDIMP,
+      SUBROUTINE AOBTCH2(IAOIND,NB,NMAT,MAT,NUCA,NRCA,JSTRA,IDONE,NDIMP,
      &                   NDIMC,IPNTC,IPNTP,ISHELL,IORB,IPRINT)
-C***********************************************************************
-C     
-C     Exctract minimal non-zero blocks from a contraction matrix for a
-C     given block. This defines an AO-batch. In the completely uncontracted
-C     case, the batch is 1 x 1.
-C
-C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -279,7 +288,7 @@ C
       SAVE IADRP, IADRC, IADRO, NBTCH
 C
 C     Construct matrix MAT containing 1 and 0 only, then fill
-C     out all elements within each contraction matrix.
+C     out all elements within each contraction matrix
 C
       CALL IZERO(MAT,NUCA*NRCA)
 C
@@ -394,14 +403,15 @@ C
 
          MAXAOPRF = MAX( MAXAOPRF, NDIMP(IMAT) )
          MAXAOCTF = MAX( MAXAOCTF, NDIMC(IMAT) )
-
+         KCLSBTCH(IBATCH) = LCLASS(ISHELL)
 C
 C        exponents
 C
          KEXPBTCH(IBATCH) = IADRP
          DO IPRI = 1, NDIMP(IMAT)
             EXPBTCH(IADRP) = PRIEXP(IPNTP(IMAT,IPRI))
-            EXPAOMIN = MIN( EXPAOMIN, EXPBTCH( IADRP ) )
+            IF (.NOT.LCLASS(ISHELL).EQ.0)
+     &         EXPAOMIN = MIN( EXPAOMIN, EXPBTCH( IADRP ) )
             IADRP = IADRP + 1
          END DO
 C
@@ -430,6 +440,14 @@ C
           INDXBTCH(IADRO) = IORB + (IPNTC(IMAT,ICNT)-1)*KHKT(ISHELL)
           IADRO = IADRO + 1
          END DO
+C
+C        AO index
+C
+         KAOBTCH(1,IBATCH) = IAOIND
+         KAOBTCH(2,IBATCH) = 1
+         NHK    = NHKTBTCH(IBATCH)
+         KHK    = NHK * 2 - 1
+         IAOIND  = IAOIND  + KHK * NCTFBTCH(IBATCH)
       END DO
 C
       NBTCH   = NBTCH + NMAT
@@ -443,8 +461,6 @@ C ---------------------------------------------------------------
 C
 
       SUBROUTINE SETAOCLS(IPRINT)
-C
-C     Group AO-bacthes into classes having the same center
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -457,19 +473,34 @@ C     Group AO-bacthes into classes having the same center
  
       NAOB  = 0
       ICNT0 = NCNTBTCH(1)
+      LCLASS0 = KCLSBTCH(1)
+
 
       DO IAOB = 1, NAOBTCH
        ICNT = NCNTBTCH(IAOB)
+       LCLASS = KCLSBTCH(IAOB)
 
-       IF ( ICNT .NE. ICNT0 )  THEN 
+       IF ( (ICNT .NE. ICNT0) .OR. (LCLASS .NE. LCLASS0) )  THEN 
+         
+         IF ((LCLASS .LT. LCLASS0).AND.(LCLASS.NE.0)) THEN
+           Write(LUPRI,*) 'LCLASS changed from ', LCLASS0, ' to ', 
+     &                     LCLASS, '.'
+           Write(LUPRI,*) 'Shells should be ordered according to '//
+     &                    'LCLASS. LCLASS = {1,2,3,0} '//
+     &                    '= {Large, Small, Auxilliary, 0-exponent'
+           CALL QUIT('Shells should be ordered according to '//
+     &               'LCLASS = {1,2,3,0}.')
+         END IF
 
         IAOCLS(1,ICLS) = ICNT0
         IAOCLS(2,ICLS) = KSTAOB
         IAOCLS(3,ICLS) = NAOB
+        IAOCLS(4,ICLS) = LCLASS0
 
         ICLS = ICLS + 1
         KSTAOB = IAOB
         NAOB   = 0
+        LCLASS0 = LCLASS
 
         ICNT0  = ICNT
        END IF
@@ -480,6 +511,7 @@ C     Group AO-bacthes into classes having the same center
       IAOCLS(1,ICLS) = ICNT0
       IAOCLS(2,ICLS) = KSTAOB
       IAOCLS(3,ICLS) = NAOB
+      IAOCLS(4,ICLS) = LCLASS0
 
       NAOBCLS = ICLS 
 
@@ -491,14 +523,8 @@ C ---------------------------------------------------------------
 C
 
       SUBROUTINE SETSPEXP(IPRINT)
-C
-C     Look for batches with identical s and p exponents
-C     NTYP = 1 single batch
-C     NTYP = 2 combined batch of s and p
-C     Combined batches give considerable speedups because
-C     the incomplete gamma function is calculated only once.
-#include"implicit.h"
-#include"priunit.h"
+#include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -534,6 +560,8 @@ C     the incomplete gamma function is calculated only once.
          NHKTBTCH( IAOBLASTS-1 ) = 2
          KNDXBTCH( 2, IAOBLASTS-1 ) = KNDXBTCH( 1, IAOB )
          KCCFBTCH( 2, IAOBLASTS-1 ) = KCCFBTCH( 1, IAOB )
+         KCLSBTCH( IAOBLAST - 1 )   = KCLSBTCH(IAOB)
+         KAOBTCH(  2, IAOBLASTS-1 ) = KAOBTCH(  1, IAOB )     
        ELSE
          IAOBLAST = IAOBLAST + 1
          IF ( IAOBLAST .LT. IAOB ) THEN 
@@ -547,6 +575,9 @@ C     the incomplete gamma function is calculated only once.
           KNDXBTCH( 2, IAOBLAST ) = 1
           KCCFBTCH( 1, IAOBLAST ) = KCCFBTCH( 1, IAOB )
           KCCFBTCH( 2, IAOBLAST ) = 1
+          KCLSBTCH( IAOBLAST )    = KCLSBTCH(IAOB)
+          KAOBTCH(  1, IAOBLAST ) = KAOBTCH(  1, IAOB )     
+          KAOBTCH(  2, IAOBLAST ) = 1
          END IF
        END IF
          
@@ -558,8 +589,8 @@ C     the incomplete gamma function is calculated only once.
       END
 
       SUBROUTINE CHECKSPEXP(NTYP, IAOB1, IAOB2)
-#include"implicit.h"
-#include"priunit.h"
+#include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -717,3 +748,230 @@ C
 
       RETURN
       END 
+
+
+C     Routine for normalizing the deinsity-fitting basis wrt. the Coulomb
+C     self-integrals (alpha|alpha)
+      SUBROUTINE NRMFIT(GABALP,WORK,LWORK,IPRINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+      DIMENSION WORK(LWORK), GABALP(*)
+#include "shells.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "fck3aob.h"
+#include "fck3mem.h"
+#include "ibtfun.h"
+      CALL QENTER('NRMFIT')
+
+      IORB = 1
+      IAOIND = 1
+      NB = -1
+      NC = -1
+      ND = -1
+
+      DO ISHELL = 1, KMAXTOT
+        IF (LCLASS(ISHELL).EQ.3) THEN
+          IF (NB.NE.NBCH(ISHELL) .OR. NC.NE.NCENT(ISHELL) .OR.
+     &        ND.NE.LCLASS(ISHELL) ) THEN
+           NB = NBCH(ISHELL)
+           NC = NCENT(ISHELL)
+           ND = LCLASS(ISHELL)
+           
+           CALL NRMFIT1(GABALP,IORB,IAOIND,NB,ISHELL,WORK,LWORK,IPRINT)
+          END IF
+          IORB = IORB + KHKT(ISHELL)
+       ENDIF 
+      END DO
+      CALL QEXIT('NRMFIT')
+      RETURN
+      END
+C
+C ---------------------------------------------------------------
+C
+
+      SUBROUTINE NRMFIT1(GABALP,IORB,IAOIND,NB,ISHELL,WORK,LWORK,IPRINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+      DIMENSION GABALP(*), WORK(LWORK)
+#include "shells.h"
+      CALL QENTER('NRMFIT1')
+
+C
+      NUCA  = NUCO(ISHELL)
+      NRCA  = NRCO(ISHELL)
+      JSTRA = JSTRT(ISHELL)
+C
+      KMAT   = 1
+      KDONE  = KMAT   + NUCA*NRCA
+      KDIMP  = KDONE  + NUCA
+      KDIMC  = KDIMP  + NUCA
+      KPNTC  = KDIMC  + NUCA
+      KPNTP  = KPNTC  + NUCA*NRCA
+      KLAST  = KPNTP  + NUCA*NUCA
+
+      IF (KLAST .GT. LWORK) CALL STOPIT('NRMFIT1',' ',KLAST,LWORK)
+C
+      CALL NRMFIT2(GABALP,IAOIND,NB,NMAT,WORK(KMAT),NUCA,NRCA,
+     &             JSTRA,WORK(KDONE),
+     &             WORK(KDIMP),WORK(KDIMC),WORK(KPNTC),WORK(KPNTP),
+     &             ISHELL,IORB,IPRINT)
+C
+      CALL QEXIT('NRMFIT1')
+      RETURN
+      END
+
+C
+C -----------------------------------------------------
+C
+
+      SUBROUTINE NRMFIT2(GABALP,IAOIND,NB,NMAT,MAT,NUCA,NRCA,JSTRA,
+     &                   IDONE,NDIMP,
+     &                   NDIMC,IPNTC,IPNTP,ISHELL,IORB,IPRINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+      PARAMETER (THR = 1.0D-17)
+C
+#include "symmet.h"
+#include "fck3aob.h"
+#include "shells.h"
+#include "primit.h"
+#include "nuclei.h"
+C
+      DIMENSION MAT(NUCA,NRCA), IDONE(NUCA), NDIMP(NUCA), NDIMC(NUCA),
+     &          GABALP(NBASISAUX),IPNTC(NUCA,NRCA),IPNTP(NUCA,NUCA)
+C
+      SAVE IADRP, IADRO, NBTCH
+C
+C     Construct matrix MAT containing 1 and 0 only, then fill
+C     out all elements within each contraction matrix as in SETAOBTCH
+C
+      CALL IZERO(MAT,NUCA*NRCA)
+C
+      DO I = 1, NUCA
+      DO J = 1, NRCA
+         IF (ABS(PRICCF(JSTRA+I,J)).GT.THR) MAT(I,J) = 1
+      END DO
+      END DO
+C
+      DO I = 1, NRCA
+      DO J = 1, NRCA
+         IF (INPRD(MAT(1,I),MAT(1,J),NUCA) .GT. 0) THEN
+            DO K = 1, NUCA
+               MAT(K,I) = MAX(MAT(K,I),MAT(K,J))
+               MAT(K,J) = MAX(MAT(K,I),MAT(K,J))
+            END DO
+         END IF
+      END DO
+      END DO
+C
+C     NMAT, NDIMP(), NDIMC(), IPNTP(), IPNTC()
+C
+      NMAT = 0
+      CALL IZERO(IDONE,NUCA)
+      DO I = 1, NRCA
+         IF (IDONE(I).EQ.0) THEN
+C
+            NMAT = NMAT + 1
+            DO J = I, NRCA
+               IDONE(J) =  INPRD(MAT(1,I),MAT(1,J),NUCA)
+            END DO
+C
+C           First non-zero primitive
+C
+            KCONT = I
+            DO J = 1, NUCA
+               IF (MAT(J,KCONT) .EQ. 1) THEN
+                  KPRIM = J
+                  GO TO 100
+               END IF
+            END DO
+  100       CONTINUE
+C
+C           IPNTP and NDIMP
+C
+            IPRI = 0
+            DO J = 1, NUCA
+            IF (MAT(J,KCONT) .EQ. 1) THEN
+               IPRI = IPRI + 1
+               IPNTP(NMAT,IPRI) = JSTRA + J
+            END IF
+            END DO
+            NDIMP(NMAT) = IPRI
+C
+C           IPNTC and NDIMC
+C
+            ICNT = 0
+            DO J = 1, NRCA
+            IF (MAT(KPRIM,J) .EQ. 1) THEN
+               ICNT = ICNT + 1
+               IPNTC(NMAT,ICNT) = J
+            END IF
+            END DO
+            NDIMC(NMAT) = ICNT
+C
+         END IF
+      END DO
+
+C     Renormalization loop over blocks
+      DO IMAT = 1, NMAT
+C
+C        AO index
+C
+         NHK    = NHKT(ISHELL)
+         KHK    = NHK * 2 - 1
+
+C        Renormalization
+         DO ICNT = 1, NDIMC(IMAT)
+         DO IPRI = 1, NDIMP(IMAT)
+            PRICCF(IPNTP(IMAT,IPRI),IPNTC(IMAT,ICNT)) = 
+     &          PRICCF(IPNTP(IMAT,IPRI),IPNTC(IMAT,ICNT))/GABALP(IAOIND)
+         END DO
+         END DO
+         IAOIND  = IAOIND  + KHK * NDIMC(IMAT)
+
+      END DO
+C
+      NBTCH   = NBTCH + NMAT
+      NAOBTCH = NBTCH
+C
+      RETURN
+      END
+
+C     For debugging
+      FUNCTION NACTIVE_BATCHES()
+#include "implicit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
+      N=0
+      DO I = 1, NAOBTCH 
+        IF (ACTVAOBTCH(I)) N=N+1
+      ENDDO
+      NACTIVE_BATCHES = N
+      RETURN
+      END
+C  /* Deck pick_act_batch */
+      SUBROUTINE ACT_ALL_BATCHES
+#include <implicit.h>
+#include <priunit.h>
+#include <maxorb.h>
+#include <aovec.h>
+#include <fck3aob.h>
+      DO I = 1, MXSHEL
+        ACTVAOBTCH(I) = .TRUE.
+        DO J = 1, 4
+          ACTVBTH(I,J) = .TRUE.
+        ENDDO
+      ENDDO
+      RETURN
+      END

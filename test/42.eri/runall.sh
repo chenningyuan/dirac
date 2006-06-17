@@ -11,7 +11,8 @@ foreach MOLSTEM ( \
 #                 Ne.sto \
 #                 Ne.vdz \
 #                 Ne.vtz \
-                  Ne7.vtz \
+                  Ne7.vdz \
+#                 Ne7.vtz \
 #                 He7.vtz \
                 )
 

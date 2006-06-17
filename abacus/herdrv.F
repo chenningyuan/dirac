@@ -62,7 +62,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "efield.h"
-      PARAMETER (NDIR = 7, NTABLE = 80)
+      PARAMETER (NDIR = 7, NTABLE = 82)
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -84,6 +84,9 @@ C
 #include "huckel.h"
 #include "ccom.h"
 #include "hrunit.h"
+#if defined (MOD_DNF)
+#include "densfit.h"
+#endif
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*JENGIN'/
@@ -106,7 +109,8 @@ C
      &             '.CM-1  ', '.CM-2  ', '.SQHDOL', '.SQHDOR',
      &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.GFACDI',
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
-     &             '.NUCMOD', '.MAGCOR', '.JENGIN', '.RUNERI'/
+     &             '.NUCMOD', '.MAGCOR', '.JENGIN', '.RUNERI',
+     &             '.LINK  ', '.DENSFI'/
 C
 C     Check if input has been processed earlier.
 C
@@ -129,6 +133,11 @@ C
         DIRAC  = .FALSE.
         SUPMAT = .NOT. DIRCAL
       ENDIF
+#if defined (MOD_ERI)
+      RUNERI = .FALSE.
+      DOLINK = .FALSE.
+      DOFCK3 = .FALSE.
+#endif
       SKIP   = .FALSE.
       TSTINP = .FALSE.
       DIPLEN = .FALSE.
@@ -266,7 +275,8 @@ C
      &                141,142,143,144,145,146,147,148,149,150,
      &                151,152,153,154,155,156,157,158,159,160,
      &                161,162,163,164,165,166,167,168,169,170,
-     &                171,172,173,174,175,176,177,178,179,180), I
+     &                171,172,173,174,175,176,177,178,179,180,
+     &                181,182,183), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -643,10 +653,25 @@ C&&& JENGIN - activate J-engine
 #endif
             GO TO 100
  180     CONTINUE
+C&&& RUNERI - activates ERI code
 #if defined (MOD_ERI)
             RUNERI=.TRUE.
 #endif
             GO TO 100
+ 181     CONTINUE
+#if defined (MOD_ERI) 
+CC&&&& DOLINK - activates the fast exchange code
+            DOLINK = .TRUE. 
+            GO TO 100
+#endif 
+ 182     CONTINUE
+#if defined (MOD_ERI) && defined (MOD_DNF)
+CC&&&& DENSFIT: Density fitting (Not yet implemented)
+            DOFIT = .TRUE.
+            GO TO 100
+#endif
+ 183     CONTINUE
+
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 199
       ELSE
@@ -664,6 +689,20 @@ C&&& JENGIN - activate J-engine
      &     ' Integrals are calculated using ERI '//
      &     'instead of HERMIT (where possible)'
       ENDIF
+      IF (DOFCK3) THEN
+         WRITE (LUPRI,'(3X,A)')
+     &     'J-engine (FCK3) used for Coulomb'
+      ENDIF
+      IF (DOLINK) THEN
+         WRITE (LUPRI,'(3X,A)')
+     &     'LinK scheme for exchange'
+      ENDIF
+#if defined (MOD_DNF)
+      IF (DOFIT) THEN
+         WRITE (LUPRI,'(3X,A)')
+     &     'Density-fitted Coulomb contribution'
+      ENDIF
+#endif
 #endif
       IF(GAUNUC) THEN
         WRITE(LUPRI,'(A)') ' Nuclear model: '//
@@ -969,7 +1008,6 @@ C
 #if defined (MOD_ERI)
 C&&& JENGINE: Read input for J-engine for Coulom contribution
         CALL FCK3INP(WORD)
-        STOP 'End of test'
       GO TO 201
 #endif
 C

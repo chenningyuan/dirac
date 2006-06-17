@@ -1,45 +1,6 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
-C
-C
-C$Id$
-C
-C   FCK3: Program for fast evaluation of coulomb contribution to the Fock matrix
-C
-
-      SUBROUTINE FCK3DRV( FMAT, DMAT, NDMT, WORK, LWORK )
+#define MOD_DNF
+      SUBROUTINE FCK3DRV( FMAT, DMAT, NDMT, GAB, GABFIT, CFIT, 
+     &                    WORK, LWORK )
 #include "implicit.h"
 #include "priunit.h"
 #ifdef PRG_DIRAC
@@ -49,7 +10,7 @@ C
 #endif
 #include "cbihr2.h"
 #include "cbieri.h"
-Cdirac#include "cbione.h"
+#include "cbione.h"
 #include "cbifck3.h"
 #include "mxcent.h"
 #include "aovec.h"
@@ -59,10 +20,29 @@ Cdirac#include "cbione.h"
 #include "fck3thr.h"
 #include "fck3mem.h"
 #include "erithr.h"
+#if defined (MOD_FMM)
 #include "clsfmm.h"
-
-      DIMENSION TIMFCK3(5),FMAT(*), DMAT(*), WORK(*)
+#endif
+#if defined (MOD_DNF)
+#include "densfit.h"
+#endif
 C
+#include "dummy.h"
+#if defined (MOD_PBC)
+#include "pbc.h"
+#endif
+C
+#include "nuclei.h"
+#if defined VAR_MPI
+#include "infpar.h"
+#endif
+      DIMENSION TIMFCK3(5),FMAT(*), DMAT(*), WORK(*), GAB(*), 
+     &          GABFIT(*), CFIT(*)
+
+#if defined VAR_MPI
+      CALL MPI3INI(DMAT, NDMT, GAB, GABFIT, CFIT, WORK, LWORK)
+#endif
+
       WORD2MB = 8.0D-6
       STATISTICS(1) = 0.0D0
       STATISTICS(2) = 0.0D0
@@ -71,25 +51,73 @@ C
       STATISTICS(5) = 0.0D0
 
       IF ( FIXTHR ) THEN
-        THRSH = THRFCK3_DEFAULT
+        THRSH = THRFCK3
       ELSE
-CTROND...IFTHRS is not set, but I set FIXTHR to true
-        THRSH = 10D0**(-IFTHRS)
+c       The number of terms screened add up. For valinomycine (C54H90N6O18) 
+c       this causes an error 2000 greater than the screening treshold (when
+c       the treshold is 1E-7). For up to at least 10 000 atoms these 
+c       tresholds should be fine if the molecules have the same (or smaller) 
+c       geometrically distributed atomic density.
+c        THRSH = 10D0**(-IFTHRS-6)
+#if defined (MOD_DNF)
+        IF (DOFIT) THEN
+          THRSH = 10D0**(-10)
+        ELSE
+#endif
+#if defined PRG_DIRAC
+          THRSH = SCRFCK*10.0d0**(-12)
+#else
+          THRSH = 10D0**(-IFTHRS-6)
+#endif
+#if defined (MOD_DNF)
+        ENDIF
+#endif
       END IF
+
+Careful / ErikT
+C      if (dopbc .and. pbcactive) then
+C        Allow only very strict  screening for PBC, at least
+C        during the test phase. / ErikT
+C         THRSH = 1.0D-18
+C      end if
+Careful
+CAREFUL
+c     THRSH = 1.0D-18
+CAREFUL
 
       THRPOD   = THRSH
       THRCOD   = THRSH
-      THRNCL   = THRSH 
+      THRNCL   = THRSH
+      THRCS    = THRSH
+
       IF ( NOSCRPRIM ) THRPOD = 0.0D0
 
-#ifdef MOD_FMM
+#if defined (MOD_FMM)
       IF (DOFMM) THEN
         NCLFCK3 = .TRUE.
         THRCLS  = THRNCL
+      ELSE
+#endif
+        NCLFCK3 = .FALSE.
+        THRCLS  = 0.0d0
+#if defined (MOD_FMM)
+      END IF
+#endif
+
+
+      IF ( .NOT. NCLFCK3 ) THEN 
+        NOSKIPCL = .TRUE.
       END IF
 
-      CALL SETBFCFMM( BRFREE ) 
+c     THRSH screens out induvidual integrals without any significant
+c     effect on timings. Hardcoded to zero and reset afterwards.
+      THRSHSAVE = THRSH
+      THRSH  = 0.0D0
+
       FACCLS=ERFCIV(THRCLS)
+
+#if defined (MOD_FMM)
+      CALL SETBFCFMM( BRFREE ) 
 #endif
 
       IF ( NDMT .NE. 1 ) THEN 
@@ -104,28 +132,46 @@ CTROND...IFTHRS is not set, but I set FIXTHR to true
       CALL TIMER('START ',TIMSTR,TIMEND)
 
       CALL GETTIM(TIMFCK3(1),DUMTIM)
-C
-C     Set AO-batches
-C
+
       CALL SETAOBTCH(SPEXP,CONTRACTED,WORK,LWORK,IPRFCK3)
 
+C     Determines the two first dimensions of the density matrix depending 
+C     on whether we are using denity-fitting or not.
+      CALL DMATDIM
+
       CALL GETTIM(TIMFCK3(2),DUMTIM)
+
+C     PBC comment: We ultimately want to compute contributions to
 C
-C     Set overlap distribution batches
+C      J_{ab}^{0l} = \sum_{mj} \sum_{cd} (ab|cd) D_{cd}^{0j}
 C
-      CALL SETODBTCH(KIODBCLS,KIODBTCH,KRODBTCH,
-     &               KFREE,LFREE,WORK,LWORK,IPRFCK3)
+C      for fixed vectors m and j (the sum is performed by calling this
+C      routine several times with different m,j).
+C      Here we call SETODBTCH to set up the cd overlap batches.
+C      We need to add different translations (this info is passed
+C      via variables in the common block include/pbc.h) to ab and
+C      cd centers.
+C      Translations for a and b: 0 and l, respectively.
+C      Translations for c and d: m and m+j, respectively.
+C      The last argument to SETODBTCH is a flag indicating
+C      whether we have ab (flag=true) or cd (flag=false) batches. /ErikT
+      CALL SETODBTCH(KIODBCLS,KRODBCLS,KIODBTCH,KRODBTCH,
+     &               KFREE,LFREE,WORK,LWORK,GAB,GABFIT,
+     &               DMAT,CFIT,NDMT,IPRFCK3,.false.)
+
       MEMODB = LWORK - LFREE
-#ifdef MOD_FMM
-      IF ( DOFMM ) THEN 
-        CALL SETMM(DMAT,NDMAT,WORK(KIODBCLS),WORK(KIODBTCH),
-     &             WORK(KRODBTCH),WORK(KFREE),LFREE,IPRFCK3)
+
+c      CALL TIMER('FCKINI',TIMSTR,TIMEND)
+
+#if defined (MOD_FMM)
+      IF ( ( .NOT. OLDMOM ) .AND. DOFMM ) THEN 
+        CALL SETMM_OR_JFF(DMAT,NDMAT,CFIT,WORK(KIODBCLS),
+     &             WORK(KIODBTCH),WORK(KRODBTCH),WORK(KFREE),LFREE,
+     &             IPRFCK3,'FMM',dummy)
       END IF
 #endif
 
-CMAW **** SKIP EXPENSIVE 2-e NCL integrals via FTUV *****
-C      WRITE(LUPRI,*) "*** maw: skipping all 2-e integrals in NCLFCK!"
-C      RETURN
+c      CALL TIMER('FCKSMM',TIMSTR,TIMEND)
 
       CALL GETTIM(TIMFCK3(3),DUMTIM)
 
@@ -134,21 +180,93 @@ C      RETURN
       NPARFTUV_NSTEPODCLS = NPARFTUV_NPAR
 
       DO NPARFTUV_KSTARTODCLS = 1, NPARFTUV_NPAR
+       IF ( CHCKNAI ) THEN
+#if defined (MOD_DNF)
+        IF (DOFIT) THEN
+         WRITE(LUPRI,*) 'CHCKNAI not yet implemented for densfit'
+         CALL QUIT('CHCKNAI not yet implemented for densfit')
+        ENDIF
+#endif /* MOD_DNF */
+        IELECTR = 1
+#if defined (MOD_DNF)
+        IF (RHSFIT) THEN
+          CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
+     &         KRFBTCH,KIFBTCH,WORK(KRODBCLS),WORK(KIODBCLS),
+     &         WORK(KRODBTCH),WORK(KIODBTCH),CFIT,ISYMDM,NDMT,
+     &         KFREE,LFREE,IELECTR,WORK,LWORK,
+     &         NPARFTUV_KSTARTODCLS,NPARFTUV_NSTEPODCLS,IPRFCK3)
+        ELSE
+#endif /* MOD_DNF */
+          CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
+     &         KRFBTCH,KIFBTCH,WORK(KRODBCLS),WORK(KIODBCLS),
+     &         WORK(KRODBTCH),WORK(KIODBTCH),DMAT,ISYMDM,NDMT,
+     &         KFREE,LFREE,IELECTR,WORK,LWORK,
+     &         NPARFTUV_KSTARTODCLS,NPARFTUV_NSTEPODCLS,IPRFCK3)
+#if defined (MOD_DNF)
+        ENDIF
+#endif /* MOD_DNF */
+       END IF
 
        IELECTR = 2
 
-       CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
-     &            KRFBTCH,KIFBTCH,WORK(KIODBCLS),WORK(KIODBTCH),
-     &            DMAT,ISYMDM,NDMT,
-     &            KFREE,LFREE,IELECTR,WORK,LWORK,
-     &            NPARFTUV_KSTARTODCLS,NPARFTUV_NSTEPODCLS,IPRFCK3)
+       NPFTUVSTR = NPARFTUV_KSTARTODCLS
+#if defined (MOD_DNF)
+       IF (DOFIT.AND.RHSFIT) NPFTUVSTR = NPFTUVSTR + NODCLSNORM
+       IF (RHSFIT) THEN
+         CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
+     &        KRFBTCH,KIFBTCH,WORK(KRODBCLS),WORK(KIODBCLS),
+     &        WORK(KRODBTCH),WORK(KIODBTCH),CFIT,ISYMDM,NDMT,
+     &        KFREE,LFREE,IELECTR,WORK,LWORK,
+     &        NPFTUVSTR,NPARFTUV_NSTEPODCLS,IPRFCK3)
+       ELSE
+#endif /* MOD_DNF */
+         CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
+     &        KRFBTCH,KIFBTCH,WORK(KRODBCLS),WORK(KIODBCLS),
+     &        WORK(KRODBTCH),WORK(KIODBTCH),DMAT,ISYMDM,NDMT,
+     &        KFREE,LFREE,IELECTR,WORK,LWORK,
+     &        NPFTUVSTR,NPARFTUV_NSTEPODCLS,IPRFCK3)
+#if defined (MOD_DNF)
+       ENDIF
+#endif /* MOD_DNF */
+
+#if defined (MOD_PBC)
+       if (dopbc .and. pbcactive) then
+C        PBC comment: See PBC comment above for context.
+C         Here we call SETODBTCH with the last argument set to true,
+C         indicating that we want ab batches.
+C         Note that we overwrite the cd batches that were constructed
+C         in the previous call to SETODBTCH, but this is fine since
+C         this data has already been processed and the results stored
+C         in variables with names that fit the regexp *FTUV*. /ErikT
+          CALL SETODBTCH(KIODBCLS,KRODBCLS,KIODBTCH,KRODBTCH,
+     &      KFREE,LFREE,WORK,LWORK,GAB,GABFIT,
+     &      DMAT,CFIT,NDMT,IPRFCK3,.true.)
+       end if
+#endif /* MOD_PBC */
 
        CALL GETTIM(TIMFCK3(4),DUMTIM)
 
-       CALL GETFCK3(FMAT,NDMT,WORK(KIODBCLS),WORK(KIODBTCH),
+c       CALL TIMER('FCKIN2',TIMSTR,TIMEND)
+
+Careful / ErikT
+C       write(LUPRI,*) 'PBC debug: calling GETFCK3',NPARFTUV_KSTARTODCLS
+C        WRITE (LUPRI,'(/,2(3(5X,A,I9,/),/))') 
+C     &         ' Number of AO   batches : ', NAOBTCH,
+C     &         ' Number of OD   batches : ', NODBTCH,
+C     &         ' Number of FTUV batches : ', NFTUVBTCH,
+C     &         ' Number of AO   classes : ', NAOBCLS,
+C     &         ' Number of OD   classes : ', NODBCLS,
+C     &         ' Number of FTUV classes : ', NFTUVCLS
+C        call flshfo(LUPRI)
+Careful       
+
+       CALL GETFCK3(FMAT,NDMT,WORK(KIODBCLS),WORK(KRODBCLS),
+     &             WORK(KIODBTCH),
      &             WORK(KRODBTCH),WORK(KIFTUVCLS),WORK(KRFTUVCLS),
      &             WORK(KIFTUV),WORK(KRFTUV),WORK(KFTUV),WORK(KRFBTCH),
      &             WORK(KIFBTCH),WORK(KFREE),LFREE,IPRFCK3)
+
+c       CALL TIMER('FCKGFC',TIMSTR,TIMEND)
 
        CALL GETTIM(TIMFCK3(5),DUMTIM)
 
@@ -211,7 +329,7 @@ C      RETURN
      &         ' - calculated nonzero     :', A_CALCULATEDN*100, ' % ',
      &         ' - calculated zero        :', A_CALCULATED0*100, ' % ',
      &         ' - skipped inside classes :', A_SKIPPED1*100, ' % ',
-     &         ' - skipp by classes       :', A_SKIPPED2*100, ' % '
+     &         ' - skip by classes        :', A_SKIPPED2*100, ' % '
 
         CALL HEADER('Numbers of classes and batches in FCK3 :',-1)  
         WRITE (LUPRI,'(/,2(3(5X,A,I9,/),/))') 
@@ -225,16 +343,18 @@ C      RETURN
 
       END DO
 
-      CALL TIMER('FCK3  ',TIMSTR,TIMEND)
- 
       CALL FLSHFO(LUPRI)
 
+#if defined (MOD_FMM)
       CALL SETBFCFMM( .FALSE. ) 
+#endif
+
+      THRSH = THRSHSAVE
 
       RETURN 
       END 
 
-      SUBROUTINE GETFCK3(FMAT,NDMAT,IODBCLS,IODBTCH,RODBTCH,
+      SUBROUTINE GETFCK3(FMAT,NDMAT,IODBCLS,RODBCLS,IODBTCH,RODBTCH,
      &                   IFTUVCLS,RFTUVCLS,IFTUV,RFTUV,FTUV,RFBTCH,
      &                   IFBTCH,WORK,LWORK,IPRINT)
 #include "implicit.h"
@@ -245,9 +365,9 @@ C      RETURN
 #include "maxorb.h"
 #include "fck3aob.h"
 #include "fck3odb.h"
-      DIMENSION IODBCLS(5,*),IODBTCH(2,*),RODBTCH(5,*),
-     &          IFTUVCLS(10,*),RFTUVCLS(4,*),IFTUV(*),RFTUV(*),
-     &          FTUV(*),RFBTCH(5,*),IFBTCH(2,*),WORK(*)     
+      DIMENSION IODBCLS(5,*),RODBCLS(2,*),IODBTCH(2,*),RODBTCH(7,*),
+     &          IFTUVCLS(10,*),RFTUVCLS(6,*),IFTUV(*),RFTUV(*),
+     &          FTUV(*),RFBTCH(6,*),IFBTCH(2,*),WORK(*), FMAT(*)
       LOGICAL GDER
 
       MAXDER = 0 
@@ -296,16 +416,17 @@ C
 C     Main two-electron subroutine
 C     ============================
 
-      CALL GETFCK31( FMAT,NDMAT,IODBCLS,IODBTCH,RODBTCH,
+      CALL GETFCK31( FMAT,NDMAT,IODBCLS,RODBCLS,IODBTCH,RODBTCH,
      &               IFTUVCLS,RFTUVCLS,IFTUV,RFTUV,FTUV,RFBTCH,
      &               IFBTCH,WORK(KINDHR),WORK(KIODHR),
      &               WORK(KLMNVL),WORK(KLMNSM),WORK(KCSQ),
      &               WORK(KLAST),LWRK,IPRINT)
 
+
       RETURN
       END
 
-      SUBROUTINE GETFCK31(FMAT,NDMAT,IODBCLS,IODBTCH,RODBTCH,
+      SUBROUTINE GETFCK31(FMAT,NDMAT,IODBCLS,RODBCLS,IODBTCH,RODBTCH,
      &                   IFTUVCLS,RFTUVCLS,IFTUV,RFTUV,FTUV,RFBTCH,
      &                   IFBTCH,INDHER,IODDHR,LMNPWR,LMNSYM,
      &                   CSQ,WORK,LWORK,IPRINT)
@@ -320,17 +441,53 @@ C     ============================
 #include "fck3thr.h"
 #include "fck3mem.h"
 #include "cbifck3.h"
+#if defined (MOD_FMM)
 #include "clsfmm.h"
-      DIMENSION IODBCLS(5,*), IODBTCH(2,*), RODBTCH(5,*),
-     &          IFTUVCLS(10,*),RFTUVCLS(4,*),IFTUV(*),RFTUV(*),
-     &          RFBTCH(5,*),IFBTCH(2,*),FTUV(*),CSQ(NCSQ1,NCSQ2),
+#endif
+#if defined (MOD_DNF)
+#include "densfit.h"
+#endif
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
+C
+#if defined (MOD_PBC)
+#include "pbc.h"
+#endif
+      LOGICAL AUX, SCREENCS, ACTIVE
+      DIMENSION IODBCLS(5,*), RODBCLS(2,*), IODBTCH(2,*), RODBTCH(7,*),
+     &          IFTUVCLS(10,*),RFTUVCLS(6,*),IFTUV(*),RFTUV(*),
+     &          RFBTCH(6,*),IFBTCH(2,*),FTUV(*),CSQ(NCSQ1,NCSQ2),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          IODDHR(NRTOP,0:7),LMNPWR(MAXODKCK,MAXODNHK,3),
      &          LMNSYM(MAXODKCK,MAXODNHK,2,0:7),WORK(*), 
-     &          KCCF(2,2)
+     &          KCCF(2,2), FMAT(*)
+      dimension tvec1(3), tvec2(3), coord_nf_lat(3)
+#if defined VAR_MPI
+#include "infpar.h"
+      NOFF  = MYNUM
+      NSTEP = NODTOT + 1
+      CALL GETTIM(TSFCK31,DUMTIM)
+C     For the special case of parallel code run in serial NODTOT=-1
+      IF (NSTEP.EQ.0) NSTEP = 1
+#else
+      PARAMETER(NSTEP = 1)
+      NOFF  = 0
+#endif
 
-      NOSKIPCL = ( ( .NOT. NCLFCK3 ) .OR. NOSKIPCL ) 
-      IF ( BRFREE ) NCLFCK3 = .FALSE. 
+#if defined (MOD_DNF)
+c      DOSCREENCS = ((RHSFIT .OR. LHSFIT) .AND. DOFIT) .AND. .NOT. OLD_DF
+      DOSCREENCS = ((RHSFIT .OR. LHSFIT) .AND. DOFIT) 
+     &             .AND. (.NOT. NOSCRE) .AND. .NOT. (RHSFIT.AND.LHSFIT)
+#else
+      DOSCREENCS = .FALSE.
+#endif /* MOD_DNF */
+
+CMAW  We need the next line if FCK3 is to do the fully classical
+CMAW  interactions inside RPQMIN in the Branch-Free scheme:
+CMAW      IF ( BRFREE ) NCLFCK3 = .FALSE. 
 
       MAXNHK  = 4 * ( MAXAONHK - 1 ) + 1
 
@@ -366,6 +523,38 @@ C
       KFTUV2   = KCOORPQ + MAXPRF * 3
       KLAST    = KFTUV2  + MAXFCLSPRF * MAXODNHK**3
 
+#if defined (MOD_PBC)
+      if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
+C        R tensors referring to different replicas of dummy overlap
+C        centers in the near-field should be added up first, and then
+C        contracted. This means that we do the loop over near-field
+C        translations in this routine instead of doing it in
+C        the routine PBC_JOP_REALMAT in PBCDRV.F.
+         call pbc_get_nfsize(nf_siz1,nf_siz2,nf_siz3)
+
+C        Allocate memory for the summed R tensor
+         khrint1_sum = KLAST
+         KLAST = KLAST + MAXPRF * MAXNTUV
+         if (KLAST .gt. LWORK) then
+            write(LUPRI,*) 'Out memory in GETFCK31.'
+            write(LUPRI,*) '  Needed    (Mwords): ',MAXPRF * MAXNTUV
+            write(LUPRI,*) '  Available (Mwords):',LWORK-khrint1_sum
+            call quit('Out memory in GETFCK31.')
+         end if
+         khrint1_aux = khrint1_sum
+      else
+#endif /* MOD_PBC */
+C        R tensors will not be added up.
+C        The loop over near-field translations occurs in PBC_JOP_REALMAT
+C        in PBCDRV.F and not here.
+         nf_siz1 = 0
+         nf_siz2 = 0
+         nf_siz3 = 0
+         khrint1_aux = KHRINT1
+#if defined (MOD_PBC)
+      end if
+#endif /* MOD_PBC */
+
       MEMFCK31 = KRJ000 - 1 
       MEMFCK32 = KLAST  - KRJ000  
 
@@ -374,23 +563,70 @@ C
 
       IELECTR  = 1
 
-      DO IABCLS = 1, NODBCLS
+      IABCLSSTART = 1
+      IABCLSEND = NODCLSNORM
+      AUX = .FALSE.
+#if defined (MOD_DNF)
+      IF (DOFIT.AND.LHSFIT) THEN
+        IABCLSSTART = NODCLSNORM + 1
+        IABCLSEND   = NODCLSNORM + NODCLSAUX
+        AUX = .TRUE.
+      END IF
+#endif /* MOD_DNF */
 
+c     DO IABCLS = IABCLSSTART, IABCLSEND
+      DO IABCLS = IABCLSSTART + NOFF, IABCLSEND, NSTEP
        ICENTA    = IODBCLS(1,IABCLS)
        ICENTB    = IODBCLS(2,IABCLS)
        NHKTAB    = IODBCLS(3,IABCLS)
        KABSTBTCH = IODBCLS(4,IABCLS)
        NABBTCH   = IODBCLS(5,IABCLS)
 
+       CSABCLS   = RODBCLS(1,IABCLS)
+
        JMAXAB = NHKTAB - 1
        NTUVAB = NHKTAB*(NHKTAB+1)*(NHKTAB+2)/6
 
-       CALL GETR12( NSYMOPR, NSYMOPS, ICENTA, ICENTB, 1 )
+#if defined (MOD_PBC)
+       if (dopbc .and. pbcactive) then
+C         We are ultimately interested in
+C         J_{ab}^{0l} = \sum_{mj} \sum_{cd} (ab|cd) D_{cd}^{0j}.
+C         Here we are dealing with ab overlaps and need to put in
+C         the translation vector l to get the PBC case right.
+          tvec1(1) = 0.0
+          tvec1(2) = 0.0
+          tvec1(3) = 0.0
+          tvec2(1) = rspc_vec_std(1)
+          tvec2(2) = rspc_vec_std(2)
+          tvec2(3) = rspc_vec_std(3)
+          CALL GETR12( NSYMOPR, NSYMOPS, ICENTA, ICENTB, 1,
+     &                 tvec1, tvec2 )
+       else
+#endif /* MOD_PBC */
+          tvec1(1) = 0.0
+          tvec1(2) = 0.0
+          tvec1(3) = 0.0
+          tvec2(1) = 0.0
+          tvec2(2) = 0.0
+          tvec2(3) = 0.0          
+          CALL GETR12( NSYMOPR, NSYMOPS, ICENTA, ICENTB, 1,
+     &                 tvec1, tvec2 )
+#if defined (MOD_PBC)
+       end if
+#endif /* MOD_PBC */
 
        DO IABBTCH = KABSTBTCH, ( KABSTBTCH + NABBTCH - 1 ) 
 
         IAOBA = IODBTCH(1,IABBTCH)
         IAOBB = IODBTCH(2,IABBTCH)
+
+c       IF (.TRUE.) THEN
+       ACTIVE = ACTVAOBTCH(IAOBA).AND.ACTVAOBTCH(IAOBB)
+#if defined (MOD_DNF)
+       IF ((.NOT.DOBOX) .OR. ACTIVE) THEN
+#endif
+
+        CSABBTCH = RODBTCH(6,IABBTCH)
 
         CALL GETAOB(NPRFA,NCTFA,NTYPA,NHKTA,JMAXA,KHKTA,KCKTA,
      &              KCSQA,KEXPA,KCCF(1,1),IAOBA)
@@ -398,41 +634,64 @@ C
         CALL GETAOB(NPRFB,NCTFB,NTYPB,NHKTB,JMAXB,KHKTB,KCKTB,
      &              KCSQB,KEXPB,KCCF(1,2),IAOBB)
 
+C       PBC comment: SCREENPRIM12 uses coordinates and a distance set
+C        by GETR12, so the necessary translations have already
+C        been put in. Hence, SCREENPRIM12 works without modification for
+C        PBC. One thing, though: In the molecular case, one screens out
+C        just a few terms, but in the PBC case screening means neglecting
+C        a converging infinite series. This means that the error
+C        estimates may be a little different. / ErikT
         CALL SCREENPRIM12(NPRFAB,RODBTCH(1,IABBTCH),WORK(KIPRAB),.TRUE.,
      &                    NPRFA,NCTFA,NTYPA,NPRFB,NCTFB,NTYPB,
      &                    EXPBTCH(KEXPA),EXPBTCH(KEXPB),
      &                    CCFBTCH(KCCF(1,1)),CCFBTCH(KCCF(2,1)),
      &                    CCFBTCH(KCCF(1,2)),CCFBTCH(KCCF(2,2)),
-     &                    R122(0,0),COOR1(1,0),COOR2(1,0),IPRINT)
-
+     &                    R122(0,0),COOR1(1,0),COOR2(1,0), 1,
+     &                    IPRINT)
         EXTPMAX = RODBTCH( 4, IABBTCH )
         SCRAB   = RODBTCH( 5, IABBTCH )
-
-        CALL DZERO(WORK(KETIJ),NPRFAB*NHKTAB*NHKTA*NHKTB*3*2)
 
         CALL SETETIJ(WORK(KETIJ),WORK(KPREFAB),
      &               R12(1,0,0),R122(0,0),
      &               WORK(KIPRAB),EXPBTCH(KEXPA),EXPBTCH(KEXPB),
      &               WORK(KCOORAB),WORK(KEXPAB),WORK(KHPI),WORK(KPA),
-     &               WORK(KPB),NPRFA,NHKTB,JMAXA,
+     &               WORK(KPB),NPRFA,NHKTA,JMAXA,
      &               NPRFB,NHKTB,JMAXB,NPRFAB,NHKTAB,IELECTR,IPRINT)
-
+        CALL MXETIJ(WORK(KETIJ),NPRFAB,JMAXA,JMAXB,ETIJAB)
         CALL SETP(WORK(KDATAP),WORK(KIPRAB),
      &            COOR1(1,0),COOR2(1,0),EXPBTCH(KEXPA),
      &            EXPBTCH(KEXPB),NPRFA,NPRFB,NPRFAB,IPRINT)
 
         CALL DZERO(WORK(KHRINT),NPRFAB*NTUVAB*NDMAT)
 
-        DO IFCLS = 1, NFTUVCLS
+c
+c       find largest exponent of the ab distribution
+        CALL GETMAXEXPAB(EXPMAB,EXPBTCH(KEXPA),EXPBTCH(KEXPB),
+     &                   NPRFA,NPRFB)
+
+        IFCLSSTART = 1
+        IFCLSEND   = NFTUVCLS
+#if defined (MOD_DNF)
+        IF (RHSFIT) IFCLSSTART = NODCLSNORM + 1
+        IF (LHSFIT .AND. .NOT. RHSFIT) IFCLSEND = NODCLSNORM
+#endif /* MOD_DNF */
+
+
+        DO IFCLS = IFCLSSTART, IFCLSEND
  
          ICENTC      = IFTUVCLS(  9, IFCLS )
          ICENTD      = IFTUVCLS( 10, IFCLS ) 
 
          RCD         = RFTUVCLS(  1, IFCLS ) 
          EXTQMAX     = RFTUVCLS(  2, IFCLS ) 
+         FTUVMX      = RFTUVCLS(  3, IFCLS )
          SCRCD       = RFTUVCLS(  4, IFCLS ) 
+         EXPMCD      = RFTUVCLS(  5, IFCLS ) 
 
-         IF ( NCLFCK3 ) 
+         CSFTUVCLS   = RFTUVCLS(  6, IFCLS ) 
+         RUBAB = R1UPPERB(JMAXA+JMAXB,EXPMAB)
+         RUBCD = R1UPPERB(IFTUVCLS(6,IFCLS),EXPMCD)
+         IF ( NCLFCK3 .OR. BRFREE ) 
      &    CALL CHECKRMIN(RMIN,RODBTCH(1,IABBTCH),ICENTC,ICENTD,RCD)
 
 C
@@ -450,10 +709,30 @@ C
 
          STATISTICS(1) = STATISTICS(1) + NPRF0
 
-         IF ((( NOSKIPCL .OR. ( RMIN .LE. EXTPMAX + EXTQMAX ) ) .OR.
-     &        ( BRFREE .AND. ( ( RMIN .LE. RPQMIN ) .OR.  
-     &                       ( RMIN .LE. EXTPMAX + EXTQMAX ) ))) .AND.
-     &        ( NOSKIPCS .OR. ( SCRAB * SCRCD .GT. THRCOD ) ) ) THEN
+CMAW  We need the full test below if FCK3 is to do the fully classical
+CMAW  interactions inside RPQMIN in the Branch-Free scheme:
+C         IF ( ( ( NOSKIPCL .OR. (  
+C     &    ( .NOT. NCLFCK3 ).OR.( RMIN .LE. EXTPMAX + EXTQMAX ) ) .AND.
+C     &    ( .NOT. BRFREE ).OR.( ( RMIN .LE. RPQMIN ) .OR.  
+C     &                  ( RMIN .LE. EXTPMAX + EXTQMAX )) )  ) .AND.
+C     &        ( NOSKIPCS .OR. ( SCRAB * SCRCD .GT. THRCOD ) ) ) THEN
+
+         TOTFAC = SCRAB * ETIJAB * RUBAB * RUBCD * FTUVMX
+
+         SCREENCS = DOSCREENCS .AND. CSFTUVCLS*CSABBTCH .LT. THRCS
+     &                   .AND. (.NOT. NCSTUV)
+
+C        Screening test
+         IF ( ( NOSKIPCL .OR. ( RMIN .LE. ( EXTPMAX+EXTQMAX ) ) ) .AND.
+     &        ( NOSKIPCS .OR. ( TOTFAC .GT. THRCOD ) ) .AND. 
+     &        ( .NOT. SCREENCS ) ) THEN
+
+          IF (IPRINT.GT.25) THEN
+            write(LUPRI,*) 'NPRFAB, NTUVAB ',NPRFAB, NTUVAB
+            CALL HEADER('HRINT before screen',-1)
+            CALL OUTPUT(WORK(KHRINT),1,NPRFAB,1,NTUVAB,NPRFAB,NTUVAB,1,
+     &                  LUPRI)
+          ENDIF
 
           NTFTUVBTCH  = IFTUVCLS(  1, IFCLS )
           KSIFTUV     = IFTUVCLS(  3, IFCLS )
@@ -485,7 +764,35 @@ C            THRSCRF = THRCOD / SCRAB
 C            CALL SCREENFBTCH( NTFTUVPRIM, IFBTCH(1,KSFBTCH),
 C     &                   RFBTCH(1,KSFBTCH), THRSCRF, NTFTUVBTCH )
 C          END IF
-        
+
+          IF ( NPRF .GT. 0 ) THEN 
+
+#if defined (MOD_PBC)
+          if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
+             call dzero(WORK(khrint1_sum), MAXPRF * NTUV)
+          end if
+#endif /* MOD_PBC */
+
+          do mx = -nf_siz1, nf_siz1  ! PBC near-field loop (dim. 1)
+          do my = -nf_siz2, nf_siz2  ! PBC near-field loop (dim. 2)
+          do mz = -nf_siz3, nf_siz3  ! PBC near-field loop (dim. 3)
+
+#if defined (MOD_PBC)
+          if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
+C            See above for context.
+C            Construct near-field translation vector, put it in
+C            common block variables from pbc.h (these are checked
+C            by the routine SETPQ below).
+             nf_vec_index(1) = mx
+             nf_vec_index(2) = my
+             nf_vec_index(3) = mz
+             coord_nf_lat(1) = dfloat(mx)
+             coord_nf_lat(2) = dfloat(my)
+             coord_nf_lat(3) = dfloat(mz)
+             call pbc_lat2std_coord(coord_nf_lat, nf_vec_std)
+          end if
+#endif /* MOD_PBC */
+       
 C
 C         The main time consuming part !!!
 C         ================================
@@ -512,43 +819,106 @@ C         ================================
      &                   IFBTCH(1,KSFTUVBTCH), RFBTCH(1,KSFTUVBTCH), 
      &                   NPRFAB, NTFTUVBTCH, JMAX, NTYP, LSIZE, NTUV )    
            ELSE 
+c           IF(NPRF.GT.0)
             CALL SETPQ(WORK(KFACINT), WORK(KALPHA), WORK(KCOORPQ), NPRF,
-     &               IPQXYZ, WORK(KDATAP), RODBTCH(1,IABBTCH),
-     &               IFTUV(KSIFTUV),RFTUV(KSRFTUV),RFBTCH(1,KSFTUVBTCH), 
-     &               NFTUVBTCH, NPRFAB, NTFTUVPRIM, JMAX, NTYP, NTUV )    
+     &               IPQXYZ, WORK(KDATAP),RFTUV(KSRFTUV), 
+     &               NPRFAB, NTFTUVPRIM, JMAX, NTYP, NTUV )    
             STATISTICS(2) = STATISTICS(2) + NPRF
            END IF
-          END IF
+          END IF          
 
-          IF ( NPRF .GT. 0 ) THEN 
+#if defined (MOD_DNF)
+C         Code for Gaussian damped integrals; over the operator
+C         exp(-a*r12*r12)/r12 instead of 1/r12.
+          IF (DF_GAUDMP.AND.(LHSFIT .AND. .NOT. RHSFIT)) THEN
+            NUCABCDT = NPRFAB * NTFTUVPRIM  + 1000
+            KHARGE = KLAST + 10000
+            KHARGF = KHARGE + NUCABCDT
+            KHALPH = KHARGF + NUCABCDT
+            KHBETA = KHALPH + NUCABCDT
+            KHPRE1 = KHBETA + NUCABCDT
+            KHPRE2 = KHPRE1 + NUCABCDT
+            KHPRE3 = KHPRE2 + NUCABCDT
+            KRO000 = KHPRE3 + NUCABCDT
+            KRM000 = KRO000 + NUCABCDT * (JMAX + 1) + 1000
+            KHRIN3 = KRM000 + NUCABCDT * (JMAX + 1) + 1000
+            KHRIN4 = KHRIN3 + NUCABCDT * NTUV + 1000
+            KHRIN5 = KHRIN4 + NUCABCDT * NTUV + 1000
+            KHEXPP = KHRIN5 + NUCABCDT * NTUV + 1000
+            KHEXPQ = KHEXPP + NUCABCDT
+            KLASTT = KHEXPQ + NUCABCDT
 
-          CALL ERIGAM(WORK(KRJ000),WORK(KFACINT),WORK(KALPHA),
-     &                WORK(KCOORPQ),WORK(KLAST),LWRK,IPRINT)
+            IJ = 0
+            DO I=1,NPRFAB
+              DO J=1,NTFTUVPRIM
+                WORK(KHEXPP + IJ) = WORK(KDATAP + 6*(I-1))
+                WORK(KHEXPQ + IJ) = RFTUV(KSRFTUV + 8*(J-1))
+                IJ = IJ + 1
+              ENDDO
+            ENDDO
+            IF (KLASTT .GT. LWORK) 
+     &           CALL STOPIT('FCK3','FCK31',KLASTT,LWORK)     
+            LWRKT   = LWORK - KLASTT + 1
+              
+            CALL ERIHER(WORK(KHRINT1),dummy,WORK(KRM000),
+     &           WORK(KCOORPQ),INDHER,IODDHR(1,IPQXYZ),
+     &           WORK(KFACINT),WORK(KALPHA),WORK(KHARGE),
+     &           WORK(KHARGF),WORK(KHALPH),WORK(KHBETA),
+     &           WORK(KHPRE1),WORK(KHPRE2),WORK(KHPRE3),
+     &           WORK(KRO000),WORK(KHRIN3),WORK(KHRIN4),
+     &           WORK(KHRIN5),WORK(KHEXPP),WORK(KHEXPQ),
+     &           WORK(KLASTT),LWRKT,IPRINT)
+C         Code for regular integrals (over the operator 1/r12)
+          ELSE
+#endif /* MOD_DNF */
+            CALL ERIGAM(WORK(KRJ000),WORK(KFACINT),WORK(KALPHA),
+     &           WORK(KCOORPQ),WORK(KLAST),LWRK,IPRINT)
 
-          CALL ERITUV(WORK(KHRINT1),WORK(KRJ000),
-     &                WORK(KCOORPQ),INDHER,IODDHR(1,IPQXYZ),
-     &                WORK(KLAST),LWRK,IPRINT)
+            CALL ERITUV(WORK(KHRINT1),WORK(KRJ000),
+     &           WORK(KCOORPQ),INDHER,IODDHR(1,IPQXYZ),
+     &           WORK(KLAST),LWRK,IPRINT)
+#if defined (MOD_DNF) 
+          ENDIF
+#endif /* MOD_DNF */
+
+#if defined (MOD_PBC)
+          if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
+C            Now we have the R tensor for the current near-field
+C            translation. Add it to the total R tensor.
+             do ir = 0, MAXPRF * NTUV - 1
+                WORK(khrint1_sum+ir) = WORK(khrint1_sum+ir)
+     &                               + WORK(KHRINT1+ir)
+             end do             
+          end if
+#endif /* MOD_PBC */
+
+          end do            ! PBC end near-field loop (dim. 3)
+          end do            ! PBC end near-field loop (dim. 2)
+          end do            ! PBC end near-field loop (dim. 1)
+
 
           IF ( NCLFCK3 .AND. ( NPRF .NE. NPRF0 ) ) THEN 
            IF ( PACKFTUV ) THEN
-            CALL HR2FTUVNCL1(WORK(KHRINT),WORK(KHRINT1),WORK(KFTUV2),
+            CALL HR2FTUVNCL1(WORK(KHRINT),WORK(khrint1_aux),
+     &                  WORK(KFTUV2),
      &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMAXAB,JMAXF,
      &                  NTUVAB,NTUVCD,NTUV,
      &                  NPRFAB,NTFTUVPRIM,NTFTUVPRIM_TOT,NPRF,JTOP)
            ELSE
-            CALL HR2FTUVNCL2(WORK(KHRINT),WORK(KHRINT1),WORK(KFTUV2),
+            CALL HR2FTUVNCL2(WORK(KHRINT),WORK(khrint1_aux),
+     &                  WORK(KFTUV2),
      &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMAXAB,JMAXF,
      &                  NTUVAB,NTUVCD,NTUV,
      &                  NPRFAB,NTFTUVPRIM,NTFTUVPRIM_TOT,NPRF,JTOP)
            END IF
           ELSE
            IF ( PACKFTUV ) THEN
-            CALL HR2FTUV1(WORK(KHRINT),WORK(KHRINT1),FTUV(KSFTUV),
+            CALL HR2FTUV1(WORK(KHRINT),WORK(khrint1_aux),FTUV(KSFTUV),
      &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMAXAB,JMAXF,
      &                  NTUVAB,NTUVCD,NTUV,NPRFAB,
      &                  NTFTUVPRIM,NTFTUVPRIM_TOT,NPRF,JTOP )
            ELSE
-            CALL HR2FTUV2(WORK(KHRINT),WORK(KHRINT1),FTUV(KSFTUV),
+            CALL HR2FTUV2(WORK(KHRINT),WORK(khrint1_aux),FTUV(KSFTUV),
      &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMAXAB,JMAXF,
      &                  NTUVAB,NTUVCD,NTUV,NPRFAB,
      &                  NTFTUVPRIM,NTFTUVPRIM_TOT,NPRF,JTOP )
@@ -561,13 +931,19 @@ C
 C         End of the main time consuming part !!!
 C         =======================================
 
-         END IF
+         END IF ! NPRF
+
+         IF (IPRINT.GT.25) THEN
+           CALL HEADER('HRINT after screen',-1)
+           CALL OUTPUT(WORK(KHRINT),1,NPRFAB,1,NTUVAB,NPRFAB,NTUVAB,1,
+     &                 LUPRI)
+         ENDIF
 
          ELSE 
           STATISTICS(5) = STATISTICS(5) + NPRF0
-         END IF
+         END IF !  Screening test
 
-        END DO 
+        END DO  !IFCLS
 
         JA = JMAXA
         JB = JMAXB
@@ -576,9 +952,9 @@ C         =======================================
          IF ( NTYPA .EQ. 2 ) CALL SETJKKK(JA,KCSQA,KCKTA,KHKTA,ICOMPA)
 
          DO ICOMPB = 1, NTYPB 
-          IF ( NTYPB .EQ. 2 ) CALL SETJKKK(JB,KCSQB,KCKTB,KHKTB,ICOMPB)           
+          IF ( NTYPB .EQ. 2 ) CALL SETJKKK(JB,KCSQB,KCKTB,KHKTB,ICOMPB)
 
-           CALL ADD2FCK3(FMAT,WORK(KFMATCP),WORK(KFMATSP),
+          CALL ADD2FCK3(FMAT,WORK(KFMATCP),WORK(KFMATSP),
      &         WORK(KFTMP),NDMAT,
      &         WORK(KETIJ),WORK(KPREFAB),WORK(KIPRAB),
      &         WORK(KHRINT),INDHER,LMNPWR,IODDHR(1,IPQXYZ),
@@ -591,11 +967,22 @@ C         =======================================
 
          END DO
         END DO
+#if defined (MOD_DNF)
+       ENDIF  !Active batches
+#endif
+       END DO !AB-batches
+       
+      END DO ! AB-calsses
 
-       END DO 
+      IF (IPRINT .GT. 20) THEN
+        CALL HEADER('FMAT in FCK3DRV',-1)
+        CALL OUTPUT(FMAT,1,NDIMA,1,NDIMB,NDIMA,NDIMB,1,LUPRI)
+      ENDIF
 
-      END DO
-
+#if defined VAR_MPI
+      CALL GETTIM(TEFCK31,DUMTIM)
+      CALL FCK3COLLECT(FMAT,NDMAT,TEFCK31-TSFCK31,WORK,LWORK,IPRINT)
+#endif
       RETURN 
       END
 
@@ -605,11 +992,18 @@ C
 
       SUBROUTINE SETP( DATAP, IPRAB, COORA, COORB,EXPBTA, EXPBTB, 
      &                 NPRFA, NPRFB, NPRFAB, IPRINT )
-#include"implicit.h"
-#include"priunit.h"
-#include"pi.h"
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+C
+#if defined (MOD_PBC)
+#include "pbc.h"
+#endif
+C
       DIMENSION DATAP(6,NPRFAB), IPRAB(2,NPRFAB), COORA(3),COORB(3),
      &          EXPBTA(NPRFA), EXPBTB(NPRFB)
+      dimension pos_ab(3), pos_nf_lat(3), pos_nf_std(3)
+      integer nf_pos_index(3)
 
       FACTOR0 = 2.0D0*PI*PI*SQRT(PI) 
 
@@ -629,6 +1023,39 @@ C
        DATAP(4,I) = ( COORA(1)*EXPA + COORB(1)*EXPB ) * EXPPI
        DATAP(5,I) = ( COORA(2)*EXPA + COORB(2)*EXPB ) * EXPPI
        DATAP(6,I) = ( COORA(3)*EXPA + COORB(3)*EXPB ) * EXPPI
+
+#if defined (MOD_PBC)
+       if (dopbc .and. pbcactive) then
+C        We now have the position P of the ab overlap and the
+C        position Q of the cd overlap. However, we want the
+C        electrostatic near-field to be centered in the cell nf_pos
+C        containing P, so that the m (center of cell containing the
+C        c orbital) and m' (center of cell containing the d orbital)
+C        vectors refer to the neighbours of nf_pos. Hence, our Q is
+C        really a vector relative to nf_pos, not relative to the
+C        origin (center of the central cell). We therefore account
+C        for nf_pos here. To save some CPU cycles and not mess up the
+C        ab-cd screening, we also subtract nf_pos from P instead of
+C        adding it to Q.
+C
+C        (Additional comment: Note that nf_pos depends on the a and b
+C        orbitals. Since we treat many such orbitals at once it is
+C        difficult to put in the vector nf_pos already in the m
+C        vector. This is why we do it at such a late stage.) / ErikT
+         pos_ab(1) = DATAP(4,I)
+         pos_ab(2) = DATAP(5,I)
+         pos_ab(3) = DATAP(6,I)
+         call pbc_nf_center(pos_ab, nf_pos_index)
+         pos_nf_lat(1) = dfloat(nf_pos_index(1))
+         pos_nf_lat(2) = dfloat(nf_pos_index(2))
+         pos_nf_lat(3) = dfloat(nf_pos_index(3))
+         call pbc_lat2std_coord(pos_nf_lat, pos_nf_std)
+         DATAP(4,I) = DATAP(4,I) - pos_nf_std(1)
+         DATAP(5,I) = DATAP(5,I) - pos_nf_std(2)
+         DATAP(6,I) = DATAP(6,I) - pos_nf_std(3)
+       end if
+#endif /* MOD_PBC */
+
       END DO
 
       RETURN
@@ -639,8 +1066,7 @@ C   --------------------------------------------------------------
 C
 
       SUBROUTINE SETPQ( FACINT, ALPHA, COORPQ, NPRF, IPQXYZ,
-     &                  DATAP, RODP, IFTUV, RFTUV, RODQ, 
-     &                  NODQ, NPRFAB, NPRFCD, JMAX, NTYP, NTUV )
+     &                  DATAP, RFTUV, NPRFAB, NPRFCD, JMAX, NTYP, NTUV )
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -651,12 +1077,15 @@ C
 #include "fck3aob.h"
 #include "fck3odb.h"
 #include "fck3thr.h"
-C      DIMENSION COORAB(3,NPRFAB),EXPABP(3,NPRFAB),
-C     &          RFTUV(7,NPRFCD),IFTUV(2,NPRFCD),COORPQ(NPRF,3),
-C     &          FACINT(*),ALPHA(*),RODP(4),RODQ(4,*),IPQ0(3)
-      DIMENSION DATAP(6,*),RFTUV(7,*),IFTUV(2,*),COORPQ(NPRF,3),
-     &          FACINT(*),ALPHA(*),RODP(4),RODQ(4,*),IPQ0(3)
-
+#if defined (MOD_DNF)
+#include "densfit.h"
+#endif
+#if defined (MOD_PBC)
+#include "pbc.h"
+#endif
+C
+      DIMENSION DATAP(6,*),RFTUV(8,*),COORPQ(NPRF,3),
+     &          FACINT(*),ALPHA(*),IPQ0(3)
       INTEGER X
 
       I=0 
@@ -670,14 +1099,31 @@ C     &          FACINT(*),ALPHA(*),RODP(4),RODQ(4,*),IPQ0(3)
        PY    = DATAP(5,IPRFAB)
        PZ    = DATAP(6,IPRFAB)
 
+#if defined (MOD_PBC)
+       if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
+C         See comments in GETFCK31 (file FCK3DRV.F) and
+C         PBC_JOP_REALMAT (file PBCDRV.F) for context.
+C         R tensors referring to different replicas should be
+C         added up. The dummy overlaps (center Q) were constructed
+C         for the central cell and need to have the near-field translation
+C         added. As a small efficiency improvement, we subtract from P
+C         instead of adding to Q. / ErikT
+          PX = PX - nf_vec_std(1)
+          PY = PY - nf_vec_std(2)
+          PZ = PZ - nf_vec_std(3)
+       end if
+#endif /* MOD_PBC */
+
+
        DO IPRFCD=1,NPRFCD
         I = I + 1
 
-        EXPQ  = RFTUV(1,IPRFCD)
-        EXPQI = RFTUV(2,IPRFCD)
-        QX    = RFTUV(3,IPRFCD)
-        QY    = RFTUV(4,IPRFCD)
-        QZ    = RFTUV(5,IPRFCD)
+        EXPQ    = RFTUV(1,IPRFCD)
+        EXPQI   = RFTUV(2,IPRFCD)
+        QX      = RFTUV(3,IPRFCD)
+        QY      = RFTUV(4,IPRFCD)
+        QZ      = RFTUV(5,IPRFCD)
+        DWEIGHT = RFTUV(8,IPRFCD)
       
 C  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 C
@@ -691,7 +1137,8 @@ C
 C  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         ALPHA(I)  = - 2.0D0 / (EXPPI + EXPQI) 
-        FACINT(I)= FACPI*EXPQI/SQRT(EXPP+EXPQ)
+c       FACINT(I)= FACPI*EXPQI/SQRT(EXPP+EXPQ)
+        FACINT(I)= FACPI*EXPQI/SQRT(EXPP+EXPQ)*DWEIGHT
 
         COORPQ(I,1)= PX - QX
         COORPQ(I,2)= PY - QY
@@ -701,11 +1148,25 @@ C  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       END DO
 
 
-      IF ( NTYP .GT. 3 ) THEN 
+      IF ( NTYP .GT. 3) THEN 
        IPQXYZ  = 0
        IPQ0(1) = 0
        IPQ0(2) = 0
        IPQ0(3) = 0
+#if defined (MOD_DNF)
+      ELSEIF ( (DOFIT.AND.LHSFIT) ) THEN 
+       IPQXYZ  = 0
+       IPQ0(1) = 0
+       IPQ0(2) = 0
+       IPQ0(3) = 0
+#endif /* MOD_DNF */
+#if defined (MOD_PBC)
+      else if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
+       IPQXYZ  = 0
+       IPQ0(1) = 0
+       IPQ0(2) = 0
+       IPQ0(3) = 0
+#endif /* MOD_PBC */
       ELSE 
        CALL LOCSYM( COORPQ, NPRF, 1, IPQ0, IPQXYZ )
       END IF
@@ -729,7 +1190,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "fck3thr.h"
-      DIMENSION RODBTCH(4),IFBTCH(2,*),RFBTCH(5,*)
+      DIMENSION RODBTCH(7),IFBTCH(2,*),RFBTCH(6,*)
 
       NPRFCDSUM = 0 
 
@@ -777,9 +1238,10 @@ C
 #include "fck3aob.h"
 #include "fck3odb.h"
 #include "fck3thr.h"
+#include "densfit.h"
       DIMENSION COORAB(3,NPRFAB),EXPABP(3,NPRFAB),COORPQ(NPRF,3),
-     &   RFTUV(7,NPRFCD_TOT),IFTUV(2,NPRFCD_TOT),FACINT(*),ALPHA(*),
-     &   RODBTCH(4),IFBTCH(2,*),RFBTCH(5,*),IPQ0(3),
+     &   RFTUV(8,NPRFCD_TOT),IFTUV(2,NPRFCD_TOT),FACINT(*),ALPHA(*),
+     &   RODBTCH(7),IFBTCH(2,*),RFBTCH(6,*),IPQ0(3),
      &   FTUV1( NPRFCD_TOT, LSIZE ), FTUV2( NPRFCD_TOT, LSIZE ),
      &   DATAP(6,NPRFAB)
 
@@ -859,10 +1321,17 @@ C
       END IF
 
       IF ( NTYP .GT. 3 ) THEN 
-       IPQXYZ  = 0
-       IPQ0(1) = 0
-       IPQ0(2) = 0
-       IPQ0(3) = 0
+        IPQXYZ  = 0
+        IPQ0(1) = 0
+        IPQ0(2) = 0
+        IPQ0(3) = 0
+#if defined (MOD_DNF)
+      ELSEIF ( DOFIT.AND.LHSFIT ) THEN 
+        IPQXYZ  = 0
+        IPQ0(1) = 0
+        IPQ0(2) = 0
+        IPQ0(3) = 0
+#endif /* MOD_DNF */
       ELSE 
        CALL LOCSYM( COORPQ, NPRF, 1, IPQ0, IPQXYZ )
       END IF
@@ -889,9 +1358,10 @@ C
 #include "fck3aob.h"
 #include "fck3odb.h"
 #include "fck3thr.h"
+#include "densfit.h"
       DIMENSION COORAB(3,NPRFAB),EXPABP(3,NPRFAB),COORPQ(NPRF,3),
-     &   RFTUV(7,NPRFCD_TOT),IFTUV(2,NPRFCD_TOT),FACINT(*),ALPHA(*),
-     &   RODBTCH(4),IFBTCH(2,*),RFBTCH(5,*),IPQ0(3),
+     &   RFTUV(8,NPRFCD_TOT),IFTUV(2,NPRFCD_TOT),FACINT(*),ALPHA(*),
+     &   RODBTCH(7),IFBTCH(2,*),RFBTCH(6,*),IPQ0(3),
      &   DATAP(6,NPRFAB)
 
       INTEGER X
@@ -961,11 +1431,18 @@ C
        IPRFCD = IPRFCD + NPRFCD
       END DO
 
-      IF ( NTYP .GT. 3 ) THEN 
-       IPQXYZ  = 0
-       IPQ0(1) = 0
-       IPQ0(2) = 0
-       IPQ0(3) = 0
+      IF ( NTYP .GT. 3) THEN 
+        IPQXYZ  = 0
+        IPQ0(1) = 0
+        IPQ0(2) = 0
+        IPQ0(3) = 0
+#if defined (MOD_DNF)
+      ELSEIF ( DOFIT.AND.LHSFIT ) THEN 
+        IPQXYZ  = 0
+        IPQ0(1) = 0
+        IPQ0(2) = 0
+        IPQ0(3) = 0
+#endif /*MOD_DNF */
       ELSE 
        CALL LOCSYM( COORPQ, NPRF, 1, IPQ0, IPQXYZ )
       END IF
@@ -980,8 +1457,8 @@ C   --------------------------------------------------------------
 C
 
       SUBROUTINE PUT2HERTOP(JTOPVAL,NRTOPVAL)
-#include"implicit.h"
-#include"hertop.h"
+#include "implicit.h"
+#include "hertop.h"
 
       JTOP  = JTOPVAL
       NRTOP = NRTOPVAL
@@ -992,8 +1469,8 @@ C
 
       SUBROUTINE PUT2ERICOM2( NPPXVAL, IPQ0VAL, IPQXYZVAL,
      &                        JMAXVAL, NTUVVAL )
-#include"implicit.h"
-#include"ericom.h"
+#include "implicit.h"
+#include "ericom.h"
       DIMENSION IPQ0VAL(3)
 
       NPPX    = NPPXVAL
@@ -1066,12 +1543,15 @@ C     &                   HRINT(1,TUVAB,IDMAT),1)
 
 C
 C   --------------------------------------------------------------
-C
+C    INPUT: HRINT1, FTUV
+C    OUTPUT: HRINT
+
 
       SUBROUTINE HR2FTUV1( HRINT, HRINT1, FTUV,  INDHER, IODDHR, NDMAT,
      &                    JMAXAB, JMAXCD, NTUVAB, NTUVCD, NTUV, 
      &                    NPRFAB, NPRFCD, NPRFCD_TOT,NPRF, JTOP )
 #include "implicit.h"
+#include "priunit.h"
 
       INTEGER TAB,UAB,VAB,TUVAB,TCD,UCD,VCD,TUVCD,TUV
       DIMENSION HRINT(NPRFAB,NTUVAB,NDMAT),HRINT1(NPRF,NTUV),
@@ -1313,9 +1793,12 @@ C
 #include "aovec.h"
 #include "fck3aob.h"
 #include "fck3odb.h"
+#include "densfit.h"
+C
+#include "pbc.h"
 C
       INTEGER T,U,V,TUV
-      DIMENSION FMAT(NBASE,NBASE,NDMAT),FMATCP(KCKTA,KCKTB,NPRFAB),
+      DIMENSION FMAT(NDIMA,NDIMB,NDMAT),FMATCP(KCKTA,KCKTB,NPRFAB),
      &   FMATSP(KHKTA,KHKTB,NPRFAB),FTMP(KCKTA,KHKTB),
      &   ETIJ(NPRFAB,0:JMAXAB,0:JMAXA,0:JMAXB,3,*),
      &   PREFAB(NPRFAB),HRINT(NPRFAB,NTUVAB,NDMAT),IPRAB(2,NPRFAB),
@@ -1367,10 +1850,11 @@ C
 
              FAC = ETIJ(IPRFAB,T,LA,LB,1,1)*
      &         ETIJ(IPRFAB,U,MA,MB,2,1)*ETIJ(IPRFAB,V,NA,NB,3,1)
- 
+
              FMATCP(KCA,KCB,IPRFAB) = 
      &            FMATCP(KCA,KCB,IPRFAB) + FAC*PREFAB(IPRFAB)
      &                      * HRINT(IPRFAB,TUV,IDMAT)
+
             END DO
            END DO
 
@@ -1405,16 +1889,36 @@ C
        DO ICTFA = 1, NCTFA
         DO ICTFB = 1, NCTFB
 
-         IAOA = INDXBTCH(KNDXBTCH(ICOMPA,IAOBA) - 1 + ICTFA)
-         IAOB = INDXBTCH(KNDXBTCH(ICOMPB,IAOBB) - 1 + ICTFB)
-
+          IAOA = INDXBTCH(KNDXBTCH(ICOMPA,IAOBA) - 1 + ICTFA)
+          
+          IOFFSET = 0
+#if defined (MOD_DNF)
+          IF (DOFIT.AND.LHSFIT) THEN
+            IOFFSET = NBASE
+            IAOA = 1
+          END IF
+#endif /* MOD_DNF */
+          IAOB = INDXBTCH(KNDXBTCH(ICOMPB,IAOBB) - 1 + ICTFB) - IOFFSET
 C
 C Here it we should probably put summation over 
 C  FMATSP(ISPA,ISPB,IPRFAB) separately outside 
 C 
 
 C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN 
+#if defined (MOD_PBC)
+         if (dopbc .and. pbcactive) then
+          DO ISPA=1, KHKTA
+           DO ISPB=1, KHKTB
+             FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) = 
+     &            FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) 
+     &          + FMATSP(ISPA,ISPB,IPRFAB) 
+     &          * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
+           END DO
+          END DO
+         else IF ( ( IAOBA .EQ. IAOBB )) THEN 
+#else
          IF ( ( IAOBA .EQ. IAOBB )) THEN 
+#endif /* MOD_PBC */
           DO ISPA=1, KHKTA
            DO ISPB=1, KHKTB
              FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) = 
@@ -1430,14 +1934,19 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
      &            FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) 
      &          + FMATSP(ISPA,ISPB,IPRFAB) 
      &          * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
-              FMAT(IAOB+ISPB-1,IAOA+ISPA-1,IDMAT) = 
-     &            FMAT(IAOB+ISPB-1,IAOA+ISPA-1,IDMAT) 
-     &          + FMATSP(ISPA,ISPB,IPRFAB) 
-     &          * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
-           END DO
+#if defined (MOD_DNF)
+              IF (.NOT.(DOFIT.AND.LHSFIT)) THEN
+#endif /* MOD_DNF  */
+                FMAT(IAOB+ISPB-1,IAOA+ISPA-1,IDMAT) = 
+     &               FMAT(IAOB+ISPB-1,IAOA+ISPA-1,IDMAT) 
+     &               + FMATSP(ISPA,ISPB,IPRFAB) 
+     &               * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
+#if defined (MOD_DNF)
+              ENDIF
+#endif /* MOD_DNF  */
+            END DO
           END DO
-         END IF
-
+        END IF
 
         END DO
        END DO
@@ -1449,9 +1958,9 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
 
       SUBROUTINE SCREENFBTCH( NACTFTUVPRIM, IFBTCH, RFBTCH, 
      &                        THRSCRF, NFBTCH )
-#include"implicit.h"
-#include"priunit.h"
-      DIMENSION IFBTCH(2,NFBTCH), RFBTCH(5,NFBTCH)
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION IFBTCH(2,NFBTCH), RFBTCH(6,NFBTCH)
 
       IBTCH         = 1
       SCRF          = RFBTCH(5,IBTCH)
@@ -1470,14 +1979,16 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
 #include "implicit.h"
 #include "cbifck3.h"
 #include "fck3thr.h"
+#include "fck3odb.h"
 
+      CHCKNAI   = .FALSE.
+      OLDFCK3   = .FALSE.
       NOSCRPRIM = .FALSE.
       NOSKIPCL  = .FALSE.
       NOSKIPCS  = .FALSE.
       SCRFBTCH  = .FALSE.
-Cdirac      FIXTHR    = .FALSE.
-Cdirac ..setting this true since IFTHRS is not set
-      FIXTHR    = .TRUE.
+      OLDMOM    = .FALSE.
+      FIXTHR    = .FALSE.
       BRFREE    = .FALSE.
       FULL_J    = .FALSE.
 
@@ -1486,14 +1997,22 @@ Cdirac ..setting this true since IFTHRS is not set
       SKALLCL   = .TRUE.
       CONTRACTED= .TRUE.
 
+      NCSODB    = .FALSE.
+      NCSTUV    = .FALSE.
+
       IPRFCK3   = 0 
 
+      THRFCK3   = THRFCK3_DEFAULT
       THRNCL    = THRFCK3_DEFAULT 
       THRPOD    = THRFCK3_DEFAULT 
       THRCOD    = THRFCK3_DEFAULT 
       THRSPEXP  = THRFCK3_DEFAULT 
 
+#if defined (MOD_FMM)
       CALL SETBFCFMM( BRFREE ) 
+#endif
+
+      SYMDENS = .TRUE.
 
       RETURN
       END
@@ -1502,20 +2021,22 @@ Cdirac ..setting this true since IFTHRS is not set
 #include "implicit.h"
 #include "priunit.h"
 #include "cbifck3.h"
-      PARAMETER ( NTABLE = 12 )
+#include "fck3thr.h"
+      PARAMETER ( NTABLE = 17 )
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      DATA TABLE /'.FIXTHR','.PRINT ','.NOSPEX','.NOSCRP',
-     &            '.NOSKCL','.NOSKCS','.SCRFBT','.NOPACK',
-     &            '.NOSKAL','.FULL_J','.UNCONT','.BRFREE'/
-C
+      DATA TABLE /'.FIXTHR','.THRFCK','.PRINT ','.NOSPEX','.NOSCRP',
+     &            '.NOSKCL','.NOSKCS','.SCRFBT','.NOPACK','.NOSKAL',
+     &            '.FULL_J','.UNCONT','.BRFREE','.CHCKNA','.NCSODB',
+     &            '.NCSTUV','XXXXXXX'/
 C
 CTROND
-      WRITE(6,*) '..inside FCK3INP'      
+      WRITE(6,*) '...inside FCK3INP (J Engine)'
       IPRINT=IPRFCK3
       NEWDEF = (WORD .EQ. '*JENGIN')
       IF(NEWDEF) THEN
         WORD1 = WORD
+C
  100    CONTINUE
             READ (LUCMD, '(A7)') WORD
             PROMPT = WORD(1:1)
@@ -1525,7 +2046,8 @@ CTROND
             ELSE IF (PROMPT .EQ. '.') THEN
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17),
+     &                     I
                   END IF
  200          CONTINUE
               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1533,60 +2055,58 @@ CTROND
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in FCK3INP.')
  1    CONTINUE
-C&&& FIXTHR: No dynamical threshold for screening
         FIXTHR     = .TRUE.
       GO TO 100
  2    CONTINUE
-C &&& PRINT: Print level
-        READ (LUCMD, '(I5)') IPRFCK3
+        READ (LUCMD, * ) THRFCK3
       GO TO 100
  3    CONTINUE
-C &&& NOSPEX: Do not exploit common s/p-exponents
+        READ (LUCMD, '(I5)') IPRFCK3
+      GO TO 100
+ 4    CONTINUE
         SPEXP      = .FALSE.
       GO TO 100
- 4    CONTINUE 
-C &&& NOSCRP: No screening of primitives in the overlap distribution
+ 5    CONTINUE 
          NOSCRPRIM = .TRUE.
       GO TO 100
- 5    CONTINUE
-C &&& NOSKCL: Do not skip classes (ODB|FTUV) based on 
-C             classical/non-classical contributions (for FMM)
+ 6    CONTINUE
          NOSKIPCL  = .TRUE.
       GO TO 100
- 6    CONTINUE
-C &&& NOSKCS: Do not skip classes (ODB|FTUV) based on 
-C             Cauchy-Schwartz
+ 7    CONTINUE
          NOSKIPCS  = .TRUE.
       GO TO 100
- 7    CONTINUE
-C &&& SCRFBT: 
+ 8    CONTINUE
          SCRFBTCH  = .TRUE.
       GO TO 100
- 8    CONTINUE
-C &&& NOPACK: Do not pack Ftuv array
+ 9    CONTINUE
          PACKFTUV  = .FALSE.
       GO TO 100  
- 9    CONTINUE
-C &&& NOSKAL: Do not skip all classes (ODB|FTUV) based on 
-C             Cauchy-Schwartz 
+ 10   CONTINUE
          SKALLCL   = .FALSE.
       GO TO 100  
- 10   CONTINUE
-C &&& FULL_J: combine 1-electron and 2-electron multipoles
-C             (under construction)
+ 11   CONTINUE
          FULL_J    = .TRUE.
          FIXTHR    = .TRUE.
          SPEXP     = .FALSE.
       GO TO 100  
- 11   CONTINUE
-C &&& UNCONT: use internally decontracted basis sets
+ 12   CONTINUE
          CONTRACTED= .FALSE.
       GO TO 100  
- 12   CONTINUE
-C &&& BRFREE: Branch-free FMM
+ 13   CONTINUE
          BRFREE    = .TRUE.
          CONTRACTED= .FALSE.
       GO TO 100  
+ 14   CONTINUE
+         CHCKNAI = .TRUE.
+      GO TO 100  
+ 15   CONTINUE
+         NCSODB  = .TRUE.
+      GO TO 100  
+ 16   CONTINUE
+         NCSTUV  = .TRUE.
+      GO TO 100  
+ 17   CONTINUE
+      GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1600,7 +2120,7 @@ C &&& BRFREE: Branch-free FMM
 
       CALL HEADER('Settings for FCK3 calculation:',0)
 
-      IF (IPRINT .NE. IPRFCK3) THEN
+      IF (IPRINT .NE. IPRFDEF) THEN
           WRITE (LUPRI,'(A,I5)') ' Print level in FCK3:',IPRFCK3
       END IF
 
@@ -1618,6 +2138,7 @@ C &&& BRFREE: Branch-free FMM
       RETURN
       END
 
+#if defined (MOD_FMM)
 C
 C  Sets the BFCFMM logical variable from cbieri common block 
 C  for the use in ERIGAM subroutine 
@@ -1631,15 +2152,16 @@ C
   
       RETURN
       END  
+#endif /* MOD_FMM */
 
       SUBROUTINE CHECKR2MIN( R2MIN, RODP, ICNTC,ICNTD, RCD )
-#include"implicit.h"
-#include"priunit.h"
-#include"maxaqn.h"
-#include"maxorb.h"
-#include"mxcent.h"
-#include"aobtch.h"
-#include"nuclei.h"
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aobtch.h"
+#include "nuclei.h"
 
 C
 C     This routine gives the minimal (square of) distance 
@@ -1688,16 +2210,111 @@ C
 
       RETURN
       END 
+c     
+c     MXETIJ finds largest factor of x*y*z components of ETIJ matrix
+c     and returns them in ETIJMX. We collapse
+c     first four dimenstions of ETIJ into one for performance.
+      SUBROUTINE MXETIJ(ETIJ,NPR12,JMAX1,JMAX2,ETIJMX)
+#include "implicit.h"
+      DIMENSION ETIJ(NPR12*(JMAX1+JMAX2+1)*(JMAX1+1)*
+     &               (JMAX2+1),3)
+c
+      ETIJMX = 0D0
+      NLEN = NPR12*(JMAX1+JMAX2+1)*(JMAX1+1)*(JMAX2+1)
+      DO J= 1, NLEN
+         ETIJMX = MAX(ETIJMX,
+     &        ABS(ETIJ(J,1)*ETIJ(J,2)*ETIJ(J,3)))
+      END DO
+      END
+c
+c     R1UPPERB is a routine for finding an upper bound for R-integrals,
+c     for given orbital exponent and 
+      FUNCTION R1UPPERB(N,ALPHA)
+#include "implicit.h"
+#include "sdpre.h"
+      UL  = 0D0
+      ALPHA2  = ALPHA
+      ALPHA2I = 1D0
+      FAC = -1D0
+      DO I = 0, N
+         FAC     = FAC*SDPRE(2*I-1)
+         UL      = MAX(UL,ABS(ALPHA2I*FAC/SDPRE(2*I+1)))
+         ALPHA2I = ALPHA2I*ALPHA2
+      END DO
+      R1UPPERB = ul
+      END
+c     /* deck dmatdim */
+      SUBROUTINE DMATDIM
+#include "implicit.h"
+#if defined (MOD_DNF)
+#include "densfit.h"
+#endif
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3aob.h"
+
+#if defined (MOD_DNF)
+      IF (DOFIT.AND.(RHSFIT.OR.LHSFIT)) THEN
+        IF (RHSFIT.AND.LHSFIT) THEN
+          NDIMA = 1
+          NDIMB = NBASEAUX
+          NDIMC = 1
+          NDIMD = NBASEAUX
+        ELSE IF (RHSFIT) THEN
+          NDIMA = NBASE
+          NDIMB = NBASE
+          NDIMC = 1
+          NDIMD = NBASEAUX
+        ELSE IF (LHSFIT) THEN
+          NDIMA = 1
+          NDIMB = NBASEAUX
+          NDIMC = NBASE
+          NDIMD = NBASE
+        ENDIF
+
+      ELSE
+#endif /*MOD_DNF */
+        NDIMA = NBASE
+        NDIMB = NBASE
+        NDIMC = NBASE
+        NDIMD = NBASE
+#if defined (MOD_DNF)
+      END IF
+#endif /*MOD_DNF */
+
+      RETURN
+      END
+
+c     Picks the largest exponent of the ab-distribution
+      SUBROUTINE GETMAXEXPAB(EXPMAB,EXPBT1,EXPBT2,NPRF1,NPRF2)
+#include "implicit.h"
+      DIMENSION EXPBT1(NPRF1),EXPBT2(NPRF2)
+      EXPMAB=0.0D0
+      DO I=1,NPRF1
+        EXP1   = EXPBT1(I)
+        DO J=1,NPRF2
+          EXP2   = EXPBT2(J)
+          EXP12  = EXP1 + EXP2 
+          EXPMAB = MAX(EXPMAB,EXP12)
+        ENDDO
+      END DO
+      RETURN
+      END
 
       SUBROUTINE CHECKRMIN( RMIN, RODP, ICNTC,ICNTD, RCD )
-#include"implicit.h"
-#include"priunit.h"
-#include"maxaqn.h"
-#include"maxorb.h"
-#include"mxcent.h"
-#include"aobtch.h"
-#include"nuclei.h"
-
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aobtch.h"
+#include "nuclei.h"
+#include "densfit.h"
+C
+#if defined (MOD_PBC)
+#include "pbc.h"
+#endif /* MOD_PBC */
+C
       DIMENSION RODP(4)
 
 C      AX = CORXBT(IA)
@@ -1720,16 +2337,37 @@ C      BZ = CORZBT(IB)
       DY = CORD(2,ICNTD)
       DZ = CORD(3,ICNTD)
 
+#if defined (MOD_PBC)
+      if (dopbc .and. pbcactive) then
+C        Here PX,PY,PZ refer to the ab overlap distributions, while
+C        CX,CY,CZ,DX,DY,DZ refer to the c and d orbitals.
+C
+C        The coordinates RODP already have the appropriate translations
+C        due to previous calls to GETR12, so PX,PY,PZ are correct.
+C        But CX,CY,CZ,DX,DY,DZ are taken from the global array CORD
+C        and need to have translations added to them.
+         CX = CX + nf_vec_std(1)
+         CY = CY + nf_vec_std(2)
+         CZ = CZ + nf_vec_std(3)
+         DX = DX + nf_vec_std(1) + nf2_vec_std(1)
+         DY = DY + nf_vec_std(2) + nf2_vec_std(2)
+         DZ = DZ + nf_vec_std(3) + nf2_vec_std(3)
+      end if
+#endif /* MOD_PBC */
+
       RPC = SQRT((PX-CX)**2 + (PY-CY)**2 + (PZ-CZ)**2)
       RPD = SQRT((PX-DX)**2 + (PY-DY)**2 + (PZ-DZ)**2)
 
       R = RPC + RPD - RCD
+      IF (RHSFIT) THEN
+        R = RPD
+      ENDIF
      
       IF ( R .GT. 0.0D0 ) THEN
-         RMIN = 0.5D0*R
+         IF (RHSFIT) RMIN = R
+         ELSE RMIN = 0.5D0*R
       ELSE
          RMIN = 0.0D0
       END IF
       RETURN
       END 
-

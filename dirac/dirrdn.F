@@ -219,7 +219,7 @@ C
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.TWOCOM','.2C_REL','.XXXXXX',
      &             '.ACMOUT','.XXXXXX','.XXXXXX','.FAMILY',
-     &             '.DENSFI','.XXXXXX','.XXXXXX','.XXXXXX',
+     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP
@@ -366,8 +366,6 @@ C&&&& FAMILY: Family basis (Not yet implemented)
             FAMILY = .TRUE.
             GO TO 100
   117    CONTINUE
-C&&&& DENSFIT: Density fitting (Not yet implemented)
-            DENSFIT = .TRUE.
             GO TO 100
   118    CONTINUE
             GO TO 100

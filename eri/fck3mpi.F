@@ -1,0 +1,151 @@
+      SUBROUTINE MPI3INI(DMAT, NDMT, GABAB, GABAL, DGABAL, WORK, LWORK)
+#include "implicit.h"
+#if defined (VAR_MPI)
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
+#include "cbihr2.h"
+#include "cbieri.h"
+#include "cbifck3.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "fck3thr.h"
+#include "densfit.h"
+#include "pbc.h"
+#include "infpar.h"
+#include "maxmom.h"
+#include "xyzpow.h"
+#include "maxaqn.h"
+#include "gamcom.h"
+#include "nuclei.h"
+#include "inforb.h"
+      DIMENSION DMAT(*), WORK(*), GABAB(*), GABAL(*), DGABAL(*)
+      IPRINT = 0
+      IPRTYP = 8
+      IF (MYNUM.EQ.0) THEN
+        CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+        CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+        CALL DF_DIMS()
+        CALL FCK3_DIMS(NDMT)
+        IF (DOFMM) CALL QUIT('Parallel code not yet implemented for mm')
+        IF (DOPBC)
+     &    CALL QUIT('Parallel code not yet implemented for pbc')
+c     ELSE
+c       CALL FCK3INI
+      ENDIF
+
+C     ERI initialization
+      CALL MPIXBCAST(ISTEP,MXAQNM,'INTEGER',MASTER)
+      CALL MPIXBCAST(MVAL,MXAQNM,'INTEGER',MASTER)
+      CALL MPIXBCAST(NVAL,MXAQNM,'INTEGER',MASTER)
+c     CALL MPIXBCAST(MAXJ,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(TABFJW,121*(MAXJ+7),'DOUBLE',MASTER)
+      CALL MPIXBCAST(WVAL,MAXJ+1,'DOUBLE',MASTER)
+
+C     FMM initializations
+      CALL MPIXBCAST(DOFMM,1,'LOGICA',MASTER)
+
+C     PBC initializations
+      CALL MPIXBCAST(DOPBC,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(PBCACTIVE,1,'LOGICA',MASTER)
+
+C     DF initializations
+      CALL MPIXBCAST(OLD_DF,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(NOSCRE,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(LHSFIT,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(RHSFIT,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(NBASEAUX,1,'INTEGER',MASTER)
+
+C     FCK3 initializations
+      CALL MPIXBCAST(DOFCK3,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(FIXTHR,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(CHCKNAI,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(SPEXP,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(NOSCRPRIM,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(NOSKIPCL,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(SCRFBTCH,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(NCLFCK3,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(PACKFTUV,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(SKALLCL,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(OLDMOM,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(FULL_J,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(CONTRACTED,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(BRFREE,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(NCSODB,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(NCSTUV,1,'LOGICA',MASTER)
+c     CALL MPIXBCAST(,1,'LOGICA',MASTER)
+c     CALL MPIXBCAST(,1,'LOGICA',MASTER)
+      CALL MPIXBCAST(IPRFCK3,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IFTHRS,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(THRCLS,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(THRSPEXP,1,'DOUBLE',MASTER)
+      
+      
+C     General initializations
+      CALL MPIXBCAST(DMAT,N2BASX*NDMT,'DOUBLE',MASTER)
+      IF (DOFIT) THEN
+        CALL MPIXBCAST(GABAB,N2BASX*NDMT,'DOUBLE',MASTER)
+        CALL MPIXBCAST(GABAL,NBASISAUX*NDMT,'DOUBLE',MASTER)
+        IF (RHSFIT)
+     &    CALL MPIXBCAST(DGABAL,NBASISAUX*NDMT,'DOUBLE',MASTER)
+      ENDIF
+
+C     Readin initializations
+C     /NUCLEI/
+      CALL MPIXSCOM(CHARGE,NPAUX,4)
+C     /NUCLEC/
+      CALL MPIXSCOM(NAMEX,NAMN(MXCENT),4)
+C     /MULBAS/
+      CALL MPIXBCAST(MULBSI,MXCENT,'INTEGER',MASTER)
+#endif      
+
+      RETURN
+      END
+
+#if defined (VAR_MPI)
+
+      SUBROUTINE FCK3DRV_SLAVE(WORK,MWORK,IPRINT)
+#include "implicit.h"
+#include "inforb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "densfit.h"
+      DIMENSION WORK(MWORK)
+      CALL DF_DIMS()
+      IF (.NOT. DOFIT) NBASISAUX=0
+      CALL FCK3_DIMS(NDMT)
+      KFMAT   = 2
+      KDMAT   = KFMAT   + N2BASX*NDMT
+      KGABAB  = KDMAT   + N2BASX*NDMT
+      KGABAL  = KGABAB  + N2BASX*NDMT
+      KDGABAL = KGABAL  + NBASISAUX*NDMT
+      KLAST   = KDGABAL + NBASISAUX*NDMT
+      IF (KLAST .GT. MWORK) CALL STOPIT('DF_SLAVE','NODSTR',KLAST,MWORK)
+      LFREE = MWORK - (KLAST - 2)
+      KFREE = KLAST
+      CALL DZERO(WORK(KFMAT),N2BASX*NDMT)
+      CALL FCK3DRV (WORK(KFMAT),WORK(KDMAT),NDMT,WORK(KGABAB),
+     &              WORK(KGABAL),WORK(KDGABAL),WORK(KFREE),LFREE)
+
+      RETURN
+      END
+
+
+
+      SUBROUTINE DF_DIMS()
+#include "implicit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "densfit.h"
+      INCLUDE "mpif.h"
+      CALL MPI_BCAST(NBASISAUX,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(DOFIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      RETURN
+      END                  
+      
+#endif
