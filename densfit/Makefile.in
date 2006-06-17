@@ -7,9 +7,8 @@
 
 include ../Makefile.config
 
-F77_OBJS = df_dirac.o
-
-F90_OBJS = 
+F77_OBJS = df_dirac.o df_fck3.o dposv.o 
+F90_OBJS = df_dofit.o df_utils.o
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
@@ -20,9 +19,6 @@ ftnchek:pre
 
 all:	$(F77_OBJS) $(F90_OBJS)
 
-clean : 
-	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
-
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
 
@@ -31,4 +27,8 @@ dirmpi.x:
 
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
+
+clean : 
+	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
+
 
