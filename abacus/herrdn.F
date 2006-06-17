@@ -703,17 +703,19 @@ C
       KISGEN = 1
       KLAST  = KISGEN + KBLOCK*KSETS
       LWRK   = LWORK  -  KLAST + 1
-#if !defined (MOD_DNF)
+C#if !defined (MOD_DNF)
+C aspg, 2006-060-17: for the time being we go for density fitting
+C       using basinp...
       CALL BASINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NONT,
      &            IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
      &            KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG,ZMAT)
-#else
-      CALL CENINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NONT,
-     &            IQM,NBLCK,JCO,BASREF,
-     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
-     &            KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG)
-#endif
+C#else
+C      CALL CENINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NONT,
+C     &            IQM,NBLCK,JCO,BASREF,
+C     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
+C     &            KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG)
+C#endif
 C
 C     *************************************************
 C     ***** Process ZMAT coordinates if requested *****
@@ -884,7 +886,7 @@ C***********************************************************************
      &          ALPHA(KPRIM,KBLOCK,KSETS),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS),ISGEN(KBLOCK)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,BSKEYWORD*14
+      CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,AUXFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
 #include "molinp.h"
@@ -895,6 +897,7 @@ C***********************************************************************
 #include "huckel.h"
 #include "aosotr.h"
 #include "gencon.h"
+#include "r12int.h"
 #include "dcbgen.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -919,6 +922,10 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 #include "ibtfun.h"
+C
+C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
+      MBSIP = 0
+C
       CNTBAS = .FALSE.
       NUCIND = 0
       NHTYP  = 0
@@ -1466,6 +1473,7 @@ CMI        ... end of small component case ... TWOCOMP
 
                IBLOCK(1)  = IBLOCK(1) + NBLCK(I,1)
                IBLOCK(2)  = IBLOCK(2) + NBLCK(I,2)
+C              IBLOCK(3)  = IBLOCK(3) + NBLCK(I,3)
              ENDIF
 
            ELSE
@@ -1579,6 +1587,11 @@ C
            NMLINE = NMLINE - 1   
            IBSFLAG = 2     
 C
+        ELSEIF (BSET.EQ.'FTLRG'.OR.BSET.EQ.'FTSML') THEN
+           WRITE(*,*) 'Only FTSET is supported at the moment.' 
+           CALL QUIT('Unsupported option in MOLECULE input')
+
+C
         ELSE 
 C
 C          Check what kind of basis set we have
@@ -1660,13 +1673,14 @@ C
               KAOVEC = KBLOCK + 1 - IBLOCK(ISET)
               CALL BASLIB(IQM(I,ISET),JCO(1,I,ISET),
      &             NUC(IBLOCK(ISET),ISET),
-     &             NRC(IBLOCK(1),ISET),SEG(IBLOCK(ISET),ISET),
+     &             NRC(IBLOCK(ISET),ISET),SEG(IBLOCK(ISET),ISET),
      &             ALPHA(1,IBLOCK(ISET),ISET),
      &             CPRIM(1,1,IBLOCK(ISET),ISET),
      &             CPRIMU(1,1,IBLOCK(ISET),ISET),
      &             NBLOCK,ISGEN(IBLOCK(ISET)),KAOVEC,KPRIM,Q,1,DSM,
      &             BASREF(1,I,ISET))
               NBLCK(I,ISET) = NBLOCK
+           write (*,*) 'testing reading of fit sets...0'
 C
            ELSE IF ( IBSFLAG .EQ. 4 ) THEN
 C
@@ -1689,8 +1703,10 @@ C
 C
 C          Print out fit set
 C
+           write (*,*) 'testing reading of fit sets...1'
            NOFITFS  = NOFITFS.AND.IQM(I,ISET).EQ.0
            IF (IQM(I,ISET).GT.0) THEN
+           write (*,*) 'testing reading of fit sets...2'
               IF(INPTST) THEN
                  WRITE(LUPRI,'(3X,A)') 'Density fit set:'
                  WRITE(LUPRI,'(6X,A,I5,A,12I5)')
@@ -1906,6 +1922,7 @@ C
 #include "aosotr.h"
 #include "gencon.h"
 #include "ibtfun.h"
+#include "densfit.h"
 C
 C*****************************************************************************
 C       MULK    - bitstring of basic operations that stabilise a center
@@ -2003,7 +2020,9 @@ C
 C*****************************************************************************
 C       Process fit set data for first (LL or LL+SS) density fitset
 C*****************************************************************************
+#if defined (NEW_DIRAC_DENSFIT_PROCESSING)
       IF (ATOMDF) THEN
+C skipped because dirac does not uses atomdf
       ELSE
         KMAXTOT = KMAX  
       ENDIF   
@@ -2067,6 +2086,62 @@ C aspg debug
       write(*,*) 'DEBUG dfit: NPSHEL_FIT =',NPSHEL_FIT
       write(*,*) 'DEBUG dfit: NPSSH_FIT  =',NPSSH_FIT
 #endif
+#else /* NEW_DIRAC_DENSFIT_PROCESSING */
+C aspg 2006-06-16
+C densfit basis processed as in dalton, so only up to LCOMP=3
+C
+      IF (DOFIT) THEN
+         write (*,*) 'processing global fit function basis'
+         LCOMP = 3
+         CALL ORBPRO(NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
+     &               NUC(1,3),NRC(1,3),SEG(1,3),ALPHA(1,1,3),
+     &               CPRIM(1,1,1,3),CPRIMU(1,1,1,3),
+     &               KATOM,KANG,KBLOCK,KPRIM,ISHELL,
+     &               IPRIM,IPRIMD,IORB,IORBD,LCOMP)
+         IF (ISHELL .GT. MXSHEL) GOTO 5070
+         IF (IORBD  .GT. MXCORB) GOTO 5080
+         IF (IPRIMD .GT. MXPRIM) GOTO 5090
+         NAUXSH    = ISHELL - NSMLSH - NLRGSH - 1
+         NAUX      = IORBD  - NLARGE - NSMALL
+         NPAUXSH   = IPRIM - NPSHEL - NPLSH - 1
+         NPAUX     = IPRIMD - NPLRG - NPSML
+         KMAXAUX   = NAUXSH
+         NBASISAUX = NAUX
+         NBASEAUX  = NBASISAUX
+         NPBASAUX  = NPAUX
+         KMAXTOT   = ISHELL
+C
+#if defined (DIRAC_DENSFIT_DEBUG)
+         write (*,*) ' > nbasisaux =',nbasisaux
+         write (*,*) ' > nauxsh    =',nauxsh
+         write (*,*) ' > naux      =',naux
+         write (*,*) ' > norbaux   =',norbaux
+         write (*,*) ' > ishell    =',ishell
+         write (*,*) ' > nsmlsh    =',nsmlsh
+         write (*,*) ' > nlrgsh    =',nlrgsh
+         write (*,*) ' > nlarge    =',nlarge
+         write (*,*) ' > nsmall    =',nsmall
+         write (*,*) ' > norbaux   =',norbaux
+         write (*,*) ' > iorb      =',iorb
+C        write (*,*) ' > kmaxtot   =',kmaxtot
+#endif
+      ELSE
+         NAUXSH    = 0
+         NAUX      = 0
+         NORBAUX   = 0
+         NPAUX     = 0
+         NPAUXSH   = 0
+         KMAXAUX   = 0
+         NBASISAUX = 0
+         NBASEAUX  = NBASISAUX
+         NPBASAUX  = 0
+         KMAXTOT   = KMAX
+#if defined (DIRAC_DENSFIT_DEBUG)
+         write (*,*) ' < nbasisaux =',nbasisaux
+#endif
+      END IF
+C
+#endif /* NEW_DIRAC_DENSFIT_PROCESSING */
 C aspg debug
 C
 C     ***************************************
@@ -2113,6 +2188,27 @@ C
         CALL QUIT('BASPRO: Too many primitive shells')
  5030 CONTINUE
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
+ 5070 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6/A,I6/A,I6)')
+     *  ' >>> BASPRO error, # of shells when adding Density-fitting'//
+     &     ' orbitals',ISHELL,
+     *  '                   current maximum number                 ',
+     &     MXSHEL, ' IORBD=', IORBD, 'IPRIMD=', IPRIMD
+        CALL QUIT('BASPRO: Too many shells')
+ 5080 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6/A,I6)')
+     *  ' >>> BASPRO error, # of contracted bf when adding Density-'//
+     &     'fitting orbitals',IORBD,
+     *  '                   current maximum number                 ',
+     &     MXCORB, 'IPRIMD=', IPRIMD
+        CALL QUIT('BASPRO: Too many contracted basis functions')
+ 5090 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6)')
+     *  ' >>> BASPRO error, # of primitive bf when adding Density-'//
+     &     'fitting orbitals',IPRIMD,
+     *  '                   current maximum number                 ',
+     &     MXPRIM
+        CALL QUIT('BASPRO: Too many primitive basis functions')
       END
 C  /* Deck basout */
       SUBROUTINE BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
@@ -2127,6 +2223,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
+#include "mx2orb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "codata.h"
@@ -2152,6 +2249,7 @@ C*****************************************************************************
 #include "symmet.h"
 #include "aosotr.h"
 #include "ibtfun.h"
+#include "densfit.h"
 C
       IF(DIRAC) THEN
          SET_TYPE(1) = 'large component basis functions'
@@ -2213,12 +2311,14 @@ C
      &                   'L  - ',TSTRING(1)
                   WRITE(LUPRI,'(23X,2I8,6X,2A)')
      &                  NPRIM(2),NBAS(2),'S  - ',TSTRING(2)
-                  IF (NPRIM(3).GT.0)
-     &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIM(3),NBAS(3),'FL - ',TSTRING(3)
-                  IF (NPRIM(4).GT.0)
-     &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIM(4),NBAS(4),'FS - ',TSTRING(4)
+                  IF (DOFIT) THEN
+                     IF (NPRIM(3).GT.0)
+     &                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &                     NPRIM(3),NBAS(3),'FL - ',TSTRING(3)
+                     IF (NPRIM(4).GT.0)
+     &                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &                     NPRIM(4),NBAS(4),'FS - ',TSTRING(4)
+                  ENDIF
                ELSE
                   WRITE (LUPRI,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
      &                 NUCDEG(ICENT),NCHARG,NPRIM(1),NBAS(1),TSTRING(1)
@@ -2237,6 +2337,8 @@ C
      &            NPLRG,NLARGE,'   L  - large components'
             WRITE(LUPRI,'(23X,2I8,3X,A)')
      &            NPSML,NSMALL,'   S  - small components'
+            IF (DOFIT) THEN
+#if defined (NEW_DIRAC_DENSFIT_PROCESSING)
 C
 C aspg, 2006-06-13
 C adding printout for the fit basis set cases, based upon the
@@ -2251,16 +2353,33 @@ C
                WRITE(LUPRI,'(23X,2I8,3X,A)')
      &            NPSML_FIT,NSMALL_FIT, '   FS - small components fit'
             ENDIF
+#else
+            IF (KSETS.EQ.3) THEN
+               WRITE(LUPRI,'(23X,2I8,3X,A)')
+     &            NPBASAUX,NBASISAUX,'   FL - global components fit'
+            ELSEIF (KSETS.EQ.4) THEN
+               WRITE(LUPRI,'(23X,2I8,3X,A)')
+     &            NPBASAUX,NBASISAUX,'   FL - large components fit'
+               WRITE(LUPRI,'(23X,2I8,3X,A)')
+     &            NPSML_FIT,NSMALL_FIT, '   FS - small components fit'
+            ENDIF
+#endif /* NEW_DIRAC_DENSFIT_PROCESSING */
+            ENDIF
 C
          ENDIF
          CALL PRSYMB(LUPRI,'-',70,2)
 C     
+#if defined (NEW_DIRAC_DENSFIT_PROCESSING) 
 C aspg, 2006-06-13
 C adding printout for the fit basis set cases, based upon the
 C value of KSETS  
 C
          NTPBAS  = NPBAS  + NPBAS_FIT 
          NTBASIS = NBASIS + NBASIS_FIT
+#else
+         NTPBAS  = NPBAS  + NPBASAUX 
+         NTBASIS = NBASIS + NBASISAUX
+#endif
 C        WRITE (LUPRI,'(2X,A,I7,3I8,6X,/)')
 C    &            'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
 C        ELSE
@@ -2313,13 +2432,13 @@ C*****************************************************************************
             CALL ORBOUT(1,NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &                  NUC(1,1),NRC(1,1),SEG(1,1),
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
-     &                  CPRIMU,NRMPRI)
+     &                  ALPHA,CPRIMU,NRMPRI)
             IF (IPREAD .GT. 2) THEN
                NRMPRI = .TRUE.
                CALL ORBOUT(1,NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &                     NUC(1,1),NRC(1,1),SEG(1,1),
      &                     WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
-     &                     CPRIMU,NRMPRI)
+     &                     ALPHA(1,1,1),CPRIMU,NRMPRI)
             END IF
          END IF
 C*****************************************************************************
@@ -2331,35 +2450,40 @@ C*****************************************************************************
             CALL ORBOUT(2,NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),
      &                  NUC(1,2),NRC(1,2),SEG(1,2),
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
-     &                  CPRIMU(1,1,1,2),NRMPRI)
+     &                  ALPHA(1,1,2),CPRIMU(1,1,1,2),NRMPRI)
             IF (IPREAD .GT. 2) THEN
                NRMPRI = .TRUE.
                CALL ORBOUT(2,NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),
      &                     NUC(1,2),NRC(1,2),SEG(1,2),
      &                     WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
-     &                     CPRIMU(1,1,1,2),NRMPRI)
+     &                     ALPHA(1,1,2),CPRIMU(1,1,1,2),NRMPRI)
             END IF
          END IF
-      ENDIF
 C 
 C aspg, 2006-06-13
 C adding printout for the fit functions. when things are stable this
 C and the calls to orbout above should be put in a separate function.
 C
+#if defined (NEW_DIRAC_DENSFIT_PROCESSING)
          IF (NLARGE_FIT.GT.0) THEN
+#else
+         write (*,*) 'debug: nbasiaux =',nbasisaux
+         IF (NBASISAUX.GT.0) THEN
+#endif
             CALL HEADER('Fit Functions, Global/Large Component',-1)
             NRMPRI = .FALSE.
             CALL ORBOUT(3,NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
      &               NUC(1,3),NRC(1,3),SEG(1,3),
      &               WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
-     &               CPRIMU(1,1,1,3),NRMPRI)
+     &               ALPHA(1,1,3),CPRIMU(1,1,1,3),NRMPRI)
             IF (IPREAD .GT. 2) THEN
                NRMPRI = .TRUE.
-            CALL ORBOUT(3,NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
+               CALL ORBOUT(3,NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
      &                  NUC(1,3),NRC(1,3),SEG(1,3),
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
-     &                  CPRIMU(1,1,1,3),NRMPRI)
+     &                  ALPHA(1,1,3),CPRIMU(1,1,1,3),NRMPRI)
             END IF
+#if defined (NEW_DIRAC_DENSFIT_PROCESSING)
             IF (NBASIS_FIT.GT.NLARGE_FIT) THEN 
                CALL HEADER('Fit Functions, Small Component',-1)
                NRMPRI = .FALSE.
@@ -2375,6 +2499,8 @@ C
      &                     CPRIMU(1,1,1,4),NRMPRI)
                END IF
             ENDIF
+#endif
+         ENDIF
 C
       END IF
 C
@@ -3251,6 +3377,13 @@ C*****************************************************************************
                      PRICRY(IPRIM) = CORD(2,ICENT)
                      PRICRZ(IPRIM) = CORD(3,ICENT)
                      IPRIMD = IPRIMD + NCOMP*NDEG
+C aspg, 2006-06-17
+C temporary debug for fit functions
+      write (*,*) 'DEBUG: l, kbch, alpha, iprim, priexp,ishell,lcomp,j',
+C     write (LUPRI,('I4,I4,F10.8,I4,F10.8,I4')),
+     $       L,KBCH,ALPHA(L,KBCH),iprim,priexp(iprim),ishell,lcomp,j
+C     write (*,*) '       lclass=',lclass
+C
    60             CONTINUE
    40          CONTINUE
    30       CONTINUE
@@ -3445,13 +3578,23 @@ C
       ELSEIF(ICLS.EQ.2) THEN
         IPRIMD = NPLRG
         IPRIM  = NPLSH
+#if defined (NEW_DIRAC_DENSFIT_PROCESSING)
       ELSEIF(ICLS.EQ.3) THEN
         IPRIMD = 0
         IPRIM  = 0
       ELSEIF(ICLS.EQ.4) THEN
         IPRIMD = NPLRG_FIT
         IPRIM  = NPLSH_FIT
+#else
+      ELSEIF(ICLS.EQ.3) THEN
+        IPRIMD = NPLRG + NPSML
+        IPRIM  = NPLSH + NPSSH
+      ELSEIF(ICLS.EQ.4) THEN
+        write(*,*) 'independent S- fit set inexistent, not printed'
+        GOTO 4242
+#endif
       ENDIF
+      write (*,*) 'in orbout: iprimd=',iprimd,' iprim=',iprim
       ICENT  = 0
       IBLOCK = 0
       DO 100 I = 1, NONTYP
@@ -3492,41 +3635,42 @@ C
                      ITYP = ITYP + 1
                      IPRIMD = IPRIMD + 1
                      IF (IPREAD .GT. 0) THEN
-                       IF (ICLS.LE.2) THEN
+                       IF (ICLS.LE.3) THEN
+                       write(*,*) 'mm=',mm,' kbch=',kbch,' nnrc=',nnrc
                        WRITE (LUPRI,IFMTA) NAMN(ICENT),DEG,
      &                                     GTOTYP(ITYP),
      &                                     IPRIMD,PRIEXP(IPSTRT),
      &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
-                       ELSE
-                       WRITE (LUPRI,IFMTA) NAMN(ICENT),DEG,
-     &                                     GTOTYP(ITYP),
-     &                                     IPRIMD,PRIEXP_FIT(IPSTRT),
-     &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
+C                      ELSE
+C                      WRITE (LUPRI,IFMTA) NAMN(ICENT),DEG,
+C    &                                     GTOTYP(ITYP),
+C    &                                     IPRIMD,PRIEXP_FIT(IPSTRT),
+C    &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
                       ENDIF
                      ENDIF
                      IF (NNUC .GT. 1) THEN
                         IPRIMD = IPRIMD + 1
                         IF (IPREAD .GT. 0) THEN
-                           IF (ICLS.LE.2) THEN
+                           IF (ICLS.LE.3) THEN
                            WRITE (LUPRI,IFMTC) CHRSEG,
      &                                     IPRIMD,PRIEXP(IPSTRT+1),
      &                                     (CPRIMU(2,MM,KBCH),MM=1,NNRC)
-                           ELSE
-                           WRITE (LUPRI,IFMTC) CHRSEG,
-     &                                     IPRIMD,PRIEXP_FIT(IPSTRT+1),
-     &                                     (CPRIMU(2,MM,KBCH),MM=1,NNRC)
+C                          ELSE
+C                          WRITE (LUPRI,IFMTC) CHRSEG,
+C    &                                     IPRIMD,PRIEXP_FIT(IPSTRT+1),
+C    &                                     (CPRIMU(2,MM,KBCH),MM=1,NNRC)
                            ENDIF
                         END IF
                      END IF
                      DO 410 M = 3, NNUC
                         IPRIMD = IPRIMD + 1
                         IF (IPREAD .GT. 0) THEN
-                      IF (ICLS.LE.2) THEN
+                      IF (ICLS.LE.3) THEN
                       WRITE (LUPRI,IFMTD) IPRIMD,PRIEXP(IPSTRT-1+M),
      &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
-                      ELSE
-                      WRITE (LUPRI,IFMTD) IPRIMD,PRIEXP_FIT(IPSTRT-1+M),
-     &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
+C                     ELSE
+C                     WRITE (LUPRI,IFMTD) IPRIMD,PRIEXP_FIT(IPSTRT-1+M),
+C    &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
                       ENDIF
                        END IF
   410              CONTINUE
@@ -3621,6 +3765,7 @@ C
  1040 FORMAT(I4,2X,A4,A2,2X,A4,24I4)
  1050 FORMAT(I4,2X,A4,4X,A4,12I6)
 C
+ 4242 CONTINUE
       RETURN
       END
 C  /* Deck nucpro */

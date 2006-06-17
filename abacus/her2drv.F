@@ -2040,8 +2040,8 @@ C     not implemented. /980116-hjaaj/jth
                      END DO
                   IF (DOSCRN) THEN
                      IF (MAXDER .GE. 1) THEN
-                        CALL SCRINT(GABRAO,ISYBLA,ISYBLB,ISYBLC,ISYBLD,
-     &                              IT,ULXINT,ULYINT,ULZINT,IPRINT)
+                        CALL SCRINT_GEOM(GABRAO,ISYBLA,ISYBLB,ISYBLC,
+     &                         ISYBLD,IT,ULXINT,ULYINT,ULZINT,IPRINT)
                      END IF
 C
 c                    IF (MAXDER .EQ. 2) THEN
@@ -4440,7 +4440,7 @@ C*****************************************************************************
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck scrint */
-      SUBROUTINE SCRINT(GABRAO,ISYBLA,ISYBLB,ISYBLC,ISYBLD,
+      SUBROUTINE SCRINT_GEOM(GABRAO,ISYBLA,ISYBLB,ISYBLC,ISYBLD,
      &                  IT,ULXINT,ULYINT,ULZINT,IPRINT)
 C*****************************************************************************
 C
@@ -4814,13 +4814,13 @@ C
      &                GABRAO(ISYBLA,ISYBLB,0)*
      &                GABRAO(ISYBLC,ISYBLD,3))
       ELSE
-         WRITE(LUPRI,'(A,I4)') 'SCRINT ERROR: Unknown IT ',IT
+         WRITE(LUPRI,'(A,I4)') 'SCRINT_GEOM ERROR: Unknown IT ',IT
          WRITE(LUPRI,'(A)') 'Please report to Joern Thyssen'
-         CALL QUIT('SCRINT ERROR: Unknown IT')
+         CALL QUIT('SCRINT_GEOM ERROR: Unknown IT')
       END IF
       IF (IPRINT .LE. 30) RETURN
       WRITE(LUPRI,'(A,2X,I4,2X,3F17.13)') 
-     &   'SCRINT IT UL?INT',IT,ULXINT,ULYINT,ULZINT
+     &   'SCRINT_GEOM IT UL?INT',IT,ULXINT,ULYINT,ULZINT
       RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
