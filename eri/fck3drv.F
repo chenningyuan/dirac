@@ -1984,7 +1984,6 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
 #include "fck3odb.h"
 
       CHCKNAI   = .FALSE.
-      OLDFCK3   = .FALSE.
       NOSCRPRIM = .FALSE.
       NOSKIPCL  = .FALSE.
       NOSKIPCS  = .FALSE.

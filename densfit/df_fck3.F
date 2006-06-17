@@ -80,7 +80,8 @@ C
 
       SYMDENS = (IFCTYP/10).EQ.1
 
-      IF (.NOT. LIN_DF) THEN
+CAREFUL      IF (.NOT. LIN_DF) THEN
+      IF (.FALSE.) THEN
 cSimen
         DO IDMT = 1, NDMT
 cSimen
@@ -499,15 +500,10 @@ c     CALL TIMER('START ',TIMSTR,TIMEND)
         ISTR = N2BASX*(IDMT - 1) + 1
         ISTRAUX = NBASISAUX*(IDMT - 1) + 1
         IF ( MOD(IFCTYP(IDMT),10) .EQ. 3 ) THEN
-          IF ( OLDFCK3 ) THEN
-            WRITE(LUPRI,*) 'OLDFCK3 not implemented for densfit'
-            CALL QUIT('Wrong setup for densfit-FCK3')
-          ELSE 
-            RHSFIT = .TRUE.
-            LHSFIT = .FALSE.
-            CALL FCK3DRV(FMAT(ISTR),DMAT(ISTR),1,GABAB,GABAL,
-     &                   DGABAL(ISTRAUX),WORK,LWORK)
-          END IF
+          RHSFIT = .TRUE.
+          LHSFIT = .FALSE.
+          CALL FCK3DRV(FMAT(ISTR),DMAT(ISTR),1,GABAB,GABAL,
+     &                 DGABAL(ISTRAUX),WORK,LWORK)
 #ifdef MOD_FMM
           IF (DOFMM) THEN
            CALL FMMFCK(FMAT(ISTR),DMAT(ISTR),WORK,LWORK)
@@ -799,12 +795,16 @@ C
 C     Get overlap-matrix
 c     CALL SETAOBTCH(SPEXP,CONTRACTED,WORK(KFREE),LFREE,0)
       CALL MEMGET('REAL',KSMAT,NBASIS*NBASIS,WORK,KFREE,LFREE)
+#if defined PRG_DIRAC
+      CALL GTOVLX(WORK(KSMAT),DP1,WORK(KFREE),LFREE)
+#else
       CALL MEMGET('REAL',KSMTMP,NBASIS*(NBASIS+1)/2,WORK,KFREE,LFREE)
       CALL RDONEL('OVERLAP ',LFOUND,WORK(KSMTMP),NBASIS*(NBASIS+1)/2)
-      CALL DSPTSI(NBASIS,WORK(KSMTMP),WORK(KSMAT))
-      CALL MEMREL('GET_CHAR',WORK,KSMTMP,KSMTMP,KFREE,LFREE)
       IF (.NOT.LFOUND) CALL QUIT('OVERLAP integrals not found on disk'//
      &                          ' in routine DF_GET_CHARGE')
+      CALL DSPTSI(NBASIS,WORK(KSMTMP),WORK(KSMAT))
+      CALL MEMREL('GET_CHAR',WORK,KSMTMP,KSMTMP,KFREE,LFREE)
+#endif
       IF (DOBOX) THEN
         DCHARGE = DP0
         DO IAOB1=1,NAOBTCH
@@ -1093,24 +1093,19 @@ C
         ISTR = N2BASX*(IDMT - 1) + 1
         ISTRAUX = NBASISAUX*(IDMT - 1) + 1
         IF ( MOD(IFCTYP(IDMT),10) .EQ. 3 ) THEN
-          IF ( OLDFCK3 ) THEN
-            WRITE(LUPRI,*) 'OLDFCK3 not implemented for densfit'
-            CALL QUIT('Wrong setup for densfit-FCK3')
-          ELSE 
-C           RHSFIT build of Fab (Fitted 2nd electron part of Fock-matrix)
-C           LHSFIT build of gamma_alpha (GAL) vector. 
-            RHSFIT = .FALSE.
-            LHSFIT = .TRUE.
-            CALL FCK3DRV(CVEC(ISTRAUX),DMAT(ISTR),1,GABAB,GABAL,
-     &                  DUMMY, WORK,LWORK)
+C         RHSFIT build of Fab (Fitted 2nd electron part of Fock-matrix)
+C         LHSFIT build of gamma_alpha (GAL) vector. 
+          RHSFIT = .FALSE.
+          LHSFIT = .TRUE.
+          CALL FCK3DRV(CVEC(ISTRAUX),DMAT(ISTR),1,GABAB,GABAL,
+     &                DUMMY, WORK,LWORK)
 #ifdef MOD_FMM
-            IF (DOFMM) THEN
-              CALL FMMFCK(CVEC(ISTRAUX),DMAT(ISTR),WORK,LWORK)
-            END IF
-#else
-            IF (DOFMM) CALL QUIT('FMM requested but not enabled')
-#endif
+          IF (DOFMM) THEN
+            CALL FMMFCK(CVEC(ISTRAUX),DMAT(ISTR),WORK,LWORK)
           END IF
+#else
+          IF (DOFMM) CALL QUIT('FMM requested but not enabled')
+#endif
         END IF
       END DO
 C     
@@ -1744,24 +1739,19 @@ c     Turn off fmm
         ISTR = N2BASX*(IDMT - 1) + 1
         ISTRAUX = NBASISAUX*(IDMT - 1) + 1
         IF ( MOD(IFCTYP(IDMT),10) .EQ. 3 ) THEN
-          IF ( OLDFCK3 ) THEN
-            WRITE(LUPRI,*) 'OLDFCK3 not implemented for densfit'
-            CALL QUIT('Wrong setup for densfit-FCK3')
-          ELSE 
-            RHSFIT = .TRUE.
-            LHSFIT = .TRUE.
-            NOSCRE_SAVE = NOSCRE
-            NOSCRE = .FALSE.  
-            THRFCK3_SAVE = THRFCK3
-            THRFCK3 = 1.0d-25
+          RHSFIT = .TRUE.
+          LHSFIT = .TRUE.
+          NOSCRE_SAVE = NOSCRE
+          NOSCRE = .FALSE.  
+          THRFCK3_SAVE = THRFCK3
+          THRFCK3 = 1.0d-25
 cSimen Added temporary to remove segmentation fault in setmaxcsbtch
-            CALL FCK3DRV(G_ALPHA(ISTRAUX),DMAT,1,GABAB,GABAL,
-c           CALL FCK3DRV(G_ALPHA(ISTRAUX),dummy,1,dummy,GABAL,
+          CALL FCK3DRV(G_ALPHA(ISTRAUX),DMAT,1,GABAB,GABAL,
+c         CALL FCK3DRV(G_ALPHA(ISTRAUX),dummy,1,dummy,GABAL,
 cSimen
-     &                   C_ALPHA(ISTRAUX),WORK,LWORK)
-            THRFCK3 = THRFCK3_SAVE
-            NOSCRE = NOSCRE_SAVE
-          END IF
+     &                 C_ALPHA(ISTRAUX),WORK,LWORK)
+          THRFCK3 = THRFCK3_SAVE
+          NOSCRE = NOSCRE_SAVE
 #ifdef MOD_FMM
           IF (DOFMM) THEN
 cToDo       implemend LHS-fitting moments.
@@ -1821,6 +1811,11 @@ C     Generate the 2-index Cauchy-Schwarz integrals
      &     WORK(KFREE),LFREE,IPRINT,.FALSE.,.FALSE.,
      &     IDUMMY,IDUMMY,.TRUE.)
 
+      IF (IPRINT.GT.10) THEN
+        CALL HEADER('GAB in SCRINT',-1)
+        CALL OUTPUT(GABAB,1,NBASIS,1,NBASIS,NBASIS,NBASIS,1,LUPRI)
+      ENDIF
+
 C     Normalize the fit set.
 C     1. Generate the 1-index Cauchy-Schwarz integrals over the fit set 
       CALL GETINT3(GABAL,WORK(KIODBCLS),WORK(KIODBTCH),
@@ -1841,6 +1836,10 @@ C        FIXME: these are now obsolete for screening and should be removed.
      &     WORK(KRODBTCH),
      &     WORK(KFREE),LFREE,IPRINT,.TRUE.,.TRUE.,
      &     IDUMMY,IDUMMY,.TRUE.)
+      IF (IPRINT.GT.10) THEN
+        CALL HEADER('GABAL in SCRINT',-1)
+        CALL OUTPUT(GABAL,1,NBASISAUX,1,1,NBASISAUX,1,1,LUPRI)
+      ENDIF
       CALL QEXIT('SCRINT')
       RETURN
       END

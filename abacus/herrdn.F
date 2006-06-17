@@ -3390,6 +3390,51 @@ C
    20    CONTINUE
          IBLOCK = IBLOCK + NBLCK(I)
    10 CONTINUE
+      !Add exp(0) function (needed in 2- and 3-index integrals)
+      !as an extra "0" class
+      IF (LCOMP .EQ. 3) THEN
+         ISHELL = ISHELL + 1
+         NUCO  (ISHELL) = 1
+         NRCO  (ISHELL) = 1
+         JSTRT (ISHELL) = IPRIM
+         NSTRT (ISHELL) = IORB
+         KSTRT (ISHELL) = IORBD
+         NCENT (ISHELL) = 0
+         NUMCF (ISHELL) = 0
+         NUMCFT(ISHELL) = 0
+         NBCH  (ISHELL) = 0
+         SHARE (ISHELL) = .FALSE.
+*        ISTBAO(ISHELL) = ISTBNU(ICENT)
+         NHKT  (ISHELL) = 1
+         KHKT  (ISHELL) = 1
+         SPHR  (ISHELL) = .FALSE.
+         KCKT  (ISHELL) = 1
+         SEGM  (ISHELL) = .FALSE.
+         LCLASS(ISHELL) = 0 
+         CENT(ISHELL,1,1) = 0.0D0
+         CENT(ISHELL,2,1) = 0.0D0
+         CENT(ISHELL,3,1) = 0.0D0
+C        Basis-set identifier (WK/UniKa/04-11-2002).
+*        MBSID(ISHELL) = MULBSI(ICENT)
+*        IORB  = IORB  + NCOMP
+*        IORBD = IORBD + NCOMP*NDEG
+         IPRIM = IPRIM + 1
+C*****************************************************************************
+C       PRIEXP  - exponent of primitive shell
+C       CCO     - unnormalized contraction coefficient
+C       PRICCF  - normalized contraction coefficient
+C       PRICRX  - x-coordinate of center
+C       PRICRY  - y-coordiante of center
+C       PRICRZ  - z-coordinate of center
+C*****************************************************************************
+        PRIEXP(IPRIM) = 0.0D0
+        PRICCF(IPRIM,1) = 1.0D0
+        PRICRX(IPRIM) = 0.0d0
+        PRICRY(IPRIM) = 0.0d0
+        PRICRZ(IPRIM) = 0.0d0
+c       IPRSHL(IPRIM) = ISHELL
+        IPRIMD = IPRIMD + 1
+      END IF
       RETURN
 C
 C       Error messages:

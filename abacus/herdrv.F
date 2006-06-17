@@ -133,6 +133,11 @@ C
         DIRAC  = .FALSE.
         SUPMAT = .NOT. DIRCAL
       ENDIF
+#if defined (MOD_DNF)
+C     Initialize defaults for density fitting
+      CALL DFIINI
+#endif
+
 #if defined (MOD_ERI)
       RUNERI = .FALSE.
       DOLINK = .FALSE.

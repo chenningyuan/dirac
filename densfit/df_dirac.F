@@ -318,16 +318,11 @@ cSimen There might be a problem here!
         IF (NBASISAUX.GT.N2BASX) CALL QUIT('Error: NBASISAUX > N2BASX.')
 cSimen
         IF ( MOD(IFCTYP(IDMT),10) .EQ. 3 ) THEN
-          IF ( OLDFCK3 ) THEN
-            WRITE(LUPRI,*) 'OLDFCK3 not implemented for densfit'
-            CALL QUIT('Wrong setup for densfit-FCK3')
-          ELSE 
-            RHSFIT = .TRUE.
-            LHSFIT = .FALSE.
-            CALL ACT_ALL_BATCHES
-            CALL FCK3DRV(FMAT(ISTR),DUMMY,1,DUMMY,DUMMY,DMAT(ISTRAUX),
-     &                   WORK,LWORK)
-          END IF
+          RHSFIT = .TRUE.
+          LHSFIT = .FALSE.
+          CALL ACT_ALL_BATCHES
+          CALL FCK3DRV(FMAT(ISTR),DUMMY,1,DUMMY,DUMMY,DMAT(ISTRAUX),
+     &                 WORK,LWORK)
 #ifdef MOD_FMM
           IF (DOFMM) THEN
 cSimen      CALL FMMFCK(FMAT(ISTR),DMAT(ISTR),WORK,LWORK)
@@ -962,28 +957,23 @@ cSimen There be a problem here
 cSimen
 
         IF ( MOD(IFCTYP(IDMT),10) .EQ. 3 ) THEN
-          IF ( OLDFCK3 ) THEN
-            WRITE(LUPRI,*) 'OLDFCK3 not implemented for densfit'
-            CALL QUIT('Wrong setup for densfit-FCK3')
-          ELSE 
-C           RHSFIT build of Fab (Fitted 2nd electron part of Fock-matrix)
-C           LHSFIT build of gamma_alpha (GAL) vector. 
-            RHSFIT = .FALSE.
-            LHSFIT = .TRUE.
+C         RHSFIT build of Fab (Fitted 2nd electron part of Fock-matrix)
+C         LHSFIT build of gamma_alpha (GAL) vector. 
+          RHSFIT = .FALSE.
+          LHSFIT = .TRUE.
 CAREFUL
-            FIXTHRSAVE = FIXTHR
-            THRFCK3SAVE = THRFCK3
-            FIXTHR = .TRUE.
-            THRFCK3 = 1.0D-11
+          FIXTHRSAVE = FIXTHR
+          THRFCK3SAVE = THRFCK3
+          FIXTHR = .TRUE.
+          THRFCK3 = 1.0D-11
 CAREFUL
-            CALL ACT_ALL_BATCHES
-            CALL FCK3DRV(CVEC(ISTRAUX),DMAT(ISTR),1,DUMMY,DUMMY,DUMMY,
-     &                   WORK,LWORK)
+          CALL ACT_ALL_BATCHES
+          CALL FCK3DRV(CVEC(ISTRAUX),DMAT(ISTR),1,DUMMY,DUMMY,DUMMY,
+     &                 WORK,LWORK)
 CAREFUL
-            FIXTHR = FIXTHRSAVE
-            THRFCK3 = THRFCK3SAVE
+          FIXTHR = FIXTHRSAVE
+          THRFCK3 = THRFCK3SAVE
 CAREFUL
-          END IF
 
         END IF
       END DO
