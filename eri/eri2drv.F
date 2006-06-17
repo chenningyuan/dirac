@@ -451,7 +451,7 @@ C
 C     AO batches
 C     ==========
 C
-      CALL SETAOB(CCFBT,INDXBT,KMAX,WORK,LWORK,IPRINT)
+      CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
 C
 C     OD batches
 C     ==========
@@ -3242,7 +3242,7 @@ C
       write(*,*) 'kfree   = ',kfree
       write(*,*) 'lfree   = ',lfree
 #endif
-      CALL SETAOB(CCFBT,INDXBT,KMXB,WORK,LWORK,IPRINT)
+      CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
 C
 C     OD batches
 C     ==========

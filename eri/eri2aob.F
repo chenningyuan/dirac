@@ -36,7 +36,7 @@ C
 #endif
 C
 C  /* Deck setaob */
-      SUBROUTINE SETAOB(CCFBT,INDXBT,KMAXMX,WORK,LWORK,IPRINT)
+      SUBROUTINE SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -63,7 +63,7 @@ C     write(*,*) 'kmaxmx2 = ',kmaxmx2
 #endif
       NBASE  = 0
       DO K = 0, MAXREP
-      DO I = 1, KMAXMX
+      DO I = 1, KMAX
          IF (IBTAND(K,ISTBAO(I)).EQ.0) NBASE = NBASE + KHKT(I)
       END DO
       END DO
@@ -87,7 +87,7 @@ C
       NB = -1
       NC = -1
       ND = -1
-      DO ISHELL = 1, KMAXMX
+      DO ISHELL = 1, KMAX
 #if defined (DIRAC_ERI_DEBUG)
          write (*,*) 'ishell = ',ishell
          write (*,*) 'nbch(',ishell,')   = ',nbch(ishell)

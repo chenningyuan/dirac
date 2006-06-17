@@ -32,8 +32,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C  /* Deck eriexc */
+#ifndef PRG_DIRAC
       SUBROUTINE ERIEXC(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      *                  CCFBT,INDXBT,FCKTMP,WORK,LWORK)
+#else
+      SUBROUTINE ERIEXC(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+     *                  CCFBT,INDXBT,FCKTMP,
+     *                  NCENTS,ICENTS,ICLASSES,WORK,LWORK)
+#endif
 #if defined (SYS_IRIX)
       DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
       LOGICAL DOEXC
@@ -84,6 +90,7 @@ C
       DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
       LOGICAL DOEXC
 #endif
+#include "memint.h"
 C
       IF (SLAVE) THEN
          IPRINT = IPRFCK
@@ -116,7 +123,7 @@ C
       IF (THRXC1.NE.D0) THRXCH = THRXC1
       IF (THRXC2.NE.D0) THRGAM = THRXC2
       IF (THRXC3.NE.D0) THRSH  = THRXC3
-      WRITE (LUPRI,'(2X,A,3(2X,E10.2))') 'Thersholds for exchange: ',
+      WRITE (LUPRI,'(2X,A,3(2X,E10.2))') 'Thresholds for exchange: ',
      &      THRXCH, THRGAM, THRSH
       NDMAT  = NDMT
 C
@@ -138,7 +145,7 @@ C
 C     AO batches
 C     ==========
 C
-      CALL SETAOB(CCFBT,INDXBT,KMAX,WORK,LWORK,IPRINT)
+      CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
 C
 C     OD batches
 C     ==========
@@ -613,8 +620,6 @@ C
 C
       FIRST = .TRUE.
       LAST  = .FALSE.
-C
-      IPRINT = IPRKEP
 C
 C     Spherical-harmonic transformation matrices
 C     ==========================================

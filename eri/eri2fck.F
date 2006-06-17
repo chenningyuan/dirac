@@ -97,7 +97,7 @@ C
 C     AO batches
 C     ==========
 C
-      CALL SETAOB(CCFBT,INDXBT,KMAX,WORK,LWORK,IPRINT)
+      CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
 C
 C     Density matrix (not needed yet)
 C     ===============================

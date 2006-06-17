@@ -3326,13 +3326,15 @@ C*****************************************************************************
       PARAMETER(D0=0.0D0,DP5 = 0.5D0,D2=2.0D0)
       DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
-     &        NPOS(*),WORK(LWORK)
+     &        NPOS(*),WORK(LWORK),
+     &        NCENTS(4), ICENTS(2,4), ICLASSES(4)
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #if defined (VAR_VECTOR)
 #include "veclen.h"
 #endif
+#include "memint.h"
       NDIM = N2BBASX*NZC1*NFMAT
       CALL DSCAL(NDIM,D2,DSO,1)
       NDMAT = NFMAT*NZC1
@@ -3353,10 +3355,37 @@ C*****************************************************************************
      &                           LWORK)
         CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
      &            IFCKOP,IPRINT)
+CTROND TODO change for relativistic calculations
+        NCENTS(1)   = 0
+        ICENTS(1,1) = 0
+C       Index 2
+        NCENTS(2)   = 0
+        ICENTS(1,2) = 0
+C       Index 3
+        NCENTS(3)   = 0
+        ICENTS(1,3) = 0
+C       Index 4
+        NCENTS(4)   = 0
+        ICENTS(1,4) = 0
+C       (LL|LL)-integrals
+        ICLASSES(1) = 1
+        ICLASSES(2) = 1
+        ICLASSES(3) = 1
+        ICLASSES(4) = 1
+CTROND
+#ifndef PRG_DIRAC
         CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
      &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &            WORK(KFREE),LFREE)
+#else
+        CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
+     &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+     &            NCENTS,ICENTS,ICLASSES,
+     &            WORK(KFREE),LFREE)
+#endif
       CALL DSCAL(NDIM,DP5,DSO,1)
+CTROND Scale in accordance with DIRAOF->SKLFC1
+      CALL DSCAL(NDIM,DP5,FMAT,1)
       END IF
       RETURN
       END
