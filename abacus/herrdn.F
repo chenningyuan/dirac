@@ -1680,7 +1680,7 @@ C
      &             NBLOCK,ISGEN(IBLOCK(ISET)),KAOVEC,KPRIM,Q,1,DSM,
      &             BASREF(1,I,ISET))
               NBLCK(I,ISET) = NBLOCK
-           write (*,*) 'testing reading of fit sets...0'
+C          write (*,*) 'testing reading of fit sets...0'
 C
            ELSE IF ( IBSFLAG .EQ. 4 ) THEN
 C
@@ -1703,10 +1703,10 @@ C
 C
 C          Print out fit set
 C
-           write (*,*) 'testing reading of fit sets...1'
+C          write (*,*) 'testing reading of fit sets...1'
            NOFITFS  = NOFITFS.AND.IQM(I,ISET).EQ.0
            IF (IQM(I,ISET).GT.0) THEN
-           write (*,*) 'testing reading of fit sets...2'
+C          write (*,*) 'testing reading of fit sets...2'
               IF(INPTST) THEN
                  WRITE(LUPRI,'(3X,A)') 'Density fit set:'
                  WRITE(LUPRI,'(6X,A,I5,A,12I5)')
@@ -3377,6 +3377,7 @@ C*****************************************************************************
                      PRICRY(IPRIM) = CORD(2,ICENT)
                      PRICRZ(IPRIM) = CORD(3,ICENT)
                      IPRIMD = IPRIMD + NCOMP*NDEG
+#if defined (DIRAC_DENSFIT_DEBUG)
 C aspg, 2006-06-17
 C temporary debug for fit functions
       write (*,*) 'DEBUG: l, kbch, alpha, iprim, priexp,ishell,lcomp,j',
@@ -3384,6 +3385,7 @@ C     write (LUPRI,('I4,I4,F10.8,I4,F10.8,I4')),
      $       L,KBCH,ALPHA(L,KBCH),iprim,priexp(iprim),ishell,lcomp,j
 C     write (*,*) '       lclass=',lclass
 C
+#endif
    60             CONTINUE
    40          CONTINUE
    30       CONTINUE
@@ -3639,7 +3641,7 @@ C
         GOTO 4242
 #endif
       ENDIF
-      write (*,*) 'in orbout: iprimd=',iprimd,' iprim=',iprim
+C     write (*,*) 'in orbout: iprimd=',iprimd,' iprim=',iprim
       ICENT  = 0
       IBLOCK = 0
       DO 100 I = 1, NONTYP

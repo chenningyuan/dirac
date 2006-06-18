@@ -197,10 +197,12 @@ C
           CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
+#if defined (MOD_ERI)
         ELSE
           CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
+#endif
         ENDIF
       ELSE
 C
@@ -3265,6 +3267,7 @@ C*****************************************************************************
      &                         LWORK)
       CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
      &          IFCKOP,IPRINT)
+#if defined (MOD_ERI)
       IF (DOFIT) THEN
         CALL LIN_DF_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
      &            IPRINT,WORK(KLAST),LWRK)
@@ -3272,9 +3275,11 @@ C*****************************************************************************
         CALL FCK_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
      &                   IPRINT,WORK(KLAST),LWRK)
       ENDIF
+#endif /* MOD_ERI */
       CALL DSCAL(NDIM,DP5,DSO,1)
       RETURN
       END
+#if defined (MOD_ERI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck FCK_Coulomb */
       SUBROUTINE FCK_Coulomb(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
@@ -3469,6 +3474,7 @@ C       Conventional (4-center integrals) AO Coulomb + exchange
       ENDIF
       RETURN
       END
+#endif /*MOD_ERI */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck diraof */
       SUBROUTINE DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
