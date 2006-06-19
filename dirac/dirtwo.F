@@ -147,6 +147,7 @@ C     =====
       ENDIF
 C     =====
 C
+#if defined (MOD_DNF)
       IF (DENSFIT) THEN
          NIND = 2 * NUMBER_OF_NUCLEI(2) + 2
          CALL MEMGET ('INTE',KINDAO,NTBAS(0),WORK,KFREE,LFREE)
@@ -171,6 +172,7 @@ c    &                     IPRINT,WORK(KCFIT))
          ENDDO
          CALL MEMREL('TWOFCK',WORK,KINDAO,KINDAO,KFREE,LFREE)
       ENDIF
+#endif /* MOD_DNF */
 C
 C     Initialize Fock matrix
 C     ======================
@@ -3268,15 +3270,21 @@ C*****************************************************************************
       CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
      &          IFCKOP,IPRINT)
 #if defined (MOD_ERI)
+#if defined (MOD_DNF)
       IF (DOFIT) THEN
         CALL LIN_DF_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
      &            IPRINT,WORK(KLAST),LWRK)
       ELSE
+#endif /* MOD_DNF */
         CALL FCK_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
      &                   IPRINT,WORK(KLAST),LWRK)
+#if defined (MOD_DNF)
       ENDIF
-#endif /* MOD_ERI */
+#endif /* MOD_DNF */
       CALL DSCAL(NDIM,DP5,DSO,1)
+#else /* MOD_ERI */
+      CALL QUIT('JENGINE only works if ERI is also present.')
+#endif /* MOD_ERI */
       RETURN
       END
 #if defined (MOD_ERI)
