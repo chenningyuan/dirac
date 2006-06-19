@@ -402,7 +402,6 @@ abacus/her2el2.o    abacus/her2fck.o    abacus/her2her.o    abacus/her2odc.o\\
 abacus/her2out.o    abacus/her2sym.o    abacus/herbas.o\\
 abacus/herdirect.o  abacus/herdrv.o     abacus/hergam.o     abacus/hergeo.o\\
 abacus/hergp.o      abacus/herrdn.o     abacus/hersol.o\\
-abacus/hercen.o \\
 abacus/hersym.o     abacus/hertst.o     abacus/her2gab.o    abacus/hermem.o\\
 abacus/abanuc.o     abacus/abatro.o     abacus/abaortvec.o abacus/abarint.o \\
 abacus/abaopt.o     abacus/abavrml.o abacus/abawalk.o abacus/abaop2.o \\
