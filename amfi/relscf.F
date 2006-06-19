@@ -4,7 +4,7 @@ C distributing it with the DIRAC package ! (MI,jan 2005)
 C see mail from Timo: Atomares SCF
 C
 C NOTE: Previous NDIMPQ value was 500000. Replaced by a parameter in scfarr.h, NDIMPQPAR.
-C Increasing was needed to run the Rn atom.
+C This increasing is needed to run larger atoms (Rn for example).
 
 
 C***** NAME ADDMA
@@ -3603,7 +3603,8 @@ C
       DIMENSION NTYSM(4),ATCO(300)
 C     PUNCH BASIS SET AND VECTORS FOR INPUT TO IBMOL-H
       LOGICAL LLIE(4)
-      DATA LLIE/1HS,1HP,1HD,1HF/, NTYSM/1,3,6,10/
+CMI   DATA LLIE/1HS,1HP,1HD,1HF/, NTYSM/1,3,6,10/
+      DATA LLIE/.false.,.false.,.false.,.false./, NTYSM/1,3,6,10/
       IDCTR=MXCC*NEWBAS
 C
 C     PUNCH VECTORS
