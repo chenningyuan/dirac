@@ -199,12 +199,10 @@ C
           CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
-#if defined (MOD_ERI)
         ELSE
           CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
-#endif
         ENDIF
       ELSE
 C
@@ -315,7 +313,7 @@ C
 #include "cbihr2.h"
 #if defined (MOD_ERI)
 #include "cbieri.h"
-#endif
+#endif /* MOD_ERI */
 #include "dcbind.h"
 #include "dcbbas.h"
 #include "hrunit.h"
@@ -323,14 +321,14 @@ C
       LUINTA = 11
 #if defined (MOD_ERI)
       IF(.NOT.RUNERI) THEN
-#endif
+#endif /* MOD_ERI */
         LUSUPM = 17
         LUDASP = 24
         LUSOL  = 49
         CALL PAOVEC(WORK,LWORK,0,IPRTWO)
 #if defined (MOD_ERI)
       ENDIF
-#endif
+#endif /* MOD_ERI */
 C
 C     Define bit packing
 C     ==================
@@ -3316,7 +3314,7 @@ C*****************************************************************************
      &             DUMMY,WORK,LWORK)
 #ifdef MOD_FMM
           IF (DOFMM) CALL FMMFCK(FMAT(ISTR),DMAT(ISTR),WORK,LWORK)
-#endif  
+#endif /* MOD_FMM */  
         END IF
       END DO
       RETURN
@@ -3346,7 +3344,7 @@ C*****************************************************************************
 #include "dcbham.h"
 #if defined (VAR_VECTOR)
 #include "veclen.h"
-#endif
+#endif /* VAR_VECTOR */
 #include "memint.h"
       NDIM = N2BBASX*NZC1*NFMAT
       CALL DSCAL(NDIM,D2,DSO,1)
@@ -3360,9 +3358,9 @@ C*****************************************************************************
 #if defined (VAR_VECTOR)
         ICHUNK = MAX(IVECLN/NFMAT,1)
         KFREE  = KFCKTP + ICHUNK*NFMAT*(NBASIS+NODD)*NBASIS
-#else
+#else /* VAR_VECTOR */
         KFREE  = KFCKTP
-#endif
+#endif /* VAR_VECTOR */
         LFREE  = LWORK - KFREE + 1
         IF (KFREE.GT.LWORK) CALL STOPIT('LINKDR','EXC',KFREE,
      &                           LWORK)
@@ -3390,18 +3388,19 @@ CTROND
         CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
      &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &            WORK(KFREE),LFREE)
-#else
+#else /* PRG_DIRAC */
         CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
      &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &            NCENTS,ICENTS,ICLASSES,
      &            WORK(KFREE),LFREE)
-#endif
+#endif /* PRG_DIRAC */
       CALL DSCAL(NDIM,DP5,DSO,1)
 CTROND Scale in accordance with DIRAOF->SKLFC1
       CALL DSCAL(NDIM,DP5,FMAT,1)
       END IF
       RETURN
       END
+#endif /* MOD_ERI */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fastjk */
       SUBROUTINE FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
@@ -3425,6 +3424,7 @@ C
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &        NPOS(*),WORK(LWORK), IFCKOP_TEMP(NFMAT)
 C
+#if defined (MOD_ERI)
       IF (DOLINK .AND. DOFCK3) THEN
 C
 C       Jengine Coulomb contribution, regular or density-fitted
@@ -3475,14 +3475,16 @@ C       Conventional (4-center integrals) AO exchange
      &              IPRINT,WORK,LWORK)
 C
       ELSE
+#endif /* MOD_ERI */
 C       Conventional (4-center integrals) AO Coulomb + exchange
         CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &              IFCKOP,NPOS,INTFLG,
      &              IPRINT,WORK,LWORK)
+#if defined (MOD_ERI)
       ENDIF
+#endif /* MOD_ERI */
       RETURN
       END
-#endif /*MOD_ERI */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck diraof */
       SUBROUTINE DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,

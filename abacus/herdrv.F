@@ -138,11 +138,11 @@ C     Initialize defaults for density fitting
       CALL DFIINI
 #endif
 
-#if defined (MOD_ERI)
+C#if defined (MOD_ERI)
       RUNERI = .FALSE.
       DOLINK = .FALSE.
       DOFCK3 = .FALSE.
-#endif
+C#endif
       SKIP   = .FALSE.
       TSTINP = .FALSE.
       DIPLEN = .FALSE.
