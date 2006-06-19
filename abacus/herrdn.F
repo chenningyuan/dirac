@@ -661,7 +661,7 @@ C***********************************************************************
       DOSPHE = CRT .EQ. 'S' .OR. CRT .EQ. 's'
       DOOWN  = CRT. EQ. 'X'
       IF(DIRAC) THEN
-        IF(TWOCOMP) THEN
+        IF(TWOCOMP.AND.DOSPHE) THEN
 C       In 2-component mode spherical Gaussians can be used,
 C       and we switch off the embedded cartesian to spherical
 C       gaussian transformation in LOWDIN()
