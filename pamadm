@@ -584,7 +584,7 @@ if [ -n "$DNFMOD" ]; then
 cat <<EOF>> Makefile
 
 DNFOBJS = \\
-densfit/df_dirac.o  densfit/df_dofit.o  densfit/df_fck3.o  densfit/dposv.o densfit/df_utils.o 
+densfit/df_dirac.o  densfit/df_fck3.o  densfit/dposv.o densfit/df_utils.o 
 EOF
 fi
 #
@@ -1017,6 +1017,7 @@ while [ -n "$1" ]; do
          ;;
       -densfit|-dnf)
          DNFMOD=1
+         ERIMOD=1
          ;;
       -eri|-er|-e)
          ERIMOD=1
