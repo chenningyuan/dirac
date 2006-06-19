@@ -1,3 +1,25 @@
+C aspg, 2006-06-19
+C
+C since the eri/fck3/densfit code in not really available in parallel form
+C at this time, we apply some tricks to get the program to compile in 
+C parallel mode. These are to have dummy funcion in place of MPI3INI
+C and have FCK3COLLECT, which sits in the old fck3driver and shouldn't
+C need to be compiled, available here. 
+
+#if defined (VAR_MPI)
+#define USE_FCK3COLLECT
+#define USE_PARALLEL_ERI_DUMMY
+#endif
+
+#if defined (USE_PARALLEL_ERI_DUMMY)
+C aspg, 2006-06-19
+C for the time being put a dummy call to the parallel routines 
+C
+      SUBROUTINE MPI3INI(DMAT, NDMT, GABAB, GABAL, DGABAL, WORK, LWORK)
+         CALL QUIT('Parallel Implementation of FCK3 not available yet.')
+      RETURN
+      END
+#else 
       SUBROUTINE MPI3INI(DMAT, NDMT, GABAB, GABAL, DGABAL, WORK, LWORK)
 #include "implicit.h"
 #if defined (VAR_MPI)
@@ -45,19 +67,25 @@ c     CALL MPIXBCAST(MAXJ,1,'INTEGER',MASTER)
       CALL MPIXBCAST(TABFJW,121*(MAXJ+7),'DOUBLE',MASTER)
       CALL MPIXBCAST(WVAL,MAXJ+1,'DOUBLE',MASTER)
 
+#if defined (MOD_FMM)
 C     FMM initializations
       CALL MPIXBCAST(DOFMM,1,'LOGICA',MASTER)
+#endif
 
+#if defined (MOD_PBC)
 C     PBC initializations
       CALL MPIXBCAST(DOPBC,1,'LOGICA',MASTER)
       CALL MPIXBCAST(PBCACTIVE,1,'LOGICA',MASTER)
+#endif
 
+#if defined (MOD_DNF)
 C     DF initializations
       CALL MPIXBCAST(OLD_DF,1,'LOGICA',MASTER)
       CALL MPIXBCAST(NOSCRE,1,'LOGICA',MASTER)
       CALL MPIXBCAST(LHSFIT,1,'LOGICA',MASTER)
       CALL MPIXBCAST(RHSFIT,1,'LOGICA',MASTER)
       CALL MPIXBCAST(NBASEAUX,1,'INTEGER',MASTER)
+#endif
 
 C     FCK3 initializations
       CALL MPIXBCAST(DOFCK3,1,'LOGICA',MASTER)
@@ -149,3 +177,38 @@ C     /MULBAS/
       END                  
       
 #endif
+#endif /* USE_PARALLEL_ERI_DUMMY */
+
+
+
+#if defined (USE_FCK3COLLECT)
+      SUBROUTINE fck3collect(FMAT,NDMAT,tm,WORK,LFREE,IPRINT)
+#include "implicit.h"
+#include "inforb.h"
+      DIMENSION FMAT(N2BASX,NDMAT), WORK(*)
+      INCLUDE 'mpif.h'
+#include "maxorb.h"
+#include "infpar.h"
+#include "priunit.h"
+c
+      DIMENSION tms(NODTOT+1)
+      NSIZE = N2BASX*NDMAT
+      IF (LFREE .LT. NSIZE) THEN
+         WRITE(LUPRI,"(I9,'*',I2,'=',I9,' needed, ',I9,' available.')")
+     &        N2BASX,NDMAT,N2BASX*NDMAT,LFREE
+        Call QUIT('Insufficient memory in fck3collect')
+      END IF
+      CALL DCOPY(NSIZE,FMAT,1,WORK,1)
+      CALL MPI_REDUCE(WORK,FMAT,NSIZE,MPI_DOUBLE_PRECISION,MPI_SUM,
+     &     MASTER,MPI_COMM_WORLD,IERR)
+      iF(iprint.ge.0) THEN
+c     for a good measure, collect times to to provide more info about
+c     load balancing.
+         CALL MPI_GATHER(tm,1,MPI_DOUBLE_PRECISION,
+     &        tms,1,MPI_DOUBLE_PRECISION,MASTER,MPI_COMM_WORLD,IERR)
+         if(IERR.NE.0) WRITE(LUPRI,*) 'error collecting times:',IERR
+         WRITE(LUPRI,"('Node times:',/,20(10F7.2,/))")
+     &        (tms(i),i=1,NODTOT+1)
+      END IF
+      END
+#endif /* USE_FCK3COLLECT */
