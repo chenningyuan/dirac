@@ -395,6 +395,7 @@ C
 C
       RETURN
       END
+#if defined (OLD_DGETRS)
 C  /* Deck dgetrs */
       SUBROUTINE DGETRS(AGE,NROWA,NRDIMA)
 C
@@ -422,6 +423,7 @@ C
   400 CONTINUE
       RETURN
       END
+#endif /* OLD_DGETRS */
 C
 C     HP-UX (and possible other machines) declines to link if
 C     there are any duplicates, and DSUM, IDMIN, IDAMIN, ICOPY, ISCAL
