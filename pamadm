@@ -142,7 +142,7 @@ setup()
       FMMOBJ='$(FMMOBJS)'
       FMMMAK=FMM_OBJ
       FMMTAR=1
-      echo " - DNF density fitting module"
+      echo " - Fast Multipole Method (fmm) module"
    fi
    #
    #  ab initio/DFT embedding module
@@ -309,6 +309,11 @@ EOF
    if [ "$DNFTAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/densfit/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$FMMTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/fmm/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$EMBTAR" ]; then
@@ -594,13 +599,11 @@ if [ -n "$FMMMOD" ]; then
 cat <<EOF>> Makefile
 
 FMMOBJS = \\
-fmm/fmmdrv.o             fmm/mm_grid_searcher.o    fmm/mm_sort.o             fmm/mm_tree_T_buffer.o \\
-fmm/mm_box_builder.o     fmm/mm_input.o            fmm/mm_standalone_aux.o    fmm/mm_T_worker.o \\
-fmm/mm_box_processor.o   fmm/mm_interface.o        fmm/mm_standalone_drv.o   fmm/mm_Vff_driver.o \\
-fmm/mm_buffers.o         fmm/mm_io_int.o            fmm/mm_stats.o            fmm/mm_Vff_processor.o \\
-fmm/mm_densfit.o         fmm/mm_map_builder.o      fmm/mm_T_contractors.o    fmm/mm_W_contractors.o \\
-fmm/mm_driver.o          fmm/mm_memory_manager.o   fmm/mm_T_pair_builder.o   fmm/mm_W_pair_builder.o \\
-fmm/mm_global_paras.o    fmm/mm_overlap_tree.o     fmm/mm_T_pair_tests.o     fmm/mm_W_worker.o 
+fmm/mm_box_builder.o    fmm/mm_global_paras.o   fmm/mm_memory_manager.o  fmm/mm_T_contractors.o   fmm/mm_Vff_driver.o \\
+fmm/mm_box_processor.o  fmm/mm_grid_searcher.o  fmm/mm_overlap_tree.o    fmm/mm_T_pair_builder.o  fmm/mm_Vff_processor.o \\
+fmm/mm_buffers.o        fmm/mm_input.o          fmm/mm_sort.o            fmm/mm_T_pair_tests.o    fmm/mm_W_contractors.o \\
+fmm/mm_densfit.o        fmm/mm_interface.o      fmm/mm_standalone_drv.o  fmm/mm_tree_T_buffer.o   fmm/mm_W_pair_builder.o \\
+fmm/mm_driver.o         fmm/mm_map_builder.o    fmm/mm_stats.o           fmm/mm_T_worker.o        fmm/mm_W_worker.o \\
 EOF
 fi
 #
@@ -631,7 +634,7 @@ cat <<EOF>> Makefile
 OBJSMXM = gp/mxmpack.o
 
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
-	\$(DFTOBJS) \$(DNFOBJS) \$(EMBOBJS) \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS)
+	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS)
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
@@ -735,6 +738,9 @@ fi
 if [ -n "$DFTMOD" ]; then
    echo '	cd dft      ; $(MAKE) clean' >> Makefile
 fi
+if [ -n "$FMMMOD" ]; then
+   echo '	cd fmm ; $(MAKE) clean' >> Makefile
+fi
 if [ -n "$DNFMOD" ]; then
    echo '	cd densfit  ; $(MAKE) clean' >> Makefile
 fi
@@ -828,6 +834,13 @@ DFT_OBJ :
 	cd dft; \$(MAKE) all
 EOF
 fi
+if [ -n "$FMMMOD" ]; then
+cat <<EOF>> Makefile
+
+FMM_OBJ :
+	cd fmm; \$(MAKE) all
+EOF
+fi
 if [ -n "$DNFMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -894,6 +907,9 @@ fi
 if [ -n "$XPPMOD" ]; then
    TEMP="$TEMP prp/xpp"
 fi
+if [ -n "$FMMMOD" ]; then
+   TEMP="$TEMP fmm"
+fi
 if [ -n "$DNFMOD" ]; then
    TEMP="$TEMP densfit"
 fi
@@ -954,14 +970,17 @@ which_modules()
 {
 #  
 #
-MODS="$ERIFLG $DNFFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG"
-MODS_IBM="$ERIFLG,$DNFFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG,$EMBFLG,$CDFTFLG"
+MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG"
+MODS_IBM="$ERIFLG,$DNFFLG,$FMMFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG,$EMBFLG,$CDFTFLG"
 dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
 fi
 if [ -n "$DNFFLG" ]; then
    dirs="$dirs densfit"
+fi
+if [ -n "$FMMFLG" ]; then
+   dirs="$dirs fmm"
 fi
 if [ -n "$DFTFLG" ]; then
    dirs="$dirs dft"
@@ -1013,6 +1032,8 @@ while [ -n "$1" ]; do
          XPPMOD=1
          ;;
       -fmm|-fm)
+         ERIMOD=1
+         DNFMOD=1
          FMMMOD=1
          ;;
       -densfit|-dnf)
