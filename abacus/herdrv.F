@@ -74,9 +74,9 @@ C
 #include "gnrinf.h"
 #endif
 #include "cbiher.h"
-#if defined (MOD_ERI)
+C#if defined (MOD_ERI)
 #include "cbieri.h"
-#endif
+C#endif
 #include "cbihr1.h"
 #include "cbisol.h"
 #include "nuclei.h"
@@ -84,9 +84,9 @@ C
 #include "huckel.h"
 #include "ccom.h"
 #include "hrunit.h"
-#if defined (MOD_DNF)
+C#if defined (MOD_DNF)
 #include "densfit.h"
-#endif
+C#endif
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*JENGIN'/
@@ -138,11 +138,11 @@ C     Initialize defaults for density fitting
       CALL DFIINI
 #endif
 
-#if defined (MOD_ERI)
+C#if defined (MOD_ERI)
       RUNERI = .FALSE.
       DOLINK = .FALSE.
       DOFCK3 = .FALSE.
-#endif
+C#endif
       SKIP   = .FALSE.
       TSTINP = .FALSE.
       DIPLEN = .FALSE.
