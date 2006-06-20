@@ -1880,6 +1880,9 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+#if defined (SYS_IRIX)
+#include "densfit.h"
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1906,7 +1909,9 @@ C
 #include "aosotr.h"
 #include "gencon.h"
 #include "ibtfun.h"
+#if ! defined (SYS_IRIX)
 #include "densfit.h"
+#endif
 C
 C*****************************************************************************
 C       MULK    - bitstring of basic operations that stabilise a center
@@ -2203,6 +2208,9 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+#if defined (SYS_IRIX)
+#include "densfit.h"
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2233,7 +2241,9 @@ C*****************************************************************************
 #include "symmet.h"
 #include "aosotr.h"
 #include "ibtfun.h"
+#if ! defined (SYS_IRIX)
 #include "densfit.h"
+#endif
 C
       IF(DIRAC) THEN
          SET_TYPE(1) = 'large component basis functions'
