@@ -1,0 +1,41 @@
+#
+# VERSION : $Revision$
+# DATE    : $Date$
+# FILE    : Makefile.in
+# SOURCE  : $Source$
+#
+
+include ../Makefile.config
+
+C_OBJS = mm_proc_selector.o
+F77_OBJS = fmmdrv.o mm_io_int.o mm_standalone_aux.o
+F90_OBJS = \
+mm_box_builder.o    mm_global_paras.o   mm_memory_manager.o  mm_T_contractors.o   mm_Vff_driver.o \
+mm_box_processor.o  mm_grid_searcher.o  mm_overlap_tree.o    mm_T_pair_builder.o  mm_Vff_processor.o \
+mm_buffers.o        mm_input.o          mm_sort.o            mm_T_pair_tests.o    mm_W_contractors.o \
+mm_densfit.o        mm_interface.o      mm_standalone_drv.o  mm_tree_T_buffer.o   mm_W_pair_builder.o \
+mm_driver.o         mm_map_builder.o    mm_stats.o           mm_T_worker.o        mm_W_worker.o
+
+F77_CPPS = $(F77_OBJS:.o=.i)
+
+pre:	$(F77_CPPS)
+
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+
+all:	$(F77_OBJS) $(F90_OBJS) $(C_OBJS)
+
+dirac.x:
+	cd .. ; $(MAKE) dirac.x
+
+dirmpi.x:
+	cd .. ; $(MAKE) dirmpi.x
+
+clean : 
+	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
+
+
+depend:
+	../utils/f90dep.pl $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90) $(C_OBJS:.o=.c) > Makefile.depend 
+include Makefile.depend
+# DO NOT DELETE THIS LINE -- make depend depends on it.

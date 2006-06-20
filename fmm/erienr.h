@@ -1,0 +1,2 @@
+C
+      COMMON /ERIENR/ ERGTOT, ERGCOU 
