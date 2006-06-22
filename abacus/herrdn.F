@@ -2203,9 +2203,6 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
-#if defined (SYS_IRIX)
-#include "densfit.h"
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2235,10 +2232,8 @@ C*****************************************************************************
 #include "primit.h"
 #include "symmet.h"
 #include "aosotr.h"
-#include "ibtfun.h"
-#if ! defined (SYS_IRIX)
 #include "densfit.h"
-#endif
+#include "ibtfun.h"
 C
       IF(DIRAC) THEN
          SET_TYPE(1) = 'large component basis functions'
