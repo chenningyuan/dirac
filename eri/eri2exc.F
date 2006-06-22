@@ -40,10 +40,6 @@ C  /* Deck eriexc */
      *                  CCFBT,INDXBT,FCKTMP,
      *                  NCENTS,ICENTS,ICLASSES,WORK,LWORK)
 #endif
-#if defined (SYS_IRIX)
-      DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
-      LOGICAL DOEXC
-#endif
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -81,15 +77,13 @@ C
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*), 
      &	        FCKTMP(*), IFCSAV(NDMT)
-#include "ibtfun.h"
 C       
 C and now comes the dimension statement for the class selection
 C used in dirac
 C
-#if ! defined (SYS_IRIX)
       DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
       LOGICAL DOEXC
-#endif
+#include "ibtfun.h"
 #include "memint.h"
 C
       IF (SLAVE) THEN

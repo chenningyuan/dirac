@@ -1880,9 +1880,6 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
-#if defined (SYS_IRIX)
-#include "densfit.h"
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1908,10 +1905,8 @@ C
 #include "huckel.h"
 #include "aosotr.h"
 #include "gencon.h"
-#include "ibtfun.h"
-#if ! defined (SYS_IRIX)
 #include "densfit.h"
-#endif
+#include "ibtfun.h"
 C
 C*****************************************************************************
 C       MULK    - bitstring of basic operations that stabilise a center
