@@ -1298,7 +1298,9 @@ C     If spherical transformations, get general transformation matrix
 C     ===============================================================
 C
        IF(ISPHTR.NE.0) THEN
-         CALL GETSPH(1,2,CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
+         MORDER = 1 ! M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
+         MINTEG = 2 ! 
+         CALL GETSPH(MORDER,MINTEG,CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
        ENDIF
 C
 C     Initialize Lowdin matrix
@@ -3019,8 +3021,8 @@ C***  Generate spherical transformation matrix  ***
 C**************************************************
 C
       NCAR = NBBAS(IREP,IC)
-      CALL SPHCAR(IREP,IC,NCAR,NSPH,CSPH,ICSP,
-     &            TMAT,IPRINT,WORK,LWORK)
+      CALL SPHCAR(TMAT,IREP,IC,NCAR,NSPH,CSPH,ICSP,
+     &            .TRUE.,IPRINT,WORK,LWORK)
 C
 C*********************************************************
 C***  Transform overlap matrix to spherical basis and  ***
@@ -6382,8 +6384,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck sphcar */
-      SUBROUTINE SPHCAR(IREP,IC,NCAR,NSPH,CSPH,ICSP,
-     &                  SPHM,IPRINT,WORK,LWORK)
+      SUBROUTINE SPHCAR(SPHM,IREP,IC,NCAR,NSPH,CSPH,ICSP,
+     &                  DONRM,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C***  Generate spherical transformation matrix for component IC
@@ -6392,6 +6394,7 @@ C
 C     Input:
 C       IREP - irrep
 C       IC   - L(1),S(2) component
+C       DONRM - normalize column by column
 C       
 C
 C***********************************************************************
@@ -6400,7 +6403,7 @@ C***********************************************************************
 #include "maxaqn.h"
 C
 #include "ccom.h"
-
+      LOGICAL DONRM
       DIMENSION SPHM(*),CSPH(*),ICSP(*),WORK(LWORK)
 #include "memint.h"
       LMAX  = NHTYP
@@ -6411,14 +6414,14 @@ C
       CALL MEMGET('INTE',KICBF,3*LMAX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
       CALL SPHCA1(SPHM,IREP,IC,NCAR,NSPH,CSPH,ICSP,LMAX,MXYZ,NFUN,
-     &            WORK(KCBUF),WORK(KICBF),WORK(KIFUN),IPRINT)
+     &            DONRM,WORK(KCBUF),WORK(KICBF),WORK(KIFUN),IPRINT)
       CALL MEMREL('SPHMAT',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck sphma1 */
       SUBROUTINE SPHCA1(SPHM,IREP,IC,NCAR,NSPH,CSPH,ICSP,LMAX,MXYZ,
-     &                  NFUN,CBUF,ICBF,IFUN,IPRINT)
+     &                  NFUN,DONRM,CBUF,ICBF,IFUN,IPRINT)
 C***********************************************************************
 C
 C***  Generate spherical transformation matrix for component IC
@@ -6444,6 +6447,7 @@ C
 #include "shells.h"
 #include "nuclei.h"
 #include "dgroup.h"
+      LOGICAL DONRM
       CHARACTER COMP(2)*1
       DIMENSION CSPH(*),ICSP(LMAX),IFUN(NFUN,3),
      &          SPHM(NCAR,NCAR),CBUF(*),ICBF(3,LMAX)
@@ -6532,12 +6536,14 @@ C
             CALL EXTELM('N',CSPH(JOFF+1),NXYZ,NLM,
      &                      CBUF(IOFF+1),KXYZ,KXYZ,KLM,
      &                      IFUN(LOFF+1,1),IFUN(LOFF+1,2))
-            JOFF = IOFF
-            DO J = 1,KLM
-              FAC = D1/DNRM2(KXYZ,CBUF(JOFF+1),1)
-              CALL DSCAL(KXYZ,FAC,CBUF(JOFF+1),1)
-              JOFF = JOFF + KXYZ
-            ENDDO
+            IF(DONRM) THEN
+              JOFF = IOFF
+              DO J = 1,KLM
+                FAC = D1/DNRM2(KXYZ,CBUF(JOFF+1),1)
+                CALL DSCAL(KXYZ,FAC,CBUF(JOFF+1),1)
+                JOFF = JOFF + KXYZ
+              ENDDO
+            ENDIF
             IOFF = IOFF + KXYZ*KLM
           ENDIF
           IF(IPRINT.GE.4) THEN
