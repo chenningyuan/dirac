@@ -3,4 +3,4 @@ C$Id$
 C
       PARAMETER ( THRFCK3_DEFAULT = 1.0E-15 )
       COMMON /FKC3THR/ THRNCL, THRPOD, THRCOD, THRSPEXP,
-     &                 FACCLS
+     &                 FACCLS, THRFCK3

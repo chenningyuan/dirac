@@ -703,7 +703,7 @@ c     &         WORK(KFREE),LFREE)
           CALL MEMREL('FIT_DENSITY',WORK,KWVECCP,KWVECCP,KFREE,LFREE)
         ENDIF
         WRITE(LUPRI,*) 'Iterative solver for fitting coefficients ',
-     &                 'used ',ITER,' iterations; error is ', ERR
+     &                 'used ',ITER,' iterations; error is ', ERROR
         CALL MEMREL('FIT_DENSITY',WORK,KWMATCP,KWMATCP,KFREE,LFREE)
 c       CALL TIMER('ITLES ', TIMSTR, TIMEND)
       ENDIF
@@ -1534,7 +1534,7 @@ C     Convergence is poor. If it should be used, a good
 C     preconditioner must be implemented! /SR
       SUBROUTINE asolve(diag,n,b,x)
 #include "implicit.h"
-      DIMENSION :: diag(n),x(n),b(n)
+      DIMENSION diag(n),x(n),b(n)
       do i=1,n
 c        x(i)=b(i)
         x(i)=b(i)/diag(i)/diag(i)
@@ -1586,6 +1586,12 @@ CU    USES atimes,asolve,snrm
       DOUBLE PRECISION ak,akden,bk,bkden,bknum,bnrm,dxnrm,xnrm,zm1nrm,
      *znrm,p(NMAX),pp(NMAX),r(NMAX),rr(NMAX),z(NMAX),zz(NMAX),snrm
       iter=0
+C
+C aspg, 2006-06-23
+C initializing bkden to 1
+C
+      bkden=1
+C
       call atimes(n,x,r,0,
      &                  NDMT,ISYMDM,IFCTYP,GABAL,IPRINT,
      &                  WORK,LWORK)
