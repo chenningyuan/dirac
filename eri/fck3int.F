@@ -942,6 +942,7 @@ C
 #include "aovec.h"
 #include "maxorb.h"
 #include "fck3aob.h"
+      INTEGER TUV
       LOGICAL FRSTUV, CONTRA, SPHRCD, GCNTCD, GCNTAB
       DIMENSION HCINT(NCCPP*NTUVAB,KHKTCD), LMNPWR(MAXAOKCK,MAXAONHK,3), 
      &          IODDKC(MAXAOKCK**2), IODDHR(NRTOP,0:7), 
