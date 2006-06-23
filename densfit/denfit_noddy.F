@@ -27,27 +27,27 @@ C FIXME: Clean up calling list and declarations after things are working!!!
 C        At the moment it's a copy of header files from the REAPRI routine.
 C
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <abainf.h>
-#include <cbirea.h>
+#include "abainf.h"
+#include "cbirea.h"
 C
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <chrsgn.h>
-#include <inforb.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "chrsgn.h"
+#include "inforb.h"
 
 C
       CHARACTER TITLER*14, SPACER*14
@@ -137,27 +137,27 @@ C FIXME: Clean up calling list and declarations after things are working!!!
 C        At the moment it's a copy of header files from the REAPRI routine.
 C
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <abainf.h>
-#include <cbirea.h>
+#include "abainf.h"
+#include "cbirea.h"
 C
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <chrsgn.h>
-#include <hertop.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "chrsgn.h"
+#include "hertop.h"
 
 C
       CHARACTER*17 FNAB 
@@ -383,27 +383,27 @@ C FIXME: Clean up calling list and declarations after things are working!!!
 C        At the moment it's a copy of header files from the REAPRI routine.
 C
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <abainf.h>
-#include <cbirea.h>
+#include "abainf.h"
+#include "cbirea.h"
 C
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <chrsgn.h>
-#include <hertop.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "chrsgn.h"
+#include "hertop.h"
 
 C
       CHARACTER*17 FNABAL 
@@ -632,27 +632,27 @@ C FIXME: Clean up calling list and declarations after things are working!!!
 C        At the moment it's a copy of header files from the REAPRI routine.
 C
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <abainf.h>
-#include <cbirea.h>
+#include "abainf.h"
+#include "cbirea.h"
 C
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <chrsgn.h>
-#include <hertop.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "chrsgn.h"
+#include "hertop.h"
 
 C
       CHARACTER*17 FNABCD 
@@ -951,8 +951,8 @@ C  /* Deck get_factor */
 ****************************************************************************
 *
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 !#if defined (SYS_CRAY)
 !      REAL P,Q,FAC
@@ -988,9 +988,9 @@ C  /* Deck get_ikm */
 ****************************************************************************
 *
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <hertop.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "hertop.h"
 C
          DIMENSION IKM((JTOP+1)*(JTOP+2)*(JTOP+3)/6,3)
 C
@@ -1023,8 +1023,8 @@ C  /* Deck get_eijt */
 ****************************************************************************
 *
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D1 = 1.0D0,D2 = 2.0D0)
 C
@@ -1075,8 +1075,8 @@ C  /* Deck get_rtuv */
 ****************************************************************************
 *
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 C
@@ -1163,8 +1163,8 @@ C  /* Deck denfit_coeffs_noddy */
 ****************************************************************************
 *
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER TITLER*21, SPACER*21
       PARAMETER (TITLER = 'DENFIT_COEFFS_NODDY> ')
@@ -1278,8 +1278,8 @@ C  /* Deck get_gamma_vec */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER*17 FNABAL
       PARAMETER(FNABAL = 'DENFIT_NODDY_INT3')
@@ -1366,8 +1366,8 @@ C  /* Deck get_m_mat */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER*17 FNAB
       PARAMETER(FNAB = 'DENFIT_NODDY_INT2')
@@ -1420,8 +1420,8 @@ C  /* Deck matinv */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D1 = 1.0D0,D0 = 0.0D0)
 C
@@ -1479,8 +1479,8 @@ C  /* Deck get_coeffs */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D1 = 1.0D0)
 C
@@ -1553,8 +1553,8 @@ C  /* Deck jab_noddy */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER*17 FNABCD
       PARAMETER(FNABCD = 'DENFIT_NODDY_INT4')
@@ -1653,8 +1653,8 @@ C  /* Deck jab_denfit_noddy */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER*17 FNABAL
       PARAMETER(FNABAL = 'DENFIT_NODDY_INT3')
@@ -1749,27 +1749,27 @@ C FIXME: Clean up calling list and declarations after things are working!!!
 C        At the moment it's a copy of header files from the REAPRI routine.
 C
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <abainf.h>
-#include <cbirea.h>
+#include "abainf.h"
+#include "cbirea.h"
 C
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <chrsgn.h>
-#include <hertop.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "chrsgn.h"
+#include "hertop.h"
 
 C
       CHARACTER*17 FNABCD 

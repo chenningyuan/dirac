@@ -52,21 +52,21 @@ C*****************************************************************************
 #include "priunit.h"
 #include "nuclei.h"
 #include "odclss.h"
-#include <inforb.h>
+#include "inforb.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
-#include <cbifck3.h>
-#include <densfit.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <iteration.h>
+#include "cbifck3.h"
+#include "densfit.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "iteration.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMT), FMAT(NBASIS*NBASIS,NDMT), 
      &          WORK(LWORK)
       LOGICAL IS_DIAGZERO
-#include <memint.h> 
+#include "memint.h" 
 C
       CALL QENTER('LIN_DF')
       CALL TIMER('START ',TIMSTR,TIMEND)
@@ -211,20 +211,20 @@ C*****************************************************************************
 #include "priunit.h"
 #include "nuclei.h"
 #include "odclss.h"
-#include <inforb.h>
+#include "inforb.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
-#include <cbifck3.h>
-#include <densfit.h>
-#include <fck3aob.h>
-#include <fck3odb.h>
-#include <iteration.h>
+#include "cbifck3.h"
+#include "densfit.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "iteration.h"
       DIMENSION DMAT(*), FMAT(*), WORK(LWORK)
       LOGICAL ROBUST_3I
-#include <memint.h> 
+#include "memint.h" 
 C
       CALL QENTER('DENS_FIT')
       CALL TIMER('START ',TIMSTR,TIMEND)
@@ -460,29 +460,29 @@ C               reduction.
 C
 C               SR and FP 15/2-2005.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       LOGICAL KCLERI
 C
       DIMENSION FMAT(*), DMAT(*), ISYMDM(*), IFCTYP(*), 
      &          WORK(*), GABAB(*), GABAL(*), DGABAL(*)
 C
 C
-#include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "inforb.h"
+#include "nuclei.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
-#include <cbihr2.h>
-#include <cbieri.h>
-#include <cbifck3.h>
-#include <priunit.h>
-#include <densfit.h>
+#include "cbihr2.h"
+#include "cbieri.h"
+#include "cbifck3.h"
+#include "priunit.h"
+#include "densfit.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('FITFCK3')
 c      
@@ -542,7 +542,7 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-#include <densfit.h> 
+#include "densfit.h" 
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -555,7 +555,7 @@ C*****************************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include <memint.h> 
+#include "memint.h" 
       CALL QENTER('DRIVE_FIT')
 C
 C     **************************************************
@@ -596,14 +596,14 @@ C*****************************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 #include "inforb.h"
-#include <densfit.h>
+#include "densfit.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
 C
-#include <memint.h> 
+#include "memint.h" 
 C
 C     We take as first index the fit set functions on either center A or B,
 C     and as second index the null function. The remaining two are ordinary
@@ -731,20 +731,20 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-#include <densfit.h> 
+#include "densfit.h" 
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
-#include <cbifck3.h>
+#include "cbifck3.h"
       DIMENSION GALPHA(NDIMAUX*NDMT),DMAT(*),WORK(LWORK),ISYMDM(*),
      &          IFCTYP(NDMT),GABAB(*),GABAL(*), I_LG(*)
 #include "nuclei.h"
 #include "symmet.h"
       LOGICAL SPEXP_SAVE,DOFMM_SAVE
 C
-#include <memint.h> 
+#include "memint.h" 
 C
       CALL QENTER('GET_GALP')
 C
@@ -777,19 +777,19 @@ C
 C
 C
       FUNCTION DF_GET_CHARGE (DMAT,WORK,LWORK)
-#include <implicit.h>
-#include <inforb.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <nuclei.h>
-#include <fck3aob.h>
-#include <densfit.h>
-#include <cbifck3.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "nuclei.h"
+#include "fck3aob.h"
+#include "densfit.h"
+#include "cbifck3.h"
       DIMENSION DMAT(*), KCCF(2,2), WORK(*)
       LOGICAL LFOUND, ACTIVE1, ACTIVE2
       PARAMETER (DP0 = 0.0d0, DP5 = 0.5d0, DP1 = 1.0d0 )
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('GET_CHAR')
 C     Get overlap-matrix
@@ -849,7 +849,7 @@ C
       END
 
       FUNCTION TRACE_MAT_PRO(A,B,N1,N2)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(N1,N2),B(N2,N1)
       TRACE = 0.0d0
       DO I=1,N1
@@ -865,13 +865,13 @@ C
       FUNCTION DF_CHARGE_BLOCK(DMAT,SMAT,WEIGHT,
      &                         KHKT1,NCTF1,ISPCOMP1,IAOB1,
      &                         KHKT2,NCTF2,ISPCOMP2,IAOB2)
-#include <implicit.h>
-#include <inforb.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <nuclei.h>
-#include <fck3aob.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "nuclei.h"
+#include "fck3aob.h"
       DIMENSION DMAT(NBASIS,NBASIS), SMAT(NBASIS,NBASIS) 
       Q = 0.0d0
       DO ICTF1 = 1, NCTF1
@@ -904,21 +904,21 @@ C     Only temporary
 #include "priunit.h"
 #include "nuclei.h"
 #include "odclss.h"
-#include <inforb.h>
+#include "inforb.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
-#include <cbifck3.h>
-#include <densfit.h>
-#include <fck3aob.h>
-#include <iteration.h>
+#include "cbifck3.h"
+#include "densfit.h"
+#include "fck3aob.h"
+#include "iteration.h"
       DIMENSION VMAT(*), I_LG(*), WORK(LWORK),
 C     Only temporary
      &          NUMBOX(*), CORDBOX(*)
 C     Only temporary
-#include <memint.h>
+#include "memint.h"
       CALL QENTER('GET_VMAT')
 C
 c     IF (DOBOX) THEN
@@ -956,7 +956,7 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-#include <densfit.h> 
+#include "densfit.h" 
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -967,7 +967,7 @@ C*****************************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include <memint.h> 
+#include "memint.h" 
 C aspg, 2006-06-17
 C
       write (*,*) 'Inside DF_GENDRV... '
@@ -1064,28 +1064,28 @@ C               CVEC returns the vector with elements gamma_alpha.
 C
 C               SR and FP 18/2-2005.
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL KCLERI
 C
       DIMENSION CVEC(*), DMAT(*), ISYMDM(*), IFCTYP(*), 
      &          GABAB(*),GABAL(*),WORK(*)
 C
 C
-#include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "inforb.h"
+#include "nuclei.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
-#include <cbihr2.h>
-#include <cbieri.h>
-#include <cbifck3.h>
-#include <priunit.h>
-#include <densfit.h>
+#include "cbihr2.h"
+#include "cbieri.h"
+#include "cbifck3.h"
+#include "priunit.h"
+#include "densfit.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('GALFCK3')
       
@@ -1127,11 +1127,11 @@ C
 C
 C     Driver for ROBUST_3I fitting (only Coulomb integrals)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FMAT(*), DMAT(*), ALBE(*), ABAL(*),WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       IF (IPRINT.GT.10) THEN
         CALL HEADER('ROBUST_3I_DRV',-1)
@@ -1190,14 +1190,14 @@ C
 C        rho_alpha = sum_cd (alpha|cd) D_cd
 C                      - sum_beta (alpha|beta) c_alpha.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FMAT(NA,NB), DMAT(NA,NB), ALBE(NAUX,NAUX), 
      &          ALBEIN(NAUX,NAUX), ABAL(NA,NB,NAUX), 
      &          CABAL(NA,NB,NAUX), CALPHA(NAUX), 
      &          RHOALP(NAUX), WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
       IF (IPRINT.GT.20) THEN
         CALL HEADER('FMAT when entering FAB_ROBUST_3I',-1)
         CALL OUTPUT(FMAT,1,NA,1,NB,NA,NB,1,LUPRI)
@@ -1268,11 +1268,11 @@ C     - NCENTS :   the number of active centers for a given index (maximally 2)
 C     - ICENTS :   the corresponding center indices 
 C     - ICLASSES : the active class (can only be one at a time).
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
       DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
 C
       DO I = 1, NAOBTCH
@@ -1333,11 +1333,11 @@ C
 C     Written by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
 C
       DIMENSION INDEX(*)
 C
@@ -1386,8 +1386,8 @@ C
 C     Written by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FULL_MAT(N_FULL,*),RED_MAT(N_RED,*)
       DIMENSION INDA(*),INDB(*)
 C
@@ -1424,9 +1424,9 @@ C
 
 
       SUBROUTINE SAVE_CONV_FIT_DENS
-#include <implicit.h>
-#include <iteration.h>
-#include <densfit.h>
+#include "implicit.h"
+#include "iteration.h"
+#include "densfit.h"
       IF (DOFIT) THEN
 #if defined (MOD_LINEARS)
         CALL di_SAVE_CONV_FIT_DENS(NFITDIM,ITER_SCF)
@@ -1439,8 +1439,8 @@ C
       END
 
       SUBROUTINE SAVE_FIT_DENS(CFIT,NFIT,ITER,LAST)
-#include <implicit.h>
-#include <iteration.h>
+#include "implicit.h"
+#include "iteration.h"
       DIMENSION CFIT(NFIT)
       CHARACTER*6 FILENAME
       LOGICAL LAST
@@ -1463,7 +1463,7 @@ C
       END
 
       SUBROUTINE READ_FIT_DENS(CFIT,NFIT,ITER,FIRST)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CFIT(NFIT)
       LOGICAL FIRST
       CHARACTER*6 FILENAME
@@ -1488,16 +1488,16 @@ C
       END
 
       SUBROUTINE SET_ITER(ITER)
-#include <implicit.h>
-#include <iteration.h>
+#include "implicit.h"
+#include "iteration.h"
       ITER_SCF = ITER
       RETURN
       END
 
       SUBROUTINE SET_ATTGAM(ATTSET,OMEGA)
-#include <implicit.h>
-#include <cbieri.h>
-#include <ericom.h>
+#include "implicit.h"
+#include "cbieri.h"
+#include "ericom.h"
       LOGICAL ATTSET
       ATTGAM = ATTSET
       OMEGA2 = OMEGA*OMEGA
@@ -1505,7 +1505,7 @@ C
       END
 
       LOGICAL FUNCTION GET_F_DENS()
-#include <iteration.h>
+#include "iteration.h"
       GET_F_DENS = F_DENS
       RETURN
       END
@@ -1533,7 +1533,7 @@ C     Subroutines for iterative solver of the fitting equations.
 C     Convergence is poor. If it should be used, a good 
 C     preconditioner must be implemented! /SR
       SUBROUTINE asolve(diag,n,b,x)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION :: diag(n),x(n),b(n)
       do i=1,n
 c        x(i)=b(i)
@@ -1695,8 +1695,8 @@ C               Multiple densities not debuged.
 C
 C               SR 19/12-2005.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       LOGICAL KCLERI
 C
       DIMENSION G_ALPHA(*), ISYMDM(*), IFCTYP(*), 
@@ -1706,23 +1706,23 @@ cSimen
      &          WORK(*), GABAL(*), C_ALPHA(*)
 C
 C
-#include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "inforb.h"
+#include "nuclei.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
-#include <cbihr2.h>
-#include <cbieri.h>
-#include <cbifck3.h>
-#include <priunit.h>
-#include <densfit.h>
-#include <fck3thr.h>
+#include "cbihr2.h"
+#include "cbieri.h"
+#include "cbifck3.h"
+#include "priunit.h"
+#include "densfit.h"
+#include "fck3thr.h"
 C
       LOGICAL DOFMM_SAVE, NOSCRE_SAVE
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('ITPROD')
 c     Turn off fmm
@@ -1781,18 +1781,18 @@ cToDo       implemend LHS-fitting moments.
 #include "priunit.h"
 #include "nuclei.h"
 #include "odclss.h"
-#include <inforb.h>
+#include "inforb.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
-#include <cbifck3.h>
-#include <densfit.h>
-#include <fck3aob.h>
-#include <iteration.h>
+#include "cbifck3.h"
+#include "densfit.h"
+#include "fck3aob.h"
+#include "iteration.h"
       DIMENSION GABAB(*), GABAL(*), WORK(LWORK)
-#include <memint.h> 
+#include "memint.h" 
       CALL QENTER('SCRINT')
 
 C     Set AO- and OD-batches (and classes)
@@ -1855,18 +1855,18 @@ C        FIXME: these are now obsolete for screening and should be removed.
 #include "priunit.h"
 #include "nuclei.h"
 #include "odclss.h"
-#include <inforb.h>
+#include "inforb.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
-#include <cbifck3.h>
-#include <densfit.h>
-#include <fck3aob.h>
-#include <iteration.h>
+#include "cbifck3.h"
+#include "densfit.h"
+#include "fck3aob.h"
+#include "iteration.h"
       DIMENSION ALBE(*), WORK(LWORK), I_LG(*)
-#include <memint.h> 
+#include "memint.h" 
       CALL QENTER('GTALBE')
 
 C     Set AO- and OD-batches (and classes)
@@ -1900,20 +1900,20 @@ C     Calculate the (al|be) matrix
 #include "priunit.h"
 #include "nuclei.h"
 #include "odclss.h"
-#include <inforb.h>
+#include "inforb.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
-#include <cbifck3.h>
-#include <densfit.h>
-#include <fck3aob.h>
-#include <iteration.h>
+#include "cbifck3.h"
+#include "densfit.h"
+#include "fck3aob.h"
+#include "iteration.h"
       DIMENSION CFIT(NBASISAUX,NDMT), NUMBOX(*), CORDBOX(*), 
      &          FMAT(*), DMAT(*), 
      &          GABAB(*), GABAL(*), ISYMDM(*), IFCTYP(*), WORK(LWORK)
-#include <memint.h> 
+#include "memint.h" 
 C
       CALL QENTER('DF_BOX')
 C
@@ -1962,8 +1962,8 @@ C     several columns (NRHS), and A is symmetric positive definite matrix.
 C     MAKECOPY indicates wether we would like to make a copy of A (so that
 C     it remains unchanged by this call) or not.
       SUBROUTINE LINSOL(AMAT,XVEC,BVEC,N,NRHS,MAKECOPY,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AMAT(N,N), XVEC(N,NRHS), BVEC(N,NRHS), WORK(LWORK)
       LOGICAL MAKECOPY
       CALL QENTER('LINSOL')
@@ -1990,14 +1990,14 @@ C       Makes a copy of the AMAT, so that AMAT is unchanged
 
       SUBROUTINE DF_GET_AUXCHA_LOC(AUXINT,I_LG,NDIMAUX,
      &                             WORK,LWORK,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include <nuclei.h>
-#include <densfit.h>
+#include "nuclei.h"
+#include "densfit.h"
       DIMENSION AUXINT(NDIMAUX),I_LG(NDIMAUX),WORK(*)
-#include <memint.h>
+#include "memint.h"
       CALL QENTER('GET_AUXC')
       IF (DOBOX) THEN
         CALL MEMGET('REAL',KAUXGLO,NBASISAUX,WORK,KFREE,LFREE)
@@ -2015,7 +2015,7 @@ C       Makes a copy of the AMAT, so that AMAT is unchanged
       END
 
       LOGICAL FUNCTION IS_DIAGZERO(AMAT,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(N,N)
       AMATMAX = 0.0d0
       DO I=1,N
@@ -2030,9 +2030,9 @@ C       Makes a copy of the AMAT, so that AMAT is unchanged
       END
 
       FUNCTION DF_E_ROB_CORR()
-#include <implicit.h>
-#include <densfit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "densfit.h"
+#include "priunit.h"
       IF (DOFIT.AND.ROBUST_E) THEN
         DF_E_ROB_CORR = ROB_E_CORR
       ELSE
@@ -2045,15 +2045,15 @@ C       Makes a copy of the AMAT, so that AMAT is unchanged
 
       SUBROUTINE DF_CAL_ROB_E(DMAT,FMAT,CFIT,NDMT,ISYMDM,IFCTYP,GABAL,
      &                        WORK,LWORK,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include <nuclei.h>
-#include <densfit.h>
+#include "nuclei.h"
+#include "densfit.h"
       DIMENSION DMAT(*),FMAT(*),CFIT(*),ISYMDM(*),IFCTYP(*),GABAL(*),
      &          WORK(*)
-#include <memint.h>
+#include "memint.h"
       CALL QENTER('CAL_ROB_')
       IF (NDMT.NE.1) 
      &  CALL QUIT('Robust correction not implenented for NDMT .GT. 1')
@@ -2077,10 +2077,10 @@ CAREFUL Added temporary to remove segmentation fault in setmaxcsbtch
 
 C  /* Deck dfiinp */
       SUBROUTINE DFIINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <densfit.h>
-#include <fck3box.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "densfit.h"
+#include "fck3box.h"
       PARAMETER ( NTABLE = 13 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DATA TABLE /'.DIATOM','.DOBOX ','.BOXORB','.BUFSIZ','.CONSTR',
@@ -2205,8 +2205,8 @@ C
       END
 C  /* Deck dfiini */
       SUBROUTINE DFIINI
-#include <implicit.h>
-#include <densfit.h>
+#include "implicit.h"
+#include "densfit.h"
       !.DIATOM - fit density for pairs of atoms (default is the global fit)
       DOFIT     = .FALSE.
       DIATOM    = .FALSE.
