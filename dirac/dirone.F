@@ -6468,11 +6468,6 @@ C
 C     Initial print section
 C     =====================
 C
-      IF(IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(A,A3,2X,A1)') 
-     &    'SPHCAR: Transformation matrix for ',REP(IREP),COMP(IC)
-      ENDIF
-C
 C     Loop over shells
 C     ================
 C
@@ -6546,6 +6541,7 @@ C
           ENDIF
           IF(IPRINT.GE.4) THEN
             KOFF = ICBF(3,LL)
+            WRITE(LUPRI,'(A)') '* SPHCAR:'
             WRITE(LUPRI,'(A,I3)')
      &       ' * Center : ',JNUC,
      &       ' * L-value: ',L
@@ -6576,6 +6572,8 @@ C
 C     Final print section
 C
       IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A,A3,2X,A1)') 
+     &    'SPHCAR: Transformation matrix for ',REP(IREP),COMP(IC)
         CALL PRSYMB(LUPRI,'-',40,0)
         CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NPSH,1,LUPRI)
       ENDIF
