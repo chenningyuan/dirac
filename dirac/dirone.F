@@ -469,6 +469,28 @@ C     Memory deallocation
 
       ENDIF
 C
+C     Output section
+C     ==============
+C
+      IF(IPRHAM.GE.4) THEN
+        IF (TWOCOMP) THEN
+         CALL HEADER(
+     &   'ONEFCK1: One-electron Fock matrix - nonrelativistic'//
+     &   '  Hamiltonian (TWOCOMP=.true.)',-1)
+        ELSE
+         CALL HEADER(
+     &   'ONEFCK1: One-electron Fock matrix from the'//
+     &   ' Dirac Hamiltonian (TWOCOMP=.false.)',-1)
+        ENDIF
+        DO 10 I = 1,NFSYM
+          IF(NFBAS(I,0).EQ.0) GOTO 10
+           WRITE(LUPRI,'(A,I1,A,I1)')
+     &     '* Fermion ircop no.',I,'/',NFSYM   
+          CALL PRQMAT(FOCK(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+   10   CONTINUE
+      ENDIF
+C
       CALL QEXIT('ONEFCK')
       RETURN
       END
@@ -585,28 +607,6 @@ C     Reindex to sorted basis
 C     =======================
 C
       CALL BUTOBS(FOCK,NZ,WORK(KFREE),LFREE)
-C
-C     Output section
-C     ==============
-C
-      IF(IPRHAM.GE.4) THEN
-        IF (TWOCOMP) THEN
-         CALL HEADER(
-     &   'ONEFCK1: One-electron Fock matrix - nonrelativistic'//
-     &   '  Hamiltonian (TWOCOMP=.true.)',-1)
-        ELSE
-         CALL HEADER(
-     &   'ONEFCK1: One-electron Fock matrix from the'//
-     &   ' Dirac Hamiltonian (TWOCOMP=.false.)',-1)
-        ENDIF
-        DO 10 I = 1,NFSYM
-          IF(NFBAS(I,0).EQ.0) GOTO 10
-           WRITE(LUPRI,'(A,I1,A,I1)')
-     &     '* Fermion ircop no.',I,'/',NFSYM   
-          CALL PRQMAT(FOCK(I2BASX(I,I)+1,1),NFBAS(I,0),NFBAS(I,0),
-     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-   10   CONTINUE
-      ENDIF
 C
       CALL QEXIT('ONEFCK1')
       RETURN
