@@ -1297,8 +1297,9 @@ C
 C     If spherical transformations, get general transformation matrix
 C     ===============================================================
 C
-       IF(ISPHTR.NE.0) 
-     &       CALL GETSPH(1,2,CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
+       IF(ISPHTR.NE.0) THEN
+         CALL GETSPH(1,2,CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
+       ENDIF
 C
 C     Initialize Lowdin matrix
 C     ========================
