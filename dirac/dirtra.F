@@ -2831,9 +2831,7 @@ C     MORDER ne 0 : M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
 C
 C     MINTEG eq 1 : the spherical components are normalized such
 C                   that all coefficients are integers.
-CMI   MORDER = 1
-      SPHNRM = .FALSE.
-CMI   MINTEG = 1
+CTROND      SPHNRM = .FALSE.
       IOFF   = 0
       DO LL = 1, LMAX
         L    = LL - 1
