@@ -40,6 +40,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "memint.h"
 
       CALL QENTER('MAKE_DKH')
+
 C ... verify if we are NOT in the pure two-component mode ...
       IF (NTBAS(2).EQ.0.OR.TWOCOMP) THEN                     
        CALL QUIT('MAKE_DKH: BSS & no small component basis sets !')  
@@ -64,13 +65,14 @@ C     IF (DO4C2C.AND..NOT.START2C.AND..NOT.CONT2C) THEN
      &  ' of four-component Fock-Dirac AO matrixes'//
      &  ' (renews files DFFCK1, DFFCK2, get FD1AO_DK)'
         IF (USEDF) THEN
+C       ... in this case we block-diagonalize the Fock-Dirac operator
          write(LUPRI,'(4X,A/)')
-     &   '... picture change transformation matrix is from'//
-     &   ' block-diagonalizations of 4c Fock-Dirac operator.'
+     &   '... the picture change transformation matrix comes from'//
+     &   ' the block-diagonalization of the Fock-Dirac operator.'
         ELSE
          write(LUPRI,'(4X,A/)')
-     &   '... picture change transformation matrix is from'//
-     &   ' block-diagonalizations of one-el. Dirac operator.'
+     &   '... the picture change transformation matrix comes from'//
+     &   ' block-diagonalizations of one-electron Dirac operator.'
         ENDIF
        ENDIF
 
@@ -82,14 +84,13 @@ C     IF (DO4C2C.AND..NOT.START2C.AND..NOT.CONT2C) THEN
 
       ENDIF
 
-CMI   ... store H2c_AO in pure LL form ...
+C ... store H2c_AO in pure LL form ...
       IF (TWOCOMPBSS.AND.(I2COFK.EQ.1.OR.I2COFK.EQ.2)) THEN
         CALL H2CTOLL(I2COFK,VMAT,WORK(KFREE),LFREE,IPRHAM)
 C       call quit('...preparing for TWOCOMP & BSS !!!')
       ENDIF
 
-CMI   ... for calculating properties in pure 2comp. mode do adapt
-CMI   them 
+C ... for calculating properties in pure 2comp. mode do adapt them 
       IF (TWOCOMPBSS.AND.DOPRP) THEN
         CALL PROP2BSS(VMAT,WORK(KFREE),LFREE)
       ENDIF
@@ -99,8 +100,10 @@ C ... export the Lowdin matrix adapted for 2c calculations,
 C ===============================================================================
       V2COUT = .TRUE.
       IF (V2COUT) THEN
-        CALL RFBSSMAT('VMAT2C  ','MAKE_DKH',VMAT,N2BBASX,LUBSS,IPRHAM)
+        CALL RFBSSMAT('VMAT2C  ',.TRUE.,'MAKE_DKH',
+     &        VMAT,N2BBASX,LUBSS,IPRHAM)
       ENDIF
+
 C    .. close the BSSMAT file...
       CLOSE(LUBSS,STATUS='KEEP')
 
@@ -148,14 +151,30 @@ C  /* Deck geth2cao */
        SUBROUTINE GETH2CAO(I2COFK,FOCK,WORK,LWORK,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Purpose: routine read chosen type of the two-component transformed Hamiltonian
+C  Purpose: routine reads selected type of the two-component transformed Hamiltonian
 C           depending on the entering I2OFCK value
 C
 C  Called from: ONEFCK (if BSS=.true.)
 C
-C On input :   FOCK - to be used inside
-C =========   I2COFK - determines the integral type
-C             IPRINT - print level
+C On input :   
+C ==========
+C  FOCK - array used inside
+C  I2COFK - determines the integral type
+C  Note that it the temporary default, BSS is really run in 4-component
+C  mode, that is the small components are simply set to zero.
+C  True 2-component mode means that the small components are fully absent.
+C
+C * BSS transformation of one-electron problem:
+C    1 - 2c matrix from 4c
+C    2 - 2c matrix from 4c 
+C * BSS transformation after 4c SCF, that is using the mean-field potential:
+C    3 - 2c one-electron matrix 
+C    4 - 2c full Fock matrix
+C    5 - 
+C    6 -
+C    7 - true 2-component mode
+C
+C  IPRINT - print level
 C
 C On output :     BSSMAT file updated with LL H2c_AO integrals
 C ===========     I2COFK set to 7
@@ -171,53 +190,45 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION FOCK(*),WORK(LWORK)
       LOGICAL FNDLAB
       CHARACTER*8 HAM2CL
-
+C
+C     HAM2CL is the label of the two-comp. hamiltonian matrix to read
+C     ==================================================================
+C
       CALL QENTER('GETH2CAO')
 
+C     Select the label
       IF      (I2COFK.EQ.1) THEN       
-CMI        .... h2c from h_D(1)_4C ... DEFAULT ...    
-           HAM2CL = 'H1AO_DK '      
+C.... h2c from h_D(1)_4C ... DEFAULT ...    
+        HAM2CL = 'H1AO_DK '      
       ELSE IF (I2COFK.EQ.2) THEN      
-CMI      .... h2c_CSC(+AMFI if present) from hD(1)_4C                                     
-           HAM2CL = 'H1AO_DK2'     
-CMI      ... these are post-DC-SCF two-component Hamiltonians ...                         
+C.... h2c_CSC(+AMFI if present) from hD(1)_4C                                     
+        HAM2CL = 'H1AO_DK2'     
+C.... these are post-DC-SCF two-component Hamiltonians ...                         
 C     =============================================================                       
       ELSE IF (I2COFK.EQ.3) THEN 
-CMI .... h2c(1) from FD4C - one electron terms !                                          
-CMI ...  WE MAY WISH TO PERFORM ONLY ONE SCF ITERATION HERE !                             
-           HAM2CL = 'FD1AO_DK'    
+C.... h2c(1) from FD4C - one electron terms !                                          
+C.... WE MAY WISH TO PERFORM ONLY ONE SCF ITERATION HERE !                             
+        HAM2CL = 'FD1AO_DK'    
       ELSE IF (I2COFK.EQ.4) THEN    
-CMI .... full Fock_2c transformed from FD4C                                               
-           HAM2CL = 'FDAO_DK '   
+C.... full Fock_2c transformed from FD4C                                               
+        HAM2CL = 'FDAO_DK '   
       ELSE IF (I2COFK.EQ.5.OR.I2COFK.EQ.6) THEN
-CMI .... f2c(=h1+u1_so, spin-free terms are removed from u1) from FD_4C term              
-           HAM2CL = 'FD2C_USO' 
+C.... f2c(=h1+u1_so, spin-free terms are removed from u1) from FD_4C term              
+        HAM2CL = 'FD2C_USO' 
       ELSE IF (I2COFK.EQ.7) THEN    
-CMI .... it's H1AO_DK or H1AO_DK2 in LL basis
-           HAM2CL = 'H2CAO_LL' 
+C.... it's H1AO_DK or H1AO_DK2 in LL basis
+        HAM2CL = 'H2CAO_LL' 
       ELSE     
-CC        write(lupri,*) 'H2CAOLL: I2CHAM=',I2CHAM   
-          write(lupri,*) 'H2CAOLL: I2COFK=',I2COFK   
-          CALL QUIT('ONEFCK: Wrong value of I2CHAM!')    
+        WRITE(lupri,*) 'H2CAOLL: I2COFK=',I2COFK   
+        CALL QUIT(
+     &'ONEFCK: Wrong value of the entering I2COFK!')
       ENDIF                                  
+C
+C     Read two-component hamiltonian integrals from file
+C     ====================================================
 
-      CALL OPNFIL(LUBSS,'BSSMAT','OLD','ONEFCK')   
-      REWIND LUBSS   
-      IF (FNDLAB(HAM2CL,LUBSS)) THEN   
-          CALL READT(LUBSS,N2BBASXQ,FOCK)    
-          IF (IPRINT.GE.2) THEN    
-           WRITE(LUPRI,'(/2X,A,A,A)')                                  
-     & 'GETH2CAO: ',HAM2CL,' transformed one-electron relativistic'//   
-     & ' integrals were read from the file BSSMAT.'
-          ENDIF  
-      ELSE
-           WRITE(LUPRI,'(/2X,A,A)')   
-     & 'GETH2CAO: ',HAM2CL,' transformed one-electron relativistic'//   
-     & ' integrals NOT FOUND in the file BSSMAT !'
-          CALL QUIT('ONEFCK: integrals NOT FOUND in the file BSSMAT!') 
-      ENDIF  
-C        ... close the file ...                                                           
-      CLOSE(LUBSS,STATUS='KEEP') 
+      CALL RFBSSMAT(HAM2CL,.FALSE.,'GETH2CAO',
+     &      FOCK,N2BBASXQ,LUBSS,IPRINT)
 
       CALL QEXIT('GETH2CAO')
       RETURN
@@ -298,16 +309,23 @@ C get transf. matrix (RKB)
 
 C     ... choose the file number !
       LUBSS = 35
-      CALL OPNFIL(LUBSS,'BSSMAT','UNKNOWN','GMOTRA')
+C     ... this is the first opening
+C     CALL OPNFIL(LUBSS,'BSSMAT','UNKNOWN','GMOTRA')
 C ... save Lowdin matrix into the BSSMAT file...
-      CALL NEWLAB('VMAT4C  ',LUBSS,LUPRI)
-      CALL WRITT(LUBSS,N2BBASX,VMAT)
-      IF (IPRHAM.GE.3) THEN
+C     CALL NEWLAB('VMAT4C  ',LUBSS,LUPRI)
+C     CALL WRITT(LUBSS,N2BBASX,VMAT)
+
+      CALL W2BSSMAT(4,.TRUE.,'VMAT4C  ','MAKE_BSS',
+     &              VMAT,N2BBASX,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'MAKE_BSS: 4c Lowdin AO to MO transf. matrix is '//
      & ' written to the BSSMAT file.'
       ENDIF
-
+c      close(LUBSS)
+c     call quit('xxxx')
+c
+C ============================================================
 C ... get the RKB transformation matrix into WORK(KTMAT)
 C ============================================================
 C     LINAD = ( DO4C2C.AND.USEDF.AND.LINEAR )
@@ -317,7 +335,6 @@ C     LINAD = ( DO4C2C.AND.USEDF.AND.LINEAR )
       ENDIF
       CALL MODHAM(WORK(KTMAT),VMAT,WORK(KTBUF),WORK(KEIG),.NOT.FPB,
      &            LINAD,WORK(KFREE),LFREE)
-
 
 C      ... NTMO is set up !!!!
 C .... this settings are needed (DFDIAG!!!) for the RKB option !!!
@@ -340,7 +357,6 @@ C          ....  Count total number of orbitals...
         I2ORBT(IFRP)= N2ORBT*NZ
         N2ORBT   = N2ORBT + NORB(IFRP)*NORB(IFRP)
       ENDDO
-
 
       IF (IPRHAM.GE.5) THEN
         IMAT = KTMAT
@@ -384,36 +400,45 @@ C          ....  Count total number of orbitals...
 
       IF (.NOT.FPB) THEN
 C      ... we need to transform to SL sorted ON basis ...
-       CALL NEWLAB('SL_TM_4C',LUBSS,LUPRI)
-       CALL WRITT(LUBSS,N2TMT,VMAT)
+C      CALL NEWLAB('SL_TM_4C',LUBSS,LUPRI)
+C      CALL WRITT(LUBSS,N2TMT,VMAT)
+       CALL W2BSSMAT(4,.TRUE.,'SL_TM_4C',
+     &     'MAKE_BSS',VMAT,N2TMT,LUBSS,IPRHAM)
        IF (IPRHAM.GE.2) THEN
         write(lupri,*)
      & 'MAKE_BSS: SL_TM_4C (VMAT) was written to the BSSMAT !!'
        ENDIF
       ENDIF
 
-      CALL NEWLAB('TMAT4C  ',LUBSS,LUPRI)
-      CALL WRITT(LUBSS,N2TMT,WORK(KTMAT))
+C     CALL NEWLAB('TMAT4C  ',LUBSS,LUPRI)
+C     CALL WRITT(LUBSS,N2TMT,WORK(KTMAT))
+      CALL W2BSSMAT(4,.TRUE.,'TMAT4C  ','MAKE_BSS',WORK(KTMAT),
+     &               N2TMT,LUBSS,IPRHAM)
       IF (IPRHAM.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
      & 'MAKE_BSS: RKB transf. matrix (TMAT, basic) '//
      & 'has been written to the BSSMAT file.'
       ENDIF
 
+c     call quit('here stop')
+
       IF (LINAD) THEN
        ISIZE = NORB(1)*NORB(1)
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
-       CALL NEWLAB('TMAT_LSY',LUBSS,LUPRI)
-       CALL WRITT(LUBSS,ISIZE,WORK(KTBUF))
-      IF (IPRHAM.GE.3) THEN
+C      CALL NEWLAB('TMAT_LSY',LUBSS,LUPRI)
+C      CALL WRITT(LUBSS,ISIZE,WORK(KTBUF))
+       CALL W2BSSMAT(4,.TRUE.,'TMAT_LSY','MAKE_BSS',
+     &      WORK(KTBUF),ISIZE,LUBSS,IPRHAM)
+       IF (IPRHAM.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
      & 'MAKE_BSS: RKB MO to MO_LSYM (WORK(KTBUF)) '//
      & 'was written to the BSSMAT file.'
-      ENDIF
+       ENDIF
       ENDIF
 
+C    ... one-step approach and NOT the linear symmetry 
       IF (.NOT.FPB.AND.LINAD) THEN
-      IVMAT = 1
+       IVMAT = 1
        IBUF = KTBUF
        IMAT = KTMAT 
        DO I = 1, NFSYM
@@ -444,8 +469,10 @@ C           VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
        ENDIF
        ENDDO
 
-       CALL NEWLAB('TMAT4C_1',LUBSS,LUPRI)
-       CALL WRITT(LUBSS,N2TMT,VMAT)
+C      CALL NEWLAB('TMAT4C_1',LUBSS,LUPRI)
+C      CALL WRITT(LUBSS,N2TMT,VMAT)
+       CALL W2BSSMAT(4,.TRUE.,'TMAT4C_1','MAKE_BSS',
+     &               VMAT,N2TMT,LUBSS,IPRHAM)
        IF (IPRHAM.GE.2) THEN
         write(lupri,*)
      & 'MAKE_BSS: TMAT4C_1 (VMAT) was written into the BSSMAT !'
@@ -453,7 +480,11 @@ C           VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
 
       ENDIF
 
-      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C     CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C       ... dummy vars
+      CALL W2BSSMAT(6,.TRUE.,'XXXXXXXX','MAKE_BSS',
+     &               VMAT,N2TMT,LUBSS,IPRHAM)
+
       IF (IPRHAM.GE.3) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'MAKE_BSS: BSSMAT file - '//
@@ -502,7 +533,8 @@ C    ... that is  the RKB  or FP "k" basis; WORK(KTMAT) entering ... !
      &                   SF_BEG,FPB,LINAD,SAVESO1,WORK(KFREE),LFREE)
 
 
-C get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in FP k basis
+C ===================================================================
+C    get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in FP k basis
 C ===================================================================
       IF (IPZ.EQ.9) THEN
        
@@ -524,12 +556,12 @@ C        ... both for FPM "k" & RKB
         ENDIF
 
       ELSE IF (IPZ.EQ.2) THEN
-C       ... second order DKH - needed FREE PARTICLE BASIS !!!
+C       ... second order DKH - only in the free-partcle basis
         CALL GET_HDK2_FPM(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KEIG),
      &                    WORK(KIBEIG),DK2SO1,
      &                    IPRHAM,WORK(KFREE),LFREE)
       ELSE
-C       ...and very rough first order, or SO1 integrals only... needed FREE PARTICLE BASIS !!!
+C       ...this is very rough first order, or SO1 integrals only... needed FREE PARTICLE BASIS !!!
         CALL GET_HDK1_FPM(WORK(KTBUF),VMAT, WORK(KIBEIG),ONLYSO1,
      &                            IPRHAM,WORK(KFREE),LFREE)
       ENDIF
@@ -660,7 +692,8 @@ C   ... now do the picture change transformation
       END IF 
 
 CMI   ... do save it into BSSMAT file ...
-      CALL W2BSSMAT('BNCR2C_4','PREPBNCR',VMAT,N2BBASXQ,LUBSS,IPRHAM)
+      CALL W2BSSMAT(1,.FALSE.,'BNCR2C_4','PREPBNCR',
+     &               VMAT,N2BBASXQ,LUBSS,IPRHAM)
 
       CALL QEXIT('PREPBNCR')
       RETURN
@@ -668,18 +701,21 @@ CMI   ... do save it into BSSMAT file ...
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck rfbssmat */
-      SUBROUTINE RFBSSMAT(LBL,FROMSUB,TMAT,ISIZE,LUBSS,IPRINT)
+      SUBROUTINE RFBSSMAT(LBL,KEEP_OPEN,FROMSUB,
+     &                    TMAT,ISIZE,LUBSS,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  PURPOSE: Read the LBL record from the BSSMAT file into TMAT
+C  PURPOSE: Read the LBL record label from the BSSMAT file into
+C           the entering TMAT array
 C
 C  On input: LBL - the label of the record
-C            FROMSUB - the name of the routine from where RFBSSMAT is called
+C            KEEP_OPEN - flag on keeping  the BSSMAT file open
+C            FROMSUB - the name of the routine from which RFBSSMAT is called
 C            TMAT - array
 C            ISIZE - the size of the record
 C            LUBSS - file unit number ...
 C
-C  On output: TMAT
+C  On output: TMAT with record
 C
 C  Written by Miro ILIAS, Strasbourg March, 2006,
 C
@@ -687,31 +723,42 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION TMAT(*)
-      LOGICAL FNDLAB,IS_HERE,IS_OPEN
+      LOGICAL FNDLAB,KEEP_OPEN,IS_HERE,IS_OPEN
       CHARACTER*8 LBL
       CHARACTER*(*) FROMSUB
       
       CALL QENTER('RFBSSMAT')
 
+      IF (IPRINT.GE.3) THEN
+       CALL HEADER('*** Output from the RFBSSMAT routine ***',-1)
+       write(lupri,*) '* RFBSSMAT called from routine:',FROMSUB
+       write(lupri,*) '* The label to be read from BSSMAT:',LBL
+      ENDIF
+
       INQUIRE(FILE='BSSMAT',EXIST=IS_HERE,OPENED=IS_OPEN)
 
       IF (.NOT.IS_HERE) THEN
        write(lupri,*) 'RFBSSMAT: BSSMAT file is not present !'
-       write(lupri,*) 'RFBSSMAT called from ',FROMSUB
        CALL QUIT('RFBSSMAT: BSSMAT file is not present !')
       ENDIF
 
       IF (.NOT.IS_OPEN) THEN
        CALL OPNFIL(LUBSS,'BSSMAT','OLD',FROMSUB)
+       IF (IPRINT.GE.3) THEN
+        write(lupri,*) '* Opening the BSSMAT file.'
+       ENDIF
+      ELSE
+       IF (IPRINT.GE.3) THEN
+        write(lupri,*) '* BSSMAT file is open.'
+       ENDIF
       ENDIF
 
       REWIND LUBSS
       IF (FNDLAB(LBL,LUBSS)) THEN
         CALL READT(LUBSS,ISIZE,TMAT)
         IF (IPRINT.GE.2) THEN
-          WRITE(LUPRI,'(/2X,A,A,A,A)')
-     & 'RFBSSMAT: ',LBL,' record'//
-     & ' was read from the file BSSMAT. Called from ',FROMSUB
+         WRITE(LUPRI,*)
+     & '* RFBSSMAT: ',LBL,' record  was read from the file BSSMAT'
         ENDIF
       ELSE
          WRITE(LUPRI,'(/2X,A,A,A)')
@@ -720,67 +767,176 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        CALL QUIT('RFBSSMAT: Record NOT FOUND in the file BSSMAT!') 
       ENDIF
 
-      CLOSE(LUBSS,STATUS='KEEP')
+      IF (.NOT.KEEP_OPEN) THEN
+        CLOSE(LUBSS,STATUS='KEEP')
+        IF (IPRINT.GE.3) THEN
+          write(lupri,*) '* BSSMAT file left closed.'
+        ENDIF
+      ELSE
+        IF (IPRINT.GE.3) THEN
+          write(lupri,*) '* BSSMAT file left open.'
+        ENDIF
+      ENDIF
+
       CALL QEXIT('RFBSSMAT')
       RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck rfbssmat */
-      SUBROUTINE W2BSSMAT(LBL,FROMSUB,TMAT,ISIZE,LUBSS,IPRINT)
+      SUBROUTINE W2BSSMAT(IW,KEEP_OPEN,LBL,
+     &           FROMSUB,TMAT,ISIZE,LUBSS,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  PURPOSE: WRITE the LBL record into the BSSMAT file from TMAT
+C  PURPOSE: WRITE the LBL record (stored in TMAT) to the BSSMAT file 
+C           acording to IW, KEEP_OPEN parameters.
 C
-C  On input: LBL - the label of the record
-C            FROMSUB - the name of the routine from where RFBSSMAT is called
-C            TMAT - array
+C  On input:
+C            IW - integer number (1-4) specifying how to write the record
+C
+C              IW = 1: find EOFLABEL, write record, renew EOFLABEL
+C              IW = 2: find EOFLABEL, write record
+C              IW = 3: write record, renew EOFLABEL
+C              IW = 4: write record only
+C              IW = 5: empty
+C              IW = 6: only renew the EOFLABEL
+C
+C            KEEP_OPEN - if .true., the BSSMAT file is left open
+C            LBL - the label of the record
+C            FROMSUB - the name of the routine from where W2BSSMAT is called
+C            TMAT - data to be written into BSSMAT
 C            ISIZE - the size of the record
-C            LUBSS - file unit number ...
+C            LUBSS - file unit number.
 C
 C  On output: none
 C
-C   Written by Miro ILIAS, Strasbourg March, 2006,
+C   Written by Miro ILIAS, Strasbourg March, 2006
+C   Latest modificatins: MI, Prievidza, Jun 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+
       DIMENSION TMAT(*)
-      LOGICAL FNDLAB,IS_HERE,IS_OPEN
+      LOGICAL FNDLAB,IS_HERE,IS_OPEN,KEEP_OPEN
       CHARACTER*8 LBL
       CHARACTER*(*) FROMSUB
+
       CALL QENTER('W2BSSMAT')
 
+      IF (IPRINT.GE.3) THEN
+        CALL HEADER('*** Output from the W2BSSMAT routine ***',-1)
+        write(lupri,*) '* W2BSSMAT was called from routine: ',FROMSUB
+        write(lupri,*) '* Entering parameter on how to write IW=',IW
+        write(lupri,*) '* The entering label for record: ',LBL
+        write(lupri,*)
+     &  '* Entering size of record (double words) ISIZE=',ISIZE
+        write(lupri,*)
+     &  '* Entering logical unit of the file, LUBSS=',LUBSS
+        write(lupri,*)
+     &  '* Keeping BSSMAT open after (T/F):',KEEP_OPEN
+        CALL FLSHFO(LUPRI)
+      ENDIF
+
+      IF (ISIZE.LE.0) THEN
+       write(lupri,*) 'Entering ISIZE=',ISIZE
+       CALL QUIT('W2BSSMAT: wrong value of ISIZE !')
+      ENDIF
+
+C     ... find out about the BSSMAT file
       INQUIRE(FILE='BSSMAT',EXIST=IS_HERE,OPENED=IS_OPEN)
 
-      IF (.NOT.IS_HERE) THEN
-       write(lupri,*) 'W2BSSMAT: BSSMAT file is not present !'
-       write(lupri,*) 'W2BSSMAT was called from ',FROMSUB
-       CALL QUIT('W2BSSMAT: BSSMAT file is not present !')
-      ENDIF
-
-      IF (.NOT.IS_OPEN) THEN
+      IF (.NOT.IS_OPEN.AND.IS_HERE) THEN
        CALL OPNFIL(LUBSS,'BSSMAT','OLD',FROMSUB)
+       IF (IPRINT.GE.3) THEN
+        write(lupri,*)
+     &  '* BSSMAT does exist, open as an old file.'
+       ENDIF
+      ELSE IF (.NOT.IS_HERE.AND..NOT.IS_OPEN) THEN
+       CALL OPNFIL(LUBSS,'BSSMAT','UNKNOWN',FROMSUB)
+       IF (IPRINT.GE.3) THEN
+        write(lupri,*)
+     &  '* BSSMAT does not exist, open it as an UNKNOWN file.'
+       ENDIF
+      ELSE IF (IS_HERE.AND.IS_OPEN) THEN
+       IF (IPRINT.GE.3) THEN
+        write(lupri,*)
+     &  '* BSSMAT does exist and is open.'
+       ENDIF
+       CONTINUE
+      ELSE
+        write(lupri,*) 'W2BSSMAT: dead branch !'
+       CALL QUIT('W2BSSMAT: dead branch, check routine !')
       ENDIF
 
-      REWIND LUBSS                                                    
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN                            
-       BACKSPACE(LUBSS)                   
-       CALL NEWLAB(LBL,LUBSS,LUPRI)             
-       CALL WRITT(LUBSS,ISIZE,TMAT)                   
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)                            
-       IF (IPRINT.GE.2) THEN
-        WRITE(LUPRI,'(/2X,A,A,A,A)')
-     & 'W2BSSMAT: ',LBL,' record '//
-     & 'was WRITTEN inthe file BSSMAT. EOFLABEL was renewed'//
-     & ' at the end. Called from ',FROMSUB
-       ENDIF
-      ELSE                                                       
-       CALL QUIT(                                               
+      IF (IW.EQ.1.OR.IW.EQ.2) THEN
+        REWIND LUBSS                                                    
+        IF (FNDLAB('EOFLABEL',LUBSS)) THEN                            
+          BACKSPACE(LUBSS)                   
+          CALL NEWLAB(LBL,LUBSS,LUPRI)             
+          CALL WRITT(LUBSS,ISIZE,TMAT)                   
+          IF (IW.EQ.1) THEN
+            CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+            IF (IPRINT.GE.3) THEN
+             WRITE(LUPRI,*)
+     &      '* Code 1:',LBL,' record '//
+     &      'was WRITTEN to the file BSSMAT after the EOFLABEL,'//
+     &      ' which was renewed.'
+            ENDIF
+          ELSE
+           IF (IPRINT.GE.3) THEN
+            WRITE(LUPRI,*)
+     & '* Code 2:',LBL,' record was WRITTEN to the file BSSMAT'//
+     & ' after the EOFLABEL, which was NOT renewed.'
+           ENDIF
+          ENDIF
+        ELSE                                                       
+         CALL QUIT( 
      & 'W2BSSMAT: Error, EOFLABEL not found in BSSMAT file!')    
-      ENDIF 
-      CLOSE(LUBSS,STATUS='KEEP')
+        ENDIF
+      ELSE IF (IW.EQ.3.OR.IW.EQ.4.OR.IW.EQ.5)  THEN
+        CALL NEWLAB(LBL,LUBSS,LUPRI)             
+        CALL WRITT(LUBSS,ISIZE,TMAT)                   
+        IF (IW.EQ.3) THEN
+          CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+          IF (IPRINT.GE.3) THEN
+            WRITE(LUPRI,*)
+     &      '* Code 3:',LBL,' record '//
+     &     'was WRITTEN to file BSSMAT. EOFLABEL was renewed.'
+          ENDIF
+        ELSE IF (IW.EQ.4.OR.IW.EQ.5) THEN
+          IF (IPRINT.GE.3) THEN
+            WRITE(LUPRI,*)
+     &     '* Code 4:',LBL,' record '//
+     &     'was WRITTEN to the file BSSMAT. EOFLABEL NOT renewed.'
+           ENDIF
+        ENDIF
+      ELSE IF (IW.EQ.6) THEN
+       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+       IF (IPRINT.GE.3) THEN
+        write(lupri,*)
+     &  '* Code 6: Only the EOFLABEL was added.'
+       ENDIF
+      ELSE
+       write(lupri,*) 'W2BSSMAT: Entering code IW=',IW
+       CALL QUIT('W2BSSMAT: Wrong value of entering IW ! Must be 1-5 !')
+      ENDIF
+ 
+C     ... close the file if not set to keep it open
+      IF (.NOT.KEEP_OPEN) THEN
+       CLOSE(LUBSS,STATUS='KEEP')
+       IF (IPRINT.GE.3) THEN
+        write(lupri,*)
+     &  '* BSSMAT file was closed.'
+       ENDIF
+      ELSE
+       IF (IPRINT.GE.3) THEN
+        write(lupri,*)
+     &  '* BSSMAT file left open.'
+       ENDIF
+      ENDIF
 
+      CALL FLSHFO(LUPRI)
       CALL QEXIT('W2BSSMAT')
       RETURN
       END
@@ -852,23 +1008,28 @@ C     ... run over fermion symmetries ...
       ENDDO
 
 C    ... do write the boson irreps (Trond's approach) into the BSSMAT file !
-      REWIND LUBSS                                                    
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN                            
-       BACKSPACE(LUBSS)                   
-       ISIZE = NORB(1)                                 
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)         
-       CALL NEWLAB('IBOS_ONB',LUBSS,LUPRI)             
-       CALL WRITT(LUBSS,ISIZE,IBEIG)                   
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)                            
-       IF (IPRINT.GE.2) THEN
-        WRITE(LUPRI,'(/2X,A)')                          
-     & 'INI_SF_RKB: IBOS_ONB (boson irreps) of the "SL" approach were'//
-     & ' written into the BSSMAT file, EOFLABEL was renewed.'
-       ENDIF              
-      ELSE                                                       
-       CALL QUIT(                                               
-     & 'MAKE_FPM:Error, EOFLABEL not found in BSSMAT file!')    
-      ENDIF 
+C     REWIND LUBSS                                                    
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN                            
+C      BACKSPACE(LUBSS)                   
+C      ISIZE = NORB(1)                                 
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)         
+C      CALL NEWLAB('IBOS_ONB',LUBSS,LUPRI)             
+C      CALL WRITT(LUBSS,ISIZE,IBEIG)                   
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)                            
+C      IF (IPRINT.GE.2) THEN
+C       WRITE(LUPRI,'(/2X,A)')                          
+C    & 'INI_SF_RKB: IBOS_ONB (boson irreps) of the "SL" approach were'//
+C    & ' written into the BSSMAT file, EOFLABEL was renewed.'
+C      ENDIF              
+C     ELSE                                                       
+C      CALL QUIT(                                               
+C    & 'MAKE_FPM:Error, EOFLABEL not found in BSSMAT file!')    
+C     ENDIF 
+
+      ISIZE = NORB(1)                                 
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)         
+      CALL W2BSSMAT(1,.TRUE.,'IBOS_ONB','INI_SF_RKB',
+     &              IBEIG,ISIZE,LUBSS,IPRINT)
 
       CALL QEXIT('INI_SF_RKB')
       RETURN
@@ -1548,24 +1709,43 @@ C ...  read (load) the picture change transformation matrix:
 C       4c AO-> 2c AO(LL)
 C     CALL MEMCHK('in DOPCT',WORK,1)
 
-      CALL OPNFIL(LUBSS,'BSSMAT','OLD','DOPCTRA')
+C     CALL OPNFIL(LUBSS,'BSSMAT','OLD','DOPCTRA')
 C     ... set up at the beginning of the file
-      REWIND LUBSS
-      IF (FNDLAB('U_PICTRM',LUBSS)) THEN
-        ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
+C     REWIND LUBSS
+C     IF (FNDLAB('U_PICTRM',LUBSS)) THEN
+C       ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
 C ... array for the picture change transformation matrix (PCTM)...
-       CALL MEMGET('REAL',KPCTM,ISIZE,WORK,KFREE,LFREE)
-       CALL MEMCHK('in DOPCT',WORK,1)
-        CALL READT(LUBSS,ISIZE,WORK(KPCTM))
+C      CALL MEMGET('REAL',KPCTM,ISIZE,WORK,KFREE,LFREE)
+C      CALL MEMCHK('in DOPCT',WORK,1)
+C       CALL READT(LUBSS,ISIZE,WORK(KPCTM))
 C       CALL READT(LUBSS,N2BBASXQ,WORK(KPCTM))
-        IF (IPRPRP.GE.3) WRITE(LUPRI,'(/2X,A)')
-     &   'DOPCTRA: Picture change transformation matrix was read.'
-      ELSE
-        IF (DOTR) THEN
-          write(lupri,*) 'DOPCTRA: U_PICTRM not found in BSSMAT file!' 
+C       IF (IPRPRP.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &   'DOPCTRA: Picture change transformation matrix was read.'
+C     ELSE
+C       IF (DOTR) THEN
+C         write(lupri,*) 'DOPCTRA: U_PICTRM not found in BSSMAT file!' 
+C         write(lupri,*)
+C    &      'deleting the SS block of entering matrix only...' 
+C         CLOSE (LUBSS,STATUS='KEEP')
+C         DO I = 1, NFSYM
+C            IS1 = 1 + (NTBAS(0)*NFBAS(I,1))+NFBAS(I,1) +
+C    &                  I2BASX(I,I)
+C           DO J = 1, NFBAS(I,2)
+C             ISS = IS1 + (J-1)*NTBAS(0)
+C             CALL DZERO(PRPAO(ISS),NFBAS(I,2))
+C           ENDDO
+C         ENDDO
+C         GOTO 789
+C       ELSE
+C         CALL QUIT('DOPCTRA:Error, U_PICTRM not found in BSSMAT file!')
+C       ENDIF
+C     END IF
+C     CLOSE (LUBSS,STATUS='KEEP')
+
+      IF (DOTR) THEN
           write(lupri,*)
-     &      'deleting the SS block of entering matrix only...' 
+     &      'DOPCTRA: deleting the SS block of entering matrix only...' 
           CLOSE (LUBSS,STATUS='KEEP')
           DO I = 1, NFSYM
              IS1 = 1 + (NTBAS(0)*NFBAS(I,1))+NFBAS(I,1) +
@@ -1576,11 +1756,16 @@ C       CALL READT(LUBSS,N2BBASXQ,WORK(KPCTM))
             ENDDO
           ENDDO
           GOTO 789
-        ELSE
-          CALL QUIT('DOPCTRA:Error, U_PICTRM not found in BSSMAT file!')
-        ENDIF
-      END IF
-      CLOSE (LUBSS,STATUS='KEEP')
+      ELSE
+       ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
+C ... array for the picture change transformation matrix (PCTM)...
+       CALL MEMGET('REAL',KPCTM,ISIZE,WORK,KFREE,LFREE)
+       CALL MEMCHK('in DOPCT',WORK,1)
+       CALL RFBSSMAT('U_PICTRM',.FALSE.,'DOPCTRA',WORK(KPCTM),
+     &               ISIZE,LUBSS,IPRPRP)
+      ENDIF
+
 
       IF (IPRINT.GE.5) THEN
        CALL HEADER('Output from DOPCTRA',-1)
@@ -1712,8 +1897,10 @@ C  /* Deck only_ll */
       SUBROUTINE ONLY_LL(PRPAO,PROPNAME,IREP,ITIM,MZ,IPRINT)
 C**************************************************************************
 C
+C PURPOSE: Keep only LL block of property matrix PRPAO.
 C
 C
+C   Written by Miro ILIAS, Strasbourg, 2006
 C
 C**************************************************************************
 #include "implicit.h"
@@ -1859,7 +2046,6 @@ C ... filled matrix blocke LL
       CALL QEXIT('CHECK_LLOP')
       RETURN
       END
-
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck MAKE_FPM */      
@@ -2180,47 +2366,58 @@ C     ... do export "k" in "xchi" in TMAT
 
 C  ... do save VMAT - "k" in "xhi" into the file BSSMAT
 C ... save Lowdin matrix into BSSMAT
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-       BACKSPACE(LUBSS)
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C      BACKSPACE(LUBSS)
 C        ... N2TMT is NFBAS(1,0)*NORB(1) + NFBAS(2,0)*NORB(2)
-       CALL NEWLAB('FPMAT4C ',LUBSS,LUPRI)
-       CALL WRITT(LUBSS,N2TMT,TMAT)
+C      CALL NEWLAB('FPMAT4C ',LUBSS,LUPRI)
+C      CALL WRITT(LUBSS,N2TMT,TMAT)
+
+       CALL W2BSSMAT(2,.TRUE.,'FPMAT4C ','MAKE_FPM',
+     &                TMAT,N2TMT,LUBSS,IPRHAM)
 
 C ===============================================================
 C        ... write help transformation matrix if needed ....
 C ===============================================================
        ISIZE = NORB(1)*NORB(1)*NZ
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-       CALL NEWLAB('FPMAT_TH',LUBSS,LUPRI)
-       CALL WRITT(LUBSS,ISIZE,TBUF)
+
+C      CALL NEWLAB('FPMAT_TH',LUBSS,LUPRI)
+C      CALL WRITT(LUBSS,ISIZE,TBUF)
+       CALL W2BSSMAT(4,.TRUE.,'FPMAT_TH','MAKE_FPM',
+     &       TBUF,ISIZE,LUBSS,IPRHAM)
+
        IF (IPRHAM.GE.3) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'MAKE_FPM: 4c "k"-> 4c "theta" transf. matrix FPMAT_TH, TBUF'//
      & ' written to the BSSMAT file.'
        ENDIF
 
-C    ... write aslo boson irreps...
+C    ... write also boson irreps...
        ISIZE = NORB(1)
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)
-       CALL NEWLAB('IBOS_ONB',LUBSS,LUPRI)
-       CALL WRITT(LUBSS,ISIZE,IBEIG)
+
+C      CALL NEWLAB('IBOS_ONB',LUBSS,LUPRI)
+C      CALL WRITT(LUBSS,ISIZE,IBEIG)
+       CALL W2BSSMAT(3,.TRUE.,'IBOS_ONB','MAKE_FPM',
+     &                IBEIG,ISIZE,LUBSS,IPRHAM)
+
        IF (IPRHAM.GE.3) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'MAKE_FPM: IBOS_ONB (boson irreps) of the free-particle basis'//
      & ' were written to into the BSSMAT file.'
        ENDIF
 
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
        IF (IPRHAM.GE.3) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'MAKE_FPM: 4c "k"-xhi transf. matrix, TMAT, is '//
      & ' written to the BSSMAT file, EOFLABEL renewed.'
        ENDIF
-      ELSE
-       CALL QUIT(
-     & 'MAKE_FPM:Error, EOFLABEL not found in BSSMAT file!')
-      END IF
+C     ELSE
+C      CALL QUIT(
+C    & 'MAKE_FPM:Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
 
       CALL QEXIT('MAKE_FPM')
       RETURN
@@ -2274,17 +2471,20 @@ C       LBL = 'TMAT4C  '
        CALL QUIT('GET_A_FAC: wrong LBL !!!')
       ENDIF
 
-      REWIND LUBSS 
-      IF (FNDLAB(LBL,LUBSS)) THEN 
-       ISIZE = NFBAS(1,0)*NORB(1)*NZ 
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
-       CALL READT(LUBSS,ISIZE,TMAT)  
-       IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A,A,A)')       
-     & 'GET_A_FAC:',LBL,' read from BSSMAT into TMAT.'         
-      ELSE                      
-       CALL QUIT('GET_A_FAC: LBL not found in BSSMAT !') 
-      END IF                                           
-                                 
+C     REWIND LUBSS 
+C     IF (FNDLAB(LBL,LUBSS)) THEN 
+C      ISIZE = NFBAS(1,0)*NORB(1)*NZ 
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
+C      CALL READT(LUBSS,ISIZE,TMAT)  
+C      IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A,A,A)')       
+C    & 'GET_A_FAC:',LBL,' read from BSSMAT into TMAT.'         
+C     ELSE                      
+C      CALL QUIT('GET_A_FAC: LBL not found in BSSMAT !') 
+C     END IF                                           
+
+      ISIZE = NFBAS(1,0)*NORB(1)*NZ 
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
+      CALL RFBSSMAT(LBL,.TRUE.,'GET_A_FAC',TMAT,ISIZE,LUBSS,IPRINT)
 
 C       ... TBUF subst  WORK(KBUF)
       CALL GTOVLT(TBUF,D0,WORK(KFREE),LFREE)
@@ -2410,12 +2610,13 @@ C    On input:
 C   -----------
 C       TMAT - transformation matrix 
 C       FACKIN  Ad(ee) _ if FPB=.true.
-C
-C       TBUF -  
+C       TBUF -  array
 C             
 C
 C    On output:
 C   ------------
+C        none; data written to file
+C
 C
 C      Written:  M.Ilias, Odense, 2003  (based on MKSAOMO by L. Visscher)
 C                Last update by M.Ilias, Strasburg, 2005
@@ -2519,20 +2720,28 @@ C               SAOMO_Le = SAOMO_Le * Ad^-1
       ENDDO
 
 C  ... write TBUF to the file...
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-         BACKSPACE(LUBSS)
-         CALL NEWLAB('TM2CAOFP',LUBSS,LUPRI)
-         ISIZE = NFBAS(1,0)*NESH(1)*NZ
-         IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NESH(2)*NZ
-         CALL WRITT(LUBSS,ISIZE,TBUF)
-         CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-         IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
-     &   'MKSAOMO_Le: TM2CAOFP written into BSSMAT, EOFLABEL renewed.'
-      ELSE
-        CALL QUIT('MKSAOMO_Le: EOFLABEL not found !')
-      END IF
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C        BACKSPACE(LUBSS)
+C        CALL NEWLAB('TM2CAOFP',LUBSS,LUPRI)
+C        ISIZE = NFBAS(1,0)*NESH(1)*NZ
+C        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NESH(2)*NZ
+C        CALL WRITT(LUBSS,ISIZE,TBUF)
+C        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &   'MKSAOMO_Le: TM2CAOFP written into BSSMAT, EOFLABEL renewed.'
+C     ELSE
+C       CALL QUIT('MKSAOMO_Le: EOFLABEL not found !')
+C     END IF
 
+      ISIZE = NFBAS(1,0)*NESH(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NESH(2)*NZ
+      CALL W2BSSMAT(1,.TRUE.,'TM2CAOFP','MKSAOMO_Le',
+     &              TBUF,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     & 'MKSAOMO_Le: TM2CAOFP written into BSSMAT, EOFLABEL renewed.'
+      ENDIF
 
 C     CALL QUIT('MKSAOMO_Le')
       CALL QEXIT('MKSAOMO_Le')
@@ -2608,59 +2817,91 @@ C      ... entering transf. marix in TMAT
 
 C     ... save the total 4c FD in ON RKB/"k" into the BSSMAT file !!!
 C  .... it is prepared for the later for block-diagonalization to the infinite order
-        REWIND(LUBSS)  
-        IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-        BACKSPACE(LUBSS)
-        CALL NEWLAB('FD4C_ONB',LUBSS,LUPRI)
-        ISIZE = NORB(1)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-        CALL WRITT(LUBSS,ISIZE,TBUF)
-        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-        IF (IPRHAM.GE.2) THEN
+C       REWIND(LUBSS)  
+C       IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C       BACKSPACE(LUBSS)
+C       CALL NEWLAB('FD4C_ONB',LUBSS,LUPRI)
+C       ISIZE = NORB(1)*NORB(1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+C       CALL WRITT(LUBSS,ISIZE,TBUF)
+C       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C       IF (IPRHAM.GE.2) THEN
+C        WRITE(LUPRI,'(/2X,A)')
+C    &  'GET_H1_ONB: 4c Fock-Dirac(FD4C_ONB) in ON RKB/"k" ready for'//
+C    &  ' BSS transformations was written (TBUF)'//
+C    &  ' into the BSSMAT file; EOFLABEL was renewed.'
+C       ENDIF
+C       ELSE
+C        CALL QUIT(
+C    &   'GET_H1_ONB: Error, EOFLABEL(for FD4C_ONB) not'//
+C    &   ' found in BSSMAT file!')
+C       END IF
+
+      ISIZE = NORB(1)*NORB(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+      CALL  W2BSSMAT(1,.TRUE.,'FD4C_ONB','GET_H1_ONB',
+     &                  TBUF,ISIZE,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.2) THEN
          WRITE(LUPRI,'(/2X,A)')
      &  'GET_H1_ONB: 4c Fock-Dirac(FD4C_ONB) in ON RKB/"k" ready for'//
      &  ' BSS transformations was written (TBUF)'//
      &  ' into the BSSMAT file; EOFLABEL was renewed.'
-        ENDIF
-        ELSE
-         CALL QUIT(
-     &   'GET_H1_ONB: Error, EOFLABEL(for FD4C_ONB) not'//
-     &   ' found in BSSMAT file!')
-        END IF
+      ENDIF
 
 C ... now if special case - DFFOCK2 from outside
         IF (CONT2C.AND.I2CHAM.EQ.6) THEN
 
-C      ... get transf. marix into TMAT
+C      ... get transf. matrix into TMAT
           IF (FPB) THEN
             LBL = 'FPMAT4C '
           ELSE 
             LBL = 'SL_TM_4C'
           ENDIF
 
-          REWIND LUBSS 
-          IF (FNDLAB(LBL,LUBSS)) THEN 
-            ISIZE = NFBAS(1,0)*NORB(1)*NZ 
-            IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
-            CALL READT(LUBSS,ISIZE,TMAT)  
-            IF (IPRHAM.GE.3) WRITE(LUPRI,'(/2X,A,A,A)')       
-     &     'GET_H1_ONB: ',LBL,' read from BSSMAT into TMAT.'         
-         ELSE                      
-            CALL QUIT('GET_A_FAC: LBL not found in BSSMAT !') 
-         END IF                                           
+C         REWIND LUBSS 
+C         IF (FNDLAB(LBL,LUBSS)) THEN 
+C           ISIZE = NFBAS(1,0)*NORB(1)*NZ 
+C           IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
+C           CALL READT(LUBSS,ISIZE,TMAT)  
+C           IF (IPRHAM.GE.3) WRITE(LUPRI,'(/2X,A,A,A)')       
+C    &     'GET_H1_ONB: ',LBL,' read from BSSMAT into TMAT.'         
+C        ELSE                      
+C           CALL QUIT('GET_A_FAC: LBL not found in BSSMAT !') 
+C        END IF                                           
 
-         CALL DF2ONB('DFFOCK2',TBUF,TMAT,VMAT,LINAD,
+       ISIZE = NFBAS(1,0)*NORB(1)*NZ 
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
+       CALL RFBSSMAT(LBL,.TRUE.,'GET_A_FAC',TMAT,ISIZE,LUBSS,IPRHAM)
+
+       CALL DF2ONB('DFFOCK2',TBUF,TMAT,VMAT,LINAD,
      &                FPB,WORK(KFREE),LFREE,IPRHAM)
 
 C     ... save the total 4c FD in ON RKB/"k" into the BSSMAT file !!!
-        REWIND(LUBSS)  
-        IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-        BACKSPACE(LUBSS)
-        CALL NEWLAB('FD4CXONB',LUBSS,LUPRI)
+C       REWIND(LUBSS)  
+C       IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C       BACKSPACE(LUBSS)
+C       CALL NEWLAB('FD4CXONB',LUBSS,LUPRI)
+C       ISIZE = NORB(1)*NORB(1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+C       CALL WRITT(LUBSS,ISIZE,TBUF)
+C       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C       IF (IPRHAM.GE.2) THEN
+C        WRITE(LUPRI,'(/2X,A)')
+C    &  'GET_H1_ONB:Special 4c Fock-Dirac(FD4CXONB)'//
+C    &  ' in ON RKB/"k" ready for'//
+C    &  ' BSS transformations was written (TBUF)'//
+C    &  ' into the BSSMAT file; EOFLABEL was renewed.'
+C       ENDIF
+C       ELSE
+C        CALL QUIT(
+C    &   'GET_H1_ONB: Error, EOFLABEL(for FD4CXONB) not'//
+C    &   ' found in BSSMAT file!')
+C       END IF
+
         ISIZE = NORB(1)*NORB(1)*NZ
         IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-        CALL WRITT(LUBSS,ISIZE,TBUF)
-        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+        CALL W2BSSMAT(1,.TRUE.,'FD4CXONB','GET_H1_ONB',
+     &                TBUF,ISIZE,LUBSS,IPRHAM) 
         IF (IPRHAM.GE.2) THEN
          WRITE(LUPRI,'(/2X,A)')
      &  'GET_H1_ONB:Special 4c Fock-Dirac(FD4CXONB)'//
@@ -2668,11 +2909,6 @@ C     ... save the total 4c FD in ON RKB/"k" into the BSSMAT file !!!
      &  ' BSS transformations was written (TBUF)'//
      &  ' into the BSSMAT file; EOFLABEL was renewed.'
         ENDIF
-        ELSE
-         CALL QUIT(
-     &   'GET_H1_ONB: Error, EOFLABEL(for FD4CXONB) not'//
-     &   ' found in BSSMAT file!')
-        END IF
 
 C        CALL QUIT('GET_H1_ONB: quit for I2CHAM=6!')
         ENDIF
@@ -2681,9 +2917,7 @@ C        CALL QUIT('GET_H1_ONB: quit for I2CHAM=6!')
 
 C================================================================================================
 C
-C
 C  In this (second) case we do the block-diagonalization of the one-electron Dirac operator.
-C
 C
 C================================================================================================
 C     IF (.NOT.START2C.AND.(.NOT.USEDF.AND.
@@ -2701,18 +2935,28 @@ C      ... read TMAT - transformation matrix 4c AO-> 4c MO
       ELSE 
         LBL = 'SL_TM_4C'
       ENDIF
-      REWIND LUBSS 
-      IF (FNDLAB(LBL,LUBSS)) THEN 
+
+C     REWIND LUBSS 
+C     IF (FNDLAB(LBL,LUBSS)) THEN 
+C      ISIZE = NFBAS(1,0)*NORB(1)*NZ 
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
+C      CALL READT(LUBSS,ISIZE,TMAT)  
+C      IF (IPRHAM.GE.3) WRITE(LUPRI,'(/2X,A,A,A)')       
+C    & 'GET_H1_ONB: ',LBL,' 4c AO-> 4c MO transf. matrix'//
+C    & ' read from BSSMAT into TMAT.'         
+C     ELSE                      
+C      CALL QUIT(
+C    & 'GET_H1_ONB: FPMAT4C/SL_TM_4C not found in BSSMAT !') 
+C     END IF    
+
        ISIZE = NFBAS(1,0)*NORB(1)*NZ 
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
-       CALL READT(LUBSS,ISIZE,TMAT)  
-       IF (IPRHAM.GE.3) WRITE(LUPRI,'(/2X,A,A,A)')       
+       CALL RFBSSMAT(LBL,.TRUE.,'GET_H1_ONB',TMAT,ISIZE,LUBSS,IPRHAM)
+       IF (IPRHAM.GE.2) THEN
+         WRITE(LUPRI,'(/2X,A,A,A)')       
      & 'GET_H1_ONB: ',LBL,' 4c AO-> 4c MO transf. matrix'//
      & ' read from BSSMAT into TMAT.'         
-      ELSE                      
-       CALL QUIT(
-     & 'GET_H1_ONB: FPMAT4C/SL_TM_4C not found in BSSMAT !') 
-      END IF                                           
+       ENDIF
 
 C First get the bare nucleus Dirac Hamiltonian (BNDH) in the SA-AO basis "xhi"
 C into VMAT array
@@ -2839,28 +3083,48 @@ C=====================================================================
          ENDIF
          IEE  = IEE + NESH(I)*NESH(I)*NZ
          IOFT = IOFT + NORB(I)*NORB(I)*NZ
+
        ENDIF
        ENDDO
+
 C      ... do save H_SO1(ee) terms into the BSSMAT file ...
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-       BACKSPACE(LUBSS)
-       ISIZE = NESH(1)*NESH(1)*NZ
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NESH(2)*NZ)
-       CALL NEWLAB('HSO1_ONB',LUBSS,LUPRI)
-       CALL WRITT(LUBSS,ISIZE,VMAT)
-       CALL NEWLAB('H1_ONB  ',LUBSS,LUPRI)
-       ISIZE=NORB(1)*NORB(1)*NZ
-       IF (NFSYM.EQ.2) ISIZE=ISIZE+NORB(2)*NORB(2)*NZ
-       CALL WRITT(LUBSS,ISIZE,TBUF)
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-       IF (IPRHAM.GE.3) THEN
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C      BACKSPACE(LUBSS)
+C      ISIZE = NESH(1)*NESH(1)*NZ
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NESH(2)*NZ)
+C      CALL NEWLAB('HSO1_ONB',LUBSS,LUPRI)
+C      CALL WRITT(LUBSS,ISIZE,VMAT)
+C      CALL NEWLAB('H1_ONB  ',LUBSS,LUPRI)
+C      ISIZE=NORB(1)*NORB(1)*NZ
+C      IF (NFSYM.EQ.2) ISIZE=ISIZE+NORB(2)*NORB(2)*NZ
+C      CALL WRITT(LUBSS,ISIZE,TBUF)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      IF (IPRHAM.GE.3) THEN
+C      WRITE(LUPRI,'(/2X,A)')
+C    & 'GET_H1_ONB: H1_SO1 & H1_ONB in ON RKB/"k" basis have been '//
+C    & 'written to the BSSMAT file, EOFLABEL is renewed.'
+C      ENDIF
+C     ENDIF
+C      call quit('GET_H1_ONB: H1_SO1 ...')
+C     ENDIF
+
+      ISIZE = NESH(1)*NESH(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NESH(2)*NZ)
+      CALL W2BSSMAT(2,.TRUE.,'HSO1_ONB','GET_H1_ONB',
+     &               VMAT,ISIZE,LUBSS,IPRHAM)      
+
+      ISIZE=NORB(1)*NORB(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE=ISIZE+NORB(2)*NORB(2)*NZ
+      CALL W2BSSMAT(3,.TRUE.,'H1_ONB  ','GET_H1_ONB',
+     &               TBUF,ISIZE,LUBSS,IPRHAM)      
+      IF (IPRHAM.GE.3) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'GET_H1_ONB: H1_SO1 & H1_ONB in ON RKB/"k" basis have been '//
      & 'written to the BSSMAT file, EOFLABEL is renewed.'
-       ENDIF
+       CALL FLSHFO(LUPRI)
       ENDIF
-C      call quit('GET_H1_ONB: H1_SO1 ...')
+
       ENDIF
 
 C .... if spin-free, eliminate spin-orbit dependent terms
@@ -2879,6 +3143,7 @@ C .... if spin-free, eliminate spin-orbit dependent terms
      &     '*** Fermion corep ',I,'/',NFSYM
           write(lupri,*) 'boson irreps: ifsym=',I,':',
      &                   ( (IBEIG(IORB(I)+J)),J=1,NORB(I))
+          CALL FLSHFO(LUPRI)
          ENDIF
          IOFT = IOFT + NORB(I)*NORB(I)*NZ
         ENDIF
@@ -2886,24 +3151,35 @@ C .... if spin-free, eliminate spin-orbit dependent terms
       ENDIF
 
 C ... write the TBUF - H1 ON RKB/"k" to the file...
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-       BACKSPACE(LUBSS)
-       CALL NEWLAB('H1_ONBAS',LUBSS,LUPRI)
-       ISIZE=NORB(1)*NORB(1)*NZ
-       IF (NFSYM.EQ.2) ISIZE=ISIZE+NORB(2)*NORB(2)*NZ
-       CALL WRITT(LUBSS,ISIZE,TBUF)
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-       IF (IPRHAM.GE.3) THEN
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C      BACKSPACE(LUBSS)
+C      CALL NEWLAB('H1_ONBAS',LUBSS,LUPRI)
+C      ISIZE=NORB(1)*NORB(1)*NZ
+C      IF (NFSYM.EQ.2) ISIZE=ISIZE+NORB(2)*NORB(2)*NZ
+C      CALL WRITT(LUBSS,ISIZE,TBUF)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      IF (IPRHAM.GE.3) THEN
+C      WRITE(LUPRI,'(/2X,A)')
+C    &'GET_H1_ONB:  H1_ONBAS (in ON RKB/"k") matrix is '//
+C    &' written to the BSSMAT file, EOFLABEL renewed.'
+C      CALL FLSHFO(LUPRI)
+C      ENDIF
+C     ELSE
+C       CALL QUIT(
+C    & 'GET_H1_ONB:Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+
+      ISIZE=NORB(1)*NORB(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE=ISIZE+NORB(2)*NORB(2)*NZ
+      CALL W2BSSMAT(1,.TRUE.,'H1_ONBAS','GET_H1_ONB',
+     &               TBUF,ISIZE,LUBSS,IPRHAM)      
+      IF (IPRHAM.GE.3) THEN
        WRITE(LUPRI,'(/2X,A)')
      &'GET_H1_ONB:  H1_ONBAS (in ON RKB/"k") matrix is '//
      &' written to the BSSMAT file, EOFLABEL renewed.'
        CALL FLSHFO(LUPRI)
-       ENDIF
-      ELSE
-        CALL QUIT(
-     & 'GET_H1_ONB:Error, EOFLABEL not found in BSSMAT file!')
-      END IF
+      ENDIF
 
 CMI   CALL QUIT('GET_H1_ONB')
       CALL QEXIT('GET_H1_ONB')
@@ -2988,20 +3264,29 @@ C       as the next BSS-SCF creates own new files
        IF (LINAD) THEN
 C       ... do the transformation back to the nonlinsym RKB_MO basis...
 C   =======================================================================
-        REWIND(LUBSS)
-        IF (FNDLAB('TMAT_LSY',LUBSS)) THEN
-        ISIZE = NORB(1)*NORB(1)
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
-         CALL READT(LUBSS,ISIZE,TMAT)
-         IF (IPRHAM.GE.2) THEN
-          WRITE(LUPRI,'(/2X,A)')
+C       REWIND(LUBSS)
+C       IF (FNDLAB('TMAT_LSY',LUBSS)) THEN
+C       ISIZE = NORB(1)*NORB(1)
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
+C        CALL READT(LUBSS,ISIZE,TMAT)
+C        IF (IPRHAM.GE.2) THEN
+C         WRITE(LUPRI,'(/2X,A)')
+C    & 'DF2ONB: 4c ON "theta"-> 4c ON LINSYM "theta" transf. '//
+C    & 'matrix TMAT_LSY was read from the BSSMAT file into TMAT.'
+C        ENDIF
+C       ELSE
+C        CALL QUIT(
+C    &  'DF2ONB: Error, EOFLABEL not found in BSSMAT file!')
+C       END IF
+
+       ISIZE = NORB(1)*NORB(1)
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
+       CALL RFBSSMAT('TMAT_LSY',.TRUE.,'DF2ONB',TMAT,ISIZE,LUBSS,IPRHAM)
+       IF (IPRHAM.GE.2) THEN
+         WRITE(LUPRI,'(/2X,A)')
      & 'DF2ONB: 4c ON "theta"-> 4c ON LINSYM "theta" transf. '//
      & 'matrix TMAT_LSY was read from the BSSMAT file into TMAT.'
-         ENDIF
-        ELSE
-         CALL QUIT(
-     &  'DF2ONB: Error, EOFLABEL not found in BSSMAT file!')
-        END IF
+       ENDIF
 
 C     ... do the reverse transformation (MOAO):  TMAT . VMAT . TMAT + = TBUF
        IOFT = 1
@@ -3066,41 +3351,61 @@ C   ... if we are in the "k" basis mode, we need transformation matrix
 C       RKB "theta" -> FPM "k"
        IF (FPB) THEN
 
-        REWIND(LUBSS)
-        IF (FNDLAB('FPMAT_TH',LUBSS)) THEN
-        ISIZE = NORB(1)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-        CALL READT(LUBSS,ISIZE,TMAT)
-         IF (IPRHAM.GE.2) THEN
-          WRITE(LUPRI,'(/2X,A)')
+C       REWIND(LUBSS)
+C       IF (FNDLAB('FPMAT_TH',LUBSS)) THEN
+C       ISIZE = NORB(1)*NORB(1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+C       CALL READT(LUBSS,ISIZE,TMAT)
+C        IF (IPRHAM.GE.2) THEN
+C         WRITE(LUPRI,'(/2X,A)')
+C    &    'DF2ONB: 4c "k"-> 4c "theta" transf. '//
+C    &    'matrix FPMAT_TH was read from the BSSMAT file into TMAT.'
+C        ENDIF
+C       ELSE
+C        CALL QUIT(
+C    &   'DF2ONB: Error, EOFLABEL not found in BSSMAT file!')
+C       END IF
+
+       ISIZE = NORB(1)*NORB(1)*NZ
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+       CALL RFBSSMAT('FPMAT_TH',.TRUE.,'DF2ONB',TMAT,ISIZE,LUBSS)
+        IF (IPRHAM.GE.2) THEN
+         WRITE(LUPRI,'(/2X,A)')
      &    'DF2ONB: 4c "k"-> 4c "theta" transf. '//
      &    'matrix FPMAT_TH was read from the BSSMAT file into TMAT.'
-         ENDIF
-        ELSE
-         CALL QUIT(
-     &   'DF2ONB: Error, EOFLABEL not found in BSSMAT file!')
-        END IF
+        ENDIF
 
 C      ELSE IF (DO4C2C.AND.USEDF.AND..NOT.FPB) THEN
        ELSE 
+
 C      ... when being in 1.step BSS, we need to transform to the AO basis first
 C       (using "standard" AO-MO transformation matrix) and 
 C       then transform it to the SL-sorted MO basis...
-        REWIND(LUBSS)
-        IF (FNDLAB('TMAT4C  ',LUBSS)) THEN
-        ISIZE = (NORB(1)*NFBAS(1,0)*NZ)
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NFBAS(2,0)*NZ)
-        CALL READT(LUBSS,ISIZE,TMAT)
-         IF (IPRHAM.GE.2) THEN
-          WRITE(LUPRI,'(/2X,A)')
+
+C       REWIND(LUBSS)
+C       IF (FNDLAB('TMAT4C  ',LUBSS)) THEN
+C       ISIZE = (NORB(1)*NFBAS(1,0)*NZ)
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NFBAS(2,0)*NZ)
+C       CALL READT(LUBSS,ISIZE,TMAT)
+C        IF (IPRHAM.GE.2) THEN
+C         WRITE(LUPRI,'(/2X,A)')
+C    &    'DF2ONB: 4c AO -> 4c "theta" transf. '//
+C    &    'matrix TMAT4C was read from the BSSMAT file into TMAT.'
+C        ENDIF
+C       ELSE
+C        CALL QUIT(
+C    &  'DF2ONB: Error, TMAT4C not found in BSSMAT file!')
+C       END IF
+
+       ISIZE = (NORB(1)*NFBAS(1,0)*NZ)
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NFBAS(2,0)*NZ)
+       CALL RFBSSMAT('TMAT4C  ',.TRUE.,'DF2ONB',TMAT,ISIZE,LUBSS)
+        IF (IPRHAM.GE.2) THEN
+         WRITE(LUPRI,'(/2X,A)')
      &    'DF2ONB: 4c AO -> 4c "theta" transf. '//
      &    'matrix TMAT4C was read from the BSSMAT file into TMAT.'
-         ENDIF
-        ELSE
-         CALL QUIT(
-     &  'DF2ONB: Error, TMAT4C not found in BSSMAT file!')
-        END IF
-
+        ENDIF
+ 
          CALL DZERO(TBUF,N2BBASXQ)
          CALL MKSAOMO(TBUF,TMAT,.FALSE.,IPRHAM,WORK(KFREE),LFREE)
          CALL DCOPY(N2BBASXQ,TBUF,1,TMAT,1)
@@ -3157,20 +3462,30 @@ C       ... do get AO Fock-Dirac matrix (MOAO): TMAT . VMAT . TMAT^+ = TBUF
 
 C       ... read SL_TM_4C into TMAT and do TMAT^+ . TBUF . TMAT = VMAT
          CALL DZERO(TMAT,N2BBASXQ)
-        REWIND(LUBSS)
-        IF (FNDLAB('SL_TM_4C',LUBSS)) THEN
+
+C       REWIND(LUBSS)
+C       IF (FNDLAB('SL_TM_4C',LUBSS)) THEN
+C       ISIZE = (NORB(1)*NFBAS(1,0)*NZ)
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NFBAS(2,0)*NZ)
+C       CALL READT(LUBSS,ISIZE,TMAT)
+C        IF (IPRHAM.GE.2) THEN
+C         WRITE(LUPRI,'(/2X,A)')
+C    &    'DF2ONB: 4c AO -> 4c "theta" SL_TM_4C transf. '//
+C    &    '  matrix was read from the BSSMAT file into TMAT.'
+C        ENDIF
+C       ELSE
+C         CALL QUIT(
+C    &   'DF2ONB: Error, SL_TM_4C not found in BSSMAT file!')
+C       END IF
+
         ISIZE = (NORB(1)*NFBAS(1,0)*NZ)
         IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NFBAS(2,0)*NZ)
-        CALL READT(LUBSS,ISIZE,TMAT)
-         IF (IPRHAM.GE.2) THEN
+        CALL RFBSSMAT('SL_TM_4C',.TRUE.,'DF2ONB',TMAT,ISIZE,LUBSS)
+        IF (IPRHAM.GE.2) THEN
           WRITE(LUPRI,'(/2X,A)')
      &    'DF2ONB: 4c AO -> 4c "theta" SL_TM_4C transf. '//
      &    '  matrix was read from the BSSMAT file into TMAT.'
-         ENDIF
-        ELSE
-          CALL QUIT(
-     &   'DF2ONB: Error, SL_TM_4C not found in BSSMAT file!')
-        END IF
+        ENDIF
 
           CALL DZERO(VMAT,N2BBASXQ)
 
@@ -3357,7 +3672,7 @@ C     ... ending point
         IBL(1,3)=NPSH(I)
         IBL(1,4)=NORB(I)
 
-C     ... problem ! it takes too long !
+C     ... problem ! it takes too long time  !
         CALL QJACOBI(TBUF(IOFT),TMAT(IOFT),NORB(I),NZ,NBL,IBL,.TRUE.,1)
 
         IF(IPRINT.GE.5) THEN
@@ -3392,14 +3707,20 @@ C     ... problem ! it takes too long !
       ENDIF
 
 C ... save H1 block diagonal as well as picture change matrix
-      CALL NEWLAB('H1FPM_BD',LUBSS,LUPRI)
-      CALL WRITT(LUBSS,ISIZE2,TBUF)
+C     CALL NEWLAB('H1FPM_BD',LUBSS,LUPRI)
+C     CALL WRITT(LUBSS,ISIZE2,TBUF)
+      CALL W2BSSMAT(4,.TRUE.,'H1FPM_BD','GET_HINF_FPM',
+     &              TBUF,ISIZE2,LUBSS,IPRINT)
       WRITE(LUPRI,'(/2X,A)')
      &'H1 "k" block-diagonal  matrix is '//
      &' written to the BSSMAT file.'
 
-      CALL NEWLAB('PCTM_FPM',LUBSS,LUPRI)
-      CALL WRITT(LUBSS,ISIZE1,TMAT)
+C     CALL NEWLAB('PCTM_FPM',LUBSS,LUPRI)
+C     CALL WRITT(LUBSS,ISIZE1,TMAT)
+
+      CALL W2BSSMAT(4,.TRUE.,'PCTM_FPM','GET_HINF_FPM',
+     &              TMAT,ISIZE1,IPRINT)
+
       WRITE(LUPRI,'(/2X,A)')
      &'4c "k" -> 2c "k" picture change  '//
      &'transformation matrix written to the BSSMAT file.'
@@ -3451,26 +3772,33 @@ C     CALL DZERO(TBUF,N2BBASXQ)
 C  ... save the picture change transformation matrix, TBUF...
       ISIZE1=NFBAS(1,0)*NESH(1)*NZ
       IF (NFSYM.EQ.2) ISIZE1=ISIZE1+NFBAS(2,0)*NESH(2)*NZ
-      CALL NEWLAB('PCTM4C2K',LUBSS,LUPRI)
-      CALL WRITT(LUBSS,ISIZE1,TBUF)
+
+C     CALL NEWLAB('PCTM4C2K',LUBSS,LUPRI)
+C     CALL WRITT(LUBSS,ISIZE1,TBUF)
 C     ... write only label for marking end of the file...
-      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C     CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+
+      CALL W2BSSMAT(3,.TRUE.,'PCTM4C2K','GET_HINF_FPM',
+     &              TBUF,ISIZE1,IPRINT)
       WRITE(LUPRI,'(/2X,A)')
      &'4c SA-AO"xhi" -> 2c "k" picture change '//
      &'transformation matrix (PCTM4C2K) is written to the BSSMAT file.'
        WRITE(LUPRI,'(2X,A)') 'EOFLABEL is added.'
 
 C  ... read the block diagonal matrix to extract the (ee) block only !
-      REWIND LUBSS
-      IF (FNDLAB('H1FPM_BD',LUBSS)) THEN
-         CALL READT(LUBSS,ISIZE2,TBUF)
-         IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
-     &   'GET_HINF_FPM: H1FPM_BD read.'
-      ELSE
-        CALL QUIT(
-     &  'GET_HINF_FPM: H1FPM_BD not found in BSSMAT file!')
-      END IF
+C     REWIND LUBSS
+C     IF (FNDLAB('H1FPM_BD',LUBSS)) THEN
+C        CALL READT(LUBSS,ISIZE2,TBUF)
+C        IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
+C    &   'GET_HINF_FPM: H1FPM_BD read.'
+C     ELSE
+C       CALL QUIT(
+C    &  'GET_HINF_FPM: H1FPM_BD not found in BSSMAT file!')
+C     END IF
 
+       CALL RFBSSMAT('H1FPM_BD',.TRUE.,'GET_HINF_FPM',TBUF,
+     &               ISIZE2,LUBSS,IPRINT)
+      
       IBUF = 1
       IMAT = 1
       DO I = 1, NFSYM
@@ -3507,21 +3835,28 @@ C      ... copy TBUF -> VMAT
        IMAT = IMAT + NESH(I)*NESH(I)*NZ
       ENDDO
 
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-       BACKSPACE(LUBSS)
-       CALL NEWLAB('H2C_FPM ',LUBSS,LUPRI)
-       ISIZE3 = NESH(1)*NESH(1)*NZ
-       IF (NFSYM.EQ.2) ISIZE3 = ISIZE3 + NESH(2)*NESH(2)*NZ
-       CALL WRITT(LUBSS,ISIZE3,VMAT)
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C      BACKSPACE(LUBSS)
+C      CALL NEWLAB('H2C_FPM ',LUBSS,LUPRI)
+C      ISIZE3 = NESH(1)*NESH(1)*NZ
+C      IF (NFSYM.EQ.2) ISIZE3 = ISIZE3 + NESH(2)*NESH(2)*NZ
+C      CALL WRITT(LUBSS,ISIZE3,VMAT)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      WRITE(LUPRI,'(/2X,A)')
+C    &'H2c "k" (ee) written to BSSMAT, EOFLABEL renewed '
+C     ELSE
+C       CALL QUIT(
+CC   &  'GET_HINF_FPM:Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+      ISIZE3 = NESH(1)*NESH(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE3 = ISIZE3 + NESH(2)*NESH(2)*NZ
+      CALL W2BSSMAT(1,.TRUE.,'H2C_FPM ','GET_HINF_FPM',
+     &              VMAT,ISIZE3,IPRINT)
+      IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
-     &'H2c "k" (ee) written to BSSMAT, EOFLABEL renewed '
-      ELSE
-        CALL QUIT(
-     &  'GET_HINF_FPM:Error, EOFLABEL not found in BSSMAT file!')
-      END IF
-
+     &'GET_HINF_FPM: H2c "k" (ee) written to BSSMAT, EOFLABEL renewed '
+      ENDIF
 
 C     CALL QUIT('GET_HINF_FPM')
       CALL QEXIT('GET_HINF_BD')
@@ -3586,9 +3921,9 @@ C     USEJACO=.TRUE.
      &                NORB(I),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
 
-C  ... do diagonalize the H1 in ON RKB/"k" basis
+C  ... diagonalize the H1 in ON RKB/"k" basis
         IF (USEJACO.AND.NZ.EQ.1) THEN
-C       ... use Jacobi diagonalization...
+C       ... use the Jacobi diagonalization...
          CALL RSJACO(NORB(I),NORB(I),NORB(I),TBUF(IBUF),
      &                  EIG(IEIG),1,1,0,TMAT(IBUF),
      &                  WORK(KFREE),LFREE)
@@ -3821,22 +4156,32 @@ C   ... Do print out the R
       ENDDO
 
 C ... save the full R, TMAT, into the file BSSMAT !
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-       BACKSPACE(LUBSS)
-       CALL NEWLAB('R_MTX   ',LUBSS,LUPRI)
-       ISIZE = NESH(1)*NESH(1)*NZ
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
-       CALL WRITT(LUBSS,ISIZE,TMAT(1))
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-       IF (IPRINT.GE.3) THEN
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C      BACKSPACE(LUBSS)
+C      CALL NEWLAB('R_MTX   ',LUBSS,LUPRI)
+C      ISIZE = NESH(1)*NESH(1)*NZ
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
+C      CALL WRITT(LUBSS,ISIZE,TMAT(1))
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      IF (IPRINT.GE.3) THEN
+C       WRITE(LUPRI,'(/2X,A)')
+C    &'R matrix (ON basis), TMAT, written to BSSMAT, EOFLABEL renewed'
+C      ENDIF
+C     ELSE
+C       CALL QUIT(
+C    & 'GET_HINF_FPM:Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+
+      ISIZE = NESH(1)*NESH(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
+      CALL W2BSSMAT(1,.TRUE.,'R_MTX   ','GET_HINF_FPM',
+     &              TMAT,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
      &'R matrix (ON basis), TMAT, written to BSSMAT, EOFLABEL renewed'
-       ENDIF
-      ELSE
-        CALL QUIT(
-     & 'GET_HINF_FPM:Error, EOFLABEL not found in BSSMAT file!')
-      END IF
+       CALL FLSHFO(LUPRI)
+      ENDIF
 
 C =========== TESTING "k" AND RKB approaches ======================
 C      ... does not work for R !!!
@@ -3936,10 +4281,10 @@ C      CALL DUNIT(TBUF(IBUFE),NREF)
        CALL DUNIT2(TBUF(IBUFE),NREF,NREF,NREF,NZ)
 
 C ... then do TBUF = TBUF + R^+.R
-            CALL QGEMM(NREF,NREF,NREF,D1, 
-     &          'H','N',IPQTOQ(1,0),TMAT(IBUFE),NREF,NREF,NZ,
-     &          'N','N',IPQTOQ(1,0),TMAT(IBUFE),NREF,NREF,NZ,
-     &          D1,IPQTOQ(1,0),TBUF(IBUFE),NREF,NREF,NZ)
+       CALL QGEMM(NREF,NREF,NREF,D1, 
+     &    'H','N',IPQTOQ(1,0),TMAT(IBUFE),NREF,NREF,NZ,
+     &    'N','N',IPQTOQ(1,0),TMAT(IBUFE),NREF,NREF,NZ,
+     &     D1,IPQTOQ(1,0),TBUF(IBUFE),NREF,NREF,NZ)
 
 C ... do print out 1 + R^+.R matrix
        IF (IPRINT.GE.7) THEN
@@ -4012,19 +4357,28 @@ C       .... U * d^-1/2 * U+
       ENDDO
 
 C ... read R into VMAT
-      REWIND LUBSS
-      IF (FNDLAB('R_MTX   ',LUBSS)) THEN
+C     REWIND LUBSS
+C     IF (FNDLAB('R_MTX   ',LUBSS)) THEN
+C      ISIZE = NESH(1)*NESH(1)*NZ
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
+C      CALL READT(LUBSS,ISIZE,VMAT)
+C      IF (IPRINT.GE.3) THEN
+C       WRITE(LUPRI,'(/2X,A)')
+C    &  'R matrix (in ON basis) was read from BSSMAT into VMAT.'
+C      ENDIF
+C     ELSE
+C       CALL QUIT(
+C    & 'GET_HINF_FPM:Error, R_MTX not found in BSSMAT file!')
+C     ENDIF
+
        ISIZE = NESH(1)*NESH(1)*NZ
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
-       CALL READT(LUBSS,ISIZE,VMAT)
-       IF (IPRINT.GE.3) THEN
+       CALL RFBSSMAT('R_MTX   ',.TRUE.,'GET_HINF_FPM',VMAT,
+     &               ISIZE,LUBSS,IPRINT)
+       IF (IPRINT.GE.2) THEN
         WRITE(LUPRI,'(/2X,A)')
      &  'R matrix (in ON basis) was read from BSSMAT into VMAT.'
        ENDIF
-      ELSE
-        CALL QUIT(
-     & 'GET_HINF_FPM:Error, R_MTX not found in BSSMAT file!')
-      ENDIF
 
 
 C ... do make VMAT -> TBUF = (1 R)  !
@@ -4168,24 +4522,36 @@ C ==============================================================================
 C   ... do save 4c ON-> 2c ON picture change transformation matrix into the file
 C =================================================================================
 C  ... do save the picture change transformation matrix into BSSMAT
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-       BACKSPACE(LUBSS)
-       CALL NEWLAB('U1_ONBAS',LUBSS,LUPRI)
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C      BACKSPACE(LUBSS)
+C      CALL NEWLAB('U1_ONBAS',LUBSS,LUPRI)
+C      ISIZE = 2*NESH(1)*NESH(1)*NZ
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + 2*NESH(2)*NESH(2)*NZ
+C      CALL WRITT(LUBSS,ISIZE,VMAT)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      IF (IPRINT.GE.3) THEN
+C       WRITE(LUPRI,'(/2X,A)')
+C    & 'GET_HINF_R: U1_ONBAS (picture change transf.matrix '//
+C    & '4c ONB->2c ONB), VMAT, is written to the BSSMAT'//
+C    & ' file, EOFLABEL is renewed.'
+C      ENDIF
+C     ELSE
+C       CALL QUIT(
+C    & 'GET_HINF_R:Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+
        ISIZE = 2*NESH(1)*NESH(1)*NZ
        IF (NFSYM.EQ.2) ISIZE = ISIZE + 2*NESH(2)*NESH(2)*NZ
-       CALL WRITT(LUBSS,ISIZE,VMAT)
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+       CALL W2BSSMAT(1,.TRUE.,'U1_ONBAS','GET_HINF_R',
+     &               VMAT,ISIZE,LUBSS,IPRINT)
+
        IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
      & 'GET_HINF_R: U1_ONBAS (picture change transf.matrix '//
      & '4c ONB->2c ONB), VMAT, is written to the BSSMAT'//
      & ' file, EOFLABEL is renewed.'
        ENDIF
-      ELSE
-        CALL QUIT(
-     & 'GET_HINF_R:Error, EOFLABEL not found in BSSMAT file!')
-      END IF
 
 C =============================================================================
 C ... do the  V U1("k") (Ad-1 V+) transformation to get the U1 in "theta" basis
@@ -4199,18 +4565,27 @@ C =============================================================================
 C     FP2TH2=.TRUE.
       IF (FP2TH2.AND.FPB) THEN
 C ... read the FPMAT_TH 4c "k"-> 4c "theta" transf. matrix into TBUF
-        REWIND(LUBSS)
-        IF (FNDLAB('FPMAT_TH',LUBSS)) THEN
-        ISIZE = NORB(1)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-        CALL READT(LUBSS,ISIZE,TBUF)
-        WRITE(LUPRI,'(/2X,A)')
+C       REWIND(LUBSS)
+C       IF (FNDLAB('FPMAT_TH',LUBSS)) THEN
+C       ISIZE = NORB(1)*NORB(1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+C       CALL READT(LUBSS,ISIZE,TBUF)
+C       WRITE(LUPRI,'(/2X,A)')
+C    & 'GET_HINF_R (T3): 4c "k"-> 4c "theta" transf. matrix FPMAT_TH '//
+C    & ' was read from the BSSMAT file into TBUF.'
+C       ELSE
+C        CALL QUIT(
+C    &  'GET_HINF_R (T3): Error, EOFLABEL not found in BSSMAT file!')
+C       END IF
+
+       ISIZE = NORB(1)*NORB(1)*NZ
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+       CALL RFBSSMAT('FPMAT_TH','GET_HINF_R',TBUF,ISIZE,LUBSS,IPRHAM)
+       IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A)')
      & 'GET_HINF_R (T3): 4c "k"-> 4c "theta" transf. matrix FPMAT_TH '//
      & ' was read from the BSSMAT file into TBUF.'
-        ELSE
-         CALL QUIT(
-     &  'GET_HINF_R (T3): Error, EOFLABEL not found in BSSMAT file!')
-        END IF
+        ENDIF
 
         IBUF = 1
         IBUF2E = 1
@@ -4305,17 +4680,26 @@ C ... do prepare the resulting Hamiltonian in ON RKB/"k" basis
 C   after the picture change transformation
 
 C ... read the Dirac Hamiltonian in the ON RKB/"k" basis into  TMAT
-      REWIND(LUBSS)
-      IF (FNDLAB('H1_ONBAS',LUBSS)) THEN
-        ISIZE = NORB(1)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-        CALL READT(LUBSS,ISIZE,TMAT)
-        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
-     &  'GET_HINF_R: H1_ONBAS read into TMAT.'
-      ELSE
-        CALL QUIT(
-     & 'GET_HINF_R:Error, H1_ONBAS not found in BSSMAT file!')
-      END IF
+C     REWIND(LUBSS)
+C     IF (FNDLAB('H1_ONBAS',LUBSS)) THEN
+C       ISIZE = NORB(1)*NORB(1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+C       CALL READT(LUBSS,ISIZE,TMAT)
+C       IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &  'GET_HINF_R: H1_ONBAS read into TMAT.'
+C     ELSE
+C       CALL QUIT(
+C    & 'GET_HINF_R:Error, H1_ONBAS not found in BSSMAT file!')
+C     END IF
+
+      ISIZE = NORB(1)*NORB(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+      CALL RFBSSMAT('H1_ONBAS',.TRUE.,'GET_HINF_R',
+     &               TMAT,ISIZE,LUBSS,IPRHAM)
+      IF (IPRINT.GE.3) THEN
+       WRITE(LUPRI,'(/2X,A)')
+     & 'GET_HINF_R: H1_ONBAS read into TMAT.'
+      ENDIF
 
       IBUF = 1
       IE   = 1
@@ -4370,23 +4754,33 @@ C ... read the Dirac Hamiltonian in the ON RKB/"k" basis into  TMAT
       ENDDO
 
 C ... save H2c_ON basis into BSSMAT
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-       BACKSPACE(LUBSS)
-       CALL NEWLAB('H2C_ONBA',LUBSS,LUPRI)
-       ISIZE = NESH(1)*NESH(1)*NZ
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
-       CALL WRITT(LUBSS,ISIZE,TBUF)
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-       IF (IPRINT.GE.3) THEN
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C      BACKSPACE(LUBSS)
+C      CALL NEWLAB('H2C_ONBA',LUBSS,LUPRI)
+C      ISIZE = NESH(1)*NESH(1)*NZ
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
+C      CALL WRITT(LUBSS,ISIZE,TBUF)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      IF (IPRINT.GE.3) THEN
+C       WRITE(LUPRI,'(/2X,A)')
+C    &  'GET_HINF_R:  H2c_infinite (in ON basis) written'//
+C    &  ' to BSSMAT, EOFLABEL renewed '
+C      ENDIF
+C     ELSE
+C       CALL QUIT(
+C    & 'GET_HINF_R:Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+
+      ISIZE = NESH(1)*NESH(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
+      CALL W2BSSMAT(1,.TRUE.,'H2C_ONBA','GET_HINF_R',
+     &              TBUF,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
      &  'GET_HINF_R:  H2c_infinite (in ON basis) written'//
      &  ' to BSSMAT, EOFLABEL renewed '
-       ENDIF
-      ELSE
-        CALL QUIT(
-     & 'GET_HINF_R:Error, EOFLABEL not found in BSSMAT file!')
-      END IF
+      ENDIF
 
 C     CALL QUIT('GET_HINF_R')
       CALL QEXIT('GET_HINF_R')
@@ -4404,7 +4798,8 @@ C
 C     PURPOSE:
 C    ==========
 C
-C   Do the transformation of H2c(ee) from ON MO(ee) basis to the SA-AO(LL) basis.
+C        Do the transformation of the H2c(ee) from ON MO(ee) basis
+C    to the final SA-AO(LL) basis.
 C
 C    On input:
 C   -----------
@@ -4427,7 +4822,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dgroup.h"
 C
       DIMENSION TMAT(*),VMAT(*),TBUF(*),FACKIN(*),IBEIG(*),WORK(LWORK)
-      LOGICAL FNDLAB, SAVESO1, SPFR,SPFR_BEG, 
+      CHARACTER*8 MYLABEL
+      LOGICAL SAVESO1, SPFR,SPFR_BEG, 
      &          WRITEH2C, GETPCTM, TRAFPRKB, FPB
 
       CALL QENTER('H2CFINAL')
@@ -4452,17 +4848,28 @@ C     TRAFPRKB = .TRUE.
       TRAFPRKB = .FALSE.
 C .... NEED TO INTERCHANGE  VARIABLES !!!
       IF (TRAFPRKB.AND.FPB) THEN
+
 C  ... read the transformation matrix "k" -> "theta"
-      REWIND LUBSS
-      IF (FNDLAB('FPMAT_TH',LUBSS)) THEN
-         ISIZE = NORB(1)*NORB(1)*NZ
-         IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-         CALL READT(LUBSS,ISIZE,TBUF)
-         IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
-     &   'FPMAT_TH read into TBUF.'
-      ELSE
-        CALL QUIT('H2CFINAL: FPMAT_TH not found !')
-      END IF
+C     REWIND LUBSS
+C     IF (FNDLAB('FPMAT_TH',LUBSS)) THEN
+C        ISIZE = NORB(1)*NORB(1)*NZ
+C        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+C        CALL READT(LUBSS,ISIZE,TBUF)
+C        IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
+C    &   'FPMAT_TH read into TBUF.'
+C     ELSE
+C       CALL QUIT('H2CFINAL: FPMAT_TH not found !')
+C     END IF
+
+      ISIZE = NORB(1)*NORB(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+      CALL RFBSSMAT('FPMAT_TH',.TRUE.,'H2CFINAL',
+     &               TBUF,ISIZE,LUBSS,IPRINT)
+
+      IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     &  'FPMAT_TH read into TBUF.'
+      ENDIF
 
       IVMAT = 1
       IBUF = 1
@@ -4544,25 +4951,33 @@ C         write(lupri,*) 'FACKIN:',(FACKIN(J),J=1,NESH(I))
 C      CALL QUIT('H2CFINAL: See H2c "theta" froml H2c "k"')
       ENDIF
 
-C      ... do add SO1  terms in MO into TBUF !!!
+C    ... do add SO1  terms in MO into TBUF !!!
       IF (SAVESO1) THEN
-        REWIND LUBSS
-        IF (FNDLAB('HSO1_ONB',LUBSS)) THEN
-          ISIZE = NESH(1)*NESH(1)*NZ
-          IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
-          CALL READT(LUBSS,ISIZE,TMAT)
-          IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
+
+C       REWIND LUBSS
+C       IF (FNDLAB('HSO1_ONB',LUBSS)) THEN
+C         ISIZE = NESH(1)*NESH(1)*NZ
+C         IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
+C         CALL READT(LUBSS,ISIZE,TMAT)
+C         IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
+C    &    'H2CFINAL: HSO1_ONB read into TMAT.'
+C       ELSE
+C         CALL QUIT('H2CFINAL: HSO1_ONB not found in BSSMAT !')
+C       END IF
+       ISIZE = NESH(1)*NESH(1)*NZ
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
+       CALL RFBSSMAT('HSO1_ONB',.TRUE.,'H2CFINAL',TMAT,
+     &               ISIZE,LUBSS,IPRINT)
+       IF (IPRINT.GE.2) THEN
+          WRITE(LUPRI,'(/2X,A)')
      &    'H2CFINAL: HSO1_ONB read into TMAT.'
-        ELSE
-          CALL QUIT('H2CFINAL: HSO1_ONB not found in BSSMAT !')
-        END IF
+       ENDIF
+
 
         IMAT = 1
         DO I=1,NFSYM
         IF (NESH(I).GT.0) THEN
-
          N2EQ = NESH(I)*NESH(I)*NZ
-
          IF (IPRINT.GE.5) THEN
            CALL HEADER(
      & 'H2CFINAL: H1_SO1 in ON  RKB/"k" basis, TMAT',-1)
@@ -4608,16 +5023,25 @@ C        ... do add H_SO1 into TBUF !!!
       ENDIF
 
 C  ... read transformation matrix 4c AO_LL -> 4c ON(ee)
-      REWIND LUBSS
-      IF (FNDLAB('TM2CAOFP',LUBSS)) THEN
-         ISIZE = NFBAS(1,0)*NESH(1)*NZ
-         IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NESH(2)*NZ
-         CALL READT(LUBSS,ISIZE,TMAT)
-         IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C     REWIND LUBSS
+C     IF (FNDLAB('TM2CAOFP',LUBSS)) THEN
+C        ISIZE = NFBAS(1,0)*NESH(1)*NZ
+C        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NESH(2)*NZ
+C        CALL READT(LUBSS,ISIZE,TMAT)
+C        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &   'H2CFINAL: TM2CAOFP read into TMAT.'
+C     ELSE
+C       CALL QUIT('H2CFINAL: TM2CAOFP not found !')
+C     END IF
+
+      ISIZE = NFBAS(1,0)*NESH(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NESH(2)*NZ
+      CALL RFBSSMAT('TM2CAOFP',.TRUE.,'H2CFINAL',TMAT,
+     &               ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN 
+         WRITE(LUPRI,'(/2X,A)')
      &   'H2CFINAL: TM2CAOFP read into TMAT.'
-      ELSE
-        CALL QUIT('H2CFINAL: TM2CAOFP not found !')
-      END IF
+      ENDIF
 
 C ....  do the transformation into VMAT
       IVMAT = 1
@@ -4700,35 +5124,48 @@ C       after MAKE_DKH /5-Aug-2002 hjaaj
       ENDDO
 
 C ====================================================================
-C  ... write the final H2c SA-AO(LL) atomic matrix elements
+C  ... write the final H2c/FDAO_DK SA-AO(LL) atomic matrix elements
 C     into the file BSSMAT...
 C ====================================================================
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-        BACKSPACE(LUBSS)
-        IF (WRITEH2C) THEN
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C       BACKSPACE(LUBSS)
+C       IF (WRITEH2C) THEN
 C        ... do save the 1el Dirac operator transformed elements ...
 C       --------------------------------------------------------------
-         CALL NEWLAB('H1AO_DK ',LUBSS,LUPRI)
-         IF (IPRINT.GE.3) THEN
-          write(lupri,*) 'H2CFINAL: H1AO_DK label used !'
-         ENDIF
-        ELSE
+C        CALL NEWLAB('H1AO_DK ',LUBSS,LUPRI)
+C        IF (IPRINT.GE.3) THEN
+C         write(lupri,*) 'H2CFINAL: H1AO_DK label used !'
+C        ENDIF
+C       ELSE
 C        ... do save the 'full' Fock-Dirac transformed elements ...
 C       --------------------------------------------------------------
-         CALL NEWLAB('FDAO_DK ',LUBSS,LUPRI)
-         IF (IPRINT.GE.3) THEN
-          write(lupri,*) 'H2CFINAL: FDAO_DK label used !'
-         ENDIF
-        ENDIF
-        CALL WRITT(LUBSS,N2BBASXQ,VMAT)
-        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
-     &  'H2CFINAL:  H2c AO_LL elements were written'//
-     &  ' into the BSSMAT file, EOFLABEL renewed.'
+C        CALL NEWLAB('FDAO_DK ',LUBSS,LUPRI)
+C        IF (IPRINT.GE.3) THEN
+C         write(lupri,*) 'H2CFINAL: FDAO_DK label used !'
+C        ENDIF
+C       ENDIF
+C       CALL WRITT(LUBSS,N2BBASXQ,VMAT)
+C       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C       IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &  'H2CFINAL:  H2c AO_LL elements were written'//
+C    &  ' into the BSSMAT file, EOFLABEL renewed.'
+C     ELSE
+C       CALL QUIT('H2CFINAL: EOFLABEL  not found !')
+C     END IF
+
+      IF (WRITEH2C) THEN
+        MYLABEL='H1AO_DK '
       ELSE
-        CALL QUIT('H2CFINAL: EOFLABEL  not found !')
-      END IF
+        MYLABEL='FDAO_DK '
+      ENDIF
+      CALL W2BSSMAT(1,.TRUE.,MYLABEL,'H2CFINAL',VMAT,
+     &                N2BBASXQ,LUBSS,IPRINT)      
+      IF (IPRINT.GE.2) THEN
+       WRITE(LUPRI,'(/2X,A,A)')
+     & 'H2CFINAL: ',MYLABEL,' AO_LL elements were written'//
+     & ' into the BSSMAT file, EOFLABEL renewed.'
+      ENDIF
 
       CALL QEXIT('H2CFINAL')
       RETURN
@@ -4776,19 +5213,28 @@ C
 #include "memint.h"
 
 
-       REWIND LUBSS
-       IF (FNDLAB('U1_ONBAS',LUBSS)) THEN
-          ISIZE = NORB(1)*NESH(1)*NZ
-          IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NESH(2)*NZ
-          CALL READT(LUBSS,ISIZE,TBUF)
-        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
-     &  'GETPCTMAT: U1_ONBAS (4c ON->2c ON) read into TBUF.'
-       ELSE
-        CALL QUIT(
-     &  'GETPCTMAT: U1_ONBAS not found in the BSSMAT file!')
-       END IF
+C      REWIND LUBSS
+C      IF (FNDLAB('U1_ONBAS',LUBSS)) THEN
+C         ISIZE = NORB(1)*NESH(1)*NZ
+C         IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NESH(2)*NZ
+C         CALL READT(LUBSS,ISIZE,TBUF)
+C       IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &  'GETPCTMAT: U1_ONBAS (4c ON->2c ON) read into TBUF.'
+C      ELSE
+C       CALL QUIT(
+C    &  'GETPCTMAT: U1_ONBAS not found in the BSSMAT file!')
+C      END IF
 
-      REWIND LUBSS
+      ISIZE = NORB(1)*NESH(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NESH(2)*NZ
+      CALL RFBSSMAT('U1_ONBAS',.TRUE.,'GETPCTMAT',
+     &               TBUF,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.2) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     &  'GETPCTMAT: U1_ONBAS (4c ON->2c ON) read into TBUF.'
+      ENDIF
+
+C     REWIND LUBSS
       IF (FPB) THEN
 C      ... free-particle ("k") basis
         LABL = 'FPMAT4C '
@@ -4803,21 +5249,27 @@ C        ...
         CALL QUIT('GETPCTMAT: blind branch for LABL !!!')
       ENDIF
 
-      IF (FNDLAB(LABL,LUBSS)) THEN
-        ISIZE2 = NFBAS(1,0)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + NFBAS(2,0)*NORB(2)*NZ
-        IF (ISIZE2.NE.N2TMT)
-     &     CALL QUIT('GETPCTMAT: ISIZE2.NE.N2TMT !!') 
-        CALL READT(LUBSS,N2TMT,VMAT)
-        IF (IPRINT.GE.3) THEN
-         WRITE(LUPRI,'(/2X,A,A,A)')
-     &  'GETPCTMAT: ',LABL,'- transformation matrix read into VMAT.'
-        ENDIF
-      ELSE
-        CALL QUIT(
-     &  'GETPCTMAT: "LABL" is not found in the BSSMAT file!')
-      END IF
+C     IF (FNDLAB(LABL,LUBSS)) THEN
+C       ISIZE2 = NFBAS(1,0)*NORB(1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + NFBAS(2,0)*NORB(2)*NZ
+C       IF (ISIZE2.NE.N2TMT)
+C    &     CALL QUIT('GETPCTMAT: ISIZE2.NE.N2TMT !!') 
+C       CALL READT(LUBSS,N2TMT,VMAT)
+C       IF (IPRINT.GE.3) THEN
+C        WRITE(LUPRI,'(/2X,A,A,A)')
+C    &  'GETPCTMAT: ',LABL,'- transformation matrix read into VMAT.'
+C       ENDIF
+C     ELSE
+C       CALL QUIT(
+C    &  'GETPCTMAT: "LABL" is not found in the BSSMAT file!')
+C     END IF
 
+      ISIZE2 = NFBAS(1,0)*NORB(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + NFBAS(2,0)*NORB(2)*NZ
+      IF (ISIZE2.NE.N2TMT)
+     &     CALL QUIT('GETPCTMAT: ISIZE2.NE.N2TMT !!') 
+      CALL RFBSSMAT(LABL,.TRUE.,'GETPCTMAT',
+     &               VMAT,ISIZE2,LUBSS,IPRINT)
 
 
       IBUF = 1
@@ -4871,35 +5323,54 @@ C ...   construct picture change transf. matrix,  VMAT*TBUF = TMAT
 C   ==========================================================
 C    ... write TMAT into the BSSMAT to be reread again later
 C   ==========================================================
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-      BACKSPACE(LUBSS)
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C     BACKSPACE(LUBSS)
+C     ISIZE = NESH(1)*NFBAS(1,0)*NZ
+C     IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
+C      CALL NEWLAB('T4CAO2CK',LUBSS,LUPRI)
+C      CALL WRITT(LUBSS,ISIZE,TMAT)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      IF (IPRINT.GE.3) THEN
+C       WRITE(LUPRI,'(/2X,A)')
+C    &  'GETPCTM: PCTM 4c SA-AO "xhi" -> H2c ON RKB/"k"'//
+C    &  ' written to the BSSMAT file (T4CAO2CK), EOFLABEL renewed.'
+C      ENDIF
+C     ELSE
+C      CALL QUIT(
+C    & 'GETPCTM:Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+
       ISIZE = NESH(1)*NFBAS(1,0)*NZ
       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
-       CALL NEWLAB('T4CAO2CK',LUBSS,LUPRI)
-       CALL WRITT(LUBSS,ISIZE,TMAT)
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-       IF (IPRINT.GE.3) THEN
+      CALL W2BSSMAT(1,.TRUE.,'T4CAO2CK','GETPCTM',
+     &               TMAT,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
      &  'GETPCTM: PCTM 4c SA-AO "xhi" -> H2c ON RKB/"k"'//
      &  ' written to the BSSMAT file (T4CAO2CK), EOFLABEL renewed.'
-       ENDIF
-      ELSE
-       CALL QUIT(
-     & 'GETPCTM:Error, EOFLABEL not found in BSSMAT file!')
-      END IF
+      ENDIF
 
-      REWIND LUBSS
-      IF (FNDLAB('TM2CAOFP',LUBSS)) THEN
-       ISIZE2 = NFBAS(1,0)*NESH(1)*NZ
-       IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + (NFBAS(2,0)*NESH(2)*NZ)
-       CALL READT(LUBSS,ISIZE2,VMAT)
-       IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C     REWIND LUBSS
+C     IF (FNDLAB('TM2CAOFP',LUBSS)) THEN
+C      ISIZE2 = NFBAS(1,0)*NESH(1)*NZ
+C      IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + (NFBAS(2,0)*NESH(2)*NZ)
+C      CALL READT(LUBSS,ISIZE2,VMAT)
+C      IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    & 'GETPCTMAT: TM2CAOFP (H2c "xhi_L" -> H2c(ee) ON) read into VMAT.'
+C     ELSE
+C      CALL QUIT(
+C    & 'GETPCTMAT: TM2CAOFP not found in the BSSMAT file!')
+C     END IF
+
+      ISIZE2 = NFBAS(1,0)*NESH(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + (NFBAS(2,0)*NESH(2)*NZ)
+      CALL RFBSSMAT('TM2CAOFP',.TRUE.,'GETPCTMAT',
+     &               VMAT,ISIZE2,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A)')
      & 'GETPCTMAT: TM2CAOFP (H2c "xhi_L" -> H2c(ee) ON) read into VMAT.'
-      ELSE
-       CALL QUIT(
-     & 'GETPCTMAT: TM2CAOFP not found in the BSSMAT file!')
-      END IF
+      ENDIF
 
 C ======================================================
 C   ... construct TBUF.VMAT+ = TMAT (4c ON -> 2c AO)
@@ -4956,38 +5427,55 @@ C  ...  construct picture change transf matrix, TBUF*VMAT+ = TMAT
       ENDDO
 
 C    ... write TMAT into the BSSMAT
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-      BACKSPACE(LUBSS)
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C     BACKSPACE(LUBSS)
+C     ISIZE = NORB(1)*NFBAS(1,1)*NZ
+C     IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NFBAS(2,1)*NZ
+C      CALL NEWLAB('T4CK2CAO',LUBSS,LUPRI)
+C      CALL WRITT(LUBSS,ISIZE,TMAT)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      IF (IPRINT.GE.3) THEN
+C       WRITE(LUPRI,'(/2X,A)')
+C    &  'GETPCTM: PCTM H4c ON RKB/"k" -> H2c SA-AO "xhi"'//
+C    &  ' written to the BSSMAT file(T4CK2CAO), EOFLABEL renewed.'
+C      ENDIF
+C     ELSE
+C      CALL QUIT(
+C    & 'GETPCTM:Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+
       ISIZE = NORB(1)*NFBAS(1,1)*NZ
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NFBAS(2,1)*NZ
-       CALL NEWLAB('T4CK2CAO',LUBSS,LUPRI)
-       CALL WRITT(LUBSS,ISIZE,TMAT)
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-       IF (IPRINT.GE.3) THEN
+      CALL W2BSSMAT(1,.TRUE.,'T4CK2CAO','GETPCTM',
+     &               TMAT,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
      &  'GETPCTM: PCTM H4c ON RKB/"k" -> H2c SA-AO "xhi"'//
      &  ' written to the BSSMAT file(T4CK2CAO), EOFLABEL renewed.'
-       ENDIF
-      ELSE
-       CALL QUIT(
-     & 'GETPCTM:Error, EOFLABEL not found in BSSMAT file!')
-      END IF
-
+      ENDIF
 
 C   ... reread T4CAO2CK back into TMAT
-      REWIND LUBSS
-      IF (FNDLAB('T4CAO2CK',LUBSS)) THEN
-         ISIZE2 = NFBAS(1,0)*NESH(1)*NZ
-         IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + NFBAS(2,0)*NESH(2)*NZ
-         CALL READT(LUBSS,ISIZE2,TMAT)
-         IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
-     &'GETPCTMAT: T4CAO2CK (H2c "xhi_L" -> H2c(ee) ON) read into TMAT.'
-      ELSE
-        CALL QUIT(
-     &'GETPCTMAT: T4CAO2CK not found in the BSSMAT file!')
-      END IF
+C     REWIND LUBSS
+C     IF (FNDLAB('T4CAO2CK',LUBSS)) THEN
+C        ISIZE2 = NFBAS(1,0)*NESH(1)*NZ
+C        IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + NFBAS(2,0)*NESH(2)*NZ
+C        CALL READT(LUBSS,ISIZE2,TMAT)
+C        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &'GETPCTMAT: T4CAO2CK (H2c "xhi_L" -> H2c(ee) ON) read into TMAT.'
+C     ELSE
+C       CALL QUIT(
+C    &'GETPCTMAT: T4CAO2CK not found in the BSSMAT file!')
+C     END IF
 
+      ISIZE2 = NFBAS(1,0)*NESH(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + NFBAS(2,0)*NESH(2)*NZ
+      CALL RFBSSMAT('T4CAO2CK',.TRUE.,'GETPCTMAT',
+     &               TMAT,ISIZE2,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+       WRITE(LUPRI,'(/2X,A)')
+     &'GETPCTMAT: T4CAO2CK (H2c "xhi_L" -> H2c(ee) ON) read into TMAT.'
+      ENDIF
 
       IBUF = 1
       IVMAT = 1
@@ -5044,23 +5532,34 @@ C  ...  construct full picture change transfprmatin matrix, TMAT*VMAT+ = TBUF
 C ************************************************************************
 C .. save the final picture change transformation matrix into the file
 C ************************************************************************
-      REWIND(LUBSS)
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-        BACKSPACE(LUBSS)
-        CALL NEWLAB('U_PICTRM',LUBSS,LUPRI)
-        ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
-        CALL WRITT(LUBSS,ISIZE,TBUF)
-        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-        IF (IPRINT.GE.3)
-     &  WRITE(LUPRI,'(/2X,A)')
+C     REWIND(LUBSS)
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C       BACKSPACE(LUBSS)
+C       CALL NEWLAB('U_PICTRM',LUBSS,LUPRI)
+C       ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
+C       CALL WRITT(LUBSS,ISIZE,TBUF)
+C       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C       IF (IPRINT.GE.3)
+C    &  WRITE(LUPRI,'(/2X,A)')
+C    &  'GETPCTMAT: Final picture change transformation matrix '//
+C    &  ' - U_PICTRM - was written to the BSSMAT file, '//
+C    &  ' EOFLABEL was renewed.'
+C     ELSE
+C       CALL QUIT(
+C    & 'GETPCTMAT: Error, EOFLABEL not found in the BSSMAT file!')
+C     END IF
+
+      ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
+      CALL W2BSSMAT(1,.TRUE.,'U_PICTRM','GETPCTM',
+     &               TBUF,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')
      &  'GETPCTMAT: Final picture change transformation matrix '//
      &  ' - U_PICTRM - was written to the BSSMAT file, '//
      &  ' EOFLABEL was renewed.'
-      ELSE
-        CALL QUIT(
-     & 'GETPCTMAT: Error, EOFLABEL not found in the BSSMAT file!')
-      END IF
+      ENDIF
 
 C     CALL QUIT('GETPCTMAT')
       CALL QEXIT('GETPCTMAT')
@@ -5099,7 +5598,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION VMAT(*),TMAT(*),
      &          EIG(*),IBEIG(*),TBUF(*),WORK(LWORK)    
       DIMENSION NBORBX(4, 2, 0:2),NPSHX(2)
-      LOGICAL SPFR,SPFR_BEG,ONLYSO1,SAVESO1,FNDLAB,DOJACOBI,WRITEH2C,
+      LOGICAL SPFR,SPFR_BEG,ONLYSO1,SAVESO1,DOJACOBI,WRITEH2C,
      &        PURLO,USEDF,DO4C2C,START2C
       CHARACTER*8 LABELH1,LABELH2,LBL
 
@@ -5114,37 +5613,60 @@ C ====================================================================
       IF (DO4C2C.AND..NOT.USEDF.AND.WRITEH2C.AND..NOT.START2C) THEN
 C ...   read the pictre change matrix into TMAT
 C    ... write TMAT into the BSSMAT  
-       REWIND LUBSS     
-       IF (FNDLAB('T4CK2CAO',LUBSS)) THEN 
+C      REWIND LUBSS     
+C      IF (FNDLAB('T4CK2CAO',LUBSS)) THEN 
+C      ISIZE = NORB(1)*NFBAS(1,1)*NZ  
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NFBAS(2,1)*NZ  
+C      CALL READT(LUBSS,ISIZE,TMAT) 
+C       IF (IPRINT.GE.3) THEN   
+C        WRITE(LUPRI,'(/2X,A)') 
+C    &   'CMP_EIGVAL: PCTM H4c ON RKB/"k" -> H2c SA-AO "xhi"'//  
+C    &   ' read from the BSSMAT file(T4CK2CAO) into TMAT.' 
+C       ENDIF
+C      ELSE     
+C       CALL QUIT(   
+C    & 'CMP_EIGVAL:Error, T4CK2CAO not found in BSSMAT file!')   
+C      END IF   
+
        ISIZE = NORB(1)*NFBAS(1,1)*NZ  
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NFBAS(2,1)*NZ  
-       CALL READT(LUBSS,ISIZE,TMAT) 
-        IF (IPRINT.GE.3) THEN   
-         WRITE(LUPRI,'(/2X,A)') 
-     &   'CMP_EIGVAL: PCTM H4c ON RKB/"k" -> H2c SA-AO "xhi"'//  
-     &   ' read from the BSSMAT file(T4CK2CAO) into TMAT.' 
-        ENDIF
-       ELSE     
-        CALL QUIT(   
-     & 'CMP_EIGVAL:Error, T4CK2CAO not found in BSSMAT file!')   
-       END IF   
+       CALL RFBSSMAT('T4CK2CAO',.TRUE.,'CMP_EIGVAL',TMAT,
+     &               ISIZE,LUBSS,IPRINT)
+       IF (IPRINT.GE.3) THEN   
+        WRITE(LUPRI,'(/2X,A)') 
+     &  'CMP_EIGVAL: PCTM H4c ON RKB/"k" -> H2c SA-AO "xhi"'//  
+     &  ' read from the BSSMAT file(T4CK2CAO) into TMAT.' 
+       ENDIF
+
 
 C     ... read the FD4C_ONB matrix which was prepared earlier
-       REWIND LUBSS     
-       IF (FNDLAB('FD4C_ONB',LUBSS)) THEN 
+C      REWIND LUBSS     
+C      IF (FNDLAB('FD4C_ONB',LUBSS)) THEN 
+C      ISIZE = NORB(1)*NORB(1)*NZ  
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ  
+C      CALL READT(LUBSS,ISIZE,VMAT) 
+C      IF (IPRINT.GE.3) THEN   
+C       WRITE(LUPRI,'(/2X,A)') 
+C    & 'CMP_EIGVAL: 4c Fock-Dirac(FD4C_ONB) in ON RKB/"k" was'//  
+C    & ' read from the BSSMAT file(FD4C_ONB) into VMAT.' 
+C      ENDIF
+C      ELSE     
+C       CALL QUIT(   
+C    & 'CMP_EIGVAL:Error, FD4C_ONB was not found in BSSMAT file!')   
+C      END IF   
+
        ISIZE = NORB(1)*NORB(1)*NZ  
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ  
-       CALL READT(LUBSS,ISIZE,VMAT) 
+       CALL RFBSSMAT('FD4C_ONB',.TRUE.,'CMP_EIGVAL',VMAT,
+     &               ISIZE,LUBSS,IPRINT)
        IF (IPRINT.GE.3) THEN   
         WRITE(LUPRI,'(/2X,A)') 
      & 'CMP_EIGVAL: 4c Fock-Dirac(FD4C_ONB) in ON RKB/"k" was'//  
      & ' read from the BSSMAT file(FD4C_ONB) into VMAT.' 
        ENDIF
-       ELSE     
-        CALL QUIT(   
-     & 'CMP_EIGVAL:Error, FD4C_ONB was not found in BSSMAT file!')   
-       END IF   
 
+
+C      =========================================================================
 C       ... do the picture change transformation  TBUF = TMAT^+ . VMAT . TMAT
 C      =========================================================================
        IVMAT = 1
@@ -5196,18 +5718,27 @@ C      =========================================================================
        ENDDO
 
 C     ... save Fock-Dirac matrix in 2c SA-AO "xhi" into BSSMAT
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-        BACKSPACE(LUBSS)
-        CALL NEWLAB('FDAO_DK ',LUBSS,LUPRI)
-        CALL WRITT(LUBSS,N2BBASXQ,TBUF)
-        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C       BACKSPACE(LUBSS)
+C       CALL NEWLAB('FDAO_DK ',LUBSS,LUPRI)
+C       CALL WRITT(LUBSS,N2BBASXQ,TBUF)
+C       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C       IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &  'CMP_EIGVAL: FD2c elements (FDAO_DK) were written'//
+C    &  ' into the BSSMAT file, EOFLABEL renewed.'
+C     ELSE
+C       CALL QUIT('CMP_EIGVAL: EOFLABEL  not found !')
+C     END IF
+
+      CALL W2BSSMAT(1,.TRUE.,'FDAO_DK ','CMP_EIGVAL',
+     &               TBUF,N2BBASXQ,IPRINT)
+      IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')
      &  'CMP_EIGVAL: FD2c elements (FDAO_DK) were written'//
      &  ' into the BSSMAT file, EOFLABEL renewed.'
-      ELSE
-        CALL QUIT('CMP_EIGVAL: EOFLABEL  not found !')
-      END IF
+      ENDIF
+
 C  ======== End of handling Fock-Dirac 2c =========
       ENDIF
 C  ======== End of handling Fock-Dirac 2c =========
@@ -5220,16 +5751,22 @@ C        DOJACOBI = .TRUE.
 C  ===================================================================
 C     ... get AND reorganize the Lowdin transformation matrix VMAT
 C  ===================================================================
-      REWIND LUBSS
-      IF (FNDLAB('VMAT4C  ',LUBSS)) THEN
-         CALL READT(LUBSS,N2BBASX,VMAT)
-         IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
-     &  'CMP_EIGVAL: VMAT4C was read from BSSMAT.'
-      ELSE
-        CALL QUIT(
-     &  'CMP_EIGVAL: VMAT4C is not found in BSSMAT file!')
-      END IF
+C     REWIND LUBSS
+C     IF (FNDLAB('VMAT4C  ',LUBSS)) THEN
+C        CALL READT(LUBSS,N2BBASX,VMAT)
+C        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &  'CMP_EIGVAL: VMAT4C was read from BSSMAT.'
+C     ELSE
+C       CALL QUIT(
+C    &  'CMP_EIGVAL: VMAT4C is not found in BSSMAT file!')
+C     END IF
 
+      CALL RFBSSMAT('VMAT4C  ',.TRUE.,'CMP_EIGVAL',
+     &               VMAT,N2BBASX,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A)')
+     &  'CMP_EIGVAL: VMAT4C was read from BSSMAT.'
+      ENDIF
 
       IF (IPRINT.GE.6) THEN
         CALL HEADER(
@@ -5262,7 +5799,10 @@ C  ...  1. remove zeros for LL !
        ENDDO
       ENDIF
 
-C  ... reorder Lowdin matrix for 2comp. BSS Hamiltonian ...
+C ===================================================================
+C  ... reorder the Lowdin matrix for 2component Hamiltonians ...
+C ===================================================================
+
       IF (NFSYM.EQ.2) THEN
 C    HJJ:For TMAT: copy the VMAT for the L block ifsym=2 to
 C        follow immediately after the L block ifsym=1.
@@ -5293,26 +5833,36 @@ C ==========================================================
 C .... write the 2c-adapted Lowdin matrix into the file
 C .. this is the non-linear symmetry case !!!!
 C ==========================================================
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-        BACKSPACE(LUBSS)
-        CALL NEWLAB('VMAT2C  ',LUBSS,LUPRI)
-        CALL WRITT(LUBSS,N2BBASX,VMAT)
-        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
-     &  'CMP_EIGVAL: Adapted (non-linsym) Lowdin matrix, VMAT2C,'//
-     &  ' was written into the BSSMAT file, EOFLABEL was renewed.'
-      ELSE
-        CALL QUIT('CMP_EIGVAL: EOFLABEL not found !')
-      END IF
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C       BACKSPACE(LUBSS)
+C       CALL NEWLAB('VMAT2C  ',LUBSS,LUPRI)
+C       CALL WRITT(LUBSS,N2BBASX,VMAT)
+C       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C       IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &  'CMP_EIGVAL: Adapted (non-linsym) Lowdin matrix, VMAT2C,'//
+C    &  ' was written into the BSSMAT file, EOFLABEL was renewed.'
+C     ELSE
+C       CALL QUIT('CMP_EIGVAL: EOFLABEL not found !')
+C     END IF
+
+      CALL W2BSSMAT(1,.TRUE.,'VMAT2C  ','CMP_EIGVAL',
+     &               VMAT,N2BBASX,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+       WRITE(LUPRI,'(/2X,A)')
+     & 'CMP_EIGVAL: Adapted (non-linsym) Lowdin matrix, VMAT2C,'//
+     & ' was written into the BSSMAT file, EOFLABEL was renewed.'
+      ENDIF
 
 C     IF (LINEAR.AND.USEDF) THEN
 C     IF (LINEAR.AND.DO4C2C) THEN
       IF (LINEAR) THEN
+
 C     ... for the linear symmetry DO ADAPT the Lowdin matrix !
 C      ... the proper setting for the 2c mode is needed !
 C   ... when we have Fock-Dirac matrix SCF in linear symmetry, we need
 C      the H2c in LINSYM_MO basis !!!
+
       NSYM = 4/NZ                                               
       DO I=1,NFSYM                     
        NPSHX(I) = NPSH(I)
@@ -5352,18 +5902,26 @@ C      NTMO(I) = NORB(I)
       ENDIF
 
 C .... write the 2c-adapted lin-sym adapted Lowdin matrix into the file
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-        BACKSPACE(LUBSS)
-        CALL NEWLAB('VMAT2C_L',LUBSS,LUPRI)
-        CALL WRITT(LUBSS,N2BBASX,VMAT)
-        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C       BACKSPACE(LUBSS)
+C       CALL NEWLAB('VMAT2C_L',LUBSS,LUPRI)
+C       CALL WRITT(LUBSS,N2BBASX,VMAT)
+C       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C       IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &  'CMP_EIGVAL: 2c LinSym adapted Lowdin matrix, VMAT2C_L,'//
+C    &  ' was written into the BSSMAT file, EOFLABEL was renewed.'
+C     ELSE
+C       CALL QUIT('CMP_EIGVAL: EOFLABEL not found !')
+C     END IF
+
+      CALL W2BSSMAT(1,.TRUE.,'VMAT2C_L','CMP_EIGVAL',
+     &              VMAT,N2BBASX,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')
      &  'CMP_EIGVAL: 2c LinSym adapted Lowdin matrix, VMAT2C_L,'//
-     &  ' was written into the BSSMAT file, EOFLABEL was renewed.'
-      ELSE
-        CALL QUIT('CMP_EIGVAL: EOFLABEL not found !')
-      END IF
+     &  ' was written to the BSSMAT file, EOFLABEL was renewed.'
+      ENDIF
 
       ENDIF
 
@@ -5376,16 +5934,22 @@ C      ... transformed converged Fock-Dirac Hamiltonian
        LABELH2='FDAO_DK '
       ENDIF
  
-      REWIND LUBSS
-      IF (FNDLAB(LABELH2,LUBSS)) THEN
-         CALL READT(LUBSS,N2BBASXQ,TBUF)
-         IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A,A,A)')
-     &  'CMP_EIGVAL: ',LABELH2,'was read from BSSMAT.'
-      ELSE
-        CALL QUIT(
-     &  'CMP_EIGVAL: H1AO_DK is not found in BSSMAT file!')
-      END IF
+C     REWIND LUBSS
+C     IF (FNDLAB(LABELH2,LUBSS)) THEN
+C        CALL READT(LUBSS,N2BBASXQ,TBUF)
+C        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A,A,A)')
+C    &  'CMP_EIGVAL: ',LABELH2,'was read from BSSMAT.'
+C     ELSE
+C       CALL QUIT(
+C    &  'CMP_EIGVAL: H1AO_DK is not found in BSSMAT file!')
+C     END IF
 
+      CALL RFBSSMAT(LABELH2,.TRUE.,'CMP_EIGVAL',
+     &              TBUF,N2BBASXQ,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A,A,A)')
+     & 'CMP_EIGVAL: ',LABELH2,' was read from BSSMAT.'
+      ENDIF
 
 C   ... transform H2c AO through Lowdin matrix into ON MO ee basis
 C   ... transform H4c AO through  matrix into ON MO  basis
@@ -5445,22 +6009,38 @@ C       ... offset for Lowdin matrix
       ENDDO
 
       IF (.NOT.WRITEH2C) THEN
+
+
 C ... do save FD_2c in Lowdin MO basis into the BSSMAT !
 C ... it is used at the post-DC-SCF level in DFSOLV !!!!
-       REWIND LUBSS   
-       IF (FNDLAB('EOFLABEL',LUBSS)) THEN                     
-         BACKSPACE(LUBSS)          
-         CALL NEWLAB('FD2C_LMO',LUBSS,LUPRI)
-         ISIZE = NESH(1)*NESH(1)*NZ 
-         IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
-         CALL WRITT(LUBSS,ISIZE,TMAT)
-         CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)                        
-        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')                  
+
+
+
+C      REWIND LUBSS   
+C      IF (FNDLAB('EOFLABEL',LUBSS)) THEN                     
+C        BACKSPACE(LUBSS)          
+C        CALL NEWLAB('FD2C_LMO',LUBSS,LUPRI)
+C        ISIZE = NESH(1)*NESH(1)*NZ 
+C        IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
+C        CALL WRITT(LUBSS,ISIZE,TMAT)
+C        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)                        
+C       IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')                  
+C    &  'CMP_EIGVAL: FD_2c elements in Lowdin MO basis were written'// 
+C    &  ' into the BSSMAT file, EOFLABEL renewed.'           
+C      ELSE                                                       
+C        CALL QUIT('CMP_EIGVAL: EOFLABEL  not found !')           
+C      END IF                        
+
+       ISIZE = NESH(1)*NESH(1)*NZ
+       IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
+       CALL W2BSSMAT(1,.TRUE.,'FD2C_LMO','CMP_EIGVAL',
+     &                TMAT,ISIZE,LUBSS,IPRHAM)
+       IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')                  
      &  'CMP_EIGVAL: FD_2c elements in Lowdin MO basis were written'// 
      &  ' into the BSSMAT file, EOFLABEL renewed.'           
-       ELSE                                                       
-         CALL QUIT('CMP_EIGVAL: EOFLABEL  not found !')           
-       END IF                        
+       ENDIF
+
       ENDIF 
 
 C ... WE WANT THE EIGENVECTORS AS WELL .... ADD ONE MORE CYCLE ONLY 
@@ -5505,17 +6085,25 @@ C ... write the TBUF - H1 in RKB/"k" to the file...
       ISIZE=NORB(1)*NORB(1)*NZ
       IF (NFSYM.EQ.2) ISIZE=ISIZE+NORB(2)*NORB(2)*NZ
 C ... get H1_ONB into TBUF
-      REWIND LUBSS
+C     REWIND LUBSS
+
       LABELH1 = 'H1_ONBAS'
       IF (SAVESO1) LABELH1 = 'H1_ONB  '
-      IF (FNDLAB(LABELH1,LUBSS)) THEN
-         CALL READT(LUBSS,ISIZE,TBUF)
-         IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A,A,A)')
-     &  'CMP_EIGVAL: ',LABELH1,' read into TBUF.'
-      ELSE
-        CALL QUIT(
-     &  'CMP_EIGVAL: H1_ONBAS or H1_ONB is not found in BSSMAT file!')
-      END IF
+
+C     IF (FNDLAB(LABELH1,LUBSS)) THEN
+C        CALL READT(LUBSS,ISIZE,TBUF)
+C        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A,A,A)')
+C    &  'CMP_EIGVAL: ',LABELH1,' read into TBUF.'
+C     ELSE
+C       CALL QUIT(
+C    &  'CMP_EIGVAL: H1_ONBAS or H1_ONB is not found in BSSMAT file!')
+C     END IF
+
+      CALL RFBSSMAT(LABELH1,.TRUE.,'CMP_EIGVAL',TBUF,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+       WRITE(LUPRI,'(/2X,A,A,A)')
+     & 'CMP_EIGVAL: ',LABELH1,' read into TBUF.'
+      ENDIF
 
       IH1FP = 1
       IH2MO = 1
@@ -5602,29 +6190,47 @@ C .... read Lowdin matrix into TMAT
         ELSE
           LABELH1='VMAT2C  '
         ENDIF
-        REWIND LUBSS   
-        IF (FNDLAB(LABELH1,LUBSS)) THEN                     
-         CALL READT(LUBSS,N2BBASX,TMAT)
-         IF (IPRINT.GE.2) THEN
-          WRITE(LUPRI,'(/2X,A)')                  
+
+C       REWIND LUBSS   
+C       IF (FNDLAB(LABELH1,LUBSS)) THEN                     
+C        CALL READT(LUBSS,N2BBASX,TMAT)
+C        IF (IPRINT.GE.2) THEN
+C         WRITE(LUPRI,'(/2X,A)')                  
+C    &  'CMP_EIGVAL: Lowdin 2c transf. matrix was read'// 
+C    &  ' into TMAT from the BSSMAT file.'           
+C        ENDIF
+C       ELSE                                                       
+C        CALL QUIT('CMP_EIGVAL: VMAT2C/VMAT2C_L not found !')           
+C       END IF                        
+
+       CALL RFBSSMAT(LABELH1,.TRUE.,'CMP_EIGVAL',
+     &               TMAT,N2BBASX,LUBSS,IPRINT)
+       IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A)')                  
      &  'CMP_EIGVAL: Lowdin 2c transf. matrix was read'// 
      &  ' into TMAT from the BSSMAT file.'           
-         ENDIF
-        ELSE                                                       
-         CALL QUIT('CMP_EIGVAL: VMAT2C/VMAT2C_L not found !')           
-        END IF                        
+       ENDIF
 
-        REWIND LUBSS   
-        IF (FNDLAB('FDAO_DK ',LUBSS)) THEN                     
-         CALL READT(LUBSS,N2BBASXQ,VMAT)
-         IF (IPRINT.GE.3) THEN
+C       REWIND LUBSS   
+C       IF (FNDLAB('FDAO_DK ',LUBSS)) THEN                     
+C        CALL READT(LUBSS,N2BBASXQ,VMAT)
+C        IF (IPRINT.GE.3) THEN
+C         WRITE(LUPRI,'(/2X,A)')                  
+C    &  'CMP_EIGVAL: FD2c elements (2c SA-AO basis,FDAO_DK) were read'//
+C    &  ' into VMAT from the BSSMAT file.'           
+C        ENDIF
+C       ELSE                                                       
+C        CALL QUIT('CMP_EIGVAL: FDAO_DK  not found in BSSMAT !') 
+C       END IF                        
+
+        CALL RFBSSMAT('FDAO_DK ',.TRUE.,'CMP_EIGVAL',
+     &                 VMAT,N2BBASXQ,LUBSS,IPRINT)
+
+        IF (IPRINT.GE.3) THEN
           WRITE(LUPRI,'(/2X,A)')                  
      &  'CMP_EIGVAL: FD2c elements (2c SA-AO basis,FDAO_DK) were read'//
      &  ' into VMAT from the BSSMAT file.'           
-         ENDIF
-        ELSE                                                       
-         CALL QUIT('CMP_EIGVAL: FDAO_DK  not found in BSSMAT !') 
-        END IF                        
+        ENDIF
 
 C       ... do the transformation ...
       IBUF  = 1
@@ -5677,20 +6283,30 @@ C       ... offset for Lowdin matrix
       ENDIF
       ENDDO
 
-       REWIND LUBSS   
-       IF (FNDLAB('EOFLABEL',LUBSS)) THEN                     
-         BACKSPACE(LUBSS)          
-         CALL NEWLAB('FD2C_LMO',LUBSS,LUPRI)
-         ISIZE = NESH(1)*NESH(1)*NZ 
-         IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
-         CALL WRITT(LUBSS,ISIZE,TBUF)
-         CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)                        
-         IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')                  
+C      REWIND LUBSS   
+C      IF (FNDLAB('EOFLABEL',LUBSS)) THEN                     
+C        BACKSPACE(LUBSS)          
+C        CALL NEWLAB('FD2C_LMO',LUBSS,LUPRI)
+C        ISIZE = NESH(1)*NESH(1)*NZ 
+C        IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
+C        CALL WRITT(LUBSS,ISIZE,TBUF)
+C        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)                        
+C        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')                  
+C    &  'CMP_EIGVAL: FD_2c elements in Lowdin MO basis were written'// 
+C    &  ' into the BSSMAT file, EOFLABEL renewed.'           
+C      ELSE                                                       
+C        CALL QUIT('CMP_EIGVAL: EOFLABEL  not found !')           
+C      END IF                        
+
+       ISIZE = NESH(1)*NESH(1)*NZ 
+       IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
+       CALL W2BSSMAT(1,.TRUE.,'FD2C_LMO','CMP_EIGVAL',
+     &                TBUF,ISIZE,LUBSS,IPRINT)
+       IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A)')                  
      &  'CMP_EIGVAL: FD_2c elements in Lowdin MO basis were written'// 
      &  ' into the BSSMAT file, EOFLABEL renewed.'           
-       ELSE                                                       
-         CALL QUIT('CMP_EIGVAL: EOFLABEL  not found !')           
-       END IF                        
+       ENDIF
 
 C        ... do diagonalize the FD2C_LMO ...
       IEIG  = 1
@@ -5766,7 +6382,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dgroup.h"
    
       DIMENSION TBUF(*),TMAT(*),VMAT(*),EIG(*),IBEIG(*),WORK(LWORK)
-      LOGICAL SPFR_BEG, DK2SO1, FNDLAB
+      LOGICAL SPFR_BEG, DK2SO1
 
       CALL QENTER('GET_HDK2_FPM')
 #include "memint.h"         
@@ -5913,22 +6529,34 @@ C         ... update the offsets...
       ENDDO
 
 C ... do save Hamiltonian matrix (VMAT) into the file BSSMAT
-      REWIND(LUBSS)
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-        BACKSPACE(LUBSS)
-        CALL NEWLAB('H2C_ONBA',LUBSS,LUPRI)
-        ISIZE = NESH(1)*NESH(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
-        CALL DCOPY(ISIZE,VMAT,1,TBUF,1)
-        CALL WRITT(LUBSS,ISIZE,TBUF)
-        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-        WRITE(LUPRI,'(/2X,A)')
-     &  'GET_HDK2_FPM: H2c_DKH2 Hamiltonian matrix (in "k" basis) is '//
-     &  ' written to the BSSMAT file, EOFLABEL renewed.'
-      ELSE
-        CALL QUIT(
-     & 'GET_HDK2_FPM: Error, EOFLABEL not found in the BSSMAT file!')
-      END IF
+C     REWIND(LUBSS)
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C       BACKSPACE(LUBSS)
+C       CALL NEWLAB('H2C_ONBA',LUBSS,LUPRI)
+C       ISIZE = NESH(1)*NESH(1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
+C       CALL DCOPY(ISIZE,VMAT,1,TBUF,1)
+C       CALL WRITT(LUBSS,ISIZE,TBUF)
+C       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C       WRITE(LUPRI,'(/2X,A)')
+C    &  'GET_HDK2_FPM: H2c_DKH2 Hamiltonian matrix (in "k" basis) is '//
+C    &  ' written to the BSSMAT file, EOFLABEL renewed.'
+C     ELSE
+C       CALL QUIT(
+C    & 'GET_HDK2_FPM: Error, EOFLABEL not found in the BSSMAT file!')
+C     END IF
+
+
+      ISIZE = NESH(1)*NESH(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
+      CALL DCOPY(ISIZE,VMAT,1,TBUF,1)
+      CALL W2BSSMAT(1,.TRUE.,'H2C_ONBA','GET_HDK2_FPM',
+     &              TBUF,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+       WRITE(LUPRI,'(/2X,A)')
+     & 'GET_HDK2_FPM: H2c_DKH2 Hamiltonian matrix (in "k" basis) is '//
+     & ' written to the BSSMAT file, EOFLABEL renewed.'
+      ENDIF
 
       CALL QEXIT('GET_HDK2_FPM')
       RETURN
@@ -5965,7 +6593,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dgroup.h"   
 
       DIMENSION TBUF(*),VMAT(*),IBEIG(*),WORK(LWORK)
-      LOGICAL ONLYSO1, FNDLAB
+      LOGICAL ONLYSO1
 
       CALL QENTER('GET_HDK1_FPM')
 #include "memint.h"         
@@ -6028,22 +6656,35 @@ C       ... update the offsets...
       ENDDO
 
 C ... do write the H1ee Hamiltonian into the file...
-      REWIND(LUBSS)
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-        BACKSPACE(LUBSS)
-        CALL NEWLAB('H2C_ONBA',LUBSS,LUPRI)
-        ISIZE = NESH(1)*NESH(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
-        CALL DCOPY(ISIZE,VMAT,1,TBUF,1)
-        CALL WRITT(LUBSS,ISIZE,TBUF)
-        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C     REWIND(LUBSS)
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C       BACKSPACE(LUBSS)
+C       CALL NEWLAB('H2C_ONBA',LUBSS,LUPRI)
+C       ISIZE = NESH(1)*NESH(1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
+C       CALL DCOPY(ISIZE,VMAT,1,TBUF,1)
+C       CALL WRITT(LUBSS,ISIZE,TBUF)
+C       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C       WRITE(LUPRI,'(/2X,A)')
+C    &  'GET_HDK1_FPM: H2c_DKH1 Hamiltonian matrix (in "k" basis) is '//
+C    &  ' written to the BSSMAT file, EOFLABEL renewed.'
+C     ELSE
+C       CALL QUIT(
+C    & 'GET_HDK2_FPM: Error, EOFLABEL not found in the BSSMAT file!')
+C     END IF
+
+      ISIZE = NESH(1)*NESH(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
+      CALL DCOPY(ISIZE,VMAT,1,TBUF,1)
+      
+      CALL W2BSSMAT(1,.TRUE.,'H2C_ONBA','GET_HDK1_FPM',
+     &              TBUF,ISIZE,LUBSS,IPRINT)
+
+      IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
      &  'GET_HDK1_FPM: H2c_DKH1 Hamiltonian matrix (in "k" basis) is '//
      &  ' written to the BSSMAT file, EOFLABEL renewed.'
-      ELSE
-        CALL QUIT(
-     & 'GET_HDK2_FPM: Error, EOFLABEL not found in the BSSMAT file!')
-      END IF
+      ENDIF
 
       CALL QEXIT('GET_HDK1_FPM')
       RETURN
@@ -6208,7 +6849,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbham.h"    
 
       DIMENSION VMAT(*),IBEIG(*),WORK(LWORK)
-      LOGICAL FNDLAB, FPB, KEEPH1, BSS_SAVE
+      LOGICAL FPB, KEEPH1, BSS_SAVE
       CHARACTER*8 LABL
 
       CALL QENTER('FDTR2C')
@@ -6225,19 +6866,28 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CMI   IF (.NOT.ONLYDFFCK) THEN
 
 C  ... read pict.change transf.matrix into VMAT !
-      REWIND LUBSS        
-      IF (FNDLAB('U_PICTRM',LUBSS)) THEN                                
-        ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ              
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NFBAS(2,1)*NZ) 
-        CALL READT(LUBSS,ISIZE,VMAT)                        
-        IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')                        
+C     REWIND LUBSS        
+C     IF (FNDLAB('U_PICTRM',LUBSS)) THEN                                
+C       ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ              
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NFBAS(2,1)*NZ) 
+C       CALL READT(LUBSS,ISIZE,VMAT)                        
+C       IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')                        
+C    &  'FDTR2C: Picture change transformation matrix (4c AO->2c AO)'//
+C    &  ' was read from the BSSMAT file.'     
+C     ELSE                                                             
+C       CALL QUIT(
+C    &  'FDTR2C:Error, U_PICTRM was not found in BSSMAT file!') 
+C     END IF                                                           
+
+      ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ              
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NFBAS(2,1)*NZ) 
+      CALL RFBSSMAT('U_PICTRM',.TRUE.,'FDTR2C',VMAT,ISIZE,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.3) THEN
+          WRITE(LUPRI,'(/2X,A)')                        
      &  'FDTR2C: Picture change transformation matrix (4c AO->2c AO)'//
      &  ' was read from the BSSMAT file.'     
-      ELSE                                                             
-        CALL QUIT(
-     &  'FDTR2C:Error, U_PICTRM was not found in BSSMAT file!') 
-      END IF                                                           
- 
+      ENDIF
+    
       IF (IPRHAM.GE.5) THEN
 C ... print out symmetry blocked picture change transformation matrix                             
       IPCTM1 = 1
@@ -6301,20 +6951,27 @@ C      CALL PRQMAT(WORK(KF1),NTBAS(0),NTBAS(0),
 C    &          NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
 C     ENDIF
 
-      REWIND LUBSS                                                  
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN                             
-        BACKSPACE(LUBSS)                                               
-        CALL NEWLAB('FD1AO_DK',LUBSS,LUPRI)                           
-        CALL WRITT(LUBSS,N2BBASXQ,WORK(KF1))       
-        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)  
-        IF (IPRHAM.GE.2) THEN 
-         WRITE(LUPRI,'(/2X,A)')                         
-     &   'FDTR2C: FD1AO_DK AO_LL elements were written'//       
-     &   ' into the BSSMAT file, EOFLABEL was renewed.'
-        ENDIF
-      ELSE                                                        
-        CALL QUIT('FDTR2C: EOFLABEL  not found !')                
-      END IF                         
+C     REWIND LUBSS                                                  
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN                             
+CC      BACKSPACE(LUBSS)                                               
+C       CALL NEWLAB('FD1AO_DK',LUBSS,LUPRI)                           
+C       CALL WRITT(LUBSS,N2BBASXQ,WORK(KF1))       
+C       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)  
+C       IF (IPRHAM.GE.2) THEN 
+C        WRITE(LUPRI,'(/2X,A)')                         
+C    &   'FDTR2C: FD1AO_DK AO_LL elements were written'//       
+C    &   ' into the BSSMAT file, EOFLABEL was renewed.'
+C       ENDIF
+C     ELSE                                                        
+C       CALL QUIT('FDTR2C: EOFLABEL  not found !')                
+C     END IF                         
+      CALL W2BSSMAT(1,.TRUE.,'FD1AO_DK','FDTR2C',
+     &              WORK(KF1),N2BBASXQ,IPRHAM)
+      IF (IPRHAM.GE.2) THEN 
+        WRITE(LUPRI,'(/2X,A)')                         
+     &  'FDTR2C: FD1AO_DK AO_LL elements were written'//       
+     &  ' into the BSSMAT file, EOFLABEL was renewed.'
+      ENDIF
 
 C ==================================================================
 C    ... continue with 2el Fock-AO matrixes ... do the picture
@@ -6392,27 +7049,42 @@ C
 C  ===============================================================
       IF (.NOT.SPINFR) THEN
 C     ... read bosonic symmetries on orbitals
-      REWIND LUBSS        
-      IF (FNDLAB('IBOS_ONB',LUBSS)) THEN                                
-        ISIZE =  NORB(1)            
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)
-        CALL READT(LUBSS,ISIZE,IBEIG)                        
-        IF (IPRHAM.GE.2) THEN
+C     REWIND LUBSS        
+C     IF (FNDLAB('IBOS_ONB',LUBSS)) THEN                                
+C       ISIZE =  NORB(1)            
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)
+C       CALL READT(LUBSS,ISIZE,IBEIG)                        
+C       IF (IPRHAM.GE.2) THEN
+C        WRITE(LUPRI,'(/2X,A)')                        
+C    &   'FDTR2C: IBEIG was read from BSSMAT:'     
+C        IF (IPRHAM.GE.3) THEN
+C        DO J=1, NFSYM
+C         write(lupri,*) '> ifsym=',J,'/',NFSYM,
+C    &     ' Norbs=',NORB(J),
+C    &     ' * boson irreps: ',
+C    &    (IBEIG(IORB(J)+K),K=1,NORB(J))
+C        ENDDO
+C        ENDIF
+C       ENDIF
+C     ELSE                                                             
+C       CALL QUIT('FDTR2C:Error,
+C    &   IBOS_ONB was not found in BSSMAT file!') 
+C     END IF                                                           
+
+      ISIZE =  NORB(1)            
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)
+      CALL RFBSSMAT('IBOS_ONB',.TRUE.,'FDTR2C',IBEIG,
+     &               ISIZE,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.3) THEN
          WRITE(LUPRI,'(/2X,A)')                        
      &   'FDTR2C: IBEIG was read from BSSMAT:'     
-         IF (IPRHAM.GE.3) THEN
          DO J=1, NFSYM
           write(lupri,*) '> ifsym=',J,'/',NFSYM,
      &     ' Norbs=',NORB(J),
      &     ' * boson irreps: ',
      &    (IBEIG(IORB(J)+K),K=1,NORB(J))
          ENDDO
-         ENDIF
-        ENDIF
-      ELSE                                                             
-        CALL QUIT('FDTR2C:Error,
-     &   IBOS_ONB was not found in BSSMAT file!') 
-      END IF                                                           
+       ENDIF
 
 C     CALL MEMCHK('FDTR2C 2.2',WORK,1)
 
@@ -6453,15 +7125,26 @@ C       LABL = 'TMAT4C  '
       ELSE
          CALL QUIT('FPMAT4C: wrong label !')
       ENDIF
-      REWIND LUBSS
-      IF (FNDLAB(LABL,LUBSS)) THEN
-        ISIZE = NFBAS(1,0)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NORB(2)*NZ)
-        CALL READT(LUBSS,ISIZE,VMAT)
-        IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A,A,A)')
-     &   'FDTR2C:',LABL,' was read from BSSMAT.'
-      ELSE
-        CALL QUIT('FDTR2C: "LABL" not found in BSSMAT!')
+
+C     REWIND LUBSS
+C     IF (FNDLAB(LABL,LUBSS)) THEN
+C       ISIZE = NFBAS(1,0)*NORB(1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NORB(2)*NZ)
+C       CALL READT(LUBSS,ISIZE,VMAT)
+C       IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A,A,A)')
+C    &   'FDTR2C:',LABL,' was read from BSSMAT.'
+C     ELSE
+C       CALL QUIT('FDTR2C: "LABL" not found in BSSMAT!')
+C     ENDIF
+
+      ISIZE = (NFBAS(1,0)*NORB(1)*NZ)
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NORB(2)*NZ)
+      CALL RFBSSMAT(LABL,.TRUE.,'FDTR2C',
+     &                VMAT,ISIZE,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.2) THEN
+       WRITE(LUPRI,'(/2X,A,A,A)')
+     & 'FDTR2C:',LABL,' - AO2MO transformation matrix '//
+     1 ' was read from BSSMAT.'
       ENDIF
 
 C =======================================================================================
@@ -6474,16 +7157,23 @@ C ==============================================================================
       ELSE
         LABL = 'FD4C_ONB'
       ENDIF
-
-      REWIND LUBSS
-      IF (FNDLAB(LABL,LUBSS)) THEN
-        ISIZE = NORB(1)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
-        CALL READT(LUBSS,ISIZE,WORK(KFDK1))
-        IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A,A,A)')
-     &   'FDTR2C: ',LABL,' was read from BSSMAT.'
-      ELSE
-        CALL QUIT('FDTR2C: FD4C_ONB/FD4CXONB was not found in BSSMAT!')
+C     REWIND LUBSS
+C     IF (FNDLAB(LABL,LUBSS)) THEN
+C       ISIZE = NORB(1)*NORB(1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
+C       CALL READT(LUBSS,ISIZE,WORK(KFDK1))
+C       IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A,A,A)')
+C    &   'FDTR2C: ',LABL,' was read from BSSMAT.'
+C     ELSE
+C       CALL QUIT('FDTR2C: FD4C_ONB/FD4CXONB was not found in BSSMAT!')
+C     ENDIF
+      ISIZE = NORB(1)*NORB(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
+      CALL RFBSSMAT(LABL,.TRUE.,'FDTR2C',WORK(KFDK1),
+     &               ISIZE,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A,A,A)')
+     & 'FDTR2C: ',LABL,' was read from BSSMAT.'
       ENDIF
 
 C ===============================================================
@@ -6639,17 +7329,26 @@ C  =======================================================================
 C  ... do transform F1(=H1+U1_SO) from 4c "k" to 2c SA-AO basis "xhi" ...
 C  =======================================================================
 C   ... read the picture change transformation matrix 4c "k" -> 2c AO "xhi"
-      REWIND LUBSS                                                 
-      IF (FNDLAB('T4CK2CAO',LUBSS)) THEN                              
-         ISIZE =  NORB(1)*NFBAS(1,1)*NZ                             
-         IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NFBAS(2,1)*NZ       
-         CALL READT(LUBSS,ISIZE,VMAT)                                   
-         IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')                      
+C     REWIND LUBSS                                                 
+C     IF (FNDLAB('T4CK2CAO',LUBSS)) THEN                              
+C        ISIZE =  NORB(1)*NFBAS(1,1)*NZ                             
+C        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NFBAS(2,1)*NZ       
+C        CALL READT(LUBSS,ISIZE,VMAT)                                   
+C        IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')                      
+C    &' FDTR2C: T4CK2CAO (4c "k" -> 2c AO "xhi") read into VMAT'
+C     ELSE                                                             
+C       CALL QUIT(                                                      
+C    &  'FDTR2C: T4CK2CAO not found in the BSSMAT file!')  
+C     END IF          
+
+      ISIZE =  NORB(1)*NFBAS(1,1)*NZ                             
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NFBAS(2,1)*NZ       
+      CALL W2BSSMAT(1,.TRUE.,'T4CK2CAO','FDTR2C',
+     &              VMAT,ISIZE,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.3) THEN
+      WRITE(LUPRI,'(/2X,A)')                      
      &' FDTR2C: T4CK2CAO (4c "k" -> 2c AO "xhi") read into VMAT'
-      ELSE                                                             
-        CALL QUIT(                                                      
-     &  'FDTR2C: T4CK2CAO not found in the BSSMAT file!')  
-      END IF          
+      ENDIF
 
       CALL DZERO(WORK(KF1),N2BBASXQ)
 
@@ -6704,19 +7403,30 @@ C     CALL MEMCHK('FDTR2C 7',WORK,1)
 
 C      ... do write the F1=H1+U1_SO 2c into the BSSMAT file
 C      to be used later in ONEFCK
-      REWIND LUBSS                                                  
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN                             
-        BACKSPACE(LUBSS)                                               
-        CALL NEWLAB('FD2C_USO',LUBSS,LUPRI)                           
-        CALL WRITT(LUBSS,N2BBASXQ,WORK(KF1))       
-        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)  
-        IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')                         
+C     REWIND LUBSS                                                  
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN                             
+C       BACKSPACE(LUBSS)                                               
+C       CALL NEWLAB('FD2C_USO',LUBSS,LUPRI)                           
+C       CALL WRITT(LUBSS,N2BBASXQ,WORK(KF1))       
+C       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)  
+C       IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')                         
+C    &  'FDTR2C: FD2c(h1+u1_SO) SA-AO elements were written '//
+C    &  ' into the BSSMAT file (FD2C_USO), the EOFLABEL renewed.'
+C     ELSE                                                        
+C       CALL QUIT('FDTR2C: EOFLABEL not found !')                
+C     END IF                         
+C     END IF                         
+
+      CALL W2BSSMAT(1,.TRUE.,'FD2C_USO','FDTR2C',
+     &            WORK(KF1),N2BBASXQ,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')                         
      &  'FDTR2C: FD2c(h1+u1_SO) SA-AO elements were written '//
      &  ' into the BSSMAT file (FD2C_USO), the EOFLABEL renewed.'
-      ELSE                                                        
-        CALL QUIT('FDTR2C: EOFLABEL not found !')                
-      END IF                         
-      END IF                         
+      ENDIF
+
+C     =====   end of SPINFR =====
+      ENDIF
 
 C     CALL MEMCHK('FDTR2C 8',WORK,1)
 C     .. do release all the allocated memmory in this subroutine at once ...!
@@ -6749,24 +7459,34 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcborb.h"   
 
       DIMENSION VMAT(*),TMAT(*),TBUF(*),EIG(*),WORK(LWORK)
-      LOGICAL FNDLAB
+C     LOGICAL FNDLAB
 
       CALL QENTER('FULLPCTM')
 #include "memint.h"
 
 C     ... read R into TMAT
-      REWIND LUBSS                                                    
-      IF (FNDLAB('R_MTX   ',LUBSS)) THEN                             
-       ISIZE = (NESH(1)*NESH(1)*NZ)                                  
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NESH(2)*NZ)        
-       CALL READT(LUBSS,ISIZE,TMAT)                     
+C     REWIND LUBSS                                                    
+C     IF (FNDLAB('R_MTX   ',LUBSS)) THEN                             
+C      ISIZE = (NESH(1)*NESH(1)*NZ)                                  
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NESH(2)*NZ)        
+C      CALL READT(LUBSS,ISIZE,TMAT)                     
+C      WRITE(LUPRI,'(/2X,A)')                                      
+C    & 'FULLPCTM: R matrix (in ON basis) was read'//
+C    & ' from BSSMAT into TMAT.' 
+C     ELSE                                                         
+C       CALL QUIT(                                                     
+C    & 'FULLPCTM:Error, R_MTX not found in BSSMAT file!')          
+C     ENDIF        
+
+      ISIZE = (NESH(1)*NESH(1)*NZ)                                  
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NESH(2)*NZ)        
+      CALL RFBSSMAT('R_MTX   ',.TRUE.,'FULLPCTM',
+     &               TMAT,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')                                      
      & 'FULLPCTM: R matrix (in ON basis) was read'//
      & ' from BSSMAT into TMAT.' 
-      ELSE                                                         
-        CALL QUIT(                                                     
-     & 'FULLPCTM:Error, R_MTX not found in BSSMAT file!')          
-      ENDIF        
+      ENDIF
 
 C   ... do generate the Omega- matrix
 C ... do generate the Omega+ matrix  
@@ -6867,20 +7587,29 @@ C       .... U * d^-1/2 * U+
       ENDIF
       ENDDO
 
-
 C     ... read R into VMAT
-      REWIND LUBSS                                                    
-      IF (FNDLAB('R_MTX   ',LUBSS)) THEN                             
-       ISIZE = (NESH(1)*NESH(1)*NZ)                                  
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NESH(2)*NZ)        
-       CALL READT(LUBSS,ISIZE,VMAT)                     
+C     REWIND LUBSS                                                    
+C     IF (FNDLAB('R_MTX   ',LUBSS)) THEN                             
+C      ISIZE = (NESH(1)*NESH(1)*NZ)                                  
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NESH(2)*NZ)        
+C      CALL READT(LUBSS,ISIZE,VMAT)                     
+C      WRITE(LUPRI,'(/2X,A)')                                      
+C    & 'FULLPCTM: R matrix (in ON basis) was read'//
+C    & ' from BSSMAT into VMAT.' 
+C     ELSE                                                         
+C       CALL QUIT(                                                     
+C    & 'FULLPCTM:Error, R_MTX not found in BSSMAT file!')          
+C     ENDIF        
+
+      ISIZE = (NESH(1)*NESH(1)*NZ)                                  
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NESH(2)*NZ)        
+      CALL RFBSSMAT('R_MTX   ',.TRUE.,'FULLPCTM',
+     &                VMAT,ISIZE,LUBSS,IPRHAM)
+      IF (IPRINT.GE.2) THEN   
        WRITE(LUPRI,'(/2X,A)')                                      
      & 'FULLPCTM: R matrix (in ON basis) was read'//
      & ' from BSSMAT into VMAT.' 
-      ELSE                                                         
-        CALL QUIT(                                                     
-     & 'FULLPCTM:Error, R_MTX not found in BSSMAT file!')          
-      ENDIF        
+      ENDIF
 
 C ... do make VMAT -> TBUF = [1 R]^t  !
       IBUFE  = 1
@@ -7024,17 +7753,27 @@ C     CALL QUIT('U1+.U1')
 C   ... do construct the full picture change transformation matrix !!! ...
 
 C   ... read U1+ pctm into TMAT
-      REWIND LUBSS
-      IF (FNDLAB('U1_ONBAS',LUBSS)) THEN
-       ISIZE = (2*NESH(1)*NESH(1)*NZ)
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + (2*NESH(2)*NESH(2)*NZ)
-       CALL READT(LUBSS,ISIZE,TMAT)
+C     REWIND LUBSS
+C     IF (FNDLAB('U1_ONBAS',LUBSS)) THEN
+C      ISIZE = (2*NESH(1)*NESH(1)*NZ)
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + (2*NESH(2)*NESH(2)*NZ)
+C      CALL READT(LUBSS,ISIZE,TMAT)
+C      WRITE(LUPRI,'(/2X,A)')
+C    & 'FULLPCTM: U1_ONBAS (+)  matrix (in ON basis)'//
+C    & ' was read from the BSSMAT file into TMAT.'
+C     ELSE
+C       CALL QUIT(
+C    & 'FULLPCTM:Error, U1_ONBAS(+) was not found in the BSSMAT file!')
+C     ENDIF
+
+      ISIZE = (2*NESH(1)*NESH(1)*NZ)
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (2*NESH(2)*NESH(2)*NZ)
+      CALL RFBSSMAT('U1_ONBAS',.TRUE.,'FULLPCTM',
+     &               TMAT,ISIZE,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'FULLPCTM: U1_ONBAS (+)  matrix (in ON basis)'//
      & ' was read from the BSSMAT file into TMAT.'
-      ELSE
-        CALL QUIT(
-     & 'FULLPCTM:Error, U1_ONBAS(+) was not found in the BSSMAT file!')
       ENDIF
 
 C ===========================================================================
@@ -7131,22 +7870,33 @@ C     ENDIF
 C =================================================================================
 C   ... do save 4c ON-> 2c ON FULL picture change transformation matrix into the file
 C =================================================================================
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-       BACKSPACE(LUBSS)
-       CALL NEWLAB('U1_ONFUL',LUBSS,LUPRI)
-       ISIZE = (NORB(1)*NORB(1)*NZ)
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
-       CALL WRITT(LUBSS,ISIZE,TMAT)
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C      BACKSPACE(LUBSS)
+C      CALL NEWLAB('U1_ONFUL',LUBSS,LUPRI)
+C      ISIZE = (NORB(1)*NORB(1)*NZ)
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
+C      CALL WRITT(LUBSS,ISIZE,TMAT)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      WRITE(LUPRI,'(/2X,A)')
+C    & 'FULLPCTM: U1_ONFUL (FULL picture change transf.matrix '//
+C    & '4c ONB->2c ONB), TMAT, is written to the BSSMAT'//
+C    & ' file, EOFLABEL is renewed.'
+C     ELSE
+C       CALL QUIT(
+C    & 'FULLPCTM:Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+
+      ISIZE = (NORB(1)*NORB(1)*NZ)
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
+      CALL W2BSSMAT(1,.TRUE.,'U1_ONFUL','FULLPCTM',
+     &                TMAT,ISIZE,LUBSS,IPRHAM)
+      IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'FULLPCTM: U1_ONFUL (FULL picture change transf.matrix '//
      & '4c ONB->2c ONB), TMAT, is written to the BSSMAT'//
      & ' file, EOFLABEL is renewed.'
-      ELSE
-        CALL QUIT(
-     & 'FULLPCTM:Error, EOFLABEL not found in BSSMAT file!')
-      END IF
+      ENDIF
 
 C    .. do the test U1+.U1 and U1.U1+ into TBUF...
       IF (IPRINT.GE.2) THEN
@@ -7203,18 +7953,26 @@ C    .. do the test U1+.U1 and U1.U1+ into TBUF...
 C     ... Now do U1+ (TMAT) * H1(BUF) * U1 (TMAT) to get both H2c(ee), H2c(pp) into VMAT
 C  ... read H1 into TBUF
 C ... read the Dirac Hamiltonian in the ON RKB/"k" basis into  TMAT
-      REWIND(LUBSS)
-      IF (FNDLAB('H1_ONBAS',LUBSS)) THEN
-        ISIZE = NORB(1)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-        CALL READT(LUBSS,ISIZE,TBUF)
-        IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
-     &  'FULLPCTM: H1_ONBAS read into TMAT.'
-      ELSE
-        CALL QUIT(
-     & 'FULLPCTM:Error, H1_ONBAS not found in BSSMAT file!')
-      END IF
+C     REWIND(LUBSS)
+C     IF (FNDLAB('H1_ONBAS',LUBSS)) THEN
+C       ISIZE = NORB(1)*NORB(1)*NZ
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+C       CALL READT(LUBSS,ISIZE,TBUF)
+C       IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
+C    &  'FULLPCTM: H1_ONBAS read into TMAT.'
+C     ELSE
+C       CALL QUIT(
+C    & 'FULLPCTM:Error, H1_ONBAS not found in BSSMAT file!')
+C     END IF
 
+      ISIZE = NORB(1)*NORB(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+      CALL RFBSSMAT('H1_ONBAS',.TRUE.,'FULLPCTM',
+     &               TBUF,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.2) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     &  'FULLPCTM: H1_ONBAS read into TMAT.'
+      ENDIF
 
       ITMAT = 1
       DO I=1, NFSYM
@@ -7267,22 +8025,31 @@ C ... read the Dirac Hamiltonian in the ON RKB/"k" basis into  TMAT
 C =================================================================================
 C    .. do save 2c Hamiltonians (ee, pp) into BSSMAT to be later back-transformed
 C =================================================================================
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-       BACKSPACE(LUBSS)
-       CALL NEWLAB('H2CON_EP',LUBSS,LUPRI)
-       ISIZE = (NORB(1)*NORB(1)*NZ)
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
-       CALL WRITT(LUBSS,ISIZE,VMAT)
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C      BACKSPACE(LUBSS)
+C      CALL NEWLAB('H2CON_EP',LUBSS,LUPRI)
+C      ISIZE = (NORB(1)*NORB(1)*NZ)
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
+C      CALL WRITT(LUBSS,ISIZE,VMAT)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      WRITE(LUPRI,'(/2X,A)')
+C    &'FULLPCTM: H2c_infinite (in ON basis, ee and pp) was written'//
+C    &' into the BSSMAT file, EOFLABEL renewed '
+C     ELSE
+C       CALL QUIT(
+C    & 'FULLPCTM:Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+
+      ISIZE = (NORB(1)*NORB(1)*NZ)
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
+      CALL W2BSSMAT(1,.TRUE.,'H2CON_EP','FULLPCTM',
+     &               VMAT,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      &'FULLPCTM: H2c_infinite (in ON basis, ee and pp) was written'//
      &' into the BSSMAT file, EOFLABEL renewed '
-      ELSE
-        CALL QUIT(
-     & 'FULLPCTM:Error, EOFLABEL not found in BSSMAT file!')
-      END IF
-
+      ENDIF
 
 C     call quit('FULLPCTM')
 
@@ -7317,13 +8084,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcborb.h" 
 
       DIMENSION TBUF(*),TMAT(*),VMAT(*),WORK(LWORK)
-      LOGICAL FNDLAB, FPB, KEEPH1
+      LOGICAL FPB, KEEPH1
       CHARACTER*8 LBL
 
       CALL QENTER('FDTR4C')
 #include "memint.h"
 
-C     ... do initiate the important FreeParticleBasis flag! If .false., we use the one-step RKB approach !
+C     ... do initiate the important FreeParticleBasis flag!
+C   If .false., we are using the one-step RKB approach !
       FPB = .NOT.NOPRTR
 
 C     ... read converged FD2C (from DFFOCK) in LMO into the VMAT !
@@ -7352,7 +8120,7 @@ C       as the next BSS-SCF creates own new files
      & 'was read from the DFFOCK(deleted afterwards) file into VMAT'
        ENDIF
 
-       CALL OPNFIL(LUBSS,'BSSMAT','OLD','FDTR4C')
+C      CALL OPNFIL(LUBSS,'BSSMAT','OLD','FDTR4C')
  
 C      ... read Lowdin 2c MO matrix ... to get 2c AO Fock matrix
 C .... read Lowdin matrix into TMAT
@@ -7361,17 +8129,25 @@ C .... read Lowdin matrix into TMAT
         ELSE
           LBL='VMAT2C  '
         ENDIF
-        REWIND LUBSS   
-        IF (FNDLAB(LBL,LUBSS)) THEN                     
-         CALL READT(LUBSS,N2BBASX,TMAT)
-         IF (IPRHAM.GE.2) THEN
+
+C       REWIND LUBSS   
+C       IF (FNDLAB(LBL,LUBSS)) THEN                     
+C        CALL READT(LUBSS,N2BBASX,TMAT)
+C        IF (IPRHAM.GE.2) THEN
+C         WRITE(LUPRI,'(/2X,A,A,A)')                  
+C    &  'FDTR4C: Lowdin 2c transf. matrix was read'// 
+C    &  ' into TMAT from the BSSMAT file, label ',LBL           
+C        ENDIF
+C       ELSE                                                       
+C        CALL QUIT('FDTR4C: VMAT2C/VMAT2C_L not found !') 
+C       END IF
+
+        CALL RFBSSMAT(LBL,.TRUE.,'FDTR4C',TMAT,N2BBASX,LUBSS,IPRHAM)
+        IF (IPRHAM.GE.2) THEN
           WRITE(LUPRI,'(/2X,A,A,A)')                  
      &  'FDTR4C: Lowdin 2c transf. matrix was read'// 
      &  ' into TMAT from the BSSMAT file, label ',LBL           
-         ENDIF
-        ELSE                                                       
-         CALL QUIT('FDTR4C: VMAT2C/VMAT2C_L not found !') 
-        END IF
+        ENDIF
 
 C       ... control print out of the Lowdin 2c matrix ....
         IF (IPRHAM.GE.5) THEN
@@ -7455,19 +8231,29 @@ C     ==========================================================================
 C ======================================================================
 C      ... do transform 2c FD AO marix into 2c ON RKB/FP "k" basis
 C ======================================================================
-        REWIND LUBSS   
-        IF (FNDLAB('TM2CAOFP',LUBSS)) THEN    
-         ISIZE = (NFBAS(1,0)*NESH(1)*NZ)
-         IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NESH(2)*NZ)
-         CALL READT(LUBSS,ISIZE,TMAT)
-         IF (IPRHAM.GE.2) THEN
+C       REWIND LUBSS   
+C       IF (FNDLAB('TM2CAOFP',LUBSS)) THEN    
+C        ISIZE = (NFBAS(1,0)*NESH(1)*NZ)
+C        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NESH(2)*NZ)
+C        CALL READT(LUBSS,ISIZE,TMAT)
+C        IF (IPRHAM.GE.2) THEN
+C        WRITE(LUPRI,'(/2X,A)')                  
+C    &  'FDTR4C: H2c SA_AO "xhi" -> H2c ON RKB/FP "k" '//
+C    &  ' transf.matrix (TM2CAOFP) read into TMAT.' 
+C        ENDIF
+C       ELSE                                                       
+C        CALL QUIT('FDTR4C: TM2CAOFP not found in BSSMAt file !') 
+C       END IF                        
+
+        ISIZE = (NFBAS(1,0)*NESH(1)*NZ)
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NESH(2)*NZ)
+        CALL RFBSSMAT('TM2CAOFP',.TRUE.,'FDTR4C',
+     &               TMAT,ISIZE,LUBSS,IPRHAM)
+        IF (IPRHAM.GE.2) THEN
          WRITE(LUPRI,'(/2X,A)')                  
      &  'FDTR4C: H2c SA_AO "xhi" -> H2c ON RKB/FP "k" '//
      &  ' transf.matrix (TM2CAOFP) read into TMAT.' 
-         ENDIF
-        ELSE                                                       
-         CALL QUIT('FDTR4C: TM2CAOFP not found in BSSMAt file !') 
-        END IF                        
+        ENDIF
 
 C ==========================================================================
 C      ... Do:     TMAT^+ . TBUF . TMAT = VMAT(FD_2c ON)
@@ -7527,19 +8313,28 @@ C ====================================================================
 C   ... store FD_2C in ON basis into ee part of block diagonal H1
 C ====================================================================
 C      ... first read H_ee and H_pp into TMAT
-       REWIND LUBSS   
-       IF (FNDLAB('H2CON_EP',LUBSS)) THEN    
-         ISIZE = (NORB(1)*NORB(1)*NZ)
-         IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
-         CALL READT(LUBSS,ISIZE,TMAT)
-         IF (IPRHAM.GE.2) THEN
-         WRITE(LUPRI,'(/2X,A)')                  
+C      REWIND LUBSS   
+C      IF (FNDLAB('H2CON_EP',LUBSS)) THEN    
+C        ISIZE = (NORB(1)*NORB(1)*NZ)
+C        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
+C        CALL READT(LUBSS,ISIZE,TMAT)
+C        IF (IPRHAM.GE.2) THEN
+C        WRITE(LUPRI,'(/2X,A)')                  
+C    &  'FDTR4C: H2c (ee,pp) ON RKB/FP "k" '//
+C    &  ' transf.matrix read into TMAT.' 
+C        ENDIF
+C      ELSE                                                       
+C        CALL QUIT('FDTR4C: H2CON_EP not found in BSSMAT file !') 
+C      END IF 
+
+      ISIZE = (NORB(1)*NORB(1)*NZ)
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
+      CALL RFBSSMAT('H2CON_EP',.TRUE.,'FDTR4C',TMAT,ISIZE,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.2) THEN
+        WRITE(LUPRI,'(/2X,A)')                  
      &  'FDTR4C: H2c (ee,pp) ON RKB/FP "k" '//
      &  ' transf.matrix read into TMAT.' 
-         ENDIF
-       ELSE                                                       
-         CALL QUIT('FDTR4C: H2CON_EP not found in BSSMAT file !') 
-       END IF 
+      ENDIF
 
       ITMAT = 1
       IVMAT = 1
@@ -7618,18 +8413,27 @@ C   ... do the reverse picture change transformation
 C           U . H . U^+ 
 
 C  ... read full picture change transf. matrix into VMAT
-      REWIND LUBSS
-      IF (FNDLAB('U1_ONFUL',LUBSS)) THEN
-       ISIZE = (NORB(1)*NORB(1)*NZ)
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
-       CALL READT(LUBSS,ISIZE,VMAT)
+C     REWIND LUBSS
+C     IF (FNDLAB('U1_ONFUL',LUBSS)) THEN
+C      ISIZE = (NORB(1)*NORB(1)*NZ)
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
+C      CALL READT(LUBSS,ISIZE,VMAT)
+C      WRITE(LUPRI,'(/2X,A)')
+C    & 'FDTR4C: U1_ONFUL (FULL picture change transf.matrix '//
+C    & '4c ONB->2c ONB), TMAT, was read from to the BSSMAT'
+C     ELSE
+C       CALL QUIT(
+C    & 'FDTR4C: Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+
+      ISIZE = (NORB(1)*NORB(1)*NZ)
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
+      CALL RFBSSMAT('U1_ONFUL',.TRUE.,'FDTR4C',TMAT,ISIZE,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'FDTR4C: U1_ONFUL (FULL picture change transf.matrix '//
      & '4c ONB->2c ONB), TMAT, was read from to the BSSMAT'
-      ELSE
-        CALL QUIT(
-     & 'FDTR4C: Error, EOFLABEL not found in BSSMAT file!')
-      END IF
+      ENDIF
 
       ITMAT = 1
       DO I=1, NFSYM
@@ -7686,19 +8490,31 @@ C  ... do transform FD_4C in ON RKB/"k" into SA-AO (VMAT) (still non_linear symm
         LBL = 'SL_TM_4C'
       ENDIF 
 C  ... read full picture change transf. matrix into VMAT
-      REWIND LUBSS
-      IF (FNDLAB(LBL,LUBSS)) THEN
+C     REWIND LUBSS
+C     IF (FNDLAB(LBL,LUBSS)) THEN
+C      ISIZE = (NFBAS(1,0)*NORB(1)*NZ)
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NORB(2)*NZ)
+C      IF (ISIZE.NE.N2TMT) CALL QUIT('>>> ISIZE.NE.N2TMT !')
+C      CALL READT(LUBSS,ISIZE,TMAT)
+C      WRITE(LUPRI,'(/2X,A,A,A)')
+C    & 'FDTR4C:',LBL,' 4c "xhi" SA-AO -> 4c ON RKB/"k"'//
+C    & ' transformation matrix read into TMAT.'
+C     ELSE
+C       CALL QUIT(
+C    & 'FDTR4C: Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+
        ISIZE = (NFBAS(1,0)*NORB(1)*NZ)
        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NORB(2)*NZ)
-       IF (ISIZE.NE.N2TMT) CALL QUIT('>>> ISIZE.NE.N2TMT !')
-       CALL READT(LUBSS,ISIZE,TMAT)
+       IF (ISIZE.NE.N2TMT) THEN
+         CALL QUIT('FDTR4C>>> ISIZE.NE.N2TMT !')
+       ENDIF
+       CALL RFBSSMAT(LBL,.TRUE.,'FDTR4C',TMAT,ISIZE,LUBSS,IPRHAM)
+       IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A,A,A)')
      & 'FDTR4C:',LBL,' 4c "xhi" SA-AO -> 4c ON RKB/"k"'//
      & ' transformation matrix read into TMAT.'
-      ELSE
-        CALL QUIT(
-     & 'FDTR4C: Error, EOFLABEL not found in BSSMAT file!')
-      END IF
+       ENDIF
 
        CALL DZERO(VMAT,N2BBASXQ)
        CALL MKSAOMO(VMAT,TMAT,.FALSE.,IPRHAM,WORK(KFREE),LFREE)
@@ -7811,23 +8627,34 @@ C
 
 C ... do save FD4C+H1PP into the BSSMAT to be used as a starting Fock MO matrix
 C ..  for DC-SCF ... FD4C_RKB
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-         BACKSPACE(LUBSS)
-         CALL NEWLAB('FD4C_RKB',LUBSS,LUPRI)
-         ISIZE = NORB(1)*NORB(1)*NZ
-         IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-         CALL WRITT(LUBSS,ISIZE,TBUF)
-         CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-         IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C        BACKSPACE(LUBSS)
+C        CALL NEWLAB('FD4C_RKB',LUBSS,LUPRI)
+C        ISIZE = NORB(1)*NORB(1)*NZ
+C        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+C        CALL WRITT(LUBSS,ISIZE,TBUF)
+C        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C        IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')
+C    &   'FDTR4C: FD4C_RKB (TBUF) was written into BSSMAT,'//
+C    &   'EOFLABEL renewed.'
+C     ELSE
+C       CALL QUIT('FDTR4C: EOFLABEL not found !')
+C     END IF
+
+      ISIZE = NORB(1)*NORB(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
+      CALL W2BSSMAT(1,.FALSE.,'FD4C_RKB','FDTR4C',
+     &              TBUF,ISIZE,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.2) THEN
+        WRITE(LUPRI,'(/2X,A)')
      &   'FDTR4C: FD4C_RKB (TBUF) was written into BSSMAT,'//
      &   'EOFLABEL renewed.'
-      ELSE
-        CALL QUIT('FDTR4C: EOFLABEL not found !')
-      END IF
+      ENDIF
 
-      CLOSE(LUBSS,STATUS='KEEP')
+C     CLOSE(LUBSS,STATUS='KEEP')
 
+C     ... this flag must be deactivated for BSS2DC calculations
       START2C = .FALSE.
 
 C      call quit('fdctr4C')
@@ -7837,6 +8664,7 @@ C      call quit('fdctr4C')
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck cmotr4c */
+C     SUBROUTINE CMOTR4C(TBUF,TMAT,CMO,EIG,IBEIG,IPRINT,WORK,LWORK)
       SUBROUTINE CMOTR4C(TBUF,TMAT,CMO,EIG,IBEIG,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -7875,7 +8703,7 @@ C ================================================================
 C               ... get 2c MO into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-      IF(IPRSCF.GE.1) THEN
+      IF(IPRINT.GE.1) THEN
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
      &              WORK,KFREE,LFREE)
       ELSE
@@ -7886,28 +8714,38 @@ C ================================================================
 
 CMI .... do the picture change transformation ...
 CMI   ... open LUBSS, get the picture change transf.matrix
-      INQUIRE(FILE='BSSMAT',EXIST=EX)
-      IF (.NOT.EX) THEN
-       CALL QUIT('CMOTR4C:BSSMAT not found !')
-      ENDIF
-      CALL OPNFIL(LUBSS,'BSSMAT','OLD','CMOTR4C')
-      REWIND(LUBSS)
-      IF (FNDLAB('U_PICTRM',LUBSS)) THEN
-        ISIZE = (NFBAS(1,0)*NFBAS(1,1)*NZ)
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NFBAS(2,1)*NZ)
+C     INQUIRE(FILE='BSSMAT',EXIST=EX)
+C     IF (.NOT.EX) THEN
+C      CALL QUIT('CMOTR4C:BSSMAT not found !')
+C     ENDIF
+C     CALL OPNFIL(LUBSS,'BSSMAT','OLD','CMOTR4C')
+C     REWIND(LUBSS)
+C     IF (FNDLAB('U_PICTRM',LUBSS)) THEN
+C       ISIZE = (NFBAS(1,0)*NFBAS(1,1)*NZ)
+C       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NFBAS(2,1)*NZ)
 C ... array for the picture change transformation matrix (PCTM)...
-        CALL READT(LUBSS,ISIZE,TMAT)
-        IF (IPRSCF.GE.2) WRITE(LUPRI,'(/2X,A)')
+C       CALL READT(LUBSS,ISIZE,TMAT)
+C       IF (IPRINT.GE.2) WRITE(LUPRI,'(/2X,A)')
+C    &  'CMOTR4C: Picture change transformation'//
+C    &  ' matrix was read into TMAT.'
+C      ELSE
+C       CALL QUIT(
+C    & 'CMOTR4C:Error, U_PICTRM not found in BSSMAT file!')
+C     ENDIF
+
+      ISIZE = (NFBAS(1,0)*NFBAS(1,1)*NZ)
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NFBAS(2,1)*NZ)
+      CALL RFBSSMAT('U_PICTRM',.TRUE.,'CMOTR4C',TMAT,
+     &               ISIZE,LUBSS,IPRSCF)
+      IF (IPRINT.GE.2) THEN
+        WRITE(LUPRI,'(/2X,A)')
      &  'CMOTR4C: Picture change transformation'//
      &  ' matrix was read into TMAT.'
-       ELSE
-        CALL QUIT(
-     & 'CMOTR4C:Error, U_PICTRM not found in BSSMAT file!')
       ENDIF
 
 C   then TMAT . CMO^ = TBUF
-       IPCTM = 1
-       IMO = 1
+      IPCTM = 1
+      IMO = 1
       DO I=1,NFSYM
       IF (NESH(I).GT.0) THEN
 
@@ -7971,11 +8809,12 @@ C    ... read 2c CMO into TBUF ...
        ENDIF
        CLOSE(LUCOEF,STATUS='KEEP')
 
-       INQUIRE(FILE='BSSMAT',EXIST=EX)
-       IF (.NOT.EX) THEN
-        CALL QUIT('CMOTR4C:BSSMAT not found !')
-       ENDIF
-       CALL OPNFIL(LUBSS,'BSSMAT','OLD','CMOTR4C')
+C      INQUIRE(FILE='BSSMAT',EXIST=EX)
+C      IF (.NOT.EX) THEN
+C       CALL QUIT('CMOTR4C:BSSMAT not found !')
+C      ENDIF
+C      CALL OPNFIL(LUBSS,'BSSMAT','OLD','CMOTR4C')
+
       ELSE
         CALL QUIT('CMOTR4C: INI2C differ from 3 or 4!')
       ENDIF
@@ -7983,23 +8822,26 @@ C    ... read 2c CMO into TBUF ...
 C =========================================
 C ... do save initial 4c MO into BSSMAT 
 C =========================================
-      REWIND LUBSS
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-       BACKSPACE(LUBSS)
-       CALL NEWLAB('CMO_LS_e',LUBSS,LUPRI)
-       ISIZE = (NESH(1)*NFBAS(1,0)*NZ)
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
-       CALL WRITT(LUBSS,ISIZE,TBUF)
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-       IF (IPRSCF.GE.2) WRITE(LUPRI,'(2X,A)') 
-     & 'CMOTR4C: CMO_LS_e starting MO (in TBUF) were'//
-     & ' written into the BSSMAT file, EOFLABEL was renewed.'
-      ELSE
-       CALL QUIT(
-     & 'CMOTR4C: Error, EOFLABEL not found in BSSMAT file!')
-      ENDIF
+C     REWIND LUBSS
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C      BACKSPACE(LUBSS)
+C      CALL NEWLAB('CMO_LS_e',LUBSS,LUPRI)
+C      ISIZE = (NESH(1)*NFBAS(1,0)*NZ)
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
+C      CALL WRITT(LUBSS,ISIZE,TBUF)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C      IF (IPRINT.GE.2) WRITE(LUPRI,'(2X,A)') 
+C    & 'CMOTR4C: CMO_LS_e starting MO (in TBUF) were'//
+C    & ' written into the BSSMAT file, EOFLABEL was renewed.'
+C     ELSE
+C      CALL QUIT(
+C    & 'CMOTR4C: Error, EOFLABEL not found in BSSMAT file!')
+C     ENDIF
+C     CLOSE(LUBSS,STATUS='KEEP')
 
-      CLOSE(LUBSS,STATUS='KEEP')
+      ISIZE = (NESH(1)*NFBAS(1,0)*NZ)
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
+      CALL W2BSSMAT(1,.FALSE.,'CMO_LS_e','CMOTR4C',TBUF,ISIZE,IPRSCF)
 
 C      call quit('in CMOTR4C !') 
 C     CALL MEMCHK('CMOTR4C e',WORK,1)
@@ -8008,12 +8850,13 @@ C     CALL MEMCHK('CMOTR4C e',WORK,1)
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck cmotr4c */
+C  /* Deck cmoini4c */
+C     SUBROUTINE CMOINI4C(CMO,TMAT,EIG,IBEIG,IPRINT,WORK,LWORK)
       SUBROUTINE CMOINI4C(CMO,TMAT,EIG,IBEIG,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:   Do the reverse picture change transformation of 2c CMO into 4c CMO
-C ----------   to restart 4c DC-SCF
+C ----------   for silly restarting the DC-SCF from BSS-SCF
 C
 C  On input: only arrays, but needed CMO 2c-4c from BSSMAT,
 C             also DFCOEF file is needed
@@ -8034,30 +8877,43 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcborb.h" 
 
       DIMENSION CMO(*),TMAT(*),EIG(*),IBEIG(*),WORK(LWORK)
-      LOGICAL FNDLAB, FPB, EX, KEEPH1
+      LOGICAL FPB, EX, KEEPH1
       CHARACTER*8 LBL
 
       CALL QENTER('CMOINI4C')
 #include "memint.h"
 
 C       ... read LS_e initial MO's from BSSMAT file
-      INQUIRE(FILE='BSSMAT',EXIST=EX)
-      IF (.NOT.EX) THEN
-       CALL QUIT('CMOINI4C:BSSMAT not found !')
-      ENDIF
-      CALL OPNFIL(LUBSS,'BSSMAT','OLD','CMOINI4C')
-      REWIND LUBSS
-      IF (FNDLAB('CMO_LS_e',LUBSS)) THEN
-       ISIZE = (NESH(1)*NFBAS(1,0)*NZ)
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
-       CALL READT(LUBSS,ISIZE,TMAT)
-       IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')
+C     INQUIRE(FILE='BSSMAT',EXIST=EX)
+C     IF (.NOT.EX) THEN
+C      CALL QUIT('CMOINI4C:BSSMAT not found !')
+C     ENDIF
+
+C     CALL OPNFIL(LUBSS,'BSSMAT','OLD','CMOINI4C')
+C     REWIND LUBSS
+C     IF (FNDLAB('CMO_LS_e',LUBSS)) THEN
+C      ISIZE = (NESH(1)*NFBAS(1,0)*NZ)
+C      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
+C      CALL READT(LUBSS,ISIZE,TMAT)
+C      IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')
+C    & 'CMOINI4C: CMO_LS_e read from BSSMAT'
+C      ELSE
+C       CALL QUIT(
+C    &  'CMOINI4C: CMO_LS_e  not found in BSSMAT file!')
+C     END IF
+C     CLOSE(LUBSS,STATUS='KEEP')
+
+      ISIZE = (NESH(1)*NFBAS(1,0)*NZ)
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
+
+      CALL RFBSSMAT('CMO_LS_e',.FALSE.,'CMOINI4C',
+     &        TMAT,ISIZE,LUBSS,IPRHAM)
+
+      IF (IPRHAM.GE.2) THEN
+         WRITE(LUPRI,'(/2X,A)')
      & 'CMOINI4C: CMO_LS_e read from BSSMAT'
-       ELSE
-        CALL QUIT(
-     &  'CMOINI4C: CMO_LS_e  not found in BSSMAT file!')
-      END IF
-      CLOSE(LUBSS,STATUS='KEEP')
+      ENDIF
+
 
 C       ... add zeroes to form LS_0e orbitals ...
       IMO = 1
@@ -8132,7 +8988,7 @@ C      call quit('in CMOINI4C !')
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck h2ctoll */
-      SUBROUTINE H2CTOLL(I2COFK,VMAT,WORK,LWORK,IPRINT)
+      SUBROUTINE H2CTOLL(I2COFK,HMAT,WORK,LWORK,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C    PURPOSE: Read the H2c_AO integrals, which are in the BSSMAT file 
@@ -8141,10 +8997,10 @@ C
 C    Called from: MAKE_DKH
 C
 C    On input:  I2COFK - determines which label from BSSMAT to be read
-C               VMAT - empty field (N2BBASXQ) to be utilized 
+C               HMAT - empty field (N2BBASXQ) to be utilized 
 C
 C    On output:  I2COFK set to 7 (see routine GETH2CAO)
-C                BSS/DKn integrals in LL_only matrix added to the BSSMAT
+C                BSS/DKn integrals in LL_only matrix are written to the BSSMAT
 C            
 C    Written by Miro Ilias, Strasbourg, 2006
 C    Modifications:
@@ -8159,78 +9015,111 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dgroup.h"
 #include "ccom.h"
 C
-      DIMENSION WORK(LWORK),VMAT(*)
+      DIMENSION WORK(LWORK),HMAT(*)
       LOGICAL ISONBSSMAT
       CHARACTER*8 HAM2CL
 
       CALL QENTER('H2CTOLL')
 #include "memint.h"
-C       ... calculate N2BBASXQ with Lintegrals
-      N2BBASXQ_L = (NTBAS(1)*NTBAS(1)*NZ)
+
+C.....calculate dimension of (LL block x NZ )
+      N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
       CALL MEMGET('REAL',KBSSLL,N2BBASXQ_L,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KBSSLL),N2BBASXQ_L)
-
-C ...; 'H1AO_DK '
+C
+C     Read original 2c hamiltonian matrix from BSSMAT
+C     ===============================================
+C
+C ....define label for reading hamiltonian integrals from BSSMAT
       IF      (I2COFK.EQ.1) THEN
-CMI        .... h2c from h_D(1)_4C ... DEFAULT ...
+C ...... h2c from h_D(1)_4C ... DEFAULT ...
          HAM2CL = 'H1AO_DK '
       ELSE IF (I2COFK.EQ.2) THEN
-CMI      .... h2c_CSC(+AMFI if present) from hD(1)_4C
+C ...... h2c_CSC(+AMFI if present) from hD(1)_4C
          HAM2CL = 'H1AO_DK2'
       ELSE
          call quit('H2CTOLL: wrong I2COFK ! Should be 1 or 2 ! ')
       ENDIF
-
-      CALL RFBSSMAT(HAM2CL,'H2CTOLL',VMAT,N2BBASXQ,LUBSS,IPRINT)
-
-C     ... control output
+      CALL RFBSSMAT(HAM2CL,.TRUE.,'H2CTOLL',HMAT,N2BBASXQ,LUBSS,IPRINT)
       IF (IPRINT.GE.5) THEN
        CALL HEADER(
      & 'H2CTOLL: H2C_AO in full block, total matrix in SA-AO',-1)
-       CALL PRQMAT(VMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+       CALL PRQMAT(HMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &            IPQTOQ(1,0),LUPRI)
       ENDIF
+C
+C     Extract the LL block and write to file
+C     ======================================
+C
+      CALL EXTRLL(0,HMAT,WORK(KBSSLL),IPRINT)
 
-C.....extract the 2c matrix from VMAT
-      CALL EXTRLL(0,VMAT,WORK(KBSSLL),IPRINT)
       IF(DOSPHE) THEN
 C.......do spherical transformation
         CALL SPH_IOTC(WORK(KBSSLL),VMAT,NSPH,IPRINT,WORK(KFREE),LFREE)
         NDIM=NSPH*NSPH*NZ
-        CALL W2BSSMAT('H2CAO_LL','H2CTOLL',VMAT,
-     &                NDIM,LUBSS,IPRINT)      
       ELSE
         NDIM = N2BBASXQ_L
-        CALL W2BSSMAT('H2CAO_LL','H2CTOLL',WORK(KBSSLL),
-     &                NDIM,LUBSS,IPRINT)      
+      ENDIF
+      CALL W2BSSMAT(1,.TRUE.,'H2CAO_LL','H2CTOLL',WORK(KBSSLL),
+     &                NDIM,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+       IF (DOSPHE) THEN
+        write(lupri,*)
+     &'H2CTOLL: 2comp. Hamiltonian in LL block written to the BSSMAT'//
+     &' in SPHERICAL representation.'
+       ELSE
+        write(lupri,*)
+     &'H2CTOLL: 2comp. Hamiltonian in LL block written to the BSSMAT'//
+     &' in CARTESIAN representation.'
+       ENDIF
       ENDIF
 
-
-C     ... control output
       IF (IPRINT.GE.5) THEN
        CALL HEADER(
      & 'H2CAO_LL: H2C_AO in LL block, total matrix in AO',-1)
        CALL PRQMAT(WORK(KBSSLL),NTBAS(1),NTBAS(1),NTBAS(1),NTBAS(1),NZ,
      &            IPQTOQ(1,0),LUPRI)
       ENDIF
-
+C
+C     In the case of bare nucleus screening correction, 
+C     read matrix of screening integrals, extract LL block
+C     and write to file
+C     ====================================================
+C
       IF (BNCRON.AND.ISONBSSMAT('BNCR2C_4','H2CTOLL',LUBSS,IPRINT)) THEN
-C     ... read 'BNCR2C_4' frol BSSMAT
-       CALL RFBSSMAT('BNCR2C_4','H2CTOLL',VMAT,N2BBASXQ,LUBSS,IPRINT)
-C     ... extract it into 2comp. form
-       CALL EXTRLL(0,VMAT,WORK(KBSSLL),IPRINT)
-C     ... write it to the end of the file ...
-       CALL W2BSSMAT('BNCR2C_2','H2CTOLL',WORK(KBSSLL),
-     &                N2BBASXQ_L,LUBSS,IPRINT)
+       CALL RFBSSMAT('BNCR2C_4',.TRUE.,'H2CTOLL',
+     &                HMAT,N2BBASXQ,LUBSS,IPRINT)
+       CALL EXTRLL(0,HMAT,WORK(KBSSLL),IPRINT)
+CMI    ... hoping it will work ...
+       IF(DOSPHE) THEN
+        CALL SPH_IOTC(WORK(KBSSLL),VMAT,NSPH,IPRINT,WORK(KFREE),LFREE)
+        NDIM=NSPH*NSPH*NZ
+       ELSE
+        NDIM = N2BBASXQ_L
+       ENDIF
+       CALL W2BSSMAT(1,.TRUE.,'BNCR2C_2','H2CTOLL',WORK(KBSSLL),
+     &                NDIM,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+       IF (DOSPHE) THEN
+        write(lupri,*)
+     &'H2CTOLL: Screened 2comp. Ham in LL block written to the BSSMAT'//
+     &' in SPHERICAL representation.'
+       ELSE
+        write(lupri,*)
+     &'H2CTOLL: Screened 2comp. Ham in LL block written to the BSSMAT'//
+     &' in CARTESIAN representation.'
+       ENDIF
+      ENDIF
       ENDIF
 
 C     ... release the memmory..
       CALL MEMREL('H2CTOLL',WORK,KBSSLL,KBSSLL,KFREE,LFREE)
 
-C      ... finally set up reading flag...
+C    ==============================================
+C         ... finally set up flag for ONEFCK...
+C    ==============================================
       I2COFK = 7
-
-C       call quit('h2ctoll')
+C
       CALL QEXIT('H2CTOLL')
       RETURN
       END
@@ -8249,7 +9138,7 @@ C
 C  On output:  PMAT2C - two-comp. symm. blocked matrix
 C
 C
-C     Written by Miro Ilias, Strasbourg, March 2006
+C  Written by Miro Ilias, Strasbourg, March 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -8948,7 +9837,7 @@ C ************************************************************************
        ELSE
         WRITE(LUPRI,'(/2X,A,I3,A,I3,A/)')
      &  'AMFIIN: going TO ADD the nuclei  ',IANUCS(IANUC),
-     &  ' wich charge ',ICHARGE,' to the BSSn Hamiltonian.'
+     &  ' with charge ',ICHARGE,' to the BSSn Hamiltonian.'
 
         IX = 0
         DO  I = 1, numballcart
@@ -9228,24 +10117,24 @@ C ==========================================================================
       RETURN
       END
 
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck amfi_stuff */
       SUBROUTINE AMFI_STUFF(H2CAO,ONLYSO1,
-     &                      ONLYTRA,IC_AMFI,WORK,LWORK,IPRINT,IMFCHA)
+     &   ONLYTRA,IC_AMFI,WORK,LWORK,IPRINT,IMFCHA)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C    PURPOSE: 
 C   ==========
-C Routine to include AMFI integrals, or simply do comparison 
-C or only the transformation 
+C   Add AMFI integrals to the selected two-component Hamiltonian
+C   -  or make comparison of SO1 AMFI integrals with DKH1_SO1 counterparts
+C   -  or do only  the CSC transformation of two-comp.Hamiltonian for test purposes
 C
-C On input: H2CAO - nothing ! only help array....
+C On input: H2CAO - array to be utilized inside....
 C                  
-C           ONLYSO1 - flag for making AMFI-SO1 and BSS-SO1 integrals comparison
-C           ONLYTRA - flag announcing only CSC transformation (testing purposes)
+C           ONLYSO1 - flag for doing the AMFI-SO1 and BSS-SO1 integrals comparison
+C           ONLYTRA - flag for doing  the CSC transformation (testing purposes)
 C           IC_AMFI - flag for the AMFI stuff
-C           IMFCHA  - total charge of the system - important for the mean-field summation
+C           IMFCHA  - total charge of the system - used to adapt the mean-field summation
 C
 C On output: H2CAO - CSC trasformed (+ AMFI, if wished) 2c SA-AO integrals.
 C
@@ -9263,32 +10152,36 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
+#include "cbieri.h"
 
       DIMENSION H2CAO(*),WORK(LWORK)
       CHARACTER LABINT(MXQN**2)*4
-      LOGICAL ONLYSO1,ONLYTRA,FNDLAB,TESTCSC
+      LOGICAL ONLYSO1,ONLYTRA,TESTCSC
 
       CALL QENTER('AMFI_STUFF')
 #include "memint.h"
 
-C        ... no dcbham.h common block !
-       IPRHAM=IPRINT
-
 C ========================================================
 C       ... read H2C_AO into the H2CAO file
 C ========================================================
-      REWIND LUBSS
-      IF (FNDLAB('H1AO_DK ',LUBSS)) THEN
-         CALL READT(LUBSS,N2BBASXQ,H2CAO)
-         IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
-     &  'AMFI_STUFF: H1AO_DK read into H2CAO.'
-      ELSE
-        CALL QUIT(
-     &  'AMFI_STUFF: H1AO_DK is not found in BSSMAT file!')
-      END IF
+C     REWIND LUBSS
+C     IF (FNDLAB('H1AO_DK ',LUBSS)) THEN
+C        CALL READT(LUBSS,N2BBASXQ,H2CAO)
+C        IF (IPRINT.GE.3) WRITE(LUPRI,'(/2X,A)')
+C    &  'AMFI_STUFF: H1AO_DK read into H2CAO.'
+C     ELSE
+C       CALL QUIT(
+C    &  'AMFI_STUFF: H1AO_DK is not found in BSSMAT file!')
+C     END IF
 
+      CALL RFBSSMAT('H1AO_DK ',.TRUE.,'AMFI_STUFF',H2CAO,
+     &                  N2BBASXQ,LUBSS,IPRINT)
+      IF (IPRINT.GE.2) THEN
+       WRITE(LUPRI,'(/2X,A)')
+     & 'AMFI_STUFF: H1AO_DK integrals read into H2CAO.'
+      ENDIF
 
-      IF (IPRHAM.GE.5) THEN
+      IF (IPRINT.GE.5) THEN
 C    ... print out H2c matrix in AO "xhi" basis
         CALL HEADER(
      &'AMFI_STUFF: READ TOTAL H(2c)_LL in "xhi" SA-AO basis ' ,-1)
@@ -9321,31 +10214,37 @@ C  ... transform to the AO basis ... as in dirone.F/PR1CEX2
          IPQ   = IQTOPQ(IQ,IREP)
          CALL MTSOAO(H2CAO(1+N2BBASX*(IPQ-1)),
      &             WORK(KBUF1+N2BBASX*(IZ-1)),
-     &             NB,IREPD,IPRHAM)
+     &             NB,IREPD,IPRINT)
       ENDDO
 
 C     CALL DCOPY(N2BBASXQ,WORK(KH2AOS1),1,WORK(KH2AOS),1)
 
-      IF (IPRHAM.GE.4) THEN
+      IF (IPRINT.GE.4) THEN
         CALL HEADER(
      &'AMFI_STUFF: TOTAL H(2c)_LL in "xhi" C AO basis ' ,-1)
 C        ... use IQDEF instead of IPQTOQ only when beeing in AO basis!
         CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI)    
       ENDIF
 
+      IF(RUNERI) THEN
+         write (*,*) 'ERI already works with spherical gaussians.'
+         write (*,*) 'the cartesian -> spherical transformation in '  
+         write (*,*) 'passing to AMFI is therefore not necessary.'
+      ELSE
 C      ... generate transf.coefficients...
-      CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRHAM)
+      CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
 
 C      ... transform C AO, WORK(KBUF1) -> S AO, WORK(KBUF2) 
       CALL DZERO(WORK(KBUF2),4*N2BBASX)
       LCOMP=0 
       DO IZ = 1, 4
-       CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
+      CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
      &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
-     &         WORK(KFREE),LFREE,IPRHAM)
+     &         WORK(KFREE),LFREE,IPRINT)
       ENDDO
+      ENDIF
 
-      IF (IPRHAM.GE.3) THEN
+      IF (IPRINT.GE.4) THEN
         CALL HEADER(
      &'AMFI_STUFF: TOTAL ENTERING H(2c)_LL in "xhi" S AO basis ' ,-1)
         CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
@@ -9359,12 +10258,11 @@ C   ... find out total number of L-component spherical functions
       CALL MEMGET('INTE',KIPNUC,NSPH,WORK,KFREE,LFREE)
       CALL MEMCHK('XXX',WORK,1)
       CALL SPHLAB(MXQN-1,LABINT)
-      IF (IPRHAM.GE.3) THEN
-        write(lupri,*)
-     &  'AMFi_STUFF:  SPHLAB done, NSPH=',NSPH
-      ENDIF
+C     IF (IPRINT.GE.3) THEN
+C       write(lupri,*)
+C    &  'AMFi_STUFF:  SPHLAB done, NSPH=',NSPH
+C     ENDIF
 C      write(lupri,*) 'NLRGSH=',NLRGSH
-
 
 C     ...allocations for AMFI integrals: typ and index
        CALL MEMGET('INTE',KAIPT,NSPH,WORK,KFREE,LFREE)
@@ -9378,7 +10276,7 @@ C      ... find out total number of atomic centers of the system
        DO I=1,NUCIND
          NTNUC = NTNUC + NUCDEG(I)
        ENDDO
-       IF (IPRHAM.GE.3) THEN
+       IF (IPRINT.GE.3) THEN
          write(lupri,*)
      &   'AMFI_STUFF: Total number of centers:',NTNUC
        ENDIF
@@ -9397,11 +10295,16 @@ C      .... charges per nucleis
      &  WORK(KIPNUC),WORK(KZTNUCS),WORK(KAIPT),WORK(KAILM),WORK(KAMFU),
      &  WORK(KANUCS),WORK(KSTNUCTYP),WORK(KCHPNUC),
      &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCHA,IC_AMFI,JM4POS,
-     &  CVAL_AMFI,IPRHAM,WORK(KFREE),LFREE)
+     &  CVAL_AMFI,IPRINT,WORK(KFREE),LFREE)
 
+      IF(RUNERI) THEN
+         write (*,*) 'ERI already works with spherical gaussians.'
+         write (*,*) 'the spherical -> cartesian trasnformation is ' 
+         write (*,*) 'therefore not necessary.'
+      ELSE
       CALL MEMCHK('before S->C',WORK,1)
 
-      IF (IPRHAM.GE.3) THEN
+      IF (IPRINT.GE.4) THEN
         CALL HEADER(
      &  'AMFI_STUFF: TOTAL H(2c)_LL (after AMFIIN)'//
      &  ' in "xhi" S AO basis' ,-1)
@@ -9415,54 +10318,60 @@ C     now transform back: S AO, WORK(KBUF2) -> C AO, WORK(KBUF1)
 C ===================================================================
       CALL DZERO(WORK(KBUF1),N2BBASX*4)
 C     ... generate with appropriare factors !!
-      CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRHAM)
+      CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRINT)
       DO IZ = 1, 4
        CALL MTAOSC(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
      &          WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
-     &          WORK(KFREE),LFREE,IPRHAM)
+     &          WORK(KFREE),LFREE,IPRINT)
       ENDDO
+      ENDIF
 
 C   ... point to check H2c in C AO basis again...
-      IF (IPRHAM.GE.4) THEN
+      IF (IPRINT.GE.4) THEN
         CALL HEADER(
      &'AMFI_STUFF: TOTAL H(2c)_LL BACK in "xhi" C AO basis ' ,-1)
         CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI) 
       ENDIF
 
+C     ... this is only testing sequence...
       TESTCSC=.FALSE.
       IF (TESTCSC) THEN
+       IF (RUNERI) THEN
+         write(*,*) 'no S<->C transformation required'
+       ELSE
        CALL DZERO(WORK(KBUF2),N2BBASX*4)
 C       ... needed to go back to S
-       CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRHAM)
+       CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
        DO IZ = 1, 4
          CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
      &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
-     &         WORK(KFREE),LFREE,IPRHAM)
+     &         WORK(KFREE),LFREE,IPRINT)
        ENDDO
 
-        IF (IPRHAM.GE.6) THEN
+        IF (IPRINT.GE.6) THEN
           CALL HEADER(
      &'AMFI_STUFF: TOTAL CSC_H(2c)_LL AGAIN in "xhi" S AO basis ' ,-1)
           CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
         ENDIF
 
        CALL DZERO(WORK(KBUF1),N2BBASX*4)
-      CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRHAM)
+      CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRINT)
 
 C        ... and from S to C
         DO IZ = 1, 4
          CALL MTAOSC(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
      &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
-     &         WORK(KFREE),LFREE,IPRHAM)
+     &         WORK(KFREE),LFREE,IPRINT)
         ENDDO
 
-        IF (IPRHAM.GE.6) THEN
+        IF (IPRINT.GE.6) THEN
           CALL HEADER(
      &'AMFI_STUFF: TOTAL CSC_H(2c)_LL AGAIN in "xhi" C AO basis ' ,-1)
           CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI)    
         ENDIF
 
         CALL QUIT('CSC  again')
+        ENDIF
       ENDIF
 
 C ============================================================
@@ -9477,9 +10386,9 @@ C ============================================================
          IREPD = IRQMAT(IZ,IREP)
          IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
          IPQ   = IQTOPQ(IQ,IREP)
-       CALL MTAOSO(WORK(KBUF1+N2BBASX*(IZ-1)),
+         CALL MTAOSO(WORK(KBUF1+N2BBASX*(IZ-1)),
      &             H2CAO(1+N2BBASX*(IPQ-1)),
-     &             NB,IREPD,IPRHAM)
+     &             NB,IREPD,IPRINT)
       ENDDO
 
       CALL BUTOBS(H2CAO,NZ,WORK(KFREE),LFREE) 
@@ -9490,8 +10399,8 @@ C ============================================================
           CALL Q2BPHASE('F',IQ,1,H2CAO(1+N2BBASX*(IZ-1)))  
         ENDDO                                    
       ENDIF
-C        ... print statement...
-       IF (IPRHAM.GE.6) THEN
+
+      IF (IPRINT.GE.6) THEN
 C    ... print out H2c matrix in AO "xhi" basis
         CALL HEADER(
      &'AMFI_STUFF: AGAIN TOTAL H(2c)_LL in "xhi" SA-AO basis ' ,-1)
@@ -9504,19 +10413,27 @@ C    ... print out H2c matrix in AO "xhi" basis
 C  SAVE THE CSC TRANSFOMED INTEGRALS 
 C     ... include/dcbgen.h..LUBSS
 C ...save hamiltonian matrix elements
-      REWIND(LUBSS)
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN
-       BACKSPACE(LUBSS)
-       CALL NEWLAB('H1AO_DK2',LUBSS,LUPRI)
-       CALL WRITT(LUBSS,N2BBASXQ,H2CAO)
-       CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)                            
+C     REWIND(LUBSS)
+C     IF (FNDLAB('EOFLABEL',LUBSS)) THEN
+C      BACKSPACE(LUBSS)
+C      CALL NEWLAB('H1AO_DK2',LUBSS,LUPRI)
+C      CALL WRITT(LUBSS,N2BBASXQ,H2CAO)
+C      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)                            
+C      WRITE(LUPRI,'(/2X,A)')
+C    &'AMFI_STUFF: CSC transformed relativistic atomic integrals'//
+C    &' were written into the BSSMAT file, EOFLABEL renewed.'
+C     ELSE
+C      CALL QUIT(
+C    &  'AMFI_STUFF: Error, EOFLABEL not found in BSSMAT file!')
+C     END IF
+
+      CALL W2BSSMAT(1,.TRUE.,'H1AO_DK2','AMFI_STUFF',
+     &              H2CAO,N2BBASXQ,LUBSS,IPRINT)
+      IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      &'AMFI_STUFF: CSC transformed relativistic atomic integrals'//
      &' were written into the BSSMAT file, EOFLABEL renewed.'
-      ELSE
-       CALL QUIT(
-     &  'AMFI_STUFF: Error, EOFLABEL not found in BSSMAT file!')
-      END IF
+      ENDIF
 
       CALL QEXIT('AMFI_STUFF')
       RETURN
@@ -9603,6 +10520,7 @@ CMI     IF (A(ICOL,ICOL).EQ.0.) PAUSE 'Singular matrix.'
 24    CONTINUE
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck sph_iotc */
       SUBROUTINE SPH_IOTC(HCAR,HSPH,NSPH,IPRINT,WORK,LWORK)
@@ -9648,9 +10566,8 @@ C
      &            WORK(KTMAT),NCAR,NSPH,1,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRINT)
 C
-      CALL MEMREL('SPH_IOTC',WORK,KWORK,KWORK,KFREE,LFREE)      
+      CALL MEMREL('SPH_IOTC',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       RETURN
       END
-      
 

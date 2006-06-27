@@ -3669,7 +3669,8 @@ CMI   ... read 2c screened bare nucleus from the BSSMAT file in 4c or 2c metric
         ELSE IF (BSS) THEN
           BNCRLAB='BNCR2C_4'
         ENDIF
-        CALL RFBSSMAT(BNCRLAB,'BNCORR',FMAT,N2BBASXQ,LUBSS,IPRHAM)
+        CALL RFBSSMAT(BNCRLAB,.FALSE.,'BNCORR',
+     &  FMAT,N2BBASXQ,LUBSS,IPRHAM)
       ELSE
 CMI   ... continue the standard way
 C     Memory allocation
