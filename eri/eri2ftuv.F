@@ -379,6 +379,10 @@ C      WRITE(LUPRI,*) 'IQLEVEL',IQLEVEL,QMIN,QMAX
         NTUV   = NHKTCD**3
 
 C
+C aspg, 2006-06-27 making ftnchek happy
+C
+        LWRK = LWORK
+C
 C     Loop over all of OD's in the class
 C     ==================================
 
@@ -740,9 +744,17 @@ C
         END DO
       END IF
 
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+C      CALL EXPCFT(ETIJ,NPP12,JMAX1,JMAX2,COOR12,EXP12,I120,HPI,
+C     &                  P1,P2,IRUTIN,IELECTR,JMAX1,JMAX2,NCNT12,IDL,
+C     &                  ISCAL1,ISCAL2,IPRINT)
       CALL EXPCFT(ETIJ,NPP12,JMAX1,JMAX2,COOR12,EXP12,I120,HPI,
      &                  P1,P2,IRUTIN,IELECTR,JMAX1,JMAX2,NCNT12,IDL,
-     &                  ISCAL1,ISCAL2,IPRINT)
+     &                  ISCAL1,ISCAL2,IPRINT,
+     &                  TEXPA,TEXPB,AOVERP,BOVERP)
+C
 
       IF ( IPRINT .GE. 20 ) THEN
         CALL HEADER( 'After GETETIJ',-1 )
@@ -1263,10 +1275,14 @@ C     &     I, KODBC2, NSAVED, IFTUV(1,I), IFTUV(2,I), NPRFCD
 #include "aobtch.h"
 #include "odclss.h"
 #include "iratdef.h"
-
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+C#include "fck3odb.h"
+#include "ericom.h"
+C
       DIMENSION IFTUVCL(10,*),WORK(*)
       INTEGER SIZEIFTUVCL,SIZERFTUVCL,SIZEIFTUV,SIZERFTUV,SIZEFTUV
-
 
 C      CALL PRIIFTUV(WORK(KIFTUV))
 
@@ -1278,7 +1294,7 @@ C      CALL PRIIFTUV(WORK(KIFTUV))
       SIZEFTUV   = 0
  
       NFTUV = 0 
-
+ 
       DO ICL=1,NFTUVCL
        NTFTUV = IFTUVCL(1,ICL)
        NHKTF  = IFTUVCL(5,ICL)
@@ -1416,7 +1432,12 @@ C      WRITE(LUPRI,'(A,6I6)') 'IFTUV-beg.: ', (IFTUV(I),I=1,6)
      &       NTFTUV, KSFTUV, JMAXF, NCNTF, ICNTC, ICNTD,
      &       RFTUVCL(1,ICL),RFTUVCL(2,ICL),RFTUVCL(3,ICL),RFTUVCL(4,ICL)
          IF ( IPRINT .GE. 5 ) THEN
-          CALL PRIFTUV2(FTUV(KSFTUV),ICL,NTFTUV,JMAXF,NDMT)
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+C          CALL PRIFTUV2(FTUV(KSFTUV),ICL,NTFTUV,JMAXF,NDMT)
+          CALL PRIFTUV2(FTUV(KSFTUV),ICL,NTFTUV,JMAXF)
+C
           DO I=1,NTFTUV
            WRITE(LUPRI,'(3X,I5,7F12.7,I4)')
      &        I,(RFTUV(KRFTUV_REL+7*(I-1)+J-1),J=1,7),

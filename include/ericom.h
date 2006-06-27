@@ -41,4 +41,8 @@ C
      &                SPHRA,  SPHRB,  SPHRC,  SPHRD, SPHRAB, SPHRCD,
      &                GCONA,  GCONB,  GCONC,  GCOND, GCONAB, GCONCD, 
      &                DIAGAB, DIAGCD, DIAGPQ, 
-     &                TKMPAB, TKMPCD,TCMPAB, TCMPCD
+     &                TKMPAB, TKMPCD,TCMPAB, TCMPCD,
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+     &                NFTUVCL

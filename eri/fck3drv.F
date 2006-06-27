@@ -37,6 +37,11 @@ C
 #include "nuclei.h"
 #if defined VAR_MPI
 #include "infpar.h"
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+#include "erithr.h"
+C
 #endif
       DIMENSION TIMFCK3(5),FMAT(*), DMAT(*), WORK(*), GAB(*), 
      &          GABFIT(*), CFIT(*)
@@ -454,6 +459,10 @@ C     ============================
 #else
 #include "gnrinf.h"
 #endif
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+#include "erithr.h"
 C
 #if defined (MOD_PBC)
 #include "pbc.h"
@@ -2001,6 +2010,11 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
       NCSODB    = .FALSE.
       NCSTUV    = .FALSE.
 
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+      IPRFDEF   = 0
+C
       IPRFCK3   = 0 
 
       THRFCK3   = THRFCK3_DEFAULT
@@ -2034,6 +2048,11 @@ C
 CTROND
       WRITE(6,*) '...inside FCK3INP (J Engine)'
       IPRINT=IPRFCK3
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+      IPRFDEF=0
+C
       NEWDEF = (WORD .EQ. '*JENGIN')
       IF(NEWDEF) THEN
         WORD1 = WORD

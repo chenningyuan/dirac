@@ -170,6 +170,11 @@ C so wonder if a general case could be written and incorporated into
 C the original eri code seen above in the ifndef clause
 C
       DOEXC = .TRUE.
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+      LFREE = LWORK
+C
       CALL ERIPRP(DOEXC,CCFBT,INDXBT,KOD,KMAX,IPRINT,WORK,KFREE,LFREE)
 C
 #endif /* ! PRG_DIRAC */
@@ -623,7 +628,12 @@ C
 C     Arrays for Hermite integrals
 C     ============================
 C
-      CALL HERPRP(INDHER,INDHSQ,IODDHR,IPRINT)
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+C      CALL HERPRP(INDHER,INDHSQ,IODDHR,IPRINT)
+      CALL HERPRP(INDHER,INDHSQ,IODDHR)
+C
       CALL LMNPRP(LMNPWR,LMNSYM,IPRINT)
 C
 C     Active/inactive batches
@@ -678,6 +688,12 @@ C
                   NODSCD = NACTCD(IODCD)
                   CALL EXICOM(IODCL1,IODCL2)
                   IJ = 0
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+                  II = 0
+C question: should II be incremented in the loops below??
+C
                   IPASS  = 0
                   DO JAB = 1, NAB
                   DO JCD = JODCL2(IODCD,1,JAB), JODCL2(IODCD,2,JAB) 

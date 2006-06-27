@@ -852,6 +852,10 @@ C
 C
       SAVE IADRP, IADRO, NBTCH
 C
+C aspg, 2006-06-27 making ftnchek happy
+C
+      NBTCH = 0
+C
 C     Construct matrix MAT containing 1 and 0 only, then fill
 C     out all elements within each contraction matrix as in SETAOBTCH
 C

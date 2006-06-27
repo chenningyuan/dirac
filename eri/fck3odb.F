@@ -216,6 +216,10 @@ C
 #endif
 #include "cbifck3.h"
 C
+C aspg, 2006-06-27 making ftnchek happy
+C
+#include "erithr.h"
+C
 #include "pbc.h"
       DIMENSION IODBCLS(5,*),RODBCLS(2,*),IODBTCH(2,*),
      &          RODBTCH(6+NDMT,*),
@@ -249,7 +253,7 @@ cSimen NOSCRE must be put to a commonblock
         WRITE(LUPRI,*) 'DMAXDGAB ', DMAXDGAB
         WRITE(LUPRI,*) 'DMAXDENS ', DMAXDENS
       ENDIF
-
+ 
       NPRFMAX = 0 
 
       ICLS   = 0 
@@ -413,7 +417,7 @@ C        estimates may be a little different. / ErikT
      &              CCFBTCH(KCCF(1,1)),CCFBTCH(KCCF(2,1)),
      &              CCFBTCH(KCCF(1,2)),CCFBTCH(KCCF(2,2)),
      &              R122(0,0),COOR1(1,0),COOR2(1,0),
-     &              IPRINT)
+     &              NDMT,IPRINT)
 
                IF ( NPRF12 .GT. 0 ) THEN                         
                  NBTCH = NBTCH + 1 
@@ -499,6 +503,13 @@ C
 
       MAXODBTCH = 0
       MAXODBCLS = 0
+
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+      NSYMOPR = 0
+      NSYMOPS = 0
+C
 
       IF (IPRINT.GT.5) THEN
         WRITE(LUPRI,'(A,3F14.6,/,A,F14.6,2I12,/,A,I12,F14.6,/,A,F14.6)') 

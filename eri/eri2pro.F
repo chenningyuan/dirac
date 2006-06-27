@@ -136,6 +136,11 @@ C
 C FYI: eriprp incorporates the calls above.
 C
       DOEXC = .FALSE.
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+      LFREE = LWORK
+C
       CALL ERIPRP(DOEXC,CCFBT,INDXBT,KOD,KMAX,IPRINT,WORK,KFREE,LFREE)
 C
 #endif /* ! PRG_DIRAC */

@@ -1327,7 +1327,12 @@ C
 C     Arrays for Hermite integrals
 C     ============================
 C
-      CALL HERPRP(INDHER,INDHSQ,IODDHR,IPRINT)
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+C      CALL HERPRP(INDHER,INDHSQ,IODDHR,IPRINT)
+      CALL HERPRP(INDHER,INDHSQ,IODDHR)
+C
       CALL LMNPRP(LMNPWR,LMNSYM,IPRINT)
 C
 C     Active/inactive batches

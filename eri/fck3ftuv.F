@@ -273,12 +273,14 @@ C
 
       LNEED    = KLAST    - 1 
       MEMFTUV2 = MEMFTUV2 + LNEED
-
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
       IF ( LNEED .GT. LWORK ) THEN         
          WRITE (LUPRI,'(/,4(2X,A,I15,/))')
      &      'MAXODPRF                      : ',MAXODPRF,
-     &      'MAXCLSPRF                     : ',MAXCLSPRF,
-     &      'MAXFTUVTMPSIZE                : ',MAXCLSPRF*(MAXODNHK**3),
+     &      'MAXCLSPRF                     : ',MAXFCLSPRF,
+     &      'MAXFTUVTMPSIZE                : ',MAXFCLSPRF*(MAXODNHK**3),
      &      'Memory requirements total     : ',LNEED,
      &      'Memory available              : ',LWORK
          CALL QUIT('Insufficient memory in SETFTUV1')
@@ -646,9 +648,17 @@ C
       IDL    = 0 
       NCNT12 = 0
 
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+C      CALL EXPCFT(ETIJ,NPRF12,JMAX1,JMAX2,COOR12,EXP12,I120,HPI,
+C     &            P1,P2,IRUTIN,IELECTR,JMAX1,JMAX2,NCNT12,IDL,
+C     &            ISCAL1,ISCAL2,IPRINT)
       CALL EXPCFT(ETIJ,NPRF12,JMAX1,JMAX2,COOR12,EXP12,I120,HPI,
      &            P1,P2,IRUTIN,IELECTR,JMAX1,JMAX2,NCNT12,IDL,
-     &            ISCAL1,ISCAL2,IPRINT)
+     &            ISCAL1,ISCAL2,IPRINT,
+     &            TEXPA,TEXPB,AOVERP,BOVERP)
+C
 
       IF ( IPRINT .GT. 10 ) THEN
        CALL HEADER('Exponents in SETETIJ',-1)
