@@ -2122,7 +2122,10 @@ C
  3    CONTINUE
         READ (LUCMD,*) MAXORBBOX
         IF ((MAXORBBOX .LE. 1) .OR. (MAXORBBOX .GT. 100000)) THEN
-          WRITE(LUPRI,*) 'Maxorbox input error, maxorbox=', MAXORBOX
+C
+C aspg, 2006-06-27 making ftnchek happy
+C
+          WRITE(LUPRI,*) 'Maxorbox input error, maxorbox=', MAXORBBOX
           CALL QUIT('Maxorbox input error')
         ENDIF
         DOBOX = .TRUE.

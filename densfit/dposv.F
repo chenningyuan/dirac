@@ -1,3 +1,4 @@
+#if defined (NO_LAPACK)
 C 
 C     This file should later be included in the lapack source file, keep it here for the
 C     moment to keep the trunk unchanged. LV, 21-10-2004
@@ -609,3 +610,8 @@ C
 *     End of DPOTRS
 *
       END
+#else
+      SUBROUTINE DENSFIT_DPOSV_DUMMY
+      RETURN
+      END
+#endif
