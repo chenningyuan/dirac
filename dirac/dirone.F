@@ -917,29 +917,27 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmao */
-CMI TODO:   to be renamed later to PRPMAO ...
-C     SUBROUTINE PRPMSAO(LU1INTX,INDXPR,IDIMENS,PTRI,PMAT,
-C     SUBROUTINE PRPMAO(INDXPR,IDIMENS,PTRI,PMAT,
       SUBROUTINE PRPMSAO(INDXPR,IDIMENS,PTRI,PMAT,
      &              OP1INT,FIRST,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
-C     Get 2c/4c SA-AO matrix of one-electron integrals
+C     PURPOSE: Get 2c/4c SA-AO matrix of one-electron integrals
 C     corresponding to property INDXPR of COMMON block XCBPRP
 C
 C     On input:  
+C    =============
 C                INDXPR - index of the operator in the list
 C                IDIMENS - dimension of arrays (triangular/square)
-C
 C                PTRI,OP1INT,FIRST - arrays to be used inside
 C    
-C     PTRI, OP1INT have size of IDIMENS.
+C         PTRI, OP1INT have size of IDIMENS.
 C
-C      On output:  PMAT - 2c/4c property matrix in SA-AO basis
-C                  PTRI(IDIMENS,NZ) - BU property matrix 
+C    On output:
+C                PMAT - 2c/4c property matrix in SA-AO basis
+C                PTRI(IDIMENS,NZ) - BU property matrix 
 C
 C NOTE: In the TWOCOM.and.BSS=.true. case one needs only PMAT array !
-C       All other input parameters in this case may be dummy ...
+C       All other input parameters in this case can be dummy ...
 C
 C     Written by Miro ILIAS/Strasbourg, March 2006
 C
@@ -949,27 +947,30 @@ C*****************************************************************************
       PARAMETER(D1 = 1.0D0,PTOL = 1.0D-12)
 C
 #include "dcbgen.h"
-#include "dcbbas.h"
 #include "dgroup.h"
+#include "dcbbas.h"
 #include "dcbham.h"
-#include "dcbqal.h"
+#include "mxcent.h"
+#include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
+#include "dcbqal.h"
 #include "dummy.h"
 C
 C     CHARACTER MXFORM*6, FMT*6, RTNLBL(2)*8,JCHR*1
-      LOGICAL FIRST(NZ), FNDLAB, IS_SQUARE, YESPCTRA
+      LOGICAL FIRST(NZ),IS_SQUARE, YESPCTRA, MAKEPCTRA
 CMI   DIMENSION PMAT(NNBBASX,*),OP1INT(NNBBASX),WORK(LWORK), IDOINT(4)
       DIMENSION PTRI(IDIMENS,NZ),PMAT(N2BBASX,NZ),
      &          OP1INT(IDIMENS),WORK(LWORK)
       CHARACTER*8 PRPLABEL
       CHARACTER*4 NUMSTR
 C
-C     EXTERNAL BDQALGEBRA
+      EXTERNAL BDQALGEBRA
 
       CALL QENTER('PRPMSAO')
 #include "memint.h"
 
+C
 C     Extract symmetry information - ISYM, IREP, ITIM
 C     =============================
       ISYM = IPRPSYM(INDXPR)
@@ -986,9 +987,25 @@ C     =============================
         CALL QUIT('PRPMSAO: wrong value of IDIMENS !')
       ENDIF
 
+      IPRINT2 = MAX(IPRPRP,IPRINT)
+      IF (IPRINT2.GE.6) THEN
+       CALL HEADER('*** Output from PRPMSAO ***',-1)
+       write(lupri,*) '* dealing with the operator with INDXPR=',
+     & INDXPR,' name=',PRPNAM(INDXPR)
+       write(lupri,*) '* operator ISYM=',ISYM,' IREP=',
+     & IREP,' ITIM=',ITIM
+       IF (IS_SQUARE) THEN
+        write(lupri,*) '* this is SQUARE operator'
+       ELSE
+        write(lupri,*) '* this is triangular operator'
+       ENDIF
+      ENDIF
+
 C    ... in this case read picture change transformed property integrals from BSSMAT file
       IF (TWOCOMP.AND.BSS) THEN
 C     IF (TWOCOMPBSS.AND.BSS) THEN
+
+        IPRINT2 = MAX(IPRHAM,IPRINT)
 
         IF (N2BBASXQ.NE.(NTBAS(1)*NTBAS(1)*NZ)) THEN
           CALL QUIT('PRPMSAO: N2BBASXQ.ne.N2BBASXQ_L!!!')
@@ -998,56 +1015,67 @@ C     IF (TWOCOMPBSS.AND.BSS) THEN
         PRPLABEL = 'P2C_'//NUMSTR
 
 C     ... BSSMAT file is already open...find end label
-        CLOSE(LUBSS,STATUS='KEEP')
-        CALL OPNFIL(LUBSS,'BSSMAT','OLD','PRPMAO') 
-        REWIND LUBSS   
-      IF (FNDLAB(PRPLABEL,LUBSS)) THEN  
-        CALL READT(LUBSS, N2BBASXQ, PMAT ) 
-        IF (IPRHAM.GE.4) THEN  
-         write(lupri,*)   
-     &  'PRPMSAO: 2comp. property read from BSSMAT file.'      
-        ENDIF
-      ELSE  
-        CALL QUIT('PRPMSAO: EOFLABEL  not found !')  
-      ENDIF                    
+C       CLOSE(LUBSS,STATUS='KEEP')
+C       CALL OPNFIL(LUBSS,'BSSMAT','OLD','PRPMAO') 
+C       REWIND LUBSS   
+C     IF (FNDLAB(PRPLABEL,LUBSS)) THEN  
+C       CALL READT(LUBSS, N2BBASXQ, PMAT ) 
+C       IF (IPRHAM.GE.4) THEN  
+C        write(lupri,*)   
+C    &  'PRPMSAO: 2comp. property read from BSSMAT file.'      
+C       ENDIF
+C     ELSE  
+C       CALL QUIT('PRPMSAO: EOFLABEL  not found !')  
+C     ENDIF                    
+
+       CALL RFBSSMAT(PRPLABEL,.FALSE.,'PRPMSAO',
+     &             PMAT,N2BBASXQ,LUBSS,IPRINT2)
+       IF (IPRINT2.GE.4) THEN  
+        write(lupri,*)   
+     & 'PRPMSAO: 2comp. property record ',PRPLABEL,
+     & ' was read from BSSMAT file.'      
+       ENDIF
 
        CALL LSET(NZ,.FALSE.,FIRST)
 
       ELSE
 
-       CALL LSET(NZ,.TRUE.,FIRST)
-
-C     ... get boson unsorted basis (triangular/square) into PTRI
-C      CALL PRPMBU(LU1INT,INDXPR,IDIMENS,PTRI,OP1INT,FIRST,WORK(KFREE),
+        CALL LSET(NZ,.TRUE.,FIRST)
 
 C     ... do resort PTRI to the boson sorted basis
+        IPRINT2 = MAX(IPRPRP,IPRINT)
         IF (IS_SQUARE) THEN
 
-        CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PMAT,OP1INT,FIRST,WORK(KFREE),
-     &           LFREE,IPRINT)   
+           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PMAT,OP1INT,FIRST,
+     &                WORK(KFREE),LFREE,IPRINT2)   
 
-         CALL SORT2SAO(IDIMENS,DUMMY,PMAT,FIRST,
-     &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT)
+           CALL SORT2SAO(IDIMENS,DUMMY,PMAT,FIRST,
+     &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ELSE
 
-        CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PTRI,OP1INT,FIRST,WORK(KFREE),
-     &           LFREE,IPRINT)   
+          CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PTRI,OP1INT,FIRST,
+     &                       WORK(KFREE),LFREE,IPRINT2)   
 
-        CALL SORT2SAO(IDIMENS,PTRI,PMAT,FIRST,
-     &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT)
+          CALL SORT2SAO(IDIMENS,PTRI,PMAT,FIRST,
+     &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ENDIF
 
+C       ... decide if the picture change transformation is needed
         IF (BSS) THEN
-         CALL DECIDEPCTR(YESPCTRA,PRPNAM(INDXPR),IPRINT)
-        ENDIF
+         IRPINT1 = MAX(IPRHAM,IPRPRP)
+         CALL DECIDEPCTR(YESPCTRA,PRPNAM(INDXPR),IPRINT1)
 C     ... if needed, do the picture change transformation of the PMAT
-        IF (YESPCTRA.AND.BSS) THEN
-          CALL DOPCTRA(INDXPR,PMAT,NZ,'S',WORK(KFREE),LFREE)
-CMI       ... this is needed for BSS ...
+         IF (YESPCTRA) THEN
+          MAKEPCTRA = DOPCT .AND. .NOT.NOPCT
+C         write(lupri,*) '* DOPCT, NOPCT, MAKEPCTRA=',
+C    &    DOPCT,NOPCT,MAKEPCTRA
+          CALL DOPCTRA(PMAT,MAKEPCTRA,PRPNAM(INDXPR),ISYM,IREP,ITIM,
+     &                 'S',NZ,WORK(KFREE),LFREE,IPRINT1)
+CMI       ... this is needed for the picture change transformed operator
           CALL LSET(NZ,.FALSE.,FIRST)
+         ENDIF
         ENDIF
 
-C      call quit('to be read from BSSMAT...')
       ENDIF
 
       CALL QEXIT('PRPMSAO')
@@ -1162,10 +1190,7 @@ C
               CALL QUIT('SORT2SAO: wrong value of IDIMENS !') 
              ENDIF
            ELSE
-CMI         ... not symmetric, nor antisymmetric - do copy full PTRI into PMAT
-CMI   ... in this case PTRI is dummy ! only PMAT exist
-C           CALL DCOPY(N2BBASX,PTRI(1,IZ),1,PMAT(1,IZ),1)
-C           write(lupri,*) 'SQUARE case !! IQ,IH=',IQ,IH
+CMI   ... in this case PTRI is dummy, only PMAT exists
             IF (.NOT.IS_SQUARE) THEN
               CALL QUIT('SORT2SAO: wrong value of IDIMENS !') 
             ENDIF
@@ -3611,8 +3636,8 @@ C     contributions from each shells (n) in the atoms :
 C           sum_(n) <X_A|(-Z(n)*G(n,a,r_C))/r_C|X_B> 
 C           X=L,S ; G(a,r)=exp(-a*r^2)
 C
-C     On input/ouput:     FMAT - assumed one-electron Fock matrix (input),
-C    =================   added screened bare nucleus matrix to it (ouput)
+C     On input/ouput:     FMAT - assumed one-electron (2c/4c bare nucleus) Fock matrix (input),
+C    =================    screening bare nucleus added (ouput)
 C
 C     Called from: PREDHF/dirscf.F
 C                  RH1DIAG/../krmc/krmcopt.F

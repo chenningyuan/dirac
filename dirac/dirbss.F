@@ -650,6 +650,8 @@ C
 C   PURPOSE: Do the picture change transformation of the SCREENED
 C            one-electron Fock matrix obtained from the BNCORR routine.
 C
+C   Called from: MAKE_BSS when THERE IS picture change transformation (we have infinite order)
+C
 C   On input: VMAT - only array
 C
 C   On output: VMAT - picture change transformed 2comp. screened bare nucleus
@@ -665,10 +667,10 @@ C****************************************************************************
 #include "dgroup.h"
 #include "dcbham.h"
       DIMENSION VMAT(*),WORK(LWORK)
-      LOGICAL FNDLAB,BSS_SAVE,TWOCOMP_SAVE
+      LOGICAL BSS_SAVE,TWOCOMP_SAVE,MAKEPCTRA
 
 #include "memint.h"
-      CALL QENTER('PREPBNCR')
+      CALL QENTER('MAKEBNCR2C')
       
       BSS_SAVE = BSS
       BSS = .FALSE.
@@ -684,18 +686,22 @@ CMI   ... get screened Dirac bare nucleus
       TWOCOMP = TWOCOMP_SAVE
 
 C   ... now do the picture change transformation
-      CALL DOPCTRA(-1,VMAT,NZ,'S',WORK(KFREE),LFREE)                 
+C     MAKEPCTRA=.FALSE.
+C     MAKEPCTRA=BSS.AND.(IBSS.GE.99.OR.IBSS.EQ.009.OR.IBSS.GE.109)
+      MAKEPCTRA=.TRUE.
+      CALL DOPCTRA(VMAT,MAKEPCTRA,'MAKEBNCR2C:.....',1,0,1,'S',
+     &             NZ,WORK(KFREE),LFREE,IPRHAM)                 
       IF(IPRHAM.GE.8) THEN                                          
        CALL HEADER('MAKEBNCR2C: 2c matrix ...',-1) 
        CALL PRQMAT(VMAT,NTBAS(0),NTBAS(0),                
      &    NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI) 
       END IF 
 
-CMI   ... do save it into BSSMAT file ...
+CMI   ... do save the pctra screened bare nucleus into the BSSMAT file ...
       CALL W2BSSMAT(1,.FALSE.,'BNCR2C_4','PREPBNCR',
      &               VMAT,N2BBASXQ,LUBSS,IPRHAM)
 
-      CALL QEXIT('PREPBNCR')
+      CALL QEXIT('MAKEBNCR2C')
       RETURN
       END
 
@@ -756,7 +762,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       REWIND LUBSS
       IF (FNDLAB(LBL,LUBSS)) THEN
         CALL READT(LUBSS,ISIZE,TMAT)
-        IF (IPRINT.GE.2) THEN
+        IF (IPRINT.GE.3) THEN
          WRITE(LUPRI,*)
      & '* RFBSSMAT: ',LBL,' record  was read from the file BSSMAT'
         ENDIF
@@ -1638,143 +1644,81 @@ C     ... eliminate spin-free components
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck dopctra */
-      SUBROUTINE DOPCTRA(INDXPR,PRPAO,MZ,TREV,WORK,LWORK)
+      SUBROUTINE DOPCTRA(PRPAO,MAKEPCTRA,PROPNAME,ISYM,IREP,
+     &                   ITIM,TREV,MZ,WORK,LWORK,IPRINT)
 C****************************************************************************
 C
-C  PURPOSE: Do picture change transformation  of the entering AO 
-C           one-electron matrix of some
-C           FOUR-COMPONENT property operator
+C  PURPOSE: Do picture change transformation of the entering AO 
+C           one-electron matrix of the FOUR-COMPONENT property operator.
 C
 C           If NOPCT = .true., do not perform the picture change tranf.,
 C           only take the LL block of a four-component property 
 C           operator (this is not rigorous, but shows how important is
 C           the picture change transfgormation of property operator)
 C
-C  On input: PRPAO 4component operator in AO basis
+C  Called from: 
+C ==============
+C    MAKEBNCR2C when picture change of screened bare nucleus is needed
+C    PRPMSAO when one needs to do the picture change transformation of 
+C            the entering property operator
+C
+C  On input: PRPAO - 4component operator in AO basis
 C            INDXPR - index of the property operator
 C            to be transformed (if -1, th's diagonal SCF start from BNCORR)
 C            MZ - number of components of the prop.operator
-C            TREV - symmatrix (S) or antisymmetric operator
+C            TREV - symmetric (S) or antisymmetric (A) operator
 C
 C
 C  On output: PRPAO picture change transformed operator 
 C             matrix (LL block) of AO basis
 C
 C  Written: M Ilias, Prievidza, June 2004
-C  Last changes: MI, Strasbourg, October 2005      
+C  Last changes: MI, Strasbourg, October 2005    
+C                MI, Prievidza, June 2006  
 C      
 C****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER ( D0 = 0.00D00, D1 = 1.00D00 )
-#include "mxcent.h"
+C#include "mxcent.h"
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbprp.h"
-#include "dcbxpr.h"
+C#include "dcborb.h"
+c#include "dcbprp.h"
+c#include "dcbxpr.h"
 
       DIMENSION WORK(*),PRPAO(*)
-      LOGICAL FNDLAB,DOTR
+      LOGICAL  MAKEPCTRA
       CHARACTER  PROPNAME*16,TREV*1
 
       CALL QENTER('DOPCTRA')
 #include "memint.h"
 
-      DOTR=(INDXPR.EQ.-1)
-
-C ... check if one needs to do the pic.change transf.
-      IF (.NOT.DOPCT.AND..NOT.DOTR) GOTO 789
-
-      IPRINT = IPRPRP
-
-      IF (.NOT.DOTR) THEN
-        IPRINT = IPRPRP
-          IREP = IPRPSYM(INDXPR) - 1
-C ... determine the time reversal symmetry of the property operator
-          ITIM = IPRPTIM(INDXPR)
-      ELSE
-       IREP=0
-      ENDIF
-
 C  ... keep only LL blocks of the four-component property operator
-      IF (NOPCT.AND..NOT.DOTR) THEN
-        CALL ONLY_LL(PRPAO,PRPNAM(INDXPR),IREP,ITIM,MZ,IPRPRP)
-        GOTO 789
-      ENDIF
+      IF (.NOT.MAKEPCTRA) THEN
 
+        CALL ONLY_LL(PRPAO,PROPNAME,IREP,ITIM,MZ,IPRINT)
+
+      ELSE
 
 C ...  read (load) the picture change transformation matrix:
 C       4c AO-> 2c AO(LL)
-C     CALL MEMCHK('in DOPCT',WORK,1)
-
-C     CALL OPNFIL(LUBSS,'BSSMAT','OLD','DOPCTRA')
-C     ... set up at the beginning of the file
-C     REWIND LUBSS
-C     IF (FNDLAB('U_PICTRM',LUBSS)) THEN
-C       ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ
-C       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
-C ... array for the picture change transformation matrix (PCTM)...
-C      CALL MEMGET('REAL',KPCTM,ISIZE,WORK,KFREE,LFREE)
-C      CALL MEMCHK('in DOPCT',WORK,1)
-C       CALL READT(LUBSS,ISIZE,WORK(KPCTM))
-C       CALL READT(LUBSS,N2BBASXQ,WORK(KPCTM))
-C       IF (IPRPRP.GE.3) WRITE(LUPRI,'(/2X,A)')
-C    &   'DOPCTRA: Picture change transformation matrix was read.'
-C     ELSE
-C       IF (DOTR) THEN
-C         write(lupri,*) 'DOPCTRA: U_PICTRM not found in BSSMAT file!' 
-C         write(lupri,*)
-C    &      'deleting the SS block of entering matrix only...' 
-C         CLOSE (LUBSS,STATUS='KEEP')
-C         DO I = 1, NFSYM
-C            IS1 = 1 + (NTBAS(0)*NFBAS(I,1))+NFBAS(I,1) +
-C    &                  I2BASX(I,I)
-C           DO J = 1, NFBAS(I,2)
-C             ISS = IS1 + (J-1)*NTBAS(0)
-C             CALL DZERO(PRPAO(ISS),NFBAS(I,2))
-C           ENDDO
-C         ENDDO
-C         GOTO 789
-C       ELSE
-C         CALL QUIT('DOPCTRA:Error, U_PICTRM not found in BSSMAT file!')
-C       ENDIF
-C     END IF
-C     CLOSE (LUBSS,STATUS='KEEP')
-
-      IF (DOTR) THEN
-          write(lupri,*)
-     &      'DOPCTRA: deleting the SS block of entering matrix only...' 
-          CLOSE (LUBSS,STATUS='KEEP')
-          DO I = 1, NFSYM
-             IS1 = 1 + (NTBAS(0)*NFBAS(I,1))+NFBAS(I,1) +
-     &                  I2BASX(I,I)
-            DO J = 1, NFBAS(I,2)
-              ISS = IS1 + (J-1)*NTBAS(0)
-              CALL DZERO(PRPAO(ISS),NFBAS(I,2))
-            ENDDO
-          ENDDO
-          GOTO 789
-      ELSE
+       CALL MEMCHK('in DOPCT',WORK,1)
        ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
 C ... array for the picture change transformation matrix (PCTM)...
        CALL MEMGET('REAL',KPCTM,ISIZE,WORK,KFREE,LFREE)
        CALL MEMCHK('in DOPCT',WORK,1)
        CALL RFBSSMAT('U_PICTRM',.FALSE.,'DOPCTRA',WORK(KPCTM),
-     &               ISIZE,LUBSS,IPRPRP)
-      ENDIF
-
+     &               ISIZE,LUBSS,IPRINT)
 
       IF (IPRINT.GE.5) THEN
-       CALL HEADER('Output from DOPCTRA',-1)
-       IF (.NOT.DOTR) THEN
+        CALL HEADER('Output from DOPCTRA',-1)
        WRITE(LUPRI,'(A,A16,/,10X,A,I2,A,I1)')
      & 'Total entering FOUR-COMPONENT AO-matrix of property ',
-     & PRPNAM(INDXPR),' time rev.symm:',ITIM,
+     & PROPNAME,' time rev.symm:',ITIM,
      & ' number of matrixes:',MZ
-       ENDIF
        CALL PRQMAT(PRPAO(1),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),MZ,
      &            IPQTOQ(1,IREP),LUPRI)
 
@@ -1824,30 +1768,20 @@ C ----------------------------------------------------------
 
 C .... control output
        IF (IPRINT.GE.5) THEN
-        IF (.NOT.DOTR) THEN
         WRITE(LUPRI,'(/A,1X,A16,/,10X,A,I2,A,I1)')
      &'Symm. blocked FOUR-COMPONENT AO-matrix of property',
-     &  PRPNAM(INDXPR),' time reversal symm:',ITIM,
+     &  PROPNAME,' time reversal symm:',ITIM,
      &  ' number of matrixes: ',MZ
-        ELSE
-        WRITE(LUPRI,'(/A,1X,A,I1)')
-     &'Symm. blocked FOUR-COMPONENT AO-matrix ',
-     &  ' number of matrixes: ',MZ
-        ENDIF
+
        WRITE(LUPRI,'(5X,A,I1,A,I1)')
      &    '*** Fermion corep ',I1,'/',NFSYM
        CALL PRQMAT(PRPAO(1+I2BASX(I1,I2)),NFBAS(I1,0),NFBAS(I2,0),
      &        NTBAS(0),NTBAS(0),MZ,IPQTOQ(1,IREP),LUPRI)
 
-        IF (.NOT.DOTR) THEN
         WRITE(LUPRI,'(/A,1X,A16,/,10X,A,I2,A,I1)')
      &'Symm. blocked TRANSFORMED TWO-COMPONENT AO-matrix of property',
-     &  PRPNAM(INDXPR),' time reversal symm:',ITIM,
+     &  PROPNAME,' time reversal symm:',ITIM,
      &  ' number of matrixes: ',MZ
-        ELSE
-        WRITE(LUPRI,'(/A)')
-     &'Symm. blocked TRANSFORMED FOUR-COMPONENT AO-matrix '
-        ENDIF
        WRITE(LUPRI,'(5X,A,I1,A,I1)')
      &    '*** Fermion corep ',I1,'/',NFSYM
        CALL PRQMAT(WORK(KPCTO+I2BASX(I1,I2)),NFBAS(I1,1),NFBAS(I2,1),
@@ -1859,15 +1793,10 @@ C .... control output
 
       ENDDO 
 
-      IF (IPRPRP.GE.5) THEN
-       IF (.NOT.DOTR) THEN
+      IF (IPRINT.GE.5) THEN
        WRITE(LUPRI,'(/A,1X,A16)')
      &'Total (blocked) TRANSFORMED TWO-COMPONENT AO-matrix of property',
-     &  PRPNAM(INDXPR)
-        ELSE
-       WRITE(LUPRI,'(/A)')
-     &'Total (blocked) TRANSFORMED TWO-COMPONENT AO-matrix: '
-        ENDIF
+     &  PROPNAME
        CALL PRQMAT(WORK(KPCTO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),MZ,
      &          IPQTOQ(1,IREP),LUPRI)
       ENDIF
@@ -1879,14 +1808,16 @@ C      picture chanded operator...
 C ... it woould be useful to test the pict change transformed operator...
 C .... NFBAS(I1,1) x NFBAS(I2,1) blocks are non-zero,
 C     while all others are zero
-      PROPNAME=PRPNAM(INDXPR)
-      CALL CHECK_LLOP(IREP,IOPSY,PROPNAME,PRPAO,MZ,IPRPRP)
+C     PROPNAME=PRPNAM(INDXPR)
+      CALL CHECK_LLOP(IREP,IOPSY,PROPNAME,PRPAO,MZ,IPRINT)
 
 C     Memory deallocation - release the used block
 
+C     CALL MEMREL('DOPCTRA',WORK,KWORK,KPCTO,KFREE,LFREE)
       CALL MEMREL('DOPCTRA',WORK,KWORK,KPCTO,KFREE,LFREE)
 
- 789  CONTINUE
+      ENDIF
+
       CALL QEXIT('DOPCTRA')
 C     CALL QUIT('In DOPCT...')
       RETURN
@@ -1897,10 +1828,12 @@ C  /* Deck only_ll */
       SUBROUTINE ONLY_LL(PRPAO,PROPNAME,IREP,ITIM,MZ,IPRINT)
 C**************************************************************************
 C
-C PURPOSE: Keep only LL block of property matrix PRPAO.
+C    PURPOSE: Keep only LL block of entering property matrix PRPAO.
 C
+C    Called from: DOPCTRA
 C
 C   Written by Miro ILIAS, Strasbourg, 2006
+C   Last modifications:  MI, June 2006, Prievidza
 C
 C**************************************************************************
 #include "implicit.h"
@@ -1960,9 +1893,8 @@ C          ... then SS,SL blocks
        ENDIF
       ENDDO
 
-      CALL CHECK_LLOP(IREP,IOPSY,PROPNAME,PRPAO,MZ,IPRINT)
+       CALL CHECK_LLOP(IREP,IOPSY,PROPNAME,PRPAO,MZ,IPRINT)
 
-C      call quit('only_ll')
       CALL QEXIT('ONLY_LL')
       RETURN
       END
@@ -2952,7 +2884,7 @@ C     END IF
        ISIZE = NFBAS(1,0)*NORB(1)*NZ 
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
        CALL RFBSSMAT(LBL,.TRUE.,'GET_H1_ONB',TMAT,ISIZE,LUBSS,IPRHAM)
-       IF (IPRHAM.GE.2) THEN
+       IF (IPRHAM.GE.3) THEN
          WRITE(LUPRI,'(/2X,A,A,A)')       
      & 'GET_H1_ONB: ',LBL,' 4c AO-> 4c MO transf. matrix'//
      & ' read from BSSMAT into TMAT.'         
