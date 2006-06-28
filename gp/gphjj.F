@@ -524,7 +524,10 @@ C
 #endif
 #if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
 #ifndef VAR_EKO
-      CALL HOSTNM(HSTNAM)
+C
+C     CALL HOSTNM(HSTNAM)
+C
+      CALL GETENV('HOST',HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #endif
