@@ -37,11 +37,6 @@ C
 #include "nuclei.h"
 #if defined VAR_MPI
 #include "infpar.h"
-C
-C aspg, 2006-06-27 making ftnchek happy
-C
-#include "erithr.h"
-C
 #endif
       DIMENSION TIMFCK3(5),FMAT(*), DMAT(*), WORK(*), GAB(*), 
      &          GABFIT(*), CFIT(*)
