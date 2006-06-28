@@ -170,7 +170,6 @@ C     /* deck dftac */
      &                 WORK,LWORK)
 C  .....................................................................
 C  .                                                                   .
-C  .  DFTAC                                                            .
 C  .  common routine for GRAC and SAOP                                 .
 C  .                                                                   .
 C  .  SAOP                                                             .
@@ -188,9 +187,7 @@ C  .  modelled after Andreas Hesselman's DFT_GRAC                      .
 C  .  which was finally eaten by this routine,                         .
 C  .  so many thanks to Andreas!                                       .
 C  .                                                                   .
-C  .....................................................................
-C  .  author:                                          last revision:  .
-C  .  radovan bast                                     october 2005    .
+C  .  radovan bast                           last revision: june 2006  .
 C  .....................................................................
 C
 #include "implicit.h"
@@ -248,11 +245,8 @@ C
 C     shift bulk?
 C     ===========
 C
-      IF(DOGRAC) THEN
-        SHIFTBULK = ACIP+EIGMAX
-      ELSE
-        SHIFTBULK = D0
-      ENDIF
+      SHIFTBULK = D0
+      IF(DOGRAC) SHIFTBULK = ACIP + HOMO_EIGENVALUE
 C
 C
 C     bulk potential
@@ -269,7 +263,7 @@ C
 C
         CALL DZERO(WORK(KVXBULK),DERVS1)
         DO I = 1,DERVS1
-          WORK(KVXBULK-1+I) = WORK(KVXSLATER-1+I)+WORK(KVXRESP-1+I)
+          WORK(KVXBULK-1+I) = WORK(KVXSLATER-1+I) + WORK(KVXRESP-1+I)
         ENDDO
         WORK(KVXBULK+1) = VX(FZ0)
 C
@@ -311,7 +305,7 @@ C     ==========
 C
       CALL DZERO(VX,DERVS1)
 C
-      VX(FR0) = (D1-FADE)*(WORK(KVXBULK)-WGHT*SHIFTBULK)
+      VX(FR0) = (D1-FADE)*(WORK(KVXBULK) - WGHT*SHIFTBULK)
      &        +     FADE *(D1-HFXFAC)*WORK(KVXOUTER)
 C
       VX(FZ0) = (D1-FADE)*WORK(KVXBULK+1)

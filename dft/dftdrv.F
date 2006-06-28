@@ -185,7 +185,7 @@ C
             DO J = 1,NISH(I)
               K = K+1
               WORK(KSAOPENERGIES+K-1) =
-     &                       EIGMAX-WORK(KEIG+J-1+(I-1)*NORB(1)+NPSH(I))
+     &              HOMO_EIGENVALUE-WORK(KEIG+J-1+(I-1)*NORB(1)+NPSH(I))
             ENDDO
           ENDIF
         ENDDO
@@ -668,7 +668,7 @@ C
      &            NCNT(NBAST), DST(NATOMS),BUF(NBAST,4),
      &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &            WORK(LWORK)
-      DIMENSION RHG(3),VT(3),RHOOUTERGRD(3)
+      DIMENSION RHG(3),VT(3)
 C
 C
       DO 300 IPNT = 1, NPOINT
@@ -746,35 +746,20 @@ C
 C         asymptotic correction
 C         =====================
 C
-          IF(DOGRAC.AND.GRACON) THEN
+          IF(GRACON) THEN
             CALL DFTAC(VX,WGHT,RHO,RHO13,DUMMY,DUMMY,RHOGRD,WORK,LWORK)
           ENDIF
 C
-          IF(DOSAOP.AND.SAOPON) THEN
+          IF(SAOPON) THEN
+            CALL GETRHO(RHOOUTER,0,GAO,SAOPDMATOUTER,BUF)
             IF(DORESP) THEN
               CALL GETRHO(RHORESP,0,GAO,SAOPDMATRESP,BUF)
-            ENDIF
-C
-            CALL GETRHO(RHOOUTER,0,GAO,SAOPDMATOUTER,BUF)
-C
-            VXZSAVE = VX(FZ0)
-C
-            IF(DORESP) THEN
               CALL DFTAC(VX,WGHT,RHO,DUMMY,RHORESP,RHOOUTER,RHOGRD,
      &                   WORK,LWORK)
             ELSE
               CALL DFTAC(VX,WGHT,RHO,DUMMY,DUMMY,RHOOUTER,RHOGRD,
      &                   WORK,LWORK)
             ENDIF
-C
-            CALL GETGRHO(RHOOUTERGRD,0,GAO,GAO1,SAOPDMATOUTER,BUF)
-C
-            GGAOUTER = RHG(1)*(RHOOUTER*RHG(1)-RHO*RHOOUTERGRD(1))
-     &               + RHG(2)*(RHOOUTER*RHG(2)-RHO*RHOOUTERGRD(2))
-     &               + RHG(3)*(RHOOUTER*RHG(3)-RHO*RHOOUTERGRD(3))
-            GGAOUTER = GGAOUTER/(RHO*RHO)
-C
-C           VX(FR0) = VX(FR0)+VXZSAVE*GGAOUTER
           ENDIF
 C
 C
@@ -1591,8 +1576,8 @@ C
      &                            MPARID,MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(ACIP,1,MPI_DOUBLE_PRECISION,
      &                        MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(EIGMAX,1,MPI_DOUBLE_PRECISION,
-     &                          MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(HOMO_EIGENVALUE,1,MPI_DOUBLE_PRECISION,
+     &                                   MPARID,MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(ACTHRESHOLD,1,MPI_DOUBLE_PRECISION,
      &                               MPARID,MPI_COMM_WORLD,IERR)
       ENDIF
@@ -1735,8 +1720,8 @@ C
      &                            MPARID,MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(ACIP,1,MPI_DOUBLE_PRECISION,
      &                        MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(EIGMAX,1,MPI_DOUBLE_PRECISION,
-     &                          MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(HOMO_EIGENVALUE,1,MPI_DOUBLE_PRECISION,
+     &                                   MPARID,MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(ACTHRESHOLD,1,MPI_DOUBLE_PRECISION,
      &                               MPARID,MPI_COMM_WORLD,IERR)
       ENDIF

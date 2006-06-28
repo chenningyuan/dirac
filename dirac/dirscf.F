@@ -1285,23 +1285,15 @@ C
       CALL FLSHFO(LUPRI)
 C
 C     for asymptotic correction
-      EIGMAX_PREVIOUS = D0
+      OLD_HOMO_EIGENVALUE = D0
 C
 C
       DO 10 ITER = 2,MAXITR
 C
-C
 C        for asymptotic correction
-C        =========================
-C
-         IF(DOGRAC) THEN
-           CALL DFTAC_ENERGIES(EIG,EIGMAX_PREVIOUS)
+         IF(DOGRAC.OR.DOSAOP) THEN
+           CALL DFTAC_EIGENVALUES(EIG,OLD_HOMO_EIGENVALUE)
          ENDIF
-C
-         IF(DOSAOP) THEN
-           CALL DFTAC_ENERGIES(EIG,EIGMAX_PREVIOUS)
-         ENDIF
-C
 C
          NITER  = NITER + 1
          KITER  = KITER + 1
@@ -4424,20 +4416,17 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck dftac_energies */
-      SUBROUTINE DFTAC_ENERGIES(EIG,EIGMAX_PREVIOUS)
+C     /* deck dftac_eigenvalues */
+      SUBROUTINE DFTAC_EIGENVALUES(EIGENVALUES,OLD_HOMO_EIGENVALUE)
 C  .....................................................................
 C  .                                                                   .
-C  .  DFTAC_ENERGIES                                                   .
 C  .  check orbital energy convergence                                 .
 C  .  for asymptotic correction                                        .
 C  .                                                                   .
 C  .  modelled after Andreas Hesselmann's routine HOMO                 .
 C  .  which has been incorporated into this one, so thanks Andreas!    .
 C  .                                                                   .
-C  .....................................................................
-C  .  andreas hesselmann        written                   revision     .
-C  .  radovan bast              january 2005              22/04/2005   .
+C  .  radovan bast                           last revision: june 2006  .
 C  .....................................................................
 C       
 #include "implicit.h"
@@ -4452,47 +4441,45 @@ C
 #include "dftcom.h"
 #include "dftac.h"
 C
-      LOGICAL FIRSTTIME
+      LOGICAL FIRST_TIME_HERE
 C
-      DIMENSION EIG(*)
+      DIMENSION EIGENVALUES(*)
 C
 C
-C     get the highest eigenvalue
-C     ==========================
+C     get the homo eigenvalue
+C     =======================
 C
       IF(.NOT.GRACON) THEN
-        EIGMAX = D0
-        FIRSTTIME = .TRUE.
+        HOMO_EIGENVALUE = D0
+        FIRST_TIME_HERE = .TRUE.
         DO I = 1,NFSYM
           IF(NISH(I).GT.0) THEN
             DO J = 1,NISH(I)
-              E = EIG(J+(I-1)*NORB(1)+NPSH(I))
-              IF(FIRSTTIME) EIGMAX = E
-              FIRSTTIME = .FALSE.
-              IF(E.GT.EIGMAX) EIGMAX = E
+              E = EIGENVALUES(J + (I-1)*NORB(1) + NPSH(I))
+              IF(FIRST_TIME_HERE) HOMO_EIGENVALUE = E
+              FIRST_TIME_HERE = .FALSE.
+              IF(E.GT.HOMO_EIGENVALUE) HOMO_EIGENVALUE = E
             ENDDO
           ENDIF
         ENDDO
       ENDIF
 C
 C
-C     turn asymptotic correction on
-C     =============================
+C     turn asymptotic correction on ?
+C     ===============================
 C
-      DELTAEIGMAX = ABS(EIGMAX_PREVIOUS-EIGMAX)
+      DELTA_HOMO = ABS(OLD_HOMO_EIGENVALUE - HOMO_EIGENVALUE)
 C
-      SAOPON = .TRUE.
+      IF(DOSAOP) SAOPON = .TRUE.
 C
-      IF(DELTAEIGMAX.LE.ACTHRESHOLD) THEN
-        IF(DOGRAC.AND.(.NOT.GRACON)) GRACON = .TRUE.
+      IF(DELTA_HOMO.LE.ACTHRESHOLD) THEN
+        IF(DOGRAC) GRACON = .TRUE.
       ENDIF
 C
-      IF(DOGRAC.AND.GRACON)
-     &                WRITE(LUPRI,*) 'GRAC asymptotic correction active'
-      IF(DOSAOP.AND.SAOPON)
-     &                WRITE(LUPRI,*) 'SAOP asymptotic correction active'
+      IF(GRACON) WRITE(LUPRI,*) 'GRAC asymptotic correction active'
+      IF(SAOPON) WRITE(LUPRI,*) 'SAOP asymptotic correction active'
 C
-      EIGMAX_PREVIOUS = EIGMAX
+      OLD_HOMO_EIGENVALUE = HOMO_EIGENVALUE
 C
 C
       RETURN
