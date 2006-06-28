@@ -411,7 +411,7 @@ C
 C     AO batches
 C     ==========
 C
-      CALL SETAOB(CCFBT,INDXBT,KMAXTOT,WORK,LWORK,IPRINT)
+      CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
 C
 C     OD batches
 C     ==========
