@@ -137,15 +137,16 @@ C
       XQRDIH = .TRUE.
       XQR_ALLCMB = .FALSE.
       XQR_SKIPEE = .FALSE.
-      IF (LEVYLE) THEN
-         INTXQR = ILLINT
-         XQR_SKIPEP = .TRUE.
-      ELSE IF (FREEPJ .OR. VEXTPJ) THEN
+CMI   ... moved after input processing ...
+C     IF (LEVYLE.OR.BSS) THEN
+C        INTXQR = ILLINT
+C        XQR_SKIPEP = .TRUE.
+C     ELSE IF (FREEPJ .OR. VEXTPJ) THEN
 C     No positron orbitals ("no-pair")
-         XQR_SKIPEP = .TRUE.
-      ELSE
-         XQR_SKIPEP = .FALSE.
-      END IF
+C        XQR_SKIPEP = .TRUE.
+C     ELSE
+C        XQR_SKIPEP = .FALSE.
+C     END IF
       DO I = 1,NFSYM
          XQR_INDSTR(1,I) = ' '
          XQR_INDSTR(2,I) = ' '
@@ -365,6 +366,17 @@ C     .EXCPRP compute excited state properties (or matrix elements)
 C
 C     Process section
 C
+      IF (LEVYLE.OR.BSS) THEN
+C        INTXQR = ILLINT
+         INTXQR = 1
+         XQR_SKIPEP = .TRUE.
+      ELSE IF (FREEPJ .OR. VEXTPJ) THEN
+C     No positron orbitals ("no-pair")
+         XQR_SKIPEP = .TRUE.
+      ELSE
+         XQR_SKIPEP = .FALSE.
+      END IF
+
       IF (CNVXQR(1).LT.DUMMY) ITRIQR(1) = 1
       IF (CNVXQR(2).LT.DUMMY) ITRIQR(2) = 1
 C

@@ -428,14 +428,14 @@ C
 #include "dcbxpr.h"
 C
       DIMENSION PRPMO(*),CMO(*),IBEIG(*),IPCMO(*),NPMO(*),WORK(*)
-      LOGICAL   TRIANG
+      LOGICAL   TRIANGUL
 C
       CALL QENTER('PRPMAT')
       KFRSAV = KFREE
 
 CMI   ... define triangulariry of matrix 
 CMI    ...   - either symmetric or antisymmetric
-      TRIANG =  (IPRPTIM(INDXPR).NE.0)
+      TRIANGUL =  (IPRPTIM(INDXPR).NE.0)
 
       NPMOT = NPMO(1)
       IF (NFSYM.EQ.2) NPMOT = NPMOT + NPMO(2)
@@ -443,7 +443,7 @@ CMI    ...   - either symmetric or antisymmetric
 
       IF (IPRINT .GE. 6) THEN
         CALL HEADER('Output frol PRPMAT',-1)
-        IF (TRIANG) THEN
+        IF (TRIANGUL) THEN
          WRITE(LUPRI,'(4X,A)')
      & 'PRPMAT: Handling TRIANGULAR matrix of'//
      & ' the (anti-)symmetric operator'
@@ -463,7 +463,7 @@ C
       CALL MEMGET('REAL',KPRPAO ,N2BBASXQ  ,WORK,KFREE,LFREE)
 
 CMI   ... own allocations.... for triangular or square AO matrixes ...
-      IF (TRIANG) THEN
+      IF (TRIANGUL) THEN
        CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
        CALL MEMGET('REAL',KONEIN ,   NNBBASX,WORK,KFREE,LFREE)
        IDIMENS = NNBBASX

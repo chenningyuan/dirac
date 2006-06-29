@@ -1062,7 +1062,7 @@ C     ... do resort PTRI to the boson sorted basis
 
 C       ... decide if the picture change transformation is needed
         IF (BSS) THEN
-         IRPINT1 = MAX(IPRHAM,IPRPRP)
+         IPRINT1 = MAX(IPRHAM,IPRPRP)
          CALL DECIDEPCTR(YESPCTRA,PRPNAM(INDXPR),IPRINT1)
 C     ... if needed, do the picture change transformation of the PMAT
          IF (YESPCTRA) THEN

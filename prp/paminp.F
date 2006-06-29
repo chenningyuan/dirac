@@ -506,8 +506,9 @@ CMI ... read again the input
 CMI ... no quandratic response whin BSS yet
       IF (BSS.AND.DOXQR) THEN
         WRITE(LUPRI,'(2X,A)')
-     &'No quadratic response with BSS Hamitonian yet.'
-        DOXQR=.FALSE.
+C    &'No quadratic response with BSS Hamitonian yet.'
+     &'Quadratic response with BSS Hamitonian.'
+C       DOXQR=.FALSE.
       ENDIF 
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
 #if defined (MOD_ESR)
