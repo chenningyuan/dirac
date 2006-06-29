@@ -136,11 +136,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-#ifndef PRG_DIRAC
+CC#ifndef PRG_DIRAC
       CALL PICKAO(IPRINT)
-#else
-      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
-#endif
+CC#else
+CC      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+CC#endif
 C
 C     Information about distributions
 C     ===============================

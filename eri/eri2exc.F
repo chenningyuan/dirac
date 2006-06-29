@@ -32,14 +32,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C  /* Deck eriexc */
-#ifndef PRG_DIRAC
+CC#ifndef PRG_DIRAC
       SUBROUTINE ERIEXC(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      *                  CCFBT,INDXBT,FCKTMP,WORK,LWORK)
-#else
-      SUBROUTINE ERIEXC(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
-     *                  CCFBT,INDXBT,FCKTMP,
-     *                  NCENTS,ICENTS,ICLASSES,WORK,LWORK)
-#endif
+CC#else
+CC      SUBROUTINE ERIEXC(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+CC     *                  CCFBT,INDXBT,FCKTMP,
+CC     *                  NCENTS,ICENTS,ICLASSES,WORK,LWORK)
+CC#endif
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -81,7 +81,8 @@ C
 C and now comes the dimension statement for the class selection
 C used in dirac
 C
-      DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
+CC      DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
+      DIMENSION KOD(10)
       LOGICAL DOEXC
 #include "ibtfun.h"
 #include "memint.h"
@@ -184,11 +185,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-#ifndef PRG_DIRAC
+CC#ifndef PRG_DIRAC
       CALL PICKAO(IPRINT)
-#else
-      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
-#endif
+CC#else
+CC      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+CC#endif
 C
 C     Information about distributions
 C     ===============================

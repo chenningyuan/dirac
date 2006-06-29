@@ -1659,6 +1659,11 @@ C
       LOGICAL FOUND1, FOUND2
       DIMENSION DMAT(NBAST,NBAST),WORK(*)
 
+C aspg, 2006-06-29, making ftnchek happy
+C
+      FOUND1 = .FALSE.
+      FOUND2 = .FALSE.
+C
       KH1AO  = 1
       KKINAO = KH1AO  + NNBAST
       KPOTAO = KKINAO + NNBAST

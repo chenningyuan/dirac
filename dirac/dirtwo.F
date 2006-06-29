@@ -3384,16 +3384,18 @@ C       (LL|LL)-integrals
         ICLASSES(3) = 1
         ICLASSES(4) = 1
 CTROND
-#ifndef PRG_DIRAC
+C#ifndef PRG_DIRAC
         CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
      &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &            WORK(KFREE),LFREE)
-#else /* PRG_DIRAC */
-        CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
-     &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-     &            NCENTS,ICENTS,ICLASSES,
-     &            WORK(KFREE),LFREE)
-#endif /* PRG_DIRAC */
+C aspg, 2006-06-29
+C ncents, icents, iclasses moved to common block in cbieri.h
+C#else /* PRG_DIRAC */
+C        CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
+C     &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+C     &            NCENTS,ICENTS,ICLASSES,
+C     &            WORK(KFREE),LFREE)
+C#endif /* PRG_DIRAC */
       CALL DSCAL(NDIM,DP5,DSO,1)
 CTROND Scale in accordance with DIRAOF->SKLFC1
       CALL DSCAL(NDIM,DP5,FMAT,1)
@@ -4481,7 +4483,8 @@ C
 #include "dgroup.h"
 C
       LOGICAL NODV,NOPV,NOCONT,RELCAL
-      DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4),WORK(LWORK)
+CC    DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4),WORK(LWORK)
+      DIMENSION WORK(LWORK)
       CHARACTER CINT(3)*2
       DATA CINT/'LL','SL','SS'/
 C      DIMENSION WORK(LWORK),FMAT(*),DMAT(*),IREPDM(*),IFCTYP(*),
@@ -4530,8 +4533,12 @@ C         (SS|SS)-integrals
           ICLASSES(3) = 2
           ICLASSES(4) = 2
         ENDIF
-        CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),NCENTS,ICENTS,ICLASSES,
-     &              WORK(KFREE),LFREE)
+C aspg, 2006-06-29
+C ncents, icents, iclasses moved to common block in cbieri.h
+C       CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),NCENTS,ICENTS,ICLASSES,
+C    &              WORK(KFREE),LFREE)
+C
+        CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
         CALL MEMREL('TWODRV.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
       ELSE
 #endif

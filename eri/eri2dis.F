@@ -232,11 +232,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-#ifndef PRG_DIRAC
+CC#ifndef PRG_DIRAC
       CALL PICKAO(IPRINT)
-#else
-      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
-#endif
+CC#else
+CC      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+CC#endif
 C
 C     Information about distributions
 C     ===============================
@@ -353,11 +353,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-#ifndef PRG_DIRAC
+CC#ifndef PRG_DIRAC
       CALL PICKAO(IPRINT)
-#else
-      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
-#endif
+CC#else
+CC      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+CC#endif
 C
 C     Information about distributions
 C     ===============================
@@ -465,11 +465,11 @@ C
       RETURN
       END
 C  /* Deck pickao */
-#ifndef PRG_DIRAC
+CC#ifndef PRG_DIRAC
       SUBROUTINE PICKAO(IPRINT)
-#else
-      SUBROUTINE PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
-#endif
+CC#else
+CC      SUBROUTINE PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+CC#endif
 C*****************************************************************************
 C
 C     Define active batches in call to ERI.
@@ -493,6 +493,7 @@ C*****************************************************************************
 #include "shells.h"
 #include "erisel.h"
 #include "aobtch.h"
+#include "cbieri.h"
 C
 #ifndef PRG_DIRAC
       DO J = 1, 4
@@ -505,7 +506,7 @@ C
       END DO
       END DO
 #else
-      DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
+CC    DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
 C
       DO I = 1, NAOBCH
          ICENT = NCNTBT(I)
@@ -957,11 +958,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-#ifndef PRG_DIRAC
+CC#ifndef PRG_DIRAC
       CALL PICKAO(IPRINT)
-#else
-      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
-#endif
+CC#else
+CC      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+CC#endif
 C
 C     Information about distributions
 C     ===============================

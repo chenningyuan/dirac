@@ -62,7 +62,7 @@ C*****************************************************************************
 #endif
       DIMENSION DMAT(*), FMAT(*), WORK(LWORK)
       DIMENSION KOD(12)
-      DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
+CC    DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
 
       LOGICAL FIRST_CALL
       SAVE FIRST_CALL
@@ -734,8 +734,9 @@ C*****************************************************************************
 #else
 #include "gnrinf.h"
 #endif
+#include "cbieri.h"
 C
-      DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
+CC    DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
 C
 #include "memint.h" 
 C

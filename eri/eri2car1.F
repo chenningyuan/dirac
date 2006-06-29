@@ -121,6 +121,11 @@ C
       LFIRST = NTUV34
 C
 C     KC2MAX and LXA have been added (WK/UniKA/04-11-2002).
+C
+C aspg 2006-06-29, making ftnchek happy
+C
+      KLAST = 0
+C
       LTOTAL = LCCONT + KC2MAX
      &       + MAX(LCSINT + LFCSNT + LFCINT,
      &             LECOEF + 2*LXA + MAX(LHPI + LP1 + LP2 + 2*LXA,

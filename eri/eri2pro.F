@@ -51,10 +51,11 @@ C
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK), IFCTYP(NDMT),
      &          ISYMDM(NDMT), CCFBT(*), INDXBT(*)
 #ifdef PRG_DIRAC
-C
-      DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
+CC
+C      DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
+      DIMENSION KOD(10)
       LOGICAL DOEXC
-C
+CC
 #endif /* PRG_DIRAC */
 #include "ccom.h"
 #include "cbieri.h"
@@ -151,11 +152,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-#ifndef PRG_DIRAC
+CC#ifndef PRG_DIRAC
       CALL PICKAO(IPRINT)
-#else
-      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
-#endif /* ! PRG_DIRAC */
+CC#else
+CC      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+CC#endif /* ! PRG_DIRAC */
 C
 C     Information about distributions
 C     ===============================

@@ -394,7 +394,8 @@ C
       RETURN
       END
 C  /* Deck er2int */
-      SUBROUTINE ER2INT(CCFBT,INDXBT,NCENTS,ICENTS,ICLASSES,WORK,LWORK)
+C      SUBROUTINE ER2INT(CCFBT,INDXBT,NCENTS,ICENTS,ICLASSES,WORK,LWORK)
+      SUBROUTINE ER2INT(CCFBT,INDXBT,WORK,LWORK)
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -411,7 +412,8 @@ C
 C and now comes the dimension statement for the class selection
 C used in dirac
 C
-      DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
+C     DIMENSION NCENTS(4), ICENTS(2,4),ICLASSES(4), KOD(10)
+      DIMENSION KOD(10)
       LOGICAL DOEXC
 C
 C for now the CSMAT() thing above is de-commented, but trond's
@@ -495,11 +497,11 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-#ifndef PRG_DIRAC
+CC#ifndef PRG_DIRAC
       CALL PICKAO(IPRINT)
-#else
-      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
-#endif
+CC#else
+CC      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+CC#endif
 C
 C     Information about distributions
 C     ===============================
