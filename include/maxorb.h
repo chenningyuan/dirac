@@ -14,6 +14,9 @@
 !
       INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT, MXBSETS
 cmi   PARAMETER (MXSHEL = 750, MXPRIM = 2000, MXCORB = 5000,            &
-Caspg PARAMETER (MXSHEL = 950, MXPRIM = 2000, MXCORB = 5000,            &
+#if ! defined (MOD_DNF)
+      PARAMETER (MXSHEL = 950, MXPRIM = 2000, MXCORB = 5000,            &
+#else
       PARAMETER (MXSHEL = 2375,MXPRIM = 5000, MXCORB = 12500,           &
+#endif
      &           MXORBT = MXCORB*(MXCORB+1)/2, MXBSETS = 4)
