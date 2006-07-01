@@ -3334,11 +3334,14 @@ C*****************************************************************************
 #include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "cbieri.h"
       PARAMETER(D0=0.0D0,DP5 = 0.5D0,D2=2.0D0)
       DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
-     &        NPOS(*),WORK(LWORK),
-     &        NCENTS(4), ICENTS(2,4), ICLASSES(4)
+     &        NPOS(*),WORK(LWORK)
+C aspg, 2006-07-01 making ftnchek happy
+C    &        NPOS(*),WORK(LWORK),
+C    &        NCENTS_SAV(4), ICENTS_SAV(2,4), ICLASSES_SAV(4)
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -3366,6 +3369,11 @@ C*****************************************************************************
      &                           LWORK)
         CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
      &            IFCKOP,IPRINT)
+C
+C aspg, 2006-07-01
+C
+C       CALL SAVE_INTINFO(NCENTS_SAV,ICENTS_SAV,ICLASSES_SAV)
+C
 CTROND TODO change for relativistic calculations
         NCENTS(1)   = 0
         ICENTS(1,1) = 0
@@ -3383,6 +3391,13 @@ C       (LL|LL)-integrals
         ICLASSES(2) = 1
         ICLASSES(3) = 1
         ICLASSES(4) = 1
+C
+C     DO I=1,4 ! loop 1
+C       write (*,*) 'DEBUG: before eriexc: ',ncents(i),iclasses(i)
+C       DO J=1,2 ! loop 2
+C          write (*,*) 'DEBUG: before eriexc',icents(j,i)
+C       ENDDO    ! loop 2
+C     ENDDO    ! loop 1
 CTROND
 C#ifndef PRG_DIRAC
         CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
@@ -3399,9 +3414,51 @@ C#endif /* PRG_DIRAC */
       CALL DSCAL(NDIM,DP5,DSO,1)
 CTROND Scale in accordance with DIRAOF->SKLFC1
       CALL DSCAL(NDIM,DP5,FMAT,1)
+C
+C aspg, 2006-07-01
+C
+C     CALL LOAD_INTINFO(NCENTS_SAV,ICENTS_SAV,ICLASSES_SAV)
+C
       END IF
       RETURN
       END
+C
+C /* deck save_intinfo */
+      SUBROUTINE SAVE_INTINFO(NCENTS_SAV,ICENTS_SAV,ICLASSES_SAV)
+#include "implicit.h"
+#include "cbieri.h"
+      DIMENSION NCENTS_SAV(4), ICENTS_SAV(2,4), ICLASSES_SAV(4)
+
+      DO I=1,4 ! loop 1
+        NCENTS_SAV(I)   = NCENTS(I)
+        ICLASSES_SAV(I) = ICLASSES(I)
+        write (*,*) 'DEBUG: in save_intinfo: ',ncents(i),iclasses(i)
+        DO J=1,2 ! loop 2
+           ICENTS_SAV(J,I) = ICENTS(J,I) 
+           write (*,*) 'DEBUG: in save_intinfo ',icents(j,i)
+        ENDDO    ! loop 2
+      ENDDO    ! loop 1
+      RETURN
+      END
+C
+C /* deck load_intinfo */
+      SUBROUTINE LOAD_INTINFO(NCENTS_SAV,ICENTS_SAV,ICLASSES_SAV)
+#include "implicit.h"
+#include "cbieri.h"
+      DIMENSION NCENTS_SAV(4), ICENTS_SAV(2,4), ICLASSES_SAV(4)
+
+      DO I=1,4 ! loop 1
+        NCENTS(I)   = NCENTS_SAV(I)
+        ICLASSES(I) = ICLASSES_SAV(I)
+        write (*,*) 'DEBUG: in save_intinfo: ',ncents(i),iclasses(i)
+        DO J=1,2 ! loop 2
+           ICENTS(J,I) = ICENTS_SAV(J,I) 
+           write (*,*) 'DEBUG: in save_intinfo ',icents(j,i)
+        ENDDO    ! loop 2
+      ENDDO    ! loop 1
+      RETURN
+      END
+C
 #endif /* MOD_ERI */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fastjk */
