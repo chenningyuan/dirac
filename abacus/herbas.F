@@ -316,6 +316,11 @@ C
             SEG(NBLOCK) = SEGEJ
             ISGEN(NBLOCK) = INTISG
 C
+C           Reorder primitive orbitals
+C
+            CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUC(NBLOCK),
+     &                  NRC(NBLOCK),SEG(NBLOCK),KPRIM,DSM)
+C
 C Normalizing CPRIMU for (angular quantumnumber + 1).
 C
 #ifdef STO3G_HUCKEL
@@ -381,6 +386,11 @@ C
             NUC(NBLOCK) = INTEXP
             NRC(NBLOCK) = INTORB
             SEG(NBLOCK) = SEGEJ
+C
+C           Reorder primitive orbitals
+C
+            CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUC(NBLOCK),
+     &                  NRC(NBLOCK),SEG(NBLOCK),KPRIM,DSM)
 C
 C Normalizing CPRIMU for (angular quantumnumber + 1).
 C
@@ -454,6 +464,7 @@ C
        write(lupri,*) 'NBLOCK,INTORB:',NBLOCK,INTORB
        write(lupri,*) 'DSM=',DSM
       ENDIF
+
 
 C
 C Initializing a counting variable that must be 0 before loop
@@ -1068,6 +1079,12 @@ C
                NRC(NBLOCK) = ISCONT
                SEG(NBLOCK) = SEGEJ
 C
+C              Reorder primitive orbitals
+C
+               CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),
+     &                     NUC(NBLOCK),NRC(NBLOCK),SEG(NBLOCK),
+     &                     KPRIM,DSM)
+C
 C Normalizing CPRIMU for (angular quantumnumber + 1).
 C
                CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK), 
@@ -1084,6 +1101,12 @@ C
                   NUC(NBLOCK) = IPPRIM
                   NRC(NBLOCK) = IPCONT
                   SEG(NBLOCK) = SEGEJ
+C
+C                 Reorder primitive orbitals
+C
+                  CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),
+     &                        NUC(NBLOCK),NRC(NBLOCK),SEG(NBLOCK),
+     &                        KPRIM,DSM)
 C
 C Normalizing CPRIMU for (angular quantumnumber + 1).
 C
