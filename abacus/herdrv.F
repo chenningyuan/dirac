@@ -673,6 +673,7 @@ CC&&&& DOLINK - activates the fast exchange code
 #if defined (MOD_ERI) && defined (MOD_DNF)
 CC&&&& DENSFIT: Density fitting (Not yet implemented)
             DOFIT = .TRUE.
+            DOFCK3 = .TRUE.
             GO TO 100
 #endif
  183     CONTINUE
