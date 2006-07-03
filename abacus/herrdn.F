@@ -1131,7 +1131,6 @@ C
                ELSE
 C                 Assume it is 'LARGE   2    1....'
                   IBSFLAG = 1
-CTROND            WRITE(6,*) 'large:',MLINE(NMLINE)
                   READ (MLINE(NMLINE),'(5X,12I5)')
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                END IF
