@@ -411,7 +411,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbreo.h"
-      LOGICAL TOBE,DOSEL,DSCFON,BARNUC,DIISAO_SAVE
+      LOGICAL TOBE,DOSEL,DSCFON,BARNUC
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
@@ -483,6 +483,26 @@ C
         IF(IPRSCF.GE.1) IOPT = 15
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT,
      &              WORK,KFREE,LFREE)
+C
+C       Generate untransformed coefficients (MO basis)
+C.......read SAOMO at rec#2 of LUTMAT
+        CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+        READ(LUTMAT)
+        CALL READT(LUTMAT,N2TMT,DMAT)
+        CLOSE(LUTMAT,STATUS='KEEP')
+C.......transform coefficients to orthonormal basis --> FOCK
+        DO IFRP = 1,NFSYM
+            CALL QGEMM(NTMO(IFRP),NTMO(IFRP),NFBAS(IFRP,0),D1,
+     &          'H','N',IPQTOQ(1,0),DMAT(I2TMT(IFRP)+1),
+     &                  NFBAS(IFRP,0),NTMO(IFRP),NZ,
+     &          'N','N',IPQTOQ(1,0),CMO(ICMOQ(IFRP)+1),
+     &                  NFBAS(IFRP,0),NTMO(IFRP),NZ,
+     &               D0,IPQTOQ(1,0),FOCK(I2TMT(IFRP)+1),
+     &                  NORB(IFRP),NTMO(IFRP),1)
+        ENDDO
+C.......write untransformed coefficients to file
+        REWIND LUCMOS
+        CALL WRITT(LUCMOS,N2TMOTQ,FOCK)
 C
 C       Determine occupation if this was not given in input
 C
@@ -691,13 +711,9 @@ C     *****   SOLVE  DHF  EIGENVALUE  PROBLEM    ******
 C     *************************************************
 C
       ENDIF !
-
-      DIISAO_SAVE = DIISAO
-      DIISAO = .TRUE.
-C     ... only DIISAO works in PREDHF because no MOs on LUCMOS yet ...
+C
       CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &            DOSEL,WORK(KFREE),LFREE)
-      DIISAO = DIISAO_SAVE
 C
 CMI   ... when (DO4C2C.AND..NOT.CONT2C)=.true.,  !
 CMI   IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG,IBEIG)

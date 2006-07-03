@@ -1924,7 +1924,6 @@ C
 C     Construct right index transformed overlap matrix Saomo = Sao T
 C     Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
 C
-CMI   CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),IPRONE,WORK(KFREE),LFREE)
       CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),.FALSE.,
      &              IPRHAM,WORK(KFREE),LFREE)
 C
