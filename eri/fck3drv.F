@@ -2040,8 +2040,6 @@ C
      &            '.FULL_J','.UNCONT','.BRFREE','.CHCKNA','.NCSODB',
      &            '.NCSTUV','XXXXXXX'/
 C
-CTROND
-      WRITE(6,*) '...inside FCK3INP (J Engine)'
       IPRINT=IPRFCK3
 C
 C aspg, 2006-06-27 making ftnchek happy
