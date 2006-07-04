@@ -6206,12 +6206,10 @@ C
         IBUF(II)=I        
 C       Positronic position
         IF(IP.LT.0.AND.IP.GE.(-NPSH(IFRP))) THEN
-CTROND          IVEC(II)=NPSH(IFRP)+1+IP
           IVEC(II)=1+IP
           NP = NP + 1
 C       Electronic position
         ELSEIF (IP.GT.0.AND.IP.LE.NESH(IFRP)) THEN
-CTROND          IVEC(II)=NPSH(IFRP)+IP
           IVEC(II)=IP
           NE = NE + 1
 C         Check if orbital belongs to closed or open shells.
