@@ -3300,7 +3300,7 @@ C       END IF
 
        ISIZE = NORB(1)*NORB(1)*NZ
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-       CALL RFBSSMAT('FPMAT_TH',.TRUE.,'DF2ONB',TMAT,ISIZE,LUBSS)
+       CALL RFBSSMAT('FPMAT_TH',.TRUE.,'DF2ONB',TMAT,ISIZE,LUBSS,IPRHAM)
         IF (IPRHAM.GE.2) THEN
          WRITE(LUPRI,'(/2X,A)')
      &    'DF2ONB: 4c "k"-> 4c "theta" transf. '//
@@ -3331,7 +3331,8 @@ C       END IF
 
        ISIZE = (NORB(1)*NFBAS(1,0)*NZ)
        IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NFBAS(2,0)*NZ)
-       CALL RFBSSMAT('TMAT4C  ',.TRUE.,'DF2ONB',TMAT,ISIZE,LUBSS)
+       CALL RFBSSMAT('TMAT4C  ',.TRUE.,'DF2ONB',TMAT,
+     &                 ISIZE,LUBSS,IPRHAM)
         IF (IPRHAM.GE.2) THEN
          WRITE(LUPRI,'(/2X,A)')
      &    'DF2ONB: 4c AO -> 4c "theta" transf. '//
@@ -3412,7 +3413,8 @@ C       END IF
 
         ISIZE = (NORB(1)*NFBAS(1,0)*NZ)
         IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NFBAS(2,0)*NZ)
-        CALL RFBSSMAT('SL_TM_4C',.TRUE.,'DF2ONB',TMAT,ISIZE,LUBSS)
+        CALL RFBSSMAT('SL_TM_4C',.TRUE.,'DF2ONB',
+     &                 TMAT,ISIZE,LUBSS,IPRHAM)
         IF (IPRHAM.GE.2) THEN
           WRITE(LUPRI,'(/2X,A)')
      &    'DF2ONB: 4c AO -> 4c "theta" SL_TM_4C transf. '//
@@ -3651,7 +3653,7 @@ C     CALL NEWLAB('PCTM_FPM',LUBSS,LUPRI)
 C     CALL WRITT(LUBSS,ISIZE1,TMAT)
 
       CALL W2BSSMAT(4,.TRUE.,'PCTM_FPM','GET_HINF_FPM',
-     &              TMAT,ISIZE1,IPRINT)
+     &              TMAT,ISIZE1,LUBSS,IPRINT)
 
       WRITE(LUPRI,'(/2X,A)')
      &'4c "k" -> 2c "k" picture change  '//
@@ -3711,12 +3713,13 @@ C     ... write only label for marking end of the file...
 C     CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
 
       CALL W2BSSMAT(3,.TRUE.,'PCTM4C2K','GET_HINF_FPM',
-     &              TBUF,ISIZE1,IPRINT)
-      WRITE(LUPRI,'(/2X,A)')
-     &'4c SA-AO"xhi" -> 2c "k" picture change '//
-     &'transformation matrix (PCTM4C2K) is written to the BSSMAT file.'
-       WRITE(LUPRI,'(2X,A)') 'EOFLABEL is added.'
-
+     &              TBUF,ISIZE1,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     &  '4c SA-AO"xhi" -> 2c "k" picture change '//
+     & 'transformation matrix (PCTM4C2K) is written to the BSSMAT file.'
+        WRITE(LUPRI,'(2X,A)') 'EOFLABEL is added.'
+      ENDIF
 C  ... read the block diagonal matrix to extract the (ee) block only !
 C     REWIND LUBSS
 C     IF (FNDLAB('H1FPM_BD',LUBSS)) THEN
@@ -3784,7 +3787,7 @@ C     END IF
       ISIZE3 = NESH(1)*NESH(1)*NZ
       IF (NFSYM.EQ.2) ISIZE3 = ISIZE3 + NESH(2)*NESH(2)*NZ
       CALL W2BSSMAT(1,.TRUE.,'H2C_FPM ','GET_HINF_FPM',
-     &              VMAT,ISIZE3,IPRINT)
+     &              VMAT,ISIZE3,LUBSS,IPRINT)
       IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      &'GET_HINF_FPM: H2c "k" (ee) written to BSSMAT, EOFLABEL renewed '
@@ -4512,7 +4515,8 @@ C       END IF
 
        ISIZE = NORB(1)*NORB(1)*NZ
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
-       CALL RFBSSMAT('FPMAT_TH','GET_HINF_R',TBUF,ISIZE,LUBSS,IPRHAM)
+       CALL RFBSSMAT('FPMAT_TH',.TRUE.,'GET_HINF_R',TBUF,
+     &      ISIZE,LUBSS,IPRINT)
        IF (IPRINT.GE.3) THEN
          WRITE(LUPRI,'(/2X,A)')
      & 'GET_HINF_R (T3): 4c "k"-> 4c "theta" transf. matrix FPMAT_TH '//
@@ -4627,7 +4631,7 @@ C     END IF
       ISIZE = NORB(1)*NORB(1)*NZ
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
       CALL RFBSSMAT('H1_ONBAS',.TRUE.,'GET_HINF_R',
-     &               TMAT,ISIZE,LUBSS,IPRHAM)
+     &               TMAT,ISIZE,LUBSS,IPRINT)
       IF (IPRINT.GE.3) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'GET_HINF_R: H1_ONBAS read into TMAT.'
@@ -5664,7 +5668,7 @@ C       CALL QUIT('CMP_EIGVAL: EOFLABEL  not found !')
 C     END IF
 
       CALL W2BSSMAT(1,.TRUE.,'FDAO_DK ','CMP_EIGVAL',
-     &               TBUF,N2BBASXQ,IPRINT)
+     &               TBUF,N2BBASXQ,LUBSS,IPRINT)
       IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
      &  'CMP_EIGVAL: FD2c elements (FDAO_DK) were written'//
@@ -5966,7 +5970,7 @@ C      END IF
        ISIZE = NESH(1)*NESH(1)*NZ
        IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
        CALL W2BSSMAT(1,.TRUE.,'FD2C_LMO','CMP_EIGVAL',
-     &                TMAT,ISIZE,LUBSS,IPRHAM)
+     &                TMAT,ISIZE,LUBSS,IPRINT)
        IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')                  
      &  'CMP_EIGVAL: FD_2c elements in Lowdin MO basis were written'// 
@@ -6898,7 +6902,7 @@ C     ELSE
 C       CALL QUIT('FDTR2C: EOFLABEL  not found !')                
 C     END IF                         
       CALL W2BSSMAT(1,.TRUE.,'FD1AO_DK','FDTR2C',
-     &              WORK(KF1),N2BBASXQ,IPRHAM)
+     &              WORK(KF1),N2BBASXQ,LUBSS,IPRHAM)
       IF (IPRHAM.GE.2) THEN 
         WRITE(LUPRI,'(/2X,A)')                         
      &  'FDTR2C: FD1AO_DK AO_LL elements were written'//       
@@ -7536,8 +7540,8 @@ C     ENDIF
       ISIZE = (NESH(1)*NESH(1)*NZ)                                  
       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NESH(2)*NZ)        
       CALL RFBSSMAT('R_MTX   ',.TRUE.,'FULLPCTM',
-     &                VMAT,ISIZE,LUBSS,IPRHAM)
-      IF (IPRINT.GE.2) THEN   
+     &                VMAT,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN   
        WRITE(LUPRI,'(/2X,A)')                                      
      & 'FULLPCTM: R matrix (in ON basis) was read'//
      & ' from BSSMAT into VMAT.' 
@@ -7701,8 +7705,8 @@ C     ENDIF
       ISIZE = (2*NESH(1)*NESH(1)*NZ)
       IF (NFSYM.EQ.2) ISIZE = ISIZE + (2*NESH(2)*NESH(2)*NZ)
       CALL RFBSSMAT('U1_ONBAS',.TRUE.,'FULLPCTM',
-     &               TMAT,ISIZE,LUBSS,IPRHAM)
-      IF (IPRHAM.GE.2) THEN
+     &               TMAT,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'FULLPCTM: U1_ONBAS (+)  matrix (in ON basis)'//
      & ' was read from the BSSMAT file into TMAT.'
@@ -7822,7 +7826,7 @@ C     END IF
       ISIZE = (NORB(1)*NORB(1)*NZ)
       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
       CALL W2BSSMAT(1,.TRUE.,'U1_ONFUL','FULLPCTM',
-     &                TMAT,ISIZE,LUBSS,IPRHAM)
+     &                TMAT,ISIZE,LUBSS,IPRINT)
       IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'FULLPCTM: U1_ONFUL (FULL picture change transf.matrix '//
@@ -8635,6 +8639,7 @@ C ================================================================
 C               ... get 2c MO into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
+      IPRINT = MAX(IPRHAM,IPRSCF)
       IF(IPRINT.GE.1) THEN
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
      &              WORK,KFREE,LFREE)
@@ -8773,7 +8778,8 @@ C     CLOSE(LUBSS,STATUS='KEEP')
 
       ISIZE = (NESH(1)*NFBAS(1,0)*NZ)
       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
-      CALL W2BSSMAT(1,.FALSE.,'CMO_LS_e','CMOTR4C',TBUF,ISIZE,IPRSCF)
+      CALL W2BSSMAT(1,.FALSE.,'CMO_LS_e','CMOTR4C',
+     &               TBUF,ISIZE,LUBSS,IPRSCF)
 
 C      call quit('in CMOTR4C !') 
 C     CALL MEMCHK('CMOTR4C e',WORK,1)

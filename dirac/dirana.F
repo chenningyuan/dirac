@@ -966,6 +966,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbham.h"
+#include "dummy.h"
 C
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
@@ -1085,7 +1086,7 @@ C
      &       '* Coefficients for reference ',REFFIL(I)
         IF(OWNBAS) THEN
           CALL SELOWN(7,WORK(KCMO),WORK(KEIG),WORK(KIBE),
-     &                II,NPROJNUC(I),LUCOEF,REFFIL(I),NQ,NE,IDUM,
+     &                II,NPROJNUC(I),LUCOEF,REFFIL(I),NQ,NE,IDUMMY,
      &                NVECS(1,0),KVEC(1,I),
      &                NSTR(1,0,I),WORK,KFREE,LFREE)
           DO IFRP = 1, NFSYM
