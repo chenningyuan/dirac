@@ -471,12 +471,11 @@ C        Observe that we use NISHMF which is the number of inactive orbitals
 C        minus those that are frozen
          DO 20 I = 1,NFSYM
             IF(NOCC(I).EQ.0) GOTO 20
-            IOFF = I2TMOT(I)+NTMO(I)*NPSH(I)+1
-            CALL QGEMM(NTMO(I),NTMO(I),NOCC(I),D1,
-CTROND            CALL QGEMM(NTMO(I),NTMO(I),NOCC(I),D1,
-     &           'N','N',IPQTOQ(1,0),EVEC(IOFF),NTMO(I),NTMO(I),NZ,
-     &           'H','N',IPQTOQ(1,0),EVEC(IOFF),NTMO(I),NTMO(I),NZ,
-     &             D0,IPQTOQ(1,0),EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ)
+C...........closed shell
+            ISTART=NPSH(I)+1
+            CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),D1,D0,
+     &                  EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                  ISTART,NISHMF(I),NTMO(I))
             IF(IPRSCF.GE.5) THEN
                CALL HEADER('DIISER: Density matrix in MO-basis',-1)
                WRITE(LUPRI,'(3X,A,I1,A,I1)')
