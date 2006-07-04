@@ -1142,64 +1142,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck densty */
-      SUBROUTINE DENSTY(DMAT,CMO,IPRINT)
-C*****************************************************************************
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-      DIMENSION DMAT(*),CMO(*)
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-C
-CTROND
-      CALL DZERO(DMAT,N2BBASXQ) 
-      DO 10 I = 1,NFSYM
-        IF(NORB(I).EQ.0) GOTO 10
-        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),D1,D0,
-     &              CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
-     &              NPSH(I)+1,NISH(I),NFBAS(I,0))
-   10 CONTINUE
-C
-C     Print section
-C
-      IF(IPRINT.GE.10) THEN
-        CALL TITLER('Output from DENSTY','*',103)
-        DO 20 I = 1,NFSYM
-        IF(NORB(I).EQ.0) GOTO 20
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
-          CALL PRQMAT(DMAT(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
-     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-   20   CONTINUE
-      ENDIF
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck denst1 */
-      SUBROUTINE DENST1(DMAT,LRD,LCD,ALPHA,BETA,
-     &                  CMO,LRC,LCC,JVEC,NVEC,NBAS)
-C*****************************************************************************
-C
-C     Construct density matrix for fermion corep IFRP
-C
-C     Written by T.Saue Mar 3 1995
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "dgroup.h"
-C
-      DIMENSION DMAT(LRD,LCD,NZ),CMO(LRC,LCC,NZ)
-      CALL QGEMM(NBAS,NBAS,NVEC,ALPHA,
-     &     'N','N',IPQTOQ(1,0),CMO(1,JVEC,1),LRC,LCC,NZ,
-     &     'H','N',IPQTOQ(1,0),CMO(1,JVEC,1),LRC,LCC,NZ,
-     &          BETA,IPQTOQ(1,0),DMAT,LRD,LCD,NZ)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck scfcyc */
       SUBROUTINE SCFCYC(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
 C*****************************************************************************
