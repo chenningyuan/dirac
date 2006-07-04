@@ -309,7 +309,10 @@ C
 C
 C
 CMI   IF (DIISAO.OR.(NASHMFT.GT.0.AND.AOC)) THEN
-      IF (DIISAO.OR.(NASHMFT.GT.0.AND.AOC).OR.AUTOCC) THEN
+CTROND      IF (DIISAO.OR.(NASHMFT.GT.0.AND.AOC).OR.AUTOCC) THEN
+      IF(DIISAO.OR.AUTOCC) THEN
+CTROND
+      WRITE(6,*) 'AO-DIISdebug....'
 C
 C        The gradient is
 C           g = DCao * FDao + f_o DVao * (FDao + (a_o-1) QVao) + H.C.
@@ -456,6 +459,8 @@ C     To be discussed !
 C
 C
       ELSE
+CTROND
+      WRITE(6,*) 'MO-DIISdebug....'
 C
 C        Old DIIS.
 C           Only for closed shell molecules.
@@ -473,9 +478,19 @@ C        minus those that are frozen
             IF(NOCC(I).EQ.0) GOTO 20
 C...........closed shell
             ISTART=NPSH(I)+1
-            CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),D1,D0,
+            CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                  D1,D0,
      &                  EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                  ISTART,NISHMF(I),NTMO(I))
+C...........open shells
+            ISTART = ISTART+NISHMF(I)
+            DO IOPEN = 1,NOPEN
+              CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                    DF(IOPEN),D1,
+     &                    EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                    ISTART,NACSHMF(I,IOPEN),NTMO(I))
+              ISTART = ISTART + NACSHMF(I,IOPEN)
+            ENDDO
             IF(IPRSCF.GE.5) THEN
                CALL HEADER('DIISER: Density matrix in MO-basis',-1)
                WRITE(LUPRI,'(3X,A,I1,A,I1)')
