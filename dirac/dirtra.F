@@ -3792,7 +3792,7 @@ C
      &                COFU,NTMO(IFRP),NTMO(IFRP),
      &                NTMO(IFRP),NZ,NVEC,JOFU,NFBAS(IFRP,0),
      &                TMAT,NFBAS(IFRP,0),NTMO(IFRP),NZT,0)
-          CALL DCOPY(NVEC,EBUF(JOFU),1,EIG(JOFT),1)
+        CALL DCOPY(NVEC,EBUF(JOFU),1,EIG(JOFT),1)
       ENDIF
 C
       IF(IPRINT.GE.IBPRNT) THEN
