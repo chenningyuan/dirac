@@ -136,38 +136,22 @@ CMI   starting Fock-Dirac MO matrix for the DC-SCF
 
       ENDIF
 
-CC    IF (.NOT.ONLYDFFCK) THEN
       CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &            WORK(KFREE),LFREE)
-CC    ENDIF
-C        CALL MEMCHK('PSIDHF.DHFSCF ',WORK,1)
 C
 C     Memory deallocation of the Fock matrix only...
       CALL MEMREL('PSIDHF.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)
 C
 C     Output section
 C
-C        CALL MEMCHK('PSIDHF x',WORK,1)
-
-CC    IF (.NOT.ONLYDFFCK) THEN
       CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &            LFREE,IPRINT)
-C     ENDIF
-C        CALL MEMCHK('PSIDHF x1',WORK,1)
-
 C     ....  
       IF (DO2C4C.AND.(INI2C.EQ.3.OR.INI2C.EQ.4)) THEN
         CALL MEMGET('REAL',K1,N2BBASXQ,      WORK,KFREE,LFREE)
         CALL MEMGET('REAL',K2,N2BBASXQ,      WORK,KFREE,LFREE)
-C       CALL MEMCHK('CMOTR4C bef',WORK,1)
-
         CALL CMOTR4C(WORK(K1),WORK(K2),WORK(KCMO),WORK(KEIG),
      &                WORK(KIBRP),WORK(KFREE),LFREE)
-
-C       CALL MEMCHK('CMOTR4C after',WORK,1)
-
-C       CALL MEMREL('PSIDHF.K2',WORK,KWORK,K2,KFREE,LFREE)
-C       CALL MEMREL('PSIDHF.K1',WORK,KWORK,K1,KFREE,LFREE)
       ENDIF
 C
 C     Memory deallocation of the rest..
@@ -238,8 +222,7 @@ CMI        call quit('tu quitni')
         DHFCONV(2)=.FALSE.
         DHFEXIT=.FALSE.
 
-C       IF (INI2C.EQ.1.OR.INI2C.EQ.2) FD2CMO = .TRUE.
-        IF (INI2C.EQ.1.OR.INI2C.EQ.2) RESTFCK = .TRUE.
+        RESTFCK=(INI2C.EQ.1.OR.INI2C.EQ.2) 
 
         BNCRON = .FALSE.
         ERGCNV = ERGCNV_SAVE
@@ -317,10 +300,6 @@ C         ... need to reset them...
          DHFCONV(2)=.FALSE.
          DHFEXIT=.FALSE.
         ENDIF
-
-C       FD2CMO = .TRUE.
-CMI     RESTFCK = .TRUE.
-C       RESTFCK = .FALSE.
 
         INQUIRE(FILE='DFDIIS',EXIST=EX)
         IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
@@ -712,8 +691,18 @@ C     *************************************************
 C
       ENDIF !
 C
+      IF(.NOT.TRIVEC) THEN
+        DLBUF = DLSHIF
+        DLSHIF = DM1
+        TOBE = .TRUE.
+      ELSE
+        TOBE = .FALSE.
+      ENDIF
       CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &            DOSEL,WORK(KFREE),LFREE)
+      IF(TOBE) THEN
+        DLSHIF = DLBUF
+      ENDIF
 C
 CMI   ... when (DO4C2C.AND..NOT.CONT2C)=.true.,  !
 CMI   IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG,IBEIG)
@@ -726,8 +715,6 @@ CMI   IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG,IBEIG)
      & 'PREDHF: Last calculation of the SCF energy'//
      & ' using pctra quantities !'
         ENDIF
-CMI       .... SUBROUTINE ERGCAL(F1,F2,DMAT,WORK,LWORK)
-CMI       ....  D(IJ)(*)(F1(IJ)+0.5F2(IJ))
          CALL MEMGET('REAL',KFCK1,N2BBASXQ,WORK,KFREE,LFREE)
          CALL REAFCK(LUFCK1,WORK(KFCK1),.TRUE.,1)
          CALL REAFCK(LUFCK2,FOCK,.TRUE.,NFMAT)
@@ -851,7 +838,7 @@ C
 #include "dgroup.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
-      LOGICAL DOSEL,DODIISAO,FNDLAB
+      LOGICAL DOSEL,FNDLAB
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),DMAT(*),BMAT(*),
      &          WORK(LWORK)
 C
@@ -868,43 +855,38 @@ CMI   ... read AO2MO transformation matrixe into WORK(KTMAT)...
 
 CMI ... perform all this only if we do note restart BSS from DC or vice versa
       IF (.NOT.RESTFCK) THEN
+        IF (NASHT.GT.0.AND.AOC) THEN
+          CALL MEMGET('REAL',KDTEMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KDEVEC,N2BBASXQ      ,WORK,KFREE,LFREE)
+        ELSE
+          KDTEMP = KFREE
+          KDEVEC = KFREE
+        ENDIF
 
-CMI   DODIISAO = DIISAO.OR.(NASHMFT.GT.0.AND.AOC)
-      DODIISAO = DIISAO.OR.(NASHMFT.GT.0.AND.AOC).OR.AUTOCC
-
-      IF (DODIISAO) THEN
-        CALL MEMGET('REAL',KDTEMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KDEVEC,N2BBASXQ      ,WORK,KFREE,LFREE)
-      ELSE
-        KDTEMP = KFREE
-        KDEVEC = KFREE
-      ENDIF
-
-      IF (NASHT.GT.0.AND.TRIVEC) THEN
-        CALL MEMGET('REAL',KCMOSAV,NCMOTQ,WORK,KFREE,LFREE)
-        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),EIG,IBEIG,TOTERG,6,
+        IF (((NASHT.GT.0).AND.AOC).AND.TRIVEC) THEN
+          CALL MEMGET('REAL',KCMOSAV,NCMOTQ,WORK,KFREE,LFREE)
+          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),EIG,IBEIG,TOTERG,6,
      &              WORK,KFREE,LFREE)
-      ELSE
-        KCMOSAV = KFREE
-      END IF
-      IF (DODIISAO) THEN
-C        read LUTMAT rec#2 with SAOMO
-C        NZT is the NZ value for the transformation matrix
-        ISIZE = 0
-        DO I = 1,NFSYM
-           ISIZE = ISIZE + NZT*NTMO(I)*NFBAS(I,0)
-        END DO
-        CALL MEMGET('REAL',KSAOMO,ISIZE,WORK,KFREE,LFREE)
-        CALL READT(LUTMAT,ISIZE,WORK(KSAOMO))
-        CALL MKMOFK(FMO,FAO,DMAT,WORK(KTMAT),WORK(KCMOSAV),
-     &              WORK(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),
-     &              WORK(KFREE),LFREE)
-      ELSE
-CMI .... can not be called for open-shell systems...
-        KSAOMO = KFREE
-        CALL MKMOFK(FMO,FAO,DUMMY,WORK(KTMAT),DUMMY,
+        ELSE
+          KCMOSAV = KFREE
+        END IF
+        IF (NASHT.GT.0.AND.AOC) THEN
+C         read LUTMAT rec#2 with SAOMO
+C         NZT is the NZ value for the transformation matrix
+          ISIZE = 0
+          DO I = 1,NFSYM
+            ISIZE = ISIZE + NZT*NTMO(I)*NFBAS(I,0)
+          END DO
+          CALL MEMGET('REAL',KSAOMO,ISIZE,WORK,KFREE,LFREE)
+          CALL READT(LUTMAT,ISIZE,WORK(KSAOMO))
+          CALL MKMOFK(FMO,FAO,DMAT,WORK(KTMAT),WORK(KCMOSAV),
+     &                WORK(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),
+     &                WORK(KFREE),LFREE)
+        ELSE
+          KSAOMO = KFREE
+          CALL MKMOFK(FMO,FAO,DUMMY,WORK(KTMAT),DUMMY,
      &              DUMMY,DUMMY,DUMMY,WORK(KFREE),LFREE)
-      END IF
+        END IF
 
       END IF ! OF .NOT.RESTFCK
 
@@ -916,48 +898,42 @@ CMI        MO basis (from pctra DC-SCF) to START 2c BSS-SCF ...
 CMI  ... or the 4comp STARTING Fock-Dirac matrix (from rev.pctra BSS-SCF+H2cPP)
 CMI     in RKB_MO basis to restart DC-SCF
 CMI ==================================================================
-CMI   RESTFCK = .FALSE.
       IF (RESTFCK) THEN
-       CALL OPNFIL(LUBSS,'BSSMAT','OLD','DFSOLV')
-       IF (DO4C2C) THEN
-CMI    IF (DO4C2C.AND..NOT.ONLYDFFCK) THEN
+        CALL OPNFIL(LUBSS,'BSSMAT','OLD','DFSOLV')
+        IF (DO4C2C) THEN
 C ... do read the FD_2c in Lowdin MO basis from the BSSMAT to 
 C      provide restarting of the postDHF BSS-SCF procedure
-       REWIND LUBSS   
-       IF (FNDLAB('FD2C_LMO',LUBSS)) THEN                     
-         ISIZE = (NESH(1)*NESH(1)*NZ) 
-         IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
-         CALL READT(LUBSS,ISIZE,FMO)
-         IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')                  
+        REWIND LUBSS   
+        IF (FNDLAB('FD2C_LMO',LUBSS)) THEN                     
+          ISIZE = (NESH(1)*NESH(1)*NZ) 
+          IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
+          CALL READT(LUBSS,ISIZE,FMO)
+          IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')                  
      &  'DFSOLV: FD_2c elements in Lowdin MO basis were read'// 
      &  ' from the BSSMAT file(FD2C_LMO)-starting guess for BSS-SCF.'
-        ELSE
-         CALL QUIT('DFSOLV: FD2C_LMO not found !')           
-        END IF         
-       ELSE  ! RESTFCK=.false., continuing with four-component DC-SCF
-CMI    ELSE IF (.NOT.ONLYDFFCK) THEN  ! RESTFCK=.false., continuing with four-component DC-SCF
+         ELSE
+           CALL QUIT('DFSOLV: FD2C_LMO not found !')           
+         END IF         
+      ELSE  ! RESTFCK=.false., continuing with four-component DC-SCF
         IF (FNDLAB('FD4C_RKB',LUBSS)) THEN
-         ISIZE = (NORB(1)*NORB(1)*NZ) 
-         IF (NFSYM.EQ.2) ISIZE=ISIZE+(NORB(2)*NORB(2)*NZ)
-         CALL READT(LUBSS,ISIZE,FMO)
-        IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')                  
+          ISIZE = (NORB(1)*NORB(1)*NZ) 
+          IF (NFSYM.EQ.2) ISIZE=ISIZE+(NORB(2)*NORB(2)*NZ)
+          CALL READT(LUBSS,ISIZE,FMO)
+          IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')                  
      &  'DFSOLV: FD_4c elements in RKB MO basis were read'// 
      &  ' from the BSSMAT file(FD4C_RKB)-starting guess for DC-SCF.'
-         ELSE                                                       
-           CALL QUIT('DFSOLV: FD4C_RKB  not found in BSSMAT !') 
-         END IF         
-       END IF         
-       CLOSE(LUBSS,STATUS='KEEP')
-       DODIISAO = .FALSE.
-       RESTFCK = .FALSE.
+          ELSE                                                       
+            CALL QUIT('DFSOLV: FD4C_RKB  not found in BSSMAT !') 
+          END IF         
+        END IF         
+        CLOSE(LUBSS,STATUS='KEEP')
+        RESTFCK = .FALSE.
       ENDIF 
-
 C
 C     Convergence control/acceleration
 C     ================================
 C
-CMI ... here we get the DHFEXIT order...
-      IF(DODIISAO) THEN
+      IF(DIISAO) THEN
         CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),WORK(KTMAT),
      &              BMAT,ICHKCNV,WORK(KSAOMO),WORK(KFREE),LFREE)
       ELSE
@@ -977,24 +953,20 @@ C        ... before extracting of EIG print the Fock matrix
            CALL PRQMAT(FMO(I2TMOT(IFSYM)+1),NTMO(IFSYM),NTMO(IFSYM),
      &          NTMO(IFSYM),NTMO(IFSYM),NZ,IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
-C           JFMO = I2TMOT(IFSYM)
-C           JEIG = IORB(IFSYM)
-C           CALL DZERO(EIG(JEIG+1), NORB(IFSYM))
-C           NTMOI = NTMO(IFSYM)
-C           DO J =1,NTMOI
-C              EIG(JEIG+J) = FMO(JFMO + NTMOI*(J-1)+J)
-C              write(lupri,*) 'EIG=',EIG(JEIG+J)
-C           END DO
          ENDDO
        ENDIF
        GOTO 9999
       END IF
 C
+C     Level shift
+C     ===========
+C
+      IF(DLSHIF.GT.D0) CALL LEVSHI(FMO,FAO)
+C
 C     Diagonalize Fock matrix
 C     =======================
 C
       TDDG = SECOND()
-CMI   CALL DFDIAG (FMO,EIG,IBEIG,FAO,.FALSE.,WORK,KFREE,LFREE)
       CALL DFDIAG (FMO,EIG,IBEIG,FAO,.TRUE.,WORK,KFREE,LFREE)
       TDDG = SECOND() - TDDG
 C
@@ -3759,7 +3731,6 @@ C         Sort the eigenvalues according to energy : keep track of
 C         the block identification. (Use FMO as scratch space for the
 C         vector sort)
 C
-CMI       CALL INIBOS(IBEIG(IORB(I)+1),I,.FALSE.,0)
           CALL INIBOS(IBEIG(IORB(I)+1),I,.FALSE.,IPRHAM)
 
           CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
@@ -4442,3 +4413,38 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Levshi */
+      SUBROUTINE LEVSHI(FMO,CMO)
+C***********************************************************************
+C
+C     Level shift
+C     Written by T. Saue July 4 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D1 = 1.0D0)
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      DIMENSION FMO(*),CMO(*)
+C
+      REWIND LUCMOS
+      CALL READT(LUCMOS,N2TMOTQ,CMO)
+      DO I = 1,NFSYM
+        ISTART = NPSH(I)+NISHMF(I)+1
+        DO IOPEN = 1,NOPEN
+          ISTART = ISTART + NACSHMF(I,IOPEN)
+        ENDDO
+        NVEC = NESH(I) - NOCCMF(I)
+        CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &              DLSHIF,D1,
+     &              CMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &              ISTART,NVEC,NTMO(I))
+      ENDDO
+C
+      RETURN
+      END
+

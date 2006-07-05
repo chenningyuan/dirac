@@ -781,7 +781,7 @@ C
      &            '.OVLSEL','.NODYNS','.XXXXXX','.DIISMO','.DIISAO',
      &            '.XXXXXX','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',
-     &            '.MJSELE','.AOC   ','.FOCC  ','.XXXXXX','.MAXIT2',
+     &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.XXXXXX','.XXXXXX', 
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', 
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', 
@@ -906,6 +906,7 @@ CMI   ... criteria of convergence for prelim.BSS-SCF
       CNVINT(1) = DUMMY
       CNVINT(2) = DUMMY
       PRJTHR  = 1.0D-10
+      DLSHIF = -D1
       CALL DZERO(SCFTID,8)
       CALL IZERO(ITRSCF,8)
 C
@@ -1186,13 +1187,12 @@ C            (new overlap selection matrix formed in each iteration)
    28          CONTINUE
                GO TO 100
    29          CONTINUE
-C&&& DIISMO: Do tsaue/jon DIIS (DIIS in MO-basis, only works for
-C                               closed shell)
+C&&& DIISMO: Do DIIS in MO-basis
                   DIISAO = .FALSE.
                   DIISMO = .TRUE.
                GO TO 100
    30          CONTINUE
-C&&& DIISAO: Do jth Dalton like DIIS 
+C&&& DIISAO: Do DIIS in AO-basis
                   DIISAO = .TRUE.
                   DIISMO = .FALSE.
                GO TO 100
@@ -1264,12 +1264,8 @@ C&&& FOCC: Fractional Occupation
                AOC = .FALSE.
                GOTO 100
  44            CONTINUE
-C&&& Specify the type of restarting the 4c SCF from the previous 2c BSS-SCF
-CMI Sept.2005
-C              IF (DO2C4C) THEN
-C               START2C = .TRUE.
-C               READ(LUCMD,*) INI2C
-C              ENDIF
+C&&& LSHIFT: Level shift
+               READ(LUCMD,*) DLSHIF
                GOTO 100
  45            CONTINUE
 CMI&&& Specify the maximum number of preliminary BSS-SCF iterations
@@ -1741,7 +1737,7 @@ C
         ENDIF
       ENDIF
       IF(DODIIS) THEN
-         IF (DIISAO .OR. (NASHT_DHF.GT.0.AND.AOC)) THEN
+         IF (DIISAO) THEN
            WRITE(LUPRI,'(A)') ' * DIIS (in AO basis)'
          ELSEIF(DIISMO) THEN
            WRITE(LUPRI,'(A)') ' * DIIS (in MO basis)'
@@ -1761,6 +1757,10 @@ C
      &     ' * Damping of Fock matrix. Weight of old matrix    : ',
      &     DAMPFC
       END IF
+      IF(DLSHIF.GT.D0) THEN
+        WRITE(LUPRI,'(A,F8.3)')
+     &     ' * Level shift activated : ',DLSHIF
+      ENDIF
       WRITE(LUPRI,'(A,I4)')
      &   ' * Maximum number of SCF iterations  : ',MAXITR
 C
