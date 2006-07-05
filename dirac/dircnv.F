@@ -307,12 +307,10 @@ C
 C
       CALL QENTER('DIISER')
 C
+C     DIIS in AO-basis
+C     ================
 C
-CMI   IF (DIISAO.OR.(NASHMFT.GT.0.AND.AOC)) THEN
-CTROND      IF (DIISAO.OR.(NASHMFT.GT.0.AND.AOC).OR.AUTOCC) THEN
-      IF(DIISAO.OR.AUTOCC) THEN
-CTROND
-      WRITE(6,*) 'AO-DIISdebug....'
+      IF(DIISAO) THEN
 C
 C        The gradient is
 C           g = DCao * FDao + f_o DVao * (FDao + (a_o-1) QVao) + H.C.
@@ -335,7 +333,6 @@ C
          DO 10 I = 1,NFSYM
             IF (NOCC(I).EQ.0) GOTO 10
             J2BASXI = I2BASX(I,I) + 1
-            JEVEC = I2TMOT(I)   + 1
 C
 C              (DCao+f_o DVao) FDao
 C
@@ -406,13 +403,12 @@ C
      &                NTMO(I),NTMO(I),
      &                EBUF(J2BASXI),NTBAS(0),NTBAS(0),
      &                            NZ,IPQTOQ(1,0),
-     &                EVEC(JEVEC),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
      &                TINV(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
      &                            NZT,IPQTOQ(1,0),
      &                TMAT(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
      &                            NZT,IPQTOQ(1,0),
      &                WORK(KFREE),LFREE,IPRSCF)
-CMI  &                FAO,N2BBASXQ,IPRSCF)  ! po..naa chyba !
 
                 IF (IPRSCF.GE.10) THEN
                  CALL HEADER('DIISER: Entering TINV',-1)
@@ -430,43 +426,36 @@ CMI  &                FAO,N2BBASXQ,IPRSCF)  ! po..naa chyba !
 
             ENDIF
 C
-            IF (ZORA) CALL ZRDIIS (I,EVEC(JEVEC),WORK,KFREE,LFREE)
+            IF (ZORA) CALL ZRDIIS (I,EVEC(I2TMOT(I)+1),WORK,KFREE,LFREE)
 C
-            IF ( IPRSCF .GE. 10 ) THEN
+            IF (IPRSCF.GE.5) THEN
                WRITE(CTMP,'(I1)') I
                CALL HEADER('DIISER: Error vector in MO-basis, corep '
      &                     //CTMP,-1)
-               CALL PRQMAT(EVEC(JEVEC),NTMO(I),NTMO(I),
+               CALL PRQMAT(EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                     NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
             END IF
 C
 C           Calculate ErrVec - ErrVec(Hermitian conj.)
 C
-            CALL DIFMMH(EVEC(JEVEC),NTMO(I),NZ,NTMO(I),NTMO(I))
+            CALL DIFMMH(EVEC(I2TMOT(I)+1),NTMO(I),NZ,NTMO(I),NTMO(I))
 C
             IF ( IPRSCF .GE. 10 ) THEN
                WRITE(CTMP,'(I1)') I
                CALL HEADER(
      &         'DIISER: ErrVec - ErrVec(Hermitian conj.) in MO'//
      &                     ', corep '//CTMP,-1)
-               CALL PRQMAT(EVEC(JEVEC),NTMO(I),NTMO(I),
+               CALL PRQMAT(EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                  NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
             END IF
 C
  10      CONTINUE
-C ....Dubillard
-C     To be discussed !
-C
 C
       ELSE
-CTROND
-      WRITE(6,*) 'MO-DIISdebug....'
 C
-C        Old DIIS.
-C           Only for closed shell molecules.
+C     DIIS in MO-basis
+C     ================
 C
-C
-
 C        Construct density matrix in MO-basis
 C        ====================================
 C
@@ -505,28 +494,42 @@ C        =================
 C
          CALL DZERO(EVEC,N2EVECTQ)
          DO 30 I = 1,NFSYM
-            IF(NOCC(I).EQ.0) GOTO 30
-            JEVEC = I2TMOT(I) + 1
-            CALL QGEMM(NTMO(I),NTMO(I),NTMO(I),D1,
-     &         'N','N',IPQTOQ(1,0), FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
-     &         'N','N',IPQTOQ(1,0),EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
-     &         D0,IPQTOQ(1,0),EVEC(JEVEC),NTMO(I),NTMO(I),NZ)
-            IF(IPRSCF.GE.5) THEN
-               CALL HEADER('DIISER DIISMO: FD*D matrix',-1)
-               WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-               CALL PRQMAT(EVEC(JEVEC),NTMO(I),NTMO(I),NTMO(I),NTMO(I),
-     &                     NZ,IPQTOQ(1,0),LUPRI)
-            ENDIF
+           IF(NOCC(I).EQ.0) GOTO 30
+           IF(SUB_BL) THEN
+             IBO = 0
+             DO ISUB = 1,N_SUB_BL(I)
+             NBO = NORB_SUB(ISUB,I,0)
+             IF(NBO.GT.0) THEN
+               IMAT = I2TMOT(I) + (NTMO(I)+1)*IBO + 1
+               CALL QGEMM(NBO,NBO,NBO,D1,
+     &         'N','N',IPQTOQ(1,0),FMO(IMAT),NTMO(I),NTMO(I),1,
+     &         'N','N',IPQTOQ(1,0),EBUF(IMAT),NTMO(I),NTMO(I),1,
+     &         D0,IPQTOQ(1,0),EVEC(IMAT),NTMO(I),NTMO(I),1)
+               IBO = IBO + NORB_SUB(ISUB,I,0)
+             ENDIF
+             ENDDO
+           ELSE
+             CALL QGEMM(NTMO(I),NTMO(I),NTMO(I),D1,
+     &        'N','N',IPQTOQ(1,0), FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
+     &        'N','N',IPQTOQ(1,0),EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
+     &        D0,IPQTOQ(1,0),EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ)
+           ENDIF
+           IF(IPRSCF.GE.5) THEN
+             CALL HEADER('DIISER DIISMO: FD*D matrix',-1)
+             WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+             CALL PRQMAT(EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                   NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+           ENDIF
 C
-            IF (ZORA) CALL ZRDIIS (I,EVEC(JEVEC),WORK,KFREE,LFREE)
+           IF (ZORA) CALL ZRDIIS (I,EVEC(I2TMOT(I)+1),WORK,KFREE,LFREE)
 C
-            CALL DIFMMH(EVEC(JEVEC),NTMO(I),NZ,NTMO(I),NTMO(I))
-            IF(IPRSCF.GE.5) THEN
-               CALL HEADER('DIISER DIISMO: Error matrix',-1)
-               WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-               CALL PRQMAT(EVEC(JEVEC),NTMO(I),NTMO(I),NTMO(I),NTMO(I),
-     &                     NZ,IPQTOQ(1,0),LUPRI)
-            ENDIF
+           CALL DIFMMH(EVEC(I2TMOT(I)+1),NTMO(I),NZ,NTMO(I),NTMO(I))
+           IF(IPRSCF.GE.5) THEN
+             CALL HEADER('DIISER DIISMO: Error matrix',-1)
+             WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+             CALL PRQMAT(EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                   NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+           ENDIF
    30    CONTINUE
 C
       END IF
