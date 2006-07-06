@@ -353,8 +353,7 @@ CMI        CALL PRJEX1(WORK(KPFMT),IDIMENS,WORK(KPTRI),PMAT,WORK(KRVEC),
             CALL EXPCAN(INDXPR,PMAT,CMO,IPREXP,WORK,KFREE,LFREE)
           ENDIF
 CMI     ... release the allocated memmory ...
-          CALL MEMREL('PRPEX1 1',WORK,KWORK,KOP1INT,KFREE,LFREE)
-          CALL MEMREL('PRPEX1 2',WORK,KWORK,KPTRI,KFREE,LFREE)
+          CALL MEMREL('PRPEX1.nooana',WORK,KWORK,KPTRI,KFREE,LFREE)
 C         write(lupri,*) 'PRPEX1 memmory release...' 
         ENDDO
 
@@ -440,17 +439,15 @@ CMI        CALL PRJEX1(WORK(KPFMT),IDIMENS,WORK(KPTRI),PMAT,WORK(KRVEC),
             CALL EXPCAN(INDXPR,PMAT,CMO,IPREXP,WORK,KFREE,LFREE)
           ENDIF
           IF(PRJANA.AND.ABS(EXPVAL(I)).GT.DTOL) THEN
-            CALL PRJEX2(EXPVAL(I),IDIMENS,WORK(KPTRI),WORK(KPFMT),
-     &                 WORK(KDFMT),
-     &                  WORK(KBVEC),
+            CALL PRJEX2(EXPVAL(I),IDIMENS,WORK(KPTRI),
+     &                  WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
      &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
-     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KPM),
+     &                  WORK(KNR),NTOT,WORK(KPM),WORK(KFMAT),
      &                  WORK(KINDX),IPREXP,PMAT,WORK,KFREE,LFREE)
             CALL PRSYMB(LUPRI,'-',76,0)
           ENDIF
 CMI        ... release the memmory
-          CALL MEMREL('PRPEX1 1o',WORK,KWORK,KOP1INT,KFREE,LFREE)
-          CALL MEMREL('PRPEX1 2o',WORK,KWORK,KPTRI,KFREE,LFREE)
+          CALL MEMREL('PRPEX1.orbana',WORK,KWORK,KPTRI,KFREE,LFREE)
         ENDDO
 C        CALL PRSYMB(LUPRI,'-',76,0)
         WRITE(LUPRI,'(4X,A)')
@@ -1476,6 +1473,7 @@ C
 C
 #include "sdpre.h"
       NTRI = NCNT*(NCNT+1)/2
+      write (6,*) 'debug: ntri',ntri,idimens
 C
 C     Make population matrix
 C

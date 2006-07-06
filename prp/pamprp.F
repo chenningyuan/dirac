@@ -1994,6 +1994,7 @@ C
       DIMENSION EXPVAL(*),EXP_CORR(*),AXIS(3,3,MXCENT),TEMP(*)
       DIMENSION TMP(3),ITMP(3),PVAL(9)
       LOGICAL   DOATOM(*), CORR
+      CHARACTER FMTEFG*80, FMTEFGA*6, FMTEFGB*6, FMTEFGC*6
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
@@ -2030,21 +2031,48 @@ C     print section
          WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
          DO I = 1,3
             DO J = 1,3
-               IF (CORR) THEN
                EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
-              EFG_METHOD(I,J,IATOM)=EFGTOT(I,J,IATOM)+EFGCORR(I,J,IATOM)
-               IF (ABS(EFG_METHOD(I,J,IATOM)).GT.1.0D-12)
-     &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
-     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGTOT(I,J
-     &              ,IATOM),' au ',EFGCORR(I,J,IATOM),' au '
-     &              ,EFG_METHOD(I,J,IATOM),' au '
+               IF (CORR) THEN 
+                  EFG_METHOD(I,J,IATOM) =
+     &              EFGTOT(I,J,IATOM)+EFGCORR(I,J,IATOM)
+                  EFGPRINT1 = EFGTOT(I,J,IATOM) 
+                  EFGPRINT2 = EFGCORR(I,J,IATOM) 
+                  EFGPRINT3 = EFG_METHOD(I,J,IATOM)
                ELSE
-               EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
-               IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
-     &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
-     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGEL(I,J
-     &              ,IATOM),' au ',EFGNUC(I,J,IATOM),' au '
-     &              ,EFGTOT(I,J,IATOM),' au '
+                  EFG_METHOD(I,J,IATOM) = EFGTOT(I,J,IATOM)
+                  EFGPRINT1 = EFGEL(I,J,IATOM) 
+                  EFGPRINT2 = EFGNUC(I,J,IATOM) 
+                  EFGPRINT3 = EFGTOT(I,J,IATOM)
+               ENDIF
+Caspg
+Caspg               IF (ABS(EFG_METHOD(I,J,IATOM)).GT.1.0D-12)
+Caspg     &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
+Caspg     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGTOT(I,J
+Caspg     &              ,IATOM),' au ',EFGCORR(I,J,IATOM),' au '
+Caspg     &              ,EFG_METHOD(I,J,IATOM),' au '
+Caspg               ELSE
+Caspg               EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
+Caspg               IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
+Caspg     &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
+Caspg     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGEL(I,J
+Caspg     &              ,IATOM),' au ',EFGNUC(I,J,IATOM),' au '
+Caspg     &              ,EFGTOT(I,J,IATOM),' au '
+Caspg               ENDIF
+Caspg
+               IF (ABS(EFG_METHOD(I,J,IATOM)).GT.1.0D-12) THEN
+CCC               FMTEFGA = MXFORM(EFGPRINT1,16)
+CCC               FMTEFGB = MXFORM(EFGPRINT2,16)
+CCC               FMTEFGC = MXFORM(EFGPRINT3,16)
+CCC               FMTEFG  = 
+CCC  &     '(2X,A3,3X,'//FMTEFGA//',3X,'//FMTEFGB//',3X,'//FMTEFGC//',A'
+                  IF (ABS(EFG_METHOD(I,I,IATOM)).GT.1.0D+04) THEN
+                     FMTEFG = '(2X,A3,3(3X,E16.10,A))'
+                  ELSE
+                     FMTEFG = '(2X,A3,3(3X,F16.10,A))'
+                  ENDIF
+                  WRITE(LUPRI,FMTEFG)
+     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGPRINT1,
+     &              ' au ',EFGPRINT2,' au ',EFGPRINT3,' au '
                ENDIF
             END DO
          END DO
@@ -2087,7 +2115,11 @@ C
      &                 'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
      &                 ,EFG_METHOD(I,I,IATOM),' au '
                ELSE
-                  WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
+CCC               FMTEFGA = MXFORM(EFGTOT(I,I,IATOM),16)
+CCC               FMTEFG = '(2X,A3,3(3X,'//FMTEFGA//'F16.10,A))' 
+                  FMTEFG = '(2X,A3,3(3X,E16.10,A))' 
+CCC            ENDIF
+                  WRITE(LUPRI,FMTEFG)
      &                 'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
      &                 ,EFGTOT(I,I,IATOM),' au '
                END IF
