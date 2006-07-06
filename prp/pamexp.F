@@ -334,6 +334,7 @@ CMI        CALL PRJEX1(WORK(KPFMT),IDIMENS,WORK(KPTRI),PMAT,WORK(KRVEC),
            CALL PRJEX1(WORK(KPFMT),PMAT,WORK(KRVEC),
      &                  INDXPR,IREP,ITIM,NP(1,0),FIRST,IPREXP,
      &                  WORK,KFREE,LFREE)
+
           ENDIF
           FMT = MXFORM(EXPVAL(I),15)
           WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
@@ -738,12 +739,11 @@ C
       CALL MEMCHK('PRJEX1 1.0',WORK,1)
 
       IOPTYP = IPRPTYP(INDXPR)
-      IPF = 1
+      NDIM = 0
       DO IFRP = 1,NFSYM
-        NDIM = NCNT(IFRP)*NCNT(IFRP)*NZ
-        CALL DZERO(PFO(IPF),NDIM)
-        IPF = IPF + NCNT(IFRP)*NCNT(IFRP)*NZ
+        NDIM = NDIM + NCNT(IFRP)*NCNT(IFRP)*NZ
       ENDDO
+      CALL DZERO(PFO,NDIM)
       FADD = D0
 
       DO IZ = 1,NZ
