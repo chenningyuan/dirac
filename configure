@@ -743,7 +743,7 @@ if [ -n "$liblist" ]; then
 #For later use we note that we found an optimized blas library
                libblas) LIB="$LIB -L$testdir -lblas" ;;
 #For Atlas you need to link with lf77blas as well
-               libatlas) LIB="$LIB -L$testdir -llapack -lf77blas -latlas";;
+               libatlas) LIB="$LIB -L$testdir -llapack -lcblas -lf77blas -latlas";;
                libdxml) LIB="$LIB -L$testdir -ldxml";;
                libcomplib.sgimath) LIB="$LIB -L$testdir -lcomplib.sgimath";;
                libveclib) LIB="$LIB -L$testdir -lveclib";;
@@ -777,7 +777,7 @@ if [ -z "$LIB" ] ; then
    read defblas
    case "$defblas" in   
    "yes" | "y" | "Y" )
-       cpp="$cpp -DNO_BLAS"
+       cpp="$cpp -DNO_BLAS -DNO_LAPACK"
        ;;
     *)
        $echo 'BLAS will not be explictly included, you may need to adapt LIB_LIST in Makefile.config manually \c'
