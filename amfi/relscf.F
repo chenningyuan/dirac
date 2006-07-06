@@ -1,11 +1,13 @@
 C
-C Authorship of this program must be dicussed before
-C distributing it with the DIRAC package ! (MI,jan 2005)
-C see mail from Timo: Atomares SCF
 C
-C NOTE: Previous NDIMPQ value was 500000. Replaced by a parameter in scfarr.h, NDIMPQPAR.
-C This increasing is needed to run larger atoms (Rn for example).
-
+C Authorship of this program should be dicussed before
+C distributing it within the DIRAC package (MI,jan 2005);
+C see email from Timo (Atomares SCF).
+C
+C NOTE: The previous  value of NDIMPQ was 500000. 
+C  Replaced by a parameter in scfarr.h, NDIMPQPAR.
+C This increase is needed for larger atoms (Rn for example).
+C
 
 C***** NAME ADDMA
       SUBROUTINE ADDMA(N,S,OVE)
@@ -2765,11 +2767,13 @@ C
       J=0
        J=NGAUSS*NBLOCK
       GO TO 33
+CMI ... ftnchek complains that "No path to this statement"
       IF(NORBIT.NE.1) GOTO 995
       J=0
       DO I=1,NBLOCK
         J=J+NSIZE(I)
       END DO
+CMI  * end
    33 I=J*(NSHT+1)
       IF(I.GT.LQM) LQM=I
       IF(NDIMPQ.LT.I) NDIMPQ=I
@@ -4235,6 +4239,7 @@ C
       II=L1+L2
       JJ=M1+M2
       KK=N1+N2
+CMI   ... ftnchek complains that LAMBDA  never set
       IMAX=II+JJ+KK+LAMBDA+3
       IF (IMAX.LE.20) GOTO 2
 C
