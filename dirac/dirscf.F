@@ -843,6 +843,8 @@ C
      &          WORK(LWORK)
 C
 #include "memint.h"
+
+      CALL QENTER('DFSOLV')
 C
 C
 C     Transform AO Fock matrix to reference MO basis
@@ -1042,7 +1044,9 @@ C
         CALL SMOGEN(FMO,WORK(KTMAT),WORK(KFREE),LFREE)
       ENDIF
 C
+      CALL FLSHFO(LUPRI)
  9999 CALL MEMREL('DFSOLV',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('DFSOLV')
       RETURN
 C
       END
@@ -4419,7 +4423,12 @@ C/* Deck Levshi */
 C***********************************************************************
 C
 C     Level shift
+C
+C     Called from: DFSOLV if DLSHIF > 0 
+C
 C     Written by T. Saue July 4 2006
+C
+C  MI July 6,2006: Requires DFCOEF with written MO's
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4430,7 +4439,16 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
       DIMENSION FMO(*),CMO(*)
+      LOGICAL IS_HERE,IS_OPEN
+
+      CALL QENTER('LEVSHI')
 C
+      IF (IPRSCF.GE.10) THEN
+        INQUIRE(FILE='DFCOEF',EXIST=IS_HERE,OPENED=IS_OPEN)
+        write(lupri,*) 'LEVSHI: DFCOEF IS_HERE=',IS_HERE
+        write(lupri,*) 'LEVSHI: DFCOEF IS_OPEN=',IS_OPEN
+      ENDIF
+
       REWIND LUCMOS
       CALL READT(LUCMOS,N2TMOTQ,CMO)
       DO I = 1,NFSYM
@@ -4445,6 +4463,7 @@ C
      &              ISTART,NVEC,NTMO(I))
       ENDDO
 C
+      CALL QEXIT('LEVSHI')
       RETURN
       END
 

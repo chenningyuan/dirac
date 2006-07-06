@@ -62,12 +62,12 @@
       REAL*8 SCFCNV(2), ERGVAL, EVCVAL, FCKVAL, DHFERG, ELERGY, E1PART, &
      &       E2PART, ERGBUF, CONVRG, TDF2, TDDG, DNSDHF, DAMPFC, DIISTH,&
      &       BMCOND, CNVINT(2), SCFTID(0:15), ESOLVE, ESOLVN, PRJTHR,   &
-     &       SCFCNV2(2)                                                 &  
+     &       SCFCNV2(2), DLSHIF                                         &  
 
       COMMON /DCRDHF/ SCFCNV, ERGVAL, EVCVAL, FCKVAL, DHFERG, ELERGY,   &
      &                E1PART, E2PART, ERGBUF, CONVRG, TDF2, TDDG,       &
      &                DNSDHF, DAMPFC, DIISTH, BMCOND, CNVINT, SCFTID,   &
-     &                ESOLVE, ESOLVN, PRJTHR, SCFCNV2                   &
+     &                ESOLVE, ESOLVN, PRJTHR, SCFCNV2, DLSHIF           &
 
       REAL*8 DF(0:MXOPEN), DA(0:MXOPEN), DALPHA(0:MXOPEN)
       INTEGER MAX_BOS_BL
