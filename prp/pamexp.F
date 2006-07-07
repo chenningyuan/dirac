@@ -331,10 +331,18 @@ CMI  &        WORK(KFREE),LFREE,IPREXP)
           IF(PRJANA) THEN
 C.........Transform property matrix to fragment orbital basis
 CMI        CALL PRJEX1(WORK(KPFMT),IDIMENS,WORK(KPTRI),PMAT,WORK(KRVEC),
+Caspg 2006-07-07
+C quick hack to get the projection analysis to work, before IREPB and ITIMB
+C were undefined, hence the crash.
+C  irepb: Molecular point group symmetry
+C  itimb: Time reversal symmetry
+      IREPB = IPRPSYM(INDXPR)-1
+      ITIMB = IPRPTIM(INDXPR)
+C
            CALL PRJEX1(WORK(KPFMT),PMAT,WORK(KRVEC),
-     &                  INDXPR,IREP,ITIM,NP(1,0),FIRST,IPREXP,
+     &                  INDXPR,IREPB,ITIMB,NP(1,0),FIRST,IPREXP,
      &                  WORK,KFREE,LFREE)
-
+Caspg
           ENDIF
           FMT = MXFORM(EXPVAL(I),15)
           WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
@@ -346,15 +354,14 @@ CMI        CALL PRJEX1(WORK(KPFMT),IDIMENS,WORK(KPTRI),PMAT,WORK(KRVEC),
      &                 WORK(KDFMT),WORK(KBVEC),
      &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
      &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KPM),
-     &                  WORK(KINDX),
-     &                  IPREXP,PMAT,WORK,KFREE,LFREE)
+     &                  WORK(KINDX),IPREXP,PMAT,WORK,KFREE,LFREE)
             CALL PRSYMB(LUPRI,'-',76,0)
           ENDIF
           IF(PRPCAN) THEN
             CALL EXPCAN(INDXPR,PMAT,CMO,IPREXP,WORK,KFREE,LFREE)
           ENDIF
 CMI     ... release the allocated memmory ...
-          CALL MEMREL('PRPEX1.nooana',WORK,KWORK,KPTRI,KFREE,LFREE)
+Caspg     CALL MEMREL('PRPEX1.nooana',WORK,KWORK,KPTRI,KFREE,LFREE)
 C         write(lupri,*) 'PRPEX1 memmory release...' 
         ENDDO
 
@@ -424,9 +431,18 @@ CMI  &          WORK(KFREE),LFREE,IPREXP)
             IF(PRJANA) THEN
 C...........Transform property matrix to fragment orbital basis
 CMI        CALL PRJEX1(WORK(KPFMT),IDIMENS,WORK(KPTRI),PMAT,WORK(KRVEC),
+Caspg
+C quick hack to get the projection analysis to work, before IREPB and ITIMB
+C were undefined, hence the crash.
+C  irepb: Molecular point group symmetry
+C  itimb: Time reversal symmetry
+      IREPB = IPRPSYM(INDXPR)-1
+      ITIMB = IPRPTIM(INDXPR)
+C
            CALL PRJEX1(WORK(KPFMT),PMAT,WORK(KRVEC),
-     &                  INDXPR,IREP,ITIM,NP(1,0),FIRST,IPREXP,
+     &                  INDXPR,IREPB,ITIMB,NP(1,0),FIRST,IPREXP,
      &                  WORK,KFREE,LFREE)
+Caspg
             ENDIF
  10       CONTINUE
  20       CONTINUE
@@ -749,25 +765,33 @@ C
       DO IZ = 1,NZ
 
       IF(.NOT.FIRST(IZ)) THEN
-        IF(IOPTYP.EQ.0) THEN
-          II = IZ
-        ELSE
-          II = 1
-CMI      ... this is deactivated as property matrix PAO is ready
-CMI       IQ = IPQTOQ(IZ,IREP)
-C         IH = IHQMAT(IQ,ITIM)
-C         IF(IH.EQ.1) THEN
-C           CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PAO)
-C         ELSEIF(IH.EQ.2) THEN
-C           CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PAO)
-C         ENDIF
-C         CALL BUTOBS(PAO,1,WORK(KFREE),LFREE)
-        ENDIF
+         II = IZ
+CC         IF(IOPTYP.EQ.0) THEN
+C this is a fock matrix...
+CC           II = IZ
+CC         ELSE
+CC           II = 1
+CC CMI      ... this is deactivated as property matrix PAO is ready
+CC CMI       IQ = IPQTOQ(IZ,IREP)
+CC C         IH = IHQMAT(IQ,ITIM)
+CC C         IF(IH.EQ.1) THEN
+CC C           CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PAO)
+CC C         ELSEIF(IH.EQ.2) THEN
+CC C           CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PAO)
+CC C         ENDIF
+CC C         CALL BUTOBS(PAO,1,WORK(KFREE),LFREE)
+CC         ENDIF
 
         IPA = 1
         IPF = 1
         IPR = 1
+Caspg
         DO IFRP = 1,NFSYM
+Caspg
+C       write (6,*) 'debug prjex1 qtrans',ifrp,irep,iz
+C       write (6,*) 'debug prjex1 qtrans',nfbas(ifrp,0),ncnt(ifrp)
+C       write (6,*) 'debug prjex1 qtrans',(ipqtoq(i,irep),i=1,nz)
+Caspg
           CALL QTRANS('AOMO','S',FADD,
      &         NFBAS(IFRP,0),NFBAS(IFRP,0),NCNT(IFRP),NCNT(IFRP),
      &         PAO(IPA,II),NTBAS(0),NTBAS(0),1,IPQTOQ(IZ,IREP),
@@ -1473,7 +1497,8 @@ C
 C
 #include "sdpre.h"
       NTRI = NCNT*(NCNT+1)/2
-      write (6,*) 'debug: ntri',ntri,idimens
+Caspg
+C     write (6,*) 'debug: ntri',ntri,idimens
 C
 C     Make population matrix
 C
