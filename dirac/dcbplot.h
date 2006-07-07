@@ -1,16 +1,14 @@
 C     common block {1,2,3}-dimensional plot
-C****************************************************    
+C     =====================================
 C
       CHARACTER*6 XVECFILE
       CHARACTER*8 ORBSTRING1, ORBSTRING2
 C
-      LOGICAL READXVECFILE,                                             &
-     &        DOPLOT, DO1DPLOT, DO2DPLOT, DO3DPLOT,                     &
-     &        PLOTDENSITY, PLOTSPINDENSITY, PLOTCURRENTDENSITY,         &
-     &        PLOTELF, PLOTLAPLACIAN, USEORBSTRING,                     &
-     &        PLOTSKIPEP, PLOTSKIPEE
-C
-C****************************************************    
+      LOGICAL         READXVECFILE,                                     &
+     &                DOPLOT, DO1DPLOT, DO2DPLOT, DO3DPLOT,             &
+     &                PLOTDENSITY, PLOTSPINDENSITY, PLOTCURRENTDENSITY, &
+     &                PLOTELF, PLOTLAPLACIAN, USEORBSTRING,             &
+     &                PLOTSKIPEP, PLOTSKIPEE
 C
       COMMON /CPLOTC/ XVECFILE, ORBSTRING1, ORBSTRING2
 C
@@ -20,6 +18,6 @@ C
      &                PLOTELF, PLOTLAPLACIAN, USEORBSTRING,             &
      &                PLOTSKIPEP, PLOTSKIPEE
 C
-      COMMON /CPLOTI/ IPLOT, NCUBE(0:3), NXVEC
+      COMMON /CPLOTI/ IPLOT, NCUBE(0:3), NXVEC, IREP_PLOT
 C
       COMMON /CPLOTR/ D1DSTEP, D3DSTART, D3DNORM

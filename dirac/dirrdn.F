@@ -6138,6 +6138,7 @@ C
       NCUBE(2)           = 80
       NCUBE(3)           = 80
       NXVEC              = 1
+      IREP_PLOT          = 0
 C
       D1DSTEP            = 0.01D0
       D3DSTART           = 4.0D0
