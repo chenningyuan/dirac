@@ -2506,9 +2506,9 @@ C       ... TBUF subst  WORK(KBUF)
          ENDIF
 
          IF (SUMDIFF.GE.THRNULL) THEN
-          WRITE(LUPRI,'(2X,A,D14.8)')
-     & 'GET_A_FAC:  DIFFERENCES A^2_ovlp-A^2_calc/N DIFFER'//
-     & ' TOO MUCH FROM "ZERO"=!',THRNULL
+          WRITE(LUPRI,*)
+     &'  GET_A_FAC: Sum of differences, (A^2_ovlp-A^2_calc)/N, makes ',
+     & SUMDIFF,' while "zero" limit is ',THRNULL
           CALL FLSHFO(LUPRI)
          ENDIF
 
