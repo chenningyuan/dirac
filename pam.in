@@ -329,6 +329,9 @@ print_header()
 #
 exitfunc()
 {
+   if [ -n "`grep 'SEVERE ERROR' $OUTPUT_FILE`" ]; then
+     EXIT=1
+   fi   
    if [ $EXIT -eq 0 ]; then
       echo
       echo "   Exit date: `date`"
