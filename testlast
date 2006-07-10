@@ -213,7 +213,7 @@ if [ "${cvs}" = "yes" ]; then
 #
 #
   echo ' Making the Makefiles (running pamadm) ...'
-  pamadm -adm  > ${testdir}/logs/$makelog 2>&1 || \
+  ./pamadm -adm  > ${testdir}/logs/$makelog 2>&1 || \
   { echo " Pamadm failed" ; \
     echo " Here is the logfile ${testdir}/logs/$makelog" ; \
     cat ${testdir}/logs/$makelog ; \
