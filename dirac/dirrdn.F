@@ -1,4 +1,4 @@
-C 
+C
 C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -31,7 +31,7 @@ C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
-C 
+C
 C
 C
 C VERSION : $Revision$
@@ -42,19 +42,19 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck paminp */
       SUBROUTINE PAMINP(DELSMALL,WORK,LWORK)
 C***********************************************************************
-C     
+C
 C     Driver for input module of DIRAC
 C     Written by T.Saue April 26 1996
 C
 C     On input: DELSMALL - flag forcing to delete small component
 C                basis functions in HERINP
 C
-C     Called from:  DIRCTL (1.time in DIRAC run) 
+C     Called from:  DIRCTL (1.time in DIRAC run)
 C                   EXEDIR (during optimization)
 C                   PAMSET (2.time for pure 2comp. mode with DELSMALL=.true.)
 C
 C     Last revision: 260496 - tsaue
-C               Febr.2006 - MI to modify for pure two-comp. mode 
+C               Febr.2006 - MI to modify for pure two-comp. mode
 C
 C***********************************************************************
 #include "implicit.h"
@@ -76,7 +76,7 @@ C
       CALL JOBINP
       CLOSE(LUCMD)
 C
-C     General input 
+C     General input
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       CALL GENINP(WORK,LWORK)
       CLOSE(LUCMD)
@@ -89,7 +89,7 @@ C     CALL HAMINP(DELSMALL,WORK,LWORK)
 C     CLOSE(LUCMD)
 
 C     Integral and basis input
-CMI/Febr.06: BASINP may set to pure two-component mode  
+CMI/Febr.06: BASINP may set to pure two-component mode
 C     only if TWOCOMP = .TRUE.  then all
 C     small-component basis functions will be zeroed out and thus all matrixes
 C     will have the size of LL. In the case of pure two-component BSS
@@ -286,8 +286,8 @@ C                   are set to zero (direct scf)... this is not the
 C                   most satisfactory solution but at the moment allows
 C                   for the use of conventional scf without changing
 C                   the inputs.. it should be made consistent with
-C                   the INTFLAG definition. 
-C 
+C                   the INTFLAG definition.
+C
                  READ(LUCMD,*) ILLDIR,ISLDIR,ISSDIR
                  IF (ILLDIR.EQ.0.AND.ISLDIR.EQ.0.AND.ISSDIR.EQ.0) THEN
                     IGTDIR = 0
@@ -336,10 +336,10 @@ C&&& LINDEP: Thresholds for linear dependence (eigenvalues of overlap matrix)
 C&&&& SPHTRA: Embed transformation to spherical harmonics in
 C&&&&         MO-transformation
 C     This is transformation to
-C      
+C
 C     1. Spherical harmonics for Large components
 C     2. Scalar restricted kinetic balance type for Small components
-C     
+C
             READ(LUCMD,*) ILSPH,ISSPH
             ISPHTR = ILSPH+2*ISSPH
             GO TO 100
@@ -355,7 +355,7 @@ C&&&&&   TWOCOMBSS - two-component relativistic mode in DIRAC / .2C_REL
             GO TO 100
   113    CONTINUE
 C&&&& ACMOUT: Print coefficients without symmetry (the C1 group).
-            DOACUT = .TRUE.    
+            DOACUT = .TRUE.
             GO TO 100
   114    CONTINUE
             GO TO 100
@@ -417,12 +417,12 @@ C
       ENDIF
 
       IF (TWOCOMP.AND.TWOCOMPBSS) THEN
-       WRITE(LUPRI,'(1X,A)') 
+       WRITE(LUPRI,'(1X,A)')
      & ' You can not have activated both .TWOCOM and .2C_REL !'
        CALL QUIT(
      & 'GENINP: .TWOCOM and .2C_REL are mutually exclusive !')
       ENDIF
-    
+
       IF (TWOCOMP.OR.TWOCOMPBSS)  THEN
         IF (TWOCOMP) THEN
         WRITE(LUPRI,'(1X,A)')
@@ -432,9 +432,9 @@ C
      &  '* Employing pure two-component relativistic mode'
         ENDIF
         INTGEN = 1
-        ISLDIR = 0 
-        ISSDIR = 0 
-        IGTDIR = 0 
+        ISLDIR = 0
+        ISSDIR = 0
+        IGTDIR = 0
       ENDIF
 
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
@@ -447,7 +447,7 @@ C
         IF(IGTDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- GT-integrals'
       ENDIF
 C
-      IF(DENSFIT) 
+      IF(DENSFIT)
      &  WRITE(LUPRI,'(1X,A)') '* Employ density fitting techniques'
 C
       IF(LBIT(ISPHTR,1)) THEN
@@ -637,7 +637,7 @@ C&&&& PROPERTIES:  Call property module
             NJOBS = NJOBS + 1
             GO TO 100
   108    CONTINUE
-C&&& HEINZ: Solve one-electronsystems using free-particle 
+C&&& HEINZ: Solve one-electronsystems using free-particle
 C           projection operators
             DOHEINZ = .TRUE.
             GO TO 100
@@ -652,7 +652,7 @@ C&&&& OPTIMIZE: Geometry optimization
             OPTIMI = .TRUE.
             GOTO 100
  112     CONTINUE
-C&&&& MINIMIZE: Geometry optimization 
+C&&&& MINIMIZE: Geometry optimization
 Ctsaue: retained for backwards compatibility
             OPTIMI = .TRUE.
             GOTO 100
@@ -666,7 +666,7 @@ Ctsaue: retained for backwards compatibility
 C
 C     Print section
 C     ==============
-C     
+C
   180 CONTINUE
       DO I = 50,1,-1
       IF(TITLE(I:I).NE.' ') GOTO 181
@@ -739,7 +739,7 @@ C  /* Deck dhfinp */
 C***********************************************************************
 C
 C     Input section for DHF-module
-C    
+C
 CMI ... it's called always after the HAMINP
 C
 C     Written by T.Saue - November 1992
@@ -782,10 +782,10 @@ C
      &            '.XXXXXX','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
-     &            '.ERGCN2','.EVCCN2','.FCKCN2','.XXXXXX','.XXXXXX', 
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', 
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', 
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' 
+     &            '.ERGCN2','.EVCCN2','.FCKCN2','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
       DATA SET/.FALSE./
 C
@@ -837,7 +837,7 @@ C
       IBOSSEL   = 0
 C     ... hjaaj: default = # boson sym.s
 C         must be changed with .MJSELE for LINEAR
-C         this can not be tested if correct because 
+C         this can not be tested if correct because
 C         GLINSM in PAMSET has not been called yet. /19.Oct.04
       DIISAO    = .FALSE.
       DIISMO    = .TRUE.
@@ -1086,14 +1086,14 @@ C             Read in number of open shells
 C
                READ(LUCMD,*) NOPEN
                IF (NOPEN.LE.0.OR.NOPEN.GT.MXOPEN) THEN
-                  WRITE(LUPRI,'(1X,A,I2,A,I2)') 
+                  WRITE(LUPRI,'(1X,A,I2,A,I2)')
      &               'DHFINP: NOPEN must be between ',
      &               1,' and ',MXOPEN
                   CALL QUIT('DHFINP ERROR: Open shell error!')
                END IF
 C
 C              Read in number of active shells and their occ.
-C              Format: 
+C              Format:
 C              If inversion symmetry: A/K,L
 C              If not               : A/K
 C              If inversion symmetry and the format is specified
@@ -1174,13 +1174,13 @@ C&&& DAMPFC: Change default damping factor
                     READ(LUCMD,*) DAMPFC
                GO TO 100
    26          CONTINUE
-C&&& OVLSEL: Activate overlap selection 
+C&&& OVLSEL: Activate overlap selection
 C            (default is dynamic overlap selection, see below)
                     OVLSEL = .TRUE.
                     DYNSEL = .TRUE.
                GO TO 100
    27          CONTINUE
-C&&& NODYNSEL: No Dynamic overlap selection 
+C&&& NODYNSEL: No Dynamic overlap selection
 C            (new overlap selection matrix formed in each iteration)
                     DYNSEL = .FALSE.
                GO TO 100
@@ -1246,7 +1246,7 @@ C&&& BOSONS: Selection based on (approx.) boson symmetry
                GOTO 100
  41            CONTINUE
 C&&& MJSELE: Selection based on Mj symmetry,
-C            NSUBBL = # of subblocks for MJ sym. 
+C            NSUBBL = # of subblocks for MJ sym.
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
                READ(LUCMD,*) NSUBBL
@@ -1339,7 +1339,7 @@ C&&& FCKCNV2: Convergence on total Fock matrix
                CALL QUIT('Illegal prompt in DHFINP.')
             END IF
       END IF
-               
+
   300 CONTINUE
 
 !
@@ -1347,14 +1347,14 @@ C&&& FCKCNV2: Convergence on total Fock matrix
 !     ===============
 
 #ifdef MOD_EMB
-      CALL init_embedding () 
+      CALL init_embedding ()
 #endif
 
 C
 C     Determine occupation
 C     ====================
 C
-C     If there only is one symmetry there is no need to change 
+C     If there only is one symmetry there is no need to change
 C     occupation during SCF cycles.
 C
       IF (NFSYM .EQ. 1) AUTOCC = .FALSE.
@@ -1371,7 +1371,7 @@ C
          NASHT_DHF = 0
          IF (NFSYM .EQ. 1) THEN
 C
-C           The easy case: 
+C           The easy case:
 C              all electrons goes into the only symmetry!
 C
             INIOCC = .FALSE.
@@ -1429,23 +1429,23 @@ C
                DTEMP          = DTEMP +
      &                          NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
             END DO
-            IF (NELEC_DHF(IFRP).LT.0) 
+            IF (NELEC_DHF(IFRP).LT.0)
      &         CALL QUIT('DHFINP: negative number of '//
      &                   'closed shell electrons!')
-            IF (MOD(NELEC_DHF(IFRP),2).NE.0) 
+            IF (MOD(NELEC_DHF(IFRP),2).NE.0)
      &         CALL QUIT('DHFINP: odd number of '//
      &                   'closed shell electrons!')
             NISH_DHF(IFRP)  = NELEC_DHF(IFRP)/2
          END DO
          NAELEC_DHF = NINT(DTEMP)
          DO IOPEN = 1,NOPEN
-C   
+C
 C           We do allow fractional occupation of 1
 C           This corresponds to a inactive electron
 C           and gives DALPHA = 0
-C   
+C
             IF (ABS(DF(IOPEN)-D1).LE.DTHRS) THEN
-               WRITE(LUPRI,'(1X,A,I2,A,F6.4)')  
+               WRITE(LUPRI,'(1X,A,I2,A,F6.4)')
      &            'WARNING: Open shell no. ',IOPEN,
      &            ' has frac. occ. of ',DF(IOPEN)
                WRITE(LUPRI,'(1X,2A)')
@@ -1455,7 +1455,7 @@ C
                DF(IOPEN)     = D1
                DALPHA(IOPEN) = D0
             ELSE IF (ABS(DF(IOPEN)) .LE. DTHRS) THEN
-               WRITE(LUPRI,'(1X,A,I2,A,F6.4)')  
+               WRITE(LUPRI,'(1X,A,I2,A,F6.4)')
      &            'WARNING: Open shell no. ',IOPEN,
      &            ' has frac. occ. of ',DF(IOPEN)
                WRITE(LUPRI,'(1X,2A)')
@@ -1467,7 +1467,7 @@ C
             ELSE
                DM        = D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))
                DN        = DM*DF(IOPEN)
-               DA(IOPEN) = (DM*(DN-D1))/(DN*(DM-D1)) 
+               DA(IOPEN) = (DM*(DN-D1))/(DN*(DM-D1))
                DALPHA(IOPEN) = (D1-DA(IOPEN))/(D1-DF(IOPEN))
             END IF
          ENDDO
@@ -1482,7 +1482,7 @@ C
      &          ' using a set of fragment orbitals.',
      &      '   - Smallest norm accepted:',PRJTHR
         IF(PROOWN) THEN
-          WRITE(LUPRI,'(3X,A)') 
+          WRITE(LUPRI,'(3X,A)')
      &     '- Fragment orbitals are obtained from local bases !',
      &     '  The indexing of fragment spinor sets is assumed ',
      &     '  to follow list of symmetry independent nuclei.'
@@ -1495,10 +1495,10 @@ C
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
      &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
               IF(NVEC.EQ.0) THEN
-                WRITE(LUPRI,'(7X,A,A3)') 
+                WRITE(LUPRI,'(7X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
               ELSE
-                WRITE(LUPRI,'(7X,A,A3,A,A72)') 
+                WRITE(LUPRI,'(7X,A,A3,A,A72)')
      &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
               ENDIF
             ENDDO
@@ -1512,10 +1512,10 @@ C
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
      &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
               IF(NVEC.EQ.0) THEN
-                WRITE(LUPRI,'(5X,A,A3)') 
+                WRITE(LUPRI,'(5X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
               ELSE
-                WRITE(LUPRI,'(5X,A,A3,A,A72)') 
+                WRITE(LUPRI,'(5X,A,A3,A,A72)')
      &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
               ENDIF
             ENDDO
@@ -1551,9 +1551,9 @@ C     IF (LEVYLE.OR.BSS) THEN
       IF(CNVINT(1).LT.DUMMY) ITRINT(1) = 1
       IF(CNVINT(2).LT.DUMMY) ITRINT(2) = 1
 C
-C     tsaue - 
+C     tsaue -
 C     Temporary fix: load HF occupation numbers into dcborb.h
-C     
+C
       CALL TDHFORB
 
 C
@@ -1562,20 +1562,20 @@ C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(DFTHAM) THEN
-        WRITE(LUPRI,'(A)') 
+        WRITE(LUPRI,'(A)')
      &   ' DHFINP: Set-up for Kohn-Sham calculation:'
       ELSE
-        WRITE(LUPRI,'(A)') 
+        WRITE(LUPRI,'(A)')
      &   ' DHFINP: Set-up for Hartree-Fock calculation:'
-      ENDIF 
+      ENDIF
       CALL PRSYMB(LUPRI,'=',75,0)
 c
-c     We disable evaluation of LS, SS, and GT integrals in 
+c     We disable evaluation of LS, SS, and GT integrals in
 c     One-center app. type 4 /jkp
 c
       IF (ONECAP.AND.(INTV1C.EQ.4).AND.INTDEF.NE.1) THEN
          INTDEF = 1
-         WRITE(LUPRI,'(A)') 
+         WRITE(LUPRI,'(A)')
      &     ' * INTFLG reset to `1 0 0 0` since ONECAP type 4 has '//
      &     'been specified'
       END IF
@@ -1689,7 +1689,7 @@ C  TODO HJAAJ: check NISH_DHF(1/2) against gerade/ungerade NISH_BOS etc.
       END IF
 C
       IF (NOPEN.GT.0.AND.ZORA) THEN
-          WRITE(LUPRI,'(A)') 
+          WRITE(LUPRI,'(A)')
      &       'DHFINP: Open shell ZORA is not implemented yet, sorry.. '
           CALL QUIT('DHFINP ERROR: asked for ZORA Open shell calc.')
       ENDIF
@@ -1779,13 +1779,13 @@ C
 #endif
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
-         IF (AUTOCC) 
+         IF (AUTOCC)
      &      CALL QUIT('ERROR! .AUTOCC combined with overlap '//
      &           'selection does not work')
          IF(.NOT. DYNSEL) THEN
             WRITE(LUPRI,'(A)') ' * Vector selection based on overlap'
          ELSE
-            WRITE(LUPRI,'(A/3X,A)') 
+            WRITE(LUPRI,'(A/3X,A)')
      &         ' * Vector selection based on overlap ',
      &            '(dynamic update of overlap-selection matrix)'
          END IF
@@ -1797,7 +1797,7 @@ C
          AUTOCC = .FALSE.
       END IF
       IF (AUTOCC .AND. NFSYM .GT. 1) THEN
-         WRITE(LUPRI,'(A)') 
+         WRITE(LUPRI,'(A)')
      &      ' * DHF occupation is allowed to change during SCF cycles.'
       END IF
       WRITE(LUPRI,'(A)')
@@ -1878,7 +1878,7 @@ CMI =====================================================================
 
       WRITE(LUPRI,'(A,I4)')
      &' * Maximum number of preliminary BSS-SCF iterations  : ',
-     &  MAXITR2 
+     &  MAXITR2
 
       WRITE(LUPRI,'(A)')
      & ' ***** CONVERGENCE CRITERIA ON PRELIMINARY BSS-SCF *****'
@@ -2164,7 +2164,7 @@ C
             END DO
             GO TO 100
   105    CONTINUE
-C&&& POST DHF REORDER: 
+C&&& POST DHF REORDER:
 C           Reorder finished MO orbitals
 C           First read the number of orbital reorderings
 C           in each fermion corep.
@@ -2207,7 +2207,7 @@ C&&&& ORBROT: Rotate orbitals prior to SCF calculations
             ROTORB = .TRUE.
             L1ORBM = .TRUE.
             READ(LUCMD,*) ROTANG
-            READ(LUCMD,'(A72)') (VECROT(I),I=1,NFSYM)            
+            READ(LUCMD,'(A72)') (VECROT(I),I=1,NFSYM)
             GO TO 100
   111    CONTINUE
 C&&&& LUCIAREL: Call LUCIAREL
@@ -2251,22 +2251,22 @@ C
      &    'calculation (Kohn-Sham method)'
 #ifndef MOD_DFT
       IF(DODFT) THEN
-        CALL QUIT('*** DFT is not included in this version')        
+        CALL QUIT('*** DFT is not included in this version')
       ENDIF
 #endif
-      IF(DORES) WRITE(LUPRI,'(A)') 
+      IF(DORES) WRITE(LUPRI,'(A)')
      &   ' * Followed by resolution of open-shell states'
       IF(DOMP2) WRITE(LUPRI,'(A)') ' * MP2 calculation'
-      IF(DOMVO) WRITE(LUPRI,'(A)') 
+      IF(DOMVO) WRITE(LUPRI,'(A)')
      &   ' * Generate modified virtual orbitals'
       IF(DOKRMC) WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted MCSCF calculation'
 #ifndef MOD_KRMC
       IF(DOKRMC .OR. DOLUCIAR)
-     &  CALL QUIT('*** KRMCSCF is not included in this version')        
+     &  CALL QUIT('*** KRMCSCF is not included in this version')
 #endif
       IF(DOLUCIAR) THEN
-C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI 
+C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
          WRITE(LUPRI,'(A)') ' * Run LUCIAREL CI code'
          WRITE(LUPRI,'(A)') '   ERROR: not implemented yet'
          CALL QUIT('.LUCIAREL as stand-alone not implemented yet')
@@ -2278,7 +2278,7 @@ C
 C     Orbital manipulations
 C
       IF(ROTORB) THEN
-        WRITE(LUPRI,'(A)') 
+        WRITE(LUPRI,'(A)')
      &     ' * Jacobi rotations between pairs of orbitals '
         DO I = 1,NFSYM
           WRITE(LUPRI,'(A2,A1,3X,A72)') FREP(I),':',VECROT(I)
@@ -2290,7 +2290,7 @@ C
          DO I = 1,NFSYM
             WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
             IF (IREORD(I) .GT. 0) THEN
-               WRITE(LUPRI,'(5X,50(I3,A))') 
+               WRITE(LUPRI,'(5X,50(I3,A))')
      &            (IMOORD(J,I),',',J=1,IREORD(I))
             ELSE
                WRITE(LUPRI,'(5X,A)') 'No reordering'
@@ -2303,7 +2303,7 @@ C
          DO I = 1,NFSYM
             WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
             IF (IREORF(I) .GT. 0) THEN
-               WRITE(LUPRI,'(5X,50(I3,A))') 
+               WRITE(LUPRI,'(5X,50(I3,A))')
      &            (IMOORF(J,I),',',J=1,IREORF(I))
             ELSE
                WRITE(LUPRI,'(5X,A)') 'No reordering'
@@ -2768,13 +2768,13 @@ C
         WRITE(LUPRI,'(1X,A)') 'Jobs in this run:'
       ENDIF
       IF(DOVEC) WRITE(LUPRI,'(1X,A)') '* Write vectors'
-      IF(DOPOP) WRITE(LUPRI,'(1X,A)') 
+      IF(DOPOP) WRITE(LUPRI,'(1X,A)')
      &     '* Mulliken population analysis'
-      IF(DOPRJ) WRITE(LUPRI,'(1X,A)') 
+      IF(DOPRJ) WRITE(LUPRI,'(1X,A)')
      &     '* Projection onto another solution '
-      IF(DO3RHO) WRITE(LUPRI,'(1X,A)') 
+      IF(DO3RHO) WRITE(LUPRI,'(1X,A)')
      &    '* Write out density for visualization (Gaussian cube format)'
-      IF(DO1RHO) WRITE(LUPRI,'(1X,A)') 
+      IF(DO1RHO) WRITE(LUPRI,'(1X,A)')
      &     '* Punch density along lines between nuclear centers'
       IF(DO1WT) WRITE(LUPRI,'(1X,A)')
      &     '* Punch Becke weights along lines between nuclear centers'
@@ -3004,7 +3004,7 @@ C
       WRITE(LUPRI,'(1X,A)') 'POPINP: Mulliken population analysis'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') '* Gross populations'
-      IF(DONETP) WRITE(LUPRI,'(1X,A)') 
+      IF(DONETP) WRITE(LUPRI,'(1X,A)')
      &     '* Net populations and overlap'
       IF(ILABDF.EQ.1) THEN
         WRITE(LUPRI,'(1X,A)') '* Label definitions based on AO-labels'
@@ -3019,10 +3019,10 @@ C
         CALL  NUMLST(VECPOP(I),IDUMMY,NFBAS(I,0),
      &              -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A,A3)') 
+          WRITE(LUPRI,'(4X,A,A3)')
      &       '- No orbitals in fermion ircop ',FREP(I)
         ELSE
-          WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+          WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &      '- Orbitals in fermion ircop ',FREP(I),' :',VECPOP(I)
         ENDIF
       ENDDO
@@ -3155,7 +3155,7 @@ C&&& OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis 
     7          CONTINUE
 C&&& PRJADJ: Phase adjustment according to selected reference orbital
                   PRJADJ = .TRUE.
-                  READ(LUCMD,*) (IREFADJ(I),I=1,NFSYM)          
+                  READ(LUCMD,*) (IREFADJ(I),I=1,NFSYM)
                GO TO 100
     8          CONTINUE
                GO TO 100
@@ -3200,15 +3200,15 @@ C
         CALL  NUMLST(VECPRJ(I),IDUMMY,NFBAS(I,0),
      &              -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A,A3)') 
+          WRITE(LUPRI,'(4X,A,A3)')
      &       '- No orbitals in fermion ircop ',FREP(I)
         ELSE
-          WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+          WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &      '- Orbitals in fermion ircop ',FREP(I),' :',VECPRJ(I)
         ENDIF
       ENDDO
       IF(OWNBAS) THEN
-        WRITE(LUPRI,'(1X,A)') 
+        WRITE(LUPRI,'(1X,A)')
      &   '* Fragments are calculated in their individual bases !',
      &   '    The indexing of fragment spinor sets is assumed ',
      &   '    to follow list of symmetry independent nuclei.'
@@ -3221,10 +3221,10 @@ C
             CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
      &                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
             IF(NVEC.EQ.0) THEN
-              WRITE(LUPRI,'(4X,A,A3)') 
+              WRITE(LUPRI,'(4X,A,A3)')
      &           '- No orbitals in fermion ircop ',FREP(I)
             ELSE
-              WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+              WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &        '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
             ENDIF
           ENDDO
@@ -3238,10 +3238,10 @@ C
             CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
      &                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
             IF(NVEC.EQ.0) THEN
-              WRITE(LUPRI,'(4X,A,A3)') 
+              WRITE(LUPRI,'(4X,A,A3)')
      &           '- No orbitals in fermion ircop ',FREP(I)
             ELSE
-              WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+              WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &        '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
             ENDIF
           ENDDO
@@ -3400,11 +3400,11 @@ C
         CALL  NUMLST(VECPRI(I),IDUMMY,NFBAS(I,0),
      &              -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A,A3)') 
+          WRITE(LUPRI,'(4X,A,A3)')
      &       '- No orbital string specified in fermion ircop ',FREP(I)
         ELSE
           NTOT = NTOT + NVEC
-          WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+          WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &      '- Orbitals in fermion ircop ',FREP(I),' :',VECPRI(I)
         ENDIF
       ENDDO
@@ -3423,7 +3423,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamini */
       SUBROUTINE PAMINI(WORK,LWORK)
 C***********************************************************************
-C     
+C
 C     Initialize data in DIRAC
 C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
@@ -3500,7 +3500,7 @@ C
 C --->
 C
 C     Test : disable automatic conversional evaluation of
-C            one-center LS and SS integrals in ONECAP models. 
+C            one-center LS and SS integrals in ONECAP models.
 C            These can also take up quite some space !!!   /jkp
 C
       DIRSET = .TRUE.
@@ -3590,7 +3590,7 @@ Cdirac#include "functionals.h"
 #endif
 C
       LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS,DELSMALL
-      CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
+      CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, LINE*80
       DIMENSION KSOP(0:7),WORK(LWORK)
 C
@@ -3616,7 +3616,7 @@ C
       GAUNT = .FALSE.
       SYMSTP = .FALSE.
       INPERR = 0
-      CALL TITLER('Hamiltonian defined','*',127)      
+      CALL TITLER('Hamiltonian defined','*',127)
 C
 C
 C     Initialize /CBIHAM/
@@ -3690,7 +3690,7 @@ C
 #endif
 
 CMI   ...two-component_BSS stuff ...
-C     TWOCOMPBSS = .FALSE. 
+C     TWOCOMPBSS = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -3758,7 +3758,7 @@ C&&&& OPERATOR: Read in operator
      &                 WORK,LWORK,IPRGEN)
            N1OPER = N1OPER + 1
            IF(N1OPER.GT.MAX1OPER) THEN
-             WRITE(LUPRI,'(A)') 
+             WRITE(LUPRI,'(A)')
      &       '***** HAMINP ERROR *****',
      &       'Redimension MAX1OPER of /CBIHAM/ !'
              CALL QUIT('HAMINP: beyond MAX1OPER !')
@@ -3813,7 +3813,7 @@ C            Levy-Leblond implies also spinfree, specify that
              NOSMLV = .TRUE.
              SSMTRC = D0
 C            Check that we have not defined operators yet, as they need to be modified in Levy-Leblond calcs.
-             IF (I_FINFIELD.GT.0) 
+             IF (I_FINFIELD.GT.0)
      &          CALL QUIT ('give .LEVY-LEBLOND option before .OPERAT')
 C            No modifications of Hamiltonian, only new definition
 C            ICHANG = ICHANG + 1
@@ -3937,7 +3937,7 @@ C&&& INTFLG: Specify what two-integrals should be included in this run
 C&&&&&  BSS:  prepare two-component Barysz-Sadlej-Snijders
 C       transformed relativistic Hamiltonian
              BSS = .TRUE.
-C        ... read 3-digit number 
+C        ... read 3-digit number
              READ(LUCMD,*) IBSS
 CMI .... problem for open-shell dc2bss scf procedure !!!!
 CMI ...it's used in CALL GTOVLX(SMAT,SSMTRC,WORK,LWORK) ...
@@ -3971,13 +3971,13 @@ CMI      ... not active yet (planned to be used within UKBAL for the infinite or
             GO TO 100
   131     CONTINUE
 C&&& DO2C4C: jump to 4c level after few 2c iterations...
-             DO2C4C = .TRUE.  
+             DO2C4C = .TRUE.
             START2C = .TRUE.
             INI2C   = 3
             GO TO 100
   132     CONTINUE
 C&&& DO4C2C:  descend to the 2c level after 4c DC-SCF ...
-            DO4C2C = .TRUE. 
+            DO4C2C = .TRUE.
             GO TO 100
   133     CONTINUE
 C&&& CONT2C:  after 4c DC-SCF continue with BSS using picture-change transformed Fock-Dirac operator !
@@ -4003,7 +4003,7 @@ C&&& specify centers for AMFI which are to be added to the BSS+AMFI Hamiltonian
             GO TO 100
   137     CONTINUE
 C&&&  new simple keyword .IOTC replacing few others
-CMI  it's BSS_RKB+AMFI; later fix this options when interacting 
+CMI  it's BSS_RKB+AMFI; later fix this options when interacting
 CMI  with other flags...
              BSS = .TRUE.
              NOPRTR = .TRUE.
@@ -4144,21 +4144,21 @@ CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
 CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
         ENDIF
 
-        IF (.NOT.(DO4C2C.AND.CONT2C)) CONT2C=.FALSE. 
+        IF (.NOT.(DO4C2C.AND.CONT2C)) CONT2C=.FALSE.
 CMI     ... set up the default value, when BSS-postDC-SCF is on
         IF (DO4C2C.AND.I2CHAM.EQ.-1) I2CHAM=3
         IF (CONT2C) THEN
          IF (I2CHAM.NE.3.AND.I2CHAM.NE.4.AND.
      &       I2CHAM.NE.5.AND.I2CHAM.NE.6) THEN
            write(lupri,*) 'HAMINP: wrong value of I2CHAM=',I2CHAM
-          CALL QUIT('HAMINP: wrong value of I2CHAM !') 
+          CALL QUIT('HAMINP: wrong value of I2CHAM !')
          ENDIF
         ENDIF
 
 CMO     IF (DO4C2C.AND.SPINFR) THEN
 CMI       CALL QUIT(
 CMI  &'HAMINP: Conflicting options DO4C2C & SPINFR !')
-CMI     ENDIF              
+CMI     ENDIF
 
         IF (DOPRP) THEN
 CMI       CALL QUIT(
@@ -4187,10 +4187,10 @@ C          write(lupri,*) '.IOTC for .SPINFR'
          IF (GAUNT) THEN
 CMI        ... AMFI SSO+SOO terms ...
            GAUNT = .FALSE.
-           IBSS = 3999 
+           IBSS = 3999
          ENDIF
          IF (ONESYS) THEN
-           IBSS = 999   
+           IBSS = 999
          ENDIF
         ENDIF
 
@@ -4202,7 +4202,7 @@ C
         IGTINT = 1
       ENDIF
 C
-C     NZ=1 always equal to one 
+C     NZ=1 always equal to one
 C     for 2-component non-relativistic calculations
 C     NZC1 is the NZ value in C1 symmetry
 C
@@ -4317,11 +4317,11 @@ C         write(lupri,*)
       ELSE IF (TWOCOMP.AND..NOT.BSS) THEN
         WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian',
      &       '   - parameter NZ set to one'
-      ELSE 
+      ELSE
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
 
-      IF(ICHANG.GT.0) WRITE(LUPRI,'(A)') 
+      IF(ICHANG.GT.0) WRITE(LUPRI,'(A)')
      &    '   with the following modifications:'
       IF(VACPOL) THEN
          WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
@@ -4339,7 +4339,7 @@ C         write(lupri,*)
       IF(DOLVC) ISSINT = 0
 
 C
-C     Reset MC if necessary 
+C     Reset MC if necessary
 CMI/Febr.2006 for BSS/TWOCOMP it is set up later
       IF(LEVYLE) MC = 1
 C
@@ -4396,7 +4396,7 @@ C     ... first large component
 CMI ... contracted L comp. basis set in NOT for generated matrix elemensts
 CMI     but for precursive four-component matrix elements !!!
          IF (BSS.OR.DO2C4C.OR.DO4C2C) THEN
-             WRITE(LUPRI,'(2X,A)') 
+             WRITE(LUPRI,'(2X,A)')
      & 'WARNING: for BSS transformation the contracted'//
      & ' L component basis is not implemented!'
         CALL QUIT('HAMINIP: contracted basis not implemented'//
@@ -4406,7 +4406,7 @@ CMI     but for precursive four-component matrix elements !!!
          WRITE(LUPRI,'(A)')'   - uncontracted large component basis set'
       END IF
 
-CMI   ... treat the small component basis set only if not beeing 
+CMI   ... treat the small component basis set only if not beeing
 CMI   in the pure two-component mode
       IF (.NOT.TWOCOMP) THEN
 
@@ -4453,13 +4453,13 @@ C
      &      '   1: No Pre-projection in scalar basis',
      &      '   2: Removal of unphysical solutions'//
      &      ' (via diagonalization of free particle Hamiltonian)',
-     &      ' *** WARNING **** This procedure may give severe linear' 
+     &      ' *** WARNING **** This procedure may give severe linear'
      &    //'  dependence problems for large basis sets'
          ELSE
             WRITE(LUPRI,'(A)')
      &      '  Spherical large component basis and Cartesian'//
      &           ' small components ',
-     &      ' *** WARNING **** This procedure may give severe linear' 
+     &      ' *** WARNING **** This procedure may give severe linear'
      &    //'  dependence problems for large basis sets'
          ENDIF
       ELSEIF(ISPHTR.EQ.0) THEN
@@ -4477,7 +4477,7 @@ C
      &        ' ERROR: ISPHTR not legal:',ISPHTR
          CALL QUIT('HAMINP: Invalid ISPHTR!')
       ENDIF
-     
+
       ENDIF
 
 C
@@ -4519,7 +4519,7 @@ C ==================================================================
                 WRITE(LUPRI,'(1X,A)')
      &          '  - Testing HJJs penalty suggestion.'
              ELSE
-                WRITE(LUPRI,'(1X,/A/)') 
+                WRITE(LUPRI,'(1X,/A/)')
      &          '    Wrong one-center model specification !'
                 CALL QUIT('    HERRDN : ERROR in readin. ')
              END IF
@@ -4548,7 +4548,7 @@ C ==================================================================
      &    '  - Charges are distributed on the nuclei and on the ',
      &    '    midpoints between the nuclei.'
              ELSE
-                WRITE(LUPRI,'(1X,/A/)') 
+                WRITE(LUPRI,'(1X,/A/)')
      &          '    Invalid one-center model specified !'
                 CALL QUIT('    ONECAP : ERROR in readin. ')
              END IF
@@ -4564,7 +4564,7 @@ C ==================================================================
                 WRITE(LUPRI,'(1X,A)')
      &          '  - Using tabulated small component charges.'
              ELSE
-                WRITE(LUPRI,'(1X,/A/)') 
+                WRITE(LUPRI,'(1X,/A/)')
      &          '    Wrong ONECAP type 4 specification !'
                 CALL QUIT('    HERRDN : ERROR in readin. ')
              END IF
@@ -4600,12 +4600,12 @@ C         Operator must be totally symmetric
           IF(ISYXPR.NE.0) THEN
              SYMSTP = .TRUE.
              WRITE(LUPRI,'(4X,A)') '***** HAMINP ERROR *****'
-             WRITE(LUPRI,'(4X,A,A)') 
+             WRITE(LUPRI,'(4X,A,A)')
      &         'The operator is not totally symmetric under ',
      &         'the molecular point group'
                CALL REDSYM(ISYXPR,IGROUP,KSOP,NELM)
              WRITE(LUPRI,'(4X,A)') '* Possible actions:'
-             WRITE(LUPRI,'(6X,A)') 
+             WRITE(LUPRI,'(6X,A)')
      &       '1. Include operator as perturbation.'
              WRITE(LUPRI,'(6X,A,A3,A,A3,10(1X,A3))')
      &       '2. Reduce symmetry: ',GROUP,' --> ',
@@ -4617,15 +4617,15 @@ C         Operator must be symmetric under time reversal
           IF(ITRXPR.NE.1) THEN
             SYMSTP = .TRUE.
             WRITE(LUPRI,'(4X,A)') '***** HAMINP ERROR *****'
-            WRITE(LUPRI,'(4X,A,A)') 
+            WRITE(LUPRI,'(4X,A,A)')
      &         'The operator is not totally symmetric under ',
      &         'time reversal'
              WRITE(LUPRI,'(4X,A)') '* Possible actions:'
-             WRITE(LUPRI,'(6X,A)') 
+             WRITE(LUPRI,'(6X,A)')
      &       '1. Include operator as perturbation.'
           ENDIF
         ENDDO
-      ENDIF      
+      ENDIF
       IF(ONESYS) THEN
         WRITE(LUPRI,'(3X,A)') '- Two-electron part ignored '//
      &   '(one-electron system)'
@@ -4655,7 +4655,7 @@ C
      &      '  using a set of fragment orbitals.'
         WRITE(LUPRI,'(3X,A,D12.4)') '- Smallest norm accepted: ',PRJTHR
         IF(PROOWN) THEN
-          WRITE(LUPRI,'(3X,A)') 
+          WRITE(LUPRI,'(3X,A)')
      &     '- Fragment orbitals are obtained from local bases !',
      &     '  The indexing of fragment spinor sets is assumed ',
      &     '  to follow list of symmetry independent nuclei.'
@@ -4668,10 +4668,10 @@ C
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
      &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
               IF(NVEC.EQ.0) THEN
-                WRITE(LUPRI,'(7X,A,A3)') 
+                WRITE(LUPRI,'(7X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
               ELSE
-                WRITE(LUPRI,'(7X,A,A3,A,A72)') 
+                WRITE(LUPRI,'(7X,A,A3,A,A72)')
      &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
               ENDIF
             ENDDO
@@ -4685,10 +4685,10 @@ C
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
      &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
               IF(NVEC.EQ.0) THEN
-                WRITE(LUPRI,'(5X,A,A3)') 
+                WRITE(LUPRI,'(5X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
               ELSE
-                WRITE(LUPRI,'(5X,A,A3,A,A72)') 
+                WRITE(LUPRI,'(5X,A,A3,A,A72)')
      &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
               ENDIF
             ENDDO
@@ -4701,7 +4701,7 @@ C
      &      '  using a set of fragment orbitals.'
         WRITE(LUPRI,'(3X,A,D12.4)') '- Smallest norm accepted: ',PRJTHR
         IF(PROOWN) THEN
-          WRITE(LUPRI,'(3X,A)') 
+          WRITE(LUPRI,'(3X,A)')
      &     '- Fragment orbitals are obtained from local bases !',
      &     '  The indexing of fragment spinor sets is assumed ',
      &     '  to follow list of symmetry independent nuclei.'
@@ -4714,10 +4714,10 @@ C
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
      &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
               IF(NVEC.EQ.0) THEN
-                WRITE(LUPRI,'(7X,A,A3)') 
+                WRITE(LUPRI,'(7X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
               ELSE
-                WRITE(LUPRI,'(7X,A,A3,A,A72)') 
+                WRITE(LUPRI,'(7X,A,A3,A,A72)')
      &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
               ENDIF
             ENDDO
@@ -4731,10 +4731,10 @@ C
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
      &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
               IF(NVEC.EQ.0) THEN
-                WRITE(LUPRI,'(7X,A,A3)') 
+                WRITE(LUPRI,'(7X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
               ELSE
-                WRITE(LUPRI,'(7X,A,A3,A,A72)') 
+                WRITE(LUPRI,'(7X,A,A3,A,A72)')
      &          '- Orbitals in fermion ircop ',FREP(I),' :',VCPROJ(I,J)
               ENDIF
             ENDDO
@@ -4812,8 +4812,8 @@ C  /* Deck op1ini */
       SUBROUTINE OP1INI(WORK,LWORK)
 C***********************************************************************
 C
-C     Initialize one-electron integrals for standard 
-C     Dirac-Coulomb Hamiltonian and for the non-relativistic 
+C     Initialize one-electron integrals for standard
+C     Dirac-Coulomb Hamiltonian and for the non-relativistic
 C     Hamiltonian as well (MI)
 C
 C     Called from:  PAMINIP
@@ -4834,7 +4834,7 @@ C
 #include "dcbham.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),WORK(LWORK)
-     
+
       CALL QENTER('OP1INI')
 
       IF (IPRHAM.GE.7) THEN
@@ -4923,7 +4923,7 @@ C
 CMI   ... this is common
       IF (LINEAR) THEN
 C
-C        Angular momentum integrals (used in case of atomic or linear 
+C        Angular momentum integrals (used in case of atomic or linear
 C        symmetry !)
 C        ============================================================
 C
@@ -4937,7 +4937,7 @@ C
          IPANGMOM         = INDXPR
 C
          PNAME            = 'Spin z-momentum'
-         IPTYP            = 12     
+         IPTYP            = 12
          NPCOMP           = 1
          PFAC(1)          = DHALF
          PLABEL(1)        = 'OVERLAP '
@@ -4981,10 +4981,10 @@ C
       LOGICAL LBIT,DIRFCK
       CALL QENTER('TWOMEM')
 C
-      CALL TITLER('Memory required by HERMIT','*',127)      
+      CALL TITLER('Memory required by HERMIT','*',127)
       CALL PAOVEC(WORK,LWORK,0,IPRTWO)
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(A)') 
+      WRITE(LUPRI,'(A)')
      &   ' Maximum memory load for two-electron integral processing:'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
@@ -4999,19 +4999,19 @@ CMI ... memmory evaluation is based on INTGEN in dcbgen.h
       DIRFCK = .FALSE.
       IF(LBIT(INTGEN,1)) THEN
         WRITE(LUPRI,'(A)') ' * LL-integrals:'
-        CALL MEMLOP(1,DIRFCK)  
+        CALL MEMLOP(1,DIRFCK)
       ENDIF
-     
+
 CMI ... evaluate memmory for SL,SS integrals only if not beeing in two-component mode
-      IF (.NOT.TWOCOMP) THEN 
+      IF (.NOT.TWOCOMP) THEN
 
         IF(LBIT(INTGEN,2)) THEN
           WRITE(LUPRI,'(A)') ' * SL-integrals:'
-          CALL MEMLOP(2,DIRFCK)  
+          CALL MEMLOP(2,DIRFCK)
         ENDIF
         IF(LBIT(INTGEN,3)) THEN
           WRITE(LUPRI,'(A)') ' * SS-integrals:'
-          CALL MEMLOP(3,DIRFCK)  
+          CALL MEMLOP(3,DIRFCK)
         ENDIF
 
       ENDIF
@@ -5063,7 +5063,7 @@ C***********************************************************************
 C
 C     Process labels:
 C       Read a string of new label name and list of primitive
-C       labels. 
+C       labels.
 C         From pointer ILAB relating proimitve labels with new
 C       labels.
 C
@@ -5274,11 +5274,11 @@ C
         CALL  NUMLST(VECMVO(I),IDUMMY,NFBAS(I,0),
      &            -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A,A3)') 
+          WRITE(LUPRI,'(4X,A,A3)')
      &       '- No orbitals in fermion ircop ',FREP(I)
         ELSE
           NTOT = NTOT + NVEC
-          WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+          WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &    '- Orbitals in fermion ircop ',FREP(I),' :',VECMVO(I)
         ENDIF
       ENDDO
@@ -5339,7 +5339,7 @@ C
       IF (DOPRP.AND.TWOCOMP.AND..NOT.BSS) THEN
        WRITE(LUPRI,'(1X,A/)')
      & 'NB: Properties & TWOCOMP require non-relativistic'//
-     & ' form of operators !' 
+     & ' form of operators !'
 CMI  &   CALL QUIT ('Properties & TWOCOMP not implemented')
       ENDIF
 
@@ -5367,7 +5367,7 @@ C     Check for possible ways of correcting..
 CMI   IF (SS_COR_NEEDED.AND..NOT.SS_COR) THEN
       IF (SS_COR_NEEDED.AND..NOT.SS_COR.AND..NOT.TWOCOMP) THEN
          DOLVC = .TRUE.
-         WRITE (LUPRI,'(A/A)') 
+         WRITE (LUPRI,'(A/A)')
      &     " * WARNING: User asked for neglect of SS-integrals "//
      &     "without invoking a correction.",
      &     "   Activated SCC method (.LVCORR), "//
@@ -5394,7 +5394,7 @@ C
 C     Checks related to Gaunt
 C
       IF (GAUNT.AND.SOFOCK) THEN
-         WRITE (LUPRI,'(/2A)') 
+         WRITE (LUPRI,'(/2A)')
      &   'Gaunt only implemented for AO Fock builder',
      &   ' ---> switched to AOFOCK'
          SOFOCK = .FALSE.
@@ -5426,7 +5426,7 @@ C
 #include "dcbdhf.h"
 C
       IF (NAELEC_DHF .EQ. 0) THEN
-         WRITE(LUPRI,'(1X,A,I4,A)') 
+         WRITE(LUPRI,'(1X,A,I4,A)')
      &      '* Closed shell SCF calculation with ',NELECT_DHF,
      &      ' electrons in'
          DO I = 1,NFSYM
@@ -5435,32 +5435,32 @@ C
          END DO
       ELSE
          IF(AOC) THEN
-           WRITE(LUPRI,'(A/)') 
+           WRITE(LUPRI,'(A/)')
      &  ' * Open shell SCF calculation using Average-of-Configuration'
          ELSE
-           WRITE(LUPRI,'(A/)') 
+           WRITE(LUPRI,'(A/)')
      &  ' * Open shell SCF calculation using Fractional Occupation'
          ENDIF
-         WRITE(LUPRI,'(A//40X,A,2(/24X,A))') 
+         WRITE(LUPRI,'(A//40X,A,2(/24X,A))')
      &      ' * Shell specifications:',
      &      'Orbitals',
      &      '#electrons  irrep 1  irrep 2     f        a      alpha',
      &      '----------  -------  -------  -------  -------  -------'
          IF (NFSYM .EQ. 1) THEN
-            WRITE(LUPRI,1001) 
+            WRITE(LUPRI,1001)
      &         NELECT_DHF,NISH_DHF(1),DF(0),DA(0),DALPHA(0)
          ELSE
-            WRITE(LUPRI,1002) 
+            WRITE(LUPRI,1002)
      &         NELECT_DHF,NISH_DHF(1),NISH_DHF(2),DF(0),DA(0),DALPHA(0)
          END IF
          DO IOPEN = 1,NOPEN
             IF (NFSYM .EQ. 1) THEN
-               WRITE(LUPRI,1011) 
+               WRITE(LUPRI,1011)
      &            IOPEN,
      &            NINT(DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))),
      &            NACSH(1,IOPEN),DF(IOPEN),DA(IOPEN),DALPHA(IOPEN)
             ELSE
-               WRITE(LUPRI,1012) 
+               WRITE(LUPRI,1012)
      &            IOPEN,
      &            NINT(DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))),
      &            NACSH(1,IOPEN),NACSH(2,IOPEN),
@@ -5601,7 +5601,7 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A,I4)') ' * Print level: ',IPRHO1
       WRITE(LUPRI,'(A,F7.4)') ' * Grid mesh (in Angstroms): ',DSTEP
-      WRITE(LUPRI,'(A)') 
+      WRITE(LUPRI,'(A)')
      &    ' (Remember that lines can be defined by ghost centers)'
   999 CONTINUE
       RETURN
@@ -5848,7 +5848,7 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A,I4)') ' * Print level: ',IPWT1
       WRITE(LUPRI,'(A,F7.4)') ' * Grid mesh (in Angstroms): ',DSTEP
-      WRITE(LUPRI,'(A)') 
+      WRITE(LUPRI,'(A)')
      &    ' (Remember that lines can be defined by ghost centers)'
   999 CONTINUE
       RETURN
@@ -5889,7 +5889,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PRJLOC','.THRESH','.MAXITR',
      S            '.VECPRJ','.VECREF','.OWNBAS','.HESSUN',
-     S            '.HESTHR','.XXXXXX','.XXXXXX','.XXXXXX'/            
+     S            '.HESTHR','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -5907,8 +5907,8 @@ C
 C     Initialize /CBILOC/
 C     ===================
 C
-      PRJLOC = .FALSE. 
-      THRLOC = 1.0D-6      
+      PRJLOC = .FALSE.
+      THRLOC = 1.0D-6
       ITRLOC = 100
       IPRLOC = IPRGEN
       HESLOC = .FALSE.
@@ -6005,11 +6005,11 @@ C     =============
 C
       IF(.NOT. DOLOC) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 
+      WRITE(LUPRI,'(1X,A)')
      S 'LOCINP: Molecular orbital localization (Pipek-Mezey criterion)'
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(PRJLOC) THEN
-         WRITE(LUPRI,'(1X,A)') 
+         WRITE(LUPRI,'(1X,A)')
      S      '* Molecular orbital localization from projection analysis'
       ELSE
          WRITE(LUPRI,'(1X,A)')
@@ -6024,7 +6024,7 @@ C
      S     '* Maximum number of iterations :',ITRLOC
       IF(PRJLOC) THEN
          IF(OWNBAS) THEN
-            WRITE(LUPRI,'(1X,A)') 
+            WRITE(LUPRI,'(1X,A)')
      S   '* Fragments are calculated in their individual bases !',
      S   '    The indexing of fragment spinor sets is assumed ',
      S   '    to follow list of symmetry independent nuclei.'
@@ -6037,10 +6037,10 @@ C
                  CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
      S                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
                  IF(NVEC.EQ.0) THEN
-                    WRITE(LUPRI,'(4X,A,A3)') 
+                    WRITE(LUPRI,'(4X,A,A3)')
      S                   '- No orbitals in fermion ircop ',FREP(I)
                  ELSE
-                    WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+                    WRITE(LUPRI,'(4X,A,A3,A,A72)')
      S           '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
                  ENDIF
               ENDDO
@@ -6054,17 +6054,17 @@ C
                  CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
      S                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
                  IF(NVEC.EQ.0) THEN
-                    WRITE(LUPRI,'(4X,A,A3)') 
+                    WRITE(LUPRI,'(4X,A,A3)')
      S                   '- No orbitals in fermion ircop ',FREP(I)
                  ELSE
-                    WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+                    WRITE(LUPRI,'(4X,A,A3,A,A72)')
      S          '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
                  ENDIF
               ENDDO
            ENDDO
         ENDIF
       ENDIF
-      WRITE(LUPRI,'(1X,A)') 
+      WRITE(LUPRI,'(1X,A)')
      S     '* Localised MO are written in file DFCOEF !!!'
       WRITE(LUPRI,'(1X,A,I5)') '* Print level :',IPRLOC
  999   CONTINUE
@@ -6074,15 +6074,13 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck plot_inp */
       SUBROUTINE PLOT_INP(WORD,RESET,WORK,LWORK)
-C  .....................................................................
-C  .  description:                                                     .
-C  .  input section for {1,2,3}-dimensional plot                       .
-C  .  copy-and-paste-and-modify-a-little-job                           .
-C  .  used Trond's respective routines                                 .
-C  .....................................................................
-C  .  author:                                          last revision:  .
-C  .  radovan bast                                     october 2005    .
-C  .....................................................................
+C=======================================================================
+C     input section for {1,2,3}-dimensional plot
+C     copy-and-paste-and-modify-a-little-job
+C     used Trond's respective routines
+C-----------------------------------------------------------------------
+C     radovan bast                              last revision: june 2006
+C=======================================================================
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -6104,7 +6102,7 @@ C
      &            '.3D    ','.DENSIT','.SPIN  ','.CURREN',
      &            '.ELF   ','.D1DSTE','.D3DSTA','.D3DNOR',
      &            '.CUBE  ','.LAPLAC','.NXVEC ','.STRING',
-     &            '.SKIPEP','.SKIPEE','.XXXXXX','.XXXXXX'/
+     &            '.SKIPEP','.SKIPEE','.RXJ   ','.XXXXXX'/
       DATA SET /.FALSE./
 C
       IF(SET) THEN
@@ -6130,8 +6128,11 @@ C
       PLOTCURRENTDENSITY = .FALSE.
       PLOTELF            = .FALSE.
       PLOTLAPLACIAN      = .FALSE.
+      PLOTRXJ            = .FALSE.
+C
       PLOTSKIPEP         = .FALSE.
       PLOTSKIPEE         = .FALSE.
+      USEORBSTRING       = .FALSE.
 C
       IPLOT              = 0
       NCUBE(1)           = 80
@@ -6143,8 +6144,6 @@ C
       D1DSTEP            = 0.01D0
       D3DSTART           = 4.0D0
       D3DNORM            = 8.0D0
-C
-      USEORBSTRING       = .FALSE.
 C
 C
 C     process input
@@ -6230,6 +6229,7 @@ C
           PLOTSKIPEE = .TRUE.
           GOTO 100
    19     CONTINUE
+          PLOTRXJ = .TRUE.
           GOTO 100
    20     CONTINUE
           GOTO 100
@@ -6243,7 +6243,7 @@ C
         ENDIF
       ENDIF
   300 CONTINUE
-C     
-C     
+C
+C
       RETURN
       END
