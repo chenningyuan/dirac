@@ -123,7 +123,7 @@ C
         DO I = IORBSTRING1BEGIN,IORBSTRING1END
           WORK(KDORBSTRING1-1+I) = D1
         ENDDO
-        
+
         IF(NFSYM.GT.1) THEN
           IF(ORBSTRING2(4:5).EQ.'..') THEN
             READ(ORBSTRING2(1:3),'(I3)') IORBSTRING2BEGIN
@@ -165,9 +165,9 @@ C     generate density matrix
 C     =======================
 C
       IF(READXVECFILE) THEN
-        CALL PERDMAT(WORK(KCMO),WORK(KDMATBF),WORK(KTMATBF),
-     &               WORK(KDORBSTRING1),WORK(KDORBSTRING2),
-     &               WORK(KFREE),LFREE)
+        CALL MODIFIED_DMAT(WORK(KCMO),WORK(KDMATBF),WORK(KTMATBF),
+     &                     WORK(KDORBSTRING1),WORK(KDORBSTRING2),
+     &                     WORK(KFREE),LFREE)
       ELSE
         CALL OCCUPYDMATORB(WORK(KDMATORB),
      &                     WORK(KDORBSTRING1),WORK(KDORBSTRING2))
@@ -226,7 +226,7 @@ C
 #include "dcbplot.h"
 #include "dcborb.h"
 C
-      DIMENSION DMATBF(N2BBASX,NZ),
+      DIMENSION DMATBF(*),
      &          GAO(*),GAO1(*),GAO2(*),
      &          CMO(*),NCNT(*),COORD(3,2),BUF(*),
      &          WORK(*)
@@ -416,7 +416,8 @@ C
 C           get necessary stuff
 C           ===================
 C
-            CALL GETQUANTITY(DMATBF,GAO,GAO1,GAO2,CMO,PX,PY,PZ,
+            CALL GETQUANTITY(DMATBF,GAO,GAO1,GAO2,
+     &                       PX,PY,PZ,
      &                       NCNT,COORD,BUF,IPRINT,
      &                       DENSITY,
      &                       SPINDENSITY(1),
@@ -426,7 +427,7 @@ C
      &                       WORK,KFREE,LFREE)
 C
 C
-C           write to file 
+C           write to file
 C           =============
 C
             PP  = XTANG*PP
@@ -484,8 +485,8 @@ C
 C
 C
 C       loop over all centers
-C       =====================     
-C     
+C       =====================
+C
         I = 0
         DO J = 1,NUCIND
           K = ISTBNU(J)
@@ -522,18 +523,18 @@ C
           DO I = 0,3
             WRITE(LU3DDENSITY,'(I5,4F12.6)')
      &                                    NCUBE(I), (D3DSTEP(J,I),J=1,3)
-          ENDDO      
+          ENDDO
           DO I = 1,NUCDEP
             WRITE(LU3DDENSITY,'(I5,4F12.6)')
      &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
-          ENDDO      
+          ENDDO
         ENDIF
         IF(PLOTELF) THEN
           WRITE(LU3DELF,'(A)') 'some'
           WRITE(LU3DELF,'(A)') 'text'
           DO I = 0,3
             WRITE(LU3DELF,'(I5,4F12.6)') NCUBE(I), (D3DSTEP(J,I),J=1,3)
-          ENDDO      
+          ENDDO
           DO I = 1,NUCDEP
             WRITE(LU3DELF,'(I5,4F12.6)')
      &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
@@ -545,7 +546,7 @@ C
           DO I = 0,3
             WRITE(LU3DLAPLACIAN,'(I5,4F12.6)') NCUBE(I),
      &                                              (D3DSTEP(J,I),J=1,3)
-          ENDDO      
+          ENDDO
           DO I = 1,NUCDEP
             WRITE(LU3DLAPLACIAN,'(I5,4F12.6)')
      &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
@@ -557,7 +558,7 @@ C
           DO I = 0,3
             WRITE(LU3DSPINDENSITY,'(I5,4F12.6)') NCUBE(I),
      &                                              (D3DSTEP(J,I),J=1,3)
-          ENDDO      
+          ENDDO
           DO I = 1,NUCDEP
             WRITE(LU3DSPINDENSITY,'(I5,4F12.6)')
      &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
@@ -569,7 +570,7 @@ C
           DO I = 0,3
             WRITE(LU3DCURRENTDENSITY,'(I5,4F12.6)') NCUBE(I),
      &                                              (D3DSTEP(J,I),J=1,3)
-          ENDDO      
+          ENDDO
           DO I = 1,NUCDEP
             WRITE(LU3DCURRENTDENSITY,'(I5,4F12.6)')
      &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
@@ -618,7 +619,8 @@ C
 C             get necessary stuff
 C             ===================
 C
-              CALL GETQUANTITY(DMATBF,GAO,GAO1,GAO2,CMO,PX,PY,PZ,
+              CALL GETQUANTITY(DMATBF,GAO,GAO1,GAO2,
+     &                         PX,PY,PZ,
      &                         NCNT,COORD,BUF,IPRINT,
      &                         DENSITY(0,KCUBE),
      &                         SPINDENSITY(KCUBE),
@@ -699,7 +701,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck dostuff */
-      SUBROUTINE GETQUANTITY(DMATBF,GAO,GAO1,GAO2,CMO,PX,PY,PZ,
+      SUBROUTINE GETQUANTITY(DMATBF,GAO,GAO1,GAO2,
+     &                       PX,PY,PZ,
      &                       NCNT,COORD,BUF,IPRINT,
      &                       DENSITY,
      &                       SPINDENSITY,
@@ -730,8 +733,8 @@ C
 #include "dcbham.h"
 #include "dcbxrs.h"
 C
-      DIMENSION DMATBF(N2BBASX,NZ),
-     &          GAO(*),GAO1(*),GAO2(*),CMO(*),
+      DIMENSION DMATBF(*),
+     &          GAO(*),GAO1(*),GAO2(*),
      &          NCNT(*),COORD(3,2),BUF(*),
      &          WORK(*)
 C
@@ -756,11 +759,12 @@ C
 C     density
 C     =======
 C
+      WRITE(0,*) 'debug in visual irep_plot', IREP_PLOT
       DENSITY(0) = D0
       DO IC = 1,MC
         DENSITY(IC) = D0
-        CALL GETRH1(DENSITY(IC),IC,0,GAO,DMATBF,BUF)
-        DENSITY(0) = DENSITY(0)+DENSITY(IC)
+        CALL GETRH1(DENSITY(IC),IC,IREP_PLOT,GAO,DMATBF,BUF)
+        DENSITY(0) = DENSITY(0) + DENSITY(IC)
       ENDDO
 C
 C
@@ -884,18 +888,17 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck perdmat */
-      SUBROUTINE PERDMAT(CMO,DMATBF,TMATBF,DORBSTRING1,DORBSTRING2,
-     &                   WORK,LWORK)
-C  .....................................................................
-C  .  description:                                                     .
-C  .  fill density matrix                                              .
-C  .  with components of the solution vector                           .
-C  .  these are read in from XVECFILE                                  .
-C  .....................................................................
-C  .  author:                                          last revision:  .
-C  .  radovan bast                                     october 2005    .
-C  .....................................................................
+C     /* deck modified_dmat */
+      SUBROUTINE MODIFIED_DMAT(CMO,DMATBF,TMATBF,
+     &                         DORBSTRING1,DORBSTRING2,
+     &                         WORK,LWORK)
+C=======================================================================
+C     fill density matrix
+C     with components of the solution vector
+C     these are read in from XVECFILE
+C-----------------------------------------------------------------------
+C     radovan bast                              last revision: june 2006
+C=======================================================================
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -919,16 +922,9 @@ C
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
 C
 C
-      CALL QENTER('PERDMAT')
+      CALL QENTER('MODIFIED_DMAT')
 C
 #include "memint.h"
-C
-C
-C     init
-C     ====
-C
-      JSYMOP     = 1
-      JOPSY      = 1
 C
 C
 C     check if solution vector file is there and open it
@@ -936,7 +932,9 @@ C     ==================================================
 C
       INQUIRE(FILE = XVECFILE,EXIST = TOBE)
       IF(.NOT.TOBE) THEN
-C       panic
+        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+        WRITE(LUPRI,'(A)') 'solution vector file not found'
+        CALL QUIT('ERROR in PLOT')
       ENDIF
       LUXVEC = 17
       OPEN(LUXVEC,FILE = XVECFILE,STATUS = 'OLD',
@@ -956,7 +954,7 @@ C
       READ(LUXVEC) LAB1
       BACKSPACE(LUXVEC)
       IF(LAB1.EQ.'END_OF_THIS_FILE') THEN
-        GOTO 2
+        GOTO 10
       ENDIF
       READ(LUXVEC) LAB1, LAB2, TYP1
       BACKSPACE(LUXVEC)
@@ -974,7 +972,10 @@ C
         READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
      &               JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
      &               DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        IF(NREADSEE.EQ.NXVEC) NBDIMEE = LEN/NZ
+        IF(NREADSEE.EQ.NXVEC) THEN
+          JSYMOPEE = JSYMOP1
+          NBDIMEE = LEN/NZ
+        ENDIF
         READ(LUXVEC)
 C
       ELSEIF(TYP1(1:1).EQ.'P') THEN
@@ -990,14 +991,17 @@ C
         READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
      &               JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
      &               DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        IF(NREADSEP.EQ.NXVEC) NBDIMEP = LEN/NZ
+        IF(NREADSEP.EQ.NXVEC) THEN
+          JSYMOPEP = JSYMOP1
+          NBDIMEP = LEN/NZ
+        ENDIF
         READ(LUXVEC)
 C
       ELSE
         GOTO 12
       ENDIF
       GOTO 1
- 2    CONTINUE
+ 10   CONTINUE
 C
 C
 C     consistency
@@ -1066,9 +1070,6 @@ C
           IF(I.EQ.NXVEC) THEN
             CALL DZERO(WORK(KBVECEE),NBDIMEE*NZ)
             CALL READT(LUXVEC,NBDIMEE*NZ,WORK(KBVECEE))
-            WRITE(LUPRI,*) 'inside PERDMAT: BVECEE'
-            CALL PRQMAT(WORK(KBVECEE),NBDIMEE,1,NBDIMEE,1,
-     &                  NZ,IPQTOQ(1,0),LUPRI)
           ELSE
             READ(LUXVEC)
           ENDIF
@@ -1081,9 +1082,6 @@ C
           IF(I.EQ.NXVEC) THEN
             CALL DZERO(WORK(KBVECEP),NBDIMEP*NZ)
             CALL READT(LUXVEC,NBDIMEP*NZ,WORK(KBVECEP))
-            WRITE(LUPRI,*) 'inside PERDMAT: BVECEP'
-            CALL PRQMAT(WORK(KBVECEP),NBDIMEP,1,NBDIMEP,1,
-     &                  NZ,IPQTOQ(1,0),LUPRI)
           ELSE
             READ(LUXVEC)
           ENDIF
@@ -1103,65 +1101,60 @@ C
 C     scatter vector
 C     ==============
 C
-      NE     = NESH(1)+NESH(2)
-      NP     = NORBT-NE
-      NEI    = NISH(1)+NISH(2)
-      NEA    = NE-NEI
-C
+      ICOUNTEREE = 1
+      ICOUNTEREP = 1
       CALL DZERO(WORK(KBMAT),N2ORBXQ)
-      IF(.NOT.PLOTSKIPEE) THEN
-        JOFF = 0
-        DO IZ = 1,NZ
-          IOFF = 0
-          IOFF = IOFF+NORBT*NORBT*(IZ-1)
-          IOFF = IOFF+NORBT*NP
-          DO II = 1,NEI
-            IOFF = IOFF+NP+NEI
-            DO IA = 1,NEA
-              IF(DORBSTRING1(II).EQ.D1) THEN
-                WORK(KBMAT+IOFF) = WORK(KBVECEE+JOFF)
-              ENDIF
-              IOFF = IOFF+1
-              JOFF = JOFF+1
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDIF
-C
-      IF(.NOT.PLOTSKIPEP) THEN
-        JOFF = 0
-        DO IZ = 1,NZ
-          IOFF = 0
-          IOFF = IOFF+NORBT*NORBT*(IZ-1)
-          IOFF = IOFF+NORBT*NP
-          DO II = 1,NEI
-            DO IA = 1,NP
-              IF(DORBSTRING1(II).EQ.D1) THEN
-                WORK(KBMAT+IOFF) = WORK(KBVECEP+JOFF)
-              ENDIF
-              IOFF = IOFF+1
-              JOFF = JOFF+1
-            ENDDO
-            IOFF = IOFF+NE
-          ENDDO
-        ENDDO
-      ENDIF
+      DO IZ = 1,NZ
+        IF(NFSYM.EQ.1) THEN
+          CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
+     &                      ICOUNTEREE,ICOUNTEREP,
+     &                      WORK(KBMAT),
+     &                      IZ,
+     &                      1,1)
+        ELSE
+          IF(IHEE.EQ.1) THEN
+            CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
+     &                        ICOUNTEREE,ICOUNTEREP,
+     &                        WORK(KBMAT),
+     &                        IZ,
+     &                        1,2)
+            CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
+     &                        ICOUNTEREE,ICOUNTEREP,
+     &                        WORK(KBMAT),
+     &                        IZ,
+     &                        2,1)
+          ELSE
+            CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
+     &                        ICOUNTEREE,ICOUNTEREP,
+     &                        WORK(KBMAT),
+     &                        IZ,
+     &                        1,1)
+            CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
+     &                        ICOUNTEREE,ICOUNTEREP,
+     &                        WORK(KBMAT),
+     &                        IZ,
+     &                        2,2)
+          ENDIF
+        ENDIF
+      ENDDO
 C
 C
 C     symmetrize
 C     ==========
 C
-      WRITE(LUPRI,*) 'inside PERDMAT: BMAT'
-      CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
-     &            NZ,IPQTOQ(1,0),LUPRI)
+      JSYMOP    = JSYMOPEE
+      IREP_PLOT = JSYMOP - 1
+C     JOPSY     = JBTOF(JSYMOP,1)
+      JOPSY     = 1
+C
       DO IZ = 1,NZ
         IOFF = NORBT*NORBT*(IZ-1)
-C       CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF))
-        CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
+        CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF))
+C       CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
       ENDDO
-C     WRITE(LUPRI,*) 'inside PERDMAT: (anti)symmetric BMAT'
+C     WRITE(LUPRI,*) 'BMAT symmetrized/antisymmetrized'
 C     CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
-C    &            NZ,IPQTOQ(1,0),LUPRI)
+C    &            NZ,IPQTOQ(1,IREP_PLOT),LUPRI)
 C
 C
 C     get density matrix
@@ -1171,29 +1164,86 @@ C
       IF(.NOT.PLOTSKIPEE) THEN
         ITYP = 0*1+0*2
         CALL DMOLI3(ITYP,IHEE,DMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
-C       WRITE(LUPRI,*) 'inside PERDMAT: DMATBF'
-C       CALL PRQMAT(DMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-C    &              NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
       IF(.NOT.PLOTSKIPEP) THEN
         ITYP = 1*1+0*2
         CALL DZERO(TMATBF,N2BBASXQ)
         CALL DMOLI3(ITYP,IHEP,TMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
-C       WRITE(LUPRI,*) 'inside PERDMAT: TMATBF'
-C       CALL PRQMAT(TMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-C    &              NZ,IPQTOQ(1,0),LUPRI)
         CALL DAXPY(N2BBASXQ,D1,TMATBF,1,DMATBF,1)
       ENDIF
-C     WRITE(LUPRI,*) 'inside PERDMAT: final DMATBF'
+C     WRITE(LUPRI,*) 'final DMATBF'
 C     CALL PRQMAT(DMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-C    &            NZ,IPQTOQ(1,0),LUPRI)
+C    &            NZ,IPQTOQ(1,IREP_PLOT),LUPRI)
+C     WRITE(LUPRI,*) 'final DMATBF: ',
+C    &               DDOT(N2BBASXQ,DMATBF,1,DMATBF,1)
+      CALL DSCAL(N2BBASXQ,-D1,DMATBF,1)
 C
 C
 C     release memory
 C     ==============
 C
-      CALL MEMREL('PERDMAT',WORK,KBVECEE,KBVECEE,KFREE,LFREE)
-      CALL QEXIT('PERDMAT')
+      CALL MEMREL('MODIFIED_DMAT',WORK,KBVECEE,KBVECEE,KFREE,LFREE)
+      CALL QEXIT('MODIFIED_DMAT')
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck scatter_bvec */
+      SUBROUTINE SCATTER_BVEC(BVECEE,BVECEP,
+     &                        ICOUNTEREE,ICOUNTEREP,
+     &                        BMAT,
+     &                        IZ,
+     &                        IFSYM1,IFSYM2)
+C=======================================================================
+C     scatter solution vector onto BMAT
+C-----------------------------------------------------------------------
+C     radovan bast                              last revision: june 2006
+C=======================================================================
+C
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C
+#include "dcborb.h"
+#include "dcbplot.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+C
+      DIMENSION BVECEE(*),BVECEP(*),BMAT(NORBT,NORBT,NZ),
+     &          NEI(2),NES(2),NP(2)
+C
+C
+      NEI(1) = NISH(1)
+      NES(1) = NESH(1) - NISH(1)
+      NP(1)  = NPSH(1)
+C
+      NEI(2) = NISH(2)
+      NES(2) = NESH(2) - NISH(2)
+      NP(2)  = NPSH(2)
+C
+      II1 = 1 + NP(1) + (NEI(1)+NES(1)+NP(2))*(IFSYM1-1)
+      II2 = II1 + NEI(IFSYM1) - 1
+      IS1 = 1 + (NP(1)+NEI(1)+NES(1))*(IFSYM2-1)
+      IS2 = IS1 + NP(IFSYM2) - 1
+      IS3 = IS2 + NEI(IFSYM2) + 1
+      IS4 = IS3 + NES(IFSYM2) - 1
+C
+      DO II = II1,II2
+        IF(.NOT.PLOTSKIPEP) THEN
+          DO IS = IS1,IS2
+            BMAT(IS,II,IZ) = BVECEP(ICOUNTEREP)
+            ICOUNTEREP = ICOUNTEREP + 1
+          ENDDO
+        ENDIF
+        IF(.NOT.PLOTSKIPEE) THEN
+          DO IS = IS3,IS4
+            BMAT(IS,II,IZ) = BVECEE(ICOUNTEREE)
+            ICOUNTEREE = ICOUNTEREE + 1
+          ENDDO
+        ENDIF
+      ENDDO
 C
 C
       RETURN
@@ -1201,13 +1251,11 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck dmatorb2bf */
       SUBROUTINE DMATORB2BF(CMO,DMATBF,DMATORB,WORK,LWORK)
-C  .....................................................................
-C  .  description:                                                     .
-C  .  transform orbital density matrix to bf density matrix            .
-C  .....................................................................
-C  .  author:                                          last revision:  .
-C  .  radovan bast                                     october 2005    .
-C  .....................................................................
+C=======================================================================
+C     transform orbital density matrix to bf density matrix
+C-----------------------------------------------------------------------
+C     radovan bast                              last revision: june 2006
+C=======================================================================
 C
 #include "implicit.h"
 C
@@ -1224,12 +1272,8 @@ C
 C
       CALL DZERO(DMATBF,N2BBASXQ)
 C
-C     CALL PRQMAT(DMATORB,NORBT,NORBT,NORBT,NORBT,
-C    &            NZ,IPQTOQ(1,0),0)
-C
       DO I = 1,NFSYM
         CALL QTRANS('MOAO','S',D0,
-C       CALL QTRANS('MOAO','A',D0,
      &              NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
      &              DMATBF(1+I2BASX(I,I)),
      &              NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
@@ -1241,11 +1285,6 @@ C       CALL QTRANS('MOAO','A',D0,
      &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &              WORK(KFREE),LFREE,IPRINT)
       ENDDO
-C
-C     CALL PRQMAT(CMO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-C    &            NZ,IPQTOQ(1,0),0)
-C     CALL PRQMAT(DMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-C    &            NZ,IPQTOQ(1,0),0)
 C
 C
       RETURN
