@@ -182,7 +182,7 @@ C     =================
 C
       CALL PLOT(WORK(KDMATBF),
      &          WORK(KGAO),WORK(KGAO1),WORK(KGAO2),
-     &          WORK(KCMO),WORK(KNCNT),WORK(KCOOR),WORK(KBUF),
+     &          WORK(KNCNT),WORK(KCOOR),WORK(KBUF),
      &          WORK,KFREE,LFREE)
 C
 C
@@ -199,7 +199,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck plot */
       SUBROUTINE PLOT(DMATBF,
      &                GAO,GAO1,GAO2,
-     &                CMO,NCNT,COOR,BUF,
+     &                NCNT,COOR,BUF,
      &                WORK,KFREE,LFREE)
 C  .....................................................................
 C  .  description:                                                     .
@@ -228,7 +228,7 @@ C
 C
       DIMENSION DMATBF(*),
      &          GAO(*),GAO1(*),GAO2(*),
-     &          CMO(*),NCNT(*),COORD(3,2),BUF(*),
+     &          NCNT(*),COORD(3,2),BUF(*),
      &          WORK(*)
 C
       DIMENSION DENSITY(0:2,NCUBE(3)),
@@ -236,6 +236,7 @@ C
      &          CURRENTDENSITY(NCUBE(3)),
      &          ELF(NCUBE(3)),
      &          DLAPLACIAN(NCUBE(3)),
+     &          RXJ(NCUBE(3)),
      &          PAIRCOORA(100,3),PAIRCOORB(100,3),
      &          D3DSTEP(3,0:3),ATOMXYZ(4,NUCDEP)
 C
@@ -314,6 +315,13 @@ C
           LU3D = LU3D+1
           OPEN(LU3DCURRENTDENSITY,
      &         FILE = 'PLOT3D.CURRENTDENSITY.cube',STATUS = 'NEW',
+     &         ACCESS = 'SEQUENTIAL',FORM = 'FORMATTED')
+        ENDIF
+        IF(PLOTRXJ) THEN
+          LU3DRXJ = LU3D
+          LU3D = LU3D+1
+          OPEN(LU3DRXJ,
+     &         FILE = 'PLOT3D.RXJ.cube',STATUS = 'NEW',
      &         ACCESS = 'SEQUENTIAL',FORM = 'FORMATTED')
         ENDIF
       ENDIF
@@ -416,14 +424,16 @@ C
 C           get necessary stuff
 C           ===================
 C
-            CALL GETQUANTITY(DMATBF,GAO,GAO1,GAO2,
+            CALL GETQUANTITY(DMATBF,
+     &                       GAO,GAO1,GAO2,
      &                       PX,PY,PZ,
      &                       NCNT,COORD,BUF,IPRINT,
      &                       DENSITY,
-     &                       SPINDENSITY(1),
-     &                       CURRENTDENSITY(1),
-     &                       ELF(1),
-     &                       DLAPLACIAN(1),
+     &                       SPINDENSITY,
+     &                       CURRENTDENSITY,
+     &                       ELF,
+     &                       DLAPLACIAN,
+     &                       RXJ,
      &                       WORK,KFREE,LFREE)
 C
 C
@@ -544,8 +554,8 @@ C
           WRITE(LU3DLAPLACIAN,'(A)') 'some'
           WRITE(LU3DLAPLACIAN,'(A)') 'text'
           DO I = 0,3
-            WRITE(LU3DLAPLACIAN,'(I5,4F12.6)') NCUBE(I),
-     &                                              (D3DSTEP(J,I),J=1,3)
+            WRITE(LU3DLAPLACIAN,'(I5,4F12.6)')
+     &                                    NCUBE(I), (D3DSTEP(J,I),J=1,3)
           ENDDO
           DO I = 1,NUCDEP
             WRITE(LU3DLAPLACIAN,'(I5,4F12.6)')
@@ -556,8 +566,8 @@ C
           WRITE(LU3DSPINDENSITY,'(A)') 'some'
           WRITE(LU3DSPINDENSITY,'(A)') 'text'
           DO I = 0,3
-            WRITE(LU3DSPINDENSITY,'(I5,4F12.6)') NCUBE(I),
-     &                                              (D3DSTEP(J,I),J=1,3)
+            WRITE(LU3DSPINDENSITY,'(I5,4F12.6)')
+     &                                    NCUBE(I), (D3DSTEP(J,I),J=1,3)
           ENDDO
           DO I = 1,NUCDEP
             WRITE(LU3DSPINDENSITY,'(I5,4F12.6)')
@@ -568,11 +578,22 @@ C
           WRITE(LU3DCURRENTDENSITY,'(A)') 'some'
           WRITE(LU3DCURRENTDENSITY,'(A)') 'text'
           DO I = 0,3
-            WRITE(LU3DCURRENTDENSITY,'(I5,4F12.6)') NCUBE(I),
-     &                                              (D3DSTEP(J,I),J=1,3)
+            WRITE(LU3DCURRENTDENSITY,'(I5,4F12.6)')
+     &                                    NCUBE(I), (D3DSTEP(J,I),J=1,3)
           ENDDO
           DO I = 1,NUCDEP
             WRITE(LU3DCURRENTDENSITY,'(I5,4F12.6)')
+     &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
+          ENDDO
+        ENDIF
+        IF(PLOTRXJ) THEN
+          WRITE(LU3DRXJ,'(A)') 'some'
+          WRITE(LU3DRXJ,'(A)') 'text'
+          DO I = 0,3
+            WRITE(LU3DRXJ,'(I5,4F12.6)') NCUBE(I), (D3DSTEP(J,I),J=1,3)
+          ENDDO
+          DO I = 1,NUCDEP
+            WRITE(LU3DRXJ,'(I5,4F12.6)')
      &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
           ENDDO
         ENDIF
@@ -619,7 +640,8 @@ C
 C             get necessary stuff
 C             ===================
 C
-              CALL GETQUANTITY(DMATBF,GAO,GAO1,GAO2,
+              CALL GETQUANTITY(DMATBF,
+     &                         GAO,GAO1,GAO2,
      &                         PX,PY,PZ,
      &                         NCNT,COORD,BUF,IPRINT,
      &                         DENSITY(0,KCUBE),
@@ -627,6 +649,7 @@ C
      &                         CURRENTDENSITY(KCUBE),
      &                         ELF(KCUBE),
      &                         DLAPLACIAN(KCUBE),
+     &                         RXJ(KCUBE),
      &                         WORK,KFREE,LFREE)
 C
 C
@@ -637,8 +660,7 @@ C           write buffer
 C           ============
 C
             IF(PLOTDENSITY) THEN
-              WRITE(LU3DDENSITY,'(6E13.5)')
-     &                                       (DENSITY(0,M),M=1,NCUBE(3))
+              WRITE(LU3DDENSITY,'(6E13.5)') (DENSITY(0,M),M=1,NCUBE(3))
             ENDIF
             IF(PLOTELF) THEN
               WRITE(LU3DELF,'(6E13.5)') (ELF(M),M=1,NCUBE(3))
@@ -654,6 +676,9 @@ C
             IF(PLOTCURRENTDENSITY) THEN
               WRITE(LU3DCURRENTDENSITY,'(6E13.5)')
      &                                  (CURRENTDENSITY(M),M=1,NCUBE(3))
+            ENDIF
+            IF(PLOTRXJ) THEN
+              WRITE(LU3DRXJ,'(6E13.5)') (RXJ(M),M=1,NCUBE(3))
             ENDIF
 C
 C
@@ -694,29 +719,32 @@ C
         IF(PLOTCURRENTDENSITY) THEN
           CLOSE(LU3DCURRENTDENSITY,STATUS = 'KEEP')
         ENDIF
+        IF(PLOTRXJ) THEN
+          CLOSE(LU3DRXJ,STATUS = 'KEEP')
+        ENDIF
       ENDIF
 C
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck dostuff */
-      SUBROUTINE GETQUANTITY(DMATBF,GAO,GAO1,GAO2,
+C     /* deck getquantity */
+      SUBROUTINE GETQUANTITY(DMATBF,
+     &                       GAO,GAO1,GAO2,
      &                       PX,PY,PZ,
      &                       NCNT,COORD,BUF,IPRINT,
      &                       DENSITY,
-     &                       SPINDENSITY,
-     &                       CURRENTDENSITY,
+     &                       SPINDENSITY_NORM,
+     &                       CURRENTDENSITY_NORM,
      &                       ELF,
      &                       DLAPLACIAN,
+     &                       RXJ_NORM,
      &                       WORK,KFREE,LFREE)
-C  .....................................................................
-C  .  description:                                                     .
-C  .                                                                   .
-C  .....................................................................
-C  .  author:                                          last revision:  .
-C  .  radovan bast                                     october 2005    .
-C  .....................................................................
+C=======================================================================
+C     description ...
+C-----------------------------------------------------------------------
+C     radovan bast                              last revision: june 2006
+C=======================================================================
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -736,10 +764,12 @@ C
       DIMENSION DMATBF(*),
      &          GAO(*),GAO1(*),GAO2(*),
      &          NCNT(*),COORD(3,2),BUF(*),
+     &          DENSITY(0:2),
+     &          GRADIENT(3),
+     &          SPINDENSITY(3),
+     &          CURRENTDENSITY(3),
+     &          RXJ(3),
      &          WORK(*)
-C
-      DIMENSION DENSITY(0:2),GRADIENT(3),
-     &          CURRENT(4),SPIN(4)
 C
 C
 C     pre-stuff
@@ -749,17 +779,19 @@ C
         CALL GETSOS(GAO,GAO1,GAO2,TEMP,NCNT,PX,PY,PZ,
      &              BUF,WORK(KFREE),LFREE,NTBAS(0),2,.FALSE.,IPRINT)
       ELSE
-        CALL GETSOS(GAO,GAO1,TEMP,TEMP,NCNT,PX,PY,PZ,
-     &              BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,IPRINT)
-C       CALL GETSOS(GAO,TEMP,TEMP,TEMP,TEMP,PX,PY,PZ,
-C    &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,IPRINT)
+        IF(PLOTELF) THEN
+          CALL GETSOS(GAO,GAO1,TEMP,TEMP,NCNT,PX,PY,PZ,
+     &                BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,IPRINT)
+        ELSE
+          CALL GETSOS(GAO,TEMP,TEMP,TEMP,TEMP,PX,PY,PZ,
+     &                BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,IPRINT)
+        ENDIF
       ENDIF
 C
 C
 C     density
 C     =======
 C
-      WRITE(0,*) 'debug in visual irep_plot', IREP_PLOT
       DENSITY(0) = D0
       DO IC = 1,MC
         DENSITY(IC) = D0
@@ -771,7 +803,7 @@ C
 C     gradient
 C     ========
 C
-      CALL GETGRHO(GRADIENT,0,GAO,GAO1,DMATBF,BUF)
+      CALL GETGRHO(GRADIENT,IREP_PLOT,GAO,GAO1,DMATBF,BUF)
       GRADSQUARED = GRADIENT(1)**D2+GRADIENT(2)**D2+GRADIENT(3)**D2
       GRADNORM = DSQRT(GRADSQUARED)
 C
@@ -786,7 +818,7 @@ C
         DO I = 1,3
           DO IC = 1,MC
             SOMETHING = D0
-            CALL GETRH1(SOMETHING,IC,0,GAO1((I-1)*NTBAS(0)+1),
+            CALL GETRH1(SOMETHING,IC,IREP_PLOT,GAO1((I-1)*NTBAS(0)+1),
      &                  DMATBF,BUF)
             ELFKIN = ELFKIN+SOMETHING
           ENDDO
@@ -820,7 +852,6 @@ C
 C     laplacian
 C     =========
 C
-C     blocked
 C     IF(PLOTLAPLACIAN) THEN
 C       CALL GETLRHO(XX,XY,XZ,YY,YZ,ZZ,
 C    &               GAO,GAO1,GAO2,DMATBF,BUF)
@@ -841,14 +872,17 @@ C
       IF(PLOTSPINDENSITY) THEN
 #if defined (MOD_CDFT)
        CALL GETCURRENTDENSITY(.FALSE.,DUMMY,
-     &                        .TRUE.,SPIN,
-     &                        IREPOP,GAO,DMATBF,BUF)
-
-       SPIN(4) = SPIN(1)**D2 + SPIN(2)**D2 + SPIN(3)**D2
-       SPIN(4) = DSQRT(SPIN(4))
-C      IF(ABS(SPIN(4)).GT.0.0001D0) THEN
-C        WRITE(0,'(4F20.6)') PX, PY, (SPIN(I),I=1,2)
-C        WRITE(0,'(4F20.6)') PY, PZ, (SPIN(I),I=2,3)
+     &                        .TRUE.,SPINDENSITY,
+     &                        IREP_PLOT,GAO,DMATBF,BUF)
+C
+       SPINDENSITY_NORM = SPINDENSITY(1)**D2
+     &                  + SPINDENSITY(2)**D2
+     &                  + SPINDENSITY(3)**D2
+       SPINDENSITY_NORM = DSQRT(SPINDENSITY_NORM)
+C
+C      IF(ABS(SPINDENSITY_NORM).GT.0.0001D0) THEN
+C        WRITE(0,'(4F20.6)') PX, PY, (SPINDENSITY(I),I=1,2)
+C        WRITE(0,'(4F20.6)') PY, PZ, (SPINDENSITY(I),I=2,3)
 C      ENDIF
 #else
       CALL QUIT('perturbed magnetization density not implemented')
@@ -857,31 +891,46 @@ C      ENDIF
 C
       IF(PLOTCURRENTDENSITY) THEN
 #if defined (MOD_CDFT)
-       CALL GETCURRENTDENSITY(.TRUE.,CURRENT,
+       CALL GETCURRENTDENSITY(.TRUE.,CURRENTDENSITY,
      &                        .FALSE.,DUMMY,
-     &                        IREPOP,GAO,DMATBF,BUF)
-
-       CURRENT(4) = CURRENT(1)**D2 + CURRENT(2)**D2 + CURRENT(3)**D2
-       CURRENT(4) = DSQRT(CURRENT(4))
-C      IF(ABS(CURRENT(4)).GT.0.0001D0) THEN
-C        WRITE(0,'(4F20.6)') PX, PY, (CURRENT(I),I=1,2)
-C        WRITE(0,'(4F20.6)') PY, PZ, (CURRENT(I),I=2,3)
+     &                        IREP_PLOT,GAO,DMATBF,BUF)
+C
+       CURRENTDENSITY_NORM = CURRENTDENSITY(1)**D2
+     &                     + CURRENTDENSITY(2)**D2
+     &                     + CURRENTDENSITY(3)**D2
+       CURRENTDENSITY_NORM = DSQRT(CURRENTDENSITY_NORM)
+C
+C      IF(ABS(CURRENTDENSITY_NORM).GT.0.0001D0) THEN
+C        WRITE(0,'(4F20.6)') PX, PY, (CURRENTDENSITY(I),I=1,2)
+C        WRITE(0,'(4F20.6)') PY, PZ, (CURRENTDENSITY(I),I=2,3)
 C      ENDIF
 #else
       CALL QUIT('perturbed current density not implemented')
 #endif
       ENDIF
 C
+      IF(PLOTRXJ) THEN
+#if defined (MOD_CDFT)
+       CALL GETCURRENTDENSITY(.TRUE.,CURRENTDENSITY,
+     &                        .FALSE.,DUMMY,
+     &                        IREP_PLOT,GAO,DMATBF,BUF)
 C
-C     slice
-C     =====
+       RXJ(1) = PY*CURRENTDENSITY(3) - PZ*CURRENTDENSITY(2)
+       RXJ(2) = PZ*CURRENTDENSITY(1) - PX*CURRENTDENSITY(3)
+       RXJ(3) = PX*CURRENTDENSITY(2) - PY*CURRENTDENSITY(1)
 C
-      IF(PZ.GT.D0) THEN
-C       DENSITY = D0
-C       SPINDENSITY = D0
-C       CURRENTDENSITY = D0
-C       ELF = D0
-C       DLAPLACIAN = D0
+       RXJ_NORM = RXJ(1)**D2
+     &          + RXJ(2)**D2
+     &          + RXJ(3)**D2
+       RXJ_NORM = DSQRT(RXJ_NORM)
+C
+C      IF(ABS(RXJ_NORM).GT.0.0001D0) THEN
+C        WRITE(0,'(4F20.6)') PX, PY, (RXJ(I),I=1,2)
+C        WRITE(0,'(4F20.6)') PY, PZ, (RXJ(I),I=2,3)
+C      ENDIF
+#else
+      CALL QUIT('.RXJ not implemented')
+#endif
       ENDIF
 C
 C
@@ -1176,7 +1225,7 @@ C     CALL PRQMAT(DMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
 C    &            NZ,IPQTOQ(1,IREP_PLOT),LUPRI)
 C     WRITE(LUPRI,*) 'final DMATBF: ',
 C    &               DDOT(N2BBASXQ,DMATBF,1,DMATBF,1)
-      CALL DSCAL(N2BBASXQ,-D1,DMATBF,1)
+C     CALL DSCAL(N2BBASXQ,-D1,DMATBF,1)
 C
 C
 C     release memory
