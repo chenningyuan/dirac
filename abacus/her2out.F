@@ -373,6 +373,8 @@ C  /* Deck fckout */
      &                  DMRSO,DNSBUF,HFXFAC,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
+C     Direct calculation of Fock matrices in SO-basis
+C
 C     First routine written by P.Taylor with 
 C     low-brain contributions by TUH
 C
@@ -415,6 +417,8 @@ C  /* Deck fckou1 */
      &                  IPNTLG,NINDAB,NINDCD,DMRSO,DNSBUF,
      &                  DINTSKP,HFXFAC,IFCTYP,IREPDM,IPRINT)
 C*****************************************************************************
+C
+C     Direct calculation of Fock matrices in SO-basis
 C
 C     Revised by T.Saue August 1996
 C     Write out blocks of symmetry integrals, eliminating duplicates

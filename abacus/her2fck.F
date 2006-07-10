@@ -62,6 +62,8 @@ C  /* Deck intfck */
      &                  DNSBUF,DINTSKP,HFXFAC,WORK,LWORK)
 C*****************************************************************************
 C
+C  Direct calculation of Fock matrices in AO-basis
+C
 C  Major surgery Aug 26 1996 by T.Saue
 C
 C  Written by Trygve Helgaker and Henrik Koch  93-93 ??
@@ -125,6 +127,8 @@ C  /* Deck intfc1 */
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
      &                  DNSBUF,DINTSKP,HFXFAC,IND)
 C*****************************************************************************
+C
+C  Direct calculation of Fock matrices in AO-basis
 C
 C  Revised Aug 26 1996 by T.Saue
 C
