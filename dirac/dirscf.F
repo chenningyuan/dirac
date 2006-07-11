@@ -197,8 +197,6 @@ C         .... prepare the DFCOEF file with staring MO's
 
         ENDIF
 
-CMI        call quit('tu quitni')
-
         INQUIRE(FILE='DFDIIS',EXIST=EX)
         IF (EX) THEN
           CALL SYSTEM('/bin/rm DFDIIS')
@@ -243,11 +241,6 @@ CMI    ... TODO: it would be good to generalize the title printout (DFT or SCF)
 
         CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &        WORK(KFREE),LFREE)
-
-C       IF (.NOT.ONESYS) THEN
-C        TRIFCK = TRIFCK_SAVE 
-C        TRIVEC = TRIVEC_SAVE
-C       ENDIF
 
         CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &            LFREE,IPRINT)
@@ -464,24 +457,9 @@ C
      &              WORK,KFREE,LFREE)
 C
 C       Generate untransformed coefficients (MO basis)
-C.......read SAOMO at rec#2 of LUTMAT
-        CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
-        READ(LUTMAT)
-        CALL READT(LUTMAT,N2TMT,DMAT)
-        CLOSE(LUTMAT,STATUS='KEEP')
-C.......transform coefficients to orthonormal basis --> FOCK
-        DO IFRP = 1,NFSYM
-            CALL QGEMM(NTMO(IFRP),NTMO(IFRP),NFBAS(IFRP,0),D1,
-     &          'H','N',IPQTOQ(1,0),DMAT(I2TMT(IFRP)+1),
-     &                  NFBAS(IFRP,0),NTMO(IFRP),NZ,
-     &          'N','N',IPQTOQ(1,0),CMO(ICMOQ(IFRP)+1),
-     &                  NFBAS(IFRP,0),NTMO(IFRP),NZ,
-     &               D0,IPQTOQ(1,0),FOCK(I2TMT(IFRP)+1),
-     &                  NORB(IFRP),NTMO(IFRP),1)
-        ENDDO
-C.......write untransformed coefficients to file
-        REWIND LUCMOS
-        CALL WRITT(LUCMOS,N2TMOTQ,FOCK)
+C       and prepare for overlap selection
+C
+        CALL PRECMOS(CMO,DMAT,FOCK,DOSEL)
 C
 C       Determine occupation if this was not given in input
 C
@@ -490,21 +468,7 @@ C
            INIOCC = .FALSE.
         ENDIF
 C
-C       Prepare for overlap selection
-C
-        IF(OVLSEL) THEN
-          DOSEL = .TRUE.
-          INQUIRE(FILE='DFSMOS',EXIST=TOBE)
-          IF(.NOT.TOBE .OR. LMOORD) THEN
-C            ... new order for overlap selection if reordered (LMOORD)
-             CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
-             CALL READT(LUTMAT,N2TMT,DMAT)
-             CLOSE(LUTMAT,STATUS='KEEP')
-             CALL SMOGEN(CMO,DMAT,WORK(KFREE),LFREE)
-          ENDIF
-        ENDIF
-C
-C        Generate density matrix/matrices
+C        Generate density matripx/matrices
 C        Be aware: All density matrices are normalized to 1,
 C                  occupation is in the DF(*) factor
 C
@@ -817,6 +781,7 @@ C     On output:
 C    ============
 C       FMO - MO-coefficients from current iteration
 C       EIG - eigenvalues
+C       DMAT is generally destroyed !
 C
 C     Callef from: PREDHF
 C                  SCFCY1
@@ -838,7 +803,7 @@ C
 #include "dgroup.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
-      LOGICAL DOSEL,FNDLAB
+      LOGICAL DOSEL,FNDLAB,TEST
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),DMAT(*),BMAT(*),
      &          WORK(LWORK)
 C
@@ -857,7 +822,7 @@ CMI   ... read AO2MO transformation matrixe into WORK(KTMAT)...
 
 CMI ... perform all this only if we do note restart BSS from DC or vice versa
       IF (.NOT.RESTFCK) THEN
-        IF (NASHT.GT.0.AND.AOC) THEN
+        IF ((NASHT.GT.0.AND.AOC).OR.DIISAO) THEN
           CALL MEMGET('REAL',KDTEMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KDEVEC,N2BBASXQ      ,WORK,KFREE,LFREE)
         ELSE
@@ -981,7 +946,7 @@ C
 C     Overlap selection
 C     =================
 C
-      IF(DOSEL) CALL SMOSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
+      IF(DOSEL) CALL SMOSEL(FAO,EIG,IBEIG,WORK(KFREE),LFREE)
 C
 C     Boson type selection
 C     ====================
@@ -1039,9 +1004,10 @@ C     Write transformed coefficients
 C
 C
 C     Dynamic update of overlap selection matrix
+C     (note that DMAT is destroyed)
 C
       IF (DYNSEL) THEN
-        CALL SMOGEN(FMO,WORK(KTMAT),WORK(KFREE),LFREE)
+        CALL SMOGEN(FAO,DMAT)
       ENDIF
 C
       CALL FLSHFO(LUPRI)
@@ -1790,121 +1756,6 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck smogen */
-      SUBROUTINE SMOGEN(CMO,TMAT,WORK,LWORK)
-C***********************************************************************
-C
-C     Multiply overlap matrix onto occupied vectors and write to file;
-C     this forms the basis for overlap selection
-C
-C     Written by T.Saue Nov 11 1995
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-C Used from COMMON blocks:
-C  DCBBAS: N2BBASX,NFBAS
-C  DCBORB: NOCC
-C  DHFCAL: NSMOTQ
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-      DIMENSION CMO(*),TMAT(*),WORK(LWORK)
-C
-      CALL QENTER('SMOGEN')
-#include "memint.h"
-      NBFDIM = 0
-      DO I = 1,NFSYM
-        NBFDIM = MAX(NBFDIM,NOCC(I)*NFBAS(I,0))
-      ENDDO
-      NBFDIM = NBFDIM*NZ
-      CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSMO,NSMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF,NBFDIM,WORK,KFREE,LFREE)
-      CALL SMOGE1(WORK(KSMO),CMO,TMAT,WORK(KSMAT),WORK(KBUF),
-     &            WORK(KFREE),LFREE)
-      CALL MEMREL('SMOGEN.SMOGE1',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      CALL QEXIT('SMOGEN')
-      RETURN
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck smoge1 */
-      SUBROUTINE SMOGE1(SMO,CMO,TMAT,SMAT,BUF,WORK,LWORK)
-C***********************************************************************
-C
-C     Multiply overlap matrix onto occupied vectors and write to file;
-C     this forms the basis for overlap selection
-C
-C     Overlap selection is based on a previous set CPRE of vectors in AO-basis
-C     We form the matrix
-C          SMO  =  T^(+) * S * CPRE
-C     where S is the overlap matrix and T the MO-transformation matrix.
-C     In each SCF-iteration we form the matrix
-C          SEL  = CMO^(+) * SMO
-C     using the current CMO-coefficients in MO-basis.
-C
-C     Written by T.Saue Nov 11 1995
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-C
-C Used from COMMON blocks:
-C  PAMIOU: LUOVLP
-C  DCBBAS:
-C  DCBORB:
-C  DGROUP: NFSYM
-C
-#include "dcbgen.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbdhf.h"
-      DIMENSION SMO(*),CMO(*),TMAT(*),SMAT(*),BUF(*),WORK(LWORK)
-C
-C     Get overlap matrix
-C
-      CALL GTOVLX(SMAT,SSMTRC,WORK,LWORK)
-C
-      DO I = 1,NFSYM
-      IF(NOCC(I).NE.0) THEN
-        IOFF = ICMOQ(I) + NPSH(I)*NFBAS(I,0)
-        CALL QGEMM(NFBAS(I,0),NOCC(I),NFBAS(I,0),D1,
-     &             'N','N',IPQTOQ(1,0),SMAT(I2BASX(I,I)+1),
-     &                     NTBAS(0),NTBAS(0),1,
-     &             'N','N',IPQTOQ(1,0),CMO(IOFF+1),
-     &                     NFBAS(I,0),NORB(I),NZ,
-     &        D0,IPQTOQ(1,0),BUF,NFBAS(I,0),NOCC(I),NZ)
-        CALL QGEMM(NORB(I),NOCC(I),NFBAS(I,0),D1,
-     &             'H','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
-     &                     NFBAS(I,0),NORB(I),NZT,
-     &             'N','N',IPQTOQ(1,0),BUF,NFBAS(I,0),NOCC(I),NZ,
-     &        D0,IPQTOQ(1,0),SMO(ISMOQ(I)+1),NORB(I),NOCC(I),NZ)
-        IF(IPRSCF.GE.6) THEN
-          CALL HEADER('SMOGE1: SMO-matrix for overlap selection',-1)
-          IF (NFSYM.GT.1) WRITE(LUPRI,'(A,I2)') ' Fermion symmetry',I
-          CALL PRQMAT(SMO(ISMOQ(I)+1),NORB(I),NOCC(I),NORB(I),NOCC(I),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-      ENDIF
-      ENDDO
-C
-C     Write to file
-C
-      CALL OPNFIL(LUSMOS,'DFSMOS','UNKNOWN','SMOGE1')
-      REWIND (LUSMOS)
-      CALL WRITT(LUSMOS,NSMOTQ,SMO)
-      CLOSE(LUSMOS,STATUS='KEEP')
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bossel */
       SUBROUTINE BOSSEL(EIG,IBEIG,CFU,WORK,LWORK)
 C***********************************************************************
@@ -2000,11 +1851,14 @@ C              swap:
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smosel */
-      SUBROUTINE SMOSEL(EIG,IBEIG,CFU,WORK,LWORK)
+      SUBROUTINE SMOSEL(CFU,EIG,IBEIG,WORK,LWORK)
 C***********************************************************************
 C
 C     Select vectors based on overlap.
-C     Input is coefficients in MO-basis.
+C     Input is
+C       CFU - coefficients in MO-basis
+C       EIG - corresponding eigenvalues
+C       IBEIG - corresponding boson info
 C
 C     Written by T.Saue Nov 11 1995
 C     Last revision May 2002 hjaaj: include EIG and IBEIG
@@ -2060,7 +1914,7 @@ C
 C       Memory allocation
         CALL MEMGET('REAL',KEBUF,NESH(I),WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIBEB,NESH(I),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KCBUF,NESH(I)*NORB(I)*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KCBUF,NESH(I)*NTMO(I)*NZ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KSBUF,NESH(I)*NOCC(I)*NZ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KRSEL,NESH(I),WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KISEL,2*NESH(I),WORK,KFREE,LFREE)
@@ -2068,7 +1922,7 @@ C       Memory allocation
      &              CFU(I2ORBT(I)+1),SMO(ISMOQ(I)+1),
      &              WORK(KEBUF),WORK(KIBEB),WORK(KCBUF),WORK(KSBUF),
      &              WORK(KRSEL),WORK(KISEL),
-     &              NORB(I),NOCC(I),NESH(I),WORK(KFREE),LFREE)
+     &              NTMO(I),NOCC(I),NESH(I),WORK(KFREE),LFREE)
 C     Memory deallocation
       CALL MEMREL('SMOSE1.SMOSE2',WORK,KWORK,KWORK,KFREE,LFREE)
       ENDIF
@@ -2113,12 +1967,12 @@ C
      &          RCSEL(KNESH),ICSEL(KNESH,2),
      &          WORK(LWORK)
 C
-C     Form product CFU * (SMAT * COCC)
+C     Form product CFU * SMO
 C
-      CALL QGEMM(NESH(IFRP),NOCC(IFRP),NORB(IFRP),D1,
+      CALL QGEMM(NESH(IFRP),NOCC(IFRP),NTMO(IFRP),D1,
      &       'H','N',IPQTOQ(1,0),CFU(1,NPSH(IFRP)+1,1),
-     &                NORB(IFRP),NORB(IFRP),NZ,
-     &       'N','N',IPQTOQ(1,0),SMO,NORB(IFRP),NOCC(IFRP),NZ,
+     &                NTMO(IFRP),NTMO(IFRP),NZ,
+     &       'N','N',IPQTOQ(1,0),SMO,NTMO(IFRP),NOCC(IFRP),NZ,
      &       D0,IPQTOQ(1,0),SBUF,NESH(IFRP),NOCC(IFRP),NZ)
       IF(IPRSCF.GE.10) THEN
         CALL HEADER('SMOSE1: SBUF-matrix',-1)
@@ -2156,7 +2010,7 @@ C
 C
 C     Perform selection
 C
-      N2DIM = NORB(IFRP)*NESH(IFRP)
+      N2DIM = NTMO(IFRP)*NESH(IFRP)
       DO IZ = 1,NZ
         CALL DCOPY(N2DIM,CFU(1,NPSH(IFRP)+1,IZ),1,CBUF(1,1,IZ),1)
       ENDDO
@@ -2175,7 +2029,7 @@ C       Zero out the selected overlap
 C       Copy buffer into vector
         JJ = NPSH(IFRP) + J
         DO IZ = 1,NZ
-          CALL DCOPY(NORB(IFRP),CBUF(1,ISEL,IZ),1,CFU(1,JJ,IZ),1)
+          CALL DCOPY(NTMO(IFRP),CBUF(1,ISEL,IZ),1,CFU(1,JJ,IZ),1)
         ENDDO
 C       Copy eigenvalue and (approx.) boson symmetry to new place:
         EIG(JJ) = EBUF(ISEL)
@@ -2198,7 +2052,7 @@ C         ... i.e. has not been selected to the occupied block
 C           Copy buffer into vector
             JJ = NPSH(IFRP) + J
             DO IZ = 1,NZ
-              CALL DCOPY(NORB(IFRP),CBUF(1,ISEL,IZ),1,CFU(1,JJ,IZ),1)
+              CALL DCOPY(NTMO(IFRP),CBUF(1,ISEL,IZ),1,CFU(1,JJ,IZ),1)
             ENDDO
 C           Copy eigenvalue and (approx.) boson symmetry to new place:
             EIG(JJ) = EBUF(ISEL)
@@ -4466,4 +4320,106 @@ C
       CALL QEXIT('LEVSHI')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck precmos */
+      SUBROUTINE PRECMOS(COFT,COFU,TMAT,DOSEL)
+C***********************************************************************
+C
+C     Generate untransformed coefficients (MO basis)
+C     and prepare for overlap selection
+C
+C     INPUT:
+C       COFT - MO coefficients in SO-basis
+C      
+C     Written by Trond Saue, July 10 2006
+C
+C**********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+C
+#include "dcbpsi.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      LOGICAL DOSEL,TOBE
+      DIMENSION COFT(*),COFU(*),TMAT(*)
+C
+C     Transform MO-coefficients to orthonormal basis
+C     ==============================================
+C
+C.....read SAOMO at rec#2 of LUTMAT
+      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PRECMOS')
+      READ(LUTMAT)
+      CALL READT(LUTMAT,N2TMT,TMAT)
+      CLOSE(LUTMAT,STATUS='KEEP')
+C.....transform coefficients to orthonormal basis --> COFU
+      DO IFRP = 1,NFSYM
+         CALL QGEMM(NTMO(IFRP),NTMO(IFRP),NFBAS(IFRP,0),D1,
+     &          'H','N',IPQTOQ(1,0),TMAT(I2TMT(IFRP)+1),
+     &                  NFBAS(IFRP,0),NTMO(IFRP),NZT,
+     &          'N','N',IPQTOQ(1,0),COFT(ICMOQ(IFRP)+1),
+     &                  NFBAS(IFRP,0),NTMO(IFRP),NZ,
+     &               D0,IPQTOQ(1,0),COFU(I2TMOT(IFRP)+1),
+     &                  NTMO(IFRP),NTMO(IFRP),1)
+      ENDDO
+C.....write untransformed coefficients to file
+      REWIND LUCMOS
+      CALL WRITT(LUCMOS,N2TMOTQ,COFU)
+C
+C     Prepare for overlap selection
+C     =============================
+C
+      IF(OVLSEL) THEN
+        DOSEL = .TRUE.
+        INQUIRE(FILE='DFSMOS',EXIST=TOBE)
+        IF(.NOT.TOBE .OR. L1ORBM) CALL SMOGEN(COFU,COFT)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Smogen */
+      SUBROUTINE SMOGEN(CMO,SCMO)
+C***********************************************************************
+C
+C     Dump occupied coefficients in orthonormal basis to file
+C     to be used for overlap selection.
+C
+C     Written by T. Saue July 10 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
 
+      DIMENSION CMO(*),SCMO(*)
+      NSMOTQ = 0
+      DO IFRP = 1,NFSYM
+        ISMOQ(IFRP) = NSMOTQ
+        ISOFF = ISMOQ(IFRP) + 1
+        ICOFF = ICMOQ(IFRP) + NPSH(IFRP)*NTMO(IFRP)
+        NSDIM = NOCC(IFRP)*NTMO(IFRP)
+        NCDIM = NTMO(IFRP)*NTMO(IFRP)
+        DO IZ = 1,NZ
+          CALL DCOPY(NSDIM,CMO(ICOFF),1,SCMO(ISOFF),1)
+          ISOFF = ISOFF + NSDIM
+          ICOFF = ICOFF + NCDIM
+        ENDDO
+        NSMOTQ = NSMOTQ + NOCC(IFRP)*NTMO(IFRP)*NZ
+      ENDDO
+C
+C     Write to file
+C
+      CALL OPNFIL(LUSMOS,'DFSMOS','UNKNOWN','SMOGEN')
+      REWIND (LUSMOS)
+      CALL WRITT(LUSMOS,NSMOTQ,SCMO)
+      CLOSE(LUSMOS,STATUS='KEEP')
+C
+      RETURN
+      END

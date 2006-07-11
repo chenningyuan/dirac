@@ -615,11 +615,8 @@ C
       LUCMOS    = 23
       LUSMOS    = 24
       N2EVECTQ  = 0
-      NSMOTQ    = 0
       DO IFRP = 1,NFSYM
-         ISMOQ(IFRP) = NSMOTQ
          N2EVECTQ = N2EVECTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
-         NSMOTQ   = NSMOTQ   + NOCC(IFRP)*NORB(IFRP)*NZ
       ENDDO
 C
 C     Closed shell Hartree - Fock
