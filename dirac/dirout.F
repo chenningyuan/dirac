@@ -1511,7 +1511,7 @@ C     should work in most conceivable cases. LV, 1-9-2000.
       ELUMO = 1.D15
       EHOMO = -1.D15
 C
-      IF (LEVYLE .OR. SPINFR) THEN
+      IF (SPINFR) THEN
         ILUMO = IBEIG(IORB(1)+NPSH(1)+NOCC(1)+1)
         IHOMO = IBEIG(IORB(1)+NPSH(1)+1)
       ELSE
@@ -1522,7 +1522,7 @@ C
          DO J = 1,NSSH(I)
             IF (ELUMO .GT. EIG(IORB(I)+NPSH(I)+NOCC(I)+J)) THEN
                ELUMO = EIG(IORB(I)+NPSH(I)+NOCC(I)+J)
-               IF (LEVYLE .OR. SPINFR) THEN
+               IF (SPINFR) THEN
                   ILUMO = IBEIG(IORB(I)+NPSH(I)+NOCC(I)+J)
                ELSE
                   ILUMO = I
@@ -1543,7 +1543,7 @@ C
 C
 C     HOMO - LUMO gap
 C
-      IF (LEVYLE .OR. SPINFR) THEN
+      IF (SPINFR) THEN
          CHOMO = REP(IHOMO)
          CLUMO = REP(ILUMO)
       ELSE
