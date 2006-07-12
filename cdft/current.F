@@ -58,6 +58,7 @@ C
 #include "codata.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "dcbgen.h"
 C
       LOGICAL LCURRENTDENSITY,
      &        LMAGNETIZATION
@@ -200,8 +201,6 @@ C
      &          DMAT(NTBAS(0),NTBAS(0))
 #endif
       DIMENSION BUF(*)
-C
-      DIMENSION CURRENTDENSITY(3)
 C
 #include "ibtfun.h"
 C
