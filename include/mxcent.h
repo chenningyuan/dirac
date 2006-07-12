@@ -7,7 +7,7 @@
 !     and then rebuild the program using the command "make".
 !
       INTEGER MXCENT, MXCOOR
-#if ! defined (MOD_ERI)
+#if ! defined (LARGE_MOLECULES)
       PARAMETER (MXCENT = 60, MXCOOR = 3*MXCENT)
 #else
       PARAMETER (MXCENT = 600, MXCOOR = 3*MXCENT)

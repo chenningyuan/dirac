@@ -14,7 +14,7 @@
 !
       INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT, MXBSETS
 cmi   PARAMETER (MXSHEL = 750, MXPRIM = 2000, MXCORB = 5000,            &
-#if ! defined (MOD_DNF)
+#if ! defined (LARGE_MOLECULES)
       PARAMETER (MXSHEL = 950, MXPRIM = 2000, MXCORB = 5000,            &
 #else
       PARAMETER (MXSHEL = 2375,MXPRIM = 5000, MXCORB = 12500,           &
