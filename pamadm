@@ -23,18 +23,19 @@ usage()
 {
    echo 'Usage: pamadm [flags] tarfile'
    echo '   Flags:'
-   echo '     -adm          : Include ALL modules (administrator)'
-   echo '     -dft          : Include DFT module'
-   echo '     -eri          : Include ERI integral routines'
-   echo '     -densfit      : Include density fitting module'
-   echo '     -fmm          : Include fast multipole method'
-   echo '     -esr          : Include ESR property module'
-   echo '     -xpp          : Include PP excitation energy module'
-   echo '     -krmc         : Include KR-MCSCF and LUCIAREL modules'
-   echo '     -emb          : Include ab initio/DFT-embedding module'
-   echo '     -cdft         : Include CDFT module'
-   echo '     tarfile=make  : only generate new Makefile'
-   echo '     tarfile=export: Make DIRAC.new.tar.gz'
+   echo '     -adm             : Include ALL modules (administrator)'
+   echo '     -dft             : Include DFT module'
+   echo '     -eri             : Include ERI integral routines'
+   echo '     -densfit         : Include density fitting module'
+   echo '     -largemolecules  : Increases commom blocks to handle more atoms and basis sets'
+   echo '     -fmm             : Include fast multipole method'
+   echo '     -esr             : Include ESR property module'
+   echo '     -xpp             : Include PP excitation energy module'
+   echo '     -krmc            : Include KR-MCSCF and LUCIAREL modules'
+   echo '     -emb             : Include ab initio/DFT-embedding module'
+   echo '     -cdft            : Include CDFT module'
+   echo '     tarfile=make     : only generate new Makefile'
+   echo '     tarfile=export   : Make DIRAC.new.tar.gz'
 }
 #
 #
@@ -104,6 +105,15 @@ setup()
       LUCIARELMAK=LUCIAREL_OBJ
       KRMCTAR=1
       echo " - KR-MCSCF and LUCIAREL modules (KRMC)"
+   fi
+   #
+   #  Increase common block sizes to handle more centers and basis sets
+   #
+   if [ -n "$LARGEMOL" ]; then
+      LRGMOLFLG='-DLARGE_MOLECULES'
+      echo " - Increasing common block sizes to handle larger systems"
+   else
+      LRGMOLFLG=' '
    fi
    #
    #  ERI two-electron integral module
@@ -970,8 +980,8 @@ which_modules()
 {
 #  
 #
-MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG"
-MODS_IBM="$ERIFLG,$DNFFLG,$FMMFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG,$EMBFLG,$CDFTFLG"
+MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $LRGMOLFLG"
+MODS_IBM="$ERIFLG,$DNFFLG,$FMMFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG,$EMBFLG,$CDFTFLG,$LRGMOLFLG"
 dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
@@ -1039,6 +1049,9 @@ while [ -n "$1" ]; do
       -densfit|-dnf)
          DNFMOD=1
          ERIMOD=1
+         ;;
+      -largemolecules|-lm|-l)
+         LARGEMOL=1
          ;;
       -eri|-er|-e)
          ERIMOD=1
