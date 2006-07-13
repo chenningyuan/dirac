@@ -163,7 +163,7 @@ CMI ... after BSS-SCF turn to the four-component picture.....
 C=============================================================
       IF (DO2C4C) THEN
         INTDEF = INTDEF_SAVE
-        INTGEN = INTDEF     
+        INTGEN = INTDEF 
         MC = 2
         SSMTRC = SSMTRC_SAVE
 
@@ -308,6 +308,10 @@ CC      IF (EX) CALL SYSTEM('/bin/rm DFCYCL')
         CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
+
+C       INTDEF = 1
+C       INTFLG = 1
+C       INTGEN = 1
 
         CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &        WORK(KFREE),LFREE)
@@ -674,11 +678,11 @@ CMI   IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG,IBEIG)
 
       IF (DO4C2C.AND..NOT.ONESYS) THEN
         IF (.NOT.CONT2C) THEN
-        IF (IPRHAM.GE.2) THEN
-         write(lupri,'(/2X,A/)')
-     & 'PREDHF: Last calculation of the SCF energy'//
-     & ' using pctra quantities !'
-        ENDIF
+         IF (IPRHAM.GE.2) THEN
+          write(lupri,'(/2X,A/)')
+     &  'PREDHF: Last calculation of the SCF energy'//
+     &  ' using pctra quantities !'
+         ENDIF
          CALL MEMGET('REAL',KFCK1,N2BBASXQ,WORK,KFREE,LFREE)
          CALL REAFCK(LUFCK1,WORK(KFCK1),.TRUE.,1)
          CALL REAFCK(LUFCK2,FOCK,.TRUE.,NFMAT)
@@ -695,7 +699,6 @@ CMI        ... MAXITER is what does the SCF procedure end !!
             DHFEXIT=.FALSE. 
         ENDIF
       ENDIF
-
 C
       CALL GETTIM(CTIDEND,WTIDEND)
       CTIDTOT = CTIDEND - CTIDSTR
@@ -1602,22 +1605,21 @@ C
 C
       IF(IPRSCF.GE.1) THEN
          CALL HEADER('Output from ERGCAL',-1)
-
 CMI      ... print out matrixes ...
          IF (IPRSCF.GE.5.AND.IPRHAM.GE.7) THEN
           CALL HEADER(
-     &    'ERGCAL: Entering total Fock F1 matrix in AO',-1)
+     &    'ERGCAL: Entering total Fock F1 matrix in SA-AO',-1)
           CALL PRQMAT(F1,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &               IPQTOQ(1,0),LUPRI)
           DO IFMAT=1,NFMAT
           CALL HEADER(
-     &    'ERGCAL: Entering total Fock F2 matrix in AO',-1)
+     &    'ERGCAL: Entering total Fock F2 matrix in SA-AO',-1)
           WRITE(LUPRI,'(2X,A,I2,A,I2)')
      &    'Fock matrix no: ',IFMAT,'/',NFMAT
           CALL PRQMAT(F2(1,1,IFMAT),NTBAS(0),NTBAS(0),
      &           NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
           CALL HEADER(
-     &    'ERGCAL: Entering total density matrix in AO',-1)
+     &    'ERGCAL: Entering total density matrix in SA-AO',-1)
           WRITE(LUPRI,'(2X,A,I2,A,I2)')
      &    'dens.matrix no: ',IFMAT,'/',NFMAT
           CALL PRQMAT(DMAT(1,1,IFMAT),NTBAS(0),NTBAS(0),
@@ -2157,6 +2159,12 @@ C
            IF (NISHT .GT. 0) THEN
               E1PART = E1PART + D2*DSUM(NISH(IFRP),
      &                         EIG(IORB(IFRP)+NPSH(IFRP)+1),1)
+              IF (IPRSCF.GE.15) THEN
+               write(lupri,*) 'ONEERG: eigenvalues:',
+     &          (EIG(IORB(IFRP)+NPSH(IFRP)+i),i=1,NISH(IFRP))
+               write(lupri,*) '2*sum: ',D2*DSUM(NISH(IFRP),
+     &                         EIG(IORB(IFRP)+NPSH(IFRP)+1),1)
+              ENDIF
            END IF
            IF (AOC) THEN
              IDX = IORB(IFRP)+NPSH(IFRP)+NISH(IFRP)+1

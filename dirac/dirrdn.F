@@ -1534,12 +1534,10 @@ C
      &   .NOT.(ONECAP.AND.(INTV1C.EQ.2.OR.INTV1C.EQ.3)) ) ISSINT = 0
 C   .... discard calculation of LS/SS/GT integrals
 C          for the LevyLe/BSS Hamiltonians
-CMI   IF (LEVYLE.OR.BSS) THEN
-CMI ... setting if SL,SS integrals in MAKE_BSS routine!
-CMI   IF (LEVYLE) THEN
-C     IF (LEVYLE.OR.TWOCOMPBSS) THEN
-C     IF (LEVYLE.OR.BSS) THEN
-      IF (LEVYLE.OR.BSS.OR.TWOCOMP) THEN
+
+      IF (LEVYLE.OR.
+     &    (BSS.AND..NOT.DO4C2C.AND..NOT.DO2C4C)
+     &    .OR.TWOCOMP) THEN
         ISLINT = 0
         ISSINT = 0
         IGTINT = 0
@@ -1916,7 +1914,7 @@ CMI =====================================================================
        ENDIF
        IF (CONT2C) THEN
          WRITE(LUPRI,'(2X,A)')
-     &   '...continue with two-component SCF iterations'//
+     &   '...continue two-component SCF procedure'//
      &   '.'
        ELSE
          WRITE(LUPRI,'(2X,A)')
@@ -3956,12 +3954,12 @@ C          ... read integer number
              READ(LUCMD,*) IMFCH
             GO TO 100
   128     CONTINUE
-C&&&&   Do solve R-equation 1
+C&&&&   Solve R-equation 1
             YREQ1 = .TRUE.
             GO TO 100
   129     CONTINUE
 C&&&&  Do NOT do preliminary free-particle transformation
-CMI ...this is Trond's one step approch to the infinite order transformation ...
+CMI ...this is Trond's one step approch for the two-component infinite order ...
             NOPRTR = .TRUE.
             GO TO 100
   130     CONTINUE
@@ -3970,17 +3968,17 @@ CMI      ... not active yet (planned to be used within UKBAL for the infinite or
              BLOCKD = .TRUE.
             GO TO 100
   131     CONTINUE
-C&&& DO2C4C: jump to 4c level after few 2c iterations...
+C&&& DO2C4C: jump to 4c level after few iterations in the 2-component quasirel.mode...
              DO2C4C = .TRUE.
             START2C = .TRUE.
             INI2C   = 3
             GO TO 100
   132     CONTINUE
-C&&& DO4C2C:  descend to the 2c level after 4c DC-SCF ...
+C&&& DO4C2C:  descend to the 2c level after 4c SCF ...
             DO4C2C = .TRUE.
             GO TO 100
   133     CONTINUE
-C&&& CONT2C:  after 4c DC-SCF continue with BSS using picture-change transformed Fock-Dirac operator !
+C&&& CONT2C:  after 4c DC-SCF continue SCF with BSS using picture-change transformed Fock-Dirac operator !
             CONT2C = .TRUE.
 C          ... read the specification of 2c 1el Hamiltonian (3,4,5)
             READ(LUCMD,*) I2CHAM
@@ -4145,8 +4143,15 @@ CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
         ENDIF
 
         IF (.NOT.(DO4C2C.AND.CONT2C)) CONT2C=.FALSE.
-CMI     ... set up the default value, when BSS-postDC-SCF is on
-        IF (DO4C2C.AND.I2CHAM.EQ.-1) I2CHAM=3
+CMI ... set up the default value of I2CHAM, when BSS-postDC-SCF is on
+        IF (DO4C2C.AND.I2CHAM.EQ.-1.AND..NOT.CONT2C) THEN
+         IF (.NOT.USEDF) THEN
+           I2CHAM = 3
+         ELSE
+           I2CHAM = 4
+         ENDIF
+        ENDIF
+
         IF (CONT2C) THEN
          IF (I2CHAM.NE.3.AND.I2CHAM.NE.4.AND.
      &       I2CHAM.NE.5.AND.I2CHAM.NE.6) THEN
@@ -4345,7 +4350,9 @@ CMI/Febr.2006 for BSS/TWOCOMP it is set up later
 C
 C     Remove integral classes not needed for this Hamiltonians
 C
-      IF (LEVYLE.OR.BSS.OR.TWOCOMP) THEN
+      IF (LEVYLE.OR.
+     &   (BSS.AND..NOT.DO4C2C.AND..NOT.DO2C4C)
+     &    .OR.TWOCOMP) THEN
         ISLINT = 0
         ISSINT = 0
         IGTINT = 0

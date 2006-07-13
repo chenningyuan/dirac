@@ -322,7 +322,8 @@ CMI  &                WORK(KFREE),LFREE,IPREXP)
           IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
 
 C.............calculate expectation value
-          CALL PRPEX3(EXPVAL(I),INDXPR,IREP,ITIM,
+CMI       CALL PRPEX3(EXPVAL(I),INDXPR,IREP,ITIM,
+          CALL PRPEX3(EXPVAL(I),INDXPR,
      &        DMAT,PMAT,FIRST,ORBANA,
      &        WORK,KFREE,LFREE,IPREXP)
 CMI  &        WORK(KFREE),LFREE,IPREXP)
@@ -415,7 +416,8 @@ CMI  &                  WORK(KFREE),LFREE,IPREXP)
               CALL DENORB(DMAT,J,1,IFRP,CMO,IPREXP)
               EXPBUF = D0
 C.............calculate expectation value
-              CALL PRPEX3(EXPBUF,INDXPR,IREP,ITIM,
+CMI           CALL PRPEX3(EXPBUF,INDXPR,IREP,ITIM,
+              CALL PRPEX3(EXPBUF,INDXPR,
      &          DMAT,PMAT,FIRST,ORBANA,
      &          WORK,KFREE,LFREE,IPREXP)
 CMI  &          WORK(KFREE),LFREE,IPREXP)
@@ -616,7 +618,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex3 */
-      SUBROUTINE PRPEX3(EXPVAL,INDXPR,IREP,ITIM,
+CMI   SUBROUTINE PRPEX3(EXPVAL,INDXPR,IREP,ITIM,
+      SUBROUTINE PRPEX3(EXPVAL,INDXPR,
      &           DMAT,PMAT,FIRST,ORBFLG,WORK,KFREE,LFREE,IPRINT)
 CMI  &           DMAT,PMAT,FIRST,ORBFLG,WORK,LWORK,IPRINT)
 C***********************************************************************
@@ -652,12 +655,16 @@ C
 
       CALL MEMCHK('PRPEX3 1.0',WORK,1)
 
-         IF (IPRINT.GE.5) THEN
-          WRITE(LUPRI,'(/A,A16)')
+      IREP = IPRPSYM(INDXPR)-1
+      ITIM = IPRPTIM(INDXPR)
+
+      IF (IPRINT.GE.5) THEN
+        WRITE(LUPRI,'(/A,A16)')
      & 'PRPEX3: Entering total SA-AO matrix of property ',PRPNAM(INDXPR)
-         CALL PRQMAT(PMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+        write(lupri,*) '   proerty operator IREP=',IREP,' ITIM=',ITIM
+        CALL PRQMAT(PMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &                 IPQTOQ(1,IREP),LUPRI)
-         ENDIF        
+      ENDIF        
 
 C========================================================================
 C     Get expectation value, using ONLY the matrices containing
@@ -1255,7 +1262,8 @@ C        CALL MEMREL('PRPEX1_MP2 2',WORK,KWORK,KPTRI,KFREE,LFREE)
 
          IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
 
-         CALL PRPEX3(EXPVAL(I),INDXPR,IREP,ITIM,
+CMI      CALL PRPEX3(EXPVAL(I),INDXPR,IREP,ITIM,
+         CALL PRPEX3(EXPVAL(I),INDXPR,
      &        DMAT,PMAT,FIRST,ORBANA,
      &        WORK,KFREE,LFREE,IPREXP)
 C    &        WORK(KFREE),LFREE,IPREXP)
