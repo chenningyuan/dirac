@@ -4142,10 +4142,11 @@ CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
 CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
         ENDIF
 
+CMI  ... todo: more precise specification needed
         IF (.NOT.(DO4C2C.AND.CONT2C)) CONT2C=.FALSE.
 CMI ... set up the default value of I2CHAM, when BSS-postDC-SCF is on
         IF (DO4C2C.AND.I2CHAM.EQ.-1.AND..NOT.CONT2C) THEN
-         IF (.NOT.USEDF) THEN
+         IF (USEDF) THEN
            I2CHAM = 3
          ELSE
            I2CHAM = 4
@@ -4317,6 +4318,7 @@ C         write(lupri,*)
      & '* after finishing four-component SCF procedure '//
      & ' perform BSS transformation of Dirac-Fock operator'//
      & ' and continue at the 2comp. level ! Code I2CHAM= ',I2CHAM
+
       ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE IF (TWOCOMP.AND..NOT.BSS) THEN

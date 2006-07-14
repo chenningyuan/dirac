@@ -313,6 +313,8 @@ C       INTDEF = 1
 C       INTFLG = 1
 C       INTGEN = 1
 
+        RESTFCK = .TRUE.
+
         CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &        WORK(KFREE),LFREE)
 
@@ -678,10 +680,11 @@ CMI   IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG,IBEIG)
 
       IF (DO4C2C.AND..NOT.ONESYS) THEN
         IF (.NOT.CONT2C) THEN
-         IF (IPRHAM.GE.2) THEN
+         IF (IPRHAM.GE.2.OR.IPRSCF.GE.3) THEN
           write(lupri,'(/2X,A/)')
      &  'PREDHF: Last calculation of the SCF energy'//
-     &  ' using pctra quantities !'
+     &  ' using pict.change transformed Fock matrixes'//
+     &  ' from LUFCK1 and LUFCK2.'
          ENDIF
          CALL MEMGET('REAL',KFCK1,N2BBASXQ,WORK,KFREE,LFREE)
          CALL REAFCK(LUFCK1,WORK(KFCK1),.TRUE.,1)
