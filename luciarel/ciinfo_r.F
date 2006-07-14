@@ -1132,8 +1132,8 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
      &  ,LBLOCK
       write(6,*)
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
+      call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
       if (CIRUN.ne.'ANALYZ') then
-        call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
         call memmar(KC2,LSCR12,'ADDS  ',2,'C2    ')
       end if
 *
