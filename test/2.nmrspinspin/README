@@ -5,8 +5,7 @@
 ! via the RELCCSD code and serves as an extra check.
 ! Note that we consistently leave out the SS integrals.
 !
-!  Three Hamiltonians have been tested: DC (Dirac-Coulomb)
-!                                       BSS+MFSSO and BSS.
+!  Several two-component Hamiltonians have been tested.
 !
 !
 !    Hamilt/Property  HO isotr    HO anisotr    HH isotr    HH anisotr
@@ -15,6 +14,7 @@
 !         BSS_RKB     -73.7192     35.5614      -8.5605     40.8995
 !       BSS+MFSSO     -73.7173     35.5588      -8.5897     40.9064 
 !     BSS_RKB+MFSSO   -73.7173     35.5587      -8.5897     40.9064
+!         DC2BSS      -73.6868     35.5419      -8.5845     40.9064
 !           DC        -73.6700     35.5249      -8.5794     40.9047
 !
 !
