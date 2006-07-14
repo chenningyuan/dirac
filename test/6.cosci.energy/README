@@ -23,6 +23,9 @@
 !       DKH2sfESO1         583.533187
 !       BSSsfBSO1          583.535908
 !       DKH2sfBSO1         583.536036   
+! 
+!        DC2BSS            585.907131
+!
 !
 ! Z86(77+) F_like heavy element (9 electrons, 2P splitting in eV)
 !----------------------------------------------------------
@@ -30,6 +33,8 @@
 !
 !     BSS+MFSSO             3796.844
 !     DKH2+MFSSO            3777.837
+!
+!       DC2BSS              3808.807
 !
 !        BSS                3808.859
 !        BSS_RKB            3810.273
