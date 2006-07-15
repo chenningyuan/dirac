@@ -5339,11 +5339,11 @@ C
 C
       CALL TITLER('Input consistency checks','*',127)
 
-      IF (SPINFR.AND..NOT.LEVYLE.AND.DOMP2)
-     &   CALL QUIT ('Spinfree MP2 not implemented')
+CMI   IF (SPINFR.AND..NOT.LEVYLE.AND.DOMP2)
+CMI  &   CALL QUIT ('Spinfree MP2 not implemented')
 
-      IF (BSS.AND.DOMP2)
-     &   CALL QUIT ('BSS & MP2 not implemented')
+CMI   IF (BSS.AND.DOMP2)
+CMI  &   CALL QUIT ('BSS & MP2 not implemented')
 
       IF (DOPRP.AND.TWOCOMP.AND..NOT.BSS) THEN
        WRITE(LUPRI,'(1X,A/)')
