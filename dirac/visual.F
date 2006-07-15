@@ -623,17 +623,17 @@ C           NCUBE(3) = 1
 C           DO KCUBE = 1,NCUBE(3)
 C             PX = -6.0D0+(ICUBE-1)*(12.0D0/(NCUBE(1)-1))
 C             PY = -6.0D0+(JCUBE-1)*(12.0D0/(NCUBE(2)-1))
-C             PZ = 0.0D0
-C             PZ = 1.0D0
+C             PZ = D0
+C             PZ = D1
 C       xy - plane }
 C     { yz - plane
 C       NCUBE(1) = 1
 C       DO ICUBE = 1,NCUBE(1)
 C         DO JCUBE = 1,NCUBE(2)
 C           DO KCUBE = 1,NCUBE(3)
+C             PY = -3.0D0+(KCUBE-1)*(6.0D0/(NCUBE(3)-1))
+C             PZ = -3.0D0+(JCUBE-1)*(6.0D0/(NCUBE(2)-1))
 C             PX = D0
-C             PY = -3.0D0+(JCUBE-1)*(6.0D0/(NCUBE(2)-1))
-C             PZ = -3.0D0+(KCUBE-1)*(6.0D0/(NCUBE(3)-1))
 C       yz - plane }
 C
 C
@@ -660,25 +660,34 @@ C           write buffer
 C           ============
 C
             IF(PLOTDENSITY) THEN
-              WRITE(LU3DDENSITY,'(6E13.5)') (DENSITY(0,M),M=1,NCUBE(3))
+C            WRITE(LU3DDENSITY,'(200E13.5)')
+             WRITE(LU3DDENSITY,'(6E13.5)')
+     &            (DENSITY(0,M),M=1,NCUBE(3))
             ENDIF
             IF(PLOTELF) THEN
-              WRITE(LU3DELF,'(6E13.5)') (ELF(M),M=1,NCUBE(3))
+C             WRITE(LU3DELF,'(200E13.5)')
+              WRITE(LU3DELF,'(6E13.5)')
+     &             (ELF(M),M=1,NCUBE(3))
             ENDIF
             IF(PLOTLAPLACIAN) THEN
+C             WRITE(LU3DLAPLACIAN,'(200E13.5)')
               WRITE(LU3DLAPLACIAN,'(6E13.5)')
-     &                                      (DLAPLACIAN(M),M=1,NCUBE(3))
+     &             (DLAPLACIAN(M),M=1,NCUBE(3))
             ENDIF
             IF(PLOTSPINDENSITY) THEN
+C             WRITE(LU3DSPINDENSITY,'(200E13.5)')
               WRITE(LU3DSPINDENSITY,'(6E13.5)')
-     &                                     (SPINDENSITY(M),M=1,NCUBE(3))
+     &             (SPINDENSITY(M),M=1,NCUBE(3))
             ENDIF
             IF(PLOTCURRENTDENSITY) THEN
+C             WRITE(LU3DCURRENTDENSITY,'(200E13.5)')
               WRITE(LU3DCURRENTDENSITY,'(6E13.5)')
-     &                                  (CURRENTDENSITY(M),M=1,NCUBE(3))
+     &             (CURRENTDENSITY(M),M=1,NCUBE(3))
             ENDIF
             IF(PLOTRXJ) THEN
-              WRITE(LU3DRXJ,'(6E13.5)') (RXJ(M),M=1,NCUBE(3))
+C             WRITE(LU3DRXJ,'(200E13.5)')
+              WRITE(LU3DRXJ,'(6E13.5)')
+     &             (RXJ(M),M=1,NCUBE(3))
             ENDIF
 C
 C
@@ -880,10 +889,12 @@ C
      &                  + SPINDENSITY(3)**D2
        SPINDENSITY_NORM = DSQRT(SPINDENSITY_NORM)
 C
-C      IF(ABS(SPINDENSITY_NORM).GT.0.0001D0) THEN
-C        WRITE(0,'(4F20.6)') PX, PY, (SPINDENSITY(I),I=1,2)
-C        WRITE(0,'(4F20.6)') PY, PZ, (SPINDENSITY(I),I=2,3)
-C      ENDIF
+Cdebug
+C      SPINDENSITY_NORM = SPINDENSITY(3)
+Cdebug
+C
+C      WRITE(0,'(4F20.6)') PX, PY, (SPINDENSITY(I),I=1,2)
+C      WRITE(0,'(4F20.6)') PY, PZ, (SPINDENSITY(I),I=2,3)
 #else
       CALL QUIT('perturbed magnetization density not implemented')
 #endif
@@ -900,10 +911,12 @@ C
      &                     + CURRENTDENSITY(3)**D2
        CURRENTDENSITY_NORM = DSQRT(CURRENTDENSITY_NORM)
 C
-C      IF(ABS(CURRENTDENSITY_NORM).GT.0.0001D0) THEN
-C        WRITE(0,'(4F20.6)') PX, PY, (CURRENTDENSITY(I),I=1,2)
-C        WRITE(0,'(4F20.6)') PY, PZ, (CURRENTDENSITY(I),I=2,3)
-C      ENDIF
+Cdebug
+C      CURRENTDENSITY_NORM = CURRENTDENSITY(3)
+Cdebug
+C
+C      WRITE(0,'(4F20.6)') PX, PY, (CURRENTDENSITY(I),I=1,2)
+C      WRITE(0,'(4F20.6)') PY, PZ, (CURRENTDENSITY(I),I=2,3)
 #else
       CALL QUIT('perturbed current density not implemented')
 #endif
@@ -924,10 +937,12 @@ C
      &          + RXJ(3)**D2
        RXJ_NORM = DSQRT(RXJ_NORM)
 C
-C      IF(ABS(RXJ_NORM).GT.0.0001D0) THEN
-C        WRITE(0,'(4F20.6)') PX, PY, (RXJ(I),I=1,2)
-C        WRITE(0,'(4F20.6)') PY, PZ, (RXJ(I),I=2,3)
-C      ENDIF
+Cdebug
+C      RXJ_NORM = RXJ(3)
+Cdebug
+C
+C      WRITE(0,'(4F20.6)') PX, PY, (RXJ(I),I=1,2)
+C      WRITE(0,'(4F20.6)') PY, PZ, (RXJ(I),I=2,3)
 #else
       CALL QUIT('.RXJ not implemented')
 #endif
@@ -1186,6 +1201,7 @@ C
           ENDIF
         ENDIF
       ENDDO
+      CALL DSCAL(N2ORBXQ,-D1,WORK(KBMAT),1)
 C
 C
 C     symmetrize
@@ -1198,8 +1214,8 @@ C     JOPSY     = JBTOF(JSYMOP,1)
 C
       DO IZ = 1,NZ
         IOFF = NORBT*NORBT*(IZ-1)
-        CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF))
-C       CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
+C       CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF))
+        CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
       ENDDO
 C     WRITE(LUPRI,*) 'BMAT symmetrized/antisymmetrized'
 C     CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
@@ -1225,7 +1241,6 @@ C     CALL PRQMAT(DMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
 C    &            NZ,IPQTOQ(1,IREP_PLOT),LUPRI)
 C     WRITE(LUPRI,*) 'final DMATBF: ',
 C    &               DDOT(N2BBASXQ,DMATBF,1,DMATBF,1)
-C     CALL DSCAL(N2BBASXQ,-D1,DMATBF,1)
 C
 C
 C     release memory
