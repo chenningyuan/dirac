@@ -593,7 +593,10 @@ C
       IOPSY = JBTOF(IREP,1)
       QBTR = .FALSE.
       DO I1 = 1,NFSYM
-         I2  = MOD(I1+IOPSY,2) + 1
+        I2  = MOD(I1+IOPSY,2) + 1
+
+        IF (NFBAS(I1,0).GT.0.AND.NFBAS(I2,0).GT.0) THEN
+
          IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
            CALL QBTRANS(IREP,'AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
@@ -617,6 +620,8 @@ C
      &           WORK(KFREE),LFREE,IPRINT)
          ENDIF
 
+         ENDIF
+
          IF (IPRINT.GE.7) THEN
           CALL HEADER('PRPMA1: Symm.blocked AO-matrix',-1)
           WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
@@ -629,6 +634,7 @@ C
      &    '* Fermion irps no.',I1,I2,' of',NFSYM
           CALL PRQMAT(PRPMO(I2PMOX(I1,I2)+1,1),NPMO(I1),NPMO(I2),
      &           NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),LUPRI)
+          CALL FLSHFO(LUPRI)
          ENDIF
 
          IF (IPRINT.GE.10) THEN
@@ -638,7 +644,7 @@ C
      &    '* Fermion ircop no.',I1,I2,' of',NFSYM
           CALL PRQMAT(CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),
      &         NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),LUPRI)
-
+          CALL FLSHFO(LUPRI)
          ENDIF
          
       ENDDO
@@ -662,6 +668,7 @@ C
      &  INDXPR,ISYM,IREP,ITIM
         CALL PRQMAT(PRPMO,NPMOT,NPMOT,NPMOT,NPMOT,NZ,
      &              IPQTOQ(1,IREP),LUPRI)
+        CALL FLSHFO(LUPRI)
       ENDIF
 C
       CALL QEXIT('PRPMA1')
