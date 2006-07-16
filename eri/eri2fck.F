@@ -64,9 +64,14 @@ C
 #include "symmet.h"
 #include "infpar.h"
 #include "shells.h"
+C
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*), 
      &	        FCKTMP(*)
+C
+      DIMENSION KOD(10), CSMAT(NBASE,NBASE)
+      LOGICAL DOEXC
+#include "memint.h"
 C
       IF (SLAVE) THEN
          IPRINT = IPRFCK
@@ -82,6 +87,7 @@ C
 C
       THRSH  = MAX(THRS,1.00D-15)
       NDMAT  = NDMT
+#ifndef PRG_DIRAC
 C
 C     Memory
 C
@@ -130,6 +136,26 @@ C
      &      ' Memory left for ODCDRV:        ',LFREE
       END IF
 C
+#else
+C aspg, 2006-04-21
+C
+C eriprp_ is a function created to set-up the ao batches for dirac
+C so wonder if a general case could be written and incorporated into
+C the original eri code seen above in the ifndef clause
+C
+      WRTINT = .FALSE.
+      FCKINT = .TRUE.
+      DOEXC = .FALSE.
+#if defined (DIRAC_ERI_DEBUG)
+      write (*,*) 'in er2int, calling eriprp'
+      write (*,*) 'kfree:  ',kfree,'  lfree:  ',lfree
+      write (*,*) 'iclasses: ',iclasses(1),' ',iclasses(2),
+     &                         iclasses(3),' ',iclasses(4)
+#endif
+      CALL ERIPRP(DOEXC,CCFBT,INDXBT,KOD,KMAX,IPRINT,WORK,KFREE,LFREE)
+C
+#endif /* ! PRG_DIRAC */
+C
       ICALL = 0
       CALL GETDST(ICALL,ICALL,IPRINT)
 C
@@ -146,6 +172,9 @@ C     Information about distributions
 C     ===============================
 C
       CALL ERIDSI(INDXBT,IPRINT)
+#ifndef PRG_DIRAC
+      KLAST = KFREE
+      LWRK  = LFREE
 #if defined (VAR_VECTOR)
       ICHUNK = MAX(IVECLN/NDMT,1)
       CALL DZERO(FCKTMP,ICHUNK*NDMT*(NBASE + NODD)*NBASE)
@@ -153,11 +182,13 @@ C
 C
       KLAST = KFREE
       LWRK  = LFREE
+#endif /* ! PRG_DIRAC */
 C
 C     Calculate integrals
 C     ===================
 C
       IF (SLAVE) THEN
+#ifndef PRG_DIRAC
 #if defined (VAR_VECTOR)
          CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
      &               WORK(KODBC1),WORK(KODBC2),
@@ -166,7 +197,7 @@ C
      &               WORK(KRDPP1),WORK(KRDPP2),
      &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &               FCKTMP,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
-     &	             INDXBT,WORK(KLAST),LWRK,IPRINT)
+     &               INDXBT,WORK(KLAST),LWRK,IPRINT)
 #else
          CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
      &               WORK(KODBC1),WORK(KODBC2),
@@ -177,8 +208,19 @@ C
      &               FMAT,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &               INDXBT,WORK(KLAST),LWRK,IPRINT)
 #endif
+#else /* PRG_DIRAC */
+         CALL ODCDRV(WORK(KOD(1)),WORK(KOD(2)),
+     &               WORK(KOD(3)),WORK(KOD(4)),
+     &               WORK(KOD(5)),WORK(KOD(6)),
+     &               WORK(KOD(7)),WORK(KOD(8)),
+     &               WORK(KOD(9)),WORK(KOD(10)),
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
+     &               FMAT,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
+     &               INDXBT,WORK(KFREE),LFREE,IPRINT)
+#endif /* PRG_DIRAC */
       ELSE
          IF (.NOT.INTSKP) THEN
+#ifndef PRG_DIRAC
 #if defined (VAR_VECTOR)
             CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
      &                  WORK(KODBC1),WORK(KODBC2),
@@ -198,6 +240,16 @@ C
      &                  FMAT,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &                  INDXBT,WORK(KLAST),LWRK,IPRINT)
 #endif
+#else /* PRG_DIRAC */
+         CALL ODCDRV(WORK(KOD(1)),WORK(KOD(2)),
+     &               WORK(KOD(3)),WORK(KOD(4)),
+     &               WORK(KOD(5)),WORK(KOD(6)),
+     &               WORK(KOD(7)),WORK(KOD(8)),
+     &               WORK(KOD(9)),WORK(KOD(10)),
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
+     &               FMAT,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
+     &               INDXBT,WORK(KFREE),LFREE,IPRINT)
+#endif /* PRG_DIRAC */
 C
 C           Error message in case of insufficient memory
 C
@@ -215,6 +267,7 @@ C
          END IF
 #if defined (VAR_VECTOR)
          IOFF = 0
+         write (6,*) 'debug: ichunk,ndmt,nbase ',ichunk,ndmt,nbase
          DO I = 1, ICHUNK
             DO J = 1, NDMT
                DO L = 1, NBASE
@@ -223,6 +276,9 @@ C                    FMAT(K,L,J) = FMAT(K,L,J) + FCKTMP(IOFF + K)
                      FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE) =
      &                    FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE) +
      &                    FCKTMP(IOFF + K)
+                     write (6,*) 'debug hrfck2, fmat, fcktmp, nbase',
+     &                            FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE),
+     &                    FCKTMP(IOFF + K),nbase,FMAT(I)
                   END DO
                   IOFF = IOFF + NBASE+NODD
                END DO
@@ -242,7 +298,7 @@ C
 C        Print densities and Fock matrix
 C        ===============================
 C
-         IF (IPRINT.GT.4) THEN
+         IF (IPRINT.GT.0) THEN
             CALL HEADER('Density and Fock matrices in ERIFCK',-1)
             KSTR = 1
             DO I = 1, NDMT
@@ -593,22 +649,22 @@ C NECgh980505  FAC = DP5
          END IF
          IF (IFIT_DMAT.EQ.0) THEN
 C...........Ordinary Fock matrix with exact density
-#ifndef PRG_DIRAC
+CCC#ifndef PRG_DIRAC
             CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
      &                  IY,FAC)
-#else
-            CALL QUIT('Insert call to ord Fock matrix construction !')
-#endif
+CCC#else
+CCC            CALL QUIT('Insert call to ord Fock matrix construction !')
+CCC#endif
           ELSE
-#ifndef PRG_DIRAC
+CCC#ifndef PRG_DIRAC
 C...........Construction of special Fock matrix for density fitting
 C...........The multiplication factor should be one in this case.
             FAC = D1
             CALL DF_FCKCON (FMAT,DMAT,FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,
      &                      LBIN,LENGTH,IX,IY,FAC,IFIT_DMAT)
-#else
-            CALL QUIT('Insert call to dfit Fock matrix construction !')
-#endif
+CCC#else
+CCC            CALL QUIT('Insert call to dfit Fock matrix construction !')
+CCC#endif
           ENDIF
       END DO
       RETURN

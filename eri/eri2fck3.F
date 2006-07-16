@@ -12,10 +12,14 @@ C
 #include "maxorb.h"
 #include "infinp.h"
 #include "inforb.h"
+#if ! defined (PRG_DIRAC)
 #include "infind.h"
+#endif
 #include "inftap.h"
 #include "infdim.h"
+#if ! defined (PRG_DIRAC)
 #include "infpri.h"
+#endif
 #include "priunit.h"
 #include "dftcom.h"
 #include "cbihr2.h"
@@ -106,11 +110,17 @@ c wake up slaves.
 #include "erithr.h"
 #include "erimem.h"
 #include "aobtch.h"
+#if defined (VAR_VECTOR)
 #include "veclen.h"
+#endif
 #include "odbtch.h"
 #include "symmet.h"
 #include "inforb.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "clsfmm.h"
 #include "shells.h"
 
@@ -216,7 +226,7 @@ C
       
       CALL GETTIM(FTUVTIM_FTUV,DUMTIM) 
 
-      CALL GETFCK(FMAT,NDMT,IFCTYP,WORK(KIFTUVCL),WORK(KRFTUVCL),
+      CALL GETFCK_ERI(FMAT,NDMT,IFCTYP,WORK(KIFTUVCL),WORK(KRFTUVCL),
      &            WORK(KIFTUV),WORK(KRFTUV),WORK(KFTUV),
      &            WORK(KRODQ),
      &            WORK(KODCL1),WORK(KODCL2),     
@@ -279,7 +289,7 @@ C
       RETURN
       END
 
-      SUBROUTINE GETFCK(FMAT,NDMT,IFCTYP,
+      SUBROUTINE GETFCK_ERI(FMAT,NDMT,IFCTYP,
      &             IFTUVCL,RFTUVCL,IFTUV,RFTUV,FTUV,
      &             RODQ,IODCL1, IODCL2,    
      &             IODBC1,IODBC2,RODBC1,RODBC2,
