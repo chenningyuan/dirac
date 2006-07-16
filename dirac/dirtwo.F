@@ -3802,9 +3802,12 @@ C....> Check whether the class is active
 C
       IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
 C
-         IF(     RUNERI.EQ..FALSE.
-     &      .AND.DOFCK3.EQ..FALSE.
-     &      .AND.DOLINK.EQ..FALSE.) THEN ! hermit-based direct scf
+CMI      IF(     RUNERI.EQ..FALSE.
+         IF(     .NOT.RUNERI
+CMI  &      .AND.DOFCK3.EQ..FALSE.
+     &      .AND..NOT.DOFCK3
+CMI  &      .AND.DOLINK.EQ..FALSE.) THEN ! hermit-based direct scf
+     &      .AND..NOT.DOLINK) THEN ! hermit-based direct scf
 #if defined (VAR_MPI)
             IF (PARCAL) THEN
 C
