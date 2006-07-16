@@ -15,7 +15,8 @@ F77_OBJS = her1ave.o    her1car.o    her1drv.o    her1int.o\
            herrdn.o     hersol.o     hersym.o     hertst.o \
            her2gab.o    hermem.o     her1cat.o    \
            abanuc.o     abatro.o     abaopt.o abaortvec.o \
-           abarint.o abavrml.o abawalk.o abaop2.o
+           abarint.o abavrml.o abawalk.o abaop2.o \
+           herfckcon.o
 
 F90_OBJS = 
 

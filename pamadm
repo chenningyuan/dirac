@@ -420,6 +420,7 @@ abacus/hergp.o      abacus/herrdn.o     abacus/hersol.o\\
 abacus/hersym.o     abacus/hertst.o     abacus/her2gab.o    abacus/hermem.o\\
 abacus/abanuc.o     abacus/abatro.o     abacus/abaortvec.o abacus/abarint.o \\
 abacus/abaopt.o     abacus/abavrml.o abacus/abawalk.o abacus/abaop2.o \\
+abacus/herfckcon.o \\
 amfi/amfi.o         amfi/amfi1.o        amfi/amfi2.o        amfi/amfi3.o \\
 amfi/relscf.o\\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
