@@ -3707,11 +3707,14 @@ C
 #include "ccom.h"
 #include "dcbgen.h"
 #include "cbihr2.h"
+#include "cbieri.h"
+#include "cbifck3.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "shells.h"
 #include "blocks.h"
 #include "dcbqal.h"
+#include "densfit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
@@ -3799,50 +3802,128 @@ C....> Check whether the class is active
 C
       IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
 C
+         IF(     RUNERI.EQ..FALSE.
+     &      .AND.DOFCK3.EQ..FALSE.
+     &      .AND.DOLINK.EQ..FALSE.) THEN ! hermit-based direct scf
 #if defined (VAR_MPI)
-        IF (PARCAL) THEN
+            IF (PARCAL) THEN
 C
-C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
+C             Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
-           CALL DIRAC_PARCTL( 1 )
+              CALL DIRAC_PARCTL( 1 )
 C
-           CALL GETTIM(CPU1,WALL1)
-           CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
-     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
+              CALL GETTIM(CPU1,WALL1)
+              CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
+     &             IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
+     &             TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
+     &             ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
 C
-           CALL GETTIM(CPU2,WALL2)
-           CPU    = CPU2 - CPU1
-           WALL   = WALL2 - WALL1
-           TOTWAL = TOTWAL + WALL
-           CALL SCRSTA(AOTEXT,DNTSKP,WALL)
-           IF (IPRINT .GT. 0) THEN
-              TOTTID = SECTID(TOTWAL)
-              WRITE(LUPRI,'(A,A12)')
+              CALL GETTIM(CPU2,WALL2)
+              CPU    = CPU2 - CPU1
+              WALL   = WALL2 - WALL1
+              TOTWAL = TOTWAL + WALL
+              CALL SCRSTA(AOTEXT,DNTSKP,WALL)
+              IF (IPRINT .GT. 0) THEN
+                 TOTTID = SECTID(TOTWAL)
+                 WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
-     &             TOTTID
-              IF (IPRINT .GT. 2) THEN
-                 CPUTID = SECTID(CPU)
-                 WALLTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12,A1,A12)')
+     &                TOTTID
+                 IF (IPRINT .GT. 2) THEN
+                    CPUTID = SECTID(CPU)
+                    WALLTID = SECTID(WALL)
+                    WRITE(LUPRI,'(A,A12,A1,A12)')
      &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
-     &             CPUTID,'/',WALLTID
+     &                CPUTID,'/',WALLTID
+                 END IF
               END IF
-           END IF
-        ELSE
+           ELSE
 #endif
-           CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
-     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
-     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
-           CPU = SECOND() - CPU
-           CALL SCRSTA(AOTEXT,DNTSKP,CPU)
+              CPU = SECOND()
+              CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
+     &             IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
+     &             .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &             IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
+     &             GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
+              CPU = SECOND() - CPU
+              CALL SCRSTA(AOTEXT,DNTSKP,CPU)
 #if defined (VAR_MPI)
-        ENDIF
+           ENDIF
 #endif
+C
+C we are using the plain eri fock matrix builder
+C
+         ELSEIF (RUNERI.AND..NOT.DOFCK3) THEN 
+           CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
+           CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
+           KFCKTP = KFREE
+           CPU = SECOND()
+
+#if defined (DIRAC_ERI_DEBUG)
+C        Print densities and Fock matrix
+C        ===============================
+C
+           IF (IPRINT.GT.0) THEN
+              CALL HEADER('Density and Fock matrices before hrfck2',-1)
+              DO I = 1, NDMAT
+                 WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
+                 CALL OUTPUT(DAO(1,I),1,NTBAS(0),1,NTBAS(0),NTBAS(0),
+     &                     NTBAS(0),1,LUPRI)
+                 WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
+                 CALL OUTPUT(FAO(1,I),1,NTBAS(0),1,NTBAS(0),NTBAS(0),
+     &                     NTBAS(0),1,LUPRI)
+              END DO
+           END IF
+#endif
+           NCENTS(1)   = 0
+           ICENTS(1,1) = 0
+C          Index 2
+           NCENTS(2)   = 0
+           ICENTS(1,2) = 0
+C          Index 3
+           NCENTS(3)   = 0
+           ICENTS(1,3) = 0
+C          Index 4
+           NCENTS(4)   = 0
+           ICENTS(1,4) = 0
+           IF(I2TYP.EQ.1) THEN
+C            (LL|LL)-integrals
+             ICLASSES(1) = 1
+             ICLASSES(2) = 1
+             ICLASSES(3) = 1
+             ICLASSES(4) = 1
+           ELSEIF(I2TYP.EQ.2) THEN
+C            (SS|LL)-integrals
+             ICLASSES(1) = 2
+             ICLASSES(2) = 2
+             ICLASSES(3) = 1
+             ICLASSES(4) = 1
+           ELSEIF(I2TYP.EQ.3) THEN
+C            (SS|SS)-integrals
+             ICLASSES(1) = 2
+             ICLASSES(2) = 2
+             ICLASSES(3) = 2
+             ICLASSES(4) = 2
+           ENDIF
+
+           CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
+C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+     &                 WORK(KCCFBT),WORK(KINDXB),IFCKOP,
+     &                 WORK(KFREE),LFREE)
+           CALL MEMREL('dirao1.hrfck2',WORK,KWORK,KWORK,KFREE,LFREE)
+           CPU = SECOND() - CPU
+C
+C alternative we use the j-engine fock matrix builder
+C
+         ELSEIF (DOFCK3) THEN 
+Caspg 
+           write (*,*) 'debug: calling hrfck3 from dirao1'
+C          KFCKTP = KFREE
+C          CPU = SECOND()
+C          CALL HRFCK3(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+C    &                 WORK(KFREE),LFREE)
+C          CPU = SECOND() - CPU
+         ENDIF
       ENDIF
 C
 C     Restore IFCTYP to the old value (even though we'll not need
