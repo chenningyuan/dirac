@@ -68,6 +68,8 @@ CC
 #include "infpar.h"
 #include "shells.h"
 C
+#include "memint.h"
+C
       IF (SLAVE) THEN
          IPRINT = 0
       ELSE

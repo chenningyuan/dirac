@@ -3855,6 +3855,7 @@ C
 C
 C we are using the plain eri fock matrix builder
 C
+#if defined (MOD_ERI)
          ELSEIF (RUNERI.AND..NOT.DOFCK3) THEN 
            CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
            CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
@@ -3927,6 +3928,12 @@ C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
 C    &                 WORK(KFREE),LFREE)
 C          CPU = SECOND() - CPU
          ENDIF
+#else /* MOD_ERI */
+         ELSE
+            CALL QUIT('*** Direct SCF only possible with HERMIT 
+     &                 in this version. Recompile with ERI ***')
+         ENDIF
+#endif /* MOD_ERI */
       ENDIF
 C
 C     Restore IFCTYP to the old value (even though we'll not need

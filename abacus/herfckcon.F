@@ -35,6 +35,7 @@ C
 #include "single.h"
 #endif
 C
+#if defined (MOD_ERI)
 C  /* Deck fckcon */
       SUBROUTINE FCKCON(FMAT,DMAT,NDMAT,I,AOINT,IND,
      &        NINT,NIND,NBUF,IX,IY1,FAC)
@@ -420,6 +421,7 @@ C
 C
       END
 C
+#if defined (MOD_DNF)
 C  /* Deck df_fckcon */
       SUBROUTINE DF_FCKCON(FMAT,DMAT,DF_FMAT,DF_DMAT,NDMAT,I,AOINT,IND,
      &                     NINT,NIND,NBUF,IX,IY1,FAC,MODE)
@@ -608,3 +610,12 @@ C
       RETURN
 C
       END
+#endif /* MOD_DNF */
+#else /* MOD_ERI */
+C dummy routine to keep some compilers happy 
+      SUBROUTINE FCKCON(FMAT,DMAT,NDMAT,I,AOINT,IND,NINT,NIND,NBUF,
+     &                  IX,IY1,FAC)    
+      CALL QUIT('*** FCKCON needs ERI to be activated ***')
+      RETURN 
+      END
+#endif /* MOD_ERI */
