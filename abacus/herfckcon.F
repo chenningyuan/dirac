@@ -64,6 +64,7 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
+#include "dcbham.h"
 #include "dftcom.h"
 #if defined (VAR_VECTOR)
 #include "veclen.h"
@@ -87,6 +88,11 @@ C       ... No Coulomb contribution for
 C           antisymmetric density matrix
         IY = IY1 - MOD(IY1,2)
       END IF
+Caspg
+#if defined (DIRAC_ERI_DEBUG)
+                write (6,*) 'debug herfckcon: ix',ix,'iy',iy
+#endif
+Caspg
 C
       IF (HFXFAC.EQ.D0 .AND. HFXMU.EQ.D0) THEN
         IY = MOD(IY,2)
@@ -102,6 +108,11 @@ C
 #if defined (VAR_VECTOR)
         ICHUNK = MAX (IVECLN/NDMAT,1)
 #endif
+Caspg
+#if defined (DIRAC_ERI_DEBUG)
+                write (6,*) 'debug herfckcon: ix',ix,'iy',iy
+#endif
+Caspg
         IF    (IX.EQ.1.OR.IX.EQ.2) THEN
 C
 C         Symmetric singlet Fock matrix
@@ -122,14 +133,28 @@ C
                 B = IND(J,2)
                 C = IND(J,3)
                 D = IND(J,4)
-                DINT = AOINT(J) * FAC
-                EINT = -DP25X*DINT
-                FMAT(A,B,I,K) = FMAT(A,B,I,K) + DINT*DMAT(C,D,I)
-                FMAT(C,D,I,K) = FMAT(C,D,I,K) + DINT*DMAT(A,B,I)
-                FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
-                FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
-                FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I)
-                FMAT(D,B,I,K) = FMAT(D,B,I,K) + EINT*DMAT(C,A,I)
+                DINT = AOINT(J) * FAC   
+                EINT = -DP25X*DINT       
+Caspg
+#if defined (DIRAC_ERI_DEBUG)
+                write (6,*) 'debug herfckcon: symmetric singlet Fij',
+     &                      'ix',ix,'iy',iy,
+     &                      'a',a,'b',b,'c',c,'d',d,
+     &                      'dint',dint,'eint',eint,
+     &                      'd(c,d,i)',DMAT(C,D,I),
+     &                      'd(a,b,i)',DMAT(A,B,I),
+     &                      'd(d,b,i)',DMAT(D,B,I),
+     &                      'd(c,b,i)',DMAT(C,B,I),
+     &                      'd(d,a,i)',DMAT(D,A,I),
+     &                      'd(c,a,i)',DMAT(C,A,I)
+#endif
+Caspg
+                FMAT(A,B,I,K) = FMAT(A,B,I,K) + DINT*DMAT(C,D,I) 
+                FMAT(C,D,I,K) = FMAT(C,D,I,K) + DINT*DMAT(A,B,I) 
+                FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I) 
+                FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I) 
+                FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I) 
+                FMAT(D,B,I,K) = FMAT(D,B,I,K) + EINT*DMAT(C,A,I) 
               END DO
 #if defined (VAR_VECTOR)
             END DO
@@ -267,6 +292,23 @@ C
               FMAT(C,D,I,K) = FMAT(C,D,I,K) + GAB
               FMAT(D,C,I,K) = FMAT(D,C,I,K) + GAB
               EINT = -DP5X*DINT
+Caspg
+#if defined (DIRAC_ERI_DEBUG)
+                write (6,*) 'debug herfckcon: general singlet case Fij',
+     &                      'ix',ix,'iy',iy,
+     &                      'a',a,'b',b,'c',c,'d',d,
+     &                      'dint',dint,'eint',eint,
+     &                      'gab',gab,'gcd',gcd,
+     &                      'd(d,b,i)',DMAT(d,b,I),
+     &                      'd(c,b,i)',DMAT(c,b,I),
+     &                      'd(d,a,i)',DMAT(d,a,I),
+     &                      'd(c,a,i)',DMAT(c,a,I),
+     &                      'd(b,d,i)',DMAT(b,d,I),
+     &                      'd(b,c,i)',DMAT(b,c,I),
+     &                      'd(a,d,i)',DMAT(a,d,I),
+     &                      'd(a,c,i)',DMAT(a,c,I)
+#endif
+Caspg
               FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
               FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
               FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I)
@@ -324,6 +366,11 @@ C
               D = IND(J,4)
               DINT = AOINT(J) * FAC
               EINT = -DP5X*DINT
+Caspg
+#if defined (DIRAC_ERI_DEBUG)
+                write (6,*) 'debug herfckcon: general triplet ns Fij'
+#endif 
+Caspg
               FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
               FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
               FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I)
@@ -380,6 +427,15 @@ C
               GAB  = DINT*(DMAT(A,B,I) + DMAT(B,A,I))
               FMAT(C,D,I,K) = FMAT(C,D,I,K) + GAB
               FMAT(D,C,I,K) = FMAT(D,C,I,K) + GAB
+Caspg
+#if defined (DIRAC_ERI_DEBUG)
+                write (6,*) 'debug herfckcon: general singlet ns Fij',
+     &                      'ix',ix,'iy',iy,
+     &                      'a',a,'b',b,'c',c,'d',d,
+     &                      'dint',dint,'eint',eint,
+     &                      'gab',gab,'gcd',gcd
+#endif
+Caspg
             END DO
 #if defined (VAR_VECTOR)
             END DO
