@@ -1708,7 +1708,12 @@ C
       WRITE(LUPRI,'(14X,A18)') 'Total contribution'
       CALL PRSYMB(LUPRI,'-',72,2)
       NATOM = 0
+      IATOMX = 1
       DO 100 IATOM = 1, NUCIND
+         IF (IATOM.GT.1) 
+     %    IATOMX = IATOMX + NUCDEG(IATOM-1)
+
+         IF (.NOT. DOATOM(IATOM)) GOTO 100
          DO 110 ISYM = 0,MAXOPR
             IF (IBTAND(ISTBNU(IATOM),ISYM) .EQ. 0) THEN
                NATOM = NATOM + 1
@@ -1775,8 +1780,12 @@ C
                      ENDIF
                      SPIN = DISOTP(NUCCHA,ISO,'SPIN')
                      MASS = NINT(DISOTP(NUCCHA,ISO,'A'))
+
+CMI                  write(lupri,*) 'IATOM=',IATOM,' NUCCHA=',NUCCHA
+
                      WRITE (LUPRI,9000)
-     &                  'Nucleus: ',NAMDEP(IATOM),
+     &                  'Nucleus: ',NAMDEP(IATOMX),
+     &                  'Proton charge:',NUCCHA,
      &                  'Mass: ',MASS,'Spin: ',
      &                  SPIN,'Quadrupole moment: ',QMOM
                      DO I=1,3
@@ -1800,7 +1809,7 @@ C
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,F12.8,A)') '  1 a.u. = ',CONV,' MHz'
       RETURN
- 9000 FORMAT (/2X,A9,A4,3X,A6,I3,3X,A6,F4.1,3X,A19,F12.7,/)
+ 9000 FORMAT (/2X,A9,A4,1X,A,I3,3X,A,I3,3X,A6,F4.1,3X,A19,F12.7,/)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck el_efg */
