@@ -52,6 +52,8 @@ C     =================
 C
       CALL MEMGET('REAL',KCMO        ,N2BBASXQ,
      &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG        ,NORBT,
+     &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMATBF     ,N2BBASXQ,
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMATBF     ,N2BBASXQ,
@@ -79,10 +81,18 @@ C
 C     read coefficients and give info
 C     ===============================
 C
+      CALL DZERO(WORK(KCMO),N2BBASXQ)
+      CALL DZERO(WORK(KEIG),NORBT)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PLOT_MEM')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
-     &            TOTERG,3,WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),DUMMY,
+     &            DUMMY,6,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS = 'KEEP')
+C
+C
+C     find occupation
+C     ===============
+C
+      CALL FNDOCC(WORK(KEIG),WORK,KFREE,LFREE)
 C
 C
 C     zero out orbitals?
@@ -889,9 +899,9 @@ C
      &                  + SPINDENSITY(3)**D2
        SPINDENSITY_NORM = DSQRT(SPINDENSITY_NORM)
 C
-Cdebug
+C
 C      SPINDENSITY_NORM = SPINDENSITY(3)
-Cdebug
+C
 C
 C      WRITE(0,'(4F20.6)') PX, PY, (SPINDENSITY(I),I=1,2)
 C      WRITE(0,'(4F20.6)') PY, PZ, (SPINDENSITY(I),I=2,3)
@@ -911,9 +921,9 @@ C
      &                     + CURRENTDENSITY(3)**D2
        CURRENTDENSITY_NORM = DSQRT(CURRENTDENSITY_NORM)
 C
-Cdebug
+C
 C      CURRENTDENSITY_NORM = CURRENTDENSITY(3)
-Cdebug
+C
 C
 C      WRITE(0,'(4F20.6)') PX, PY, (CURRENTDENSITY(I),I=1,2)
 C      WRITE(0,'(4F20.6)') PY, PZ, (CURRENTDENSITY(I),I=2,3)
@@ -937,9 +947,9 @@ C
      &          + RXJ(3)**D2
        RXJ_NORM = DSQRT(RXJ_NORM)
 C
-Cdebug
+C
 C      RXJ_NORM = RXJ(3)
-Cdebug
+C
 C
 C      WRITE(0,'(4F20.6)') PX, PY, (RXJ(I),I=1,2)
 C      WRITE(0,'(4F20.6)') PY, PZ, (RXJ(I),I=2,3)
@@ -1201,7 +1211,7 @@ C
           ENDIF
         ENDIF
       ENDDO
-      CALL DSCAL(N2ORBXQ,-D1,WORK(KBMAT),1)
+C     CALL DSCAL(N2ORBXQ,-D1,WORK(KBMAT),1)
 C
 C
 C     symmetrize
@@ -1209,14 +1219,35 @@ C     ==========
 C
       JSYMOP    = JSYMOPEE
       IREP_PLOT = JSYMOP - 1
-C     JOPSY     = JBTOF(JSYMOP,1)
-      JOPSY     = 1
+      JOPSY     = JBTOF(IREP_PLOT,1)
+C     JOPSY     = 1
 C
-      DO IZ = 1,NZ
-        IOFF = NORBT*NORBT*(IZ-1)
+C     DO IZ = 1,NZ
+C       IOFF = NORBT*NORBT*(IZ-1)
 C       CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF))
-        CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
+C       CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
+C     ENDDO
+C
+C     WRITE(LUPRI,*) 'BMAT'
+C     CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
+C    &            NZ,IPQTOQ(1,IREP_PLOT),LUPRI)
+      DO IZ = 1,NZ
+        IQ = IPQTOQ(IZ,IREP_PLOT)
+C       WRITE(0,*) 'debug ', IQ
+        IOFF = NORBT*NORBT*(IQ-1)
+C       IM = IHQMAT(IQ,IH)
+C       WRITE(0,*) 'debug ', IM
+C       IF(IM.EQ.1) THEN
+C         CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF))
+C       ELSEIF(IM.EQ.2) THEN
+          CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
+C       ENDIF
+C       WRITE(0,*) 'debug ende'
       ENDDO
+C
+C
+C
+C
 C     WRITE(LUPRI,*) 'BMAT symmetrized/antisymmetrized'
 C     CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
 C    &            NZ,IPQTOQ(1,IREP_PLOT),LUPRI)
@@ -1262,35 +1293,34 @@ C     /* deck scatter_bvec */
 C=======================================================================
 C     scatter solution vector onto BMAT
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: june 2006
+C     radovan bast                              last revision: july 2006
 C=======================================================================
-C
 #include "implicit.h"
 #include "priunit.h"
-C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
+C-----------------------------------------------------------------------
 #include "dcborb.h"
 #include "dcbplot.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-C
-      DIMENSION BVECEE(*),BVECEP(*),BMAT(NORBT,NORBT,NZ),
+C-----------------------------------------------------------------------
+      DIMENSION BVECEE(*),BVECEP(*),
+     &          BMAT(NORBT,NORBT,NZ),
      &          NEI(2),NES(2),NP(2)
+C-----------------------------------------------------------------------
+      DO I = 1,2
+        NEI(I) = NISH(I)
+        NES(I) = NESH(I) - NISH(I)
+        NP(I)  = NPSH(I)
+      ENDDO
 C
-C
-      NEI(1) = NISH(1)
-      NES(1) = NESH(1) - NISH(1)
-      NP(1)  = NPSH(1)
-C
-      NEI(2) = NISH(2)
-      NES(2) = NESH(2) - NISH(2)
-      NP(2)  = NPSH(2)
-C
-      II1 = 1 + NP(1) + (NEI(1)+NES(1)+NP(2))*(IFSYM1-1)
+      II1 = 1
+      II1 = II1 + (NESH(1)+NPSH(1))*(IFSYM1-1)
+      II1 = II1 + NP(IFSYM1)
       II2 = II1 + NEI(IFSYM1) - 1
-      IS1 = 1 + (NP(1)+NEI(1)+NES(1))*(IFSYM2-1)
-      IS2 = IS1 + NP(IFSYM2) - 1
+      IS1 = 1
+      IS1 = IS1 + (NESH(1)+NPSH(1))*(IFSYM2-1)
+      IS2 = IS1 + NP(IFSYM2)  - 1
       IS3 = IS2 + NEI(IFSYM2) + 1
       IS4 = IS3 + NES(IFSYM2) - 1
 C
@@ -1308,32 +1338,30 @@ C
           ENDDO
         ENDIF
       ENDDO
-C
-C
+C-----------------------------------------------------------------------
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck dmatorb2bf */
       SUBROUTINE DMATORB2BF(CMO,DMATBF,DMATORB,WORK,LWORK)
 C=======================================================================
-C     transform orbital density matrix to bf density matrix
+C     transform orbital ("mo") density matrix
+C     to bf ("ao") density matrix
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: june 2006
+C     radovan bast                              last revision: july 2006
 C=======================================================================
-C
 #include "implicit.h"
-C
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
+C-----------------------------------------------------------------------
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-C
+C-----------------------------------------------------------------------
       DIMENSION CMO(*),DMATBF(*),DMATORB(*),WORK(LWORK)
-C
+C-----------------------------------------------------------------------
 #include "memint.h"
-C
-C
+C-----------------------------------------------------------------------
       CALL DZERO(DMATBF,N2BBASXQ)
 C
       DO I = 1,NFSYM
@@ -1349,43 +1377,37 @@ C
      &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &              WORK(KFREE),LFREE,IPRINT)
       ENDDO
-C
-C
+C-----------------------------------------------------------------------
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck occupydmatorb */
       SUBROUTINE OCCUPYDMATORB(DMATORB,DORBSTRING1,DORBSTRING2)
-C  .....................................................................
-C  .  description:                                                     .
-C  .  occupy orbital density matrix                                    .
-C  .....................................................................
-C  .  author:                                          last revision:  .
-C  .  radovan bast                                     october 2005    .
-C  .....................................................................
-C
+C=======================================================================
+C     occupy orbital density matrix
+C-----------------------------------------------------------------------
+C     radovan bast                              last revision: july 2006
+C=======================================================================
 #include "implicit.h"
-C
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
+C-----------------------------------------------------------------------
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-C
-C
+C-----------------------------------------------------------------------
       DIMENSION DMATORB(*),DORBSTRING1(*),DORBSTRING2(*)
-C
-C
+C-----------------------------------------------------------------------
       CALL DZERO(DMATORB,N2ORBXQ)
 C
       K = 0
       DO I = 1,NFSYM
         IF(NISH(I).GT.0) THEN
           DO J = 1,NISH(I)
-            K = K+1
-            JOFF = (NORB(1)*(I-1)+NPSH(I))*NORBT
-            JOFF = JOFF+NORB(1)*(I-1)+NPSH(I)
-            JOFF = JOFF+(J-1)*NORBT+J-1
+            K = K + 1
+            JOFF = (NORB(1)*(I-1) + NPSH(I))*NORBT
+            JOFF = JOFF + NORB(1)*(I-1) + NPSH(I)
+            JOFF = JOFF + (J-1)*NORBT + J - 1
 C
             IF((I.EQ.1).AND.(DORBSTRING1(J).EQ.D1)) THEN
               DMATORB(1+JOFF) = D1
@@ -1397,7 +1419,6 @@ C
           ENDDO
         ENDIF
       ENDDO
-C
-C
+C-----------------------------------------------------------------------
       RETURN
       END
