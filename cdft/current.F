@@ -1,4 +1,4 @@
-C 
+C
 C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -31,45 +31,34 @@ C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
-C 
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck getcurrentdensity */
       SUBROUTINE GETCURRENTDENSITY(LCURRENTDENSITY,CURRENTDENSITY,
      &                             LMAGNETIZATION,DMAGNETIZATION,
      &                             IREPOP,GAO,DMAT,BUF)
-C  .....................................................................
-C  .  description:                                                     .
-C  .  get current density or magnetization density in point            .
-C  .                                                                   .
-C  .  routine returns one (or two) vectors with                        .
-C  .  density(1) =  density_x                                          .
-C  .  density(2) =  density_y                                          .
-C  .  density(3) =  density_z                                          .
-C  .....................................................................
-C  .  author:                                          last revision:  .
-C  .  radovan bast                                     march 2006      .
-C  .....................................................................
+C=======================================================================
+C     get current density or magnetization density in point
 C
+C     routine returns one (or two) vectors with
+C     density(1) =  density_x
+C     density(2) =  density_y
+C     density(3) =  density_z
+C-----------------------------------------------------------------------
+C     radovan bast                              last revision: july 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
-C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
-#include "codata.h"
-#include "dgroup.h"
-#include "dcbbas.h"
+C-----------------------------------------------------------------------
 #include "dcbgen.h"
-C
-      LOGICAL LCURRENTDENSITY,
-     &        LMAGNETIZATION
-C
+C-----------------------------------------------------------------------
+      LOGICAL LCURRENTDENSITY,LMAGNETIZATION
+C-----------------------------------------------------------------------
       DIMENSION CURRENTDENSITY(3),
      &          DMAGNETIZATION(3),
-     &          GAO(*),
-     &          DMAT(*),
-     &          BUF(*) 
-C
-C
+     &          GAO(*),DMAT(*),BUF(*)
+C-----------------------------------------------------------------------
       IF(LMAGNETIZATION) THEN
         F  = D1
         G  = D1
@@ -85,8 +74,8 @@ C       transforms like rotations, hence:
       ENDIF
 C
       IF(LCURRENTDENSITY) THEN
-        F  = CVAL
-        G  = CVAL
+        F  = -CVAL
+        G  = -CVAL
         IU = 1
         IV = 2
         IX = 2
@@ -97,8 +86,7 @@ C       transforms like coordinates, hence:
      &                             F,G,IU,IV,IX,IY,IREPOP,ITRANSFORM,
      &                             GAO,DMAT,BUF)
       ENDIF
-C
-C
+C-----------------------------------------------------------------------
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -107,39 +95,31 @@ C     /* deck getcurrentdensity_sub */
      &                                 F,G,IU,IV,IX,IY,
      &                                 IREPOP,ITRANSFORM,
      &                                 GAO,DMAT,BUF)
-C  .....................................................................
-C  .  description:                                                     .
-C  .  get contributions to current or magnetization density            .
-C  .....................................................................
-C  .  author:                                          last revision:  .
-C  .  radovan bast                                     march 2006      .
-C  .....................................................................
-C
+C=======================================================================
+C     get contributions to current or magnetization density
+C-----------------------------------------------------------------------
+C     radovan bast                              last revision: july 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
+C-----------------------------------------------------------------------
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-C
+C-----------------------------------------------------------------------
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
 #endif
-C
+C-----------------------------------------------------------------------
       DIMENSION CURRENTDENSITY(3),
-C    &          DMAGNETIZATION(3),
-     &          GAO(*),
-     &          DMAT(*),
-     &          BUF(*) 
-C
+     &          GAO(*),DMAT(*),BUF(*)
+C-----------------------------------------------------------------------
 #include "ibtfun.h"
-C
-C
+C-----------------------------------------------------------------------
       DO I = 1,3
 C
         IQ = IQTOPQ(5-I,ISYMAX(I,ITRANSFORM))
@@ -151,20 +131,18 @@ C
         IOFF = IOFF*(IQ-1)
 C
         TEMP1 = D0
-        TEMP2 = D0
-C
         CALL GETCURRENT(TEMP1,IU,IV,
      &                  IREPOP,ITRANSFORM,I,
      &                  GAO,DMAT(1+IOFF),BUF)
 C
+        TEMP2 = D0
         CALL GETCURRENT(TEMP2,IX,IY,
      &                  IREPOP,ITRANSFORM,I,
      &                  GAO,DMAT(1+IOFF),BUF)
 C
         CURRENTDENSITY(I) = F*TEMP1 + G*TEMP2
       ENDDO
-C
-C
+C-----------------------------------------------------------------------
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -172,26 +150,22 @@ C     /* deck getcurrent */
       SUBROUTINE GETCURRENT(CURRENT,IC1,IC2,
      &                      IREPOP,ITRANSFORM,IXYZ,
      &                      GAO,DMAT,BUF)
-C  .....................................................................
-C  .  description:                                                     .
-C  .  get contributions to current or magnetization density            .
-C  .....................................................................
-C  .  author:                                          last revision:  .
-C  .  radovan bast                                     march 2006      .
-C  .....................................................................
-C
+C=======================================================================
+C     get contributions to current or magnetization density
+C-----------------------------------------------------------------------
+C     radovan bast                              last revision: july 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
+C-----------------------------------------------------------------------
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-C
+C-----------------------------------------------------------------------
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION GAO(NBAST),
@@ -201,10 +175,9 @@ C
      &          DMAT(NTBAS(0),NTBAS(0))
 #endif
       DIMENSION BUF(*)
-C
+C-----------------------------------------------------------------------
 #include "ibtfun.h"
-C
-C
+C-----------------------------------------------------------------------
       CURRENT = D0
 C
       DO IREP1 = 0,NBSYM-1
@@ -228,7 +201,6 @@ C
         ENDIF
 C
       ENDDO
-C
-C
+C-----------------------------------------------------------------------
       RETURN
       END
