@@ -3861,23 +3861,7 @@ C
            CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
            KFCKTP = KFREE
            CPU = SECOND()
-
-#if defined (DIRAC_ERI_DEBUG)
-C        Print densities and Fock matrix
-C        ===============================
-C
-           IF (IPRINT.GT.0) THEN
-              CALL HEADER('Density and Fock matrices before hrfck2',-1)
-              DO I = 1, NDMAT
-                 WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
-                 CALL OUTPUT(DAO(1,I),1,NTBAS(0),1,NTBAS(0),NTBAS(0),
-     &                     NTBAS(0),1,LUPRI)
-                 WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
-                 CALL OUTPUT(FAO(1,I),1,NTBAS(0),1,NTBAS(0),NTBAS(0),
-     &                     NTBAS(0),1,LUPRI)
-              END DO
-           END IF
-#endif
+Caspg
            NCENTS(1)   = 0
            ICENTS(1,1) = 0
 C          Index 2
@@ -3909,11 +3893,19 @@ C            (SS|SS)-integrals
              ICLASSES(4) = 2
            ENDIF
 
+Caspg
+           factor =  2.d0
+           CALL DSCAL(N2BBASX,factor,DAO,1)
+Caspg
            CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
 C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KCCFBT),WORK(KINDXB),IFCKOP,
      &                 WORK(KFREE),LFREE)
            CALL MEMREL('dirao1.hrfck2',WORK,KWORK,KWORK,KFREE,LFREE)
+Caspg
+           factor =  0.5
+           CALL DSCAL(N2BBASX,factor,DAO,1)
+Caspg
            CPU = SECOND() - CPU
 C
 C alternative we use the j-engine fock matrix builder
@@ -3935,6 +3927,24 @@ C          CPU = SECOND() - CPU
          ENDIF
 #endif /* MOD_ERI */
       ENDIF
+Caspg
+#if defined (DIRAC_ERI_DEBUG)
+C        Print densities and Fock matrix
+C        ===============================
+C
+           IF (.TRUE.) THEN
+              CALL HEADER('Density and Fock matrices after 2-e',-1)
+              DO I = 1, NDMAT
+                 WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
+                 CALL OUTPUT(DAO(1,I),1,NTBAS(0),1,NTBAS(0),NTBAS(0),
+     &                     NTBAS(0),1,LUPRI)
+                 WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
+                 CALL OUTPUT(FAO(1,I),1,NTBAS(0),1,NTBAS(0),NTBAS(0),
+     &                     NTBAS(0),1,LUPRI)
+              END DO
+           END IF
+#endif
+Caspg
 C
 C     Restore IFCTYP to the old value (even though we'll not need
 C     it anymore)
