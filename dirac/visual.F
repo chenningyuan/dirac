@@ -1210,9 +1210,7 @@ C
           ENDIF
         ENDIF
       ENDDO
-C     CALL DSCAL(N2ORBXQ,-D1,WORK(KBMAT),1)
-C     there is a minus sign error in BMAT but somehow it is good at the
-C     end so i leave it for the moment
+      CALL DSCAL(N2ORBXQ,-D1,WORK(KBMAT),1)
 C
 C
 C     symmetrize
@@ -1224,7 +1222,8 @@ C
 C
       DO IZ = 1,NZ
         IOFF = NORBT*NORBT*(IZ-1)
-        CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
+        CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF))
+C       CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
       ENDDO
 C
 C
