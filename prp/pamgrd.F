@@ -296,7 +296,7 @@ C
 C
 C
         CALL DZERO(GPOE,NZ*NXOPE)
-        CALL PRPORB(GPOE,JXOPE,NXOPE,PRPMO,NORBT,WORK(KDV),NZ,IH)
+        CALL PRPORB(GPOE,JXOPE,NXOPE,PRPMO,NORBT,WORK(KDV),NZ,IH,IPRINT)
 
 c       no scaling
         CALL DSCAL(NZ*NXOPE,DM1,GPOE,1)
@@ -307,7 +307,7 @@ C     ====================================
 C
       IF(NXOPP.GT.0) THEN
         CALL DZERO(GPOP,NZ*NXOPP)
-        CALL PRPORB(GPOP,JXOPP,NXOPP,PRPMO,NORBT,WORK(KDV),NZ,IH)
+        CALL PRPORB(GPOP,JXOPP,NXOPP,PRPMO,NORBT,WORK(KDV),NZ,IH,IPRINT)
 c       no scaling
         CALL DSCAL(NZ*NXOPP,DM1,GPOP,1)
       ENDIF
@@ -854,7 +854,7 @@ C
          CALL MEMGET('REAL',KDV,0,WORK,KFREE,LFREE)
       END IF
       CALL DZERO(GPO,NZ*NXOP)
-      CALL PRPORB(GPO,JXOP,NXOP,PRPMO,NORBT,WORK(KDV),NZ,IH)
+      CALL PRPORB(GPO,JXOP,NXOP,PRPMO,NORBT,WORK(KDV),NZ,IH,IPRINT)
 C
       CALL MEMREL('GPOGET',WORK,1,KFRSAV,KFREE,LFREE)
 c       no scaling
@@ -864,7 +864,7 @@ c       no scaling
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prporb */
-      SUBROUTINE PRPORB(QVEC,JXOP,NXOP,QMAT,NDIM,DV,NZ,IH)
+      SUBROUTINE PRPORB(QVEC,JXOP,NXOP,QMAT,NDIM,DV,NZ,IH,IPRINT)
 C***********************************************************************
 C
 C     Construct 1-eletron property gradient
@@ -893,6 +893,8 @@ C
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ),
      &          DV(*)
+
+      CALL QENTER('PRPORB')
 C
 C
       IF (IH .EQ. 1) THEN
@@ -955,5 +957,7 @@ C
 C
 
       END DO
+
+      CALL QEXIT('PRPORB')
       RETURN
       END
