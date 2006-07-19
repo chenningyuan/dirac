@@ -40,7 +40,7 @@ C     /* deck getcurrentdensity */
 C=======================================================================
 C     get current density or magnetization density in point
 C
-C     routine returns one (or two) vectors with
+C     routine returns one (or two) vector(s) with
 C     density(1) =  density_x
 C     density(2) =  density_y
 C     density(3) =  density_z
@@ -52,14 +52,18 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
 #include "dcbgen.h"
+#include "cdft.h"
 C-----------------------------------------------------------------------
-      LOGICAL LCURRENTDENSITY,LMAGNETIZATION
-C-----------------------------------------------------------------------
+      LOGICAL LCURRENTDENSITY,LMAGNETIZATION,NONCOLLINEAR
+C
       DIMENSION CURRENTDENSITY(3),
      &          DMAGNETIZATION(3),
      &          GAO(*),DMAT(*),BUF(*)
 C-----------------------------------------------------------------------
       IF(LMAGNETIZATION) THEN
+C       NONCOLLINEAR = .NOT.COLLINEAR
+        NONCOLLINEAR = .TRUE.
+C
         F  = D1
         G  = D1
         IU = 1
@@ -68,7 +72,7 @@ C-----------------------------------------------------------------------
         IY = 2
 C       transforms like rotations, hence:
         ITRANSFORM = 2
-        CALL GETCURRENTDENSITY_SUB(DMAGNETIZATION,
+        CALL GETCURRENTDENSITY_SUB(DMAGNETIZATION,NONCOLLINEAR,
      &                             F,G,IU,IV,IX,IY,IREPOP,ITRANSFORM,
      &                             GAO,DMAT,BUF)
       ENDIF
@@ -82,7 +86,7 @@ C
         IY = 1
 C       transforms like coordinates, hence:
         ITRANSFORM = 1
-        CALL GETCURRENTDENSITY_SUB(CURRENTDENSITY,
+        CALL GETCURRENTDENSITY_SUB(CURRENTDENSITY,.TRUE.,
      &                             F,G,IU,IV,IX,IY,IREPOP,ITRANSFORM,
      &                             GAO,DMAT,BUF)
       ENDIF
@@ -91,7 +95,7 @@ C-----------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck getcurrentdensity_sub */
-      SUBROUTINE GETCURRENTDENSITY_SUB(CURRENTDENSITY,
+      SUBROUTINE GETCURRENTDENSITY_SUB(CURRENTDENSITY,NONCOLLINEAR,
      &                                 F,G,IU,IV,IX,IY,
      &                                 IREPOP,ITRANSFORM,
      &                                 GAO,DMAT,BUF)
@@ -102,26 +106,35 @@ C     radovan bast                              last revision: july 2006
 C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
+#include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 C-----------------------------------------------------------------------
+      LOGICAL NONCOLLINEAR
+C
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
 #endif
-C-----------------------------------------------------------------------
+C
       DIMENSION CURRENTDENSITY(3),
      &          GAO(*),DMAT(*),BUF(*)
 C-----------------------------------------------------------------------
 #include "ibtfun.h"
 C-----------------------------------------------------------------------
-      DO I = 1,3
+      IF(NONCOLLINEAR) THEN
+        ISTART = 1
+      ELSE
+        CURRENTDENSITY(1) = D0
+        CURRENTDENSITY(2) = D0
+        ISTART = 3
+      ENDIF
 C
+      DO I = ISTART,3
         IQ = IQTOPQ(5-I,ISYMAX(I,ITRANSFORM))
 #if defined (VAR_G77) || defined (SYS_SX)
         IOFF = NBAST*NBAST
@@ -157,9 +170,9 @@ C     radovan bast                              last revision: july 2006
 C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
+#include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
