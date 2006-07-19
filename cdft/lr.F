@@ -37,23 +37,21 @@ C     /* deck sdft_lintrans */
       SUBROUTINE SDFT_LINTRANS(DTRMAT,EXCMAT,
      &                         IREPOP,
      &                         GAO,GAO1,
-     &                         RHO,RHOGRADNORM,RHOGRAD,WEIGHT,DOGGA,
+     &                         RHO,RHOGRADNORM,
+     &                         RHOGRAD,
+     &                         WEIGHT,DOGGA,
      &                         BUF)
-C  .....................................................................
-C  .  description:                                                     .
-C  .  lets the "spin density" contribute to linear response            .
-C  .  adaptation of DFTLTR in dftaux.F                                 .
-C  .....................................................................
-C  .  author:                                          last revision:  .
-C  .  radovan bast                                     march 2006      .
-C  .....................................................................
-C
+C=======================================================================
+C     lets the "spin density" contribute to linear response     
+C     adaptation of DFTLTR in dftaux.F                          
+C-----------------------------------------------------------------------
+C     radovan bast                              last revision: july 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
+C-----------------------------------------------------------------------
+#include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
@@ -62,19 +60,19 @@ C
 #include "dftcom.h"
 #include "cdft.h"
 #include "../dft/functionals.h"
-C
+C-----------------------------------------------------------------------
       LOGICAL DOGGA
 C
-      DIMENSION DTRMAT(*),
-     &          EXCMAT(*),
-     &          GAO(*),
-     &          GAO1(*),
+      DIMENSION DTRMAT(*),EXCMAT(*),
+     &          GAO(*),GAO1(*),
      &          RHOGRAD(3),
-     &          DMAGNETIZATION(3),
-     &          VXC(DERVS2),
-     &          BUF(*)
+     &          BUF(*),
 C
+     &          DMAGNETIZATION(3),
+     &          VXC(DERVS2)
+C-----------------------------------------------------------------------
 #include "ibtfun.h"
+C-----------------------------------------------------------------------
 C
 C
 C     get modified magnetization
@@ -86,17 +84,9 @@ C
 C
       IF(DOGGA) THEN
 C
-C
-C       G G A
-C       =====
-C
         CALL QUIT('SDFT linear response not implemented for GGA')
 C
       ELSE
-C
-C
-C       L D A
-C       =====
 C
         DNORM = DSQRT(DDOT(3,DMAGNETIZATION,1,DMAGNETIZATION,1))
         IF(DNORM.GT.DFTHRL) THEN
@@ -118,7 +108,6 @@ C
         ENDIF
 C
       ENDIF
-C
-C
+C-----------------------------------------------------------------------
       RETURN
       END
