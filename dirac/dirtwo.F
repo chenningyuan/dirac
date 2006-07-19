@@ -3897,6 +3897,7 @@ Caspg
            factor =  2.d0
            CALL DSCAL(N2BBASX,factor,DAO,1)
 Caspg
+           IPRFCK=IPRINT
            CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
 C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KCCFBT),WORK(KINDXB),IFCKOP,
