@@ -1857,7 +1857,7 @@ C        ------------------------------------
 C
          CALL DZERO(WORK(KOP),NZXOPEQ)
          CALL PRPORB(WORK(KOP),WORK(KZXOPE),NZXOPE,WORK(KUBVEC),
-     &               NORBT,WORK(KDV),NZ,IHH)
+     &               NORBT,WORK(KDV),NZ,IHH,IPRXRS)
 C
 C
          J  = IBEVC(I+IEOFF) - ITOFF
@@ -1921,7 +1921,7 @@ C        ------------------------------------
 C
          CALL DZERO(WORK(KOP),NZXOPPQ)
          CALL PRPORB(WORK(KOP),WORK(KZXOPP),NZXOPP,WORK(KUBVEC),
-     &               NORBT,WORK(KDV),NZ,IHH)
+     &               NORBT,WORK(KDV),NZ,IHH,IPRXRS)
 C
 C
          J  = IBPVC(I+IPOFF) - ITOFF
