@@ -42,8 +42,8 @@ C     /* deck sdft_lintrans */
      &                         WEIGHT,DOGGA,
      &                         BUF)
 C=======================================================================
-C     lets the "spin density" contribute to linear response     
-C     adaptation of DFTLTR in dftaux.F                          
+C     lets the "spin density" contribute to linear response
+C     adaptation of DFTLTR in dftaux.F
 C-----------------------------------------------------------------------
 C     radovan bast                              last revision: july 2006
 C=======================================================================
@@ -84,9 +84,17 @@ C
 C
       IF(DOGGA) THEN
 C
+C
+C       G G A
+C       =====
+C
         CALL QUIT('SDFT linear response not implemented for GGA')
 C
       ELSE
+C
+C
+C       L S D A
+C       =======
 C
         DNORM = DSQRT(DDOT(3,DMAGNETIZATION,1,DMAGNETIZATION,1))
         IF(DNORM.GT.DFTHRL) THEN
