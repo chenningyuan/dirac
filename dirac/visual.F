@@ -971,34 +971,31 @@ C     fill density matrix
 C     with components of the solution vector
 C     these are read in from XVECFILE
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: june 2006
+C     radovan bast                              last revision: july 2006
 C=======================================================================
-C
 #include "implicit.h"
 #include "priunit.h"
-C
 #include "dcbqal.h"
-C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
+C-----------------------------------------------------------------------
 #include "dcborb.h"
 #include "dcbplot.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
 #include "dcbxrs.h"
-C
+C-----------------------------------------------------------------------
       LOGICAL TOBE
-C
-      DIMENSION CMO(*),DMATBF(*),TMATBF(*),WORK(LWORK)
-      DIMENSION DORBSTRING1(*),DORBSTRING2(*)
-C
+C-----------------------------------------------------------------------
+      DIMENSION CMO(*),DMATBF(*),TMATBF(*),
+     &          DORBSTRING1(*),DORBSTRING2(*),
+     &          WORK(LWORK)
+C-----------------------------------------------------------------------
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
-C
-C
+C-----------------------------------------------------------------------
       CALL QENTER('MODIFIED_DMAT')
-C
 #include "memint.h"
+C-----------------------------------------------------------------------
 C
 C
 C     check if solution vector file is there and open it
@@ -1175,9 +1172,11 @@ C
 C     scatter vector
 C     ==============
 C
-      ICOUNTEREE = 1
-      ICOUNTEREP = 1
+      IHERMITICITY = IHEE
+      ICOUNTEREE   = 1
+      ICOUNTEREP   = 1
       CALL DZERO(WORK(KBMAT),N2ORBXQ)
+C
       DO IZ = 1,NZ
         IF(NFSYM.EQ.1) THEN
           CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
@@ -1186,7 +1185,7 @@ C
      &                      IZ,
      &                      1,1)
         ELSE
-          IF(IHEE.EQ.1) THEN
+          IF(IHERMITICITY.EQ.1) THEN
             CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
      &                        ICOUNTEREE,ICOUNTEREP,
      &                        WORK(KBMAT),
@@ -1212,6 +1211,8 @@ C
         ENDIF
       ENDDO
 C     CALL DSCAL(N2ORBXQ,-D1,WORK(KBMAT),1)
+C     there is a minus sign error in BMAT but somehow it is good at the
+C     end so i leave it for the moment
 C
 C
 C     symmetrize
@@ -1220,37 +1221,11 @@ C
       JSYMOP    = JSYMOPEE
       IREP_PLOT = JSYMOP - 1
       JOPSY     = JBTOF(IREP_PLOT,1)
-C     JOPSY     = 1
 C
-C     DO IZ = 1,NZ
-C       IOFF = NORBT*NORBT*(IZ-1)
-C       CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF))
-C       CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
-C     ENDDO
-C
-C     WRITE(LUPRI,*) 'BMAT'
-C     CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
-C    &            NZ,IPQTOQ(1,IREP_PLOT),LUPRI)
       DO IZ = 1,NZ
-        IQ = IPQTOQ(IZ,IREP_PLOT)
-C       WRITE(0,*) 'debug ', IQ
-        IOFF = NORBT*NORBT*(IQ-1)
-C       IM = IHQMAT(IQ,IH)
-C       WRITE(0,*) 'debug ', IM
-C       IF(IM.EQ.1) THEN
-C         CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF))
-C       ELSEIF(IM.EQ.2) THEN
-          CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
-C       ENDIF
-C       WRITE(0,*) 'debug ende'
+        IOFF = NORBT*NORBT*(IZ-1)
+        CALL FULMAT('A',NORBT,NORBT,WORK(KBMAT+IOFF))
       ENDDO
-C
-C
-C
-C
-C     WRITE(LUPRI,*) 'BMAT symmetrized/antisymmetrized'
-C     CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
-C    &            NZ,IPQTOQ(1,IREP_PLOT),LUPRI)
 C
 C
 C     get density matrix
@@ -1267,11 +1242,6 @@ C
         CALL DMOLI3(ITYP,IHEP,TMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
         CALL DAXPY(N2BBASXQ,D1,TMATBF,1,DMATBF,1)
       ENDIF
-C     WRITE(LUPRI,*) 'final DMATBF'
-C     CALL PRQMAT(DMATBF,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-C    &            NZ,IPQTOQ(1,IREP_PLOT),LUPRI)
-C     WRITE(LUPRI,*) 'final DMATBF: ',
-C    &               DDOT(N2BBASXQ,DMATBF,1,DMATBF,1)
 C
 C
 C     release memory
@@ -1279,8 +1249,7 @@ C     ==============
 C
       CALL MEMREL('MODIFIED_DMAT',WORK,KBVECEE,KBVECEE,KFREE,LFREE)
       CALL QEXIT('MODIFIED_DMAT')
-C
-C
+C-----------------------------------------------------------------------
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
