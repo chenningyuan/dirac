@@ -62,7 +62,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "efield.h"
-      PARAMETER (NDIR = 7, NTABLE = 82)
+      PARAMETER (NDIR = 8, NTABLE = 82)
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -89,7 +89,7 @@ C#if defined (MOD_DNF)
 C#endif
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
-     &             '*SUPINT', '*ER2INT', '*JENGIN'/
+     &             '*SUPINT', '*ER2INT', '*JENGIN', '*DENSFI'/
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
      &             '.DIPLEN', '.NO HAM', '.SOTEST', '.DIPVEL',
      &             '.QUADRU', '.PHASEO', '.SECMOM', '.SUPONL',
@@ -976,7 +976,7 @@ C
          IF (WORD(1:2) .EQ. '**') GO TO 1
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7), I
+               GO TO (1,2,3,4,5,6,7,8), I
             END IF
   210    CONTINUE
          WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
@@ -1014,6 +1014,12 @@ C
 #if defined (MOD_ERI)
 C&&& JENGINE: Read input for J-engine for Coulom contribution
         CALL FCK3INP(WORD)
+      GO TO 201
+#endif
+    8    CONTINUE
+#if defined (MOD_DNF)
+C&&& JENGINE: Read input for density fitting 
+        CALL DFIINP(WORD)
       GO TO 201
 #endif
 C
