@@ -181,6 +181,7 @@ C     *** I N I T I A L I Z E  ***
 C     ****************************
 C
       CALL SETXLR(WORK,KFREE,LFREE)
+
       IF(XLRANA) THEN
         CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
         CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
@@ -390,6 +391,7 @@ C
 C
 #include "ibtfun.h"
 C
+
 C     IF (SET.AND.(TWOCOMP.AND.BSS)) RETURN
       NEWDEF = (WORD .EQ. '*LINEAR')
       IF (SET) THEN
@@ -462,17 +464,6 @@ C        as the default for LevyLe/BSS
 C
 C     Initialize user-defined linear response properties
 C     ==================================================
-C
-C     Electric dipole polarizibilities
-C     Magnetic susceptibilities
-      IF(MSUSCP) THEN
-C        CALL DEF_MSUSCP(WORK,LWORK)
-      ENDIF
-C     NMR shielding constants
-      IF(SHIELD) THEN
-C        CALL DEF_SHIELD(WORK,LWORK)
-      ENDIF
-C     NMR indirect spin-spin coupling constants
 C
 C     Process input from CBIXLR
 C     =========================
@@ -713,7 +704,7 @@ C
       IF(.NOT.(DOXLR.OR.XLRANA)) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)')
-     &   ' XLRINP: Electronic linear reponse properties'
+     &' XLRINP: Electronic linear reponse properties'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A,I5)')
      &   ' * Print level                 :',IPRXLR
@@ -840,32 +831,36 @@ C
      &  ' * Maximum number of trial vectors to be loaded'//
      &  ' in each microiteration:', MXLOAD
 C
-C     A operators
-C     ===========
+C     User specified A operators
+C     ===========================
 C
-      CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(A)') ' ** A operators **'
-      CALL PRSYMB(LUPRI,'-',75,0)
-      DO I = 1,NLRAPT
+      IF (NLRAPT.GT.0) THEN
+       CALL PRSYMB(LUPRI,'-',75,0)
+       WRITE(LUPRI,'(A)') ' ** User specified A operators **'
+       CALL PRSYMB(LUPRI,'-',75,0)
+       DO I = 1,NLRAPT
         INDXPR = LLRAPU(I)
         CALL WRIXPR(I,INDXPR)
-      ENDDO
+       ENDDO
+      ENDIF
 C
-C     B operators
-C     ===========
+C     User specified B operators
+C     ===========================
 C
-      CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(A)') ' ** B operators **'
-      CALL PRSYMB(LUPRI,'-',75,0)
-      DO I = 1,NLRBPT
+      IF (NLRBPT.GT.0) THEN
+       CALL PRSYMB(LUPRI,'-',75,0)
+       WRITE(LUPRI,'(A)') ' ** User specified B operators **'
+       CALL PRSYMB(LUPRI,'-',75,0)
+       DO I = 1,NLRBPT
         INDXPR = LLRBPU(I)
         CALL WRIXPR(I,INDXPR)
-      ENDDO
+       ENDDO
+      ENDIF
 C
 C     Frequencies
 C     ===========
 C
-      CALL PRSYMB(LUPRI,'-',75,0)
+C     CALL PRSYMB(LUPRI,'-',75,0)
       WRITE(LUPRI,'(A)')
      &' * Linear response functions evaluated at the following '//
      &   'frequencies:'
@@ -879,135 +874,18 @@ C
          WRITE(LUPRI,'(/A)') ' FATAL ERROR: both SKIPEE and SKIPEP'
       END IF
       IF (INPERR.GT.0) CALL QUIT('Input error in *LINEAR RESPONSE')
+
       RETURN
-C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck NMRINP */
-      SUBROUTINE NMRINPX(WORD,RESET)
-C***********************************************************************
-C
-C     Input section for NMR properties
-C
-C     Written by T.Enevoldsen - Nov 1997
-C     Last revision:
-C
-C MI/2004 This is deactivated because Thomas has written a new subroutine
-C  when London atomic orbitals are employed for magnetic properties.
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "orgcom.h"
-      PARAMETER (NTABLE = 8)
-      LOGICAL SET, NEWDEF, RESET, GORG
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-C
-      SAVE SET
-      DATA TABLE /'.GAUGEO','xXXXXXX','xXXXXXX','xXXXXXX',
-     &            'xXXXXXX','xXXXXXX','xXXXXXX','xXXXXXX'/
-      DATA SET/.FALSE./
-C
-      NEWDEF = (WORD .EQ. '*NMR')
-      IF (SET) THEN
-         IF (NEWDEF)
-     &      CALL QUIT('Only one "*NMR" input section allowed')
-C        hjaaj: repeated input sections give infinite loop ...
-         IF (RESET) SET = .FALSE.
-         RETURN
-      END IF
-      IF (RESET) THEN
-         SET = .FALSE.
-      ELSE
-         SET = .TRUE.
-      END IF
-C
-C
-C     Initialize
-C     ===================
-C
-      GORG = .FALSE.
-      CALL DZERO(GAGORG,3)
-C
-C     Process input
-C     =========================
-C
-      ICHANG = 0
-      IF (NEWDEF) THEN
-         WORD1 = WORD
-  100    CONTINUE
-            READ (LUCMD, '(A7)') WORD
-  110       CONTINUE
-            PROMPT = WORD(1:1)
-            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
-               GO TO 100
-            ELSE IF (PROMPT .EQ. '.') THEN
-               ICHANG = ICHANG + 1
-               DO 200 I = 1, NTABLE
-                  IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8), I
-                  END IF
-  200          CONTINUE
-               IF (WORD .EQ. '.OPTION') THEN
-                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-                 GO TO 100
-               END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in NMRINP.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in NMRINP.')
-    1          CONTINUE
-C Read user specified gauge origin
-                  READ(LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
-                  GORG = .TRUE.
-               GO TO 100
-    2          CONTINUE
-               GO TO 100
-    3          CONTINUE
-               GO TO 100
-    4          CONTINUE
-               GO TO 100
-    5          CONTINUE
-               GO TO 100
-    6          CONTINUE
-               GO TO 100
-    7          CONTINUE
-               GO TO 100
-    8          CONTINUE
-               GO TO 100
-            ELSE IF (PROMPT .EQ. '*') THEN
-               GO TO 300
-            ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in NMRINP.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in NMRINP.')
-            END IF
-      END IF
-  300 CONTINUE
-C
-C     Print section
-C     =============
-C
-      IF (GORG) THEN
-         CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(A)') ' *NMR input: '
-         CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(/,A,3F12.6,/)') 'User defined gauge '//
-     &           'origin used:',(GAGORG(I), I = 1, 3)
-         CALL DCOPY(3,GAGORG,1,DIPORG,1)
-      END IF
-  999 CONTINUE
-      RETURN
-C
-      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setxlr */
       SUBROUTINE SETXLR(WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Linear response module:
-C       Initialize variables/Open necessary files etc.
+C  ================================
+C     Initialize variables/Open necessary files etc.
 C
 C     Written by T.Saue and H.J.Aa.Jensen July 1996
 C     Last revision: July 9 1996 - tsaue
@@ -1018,15 +896,21 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0)
 C
 #include "dgroup.h"
+#include "pgroup.h"
 #include "dcbxlr.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
+#include "dcbxpr.h"
 C
       LOGICAL TOBE,ORBDEF(3)
       DIMENSION WORK(*),IR(2,2),NR(2)
+      CHARACTER  TTYP(-1:1)*2
+      DATA TTYP /'T-','T0','T+'/
+
       CALL QENTER('SETXLR')
       KFRSAV = KFREE
+
 C
 C     ************************************
 C     *** Set orbital strings          ***
@@ -1038,10 +922,77 @@ C     ************************************
 C     *** Sort operators on symmetries ***
 C     ************************************
 C
+
+CMI/TODO heartfull wish July 2006: It would be good to have sorting of
+C       A,B operators at the beginning of the run (after the XLRINP)
+
       CALL OP1SRT('LLAPSU',LLRAPU,LLAPSU,NLRAPT,NLRAP,JLRAP,
      &            WORK(KFREE),LFREE)
+
       CALL OP1SRT('LLBPSU',LLRBPU,LLBPSU,NLRBPT,NLRBP,JLRBP,
      &            WORK(KFREE),LFREE)
+
+CMI   ... print out on what couples are going into the linear response...
+      IF (IPRXLR.GE.7) THEN
+       CALL PRSYMB(LUPRI,'-',75,0)
+       WRITE(LUPRI,'(A)') ' ** SETXLR: List of all A operators **'
+       CALL PRSYMB(LUPRI,'-',75,0)
+       DO I = 1,NLRAPT
+        INDXPR = LLRAPU(I)
+        CALL WRIXPR(I,INDXPR)
+       ENDDO
+
+       CALL PRSYMB(LUPRI,'-',75,0)
+       WRITE(LUPRI,'(A)') ' ** SETXLR: List of all B operators **'
+       CALL PRSYMB(LUPRI,'-',75,0)
+       DO I = 1,NLRBPT
+        INDXPR = LLRBPU(I)
+        CALL WRIXPR(I,INDXPR)
+       ENDDO
+      
+       WRITE(LUPRI,'(A)')
+     & ' ** SETXLR: Sorted couples of A,B operators'//
+     & ' for linear response calculations **'
+
+        DO IOPSY = 1,NFSYM
+          NBF = NBSYM/NFSYM
+          DO IBF = 1,NBF
+            ISYM = JFSYM(IBF,IOPSY)
+            NOPA = NLRAP(ISYM)
+            JOPA = JLRAP(ISYM)
+            NOPB = NLRBP(ISYM)
+            JOPB = JLRBP(ISYM)
+            DO IOPA = 1,NOPA
+              INDAP  = LLAPSU(JOPA+IOPA)
+              INDPRA = LLRAPU(INDAP)
+              IREPA  = IPRPSYM(INDPRA)-1
+              ITIMA  = IPRPTIM(INDPRA)
+              DO IOPB = 1,NOPB
+                INDBP  = LLBPSU(JOPB+IOPB)
+                INDPRB = LLRBPU(INDBP)
+                IREPB  = IPRPSYM(INDPRB)-1
+                ITIMB  = IPRPTIM(INDPRB)
+                ITIMAB = ITIMA*ITIMB
+                IF    (ITIMAB.EQ. 1) THEN
+                  WRITE(LUPRI,'(/A,I2,A,I2,A)')
+     &             '<<A(',INDAP,'),B(',INDBP,
+     &             ')>> - linear response function (real):'
+                ELSEIF(ITIMAB.EQ.-1) THEN
+                  WRITE(LUPRI,'(/A,I2,A,I2,A)')
+     &             '<<A(',INDAP,'),B(',INDBP,
+     &             ')>> - linear response function (imaginary):'
+                ENDIF
+                CALL PRSYMB(LUPRI,'-',95,0)
+                WRITE(LUPRI,'(3X,A,A16,5X,A3,2X,A2)')
+     &             'A - ',PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA),
+     &             'B - ',PRPNAM(INDPRB),REP(IREPB),TTYP(ITIMB)
+                CALL PRSYMB(LUPRI,'-',95,0)
+             ENDDO
+             ENDDO
+             ENDDO
+             ENDDO
+      ENDIF
+
 C
 C     **************************************************
 C     *** Transfer information from XCBXLR to WRKXRS ***
@@ -1101,9 +1052,11 @@ C
         LURST = 28
         CALL OPNFIL(LURST,XLR_XVCFIL,'OLD','PRPXLR')
       ENDIF
+
       CALL QEXIT('SETXLR')
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETLRF */
       SUBROUTINE GETLRF(ABLRF,IBTYP,IBCVC,IBEVC,IBPVC,RCNV,

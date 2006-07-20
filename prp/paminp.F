@@ -479,7 +479,7 @@ C
         CALL GRDINP(WORD,.FALSE.)
         GO TO 200
     6 CONTINUE
-CMI ... change for LAO-based magnetic properties
+CMI ... changed for LAO-based magnetic properties
         CALL NMRINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
@@ -507,16 +507,16 @@ CMI ... no quandratic response whin BSS yet
       IF (BSS.AND.DOXQR) THEN
         WRITE(LUPRI,'(2X,A)')
 C    &'No quadratic response with BSS Hamitonian yet.'
-     &'Quadratic response with BSS Hamitonian.'
+     &'Quadratic response with 2component BSS/IOTC Hamitonian.'
 C       DOXQR=.FALSE.
       ENDIF 
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
 #if defined (MOD_ESR)
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
 #endif
-C
-C     Define special operators
-C
+C===========================================================================
+C Define special operators for the list of properties programmed in DIRAC
+C===========================================================================
       CALL PRPDEF(WORK,LWORK)
 C
       CALL FLSHFO(LUPRI)

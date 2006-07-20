@@ -3551,6 +3551,7 @@ CMI  &'GETDHB: The total MO matrix in not symmetric!')
       RETURN
       END
 
+      INTEGER FUNCTION ICONVXYZ(C)
 C******************************************************
 C 
 C   Integer function returning 1,2 or 3,
@@ -3559,7 +3560,6 @@ C
 C  Written by M.Ilias, Odense, august 2003
 C
 C******************************************************
-      INTEGER FUNCTION ICONVXYZ(C)
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER*1 C
@@ -3577,6 +3577,8 @@ C******************************************************
         WRITE(LUPRI,'(A)') 'ICONVXYZ: and it has to be x/y/z...!!!'
         CALL QUIT('ICONVXYZ: Not x/y/z input!')
       ENDIF
+
+C       write(lupri,*) 'ICONVXYZ: C=',C,' ICONVXYZ=',ICONVXYZ
 
       CALL QEXIT('ICONVXYZ')
       RETURN

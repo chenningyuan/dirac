@@ -420,9 +420,12 @@ C  /* Deck def_epolar */
 C***********************************************************************
 C
 C     Define operators for electric dipole polarizabilities
+C    
+C     This is only linear response calculation.
 C
 C     Written by T.Saue - June 28 1996
 C     Last revision: June 28 - tsaue
+C                    July 2006 - M.Ilias, Prievidza
 C
 C***********************************************************************
 #include "implicit.h"
@@ -435,6 +438,8 @@ C***********************************************************************
       DIMENSION WORK(LWORK),PFAC(3)
 #include "dcbibt.h"
 C
+      CALL QENTER('DEF_EPOLAR')
+
       PNAME     = 'X-Dipole length '
       IPTYP     = 1
       NPCOMP    = 1
@@ -470,7 +475,38 @@ C
       IPEPOLAR(3,1) = INDOP1
       CALL OP1IND('ZEPOLB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
       IPEPOLAR(3,2) = INDOP1
-C
+
+C  Print section
+
+      IF (IPRPRP.GE.1) THEN
+
+       CALL PRSYMB(LUPRI,'=',75,0)
+       WRITE(LUPRI,'(1X,A)')
+     &  'DEF_EPOLAR: Electric dipole polarizability'
+
+       CALL PRSYMB(LUPRI,'-',75,0)
+       WRITE(LUPRI,'(1X,A)')
+     &'** A operators for the electric dipole polarizability **'
+       CALL PRSYMB(LUPRI,'-',75,0)
+       DO I = 1, 3
+        INDOP1 = IPEPOLAR(I,1)
+        INDXPR = LLRAPU(INDOP1)
+        CALL WRIXPR(INDOP1,INDXPR)
+       ENDDO
+
+       CALL PRSYMB(LUPRI,'-',75,0)
+       WRITE(LUPRI,'(1X,A)')
+     &'** B operators for the electric dipole polarizability **'
+       CALL PRSYMB(LUPRI,'-',75,0)
+       DO I = 1, 3
+        INDOP1 = IPEPOLAR(I,2)
+        INDXPR = LLRBPU(INDOP1)
+        CALL WRIXPR(INDOP1,INDXPR)
+       ENDDO
+
+      ENDIF
+
+      CALL QEXIT('DEF_EPOLAR')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1262,8 +1298,6 @@ C
 C     Magnetizabilities
 C
       IF(MSUSCP) THEN
-CMI ... discard Trond's version
-CMI     CALL DEF_MSUSCP(WORK,LWORK) 
         CALL DEF_MSUSCP(WORK,LWORK)
       ENDIF
 C
@@ -1372,7 +1406,6 @@ C
         CALL PRP_NQCC(EXPVAL,WORK(KEXP_CORR),.FALSE.,WORK,KFREE,LFREE)
       ENDIF
 C
-C     Electric dipole polarizability
 C
       IF(EPOLAR) THEN
         CALL PRP_EPOLAR(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
@@ -5757,6 +5790,7 @@ C  -1 is for the compatibility with Dalton
         IF (XLR_SKIPEP.AND.IPRPRP.GE.1) THEN
          CALL HEADER('Expectation values part of susceptibilities',-1)
          CALL OUTPUT(SUSDIA,1,3,1,3,3,3,1,LUPRI)
+         CALL FLSHFO(LUPRI)
         ENDIF 
 
        ENDIF 
@@ -5864,6 +5898,7 @@ C
         CALL POLPRI(SUSFSY,'   ',-2)
         AVERAG = (SUSFSY(1,1) + SUSFSY(2,2) + SUSFSY(3,3))/D3
         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        CALL FLSHFO(LUPRI)
        ENDIF
 
       ENDIF
@@ -5887,10 +5922,21 @@ C ... extract relaxation part of magnetic susceptibilities...
        DO IB = 1,3
          IF (LONDON) THEN
           READ (PRPNAM(LLRBPU(IB)),'(4X,A1)') JCB
-CMI       write(lupri,*) 'before ICONV...',PRPNAM(LLRBPU(IB))
-          JB = ICONVXYZ(JCB)  
+          JB = ICONVXYZ(JCB)
+          IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3)  THEN
+           write(lupri,*)
+     &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(LLRBPU(IB))
+           write(lupri,*) 'got JCB=',JCB
+           CALL QUIT('PRP_MSUSCP: wrong extracted number in LAO !')
+          ENDIF
          ELSE
           READ (PRPNAM(LLRBPU(IB)),'(7X,I1)') JB
+          IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3)  THEN
+           write(lupri,*)
+     &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(LLRBPU(IB))
+           write(lupri,*) 'got JB=',JB
+           CALL QUIT('PRP_MSUSCP: wrong extracted number !')
+          ENDIF
          ENDIF
          KB = IPMSUSC(2,JB)
          DO IA = 1, 3
@@ -6158,6 +6204,7 @@ CMI   CALL OUTPUT(PARSUS,1,3,1,3,3,3,1,LUPRI)
 C     CALL POLPRI(PARSUS,'PRI',-2)
 C     CALL DSCAL(9,-D1,PARSUS,1)
 
+      CALL FLSHFO(LUPRI)
       CALL QEXIT('PRP_MSUSCP')
       RETURN
       END
