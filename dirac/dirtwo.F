@@ -3910,7 +3910,7 @@ Caspg
            CPU = SECOND() - CPU
          ENDIF
 #else /* MOD_ERI */
-         ELSE
+C        ELSE
             CALL QUIT('*** Direct SCF only possible with HERMIT 
      &                 in this version. Recompile with ERI ***')
          ENDIF
