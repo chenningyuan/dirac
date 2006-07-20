@@ -3691,7 +3691,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D2 = 2.0D0,D10 = 10.0D0)
+      PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
 #include "dummy.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -3802,11 +3802,8 @@ C....> Check whether the class is active
 C
       IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
 C
-CMI      IF(     RUNERI.EQ..FALSE.
          IF(     .NOT.RUNERI
-CMI  &      .AND.DOFCK3.EQ..FALSE.
      &      .AND..NOT.DOFCK3
-CMI  &      .AND.DOLINK.EQ..FALSE.) THEN ! hermit-based direct scf
      &      .AND..NOT.DOLINK) THEN ! hermit-based direct scf
 #if defined (VAR_MPI)
             IF (PARCAL) THEN
@@ -3852,16 +3849,17 @@ C
 #if defined (VAR_MPI)
            ENDIF
 #endif
+         ELSE
 C
-C we are using the plain eri fock matrix builder
+C we are using the eri/fck3 fock matrix builder, if
+C eri has been enabled
 C
 #if defined (MOD_ERI)
-         ELSEIF (RUNERI.AND..NOT.DOFCK3) THEN 
            CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
            CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
            KFCKTP = KFREE
            CPU = SECOND()
-Caspg
+C
            NCENTS(1)   = 0
            ICENTS(1,1) = 0
 C          Index 2
@@ -3892,34 +3890,24 @@ C            (SS|SS)-integrals
              ICLASSES(3) = 2
              ICLASSES(4) = 2
            ENDIF
-
-Caspg
-           factor =  2.d0
-           CALL DSCAL(N2BBASX,factor,DAO,1)
-Caspg
            IPRFCK=IPRINT
-           CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
-C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-     &                 WORK(KCCFBT),WORK(KINDXB),IFCKOP,
-     &                 WORK(KFREE),LFREE)
-           CALL MEMREL('dirao1.hrfck2',WORK,KWORK,KWORK,KFREE,LFREE)
+           IF (.NOT.RUNERI) THEN
+              CALL HRFCK3(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
+C    &                    WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+     &                    WORK(KCCFBT),WORK(KINDXB),IFCKOP,
+     &                    WORK(KFREE),LFREE)
+           ELSE ! ERI only
 Caspg
-           factor =  0.5
-           CALL DSCAL(N2BBASX,factor,DAO,1)
+              CALL DSCAL(N2BBASX,D2,DAO,1)
+              CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
+C    &                    WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+     &                    WORK(KCCFBT),WORK(KINDXB),IFCKOP,
+     &                    WORK(KFREE),LFREE)
+              CALL DSCAL(N2BBASX,DP5,DAO,1)
 Caspg
+           ENDIF
+           CALL MEMREL('dirao1.hrfck23',WORK,KWORK,KWORK,KFREE,LFREE)
            CPU = SECOND() - CPU
-C
-C alternative we use the j-engine fock matrix builder
-C
-         ELSEIF (DOFCK3) THEN 
-Caspg 
-           write (*,*) 'debug: calling hrfck3 from dirao1'
-C          KFCKTP = KFREE
-C          CPU = SECOND()
-C          CALL HRFCK3(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
-C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-C    &                 WORK(KFREE),LFREE)
-C          CPU = SECOND() - CPU
          ENDIF
 #else /* MOD_ERI */
          ELSE
