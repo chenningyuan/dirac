@@ -298,7 +298,7 @@ C
 C        Print densities and Fock matrix
 C        ===============================
 C
-         IF (IPRINT.GT.0) THEN
+         IF (IPRINT.GT.5) THEN
             CALL HEADER('Density and Fock matrices in ERIFCK',-1)
             KSTR = 1
             DO I = 1, NDMT
