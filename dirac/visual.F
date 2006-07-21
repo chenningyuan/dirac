@@ -612,6 +612,17 @@ C
 C       do the grid walk
 C       ================
 C
+C     { debug
+C       NCUBE(1) = 1
+C       NCUBE(2) = 1
+C       NCUBE(3) = 1
+C       DO ICUBE = 1,NCUBE(1)
+C         DO JCUBE = 1,NCUBE(2)
+C           DO KCUBE = 1,NCUBE(3)
+C             PX = D1
+C             PY = D1
+C             PZ = D1
+C       debug }
 C     { 3D
         DO ICUBE = 1,NCUBE(1)
           DO JCUBE = 1,NCUBE(2)
