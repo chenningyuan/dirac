@@ -5749,6 +5749,8 @@ C=============================================================================
       CALL DZERO(SUS2EL,9)
       CALL DZERO(SUSFSY,9)
       CALL DZERO(SUSFS,9)
+
+C     ... evaluate expectation value terms
       IF (LONDON) CALL EXPVSUSLO(WORK(KFREE),LFREE)
 
       KFRSAV = KFREE
@@ -5774,15 +5776,20 @@ C=============================================================================
         DO I = 1, 3
         DO J = I, 3
           IJ = IJ + 1
+          IJX = IPDSUSC(IJ) 
           IF (IJ.GT.NEXPP) WRITE(LUPRI,*)
      &   "PRP_MSUSCP: NEXPP is exceeded!"
          IF (XLR_SKIPEP) THEN
 C  -1 is for the compatibility with Dalton
-          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJ)
-          SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJ)
+C         SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJ)
+          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
+C         SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJ)
+          SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
          ELSE                
-          SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJ)
-          SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJ)
+C         SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJ)
+          SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
+C         SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJ)
+          SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
          ENDIF
         ENDDO
         ENDDO
@@ -5806,7 +5813,8 @@ C  19-27...RDUSLL, 28-33...RDSUSNL, 34-39 - SUSCGO
         DO I = 1, 3
         DO J = I, 3 
           IJ = IJ + 1
-          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJ) +
+          IJX = IPDSUSC(IJ) 
+          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
      &   SUSDIA(IPTAX(J,2),IPTAX(I,2))  
           SUSDIA(IPTAX(I,2),IPTAX(J,2)) = 
      &   SUSDIA(IPTAX(J,2),IPTAX(I,2))
@@ -5842,7 +5850,8 @@ C       ... write out symmetrized RDSUSLL
         DO I = 1, 3
         DO J = 1, 3 
          IJ = IJ + 1
-         SUSDIA(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJ) +
+         IJX = IPDSUSC(IJ) 
+         SUSDIA(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJX) +
      &   SUSDIA(IPTAX(I,2),IPTAX(J,2)) 
         ENDDO
         ENDDO
@@ -5854,14 +5863,15 @@ C ----------------------------------------------------------------------
          DO I = 1, 3
          DO J = I, 3 
           IJ = IJ + 1
-          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJ) +
+         IJX = IPDSUSC(IJ) 
+          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
      &     SUSDIA(IPTAX(J,2),IPTAX(I,2)) 
           SUSDIA(IPTAX(I,2),IPTAX(J,2)) =  
      &     SUSDIA(IPTAX(J,2),IPTAX(I,2))
 C         ... save them only when e-p rotations are active!
           IF (.NOT.XLR_SKIPEP) THEN
-            SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJ)
-            SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJ)
+            SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX)
+            SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJX)
           ENDIF
          ENDDO
          ENDDO
@@ -5870,8 +5880,9 @@ C ... This is needed for compatibility with Dalton
          DO I = 1, 3
          DO J = I, 3 
           IJ = IJ + 1
-          SUSCOM(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJ)
-          SUSCOM(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJ)
+         IJX = IPDSUSC(IJ) 
+          SUSCOM(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJX)
+          SUSCOM(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
          ENDDO
          ENDDO
 
@@ -5904,11 +5915,11 @@ C
       ENDIF
 
 C------------------------------------------------------------
-C  ... save the relaxation parts of susceptibilities
+C  ... get relaxation parts of susceptibilities
 C     for both conventional and London atomic orbitals
 C------------------------------------------------------------
       
-      DO IFREQ = 1, NBFREQ ! Run over frequencies...
+      DO IFREQ = 1, NBFREQ 
 
         CALL PRSYMB(LUPRI,'-',72,2)
         IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
@@ -5918,19 +5929,33 @@ C------------------------------------------------------------
         CALL DZERO(SUSREL,9)
         CALL DZERO(SUSREL_EP,18)
 
-C ... extract relaxation part of magnetic susceptibilities...
+C ===========================================================================
+C ... extract the relaxation (response) part of magnetic susceptibilities...
+C ===========================================================================
        DO IB = 1,3
+
          IF (LONDON) THEN
-          READ (PRPNAM(LLRBPU(IB)),'(4X,A1)') JCB
+          IBX = IPLONDON(1,IB)
+
+C          write(lupri,*)
+C    &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(IBX)
+
+C         READ (PRPNAM(LLRBPU(IBX)),'(4X,A1)') JCB
+          READ (PRPNAM((IBX)),'(4X,A1)') JCB
           JB = ICONVXYZ(JCB)
           IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3)  THEN
            write(lupri,*)
-     &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(LLRBPU(IB))
+     &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(LLRBPU(IBX))
            write(lupri,*) 'got JCB=',JCB
            CALL QUIT('PRP_MSUSCP: wrong extracted number in LAO !')
           ENDIF
          ELSE
-          READ (PRPNAM(LLRBPU(IB)),'(7X,I1)') JB
+           IBX = IPMSUSC(2,IB)
+C          write(lupri,*)
+C    & 'PRP_MSUSCP: PRPNAM(LLRBPU(IBX),PRPNAM(LLRBPU(IBX):',
+C    &    PRPNAM(LLRBPU(IBX)),PRPNAM(LLRBPU(IBX))
+
+          READ (PRPNAM(LLRBPU(IBX)),'(7X,I1)') JB
           IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3)  THEN
            write(lupri,*)
      &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(LLRBPU(IB))
@@ -5938,21 +5963,44 @@ C ... extract relaxation part of magnetic susceptibilities...
            CALL QUIT('PRP_MSUSCP: wrong extracted number !')
           ENDIF
          ENDIF
+
          KB = IPMSUSC(2,JB)
          DO IA = 1, 3
           IF (LONDON) THEN
-           READ (PRPNAM(LLRAPU(IA)),'(4X,A1)') JCA
+           IAX = IPLONDON(1,IA)
+
+C          write(lupri,*)
+C    &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(LLRAPU(IAX))
+C    &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM((IAX))
+
+           READ (PRPNAM((IAX)),'(4X,A1)') JCA
+C          READ (PRPNAM(LLRAPU(IAX)),'(4X,A1)') JCA
            JA = ICONVXYZ(JCA)  
           ELSE
-           READ (PRPNAM(LLRAPU(IA)),'(7X,I1)') JA
+           IAX = IPMSUSC(1,IA)
+           READ (PRPNAM(LLRAPU(IAX)),'(7X,I1)') JA
+           IF (JA.NE.1.AND.JA.NE.2.AND.JA.NE.3)  THEN
+           write(lupri,*)
+     &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(LLRAPU(IA))
+           write(lupri,*) 'got JA=',JA
+           CALL QUIT('PRP_MSUSCP: wrong extracted number !')
+           ENDIF
           ENDIF
+
+C          write(lupri,*)
+C    & 'PRP_MSUSCP: PRPNAM(LLRAPU(IAX),PRPNAM(LLRAPU(IAX):',
+C    &    PRPNAM(LLRAPU(IAX)),PRPNAM(LLRAPU(IAX))
+
           KA = IPMSUSC(1,IA)
-          SUSREL(IPTAX(IB,2),IPTAX(IA,2)) = ABLRF(IFREQ,KA,KB,1) 
+          SUSREL(IPTAX(IB,2),IPTAX(IA,2)) = ABLRF(IFREQ,KA,KB,1)
+
+C         write(lupri,*) 'KA,KB=',KA,KB,' ABLRF=',ABLRF(IFREQ,KA,KB,1)
+
           IF (.NOT.XLR_SKIPEP) THEN
-C   .... separate and save e-e "paramagnetic" and e-p "diamagnetic"
+C   .... save e-e "paramagnetic" and e-p "diamagnetic"
 C        contributions from the linear response function
-           SUSREL_EP(IPTAX(IB,2),IPTAX(IA,2),1) = ABLRF(IFREQ,KA,KB,2) 
-           SUSREL_EP(IPTAX(IB,2),IPTAX(IA,2),2) = ABLRF(IFREQ,KA,KB,3) 
+           SUSREL_EP(IPTAX(IB,2),IPTAX(IA,2),1) = ABLRF(IFREQ,KA,KB,2)
+           SUSREL_EP(IPTAX(IB,2),IPTAX(IA,2),2) = ABLRF(IFREQ,KA,KB,3)
           ENDIF
          ENDDO
        ENDDO
