@@ -200,6 +200,12 @@ cbs   setting the numbers of cartesians per IR
       isum=isum+itotalperIR(iredrun)
       enddo 
       numballcart=isum
+CMI... verify the total number of basis function
+      IF (numballcart.gt.Mxcart) THEN
+        write(lupri,*) 'numballcart=',numballcart
+        write(lupri,*) 'Increase Mxcent=',Mxcart
+        call quit('readbas: Increase the Mxcart !!!')
+      ENDIF
       iorbrun=0
       do iredrun=1,numbofsym 
       do inired=1,itotalperIR(iredrun)

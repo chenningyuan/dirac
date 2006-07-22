@@ -318,8 +318,10 @@ C        ... write only type 5HERLIT) and index
         ELSE IF (IXL.EQ.4.AND.IXML.EQ.+4) THEN
             IPTYP=25 ! 5g4+
         ELSE
-           write(lupri,*) 'IXL=',IXL,' IXML=',IXML,' IXINLML=',IXINLML 
-           CALL QUIT('AMFI:IPTYP not defined !!!')
+         write(lupri,*) 'contandmult: I/numballcart/Mxcart=',I,'/',
+     &   numballcart,'/',Mxcart,
+     &   'IXL=',IXL,' IXML=',IXML,' IXINLML=',IXINLML 
+         CALL QUIT('AMFI:IPTYP not defined or another error !!!')
         ENDIF
            write(LUPROP) IPTYP,IXINLML
           enddo
