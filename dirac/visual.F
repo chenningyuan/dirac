@@ -20,7 +20,7 @@ C
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
-#include "dcbplot.h"
+#include "visual.h"
 #include "maxorb.h"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -233,7 +233,7 @@ C
 #include "dcbgen.h"
 C
       CHARACTER PAIRNAMEA(100)*3,PAIRNAMEB(100)*3
-#include "dcbplot.h"
+#include "visual.h"
 #include "dcborb.h"
 C
       DIMENSION DMATBF(*),
@@ -783,7 +783,7 @@ C
       PARAMETER (D23 = 2.0D0/3.0D0,D53 = 5.0D0/3.0D0)
       PARAMETER (D32 = 3.0D0/2.0D0,D54 = 5.0D0/4.0D0)
 C
-#include "dcbplot.h"
+#include "visual.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -990,7 +990,7 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
 #include "dcborb.h"
-#include "dcbplot.h"
+#include "visual.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
@@ -1289,7 +1289,7 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
 #include "dcborb.h"
-#include "dcbplot.h"
+#include "visual.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 C-----------------------------------------------------------------------

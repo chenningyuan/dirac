@@ -2624,7 +2624,7 @@ C
 C
 #include "dcblab.h"
 #include "dcbana.h"
-#include "dcbplot.h"
+#include "visual.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
      &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALI',
@@ -2650,7 +2650,7 @@ C
       DOLOC   = .FALSE.
 C
 C
-C     initialize dcbplot.h
+C     initialize visual.h
 C     ====================
 C
       DOPLOT = .FALSE.
@@ -6099,7 +6099,7 @@ C
 C
 #include "dcbgen.h"
 #include "dcbana.h"
-#include "dcbplot.h"
+#include "visual.h"
 #include "dgroup.h"
 C
       LOGICAL   SET,RESET,NEWDEF
@@ -6125,7 +6125,7 @@ C
       ENDIF
 C
 C
-C     initialize dcbplot.h
+C     initialize visual.h
 C     ====================
 C
       READXVECFILE       = .FALSE.
