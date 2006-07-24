@@ -773,16 +773,14 @@ C     /* deck getquantity */
 C=======================================================================
 C     description ...
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: june 2006
+C     radovan bast                              last revision: july 2006
 C=======================================================================
-C
 #include "implicit.h"
 #include "priunit.h"
-C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
       PARAMETER (D23 = 2.0D0/3.0D0,D53 = 5.0D0/3.0D0)
       PARAMETER (D32 = 3.0D0/2.0D0,D54 = 5.0D0/4.0D0)
-C
+C-----------------------------------------------------------------------
 #include "visual.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -790,7 +788,7 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbxrs.h"
-C
+C-----------------------------------------------------------------------
       DIMENSION DMATBF(*),
      &          GAO(*),GAO1(*),GAO2(*),
      &          NCNT(*),COORD(3,2),BUF(*),
@@ -800,6 +798,7 @@ C
      &          CURRENTDENSITY(3),
      &          RXJ(3),
      &          WORK(*)
+C-----------------------------------------------------------------------
 C
 C
 C     pre-stuff
@@ -882,18 +881,13 @@ C
 C     laplacian
 C     =========
 C
-C     IF(PLOTLAPLACIAN) THEN
+      IF(PLOTLAPLACIAN) THEN
+        CALL QUIT('visualization of the laplacian not implemented')
 C       CALL GETLRHO(XX,XY,XZ,YY,YZ,ZZ,
 C    &               GAO,GAO1,GAO2,DMATBF,BUF)
-CC      BLUB       = GRADIENT(1)*XX*GRADIENT(1)
-CC   &             + GRADIENT(2)*YY*GRADIENT(2)
-CC   &             + GRADIENT(3)*ZZ*GRADIENT(3)
-CC   &             + GRADIENT(1)*XY*GRADIENT(2)
-CC   &             + GRADIENT(1)*XZ*GRADIENT(3)
-CC   &             + GRADIENT(2)*YZ*GRADIENT(3)
 C       DLAPLACIAN = XX+YY+ZZ
 C       DLAPLACIAN = -DLAPLACIAN
-C     ENDIF
+      ENDIF
 C
 C
 C     spin and current
@@ -909,10 +903,6 @@ C
      &                  + SPINDENSITY(2)**D2
      &                  + SPINDENSITY(3)**D2
        SPINDENSITY_NORM = DSQRT(SPINDENSITY_NORM)
-C
-C
-C      SPINDENSITY_NORM = SPINDENSITY(3)
-C
 C
 C      WRITE(0,'(4F20.6)') PX, PY, (SPINDENSITY(I),I=1,2)
 C      WRITE(0,'(4F20.6)') PY, PZ, (SPINDENSITY(I),I=2,3)
@@ -931,10 +921,6 @@ C
      &                     + CURRENTDENSITY(2)**D2
      &                     + CURRENTDENSITY(3)**D2
        CURRENTDENSITY_NORM = DSQRT(CURRENTDENSITY_NORM)
-C
-C
-C      CURRENTDENSITY_NORM = CURRENTDENSITY(3)
-C
 C
 C      WRITE(0,'(4F20.6)') PX, PY, (CURRENTDENSITY(I),I=1,2)
 C      WRITE(0,'(4F20.6)') PY, PZ, (CURRENTDENSITY(I),I=2,3)
@@ -958,18 +944,13 @@ C
      &          + RXJ(3)**D2
        RXJ_NORM = DSQRT(RXJ_NORM)
 C
-C
-C      RXJ_NORM = RXJ(3)
-C
-C
 C      WRITE(0,'(4F20.6)') PX, PY, (RXJ(I),I=1,2)
 C      WRITE(0,'(4F20.6)') PY, PZ, (RXJ(I),I=2,3)
 #else
       CALL QUIT('.RXJ not implemented')
 #endif
       ENDIF
-C
-C
+C-----------------------------------------------------------------------
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1250,10 +1231,6 @@ C
         CALL DMOLI3(1,IHEP,TMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
         CALL DAXPY(N2BBASXQ,D1,TMATBF,1,DMATBF,1)
       ENDIF
-C
-C
-C     insert phase
-C     ============
 C
       IF(NZ.LT.4) THEN
         DO IZ = 1,NZ
