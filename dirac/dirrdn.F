@@ -6107,7 +6107,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.REAXVE','.1D    ','.2D    ',
+      DATA TABLE /'.PRINT ','.READXV','.1D    ','.2D    ',
      &            '.3D    ','.DENSIT','.SPIN  ','.CURREN',
      &            '.ELF   ','.D1DSTE','.D3DSTA','.D3DNOR',
      &            '.CUBE  ','.LAPLAC','.NXVEC ','.STRING',
