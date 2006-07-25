@@ -135,12 +135,12 @@ C-----------------------------------------------------------------------
       ENDIF
 C
       DO I = ISTART,3
-        IQ = IQTOPQ(5-I,ISYMAX(I,ITRANSFORM))
 #if defined (VAR_G77) || defined (SYS_SX)
         IOFF = NBAST*NBAST
 #else
         IOFF = NTBAS(0)*NTBAS(0)
 #endif
+        IQ = IQTOPQ(5-I,ISYMAX(I,2))
         IOFF = IOFF*(IQ-1)
 C
         TEMP1 = D0
