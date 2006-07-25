@@ -971,7 +971,10 @@ C  /* Deck pick_act_batch */
 #include <maxorb.h>
 #include <aovec.h>
 #include <fck3aob.h>
-      DO I = 1, MXSHEL
+C aspg, 2006-07-25
+C putting outer do loop in line with dalton
+C     DO I = 1, MXSHEL
+      DO I = 1, NAOBTCH 
         ACTVAOBTCH(I) = .TRUE.
         DO J = 1, 4
           ACTVBTH(I,J) = .TRUE.
