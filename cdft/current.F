@@ -143,12 +143,12 @@ C
         IQ = IQTOPQ(5-I,ISYMAX(I,2))
         IOFF = IOFF*(IQ-1)
 C
-        TEMP1 = D0
+C       TEMP1 = D0
         CALL GETCURRENT(TEMP1,IU,IV,
      &                  IREPOP,ITRANSFORM,I,
      &                  GAO,DMAT(1+IOFF),BUF)
 C
-        TEMP2 = D0
+C       TEMP2 = D0
         CALL GETCURRENT(TEMP2,IX,IY,
      &                  IREPOP,ITRANSFORM,I,
      &                  GAO,DMAT(1+IOFF),BUF)
@@ -200,7 +200,10 @@ C
 C
           I1 = IBBAS(IREP1,IC1)+1
 C
-          IREP2 = IBTXOR(IREP1,ISYMAX(IXYZ,ITRANSFORM))
+          INTERMEDIATE = ISYMAX(IXYZ,ITRANSFORM)
+          INTERMEDIATE = IBTXOR(INTERMEDIATE,IREPOP)
+          IREP2 = IBTXOR(IREP1,INTERMEDIATE)
+C
           N2 = NBBAS(IREP2,IC2)
           IF(N2.GT.0) THEN
 C
