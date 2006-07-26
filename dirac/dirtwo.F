@@ -3257,7 +3257,9 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "densfit.h"
       NDIM = N2BBASX*NZC1*NFMAT
-      CALL DSCAL(NDIM,D2,DSO,1)
+Caspg
+Caspg      CALL DSCAL(NDIM,D2,DSO,1)
+Caspg
       NDMAT = NZC1*NFMAT
       KIFCTP = 1
       KISYMD = KIFCTP + NDMAT
@@ -3279,7 +3281,9 @@ C*****************************************************************************
 #if defined (MOD_DNF)
       ENDIF
 #endif /* MOD_DNF */
-      CALL DSCAL(NDIM,DP5,DSO,1)
+Caspg
+Caspg      CALL DSCAL(NDIM,DP5,DSO,1)
+Caspg
 #else /* MOD_ERI */
       CALL QUIT('JENGINE only works if ERI is also present.')
 #endif /* MOD_ERI */
@@ -3350,7 +3354,9 @@ C    &        NCENTS_SAV(4), ICENTS_SAV(2,4), ICLASSES_SAV(4)
 #endif /* VAR_VECTOR */
 #include "memint.h"
       NDIM = N2BBASX*NZC1*NFMAT
-      CALL DSCAL(NDIM,D2,DSO,1)
+Caspg
+Caspg      CALL DSCAL(NDIM,D2,DSO,1)
+Caspg
       NDMAT = NFMAT*NZC1
       IF (HFXFAC.NE.D0) THEN
         KIFCTP = 1
@@ -3411,9 +3417,13 @@ C     &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
 C     &            NCENTS,ICENTS,ICLASSES,
 C     &            WORK(KFREE),LFREE)
 C#endif /* PRG_DIRAC */
-      CALL DSCAL(NDIM,DP5,DSO,1)
+Caspg
+Caspg      CALL DSCAL(NDIM,DP5,DSO,1)
+Caspg
 CTROND Scale in accordance with DIRAOF->SKLFC1
-      CALL DSCAL(NDIM,DP5,FMAT,1)
+Caspg
+Caspg      CALL DSCAL(NDIM,DP5,FMAT,1)
+Caspg
 C
 C aspg, 2006-07-01
 C
@@ -3479,10 +3489,12 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
+      PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &        NPOS(*),WORK(LWORK), IFCKOP_TEMP(NFMAT)
 C
+      DIM = N2BBASX*NZ*NFMAT
 #if defined (MOD_ERI)
       IF (DOLINK .AND. DOFCK3) THEN
 C
@@ -3498,7 +3510,7 @@ C
 C       Turn off exchange
         DO IFMAT=1, NFMAT
           IF (IFCKOP(IFMAT).EQ.1)  THEN
-            IFCKOP_TEMP(IFMAT) = 1
+            IFCKOP_TEMP(IFMAT) = 2
           ELSEIF (IFCKOP(IFMAT).EQ.3) THEN
             IFCKOP_TEMP(IFMAT) = 0
           ELSE
@@ -3506,16 +3518,27 @@ C       Turn off exchange
           ENDIF
         ENDDO
 C       Conventional (via 4-center integrals) AO Coulomb
+Caspg
+      write (6,*) 'debug in fastjk: J->eri, K->link'
+      write (6,*) '                 before eri:'
+Caspg
       CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &            IFCKOP_TEMP,NPOS,INTFLG,
      &            IPRINT,WORK,LWORK)
 C       LinK-exchange
+Caspg
+      write (6,*) '                 before link:'
+Caspg
       CALL LINKDR(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
      &            NPOS,INTFLG,IPRINT,WORK,LWORK)
 C
       ELSEIF (DOFCK3) THEN
 C
 C       Jengine Coulomb contribution, regular or density-fitted
+Caspg
+      write (6,*) 'debug in fastjk: J->jengine, K->eri'
+      write (6,*) '                 before jengine:'
+Caspg
         CALL JENGINE(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
      &               NPOS,INTFLG,IPRINT,WORK,LWORK)
 C       Turn off Coulomb
@@ -3529,6 +3552,9 @@ C       Turn off Coulomb
           ENDIF
         ENDDO
 C       Conventional (4-center integrals) AO exchange
+Caspg
+      write (6,*) '                 before exchange via eri:'
+Caspg
         CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &              IFCKOP_TEMP,NPOS,INTFLG,
      &              IPRINT,WORK,LWORK)
@@ -3891,21 +3917,30 @@ C            (SS|SS)-integrals
              ICLASSES(4) = 2
            ENDIF
            IPRFCK=IPRINT
-           IF (.NOT.RUNERI) THEN
-              CALL HRFCK3(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
-C    &                    WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-     &                    WORK(KCCFBT),WORK(KINDXB),IFCKOP,
-     &                    WORK(KFREE),LFREE)
-           ELSE ! ERI only
 Caspg
+Caspg           IF (.NOT.RUNERI) THEN
+Caspg              CALL HRFCK3(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
+CaspgC    &                    WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+Caspg     &                    WORK(KCCFBT),WORK(KINDXB),IFCKOP,
+Caspg     &                    WORK(KFREE),LFREE)
+Caspg           ELSE ! ERI only
+CaspgCaspg
+          IF (DOFCK3.AND.RUNERI) THEN
+              CALL DSCAL(N2BBASX,D2,FAO,1)
+          ELSE
               CALL DSCAL(N2BBASX,D2,DAO,1)
+          ENDIF
               CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
 C    &                    WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                    WORK(KCCFBT),WORK(KINDXB),IFCKOP,
      &                    WORK(KFREE),LFREE)
+          IF (DOFCK3.AND.RUNERI) THEN
+              CALL DSCAL(N2BBASX,DP5,FAO,1)
+          ELSE
               CALL DSCAL(N2BBASX,DP5,DAO,1)
+          ENDIF
 Caspg
-           ENDIF
+Caspg           ENDIF
            CALL MEMREL('dirao1.hrfck23',WORK,KWORK,KWORK,KFREE,LFREE)
            CPU = SECOND() - CPU
          ENDIF
@@ -4059,7 +4094,7 @@ C
 C
 C     LL-integrals
 C     ============
-C
+
       IF(LBIT(INTFLG,1).AND.(.NOT.LBIT(IDFLAG,1))) THEN
         WRITE(LUPRI,'(A)') 'CONSCF: LL-integrals:'
         CALL TIMER('START ',TIMSTR,TIMEND)
