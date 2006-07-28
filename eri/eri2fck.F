@@ -637,11 +637,9 @@ C
 C   FAC account for the different integrals in eri and twoint.
 C   twoint are 4times larger, but FAC seems only to be 2(?), at least for
 C   IFCTYP = 13
-Caspg         write (6,*) 'i,ifctyp, ix, iy',i,ifctyp(i),ix,iy
 	 IF      (IFCTYP(I).EQ.13) THEN
 C NECgh980505  We adjust the FAC, since we do not symmetrize/scal anymore.
 C NECgh980505  FAC = D2
-Caspg              FAC = 1.63608042*D4
                FAC = D4
          ELSE IF (IFCTYP(I).EQ.3)  THEN
 C NECgh980505  FAC = DP5 
@@ -653,23 +651,15 @@ C NECgh980505  FAC = DP5
          IF (IFIT_DMAT.EQ.0) THEN
 #endif
 C...........Ordinary Fock matrix with exact density
-CCC#ifndef PRG_DIRAC
             CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
      &                  IY,FAC)
-CCC#else
-CCC            CALL QUIT('Insert call to ord Fock matrix construction !')
-CCC#endif
 #if defined (MOD_DNF)
           ELSE
-CCC#ifndef PRG_DIRAC
 C...........Construction of special Fock matrix for density fitting
 C...........The multiplication factor should be one in this case.
             FAC = D1
             CALL DF_FCKCON (FMAT,DMAT,FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,
      &                      LBIN,LENGTH,IX,IY,FAC,IFIT_DMAT)
-CCC#else
-CCC            CALL QUIT('Insert call to dfit Fock matrix construction !')
-CCC#endif
           ENDIF
 #endif
       END DO
