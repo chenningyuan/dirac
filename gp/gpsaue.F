@@ -4318,7 +4318,7 @@ C**************************************************************************
 C     DATA ZEROTHRS / 1.0D-15  /
 C     DATA ZEROTHRS / 0.0D0  /
 
-C     DATA ZEROTHRS1 / 1.0D-9  /
+      DATA ZEROTHRS1 / 1.0D-9  /
 C        .... file number and file name of the check file
       DATA LUF / 33  /
       DATA FILENAME / 'QJACO.MTX' /
