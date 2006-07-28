@@ -88,11 +88,6 @@ C       ... No Coulomb contribution for
 C           antisymmetric density matrix
         IY = IY1 - MOD(IY1,2)
       END IF
-Caspg
-#if defined (DIRAC_ERI_DEBUG)
-                write (6,*) 'debug herfckcon: ix',ix,'iy',iy
-#endif
-Caspg
 C
       IF (HFXFAC.EQ.D0 .AND. HFXMU.EQ.D0) THEN
         IY = MOD(IY,2)
@@ -110,7 +105,7 @@ C
 #endif
 Caspg
 #if defined (DIRAC_ERI_DEBUG)
-                write (6,*) 'debug herfckcon: ix',ix,'iy',iy
+                write (6,*) 'debug herfckcon: X,Y',ix,iy
 #endif
 Caspg
         IF    (IX.EQ.1.OR.IX.EQ.2) THEN
