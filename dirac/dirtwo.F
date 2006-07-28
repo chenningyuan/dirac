@@ -3257,9 +3257,7 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "densfit.h"
       NDIM = N2BBASX*NZC1*NFMAT
-Caspg
-Caspg      CALL DSCAL(NDIM,D2,DSO,1)
-Caspg
+      CALL DSCAL(NDIM,D2,DSO,1)
       NDMAT = NZC1*NFMAT
       KIFCTP = 1
       KISYMD = KIFCTP + NDMAT
@@ -3281,15 +3279,23 @@ Caspg
 #if defined (MOD_DNF)
       ENDIF
 #endif /* MOD_DNF */
-Caspg
-Caspg      CALL DSCAL(NDIM,DP5,DSO,1)
-Caspg
+      CALL DSCAL(NDIM,DP5,DSO,1)
 #else /* MOD_ERI */
       CALL QUIT('JENGINE only works if ERI is also present.')
 #endif /* MOD_ERI */
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+      IF(IPRINT.GE.0) THEN
+        DO I = 1,NFMAT
+          write (6,*) 'debug: contribution from jengine to FMAT'
+          CALL PRINTDMAT(I,NTBAS(0),FMAT(1,1,I))
+        ENDDO
+      ENDIF
+#endif /* DEBUG_DIRAC_FCKBUILD_DF */
+Caspg
       RETURN
       END
-#if defined (MOD_ERI)
+#if defined (MOD_ERI) 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck FCK_Coulomb */
       SUBROUTINE FCK_Coulomb(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
@@ -3343,9 +3349,6 @@ C*****************************************************************************
       DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &        NPOS(*),WORK(LWORK)
-C aspg, 2006-07-01 making ftnchek happy
-C    &        NPOS(*),WORK(LWORK),
-C    &        NCENTS_SAV(4), ICENTS_SAV(2,4), ICLASSES_SAV(4)
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -3353,12 +3356,11 @@ C    &        NCENTS_SAV(4), ICENTS_SAV(2,4), ICLASSES_SAV(4)
 #include "veclen.h"
 #endif /* VAR_VECTOR */
 #include "memint.h"
+      I2TYP_TEMP = 1
       NDIM = N2BBASX*NZC1*NFMAT
-Caspg
-Caspg      CALL DSCAL(NDIM,D2,DSO,1)
-Caspg
+      CALL DSCAL(NDIM,D2,DSO,1)
       NDMAT = NFMAT*NZC1
-      IF (HFXFAC.NE.D0) THEN
+      IF (HFXFAC.NE.D0) THEN  
         KIFCTP = 1
         KISYMD = KIFCTP + NDMAT
         KCCFBT = KISYMD + NDMAT
@@ -3375,11 +3377,10 @@ Caspg
      &                           LWORK)
         CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
      &            IFCKOP,IPRINT)
-C
-C aspg, 2006-07-01
-C
-C       CALL SAVE_INTINFO(NCENTS_SAV,ICENTS_SAV,ICLASSES_SAV)
-C
+Caspg aoswitch
+#if ! defined (REPLACING_AOSWITCH)
+        CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP_TEMP)
+#else
 CTROND TODO change for relativistic calculations
         NCENTS(1)   = 0
         ICENTS(1,1) = 0
@@ -3397,79 +3398,30 @@ C       (LL|LL)-integrals
         ICLASSES(2) = 1
         ICLASSES(3) = 1
         ICLASSES(4) = 1
-C
-C     DO I=1,4 ! loop 1
-C       write (*,*) 'DEBUG: before eriexc: ',ncents(i),iclasses(i)
-C       DO J=1,2 ! loop 2
-C          write (*,*) 'DEBUG: before eriexc',icents(j,i)
-C       ENDDO    ! loop 2
-C     ENDDO    ! loop 1
 CTROND
-C#ifndef PRG_DIRAC
+#endif /* REPLACING_AOSWITCH */
+Caspg aoswitch
         CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
      &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &            WORK(KFREE),LFREE)
-C aspg, 2006-06-29
-C ncents, icents, iclasses moved to common block in cbieri.h
-C#else /* PRG_DIRAC */
-C        CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
-C     &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-C     &            NCENTS,ICENTS,ICLASSES,
-C     &            WORK(KFREE),LFREE)
-C#endif /* PRG_DIRAC */
-Caspg
-Caspg      CALL DSCAL(NDIM,DP5,DSO,1)
-Caspg
+        CALL DSCAL(NDIM,DP5,DSO,1)
 CTROND Scale in accordance with DIRAOF->SKLFC1
-Caspg
-Caspg      CALL DSCAL(NDIM,DP5,FMAT,1)
-Caspg
-C
-C aspg, 2006-07-01
-C
-C     CALL LOAD_INTINFO(NCENTS_SAV,ICENTS_SAV,ICLASSES_SAV)
-C
+        CALL DSCAL(NDIM,DP5,FMAT,1)
       END IF
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+      IF(IPRINT.GE.0) THEN
+        DO I = 1,NFMAT
+          write (6,*) 'debug: contribution from linkdr to FMAT'
+          CALL PRINTDMAT(I,NTBAS(0),FMAT(1,1,I))
+        ENDDO
+      ENDIF
+#endif /* DEBUG_DIRAC_FCKBUILD_DF */
+Caspg
       RETURN
       END
 C
-C /* deck save_intinfo */
-      SUBROUTINE SAVE_INTINFO(NCENTS_SAV,ICENTS_SAV,ICLASSES_SAV)
-#include "implicit.h"
-#include "cbieri.h"
-      DIMENSION NCENTS_SAV(4), ICENTS_SAV(2,4), ICLASSES_SAV(4)
-
-      DO I=1,4 ! loop 1
-        NCENTS_SAV(I)   = NCENTS(I)
-        ICLASSES_SAV(I) = ICLASSES(I)
-        write (*,*) 'DEBUG: in save_intinfo: ',ncents(i),iclasses(i)
-        DO J=1,2 ! loop 2
-           ICENTS_SAV(J,I) = ICENTS(J,I) 
-           write (*,*) 'DEBUG: in save_intinfo ',icents(j,i)
-        ENDDO    ! loop 2
-      ENDDO    ! loop 1
-      RETURN
-      END
-C
-C /* deck load_intinfo */
-      SUBROUTINE LOAD_INTINFO(NCENTS_SAV,ICENTS_SAV,ICLASSES_SAV)
-#include "implicit.h"
-#include "cbieri.h"
-      DIMENSION NCENTS_SAV(4), ICENTS_SAV(2,4), ICLASSES_SAV(4)
-
-      DO I=1,4 ! loop 1
-        NCENTS(I)   = NCENTS_SAV(I)
-        ICLASSES(I) = ICLASSES_SAV(I)
-        write (*,*) 'DEBUG: in save_intinfo: ',ncents(i),iclasses(i)
-        DO J=1,2 ! loop 2
-           ICENTS(J,I) = ICENTS_SAV(J,I) 
-           write (*,*) 'DEBUG: in save_intinfo ',icents(j,i)
-        ENDDO    ! loop 2
-      ENDDO    ! loop 1
-      RETURN
-      END
-C
-#endif /* MOD_ERI */
+#endif /* MOD_ERI */ 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fastjk */
       SUBROUTINE FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
@@ -3494,7 +3446,7 @@ C
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &        NPOS(*),WORK(LWORK), IFCKOP_TEMP(NFMAT)
 C
-      DIM = N2BBASX*NZ*NFMAT
+      DIM = N2BBASX*NZC1*NFMAT
 #if defined (MOD_ERI)
       IF (DOLINK .AND. DOFCK3) THEN
 C
@@ -3507,7 +3459,15 @@ C       LinK-exchange
 C
       ELSEIF (DOLINK) THEN
 C
-C       Turn off exchange
+C       LinK-exchange plus standard (ERI) Coulomb
+C
+C       Turn off exchange. This will affect how IX and IY will be set 
+C       for instance in FCKCON, but IX and IY will be set in SETFCK,
+C       and care has to be taken to correctly match the ifckop_temp
+C       values and those expected in SETFCK... in other words, 
+C       whenever you change this, check if you're doing the correct
+C       correspondenct to the table IPFCK in SETFCK. /aspg/
+C
         DO IFMAT=1, NFMAT
           IF (IFCKOP(IFMAT).EQ.1)  THEN
             IFCKOP_TEMP(IFMAT) = 2
@@ -3517,7 +3477,8 @@ C       Turn off exchange
             IFCKOP_TEMP(IFMAT) = IFCKOP(IFMAT)
           ENDIF
         ENDDO
-C       Conventional (via 4-center integrals) AO Coulomb
+C     
+C       first add conventional (via 4-center integrals) AO Coulomb
 Caspg
       write (6,*) 'debug in fastjk: J->eri, K->link'
       write (6,*) '                 before eri:'
@@ -3525,7 +3486,21 @@ Caspg
       CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &            IFCKOP_TEMP,NPOS,INTFLG,
      &            IPRINT,WORK,LWORK)
-C       LinK-exchange
+C   
+C       now adding exchange via LinK... 
+C
+C       at the time of writing (2006-07-27), a temporary
+C       solution to combine J from ERI and K from linK 
+C       is to perform a symmetrization of FMAT and DMAT 
+C       inside DIRAO1 before passing them on to LINKDR,
+C       because (a) only the upper triangular elements of the 
+C       fock matrices are placed in FMAT when HRFCK2 is
+C       called, and the full symmetrization of FMAT and
+C       DMAT is done only outside FASTJK; and (b) LINKDR
+C       creates the symmetrical matrices, so the symmetrization
+C       outside FASTJK gets completely wrong after
+C       exchange is added via LINKDR. /aspg/ 
+C       
 Caspg
       write (6,*) '                 before link:'
 Caspg
@@ -3535,13 +3510,25 @@ C
       ELSEIF (DOFCK3) THEN
 C
 C       Jengine Coulomb contribution, regular or density-fitted
+C       plus exchange via the conventional AO code (ERI)
+C
 Caspg
       write (6,*) 'debug in fastjk: J->jengine, K->eri'
       write (6,*) '                 before jengine:'
 Caspg
         CALL JENGINE(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
      &               NPOS,INTFLG,IPRINT,WORK,LWORK)
-C       Turn off Coulomb
+C
+C       Turn off Coulomb. same comments as for the LinK/Conventional
+C       combination (see above) apply. 
+C
+C       HEADS UP for possible problems when using jengine and eri
+C       together, since JENGINE also creates full matrices (as link,
+C       see comment above) and ERI the upper triangular, but I haven't
+C       seen wrong resuls for the pure non-relativistic calculations.
+C       So at this point (2006-07-27) there's no dirty tricks is DIRAO1
+C       to symmetrize matrices when DOFCK3 is switched on. /aspg/ 
+C
         DO IFMAT=1, NFMAT
           IF (IFCKOP(IFMAT).EQ.1) THEN
             IFCKOP_TEMP(IFMAT) = 3
@@ -3551,6 +3538,7 @@ C       Turn off Coulomb
             IFCKOP_TEMP(IFMAT) = IFCKOP(IFMAT)
           ENDIF
         ENDDO
+C
 C       Conventional (4-center integrals) AO exchange
 Caspg
       write (6,*) '                 before exchange via eri:'
@@ -3886,6 +3874,10 @@ C
            KFCKTP = KFREE
            CPU = SECOND()
 C
+Caspg aoswitch
+#if ! defined (REPLACING_AOSWITCH)
+           CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP)
+#else
            NCENTS(1)   = 0
            ICENTS(1,1) = 0
 C          Index 2
@@ -3916,31 +3908,25 @@ C            (SS|SS)-integrals
              ICLASSES(3) = 2
              ICLASSES(4) = 2
            ENDIF
+#endif /* REPLACING_AOSWITCH */
+Caspg aoswitch
            IPRFCK=IPRINT
+           CALL DSCAL(N2BBASX,D2,DAO,1)
+           CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
+C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+     &                 WORK(KCCFBT),WORK(KINDXB),IFCKOP,
+     &                 WORK(KFREE),LFREE)
+           CALL DSCAL(N2BBASX,DP5,DAO,1)
 Caspg
-Caspg           IF (.NOT.RUNERI) THEN
-Caspg              CALL HRFCK3(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
-CaspgC    &                    WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-Caspg     &                    WORK(KCCFBT),WORK(KINDXB),IFCKOP,
-Caspg     &                    WORK(KFREE),LFREE)
-Caspg           ELSE ! ERI only
-CaspgCaspg
-          IF (DOFCK3.AND.RUNERI) THEN
-              CALL DSCAL(N2BBASX,D2,FAO,1)
-          ELSE
-              CALL DSCAL(N2BBASX,D2,DAO,1)
-          ENDIF
-              CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
-C    &                    WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-     &                    WORK(KCCFBT),WORK(KINDXB),IFCKOP,
-     &                    WORK(KFREE),LFREE)
-          IF (DOFCK3.AND.RUNERI) THEN
-              CALL DSCAL(N2BBASX,DP5,FAO,1)
-          ELSE
-              CALL DSCAL(N2BBASX,DP5,DAO,1)
-          ENDIF
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+         IF(IPRINT.GE.0) THEN
+           DO I = 1,NDMAT
+             write (6,*) 'debug: contribution from eri (J/XC) to FMAT'
+             CALL PRINTDMAT(I,NTBAS(0),FAO)
+           ENDDO
+         ENDIF
+#endif /* DEBUG_DIRAC_FCKBUILD_DF */
 Caspg
-Caspg           ENDIF
            CALL MEMREL('dirao1.hrfck23',WORK,KWORK,KWORK,KFREE,LFREE)
            CPU = SECOND() - CPU
          ENDIF
@@ -3951,24 +3937,6 @@ C        ELSE
          ENDIF
 #endif /* MOD_ERI */
       ENDIF
-Caspg
-#if defined (DIRAC_ERI_DEBUG)
-C        Print densities and Fock matrix
-C        ===============================
-C
-           IF (.TRUE.) THEN
-              CALL HEADER('Density and Fock matrices after 2-e',-1)
-              DO I = 1, NDMAT
-                 WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
-                 CALL OUTPUT(DAO(1,I),1,NTBAS(0),1,NTBAS(0),NTBAS(0),
-     &                     NTBAS(0),1,LUPRI)
-                 WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
-                 CALL OUTPUT(FAO(1,I),1,NTBAS(0),1,NTBAS(0),NTBAS(0),
-     &                     NTBAS(0),1,LUPRI)
-              END DO
-           END IF
-#endif
-Caspg
 C
 C     Restore IFCTYP to the old value (even though we'll not need
 C     it anymore)
@@ -4003,6 +3971,26 @@ C
      &                4,IQMULT,LUPRI)
         ENDDO
       ENDIF
+Caspg
+C
+C   2006-07-27
+C
+C   temporary solution (or dirty trick, take your pick) to make the 
+C   combination ERI->J / LinK->K work, due to the differences in 
+C   constructing the fock matrices in each case. So below we add
+C   a bare bones version of the code outside FASTJK responsible to
+C   perform the final setup on the matrices (symmetrization etc).
+C  
+C   This assumes that a call to LINKDR comes after the call to DIRAO1,
+C   otherwise the fock matrices will continue to be updated incorrectly.
+C
+      IF (DOLINK) THEN
+        CALL BUTOBS(FAO,NZ,WORK,LWORK)
+C       CALL BUTOBS(DAO,NZ,WORK,LWORK)
+        CALL FULMAT('S',NTBAS(0),NTBAS(0),FAO)
+      ENDIF
+C
+Caspg
 C
       CALL QEXIT('DIRAO1')
       RETURN
@@ -4232,12 +4220,14 @@ C       (defined in SETGMT(prp/pamrvc.F)). /hjaaj Apr 2002
         IHRM = IHRMOP(I)
         IPAR = JBTOF(IREP,1)
         IFCK = IFCKOP(I)
+Caspg        write (6,*) 'i,ifckop(i)',i,ifckop(i)
 C
 C       First determine contributions
 C
         DO IZ = 1,NZC1
           IRFCK(IZ) = IRQMAT(IZ,IREP)
           IY        = IPFCK(IZ,IFCK)
+Caspg       write (6,*) 'iy,iz,ifck,ipfck(iz,ifck)',iy,iz,ifck,ipfck(iz,ifck)
           IC        = MOD(IY,2)
           IE        = IY - IC
           IH        = IHQMAT(IZ,IHRM)
@@ -4665,14 +4655,9 @@ C
 #include "dgroup.h"
 C
       LOGICAL NODV,NOPV,NOCONT,RELCAL
-CC    DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4),WORK(LWORK)
       DIMENSION WORK(LWORK)
       CHARACTER CINT(3)*2
       DATA CINT/'LL','SL','SS'/
-C      DIMENSION WORK(LWORK),FMAT(*),DMAT(*),IREPDM(*),IFCTYP(*),
-C     &          INDX(2,*),INDXAB(*),DINTSKP(*),GABRAO(*),
-C     &          DMRAO(*),DMRSO(*),INDEX(*),TIMES(*)
-C
 #include "memint.h"
 C
 #if defined (MOD_ERI)
@@ -4682,6 +4667,10 @@ C       CCFBT - normalized contraction coefficients
         CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
 C       INDXBT - orbital indices for AO batches
         CALL MEMGET('INTE',KINDXB,NBSYM*MXSHEL*MXCONT,WORK,KFREE,LFREE)
+Caspg aoswitch
+#if ! defined (REPLACING_AOSWITCH)
+        CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP)
+#else
 C       Pick active AO-batches
 C       NCENTS=0 means all centers active
 C       Index 1
@@ -4715,15 +4704,11 @@ C         (SS|SS)-integrals
           ICLASSES(3) = 2
           ICLASSES(4) = 2
         ENDIF
-C aspg, 2006-06-29
-C ncents, icents, iclasses moved to common block in cbieri.h
-C       CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),NCENTS,ICENTS,ICLASSES,
-C    &              WORK(KFREE),LFREE)
-C
+#endif /* REPLACING_AOSWITCH */
         CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
         CALL MEMREL('TWODRV.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
       ELSE
-#endif
+#endif /* MOD_ERI */
 C.......Undifferentiated integrals written on file
         IF(INTTYP.EQ.0) THEN
           NDMAT  = 1
@@ -4758,3 +4743,79 @@ C.......Undifferentiated integrals written on file
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SET_AOBATCH_STATE(ICENTER,STATUS)
+#include "implicit.h"
+#include "cbieri.h"
+      CHARACTER STATUS
+C
+C     sets and individual center as active when calculating ao batches 
+C     icenter is the center on the two-electron integral to be made active.
+C
+C     arguments:
+C
+C     icenter: the numerical designation for the center, takes 
+C              values 1,2,3 or 4
+C     status : whether to make the center active or inactive, takes 
+C              values 'A' for active and 'I' for inactive
+C
+C     note: the variables are defined in the CBIERI common block 
+C
+      IF (    (ICENTER.LT.1) .OR.(ICENTER.GT.4)
+     &    .OR.((STATUS.NE.'A').AND.(STATUS.NE.'I'))) 
+     &   CALL QUIT('wrong parameter value in set_aobatch_state')
+
+      IF (STATUS.EQ.'A') THEN
+C     center is active
+         NCENTS(ICENTER)   = 0
+         ICENTS(1,ICENTER) = 0
+      ELSE
+         NCENTS(ICENTER)   = 1
+         ICENTS(1,ICENTER) = 1
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SET_ALL_AOCENTERS_ACTIVE(I2TYP)
+#include "implicit.h"
+C
+C sets all centers active for the ao-batches of class i2typ
+C
+Caspg     write (6,*) 'debug: setting centers'
+      CALL SET_AOBATCH_STATE(1,'A')
+      CALL SET_AOBATCH_STATE(2,'A')
+      CALL SET_AOBATCH_STATE(3,'A')
+      CALL SET_AOBATCH_STATE(4,'A')
+      CALL SET_AOBATCH_CLASS(I2TYP)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SET_AOBATCH_CLASS(I2TYP)
+#include "implicit.h"
+#include "cbieri.h"
+C
+C     note: the variables are in the CBIERI common block 
+C
+C     Index 1
+      IF(I2TYP.EQ.1) THEN
+C       (LL|LL)-integrals
+        ICLASSES(1) = 1
+        ICLASSES(2) = 1
+        ICLASSES(3) = 1
+        ICLASSES(4) = 1
+      ELSEIF(I2TYP.EQ.2) THEN
+C       (SS|LL)-integrals
+        ICLASSES(1) = 2
+        ICLASSES(2) = 2
+        ICLASSES(3) = 1
+        ICLASSES(4) = 1
+      ELSEIF(I2TYP.EQ.3) THEN
+C       (SS|SS)-integrals
+        ICLASSES(1) = 2
+        ICLASSES(2) = 2
+        ICLASSES(3) = 2
+        ICLASSES(4) = 2
+      ENDIF
+      RETURN
+      END
+
