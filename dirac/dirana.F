@@ -3471,9 +3471,6 @@ C
           DO IZ = 1,NZ
             A(IZ) =  BVEC(ISEL,IB,IZ)/DB
           ENDDO
-          DO IZ = 1,NZ
-            A(IZ) =  VEC(IB,J,IZ)/DB
-          ENDDO
           DO I = 1,NBAS
             B(1)        = CMO(I,IC,2)*A(1) - CMO(I,IC,1)*A(2)
             CMO(I,IC,1) = CMO(I,IC,1)*A(1) + CMO(I,IC,2)*A(2)
