@@ -3585,6 +3585,8 @@ C
 #include "dgroup.h"
 #include "dcbqal.h"
 #include "dcbbas.h"
+#include "dcbgen.h"
+#include "cbieri.h"
 #include "blocks.h"
 #include "cbihr2.h"
       EXTERNAL BDQALGEBRA
@@ -3605,6 +3607,9 @@ C
 C     Get G(ab) integrals from AOPROPER
 C     =================================
 C
+      if (RUNERI.OR.DOFCK3.OR.DOLINK) then
+         write (6,*) 'skip getgab'
+      else
       IF (SCRFCK .GT. D0) THEN
 C
          IJOB   = 0
@@ -3620,6 +3625,7 @@ C        IGTYP 2 will add also the SL (Gaunt) type integrals
      &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
 C
       END IF
+      endif
 C
       IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
@@ -3750,6 +3756,10 @@ Ctec Is FIRST needed???
       NDMAT = NFMAT*NZC1
       CALL SETFCK(IFCTYP,IREPDM,NFMAT,NZC1,ISYMOP,IHRMOP,IFCKOP,IPRINT)
       CALL DZERO(DNTSKP,8)
+
+      if (runeri.or.dofck3.or.dolink) then
+         write (6,*) 'skip mkdrao'
+      else
       IF (SCRFCK.GT.D0) THEN
 C
 C       Make reduced density matrix for screening
@@ -3758,6 +3768,7 @@ C       (Reduced GAB is already present in GABRAO)
 C
         CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
       ENDIF
+      endif
 C
 C     ****************************
 C     **** Process integrals *****
