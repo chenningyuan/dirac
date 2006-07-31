@@ -66,6 +66,7 @@ C       NONCOLLINEAR = .NOT.COLLINEAR
 C
         F  = D1
         G  = D1
+        IF(BETA) G = -D1
         IU = 1
         IV = 1
         IX = 2
