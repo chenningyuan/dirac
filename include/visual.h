@@ -8,7 +8,10 @@ C
      &                DOPLOT, DO1DPLOT, DO2DPLOT, DO3DPLOT,             &
      &                PLOTDENSITY, PLOTSPINDENSITY, PLOTCURRENTDENSITY, &
      &                PLOTELF, PLOTLAPLACIAN, USEORBSTRING,             &
-     &                PLOTRXJ, PLOTSKIPEP, PLOTSKIPEE
+     &                PLOTRXJ,                                          &
+     &                PLOTSKIPEP, PLOTSKIPEE,                           &
+     &                CUT_XY, CUT_XY_SMALL, CUT_YZ, CUT_YZ_SMALL,       &
+     &                FORMAT_200
 C
       COMMON /CPLOTC/ XVECFILE, ORBSTRING1, ORBSTRING2
 C
@@ -16,7 +19,10 @@ C
      &                DOPLOT, DO1DPLOT, DO2DPLOT, DO3DPLOT,             &
      &                PLOTDENSITY, PLOTSPINDENSITY, PLOTCURRENTDENSITY, &
      &                PLOTELF, PLOTLAPLACIAN, USEORBSTRING,             &
-     &                PLOTRXJ, PLOTSKIPEP, PLOTSKIPEE
+     &                PLOTRXJ,                                          &
+     &                PLOTSKIPEP, PLOTSKIPEE,                           &
+     &                CUT_XY, CUT_XY_SMALL, CUT_YZ, CUT_YZ_SMALL,       &
+     &                FORMAT_200
 C
       COMMON /CPLOTI/ IPLOT, NCUBE(0:3), NXVEC, IREP_PLOT
 C

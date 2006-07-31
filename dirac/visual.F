@@ -233,6 +233,7 @@ C
 #include "dcbgen.h"
 C
       CHARACTER PAIRNAMEA(100)*3,PAIRNAMEB(100)*3
+      CHARACTER*20 FORMATSTRING
 #include "visual.h"
 #include "dcborb.h"
 C
@@ -612,21 +613,13 @@ C
 C       do the grid walk
 C       ================
 C
-C     { debug
-C       NCUBE(1) = 1
-C       NCUBE(2) = 1
-C       NCUBE(3) = 1
-C       DO ICUBE = 1,NCUBE(1)
-C         DO JCUBE = 1,NCUBE(2)
-C           DO KCUBE = 1,NCUBE(3)
-C             PX = D1
-C             PY = D1
-C             PZ = D1
-C       debug }
-C     { 3D
+        IF(CUT_XY.OR.CUT_XY_SMALL) NCUBE(3) = 1
+        IF(CUT_YZ.OR.CUT_YZ_SMALL) NCUBE(1) = 1
+C
         DO ICUBE = 1,NCUBE(1)
           DO JCUBE = 1,NCUBE(2)
             DO KCUBE = 1,NCUBE(3)
+C
               PX = D3DSTEP(1,0)+(ICUBE-1)*D3DSTEP(1,1)
      &                         +(JCUBE-1)*D3DSTEP(1,2)
      &                         +(KCUBE-1)*D3DSTEP(1,3)
@@ -636,26 +629,30 @@ C     { 3D
               PZ = D3DSTEP(3,0)+(ICUBE-1)*D3DSTEP(3,1)
      &                         +(JCUBE-1)*D3DSTEP(3,2)
      &                         +(KCUBE-1)*D3DSTEP(3,3)
-C       3D }
-C     { xy - plane
-C       DO ICUBE = 1,NCUBE(1)
-C         DO JCUBE = 1,NCUBE(2)
-C           NCUBE(3) = 1
-C           DO KCUBE = 1,NCUBE(3)
-C             PX = -6.0D0+(ICUBE-1)*(12.0D0/(NCUBE(1)-1))
-C             PY = -6.0D0+(JCUBE-1)*(12.0D0/(NCUBE(2)-1))
-C             PZ = D0
-C             PZ = D1
-C       xy - plane }
-C     { yz - plane
-C       NCUBE(1) = 1
-C       DO ICUBE = 1,NCUBE(1)
-C         DO JCUBE = 1,NCUBE(2)
-C           DO KCUBE = 1,NCUBE(3)
-C             PY = -3.0D0+(KCUBE-1)*(6.0D0/(NCUBE(3)-1))
-C             PZ = -3.0D0+(JCUBE-1)*(6.0D0/(NCUBE(2)-1))
-C             PX = D0
-C       yz - plane }
+C
+              IF(CUT_XY) THEN
+                PX = -6.0D0+(ICUBE-1)*(12.0D0/(NCUBE(1)-1))
+                PY = -6.0D0+(JCUBE-1)*(12.0D0/(NCUBE(2)-1))
+                PZ = D0
+              ENDIF
+C
+              IF(CUT_XY_SMALL) THEN
+                PX = -3.0D0+(ICUBE-1)*(6.0D0/(NCUBE(1)-1))
+                PY = -3.0D0+(JCUBE-1)*(6.0D0/(NCUBE(2)-1))
+                PZ = D0
+              ENDIF
+C
+              IF(CUT_YZ) THEN
+                PY = -6.0D0+(KCUBE-1)*(12.0D0/(NCUBE(3)-1))
+                PZ = -6.0D0+(JCUBE-1)*(12.0D0/(NCUBE(2)-1))
+                PX = D0
+              ENDIF
+C
+              IF(CUT_YZ_SMALL) THEN
+                PY = -3.0D0+(KCUBE-1)*(6.0D0/(NCUBE(3)-1))
+                PZ = -3.0D0+(JCUBE-1)*(6.0D0/(NCUBE(2)-1))
+                PX = D0
+              ENDIF
 C
 C
 C             get necessary stuff
@@ -680,37 +677,33 @@ C
 C           write buffer
 C           ============
 C
+            FORMATSTRING = '(6E13.5)'
+            IF(FORMAT_200) FORMATSTRING = '(200E13.5)'
+C
             IF(PLOTDENSITY) THEN
-C            WRITE(LU3DDENSITY,'(200E13.5)')
-             WRITE(LU3DDENSITY,'(6E13.5)')
+             WRITE(LU3DDENSITY,FORMATSTRING)
      &            (DENSITY(0,M),M=1,NCUBE(3))
             ENDIF
             IF(PLOTELF) THEN
-C             WRITE(LU3DELF,'(200E13.5)')
-              WRITE(LU3DELF,'(6E13.5)')
+              WRITE(LU3DELF,FORMATSTRING)
      &             (ELF(M),M=1,NCUBE(3))
             ENDIF
             IF(PLOTLAPLACIAN) THEN
-C             WRITE(LU3DLAPLACIAN,'(200E13.5)')
-              WRITE(LU3DLAPLACIAN,'(6E13.5)')
+              WRITE(LU3DLAPLACIAN,FORMATSTRING)
      &             (DLAPLACIAN(M),M=1,NCUBE(3))
             ENDIF
             IF(PLOTSPINDENSITY) THEN
-C             WRITE(LU3DSPINDENSITY,'(200E13.5)')
-              WRITE(LU3DSPINDENSITY,'(6E13.5)')
+              WRITE(LU3DSPINDENSITY,FORMATSTRING)
      &             (SPINDENSITY(M),M=1,NCUBE(3))
             ENDIF
             IF(PLOTCURRENTDENSITY) THEN
-C             WRITE(LU3DCURRENTDENSITY,'(200E13.5)')
-              WRITE(LU3DCURRENTDENSITY,'(6E13.5)')
+              WRITE(LU3DCURRENTDENSITY,FORMATSTRING)
      &             (CURRENTDENSITY(M),M=1,NCUBE(3))
             ENDIF
             IF(PLOTRXJ) THEN
-C             WRITE(LU3DRXJ,'(200E13.5)')
-              WRITE(LU3DRXJ,'(6E13.5)')
+              WRITE(LU3DRXJ,FORMATSTRING)
      &             (RXJ(M),M=1,NCUBE(3))
             ENDIF
-C
 C
           ENDDO
 C
@@ -904,8 +897,12 @@ C
      &                  + SPINDENSITY(3)**D2
        SPINDENSITY_NORM = DSQRT(SPINDENSITY_NORM)
 C
-C      WRITE(0,'(4F20.6)') PX, PY, (SPINDENSITY(I),I=1,2)
-C      WRITE(0,'(4F20.6)') PY, PZ, (SPINDENSITY(I),I=2,3)
+       IF(CUT_XY.OR.CUT_XY_SMALL) THEN
+         WRITE(0,'(4F20.6)') PX, PY, (SPINDENSITY(I),I=1,2)
+       ENDIF
+       IF(CUT_YZ.OR.CUT_YZ_SMALL) THEN
+         WRITE(0,'(4F20.6)') PY, PZ, (SPINDENSITY(I),I=2,3)
+       ENDIF
 #else
       CALL QUIT('perturbed magnetization density not implemented')
 #endif
@@ -922,8 +919,12 @@ C
      &                     + CURRENTDENSITY(3)**D2
        CURRENTDENSITY_NORM = DSQRT(CURRENTDENSITY_NORM)
 C
-C      WRITE(0,'(4F20.6)') PX, PY, (CURRENTDENSITY(I),I=1,2)
-C      WRITE(0,'(4F20.6)') PY, PZ, (CURRENTDENSITY(I),I=2,3)
+       IF(CUT_XY.OR.CUT_XY_SMALL) THEN
+         WRITE(0,'(4F20.6)') PX, PY, (CURRENTDENSITY(I),I=1,2)
+       ENDIF
+       IF(CUT_YZ.OR.CUT_YZ_SMALL) THEN
+         WRITE(0,'(4F20.6)') PY, PZ, (CURRENTDENSITY(I),I=2,3)
+       ENDIF
 #else
       CALL QUIT('perturbed current density not implemented')
 #endif
@@ -944,8 +945,12 @@ C
      &          + RXJ(3)**D2
        RXJ_NORM = DSQRT(RXJ_NORM)
 C
-C      WRITE(0,'(4F20.6)') PX, PY, (RXJ(I),I=1,2)
-C      WRITE(0,'(4F20.6)') PY, PZ, (RXJ(I),I=2,3)
+       IF(CUT_XY.OR.CUT_XY_SMALL) THEN
+         WRITE(0,'(4F20.6)') PX, PY, (RXJ(I),I=1,2)
+       ENDIF
+       IF(CUT_YZ.OR.CUT_YZ_SMALL) THEN
+         WRITE(0,'(4F20.6)') PY, PZ, (RXJ(I),I=2,3)
+       ENDIF
 #else
       CALL QUIT('.RXJ not implemented')
 #endif

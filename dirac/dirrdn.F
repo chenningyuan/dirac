@@ -6095,7 +6095,7 @@ C
 #include "priunit.h"
 #include "dummy.h"
 C
-      PARAMETER (NTABLE = 20)
+      PARAMETER (NTABLE = 24)
 C
 #include "dcbgen.h"
 #include "dcbana.h"
@@ -6111,7 +6111,8 @@ C
      &            '.3D    ','.DENSIT','.SPIN  ','.CURREN',
      &            '.ELF   ','.D1DSTE','.D3DSTA','.D3DNOR',
      &            '.CUBE  ','.LAPLAC','.NXVEC ','.STRING',
-     &            '.SKIPEP','.SKIPEE','.RXJ   ','.XXXXXX'/
+     &            '.SKIPEP','.SKIPEE','.RXJ   ','.FORMAT',
+     &            '.CUTXY ','.CUTXYS','.CUTYZ ','.CUTYZS'/
       DATA SET /.FALSE./
 C
       IF(SET) THEN
@@ -6143,6 +6144,13 @@ C
       PLOTSKIPEE         = .FALSE.
       USEORBSTRING       = .FALSE.
 C
+      CUT_XY             = .FALSE.
+      CUT_XY_SMALL       = .FALSE.
+      CUT_YZ             = .FALSE.
+      CUT_YZ_SMALL       = .FALSE.
+C
+      FORMAT_200         = .FALSE.
+C
       IPLOT              = 0
       NCUBE(1)           = 80
       NCUBE(2)           = 80
@@ -6169,7 +6177,8 @@ C
         ELSEIF(PROMPT.EQ.'.') THEN
           DO 200 I = 1,NTABLE
             IF(TABLE(I).EQ.WORD) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), I
+            GOTO
+     &(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24),I
             ENDIF
   200     CONTINUE
           IF(WORD.EQ.'.OPTION') THEN
@@ -6241,6 +6250,19 @@ C
           PLOTRXJ = .TRUE.
           GOTO 100
    20     CONTINUE
+          FORMAT_200 = .TRUE.
+          GOTO 100
+   21     CONTINUE
+          CUT_XY = .TRUE.
+          GOTO 100
+   22     CONTINUE
+          CUT_XY_SMALL = .TRUE.
+          GOTO 100
+   23     CONTINUE
+          CUT_YZ = .TRUE.
+          GOTO 100
+   24     CONTINUE
+          CUT_YZ_SMALL = .TRUE.
           GOTO 100
         ELSEIF(PROMPT.EQ.'*') THEN
           GOTO 300
