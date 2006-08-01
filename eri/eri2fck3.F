@@ -1583,7 +1583,11 @@ c     fck2sn1 - broadcast variables each time.
 #include "implicit.h"
 #include "inforb.h"
 #include "siripc.h"
+#if defined (PRG_DIRAC) /* PRG_DIRAC */
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif /* PRG_DIRAC */
 c note: NDMT is always INTENT(IN)
       DIMENSION DMAT(N2BASX,NDMT), ISYMDM(NDMT),IFCTYP(NDMT),
      &          SAO(N2BASX)
@@ -1608,6 +1612,7 @@ c
       END
       SUBROUTINE fck3sn3
       END
+#if defined (FCK3COLLECT_NO_CONFLICT)
       SUBROUTINE fck3collect(FMAT,NDMAT,tm,WORK,LFREE,IPRINT)
 #include "implicit.h"
 #include "inforb.h"
@@ -1706,4 +1711,5 @@ c     needed for HERPRP
       CALL MPI_BCAST(JTOP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(NRTOP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
       END
+#endif /* FCK3COLLECT_NO_CONFLICT */
 #endif
