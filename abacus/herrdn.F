@@ -118,15 +118,18 @@ C
 #else
       PARAMETER ( MAXPRD = 30 )
 #endif
-      PARAMETER ( NTABLE = 10, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 11, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "cbirea.h"
 #include "ccom.h"
+Caspg adding numder to set NOMOVE
+#include "numder.h"
+Caspg
 C
       DATA TABLE /'.PRINT ', '.OLDNOR', '.MAXPRI', '.BIGVEC',
      *            '.MOLINP', '.SYMTHR', '.CM FUN', '.ZCMVAL',
-     *            '.MOLPRI', '.UNCONT'/
+     *            '.MOLPRI', '.UNCONT', '.NORTSD'/
 C
       NEWDEF = (WORD .EQ. '*READIN')
       ICHANG = 0
@@ -141,7 +144,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -184,6 +187,12 @@ C
                GO TO 100
  10            CONTINUE
                   UNCONT = .TRUE.
+               GO TO 100
+ 11            CONTINUE
+Caspg 
+C setting NOMOVE to true disables redefinition of coordinates for automatically
+C determined symmetry
+                  NOMOVE = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -278,8 +287,12 @@ C
 #include "ccom.h"
 #include "mxsymm.h"
 #include "cbirea.h"
+Caspg adding numder to set NOMOVE
+#include "numder.h"
+Caspg
       THRS = 1.0D-15
 C
+      NOMOVE = .FALSE.
       IPREAD = IPRDEF
       LUMLCL = 9
       BIGVC  = .FALSE.

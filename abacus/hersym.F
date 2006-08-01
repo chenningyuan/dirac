@@ -105,10 +105,10 @@ C  /* Deck fndsym */
 #include "cbisol.h"
 #include "cbihr1.h"
 #include "molinp.h"
-#ifndef PRG_DIRAC
+CCCC#ifndef PRG_DIRAC
 #include "r12int.h"
 #include "numder.h"
-#endif
+CCCC#endif
 C ***********************************************************
 C *   ATMARR - Atomic coordinates
 C *   CLASS  - Full point group
@@ -117,6 +117,9 @@ C *   DIRAXS - Improper rotational axes
 C *   DMRPLN - Mirror planes
 C *   TMPARR + TMP2AR - Temporary arrays
 C ***********************************************************
+Caspg
+CCCC         LOGICAL NOMOVE
+Caspg
          DIMENSION ATMARR(6,0:MXCENT), DRTAXS(6,0:MAXAXS)
          DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
          DIMENSION TMPARR(7,0:LENTMP), WORK(LWORK)
@@ -125,6 +128,10 @@ C ***********************************************************
          PARAMETER (D0 = 0.0D0)
          CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41
          CHARACTER SYMM*9, TMPLN*80
+Caspg
+CCCC         NOMOVE = .TRUE.
+Caspg
+
          I = 1
 C ::: IPRTHR - Print level threshold for verbose output. :::
          IPRTHR = 7
@@ -159,14 +166,14 @@ C        END IF
          CALL PRNARR(TEXT, MXCENT, ATMARR)
 C        Sort atoms after atom number and distance from origo
          CALL SRTATM(MXCENT, 6, ATMARR, .TRUE.)
-#ifndef PRG_DIRAC
+CCCC#ifndef PRG_DIRAC
          IF (.NOT. NOMOVE) THEN
             CALL CNTRML(MXCENT, ATMARR)
          END IF
-#else
+CCCC#else
 C        Place molecular center of mass at the origin
-         CALL CNTRML(MXCENT, ATMARR)
-#endif
+CCCC         CALL CNTRML(MXCENT, ATMARR)
+CCCC#endif
 C        Determine molecular point group
          CALL FNDGRP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
      &                               TMPARR, CLASS)
@@ -177,14 +184,14 @@ C ::: the symmetry elements is constructed.  :::
 C
          WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
          LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
-#ifndef PRG_DIRAC
+CCCC#ifndef PRG_DIRAC
          IF (.NOT. NOMOVE) THEN
            CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
          END IF
-#else
-         CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
-#endif
-#ifndef PRG_DIRAC
+CCCC#else
+CCCC         CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
+CCCC#endif
+CCCC#ifndef PRG_DIRAC
           IF (.NOT. NOMOVE) THEN
             TEXT = 'Centered and Rotated                    '
             CALL PRNARR(TEXT , MXCENT, ATMARR)
@@ -192,10 +199,10 @@ C
             WRITE (LUPRI,'(/A/)') 
      &  ' System could not be centered or rotated due to finite field'
          END IF
-#else
-         TEXT = 'Centered and Rotated                    '
-         CALL PRNARR(TEXT , MXCENT, ATMARR)
-#endif
+CCCC#else
+CCCC         TEXT = 'Centered and Rotated                    '
+CCCC         CALL PRNARR(TEXT , MXCENT, ATMARR)
+CCCC#endif
          IF (IPREAD .GE. IPRTHR) THEN
             IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
                WRITE(LUPRI,'(/1X,A)') 'No rotational axes were found.'
