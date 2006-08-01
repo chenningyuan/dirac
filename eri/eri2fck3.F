@@ -1642,6 +1642,7 @@ c     load balancing.
      &        (tms(i),i=1,NODTOT+1)
       END IF
       END
+#endif /* FCK3COLLECT_NO_CONFLICT */
 c
       SUBROUTINE FCK3_DIMS(NDMAT)
 #include "implicit.h"
@@ -1711,5 +1712,4 @@ c     needed for HERPRP
       CALL MPI_BCAST(JTOP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(NRTOP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
       END
-#endif /* FCK3COLLECT_NO_CONFLICT */
 #endif
