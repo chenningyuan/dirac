@@ -1325,6 +1325,10 @@ C
         CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPREXP)
       ENDIF
 C
+      IF (ROTG) THEN
+       CALL DEF_ROTG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+      ENDIF
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1445,6 +1449,13 @@ C     Magnetic susceptibilities
 C
       IF (MSUSCP) THEN
         CALL PRP_MSUSCP(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+      ENDIF
+C
+C     Molecular rotational g-tensor
+C
+      IF (ROTG) THEN
+C       CALL PRP_ROTG(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+        CALL PRP_ROTG(ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 
 C
@@ -7815,14 +7826,15 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_ROTG */
-      SUBROUTINE PRP_ROTG(ABLRF,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_ROTG(ABLRF,ABCNV,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
-C     Output routine for rotational g-tensor
+C    Output routine for rotational g-tensor
 C
-C     Written by T.Enevoldsen Jul. 1998
+C   Written by T.Enevoldsen Jul. 1998
 C     
-C     Revisions: MI, jan.2003 - added from TEC's 'left' code
+C  Revisions: MI, jan.2003 - added from TEC's 'left' code
+C             MI, Prievidza, August 2006
 C     
 C***********************************************************************
 #include "implicit.h"
@@ -7830,18 +7842,26 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
+#include "orgcom.h"
 #include "dcborb.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcbxlr.h"
-      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),WORK(*),
-     &     IBUFA(3),IBUFB(3)
+CMI ... added
+#include "nuclei.h"
+#include "molgfa.h"
+#include "iratdef.h"
+
+      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT),ABCNV(NBFREQ,NLRBPT),
+     &     WORK(*),IBUFA(3),IBUFB(3)
+      INTEGER ICONVXYZ
       CHARACTER AX*1,BX*1
+
+      CALL QENTER('PRP_ROTG')
 C     
       CALL TITLER('DIRAC  - ROTATIONAL g-tensor','*',116)
-      WRITE(LUPRI,'(A)')
-     &     '*** WARNING *** This piece of code is not finished'
+      write(lupri,*) 'WARNING: Output not compatible with Dalton !'
 C     
       KFRSAV = KFREE
 C     
@@ -7853,7 +7873,6 @@ C     *** Extract g-tensor ***
 C     
       NA = 0
       NB = 0
-C     
       DO I = 1, 3
          IF(IPROTG(1,I).GT.0) THEN
             NA = NA + 1
@@ -7866,25 +7885,519 @@ C
       END DO
 
       DO IFREQ = 1,NBFREQ
+
          CALL PRSYMB(LUPRI,'-',72,2)
+
          IF(.NOT.BFREQ(IFREQ).EQ.0.0E1) THEN
             WRITE(LUPRI,'(A,F15.8,2X,A)') 
-     &           '*** Frequency    :',BFREQ(IFREQ),'a.u.'
+     &      '*** Frequency    :',BFREQ(IFREQ),'a.u.'
          ENDIF
 
          DO IB = 1,NB
             READ (PRPNAM(LLRBPU(IBUFB(IB))),'(6X,A1)') BX
-            KB = IBUFB(IB)
+
+C           write(lupri,*) '(LLRBPU(IBUFB(IB))=',
+C    &      PRPNAM(LLRBPU(IBUFB(IB))),'BX=',BX,' symm=',
+C    &     IPRPSYM(LLRBPU(IBUFB(IB))),'LLRBPU(IBUFB(IB))=',
+C    &     LLRBPU(IBUFB(IB))
+
+            KB = IBUFB(ICONVXYZ(BX))
             DO IA = 1,NA
+
+C              READ (PRPNAM(LLRAPU(IBUFA(IAX))),'(6X,A1)') AX
                READ (PRPNAM(LLRAPU(IBUFA(IA))),'(6X,A1)') AX
-               KA = IBUFA(IA)
-               VALUE = -4*ABLRF(IFREQ,KA,KB,1)
-               WRITE(LUPRI,'(5A,F15.8,2X,A)') '@ g(',AX,',',BX,') =',
-     &              VALUE,'a.u.'
+C              READ (PRPNAM(IAX),'(6X,A1)') AX
+
+C       write(lupri,*) 'PRPNAM(LLRAPU(IBUFA(IA))=',
+C    &       PRPNAM(LLRAPU(IBUFA(IA))),' AX=',AX,' symm=',
+C    &       IPRPSYM(LLRAPU(IBUFA(IA))),'LLRAPU(IBUFA(IA))=',
+C    &       LLRAPU(IBUFA(IA))
+
+C       write(lupri,*) 'IBUFA(IA),IBUFB(IB)=',IBUFA(IA),IBUFB(IB)
+
+               KA = IBUFA(ICONVXYZ(AX))
+
+C              KA = IBUFA(IA)
+C              KA = IBUFA(IAX)
+CMI            VALUE = -4*ABLRF(IFREQ,KA,KB,1)
+               VALUE = -4*ABLRF(IFREQ,KA,KB)
+
+CMI            .... hoping ...
+CMI            ELMGF (KA,KB) = ABLRF(IFREQ,KA,KB,1)
+               ELMGF (KA,KB) = ABLRF(IFREQ,KA,KB)
+               ELMGF (KB,KA) = ELMGF (KA,KB)
+
+C      write(lupri,*) 'KA,KB=',KA,KB, "ABALRF (KA,KB)=",ELMGF (KA,KB)
+       WRITE(LUPRI,'(5A,F15.8,2X,A,F15.8)') '@ g(',AX,',',BX,') =',
+     &             VALUE,'a.u. ELMGF=',ELMGF (KA,KB)
             ENDDO
          ENDDO
-C     
+C         
+         IF (IPRPRP.GE.7) THEN
+
+            CALL HEADER('Electronic contribution to molecular'//
+     &                  ' g-factor',-1)
+            CALL OUTPUT(ELMGF,1,3,1,3,3,3,1,LUPRI)
+
+         write(lupri,*) 'POLPRI output:'
+         CALL POLPRI(ELMGF,'   ',-2)
+         ENDIF
+
       END DO
+
+CMI ... from DALTON
+C     KGEOM = 1
+C     KMASS = KGEOM + 3*(NATOMS + NFLOAT)
+C     KNAT  = KMASS + NATOMS + NFLOAT
+C     KNUMIS= KNAT  + (NATOMS + NFLOAT + 1)/IRAT
+C     KLAST = KNUMIS+ (NATOMS + NFLOAT + 1)/IRAT
+C     IF (KLAST .GT. LWORK) CALL STOPIT('ABADRV','CMMASS',KLAST,
+C     IF (KLAST .GT. LFREE) CALL QUIT('PRP_ROTG...error alloc 1 !')
+
+
+      CALL MEMCHK('PRP_ROTG 1',WORK,1)
+
+      IGEOMSIZE = 3*(NATOMS+NFLOAT)
+C     CALL MEMGET('REAL',KGEOM  ,3*(NATOMS+NFLOAT) ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGEOM  ,IGEOMSIZE, WORK,KFREE,LFREE)
+
+      CALL MEMCHK('PRP_ROTG 2',WORK,1)
+
+      CALL MEMGET('REAL',KMASS  ,  NATOMS ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNAT   ,  NATOMS ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNUMIS ,  NATOMS ,WORK,KFREE,LFREE)
+
+CC    write(lupri,*) 'gagorg 1:',GAGORG(1),GAGORG(2),GAGORG(3)
+
+      DO I = 1, MXCENT
+            ISOTOP(I) = 1
+      END DO
+C     CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),WORK(KNUMIS),
+      CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,
+     &            IPRPRP)
+
+       CALL DCOPY(3,CMXYZ,1,GAGORG,1)
+CC    write(lupri,*) 'gagorg 2:',GAGORG(1),GAGORG(2),GAGORG(3)
+C      CALL DZERO(GAGORG,3)
+       CALL NUCMGF(WORK(KGEOM),GAGORG,LUPRI,IPRPRP)
+
+CMI ... from DALTON
+         JATOM  = NATOMS + NFLOAT
+         CALL MEMGET('REAL',KGEOM  ,3*JATOM ,WORK,KFREE,LFREE)
+C        KGEOM  = 1
+C        KAMASS = KGEOM + 3*JATOM
+         CALL MEMGET('REAL',KAMASS ,JATOM ,WORK,KFREE,LFREE)
+
+         KLAST  = KAMASS + JATOM
+C        LWRK   = LWORK - KLAST + 1
+         LWRK   = LFREE - KLAST + 1
+CMI      IF (KLAST .GT. LWORK) CALL
+         IF (KLAST .GT. LFREE) CALL
+     &        QUIT('PRP_ROTG...error allocations !!! ')
+
+        CALL MEMCHK('prp_rotg 0.1',WORK,1)
+
+      DO I = 1, MXCENT
+            ISOTOP(I) = 1
+      END DO
+CMI     CALL MGFRES(WORK(KGEOM),WORK(KAMASS),WORK(KLAST),LWRK,JATOM,
+        CALL MGFRES(WORK(KGEOM),WORK(KAMASS),JATOM,IPRPRP)
+
+        CALL MEMCHK('prp_rotg 0.2',WORK,1)
+
+CMI   ... will it work ?
+C ... release the memmory...
+      CALL MEMREL('GETCON',WORK,1,KFRSAV,KFREE,LFREE)
+
+      CALL QEXIT('PRP_ROTG')
+      RETURN
+      END
+
+C  /* Deck nucmgf */
+      SUBROUTINE NUCMGF(GEOM,ORIGIN,LUPRI,IPRINT)
+C
+C     Calculate nuclear contribution to molecular g-factors
+C     K.Ruud, June-94
+C
+CMI Added from dalton-2.0, May 2006, Strasbourg
+C
+C calling in DALTON:  IF (MOLGFA) CALL NUCMGF(WORK(KGEOM),GAGORG,LUPRI,IPRDEF)
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <nuclei.h>
+      DIMENSION ORIGIN(3), GEOM(3*(NATOMS+NFLOAT))
+#include <symmet.h>
+#include <molgfa.h>
+#include <ibtfun.h>
+C
+
+      IF (IPRINT.GE.5) THEN
+       CALL HEADER(
+     & 'NUCMGF: Entering parameters to calculate nuclear'//
+     & ' contribution to molecular g-factor',-1)
+       write(lupri,*) 'ORIGIN=',ORIGIN(1),ORIGIN(2),ORIGIN(3)
+       do i=1, (3*(NATOMS+NFLOAT))
+        write(lupri,*) 'Entering geom(',i,')=',GEOM(i)
+       enddo
+      ENDIF
+
+      CALL DZERO(GFANUC,9)
+      KK = 1
+      NATOM = 1
+      IX = IPTAX(1,2)
+      IY = IPTAX(2,2)
+      IZ = IPTAX(3,2)
+      DO 10 I = 1, NUCIND
+         IF (IPRINT.GE.6) THEN
+          write(lupri,*) I,'. nuclei with charge=',CHARGE(I)
+         ENDIF
+         DO 20 ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+               XCOOR = GEOM(KK) - ORIGIN(1)
+               YCOOR = GEOM(KK + 1) - ORIGIN(2)
+               ZCOOR = GEOM(KK + 2) - ORIGIN(3)
+               R2    = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+               GFANUC(IX,IX) = GFANUC(IX,IX) + CHARGE(I)*(YCOOR*YCOOR
+     &                                       + ZCOOR*ZCOOR)
+               GFANUC(IY,IY) = GFANUC(IY,IY) + CHARGE(I)*(XCOOR*XCOOR
+     &                                       + ZCOOR*ZCOOR)
+               GFANUC(IZ,IZ) = GFANUC(IZ,IZ) + CHARGE(I)*(XCOOR*XCOOR
+     &                                       + YCOOR*YCOOR)
+               GFANUC(IX,IY) = GFANUC(IX,IY) - CHARGE(I)*XCOOR*YCOOR
+               GFANUC(IX,IZ) = GFANUC(IX,IZ) - CHARGE(I)*XCOOR*ZCOOR
+               GFANUC(IY,IZ) = GFANUC(IY,IZ) - CHARGE(I)*YCOOR*ZCOOR
+               KK = KK + 3
+            END IF
+ 20      CONTINUE
+ 10   CONTINUE
+      GFANUC(IY,IX) = GFANUC(IX,IY)
+      GFANUC(IZ,IX) = GFANUC(IX,IZ)
+      GFANUC(IZ,IY) = GFANUC(IY,IZ)
+CMI   ... final output ...
+      IF (IPRINT .GE. 5) THEN
+         CALL HEADER('Nuclear contribution to molecular g-factor',-1)
+         CALL OUTPUT(GFANUC,1,3,1,3,3,3,1,LUPRI)
+      END IF
+      RETURN
+      END
+
+C  /* Deck mgfres */
+C
+C
+C    Output routine for molecular g-factor
+C
+C
+      SUBROUTINE MGFRES(GEOM,AMASS,KATOM,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+C#include <mxorb.h>
+#include <maxorb.h>
+C#include <pmass.h>
+#include "codata.h"
+      PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
+     &           THRESH = 1.0D-5)
+      LOGICAL PLANAR, LINEAR, D12, D23
+CC    DIMENSION ANGMOM(3), TINERT(9), OMEGA(3,3), WORK(LWORK),
+      DIMENSION ANGMOM(3), TINERT(9), OMEGA(3,3), 
+     &          EIGVAL(3), EIGVEC(3,3),
+     &          GTRAN1(3,3), GTRAN2(3,3), GTRAN3(3,3), GEOM(KATOM,3),
+     &          AMASS(KATOM)
+#include <abainf.h>
+#include <nuclei.h>
+#include <symmet.h>
+C#include <suscpt.h>
+#include "dcbsusc.h"
+C#include "cbiher.h"
+#include <molgfa.h>
+#include <orgcom.h>
+#include <ibtfun.h>
+C
+
+      CALL QENTER('MGFRES')
+
+C     CALL MEMCHK('MGFRES 0.9',WORK,1)
+
+      DO I = 1, MXCENT
+          ISOTOP(I) = 1
+      END DO
+
+      NOLOND = .TRUE.
+
+      D12 = .FALSE.
+      D23 = .FALSE.
+C
+      IF (IPRINT .GE. 0) THEN
+        CALL TITLER('ABACUS - MOLECULAR g-TENSOR','*',124)
+      ENDIF
+
+      CALL DZERO(TOTMGF,9)
+C
+C     Add terms to diamagnetic molecular g factor
+C
+CMI .... only LONDON orbitals !!!!!!!
+CMI      ... NOLOND in abainf.h...
+
+      write(lupri,*) 'NOLOND=',NOLOND,' IPRINT=',IPRINT
+
+      IF (.NOT. NOLOND) THEN
+         DO 10 I = 1, 3
+         DO 10 J = 1, 3
+            GFACDIA(I,J) = GFACDIA(I,J) + SUS2EL(I,J) + SUSFS(I,J)
+     &                  + SUSFSY(I,J)
+ 10      CONTINUE 
+      END IF
+      DO 200 I = 1, 3
+         ANGMOM(I) = D1
+         DO 200 J = 1, 3
+            ELMGF(I,J)  = D4*ELMGF(I,J)
+            GFACDIA(I,J) = D4*GFACDIA(I,J)
+            TOTMGF(I,J) = GFANUC(I,J) + ELMGF(I,J) + GFACDIA(I,J)
+ 200  CONTINUE
+C
+      IF (IPRINT .GE. 2) THEN
+         CALL HEADER(
+     &   'Nuclear contribution * proton mass * moment of inertia',-1)
+         CALL POLPRI(GFANUC,'   ',-2)
+         AVENUC = (GFANUC(1,1) + GFANUC(2,2) + GFANUC(3,3))/D3
+         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVENUC
+C
+         CALL HEADER(
+     &   'Diamagnetic contribution * proton mass * moment of inertia',
+     &   -1)
+C        CALL POLPRI(GFACDI,'   ',-2)
+         CALL POLPRI(GFACDIA,'   ',-2)
+CMI      AVEDIA = (GFACDI(1,1) + GFACDI(2,2) + GFACDI(3,3))/D3
+         AVEDIA = (GFACDIA(1,1) + GFACDIA(2,2) + GFACDIA(3,3))/D3
+         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVEDIA
+C
+         CALL HEADER(
+     &   'Electronic contribution * proton mass * moment of inertia',-1)
+         CALL POLPRI(ELMGF,'   ',-2)
+         AVEEL = (ELMGF(1,1) + ELMGF(2,2) + ELMGF(3,3))/D3
+         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVEEL
+C
+         CALL HEADER(
+     &   'Total molecular g-factor * proton mass * moment of inertia',
+     &   -1)
+         CALL POLPRI(TOTMGF,'   ',2)
+         AVETOT = (TOTMGF(1,1) + TOTMGF(2,2) + TOTMGF(3,3))/D3
+         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVETOT
+      END IF
+C
+C     Determine principal moments of inertia
+C
+      JATOM = 1
+      DO 100 IATOM = 1, NUCIND
+         NATTYP = NINT(CHARGE(IATOM))
+         NUMIS  = ISOTOP(IATOM)
+         DO 110 ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
+
+          IF (IPRINT.GE.9) THEN
+           write(lupri,*) 'NATTYP,NUMIS,DISOTP=',NATTYP,NUMIS,
+     &     DISOTP(NATTYP,NUMIS,'MASS')
+
+           write(lupri,*)
+     &    'AMASS(',JATOM,')=',AMASS(JATOM) 
+          ENDIF
+
+               DO 120 ICOOR = 1, 3
+                  GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+     &                               *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
+             if (IPRINT.GE.8) THEN
+               write(lupri,*)
+     &         'geom(',JATOM,';',ICOOR,')=',
+     &         GEOM(JATOM,ICOOR)
+             endif
+
+ 120           CONTINUE
+               JATOM = JATOM + 1
+            END IF
+ 110     CONTINUE
+ 100  CONTINUE
+
+      CALL WLKDIN(GEOM,AMASS,KATOM,ANGMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
+     &            .TRUE.,PLANAR,LINEAR,IPRINT)
+
+C
+C     Transform molecular g-factor to principal axis system, and multiply by
+C     inverse moment of inertia and proton mass
+C
+      IF (IPRINT .GE. 0) THEN
+         IF (NOLOND) THEN
+            WRITE (LUPRI,'(/,1X,A)')' Calculation without '//
+     &                               'London orbitals.'
+         ELSE
+            WRITE (LUPRI,'(/,1X,A)')' London orbitals used.'
+         END IF
+      END IF
+C
+C     All components of the moment of inertia not defined for linear molecules
+C
+      IF (LINEAR) THEN
+         IF (ABS(TOTMGF(1,1)) .GT. THRESH) THEN
+            AVETOT = TOTMGF(1,1)*PMASS*EIGVAL(3)
+CMI         AVEDIA = GFACDI(1,1)*PMASS*EIGVAL(3)
+            AVEDIA = GFACDIA(1,1)*PMASS*EIGVAL(3)
+            AVEEL  = ELMGF (1,1)*PMASS*EIGVAL(3)
+            AVENUC = GFANUC(1,1)*PMASS*EIGVAL(3)
+            CALL DZERO(GTRAN,9)
+            GTRAN(1,1) = AVETOT
+         ELSE
+            AVETOT = TOTMGF(2,2)*PMASS*EIGVAL(3)
+CMI         AVEDIA = GFACDI(2,2)*PMASS*EIGVAL(3)
+            AVEDIA = GFACDIA(2,2)*PMASS*EIGVAL(3)
+            AVEEL  = ELMGF (2,2)*PMASS*EIGVAL(3)
+            AVENUC = GFANUC(2,2)*PMASS*EIGVAL(3)
+            CALL DZERO(GTRAN,9)
+            GTRAN(1,1) = AVETOT
+         END IF
+CMI       IF (IPRDEF .GE. 0) THEN
+        IF (IPRINT .GE. 0) THEN
+            WRITE (LUPRI,'(2X,A,F12.6)') 'Moment of inertia :',
+     &           D1/EIGVAL(3)
+            CALL HEADER('Molecular g-factor',1)
+            WRITE(LUPRI,'(4(1X,A,F12.8,/))')
+     &           ' Isotropic g-factor          :',AVETOT,
+     &           ' Nuclear part of g-factor    :',AVENUC,
+     &           ' Diamagnetic part of g-factor:',AVEDIA,
+     &           ' Electronic part of g-factor :',AVEEL
+            WRITE (LUPRI,'(1X,A)') 'The molecule is linear'
+         END IF
+      ELSE
+         IF (IPRINT .GE. 0) THEN
+            CALL HEADER
+     &    ('Principal moments of inertia (a.u.) and principle axis',0)
+            WRITE (LUPRI,'(3X,A,F12.6,6X,3F12.6)')
+     &           'IA',D1/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
+     &           'IB',D1/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
+     &           'IC',D1/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
+         END IF
+         CALL DZERO(GTRAN,9)
+         CALL DZERO(GTRAN1,9)
+         CALL DZERO(GTRAN2,9)
+         CALL DZERO(GTRAN3,9)
+         DO 50 I = 1, 3
+            DO 50 J = 1, 3
+               DO 60 IX = 1, 3
+                  DO 60 IY = 1, 3
+                     JX = IPTAX(IX,2)
+                     JY = IPTAX(IY,2)
+                     CONST = EIGVAL(I)*PMASS
+                     GTRAN(I,J)  = GTRAN(I,J) + EIGVEC(IX,I)
+     &                            *TOTMGF(JX,JY)*EIGVEC(IY,J)*CONST
+                     GTRAN1(I,J) = GTRAN1(I,J) + EIGVEC(IX,I)
+     &                            *GFANUC(JX,JY)*EIGVEC(IY,J)*CONST
+                     GTRAN2(I,J) = GTRAN2(I,J) + EIGVEC(IX,I)
+     &                            *ELMGF(JX,JY)*EIGVEC(IY,J)*CONST
+                     GTRAN3(I,J) = GTRAN3(I,J) + EIGVEC(IX,I)
+     &                            *GFACDIA(JX,JY)*EIGVEC(IY,J)*CONST
+ 60            CONTINUE
+ 50      CONTINUE
+         DIFF1 = ABS(GTRAN(1,1) - GTRAN(2,2))
+         DIFF2 = ABS(GTRAN(2,2) - GTRAN(3,3))
+         IF (DIFF1 .LT. THRESH) D12 = .TRUE.
+         IF (DIFF2 .LT. THRESH) D23 = .TRUE.
+         AVETOT = (GTRAN(1,1)  + GTRAN(2,2)  + GTRAN(3,3) )/D3
+         AVENUC = (GTRAN1(1,1) + GTRAN1(2,2) + GTRAN1(3,3))/D3
+         AVEEL  = (GTRAN2(1,1) + GTRAN2(2,2) + GTRAN2(3,3))/D3
+         AVEDIA = (GTRAN3(1,1) + GTRAN3(2,2) + GTRAN3(3,3))/D3
+         IF (IPRINT .GE. 0) THEN
+         IF (D12 .AND. D23) THEN
+            WRITE (LUPRI,'(4(/,1X,A,F12.8))')
+     &           ' Molecular g-factor      :  ',AVETOT,
+     &           ' Nuclear contribution    :  ',AVENUC,
+     &           ' Diamagnetic contribution:  ',AVEDIA,
+     &           ' Electronic contribution :  ',AVEEL
+            WRITE (LUPRI,'(/,1X,A)') ' Molecular g-factor is spherical.'
+         ELSE IF (D12 .OR. D23) THEN
+            IF (D12) THEN
+               PAR = GTRAN(3,3)
+               PER = (GTRAN(1,1) + GTRAN(2,2))/D2
+            ELSE
+               PAR = GTRAN(1,1)
+               PER = (GTRAN(2,2) + GTRAN(3,3))/D2
+            END IF
+            ANI = PAR - PER
+            CALL HEADER('Molecular g-factor',1)
+            WRITE (LUPRI,'(6(1X,A,F12.8,/))')
+     &           ' Isotropic g-factor       : ',AVETOT,
+     &           ' Nuclear contribution     : ',AVENUC,
+     &           ' Electronic contribution  : ',AVEEL,
+     &           ' Parallel component:        ',PAR,
+     &           ' Perpendicular component:   ',PER,
+     &           ' Anisotropy:                ',ANI
+            WRITE (LUPRI,'(1X,A)') ' Molecular g-factor is cylindrical.'
+            CALL HEADER('Molecular g-factor in principal axis system '//
+     &                  '(a.u.):',1)
+            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+     &         'A', (GTRAN(I,1),I = 1,3),
+     &         'B', (GTRAN(I,2),I = 1,3),
+     &         'C', (GTRAN(I,3),I = 1,3)
+            CALL HEADER('Nuclear contribution '//
+     &                  'in principle axis system (a.u.):',1)
+            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+     &         'A', (GTRAN1(I,1),I = 1,3),
+     &         'B', (GTRAN1(I,2),I = 1,3),
+     &         'C', (GTRAN1(I,3),I = 1,3)
+            CALL HEADER('Electronic contribution '//
+     &                  'in principle axis system (a.u.):',1)
+            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+     &         'A', (GTRAN2(I,1),I = 1,3),
+     &         'B', (GTRAN2(I,2),I = 1,3),
+     &         'C', (GTRAN2(I,3),I = 1,3)
+            CALL HEADER('Diamagnetic contribution '//
+     &                  'in principle axis system (a.u.):',1)
+            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+     &         'A', (GTRAN3(I,1),I = 1,3),
+     &         'B', (GTRAN3(I,2),I = 1,3),
+     &         'C', (GTRAN3(I,3),I = 1,3)
+         ELSE
+            ANI1 = GTRAN(1,1) - (GTRAN(2,2) + GTRAN(3,3))/D2
+            ANI2 = GTRAN(2,2) - (GTRAN(1,1) + GTRAN(3,3))/D2
+            CALL HEADER('Molecular g-tensor',1)
+            WRITE (LUPRI,'(6(1X,A,F12.8,/))')
+     &           ' Isotropic g-tensor       : ',AVETOT,
+     &           ' Nuclear contribution     : ',AVENUC,
+     &           ' Diamagnetic contribution : ',AVEDIA,
+     &           ' Electronic contribution  : ',AVEEL,
+     &           ' 1st anisotropy:            ',ANI1,
+     &           ' 2nd anisotropy:            ',ANI2
+            CALL HEADER('Molecular g-tensor in principal axis system '//
+     &                  '(a.u.):',1)
+            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+     &         'A', (GTRAN(I,1),I = 1,3),
+     &         'B', (GTRAN(I,2),I = 1,3),
+     &         'C', (GTRAN(I,3),I = 1,3)
+            CALL HEADER('Nuclear contribution '//
+     &                  'in principle axis system (a.u.):',1)
+            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+     &         'A', (GTRAN1(I,1),I = 1,3),
+     &         'B', (GTRAN1(I,2),I = 1,3),
+     &         'C', (GTRAN1(I,3),I = 1,3)
+            CALL HEADER('Electronic contribution '//
+     &                  'in principle axis system (a.u.):',1)
+            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+     &         'A', (GTRAN2(I,1),I = 1,3),
+     &         'B', (GTRAN2(I,2),I = 1,3),
+     &         'C', (GTRAN2(I,3),I = 1,3)
+            CALL HEADER('Diamagnetic contribution '//
+     &                  'in principle axis system (a.u.):',1)
+            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+     &         'A', (GTRAN3(I,1),I = 1,3),
+     &         'B', (GTRAN3(I,2),I = 1,3),
+     &         'C', (GTRAN3(I,3),I = 1,3)
+         END IF
+         END IF
+      END IF
+
+      CALL QEXIT('MGFRES')
       RETURN
       END
 
