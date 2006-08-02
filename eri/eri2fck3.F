@@ -133,10 +133,12 @@ C
 C   This should be checked to be consistent with the fmm part ...
 C
       THRCLS = THRSH
+#if defined (MOD_FMM)
       IF (DOFMM) THEN
          NCLONE = .TRUE.
          NCLERI = .TRUE.
       END IF
+#endif
 C
 C        Initialization in ER2INI
 C
