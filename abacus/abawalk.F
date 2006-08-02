@@ -6879,10 +6879,12 @@ C
   100 CONTINUE
       RETURN
       END
+#endif /* ! PRG_DIRAC */
 C  /* Deck wlkdin */
       SUBROUTINE WLKDIN(COR,TMASS,N,ANGMOM,TINERT,OMEGA,CEPVAL,
-     &                  CEPVEC,DOCOPY,PLANAR,LINEAR)
+     &                  CEPVEC,DOCOPY,PLANAR,LINEAR,IPRINT)
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, TSTLIN = 1.D-4)
       INTEGER X, Y, Z
       LOGICAL PLANAR, LINEAR, DOCOPY
@@ -6916,8 +6918,18 @@ C
       AMAT(4) = TINERT(3,1)
       AMAT(5) = TINERT(3,2)
       AMAT(6) = TINERT(3,3)
+
+      IF (IPRINT.GE.9) THEN
+       write(lupri,*) 'WLKDIN: AMAT:',(AMAT(i),i=1,6)
+      ENDIF
+
       CALL DUNIT(EIGVEC,3)
       CALL JACO(AMAT,EIGVEC,3,3,3,AWRK,IWRK)
+      IF (IPRINT.GE.9) THEN
+       write(lupri,*)
+     &  'WLKDIN: EIGVEC',((EIGVEC(i,j),i=1,3),j=1,3)
+      ENDIF
+
       EIGVAL(1) = AMAT(1)
       EIGVAL(2) = AMAT(3)
       EIGVAL(3) = AMAT(6)
@@ -6959,6 +6971,7 @@ C
       END IF
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck wlkcrs */
       SUBROUTINE WLKCRS(VEC1,N1,VEC2,N2,VEC3,N3)
 #include "implicit.h"
