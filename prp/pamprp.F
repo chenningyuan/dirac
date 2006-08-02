@@ -7884,6 +7884,15 @@ C
          ENDIF
       END DO
 
+CMI Aug 2006:  To get numbers compatible with Dalton
+CMI we need special way on extracting the response part of rot_g_tensor
+CMI ... still TODO
+
+C     write(lupri,*) 'NLRAPT,NLRBPT =',NLRAPT,NLRBPT
+C     DO I =1, NLRAPT
+C      write(lupri,*) 'I=',I,' operator A:',PRPNAM(LLRAPU(I))
+C     ENDDO
+
       DO IFREQ = 1,NBFREQ
 
          CALL PRSYMB(LUPRI,'-',72,2)
@@ -7934,11 +7943,9 @@ C      write(lupri,*) 'KA,KB=',KA,KB, "ABALRF (KA,KB)=",ELMGF (KA,KB)
          ENDDO
 C         
          IF (IPRPRP.GE.7) THEN
-
-            CALL HEADER('Electronic contribution to molecular'//
+         CALL HEADER('Electronic contribution to molecular'//
      &                  ' g-factor',-1)
-            CALL OUTPUT(ELMGF,1,3,1,3,3,3,1,LUPRI)
-
+         CALL OUTPUT(ELMGF,1,3,1,3,3,3,1,LUPRI)
          write(lupri,*) 'POLPRI output:'
          CALL POLPRI(ELMGF,'   ',-2)
          ENDIF
@@ -8202,7 +8209,6 @@ C
           IF (IPRINT.GE.9) THEN
            write(lupri,*) 'NATTYP,NUMIS,DISOTP=',NATTYP,NUMIS,
      &     DISOTP(NATTYP,NUMIS,'MASS')
-
            write(lupri,*)
      &    'AMASS(',JATOM,')=',AMASS(JATOM) 
           ENDIF
