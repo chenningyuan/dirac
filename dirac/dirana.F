@@ -1331,6 +1331,20 @@ C
               CALL PRQMAT(AMAT(IOFF,JOFF,1),
      &             NSTR(IFRP,0,I),NSTR(IFRP,0,J),NTOT,NTOT,NZ,
      &             IPQTOQ(1,0),LUPRI)
+
+CMI           IF (IPRPRJ.GE.2.AND.NSTR(IFRP,0,I).EQ.NSTR(IFRP,0,J)) THEN
+CMI           ... we want diagonal elements from the square matrix...
+              IF (NSTR(IFRP,0,I).EQ.NSTR(IFRP,0,J)) THEN
+               WRITE(LUPRI,'(/A,2(3X,A6))')
+     &         '*Overlaps - diagonal elements only :',
+     &             REFFIL(I),REFFIL(J)
+                DO II=1, NSTR(IFRP,0,I)
+                 write(lupri,*) II,'           ',
+     &           AMAT(IOFF+II-1,JOFF+II-1,1)
+                ENDDO
+                write(lupri,*)
+               ENDIF
+
               IOFF = IOFF + NSTR(IFRP,0,I)
             ENDDO
             JOFF = JOFF + NSTR(IFRP,0,J)
