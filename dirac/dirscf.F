@@ -2045,7 +2045,7 @@ C     Copy in missing vectors among the unoccupied orbitals
 C
       IF(ISELM.GT.NOCC(IFRP)) THEN
         JSTR = NOCC(IFRP)+1
-        DO J = JSTR,ISELM
+        DO 10 J = JSTR,ISELM
         IF (ICSEL(J,2) .NE. 0) THEN
 C       ... i.e. has been copied to the occupied block
           DO ISEL = 1,NOCC(IFRP)
@@ -2062,10 +2062,11 @@ C           Copy buffer into vector
 C           Copy eigenvalue and (approx.) boson symmetry to new place:
             EIG(JJ) = EBUF(ISEL)
             IBEIG(JJ) = IBEBUF(ISEL)
+            GOTO 10
           END IF
           ENDDO
         END IF
-        ENDDO
+ 10     CONTINUE
       END IF
 C
 C     Print section
@@ -2074,8 +2075,15 @@ C
       CALL HEADER('SMOSEL: Reordered vectors in fermion ircop '
      &            //FSYM,-1)
       NVEC = 0
-      DO J = 1,ISELM
+      DO J = 1,NOCC(IFRP)
       IF(ICSEL(J,1).NE.J) THEN
+        NVEC = NVEC + 1
+        WRITE(LUPRI,'(I5,A,I5,A,F20.10)') ICSEL(J,1),' --> ',J,
+     &                                    ' OVERLAP ',RCSEL(J)
+      ENDIF
+      ENDDO
+      DO J = NOCC(IFRP)+1,ISELM
+      IF(ICSEL(J,1).NE.0) THEN
         NVEC = NVEC + 1
         WRITE(LUPRI,'(I5,A,I5,A,F20.10)') ICSEL(J,1),' --> ',J,
      &                                    ' OVERLAP ',RCSEL(J)
