@@ -547,8 +547,31 @@ C            Transform error vector to current orthonormal MO-basis
      &       ('DIISER DIISMO: Error matrix in current MO-basis',-1)
              WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
              KOFF = KBUF + NPSH(I)*NTMO(I)
-             CALL PRQMAT(WORK(KOFF),NTMO(I),NOCC(I),
+             IF(IPRSCF.GE.3) THEN
+               CALL PRQMAT(WORK(KOFF),NTMO(I),NOCC(I),
      &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+             ENDIF
+             NDIM = NTMO(I)*NTMO(I)
+             DO J1 = 1,NOCC(I)
+               GMAX = D0
+               J2 = 0
+               KOFF = KOFF + NPSH(I)
+               DO K = 1,NESH(I)
+                 GTMP=WORK(KOFF)*WORK(KOFF)
+                 DO IZ = 2,NZ
+                   KK = KOFF + NDIM
+                   GTMP = GTMP + WORK(KK)*WORK(KK)
+                 ENDDO
+                 IF(GTMP.GT.GMAX) THEN
+                   J2 = K
+                   GMAX = GTMP
+                 ENDIF
+                 KOFF = KOFF + 1
+               ENDDO
+               WRITE(6,'(A,I5,A,I5,E12.4)') 
+     &            'Occ. orb. ',J1, '  largest gradient partner: ',J2,
+     &              SQRT(GMAX)
+             ENDDO
              CALL MEMREL('DIISER.MOerr',WORK,KWORK,KWORK,KFREE,LFREE)
            ENDIF
    30    CONTINUE
