@@ -2086,7 +2086,7 @@ C
       ENDIF
       ENDDO
       IF(NVEC.EQ.0) WRITE(LUPRI,'(A)') 'No reordering.'
-      IF(IPRSCF.GE.2) THEN
+      IF(IPRSCF.GE.3) THEN
         WRITE(LUPRI,'(/A)') '  I  ICSEL(I,1)  ICSEL(I,2)    RCSEL(I)'
         DO I = 1,ISELM
           WRITE(LUPRI,'(I4,2I12,F12.4)')I,ICSEL(I,1),ICSEL(I,2),RCSEL(I)
