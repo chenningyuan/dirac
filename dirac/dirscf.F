@@ -1941,7 +1941,10 @@ C  /* Deck smose2 */
      &                  RCSEL,ICSEL,KNORB,KNOCC,KNESH,WORK,LWORK)
 C***********************************************************************
 C
-C     Select vectors based on overlap
+C     Select vectors  fermion ircop IFRP based on overlap
+C
+C     Reference vector J has largest overlap with MO-coefficient ICSEL(J,1)
+C     MO-coefficient J has largest overlap with refernce vector ICSEL(J,2)
 C
 C     Written by T.Saue Nov 11 1995
 C     Major revisions: Jan 7 1998 - jth NORB(IFRP) etc. is now parameter
@@ -1984,29 +1987,21 @@ C
         CALL PRQMAT(SBUF,NESH(IFRP),NOCC(IFRP),NESH(IFRP),NOCC(IFRP),
      &              NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-      IF(NZ.EQ.1) THEN
+C
+C     Form squared overlaps
+C
+      DO J = 1,NOCC(IFRP)
+        DO I = 1,NESH(IFRP)
+          SBUF(I,J,1) = SBUF(I,J,1)*SBUF(I,J,1)
+        ENDDO
+      ENDDO
+      DO IZ = 2,NZ
         DO J = 1,NOCC(IFRP)
           DO I = 1,NESH(IFRP)
-            SBUF(I,J,1) = SBUF(I,J,1)*SBUF(I,J,1)
+            SBUF(I,J,1) = SBUF(I,J,1) + SBUF(I,J,IZ)*SBUF(I,J,IZ)
           ENDDO
         ENDDO
-      ELSEIF(NZ.EQ.2) THEN
-        DO J = 1,NOCC(IFRP)
-          DO I = 1,NESH(IFRP)
-            SBUF(I,J,1) = SBUF(I,J,1)*SBUF(I,J,1)
-     &                  + SBUF(I,J,2)*SBUF(I,J,2)
-          ENDDO
-        ENDDO
-      ELSEIF(NZ.EQ.4) THEN
-        DO J = 1,NOCC(IFRP)
-          DO I = 1,NESH(IFRP)
-            SBUF(I,J,1) = SBUF(I,J,1)*SBUF(I,J,1)
-     &                  + SBUF(I,J,2)*SBUF(I,J,2)
-     &                  + SBUF(I,J,3)*SBUF(I,J,3)
-     &                  + SBUF(I,J,4)*SBUF(I,J,4)
-          ENDDO
-        ENDDO
-      ENDIF
+      ENDDO
       IF(IPRSCF.GE.6) THEN
         CALL HEADER('SMOSE1: Squared-matrix',-1)
         CALL PRQMAT(SBUF,NESH(IFRP),NOCC(IFRP),NESH(IFRP),NOCC(IFRP),
@@ -2047,7 +2042,8 @@ C
         JSTR = NOCC(IFRP)+1
         DO 10 J = JSTR,ISELM
         IF (ICSEL(J,2) .NE. 0) THEN
-C       ... i.e. has been copied to the occupied block
+C       ... i.e. MO-coefficient J has been copied to the occupied
+C       position ICSEL(J,2)
           DO ISEL = 1,NOCC(IFRP)
           IF (ICSEL(ISEL,2) .EQ. 0) THEN
 C         ... i.e. has not been selected to the occupied block
