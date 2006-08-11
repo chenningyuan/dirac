@@ -530,6 +530,27 @@ C
              CALL PRQMAT(EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                   NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
            ENDIF
+           IF(IPRSCF.GE.2) THEN
+C            Transform error vector to current orthonormal MO-basis      
+             REWIND LUCMOS
+             CALL READT(LUCMOS,N2TMOTQ,EBUF)
+             NDIM = NTMO(I)*NTMO(I)*NZ
+             CALL MEMGET('REAL',KBUF,NDIM,WORK,KFREE,LFREE)
+             CALL QTRANS('AOMO','S',D0,NTMO(I),NTMO(I),
+     &                NTMO(I),NTMO(I),
+     &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &                WORK(KBUF),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &                EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &                EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &                WORK(KFREE),LFREE,IPRSCF)
+             CALL HEADER
+     &       ('DIISER DIISMO: Error matrix in current MO-basis',-1)
+             WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+             KOFF = KBUF + NPSH(I)*NTMO(I)
+             CALL PRQMAT(WORK(KOFF),NTMO(I),NOCC(I),
+     &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+             CALL MEMREL('DIISER.MOerr',WORK,KWORK,KWORK,KFREE,LFREE)
+           ENDIF
    30    CONTINUE
 C
       END IF
