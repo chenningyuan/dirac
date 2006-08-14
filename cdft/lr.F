@@ -103,7 +103,13 @@ C
 C
           ITRANSFORM = 2
 C
-          DO I = 1,3
+          IF(COLLINEAR) THEN
+            ISTART = 3
+          ELSE
+            ISTART = 1
+          ENDIF
+C
+          DO I = ISTART,3
             IQ = IQTOPQ(5-I,ISYMAX(I,ITRANSFORM))
             IOFF = NBAST*NBAST
             IOFF = IOFF*(IQ-1)

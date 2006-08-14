@@ -61,8 +61,8 @@ C
      &          GAO(*),DMAT(*),BUF(*)
 C-----------------------------------------------------------------------
       IF(LMAGNETIZATION) THEN
-C       NONCOLLINEAR = .NOT.COLLINEAR
-        NONCOLLINEAR = .TRUE.
+        NONCOLLINEAR = .NOT.COLLINEAR
+C       NONCOLLINEAR = .TRUE.
 C
         F  = D1
         G  = D1
