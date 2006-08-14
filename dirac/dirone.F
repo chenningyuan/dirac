@@ -1001,35 +1001,27 @@ C     =============================
        ENDIF
       ENDIF
 
+C ========================================================================================
 C    ... in this case read picture change transformed property integrals from BSSMAT file
+C ========================================================================================
       IF (TWOCOMP.AND.BSS) THEN
-C     IF (TWOCOMPBSS.AND.BSS) THEN
 
-        IPRINT2 = MAX(IPRHAM,IPRINT)
+       IPRINT2 = MAX(IPRHAM,IPRINT)
 
-        IF (N2BBASXQ.NE.(NTBAS(1)*NTBAS(1)*NZ)) THEN
-          CALL QUIT('PRPMSAO: N2BBASXQ.ne.N2BBASXQ_L!!!')
-        ENDIF
+       IF (N2BBASXQ.NE.(NTBAS(1)*NTBAS(1)*NZ)) THEN
+         write(lupri,*) 'N2BBASXQ=',N2BBASXQ
+         write(lupri,*) 'NTBAS(1)=',NTBAS(1)
+         write(lupri,*) 'NTBAS(1)*NTBAS(1)*NZ=',
+     &    NTBAS(1)*NTBAS(1)*NZ
+         CALL QUIT('PRPMSAO: N2BBASXQ.ne.N2BBASXQ_L!!!')
+      ENDIF
 
-        CALL NUM2STR(INDXPR,NUMSTR)
-        PRPLABEL = 'P2C_'//NUMSTR
-
-C     ... BSSMAT file is already open...find end label
-C       CLOSE(LUBSS,STATUS='KEEP')
-C       CALL OPNFIL(LUBSS,'BSSMAT','OLD','PRPMAO') 
-C       REWIND LUBSS   
-C     IF (FNDLAB(PRPLABEL,LUBSS)) THEN  
-C       CALL READT(LUBSS, N2BBASXQ, PMAT ) 
-C       IF (IPRHAM.GE.4) THEN  
-C        write(lupri,*)   
-C    &  'PRPMSAO: 2comp. property read from BSSMAT file.'      
-C       ENDIF
-C     ELSE  
-C       CALL QUIT('PRPMSAO: EOFLABEL  not found !')  
-C     ENDIF                    
+       CALL NUM2STR(INDXPR,NUMSTR)
+       PRPLABEL = 'P2C_'//NUMSTR
 
        CALL RFBSSMAT(PRPLABEL,.FALSE.,'PRPMSAO',
      &             PMAT,N2BBASXQ,LUBSS,IPRINT2)
+
        IF (IPRINT2.GE.4) THEN  
         write(lupri,*)   
      & 'PRPMSAO: 2comp. property record ',PRPLABEL,
@@ -1060,17 +1052,33 @@ C     ... do resort PTRI to the boson sorted basis
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ENDIF
 
+C ====================================================================
 C       ... decide if the picture change transformation is needed
+C ====================================================================
         IF (BSS) THEN
          IPRINT1 = MAX(IPRHAM,IPRPRP)
          CALL DECIDEPCTR(YESPCTRA,PRPNAM(INDXPR),IPRINT1)
 C     ... if needed, do the picture change transformation of the PMAT
          IF (YESPCTRA) THEN
           MAKEPCTRA = DOPCT .AND. .NOT.NOPCT
-C         write(lupri,*) '* DOPCT, NOPCT, MAKEPCTRA=',
-C    &    DOPCT,NOPCT,MAKEPCTRA
-          CALL DOPCTRA(PMAT,MAKEPCTRA,PRPNAM(INDXPR),ISYM,IREP,ITIM,
-     &                 'S',NZ,WORK(KFREE),LFREE,IPRINT1)
+
+C  ... allocate array for the picture change transformation matrix
+          ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ
+          IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
+          CALL MEMGET('REAL',KPCTM,ISIZE,WORK,KFREE,LFREE)
+C     ... array for the 2-component picture change transformed operator
+          CALL MEMGET('REAL',KPCTO,N2BBASXQ,WORK,KFREE,LFREE)
+
+          CALL MEMCHK('xxx 1',WORK,1)
+          CALL DOPCTRA(PMAT,WORK(KPCTM),WORK(KPCTO),ISIZE,MAKEPCTRA,
+     &                  PRPNAM(INDXPR),ISYM,IREP,ITIM,
+     &                 'S',WORK(KFREE),LFREE,IPRINT1)
+
+          CALL MEMCHK('xxx 2',WORK,1)
+
+          CALL MEMREL('DOPCTRA',WORK,KWORK,KPCTO,KFREE,LFREE)
+          CALL MEMREL('DOPCTRA',WORK,KWORK,KPCTM,KFREE,LFREE)
+
 CMI       ... this is needed for the picture change transformed operator
           CALL LSET(NZ,.FALSE.,FIRST)
          ENDIF
@@ -3720,7 +3728,7 @@ C     Initialization (calculate LL and SS)
 C
       DOINT(1,1) = .TRUE.
       IF (NOSMLV.OR.BSS) THEN
-CMI   IF (NOSMLV) THEN
+C     IF (NOSMLV) THEN
          DOINT(2,2) = .FALSE.
          IF (IPRINT.GE.2) THEN
           WRITE(LUPRI,'(2X,/,A)')
