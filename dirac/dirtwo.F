@@ -3405,9 +3405,13 @@ Caspg aoswitch
      &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &            WORK(KFREE),LFREE)
         CALL DSCAL(NDIM,DP5,DSO,1)
-CTROND Scale in accordance with DIRAOF->SKLFC1
-        CALL DSCAL(NDIM,DP5,FMAT,1)
+Caspg moving it ouside the if, so it's always scaled
+C     regardless of exchange being calculated or not..
+CCTROND Scale in accordance with DIRAOF->SKLFC1
+C        CALL DSCAL(NDIM,DP5,FMAT,1)
       END IF
+      CALL DSCAL(NDIM,DP5,FMAT,1)
+Caspg
 Caspg
 #if defined (DEBUG_DIRAC_FCKBUILD_DF)
       IF(IPRINT.GE.0) THEN

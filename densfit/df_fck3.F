@@ -80,8 +80,7 @@ C
 
       SYMDENS = (IFCTYP/10).EQ.1
 
-CAREFUL      IF (.NOT. LIN_DF) THEN
-      IF (.FALSE.) THEN
+      IF (.NOT. LIN_DF) THEN
 cSimen
         DO IDMT = 1, NDMT
 cSimen
@@ -137,6 +136,12 @@ C       Call to grenerate the one-electron integrals over the fit set
 cSimen
         CALL DZERO(WORK(KCFIT),NBASISAUX*NDMT)
 cSimen
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+        CALL HEADER('fmat before df_box',-1)
+        CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+#endif
+Caspg
         DO IBOX=1,NUMBOXES
           CALL DF_BOX(WORK(KCFIT),IBOX,WORK(KNUMBOX),
      &                WORK(KCORDBOX),FMAT,DMAT,NDMT,WORK(KGABAB),
@@ -149,6 +154,12 @@ cSimen
           CALL OUTPUT(WORK(KCFIT),1,NBASISAUX,1,1,NBASISAUX,1,1,LUPRI)
         ENDIF
 
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+       CALL HEADER('fmat after df_box, before fitfck3',-1)
+       CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+#endif
+Caspg
         SU = 0.0d0
         DO I=1,NBASISAUX
           SU = SU + WORK(KCFIT+I-1) * WORK(KAUXINT+I-1)
@@ -168,14 +179,26 @@ c        CALL TIMER('ITSOLV',TIMSTR,TIMEND)
      &       WORK(KGABAB),WORK(KGABAL),WORK(KCFIT),IPRFCK,
      &       WORK(KFREE),LFREE)
         CALL TIMER('JLINBU',TIMSTR,TIMEND)
-
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+        CALL HEADER('fmat after fitfck3',-1)
+        CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        write (6,*) 'debug: before robust fit'
+#endif
+Caspg
         IF (ROBUST_E) THEN
           CALL DF_CAL_ROB_E(DMAT,FMAT,WORK(KCFIT),NDMT,ISYMDM,IFCTYP,
      &                      WORK(KGABAL),WORK(KFREE),LFREE,IPRINT)
         ENDIF
 
 C
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+        write (6,*) 'debug: after robust fit, end of function'
+        IF (IPRFCK.GE.0) THEN
+#else
         IF (IPRFCK.GT.25) THEN
+#endif
           CALL HEADER('Fitted Fock matrix',-1)
           CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         ENDIF
@@ -419,7 +442,11 @@ c        CALL TIMER('ITSOLV',TIMSTR,TIMEND)
 
         CALL TIMER('JBUILD',TIMSTR,TIMEND)
 C
+#if defined (DEBUG_DIRAC_FCKBUILD_DF) 
+        IF (IPRFCK.GE.0) THEN
+#else
         IF (IPRFCK.GT.2) THEN
+#endif
           CALL HEADER('Fitted Fock matrix',-1)
           CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         ENDIF
@@ -495,6 +522,11 @@ c
 #endif
 
 c     CALL TIMER('START ',TIMSTR,TIMEND)
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+      write (6,*) 'debug: inside fitfck3, ifctyp(idmt):',IFCTYP(IDMT)
+#endif
+Caspg
  
       DO IDMT=1,NDMT
         ISTR = N2BASX*(IDMT - 1) + 1
@@ -502,6 +534,11 @@ c     CALL TIMER('START ',TIMSTR,TIMEND)
         IF ( MOD(IFCTYP(IDMT),10) .EQ. 3 ) THEN
           RHSFIT = .TRUE.
           LHSFIT = .FALSE.
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+          write (6,*) 'debug: inside fitfck3, calling fck3drv'
+#endif
+Caspg
           CALL FCK3DRV(FMAT(ISTR),DMAT(ISTR),1,GABAB,GABAL,
      &                 DGABAL(ISTRAUX),WORK,LWORK)
 #ifdef MOD_FMM
@@ -511,6 +548,12 @@ c     CALL TIMER('START ',TIMSTR,TIMEND)
 #else
 C         IF (DOFMM) CALL QUIT('FMM requested but not enabled')
 #endif
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+        ELSE
+           write (6,*) 'debug: this ifctyp type does nothing'
+#endif /* DEBUG_DIRAC_FCKBUILD_DF */
+Caspg
         END IF
       END DO
 
@@ -1735,6 +1778,11 @@ c     Turn off fmm
       DOFMM_SAVE = DOFMM
       DOFMM = .FALSE.
    
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+      write (6,*) 'debug: inside itprod, ifctyp(idmt):',IFCTYP(IDMT)
+#endif
+Caspg
       IF (DOFMM) THEN
         KCLERI = NCLERI
         NCLERI = .TRUE.
@@ -1751,6 +1799,11 @@ c     Turn off fmm
           NOSCRE = .FALSE.  
           THRFCK3_SAVE = THRFCK3
           THRFCK3 = 1.0d-25
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+          write (6,*) 'debug: inside itprod, calling fck3drv'
+#endif
+Caspg
 cSimen Added temporary to remove segmentation fault in setmaxcsbtch
           CALL FCK3DRV(G_ALPHA(ISTRAUX),DMAT,1,GABAB,GABAL,
 c         CALL FCK3DRV(G_ALPHA(ISTRAUX),dummy,1,dummy,GABAL,
@@ -1767,6 +1820,12 @@ cToDo       implemend LHS-fitting moments.
           IF (DOFMM) CALL QUIT('FMM requested but not enabled')
 #endif
         END IF
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+        ELSE
+           write (6,*) 'debug: this ifctyp type does nothing'
+#endif /* DEBUG_DIRAC_FCKBUILD_DF */
+Caspg  
       END DO
 
       IF (DOFMM) NCLERI = KCLERI
@@ -2090,7 +2149,7 @@ C  /* Deck dfiinp */
       PARAMETER ( NTABLE = 13 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DATA TABLE /'.DIATOM','.DOBOX ','.BOXORB','.BUFSIZ','.CONSTR',
-     &            '.NOROBU','.ATTENU','.GAUDAM','.NONLIN','.XXXXXX',
+     &            '.NOROBU','.ATTENU','.GAUDAM','.OLD_DF','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       WORD1 = WORD
@@ -2226,8 +2285,8 @@ C  /* Deck dfiini */
       DF_CONSTR = .FALSE.
       DF_GAUDMP = .FALSE.
       DF_ATTENU = .FALSE.
-c     LIN_DF    = .TRUE.
-      LIN_DF    = .FALSE.
+      LIN_DF    = .TRUE.
+C     LIN_DF    = .FALSE.
       CALL SET_BOX_DEFAULTS()
       RETURN
       END
