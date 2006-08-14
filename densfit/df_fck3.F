@@ -1819,13 +1819,13 @@ cToDo       implemend LHS-fitting moments.
 #else
           IF (DOFMM) CALL QUIT('FMM requested but not enabled')
 #endif
-        END IF
 Caspg
 #if defined (DEBUG_DIRAC_FCKBUILD_DF)
         ELSE
            write (6,*) 'debug: this ifctyp type does nothing'
 #endif /* DEBUG_DIRAC_FCKBUILD_DF */
 Caspg  
+        END IF
       END DO
 
       IF (DOFMM) NCLERI = KCLERI
