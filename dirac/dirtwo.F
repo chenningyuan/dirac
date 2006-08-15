@@ -3377,30 +3377,9 @@ C*****************************************************************************
      &                           LWORK)
         CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
      &            IFCKOP,IPRINT)
-Caspg aoswitch
-#if ! defined (REPLACING_AOSWITCH)
+C
         CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP_TEMP)
-#else
-CTROND TODO change for relativistic calculations
-        NCENTS(1)   = 0
-        ICENTS(1,1) = 0
-C       Index 2
-        NCENTS(2)   = 0
-        ICENTS(1,2) = 0
-C       Index 3
-        NCENTS(3)   = 0
-        ICENTS(1,3) = 0
-C       Index 4
-        NCENTS(4)   = 0
-        ICENTS(1,4) = 0
-C       (LL|LL)-integrals
-        ICLASSES(1) = 1
-        ICLASSES(2) = 1
-        ICLASSES(3) = 1
-        ICLASSES(4) = 1
-CTROND
-#endif /* REPLACING_AOSWITCH */
-Caspg aoswitch
+C
         CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
      &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &            WORK(KFREE),LFREE)
@@ -3608,28 +3587,32 @@ C     Memory allocation
       CALL MEMGET('REAL',KGAB  ,N2GAB  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
 C
+      IF (.NOT.RUNERI) THEN 
+C
 C     Get G(ab) integrals from AOPROPER
 C     =================================
 C
-      if (RUNERI.OR.DOFCK3.OR.DOLINK) then
-         write (6,*) 'skip getgab'
-      else
-      IF (SCRFCK .GT. D0) THEN
+         IF (SCRFCK .GT. D0) THEN
 C
-         IJOB   = 0
-         ITYPE  = 0
-         IGTYP  = 0
-C        IGTYP 0 gives just the LL integrals
-C        IGTYP 1 will add the SS type integrals
-         IF(LBIT(INTFLG,2).OR.LBIT(INTFLG,3)) IGTYP = 1
-C        IGTYP 2 will add also the SL (Gaunt) type integrals
-         IF(LBIT(INTFLG,4)) IGTYP = 2
-         MAXDIF = 0
-         CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
-     &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
-C
-      END IF
-      endif
+            IJOB   = 0
+            ITYPE  = 0
+            IGTYP  = 0
+C           IGTYP 0 gives just the LL integrals
+C           IGTYP 1 will add the SS type integrals
+            IF(LBIT(INTFLG,2).OR.LBIT(INTFLG,3)) IGTYP = 1
+C           IGTYP 2 will add also the SL (Gaunt) type integrals
+            IF(LBIT(INTFLG,4)) IGTYP = 2
+            MAXDIF = 0
+            CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
+     &           IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
+         ENDIF
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+      ELSE
+         write (6,*) 'eri run, skipping getgab'
+#endif
+Caspg
+      ENDIF
 C
       IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
@@ -3761,18 +3744,21 @@ Ctec Is FIRST needed???
       CALL SETFCK(IFCTYP,IREPDM,NFMAT,NZC1,ISYMOP,IHRMOP,IFCKOP,IPRINT)
       CALL DZERO(DNTSKP,8)
 
-      if (runeri.or.dofck3.or.dolink) then
-         write (6,*) 'skip mkdrao'
-      else
-      IF (SCRFCK.GT.D0) THEN
+      IF (.NOT.RUNERI) THEN
+         IF (SCRFCK.GT.D0) THEN
 C
 C       Make reduced density matrix for screening
 C       ==========================================
 C       (Reduced GAB is already present in GABRAO)
 C
-        CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
+           CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
+         ENDIF
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+      ELSE
+         write (6,*) 'eri run, skippng mkdrao'
+#endif
       ENDIF
-      endif
 C
 C     ****************************
 C     **** Process integrals *****
@@ -3831,9 +3817,7 @@ C....> Check whether the class is active
 C
       IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
 C
-         IF(     .NOT.RUNERI
-     &      .AND..NOT.DOFCK3
-     &      .AND..NOT.DOLINK) THEN ! hermit-based direct scf
+         IF (.NOT.RUNERI) THEN  ! hermit-based scf
 #if defined (VAR_MPI)
             IF (PARCAL) THEN
 C
@@ -3875,6 +3859,17 @@ C
      &             GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
               CPU = SECOND() - CPU
               CALL SCRSTA(AOTEXT,DNTSKP,CPU)
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+              IF(IPRINT.GE.0) THEN
+                 DO I = 1,NDMAT
+                    write (6,*) 
+     &                'debug: contribution from hermit (J/XC) to FMAT'
+                    CALL PRINTDMAT(I,NTBAS(0),FAO)
+                 ENDDO
+              ENDIF
+#endif /* DEBUG_DIRAC_FCKBUILD_DF */
+Caspg
 #if defined (VAR_MPI)
            ENDIF
 #endif
@@ -3889,42 +3884,8 @@ C
            KFCKTP = KFREE
            CPU = SECOND()
 C
-Caspg aoswitch
-#if ! defined (REPLACING_AOSWITCH)
            CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP)
-#else
-           NCENTS(1)   = 0
-           ICENTS(1,1) = 0
-C          Index 2
-           NCENTS(2)   = 0
-           ICENTS(1,2) = 0
-C          Index 3
-           NCENTS(3)   = 0
-           ICENTS(1,3) = 0
-C          Index 4
-           NCENTS(4)   = 0
-           ICENTS(1,4) = 0
-           IF(I2TYP.EQ.1) THEN
-C            (LL|LL)-integrals
-             ICLASSES(1) = 1
-             ICLASSES(2) = 1
-             ICLASSES(3) = 1
-             ICLASSES(4) = 1
-           ELSEIF(I2TYP.EQ.2) THEN
-C            (SS|LL)-integrals
-             ICLASSES(1) = 2
-             ICLASSES(2) = 2
-             ICLASSES(3) = 1
-             ICLASSES(4) = 1
-           ELSEIF(I2TYP.EQ.3) THEN
-C            (SS|SS)-integrals
-             ICLASSES(1) = 2
-             ICLASSES(2) = 2
-             ICLASSES(3) = 2
-             ICLASSES(4) = 2
-           ENDIF
-#endif /* REPLACING_AOSWITCH */
-Caspg aoswitch
+C
            IPRFCK=IPRINT
            CALL DSCAL(N2BBASX,D2,DAO,1)
            CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
@@ -4000,8 +3961,6 @@ C   This assumes that a call to LINKDR comes after the call to DIRAO1,
 C   otherwise the fock matrices will continue to be updated incorrectly.
 C
       IF (DOLINK) THEN
-        CALL BUTOBS(FAO,NZ,WORK,LWORK)
-C       CALL BUTOBS(DAO,NZ,WORK,LWORK)
         CALL FULMAT('S',NTBAS(0),NTBAS(0),FAO)
       ENDIF
 C
@@ -4214,10 +4173,18 @@ c     DATA IPFCK/3,2,2,2, 1,0,0,0, 2,2,2,2/
       DATA IPFCK/0,0,0,0, 3,2,2,2, 1,0,0,0, 2,2,2,2/
 #include "ibtfun.h"
 C
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+      IF (IPRINT.GE.0) THEN
+#else
       IF (IPRINT.GE.2) THEN
+#endif
         CALL HEADER('Output from SETFCK',-1)
         WRITE(LUPRI,'(A,F7.4)') '* Exchange factor: ',HFXFAC
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+        IF (IPRINT.GE.0) THEN
+#else
         IF (IPRINT.GE.3) THEN
+#endif
          WRITE(LUPRI,'(3X,A,I2,A,I2)')
      &   '* Entering parameters:  NFMAT=',NFMAT,' MZ= ',MZ
          WRITE(LUPRI,*) 'ISYMOP(1:NFMAT) >',(ISYMOP(I),I=1,NFMAT)
@@ -4235,14 +4202,18 @@ C       (defined in SETGMT(prp/pamrvc.F)). /hjaaj Apr 2002
         IHRM = IHRMOP(I)
         IPAR = JBTOF(IREP,1)
         IFCK = IFCKOP(I)
-Caspg        write (6,*) 'i,ifckop(i)',i,ifckop(i)
+        write (6,*) 'i,ifckop(i)',i,ifckop(i)
 C
 C       First determine contributions
 C
         DO IZ = 1,NZC1
           IRFCK(IZ) = IRQMAT(IZ,IREP)
           IY        = IPFCK(IZ,IFCK)
-Caspg       write (6,*) 'iy,iz,ifck,ipfck(iz,ifck)',iy,iz,ifck,ipfck(iz,ifck)
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+       write (6,*) 'iy,iz,ifck,ipfck(iz,ifck)',iy,iz,ifck,ipfck(iz,ifck)
+#endif
+Caspg
           IC        = MOD(IY,2)
           IE        = IY - IC
           IH        = IHQMAT(IZ,IHRM)
@@ -4282,7 +4253,11 @@ C           ... MZ.eq.4: we are using DIRAOF (not .SOFOCK)
 C
 C     Print section
 C
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+        IF(IPRINT.GE.0) THEN
+#else
         IF(IPRINT.GE.2) THEN
+#endif
           WRITE(LUPRI,'(A,I5,3X,A,3X,A,A3)') 
      &      '* Fock matrix no.',I,' - ',
      &      'Operator irrep: ',REP(IREP)
@@ -4682,44 +4657,9 @@ C       CCFBT - normalized contraction coefficients
         CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
 C       INDXBT - orbital indices for AO batches
         CALL MEMGET('INTE',KINDXB,NBSYM*MXSHEL*MXCONT,WORK,KFREE,LFREE)
-Caspg aoswitch
-#if ! defined (REPLACING_AOSWITCH)
+C
         CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP)
-#else
-C       Pick active AO-batches
-C       NCENTS=0 means all centers active
-C       Index 1
-        NCENTS(1)   = 0
-        ICENTS(1,1) = 0
-C       Index 2
-        NCENTS(2)   = 0
-        ICENTS(1,2) = 0
-C       Index 3
-        NCENTS(3)   = 0
-        ICENTS(1,3) = 0
-C       Index 4
-        NCENTS(4)   = 0
-        ICENTS(1,4) = 0
-        IF(I2TYP.EQ.1) THEN
-C         (LL|LL)-integrals
-          ICLASSES(1) = 1
-          ICLASSES(2) = 1
-          ICLASSES(3) = 1
-          ICLASSES(4) = 1
-        ELSEIF(I2TYP.EQ.2) THEN
-C         (SS|LL)-integrals
-          ICLASSES(1) = 2
-          ICLASSES(2) = 2
-          ICLASSES(3) = 1
-          ICLASSES(4) = 1
-        ELSEIF(I2TYP.EQ.3) THEN
-C         (SS|SS)-integrals
-          ICLASSES(1) = 2
-          ICLASSES(2) = 2
-          ICLASSES(3) = 2
-          ICLASSES(4) = 2
-        ENDIF
-#endif /* REPLACING_AOSWITCH */
+C
         CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
         CALL MEMREL('TWODRV.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
       ELSE
