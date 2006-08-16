@@ -465,6 +465,22 @@ C        Observe that we use NISHMF which is the number of inactive orbitals
 C        minus those that are frozen
          DO 20 I = 1,NFSYM
             IF(NOCC(I).EQ.0) GOTO 20
+            IF(IPRSCF.GE.2) THEN
+C             Transform Fock matrix to current orthonormal MO-basis      
+              CALL QTRANS('AOMO','S',D0,NTMO(I),NTMO(I),
+     &                NTMO(I),NTMO(I),
+     &                FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &                EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &                WORK(KFREE),LFREE,IPRSCF)
+             KOFF = I2TMOT(I) + NPSH(I)*(NTMO(I)+1) + 1
+             CALL HEADER
+     &       ('DIISER: Fock matrix (occ-nesh) in current MO-basis',-1)
+             WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+             CALL PRQMAT(EBUF(KOFF),NESH(I),NOCC(I),
+     &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+            ENDIF
 C...........closed shell
             ISTART=NPSH(I)+1
             CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
