@@ -4202,7 +4202,11 @@ C       (defined in SETGMT(prp/pamrvc.F)). /hjaaj Apr 2002
         IHRM = IHRMOP(I)
         IPAR = JBTOF(IREP,1)
         IFCK = IFCKOP(I)
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
         write (6,*) 'i,ifckop(i)',i,ifckop(i)
+#endif
+Caspg
 C
 C       First determine contributions
 C
