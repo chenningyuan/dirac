@@ -531,7 +531,23 @@ Caspg
       DO IDMT=1,NDMT
         ISTR = N2BASX*(IDMT - 1) + 1
         ISTRAUX = NBASISAUX*(IDMT - 1) + 1
+C
+C aspg, 2006-08-14:
+C
+C due to the differences in the way dirac and dalton's dft code 
+C work at the time of writing (in dirac's setfck_ ifctyp is 
+C changed to "coulomb"(=1) whereas in dalton apparently ifcktyp 
+C not changed and remains as "coulomb+exchange"(=3) ), the
+C if statement below for dirac tests for both the pure coulomb
+C and coulomb+exchange cases 
+C
+#if defined (PRG_DIRAC)
+        IF ((MOD(IFCTYP(IDMT),10) .EQ. 1).OR.
+     &      (MOD(IFCTYP(IDMT),10) .EQ. 3)) THEN
+#else
         IF ( MOD(IFCTYP(IDMT),10) .EQ. 3 ) THEN
+#endif
+Caspg
           RHSFIT = .TRUE.
           LHSFIT = .FALSE.
 Caspg
@@ -1135,7 +1151,23 @@ C
       DO IDMT=1,NDMT
         ISTR = N2BASX*(IDMT - 1) + 1
         ISTRAUX = NBASISAUX*(IDMT - 1) + 1
+C
+C aspg, 2006-08-14:
+C
+C due to the differences in the way dirac and dalton's dft code 
+C work at the time of writing (in dirac's setfck_ ifctyp is 
+C changed to "coulomb"(=1) whereas in dalton apparently ifcktyp 
+C not changed and remains as "coulomb+exchange"(=3) ), the
+C if statement below for dirac tests for both the pure coulomb
+C and coulomb+exchange cases 
+C
+#if defined (PRG_DIRAC)
+        IF ((MOD(IFCTYP(IDMT),10) .EQ. 1).OR.
+     &      (MOD(IFCTYP(IDMT),10) .EQ. 3)) THEN
+#else
         IF ( MOD(IFCTYP(IDMT),10) .EQ. 3 ) THEN
+#endif
+Caspg
 C         RHSFIT build of Fab (Fitted 2nd electron part of Fock-matrix)
 C         LHSFIT build of gamma_alpha (GAL) vector. 
           RHSFIT = .FALSE.
@@ -1792,7 +1824,23 @@ Caspg
       DO IDMT=1,NDMT
         ISTR = N2BASX*(IDMT - 1) + 1
         ISTRAUX = NBASISAUX*(IDMT - 1) + 1
+C
+C aspg, 2006-08-14:
+C
+C due to the differences in the way dirac and dalton's dft code 
+C work at the time of writing (in dirac's setfck_ ifctyp is 
+C changed to "coulomb"(=1) whereas in dalton apparently ifcktyp 
+C not changed and remains as "coulomb+exchange"(=3) ), the
+C if statement below for dirac tests for both the pure coulomb
+C and coulomb+exchange cases 
+C
+#if defined (PRG_DIRAC)
+        IF ((MOD(IFCTYP(IDMT),10) .EQ. 1).OR. 
+     &      (MOD(IFCTYP(IDMT),10) .EQ. 3)) THEN 
+#else
         IF ( MOD(IFCTYP(IDMT),10) .EQ. 3 ) THEN
+#endif
+Caspg
           RHSFIT = .TRUE.
           LHSFIT = .TRUE.
           NOSCRE_SAVE = NOSCRE
