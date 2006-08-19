@@ -1,3 +1,4 @@
+C /* Deck make_dkh */
        SUBROUTINE MAKE_DKH(VMAT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -226,9 +227,7 @@ C.... it's H1AO_DK or H1AO_DK2 in LL basis
 C
 C     Read two-component hamiltonian integrals from file
 C     ====================================================
-
-CC    CALL DZERO(FOCK,N2BBASXQ)
-
+C
       CALL RFBSSMAT(HAM2CL,.FALSE.,'GETH2CAO',
      &      FOCK,N2BBASXQ,LUBSS,IPRINT)
 
@@ -684,6 +683,7 @@ CMI   ... get Dirac 1el matrix
       CALL ONEFCK(VMAT,IPRHAM,WORK(KFREE),LFREE)
 CMI   ... get screened Dirac bare nucleus
       CALL BNCORR(VMAT,WORK(KFREE),LFREE,IPRHAM)
+C
       BSS = BSS_SAVE
       TWOCOMP = TWOCOMP_SAVE
 
@@ -701,8 +701,6 @@ C     ... array for the picture change transformed operator
 C      CALL MEMREL('MAKEBNCR2C',WORK,KWORK,KPCTO,KFREE,LFREE)
 C      CALL MEMREL('MAKEBNCR2C',WORK,KWORK,KPCTM,KFREE,LFREE)
        CALL MEMREL('MAKEBNCR2C',WORK,KPCTM,KPCTM,KFREE,LFREE)
-
-
       IF(IPRHAM.GE.8) THEN                                          
        CALL HEADER(
      & 'MAKEBNCR2C: IOTC-2c matrix screened bare nucleus',-1) 
@@ -1654,7 +1652,6 @@ C     ... eliminate spin-free components
       CALL QEXIT('SPF_HK')
       RETURN
       END
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck dopctra */
       SUBROUTINE DOPCTRA(PRPAO,PCTM,PRPAO1,ISIZEPCTM,MAKEPCTRA,
@@ -1789,7 +1786,6 @@ C       ... find offsets for picture change transformation matrix
 
 C .... control output
        IF (IPRINT.GE.5) THEN
-
         WRITE(LUPRI,'(/A,1X,A16)')
      & 'DOPCTRA: Symm. blocked FOUR-COMPONENT AO-matrix of property',
      &  PROPNAME
@@ -1830,7 +1826,6 @@ C .... control output
 
          ENDIF      
         ENDIF      
-
       ENDDO 
 
       IF (IPRINT.GE.5) THEN
@@ -1848,7 +1843,6 @@ C ... check the pict change transformed operator...
       CALL CHECK_LLOP(IREP,IOPSY,PROPNAME,PRPAO,IPRINT)
 
       ENDIF
-
       CALL QEXIT('DOPCTRA')
       RETURN
       END
@@ -1860,7 +1854,6 @@ C**************************************************************************
 C
 C    PURPOSE: Keep only LL block of entering property matrix PRPAO.
 C
-C    Called from: DOPCTRA
 C
 C   Written by Miro ILIAS, Strasbourg, 2006
 C   Last modifications:  MI, June 2006, Prievidza
@@ -9025,13 +9018,15 @@ C
 
       IF(DOSPHE) THEN
 C.......do spherical transformation
-        CALL SPH_IOTC(WORK(KBSSLL),VMAT,NSPH,IPRINT,WORK(KFREE),LFREE)
+        CALL SPH_IOTC(WORK(KBSSLL),HMAT,NSPH,IPRINT,WORK(KFREE),LFREE)
         NDIM=NSPH*NSPH*NZ
+        CALL W2BSSMAT(1,.TRUE.,'H2CAO_LL','H2CTOLL',HMAT,
+     &                NDIM,LUBSS,IPRINT)
       ELSE
         NDIM = N2BBASXQ_L
-      ENDIF
-      CALL W2BSSMAT(1,.TRUE.,'H2CAO_LL','H2CTOLL',WORK(KBSSLL),
+        CALL W2BSSMAT(1,.TRUE.,'H2CAO_LL','H2CTOLL',WORK(KBSSLL),
      &                NDIM,LUBSS,IPRINT)
+      ENDIF
       IF (IPRINT.GE.3) THEN
        IF (DOSPHE) THEN
         write(lupri,*)
@@ -9062,13 +9057,15 @@ C
        CALL EXTRLL(0,HMAT,WORK(KBSSLL),IPRINT)
 CMI    ... hoping it will work ...
        IF(DOSPHE) THEN
-        CALL SPH_IOTC(WORK(KBSSLL),VMAT,NSPH,IPRINT,WORK(KFREE),LFREE)
+        CALL SPH_IOTC(WORK(KBSSLL),HMAT,NSPH,IPRINT,WORK(KFREE),LFREE)
         NDIM=NSPH*NSPH*NZ
+        CALL W2BSSMAT(1,.TRUE.,'BNCR2C_2','H2CTOLL',HMAT,
+     &                NDIM,LUBSS,IPRINT)
        ELSE
         NDIM = N2BBASXQ_L
-       ENDIF
-       CALL W2BSSMAT(1,.TRUE.,'BNCR2C_2','H2CTOLL',WORK(KBSSLL),
+        CALL W2BSSMAT(1,.TRUE.,'BNCR2C_2','H2CTOLL',WORK(KBSSLL),
      &                NDIM,LUBSS,IPRINT)
+       ENDIF
       IF (IPRINT.GE.3) THEN
        IF (DOSPHE) THEN
         write(lupri,*)
@@ -10512,31 +10509,118 @@ C
       DIMENSION HCAR(*),HSPH(*),WORK(LWORK)
 #include "memint.h"
       IPRINT = 0
-      NCSPH = 0
-      DO LL = 1,NHTYP
-        NCSPH = NCSPH + LL*(LL+1)*(2*LL-1)/2
-      ENDDO
-      NICSP = NHTYP
-      CALL MEMGET('INTE',KICSP,NICSP ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCSPH,NCSPH ,WORK,KFREE,LFREE)
-      CALL GETSPH(1,2,WORK(KCSPH),WORK(KICSP),NHTYP,
-     &            WORK(KFREE),LFREE,IPRINT)
-      IREP = 0
-      IC   = 1
-      NCAR = NBBAS(IREP,IC)
-      NMAT = NBBAS(IREP,IC)*NBBAS(IREP,IC)
-      CALL MEMGET('REAL',KTMAT,NMAT,WORK,KFREE,LFREE)
-      CALL SPHCAR(WORK(KTMAT),IREP,IC,NCAR,NSPH,
-     &            WORK(KCSPH),WORK(KICSP),.FALSE.,
-     &            IPRINT,WORK(KFREE),LFREE)
-      CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
-     &            HCAR,NCAR,NCAR,NZ,IPQTOQ(1,0),
-     &            HSPH,NSPH,NSPH,NZ,IPQTOQ(1,0),
-     &            WORK(KTMAT),NCAR,NSPH,1,IPQTOQ(1,0),
-     &            WORK(KTMAT),NCAR,NSPH,1,IPQTOQ(1,0),
-     &            WORK(KFREE),LFREE,IPRINT)
+      CALL MEMGET('INTE',KIP  ,NBSYM*4,WORK,KFREE,LFREE)
+      CALL SPH_IOT1(HCAR,HSPH,NSPH,WORK(KIP),IPRINT,
+     &              WORK(KFREE),LFREE)
 C
-      CALL MEMREL('SPH_IOTC',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('SPH_IOTC',WORK,KWORK,KWORK,KFREE,LFREE)      
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck sph_iot1 */
+      SUBROUTINE SPH_IOT1(HCAR,HSPH,NSPHTOT,IP,IPRINT,
+     &                    WORK,LWORK)
+C***********************************************************************
+C
+C     Transform 2comp matrix from Cartesian to spherical Gaussians
+C
+C     On output NPSHTOT gives the total number of large components
+C     in spherical Gaussian basis
+C
+C     Written by Trond Saue June 16 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+      PARAMETER(D1=1.00D00,D0=0.00D00)
+C
+#include "ccom.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      DIMENSION HCAR(*),HSPH(*),IP(4,NBSYM),WORK(LWORK)
+#include "memint.h"
+C     
+C     Generate spherical transformation matrix for each irrep
+C
+      IC   = 1
+      NBRP = 4/NZ
+      ICAR = 1
+      ISPH = 1
+      NSPHTOT = 0
+      DO IFRP = 1,NFSYM
+        DO ISYM = 1,NBRP
+          IBSYM = JFSYM(ISYM,IFRP)
+          IBREP = IBSYM - 1
+          NCAR  = NBBAS(IBREP,IC)
+          NMAT = NBBAS(IBREP,IC)*NBBAS(IBREP,IC)
+          CALL MEMGET('REAL',IP(1,IBSYM),NMAT,WORK,KFREE,LFREE)
+          CALL SPHCAR(WORK(IP(1,IBSYM)),IBREP,IC,NCAR,NSPH,
+     &                .FALSE.,IPRINT,WORK(KFREE),LFREE)
+          NSPHTOT = NSPHTOT + NSPH
+          IP(2,IBSYM)=NSPH
+          IP(3,IBSYM)=ICAR
+          IP(4,IBSYM)=ISPH
+          ICAR = ICAR + NBBAS(IBREP,IC)
+          ISPH = ISPH + NSPH
+        ENDDO
+      ENDDO
+C
+C     Transform matrix
+C
+      CALL SPH_IOT2(HCAR,NTBAS(1),HSPH,NSPHTOT,IP,WORK,KFREE,LFREE)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Sph_iotc2 */
+      SUBROUTINE SPH_IOT2(HCAR,NCAR,HSPH,NSPH,IP,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Pointer IP:
+C       IP(1,ISYM) - offset for spherical transformation matrix
+C       IP(2,ISYM) - number of spherical components for ISYM
+C       IP(3,ISYM) - pointer ICAR
+C       IP(4,ISYM) - pointer ISPH
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.00D00,D0=0.00D00)
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "pgroup.h"
+      DIMENSION HCAR(NCAR,NCAR,NZ),HSPH(NSPH,NSPH,NZ),
+     &          IP(4,NBSYM),WORK(*)
+C
+      IC = 1
+      NDIM = NSPH*NSPH*NZ
+      CALL DZERO(HSPH,NDIM)
+      DO 10 JSYM = 1,NBSYM
+        JREP = JSYM-1
+        NJC  = NBBAS(JREP,1)
+        IF(NJC.EQ.0) GOTO 10
+        NJS  = IP(2,JSYM)
+        JT   = IP(1,JSYM)
+        JC   = IP(3,JSYM)
+        JS   = IP(4,JSYM)
+        DO 20 ISYM = 1,NBSYM
+          IREP = ISYM-1
+          NIC  = NBBAS(IREP,1)
+          IF(NIC.EQ.0) GOTO 20
+          NIS  = IP(2,ISYM)
+          IT   = IP(1,ISYM)
+          IC   = IP(3,ISYM)
+          IS   = IP(4,ISYM)
+          CALL QTRANS('AOMO','S',D0,NIC,NJC,NIS,NJS,
+     &            HCAR(IC,JC,1),NCAR,NCAR,NZ,IPQTOQ(1,0),
+     &            HSPH(IS,JS,1),NSPH,NSPH,NZ,IPQTOQ(1,0),
+     &            WORK(IT),NIC,NIS,1,IPQTOQ(1,0),
+     &            WORK(JT),NJC,NJS,1,IPQTOQ(1,0),
+     &            WORK(KFREE),LFREE,IPRINT)
+ 20     CONTINUE
+ 10   CONTINUE
 C
       RETURN
       END

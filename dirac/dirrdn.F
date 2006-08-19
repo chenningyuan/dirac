@@ -4055,6 +4055,7 @@ C
 C    Remove inconsistencies
 C     =====================
 C
+CCCCCC
       IF (DELSMALL.AND..NOT.TWOCOMP) THEN
         CALL QUIT('HAMINP: DELSMALL=.true & TWOCOMP=.false. !')
       ENDIF
@@ -4099,8 +4100,8 @@ CMI     Remove inconsistencies for TWOCOMP option
         CALL QUIT(
      &  'Conflicting options : TWOCOMP and others (see code) !')
       ENDIF
-
-CMI          Remove inconsistencies for the BSS option
+C
+C     Remove inconsistencies for the BSS option
 C     =====================================================
       IF ((DO2C4C.OR.DO4C2C.OR.USEDF).AND..NOT.BSS) THEN
           CALL QUIT(
@@ -4109,15 +4110,10 @@ C     =====================================================
       IF (.NOT.BSS.AND..NOT.TWOCOMP.AND.TWOCOMPBSS) THEN
         CALL QUIT('HAMINP: for not .BSS must be .TWOCOMP in GENINP !')
       ENDIF
-
       IF (BSS) THEN
-C       IF (NOPRTR.AND.USEDF) THEN
-C        CALL QUIT(
-C    &'HAMINP: "k" basis transf.is required for BSS-post-DHF process!')
-C       ENDIF
         IF (LEVYLE.OR.FREEPJ.OR.VEXTPJ) THEN
           CALL QUIT(
-     &'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS !')
+     &   'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS !')
         ENDIF
         IF (SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP) THEN
           CALL QUIT(
@@ -4125,21 +4121,18 @@ C       ENDIF
         ENDIF
         IF (URKBAL.OR.SPINFR2) THEN
           CALL QUIT(
-     &'HAMINP:Conflicting options URKBAL/SPINFR2 & BSS!')
+     &  'HAMINP:Conflicting options URKBAL/SPINFR2 & BSS!')
         ENDIF
-CMI ... DIRCON(1) means contracted L component basis set !
-CMI     IF (ZORA.OR.PROJEC) THEN
-CMI     IF (ZORA.OR.PROJEC.OR.DIRCON(1)) THEN
+C ...   DIRCON(1) means contracted L component basis set !
         IF (ZORA) THEN
           CALL QUIT(
      &'HAMINP: Conflicting options ZORA & BSS !')
-CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
         ENDIF
         IF (DIRCON(1)) THEN
-         CALL QUIT(
-     &  'HAMINP: Can not use the contracted basis set for'//
-     &  ' the BSS Hamiltonian !')
-CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
+          CALL QUIT(
+     &   'HAMINP: Can not use the contracted basis set for'//
+     &   ' the BSS Hamiltonian !')
+CMI  &'  HAMINP: Conflicting options ZORA/PROJEC & BSS !')
         ENDIF
 
 CMI  ... todo: more precise specification needed

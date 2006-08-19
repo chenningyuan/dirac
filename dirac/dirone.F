@@ -1251,25 +1251,12 @@ C     Memory allocation
 C
       CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,MXBBAS ,WORK,KFREE,LFREE)
-      IF(ISPHTR.NE.0) THEN
-        NCSPH = 0
-        DO LL = 1,NHTYP
-          NCSPH = NCSPH + LL*(LL+1)*(2*LL-1)/2
-        ENDDO
-        NICSP = NHTYP
-      ELSE
-        NCSPH = 0
-        NICSP = 0
-      ENDIF
-      CALL MEMGET('INTE',KICSP,NICSP ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCSPH,NCSPH ,WORK,KFREE,LFREE)
 C
 C     Make Lowdin matrix
 C     ==================
 C
-      CALL LOWDI1(VMAT,WORK(KSMAT),WORK(KEIG),WORK(KCSPH),
-     &            WORK(KICSP),WORK(KFREE),LFREE,IPRINT)
-
+      CALL LOWDI1(VMAT,WORK(KSMAT),WORK(KEIG),
+     &            WORK(KFREE),LFREE,IPRINT)
 C
 C     Memory deallocation
 C
@@ -1282,7 +1269,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lowdi1 */
-      SUBROUTINE LOWDI1(VMAT,SMAT,EIG,CSPH,ICSP,WORK,LWORK,IPRINT)
+      SUBROUTINE LOWDI1(VMAT,SMAT,EIG,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     PURPOSE:
@@ -1314,7 +1301,7 @@ C
 #include "pgroup.h"
 #include "dcbbas.h"
       CHARACTER COMP(2)*1
-      DIMENSION VMAT(*),SMAT(*),EIG(*),CSPH(*),ICSP(*),WORK(LWORK)
+      DIMENSION VMAT(*),SMAT(*),EIG(*),WORK(LWORK)
       LOGICAL LBIT
 C
       CALL QENTER('LOWDI1')
@@ -1326,15 +1313,6 @@ C     Get overlap matrix packed on fermion irreps
 C     ===========================================
 C
       CALL GTOVLT(SMAT,D1,WORK,LWORK)
-C
-C     If spherical transformations, get general transformation matrix
-C     ===============================================================
-C
-       IF(ISPHTR.NE.0) THEN
-         MORDER = 1 ! M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
-         MINTEG = 2 ! 
-         CALL GETSPH(MORDER,MINTEG,CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
-       ENDIF
 C
 C     Initialize Lowdin matrix
 C     ========================
@@ -1361,7 +1339,7 @@ C
             IF(LBIT(ISPHTR,IC)) THEN
               CALL SPHLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
      &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
-     &                    CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
+     &                    WORK,LWORK,IPRINT)
               NDEL  = NBBAS(IREP,IC) - NEFF
             ELSE
               CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
@@ -1401,7 +1379,7 @@ C
             IF(LBIT(ISPHTR,IC)) THEN
               CALL RKBLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
      &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
-     &                    CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
+     &                    NHTYP,WORK,LWORK,IPRINT)
               NDEL  = NBBAS(IREP,IC) - NEFF
             ELSE
               CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
@@ -2999,7 +2977,7 @@ C  /* Deck reno */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck sphlow */
       SUBROUTINE SPHLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,
-     &                  EIG,CSPH,ICSP,LMAX,WORK,LWORK,IPRINT)
+     &                  EIG,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Generate Lowdin matrix with spherical transformation embedded.
@@ -3012,14 +2990,14 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
-     &          CSPH(*),ICSP(*),WORK(*)
+     &          WORK(*)
 C
       CALL QENTER('SPHLOW')
 #include "memint.h"
       NMAT = NBBAS(IREP,IC)*NBBAS(IREP,IC)
       CALL MEMGET('REAL',KTMAT,NMAT  ,WORK,KFREE,LFREE)
       CALL SPHLO1(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,EIG,
-     &            CSPH,ICSP,WORK(KTMAT),WORK(KFREE),LFREE,IPRINT)
+     &            WORK(KTMAT),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('SPHLOW',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('SPHLOW')
@@ -3028,7 +3006,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck sphlo1 */
       SUBROUTINE SPHLO1(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,EIG,
-     &                  CSPH,ICSP,TMAT,WORK,LWORK,IPRINT)
+     &                  TMAT,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Generate Lowdin matrix with spherical transformation embedded.
@@ -3042,8 +3020,7 @@ C
 #include "pgroup.h"
 #include "dcbbas.h"
       CHARACTER COMP(2)*1
-      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
-     &          CSPH(*),ICSP(*),TMAT(*),WORK(*)
+      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),TMAT(*),WORK(*)
       DATA COMP/'L','S'/
 #include "sdpre.h"
 #include "ibtfun.h"
@@ -3053,7 +3030,7 @@ C***  Generate spherical transformation matrix  ***
 C**************************************************
 C
       NCAR = NBBAS(IREP,IC)
-      CALL SPHCAR(TMAT,IREP,IC,NCAR,NSPH,CSPH,ICSP,
+      CALL SPHCAR(TMAT,IREP,IC,NCAR,NSPH,
      &            .TRUE.,IPRINT,WORK,LWORK)
 C
 C*********************************************************
@@ -3082,7 +3059,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck rkblow */
       SUBROUTINE RKBLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,
-     &                  EIG,CSPH,ICSP,LMAX,WORK,LWORK,IPRINT)
+     &                  EIG,LMAX,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Generate Lowdin matrix with RKB transformation embedded.
@@ -3094,7 +3071,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
-     &          CSPH(*),ICSP(*),WORK(*)
+     &          WORK(*)
 C
       CALL QENTER('RKBLOW')
 #include "memint.h"
@@ -3112,7 +3089,7 @@ C
       CALL MEMGET('INTE',KICBF,3*LMAX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
       CALL RKBLO1(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,EIG,NCAR,
-     &            CSPH,ICSP,LMAX,NXYZ,NFUN,WORK(KTMAT),WORK(KCBUF),
+     &            LMAX,NXYZ,NFUN,WORK(KTMAT),WORK(KCBUF),
      &            WORK(KICBF),WORK(KIFUN),
      &            WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('RKBLOW',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3123,18 +3100,14 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck rkblo1 */
       SUBROUTINE RKBLO1(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,EIG,NCAR,
-     &                  CSPH,ICSP,LMAX,MXYZ,NFUN,TMAT,CRED,IRED,
+     &                  LMAX,MXYZ,NFUN,TMAT,CRED,IRED,
      &                  IFUN,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Generate Lowdin matrix with RKB transformation embedded.
 C
-C     Spherical transformation matrix:
-C       CSPH - for each L value it has the dimension CSPH(NLM,NXYZ,*)
-C       ICSP - gives offsets to each L value in spherical 
-C              transformation matrix CSPH
 C     For each center and L value a transformation matrix is extracted
-C     from CSPH according to allowed symmetries.
+C     from spherical transformation matric CSP according to allowed symmetries.
 C       IFUN(*,1) - points to Cartesian component in full list
 C       IFUN(*,2) - points to spherical component in full list
 C       IFUN(*,3) - points to Cartesian comp. in symmetry-reduced list
@@ -3162,6 +3135,7 @@ C
 #include "maxaqn.h"
 C
 #include "ccom.h"
+#include "sphtrm.h"
 #include "symmet.h"
 #include "pgroup.h"
 #include "shells.h"
@@ -3170,8 +3144,7 @@ C
 #include "dcbrkb.h"
       LOGICAL LRKB
       CHARACTER COMP(2)*1
-      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
-     &          CSPH(*),ICSP(LMAX),IFUN(NFUN,3),
+      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),IFUN(NFUN,3),
      &          TMAT(NCAR,NCAR),CRED(*),IRED(3,LMAX),
      &          WORK(*)
       DATA COMP/'L','S'/
@@ -3265,20 +3238,20 @@ C           Solid harmonic functions
 C
             KLM = 0
             DO ICMP = 1,NLM
-               IVARB = IBTXOR(IREP,IREPLM(L,ICMP-LL))
-               IF(IBTAND(MULA,IVARB).EQ.0) THEN
-                  KLM               = KLM + 1
-                  IFUN(LOFF+KLM,2)  = ICMP
-               ENDIF
-               IRED(2,LL) = KLM
+              M = MDEF(L,ICMP)
+              IVARB = IBTXOR(IREP,IREPLM(L,M))
+              IF(IBTAND(MULA,IVARB).EQ.0) THEN
+                KLM               = KLM + 1
+                IFUN(LOFF+KLM,2)  = ICMP
+              ENDIF
+              IRED(2,LL) = KLM
             ENDDO
 C
 C           Extract spherical transformation matrix
 C
             IRED(3,LL) = IOFF
             IF(KLM.GT.0) THEN
-               JOFF = ICSP(LL)
-               CALL EXTELM('N',CSPH(JOFF+1),NXYZ,NLM,
+               CALL EXTELM('T',CSP(ISPADR(LL)),NLM,NXYZ,
      &              CRED(IOFF+1),KXYZ,KXYZ,KLM,
      &              IFUN(LOFF+1,1),IFUN(LOFF+1,2))
                JOFF = IOFF
@@ -3372,8 +3345,8 @@ C
 C
 C                 First extract spherical transformation matrix 
 C                 for L-2 partner
-                  JM2    = ICSP(LLM2)
-                  CALL EXTELM('N',CSPH(JM2+1) ,NXYZM2,NLMM2,
+C
+                  CALL EXTELM('T',CSP(ISPADR(LLM2)),NLMM2,NXYZM2,
      &                 CRED(IM2+1),KRKB,KXYZM2,KLMM2,
      &                 IFUN(LM2F+1,1),IFUN(LM2F+1,2))
 C
@@ -6415,7 +6388,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck sphcar */
-      SUBROUTINE SPHCAR(SPHM,IREP,IC,NCAR,NSPH,CSPH,ICSP,
+      SUBROUTINE SPHCAR(SPHM,IREP,IC,NCAR,NSPH,
      &                  DONRM,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
@@ -6435,7 +6408,7 @@ C***********************************************************************
 C
 #include "ccom.h"
       LOGICAL DONRM
-      DIMENSION SPHM(*),CSPH(*),ICSP(*),WORK(LWORK)
+      DIMENSION SPHM(*),WORK(LWORK)
 #include "memint.h"
       LMAX  = NHTYP
       NXYZ  = (LMAX*(LMAX+1))/2
@@ -6444,14 +6417,14 @@ C
       CALL MEMGET('REAL',KCBUF,NCBUF ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KICBF,3*LMAX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
-      CALL SPHCA1(SPHM,IREP,IC,NCAR,NSPH,CSPH,ICSP,LMAX,MXYZ,NFUN,
+      CALL SPHCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,MXYZ,NFUN,
      &            DONRM,WORK(KCBUF),WORK(KICBF),WORK(KIFUN),IPRINT)
       CALL MEMREL('SPHMAT',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck sphma1 */
-      SUBROUTINE SPHCA1(SPHM,IREP,IC,NCAR,NSPH,CSPH,ICSP,LMAX,MXYZ,
+      SUBROUTINE SPHCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,MXYZ,
      &                  NFUN,DONRM,CBUF,ICBF,IFUN,IPRINT)
 C***********************************************************************
 C
@@ -6473,6 +6446,7 @@ C
 #include "maxaqn.h"
 C
 #include "ccom.h"
+#include "sphtrm.h"
 #include "symmet.h"
 #include "pgroup.h"
 #include "shells.h"
@@ -6480,7 +6454,7 @@ C
 #include "dgroup.h"
       LOGICAL DONRM
       CHARACTER COMP(2)*1
-      DIMENSION CSPH(*),ICSP(LMAX),IFUN(NFUN,3),
+      DIMENSION IFUN(NFUN,3),
      &          SPHM(NCAR,NCAR),CBUF(*),ICBF(3,LMAX)
       DATA COMP/'L','S'/
 #include "ibtfun.h"
@@ -6551,7 +6525,8 @@ C         Solid harmonic functions
 C
           KLM = 0
           DO ICMP = 1,NLM
-            IVARB = IBTXOR(IREP,IREPLM(L,ICMP-LL))
+            M = MDEF(L,ICMP)
+            IVARB = IBTXOR(IREP,IREPLM(L,M))
             IF(IBTAND(MULA,IVARB).EQ.0) THEN
               KLM               = KLM + 1
               IFUN(LOFF+KLM,2)  = ICMP
@@ -6563,8 +6538,7 @@ C         Extract spherical transformation matrix
 C
           ICBF(3,LL) = IOFF
           IF(KLM.GT.0) THEN
-            JOFF = ICSP(LL)
-            CALL EXTELM('N',CSPH(JOFF+1),NXYZ,NLM,
+            CALL EXTELM('T',CSP(ISPADR(LL)),NLM,NXYZ,
      &                      CBUF(IOFF+1),KXYZ,KXYZ,KLM,
      &                      IFUN(LOFF+1,1),IFUN(LOFF+1,2))
             IF(DONRM) THEN

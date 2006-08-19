@@ -1,4 +1,4 @@
-C 
+ 
 C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -1318,7 +1318,7 @@ C
      &                    'Max.ang.quantum no.:',(IQM(I,1)-1),
      &                    '  Blocks:',(JCO(K,I,1), K=1,IQM(I,1))
                   ENDIF
-                  NHTYP     = MAX(NHTYP,IQM(I,1))
+                  NHTYP  =   MAX(NHTYP,IQM(I,1))
                   IF(NHTYP.GT.MXQN) GOTO 5000
                ENDIF
 C
@@ -1333,7 +1333,6 @@ C
      $              (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
                   DIRCON(1) = .TRUE.
                END IF
-
 
                IF (.NOT.TWOCOMP) THEN
 C
@@ -4264,21 +4263,14 @@ C
 C     III. Spherical harmonics
 C     ------------------------
 C
-         DO 300 I = 0, NHTYP - 1
-            II = I + 1
-            IF (I .EQ. 0) THEN
-               ISYMAO(II,1) = IREPLM(0,0)
-            ELSE IF (I .EQ. 1) THEN
-               ISYMAO(II,1) = IREPLM(1, 1)
-               ISYMAO(II,2) = IREPLM(1,-1)
-               ISYMAO(II,3) = IREPLM(1, 0)
-            ELSE
-               DO 310 J = -I,I
-                  JJ = J + I + 1
-                  ISYMAO(II,JJ) = IREPLM(I,J)
-  310          CONTINUE
-            END IF
-  300    CONTINUE
+         DO L = 0,NHTYP-1
+           LL = L+1
+           NLM = 2*L + 1
+           DO ILM = 1,NLM
+             M = MDEF(L,ILM)
+             ISYMAO(LL,ILM) = IREPLM(L,M)
+           ENDDO
+         ENDDO
       END IF
 C*****************************************************************************
 C Determine transformation from AOs to SOs :
@@ -5251,10 +5243,12 @@ C aspg, 2006-05-12
 C updating to dalton's version
 C
       SUBROUTINE SPHINP(LUINFO,WORK,LWORK,DOOWN,MXSPD)
-C
+C=======================================================================
 C     Calculate spherical harmonic transformation coefficients
 C     or, if DOOWN true, read user specified coefficients.
 C
+C     Modifications to DIRAC by Trond Saue Aug 18 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.0D0)
@@ -5279,109 +5273,75 @@ C
       MXSPD = MXQN
 C
       IOFF = 1
-      DO 100 I = 1, MXQN
-         KCK(I)    = I*(I+1)/2
-         ISPADR(I) = IOFF
-         IOFF      = IOFF + KCK(I)**2
-         IF (DOOWN) THEN
-            SPH(I) = .TRUE.
-         ELSE
-            IF (DOCART) THEN
-               KHK(I) = I*(I+1)/2
-               SPH(I) = .FALSE.
-            ELSE
-               KHK(I) = 2*I - 1
-               SPH(I) = I .GT. 2
-            END IF
-         END IF
-  100 CONTINUE
+      DO I = 1, MXQN
+        KCK(I)    = I*(I+1)/2
+        ISPADR(I) = IOFF
+        IOFF      = IOFF + KCK(I)**2
+        IF (DOOWN) THEN
+          SPH(I) = .TRUE.
+        ELSE
+          IF (DOCART) THEN
+            KHK(I) = I*(I+1)/2
+            SPH(I) = .FALSE.
+          ELSE
+            KHK(I) = 2*I - 1
+            SPH(I) = I .GT. 2
+          END IF
+        END IF
+      ENDDO
 C
       SPHNRM = .TRUE.
 C
-      IF (DOCART) THEN
-         CALL CARLAB(MXQN-1,GTOTYP)
+C     Always make Cartesian transformation matrix
+C     
+      CALL DZERO(CSP,NCSP)
+      IF (.NOT.DOOWN) THEN
+        CALL SPHLAB(MXQN-1,GTOTYP)
+        CALL GETSPH(WORK,LWORK,IPREAD)
       ELSE
-         CALL DZERO(CSP,NCSP)
-         IF (.NOT.DOOWN) THEN
-            CALL SPHLAB(MXQN-1,GTOTYP)
-            KCSPT = 1
-            KWRK  = KCSPT + (MXQN*(MXQN + 1)/2)*(2*MXQN - 1)
-            IF (KWRK .GT. LWORK) CALL STOPIT('SPHINP',' ',KWRK,LWORK)
-            LWRK  = LWORK - KWRK + 1
-            DO 200 LVAL = 0, MXQN - 1
-               NLM = 2*LVAL + 1
-               NXYZ = (LVAL+1)*(LVAL+2)/2
-               IF (LVAL .EQ. 0) THEN
-                  CSP(1)  = D1
-               ELSE IF (LVAL .EQ. 1) THEN
-                  CSP (2) = D1
-                  CSP (6) = D1
-                  CSP(10) = D1
-               ELSE
-                  IF (OLDNRM) THEN
-C                    use old Dalton 1.0 normalization
-                     MINTEG = 0
-                     SPHNRM = .FALSE.
-                  ELSE
-C                    generate normalized s,p,d,f,g,h,i GTO's
-                     MINTEG = 2
-                  END IF
-                  CALL SPHCOM(LVAL,WORK(KCSPT),NLM,NXYZ,1,MINTEG,
-     &                        WORK(KWRK),LWRK,IPREAD)
-                  CALL MTRSP(NXYZ,NLM,WORK(KCSPT),NXYZ,
-     &                       CSP(ISPADR(LVAL+1)),NLM)
-               END IF
-  200       CONTINUE
-         ELSE
-            CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),'(BN,I5)') MXSPD
-            IF (MXSPD .GT. MXQN) THEN
-              WRITE (LUPRI,'(/A/I10,A,I4//A//A/A)')
-     &        ' ERROR: specified MXSPD for GTO transformation matrix',
-     &        MXSPD,' is greater than allowed max value of',MXQN,
-     &        ' Dump of last two lines read from .mol file:',
-     &        MLINE(NMLINE-1),MLINE(NMLINE)
-              CALL QUIT('ERROR in reading .mol file, see output')
-            END IF
-            IOFF = 1
-            DO 300 I = 1, MXSPD
-               CALL RDLINE(LUINFO)
-               READ (MLINE(NMLINE),'(BN,4X,A1,I5)')  KEY, KHK(I)
-               IF (KHK(I) .GT. KCK(I)) THEN
-                 WRITE (LUPRI,'(/A,I5,A,I3/A,I5,A//A//A)')
-     &           ' ERROR: you specified',KHK(I),
-     &           ' components for GTO transformation matrix for L =',
-     &           I-1,' and that is greater than',KCK(I),
-     &           ', the number of Cartesian components.',
-     &           ' Dump of last line read from .mol file:',MLINE(NMLINE)
-                 CALL QUIT('ERROR in reading .mol file, see output')
-               END IF
-               CALL RDCSP(LUINFO,CSP(ISPADR(I)),GTOTYP(IOFF),
-     &           KHK(I),KCK(I))
-               IOFF = IOFF + KHK(I)
-  300       CONTINUE
-         END IF
-         IF (DOOWN .OR. IPREAD .GT. 4) THEN
-            CALL HEADER('Cartesian transformation matrices',-1)
-            IF (DOOWN) THEN
-               WRITE (LUPRI,'(A/)') '  to user specified combinations'
-            ELSE
-               WRITE (LUPRI,'(A/)') '  to spherical harmonics'
-            END IF
-            IOFF = 0
-            DO 400 I = 1, MXSPD
-               KHKI = KHK(I)
-               KCKI = KCK(I)
-               WRITE (LUPRI,'(A,I5//A/,(5X,15(A4,1X)))')
-     &            '  Coefficients for angular quantum number ',I-1,
-     &            '  to GTOs with labels:',(GTOTYP(IOFF+J),J=1,KHKI)
-               IOFF = IOFF + KHKI
-               CALL OUTPUT(CSP(ISPADR(I)),1,KHKI,1,KCKI,KHKI,KCKI,1,
-     &                     LUPRI)
- 400        CONTINUE
-            CALL FLSHFO(LUPRI)
-         END IF
+        CALL RDLINE(LUINFO)
+        READ (MLINE(NMLINE),'(BN,I5)') MXSPD
+        IF (MXSPD .GT. MXQN) THEN
+          WRITE (LUPRI,'(/A/I10,A,I4//A//A/A)')
+     &    ' ERROR: specified MXSPD for GTO transformation matrix',
+     &    MXSPD,' is greater than allowed max value of',MXQN,
+     &    ' Dump of last two lines read from .mol file:',
+     &    MLINE(NMLINE-1),MLINE(NMLINE)
+          CALL QUIT('ERROR in reading .mol file, see output')
+        END IF
+        IOFF = 1
+        DO 300 I = 1, MXSPD
+          CALL RDLINE(LUINFO)
+          READ (MLINE(NMLINE),'(BN,4X,A1,I5)')  KEY, KHK(I)
+          IF (KHK(I) .GT. KCK(I)) THEN
+            WRITE (LUPRI,'(/A,I5,A,I3/A,I5,A//A//A)')
+     &        ' ERROR: you specified',KHK(I),
+     &        ' components for GTO transformation matrix for L =',
+     &         I-1,' and that is greater than',KCK(I),
+     &         ', the number of Cartesian components.',
+     &         ' Dump of last line read from .mol file:',MLINE(NMLINE)
+               CALL QUIT('ERROR in reading .mol file, see output')
+          END IF
+          CALL RDCSP(LUINFO,CSP(ISPADR(I)),GTOTYP(IOFF),
+     &               KHK(I),KCK(I))
+          IOFF = IOFF + KHK(I)
+  300   CONTINUE
+        CALL HEADER('Cartesian transformation matrices',-1)
+        WRITE (LUPRI,'(A/)') '  to user specified combinations'
+        IOFF = 0
+        DO 400 I = 1, MXSPD
+          KHKI = KHK(I)
+          KCKI = KCK(I)
+          WRITE (LUPRI,'(A,I5//A/,(5X,15(A4,1X)))')
+     &      '  Coefficients for angular quantum number ',I-1,
+     &      '  to GTOs with labels:',(GTOTYP(IOFF+J),J=1,KHKI)
+          IOFF = IOFF + KHKI
+          CALL OUTPUT(CSP(ISPADR(I)),1,KHKI,1,KCKI,KHKI,KCKI,1,
+     &                LUPRI)
+ 400    CONTINUE
+        CALL FLSHFO(LUPRI)
       END IF
+      IF (DOCART) CALL CARLAB(MXQN-1,GTOTYP)
       RETURN
       END
 C
@@ -8105,3 +8065,106 @@ C     END of IF master (i.e. if MYTID .eq. MPARID)
       RETURN
 C     end of SUBROUTINE MNFOUT
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Getsph */
+      SUBROUTINE GETSPH(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Get spherical transformation matrices up to LMAX
+C     Written by T.Saue May 1 1998 
+C     Rewrite by cut'n paste 2006 Trond Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+      PARAMETER(D1 = 1.0D0)
+#include "ccom.h"
+#include "sphtrm.h"
+#include "cbirea.h"
+      DIMENSION WORK(LWORK)
+#include "memint.h"
+      CALL MEMGET('REAL',KCSPT,(MXQN*(MXQN + 1)/2)*(2*MXQN - 1),
+     &             WORK,KFREE,LFREE)
+      DO LVAL = 0, MXQN - 1
+        NLM = 2*LVAL + 1
+        NXYZ = (LVAL+1)*(LVAL+2)/2
+        IF (LVAL .EQ. 0) THEN
+          CSP(1)  = D1
+        ELSE IF (LVAL .EQ. 1) THEN
+          CSP (2) = D1
+          CSP (6) = D1
+          CSP(10) = D1
+        ELSE
+          IF (OLDNRM) THEN
+C         use old Dalton 1.0 normalization
+            MINTEG = 0
+            SPHNRM = .FALSE.
+          ELSE
+C         generate normalized s,p,d,f,g,h,i GTO's
+            MINTEG = 2
+          END IF
+          CALL SPHCOM(LVAL,WORK(KCSPT),NLM,NXYZ,1,MINTEG,
+     &                WORK(KFREE),LFREE,IPREAD)
+C.........transpose  CSPT(NXYZ,NLM) --> CSP(NLM,NXYZ)
+C.........note, however, 
+C.........that ISPADR gives offsets in blocks of NXYZ*NXYZ
+C
+          CALL MTRSP(NXYZ,NLM,WORK(KCSPT),NXYZ,
+     &               CSP(ISPADR(LVAL+1)),NLM)
+        END IF
+      ENDDO
+C
+      IF (IPRINT .GT. 4) THEN
+        CALL HEADER('Cartesian transformation matrices',-1)
+        WRITE (LUPRI,'(A/)') '  to spherical harmonics'
+        IOFF = 0
+        DO I = 1, MXQN
+          KHKI = 2*I - 1
+          KCKI = KCK(I)
+          WRITE (LUPRI,'(A,I5//A/,(5X,15(A4,1X)))')
+     &      '  Coefficients for angular quantum number ',I-1,
+     &      '  to GTOs with labels:',(GTOTYP(IOFF+J),J=1,KHKI)
+          IOFF = IOFF + KHKI
+          CALL OUTPUT(CSP(ISPADR(I)),1,KHKI,1,KCKI,KHKI,KCKI,1,
+     &                LUPRI)
+        ENDDO
+        CALL FLSHFO(LUPRI)
+      END IF
+C
+      CALL MEMREL('GETSPH',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+C     
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Mdef */
+      FUNCTION MDEF(L,ICMP)
+C***********************************************************************
+C
+C     An integer function that returns the M-value for component ICMP
+C     of angular momentum L of solid harmonics.
+C
+C     The main purpose of the function is to centralize the definition
+C     of the Cartesian to spherical transformation.
+C
+C     Written by Trond Saue Aug 19 2006
+C
+C***********************************************************************
+#include "priunit.h"
+      IF(L.EQ.1) THEN
+        GO TO (1,2,3), ICMP
+ 1      CONTINUE
+          MDEF = 1
+          RETURN
+ 2      CONTINUE
+          MDEF =-1
+          RETURN
+ 3      CONTINUE
+          MDEF = 0
+          RETURN
+      ELSE
+        MDEF = ICMP-L-1
+      ENDIF
+      RETURN
+      END
+

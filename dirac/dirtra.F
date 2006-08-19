@@ -2806,46 +2806,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck Getsph */
-      SUBROUTINE GETSPH(MORDER,MINTEG,CSPH,ICSP,LMAX,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Get spherical transformation matrices up to LMAX
-C     Written by T.Saue May 1 1998
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-      PARAMETER(D1 = 1.0D0)
-#include "ccom.h"
-#include "sphtrm.h"
-#include "symmet.h"
-#include "pgroup.h"
-      DIMENSION CSPH(*),ICSP(*),WORK(*)
-C
-C     MORDER eq 0 : M_l order 0, +1, -1, +2, -2, ..., +LVAL, -LVAL
-C     MORDER ne 0 : M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
-C
-C     MINTEG eq 1 : the spherical components are normalized such
-C                   that all coefficients are integers.
-CTROND      SPHNRM = .FALSE.
-      IOFF   = 0
-      DO LL = 1, LMAX
-        L    = LL - 1
-        NLM  = 2*L + 1
-        NXYZ = (LL*(LL+1))/2
-        CALL SPHCOM(L,CSPH(IOFF+1),NLM,NXYZ,MORDER,MINTEG,
-     &                WORK,LWORK,IPRINT)
-        ICSP(LL) = IOFF
-        IOFF     = IOFF + NLM*NXYZ
-      ENDDO
-      RETURN
-C     
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck keepll */
       SUBROUTINE KEEPLL(AMAT,MZ,BASIS)
 C***********************************************************************
