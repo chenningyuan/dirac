@@ -78,6 +78,8 @@ C
 C
 C     General input
       OPEN(LUCMD,FILE = 'DIRAC.INP')
+      CALL HAMSCAN
+      REWIND LUCMD
       CALL GENINP(WORK,LWORK)
       CLOSE(LUCMD)
 C
@@ -4208,6 +4210,7 @@ C
       IF (TWOCOMP.AND..NOT.BSS) THEN
         NZC1 = 1
         NZ   = 1
+        SPINFR = .TRUE.
       ELSE
         NZC1 = 4
       ENDIF
@@ -6286,3 +6289,52 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Hamscan */
+      SUBROUTINE HAMSCAN
+C***********************************************************************
+C
+C     Search for keywords in the Hamiltonian input
+C
+C     Written by T. Saue Aug 21 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      CHARACTER WORD*7,PROMPT*1
+C
+C     Read menu file
+C     ==============
+C     **** Find Hamiltonian input *****
+C
+      REWIND (LUCMD,IOSTAT=IOS)
+C     ... IOSTAT to avoid program abort on some systems
+C         if reading input from a terminal
+  900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      IF (WORD .EQ. '**HAMIL') THEN
+         GO TO 930
+      ELSE
+         GO TO 900
+      END IF
+  910 CONTINUE
+        RETURN
+  920 CONTINUE
+         CALL QUIT('Error reading LUCMD, no HAMIL input found')
+  930 CONTINUE
+      READ (LUCMD,'(A7)') WORD
+      PROMPT = WORD(1:1)
+      IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+         GO TO 930
+      ELSEIF(PROMPT.EQ.'.') THEN
+         WRITE(LUPRI,'(A,A7)') 'HAMSCAN: Found keyword ',WORD
+      ELSE IF (PROMPT .EQ. '*') THEN
+        RETURN
+      ELSE
+        WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *         '" not recognized in HAMINP.'
+        CALL QUIT('Illegal prompt in HAMINP.')
+      END IF
+C
+      RETURN
+      END
+      
