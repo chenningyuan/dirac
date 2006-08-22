@@ -474,7 +474,7 @@ C
            INIOCC = .FALSE.
         ENDIF
 C
-C        Generate density matripx/matrices
+C        Generate density matrix/matrices
 C        Be aware: All density matrices are normalized to 1,
 C                  occupation is in the DF(*) factor
 C
@@ -637,7 +637,6 @@ C
      &                 FOCK(1+N2BBASXQ*IOPEN),1,FOCK,1)
           END DO
         ENDIF
-C
         IF(IPRSCF.GE.5) THEN
           IF (NISHT .GT. 0) THEN
             CALL HEADER('PREDHF: Total FD matrix in SA-AO basis',-1)
@@ -4390,7 +4389,7 @@ C
       IF(OVLSEL) THEN
         DOSEL = .TRUE.
         INQUIRE(FILE='DFSMOS',EXIST=TOBE)
-        IF(.NOT.TOBE .OR. L1ORBM) CALL SMOGEN(COFU,COFT)
+        IF(.NOT.TOBE .OR. L1ORBM) CALL SMOGEN(COFU,TMAT)
       ENDIF
 C
       RETURN
