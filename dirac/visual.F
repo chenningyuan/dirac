@@ -637,8 +637,8 @@ C
               ENDIF
 C
               IF(CUT_XY_SMALL) THEN
-                PX = -3.0D0+(ICUBE-1)*(6.0D0/(NCUBE(1)-1))
-                PY = -3.0D0+(JCUBE-1)*(6.0D0/(NCUBE(2)-1))
+                PX = -2.0D0+(ICUBE-1)*(4.0D0/(NCUBE(1)-1))
+                PY = -2.0D0+(JCUBE-1)*(4.0D0/(NCUBE(2)-1))
                 PZ = D0
               ENDIF
 C
@@ -649,8 +649,8 @@ C
               ENDIF
 C
               IF(CUT_YZ_SMALL) THEN
-                PY = -3.0D0+(KCUBE-1)*(6.0D0/(NCUBE(3)-1))
-                PZ = -3.0D0+(JCUBE-1)*(6.0D0/(NCUBE(2)-1))
+                PY = -2.0D0+(KCUBE-1)*(4.0D0/(NCUBE(3)-1))
+                PZ = -2.0D0+(JCUBE-1)*(4.0D0/(NCUBE(2)-1))
                 PX = D0
               ENDIF
 C
@@ -898,10 +898,10 @@ C
        SPINDENSITY_NORM = DSQRT(SPINDENSITY_NORM)
 C
        IF(CUT_XY.OR.CUT_XY_SMALL) THEN
-         WRITE(0,'(4F20.6)') PX, PY, (SPINDENSITY(I),I=1,2)
+         WRITE(0,'(4F30.20)') PX, PY, (SPINDENSITY(I),I=1,2)
        ENDIF
        IF(CUT_YZ.OR.CUT_YZ_SMALL) THEN
-         WRITE(0,'(4F20.6)') PY, PZ, (SPINDENSITY(I),I=2,3)
+         WRITE(0,'(4F30.20)') PY, PZ, (SPINDENSITY(I),I=2,3)
        ENDIF
 #else
       CALL QUIT('perturbed magnetization density not implemented')
@@ -920,10 +920,10 @@ C
        CURRENTDENSITY_NORM = DSQRT(CURRENTDENSITY_NORM)
 C
        IF(CUT_XY.OR.CUT_XY_SMALL) THEN
-         WRITE(0,'(4F20.6)') PX, PY, (CURRENTDENSITY(I),I=1,2)
+         WRITE(0,'(4F30.20)') PX, PY, (CURRENTDENSITY(I),I=1,2)
        ENDIF
        IF(CUT_YZ.OR.CUT_YZ_SMALL) THEN
-         WRITE(0,'(4F20.6)') PY, PZ, (CURRENTDENSITY(I),I=2,3)
+         WRITE(0,'(4F30.20)') PY, PZ, (CURRENTDENSITY(I),I=2,3)
        ENDIF
 #else
       CALL QUIT('perturbed current density not implemented')
@@ -946,10 +946,10 @@ C
        RXJ_NORM = DSQRT(RXJ_NORM)
 C
        IF(CUT_XY.OR.CUT_XY_SMALL) THEN
-         WRITE(0,'(4F20.6)') PX, PY, (RXJ(I),I=1,2)
+         WRITE(0,'(4F30.20)') PX, PY, (RXJ(I),I=1,2)
        ENDIF
        IF(CUT_YZ.OR.CUT_YZ_SMALL) THEN
-         WRITE(0,'(4F20.6)') PY, PZ, (RXJ(I),I=2,3)
+         WRITE(0,'(4F30.20)') PY, PZ, (RXJ(I),I=2,3)
        ENDIF
 #else
       CALL QUIT('.RXJ not implemented')
