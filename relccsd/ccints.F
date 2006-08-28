@@ -595,6 +595,99 @@ C
 10011 CALL QUIT('ERROR READING INTEGRALS FROM MDBINT')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ADDPROP (PROP_NAME,FF_STRENGTH,NSP,FOCKR,FOCKI,
+     &                    PROPR,PROPI)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Reads property integral files and adds the specified operator
+C     to the Fock matrix (after multiplying it with the specified
+C     field strength). This allows for treatment of operators that
+C     break the Kramers but not the point group symmetry.
+C     This version reads from the file created by PRTRAN
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER NSP,NSPQ
+      REAL*8 PROPR(NSP,NSP),PROPI(NSP,NSP)
+      REAL*8 FOCKR(NSP,NSP),FOCKI(NSP,NSP)
+      REAL*8 FF_STRENGTH(2), F_ANTI_HERMITIAN
+      CHARACTER*8 PROP_NAME
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8 AH_CHECK
+      PARAMETER (AH_CHECK=1.D-5)
+      CHARACTER*32 ACHAR
+C
+C---------------Executable code--------------------------------------
+C
+      OPEN (MDPROP,FILE='MDPROP',FORM='UNFORMATTED')
+      INOP = 0
+    1 READ (MDPROP,ERR=10,END=11) ACHAR
+      IF (ACHAR(1:8).NE.'********'.OR.ACHAR(25:32).NE.PROP_NAME) GOTO 1
+      WRITE (IW,1000) PROP_NAME,ACHAR(9:16),ACHAR(17:24),FF_STRENGTH
+      READ (MDPROP) ((PROPR(I,J),PROPI(I,J),I=1,NSP),J=1,NSP)
+      CLOSE (MDPROP,STATUS='KEEP')
+      GOTO 12
+   10 INOP = 1
+      GOTO 12
+   11 INOP = 2
+   12 CONTINUE
+C
+C     Error exit if the integrals could not be read
+C
+      IF (INOP.EQ.1) GOTO 101
+      IF (INOP.EQ.2) GOTO 102
+C
+C     Multiply with the real part of the FF strength parameter
+      NSPQ = NSP * NSP
+      CALL DAXPY (NSPQ,FF_STRENGTH(1),PROPR,1,FOCKR,1)
+      CALL DAXPY (NSPQ,FF_STRENGTH(1),PROPI,1,FOCKI,1)
+C     Multiply with the imaginary part of the FF strength parameter
+      CALL DAXPY (NSPQ,-FF_STRENGTH(2),PROPI,1,FOCKR,1)
+      CALL DAXPY (NSPQ,FF_STRENGTH(2),PROPR,1,FOCKI,1)
+C
+C     Check the hermiticity of the new Fock matrix
+C
+      DO J = 1, NSP
+         DO I = 1, NSP
+            F_ANTI_HERMITIAN = FOCKR(I,J) - FOCKR(J,I)
+            IF (ABS(F_ANTI_HERMITIAN).GT.AH_CHECK)
+     &         CALL QUIT ("Perturbed Fock matrix is nonhermitian")
+            F_ANTI_HERMITIAN = FOCKI(I,J) + FOCKI(J,I)
+            IF (ABS(F_ANTI_HERMITIAN).GT.AH_CHECK)
+     &         CALL QUIT ("Perturbed Fock matrix is nonhermitian")
+         ENDDO
+      ENDDO
+      RETURN
+C
+  101 WRITE (6,*) ' Error reading property ',PROP_NAME,' on file MDPROP'
+      CALL QUIT(' Error reading property integrals')
+  102 WRITE (6,*) ' Property ',PROP_NAME,' not found on file MDPROP'
+      CALL QUIT(' Property integrals missing')
+ 1000 FORMAT (/' Read integral type ',A8,' created ',
+     & A8,' storage info : ',A8
+     &/' Added this to the Fock matrix with field strength ',2G16.8)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDPROP(IPRNT,NAMEA,NSP,RDDIAG,PROP,IREPSPI,APHASE,
      &                  AVO,AOV,AOO,AVV)
 C
@@ -1118,9 +1211,13 @@ C
 #endif
 C---------------Local variables--------------------------------------
 C
+      REAL*8 SYM_CHECK
+      PARAMETER (SYM_CHECK=1.D-5)
       REAL*8 EPSDIF
       LOGICAL FOCKSP
       CHARACTER*2 ORBTYP
+      REAL*8 FF_STRENGTH(2)
+      CHARACTER*8 PROP_NAME
 C
 C---------------Executable code--------------------------------------
 C
@@ -1140,6 +1237,17 @@ C
         READ (MRCONEE) 
         READ (MRCONEE) (BUF1(IJ),BUF2(IJ),IJ=1,NSPQ)
         CLOSE (MRCONEE)
+C       We may add a property operator here, scaled with a field strength
+C       Note that the input can supply a list of operators, here we just assume
+C       that only one is added.
+C       Use the VBUF arrays as scratch arrays, they will always be large enough
+        IF (ADD_FINITE_FIELD) THEN
+           FF_STRENGTH(1) = FF_PROP_STRENGTHS(1,1)
+           FF_STRENGTH(2) = FF_PROP_STRENGTHS(2,1)
+           PROP_NAME = FF_PROP_NAMES(1)
+           CALL ADDPROP (PROP_NAME,FF_STRENGTH,NSP,
+     &                   BUF1,BUF2,VBUF1,VBUF2)
+        ENDIF
       ENDIF
 C
 #if defined (VAR_MPI)
@@ -1164,6 +1272,19 @@ C
          DO J = 1, NSP
             DO I = 1, NSP
                IJ = IJ + 1
+C-----------------------------------------------------------------------
+C This test is to be debugged, we do not yet have irep info for
+C all the index pairs, which gives spurious quits. EE+LV, aug 2006
+C-----------------------------------------------------------------------
+C              Before processing, we check whether the Fock matrix
+C              is indeed totally symmetric. This will catch errors
+C              in finite-field calculations and is a useful additional
+C              check otherwise
+C              IREP = INDEX(I,J,3,ICASE)
+C              FSIZE = ABS(BUF1(IJ)) + ABS(BUF2(IJ))
+C              IF (IREP.NE.1.AND.FSIZE.GT.SYM_CHECK)  
+C    &            CALL QUIT (" Fock matrix not totally symmetric")
+C-----------------------------------------------------------------------
                ITYP = INDEX(I,J,1,ICASE)
                IND = INDEX(I,J,2,ICASE)
                IF (FOCKSP) IND = INDEX(I,J,2,ITYP)

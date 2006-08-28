@@ -175,7 +175,8 @@ C
       NAMELIST/RELCCSD/ NELEC,NELEC_F1,NELEC_F2,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOFSPC,
      &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
-      NAMELIST/CCSORT/ USEOE,NORECMP
+      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,
+     &                 FF_PROP_NAMES,FF_PROP_STRENGTHS
       NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCFOPR/ DOMP2G,DOMP2GOLD,DOCCSDG,DOCCSDTG,NEOPER,NAMEE,
@@ -418,9 +419,17 @@ C     Shifts for hole-particle excitations may be either negative or positive
       SHIFT_IH(2,4) =  SHIFTHP
 C
 C     Input for the sorting routine.
+C     We can add a finite field here, if desired
+C     This assumes that PRTRA is called as well !
 C
       USEOE = .TRUE.
       NORECMP = .FALSE.
+      ADD_FINITE_FIELD = .FALSE.
+      DO IOPER = 1, MAXOP
+         FF_PROP_NAMES(IOPER) = '        '
+         FF_PROP_STRENGTHS(1,IOPER) = 0.D0
+         FF_PROP_STRENGTHS(2,IOPER) = 0.D0
+      ENDDO
       REWIND (IN)
       READ (IN,CCSORT,END=14,ERR=13)
       GOTO 14
