@@ -4197,7 +4197,7 @@ C
       PFAC(2)  = 0.5D0*CVAL
       PFAC(3)  =  0.5D0*G1FAC
 C X component of B-field
-      PNAME     = 'MAGFLDX1'
+      PNAME     = 'MAGFLDX'
       IPTYP     = IOP(1)
       PLABEL(1) = 'ZDIPLEN'
       PLABEL(2) = 'YDIPLEN'
@@ -4227,7 +4227,7 @@ C        Sigma_X:
       END IF
 #if !defined (XH4)
 C Y component of B-field
-      PNAME     = 'MAGFLDY2'
+      PNAME     = 'MAGFLDY'
       IPTYP     = IOP(2)
       PLABEL(1) = 'XDIPLEN'
       PLABEL(2) = 'ZDIPLEN'
@@ -4256,7 +4256,7 @@ C        Sigma_Y:
          CALL OP1IND('y spin',IPSIGMA(2),LESRP,NESRP,INDXPR,MAXESR)
       END IF
 C Z component of B-field
-      PNAME     = 'MAGFLDZ3'
+      PNAME     = 'MAGFLDZ'
       IPTYP     = IOP(3)
       PLABEL(1) = 'YDIPLEN'
       PLABEL(2) = 'XDIPLEN'
@@ -4497,7 +4497,7 @@ C
       PFAC(3)   = 0.5D0*G1FAC
 C
 C     x - component
-      PNAME     = 'MAGFLDX1'
+      PNAME     = 'MAGFLDX'
       IPTYP     = IOP(1)
       PLABEL(1) = 'ZDIPLEN'
       PLABEL(2) = 'YDIPLEN'
@@ -4507,7 +4507,7 @@ C     x - component
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
 C     y - component
-      PNAME     = 'MAGFLDY2'
+      PNAME     = 'MAGFLDY'
       IPTYP     = IOP(2)
       PLABEL(1) = 'XDIPLEN'
       PLABEL(2) = 'ZDIPLEN'
@@ -4517,7 +4517,7 @@ C     y - component
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
 C     z - component
-      PNAME     = 'MAGFLDZ3'
+      PNAME     = 'MAGFLDZ'
       IPTYP     = IOP(3)
       PLABEL(1) = 'YDIPLEN'
       PLABEL(2) = 'XDIPLEN'
@@ -5063,7 +5063,7 @@ C     Define  operators for conventional orbitals
        PFAC(1)  = DI2*CVAL
        PFAC(2)  = DI2*CVAL
 C   ....X componete of B-field
-       PNAME     = 'MAGFLDX1'
+       PNAME     = 'MAGFLDX'
        IPTYP     = IOP(1)
        PLABEL(1) = 'ZDIPLEN'
        PLABEL(2) = 'YDIPLEN'
@@ -5075,7 +5075,7 @@ C   ....X componete of B-field
      &     ,MAXLLR)
 #if !defined (XH4)
 C Y componete of B-field
-       PNAME     = 'MAGFLDY2'
+       PNAME     = 'MAGFLDY'
        IPTYP     = IOP(2)
        PLABEL(1) = 'XDIPLEN'
        PLABEL(2) = 'ZDIPLEN'
@@ -5086,7 +5086,7 @@ C Y componete of B-field
        CALL OP1IND('XFIELDB',IPMSUSC(2,2),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
 C Z componete of B-field
-       PNAME     = 'MAGFLDZ3'
+       PNAME     = 'MAGFLDZ'
        IPTYP     = IOP(3)
        PLABEL(1) = 'YDIPLEN'
        PLABEL(2) = 'XDIPLEN'
@@ -7754,7 +7754,7 @@ C     Conventional orbitals
          PFAC(1)  = DI2*CVAL
          PFAC(2)  = DI2*CVAL
 C X componete of B-field
-         PNAME     = 'MAGFLDX1'
+         PNAME     = 'X magnetic field - Bx'
          IPTYP     = IOP(1)
          PLABEL(1) = 'ZDIPLEN'
          PLABEL(2) = 'YDIPLEN'
@@ -7766,7 +7766,7 @@ C X componete of B-field
      &     ,MAXLLR)
 #if !defined (XH4)
 C Y componete of B-field
-         PNAME     = 'MAGFLDY2'
+         PNAME     = 'Y magnetic field - By'
          IPTYP     = IOP(2)
          PLABEL(1) = 'XDIPLEN'
          PLABEL(2) = 'ZDIPLEN'
@@ -7777,7 +7777,7 @@ C Y componete of B-field
          CALL OP1IND('XFIELDB',IPROTG(2,2),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
 C Z componete of B-field
-         PNAME     = 'MAGFLDZ3'
+         PNAME     = 'Z magnetic field - Bz'
          IPTYP     = IOP(3)
          PLABEL(1) = 'YDIPLEN'
          PLABEL(2) = 'XDIPLEN'
@@ -7850,6 +7850,7 @@ C***********************************************************************
 #include "dcbxlr.h"
 CMI ... added
 #include "nuclei.h"
+#include "symmet.h"
 #include "molgfa.h"
 #include "iratdef.h"
 
@@ -7897,13 +7898,13 @@ C     ENDDO
 
          CALL PRSYMB(LUPRI,'-',72,2)
 
-         IF(.NOT.BFREQ(IFREQ).EQ.0.0E1) THEN
+         IF(BFREQ(IFREQ).NE.0.0D0) THEN
             WRITE(LUPRI,'(A,F15.8,2X,A)') 
      &      '*** Frequency    :',BFREQ(IFREQ),'a.u.'
          ENDIF
 
          DO IB = 1,NB
-            READ (PRPNAM(LLRBPU(IBUFB(IB))),'(6X,A1)') BX
+            READ (PRPNAM(LLRBPU(IBUFB(IB))),'(A1)') BX
 
 C           write(lupri,*) '(LLRBPU(IBUFB(IB))=',
 C    &      PRPNAM(LLRBPU(IBUFB(IB))),'BX=',BX,' symm=',
@@ -7911,11 +7912,10 @@ C    &     IPRPSYM(LLRBPU(IBUFB(IB))),'LLRBPU(IBUFB(IB))=',
 C    &     LLRBPU(IBUFB(IB))
 
             KB = IBUFB(ICONVXYZ(BX))
+            KB = IPTAX(KB,2)
             DO IA = 1,NA
 
-C              READ (PRPNAM(LLRAPU(IBUFA(IAX))),'(6X,A1)') AX
-               READ (PRPNAM(LLRAPU(IBUFA(IA))),'(6X,A1)') AX
-C              READ (PRPNAM(IAX),'(6X,A1)') AX
+               READ (PRPNAM(LLRAPU(IBUFA(IA))),'(A1)') AX
 
 C       write(lupri,*) 'PRPNAM(LLRAPU(IBUFA(IA))=',
 C    &       PRPNAM(LLRAPU(IBUFA(IA))),' AX=',AX,' symm=',
@@ -7925,9 +7925,8 @@ C    &       LLRAPU(IBUFA(IA))
 C       write(lupri,*) 'IBUFA(IA),IBUFB(IB)=',IBUFA(IA),IBUFB(IB)
 
                KA = IBUFA(ICONVXYZ(AX))
+               KA = IPTAX(KA,2)
 
-C              KA = IBUFA(IA)
-C              KA = IBUFA(IAX)
 CMI            VALUE = -4*ABLRF(IFREQ,KA,KB,1)
                VALUE = -4*ABLRF(IFREQ,KA,KB)
 
