@@ -7754,7 +7754,7 @@ C     Conventional orbitals
          PFAC(1)  = DI2*CVAL
          PFAC(2)  = DI2*CVAL
 C X componete of B-field
-         PNAME     = 'X magnetic field - Bx'
+         PNAME     = 'X magnetic field'
          IPTYP     = IOP(1)
          PLABEL(1) = 'ZDIPLEN'
          PLABEL(2) = 'YDIPLEN'
@@ -7766,7 +7766,7 @@ C X componete of B-field
      &     ,MAXLLR)
 #if !defined (XH4)
 C Y componete of B-field
-         PNAME     = 'Y magnetic field - By'
+         PNAME     = 'Y magnetic field'
          IPTYP     = IOP(2)
          PLABEL(1) = 'XDIPLEN'
          PLABEL(2) = 'ZDIPLEN'
@@ -7777,7 +7777,7 @@ C Y componete of B-field
          CALL OP1IND('XFIELDB',IPROTG(2,2),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
 C Z componete of B-field
-         PNAME     = 'Z magnetic field - Bz'
+         PNAME     = 'Z magnetic field'
          IPTYP     = IOP(3)
          PLABEL(1) = 'YDIPLEN'
          PLABEL(2) = 'XDIPLEN'
@@ -7834,7 +7834,7 @@ C
 C   Written by T.Enevoldsen Jul. 1998
 C     
 C  Revisions: MI, jan.2003 - added from TEC's 'left' code
-C             MI, Prievidza, August 2006
+C             MI, Prievidza/Odense, August 2006
 C     
 C***********************************************************************
 #include "implicit.h"
@@ -7885,15 +7885,6 @@ C
          ENDIF
       END DO
 
-CMI Aug 2006:  To get numbers compatible with Dalton
-CMI we need special way on extracting the response part of rot_g_tensor
-CMI ... still TODO
-
-C     write(lupri,*) 'NLRAPT,NLRBPT =',NLRAPT,NLRBPT
-C     DO I =1, NLRAPT
-C      write(lupri,*) 'I=',I,' operator A:',PRPNAM(LLRAPU(I))
-C     ENDDO
-
       DO IFREQ = 1,NBFREQ
 
          CALL PRSYMB(LUPRI,'-',72,2)
@@ -7906,36 +7897,21 @@ C     ENDDO
          DO IB = 1,NB
             READ (PRPNAM(LLRBPU(IBUFB(IB))),'(A1)') BX
 
-C           write(lupri,*) '(LLRBPU(IBUFB(IB))=',
-C    &      PRPNAM(LLRBPU(IBUFB(IB))),'BX=',BX,' symm=',
-C    &     IPRPSYM(LLRBPU(IBUFB(IB))),'LLRBPU(IBUFB(IB))=',
-C    &     LLRBPU(IBUFB(IB))
-
             KB = IBUFB(ICONVXYZ(BX))
             KB = IPTAX(KB,2)
+
             DO IA = 1,NA
 
                READ (PRPNAM(LLRAPU(IBUFA(IA))),'(A1)') AX
 
-C       write(lupri,*) 'PRPNAM(LLRAPU(IBUFA(IA))=',
-C    &       PRPNAM(LLRAPU(IBUFA(IA))),' AX=',AX,' symm=',
-C    &       IPRPSYM(LLRAPU(IBUFA(IA))),'LLRAPU(IBUFA(IA))=',
-C    &       LLRAPU(IBUFA(IA))
-
-C       write(lupri,*) 'IBUFA(IA),IBUFB(IB)=',IBUFA(IA),IBUFB(IB)
-
                KA = IBUFA(ICONVXYZ(AX))
                KA = IPTAX(KA,2)
 
-CMI            VALUE = -4*ABLRF(IFREQ,KA,KB,1)
                VALUE = -4*ABLRF(IFREQ,KA,KB)
 
-CMI            .... hoping ...
-CMI            ELMGF (KA,KB) = ABLRF(IFREQ,KA,KB,1)
-               ELMGF (KA,KB) = ABLRF(IFREQ,KA,KB)
+               ELMGF (KA,KB) = ABLRF(IFREQ,IBUFA(IA),IBUFB(IB))
                ELMGF (KB,KA) = ELMGF (KA,KB)
 
-C      write(lupri,*) 'KA,KB=',KA,KB, "ABALRF (KA,KB)=",ELMGF (KA,KB)
        WRITE(LUPRI,'(5A,F15.8,2X,A,F15.8)') '@ g(',AX,',',BX,') =',
      &             VALUE,'a.u. ELMGF=',ELMGF (KA,KB)
             ENDDO
@@ -7951,20 +7927,9 @@ C
 
       END DO
 
-CMI ... from DALTON
-C     KGEOM = 1
-C     KMASS = KGEOM + 3*(NATOMS + NFLOAT)
-C     KNAT  = KMASS + NATOMS + NFLOAT
-C     KNUMIS= KNAT  + (NATOMS + NFLOAT + 1)/IRAT
-C     KLAST = KNUMIS+ (NATOMS + NFLOAT + 1)/IRAT
-C     IF (KLAST .GT. LWORK) CALL STOPIT('ABADRV','CMMASS',KLAST,
-C     IF (KLAST .GT. LFREE) CALL QUIT('PRP_ROTG...error alloc 1 !')
-
-
       CALL MEMCHK('PRP_ROTG 1',WORK,1)
 
       IGEOMSIZE = 3*(NATOMS+NFLOAT)
-C     CALL MEMGET('REAL',KGEOM  ,3*(NATOMS+NFLOAT) ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGEOM  ,IGEOMSIZE, WORK,KFREE,LFREE)
 
       CALL MEMCHK('PRP_ROTG 2',WORK,1)
@@ -7973,18 +7938,14 @@ C     CALL MEMGET('REAL',KGEOM  ,3*(NATOMS+NFLOAT) ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNAT   ,  NATOMS ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNUMIS ,  NATOMS ,WORK,KFREE,LFREE)
 
-CC    write(lupri,*) 'gagorg 1:',GAGORG(1),GAGORG(2),GAGORG(3)
 
       DO I = 1, MXCENT
             ISOTOP(I) = 1
       END DO
-C     CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),WORK(KNUMIS),
       CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,
      &            IPRPRP)
 
        CALL DCOPY(3,CMXYZ,1,GAGORG,1)
-CC    write(lupri,*) 'gagorg 2:',GAGORG(1),GAGORG(2),GAGORG(3)
-C      CALL DZERO(GAGORG,3)
        CALL NUCMGF(WORK(KGEOM),GAGORG,LUPRI,IPRPRP)
 
 CMI ... from DALTON
@@ -8006,12 +7967,9 @@ CMI      IF (KLAST .GT. LWORK) CALL
       DO I = 1, MXCENT
             ISOTOP(I) = 1
       END DO
-CMI     CALL MGFRES(WORK(KGEOM),WORK(KAMASS),WORK(KLAST),LWRK,JATOM,
-        CALL MGFRES(WORK(KGEOM),WORK(KAMASS),JATOM,IPRPRP)
+      CALL MGFRES(WORK(KGEOM),WORK(KAMASS),JATOM,IPRPRP)
 
-        CALL MEMCHK('prp_rotg 0.2',WORK,1)
 
-CMI   ... will it work ?
 C ... release the memmory...
       CALL MEMREL('GETCON',WORK,1,KFRSAV,KFREE,LFREE)
 
@@ -8145,10 +8103,7 @@ C
 C
 C     Add terms to diamagnetic molecular g factor
 C
-CMI .... only LONDON orbitals !!!!!!!
-CMI      ... NOLOND in abainf.h...
-
-      write(lupri,*) 'NOLOND=',NOLOND,' IPRINT=',IPRINT
+C     write(lupri,*) 'NOLOND=',NOLOND,' IPRINT=',IPRINT
 
       IF (.NOT. NOLOND) THEN
          DO 10 I = 1, 3
