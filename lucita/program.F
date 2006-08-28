@@ -1059,6 +1059,8 @@ C     I_RESTRT_CC.EQ.1
 * Final set of MO's
 * =================
 *
+C     nomofl = 0
+*
       IF(NOMOFL.EQ.0) THEN
 *. Create final set of mo's
         WRITE(6,*) ' I am going to call FINMO '

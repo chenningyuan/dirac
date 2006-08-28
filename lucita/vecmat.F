@@ -710,13 +710,15 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
       IF( ICISTR .NE. 1 ) CALL REWINO(LUC)
 *. Number of terms to be printed
 C?    WRITE(6,*) ' GASANA : IPRNCIV = ', IPRNCIV
-      IF(IPRNCIV.EQ.0) THEN
-        THRES = 0.02
+      IF (IPRNCIV.EQ.0) THEN
+        THRES = 2.0D-1
         MAXTRM = 200
-      ELSE
-        THRES = 0.0D0
-*. Well atmost 100000 coefs - to save disk ..
-        MAXTRM = 100000
+      ELSE IF (IPRNCIV.EQ.1) THEN
+        THRES = 2.0D-3
+        MAXTRM = 1000
+      ELSE IF (IPRNCIV.EQ.2) THEN
+        THRES = 2.0D-4
+        MAXTRM = 10000
       END IF
 *
       IUSLAB = 0
@@ -762,11 +764,11 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GASANAS(C,LUC,NSSOA,NSSOB,NOCTPA,NOCTPB,
-     &                 MXPNGAS,IOCTPA,IOCTPB,NBLOCK,IBLOCK,
-     &                 THRES,MAXTRM,NAEL,NBEL,
-     &                 IASTR,IBSTR,IBLTP,NSMST,IUSLAB,
-     &                 IOBLAB,NCPMT,WCPMT,NELFSPGP,NOCCLS,NGAS,
-     &                 IOCCLS,ICISTR,NORB,IPRNCIV)
+     &                   MXPNGAS,IOCTPA,IOCTPB,NBLOCK,IBLOCK,
+     &                   THRES,MAXTRM,NAEL,NBEL,
+     &                   IASTR,IBSTR,IBLTP,NSMST,IUSLAB,
+     &                   IOBLAB,NCPMT,WCPMT,NELFSPGP,NOCCLS,NGAS,
+     &                   IOCCLS,ICISTR,NORB,IPRNCIV)
 *
 * Analyze CI vector :
 *
@@ -832,7 +834,7 @@ C     WRITE(6,*) 'C(1) = ',C(1)
         XMIN = XMIN/SQRT(10.0D0)
       END IF
       IF(XMIN .LT. THRES  ) XMIN =  THRES
-      IF(IPRNCIV.EQ.1) THEN
+      IF(IPRNCIV.GE.2) THEN
 *. Print in one shot
        XMAX = 3006.1956
        XMIN = 0.0D0
@@ -2177,7 +2179,7 @@ C     KLL = KFLREE
 *
 *. a matrix XIN is given as NTOOB X NTOOB matrix in type form
 *
-* If ISYM.eq.1 matrix is assuemed to be packed - lower half as usual
+* If ISYM.eq.1 matrix is assumed to be packed - lower half as usual
 *.
 *. Reorder to symmetry-ordered and -blocked matrix to give XOUT
 *

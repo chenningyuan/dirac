@@ -3188,6 +3188,7 @@ c       Write(*,Fmt) '*'//Line//'*'
 *     University of Lund, Sweden, 1993                                 *
 *     Modified, Timo Fleig, Dec 2001                                   *
 *                           Aug 2004                                   *
+*                           Aug 2006                                   *
 *                                                                      *
 *----------------------------------------------------------------------*
 *                                                                      *
@@ -3195,7 +3196,7 @@ c       Write(*,Fmt) '*'//Line//'*'
 *                                                                      *
 ************************************************************************
       Character*8   Fmt
-      Character*80  Line,BlLine,StLine
+      Character*70  Line,BlLine,StLine
 *----------------------------------------------------------------------*
 *     Start and define the paper width                                 *
 *----------------------------------------------------------------------*
@@ -3215,10 +3216,10 @@ c       Write(*,Fmt) '*'//Line//'*'
 *----------------------------------------------------------------------*
       Write(*,*)
       Write(*,*)
-      nLine=18
+      nLine=25
       Do i=1,nLine
         Line=BlLine
-        If ( i.eq.1 .or. i.eq.nLine )
+        If ( i.eq.1 .or. i.eq.2 .or. i.eq.nLine )
      &  Line=StLine
         If ( i.eq.5 )
      &  Line='D I R L U C'
@@ -3245,6 +3246,16 @@ c       Write(*,Fmt) '*'//Line//'*'
         If ( i.eq.17)
      &  Line='                                                  '
         If ( i.eq.18)
+     &  Line='Citation:                                         '
+        If ( i.eq.19)
+     &  Line='  J. Olsen, P. Joergensen, J. Simons,             '
+        If ( i.eq.20)
+     &  Line='          Chem. Phys. Lett. 169 (1990) 463        '
+        If ( i.eq.21)
+     &  Line='  T. Fleig, L. Visscher,                          '
+        If ( i.eq.22)
+     &  Line='          Chem. Phys. 311 (2005) 113              '
+        If ( i.eq.24 .or. i.eq.25 )
      &  Line = StLine
         write(6,*) Line
       End Do
@@ -5669,11 +5680,12 @@ CC        IVFLEV = 1               ! could be made more flexible
 *   IPRCIX (done)
 *   IPRORB (done)
 *   IPRDIA (done, but a little incomplete)
-*   IPRXT  (does not shop up anywhere)
+*   IPRXT  (does not show up anywhere)
 *   IPRRSP (for response jobs; omitted)
 *   IPRDEN (done)
 *   IPROCC (done)
 *   IPRNCIV (done)
+*
 *
       IPRDEN = 0
       if (PRILUC.eq.'NON') then
@@ -5715,7 +5727,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRRSP = 0
          if (IDEMOL.ge.1) IPRDEN = 5
          IPROCC = 0
-         IPRNCIV = 1
+         IPRNCIV = 2
       else if (PRILUC.eq.'VHI') then
          IPRSTR = 500
          IPRCIX = 100
@@ -5725,7 +5737,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRRSP = 0
          if (IDEMOL.ge.1) IPRDEN = 500
          IPROCC = 00
-         IPRNCIV = 2
+         IPRNCIV = 5
       end if
 *
       if (IDEMOL.ge.1.and.IPRDEN.lt.1) IPRDEN = 1
@@ -7347,10 +7359,10 @@ C----- bit manipulation definitions
       PARAMETER (IBT02=3, IBT08=255, IBT10=1023, IBT16=65535)
       PARAMETER (MYSHF=16,IBTMY=IBT16,MAXLN=16)
       IBTAND(I,J) = IAND(I,J)
-      IBTOR(I,J)  = IOR(I,J)
-      IBTSHL(I,J) = ISHFT(I,J)
+C     IBTOR(I,J)  = IOR(I,J)
+C     IBTSHL(I,J) = ISHFT(I,J)
       IBTSHR(I,J) = ISHFT(I,-J)
-      IBTXOR(I,J) = IEOR(I,J)
+C     IBTXOR(I,J) = IEOR(I,J)
 C-----
 C
       REWIND LUINT
@@ -7535,9 +7547,6 @@ c
           write(6,*) ' NOCC_L(ISM) is ',NOCC_L(ISM)
           write(6,*) ' NORB_L(ISM) is ',NORB_L(ISM)
         end do
-        write(6,*) ' Check first whether an input for .DHFCAL '
-        write(6,*) ' exists in your DIRAC.INP file.           '
-        write(6,*) ' This is mandatory even if .DHF is not active! '
         stop 'Quitting.'
       end if
 *

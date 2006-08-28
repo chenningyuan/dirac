@@ -579,7 +579,10 @@ C?    DIMENSION SCRTEST(10000)
       COMMON/MOLOBS/
      & IOList(64),iToc(64),nBas(8),nOrb(8),nFro(8),nDel(8),
      & Nsym
-      NTEST = 1
+
+      ifinmo = 0
+
+      NTEST = 000
       IF(NTEST.GE.1) THEN
         WRITE(6,*)
         WRITE(6,*) ' ================'
@@ -612,6 +615,7 @@ C?    DIMENSION SCRTEST(10000)
       IF(IFINMO.EQ.1.OR.IFINMO.EQ.3.OR.IFINMO.EQ.5) THEN
 *. Symmetry order density matrix
         CALL TYPE_TO_SYM_REO_MAT(WORK(KRHO1),WORK(KMAT2))
+        print*,' After TYPE_TO_SYM_REO_MAT '
 *. Pack to triangular form
         DO ISYM = 1, NSMOB
           IF(ISYM.EQ.1) THEN
@@ -637,6 +641,7 @@ C              TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 C         CALL APRBLM2(CMOAO,NBAS,NBAS,NSYM,0)
           CALL APRBLM2(WORK(KMAT1),NACOBS,NACOBS,NSMOB,1)
         END IF
+        print*,' After APRBLM2 '
       END IF
       IF(IFINMO.EQ.3.OR.IFINMO.EQ.4.OR.IFINMO.EQ.5) THEN
 *. Diagonalize symmetry-type blocks
@@ -672,17 +677,20 @@ C?   &                         scrtest(1+nint1),scrtest(1+2*nint1))
 *
 *. Second transformation matrix is now in WORK(KMAT5)
 *. Obtain total transformation matrix
-C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,LBROW,LBCOL,ITRNSP)
+C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,
+C    &                LBROW,LBCOL,ITRNSP)
         CALL MULT_BLOC_MAT(WORK(KMAT4),WORK(KMAT2),WORK(KMAT5),NSMOB,
      &                     NACOBS,NACOBS,NACOBS,NACOBS,NACOBS,NACOBS,0)
         CALL COPVEC(WORK(KMAT4),WORK(KMAT2),NTOOB**2)
       END IF
       CALL COPVEC(WORK(KMAT2),WORK(KMOMO),LMOMO)
 *     ^ MOMO transformation saved in WORK(KMOMO)
+CTF   print*,'MOMO transformation saved in WORK(KMOMO)'
 *
       IF(NOMOFL.EQ.0) THEN
 *
-*. MAX Length of MA-AO transformation matrix ( no frozen or deleted orbitals)
+*. MAX Length of MO-AO transformation matrix 
+*  (no frozen or deleted orbitals)
 *
         LMOAO = 0
         DO ISYM = 1, NSMOB
