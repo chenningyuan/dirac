@@ -7862,7 +7862,6 @@ CMI ... added
       CALL QENTER('PRP_ROTG')
 C     
       CALL TITLER('DIRAC  - ROTATIONAL g-tensor','*',116)
-      write(lupri,*) 'WARNING: Output not compatible with Dalton !'
 C     
       KFRSAV = KFREE
 C     
@@ -7912,8 +7911,8 @@ C
                ELMGF (KA,KB) = ABLRF(IFREQ,IBUFA(IA),IBUFB(IB))
                ELMGF (KB,KA) = ELMGF (KA,KB)
 
-       WRITE(LUPRI,'(5A,F15.8,2X,A,F15.8)') '@ g(',AX,',',BX,') =',
-     &             VALUE,'a.u. ELMGF=',ELMGF (KA,KB)
+       WRITE(LUPRI,'(5A,F15.8,2X,A)') '@ g(',AX,',',BX,') =',
+     &             VALUE,'a.u.'
             ENDDO
          ENDDO
 C         
