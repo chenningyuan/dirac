@@ -2040,8 +2040,8 @@ C    &            ICISTR,NOCSF,IDIAG,NOINT
 *
 *     IWAY = 1 : choose the lowest values of
 *                the CI diagonal. The number of combinations is
-*                choosen so no degenerate levels are splitted .
-*                the number of combinations used ,NPRDET, can
+*                chosen so that no degenerate levels are splitted.
+*                The number of combinations used, NPRDET, can
 *                therefore be lower than mxsbdt.
 *     IWAY = 2 : Choose the first NPRDET combinations,
 *                stupid, but convenient for testing
@@ -2100,7 +2100,9 @@ C     COMMON/BIGGY/WORK(MXPWRD)
         CALL FNDMND(LUDIA,LBLK,CIDIA,MXDM,NPRDET,WORK(KL1),
      &              WORK(KL2),IDET,WORK(KL3),NTEST)
       ELSE IF ( IWAY .EQ. 2 ) THEN
-        CALL ISETVC(IDET,0,1,NPRDET)
+CTF     Only for debugging purposes. Fixed argument list.
+        IZERO = 0
+        CALL ISETVC(IDET,IZERO,NPRDET)
       END IF
 *. Check for degeneracies on the boundaries between P1, P2 and Q space
 *. P1 - P2

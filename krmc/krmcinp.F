@@ -548,6 +548,7 @@ C
      &     ' * Allowed interval of 2 * MK :',
      &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
       END IF
+C
       IF (KRMC_CIPROGRAM.EQ.'LUCIAREL') THEN
          WRITE(LUPRI,'(A,I4)')
      &' * Using symmetry nomenclature for LUCIAREL. '

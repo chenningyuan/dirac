@@ -7,7 +7,7 @@
 
 include ../Makefile.config
 
-F77_OBJS = ciinfo.o  density.o  diagonal.o  diagonalize.o  doubledir.o  \
+F77_OBJS = ciinfo.o  density.o  diagonal.o  diagonalize.o  \
            fock.o  interface.o  io.o  lucia_cc.o  lucia_icci.o  memory.o \
            program.o  property.o  sigma.o  strings.o  transform.o  utils.o  \
            vecmat.o

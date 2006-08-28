@@ -439,7 +439,7 @@ relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o relccsd/ccfspc.o \\
 relccsd/waio.o  \\
 dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \\
-lucita/ciinfo.o  lucita/density.o  lucita/diagonal.o  lucita/diagonalize.o  lucita/doubledir.o  \\
+lucita/ciinfo.o  lucita/density.o  lucita/diagonal.o  lucita/diagonalize.o  \\
 lucita/fock.o  lucita/interface.o  lucita/io.o  lucita/lucia_cc.o  lucita/lucia_icci.o  lucita/memory.o \\
 lucita/program.o  lucita/property.o  lucita/sigma.o  lucita/strings.o  lucita/transform.o  lucita/utils.o  \\
 lucita/vecmat.o

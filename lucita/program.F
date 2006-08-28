@@ -372,8 +372,8 @@ C       LSCR12 = MAX(LBLOCK,4*LSCR2)
         Call Abend2(' EXPHAM not implemented for GAS ')
         NSBDET = MXP1 + MXP2 + MXQ
         IF(NSBDET .GT. NVAR ) THEN
-*. The allowed dimension of the  subspace is higher than the
-*. total dimension.Reduce total dimension and P1,P2,Q dimensions
+*. The allowed dimension of the subspace is higher than the
+*. total dimension. Reduce total dimension and P1,P2,Q dimensions
 *. Reduce
            ISUB = NSBDET - NVAR
            NSBDET = NVAR
@@ -398,7 +398,7 @@ C       LSCR12 = MAX(LBLOCK,4*LSCR2)
         IF(IPROCC.GT.NVAR ) THEN
            IPROCC = NVAR
         END IF
-*. Obtain and diagonalize subsspace Hamiltonian
+*. Obtain and diagonalize subspace Hamiltonian
 *
         IF(ICISTR.EQ.1) THEN
           LBLK = NVAR
@@ -963,7 +963,8 @@ C
 * =======================
 *
           ELSE IF (CARD(1:7).EQ. 'VECFREE'     ) THEN
-
+            write(6,*) ' Vector free calculation NOT implemented. '
+            call quit(' LUCITA says good-bye. ')
             WRITE(6,'(A,I3)') ' Vector free calculation at level ',
      &                          -ISEQCI(JSEQ,JCMBSPC)
             LEVEL =  -ISEQCI(JSEQ,JCMBSPC)
@@ -975,8 +976,8 @@ C
             END IF
             WRITE(6,*) ' LU1EFF in MAIN ', LU1EFF
 *
-            CALL DIRDIR(JCMBSPC-1,JCMBSPC,IREFSM,LUC,LEVEL,EREF,
-     &                  LUSC2,LUSC3,LU1EFF)
+C           CALL DIRDIR(JCMBSPC-1,JCMBSPC,IREFSM,LUC,LEVEL,EREF,
+C    &                  LUSC2,LUSC3,LU1EFF)
 *
 * ================================
 * General perturbation calculation
@@ -1058,8 +1059,6 @@ C     I_RESTRT_CC.EQ.1
 * =================
 * Final set of MO's
 * =================
-*
-C     nomofl = 0
 *
       IF(NOMOFL.EQ.0) THEN
 *. Create final set of mo's
