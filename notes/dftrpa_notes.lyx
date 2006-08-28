@@ -203,14 +203,12 @@ F_{xc;pq}^{B}=\int\left[\frac{\partial e_{xc}}{\partial\rho}\Omega_{pq}^{B}+2\fr
 
 \end_inset 
 
- and the matrix
-\begin_inset Formula \begin{eqnarray*}
-G_{xc;pq} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}\Omega_{pq}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left\{ \left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\Omega_{pq}+\rho^{B}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{pq}\right)\right\} \right.\\
- & + & \left.2\frac{\partial e_{xc}}{\partial\zeta}\left(\boldsymbol{\nabla}\rho^{B}\cdot\boldsymbol{\nabla}\Omega_{pq}\right)+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\Omega_{pq}\right)\right]d\tau\end{eqnarray*}
-
+ and the matrix 
+\begin_inset Formula $G_{xc;pq}$
 \end_inset 
 
- The matrix has the form (
+.
+ The latter matrix has the form (
 \begin_inset LatexCommand \ref{eq:doexc2}
 
 \end_inset 
@@ -220,6 +218,19 @@ G_{xc;pq} & = & \int\left[\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}\Om
 s & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)=\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+\frac{\partial e_{xc}}{\partial\rho\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)}{\left|\boldsymbol{\nabla}\rho\right|}\\
 \mathbf{v} & = & 2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho^{B}\boldsymbol{\nabla}\rho_{0}+2\frac{\partial e_{xc}}{\partial\zeta}\boldsymbol{\nabla}\rho^{B}+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\boldsymbol{\nabla}\rho_{0}\\
  & = & \left\{ \frac{\partial e_{\textrm{xc}}}{\partial\left|\boldsymbol{{\nabla}}\rho\right|}\boldsymbol{\nabla}\rho^{B}+\left(\frac{\partial e_{xc}}{\partial\rho\partial\left|\boldsymbol{\nabla}\rho\right|}\rho^{B}+\left[\frac{\partial^{2}e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|^{2}}-\frac{\partial e_{xc}}{\partial\left|\boldsymbol{\nabla}\rho\right|}\frac{1}{\left|\boldsymbol{\nabla}\rho\right|}\right]\frac{\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)}{\left|\boldsymbol{\nabla}\rho\right|}\right)\boldsymbol{\nabla}\rho_{0}\right\} \frac{1}{\left|\boldsymbol{\nabla}\rho\right|}\end{eqnarray*}
+
+\end_inset 
+
+
+\layout Standard
+
+The construction of the matrix 
+\begin_inset Formula $G$
+\end_inset 
+
+ requires the perturbed density
+\begin_inset Formula \[
+\rho^{B}=-\Omega_{ii}^{B}=\frac{\partial\rho}{\partial\kappa_{pq}}b_{pq}^{X}=\frac{\partial\rho}{\partial\kappa_{ai}}b_{ai}^{X}-\frac{\partial\rho}{\partial\kappa_{ia}}b_{ia}^{X}=-\Omega_{\kappa\lambda}D_{\lambda\kappa}^{X};\quad D_{\lambda\kappa}^{X}=c_{\lambda r}b_{rs}^{X}c_{\kappa s}\]
 
 \end_inset 
 
@@ -254,19 +265,28 @@ We need
 \end_inset 
 
 .
- The matrix has the form
-\begin_inset Formula \[
-H_{xc;pq}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau\]
+ The matrix has the form (
+\begin_inset LatexCommand \ref{eq:doexc2}
 
 \end_inset 
 
- with
+) with
 \begin_inset Formula \begin{eqnarray*}
 s & = & \frac{\partial^{3}e_{xc}}{\partial\rho^{3}}\rho^{B}\rho^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\rho^{B}\zeta^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\zeta^{B}\rho^{C}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta^{2}}\zeta^{B}\zeta^{C}+\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{BC}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\zeta^{BC}\\
  & = & \frac{\partial^{3}e_{xc}}{\partial\rho^{3}}\rho^{B}\rho^{C}+2\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\left\{ \rho^{B}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{C}\right)+\rho^{C}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\right\} +4\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta^{2}}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{C}\right)\\
  & + & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{BC}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left\{ \left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{BC}\right)+\left(\boldsymbol{\nabla}\rho^{B}\cdot\boldsymbol{\nabla}\rho^{C}\right)\right\} \\
 \mathbf{v} & = & 8\frac{\partial^{3}e_{xc}}{\partial\zeta^{3}}\boldsymbol{\nabla}\rho_{0}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{C}\right)+4\frac{\partial^{3}e_{xc}}{\partial\rho\partial\zeta^{2}}\boldsymbol{\nabla}\rho_{0}\left\{ \rho^{B}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{C}\right)+\rho^{C}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\right\} \\
  & + & 2\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\boldsymbol{\nabla}\rho_{0}\rho^{B}\rho^{C}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\boldsymbol{\nabla}\rho_{0}\rho^{BC}+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\boldsymbol{\nabla}\rho_{0}\left\{ \left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{BC}\right)+\left(\boldsymbol{\nabla}\rho^{B}\cdot\boldsymbol{\nabla}\rho^{C}\right)\right\} \end{eqnarray*}
+
+\end_inset 
+
+ The construction of 
+\begin_inset Formula $H$
+\end_inset 
+
+ requires the perturbed density
+\begin_inset Formula \[
+\rho^{BC}=-\left[b_{aj}^{C}\Omega_{ji}b_{ia}^{B}-b_{ia}^{B}\Omega_{ab}b_{bi}^{C}-b_{ib}^{C}\Omega_{ba}b_{ai}^{B}+b_{ai}^{B}\Omega_{ij}b_{ja}^{C}\right]\]
 
 \end_inset 
 
