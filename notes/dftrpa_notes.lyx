@@ -192,8 +192,8 @@ We need
 \left.\frac{d}{d\varepsilon_{B}}\left[\frac{\partial E_{xc}}{\partial\kappa_{ai}^{*}}\right]\right|_{\boldsymbol{\kappa}=\mathbf{0}} & = & -\int\left[\frac{\partial e_{xc}}{\partial\rho}\frac{d}{d\varepsilon_{B}}\left(\frac{\partial\rho}{\partial\kappa_{ia}}\right)+\frac{\partial e_{xc}}{\partial\zeta}\frac{d}{d\varepsilon_{B}}\left(\frac{\partial\zeta}{\partial\kappa_{ia}}\right)\right.\\
  & + & \left.\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\frac{\partial\rho}{\partial\kappa_{ia}}\frac{d\rho}{d\varepsilon_{B}}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\frac{\partial\zeta}{\partial\kappa_{ia}}\frac{d\rho}{d\varepsilon_{B}}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\frac{\partial\rho}{\partial\kappa_{ia}}\frac{d\zeta}{d\varepsilon_{B}}+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\frac{\partial\zeta}{\partial\kappa_{ia}}\frac{d\zeta}{d\varepsilon_{B}}\right]d\tau\\
  & = & -\int\left[\frac{\partial e_{xc}}{\partial\rho}\rho_{ia}^{B}+\frac{\partial e_{xc}}{\partial\zeta}\zeta_{ia}^{B}\right.\\
- & + & \left.\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho_{ia}\rho^{B}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\zeta_{ia}\rho^{B}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho_{ia}\zeta^{B}+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\zeta_{ia}\zeta^{B}\right]d\tau\\
- & = & -F_{xc;ai}^{B}-G_{xc;ai}\end{eqnarray*}
+ & + & \left.\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho_{ia}\rho^{B}++\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho_{ia}\zeta^{B}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\zeta_{ia}\rho^{B}+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\zeta_{ia}\zeta^{B}\right]d\tau\\
+ & = & -\left(F_{xc;ai}^{B}+G_{xc;ai}\right)\end{eqnarray*}
 
 \end_inset 
 
@@ -224,6 +224,53 @@ s & = & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{B}+2\frac{\partial^{2}e
 \end_inset 
 
 
+\layout Subsection
+
+Quadratic reponse
+\layout Standard
+
+We need
+\begin_inset Formula \begin{eqnarray*}
+\left.\frac{d^{2}}{d\varepsilon_{B}d\varepsilon_{C}}\left[\frac{\partial E_{xc}}{\partial\kappa_{ai}^{*}}\right]\right|_{\boldsymbol{\kappa}=\mathbf{0}} & = & -\int\left[\frac{\partial e_{xc}}{\partial\rho}\rho_{ia}^{BC}+\frac{\partial e_{xc}}{\partial\zeta}\zeta_{ia}^{BC}\right.\\
+ & + & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho_{ia}^{B}\rho^{C}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho_{ia}^{B}\zeta^{C}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\zeta_{ia}^{B}\rho^{C}+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\zeta_{ia}^{B}\zeta^{C}\\
+ & + & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho_{ia}^{C}\rho^{B}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho_{ia}^{C}\zeta^{B}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\zeta_{ia}^{C}\rho^{B}+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\zeta_{ia}^{C}\zeta^{B}\\
+ & + & \frac{\partial^{3}e_{xc}}{\partial\rho^{3}}\rho_{ia}\rho^{B}\rho^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\rho_{ia}\rho^{B}\zeta^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\rho_{ia}\zeta^{B}\rho^{C}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta^{2}}\rho_{ia}\zeta^{B}\zeta^{C}\\
+ & + & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho_{ai}\rho^{BC}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho_{ai}\zeta^{BC}+\frac{\partial^{3}e_{xc}}{\partial\zeta^{3}}\zeta_{ia}\zeta^{B}\zeta^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho\partial\zeta^{2}}\zeta_{ia}\rho^{B}\zeta^{C}\\
+ & + & \left.\frac{\partial^{3}e_{xc}}{\partial\rho\partial\zeta^{2}}\zeta_{ia}\zeta^{B}\rho^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\zeta_{ia}\rho^{B}\rho^{C}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\zeta_{ai}\rho^{BC}+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\zeta_{ia}\zeta^{BC}\right|d\tau\\
+ & = & -\left(F_{xc;ai}^{BC}+G_{xc;ai}^{B}+G_{xc;ai}^{C}+H_{xc;ai}\right)\end{eqnarray*}
+
+\end_inset 
+
+ where appears the two-index transformed Kohn-Sham matrix 
+\begin_inset Formula $F_{xc;ai}^{BC}$
+\end_inset 
+
+ , the one-index transformed 
+\begin_inset Formula $G$
+\end_inset 
+
+ matrix (with respect to B and C separately) and a new quantity 
+\begin_inset Formula $H_{xc;pq}$
+\end_inset 
+
+.
+ The matrix has the form
+\begin_inset Formula \[
+H_{xc;pq}=\int s\Omega_{pq}+\mathbf{v}\cdot\boldsymbol{\nabla}\Omega_{pq}d\tau\]
+
+\end_inset 
+
+ with
+\begin_inset Formula \begin{eqnarray*}
+s & = & \frac{\partial^{3}e_{xc}}{\partial\rho^{3}}\rho^{B}\rho^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\rho^{B}\zeta^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\zeta^{B}\rho^{C}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta^{2}}\zeta^{B}\zeta^{C}+\frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{BC}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\zeta^{BC}\\
+ & = & \frac{\partial^{3}e_{xc}}{\partial\rho^{3}}\rho^{B}\rho^{C}+2\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\left\{ \rho^{B}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{C}\right)+\rho^{C}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\right\} +4\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta^{2}}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{C}\right)\\
+ & + & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho^{BC}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\left\{ \left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{BC}\right)+\left(\boldsymbol{\nabla}\rho^{B}\cdot\boldsymbol{\nabla}\rho^{C}\right)\right\} \\
+\mathbf{v} & = & 8\frac{\partial^{3}e_{xc}}{\partial\zeta^{3}}\boldsymbol{\nabla}\rho_{0}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{C}\right)+4\frac{\partial^{3}e_{xc}}{\partial\rho\partial\zeta^{2}}\boldsymbol{\nabla}\rho_{0}\left\{ \rho^{B}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{C}\right)+\rho^{C}\left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{B}\right)\right\} \\
+ & + & 2\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\boldsymbol{\nabla}\rho_{0}\rho^{B}\rho^{C}+2\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\boldsymbol{\nabla}\rho_{0}\rho^{BC}+4\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\boldsymbol{\nabla}\rho_{0}\left\{ \left(\boldsymbol{\nabla}\rho_{0}\cdot\boldsymbol{\nabla}\rho^{BC}\right)+\left(\boldsymbol{\nabla}\rho^{B}\cdot\boldsymbol{\nabla}\rho^{C}\right)\right\} \end{eqnarray*}
+
+\end_inset 
+
+ 
 \layout Subsection
 
 Spin-orbital basis
