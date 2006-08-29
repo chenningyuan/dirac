@@ -387,7 +387,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "mxsymm.h"
          DIMENSION V1(3), V2(3)
          TEMP = (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3))*
-     &           (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))
+     &          (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))
          IF (TEMP .GT. ZERTOL) THEN
             TEMP = (V1(1)*V2(1)+V1(2)*V2(2)+V1(3)*V2(3))/SQRT(TEMP)
 C ::: Parallell vectors might yield a value here that's slightly greater :::
@@ -1378,8 +1378,8 @@ C ::: track of indexes, so that all combinations are tried.        :::
                                  V2(3) = V2(3) + ATMARR(3,M)
  167                          CONTINUE
 C ::: We check for all possible orders of rotation from Ord/2 and down :::
-                              IF((V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(1))
-     1                                       .GT. TOLLRN*TOLLRN) THEN
+                              IF((V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))
+     &                                       .GT. TOLLRN*TOLLRN) THEN
                                DO 168 M = IORD/2, MINORD, -1
                                 IF(ROTAXS(MXM,ATMARR,TMPARR,M,
      &                                                   V2,PROP))THEN
