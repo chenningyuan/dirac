@@ -1,0 +1,33 @@
+**DIRAC
+.WAVE FUNCTIONS
+.PROPERTIES
+**HAMILTONIAN
+.LEVY-LEBLOND   ! non-relativistic
+!                 or
+!.LVCORR          Dirac-Coulomb Hamiltonian without (SS|SS) integrals using LV correction
+.DFT
+LDA             ! the functional is LDA
+**INTEGRALS
+.NUCMOD
+2               ! Gaussian model
+!                 or
+!1                point charge
+*TWOINT
+.SCREEN
+1.0D-16         ! screening of two-electron integrals
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.EVCCNV
+1.0E-8 1.0E-6   ! converge to 1.0E-8 in the error vector but accept error vector below 1.0E-6
+.ITRINT
+0 0             ! include (LL|LL) and (LL|SS) integrals from the 0th iteration on
+!                 (so right from the start)
+!                 a good choice if you restart from a previous run
+**PROPERTIES
+.POLARIZABILITY ! calculate the electric dipole polarizability
+*LINEAR RESPONSE
+.B FREQ
+1               ! ... for only one frequency
+0.072           ! ... for the frequency 0.072 a.u.
+*END OF

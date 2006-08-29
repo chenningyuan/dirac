@@ -1,0 +1,19 @@
+**DIRAC
+.WAVE FUNCTIONS
+.PROPERTIES
+**HAMILTONIAN
+.LEVY-LEBLOND   ! non-relativistic
+!                 or
+!.LVCORR          Dirac-Coulomb Hamiltonian without (SS|SS) integrals using LV correction
+.DFT
+LDA             ! the functional is LDA
+**INTEGRALS
+.NUCMOD
+2               ! Gaussian model
+!                 or
+!1                point charge
+**WAVE FUNCTIONS
+.DHF
+**PROPERTIES
+.POLARIZABILITY ! calculate the electric dipole polarizability
+*END OF
