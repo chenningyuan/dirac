@@ -240,6 +240,7 @@ C
             IQM = IQM + 1
             JCO(IQM) = 1
   11        CONTINUE
+CMI           ... to have INTORB fixed for repeating calls of READNU
             NBLOCK = NBLOCK + 1
             IF (NBLOCK .GT. KAOVEC) THEN
                CALL QUIT('Too many AO blocks'//
@@ -286,9 +287,8 @@ C
                END IF
             ELSE
 
-CMI           ... to have INTORB fixed for repeating calls of READNU
                IF (READNU_CALLED) THEN
-C               INTEXP = INTEXP_SAVE
+C                INTEXP = INTEXP_SAVE
                  INTORB = INTORB_SAVE
                  IF (IPREAD.GE.7) THEN
                  write(lupri,*) 'restored INTORB=',INTORB
@@ -460,7 +460,7 @@ C
 
       IF (IPRINT.GE.5) THEN
        CALL HEADER('Output from READNU',-1)
-       write(lupri,*) 'enetering REANU, IPREAD=',IPRINT
+       write(lupri,*) 'entering READNU, IPREAD=',IPRINT
        write(lupri,*) 'NBLOCK,INTORB:',NBLOCK,INTORB
        write(lupri,*) 'DSM=',DSM
       ENDIF
