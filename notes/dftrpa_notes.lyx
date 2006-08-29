@@ -248,7 +248,7 @@ We need
  & + & \frac{\partial^{3}e_{xc}}{\partial\rho^{3}}\rho_{ia}\rho^{B}\rho^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\rho_{ia}\rho^{B}\zeta^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\rho_{ia}\zeta^{B}\rho^{C}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta^{2}}\rho_{ia}\zeta^{B}\zeta^{C}\\
  & + & \frac{\partial^{2}e_{xc}}{\partial\rho^{2}}\rho_{ai}\rho^{BC}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\rho_{ai}\zeta^{BC}+\frac{\partial^{3}e_{xc}}{\partial\zeta^{3}}\zeta_{ia}\zeta^{B}\zeta^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho\partial\zeta^{2}}\zeta_{ia}\rho^{B}\zeta^{C}\\
  & + & \left.\frac{\partial^{3}e_{xc}}{\partial\rho\partial\zeta^{2}}\zeta_{ia}\zeta^{B}\rho^{C}+\frac{\partial^{3}e_{xc}}{\partial\rho^{2}\partial\zeta}\zeta_{ia}\rho^{B}\rho^{C}+\frac{\partial^{2}e_{xc}}{\partial\rho\partial\zeta}\zeta_{ai}\rho^{BC}+\frac{\partial^{2}e_{xc}}{\partial\zeta^{2}}\zeta_{ia}\zeta^{BC}\right|d\tau\\
- & = & -\left(F_{xc;ai}^{BC}+G_{xc;ai}^{B}+G_{xc;ai}^{C}+H_{xc;ai}\right)\end{eqnarray*}
+ & = & -\left(F_{xc;ai}^{[BC]}+G_{xc;ai}^{C[B]}+G_{xc;ai}^{B[C]}+H_{xc;ai}^{BC}\right)\end{eqnarray*}
 
 \end_inset 
 
