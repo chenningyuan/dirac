@@ -429,9 +429,8 @@ C
             IF (ZORA) CALL ZRDIIS (I,EVEC(I2TMOT(I)+1),WORK,KFREE,LFREE)
 C
             IF (IPRSCF.GE.5) THEN
-               WRITE(CTMP,'(I1)') I
-               CALL HEADER('DIISER: Error vector in MO-basis, corep '
-     &                     //CTMP,-1)
+               CALL HEADER('DIISER DIISMO: FD*D matrix',-1)
+               WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
                CALL PRQMAT(EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                     NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
             END IF
@@ -442,9 +441,8 @@ C
 C
             IF ( IPRSCF .GE. 10 ) THEN
                WRITE(CTMP,'(I1)') I
-               CALL HEADER(
-     &         'DIISER: ErrVec - ErrVec(Hermitian conj.) in MO'//
-     &                     ', corep '//CTMP,-1)
+               CALL HEADER('DIISER: Error vector in MO-basis, corep '
+     &                     //CTMP,-1)
                CALL PRQMAT(EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                  NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
             END IF
@@ -546,53 +544,56 @@ C
              CALL PRQMAT(EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                   NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
            ENDIF
-           IF(IPRSCF.GE.2) THEN
-C            Transform error vector to current orthonormal MO-basis      
-             REWIND LUCMOS
-             CALL READT(LUCMOS,N2TMOTQ,EBUF)
-             NDIM = NTMO(I)*NTMO(I)*NZ
-             CALL MEMGET('REAL',KBUF,NDIM,WORK,KFREE,LFREE)
-             CALL QTRANS('AOMO','S',D0,NTMO(I),NTMO(I),
+   30    CONTINUE
+C
+      END IF
+      IF(IPRSCF.GE.2) THEN
+C     Transform error vector to current orthonormal MO-basis      
+        REWIND LUCMOS
+        CALL READT(LUCMOS,N2TMOTQ,EBUF)
+        DO 40 I = 1,NFSYM
+          IF(NOCC(I).EQ.0) GOTO 40
+          NDIM = NTMO(I)*NTMO(I)*NZ
+          CALL MEMGET('REAL',KBUF,NDIM,WORK,KFREE,LFREE)
+          CALL QTRANS('AOMO','S',D0,NTMO(I),NTMO(I),
      &                NTMO(I),NTMO(I),
      &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
      &                WORK(KBUF),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
      &                EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
      &                EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
      &                WORK(KFREE),LFREE,IPRSCF)
-             CALL HEADER
+          CALL HEADER
      &       ('DIISER DIISMO: Error matrix in current MO-basis',-1)
-             WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-             KOFF = KBUF + NPSH(I)*NTMO(I)
-             IF(IPRSCF.GE.3) THEN
-               CALL PRQMAT(WORK(KOFF),NTMO(I),NOCC(I),
-     &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
-             ENDIF
-             NDIM = NTMO(I)*NTMO(I)
-             DO J1 = 1,NOCC(I)
-               GMAX = D0
-               J2 = 0
-               KOFF = KOFF + NPSH(I)
-               DO K = 1,NESH(I)
-                 GTMP=WORK(KOFF)*WORK(KOFF)
-                 DO IZ = 2,NZ
-                   KK = KOFF + NDIM
-                   GTMP = GTMP + WORK(KK)*WORK(KK)
-                 ENDDO
-                 IF(GTMP.GT.GMAX) THEN
-                   J2 = K
-                   GMAX = GTMP
-                 ENDIF
-                 KOFF = KOFF + 1
-               ENDDO
-               WRITE(6,'(A,I5,A,I5,E12.4)') 
-     &            'Occ. orb. ',J1, '  largest gradient partner: ',J2,
-     &              SQRT(GMAX)
-             ENDDO
-             CALL MEMREL('DIISER.MOerr',WORK,KWORK,KWORK,KFREE,LFREE)
-           ENDIF
-   30    CONTINUE
-C
-      END IF
+          WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+          KOFF = KBUF + NPSH(I)*NTMO(I)
+          IF(IPRSCF.GE.3) THEN
+            CALL PRQMAT(WORK(KOFF),NTMO(I),NOCC(I),
+     &                  NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+          NDIM = NTMO(I)*NTMO(I)
+          DO J1 = 1,NOCC(I)
+            GMAX = D0
+            J2 = 0
+            KOFF = KOFF + NPSH(I)
+            DO K = 1,NESH(I)
+              GTMP=WORK(KOFF)*WORK(KOFF)
+              DO IZ = 2,NZ
+                KK = KOFF + NDIM
+                GTMP = GTMP + WORK(KK)*WORK(KK)
+              ENDDO
+              IF(GTMP.GT.GMAX) THEN
+                J2 = K
+                GMAX = GTMP
+              ENDIF
+              KOFF = KOFF + 1
+            ENDDO
+            WRITE(6,'(A,I5,A,I5,E12.4)') 
+     &       'Occ. orb. ',J1, '  largest gradient partner: ',J2,
+     &        SQRT(GMAX)
+          ENDDO
+          CALL MEMREL('DIISER.MOerr',WORK,KWORK,KWORK,KFREE,LFREE)
+ 40     CONTINUE
+      ENDIF
 C
 C     Find EVCVAL = total norm of gradient in EVEC
 C     ============================================

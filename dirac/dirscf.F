@@ -465,7 +465,7 @@ C
 C       Generate untransformed coefficients (MO basis)
 C       and prepare for overlap selection
 C
-        CALL PRECMOS(CMO,DMAT,FOCK,DOSEL)
+        CALL PRECMOS(CMO,DMAT,FOCK,DOSEL,IPRSCF)
 C
 C       Determine occupation if this was not given in input
 C
@@ -4336,7 +4336,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck precmos */
-      SUBROUTINE PRECMOS(COFT,COFU,TMAT,DOSEL)
+      SUBROUTINE PRECMOS(COFT,COFU,TMAT,DOSEL,IPRINT)
 C***********************************************************************
 C
 C     Generate untransformed coefficients (MO basis)
@@ -4371,13 +4371,24 @@ C.....read SAOMO at rec#2 of LUTMAT
       CLOSE(LUTMAT,STATUS='KEEP')
 C.....transform coefficients to orthonormal basis --> COFU
       DO IFRP = 1,NFSYM
-         CALL QGEMM(NTMO(IFRP),NTMO(IFRP),NFBAS(IFRP,0),D1,
-     &          'H','N',IPQTOQ(1,0),TMAT(I2TMT(IFRP)+1),
-     &                  NFBAS(IFRP,0),NTMO(IFRP),NZT,
-     &          'N','N',IPQTOQ(1,0),COFT(ICMOQ(IFRP)+1),
-     &                  NFBAS(IFRP,0),NTMO(IFRP),NZ,
-     &               D0,IPQTOQ(1,0),COFU(I2TMOT(IFRP)+1),
-     &                  NTMO(IFRP),NTMO(IFRP),1)
+        CALL QGEMM(NTMO(IFRP),NTMO(IFRP),NFBAS(IFRP,0),D1,
+     &         'H','N',IPQTOQ(1,0),TMAT(I2TMT(IFRP)+1),
+     &                 NFBAS(IFRP,0),NTMO(IFRP),NZT,
+     &         'N','N',IPQTOQ(1,0),COFT(ICMOQ(IFRP)+1),
+     &                 NFBAS(IFRP,0),NTMO(IFRP),NZ,
+     &              D0,IPQTOQ(1,0),COFU(I2TMOT(IFRP)+1),
+     &                 NTMO(IFRP),NTMO(IFRP),1)
+        IF(IPRINT.GT.10) THEN
+          WRITE(LUPRI,'(A,I2)') 
+     &     'PRECMOS: Coefficients in SO-basis, fermion ircop ',IFRP
+          CALL PRQMAT(COFT(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NTMO(IFRP),
+     &                NFBAS(IFRP,0),NTMO(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+          WRITE(LUPRI,'(A,I2)') 
+     &     'PRECMOS: Coefficients in orthonormal basis, fermion ircop '
+     &     ,IFRP
+          CALL PRQMAT(COFU(I2TMOT(IFRP)+1),NTMO(IFRP),NTMO(IFRP),
+     &                NTMO(IFRP),NTMO(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
       ENDDO
 C.....write untransformed coefficients to file
       REWIND LUCMOS
