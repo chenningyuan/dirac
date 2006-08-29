@@ -381,7 +381,7 @@ C
       THCXRS = THCQR
       RESFAC = RESXQR
       MAXITR = ITRXQR
-      MAXSIM = 0
+      MAXSIM = -1
       NREDM  = MAXQRM
       N2REDM = MAXQRM*MAXQRM
       LOFFTY = 0
