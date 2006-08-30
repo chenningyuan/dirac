@@ -5813,10 +5813,15 @@ C
 C       Find eigenvalues of Jz
 C
         IF (NL.GT.0) THEN
-           CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
+          IF(DOJACO) THEN
+            CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
+     &                  WORK(KVLL),WORK(KFREE),LFREE)
+          ELSE
+            CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
      &                EIG(IEIGE),1,
      &                WORK(KVLL),NL,NL,
      &                WORK(KFREE),LFREE,IERR)
+          ENDIF
           IF (IPRHAM.GE.15) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues/eigenvectors',-1) 
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -5834,11 +5839,15 @@ C
      &               TMAT(IOFT),NT,NT,NZ)
 C
         IF (NS.GT.0) THEN
-           CALL QDIAG(1,NS,WORK(KFSS),NS,NS,
+          IF(DOJACO) THEN
+            CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
+     &                  WORK(KVSS),WORK(KFREE),LFREE)
+          ELSE
+            CALL QDIAG(1,NS,WORK(KFSS),NS,NS,
      &                EIG(IEIGP),1,
      &                WORK(KVSS),NS,NS,
      &                WORK(KFREE),LFREE,IERR)
-
+          ENDIF
           IF (IPRHAM.GE.15) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1) 
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
