@@ -5947,11 +5947,6 @@ C ===========================================================================
 
          IF (LONDON) THEN
           IBX = IPLONDON(1,IB)
-
-C          write(lupri,*)
-C    &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(IBX)
-
-C         READ (PRPNAM(LLRBPU(IBX)),'(4X,A1)') JCB
           READ (PRPNAM((IBX)),'(4X,A1)') JCB
           JB = ICONVXYZ(JCB)
           IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3)  THEN
@@ -5961,16 +5956,13 @@ C         READ (PRPNAM(LLRBPU(IBX)),'(4X,A1)') JCB
            CALL QUIT('PRP_MSUSCP: wrong extracted number in LAO !')
           ENDIF
          ELSE
-           IBX = IPMSUSC(2,IB)
-C          write(lupri,*)
-C    & 'PRP_MSUSCP: PRPNAM(LLRBPU(IBX),PRPNAM(LLRBPU(IBX):',
-C    &    PRPNAM(LLRBPU(IBX)),PRPNAM(LLRBPU(IBX))
-
-          READ (PRPNAM(LLRBPU(IBX)),'(7X,I1)') JB
+          IBX = IPMSUSC(2,IB)
+          READ (PRPNAM(LLRBPU(IBX)),'(6X,A1)') JCB
+          JB = ICONVXYZ(JCB)
           IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3)  THEN
            write(lupri,*)
-     &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(LLRBPU(IB))
-           write(lupri,*) 'got JB=',JB
+     &     'PRP_MSUSCP: operator name...',PRPNAM(LLRBPU(IB))
+           write(lupri,*) 'extracted JCB,JB=',JCB,JB
            CALL QUIT('PRP_MSUSCP: wrong extracted number !')
           ENDIF
          ENDIF
@@ -5979,33 +5971,22 @@ C    &    PRPNAM(LLRBPU(IBX)),PRPNAM(LLRBPU(IBX))
          DO IA = 1, 3
           IF (LONDON) THEN
            IAX = IPLONDON(1,IA)
-
-C          write(lupri,*)
-C    &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(LLRAPU(IAX))
-C    &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM((IAX))
-
            READ (PRPNAM((IAX)),'(4X,A1)') JCA
-C          READ (PRPNAM(LLRAPU(IAX)),'(4X,A1)') JCA
            JA = ICONVXYZ(JCA)  
           ELSE
            IAX = IPMSUSC(1,IA)
-           READ (PRPNAM(LLRAPU(IAX)),'(7X,I1)') JA
+           READ (PRPNAM(LLRAPU(IAX)),'(6X,A1)') JCA
+           JA = ICONVXYZ(JCA)
            IF (JA.NE.1.AND.JA.NE.2.AND.JA.NE.3)  THEN
            write(lupri,*)
-     &    'PRP_MSUSCP: before ICONVXYZ the name...',PRPNAM(LLRAPU(IA))
-           write(lupri,*) 'got JA=',JA
+     &    'PRP_MSUSCP: operator..',PRPNAM(LLRAPU(IA))
+           write(lupri,*) 'extracted JCA,JA=',JCA,JA
            CALL QUIT('PRP_MSUSCP: wrong extracted number !')
            ENDIF
           ENDIF
 
-C          write(lupri,*)
-C    & 'PRP_MSUSCP: PRPNAM(LLRAPU(IAX),PRPNAM(LLRAPU(IAX):',
-C    &    PRPNAM(LLRAPU(IAX)),PRPNAM(LLRAPU(IAX))
-
           KA = IPMSUSC(1,IA)
           SUSREL(IPTAX(IB,2),IPTAX(IA,2)) = ABLRF(IFREQ,KA,KB,1)
-
-C         write(lupri,*) 'KA,KB=',KA,KB,' ABLRF=',ABLRF(IFREQ,KA,KB,1)
 
           IF (.NOT.XLR_SKIPEP) THEN
 C   .... save e-e "paramagnetic" and e-p "diamagnetic"
@@ -6524,8 +6505,19 @@ C
            IF (LONDON) THEN
              READ (PRPNAM(IBINDEX),'(4X,A1)') CJB
              JB = ICONVXYZ(CJB)
+             IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3) THEN
+               write(lupri,*) '...operator name:',PRPNAM(IBINDEX)
+               write(lupri,*) 'extracted CJB,JB:',CJB,JB
+               CALL QUIT('PRP_SHIELD1: wrong index !')
+             ENDIF
            ELSE
-            READ (PRPNAM(IBINDEX),'(7X,I1)') JB
+             READ (PRPNAM(IBINDEX),'(6X,A1)') CJB
+             JB = ICONVXYZ(CJB)
+             IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3) THEN
+               write(lupri,*) '...operator name:',PRPNAM(IBINDEX)
+               write(lupri,*) 'extracted CJB,JB:',CJB,JB
+               CALL QUIT('PRP_SHIELD1: wrong index !')
+             ENDIF
            ENDIF
             KB = IPSHIELD(JB+MXCOOR)
             DO IA = 1,NA
