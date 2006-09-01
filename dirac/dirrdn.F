@@ -3671,7 +3671,10 @@ C     ... default L&S components... needs discussion about relation to DO2C4C/DO
 C     ... no specifications for AMFI center
       ALLAMFA = .TRUE.
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
-      IF (.NOT. SETFUN) HFXFAC  = D1
+      IF (.NOT. SETFUN) THEN
+        HFXFAC  = D1
+        HFXMU   = D0
+      ENDIF
 C ... get integral flags in advance
       ILLINT    = IBTAND(INTGEN,1)
       ISLINT    = IBTAND(INTGEN/2,1)

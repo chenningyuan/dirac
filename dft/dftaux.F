@@ -192,3 +192,10 @@ c
       CHARACTER str(slength)
       WRITE(LUPRI, *) str
       END
+
+      SUBROUTINE DFTSETCAM(W,BETA)
+#include "implicit.h"
+#include "dcbham.h"
+      HFXMU = W
+      HFXATT = BETA 
+      END

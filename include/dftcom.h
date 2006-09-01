@@ -20,14 +20,14 @@ CTROND: HFXFAC flyttet  til DCBPAM !!
 C so for now HFXFAC stays in DCBPAM, later this has to be checked
 C     
 C     REAL*8  HFXFAC, HFXATT, HFXMU
-      REAL*8  HFXATT, HFXMU
+C      REAL*8  HFXATT, HFXMU
       LOGICAL DFTHES, DFTHRS, OVWN3, DFTEST, DOVWNI, DFTIMG
 C     
       COMMON /DFTCOM/ DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC,   &
      &                INTCHK, ANGINT, ANGMIN, LEBMIN,                   &
      &                IPRDFT, NOPRUN, ATSIZE, ALDAON,                   &
 C    &                HFXFAC, HFXATT, HFXMU,                            &
-     &                HFXATT, HFXMU,                                    &
+C    &                HFXATT, HFXMU,                                    &
      &                DFTHES, DFTHRS, DOVWN3, DFTEST, DOVWNI, DFTIMG
 C     
       COMMON /DFTRRR/ RADINT, DFTELS, DFTHR0, DFTHRL, DFTHRI
