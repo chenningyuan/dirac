@@ -33,24 +33,21 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck sdft_lintrans */
-      SUBROUTINE SDFT_LINTRANS(DTRMAT,EXCMAT,
-     &                         IREPOP,
-     &                         GAO,GAO1,
-     &                         RHO,RHOGRADNORM,
-     &                         RHOGRAD,
-     &                         WEIGHT,DOGGA,
-     &                         BUF)
+C     /* deck sdft_linear_trans */
+      SUBROUTINE SDFT_LINEAR_TRANS(DTRMAT,
+     &                             EXCMAT,
+     &                             IREPOP,
+     &                             GAO,DENSITY,WEIGHT,DOGGA,BUF)
 C=======================================================================
-C     lets the "spin density" contribute to linear response
+C     contribution of spin density to E_xc
 C     adaptation of DFTLTR in dftaux.F
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: july 2006
+C     radovan bast                         last revision: september 2006
 C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -60,68 +57,95 @@ C-----------------------------------------------------------------------
 #include "dftcom.h"
 #include "cdft.h"
 #include "../dft/functionals.h"
-C-----------------------------------------------------------------------
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       LOGICAL DOGGA
 C
-      DIMENSION DTRMAT(*),EXCMAT(*),
-     &          GAO(*),GAO1(*),
-     &          RHOGRAD(3),
-     &          BUF(*),
-C
-     &          DMAGNETIZATION(3),
-     &          VXC(DERVS2)
-C-----------------------------------------------------------------------
+      DIMENSION DTRMAT(*),EXCMAT(*),GAO(*),BUF(*),
+     &          SPIN_DENSITY(3),VXC(DERVS2)
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #include "ibtfun.h"
-C-----------------------------------------------------------------------
-C
-C
-C     get modified magnetization
-C     ==========================
-C
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       CALL GETCURRENTDENSITY(.FALSE.,DUMMY,
-     &                       .TRUE.,DMAGNETIZATION,
+     &                       .TRUE.,SPIN_DENSITY,
      &                       IREPOP,GAO,DTRMAT,BUF)
 C
-      IF(DOGGA) THEN
+      IF(DOGGA) CALL QUIT('GGA SDFT linear response not implemented')
 C
+      SPIN_DENSITY_NORM = DSQRT(DDOT(3,SPIN_DENSITY,1,SPIN_DENSITY,1))
+      IF(SPIN_DENSITY_NORM.GT.DFTHRL) THEN
 C
-C       G G A
-C       =====
+        CALL SDFTPOT1(VXC,WEIGHT,DENSITY,D0)
 C
-        CALL QUIT('SDFT linear response not implemented for GGA')
+        ISTART = 1
+        IF(COLLINEAR) ISTART = 3
 C
-      ELSE
+        DO IXYZ = ISTART,3
+          IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+          IOFF = NBAST*NBAST
+          IOFF = IOFF*(IQ-1)
 C
+          VXC_S = VXC(FRR)*SPIN_DENSITY(I)
 C
-C       L S D A
-C       =======
-C
-        DNORM = DSQRT(DDOT(3,DMAGNETIZATION,1,DMAGNETIZATION,1))
-        IF(DNORM.GT.DFTHRL) THEN
-C
-          CALL SDFTPOT1(VXC,WEIGHT,RHO,D0)
-C
-          ITRANSFORM = 2
-C
-          IF(COLLINEAR) THEN
-            ISTART = 3
-          ELSE
-            ISTART = 1
-          ENDIF
-C
-          DO I = ISTART,3
-            IQ = IQTOPQ(5-I,ISYMAX(I,ITRANSFORM))
-            IOFF = NBAST*NBAST
-            IOFF = IOFF*(IQ-1)
-C
-            VXC_S = VXC(FRR)*DMAGNETIZATION(I)
-            MYIREPOP = IBTXOR(IREPOP,ISYMAX(I,ITRANSFORM))
-            CALL DOEXC1(VXC_S,MYIREPOP,EXCMAT(1+IOFF),GAO)
-          ENDDO
-C
-        ENDIF
+          CALL SDFT_EXC(VXC_S,IREPOP,1,IXYZ,EXCMAT(1+IOFF),GAO)
+        ENDDO
 C
       ENDIF
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck sdft_exc */
+      SUBROUTINE SDFT_EXC(VXC_S,IREPOP,ITRANSFORM,IXYZ,EXCMAT,GAO)
+C=======================================================================
+C     contribution of spin density to E_xc
+C     adaptation of DFTLTR in dftaux.F
 C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAO(NBAST),
+     &          EXCMAT(NBAST,NBAST)
+#else
+      DIMENSION GAO(NTBAS(0)),
+     &          EXCMAT(NTBAS(0),NTBAS(0))
+#endif
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#include "ibtfun.h"
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      DO IREP1 = 0,NBSYM-1
+        INTERMEDIATE = ISYMAX(IXYZ,ITRANSFORM)
+        INTERMEDIATE = IBTXOR(INTERMEDIATE,IREPOP)
+        IREP2 = IBTXOR(IREP1,INTERMEDIATE)
+C
+        DO IC = 1,MC
+C
+          I1 = IBBAS(IREP1,IC)
+          N1 = NBBAS(IREP1,IC)
+          I2 = IBBAS(IREP2,IC)
+          N2 = NBBAS(IREP2,IC)
+C
+          IF((N1.GT.0).AND.(N2.GT.0)) THEN
+C
+            DO J = 1,N2
+              CALL DAXPY(N1,VXC_S*GAO(I2+J),
+     &                   GAO(I1+1),1,EXCMAT(I1+1,I2+J),1)
+            ENDDO
+          ENDIF
+        ENDDO
+      ENDDO
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       RETURN
       END

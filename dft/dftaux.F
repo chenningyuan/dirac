@@ -1,4 +1,4 @@
-C 
+C
 C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -31,7 +31,7 @@ C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
-C 
+C
 C /* Deck dftltr */
       SUBROUTINE DFTLTR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,RHO,
      &                  RHOGRD,RHG,WGHT,DOGGA,BUF)
@@ -62,11 +62,11 @@ C
       DIMENSION DTRMAT(NBAST,NBAST,NZ,NXCMAT),
      &          EXCMAT(NBAST,NBAST,NZ,NXCMAT),
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
-     &          GAO(NBAST), GAO1(NBAST,3), 
+     &          GAO(NBAST), GAO1(NBAST,3),
      &          RHG(3),VT(3), VXC(DERVS2), BUF(*)
       DIMENSION B3(3)
 C
-      DO IM = 1,NXCMAT      
+      DO IM = 1,NXCMAT
       IREPOP = ISYMOP(IM)-1
       IF(IHRMOP(IM).EQ.1) THEN
 C
@@ -80,7 +80,7 @@ C       ***** LDA *****
 C       ***************
 C
         IF(.NOT.DOGGA) THEN
-          IF(DABS(B0).GT.DFTHRL) THEN 
+          IF(DABS(B0).GT.DFTHRL) THEN
 C
 C           Calculated VT
 C
@@ -88,10 +88,10 @@ C
             SXC = VXC(FRR)*B0
 C
 C           Linear transformation
-C  
+C
             CALL DOEXC1(SXC,IREPOP,EXCMAT(1,1,1,IM),GAO)
           END IF
-        ELSE  
+        ELSE
 C
 C         ***************
 C         ***** GGA *****
@@ -99,7 +99,7 @@ C         ***************
 C
           CALL GETGRHO(B3,IREPOP,GAO,GAO1,DTRMAT(1,1,1,IM),BUF)
           BMAX = MAX(ABS(B0),ABS(B3(1)),ABS(B3(2)),ABS(B3(3)))
-C          
+C
           IF (BMAX.GT.DFTHRL) THEN
             CALL DFTPOT1(VXC,WGHT,RHO,RHOGRD)
             BR = (B3(1)*RHG(1)+ B3(2)*RHG(2)+ B3(3)*RHG(3))/RHOGRD
@@ -111,15 +111,17 @@ C
 
 C           Linear transformation
 C
-            CALL DOEXC2(SXC,VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)      
+            CALL DOEXC2(SXC,VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
           END IF
         END IF
 #if defined (MOD_CDFT)
       ELSEIF(IHRMOP(IM).EQ.-1) THEN
         IF(SDFT) THEN
-          CALL SDFT_LINTRANS(DTRMAT(1,1,1,IM),EXCMAT(1,1,1,IM),IREPOP,
-     &                       GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+          CALL SDFT_LINEAR_TRANS(DTRMAT(1,1,1,IM),
+     &                           EXCMAT(1,1,1,IM),
+     &                           IREPOP,
+     &                           GAO,RHO,WGHT,DOGGA,BUF)
         ENDIF
       ELSE
         CALL QUIT('DTRMAT has to be hermitian or antihermitian')
@@ -152,7 +154,7 @@ C
       DIMENSION GAO(NTBAS(0)),GAO1(NTBAS(0),3),EXCMAT(NTBAS(0),NTBAS(0))
 #endif
       DIMENSION VT(0:3)
-C      
+C
 #include "ibtfun.h"
 C
       DO 10 IRP1 = 0,NBSYM-1
