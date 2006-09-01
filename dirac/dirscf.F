@@ -4377,7 +4377,7 @@ C.....transform coefficients to orthonormal basis --> COFU
      &         'N','N',IPQTOQ(1,0),COFT(ICMOQ(IFRP)+1),
      &                 NFBAS(IFRP,0),NTMO(IFRP),NZ,
      &              D0,IPQTOQ(1,0),COFU(I2TMOT(IFRP)+1),
-     &                 NTMO(IFRP),NTMO(IFRP),1)
+     &                 NTMO(IFRP),NTMO(IFRP),NZ)
         IF(IPRINT.GT.10) THEN
           WRITE(LUPRI,'(A,I2)') 
      &     'PRECMOS: Coefficients in SO-basis, fermion ircop ',IFRP
