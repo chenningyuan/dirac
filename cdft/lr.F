@@ -84,9 +84,9 @@ C
           IOFF = NBAST*NBAST
           IOFF = IOFF*(IQ-1)
 C
-          VXC_S = VXC(FRR)*SPIN_DENSITY(I)
+          VXC_S = VXC(FRR)*SPIN_DENSITY(IXYZ)
 C
-          CALL SDFT_EXC(VXC_S,IREPOP,1,IXYZ,EXCMAT(1+IOFF),GAO)
+          CALL SDFT_EXC(VXC_S,IREPOP,IXYZ,EXCMAT(1+IOFF),GAO)
         ENDDO
 C
       ENDIF
@@ -95,10 +95,10 @@ C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck sdft_exc */
-      SUBROUTINE SDFT_EXC(VXC_S,IREPOP,ITRANSFORM,IXYZ,EXCMAT,GAO)
+      SUBROUTINE SDFT_EXC(VXC_S,IREPOP,IXYZ,EXCMAT,GAO)
 C=======================================================================
 C     contribution of spin density to E_xc
-C     adaptation of DFTLTR in dftaux.F
+C     adaptation of DOEXC1 in dftdrv.F
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
@@ -126,7 +126,7 @@ C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #include "ibtfun.h"
 C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       DO IREP1 = 0,NBSYM-1
-        INTERMEDIATE = ISYMAX(IXYZ,ITRANSFORM)
+        INTERMEDIATE = ISYMAX(IXYZ,2)
         INTERMEDIATE = IBTXOR(INTERMEDIATE,IREPOP)
         IREP2 = IBTXOR(IREP1,INTERMEDIATE)
 C
