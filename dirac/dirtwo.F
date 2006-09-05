@@ -174,48 +174,31 @@ c    &                     IPRINT,WORK(KCFIT))
       ENDIF
 #endif /* MOD_DNF */
 C
-C     Initialize Fock matrix
-C     ======================
+C     Initialize and build Fock matrix
+C     ================================
 C
       CALL DZERO(FMAT,N2BBASXQ*NFMAT)
+      IF (HFXMU.NE.D0) THEN
 C
-C     *************************************************
-C     *****  D i r e c t  c o n s t r u c t i o n *****
-C     *****  o f   F o c k   m a t r i c e s      *****
-C     *************************************************
+C       Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
+C       NOTE that this extra part has to be calculated first,
+C       since there is a scaling of Fock matrices in the SO Fock build
+C       The scaling is now turned off for HFXMU.NE.0
 C
-C     This module has to come before the conventional SCF-module;
-C     otherwise FOCK must be copied into buffer; this stems from
-C     the symmetrization procedure
-C
-C aspg, 2006-05-15: added test so that whenever gaunt integrals
-C       and at least one other type of integral is asked for in
-C       the direct calculation it assumes all other types are also
-C       calculated on the fly. otherwise conventional scf is
-C       performed. 
-C
-      IF(IDFLAG.NE.0.AND.IDFLAG.GT.8) THEN
-        IF(SOFOCK) THEN
-          CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                IFCKOP,NPOS,INTFLG,
-     &                IPRINT,WORK,LWORK)
-        ELSE
-          CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                IFCKOP,NPOS,INTFLG,
-     &                IPRINT,WORK,LWORK)
-        ENDIF
-      ELSE
-C
-C     **********************************************
-C     *****  C o n v e n t i o n a l    S C F  *****
-C     **********************************************
-C
-        IF(HFXFAC.NE.D1 .AND. HFXFAC.NE.D0) 
-     &       CALL QUIT('HFXFAC not implemented in CONSCF !')
-C       hjaaj July 2004: HFXFAC .eq. D0 is defined through SETFCK
-        CALL CONSCF(FMAT,DMAT,NFMAT,IFCKOP,ISYMOP,IHRMOP,INTFLG,
-     &              IPRINT,WORK,LWORK)
-      ENDIF
+        HFXTMP = HFXFAC
+        HFXFAC = HFXATT 
+C       ...note that when HFXMU.NE.0, Coulomb contributions are
+C       turned off !
+CTROND  Gaunt-integrals should be turned off !
+        CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &         IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+        HFXFAC = HFXTMP
+      END IF
+      HFXTMP = HFXMU
+      HFXMU = D0
+      CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &         IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+      HFXMU = HFXTMP
 C
 C     ===========================
       IF (ONECAP.AND.SMLV1C) THEN
@@ -4225,6 +4208,8 @@ C         An anti-symmetric matrix gives no Coulomb contributions
           IF (IH.EQ.2) IC = 0
 C         No exchange contributions if HFXFAC = 0
           IF (HFXFAC.EQ.D0) IE = 0
+C         No Coulomb contributions if HFXMU.NE.0
+          IF (HFXMU.NE.D0) IC = 0
           IY   = IC + IE
           IF (MZ.LT.4) THEN
 C           ... we are using .SOFOCK or non-direct (CONSCF)
@@ -4388,6 +4373,7 @@ C
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
+#include "dcbham.h"
 #include "ccom.h"
 #include "blocks.h"
 #if defined (VAR_MPI)
@@ -4531,15 +4517,17 @@ C
 C
 C     Scale matrices
 C
-      DO I = 1,NDMAT
-        IY = MOD(IFCTYP(I),10)
-        IX = (IFCTYP(I)-IY)/10
-        IF(IX.EQ.0) THEN
-          CALL DSCAL(N2BBASX,D2,FSO(1,I),1)
-        ELSE
-          CALL DSCAL(N2BBASX,D4,FSO(1,I),1)
-        ENDIF
-      ENDDO
+      IF (HFXMU.EQ.D0) THEN
+        DO I = 1,NDMAT
+          IY = MOD(IFCTYP(I),10)
+          IX = (IFCTYP(I)-IY)/10
+          IF(IX.EQ.0) THEN
+            CALL DSCAL(N2BBASX,D2,FSO(1,I),1)
+          ELSE
+            CALL DSCAL(N2BBASX,D4,FSO(1,I),1)
+          ENDIF
+        ENDDO
+      ENDIF
       CALL QEXIT('DIRSO1')
       RETURN
       END
@@ -4775,6 +4763,74 @@ C       (SS|SS)-integrals
         ICLASSES(3) = 2
         ICLASSES(4) = 2
       ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Fockbuild */
+      SUBROUTINE FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                     IFCKOP,NPOS,INTFLG,
+     &                     IPRINT,WORK,LWORK)
+C***********************************************************************
+C
+C     Fock matrix builder
+C
+C     Written by T. Saue Sep 5 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "dummy.h"
+      PARAMETER(D0=0.0D0, D1=1.0D0)
+C
+#include "dcbgen.h"
+#include "cbihr2.h"
+#include "dcbham.h"
+C
+      DIMENSION FMAT(*),DMAT(*),ISYMOP(NFMAT),IHRMOP(NFMAT),
+     &          IFCKOP(NFMAT),NPOS(*),WORK(LWORK)
+C
+C     *************************************************
+C     *****  D i r e c t  c o n s t r u c t i o n *****
+C     *****  o f   F o c k   m a t r i c e s      *****
+C     *************************************************
+C
+C     This module has to come before the conventional SCF-module;
+C     otherwise FOCK must be copied into buffer; this stems from
+C     the symmetrization procedure
+C
+C aspg, 2006-05-15: added test so that whenever gaunt integrals
+C       and at least one other type of integral is asked for in
+C       the direct calculation it assumes all other types are also
+C       calculated on the fly. otherwise conventional scf is
+C       performed. 
+C
+      IF(IDFLAG.NE.0.AND.IDFLAG.GT.8) THEN
+        IF(SOFOCK) THEN
+C.........construction of Fock matrix using ERIs in SO-basis
+          CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                IFCKOP,NPOS,INTFLG,
+     &                IPRINT,WORK,LWORK)
+        ELSE
+C.........construction of Fock matrix using ERIs in AO-basis:
+C.........skeleton Fock approach
+          CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                IFCKOP,NPOS,INTFLG,
+     &                IPRINT,WORK,LWORK)
+        ENDIF
+      ELSE
+C
+C     **********************************************
+C     *****  C o n v e n t i o n a l    S C F  *****
+C     **********************************************
+C
+        IF(HFXFAC.NE.D1 .AND. HFXFAC.NE.D0) 
+     &       CALL QUIT('HFXFAC not implemented in CONSCF !')
+C       hjaaj July 2004: HFXFAC .eq. D0 is defined through SETFCK
+        CALL CONSCF(FMAT,DMAT,NFMAT,IFCKOP,ISYMOP,IHRMOP,INTFLG,
+     &              IPRINT,WORK,LWORK)
+      ENDIF
+C
       RETURN
       END
 

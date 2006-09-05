@@ -189,6 +189,7 @@ C
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
      &          WVALU(NUABCD), TALPHA(NUABCD), INDADR(NUABCD),
      &          SCLFAC(NUABCD)
+#include "dcbham.h"
 #include "twosta.h"
 #include "subdir.h"
 #include "sdpre.h"
@@ -220,7 +221,19 @@ C
          DO 100 IOD12 = 1, NUC12
             EXPP   = EXP12(IOD12)
             FAC12I = FAC12(IOD12)
-            IF (PANAS .EQ. D0) THEN
+            IF (HFXMU .NE. D0) THEN
+               DO IOD34 = 1, NUC34
+                  IODS   = IODS + 1
+                  EXPQ   = EXP34(IOD34)
+                  EXPPQ  = EXPP + EXPQ
+                  EXPPQI = D1/(EXPP + EXPQ)
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
+                  ALPHA  = EXPP*EXPQ*EXPPQI
+                  BETA   = HFXMU**2/(ALPHA + HFXMU**2)
+                  TALPHA(IODS) = - D2*ALPHA*BETA
+                  RJ000(IODS,0) = SQRT(BETA)*FACTOR
+               END DO
+            ELSEIF (PANAS .EQ. D0) THEN
                DO 110 IOD34 = 1, NUC34
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
@@ -236,8 +249,11 @@ C
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
                   EXPMOD = EXPPQ/D2
+C.................this is eq. (48) for (chi)**2 of Panas&Snis, 
+C.................Theor. Chem. Acc. 97(1997) 232
                   EXPPQP = EXPMOD + SQRT(EXPMOD**2 + EXPP*EXPQ*PANAS)
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(D1/EXPPQP)
+C.................this is -2tau, where tau is from eq. (46)
                   TALPHA(IODS) = - D2*EXPP*EXPQ/EXPPQP
                   RJ000(IODS,0) = FACTOR
  111           CONTINUE

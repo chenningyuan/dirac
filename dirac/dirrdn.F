@@ -3674,6 +3674,7 @@ Ctsaue: Exchange factor must not be reset during geometry optimizations.
       IF (.NOT. SETFUN) THEN
         HFXFAC  = D1
         HFXMU   = D0
+        HFXATT  = D0
       ENDIF
 C ... get integral flags in advance
       ILLINT    = IBTAND(INTGEN,1)
