@@ -1,4 +1,4 @@
-C 
+C
 C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -31,8 +31,8 @@ C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
-C 
-C /* Deck dftac */ 
+C
+C /* Deck dftac */
 C      SUBROUTINE DFTAC(VA,DST,CRX,CRY,CRZ)
 C
 C     T. Helgaker
@@ -40,8 +40,8 @@ C     based on code by Handy and Tozer
 C
 C#include "implicit.h"
 C#include "mxcent.h"
-C      PARAMETER (D0 = 0.0D0) 
-C      LOGICAL INSIDE 
+C      PARAMETER (D0 = 0.0D0)
+C      LOGICAL INSIDE
 C      DIMENSION DST(NATOMS)
 C#include "dfterg.h"
 C#include "dftcom.h"
@@ -67,7 +67,7 @@ C  100 CONTINUE
 C
 C      IF (.NOT.INSIDE) THEN
 C         RHOT = D0
-C         RINV = D0 
+C         RINV = D0
 C         DO 200 I = 1, NATOMS
 C            RHOT = RHOT + DFTCHR(I)
 C            RINV = RINV + DFTCHR(I)/DST(I)
@@ -75,7 +75,7 @@ C  200    CONTINUE
 C         ASYMP = -WDFTX*RINV/RHOT + SHIFT
 C
 C         NFRC = 0
-C         FRAC = D0 
+C         FRAC = D0
 C         DO 300 I = 1, NATOMS
 C            BRAG  = RADIUS(NINT(CHARGE(I)))/XTANG
 C            BRAG1 = DFTBR1*BRAG
@@ -166,36 +166,33 @@ c---------------------------------------------------------------------
 #endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck dftac */
-      SUBROUTINE DFTAC(VX,WGHT,RHO,RHO13,RHORESP,RHOOUTER,RHOGRD,
-     &                 WORK,LWORK)
-C  .....................................................................
-C  .                                                                   .
-C  .  common routine for GRAC and SAOP                                 .
-C  .                                                                   .
-C  .  SAOP                                                             .
-C  .  statistical averaging of (model) orbital potentials              .
-C  .  P. R. T. Schipper, O. V. Gritsenko, S. J. A. van Gisbergen, E. J..
-C  .  Baerends, JCP 112, 1344 (2000).                                  .
-C  .                                                                   .
-C  .  GRAC                                                             .
-C  .  gradient regulated asymptotic correction                         .
-C  .  M. Gr\"uning et al. JCP 114, 652 (2001).                         .
-C  .                                                                   .
-C  .  closed-shell version                                             .
-C  .                                                                   .
-C  .  modelled after Andreas Hesselman's DFT_GRAC                      .
-C  .  which was finally eaten by this routine,                         .
-C  .  so many thanks to Andreas!                                       .
-C  .                                                                   .
-C  .  radovan bast                           last revision: june 2006  .
-C  .....................................................................
+      SUBROUTINE DFTAC(VX,WEIGHT,
+     &                 RHO,RHO13,RHO_RESP,RHO_OUTER,GRADIENT_NORM)
+C=======================================================================
+C     common routine for GRAC and SAOP
 C
+C     SAOP
+C     statistical averaging of (model) orbital potentials
+C     P. R. T. Schipper, O. V. Gritsenko, S. J. A. van Gisbergen, E. J.
+C     Baerends, JCP 112, 1344 (2000).
+C
+C     GRAC
+C     gradient regulated asymptotic correction
+C     M. Gr\"uning et al. JCP 114, 652 (2001).
+C
+C     closed-shell version
+C
+C     modelled after Andreas Hesselman's DFT_GRAC
+C     which was finally eaten by this routine,
+C     so many thanks to Andreas!
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
-C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #include "pi.h"
-C
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -204,37 +201,26 @@ C
 #include "dftbuf.h"
 #include "dgroup.h"
 #include "functionals.h"
-C
-      DIMENSION VX(DERVS1),WORK(LWORK)
-C
-#include "memint.h"
-C
-C
-C     memory allocation
-C     =================
-C
-      CALL MEMGET('REAL',KVXBULK     ,DERVS1,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVXOUTER    ,DERVS1,
-     &            WORK,KFREE,LFREE)
-C
-      IF(DORESP) THEN
-        CALL MEMGET('REAL',KVXSLATER ,DERVS1,
-     &              WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KVXRESP   ,DERVS1,
-     &              WORK,KFREE,LFREE)
-      ENDIF
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      LOGICAL   LBIT
+      DIMENSION VX(DERVS1), 
+     &          VX_BULK(DERVS1), 
+     &          VX_OUTER(DERVS1), 
+     &          VX_SLATER(DERVS1), 
+     &          VX_RESP(DERVS1)
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
 C
 C     GRAC parameters
 C     ===============
 C
-      IF(DOGRAC) THEN
+C             GRAC
+      IF(LBIT(LBIT_DFTAC,1)) THEN
         RHO43 = RHO*RHO13
-        SIGMA = RHOGRD*RHOGRD
+        SIGMA = GRADIENT_NORM*GRADIENT_NORM
         X = D0
 C
-        IF(RHO43.NE.D0) THEN
+        IF(RHO43 .NE. D0) THEN
            X = SQRT(SIGMA)/RHO43
         ELSE
           RETURN
@@ -246,58 +232,49 @@ C     shift bulk?
 C     ===========
 C
       SHIFTBULK = D0
-      IF(DOGRAC) SHIFTBULK = ACIP + HOMO_EIGENVALUE
+C
+C             GRAC
+      IF(LBIT(LBIT_DFTAC,1)) SHIFTBULK = DFTAC_IP + HOMO_EIGENVALUE
 C
 C
 C     bulk potential
 C     ==============
 C
-      IF(DORESP) THEN
+      CALL DZERO(VX_BULK,DERVS1)
 C
-        CALL DZERO(WORK(KVXSLATER),DERVS1)
-        CALL GLLBHOLEPOT(WORK(KVXSLATER),WGHT,RHO,RHOGRD)  
+      IF(LBIT(LBIT_DFTAC,4)) THEN !SAOP with response part
+        CALL DZERO(VX_SLATER,DERVS1)
+        CALL DZERO(VX_RESP,DERVS1)
 C
-        CALL DZERO(WORK(KVXRESP),DERVS1)
-        DK = 0.42D0
-        WORK(KVXRESP) = DK*WGHT*RHORESP/RHO
-C
-        CALL DZERO(WORK(KVXBULK),DERVS1)
-        DO I = 1,DERVS1
-          WORK(KVXBULK-1+I) = WORK(KVXSLATER-1+I) + WORK(KVXRESP-1+I)
-        ENDDO
-        WORK(KVXBULK+1) = VX(FZ0)
-C
-      ELSE
-C
-        CALL DZERO(WORK(KVXBULK),DERVS1)
-        DO I = 1,DERVS1
-          WORK(KVXBULK-1+I) = VX(I)
-        ENDDO
-C
+        CALL GLLBHOLEPOT(VX_SLATER,WEIGHT,RHO,GRADIENT_NORM)
+        VX_RESP(FR0) = 0.42D0*WEIGHT*RHO_RESP/RHO
+        VX_BULK(FR0) = VX_SLATER(FR0) + VX_RESP(FR0)
+      ELSE !GRAC
+        VX_BULK(FR0) = VX(FR0)
       ENDIF
+C
+      VX_BULK(FZ0) = VX(FZ0)
 C
 C
 C     asymptotic potential
 C     ====================
 C
-      CALL DZERO(WORK(KVXOUTER),DERVS1)
-      IF(DOLBALPHA) THEN
-        CALL LBALPHAPOT(WORK(KVXOUTER),WGHT,RHO,RHOGRD)
-      ENDIF
-      IF(DOLB94) THEN
-        CALL LB94POT(WORK(KVXOUTER),WGHT,RHO,RHOGRD)
-      ENDIF
+      CALL DZERO(VX_OUTER,DERVS1)
+C
+      IF(LBIT(LBIT_DFTAC,6))
+     &                CALL LB94POT(VX_OUTER,WEIGHT,RHO,GRADIENT_NORM)
+      IF(LBIT(LBIT_DFTAC,7))
+     &                CALL LBALPHAPOT(VX_OUTER,WEIGHT,RHO,GRADIENT_NORM)
 C
 C
 C     howto FADE (with D0 .LE. FADE .LE. D1)
 C     ======================================
 C
-      IF(DOSAOP) THEN
-        FADE = RHOOUTER/RHO
-      ENDIF
-      IF(DOGRAC) THEN
-        FADE = D1/(D1+EXP(-GRACALPHA*(X-GRACBETA)))
-      ENDIF
+C             SAOP
+      IF(LBIT(LBIT_DFTAC,3)) FADE = RHO_OUTER/RHO
+C             GRAC
+      IF(LBIT(LBIT_DFTAC,1)) FADE = 
+     &                            D1/(D1+EXP(-GRAC_ALPHA*(X-GRAC_BETA)))
 C
 C
 C     connection
@@ -305,17 +282,303 @@ C     ==========
 C
       CALL DZERO(VX,DERVS1)
 C
-      VX(FR0) = (D1-FADE)*(WORK(KVXBULK) - WGHT*SHIFTBULK)
-     &        +     FADE *(D1-HFXFAC)*WORK(KVXOUTER)
+      VX(FR0) = (D1-FADE)*(VX_BULK(FR0) - WEIGHT*SHIFTBULK)
+     &        +     FADE *(D1-HFXFAC)*VX_OUTER(FR0)
 C
-      VX(FZ0) = (D1-FADE)*WORK(KVXBULK+1)
+      VX(FZ0) = (D1-FADE)*VX_BULK(FZ0)
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck dftac_eigenvalues */
+      SUBROUTINE DFTAC_EIGENVALUES(EIGENVALUES,OLD_HOMO_EIGENVALUE)
+C=======================================================================
+C     check orbital energy convergence
+C     for asymptotic correction
+C     modelled after Andreas Hesselmann's routine HOMO
+C     which has been incorporated into this one, so thanks Andreas!
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+#include "dftcom.h"
+#include "dftac.h"
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      LOGICAL LBIT, FIRST_TIME_HERE
+      DIMENSION EIGENVALUES(*)
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C
+C
+C     get the homo eigenvalue
+C     =======================
+C
+C                   GRAC is active
+      IF(.NOT. LBIT(LBIT_DFTAC,2)) THEN
+        HOMO_EIGENVALUE = D0
+        FIRST_TIME_HERE = .TRUE.
+        DO I = 1,NFSYM
+          IF(NISH(I) .GT. 0) THEN
+            DO J = 1,NISH(I)
+              E = EIGENVALUES(J + (I-1)*NORB(1) + NPSH(I))
+              IF(FIRST_TIME_HERE) HOMO_EIGENVALUE = E
+              FIRST_TIME_HERE = .FALSE.
+              IF(E .GT. HOMO_EIGENVALUE) HOMO_EIGENVALUE = E
+            ENDDO
+          ENDIF
+        ENDDO
+      ENDIF
+C
+C
+C     turn asymptotic correction on ?
+C     ===============================
+C
+C             SAOP
+      IF(LBIT(LBIT_DFTAC,3)) THEN
+C                     SAOP is active
+        IF(.NOT. LBIT(LBIT_DFTAC,4)) LBIT_DFTAC = LBIT_DFTAC + 8
+      ENDIF
+C
+      DELTA_HOMO = ABS(OLD_HOMO_EIGENVALUE - HOMO_EIGENVALUE)
+      IF(DELTA_HOMO .LE. DFTAC_THRESHOLD) THEN
+C               GRAC
+        IF(LBIT(LBIT_DFTAC,1)) THEN
+C                       GRAC is active
+          IF(.NOT. LBIT(LBIT_DFTAC,2)) LBIT_DFTAC = LBIT_DFTAC + 2
+        ENDIF
+      ENDIF
+C
+C             GRAC is active
+      IF(LBIT(LBIT_DFTAC,2))
+     &                WRITE(LUPRI,*) 'GRAC asymptotic correction active'
+C             SAOP is active
+      IF(LBIT(LBIT_DFTAC,4))
+     &                WRITE(LUPRI,*) 'SAOP asymptotic correction active'
+C
+      OLD_HOMO_EIGENVALUE = HOMO_EIGENVALUE
+C
+C
+C     debug
+C     =====
+C
+      ICOUNTER_DFTAC_DEBUG = ICOUNTER_DFTAC_DEBUG + 1
+      IF(ICOUNTER_DFTAC_DEBUG .GT. 15) LBIT_DFTAC = LBIT_DFTAC + 128
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck dftac_saop_get_dmats */
+      SUBROUTINE DFTAC_SAOP_GET_DMATS(DMAT_OUTER_AO,
+     &                                DMAT_RESP_AO,
+     &                                WORK,LWORK)
+C=======================================================================
+C     get orbital energies and density matrices for SAOP
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "dftac.h"
+#include "dfterg.h"
+#include "dgroup.h"
+#include "functionals.h"
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      LOGICAL   LBIT,
+     &          FILE_IS_THERE,
+     &          FILE_IS_OPENED
+      DIMENSION DMAT_OUTER_AO(*),
+     &          DMAT_RESP_AO(*),
+     &          WORK(LWORK)
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#include "memint.h"
+      CALL QENTER('DFTAC_SAOP_GET_DMATS')
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C
+C
+C     allocate memory
+C     ===============
+C
+      CALL MEMGET('REAL',KSAOPCMO          ,N2BBASXQ,
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT_OUTER_MO ,N2ORBX,
+     &            WORK,KFREE,LFREE)
+C             SAOP with response part
+      IF(LBIT(LBIT_DFTAC,5)) THEN
+        CALL MEMGET('REAL',KDMAT_RESP_MO,N2ORBX,
+     &              WORK,KFREE,LFREE)
+      ENDIF
+      CALL MEMGET('REAL',KEIG              ,NORBT,
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSAOPENERGIES     ,NORBT,
+     &            WORK,KFREE,LFREE)
+C
+C
+C     read coefficients and give info
+C     ===============================
+C
+      INQUIRE(FILE = 'DFCOEF',EXIST = FILE_IS_THERE)
+      IF(.NOT.FILE_IS_THERE) THEN
+        WRITE(LUPRI,'(/A)') 'SAOP: Coefficient file DFCOEF not found!'
+        CALL QUIT('SAOP: Coefficient file DFCOEF not found!')
+      ENDIF
+C
+      INQUIRE(FILE = 'DFCOEF',OPENED = FILE_IS_OPENED)
+      IF(FILE_IS_OPENED) THEN
+        INQUIRE(FILE = 'DFCOEF',NUMBER = LUSAOP)
+        REWIND LUSAOP
+      ELSE
+        LUSAOP = 42
+        CALL OPNFIL(LUSAOP,'DFCOEF','UNKNOWN','SAOP')
+      ENDIF
+C
+      CALL DZERO(WORK(KSAOPCMO),N2BBASXQ)
+      CALL DZERO(WORK(KEIG),NORBT)
+      CALL REACMO(LUSAOP,'DFCOEF',WORK(KSAOPCMO),WORK(KEIG),TEMP,
+     &            TOTERG,6,WORK,KFREE,LFREE)
+      IF(.NOT.FILE_IS_OPENED) THEN
+        CLOSE(LUSAOP,STATUS = 'KEEP')
+      ENDIF
+C
+C
+C     calculate energy differences
+C     ============================
+C
+      K = 0
+      CALL DZERO(WORK(KSAOPENERGIES),NORBT)
+      DO I = 1,NFSYM
+        IF(NISH(I).GT.0) THEN
+          DO J = 1,NISH(I)
+            K = K+1
+            WORK(KSAOPENERGIES+K-1) =
+     &            HOMO_EIGENVALUE-WORK(KEIG+J-1+(I-1)*NORB(1)+NPSH(I))
+          ENDDO
+        ENDIF
+      ENDDO
+C
+C
+C     get orbital density matrices
+C     ============================
+C
+      CALL DZERO(DMAT_OUTER_AO,N2BBASX)
+      CALL DZERO(WORK(KDMAT_OUTER_MO),N2ORBX)
+C             SAOP with response part
+      IF(LBIT(LBIT_DFTAC,5)) THEN
+        WRITE(LUPRI,*) 'here', N2BBASX
+        CALL DZERO(DMAT_RESP_AO,N2BBASX)
+        CALL DZERO(WORK(KDMAT_RESP_MO),N2ORBX)
+      ENDIF
+      K = 0
+      DO I = 1,NFSYM
+        IF(NISH(I).GT.0) THEN
+          DO J = 1,NISH(I)
+            K = K+1
+            JOFF = (NORB(1)*(I-1)+NPSH(I))*NORBT
+            JOFF = JOFF+NORB(1)*(I-1)+NPSH(I)
+            JOFF = JOFF+(J-1)*NORBT+J-1
+C                   SAOP with response part
+            IF(LBIT(LBIT_DFTAC,5)) THEN
+              WORK(KDMAT_RESP_MO+JOFF)
+     &                                 = SQRT(WORK(KSAOPENERGIES+K-1))
+            ENDIF
+            WORK(KDMAT_OUTER_MO+JOFF)
+     &                        = EXP(-D2*(WORK(KSAOPENERGIES+K-1)**D2))
+          ENDDO
+        ENDIF
+      ENDDO
+C
+C
+C     to avoid numerical problems for degenerate orbitals
+C     ===================================================
+C
+      DO I = 1,NFSYM
+        IF(NISH(I).GT.0) THEN
+          DO JHELP = 1,(NISH(I)-1)
+            J = NISH(I)-JHELP
+            KCHECK = NISH(1)*(I-1)+J
+C
+            JOFF = (NORB(1)*(I-1)+NPSH(I))*NORBT
+            JOFF = JOFF+NORB(1)*(I-1)+NPSH(I)
+            JOFF = JOFF+(J-1)*NORBT+J-1
+C
+            JOFFNEXT = JOFF+NORBT+1
+C
+            SOMEDIFF = ABS(WORK(KSAOPENERGIES+KCHECK)
+     &                                  -WORK(KSAOPENERGIES+KCHECK-1))
+            IF(SOMEDIFF.LT.1.0D-5) THEN
+C                     SAOP with response part
+              IF(LBIT(LBIT_DFTAC,5)) THEN
+                WORK(KDMAT_RESP_MO+JOFF)
+     &                               = WORK(KDMAT_RESP_MO+JOFFNEXT)
+              ENDIF
+              WORK(KDMAT_OUTER_MO+JOFF)
+     &                              = WORK(KDMAT_OUTER_MO+JOFFNEXT)
+            ENDIF
+          ENDDO
+        ENDIF
+      ENDDO
+C
+C
+C     transform density matrices
+C     ==========================
+C
+      DO I = 1,NFSYM
+        IF(NISH(I).GT.0) THEN
+C                 SAOP with response part
+          IF(LBIT(LBIT_DFTAC,5)) THEN
+            CALL QTRANS('MOAO','S',D0,
+     &                  NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
+     &                  DMAT_RESP_AO(1+I2BASX(I,I)),
+     &                  NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
+     &                  WORK(KDMAT_RESP_MO+I2ORBX(I,I)),
+     &                  NORBT,NORBT,1,IPQTOQ(1,0),
+     &                  WORK(KSAOPCMO+ICMOQ(I)),
+     &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &                  WORK(KSAOPCMO+ICMOQ(I)),
+     &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &                  WORK(KFREE),LFREE,IPRINT)
+          ENDIF
+          CALL QTRANS('MOAO','S',D0,
+     &                NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
+     &                DMAT_OUTER_AO(1+I2BASX(I,I)),
+     &                NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
+     &                WORK(KDMAT_OUTER_MO+I2ORBX(I,I)),
+     &                NORBT,NORBT,1,IPQTOQ(1,0),
+     &                WORK(KSAOPCMO+ICMOQ(I)),
+     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &                WORK(KSAOPCMO+ICMOQ(I)),
+     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &                WORK(KFREE),LFREE,IPRINT)
+        ENDIF
+      ENDDO
+C             SAOP with response part
+      IF(LBIT(LBIT_DFTAC,5)) THEN
+        CALL DSCAL(N2BBASX,D2,DMAT_RESP_AO,1)
+      ENDIF
+      CALL DSCAL(N2BBASX,D2,DMAT_OUTER_AO,1)
 C
 C
 C     memory release
 C     ==============
 C
-      CALL MEMREL('DFTAC',WORK,KVXBULK,KVXBULK,KFREE,LFREE)
-C
-C
+      CALL MEMREL('DFTAC_SAOP_GET_DMATS',WORK,KSAOPCMO,KSAOPCMO,
+     &            KFREE,LFREE)
+      CALL QEXIT('DFTAC_SAOP_GET_DMATS')
+C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       RETURN
       END

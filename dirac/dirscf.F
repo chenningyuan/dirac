@@ -1167,6 +1167,7 @@ C#endif
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbreo.h"
+      LOGICAL   LBIT
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
@@ -1190,14 +1191,15 @@ C     Start cycle
 C
       CALL FLSHFO(LUPRI)
 C
-C     for asymptotic correction
+C     asymptotic correction
       OLD_HOMO_EIGENVALUE = D0
 C
 C
       DO 10 ITER = 2,MAXITR
 C
-C        for asymptotic correction
-         IF(DOGRAC.OR.DOSAOP) THEN
+C        asymptotic correction
+C                GRAC                    SAOP
+         IF(LBIT(LBIT_DFTAC,1) .OR. LBIT(LBIT_DFTAC,3)) THEN
            CALL DFTAC_EIGENVALUES(EIG,OLD_HOMO_EIGENVALUE)
          ENDIF
 C
@@ -4215,75 +4217,6 @@ C.....Active orbitals:
       ENDDO
 C.....Secondary positive-energy orbitals:
       CALL ICOPY(NSSH(IFRP),-1,0,IBUF(II),1)
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck dftac_eigenvalues */
-      SUBROUTINE DFTAC_EIGENVALUES(EIGENVALUES,OLD_HOMO_EIGENVALUE)
-C  .....................................................................
-C  .                                                                   .
-C  .  check orbital energy convergence                                 .
-C  .  for asymptotic correction                                        .
-C  .                                                                   .
-C  .  modelled after Andreas Hesselmann's routine HOMO                 .
-C  .  which has been incorporated into this one, so thanks Andreas!    .
-C  .                                                                   .
-C  .  radovan bast                           last revision: june 2006  .
-C  .....................................................................
-C       
-#include "implicit.h"
-#include "priunit.h"
-C
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbdhf.h"
-#include "dftcom.h"
-#include "dftac.h"
-C
-      LOGICAL FIRST_TIME_HERE
-C
-      DIMENSION EIGENVALUES(*)
-C
-C
-C     get the homo eigenvalue
-C     =======================
-C
-      IF(.NOT.GRACON) THEN
-        HOMO_EIGENVALUE = D0
-        FIRST_TIME_HERE = .TRUE.
-        DO I = 1,NFSYM
-          IF(NISH(I).GT.0) THEN
-            DO J = 1,NISH(I)
-              E = EIGENVALUES(J + (I-1)*NORB(1) + NPSH(I))
-              IF(FIRST_TIME_HERE) HOMO_EIGENVALUE = E
-              FIRST_TIME_HERE = .FALSE.
-              IF(E.GT.HOMO_EIGENVALUE) HOMO_EIGENVALUE = E
-            ENDDO
-          ENDIF
-        ENDDO
-      ENDIF
-C
-C
-C     turn asymptotic correction on ?
-C     ===============================
-C
-      DELTA_HOMO = ABS(OLD_HOMO_EIGENVALUE - HOMO_EIGENVALUE)
-C
-      IF(DOSAOP) SAOPON = .TRUE.
-C
-      IF(DELTA_HOMO.LE.ACTHRESHOLD) THEN
-        IF(DOGRAC) GRACON = .TRUE.
-      ENDIF
-C
-      IF(GRACON) WRITE(LUPRI,*) 'GRAC asymptotic correction active'
-      IF(SAOPON) WRITE(LUPRI,*) 'SAOP asymptotic correction active'
-C
-      OLD_HOMO_EIGENVALUE = HOMO_EIGENVALUE
-C
 C
       RETURN
       END

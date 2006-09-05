@@ -1,4 +1,4 @@
-C 
+C
 C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -31,7 +31,7 @@ C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
-C 
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dftinp */
       SUBROUTINE DFTINP(WORD,RESET,WORK,LWORK)
@@ -50,7 +50,7 @@ C*****************************************************************************
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
       LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, ACWORD*4
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, AC_WORD*4
       DIMENSION WORK(LWORK)
 C
 #include "mxcent.h"
@@ -102,20 +102,15 @@ C          geometry in a geometry optimization) /hjaaj
       DFTHRL = 1.0D-10
       DFTELS = 1.0D-3
       NOPRUN = .FALSE.
-      ANGMIN = 15  
+      ANGMIN = 15
       ATSIZE = .FALSE.
 C
 C
 C     initialize /DFTAC/
 C     ==================
 C
-      DOGRAC     = .FALSE.
-      GRACON     = .FALSE.
-      DOSAOP     = .FALSE.
-      SAOPON     = .FALSE.
-      DORESP     = .FALSE.
-      DOLB94     = .FALSE.
-      DOLBALPHA  = .FALSE.
+      LBIT_DFTAC           = 0
+      ICOUNTER_DFTAC_DEBUG = 0
 C
 C
 C     initialize /SDFT/
@@ -192,7 +187,7 @@ C&&& ANGMIN: Set minimum order of Lebedev scheme after pruning
                  READ(LUCMD,*) ANGMIN
                  GO TO 100
  10              CONTINUE
-C&&& ATSIZE: Estimate relative atomic sizes for use in the Becke 
+C&&& ATSIZE: Estimate relative atomic sizes for use in the Becke
 C            partitioning scheme from atomic contributions
 C            to the density.
                  ATSIZE = .TRUE.
@@ -203,44 +198,48 @@ C&&& ERRELS: Threshold for accepted error in integrated number of electrons
                  GO TO 100
  12              CONTINUE
 C&&& GRAC: gradient regulated asymptotic correction
-                 DOGRAC = .TRUE.
-                 READ(LUCMD,'(A4)') ACWORD
-                 IF(ACWORD.EQ.'LB94') THEN
-                   DOLB94 = .TRUE.
-                 ELSEIF(ACWORD.EQ.'LBAL') THEN
-                   DOLBALPHA = .TRUE.
-                 ELSEIF(ACWORD.EQ.'LBAl') THEN
-                   DOLBALPHA = .TRUE.
-                 ELSEIF(ACWORD.EQ.'LBal') THEN
-                   DOLBALPHA = .TRUE.
+                 LBIT_DFTAC = LBIT_DFTAC + 1
+                 READ(LUCMD,'(A4)') AC_WORD
+                 IF(AC_WORD .EQ. 'LB94') THEN
+                   LBIT_DFTAC = LBIT_DFTAC + 32
+                 ELSEIF(AC_WORD .EQ. 'LBAL') THEN
+                   LBIT_DFTAC = LBIT_DFTAC + 64
+                 ELSEIF(AC_WORD .EQ. 'LBAl') THEN
+                   LBIT_DFTAC = LBIT_DFTAC + 64
+                 ELSEIF(AC_WORD .EQ. 'LBal') THEN
+                   LBIT_DFTAC = LBIT_DFTAC + 64
                  ELSE
-C                  panic
+                   CALL QUIT('keyword following .GRAC not recognized')
                  ENDIF
-                 READ(LUCMD,*) GRACALPHA, GRACBETA, ACIP, ACTHRESHOLD
+                 READ(LUCMD,*) GRAC_ALPHA, GRAC_BETA,
+     &                         DFTAC_IP, DFTAC_THRESHOLD
                  GOTO 100
  13              CONTINUE
 C&&& SAOP: statistical averaging of (model) orbital potentials
-                 DOSAOP = .TRUE.
-                 READ(LUCMD,'(A4)') ACWORD
-                 IF(ACWORD.EQ.'LB94') THEN
-                   DOLB94 = .TRUE.
-                 ELSEIF(ACWORD.EQ.'LBAL') THEN
-                   DOLBALPHA = .TRUE.
-                 ELSEIF(ACWORD.EQ.'LBAl') THEN
-                   DOLBALPHA = .TRUE.
-                 ELSEIF(ACWORD.EQ.'LBal') THEN
-                   DOLBALPHA = .TRUE.
+                 LBIT_DFTAC = LBIT_DFTAC + 4
+                 READ(LUCMD,'(A4)') AC_WORD
+                 IF(AC_WORD .EQ. 'LB94') THEN
+                   LBIT_DFTAC = LBIT_DFTAC + 32
+                 ELSEIF(AC_WORD .EQ. 'LBAL') THEN
+                   LBIT_DFTAC = LBIT_DFTAC + 64
+                 ELSEIF(AC_WORD .EQ. 'LBAl') THEN
+                   LBIT_DFTAC = LBIT_DFTAC + 64
+                 ELSEIF(AC_WORD .EQ. 'LBal') THEN
+                   LBIT_DFTAC = LBIT_DFTAC + 64
                  ELSE
-C                  panic
+                   CALL QUIT('keyword following .SAOP not recognized')
                  ENDIF
                  GOTO 100
  14              CONTINUE
 C&&& SAOP!: "original" SAOP as in JCP 112, 1344 (2000).
-                 DOSAOP      = .TRUE.
-                 DORESP      = .TRUE.
-                 DOLBALPHA   = .TRUE.
-                 DFTHAM      = .TRUE.
-                 ALDAON      = .TRUE.
+C                             SAOP
+                 LBIT_DFTAC = 4
+C                                 SAOP with response part
+     &                          + 16
+C                                      asymptotic part is LBalpha
+     &                               + 64
+                 DFTHAM     = .TRUE.
+                 ALDAON     = .TRUE.
 #if defined (MOD_DFT)
                  CALL DOALDA(.TRUE.)
 #endif
@@ -279,7 +278,7 @@ C     =============
 C
       IF(.NOT.DFTHAM) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 
+      WRITE(LUPRI,'(1X,A)')
      &   'DFTINP: Set-up for Kohn-Sham calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A,I5)') ' * Print level: ',IPRDFT
@@ -288,9 +287,9 @@ C
       WRITE(LUPRI,'(A)')
      &     ' * Radial quadrature according to',
      &     '          R. Lindh, P.-Aa. Malmqvist and L. Gagliardi'
-      WRITE(LUPRI,'(A,E12.5)') 
+      WRITE(LUPRI,'(A,E12.5)')
      &     '   Precision of radial quadrature set to: ', RADINT
-      WRITE(LUPRI,'(A,E12.5)') 
+      WRITE(LUPRI,'(A,E12.5)')
      &    '   Accepted error in integrated number of electrons: ',DFTELS
       WRITE(LUPRI,'(A)')
      &     ' * Angular quadrature according to Lebedev scheme.'
@@ -315,24 +314,27 @@ C
         DFTPOT = .FALSE.
       ENDIF
 C
-      IF(DOGRAC) THEN
-        WRITE(LUPRI,'(A)') 
+C             GRAC
+      IF(LBIT(LBIT_DFTAC,1)) THEN
+        WRITE(LUPRI,'(A)')
      &        ' * Gradient regulated asymptotic correction:'
-        WRITE(LUPRI,'(A,F12.6)') '   alpha = ', GRACALPHA
-        WRITE(LUPRI,'(A,F12.6)') '   beta  = ', GRACBETA
-        WRITE(LUPRI,'(A)') 
+        WRITE(LUPRI,'(A,F12.6)') '   alpha = ', GRAC_ALPHA
+        WRITE(LUPRI,'(A,F12.6)') '   beta  = ', GRAC_BETA
+        WRITE(LUPRI,'(A)')
      &        '   threshold for difference in HOMO eigenvalue'
-        WRITE(LUPRI,'(A,E12.6)') 
-     &        '   below which asymptotic correction is switched on: ',
-     &        ACTHRESHOLD
         WRITE(LUPRI,'(A,E12.6)')
-     &        '   bulk potential will be shifted by (IP): ', ACIP
+     &        '   below which asymptotic correction is switched on: ',
+     &        DFTAC_THRESHOLD
+        WRITE(LUPRI,'(A,E12.6)')
+     &        '   bulk potential will be shifted by (IP): ', DFTAC_IP
       ENDIF
-      IF(DOSAOP) THEN
-        WRITE(LUPRI,'(A)') 
+C             SAOP
+      IF(LBIT(LBIT_DFTAC,3)) THEN
+        WRITE(LUPRI,'(A)')
      &        ' * Statistical averaging of (model) orbital potentials:'
       ENDIF
-      IF(DORESP) THEN
+C             SAOP with response part
+      IF(LBIT(LBIT_DFTAC,5)) THEN
         WRITE(LUPRI,'(A)')
      &        '   original SAOP as in JCP 112, 1344 (2000) chosen'
         WRITE(LUPRI,'(A)')
@@ -341,10 +343,10 @@ C
      &        '   the functional under .DFT is expected to be GLLBhole'
       ENDIF
 C
-      IF(DOLB94) THEN
+      IF(LBIT(LBIT_DFTAC,6)) THEN
         WRITE(LUPRI,'(A)') '   the asymptotic potential is LB94'
       ENDIF
-      IF(DOLBALPHA) THEN
+      IF(LBIT(LBIT_DFTAC,7)) THEN
         WRITE(LUPRI,'(A)') '   the asymptotic potential is LBalpha'
       ENDIF
 C
