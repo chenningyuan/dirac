@@ -4095,9 +4095,10 @@ C
         CALL QUIT('Conflicting options : VEXTPJ and FREEPJ !')
       ENDIF
 
-CMI     Remove inconsistencies for TWOCOMP option
+CMI     Remove inconsistencies for the TWOCOMP option
       IF (TWOCOMP.AND.(LEVYLE.OR.
-     &              URKBAL.OR.FREEPJ.OR.VEXTPJ.OR.GAUNT)) THEN
+CMI  &              URKBAL.OR.FREEPJ.OR.VEXTPJ.OR.GAUNT)) THEN
+     &              URKBAL.OR.FREEPJ.OR.VEXTPJ)) THEN
         WRITE(LUPRI,'(A)') '***** HAMINP ERROR *****'
         WRITE(LUPRI,'(A)')
      &  'You cannot specify both TWOCOMP and other otions '//
