@@ -111,7 +111,6 @@ CAREFUL
 #include "densfit.h"
 #include "fck3int.h"
 #include "dummy.h"
-#include "ibtfun.h"
 cSimen
 #include "nuclei.h"
 cSimen
@@ -124,6 +123,7 @@ cSimen
      &          KCCF(2,4), IODDKC(MAXAOKCK**2), IPNTUV(*), I_LG(*)
       LOGICAL GCNTA, GCNTB, GCNTC, GCNTD, GCNTAB, GCNTCD, 
      &        DODIST, GENCON, BOXACT
+#include "ibtfun.h"
       CALL QENTER('GETINT31')
 
 C     Monitor maximum memory requirement
@@ -1372,9 +1372,9 @@ C     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "nuclei.h"
 #include "shells.h"
 #include "fck3aob.h"
-#include "ibtfun.h"
       LOGICAL AUXEL1, AUXEL2, DOGAB
       INTEGER N_NORM(4), N_FIT(4), I_NORM(4), I_FIT(4) 
+#include "ibtfun.h"
       AUX1 = AUXEL1
       AUX2 = AUXEL2
       GAB  = DOGAB
@@ -1662,10 +1662,10 @@ C     Allocate
 #include "fck3odb.h"
 #include "nuclei.h"
 #include "pi.h"
-      PARAMETER (PI32 = SQRTPI*PI)
-      PR1CINT(A) = PI32/SQRT(A**3)
       DIMENSION CSQ(NCSQ1,NCSQ2), OAUX(*),WORK(*),KCCF(2)
       LOGICAL FIRST
+      PARAMETER (PI32 = SQRTPI*PI)
+      PR1CINT(A) = PI32/SQRT(A**3)
       CALL QENTER('AUXCH1')
 
       CALL DZERO(OAUX,NBASISAUX)
