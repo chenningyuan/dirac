@@ -34,11 +34,17 @@ C...      http://dirac.chem.sdu.dk
 C 
 C /* Deck dftexc */
       SUBROUTINE DFTEXC(DMAT,DTRMAT,EXCMAT,NXCMAT,
-     &                  ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                  ISYMOP,IHRMOP,IOPTS,
      &                  WORK,LWORK,IPRINT)
 C
 C     T. Helgaker sep 99
 C     DIRAC adaption by T.Saue
+C
+C     00001: DOERG, calculate DFT energy
+C     00010: DOGRD, calculate molecular gradient
+C     00100: DOLR,  linear response contribution
+C     01000: DOQR,  quadratic response contribution
+C     10000: DOLND, include London orbitals
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -63,7 +69,7 @@ C
 #include "dfterg.h"
 #include "dgroup.h"
 #include "functionals.h"
-      LOGICAL DOERG, DOGRD, DOLND, DOATR
+      LOGICAL DOERG, DOGRD, DOLND, DOLR,LBIT,DOQR
       LOGICAL FILEISTHERE, FILEISOPENED
       DIMENSION DMAT(N2BBASX,NZ,*),EXCMAT(N2BBASX,NZ,*),
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
@@ -71,6 +77,11 @@ C
 C
 #include "memint.h"
 C
+      DOERG = LBIT(IOPTS,1)
+      DOGRD = LBIT(IOPTS,2)
+      DOLR  = LBIT(IOPTS,3)
+      DOQR  = LBIT(IOPTS,4)
+      DOLND = LBIT(IOPTS,5)
       LUQUAD = 44
 C     Initial expectation value of two-electron matrix
       IF (DOERG) THEN
@@ -97,7 +108,7 @@ C
 C     Scale density matrices
 C
       CALL DSCAL(N2BBASX,D2,DMAT,1)
-      IF (DOATR) THEN
+      IF (DOLR.OR.DOQR) THEN
         CALL DSCAL(N2BBASXQ*NXCMAT,D2,DTRMAT,1)
 C       Insert half-phases:
 C       The symmetry scheme tries to pack the real symemtric and three 
@@ -305,13 +316,13 @@ C
             CALL DFT_PARDRV(DMAT,WORK(KSAOPDMATRESP),
      &                      WORK(KSAOPDMATOUTER),
      &                      DTRMAT,EXCMAT,NXCMAT,
-     &                      ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                      ISYMOP,IHRMOP,IOPTS,
      &                      WORK(KFREE),LFREE,LUQUAD,IPRDFT)
           ELSE
             CALL DFT_PARDRV(DMAT,DUMMY,
      &                      WORK(KSAOPDMATOUTER),
      &                      DTRMAT,EXCMAT,NXCMAT,
-     &                      ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                      ISYMOP,IHRMOP,IOPTS,
      &                      WORK(KFREE),LFREE,LUQUAD,IPRDFT)
           ENDIF
 C
@@ -319,7 +330,7 @@ C
         ELSE
           CALL DFT_PARDRV(DMAT,DUMMY,DUMMY,
      &                    DTRMAT,EXCMAT,NXCMAT,
-     &                    ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                    ISYMOP,IHRMOP,IOPTS,
      &                    WORK(KFREE),LFREE,LUQUAD,IPRDFT)
         ENDIF
 C
@@ -340,14 +351,14 @@ C
         IF(DORESP) THEN
           CALL DFTDRV(DMAT,WORK(KSAOPDMATRESP),WORK(KSAOPDMATOUTER),
      &                DTRMAT,EXCMAT,NXCMAT,
-     &                ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                ISYMOP,IHRMOP,IOPTS,
      &                WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &                WORK(KCNT),WORK(KDST),WORK(KBUF),
      &                WORK(KFREE),LFREE,LUQUAD,IPRDFT)
         ELSE
           CALL DFTDRV(DMAT,DUMMY,WORK(KSAOPDMATOUTER),
      &                DTRMAT,EXCMAT,NXCMAT,
-     &                ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                ISYMOP,IHRMOP,IOPTS,
      &                WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &                WORK(KCNT),WORK(KDST),WORK(KBUF),
      &                WORK(KFREE),LFREE,LUQUAD,IPRDFT)
@@ -356,7 +367,7 @@ C
       ELSE
         CALL DFTDRV(DMAT,DUMMY,DUMMY,
      &              DTRMAT,EXCMAT,NXCMAT,
-     &              ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &              ISYMOP,IHRMOP,IOPTS,
      &              WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &              WORK(KCNT),WORK(KDST),WORK(KBUF),
      &              WORK(KFREE),LFREE,LUQUAD,IPRDFT)
@@ -366,7 +377,7 @@ C
       ENDIF
 #endif
       IF(DFTISGGA()) CALL SYMSYM(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
-      IF (DOATR) THEN
+      IF (DOLR.OR.DOQR) THEN
 C       Insert half-phases
         IF(NZ.LT.4) THEN
            DO IM = 1,NXCMAT
@@ -389,7 +400,7 @@ C     Rescale density matrices
 C
       CALL DSCAL(N2BBASX,DP5,DMAT,1)
       IF(NASHT.GT.0) CALL GTDOAV(DMAT,-1)
-      IF (DOATR) THEN
+      IF (DOLR.OR.DOQR) THEN
         CALL DSCAL(N2BBASXQ*NXCMAT,DP5,DTRMAT,1)
       END IF
 C
@@ -404,7 +415,7 @@ C
 C /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,SAOPDMATRESP,SAOPDMATOUTER,
      &                  DTRMAT,EXCMAT,NXCMAT,
-     &                  ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                  ISYMOP,IHRMOP,IOPTS,
      &                  GAO,GAO1,GAO2,GAB1,NCNT,DST,BUF,
      &                  WORK,LWORK,LUQUAD,IPRINT)
 C
@@ -437,7 +448,7 @@ C#include "inforb.h"
 #include "functionals.h"
 #include "dgroup.h"
 C
-      LOGICAL DOERG, DOGRD, DOLND, DOATR
+      LOGICAL DOERG, DOGRD, DOLND, DOLR, DOQR, LBIT
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION EXCMAT(NBAST,NBAST,NZ,NXCMAT)
@@ -453,6 +464,12 @@ CTROND
       TIMSTR = SECOND()
 #include "memint.h"
 C
+      DOERG = LBIT(IOPTS,1)
+      DOGRD = LBIT(IOPTS,2)
+      DOLR  = LBIT(IOPTS,3)
+      DOQR  = LBIT(IOPTS,4)
+      DOLND = LBIT(IOPTS,5)
+C
       IF (IPRINT .GE. 100) THEN
          CALL HEADER('DMAT in DFTDRV ',-1)
          CALL OUTPUT(DMAT,1,NTBAS(0),1,NTBAS(0),
@@ -466,7 +483,7 @@ C
       IF (DOLND) THEN
          NDER = 0
       END IF
-      IF (DOATR) THEN
+      IF (DOLR.OR.DOQR) THEN
          NDER = 0
       END IF
 C
@@ -513,6 +530,7 @@ C
            KWB = KW
            NTEST = 1
            DO NODE = 1,NODES
+              write(lupri,*) 'Sending to node', NODE
              CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,ISTAT,IERR)
              NWHO = ISTAT(MPI_SOURCE)
@@ -535,10 +553,10 @@ C
            ENDDO
          ELSE
 #endif
+      write(lupri,*) 'Sent, calling DFTDR1'
            CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
      &                 DMAT,SAOPDMATRESP,SAOPDMATOUTER,
-     &                 DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
-     &                 DOERG,DOGRD,DOLND,DOATR,
+     &                 DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &                 GAO,GAO1,GAO2,GAB1,
      &                 NCNT,DST,BUF,WORK(KFREE),LFREE,IPRINT)
 #if defined (VAR_MPI) 
@@ -553,8 +571,8 @@ C
       END IF
   200 CONTINUE
 #if defined (VAR_MPI)
-      IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,DOERG,DOGRD,DOLND,DOATR,
-     &                       WORK,KFREE,LFREE,IPRINT)
+      IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,IOPTS,WORK,KFREE,LFREE,
+     &                       IPRINT)
 #endif
       IF (DOLND) THEN
         DO I = 1, NTBAS(0)
@@ -618,7 +636,7 @@ CTROND            CALL DFT_ENE_REPORT()
             CALL HEADER('GRADFT in DFTDRV ',-1)
             CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
          END IF
-         IF (DOATR) THEN
+         IF (DOLR.OR.DOQR) THEN
             CALL HEADER('EXCMAT in DFTDRV ',-1)
             CALL OUTPUT(EXCMAT(1,1,1,1),
      &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
@@ -634,8 +652,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftdr1 */
       SUBROUTINE DFTDR1(CORX,CORY,CORZ,WEIGHT,NPOINT,
      &                  DMAT,SAOPDMATRESP,SAOPDMATOUTER,
-     &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
-     &                  DOERG,DOGRD,DOLND,DOATR,
+     &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &                  GAO,GAO1,GAO2,GAB1,
      &                  NCNT,DST,BUF,WORK,LWORK,IPRINT)
 C***********************************************************************
@@ -659,7 +676,7 @@ C
 #include "dfterg.h"
 #include "functionals.h"
 #include "dgroup.h"
-      LOGICAL DOERG,DOGRD,DOLND,DOATR
+      LOGICAL DOERG,DOGRD,DOLND,DOLR,DOQR,LBIT
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
      &            DMAT(NBAST,NBAST),SAOPDMATRESP(*),SAOPDMATOUTER(*),
@@ -670,6 +687,11 @@ C
      &            WORK(LWORK)
       DIMENSION RHG(3),VT(3)
 C
+      DOERG = LBIT(IOPTS,1)
+      DOGRD = LBIT(IOPTS,2)
+      DOLR  = LBIT(IOPTS,3)
+      DOQR  = LBIT(IOPTS,4)
+      DOLND = LBIT(IOPTS,5)
 C
       DO 300 IPNT = 1, NPOINT
        
@@ -798,9 +820,14 @@ C
 C       Hessian transformation
 C       ======================
 C
-        IF (DOATR) THEN
-          CALL DFTLTR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,RHO,
-     &                RHOGRD,RHG,WGHT,DOGGA,BUF)
+        IF (DOLR) THEN
+          CALL DFT_LINRES(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
+     &                    RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+        END IF
+C
+        IF (DOQR) THEN
+          CALL DFT_QUADRES(DTRMAT,EXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
+     &                     RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
         END IF
   300 CONTINUE
 C
@@ -1192,8 +1219,7 @@ C
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftres */
-      SUBROUTINE DFTRES(EXCMAT,NXCMAT,DOERG,DOGRD,DOLND,DOATR,
-     &                  WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE DFTRES(EXCMAT,NXCMAT,IOPTS,WORK,KFREE,LFREE,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Send receive DFTresults
@@ -1218,11 +1244,18 @@ C
 #include "dftcom.h"
 #include "dfterg.h"
 #include "dgroup.h"
-      LOGICAL DOERG, DOGRD, DOLND, DOATR
+      LOGICAL DOERG, DOGRD, DOLND, DOLR, DOQR, LBIT
       DIMENSION EXCMAT(*),WORK(*)
 C
       KWORK = KFREE
       LFMAT = N2BBASX*NXCMAT*NZ
+C
+      DOERG = LBIT(IOPTS,1)
+      DOGRD = LBIT(IOPTS,2)
+      DOLR  = LBIT(IOPTS,3)
+      DOQR  = LBIT(IOPTS,4)
+      DOLND = LBIT(IOPTS,5)
+C
       IF (MYTID.EQ.0) THEN
         CALL MEMGET('REAL',KFBUF,LFMAT,WORK,KFREE,LFREE)
 C
@@ -1270,8 +1303,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck dftpar */
       SUBROUTINE DFTPAR(DMAT,SAOPDMATRESP,SAOPDMATOUTER,
-     &                  DTRMAT,EXCMAT,NXCMAT,
-     &                  ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &                  WORK,KFREE,LFREE,IPRINT)
 C
 C     T.Saue and T. Helgaker 
@@ -1301,13 +1333,19 @@ C
 #include "dftbuf.h"
 #include "functionals.h"
 C
-      LOGICAL DOERG, DOGRD, DOLND, DOATR
+      LOGICAL DOERG, DOGRD, DOLND, DOLR, DOQR, LBIT
       DIMENSION DMAT(*),SAOPDMATRESP(*),SAOPDMATOUTER(*),
      &          DTRMAT(*),EXCMAT(*),ISYMOP(NXCMAT),
      &          IHRMOP(NXCMAT),WORK(*)
 C
       KWORK = KFREE
       TIMSTR = SECOND()
+C
+      DOERG = LBIT(IOPTS,1)
+      DOGRD = LBIT(IOPTS,2)
+      DOLR  = LBIT(IOPTS,3)
+      DOQR  = LBIT(IOPTS,4)
+      DOLND = LBIT(IOPTS,5)
 C
       LEXCMAT = NBAST*NBAST*NZ*NXCMAT
       CALL DZERO(EXCMAT,LEXCMAT)
@@ -1329,7 +1367,7 @@ C
       IF (DOLND) THEN
          NDER = 0
       END IF
-      IF (DOATR) THEN
+      IF (DOLR.OR.DOQR) THEN
          NDER = 0
       END IF
 C
@@ -1375,8 +1413,7 @@ C
      &                 MPARID,35,MPI_COMM_WORLD,ISTAT,IERR)
       CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
      &            DMAT,SAOPDMATRESP,SAOPDMATOUTER,
-     &            DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
-     &            DOERG,DOGRD,DOLND,DOATR,
+     &            DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &            WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &            WORK(KCNT),WORK(KDST),WORK(KBUF),
      &            WORK(KFREE),LFREE,IPRINT)
@@ -1478,8 +1515,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pardrv */
       SUBROUTINE DFT_PARDRV(DMAT,SAOPDMATRESP,SAOPDMATOUTER,
-     &                      DTRMAT,EXCMAT,NXCMAT,
-     &                      ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                      DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &                      WORK,LWORK,LUQUAD,IPRINT)
 C
 C     A cut and paste job by T. Saue Sep 25 2003
@@ -1500,7 +1536,7 @@ C
 #include "cdft.h"
 #include "dgroup.h"
 C
-      LOGICAL DOERG, DOGRD, DOLND, DOATR, LSEND(6), LACBCAST(7)
+      LOGICAL DOERG, DOGRD, DOLND, DOLR,DOQR,LBIT, LSEND(6), LACBCAST(7)
 C
 #if defined (MOD_CDFT)
       LOGICAL LCDFTBCAST(2)
@@ -1513,6 +1549,12 @@ C
 C
 #include "memint.h"
       CALL QENTER('DFT_PARDRV')
+C
+      DOERG = LBIT(IOPTS,1)
+      DOGRD = LBIT(IOPTS,2)
+      DOLR  = LBIT(IOPTS,3)
+      DOQR  = LBIT(IOPTS,4)
+      DOLND = LBIT(IOPTS,5)
 C
 C     Ensure that NODES .LE. MAXNOD
 C
@@ -1596,10 +1638,9 @@ C
 C     Transfer functionals
       CALL DFTSYNCFUNC(1)
 C     Transfer control parameters
-      CALL MPI_BCAST(DOERG,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DOGRD,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DOLND,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DOATR,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      write(lupri,*) 'Before IOPTS broadcast'
+      CALL MPI_BCAST(IOPTS,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      write(lupri,*) 'After IOPTS broadcast'
 C
       CALL MPI_BCAST(ISYMOP,NXCMAT,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -1608,24 +1649,27 @@ C
 C
       CALL MPI_BCAST(DMAT,N2BBASX,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      IF(DOATR) THEN
+      IF(DOLR.OR.DOQR) THEN
         LMAT = N2BBASXQ*NXCMAT
         CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
       ENDIF
+
+      write(lupri,*) 'Broadcasted'
 C
 C-----------------------
 C     Start calculation.
 C-----------------------
 C
       CALL DFTDRV(DMAT,SAOPDMATRESP,SAOPDMATOUTER,
-     &            DTRMAT,EXCMAT,NXCMAT,
-     &            ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &            DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &            DUM,DUM,DUM,DUM,IDUM,DUM,DUM,
      &            WORK(KFREE),LFREE,LUQUAD,IPRINT)
+      write(lupri,*) 'DFTDRV done'
 C
       CALL MEMREL('DFT_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('DFT_PARDRV')
+      write(lupri,*) 'Exit DFT_PARDRV'
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1652,7 +1696,7 @@ C
 #include "infpar.h"
 C
       DIMENSION WORK(LWORK)
-      LOGICAL DOERG,DOGRD,DOLND,DOATR,LSEND(6),LACBCAST(7)
+      LOGICAL DOERG,DOGRD,DOLND,DOLR,LSEND(6),LACBCAST(7)
 C
 #if defined (MOD_CDFT)
       LOGICAL LCDFTBCAST(2)
@@ -1730,50 +1774,35 @@ C
         CALL MEMGET('REAL',KSAOPDMATRESP,N2BBASX,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KSAOPDMATRESP),N2BBASX,
      &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+      ELSE
+        KSAOPDMATRESP = KFREE
       ENDIF
 C
       IF(DOSAOP) THEN
         CALL MEMGET('REAL',KSAOPDMATOUTER,N2BBASX,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KSAOPDMATOUTER),N2BBASX,
      &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+      ELSE
+        KSAOPDMATOUTER = KFREE
       ENDIF
 C
 C
 C     Receive functionals
       CALL DFTSYNCFUNC(0)
 C     Transfer control parameters
-      CALL MPI_BCAST(DOERG,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DOGRD,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DOLND,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DOATR,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IOPTS,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       CALL MEMGET('INTE',KSYM,NXCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KHRM,NXCMAT,WORK,KFREE,LFREE)
-      IF(DOSAOP) THEN
-        IF(DORESP) THEN
-          CALL DFTNO1(NXCMAT,WORK(KSYM),WORK(KHRM),
-     &                DOERG,DOGRD,DOLND,DOATR,
-     &                WORK(KSAOPDMATRESP),WORK(KSAOPDMATOUTER),
-     &                WORK,KFREE,LFREE)
-        ELSE
-          CALL DFTNO1(NXCMAT,WORK(KSYM),WORK(KHRM),
-     &                DOERG,DOGRD,DOLND,DOATR,
-     &                DUMMY,WORK(KSAOPDMATOUTER),
-     &                WORK,KFREE,LFREE)
-        ENDIF
-      ELSE
-        CALL DFTNO1(NXCMAT,WORK(KSYM),WORK(KHRM),
-     &              DOERG,DOGRD,DOLND,DOATR,
-     &              DUMMY,DUMMY,
-     &              WORK,KFREE,LFREE)
-      ENDIF
+      CALL DFTNO1(NXCMAT,WORK(KSYM),WORK(KHRM),IOPTS,
+     &            WORK(KSAOPDMATRESP),WORK(KSAOPDMATOUTER),
+     &            WORK,KFREE,LFREE)
 C
       CALL MEMREL('DFTNOD',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('DFTNOD')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftno1 */
-      SUBROUTINE DFTNO1(NXCMAT,ISYMOP,IHRMOP,
-     &                  DOERG,DOGRD,DOLND,DOATR,
+      SUBROUTINE DFTNO1(NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &                  SAOPDMATRESP,SAOPDMATOUTER,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -1789,9 +1818,15 @@ C
 #endif
 #include "infpar.h"
 #include "dcbbas.h"
-      LOGICAL DOERG, DOGRD, DOLND, DOATR
+      LOGICAL DOERG, DOGRD, DOLND, DOLR, DOQR, LBIT
       DIMENSION ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &          SAOPDMATRESP(*),SAOPDMATOUTER(*),WORK(*)
+C
+      DOERG = LBIT(IOPTS,1)
+      DOGRD = LBIT(IOPTS,2)
+      DOLR  = LBIT(IOPTS,3)
+      DOQR  = LBIT(IOPTS,4)
+      DOLND = LBIT(IOPTS,5)
 C
       CALL MPI_BCAST(ISYMOP,NXCMAT,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -1802,7 +1837,7 @@ C
       CALL MEMGET('REAL',KDEN,N2BBASX,WORK,KFREE,LFREE)
       CALL MPI_BCAST(WORK(KDEN),N2BBASX,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      IF(DOATR) THEN
+      IF(DOLR.OR.DOQR) THEN
         CALL MEMGET('REAL',KDTR,LMAT,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KDTR),LMAT,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -1815,11 +1850,9 @@ C
       IPRINT = 0
       CALL DFTPAR(WORK(KDEN),
      &            SAOPDMATRESP,SAOPDMATOUTER,
-     &            WORK(KDTR),WORK(KEXC),NXCMAT,
-     &            ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &            WORK(KDTR),WORK(KEXC),NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &            WORK,KFREE,LFREE,IPRINT)
-      CALL DFTRES(WORK(KEXC),NXCMAT,DOERG,DOGRD,DOLND,DOATR,
-     &            WORK,KFREE,LFREE,IPRINT)
+      CALL DFTRES(WORK(KEXC),NXCMAT,IOPTS,WORK,KFREE,LFREE,IPRINT)
       RETURN
       END
 #endif

@@ -31,10 +31,10 @@ C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
-C
-C /* Deck dftltr */
-      SUBROUTINE DFTLTR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,RHO,
-     &                  RHOGRD,RHG,WGHT,DOGGA,BUF)
+C 
+C /* Deck dft_linres */
+      SUBROUTINE DFT_LINRES(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
+     &                      RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
 C
 C     T. Helgaker sep 99/oct 00
 C     adapted to DIRAC by T.Saue May 3 2001
@@ -128,6 +128,135 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 #endif
       ENDIF
       ENDDO
+      RETURN
+      END
+      SUBROUTINE DFT_QUADRES(DTRMAT,EXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
+     &                       RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+C***********************************************************************
+C
+C     Based on DFT_LINRES
+C
+C     Driver for DFT contributions to quadratic response.
+C
+C     On input:
+C     DTRMAT(*,*,*,1) --- B density matrix
+C     DTRMAT(*,*,*,2) --- C density matrix
+C     DTRMAT(*,*,*,3) --- BC density matrix
+C     GAO             --- 
+C
+C     On output:
+C     EXCMAT(*,*,*,1) --- G_B matrix
+C     EXCMAT(*,*,*,2) --- G_C matrix
+C     EXCMAT(*,*,*,3) --- H_BC matrix
+C
+C     tsaue & johhe Aug. 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+      PARAMETER(D0=0.0D0,D1=1.0D0,DP5 = 0.5D0,D2=2.0D0)
+C
+#include "inforb.h"
+#include "nuclei.h"
+#if defined (PRG_DIRAC)
+#include "dgroup.h"
+#else
+#include "wrkrsp.h"
+#include "dftinf.h"
+#endif
+#include "dftcom.h"
+#include "functionals.h"
+C
+      INTEGER A, B
+      LOGICAL DOGGA, TRPLET
+      DIMENSION DTRMAT(NBAST,NBAST,NZ,3),
+     &          EXCMAT(NBAST,NBAST,NZ,3),
+     &          ISYMOP(3),IHRMOP(3),
+     &          GAO(NBAST), GAO1(NBAST,3), 
+     &          RHG(3),VT(3), VXC(DERVS3), BUF(*)
+!johhe Check DERVS3
+      DIMENSION B3(3)
+C
+C     Get perturbed densities
+C     =======================
+C
+      IREPBOP = ISYMOP(1)-1
+      IF(IHRMOP(1).EQ.1) THEN
+         CALL GETRHO(B0,IREPBOP,GAO,DTRMAT(1,1,1,1),BUF)
+      ELSE
+         CALL QUIT('DFTQR program general case!')
+      END IF
+C
+      IREPCOP = ISYMOP(2)-1
+      IF(IHRMOP(2).EQ.1) THEN
+         CALL GETRHO(C0,IREPCOP,GAO,DTRMAT(1,1,1,2),BUF)
+      ELSE
+         CALL QUIT('DFTQR program general case!')
+      END IF
+C
+      IREPBCOP = ISYMOP(3)-1
+      IF(IHRMOP(3).EQ.1) THEN
+         CALL GETRHO(BC0,IREPBCOP,GAO,DTRMAT(1,1,1,3),BUF)
+      ELSE
+         CALL QUIT('DFTQR program general case!')
+      END IF
+C
+C       ***************
+C       ***** LDA *****
+C       ***************
+C
+      IF(.NOT.DOGGA) THEN
+C
+C     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
+         CALL DFTPOT2(VXC,WGHT,RHO,0D0)
+C
+C     Constructing G_B matrix
+         IF(DABS(B0).GT.DFTHRL) THEN 
+C
+C           Calculated VT
+C
+            SXC = VXC(FRR)*B0
+C
+C           Linear transformation
+C  
+            CALL DOEXC1(SXC,IREPBOP,EXCMAT(1,1,1,1),GAO)
+         END IF
+C
+C     Constructing G_C matrix
+         IF(DABS(C0).GT.DFTHRL) THEN 
+C
+C           Calculated VT
+C
+            SXC = VXC(FRR)*C0
+C
+C           Linear transformation
+C  
+            CALL DOEXC1(SXC,IREPCOP,EXCMAT(1,1,1,2),GAO)
+         END IF
+C
+C     Constructing H_BC matrix
+         IF(DABS(BC0).GT.DFTHRL) THEN 
+C
+C           Calculated VT
+C
+            SXC = VXC(FRRR)*B0*C0 + VXC(FRR)*BC0
+C
+C           Linear transformation
+C  
+            CALL DOEXC1(SXC,IREPBCOP,EXCMAT(1,1,1,3),GAO)
+         END IF
+      ELSE  
+C
+C         ***************
+C         ***** GGA *****
+C         ***************
+C
+C     Write me!
+C
+      END IF
+!      ENDDO
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

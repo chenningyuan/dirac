@@ -119,25 +119,25 @@ struct ThirdDrv_ {
     real fR;   /* d/drho  F */
     real fZ;   /* d/dzeta F */
     real fG;   /* d/dgamma F */
-    real fRR[2];  /* d/drho%Gï¿¿%@ F */
-    real fRZ[2];  /* d/(drho dzeta) F */
-    real fZZ[2];  /* d/dzeta%Gï¿¿%@ F */
-    real fRG[2];  /* d/(drho dgamma) F */
-    real fRRR[2]; /* d/drho%Gï¿¿%@ F */
-    real fRRZ[2][2]; /* d/(drho%Gï¿¿%@ dzeta) F */
+    real fRR;  /* d/drho%Gï¿¿%@ F */
+    real fRZ;  /* d/(drho dzeta) F */
+    real fZZ;  /* d/dzeta%Gï¿¿%@ F */
+    real fRG;  /* d/(drho dgamma) F */
+    real fRRR; /* d/drho%Gï¿¿%@ F */
+    real fRRZ; /* d/(drho%Gï¿¿%@ dzeta) F */
     /* two forms of fRRG needed as the formulae is non symmetric */
-    real fRRG[2];     /* d/(drho? dgamma) F */
-    real fRRGX[2][2]; /* d/(drho? dgamma) F */
-    real fRZZ[2][2]; /* d/(drho dzeta%Gï¿¿%@) F */
-    real fZZZ[2]; /* d/dzeta%Gï¿¿%@ F */
+    real fRRG;     /* d/(drho? dgamma) F */
+    real fRRGX; /* d/(drho? dgamma) F */
+    real fRZZ; /* d/(drho dzeta%Gï¿¿%@) F */
+    real fZZZ; /* d/dzeta%Gï¿¿%@ F */
 };
 
 void dftpot0_(FirstDrv *ds, const real* weight,
               const real* rho, const real* grad);
 void dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
               const int* triplet);
-void dftpot2_(ThirdDrv *ds, real factor, const FunDensProp* dp, int isgga,
-              int triplet);
+void dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
+              const int* triplet);
 
 /* Property evaluators */
 void dft_kohn_sham_(real* dmat, real* ksm, real *edfty,

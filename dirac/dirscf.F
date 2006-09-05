@@ -564,8 +564,9 @@ C                 is generally not integrated
            TMP = DFTELS
            DFTELS = D1
 C          NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-           CALL DFTEXC(DMAT,DUMMY,FOCK,1,1,1,.TRUE.,.FALSE.,
-     &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
+           IOPTS = 1
+           CALL DFTEXC(DMAT,DUMMY,FOCK,1,1,1,IOPTS,WORK(KFREE),LFREE,
+     &                 IPRSCF)
            DFTELS = TMP
            TDXC = SECOND() - TDXC
         ENDIF
@@ -1315,8 +1316,9 @@ C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
 C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-             CALL DFTEXC(DMAT,DUMMY,FOCK,1,1,1,.TRUE.,.FALSE.,
-     &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
+            IOPTS = 1
+             CALL DFTEXC(DMAT,DUMMY,FOCK,1,1,1,IOPTS,WORK(KFREE),LFREE,
+     &                   IPRSCF)
          ENDIF
 #endif
 C

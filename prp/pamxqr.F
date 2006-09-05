@@ -2317,6 +2317,10 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxrs.h"
 C
+#if defined (MOD_DFT)
+#include "dftcom.h"
+#endif
+C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
 C
       DIMENSION VECAEE(NZYAEE,NZ),VECBEE(NZYBEE,NZ),VECCEE(NZYCEE,NZ),
@@ -2369,12 +2373,46 @@ C
 C
 C     Construct the Fock matrices in AO basis. 
 C
+C     Check for static time-symmetric or anti-symmetric poperties
+C     to use symmetries and not general matrices.
+C
       CALL E3FCK(ISYMOP,IHRMOP,IFCKOP,ISYMB,ISYMC,ISYMA,
      &     ITIMB,ITIMC,ITIMB*ITIMC,IFERB,IFERC,IFERA,NPOS)
       CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,WORK(KF1AO),WORK(KD1AO),3,
      &     WORK(KPOS),INTFLG,IPRXQR,WORK(KFREE),LFREE)
+c
+c
+cjohhe     
+c     In accordance with linear response, this is where the fock matrix
+c     is to be changed in order to include the exchange-correlation
+c     part when DFT is used.  The main question is how this is achieved.
+c     How should the already included exchange part be handled?  Do
+c     we need to modify the above call to TWOFCK depending on not only
+c     whether DFT is used or not, but also depending on whether we use
+c     pure or hybrid functionals?
+c
+c
+#if defined (MOD_DFT)
+C
+C     Construct Kohn-Sham contribution
+C     ================================
+C
+      IF(DFTADD) THEN
+c        IF (NCSIM.GT.0) CALL QUIT('GMOLITX1: MCSCF-DFT not implemented')
+cC       Generate standard density matrix
+        IREPOP = JSYMOP-1
+        CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL GENDEN(WORK(KDMAT),CMO,1,IPRXQR)
+        IOPTS = 8
+        CALL DFTEXC(WORK(KDMAT),WORK(KD1AO),WORK(KF1AO),3,ISYMOP,IHRMOP,
+     &              IOPTS,WORK(KFREE),LFREE,IPRXQR)
+        CALL MEMREL('E3DRV.dft',WORK,1,KDMAT,KFREE,LFREE)
+      END IF
+#endif
+c
+c
 C
 C     Scale all Fock matrices with a factor 4 to agree with
 C     convention used in TWOFCK as of Aug 2004.

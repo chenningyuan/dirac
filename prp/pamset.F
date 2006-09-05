@@ -651,8 +651,8 @@ C     ================================
       IF(DFTADD) THEN
          CALL GENDEN(FAO,CMO,1,IPRINT)
 C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-         CALL DFTEXC(FAO,DUM,FMO,1,1,1,.TRUE.,.FALSE.,
-     &               .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRINT)
+         IOPTS = 1
+         CALL DFTEXC(FAO,DUM,FMO,1,1,1,IOPTS,WORK(KFREE),LFREE,IPRINT)
       ENDIF
 #endif
 C
