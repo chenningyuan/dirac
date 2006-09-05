@@ -191,7 +191,7 @@ C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C-----------------------------------------------------------------------
 #include "pi.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -201,27 +201,23 @@ C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #include "dftbuf.h"
 #include "dgroup.h"
 #include "functionals.h"
-C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C
       LOGICAL   LBIT
-      DIMENSION VX(DERVS1), 
-     &          VX_BULK(DERVS1), 
-     &          VX_OUTER(DERVS1), 
-     &          VX_SLATER(DERVS1), 
+      DIMENSION VX(DERVS1),
+     &          VX_BULK(DERVS1),
+     &          VX_OUTER(DERVS1),
+     &          VX_SLATER(DERVS1),
      &          VX_RESP(DERVS1)
-C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
 C
 C     GRAC parameters
 C     ===============
 C
-C             GRAC
-      IF(LBIT(LBIT_DFTAC,1)) THEN
+      IF(LBIT(LBIT_DFTAC,1)) THEN !GRAC
         RHO43 = RHO*RHO13
-        SIGMA = GRADIENT_NORM*GRADIENT_NORM
         X = D0
-C
         IF(RHO43 .NE. D0) THEN
-           X = SQRT(SIGMA)/RHO43
+          X = SQRT(GRADIENT_NORM*GRADIENT_NORM)/RHO43
         ELSE
           RETURN
         ENDIF
@@ -232,9 +228,7 @@ C     shift bulk?
 C     ===========
 C
       SHIFTBULK = D0
-C
-C             GRAC
-      IF(LBIT(LBIT_DFTAC,1)) SHIFTBULK = DFTAC_IP + HOMO_EIGENVALUE
+      IF(LBIT(LBIT_DFTAC,1)) SHIFTBULK = DFTAC_IP + HOMO_EIGENVALUE !GRAC
 C
 C
 C     bulk potential
@@ -270,11 +264,10 @@ C
 C     howto FADE (with D0 .LE. FADE .LE. D1)
 C     ======================================
 C
-C             SAOP
-      IF(LBIT(LBIT_DFTAC,3)) FADE = RHO_OUTER/RHO
-C             GRAC
-      IF(LBIT(LBIT_DFTAC,1)) FADE = 
-     &                            D1/(D1+EXP(-GRAC_ALPHA*(X-GRAC_BETA)))
+      IF(LBIT(LBIT_DFTAC,3)) !SAOP
+     &                     FADE = RHO_OUTER/RHO
+      IF(LBIT(LBIT_DFTAC,1)) !GRAC
+     &                     FADE = D1/(D1+EXP(-GRAC_ALPHA*(X-GRAC_BETA)))
 C
 C
 C     connection
@@ -282,16 +275,17 @@ C     ==========
 C
       CALL DZERO(VX,DERVS1)
 C
-      VX(FR0) = (D1-FADE)*(VX_BULK(FR0) - WEIGHT*SHIFTBULK)
-     &        +     FADE *(D1-HFXFAC)*VX_OUTER(FR0)
+      VX(FZ0) = (D1-FADE)* VX_BULK(FZ0)
+      VX(FR0) = (D1-FADE)*(VX_BULK(FR0)-WEIGHT*SHIFTBULK)
+     &        +     FADE * VX_OUTER(FR0)*(D1-HFXFAC)
 C
-      VX(FZ0) = (D1-FADE)*VX_BULK(FZ0)
-C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck dftac_eigenvalues */
-      SUBROUTINE DFTAC_EIGENVALUES(EIGENVALUES,OLD_HOMO_EIGENVALUE)
+      SUBROUTINE DFTAC_EIGENVALUES(EIGENVALUES,
+     &                             OLD_HOMO_EIGENVALUE)
 C=======================================================================
 C     check orbital energy convergence
 C     for asymptotic correction
@@ -303,30 +297,28 @@ C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C-----------------------------------------------------------------------
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dftcom.h"
 #include "dftac.h"
-C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C
       LOGICAL LBIT, FIRST_TIME_HERE
       DIMENSION EIGENVALUES(*)
-C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
 C
 C     get the homo eigenvalue
 C     =======================
 C
-C                   GRAC is active
-      IF(.NOT. LBIT(LBIT_DFTAC,2)) THEN
+      IF(.NOT. LBIT(LBIT_DFTAC,2)) THEN !GRAC is not active
         HOMO_EIGENVALUE = D0
         FIRST_TIME_HERE = .TRUE.
         DO I = 1,NFSYM
           IF(NISH(I) .GT. 0) THEN
             DO J = 1,NISH(I)
-              E = EIGENVALUES(J + (I-1)*NORB(1) + NPSH(I))
+              E = EIGENVALUES(J+(I-1)*NORB(1)+NPSH(I))
               IF(FIRST_TIME_HERE) HOMO_EIGENVALUE = E
               FIRST_TIME_HERE = .FALSE.
               IF(E .GT. HOMO_EIGENVALUE) HOMO_EIGENVALUE = E
@@ -339,37 +331,30 @@ C
 C     turn asymptotic correction on ?
 C     ===============================
 C
-C             SAOP
-      IF(LBIT(LBIT_DFTAC,3)) THEN
-C                     SAOP is active
-        IF(.NOT. LBIT(LBIT_DFTAC,4)) LBIT_DFTAC = LBIT_DFTAC + 8
+      IF(LBIT(LBIT_DFTAC,3)) THEN !SAOP
+        IF(.NOT. LBIT(LBIT_DFTAC,4)) !SAOP is not active
+     &                               LBIT_DFTAC = LBIT_DFTAC + 8 !activate SAOP
       ENDIF
 C
       DELTA_HOMO = ABS(OLD_HOMO_EIGENVALUE - HOMO_EIGENVALUE)
+      OLD_HOMO_EIGENVALUE = HOMO_EIGENVALUE
+C
       IF(DELTA_HOMO .LE. DFTAC_THRESHOLD) THEN
-C               GRAC
-        IF(LBIT(LBIT_DFTAC,1)) THEN
-C                       GRAC is active
-          IF(.NOT. LBIT(LBIT_DFTAC,2)) LBIT_DFTAC = LBIT_DFTAC + 2
+        IF(LBIT(LBIT_DFTAC,1)) THEN !GRAC
+          IF(.NOT. LBIT(LBIT_DFTAC,2)) !GRAC is not active
+     &                                 LBIT_DFTAC = LBIT_DFTAC + 2 !activate GRAC
         ENDIF
       ENDIF
 C
-C             GRAC is active
-      IF(LBIT(LBIT_DFTAC,2))
+      IF(LBIT(LBIT_DFTAC,2)) !GRAC is active
      &                WRITE(LUPRI,*) 'GRAC asymptotic correction active'
-C             SAOP is active
-      IF(LBIT(LBIT_DFTAC,4))
+      IF(LBIT(LBIT_DFTAC,4)) !SAOP is active
      &                WRITE(LUPRI,*) 'SAOP asymptotic correction active'
 C
-      OLD_HOMO_EIGENVALUE = HOMO_EIGENVALUE
+C     ICOUNTER_DFTAC_DEBUG = ICOUNTER_DFTAC_DEBUG + 1 !for debug only
+C     IF(ICOUNTER_DFTAC_DEBUG .GT. 15) LBIT_DFTAC = LBIT_DFTAC + 128
 C
 C
-C     debug
-C     =====
-C
-      ICOUNTER_DFTAC_DEBUG = ICOUNTER_DFTAC_DEBUG + 1
-      IF(ICOUNTER_DFTAC_DEBUG .GT. 15) LBIT_DFTAC = LBIT_DFTAC + 128
-C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
