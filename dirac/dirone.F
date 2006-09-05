@@ -4383,20 +4383,9 @@ C.....loop over fermion ircops
         NVECS(IFRP) = 0
 C.......loop over fragments
         DO IFRAG = 1,NFRAG
-          CALL MEMGET('INTE',KVEC(IFRP,IFRAG),NORB(IFRP),
-     &                WORK,KFREE,LFREE)
-          NSTR(IFRP,0,IFRAG) = 1
-          CALL NUMLST(VCPROJ(IFRP,IFRAG),WORK(KVEC(IFRP,IFRAG)),
-     &              NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
-     &              IFRP,NSTR(IFRP,0,IFRAG),WORK(KFREE),LFREE)
-          CALL ORBCNT(WORK(KVEC(IFRP,IFRAG)),NSTR(IFRP,0,IFRAG),IFRP,
-     &                NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
-          NSTR(IFRP,0,IFRAG) = NSTR(IFRP,1,IFRAG) + NSTR(IFRP,2,IFRAG)
+          CALL ORBNUM(VCPROJ(IFRP,IFRAG),IFRP,KVEC(IFRP,IFRAG),
+     &                NSTR(1,0,IFRAG),WORK,KFREE,LFREE)
           NVECS(IFRP) = NVECS(IFRP) + NSTR(IFRP,0,IFRAG)
-          CALL MEMREL('PSIPRJ',WORK,KVEC(IFRP,IFRAG),KVEC(IFRP,IFRAG),
-     &                KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(IFRP,IFRAG),NSTR(IFRP,0,IFRAG),
-     &                WORK,KFREE,LFREE)
         ENDDO
         NVECT = NVECT + NVECS(IFRP)
       ENDDO

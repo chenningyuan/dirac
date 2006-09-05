@@ -2012,3 +2012,38 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Orbnum */
+      SUBROUTINE ORBNUM(VECREF,IFRP,KVEC,NSTR,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     From an orbital string VECREF for fermion ircop IFRP
+C     find the total number of vectors NSTR(IFRP,0) and allocate
+C     starting adress KVEC. 
+C
+C     NSTR(IFRP,0) : total number of vectors
+C     NSTR(IFRP,1) : vectors of positive energy
+C     NSTR(IFRP,1) : vectors of negative energy
+C     
+C     Written by T. Saue Sep 1 2006
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcborb.h"
+      CHARACTER VECREF*(*)
+      DIMENSION NSTR(2,0:2),WORK(*)
+C
+      CALL MEMGET('INTE',KVEC,NORB(IFRP),WORK,KFREE,LFREE)
+      NSTR(IFRP,0) = 1
+      CALL NUMLST(VECREF,WORK(KVEC),NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
+     &              IFRP,NSTR(IFRP,0),WORK(KFREE),LFREE)
+      CALL ORBCNT(WORK(KVEC),NSTR(IFRP,0),IFRP,
+     &            NSTR(IFRP,2),NSTR(IFRP,1))
+      NSTR(IFRP,0) = NSTR(IFRP,1) + NSTR(IFRP,2)
+      CALL MEMREL('ORBNUM',WORK,KVEC,KVEC,KFREE,LFREE)
+      CALL MEMGET('INTE',KVEC,NSTR(IFRP,0),WORK,KFREE,LFREE)
+C
+      RETURN
+      END
+

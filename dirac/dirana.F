@@ -984,38 +984,18 @@ C
       DO IFRP = 1,NFSYM
         NVECS(IFRP,1) = 0
         DO I = 1,NREFS
-          CALL MEMGET('INTE',KVEC(IFRP,I),NORB(IFRP),WORK,KFREE,LFREE)
-          NSTR(IFRP,0,I) = 1
-          CALL NUMLST(VECREF(IFRP,I),WORK(KVEC(IFRP,I)),
-     &              NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
-     &              IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
-          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
-     &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-          NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
+          CALL ORBNUM(VECREF(IFRP,I),IFRP,KVEC(IFRP,I),NSTR(1,0,I),
+     &                WORK,KFREE,LFREE)     
           NVECS(IFRP,1) = NVECS(IFRP,1) + NSTR(IFRP,0,I)
-          CALL MEMREL('PRJANA',WORK,KVEC(IFRP,I),KVEC(IFRP,I),
-     &                KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
-     &                WORK,KFREE,LFREE)
         ENDDO
       ENDDO
 C
 C     Find number of MO-orbitals to analyse
 C
       DO IFRP = 1,NFSYM
-        CALL MEMGET('INTE',KVEC(IFRP,0),NORB(IFRP),WORK,KFREE,LFREE)
-        NSTR(IFRP,0,0) = 1
-        CALL NUMLST(VECPRJ(IFRP),WORK(KVEC(IFRP,0)),
-     &              NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
-     &              IFRP,NSTR(IFRP,0,0),WORK(KFREE),LFREE)
-        CALL ORBCNT(WORK(KVEC(IFRP,0)),NSTR(IFRP,0,0),IFRP,
-     &              NSTR(IFRP,2,0),NSTR(IFRP,1,0))
-        NSTR(IFRP,0,0) = NSTR(IFRP,1,0) + NSTR(IFRP,2,0)
+        CALL ORBNUM(VECPRJ(IFRP),IFRP,KVEC(IFRP,0),NSTR(1,0,0),
+     &              WORK,KFREE,LFREE)     
         NVECS(IFRP,2) = NSTR(IFRP,0,0)
-        CALL MEMREL('PRJANA',WORK,KVEC(IFRP,0),KVEC(IFRP,0),
-     &              KFREE,LFREE)
-        CALL MEMGET('INTE',KVEC(IFRP,0),NSTR(IFRP,0,0),
-     &                WORK,KFREE,LFREE)
       ENDDO
 C
 C     Selected reference eigenvalues
