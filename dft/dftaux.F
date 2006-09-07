@@ -118,10 +118,13 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 #if defined (MOD_CDFT)
       ELSEIF(IHRMOP(IM).EQ.-1) THEN
         IF(SDFT) THEN
-          CALL SDFT_LINEAR_TRANS(DTRMAT(1,1,1,IM),
-     &                           EXCMAT(1,1,1,IM),
-     &                           IREPOP,
-     &                           GAO,RHO,WGHT,DOGGA,BUF)
+          CALL SDFT_LR(DTRMAT(1,1,1,IM),
+     &                 EXCMAT(1,1,1,IM),
+     &                 IREPOP,
+     &                 GAO,RHO,WGHT,DOGGA,BUF)
+C    &                 GAO,GAO1,
+C    &                 RHO,RHOGRD,
+C    &                 WGHT,DOGGA,BUF)
         ENDIF
       ELSE
         CALL QUIT('DTRMAT has to be hermitian or antihermitian')
