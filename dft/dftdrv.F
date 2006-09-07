@@ -131,20 +131,15 @@ C       the diagonal for the appropriate symmetry blocks...
       END IF
 C
 C
-C     get orbital energies and density matrices for SAOP
-C     ==================================================
+C     get density matrices for SAOP
+C     =============================
 C
-C             SAOP is active
-      IF(LBIT(LBIT_DFTAC,4)) THEN
+      IF(LBIT(LBIT_DFTAC,4)) THEN !SAOP is active
         CALL MEMGET('REAL',KDMAT_OUTER_AO,N2BBASX,
      &              WORK,KFREE,LFREE)
-C       CALL DZERO(WORK(KDMAT_OUTER_AO),N2BBASX)
-C               SAOP with response part
-        IF(LBIT(LBIT_DFTAC,5)) THEN
-C         WRITE(LUPRI,*) 'here 1'
+        IF(LBIT(LBIT_DFTAC,5)) THEN !SAOP with response part
           CALL MEMGET('REAL',KDMAT_RESP_AO,N2BBASX,
      &                WORK,KFREE,LFREE)
-C         CALL DZERO(WORK(KDMAT_RESP_AO),N2BBASX)
         ENDIF
 C
         CALL DFTAC_SAOP_GET_DMATS(WORK(KDMAT_OUTER_AO),
@@ -205,14 +200,12 @@ C             SAOP is active
 C       Insert half-phases
         IF(NZ.LT.4) THEN
            DO IM = 1,NXCMAT
-           IF(IHRMOP(IM).EQ.1) THEN
             IREPOP = ISYMOP(IM)-1
             DO IZ = 1,NZ
               IQ = IPQTOQ(IZ,IREPOP)
               CALL Q2BPHASE('D',IQ,1,DTRMAT(1,IZ,IM))
               CALL Q2BPHASE('F',IQ,1,EXCMAT(1,IZ,IM))
             ENDDO
-          ENDIF
           ENDDO
         ENDIF
       ENDIF
