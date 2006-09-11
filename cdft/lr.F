@@ -33,14 +33,13 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck sdft_linear_trans */
+C     /* deck sdft_lr */
       SUBROUTINE SDFT_LR(DTRMAT,
      &                   EXCMAT,
      &                   IREPOP,
-     &                   GAO,DENSITY,WEIGHT,DOGGA,BUF)
-C    &                   GAO,GAO1,
-C    &                   DENSITY,DENSITY_GRADIENT_NORM,
-C    &                   WEIGHT,DOGGA,BUF)
+     &                   GAO,GAO1,
+     &                   DENSITY,DENSITY_GRADIENT_NORM,
+     &                   WEIGHT,DOGGA,BUF)
 C=======================================================================
 C     contribution of spin density to g_pg (upon integration G_pg)
 C     adaptation of DFTLTR in dftaux.F
@@ -65,19 +64,20 @@ C
       DIMENSION DTRMAT(*),
      &          EXCMAT(*),
      &          GAO(*),
-C    &          GAO1(*),
+     &          GAO1(*),
      &          BUF(*),
      &          SPIN_DENSITY(3),
-     &          SPIN_DENSITY_GRADIENT(3,3),
+     &          SPIN_DENSITY_DERVS(3,3),
      &          VXC(DERVS2),
      &          VXC_V(3)
 C
 #include "ibtfun.h"
 C
 C
-      CALL GETCURRENTDENSITY(.FALSE.,DUMMY,
-     &                       .TRUE.,SPIN_DENSITY,
-     &                       IREPOP,GAO,DTRMAT,BUF)
+      CALL GET_CURRENT(2,
+     &                 SPIN_DENSITY,
+     &                 DUMMY,
+     &                 IREPOP,GAO,DUMMY,DTRMAT,BUF)
 C
       ISTART = 1
       IF(COLLINEAR) ISTART = 3
@@ -101,31 +101,43 @@ C
 C
       ELSE !GGA
 C
-        CALL QUIT('GGA SDFT linear response not implemented')
+C       CALL QUIT('GGA SDFT linear response not implemented')
 C
-C       CALL GETCURRENTDENSITY_GRADIENT(.FALSE.,DUMMY,
-C    &                                  .TRUE.,SPIN_DENSITY_GRADIENT,
-C    &                                  IREPOP,GAO,GAO1,DTRMAT,BUF)
+        CALL GET_CURRENT(4,
+     &                   DUMMY,
+     &                   SPIN_DENSITY_DERVS,
+     &                   IREPOP,GAO,GAO1,DTRMAT,BUF)
 C
-C                                        checkmeout
-        CALL SDFTPOT1(VXC,WEIGHT,DENSITY,DENSITY_GRADIENT_NORM)
+        TEST_MAX = MAX(
+     &                 SPIN_DENSITY_NORM,
+     &                 SPIN_DENSITY_DERVS(1,1),
+     &                 SPIN_DENSITY_DERVS(1,2),
+     &                 SPIN_DENSITY_DERVS(1,3),
+     &                 SPIN_DENSITY_DERVS(2,1),
+     &                 SPIN_DENSITY_DERVS(2,2),
+     &                 SPIN_DENSITY_DERVS(2,3),
+     &                 SPIN_DENSITY_DERVS(3,1),
+     &                 SPIN_DENSITY_DERVS(3,2),
+     &                 SPIN_DENSITY_DERVS(3,3)
+     &                )
+        IF(TEST_MAX .GT. DFTHRL) THEN
+C          
+          CALL SDFTPOT1(VXC,WEIGHT,DENSITY,DENSITY_GRADIENT_NORM)
 C
-        DO IXYZ = ISTART,3
-          IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
-          IOFF = NBAST*NBAST*(IQ-1)
-C
-C         BR = (B3(1)*RHG(1)+ B3(2)*RHG(2)+ B3(3)*RHG(3))/RHOGRD
-C         FACR = VXC(FRZ)*SPIN_DENSITY(IXYZ) + (VXC(FZZ)-VXC(FZ0)/RHOGRD)*BR
-C
-          VXC_S = VXC(FRR)*SPIN_DENSITY(IXYZ)
-C    &                                        + VXC(FRZ)*BR
-          DO JXYZ = 1,3
-C           VXC_V(JXYZ) = (VXC(FZ0)*B3(JXYZ)+FACR*RHG(JXYZ))/RHOGRD
+          DO IXYZ = ISTART,3
+            IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+            IOFF = NBAST*NBAST*(IQ-1)
+C         
+            VXC_S = VXC(FRR)*SPIN_DENSITY(IXYZ)
+            DO JXYZ = 1,3
+C             VXC_V(JXYZ) = VXC(FZZ)*SPIN_DENSITY_DERVS(IXYZ,JXYZ)
+              VXC_V(JXYZ) = D0
+            ENDDO
+C         
+            CALL SDFT_EXC_GGA(VXC_S,VXC_V,
+     &                        IREPOP,IXYZ,EXCMAT(1+IOFF),GAO,GAO1)
           ENDDO
-C
-C         CALL SDFT_EXC_GGA(VXC_S,VXC_V,
-C    &                      IREPOP,IXYZ,EXCMAT(1+IOFF),GAO,GAO1)
-        ENDDO
+        ENDIF
       ENDIF
 C
 C
@@ -179,8 +191,74 @@ C
 C
               I2 = IBBAS(IREP2,IC)
               DO J = 1,N2
-                CALL DAXPY(N1,VXC_S*GAO(I2+J),
-     &                     GAO(I1+1),1,EXCMAT(I1+1,I2+J),1)
+                FACTOR = VXC_S*GAO(I2+J)
+                CALL DAXPY(N1,FACTOR,GAO(I1+1),1,EXCMAT(I1+1,I2+J),1)
+              ENDDO
+            ENDIF
+          ENDIF
+        ENDDO
+      ENDDO
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck sdft_exc_gga */
+      SUBROUTINE SDFT_EXC_GGA(VXC_S,VXC_V,
+     &                        IREPOP,IXYZ,EXCMAT,GAO,GAO1)
+C=======================================================================
+C     contribution of spin density to g_pg (upon integration G_pg)
+C     adaptation of DOEXC1 in dftdrv.F
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+C
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAO(NBAST),
+     &          GAO1(NBAST,3),
+     &          EXCMAT(NBAST,NBAST)
+#else
+      DIMENSION GAO(NTBAS(0)),
+     &          GAO1(NTBAS(0),3),
+     &          EXCMAT(NTBAS(0),NTBAS(0))
+#endif
+      DIMENSION VXC_V(3)
+C
+#include "ibtfun.h"
+C
+C
+      INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,2),IREPOP)
+C
+      DO IREP1 = 0,NBSYM-1
+        DO IC = 1,MC
+C
+          N1 = NBBAS(IREP1,IC)
+          IF(N1.GT.0) THEN
+C
+            I1 = IBBAS(IREP1,IC)
+            IREP2 = IBTXOR(IREP1,INTERMEDIATE)
+            N2 = NBBAS(IREP2,IC)
+            IF(N2.GT.0) THEN
+C
+              I2 = IBBAS(IREP2,IC)
+              DO J = 1,N2
+                FACTOR = VXC_S*GAO(I2+J)
+     &                 + D2*VXC_V(1)*GAO1(I2+J,1)
+     &                 + D2*VXC_V(2)*GAO1(I2+J,2)
+     &                 + D2*VXC_V(3)*GAO1(I2+J,3)
+                CALL DAXPY(N1,FACTOR,GAO(I1+1),1,EXCMAT(I1+1,I2+J),1)
               ENDDO
             ENDIF
           ENDIF

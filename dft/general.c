@@ -225,9 +225,6 @@ dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
 //	       0.125*drvs.df00003* *grad* *grad* *grad + 1.5*drvs.df00101 + 0.75*drvs.df00002* *grad;
 }
 
-/*
-#if defined (MOD_CDFT)
-*/
 void
 sdftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad)
 {
@@ -252,15 +249,12 @@ sdftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad)
   ds->fZ  = 0; /* NOT USED */
   ds->fRR = 0.5*(drvs.df2000 - drvs.df1100);
   ds->fRZ = 0; /* NOT USED */
-  ds->fZZ = 0; /* NOT USED */
+  ds->fZZ = drvs.df0020 + drvs.df0011;
   ds->fRG = 0; /* NOT USED */
   ds->fZG = 0; /* NOT USED */
   ds->fGG = 0; /* NOT USED */
   ds->fG  = 0; /* NOT USED */
 }
-/*
-#endif
-*/
 
 extern void quit_(const char* str, int len);
 void

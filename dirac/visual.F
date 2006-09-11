@@ -888,9 +888,9 @@ C     ================
 C
       IF(PLOTSPINDENSITY) THEN
 #if defined (MOD_CDFT)
-       CALL GETCURRENTDENSITY(.FALSE.,DUMMY,
-     &                        .TRUE.,SPINDENSITY,
-     &                        IREP_PLOT,GAO,DMATBF,BUF)
+C      CALL GET_CURRENT_DENSITY(.FALSE.,DUMMY,
+C    &                        .TRUE.,SPINDENSITY,
+C    &                        IREP_PLOT,GAO,DMATBF,BUF)
 C
        SPINDENSITY_NORM = SPINDENSITY(1)**D2
      &                  + SPINDENSITY(2)**D2
@@ -910,9 +910,9 @@ C
 C
       IF(PLOTCURRENTDENSITY) THEN
 #if defined (MOD_CDFT)
-       CALL GETCURRENTDENSITY(.TRUE.,CURRENTDENSITY,
-     &                        .FALSE.,DUMMY,
-     &                        IREP_PLOT,GAO,DMATBF,BUF)
+C      CALL GET_CURRENT_DENSITY(.TRUE.,CURRENTDENSITY,
+C    &                        .FALSE.,DUMMY,
+C    &                        IREP_PLOT,GAO,DMATBF,BUF)
 C
        CURRENTDENSITY_NORM = CURRENTDENSITY(1)**D2
      &                     + CURRENTDENSITY(2)**D2
@@ -932,9 +932,9 @@ C
 C
       IF(PLOTRXJ) THEN
 #if defined (MOD_CDFT)
-       CALL GETCURRENTDENSITY(.TRUE.,CURRENTDENSITY,
-     &                        .FALSE.,DUMMY,
-     &                        IREP_PLOT,GAO,DMATBF,BUF)
+C      CALL GET_CURRENT_DENSITY(.TRUE.,CURRENTDENSITY,
+C    &                        .FALSE.,DUMMY,
+C    &                        IREP_PLOT,GAO,DMATBF,BUF)
 C
        RXJ(1) = PY*CURRENTDENSITY(3) - PZ*CURRENTDENSITY(2)
        RXJ(2) = PZ*CURRENTDENSITY(1) - PX*CURRENTDENSITY(3)

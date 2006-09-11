@@ -33,84 +33,44 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck getcurrentdensity */
-      SUBROUTINE GETCURRENTDENSITY(L_CURRENT_DENSITY,
-     &                               CURRENT_DENSITY,
-     &                             L_SPIN_DENSITY,
-     &                               SPIN_DENSITY,
-     &                             IREPOP,GAO,DMAT,BUF)
+C     /* deck get_current */
+      SUBROUTINE GET_CURRENT(LBIT_CURRENT,
+     &                       CURRENT,
+     &                       CURRENT_DERVS,
+     &                       IREPOP,GAO,GAO1,DMAT,BUF)
 C=======================================================================
-C     get current density or spin density in point
+C     routine returns
 C
-C     routine returns one (or two) vector(s) with
-C     density(1) =  density_x
-C     density(2) =  density_y
-C     density(3) =  density_z
+C     CURRENT(1) = j_x    s_x
+C     CURRENT(2) = j_y or s_y
+C     CURRENT(3) = j_z    s_z
+C
+C     and/or
+C
+C     its derivatives
+C
+C     CURRENT_DERVS(1,1) = derivative of x-component wrt x
+C     CURRENT_DERVS(1,2) = derivative of x-component wrt y
+C     CURRENT_DERVS(1,3) = derivative of x-component wrt z
+C                      
+C     CURRENT_DERVS(2,1) = derivative of y-component wrt x
+C     CURRENT_DERVS(2,2) = derivative of y-component wrt y
+C     CURRENT_DERVS(2,3) = derivative of y-component wrt z
+C                      
+C     CURRENT_DERVS(3,1) = derivative of z-component wrt x
+C     CURRENT_DERVS(3,2) = derivative of z-component wrt y
+C     CURRENT_DERVS(3,3) = derivative of z-component wrt z
+C
+C     options
+C
+C     (LBIT_CURRENT,1) = .TRUE.  current ...
+C     (LBIT_CURRENT,1) = .FALSE. spin ...
+C     (LBIT_CURRENT,2) = .TRUE.  density
+C     (LBIT_CURRENT,2) = .FALSE. no density
+C     (LBIT_CURRENT,3) = .TRUE.  derivatives
+C     (LBIT_CURRENT,3) = .FALSE. no derivatives
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: july 2006
-C=======================================================================
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
-#include "dcbgen.h"
-#include "cdft.h"
-C
-      LOGICAL   L_CURRENT_DENSITY,
-     &          L_SPIN_DENSITY,
-     &          NONCOLLINEAR
-      DIMENSION CURRENT_DENSITY(3),
-     &          SPIN_DENSITY(3),
-     &          GAO(*),
-     &          DMAT(*),
-     &          BUF(*)
-C
-C
-      IF(L_SPIN_DENSITY) THEN
-        NONCOLLINEAR = .NOT. COLLINEAR
-        F  = D1
-        G  = D1
-C       IF(BETA) G = -D1
-        IU = 1
-        IV = 1
-        IX = 2
-        IY = 2
-C       transforms like rotations, hence:
-        ITRANSFORM = 2
-        CALL GETCURRENTDENSITY_SUB(SPIN_DENSITY,NONCOLLINEAR,
-     &                             F,G,IU,IV,IX,IY,
-     &                             IREPOP,ITRANSFORM,
-     &                             GAO,DMAT,BUF)
-      ENDIF
-C
-      IF(L_CURRENT_DENSITY) THEN
-        F  = -CVAL
-        G  = -CVAL
-        IU = 1
-        IV = 2
-        IX = 2
-        IY = 1
-C       transforms like coordinates, hence:
-        ITRANSFORM = 1
-        CALL GETCURRENTDENSITY_SUB(CURRENT_DENSITY,.TRUE.,
-     &                             F,G,IU,IV,IX,IY,
-     &                             IREPOP,ITRANSFORM,
-     &                             GAO,DMAT,BUF)
-      ENDIF
-C
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck getcurrentdensity_sub */
-      SUBROUTINE GETCURRENTDENSITY_SUB(CURRENT_DENSITY,NONCOLLINEAR,
-     &                                 F,G,IU,IV,IX,IY,
-     &                                 IREPOP,ITRANSFORM,
-     &                                 GAO,DMAT,BUF)
-C=======================================================================
-C     get contributions to current or spin density
-C-----------------------------------------------------------------------
-C     radovan bast                              last revision: july 2006
+C     radovan bast                         last revision: september 2006
 C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
@@ -122,58 +82,102 @@ C-----------------------------------------------------------------------
 #include "symmet.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "cdft.h"
 C
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
 #endif
-      LOGICAL   NONCOLLINEAR
-      DIMENSION CURRENT_DENSITY(3),
+      LOGICAL   LBIT
+      DIMENSION CURRENT(3),
+     &          CURRENT_DERVS(3,3),
      &          GAO(*),
+     &          GAO1(*),
      &          DMAT(*),
      &          BUF(*)
 C
 #include "ibtfun.h"
 C
 C
-      IF(NONCOLLINEAR) THEN
-        ISTART = 1
-      ELSE
-        CURRENT_DENSITY(1) = D0
-        CURRENT_DENSITY(2) = D0
-        ISTART = 3
+      IF(      LBIT(LBIT_CURRENT,1)) THEN !current
+        F  = -CVAL
+        G  = -CVAL
+        IU = 1
+        IV = 2
+        IX = 2
+        IY = 1
+        ITRANSFORM = 1
       ENDIF
+      IF(.NOT. LBIT(LBIT_CURRENT,1)) THEN !spin
+        F  = D1
+        G  = D1
+        IU = 1
+        IV = 1
+        IX = 2
+        IY = 2
+        ITRANSFORM = 2
+      ENDIF
+      IF(LBIT(LBIT_CURRENT,2)) THEN !density
+        CALL DZERO(CURRENT,3)
+      ENDIF
+      IF(LBIT(LBIT_CURRENT,3)) THEN !derivatives
+        CALL DZERO(CURRENT_DERVS,9)
+      ENDIF
+C
+      ISTART = 1
+      IF(COLLINEAR) ISTART = 3
 C
       DO IXYZ = ISTART,3
 #if defined (VAR_G77) || defined (SYS_SX)
         IOFF = NBAST*NBAST
+        JOFF = NBAST
 #else
         IOFF = NTBAS(0)*NTBAS(0)
+        JOFF = NTBAS(0)
 #endif
         IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
         IOFF = IOFF*(IQ-1)
 C
-        CALL GETCURRENT(TEMP1,IU,IV,
-     &                  IREPOP,ITRANSFORM,IXYZ,
-     &                  GAO,DMAT(1+IOFF),BUF)
-        CALL GETCURRENT(TEMP2,IX,IY,
-     &                  IREPOP,ITRANSFORM,IXYZ,
-     &                  GAO,DMAT(1+IOFF),BUF)
-C
-        CURRENT_DENSITY(IXYZ) = F*TEMP1 + G*TEMP2
+        IF(LBIT(LBIT_CURRENT,2)) THEN !density
+          CALL GET_CURRENT_SUB(CURRENT(IXYZ),
+     &                         F,IU,IV,ITRANSFORM,IXYZ,
+     &                         GAO,GAO,
+     &                         IREPOP,DMAT(1+IOFF),BUF)
+          CALL GET_CURRENT_SUB(CURRENT(IXYZ),
+     &                         G,IX,IY,ITRANSFORM,IXYZ,
+     &                         GAO,GAO,
+     &                         IREPOP,DMAT(1+IOFF),BUF)
+        ENDIF
+        IF(LBIT(LBIT_CURRENT,3)) THEN !derivatives
+          DO JXYZ = 1,3
+            CALL GET_CURRENT_SUB(CURRENT_DERVS(IXYZ,JXYZ),
+     &                           F,IU,IV,ITRANSFORM,IXYZ,
+     &                           GAO,
+     &                           GAO1(1+JOFF*(JXYZ-1)),
+     &                           IREPOP,DMAT(1+IOFF),BUF)
+            CALL GET_CURRENT_SUB(CURRENT_DERVS(IXYZ,JXYZ),
+     &                           G,IX,IY,ITRANSFORM,IXYZ,
+     &                           GAO,
+     &                           GAO1(1+JOFF*(JXYZ-1)),
+     &                           IREPOP,DMAT(1+IOFF),BUF)
+            CURRENT_DERVS(IXYZ,JXYZ) = CURRENT_DERVS(IXYZ,JXYZ)*D2
+          ENDDO
+        ENDIF
       ENDDO
 C
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck getcurrent */
-      SUBROUTINE GETCURRENT(CURRENT,IC1,IC2,
-     &                      IREPOP,ITRANSFORM,IXYZ,
-     &                      GAO,DMAT,BUF)
+C     /* deck get_current_sub */
+      SUBROUTINE GET_CURRENT_SUB(CURRENT,
+     &                           F,IC1,IC2,ITRANSFORM,IXYZ,
+     &                           GAO1,
+     &                           GAO2,
+     &                           IREPOP,DMAT,BUF)
 C=======================================================================
-C     get contributions to current or spin density
+C
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: july 2006
+C     radovan bast                         last revision: september 2006
 C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
@@ -188,10 +192,12 @@ C-----------------------------------------------------------------------
 C
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),
+      DIMENSION GAO1(NBAST),
+     &          GAO2(NBAST),
      &          DMAT(NBAST,NBAST)
 #else
-      DIMENSION GAO(NTBAS(0)),
+      DIMENSION GAO1(NTBAS(0)),
+     &          GAO2(NTBAS(0)),
      &          DMAT(NTBAS(0),NTBAS(0))
 #endif
       DIMENSION BUF(*)
@@ -199,7 +205,6 @@ C
 #include "ibtfun.h"
 C
 C
-      CURRENT = D0
       INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),IREPOP)
 C
       DO IREP1 = 0,NBSYM-1
@@ -214,11 +219,59 @@ C
 C
             I2 = IBBAS(IREP2,IC2)+1
             CALL DGEMV('N',NBBAS(IREP1,IC1),NBBAS(IREP2,IC2),D1,
-     &                 DMAT(I1,I2),NTBAS(0),GAO(I2),1,D0,BUF,1)
-            CURRENT = CURRENT + DDOT(NBBAS(IREP1,IC1),GAO(I1),1,BUF,1)
+     &                 DMAT(I1,I2),NTBAS(0),GAO2(I2),1,D0,BUF,1)
+            CURRENT = CURRENT+F*DDOT(NBBAS(IREP1,IC1),GAO1(I1),1,BUF,1)
           ENDIF
         ENDIF
       ENDDO
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck get_current_div */
+      SUBROUTINE GET_CURRENT_DIV(CURRENT_DERVS,CURRENT_DIV)
+C=======================================================================
+C     calculate divergence
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
+C
+      DIMENSION CURRENT_DERVS(3,3)
+C
+C
+      CURRENT_DIV = D0
+      DO IXYZ = 1,3
+        CURRENT_DIV = CURRENT_DIV + CURRENT_DERVS(IXYZ,IXYZ)
+      ENDDO
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck get_current_rot */
+      SUBROUTINE GET_CURRENT_ROT(CURRENT_DERVS,CURRENT_ROT)
+C=======================================================================
+C     calculate curl
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
+C
+      DIMENSION CURRENT_DERVS(3,3),
+     &          CURRENT_ROT(3)
+C
+C
+      CURRENT_ROT(1) = -CURRENT_DERVS(2,3) + CURRENT_DERVS(3,2)
+      CURRENT_ROT(2) = -CURRENT_DERVS(3,1) + CURRENT_DERVS(1,3)
+      CURRENT_ROT(3) = -CURRENT_DERVS(1,2) + CURRENT_DERVS(2,1)
 C
 C
       RETURN
