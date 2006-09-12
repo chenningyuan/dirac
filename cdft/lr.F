@@ -130,8 +130,7 @@ C
 C         
             VXC_S = VXC(FRR)*SPIN_DENSITY(IXYZ)
             DO JXYZ = 1,3
-C             VXC_V(JXYZ) = VXC(FZZ)*SPIN_DENSITY_DERVS(IXYZ,JXYZ)
-              VXC_V(JXYZ) = D0
+              VXC_V(JXYZ) = VXC(FZZ)*SPIN_DENSITY_DERVS(IXYZ,JXYZ)
             ENDDO
 C         
             CALL SDFT_EXC_GGA(VXC_S,VXC_V,

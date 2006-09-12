@@ -976,6 +976,12 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#if defined (MOD_CDFT)
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#endif
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION AMAT(NBAST,NBAST,NZ,NMAT)
@@ -1026,6 +1032,50 @@ C
    30     CONTINUE
           ENDIF
    10   CONTINUE
+#if defined (MOD_CDFT)
+      ELSEIF(IHRMOP(IM).EQ.-1) THEN
+        DO IXYZ = 1,3
+          IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+          IREPOP = IBTXOR(ISYMAX(IXYZ,2),ISYMOP(IM)-1)
+          DO 110 IRP1 = 0,NBSYM-1
+            IRP2 = IBTXOR(IRP1,IREPOP)
+            IF(IRP2.LT.IRP1) THEN
+            DO 120 IC = 1,MC
+              NB1 = NBBAS(IRP1,IC)
+              IF(NB1.EQ.0) GOTO 120
+              NB2 = NBBAS(IRP2,IC)
+              IF(NB2.EQ.0) GOTO 120
+              JB1 = IBBAS(IRP1,IC)
+              JB2 = IBBAS(IRP2,IC)
+              DO I = 1,NB1
+                II = JB1+I
+                DO J = 1,NB2
+                  JJ = JB2+J
+                  AVERAG = DP5*(AMAT(II,JJ,IQ,IM) + AMAT(JJ,II,IQ,IM))
+                  AMAT(II,JJ,IQ,IM) = AVERAG 
+                  AMAT(JJ,II,IQ,IM) = AVERAG 
+                ENDDO
+              ENDDO
+  120       CONTINUE
+            ELSEIF(IRP2.EQ.IRP1) THEN
+            DO 130 IC = 1,MC
+              NB = NBBAS(IRP1,IC)
+              IF(NB.EQ.0) GOTO 130
+              JB = IBBAS(IRP1,IC)
+              DO I = 1,NB
+                II = JB+I
+                DO J = 1,I-1
+                  JJ = JB+J
+                  AVERAG = DP5*(AMAT(II,JJ,IQ,IM) + AMAT(JJ,II,IQ,IM))
+                  AMAT(II,JJ,IQ,IM) = AVERAG 
+                  AMAT(JJ,II,IQ,IM) = AVERAG 
+                ENDDO
+              ENDDO
+  130       CONTINUE
+            ENDIF
+  110     CONTINUE
+        ENDDO
+#endif
       ENDIF
       ENDDO
 C
