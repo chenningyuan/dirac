@@ -249,7 +249,7 @@ sdftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad)
   ds->fZ  = 0; /* NOT USED */
   ds->fRR = 0.5*(drvs.df2000 - drvs.df1100);
   ds->fRZ = 0; /* NOT USED */
-  ds->fZZ = drvs.df0020 + drvs.df0011;
+  ds->fZZ = 0.5*(drvs.df0020 - drvs.df0011 - drvs.df00001);
   ds->fRG = 0; /* NOT USED */
   ds->fZG = 0; /* NOT USED */
   ds->fGG = 0; /* NOT USED */
