@@ -1,4 +1,5 @@
 #!/bin/bash
+#. /etc/profile  # profile is not executed by cron (uncomment this line if you use testlast with cron)
 #
 # Test latest version of DIRAC by updating the working copy and
 # running the standard testset.
@@ -276,9 +277,10 @@ echo " When they are done please check the results in the directory ${testdir}/l
 #
 # Other queue systems used in Amsterdam. Add you own as new comment line if you like
 #
-#tc: SGE queueing system
-qsub -e $errfile -o $errfile -l s_cpu=$time -cwd -V $parallel -l queue=$queue -N testlast job_testlast.sh
-#das:   /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=$time,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
+#tc: tcsub wrapper from tctools module
+chmod a+x job_testlast.sh; tcsub -a generic -n 1 -q $queue -p mpich job_testlast.sh 0:15
+#oldtc: qsub -e $errfile -o $errfile -l s_cpu=$time -cwd -V $parallel -l queue=$queue -N testlast job_testlast.sh
+#das:  /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=$time,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
 #solo:  qstc -n $nodes -m -q power4 job_testlast.sh 1h
 #teras: bsub <job_testlast.sh
 fi
