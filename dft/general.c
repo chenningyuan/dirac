@@ -215,7 +215,9 @@ dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
 //    ds->fZG = 0;
 //    ds->fGG = 0;
 //    ds->fG  = 0;
+*/
     ds->fRRR = 0.25*(drvs.df3000 + 3*drvs.df2100);
+/*
 //    ds->fRRZ = 0.25*(drvs.df2010 + drvs.df2001 + 2*drvs.df1110 + 
 //	            (drvs.df20001 + drvs.df11001)* *grad);
 //    ds->fRZZ = 0.25*(drvs.df1020 + *drvs.df1002) + 0.5*drvs.df1011 +
