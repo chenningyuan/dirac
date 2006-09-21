@@ -69,6 +69,7 @@ usage ()
    echo '     -outcmo                : Save DFCOEF to   job directory from work area (for restart)'
    echo '     -infck                 : Copy DFFCK2 from job directory to   work area'
    echo '     -outfck                : Save DFFCK2 to   job directory from work area'
+   echo '     -noarch                : Do not create a .tgz archive of the calculation'
    echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default dirac.x'
    echo '     -run name              : File suffix for output; default "'$RUN'"'
    echo '     -nice                  : execute Dirac with nice/npri'
@@ -486,6 +487,15 @@ save_files()
          fi
       done
    fi
+   if [ -n "$DO_ARCHIVE" ]; then
+       FILES=
+       for f in $ARCHIVE_FILES; do
+         if [ -r "$f" ]; then
+             FILES="$FILES $f"
+         fi
+       done
+       tar cv $FILES | gzip > "$LOC/${MENU}_$MOL.tgz"
+   fi
 }
 #
 #
@@ -664,6 +674,11 @@ initialize()
 #  2) basis set directory in Dirac distribution
 
    BASDIR="$LOC/:$BASDIR"
+
+# Files to include in the .tgz archive file.
+   ARCHIVE_FILES="MOLECULE.INP DIRAC.INP DFCOEF *.cube"
+   DO_ARCHIVE=yes
+
 }
 #
 #
@@ -713,6 +728,9 @@ while [ -n "$1" ]; do
          ;;
       -outcmo|-utcmo)
          GET_FILES="$GET_FILES DFCOEF"
+         ;;
+      -noarch)
+         DO_ARCHIVE=
          ;;
       -mw|-memory)
          shift
