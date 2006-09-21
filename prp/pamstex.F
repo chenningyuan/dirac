@@ -1,4 +1,5 @@
 #ifdef MOD_STEX
+
 c
 c     EVEC(NVIRT*NORB,4,NVEC)
 c     
@@ -1838,5 +1839,8 @@ C
      &     'N',OP,IPQTOQ(1,0),CORB1,NTBAS(0),1,NZ,
      &     'H','N',IPQTOQ(1,0),CORB2,NTBAS(0),1,NZ,
      &     0.0D0,IPQTOQ(1,0),DAO,NTBAS(0),NTBAS(0),NZ)
+      END
+#else
+      SUBROUTINE STEX_DUMMY
       END
 #endif
