@@ -261,8 +261,8 @@ C     See if a separate reference state will be used.
          WRITE(LUPRI,*) 'for STEX calculation'
 C     Move groundstate DFCOEF to DFCOEF.GS
 C     ulfek: bug here on some systems
-         ISYS1 = SYSTEM('mv DFCOEF DFCOEF.GS')
-         ISYS2 = SYSTEM('mv DFCOEF.ION DFCOEF')
+         ISYS1 = MYSYSTEM('mv DFCOEF DFCOEF.GS')
+         ISYS2 = MYSYSTEM('mv DFCOEF.ION DFCOEF')
          PRINT *,'mv return codes',ISYS1,ISYS2
          STEX_COFACTOR = .TRUE.
       ELSE

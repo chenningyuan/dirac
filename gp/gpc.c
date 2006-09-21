@@ -57,6 +57,23 @@
 #include "patchlevel.h"
 #include "compinfo.h"
 
+/*
+  Workaround for buggy fortran SYSTEM() on some
+  platforms (intel fortran 8.x)
+*/
+int mysystem_(const char *cmd, int cmdlen)
+{
+  int i;
+  char *s;
+  s = malloc(cmdlen+1);
+  for (i=0;i<cmdlen;i++)
+    s[i] = cmd[i];
+  s[cmdlen] = 0;
+  i = system(cmd);
+  free(s);
+  return i;
+}
+
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #include <fortran.h>
 #define frac2i FRAC2I
