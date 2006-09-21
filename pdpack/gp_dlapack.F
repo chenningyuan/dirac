@@ -1,3 +1,8 @@
+      SUBROUTINE DPOTRF( UPLO, N, B, LDB, INFO )
+C     ulfek: this is a stub
+      CALL QUIT('DPOTRF Missing in gp_dlapack')
+      END
+
       SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO )
 *
 *  -- LAPACK driver routine (version 3.0) --

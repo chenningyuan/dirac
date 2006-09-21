@@ -57,7 +57,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 8, NTABLE = 36)
+      PARAMETER (NDIR = 9, NTABLE = 36)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -70,7 +70,8 @@ C
 #include "dcbprp.h"
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
-     &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA'/
+     &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',
+     &             '*STEX  '/
       DATA TABLE  /'.DIPOLE','.QUADRU','.POLARI','.MAGNET',
      &             '.NMR   ','.SPIN-S','.SHIELD','.PRINT ',
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
@@ -449,7 +450,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8), I
+               GO TO (1,2,3,4,5,6,7,8,9), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -491,6 +492,14 @@ CMI ... changed for LAO-based magnetic properties
         GO TO 200
     8 CONTINUE
          CALL XQRINP(WORD,.FALSE.,WORK,LWORK)
+         GO TO 200
+C     *STEX
+    9 CONTINUE
+#ifdef MOD_STEX
+         CALL STEX_INPUT(WORD,.FALSE.,WORK,LWORK)
+#else
+         CALL QUIT('*STEX not included in this version')
+#endif
          GO TO 200
 C
     1 CONTINUE

@@ -260,8 +260,9 @@ C     See if a separate reference state will be used.
          WRITE(LUPRI,*) 'DFCOEF.ION found, using it as reference state'
          WRITE(LUPRI,*) 'for STEX calculation'
 C     Move groundstate DFCOEF to DFCOEF.GS
-         ISYS1 = MYSYSTEM('mv DFCOEF DFCOEF.GS')
-         ISYS2 = MYSYSTEM('mv DFCOEF.ION DFCOEF')
+C     ulfek: bug here on some systems
+         ISYS1 = SYSTEM('mv DFCOEF DFCOEF.GS')
+         ISYS2 = SYSTEM('mv DFCOEF.ION DFCOEF')
          PRINT *,'mv return codes',ISYS1,ISYS2
          STEX_COFACTOR = .TRUE.
       ELSE
@@ -349,8 +350,8 @@ C     Add the reference state Fock matrix to the integrals
 C     If we use a separate reference state the 2e Fock matrices
 C     on disk have to be re-evaluated. This is done automatically
 C     if we delete the old ones.
-         CALL SYSTEM('rm -f DFFCK2')
-         CALL SYSTEM('rm -f DFFOCK')      
+         I = SYSTEM('rm -f DFFCK2')
+         I = SYSTEM('rm -f DFFOCK')      
       ENDIF
       CALL MEMGET('REAL',KFOCKREF,N2BBASXQ,WORK,KFREE,LFREE)
       CALL FLUSH(LUPRI)
@@ -1518,7 +1519,7 @@ C     check if we have to calculate cof. explicitly.
 c     new cofactor evaluation by svd
       LSVD = .FALSE.
       IF (LCOF) THEN
-         print *,'calling adjugate, det = ',ABS(SDET)
+c         print *,'calling adjugate, det = ',ABS(SDET)
          DO K=1,NORB
             DO L=1,NORB
                SINV(L,K) = S(L,K)
@@ -1574,23 +1575,6 @@ C     add nuclear dipole moment term
          ENDDO
       ENDDO
       PRINT *,'ZMATNORM ',NAME,' ',SQRT(NOR)
-      END
-
-      SUBROUTINE QMATNORM(NAME,A,ROWS,COLS,NZ)
-      IMPLICIT NONE
-      DOUBLE PRECISION A,NOR
-      INTEGER ROWS,COLS,II,JJ,IZ,NZ
-      CHARACTER NAME*(*)
-      DIMENSION A(ROWS,COLS,NZ)
-      NOR = 0.0D0
-      DO IZ=1,NZ
-         DO JJ=1,COLS
-            DO II=1,ROWS
-               NOR = NOR + ABS(A(II,JJ,IZ))**2
-            ENDDO
-         ENDDO
-      ENDDO
-      PRINT *,'QMATNORM ',NAME,' ',SQRT(NOR)
       END
 
       SUBROUTINE COF_PRPGRAD(XPRPGRAD,CMO1,IBEIG,CMO2,REFGSOVL,WORK
