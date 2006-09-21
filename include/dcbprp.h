@@ -30,7 +30,7 @@
      &        ESRGTENS, ESRANISO, EFT, EFTNTL, EFN, RHONUC,             &
      &        DOTPA,DOVER,DOEXCPRP,                                     &
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
-     &        PVCSHI, PVCSPNSPN
+     &        PVCSHI, PVCSPNSPN, DOSTEX
 
       INTEGER MXPRPWF,EXCPRPTYP
       PARAMETER (MXPRPWF = 3)
@@ -42,7 +42,7 @@
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
      &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP, EXCPRPTYP,   &
      &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
-     &                PVCSHI, PVCSPNSPN
+     &                PVCSHI, PVCSPNSPN, DOSTEX
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &
