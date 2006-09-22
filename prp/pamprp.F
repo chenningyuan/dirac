@@ -7236,7 +7236,7 @@ C
 #include "ibtfun.h"
 C
 C
-      DFAC = -(GFERMI*(D1-D4*STHETAW2))/(CVEL*SQRT(D2))
+      DFAC = (GFERMI*(D1-D4*STHETAW2))/(CVEL*SQRT(D2))
       DFAC = (DFAC*AU2HZ)/(D2*PI*CVEL*CVEL)
       DFAC = DFAC*1.0D9
 C
@@ -7264,12 +7264,12 @@ C             e-e
               TEMPMAT(INUC,JNUC,ICOOR) = ABLRF(IFREQ,KA,KB,2)
 C
 C             don't look for e-p in case of LEVY-LEBLOND
-C             IF(.NOT.XLR_SKIPEP) THEN
+              IF(.NOT.XLR_SKIPEP) THEN
 C
 C               e-p
-C               TEMPMAT(INUC,JNUC,ICOOR) = TEMPMAT(INUC,JNUC,ICOOR)
-C    &                                 + ABLRF(IFREQ,KA,KB,3)
-C             ENDIF
+                TEMPMAT(INUC,JNUC,ICOOR) = TEMPMAT(INUC,JNUC,ICOOR)
+     &                                 + ABLRF(IFREQ,KA,KB,3)
+              ENDIF
             ENDDO
           ENDDO
 C       ENDIF
