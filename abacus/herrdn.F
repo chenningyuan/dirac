@@ -1414,7 +1414,7 @@ C
 C
                ELSE IF ( IBSFLAG .EQ. 2 ) THEN
 C
-C                 Read molfdir small component basis set.
+C                 Read MOLFDIR small component basis set.
 C
                   KBFPR = 1
                   KBFCO = KBFPR + KPRIM
@@ -2185,14 +2185,12 @@ C
      &            DOOWN)
 C
 C FIXME: In principle kinetic balance can be made for contracted
-C FIXME: basis sets iff the small component basis set exponents
+C FIXME: basis sets if the small component basis set exponents
 C FIXME: are kinetically balanced. Currently, the code resets
 C FIXME: ISPHTR if the small component basis set is explicitly given
 C FIXME: (IBSFLAG .NE. 4, see INFO: above)./hjaaj+jth sep 2000
 C
-      IF (DIRAC.AND.ISPHTR.EQ.3)
-CMI   IF (DIRAC.AND.ISPHTR.EQ.3.AND..NOT.TWOCOMP)
-     $     CALL RKBREL(IPREAD)
+      IF (DIRAC.AND.ISPHTR.EQ.3) CALL RKBREL(IPREAD)
 C
       RETURN
 C
@@ -7262,15 +7260,21 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck kinbal */
-      SUBROUTINE KINBAL(I,IBLL,IBLS,
+      SUBROUTINE KINBAL(IATOM,IBLL,IBLS,
      &     IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
      &     NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
      &     CNTBAS)
 C*****************************************************************************
 C
-C      Generate small component functions from large using the
-C      kinetic balance relation
+C      Generate small component functions from large for
+C      atom type IATOM using the kinetic balance relation
 C
+C           ISGEN - bit packed information on generation of small
+C                   components using the kinetic balance relation
+C             1 - downwards: small L+1 from large L
+C             2 - upwards  : small L-1 from large L
+C             0 - if not specified same as 3 (both down and up)
+
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -7288,20 +7292,23 @@ C
       IUP(J)   = IBTAND(1,IBTSHR(J,1))
 C
       IBS = IBLS - 1
-      IBU = IBLL + JCO(1,I,1) - 1
+      IBU = IBLL + JCO(1,IATOM,1) - 1
       IBD = IBLL - 1
       JBS = IBS
-      IQM(I,2) = 0
-      DO J = 1,(IQM(I,1)+1)
+      IQM(IATOM,2) = 0
+C
+C     Loop over possible range of (L+1) values for 
+C     small components for atom type IATOM
+C
+      DO J = 1,(IQM(IATOM,1)+1)
         IBJ = IBS
 C
 C       Generate function from downwards
 C
         IF(J.GT.1) THEN
-          DO K = 1,JCO(J-1,I,1)
+          DO K = 1,JCO(J-1,IATOM,1)
             IBD = IBD + 1
-            IF(IDOWN(ISGEN(IBD)) .EQ. 1
-     $          .OR. ISGEN(IBD)  .EQ. 0 )  THEN
+            IF((IDOWN(ISGEN(IBD)).EQ.1).OR.(ISGEN(IBD).EQ.0))  THEN
               IF (CNTBAS) THEN
 C               Collect the uncontracted small component
 C               basis functions in chunks of about 50 basis
@@ -7335,11 +7342,10 @@ C               evaluation.
 C
 C       Generate function from upwards
 C
-        IF(J.LT.IQM(I,1)) THEN
-          DO K = 1,JCO(J+1,I,1)
+        IF(J.LT.IQM(IATOM,1)) THEN
+          DO K = 1,JCO(J+1,IATOM,1)
             IBU = IBU + 1
-            IF(IUP(ISGEN(IBU)).EQ.1
-     $           .OR. ISGEN(IBU) .EQ. 0 ) THEN
+            IF((IUP(ISGEN(IBU)).EQ.1).OR.(ISGEN(IBU).EQ.0)) THEN
               IF (CNTBAS) THEN
 C               See note above.
                 MXDUM = 50 - MOD(50, KHK(J))
@@ -7367,10 +7373,10 @@ C               See note above.
             ENDIF
           ENDDO
         ENDIF
-        JCO(J,I,2) = IBS - IBJ
-        IF(JCO(J,I,2).GT.0) IQM(I,2) = J
+        JCO(J,IATOM,2) = IBS - IBJ
+        IF(JCO(J,IATOM,2).GT.0) IQM(IATOM,2) = J
       ENDDO
-      NBLCK(I,2) = IBS - JBS
+      NBLCK(IATOM,2) = IBS - JBS
 C
       RETURN
       END
@@ -7380,13 +7386,17 @@ C  /* Deck gensml */
      &                  SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
 C*****************************************************************************
 C
+C     IBS - index of actual small component (SC) block
+C     IBL - index of large component (LC) block from which it is generated
+C     IBJ - offset for start of SC block with same IQM and atom type
+C     IQM - (L+1)-value of actual SC block
 C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "infpar.h"
 C
-      PARAMETER ( ALPTHR = 1.0D-3 )
+      PARAMETER (D1=1.0D0,SML = 1.0D-6)
 C
       LOGICAL SEG,INPTST
       DIMENSION NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
@@ -7399,20 +7409,24 @@ C     hence NRC(IBS) = NUC(IBL) and SEG(IBS) = T
 C
       SEG(IBS,2)   = .TRUE.
 C
-cccC     CALL DCOPY(NUC(IBS,2),ALPHA(1,IBL,1),1,ALPHA(1,IBS,2),1)
-C
 C     Remove small component basis functions already present.
 C
       NUC_IBS = 0
       DO I = JSBEG + 1,JSEND
          ALPTEST = ALPHA(I,IBL,1)
+         ALPINV  = D1/ALPTEST
 C
 C        Check previous shells:
 C
          DO J = IBJ+1,IBS-1
             DO IJ = 1,NUC(J,2)
-              TEST = ABS(ALPTEST - ALPHA(IJ,J,2))
-              IF (TEST .LE. ALPTHR) GO TO 100
+              TEST = ABS(ALPTEST-ALPHA(IJ,J,2))*ALPINV
+              IF (TEST.LT.SML) THEN
+              WRITE(LUPRI,'(A,E24.16/8X,A,E24.16,A)') 
+     &           'WARNING from GENSML: Skipping ',ALPTEST,
+     &           'too close to ',ALPHA(IJ,J,2),' from previous shells'
+                GO TO 100
+              ENDIF
             END DO
          END DO
 C
@@ -7423,8 +7437,13 @@ C        are duplicated in order to have segmented contraction).
 C        /HJAaJ D1c 2005
 C     
          DO IJ = 1, NUC_IBS
-            TEST = ABS(ALPTEST - ALPHA(IJ,IBS,2))
-            IF (TEST .LE. ALPTHR) GO TO 100
+            TEST = ABS(ALPTEST-ALPHA(IJ,IBS,2))*ALPINV
+            IF (TEST.LT.SML) THEN
+              WRITE(LUPRI,'(A,E24.16/8X,A,E24.16,A)') 
+     &         'WARNING from GENSML: Skipping ',ALPTEST,
+     &         'too close to ',ALPHA(IJ,IBS,2),' from same shell'
+              GO TO 100
+            ENDIF
          END DO
 C
          NUC_IBS = NUC_IBS + 1
