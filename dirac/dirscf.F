@@ -413,6 +413,9 @@ C     IF (FD2CMO) BARNUC=.FALSE.
 C
 C       Initiate SCF cycle
 C
+#if defined (DF_TIME_ROUTINES)
+        CALL TIMER('START ',TIMSTR,TIMEND)
+#endif
         CALL GTINFO(DAYTID)
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
      +  '########## START ITERATION NO.',NITER,' ##########',
@@ -555,7 +558,11 @@ C
 #if defined (MOD_DFT)
 C       Construct Kohn-Sham contribution
 C       ================================
+#if defined (MOD_DNF)
+        IF(DFTADD.AND..NOT.DFITXC) THEN
+#else /* mod_dnf */ 
         IF(DFTADD) THEN
+#endif
 C          tsaue: turn off test on numerical integration,
 C                 When starting from coefficients from a different
 C                 geometry; they are not orthonormal at the new
@@ -762,6 +769,9 @@ C
       CALL FLSHFO(LUPRI)
       CALL MEMREL('PREDHF',WORK,KWORK,KWORK,KFREE,LFREE)
 C
+#if defined (DF_TIME_ROUTINES)
+      CALL TIMER('PreDHF',TIMSTR,TIMEND)
+#endif
  666  CONTINUE
       CALL QEXIT('PREDHF')
       RETURN
@@ -1077,7 +1087,13 @@ C
 C     ... or perform SCF-cycle
 C     ========================
 C
+#if defined (DF_TIME_ROUTINES)
+        CALL TIMER('START ',TIMSTR,TIMEND)
+#endif
         CALL SCFCYC(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
+#if defined (DF_TIME_ROUTINES)
+        CALL TIMER('DHFSCF',TIMSTR,TIMEND)
+#endif
       ENDIF
 
 !     Finalize Embedding Module
@@ -1207,6 +1223,7 @@ C
          KITER  = KITER + 1
          CALL GTINFO(DAYTID)
          CALL GETTIM(CTIDSTR,WTIDSTR)
+         CALL TIMER('START ',TIMSTR,TIMEND)
          WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
      +     '########## START ITERATION NO.',NITER,'##########',
      &     DAYTID
@@ -1316,9 +1333,13 @@ C
 #if defined (MOD_DFT)
 C        Construct Kohn-Sham contribution
 C        ================================
+#if defined (MOD_DNF)
+         IF(DFTADD.AND..NOT.DFITXC) THEN
+#else
          IF(DFTADD) THEN
-C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-            IOPTS = 1
+#endif
+C         NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
+             IOPTS = 1
              CALL DFTEXC(DMAT,DUMMY,FOCK,1,1,1,IOPTS,WORK(KFREE),LFREE,
      &                   IPRSCF)
          ENDIF
@@ -1433,6 +1454,9 @@ CMI    ... we may get the DHFEXIT
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
         CALL FLSHFO(LUPRI)
+#if defined (DF_TIME_ROUTINES)
+        CALL TIMER('SCFCY1',TIMSTR,TIMEND)
+#endif
 C
 C       switch off onecap approximation ?
         IF (ONECOFF) THEN

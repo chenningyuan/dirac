@@ -679,6 +679,11 @@ C       In 2-component mode spherical Gaussians can be used,
 C       and we switch off the embedded cartesian to spherical
 C       gaussian transformation in LOWDIN()
           ISPHTR = 0
+#if defined (MOD_DNF)
+Caspg, test
+        ELSE IF (DOSPHE) THEN
+          ISPHTR = 0
+#endif
         ELSE IF (.NOT. (DOCART .OR. DOOWN)) THEN
 C       In 4-component mode Cartesian Gaussians are always used.  
          IF (IPREAD .GT. 0) THEN
@@ -2420,8 +2425,8 @@ C
                WRITE (LUPRI,'(2X,A)') 'Spherical harmonic basis used.'
             ENDIF
          END IF
-         WRITE (LUPRI,'(1X,A,1P,D10.2)') ' Threshold for integrals:',
-     &                                   THRS
+         WRITE (LUPRI,'(1X,A,1P,D10.2)') 
+     &    ' Threshold for integrals (to be written to file):',THRS
       END IF
 
 CMI   ... prepare the MNF.INP file with basis set exponents....

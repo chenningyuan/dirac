@@ -18,6 +18,6 @@ cmi   PARAMETER (MXSHEL = 750, MXPRIM = 2000, MXCORB = 5000,            &
       PARAMETER (MXSHEL = 950, MXPRIM = 2000, MXCORB = 5000,            &
      &           MXORBT = MXCORB*(MXCORB+1)/2, MXBSETS = 4)
 #else
-      PARAMETER (MXSHEL = 2375,MXPRIM = 5000, MXCORB = 12500,           &
+      PARAMETER (MXSHEL = 8000,MXPRIM = 32000, MXCORB = 16000,          &
      &           MXORBT = MXCORB*(MXCORB+1)/2, MXBSETS = 4)
 #endif

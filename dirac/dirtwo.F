@@ -3253,6 +3253,14 @@ C*****************************************************************************
 #if defined (MOD_ERI)
 #if defined (MOD_DNF)
       IF (DOFIT) THEN
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+      IF(IPRINT.GE.0) THEN
+        DO I = 1,NFMAT
+          write (6,*) 'debug: dmat before lin_df_coulomb'
+          CALL PRINTDMAT(I,NTBAS(0),DSO(1,1,I))
+        ENDDO
+      ENDIF
+#endif /* DEBUG_DIRAC_FCKBUILD_DF */
         CALL LIN_DF_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
      &            IPRINT,WORK(KLAST),LWRK)
       ELSE
@@ -3272,6 +3280,8 @@ Caspg
         DO I = 1,NFMAT
           write (6,*) 'debug: contribution from jengine to FMAT'
           CALL PRINTDMAT(I,NTBAS(0),FMAT(1,1,I))
+          write (6,*) 'debug: dmat after lin_df_coulomb'
+          CALL PRINTDMAT(I,NTBAS(0),DSO(1,1,I))
         ENDDO
       ENDIF
 #endif /* DEBUG_DIRAC_FCKBUILD_DF */
@@ -4814,9 +4824,15 @@ C.........construction of Fock matrix using ERIs in SO-basis
         ELSE
 C.........construction of Fock matrix using ERIs in AO-basis:
 C.........skeleton Fock approach
+#if defined (DF_TIME_ROUTINES)
+          CALL TIMER('START ',TIMSTR,TIMEND)
+#endif
           CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
+#if defined (DF_TIME_ROUTINES)
+          CALL TIMER('fastjk',TIMSTR,TIMEND)
+#endif
         ENDIF
       ELSE
 C

@@ -1,9 +1,11 @@
       LOGICAL DOFIT, LHSFIT,RHSFIT,ROBUST_E,DOBOX,DF_CONSTR,
-     &        DF_GAUDMP,DF_ATTENU,DIATOM, LIN_DF
+     &        DF_GAUDMP,DF_ATTENU,DIATOM, LIN_DF, SAVE_CFIT,
+     &        SAVE_VAB,DF_FITVXC
       COMMON /DENSFIT/ ROB_E_CORR,DF_ATTPAR,DF_GAUPAR,
      &                 NDIMA, NDIMB, NDIMC, NDIMD, 
      &                 NBASEAUX, NODCLSNORM, 
      &                 NODCLSAUX, NODBTNORM, NODBTAUX,
      &                 DOFIT,LHSFIT,RHSFIT,ROBUST_E,DIATOM,
      &                 DOBOX,DF_CONSTR,DF_GAUDMP,DF_ATTENU,
-     &                 LIN_DF
+     &                 LIN_DF,DF_SCRTHR,SAVE_CFIT,SAVE_VAB,
+     &                 DF_FITVXC

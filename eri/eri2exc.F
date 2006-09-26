@@ -399,15 +399,33 @@ C  /* Deck exisym */
       DIMENSION FMAT(NBASE,NBASE,NDMT), IFCTYP(NDMT)
 C
       DO K = 1, NDMT
-      IF (IFCTYP(K).GT.10) THEN
-         DO J = 1, NBASE
-         DO I = 1, J - 1 
-            FIJ = DP5*(FMAT(I,J,K) + FMAT(J,I,K))
-            FMAT(I,J,K) = FIJ 
-            FMAT(J,I,K) = FIJ 
-         END DO
-         END DO
-      END IF
+#if defined (PRG_DIRAC)
+Caspg, modifications to allow anti-symmetric matrices
+         IH = IFCTYP(K)/10
+         IF (IH.EQ.1) THEN
+Csymmetrix matrices 
+#else
+         IF (IFCTYP(K).GT.10) THEN
+#endif
+            DO J = 1, NBASE
+            DO I = 1, J - 1 
+               FIJ = DP5*(FMAT(I,J,K) + FMAT(J,I,K))
+               FMAT(I,J,K) = FIJ 
+               FMAT(J,I,K) = FIJ 
+            END DO
+            END DO
+#if defined (PRG_DIRAC)
+Canti-symmetric matrices
+         ELSEIF (IH.EQ.2) THEN
+              DO J = 1, NBASE
+               DO I = 1, J - 1 
+                  FIJ = DP5*(FMAT(I,J,K) - FMAT(J,I,K))
+                  FMAT(I,J,K) =  FIJ 
+                  FMAT(J,I,K) = -FIJ 
+               END DO
+               END DO
+#endif
+          END IF
       END DO
       RETURN
       END
@@ -1279,12 +1297,14 @@ C
 #include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine EXINDF',-1)
+#if ! defined (PRG_DIRAC)
       DO K = 1, NDMT
       IF (IFCTYP(K).NE.2.AND.IFCTYP(K).NE.12) THEN
          WRITE (LUPRI,'(2X,A,I5)') ' IFCTYP(K):', IFCTYP(K)
          CALL QUIT('Wrong value of IFCTYP in EXINDF')
       END IF
       END DO
+#endif
 C
       NCCS1 = (NPQBCS - NPPBCS)*NCTFAB*NCTFCD
       NCCS2 = NPPBCS*NCTFAB*NCTFCD

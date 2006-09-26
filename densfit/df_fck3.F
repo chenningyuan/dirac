@@ -172,7 +172,12 @@ Caspg
         CALL SET_ATTGAM(.FALSE.,0.0d0)
 
 c        CALL TIMER('ITSOLV',TIMSTR,TIMEND)
-
+Caspg+rbast
+        IF (DF_FITVXC) THEN
+           CALL DF_AuxVXC_UpdateCFit(DMAT,WORK(KCFIT),WORK(KFREE),LFREE)
+           CALL TIMER('DF_AuxVXC_UpdateCFit',TIMSTR,TIMEND)
+        ENDIF
+Caspg+rbast
         CALL SETAOBTCH(SPEXP,CONTRACTED,WORK(KFREE),LFREE,IPRINT)
         CALL ACT_ALL_BATCHES
         CALL FITFCK3(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
@@ -1035,6 +1040,12 @@ C
       CALL MEMGET('REAL',KGALPHA,NDIMAUX*NDMT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KAUXINT,NDIMAUX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KVMAT,NDIMAUX*NDIMAUX,WORK,KFREE,LFREE)
+Caspg+rbast
+      IF (DF_FITVXC) THEN
+         write (6,*) 'allocating kgjk'
+         CALL MEMGET('REAL',KGJK,NDIMAUX*NDIMAUX,WORK,KFREE,LFREE)
+      ENDIF
+Caspg+rbast
 C
       CALL DZERO (CFIT,NDIMAUX*NDMT)
 C     GALPHA = sum_cd (alpha|cd)Dcd
@@ -1052,15 +1063,49 @@ c     CALL OUTPUT(WORK(KVMAT),1,NDIMAUX,1,NDIMAUX,NDIMAUX,NDIMAUX,1,2)
 c     CALL HEADER('GALPHA in DF_GENDRV',-1)
 c     CALL OUTPUT(WORK(KGALPHA),1,NDIMAUX,1,1,NDIMAUX,1,1,2)
 C
-      CALL LINSOL(WORK(KVMAT),CFIT,WORK(KGALPHA),NDIMAUX,NDMT,
-     &            DF_CONSTR,WORK(KFREE),LFREE)
+Caspg+rbast, 2006-09-21 
+      IF (SAVE_VAB) THEN
+         CALL SAVE_MATRIX(WORK(KVMAT),NBASISAUX,NBASISAUX,'ALBEMA')
+         IF (.TRUE.) THEN
+            CALL HEADER('ccVMAT in DF_GENDRV',-1)
+            CALL OUTPUT(WORK(KVMAT),1,NBASISAUX,1,NBASISAUX,
+     &               NBASISAUX,NBASISAUX,1,2)
+         ENDIF
+      ENDIF
+      IF (DF_FITVXC) THEN
+C to avoid having to setup another KVMAT for the XC-Fit stuff at
+C the end, we now always set the "keep matrix" variable in linsol
+C set to true
+         CALL LINSOL(WORK(KVMAT),CFIT,WORK(KGALPHA),NDIMAUX,NDMT,
+     &               .TRUE.,WORK(KFREE),LFREE)
+      ELSE
+         CALL LINSOL(WORK(KVMAT),CFIT,WORK(KGALPHA),NDIMAUX,NDMT,
+     &               DF_CONSTR,WORK(KFREE),LFREE)
+      ENDIF
+Caspg+rbast, 2006-09-21
+C
       IF (DF_CONSTR) THEN
 C       Grenerate the one-electron integrals over the fitting basis
         CALL DF_GET_AUXCHA_LOC(WORK(KAUXINT),I_LG,NDIMAUX,
      &                         WORK(KFREE),LFREE,IPRINT)
         CALL MEMGET('REAL',KCORR,NDIMAUX,WORK,KFREE,LFREE)
-        CALL LINSOL(WORK(KVMAT),WORK(KCORR),WORK(KAUXINT),NDIMAUX,1,
-     &              .FALSE.,WORK(KFREE),LFREE)
+C
+Caspg+rbast, 2006-09-21
+C
+         IF (DF_FITVXC) THEN
+            CALL LINSOL(WORK(KVMAT),WORK(KCORR),WORK(KAUXINT),NDIMAUX,1,
+     &                 .TRUE.,WORK(KFREE),LFREE)
+         ELSE
+            CALL LINSOL(WORK(KVMAT),WORK(KCORR),WORK(KAUXINT),NDIMAUX,1,
+     &                 .FALSE.,WORK(KFREE),LFREE)
+         ENDIF 
+C if we are asked to save the fit coefficients, those for the charge
+C conservation constraint are also saved, but in a different file
+         IF (SAVE_CFIT) THEN
+             CALL SAVE_MATRIX(WORK(KCORR),1,NBASISAUX,'FITCHC')
+         ENDIF
+Caspg+rbast, 2006-09-21
+C
         WRITE(LUPRI,'(A,I4)') 'Charge of density/fitted '//
      &                         'density of IBOX', IBOX
         WRITE(LUPRI,'(A)') ' IDMT      Normal           Free fit    '//
@@ -1083,6 +1128,15 @@ C       Grenerate the one-electron integrals over the fitting basis
           WRITE(LUPRI,'(I3,4F18.12)') IDMT,BOX_CHARGE,CHARGE_FIT,
      &                                CORRECTED_CHARGE,COEFF_MAX
         ENDDO
+Caspg+rbast, 2006-09-21
+C setting up Gjk matrix for the XC contribution in DFT
+        IF (DF_FITVXC) THEN
+           write (6,*) 'debug: ook'
+           CALL DF_FitXC_Build_GKJ(WORK(KGJK),NBASISAUX,NBASISAUX,
+     &                           WORK(KVMAT),WORK(KAUXINT),WORK(KCORR))
+           CALL SAVE_MATRIX(WORK(KGJK),NBASISAUX,NBASISAUX,'FITXCG')
+        ENDIF
+Caspg+rbast, 2006-09-21
         CALL MEMREL('DFGENDRV',WORK,KCORR,KCORR,KFREE,LFREE)
       ELSE
         CALL DF_GET_AUXCHA_LOC(WORK(KAUXINT),I_LG,NDIMAUX,
@@ -1096,6 +1150,25 @@ C       Grenerate the one-electron integrals over the fitting basis
      &         DDOT(NDIMAUX,WORK(KAUXINT),1,CFIT(1,IDMT),1) 
           WRITE(LUPRI,'(I3,4F18.12)') IDMT,BOX_CHARGE,CHARGE_FIT
         ENDDO
+Caspg+rbast, 2006-09-21
+C setting up Gjk matrix for the XC contribution in DFT
+        IF (DF_FITVXC) THEN
+           write (6,*) 'doo'
+           CALL DF_FitXC_Build_GKJ(WORK(KGJK),NBASISAUX,NBASISAUX,
+     &                           WORK(KVMAT),DUMMY,DUMMY)
+           CALL SAVE_MATRIX(WORK(KGJK),NBASISAUX,NBASISAUX,'FITXCG')
+        ENDIF
+Caspg+rbast, 2006-09-21
+      ENDIF
+Caspg, 2006-09-21
+C fit coefficients for this iteration are saved to file 
+      IF (SAVE_CFIT) THEN
+          CALL SAVE_MATRIX(CFIT,1,NBASISAUX,'FITCOE')
+      ENDIF
+Caspg, 2006-09-21
+
+      IF (DF_FITVXC) THEN
+         CALL MEMREL('dfgendrv-kgjk',WORK,KGJK,KGJK,KFREE,LFREE)
       ENDIF
       CALL MEMREL('DFGENDRV',WORK,KVMAT,KVMAT,KFREE,LFREE)
       CALL MEMREL('DFGENDRV',WORK,KAUXINT,KAUXINT,KFREE,LFREE)
@@ -2197,8 +2270,8 @@ C  /* Deck dfiinp */
       PARAMETER ( NTABLE = 13 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DATA TABLE /'.DIATOM','.DOBOX ','.BOXORB','.BUFSIZ','.CONSTR',
-     &            '.NOROBU','.ATTENU','.GAUDAM','.OLD_DF','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.NOROBU','.ATTENU','.GAUDAM','.OLD_DF','.SCREEN',
+     &            '.SAVE_C','.SAVE_V','.DF_VXC'/
 C
       WORD1 = WORD
 C       
@@ -2283,12 +2356,20 @@ C
         LIN_DF = .FALSE.
       GO TO 100
  10   CONTINUE
+        READ (LUCMD,*) DF_SCRTHR
+        WRITE(LUPRI,*) 'Setting screening threshold in DF to',DF_SCRTHR
       GO TO 100
  11   CONTINUE
+        WRITE(LUPRI,*) 'Saving fit coefficients at each iteration.'
+        SAVE_CFIT = .TRUE.
       GO TO 100
  12   CONTINUE
+        WRITE(LUPRI,*) 'Saving (alpha|beta) matrix at each iteration.'
+        SAVE_VAB  = .TRUE.
       GO TO 100
  13   CONTINUE
+        WRITE(LUPRI,*) 'Calculating quantities for XC potential eval'
+        DF_FITVXC = .TRUE.
       GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -2333,7 +2414,11 @@ C  /* Deck dfiini */
       DF_CONSTR = .FALSE.
       DF_GAUDMP = .FALSE.
       DF_ATTENU = .FALSE.
+      DF_FITVXC = .FALSE.
       LIN_DF    = .TRUE.
+      DF_SCRTHR = 1.0E-10
+      SAVE_CFIT = .FALSE.
+      SAVE_VAB  = .FALSE.
 C     LIN_DF    = .FALSE.
       CALL SET_BOX_DEFAULTS()
       RETURN

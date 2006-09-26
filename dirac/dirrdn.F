@@ -4216,6 +4216,12 @@ C
         NZC1 = 1
         NZ   = 1
         SPINFR = .TRUE.
+#if defined (MOD_DNF)
+C aspg, nzc1 set to 1 for the .2c_rel runs with density fitting
+C and link
+      ELSEIF (TWOCOMPBSS) THEN
+        NZC1 = 1
+#endif
       ELSE
         NZC1 = 4
       ENDIF

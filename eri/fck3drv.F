@@ -63,11 +63,27 @@ c       geometrically distributed atomic density.
 c        THRSH = 10D0**(-IFTHRS-6)
 #if defined (MOD_DNF)
         IF (DOFIT) THEN
-          THRSH = 10D0**(-10)
+CCaspg
+CC old definition:
+C          THRSH = 10D0**(-10)
+CC
+CC DF_SCRTHR (included from densfit.h) is initialized in DFIINI as 1.0E-10, 
+CC but can be changed via user input in DFIINP
+CC
+           THRSH = DF_SCRTHR
+CCaspg
         ELSE
 #endif
 #if defined PRG_DIRAC
-          THRSH = SCRFCK*10.0d0**(-12)
+CCaspg, 2006-09-05
+CC IFHTRS will dynamically change in dalton but not in dirac (it's not even used...)
+CC so until dynamical thresholds are implemented in the scf, we replace the
+CC dalton code, 
+C          THRSH = SCRFCK*10.0d0**(-6)
+CC with just the default/user-defined threshold... 
+CC
+          THRSH = SCRFCK
+CCaspg
 #else
           THRSH = 10D0**(-IFTHRS-6)
 #endif
@@ -75,6 +91,10 @@ c        THRSH = 10D0**(-IFTHRS-6)
         ENDIF
 #endif
       END IF
+Caspg
+      write (LUPRI,*)
+     & 'debug: thresholds in fck3drv: scrfck',SCRFCK,'thrsh',THRSH
+Caspg
 
 Careful / ErikT
 C      if (dopbc .and. pbcactive) then
@@ -2140,7 +2160,12 @@ C
       IF ( FIXTHR ) THEN
         WRITE (LUPRI,'(A,I5)') 'Threshold is fixed.'
       ELSE
+#if defined (PRG_DIRAC)
+        WRITE (LUPRI,'(A,I5)') 
+     &    'Dynamical threshold is not (yet) implemented in DIRAC'
+#else
         WRITE (LUPRI,'(A,I5)') 'Threshold set dynamically.'
+#endif
       END IF
 
       IF ( NOSKIPCL ) THEN

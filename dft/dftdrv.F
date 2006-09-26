@@ -83,7 +83,11 @@ C
       DOLND = LBIT(IOPTS,5)
       LUQUAD = 44
 C     Initial expectation value of two-electron matrix
+#if defined (MOD_DNF)
+      IF (DOERG.AND..NOT.DFITXC) THEN
+#else
       IF (DOERG) THEN
+#endif
          ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1)
       END IF 
 C     Check for Hermitian density matrices;
@@ -169,14 +173,20 @@ C
 #endif
 C
 C     Integrate
+        NDIMENSION = NTBAS(0)
+#if defined (MOD_DNF)
+        IF (DFITXC) NDIMENSION = MAX(NTBAS(0),NBASISAUX)*2
+        write (6,*) 'debug: ndimension',ndimension,ntbas(0),nbasisaux
+C*100
+#endif
 C
-        CALL MEMGET('REAL',KGAO,NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGA1,3*NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGA2,6*NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGB1,3*NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KCNT,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KGAO,NDIMENSION,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KGA1,3*NDIMENSION,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KGA2,6*NDIMENSION,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KGB1,3*NDIMENSION,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KCNT,NDIMENSION,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDST,NATOMS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBUF,NTBAS(0)*4,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KBUF,NDIMENSION*4,WORK,KFREE,LFREE)
 C        
         CALL DFTDRV(DMAT,WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO),
      &              DTRMAT,EXCMAT,NXCMAT,
@@ -189,8 +199,15 @@ C             SAOP is active
         CALL MEMREL('DFTDRV',WORK,KDMAT_OUTER_AO,KDMAT_OUTER_AO,
      &              KFREE,LFREE)
       ELSE
-        CALL MEMREL('DFTDRV',WORK,KGAO,KGAO,
-     &              KFREE,LFREE)
+        CALL MEMREL('DFTDRV-buf',WORK,KBUF,KBUF,KFREE,LFREE)
+        CALL MEMREL('DFTDRV-dst',WORK,KDST,KDST,KFREE,LFREE)
+        CALL MEMREL('DFTDRV-cnt',WORK,KCNT,KCNT,KFREE,LFREE)
+        CALL MEMREL('DFTDRV-gb1',WORK,KGB1,KGB1,KFREE,LFREE)
+        CALL MEMREL('DFTDRV-ga2',WORK,KGA2,KGA2,KFREE,LFREE)
+        CALL MEMREL('DFTDRV-ga1',WORK,KGA1,KGA1,KFREE,LFREE)
+        CALL MEMREL('DFTDRV-gao',WORK,KGAO,KGAO,KFREE,LFREE)
+C       CALL MEMREL('DFTDRV-all',WORK,KGAO,KGAO,
+C    &              KFREE,LFREE)
       ENDIF
 #if defined (VAR_MPI)
       ENDIF
@@ -223,7 +240,11 @@ C
 C
 C     Calculate final expectation value of two-electron matrix;
 C     the Kohn-Sham contribution can then be subtracted 
+#if defined (MOD_DNF)
+      IF (DOERG.AND..NOT.DFITXC) THEN
+#else
       IF (DOERG) THEN
+#endif
         ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1) - ERRKS
       END IF 
 C
@@ -504,12 +525,30 @@ C
      &            WORK(LWORK)
       DIMENSION RHG(3),VT(3)
 C
+#include "memint.h"
+C
       DOERG = LBIT(IOPTS,1)
       DOGRD = LBIT(IOPTS,2)
       DOLR  = LBIT(IOPTS,3)
       DOQR  = LBIT(IOPTS,4)
       DOLND = LBIT(IOPTS,5)
-C
+#if defined (MOD_DNF)
+C aspg+rbast 2006-09-21
+C memory allocation for variables to hold information related
+C to density fitting. used in connection to the scheme of
+C Birkenheuer et at (IJQC 102, 743, 2005) to compute the 
+C exchange-correlation contibutions together with density fitting 
+      IF (DFITXC) THEN ! 
+         CALL MEMGET('REAL',KCFIT,NBASISAUX,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KXCVEC,NBASISAUX,WORK,KFREE,LFREE)
+         write (6,*) 'debug: a'
+         CALL DZERO(WORK(KXCVEC),NBASISAUX)
+         write (6,*) 'debug: b'
+         CALL READ_MATRIX(WORK(KCFIT),1,NBASISAUX,'FITCOE')
+         write (6,*) 'debug: c'
+      ENDIF
+Caspg+rbast
+#endif
       DO 300 IPNT = 1, NPOINT
        
         IF (IPRINT .GE. 100) THEN
@@ -522,14 +561,29 @@ C
 C       AOs
 C       ===
 C
+Caspg+rbast, 2006-09-21
+        NDIMENSION = NBAST
+#if defined (MOD_DNF)
+        IF (DFITXC) NDIMENSION = MAX(NBAST,NBASISAUX)
+#endif
+C
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
      &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
-     &              BUF,WORK,LWORK,NBAST,NDER,DOLND,IPRINT)
+     &              BUF,WORK,LWORK,NDIMENSION,NDER,DOLND,IPRINT)
 C
 C       Density
 C       =======
 C
-        CALL GETRHO(RHO,0,GAO,DMAT,BUF)
+#if defined (MOD_DNF)
+        IF (DFITXC) THEN  ! 
+          RHO = DDOT(NBASISAUX,GAO,1,WORK(KCFIT),1)
+        ELSE
+#endif
+          CALL GETRHO(RHO,0,GAO,DMAT,BUF)
+#if defined (MOD_DNF)
+        ENDIF
+#endif
+Caspg+rbast, 2006-09-21
         IF (RHO.LE.DFTHR0) GO TO 300
         RHO13  = RHO**DP3
 C
@@ -559,6 +613,9 @@ C
      &           + D2*(RHG(1)*RXY*RHG(2) + RHG(1)*RXZ*RHG(3) 
      &               + RHG(2)*RYZ*RHG(3))
         END IF
+Caspg
+C       ENDIF ! end conventional vs. birkenheuer code 
+Caspg
 C
 C       Number of electrons
 C       ===================
@@ -568,6 +625,7 @@ C
 C       Energy
 C       ======
 C
+c       IF(DOERG.AND..NOT.DFITXC) THEN
         IF(DOERG) THEN
            EDFTY = EDFTY + DFTENERGY(RHO,RHOGRD)*WGHT
         ENDIF
@@ -608,15 +666,38 @@ C       =====================================================
 C
         IF (DOERG) THEN
           IREPOP = 0
-          IF (DOGGA .AND. .NOT.FROMVX) THEN
-            DO I = 1,3
-              VT(I) = VX(FZ0)*RHG(I)
-            ENDDO
-            CALL DOEXC2(VX(FR0),VT,IREPOP,EXCMAT,GAO,GAO1)      
-          ELSE
-            CALL DOEXC1(VX(FR0),IREPOP,EXCMAT,GAO)
-          END IF
+C aspg+rbast, 2006-09-21
+#if defined (MOD_DNF)
+           IF (DFITXC) THEN ! using densifit
+C gga not working now with densfit
+             IF (DOGGA .AND. .NOT.FROMVX) THEN
+C              DO I = 1,3
+C                VT(I) = VX(FZ0)*RHG(I)
+C              ENDDO
+C              CALL DOEXC2(VX(FR0),VT,IREPOP,EXCMAT,GAO,GAO1)      
+               call quit('GGA not working in the dfit scheme') 
+             ELSE
+C              CALL DF_DOEXC(VX(FR0),IREPOP,WORK(KCFIT),WORK(KALPHA))
+               DO I = 1, NBASISAUX
+                  WORK(KXCVEC - 1 + I) = WORK(KXCVEC - 1 + I)
+     &                                 + VX(FR0)*GAO(I)
+               ENDDO
+             END IF
+          ELSE ! normal code
+#endif
+             IF (DOGGA .AND. .NOT.FROMVX) THEN
+              DO I = 1,3
+                 VT(I) = VX(FZ0)*RHG(I)
+              ENDDO
+               CALL DOEXC2(VX(FR0),VT,IREPOP,EXCMAT,GAO,GAO1)      
+              ELSE
+               CALL DOEXC1(VX(FR0),IREPOP,EXCMAT,GAO)
+              END IF
+#if defined (MOD_DNF)
+          ENDIF ! densfit if
+#endif
         END IF
+C aspg+rbast, 2006-09-21
 C
 C       Exchange-correlation contribution to molecular gradient
 C       =======================================================
@@ -645,7 +726,16 @@ C
      &                     RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
         END IF
   300 CONTINUE
-C
+Caspg+rbast, 2006-09-21
+#if defined (MOD_DNF)
+      IF (DFITXC) THEN ! releasing temp space used for the df code
+         CALL SAVE_MATRIX(WORK(KXCVEC),1,NBASISAUX,'FITVXC')
+         CALL MEMREL('dftdr1-xcvec',WORK,KXCVEC,KXCVEC,KFREE,LFREE)
+         CALL MEMREL('dftdr1-fitco',WORK,KCFIT ,KCFIT ,KFREE,LFREE)
+C        CALL MEMREL('dftdr1-alpha',WORK,KALPHA,KALPHA,KFREE,LFREE)
+      ENDIF
+#endif
+Caspg+rbast, 2006-09-21
       RETURN
       END
 C  /* Deck reaqua */
