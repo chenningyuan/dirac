@@ -330,7 +330,7 @@ print_header()
 #
 exitfunc()
 {
-   if [ -n "`grep 'SEVERE ERROR' $OUTPUT_FILE`" ]; then
+   if [ -r $OUTPUT_FILE && -n "`grep 'SEVERE ERROR' $OUTPUT_FILE`" ]; then
      EXIT=1
    fi   
    if [ $EXIT -eq 0 ]; then
@@ -697,7 +697,8 @@ initialize
 ARG_SAVE="$*"
 if [ -z "$1" ]; then
    usage
-   exitfunc
+   EXIT=2
+   exitfunc 
 fi
 
 while [ -n "$1" ]; do
