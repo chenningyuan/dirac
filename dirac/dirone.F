@@ -4345,6 +4345,7 @@ C
       DIMENSION TMAT(*),TINV(*),WORK(*)
       DIMENSION NSTR(2,0:2,MFRAG),KVEC(2,MFRAG),
      &          KQ(2),KE(2),KI(2),NVECS(2),NQ(2),NE(2),NI(2)
+      DIMENSION IOFF(2)
 C
       KFRSAV = KFREE
       CALL TITLER('Reduction of variational space by projection',
@@ -4409,8 +4410,9 @@ C
       CALL MEMGET('REAL',KQ(1),NCDIM,WORK,KFREE,LFREE)
       KQ(2)   = KQ(1) + NQ(1)
 C
-C     Select fragment orbitals
-C     =========================
+C     Allocate buffer space for coefficients, eigenvalues
+C     and boson irrep information
+C     ===================================================
 C
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
@@ -4421,75 +4423,17 @@ C
         IOPT = 7
         KIBE = KFREE
       ENDIF
+C
+C     Select fragment orbitals
+C     =========================
+C
       DO IFRP = 1,NFSYM
-        NQ(IFRP) = KQ(IFRP)
-        NE(IFRP) = KE(IFRP)
-        NI(IFRP) = KI(IFRP)
+        IOFF(IFRP) = 0
       ENDDO
-      INUC = 1
-C.....loop over fragments
-      DO 10 IFRAG = 1,NFRAG
-        NVECT = 0
-        DO IFRP = 1,NFSYM
-          NVECT = NVECT + NSTR(IFRP,0,IFRAG)
-        ENDDO
-        IF(NVECT.EQ.0) THEN
-          WRITE(LUPRI,'(A,A6)') 
-     &       '* No coefficients selected for fragment ',PRJFIL(IFRAG)
-          GOTO 12
-        ENDIF
-        INQUIRE(FILE=PRJFIL(IFRAG),EXIST=TOBE)
-        IF (.NOT.TOBE) THEN
-           WRITE(LUPRI,'(A,A6,A)') 
-     &     'Fragment coefficient file ',PRJFIL(IFRAG),' not present'
-           CALL QUIT('PSIPRJ: No fragment coefficients !')
-        ENDIF
-        CALL OPNFIL(LUCOEF,PRJFIL(IFRAG),'OLD','PSIPRJ')
-        WRITE(LUPRI,'(A,A6)') 
-     &       '* Coefficients for fragment ',PRJFIL(IFRAG)
-C.......Fragment orbitals in own basis
-        IF(PROOWN) THEN
-          CALL SELOWN(IOPT,WORK(KCMO),WORK(KEIG),WORK(KIBE),
-     &                INUC, NPRJNUC(IFRAG),LUCOEF,PRJFIL(IFRAG),
-     &                NQ,NE,NI,NVECS,KVEC(1,IFRAG),NSTR(1,0,IFRAG),
-     &                WORK,KFREE,LFREE)
-          DO IFRP = 1, NFSYM
-            IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
-              NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,IFRAG)*NFBAS(IFRP,0)
-              NE(IFRP) = NE(IFRP) + NSTR(IFRP,0,IFRAG)
-CTROND...This will not work for integer array !!!!
-              NI(IFRP) = NI(IFRP) + NSTR(IFRP,0,IFRAG)
-            ENDIF
-          ENDDO
-C.......Fragment orbitals in molecular basis
-        ELSE
-          CALL REACMO(LUCOEF,PRJFIL(IFRAG),WORK(KCMO),DUM,WORK(KIBE),
-     &                TOTERG,IOPT,WORK,KFREE,LFREE)
-          DO IFRP = 1, NFSYM
-            IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
-              CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(NQ(IFRP)),
-     &                       NVECS(IFRP),WORK(KVEC(IFRP,IFRAG)),
-     &                       NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG),
-     &                       NFBAS(IFRP,0),NORB(IFRP))
-              CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(NE(IFRP)),
-     &             WORK(KVEC(IFRP,IFRAG)),
-     &             NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
-              NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,IFRAG)*NFBAS(IFRP,0)
-              NE(IFRP) = NE(IFRP) + NSTR(IFRP,0,IFRAG)
-              IF(SPINFR) THEN
-C               Spin-free case: Fill array with boson irrep info
-CTROND...error for multiple fragments !
-                CALL SELIBEIG(WORK(KIBE),IORB(IFRP),IFRP,
-     &                         WORK(KI(IFRP)),WORK(KVEC(IFRP,IFRAG)),
-     &                         NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
-              ENDIF
-            ENDIF
-          ENDDO
-        ENDIF
-        CLOSE(LUCOEF,STATUS='KEEP')
- 12     CONTINUE
-        INUC = INUC + NPRJNUC(IFRAG)
- 10   CONTINUE
+      CALL SELFRAG(WORK(KQ(1)),NVECS,WORK(KE(1)),WORK(KI(1)),
+     &             NFRAG,NSTR,PRJFIL,PROOWN,NPRJNUC,IOPT,KVEC,
+     &             WORK(KCMO),WORK(KEIG),WORK(KIBE),IOFF,
+     &             WORK,KFREE,LFREE)
 C
 C     Throw away the full set of coefficients and eigenvalues
 C     =======================================================
@@ -6382,210 +6326,5 @@ C         Finish by adjusting the number of positron solutions to zero
           ENDDO
  20     CONTINUE
 C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C /* Deck sphcar */
-      SUBROUTINE SPHCAR(SPHM,IREP,IC,NCAR,NSPH,
-     &                  DONRM,IPRINT,WORK,LWORK)
-C***********************************************************************
-C
-C***  Generate spherical transformation matrix for component IC
-C***  and irrep IREP
-C
-C     Input:
-C       IREP - irrep
-C       IC   - L(1),S(2) component
-C       DONRM - normalize column by column
-C       
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
-C
-#include "ccom.h"
-      LOGICAL DONRM
-      DIMENSION SPHM(*),WORK(LWORK)
-#include "memint.h"
-      LMAX  = NHTYP
-      NXYZ  = (LMAX*(LMAX+1))/2
-      NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
-      NCBUF = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
-      CALL MEMGET('REAL',KCBUF,NCBUF ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KICBF,3*LMAX,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
-      CALL SPHCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,MXYZ,NFUN,
-     &            DONRM,WORK(KCBUF),WORK(KICBF),WORK(KIFUN),IPRINT)
-      CALL MEMREL('SPHMAT',WORK,KWORK,KWORK,KFREE,LFREE)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C /* Deck sphma1 */
-      SUBROUTINE SPHCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,MXYZ,
-     &                  NFUN,DONRM,CBUF,ICBF,IFUN,IPRINT)
-C***********************************************************************
-C
-C***  Generate spherical transformation matrix for component IC
-C***  and irrep IREP
-C
-C     Input:
-C       IREP - irrep
-C       IC   - L(1),S(2) component
-C       
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
-C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-C
-#include "ccom.h"
-#include "sphtrm.h"
-#include "symmet.h"
-#include "pgroup.h"
-#include "shells.h"
-#include "nuclei.h"
-#include "dgroup.h"
-      LOGICAL DONRM
-      CHARACTER COMP(2)*1
-      DIMENSION IFUN(NFUN,3),
-     &          SPHM(NCAR,NCAR),CBUF(*),ICBF(3,LMAX)
-      DATA COMP/'L','S'/
-#include "ibtfun.h"
-C
-C     Initialize
-C     ==========
-C
-C.....Large components
-      IF(IC.EQ.1) THEN
-        JA1 = 1
-        JA2 = NLRGSH
-C.....Small components
-      ELSEIF(IC.EQ.2) THEN
-        JA1 = NLRGSH+1
-        JA2 = KMAX
-      ENDIF
-C.....
-      N2MAT = NCAR*NCAR
-      CALL DZERO(SPHM,N2MAT)
-C
-C     Initial print section
-C     =====================
-C
-C     Loop over shells
-C     ================
-C
-      ISOFF = ICOS(IREP+1,IC)
-      NAORB = NSTRT(JA1)
-      INUC = 0
-      IROW = 0
-      ICOL = 0
-      DO 10 JA = JA1,JA2
-        JNUC = NCENT(JA)
-C
-C       New center; check out allowed symmetries
-C       ----------------------------------------
-        IF(JNUC.NE.INUC) THEN
-          MULA = ISTBNU(JNUC)
-          INUC = JNUC
-          ILL  = 0
-          IOFF = 0
-        ENDIF
-        LL  = NHKT(JA)
-C
-C       New L-value; extract relevant transformation matrix
-C       ---------------------------------------------------
-        IF(LL.NE.ILL) THEN
-          ILL  = LL
-          L    = LL - 1
-          NLM  = 2*L + 1
-          NXYZ = (LL*(LL+1))/2
-          LOFF = NHKOFF(LL)
-C
-C         Cartesian functions
-C
-          KXYZ = 0
-          DO ICMP = 1,NXYZ
-            IVARB = IBTXOR(IREP,ISYMAO(LL,ICMP))
-            IF(IBTAND(MULA,IVARB).EQ.0) THEN
-              KXYZ              = KXYZ + 1
-              IFUN(LOFF+KXYZ,1) = ICMP
-              IFUN(LOFF+ICMP,3) = KXYZ
-            ENDIF
-            ICBF(1,LL) = KXYZ
-          ENDDO
-C
-C         Solid harmonic functions
-C
-          KLM = 0
-          DO ICMP = 1,NLM
-            M = MDEF(L,ICMP)
-            IVARB = IBTXOR(IREP,IREPLM(L,M))
-            IF(IBTAND(MULA,IVARB).EQ.0) THEN
-              KLM               = KLM + 1
-              IFUN(LOFF+KLM,2)  = ICMP
-            ENDIF
-            ICBF(2,LL) = KLM
-          ENDDO
-C
-C         Extract spherical transformation matrix
-C
-          ICBF(3,LL) = IOFF
-          IF(KLM.GT.0) THEN
-            CALL EXTELM('T',CSP(ISPADR(LL)),NLM,NXYZ,
-     &                      CBUF(IOFF+1),KXYZ,KXYZ,KLM,
-     &                      IFUN(LOFF+1,1),IFUN(LOFF+1,2))
-            IF(DONRM) THEN
-              JOFF = IOFF
-              DO J = 1,KLM
-                FAC = D1/DNRM2(KXYZ,CBUF(JOFF+1),1)
-                CALL DSCAL(KXYZ,FAC,CBUF(JOFF+1),1)
-                JOFF = JOFF + KXYZ
-              ENDDO
-            ENDIF
-            IOFF = IOFF + KXYZ*KLM
-          ENDIF
-          IF(IPRINT.GE.4) THEN
-            KOFF = ICBF(3,LL)
-            WRITE(LUPRI,'(A)') '* SPHCAR:'
-            WRITE(LUPRI,'(A,I3)')
-     &       ' * Center : ',JNUC,
-     &       ' * L-value: ',L
-            IF(KLM.GT.0) THEN
-              WRITE(lupri,*) 'KXYZ,KLM=',KXYZ,KLM
-              CALL OUTPUT(CBUF(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,1,LUPRI)
-            ELSE
-              WRITE(LUPRI,'(A)') ' - no functions - '
-            ENDIF
-          ENDIF
-        ENDIF
-C
-C       Expand transformation matrix
-C       ============================
-C
-        IF(KLM.EQ.0) GOTO 10
-        KOFF = ICBF(3,LL)+1
-        DO J = 1,KLM
-          CALL DCOPY(KXYZ,CBUF(KOFF),1,
-     &                SPHM(IROW+1,ICOL+J),1)   
-          KOFF = KOFF + KXYZ
-        ENDDO
-        IROW = IROW + KXYZ
-        ICOL = ICOL + KLM
-   10 CONTINUE
-      NSPH = ICOL
-C
-C     Final print section
-C
-      IF(IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(A,A3,2X,A1)') 
-     &    'SPHCAR: Transformation matrix for ',REP(IREP),COMP(IC)
-        CALL PRSYMB(LUPRI,'-',40,0)
-        CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NPSH,1,LUPRI)
-      ENDIF
       RETURN
       END

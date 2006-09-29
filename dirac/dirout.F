@@ -992,7 +992,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-Cjth - linux      DIMENSION EIG(NFBAS(IFRP,0)),
       DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(*)
 C
       NVEC = NPVEC + NEVEC
@@ -1565,8 +1564,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selown */
-      SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,CMOFIL,KQ,
-     &                  KE,KI,NVECS,KVEC,NSTR,WORK,KFREE,LFREE)
+      SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,CMOFIL,
+     &                  CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR,
+     &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Select coeffiecients for symmetry independent nucleus INUC
@@ -1593,7 +1593,7 @@ C
 #include "dcbbas.h"
 #include "nuclei.h"
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(2),NVECS(2),
-     &          KQ(2),KE(2),KI(2),WORK(*)
+     &          CSEL(*),ESEL(*),IBSEL(*),IOFF(2),WORK(*)
 C     Local variables
       LOGICAL LBIT
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
@@ -1669,11 +1669,13 @@ C
 C     Select and adjust format to molecular basis
 C     ===========================================
 C
-      IEIG = 1
-      ICMO = 1
+      ICMO  = 1
+      IEIG  = 1
+      ICOFF = 1
+      IEOFF = 1
       DO IFRP = 1,NFSYM
       IF(NSTR(IFRP,0).GT.0) THEN
-        NVEC = IDIM(1,IFRP)+IDIM(2,IFRP)
+        NCMO = IDIM(1,IFRP)+IDIM(2,IFRP)
 C       Generate pointer array for bases
         CALL MEMGET('INTE',KBAS,IDIM(3,IFRP),WORK,KFREE,LFREE)
         CALL SELOWI(INUC,NNUC,IFRP,WORK(KBAS),NSBAS)
@@ -1690,27 +1692,31 @@ C       Generate pointer array for bases
         ENDIF
 C       Select coefficients
         IF(LBIT(IOPT,2)) THEN
-          CALL SELOWC(INUC,CMO(ICMO),IDIM(3,IFRP),NVEC,
+          ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
+          CALL SELOWC(INUC,CMO(ICMO),IDIM(3,IFRP),NCMO,
      &              IDIM(1,IFRP),IDIM(2,IFRP),
-     &              WORK(KQ(IFRP)),NFBAS(IFRP,0),NVECS(IFRP),
+     &              CSEL(ICSEL),NFBAS(IFRP,0),NVECS(IFRP),
      &              WORK(KVEC(IFRP)),WORK(KBAS),
      &              NSTR(IFRP,2),NSTR(IFRP,1))
-          ICMO = ICMO + NVEC*IDIM(3,IFRP)*NZ
+          ICMO = ICMO + NCMO*IDIM(3,IFRP)*NZ
         ENDIF
+        IESEL = IEOFF + IOFF(IFRP)
 C       Select eigenvalues
         IF(LBIT(IOPT,3)) THEN
           CALL SELOWE(EIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
-     &                WORK(KE(IFRP)),
-     &                WORK(KVEC(IFRP)),NSTR(IFRP,2),NSTR(IFRP,1))
+     &                ESEL(IESEL),WORK(KVEC(IFRP)),
+     &                NSTR(IFRP,2),NSTR(IFRP,1))
         ENDIF
 C       Select boson irrep information
         IF(LBIT(IOPT,4)) THEN
           CALL SELOWB(IBEIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
-     &                WORK(KI(IFRP)),
-     &                WORK(KVEC(IFRP)),NSTR(IFRP,2),NSTR(IFRP,1))
+     &                IBSEL(IESEL),WORK(KVEC(IFRP)),
+     &                NSTR(IFRP,2),NSTR(IFRP,1))
         ENDIF
-        IEIG = IEIG + NVEC
+        IEIG = IEIG + NCMO
         CALL MEMREL('SELOWN.loop',WORK,KBAS,KBAS,KFREE,LFREE)
+        ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
+        IEOFF = IEOFF + NVECS(IFRP)
       ENDIF
       ENDDO
       RETURN
@@ -1782,7 +1788,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-Cjth - linux      DIMENSION EIG(NFBAS(IFRP,0)),
       DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(*)
 C
       NVEC = NPVEC + NEVEC

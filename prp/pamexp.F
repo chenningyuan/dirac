@@ -824,6 +824,12 @@ C
      &         NCNT(IFRP),NCNT(IFRP),NZ,
      &         IPQTOQ(1,IREP),LUPRI)
           IPF = IPF + NCNT(IFRP)*NCNT(IFRP)*NZ
+CTROND
+          LUBUF = 35
+          CALL OPNFIL(LUBUF,'PRPMAT','UNKNOWN','PAMEXP')
+          NOST = NCNT(IFRP)*NCNT(IFRP)
+          CALL WRITT(LUBUF,NOST,PFO)
+          CLOSE(LUBUF,STATUS='KEEP')
         ENDDO       
       ENDIF
 
@@ -1653,7 +1659,7 @@ C       Memory allocation
         CALL MEMGET('REAL',KPEI,NISH(IFRP),WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KSEL,NISH(IFRP),WORK,KFREE,LFREE)
 C       Select occupied molecular orbitals
-        CALL ORBLO3(WORK(KSEL),NISH(IFRP))
+        CALL OCCUPY(WORK(KSEL),NISH(IFRP))
         CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KSCO),NISH(IFRP),
      &              WORK(KSEL),D0,NISH(IFRP),NFBAS(IFRP,0),NORB(IFRP))
         CALL MEMREL('EXPCAN.sel',WORK,KSEL,KSEL,KFREE,LFREE)

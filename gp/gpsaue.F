@@ -6448,4 +6448,28 @@ C***********************************************************************
 #include "priunit.h"
       BICO=NINT(EXP(FACTLN(N)-FACTLN(K)-FACTLN(N-K)))      
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck orblo3 */
+      SUBROUTINE OCCUPY(ISEL,N)
+C***********************************************************************
+C
+C     Written by S.Dubillard Jan 21 2004
+C     Last revision:
+C
+C     Construction of the array ISEL for the selection of the occupied
+C     electronic orbital coefficients
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION ISEL(N)
+      CALL QENTER('OCCUPY')
+C
+      DO I = 1,N
+         ISEL(I) = I
+      ENDDO
+C
+      CALL QEXIT('OCCUPY')
+      RETURN
+      END

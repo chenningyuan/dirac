@@ -8395,7 +8395,8 @@ C  /* Deck prop2bss */
       SUBROUTINE PROP2BSS(VMAT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C    PURPOSE: Run the list of four-component property operators in DCBPRP and do the pictre change
+C    PURPOSE: Run the list of four-component property operators 
+C             in DCBPRP and do the picture change
 C             transformation of most of them. Do not transform
 C             certain operators (overlap, connection matrixes...)
 C

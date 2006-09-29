@@ -3062,7 +3062,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
-     &            '.WGPOP','.OWNBAS','.PRJADJ','.XXXXXX'/
+     &            '.WGPOP','.OWNBAS','.PRJADJ','.POLREF'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -3087,6 +3087,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       LWGPOP = .FALSE.
       OWNBAS = .FALSE.
       PRJADJ = .FALSE.
+      POLREF = .FALSE.
 C
 C     Process input from CBIPRJ
 C     =========================
@@ -3158,6 +3159,8 @@ C&&& PRJADJ: Phase adjustment according to selected reference orbital
                   READ(LUCMD,*) (IREFADJ(I),I=1,NFSYM)
                GO TO 100
     8          CONTINUE
+C&&& POLREF: Polarize reference orbitals
+                  POLREF = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -3229,7 +3232,15 @@ C
             ENDIF
           ENDDO
         ENDDO
+        IF(POLREF) THEN
+          WRITE(LUPRI,'(1X,A)')
+     &      '* Reference orbitals will be polarized'
+        ENDIF
       ELSE
+        IF(POLREF) THEN
+          CALL QUIT
+     &     ('ANAINP: Polarization only possible with SELOWN=T')
+        ENDIF
         DO J = 1,NREFS
           WRITE(LUPRI,'(1X,A,I3)') '* Fragment spinor set ',J
           WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
