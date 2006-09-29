@@ -4090,7 +4090,7 @@ C
 C
       CALL QENTER('DEF_SHIELD1')
 C
-      LABEL = 'RNST'
+CMI   LABEL = 'RNST'
       NNSTIN = 0
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSHIELD,3+MXCOOR)
@@ -4101,9 +4101,10 @@ C     YAVECTOR
       IOP(2) = 6
 C     ZAVECTOR
       IOP(3) = 7
-CMI change signs according to TEC
-      PFAC(1)  = CVAL
-      PFAC(2)  = CVAL
+CMI previously were here + signs (old TEC's convention)
+CMI but the - sign is correct, so everythink is rearranged
+      PFAC(1)  = -CVAL
+      PFAC(2)  = -CVAL
       NPCOMP   = 2
 C
 C     Irreps
@@ -4111,7 +4112,6 @@ C
       DO 100 IREPO = 0, MAXREP
 C
 C       Atoms
-C
 C
 C       First define left-hand operators
 C
@@ -4160,6 +4160,7 @@ C
 
 C Expectation value contribution is always from the London phase factor
 C (Note! it is not the diamagnetic term!)
+              LABEL = 'RNST'
               IF (LONDON) THEN
 C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
                  DOEXP = .TRUE.
@@ -4208,7 +4209,8 @@ C
       PFAC(2)  = 0.5D0*CVAL
       PFAC(3)  =  0.5D0*G1FAC
 C X component of B-field
-      PNAME     = 'MAGFLDX'
+         PNAME     = 'X magnetic field'
+C     PNAME     = 'MAGFLDX'
       IPTYP     = IOP(1)
       PLABEL(1) = 'ZDIPLEN'
       PLABEL(2) = 'YDIPLEN'
@@ -4238,7 +4240,8 @@ C        Sigma_X:
       END IF
 #if !defined (XH4)
 C Y component of B-field
-      PNAME     = 'MAGFLDY'
+         PNAME     = 'Y magnetic field'
+C     PNAME     = 'MAGFLDY'
       IPTYP     = IOP(2)
       PLABEL(1) = 'XDIPLEN'
       PLABEL(2) = 'ZDIPLEN'
@@ -4267,7 +4270,8 @@ C        Sigma_Y:
          CALL OP1IND('y spin',IPSIGMA(2),LESRP,NESRP,INDXPR,MAXESR)
       END IF
 C Z component of B-field
-      PNAME     = 'MAGFLDZ'
+         PNAME     = 'Z magnetic field'
+C     PNAME     = 'MAGFLDZ'
       IPTYP     = IOP(3)
       PLABEL(1) = 'YDIPLEN'
       PLABEL(2) = 'XDIPLEN'
@@ -5968,7 +5972,8 @@ C ===========================================================================
           ENDIF
          ELSE
           IBX = IPMSUSC(2,IB)
-          READ (PRPNAM(LLRBPU(IBX)),'(6X,A1)') JCB
+CMI  ...     first character, like 'X magnetic field'
+          READ (PRPNAM(LLRBPU(IBX)),'(A1)') JCB
           JB = ICONVXYZ(JCB)
           IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3)  THEN
            write(lupri,*)
@@ -5986,7 +5991,8 @@ C ===========================================================================
            JA = ICONVXYZ(JCA)  
           ELSE
            IAX = IPMSUSC(1,IA)
-           READ (PRPNAM(LLRAPU(IAX)),'(6X,A1)') JCA
+CMI        READ (PRPNAM(LLRAPU(IAX)),'(6X,A1)') JCA
+           READ (PRPNAM(LLRAPU(IAX)),'(A1)') JCA
            JA = ICONVXYZ(JCA)
            IF (JA.NE.1.AND.JA.NE.2.AND.JA.NE.3)  THEN
            write(lupri,*)
@@ -6325,6 +6331,7 @@ C     Written by T.Enevoldsen Nov. 7 1997
 C
 C     Updated by MI,2003,2004 for LAO based calculation 
 C     of NMR shieldings.
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -6337,7 +6344,7 @@ C***********************************************************************
 #include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2I = 0.50D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2I = 0.50D0)
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &     TMPMAT(3,*),TMAT(3,3,NUCDEP), DMAT(3,3,NUCDEP),
@@ -6428,7 +6435,9 @@ CMI ... take care of the correct form of PRPLBL(IPL) name
             IB = MOD(I+2,3) + 1
 CMI   ... for compatibility with Dalton exp.values (NSLO) !
 CMI         TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)*D2I
-            TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)
+CMI         TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)
+CMI   ... new sign convention !!!
+            TMPMAT(IPTAX(IB,2),IA) = -EXPVAL(IOP)
          ENDDO
          IF (IPRPRP.GE.2) THEN
             CALL HEADER('London part of shielding (exp.value)'//
@@ -6442,7 +6451,7 @@ C         ... add the London exp.value parts of shield. to to the DMAT
       END IF
 
 C--------------------------------------------------------------------
-C  Get the expectation value reorthonormalization terms, {T,h(mK)}
+C  Get the (expectation value) reorthonormalization terms, {T,h(mK)}
 C--------------------------------------------------------------------
       IF(LONDON.AND.(.NOT.NOORTH)) THEN
          CALL MEMGET('REAL',KW,3*N2ORBXQ,WORK,KFREE,LFREE)
@@ -6453,6 +6462,8 @@ C--------------------------------------------------------------------
 C  ...  get the expect. value {T,h(mK)} reorthonormalization term
          CALL GETCON(WORK(KW),WORK(KCON),WORK(KDMAT),TMPMAT,
      &               WORK,KFREE,LFREE,IPRPRP)
+CMI   ...  sign convention !!!
+         CALL DSCAL(NCMAT,DM1,TMPMAT,1)
          IF (IPRPRP.GE.2) THEN
           CALL HEADER('Reorthonormalization part of the '// 
      &  'shielding (expect.value) in symmetry coordinates (ppm)',1)
@@ -6462,6 +6473,7 @@ C         ... extract the reorthonormalization part into the PMAT
          CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
 C         ... add the reorthonormalization terms to the DMAT
          CALL DAXPY(NCMAT,D1,PMAT,1,DMAT,1)
+CMI      CALL DAXPY(NCMAT,DM1,PMAT,1,DMAT,1)
       END IF
 
 C
@@ -6522,7 +6534,9 @@ C
                CALL QUIT('PRP_SHIELD1: wrong index !')
              ENDIF
            ELSE
-             READ (PRPNAM(IBINDEX),'(6X,A1)') CJB
+CMI  ...     first character, like 'X magnetic field'
+             READ (PRPNAM(IBINDEX),'(A1)') CJB
+C            write(lupri,*) 'PRPNAM(IBINDEX)=',PRPNAM(IBINDEX)
              JB = ICONVXYZ(CJB)
              IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3) THEN
                write(lupri,*) '...operator name:',PRPNAM(IBINDEX)
@@ -6535,10 +6549,12 @@ C
                JA = IBUFA(IA)
                KA = IPSHIELD(JA)
 C...           First extract the e-e contribution
-               TMPMAT(IPTAX(JB,2),JA) = ABLRF(IFREQ,KA,KB,2)
+CMI            TMPMAT(IPTAX(JB,2),JA) = ABLRF(IFREQ,KA,KB,2)
+               TMPMAT(IPTAX(JB,2),JA) = -ABLRF(IFREQ,KA,KB,2)
 C...           then extract the e-p "diamagnetic" contribution
                TMPMAT(IPTAX(JB,2),JA+NCMAT)
-     &            = ABLRF(IFREQ,KA,KB,3)
+CMI  &            = ABLRF(IFREQ,KA,KB,3)
+     &            = -ABLRF(IFREQ,KA,KB,3)
             ENDDO
          ENDDO
 #if defined (XH4)
@@ -7724,8 +7740,10 @@ C*****************************************************************************
 C
 C     Define operators for rotational g-tensor
 C     DEF_SHIELD1 as skeleton
+C
 C     Written by T. Enevoldsen - Jul. 1998
 C     Last revision: MI, jan.2003 - added from TEC's code
+C                    MI, Sept.2006 - making functional
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -7797,6 +7815,15 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 'Rotational g-tensor:'
       CALL PRSYMB(LUPRI,'=',75,0)
+C
+C      Print reference
+C
+      WRITE(LUPRI,'(4X,A)')
+     & 'Reference: T.Enevoldsen et al, JCP 114 (2001) p.84'
+     
+      WRITE(LUPRI,'(1X,A)')
+     & 'NOTE: You must set .USECM in the *NMR section '//
+     & ' to get correct values of rot_g_tensor.'
 C
 C     A operators
 C     ===========

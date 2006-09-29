@@ -65,6 +65,7 @@ C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, WRDSRC*7
       DIMENSION WORK(LWORK)
+      LOGICAL CHGO
 C
 #include "orgcom.h"
 #include "dcbprp.h"
@@ -410,10 +411,19 @@ C
       DO I = 1, NPRPWF
          WRITE(LUPRI,'(5X,I1,A,A)') I,': ',PRPWF(I)
       END DO
+
+CMI ...for magnetic susceptibility, NMR shielding constatngs and rotational
+CMI   g_tensors operator centers might be changed
+      WRITE(LUPRI,'(1X,A)') 
+     &'These initial settings of center and origins'//
+     &' might be changed later:'
       WRITE (LUPRI,'(1X,A,3F18.10)')
      &     '* Operator center:', (ORIGIN(I),I=1,3),
      &     '* Gauge origin   :', (GAGORG(I),I=1,3),
      &     '* Dipole origin  :', (DIPORG(I),I=1,3)
+      GAGORGX = GAGORG(1)
+      GAGORGY = GAGORG(2)
+      GAGORGZ = GAGORG(3)
 
       IF (DOPCT) THEN
        IF (.NOT.NOPCT) THEN
@@ -527,7 +537,20 @@ C===========================================================================
 C Define special operators for the list of properties programmed in DIRAC
 C===========================================================================
       CALL PRPDEF(WORK,LWORK)
-C
+
+CMI   ... when there is a change in gauge origin...
+C     write(lupri,*) GAGORGX,GAGORGY,GAGORGZ
+      THRS1=1.0D-7
+      CHGO= DABS(GAGORGX-GAGORG(1)).GE.THRS1.OR.
+     &      DABS(GAGORGY-GAGORG(2)).GE.THRS1.OR.
+     &      DABS(GAGORGZ-GAGORG(3)).GE.THRS2
+      IF (CHGO) THEN
+       WRITE (LUPRI,'(1X,A,3F18.10)')
+     &     '* Operator center:', (ORIGIN(I),I=1,3),
+     &     '* Gauge origin   :', (GAGORG(I),I=1,3),
+     &     '* Dipole origin  :', (DIPORG(I),I=1,3)
+      ENDIF
+
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PRPINP')
       RETURN
