@@ -30,7 +30,7 @@
      &        ESRGTENS, ESRANISO, EFT, EFTNTL, EFN, RHONUC,             &
      &        DOTPA,DOVER,DOEXCPRP,                                     &
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
-     &        PVCSHI, PVCSPNSPN, DOSTEX
+     &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX
 
       INTEGER MXPRPWF,EXCPRPTYP
       PARAMETER (MXPRPWF = 3)
@@ -42,7 +42,7 @@
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
      &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP, EXCPRPTYP,   &
      &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
-     &                PVCSHI, PVCSPNSPN, DOSTEX
+     &                PVC_SHIELD, PVC_SPINSPIN, DOSTEX
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &
@@ -50,13 +50,15 @@
      &        IPROTG(2,3),IPMSUSC(2,3),IMAGOUT,                         &
      &        IPCON21(3),IPCON22(3),IPCON23(6),                         &
      &        IPLONDON(4,3),IPCON(3),IPRNST(MXCOOR*3),                  &
-     &        IPPVCSHI(MXCOOR+3), IPPVCSPNSPN(2,MXCOOR)
+     &        IP_PVC_SHIELD(MXCOOR+3),                                  &
+     &        IP_PVC_SPINSPIN(2,MXCOOR)
       COMMON /CBIPRP/ IPRPRP, IPEPOLAR, IPSPNSPN, IPDSO, NDSOIN,        &
      &                IPSHIELD, IPNSTDIA, NNSTIN, IPESR, NPRPWF,        &
      &                         IPROTG,IPMSUSC,IMAGOUT,                  &
      &                IPCON21,IPCON22,IPCON23,                          &
      &                IPLONDON,IPCON,IPRNST,                            &
-     &                IPPVCSHI, IPPVCSPNSPN
+     &                IP_PVC_SHIELD,                                    &
+     &                IP_PVC_SPINSPIN
 
       REAL*8 ABUND
       COMMON /CBRPRP/ ABUND

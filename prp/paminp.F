@@ -91,44 +91,44 @@ C
 C     Initialize /CBIPRP/
 C     ===================
 C
-      IPRPRP    = 0
-      DOEXP     = .FALSE.
-      DOESR     = .FALSE.
-      DOXLR     = .FALSE.
-      DOXPP     = .FALSE.
-      DOXQR     = .FALSE.
-      DOTPA     = .FALSE.
-      DOVER     = .FALSE.
-      DOEXCPRP  = .FALSE.
-      EXCPRPTYP = 0
-      DIPOLE    = .FALSE.
-      QUADRU    = .FALSE.
-      EPOLAR    = .FALSE.
-      MSUSCP    = .FALSE.
-      IMAGOUT   = 0
-      SHIELD    = .FALSE.
-      PVCSHI    = .FALSE.
-      PVCSPNSPN = .FALSE.
-      SPNSPN    = .FALSE.
-      EFG       = .FALSE.
-      EFN       = .FALSE.
-      EFT       = .FALSE.
-      EFTNTL    = .FALSE.
-      NQCC      = .FALSE.
-      DSO       = .FALSE.
-      NSTDIA    = .FALSE.
-      MSUSCDIA  = .FALSE.
-      ROTG      = .FALSE.
-      LONDON    = .FALSE.
-      PVC       = .FALSE.
-      RHONUC    = .FALSE.
-      ABUND     = D1
-      NDSOINT   = 0
-      MGRAD     = .FALSE.
-      ESRGTENS  = .FALSE.
-      ESRANISO  = .FALSE.
-      NPRPWF    = 1
-      PRPWF(1)  = 'DHF'
+      IPRPRP       = 0
+      DOEXP        = .FALSE.
+      DOESR        = .FALSE.
+      DOXLR        = .FALSE.
+      DOXPP        = .FALSE.
+      DOXQR        = .FALSE.
+      DOTPA        = .FALSE.
+      DOVER        = .FALSE.
+      DOEXCPRP     = .FALSE.
+      EXCPRPTYP    = 0
+      DIPOLE       = .FALSE.
+      QUADRU       = .FALSE.
+      EPOLAR       = .FALSE.
+      MSUSCP       = .FALSE.
+      IMAGOUT      = 0
+      SHIELD       = .FALSE.
+      PVC_SHIELD   = .FALSE.
+      PVC_SPINSPIN = .FALSE.
+      SPNSPN       = .FALSE.
+      EFG          = .FALSE.
+      EFN          = .FALSE.
+      EFT          = .FALSE.
+      EFTNTL       = .FALSE.
+      NQCC         = .FALSE.
+      DSO          = .FALSE.
+      NSTDIA       = .FALSE.
+      MSUSCDIA     = .FALSE.
+      ROTG         = .FALSE.
+      LONDON       = .FALSE.
+      PVC          = .FALSE.
+      RHONUC       = .FALSE.
+      ABUND        = D1
+      NDSOINT      = 0
+      MGRAD        = .FALSE.
+      ESRGTENS     = .FALSE.
+      ESRANISO     = .FALSE.
+      NPRPWF       = 1
+      PRPWF(1)     = 'DHF'
 
 CMI Activate the  picture change transformations
 C   of four-component property matrixes 
@@ -297,9 +297,9 @@ C&&&& EFTNTL - non-traceless electric field third derivatives
             DOEXP    = .TRUE.
             GO TO 100
   119    CONTINUE
-C&&&& PVCSHI: parity-violating contribution to NMR shielding
-            DOXLR  = .TRUE.
-            PVCSHI = .TRUE.
+C&&&& PV contribution to NMR shielding
+            DOXLR      = .TRUE.
+            PVC_SHIELD = .TRUE.
             GOTO 100
   120    CONTINUE
 C&&&& EFN: Electric field at nuclei
@@ -355,9 +355,9 @@ C&&&& MSUSCD diamagnetic contribution to the magnetizabilities
             DOEXP    = .TRUE.
             GO TO 100
   128    CONTINUE 
-C&&&& PVCSPN: parity-violating contribution to spin-spin coupling
-            DOXLR     = .TRUE.
-            PVCSPNSPN = .TRUE.
+C&&&& PV contribution to spin-spin coupling
+            DOXLR        = .TRUE.
+            PVC_SPINSPIN = .TRUE.
             GO TO 100
   129    CONTINUE 
 C&&&& NOPCT - when DOPCT is .true. do NOT do picture change transformation...

@@ -1318,17 +1318,12 @@ C
         CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
 C
-C     parity-violating contribution to NMR shielding
 C
-      IF(PVCSHI) THEN
-        CALL DEF_PVCSHI_MEM(WORK,LWORK)
-      ENDIF
+C     PV contribution to NMR shielding
+      IF(PVC_SHIELD) CALL DEFINE_PVC_SHIELD(WORK,LWORK)
+C     PV contribution to spin-spin coupling
+      IF(PVC_SPINSPIN) CALL DEFINE_PVC_SPINSPIN(WORK,LWORK)
 C
-C     parity-violating contribution to spin-spin coupling
-C
-      IF(PVCSPNSPN) THEN
-        CALL DEF_PVCSPNSPN_MEM(WORK,LWORK)
-      ENDIF
 C
 C     Diamagnetic contribution to shieldings
 C
@@ -1444,17 +1439,14 @@ C
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
-C     parity-violating contribution to NMR shielding
 C
-      IF(PVCSHI) THEN
-        CALL PRP_PVCSHI_MEM(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
-      ENDIF 
+C     PV contribution to NMR shielding
+      IF(PVC_SHIELD) 
+     &  CALL PRINTOUT_PVC_SHIELD(ABLRF,ABCNV,WORK,KFREE,LFREE)
+C     PV contribution to spin-spin coupling
+      IF(PVC_SPINSPIN)
+     &  CALL PRINTOUT_PVC_SPINSPIN(ABLRF,ABCNV,WORK,KFREE,LFREE)
 C
-C     parity-violating contribution to spin-spin coupling
-C
-      IF(PVCSPNSPN) THEN
-        CALL PRP_PVCSPNSPN_MEM(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
-      ENDIF 
 C
 C     Magnetic susceptibilities
 C
@@ -4392,77 +4384,74 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck def_pvcshi_mem */
-      SUBROUTINE DEF_PVCSHI_MEM(WORK,LWORK)
-C  *********************************************************************
-C  *                                                                   *
-C  *  define operators for parity-violating contribution to NMR        *
-C  *  shielding                                                        *
-C  *                                                                   *
-C  *  modelled after DEF_SHIELD                                        *
-C  *                                                                   *
-C  *********************************************************************
-C  *                            written                   revision     *
-C  *  radovan bast              march 2004                14/03/2005   *
-C  *                                                                   *
-C  *********************************************************************
+C     /* deck DEFINE_PVC_SHIELD */
+      SUBROUTINE DEFINE_PVC_SHIELD(WORK,LWORK)
+C=======================================================================
+C     define operators for 
+C     PV contribution to NMR shielding
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
-C
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
 #include "mxcent.h"
 #include "nuclei.h"
 C
       DIMENSION WORK(LWORK)
-C
 #include "memint.h"
 C
 C
-C     allocate memory
-C     ===============
-C
       CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
-C
-C
-C     accept .SELECT
-C     ==============
-C
       CALL SETATM(WORK(KDOATOM),NATOM,-29)
-C
-C
-C     call
-C     ====
-C
-      CALL DEF_PVCSHI(WORK(KDOATOM),WORK(KFREE),LFREE)
-C
-C
-C     release memory
-C     ==============
-C
-      CALL MEMREL('DEF_PVCSHI_MEM',WORK,1,KFREE,KFREE,LFREE)
+      CALL DEFINE_PVC_SHIELD_SUB(WORK(KDOATOM),WORK(KFREE),LFREE)
+      CALL MEMREL('DEFINE_PVC_SHIELD',WORK,1,KFREE,KFREE,LFREE)
 C
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck def_pvcshi */
-      SUBROUTINE DEF_PVCSHI(DOATOM,WORK,LWORK)
-C  *********************************************************************
-C  *                                                                   *
-C  *  define operators for parity-violating contribution to NMR        *
-C  *  shielding                                                        *
-C  *                                                                   *
-C  *  modelled after DEF_SHIELD1                                       *
-C  *                                                                   *
-C  *********************************************************************
-C  *                            written                   revision     *
-C  *  radovan bast              march 2004                14/03/2005   *
-C  *                                                                   *
-C  *********************************************************************
+C     /* deck DEFINE_PVC_SPINSPIN */
+      SUBROUTINE DEFINE_PVC_SPINSPIN(WORK,LWORK)
+C=======================================================================
+C     define operators for 
+C     PV contribution to spin-spin coupling
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
+#include "mxcent.h"
+#include "nuclei.h"
 C
-      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      DIMENSION WORK(LWORK)
+#include "memint.h"
 C
+C
+      CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
+      CALL SETATM(WORK(KDOATOM),NATOM,-29)
+      CALL DEFINE_PVC_SPINSPIN_SUB(WORK(KDOATOM),WORK(KFREE),LFREE)
+      CALL MEMREL('DEFINE_PVC_SPINSPIN',WORK,1,KFREE,KFREE,LFREE)
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck DEFINE_PVC_SHIELD_SUB */
+      SUBROUTINE DEFINE_PVC_SHIELD_SUB(DOATOM,WORK,LWORK)
+C=======================================================================
+C     define operators for
+C     PV contribution to NMR shielding
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -4480,33 +4469,29 @@ C
 #include "dcbnmr.h"
 #include "chrxyz.h"
 C
-      LOGICAL DOATOM(NUCIND)
-      CHARACTER PNAME*16,PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      LOGICAL   DOATOM(NUCIND)
+      CHARACTER PNAME*16,
+     &          PLABEL(3)*8
+      DIMENSION WORK(LWORK),
+     &          PFAC(3),
+     &          IOP(3)
 C
 #include "chrnos.h"
 #include "ibtfun.h"
 C
 C
-      CALL QENTER('DEF_PVCSHI')
+C     right hand
+C     ==========
 C
-C
-C     define right hand operators
-C     ===========================
-C
-      NSCOOR = 3*NUCDEP
-      CALL IZERO(IPPVCSHI,3+MXCOOR)
+      CALL IZERO(IP_PVC_SHIELD,3+MXCOOR)
 C
 C     xavector
       IOP(1) = 5
-C
 C     yavector
       IOP(2) = 6
-C
 C     zavector
       IOP(3) = 7
 C
-      NPCOMP    = 2
       PFAC(1)   = 0.5D0*CVAL
       PFAC(2)   = 0.5D0*CVAL
       PFAC(3)   = 0.5D0*G1FAC
@@ -4516,9 +4501,9 @@ C     x - component
       IPTYP     = IOP(1)
       PLABEL(1) = 'ZDIPLEN'
       PLABEL(2) = 'YDIPLEN'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+      CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XSHIELB',IPPVCSHI(1+MXCOOR),
+      CALL OP1IND('XSHIELB',IP_PVC_SHIELD(1+MXCOOR),
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
 C     y - component
@@ -4526,9 +4511,9 @@ C     y - component
       IPTYP     = IOP(2)
       PLABEL(1) = 'XDIPLEN'
       PLABEL(2) = 'ZDIPLEN'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+      CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('YSHIELB',IPPVCSHI(2+MXCOOR),
+      CALL OP1IND('YSHIELB',IP_PVC_SHIELD(2+MXCOOR),
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
 C     z - component
@@ -4536,57 +4521,48 @@ C     z - component
       IPTYP     = IOP(3)
       PLABEL(1) = 'YDIPLEN'
       PLABEL(2) = 'XDIPLEN'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+      CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('ZSHIELB',IPPVCSHI(3+MXCOOR),
+      CALL OP1IND('ZSHIELB',IP_PVC_SHIELD(3+MXCOOR),
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
 C
-C     define left hand operators
-C     ==========================
+C     left hand
+C     =========
 C
-      CALL IZERO(IPPVCSHI,MXCOOR)
+      CALL IZERO(IP_PVC_SHIELD,MXCOOR)
       WRITE(LUPRI,'(A)') 'Parity-violating contribution'
       WRITE(LUPRI,'(A)') 'to NMR shielding'
 C
 C     xalpha
       IOP(1) = 2
       PFAC(1) = CVAL
-C
 C     yalpha
       IOP(2) = 3
       PFAC(2) = CVAL
-C
 C     zalpha
       IOP(3) = 4
       PFAC(3) = CVAL
 C
-C     this prefactor (CVAL) has to be here to guarantee
-C     to go to the usually employed non-relativistic limit
-C     in the output section we will divide by CVEL
+C     this prefactor (CVAL) guarantees the NRL employes in the literature
+C     in the printout section we will divide by CVEL
 C
-C
-C     if point nucleus
-      IF(.NOT.GAUNUC) THEN
-        DO ICOOR = 1,3
-          PFAC(ICOOR) = PFAC(ICOOR)*D3/(D4*GFAC*PI)
-        ENDDO      
+      IF(.NOT.GAUNUC) THEN !point nucleus
+        DO IXYZ = 1,3
+          PFAC(IXYZ) = PFAC(IXYZ)*D3/(D4*GFAC*PI)
+        ENDDO
       ENDIF
-C      
-      NPCOMP = 1
+C
       DO IATOM = 1,NUCDEP
         IF(DOATOM(IATOM)) THEN
           DO IREP = 0,MAXREP
-            IF(IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
-C     
-C             if gaussian model
-              IF(GAUNUC) THEN
+            IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+C
+              IF(GAUNUC) THEN !gaussian model
                 PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-C     
-C             if point nucleus
-              ELSE
+              ELSE !point nucleus
                 PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
@@ -4595,101 +4571,41 @@ C             if point nucleus
      &                       //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                       //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
 C
-              DO ICOOR = 1,3
+              DO IXYZ = 1,3
 C
-                IPTYP = IOP(ICOOR)
-                PNAME(5:5) = CHRNOS(ICOOR)
-                CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+                IPTYP = IOP(IXYZ)
+                PNAME(5:5) = CHRNOS(IXYZ)
+                CALL XPRIND(PNAME,IPTYP,1,PFAC,PLABEL,
      &                      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-                CALL OP1IND(PNAME(1:6),INDOP1,LLRAPU,NLRAPT,
+                CALL OP1IND(PNAME(1:6),INDEXA,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
-                ISCOOR = IPTCNT(3*(IATOM-1)+ICOOR,IREP,2)
+                ISCOOR = IPTCNT(3*(IATOM-1)+IXYZ,IREP,2)
                 IF(ISCOOR.GT.0) THEN
-                  IPPVCSHI(ISCOOR) = INDOP1
+                  IP_PVC_SHIELD(ISCOOR) = INDEXA
                 ENDIF
-                CALL WRIXPR(INDOP1,INDXPR)
-C
+                CALL WRIXPR(INDEXA,INDXPR)
               ENDDO
-C
             ENDIF
           ENDDO
         ENDIF
       ENDDO
 C
 C
-      CALL QEXIT('DEF_PVCSHI')
-C
-C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck def_pvcspnspn_mem */
-      SUBROUTINE DEF_PVCSPNSPN_MEM(WORK,LWORK)
-C  *********************************************************************
-C  *                                                                   *
-C  *  define operators for parity-violating contribution to            *
-C  *  spin-spin coupling                                               *
-C  *                                                                   *
-C  *********************************************************************
-C  *                            written                   revision     *
-C  *  radovan bast              september 2005            15/10/2005   *
-C  *                                                                   *
-C  *********************************************************************
+C     /* deck DEFINE_PVC_SPINSPIN_SUB */
+      SUBROUTINE DEFINE_PVC_SPINSPIN_SUB(DOATOM,WORK,LWORK)
+C=======================================================================
+C     define operators for
+C     PV contribution to spin-spin coupling
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-C
-      DIMENSION WORK(LWORK)
-C
-#include "memint.h"
-C
-C
-C     allocate memory
-C     ===============
-C
-      CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
-C
-C
-C     accept .SELECT
-C     ==============
-C
-      CALL SETATM(WORK(KDOATOM),NATOM,-29)
-C
-C
-C     call
-C     ====
-C
-      CALL DEF_PVCSPNSPN(WORK(KDOATOM),WORK(KFREE),LFREE)
-C
-C
-C     release memory
-C     ==============
-C
-      CALL MEMREL('DEF_PVCSPNSPN_MEM',WORK,1,KFREE,KFREE,LFREE)
-C
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck def_pvcspnspn */
-      SUBROUTINE DEF_PVCSPNSPN(DOATOM,WORK,LWORK)
-C  *********************************************************************
-C  *                                                                   *
-C  *  define operators for parity-violating contribution to            *
-C  *  spin-spin coupling                                               *
-C  *                                                                   *
-C  *********************************************************************
-C  *                            written                   revision     *
-C  *  radovan bast              september 2005            15/10/2005   *
-C  *                                                                   *
-C  *********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -4707,53 +4623,48 @@ C
 #include "dcbnmr.h"
 #include "chrxyz.h"
 C
-      LOGICAL DOATOM(NUCIND)
-      CHARACTER PNAME*16,PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      LOGICAL   DOATOM(NUCIND)
+      CHARACTER PNAME*16,
+     &          PLABEL(3)*8
+      DIMENSION WORK(LWORK),
+     &          PFAC(3),
+     &          IOP(3)
 C
 #include "chrnos.h"
 #include "ibtfun.h"
 C
 C
-      CALL QENTER('DEF_PVCSPNSPN')
+C     right hand
+C     ==========
 C
-C
-C     define left hand operators
-C     ==========================
-C
-      CALL IZERO(IPPVCSPNSPN,2*MXCOOR)
+      CALL IZERO(IP_PVC_SPINSPIN,2*MXCOOR)
 C
 C     xavector
       IOP(1) = 5
-C
 C     yavector
       IOP(2) = 6
-C
 C     zavector
       IOP(3) = 7
 C
-      PFAC(1)  = -CVAL
-      PFAC(2)  = -CVAL
+      PFAC(1)  = CVAL
+      PFAC(2)  = CVAL
 C
-      NPCOMP = 2
       IREP = 0
       DO IATOM = 1,NUCDEP
-C
 C       IF(DOATOM(IATOM)) THEN
-C
-          DO ICOOR = 1,3
-            ISCOOR = IPTCNT(3*(IATOM-1)+ICOOR,IREP,2)
+          DO IXYZ = 1,3
+            ISCOOR = IPTCNT(3*(IATOM-1)+IXYZ,IREP,2)
             IF(ISCOOR.GT.0) THEN
 C
               PNAME = 'NUCSPI'//CHRNOS(ISCOOR/10)
      &                        //CHRNOS(MOD(ISCOOR,10))
      &                        //NAMN(IATOM)
      &                        //REP(IREP)
-     &                        //CHRXYZ(ICOOR)
+     &                        //CHRXYZ(IXYZ)
 C
-              IPTYP = IOP(ICOOR)
-              IC1   = MOD(ICOOR+1,3)+1
-              IC2   = MOD(ICOOR  ,3)+1
+              IPTYP = IOP(IXYZ)
+              IC1   = MOD(IXYZ+1,3)+1
+              IC2   = MOD(IXYZ  ,3)+1
               IREP1 = IBTXOR(IREP,ISYMAX(IC2,1))
               IREP2 = IBTXOR(IREP,ISYMAX(IC1,1))
               IS1   = IPTCNT(3*(IATOM-1)+IC1,IREP1,1)
@@ -4764,63 +4675,52 @@ C
               PLABEL(2) = 'NEF '//CHRNOS(IS2/10)
      &                          //CHRNOS(MOD(IS2,10))//'  '
 C
-              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+              CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
      &                    INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-              CALL OP1IND('XSPNA',INDEXA,LLRAPU,NLRAPT,INDXPR,MAXLLR)
-              IPPVCSPNSPN(1,ISCOOR) = INDEXA
-              CALL WRIXPR(INDEXA,INDXPR)
-C
+              CALL OP1IND('XSPNA',INDEXB,LLRBPU,NLRBPT,INDXPR,MAXLLR)
+              IP_PVC_SPINSPIN(1,ISCOOR) = INDEXB
+              CALL WRIXPR(INDEXB,INDXPR)
             ENDIF
           ENDDO
-C
 C       ENDIF
       ENDDO
 C
 C
-C     define right hand operators
-C     ===========================
+C     left hand
+C     =========
 C
       WRITE(LUPRI,'(A)') 'Parity-violating contribution'
-      WRITE(LUPRI,'(A)') 'to spin-spin couplings'
+      WRITE(LUPRI,'(A)') 'to spin-spin coupling'
 C
 C     xalpha
       IOP(1) = 2
       PFAC(1) = CVAL
-C
 C     yalpha
       IOP(2) = 3
       PFAC(2) = CVAL
-C
 C     zalpha
       IOP(3) = 4
       PFAC(3) = CVAL
 C
-C     this prefactor (CVAL) has to be here to guarantee
-C     to go to the usually employed non-relativistic limit
-C     in the output section we will divide by CVEL
+C     this prefactor (CVAL) guarantees the NRL employes in the literature
+C     in the printout section we will divide by CVEL
 C
-C
-C     if point nucleus
-      IF(.NOT.GAUNUC) THEN
-        DO ICOOR = 1,3
-          PFAC(ICOOR) = PFAC(ICOOR)*D3/(D4*GFAC*PI)
-        ENDDO      
+      IF(.NOT.GAUNUC) THEN !point nucleus
+        DO IXYZ = 1,3
+          PFAC(IXYZ) = PFAC(IXYZ)*D3/(D4*GFAC*PI)
+        ENDDO
       ENDIF
-C      
-      NPCOMP = 1
+C
       DO IATOM = 1,NUCDEP
-C       IF(DOATOM(IATOM)) THEN
+        IF(DOATOM(IATOM)) THEN
           DO IREP = 0,MAXREP
-            IF(IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
-C     
-C             if gaussian model
-              IF(GAUNUC) THEN
+            IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+C
+              IF(GAUNUC) THEN !gaussian model
                 PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-C     
-C             if point nucleus
-              ELSE
+              ELSE !point nucleus
                 PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
@@ -4829,34 +4729,28 @@ C             if point nucleus
      &                       //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                       //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
 C
-              DO ICOOR = 1,3
+              DO IXYZ = 1,3
 C
-                IPTYP = IOP(ICOOR)
-                PNAME(5:5) = CHRNOS(ICOOR)
-                CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+                IPTYP = IOP(IXYZ)
+                PNAME(5:5) = CHRNOS(IXYZ)
+                CALL XPRIND(PNAME,IPTYP,1,PFAC,PLABEL,
      &                      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-                CALL OP1IND(PNAME(1:6),INDEXB,LLRBPU,NLRBPT,
+                CALL OP1IND(PNAME(1:6),INDEXA,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
-                ISCOOR = IPTCNT(3*(IATOM-1)+ICOOR,IREP,2)
+                ISCOOR = IPTCNT(3*(IATOM-1)+IXYZ,IREP,2)
                 IF(ISCOOR.GT.0) THEN
-                  IPPVCSPNSPN(2,ISCOOR) = INDEXB
+                  IP_PVC_SPINSPIN(2,ISCOOR) = INDEXA
                 ENDIF
-                CALL WRIXPR(INDEXB,INDXPR)
-C
+                CALL WRIXPR(INDEXA,INDXPR)
               ENDDO
-C
             ENDIF
           ENDDO
-C       ENDIF
+        ENDIF
       ENDDO
-C
-C
-      CALL QEXIT('DEF_PVCSPNSPN')
 C
 C
       RETURN
       END
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_NSTDIA */
       SUBROUTINE DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
@@ -6874,544 +6768,288 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck prp_pvcshi_mem */
-      SUBROUTINE PRP_PVCSHI_MEM(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
-C  *********************************************************************
-C  *                                                                   *
-C  *  prepare output for parity-violating contribution to NMR          *
-C  *  shielding                                                        *
-C  *                                                                   *
-C  *  modelled after PRP_SHIELD and PRP_SPNSPN                         *
-C  *                                                                   *
-C  *********************************************************************
-C  *                            written                   revision     *
-C  *  radovan bast              november 2004             07/02/2005   *
-C  *                                                                   *
-C  *********************************************************************
-C
+C     /* deck PRINTOUT_PVC_SHIELD */
+      SUBROUTINE PRINTOUT_PVC_SHIELD(ABLRF,ABCNV,WORK,KFREE,LFREE)
+C=======================================================================
+C     PV contribution to NMR shielding
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
 #include "mxcent.h"
-C
-#include "dcbprp.h"
-#include "dcbexp.h"
-#include "dcbxlr.h"
 #include "nuclei.h"
 C
-      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &          ABCNV(NBFREQ,NLRBPT),WORK(*)
+      DIMENSION WORK(*)
 C
 C
-C     allocate memory
-C     ===============
-C
-      CALL MEMGET('REAL',KTEMPMAT,NUCDEP*4,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGVALMAT,NUCDEP*5,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KDOATOM ,NUCDEP  ,WORK,KFREE,LFREE)
-C
-C
-C     accept .SELECT
-C     ==============
-C
+      CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
       CALL SETATM(WORK(KDOATOM),NATOM,-29)
-C
-C
-C     call
-C     ====
-C
-      CALL PRP_PVCSHI(EXPVAL,ABLRF,ABCNV,
-     &                WORK(KTEMPMAT),WORK(KGVALMAT),WORK(KDOATOM),
-     &                WORK,KFREE,LFREE)
-C
-C
-C     release memory
-C     ==============
-C
-      CALL MEMREL('PRP_PVCSHI_MEM',WORK,1,KFREE,KFREE,LFREE)
+      CALL PRINTOUT_PVC_SHIELD_SUB(ABLRF,ABCNV,WORK(KDOATOM),
+     &                             WORK,KFREE,LFREE)
+      CALL MEMREL('PRINTOUT_PVC_SHIELD',WORK,1,KFREE,KFREE,LFREE)
 C
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck prp_pvcshi */
-      SUBROUTINE PRP_PVCSHI(EXPVAL,ABLRF,ABCNV,TEMPMAT,GVALMAT,DOATOM,
-     &                      WORK,KFREE,LFREE)
-C  *********************************************************************
-C  *                                                                   *
-C  *  output for parity-violating contribution to NMR shielding        *
-C  *  shielding                                                        *
-C  *                                                                   *
-C  *  modelled after PRP_SHIELD and PRP_SPNSPN                         *
-C  *                                                                   *
-C  *********************************************************************
-C  *                            written                   revision     *
-C  *  radovan bast              november 2004             07/02/2005   *
-C  *                                                                   *
-C  *********************************************************************
-C
+C     /* deck PRINTOUT_PVC_SPINSPIN */
+      SUBROUTINE PRINTOUT_PVC_SPINSPIN(ABLRF,ABCNV,WORK,KFREE,LFREE)
+C=======================================================================
+C     PV contribution to spin-spin coupling
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
 #include "mxcent.h"
-#include "codata.h"
+#include "nuclei.h"
+C
+      DIMENSION WORK(*)
+C
+C
+      CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
+      CALL SETATM(WORK(KDOATOM),NATOM,-29)
+      CALL PRINTOUT_PVC_SPINSPIN_SUB(ABLRF,ABCNV,
+     &                               WORK(KDOATOM),
+     &                               WORK,KFREE,LFREE)
+      CALL MEMREL('PRINTOUT_PVC_SPINSPIN',WORK,1,KFREE,KFREE,LFREE)
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck PRINTOUT_PVC_SHIELD_SUB */
+      SUBROUTINE PRINTOUT_PVC_SHIELD_SUB(ABLRF,ABCNV,DOATOM,
+     &                                   WORK,KFREE,LFREE)
+C=======================================================================
+C     PV contribution to NMR shielding
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
+#include "mxcent.h"
 #include "dcbprp.h"
-#include "dcbxpr.h"
-#include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
+#include "nuclei.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
 C
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
-     &           GFERMI = 2.22254D-14,STHETAW2 = 0.2319D0)
+      PARAMETER GFERMI = 2.22254D-14
+      PARAMETER STHETAW2 = 0.2319D0
 C
-      LOGICAL TEST,DOATOM(NUCDEP),LZERO(NUCDEP)
-C
-      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+      LOGICAL   DOATOM(NUCDEP)
+      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),
-     &          TEMPMAT(NUCDEP,4),GVALMAT(5,NUCDEP),
+     &          RESPONSE_MATRIX(3,3),
      &          WORK(*)
 C
-#include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "ibtfun.h"
 C
 C
-      DFAC = (GFERMI*(D1-D4*STHETAW2)*1.0D6)/(CVEL*SQRT(D2))
+      FACTOR = (GFERMI*(D1-D4*STHETAW2)*1.0D6)/(CVEL*SQRT(D2))
 C
-C
-      CALL AROUND('Parity-violating contribution to NMR shielding')
-      WRITE(LUPRI,'(A)') 'WARNING: only for C1 symmetry'
+      CALL AROUND('PV NMR shielding tensor (in ppm)')
+      WRITE(LUPRI,'(A)') 'WARNING: use only with C1 symmetry'
+      WRITE(LUPRI,'(A)') '         and mind the gauge origin'
       WRITE(LUPRI,*)
 C
+      DO IATOM = 1,NUCDEP
+        IF(DOATOM(IATOM)) THEN
 C
-      IFREQ = 1
 C
+C         extract response
+C         ================
 C
-C     fill temporary matrix
-C     =====================
-C
-      CALL DZERO(TEMPMAT,NUCDEP*4)
-      DO INUC = 1,NUCDEP
-        IF(DOATOM(INUC)) THEN
-          DO ICOOR = 1,3
-            KA = IPPVCSHI((INUC*3)-3+ICOOR)
-            KB = IPPVCSHI(ICOOR+MXCOOR)
-C
-C           e-e
-            TEMPMAT(INUC,ICOOR) = ABLRF(IFREQ,KA,KB,2)
-C
-C           don't look for e-p in case of LEVY-LEBLOND
-            IF(.NOT.XLR_SKIPEP) THEN
-C
-C             e-p
-              TEMPMAT(INUC,ICOOR) = TEMPMAT(INUC,ICOOR)
-     &                            + ABLRF(IFREQ,KA,KB,3)
-            ENDIF
+          DO IXYZ = 1,3
+            DO JXYZ = 1,3
+              KA = IP_PVC_SHIELD((IATOM*3)-3+IXYZ)
+              KB = IP_PVC_SHIELD(JXYZ+MXCOOR)
+              RESPONSE_MATRIX(IXYZ,JXYZ) = ABLRF(1,KA,KB,2)
+              IF(.NOT. XLR_SKIPEP) THEN
+                RESPONSE_MATRIX(IXYZ,JXYZ) = RESPONSE_MATRIX(IXYZ,JXYZ)
+     &                                     + ABLRF(1,KA,KB,3)
+              ENDIF
+            ENDDO
           ENDDO
-        ENDIF
-      ENDDO
 C
 C
-C     multiply TEMPMAT with DFAC
-C     ==========================
+C         extract nuclear g factor
+C         ========================
 C
-      CALL DSCAL(NUCDEP*4,DFAC,TEMPMAT,1)
-C
-C
-C     extract nuclear g factors for magnetogyric ratios
-C     =================================================
-C
-      CALL DZERO(GVALMAT,NUCDEP*5)
-      DO INUC = 1,NUCDEP
-        IDEG = NUCDEG(INUC)
-        IF(DOATOM(INUC)) THEN
-          TEST = .FALSE.
-          IZ = NINT(CHARGE(INUC))
-          NISO = 0
+          IZ = NINT(CHARGE(IATOM))
+          ABUNDANCE = D0
           DO ISO = 1,5
             GVAL = DISOTP(IZ,ISO,'GVAL')
-            IF(GVAL.NE.0) THEN
-              ABND = DISOTP(IZ,ISO,'ABUNDANCE')
-              IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
-                TEST = .TRUE.
-                NISO = NISO+1
-                GVALMAT(NISO,INUC) = GVAL
-              ENDIF
-            ENDIF
+            IF(GVAL .NE. D0) GOTO 1
           ENDDO
-        ENDIF
-      ENDDO
+ 1        CONTINUE
 C
+          CALL DSCAL(9,FACTOR,RESPONSE_MATRIX,1) !scale by FACTOR
 C
-C     divide x,y,z comonents of TEMPMAT by magnetogyric ratio
-C     =======================================================
+          WRITE(LUPRI,'(2A10)') 'nucleus', NAMDEP(IATOM)
+          WRITE(LUPRI,'(A10,E20.10)') 'g-factor', GVAL
 C
-      DO INUC = 1,NUCDEP
-        IF(DOATOM(INUC)) THEN
-          RATIO = GVALMAT(1,INUC)/(D2*XFMP)
-          LZERO(INUC) = .FALSE.
-          IF(RATIO.EQ.D0) LZERO(INUC) = .TRUE.
-          IF(.NOT.LZERO(INUC)) THEN
-            DO ICOOR = 1,3
-              TEMPMAT(INUC,ICOOR) = TEMPMAT(INUC,ICOOR)/RATIO
-            ENDDO
+          RATIO = GVAL/(D2*XFMP)
+          IF(RATIO .NE. D0) THEN
+            BY_RATIO = D1/RATIO
+            CALL DSCAL(9,BY_RATIO,RESPONSE_MATRIX,1) !divide by magnetogyric ratio 
+          ELSE
+            WRITE(LUPRI,'(A)') '  g-factor is zero'
+            WRITE(LUPRI,'(A)') '  therefore no division'
+            WRITE(LUPRI,'(A)') '  by magnetogyric ratio'
           ENDIF
+C
+          CALL PRINTOUT_TENSOR(RESPONSE_MATRIX)
         ENDIF
       ENDDO
-C
-C
-C     calculate average of trace
-C     ==========================
-C
-      DO INUC = 1,NUCDEP
-        IF(DOATOM(INUC)) THEN
-          TEMPMAT(INUC,4) = (TEMPMAT(INUC,1)
-     &                    +  TEMPMAT(INUC,2)
-     &                    +  TEMPMAT(INUC,3))/D3
-        ENDIF
-      ENDDO
-C
-C
-C     printout
-C     ========
-C
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A)') '@'
-      WRITE(LUPRI,'(A)') '@   PV contribution to NMR shielding'
-      WRITE(LUPRI,'(A)') '@'
-      WRITE(LUPRI,*)
-C
-      DO INUC = 1,NUCDEP
-        IF(DOATOM(INUC)) THEN
-          WRITE(LUPRI,'(A12,A4,A6,E22.8,A4)') '@   Nucleus ',
-     &          NAMDEP(INUC),'xx', TEMPMAT(INUC,1), 'ppm'
-          WRITE(LUPRI,'(A3,A19,E22.8,A4)') '@  ',
-     &                       'yy', TEMPMAT(INUC,2), 'ppm'
-          WRITE(LUPRI,'(A3,A19,E22.8,A4)') '@  ',
-     &                       'zz', TEMPMAT(INUC,3), 'ppm'
-          WRITE(LUPRI,*)
-          WRITE(LUPRI,'(A3,A24,E17.8,A4)') '@  ',
-     &                  'average', TEMPMAT(INUC,4), 'ppm'
-          WRITE(LUPRI,'(A)') '@'
-          WRITE(LUPRI,*)
-        ENDIF
-      ENDDO
-C
-      WRITE(LUPRI,'(A)') '@   following nuclear g factors used:'
-      IF(DOATOM(1)) THEN
-        WRITE(LUPRI,'(A12,A4,F22.6)') '@   Nucleus ',
-     &        NAMDEP(1),GVALMAT(1,1)
-        IF(LZERO(1)) THEN
-          WRITE(LUPRI,'(A20)') 'WARNING:'
-          WRITE(LUPRI,'(A47)') 'division by the (zero) magnetogyric'
-          WRITE(LUPRI,'(A34)') 'ratio for this nucleus'
-          WRITE(LUPRI,'(A30)') 'has been prevented'
-        ENDIF
-      ENDIF
-C
-      IF(NUCDEP.GE.2) THEN
-        DO INUC = 2,NUCDEP
-          IF(DOATOM(INUC)) THEN
-            WRITE(LUPRI,'(A12,A4,F22.6)') '@           ',
-     &            NAMDEP(INUC),GVALMAT(1,INUC)
-            IF(LZERO(INUC)) THEN
-              WRITE(LUPRI,'(A20)') 'WARNING:'
-              WRITE(LUPRI,'(A47)') 'division by the (zero) magnetogyric'
-              WRITE(LUPRI,'(A34)') 'ratio for this nucleus'
-              WRITE(LUPRI,'(A30)') 'has been prevented'
-            ENDIF
-          ENDIF
-        ENDDO
-      ENDIF
-C
-      WRITE(LUPRI,'(A)') '@'
-      WRITE(LUPRI,*)
       CALL PRSYMB(LUPRI,'-',46,0)
 C
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck prp_pvcspnspn_mem */
-      SUBROUTINE PRP_PVCSPNSPN_MEM(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
-C  *********************************************************************
-C  *                                                                   *
-C  *  prepare output for parity-violating contribution to              *
-C  *  spin-spin couplings                                              *
-C  *                                                                   *
-C  *********************************************************************
-C  *                            written                   revision     *
-C  *  radovan bast              september 2005            01/10/2005   *
-C  *                                                                   *
-C  *********************************************************************
-C
+C     /* deck PRINTOUT_TENSOR */
+      SUBROUTINE PRINTOUT_TENSOR(TENSOR)
+C=======================================================================
+C     print tensor
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
+      DIMENSION TENSOR(3,3)
 C
-#include "dcbprp.h"
-#include "dcbexp.h"
-#include "dcbxlr.h"
-#include "nuclei.h"
+      WRITE(LUPRI,'(A)')
+      WRITE(LUPRI,'(A22,2A20)') 'x', 'y', 'z'
+      WRITE(LUPRI,'(A)')
+      WRITE(LUPRI,'(A10,3E20.10)') 'x', (TENSOR(1,IXYZ),IXYZ=1,3)
+      WRITE(LUPRI,'(A10,3E20.10)') 'y', (TENSOR(2,IXYZ),IXYZ=1,3)
+      WRITE(LUPRI,'(A10,3E20.10)') 'z', (TENSOR(3,IXYZ),IXYZ=1,3)
 C
-      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &          ABCNV(NBFREQ,NLRBPT),WORK(*)
+      AVG_TRACE = D0
+      DO IXYZ = 1,3
+        AVG_TRACE = AVG_TRACE + TENSOR(IXYZ,IXYZ)
+      ENDDO
+      AVG_TRACE = AVG_TRACE/D3
 C
-C
-C     allocate memory
-C     ===============
-C
-      CALL MEMGET('REAL',KTEMPMAT    ,NUCDEP*NUCDEP*3,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTEMPPAIRMAT,NUCDEP*NUCDEP  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPAIRMAT    ,NUCDEP*NUCDEP  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGVALMAT    ,NUCDEP*5       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRATIO      ,NUCDEP         ,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KDOATOM     ,NUCDEP         ,WORK,KFREE,LFREE)
-C
-C
-C     accept .SELECT
-C     ==============
-C
-      CALL SETATM(WORK(KDOATOM),NATOM,-29)
-C
-C
-C     call
-C     ====
-C
-      CALL PRP_PVCSPNSPN(EXPVAL,ABLRF,ABCNV,
-     &                   WORK(KTEMPMAT),
-     &                   WORK(KTEMPPAIRMAT),
-     &                   WORK(KPAIRMAT),
-     &                   WORK(KGVALMAT),
-     &                   WORK(KRATIO),
-     &                   WORK(KDOATOM),
-     &                   WORK,KFREE,LFREE)
-C
-C
-C     release memory
-C     ==============
-C
-      CALL MEMREL('PRP_PVCSPNSPN_MEM',WORK,1,KFREE,KFREE,LFREE)
+      WRITE(LUPRI,'(A10,3A20,E20.10)')
+     &                               'trace/3', ' ', ' ', ' ', AVG_TRACE
+      WRITE(LUPRI,'(A)')
+      WRITE(LUPRI,'(A)')
 C
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck prp_pvcspnspn */
-      SUBROUTINE PRP_PVCSPNSPN(EXPVAL,ABLRF,ABCNV,
-     &                         TEMPMAT,
-     &                         TEMPPAIRMAT,
-     &                         PAIRMAT,
-     &                         GVALMAT,
-     &                         RATIO,
-     &                         DOATOM,
-     &                         WORK,KFREE,LFREE)
-C  *********************************************************************
-C  *                                                                   *
-C  *  output for parity-violating contribution to                      *
-C  *  spin-spin couplings                                              *
-C  *                                                                   *
-C  *********************************************************************
-C  *                            written                   revision     *
-C  *  radovan bast              september 2005            01/10/2005   *
-C  *                                                                   *
-C  *********************************************************************
-C
+C     /* deck PRINTOUT_PVC_SPINSPIN_SUB */
+      SUBROUTINE PRINTOUT_PVC_SPINSPIN_SUB(ABLRF,ABCNV,DOATOM,
+     &                                     WORK,KFREE,LFREE)
+C=======================================================================
+C     PV contribution to spin-spin coupling
+C-----------------------------------------------------------------------
+C     radovan bast                         last revision: september 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
 #include "mxcent.h"
-#include "codata.h"
 #include "dcbprp.h"
-#include "dcbxpr.h"
-#include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
+#include "nuclei.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
 C
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
-     &           GFERMI = 2.22254D-14,
-     &           AU2HZ = 6.579683920721D15,
-     &           STHETAW2 = 0.2319D0)
+      PARAMETER GFERMI = 2.22254D-14
+      PARAMETER STHETAW2 = 0.2319D0
+      PARAMETER AU2HZ = 6.579683920721D15
 C
-      LOGICAL TEST,DOATOM(NUCDEP),LZERO(NUCDEP)
-C
-      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+      LOGICAL   DOATOM(NUCDEP)
+      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),
-     &          TEMPMAT(NUCDEP,NUCDEP,3),
-     &          TEMPPAIRMAT(NUCDEP,NUCDEP),
-     &          PAIRMAT(NUCDEP,NUCDEP),
-     &          GVALMAT(5,NUCDEP),
-     &          RATIO(NUCDEP),
      &          WORK(*)
 C
-#include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "ibtfun.h"
 C
 C
-      DFAC = (GFERMI*(D1-D4*STHETAW2))/(CVEL*SQRT(D2))
-      DFAC = (DFAC*AU2HZ)/(D2*PI*CVEL*CVEL)
-      DFAC = DFAC*1.0D9
+      FACTOR = (GFERMI*(D1-D4*STHETAW2))/(CVEL*SQRT(D2))
+      FACTOR = (FACTOR*AU2HZ)/(D2*PI*CVEL*CVEL)
+      FACTOR = FACTOR*1.0D9
 C
-C
-      CALL AROUND('PV contribution to spin-spin couplings')
-      WRITE(LUPRI,'(A)') 'WARNING: only for C1 symmetry'
+      CALL AROUND('PV contribution to spin-spin coupling (in nHz)')
+      WRITE(LUPRI,'(A)') 'WARNING: use only with C1 symmetry'
       WRITE(LUPRI,*)
 C
+      DO IATOM = 1,NUCDEP-1
+        DO JATOM = IATOM+1,NUCDEP
 C
-      IFREQ = 1
 C
+C         extract nuclear g factors
+C         =========================
 C
-C     fill temporary matrix
-C     =====================
-C
-      CALL DZERO(TEMPMAT,NUCDEP*NUCDEP*3)
-      DO INUC = 1,NUCDEP
-C       IF(DOATOM(INUC)) THEN
-          DO JNUC = 1,NUCDEP
-            DO ICOOR = 1,3
-              KA = IPPVCSPNSPN(1,(INUC*3)-3+ICOOR)
-              KB = IPPVCSPNSPN(2,(JNUC*3)-3+ICOOR)
-C
-C             e-e
-              TEMPMAT(INUC,JNUC,ICOOR) = ABLRF(IFREQ,KA,KB,2)
-C
-C             don't look for e-p in case of LEVY-LEBLOND
-              IF(.NOT.XLR_SKIPEP) THEN
-C
-C               e-p
-                TEMPMAT(INUC,JNUC,ICOOR) = TEMPMAT(INUC,JNUC,ICOOR)
-     &                                 + ABLRF(IFREQ,KA,KB,3)
-              ENDIF
-            ENDDO
+          IZ = NINT(CHARGE(IATOM))
+          ABUNDANCE = D0
+          DO ISO = 1,5
+            GVAL_IATOM = DISOTP(IZ,ISO,'GVAL')
+            IF(GVAL_IATOM .NE. D0) GOTO 1
           ENDDO
-C       ENDIF
-      ENDDO
+ 1        CONTINUE
+          IZ = NINT(CHARGE(JATOM))
+          ABUNDANCE = D0
+          DO ISO = 1,5
+            GVAL_JATOM = DISOTP(IZ,ISO,'GVAL')
+            IF(GVAL_JATOM .NE. D0) GOTO 2
+          ENDDO
+ 2        CONTINUE
+C
+          RATIO_IATOM = GVAL_IATOM/(D2*XFMP)
+          RATIO_JATOM = GVAL_JATOM/(D2*XFMP)
 C
 C
-C     extract nuclear g factors for magnetogyric ratios
-C     =================================================
+C         extract response
+C         ================
 C
-      CALL DZERO(GVALMAT,NUCDEP*5)
-      DO INUC = 1,NUCDEP
-        IDEG = NUCDEG(INUC)
-C       IF(DOATOM(INUC)) THEN
-        TEST = .FALSE.
-        IZ = NINT(CHARGE(INUC))
-        NISO = 0
-        DO ISO = 1,5
-          GVAL = DISOTP(IZ,ISO,'GVAL')
-          IF(GVAL.NE.0) THEN
-            ABND = DISOTP(IZ,ISO,'ABUNDANCE')
-            IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
-              TEST = .TRUE.
-              NISO = NISO+1
-              GVALMAT(NISO,INUC) = GVAL
+          RESPONSE = D0
+          DO IXYZ = 1,3
+            KA = IP_PVC_SPINSPIN(1,(IATOM*3)-3+IXYZ)
+            KB = IP_PVC_SPINSPIN(2,(JATOM*3)-3+IXYZ)
+            RESPONSE = RESPONSE
+     &               + RATIO_JATOM*ABLRF(1,KA,KB,2) 
+     &               + RATIO_IATOM*ABLRF(1,KB,KA,2)
+            IF(.NOT. XLR_SKIPEP) THEN
+              RESPONSE = RESPONSE
+     &                 + RATIO_JATOM*ABLRF(1,KA,KB,3)
+     &                 + RATIO_IATOM*ABLRF(1,KB,KA,3)
             ENDIF
-          ENDIF
-        ENDDO
-C       ENDIF
-      ENDDO
+          ENDDO
+          RESPONSE = RESPONSE*FACTOR/D3
 C
-C
-C     get magnetogyric ratio
-C     ======================
-C
-      DO INUC = 1,NUCDEP
-        RATIO(INUC) = GVALMAT(1,INUC)/(D2*XFMP)
-        LZERO(INUC) = .FALSE.
-        IF(RATIO(INUC).EQ.D0) LZERO(INUC) = .TRUE.
-      ENDDO
-C
-C
-C     calculate average of trace
-C     ==========================
-C
-      CALL DZERO(TEMPPAIRMAT,NUCDEP*NUCDEP)
-      CALL DZERO(PAIRMAT,NUCDEP*NUCDEP)
-      DO INUC = 1,NUCDEP
-        DO JNUC = 1,NUCDEP
-          TEMPPAIRMAT(INUC,JNUC) =
-     &                  (TEMPMAT(INUC,JNUC,1)+TEMPMAT(INUC,JNUC,2)
-     &                  +TEMPMAT(INUC,JNUC,3))/D3
-          IF(.NOT.(LZERO(INUC))) THEN
-            TEMPPAIRMAT(INUC,JNUC) = TEMPPAIRMAT(INUC,JNUC)*RATIO(INUC)
-          ENDIF
+          WRITE(LUPRI,'(2A10,E20.10)')
+     &          NAMDEP(IATOM), NAMDEP(JATOM), RESPONSE
         ENDDO
       ENDDO
-      CALL DAXPY(NUCDEP*NUCDEP,D1,TEMPPAIRMAT,1,PAIRMAT,1)
-      CALL DZERO(TEMPPAIRMAT,NUCDEP*NUCDEP)
-      DO INUC = 1,NUCDEP
-        DO JNUC = 1,NUCDEP
-          TEMPPAIRMAT(INUC,JNUC) =
-     &                  (TEMPMAT(JNUC,INUC,1)+TEMPMAT(JNUC,INUC,2)
-     &                  +TEMPMAT(JNUC,INUC,3))/D3
-          IF(.NOT.(LZERO(INUC))) THEN
-            TEMPPAIRMAT(INUC,JNUC) = TEMPPAIRMAT(INUC,JNUC)*RATIO(JNUC)
-          ENDIF
-        ENDDO
-      ENDDO
-      CALL DAXPY(NUCDEP*NUCDEP,D1,TEMPPAIRMAT,1,PAIRMAT,1)
-C
-C
-C     multiply with DFAC
-C     ==================
-C
-      CALL DSCAL(NUCDEP*NUCDEP,DFAC,PAIRMAT,1)
-C
-C
-C     printout
-C     ========
-C
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A)') '@'
-      WRITE(LUPRI,'(A)') '@   PV contribution to spin-spin couplings'
-      WRITE(LUPRI,'(A)') '@'
-      WRITE(LUPRI,*)
-C
-      DO INUC = 1,NUCDEP
-        DO JNUC = INUC+1,NUCDEP
-          WRITE(LUPRI,'(A12,A4,A11,A4,A8,E17.8,A4)')
-     &                '@           ',NAMDEP(INUC),' ',
-     &                               NAMDEP(JNUC),' ',
-     &                               PAIRMAT(INUC,JNUC), 'nHz'
-        ENDDO
-      ENDDO
-      WRITE(LUPRI,'(A)') '@'
-      WRITE(LUPRI,*)
-C
-      WRITE(LUPRI,'(A)') '@   following nuclear g factors used:'
-C     IF(DOATOM(1)) THEN
-        WRITE(LUPRI,'(A12,A4,F22.6)') '@   Nucleus ',
-     &        NAMDEP(1),GVALMAT(1,1)
-        IF(LZERO(1)) THEN
-          WRITE(LUPRI,'(A20)') 'WARNING:'
-          WRITE(LUPRI,'(A47)') 'multiplication by the (zero)'
-          WRITE(LUPRI,'(A34)') 'magnetogyric ratio for this nucleus'
-          WRITE(LUPRI,'(A30)') 'has been prevented'
-        ENDIF
-C     ENDIF
-C
-      IF(NUCDEP.GE.2) THEN
-        DO INUC = 2,NUCDEP
-C         IF(DOATOM(INUC)) THEN
-            WRITE(LUPRI,'(A12,A4,F22.6)') '@           ',
-     &            NAMDEP(INUC),GVALMAT(1,INUC)
-            IF(LZERO(INUC)) THEN
-              WRITE(LUPRI,'(A20)') 'WARNING:'
-              WRITE(LUPRI,'(A47)') 'multiplication by the (zero)'
-              WRITE(LUPRI,'(A34)') 'magnetogyric ratio for this nucleus'
-              WRITE(LUPRI,'(A30)') 'has been prevented'
-            ENDIF
-C         ENDIF
-        ENDDO
-      ENDIF
-C
-      WRITE(LUPRI,'(A)') '@'
-      WRITE(LUPRI,*)
       CALL PRSYMB(LUPRI,'-',46,0)
 C
 C
@@ -8603,4 +8241,3 @@ C      call quit('prop2bss')
       CALL QEXIT('PROP2BSS')
       RETURN
       END
-
