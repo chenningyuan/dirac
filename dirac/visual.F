@@ -1,6 +1,6 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck plot_mem */
-      SUBROUTINE PLOT_MEM(WORK,LWORK)
+      SUBROUTINE PLOT(WORK,LWORK)
 C  .....................................................................
 C  .  description:                                                     .
 C  .  prepare {1,2,3}-dimensional plot                                 .
@@ -131,7 +131,7 @@ C
         ENDIF
         CALL DFILL(WORK(KDORBSTRING1),D0,NISH(1))
         DO I = IORBSTRING1BEGIN,IORBSTRING1END
-          WORK(KDORBSTRING1-1+I) = D1
+          IF(IORBSTRING1BEGIN .NE. 0) WORK(KDORBSTRING1-1+I) = D1
         ENDDO
 
         IF(NFSYM.GT.1) THEN
@@ -165,7 +165,7 @@ C
           ENDIF
           CALL DFILL(WORK(KDORBSTRING2),D0,NISH(2))
           DO I = IORBSTRING2BEGIN,IORBSTRING2END
-            WORK(KDORBSTRING2-1+I) = D1
+            IF(IORBSTRING2BEGIN .NE. 0) WORK(KDORBSTRING2-1+I) = D1
           ENDDO
         ENDIF
       ENDIF
@@ -190,7 +190,7 @@ C
 C     call PLOT routine
 C     =================
 C
-      CALL PLOT(WORK(KDMATBF),
+      CALL PLOT_SUB(WORK(KDMATBF),
      &          WORK(KGAO),WORK(KGAO1),WORK(KGAO2),
      &          WORK(KNCNT),WORK(KCOOR),WORK(KBUF),
      &          WORK,KFREE,LFREE)
@@ -207,7 +207,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck plot */
-      SUBROUTINE PLOT(DMATBF,
+      SUBROUTINE PLOT_SUB(DMATBF,
      &                GAO,GAO1,GAO2,
      &                NCNT,COOR,BUF,
      &                WORK,KFREE,LFREE)

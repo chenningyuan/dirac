@@ -113,7 +113,7 @@ C***********************************************************************
 C
 C
 C
-      IF(DOPLOT) CALL PLOT_MEM(WORK,LWORK)
+      IF(DOPLOT) CALL PLOT(WORK,LWORK)
 C
 C
 C
