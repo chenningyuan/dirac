@@ -2973,9 +2973,11 @@ C**********************************************************************
 C
 C     PURPOSE:
 C   =============
-C        Construct half transformed overlap matrix, Saomo = Sao C
+C        Construct half transformed overlap matrix, Saomo = Sao T
+C        From the relation T^(dagger) Sao T = 1 follows that
+C        Sao T is the inverse of T^(dagger)
 C
-C    On input:  TMAT - transformation matrix, C
+C    On input:  TMAT - transformation matrix, Y
 C               TWOC - flag for setting the two-component scheme
 C               note: after MAKE_BSS in GMOTRA we may be anyhow the 2c picture,
 C                      so we use TWOC=.false.
