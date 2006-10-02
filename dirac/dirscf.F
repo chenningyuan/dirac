@@ -1383,7 +1383,7 @@ C
          IF(AOC) THEN
            DO IOPEN = 1,NOPEN
 C  
-C             The factor in only DF and not D2*DF because of the
+C             The factor is only DF and not D2*DF because of the
 C                multiplication with D2 in TWOFCK.
 C
               CALL DAXPY(N2BBASXQ,DF(IOPEN),
