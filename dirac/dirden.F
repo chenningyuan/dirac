@@ -210,14 +210,13 @@ C*****************************************************************************
 C
 C     Get (projection) projection density matrices (normed to unity)
 C     IFLAG is a 6 bit pattern:
-C       000000: No density matrices
-C       000001: Inactive density matrix
-C       000010: Active density matrix (see bit 6-?)
-C       000100: Secondary electron density matrix
-C       001000: Secondary positron density matrix
-C       010000: C Ct (that is 1 in AO-basis)
-C       100000: QED inactive density matrix: 
-C               inactive density matrix + Secondary positron density matrix
+C       0 - 000000: No density matrices
+C       1 - 000001: Inactive density matrix
+C       2 - 000010: Active density matrix (see bit 6-?)
+C       4 - 000100: Secondary electron density matrix
+C       8 - 001000: Secondary positron density matrix
+C      16 - 010000: C Ct (that is 1 in AO-basis)
+C      32 - 100000: reference vacuum (for QED)
 C
 C     Important: Act. density matrix works only for one open shell.
 C
@@ -227,11 +226,10 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D1=1.0D00,DM1=-1.0D00,D0=0.0 D00)
+      PARAMETER (D1=1.0D00,DM1=-1.0D00,D0=0.0D00)
 C
       LOGICAL LBIT
       DIMENSION DMAT(*), CMO(*)
-      CHARACTER CHR*80
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -240,68 +238,88 @@ C
 C
       CALL QENTER('GENDEN')
 C
-      IOFF = 1
-      DO 10 I = 1,6
+      IF(IFLAG.EQ.0) GOTO 999
+C
+C     Initialize matrix
+C
+      IF (LBIT(IFLAG,6)) THEN
+        LUBVAC = 14
+        CALL OPNFIL(LUBVAC,'DFBVAC','OLD','GENDEN')
+        CALL READT(LUBVAC,N2BBASXQ,DMAT)
+        CLOSE(LUBVAC,STATUS='KEEP')
+        FAC    = DM1
+      ELSE
+        CALL DZERO(DMAT,N2BBASXQ)
+        FAC    = D0
+      ENDIF
+      DO 10 I = 1,5
       IF (LBIT(IFLAG,I)) THEN
-        IF(I.EQ.6) THEN
-          LUBVAC = 14
-          CALL OPNFIL(LUBVAC,'DFBVAC','OLD','GENDEN')
-          CALL READT(LUBVAC,N2BBASXQ,DMAT(IOFF))
-          CLOSE(LUBVAC,STATUS='KEEP')
-          FAC    = DM1
-        ELSE
-          CALL DZERO(DMAT(IOFF),N2BBASXQ)
-          FAC    = D0
-        ENDIF
-        DO 20 ISYM = 1,NFSYM
+        DO 20 IFRP = 1,NFSYM
           IF (I.EQ.1) THEN
-            ITEST  = NISH(ISYM)
-            ISTART = NPSH(ISYM)+1
-            ILOOP  = NISH(ISYM)
-            CHR    = 'GENDEN: Inactive density matrix, corep '
+            ITEST  = NISH(IFRP)
+            ISTART = NPSH(IFRP)+1
+            ILOOP  = NISH(IFRP)
           ELSEIF (I.EQ.2) THEN
-            ITEST  = NASH(ISYM)
-            ISTART = NPSH(ISYM)+NISH(ISYM)+1
-            ILOOP  = NASH(ISYM)
-            CHR    = 'GENDEN: Active density matrix, corep '
+            ITEST  = NASH(IFRP)
+            ISTART = NPSH(IFRP)+NISH(IFRP)+1
+            ILOOP  = NASH(IFRP)
           ELSEIF (I.EQ.3) THEN
-            ITEST  = NSSH(ISYM)
-            ISTART = NPSH(ISYM)+NISH(ISYM)+NASH(ISYM)+1
-            ILOOP  = NSSH(ISYM)
-            CHR    = 'GENDEN: Sec. (electron) density matrix, corep '
+            ITEST  = NSSH(IFRP)
+            ISTART = NPSH(IFRP)+NISH(IFRP)+NASH(IFRP)+1
+            ILOOP  = NSSH(IFRP)
           ELSEIF (I.EQ.4) THEN
-            ITEST  = NPSH(ISYM)
+            ITEST  = NPSH(IFRP)
             ISTART = 1
-            ILOOP  = NPSH(ISYM)
-            CHR    = 'GENDEN: Sec. (positron) density matrix, corep '
+            ILOOP  = NPSH(IFRP)
           ELSEIF (I.EQ.5) THEN
-            ITEST  = NORB(ISYM)
+            ITEST  = NORB(IFRP)
             ISTART = 1
-            ILOOP  = NORB(ISYM)
-            CHR    = 'GENDEN: C Ct (1 in AO-basis), corep '
-          ELSEIF (I.EQ.6) THEN
-            ITEST  = NPSH(ISYM)+NISH(ISYM)
-            ISTART = 1
-            ILOOP  = NPSH(ISYM)+NISH(ISYM)
-            CHR    = 'GENDEN: QED inactive density matrix, corep '
-          END IF
+            ILOOP  = NORB(IFRP)
+          ENDIF
           IF (ITEST.EQ.0) GOTO 20
-          CALL DENST1(DMAT(I2BASX(ISYM,ISYM)+IOFF),NTBAS(0),NTBAS(0),
-     &              D1,FAC,CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
-     &              ISTART,ILOOP,NFBAS(ISYM,0))
-          IF (IPRINT.GE.10) THEN
-            WRITE(LUPRI,'(/3X,A,I1,A,I1/)') CHR,ISYM,'/',NFSYM
-C           WRITE(LUPRI,*) CHR,' ',ISYM,'/',NFSYM
-            CALL PRQMAT(DMAT(I2BASX(ISYM,ISYM)+IOFF),
-     &                  NFBAS(ISYM,0),NFBAS(ISYM,0),
-     &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-          END IF
- 20     CONTINUE           
-        IOFF = IOFF + N2BBASXQ
+          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),
+     &              D1,FAC,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
+     &              ISTART,ILOOP,NFBAS(IFRP,0))
+ 20    CONTINUE           
+      FAC= D1
       ENDIF
  10   CONTINUE
+      IF (IPRINT.GE.10) THEN
+        WRITE(LUPRI,'(A)') '* Output from GENDEN:'
+        DO I = 1,6
+        IF (LBIT(IFLAG,I)) THEN
+          IF (I.EQ.1) THEN
+            WRITE(LUPRI,'(3X,A)') 
+     &           '- inactive density matrix'
+          ELSEIF (I.EQ.2) THEN
+            WRITE(LUPRI,'(3X,A)') 
+     &           '- active density matrix'
+          ELSEIF (I.EQ.3) THEN
+            WRITE(LUPRI,'(3X,A)') 
+     &           '- Sec. (electron) density matrix'
+          ELSEIF (I.EQ.4) THEN
+            WRITE(LUPRI,'(3X,A)') 
+     &           '- Sec. (positron) density matrix'
+          ELSEIF (I.EQ.5) THEN
+            WRITE(LUPRI,'(3X,A)') 
+     &           '- C Ct (1 in AO-basis)'
+          ELSEIF (I.EQ.5) THEN
+            WRITE(LUPRI,'(3X,A)') '- reference vacuum'
+          ENDIF
+        ENDIF
+        ENDDO
+        DO IFRP = 1,NFSYM
+          WRITE(LUPRI,'(/A,A3)')
+     &      '* Fermion ircop ',FREP(IFRP)
+          CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)),
+     &              NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+        ENDDO
+      END IF
+
 C
 C   
+ 999  CONTINUE
       CALL QEXIT('GENDEN')
       CALL FLSHFO(LUPRI)
       RETURN
@@ -378,7 +396,7 @@ C
 
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
       IDEN = 1
-      IF(VACPOL) IDEN = 32
+      IF(VACPOL) IDEN = IDEN + 8 + 32
       CALL GENDEN(DMAT,CMO,IDEN,IPRINT)
       IF(AOC) THEN
 C.......Average of Configuration

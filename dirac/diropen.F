@@ -40,7 +40,7 @@ C FILE    : diropen.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKMOFK */
-      SUBROUTINE MKMOFK(FMO,FAO,DMAT,TMAT,CMO,SAOMO,DTEMP1,DTEMP2,
+      SUBROUTINE MKMOFK(FMO,FAO,DMAT,TMAT,CMO,TDINV,DTEMP1,DTEMP2,
      &                  WORK,LWORK)
 C****************************************************************************
 C
@@ -48,12 +48,15 @@ C     PURPOSE:
 C  =============
 C        Construct MO Fock matrix from Fock matrices in AO-basis
 C
-C     On input
-C  FAO
+C     On input:
+C  FAO(*,1)       - FD-matrix, that is FD = h + {sum(S) Q_s}, see (3.41)
+C                   of the thesis of J. Thyssen
+C  FAO(*,1+IOPEN) - FV-matrix, two-electron Fock matrix constructed from
+C                   the normalized density matrix of open shell IOPEN
 C  TMAT
 C  DMAT
 C  CMO
-C  SAOMO
+C  TDINV
 C
 C     On output:
 C  FMO
@@ -75,7 +78,7 @@ C*****************************************************************************
 #include "dgroup.h"
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),CMO(*),
      &          DTEMP1(N2BBASXQ,*),DTEMP2(N2BBASXQ),
-     &          DMAT(N2BBASXQ,NFMAT),SAOMO(*),WORK(*)
+     &          DMAT(N2BBASXQ,NFMAT),TDINV(*),WORK(*)
       CHARACTER CTMP*3
 C
 #include "memint.h"
@@ -172,13 +175,9 @@ C
 C
 C
 C        Get secondary density matrices as projection operator
-C           in AO-basis
+C        in AO-basis
 C
          CALL GENDEN(DTEMP1,CMO,12,IPRSCF)
-C
-C        Construct total secondary density matrix DSao
-C
-         CALL DAXPY(N2BBASXQ,D1,DTEMP1(1,2),1,DTEMP1(1,1),1)
 C
 C        Construct the projection operator:
 C         BETA DCao + GAMMA DSao
@@ -188,7 +187,7 @@ C
          CALL DAXPY(N2BBASXQ,BETA,DMAT(1,1),1,DTEMP1(1,1),1)
 C
 C
-         IOFFSAOMO = 1
+         IOFFTDINV = 1
          DO 20 I = 1,NFSYM
 C
             IF (NACSH(I,IOPEN).GT.0) THEN
@@ -321,15 +320,15 @@ C
      &               NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
                END IF
 C
-C              Transform with halftransformed Saomo from left and right
+C              Transform with inverse T from left and right
 C              Store the result in DTEMP1(1,1)
 C
                CALL QTRANS('AOMO','S',D0,
      &           NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
      &           DTEMP2(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &           DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &           SAOMO(IOFFSAOMO),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
-     &           SAOMO(IOFFSAOMO),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &           TDINV(IOFFTDINV),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &           TDINV(IOFFTDINV),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRSCF)
                IF ( IPRSCF .GE. 15 ) THEN
                   WRITE(CTMP,'(I1)') I
@@ -368,8 +367,8 @@ C
      &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
                END IF
             END IF
-CMI         IOFFSAOMO = IOFFSAOMO + NZ*NORB(I)*NFBAS(I,0)
-            IOFFSAOMO = IOFFSAOMO + NZT*NORB(I)*NFBAS(I,0)
+CMI         IOFFTDINV = IOFFTDINV + NZ*NORB(I)*NFBAS(I,0)
+            IOFFTDINV = IOFFTDINV + NZT*NORB(I)*NFBAS(I,0)
  20      CONTINUE
  10   CONTINUE
 C
