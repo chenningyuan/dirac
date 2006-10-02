@@ -311,7 +311,7 @@ C
         DO IFRP = 1,NFSYM
           WRITE(LUPRI,'(/A,A3)')
      &      '* Fermion ircop ',FREP(IFRP)
-          CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)),
+          CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1),
      &              NFBAS(IFRP,0),NFBAS(IFRP,0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
         ENDDO
