@@ -6846,8 +6846,8 @@ C-----------------------------------------------------------------------
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
-      PARAMETER GFERMI = 2.22254D-14
-      PARAMETER STHETAW2 = 0.2319D0
+      PARAMETER ( GFERMI = 2.22254D-14 )
+      PARAMETER ( STHETAW2 = 0.2319D0 )
 C
       LOGICAL   DOATOM(NUCDEP)
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
@@ -6980,9 +6980,9 @@ C-----------------------------------------------------------------------
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
-      PARAMETER GFERMI = 2.22254D-14
-      PARAMETER STHETAW2 = 0.2319D0
-      PARAMETER AU2HZ = 6.579683920721D15
+      PARAMETER ( GFERMI = 2.22254D-14 )
+      PARAMETER ( STHETAW2 = 0.2319D0 )
+      PARAMETER ( AU2HZ = 6.579683920721D15 )
 C
       LOGICAL   DOATOM(NUCDEP)
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
