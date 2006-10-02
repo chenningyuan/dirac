@@ -1867,11 +1867,8 @@ C     Generate density matrix
 C     Be aware: Both density matrices are normed to 1
 C     Coeffients may now be deallocated.....
 C
-      CALL GENDEN(WORK(KDMAT),WORK(KCMO),1,IPRHO1)
+      CALL DENMAT(WORK(KDMAT),WORK(KCMO),IPRHO1)
       CALL DSCAL(N2BBASXQ,D2,WORK(KDMAT),1)
-CTROND      DO IOPEN = 1,NOPEN
-CTROND        CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRSCF)
-CTROND      END DO
       CALL GT1RH1(WORK(KDMAT),WORK(KGAOS),WORK(KCOOR),WORK(KBUF),
      &            IPRHO1,WORK,KFREE,LFREE)
 C
@@ -2100,9 +2097,6 @@ C
 C     Generate density matrix
 C     Be aware: Both density matrices are normed to 1
       CALL GENDEN(WORK(KDMAT),WORK(KCMO),1,IPRRHO)
-CTROND      DO IOPEN = 1,NOPEN
-CTROND        CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRSCF)
-CTROND      END DO
 C     Coeffients may now be deallocated.....
       CALL MEMREL('GT3RHO.cmo',WORK,KCMO,KCMO,KFREE,LFREE)
 C
