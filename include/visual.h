@@ -7,7 +7,7 @@ C
       LOGICAL         READXVECFILE,                                     &
      &                DOPLOT, DO1DPLOT, DO2DPLOT, DO3DPLOT,             &
      &                PLOTDENSITY, PLOTSPINDENSITY, PLOTCURRENTDENSITY, &
-     &                PLOTELF, PLOTLAPLACIAN, USEORBSTRING,             &
+     &                PLOTELF, PLOTLAPLACIAN, USE_ORBSTRING,            &
      &                PLOTRXJ,                                          &
      &                PLOTSKIPEP, PLOTSKIPEE,                           &
      &                CUT_XY, CUT_XY_SMALL, CUT_YZ, CUT_YZ_SMALL,       &
@@ -18,7 +18,7 @@ C
       COMMON /CPLOTL/ READXVECFILE,                                     &
      &                DOPLOT, DO1DPLOT, DO2DPLOT, DO3DPLOT,             &
      &                PLOTDENSITY, PLOTSPINDENSITY, PLOTCURRENTDENSITY, &
-     &                PLOTELF, PLOTLAPLACIAN, USEORBSTRING,             &
+     &                PLOTELF, PLOTLAPLACIAN, USE_ORBSTRING,            &
      &                PLOTRXJ,                                          &
      &                PLOTSKIPEP, PLOTSKIPEE,                           &
      &                CUT_XY, CUT_XY_SMALL, CUT_YZ, CUT_YZ_SMALL,       &

@@ -6162,7 +6162,7 @@ C
 C
       PLOTSKIPEP         = .FALSE.
       PLOTSKIPEE         = .FALSE.
-      USEORBSTRING       = .FALSE.
+      USE_ORBSTRING       = .FALSE.
 C
       BETA               = .FALSE.
 C
@@ -6262,7 +6262,7 @@ C
    16     CONTINUE
           READ(LUCMD,'(A)') ORBSTRING1
           IF(NFSYM.GT.1) READ(LUCMD,'(A)') ORBSTRING2
-          USEORBSTRING = .TRUE.
+          USE_ORBSTRING = .TRUE.
           GOTO 100
    17     CONTINUE
           PLOTSKIPEP = .TRUE.

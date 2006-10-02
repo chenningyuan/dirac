@@ -1,21 +1,16 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck plot_mem */
+C     /* deck PLOT */
       SUBROUTINE PLOT(WORK,LWORK)
-C  .....................................................................
-C  .  description:                                                     .
-C  .  prepare {1,2,3}-dimensional plot                                 .
-C  .  copy-and-paste-and-modify-a-little-job                           .
-C  .  used Trond's respective routines                                 .
-C  .....................................................................
-C  .  author:                                          last revision:  .
-C  .  radovan bast                                     october 2005    .
-C  .....................................................................
-C
+C=======================================================================
+C     prepare {1,2,3}-dimensional plot
+C     adaptation of Trond's plot routines
+C-----------------------------------------------------------------------
+C     radovan bast                           last revision: october 2006
+C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
-C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
+!-----------------------------------------------------------------------
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
@@ -24,192 +19,179 @@ C
 #include "maxorb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-C
-      LOGICAL TOBE
-C
+
+      LOGICAL   TOBE
       DIMENSION WORK(LWORK)
-C
-      CALL QENTER('PLOT_MEM')
-C
+
+      CALL QENTER('PLOT')
+
 #include "memint.h"
-C
+
       CALL TITLER('{1,2,3}-dimensional plot','*',122)
-C
-C
-C     check if coefficients are on file
-C     =================================
-C
-      INQUIRE(FILE = 'DFCOEF',EXIST = TOBE)
-      IF(.NOT.TOBE) THEN
+
+      INQUIRE(FILE = 'DFCOEF',EXIST = TOBE) !check if coefficients are on file
+      IF(.NOT. TOBE) THEN
         WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
         WRITE(LUPRI,'(A)') 'coefficients not found'
         CALL QUIT('ERROR in PLOT')
       ENDIF
-C
-C
-C     memory allocation
-C     =================
-C
-      CALL MEMGET('REAL',KCMO        ,N2BBASXQ,
+
+
+!     allocate memory
+
+      CALL MEMGET('REAL',KCMO     ,N2BBASXQ,
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG        ,NORBT,
+      CALL MEMGET('REAL',KEIG     ,NORBT,
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMATBF     ,N2BBASXQ,
+      CALL MEMGET('REAL',KDMAT_AO ,N2BBASXQ,
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMATBF     ,N2BBASXQ,
+      CALL MEMGET('REAL',KTMAT_AO ,N2BBASXQ,
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMATORB    ,N2ORBXQ,
+      CALL MEMGET('REAL',KDMAT_MO ,N2ORBXQ,
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDORBSTRING1,NISH(1),
+      CALL MEMGET('REAL',KSTRING1 ,NISH(1),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDORBSTRING2,NISH(2),
+      CALL MEMGET('REAL',KSTRING2 ,NISH(2),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO        ,NTBAS(0),
+      CALL MEMGET('REAL',KGAO     ,NTBAS(0),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO1       ,3*NTBAS(0),
+      CALL MEMGET('REAL',KGAO1    ,3*NTBAS(0),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO2       ,6*NTBAS(0),
+      CALL MEMGET('REAL',KGAO2    ,6*NTBAS(0),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNCNT       ,NTBAS(0),
+      CALL MEMGET('INTE',KNCNT    ,NTBAS(0),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCOOR       ,6,
+      CALL MEMGET('REAL',KBUF     ,NTBAS(0)*4,
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF        ,NTBAS(0)*4,
-     &            WORK,KFREE,LFREE)
-C
-C
-C     read coefficients and give info
-C     ===============================
-C
+
+
+!     read coefficients and give info
+
       CALL DZERO(WORK(KCMO),N2BBASXQ)
       CALL DZERO(WORK(KEIG),NORBT)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PLOT_MEM')
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PLOT')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),DUMMY,
      &            DUMMY,6,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS = 'KEEP')
-C
-C
-C     find occupation
-C     ===============
-C
-      CALL FNDOCC(WORK(KEIG),WORK,KFREE,LFREE)
-C
-C
-C     zero out orbitals?
-C     ==================
-C
-      CALL DFILL(WORK(KDORBSTRING1),D1,NISH(1))
-      IF(NFSYM.GT.1) CALL DFILL(WORK(KDORBSTRING2),D1,NISH(2))
-      IF(USEORBSTRING) THEN
-        IF(ORBSTRING1(4:5).EQ.'..') THEN
-          READ(ORBSTRING1(1:3),'(I3)') IORBSTRING1BEGIN
-          READ(ORBSTRING1(6:8),'(I3)') IORBSTRING1END
+
+      CALL FNDOCC(WORK(KEIG),WORK,KFREE,LFREE) !find occupation
+
+
+!     zero out orbitals?
+
+      CALL DFILL(WORK(KSTRING1),D1,NISH(1))
+      IF(NFSYM .GT. 1) CALL DFILL(WORK(KSTRING2),D1,NISH(2))
+
+      IF(USE_ORBSTRING) THEN
+        IF(ORBSTRING1(4:5) .EQ. '..') THEN
+          READ(ORBSTRING1(1:3),'(I3)') ISTRING1_BEGIN
+          READ(ORBSTRING1(6:8),'(I3)') ISTRING1_END
           GOTO 1
         ENDIF
-        IF(ORBSTRING1(3:4).EQ.'..') THEN
-          READ(ORBSTRING1(1:2),'(I3)') IORBSTRING1BEGIN
-          READ(ORBSTRING1(5:8),'(I3)') IORBSTRING1END
+        IF(ORBSTRING1(3:4) .EQ. '..') THEN
+          READ(ORBSTRING1(1:2),'(I3)') ISTRING1_BEGIN
+          READ(ORBSTRING1(5:8),'(I3)') ISTRING1_END
           GOTO 1
         ENDIF
-        IF(ORBSTRING1(2:3).EQ.'..') THEN
-          READ(ORBSTRING1(1:1),'(I3)') IORBSTRING1BEGIN
-          READ(ORBSTRING1(4:8),'(I3)') IORBSTRING1END
+        IF(ORBSTRING1(2:3) .EQ. '..') THEN
+          READ(ORBSTRING1(1:1),'(I3)') ISTRING1_BEGIN
+          READ(ORBSTRING1(4:8),'(I3)') ISTRING1_END
           GOTO 1
         ENDIF
         WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
         WRITE(LUPRI,'(A)') 'wrong orbital string format'
         CALL QUIT('ERROR in PLOT')
  1      CONTINUE
-C
         IF(
-     &         (.NOT.(IORBSTRING1BEGIN.LE.IORBSTRING1END))
-     &     .OR.(.NOT.(IORBSTRING1BEGIN.GE.0))
-     &     .OR.(.NOT.(IORBSTRING1END.LE.NISH(1)))) THEN
+     &          (.NOT. (ISTRING1_BEGIN .LE. ISTRING1_END))
+     &     .OR. (.NOT. (ISTRING1_BEGIN .GE. 0))
+     &     .OR. (.NOT. (ISTRING1_END .LE. NISH(1)))) THEN
           WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
           WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
           CALL QUIT('ERROR in PLOT')
         ENDIF
-        CALL DFILL(WORK(KDORBSTRING1),D0,NISH(1))
-        DO I = IORBSTRING1BEGIN,IORBSTRING1END
-          IF(IORBSTRING1BEGIN .NE. 0) WORK(KDORBSTRING1-1+I) = D1
+        CALL DFILL(WORK(KSTRING1),D0,NISH(1))
+        DO I = ISTRING1_BEGIN,ISTRING1_END
+          IF(ISTRING1_BEGIN .NE. 0) WORK(KSTRING1-1+I) = D1
         ENDDO
 
-        IF(NFSYM.GT.1) THEN
-          IF(ORBSTRING2(4:5).EQ.'..') THEN
-            READ(ORBSTRING2(1:3),'(I3)') IORBSTRING2BEGIN
-            READ(ORBSTRING2(6:8),'(I3)') IORBSTRING2END
+        IF(NFSYM .GT. 1) THEN
+          IF(ORBSTRING2(4:5) .EQ. '..') THEN
+            READ(ORBSTRING2(1:3),'(I3)') ISTRING2_BEGIN
+            READ(ORBSTRING2(6:8),'(I3)') ISTRING2_END
             GOTO 2
           ENDIF
-          IF(ORBSTRING2(3:4).EQ.'..') THEN
-            READ(ORBSTRING2(1:2),'(I3)') IORBSTRING2BEGIN
-            READ(ORBSTRING2(5:8),'(I3)') IORBSTRING2END
+          IF(ORBSTRING2(3:4) .EQ. '..') THEN
+            READ(ORBSTRING2(1:2),'(I3)') ISTRING2_BEGIN
+            READ(ORBSTRING2(5:8),'(I3)') ISTRING2_END
             GOTO 2
           ENDIF
-          IF(ORBSTRING2(2:3).EQ.'..') THEN
-            READ(ORBSTRING2(1:1),'(I3)') IORBSTRING2BEGIN
-            READ(ORBSTRING2(4:8),'(I3)') IORBSTRING2END
+          IF(ORBSTRING2(2:3) .EQ. '..') THEN
+            READ(ORBSTRING2(1:1),'(I3)') ISTRING2_BEGIN
+            READ(ORBSTRING2(4:8),'(I3)') ISTRING2_END
             GOTO 2
           ENDIF
           WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
           WRITE(LUPRI,'(A)') 'wrong orbital string format'
           CALL QUIT('ERROR in PLOT')
  2        CONTINUE
-C
           IF(
-     &           (.NOT.(IORBSTRING2BEGIN.LE.IORBSTRING2END))
-     &       .OR.(.NOT.(IORBSTRING2BEGIN.GE.0))
-     &       .OR.(.NOT.(IORBSTRING2END.LE.NISH(2)))) THEN
+     &            (.NOT. (ISTRING2_BEGIN .LE. ISTRING2_END))
+     &       .OR. (.NOT. (ISTRING2_BEGIN .GE. 0))
+     &       .OR. (.NOT. (ISTRING2_END .LE. NISH(1)))) THEN
             WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
             WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
             CALL QUIT('ERROR in PLOT')
           ENDIF
-          CALL DFILL(WORK(KDORBSTRING2),D0,NISH(2))
-          DO I = IORBSTRING2BEGIN,IORBSTRING2END
-            IF(IORBSTRING2BEGIN .NE. 0) WORK(KDORBSTRING2-1+I) = D1
+          CALL DFILL(WORK(KSTRING2),D0,NISH(1))
+          DO I = ISTRING2_BEGIN,ISTRING2_END
+            IF(ISTRING2_BEGIN .NE. 0) WORK(KSTRING2-1+I) = D1
           ENDDO
-        ENDIF
-      ENDIF
-C
-C
-C     generate density matrix
-C     =======================
-C
+        ENDIF !IF(NFSYM .GT. 1) THEN
+      ENDIF !IF(USE_ORBSTRING) THEN
+
+
+!     generate density matrix
+
       IF(READXVECFILE) THEN
-        CALL MODIFIED_DMAT(WORK(KCMO),WORK(KDMATBF),WORK(KTMATBF),
-     &                     WORK(KDORBSTRING1),WORK(KDORBSTRING2),
-     &                     WORK(KFREE),LFREE)
+        CALL MODIFIED_DMAT_AO(WORK(KCMO),
+     &                        WORK(KDMAT_AO),WORK(KTMAT_AO),
+     &                        WORK(KSTRING1),WORK(KSTRING2),
+     &                        WORK(KFREE),LFREE)
       ELSE
-        CALL OCCUPYDMATORB(WORK(KDMATORB),
-     &                     WORK(KDORBSTRING1),WORK(KDORBSTRING2))
-        CALL DMATORB2BF(WORK(KCMO),WORK(KDMATBF),WORK(KDMATORB),
-     &                  WORK(KFREE),LFREE)
+        CALL OCCUPY_DMAT_MO(WORK(KDMAT_MO),
+     &                      WORK(KSTRING1),WORK(KSTRING2))
+        CALL DMAT_MO_2_AO(WORK(KCMO),
+     &                    WORK(KDMAT_AO),
+     &                    WORK(KDMAT_MO),
+     &                    WORK(KFREE),LFREE)
       ENDIF
-      CALL DSCAL(N2BBASXQ,D2,WORK(KDMATBF),1)
-C
-C
-C     call PLOT routine
-C     =================
-C
-      CALL PLOT_SUB(WORK(KDMATBF),
-     &          WORK(KGAO),WORK(KGAO1),WORK(KGAO2),
-     &          WORK(KNCNT),WORK(KCOOR),WORK(KBUF),
-     &          WORK,KFREE,LFREE)
-C
-C
-C     memory deallocation
-C     ===================
-C
-      CALL MEMREL('PLOT_MEM',WORK,KCMO,KCMO,KFREE,LFREE)
-      CALL QEXIT('PLOT_MEM')
-C
-C
+      CALL DSCAL(N2BBASXQ,D2,WORK(KDMAT_AO),1)
+
+
+!     call PLOT routine
+
+      CALL PLOT_SUB(WORK(KDMAT_AO),
+     &              WORK(KGAO),
+     &              WORK(KGAO1),
+     &              WORK(KGAO2),
+     &              WORK(KNCNT),
+     &              WORK(KBUF),
+     &              WORK,KFREE,LFREE)
+
+
+!     release memory
+
+      CALL MEMREL('PLOT',WORK,KCMO,KCMO,KFREE,LFREE)
+      CALL QEXIT('PLOT')
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck plot */
-      SUBROUTINE PLOT_SUB(DMATBF,
+      SUBROUTINE PLOT_SUB(DMAT_AO,
      &                GAO,GAO1,GAO2,
-     &                NCNT,COOR,BUF,
+     &                NCNT,BUF,
      &                WORK,KFREE,LFREE)
 C  .....................................................................
 C  .  description:                                                     .
@@ -237,9 +219,9 @@ C
 #include "visual.h"
 #include "dcborb.h"
 C
-      DIMENSION DMATBF(*),
+      DIMENSION DMAT_AO(*),
      &          GAO(*),GAO1(*),GAO2(*),
-     &          NCNT(*),COORD(3,2),BUF(*),
+     &          NCNT(*),BUF(*),
      &          WORK(*)
 C
       DIMENSION DENSITY(0:2,NCUBE(3)),
@@ -435,10 +417,10 @@ C
 C           get necessary stuff
 C           ===================
 C
-            CALL GETQUANTITY(DMATBF,
+            CALL GETQUANTITY(DMAT_AO,
      &                       GAO,GAO1,GAO2,
      &                       PX,PY,PZ,
-     &                       NCNT,COORD,BUF,IPRINT,
+     &                       NCNT,BUF,IPRINT,
      &                       DENSITY,
      &                       SPINDENSITY,
      &                       CURRENTDENSITY,
@@ -658,10 +640,10 @@ C
 C             get necessary stuff
 C             ===================
 C
-              CALL GETQUANTITY(DMATBF,
+              CALL GETQUANTITY(DMAT_AO,
      &                         GAO,GAO1,GAO2,
      &                         PX,PY,PZ,
-     &                         NCNT,COORD,BUF,IPRINT,
+     &                         NCNT,BUF,IPRINT,
      &                         DENSITY(0,KCUBE),
      &                         SPINDENSITY(KCUBE),
      &                         CURRENTDENSITY(KCUBE),
@@ -752,10 +734,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck getquantity */
-      SUBROUTINE GETQUANTITY(DMATBF,
+      SUBROUTINE GETQUANTITY(DMAT_AO,
      &                       GAO,GAO1,GAO2,
      &                       PX,PY,PZ,
-     &                       NCNT,COORD,BUF,IPRINT,
+     &                       NCNT,BUF,IPRINT,
      &                       DENSITY,
      &                       SPINDENSITY_NORM,
      &                       CURRENTDENSITY_NORM,
@@ -782,9 +764,9 @@ C-----------------------------------------------------------------------
 #include "dcbham.h"
 #include "dcbxrs.h"
 C-----------------------------------------------------------------------
-      DIMENSION DMATBF(*),
+      DIMENSION DMAT_AO(*),
      &          GAO(*),GAO1(*),GAO2(*),
-     &          NCNT(*),COORD(3,2),BUF(*),
+     &          NCNT(*),BUF(*),
      &          DENSITY(0:2),
      &          GRADIENT(3),
      &          SPINDENSITY(3),
@@ -817,7 +799,7 @@ C
       DENSITY(0) = D0
       DO IC = 1,MC
         DENSITY(IC) = D0
-        CALL GETRH1(DENSITY(IC),IC,IREP_PLOT,GAO,DMATBF,BUF)
+        CALL GETRH1(DENSITY(IC),IC,IREP_PLOT,GAO,DMAT_AO,BUF)
         DENSITY(0) = DENSITY(0) + DENSITY(IC)
       ENDDO
 C
@@ -825,7 +807,7 @@ C
 C     gradient
 C     ========
 C
-      CALL GETGRHO(GRADIENT,IREP_PLOT,GAO,GAO1,DMATBF,BUF)
+      CALL GETGRHO(GRADIENT,IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
       GRADSQUARED = GRADIENT(1)**D2+GRADIENT(2)**D2+GRADIENT(3)**D2
       GRADNORM = DSQRT(GRADSQUARED)
 C
@@ -841,7 +823,7 @@ C
           DO IC = 1,MC
             SOMETHING = D0
             CALL GETRH1(SOMETHING,IC,IREP_PLOT,GAO1((I-1)*NTBAS(0)+1),
-     &                  DMATBF,BUF)
+     &                  DMAT_AO,BUF)
             ELFKIN = ELFKIN+SOMETHING
           ENDDO
         ENDDO
@@ -877,7 +859,7 @@ C
       IF(PLOTLAPLACIAN) THEN
         CALL QUIT('visualization of the laplacian not implemented')
 C       CALL GETLRHO(XX,XY,XZ,YY,YZ,ZZ,
-C    &               GAO,GAO1,GAO2,DMATBF,BUF)
+C    &               GAO,GAO1,GAO2,DMAT_AO,BUF)
 C       DLAPLACIAN = XX+YY+ZZ
 C       DLAPLACIAN = -DLAPLACIAN
       ENDIF
@@ -890,7 +872,7 @@ C
 #if defined (MOD_CDFT)
 C      CALL GET_CURRENT_DENSITY(.FALSE.,DUMMY,
 C    &                        .TRUE.,SPINDENSITY,
-C    &                        IREP_PLOT,GAO,DMATBF,BUF)
+C    &                        IREP_PLOT,GAO,DMAT_AO,BUF)
 C
        SPINDENSITY_NORM = SPINDENSITY(1)**D2
      &                  + SPINDENSITY(2)**D2
@@ -912,7 +894,7 @@ C
 #if defined (MOD_CDFT)
 C      CALL GET_CURRENT_DENSITY(.TRUE.,CURRENTDENSITY,
 C    &                        .FALSE.,DUMMY,
-C    &                        IREP_PLOT,GAO,DMATBF,BUF)
+C    &                        IREP_PLOT,GAO,DMAT_AO,BUF)
 C
        CURRENTDENSITY_NORM = CURRENTDENSITY(1)**D2
      &                     + CURRENTDENSITY(2)**D2
@@ -934,7 +916,7 @@ C
 #if defined (MOD_CDFT)
 C      CALL GET_CURRENT_DENSITY(.TRUE.,CURRENTDENSITY,
 C    &                        .FALSE.,DUMMY,
-C    &                        IREP_PLOT,GAO,DMATBF,BUF)
+C    &                        IREP_PLOT,GAO,DMAT_AO,BUF)
 C
        RXJ(1) = PY*CURRENTDENSITY(3) - PZ*CURRENTDENSITY(2)
        RXJ(2) = PZ*CURRENTDENSITY(1) - PX*CURRENTDENSITY(3)
@@ -960,8 +942,8 @@ C-----------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck modified_dmat */
-      SUBROUTINE MODIFIED_DMAT(CMO,DMATBF,TMATBF,
-     &                         DORBSTRING1,DORBSTRING2,
+      SUBROUTINE MODIFIED_DMAT_AO(CMO,DMAT_AO,TMATBF,
+     &                         STRING1,STRING2,
      &                         WORK,LWORK)
 C=======================================================================
 C     fill density matrix
@@ -984,13 +966,13 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
       LOGICAL TOBE
 C-----------------------------------------------------------------------
-      DIMENSION CMO(*),DMATBF(*),TMATBF(*),
-     &          DORBSTRING1(*),DORBSTRING2(*),
+      DIMENSION CMO(*),DMAT_AO(*),TMATBF(*),
+     &          STRING1(*),STRING2(*),
      &          WORK(LWORK)
 C-----------------------------------------------------------------------
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
 C-----------------------------------------------------------------------
-      CALL QENTER('MODIFIED_DMAT')
+      CALL QENTER('MODIFIED_DMAT_AO')
 #include "memint.h"
 C-----------------------------------------------------------------------
 C
@@ -1227,21 +1209,21 @@ C
 C     get density matrix
 C     ==================
 C
-      CALL DZERO(DMATBF,N2BBASXQ)
+      CALL DZERO(DMAT_AO,N2BBASXQ)
       IF(.NOT.PLOTSKIPEE) THEN
-        CALL DMOLI3(0,IHEE,DMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
+        CALL DMOLI3(0,IHEE,DMAT_AO,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
       ENDIF
       IF(.NOT.PLOTSKIPEP) THEN
         CALL DZERO(TMATBF,N2BBASXQ)
         CALL DMOLI3(1,IHEP,TMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
-        CALL DAXPY(N2BBASXQ,D1,TMATBF,1,DMATBF,1)
+        CALL DAXPY(N2BBASXQ,D1,TMATBF,1,DMAT_AO,1)
       ENDIF
 C
       IF(NZ.LT.4) THEN
         DO IZ = 1,NZ
           IQ = IPQTOQ(IZ,IREP_PLOT)
           IOFF = NTBAS(0)*NTBAS(0)*(IZ-1)
-          CALL Q2BPHASE('D',IQ,1,DMATBF(1+IOFF))
+          CALL Q2BPHASE('D',IQ,1,DMAT_AO(1+IOFF))
         ENDDO
       ENDIF
 C
@@ -1249,8 +1231,8 @@ C
 C     release memory
 C     ==============
 C
-      CALL MEMREL('MODIFIED_DMAT',WORK,KBVECEE,KBVECEE,KFREE,LFREE)
-      CALL QEXIT('MODIFIED_DMAT')
+      CALL MEMREL('MODIFIED_DMAT_AO',WORK,KBVECEE,KBVECEE,KFREE,LFREE)
+      CALL QEXIT('MODIFIED_DMAT_AO')
 C-----------------------------------------------------------------------
       RETURN
       END
@@ -1313,83 +1295,77 @@ C-----------------------------------------------------------------------
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck dmatorb2bf */
-      SUBROUTINE DMATORB2BF(CMO,DMATBF,DMATORB,WORK,LWORK)
+C     /* deck DMAT_MO_2_AO */
+      SUBROUTINE DMAT_MO_2_AO(CMO,DMAT_AO,DMAT_MO,WORK,LWORK)
 C=======================================================================
-C     transform orbital ("mo") density matrix
-C     to bf ("ao") density matrix
+C     transform MO to AO density matrix
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: july 2006
+C     radovan bast                           last revision: october 2006
 C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
+!-----------------------------------------------------------------------
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-C-----------------------------------------------------------------------
-      DIMENSION CMO(*),DMATBF(*),DMATORB(*),WORK(LWORK)
-C-----------------------------------------------------------------------
+
+      DIMENSION CMO(*),DMAT_AO(*),DMAT_MO(*),WORK(LWORK)
+
 #include "memint.h"
-C-----------------------------------------------------------------------
-      CALL DZERO(DMATBF,N2BBASXQ)
-C
+
+      CALL DZERO(DMAT_AO,N2BBASXQ)
+
       DO I = 1,NFSYM
         CALL QTRANS('MOAO','S',D0,
      &              NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
-     &              DMATBF(1+I2BASX(I,I)),
+     &              DMAT_AO(1+I2BASX(I,I)),
      &              NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
-     &              DMATORB(1+I2ORBX(I,I)),
+     &              DMAT_MO(1+I2ORBX(I,I)),
      &              NORBT,NORBT,1,IPQTOQ(1,0),
      &              CMO(1+ICMOQ(I)),
      &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &              CMO(1+ICMOQ(I)),
      &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &              WORK(KFREE),LFREE,IPRINT)
+     &              WORK(KFREE),LFREE,0)
       ENDDO
-C-----------------------------------------------------------------------
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck occupydmatorb */
-      SUBROUTINE OCCUPYDMATORB(DMATORB,DORBSTRING1,DORBSTRING2)
+C     /* deck OCCUPY_DMAT_MO */
+      SUBROUTINE OCCUPY_DMAT_MO(DMAT_MO,STRING1,STRING2)
 C=======================================================================
-C     occupy orbital density matrix
+C     occupy MO density matrix
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: july 2006
+C     radovan bast                           last revision: october 2006
 C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
+!-----------------------------------------------------------------------
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-C-----------------------------------------------------------------------
-      DIMENSION DMATORB(*),DORBSTRING1(*),DORBSTRING2(*)
-C-----------------------------------------------------------------------
-      CALL DZERO(DMATORB,N2ORBXQ)
-C
+
+      DIMENSION DMAT_MO(*),STRING1(*),STRING2(*)
+
+      CALL DZERO(DMAT_MO,N2ORBXQ)
+
       K = 0
       DO I = 1,NFSYM
-        IF(NISH(I).GT.0) THEN
+        IF(NISH(I) .GT. 0) THEN
           DO J = 1,NISH(I)
             K = K + 1
             JOFF = (NORB(1)*(I-1) + NPSH(I))*NORBT
             JOFF = JOFF + NORB(1)*(I-1) + NPSH(I)
             JOFF = JOFF + (J-1)*NORBT + J - 1
-C
-            IF((I.EQ.1).AND.(DORBSTRING1(J).EQ.D1)) THEN
-              DMATORB(1+JOFF) = D1
-            ENDIF
-            IF((I.EQ.2).AND.(DORBSTRING2(J).EQ.D1)) THEN
-              DMATORB(1+JOFF) = D1
-            ENDIF
-C
+
+            IF(I .EQ. 1) DMAT_MO(1+JOFF) = STRING1(J)
+            IF(I .EQ. 2) DMAT_MO(1+JOFF) = STRING2(J)
           ENDDO
         ENDIF
       ENDDO
-C-----------------------------------------------------------------------
+
       RETURN
       END
