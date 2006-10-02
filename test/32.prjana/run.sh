@@ -29,5 +29,5 @@ MOL=CH4;
 MENU=CH4;
 export MOL;
 export MENU;
-../run.sh -copy DFCAT -copy DFHAT1 -copy DFHAT2 -copy DFHAT3 -copy DFHAT4
+../run.sh -copy "DFCAT  DFHAT1 DFHAT2 DFHAT3 DFHAT4"
 rm DFCAT DFHAT1 DFHAT2 DFHAT3 DFHAT4 cf.H cf.C
