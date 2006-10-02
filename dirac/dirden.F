@@ -303,7 +303,7 @@ C
           ELSEIF (I.EQ.5) THEN
             WRITE(LUPRI,'(3X,A)') 
      &           '- C Ct (1 in AO-basis)'
-          ELSEIF (I.EQ.5) THEN
+          ELSEIF (I.EQ.6) THEN
             WRITE(LUPRI,'(3X,A)') '- reference vacuum'
           ENDIF
         ENDIF
