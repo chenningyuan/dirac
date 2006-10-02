@@ -252,6 +252,7 @@ C
         CALL DZERO(DMAT,N2BBASXQ)
         FAC    = D0
       ENDIF
+      ITEST = 0
       DO 10 I = 1,5
       IF (LBIT(IFLAG,I)) THEN
         DO 20 IFRP = 1,NFSYM
@@ -281,7 +282,7 @@ C
      &              D1,FAC,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
      &              ISTART,ILOOP,NFBAS(IFRP,0))
  20    CONTINUE           
-      FAC= D1
+      IF (ITEST.NE.0) FAC= D1
       ENDIF
  10   CONTINUE
       IF (IPRINT.GE.10) THEN
