@@ -124,7 +124,7 @@ C     If semiclassical QED, write density of bare vacuum to file
 C     ==========================================================
 C
       IF(VACPOL) THEN
-        CALL BARVAC(WORK,LWORK)      
+        CALL BARVAC(WORK,LWORK,IPRGEN)      
       ENDIF
 
 C
@@ -1481,7 +1481,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck barvac */
-      SUBROUTINE BARVAC(WORK,LWORK)
+      SUBROUTINE BARVAC(WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Generate and write bare vacuum density to file
@@ -1501,14 +1501,14 @@ C
       CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
       CALL BARVA1(WORK(KFAO),WORK(KFMO),WORK(KTMAT),
-     &            WORK(KEIG),WORK(KIBRP),WORK,KFREE,LFREE)
+     &            WORK(KEIG),WORK(KIBRP),IPRINT,WORK,KFREE,LFREE)
       CALL MEMREL('BARVAC',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck barva1 */
-      SUBROUTINE BARVA1(FAO,FMO,TMAT,EIG,IBEIG,WORK,KFREE,LFREE)
+      SUBROUTINE BARVA1(FAO,FMO,TMAT,EIG,IBEIG,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Generate and write bare vacuum density to file
@@ -1525,7 +1525,6 @@ C
 C
       DIMENSION FAO(*),FMO(*),TMAT(*),EIG(*),IBEIG(*),WORK(*)
 C
-      IPRINT = 10
       LUBUF  = 10
 C
 C     Generate free particle matrix
