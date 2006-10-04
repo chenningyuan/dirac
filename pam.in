@@ -330,8 +330,10 @@ print_header()
 #
 exitfunc()
 {
-   if [ -r $OUTPUT_FILE && -n "`grep 'SEVERE ERROR' $OUTPUT_FILE`" ]; then
-     EXIT=1
+   if [ -r "$OUTPUT_FILE" ]; then
+  	if [ -n "`grep 'SEVERE ERROR' $OUTPUT_FILE`" ]; then
+ 	     EXIT=1	
+	fi
    fi   
    if [ $EXIT -eq 0 ]; then
       echo
