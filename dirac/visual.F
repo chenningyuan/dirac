@@ -143,7 +143,7 @@ C=======================================================================
             WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
             CALL QUIT('ERROR in PLOT')
           ENDIF
-          CALL DFILL(WORK(KSTRING2),D0,NISH(1))
+          CALL DFILL(WORK(KSTRING2),D0,NISH(2))
           DO I = ISTRING2_BEGIN,ISTRING2_END
             IF(ISTRING2_BEGIN .NE. 0) WORK(KSTRING2-1+I) = D1
           ENDDO
