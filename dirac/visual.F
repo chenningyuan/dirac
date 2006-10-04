@@ -49,9 +49,9 @@ C=======================================================================
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT_MO ,N2ORBXQ,
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSTRING1 ,NISH(1),
+      CALL MEMGET('REAL',KSTRING1 ,NESH(1),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSTRING2 ,NISH(2),
+      CALL MEMGET('REAL',KSTRING2 ,NESH(2),
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGAO     ,NTBAS(0),
      &            WORK,KFREE,LFREE)
@@ -105,12 +105,12 @@ C=======================================================================
         IF(
      &          (.NOT. (ISTRING1_BEGIN .LE. ISTRING1_END))
      &     .OR. (.NOT. (ISTRING1_BEGIN .GE. 0))
-     &     .OR. (.NOT. (ISTRING1_END .LE. NISH(1)))) THEN
+     &     .OR. (.NOT. (ISTRING1_END .LE. NESH(1)))) THEN
           WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
           WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
           CALL QUIT('ERROR in PLOT')
         ENDIF
-        CALL DFILL(WORK(KSTRING1),D0,NISH(1))
+        CALL DFILL(WORK(KSTRING1),D0,NESH(1))
         DO I = ISTRING1_BEGIN,ISTRING1_END
           IF(ISTRING1_BEGIN .NE. 0) WORK(KSTRING1-1+I) = D1
         ENDDO
@@ -138,12 +138,12 @@ C=======================================================================
           IF(
      &            (.NOT. (ISTRING2_BEGIN .LE. ISTRING2_END))
      &       .OR. (.NOT. (ISTRING2_BEGIN .GE. 0))
-     &       .OR. (.NOT. (ISTRING2_END .LE. NISH(1)))) THEN
+     &       .OR. (.NOT. (ISTRING2_END .LE. NESH(2)))) THEN
             WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
             WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
             CALL QUIT('ERROR in PLOT')
           ENDIF
-          CALL DFILL(WORK(KSTRING2),D0,NISH(2))
+          CALL DFILL(WORK(KSTRING2),D0,NESH(2))
           DO I = ISTRING2_BEGIN,ISTRING2_END
             IF(ISTRING2_BEGIN .NE. 0) WORK(KSTRING2-1+I) = D1
           ENDDO
@@ -1355,7 +1355,7 @@ C=======================================================================
       K = 0
       DO I = 1,NFSYM
         IF(NISH(I) .GT. 0) THEN
-          DO J = 1,NISH(I)
+          DO J = 1,NESH(I)
             K = K + 1
             JOFF = (NORB(1)*(I-1) + NPSH(I))*NORBT
             JOFF = JOFF + NORB(1)*(I-1) + NPSH(I)
