@@ -1,7 +1,4 @@
-Node  1: DIRAC allocating 50000000 words of memory
-Node  3: DIRAC allocating 50000000 words of memory
-Node  2: DIRAC allocating 50000000 words of memory
-Master : DIRAC allocating 50000000 words of memory
+Master : DIRAC allocating 80000000 words of memory
 ******************************************************************************
 *                                                                            *
 *                                O U T P U T                                 *
@@ -131,17 +128,17 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *                                                                            *
 ******************************************************************************
  Version           : Dirac 4.1 (patchlevel 0) 
- Hostname          : compute-0-2.local
+ Hostname          : compute-0-12.local
  Operating system  : Linux 2.4.21-20.ELsmp
  Machine           : i686
- Run               : Parallel
- Last compilation  : 12:25:23 Sep 30 2006 (by bast@)
+ Run               : Sequential
+ Last compilation  : 00:17:45 Oct  5 2006 (by bast@)
  FORTRAN compiler  : mpif77 -O3 -ip -w 
  C compiler        : mpicc -O3 -ip 
  Size of COMMON=         192
- Basis set dir.    : /home/bast/offen/41.pv.nmr/:/home/bast/dirac/snapshot/basis/:/home/bast/dirac/snapshot/basis_dalton/
+ Basis set dir.    : /home/bast/debug/:/home/bast/dirac/snapshot/basis/:/home/bast/dirac/snapshot/basis_dalton/
 
- Date and time (Linux) : Sat Sep 30 12:43:14 2006
+ Date and time (Linux) : Thu Oct  5 00:18:45 2006
 
 
  *************************************************************************
@@ -159,7 +156,6 @@ HAMSCAN: Found keyword .LVCORR
  **************************************************************************
 
  * The speed of light :        137.0359998
- * Parallel run
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -667,205 +663,205 @@ Total no. of orbitals      (NORB):   196
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Sat Sep 30 12:43:15 2006
+########## START ITERATION NO.   1 ##########   Thu Oct  5 00:18:45 2006
 
-It.   1    -56.26264264619      1.00D+20  0.00D+00  0.00D+00               0.76000000s   Bare nuclei    Sat Sep 30
+It.   1    -56.26264264619      1.00D+20  0.00D+00  0.00D+00               0.76000000s   Bare nuclei    Thu Oct  5
 
-########## START ITERATION NO.   2##########   Sat Sep 30 12:43:15 2006
+########## START ITERATION NO.   2##########   Thu Oct  5 00:18:46 2006
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   22.52%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12    0.00%   31.36%    0.00%    0.06%   2.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 3.05000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   22.52%    0.00%    0.00%   0.38000000s
+SOfock:SL  1.00D-12    0.00%   31.66%    0.00%    0.06%   4.94000000s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.51000000s
 
-########## END ITERATION NO.   2 ##########   Sat Sep 30 12:43:15 2006
+########## END ITERATION NO.   2 ##########   Thu Oct  5 00:18:46 2006
 
-It.   2    -149.9528105096      9.37D+01  6.02D+00  2.22D+00               3.05000000s   LL SL          Sat Sep 30
+It.   2    -149.9528105096      9.37D+01  6.02D+00  2.22D+00               6.51000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.   3##########   Sat Sep 30 12:43:19 2006
+########## START ITERATION NO.   3##########   Thu Oct  5 00:18:53 2006
 
     3 *** Differential density matrix. DCOVLP     = 0.5252
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   22.53%    0.00%    0.00%   1.00000000s
-SOfock:SL  1.00D-12    0.00%   32.23%    0.00%    0.12%   2.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 2.83000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   22.53%    0.00%    0.00%   0.38000000s
+SOfock:SL  1.00D-12    0.00%   32.55%    0.00%    0.12%   4.92000000s
+>>> Total wall time: 6.00000000s
+>>> Total CPU-time : 6.34000000s
 
-########## END ITERATION NO.   3 ##########   Sat Sep 30 12:43:19 2006
+########## END ITERATION NO.   3 ##########   Thu Oct  5 00:18:53 2006
 
-It.   3    -150.6689114534      7.16D-01 -1.50D+00  1.09D+00   DIIS   2    2.83000000s   LL SL          Sat Sep 30
+It.   3    -150.6689114535      7.16D-01 -1.50D+00  1.09D+00   DIIS   2    6.34000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.   4##########   Sat Sep 30 12:43:23 2006
+########## START ITERATION NO.   4##########   Thu Oct  5 00:18:59 2006
 
     4 *** Differential density matrix. DCOVLP     = 1.0763
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   22.53%    0.00%    0.01%   1.00000000s
-SOfock:SL  1.00D-12    0.00%   32.47%    0.00%    0.16%   2.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 2.82000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   22.53%    0.00%    0.01%   0.38000000s
+SOfock:SL  1.00D-12    0.00%   32.80%    0.00%    0.16%   4.91000000s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.38000000s
 
-########## END ITERATION NO.   4 ##########   Sat Sep 30 12:43:23 2006
+########## END ITERATION NO.   4 ##########   Thu Oct  5 00:18:59 2006
 
-It.   4    -150.8811940805      2.12D-01  5.00D-01  5.26D-02   DIIS   3    2.82000000s   LL SL          Sat Sep 30
+It.   4    -150.8811940805      2.12D-01  5.00D-01  5.26D-02   DIIS   3    6.38000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.   5##########   Sat Sep 30 12:43:27 2006
+########## START ITERATION NO.   5##########   Thu Oct  5 00:19:06 2006
 
     5 *** Differential density matrix. DCOVLP     = 0.9980
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   22.53%    0.00%    0.10%   0.00000000s
-SOfock:SL  1.00D-12    0.00%   34.90%    0.00%    0.63%   2.00000000s
->>> Total wall time: 3.00000000s
->>> Total CPU-time : 2.82000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   22.53%    0.00%    0.10%   0.38000000s
+SOfock:SL  1.00D-12    0.00%   35.30%    0.00%    0.65%   4.88000000s
+>>> Total wall time: 6.00000000s
+>>> Total CPU-time : 6.40000000s
 
-########## END ITERATION NO.   5 ##########   Sat Sep 30 12:43:27 2006
+########## END ITERATION NO.   5 ##########   Thu Oct  5 00:19:06 2006
 
-It.   5    -150.8817319669      5.38D-04 -1.29D-02  8.43D-03   DIIS   4    2.82000000s   LL SL          Sat Sep 30
+It.   5    -150.8817319669      5.38D-04 -1.29D-02  8.43D-03   DIIS   4    6.40000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.   6##########   Sat Sep 30 12:43:30 2006
+########## START ITERATION NO.   6##########   Thu Oct  5 00:19:12 2006
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   22.58%    0.00%    0.32%   1.00000000s
-SOfock:SL  1.00D-12    0.00%   36.73%    0.00%    0.85%   2.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 2.83000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   22.58%    0.00%    0.32%   0.38000000s
+SOfock:SL  1.00D-12    0.00%   37.18%    0.00%    0.86%   4.85000000s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.41000000s
 
-########## END ITERATION NO.   6 ##########   Sat Sep 30 12:43:30 2006
+########## END ITERATION NO.   6 ##########   Thu Oct  5 00:19:12 2006
 
-It.   6    -150.8817544620      2.25D-05  5.24D-04  2.02D-03   DIIS   5    2.83000000s   LL SL          Sat Sep 30
+It.   6    -150.8817544620      2.25D-05  5.24D-04  2.02D-03   DIIS   5    6.41000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.   7##########   Sat Sep 30 12:43:34 2006
+########## START ITERATION NO.   7##########   Thu Oct  5 00:19:19 2006
 
     7 *** Differential density matrix. DCOVLP     = 1.0001
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   22.64%    0.00%    0.44%   1.00000000s
-SOfock:SL  1.00D-12    0.00%   39.22%    0.00%    1.07%   2.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 2.89000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   22.64%    0.00%    0.44%   0.38000000s
+SOfock:SL  1.00D-12    0.00%   39.74%    0.00%    1.09%   4.84000000s
+>>> Total wall time: 6.00000000s
+>>> Total CPU-time : 6.46000000s
 
-########## END ITERATION NO.   7 ##########   Sat Sep 30 12:43:34 2006
+########## END ITERATION NO.   7 ##########   Thu Oct  5 00:19:19 2006
 
-It.   7    -150.8817575735      3.11D-06  3.00D-04  6.97D-04   DIIS   6    2.89000000s   LL SL          Sat Sep 30
+It.   7    -150.8817575735      3.11D-06  3.00D-04  6.97D-04   DIIS   6    6.46000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.   8##########   Sat Sep 30 12:43:38 2006
+########## START ITERATION NO.   8##########   Thu Oct  5 00:19:25 2006
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   22.77%    0.01%    0.57%   1.00000000s
-SOfock:SL  1.00D-12    0.00%   41.04%    0.00%    1.50%   2.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 2.98000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   22.77%    0.01%    0.57%   0.37000000s
+SOfock:SL  1.00D-12    0.00%   41.60%    0.00%    1.53%   4.80000000s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.45000000s
 
-########## END ITERATION NO.   8 ##########   Sat Sep 30 12:43:38 2006
+########## END ITERATION NO.   8 ##########   Thu Oct  5 00:19:25 2006
 
-It.   8    -150.8817581093      5.36D-07  1.56D-04  2.35D-04   DIIS   7    2.98000000s   LL SL          Sat Sep 30
+It.   8    -150.8817581093      5.36D-07  1.56D-04  2.35D-04   DIIS   7    6.45000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.   9##########   Sat Sep 30 12:43:42 2006
+########## START ITERATION NO.   9##########   Thu Oct  5 00:19:32 2006
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   22.92%    0.06%    0.84%   1.00000000s
-SOfock:SL  1.00D-12    0.00%   43.52%    0.00%    2.26%   1.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 3.07000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   22.92%    0.06%    0.84%   0.38000000s
+SOfock:SL  1.00D-12    0.00%   44.15%    0.00%    2.30%   4.78000000s
+>>> Total wall time: 6.00000000s
+>>> Total CPU-time : 6.47000000s
 
-########## END ITERATION NO.   9 ##########   Sat Sep 30 12:43:42 2006
+########## END ITERATION NO.   9 ##########   Thu Oct  5 00:19:32 2006
 
-It.   9    -150.8817581743      6.51D-08  5.66D-05  5.58D-05   DIIS   8    3.07000000s   LL SL          Sat Sep 30
+It.   9    -150.8817581743      6.51D-08  5.66D-05  5.58D-05   DIIS   8    6.47000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.  10##########   Sat Sep 30 12:43:46 2006
+########## START ITERATION NO.  10##########   Thu Oct  5 00:19:38 2006
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   23.38%    0.16%    1.50%   0.00000000s
-SOfock:SL  1.00D-12    0.00%   46.84%    0.00%    3.47%   2.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 3.05000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   23.38%    0.16%    1.50%   0.38000000s
+SOfock:SL  1.00D-12    0.00%   47.55%    0.00%    3.53%   4.73000000s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.45000000s
 
-########## END ITERATION NO.  10 ##########   Sat Sep 30 12:43:46 2006
+########## END ITERATION NO.  10 ##########   Thu Oct  5 00:19:38 2006
 
-It.  10    -150.8817581776      3.30D-09 -1.46D-05  1.39D-05   DIIS   9    3.05000000s   LL SL          Sat Sep 30
+It.  10    -150.8817581776      3.30D-09 -1.46D-05  1.39D-05   DIIS   9    6.45000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.  11##########   Sat Sep 30 12:43:50 2006
+########## START ITERATION NO.  11##########   Thu Oct  5 00:19:45 2006
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   24.54%    0.35%    2.00%   0.00000000s
-SOfock:SL  1.00D-12    0.00%   51.60%    0.02%    4.93%   2.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 3.03000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   24.54%    0.35%    2.00%   0.40000000s
+SOfock:SL  1.00D-12    0.00%   52.41%    0.01%    5.01%   4.68000000s
+>>> Total wall time: 6.00000000s
+>>> Total CPU-time : 6.43000000s
 
-########## END ITERATION NO.  11 ##########   Sat Sep 30 12:43:50 2006
+########## END ITERATION NO.  11 ##########   Thu Oct  5 00:19:45 2006
 
-It.  11    -150.8817581778      1.88D-10 -2.56D-06  5.59D-06   DIIS   9    3.03000000s   LL SL          Sat Sep 30
+It.  11    -150.8817581778      1.88D-10 -2.56D-06  5.59D-06   DIIS   9    6.43000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.  12##########   Sat Sep 30 12:43:54 2006
+########## START ITERATION NO.  12##########   Thu Oct  5 00:19:51 2006
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   25.89%    0.38%    1.86%   0.00000000s
-SOfock:SL  1.00D-12    0.00%   55.19%    0.02%    6.63%   2.00000000s
->>> Total wall time: 3.00000000s
->>> Total CPU-time : 3.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   25.89%    0.38%    1.86%   0.37000000s
+SOfock:SL  1.00D-12    0.00%   56.06%    0.00%    6.76%   4.61000000s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.33000000s
 
-########## END ITERATION NO.  12 ##########   Sat Sep 30 12:43:54 2006
+########## END ITERATION NO.  12 ##########   Thu Oct  5 00:19:51 2006
 
-It.  12    -150.8817581779      4.37D-11  1.37D-06  2.57D-06   DIIS   9    3.00000000s   LL SL          Sat Sep 30
+It.  12    -150.8817581779      4.37D-11 -1.37D-06  2.57D-06   DIIS   9    6.33000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.  13##########   Sat Sep 30 12:43:57 2006
+########## START ITERATION NO.  13##########   Thu Oct  5 00:19:58 2006
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   27.36%    1.52%    1.95%   1.00000000s
-SOfock:SL  1.00D-12    0.00%   58.96%    0.49%    7.72%   2.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 3.03000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   27.36%    1.52%    1.95%   0.37000000s
+SOfock:SL  1.00D-12    0.00%   59.89%    0.46%    7.88%   4.56000000s
+>>> Total wall time: 6.00000000s
+>>> Total CPU-time : 6.27000000s
 
-########## END ITERATION NO.  13 ##########   Sat Sep 30 12:43:57 2006
+########## END ITERATION NO.  13 ##########   Thu Oct  5 00:19:58 2006
 
-It.  13    -150.8817581779      1.11D-11 -1.01D-06  1.13D-06   DIIS   9    3.03000000s   LL SL          Sat Sep 30
+It.  13    -150.8817581779      1.11D-11  1.01D-06  1.13D-06   DIIS   9    6.27000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.  14##########   Sat Sep 30 12:44:01 2006
+########## START ITERATION NO.  14##########   Thu Oct  5 00:20:04 2006
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   29.09%    3.01%    3.32%   1.00000000s
-SOfock:SL  1.00D-12    0.04%   62.51%    0.64%   10.00%   2.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 2.94000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   29.09%    3.01%    3.32%   0.38000000s
+SOfock:SL  1.00D-12    0.05%   63.50%    0.57%   10.18%   4.45000000s
+>>> Total wall time: 6.00000000s
+>>> Total CPU-time : 6.19000000s
 
-########## END ITERATION NO.  14 ##########   Sat Sep 30 12:44:01 2006
+########## END ITERATION NO.  14 ##########   Thu Oct  5 00:20:04 2006
 
-It.  14    -150.8817581779      2.30D-12 -4.71D-07  5.12D-07   DIIS   9    2.94000000s   LL SL          Sat Sep 30
+It.  14    -150.8817581779      2.33D-12 -4.71D-07  5.12D-07   DIIS   9    6.19000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.  15##########   Sat Sep 30 12:44:05 2006
+########## START ITERATION NO.  15##########   Thu Oct  5 00:20:10 2006
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   31.62%    3.19%    5.39%   1.00000000s
-SOfock:SL  1.00D-12    0.03%   66.20%    0.38%   11.48%   2.00000000s
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 3.06000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   31.62%    3.19%    5.40%   0.37000000s
+SOfock:SL  1.00D-12    0.03%   67.21%    0.29%   11.65%   4.40000000s
+>>> Total wall time: 6.00000000s
+>>> Total CPU-time : 6.11000000s
 
-########## END ITERATION NO.  15 ##########   Sat Sep 30 12:44:05 2006
+########## END ITERATION NO.  15 ##########   Thu Oct  5 00:20:10 2006
 
-It.  15    -150.8817581779      1.17D-12 -2.18D-07  1.72D-07   DIIS   9    3.06000000s   LL SL          Sat Sep 30
+It.  15    -150.8817581779      1.31D-12 -2.18D-07  1.72D-07   DIIS   9    6.11000000s   LL SL          Thu Oct  5
 
-########## START ITERATION NO.  16##########   Sat Sep 30 12:44:09 2006
+########## START ITERATION NO.  16##########   Thu Oct  5 00:20:16 2006
 
    16 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.39%   35.20%    3.87%    5.86%   1.00000000s
-SOfock:SL  1.00D-12    0.38%   70.86%    0.34%   13.26%   1.00000000s
->>> Total wall time: 3.00000000s
->>> Total CPU-time : 1.92000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.39%   35.20%    3.87%    5.86%   0.37000000s
+SOfock:SL  1.00D-12    0.38%   71.91%    0.24%   13.46%   4.33000000s
+>>> Total wall time: 5.00000000s
+>>> Total CPU-time : 5.10000000s
 
-########## END ITERATION NO.  16 ##########   Sat Sep 30 12:44:09 2006
+########## END ITERATION NO.  16 ##########   Thu Oct  5 00:20:16 2006
 
-It.  16    -150.8817581779      1.82D-12 -6.48D-08  5.92D-08   DIIS   9    1.92000000s   LL SL          Sat Sep 30
+It.  16    -150.8817581779      1.76D-12 -6.48D-08  5.92D-08   DIIS   9    5.10000000s   LL SL          Thu Oct  5
 
 
                                SCF - CYCLE
@@ -881,40 +877,40 @@ It.  16    -150.8817581779      1.82D-12 -6.48D-08  5.92D-08   DIIS   9    1.920
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -56.26264264619      1.00D+20  0.00D+00  0.00D+00               0.76000000s   Bare nuclei    Sat Sep 30
-It.   2    -149.9528105096      9.37D+01  6.02D+00  2.22D+00               3.05000000s   LL SL          Sat Sep 30
-It.   3    -150.6689114534      7.16D-01 -1.50D+00  1.09D+00   DIIS   2    2.83000000s   LL SL          Sat Sep 30
-It.   4    -150.8811940805      2.12D-01  5.00D-01  5.26D-02   DIIS   3    2.82000000s   LL SL          Sat Sep 30
-It.   5    -150.8817319669      5.38D-04 -1.29D-02  8.43D-03   DIIS   4    2.82000000s   LL SL          Sat Sep 30
-It.   6    -150.8817544620      2.25D-05  5.24D-04  2.02D-03   DIIS   5    2.83000000s   LL SL          Sat Sep 30
-It.   7    -150.8817575735      3.11D-06  3.00D-04  6.97D-04   DIIS   6    2.89000000s   LL SL          Sat Sep 30
-It.   8    -150.8817581093      5.36D-07  1.56D-04  2.35D-04   DIIS   7    2.98000000s   LL SL          Sat Sep 30
-It.   9    -150.8817581743      6.51D-08  5.66D-05  5.58D-05   DIIS   8    3.07000000s   LL SL          Sat Sep 30
-It.  10    -150.8817581776      3.30D-09 -1.46D-05  1.39D-05   DIIS   9    3.05000000s   LL SL          Sat Sep 30
-It.  11    -150.8817581778      1.88D-10 -2.56D-06  5.59D-06   DIIS   9    3.03000000s   LL SL          Sat Sep 30
-It.  12    -150.8817581779      4.37D-11  1.37D-06  2.57D-06   DIIS   9    3.00000000s   LL SL          Sat Sep 30
-It.  13    -150.8817581779      1.11D-11 -1.01D-06  1.13D-06   DIIS   9    3.03000000s   LL SL          Sat Sep 30
-It.  14    -150.8817581779      2.30D-12 -4.71D-07  5.12D-07   DIIS   9    2.94000000s   LL SL          Sat Sep 30
-It.  15    -150.8817581779      1.17D-12 -2.18D-07  1.72D-07   DIIS   9    3.06000000s   LL SL          Sat Sep 30
-It.  16    -150.8817581779      1.82D-12 -6.48D-08  5.92D-08   DIIS   9    1.92000000s   LL SL          Sat Sep 30
+It.   1    -56.26264264619      1.00D+20  0.00D+00  0.00D+00               0.76000000s   Bare nuclei    Thu Oct  5
+It.   2    -149.9528105096      9.37D+01  6.02D+00  2.22D+00               6.51000000s   LL SL          Thu Oct  5
+It.   3    -150.6689114535      7.16D-01 -1.50D+00  1.09D+00   DIIS   2    6.34000000s   LL SL          Thu Oct  5
+It.   4    -150.8811940805      2.12D-01  5.00D-01  5.26D-02   DIIS   3    6.38000000s   LL SL          Thu Oct  5
+It.   5    -150.8817319669      5.38D-04 -1.29D-02  8.43D-03   DIIS   4    6.40000000s   LL SL          Thu Oct  5
+It.   6    -150.8817544620      2.25D-05  5.24D-04  2.02D-03   DIIS   5    6.41000000s   LL SL          Thu Oct  5
+It.   7    -150.8817575735      3.11D-06  3.00D-04  6.97D-04   DIIS   6    6.46000000s   LL SL          Thu Oct  5
+It.   8    -150.8817581093      5.36D-07  1.56D-04  2.35D-04   DIIS   7    6.45000000s   LL SL          Thu Oct  5
+It.   9    -150.8817581743      6.51D-08  5.66D-05  5.58D-05   DIIS   8    6.47000000s   LL SL          Thu Oct  5
+It.  10    -150.8817581776      3.30D-09 -1.46D-05  1.39D-05   DIIS   9    6.45000000s   LL SL          Thu Oct  5
+It.  11    -150.8817581778      1.88D-10 -2.56D-06  5.59D-06   DIIS   9    6.43000000s   LL SL          Thu Oct  5
+It.  12    -150.8817581779      4.37D-11 -1.37D-06  2.57D-06   DIIS   9    6.33000000s   LL SL          Thu Oct  5
+It.  13    -150.8817581779      1.11D-11  1.01D-06  1.13D-06   DIIS   9    6.27000000s   LL SL          Thu Oct  5
+It.  14    -150.8817581779      2.33D-12 -4.71D-07  5.12D-07   DIIS   9    6.19000000s   LL SL          Thu Oct  5
+It.  15    -150.8817581779      1.31D-12 -2.18D-07  1.72D-07   DIIS   9    6.11000000s   LL SL          Thu Oct  5
+It.  16    -150.8817581779      1.76D-12 -6.48D-08  5.92D-08   DIIS   9    5.10000000s   LL SL          Thu Oct  5
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   16 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00000000s
-      LL SL        :    3.80000000s
+      No 2-ints    :    1.00000000s
+      LL SL        :    6.33333333s
 
 
                                TOTAL ENERGY
                                ------------
 
-   Electronic energy                        :    -187.03304387879879
+   Electronic energy                        :    -187.03304387879882
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      36.15128423750657
    SS Coulombic correction                  :       0.00000146340132
 
    Sum of all contributions to the energy
-   Total energy                             :    -150.88175817789090
+   Total energy                             :    -150.88175817789096
 
 
                            WARNING from EIGCHK
@@ -935,15 +931,15 @@ It.  16    -150.8817581779      1.82D-12 -6.48D-08  5.92D-08   DIIS   9    1.920
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--20.65295421118008  ( 2)   -20.65269840895656  ( 2)    -1.45899753256498  ( 2)    -1.21807771916983  ( 2)    -0.73902162172371  ( 2)
- -0.64794180943117  ( 2)    -0.58089636133204  ( 2)    -0.54827699806640  ( 2)    -0.47192101959790  ( 2)
+-20.65295421116079  ( 2)   -20.65269840896651  ( 2)    -1.45899753255493  ( 2)    -1.21807771916434  ( 2)    -0.73902162171117  ( 2)
+ -0.64794180943561  ( 2)    -0.58089636134449  ( 2)    -0.54827699805811  ( 2)    -0.47192101960897  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.16214318502830  ( 2)     0.18298529147173  ( 2)     0.29599164109952  ( 2)     0.80207864039612  ( 2)     0.81752863158968  ( 2)
-  1.11644038750663  ( 2)     1.13293505773330  ( 2)     1.18003248082060  ( 2)     1.20407746054476  ( 2)     1.29582457379100  ( 2)
-  1.30115936225697  ( 2)     1.49820312497354  ( 2)     1.53695219953571  ( 2)     1.54549185367124  ( 2)     1.72188144617886  ( 2)
-  1.88066789757800  ( 2)     2.03588402453464  ( 2)     2.37586393734530  ( 2)     2.42198170642106  ( 2)     2.71525081444120  ( 2)
-  2.71891364367868  ( 2)     2.97536561756296  ( 2)     3.25811536495347  ( 2)     3.27154247235806  ( 2)     3.36333440692353  ( 2)
-  3.49735616393008  ( 2)     3.85573394835269  ( 2)     3.97536780975167  ( 2)     4.18432971742566  ( 2)
+  0.16214318503220  ( 2)     0.18298529147701  ( 2)     0.29599164108129  ( 2)     0.80207864039526  ( 2)     0.81752863158594  ( 2)
+  1.11644038751047  ( 2)     1.13293505777458  ( 2)     1.18003248080153  ( 2)     1.20407746050284  ( 2)     1.29582457382157  ( 2)
+  1.30115936226181  ( 2)     1.49820312499104  ( 2)     1.53695219954963  ( 2)     1.54549185371515  ( 2)     1.72188144616728  ( 2)
+  1.88066789757758  ( 2)     2.03588402453226  ( 2)     2.37586393736095  ( 2)     2.42198170639479  ( 2)     2.71525081443450  ( 2)
+  2.71891364365571  ( 2)     2.97536561754915  ( 2)     3.25811536494943  ( 2)     3.27154247237171  ( 2)     3.36333440690650  ( 2)
+  3.49735616392656  ( 2)     3.85573394834966  ( 2)     3.97536780971935  ( 2)     4.18432971742689  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.16214319 au (symmetry E1 )
@@ -992,8 +988,8 @@ It.  16    -150.8817581779      1.82D-12 -6.48D-08  5.92D-08   DIIS   9    1.920
     - Active orbitals    : No electrons
     - Secondary orbitals :     10..    38                                          
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -150.881758177889083
-* Heading : PV contribution to NMR shielding                 Sat Sep 30 12:44:09 2006
+* REACMO: Coefficients read from file DFCOEF - Total energy: -150.881758177889196
+* Heading : PV contribution to NMR shielding                 Thu Oct  5 00:20:16 2006
 
 
 
@@ -1004,38 +1000,34 @@ MAGFLDX          - Symmetry: A    T-
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file /state/partition1/ba
-* Heading : PV contribution to NMR shielding                 Sat Sep 30 12:44:11 2006
+* Heading : PV contribution to NMR shielding                 Thu Oct  5 00:20:21 2006
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file /state/partition1/ba
-* Heading : PV contribution to NMR shielding                 Sat Sep 30 12:43:15 2006
+* Heading : PV contribution to NMR shielding                 Thu Oct  5 00:18:45 2006
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  4.67D-09
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.14D+03
 * Screening threshold in LR solver scaled with norm of property vector:  6.1055D+00
   and changed to:  2.8530D-08
 
-########## START MICROITERATION NO.   1 ##########   Sat Sep 30 12:44:12 2006
+########## START MICROITERATION NO.   1 ##########   Thu Oct  5 00:20:22 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    0.00%   22.78%    0.00%    2.71%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :39.00000000s
-SOfock:SL  2.85D-08    0.00%   41.15%    0.00%    6.96%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :41.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    0.00%   22.78%    0.00%    2.71%   0.38000000s
+SOfock:SL  2.85D-08    0.00%   41.72%    0.00%    7.08%   4.63000000s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.47E+00  1.47E+00
 
-########## START MICROITERATION NO.   2 ##########   Sat Sep 30 12:44:15 2006
+########## START MICROITERATION NO.   2 ##########   Thu Oct  5 00:20:27 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    0.00%   23.10%    0.00%    4.74%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :42.00000000s
-SOfock:SL  2.85D-08    0.00%   43.98%    0.00%    8.47%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :44.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    0.00%   23.10%    0.00%    4.74%   0.37000000s
+SOfock:SL  2.85D-08    0.00%   44.62%    0.00%    8.57%   4.60000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   6.44D-08
 (XRSRED) oo-norm of anti-symmetry of REDE =   3.22D-08      (element (  2,  1))
@@ -1046,13 +1038,11 @@ SOfock:SL  2.85D-08    0.00%   43.98%    0.00%    8.47%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  4.14E-01  4.14E-01
 
-########## START MICROITERATION NO.   3 ##########   Sat Sep 30 12:44:18 2006
+########## START MICROITERATION NO.   3 ##########   Thu Oct  5 00:20:33 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    0.00%   23.60%    0.00%    7.48%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :45.00000000s
-SOfock:SL  2.85D-08    0.00%   48.00%    0.00%   10.12%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :46.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    0.00%   23.60%    0.00%    7.48%   0.37000000s
+SOfock:SL  2.85D-08    0.00%   48.73%    0.00%   10.19%   4.54000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.14D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   3.22D-08      (element (  2,  1))
@@ -1063,13 +1053,11 @@ SOfock:SL  2.85D-08    0.00%   48.00%    0.00%   10.12%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  8.85E-02  8.85E-02
 
-########## START MICROITERATION NO.   4 ##########   Sat Sep 30 12:44:21 2006
+########## START MICROITERATION NO.   4 ##########   Thu Oct  5 00:20:38 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    0.00%   24.90%    0.00%   13.23%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   :46.00000000s
-SOfock:SL  2.85D-08    0.03%   52.93%    0.00%   13.72%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :48.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    0.00%   24.90%    0.00%   13.23%   0.37000000s
+SOfock:SL  2.85D-08    0.03%   53.77%    0.00%   13.72%   4.44000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   3.98D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   9.05D-08      (element (  4,  1))
@@ -1080,13 +1068,11 @@ SOfock:SL  2.85D-08    0.03%   52.93%    0.00%   13.72%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  3.62E-02  3.62E-02
 
-########## START MICROITERATION NO.   5 ##########   Sat Sep 30 12:44:24 2006
+########## START MICROITERATION NO.   5 ##########   Thu Oct  5 00:20:43 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    0.00%   26.61%    0.00%   16.43%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   :48.00000000s
-SOfock:SL  2.85D-08    0.26%   57.32%    0.00%   14.98%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :50.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    0.00%   26.61%    0.00%   16.43%   0.37000000s
+SOfock:SL  2.85D-08    0.27%   58.23%    0.00%   14.93%   4.35000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   6.54D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   9.05D-08      (element (  4,  1))
@@ -1097,13 +1083,11 @@ SOfock:SL  2.85D-08    0.26%   57.32%    0.00%   14.98%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.20E-02  1.20E-02
 
-########## START MICROITERATION NO.   6 ##########   Sat Sep 30 12:44:26 2006
+########## START MICROITERATION NO.   6 ##########   Thu Oct  5 00:20:48 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    0.00%   28.59%    0.00%   19.84%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :51.00000000s
-SOfock:SL  2.85D-08    0.82%   61.32%    0.00%   16.65%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :53.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    0.00%   28.59%    0.00%   19.84%   0.37000000s
+SOfock:SL  2.85D-08    0.85%   62.29%    0.00%   16.56%   4.28000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.39D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   2.18D-07      (element (  6,  1))
@@ -1114,13 +1098,11 @@ SOfock:SL  2.85D-08    0.82%   61.32%    0.00%   16.65%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  3.13E-03  3.13E-03
 
-########## START MICROITERATION NO.   7 ##########   Sat Sep 30 12:44:29 2006
+########## START MICROITERATION NO.   7 ##########   Thu Oct  5 00:20:53 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    0.00%   32.16%    0.00%   21.30%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :54.00000000s
-SOfock:SL  2.85D-08    2.40%   65.36%    0.00%   19.38%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :55.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    0.00%   32.16%    0.00%   21.30%   0.36000000s
+SOfock:SL  2.85D-08    2.50%   66.31%    0.00%   19.36%   4.13000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.78D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   2.18D-07      (element (  6,  1))
@@ -1131,13 +1113,11 @@ SOfock:SL  2.85D-08    2.40%   65.36%    0.00%   19.38%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.34E-03  1.34E-03
 
-########## START MICROITERATION NO.   8 ##########   Sat Sep 30 12:44:31 2006
+########## START MICROITERATION NO.   8 ##########   Thu Oct  5 00:20:58 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    0.25%   37.13%    0.00%   23.98%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   :55.00000000s
-SOfock:SL  2.85D-08    7.47%   66.11%    0.00%   21.53%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :57.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    0.25%   37.13%    0.00%   23.98%   0.36000000s
+SOfock:SL  2.85D-08    7.73%   66.91%    0.00%   21.62%   3.84000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   2.35D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   2.18D-07      (element (  6,  1))
@@ -1148,13 +1128,11 @@ SOfock:SL  2.85D-08    7.47%   66.11%    0.00%   21.53%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  3.41E-03  3.41E-03
 
-########## START MICROITERATION NO.   9 ##########   Sat Sep 30 12:44:34 2006
+########## START MICROITERATION NO.   9 ##########   Thu Oct  5 00:21:03 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    0.00%   31.88%    0.00%   19.55%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :58.00000000s
-SOfock:SL  2.85D-08    2.06%   64.74%    0.00%   19.94%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :59.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    0.00%   31.88%    0.00%   19.55%   0.37000000s
+SOfock:SL  2.85D-08    2.15%   65.69%    0.00%   19.98%   4.13000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   3.83D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   5.74D-07      (element (  9,  1))
@@ -1165,13 +1143,11 @@ SOfock:SL  2.85D-08    2.06%   64.74%    0.00%   19.94%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.37E-03  2.37E-03
 
-########## START MICROITERATION NO.  10 ##########   Sat Sep 30 12:44:37 2006
+########## START MICROITERATION NO.  10 ##########   Thu Oct  5 00:21:07 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    0.00%   33.56%    0.00%   17.23%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   :59.00000000s
-SOfock:SL  2.85D-08    3.34%   65.89%    0.00%   21.10%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 1min 1.000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    0.00%   33.56%    0.00%   17.23%   0.36000000s
+SOfock:SL  2.85D-08    3.46%   66.82%    0.00%   21.29%   4.05000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   5.13D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   5.74D-07      (element (  9,  1))
@@ -1182,13 +1158,11 @@ SOfock:SL  2.85D-08    3.34%   65.89%    0.00%   21.10%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  3.44E-04  3.44E-04
 
-########## START MICROITERATION NO.  11 ##########   Sat Sep 30 12:44:39 2006
+########## START MICROITERATION NO.  11 ##########   Thu Oct  5 00:21:12 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    0.53%   46.36%    0.00%   13.79%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 2.00000000s
-SOfock:SL  2.85D-08   21.95%   61.27%    0.00%   23.78%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 3.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    0.53%   46.36%    0.00%   13.79%   0.36000000s
+SOfock:SL  2.85D-08   22.62%   61.66%    0.00%   24.88%   3.15000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   7.36D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   5.74D-07      (element (  9,  1))
@@ -1199,13 +1173,11 @@ SOfock:SL  2.85D-08   21.95%   61.27%    0.00%   23.78%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.21E-04  1.21E-04
 
-########## START MICROITERATION NO.  12 ##########   Sat Sep 30 12:44:42 2006
+########## START MICROITERATION NO.  12 ##########   Thu Oct  5 00:21:16 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    1.14%   54.44%    0.00%   15.07%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 3.00000000s
-SOfock:SL  2.85D-08   45.34%   44.87%    0.00%   25.02%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 5.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    1.14%   54.44%    0.00%   15.07%   0.36000000s
+SOfock:SL  2.85D-08   46.66%   44.58%    0.00%   26.76%   2.12000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   9.29D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   7.61D-07      (element ( 12,  1))
@@ -1216,13 +1188,11 @@ SOfock:SL  2.85D-08   45.34%   44.87%    0.00%   25.02%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  7.80E-05  7.80E-05
 
-########## START MICROITERATION NO.  13 ##########   Sat Sep 30 12:44:44 2006
+########## START MICROITERATION NO.  13 ##########   Thu Oct  5 00:21:19 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.85D-08    1.88%   57.78%    0.00%   16.74%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 6.00000000s
-SOfock:SL  2.85D-08   57.27%   35.47%    0.00%   23.28%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 7.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.85D-08    1.88%   57.78%    0.00%   16.74%   0.35000000s
+SOfock:SL  2.85D-08   58.90%   34.84%    0.00%   24.93%   1.67000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.14D-05
 (XRSRED) oo-norm of anti-symmetry of REDE =   7.92D-07      (element ( 13,  1))
@@ -1242,55 +1212,55 @@ SOfock:SL  2.85D-08   57.27%   35.47%    0.00%   23.28%   1.00000000s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   1.95000000s  (LL SL    )     [  1]
+* It.  1   5.33000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.47D+00 |   1.47D+00
 ==============================================
-* It.  2   1.94000000s  (LL SL    )     [  1]
+* It.  2   5.31000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   4.14D-01 |   4.14D-01
 ==============================================
-* It.  3   1.93000000s  (LL SL    )     [  1]
+* It.  3   5.24000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   8.85D-02 |   8.85D-02
 ==============================================
-* It.  4   1.95000000s  (LL SL    )     [  1]
+* It.  4   5.14000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   3.62D-02 |   3.62D-02
 ==============================================
-* It.  5   1.85000000s  (LL SL    )     [  1]
+* It.  5   5.04000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.20D-02 |   1.20D-02
 ==============================================
-* It.  6   1.90000000s  (LL SL    )     [  1]
+* It.  6   4.97000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   3.13D-03 |   3.13D-03
 ==============================================
-* It.  7   1.80000000s  (LL SL    )     [  1]
+* It.  7   4.83000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.34D-03 |   1.34D-03
 ==============================================
-* It.  8   1.74000000s  (LL SL    )     [  1]
+* It.  8   4.53000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   3.41D-03 |   3.41D-03
 ==============================================
-* It.  9   1.86000000s  (LL SL    )     [  1]
+* It.  9   4.84000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   2.37D-03 |   2.37D-03
 ==============================================
-* It. 10   1.81000000s  (LL SL    )     [  1]
+* It. 10   4.75000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   3.44D-04 |   3.44D-04
 ==============================================
-* It. 11   1.57000000s  (LL SL    )     [  1]
+* It. 11   3.85000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.21D-04 |   1.21D-04
 ==============================================
-* It. 12   1.30000000s  (LL SL    )     [  1]
+* It. 12   2.81000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   7.80D-05 |   7.80D-05
 ==============================================
-* It. 13   1.22000000s  (LL SL    )     [  1]
+* It. 13   2.34000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   4.61D-05 |   4.61D-05
 ==============================================
@@ -1306,26 +1276,22 @@ MAGFLDY          - Symmetry: A    T-
 * Screening threshold in LR solver scaled with norm of property vector:  7.6254D-01
   and changed to:  3.5633D-09
 
-########## START MICROITERATION NO.   1 ##########   Sat Sep 30 12:44:47 2006
+########## START MICROITERATION NO.   1 ##########   Thu Oct  5 00:21:22 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.00%   22.82%    0.00%    2.59%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 8.00000000s
-SOfock:SL  3.56D-09    0.00%   41.53%    0.00%    5.10%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 9.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.00%   22.82%    0.00%    2.59%   0.37000000s
+SOfock:SL  3.56D-09    0.00%   42.11%    0.00%    5.17%   4.66000000s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.32E-01  1.32E-01
 
-########## START MICROITERATION NO.   2 ##########   Sat Sep 30 12:44:50 2006
+########## START MICROITERATION NO.   2 ##########   Thu Oct  5 00:21:28 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.00%   23.31%    0.00%    4.52%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 9.00000000s
-SOfock:SL  3.56D-09    0.00%   45.90%    0.00%    7.03%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :11.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.00%   23.31%    0.00%    4.52%   0.38000000s
+SOfock:SL  3.56D-09    0.00%   46.59%    0.00%    7.10%   4.60000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.04D-09
 (XRSRED) oo-norm of anti-symmetry of REDE =   5.20D-10      (element (  2,  1))
@@ -1336,13 +1302,11 @@ SOfock:SL  3.56D-09    0.00%   45.90%    0.00%    7.03%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.80E-02  2.80E-02
 
-########## START MICROITERATION NO.   3 ##########   Sat Sep 30 12:44:52 2006
+########## START MICROITERATION NO.   3 ##########   Thu Oct  5 00:21:33 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.00%   23.99%    0.00%    5.00%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :12.00000000s
-SOfock:SL  3.56D-09    0.01%   49.34%    0.00%    7.83%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :14.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.00%   23.99%    0.00%    5.00%   0.37000000s
+SOfock:SL  3.56D-09    0.01%   50.11%    0.00%    7.90%   4.55000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   8.37D-09
 (XRSRED) oo-norm of anti-symmetry of REDE =   3.06D-09      (element (  3,  1))
@@ -1353,13 +1317,11 @@ SOfock:SL  3.56D-09    0.01%   49.34%    0.00%    7.83%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  6.37E-03  6.37E-03
 
-########## START MICROITERATION NO.   4 ##########   Sat Sep 30 12:44:55 2006
+########## START MICROITERATION NO.   4 ##########   Thu Oct  5 00:21:38 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.00%   25.59%    0.00%    8.51%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :15.00000000s
-SOfock:SL  3.56D-09    0.08%   54.42%    0.00%   11.71%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :17.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.00%   25.59%    0.00%    8.51%   0.37000000s
+SOfock:SL  3.56D-09    0.08%   55.28%    0.00%   11.79%   4.45000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.49D-08
 (XRSRED) oo-norm of anti-symmetry of REDE =   3.06D-09      (element (  3,  1))
@@ -1370,13 +1332,11 @@ SOfock:SL  3.56D-09    0.08%   54.42%    0.00%   11.71%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  4.60E-03  4.60E-03
 
-########## START MICROITERATION NO.   5 ##########   Sat Sep 30 12:44:58 2006
+########## START MICROITERATION NO.   5 ##########   Thu Oct  5 00:21:44 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.00%   25.69%    0.00%   11.14%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :18.00000000s
-SOfock:SL  3.56D-09    0.05%   54.20%    0.00%   12.81%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :19.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.00%   25.69%    0.00%   11.14%   0.37000000s
+SOfock:SL  3.56D-09    0.06%   55.04%    0.00%   12.85%   4.45000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   2.02D-08
 (XRSRED) oo-norm of anti-symmetry of REDE =   3.06D-09      (element (  3,  1))
@@ -1387,13 +1347,11 @@ SOfock:SL  3.56D-09    0.05%   54.20%    0.00%   12.81%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  9.57E-04  9.57E-04
 
-########## START MICROITERATION NO.   6 ##########   Sat Sep 30 12:45:01 2006
+########## START MICROITERATION NO.   6 ##########   Thu Oct  5 00:21:49 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.00%   29.92%    0.00%   10.26%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   :19.00000000s
-SOfock:SL  3.56D-09    0.72%   62.13%    0.00%   16.24%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :21.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.00%   29.92%    0.00%   10.26%   0.37000000s
+SOfock:SL  3.56D-09    0.74%   63.07%    0.00%   16.41%   4.29000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   4.81D-08
 (XRSRED) oo-norm of anti-symmetry of REDE =   1.25D-08      (element (  6,  1))
@@ -1404,13 +1362,11 @@ SOfock:SL  3.56D-09    0.72%   62.13%    0.00%   16.24%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  4.03E-04  4.03E-04
 
-########## START MICROITERATION NO.   7 ##########   Sat Sep 30 12:45:04 2006
+########## START MICROITERATION NO.   7 ##########   Thu Oct  5 00:21:54 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.00%   32.74%    0.00%   14.46%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   :21.00000000s
-SOfock:SL  3.56D-09    2.21%   65.44%    0.00%   18.58%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :23.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.00%   32.74%    0.00%   14.46%   0.37000000s
+SOfock:SL  3.56D-09    2.29%   66.38%    0.00%   18.73%   4.15000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.08D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   2.77D-08      (element (  7,  1))
@@ -1421,13 +1377,11 @@ SOfock:SL  3.56D-09    2.21%   65.44%    0.00%   18.58%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  4.37E-04  4.37E-04
 
-########## START MICROITERATION NO.   8 ##########   Sat Sep 30 12:45:06 2006
+########## START MICROITERATION NO.   8 ##########   Thu Oct  5 00:21:59 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.00%   30.69%    0.00%   13.59%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :24.00000000s
-SOfock:SL  3.56D-09    1.14%   63.53%    0.00%   19.89%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :26.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.00%   30.69%    0.00%   13.59%   0.37000000s
+SOfock:SL  3.56D-09    1.18%   64.49%    0.00%   20.08%   4.21000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.56D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   2.77D-08      (element (  7,  1))
@@ -1438,13 +1392,11 @@ SOfock:SL  3.56D-09    1.14%   63.53%    0.00%   19.89%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  8.32E-05  8.32E-05
 
-########## START MICROITERATION NO.   9 ##########   Sat Sep 30 12:45:09 2006
+########## START MICROITERATION NO.   9 ##########   Thu Oct  5 00:22:04 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.19%   41.14%    0.00%   12.57%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :27.00000000s
-SOfock:SL  3.56D-09   11.75%   65.63%    0.00%   22.83%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :28.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.19%   41.14%    0.00%   12.57%   0.36000000s
+SOfock:SL  3.56D-09   12.15%   66.28%    0.00%   23.55%   3.58000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.78D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   2.77D-08      (element (  7,  1))
@@ -1455,13 +1407,11 @@ SOfock:SL  3.56D-09   11.75%   65.63%    0.00%   22.83%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  7.30E-05  7.30E-05
 
-########## START MICROITERATION NO.  10 ##########   Sat Sep 30 12:45:11 2006
+########## START MICROITERATION NO.  10 ##########   Thu Oct  5 00:22:08 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.39%   42.55%    0.00%   20.21%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :29.00000000s
-SOfock:SL  3.56D-09   14.98%   64.01%    0.00%   23.53%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :31.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.39%   42.55%    0.00%   20.21%   0.36000000s
+SOfock:SL  3.56D-09   15.45%   64.59%    0.00%   24.06%   3.44000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.87D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   2.77D-08      (element (  7,  1))
@@ -1472,13 +1422,11 @@ SOfock:SL  3.56D-09   14.98%   64.01%    0.00%   23.53%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.09E-04  1.09E-04
 
-########## START MICROITERATION NO.  11 ##########   Sat Sep 30 12:45:14 2006
+########## START MICROITERATION NO.  11 ##########   Thu Oct  5 00:22:12 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.39%   39.56%    0.00%   11.80%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :32.00000000s
-SOfock:SL  3.56D-09    8.30%   67.22%    0.00%   21.90%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :33.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.39%   39.56%    0.00%   11.80%   0.36000000s
+SOfock:SL  3.56D-09    8.55%   68.02%    0.00%   22.46%   3.75000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   2.17D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   2.77D-08      (element (  7,  1))
@@ -1489,13 +1437,11 @@ SOfock:SL  3.56D-09    8.30%   67.22%    0.00%   21.90%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  7.84E-05  7.84E-05
 
-########## START MICROITERATION NO.  12 ##########   Sat Sep 30 12:45:16 2006
+########## START MICROITERATION NO.  12 ##########   Thu Oct  5 00:22:17 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.19%   41.26%    0.00%   11.92%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :34.00000000s
-SOfock:SL  3.56D-09    9.68%   66.91%    0.00%   22.83%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :36.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.19%   41.26%    0.00%   11.92%   0.37000000s
+SOfock:SL  3.56D-09   10.01%   67.61%    0.00%   23.50%   3.68000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   2.24D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   2.77D-08      (element (  7,  1))
@@ -1506,13 +1452,11 @@ SOfock:SL  3.56D-09    9.68%   66.91%    0.00%   22.83%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  3.02E-05  3.02E-05
 
-########## START MICROITERATION NO.  13 ##########   Sat Sep 30 12:45:19 2006
+########## START MICROITERATION NO.  13 ##########   Thu Oct  5 00:22:21 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    0.39%   47.41%    0.00%   15.07%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :37.00000000s
-SOfock:SL  3.56D-09   25.40%   57.85%    0.00%   26.27%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :38.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    0.39%   47.41%    0.00%   15.07%   0.36000000s
+SOfock:SL  3.56D-09   26.23%   58.06%    0.00%   27.49%   2.97000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   4.77D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   1.11D-07      (element ( 13,  1))
@@ -1523,13 +1467,11 @@ SOfock:SL  3.56D-09   25.40%   57.85%    0.00%   26.27%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.21E-05  1.21E-05
 
-########## START MICROITERATION NO.  14 ##########   Sat Sep 30 12:45:21 2006
+########## START MICROITERATION NO.  14 ##########   Thu Oct  5 00:22:25 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  3.56D-09    1.10%   54.45%    0.00%   17.58%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :39.00000000s
-SOfock:SL  3.56D-09   45.20%   44.90%    0.00%   26.14%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :40.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.56D-09    1.10%   54.45%    0.00%   17.58%   0.36000000s
+SOfock:SL  3.56D-09   46.55%   44.59%    0.00%   27.76%   2.10000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   5.15D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   1.11D-07      (element ( 13,  1))
@@ -1549,59 +1491,59 @@ SOfock:SL  3.56D-09   45.20%   44.90%    0.00%   26.14%   1.00000000s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   1.98000000s  (LL SL    )     [  1]
+* It.  1   5.37000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.32D-01 |   1.32D-01
 ==============================================
-* It.  2   1.99000000s  (LL SL    )     [  1]
+* It.  2   5.31000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   2.80D-02 |   2.80D-02
 ==============================================
-* It.  3   2.06000000s  (LL SL    )     [  1]
+* It.  3   5.24000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   6.37D-03 |   6.37D-03
 ==============================================
-* It.  4   1.96000000s  (LL SL    )     [  1]
+* It.  4   5.16000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   4.60D-03 |   4.60D-03
 ==============================================
-* It.  5   1.93000000s  (LL SL    )     [  1]
+* It.  5   5.14000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   9.57D-04 |   9.57D-04
 ==============================================
-* It.  6   1.85000000s  (LL SL    )     [  1]
+* It.  6   5.00000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   4.03D-04 |   4.03D-04
 ==============================================
-* It.  7   1.88000000s  (LL SL    )     [  1]
+* It.  7   4.84000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   4.37D-04 |   4.37D-04
 ==============================================
-* It.  8   1.96000000s  (LL SL    )     [  1]
+* It.  8   4.92000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   8.32D-05 |   8.32D-05
 ==============================================
-* It.  9   1.71000000s  (LL SL    )     [  1]
+* It.  9   4.27000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   7.30D-05 |   7.30D-05
 ==============================================
-* It. 10   1.66000000s  (LL SL    )     [  1]
+* It. 10   4.14000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.09D-04 |   1.09D-04
 ==============================================
-* It. 11   1.72000000s  (LL SL    )     [  1]
+* It. 11   4.45000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   7.84D-05 |   7.84D-05
 ==============================================
-* It. 12   1.68000000s  (LL SL    )     [  1]
+* It. 12   4.37000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   3.02D-05 |   3.02D-05
 ==============================================
-* It. 13   1.55000000s  (LL SL    )     [  1]
+* It. 13   3.67000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.21D-05 |   1.21D-05
 ==============================================
-* It. 14   1.31000000s  (LL SL    )     [  1]
+* It. 14   2.78000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   3.84D-06 |   3.84D-06
 ==============================================
@@ -1617,26 +1559,22 @@ MAGFLDZ          - Symmetry: A    T-
 * Screening threshold in LR solver scaled with norm of property vector:  5.8067D+00
   and changed to:  2.7134D-08
 
-########## START MICROITERATION NO.   1 ##########   Sat Sep 30 12:45:25 2006
+########## START MICROITERATION NO.   1 ##########   Thu Oct  5 00:22:29 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.00%   22.80%    0.00%    2.71%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   :40.00000000s
-SOfock:SL  2.71D-08    0.00%   41.14%    0.00%    6.68%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :42.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.00%   22.80%    0.00%    2.71%   0.37000000s
+SOfock:SL  2.71D-08    0.00%   41.71%    0.00%    6.79%   4.63000000s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.12E+00  1.12E+00
 
-########## START MICROITERATION NO.   2 ##########   Sat Sep 30 12:45:27 2006
+########## START MICROITERATION NO.   2 ##########   Thu Oct  5 00:22:34 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.00%   23.30%    0.00%    6.07%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :43.00000000s
-SOfock:SL  2.71D-08    0.00%   45.47%    0.00%    9.04%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :45.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.00%   23.30%    0.00%    6.07%   0.37000000s
+SOfock:SL  2.71D-08    0.00%   46.15%    0.00%    9.12%   4.56000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   3.42D-08
 (XRSRED) oo-norm of anti-symmetry of REDE =   1.71D-08      (element (  2,  1))
@@ -1647,13 +1585,11 @@ SOfock:SL  2.71D-08    0.00%   45.47%    0.00%    9.04%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  5.71E-01  5.71E-01
 
-########## START MICROITERATION NO.   3 ##########   Sat Sep 30 12:45:30 2006
+########## START MICROITERATION NO.   3 ##########   Thu Oct  5 00:22:39 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.00%   23.49%    0.00%    6.72%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :46.00000000s
-SOfock:SL  2.71D-08    0.00%   46.88%    0.00%    9.41%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :48.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.00%   23.49%    0.00%    6.72%   0.38000000s
+SOfock:SL  2.71D-08    0.00%   47.59%    0.00%    9.48%   4.53000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   9.98D-08
 (XRSRED) oo-norm of anti-symmetry of REDE =   2.90D-08      (element (  3,  1))
@@ -1664,13 +1600,11 @@ SOfock:SL  2.71D-08    0.00%   46.88%    0.00%    9.41%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  9.98E-02  9.98E-02
 
-########## START MICROITERATION NO.   4 ##########   Sat Sep 30 12:45:33 2006
+########## START MICROITERATION NO.   4 ##########   Thu Oct  5 00:22:44 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.00%   24.87%    0.00%   11.58%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :49.00000000s
-SOfock:SL  2.71D-08    0.03%   52.84%    0.00%   12.36%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :50.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.00%   24.87%    0.00%   11.58%   0.37000000s
+SOfock:SL  2.71D-08    0.03%   53.68%    0.00%   12.37%   4.45000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   3.00D-07
 (XRSRED) oo-norm of anti-symmetry of REDE =   8.64D-08      (element (  4,  1))
@@ -1681,13 +1615,11 @@ SOfock:SL  2.71D-08    0.03%   52.84%    0.00%   12.36%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.26E-02  2.26E-02
 
-########## START MICROITERATION NO.   5 ##########   Sat Sep 30 12:45:36 2006
+########## START MICROITERATION NO.   5 ##########   Thu Oct  5 00:22:50 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.00%   27.85%    0.00%   13.67%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   :50.00000000s
-SOfock:SL  2.71D-08    0.57%   59.22%    0.00%   14.77%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :52.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.00%   27.85%    0.00%   13.67%   0.36000000s
+SOfock:SL  2.71D-08    0.59%   60.15%    0.00%   14.80%   4.32000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.70D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   6.44D-07      (element (  5,  1))
@@ -1698,13 +1630,11 @@ SOfock:SL  2.71D-08    0.57%   59.22%    0.00%   14.77%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  5.89E-03  5.89E-03
 
-########## START MICROITERATION NO.   6 ##########   Sat Sep 30 12:45:38 2006
+########## START MICROITERATION NO.   6 ##########   Thu Oct  5 00:22:55 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.00%   31.01%    0.00%   14.79%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :53.00000000s
-SOfock:SL  2.71D-08    2.09%   64.02%    0.00%   17.09%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :55.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.00%   31.01%    0.00%   14.79%   0.37000000s
+SOfock:SL  2.71D-08    2.17%   64.97%    0.00%   17.18%   4.16000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   2.14D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   6.44D-07      (element (  5,  1))
@@ -1715,13 +1645,11 @@ SOfock:SL  2.71D-08    2.09%   64.02%    0.00%   17.09%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.97E-03  1.97E-03
 
-########## START MICROITERATION NO.   7 ##########   Sat Sep 30 12:45:41 2006
+########## START MICROITERATION NO.   7 ##########   Thu Oct  5 00:23:00 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.09%   34.82%    0.00%   13.83%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :56.00000000s
-SOfock:SL  2.71D-08    6.46%   65.04%    0.00%   20.23%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :57.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.09%   34.82%    0.00%   13.83%   0.37000000s
+SOfock:SL  2.71D-08    6.71%   65.87%    0.00%   20.59%   3.91000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   2.79D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   6.44D-07      (element (  5,  1))
@@ -1732,13 +1660,11 @@ SOfock:SL  2.71D-08    6.46%   65.04%    0.00%   20.23%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.07E-03  2.07E-03
 
-########## START MICROITERATION NO.   8 ##########   Sat Sep 30 12:45:44 2006
+########## START MICROITERATION NO.   8 ##########   Thu Oct  5 00:23:04 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.00%   33.80%    0.00%   15.34%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   :57.00000000s
-SOfock:SL  2.71D-08    4.57%   65.03%    0.00%   20.47%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :59.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.00%   33.80%    0.00%   15.34%   0.36000000s
+SOfock:SL  2.71D-08    4.75%   65.89%    0.00%   20.73%   4.01000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   3.55D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   6.44D-07      (element (  5,  1))
@@ -1749,13 +1675,11 @@ SOfock:SL  2.71D-08    4.57%   65.03%    0.00%   20.47%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  3.50E-03  3.50E-03
 
-########## START MICROITERATION NO.   9 ##########   Sat Sep 30 12:45:46 2006
+########## START MICROITERATION NO.   9 ##########   Thu Oct  5 00:23:09 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.00%   31.84%    0.00%   14.87%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 1min 0.000s
-SOfock:SL  2.71D-08    2.70%   63.83%    0.00%   19.30%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 2.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.00%   31.84%    0.00%   14.87%   0.37000000s
+SOfock:SL  2.71D-08    2.81%   64.74%    0.00%   19.47%   4.13000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   4.04D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   6.44D-07      (element (  5,  1))
@@ -1766,13 +1690,11 @@ SOfock:SL  2.71D-08    2.70%   63.83%    0.00%   19.30%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.55E-03  2.55E-03
 
-########## START MICROITERATION NO.  10 ##########   Sat Sep 30 12:45:49 2006
+########## START MICROITERATION NO.  10 ##########   Thu Oct  5 00:23:14 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.07%   32.72%    0.00%   17.04%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 2.00000000s
-SOfock:SL  2.71D-08    3.34%   65.08%    0.00%   19.93%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 4.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.07%   32.72%    0.00%   17.04%   0.37000000s
+SOfock:SL  2.71D-08    3.47%   65.99%    0.00%   20.08%   4.06000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   5.65D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   6.44D-07      (element (  5,  1))
@@ -1783,13 +1705,11 @@ SOfock:SL  2.71D-08    3.34%   65.08%    0.00%   19.93%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.75E-03  1.75E-03
 
-########## START MICROITERATION NO.  11 ##########   Sat Sep 30 12:45:51 2006
+########## START MICROITERATION NO.  11 ##########   Thu Oct  5 00:23:19 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.07%   35.01%    0.00%   17.63%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 5.00000000s
-SOfock:SL  2.71D-08    5.30%   65.84%    0.00%   20.38%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 7.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.07%   35.01%    0.00%   17.63%   0.37000000s
+SOfock:SL  2.71D-08    5.49%   66.71%    0.00%   20.58%   3.94000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   6.68D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   6.44D-07      (element (  5,  1))
@@ -1800,13 +1720,11 @@ SOfock:SL  2.71D-08    5.30%   65.84%    0.00%   20.38%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  4.84E-04  4.84E-04
 
-########## START MICROITERATION NO.  12 ##########   Sat Sep 30 12:45:54 2006
+########## START MICROITERATION NO.  12 ##########   Thu Oct  5 00:23:23 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.39%   43.22%    0.00%   16.91%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 8.00000000s
-SOfock:SL  2.71D-08   15.44%   64.73%    0.00%   22.40%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 9.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.39%   43.22%    0.00%   16.91%   0.36000000s
+SOfock:SL  2.71D-08   15.92%   65.31%    0.00%   23.05%   3.43000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   9.18D-06
 (XRSRED) oo-norm of anti-symmetry of REDE =   9.48D-07      (element ( 12,  1))
@@ -1817,13 +1735,11 @@ SOfock:SL  2.71D-08   15.44%   64.73%    0.00%   22.40%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  3.03E-04  3.03E-04
 
-########## START MICROITERATION NO.  13 ##########   Sat Sep 30 12:45:56 2006
+########## START MICROITERATION NO.  13 ##########   Thu Oct  5 00:23:27 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.44%   46.10%    0.00%   19.34%   0.00000000s
->>>> Total wall time used in HER_PARDRV so far   : 9.00000000s
-SOfock:SL  2.71D-08   20.31%   62.22%    0.00%   24.06%   2.00000000s
->>>> Total wall time used in HER_PARDRV so far   :11.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.44%   46.10%    0.00%   19.34%   0.36000000s
+SOfock:SL  2.71D-08   20.96%   62.63%    0.00%   24.83%   3.19000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.18D-05
 (XRSRED) oo-norm of anti-symmetry of REDE =   9.76D-07      (element ( 13,  1))
@@ -1834,13 +1750,11 @@ SOfock:SL  2.71D-08   20.31%   62.22%    0.00%   24.06%   2.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.96E-04  1.96E-04
 
-########## START MICROITERATION NO.  14 ##########   Sat Sep 30 12:45:59 2006
+########## START MICROITERATION NO.  14 ##########   Thu Oct  5 00:23:31 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    0.90%   49.03%    0.00%   22.62%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :12.00000000s
-SOfock:SL  2.71D-08   27.70%   58.15%    0.00%   24.90%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :13.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    0.90%   49.03%    0.00%   22.62%   0.36000000s
+SOfock:SL  2.71D-08   28.55%   58.36%    0.00%   25.73%   2.86000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.51D-05
 (XRSRED) oo-norm of anti-symmetry of REDE =   1.25D-06      (element ( 14,  1))
@@ -1851,13 +1765,11 @@ SOfock:SL  2.71D-08   27.70%   58.15%    0.00%   24.90%   1.00000000s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  7.42E-05  7.42E-05
 
-########## START MICROITERATION NO.  15 ##########   Sat Sep 30 12:46:01 2006
+########## START MICROITERATION NO.  15 ##########   Thu Oct  5 00:23:35 2006
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  2.71D-08    1.78%   59.28%    0.00%   22.01%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :14.00000000s
-SOfock:SL  2.71D-08   55.23%   38.17%    0.00%   23.75%   1.00000000s
->>>> Total wall time used in HER_PARDRV so far   :15.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.71D-08    1.78%   59.28%    0.00%   22.01%   0.35000000s
+SOfock:SL  2.71D-08   56.82%   37.54%    0.00%   24.86%   1.72000000s
 
 (XRSRED)  1-norm of anti-symmetry of REDE =   1.69D-05
 (XRSRED) oo-norm of anti-symmetry of REDE =   1.25D-06      (element ( 14,  1))
@@ -1877,63 +1789,63 @@ SOfock:SL  2.71D-08   55.23%   38.17%    0.00%   23.75%   1.00000000s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   1.93000000s  (LL SL    )     [  1]
+* It.  1   5.33000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.12D+00 |   1.12D+00
 ==============================================
-* It.  2   1.95000000s  (LL SL    )     [  1]
+* It.  2   5.26000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   5.71D-01 |   5.71D-01
 ==============================================
-* It.  3   1.99000000s  (LL SL    )     [  1]
+* It.  3   5.24000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   9.98D-02 |   9.98D-02
 ==============================================
-* It.  4   1.93000000s  (LL SL    )     [  1]
+* It.  4   5.15000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   2.26D-02 |   2.26D-02
 ==============================================
-* It.  5   1.87000000s  (LL SL    )     [  1]
+* It.  5   5.02000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   5.89D-03 |   5.89D-03
 ==============================================
-* It.  6   1.83000000s  (LL SL    )     [  1]
+* It.  6   4.86000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.97D-03 |   1.97D-03
 ==============================================
-* It.  7   1.75000000s  (LL SL    )     [  1]
+* It.  7   4.60000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   2.07D-03 |   2.07D-03
 ==============================================
-* It.  8   1.91000000s  (LL SL    )     [  1]
+* It.  8   4.71000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   3.50D-03 |   3.50D-03
 ==============================================
-* It.  9   1.89000000s  (LL SL    )     [  1]
+* It.  9   4.83000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   2.55D-03 |   2.55D-03
 ==============================================
-* It. 10   1.77000000s  (LL SL    )     [  1]
+* It. 10   4.76000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.75D-03 |   1.75D-03
 ==============================================
-* It. 11   1.70000000s  (LL SL    )     [  1]
+* It. 11   4.64000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   4.84D-04 |   4.84D-04
 ==============================================
-* It. 12   1.66000000s  (LL SL    )     [  1]
+* It. 12   4.12000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   3.03D-04 |   3.03D-04
 ==============================================
-* It. 13   1.58000000s  (LL SL    )     [  1]
+* It. 13   3.89000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.96D-04 |   1.96D-04
 ==============================================
-* It. 14   1.47000000s  (LL SL    )     [  1]
+* It. 14   3.57000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   7.42D-05 |   7.42D-05
 ==============================================
-* It. 15   1.18000000s  (LL SL    )     [  1]
+* It. 15   2.39000000s  (LL SL    )     [  1]
 ----------------------------------------------
             0.000000 :   1.31D-05 |   1.31D-05
 ==============================================
@@ -1948,7 +1860,7 @@ SOfock:SL  2.71D-08   55.23%   38.17%    0.00%   23.75%   1.00000000s
    A - PVCa1O3 03           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-   -1.382532076521 a.u. at frequency      0.00000000 a.u.    7.55E-06   (converged)
+   -1.382532076904 a.u. at frequency      0.00000000 a.u.    7.55E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 2)>> - linear response function (real):
@@ -1956,7 +1868,7 @@ SOfock:SL  2.71D-08   55.23%   38.17%    0.00%   23.75%   1.00000000s
    A - PVCa1O3 03           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-   -1.702140356789 a.u. at frequency      0.00000000 a.u.    5.03E-06   (converged)
+   -1.702140358574 a.u. at frequency      0.00000000 a.u.    5.03E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 3)>> - linear response function (real):
@@ -1964,7 +1876,7 @@ SOfock:SL  2.71D-08   55.23%   38.17%    0.00%   23.75%   1.00000000s
    A - PVCa1O3 03           A    T-
    B - MAGFLDZ              A    T-
 -----------------------------------------------------------------------------------------------
-    3.024330460252 a.u. at frequency      0.00000000 a.u.    2.25E-06   (converged)
+    3.024330458859 a.u. at frequency      0.00000000 a.u.    2.25E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 1)>> - linear response function (real):
@@ -1972,7 +1884,7 @@ SOfock:SL  2.71D-08   55.23%   38.17%    0.00%   23.75%   1.00000000s
    A - PVCa2O3 03           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-   -1.140080199391 a.u. at frequency      0.00000000 a.u.    7.55E-06   (converged)
+   -1.140080200455 a.u. at frequency      0.00000000 a.u.    7.55E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 2)>> - linear response function (real):
@@ -1980,7 +1892,7 @@ SOfock:SL  2.71D-08   55.23%   38.17%    0.00%   23.75%   1.00000000s
    A - PVCa2O3 03           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-   -0.83117244D-02 a.u. at frequency      0.00000000 a.u.    5.03E-06   (converged)
+   -0.83117250D-02 a.u. at frequency      0.00000000 a.u.    5.03E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 3)>> - linear response function (real):
@@ -1988,7 +1900,7 @@ SOfock:SL  2.71D-08   55.23%   38.17%    0.00%   23.75%   1.00000000s
    A - PVCa2O3 03           A    T-
    B - MAGFLDZ              A    T-
 -----------------------------------------------------------------------------------------------
-   -0.146840604518 a.u. at frequency      0.00000000 a.u.    2.25E-06   (converged)
+   -0.146840604380 a.u. at frequency      0.00000000 a.u.    2.25E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 1)>> - linear response function (real):
@@ -1996,7 +1908,7 @@ SOfock:SL  2.71D-08   55.23%   38.17%    0.00%   23.75%   1.00000000s
    A - PVCa3O3 03           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-   -1.308000516958 a.u. at frequency      0.00000000 a.u.    7.55E-06   (converged)
+   -1.308000517153 a.u. at frequency      0.00000000 a.u.    7.55E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 2)>> - linear response function (real):
@@ -2004,7 +1916,7 @@ SOfock:SL  2.71D-08   55.23%   38.17%    0.00%   23.75%   1.00000000s
    A - PVCa3O3 03           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-   -0.839222230957 a.u. at frequency      0.00000000 a.u.    5.03E-06   (converged)
+   -0.839222231052 a.u. at frequency      0.00000000 a.u.    5.03E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 3)>> - linear response function (real):
@@ -2012,7 +1924,7 @@ SOfock:SL  2.71D-08   55.23%   38.17%    0.00%   23.75%   1.00000000s
    A - PVCa3O3 03           A    T-
    B - MAGFLDZ              A    T-
 -----------------------------------------------------------------------------------------------
-    1.098931138835 a.u. at frequency      0.00000000 a.u.    2.25E-06   (converged)
+    1.098931135712 a.u. at frequency      0.00000000 a.u.    2.25E-06   (converged)
 -----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
@@ -2029,19 +1941,25 @@ WARNING: use only with C1 symmetry
 
                      x                   y                   z
 
-         x    0.5564942470E-07    0.6851423792E-07   -0.1217347887E-06
-         y    0.4589029672E-07    0.3345619892E-09    0.5910600776E-08
-         z    0.5264939419E-07    0.3378021758E-07   -0.4423397236E-07
-   trace/3                                                                0.3916671443E-08
+         x    0.5564942472E-07    0.6851423799E-07   -0.1217347887E-06
+         y    0.4589029676E-07    0.3345620119E-09    0.5910600771E-08
+         z    0.5264939420E-07    0.3378021758E-07   -0.4423397224E-07
+   trace/3                                                                0.3916671498E-08
 
+          principal components
+
+        xx    0.1073252388E-06
+        yy   -0.2536487423E-07
+        zz   -0.7021035010E-07
+
+             and their average
+
+              0.3916671498E-08
 
 ----------------------------------------------
 
- Date and time (Linux) : Sat Sep 30 12:46:04 2006
->>>> Total CPU  time used in DIRAC (Node 1):  2min43.900s
->>>> Total CPU  time used in DIRAC (Node 3):  2min35.330s
->>>> Total CPU  time used in DIRAC (Node 2):  2min19.030s
+ Date and time (Linux) : Thu Oct  5 00:23:38 2006
 *****************************************************
->>>> Total CPU  time used in DIRAC (Node 0):  2min 2.630s
->>>> Total WALL time used in DIRAC:  2min53.000s
+>>>> Total CPU  time used in DIRAC:  4min51.150s
+>>>> Total WALL time used in DIRAC:  4min54.000s
 ********** E N D   of   D I R A C  output  **********

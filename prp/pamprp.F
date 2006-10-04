@@ -6927,33 +6927,60 @@ C     /* deck PRINTOUT_TENSOR */
 C=======================================================================
 C     print tensor
 C-----------------------------------------------------------------------
-C     radovan bast                         last revision: september 2006
+C     radovan bast                           last revision: october 2006
 C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
-      DIMENSION TENSOR(3,3)
-C
+      DIMENSION TENSOR(3,3),
+     &          PRINCIPAL_VAL(9),
+     &          PRINCIPAL_AX(3,3),
+     &          SOME(3),
+     &          ISOME(3)
+
       WRITE(LUPRI,'(A)')
       WRITE(LUPRI,'(A22,2A20)') 'x', 'y', 'z'
       WRITE(LUPRI,'(A)')
       WRITE(LUPRI,'(A10,3E20.10)') 'x', (TENSOR(1,IXYZ),IXYZ=1,3)
       WRITE(LUPRI,'(A10,3E20.10)') 'y', (TENSOR(2,IXYZ),IXYZ=1,3)
       WRITE(LUPRI,'(A10,3E20.10)') 'z', (TENSOR(3,IXYZ),IXYZ=1,3)
-C
+
       AVG_TRACE = D0
       DO IXYZ = 1,3
         AVG_TRACE = AVG_TRACE + TENSOR(IXYZ,IXYZ)
       ENDDO
       AVG_TRACE = AVG_TRACE/D3
-C
+
       WRITE(LUPRI,'(A10,3A20,E20.10)')
      &                               'trace/3', ' ', ' ', ' ', AVG_TRACE
-      WRITE(LUPRI,'(A)')
-      WRITE(LUPRI,'(A)')
-C
-C
+
+      CALL DUNIT(PRINCIPAL_AX,3)
+      IJ = 1
+      DO I = 1,3
+        DO J = 1,I
+          PRINCIPAL_VAL(IJ) = TENSOR(I,J)
+          IJ = IJ + 1
+        ENDDO
+      ENDDO
+      CALL JACO(PRINCIPAL_VAL,PRINCIPAL_AX,3,3,3,SOME,ISOME)
+
+      WRITE(LUPRI,'(A30)')
+      WRITE(LUPRI,'(A30)') 'principal components'
+      WRITE(LUPRI,'(A30)')
+      WRITE(LUPRI,'(A10,E20.10)') 'xx', PRINCIPAL_VAL(1)
+      WRITE(LUPRI,'(A10,E20.10)') 'yy', PRINCIPAL_VAL(3)
+      WRITE(LUPRI,'(A10,E20.10)') 'zz', PRINCIPAL_VAL(6)
+      WRITE(LUPRI,'(A30)')
+      WRITE(LUPRI,'(A30)') 'and their average'
+      WRITE(LUPRI,'(A30)')
+
+      AVG = PRINCIPAL_VAL(1) + PRINCIPAL_VAL(3) + PRINCIPAL_VAL(6)
+      AVG = AVG/D3
+
+      WRITE(LUPRI,'(E30.10)') AVG
+      WRITE(LUPRI,'(A30)')
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
