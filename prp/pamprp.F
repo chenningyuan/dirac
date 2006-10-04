@@ -4712,7 +4712,7 @@ C
       ENDIF
 C
       DO IATOM = 1,NUCDEP
-        IF(DOATOM(IATOM)) THEN
+C       IF(DOATOM(IATOM)) THEN
           DO IREP = 0,MAXREP
             IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
 C
@@ -4745,7 +4745,7 @@ C
               ENDDO
             ENDIF
           ENDDO
-        ENDIF
+C       ENDIF
       ENDDO
 C
 C
