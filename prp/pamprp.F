@@ -6968,17 +6968,15 @@ C-----------------------------------------------------------------------
       WRITE(LUPRI,'(A30)')
       WRITE(LUPRI,'(A30)') 'principal components'
       WRITE(LUPRI,'(A30)')
-      WRITE(LUPRI,'(A10,E20.10)') 'xx', PRINCIPAL_VAL(1)
-      WRITE(LUPRI,'(A10,E20.10)') 'yy', PRINCIPAL_VAL(3)
-      WRITE(LUPRI,'(A10,E20.10)') 'zz', PRINCIPAL_VAL(6)
-      WRITE(LUPRI,'(A30)')
-      WRITE(LUPRI,'(A30)') 'and their average'
+      WRITE(LUPRI,'(E30.10)') PRINCIPAL_VAL(1)
+      WRITE(LUPRI,'(E30.10)') PRINCIPAL_VAL(3)
+      WRITE(LUPRI,'(E30.10)') PRINCIPAL_VAL(6)
       WRITE(LUPRI,'(A30)')
 
       AVG = PRINCIPAL_VAL(1) + PRINCIPAL_VAL(3) + PRINCIPAL_VAL(6)
       AVG = AVG/D3
 
-      WRITE(LUPRI,'(E30.10)') AVG
+      WRITE(LUPRI,'(A10,E20.10)') 'sum/3', AVG
       WRITE(LUPRI,'(A30)')
 
       RETURN
