@@ -283,7 +283,8 @@ C***********************************************************************
       DATA CIC/'(LL|??)', '(SS|??)', '(LS|??)'/
 C
       CALL GETTIM(CPUBEF,WALLBEF)
-       DO IC = 1, 3
+      DO IC = 1, 2
+CLV:Gaunt       DO IC = 1, 3
           WRITE(LUPRI,'(A,I2,2A)') ' - Integral class',IC,' : ',CIC(IC)
           CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
           DO ISHLA = IASTRT, IASMAX
@@ -406,7 +407,8 @@ C
         END IF
 C
         CALL GETTIM(CPUBEF,WALLBEF)
-        DO IC = 3, 1, -1
+        DO IC = 2, 1, -1
+CLV: Gaunt        DO IC = 3, 1, -1
            WRITE(LUPRI,'(A,I2,2A)') ' - Integral class',IC,' : ',CIC(IC)
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            IBUFMPI(1) = IC

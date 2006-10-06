@@ -172,7 +172,8 @@ C
         END IF
 C
         CALL GETTIM(CPUBEF,WALLBEF)
-        DO IC = 3, 1, -1
+        DO IC = 2, 1, -1
+CLV:Gaunt DO IC = 3, 1, -1
         IF(LBIT(INTFLG,IC)) THEN
            WRITE(LUPRI,'(A,I2,2A)') ' - Integral class',IC,' : ',CIC(IC)
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
@@ -249,7 +250,8 @@ C
 C
         CALL XTIME(5,1,' Computing+transform. integrals')
         CALL GETTIM(CPUBEF,WALLBEF)
-        DO IC = 1, 3
+        DO IC = 1, 2
+CLV:Gaunt  DO IC = 1, 3
         IF(LBIT(INTFLG,IC)) THEN
            WRITE(LUPRI,'(A,I2,2A)') ' - Integral class',IC,' : ',CIC(IC)
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
