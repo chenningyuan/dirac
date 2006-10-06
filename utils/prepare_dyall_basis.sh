@@ -23,7 +23,7 @@ done
 #
 
 for block in  4p 4d 5s 5p 5d 5f 6p; do
-   for zeta in dz tz qz; do
+   for zeta in tz qz; do
 
       python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive.txt" \
                              --print_polarization --print_scfbas --uncontracted \
@@ -37,7 +37,7 @@ done
 # 3. concatenate the resulting intermediate .bas files by hand, and edit the "elements supported field"
 #
 
-for zeta in dz tz qz; do
+for zeta in tz qz; do
    cat dyall*.$zeta.bas > dyall.valence_correlating.$zeta.bas
 done 
 
