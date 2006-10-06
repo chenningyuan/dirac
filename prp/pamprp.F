@@ -6934,6 +6934,7 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
       DIMENSION TENSOR(3,3),
+     &          SYM_TENSOR(3,3),
      &          PRINCIPAL_VAL(9),
      &          PRINCIPAL_AX(3,3),
      &          SOME(3),
@@ -6942,24 +6943,29 @@ C-----------------------------------------------------------------------
       WRITE(LUPRI,'(A)')
       WRITE(LUPRI,'(A22,2A20)') 'x', 'y', 'z'
       WRITE(LUPRI,'(A)')
-      WRITE(LUPRI,'(A10,3E20.10)') 'x', (TENSOR(1,IXYZ),IXYZ=1,3)
-      WRITE(LUPRI,'(A10,3E20.10)') 'y', (TENSOR(2,IXYZ),IXYZ=1,3)
-      WRITE(LUPRI,'(A10,3E20.10)') 'z', (TENSOR(3,IXYZ),IXYZ=1,3)
+      WRITE(LUPRI,'(A10,3E20.10)') 'x', (TENSOR(1,I),I=1,3)
+      WRITE(LUPRI,'(A10,3E20.10)') 'y', (TENSOR(2,I),I=1,3)
+      WRITE(LUPRI,'(A10,3E20.10)') 'z', (TENSOR(3,I),I=1,3)
 
       AVG_TRACE = D0
-      DO IXYZ = 1,3
-        AVG_TRACE = AVG_TRACE + TENSOR(IXYZ,IXYZ)
+      DO I = 1,3
+        AVG_TRACE = AVG_TRACE + TENSOR(I,I)
       ENDDO
       AVG_TRACE = AVG_TRACE/D3
 
       WRITE(LUPRI,'(A10,3A20,E20.10)')
      &                               'trace/3', ' ', ' ', ' ', AVG_TRACE
 
+      DO I = 1,3
+        DO J = 1,3
+          SYM_TENSOR(I,J) = (TENSOR(I,J) + TENSOR(J,I))/D2
+        ENDDO
+      ENDDO
       CALL DUNIT(PRINCIPAL_AX,3)
       IJ = 1
       DO I = 1,3
         DO J = 1,I
-          PRINCIPAL_VAL(IJ) = TENSOR(I,J)
+          PRINCIPAL_VAL(IJ) = SYM_TENSOR(I,J)
           IJ = IJ + 1
         ENDDO
       ENDDO
