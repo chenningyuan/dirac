@@ -1,37 +1,36 @@
-      SUBROUTINE IFILL(IX,INSIDE,LENGTH)
-C
+      SUBROUTINE IFILL(IX,IPUT,LENGTH)
 #include "implicit.h"
-C
-      INTEGER IX(LENGTH)
-C
-C
-      IF(LENGTH.LE.0) RETURN
-C
-      DO I=1,LENGTH
-        IX(I) = INSIDE
+      DIMENSION IX(LENGTH)
+
+      IF(LENGTH .LE. 0) RETURN
+      DO I = 1,LENGTH
+        IX(I) = IPUT
       ENDDO
-C
-C
+
       RETURN
       END
-C
-C
-C
-C
-C
-      SUBROUTINE DFILL(DX,DINSIDE,LENGTH)
-C
+
+
+      SUBROUTINE DFILL(DX,DPUT,LENGTH)
 #include "implicit.h"
-C
       DIMENSION DX(LENGTH)
-C
-C
-      IF(LENGTH.LE.0) RETURN
-C
-      DO I=1,LENGTH
-        DX(I) = DINSIDE
+
+      IF(LENGTH .LE. 0) RETURN
+      DO I = 1,LENGTH
+        DX(I) = DPUT
       ENDDO
-C
-C
+
+      RETURN
+      END
+
+
+      SUBROUTINE SET_LBIT(LBIT_INTEGER,IDIGIT)
+#include "implicit.h"
+      LOGICAL LBIT
+
+      IF(.NOT. LBIT(LBIT_INTEGER,IDIGIT)) THEN
+        LBIT_INTEGER = LBIT_INTEGER + 2**(IDIGIT - 1)
+      ENDIF
+
       RETURN
       END
