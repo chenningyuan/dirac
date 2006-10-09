@@ -6971,19 +6971,25 @@ C-----------------------------------------------------------------------
       ENDDO
       CALL JACO(PRINCIPAL_VAL,PRINCIPAL_AX,3,3,3,SOME,ISOME)
 
-      WRITE(LUPRI,'(A30)')
+      WRITE(LUPRI,'(A)')
       WRITE(LUPRI,'(A30)') 'principal components'
-      WRITE(LUPRI,'(A30)')
+      WRITE(LUPRI,'(A)')
       WRITE(LUPRI,'(E30.10)') PRINCIPAL_VAL(1)
       WRITE(LUPRI,'(E30.10)') PRINCIPAL_VAL(3)
       WRITE(LUPRI,'(E30.10)') PRINCIPAL_VAL(6)
-      WRITE(LUPRI,'(A30)')
+      WRITE(LUPRI,'(A)')
 
       AVG = PRINCIPAL_VAL(1) + PRINCIPAL_VAL(3) + PRINCIPAL_VAL(6)
       AVG = AVG/D3
 
       WRITE(LUPRI,'(A10,E20.10)') 'sum/3', AVG
-      WRITE(LUPRI,'(A30)')
+      WRITE(LUPRI,'(A)')
+      WRITE(LUPRI,'(A30)') 'principal axes'
+      WRITE(LUPRI,'(A)')
+      WRITE(LUPRI,'(A10,3E20.10)') 'x', (PRINCIPAL_AX(1,I),I=1,3)
+      WRITE(LUPRI,'(A10,3E20.10)') 'y', (PRINCIPAL_AX(2,I),I=1,3)
+      WRITE(LUPRI,'(A10,3E20.10)') 'z', (PRINCIPAL_AX(3,I),I=1,3)
+      WRITE(LUPRI,'(A)')
 
       RETURN
       END
