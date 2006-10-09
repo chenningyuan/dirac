@@ -247,6 +247,7 @@ C
         CALL OPNFIL(LUBVAC,'DFBVAC','OLD','GENDEN')
         CALL READT(LUBVAC,N2BBASXQ,DMAT)
         CLOSE(LUBVAC,STATUS='KEEP')
+        CALL DSCAL(N2BBASXQ,DM1,DMAT,1)
         FAC    = DM1
       ELSE
         CALL DZERO(DMAT,N2BBASXQ)
@@ -532,6 +533,7 @@ C.....Read inverse MO-transformation
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
       CLOSE(LUTMAT)
 C
+      OCC = D0
       DO I = 1,NFSYM
         IF(IPRINT.GE.6) THEN
           WRITE(6,'(A)') 
@@ -554,8 +556,9 @@ C       Transform density matrix to MO-basis
      &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
 C       Diagonalize and extract the requested density
-        CALL DENSEP(WORK(I2TMOT(I)+KDMAT),NTMO(I),IOPT,IPRINT,
-     &              WORK,KFREE,LFREE)
+        CALL DENSEP(WORK(I2TMOT(I)+KDMAT),NTMO(I),IOPT,OCCBUF,
+     &              IPRINT,WORK,KFREE,LFREE)
+        OCC = OCC + OCCBUF
       ENDDO
 C.....Read MO-transformation
       CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
@@ -585,12 +588,15 @@ C.....and transform back to AO-basis
      &                NTBAS(I),NTBAS(I),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
       ENDDO
+C
+      WRITE(LUPRI,'(A,F16.9)') 
+     &  '* ATTACHMENT_DENSITY: Electron number :',OCC
       CALL MEMREL('ATTACHMENT_DENSITY',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck densep */
-      SUBROUTINE DENSEP(DMAT,NDIM,IOPT,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE DENSEP(DMAT,NDIM,IOPT,OCC,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     The density matrix in MO-basis, DMAT, is diagonalized.
@@ -626,7 +632,7 @@ C
         CALL OUTPUT(WORK(KEIG),1,NDIM,1,1,NDIM,1,1,LUPRI)
       ENDIF
 C
-      CALL EIGSEP(WORK(KEIG),WORK(KEMAT),IOPT,NDIM)
+      CALL EIGSEP(WORK(KEIG),WORK(KEMAT),IOPT,OCC,NDIM)
 C     Using selected eigenvectors, restore requested density in MO-basis
       CALL QTRANS('MOAO','S',D0,NDIM,NDIM,NDIM,NDIM,
      &      DMAT,NDIM,NDIM,NZ,IPQTOQ(1,0),
@@ -654,7 +660,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Eigsep */
-      SUBROUTINE EIGSEP(EIG,EMAT,IOPT,NDIM)
+      SUBROUTINE EIGSEP(EIG,EMAT,IOPT,OCC,NDIM)
 C***********************************************************************
 C
 C     IOPT = 0: Construct diagonal difference density matrix
