@@ -238,7 +238,6 @@ C
 C
       CALL QENTER('GENDEN')
 C
-      IF(IFLAG.EQ.0) GOTO 999
 C
 C     Initialize matrix
 C
@@ -247,12 +246,15 @@ C
         CALL OPNFIL(LUBVAC,'DFBVAC','OLD','GENDEN')
         CALL READT(LUBVAC,N2BBASXQ,DMAT)
         CLOSE(LUBVAC,STATUS='KEEP')
-        CALL DSCAL(N2BBASXQ,DM1,DMAT,1)
         FAC    = DM1
       ELSE
         CALL DZERO(DMAT,N2BBASXQ)
         FAC    = D0
       ENDIF
+C
+C
+      IF(IFLAG.EQ.0) GOTO 999
+C
       ITEST = 0
       DO 10 I = 1,5
       IF (LBIT(IFLAG,I)) THEN
@@ -398,8 +400,11 @@ C
 
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
       IDEN = 1
-      IF(VACPOL) IDEN = IDEN + 8 + 32
+      IF(VACPOL.AND..NOT.ALTVAC) THEN
+        IDEN = IDEN + 8 + 32
+      ENDIF
       CALL GENDEN(DMAT,CMO,IDEN,IPRINT)
+      IF(ALTVAC) CALL GENALTVAC(DMAT,CMO,IPRINT)
       IF(AOC) THEN
 C.......Average of Configuration
         DO IOPEN = 1,NOPEN
@@ -703,5 +708,77 @@ C
       ENDIF
       WRITE(LUPRI,'(A,F16.8)') 
      &   'EIGSEP: * Electron number: ',OCC
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck altvac */
+      SUBROUTINE GENALTVAC(DMAT,CMO,IPRINT)
+C*****************************************************************************
+C
+C     Calculate alternative definition of density matrix of 
+C     vacuum polarisation:
+C
+C     The standard definition is:
+C
+C     D(vacpol) = [D(-) - D(-)_ref]
+C
+C     Alternatively:
+C
+C     D(vacpol) = (1/2)[D(-) - D(+)]
+C    
+C
+C     Note that the density matrix is NOT initialized to zero !
+C
+C     Written by  T. Saue Oct 9 2006
+C     Last revision: 1997/11/23 - jth
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D1=1.0D00,DM1=-1.0D00,D0=0.0D00,DP5=0.5D0,DPM5=-0.5D0)
+C
+      DIMENSION DMAT(*), CMO(*)
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+C
+#include "ibtfun.h"
+C
+      CALL QENTER('GENALTVAC')
+C
+C     Calculate negative energy part
+C
+      DO IFRP = 1,NFSYM
+        ITEST  = NPSH(IFRP)
+        ISTART = 1
+        ILOOP  = NPSH(IFRP)
+        IF(ITEST.GT.0) THEN
+          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),
+     &              DP5,D1,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
+     &              ISTART,ILOOP,NFBAS(IFRP,0))
+        ENDIF
+        ITEST  = NESH(IFRP)
+        ISTART = NPSH(IFRP)+1
+        ILOOP  = NESH(IFRP)
+        IF(ITEST.GT.0) THEN
+          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),
+     &              DPM5,D1,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
+     &              ISTART,ILOOP,NFBAS(IFRP,0))
+        ENDIF
+      ENDDO
+      IF (IPRINT.GE.10) THEN
+        WRITE(LUPRI,'(A)') '* Output from GENALTVAC:'
+        DO IFRP = 1,NFSYM
+          WRITE(LUPRI,'(/A,A3)')
+     &      '* Fermion ircop ',FREP(IFRP)
+          CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1),
+     &              NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+        ENDDO
+      END IF
+C   
+ 999  CONTINUE
+      CALL QEXIT('GENALTVAC')
+      CALL FLSHFO(LUPRI)
       RETURN
       END

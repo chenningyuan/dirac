@@ -3617,7 +3617,7 @@ C
      &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
      &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C',
      &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
-     &            '.IOTC  ','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.IOTC  ','.ALTVAC','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
@@ -3656,6 +3656,7 @@ C
       SMLV1C  = .FALSE.
       ONECOFF = .FALSE.
       VACPOL  = .FALSE.
+      ALTVAC  = .FALSE.
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
@@ -4025,7 +4026,9 @@ CMI  with other flags...
              IBSS = 2999
              GO TO 100
   138     CONTINUE
-C&&& XXXX
+C&&& ALTVAC: Alternative definition of vacuum polarisation
+             VACPOL = .TRUE.
+             ALTVAC = .TRUE.
              GO TO 100
   139     CONTINUE
 C&&& XXXX
@@ -4349,7 +4352,11 @@ C         write(lupri,*)
       IF(ICHANG.GT.0) WRITE(LUPRI,'(A)')
      &    '   with the following modifications:'
       IF(VACPOL) THEN
-         WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
+        WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
+        IF(ALTVAC) THEN
+          WRITE(LUPRI,'(6X,A)')
+     &      '- alternative definition of vacuum polariation'
+        ENDIF
       ENDIF
       IF(SPINFR) THEN
          WRITE(LUPRI,'(3X,A)') '- Spin-orbit interactions neglected'

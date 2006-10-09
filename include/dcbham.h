@@ -98,7 +98,7 @@
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
-     &        VACPOL, RDSUSLLMOD                                        &
+     &        VACPOL, RDSUSLLMOD, ALTVAC                                &
 
 ! keep and actualize here number of elements in the DCLHAM common block
       INTEGER NDCLHAM
@@ -110,7 +110,7 @@
      &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
-     &                RDSUSLLMOD                                        &
+     &                RDSUSLLMOD,ALTVAC                                 &
 C
 C aspg, 2006-04-21
 C checking should be done as to whether or not HFXFAC can leave 
