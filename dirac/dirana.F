@@ -1868,6 +1868,9 @@ C     Be aware: Both density matrices are normed to 1
 C     Coeffients may now be deallocated.....
 C
       CALL DENMAT(WORK(KDMAT),WORK(KCMO),IPRHO1)
+      IF(IOPTDD.NE.0) 
+     &  CALL ATTACHMENT_DENSITY(WORK(KDMAT),IOPTDD,IPRHO1,
+     &                          WORK,KFREE,LFREE)
       CALL DSCAL(N2BBASXQ,D2,WORK(KDMAT),1)
       CALL GT1RH1(WORK(KDMAT),WORK(KGAOS),WORK(KCOOR),WORK(KBUF),
      &            IPRHO1,WORK,KFREE,LFREE)

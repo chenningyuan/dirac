@@ -5540,7 +5540,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.MESH  ','.PRINT ','.XXXXXX','.XXXXXX',
+      DATA TABLE /'.MESH  ','.PRINT ','.DIFDEN','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -5560,6 +5560,7 @@ C     ===================
 C
       DSTEP  = 0.01D0
       IPRHO1 = 0
+      IOPTDD = 0
 C
 C     Process input from DCBRHO1
 C     ==========================
@@ -5597,6 +5598,12 @@ C&&&& PRINT: Print level
                   READ(LUCMD,*) IPRHO1
                GO TO 100
     3          CONTINUE
+C&&&& DIFDEN: Attachment/detahcment density plots
+                  READ(LUCMD,*) IOPTDD
+                  IF(IOPTDD.EQ.0) THEN
+                    WRITE(LUPRI,'(A)') 
+     &               '* RHO1IN: IOPTDD.EQ.0: will ignore this.'     
+                  ENDIF
                GO TO 100
     4          CONTINUE
                GO TO 100
@@ -5627,6 +5634,11 @@ C
       WRITE(LUPRI,'(A)') ' RHO1IN: 1-dimensional density plot:'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A,I4)') ' * Print level: ',IPRHO1
+      IF(IOPTDD.GT.0) THEN
+        WRITE(LUPRI,'(A)') 'Constructing attachment density'
+      ELSEIF(IOPTDD.LT.0) THEN
+        WRITE(LUPRI,'(A)') 'Constructing detachment density'
+      ENDIF
       WRITE(LUPRI,'(A,F7.4)') ' * Grid mesh (in Angstroms): ',DSTEP
       WRITE(LUPRI,'(A)')
      &    ' (Remember that lines can be defined by ghost centers)'

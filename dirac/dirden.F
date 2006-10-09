@@ -472,3 +472,230 @@ C
      &          BETA,IPQTOQ(1,0),DMAT,LRD,LCD,NZ)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Density_attachment */
+      SUBROUTINE ATTACHMENT_DENSITY(DAO,IOPT,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Create attachment/detachment densities from a difference density
+C     The approach is inspired by section 4.4. of 
+C     A. Dreuw and M. Head-Gordon:
+C      "Single-Reference ab initio Methods for the Calculation of
+C       Excited States of Large Molecules"
+C       Chem. Rev. 105(2005) 4009-4037
+C
+C     The starting point is a (difference) density matrix in AO-basis (DAO).
+C     It is transformed to MO-basis for numerical stability and 
+C     then diagonalized. The diagonal matrix can be split into two parts:
+C       1) The detachment density is generated from the eigenvectors 
+C          corresponding to negative eigenvalues
+C       2) The attachment density is generated from the eigenvectors
+C          corresponding to positive eigenvalues
+C
+C     IOPT = 0: Simple backtransformation to restore the original matrix
+C               (debug option)
+C     IOPT < 0: Generate detachment density in AO-basis
+C     IOPT > 0: Generate attachment density in AO-basis
+C
+C     The original references are:
+C       Martin Head-Gordon, Ana M. Grana, David Maurice, and Christopher A. White:
+C       "Analysis of Electronic Transitions as the Difference of Electron 
+C        Attachment and Detachment Densities", 
+C        J. Phys. Chem, 99 (1995) 14261
+C
+C       Ana M. Grana, Timothy J. Lee, and Martin Head-Gordon:
+C       "Ab Initio Calculations of Singlet and Triplet Excited States of 
+C        Chlorine Nitrate and Nitric Acid",
+C        J. Phys. Chem, 99 (1995) 3493
+C     Written by T. Saue
+
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D0 = 0.0D0,D2=2.0D0, D1 = 1.0D00)
+C
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+      DIMENSION DAO(*),WORK(*)
+C
+      KFRSAV = KFREE
+      CALL MEMGET('REAL',KTMAT,N2TMT   ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDVEC,N2BBASXQ,WORK,KFREE,LFREE)
+C.....Read inverse MO-transformation
+      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+      READ(LUTMAT)
+      CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
+      CLOSE(LUTMAT)
+C
+      DO I = 1,NFSYM
+        IF(IPRINT.GE.6) THEN
+          WRITE(6,'(A)') 
+     &     'ATTACHMENT_DENSITY: Density matrix in AO-basis'
+          CALL PRQMAT(DAO(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
+     &                 NTBAS(I),NTBAS(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+C       Transform density matrix to MO-basis
+        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &      NTMO(I),NTMO(I),
+     &      DAO(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &      WORK(I2TMOT(I)+KDMAT),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &      WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
+     &      WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
+     &      WORK(KFREE),LFREE,0)
+        IF(IPRINT.GE.6) THEN
+          WRITE(6,'(A)') 
+     &     'ATTACHMENT_DENSITY: Density matrix in MO-basis'
+          CALL PRQMAT(WORK(I2TMOT(I)+KDMAT),NTMO(I),NTMO(I),
+     &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+C       Diagonalize and extract the requested density
+        CALL DENSEP(WORK(I2TMOT(I)+KDMAT),NTMO(I),IOPT,IPRINT,
+     &              WORK,KFREE,LFREE)
+      ENDDO
+C.....Read MO-transformation
+      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+      CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
+      CLOSE(LUTMAT)
+C.....and transform back to AO-basis
+      DO I = 1,NFSYM
+        CALL QTRANS('MOAO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &      NTMO(I),NTMO(I),
+     &      DAO(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &      WORK(I2TMOT(I)+KDMAT),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &      WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
+     &      WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
+     &      WORK(KFREE),LFREE,0)
+        IF(IPRINT.GE.5) THEN
+          IF(IOPT.EQ.0) THEN
+            WRITE(6,'(A)') 
+     &      'ATTACHMENT_DENSITY: Density matrix restored to AO-basis'
+          ELSEIF(IOPT.LT.0) THEN
+            WRITE(6,'(A)') 
+     &      'ATTACHMENT_DENSITY: Detachment density in AO-basis'
+          ELSE
+            WRITE(6,'(A)') 
+     &      'ATTACHMENT_DENSITY: Attachment density in AO-basis'
+          ENDIF
+          CALL PRQMAT(DAO(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
+     &                NTBAS(I),NTBAS(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+      ENDDO
+      CALL MEMREL('ATTACHMENT_DENSITY',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck densep */
+      SUBROUTINE DENSEP(DMAT,NDIM,IOPT,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     The density matrix in MO-basis, DMAT, is diagonalized.
+C     
+C     IOPT = 0: Simple backtransformation to restore the original matrix
+C               (debug option)
+C     IOPT < 0: Generate detachment density in AO-basis
+C     IOPT > 0: Generate attachment density in AO-basis
+C     
+C     Written by T. Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,DM1=-1.0D0)
+C
+#include "dgroup.h"
+      DIMENSION DMAT(NDIM,NDIM,NZ),WORK(*)
+C
+      KFRSAV = KFREE
+C
+      N2DIM = NDIM*NDIM
+      N2DIMQ = N2DIM*NZ
+      CALL MEMGET('REAL',KEIG,NDIM ,WORK,KFREE,LFREE)            
+      CALL MEMGET('REAL',KMAT,N2DIMQ,WORK,KFREE,LFREE)            
+      CALL MEMGET('REAL',KVEC,N2DIMQ,WORK,KFREE,LFREE)            
+      CALL MEMGET('REAL',KEMAT,N2DIM,WORK,KFREE,LFREE)            
+C
+      CALL QDIAG(NZ,NDIM,DMAT,NDIM,NDIM,WORK(KEIG),1,
+     &           WORK(KVEC),NDIM,NDIM,WORK(KFREE),LFREE,IERR)
+      IF(IPRINT.GE.2) THEN
+        WRITE(6,'(A)') '* DENSEP:Eigenvalues...'
+        CALL OUTPUT(WORK(KEIG),1,NDIM,1,1,NDIM,1,1,LUPRI)
+      ENDIF
+C
+      CALL EIGSEP(WORK(KEIG),WORK(KEMAT),IOPT,NDIM)
+C     Using selected eigenvectors, restore requested density in MO-basis
+      CALL QTRANS('MOAO','S',D0,NDIM,NDIM,NDIM,NDIM,
+     &      DMAT,NDIM,NDIM,NZ,IPQTOQ(1,0),
+     &      WORK(KEMAT),NDIM,NDIM,1,IPQTOQ(1,0),
+     &      WORK(KVEC),NDIM,NDIM,NZ,IPQTOQ(1,0),
+     &      WORK(KVEC),NDIM,NDIM,NZ,IPQTOQ(1,0),
+     &      WORK(KFREE),LFREE,0)
+C
+      IF(IPRINT.GE.6) THEN
+        IF(IOPT.EQ.0) THEN
+          WRITE(6,'(A)') 
+     &    'DENSEP: Density matrix restored to MO-basis'
+        ELSEIF(IOPT.LT.0) THEN
+          WRITE(6,'(A)') 
+     &    'DENSEP: Detachment density in MO-basis'
+        ELSE
+          WRITE(6,'(A)') 
+     &    'DENSEP: Attachment density in MO-basis'
+        ENDIF
+        CALL PRQMAT(DMAT,NDIM,NDIM,NDIM,NDIM,NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+      CALL MEMREL('DENSEP',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Eigsep */
+      SUBROUTINE EIGSEP(EIG,EMAT,IOPT,NDIM)
+C***********************************************************************
+C
+C     IOPT = 0: Construct diagonal difference density matrix
+C     IOPT < 0: Construct diagonal detachment density matrix
+C     IOPT > 0: Construct diagonal attachment density matrix
+C
+C     This is not a memory-optimal way of doing things....
+C
+C     Written by T. Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0)
+      DIMENSION EIG(NDIM),EMAT(NDIM,NDIM)
+C
+      N2DIM = NDIM*NDIM
+      CALL DZERO(EMAT,N2DIM)
+C    
+      OCC=D0
+      IF(IOPT.EQ.0) THEN
+C.......difference density (debug)
+        DO I = 1,NDIM
+          EMAT(I,I) = EIG(I)
+          OCC = OCC + EMAT(I,I)
+        ENDDO   
+      ELSEIF(IOPT.LT.0) THEN
+C.......detachment density
+        DO I = 1,NDIM
+          EMAT(I,I) = MIN(D0,EIG(I))
+          OCC = OCC + EMAT(I,I)
+        ENDDO   
+      ELSE
+C.......attachment density
+        DO I = 1,NDIM
+          EMAT(I,I) = MAX(D0,EIG(I))
+          OCC = OCC + EMAT(I,I)
+        ENDDO   
+C
+      ENDIF
+      WRITE(LUPRI,'(A,F16.8)') 
+     &   'EIGSEP: * Electron number: ',OCC
+      RETURN
+      END
