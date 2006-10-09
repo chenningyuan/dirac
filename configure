@@ -1713,6 +1713,8 @@ RCP=$rcp
 RSH=$rsh
 #
 DEBUGGER=$debug
+#
+CLEANUP=
 EOF
 cat ./pam.in >> $INSTALL_DIR/pam
 chmod a+rx $INSTALL_DIR/pam

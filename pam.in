@@ -292,7 +292,7 @@ execute_dirac()
       $NICE_CMD $DIRAC_CMD > $OUTPUT_FILE || \
          ( \
             echo "   $DIRAC returned non-zero exit code" ; \
-            EXIT=1 ; export EXIT \
+            $CLEANUP ; EXIT=1 ; export EXIT \
          )
    fi
 }
