@@ -1590,8 +1590,8 @@ C
         WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
      &   ('Fermion irrep ',I,':',NFRO_DHF(I),I=1,NFSYM)
       ENDIF
-      IF (NELECT_DHF+NAELEC_DHF .EQ. 0) THEN
-         CALL QUIT('DHFINP: Zero electrons not allowed!')
+      IF (NELECT_DHF+NAELEC_DHF.EQ.0.AND.(.NOT.VACPOL)) THEN
+        CALL QUIT('DHFINP: Zero electrons not allowed!')
       END IF
 
 ! Print embedding information
