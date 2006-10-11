@@ -386,7 +386,7 @@ C
            KWB = KW
            NTEST = 1
            DO NODE = 1,NODES
-              write(lupri,*) 'Sending to node', NODE
+C             write(lupri,*) 'Sending to node', NODE
              CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,ISTAT,IERR)
              NWHO = ISTAT(MPI_SOURCE)
@@ -409,7 +409,7 @@ C
            ENDDO
          ELSE
 #endif
-      write(lupri,*) 'Sent, calling DFTDR1'
+C     write(lupri,*) 'Sent, calling DFTDR1'
            CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
      &                 DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &                 DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
@@ -1599,9 +1599,9 @@ C
 C     Transfer functionals
       CALL DFTSYNCFUNC(1)
 C     Transfer control parameters
-      write(lupri,*) 'Before IOPTS broadcast'
+C     write(lupri,*) 'Before IOPTS broadcast'
       CALL MPI_BCAST(IOPTS,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      write(lupri,*) 'After IOPTS broadcast'
+C     write(lupri,*) 'After IOPTS broadcast'
 C
       CALL MPI_BCAST(ISYMOP,NXCMAT,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -1616,7 +1616,7 @@ C
      &               MPI_COMM_WORLD,IERR)
       ENDIF
 
-      write(lupri,*) 'Broadcasted'
+C     write(lupri,*) 'Broadcasted'
 C
 C-----------------------
 C     Start calculation.
@@ -1626,11 +1626,11 @@ C
      &            DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &            DUM,DUM,DUM,DUM,IDUM,DUM,DUM,
      &            WORK(KFREE),LFREE,LUQUAD,IPRINT)
-      write(lupri,*) 'DFTDRV done'
+C     write(lupri,*) 'DFTDRV done'
 C
       CALL MEMREL('DFT_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('DFT_PARDRV')
-      write(lupri,*) 'Exit DFT_PARDRV'
+C     write(lupri,*) 'Exit DFT_PARDRV'
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
