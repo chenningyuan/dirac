@@ -68,9 +68,9 @@ C 2006-09-21: pilot implementation by Andre Gomes and Radovan Bast, Strasbourg
 C
 C Remarks
 C -------
-C at this point, bothe Gjk and the integral list are 
-C read from files "FITXCG" and "FITVXC", respectively, in order to
-C avoid much change in the current function calls.
+C at this point, both Gjk and the integral list are C read from 
+C files "FITXCG" and "FITVXC", respectively, in order to avoid 
+C much change to the current function calls.
 C 
 #include "implicit.h"
 #include "mxcent.h"
@@ -83,7 +83,7 @@ C
       LOGICAL DEBUG, ADD_XC_FIT
 #include "memint.h"
 C
-      DEBUG = .TRUE.
+      DEBUG = .false.
       ADD_XC_FIT = .TRUE.
 C
 C first step is to numerically integrate <V_{XC}[\rho_{fit}]|\alpha>
@@ -110,13 +110,20 @@ C
       IF (ADD_XC_FIT) THEN ! switch the exchange contrib on/off for testing purposes 
          DO K = 1, NBASISAUX
             BK = 0.0
-            DO J = 1,NBASISAUX
-               BK = BK + WORK(KVXCI+J-1)*WORK(KGJK+NBASISAUX*(J-1)+K) 
-            ENDDO
-C           BK = DDOT(NBASISAUX,WORK(KVXCI),1,
-C    &                       WORK(KGJK + NBASISAUX*(J-1)),1)
-            IF (DEBUG) write (6,*) 'debug, Cfit,BK',CFIT(K),BK
-            CFIT(K) = CFIT(K) + BK 
+            if (DEBUG) THEN
+               DO J = 1,NBASISAUX
+                  write (6,*) 'debug: index1, index2',
+     &                 KVXCI+J-1,KGJK+NBASISAUX*(K-1)+(J-1)
+                  write (6,*) 'debug: integral(',j,'), G(',j,',',k,') ',
+     &                 WORK(KVXCI+J-1),WORK(KGJK+NBASISAUX*(K-1)+(J-1))
+               ENDDO
+            endif
+            BK = DDOT(NBASISAUX,WORK(KVXCI),1,
+     &                       WORK(KGJK + NBASISAUX*(K-1)),1)
+            CFIT_OLD = CFIT(K)
+C           CFIT(K)  = CFIT(K) + BK 
+            CFIT(K)  = BK 
+            IF (DEBUG) write (6,*) 'debug, C,Cn,B',CFIT_OLD,CFIT(K),BK
          ENDDO
       ENDIF
 C
@@ -181,6 +188,7 @@ Caspg these array sizes have to be changed, dynamic allocation needed...
 C#include "memint.h"
 C
       DEBUG = .FALSE.
+C     DEBUG = .TRUE.
 C
 C first step: invert Vab. 
 C
@@ -302,10 +310,10 @@ C
      &     IDUM,LDUM)
       WRITE(IUNIT,'(2I8)') IDIMA,IDIMB  
       DO I=1,IDIMA
-        WRITE(IUNIT,'(66(D27.18))')
+        WRITE(IUNIT,'(66(D37.28))')
      &          (MATRIX((I-1)*IDIMA+J), J=1,IDIMB)
         IF (DEBUG) THEN
-           FMT='(2(I8)1(D27.18))'
+           FMT='(2(I8)1(D37.28))'
            write(6,*) FMT
            WRITE(6,FMT)
      &          (I,J,MATRIX((I-1)*IDIMA+J), J=1,IDIMB)
@@ -337,10 +345,10 @@ C     DEBUG = .TRUE.
         CALL QUIT('Dimensions do not match in READ_MATRIX')
       ELSE
           DO I=1,IDIMA
-            READ(IUNIT,'(66(D27.18))')
+            READ(IUNIT,'(66(D37.28))')
      &              (MATRIX((I-1)*IDIMA+J), J=1,IDIMB)
             IF (DEBUG) THEN
-               FMT='(21(D27.18))'
+               FMT='(66(D37.28))'
                write(6,*) FMT
                WRITE(6,FMT)
      &              (MATRIX((I-1)*IDIMA+J), J=1,IDIMB)

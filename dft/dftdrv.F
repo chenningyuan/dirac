@@ -82,6 +82,20 @@ C
       DOQR  = LBIT(IOPTS,4)
       DOLND = LBIT(IOPTS,5)
       LUQUAD = 44
+CCC
+#if defined (MOD_DNF)
+C aspg+rbast 2006-10-10
+C prepare for accumulating integrals... 
+      IF (DFITXC) THEN ! 
+         CALL MEMGET('REAL',KXCVEB,NBASISAUX,WORK,KFREE,LFREE)
+         write (6,*) 'debug: a1'
+         CALL DZERO(WORK(KXCVEB),NBASISAUX)
+         CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'FITVXC')
+C        CALL MEMREL('dftexc-xcvec',WORK,KXCVEB,KXCVEB,KFREE,LFREE)
+      ENDIF
+Caspg+rbast
+#endif
+CCC
 C     Initial expectation value of two-electron matrix
 #if defined (MOD_DNF)
       IF (DOERG.AND..NOT.DFITXC) THEN
@@ -175,8 +189,9 @@ C
 C     Integrate
         NDIMENSION = NTBAS(0)
 #if defined (MOD_DNF)
+Caspg, the mult by two here is still not quite understandable...
         IF (DFITXC) NDIMENSION = MAX(NTBAS(0),NBASISAUX)*2
-        write (6,*) 'debug: ndimension',ndimension,ntbas(0),nbasisaux
+C       write (6,*) 'debug: ndimension',ndimension,ntbas(0),nbasisaux
 C*100
 #endif
 C
@@ -247,6 +262,9 @@ C     the Kohn-Sham contribution can then be subtracted
 #endif
         ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1) - ERRKS
       END IF 
+      IF (DFITXC) THEN
+         CALL MEMREL('dftexc-xcvec',WORK,KXCVEB,KXCVEB,KFREE,LFREE)
+      ENDIF
 C
  10   RETURN
       END
@@ -539,13 +557,14 @@ C to density fitting. used in connection to the scheme of
 C Birkenheuer et at (IJQC 102, 743, 2005) to compute the 
 C exchange-correlation contibutions together with density fitting 
       IF (DFITXC) THEN ! 
+         DOGRD = .false.
+         DOLR  = .false.
+         DOQR  = .false.
+         DOLND = .false.
          CALL MEMGET('REAL',KCFIT,NBASISAUX,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KXCVEC,NBASISAUX,WORK,KFREE,LFREE)
-         write (6,*) 'debug: a'
-         CALL DZERO(WORK(KXCVEC),NBASISAUX)
-         write (6,*) 'debug: b'
+         CALL READ_MATRIX(WORK(KXCVEC),1,NBASISAUX,'FITVXC')
          CALL READ_MATRIX(WORK(KCFIT),1,NBASISAUX,'FITCOE')
-         write (6,*) 'debug: c'
       ENDIF
 Caspg+rbast
 #endif
@@ -671,13 +690,8 @@ C aspg+rbast, 2006-09-21
            IF (DFITXC) THEN ! using densifit
 C gga not working now with densfit
              IF (DOGGA .AND. .NOT.FROMVX) THEN
-C              DO I = 1,3
-C                VT(I) = VX(FZ0)*RHG(I)
-C              ENDDO
-C              CALL DOEXC2(VX(FR0),VT,IREPOP,EXCMAT,GAO,GAO1)      
                call quit('GGA not working in the dfit scheme') 
              ELSE
-C              CALL DF_DOEXC(VX(FR0),IREPOP,WORK(KCFIT),WORK(KALPHA))
                DO I = 1, NBASISAUX
                   WORK(KXCVEC - 1 + I) = WORK(KXCVEC - 1 + I)
      &                                 + VX(FR0)*GAO(I)
@@ -732,7 +746,6 @@ Caspg+rbast, 2006-09-21
          CALL SAVE_MATRIX(WORK(KXCVEC),1,NBASISAUX,'FITVXC')
          CALL MEMREL('dftdr1-xcvec',WORK,KXCVEC,KXCVEC,KFREE,LFREE)
          CALL MEMREL('dftdr1-fitco',WORK,KCFIT ,KCFIT ,KFREE,LFREE)
-C        CALL MEMREL('dftdr1-alpha',WORK,KALPHA,KALPHA,KFREE,LFREE)
       ENDIF
 #endif
 Caspg+rbast, 2006-09-21

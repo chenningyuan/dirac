@@ -1334,7 +1334,10 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
 #if defined (MOD_DNF)
-         IF(DFTADD.AND..NOT.DFITXC) THEN
+         IF(DFTADD.AND.DFITXC) THEN
+C add code to calculate errks with the birkenheurer scheme here...
+C           ERRKS = DDOT(N2BBASX,DMAT,1,FOCK,1)
+         ELSEIF (DFTADD) THEN 
 #else
          IF(DFTADD) THEN
 #endif
@@ -1383,7 +1386,7 @@ C
          IF(AOC) THEN
            DO IOPEN = 1,NOPEN
 C  
-C             The factor is only DF and not D2*DF because of the
+C             The factor in only DF and not D2*DF because of the
 C                multiplication with D2 in TWOFCK.
 C
               CALL DAXPY(N2BBASXQ,DF(IOPEN),
@@ -1538,6 +1541,7 @@ C
 #include "dcbgen.h"
 #if defined (MOD_DFT)
 #include "dfterg.h"
+#include "dftcom.h"
 #endif
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6
@@ -1603,6 +1607,13 @@ C
 C...  If DFT correct for contribution from Kohn-Sham potential
 C...  to two-electron energy
       IF(DODFT) THEN
+#if defined (MOD_DNF)
+         IF (DFITXC) THEN
+C add code to do calculate errks for the birkenheuer scheme here
+C           ERRKS = DDOT(N2BBASX,DMAT(1,IZ,JSHELL+1),1,
+C    &                             F2(1,IZ,ISHELL+1),1)
+         END IF
+#endif
         E(1,2,0) = E(1,2,0) - ERRKS
       ENDIF
       DO IZ = 1,NZ

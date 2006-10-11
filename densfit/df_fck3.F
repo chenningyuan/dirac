@@ -63,6 +63,7 @@ C*****************************************************************************
 #include "fck3aob.h"
 #include "fck3odb.h"
 #include "iteration.h"
+#include "dfterg.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMT), FMAT(NBASIS*NBASIS,NDMT), 
      &          WORK(LWORK)
       LOGICAL IS_DIAGZERO
@@ -150,6 +151,7 @@ Caspg
         ENDDO ! Loop over IBOX
 
         IF (IPRINT.GT.25) THEN
+Caspg   if (.true.) then
           CALL HEADER('CFIT',-1)
           CALL OUTPUT(WORK(KCFIT),1,NBASISAUX,1,1,NBASISAUX,1,1,LUPRI)
         ENDIF
@@ -173,10 +175,10 @@ Caspg
 
 c        CALL TIMER('ITSOLV',TIMSTR,TIMEND)
 Caspg+rbast
-        IF (DF_FITVXC) THEN
-           CALL DF_AuxVXC_UpdateCFit(DMAT,WORK(KCFIT),WORK(KFREE),LFREE)
-           CALL TIMER('DF_AuxVXC_UpdateCFit',TIMSTR,TIMEND)
-        ENDIF
+C       IF (DF_FITVXC) THEN
+C          CALL DF_AuxVXC_UpdateCFit(DMAT,WORK(KCFIT),WORK(KFREE),LFREE)
+C          CALL TIMER('DF_AuxVXC_UpdateCFit',TIMSTR,TIMEND)
+C       ENDIF
 Caspg+rbast
         CALL SETAOBTCH(SPEXP,CONTRACTED,WORK(KFREE),LFREE,IPRINT)
         CALL ACT_ALL_BATCHES
@@ -186,10 +188,49 @@ Caspg+rbast
         CALL TIMER('JLINBU',TIMSTR,TIMEND)
 Caspg
 #if defined (DEBUG_DIRAC_FCKBUILD_DF)
-        CALL HEADER('fmat after fitfck3',-1)
+        CALL HEADER('fmat after fitfck3 #1',-1)
         CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-        write (6,*) 'debug: before robust fit'
+        write (6,*) 'debug: before robust fit, vxc'
 #endif
+Caspg
+Caspg+rbast
+Ctemporarily adding the exchange-correlation part separately
+Cafter debug will hopefully be only one call (above) to fitfck3...
+        IF (DF_FITVXC) THEN
+           CALL DF_AuxVXC_UpdateCFit(DMAT,WORK(KCFIT),WORK(KFREE),LFREE)
+           CALL TIMER('DF_AuxVXC_UpdateCFit',TIMSTR,TIMEND)
+
+           errks1=0.0
+           do i=1,ndmt
+           ERRKS1=errks1+DDOT(NBAST*NBAST,DMAT(1,I),1,FMAT(1,I),1)
+Caspg      write (6,*) 'nb,errks step 1',nbast,errks1
+C          CALL DZERO(FMAT(1,I),NBAST*NBAST)
+           enddo
+C          CALL HEADER('fmat after dzeros ',-1)
+C          CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+
+           CALL SETAOBTCH(SPEXP,CONTRACTED,WORK(KFREE),LFREE,IPRINT)
+           CALL ACT_ALL_BATCHES
+           CALL FITFCK3(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
+     &       WORK(KGABAB),WORK(KGABAL),WORK(KCFIT),IPRFCK,
+     &       WORK(KFREE),LFREE)
+           CALL TIMER('JLIVXC',TIMSTR,TIMEND)
+
+           errks2=0.0
+           do i=1,ndmt
+           ERRKS2=errks2+DDOT(NBAST*NBAST,DMAT(1,I),1,FMAT(1,I),1)
+Caspg      write (6,*) 'nb,errks step 2',nbast,errks2
+           enddo
+           errks = (errks2 - errks1)*0.5
+Caspg      write (6,*) 'errks final',errks
+Caspg+rbast
+Caspg
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+           CALL HEADER('fmat after fitfck3 vxc',-1)
+           CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+           write (6,*) 'debug: before robust fit'
+#endif
+        ENDIF
 Caspg
         IF (ROBUST_E) THEN
           CALL DF_CAL_ROB_E(DMAT,FMAT,WORK(KCFIT),NDMT,ISYMDM,IFCTYP,
@@ -528,9 +569,9 @@ c
 
 c     CALL TIMER('START ',TIMSTR,TIMEND)
 Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-      write (6,*) 'debug: inside fitfck3, ifctyp(idmt):',IFCTYP(IDMT)
-#endif
+C#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+C      write (6,*) 'debug: inside fitfck3, ifctyp(idmt):',IFCTYP(IDMT)
+C#endif
 Caspg
  
       DO IDMT=1,NDMT
@@ -1042,7 +1083,7 @@ C
       CALL MEMGET('REAL',KVMAT,NDIMAUX*NDIMAUX,WORK,KFREE,LFREE)
 Caspg+rbast
       IF (DF_FITVXC) THEN
-         write (6,*) 'allocating kgjk'
+C        write (6,*) 'allocating kgjk'
          CALL MEMGET('REAL',KGJK,NDIMAUX*NDIMAUX,WORK,KFREE,LFREE)
       ENDIF
 Caspg+rbast
@@ -1066,7 +1107,7 @@ C
 Caspg+rbast, 2006-09-21 
       IF (SAVE_VAB) THEN
          CALL SAVE_MATRIX(WORK(KVMAT),NBASISAUX,NBASISAUX,'ALBEMA')
-         IF (.TRUE.) THEN
+         IF (.false.) THEN
             CALL HEADER('ccVMAT in DF_GENDRV',-1)
             CALL OUTPUT(WORK(KVMAT),1,NBASISAUX,1,NBASISAUX,
      &               NBASISAUX,NBASISAUX,1,2)
@@ -1081,6 +1122,9 @@ C set to true
       ELSE
          CALL LINSOL(WORK(KVMAT),CFIT,WORK(KGALPHA),NDIMAUX,NDMT,
      &               DF_CONSTR,WORK(KFREE),LFREE)
+      ENDIF
+      IF (SAVE_CFIT) THEN
+          CALL SAVE_MATRIX(CFIT,1,NBASISAUX,'FITCO1')
       ENDIF
 Caspg+rbast, 2006-09-21
 C
@@ -1104,6 +1148,12 @@ C conservation constraint are also saved, but in a different file
          IF (SAVE_CFIT) THEN
              CALL SAVE_MATRIX(WORK(KCORR),1,NBASISAUX,'FITCHC')
          ENDIF
+Cdebug
+         if (.false.) then
+          CALL HEADER('Constrained fit coefs ',-1)
+          CALL OUTPUT(WORK(KCORR),1,NBASISAUX,1,1,NBASISAUX,1,1,LUPRI)
+        ENDIF
+Cdebug
 Caspg+rbast, 2006-09-21
 C
         WRITE(LUPRI,'(A,I4)') 'Charge of density/fitted '//
@@ -1127,11 +1177,20 @@ C
           COEFF_MAX = COEFF_MAX * ABS(DLAMBDA)
           WRITE(LUPRI,'(I3,4F18.12)') IDMT,BOX_CHARGE,CHARGE_FIT,
      &                                CORRECTED_CHARGE,COEFF_MAX
+Caspg, 2006-10-01 
+Cupdating fit coefficients for the constrained fit?
+C c = c + lambda c_constrained
+C         write (LUPRI,*) 'updating fit coefficients after constraint'
+CC        write (LUPRI,*) 'lambda',dlambda
+C         DO I=1,NDIMAUX
+C            CFIT(I,IDMT) = CFIT(I,IDMT) + DLAMBDA*WORK(KCORR+I-1)
+C         ENDDO
+Caspg, 2006-10-01 
         ENDDO
 Caspg+rbast, 2006-09-21
 C setting up Gjk matrix for the XC contribution in DFT
         IF (DF_FITVXC) THEN
-           write (6,*) 'debug: ook'
+C          write (6,*) 'debug: ook'
            CALL DF_FitXC_Build_GKJ(WORK(KGJK),NBASISAUX,NBASISAUX,
      &                           WORK(KVMAT),WORK(KAUXINT),WORK(KCORR))
            CALL SAVE_MATRIX(WORK(KGJK),NBASISAUX,NBASISAUX,'FITXCG')
@@ -1153,7 +1212,7 @@ Caspg+rbast, 2006-09-21
 Caspg+rbast, 2006-09-21
 C setting up Gjk matrix for the XC contribution in DFT
         IF (DF_FITVXC) THEN
-           write (6,*) 'doo'
+C          write (6,*) 'doo'
            CALL DF_FitXC_Build_GKJ(WORK(KGJK),NBASISAUX,NBASISAUX,
      &                           WORK(KVMAT),DUMMY,DUMMY)
            CALL SAVE_MATRIX(WORK(KGJK),NBASISAUX,NBASISAUX,'FITXCG')
@@ -1884,9 +1943,9 @@ c     Turn off fmm
       DOFMM = .FALSE.
    
 Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-      write (6,*) 'debug: inside itprod, ifctyp(idmt):',IFCTYP(IDMT)
-#endif
+C#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+C      write (6,*) 'debug: inside itprod, ifctyp(idmt):',IFCTYP(IDMT)
+C#endif
 Caspg
       IF (DOFMM) THEN
         KCLERI = NCLERI
