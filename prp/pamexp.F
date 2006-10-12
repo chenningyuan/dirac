@@ -85,6 +85,11 @@ C     CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
 CMI ... Needed for SQUARE matrixes of some property operators!
 C     CALL MEMGET('REAL',KONEIN ,   N2BBASX,WORK,KFREE,LFREE)
 C
+#ifdef ANALYZE_PROP_GRADIENT
+      LUNIT = 35
+      CALL OPNFIL(LUNIT,'PMAT','UNKNOWN','PAMEXP')
+#endif
+C
 C     CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
 C    &            WORK(KDMAT),WORK(KPMAT),WORK(KPTRI),
 C    &            WORK(KONEIN),
@@ -93,6 +98,10 @@ C    &            WORK(KFIRST),WORK(KFREE),LFREE)
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),
      &            WORK(KFIRST),WORK(KFREE),LFREE)
+C
+#ifdef ANALYZE_PROP_GRADIENT
+      CLOSE(LUNIT,STATUS = 'KEEP')
+#endif
 C
 C
 C     Memory deallocation
@@ -813,6 +822,17 @@ Caspg
         FADD = D1
       ENDIF
       ENDDO
+C
+#ifdef ANALYZE_PROP_GRADIENT
+      LUNIT = 35
+      WRITE(LUNIT) PRPNAM(INDXPR)
+      IPF = 1
+      DO IFRP = 1,NFSYM
+        NDIM = NCNT(IFRP)*NCNT(IFRP)*NZ
+        CALL WRITT(LUNIT,NDIM,PFO(IPF))
+        IPF = IPF + NDIM
+      ENDDO
+#endif
 C
       IF(IPRINT.GE.2) THEN
         IPF = 1

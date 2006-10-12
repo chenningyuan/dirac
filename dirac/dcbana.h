@@ -11,7 +11,7 @@ C     DOLOC  - perform orbital localization
 C
 C
       LOGICAL         DOPOP, DOPRJ, DOVEC, DO1RHO, DO3RHO, DO1WT,       &
-     &                DOLOC, GRADANA
+     &                DOLOC
 C
       COMMON /DCLPRP/ DOPOP, DOPRJ, DOVEC, DO1RHO, DO3RHO, DO1WT,       &
-     &                DOLOC, GRADANA
+     &                DOLOC
