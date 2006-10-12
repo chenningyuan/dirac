@@ -116,6 +116,9 @@ C
       IF(DOPLOT) CALL PLOT(WORK,LWORK)
 C
 C
+#ifdef ANALYZE_PROP_GRADIENT
+      CALL ANALYZE_PROP_GRADIENT(WORK,LWORK)
+#endif
 C
 C
 C
@@ -3597,3 +3600,154 @@ C
 C
       RETURN
       END
+#ifdef ANALYZE_PROP_GRADIENT
+      SUBROUTINE ANALYZE_PROP_GRADIENT(WORK,LWORK)
+
+#include "implicit.h"
+#include "priunit.h"
+#include "sdpre.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+      PARAMETER (NZ   = 4)
+      PARAMETER (NREF = 38)
+      PARAMETER (NMOL = 2)
+      PARAMETER (NTOT = NREF + NMOL)
+
+      PARAMETER (IHOMO = 17,ILUMO = 18)
+
+      DIMENSION BVEC(NTOT,NMOL,NZ),
+     &          PMAT(NTOT,NTOT,NZ),
+     &          TMAT(NTOT,NTOT,NZ),
+     &          QMAT(NTOT,NTOT,NZ),
+     &          ZMAT(NTOT,NTOT),
+     &          ZVEC(NTOT*NTOT),
+     &          IND(NTOT*NTOT),
+     &          IQ(4),
+     &          GRADIENT(4),
+     &          WORK(LWORK)
+
+      CHARACTER PROP_NAME*16
+
+#include "memint.h"
+
+      DO I = 1,4
+        IQ(I) = I
+      ENDDO
+
+!     read projection coefficients
+
+      LU_PROJ = 13
+      CALL OPNFIL(LU_PROJ,'DFPRJC','OLD','MAINNN')
+      READ(LU_PROJ)
+      READ(LU_PROJ) 
+      READ(LU_PROJ)
+      READ(LU_PROJ) BVEC
+      CLOSE(LU_PROJ,STATUS = 'KEEP')
+
+!     read property matrix in fragment basis
+
+      LU_PROP = 14
+      CALL OPNFIL(LU_PROP,'PMAT','OLD','MAINNN')
+ 10   CONTINUE
+      READ(LU_PROP,END = 20,ERR = 20) PROP_NAME
+      READ(LU_PROP) PMAT
+
+!     get property gradient
+
+      CALL QTRANS('AOMO','S',D0,
+     &            NTOT,NTOT,1,1,
+     &            PMAT,NTOT,NTOT,NZ,IQ,
+     &            GRADIENT,1,1,NZ,IQ,
+     &            BVEC(1,1,1),NTOT,NMOL,NZ,IQ,
+     &            BVEC(1,2,1),NTOT,NMOL,NZ,IQ,
+     &            WORK(KFREE),LFREE,0)
+      CALL DSCAL(4,D2,GRADIENT,1)
+
+      WRITE(LUPRI,*) 'GRADANA: gradient for property ', PROP_NAME
+      DO IZ = 1,NZ
+        WRITE(LUPRI,*) GRADIENT(IZ)
+      ENDDO
+
+      CALL DZERO(QMAT,NTOT*NTOT*NZ)
+      DO K = 1,NTOT
+        DO L = 1,NTOT
+          CALL QTRANS('AOMO','S',D0,
+     &                1,1,1,1,
+     &                PMAT(K,L,1),NTOT,NTOT,NZ,IQ,
+     &                QMAT(K,L,1),NTOT,NTOT,NZ,IQ,
+     &                BVEC(K,1,1),NTOT,NMOL,NZ,IQ,
+     &                BVEC(L,2,1),NTOT,NMOL,NZ,IQ,
+     &                WORK(KFREE),LFREE,0)
+        ENDDO
+      ENDDO
+      CALL DSCAL(NTOT*NTOT*NZ,D2,QMAT,1)
+
+      WRITE(LUPRI,*) 'GRADANA: compare'
+      DO IZ = 1,NZ
+        WRITE(LUPRI,*) DSUM(NTOT*NTOT,QMAT(1,1,IZ),1)
+      ENDDO
+
+!     symmetrize QMAT -> triangular TMAT
+
+      CALL DZERO(TMAT,NTOT*NTOT*NZ)
+      DO IZ = 1,NZ
+        DO L = 1,NTOT
+          DO K = 1,(L-1)
+            TMAT(K,L,IZ) = QMAT(K,L,IZ) + QMAT(L,K,IZ)
+          ENDDO
+          TMAT(L,L,IZ) = QMAT(L,L,IZ)
+        ENDDO
+      ENDDO
+
+!     square TMAT -> ZMAT or ZVEC
+
+      CALL DZERO(ZMAT,NTOT*NTOT)
+      CALL DZERO(ZVEC,NTOT*NTOT)
+      DO K = 1,NTOT
+        DO L = 1,NTOT
+          DO IZ = 1,NZ
+            ZMAT(K,L) = ZMAT(K,L) + TMAT(K,L,IZ)*TMAT(K,L,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+      DO K = 1,NTOT
+        DO L = 1,NTOT
+          ZVEC((K-1)*NTOT-1+L) = ZMAT(K,L)
+        ENDDO
+      ENDDO
+
+      CALL INDEXX(NTOT*NTOT,ZVEC,IND)
+
+      WRITE(LUPRI,*) 'GRADANA: ZMAT'
+      CALL PRQMAT(ZMAT,NTOT,NTOT,NTOT,NTOT,1,IQ,LUPRI)
+      WRITE(LUPRI,*) 'GRADANA: index'
+      WRITE(LUPRI,'(2A6,6A16)') 'INDK', 'INDL', 'ZVEC',
+     &                          'ZMAT',
+     &                  'TMAT(IZ1)', 'TMAT(IZ2)','TMAT(IZ3)','TMAT(IZ4)'
+      DO IDUMMY = 1,50
+        I = NTOT*NTOT - IDUMMY + 1
+        INDK = INT((IND(I)-0.1D0)/NTOT)
+        INDL = IND(I) - INDK*NTOT + 1
+        INDK = INDK + 1
+        WRITE(LUPRI,'(2I6,6F16.8)') INDK, INDL, ZVEC(IND(I)),
+     &                              ZMAT(INDK,INDL),
+     &                             (TMAT(INDK,INDL,IZ),IZ=1,NZ)
+        IF((INDK.EQ.IHOMO).AND.(INDL.EQ.ILUMO)) THEN
+          WRITE(LUPRI,*) 'GRADANA: homo-lumo'
+          DO MYZ = 1,NZ
+            WRITE(LUPRI,*) MYZ, QMAT(INDK,INDL,MYZ)
+          ENDDO
+          WRITE(LUPRI,*) 'GRADANA: lumo-homo'
+          DO MYZ = 1,NZ
+            WRITE(LUPRI,*) MYZ, QMAT(INDL,INDK,MYZ)
+          ENDDO
+        ENDIF
+      ENDDO
+
+      GOTO 10
+ 20   CONTINUE
+
+      RETURN
+      END
+#endif

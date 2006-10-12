@@ -316,7 +316,9 @@ C
 C     Print section
 C     =============
 C
+#ifndef ANALYZE_PROP_GRADIENT
       IF(IPRINT.GE.4) THEN
+#endif
         CALL HEADER('Output from GRDORB',-1)
         IREP = IPRPSYM(INDXPR)-1
         IF(NXOPE.GT.0) THEN
@@ -331,7 +333,9 @@ C
           CALL PRQMAT(GPOP,NXOPP,1,NXOPP,1,NZ,IPQTOQ(1,IREP),
      &                LUPRI)
         ENDIF
+#ifndef ANALYZE_PROP_GRADIENT
       ENDIF
+#endif
       CALL QEXIT ('GRDOR1')
       RETURN
       END
@@ -726,14 +730,18 @@ C
           CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),CMO,
      &                IBEIG,WORK,KFREE,LFREE,IPRINT)
           CALL MEMREL('GPGET.e-e',WORK,1,KFRSAV,KFREE,LFREE)
+#ifndef ANALYZE_PROP_GRADIENT
           IF(IPRINT.GE.4) THEN
+#endif
             CALL HEADER('Output from GPGET',-1)
             IREP = ISYM - 1
             WRITE(LUPRI,'(A,A16)') 
      &      '* Gradient (e-e) of property ',PRPNAM(INDXPR)
             CALL PRQMAT(GP,NXPAR,1,NXPAR,1,NZ,
      &                  IPQTOQ(1,IREP),LUPRI)
+#ifndef ANALYZE_PROP_GRADIENT
           ENDIF
+#endif
         ENDIF
       ELSEIF(ITYP.EQ.JBPNDX) THEN
         IF(NXPAR.GE.0) THEN
