@@ -2633,7 +2633,7 @@ C
      &             '*PLOT  ','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.MULPOP','.PROJEC','.PRIVEC','.RHO1  ',
      &             '.DENSIT','.WT1   ','.LOCALI','.XXXXXX',
-     &             '.PLOT  ','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.PLOT  ','.GRADAN','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
 #include "memint.h"
@@ -2650,6 +2650,7 @@ C
       DO3RHO  = .FALSE.
       DO1WT   = .FALSE.
       DOLOC   = .FALSE.
+      GRADANA = .FALSE.
 C
 C
 C     initialize visual.h
@@ -2746,6 +2747,8 @@ C&&&& LOCALIZE : Molecular orbital localization
             NJOBS = NJOBS +1
             GO TO 100
   110    CONTINUE
+            GRADANA = .TRUE.
+            NJOBS = NJOBS +1
             GO TO 100
   111    CONTINUE
             GO TO 100
