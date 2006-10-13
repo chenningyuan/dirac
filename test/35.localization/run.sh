@@ -46,6 +46,6 @@ MOL=CH4;
 MENU=CH4locprj;
 export MOL;
 export MENU;
-../run.sh -incmo -copy "DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"
+../run.sh -incmo -copy DFC1AT -copy DFH1AT -copy DFH2AT -copy DFH3AT -copy DFH4AT
 rm cf.C cf.H DFCOEF DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT
 exit 0
