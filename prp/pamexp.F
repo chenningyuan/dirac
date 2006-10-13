@@ -72,13 +72,7 @@ C     Memory allocation
 
 CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
       CALL MEMGET('REAL',KDMAT  ,NZ*N2BBASX*2,WORK,KFREE,LFREE)
-
-CMI   CALL MEMGET('REAL',KPMAT  ,N2BBASX   ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMAT  ,N2BBASX*NZ,WORK,KFREE,LFREE)
-
-CMI       ... this is for triangular..
-C     CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
-
       CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
 
 
@@ -89,20 +83,9 @@ C
       LUNIT = 35
       CALL OPNFIL(LUNIT,'PMAT','UNKNOWN','PAMEXP')
 #endif
-C
-C     CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
-C    &            WORK(KDMAT),WORK(KPMAT),WORK(KPTRI),
-C    &            WORK(KONEIN),
-C    &            WORK(KFIRST),WORK(KFREE),LFREE)
-
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),
      &            WORK(KFIRST),WORK(KFREE),LFREE)
-C
-#ifdef ANALYZE_PROPERTY_GRADIENT
-      CLOSE(LUNIT,STATUS = 'KEEP')
-#endif
-C
 C
 C     Memory deallocation
 C
@@ -322,20 +305,16 @@ C         write(lupri,*) 'PRPEX1...I,INDXPR',I,INDXPR
 
 C.........generate property matrix in SA-AO-basis into PMAT ...
 CMI ... extended parameter list by the OP1INT array for square matrixes
-CMI       CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),IDIMENS,
           CALL PRPEX2(INDXPR,EXPVAL(I),LEXPST(1,I),IDIMENS,
      &                WORK(KPTRI),PMAT,WORK(KOP1INT),FIRST,
-CMI  &                WORK(KFREE),LFREE,IPREXP)
      &                WORK,KFREE,LFREE,IPREXP)
 
           IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
 
 C.............calculate expectation value
-CMI       CALL PRPEX3(EXPVAL(I),INDXPR,IREP,ITIM,
           CALL PRPEX3(EXPVAL(I),INDXPR,
      &        DMAT,PMAT,FIRST,ORBANA,
      &        WORK,KFREE,LFREE,IPREXP)
-CMI  &        WORK(KFREE),LFREE,IPREXP)
  30       CONTINUE
 
           IF(PRJANA) THEN
@@ -412,11 +391,8 @@ C
           DO 10 IFRP = 1,NFSYM
             IF(NORB(IFRP).EQ.0) GOTO 10
 C.........generate property matrix in SO-basis
-CMI ... extended parameter list by the OP1INT array for square matrixes
-CMI         CALL PRPEX2(LU1INT,INDXPR,EXPBUF,LEXPST(1,I),IDIMENS,
             CALL PRPEX2(INDXPR,EXPBUF,LEXPST(1,I),IDIMENS,
      &                  WORK(KPTRI),PMAT,WORK(KOP1INT),FIRST,
-CMI  &                  WORK(KFREE),LFREE,IPREXP)
      &                  WORK,KFREE,LFREE,IPREXP)
 
             IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 20
@@ -425,11 +401,9 @@ CMI  &                  WORK(KFREE),LFREE,IPREXP)
               CALL DENORB(DMAT,J,1,IFRP,CMO,IPREXP)
               EXPBUF = D0
 C.............calculate expectation value
-CMI           CALL PRPEX3(EXPBUF,INDXPR,IREP,ITIM,
               CALL PRPEX3(EXPBUF,INDXPR,
      &          DMAT,PMAT,FIRST,ORBANA,
      &          WORK,KFREE,LFREE,IPREXP)
-CMI  &          WORK(KFREE),LFREE,IPREXP)
               IOPEN = GETIOPEN(J,IFRP)
               EXPBUF = EXPBUF*DF(IOPEN)
               EXPVAL(I) = EXPVAL(I) + EXPBUF
@@ -441,7 +415,6 @@ CMI  &          WORK(KFREE),LFREE,IPREXP)
 
             IF(PRJANA) THEN
 C...........Transform property matrix to fragment orbital basis
-CMI        CALL PRJEX1(WORK(KPFMT),IDIMENS,WORK(KPTRI),PMAT,WORK(KRVEC),
 Caspg
 C quick hack to get the projection analysis to work, before IREPB and ITIMB
 C were undefined, hence the crash.
@@ -493,9 +466,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex2 */
-CMI   SUBROUTINE PRPEX2(LU1INTX,INDXPR,EXPVAL,LEXPST,IDIMENS,
       SUBROUTINE PRPEX2(INDXPR,EXPVAL,LEXPST,IDIMENS,
-CMI  &                  PTRI,PMAT,OP1INT,FIRST,WORK,LWORK,IPRINT)
      &                  PTRI,PMAT,OP1INT,FIRST,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -533,7 +504,7 @@ C     DIMENSION PTRI(NNBBASX,NZ),PMAT(N2BBASX,NZ),
 
       CALL QENTER('PRPEX2')
 
-      CALL MEMCHK('PRPEX2 1.0',WORK,1)
+C      CALL MEMCHK('PRPEX2 1.0',WORK,1)
 
       EXPVAL = D0
 C
@@ -548,7 +519,6 @@ C
 C     2. Time reversal symmetry
 C
       ITIM = IPRPTIM(INDXPR)
-CMI   IF(ITIM.NE.1) LEXPST(2) = .TRUE.
       IF(ITIM.EQ.-1) LEXPST(2) = .TRUE.
 
 CMI ... control output...
@@ -565,7 +535,6 @@ CMI ... control output...
 C
 C     If not totally symmetric, return with zero value
 C
-CMI   IF (LEXPST(1).OR.LEXPST(2)) RETURN
       IF (LEXPST(1).AND.(.NOT.PRJANA)) GOTO 90 
 
 C
@@ -580,7 +549,6 @@ C
 CMI ... check it ! In the pure two-component mode there should be no reading from AOPROPER !!
       IOPTYP = IPRPTYP(INDXPR)
 
-CMI   IF(IOPTYP.EQ.0) THEN
       IF(IOPTYP.EQ.0.AND..NOT.(BSS.AND.TWOCOMP)) THEN
 
         KLBL  = IPRPLBL(1,INDXPR)
@@ -601,23 +569,16 @@ CMI   IF(IOPTYP.EQ.0) THEN
         ENDIF
 
       ELSEIF (ITIM.EQ.0) THEN
-CMI     CALL PRPMAOSQ(LU1INT,INDXPR,PMAT,OP1INT,
-CMI     CALL PRPMAO(LU1INT,INDXPR,N2BBASX,PMAT,OP1INT,
-CMI  &              FIRST,WORK,LWORK,IPRINT)
         IF (IDIMENS.NE.N2BBASX) CALL QUIT('PRPEX2: wrong IDIMENS !')
         CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PMAT,OP1INT,
-CMI  &              FIRST,WORK,LWORK,IPRINT)
      &              FIRST,WORK(KFREE),LFREE,IPRINT)
       ELSE
-CMI     CALL PRPMAO(LU1INT,INDXPR,NNBBASX,PTRI,OP1INT,
-CMI  &              FIRST,WORK,LWORK,IPRINT)
         IF (IDIMENS.NE.NNBBASX) CALL QUIT('PRPEX2: wrong IDIMENS !')
         CALL PRPMSAO(INDXPR,IDIMENS,PTRI,PMAT,OP1INT,
-CMI  &              FIRST,WORK,LWORK,IPRINT)
      &              FIRST,WORK(KFREE),LFREE,IPRINT)
       ENDIF
 
-      CALL MEMCHK('PRPEX2 2.0',WORK,1)
+C      CALL MEMCHK('PRPEX2 2.0',WORK,1)
 C
 C     
 C
@@ -627,10 +588,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex3 */
-CMI   SUBROUTINE PRPEX3(EXPVAL,INDXPR,IREP,ITIM,
       SUBROUTINE PRPEX3(EXPVAL,INDXPR,
      &           DMAT,PMAT,FIRST,ORBFLG,WORK,KFREE,LFREE,IPRINT)
-CMI  &           DMAT,PMAT,FIRST,ORBFLG,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -662,7 +621,7 @@ C
 
       CALL QENTER('PRPEX3')
 
-      CALL MEMCHK('PRPEX3 1.0',WORK,1)
+C      CALL MEMCHK('PRPEX3 1.0',WORK,1)
 
       IREP = IPRPSYM(INDXPR)-1
       ITIM = IPRPTIM(INDXPR)
@@ -681,7 +640,6 @@ C     integrals (ensured by logical FIRST(1..NZ) )
 C========================================================================
       DO IZ = 1,NZ
       IF(.NOT.FIRST(IZ)) THEN
-CMI      IF (.NOT. ORBFLG) THEN
          IF ( ORBFLG) THEN
            DO IOPEN = 0,NOPEN
               EXPVAL = EXPVAL + DF(IOPEN)
@@ -727,14 +685,12 @@ CMI ... test ouput - print the PMAT and DMAT matrixes
       ENDDO
       EXPVAL = EXPVAL + EXPVAL
 CTROND      CALL MEMCHK('PRPEX3 2.0',WORK,1)
-            CALL MEMCHK('PRPEX3 2.0',WORK,1)
 C
       CALL QEXIT('PRPEX3')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjex1 */
-CMI   SUBROUTINE PRJEX1(PFO,IDIMENS,PTRI,PAO,RVEC,INDXPR,IREP,ITIM,NCNT,
       SUBROUTINE PRJEX1(PFO,PAO,RVEC,INDXPR,IREP,ITIM,NCNT,
      &                  FIRST,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
@@ -760,8 +716,6 @@ C
 C
       LOGICAL FIRST(NZ)
       DIMENSION PFO(*),PAO(N2BBASX,NZ),NCNT(*),RVEC(*),WORK(*)
-C    &          RVEC(*),PTRI(NNBBASX,NZ),WORK(*)
-CMI  &          RVEC(*),PTRI(IDIMENS,NZ),WORK(*)
 
       CALL QENTER('PRJEX1')
 C
@@ -1221,9 +1175,7 @@ CMI#include "memint.h"
 C
 C     LWORK=LFREE
 C
-      CALL MEMCHK('voor dzero',WORK,1)
       CALL DZERO(EXPVAL,NEXPP)
-      CALL MEMCHK('na dzero',WORK,1)
       N2EXP = 2*NEXPP
       CALL LSET(N2EXP,.FALSE.,LEXPST)
 C
@@ -1242,7 +1194,6 @@ C     Transform DMO to 'orthonormal SO' basis
 C     =======================================
 C
       CALL DMP2AO(DMO,DMAT,CMO,WORK,KFREE,LFREE)
-CMI   CALL MEMCHK('PRPEX1_MP2 1',WORK,1)
 C  
 C     Calculate correlation contribution to property
 C     ==============================================
@@ -1254,7 +1205,6 @@ C
 
         INDXPR = LEXPP(I)
 
-       CALL MEMCHK('PRPEX1_MP2 0.1',WORK,1)
         IS_SQUARE = (IPRPTIM(INDXPR).EQ.0)
         IF (IS_SQUARE) THEN
             IDIMENS = N2BBASX
@@ -1265,37 +1215,17 @@ C
             CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KOP1INT,   IDIMENS,WORK,KFREE,LFREE)
         ENDIF
-      CALL MEMCHK('PRPEX1_MP2 1',WORK,1)
-
-C      write(lupri,*) 'prpex1_mp2: I=',I,'/',NEXPP
 
 CMI ....  modified for square matrixes of properties...get SA-AO matrix into PMAT
-CMI      CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
          CALL PRPEX2(INDXPR,EXPVAL(I),LEXPST(1,I),
      &                IDIMENS,WORK(KPTRI),PMAT,WORK(KOP1INT),FIRST,
-CMI  &                WORK(KFREE),LFREE,IPREXP)
      &                WORK,KFREE,LFREE,IPREXP)
-
-      CALL MEMCHK('PRPEX1_MP2 1.1',WORK,1)
-
-CMI  ... release the memmory
-         CALL MEMREL('PRPEX1_MP2 1',WORK,1,KOP1INT,KFREE,LFREE)
-C        CALL MEMREL('PRPEX1_MP2 1',WORK,KOP1INT,KOP1INT,KFREE,LFREE)
-C        CALL MEMREL('PRPEX1_MP2 1',WORK,KWORK,KOP1INT,KFREE,LFREE)
          CALL MEMREL('PRPEX1_MP2 2',WORK,1,KPTRI,KFREE,LFREE)
-C        CALL MEMREL('PRPEX1_MP2 2',WORK,KPTRI,KPTRI,KFREE,LFREE)
-C        CALL MEMREL('PRPEX1_MP2 2',WORK,KWORK,KPTRI,KFREE,LFREE)
 
          IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
-
-CMI      CALL PRPEX3(EXPVAL(I),INDXPR,IREP,ITIM,
          CALL PRPEX3(EXPVAL(I),INDXPR,
      &        DMAT,PMAT,FIRST,ORBANA,
      &        WORK,KFREE,LFREE,IPREXP)
-C    &        WORK(KFREE),LFREE,IPREXP)
-
-         CALL MEMCHK('PRPEX1_MP2 3',WORK,1)
-
  30       CONTINUE
 
         FMT = MXFORM(EXPVAL(I),15)
