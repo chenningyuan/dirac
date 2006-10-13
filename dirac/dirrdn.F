@@ -3046,7 +3046,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 8)
+      PARAMETER (NTABLE = 12)
 C
 #include "dcbgen.h"
 #include "dcbana.h"
@@ -3062,7 +3062,8 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
-     &            '.WGPOP','.OWNBAS','.PRJADJ','.POLREF'/
+     &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
+     &            '.POLTST','.POLNRM','.REMREF','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -3088,6 +3089,9 @@ C     Default is to project all occupied vectors onto all fragment vectors
       OWNBAS = .FALSE.
       PRJADJ = .FALSE.
       POLREF = .FALSE.
+      POLTST = .FALSE.
+      POLNRM = .FALSE.
+      REMREF = .FALSE.
 C
 C     Process input from CBIPRJ
 C     =========================
@@ -3161,6 +3165,22 @@ C&&& PRJADJ: Phase adjustment according to selected reference orbital
     8          CONTINUE
 C&&& POLREF: Polarize reference orbitals
                   POLREF = .TRUE.
+               GO TO 100
+ 9             CONTINUE
+C&&& POLTST: Check if polarization contributions are spanned by
+C            polarizaed atomic orbitals
+                  POLTST = .TRUE.
+                  POLNRM = .TRUE.
+               GO TO 100
+ 10            CONTINUE
+C&&& POLNRM: Normalize polarization contribution
+                  POLNRM = .TRUE.
+               GO TO 100
+ 11            CONTINUE
+C&&& REMREF: Project out reference orbitals from polarized orbitals
+                  REMREF = .TRUE.
+               GO TO 100
+ 12            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -3236,8 +3256,17 @@ C
           WRITE(LUPRI,'(1X,A)')
      &      '* Reference orbitals will be polarized'
         ENDIF
+        IF(REMREF) THEN
+          WRITE(LUPRI,'(1X,A)')
+     &      '* Project out reference orbitals from polarized ones.'
+        ENDIF
+        IF(POLTST) THEN
+          WRITE(LUPRI,'(1X,A)')
+     &      '* Test if polarization contributions are spanned by ',
+     &      ' polarized reference orbitals.'
+        ENDIF
       ELSE
-        IF(POLREF) THEN
+        IF(POLREF.OR.POLTST) THEN
           CALL QUIT
      &     ('ANAINP: Polarization only possible with SELOWN=T')
         ENDIF
@@ -3257,6 +3286,10 @@ C
             ENDIF
           ENDDO
         ENDDO
+      ENDIF
+      IF(POLNRM) THEN
+        WRITE(6,'(1X,A)')
+     &    '* Polarization contributions will be normalized.'
       ENDIF
       IF(LWGPOP) WRITE(LUPRI,'(A,A)') '* Overlap densities split ',
      &  'between contributions according to their weight.'

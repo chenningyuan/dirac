@@ -2020,7 +2020,13 @@ C
 C     From an orbital string VECREF for fermion ircop IFRP
 C     find the total number of vectors NSTR(IFRP,0) and allocate
 C     starting adress KVEC. 
+C     
+C     On input:
+C     NSTR(IFRP,1) : max. number of vectors of positive energy
+C     NSTR(IFRP,2) : max. number of vectors of negative energy
 C
+C
+C     On output:
 C     NSTR(IFRP,0) : total number of vectors
 C     NSTR(IFRP,1) : vectors of positive energy
 C     NSTR(IFRP,2) : vectors of negative energy
@@ -2036,8 +2042,8 @@ C
 C
       CALL MEMGET('INTE',KVEC,NORB(IFRP),WORK,KFREE,LFREE)
       NSTR(IFRP,0) = 1
-      CALL NUMLST(VECREF,WORK(KVEC),NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
-     &              IFRP,NSTR(IFRP,0),WORK(KFREE),LFREE)
+      CALL NUMLST(VECREF,WORK(KVEC),NORB(IFRP),-NSTR(IFRP,2),
+     &            NSTR(IFRP,1),IFRP,NSTR(IFRP,0),WORK(KFREE),LFREE)
       CALL ORBCNT(WORK(KVEC),NSTR(IFRP,0),IFRP,
      &            NSTR(IFRP,2),NSTR(IFRP,1))
       NSTR(IFRP,0) = NSTR(IFRP,1) + NSTR(IFRP,2)

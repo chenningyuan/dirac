@@ -1905,14 +1905,28 @@ C
         WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
      +    '* Electronic eigenvalue nr.',I,': ',EIG(I)
         CALL PRSYMB(LUPRI,'=',52,0)
+        BIG=D0
+        IBIG=0
         DO J = 1,NBAS
           DVEC = D0
           DO IZ = 1,NZ
             DVEC = DVEC + ABS(CPOL(J,I,IZ))
           ENDDO
-          IF(DVEC.GT.DTOL) WRITE(LUPRI,100)
+          IF(DVEC.GT.DTOL) THEN
+            WRITE(LUPRI,100)
      &          J,PLABEL(IPLAB(J,2),2),(CPOL(J,I,IZ),IZ = 1,NZ)
+            IF(DVEC.GT.BIG) THEN
+              BIG = DVEC
+              IBIG = J
+            ENDIF
+          ENDIF
         ENDDO
+        WRITE(6,*) ' * Max. ',BIG
+        IF(IBIG.GT.0) THEN
+          WRITE(LUPRI,100)
+     &          IBIG,PLABEL(IPLAB(IBIG,2),2),
+     &          (CPOL(IBIG,I,IZ),IZ = 1,NZ)
+        ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'=',52,0)
       RETURN

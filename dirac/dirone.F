@@ -4384,6 +4384,8 @@ C.....loop over fermion ircops
         NVECS(IFRP) = 0
 C.......loop over fragments
         DO IFRAG = 1,NFRAG
+          NSTR(IFRP,1,IFRAG) = NESH(IFRP)
+          NSTR(IFRP,2,IFRAG) = NPSH(IFRP)
           CALL ORBNUM(VCPROJ(IFRP,IFRAG),IFRP,KVEC(IFRP,IFRAG),
      &                NSTR(1,0,IFRAG),WORK,KFREE,LFREE)
           NVECS(IFRP) = NVECS(IFRP) + NSTR(IFRP,0,IFRAG)
@@ -4636,7 +4638,7 @@ C
             P(IZ) = -P(IZ)
           ENDDO
 C
-C         Form VECS = VECS -VREF<VREF|VECS>
+C         Form |VECS> = |VECS> -|VREF><VREF|VECS>
 C
           CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
      &                VREF(1,IREF,1),N2VREF,1,IPQTOQ(1,0),NZ,
