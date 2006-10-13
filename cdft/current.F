@@ -82,6 +82,7 @@ C-----------------------------------------------------------------------
 #include "symmet.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "dcbgen.h"
 #include "cdft.h"
 C
 #if defined (VAR_G77) || defined (SYS_SX)

@@ -2652,9 +2652,7 @@ C
       DOLOC   = .FALSE.
 C
 C
-C     initialize visual.h
-C     ====================
-C
+!     initialize visual.h
       DOPLOT = .FALSE.
 C
 C
@@ -2829,7 +2827,7 @@ C
         CALL LOCINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     9 CONTINUE
-        CALL PLOT_INP(WORD,.FALSE.,WORK,LWORK)
+        CALL PLOT_INPUT(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
    10 CONTINUE
         GO TO 200
@@ -2848,7 +2846,7 @@ C
       IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
 #endif
       IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
-      IF(DOPLOT) CALL PLOT_INP(WORD,.TRUE.,WORK,LWORK)
+      IF(DOPLOT) CALL PLOT_INPUT(WORD,.TRUE.,WORK,LWORK)
 C
       CALL QEXIT('ANWINP')
       RETURN
@@ -6151,42 +6149,43 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck plot_inp */
-      SUBROUTINE PLOT_INP(WORD,RESET,WORK,LWORK)
+C     /* deck PLOT_INPUT */
+      SUBROUTINE PLOT_INPUT(WORD,RESET,WORK,LWORK)
 C=======================================================================
 C     input section for {1,2,3}-dimensional plot
 C     copy-and-paste-and-modify-a-little-job
 C     used Trond's respective routines
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: june 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
-C
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-C
+
       PARAMETER (NTABLE = 28)
-C
+
 #include "dcbgen.h"
 #include "dcbana.h"
 #include "visual.h"
 #include "cdft.h"
 #include "dgroup.h"
-C
-      LOGICAL   SET,RESET,NEWDEF
-      CHARACTER PROMPT*1,WORD*7,TABLE(NTABLE)*7,WORD1*7
+
+      LOGICAL   SET, RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD_SAVE*7
       DIMENSION WORK(LWORK)
-C
+
       SAVE SET
-      DATA TABLE /'.PRINT ','.READXV','.1D    ','.2D    ',
+      DATA TABLE /'.XXXXXX','.READXV','.1D    ','.2D    ',
      &            '.3D    ','.DENSIT','.SPIN  ','.CURREN',
-     &            '.ELF   ','.D1DSTE','.D3DSTA','.D3DNOR',
-     &            '.CUBE  ','.LAPLAC','.NXVEC ','.STRING',
+     &            '.ELF   ','.1DSTEP','.3DSTAR','.3DNORM',
+     &            '.CUBE  ','.XXXXXX','.NXVEC ','.STRING',
      &            '.SKIPEP','.SKIPEE','.RXJ   ','.FORMAT',
      &            '.CUTXY ','.CUTXYS','.CUTYZ ','.CUTYZS',
-     &            '.BETA  ','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET /.FALSE./
-C
+
       IF(SET) THEN
         IF(RESET) SET = .FALSE.
         RETURN
@@ -6196,152 +6195,123 @@ C
       ELSE
         SET = .TRUE.
       ENDIF
-C
-C
-C     initialize visual.h
-C     ====================
-C
-      READXVECFILE       = .FALSE.
-      DO1DPLOT           = .FALSE.
-      DO2DPLOT           = .FALSE.
-      DO3DPLOT           = .FALSE.
-      PLOTDENSITY        = .FALSE.
-      PLOTSPINDENSITY    = .FALSE.
-      PLOTCURRENTDENSITY = .FALSE.
-      PLOTELF            = .FALSE.
-      PLOTLAPLACIAN      = .FALSE.
-      PLOTRXJ            = .FALSE.
-C
-      PLOTSKIPEP         = .FALSE.
-      PLOTSKIPEE         = .FALSE.
-      USE_ORBSTRING       = .FALSE.
-C
-      BETA               = .FALSE.
-C
-      CUT_XY             = .FALSE.
-      CUT_XY_SMALL       = .FALSE.
-      CUT_YZ             = .FALSE.
-      CUT_YZ_SMALL       = .FALSE.
-C
-      FORMAT_200         = .FALSE.
-C
-      IPLOT              = 0
-      NCUBE(1)           = 80
-      NCUBE(2)           = 80
-      NCUBE(3)           = 80
-      NXVEC              = 1
-      IREP_PLOT          = 0
-C
-      D1DSTEP            = 0.01D0
-      D3DSTART           = 4.0D0
-      D3DNORM            = 8.0D0
-C
-C
-C     process input
-C     =============
-C
-      NEWDEF = (WORD.EQ.'*PLOT')
-      IF(NEWDEF) THEN
-        WORD1 = WORD
+
+!     initialize visual.h
+
+      NCUBE(1)             = 80
+      NCUBE(2)             = 80
+      NCUBE(3)             = 80
+      NXVEC                = 1
+      IREP_PLOT            = 0
+
+      LBIT_PLOT_GENERAL    = 0
+      LBIT_PLOT_QUANTITY   = 0
+      LBIT_PLOT_2D_OPTIONS = 0
+
+      STEP_1D              = 0.01D0
+      START_3D             = 4.0D0
+      DNORM_3D             = 8.0D0
+
+!     process input
+
+      IF(WORD .EQ. '*PLOT') THEN
+        WORD_SAVE = WORD
   100   CONTINUE
         READ(LUCMD,'(A7)') WORD
         PROMPT = WORD(1:1)
-        IF(PROMPT.EQ.'!'.OR.PROMPT.EQ.'#') THEN
+        IF(PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
           GOTO 100
-        ELSEIF(PROMPT.EQ.'.') THEN
+        ELSEIF(PROMPT .EQ. '.') THEN
           DO 200 I = 1,NTABLE
-            IF(TABLE(I).EQ.WORD) THEN
-            GOTO (1,2,3,4,5,6,7,8,
-     &            9,10,11,12,13,14,15,16,
-     &            17,18,19,20,21,22,23,24,
-     &            25,26,27,28), I
+            IF(TABLE(I) .EQ. WORD) THEN
+            GOTO ( 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+     &            11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+     &            21, 22, 23, 24, 25, 26, 27, 28), I
             ENDIF
   200     CONTINUE
-          IF(WORD.EQ.'.OPTION') THEN
-            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+          IF(WORD .EQ. '.OPTION') THEN
+            CALL PRTAB(NTABLE,TABLE,WORD_SAVE//' input keywords',LUPRI)
             GOTO 100
           ENDIF
           WRITE(LUPRI,'(/,3A,/)') ' Keyword "', WORD,
-     *                            '" not recognized in PLOT_INP.'
-          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-          CALL QUIT('Illegal keyword in PLOT_INP.')
+     &                            '" not recognized in PLOT_INPUT.'
+          CALL PRTAB(NTABLE,TABLE,WORD_SAVE//' input keywords',LUPRI)
+          CALL QUIT('Illegal keyword in PLOT_INPUT.')
+
     1     CONTINUE
-          READ(LUCMD,*) IPLOT
           GOTO 100
     2     CONTINUE
-          READXVECFILE = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_GENERAL,4)
           READ(LUCMD,'(A6)') XVECFILE
           GOTO 100
     3     CONTINUE
-          DO1DPLOT = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_GENERAL,1)
           GOTO 100
     4     CONTINUE
-          DO2DPLOT = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_GENERAL,2)
           GOTO 100
     5     CONTINUE
-          DO3DPLOT = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_GENERAL,3)
           GOTO 100
     6     CONTINUE
-          PLOTDENSITY = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,1)
           GOTO 100
     7     CONTINUE
-          PLOTSPINDENSITY    = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,2)
           GOTO 100
     8     CONTINUE
-          PLOTCURRENTDENSITY = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,3)
           GOTO 100
     9     CONTINUE
-          PLOTELF = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,4)
           GOTO 100
    10     CONTINUE
-          READ(LUCMD,*) D1DSTEP
+          READ(LUCMD,*) STEP_1D
           GOTO 100
    11     CONTINUE
-          READ(LUCMD,*) D3DSTART
+          READ(LUCMD,*) START_3D
           GOTO 100
    12     CONTINUE
-          READ(LUCMD,*) D3DNORM
+          READ(LUCMD,*) DNORM_3D
           GOTO 100
    13     CONTINUE
           READ(LUCMD,*) NCUBE(1), NCUBE(2), NCUBE(3)
           GOTO 100
    14     CONTINUE
-          PLOTLAPLACIAN = .TRUE.
           GOTO 100
    15     CONTINUE
           READ(LUCMD,*) NXVEC
           GOTO 100
    16     CONTINUE
           READ(LUCMD,'(A)') ORBSTRING1
-          IF(NFSYM.GT.1) READ(LUCMD,'(A)') ORBSTRING2
-          USE_ORBSTRING = .TRUE.
+          IF(NFSYM .GT. 1) READ(LUCMD,'(A)') ORBSTRING2
+          CALL SET_LBIT(LBIT_PLOT_GENERAL,7)
           GOTO 100
    17     CONTINUE
-          PLOTSKIPEP = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_GENERAL,5)
           GOTO 100
    18     CONTINUE
-          PLOTSKIPEE = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_GENERAL,6)
           GOTO 100
    19     CONTINUE
-          PLOTRXJ = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,5)
           GOTO 100
    20     CONTINUE
-          FORMAT_200 = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,5)
           GOTO 100
    21     CONTINUE
-          CUT_XY = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,1)
           GOTO 100
    22     CONTINUE
-          CUT_XY_SMALL = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,2)
           GOTO 100
    23     CONTINUE
-          CUT_YZ = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,3)
           GOTO 100
    24     CONTINUE
-          CUT_YZ_SMALL = .TRUE.
+          CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,4)
           GOTO 100
    25     CONTINUE
-          BETA = .TRUE.
           GOTO 100
    26     CONTINUE
           GOTO 100
@@ -6349,18 +6319,18 @@ C
           GOTO 100
    28     CONTINUE
           GOTO 100
-        ELSEIF(PROMPT.EQ.'*') THEN
+
+        ELSEIF(PROMPT .EQ. '*') THEN
           GOTO 300
         ELSE
           WRITE(LUPRI,'(/,3A,/)') ' Keyword "', WORD,
-     *                            '" not recognized in PLOT_INP.'
-          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-          CALL QUIT('Illegal keyword in PLOT_INP.')
+     &                            '" not recognized in PLOT_INPUT.'
+          CALL PRTAB(NTABLE,TABLE,WORD_SAVE//' input keywords',LUPRI)
+          CALL QUIT('Illegal keyword in PLOT_INPUT.')
         ENDIF
       ENDIF
   300 CONTINUE
-C
-C
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

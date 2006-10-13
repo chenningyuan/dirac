@@ -5,12 +5,15 @@ C=======================================================================
 C     prepare {1,2,3}-dimensional plot
 C     adaptation of Trond's plot routines
 C-----------------------------------------------------------------------
-C     radovan bast                           last revision: october 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-!-----------------------------------------------------------------------
+
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
@@ -20,7 +23,7 @@ C=======================================================================
 #include "dcbham.h"
 #include "dgroup.h"
 
-      LOGICAL   TOBE
+      LOGICAL   FILE_EXISTS,LBIT
       DIMENSION WORK(LWORK)
 
       CALL QENTER('PLOT')
@@ -29,13 +32,12 @@ C=======================================================================
 
       CALL TITLER('{1,2,3}-dimensional plot','*',122)
 
-      INQUIRE(FILE = 'DFCOEF',EXIST = TOBE) !check if coefficients are on file
-      IF(.NOT. TOBE) THEN
+      INQUIRE(FILE = 'DFCOEF',EXIST = FILE_EXISTS) !check if coefficients are on file
+      IF(.NOT. FILE_EXISTS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
         WRITE(LUPRI,'(A)') 'coefficients not found'
         CALL QUIT('ERROR in PLOT')
       ENDIF
-
 
 !     allocate memory
 
@@ -64,7 +66,6 @@ C=======================================================================
       CALL MEMGET('REAL',KBUF     ,NTBAS(0)*4,
      &            WORK,KFREE,LFREE)
 
-
 !     read coefficients and give info
 
       CALL DZERO(WORK(KCMO),N2BBASXQ)
@@ -76,13 +77,16 @@ C=======================================================================
 
       CALL FNDOCC(WORK(KEIG),WORK,KFREE,LFREE) !find occupation
 
-
 !     zero out orbitals?
 
+      CALL DFILL(WORK(KSTRING1),D0,NESH(1))
       CALL DFILL(WORK(KSTRING1),D1,NISH(1))
-      IF(NFSYM .GT. 1) CALL DFILL(WORK(KSTRING2),D1,NISH(2))
+      IF(NFSYM .GT. 1) THEN
+        CALL DFILL(WORK(KSTRING2),D0,NESH(2))
+        CALL DFILL(WORK(KSTRING2),D1,NISH(2))
+      ENDIF
 
-      IF(USE_ORBSTRING) THEN
+      IF(LBIT(LBIT_PLOT_GENERAL,7)) THEN !use orbital string
         IF(ORBSTRING1(4:5) .EQ. '..') THEN
           READ(ORBSTRING1(1:3),'(I3)') ISTRING1_BEGIN
           READ(ORBSTRING1(6:8),'(I3)') ISTRING1_END
@@ -148,12 +152,11 @@ C=======================================================================
             IF(ISTRING2_BEGIN .NE. 0) WORK(KSTRING2-1+I) = D1
           ENDDO
         ENDIF !IF(NFSYM .GT. 1) THEN
-      ENDIF !IF(USE_ORBSTRING) THEN
-
+      ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,7)) THEN !use orbital string
 
 !     generate density matrix
 
-      IF(READXVECFILE) THEN
+      IF(LBIT(LBIT_PLOT_GENERAL,4)) THEN !read solution vector
         CALL MODIFIED_DMAT_AO(WORK(KCMO),
      &                        WORK(KDMAT_AO),WORK(KTMAT_AO),
      &                        WORK(KSTRING1),WORK(KSTRING2),
@@ -168,7 +171,6 @@ C=======================================================================
       ENDIF
       CALL DSCAL(N2BBASXQ,D2,WORK(KDMAT_AO),1)
 
-
 !     call PLOT routine
 
       CALL PLOT_SUB(WORK(KDMAT_AO),
@@ -178,7 +180,6 @@ C=======================================================================
      &              WORK(KNCNT),
      &              WORK(KBUF),
      &              WORK,KFREE,LFREE)
-
 
 !     release memory
 
@@ -211,26 +212,33 @@ C
 #include "codata.h"
 C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      PARAMETER (NR_QUANTITIES = 5)
 C
 #include "dcbgen.h"
 C
       CHARACTER PAIRNAMEA(100)*3,PAIRNAMEB(100)*3
-      CHARACTER*20 FORMATSTRING
+      CHARACTER*20 FORMAT_STRING
+
+      CHARACTER*30 FILE_NAME
+      CHARACTER QUANTITY_NAME(NR_QUANTITIES)*30
+
 #include "visual.h"
 #include "dcborb.h"
-C
+
+      LOGICAL   LBIT
+      DIMENSION LUNIT(3,NR_QUANTITIES)
+
+
+
       DIMENSION DMAT_AO(*),
      &          GAO(*),GAO1(*),GAO2(*),
      &          NCNT(*),BUF(*),
      &          WORK(*)
 C
-      DIMENSION DENSITY(0:2,NCUBE(3)),
-     &          SPINDENSITY(NCUBE(3)),
-     &          CURRENTDENSITY(NCUBE(3)),
-     &          ELF(NCUBE(3)),
-     &          DLAPLACIAN(NCUBE(3)),
-     &          RXJ(NCUBE(3)),
-     &          PAIRCOORA(100,3),PAIRCOORB(100,3),
+      DIMENSION QUANTITY(NR_QUANTITIES,NCUBE(3))
+
+
+      DIMENSION PAIRCOORA(100,3),PAIRCOORB(100,3),
      &          D3DSTEP(3,0:3),ATOMXYZ(4,NUCDEP)
 C
 #include "dcbbas.h"
@@ -242,143 +250,81 @@ C
 #include "ibtfun.h"
 C
 C
-      IPRINT = IPLOT
-C
-C
-C     open files
-C     ==========
-C
-      LU1D = 13
-      LU3D = 14
-C
-      IF(DO1DPLOT) THEN
-        IF(PLOTDENSITY) THEN
-          LU1DDENSITY = LU1D
-          LU1D = LU1D+1
-          OPEN(LU1DDENSITY,
-     &         FILE = 'PLOT1D.DENSITY',STATUS = 'NEW',
-     &         ACCESS = 'SEQUENTIAL',FORM = 'FORMATTED')
+
+
+
+
+
+      QUANTITY_NAME(1) = 'density'
+      QUANTITY_NAME(2) = 'spin_density'
+      QUANTITY_NAME(3) = 'current_density'
+      QUANTITY_NAME(4) = 'ELF'
+      QUANTITY_NAME(5) = 'r_times_j'
+
+      LUNIT_BASE = 13
+
+!     open files
+
+      DO I = 1,3 !1D, 2D, 3D
+        IF(LBIT(LBIT_PLOT_GENERAL,I)) THEN
+          DO IQUANTITY = 1,NR_QUANTITIES
+            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+              WRITE(FILE_NAME,'(A5,I1,A2,A)') 'PLOT.', I, 'D.',
+     &                                  QUANTITY_NAME(IQUANTITY)
+              OPEN(LUNIT_BASE,
+     &             FILE = FILE_NAME,
+     &             STATUS = 'NEW',
+     &             ACCESS = 'SEQUENTIAL',
+     &             FORM = 'FORMATTED')
+              LUNIT(I,IQUANTITY) = LUNIT_BASE
+              LUNIT_BASE = LUNIT_BASE + 1
+            ENDIF
+          ENDDO
         ENDIF
-        IF(PLOTELF) THEN
-          LU1DELF = LU1D
-          LU1D = LU1D+1
-          OPEN(LU1DELF,
-     &         FILE = 'PLOT1D.ELF',STATUS = 'NEW',
-     &         ACCESS = 'SEQUENTIAL',FORM = 'FORMATTED')
-        ENDIF
-        IF(PLOTLAPLACIAN) THEN
-          LU1DLAPLACIAN = LU1D
-          LU1D = LU1D+1
-          OPEN(LU1DLAPLACIAN,
-     &         FILE = 'PLOT1D.LAPLACIAN',STATUS = 'NEW',
-     &         ACCESS = 'SEQUENTIAL',FORM = 'FORMATTED')
-        ENDIF
-      ENDIF
-      IF(DO3DPLOT) THEN
-        IF(PLOTDENSITY) THEN
-          LU3DDENSITY = LU3D
-          LU3D = LU3D+1
-          OPEN(LU3DDENSITY,
-     &         FILE = 'PLOT3D.DENSITY.cube',STATUS = 'NEW',
-     &         ACCESS = 'SEQUENTIAL',FORM = 'FORMATTED')
-        ENDIF
-        IF(PLOTELF) THEN
-          LU3DELF = LU3D
-          LU3D = LU3D+1
-          OPEN(LU3DELF,
-     &         FILE = 'PLOT3D.ELF.cube',STATUS = 'NEW',
-     &         ACCESS = 'SEQUENTIAL',FORM = 'FORMATTED')
-        ENDIF
-        IF(PLOTLAPLACIAN) THEN
-          LU3DLAPLACIAN = LU3D
-          LU3D = LU3D+1
-          OPEN(LU3DLAPLACIAN,
-     &         FILE = 'PLOT3D.LAPLACIAN.cube',STATUS = 'NEW',
-     &         ACCESS = 'SEQUENTIAL',FORM = 'FORMATTED')
-        ENDIF
-        IF(PLOTSPINDENSITY) THEN
-          LU3DSPINDENSITY = LU3D
-          LU3D = LU3D+1
-          OPEN(LU3DSPINDENSITY,
-     &         FILE = 'PLOT3D.SPINDENSITY.cube',STATUS = 'NEW',
-     &         ACCESS = 'SEQUENTIAL',FORM = 'FORMATTED')
-        ENDIF
-        IF(PLOTCURRENTDENSITY) THEN
-          LU3DCURRENTDENSITY = LU3D
-          LU3D = LU3D+1
-          OPEN(LU3DCURRENTDENSITY,
-     &         FILE = 'PLOT3D.CURRENTDENSITY.cube',STATUS = 'NEW',
-     &         ACCESS = 'SEQUENTIAL',FORM = 'FORMATTED')
-        ENDIF
-        IF(PLOTRXJ) THEN
-          LU3DRXJ = LU3D
-          LU3D = LU3D+1
-          OPEN(LU3DRXJ,
-     &         FILE = 'PLOT3D.RXJ.cube',STATUS = 'NEW',
-     &         ACCESS = 'SEQUENTIAL',FORM = 'FORMATTED')
-        ENDIF
-      ENDIF
-C
-C
-C     1D ?
-C     ====
-C
-      IF(DO1DPLOT) THEN
+      ENDDO
+
+      IF(LBIT(LBIT_PLOT_GENERAL,1)) THEN !1D
 C
 C
 C       loop over pairs of nuclear centers
 C       ==================================
 C
-        NPAIRS  = 0
+        NR_PAIRS  = 0
         DO I = 1,NUCDEP
           DO J = I+1,NUCDEP
 C
-            NPAIRS = NPAIRS+1
+            NR_PAIRS = NR_PAIRS+1
 C
-            WRITE(PAIRNAMEA(NPAIRS),'(A2,I1)') NAMDEP(I), I
-            PAIRCOORA(NPAIRS,1) = CORD(1,I)
-            PAIRCOORA(NPAIRS,2) = CORD(2,I)
-            PAIRCOORA(NPAIRS,3) = CORD(3,I)
+            WRITE(PAIRNAMEA(NR_PAIRS),'(A2,I1)') NAMDEP(I), I
+            PAIRCOORA(NR_PAIRS,1) = CORD(1,I)
+            PAIRCOORA(NR_PAIRS,2) = CORD(2,I)
+            PAIRCOORA(NR_PAIRS,3) = CORD(3,I)
 C
-            WRITE(PAIRNAMEB(NPAIRS),'(A2,I1)') NAMDEP(J), J
-            PAIRCOORB(NPAIRS,1) = CORD(1,J)
-            PAIRCOORB(NPAIRS,2) = CORD(2,J)
-            PAIRCOORB(NPAIRS,3) = CORD(3,J)
+            WRITE(PAIRNAMEB(NR_PAIRS),'(A2,I1)') NAMDEP(J), J
+            PAIRCOORB(NR_PAIRS,1) = CORD(1,J)
+            PAIRCOORB(NR_PAIRS,2) = CORD(2,J)
+            PAIRCOORB(NR_PAIRS,3) = CORD(3,J)
 C
           ENDDO
         ENDDO
 C
-C
-C       loop over pairs
-C       ===============
-C
-        DO IPAIR = 1,NPAIRS
-C
-C
-C         write pair label to file
-C         ========================
-C
-          IF(PLOTDENSITY) THEN
-            WRITE(LU1DDENSITY,'(A5)') '*****'
-            WRITE(LU1DDENSITY,'(A)')
-            WRITE(LU1DDENSITY,'(A3,A1,A3)') PAIRNAMEA(IPAIR), '-',
-     &                                      PAIRNAMEB(IPAIR)
-            WRITE(LU1DDENSITY,'(A)')
-          ENDIF
-          IF(PLOTELF) THEN
-            WRITE(LU1DELF,'(A5)') '*****'
-            WRITE(LU1DELF,'(A)')
-            WRITE(LU1DELF,'(A3,A1,A3)') PAIRNAMEA(IPAIR), '-',
-     &                                  PAIRNAMEB(IPAIR)
-            WRITE(LU1DELF,'(A)')
-          ENDIF
-          IF(PLOTLAPLACIAN) THEN
-            WRITE(LU1DLAPLACIAN,'(A5)') '*****'
-            WRITE(LU1DLAPLACIAN,'(A)')
-            WRITE(LU1DLAPLACIAN,'(A3,A1,A3)') PAIRNAMEA(IPAIR), '-',
-     &                                        PAIRNAMEB(IPAIR)
-            WRITE(LU1DLAPLACIAN,'(A)')
-          ENDIF
+
+
+
+
+        DO IPAIR = 1,NR_PAIRS !loop over pairs
+
+!         write pair label to file
+
+          DO IQUANTITY = 1,NR_QUANTITIES
+            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+              WRITE(LUNIT(1,IQUANTITY),'(A5)') '*****'
+              WRITE(LUNIT(1,IQUANTITY),'(A)')
+              WRITE(LUNIT(1,IQUANTITY),'(A3,A1,A3)') 
+     &                           PAIRNAMEA(IPAIR), '-', PAIRNAMEB(IPAIR)
+              WRITE(LUNIT(1,IQUANTITY),'(A)')
+            ENDIF
+          ENDDO
 C
 C
 C         calculate distance and step
@@ -396,7 +342,7 @@ C
 C         -> angstrom
 C         ===========
 C
-          ASTEP = D1DSTEP/XTANG
+          ASTEP = STEP_1D/XTANG
           NPOINTS = INT(DISTANCE/ASTEP)
           IF(MOD(NPOINTS,2).EQ.1) NPOINTS = NPOINTS+1
           ASTEP = DISTANCE/SDPRE(NPOINTS)
@@ -414,50 +360,30 @@ C
             PZ  = PAIRCOORA(IPAIR,3)+PP*DZ
 C
 C
-C           get necessary stuff
-C           ===================
-C
-            CALL GETQUANTITY(DMAT_AO,
-     &                       GAO,GAO1,GAO2,
-     &                       PX,PY,PZ,
-     &                       NCNT,BUF,IPRINT,
-     &                       DENSITY,
-     &                       SPINDENSITY,
-     &                       CURRENTDENSITY,
-     &                       ELF,
-     &                       DLAPLACIAN,
-     &                       RXJ,
-     &                       WORK,KFREE,LFREE)
-C
-C
-C           write to file
-C           =============
-C
+!           get necessary stuff
+
+            CALL GET_QUANTITY_IN_POINT(DMAT_AO,
+     &                                 GAO,GAO1,GAO2,
+     &                                 PX,PY,PZ,
+     &                                 NCNT,BUF,
+     &                                 QUANTITY,
+     &                                 WORK,KFREE,LFREE)
+
+!           write buffer
+
             PP  = XTANG*PP
-C
-            IF(PLOTDENSITY) THEN
-              WRITE(LU1DDENSITY,'(F10.6,3E20.10)')
-     &                                         PP, (DENSITY(I,1),I=0,MC)
-            ENDIF
-            IF(PLOTELF) THEN
-              WRITE(LU1DELF,'(F10.6,3E20.10)') PP, ELF(1)
-            ENDIF
-            IF(PLOTLAPLACIAN) THEN
-              WRITE(LU1DLAPLACIAN,'(F10.6,3E20.10)') PP, DLAPLACIAN(1)
-            ENDIF
-C
-C
+
+            DO IQUANTITY = 1,NR_QUANTITIES
+              IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+                WRITE(LUNIT(1,IQUANTITY),'(F10.6,3E20.10)')
+     &                PP, QUANTITY(IQUANTITY,1)
+              ENDIF
+            ENDDO
           ENDDO
-C
         ENDDO
-C
-      ENDIF
-C
-C
-C     3D ?
-C     ====
-C
-      IF(DO3DPLOT) THEN
+      ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,1)) THEN !1D
+
+      IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
 C
 C
 C       calculate cube parameters
@@ -511,92 +437,45 @@ C       add some space, calculate step sizes and convert step vectors to angstro
 C       =========================================================================
 C
         DO I = 1,3
-          D3DSTEP(I,0) = D3DSTEP(I,0)-D3DSTART
-          D3DSTEP(I,I) = (D3DSTEP(I,I)+D3DNORM)*XTANG
+          D3DSTEP(I,0) = D3DSTEP(I,0)-START_3D
+          D3DSTEP(I,I) = (D3DSTEP(I,I)+DNORM_3D)*XTANG
           D3DSTEP(I,I) = (D3DSTEP(I,I)-D3DSTEP(I,0))/(NCUBE(I)-1)
         ENDDO
 C
 C
-C       write header
-C       ============
-C
-        IF(PLOTDENSITY) THEN
-          WRITE(LU3DDENSITY,'(A)') 'some'
-          WRITE(LU3DDENSITY,'(A)') 'text'
-          DO I = 0,3
-            WRITE(LU3DDENSITY,'(I5,4F12.6)')
+
+
+
+!       write header
+
+        DO IQUANTITY = 1,NR_QUANTITIES
+          IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+            WRITE(LUNIT(3,IQUANTITY),'(A)') 'some'
+            WRITE(LUNIT(3,IQUANTITY),'(A)') 'text'
+            DO I = 0,3
+              WRITE(LUNIT(3,IQUANTITY),'(I5,4F12.6)') 
      &                                    NCUBE(I), (D3DSTEP(J,I),J=1,3)
-          ENDDO
-          DO I = 1,NUCDEP
-            WRITE(LU3DDENSITY,'(I5,4F12.6)')
+            ENDDO
+            DO I = 1,NUCDEP
+              WRITE(LUNIT(3,IQUANTITY),'(I5,4F12.6)')
      &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
-          ENDDO
+            ENDDO
+          ENDIF
+        ENDDO
+
+!       grid walk
+
+        IF(LBIT(LBIT_PLOT_2D_OPTIONS,1) .OR.
+     &     LBIT(LBIT_PLOT_2D_OPTIONS,2)) THEN
+          NCUBE(3) = 1
         ENDIF
-        IF(PLOTELF) THEN
-          WRITE(LU3DELF,'(A)') 'some'
-          WRITE(LU3DELF,'(A)') 'text'
-          DO I = 0,3
-            WRITE(LU3DELF,'(I5,4F12.6)') NCUBE(I), (D3DSTEP(J,I),J=1,3)
-          ENDDO
-          DO I = 1,NUCDEP
-            WRITE(LU3DELF,'(I5,4F12.6)')
-     &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
-          ENDDO
+        IF(LBIT(LBIT_PLOT_2D_OPTIONS,3) .OR.
+     &     LBIT(LBIT_PLOT_2D_OPTIONS,4)) THEN
+          NCUBE(1) = 1
         ENDIF
-        IF(PLOTLAPLACIAN) THEN
-          WRITE(LU3DLAPLACIAN,'(A)') 'some'
-          WRITE(LU3DLAPLACIAN,'(A)') 'text'
-          DO I = 0,3
-            WRITE(LU3DLAPLACIAN,'(I5,4F12.6)')
-     &                                    NCUBE(I), (D3DSTEP(J,I),J=1,3)
-          ENDDO
-          DO I = 1,NUCDEP
-            WRITE(LU3DLAPLACIAN,'(I5,4F12.6)')
-     &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
-          ENDDO
-        ENDIF
-        IF(PLOTSPINDENSITY) THEN
-          WRITE(LU3DSPINDENSITY,'(A)') 'some'
-          WRITE(LU3DSPINDENSITY,'(A)') 'text'
-          DO I = 0,3
-            WRITE(LU3DSPINDENSITY,'(I5,4F12.6)')
-     &                                    NCUBE(I), (D3DSTEP(J,I),J=1,3)
-          ENDDO
-          DO I = 1,NUCDEP
-            WRITE(LU3DSPINDENSITY,'(I5,4F12.6)')
-     &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
-          ENDDO
-        ENDIF
-        IF(PLOTCURRENTDENSITY) THEN
-          WRITE(LU3DCURRENTDENSITY,'(A)') 'some'
-          WRITE(LU3DCURRENTDENSITY,'(A)') 'text'
-          DO I = 0,3
-            WRITE(LU3DCURRENTDENSITY,'(I5,4F12.6)')
-     &                                    NCUBE(I), (D3DSTEP(J,I),J=1,3)
-          ENDDO
-          DO I = 1,NUCDEP
-            WRITE(LU3DCURRENTDENSITY,'(I5,4F12.6)')
-     &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
-          ENDDO
-        ENDIF
-        IF(PLOTRXJ) THEN
-          WRITE(LU3DRXJ,'(A)') 'some'
-          WRITE(LU3DRXJ,'(A)') 'text'
-          DO I = 0,3
-            WRITE(LU3DRXJ,'(I5,4F12.6)') NCUBE(I), (D3DSTEP(J,I),J=1,3)
-          ENDDO
-          DO I = 1,NUCDEP
-            WRITE(LU3DRXJ,'(I5,4F12.6)')
-     &            NINT(ATOMXYZ(4,I)), ATOMXYZ(4,I), (ATOMXYZ(J,I),J=1,3)
-          ENDDO
-        ENDIF
-C
-C
-C       do the grid walk
-C       ================
-C
-        IF(CUT_XY.OR.CUT_XY_SMALL) NCUBE(3) = 1
-        IF(CUT_YZ.OR.CUT_YZ_SMALL) NCUBE(1) = 1
+
+
+
 C
         DO ICUBE = 1,NCUBE(1)
           DO JCUBE = 1,NCUBE(2)
@@ -612,150 +491,95 @@ C
      &                         +(JCUBE-1)*D3DSTEP(3,2)
      &                         +(KCUBE-1)*D3DSTEP(3,3)
 C
-              IF(CUT_XY) THEN
+              IF(LBIT(LBIT_PLOT_2D_OPTIONS,1)) THEN
                 PX = -6.0D0+(ICUBE-1)*(12.0D0/(NCUBE(1)-1))
                 PY = -6.0D0+(JCUBE-1)*(12.0D0/(NCUBE(2)-1))
                 PZ = D0
               ENDIF
 C
-              IF(CUT_XY_SMALL) THEN
+              IF(LBIT(LBIT_PLOT_2D_OPTIONS,2)) THEN
                 PX = -2.0D0+(ICUBE-1)*(4.0D0/(NCUBE(1)-1))
                 PY = -2.0D0+(JCUBE-1)*(4.0D0/(NCUBE(2)-1))
                 PZ = D0
               ENDIF
 C
-              IF(CUT_YZ) THEN
+              IF(LBIT(LBIT_PLOT_2D_OPTIONS,3)) THEN
                 PY = -6.0D0+(KCUBE-1)*(12.0D0/(NCUBE(3)-1))
                 PZ = -6.0D0+(JCUBE-1)*(12.0D0/(NCUBE(2)-1))
                 PX = D0
               ENDIF
 C
-              IF(CUT_YZ_SMALL) THEN
+              IF(LBIT(LBIT_PLOT_2D_OPTIONS,4)) THEN
                 PY = -2.0D0+(KCUBE-1)*(4.0D0/(NCUBE(3)-1))
                 PZ = -2.0D0+(JCUBE-1)*(4.0D0/(NCUBE(2)-1))
                 PX = D0
               ENDIF
 C
 C
-C             get necessary stuff
-C             ===================
-C
-              CALL GETQUANTITY(DMAT_AO,
-     &                         GAO,GAO1,GAO2,
-     &                         PX,PY,PZ,
-     &                         NCNT,BUF,IPRINT,
-     &                         DENSITY(0,KCUBE),
-     &                         SPINDENSITY(KCUBE),
-     &                         CURRENTDENSITY(KCUBE),
-     &                         ELF(KCUBE),
-     &                         DLAPLACIAN(KCUBE),
-     &                         RXJ(KCUBE),
-     &                         WORK,KFREE,LFREE)
-C
-C
+              CALL GET_QUANTITY_IN_POINT(DMAT_AO,
+     &                                   GAO,GAO1,GAO2,
+     &                                   PX,PY,PZ,
+     &                                   NCNT,BUF,
+     &                                   QUANTITY(1,KCUBE),
+     &                                   WORK,KFREE,LFREE)
             ENDDO
 C
-C
-C           write buffer
-C           ============
-C
-            FORMATSTRING = '(6E13.5)'
-            IF(FORMAT_200) FORMATSTRING = '(200E13.5)'
-C
-            IF(PLOTDENSITY) THEN
-             WRITE(LU3DDENSITY,FORMATSTRING)
-     &            (DENSITY(0,M),M=1,NCUBE(3))
-            ENDIF
-            IF(PLOTELF) THEN
-              WRITE(LU3DELF,FORMATSTRING)
-     &             (ELF(M),M=1,NCUBE(3))
-            ENDIF
-            IF(PLOTLAPLACIAN) THEN
-              WRITE(LU3DLAPLACIAN,FORMATSTRING)
-     &             (DLAPLACIAN(M),M=1,NCUBE(3))
-            ENDIF
-            IF(PLOTSPINDENSITY) THEN
-              WRITE(LU3DSPINDENSITY,FORMATSTRING)
-     &             (SPINDENSITY(M),M=1,NCUBE(3))
-            ENDIF
-            IF(PLOTCURRENTDENSITY) THEN
-              WRITE(LU3DCURRENTDENSITY,FORMATSTRING)
-     &             (CURRENTDENSITY(M),M=1,NCUBE(3))
-            ENDIF
-            IF(PLOTRXJ) THEN
-              WRITE(LU3DRXJ,FORMATSTRING)
-     &             (RXJ(M),M=1,NCUBE(3))
+
+!           write buffer
+
+            FORMAT_STRING = '(6E13.5)'
+            IF(LBIT(LBIT_PLOT_2D_OPTIONS,5)) THEN
+              FORMAT_STRING = '(200E13.5)'
             ENDIF
 C
+            DO IQUANTITY = 1,NR_QUANTITIES
+              IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+                WRITE(LUNIT(3,IQUANTITY),FORMAT_STRING)
+     &               (QUANTITY(IQUANTITY,M),M=1,NCUBE(3))
+              ENDIF
+            ENDDO
           ENDDO
-C
         ENDDO
-C
-      ENDIF
-C
-C
-C     close files
-C     ===========
-C
-      IF(DO1DPLOT) THEN
-        IF(PLOTDENSITY) THEN
-          CLOSE(LU1DDENSITY,STATUS = 'KEEP')
+      ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
+
+!     close files
+
+      DO I = 1,3 !1D, 2D, 3D
+        IF(LBIT(LBIT_PLOT_GENERAL,I)) THEN
+          DO IQUANTITY = 1,NR_QUANTITIES
+            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+              CLOSE(LUNIT(I,IQUANTITY),
+     &              STATUS = 'KEEP')
+            ENDIF
+          ENDDO
         ENDIF
-        IF(PLOTELF) THEN
-          CLOSE(LU1DELF,STATUS = 'KEEP')
-        ENDIF
-        IF(PLOTLAPLACIAN) THEN
-          CLOSE(LU1DLAPLACIAN,STATUS = 'KEEP')
-        ENDIF
-      ENDIF
-      IF(DO3DPLOT) THEN
-        IF(PLOTDENSITY) THEN
-          CLOSE(LU3DDENSITY,STATUS = 'KEEP')
-        ENDIF
-        IF(PLOTELF) THEN
-          CLOSE(LU3DELF,STATUS = 'KEEP')
-        ENDIF
-        IF(PLOTLAPLACIAN) THEN
-          CLOSE(LU3DLAPLACIAN,STATUS = 'KEEP')
-        ENDIF
-        IF(PLOTSPINDENSITY) THEN
-          CLOSE(LU3DSPINDENSITY,STATUS = 'KEEP')
-        ENDIF
-        IF(PLOTCURRENTDENSITY) THEN
-          CLOSE(LU3DCURRENTDENSITY,STATUS = 'KEEP')
-        ENDIF
-        IF(PLOTRXJ) THEN
-          CLOSE(LU3DRXJ,STATUS = 'KEEP')
-        ENDIF
-      ENDIF
-C
-C
+      ENDDO
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck getquantity */
-      SUBROUTINE GETQUANTITY(DMAT_AO,
-     &                       GAO,GAO1,GAO2,
-     &                       PX,PY,PZ,
-     &                       NCNT,BUF,IPRINT,
-     &                       DENSITY,
-     &                       SPINDENSITY_NORM,
-     &                       CURRENTDENSITY_NORM,
-     &                       ELF,
-     &                       DLAPLACIAN,
-     &                       RXJ_NORM,
-     &                       WORK,KFREE,LFREE)
+C     /* deck GET_QUANTITY_IN_POINT */
+      SUBROUTINE GET_QUANTITY_IN_POINT(DMAT_AO,
+     &                                 GAO,GAO1,GAO2,
+     &                                 PX,PY,PZ,
+     &                                 NCNT,BUF,
+     &                                 QUANTITY,
+     &                                 WORK,KFREE,LFREE)
 C=======================================================================
-C     description ...
+C     get quantity in point
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: july 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
       PARAMETER (D23 = 2.0D0/3.0D0,D53 = 5.0D0/3.0D0)
       PARAMETER (D32 = 3.0D0/2.0D0,D54 = 5.0D0/4.0D0)
-C-----------------------------------------------------------------------
+      PARAMETER (NR_QUANTITIES = 5)
+
 #include "visual.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -763,181 +587,123 @@ C-----------------------------------------------------------------------
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbxrs.h"
-C-----------------------------------------------------------------------
+
+      LOGICAL   LBIT
+
       DIMENSION DMAT_AO(*),
      &          GAO(*),GAO1(*),GAO2(*),
      &          NCNT(*),BUF(*),
-     &          DENSITY(0:2),
-     &          GRADIENT(3),
-     &          SPINDENSITY(3),
-     &          CURRENTDENSITY(3),
-     &          RXJ(3),
+     &          QUANTITY(NR_QUANTITIES),
+     &          VECTOR(3),
      &          WORK(*)
-C-----------------------------------------------------------------------
-C
-C
-C     pre-stuff
-C     =========
-C
-      IF(PLOTLAPLACIAN) THEN
-        CALL GETSOS(GAO,GAO1,GAO2,TEMP,NCNT,PX,PY,PZ,
-     &              BUF,WORK(KFREE),LFREE,NTBAS(0),2,.FALSE.,IPRINT)
+
+      IF(LBIT(LBIT_PLOT_QUANTITY,4)) THEN !ELF
+        CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
+     &              BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
+        CALL GETGRHO(VECTOR,IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
+        GRADIENT_SQUARED = VECTOR(1)**D2+VECTOR(2)**D2+VECTOR(3)**D2
       ELSE
-        IF(PLOTELF) THEN
-          CALL GETSOS(GAO,GAO1,TEMP,TEMP,NCNT,PX,PY,PZ,
-     &                BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,IPRINT)
-        ELSE
-          CALL GETSOS(GAO,TEMP,TEMP,TEMP,TEMP,PX,PY,PZ,
-     &                BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,IPRINT)
-        ENDIF
+        CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
+     &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,0)
       ENDIF
-C
-C
-C     density
-C     =======
-C
-      DENSITY(0) = D0
-      DO IC = 1,MC
-        DENSITY(IC) = D0
-        CALL GETRH1(DENSITY(IC),IC,IREP_PLOT,GAO,DMAT_AO,BUF)
-        DENSITY(0) = DENSITY(0) + DENSITY(IC)
-      ENDDO
-C
-C
-C     gradient
-C     ========
-C
-      CALL GETGRHO(GRADIENT,IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
-      GRADSQUARED = GRADIENT(1)**D2+GRADIENT(2)**D2+GRADIENT(3)**D2
-      GRADNORM = DSQRT(GRADSQUARED)
-C
-C
-C     elf
-C     ===
-C
-      IF(PLOTELF) THEN
-C
+
+!     density
+
+      CALL GETRHO(DENSITY,IREP_PLOT,GAO,DMAT_AO,BUF)
+      QUANTITY(1) = DENSITY
+
+      IF(LBIT(LBIT_PLOT_QUANTITY,4)) THEN !ELF
+
         ELFKIN = D0
-C
         DO I = 1,3
           DO IC = 1,MC
             SOMETHING = D0
             CALL GETRH1(SOMETHING,IC,IREP_PLOT,GAO1((I-1)*NTBAS(0)+1),
      &                  DMAT_AO,BUF)
-            ELFKIN = ELFKIN+SOMETHING
+            ELFKIN = ELFKIN + SOMETHING
           ENDDO
         ENDDO
-C
         ELFKIN = ELFKIN/D2
 C
         PI =  3.1415926536D0
-        PRE = 0.3D0*((D3*PI*PI)**D23)
-        H = PRE*(DENSITY(0)**D53)
-C
-        G = ELFKIN-GRADSQUARED/(8.0D0*DENSITY(0))
+        PREFACTOR = 0.3D0*((D3*PI*PI)**D23)
+
+        H = PREFACTOR*(DENSITY**D53)
+        G = ELFKIN - GRADIENT_SQUARED/(8.0D0*DENSITY)
 C
         ELFCHI = G/H
 C
-C       IF(G.GT.1.0D-8) THEN
-          ELF = D1/(D1+ELFCHI*ELFCHI)
-C       ELSE
-C         ELF = D0
-C       ENDIF
-C
-C       MBE1
-C       ELF = ELF**D32
-C
-C       MBE2
-C       ELF = ELF**D54
-C
+        QUANTITY(4) = D1/(D1 + ELFCHI*ELFCHI)
+C       QUANTITY(4) = ELF**D32 !MBE1
+C       QUANTITY(4) = ELF**D54 !MBE2
       ENDIF
-C
-C
-C     laplacian
-C     =========
-C
-      IF(PLOTLAPLACIAN) THEN
-        CALL QUIT('visualization of the laplacian not implemented')
-C       CALL GETLRHO(XX,XY,XZ,YY,YZ,ZZ,
-C    &               GAO,GAO1,GAO2,DMAT_AO,BUF)
-C       DLAPLACIAN = XX+YY+ZZ
-C       DLAPLACIAN = -DLAPLACIAN
-      ENDIF
-C
-C
-C     spin and current
-C     ================
-C
-      IF(PLOTSPINDENSITY) THEN
+
+!     magnetization and current density
+
+      DO IQUANTITY = 2,3
+        IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
-C      CALL GET_CURRENT_DENSITY(.FALSE.,DUMMY,
-C    &                        .TRUE.,SPINDENSITY,
-C    &                        IREP_PLOT,GAO,DMAT_AO,BUF)
-C
-       SPINDENSITY_NORM = SPINDENSITY(1)**D2
-     &                  + SPINDENSITY(2)**D2
-     &                  + SPINDENSITY(3)**D2
-       SPINDENSITY_NORM = DSQRT(SPINDENSITY_NORM)
-C
-       IF(CUT_XY.OR.CUT_XY_SMALL) THEN
-         WRITE(0,'(4F30.20)') PX, PY, (SPINDENSITY(I),I=1,2)
-       ENDIF
-       IF(CUT_YZ.OR.CUT_YZ_SMALL) THEN
-         WRITE(0,'(4F30.20)') PY, PZ, (SPINDENSITY(I),I=2,3)
-       ENDIF
+          CALL GET_CURRENT(IQUANTITY,
+     &                     VECTOR,
+     &                     DUMMY,
+     &                     IREP_PLOT,GAO,DUMMY,DMAT_AO,BUF)
+
+          QUANTITY(IQUANTITY) = VECTOR(1)**D2
+     &                        + VECTOR(2)**D2
+     &                        + VECTOR(3)**D2
+          QUANTITY(IQUANTITY) = DSQRT(QUANTITY(IQUANTITY))
+
+          IF(LBIT(LBIT_PLOT_2D_OPTIONS,1) .OR.
+     &       LBIT(LBIT_PLOT_2D_OPTIONS,2)) THEN
+            WRITE(0,'(4F30.20)') PX, PY, (VECTOR(IXYZ),IXYZ=1,2)
+          ENDIF
+          IF(LBIT(LBIT_PLOT_2D_OPTIONS,3) .OR.
+     &       LBIT(LBIT_PLOT_2D_OPTIONS,4)) THEN
+            WRITE(0,'(4F30.20)') PX, PY, (VECTOR(IXYZ),IXYZ=2,3)
+          ENDIF
 #else
-      CALL QUIT('perturbed magnetization density not implemented')
+          CALL QUIT('not implemented')
 #endif
-      ENDIF
-C
-      IF(PLOTCURRENTDENSITY) THEN
+        ENDIF
+      ENDDO
+
+!     r \times j
+
+      DO IQUANTITY = 5,5
+        IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
-C      CALL GET_CURRENT_DENSITY(.TRUE.,CURRENTDENSITY,
-C    &                        .FALSE.,DUMMY,
-C    &                        IREP_PLOT,GAO,DMAT_AO,BUF)
-C
-       CURRENTDENSITY_NORM = CURRENTDENSITY(1)**D2
-     &                     + CURRENTDENSITY(2)**D2
-     &                     + CURRENTDENSITY(3)**D2
-       CURRENTDENSITY_NORM = DSQRT(CURRENTDENSITY_NORM)
-C
-       IF(CUT_XY.OR.CUT_XY_SMALL) THEN
-         WRITE(0,'(4F30.20)') PX, PY, (CURRENTDENSITY(I),I=1,2)
-       ENDIF
-       IF(CUT_YZ.OR.CUT_YZ_SMALL) THEN
-         WRITE(0,'(4F30.20)') PY, PZ, (CURRENTDENSITY(I),I=2,3)
-       ENDIF
+          CALL GET_CURRENT(3,
+     &                     VECTOR,
+     &                     DUMMY,
+     &                     IREP_PLOT,GAO,DUMMY,DMAT_AO,BUF)
+
+          VECTOR_1 = PY*VECTOR(3) - PZ*VECTOR(2)
+          VECTOR_2 = PZ*VECTOR(1) - PX*VECTOR(3)
+          VECTOR_3 = PX*VECTOR(2) - PY*VECTOR(1)
+
+          VECTOR(1) = VECTOR_1
+          VECTOR(2) = VECTOR_2
+          VECTOR(3) = VECTOR_3
+
+          QUANTITY(IQUANTITY) = VECTOR(1)**D2
+     &                        + VECTOR(2)**D2
+     &                        + VECTOR(3)**D2
+          QUANTITY(IQUANTITY) = DSQRT(QUANTITY(IQUANTITY))
+
+          IF(LBIT(LBIT_PLOT_2D_OPTIONS,1) .OR.
+     &       LBIT(LBIT_PLOT_2D_OPTIONS,2)) THEN
+            WRITE(0,'(4F30.20)') PX, PY, (VECTOR(IXYZ),IXYZ=1,2)
+          ENDIF
+          IF(LBIT(LBIT_PLOT_2D_OPTIONS,3) .OR.
+     &       LBIT(LBIT_PLOT_2D_OPTIONS,4)) THEN
+            WRITE(0,'(4F30.20)') PX, PY, (VECTOR(IXYZ),IXYZ=2,3)
+          ENDIF
 #else
-      CALL QUIT('perturbed current density not implemented')
+          CALL QUIT('not implemented')
 #endif
-      ENDIF
-C
-      IF(PLOTRXJ) THEN
-#if defined (MOD_CDFT)
-C      CALL GET_CURRENT_DENSITY(.TRUE.,CURRENTDENSITY,
-C    &                        .FALSE.,DUMMY,
-C    &                        IREP_PLOT,GAO,DMAT_AO,BUF)
-C
-       RXJ(1) = PY*CURRENTDENSITY(3) - PZ*CURRENTDENSITY(2)
-       RXJ(2) = PZ*CURRENTDENSITY(1) - PX*CURRENTDENSITY(3)
-       RXJ(3) = PX*CURRENTDENSITY(2) - PY*CURRENTDENSITY(1)
-C
-       RXJ_NORM = RXJ(1)**D2
-     &          + RXJ(2)**D2
-     &          + RXJ(3)**D2
-       RXJ_NORM = DSQRT(RXJ_NORM)
-C
-       IF(CUT_XY.OR.CUT_XY_SMALL) THEN
-         WRITE(0,'(4F30.20)') PX, PY, (RXJ(I),I=1,2)
-       ENDIF
-       IF(CUT_YZ.OR.CUT_YZ_SMALL) THEN
-         WRITE(0,'(4F30.20)') PY, PZ, (RXJ(I),I=2,3)
-       ENDIF
-#else
-      CALL QUIT('.RXJ not implemented')
-#endif
-      ENDIF
-C-----------------------------------------------------------------------
+        ENDIF
+      ENDDO
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -964,7 +730,7 @@ C-----------------------------------------------------------------------
 #include "dcbbas.h"
 #include "dcbxrs.h"
 C-----------------------------------------------------------------------
-      LOGICAL TOBE
+      LOGICAL FILE_EXISTS, LBIT
 C-----------------------------------------------------------------------
       DIMENSION CMO(*),DMAT_AO(*),TMATBF(*),
      &          STRING1(*),STRING2(*),
@@ -980,8 +746,8 @@ C
 C     check if solution vector file is there and open it
 C     ==================================================
 C
-      INQUIRE(FILE = XVECFILE,EXIST = TOBE)
-      IF(.NOT.TOBE) THEN
+      INQUIRE(FILE = XVECFILE,EXIST = FILE_EXISTS)
+      IF(.NOT.FILE_EXISTS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
         WRITE(LUPRI,'(A)') 'solution vector file not found'
         CALL QUIT('ERROR in PLOT')
@@ -994,11 +760,11 @@ C
 C     get NBDIMs of record NXVEC
 C     ==========================
 C
-      NBDIMEE  = 0
-      NBDIMEP  = 0
-      NREADS   = 0
-      NREADSEE = 0
-      NREADSEP = 0
+      NBDIM_EE  = 0
+      NBDIM_EP  = 0
+      NR_READS   = 0
+      NR_READS_EE = 0
+      NR_READS_EP = 0
       REWIND LUXVEC
  1    CONTINUE
       READ(LUXVEC) LAB1
@@ -1010,40 +776,40 @@ C
       BACKSPACE(LUXVEC)
 C
       IF(TYP1(1:1).EQ.'E') THEN
-        NREADS   = NREADS+1
-        NREADSEE = NREADSEE+1
+        NR_READS   = NR_READS+1
+        NR_READS_EE = NR_READS_EE+1
         IF(TYP1(2:2).EQ.'+') THEN
-          IHEE = 1
+          IH_EE = 1
         ELSEIF(TYP1(2:2).EQ.'-') THEN
-          IHEE = -1
+          IH_EE = -1
         ELSE
           GOTO 12
         ENDIF
         READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
      &               JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
      &               DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        IF(NREADSEE.EQ.NXVEC) THEN
-          JSYMOPEE = JSYMOP1
-          NBDIMEE = LEN/NZ
+        IF(NR_READS_EE.EQ.NXVEC) THEN
+          JSYMOP_EE = JSYMOP1
+          NBDIM_EE = LEN/NZ
         ENDIF
         READ(LUXVEC)
 C
       ELSEIF(TYP1(1:1).EQ.'P') THEN
-        NREADS   = NREADS+1
-        NREADSEP = NREADSEP+1
+        NR_READS   = NR_READS+1
+        NR_READS_EP = NR_READS_EP+1
         IF(TYP1(2:2).EQ.'+') THEN
-          IHEP = 1
+          IH_EP = 1
         ELSEIF(TYP1(2:2).EQ.'-') THEN
-          IHEP = -1
+          IH_EP = -1
         ELSE
           GOTO 12
         ENDIF
         READ(LUXVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
      &               JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
      &               DUM, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        IF(NREADSEP.EQ.NXVEC) THEN
+        IF(NR_READS_EP.EQ.NXVEC) THEN
           JSYMOPEP = JSYMOP1
-          NBDIMEP = LEN/NZ
+          NBDIM_EP = LEN/NZ
         ENDIF
         READ(LUXVEC)
 C
@@ -1057,15 +823,22 @@ C
 C     consistency
 C     ===========
 C
-      IF(NREADS.EQ.0) GOTO 11
-      IF(.NOT.(PLOTSKIPEE).AND.(.NOT.PLOTSKIPEP)) THEN
-        IF(.NOT.(NREADSEE.EQ.NREADSEP)) GOTO 11
+!     LBIT(LBIT_PLOT_GENERAL,5) skip +- (SKIPEP)
+!     LBIT(LBIT_PLOT_GENERAL,6) skip ++ (SKIPEE)
+
+      IF(NR_READS.EQ.0) GOTO 11
+      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5) .AND. 
+     &   .NOT. LBIT(LBIT_PLOT_GENERAL,6)) THEN
+        IF(.NOT.(NR_READS_EE.EQ.NR_READS_EP)) GOTO 11
       ENDIF
-      IF((.NOT.PLOTSKIPEP).AND.(NREADSEP.EQ.0)) GOTO 13
-      IF((.NOT.PLOTSKIPEE).AND.(NREADSEE.EQ.0)) GOTO 14
-      IF((.NOT.PLOTSKIPEP).AND.(NREADSEP.LT.NXVEC)) GOTO 11
-      IF((.NOT.PLOTSKIPEE).AND.(NREADSEE.LT.NXVEC)) GOTO 11
-      IF(PLOTSKIPEE.AND.PLOTSKIPEP) GOTO 15
+      IF(.NOT.LBIT(LBIT_PLOT_GENERAL,5) .AND.(NR_READS_EP.EQ.0)) GOTO 13
+      IF(.NOT.LBIT(LBIT_PLOT_GENERAL,6) .AND.(NR_READS_EE.EQ.0)) GOTO 14
+      IF(.NOT.LBIT(LBIT_PLOT_GENERAL,5) 
+     &   .AND.(NR_READS_EP.LT.NXVEC)) GOTO 11
+      IF(.NOT.LBIT(LBIT_PLOT_GENERAL,6) 
+     &   .AND.(NR_READS_EE.LT.NXVEC)) GOTO 11
+      IF(LBIT(LBIT_PLOT_GENERAL,5) .AND .
+     &   LBIT(LBIT_PLOT_GENERAL,6)) GOTO 15
 C
 C
 C     error handling
@@ -1102,9 +875,9 @@ C
 C     memory allocation
 C     =================
 C
-      CALL MEMGET('REAL',KBVECEE   ,NBDIMEE*NZ,
+      CALL MEMGET('REAL',KBVEC_EE   ,NBDIM_EE*NZ,
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBVECEP   ,NBDIMEP*NZ,
+      CALL MEMGET('REAL',KBVEC_EP   ,NBDIM_EP*NZ,
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBMAT     ,N2ORBXQ,
      &            WORK,KFREE,LFREE)
@@ -1115,27 +888,28 @@ C     ===================
 C
       REWIND LUXVEC
       DO I = 1,NXVEC
-        IF(.NOT.PLOTSKIPEE) THEN
+        IF(.NOT.LBIT(LBIT_PLOT_GENERAL,6)) THEN
           READ(LUXVEC)
           IF(I.EQ.NXVEC) THEN
-            CALL DZERO(WORK(KBVECEE),NBDIMEE*NZ)
-            CALL READT(LUXVEC,NBDIMEE*NZ,WORK(KBVECEE))
+            CALL DZERO(WORK(KBVEC_EE),NBDIM_EE*NZ)
+            CALL READT(LUXVEC,NBDIM_EE*NZ,WORK(KBVEC_EE))
           ELSE
             READ(LUXVEC)
           ENDIF
-        ELSEIF(NREADSEE.GT.0) THEN
+!              irgendwas komisch hier
+        ELSEIF(NR_READS_EE.GT.0) THEN
           READ(LUXVEC)
           READ(LUXVEC)
         ENDIF
-        IF(.NOT.PLOTSKIPEP) THEN
+        IF(.NOT.LBIT(LBIT_PLOT_GENERAL,5)) THEN
           READ(LUXVEC)
           IF(I.EQ.NXVEC) THEN
-            CALL DZERO(WORK(KBVECEP),NBDIMEP*NZ)
-            CALL READT(LUXVEC,NBDIMEP*NZ,WORK(KBVECEP))
+            CALL DZERO(WORK(KBVEC_EP),NBDIM_EP*NZ)
+            CALL READT(LUXVEC,NBDIM_EP*NZ,WORK(KBVEC_EP))
           ELSE
             READ(LUXVEC)
           ENDIF
-        ELSEIF(NREADSEP.GT.0) THEN
+        ELSEIF(NR_READS_EP.GT.0) THEN
           READ(LUXVEC)
           READ(LUXVEC)
         ENDIF
@@ -1151,38 +925,38 @@ C
 C     scatter vector
 C     ==============
 C
-      IHERMITICITY = IHEE
-      ICOUNTEREE   = 1
-      ICOUNTEREP   = 1
+      IHERMITICITY = IH_EE
+      ICOUNTER_EE   = 1
+      ICOUNTER_EP   = 1
       CALL DZERO(WORK(KBMAT),N2ORBXQ)
 C
       DO IZ = 1,NZ
         IF(NFSYM.EQ.1) THEN
-          CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
-     &                      ICOUNTEREE,ICOUNTEREP,
+          CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
+     &                      ICOUNTER_EE,ICOUNTER_EP,
      &                      WORK(KBMAT),
      &                      IZ,
      &                      1,1)
         ELSE
           IF(IHERMITICITY.EQ.1) THEN
-            CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
-     &                        ICOUNTEREE,ICOUNTEREP,
+            CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
+     &                        ICOUNTER_EE,ICOUNTER_EP,
      &                        WORK(KBMAT),
      &                        IZ,
      &                        1,2)
-            CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
-     &                        ICOUNTEREE,ICOUNTEREP,
+            CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
+     &                        ICOUNTER_EE,ICOUNTER_EP,
      &                        WORK(KBMAT),
      &                        IZ,
      &                        2,1)
           ELSE
-            CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
-     &                        ICOUNTEREE,ICOUNTEREP,
+            CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
+     &                        ICOUNTER_EE,ICOUNTER_EP,
      &                        WORK(KBMAT),
      &                        IZ,
      &                        1,1)
-            CALL SCATTER_BVEC(WORK(KBVECEE),WORK(KBVECEP),
-     &                        ICOUNTEREE,ICOUNTEREP,
+            CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
+     &                        ICOUNTER_EE,ICOUNTER_EP,
      &                        WORK(KBMAT),
      &                        IZ,
      &                        2,2)
@@ -1195,7 +969,7 @@ C
 C     symmetrize
 C     ==========
 C
-      JSYMOP    = JSYMOPEE
+      JSYMOP    = JSYMOP_EE
       IREP_PLOT = JSYMOP - 1
       JOPSY     = JBTOF(IREP_PLOT,1)
 C
@@ -1210,12 +984,12 @@ C     get density matrix
 C     ==================
 C
       CALL DZERO(DMAT_AO,N2BBASXQ)
-      IF(.NOT.PLOTSKIPEE) THEN
-        CALL DMOLI3(0,IHEE,DMAT_AO,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
+      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,6)) THEN !if not skip ++ (SKIPEE)
+        CALL DMOLI3(0,IH_EE,DMAT_AO,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
       ENDIF
-      IF(.NOT.PLOTSKIPEP) THEN
+      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5)) THEN !if not skip +- (SKIPEP)
         CALL DZERO(TMATBF,N2BBASXQ)
-        CALL DMOLI3(1,IHEP,TMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
+        CALL DMOLI3(1,IH_EP,TMATBF,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
         CALL DAXPY(N2BBASXQ,D1,TMATBF,1,DMAT_AO,1)
       ENDIF
 C
@@ -1231,15 +1005,15 @@ C
 C     release memory
 C     ==============
 C
-      CALL MEMREL('MODIFIED_DMAT_AO',WORK,KBVECEE,KBVECEE,KFREE,LFREE)
+      CALL MEMREL('MODIFIED_DMAT_AO',WORK,KBVEC_EE,KBVEC_EE,KFREE,LFREE)
       CALL QEXIT('MODIFIED_DMAT_AO')
 C-----------------------------------------------------------------------
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck scatter_bvec */
-      SUBROUTINE SCATTER_BVEC(BVECEE,BVECEP,
-     &                        ICOUNTEREE,ICOUNTEREP,
+      SUBROUTINE SCATTER_BVEC(BVEC_EE,BVEC_EP,
+     &                        ICOUNTER_EE,ICOUNTER_EP,
      &                        BMAT,
      &                        IZ,
      &                        IFSYM1,IFSYM2)
@@ -1257,7 +1031,8 @@ C-----------------------------------------------------------------------
 #include "dgroup.h"
 #include "dcbbas.h"
 C-----------------------------------------------------------------------
-      DIMENSION BVECEE(*),BVECEP(*),
+      LOGICAL   LBIT
+      DIMENSION BVEC_EE(*),BVEC_EP(*),
      &          BMAT(NORBT,NORBT,NZ),
      &          NEI(2),NES(2),NP(2)
 C-----------------------------------------------------------------------
@@ -1278,16 +1053,16 @@ C
       IS4 = IS3 + NES(IFSYM2) - 1
 C
       DO II = II1,II2
-        IF(.NOT.PLOTSKIPEP) THEN
+        IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5)) THEN !if not skip +- (SKIPEP)
           DO IS = IS1,IS2
-            BMAT(IS,II,IZ) = BVECEP(ICOUNTEREP)
-            ICOUNTEREP = ICOUNTEREP + 1
+            BMAT(IS,II,IZ) = BVEC_EP(ICOUNTER_EP)
+            ICOUNTER_EP = ICOUNTER_EP + 1
           ENDDO
         ENDIF
-        IF(.NOT.PLOTSKIPEE) THEN
+        IF(.NOT. LBIT(LBIT_PLOT_GENERAL,6)) THEN !if not skip ++ (SKIPEE)
           DO IS = IS3,IS4
-            BMAT(IS,II,IZ) = BVECEE(ICOUNTEREE)
-            ICOUNTEREE = ICOUNTEREE + 1
+            BMAT(IS,II,IZ) = BVEC_EE(ICOUNTER_EE)
+            ICOUNTER_EE = ICOUNTER_EE + 1
           ENDDO
         ENDIF
       ENDDO
