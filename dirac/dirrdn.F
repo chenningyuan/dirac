@@ -6179,7 +6179,7 @@ C=======================================================================
       SAVE SET
       DATA TABLE /'.XXXXXX','.READXV','.1D    ','.2D    ', !  1  2  3  4
      &            '.3D    ','.DENSIT','.SPIN  ','.CURREN', !  5  6  7  8
-     &            '.ELF   ','.1DSTEP','.3DSTAR','.3DNORM', !  9 10 11 12
+     &            '.ELF   ','.1DSTEP','.3DADD ','.XXXXXX', !  9 10 11 12
      &            '.CUBE  ','.XXXXXX','.NXVEC ','.STRING', ! 13 14 15 16
      &            '.SKIPEP','.SKIPEE','.RXJ   ','.FORMAT', ! 17 18 19 20
      &            '.CUTXY ','.CUTXYS','.CUTYZ ','.CUTYZS', ! 21 22 23 24
@@ -6217,8 +6217,7 @@ C=======================================================================
       LBIT_PLOT_2D_OPTIONS = 0
 
       STEP_1D              = 0.01D0
-      START_3D             = 4.0D0
-      DNORM_3D             = 8.0D0
+      ADD_3D               = 4.0D0
 
 !     process input
 
@@ -6280,10 +6279,9 @@ C=======================================================================
           READ(LUCMD,*) STEP_1D
           GOTO 100
    11     CONTINUE
-          READ(LUCMD,*) START_3D
+          READ(LUCMD,*) ADD_3D
           GOTO 100
    12     CONTINUE
-          READ(LUCMD,*) DNORM_3D
           GOTO 100
    13     CONTINUE
           READ(LUCMD,*) NCUBE(1), NCUBE(2), NCUBE(3)

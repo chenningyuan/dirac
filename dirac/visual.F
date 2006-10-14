@@ -458,8 +458,8 @@ C       add some space, calculate step sizes and convert step vectors to angstro
 C       =========================================================================
 C
         DO I = 1,3
-          D3DSTEP(I,0) = D3DSTEP(I,0)-START_3D
-          D3DSTEP(I,I) = (D3DSTEP(I,I)+DNORM_3D)*XTANG
+          D3DSTEP(I,0) = D3DSTEP(I,0)-ADD_3D
+          D3DSTEP(I,I) = (D3DSTEP(I,I)+(ADD_3D*D2))*XTANG
           D3DSTEP(I,I) = (D3DSTEP(I,I)-D3DSTEP(I,0))/(NCUBE(I)-1)
         ENDDO
 C

@@ -45,4 +45,4 @@ C
      &                LBIT_PLOT_GENERAL,                                &
      &                LBIT_PLOT_QUANTITY,                               &
      &                LBIT_PLOT_2D_OPTIONS
-      COMMON /CPLOTR/ STEP_1D, START_3D, DNORM_3D
+      COMMON /CPLOTR/ STEP_1D, ADD_3D
