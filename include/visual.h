@@ -1,19 +1,33 @@
 C     common block {1,2,3}-dimensional plot
 C     =====================================
 C
-C     LBIT(LBIT_PLOT_GENERAL,1) 1D
-C     LBIT(LBIT_PLOT_GENERAL,2) 2D
-C     LBIT(LBIT_PLOT_GENERAL,3) 3D
-C     LBIT(LBIT_PLOT_GENERAL,4) read solution vector
-C     LBIT(LBIT_PLOT_GENERAL,5) skip +- (SKIPEP)
-C     LBIT(LBIT_PLOT_GENERAL,6) skip ++ (SKIPEE)
-C     LBIT(LBIT_PLOT_GENERAL,7) use orbital string
+C     LBIT(LBIT_PLOT_GENERAL,1)    1D
+C     LBIT(LBIT_PLOT_GENERAL,2)    2D
+C     LBIT(LBIT_PLOT_GENERAL,3)    3D
+C     LBIT(LBIT_PLOT_GENERAL,4)    read solution vector
+C     LBIT(LBIT_PLOT_GENERAL,5)    skip +- (SKIPEP)
+C     LBIT(LBIT_PLOT_GENERAL,6)    skip ++ (SKIPEE)
+C     LBIT(LBIT_PLOT_GENERAL,7)    use orbital string
 C
-C     LBIT(LBIT_PLOT_QUANTITY,1) density
-C     LBIT(LBIT_PLOT_QUANTITY,2) spin density
-C     LBIT(LBIT_PLOT_QUANTITY,3) current density
-C     LBIT(LBIT_PLOT_QUANTITY,4) ELF
-C     LBIT(LBIT_PLOT_QUANTITY,5) r \times j
+C     LBIT(LBIT_PLOT_QUANTITY,1)   density
+C     LBIT(LBIT_PLOT_QUANTITY,2)   spin density
+C     LBIT(LBIT_PLOT_QUANTITY,3)   current density
+C     LBIT(LBIT_PLOT_QUANTITY,4)   ELF
+C     LBIT(LBIT_PLOT_QUANTITY,5)   r \times j
+C     LBIT(LBIT_PLOT_QUANTITY,6)   not used
+C     LBIT(LBIT_PLOT_QUANTITY,7)   not used
+C     LBIT(LBIT_PLOT_QUANTITY,8)   not used
+C     LBIT(LBIT_PLOT_QUANTITY,9)   not used
+C     LBIT(LBIT_PLOT_QUANTITY,10) .OPT0 (debug and testing of new functionalities)
+C     LBIT(LBIT_PLOT_QUANTITY,11) .OPT1 (debug and testing of new functionalities)
+C     LBIT(LBIT_PLOT_QUANTITY,12) .OPT2 (debug and testing of new functionalities)
+C     LBIT(LBIT_PLOT_QUANTITY,13) .OPT3 (debug and testing of new functionalities)
+C     LBIT(LBIT_PLOT_QUANTITY,14) .OPT4 (debug and testing of new functionalities)
+C     LBIT(LBIT_PLOT_QUANTITY,15) .OPT5 (debug and testing of new functionalities)
+C     LBIT(LBIT_PLOT_QUANTITY,16) .OPT6 (debug and testing of new functionalities)
+C     LBIT(LBIT_PLOT_QUANTITY,17) .OPT7 (debug and testing of new functionalities)
+C     LBIT(LBIT_PLOT_QUANTITY,18) .OPT8 (debug and testing of new functionalities)
+C     LBIT(LBIT_PLOT_QUANTITY,19) .OPT9 (debug and testing of new functionalities)
 C
 C     LBIT(LBIT_PLOT_2D_OPTIONS,1) xy cut
 C     LBIT(LBIT_PLOT_2D_OPTIONS,2) xy cut, "small"

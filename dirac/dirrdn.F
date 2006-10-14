@@ -6164,7 +6164,7 @@ C=======================================================================
 #include "priunit.h"
 #include "dummy.h"
 
-      PARAMETER (NTABLE = 28)
+      PARAMETER (NTABLE = 60)
 
 #include "dcbgen.h"
 #include "dcbana.h"
@@ -6177,13 +6177,21 @@ C=======================================================================
       DIMENSION WORK(LWORK)
 
       SAVE SET
-      DATA TABLE /'.XXXXXX','.READXV','.1D    ','.2D    ',
-     &            '.3D    ','.DENSIT','.SPIN  ','.CURREN',
-     &            '.ELF   ','.1DSTEP','.3DSTAR','.3DNORM',
-     &            '.CUBE  ','.XXXXXX','.NXVEC ','.STRING',
-     &            '.SKIPEP','.SKIPEE','.RXJ   ','.FORMAT',
-     &            '.CUTXY ','.CUTXYS','.CUTYZ ','.CUTYZS',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA TABLE /'.XXXXXX','.READXV','.1D    ','.2D    ', !  1  2  3  4
+     &            '.3D    ','.DENSIT','.SPIN  ','.CURREN', !  5  6  7  8
+     &            '.ELF   ','.1DSTEP','.3DSTAR','.3DNORM', !  9 10 11 12
+     &            '.CUBE  ','.XXXXXX','.NXVEC ','.STRING', ! 13 14 15 16
+     &            '.SKIPEP','.SKIPEE','.RXJ   ','.FORMAT', ! 17 18 19 20
+     &            '.CUTXY ','.CUTXYS','.CUTYZ ','.CUTYZS', ! 21 22 23 24
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 25 26 27 28
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 29 30 31 32
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 33 34 35 36
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 37 38 39 40
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 41 42 43 44
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 45 46 47 48
+     &            '.XXXXXX','.OPT0  ','.OPT1  ','.OPT2  ', ! 49 50 51 52
+     &            '.OPT3  ','.OPT4  ','.OPT5  ','.OPT6  ', ! 53 54 55 56
+     &            '.OPT7  ','.OPT8  ','.OPT9  ','.XXXXXX'/ ! 57 58 59 60
       DATA SET /.FALSE./
 
       IF(SET) THEN
@@ -6226,7 +6234,10 @@ C=======================================================================
             IF(TABLE(I) .EQ. WORD) THEN
             GOTO ( 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
      &            11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-     &            21, 22, 23, 24, 25, 26, 27, 28), I
+     &            21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+     &            31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+     &            41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+     &            51, 52, 53, 54, 55, 56, 57, 58, 59, 60), I
             ENDIF
   200     CONTINUE
           IF(WORD .EQ. '.OPTION') THEN
@@ -6311,13 +6322,66 @@ C=======================================================================
    24     CONTINUE
           CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,4)
           GOTO 100
+
    25     CONTINUE
-          GOTO 100
    26     CONTINUE
-          GOTO 100
    27     CONTINUE
-          GOTO 100
    28     CONTINUE
+   29     CONTINUE
+   30     CONTINUE
+   31     CONTINUE
+   32     CONTINUE
+   33     CONTINUE
+   34     CONTINUE
+   35     CONTINUE
+   36     CONTINUE
+   37     CONTINUE
+   38     CONTINUE
+   39     CONTINUE
+   40     CONTINUE
+   41     CONTINUE
+   42     CONTINUE
+   43     CONTINUE
+   44     CONTINUE
+   45     CONTINUE
+   46     CONTINUE
+   47     CONTINUE
+   48     CONTINUE
+   49     CONTINUE
+          GOTO 100
+
+   50     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,10)
+          GOTO 100
+   51     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,11)
+          GOTO 100
+   52     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,12)
+          GOTO 100
+   53     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,13)
+          GOTO 100
+   54     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,14)
+          GOTO 100
+   55     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,15)
+          GOTO 100
+   56     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,16)
+          GOTO 100
+   57     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,17)
+          GOTO 100
+   58     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,18)
+          GOTO 100
+   59     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,19)
+          GOTO 100
+
+   60     CONTINUE
           GOTO 100
 
         ELSEIF(PROMPT .EQ. '*') THEN

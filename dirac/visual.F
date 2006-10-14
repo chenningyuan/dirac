@@ -23,7 +23,7 @@ C=======================================================================
 #include "dcbham.h"
 #include "dgroup.h"
 
-      LOGICAL   FILE_EXISTS,LBIT
+      LOGICAL   FILE_EXISTS, LBIT
       DIMENSION WORK(LWORK)
 
       CALL QENTER('PLOT')
@@ -71,13 +71,23 @@ C=======================================================================
       CALL DZERO(WORK(KCMO),N2BBASXQ)
       CALL DZERO(WORK(KEIG),NORBT)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PLOT')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),DUMMY,
-     &            DUMMY,6,WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),UNUSED,
+     &            UNUSED,6,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS = 'KEEP')
 
       CALL FNDOCC(WORK(KEIG),WORK,KFREE,LFREE) !find occupation
 
-!     zero out orbitals?
+!     the default here is to set the diagonal elements
+!     of the MO density matrix to D0,
+!     then to put D1 in the diagonal elements of the inactive block
+
+!     if an orbital string is given the elements will be DZEROed again
+!     and only selected elements will be set to D1
+!     and later transformed to AO density matrix
+
+!     this will not happen if a solution vector is read in
+!     then MODIFIED_DMAT_AO will occupy the elements
+!     and transform to AO basis
 
       CALL DFILL(WORK(KSTRING1),D0,NESH(1))
       CALL DFILL(WORK(KSTRING1),D1,NISH(1))
@@ -212,7 +222,7 @@ C
 #include "codata.h"
 C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_QUANTITIES = 5)
+      PARAMETER (NR_QUANTITIES = 19)
 C
 #include "dcbgen.h"
 C
@@ -260,6 +270,17 @@ C
       QUANTITY_NAME(3) = 'current_density'
       QUANTITY_NAME(4) = 'ELF'
       QUANTITY_NAME(5) = 'r_times_j'
+
+      QUANTITY_NAME(10) = 'opt0'
+      QUANTITY_NAME(11) = 'opt1'
+      QUANTITY_NAME(12) = 'opt2'
+      QUANTITY_NAME(13) = 'opt3'
+      QUANTITY_NAME(14) = 'opt4'
+      QUANTITY_NAME(15) = 'opt5'
+      QUANTITY_NAME(16) = 'opt6'
+      QUANTITY_NAME(17) = 'opt7'
+      QUANTITY_NAME(18) = 'opt8'
+      QUANTITY_NAME(19) = 'opt9'
 
       LUNIT_BASE = 13
 
@@ -320,7 +341,7 @@ C
             IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
               WRITE(LUNIT(1,IQUANTITY),'(A5)') '*****'
               WRITE(LUNIT(1,IQUANTITY),'(A)')
-              WRITE(LUNIT(1,IQUANTITY),'(A3,A1,A3)') 
+              WRITE(LUNIT(1,IQUANTITY),'(A3,A1,A3)')
      &                           PAIRNAMEA(IPAIR), '-', PAIRNAMEB(IPAIR)
               WRITE(LUNIT(1,IQUANTITY),'(A)')
             ENDIF
@@ -453,7 +474,7 @@ C
             WRITE(LUNIT(3,IQUANTITY),'(A)') 'some'
             WRITE(LUNIT(3,IQUANTITY),'(A)') 'text'
             DO I = 0,3
-              WRITE(LUNIT(3,IQUANTITY),'(I5,4F12.6)') 
+              WRITE(LUNIT(3,IQUANTITY),'(I5,4F12.6)')
      &                                    NCUBE(I), (D3DSTEP(J,I),J=1,3)
             ENDDO
             DO I = 1,NUCDEP
@@ -578,7 +599,7 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
       PARAMETER (D23 = 2.0D0/3.0D0,D53 = 5.0D0/3.0D0)
       PARAMETER (D32 = 3.0D0/2.0D0,D54 = 5.0D0/4.0D0)
-      PARAMETER (NR_QUANTITIES = 5)
+      PARAMETER (NR_QUANTITIES = 19)
 
 #include "visual.h"
 #include "dcborb.h"
@@ -589,19 +610,24 @@ C=======================================================================
 #include "dcbxrs.h"
 
       LOGICAL   LBIT
-
       DIMENSION DMAT_AO(*),
-     &          GAO(*),GAO1(*),GAO2(*),
-     &          NCNT(*),BUF(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          GAO2(*),
+     &          NCNT(*),
+     &          BUF(*),
      &          QUANTITY(NR_QUANTITIES),
      &          VECTOR(3),
      &          WORK(*)
 
+      CALL DZERO(QUANTITY,NR_QUANTITIES)
+
       IF(LBIT(LBIT_PLOT_QUANTITY,4)) THEN !ELF
         CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
      &              BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
+
         CALL GETGRHO(VECTOR,IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
-        GRADIENT_SQUARED = VECTOR(1)**D2+VECTOR(2)**D2+VECTOR(3)**D2
+        GRADIENT_SQUARED = VECTOR(1)**D2 + VECTOR(2)**D2 + VECTOR(3)**D2
       ELSE
         CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
      &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,0)
@@ -624,18 +650,18 @@ C=======================================================================
           ENDDO
         ENDDO
         ELFKIN = ELFKIN/D2
-C
-        PI =  3.1415926536D0
-        PREFACTOR = 0.3D0*((D3*PI*PI)**D23)
 
-        H = PREFACTOR*(DENSITY**D53)
+        PI =  3.1415926536D0
+        FACTOR = 0.3D0*((D3*PI*PI)**D23)
+
+        H = FACTOR*(DENSITY**D53)
         G = ELFKIN - GRADIENT_SQUARED/(8.0D0*DENSITY)
-C
+
         ELFCHI = G/H
-C
+
         QUANTITY(4) = D1/(D1 + ELFCHI*ELFCHI)
-C       QUANTITY(4) = ELF**D32 !MBE1
-C       QUANTITY(4) = ELF**D54 !MBE2
+!       QUANTITY(4) = ELF**D32 !MBE1
+!       QUANTITY(4) = ELF**D54 !MBE2
       ENDIF
 
 !     magnetization and current density
@@ -645,8 +671,8 @@ C       QUANTITY(4) = ELF**D54 !MBE2
 #if defined (MOD_CDFT)
           CALL GET_CURRENT(IQUANTITY,
      &                     VECTOR,
-     &                     DUMMY,
-     &                     IREP_PLOT,GAO,DUMMY,DMAT_AO,BUF)
+     &                     UNUSED,
+     &                     IREP_PLOT,GAO,UNUSED,DMAT_AO,BUF)
 
           QUANTITY(IQUANTITY) = VECTOR(1)**D2
      &                        + VECTOR(2)**D2
@@ -674,8 +700,8 @@ C       QUANTITY(4) = ELF**D54 !MBE2
 #if defined (MOD_CDFT)
           CALL GET_CURRENT(3,
      &                     VECTOR,
-     &                     DUMMY,
-     &                     IREP_PLOT,GAO,DUMMY,DMAT_AO,BUF)
+     &                     UNUSED,
+     &                     IREP_PLOT,GAO,UNUSED,DMAT_AO,BUF)
 
           VECTOR_1 = PY*VECTOR(3) - PZ*VECTOR(2)
           VECTOR_2 = PZ*VECTOR(1) - PX*VECTOR(3)
@@ -827,15 +853,15 @@ C
 !     LBIT(LBIT_PLOT_GENERAL,6) skip ++ (SKIPEE)
 
       IF(NR_READS.EQ.0) GOTO 11
-      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5) .AND. 
+      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5) .AND.
      &   .NOT. LBIT(LBIT_PLOT_GENERAL,6)) THEN
         IF(.NOT.(NR_READS_EE.EQ.NR_READS_EP)) GOTO 11
       ENDIF
       IF(.NOT.LBIT(LBIT_PLOT_GENERAL,5) .AND.(NR_READS_EP.EQ.0)) GOTO 13
       IF(.NOT.LBIT(LBIT_PLOT_GENERAL,6) .AND.(NR_READS_EE.EQ.0)) GOTO 14
-      IF(.NOT.LBIT(LBIT_PLOT_GENERAL,5) 
+      IF(.NOT.LBIT(LBIT_PLOT_GENERAL,5)
      &   .AND.(NR_READS_EP.LT.NXVEC)) GOTO 11
-      IF(.NOT.LBIT(LBIT_PLOT_GENERAL,6) 
+      IF(.NOT.LBIT(LBIT_PLOT_GENERAL,6)
      &   .AND.(NR_READS_EE.LT.NXVEC)) GOTO 11
       IF(LBIT(LBIT_PLOT_GENERAL,5) .AND .
      &   LBIT(LBIT_PLOT_GENERAL,6)) GOTO 15
@@ -1010,8 +1036,20 @@ C
 C-----------------------------------------------------------------------
       RETURN
       END
+
+
+
+
+
+
+
+
+
+
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck scatter_bvec */
+C     /* deck SCATTER_BVEC */
       SUBROUTINE SCATTER_BVEC(BVEC_EE,BVEC_EP,
      &                        ICOUNTER_EE,ICOUNTER_EP,
      &                        BMAT,
@@ -1020,38 +1058,44 @@ C     /* deck scatter_bvec */
 C=======================================================================
 C     scatter solution vector onto BMAT
 C-----------------------------------------------------------------------
-C     radovan bast                              last revision: july 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
+
 #include "dcborb.h"
 #include "visual.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-C-----------------------------------------------------------------------
+
       LOGICAL   LBIT
-      DIMENSION BVEC_EE(*),BVEC_EP(*),
+      DIMENSION BVEC_EE(*),
+     &          BVEC_EP(*),
      &          BMAT(NORBT,NORBT,NZ),
-     &          NEI(2),NES(2),NP(2)
-C-----------------------------------------------------------------------
+     &          NEI(2),
+     &          NES(2),
+     &          NP(2)
+
       DO I = 1,2
         NEI(I) = NISH(I)
         NES(I) = NESH(I) - NISH(I)
         NP(I)  = NPSH(I)
       ENDDO
-C
+
       II1 = 1
-      II1 = II1 + (NESH(1)+NPSH(1))*(IFSYM1-1)
+      II1 = II1 + (NESH(1) + NPSH(1))*(IFSYM1 - 1)
       II1 = II1 + NP(IFSYM1)
       II2 = II1 + NEI(IFSYM1) - 1
       IS1 = 1
-      IS1 = IS1 + (NESH(1)+NPSH(1))*(IFSYM2-1)
+      IS1 = IS1 + (NESH(1) + NPSH(1))*(IFSYM2 - 1)
       IS2 = IS1 + NP(IFSYM2)  - 1
       IS3 = IS2 + NEI(IFSYM2) + 1
       IS4 = IS3 + NES(IFSYM2) - 1
-C
+
       DO II = II1,II2
         IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5)) THEN !if not skip +- (SKIPEP)
           DO IS = IS1,IS2
@@ -1066,7 +1110,7 @@ C
           ENDDO
         ENDIF
       ENDDO
-C-----------------------------------------------------------------------
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1075,17 +1119,23 @@ C     /* deck DMAT_MO_2_AO */
 C=======================================================================
 C     transform MO to AO density matrix
 C-----------------------------------------------------------------------
-C     radovan bast                           last revision: october 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-!-----------------------------------------------------------------------
+
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 
-      DIMENSION CMO(*),DMAT_AO(*),DMAT_MO(*),WORK(LWORK)
+      DIMENSION CMO(*),
+     &          DMAT_AO(*),
+     &          DMAT_MO(*),
+     &          WORK(LWORK)
 
 #include "memint.h"
 
@@ -1113,17 +1163,22 @@ C     /* deck OCCUPY_DMAT_MO */
 C=======================================================================
 C     occupy MO density matrix
 C-----------------------------------------------------------------------
-C     radovan bast                           last revision: october 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-!-----------------------------------------------------------------------
+
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 
-      DIMENSION DMAT_MO(*),STRING1(*),STRING2(*)
+      DIMENSION DMAT_MO(*),
+     &          STRING1(*),
+     &          STRING2(*)
 
       CALL DZERO(DMAT_MO,N2ORBXQ)
 
