@@ -80,55 +80,56 @@ C
 #include "dftcom.h"
 #include "densfit.h"
       DOUBLE PRECISION CFIT(*), DMAT(*), WORK(*)
-      LOGICAL DEBUG, ADD_XC_FIT
+      LOGICAL ADD_XC_FIT
 #include "memint.h"
 C
-      DEBUG = .false.
       ADD_XC_FIT = .TRUE.
+C
+C before anything, we should make sure that we are 
 C
 C first step is to numerically integrate <V_{XC}[\rho_{fit}]|\alpha>
 C
 C     NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
       IOPTS = 1
-      IF (DEBUG) write (6,*) 'debug: lwork,lfree',lwork,lfree
       CALL DFTEXC(DMAT,DUMMY,DUMMY,1,1,1,IOPTS,WORK(KFREE),LFREE,
      &              IPRSCF)
 C
 C after that, we get gkj and the integrals above from file...
 C
-      IF (DEBUG)  write (6,*) 'allocating kgjk and kvcxints'
       CALL MEMGET('REAL',KGJK,NBASISAUX*NBASISAUX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KVXCI,NBASISAUX,WORK,KFREE,LFREE)
+      if (using_diffdens) then
+         CALL MEMGET('REAL',KPREVBK,NBASISAUX,WORK,KFREE,LFREE)
+         CALL READ_MATRIX(WORK(KPREVBK),1,NBASISAUX,'FITDDB')
+      endif
 
       CALL READ_MATRIX(WORK(KGJK),NBASISAUX,NBASISAUX,'FITXCG')
-      IF (DEBUG) write (6,*) 'read gjk'
       CALL READ_MATRIX(WORK(KVXCI),1,NBASISAUX,'FITVXC')
-      IF (DEBUG) write (6,*) 'read Vxc integrals over fit set'
 C .. and create b_k = \sum_j [<integral above>]Gjk 
 C    which is then used to update cfit...
 C
       IF (ADD_XC_FIT) THEN ! switch the exchange contrib on/off for testing purposes 
          DO K = 1, NBASISAUX
-            BK = 0.0
-            if (DEBUG) THEN
-               DO J = 1,NBASISAUX
-                  write (6,*) 'debug: index1, index2',
-     &                 KVXCI+J-1,KGJK+NBASISAUX*(K-1)+(J-1)
-                  write (6,*) 'debug: integral(',j,'), G(',j,',',k,') ',
-     &                 WORK(KVXCI+J-1),WORK(KGJK+NBASISAUX*(K-1)+(J-1))
-               ENDDO
-            endif
             BK = DDOT(NBASISAUX,WORK(KVXCI),1,
      &                       WORK(KGJK + NBASISAUX*(K-1)),1)
             CFIT_OLD = CFIT(K)
-C           CFIT(K)  = CFIT(K) + BK 
-            CFIT(K)  = BK 
-            IF (DEBUG) write (6,*) 'debug, C,Cn,B',CFIT_OLD,CFIT(K),BK
+            CFIT(K)  = CFIT(K) + BK 
+            if (using_diffdens) then
+               CFIT(K)  = (BK - work(kprevbk - 1 + k)) 
+               work(kprevbk - 1 + k) = bk 
+            else
+               CFIT(K)  = BK 
+            endif
          ENDDO
       ENDIF
 C
 C and we're done!
 C
+      if (using_diffdens) then
+         CALL SAVE_MATRIX(WORK(KPREVBK),1,NBASISAUX,'FITDDB')
+         CALL MEMREL('DF_Set_AuxVXC_CFit-3',WORK,KPREVBK,
+     &               KPREVBK,KFREE,LFREE)
+      endif
       CALL MEMREL('DF_Set_AuxVXC_CFit-2',WORK,KVXCI,KVXCI,KFREE,LFREE)
       CALL MEMREL('DF_Set_AuxVXC_CFit-1',WORK,KGJK,KGJK,KFREE,LFREE)
       RETURN
@@ -356,5 +357,59 @@ C     DEBUG = .TRUE.
           ENDDO
           CALL GPCLOSE(IUNIT,'KEEP')
       ENDIF
+      RETURN
+      END
+C /* Deck INIT_DD_FITVXC_FILES */
+C
+      SUBROUTINE DF_FitXC_InitFilesDD(NBASIS,WORK,LWORK)
+C
+C Description
+C -----------
+C This subroutine initializes the files which will hold the information
+C regarding fit coefficients and auxiliary coefficients for the evaluation
+C of the exchange-correlation contribution, when differential densities
+C are used in the SCF procedure... This is so because we cannot feed
+C "differential" fit coefficients to obtail the density in the DFT part,
+C and also cannot use the B_k coefficients in full, since for the SCF
+C the C_k's are differential...
+C
+C Arguments
+C ---------
+C NBASIS: number of auxiliary basis functions
+C WORK  : work array
+C LWORK : current positon of memory 
+C
+C Results
+C -------
+C After it is called, the files "FITDDC" and "FITDDB" will be created
+C and its elements set to zero.
+C
+C "FITDDC" will contain the "non-differential" fit coefficients,
+C that is, the sum of the differential fit coefficients accumulated during 
+C the scf proc. 
+C
+C "FITDDB" will containing the coefficients B_k which multiply the 
+C exchance-correlation contribution from a previous scf iteration.
+C
+C Remarks
+C -------
+C Should be placed before routines that perform the scf iterations.
+C If it is somewhere else then there's something wrong...
+C
+C History
+C -------
+C 2006-10-15: Initial implementation, Andre Gomes
+C
+#include "implicit.h"
+      DOUBLE PRECISION WORK(*)
+#include "memint.h"
+C
+      CALL MEMGET('REAL',KPREV,NBASIS,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KPREV),NBASIS)
+C
+      CALL SAVE_MATRIX(WORK(KPREV),1,NBASIS,'FITDDB')
+      CALL SAVE_MATRIX(WORK(KPREV),1,NBASIS,'FITDDC')
+C
+      CALL MEMREL('Init_DD_FitVXC_Files',WORK,KPREV,KPREV,KFREE,LFREE)
       RETURN
       END

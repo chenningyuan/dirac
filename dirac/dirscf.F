@@ -1183,6 +1183,7 @@ C#endif
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbreo.h"
+#include "densfit.h"
       LOGICAL   LBIT
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
@@ -1191,6 +1192,16 @@ C#endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
+#if defined (MOD_DNF)
+      IF (DF_FITVXC) THEN
+         IF (DODSCF) THEN
+            using_diffdens = .true.
+            CALL DF_FitXC_InitFilesDD(NBASISAUX,WORK,LWORK)
+          ELSE
+             using_diffdens = .false.
+          endif
+      ENDIF
+#endif
 C
 C     ***********************************
 C     ***** Perform SCF-iterations ******

@@ -111,6 +111,7 @@ C       AUXINT Charge integrals
         CALL MEMGET ('REAL',KGABAB,NBASIS*NBASIS,WORK,KFREE,LFREE)
         CALL MEMGET ('REAL',KGABAL,NBASISAUX,WORK,KFREE,LFREE)
         CALL MEMGET ('REAL',KAUXINT,NBASISAUX,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KCFTDD,NBASISAUX,WORK,KFREE,LFREE)
 
 C       We will have no symmetry between density 1 and 2
         ODTR12 = .FALSE.
@@ -150,12 +151,27 @@ Caspg
      &                IPRINT)
         ENDDO ! Loop over IBOX
 
-        IF (IPRINT.GT.25) THEN
+c       IF (IPRINT.GT.25) THEN
 Caspg   if (.true.) then
+        if (.true.) then
           CALL HEADER('CFIT',-1)
           CALL OUTPUT(WORK(KCFIT),1,NBASISAUX,1,1,NBASISAUX,1,1,LUPRI)
         ENDIF
-
+Caspg
+          write (6,*) 'using_diffdens',using_diffdens
+          IF (df_fitvxc.and.using_diffdens) THEN
+              write (6,*) 'fobo'
+              CALL READ_MATRIX(WORK(KCFTDD),1,NBASISAUX,'FITDDC')
+              DO I = 1,NBASISAUX
+C                write (6,*) 'i, cfit (new,from file)',i,
+C    &                       WORK(KCFIT-1+I),WORK(KCFTDD-1+I)
+                 WORK(KCFTDD-1+I) = WORK(KCFTDD-1+I)
+     &                             + WORK(KCFIT-1+I)
+C                write (6,*) 'new cfit:',WORK(KCFTDD-1+I)
+              ENDDO
+              CALL SAVE_MATRIX(WORK(KCFTDD),1,NBASISAUX,'FITDDC')
+              CALL MEMREL('df-fitdd',WORK,KCFTDD,KCFTDD,KFREE,LFREE)
+          ENDIF
 Caspg
 #if defined (DEBUG_DIRAC_FCKBUILD_DF)
        CALL HEADER('fmat after df_box, before fitfck3',-1)
@@ -203,11 +219,7 @@ Cafter debug will hopefully be only one call (above) to fitfck3...
            errks1=0.0
            do i=1,ndmt
            ERRKS1=errks1+DDOT(NBAST*NBAST,DMAT(1,I),1,FMAT(1,I),1)
-Caspg      write (6,*) 'nb,errks step 1',nbast,errks1
-C          CALL DZERO(FMAT(1,I),NBAST*NBAST)
            enddo
-C          CALL HEADER('fmat after dzeros ',-1)
-C          CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
 
            CALL SETAOBTCH(SPEXP,CONTRACTED,WORK(KFREE),LFREE,IPRINT)
            CALL ACT_ALL_BATCHES
@@ -219,10 +231,14 @@ C          CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
            errks2=0.0
            do i=1,ndmt
            ERRKS2=errks2+DDOT(NBAST*NBAST,DMAT(1,I),1,FMAT(1,I),1)
-Caspg      write (6,*) 'nb,errks step 2',nbast,errks2
+Casp       write (6,*) 'nb,errks step 2',nbast,errks2
            enddo
-           errks = (errks2 - errks1)*0.5
-Caspg      write (6,*) 'errks final',errks
+           if (using_diffdens) then
+              errks = (errks2 - errks1)*0.5 + errks
+           else
+              errks = (errks2 - errks1)*0.5
+           endif
+           write (6,*) 'errks final',errks
 Caspg+rbast
 Caspg
 #if defined (DEBUG_DIRAC_FCKBUILD_DF)
@@ -1177,15 +1193,6 @@ C
           COEFF_MAX = COEFF_MAX * ABS(DLAMBDA)
           WRITE(LUPRI,'(I3,4F18.12)') IDMT,BOX_CHARGE,CHARGE_FIT,
      &                                CORRECTED_CHARGE,COEFF_MAX
-Caspg, 2006-10-01 
-Cupdating fit coefficients for the constrained fit?
-C c = c + lambda c_constrained
-C         write (LUPRI,*) 'updating fit coefficients after constraint'
-CC        write (LUPRI,*) 'lambda',dlambda
-C         DO I=1,NDIMAUX
-C            CFIT(I,IDMT) = CFIT(I,IDMT) + DLAMBDA*WORK(KCORR+I-1)
-C         ENDDO
-Caspg, 2006-10-01 
         ENDDO
 Caspg+rbast, 2006-09-21
 C setting up Gjk matrix for the XC contribution in DFT
@@ -1212,7 +1219,6 @@ Caspg+rbast, 2006-09-21
 Caspg+rbast, 2006-09-21
 C setting up Gjk matrix for the XC contribution in DFT
         IF (DF_FITVXC) THEN
-C          write (6,*) 'doo'
            CALL DF_FitXC_Build_GKJ(WORK(KGJK),NBASISAUX,NBASISAUX,
      &                           WORK(KVMAT),DUMMY,DUMMY)
            CALL SAVE_MATRIX(WORK(KGJK),NBASISAUX,NBASISAUX,'FITXCG')
@@ -1220,15 +1226,18 @@ C          write (6,*) 'doo'
 Caspg+rbast, 2006-09-21
       ENDIF
 Caspg, 2006-09-21
-C fit coefficients for this iteration are saved to file 
+C fit coefficients for this iteration are saved to file
+C if differential densities are being used, we accumulate the fit 
+C coefficients and save this as well 
+      write (6,*) 'goo'
       IF (SAVE_CFIT) THEN
+          write (6,*) 'foo'
           CALL SAVE_MATRIX(CFIT,1,NBASISAUX,'FITCOE')
       ENDIF
-Caspg, 2006-09-21
-
       IF (DF_FITVXC) THEN
          CALL MEMREL('dfgendrv-kgjk',WORK,KGJK,KGJK,KFREE,LFREE)
       ENDIF
+Caspg, 2006-09-21
       CALL MEMREL('DFGENDRV',WORK,KVMAT,KVMAT,KFREE,LFREE)
       CALL MEMREL('DFGENDRV',WORK,KAUXINT,KAUXINT,KFREE,LFREE)
       CALL MEMREL('DFGENDRV',WORK,KGALPHA,KGALPHA,KFREE,LFREE)
@@ -2429,6 +2438,8 @@ C
  13   CONTINUE
         WRITE(LUPRI,*) 'Calculating quantities for XC potential eval'
         DF_FITVXC = .TRUE.
+        SAVE_CFIT = .TRUE.
+        SAVE_VAB  = .TRUE.
       GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -2463,6 +2474,16 @@ C  /* Deck dfiini */
       SUBROUTINE DFIINI
 #include "implicit.h"
 #include "densfit.h"
+Caspg, 2006-10-15
+C still thinking about the best way to communicate whether or
+C not we will be using differential densities to de df routines.. 
+C if not done correctly, fitvxc will not work properly
+C one way would be to get the value of dodscf from
+C
+C#include "dcbdhf.h"
+C
+C but this is initalized after the integrals...
+C
       !.DIATOM - fit density for pairs of atoms (default is the global fit)
       DOFIT     = .FALSE.
       DIATOM    = .FALSE.
@@ -2478,6 +2499,11 @@ C  /* Deck dfiini */
       DF_SCRTHR = 1.0E-10
       SAVE_CFIT = .FALSE.
       SAVE_VAB  = .FALSE.
+C
+C     using_diffdens = .false.
+      using_diffdens = .true.
+C     if (dodscf.eq..false.) using_diffdens = .false.
+C
 C     LIN_DF    = .FALSE.
       CALL SET_BOX_DEFAULTS()
       RETURN

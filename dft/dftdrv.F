@@ -88,10 +88,8 @@ C aspg+rbast 2006-10-10
 C prepare for accumulating integrals... 
       IF (DFITXC) THEN ! 
          CALL MEMGET('REAL',KXCVEB,NBASISAUX,WORK,KFREE,LFREE)
-         write (6,*) 'debug: a1'
          CALL DZERO(WORK(KXCVEB),NBASISAUX)
          CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'FITVXC')
-C        CALL MEMREL('dftexc-xcvec',WORK,KXCVEB,KXCVEB,KFREE,LFREE)
       ENDIF
 Caspg+rbast
 #endif
@@ -532,6 +530,7 @@ C
 #include "dfterg.h"
 #include "functionals.h"
 #include "dgroup.h"
+#include "densfit.h"
       LOGICAL DOERG,DOGRD,DOLND,DOLR,DOQR,LBIT
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
@@ -564,7 +563,11 @@ C exchange-correlation contibutions together with density fitting
          CALL MEMGET('REAL',KCFIT,NBASISAUX,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KXCVEC,NBASISAUX,WORK,KFREE,LFREE)
          CALL READ_MATRIX(WORK(KXCVEC),1,NBASISAUX,'FITVXC')
-         CALL READ_MATRIX(WORK(KCFIT),1,NBASISAUX,'FITCOE')
+         if (using_diffdens) then
+            CALL READ_MATRIX(WORK(KCFIT),1,NBASISAUX,'FITDDC')
+         else
+            CALL READ_MATRIX(WORK(KCFIT),1,NBASISAUX,'FITCOE')
+         endif
       ENDIF
 Caspg+rbast
 #endif
