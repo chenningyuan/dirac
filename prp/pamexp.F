@@ -79,13 +79,20 @@ CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
 CMI ... Needed for SQUARE matrixes of some property operators!
 C     CALL MEMGET('REAL',KONEIN ,   N2BBASX,WORK,KFREE,LFREE)
 C
+
 #ifdef ANALYZE_PROPERTY_GRADIENT
-      LUNIT = 35
+      LUNIT = 14
       CALL OPNFIL(LUNIT,'PMAT','UNKNOWN','PAMEXP')
 #endif
+
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),
      &            WORK(KFIRST),WORK(KFREE),LFREE)
+
+#ifdef ANALYZE_PROPERTY_GRADIENT
+      CLOSE(LUNIT,STATUS = 'KEEP')
+#endif
+
 C
 C     Memory deallocation
 C
@@ -778,7 +785,7 @@ Caspg
       ENDDO
 C
 #ifdef ANALYZE_PROPERTY_GRADIENT
-      LUNIT = 35
+      LUNIT = 14
       WRITE(LUNIT) PRPNAM(INDXPR)
       IPF = 1
       DO IFRP = 1,NFSYM
