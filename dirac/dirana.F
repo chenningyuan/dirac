@@ -3767,7 +3767,15 @@ C
       RETURN
       END
 #ifdef ANALYZE_PROPERTY_GRADIENT
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck ANALYZE_PROPERTY_GRAD */
       SUBROUTINE ANALYZE_PROPERTY_GRAD(WORK,LWORK)
+C=======================================================================
+C     analyze property gradient
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                            last revision: october 2006
+C=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3780,7 +3788,7 @@ C
       PARAMETER (NMOL = 2)
       PARAMETER (NTOT = NREF + NMOL)
 
-      PARAMETER (IHOMO = 17,ILUMO = 18)
+#include "inforb.h"
 
       DIMENSION BVEC(NTOT,NMOL,NZ),
      &          PMAT(NTOT,NTOT,NZ),
@@ -3796,6 +3804,9 @@ C
       CHARACTER PROP_NAME*16
 
 #include "memint.h"
+
+      IHOMO = NISH(1)
+      ILUMO = IHOMO + 1
 
       DO I = 1,4
         IQ(I) = I
@@ -3900,11 +3911,11 @@ C
      &                              ZMAT(INDK,INDL),
      &                             (TMAT(INDK,INDL,IZ),IZ=1,NZ)
         IF((INDK.EQ.IHOMO).AND.(INDL.EQ.ILUMO)) THEN
-          WRITE(LUPRI,*) 'GRADANA: homo-lumo'
+          WRITE(LUPRI,*) 'GRADANA: QMAT homo-lumo'
           DO MYZ = 1,NZ
             WRITE(LUPRI,*) MYZ, QMAT(INDK,INDL,MYZ)
           ENDDO
-          WRITE(LUPRI,*) 'GRADANA: lumo-homo'
+          WRITE(LUPRI,*) 'GRADANA: QMAT lumo-homo'
           DO MYZ = 1,NZ
             WRITE(LUPRI,*) MYZ, QMAT(INDL,INDK,MYZ)
           ENDDO
