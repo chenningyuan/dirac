@@ -185,6 +185,10 @@ C           = alpha*f DCao + (a_o-1)*DSao
 C
          CALL DSCAL(N2BBASXQ,GAMMA,DTEMP1(1,1),1)
          CALL DAXPY(N2BBASXQ,BETA,DMAT(1,1),1,DTEMP1(1,1),1)
+C........also include contribution to active-active block !
+C........add factor half since this is a diagonal block
+         FAC = GAMMA*DP5
+         CALL DAXPY(N2BBASXQ,FAC,DMAT(1,1+IOPEN),1,DTEMP1(1,1),1)
 C
 C
          IOFFTDINV = 1
