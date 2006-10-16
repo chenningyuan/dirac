@@ -70,7 +70,7 @@ C
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.COLLIN',
-     &            '.DFITXC','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -88,7 +88,6 @@ C
 C     Initialize /DFTCOM/ and integration parameters
 C     ==============================================
 C
-      DFITXC = .FALSE.
       IPRDFT = 2
       GRDONE = .FALSE.
 C     ... GRDONE false: calculate grid
@@ -257,22 +256,6 @@ C                                      asymptotic part is LBalpha
 #endif
                  GO TO 100
  17              CONTINUE
-#if defined (MOD_DNF)
-C&&& DFITXC, uses the Birkenheuer et at's scheme to calculate the
-C&&& XC contribution using density fitting together with numerical
-C&&& integration. See IJQC 102, 743-761 (2005). It is only turned
-C&&& on if it is a density fitting run... 
-                 IF (DOFIT) THEN
-                    DFITXC = .TRUE.
-                 ELSE
-                    WRITE(LUPRI,*) 'You requested the use of Density '//
-     &                'Fitting to build the Exchange-Correlation '//
-     &                'contribution but have not requested the use '//
-     &                'of Density Fitting to begin with. Check your '// 
-     &                'inputs and try again...'
-                 CALL QUIT('Incompatible options for DFT and INTEGRALS')
-                 ENDIF
-#endif
                  GO TO 100
  18              CONTINUE
                  GO TO 100
@@ -367,15 +350,6 @@ C
       IF(LBIT(LBIT_DFTAC,7)) THEN
         WRITE(LUPRI,'(A)') '   the asymptotic potential is LBalpha'
       ENDIF
-C
-#if defined (MOD_DNF)
-      IF (DFITXC) THEN
-         WRITE(LUPRI,'(A)') ' * Density Fitting will be used to '//
-     &   'build the Exchange-Correlation contribution',
-     &   '   according to the scheme of Birkenheuer and coworkers'//
-     &   '(IJQC 102, 743, 2005)'
-      ENDIF
-#endif
 C
   999 CONTINUE
 C

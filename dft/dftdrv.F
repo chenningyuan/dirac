@@ -69,6 +69,7 @@ C
 #include "dfterg.h"
 #include "dgroup.h"
 #include "functionals.h"
+#include "densfit.h"
       LOGICAL DOERG, DOGRD, DOLND, DOLR,LBIT,DOQR
       DIMENSION DMAT(N2BBASX,NZ,*),EXCMAT(N2BBASX,NZ,*),
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
@@ -86,7 +87,7 @@ CCC
 #if defined (MOD_DNF)
 C aspg+rbast 2006-10-10
 C prepare for accumulating integrals... 
-      IF (DFITXC) THEN ! 
+      IF (DF_FITVXC) THEN ! 
          CALL MEMGET('REAL',KXCVEB,NBASISAUX,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KXCVEB),NBASISAUX)
          CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'FITVXC')
@@ -96,7 +97,7 @@ Caspg+rbast
 CCC
 C     Initial expectation value of two-electron matrix
 #if defined (MOD_DNF)
-      IF (DOERG.AND..NOT.DFITXC) THEN
+      IF (DOERG.AND..NOT.DF_FITVXC) THEN
 #else
       IF (DOERG) THEN
 #endif
@@ -188,9 +189,7 @@ C     Integrate
         NDIMENSION = NTBAS(0)
 #if defined (MOD_DNF)
 Caspg, the mult by two here is still not quite understandable...
-        IF (DFITXC) NDIMENSION = MAX(NTBAS(0),NBASISAUX)*2
-C       write (6,*) 'debug: ndimension',ndimension,ntbas(0),nbasisaux
-C*100
+        IF (DF_FITVXC) NDIMENSION = MAX(NTBAS(0),NBASISAUX)
 #endif
 C
         CALL MEMGET('REAL',KGAO,NDIMENSION,WORK,KFREE,LFREE)
@@ -225,7 +224,8 @@ C    &              KFREE,LFREE)
 #if defined (VAR_MPI)
       ENDIF
 #endif
-      IF(DFTISGGA()) CALL SYMSYM(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
+      IF(DFTISGGA().AND..NOT.DF_FITVXC) 
+     &   CALL SYMSYM(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
       IF (DOLR.OR.DOQR) THEN
 C       Insert half-phases
         IF(NZ.LT.4) THEN
@@ -254,13 +254,13 @@ C
 C     Calculate final expectation value of two-electron matrix;
 C     the Kohn-Sham contribution can then be subtracted 
 #if defined (MOD_DNF)
-      IF (DOERG.AND..NOT.DFITXC) THEN
+      IF (DOERG.AND..NOT.DF_FITVXC) THEN
 #else
       IF (DOERG) THEN
 #endif
         ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1) - ERRKS
       END IF 
-      IF (DFITXC) THEN
+      IF (DF_FITVXC) THEN
          CALL MEMREL('dftexc-xcvec',WORK,KXCVEB,KXCVEB,KFREE,LFREE)
       ENDIF
 C
@@ -555,7 +555,7 @@ C memory allocation for variables to hold information related
 C to density fitting. used in connection to the scheme of
 C Birkenheuer et at (IJQC 102, 743, 2005) to compute the 
 C exchange-correlation contibutions together with density fitting 
-      IF (DFITXC) THEN ! 
+      IF (DF_FITVXC) THEN ! 
          DOGRD = .false.
          DOLR  = .false.
          DOQR  = .false.
@@ -586,7 +586,7 @@ C
 Caspg+rbast, 2006-09-21
         NDIMENSION = NBAST
 #if defined (MOD_DNF)
-        IF (DFITXC) NDIMENSION = MAX(NBAST,NBASISAUX)
+        IF (DF_FITVXC) NDIMENSION = MAX(NBAST,NBASISAUX)
 #endif
 C
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
@@ -597,7 +597,7 @@ C       Density
 C       =======
 C
 #if defined (MOD_DNF)
-        IF (DFITXC) THEN  ! 
+        IF (DF_FITVXC) THEN  ! 
           RHO = DDOT(NBASISAUX,GAO,1,WORK(KCFIT),1)
         ELSE
 #endif
@@ -614,11 +614,13 @@ C       ===================
 C
         IF (DOGRHO) THEN
 #if defined (MOD_DNF)
-          IF (DFITXC) THEN  ! 
+          IF (DF_FITVXC) THEN  ! 
             DO IXYZ = 1,3
              IOFF = (IXYZ - 1)*NBASISAUX
              RHG(IXYZ) = 
-     &          D2*DDOT(NBASISAUX,GAO1(1+IOFF,IXYZ),1,WORK(KCFIT),1)
+     &          DP5*DDOT(NBASISAUX,GAO1(1,IXYZ),1,WORK(KCFIT),1)
+C            RHG(IXYZ) = 
+C    &          D2*DDOT(NBASISAUX,GAO1(1+IOFF,IXYZ),1,WORK(KCFIT),1)
             ENDDO
           ELSE
 #endif
@@ -659,7 +661,7 @@ C
 C       Energy
 C       ======
 C
-c       IF(DOERG.AND..NOT.DFITXC) THEN
+c       IF(DOERG.AND..NOT.DF_FITVXC) THEN
         IF(DOERG) THEN
            EDFTY = EDFTY + DFTENERGY(RHO,RHOGRD)*WGHT
         ENDIF
@@ -702,22 +704,20 @@ C
           IREPOP = 0
 C aspg+rbast, 2006-09-21
 #if defined (MOD_DNF)
-           IF (DFITXC) THEN ! using densifit
-C gga not working now with densfit
+           IF (DF_FITVXC) THEN ! using densifit
              IF (DOGGA .AND. .NOT.FROMVX) THEN
-C              call quit('GGA not working in the dfit scheme') 
                DO I = 1,3
                   VT(I) = VX(FZ0)*RHG(I)
                ENDDO
                DO I = 1, NBASISAUX
                   WORK(KXCVEC - 1 + I)= WORK(KXCVEC - 1 + I)
-     &                                + VX(FR0)*GAO(I)
-!                                        be careful with this factor D2 in DALTON
-     &                                + D2*VT(1)*GAO1(1,1)
-     &                                + D2*VT(2)*GAO1(1 + NBASISAUX,2)
-     &                                + D2*VT(3)*GAO1(1 + NBASISAUX*2,3)
+     &                          + VX(FR0)*GAO(I)
+!             be careful with this factor D2 in DALTON
+     &                          + D1*VT(1)*GAO1(I,1)
+     &                          + D1*VT(2)*GAO1(I,2)
+     &                          + D1*VT(3)*GAO1(I,3)
                ENDDO
-             ELSE
+             ELSE ! only lda
                DO I = 1, NBASISAUX
                   WORK(KXCVEC - 1 + I) = WORK(KXCVEC - 1 + I)
      &                                 + VX(FR0)*GAO(I)
@@ -768,7 +768,7 @@ C
   300 CONTINUE
 Caspg+rbast, 2006-09-21
 #if defined (MOD_DNF)
-      IF (DFITXC) THEN ! releasing temp space used for the df code
+      IF (DF_FITVXC) THEN ! releasing temp space used for the df code
          CALL SAVE_MATRIX(WORK(KXCVEC),1,NBASISAUX,'FITVXC')
          CALL MEMREL('dftdr1-xcvec',WORK,KXCVEC,KXCVEC,KFREE,LFREE)
          CALL MEMREL('dftdr1-fitco',WORK,KCFIT ,KCFIT ,KFREE,LFREE)

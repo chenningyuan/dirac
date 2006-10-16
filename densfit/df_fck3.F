@@ -151,23 +151,19 @@ Caspg
      &                IPRINT)
         ENDDO ! Loop over IBOX
 
-c       IF (IPRINT.GT.25) THEN
+        IF (IPRINT.GT.25) THEN
 Caspg   if (.true.) then
-        if (.true.) then
           CALL HEADER('CFIT',-1)
           CALL OUTPUT(WORK(KCFIT),1,NBASISAUX,1,1,NBASISAUX,1,1,LUPRI)
         ENDIF
 Caspg
           write (6,*) 'using_diffdens',using_diffdens
           IF (df_fitvxc.and.using_diffdens) THEN
-              write (6,*) 'fobo'
+c             write (6,*) 'fobo'
               CALL READ_MATRIX(WORK(KCFTDD),1,NBASISAUX,'FITDDC')
               DO I = 1,NBASISAUX
-C                write (6,*) 'i, cfit (new,from file)',i,
-C    &                       WORK(KCFIT-1+I),WORK(KCFTDD-1+I)
                  WORK(KCFTDD-1+I) = WORK(KCFTDD-1+I)
      &                             + WORK(KCFIT-1+I)
-C                write (6,*) 'new cfit:',WORK(KCFTDD-1+I)
               ENDDO
               CALL SAVE_MATRIX(WORK(KCFTDD),1,NBASISAUX,'FITDDC')
               CALL MEMREL('df-fitdd',WORK,KCFTDD,KCFTDD,KFREE,LFREE)
@@ -1227,8 +1223,6 @@ Caspg+rbast, 2006-09-21
       ENDIF
 Caspg, 2006-09-21
 C fit coefficients for this iteration are saved to file
-C if differential densities are being used, we accumulate the fit 
-C coefficients and save this as well 
       write (6,*) 'goo'
       IF (SAVE_CFIT) THEN
           write (6,*) 'foo'
@@ -2436,7 +2430,10 @@ C
         SAVE_VAB  = .TRUE.
       GO TO 100
  13   CONTINUE
-        WRITE(LUPRI,*) 'Calculating quantities for XC potential eval'
+        WRITE(LUPRI,'(A)') 'Density Fitting will be used to '//
+     &   'build the Exchange-Correlation contribution',
+     &   '   according to the scheme of Birkenheuer and coworkers'//
+     &   '(IJQC 102, 743, 2005)'
         DF_FITVXC = .TRUE.
         SAVE_CFIT = .TRUE.
         SAVE_VAB  = .TRUE.

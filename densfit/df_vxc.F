@@ -75,8 +75,12 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "nuclei.h"
+#if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
+#else
+#include "gnrinf.h"
+#endif
 #include "dftcom.h"
 #include "densfit.h"
       DOUBLE PRECISION CFIT(*), DMAT(*), WORK(*)
@@ -90,9 +94,13 @@ C
 C first step is to numerically integrate <V_{XC}[\rho_{fit}]|\alpha>
 C
 C     NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
+#if defined (PRG_DIRAC)
       IOPTS = 1
       CALL DFTEXC(DMAT,DUMMY,DUMMY,1,1,1,IOPTS,WORK(KFREE),LFREE,
      &              IPRSCF)
+#else
+C
+#endif /* PRG_DIRAC */
 C
 C after that, we get gkj and the integrals above from file...
 C

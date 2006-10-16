@@ -313,8 +313,7 @@ C
 #include "symmet.h"
 C
 #if defined (MOD_DNF)
-Caspg, added to provide the value of DFITXC
-#include "dftcom.h"
+#include "densfit.h"
 #endif
 C
 #include "ibtfun.h"
@@ -331,11 +330,10 @@ C for the integration of <V_{XC}[\rho_{fit}]|\alpha_k>,
 C as necessary for the use of density fitting as in the
 C Birkenheuer scheme, we start from the beginning of the
 C fit set, instead of from the beginning of the orbital set
-C
-C     write (6,*) 'debug: kmax,kmaxtot',kmax,kmaxtot
-      IF (DFITXC) THEN
+C remember that kmaxtot=nbasis(L)+nbasis(S)+nbasisaux+1
+      IF (DF_FITVXC) THEN
          ISHBEGIN=KMAX+1
-         ISHEND  =KMAXTOT
+         ISHEND  =KMAXTOT - 1
       ELSE
 #endif
          ISHBEGIN=1

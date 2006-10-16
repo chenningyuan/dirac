@@ -385,6 +385,9 @@ C
 #if defined (MOD_DFT)
 #include "dftcom.h"
 #endif
+#if defined (MOD_DNF)
+#include "densfit.h"
+#endif
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -558,7 +561,7 @@ C
 C       Construct Kohn-Sham contribution
 C       ================================
 #if defined (MOD_DNF)
-        IF(DFTADD.AND..NOT.DFITXC) THEN
+        IF(DFTADD.AND..NOT.DF_FITVXC) THEN
 #else /* mod_dnf */ 
         IF(DFTADD) THEN
 #endif
@@ -1350,7 +1353,7 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
 #if defined (MOD_DNF)
-         IF(DFTADD.AND.DFITXC) THEN
+         IF(DFTADD.AND.DF_FITVXC) THEN
 C add code to calculate errks with the birkenheurer scheme here...
 C           ERRKS = DDOT(N2BBASX,DMAT,1,FOCK,1)
          ELSEIF (DFTADD) THEN 
@@ -1559,6 +1562,9 @@ C
 #include "dfterg.h"
 #include "dftcom.h"
 #endif
+#if defined (MOD_DNF)
+#include "densfit.h"
+#endif
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),
@@ -1624,7 +1630,7 @@ C...  If DFT correct for contribution from Kohn-Sham potential
 C...  to two-electron energy
       IF(DODFT) THEN
 #if defined (MOD_DNF)
-         IF (DFITXC) THEN
+         IF (DF_FITVXC) THEN
 C add code to do calculate errks for the birkenheuer scheme here
 C           ERRKS = DDOT(N2BBASX,DMAT(1,IZ,JSHELL+1),1,
 C    &                             F2(1,IZ,ISHELL+1),1)
