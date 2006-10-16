@@ -613,7 +613,18 @@ C       Gradient of density
 C       ===================
 C
         IF (DOGRHO) THEN
-          CALL GETGRHO(RHG,0,GAO,GAO1,DMAT,BUF)      
+#if defined (MOD_DNF)
+          IF (DFITXC) THEN  ! 
+            DO IXYZ = 1,3
+             IOFF = (IXYZ - 1)*NBASISAUX
+             RHG(IXYZ) = D2*DDOT(NBASISAUX,GAO1(1+IOFF),1,WORK(KCFIT),1)
+            ENDDO
+          ELSE
+#endif
+            CALL GETGRHO(RHG,0,GAO,GAO1,DMAT,BUF)      
+#if defined (MOD_DNF)
+          ENDIF
+#endif
           RHOGRD = DSQRT(RHG(1)**2 + RHG(2)**2 + RHG(3)**2)
         END IF
 C
@@ -693,7 +704,18 @@ C aspg+rbast, 2006-09-21
            IF (DFITXC) THEN ! using densifit
 C gga not working now with densfit
              IF (DOGGA .AND. .NOT.FROMVX) THEN
-               call quit('GGA not working in the dfit scheme') 
+C              call quit('GGA not working in the dfit scheme') 
+               DO I = 1,3
+                  VT(I) = VX(FZ0)*RHG(I)
+               ENDDO
+               DO I = 1, NBASISAUX
+                  WORK(KXCVEC - 1 + I) = WORK(KXCVEC - 1 + I)
+     &                                 + VX(FR0)*GAO(I)
+!                                        be careful with this factor D2 in DALTON
+     &                                 + D2*VT(1)*GAO1(1)
+     &                                 + D2*VT(2)*GAO1(1 + NBASISAUX)
+     &                                 + D2*VT(3)*GAO1(1 + NBASISAUX*2)
+               ENDDO
              ELSE
                DO I = 1, NBASISAUX
                   WORK(KXCVEC - 1 + I) = WORK(KXCVEC - 1 + I)
