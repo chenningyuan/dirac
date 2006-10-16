@@ -3784,7 +3784,8 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
       PARAMETER (NZ   = 4)
-      PARAMETER (NREF = 38)
+!     PARAMETER (NREF = 38) !se
+      PARAMETER (NREF = 86) !po
       PARAMETER (NMOL = 2)
       PARAMETER (NTOT = NREF + NMOL)
 
@@ -3805,7 +3806,7 @@ C=======================================================================
 
 #include "memint.h"
 
-      IHOMO = NISH(1)
+      IHOMO = NISH(1)/2
       ILUMO = IHOMO + 1
 
       DO I = 1,4
