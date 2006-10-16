@@ -3785,7 +3785,7 @@ C=======================================================================
 
       PARAMETER (NZ   = 4)
 !     PARAMETER (NREF = 38) !se
-      PARAMETER (NREF = 86) !po
+      PARAMETER (NREF = 88) !po
       PARAMETER (NMOL = 2)
       PARAMETER (NTOT = NREF + NMOL)
 
@@ -3806,8 +3806,8 @@ C=======================================================================
 
 #include "memint.h"
 
-      IHOMO = NISH(1)/2
-      ILUMO = IHOMO + 1
+!     IHOMO = ...
+!     ILUMO = ...
 
       DO I = 1,4
         IQ(I) = I
@@ -3911,16 +3911,16 @@ C=======================================================================
         WRITE(LUPRI,'(2I6,6F16.8)') INDK, INDL, ZVEC(IND(I)),
      &                              ZMAT(INDK,INDL),
      &                             (TMAT(INDK,INDL,IZ),IZ=1,NZ)
-        IF((INDK.EQ.IHOMO).AND.(INDL.EQ.ILUMO)) THEN
-          WRITE(LUPRI,*) 'GRADANA: QMAT homo-lumo'
-          DO MYZ = 1,NZ
-            WRITE(LUPRI,*) MYZ, QMAT(INDK,INDL,MYZ)
-          ENDDO
-          WRITE(LUPRI,*) 'GRADANA: QMAT lumo-homo'
-          DO MYZ = 1,NZ
-            WRITE(LUPRI,*) MYZ, QMAT(INDL,INDK,MYZ)
-          ENDDO
-        ENDIF
+!       IF((INDK.EQ.IHOMO).AND.(INDL.EQ.ILUMO)) THEN
+!         WRITE(LUPRI,*) 'GRADANA: QMAT homo-lumo'
+!         DO MYZ = 1,NZ
+!           WRITE(LUPRI,*) MYZ, QMAT(INDK,INDL,MYZ)
+!         ENDDO
+!         WRITE(LUPRI,*) 'GRADANA: QMAT lumo-homo'
+!         DO MYZ = 1,NZ
+!           WRITE(LUPRI,*) MYZ, QMAT(INDL,INDK,MYZ)
+!         ENDDO
+!       ENDIF
       ENDDO
 
       GOTO 10
