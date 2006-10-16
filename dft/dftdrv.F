@@ -617,7 +617,8 @@ C
           IF (DFITXC) THEN  ! 
             DO IXYZ = 1,3
              IOFF = (IXYZ - 1)*NBASISAUX
-             RHG(IXYZ) = D2*DDOT(NBASISAUX,GAO1(1+IOFF),1,WORK(KCFIT),1)
+             RHG(IXYZ) = 
+     &          D2*DDOT(NBASISAUX,GAO1(1+IOFF,IXYZ),1,WORK(KCFIT),1)
             ENDDO
           ELSE
 #endif
@@ -709,12 +710,12 @@ C              call quit('GGA not working in the dfit scheme')
                   VT(I) = VX(FZ0)*RHG(I)
                ENDDO
                DO I = 1, NBASISAUX
-                  WORK(KXCVEC - 1 + I) = WORK(KXCVEC - 1 + I)
-     &                                 + VX(FR0)*GAO(I)
+                  WORK(KXCVEC - 1 + I)= WORK(KXCVEC - 1 + I)
+     &                                + VX(FR0)*GAO(I)
 !                                        be careful with this factor D2 in DALTON
-     &                                 + D2*VT(1)*GAO1(1)
-     &                                 + D2*VT(2)*GAO1(1 + NBASISAUX)
-     &                                 + D2*VT(3)*GAO1(1 + NBASISAUX*2)
+     &                                + D2*VT(1)*GAO1(1,1)
+     &                                + D2*VT(2)*GAO1(1 + NBASISAUX,2)
+     &                                + D2*VT(3)*GAO1(1 + NBASISAUX*2,3)
                ENDDO
              ELSE
                DO I = 1, NBASISAUX
