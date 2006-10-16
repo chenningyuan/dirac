@@ -397,7 +397,6 @@ C***********************************************************************
       DIMENSION DMAT(*),CMO(*)
 C
       CALL QENTER('DENMAT')
-
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
       IDEN = 1
       IF(VACPOL.AND..NOT.ALTVAC) THEN
@@ -711,7 +710,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck altvac */
+C  /* Deck genaltvac */
       SUBROUTINE GENALTVAC(DMAT,CMO,IPRINT)
 C*****************************************************************************
 C
