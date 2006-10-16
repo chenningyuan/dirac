@@ -90,7 +90,7 @@ C     -------------------------------------------
 C
 C     Note: t stands for hermitian conjungation
 C     Fmo = FDmo + DVmo * FVmo * (DCmo - DSmo)t + H.C.
-C         = FDmo + Ct Sao DVao FVao (beta DCao + gamma DSao)t Sao C + H.C
+C         = FDmo + Ct Sao [DVao FVao (beta DCao + gamma DSao)t] Sao C + H.C
 C     where beta  = alpha*f
 C     and   gamma = a-1
 C
@@ -101,10 +101,10 @@ C
 C     Open shells that do couple:
 C     ---------------------------
 C
-C     See paper by J. Thyssen
-C     (reference: manuscript)
+C     See thesis of J. Thyssen
 C
-C        Transform FD to MO-basis
+C     Transform FD to MO-basis
+C     ========================
 C
       DO I = 1,NFSYM
       IF(NORB(I).GT.0) THEN
@@ -121,7 +121,6 @@ C
         ENDIF
 
         IF(IPRSCF.GE.10) THEN
-CMI         ... more of the output desired
          CALL HEADER(
      &    'MKMOFK: Entering Fock AO matrix - closed shell part',-1)
           WRITE(LUPRI,'(A,I1,A,I1)')
@@ -157,39 +156,53 @@ C
          GOTO 30
       END IF
 C
-C
 C     Construct coupling operator L
-C
+C     =============================
 C
       IF(.NOT.AOC) GOTO 30
+C
       DO 10 IOPEN = 1,NOPEN
 C
          BETA  = DALPHA(IOPEN)*DF(IOPEN)
          GAMMA = DA(IOPEN)-D1
          IF (IPRSCF.GE.8) THEN
-            WRITE(LUPRI,'(A,I1,A,F10.6)') 
+           WRITE(LUPRI,'(A,I1,A,F10.6)') 
      &         'MKMOFK: BETA  factor, open shell ',IOPEN,' : ',BETA
-            WRITE(LUPRI,'(A,I1,A,F10.6)') 
+           WRITE(LUPRI,'(A,I1,A,F10.6)') 
      &         'MKMOFK: GAMMA factor, open shell ',IOPEN,' : ',GAMMA
          END IF
 C
-C
 C        Get secondary density matrices as projection operator
 C        in AO-basis
+C        IFLAG = 4 + 8 = 12
+C          4 - 000100: Secondary electron density matrix
+C          8 - 001000: Secondary positron density matrix
 C
-         CALL GENDEN(DTEMP1,CMO,12,IPRSCF)
+         IF(VACPOL) THEN
+C..........negative energy solutions are occupied
+           IFLAG = 4
+         ELSE
+           IFLAG = 12
+         ENDIF
+         CALL GENDEN(DTEMP1,CMO,IFLAG,IPRSCF)
 C
 C        Construct the projection operator:
 C         BETA DCao + GAMMA DSao
 C           = alpha*f DCao + (a_o-1)*DSao
 C
          CALL DSCAL(N2BBASXQ,GAMMA,DTEMP1(1,1),1)
-         CALL DAXPY(N2BBASXQ,BETA,DMAT(1,1),1,DTEMP1(1,1),1)
+         IF(VACPOL) THEN
+C..........negative energy solutions are occupied
+           IFLAG = 9
+           CALL GENDEN(DTEMP1(1,2),CMO,IFLAG,IPRSCF)
+           CALL DAXPY(N2BBASXQ,BETA,DTEMP1(1,2),1,DTEMP1(1,1),1)
+         ELSE
+           CALL DAXPY(N2BBASXQ,BETA,DMAT(1,1),1,DTEMP1(1,1),1)
+         ENDIF
 C........also include contribution to active-active block !
 C........add factor half since this is a diagonal block
          FAC = GAMMA*DP5
          CALL DAXPY(N2BBASXQ,FAC,DMAT(1,1+IOPEN),1,DTEMP1(1,1),1)
-C
 C
          IOFFTDINV = 1
          DO 20 I = 1,NFSYM

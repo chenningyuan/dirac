@@ -443,7 +443,6 @@ C
       CALL GETTIM(CTIDSTR,WTIDSTR)
 
 CMI  ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. (dcbham.h)
-
 C
 C     Get 2-electron Fock matrix (save in CMO)
 C     ========================================
@@ -681,8 +680,12 @@ C
         DLSHIF = DLBUF
       ENDIF
 C
+C     Add vacuum polarisation in case of ONESYS
+C
+      IF(ONESYS.AND.VACPOL) THEN
+        CALL ONEVAC(CMO,EIG,IBEIG,FOCK,WORK(KFREE),LFREE)
+      ENDIF
 CMI   ... when (DO4C2C.AND..NOT.CONT2C)=.true.,  !
-CMI   IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG,IBEIG)
       IF(BARNUC.OR.TRIFCK.AND..NOT.DO4C2C) CALL ONEERG(EIG,IBEIG)
 
       IF (DO4C2C.AND..NOT.ONESYS) THEN
@@ -1141,8 +1144,10 @@ C       integral classes are inactive (keep the code simple)
         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
         NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
         NPOS = NPOS + NSMLBL*NLRGBL
+        CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      ELSE
+        KPOS = KFREE
       ENDIF
-      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 C
 C     Initiate/restart SCF-cycle
 C
@@ -4359,7 +4364,7 @@ C.....transform coefficients to orthonormal basis --> COFU
      &                 NFBAS(IFRP,0),NTMO(IFRP),NZ,
      &              D0,IPQTOQ(1,0),COFU(I2TMOT(IFRP)+1),
      &                 NTMO(IFRP),NTMO(IFRP),NZ)
-        IF(IPRINT.GT.10) THEN
+        IF(IPRINT.GE.10) THEN
           WRITE(LUPRI,'(A,I2)') 
      &     'PRECMOS: Coefficients in SO-basis, fermion ircop ',IFRP
           CALL PRQMAT(COFT(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NTMO(IFRP),
@@ -4429,3 +4434,75 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck onesys */
+      SUBROUTINE ONEVAC(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
+C***********************************************************************
+C
+C     For one-electron system add vacuum polarization potential
+C     and rediagonalize
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0)
+C
+#include "maxorb.h"
+#include "aovec.h"
+C
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "blocks.h"
+      DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),WORK(*),NB(2)
+C
+#include "memint.h"
+C
+C     Some memory allocation
+C
+      CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      IF(PARCAL) THEN
+C       We will always allocate the maximum size, even if some 
+C       integral classes are inactive (keep the code simple)
+        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
+        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
+        NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
+        NPOS = NPOS + NSMLBL*NLRGBL
+        CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      ELSE
+        KPOS = KFREE
+      ENDIF
+C
+C     Modify some variables to make things work...
+C
+      ONESYS = .FALSE.
+      NFMAT  = 1
+      NOPEN  = 0
+      DO IFRP = 1,NFSYM
+        NB(IFRP) = NISH(IFRP)
+        NISH(IFRP) = 0
+      ENDDO
+      HFXFAC = D0
+C
+C     Solve one-electron system with vacuum polarisation added.
+C
+      CALL PREDHF(CMO,EIG,IBEIG,FOCK,WORK(KDMAT),DUM,WORK(KPOS),
+     &            WORK(KFREE),LFREE)
+C
+C     Reset variables
+C
+      ONESYS = .TRUE.
+      DO IFRP = 1,NFSYM
+        NISH(IFRP) = NB(IFRP)
+      ENDDO
+C
+C     Release memory
+      CALL MEMREL('ONEVAC',WORK,1,KWORK,KFREE,LFREE)
+C
+      RETURN
+      END
+
+
