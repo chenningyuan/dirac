@@ -4491,7 +4491,6 @@ C
         NB(IFRP) = NISH(IFRP)
         NISH(IFRP) = 0
       ENDDO
-      HFXFAC = D0
 C
 C     Solve one-electron system with vacuum polarisation added.
 C
