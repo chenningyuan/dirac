@@ -38,7 +38,7 @@ C
 *                                                                     *
 ***********************************************************************
 *
-      SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF)
+      SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT)
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
@@ -67,6 +67,13 @@ C
 #include "intform.inc"
 #include "comjep.inc"
 #include "cc_exc.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar.inc"
+
 *
 C     COMMON/CSFBAS/KDFTP,KCFTP,KDTOC,KICONF(MXCNSM),KTPFCN(MXCNSM),
 C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
@@ -98,51 +105,52 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
 *. CI not CC
       ICC_EXC = 0
 *
-      IF(NTEST.GE.1) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ====================================='
-        WRITE(6,*) ' Control has been transferred to GASCI'
-        WRITE(6,*) ' ====================================='
-        WRITE(6,*)
-      END IF
+C      IF(NTEST.GE.1) THEN
+        WRITE(LUWRTOUT,*)
+        WRITE(LUWRTOUT,*) ' ====================================='
+        WRITE(LUWRTOUT,*) ' Control has been transferred to GASCI'
+        WRITE(LUWRTOUT,*) ' ====================================='
+        WRITE(LUWRTOUT,*)
+C      END IF
       IF(NTEST.GE.5) THEN
-        WRITE(6,'(A)') '  A few pertinent data : '
-        WRITE(6,*)
-        WRITE(6,'(A,I2)') '  CI space         ',ISPC
-        WRITE(6,*)
-        WRITE(6,*) ' Number of GAS spaces included ',LCMBSPC(ISPC)
-        WRITE(6,'(A,10I3)') '  GAS spaces included           ',
+        WRITE(LUWRTOUT,'(A)') '  A few pertinent data : '
+        WRITE(LUWRTOUT,*)
+        WRITE(LUWRTOUT,'(A,I2)') '  CI space         ',ISPC
+        WRITE(LUWRTOUT,*)
+        WRITE(LUWRTOUT,*) ' Number of GAS spaces included '
+     &,LCMBSPC(ISPC)
+        WRITE(LUWRTOUT,'(A,10I3)') '  GAS spaces included           ',
      &               (ICMBSPC(II,ISPC),II=1,LCMBSPC(ISPC))
-        WRITE(6,*)
-        WRITE(6,*) ' Occupation constraints : '
-        WRITE(6,*) '========================= '
-        WRITE(6,*)
-        WRITE(6,*)
+        WRITE(LUWRTOUT,*)
+        WRITE(LUWRTOUT,*) ' Occupation constraints : '
+        WRITE(LUWRTOUT,*) '========================= '
+        WRITE(LUWRTOUT,*)
+        WRITE(LUWRTOUT,*)
         DO JJGASSPC = 1, LCMBSPC(ISPC)
          JGASSPC = ICMBSPC(JJGASSPC,ISPC)
-        WRITE(6,*)
+        WRITE(LUWRTOUT,*)
      &  ' Gas space  Min acc. occupation Max acc. occupation '
-        WRITE(6,*)
+        WRITE(LUWRTOUT,*)
      &  ' ================================================== '
         DO IGAS = 1, NGAS
-          WRITE(6,'(3X,I2,13X,I3,16X,I3)') IGAS,
+          WRITE(LUWRTOUT,'(3X,I2,13X,I3,16X,I3)') IGAS,
      &     IGSOCCX(IGAS,1,JGASSPC),IGSOCCX(IGAS,2,JGASSPC)
         END DO
         END DO
 *
        END IF
 *
-      WRITE(6,*)
+      WRITE(LUWRTOUT,*)
       NDET = XISPSM(ISM,ISPC)
       NEL = NELCI(ISPC)
-      WRITE(6,*) ' Number of determinants/combinations  ',NDET
+      WRITE(LUWRTOUT,*) ' Number of determinants/combinations  ',NDET
       IF(NDET.EQ.0) THEN
-       WRITE(6,*) ' The number of determinants/combinations is zero.'
-       WRITE(6,*) ' I am sure that fascinating discussions about '
-       WRITE(6,*) ' the energy of such a wave function exists, '
-       WRITE(6,*) ' but I am just a dumb program, so I will stop'
-       WRITE(6,*)
-       WRITE(6,*) ' GASCI : Vanishing number of parameters '
+       WRITE(LUOUT,*) 'the number of determinants/combinations is zero.'
+       WRITE(LUOUT,*) ' I am sure that fascinating discussions about '
+       WRITE(LUOUT,*) ' the energy of such a wave function exists, '
+       WRITE(LUOUT,*) ' but I am just a dumb program, so I will stop'
+       WRITE(LUOUT,*)
+       WRITE(LUOUT,*) ' GASCI : Vanishing number of parameters '
        Call Abend2(' GASCI : Vanishing number of parameters ')
       END IF
 *.Transfer to CANDS
@@ -159,7 +167,7 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
         NVAR = NCSASM(ISM)
       END  IF
       IF(IPRNT.GE.5)
-     &WRITE(6,*) '  NVAR in GASCI ', NVAR
+     &WRITE(LUOUT,*) '  NVAR in GASCI ', NVAR
 *. Allocate memory for diagonalization
       IF(ICISTR.EQ.1) THEN
         LBLOCK = NDET
@@ -209,7 +217,8 @@ CTF
 *. Number of BLOCKS
         NBLOCK = IFRMR(WORK(KLCI1BT),1,NBATCH)
      &         + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
-        WRITE(6,*) ' Number of blocks ', NBLOCK
+        WRITE(LUWRTOUT,*) ' Number of blocks ', NBLOCK
+        WRITE(LUWRTOUT,*) ' Number of batches ', NBATCH
 *. Length of each block
       CALL EXTRROW(WORK(KLCIBT),8,8,NBLOCK,WORK(KLCI1BT))
 *. Class divisions of  dets
@@ -301,7 +310,7 @@ C?      WRITE(6,*) ' MAXB1 2', MAXB1
         MAXB = MAX(MAXB,MAXB1)
       END IF
       MXSTBL = MAX(MAXA,MAXB,MXSTBL0)
-      IF(IPRCIX.GE.2 ) WRITE(6,*)
+      IF(IPRCIX.GE.2 ) WRITE(LUWRTOUT,*)
      &' Largest block of strings with given symmetry and type',MXSTBL
 *. Largest number of resolution strings and spectator strings
 *  that can be treated simultaneously
@@ -320,17 +329,20 @@ C?      WRITE(6,*) ' MAXB1 2', MAXB1
      &              MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK,
      &              IPHGAS,NHLFSPGP,MNHL,IADVICE)
         IF(IPRCIX.GE.2) THEN
-          WRITE(6,*) 'GASCI  : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
+         WRITE(LUWRTOUT,*) 'GASCI  : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
      &                         MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
-           WRITE(6,*) 'GASCI  : MXADKBLK ', MXADKBLK
+         WRITE(LUWRTOUT,*) 'GASCI  : MXADKBLK ', MXADKBLK
         END IF
         LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB)
         IF(IPRCIX.GE.2)
-     &  WRITE(6,*) ' Space for resolution matrices ',LSCR2
+     &  WRITE(LUWRTOUT,*) ' Space for resolution matrices ',LSCR2
 *. for Passive/active division
         LSCR12 = MAX(LBLOCK,2*LSCR2)
 C       LSCR12 = MAX(LBLOCK,4*LSCR2)
         CALL MEMMAN(KVEC3,LSCR12,'ADDL  ',2,'KC2   ')
+      END IF
+      IF(MYPROC.EQ.MASTER)THEN
+         WRITE(6,*)'LBLOCK = ',LBLOCK
       END IF
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
@@ -351,9 +363,9 @@ C       LSCR12 = MAX(LBLOCK,4*LSCR2)
           CALL REWINO(LUDIA)
           CALL TODSC(WORK(KVEC1),NVAR,-1,LUDIA)
         END IF
-        IF(IPRCIX.GE.2) WRITE(6,*) ' Diagonal constructed  '
+        IF(IPRCIX.GE.2) WRITE(LUWRTOUT,*) ' Diagonal constructed  '
       ELSE
-         WRITE(6,*) ' Diagonal not calculated '
+         WRITE(LUWRTOUT,*) ' Diagonal not calculated '
       END IF
 *
 *. Explicit Hamiltonian
@@ -362,13 +374,13 @@ C       LSCR12 = MAX(LBLOCK,4*LSCR2)
 *
 #ifdef PERTURBATION_LUCITA
       IF(IPROCC. NE. 0 .OR. MXP1+MXP2+MXQ .NE. 0 ) THEN
-        WRITE(6,*) ' EXPHAM not implemented for GAS '
-        WRITE(6,*) ' EXPHAM not implemented for GAS '
-        WRITE(6,*) ' EXPHAM not implemented for GAS '
-        WRITE(6,*) ' EXPHAM not implemented for GAS '
-        WRITE(6,*) ' EXPHAM not implemented for GAS '
-        WRITE(6,*) ' EXPHAM not implemented for GAS '
-        WRITE(6,*) ' EXPHAM not implemented for GAS '
+        WRITE(LUOUT,*) ' EXPHAM not implemented for GAS '
+        WRITE(LUOUT,*) ' EXPHAM not implemented for GAS '
+        WRITE(LUOUT,*) ' EXPHAM not implemented for GAS '
+        WRITE(LUOUT,*) ' EXPHAM not implemented for GAS '
+        WRITE(LUOUT,*) ' EXPHAM not implemented for GAS '
+        WRITE(LUOUT,*) ' EXPHAM not implemented for GAS '
+        WRITE(LUOUT,*) ' EXPHAM not implemented for GAS '
         Call Abend2(' EXPHAM not implemented for GAS ')
         NSBDET = MXP1 + MXP2 + MXQ
         IF(NSBDET .GT. NVAR ) THEN
@@ -377,7 +389,7 @@ C       LSCR12 = MAX(LBLOCK,4*LSCR2)
 *. Reduce
            ISUB = NSBDET - NVAR
            NSBDET = NVAR
-           WRITE(6,*) ' NOTE: NSBDET lowered to ... ',NSBDET
+           WRITE(LUOUT,*) ' NOTE: NSBDET lowered to ... ',NSBDET
 *
            ISUBQ = MIN(ISUB,MXQ)
            MXQ = MXQ - ISUBQ
@@ -391,7 +403,7 @@ C       LSCR12 = MAX(LBLOCK,4*LSCR2)
            MXP1 = MXP1 - ISUBP1
            ISUB = ISUB - ISUBP1
 *
-           WRITE(6,'(/A,3I5)')
+           WRITE(LUOUT,'(/A,3I5)')
      &     ' Modified MXP1,MXP2,MXQ ',MXP1,MXP2,MXQ
         END IF
 *
@@ -461,7 +473,7 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
      &     WORK(KLCLSA),WORK(KLCLSL),WORK(KLBLKA),
      &     WORK(KLCLSD),WORK(KLCLSDT),ISKIPEI,WORK(KLC2B),WORK(KLCLSA2),
      &     LBLOCK,IROOTHOMING,WORK(KLBASSPC),WORK(KLEBASC),
-     &     WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,ISPC)
+     &     WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,ISPC,LUWRTOUT)
       EREF = EROOT(IRFROOT)
 C?    WRITE(6,*) ' Memcheck after CIEIG5'
 C?    CALL MEMCHK
@@ -478,26 +490,28 @@ CTF
       end if
 *
       CALL REWINO(LUC)
+*      write(6,*)'problem here GASCI', myproc
+      IF(MYPROC.EQ.MASTER) THEN
       DO JROOT = 1, NROOT
         if (IPRNCIV.ge.1) then
-          WRITE(6,*)
-          WRITE(6,'(1H ,A,I3)')
+          WRITE(LUWRTOUT,*)
+          WRITE(LUWRTOUT,'(1H ,A,I3)')
      &    ' **************************************************'
-          WRITE(6,'(1H ,A,I3)')
+          WRITE(LUWRTOUT,'(1H ,A,I3)')
      &    ' Analysis of occupation for ROOT = ',JROOT
-          WRITE(6,'(1H ,A,I3)')
+          WRITE(LUWRTOUT,'(1H ,A,I3)')
      &    ' **************************************************'
-          WRITE(6,*)
+          WRITE(LUWRTOUT,*)
         end if
         if (IPRDEN.ge.1) then
-          WRITE(6,*)
-          WRITE(6,'(1H ,A,I3)')
+          WRITE(LUWRTOUT,*)
+          WRITE(LUWRTOUT,'(1H ,A,I3)')
      &    ' **************************************************'
-          WRITE(6,'(1H ,A,I3)')
+          WRITE(LUWRTOUT,'(1H ,A,I3)')
      &    ' Analysis of Density and occupation for ROOT = ',JROOT
-          WRITE(6,'(1H ,A,I3)')
+          WRITE(LUWRTOUT,'(1H ,A,I3)')
      &    ' **************************************************'
-          WRITE(6,*)
+          WRITE(LUWRTOUT,*)
         end if
         IF(ICISTR.EQ.1) THEN
           CALL FRMDSC(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
@@ -534,11 +548,11 @@ CTF
           END IF
 *
           IF (IPRNCIV.EQ.2) THEN
-             WRITE(6,*)
-             WRITE(6,*) ' ======================'
-             WRITE(6,*) ' Complete CI expansion '
-             WRITE(6,*) ' ======================'
-             WRITE(6,*)
+             WRITE(LUWRTOUT,*)
+             WRITE(LUWRTOUT,*) ' ======================'
+             WRITE(LUWRTOUT,*) ' Complete CI expansion '
+             WRITE(LUWRTOUT,*) ' ======================'
+             WRITE(LUWRTOUT,*)
              IF(NROOT.EQ.1) THEN
                CALL WRTVCD(WORK(KVEC1),LUC  ,1,LBLK)
              ELSE
@@ -549,6 +563,8 @@ CTF
         END IF
         IF (NPROP.GT.0) CALL ONE_EL_PROP
       END DO
+      END IF
+*    /\ end over master
 *
 CTF
 *  If TERACI has been chosen, only 1 root is determined.
@@ -559,11 +575,11 @@ CTF
 *
        ITEST = 0
        IF(ITEST.EQ.1.AND.IDENSI.EQ.2) THEN
-         WRITE(6,*) 'calling EN_FROM_DEN'
+         WRITE(LUOUT,*) 'calling EN_FROM_DEN'
          CALL EN_FROM_DENS(ENERGY,2)
-         WRITE(6,'(A,F24.12)')
+         WRITE(LUOUT,'(A,F24.12)')
      &   ' Energy from EN_FROM_DEN',ENERGY
-         WRITE(6,*) ' Construct fock matrix '
+         WRITE(LUOUT,*) ' Construct fock matrix '
          CALL MEMMAN(KLFOO,NTOOB**2,'ADDL  ',2,'FOO   ')
          CALL FOCK_MAT(WORK(KLFOO),2)
        END IF
@@ -571,9 +587,11 @@ CTF
 *. Regenerate densities for reference root
 *
 C?     write(6,*) ' IRFROOT and NROOT ',IRFROOT, NROOT
+       IF(MYPROC.EQ.MASTER) THEN
        IF(IH0ROOT.NE.NROOT) THEN
 *. Position vectors
          CALL REWINO(LUC)
+*         write(6,*)'problem here GASCI (1)', myproc
          DO JROOT = 1, IH0ROOT
            IF(ICISTR.EQ.1) THEN
              CALL FRMDSC(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
@@ -596,17 +614,20 @@ COLD &                 LUSC1,LUSC2,1)
      &            WORK(KVEC1),WORK(KVEC2),LUSC1,LUSC2,EXPS2)
          END IF
        END IF
+       END IF
+*     /\ end over master
 *
        IF(IEXTKOP.EQ.1) THEN
-         WRITE(6,*) ' Control will be transferred to EXTKOP'
+         WRITE(LUOUT,*) ' Control will be transferred to EXTKOP'
          CALL EXTKOP
        END IF
 *
+*        write(6,*)'problem here GASCI (2)', myproc
 * CI respons for the final state
 *
 *. Note : DOES RESPONS for lowest state on LUC !
 * make a copy of state of interest in general
-      IF(IRESPONS.NE.0) THEN
+      IF(IRESPONS.NE.0.AND.MYPROC.EQ.MASTER) THEN
 *. Active part of energy
 C?      WRITE(6,*)
 C?   &  ' Control will be transferred to the response module'
@@ -618,6 +639,7 @@ C?      WRITE(6,*) ' Home from CI_RESPONS'
 *
       CALL MEMMAN(IDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI')
 *
+*      write(6,*)'problem here (GASCI) 3', myproc
 * Eliminate scratch units:
       close(unit=LUSC2,status='DELETE')
       close(unit=LUSC3,status='DELETE')
@@ -664,9 +686,94 @@ C      CALL SLASK
 *
 * Written by Jeppe Olsen , winter of 1991
 *                          GAS version in action summer of 95
+* 
+* Modification wrt to a parallel version
+* by Stefan Knecht in spring - summer of 2006
 *
+* This routine is originally called from the Dirac menu.
+* In the case of a parallel run, the relevant nodes will be 
+* waken up and sent to sleep.
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "priunit.h"
+#include "lucipar.inc"
+*      INTEGER IVER,ISUBV
+      DIMENSION WRK(LWRK)
+*
+*---------------Executable code--------------------------------------
+*
+      IN = LUCMD
+      IW = LUPRI
+#if defined (VAR_MPI)
+      MASTER = MPARID
+      MYPROC = MYTID
+*     Add the master node
+      NMPROC = NUMNOD + 1
+#else
+      MASTER = 0
+      MYPROC = 0
+      NMPROC = 1
+#endif
+*
+*     Summon the slaves, who are waiting in the general menu routine.
+*
+      CALL LUMSTI
+*
+*      CALL MPI_GET_VERSION(IVER,ISUBV,IERR)
+*#if MPI_VERSION == 2
+*      WRITE(6,*)'first way: MPI_VERSION is',IVER,'.',ISUBV
+*#else
+*      WRITE(6,*)'second way: MPI_VERSION is',IVER,'.',ISUBV
+*#endif
+*
+*      Enter the generic LUCITA routine (master becomes 
+*      now somewhat like primus inter parens)
+*
+      CALL PAMLU(WRK,LWRK,IN,IW)
+*
+*     Return the slaves to the general menu routine.
+*
+      CALL LUMSTE
+*
+*      CLOSE(LUCMD)
+      RETURN
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*                                                                     *
+***********************************************************************
+*
+      SUBROUTINE PAMLU(WRK,LWRK,IUNIN,IUNUT)
+*
+* L U C I A
+*
+*
+* CI for program for :FCI
+*                     RASCI
+*                     MRSDCI
+*                     GAS GAS GAS GAS GAS GAS
+*
+* Written by Jeppe Olsen , winter of 1991
+*                          GAS version in action summer of 95
+*
+* Modifications wrt to a MPI implementation by 
+* Stefan Knecht, Feb. 06 
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar.inc"
+#include "files.inc"
+#include "priunit.h"
 *. Parameters for dimensioning
 #include "mxpdim.inc"
 *.File numbers
@@ -680,16 +787,37 @@ C      CALL SLASK
 #include "cicisp.inc"
 #include "oper.inc"
 #include "cgas.inc"
+#include "luctinp.h"
 *.Memory
 #include "wrkspc.inc"
       DIMENSION WRK(LWRK)
 *.Scratch : A character line
       CHARACTER*72 CARD
+      CHARACTER*10 INTFCE,TESTFX
+      CHARACTER TESTF*8
+      INTEGER MYRNRO, IAMSER
+#if defined (VAR_MPI)
+      MASTER = MPARID
+      MYPROC = MYTID
+C     Add the master node
+      NMPROC = NUMNOD + 1
+#else
+      MASTER = 0
+      MYPROC = 0
+      NMPROC = 1
+#endif
+C
+      IN = IUNIN
+      IW = IUNUT
+      LUIN = IUNIN
+      LUOUT = IUNUT
+*
 *.
       CALL QENTER('REST ')
 *.    No floating point underflow
       CALL XUFLOW
 *. Assign diskunits
+C
       CALL DISKUN
 *
 *. Static memory, initialization and allocation
@@ -701,7 +829,8 @@ C
       MXPWRD = LWRK
       KADD = MXPWRD
       CALL MEMMAN(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
-*
+C
+C
 *
 *  Call input conversion program MOLUC (subroutine now)
 *
@@ -715,6 +844,25 @@ c     call hello
 * 1 : .Read input,insert defaults and cross check input
 * ======================================================
       CALL INPCTL(LUIN,LUCMOL,LUOUT)
+C
+*. determine the calculation mode in case of a parallel run
+*  --> coarse-grain version; --> fine-grain version; 
+*  --> hybrid version
+*
+      IF(IRUNPA.EQ.1) THEN
+*
+        IF(NMPROC.LT.2) THEN
+           WRITE (LUOUT,1234) 
+1234       FORMAT('You need more than 1 processor in a parallel run!!!')
+           CALL Abend2('STOP! Increase the number of processors!')
+        END IF
+*
+      ELSE IF(IRUNPA.EQ.0) THEN
+        IRTNDRAT = 0
+        NPARWAY = 0
+        IRUNPCG = 0
+      END IF
+*
 *. Ratio beteeen real and integer word length
       CALL ZIRAT
 *. From shells to orbitals
@@ -733,12 +881,12 @@ c     call hello
       IF(NOINT.EQ.0) THEN
         CALL INTIM(IPRORB)
       ELSE
-        WRITE(6,*) ' No integrals imported '
+        WRITE(LUOUT,*) ' No integrals imported '
       END IF
 *. READ in MO-AO matrix
       IF(NOMOFL.EQ.0) then
-        write(6,*) 'KMOAOIN not defined. '
-        write(6,*) 'And NOMOFL = ',NOMOFL
+        write(LUOUT,*) 'KMOAOIN not defined. '
+        write(LUOUT,*) 'And NOMOFL = ',NOMOFL
         Call Abend2('Quitting.')
 CTF     CALL GET_CMOAO(WORK(KMOAOIN))
       end if
@@ -750,7 +898,7 @@ CTF     CALL GET_CMOAO(WORK(KMOAOIN))
 *. Symmetry of reference
       IF(PNTGRP.GT.1) CALL MLSM(IREFSM,IREFPA,IREFSM,'CI',1)
       IF(NOINT.EQ.1) THEN
-        WRITE(6,*) ' End of calculation without integrals'
+        WRITE(LUOUT,*) ' End of calculation without integrals'
         Call Abend2(' End of calculation without integrals')
       END IF
 *
@@ -771,8 +919,8 @@ CTF     CALL GET_CMOAO(WORK(KMOAOIN))
 *
       IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0) THEN
         CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'VCSAVE')
-        WRITE(6,*) ' Restart vectors from previous run'
-        WRITE(6,*) ' will be saved on LUSC39   '
+        WRITE(LUOUT,*) ' Restart vectors from previous run'
+        WRITE(LUOUT,*) ' will be saved on LUSC39   '
 *
         IF(ICISTR.EQ.1) THEN
           LBLK = XISPSM(IREFSM,1)
@@ -808,47 +956,47 @@ CTF     CALL GET_CMOAO(WORK(KMOAOIN))
       DO JCMBSPC = 1, NCMBSPC
         ISKIPEI = 0
 *
-        WRITE(6,*)
-        WRITE(6,*)
-        WRITE(6,*)
-        WRITE(6,'(15X,A)')
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,'(15X,A)')
      &  '********************************'
-        WRITE(6,'(15X,A)')
+        WRITE(LUOUT,'(15X,A)')
      &  ' ******************************'
-        WRITE(6,*)
-        WRITE(6,'(15X,A,I3)')
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,'(15X,A,I3)')
      &  '   Calculations in space ', JCMBSPC
-        WRITE(6,*)
-        WRITE(6,'(15X,A)')
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,'(15X,A)')
      &  ' ******************************'
-        WRITE(6,'(15X,A)')
+        WRITE(LUOUT,'(15X,A)')
      &  '********************************'
-        WRITE(6,*)
-        WRITE(6,*)
-        WRITE(6,*)
-        WRITE(6,*)
-C       WRITE(6,'(A,I3)')
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*)
+C       WRITE(LUOUT,'(A,I3)')
 C    &  ' Number of calculation in this CI space ', NSEQCI(JCMBSPC)
 *. Special treatment of lambda calc in first calc
         IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0.AND.JCMBSPC.EQ.1) THEN
-          WRITE(6,*) ' Remember No restart in calc 1 (Lambda calc)'
+          WRITE(LUOUT,*) ' Remember No restart in calc 1 (Lambda calc)'
           IRESTR = 0
         END IF
 *
         I_EXPAND = 1
         IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.GT.1) THEN
-          WRITE(6,*) ' =================================='
-          WRITE(6,*) '   Modified operator will be used'
-          WRITE(6,*) '   Modified operator will be used'
-          WRITE(6,*) '   Modified operator will be used'
-          WRITE(6,*) '   Modified operator will be used'
-          WRITE(6,*) '   Modified operator will be used'
-          WRITE(6,*) '   Modified operator will be used'
-          WRITE(6,*) '   Modified operator will be used'
-          WRITE(6,*) ' =================================='
+          WRITE(LUOUT,*) ' =================================='
+          WRITE(LUOUT,*) '   Modified operator will be used'
+          WRITE(LUOUT,*) '   Modified operator will be used'
+          WRITE(LUOUT,*) '   Modified operator will be used'
+          WRITE(LUOUT,*) '   Modified operator will be used'
+          WRITE(LUOUT,*) '   Modified operator will be used'
+          WRITE(LUOUT,*) '   Modified operator will be used'
+          WRITE(LUOUT,*) '   Modified operator will be used'
+          WRITE(LUOUT,*) ' =================================='
 CMO       IF(JCMBSPC.EQ.2) THEN
 *. Obtain modified operator for lambda calculations
-CMO         WRITE(6,*) ' Operator will be modified '
+CMO         WRITE(LUOUT,*) ' Operator will be modified '
 CMO         CALL GENH1(XLAMBDA)
 CMO         CALL SCLH2(XLAMBDA)
 CMO       END IF
@@ -856,8 +1004,8 @@ CMO       END IF
 *
         IF(JCMBSPC.EQ.2.AND.IRESTR_ORIG.EQ.1.AND.XLAMBDA.NE.1.0D0)  THEN
 *.Obtain restart vectors for Lambda calculations from LUSC39
-          WRITE(6,*) ' Restart vectors will be copied to LUC'
-          WRITE(6,*) ' CI will restart with vectors from prev. calc'
+          WRITE(LUOUT,*) ' Restart vectors will be copied to LUC'
+          WRITE(LUOUT,*) ' CI will restart with vectors from prev. calc'
           IF(ICISTR.EQ.1) THEN
             LBLK = XISPSM(IREFSM,2)
           ELSE
@@ -909,7 +1057,7 @@ CMO       END IF
             ELSE
               LBLK = -1
             END IF
-C           WRITE(6,*) ' LBLK = ', LBLK
+C           WRITE(LUOUT,*) ' LBLK = ', LBLK
             CALL EXPCIV(IREFSM,ISTOSPC  ,LUIN,JCMBSPC,LUOUT,
      &                  LBLK,LUSC2,
      &                  NROOT,1,IDC,IPRDIA)
@@ -937,22 +1085,21 @@ C           WRITE(6,*) ' LBLK = ', LBLK
 C
 C
 C
+            CALL GASCI(IREFSM,JCMBSPC,IPRDIA,EREF,LUOUT)
 C
-            CALL GASCI(IREFSM,JCMBSPC,IPRDIA,EREF)
-C
-C
+*            write(6,*)'problem here?', myproc
 C
 C
 *. Modified one-electron operator in first it
             IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.EQ.1) THEN
 *. Obtain modified operator for lambda calculations
-              WRITE(6,*) ' Operator will be modified '
+              WRITE(LUOUT,*) ' Operator will be modified '
               CALL GENH1(XLAMBDA)
               CALL SCLH2(XLAMBDA)
             END IF
 *. Transform CI coeffficients
             IF(ITRACI.NE.0) THEN
-              WRITE(6,*) ' Control will be transferred to TRACI_CTL'
+              WRITE(LUOUT,*) ' Control will be transferred to TRACI_CTL'
               CALL TRACI_CTL
             END IF
 *. Last space where vectors were stored
@@ -974,7 +1121,7 @@ C
             ELSE
               LU1EFF = LUHC
             END IF
-            WRITE(6,*) ' LU1EFF in MAIN ', LU1EFF
+            WRITE(LUOUT,*) ' LU1EFF in MAIN ', LU1EFF
 *
 C           CALL DIRDIR(JCMBSPC-1,JCMBSPC,IREFSM,LUC,LEVEL,EREF,
 C    &                  LUSC2,LUSC3,LU1EFF)
@@ -984,7 +1131,7 @@ C    &                  LUSC2,LUSC3,LU1EFF)
 * ================================
 *
           ELSE IF (CARD(1:5).EQ.'PERTU'      ) THEN
-            WRITE(6,'(A)') ' Perturbation calculation '
+            WRITE(LUOUT,'(A)') ' Perturbation calculation '
             CALL PERTCTL(IREFSM,JCMBSPC,EREF)
             IF( NPROP.GT.0) THEN
 *. Perturbation expansion of properties
@@ -996,8 +1143,8 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
             END IF
 *. also perturbation expansion of EKT ??
             IF(IPTEKT.EQ.1) THEN
-              WRITE(6,*) ' Perturbation expansion of EKT '
-              WRITE(6,*) ' ============================= '
+              WRITE(LUOUT,*) ' Perturbation expansion of EKT '
+              WRITE(LUOUT,*) ' ============================= '
               CALL PTEKT(LUC,LUSC36,NPERT,IREFSM,JCMBSPC)
             END IF
           ELSE IF(CARD(1:2).EQ.'CC') THEN
@@ -1008,7 +1155,7 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
 *
 *. PH division and Passive active division is not working
             IF(IUSE_PH.NE.0.OR.IUSE_PA.NE.0) THEN
-              WRITE(6,*) ' USE_PH, USE_PA options not allowed for CC'
+              WRITE(LUOUT,*) 'USE_PH, USE_PA options not allowed for CC'
               Call Abend2(' USE_PH, USE_PA options not allowed for CC')
             END IF
             MAXIT = ISEQCI(JSEQ,JCMBSPC)
@@ -1025,7 +1172,7 @@ C     I_RESTRT_CC.EQ.1
             ELSE
               I_TRANS_WF = 0
             END IF
-            WRITE(6,*) ' I_TRANS_WF = ', I_TRANS_WF
+            WRITE(LUOUT,*) ' I_TRANS_WF = ', I_TRANS_WF
             CALL LUCIA_CC(IREFSM,JCMBSPC,IPRDIA,EREF,II_RESTRT_CC,
      &                    I_TRANS_WF)
             I_HAVE_DONE_CC = 1
@@ -1049,10 +1196,10 @@ C     I_RESTRT_CC.EQ.1
 *  ====================================
 *
       IF(ITRAPRP.NE.0) THEN
-        WRITE(6,*) ' Transition properties of final states '
-        WRITE(6,*) ' and states on file LUEXC ( unit 17 ) '
-        WRITE(6,*) ' Will be called now '
-        WRITE(6,*)
+        WRITE(LUOUT,*) ' Transition properties of final states '
+        WRITE(LUOUT,*) ' and states on file LUEXC ( unit 17 ) '
+        WRITE(LUOUT,*) ' Will be called now '
+        WRITE(LUOUT,*)
         CALL LTRAPRP
       END IF
 *
@@ -1062,7 +1209,7 @@ C     I_RESTRT_CC.EQ.1
 *
       IF(NOMOFL.EQ.0) THEN
 *. Create final set of mo's
-        WRITE(6,*) ' I am going to call FINMO '
+        WRITE(LUOUT,*) ' I am going to call FINMO '
         CALL FINMO
       END IF
 *
@@ -1083,9 +1230,11 @@ c     Call GetMem('LUCIA','Free','REAL',KBASE,MxpWrd)
       close(unit=LU91,status='DELETE')
       close(unit=LUSCR1,status='DELETE')
 *
-      Write (6,*) ' I am home from the loops '
+C
+      WRITE (LUOUT,*) '                          '
+      WRITE (LUOUT,*) ' I am home from the loops '
 *
-      CALL FLSHFO(6)
+      CALL FLSHFO(LUOUT)
 *
       END
 ***********************************************************************
@@ -1168,8 +1317,17 @@ c     Call GetMem('LUCIA','Free','REAL',KBASE,MxpWrd)
 #include "cgas.inc"
 #include "oper.inc"
 #include "machine.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar.inc"
 *./CECORE/
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
+      CHARACTER IN_MPINN*7
+      CHARACTER*11 NNIN_MPI
+      INTEGER IN_MPILL
 *
 *. Flag for compatibility with normal MOLCAS input format
       MOLCS = 1
@@ -1183,7 +1341,25 @@ c     Call GetMem('LUCIA','Free','REAL',KBASE,MxpWrd)
 *
 *  Open file LUCIAIN from MOLUC conversion program
 *
-      open(unit=LUCMOL,file='LUCIAIN',
+      IN_MPINN ="LUCIAIN"
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NNIN_MPI,'(A7,A1,I1)') IN_MPINN,'.',MYPROC
+         IN_MPILL=9
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NNIN_MPI,'(A7,A1,I2)') IN_MPINN,'.',MYPROC
+         IN_MPILL=10
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NNIN_MPI,'(A7,A1,I3)') IN_MPINN,'.',MYPROC
+         IN_MPILL=11
+      ELSE
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+      ENDIF
+#else
+      NNIN_MPI=IN_MPINN
+      IN_MPILL=7
+#endif
+      open(unit=LUCMOL,file=NNIN_MPI(1:IN_MPILL),
      &     status='OLD',form='FORMATTED')
 *
 *****************************************************************
@@ -1397,8 +1573,8 @@ C     UPPCAS(LINE,LENGTH)
                READ(LUCMOL,*) MXER4
             ELSE
                ISETKW(5) = - 1
-               WRITE(6,*) ' Illegal card for EXTSPC : '
-               WRITE(6,'(1H ,A)') CARD1
+               WRITE(LUOUT,*) ' Illegal card for EXTSPC : '
+               WRITE(LUOUT,'(1H ,A)') CARD1
                NERROR = NERROR + 1
             END IF
             GOTO 999
@@ -1949,9 +2125,9 @@ C?       WRITE(6,'(A)') CARD1
             ELSE IF(CARD1(1:5).EQ.'E0=RE') THEN
                IE0AVEX = 3
                READ(5,*) E0READ
-               WRITE(6,*) ' Zero order energy =',E0READ
+               WRITE(LUOUT,*) ' Zero order energy =',E0READ
             ELSE
-               WRITE(6,*) ' Unknown form of zero order energy '
+               WRITE(LUOUT,*) ' Unknown form of zero order energy '
                WRITE(LUOUT,'(1H ,A)') CARD1
                NERROR = NERROR + 1
             END IF
@@ -2042,11 +2218,11 @@ C?       WRITE(6,'(A)') CARD1
                ELSE IF(ITEMX(1:3).EQ.'ALL'.OR.ITEMX(1:4).EQ.'REST') THEN
 *. Only a single space must be defined in this way
                   IF(IGSFILL.NE.0) THEN
-                     WRITE(6,*)
+                     WRITE(LUOUT,*)
      &                   ' Several shell spaces defined by ALL or REST'
-                     WRITE(6,*)
+                     WRITE(LUOUT,*)
      &                   ' This confuses and upsets me '
-                     WRITE(6,*)
+                     WRITE(LUOUT,*)
      &                   '                                / Lucita '
                      ISETKW(50) = -1
                      NERROR = NERROR + 1
@@ -2055,12 +2231,12 @@ C?       WRITE(6,'(A)') CARD1
                ELSE
 *. I expect that NIRREP integers are given
                   IF(NITEM.NE.NIRREP) THEN
-                     WRITE(6,*) ' Erroneous input to GASSH : '
-                     WRITE(6,'(72A)') CARD1
-                     WRITE(6,*) ' Specify either :   NONE '
-                     WRITE(6,*) '                     ALL'
-                     WRITE(6,*) '                    REST'
-                     WRITE(6,*) ' Or NIRREP integers '
+                     WRITE(LUOUT,*) ' Erroneous input to GASSH : '
+                     WRITE(LUOUT,'(72A)') CARD1
+                     WRITE(LUOUT,*) ' Specify either :   NONE '
+                     WRITE(LUOUT,*) '                     ALL'
+                     WRITE(LUOUT,*) '                    REST'
+                     WRITE(LUOUT,*) ' Or NIRREP integers '
                      NERROR = NERROR + 1
                      ISETKW(50) = -1
                   END IF
@@ -2078,9 +2254,9 @@ CTF
             do IGS=1,NGAS,1
               do IRR=1,NIRREP,1
                 if (NGSSH(IRR,IGS).gt.MXTSOB) then
-                  write(6,*) 'Too many orbitals per GAS and symmetry!'
-                  write(6,*) 'My maximum is  ',MXTSOB
-                  write(6,*) 'Please redefine your GAS spaces.'
+                write(LUOUT,*) 'Too many orbitals per GAS and symmetry!'
+                  write(LUOUT,*) 'My maximum is  ',MXTSOB
+                  write(LUOUT,*) 'Please redefine your GAS spaces.'
                   Call Abend2( 'Quitting.' )
                 end if
               end do
@@ -2097,12 +2273,12 @@ CTF
 *. Orbital constraints in gas spaces
 *. GASSH must have been defined vefore, check this
             IF(ISETKW(50).EQ.0) THEN
-               WRITE(6,*) ' Dear User'
-               WRITE(6,*)
-               WRITE(6,*) ' GASSH must be specified before GASSPC'
-               WRITE(6,*)
+               WRITE(LUOUT,*) ' Dear User'
+               WRITE(LUOUT,*)
+               WRITE(LUOUT,*) ' GASSH must be specified before GASSPC'
+               WRITE(LUOUT,*)
      &          ' Else I do not know about the number of orbital spaces'
-               WRITE(6,*) ' So I will stop '
+               WRITE(LUOUT,*) ' So I will stop '
                Call Abend2( 'READIN: put GASSH before GASSPC' )
             END IF
             IDOGAS = 1
@@ -2125,15 +2301,17 @@ CTF
          ISETKW(52) = 1
 *. Check if SEQUEN have been specified.
          IF(ISETKW(54).EQ.1) THEN
-           WRITE(6,*) ' Dear user '
-           WRITE(6,*)
-           WRITE(6,*)' SEQUEN flag has been specified before CMBSPC'
-           WRITE(6,*)' This confuses me and makes me wonder what the'
-           WRITE(6,*)' meaning of everything is. '
-           WRITE(6,*)' Please ensure that CMPSPC is given before SEQUEN'
-           WRITE(6,*)
-           WRITE(6,*)'                                  Lucita  '
-           WRITE(6,*)
+           WRITE(LUOUT,*) ' Dear user '
+           WRITE(LUOUT,*)
+           WRITE(LUOUT,*)' SEQUEN flag has been specified before CMBSPC'
+           WRITE(LUOUT,*)' This confuses me and makes me wonder 
+     & what the'
+           WRITE(LUOUT,*)' meaning of everything is. '
+           WRITE(LUOUT,*)' Please ensure that CMPSPC is given 
+     &before SEQUEN'
+           WRITE(LUOUT,*)
+           WRITE(LUOUT,*)'                                  Lucita  '
+           WRITE(LUOUT,*)
            Call Abend2( 'READIN: Specify CMBSPC before SEQUEN' )
          END IF
 *. Number of combination spaces
@@ -2216,11 +2394,11 @@ CTF
 *. defined presently, so flag by a minus and insert later
 *
 * At the moment : I want MAXIT as the second entry
-                     WRITE(6,*)
+                     WRITE(LUOUT,*)
      &                   ' ERROR :  Number_of_iterations not specified'
-                     WRITE(6,*)
+                     WRITE(LUOUT,*)
      &                   ' Required form of CI card is : '
-                     WRITE(6,*) ' CI , Number_of_iterations'
+                     WRITE(LUOUT,*) ' CI , Number_of_iterations'
                      ISEQCI(ICI,JCMBSPC) = -1
                      NERROR = NERROR + 1
                      ISETKW(54) = -1
@@ -2259,11 +2437,11 @@ CTF
 *              LEVEL = 4 => Level 2 + MP4 in next space
 *
                   IF(NITEM.EQ.1) THEN
-                     WRITE(6,*)
+                     WRITE(LUOUT,*)
      &                    ' ERROR :  Level parameter not specified'
-                     WRITE(6,*)
+                     WRITE(LUOUT,*)
      &                    ' Required form of VECFREE card is : '
-                     WRITE(6,*) ' VECFREE , LEVEL'
+                     WRITE(LUOUT,*) ' VECFREE , LEVEL'
                      ISEQCI(ICI,JCMBSPC) = -1
                      NERROR = NERROR + 1
                   ELSE
@@ -2278,18 +2456,18 @@ CTF
 *. Coupled Cluster calculation
 * ==============================
 *
-                  WRITE(6,*) ' CC routines will be called '
+                  WRITE(LUOUT,*) ' CC routines will be called '
                   I_DO_CC = 1
 *. Last calculation which is CC
                   LAST_CC_SPC = JCMBSPC
                   LAST_CC_RUN = ICI
                   IF(NITEM.EQ.1) THEN
 * At the moment : I want MAXIT as the second entry
-                     WRITE(6,*)
+                     WRITE(LUOUT,*)
      &                    ' ERROR :  Number_of_iterations not specified'
-                     WRITE(6,*)
+                     WRITE(LUOUT,*)
      &                    ' Required form of CC card is : '
-                     WRITE(6,*) ' CC , Number_of_iterations'
+                     WRITE(LUOUT,*) ' CC , Number_of_iterations'
                      ISEQCI(ICI,JCMBSPC) = -1
                      NERROR = NERROR + 1
                      ISETKW(54) = -1
@@ -2303,28 +2481,28 @@ CTF
 *. Internal contracted CI calculation
 * ==============================
 *
-                  WRITE(6,*) ' ICCI routines will be called '
+                  WRITE(LUOUT,*) ' ICCI routines will be called '
                ELSE IF(CARDX(1:4).EQ.'ICPT' ) THEN
 *
 * ==============================
 *. Internal contracted PT calculation
 * ==============================
 *
-                  WRITE(6,*) ' Internal contracted PT '
+                  WRITE(LUOUT,*) ' Internal contracted PT '
                ELSE
 *
-                  WRITE(6,'(A,A)')
+                  WRITE(LUOUT,'(A,A)')
      &              ' Unknown type of calculation specified in SEQUEN',
      &                 CARDX
-                  WRITE(6,*) ' Allowed ENTRIES : '
-                  WRITE(6,*) ' ================='
-                  WRITE(6,*) '     CI'
-                  WRITE(6,*) '     APR_CI'
-                  WRITE(6,*) '     PERTU '
-                  WRITE(6,*) '     VECFREE'
-                  WRITE(6,*) '     CC     '
-                  WRITE(6,*) '     ICCI   '
-                  WRITE(6,*) '     ICPT   '
+                  WRITE(LUOUT,*) ' Allowed ENTRIES : '
+                  WRITE(LUOUT,*) ' ================='
+                  WRITE(LUOUT,*) '     CI'
+                  WRITE(LUOUT,*) '     APR_CI'
+                  WRITE(LUOUT,*) '     PERTU '
+                  WRITE(LUOUT,*) '     VECFREE'
+                  WRITE(LUOUT,*) '     CC     '
+                  WRITE(LUOUT,*) '     ICCI   '
+                  WRITE(LUOUT,*) '     ICPT   '
                   NERROR = NERROR + 1
                   ISETKW(54) = -1
                END IF
@@ -2384,12 +2562,12 @@ C?       WRITE(6,'(A,A)') ' Machine = ', MACHINE
       IF(CARD(2:6).EQ.'H0SPC') THEN
 *. Ensure that number of GASSPACES have been defined
          IF(ISETKW(50).EQ.0) THEN
-            WRITE(6,*) ' Dear User'
-            WRITE(6,*)
-            WRITE(6,*) ' GASSH must be specified before H0SPC'
-            WRITE(6,*)
+            WRITE(LUOUT,*) ' Dear User'
+            WRITE(LUOUT,*)
+            WRITE(LUOUT,*) ' GASSH must be specified before H0SPC'
+            WRITE(LUOUT,*)
      &         ' Else I do not know about the number of orbital spaces'
-            WRITE(6,*) ' So I will stop '
+            WRITE(LUOUT,*) ' So I will stop '
             Call Abend2( 'READIN: put GASSH before H0SPC ' )
          END IF
          READ(LUCMOL,*) NPTSPC
@@ -2421,12 +2599,12 @@ C          END DO
       IF(CARD(2:6).EQ.'H0FRM') THEN
 *. Ensure that number of Perturbation subspaces have been defined
          IF(ISETKW(58).EQ.0) THEN
-            WRITE(6,*) ' Dear User'
-            WRITE(6,*)
-            WRITE(6,*) ' H0SPC must be specified before H0FRM'
-            WRITE(6,*)
+            WRITE(LUOUT,*) ' Dear User'
+            WRITE(LUOUT,*)
+            WRITE(LUOUT,*) ' H0SPC must be specified before H0FRM'
+            WRITE(LUOUT,*)
      &           ' Else I do not know about the number of spaces'
-            WRITE(6,*) ' So I will stop '
+            WRITE(LUOUT,*) ' So I will stop '
             Call Abend2( 'READIN: put H0SPC before H0FRM ' )
          END IF
 *. Type of perturbation in this subspace
@@ -2536,7 +2714,7 @@ C?       WRITE(6,*) (IH0EXSPC(I),I=1, NH0EXSPC)
 *. Change to upper case
          CALL UPPCAS(CARD1,MXPLNC)
 *
-         WRITE(6,'(A,A)')
+         WRITE(LUOUT,'(A,A)')
      &        ' Type of final orbitals ',CARD1
          ISETKW(68) = 1
 *
@@ -2563,17 +2741,17 @@ C?       WRITE(6,*) (IH0EXSPC(I),I=1, NH0EXSPC)
             END DO
          ELSE
 *. Unidentified type of final orbitals
-            WRITE(6,*) ' Unidentified type of final orbitals'
-            WRITE(6,'(A,A)') '  you suggested : ', CARD1
-            WRITE(6,*)
-            WRITE(6,*) ' Allowed types of final orbitals'
-            WRITE(6,*) ' ==============================='
-            WRITE(6,*)
-            WRITE(6,*) '     NATUR'
-            WRITE(6,*) '     CANON'
-            WRITE(6,*) '     PS_NAT'
-            WRITE(6,*) '     PS_CAN'
-            WRITE(6,*) '     PS_NC'
+            WRITE(LUOUT,*) ' Unidentified type of final orbitals'
+            WRITE(LUOUT,'(A,A)') '  you suggested : ', CARD1
+            WRITE(LUOUT,*)
+            WRITE(LUOUT,*) ' Allowed types of final orbitals'
+            WRITE(LUOUT,*) ' ==============================='
+            WRITE(LUOUT,*)
+            WRITE(LUOUT,*) '     NATUR'
+            WRITE(LUOUT,*) '     CANON'
+            WRITE(LUOUT,*) '     PS_NAT'
+            WRITE(LUOUT,*) '     PS_CAN'
+            WRITE(LUOUT,*) '     PS_NC'
             NERROR = NERROR + 1
             ISETKW(68) = - 1
          END IF
@@ -2660,7 +2838,7 @@ C?       WRITE(6,*) (IH0EXSPC(I),I=1, NH0EXSPC)
 *. Number of EKT to be analyzed, atmost 20
          READ(5,*)  NPTEKT
          IF(NPTEKT.GT.20) THEN
-            WRITE(6,*) ' Atmost 20 perturbation expansions'
+            WRITE(LUOUT,*) ' Atmost 20 perturbation expansions'
             Call Abend2( ' NPTEKT in .PTEKT to Large ' )
          END IF
 *. orbital and symmetry for zero order solution
@@ -2691,7 +2869,7 @@ C        WRITE(6,*) ' Reference Root = ',IH0ROOT
       IF(CARD(2:7).EQ.'NORST2') THEN
          ISETKW(77) = 1
          IRST2 =  0
-         WRITE(6,*) ' NORST2 flag read '
+         WRITE(LUOUT,*) ' NORST2 flag read '
          GOTO 999
       END IF
 *
@@ -2702,7 +2880,7 @@ C        WRITE(6,*) ' Reference Root = ',IH0ROOT
       IF(CARD(2:7).EQ.'SKIPEI') THEN
          ISETKW(78) = 1
          ISKIPEI =  1
-         WRITE(6,*) ' SKIPEI flag set  '
+         WRITE(LUOUT,*) ' SKIPEI flag set  '
          GOTO 999
       END IF
 *
@@ -2779,10 +2957,10 @@ C        READ(LUCMOL,*) NEXCSTATE
          CALL DECODE_LINE(CARD1,MXPLNC,NITEM,ITEM,MX_ITEM)
          N_AVE_OP = NITEM
          IF(N_AVE_OP.GT. MXNRESP) THEN
-            WRITE(6,*) ' READIN : Error for keyword RESPON'
-            WRITE(6,*) ' Specified number of A ops = ', N_AVE_OP
-            WRITE(6,*) ' Larger than MAX = ', MXNRESP
-            WRITE(6,*) ' PLEASE reduce NAVE_OP and RETURN '
+            WRITE(LUOUT,*) ' READIN : Error for keyword RESPON'
+            WRITE(LUOUT,*) ' Specified number of A ops = ', N_AVE_OP
+            WRITE(LUOUT,*) ' Larger than MAX = ', MXNRESP
+            WRITE(LUOUT,*) ' PLEASE reduce NAVE_OP and RETURN '
             Call Abend2( ' READIN, KEYWORD RESPON : NAVE_OP .gt. 20 ' )
          END IF
          DO JITEM = 1, NITEM
@@ -2791,10 +2969,10 @@ C        READ(LUCMOL,*) NEXCSTATE
 *. Number of respons calculations to be performed
          READ(LUCMOL,*) NRESP
          IF(NRESP.GT. MXNRESP) THEN
-            WRITE(6,*) ' READIN : Error for keyword RESPON'
-            WRITE(6,*) ' Specified number of calcs = ', NRESP
-            WRITE(6,*) ' Larger than MAX = ', MXNRESP
-            WRITE(6,*) ' PLEASE reduce NRESP and RETURN '
+            WRITE(LUOUT,*) ' READIN : Error for keyword RESPON'
+            WRITE(LUOUT,*) ' Specified number of calcs = ', NRESP
+            WRITE(LUOUT,*) ' Larger than MAX = ', MXNRESP
+            WRITE(LUOUT,*) ' PLEASE reduce NRESP and RETURN '
             Call Abend2( ' READIN, KEYWORD RESPON : NRESP .gt. 20 ' )
          END IF
          DO IRESP = 1, NRESP
@@ -2886,9 +3064,9 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
          CALL UPPCAS(CARD1,MXPLNC)
          CALL DECODE_LINE(CARD1,MXPLNC,NITEM,ITEM,MX_ITEM)
          IF(NITEM.LT. 2) THEN
-            WRITE(6,*) ' READIN : Error for keyword TRACI'
-            WRITE(6,*) ' Number of items read ', NITEM
-            WRITE(6,*)
+            WRITE(LUOUT,*) ' READIN : Error for keyword TRACI'
+            WRITE(LUOUT,*) ' Number of items read ', NITEM
+            WRITE(LUOUT,*)
      &      ' Form of line should be : complete/restrict, fock/natural'
          END IF
 *
@@ -2896,23 +3074,23 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
          ITRACI_CN=ITEM(2)
          IF(    ITRACI_CR(1:4).NE.'REST'
      &        .AND.ITRACI_CR(1:4).NE.'COMP') THEN
-            WRITE(6,*) ' Illegal entry under keyword TRACI '
-            WRITE(6,*) ' Your suggestion : ', ITRACI_CR
-            WRITE(6,*) ' Allowed entries : '
-            WRITE(6,*) ' =================='
-            WRITE(6,*)    ' COMPlete '
-            WRITE(6,*)    ' RESTrict'
+            WRITE(LUOUT,*) ' Illegal entry under keyword TRACI '
+            WRITE(LUOUT,*) ' Your suggestion : ', ITRACI_CR
+            WRITE(LUOUT,*) ' Allowed entries : '
+            WRITE(LUOUT,*) ' =================='
+            WRITE(LUOUT,*)    ' COMPlete '
+            WRITE(LUOUT,*)    ' RESTrict'
             NERROR = NERROR + 1
             ISETKW(88) = -1
          END IF
          IF(    ITRACI_CN(1:4).NE.'CANO'
      &        .AND.ITRACI_CN(1:4).NE.'NATU') THEN
-            WRITE(6,*) ' Illegal entry under keyword TRACI '
-            WRITE(6,*) ' Your suggestion : ', ITRACI_CN
-            WRITE(6,*) ' Allowed entries : '
-            WRITE(6,*) ' =================='
-            WRITE(6,*)    ' CANOnica'
-            WRITE(6,*)    ' NATUral '
+            WRITE(LUOUT,*) ' Illegal entry under keyword TRACI '
+            WRITE(LUOUT,*) ' Your suggestion : ', ITRACI_CN
+            WRITE(LUOUT,*) ' Allowed entries : '
+            WRITE(LUOUT,*) ' =================='
+            WRITE(LUOUT,*)    ' CANOnica'
+            WRITE(LUOUT,*)    ' NATUral '
             NERROR = NERROR + 1
             ISETKW(88) = -1
          END IF
@@ -3016,22 +3194,22 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
 *
 *. KEYWORD was not identified
 *
-      WRITE(6,*)
+      WRITE(LUOUT,*)
      &     '  ****  Error, unidentified KEYWORD in READIN   **** '
-      WRITE(6,*)
-      WRITE(6,*) ' Last line read  '
-      WRITE(6,*) ' ================'
+      WRITE(LUOUT,*)
+      WRITE(LUOUT,*) ' Last line read  '
+      WRITE(LUOUT,*) ' ================'
       WRITE(LUOUT,'(10X,A)') CARD
-      WRITE(6,*)
-      WRITE(6,*) ' Preceeding KEYWORD'
-      WRITE(6,*) ' ==================='
+      WRITE(LUOUT,*)
+      WRITE(LUOUT,*) ' Preceeding KEYWORD'
+      WRITE(LUOUT,*) ' ==================='
       WRITE(LUOUT,'(10X,A)') LASTCARD
       NERROR = NERROR + 1
 *
       END IF
  999  CONTINUE
       IF(IECHO.EQ.1)
-     &     WRITE(6,'(A,A)') ' processed KEYWORD/COMMENT  : ', CARD
+     &     WRITE(LUOUT,'(A,A)') ' processed KEYWORD/COMMENT  : ', CARD
 *. Save previous keyword
       LASTCARD(1:72) = CARD(1:72)
       GOTO 1000
@@ -3045,15 +3223,17 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
         WRITE(LUOUT,'(A,I9)')
      &  ' Number of input errors detected in READIN ', NERROR
 *
-        WRITE(6,*) ' The following keywords were correctly identified'
-        WRITE(6,*) ' ================================================'
+        WRITE(LUOUT,*) 
+     &  ' The following keywords were correctly identified'
+        WRITE(LUOUT,*) 
+     &  ' ================================================'
         DO  IENTRY = 1, MXPKW
           IF(ISETKW(IENTRY).EQ.+1)
      &    WRITE(LUOUT,'(10X,A)') KEYWOR(IENTRY)
         END DO
-        WRITE(6,*)
+        WRITE(LUOUT,*)
 *
-        WRITE(6,*) ' ERRORS were detected for the following KEYWORDS'
+        WRITE(LUOUT,*) 'ERRORS were detected for the following KEYWORDS'
         DO IENTRY = 1, MXPKW
            IF(ISETKW(IENTRY).EQ.-1) WRITE(LUOUT,'(A)') KEYWOR(IENTRY)
         END DO
@@ -3489,11 +3669,11 @@ C?    WRITE(6,* ) ' TEST readin IDC = ', IDC
       IF(IDIAG.EQ.2 .AND. MXCIV.GT.2 ) THEN
         MXCIV = 2
         NWARN = NWARN + 1
-        WRITE(6,*) ' Warning : You have specified TERACI '
-        WRITE(6,*) '           I allow myself to set MXCIV = 2 '
-        WRITE(6,*)
-        WRITE(6,*) '                   Best Wishes    '
-        WRITE(6,*) '                      Lucia       '
+        WRITE(LUOUT,*) ' Warning : You have specified TERACI '
+        WRITE(LUOUT,*) '           I allow myself to set MXCIV = 2 '
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*) '                   Best Wishes    '
+        WRITE(LUOUT,*) '                      Lucia       '
       END IF
 
 *
@@ -3641,7 +3821,7 @@ C     END IF
 * 50 : GAS shells must be defined
 *
       IF(ISETKW(50).EQ.0) THEN
-        WRITE(6,*) ' GASSH must be defined '
+        WRITE(LUOUT,*) ' GASSH must be defined '
         NERROR = NERROR + 1
         IGSFILL = 0
         ISETKW(50) = -1
@@ -3724,9 +3904,9 @@ C     END IF
 *. Should be less or equal to NROOT
       IF(ISETKW(60).EQ.1) THEN
         IF(IRFROOT.GT.NROOT) THEN
-          WRITE(6,*) ' Reference root (RFROOT) larger '
-          WRITE(6,*) ' than total number of roots (NROOT) '
-          WRITE(6,*) ' CHANGE NROOT or RFROOT '
+          WRITE(LUOUT,*) ' Reference root (RFROOT) larger '
+          WRITE(LUOUT,*) ' than total number of roots (NROOT) '
+          WRITE(LUOUT,*) ' CHANGE NROOT or RFROOT '
           NMISS = NMISS + 1
         END IF
       END IF
@@ -3754,9 +3934,9 @@ C     END IF
        END IF
        IF(IUSED.EQ.1.AND.ISETKW(61).EQ.0) THEN
 *. Needed, but not supplied
-          WRITE(6,*) ' You have specified that zero order operator'
-          WRITE(6,*) ' Include exact Hamilton operator in subspace'
-          WRITE(6,*) ' You should then also supply Keyword H0EX '
+          WRITE(LUOUT,*) ' You have specified that zero order operator'
+          WRITE(LUOUT,*) ' Include exact Hamilton operator in subspace'
+          WRITE(LUOUT,*) ' You should then also supply Keyword H0EX '
           NMISS = NMISS + 1
        END IF
 *
@@ -3771,8 +3951,8 @@ C     END IF
       END DO
 *
       IF(IDOPERT.EQ.1 .AND. IPERT.EQ.0) THEN
-        WRITE(6,*) ' Perturbation theory will be used '
-        WRITE(6,*) ' Please specify form through PERTU keyword '
+        WRITE(LUOUT,*) ' Perturbation theory will be used '
+        WRITE(LUOUT,*) ' Please specify form through PERTU keyword '
         NMISS = NMISS + 1
       END IF
 *
@@ -3863,20 +4043,20 @@ C     END IF
 *. If IDENSI was set to zero and properties were requested
 *  overwrite input to obtain 1-el matrix
       IF(IDENSI.EQ.0.AND.ISETKW(80).EQ.1) THEN
-        WRITE(6,*) ' You have specified calculation of'
-        WRITE(6,*) ' one-electron properties, and this'
-        WRITE(6,*) ' requires the calculation of the '
-        WRITE(6,*) ' one-electron density. '
-        WRITE(6,*)
-        WRITE(6,*) ' You have, however, specified IDENSI=0'
-        WRITE(6,*) ' corresponding  to no densities'
-        WRITE(6,*)
-        WRITE(6,*) ' I will allow myself to modify your'
-        WRITE(6,*) ' input to allow calculation of the '
-        WRITE(6,*) ' one-electron densities, so property'
-        WRITE(6,*) ' calculation can proceed as planned '
-        WRITE(6,*)
-        WRITE(6,*)                        ' Lucia '
+        WRITE(LUOUT,*) ' You have specified calculation of'
+        WRITE(LUOUT,*) ' one-electron properties, and this'
+        WRITE(LUOUT,*) ' requires the calculation of the '
+        WRITE(LUOUT,*) ' one-electron density. '
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*) ' You have, however, specified IDENSI=0'
+        WRITE(LUOUT,*) ' corresponding  to no densities'
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*) ' I will allow myself to modify your'
+        WRITE(LUOUT,*) ' input to allow calculation of the '
+        WRITE(LUOUT,*) ' one-electron densities, so property'
+        WRITE(LUOUT,*) ' calculation can proceed as planned '
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*)                        ' Lucia '
 *. and do it
         IDENSI = 1
       END IF
@@ -3884,7 +4064,7 @@ C     END IF
 *  used in current simple-minded implementation.
       IF(I_DO_CC .EQ. 1 .AND. IDENSI.LE.1 ) THEN
         IDENSI = 2
-        WRITE(6,*) ' IDENSI flag raised to two for CC calculation'
+        WRITE(LUOUT,*) ' IDENSI flag raised to two for CC calculation'
       END IF
 *
 * 75 : Perturbation expansion of EKT, default is no
@@ -3899,9 +4079,9 @@ C     END IF
 *. Should be less or equal to NROOT
       IF(ISETKW(76).EQ.1) THEN
         IF(IH0ROOT.GT.NROOT) THEN
-          WRITE(6,*) ' Zero order operator root (H0ROOT) larger '
-          WRITE(6,*) ' than total number of roots (NROOT) '
-          WRITE(6,*) ' CHANGE NROOT or H0ROOT '
+          WRITE(LUOUT,*) ' Zero order operator root (H0ROOT) larger '
+          WRITE(LUOUT,*) ' than total number of roots (NROOT) '
+          WRITE(LUOUT,*) ' CHANGE NROOT or H0ROOT '
           NMISS = NMISS + 1
         END IF
       END IF
@@ -3931,9 +4111,9 @@ C     END IF
 *. Problematic if Properties should be calculated
        IF(ISETKW(80).EQ.1.OR.ISETKW(81).EQ.1.OR.ISETKW(82).EQ.1)
      & THEN
-         WRITE(6,*) ' Symmetry of X,Y,Z has not been given'
-         WRITE(6,*) ' You have to specify this for property calc'
-         WRITE(6,*) ' Please add KEYWORD XYZSYM '
+         WRITE(LUOUT,*) ' Symmetry of X,Y,Z has not been given'
+         WRITE(LUOUT,*) ' You have to specify this for property calc'
+         WRITE(LUOUT,*) ' Please add KEYWORD XYZSYM '
          NMISS = NMISS + 1
          ISETKW(79) = -1
        ELSE
@@ -3970,11 +4150,11 @@ C     END IF
 *. Properties should be defined if transition properties are
 *. invoked
       IF(ITRAPRP.NE.0.AND.NPROP.EQ.0) THEN
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  ' You have specified transition property calculation'
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  ' (keyword TRAPRP) but no property labels have been supplied'
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  '(Keyword PROPER). Transition densities will be obtained '
       END IF
 *
@@ -4055,16 +4235,16 @@ C     END IF
 *. Requires access to MO-AO file
       IF(ITRA_FI.EQ.1) THEN
        IF(NOMOFL.EQ.1) THEN
-         WRITE(6,*) ' Integral transformation required, '
-         WRITE(6,*) ' but no mo-ao file accessible      '
-         WRITE(6,*) ' MO-MO integral transformation '
+         WRITE(LUOUT,*) ' Integral transformation required, '
+         WRITE(LUOUT,*) ' but no mo-ao file accessible      '
+         WRITE(LUOUT,*) ' MO-MO integral transformation '
 C        WRITE(6,*) ' REMOVE KEWORD NOMOFL '
 C        ISETKW(93) = -1
 C        NERROR = NERROR + 1
        END IF
 *. Integrals will be written in LUCIA format, so set IDMPIN flag
        IDMPIN = 1
-       WRITE(6,*) ' DMPINT flag set to one '
+       WRITE(LUOUT,*) ' DMPINT flag set to one '
       END IF
 *
 * 94 : Initialize Calculation with integral transformation
@@ -4075,9 +4255,9 @@ C        NERROR = NERROR + 1
       END IF
 *. Requires access to MO-AO file
        IF(ITRA_IN.EQ.1.AND.NOMOFL.EQ.1) THEN
-         WRITE(6,*) ' Integral transformation required, '
-         WRITE(6,*) ' but no mo-ao file accessible      '
-         WRITE(6,*) ' REMOVE KEWORD NOMOFL '
+         WRITE(LUOUT,*) ' Integral transformation required, '
+         WRITE(LUOUT,*) ' but no mo-ao file accessible      '
+         WRITE(LUOUT,*) ' REMOVE KEWORD NOMOFL '
          ISETKW(94) = -1
          NERROR = NERROR + 1
        END IF
@@ -4101,8 +4281,8 @@ C        NERROR = NERROR + 1
       IF(IRELAX.EQ.1) THEN
 *. To obtain relaxed densities two-elec density must be calc, so
         IF(IDENSI.LT.2) THEN
-          WRITE(6,*) ' Density matrix flag (IDENSI) raised '
-          WRITE(6,*) ' to allow calculation of 2-elec densities'
+          WRITE(LUOUT,*) ' Density matrix flag (IDENSI) raised '
+          WRITE(LUOUT,*) ' to allow calculation of 2-elec densities'
           IDENSI = 2
         END IF
       END IF
@@ -4148,10 +4328,10 @@ C        NERROR = NERROR + 1
 *
       IF(ISETKW(50).EQ.1.AND. ISETKW(51).EQ.0) THEN
 * Number of GAS shells given but no occupations !!
-        WRITE(6,*) ' GAS calculation (GASSH specified)'
-        WRITE(6,*) ' But no Occupation constraints (GASSPC) '
-        WRITE(6,*)
-        WRITE(6,*) ' Please add GASSPC '
+        WRITE(LUOUT,*) ' GAS calculation (GASSH specified)'
+        WRITE(LUOUT,*) ' But no Occupation constraints (GASSPC) '
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*) ' Please add GASSPC '
         NMISS = NMISS + 1
       END IF
 *
@@ -4176,7 +4356,7 @@ C        NERROR = NERROR + 1
         IF(IEXPERT.EQ.0) THEN
           Call Abend()
         ELSE
-          WRITE(6,*) ' Processing continues (EXPERT mode )'
+          WRITE(LUOUT,*) ' Processing continues (EXPERT mode )'
         END IF
       END IF
 *. Open one-electron file to obtain core energy and
@@ -4187,7 +4367,7 @@ C        NERROR = NERROR + 1
         if (ENVIRO(1:5).ne.'DIRAC') CALL CHK_ORBDIM(IGSFILL,NIRREP)
 C     CHK_ORBDIM(IGSFILL,NIRREP)
       ELSE
-        WRITE(6,*) ' GETOBS not called since NOINT = 1'
+        WRITE(LUOUT,*) ' GETOBS not called since NOINT = 1'
         ECORE = 0.0D0
       END IF
 *. Check number of orbitals and insert occupations for ALL/REST
@@ -4362,7 +4542,7 @@ C     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
      &  '        GAS',IGAS,'          ',
      &  (NGSSH(IRREP,IGAS),IRREP = 1, NIRREP)
       END DO
-      IF(IGSFILL.NE.0) WRITE(6,'(7X,A,I3)')
+      IF(IGSFILL.NE.0) WRITE(LUOUT,'(7X,A,I3)')
      &' Gas space provided by courtesy of LUCIA :',  IGSFILL
 *
       WRITE(LUOUT,*)
@@ -4396,17 +4576,17 @@ C     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
      &' **************************************************'
       WRITE(LUOUT,*)
 
-      WRITE(6,*)
-      WRITE(6,'(A,I3)')
+      WRITE(LUOUT,*)
+      WRITE(LUOUT,'(A,I3)')
      &' Number of CI spaces included : ', NCMBSPC
-      WRITE(6,*)
+      WRITE(LUOUT,*)
       DO JCMBSPC = 1, NCMBSPC
-        WRITE(6,*)
-        WRITE(6,'(A,I3)') ' Information about CI space ', JCMBSPC
-        WRITE(6,'(A)')    ' =================================='
-        WRITE(6,'(1H ,3X,A,I3)')
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,'(A,I3)') ' Information about CI space ', JCMBSPC
+        WRITE(LUOUT,'(A)')    ' =================================='
+        WRITE(LUOUT,'(1H ,3X,A,I3)')
      &  'Number of occupation spaces included  ',LCMBSPC(JCMBSPC)
-        WRITE(6,'(A,10I3)') '    Occupation spaces included ',
+        WRITE(LUOUT,'(A,10I3)') '    Occupation spaces included ',
      &  (ICMBSPC(II,JCMBSPC),II=1,LCMBSPC(JCMBSPC))
 *
       END DO
@@ -4417,10 +4597,10 @@ C     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
       WRITE(LUOUT,*) ' ******************************************'
       WRITE(LUOUT,*)
       DO JCMBSPC = 1, NCMBSPC
-        WRITE(6,*)
-        WRITE(6,'(7X,A,I3)') ' CI space ', JCMBSPC
-        WRITE(6,'(7X,A)')    ' =============='
-        WRITE(6,*)
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,'(7X,A,I3)') ' CI space ', JCMBSPC
+        WRITE(LUOUT,'(7X,A)')    ' =============='
+        WRITE(LUOUT,*)
 *
 C       WRITE(6,'(A,I3)') ' Number of calculations in this CI space ',
 C    &  NSEQCI(JCMBSPC)
@@ -4429,30 +4609,30 @@ C       WRITE(6,'(A)')   '  =============================='
         DO JSEQ = 1, NSEQCI(JCMBSPC)
           CARDX = CSEQCI(JSEQ,JCMBSPC)
           IF(CARDX(1:7).EQ.'VECFREE') THEN
-            WRITE(6,'(10X,A,I3)')
+            WRITE(LUOUT,'(10X,A,I3)')
      &      '       Vector free calculation at level ',
      &      -ISEQCI(JSEQ,JCMBSPC)
           ELSE IF(CARDX(1:2).EQ.'CI') THEN
-            WRITE(6,'(10X,A,I3)')
+            WRITE(LUOUT,'(10X,A,I3)')
      &      '       Normal CI with max. iterations = ',
      &      ISEQCI(JSEQ,JCMBSPC)
           ELSE IF(CARDX(1:6).EQ.'APR-CI') THEN
-            WRITE(6,'(10X,A,I3)')
+            WRITE(LUOUT,'(10X,A,I3)')
      &      '       CI using approximate H with max. iterations = ',
      &      ISEQCI(JSEQ,JCMBSPC)
           ELSE IF(CARDX(1:5).EQ.'PERTU') THEN
-            WRITE(6,'(10X,A,I3)')
+            WRITE(LUOUT,'(10X,A,I3)')
      &      '       Perturbation calculation '
           ELSE IF(CARDX(1:2).EQ.'CC'   ) THEN
-            WRITE(6,'(10X,A,I3)')
+            WRITE(LUOUT,'(10X,A,I3)')
      &      '       Coupled Cluster Calculation, max. iterations =',
      &      ISEQCI(JSEQ,JCMBSPC)
             IF(JCMBSPC.EQ.LAST_CC_SPC.AND.JSEQ.EQ.LAST_CC_RUN) THEN
-              WRITE(6,'(10X,A)')
+              WRITE(LUOUT,'(10X,A)')
      &      '       (Expanded cc wf will be transferred to LUC ) '
             END IF
           ELSE IF(CARDX(1:4).EQ.'ICCI' ) THEN
-            WRITE(6,'(10X,A)')
+            WRITE(LUOUT,'(10X,A)')
      &      '       Internal Contracted calculation '
 
           END IF
@@ -4460,28 +4640,31 @@ C       WRITE(6,'(A)')   '  =============================='
 *       ^ End of loop over spaces in given CI space
       END DO
 *     ^ End of loop over CI spaces
-      WRITE(6,*)
+      WRITE(LUOUT,*)
       END IF
 *     ^ End of GAS/NOGAS switch
 *
       IF(XLAMBDA.NE.1.0D0) THEN
-        WRITE(6,*)
-        WRITE(6,'(A,F13.8)')
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,'(A,F13.8)')
      &  ' Modifed operator H(l) = l*F + l*(H-F) used with l =',XLAMBDA
         IF(IRESTR.EQ.0) THEN
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  ' Notice : This madness starts  in second calculation'
         ELSE
-         WRITE(6,*) ' You have specified a calculation with modified '
-         WRITE(6,*) ' Hamiltonian (the LAMBDA option) and RESTART '
-         WRITE(6,*) ' so this is what I will do '
-         WRITE(6,*)
-         WRITE(6,*) '   1:) Perform CI in space 1 to obtain Hamiltonian'
-         WRITE(6,*) '       (no RESTART in this space )'
-         WRITE(6,*) '   2:) CI calculation in space 2  with '
-         WRITE(6,*) '       modified Hamiltonian and RESTART from LU21'
-         WRITE(6,*) ' Space 2 should therefore correspond to the'
-         WRITE(6,*) ' restarted calculation '
+         WRITE(LUOUT,*) 
+     & ' You have specified a calculation with modified '
+         WRITE(LUOUT,*) ' Hamiltonian (the LAMBDA option) and RESTART '
+         WRITE(LUOUT,*) ' so this is what I will do '
+         WRITE(LUOUT,*)
+         WRITE(LUOUT,*) 
+     & '   1:) Perform CI in space 1 to obtain Hamiltonian'
+         WRITE(LUOUT,*) '       (no RESTART in this space )'
+         WRITE(LUOUT,*) '   2:) CI calculation in space 2  with '
+         WRITE(LUOUT,*) 
+     & '       modified Hamiltonian and RESTART from LU21'
+         WRITE(LUOUT,*) ' Space 2 should therefore correspond to the'
+         WRITE(LUOUT,*) ' restarted calculation '
        END IF
       END IF
 *
@@ -4501,7 +4684,7 @@ C       WRITE(6,'(A)')   '  =============================='
       WRITE(LUOUT,*) '************************** '
       WRITE(LUOUT,*)
 *. Program environment
-      WRITE(6,'(A,A6)') '      Program environment... ', ENVIRO
+      WRITE(LUOUT,'(A,A6)') '      Program environment... ', ENVIRO
 *. Integral import
       IF(NOINT.EQ.1) THEN
         WRITE(LUOUT,'(1H ,A)')
@@ -4587,18 +4770,18 @@ C       WRITE(LUOUT,'(1H ,A,F8.3)')
 C    &  '     ML   combinations used with sign ',PLSIGN
 C     END IF
 *. CI storage mode
-      WRITE(6,*)
+      WRITE(LUOUT,*)
       IF(ICISTR.EQ.1) THEN
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  '     3 symmetry blocks and two vectors will be held in core '
       ELSE IF( ICISTR.EQ.2) THEN
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  '     3 symmetry blocks will be held in core '
       ELSE IF( ICISTR.EQ.3) THEN
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  '     3 symmetry-occ-occ blocks will be held in core '
       END IF
-      IF(LCSBLK.NE.0) WRITE(6,'(A,I10)')
+      IF(LCSBLK.NE.0) WRITE(LUOUT,'(A,I10)')
      &  '      Smallest allowed size of sigma- and C-batch ',LCSBLK
       WRITE(LUOUT,'(1H ,A,I4)')
      &  '     Dimension of block of resolution strings ', MXINKA
@@ -4702,7 +4885,7 @@ C    &  '        Allowed number of iterations    ',MAXIT
         WRITE(LUOUT,'(1H ,A,I3)')
      &    '        Multispace method in use from space ',
      &             IFMULSPC
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &    '        Pattern '
         CALL IWRTMA(IPAT,1,LPAT,1,LPAT)
       ELSE
@@ -4710,7 +4893,7 @@ C    &  '        Allowed number of iterations    ',MAXIT
      &    '        No multispace method in use '
       END IF
 *
-      WRITE(6,*)
+      WRITE(LUOUT,*)
       IF(IDIAG.EQ.2) THEN
         WRITE(LUOUT,'(1H ,A,E11.5)')
      &   '        Individual second order energy threshold ',E_THRE
@@ -4737,9 +4920,9 @@ C    &  '        Allowed number of iterations    ',MAXIT
      &    '     Perturbation calculation'
         WRITE(LUOUT,'(1H ,A)')
      &  '     ======================= '
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  '        Root Choosen as zero order state ', IRFROOT
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  '        Root used for zero order operator ', IH0ROOT
 COLD    IF(MPORENP.EQ.1) THEN
 COLD    WRITE(6,*)
@@ -4752,32 +4935,32 @@ COLD    WRITE(6,*)
 COLD &  '        One-body Hamiltonian readin '
 COLD    END IF
         IF(IE0AVEX.EQ.1) THEN
-          WRITE(6,*)
+          WRITE(LUOUT,*)
      &  '        Expectation value of H0 used as zero order energy '
         ELSE IF( IE0AVEX.EQ.2) THEN
-          WRITE(6,*)
+          WRITE(LUOUT,*)
      &  '        Exact energy of reference used as zero order energy'
         END IF
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  '        Correction vectors obtained through  order ', NPERT
         IF(IH0SPC.EQ.0) THEN
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  '        No restrictions on perturbation interactions '
         ELSE
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  '        Perturbation restricted to interactions in subspaces'
         END IF
 *
         IF(IH0SPC.NE.0) THEN
-        WRITE(6,*)
-        WRITE(6,*)
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*)
      &  '        Number of perturbation subspaces ', NPTSPC
-        WRITE(6,*)
-        WRITE(6,*)
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*)
      &  '        ======================== '
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  '        Perturbation subspaces : '
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  '        ======================== '
         DO JPTSPC = 1, NPTSPC
 COLD      WRITE(LUOUT,'(A)')
@@ -4792,14 +4975,14 @@ COLD &     ' ====================================================== '
           END DO
         END DO
 *
-        WRITE(6,*)
-        WRITE(6,'(7X,A)') ' ========================================'
-        WRITE(6,'(7X,A)') ' Approximate Hamiltonian in CI subspaces '
-        WRITE(6,'(7X,A)') ' ========================================'
-        WRITE(6,'(7X,A)')
-        WRITE(6,'(7X,A)') '    Subspace          H(apr)   '
-        WRITE(6,'(7X,A)') '  ============================='
-        WRITE(6,'(7X,A)')
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,'(7X,A)') '========================================'
+        WRITE(LUOUT,'(7X,A)') 'Approximate Hamiltonian in CI subspaces '
+        WRITE(LUOUT,'(7X,A)') '========================================'
+        WRITE(LUOUT,'(7X,A)')
+        WRITE(LUOUT,'(7X,A)') '    Subspace          H(apr)   '
+        WRITE(LUOUT,'(7X,A)') '  ============================='
+        WRITE(LUOUT,'(7X,A)')
         DO JPTSPC = 1, NPTSPC
           IF(IH0INSPC(JPTSPC).EQ.1) THEN
             WRITE(LUOUT,'(12X,I3,8X,A)')
@@ -4819,50 +5002,51 @@ COLD &     ' ====================================================== '
           END IF
          END DO
          IF(ISETKW(61).GT.0) THEN
-           WRITE(6,*)
-           WRITE(6,'(7X,A)')
+           WRITE(LUOUT,*)
+           WRITE(LUOUT,'(7X,A)')
      &     ' Orbital subspaces where exact Hamiltonian is used : '
-           WRITE(6,'(7X,A)')
+           WRITE(LUOUT,'(7X,A)')
      &      '===================================================='
-           WRITE(6,*)
+           WRITE(LUOUT,*)
            WRITE(LUOUT,'(10X,10(2X,I3))') (IH0EXSPC(I),I=1, NH0EXSPC)
-           WRITE(6,*)
+           WRITE(LUOUT,*)
          END IF
 *
        END IF
        END IF
 *
        IF(NPROP.EQ.0) THEN
-       WRITE(6,*)
+       WRITE(LUOUT,*)
 C        WRITE(6,*) '     No calculation of properties'
        ELSE
-         WRITE(6,'(7X,A,I3)')
+         WRITE(LUOUT,'(7X,A,I3)')
      &   ' Number of properties to be calculated', NPROP
-         WRITE(6,*)
-         WRITE(6,'(9X,A)')    ' Properties : '
-         WRITE(6,'(9X,A)')   ' ============='
+         WRITE(LUOUT,*)
+         WRITE(LUOUT,'(9X,A)')    ' Properties : '
+         WRITE(LUOUT,'(9X,A)')   ' ============='
          DO IPROP = 1, NPROP
-           WRITE(6,'(16X,A)') PROPER(IPROP)
+           WRITE(LUOUT,'(16X,A)') PROPER(IPROP)
          END DO
 *
          IF(IRELAX.EQ.0) THEN
-           WRITE(6,'(7X,A)') ' No use of relaxed densities '
+           WRITE(LUOUT,'(7X,A)') ' No use of relaxed densities '
          ELSE
-           WRITE(6,'(7X,A)') ' Relaxed densities used for '
-           WRITE(6,'(7X,A)') ' (implemented only for pert) '
+           WRITE(LUOUT,'(7X,A)') ' Relaxed densities used for '
+           WRITE(LUOUT,'(7X,A)') ' (implemented only for pert) '
          END IF
        END IF
 *
        IF(IEXTKOP.EQ.0.AND.IPTEKT.EQ.0) THEN
 C        WRITE(6,'(5X,A)') ' No extended Koopmans'' calculations '
        ELSE IF(IEXTKOP.NE.0) THEN
-         WRITE(6,'(5X,A)') ' Extended Koopmans'' calculations '
+         WRITE(LUOUT,'(5X,A)') ' Extended Koopmans'' calculations '
        ELSE IF(IPTEKT.NE.0) THEN
-         WRITE(6,'(5X,A)') ' Perturbation expansion of EKT equations'
+         WRITE(LUOUT,'(5X,A)') 
+     & ' Perturbation expansion of EKT equations'
        END IF
 *
        IF(IPTFOCK.EQ.1) THEN
-         WRITE(6,*) ' Perturbation expansion of Fock matrix '
+         WRITE(LUOUT,*) ' Perturbation expansion of Fock matrix '
        ELSE
 C        WRITE(6,*) 'No  Perturbation expansion of Fock matrix '
        END IF
@@ -4872,12 +5056,12 @@ C       WRITE(6,*)
 C       WRITE(6,'(5X,A)')
 C    &  ' No transition properties will be calculated'
       ELSE
-        WRITE(6,*)
-        WRITE(6,'(5X,A)')
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,'(5X,A)')
      &  ' Transition properties will be calculated '
-        WRITE(6,*)  ' Symmetry of additional states :', IEXCSYM
-        WRITE(6,*)  ' Number   of additional states :', NEXCSTATE
-        WRITE(6,*)
+        WRITE(LUOUT,*)  ' Symmetry of additional states :', IEXCSYM
+        WRITE(LUOUT,*)  ' Number   of additional states :', NEXCSTATE
+        WRITE(LUOUT,*)
       END IF
       IF(IRESPONS.NE.0) THEN
       WRITE(LUOUT,*)
@@ -4885,63 +5069,63 @@ C    &  ' No transition properties will be calculated'
       WRITE(LUOUT,*) '*  Response Calculation  *'
       WRITE(LUOUT,*) '************************** '
       WRITE(LUOUT,*)
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  ' CI-Response will be called after each CI calculation'
-        WRITE(6,*)
+        WRITE(LUOUT,*)
      &  ' Root used for response calculations (RFROOT) ',IRFROOT
-        WRITE(6,*)
+        WRITE(LUOUT,*)
 C       WRITE(6,*) ' Number of A-operators : ', N_AVE_OP
-        WRITE(6,*) ' Labels of A-operators '
-        WRITE(6,*) ' ======================='
-        WRITE(6,*)
+        WRITE(LUOUT,*) ' Labels of A-operators '
+        WRITE(LUOUT,*) ' ======================='
+        WRITE(LUOUT,*)
         DO IAVE = 1, N_AVE_OP
-          WRITE(6,'(1H , 6X,A)') AVE_OP(IAVE)
+          WRITE(LUOUT,'(1H , 6X,A)') AVE_OP(IAVE)
         END DO
-        WRITE(6,*)
+        WRITE(LUOUT,*)
 C       WRITE(6,*) ' Number of response calculations ', NRESP
-        WRITE(6,*) ' Perturbations : '
-        WRITE(6,*) ' ================'
-        WRITE(6,*)
-        WRITE(6,*) ' Calc  Op1    Op2    Mxord1     Mxord2    Freq '
+        WRITE(LUOUT,*) ' Perturbations : '
+        WRITE(LUOUT,*) ' ================'
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,*) ' Calc  Op1    Op2    Mxord1     Mxord2    Freq '
         DO IRESP = 1, NRESP
-          WRITE(6,'(1H ,I2,2X,A,A,3X,I4,3X,I4,2X,F12.7)' )
+          WRITE(LUOUT,'(1H ,I2,2X,A,A,3X,I4,3X,I4,2X,F12.7)' )
      &    IRESP,RESP_OP(1,IRESP),RESP_OP(2,IRESP),MAXORD_OP(1,IRESP),
      &    MAXORD_OP(2,IRESP),RESP_W(IRESP)
         END DO
       END IF
 *
 C     IF(NOMOFL.EQ.0) THEN
-        WRITE(6,*)
-        WRITE(6,'(7X,A)') ' Final orbitals :'
-        WRITE(6,'(7X,A)') ' ================'
-        WRITE(6,*)
+        WRITE(LUOUT,*)
+        WRITE(LUOUT,'(7X,A)') ' Final orbitals :'
+        WRITE(LUOUT,'(7X,A)') ' ================'
+        WRITE(LUOUT,*)
         IF(IFINMO.EQ.1) THEN
-          WRITE(6,'(10X,A)') ' Natural orbitals'
+          WRITE(LUOUT,'(10X,A)') ' Natural orbitals'
         ELSE IF(IFINMO.EQ.2) THEN
-          WRITE(6,'(10X,A)') ' Canonical orbitals'
+          WRITE(LUOUT,'(10X,A)') ' Canonical orbitals'
         ELSE IF(IFINMO.EQ.3) THEN
-          WRITE(6,'(10X,A)') ' Pseudo-natural orbitals'
-          WRITE(6,'(10X,A)')
+          WRITE(LUOUT,'(10X,A)') ' Pseudo-natural orbitals'
+          WRITE(LUOUT,'(10X,A)')
      &   ' (Density matrix diagonalized in orbital subspaces )'
         ELSE IF(IFINMO.EQ.4) THEN
-          WRITE(6,'(10X,A)') ' Pseudo-canonical orbitals'
-          WRITE(6,'(10X,A)')
+          WRITE(LUOUT,'(10X,A)') ' Pseudo-canonical orbitals'
+          WRITE(LUOUT,'(10X,A)')
      &   ' (FI+FA  diagonalized in orbital subspaces )'
          ELSE IF (IFINMO .EQ. 5 ) THEN
-          WRITE(6,'(10X,A)')
+          WRITE(LUOUT,'(10X,A)')
      &   ' Pseudo-natural-canonical orbitals (sic)'
-          WRITE(6,'(10X,A)')
+          WRITE(LUOUT,'(10X,A)')
      &   ' (Pseudo natural orbitals are first obtained'
-          WRITE(6,'(10X,A)')
+          WRITE(LUOUT,'(10X,A)')
      &   '  by diagonalizing density matrix in orbital subpspaces.'
-          WRITE(6,'(10X,A)')
+          WRITE(LUOUT,'(10X,A)')
      &   '  FI+FA is transformed to this basis, and the transformed'
-          WRITE(6,'(10X,A)')
+          WRITE(LUOUT,'(10X,A)')
      &   '  matrix is block diagonalized) '
-          WRITE(6,*)
-          WRITE(6,'(10X,A)')
+          WRITE(LUOUT,*)
+          WRITE(LUOUT,'(10X,A)')
      &   ' Orbital spaces in which transformed FIFA is diagonalized'
-          WRITE(6,'(10X,A)')
+          WRITE(LUOUT,'(10X,A)')
      &   ' ========================================================'
           DO IPSSPC = 1, NPSSPC
             WRITE(LUOUT,'(A,I2,A,10I4,6X,2I6)')
@@ -4954,20 +5138,20 @@ C     END IF
       IF(ITRACI.EQ.0) THEN
 C       WRITE(6,'(5X,A)')  ' No transformation of CI vectors'
       ELSE
-        WRITE(6,'(5X,A)')   ' CI vectors transformed in each run'
-        WRITE(6,'(7X,A,A)')
+        WRITE(LUOUT,'(5X,A)')   ' CI vectors transformed in each run'
+        WRITE(LUOUT,'(7X,A,A)')
      &        ' Complete or restricted rotations :',ITRACI_CR
-        WRITE(6,'(7X,A,A)')
+        WRITE(LUOUT,'(7X,A,A)')
      &        ' Type of Final orbitals           :',ITRACI_CN
       END IF
 *
 * Integral Transformations
 *
       IF(ITRA_FI.EQ.1) THEN
-        WRITE(6,*) '      Integrals transformed to final MO''s '
+        WRITE(LUOUT,*) '      Integrals transformed to final MO''s '
       END IF
       IF(ITRA_IN.EQ.1) THEN
-        WRITE(6,*) '      Integrals transformed to initial  MO''s '
+        WRITE(LUOUT,*) '      Integrals transformed to initial  MO''s '
       END IF
 
 *
@@ -5038,14 +5222,15 @@ C       WRITE(6,'(5X,A)')  ' No transformation of CI vectors'
      &  '      Final CI vectors will be printed '
       END IF
 *
-      WRITE(6,*)
+      WRITE(LUOUT,*)
 C     IF(MOLCS.EQ.1) WRITE(LUOUT,'(1H ,A,E18.9)')
 C    &  '      Core energy : ', ECORE
 *
       IF(IDMPIN.EQ.1) THEN
         WRITE(LUOUT,'(1H ,A)')
-        WRITE(6,*) '      Integrals written in formatted form (E22.15)'
-        WRITE(6,*) '      on file 90 '
+        WRITE(LUOUT,*) 
+     & '      Integrals written in formatted form (E22.15)'
+        WRITE(LUOUT,*) '      on file 90 '
       END IF
       RETURN
       END
@@ -5058,30 +5243,318 @@ C    &  '      Core energy : ', ECORE
 *
 * Introduce LUCIA
 *
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(LUOUT,'(1H ,8X,A)')
      &'****************************************************************'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(LUOUT,'(1H ,8X,A)')
      &'*                                                              *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(LUOUT,'(1H ,8X,A)')
      &'*           Welcome to LUCIA, A direct CI program              *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(LUOUT,'(1H ,8X,A)')
      &'*                                                              *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(LUOUT,'(1H ,8X,A)')
      &'* Written by Jeppe Olsen, University of Lund, Sweden           *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(LUOUT,'(1H ,8X,A)')
      &'* Version of Sept 97   (GAS-CI, GAS-PERT, CI- RESPONS )        *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(LUOUT,'(1H ,8X,A)')
      &'****************************************************************'
 *
-      WRITE(6,*)
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(LUOUT,*)
+      WRITE(LUOUT,'(1H ,8X,A)')
      &' In case of trouble please contact : '
-      WRITE(6,'(1H ,12X,2A)')
+      WRITE(LUOUT,'(1H ,12X,2A)')
      &' Jeppe Olsen, Chemical Centre, University of Lund, P.O.Box 124',
      &' Lund, S-22100 Sweden '
-      WRITE(6,'(1H ,12X,2A)')
+      WRITE(LUOUT,'(1H ,12X,2A)')
      &' Telephone : 46 46 2224915, FAX : 46 46 2224543,',
      &' E-mail : TEOJEO@garm.teokem.lu.se'
       WRITE(6,*)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LUMSTI
+*
+*     Call the slaves if we run in parallel
+*
+*     Adaption of the corresponding RELCCSD routine 
+*     written by Luuk Visscher, August 1997
+*     LUCITA version by Stefan Knecht, Feb. 06
+*    
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "lucipar.inc"
+#include "maxorb.h"
+#include "dcbgen.h"
+*
+*     ITASK = 5 for parallel LUCITA
+*
+      IF (PARCAL) CALL DIRAC_PARCTL( 5 )
+      IF (PARCAL) THEN
+         IRUNPA = 1
+      ELSE
+         IRUNPA = 0
+      END IF
+*      write(6,*)'irunpa =',irunpa
+*
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck LUMSTE */
+      SUBROUTINE LUMSTE
+*
+*     Release the slaves if we run in parallel
+*
+*     Adaption of the corresponding RELCCSD routine
+*     written by Luuk Visscher, August 1997
+*     LUCITA version by Stefan Knecht, Feb. 06
+*
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "maxorb.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "dcbgen.h"
+#include "infpar.h"
+#include "lucipar.inc"
+*
+      IF (.NOT.PARCAL) RETURN
+*
+*     Find the slaves and release them
+
+      NTEST = -1
+#if defined (VAR_MPI)
+      DO I = 1,NUMNOD
+         CALL MPI_IRECV(NODE,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+     &                  MPI_COMM_WORLD,IREQ,IERR)
+         CALL MPI_WAIT(IREQ,ISTAT,IERR)
+         CALL MPI_SEND(NTEST,1,MPI_INTEGER,NODE,30,
+     &                  MPI_COMM_WORLD,IERR)
+      ENDDO
+#endif
+
+*
+*     Let the slaves sleep (if relevant for this operating system)
+*
+      CALL DIRAC_PARCTL( 0 )
+      RETURN
+      END
+#if defined (VAR_MPI)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck LUCINOD */
+      SUBROUTINE LUCINOD(WRK,LWRK)
+*
+*     LUCITA routine (DIRAC interface) for the slaves
+*
+*     adapted version of the slave RELCCSD 
+*     routine (DIRAC interface) written by 
+*     Luuk Visscher, August 1997.
+*     LUCITA version by Stefan Knecht, Feb. 06
+*
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      IMPLICIT REAL*8(A-H,O-Z)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar.inc"
+#include "files.inc"
+*. Parameters for dimensioning
+#include "mxpdim.inc"
+*.File numbers
+#include "clunit.inc"
+#include "units.inc"
+#include "priunit.h"
+*.Print flags
+#include "cprnt.inc"
+#include "lucinp.inc"
+#include "cstate.inc"
+#include "crun.inc"
+#include "cicisp.inc"
+#include "oper.inc"
+#include "cgas.inc"
+#include "luctinp.h"
+*.Memory
+#include "wrkspc.inc"
+      DIMENSION WRK(LWRK)
+      DIMENSION IMOKW(NTABLE)
+      CHARACTER*10 INTFCE, WORD3*7
+      CHARACTER MYWAFFCD*8, MYCALCTP*8, WORD*7, MYSZCALD*3
+      LOGICAL CA,LUEND
+*
+*
+*     arrange for the MPI stuff and correct node number
+*     to the total number of running invocations.
+*
+#if defined (VAR_MPI)
+      MASTER = MPARID
+      MYPROC = MYTID
+C     Add the master node, NUMNOD = number of slaves
+      NMPROC = NUMNOD + 1
+#else
+      MASTER = 0
+      MYPROC = 0
+      NMPROC = 1
+#endif
+      INTFCE = 'DIRAC     '
+*
+*     let the nodes know that we perform a parallel run! --> why?
+*     well, that's the way it goes !
+      IRUNPA = 1
+*
+*     create a node-unique filename as output file. Important on
+*     shared file systems. Otherwise all the output gets mingled in one
+*     file. You don't really want to do this.
+*
+      LUCITABASF="LUCITA.OUT"
+*
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (LUCIFILN,'(A10,A1,I1)') LUCITABASF,'.',MYPROC
+         LUFIL=12
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (LUCIFILN,'(A10,A1,I2)') LUCITABASF,'.',MYPROC
+         LUFIL=13
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (LUCIFILN,'(A10,A1,I3)') LUCITABASF,'.',MYPROC
+         LUFIL=14
+      ELSE
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+      ENDIF
+#else
+      LUCIFILN=LUCITABASF
+      LUFIL=10
+#endif
+*
+*     open the local input file and the node specific output file.
+*     The associated file handle MSLVOUT is transferred to CCMAIN.
+*     Every access to the local stdout handle then automatically writes
+*     to the corresponding output file.
+*
+*
+      OPEN(LUCMD,FILE = 'DIRAC.INP')
+      OPEN(MSLVOUT,FILE = LUCIFILN(1:LUFIL))
+*
+*     ==============
+*     **** Find Lucita input *****
+*
+      REWIND (LUCMD,IOSTAT=IOS)
+*     ... IOSTAT to avoid program abort on some systems
+*         if reading input from a terminal
+*
+*     ... IOSTAT to avoid program abort on some systems
+*         if reading input from a terminal
+  900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      IF (WORD .EQ. '*LUCITA') THEN
+         GO TO 930
+      ELSE
+         GO TO 900
+      END IF
+  910 CONTINUE
+         CALL QUIT('End of file on LUCMD, no Lucita input found')
+  920 CONTINUE
+         CALL QUIT('Error reading LUCMD, no Lucita input found')
+  930 CONTINUE
+      WORD3 = WORD
+*
+*    pointer in DIRAC.INP should now be positioned behind *LUCITA
+*
+        CALL LUCTINP(WORD,.FALSE.,WORK,LWRK)
+        CALL LUCTINP(WORD,.TRUE.,WORK,LWRK)
+*
+*     now let's call the working routine!
+*
+        CALL PAMLU(WRK,LWRK,LUCMD,MSLVOUT)
+      CLOSE (MSLVOUT,STATUS='KEEP')
+      CLOSE (LUCMD,STATUS='KEEP')
+*
+*
+*     The slave is finished, wait for the master
+
+
+      LUEND = .FALSE.
+#if defined (VAR_MPI)
+      CALL MPI_ISEND(MYTID,1,MPI_INTEGER,MPARID,20,
+     &              MPI_COMM_WORLD,IREQ,IERR)
+
+    1    CONTINUE
+         CALL SLEEP(1)
+         CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,LUEND,ISTAT,IERR)
+         IF (.NOT.LUEND) GOTO 1
+
+      CALL MPI_RECV(NTEST,1,MPI_INTEGER,MPARID,30,
+     &               MPI_COMM_WORLD,ISTAT,IERR)
+#endif
+      RETURN
+      END
+#endif    /* ifdef VAR_MPI */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+      INTEGER FUNCTION STR_LENGTH(STR)
+
+*     Returns the length of <str> without blanks
+*
+*     LUCITA version by Stefan Knecht, Feb. 06
+*     Originally written by Stephan Raub
+*
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+#include "implicit.h"
+
+
+      integer lmax
+      character(*) str
+
+!--- Begin ---!
+
+      lmax=len(str)
+
+      do i=lmax, 1, -1
+
+         if(str(i:i).ne.' ')then
+
+            Str_Length=i
+*
+            goto 10
+*
+         end if
+
+      end do !. of i
+
+      Str_Length=lmax
+
+ 10   continue
+      return
+      end function Str_Length
+
+*      implicit none
+*
+*      
+*      integer lmax
+*      integer i
+*
+*
+*      character(*), INTENT(IN) ::  str
+*
+*
+*
+*!--- Begin ---!
+*
+*      lmax=len(str)
+*
+*      do i=lmax, 1, -1
+*
+*         if(str(i:i).ne.' ')then
+*
+*            Str_Length=i
+*            return
+*
+*         end if
+*
+*      end do !. of i
+*
+*      Str_Length=lmax
+*
+*      return
+*      end function Str_Length
