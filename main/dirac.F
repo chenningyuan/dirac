@@ -684,6 +684,11 @@ C
 C        Enter the DFT module
 C
          CALL DFTNOD(WORK,LWORK)
+      ELSE IF (ITASK .EQ. 5) THEN
+C
+C        Enter the LUCITA module
+C
+         CALL LUCINOD(WORK,LWORK)
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -766,6 +771,11 @@ C
 C        Enter the DFT module
 C
          CALL DFTNOD(WORK,LWORK)
+      ELSE IF (ITASK .EQ. 5) THEN
+C
+C        Enter the LUCITA module
+C
+         CALL LUCINOD(WORK,LWORK)
       ELSE
 C
 C        Unknown task. Abort execution.
