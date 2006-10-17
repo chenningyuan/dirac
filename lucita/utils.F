@@ -106,8 +106,20 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
       CHARACTER*72 CHAR_X
+      INTEGER FLLNGTH
+      CHARACTER*10 SCRFLL
+      CHARACTER*6 SCRFL
+
 *
 #include "units.inc"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+#endif
+      
+
 *
       NTESTL = 0
       if (NTESTL.ge.1) then
@@ -116,7 +128,26 @@ C
       end if
 *
       LU_INTERNAL = LUSC_INT
+      SCRFL ="LUSCDL"
 *
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (SCRFLL,'(A6,A1,I1)') SCRFL,'.',MYPROC
+         FLLNGTH=8
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (SCRFLL,'(A6,A1,I2)') SCRFL,'.',MYPROC
+         FLLNGTH=9
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (SCRFLL,'(A6,A1,I3)') SCRFL,'.',MYPROC
+         FLLNGTH=10
+      ELSE
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+      ENDIF
+#else
+      SCRFLL=SCRFL
+      FLLNGTH=6
+#endif
+
       Open(Unit=LU_INTERNAL,
      &     File='LUSCDL',
      &     Status='NEW',
