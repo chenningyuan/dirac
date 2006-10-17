@@ -6,4 +6,4 @@
      &              LUSC34,LUSC35,LUSC36,LUSC37,LUSC38,LUSC39,
      &              LUSC40,
      &              LUCIVO,LUORB,LUMOIN,LUMOUT,LUEXC,LU_CCAMP,
-     &              LUCMOL,LU90,LU91
+     &              LUCMOL,LU90,LU91,LU_LUWRT
