@@ -33,23 +33,28 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck sdft_lr */
+C     /* SDFT_LR */
       SUBROUTINE SDFT_LR(DTRMAT,
      &                   EXCMAT,
      &                   IREPOP,
      &                   GAO,GAO1,
-     &                   DENSITY,DENSITY_GRADIENT_NORM,
+     &                   DENSITY,
+     &                   DENSITY_GRADIENT,
+     &                   DENSITY_GRADIENT_NORM,
      &                   WEIGHT,DOGGA,BUF)
 C=======================================================================
-C     contribution of spin density to g_pg (upon integration G_pg)
+C     contribution of spin density to g_pq (upon integration G_pq)
 C     adaptation of DFTLTR in dftaux.F
 C-----------------------------------------------------------------------
-C     radovan bast                         last revision: september 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
+
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -59,7 +64,7 @@ C-----------------------------------------------------------------------
 #include "dftcom.h"
 #include "cdft.h"
 #include "../dft/functionals.h"
-C
+
       LOGICAL   DOGGA
       DIMENSION DTRMAT(*),
      &          EXCMAT(*),
@@ -69,45 +74,42 @@ C
      &          SPIN_DENSITY(3),
      &          SPIN_DENSITY_DERVS(3,3),
      &          VXC(DERVS2),
-     &          VXC_V(3)
-C
+     &          VXC_V(3),
+     &          DENSITY_GRADIENT(3)
+
 #include "ibtfun.h"
-C
-C
+
       CALL GET_CURRENT(2,
      &                 SPIN_DENSITY,
      &                 DUMMY,
      &                 IREPOP,GAO,DUMMY,DTRMAT,BUF)
-C
+
       ISTART = 1
       IF(COLLINEAR) ISTART = 3
-C
+
       SPIN_DENSITY_NORM = DSQRT(DDOT(3,SPIN_DENSITY,1,SPIN_DENSITY,1))
-C
+
       IF(.NOT. DOGGA) THEN !LDA
-C
         IF(SPIN_DENSITY_NORM .GT. DFTHRL) THEN
-C
+
           CALL SDFTPOT1(VXC,WEIGHT,DENSITY,D0)
-C
+
           DO IXYZ = ISTART,3
             IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
             IOFF = NBAST*NBAST*(IQ-1)
-C
+
             VXC_S = VXC(FRR)*SPIN_DENSITY(IXYZ)
             CALL SDFT_EXC(VXC_S,IREPOP,IXYZ,EXCMAT(1+IOFF),GAO)
           ENDDO
         ENDIF
-C
+
       ELSE !GGA
-C
-C       CALL QUIT('GGA SDFT linear response not implemented')
-C
+
         CALL GET_CURRENT(4,
      &                   DUMMY,
      &                   SPIN_DENSITY_DERVS,
      &                   IREPOP,GAO,GAO1,DTRMAT,BUF)
-C
+
         TEST_MAX = MAX(
      &                 SPIN_DENSITY_NORM,
      &                 SPIN_DENSITY_DERVS(1,1),
@@ -120,33 +122,45 @@ C
      &                 SPIN_DENSITY_DERVS(3,2),
      &                 SPIN_DENSITY_DERVS(3,3)
      &                )
+
         IF(TEST_MAX .GT. DFTHRL) THEN
-C          
+
           CALL SDFTPOT1(VXC,WEIGHT,DENSITY,DENSITY_GRADIENT_NORM)
-C
+
           DO IXYZ = ISTART,3
             IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
             IOFF = NBAST*NBAST*(IQ-1)
-C         
-            VXC_S = VXC(FRR)*SPIN_DENSITY(IXYZ)
+
+            FACTOR_1 = D0
             DO JXYZ = 1,3
-              VXC_V(JXYZ) = VXC(FZZ)*SPIN_DENSITY_DERVS(IXYZ,JXYZ)
+              FACTOR_1 = FACTOR_1
+     &            + SPIN_DENSITY_DERVS(IXYZ,JXYZ)*DENSITY_GRADIENT(JXYZ)
             ENDDO
-C         
+            FACTOR_1 = FACTOR_1/DENSITY_GRADIENT_NORM
+
+            FACTOR_2 = VXC(FZZ) - VXC(FZ0)/DENSITY_GRADIENT_NORM
+            FACTOR_2 = FACTOR_2*FACTOR_1
+            FACTOR_2 = FACTOR_2 + VXC(FRZ)*SPIN_DENSITY(IXYZ)
+
+            VXC_S = VXC(FRR)*SPIN_DENSITY(IXYZ) + VXC(FRZ)*FACTOR_1
+            DO JXYZ = 1,3
+              VXC_V(JXYZ) = (VXC(FZ0)*SPIN_DENSITY_DERVS(IXYZ,JXYZ)
+     &          + FACTOR_2*DENSITY_GRADIENT(JXYZ))/DENSITY_GRADIENT_NORM
+            ENDDO
+
             CALL SDFT_EXC_GGA(VXC_S,VXC_V,
      &                        IREPOP,IXYZ,EXCMAT(1+IOFF),GAO,GAO1)
           ENDDO
         ENDIF
       ENDIF
-C
-C
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck sdft_exc */
       SUBROUTINE SDFT_EXC(VXC_S,IREPOP,IXYZ,EXCMAT,GAO)
 C=======================================================================
-C     contribution of spin density to g_pg (upon integration G_pg)
+C     contribution of spin density to g_pq (upon integration G_pq)
 C     adaptation of DOEXC1 in dftdrv.F
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
@@ -206,7 +220,7 @@ C     /* deck sdft_exc_gga */
       SUBROUTINE SDFT_EXC_GGA(VXC_S,VXC_V,
      &                        IREPOP,IXYZ,EXCMAT,GAO,GAO1)
 C=======================================================================
-C     contribution of spin density to g_pg (upon integration G_pg)
+C     contribution of spin density to g_pq (upon integration G_pq)
 C     adaptation of DOEXC1 in dftdrv.F
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006

@@ -122,7 +122,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
      &                 EXCMAT(1,1,1,IM),
      &                 IREPOP,
      &                 GAO,GAO1,
-     &                 RHO,RHOGRD,
+     &                 RHO,RHG,RHOGRD,
      &                 WGHT,DOGGA,BUF)
         ENDIF
       ELSE

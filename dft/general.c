@@ -250,9 +250,9 @@ sdftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad)
     selected_func->second(&drvs, *w, &dp);
        
   ds->fR  = 0; /* NOT USED */
-  ds->fZ  = 0; /* NOT USED */
+  ds->fZ  = drvs.df0010;
   ds->fRR = 0.5*(drvs.df2000 - drvs.df1100);
-  ds->fRZ = 0; /* NOT USED */
+  ds->fRZ = 0.5*(drvs.df1010 - drvs.df1001);
   ds->fZZ = 0.5*(drvs.df0020 - drvs.df0011 - drvs.df00001);
   ds->fRG = 0; /* NOT USED */
   ds->fZG = 0; /* NOT USED */
