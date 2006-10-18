@@ -70,12 +70,12 @@ C=======================================================================
      &          EXCMAT(*),
      &          GAO(*),
      &          GAO1(*),
+     &          DENSITY_GRADIENT(3),
      &          BUF(*),
      &          SPIN_DENSITY(3),
      &          SPIN_DENSITY_DERVS(3,3),
      &          VXC(DERVS2),
-     &          VXC_V(3),
-     &          DENSITY_GRADIENT(3)
+     &          VXC_V(3)
 
 #include "ibtfun.h"
 
@@ -157,18 +157,21 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck sdft_exc */
+C     /* SDFT_EXC */
       SUBROUTINE SDFT_EXC(VXC_S,IREPOP,IXYZ,EXCMAT,GAO)
 C=======================================================================
 C     contribution of spin density to g_pq (upon integration G_pq)
 C     adaptation of DOEXC1 in dftdrv.F
 C-----------------------------------------------------------------------
-C     radovan bast                         last revision: september 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
+
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -176,7 +179,7 @@ C-----------------------------------------------------------------------
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-C
+
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION GAO(NBAST),
@@ -185,23 +188,22 @@ C
       DIMENSION GAO(NTBAS(0)),
      &          EXCMAT(NTBAS(0),NTBAS(0))
 #endif
-C
+
 #include "ibtfun.h"
-C
-C
+
       INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,2),IREPOP)
-C
+
       DO IREP1 = 0,NBSYM-1
         DO IC = 1,MC
-C
+
           N1 = NBBAS(IREP1,IC)
-          IF(N1.GT.0) THEN
-C
+          IF(N1 .GT. 0) THEN
+
             I1 = IBBAS(IREP1,IC)
             IREP2 = IBTXOR(IREP1,INTERMEDIATE)
             N2 = NBBAS(IREP2,IC)
-            IF(N2.GT.0) THEN
-C
+            IF(N2 .GT. 0) THEN
+
               I2 = IBBAS(IREP2,IC)
               DO J = 1,N2
                 FACTOR = VXC_S*GAO(I2+J)
@@ -211,24 +213,26 @@ C
           ENDIF
         ENDDO
       ENDDO
-C
-C
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck sdft_exc_gga */
+C     /* SDFT_EXC_GGA */
       SUBROUTINE SDFT_EXC_GGA(VXC_S,VXC_V,
      &                        IREPOP,IXYZ,EXCMAT,GAO,GAO1)
 C=======================================================================
 C     contribution of spin density to g_pq (upon integration G_pq)
 C     adaptation of DOEXC1 in dftdrv.F
 C-----------------------------------------------------------------------
-C     radovan bast                         last revision: september 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
+
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -236,7 +240,7 @@ C-----------------------------------------------------------------------
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-C
+
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION GAO(NBAST),
@@ -248,27 +252,26 @@ C
      &          EXCMAT(NTBAS(0),NTBAS(0))
 #endif
       DIMENSION VXC_V(3)
-C
+
 #include "ibtfun.h"
-C
-C
+
       INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,2),IREPOP)
-C
+
       DO IREP1 = 0,NBSYM-1
         DO IC = 1,MC
-C
+
           N1 = NBBAS(IREP1,IC)
-          IF(N1.GT.0) THEN
-C
+          IF(N1 .GT. 0) THEN
+
             I1 = IBBAS(IREP1,IC)
             IREP2 = IBTXOR(IREP1,INTERMEDIATE)
             N2 = NBBAS(IREP2,IC)
-            IF(N2.GT.0) THEN
-C
+            IF(N2 .GT. 0) THEN
+
               I2 = IBBAS(IREP2,IC)
               DO J = 1,N2
-                FACTOR = VXC_S*GAO(I2+J)
-     &                 + D2*VXC_V(1)*GAO1(I2+J,1)
+                FACTOR =    VXC_S   *GAO(I2+J)
+     &                 + D2*VXC_V(1)*GAO1(I2+J,1) !factor D2 has to be here, mind SYMSYM
      &                 + D2*VXC_V(2)*GAO1(I2+J,2)
      &                 + D2*VXC_V(3)*GAO1(I2+J,3)
                 CALL DAXPY(N1,FACTOR,GAO(I1+1),1,EXCMAT(I1+1,I2+J),1)
@@ -277,7 +280,6 @@ C
           ENDIF
         ENDDO
       ENDDO
-C
-C
+
       RETURN
       END
