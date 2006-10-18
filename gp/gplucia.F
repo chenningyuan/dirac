@@ -3067,6 +3067,7 @@ C?    write(6,*) ' GTH1ES : IBSO ', IBSO(ISM)
 * IOCOC(IATP,IBTP)  = 1 =>      allowed combination
 * IOCOC(IATP,IBTP)  = 0 => not allowed combination
 *
+#include "../lucita/lucipar.inc"
 *.Input
       INTEGER ICMBSPC(LCMBSPC)
       INTEGER MNMXOC(MXPNGAS,2,*)
@@ -3080,16 +3081,18 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
       NTEST = MAX(NTEST,IPRNT)
 *
       IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' IAIBCM_GAS entered '
-        WRITE(6,*) ' ==================='
-        WRITE(6,*)
-        WRITE(6,*) ' Number of GAS spaces included ', LCMBSPC
-        WRITE(6,*) ' GAS spaces included ',(ICMBSPC(II),II=1,LCMBSPC)
-        WRITE(6,*)
-        IF(NTEST.GE.40) THEN
-          WRITE(6,*) ' IOCA and IOCB '
-          CALL IWRTMA(IOCA,NGAS,NOCTPA,MXPNGAS,NOCTPA)
-          CALL IWRTMA(IOCB,NGAS,NOCTPB,MXPNGAS,NOCTPB)
+        IF(MYPROC.EQ.MASTER) THEN
+          WRITE(6,*) ' IAIBCM_GAS entered '
+          WRITE(6,*) ' ==================='
+          WRITE(6,*)
+          WRITE(6,*) ' Number of GAS spaces included ', LCMBSPC
+          WRITE(6,*) ' GAS spaces included ',(ICMBSPC(II),II=1,LCMBSPC)
+          WRITE(6,*)
+          IF(NTEST.GE.40) THEN
+            WRITE(6,*) ' IOCA and IOCB '
+            CALL IWRTMA(IOCA,NGAS,NOCTPA,MXPNGAS,NOCTPA)
+            CALL IWRTMA(IOCB,NGAS,NOCTPB,MXPNGAS,NOCTPB)
+          END IF
         END IF
       END IF
 *
@@ -3122,10 +3125,12 @@ CMI        IF(INCLUDE .EQ.1) THEN
   100 CONTINUE
 *
       IF ( NTEST .GE. 30 ) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' Matrix giving allowed combinations of types '
-        WRITE(6,*)
-        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
+        IF(MYPROC.EQ.MASTER)THEN
+          WRITE(6,*)
+          WRITE(6,*) ' Matrix giving allowed combinations of types '
+          WRITE(6,*)
+          CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
+        END IF
       END IF
 *
       RETURN
