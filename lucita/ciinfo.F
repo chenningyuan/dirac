@@ -1354,6 +1354,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * ====================
 *
 #include "cicisp.inc"
+#include "lucipar.inc"
       CALL QENTER('LCISP')
 *
 *
@@ -1417,36 +1418,39 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
 *
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
-      WRITE(6,*)
-      WRITE(6,*)
-      WRITE(6,*)
+      IF(MYPROC.EQ.MASTER) THEN
+        WRITE(6,*)
+        WRITE(6,*)
+        WRITE(6,*)
      &' Number of internal combinations per symmetry '
-      WRITE(6,*)
+        WRITE(6,*)
      & ' =========================================== '
 *
-      DO 200 ICI = 1, NCMBSPC
-          WRITE(6,*) ' CI space ', ICI
-          WRITE(6,'(1H , 4E22.15)') (XISPSM(II,ICI),II=1,NSMCI)
-C         CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
-  200 CONTINUE
-      if (NTEST.ge.1) then
-        WRITE(6,*)
-        WRITE(6,*) ' Largest symmetry block           ',MXSB
-        WRITE(6,*) ' Largest Symmetry-type-type block ',MXSOOB
-        WRITE(6,*)
-      end if
+        DO 200 ICI = 1, NCMBSPC
+            WRITE(6,*) ' CI space ', ICI
+            WRITE(6,'(1H , 4E22.15)') (XISPSM(II,ICI),II=1,NSMCI)
+C           CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
+  200   CONTINUE
+        if (NTEST.ge.1) then
+          WRITE(6,*)
+          WRITE(6,*) ' Largest symmetry block           ',MXSB
+          WRITE(6,*) ' Largest Symmetry-type-type block ',MXSOOB
+          WRITE(6,*)
+        end if
 *
-      IF(NTEST.GE.5) THEN
-        WRITE(6,*)
+        IF(NTEST.GE.5) THEN
+          WRITE(6,*)
      &  ' Number of TTS subblocks per CI expansion '
-        WRITE(6,*)
+          WRITE(6,*)
      &   ' ======================================== '
 *
-        DO  ICI = 1,  NCMBSPC
-            WRITE(6,*) ' Internal CI space ', ICI
-            CALL IWRTMA(NBLKIC(1,ICI),1,NSMCI,1,NSMCI)
-        END DO
+          DO  ICI = 1,  NCMBSPC
+              WRITE(6,*) ' Internal CI space ', ICI
+              CALL IWRTMA(NBLKIC(1,ICI),1,NSMCI,1,NSMCI)
+          END DO
+        END IF
       END IF
+*.   /\ Master is writing
 *. Largest number of BLOCKS in a CI expansion
       MXNTTS = 0
       DO ICI = 1,NCMBSPC
@@ -1455,22 +1459,25 @@ C         CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
        END DO
       END DO
 *
-      if (NTEST.ge.1) then
-        WRITE(6,*) ' Largest number of blocks in CI expansion',
-     &               MXNTTS
-      end if
+      IF(MYPROC.EQ.MASTER) THEN
+        if (NTEST.ge.1) then
+          WRITE(6,*) ' Largest number of blocks in CI expansion',
+     &                 MXNTTS
+        end if
 *
-      IF(NTEST.GE.5) THEN
-      WRITE(6,*)
+        IF(NTEST.GE.5) THEN
+        WRITE(6,*)
      &' Number of columns per CI expansion '
-      WRITE(6,*)
+        WRITE(6,*)
      & ' =================================== '
 *
-      DO  ICI = 1,  NCMBSPC
-          WRITE(6,*) ' Internal CI space ', ICI
-          CALL IWRTMA(LCOLIC(1,ICI),1,NSMCI,1,NSMCI)
-      END DO
+        DO  ICI = 1,  NCMBSPC
+            WRITE(6,*) ' Internal CI space ', ICI
+            CALL IWRTMA(LCOLIC(1,ICI),1,NSMCI,1,NSMCI)
+        END DO
+        END IF
       END IF
+*.   /\ Master is writing
 *
       CALL QEXIT('LCISP')
 *
