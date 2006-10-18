@@ -3508,7 +3508,7 @@ C?   &              LU1,LU2,LU3,LU4,LU5,LU6
            WRITE(LUWRTOUT,'(A)')' '
          ELSE IF(IRUNPA.EQ.0)THEN
            WRITE(LUWRTOUT,'(A)')
-     &' No parallel route for sigma-vector generation is ... active'
+     &' You are running a serial LUCITA calculation.'
            WRITE(LUWRTOUT,'(A)')
      &' Sorry, but sigma-vector(s) will be calculated one by one'
            WRITE(LUWRTOUT,'(A)')' '
@@ -4000,7 +4000,8 @@ C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG)
         CALL GETTIM(CPUSIG2,WALLSIG2)
         CPUTID = SECTID(CPUSIG2-CPUSIG1)
         WALLTID = SECTID(WALLSIG2-WALLSIG1)
-        WRITE(6,9400) CPUTID,WALLTID, MYPROC
+*        WRITE(6,9450) CPUTID,WALLTID, MYPROC
+        WRITE(6,9450) CPUTID,WALLTID
         CALL REWINE(LU6,LBLK)
         CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
 *.2.2 Augment projected matrix
@@ -4038,7 +4039,8 @@ C       DO JVEC = NROOT+1, NVEC+IADD
         CALL GETTIM(CPUSIG2,WALLSIG2)
         CPUTID = SECTID(CPUSIG2-CPUSIG1)
         WALLTID = SECTID(WALLSIG2-WALLSIG1)
-        WRITE(6,9400) CPUTID,WALLTID, MYNEW_ID
+*        WRITE(6,9450) CPUTID,WALLTID, MYNEW_ID
+        WRITE(6,9450) CPUTID,WALLTID
 *
 *. gather the freh sigma vectors in correct order on LU4 (slave --> master)
 *
@@ -4167,7 +4169,8 @@ C         DO JVEC = NROOT+1, NVEC+IADD
           CALL GETTIM(CPUSIG2,WALLSIG2)
           CPUTID = SECTID(CPUSIG2-CPUSIG1)
           WALLTID = SECTID(WALLSIG2-WALLSIG1)
-          WRITE(6,9400) CPUTID,WALLTID, MYNEW_ID
+*          WRITE(6,9450) CPUTID,WALLTID, MYNEW_ID
+          WRITE(6,9450) CPUTID,WALLTID
         END IF
  140    CONTINUE
         IF(MYPROC.LE.IADD.AND.MYPROC.NE.MASTER) THEN
@@ -4244,7 +4247,8 @@ C         DO JVEC = NROOT+1, NVEC+IADD
         CALL GETTIM(CPUSIG2,WALLSIG2)
         CPUTID = SECTID(CPUSIG2-CPUSIG1)
         WALLTID = SECTID(WALLSIG2-WALLSIG1)
-        WRITE(6,9400) CPUTID,WALLTID, MYPROC
+*        WRITE(6,9400) CPUTID,WALLTID, MYPROC
+        WRITE(6,9400) CPUTID,WALLTID
         CALL REWINE(LU6,LBLK)
         CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
 *2.2 Augment projected matrix
@@ -4818,8 +4822,14 @@ C
  1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
  1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
- 9400 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL incl. bcast: ',
-     &A,'(',A,')',I4)
+* 9400 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL : ',
+*     &A,'(',A,')',I4)
+ 9400 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL : ',
+     &A,'(',A,')')
+* 9450 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL RUNNING 
+*     & PARALLEL: ',A,'(',A,')',I4)
+ 9450 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL RUNNING 
+     & PARALLEL: ',A,'(',A,')')
  9500 FORMAT(' >>>  CPU (WALL) TIME IN CPBACK OF SIGMA VEC: ',A,
      &'(',A,')')
  9550 FORMAT(' >>>  CPU (WALL) TIME IN CP COEFF. TO NODES:',A,'(',A,')')
