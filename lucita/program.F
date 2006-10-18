@@ -1220,7 +1220,9 @@ C     I_RESTRT_CC.EQ.1
         CALL TRAINT
       END IF
 *. Print info on matrix multiplier
-      CALL PR_MATML_STAT
+      IF(MYPROC.EQ.MASTER)THEN
+        CALL PR_MATML_STAT
+      END IF
 *
 c     Call GetMem('LUCIA','Free','REAL',KBASE,MxpWrd)
       CALL QEXIT('REST ')
