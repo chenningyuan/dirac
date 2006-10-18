@@ -149,7 +149,7 @@ C
 #endif
 
       Open(Unit=LU_INTERNAL,
-     &     File='LUSCDL',
+     &     File=SCRFLL(1:FLLNGTH),
      &     Status='NEW',
      &     Form='FORMATTED')
 *
