@@ -535,7 +535,7 @@ C
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
      &            DMAT(NBAST,NBAST),DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
-     &            DTRMAT(*),GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
+     &            DTRMAT(*),GAO(*), GAO1(*), GAO2(NBAST,6),
      &            GAB1(NBAST,3),EXCMAT(NBAST,NBAST,NZ,NXCMAT), 
      &            NCNT(NBAST), DST(NATOMS),BUF(NBAST,4),
      &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
@@ -615,13 +615,11 @@ C
         IF (DOGRHO) THEN
 #if defined (MOD_DNF)
           IF (DF_FITVXC) THEN  ! 
-            DO IXYZ = 1,3
-             IOFF = (IXYZ - 1)*NBASISAUX
-             RHG(IXYZ) = 
-     &          DP5*DDOT(NBASISAUX,GAO1(1,IXYZ),1,WORK(KCFIT),1)
-C            RHG(IXYZ) = 
-C    &          D2*DDOT(NBASISAUX,GAO1(1+IOFF,IXYZ),1,WORK(KCFIT),1)
-            ENDDO
+             DO IXYZ = 1,3
+              IOFF = NBASISAUX * (IXYZ - 1) + 1
+              RHG(IXYZ) = 
+     &          D1*DDOT(NBASISAUX,GAO1(IOFF),1,WORK(KCFIT),1)
+             ENDDO
           ELSE
 #endif
             CALL GETGRHO(RHG,0,GAO,GAO1,DMAT,BUF)      
@@ -649,9 +647,6 @@ C
      &           + D2*(RHG(1)*RXY*RHG(2) + RHG(1)*RXZ*RHG(3) 
      &               + RHG(2)*RYZ*RHG(3))
         END IF
-Caspg
-C       ENDIF ! end conventional vs. birkenheuer code 
-Caspg
 C
 C       Number of electrons
 C       ===================
@@ -661,7 +656,6 @@ C
 C       Energy
 C       ======
 C
-c       IF(DOERG.AND..NOT.DF_FITVXC) THEN
         IF(DOERG) THEN
            EDFTY = EDFTY + DFTENERGY(RHO,RHOGRD)*WGHT
         ENDIF
@@ -671,7 +665,7 @@ C       ==============================
 C
         IF (DOERG.OR.DOGRD.OR.DOLND) THEN
            CALL DFTPOT0(VX, WGHT, RHO, RHOGRD)
-           IF(DOGGA) THEN
+           IF (DOGGA) THEN
              VX(FZ0) = VX(FZ0)/RHOGRD
            ENDIF
 C
@@ -710,12 +704,16 @@ C aspg+rbast, 2006-09-21
                   VT(I) = VX(FZ0)*RHG(I)
                ENDDO
                DO I = 1, NBASISAUX
+                  IOFF1 = I 
+                  IOFF2 = IOFF1 + NBASISAUX
+                  IOFF3 = IOFF2 + NBASISAUX
                   WORK(KXCVEC - 1 + I)= WORK(KXCVEC - 1 + I)
-     &                          + VX(FR0)*GAO(I)
-!             be careful with this factor D2 in DALTON
-     &                          + D1*VT(1)*GAO1(I,1)
-     &                          + D1*VT(2)*GAO1(I,2)
-     &                          + D1*VT(3)*GAO1(I,3)
+     &                          + D1 * VX(FR0) * GAO(I)
+! be careful with the factor below, compared to dalton and to the 
+! evaluation over orbital basis 
+     &                          + D1 * VT(1)   * GAO1(IOFF1)
+     &                          + D1 * VT(2)   * GAO1(IOFF2)
+     &                          + D1 * VT(3)   * GAO1(IOFF3)
                ENDDO
              ELSE ! only lda
                DO I = 1, NBASISAUX
