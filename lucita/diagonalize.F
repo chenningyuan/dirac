@@ -75,7 +75,6 @@ C     DIMENSION INIDET(100)
 *.
       DIMENSION EROOT(NROOT)
 C
-      WRITE(6,*)
       IF( IPRT.GT. 1 )  WRITE(6,'(/A)')
      &'          *** information from ci diagonalization  ***'
 C?    WRITE(6,*)
@@ -93,9 +92,9 @@ C?    WRITE(6,*) ' IROOTHOMING in CIEIG5 ', IROOTHOMING
 * ==================================================
 * In order treat degeneracies, the lowest 4 * NROOT elements are
 *.obtained
-       IF(MYPROC.EQ.MASTER) THEN
-        write(LUWRTOUT,*) ' CIEIG5 NDIM NROOT ', NDIM,NROOT
-       END IF
+CSK       IF(MYPROC.EQ.MASTER) THEN
+CSK        write(LUWRTOUT,*) ' CIEIG5 NDIM NROOT ', NDIM,NROOT
+CSK       END IF
           NFINDM = MIN(NDIM,4*NROOT)
           CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,ISCR1(1+2*NFINDM),
      &                SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
