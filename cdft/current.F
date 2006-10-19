@@ -33,12 +33,13 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck get_current */
+C     /* GET_CURRENT */
       SUBROUTINE GET_CURRENT(LBIT_CURRENT,
      &                       CURRENT,
      &                       CURRENT_DERVS,
      &                       IREPOP,GAO,GAO1,DMAT,BUF)
 C=======================================================================
+C
 C     routine returns
 C
 C     CURRENT(1) = j_x    s_x
@@ -52,11 +53,11 @@ C
 C     CURRENT_DERVS(1,1) = derivative of x-component wrt x
 C     CURRENT_DERVS(1,2) = derivative of x-component wrt y
 C     CURRENT_DERVS(1,3) = derivative of x-component wrt z
-C                      
+C
 C     CURRENT_DERVS(2,1) = derivative of y-component wrt x
 C     CURRENT_DERVS(2,2) = derivative of y-component wrt y
 C     CURRENT_DERVS(2,3) = derivative of y-component wrt z
-C                      
+C
 C     CURRENT_DERVS(3,1) = derivative of z-component wrt x
 C     CURRENT_DERVS(3,2) = derivative of z-component wrt y
 C     CURRENT_DERVS(3,3) = derivative of z-component wrt z
@@ -69,13 +70,17 @@ C     (LBIT_CURRENT,2) = .TRUE.  density
 C     (LBIT_CURRENT,2) = .FALSE. no density
 C     (LBIT_CURRENT,3) = .TRUE.  derivatives
 C     (LBIT_CURRENT,3) = .FALSE. no derivatives
+C
 C-----------------------------------------------------------------------
-C     radovan bast                         last revision: september 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
+
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -84,7 +89,7 @@ C-----------------------------------------------------------------------
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "cdft.h"
-C
+
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
 #endif
@@ -95,10 +100,9 @@ C
      &          GAO1(*),
      &          DMAT(*),
      &          BUF(*)
-C
+
 #include "ibtfun.h"
-C
-C
+
       IF(      LBIT(LBIT_CURRENT,1)) THEN !current
         F  = -CVAL
         G  = -CVAL
@@ -111,6 +115,7 @@ C
       IF(.NOT. LBIT(LBIT_CURRENT,1)) THEN !spin
         F  = D1
         G  = D1
+!       IF(BETA) G = -D1
         IU = 1
         IV = 1
         IX = 2
@@ -123,10 +128,10 @@ C
       IF(LBIT(LBIT_CURRENT,3)) THEN !derivatives
         CALL DZERO(CURRENT_DERVS,9)
       ENDIF
-C
+
       ISTART = 1
       IF(COLLINEAR) ISTART = 3
-C
+
       DO IXYZ = ISTART,3
 #if defined (VAR_G77) || defined (SYS_SX)
         IOFF = NBAST*NBAST
@@ -137,7 +142,7 @@ C
 #endif
         IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
         IOFF = IOFF*(IQ-1)
-C
+
         IF(LBIT(LBIT_CURRENT,2)) THEN !density
           CALL GET_CURRENT_SUB(CURRENT(IXYZ),
      &                         F,IU,IV,ITRANSFORM,IXYZ,
@@ -160,120 +165,121 @@ C
      &                           GAO,
      &                           GAO1(1+JOFF*(JXYZ-1)),
      &                           IREPOP,DMAT(1+IOFF),BUF)
-            CURRENT_DERVS(IXYZ,JXYZ) = CURRENT_DERVS(IXYZ,JXYZ)*D2
+            CURRENT_DERVS(IXYZ,JXYZ) =
+     &               CURRENT_DERVS(IXYZ,JXYZ) + CURRENT_DERVS(IXYZ,JXYZ)
           ENDDO
         ENDIF
       ENDDO
-C
-C
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck get_current_sub */
+C     /* deck GET_CURRENT_SUB */
       SUBROUTINE GET_CURRENT_SUB(CURRENT,
      &                           F,IC1,IC2,ITRANSFORM,IXYZ,
-     &                           GAO1,
-     &                           GAO2,
+     &                           GAOL,
+     &                           GAOR,
      &                           IREPOP,DMAT,BUF)
 C=======================================================================
-C
+C     GAOL is GAO, GAOR can be GAO or slice of GAO1
 C-----------------------------------------------------------------------
-C     radovan bast                         last revision: september 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
+
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-C
+
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO1(NBAST),
-     &          GAO2(NBAST),
+      DIMENSION GAOL(NBAST),
+     &          GAOR(NBAST),
      &          DMAT(NBAST,NBAST)
 #else
-      DIMENSION GAO1(NTBAS(0)),
-     &          GAO2(NTBAS(0)),
+      DIMENSION GAOL(NTBAS(0)),
+     &          GAOR(NTBAS(0)),
      &          DMAT(NTBAS(0),NTBAS(0))
 #endif
       DIMENSION BUF(*)
-C
+
 #include "ibtfun.h"
-C
-C
+
       INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),IREPOP)
-C
+
       DO IREP1 = 0,NBSYM-1
-C
+
         N1 = NBBAS(IREP1,IC1)
-        IF(N1.GT.0) THEN
-C
+        IF(N1 .GT. 0) THEN
+
           I1 = IBBAS(IREP1,IC1)+1
           IREP2 = IBTXOR(IREP1,INTERMEDIATE)
           N2 = NBBAS(IREP2,IC2)
-          IF(N2.GT.0) THEN
-C
+          IF(N2 .GT. 0) THEN
+
             I2 = IBBAS(IREP2,IC2)+1
             CALL DGEMV('N',NBBAS(IREP1,IC1),NBBAS(IREP2,IC2),D1,
-     &                 DMAT(I1,I2),NTBAS(0),GAO2(I2),1,D0,BUF,1)
-            CURRENT = CURRENT+F*DDOT(NBBAS(IREP1,IC1),GAO1(I1),1,BUF,1)
+     &                 DMAT(I1,I2),NTBAS(0),GAOR(I2),1,D0,BUF,1)
+            CURRENT = CURRENT+F*DDOT(NBBAS(IREP1,IC1),GAOL(I1),1,BUF,1)
           ENDIF
         ENDIF
       ENDDO
-C
-C
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck get_current_div */
+C     /* deck GET_CURRENT_DIV */
       SUBROUTINE GET_CURRENT_DIV(CURRENT_DERVS,CURRENT_DIV)
 C=======================================================================
 C     calculate divergence
 C-----------------------------------------------------------------------
-C     radovan bast                         last revision: september 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
-C
+
       DIMENSION CURRENT_DERVS(3,3)
-C
-C
+
       CURRENT_DIV = D0
       DO IXYZ = 1,3
         CURRENT_DIV = CURRENT_DIV + CURRENT_DERVS(IXYZ,IXYZ)
       ENDDO
-C
-C
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck get_current_rot */
+C     /* deck GET_CURRENT_ROT */
       SUBROUTINE GET_CURRENT_ROT(CURRENT_DERVS,CURRENT_ROT)
 C=======================================================================
 C     calculate curl
 C-----------------------------------------------------------------------
-C     radovan bast                         last revision: september 2006
+C                                                           radovan bast
+C                                            last revision: october 2006
 C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
+
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C-----------------------------------------------------------------------
-C
+
       DIMENSION CURRENT_DERVS(3,3),
      &          CURRENT_ROT(3)
-C
-C
+
       CURRENT_ROT(1) = -CURRENT_DERVS(2,3) + CURRENT_DERVS(3,2)
       CURRENT_ROT(2) = -CURRENT_DERVS(3,1) + CURRENT_DERVS(1,3)
       CURRENT_ROT(3) = -CURRENT_DERVS(1,2) + CURRENT_DERVS(2,1)
-C
-C
+
       RETURN
       END
