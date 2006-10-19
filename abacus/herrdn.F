@@ -7427,9 +7427,9 @@ C
             DO IJ = 1,NUC(J,2)
               TEST = ABS(ALPTEST-ALPHA(IJ,J,2))*ALPINV
               IF (TEST.LT.SML) THEN
-              WRITE(LUPRI,'(A,E24.16/8X,A,E24.16,A)') 
-     &           'WARNING from GENSML: Skipping ',ALPTEST,
-     &           'too close to ',ALPHA(IJ,J,2),' from previous shells'
+C              WRITE(LUPRI,'(A,E24.16/8X,A,E24.16,A)') 
+C     &           'WARNING from GENSML: Skipping ',ALPTEST,
+C     &           'too close to ',ALPHA(IJ,J,2),' from previous shells'
                 GO TO 100
               ENDIF
             END DO
@@ -7444,9 +7444,9 @@ C
          DO IJ = 1, NUC_IBS
             TEST = ABS(ALPTEST-ALPHA(IJ,IBS,2))*ALPINV
             IF (TEST.LT.SML) THEN
-              WRITE(LUPRI,'(A,E24.16/8X,A,E24.16,A)') 
-     &         'WARNING from GENSML: Skipping ',ALPTEST,
-     &         'too close to ',ALPHA(IJ,IBS,2),' from same shell'
+C              WRITE(LUPRI,'(A,E24.16/8X,A,E24.16,A)') 
+C     &         'WARNING from GENSML: Skipping ',ALPTEST,
+C     &         'too close to ',ALPHA(IJ,IBS,2),' from same shell'
               GO TO 100
             ENDIF
          END DO
