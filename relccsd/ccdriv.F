@@ -3290,10 +3290,10 @@ C      Right adjust representation names
 C
        DO IRP = 1, NSYMRP
           REPN(IRP) = REPNT(IRP)(1:4)
-          CALL BLANKR (4,REPN(IRP))
+          CALL BLANKL (4,REPN(IRP))
        ENDDO
        DO IRP = 1, NREP
-          CALL BLANKR (4,REPNA(IRP))
+          CALL BLANKL (4,REPNA(IRP))
        ENDDO
       ENDIF
 C

@@ -233,14 +233,14 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BLANKR (N,A)
+      SUBROUTINE BLANKL (N,A)
 C
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
 C
 C     Circular shift of character array such that the blanks are to the
-C     right side of the array.
+C     left side of the array.
 C
 C---------------Routines called----------------------------------------
 C
@@ -271,6 +271,50 @@ C
             A(I+IS) = A(I)
       ENDDO
       DO I = 1, IS
+         A(I) = ' '
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BLANKR (N,A)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Circular shift of character array such that the blanks are to the
+C     right side of the array.
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER N
+      CHARACTER*1 A(N)
+C
+C---------------Common Blocks--------------------------------------
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+      IS = 0
+      DO I = 1, N
+         IF (A(I).NE.' ') GOTO 2
+         IS = IS + 1
+      ENDDO
+C
+    2 IF (IS.EQ.0) RETURN
+C
+      DO I = 1, N-IS
+            A(I) = A(I+IS)
+      ENDDO
+      DO I = N-IS+1, N
          A(I) = ' '
       ENDDO
 C

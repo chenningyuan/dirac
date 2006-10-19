@@ -70,6 +70,14 @@ C     Initializations
 C
       CALL PAMINI(WORK,LWORK)
 C
+C     Echo back the input and count the number of keywords given
+C
+      CALL TITLER('Input read from DIRAC.INP','*',127)
+      OPEN(LUCMD,FILE = 'DIRAC.INP')
+      CALL KEYWORD_SCAN (.TRUE.,.TRUE.,.TRUE.,.TRUE.,.TRUE.,.TRUE.,
+     &                   .FALSE.,NUMBER_OF_KEYWORDS,WORK)
+      CLOSE(LUCMD)
+C
 C     Specify job
 C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
@@ -204,9 +212,9 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 8, NTABLE = 24)
 C
-      LOGICAL LBIT
+      LOGICAL LBIT, FIND_KEYWORD
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
-     &          WORD1*7, MXFORM*6, FMT*6
+     &          WORD1*7,MXFORM*6, FMT*6
       DIMENSION WORK(LWORK)
       LOGICAL   NOGENINP
 C
@@ -235,24 +243,11 @@ C     Read menu file
 C     ==============
 C     **** Find General input *****
 C
-      REWIND (LUCMD,IOSTAT=IOS)
-C     ... IOSTAT to avoid program abort on some systems
-C         if reading input from a terminal
-  900 CONTINUE
-      READ (LUCMD,'(A7)',END=910,ERR=920) WORD
-      IF (WORD .EQ. '**GENER') THEN
-         GO TO 930
-      ELSE
-         GO TO 900
-      END IF
-  910 CONTINUE
+      IF (.NOT.FIND_KEYWORD('**GENER')) THEN
          NOGENINP = .TRUE.
          GOTO 180
-C         CALL QUIT('End of file on LUCMD, no DIRAC input found')
-  920 CONTINUE
-         CALL QUIT('Error reading LUCMD, no Dirac input found')
-  930 CONTINUE
-      WORD1 = WORD
+      ENDIF
+      WORD1 = '**GENERAL'
 C
 C     Process input for COMMON  /DCBGEN/
 C     ==================================
@@ -271,7 +266,7 @@ C
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
-               CALL PRTAB(NDIR,TABDIR, WORD1//' input keywords',LUPRI)
+               CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                GO TO 100
             END IF
@@ -545,6 +540,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (NTABLE = 12, NDIR = 4)
+      LOGICAL FIND_KEYWORD
 C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7, TABDIR(NDIR)*7,
      &          WORD1*7
@@ -563,24 +559,9 @@ C     Read menu file
 C     ==============
 C     **** Find Dirac input *****
 C
-      REWIND (LUCMD,IOSTAT=IOS)
-C     ... IOSTAT to avoid program abort on some systems
-C         if reading input from a terminal
-C
-C     ... IOSTAT to avoid program abort on some systems
-C         if reading input from a terminal
-  900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
-      IF (WORD .EQ. '**DIRAC') THEN
-         GO TO 930
-      ELSE
-         GO TO 900
-      END IF
-  910 CONTINUE
-         CALL QUIT('End of file on LUCMD, no Dirac input found')
-  920 CONTINUE
-         CALL QUIT('Error reading LUCMD, no Dirac input found')
-  930 CONTINUE
-      WORD1 = WORD
+      IF (.NOT.FIND_KEYWORD('**DIRAC')) 
+     &   CALL QUIT('no Dirac input found')
+      WORD1 = '**DIRAC'
 C
 C     Process job input for COMMON  /CBIPAM/
 C     ======================================
@@ -5467,7 +5448,7 @@ C
 C
       IF (GAUNT.AND.LONDON)
      & CALL QUIT ('London orbitals are not implemented for GAUNT')
-C
+      
       RETURN
  1000 FORMAT (/' **** WARNING **** ',A,' not tested.')
       END
@@ -6443,4 +6424,113 @@ C         if reading input from a terminal
 C
       RETURN
       END
-      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck keyword_scan */
+      SUBROUTINE KEYWORD_SCAN (DOUBLE_STAR,SINGLE_STAR,DOT,NAME_LIST,
+     &                         PRINT_LIST,PRINT_ALL,FILL_LIST,
+     &                         NUMBER_OF_KEYWORDS,KEYWORD_LIST)
+C***********************************************************************
+C
+C     Search for keywords in the DIRAC input file. These are given 
+C     in the list KEYWORD_LIST if FILL_LIST is TRUE. If FILL_LIST
+C     is FALSE only the total number NUMBER_OF_KEYWORDS is given back.
+C
+C     Input switches for the scan (may be toggled individually)
+C           - DOUBLE_STAR : Include keys corresponding to sections
+C           - SINGLE_STAR : Include keys corresponding to subsections
+C           - DOT         : Include keys from within subsections
+C           - NAME_LIST   : Include NAMELIST type input (RELCCSD)
+C
+C     All keywords found are also printed to output if PRINT_LIST is TRUE
+C     The whole input is echoed to output if PRINT_ALL is TRUE
+C
+C     Written by L. Visscher, october 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      LOGICAL DOUBLE_STAR,SINGLE_STAR,DOT,NAME_LIST
+      LOGICAL PRINT_LIST,PRINT_ALL,FILL_LIST
+      CHARACTER*80 LINE
+      CHARACTER*7 KEYWORD_LIST(*)
+      INTEGER NUMBER_OF_KEYWORDS
+C
+C     Scan menu file
+C     ==============
+C
+      NUMBER_OF_KEYWORDS = 0
+      REWIND (LUCMD,IOSTAT=IOS)
+C     ... IOSTAT to avoid program abort on some systems
+C         if reading input from a terminal
+  100 READ (LUCMD,'(A80)',END=120,ERR=110) LINE
+C
+C     Search for regular DIRAC input
+C
+      IF (DOUBLE_STAR .AND. LINE(1:2) .EQ. '**') THEN
+        NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
+        IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(3:9)
+        IF (PRINT_LIST) WRITE (LUPRI,*) LINE
+      ELSE IF (SINGLE_STAR .AND. LINE(1:1) .EQ. '*') THEN
+        NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
+        IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(2:8)
+        IF (PRINT_LIST) WRITE (LUPRI,*) LINE
+      ELSE IF (DOT. AND. LINE(1:1) .EQ. '.') THEN
+        NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
+        IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(2:8)
+        IF (PRINT_LIST) WRITE (LUPRI,*) LINE
+      ELSE
+        IF (PRINT_ALL) WRITE (LUPRI,*) LINE
+      ENDIF
+C
+C     Search for namelist input (first remove trailing blanks)
+C
+      CALL BLANKR (132,LINE)
+      IF (NAME_LIST .AND. (LINE(1:1).EQ.'&' .OR. LINE(1:1).EQ.'$')) THEN
+       NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
+       IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(2:8)
+       IF (PRINT_LIST.AND..NOT.PRINT_ALL) 
+     &    WRITE (LUPRI,*) LINE
+      END IF
+C
+      GO TO 100
+  110 CONTINUE
+      CALL QUIT('Error scanning for keywords')
+  120 CONTINUE
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck find_keyword */
+      LOGICAL FUNCTION FIND_KEYWORD (KEYWORD)
+C***********************************************************************
+C
+C     Position menu file at the specified keyword 
+C
+C     Written by L. Visscher, october 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      LOGICAL KEY_FOUND
+      CHARACTER LINE*80,KEYWORD*(*)
+C
+      KEY_FOUND = .FALSE.
+      REWIND (LUCMD,IOSTAT=IOS)
+C
+      LEN_KEYWORD = LEN(KEYWORD)
+  200 READ (LUCMD,'(A80)',END=220,ERR=210) LINE
+      CALL BLANKR (LINE,80)
+C
+      IF (LINE(1:LEN_KEYWORD) .EQ. KEYWORD(1:LEN_KEYWORD)) THEN
+         KEY_FOUND = .TRUE.
+         GO TO 220
+      ENDIF
+      GO TO 200
+C
+  210 CONTINUE
+      CALL QUIT('Error scanning for keywords')
+  220 CONTINUE
+C
+      FIND_KEYWORD = KEY_FOUND
+      RETURN
+      END
