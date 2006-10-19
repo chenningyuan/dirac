@@ -919,6 +919,13 @@ C      provide restarting of the postDHF BSS-SCF procedure
         RESTFCK = .FALSE.
       ENDIF 
 C
+C     Freeze orbitals by zeroing off-diagonal elements of FMO
+C     =======================================================
+C
+      IF (DOMOFREEZE) THEN
+         CALL FMO_FREEZE(FMO)
+      ENDIF
+C
 C     Convergence control/acceleration
 C     ================================
 C
@@ -4511,3 +4518,35 @@ C
       END
 
 
+      SUBROUTINE FMO_FREEZE(FMO)
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+      DIMENSION FMO(NORBT,NORBT,NZ)
+      DO I=1,NMOFREEZE(1)
+         IIORB = IMOFREEZE(I) + NPSH(1)
+         DO IZ=1,NZ
+            CTMP = FMO(IIORB,IIORB,IZ)
+            DO J=1,NORBT
+               FMO(J,IIORB,IZ) = 0.0D0
+               FMO(IIORB,J,IZ) = 0.0D0
+            ENDDO
+            FMO(IIORB,IIORB,IZ) = CTMP
+         ENDDO               
+      ENDDO
+      IF (NFSYM.GT.2) THEN
+         DO I=1+NMOFREEZE(1),NMOFREEZE(1)+NMOFREEZE(2)
+            IIORB = IMOFREEZE(I) + NORB(1) + NPSH(2)
+            DO IZ=1,NZ
+               CTMP = FMO(IIORB,IIORB,IZ)
+               DO J=1,NORBT
+                  FMO(J,IIORB,IZ) = 0.0D0
+                  FMO(IIORB,J,IZ) = 0.0D0
+               ENDDO
+               FMO(IIORB,IIORB,IZ) = CTMP
+            ENDDO               
+         ENDDO
+      ENDIF      
+      END

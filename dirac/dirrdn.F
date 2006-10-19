@@ -743,7 +743,7 @@ C***********************************************************************
 C
       LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      CHARACTER LINE*80, TEXT*20
+      CHARACTER LINE*80, TEXT*20, CTEMP*72
       DIMENSION WORK(LWORK)
 C
 #include "nuclei.h"
@@ -765,7 +765,7 @@ C
      &            '.XXXXXX','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
-     &            '.ERGCN2','.EVCCN2','.FCKCN2','.XXXXXX','.XXXXXX',
+     &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
@@ -814,6 +814,7 @@ C
       DODIIS    = .TRUE.
       DIISON    = .FALSE.
       OVLSEL    = .FALSE.
+      DOMOFREEZE = .FALSE.
       DYNSEL    = .FALSE.
       DOBOSSEL  = .FALSE.
       NSUBBL    = NBSYM
@@ -1302,6 +1303,23 @@ C&&& FCKCNV2: Convergence on total Fock matrix
                ENDIF
                GOTO 100
  49            CONTINUE
+C     .MOFREEZE
+               DOMOFREEZE = .TRUE.
+               WRITE (LUPRI,*) 'WARNING: .MOFREEZE is experimental!'
+               DO I = 1,NFSYM
+                  READ(LUCMD,'(A72)') CTEMP
+                  NMOFREEZE(I) = -1
+                  CALL NUMLST(CTEMP,IMOFREEZE(1+(I-1)*(NMOFREEZE(1))),
+     &                 MXMOFREEZE,1,MXMOFREEZE,
+     &                 I,NMOFREEZE(I),WORK,LWORK)
+               END DO
+               WRITE (LUPRI,*)'Freezing orbitals in fermion symmetry 1'
+               WRITE (LUPRI,*) (IMOFREEZE(I),I=1,NMOFREEZE(1))
+               IF (NFSYM.GT.1) THEN
+                WRITE (LUPRI,*)'Freezing orbitals in fermion symmetry 2'
+                WRITE (LUPRI,*) (IMOFREEZE(I),I=NMOFREEZE(1)+1,
+     &               NMOFREEZE(1)+NMOFREEZE(2))
+               ENDIF
                GOTO 100
  50            CONTINUE
                GOTO 100

@@ -13,7 +13,7 @@
 
 
       INTEGER MFMAT, MXOPEN
-      PARAMETER (MFMAT = 10, MXOPEN = 10)
+      PARAMETER (MFMAT = 10, MXOPEN = 10, MXMOFREEZE = 100)
 
       INTEGER MFRAG
       PARAMETER (MFRAG = 6)
@@ -29,13 +29,13 @@
      &        FCKCNV, DODSCF, DODAMP, DODIIS, DIISON, FIXDIF,           &
      &        DIISAO, DIISMO, OVLSEL, DYNSEL, DOBOSSEL, AUTOCC, INIOCC, &
      &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,                     &
-     &                 ERGCNV2, EVCCNV2, FCKCNV2                        &
+     &                 ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE            &
 
       COMMON /DCLDHF/ ERGCNV, EVCCNV, FCKCNV, DHFCONV, DHFEXIT, TRIVEC, &
      &                TRIFCK, DODSCF, DODAMP, DODIIS, DIISON, OVLSEL,   &
      &                FIXDIF, DIISAO, DIISMO, DYNSEL, DOBOSSEL, AUTOCC, &
      &                INIOCC, DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,     &
-     &                ERGCNV2, EVCCNV2, FCKCNV2
+     &                ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE
 
       INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
      &        INTDEF, INTDEF_SAVE, INTFLG,                              &
@@ -45,7 +45,7 @@
      &        IHRMOP(MFMAT), NEWOCC, MXMACRO, MXMICRO, MAXBCK, NFRAG,   &
      &        NTMO(2), I2TMOT(2), N2TMOTQ, NISHMF(2),                   &
      &        NACSHMF(2, MXOPEN), NASHMFT, NOCCMF(2), NPRJNUC(MFRAG),   &
-     &               MAXITR2                                            &
+     &               MAXITR2, NMOFREEZE(2), IMOFREEZE(MXMOFREEZE)       &
 
       COMMON /DCIDHF/ NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS,     &
      &                NELMBM, INTDEF, INTDEF_SAVE, INTFLG,              &
@@ -55,7 +55,8 @@
      &                MXMACRO, MXMICRO, MAXBCK, NFRAG,   NTMO, I2TMOT,  &
      &                N2TMOTQ, NISHMF,                                  &
      &                NACSHMF, NASHMFT, NOCCMF, NPRJNUC,                &
-     &                       MAXITR2                                    &
+     &                       MAXITR2,                                   &
+     &                    NMOFREEZE, IMOFREEZE                          &
 
 !..number of closed and open shell orbitals with frozen ones subtracted
 
