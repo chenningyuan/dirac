@@ -1228,10 +1228,10 @@ c     Call GetMem('LUCIA','Free','REAL',KBASE,MxpWrd)
       CALL QEXIT('REST ')
 *
 * Eliminate scratch units:
-      close(unit=LUSC1,status='DELETE')
+CSK      close(unit=LUSC1,status='DELETE')
       close(unit=LU91,status='DELETE')
-      close(unit=LUSCR1,status='DELETE')
-*
+CSK      write(6,*)'LUSCR1,MYPROC', LUSCR1,MYPROC
+CSK      close(unit=LUSCR1,status='DELETE')
 C
       WRITE (LUOUT,*) '                          '
       WRITE (LUOUT,*) ' I am home from the loops '
