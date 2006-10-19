@@ -554,7 +554,7 @@ C
 * 10b: runtype of CI calculation
 *
       write(LUOUT,'(A42,A8)')
-     &  ' Performing the CI calculation ........ ',performci
+     &  ' Running the CI calculation ........... ',performci
       write(LUOUT,*)
 *
 * 11: INAC specification of inactive orbitals per symmetry
