@@ -146,6 +146,7 @@ C=======================================================================
             DO JXYZ = 1,3
               VXC_V(JXYZ) = (VXC(FZ0)*SPIN_DENSITY_DERVS(IXYZ,JXYZ)
      &          + FACTOR_2*DENSITY_GRADIENT(JXYZ))/DENSITY_GRADIENT_NORM
+              VXC_V(JXYZ) = VXC_V(JXYZ)*D2 !because of SYMSYM later in the code
             ENDDO
 
             CALL SDFT_EXC_GGA(VXC_S,VXC_V,
@@ -270,10 +271,10 @@ C=======================================================================
 
               I2 = IBBAS(IREP2,IC)
               DO J = 1,N2
-                FACTOR =    VXC_S   *GAO(I2+J)
-     &                 + D2*VXC_V(1)*GAO1(I2+J,1) !factor D2 has to be here, mind SYMSYM
-     &                 + D2*VXC_V(2)*GAO1(I2+J,2)
-     &                 + D2*VXC_V(3)*GAO1(I2+J,3)
+                FACTOR = VXC_S   *GAO(I2+J)
+     &                 + VXC_V(1)*GAO1(I2+J,1)
+     &                 + VXC_V(2)*GAO1(I2+J,2)
+     &                 + VXC_V(3)*GAO1(I2+J,3)
                 CALL DAXPY(N1,FACTOR,GAO(I1+1),1,EXCMAT(I1+1,I2+J),1)
               ENDDO
             ENDIF
