@@ -1653,7 +1653,7 @@ C       CALL GETOBS2(ECORE_ENV,NAOS_ENV,NMOS_ENV)
         CALL GETOBS_LUCIA(NAOS_ENV,NMOS_ENV)
       else if (ENVIRO(1:5).eq.'DIRAC') then
         if (myproc.eq.master) then
-        write(6,*)
+*        write(6,*)
         write(6,*) 'Integral import from DIRAC.'
         write(6,*) 'No checking of environment dims.'
         end if
