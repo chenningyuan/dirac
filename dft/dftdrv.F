@@ -549,6 +549,8 @@ C
       DOLR  = LBIT(IOPTS,3)
       DOQR  = LBIT(IOPTS,4)
       DOLND = LBIT(IOPTS,5)
+C
+      NDIMENSION = NBAST
 #if defined (MOD_DNF)
 C aspg+rbast 2006-09-21
 C memory allocation for variables to hold information related
@@ -568,6 +570,7 @@ C exchange-correlation contibutions together with density fitting
          else
             CALL READ_MATRIX(WORK(KCFIT),1,NBASISAUX,'FITCOE')
          endif
+         NDIMENSION = MAX(NBAST,NBASISAUX)
       ENDIF
 Caspg+rbast
 #endif
@@ -582,12 +585,6 @@ C
 C
 C       AOs
 C       ===
-C
-Caspg+rbast, 2006-09-21
-        NDIMENSION = NBAST
-#if defined (MOD_DNF)
-        IF (DF_FITVXC) NDIMENSION = MAX(NBAST,NBASISAUX)
-#endif
 C
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
      &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
