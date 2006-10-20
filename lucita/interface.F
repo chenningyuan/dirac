@@ -7528,7 +7528,8 @@ C?    write(6,*) 'ISYMOFF = ',ISYMOFF
 #endif
 #include "files.inc"
 *
-      INTEGER Str_Length, MYTIMEXL, MYDATEXL, intkrm, intkrp, INTITER  
+*      INTEGER Str_Length, MYTIMEXL, MYDATEXL, intkrm, intkrp, INTITER  
+      INTEGER intkrm, intkrp, INTITER  
       character*8 DIRACTWO
       character*10 DATEX,DATEXB,TIMEX*8,TIMEXB*8
       logical REALAR
@@ -7591,21 +7592,21 @@ C
         if (myproc.eq.master) then
           read (LUTWO) datex,timex,nkr,
      &          (kr(i),kr(-i),i=1,nkr)
-          mytimexl = Str_Length(timex)
-          mydatexl = Str_Length(datex)
+*          mytimexl = Str_Length(timex)
+*          mydatexl = Str_Length(datex)
         end if
       end if
 #if defined (VAR_MPI)
       if (N2EFIL.eq.0) then
           if (nmproc.gt.1) then
-              call mpi_bcast(mytimexl,1,mpi_integer,master,
-     &                      mpi_comm_world,ierr)
-              call mpi_bcast(mydatexl,1,mpi_integer,master,
-     &                      mpi_comm_world,ierr)
-              call mpi_bcast(timex,mytimexl,mpi_character,master,
-     &                      mpi_comm_world,ierr)
-              call mpi_bcast(datex,mydatexl,mpi_character,master,
-     &                      mpi_comm_world,ierr)
+*              call mpi_bcast(mytimexl,1,mpi_integer,master,
+*     &                      mpi_comm_world,ierr)
+*              call mpi_bcast(mydatexl,1,mpi_integer,master,
+*     &                      mpi_comm_world,ierr)
+*              call mpi_bcast(timex,mytimexl,mpi_character,master,
+*     &                      mpi_comm_world,ierr)
+*              call mpi_bcast(datex,mydatexl,mpi_character,master,
+*     &                      mpi_comm_world,ierr)
               call mpi_bcast(nkr,1,mpi_integer,master,
      &                      mpi_comm_world,ierr)
               do j = 1, nkr
@@ -7630,9 +7631,9 @@ C
       if (myproc.eq.master) then
         write(6,*) 'Integrals have been calculated on the'
         write(6,'(A12,1X,A)') '            ',DATEX,' at ',TIMEX
-      else
-        write(12,*) 'Integrals have been calculated on the'
-        write(12,'(A12,1X,A)') '            ',DATEX,' at ',TIMEX
+*      else
+*        write(12,*) 'Integrals have been calculated on the'
+*        write(12,'(A12,1X,A)') '            ',DATEX,' at ',TIMEX
       end if
       if (NTEST.ge.5) then
         
