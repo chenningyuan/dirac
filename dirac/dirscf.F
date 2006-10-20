@@ -4542,5 +4542,4 @@ C
             ENDDO               
          ENDDO
       ENDDO
-      RETURN
       END
