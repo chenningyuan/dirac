@@ -4525,20 +4525,13 @@ C
 #include "dcborb.h"
 #include "dcbdhf.h"
       DIMENSION FMO(NORBT,NORBT,NZ)
-      DO I=1,NMOFREEZE(1)
-         IIORB = IMOFREEZE(I) + NPSH(1)
-         DO IZ=1,NZ
-            CTMP = FMO(IIORB,IIORB,IZ)
-            DO J=1,NORBT
-               FMO(J,IIORB,IZ) = 0.0D0
-               FMO(IIORB,J,IZ) = 0.0D0
-            ENDDO
-            FMO(IIORB,IIORB,IZ) = CTMP
-         ENDDO               
-      ENDDO
-      IF (NFSYM.GT.2) THEN
-         DO I=1+NMOFREEZE(1),NMOFREEZE(1)+NMOFREEZE(2)
-            IIORB = IMOFREEZE(I) + NORB(1) + NPSH(2)
+      DO IFR=1,NFSYM
+         DO I=1,NMOFREEZE(1)
+            IF (IFR.EQ.1) THEN
+               IIORB = IMOFREEZE(I) + NPSH(1)
+            ELSE
+               IIORB = IMOFREEZE(I) + NORB(1) + NPSH(2)
+            ENDIF
             DO IZ=1,NZ
                CTMP = FMO(IIORB,IIORB,IZ)
                DO J=1,NORBT
@@ -4548,5 +4541,4 @@ C
                FMO(IIORB,IIORB,IZ) = CTMP
             ENDDO               
          ENDDO
-      ENDIF      
       END
