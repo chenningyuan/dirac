@@ -681,8 +681,9 @@ C       gaussian transformation in LOWDIN()
           ISPHTR = 0
 #if defined (MOD_DNF)
 Caspg, test
-        ELSE IF (DOSPHE) THEN
-          ISPHTR = 0
+C       ELSE IF (DOSPHE) THEN
+C         ISPHTR = 0
+Caspg
 #endif
         ELSE IF (.NOT. (DOCART .OR. DOOWN)) THEN
 C       In 4-component mode Cartesian Gaussians are always used.  

@@ -8845,12 +8845,6 @@ C        ... use IQDEF instead of IPQTOQ only when beeing in AO basis!
         CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI)    
       ENDIF
 
-      IF(RUNERI) THEN
-         write (*,*) 'ERI already works with spherical gaussians.'
-         write (*,*) 'the cartesian -> spherical transformation in '  
-         write (*,*) 'passing to AMFI is therefore not necessary.'
-      ELSE
-C      ... generate transf.coefficients...
       CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
 
 C      ... transform C AO, WORK(KBUF1) -> S AO, WORK(KBUF2) 
@@ -8861,7 +8855,6 @@ C      ... transform C AO, WORK(KBUF1) -> S AO, WORK(KBUF2)
      &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
      &         WORK(KFREE),LFREE,IPRINT)
       ENDDO
-      ENDIF
 
       IF (IPRINT.GE.4) THEN
         CALL HEADER(
@@ -8910,11 +8903,6 @@ C      .... charges per nucleis
      &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCHA,IC_AMFI,JM4POS,
      &  CVAL_AMFI,IPRINT,WORK(KFREE),LFREE)
 
-      IF(RUNERI) THEN
-         write (*,*) 'ERI already works with spherical gaussians.'
-         write (*,*) 'the spherical -> cartesian trasnformation is ' 
-         write (*,*) 'therefore not necessary.'
-      ELSE
       CALL MEMCHK('before S->C',WORK,1)
 
       IF (IPRINT.GE.4) THEN
@@ -8922,7 +8910,6 @@ C      .... charges per nucleis
      &  'AMFI_STUFF: TOTAL H(2c)_LL (after AMFIIN)'//
      &  ' in "xhi" S AO basis' ,-1)
         CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
-      ENDIF
 
 C ===================================================================
 C     now transform back: S AO, WORK(KBUF2) -> C AO, WORK(KBUF1) 
@@ -8947,9 +8934,6 @@ C   ... point to check H2c in C AO basis again...
 C     ... this is only testing sequence...
       TESTCSC=.FALSE.
       IF (TESTCSC) THEN
-       IF (RUNERI) THEN
-         write(*,*) 'no S<->C transformation required'
-       ELSE
        CALL DZERO(WORK(KBUF2),N2BBASX*4)
 C       ... needed to go back to S
        CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
@@ -8982,7 +8966,6 @@ C        ... and from S to C
         ENDIF
 
         CALL QUIT('CSC  again')
-        ENDIF
       ENDIF
 
 C ============================================================
