@@ -28,14 +28,14 @@
       LOGICAL DHFCONV(2), DHFEXIT, TRIVEC, TRIFCK, ERGCNV, EVCCNV,      &
      &        FCKCNV, DODSCF, DODAMP, DODIIS, DIISON, FIXDIF,           &
      &        DIISAO, DIISMO, OVLSEL, DYNSEL, DOBOSSEL, AUTOCC, INIOCC, &
-     &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,                     &
+     &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,DOCCNV,              &
      &                 ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE            &
 
       COMMON /DCLDHF/ ERGCNV, EVCCNV, FCKCNV, DHFCONV, DHFEXIT, TRIVEC, &
      &                TRIFCK, DODSCF, DODAMP, DODIIS, DIISON, OVLSEL,   &
      &                FIXDIF, DIISAO, DIISMO, DYNSEL, DOBOSSEL, AUTOCC, &
      &                INIOCC, DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,     &
-     &                ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE
+     &                ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE,DOCCNV      &
 
       INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
      &        INTDEF, INTDEF_SAVE, INTFLG,                              &

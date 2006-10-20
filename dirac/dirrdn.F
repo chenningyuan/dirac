@@ -810,6 +810,7 @@ C
       DODSCF    = .FALSE.
       FIXDIF    = .FALSE.
       IF(IDFLAG.GT.0) DODSCF    = .TRUE.
+      DOCCNV    = .TRUE.
       DODAMP    = .TRUE.
       DODIIS    = .TRUE.
       DIISON    = .FALSE.

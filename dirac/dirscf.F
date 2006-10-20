@@ -878,7 +878,6 @@ C         NZT is the NZ value for the transformation matrix
         END IF
 
       END IF ! OF .NOT.RESTFCK
-
       CLOSE(LUTMAT,STATUS='KEEP')
 
 CMI ==================================================================
@@ -929,14 +928,16 @@ C
 C     Convergence control/acceleration
 C     ================================
 C
-      IF(DIISAO) THEN
-        CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),WORK(KTMAT),
-     &              BMAT,ICHKCNV,WORK(KSAOMO),WORK(KFREE),LFREE)
-      ELSE
-        CALL DHFCNV(FMO,DUMMY,DUMMY,FAO,DMAT,DUMMY,BMAT,ICHKCNV,
-     &              DUMMY,WORK(KFREE),LFREE)
+      IF(DOCCNV) THEN
+        IF(DIISAO) THEN
+          CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),
+     &                WORK(KTMAT),BMAT,ICHKCNV,WORK(KSAOMO),
+     &                WORK(KFREE),LFREE)
+        ELSE
+          CALL DHFCNV(FMO,DUMMY,DUMMY,FAO,DMAT,DUMMY,BMAT,ICHKCNV,
+     &                DUMMY,WORK(KFREE),LFREE)
+        ENDIF
       ENDIF
-
       IF (DHFEXIT) THEN
 C        ... extract diagonal FMO elements to EIG
        IF (IPRSCF.GE.6) THEN
@@ -3573,7 +3574,15 @@ C
      &                 EIG(IORB(I)+1),1,FAO(I2TMOT(I)+1),NTMO(I),
      &                 NTMO(I),WORK(KFREE),LFREE,IERR)
           ENDIF
-
+C
+          IF(VACPOL) THEN
+            CALL HEADER(
+     &      'DFDIAG: Eigenvalues (normal diagonalization) :',-1)
+            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &      '*** Fermion corep ',I,'/',NFSYM
+            WRITE(LUPRI,'(I5,F25.10)')
+     &      (J,EIG(IORB(I)+J),J=1,NTMO(I)) 
+         ENDIF
          IF (DODBG) THEN
           IF (IPRHAM.GE.7) THEN
            CALL HEADER(
@@ -4470,13 +4479,14 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "blocks.h"
-      DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),WORK(*),NB(2)
+      DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),WORK(*),NB(2),NO(2)
 C
 #include "memint.h"
 C
 C     Some memory allocation
 C
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      NPOS = 0
       IF(PARCAL) THEN
 C       We will always allocate the maximum size, even if some 
 C       integral classes are inactive (keep the code simple)
@@ -4495,9 +4505,13 @@ C
       NFMAT  = 1
       NOPEN  = 0
       DO IFRP = 1,NFSYM
+        NSSH(IFRP) = NSSH(IFRP)+NOCC(IFRP)
         NB(IFRP) = NISH(IFRP)
         NISH(IFRP) = 0
+        NO(IFRP) = NOCC(IFRP)
+        NOCC(IFRP) = 0
       ENDDO
+      DOCCNV = .FALSE.
 C
 C     Solve one-electron system with vacuum polarisation added.
 C
@@ -4509,6 +4523,8 @@ C
       ONESYS = .TRUE.
       DO IFRP = 1,NFSYM
         NISH(IFRP) = NB(IFRP)
+        NOCC(IFRP) = NO(IFRP)
+        NSSH(IFRP) = NSSH(IFRP)-NOCC(IFRP)
       ENDDO
 C
 C     Release memory
