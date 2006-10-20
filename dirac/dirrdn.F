@@ -4142,7 +4142,6 @@ C
 
 CMI     Remove inconsistencies for the TWOCOMP option
       IF (TWOCOMP.AND.(LEVYLE.OR.
-CMI  &              URKBAL.OR.FREEPJ.OR.VEXTPJ.OR.GAUNT)) THEN
      &              URKBAL.OR.FREEPJ.OR.VEXTPJ)) THEN
         WRITE(LUPRI,'(A)') '***** HAMINP ERROR *****'
         WRITE(LUPRI,'(A)')
@@ -4205,23 +4204,9 @@ CMI ... set up the default value of I2CHAM, when BSS-postDC-SCF is on
          ENDIF
         ENDIF
 
-CMO     IF (DO4C2C.AND.SPINFR) THEN
-CMI       CALL QUIT(
-CMI  &'HAMINP: Conflicting options DO4C2C & SPINFR !')
-CMI     ENDIF
-
-        IF (DOPRP) THEN
-CMI       CALL QUIT(
-CMI  &'HAMINP: .BSS not yet implemented for properties!')
-        ENDIF
-
-CMI ... 2comp_BSS stuff
-C     IF (TWOCOMP.AND..NOT.DELSMALL) THEN
-C       TWOCOMPBSS = .TRUE.
-C       TWOCOMP = .FALSE.
-C       write(LUPRI,'(2X,A)')
-C    & ' TWOCOMPBSS set to .true., TWOCOMP to .false. '
-C     ENDIF
+       IF (DOPRP) THEN
+        WRITE(LUPRI,'(2X,A)') '- BSS with properties !' 
+       ENDIF
 
        IF (TWOCOMP.AND..NOT.TWOCOMPBSS) THEN
         CALL QUIT('HAMINP: for .BSS must be .2C_REL in GENINP !')
@@ -5394,17 +5379,10 @@ C
 C
       CALL TITLER('Input consistency checks','*',127)
 
-CMI   IF (SPINFR.AND..NOT.LEVYLE.AND.DOMP2)
-CMI  &   CALL QUIT ('Spinfree MP2 not implemented')
-
-CMI   IF (BSS.AND.DOMP2)
-CMI  &   CALL QUIT ('BSS & MP2 not implemented')
-
       IF (DOPRP.AND.TWOCOMP.AND..NOT.BSS) THEN
        WRITE(LUPRI,'(1X,A/)')
      & 'NB: Properties & TWOCOMP require non-relativistic'//
      & ' form of operators !'
-CMI  &   CALL QUIT ('Properties & TWOCOMP not implemented')
       ENDIF
 
       IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
@@ -5428,7 +5406,6 @@ C     .. or are computed exactly
       SS_COR_NEEDED = SS_COR_NEEDED.AND.(IBTAND(INTGEN/4,1).EQ.0)
 C     Check for possible ways of correcting..
       SS_COR = DOLVC.OR.DOTSC
-CMI   IF (SS_COR_NEEDED.AND..NOT.SS_COR) THEN
       IF (SS_COR_NEEDED.AND..NOT.SS_COR.AND..NOT.TWOCOMP) THEN
          DOLVC = .TRUE.
          WRITE (LUPRI,'(A/A)')
