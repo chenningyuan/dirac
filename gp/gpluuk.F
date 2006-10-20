@@ -304,6 +304,11 @@ C
 C---------------Executable code--------------------------------------
 C
       IS = 0
+Caspg
+C for some reason N was being corrupted, at least for some
+C compilers, so we save its value in ntt
+Caspg
+      NTT = N
       DO I = 1, N
          IF (A(I).NE.' ') GOTO 2
          IS = IS + 1
@@ -311,13 +316,21 @@ C
 C
     2 IF (IS.EQ.0) RETURN
 C
+Caspg write (*,*) 'before loop2: i,n,is',i,n,is
       DO I = 1, N-IS
+C           write (*,*) 'a(i):',a(i),': <- a(i+is):',a(i+is),':'
             A(I) = A(I+IS)
+Caspg       write (*,*) 'inside loop2: i, a(i)',i,a(i)
       ENDDO
-      DO I = N-IS+1, N
+
+Caspg write (*,*) 'before crashing loop: i,ntt,n,is',i,n,ntt,is
+      DO I = NTT-IS+1, NTT
+C        write (*,*) 'inside crashing loop: i,n,ntt,is',i,n,ntt,is
+C        write (*,*) 'a(i) before conversion to whitespace :',a(i),':'
          A(I) = ' '
       ENDDO
 C
+Caspg write (*,*) 'final line',a
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

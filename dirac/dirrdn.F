@@ -6514,8 +6514,11 @@ C
 C
       LEN_KEYWORD = LEN(KEYWORD)
   200 READ (LUCMD,'(A80)',END=220,ERR=210) LINE
-      CALL BLANKR (LINE,80)
+Caspg write (6,*) 'line:',line
+      CALL BLANKR (80,LINE)
 C
+Caspg write (6,*) 'test1',LINE(1:LEN_KEYWORD),':'
+Caspg write (6,*) 'test2',KEYWORD(1:LEN_KEYWORD),':'
       IF (LINE(1:LEN_KEYWORD) .EQ. KEYWORD(1:LEN_KEYWORD)) THEN
          KEY_FOUND = .TRUE.
          GO TO 220
