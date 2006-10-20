@@ -4541,4 +4541,6 @@ C
                FMO(IIORB,IIORB,IZ) = CTMP
             ENDDO               
          ENDDO
+      ENDDO
+      RETURN
       END
