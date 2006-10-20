@@ -5496,56 +5496,23 @@ C     Add the master node, NUMNOD = number of slaves
       END
 #endif    /* ifdef VAR_MPI */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-      INTEGER FUNCTION STR_LENGTH(STR)
-
+*
+*      INTEGER FUNCTION STR_LENGTH(STR)
+*
 *     Returns the length of <str> without blanks
 *
 *     LUCITA version by Stefan Knecht, Feb. 06
 *     Originally written by Stephan Raub
 *
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-#include "implicit.h"
-
-
-      integer lmax
-      character(*) str
-
-!--- Begin ---!
-
-      lmax=len(str)
-
-      do i=lmax, 1, -1
-
-         if(str(i:i).ne.' ')then
-
-            Str_Length=i
 *
-            goto 10
+*#include "implicit.h"
 *
-         end if
-
-      end do !. of i
-
-      Str_Length=lmax
-
- 10   continue
-      return
-      end function Str_Length
-
-*      implicit none
 *
-*      
 *      integer lmax
-*      integer i
+*      character(*) str
 *
-*
-*      character(*), INTENT(IN) ::  str
-*
-*
-*
-*!--- Begin ---!
+!--- Begin ---!
 *
 *      lmax=len(str)
 *
@@ -5554,7 +5521,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 *         if(str(i:i).ne.' ')then
 *
 *            Str_Length=i
-*            return
+*
+*            goto 10
 *
 *         end if
 *
@@ -5562,5 +5530,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 *
 *      Str_Length=lmax
 *
+* 10   continue
 *      return
 *      end function Str_Length
