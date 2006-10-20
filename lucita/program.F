@@ -939,9 +939,11 @@ CTF     CALL GET_CMOAO(WORK(KMOAOIN))
 *
         CALL REWINO(LUC)
         CALL REWINO(LUSC39)
-        DO JROOT = 1, NROOT
-          CALL COPVCD(LUC,LUSC39,WORK(KVEC1),0,LBLK)
-        END DO
+        IF(MYPROC.EQ.MASTER)THEN
+          DO JROOT = 1, NROOT
+            CALL COPVCD(LUC,LUSC39,WORK(KVEC1),0,LBLK)
+          END DO
+        END IF
         CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'VCSAVE')
       END IF
 *     ^ End of special handling of restarted calc with lambda modified op.
@@ -1023,9 +1025,11 @@ CMO       END IF
 *. Copy vectors from LUSC39 to LUC
           CALL REWINO(LUC)
           CALL REWINO(LUSC39)
-          DO JROOT = 1, NROOT
-            CALL COPVCD(LUSC39,LUC,WORK(KVEC1),0,LBLK)
-          END DO
+          IF(MYPROC.EQ.MASTER) THEN
+            DO JROOT = 1, NROOT
+              CALL COPVCD(LUSC39,LUC,WORK(KVEC1),0,LBLK)
+            END DO
+          END IF
           CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'VCSAVE')
 *. No expansion should follow
           I_EXPAND = 0
