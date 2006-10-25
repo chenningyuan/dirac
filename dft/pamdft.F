@@ -70,7 +70,7 @@ C
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.COLLIN',
-     &            '.BETA  ','.CDFT  ','.XCDFT ','.XXXXXX'/
+     &            '.BETA  ','.CDFT  ','.XACDFT','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
