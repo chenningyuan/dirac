@@ -70,7 +70,7 @@ C
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.COLLIN',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.BETA  ','.CDFT  ','.XCDFT ','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -114,11 +114,11 @@ C
       ICOUNTER_DFTAC_DEBUG = 0
 C
 C
-C     initialize /SDFT/
-C     =================
-C
-      SDFT      = .FALSE.
-      COLLINEAR = .FALSE.
+
+!     initialize cdft.h
+      LBIT_CDFT  = 0
+      CDFT_ALPHA = D1
+
 C
 C
 C     Process input for DFTCAL
@@ -247,19 +247,29 @@ C                                      asymptotic part is LBalpha
                  GOTO 100
  15              CONTINUE
 #if defined (MOD_CDFT)
-                 SDFT = .TRUE.
+                 CALL SET_LBIT(LBIT_CDFT,1)
 #endif
                  GO TO 100
  16              CONTINUE
 #if defined (MOD_CDFT)
-                 COLLINEAR = .TRUE.
+                 CALL SET_LBIT(LBIT_CDFT,3)
 #endif
                  GO TO 100
  17              CONTINUE
+#if defined (MOD_CDFT)
+                 CALL SET_LBIT(LBIT_CDFT,4)
+#endif
                  GO TO 100
  18              CONTINUE
+#if defined (MOD_CDFT)
+                 CALL SET_LBIT(LBIT_CDFT,2)
+#endif
                  GO TO 100
  19              CONTINUE
+#if defined (MOD_CDFT)
+                 CALL SET_LBIT(LBIT_CDFT,5)
+                 READ(LUCMD,*) CDFT_ALPHA
+#endif
                  GO TO 100
  20              CONTINUE
                  GO TO 100

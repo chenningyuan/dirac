@@ -79,13 +79,22 @@ C=======================================================================
 
 #include "ibtfun.h"
 
+      F  = D1
+      G  = D1
+      IF(LBIT(LBIT_CDFT,4)) G = -D1 !spin density operator is \beta*\Sigma instead of \Sigma
+      IU = 1
+      IV = 1
+      IX = 2
+      IY = 2
+      ITRANSFORM = 2
+
       CALL GET_CURRENT(2,
      &                 SPIN_DENSITY,
      &                 DUMMY,
      &                 IREPOP,GAO,DUMMY,DTRMAT,BUF)
 
       ISTART = 1
-      IF(COLLINEAR) ISTART = 3
+      IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !collinear approximation
 
       SPIN_DENSITY_NORM = DSQRT(DDOT(3,SPIN_DENSITY,1,SPIN_DENSITY,1))
 
@@ -99,7 +108,15 @@ C=======================================================================
             IOFF = NBAST*NBAST*(IQ-1)
 
             VXC_S = VXC(FRR)*SPIN_DENSITY(IXYZ)
-            CALL SDFT_EXC(VXC_S,IREPOP,IXYZ,EXCMAT(1+IOFF),GAO)
+
+            CALL CDFT_EXC(VXC_S,
+     &                    F,IU,IV,ITRANSFORM,IXYZ,
+     &                    GAO,
+     &                    IREPOP,EXCMAT(1+IOFF),BUF)
+            CALL CDFT_EXC(VXC_S,
+     &                    G,IX,IY,ITRANSFORM,IXYZ,
+     &                    GAO,
+     &                    IREPOP,EXCMAT(1+IOFF),BUF)
           ENDDO
         ENDIF
 
@@ -154,66 +171,6 @@ C=======================================================================
           ENDDO
         ENDIF
       ENDIF
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SDFT_EXC */
-      SUBROUTINE SDFT_EXC(VXC_S,IREPOP,IXYZ,EXCMAT,GAO)
-C=======================================================================
-C     contribution of spin density to g_pq (upon integration G_pq)
-C     adaptation of DOEXC1 in dftdrv.F
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                            last revision: october 2006
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),
-     &          EXCMAT(NBAST,NBAST)
-#else
-      DIMENSION GAO(NTBAS(0)),
-     &          EXCMAT(NTBAS(0),NTBAS(0))
-#endif
-
-#include "ibtfun.h"
-
-      INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,2),IREPOP)
-
-      DO IREP1 = 0,NBSYM-1
-        DO IC = 1,MC
-
-          N1 = NBBAS(IREP1,IC)
-          IF(N1 .GT. 0) THEN
-
-            I1 = IBBAS(IREP1,IC)
-            IREP2 = IBTXOR(IREP1,INTERMEDIATE)
-            N2 = NBBAS(IREP2,IC)
-            IF(N2 .GT. 0) THEN
-
-              I2 = IBBAS(IREP2,IC)
-              DO J = 1,N2
-                FACTOR = VXC_S*GAO(I2+J)
-                CALL DAXPY(N1,FACTOR,GAO(I1+1),1,EXCMAT(I1+1,I2+J),1)
-              ENDDO
-            ENDIF
-          ENDIF
-        ENDDO
-      ENDDO
 
       RETURN
       END
@@ -280,6 +237,68 @@ C=======================================================================
             ENDIF
           ENDIF
         ENDDO
+      ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* CDFT_EXC */
+      SUBROUTINE CDFT_EXC(VXC_S,
+     &                    F,IC1,IC2,ITRANSFORM,IXYZ,
+     &                    GAO,
+     &                    IREPOP,EXCMAT,BUF)
+C=======================================================================
+C     contribution of current or spin density to
+C     to g_pq (upon integration G_pq)
+C     adaptation of DOEXC1 in dftdrv.F
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                            last revision: october 2006
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAO(NBAST),
+     &          EXCMAT(NBAST,NBAST)
+#else
+      DIMENSION GAO(NTBAS(0)),
+     &          EXCMAT(NTBAS(0),NTBAS(0))
+#endif
+
+#include "ibtfun.h"
+
+      INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),IREPOP)
+
+      DO IREP1 = 0,NBSYM-1
+
+        N1 = NBBAS(IREP1,IC1)
+        IF(N1 .GT. 0) THEN
+
+          I1 = IBBAS(IREP1,IC1)
+          IREP2 = IBTXOR(IREP1,INTERMEDIATE)
+          N2 = NBBAS(IREP2,IC2)
+          IF(N2 .GT. 0) THEN
+
+            I2 = IBBAS(IREP2,IC2)
+            DO J = 1,N2
+              FACTOR = F*VXC_S*GAO(I2+J)
+              CALL DAXPY(N1,FACTOR,GAO(I1+1),1,EXCMAT(I1+1,I2+J),1)
+            ENDDO
+          ENDIF
+        ENDIF
       ENDDO
 
       RETURN

@@ -112,11 +112,11 @@ C     only for Hermitian densities
         IF(IHRMOP(IM).EQ.1) NHM = NHM + 1
       ENDDO
 #if defined (MOD_CDFT)
-      IF(.NOT.(SDFT)) THEN
-        IF(NHM.EQ.0) GOTO 10
+      IF(.NOT. LBIT(LBIT_CDFT,1) .OR. .NOT. LBIT(LBIT_CDFT,2)) THEN !if no spin or current density contribution
+        IF(NHM .EQ. 0) GOTO 10
       ENDIF
 #else
-      IF(NHM.EQ.0) GOTO 10
+      IF(NHM .EQ. 0) GOTO 10
 #endif
 C
       IF(NASHT.GT.0) CALL GTDOAV(DMAT,1)
@@ -1527,10 +1527,6 @@ C
 C
       LOGICAL DOERG, DOGRD, DOLND, DOLR,DOQR,LBIT, LSEND(6)
 C
-#if defined (MOD_CDFT)
-      LOGICAL LCDFTBCAST(2)
-#endif
-C
       DIMENSION EXCMAT(*),DMAT(N2BBASX),
      &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
      &          DTRMAT(N2BBASX,NZ,NXCMAT),
@@ -1575,17 +1571,13 @@ C     Transfer dftcom
       LSEND(6)  = DFTASC
       CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
 C
-C
-C     transfer parameters for SDFT/ CDFT
-C     ==================================
-C
+
 #if defined (MOD_CDFT)
-      LCDFTBCAST(1) = SDFT
-      LCDFTBCAST(2) = COLLINEAR
-      CALL MPI_BCAST(LCDFTBCAST,2,
-     &               MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+!     transfer parameters for spin/current density response
+      CALL MPI_BCAST(LBIT_CDFT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(CDFT_ALPHA,1,MPI_REAL,MPARID,MPI_COMM_WORLD,IERR)
 #endif
-C
+
 C
 C     transfer parameters for asymptotic correction
 C     =============================================
@@ -1680,10 +1672,6 @@ C
       DIMENSION WORK(LWORK)
       LOGICAL DOERG,DOGRD,DOLND,DOLR,LSEND(6),LBIT
 C
-#if defined (MOD_CDFT)
-      LOGICAL LCDFTBCAST(2)
-#endif
-C
       CALL QENTER('DFTNOD')
 #include "memint.h"
 C
@@ -1714,25 +1702,15 @@ C     Receive some dftcom variables
       DFTORD = LSEND(5)
       DFTASC = LSEND(6)
 C
-C
-C     receive parameters for SDFT/ CDFT
-C     =================================
-C
+
 #if defined (MOD_CDFT)
-      CALL MPI_BCAST(LCDFTBCAST,2,
-     &               MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-      SDFT      = LCDFTBCAST(1)
-      COLLINEAR = LCDFTBCAST(2)
+!     receive parameters for spin/current density response
+      CALL MPI_BCAST(LBIT_CDFT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(CDFT_ALPHA,1,MPI_REAL,MPARID,MPI_COMM_WORLD,IERR)
 #endif
-C
-C
+
 C     receive parameters for asymptotic correction
 C     ============================================
-C
-
-
-C     transfer parameters for asymptotic correction
-C     =============================================
 C
       CALL MPI_BCAST(LBIT_DFTAC,1,
      &               MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)

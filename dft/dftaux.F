@@ -58,7 +58,7 @@ C
 #include "functionals.h"
 C
       INTEGER A, B
-      LOGICAL DOGGA, TRPLET
+      LOGICAL DOGGA, TRPLET, LBIT
       DIMENSION DTRMAT(NBAST,NBAST,NZ,NXCMAT),
      &          EXCMAT(NBAST,NBAST,NZ,NXCMAT),
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
@@ -117,7 +117,8 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
         END IF
 #if defined (MOD_CDFT)
       ELSEIF(IHRMOP(IM) .EQ. -1) THEN
-        IF(SDFT) THEN
+
+        IF(LBIT(LBIT_CDFT,1)) THEN !spin density contribution to linear response
           CALL SDFT_LR(DTRMAT(1,1,1,IM),
      &                 EXCMAT(1,1,1,IM),
      &                 IREPOP,
@@ -125,6 +126,16 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
      &                 RHO,RHG,RHOGRD,
      &                 WGHT,DOGGA,BUF)
         ENDIF
+
+!       IF(LBIT(LBIT_CDFT,2)) THEN !current density contribution to linear response
+!         CALL CDFT_LR(DTRMAT(1,1,1,IM),
+!    &                 EXCMAT(1,1,1,IM),
+!    &                 IREPOP,
+!    &                 GAO,GAO1,
+!    &                 RHO,RHG,RHOGRD,
+!    &                 WGHT,DOGGA,BUF)
+!       ENDIF
+
       ELSE
         CALL QUIT('DTRMAT has to be hermitian or antihermitian')
 #endif

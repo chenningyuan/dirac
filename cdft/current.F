@@ -115,7 +115,7 @@ C=======================================================================
       IF(.NOT. LBIT(LBIT_CURRENT,1)) THEN !spin
         F  = D1
         G  = D1
-!       IF(BETA) G = -D1
+        IF(LBIT(LBIT_CDFT,4)) G = -D1 !spin density operator is \beta*\Sigma instead of \Sigma
         IU = 1
         IV = 1
         IX = 2
@@ -130,7 +130,7 @@ C=======================================================================
       ENDIF
 
       ISTART = 1
-      IF(COLLINEAR) ISTART = 3
+      IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !collinear approximation
 
       DO IXYZ = ISTART,3
 #if defined (VAR_G77) || defined (SYS_SX)
