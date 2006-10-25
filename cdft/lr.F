@@ -65,7 +65,7 @@ C=======================================================================
 #include "cdft.h"
 #include "../dft/functionals.h"
 
-      LOGICAL   DOGGA
+      LOGICAL   DOGGA, LBIT
       DIMENSION DTRMAT(*),
      &          EXCMAT(*),
      &          GAO(*),
@@ -171,6 +171,94 @@ C=======================================================================
           ENDDO
         ENDIF
       ENDIF
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* CDFT_LR */
+      SUBROUTINE CDFT_LR(DTRMAT,
+     &                   EXCMAT,
+     &                   IREPOP,
+     &                   GAO,GAO1,
+     &                   DENSITY,
+     &                   DENSITY_GRADIENT,
+     &                   DENSITY_GRADIENT_NORM,
+     &                   WEIGHT,DOGGA,BUF)
+C=======================================================================
+C     contribution of current density to g_pq (upon integration G_pq)
+C     adaptation of DFTLTR in dftaux.F
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                            last revision: october 2006
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      PARAMETER (D23 = 2.0D0/3.0D0)
+
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "dgroup.h"
+#include "dftcom.h"
+#include "dcbgen.h"
+#include "cdft.h"
+#include "../dft/functionals.h"
+
+      LOGICAL   DOGGA, LBIT
+      DIMENSION DTRMAT(*),
+     &          EXCMAT(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          DENSITY_GRADIENT(3),
+     &          BUF(*),
+     &          CURRENT_DENSITY(3),
+     &          CURRENT_DENSITY_DERVS(3,3),
+     &          VXC(DERVS2),
+     &          VXC_V(3)
+
+#include "ibtfun.h"
+
+      IF(.NOT. LBIT(LBIT_CDFT,5)) !X\alpha type current density contribution not requested
+     &         CALL QUIT('problem in cdft linear response')
+
+      F  = -CVAL
+      G  = -CVAL
+      IU = 1
+      IV = 2
+      IX = 2
+      IY = 1
+      ITRANSFORM = 1
+
+      CALL GET_CURRENT(3,
+     &                 CURRENT_DENSITY,
+     &                 DUMMY,
+     &                 IREPOP,GAO,DUMMY,DTRMAT,BUF)
+
+      DO IXYZ = 1,3
+        CURRENT_DENSITY(IXYZ) = DABS(CURRENT_DENSITY(IXYZ))
+        IF(CURRENT_DENSITY(IXYZ) .LT. DFTHRL) GOTO 1
+
+        IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+        IOFF = NBAST*NBAST*(IQ-1)
+
+        VXC_S = CURRENT_DENSITY(IXYZ)**(-D23)
+        VXC_S = VXC_S*WEIGHT*CDFT_ALPHA
+
+        CALL CDFT_EXC(VXC_S,
+     &                F,IU,IV,ITRANSFORM,IXYZ,
+     &                GAO,
+     &                IREPOP,EXCMAT(1+IOFF),BUF)
+        CALL CDFT_EXC(VXC_S,
+     &                G,IX,IY,ITRANSFORM,IXYZ,
+     &                GAO,
+     &                IREPOP,EXCMAT(1+IOFF),BUF)
+ 1      CONTINUE
+      ENDDO
 
       RETURN
       END

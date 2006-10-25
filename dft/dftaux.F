@@ -127,14 +127,14 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
      &                 WGHT,DOGGA,BUF)
         ENDIF
 
-!       IF(LBIT(LBIT_CDFT,2)) THEN !current density contribution to linear response
-!         CALL CDFT_LR(DTRMAT(1,1,1,IM),
-!    &                 EXCMAT(1,1,1,IM),
-!    &                 IREPOP,
-!    &                 GAO,GAO1,
-!    &                 RHO,RHG,RHOGRD,
-!    &                 WGHT,DOGGA,BUF)
-!       ENDIF
+        IF(LBIT(LBIT_CDFT,2)) THEN !current density contribution to linear response
+          CALL CDFT_LR(DTRMAT(1,1,1,IM),
+     &                 EXCMAT(1,1,1,IM),
+     &                 IREPOP,
+     &                 GAO,GAO1,
+     &                 RHO,RHG,RHOGRD,
+     &                 WGHT,DOGGA,BUF)
+        ENDIF
 
       ELSE
         CALL QUIT('DTRMAT has to be hermitian or antihermitian')
