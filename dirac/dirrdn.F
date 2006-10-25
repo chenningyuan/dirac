@@ -6477,10 +6477,14 @@ C
       ELSE
         IF (PRINT_ALL) WRITE (LUPRI,*) LINE
       ENDIF
+
+CMI  ... this is needed to solve the 'segmentation fault' problem on PC Linux GNU/g77
+      LINE="\n"
 C
 C     Search for namelist input (first remove trailing blanks)
 C
       CALL BLANKR (132,LINE)
+
       IF (NAME_LIST .AND. (LINE(1:1).EQ.'&' .OR. LINE(1:1).EQ.'$')) THEN
        NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
        IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(2:8)
