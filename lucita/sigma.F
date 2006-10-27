@@ -2161,8 +2161,14 @@ C     NTEST = MAX(NTEST,IPRNT)
             IDISTLIST(I) = -1
           END DO
           CALL FIND_ACTIVE_BLOCKS_2(LUC,-1,SSCLFAC,CB,
-     &         ICBLINF,NMBLOCK,MYNEW_COMM)
-        END IF
+     &         NMBLOCK,MYNEW_COMM)
+*          
+          DO ICBTS = 1, NMBLOCK 
+              ILEN  = IBATS(8,ICBTS)
+              ICBLINF(ICBTS) = ILEN
+          END DO
+*
+        END IF         
         IF(NPARWAY.GT.0) THEN
           CALL MPI_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC,IERR)
         ELSE IF(NPARWAY.EQ.0)THEN
