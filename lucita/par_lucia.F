@@ -948,7 +948,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE FIND_ACTIVE_BLOCKS_2(LUIN,LBLK,BLK_A,SEGMNT,
-     &           JCBLINF,NTOTBLK,IAMCOMM)
+     &           NTOTBLK,IAMCOMM)
 *
 *. Find the active (nonvanishing blocks) on LUIN
 *. Non vanishing block is flagged by a 1.0 ( note : real)
@@ -961,7 +961,7 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "lucipar.inc"
 *. Output
-      DIMENSION BLK_A(*), JCBLINF(*)
+      DIMENSION BLK_A(*)
 *. Scratch
       DIMENSION SEGMNT(*)
 *
@@ -993,10 +993,8 @@ C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
             IF(IMZERO.EQ.0) THEN
               NBLK_A = NBLK_A + 1
               BLK_A(IBLK) = 1.0D0
-              JCBLINF(IBLK) = LBL
             ELSE
               BLK_A(IBLK) = 0.0D0
-              JCBLINF(IBLK) = LBL
             END IF
           END IF
       
@@ -1006,16 +1004,11 @@ C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
       END IF
 *.   /\ MASTER work!
       NTEST = 0
-*test this sk
+*
       IF(NPARWAY.NE.0)THEN
-*      DO ISS = 1, NTOTBLK
          CALL MPI_BCAST(BLK_A,NTOTBLK,MPI_REAL8,0,IAMCOMM,IERR)
-*         CALL MPI_BCAST(BLK_A(ISS),1,MPI_REAL8,MASTER,IAMCOMM,IERR)
-         CALL MPI_BCAST(JCBLINF,NTOTBLK,MPI_INTEGER,0,IAMCOMM,IERR)
-*         CALL MPI_BCAST(JCBLINF(ISS),1,MPI_INTEGER,MASTER,IAMCOMM,IERR)
-*      END DO
       END IF
-* -sk
+*
       IF(NTEST.GE.1) THEN
       IF(MYNEW_ID.EQ.MASTER)THEN
         WRITE(6,'(A,I8,I8)')
@@ -1024,14 +1017,9 @@ C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
       END IF
       END IF
       IF(NTEST.GE.100) THEN
-      IF(MYNEW_ID.LT.2)THEN
-        DO IS = 1,NTOTBLK
-          WRITE(6,*) 'BLOCK LENGTH OF BLOCK',IS,'=',JCBLINF(IS),MYNEW_ID
-        END DO
         WRITE(6,*) ' Active blocks ',MYNEW_ID
 *        CALL WRTMAT(BLK_A,1,NBLK,1,NBLK)
         CALL WRTMAT(BLK_A,1,NTOTBLK,1,NTOTBLK)
-      END IF
       END IF
 *
 *
@@ -2357,6 +2345,88 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
       IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
 C
       RETURN
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COPVCD_SPECIAL(LUIN,LUOUT,SEGMNT,LBLK,ACT_BLK,NUMBLK)
+*
+* Read vector from disc file luin to array segmnt
+* and send to master using communicator jcomm.
+* vector is written in file luout
+*
+* MPI adaption         Stefan Knecht, Feb 21, 2006
+* NOFSLV: process-# of the node
+*
+* LBLK DEFINES STRUCTURE OF FILE
+*
+* Type of file LUOUT is inherited from LUIN
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      DIMENSION SEGMNT(*),ACT_BLK(*)
+C
+*
+      IREW = 0
+      IBLOCK = 0
+*
+      IF( IREW .NE. 0 ) THEN
+          CALL REWINE( LUIN ,LBLK)
+          CALL REWINE( LUOUT ,LBLK)
+      END IF
+
+C
+C LOOP OVER BLOCKS
+C
+C?      write(6,*) ' COPVCD LBLK : ', LBLK
+ 1000 CONTINUE
+        IBLOCK = IBLOCK + 1
+        IF(LBLK .GT. 0 ) THEN
+          LBL = LBLK
+        ELSE IF ( LBLK .EQ. 0 ) THEN
+            READ(LUIN) LBL
+*
+            WRITE(LUOUT) LBL
+C?        write(6,*) ' COPVCD LBL : ', LBL
+*
+        ELSE IF  (LBLK .LT. 0 ) THEN
+            CALL IFRMDS(LBL,1,-1,LUIN)
+*
+            CALL ITODS (LBL,1,-1,LUOUT)
+        END IF
+*
+        IF( LBL .GE. 0 ) THEN
+          IF(LBLK .GE.0 ) THEN
+            KBLK = LBL
+          ELSE
+            KBLK = -1
+          END IF
+C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
+          NO_ZEROING = 1
+*
+          CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                 NO_ZEROING)
+          IF(IMZERO.EQ.0) THEN
+            ACT_BLK(IBLOCK) = 1.0D0 
+            IF(IAMPACK.EQ.0) THEN
+                CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
+            ELSE
+              CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
+            END IF
+          ELSE
+              ACT_BLK(IBLOCK) = 0.0D0
+              CALL ZERORC(LBL,LUOUT,IAMPACK)
+          END IF
+        END IF
+      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
+C
+*
+      NUMBLK = IBLOCK - 1
+*
       END
 ***********************************************************************
 *                                                                     *
