@@ -8910,6 +8910,7 @@ C      .... charges per nucleis
      &  'AMFI_STUFF: TOTAL H(2c)_LL (after AMFIIN)'//
      &  ' in "xhi" S AO basis' ,-1)
         CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
+      ENDIF
 
 C ===================================================================
 C     now transform back: S AO, WORK(KBUF2) -> C AO, WORK(KBUF1) 
@@ -8922,7 +8923,6 @@ C     ... generate with appropriare factors !!
      &          WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
      &          WORK(KFREE),LFREE,IPRINT)
       ENDDO
-      ENDIF
 
 C   ... point to check H2c in C AO basis again...
       IF (IPRINT.GE.4) THEN
