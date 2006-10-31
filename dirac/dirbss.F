@@ -8485,6 +8485,31 @@ C      ... indexes of H2CAO(I1,J1,2-4)
        I1 = IAMFU(I+(numballcart*(IANUC-1)))
        J1 = IAMFU(J+(numballcart*(IANUC-1)))
 
+C      ... print out AMFI integrals
+       IF (IPRINT.GE.3) THEN
+        IF (DABS(SOXINT).GT.THRNULL) THEN
+          write(lupri,*) 'amfi unzero contrib: <',
+     &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
+     &  '[',IANUCS(IANUC),']','|X|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
+     &   '[',IANUCS(IANUC),']> ',SOXINT
+        ENDIF
+
+        IF (DABS(SOYINT).GT.THRNULL) THEN
+          write(lupri,*) 'amfi unzero contrib: <',
+     &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
+     &  '[',IANUCS(IANUC),']','|Y|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
+     &   '[',IANUCS(IANUC),']> ',SOYINT
+        ENDIF
+
+        IF (DABS(SOZINT).GT.THRNULL) THEN
+          write(lupri,*) 'amfi unzero contrib: <',
+     &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
+     &  '[',IANUCS(IANUC),']','|Y|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
+     &   '[',IANUCS(IANUC),']> ',SOZINT
+        ENDIF
+
+       ENDIF
+
        IF (IPRINT.GE.5) THEN
        write(lupri,*) 'amfi: <',LABINT(IPTA(I)),'(',INDXLMA(I),')',
      &  '[',IANUCS(IANUC),']','|O|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
