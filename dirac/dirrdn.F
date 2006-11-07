@@ -6154,7 +6154,7 @@ C=======================================================================
       DIMENSION WORK(LWORK)
 
       SAVE SET
-      DATA TABLE /'.XXXXXX','.READXV','.1D    ','.2D    ', !  1  2  3  4
+      DATA TABLE /'.INTEGR','.READXV','.1D    ','.2D    ', !  1  2  3  4
      &            '.3D    ','.DENSIT','.SPIN  ','.CURREN', !  5  6  7  8
      &            '.ELF   ','.1DSTEP','.3DADD ','.XXXXXX', !  9 10 11 12
      &            '.CUBE  ','.XXXXXX','.NXVEC ','.STRING', ! 13 14 15 16
@@ -6226,6 +6226,7 @@ C=======================================================================
           CALL QUIT('Illegal keyword in PLOT_INPUT.')
 
     1     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_GENERAL,8)
           GOTO 100
     2     CONTINUE
           CALL SET_LBIT(LBIT_PLOT_GENERAL,4)

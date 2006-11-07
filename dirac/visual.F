@@ -235,7 +235,8 @@ C=======================================================================
 #include "visual.h"
 #include "dcborb.h"
 
-      LOGICAL   LBIT
+      LOGICAL   LBIT,
+     &          QUANTITY_IS_A_VECTOR(NR_QUANTITIES)
       DIMENSION DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
@@ -244,7 +245,7 @@ C=======================================================================
      &          BUF(*),
      &          WORK(*),
      &          LUNIT(3,NR_QUANTITIES),
-     &          QUANTITY(NR_QUANTITIES,NCUBE(3)),
+     &          QUANTITY(NR_QUANTITIES,0:3,NCUBE(3)),
      &          PAIR_COOR_A(MAX_NR_PAIRS,3),
      &          PAIR_COOR_B(MAX_NR_PAIRS,3),
      &          STEP_3D(3,0:3),
@@ -263,6 +264,11 @@ C=======================================================================
       QUANTITY_NAME(3) = 'current_density'
       QUANTITY_NAME(4) = 'ELF'
       QUANTITY_NAME(5) = 'r_times_j'
+      QUANTITY_IS_A_VECTOR(1) = .FALSE.
+      QUANTITY_IS_A_VECTOR(2) = .TRUE.
+      QUANTITY_IS_A_VECTOR(3) = .TRUE.
+      QUANTITY_IS_A_VECTOR(4) = .FALSE.
+      QUANTITY_IS_A_VECTOR(5) = .TRUE.
 
       QUANTITY_NAME(10) = 'opt0'
       QUANTITY_NAME(11) = 'opt1'
@@ -274,6 +280,16 @@ C=======================================================================
       QUANTITY_NAME(17) = 'opt7'
       QUANTITY_NAME(18) = 'opt8'
       QUANTITY_NAME(19) = 'opt9'
+      QUANTITY_IS_A_VECTOR(10) = .FALSE.
+      QUANTITY_IS_A_VECTOR(11) = .FALSE.
+      QUANTITY_IS_A_VECTOR(12) = .FALSE.
+      QUANTITY_IS_A_VECTOR(13) = .FALSE.
+      QUANTITY_IS_A_VECTOR(14) = .FALSE.
+      QUANTITY_IS_A_VECTOR(15) = .FALSE.
+      QUANTITY_IS_A_VECTOR(16) = .FALSE.
+      QUANTITY_IS_A_VECTOR(17) = .FALSE.
+      QUANTITY_IS_A_VECTOR(18) = .FALSE.
+      QUANTITY_IS_A_VECTOR(19) = .FALSE.
 
 !     open files
 
@@ -367,7 +383,7 @@ C=======================================================================
             DO IQUANTITY = 1,NR_QUANTITIES
               IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
                 WRITE(LUNIT(1,IQUANTITY),'(F10.6,3E20.10)')
-     &                PP, QUANTITY(IQUANTITY,1)
+     &                PP, QUANTITY(IQUANTITY,0,1)
               ENDIF
             ENDDO
           ENDDO
@@ -492,7 +508,7 @@ C=======================================================================
      &                                   GAO,GAO1,GAO2,
      &                                   PX,PY,PZ,
      &                                   NCNT,BUF,
-     &                                   QUANTITY(1,KCUBE),
+     &                                   QUANTITY(1,0,KCUBE),
      &                                   WORK,KFREE,LFREE)
             ENDDO
 
@@ -506,7 +522,7 @@ C=======================================================================
             DO IQUANTITY = 1,NR_QUANTITIES
               IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
                 WRITE(LUNIT(3,IQUANTITY),FORMAT_STRING)
-     &               (QUANTITY(IQUANTITY,M),M=1,NCUBE(3))
+     &               (QUANTITY(IQUANTITY,0,M),M=1,NCUBE(3))
               ENDIF
             ENDDO
           ENDDO
@@ -566,7 +582,7 @@ C=======================================================================
      &          GAO2(*),
      &          NCNT(*),
      &          BUF(*),
-     &          QUANTITY(NR_QUANTITIES),
+     &          QUANTITY(NR_QUANTITIES,0:3),
      &          VECTOR(3),
      &          WORK(*)
 
@@ -586,7 +602,7 @@ C=======================================================================
 !     density
 
       CALL GETRHO(DENSITY,IREP_PLOT,GAO,DMAT_AO,BUF)
-      QUANTITY(1) = DENSITY
+      QUANTITY(1,0) = DENSITY
 
       IF(LBIT(LBIT_PLOT_QUANTITY,4)) THEN !ELF
 
@@ -609,9 +625,9 @@ C=======================================================================
 
         ELFCHI = G/H
 
-        QUANTITY(4) = D1/(D1 + ELFCHI*ELFCHI)
-!       QUANTITY(4) = ELF**D32 !MBE1
-!       QUANTITY(4) = ELF**D54 !MBE2
+        QUANTITY(4,0) = D1/(D1 + ELFCHI*ELFCHI)
+!       QUANTITY(4,0) = ELF**D32 !MBE1
+!       QUANTITY(4,0) = ELF**D54 !MBE2
       ENDIF
 
 !     magnetization and current density
@@ -624,10 +640,14 @@ C=======================================================================
      &                     UNUSED,
      &                     IREP_PLOT,GAO,UNUSED,DMAT_AO,BUF)
 
-          QUANTITY(IQUANTITY) = VECTOR(1)**D2
-     &                        + VECTOR(2)**D2
-     &                        + VECTOR(3)**D2
-          QUANTITY(IQUANTITY) = DSQRT(QUANTITY(IQUANTITY))
+          QUANTITY(IQUANTITY,1) = VECTOR(1)
+          QUANTITY(IQUANTITY,2) = VECTOR(2)
+          QUANTITY(IQUANTITY,3) = VECTOR(3)
+
+          QUANTITY(IQUANTITY,0) = VECTOR(1)**D2
+     &                          + VECTOR(2)**D2
+     &                          + VECTOR(3)**D2
+          QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
 
           IF(LBIT(LBIT_PLOT_2D_OPTIONS,1) .OR.
      &       LBIT(LBIT_PLOT_2D_OPTIONS,2)) THEN
@@ -661,10 +681,14 @@ C=======================================================================
           VECTOR(2) = VECTOR_2
           VECTOR(3) = VECTOR_3
 
-          QUANTITY(IQUANTITY) = VECTOR(1)**D2
-     &                        + VECTOR(2)**D2
-     &                        + VECTOR(3)**D2
-          QUANTITY(IQUANTITY) = DSQRT(QUANTITY(IQUANTITY))
+          QUANTITY(IQUANTITY,1) = VECTOR(1)
+          QUANTITY(IQUANTITY,2) = VECTOR(2)
+          QUANTITY(IQUANTITY,3) = VECTOR(3)
+
+          QUANTITY(IQUANTITY,0) = VECTOR(1)**D2
+     &                          + VECTOR(2)**D2
+     &                          + VECTOR(3)**D2
+          QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
 
           IF(LBIT(LBIT_PLOT_2D_OPTIONS,1) .OR.
      &       LBIT(LBIT_PLOT_2D_OPTIONS,2)) THEN

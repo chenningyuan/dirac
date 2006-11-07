@@ -8,6 +8,7 @@ C     LBIT(LBIT_PLOT_GENERAL,4)    read solution vector
 C     LBIT(LBIT_PLOT_GENERAL,5)    skip +- (SKIPEP)
 C     LBIT(LBIT_PLOT_GENERAL,6)    skip ++ (SKIPEE)
 C     LBIT(LBIT_PLOT_GENERAL,7)    use orbital string
+C     LBIT(LBIT_PLOT_GENERAL,8)    integrate
 C
 C     LBIT(LBIT_PLOT_QUANTITY,1)   density
 C     LBIT(LBIT_PLOT_QUANTITY,2)   spin density
