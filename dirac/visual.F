@@ -189,7 +189,7 @@ C=======================================================================
      &              WORK(KGAO2),
      &              WORK(KNCNT),
      &              WORK(KBUF),
-     &              WORK,KFREE,LFREE)
+     &              WORK(KFREE),LFREE)
 
 !     release memory
 
@@ -203,7 +203,7 @@ C     /* deck PLOT_SUB */
       SUBROUTINE PLOT_SUB(DMAT_AO,
      &                    GAO,GAO1,GAO2,
      &                    NCNT,BUF,
-     &                    WORK,KFREE,LFREE)
+     &                    WORK,LWORK)
 C=======================================================================
 C     do the {1,2,3}-dimensional plot
 C     adaptation of Trond's plot routines
@@ -243,9 +243,10 @@ C=======================================================================
      &          GAO2(*),
      &          NCNT(*),
      &          BUF(*),
-     &          WORK(*),
+     &          WORK(LWORK),
      &          LUNIT(3,NR_QUANTITIES),
      &          QUANTITY(NR_QUANTITIES,0:3,NCUBE(3)),
+     &          QUANTITY_INTEGRAL(NR_QUANTITIES,0:3),
      &          PAIR_COOR_A(MAX_NR_PAIRS,3),
      &          PAIR_COOR_B(MAX_NR_PAIRS,3),
      &          STEP_3D(3,0:3),
@@ -258,6 +259,8 @@ C=======================================================================
 #include "symmet.h"
 #include "sdpre.h"
 #include "ibtfun.h"
+
+#include "memint.h"
 
       QUANTITY_NAME(1) = 'density'
       QUANTITY_NAME(2) = 'spin_density'
@@ -527,6 +530,83 @@ C=======================================================================
             ENDDO
           ENDDO
         ENDDO
+
+        IF(LBIT(LBIT_PLOT_GENERAL,8)) THEN !integrate
+
+!         set up grid
+          CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
+
+          LUNIT_QUAD = 44
+
+          REWIND LUNIT_QUAD
+          READ(LUNIT_QUAD) NR_POINTS
+
+          CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
+
+          CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
+     &                WORK(KW),
+     &                LUNIT_QUAD,NR_POINTS)
+
+          CALL DZERO(QUANTITY_INTEGRAL,NR_QUANTITIES*4)
+          DO I = 1,NR_POINTS
+            CALL GET_QUANTITY_IN_POINT(DMAT_AO,
+     &                                 GAO,GAO1,GAO2,
+     &                                 WORK(KX - 1 + I),
+     &                                 WORK(KY - 1 + I),
+     &                                 WORK(KZ - 1 + I),
+     &                                 NCNT,BUF,
+     &                                 QUANTITY,
+     &                                 WORK,KFREE,LFREE)
+
+            DO IQUANTITY = 1,NR_QUANTITIES
+              IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+                QUANTITY_INTEGRAL(IQUANTITY,0)
+     &                     = QUANTITY_INTEGRAL(IQUANTITY,0)
+     &                     + QUANTITY(IQUANTITY,0,1)*WORK(KW - 1 + I)
+                IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
+                  DO IXYZ = 1,3
+                    QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
+     &                     = QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
+     &                     + QUANTITY(IQUANTITY,IXYZ,1)*WORK(KW - 1 + I)
+                  ENDDO
+                ENDIF
+              ENDIF
+            ENDDO
+          ENDDO !DO I = 1,NR_POINTS
+
+!         print integrals
+
+          CALL AROUND('3D integration')
+
+          WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
+     &                                 'scalar/norm',
+     &                                 'x-component',
+     &                                 'y-component',
+     &                                 'z-component'
+          WRITE(LUPRI,'(A)')
+
+          DO IQUANTITY = 1,NR_QUANTITIES
+            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+              IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
+                WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,1),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,2),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,3)
+              ELSE
+                WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                  QUANTITY_INTEGRAL(IQUANTITY,0)
+              ENDIF
+            ENDIF
+          ENDDO
+          WRITE(LUPRI,'(A)')
+          CALL PRSYMB(LUPRI,'-',100,0)
+
+          CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
+        ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,8)) THEN !integrate
       ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
 
 !     close files
@@ -840,11 +920,11 @@ C=======================================================================
      &   .NOT. NR_READS_EE .EQ. NR_READS_EP)
      &   GOTO 11
 
-      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5) .AND. 
+      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5) .AND.
      &   NR_READS_EP .EQ. 0)
      &   GOTO 13
 
-      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,6) .AND. 
+      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,6) .AND.
      &   NR_READS_EE .EQ. 0)
      &   GOTO 14
 
