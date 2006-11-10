@@ -235,8 +235,7 @@ C=======================================================================
 #include "visual.h"
 #include "dcborb.h"
 
-      LOGICAL   LBIT,
-     &          QUANTITY_IS_A_VECTOR(NR_QUANTITIES)
+      LOGICAL   LBIT
       DIMENSION DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
@@ -246,7 +245,6 @@ C=======================================================================
      &          WORK(LWORK),
      &          LUNIT(3,NR_QUANTITIES),
      &          QUANTITY(NR_QUANTITIES,0:3,NCUBE(3)),
-     &          QUANTITY_INTEGRAL(NR_QUANTITIES,0:3),
      &          PAIR_COOR_A(MAX_NR_PAIRS,3),
      &          PAIR_COOR_B(MAX_NR_PAIRS,3),
      &          STEP_3D(3,0:3),
@@ -267,11 +265,6 @@ C=======================================================================
       QUANTITY_NAME(3) = 'current_density'
       QUANTITY_NAME(4) = 'ELF'
       QUANTITY_NAME(5) = 'r_times_j'
-      QUANTITY_IS_A_VECTOR(1) = .FALSE.
-      QUANTITY_IS_A_VECTOR(2) = .TRUE.
-      QUANTITY_IS_A_VECTOR(3) = .TRUE.
-      QUANTITY_IS_A_VECTOR(4) = .FALSE.
-      QUANTITY_IS_A_VECTOR(5) = .TRUE.
 
       QUANTITY_NAME(10) = 'opt0'
       QUANTITY_NAME(11) = 'opt1'
@@ -283,16 +276,6 @@ C=======================================================================
       QUANTITY_NAME(17) = 'opt7'
       QUANTITY_NAME(18) = 'opt8'
       QUANTITY_NAME(19) = 'opt9'
-      QUANTITY_IS_A_VECTOR(10) = .FALSE.
-      QUANTITY_IS_A_VECTOR(11) = .FALSE.
-      QUANTITY_IS_A_VECTOR(12) = .FALSE.
-      QUANTITY_IS_A_VECTOR(13) = .FALSE.
-      QUANTITY_IS_A_VECTOR(14) = .FALSE.
-      QUANTITY_IS_A_VECTOR(15) = .FALSE.
-      QUANTITY_IS_A_VECTOR(16) = .FALSE.
-      QUANTITY_IS_A_VECTOR(17) = .FALSE.
-      QUANTITY_IS_A_VECTOR(18) = .FALSE.
-      QUANTITY_IS_A_VECTOR(19) = .FALSE.
 
 !     open files
 
@@ -533,13 +516,14 @@ C=======================================================================
 
         IF(LBIT(LBIT_PLOT_GENERAL,8)) THEN !integrate
 
-!         set up grid
+!         3D integration
+
+          LUNIT_3D_GRID = 44
+
           CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
 
-          LUNIT_QUAD = 44
-
-          REWIND LUNIT_QUAD
-          READ(LUNIT_QUAD) NR_POINTS
+          REWIND LUNIT_3D_GRID
+          READ(LUNIT_3D_GRID) NR_POINTS
 
           CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
@@ -548,64 +532,51 @@ C=======================================================================
 
           CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
      &                WORK(KW),
-     &                LUNIT_QUAD,NR_POINTS)
+     &                LUNIT_3D_GRID,NR_POINTS)
 
-          CALL DZERO(QUANTITY_INTEGRAL,NR_QUANTITIES*4)
-          DO I = 1,NR_POINTS
-            CALL GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                                 GAO,GAO1,GAO2,
-     &                                 WORK(KX - 1 + I),
-     &                                 WORK(KY - 1 + I),
-     &                                 WORK(KZ - 1 + I),
-     &                                 NCNT,BUF,
-     &                                 QUANTITY,
-     &                                 WORK,KFREE,LFREE)
-
-            DO IQUANTITY = 1,NR_QUANTITIES
-              IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
-                QUANTITY_INTEGRAL(IQUANTITY,0)
-     &                     = QUANTITY_INTEGRAL(IQUANTITY,0)
-     &                     + QUANTITY(IQUANTITY,0,1)*WORK(KW - 1 + I)
-                IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
-                  DO IXYZ = 1,3
-                    QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
-     &                     = QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
-     &                     + QUANTITY(IQUANTITY,IXYZ,1)*WORK(KW - 1 + I)
-                  ENDDO
-                ENDIF
-              ENDIF
-            ENDDO
-          ENDDO !DO I = 1,NR_POINTS
-
-!         print integrals
-
-          CALL AROUND('3D integration')
-
-          WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
-     &                                 'scalar/norm',
-     &                                 'x-component',
-     &                                 'y-component',
-     &                                 'z-component'
-          WRITE(LUPRI,'(A)')
-
-          DO IQUANTITY = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
-              IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
-                WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,1),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,2),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,3)
-              ELSE
-                WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                  QUANTITY_INTEGRAL(IQUANTITY,0)
-              ENDIF
-            ENDIF
-          ENDDO
-          WRITE(LUPRI,'(A)')
-          CALL PRSYMB(LUPRI,'-',100,0)
+          CALL AROUND('3D quadrature')
+          CALL INTEGRATE_QUANTITY(DMAT_AO,
+     &                            GAO,GAO1,GAO2,
+     &                            WORK(KX),WORK(KY),WORK(KZ),
+     &                            WORK(KW),
+     &                            NR_POINTS,
+     &                            NCNT,BUF,
+     &                            WORK,KFREE,LFREE)
 
           CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
+
+!         2D integration
+
+          LUNIT_2D_GRID = 45
+
+          N = 30
+          DIMX = 10.0D0
+          DIMZ = 10.0D0
+          CALL LEGENDRE_2D_GRID(N,DIMX,DIMZ,LUNIT_2D_GRID)
+
+          REWIND LUNIT_2D_GRID
+          READ(LUNIT_2D_GRID) NR_POINTS
+
+          CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
+
+          CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
+     &                WORK(KW),
+     &                LUNIT_2D_GRID,NR_POINTS)
+
+          CALL AROUND('2D Gauss-Legendre quadrature')
+          CALL INTEGRATE_QUANTITY(DMAT_AO,
+     &                            GAO,GAO1,GAO2,
+     &                            WORK(KX),WORK(KY),WORK(KZ),
+     &                            WORK(KW),
+     &                            NR_POINTS,
+     &                            NCNT,BUF,
+     &                            WORK,KFREE,LFREE)
+
+          CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
+
         ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,8)) THEN !integrate
       ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
 
@@ -1237,6 +1208,282 @@ C=======================================================================
           ENDDO
         ENDIF
       ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck INTEGRATE_QUANTITY */
+      SUBROUTINE INTEGRATE_QUANTITY(DMAT_AO,
+     &                              GAO,GAO1,GAO2,
+     &                              PX,PY,PZ,
+     &                              WEIGHT,
+     &                              NR_POINTS,
+     &                              NCNT,BUF,
+     &                              WORK,KFREE,LFREE)
+C=======================================================================
+C     integrate
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                            last revision: october 2006
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      PARAMETER (NR_QUANTITIES = 19)
+
+#include "visual.h"
+
+      CHARACTER QUANTITY_NAME(NR_QUANTITIES)*30
+      LOGICAL   LBIT,
+     &          QUANTITY_IS_A_VECTOR(NR_QUANTITIES)
+      DIMENSION QUANTITY_INTEGRAL(NR_QUANTITIES,0:3),
+     &          QUANTITY(NR_QUANTITIES,0:3),
+     &          DMAT_AO(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          GAO2(*),
+     &          PX(*),
+     &          PY(*),
+     &          PZ(*),
+     &          WEIGHT(*),
+     &          NCNT(*),
+     &          BUF(*),
+     &          WORK(*)
+
+      QUANTITY_NAME(1) = 'density'
+      QUANTITY_NAME(2) = 'spin_density'
+      QUANTITY_NAME(3) = 'current_density'
+      QUANTITY_NAME(4) = 'ELF'
+      QUANTITY_NAME(5) = 'r_times_j'
+      QUANTITY_IS_A_VECTOR(1) = .FALSE.
+      QUANTITY_IS_A_VECTOR(2) = .TRUE.
+      QUANTITY_IS_A_VECTOR(3) = .TRUE.
+      QUANTITY_IS_A_VECTOR(4) = .FALSE.
+      QUANTITY_IS_A_VECTOR(5) = .TRUE.
+
+      QUANTITY_NAME(10) = 'opt0'
+      QUANTITY_NAME(11) = 'opt1'
+      QUANTITY_NAME(12) = 'opt2'
+      QUANTITY_NAME(13) = 'opt3'
+      QUANTITY_NAME(14) = 'opt4'
+      QUANTITY_NAME(15) = 'opt5'
+      QUANTITY_NAME(16) = 'opt6'
+      QUANTITY_NAME(17) = 'opt7'
+      QUANTITY_NAME(18) = 'opt8'
+      QUANTITY_NAME(19) = 'opt9'
+      QUANTITY_IS_A_VECTOR(10) = .FALSE.
+      QUANTITY_IS_A_VECTOR(11) = .FALSE.
+      QUANTITY_IS_A_VECTOR(12) = .FALSE.
+      QUANTITY_IS_A_VECTOR(13) = .FALSE.
+      QUANTITY_IS_A_VECTOR(14) = .FALSE.
+      QUANTITY_IS_A_VECTOR(15) = .FALSE.
+      QUANTITY_IS_A_VECTOR(16) = .FALSE.
+      QUANTITY_IS_A_VECTOR(17) = .FALSE.
+      QUANTITY_IS_A_VECTOR(18) = .FALSE.
+      QUANTITY_IS_A_VECTOR(19) = .FALSE.
+
+      CALL DZERO(QUANTITY_INTEGRAL,NR_QUANTITIES*4)
+
+      DO IPOINT = 1,NR_POINTS
+        CALL GET_QUANTITY_IN_POINT(DMAT_AO,
+     &                             GAO,GAO1,GAO2,
+     &                             PX(IPOINT),
+     &                             PY(IPOINT),
+     &                             PZ(IPOINT),
+     &                             NCNT,BUF,
+     &                             QUANTITY,
+     &                             WORK,KFREE,LFREE)
+
+        DO IQUANTITY = 1,NR_QUANTITIES
+          IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+            QUANTITY_INTEGRAL(IQUANTITY,0)
+     &                          = QUANTITY_INTEGRAL(IQUANTITY,0)
+     &                          + QUANTITY(IQUANTITY,0)*WEIGHT(IPOINT)
+
+            IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
+              DO IXYZ = 1,3
+                QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
+     &                       = QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
+     &                       + QUANTITY(IQUANTITY,IXYZ)*WEIGHT(IPOINT)
+              ENDDO
+            ENDIF
+          ENDIF
+        ENDDO
+      ENDDO
+
+      WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
+     &                             'scalar/norm',
+     &                             'x-component',
+     &                             'y-component',
+     &                             'z-component'
+
+      WRITE(LUPRI,'(A)')
+
+      DO IQUANTITY = 1,NR_QUANTITIES
+        IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+          IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
+            WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,1),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,2),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,3)
+          ELSE
+            WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                  QUANTITY_INTEGRAL(IQUANTITY,0)
+          ENDIF
+        ENDIF
+      ENDDO
+
+      WRITE(LUPRI,'(A)')
+      CALL PRSYMB(LUPRI,'-',100,0)
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck LEGENDRE_POLYNOMIAL */
+      SUBROUTINE LEGENDRE_POLYNOMIAL(P,N,X)
+C=======================================================================
+C                                                           radovan bast
+C                                           last revision: november 2006
+C=======================================================================
+
+#include "implicit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      PARAMETER (NMAX = 1000)
+
+      DIMENSION P(0:NMAX)
+
+      P(0) = 1
+      P(1) = X
+
+      DO I = 1,N-1
+        P(I+1) = (2*I + 1)*X*P(I) - I*P(I-1)
+        P(I+1) = P(I+1)/(I+1)
+      ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck LEGENDRE_POLYNOMIAL_DERIVATIVES */
+      SUBROUTINE LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X)
+C=======================================================================
+C                                                           radovan bast
+C                                           last revision: november 2006
+C=======================================================================
+
+#include "implicit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      PARAMETER (NMAX = 1000)
+
+      DIMENSION P(0:NMAX),
+     &          DP(NMAX)
+
+      DO I = 1,N
+        DP(I) = (I*X*P(I) - I*P(I-1))/(X*X - D1)
+      ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck LEGENDRE_1D_GRID */
+      SUBROUTINE LEGENDRE_1D_GRID(N,X,W)
+C=======================================================================
+C                                                           radovan bast
+C                                           last revision: november 2006
+C=======================================================================
+
+#include "implicit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      PARAMETER (NMAX = 1000)
+      PARAMETER (THRESHOLD = 1.0D-12)
+
+      DIMENSION X(NMAX),
+     &          W(NMAX),
+     &          P(0:NMAX),
+     &          DP(NMAX)
+
+      X_OLD = -D1
+      CALL LEGENDRE_POLYNOMIAL(P,N,X_OLD)
+
+      DO I = 1,N
+        STEP  = 1.0D-4
+        DO WHILE(DABS(STEP) .GT. THRESHOLD)
+          Y_OLD = P(N)
+          X_NEW = X_OLD + STEP
+
+          CALL LEGENDRE_POLYNOMIAL(P,N,X_NEW)
+          Y_NEW = P(N)
+
+          IF((Y_OLD/Y_NEW) .LT. D0) THEN
+            STEP = -STEP/10.0D0
+          ENDIF
+
+          X_OLD = X_NEW
+        ENDDO
+
+ 1      CONTINUE
+        X(I) = X_NEW
+
+        CALL LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X(I))
+        W(I) = (D1 - X(I)*X(I))*DP(N)*DP(N)
+        W(I) = D2/W(I)
+      ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck LEGENDRE_2D_GRID */
+      SUBROUTINE LEGENDRE_2D_GRID(N,DIMI,DIMJ,LUNIT)
+C=======================================================================
+C                                                           radovan bast
+C                                           last revision: november 2006
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      PARAMETER (NMAX = 1000)
+
+      CHARACTER*30 FILE_NAME
+      DIMENSION PX(NMAX*NMAX),
+     &          PY(NMAX*NMAX),
+     &          PZ(NMAX*NMAX),
+     &          WEIGHT(NMAX*NMAX),
+     &          X(NMAX),
+     &          W(NMAX)
+
+      WRITE(FILE_NAME,'(A5,I2)') 'GRID.', LUNIT
+
+      OPEN(LUNIT,
+     &     FILE = FILE_NAME,
+     &     STATUS = 'UNKNOWN',
+     &     ACCESS = 'SEQUENTIAL',
+     &     FORM = 'UNFORMATTED')
+      REWIND LUNIT
+
+      CALL LEGENDRE_1D_GRID(N,X,W)
+
+      IPOINT = 0
+      DO I = 1,N
+        DO J = 1,N
+          IPOINT = IPOINT + 1
+
+          PX(IPOINT) = (X(I) + D1)*DIMI/D2
+          PY(IPOINT) = D0
+          PZ(IPOINT) = -DIMJ/D2 + (X(J) + D1)*DIMJ/D2
+
+          WEIGHT(IPOINT) = W(I)*W(J)*(DIMI/D2)*(DIMJ/D2)
+        ENDDO
+      ENDDO
+      NR_POINTS = IPOINT
+
+      CALL WRTQUA(PX,PY,PZ,WEIGHT,LUNIT,NR_POINTS)
 
       RETURN
       END
