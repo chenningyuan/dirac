@@ -550,9 +550,9 @@ C=======================================================================
           LUNIT_2D_GRID = 45
 
           N = 30
-          DIMX = 10.0D0
+          DIMY = 10.0D0
           DIMZ = 10.0D0
-          CALL LEGENDRE_2D_GRID(N,DIMX,DIMZ,LUNIT_2D_GRID)
+          CALL LEGENDRE_2D_GRID(N,DIMY,DIMZ,LUNIT_2D_GRID)
 
           REWIND LUNIT_2D_GRID
           READ(LUNIT_2D_GRID) NR_POINTS
@@ -765,8 +765,8 @@ C     /* deck MODIFIED_DMAT_AO */
 C=======================================================================
 C     fill MO density matrix
 C     with components of the solution vector
-C     then transform to AO density matrix
 C     these are read in from XVECFILE
+C     then transform to AO density matrix
 C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                            last revision: october 2006
@@ -1300,7 +1300,10 @@ C=======================================================================
           IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
             QUANTITY_INTEGRAL(IQUANTITY,0)
      &                          = QUANTITY_INTEGRAL(IQUANTITY,0)
-     &                          + QUANTITY(IQUANTITY,0)*WEIGHT(IPOINT)
+C    &                          + QUANTITY(IQUANTITY,0)*WEIGHT(IPOINT)
+     &                          + WEIGHT(IPOINT)
+     &                          * EXP(-(PY(IPOINT)**D2))
+     &                          * EXP(-(PZ(IPOINT)**D2))
 
             IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
               DO IXYZ = 1,3
@@ -1385,6 +1388,63 @@ C=======================================================================
       DO I = 1,N
         DP(I) = (I*X*P(I) - I*P(I-1))/(X*X - D1)
       ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck LOBATTO_1D_GRID */
+      SUBROUTINE LOBATTO_1D_GRID(N,X,W)
+C=======================================================================
+C                                                           radovan bast
+C                                           last revision: november 2006
+C=======================================================================
+
+#include "implicit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      PARAMETER (NMAX = 1000)
+      PARAMETER (THRESHOLD = 1.0D-12)
+
+      DIMENSION X(NMAX),
+     &          W(NMAX),
+     &          P(0:NMAX),
+     &          DP(NMAX)
+
+      X_OLD = -D1
+      CALL LEGENDRE_POLYNOMIAL(P,N,X_OLD)
+      CALL LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X_OLD)
+
+      DO I = 2,N-1
+        STEP  = 1.0D-4
+        DO WHILE(DABS(STEP) .GT. THRESHOLD)
+          Y_OLD = DP(N-1)
+          X_NEW = X_OLD + STEP
+
+          CALL LEGENDRE_POLYNOMIAL(P,N,X_NEW)
+          CALL LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X_NEW)
+          Y_NEW = DP(N-1)
+
+          IF((Y_OLD/Y_NEW) .LT. D0) THEN
+            STEP = -STEP/10.0D0
+          ENDIF
+
+          X_OLD = X_NEW
+        ENDDO
+
+ 1      CONTINUE
+        X(I) = X_NEW
+
+        W(I) = N*(N - 1)*P(N-1)*P(N-1)
+        W(I) = D2/W(I)
+      ENDDO
+
+!     end points
+
+      X(1) = -D1
+      X(N) =  D1
+
+      W(1) = D2/(N*(N - D1))
+      W(N) = W(1)
 
       RETURN
       END
@@ -1474,9 +1534,9 @@ C=======================================================================
         DO J = 1,N
           IPOINT = IPOINT + 1
 
-          PX(IPOINT) = (X(I) + D1)*DIMI/D2
-          PY(IPOINT) = D0
-          PZ(IPOINT) = -DIMJ/D2 + (X(J) + D1)*DIMJ/D2
+          PX(IPOINT) = D0
+          PY(IPOINT) = (X(I)+D1)*DIMI/D2
+          PZ(IPOINT) = (X(J)+D1)*DIMJ/D2 - DIMJ/D2
 
           WEIGHT(IPOINT) = W(I)*W(J)*(DIMI/D2)*(DIMJ/D2)
         ENDDO
