@@ -6155,12 +6155,12 @@ C=======================================================================
 
       SAVE SET
       DATA TABLE /'.INTEGR','.READXV','.1D    ','.2D    ', !  1  2  3  4
-     &            '.3D    ','.DENSIT','.SPIN  ','.CURREN', !  5  6  7  8
+     &            '.3D    ','.DENSIT','.MAGNET','.CURREN', !  5  6  7  8
      &            '.ELF   ','.1DSTEP','.3DADD ','.XXXXXX', !  9 10 11 12
      &            '.CUBE  ','.XXXXXX','.NXVEC ','.STRING', ! 13 14 15 16
      &            '.SKIPEP','.SKIPEE','.RXJ   ','.FORMAT', ! 17 18 19 20
      &            '.CUTXY ','.CUTXYS','.CUTYZ ','.CUTYZS', ! 21 22 23 24
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 25 26 27 28
+     &            '.DIVSPI','.DIVCUR','.ROTSPI','.ROTCUR', ! 25 26 27 28
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 29 30 31 32
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 33 34 35 36
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 37 38 39 40
@@ -6298,11 +6298,19 @@ C=======================================================================
    24     CONTINUE
           CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,4)
           GOTO 100
-
    25     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,6)
+          GOTO 100
    26     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,7)
+          GOTO 100
    27     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,8)
+          GOTO 100
    28     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,9)
+          GOTO 100
+
    29     CONTINUE
    30     CONTINUE
    31     CONTINUE

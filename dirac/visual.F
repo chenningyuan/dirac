@@ -261,10 +261,14 @@ C=======================================================================
 #include "memint.h"
 
       QUANTITY_NAME(1) = 'density'
-      QUANTITY_NAME(2) = 'spin_density'
+      QUANTITY_NAME(2) = 'magnetization'
       QUANTITY_NAME(3) = 'current_density'
       QUANTITY_NAME(4) = 'ELF'
       QUANTITY_NAME(5) = 'r_times_j'
+      QUANTITY_NAME(6) = 'divergence_magnetization'
+      QUANTITY_NAME(7) = 'divergence_current_density'
+      QUANTITY_NAME(8) = 'curl_magnetization'
+      QUANTITY_NAME(9) = 'curl_current_density'
 
       QUANTITY_NAME(10) = 'opt0'
       QUANTITY_NAME(11) = 'opt1'
@@ -636,6 +640,7 @@ C=======================================================================
      &          BUF(*),
      &          QUANTITY(NR_QUANTITIES,0:3),
      &          VECTOR(3),
+     &          DMATRIX(3,3),
      &          WORK(*)
 
       CALL DZERO(QUANTITY,NR_QUANTITIES)
@@ -750,6 +755,49 @@ C=======================================================================
      &       LBIT(LBIT_PLOT_2D_OPTIONS,4)) THEN
             WRITE(0,'(4F30.20)') PX, PY, (VECTOR(IXYZ),IXYZ=2,3)
           ENDIF
+#else
+          CALL QUIT('not implemented')
+#endif
+        ENDIF
+      ENDDO
+
+!     divergence of magnetization and current density
+
+      DO IQUANTITY = 6,7
+        IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+#if defined (MOD_CDFT)
+          CALL GET_CURRENT(IQUANTITY-2,
+     &                     UNUSED,
+     &                     DMATRIX,
+     &                     IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
+
+          CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
+#else
+          CALL QUIT('not implemented')
+#endif
+        ENDIF
+      ENDDO
+
+!     curl of magnetization and current density
+
+      DO IQUANTITY = 8,9
+        IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+#if defined (MOD_CDFT)
+          CALL GET_CURRENT(IQUANTITY-4,
+     &                     UNUSED,
+     &                     DMATRIX,
+     &                     IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
+
+          CALL GET_CURRENT_ROT(DMATRIX,VECTOR)
+
+          QUANTITY(IQUANTITY,1) = VECTOR(1)
+          QUANTITY(IQUANTITY,2) = VECTOR(2)
+          QUANTITY(IQUANTITY,3) = VECTOR(3)
+
+          QUANTITY(IQUANTITY,0) = VECTOR(1)**D2
+     &                          + VECTOR(2)**D2
+     &                          + VECTOR(3)**D2
+          QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
 #else
           CALL QUIT('not implemented')
 #endif
@@ -1254,14 +1302,22 @@ C=======================================================================
      &          WORK(*)
 
       QUANTITY_NAME(1) = 'density'
-      QUANTITY_NAME(2) = 'spin_density'
+      QUANTITY_NAME(2) = 'magnetization'
       QUANTITY_NAME(3) = 'current_density'
       QUANTITY_NAME(4) = 'ELF'
       QUANTITY_NAME(5) = 'r_times_j'
+      QUANTITY_NAME(6) = 'divergence_magnetization'
+      QUANTITY_NAME(7) = 'divergence_current_density'
+      QUANTITY_NAME(8) = 'curl_magnetization'
+      QUANTITY_NAME(9) = 'curl_current_density'
       QUANTITY_IS_A_VECTOR(1) = .FALSE.
       QUANTITY_IS_A_VECTOR(2) = .TRUE.
       QUANTITY_IS_A_VECTOR(3) = .TRUE.
       QUANTITY_IS_A_VECTOR(4) = .FALSE.
+      QUANTITY_IS_A_VECTOR(5) = .TRUE.
+      QUANTITY_IS_A_VECTOR(6) = .FALSE.
+      QUANTITY_IS_A_VECTOR(7) = .FALSE.
+      QUANTITY_IS_A_VECTOR(8) = .TRUE.
       QUANTITY_IS_A_VECTOR(5) = .TRUE.
 
       QUANTITY_NAME(10) = 'opt0'

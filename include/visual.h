@@ -11,14 +11,14 @@ C     LBIT(LBIT_PLOT_GENERAL,7)    use orbital string
 C     LBIT(LBIT_PLOT_GENERAL,8)    integrate
 C
 C     LBIT(LBIT_PLOT_QUANTITY,1)   density
-C     LBIT(LBIT_PLOT_QUANTITY,2)   spin density
+C     LBIT(LBIT_PLOT_QUANTITY,2)   magnetization
 C     LBIT(LBIT_PLOT_QUANTITY,3)   current density
 C     LBIT(LBIT_PLOT_QUANTITY,4)   ELF
 C     LBIT(LBIT_PLOT_QUANTITY,5)   r \times j
-C     LBIT(LBIT_PLOT_QUANTITY,6)   not used
-C     LBIT(LBIT_PLOT_QUANTITY,7)   not used
-C     LBIT(LBIT_PLOT_QUANTITY,8)   not used
-C     LBIT(LBIT_PLOT_QUANTITY,9)   not used
+C     LBIT(LBIT_PLOT_QUANTITY,6)   divergence(magnetization)
+C     LBIT(LBIT_PLOT_QUANTITY,7)   divergence(current density)
+C     LBIT(LBIT_PLOT_QUANTITY,8)   curl(magnetization)
+C     LBIT(LBIT_PLOT_QUANTITY,9)   curl(current density)
 C     LBIT(LBIT_PLOT_QUANTITY,10) .OPT0 (debug and testing of new functionalities)
 C     LBIT(LBIT_PLOT_QUANTITY,11) .OPT1 (debug and testing of new functionalities)
 C     LBIT(LBIT_PLOT_QUANTITY,12) .OPT2 (debug and testing of new functionalities)
