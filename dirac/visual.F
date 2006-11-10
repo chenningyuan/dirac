@@ -549,10 +549,11 @@ C=======================================================================
 
           LUNIT_2D_GRID = 45
 
-          N = 30
+          N = 300
           DIMY = 10.0D0
           DIMZ = 10.0D0
-          CALL LEGENDRE_2D_GRID(N,DIMY,DIMZ,LUNIT_2D_GRID)
+!         CALL LEGENDRE_2D_GRID(N,DIMY,DIMZ,LUNIT_2D_GRID)
+          CALL LOBATTO_2D_GRID(N,DIMY,DIMZ,LUNIT_2D_GRID)
 
           REWIND LUNIT_2D_GRID
           READ(LUNIT_2D_GRID) NR_POINTS
@@ -566,7 +567,7 @@ C=======================================================================
      &                WORK(KW),
      &                LUNIT_2D_GRID,NR_POINTS)
 
-          CALL AROUND('2D Gauss-Legendre quadrature')
+          CALL AROUND('2D Gauss-Lobatto quadrature')
           CALL INTEGRATE_QUANTITY(DMAT_AO,
      &                            GAO,GAO1,GAO2,
      &                            WORK(KX),WORK(KY),WORK(KZ),
@@ -1300,10 +1301,10 @@ C=======================================================================
           IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
             QUANTITY_INTEGRAL(IQUANTITY,0)
      &                          = QUANTITY_INTEGRAL(IQUANTITY,0)
-C    &                          + QUANTITY(IQUANTITY,0)*WEIGHT(IPOINT)
-     &                          + WEIGHT(IPOINT)
-     &                          * EXP(-(PY(IPOINT)**D2))
-     &                          * EXP(-(PZ(IPOINT)**D2))
+     &                          + QUANTITY(IQUANTITY,0)*WEIGHT(IPOINT)
+!    &                          + WEIGHT(IPOINT)
+!    &                          * EXP(-(PY(IPOINT)**D2))
+!    &                          * EXP(-(PZ(IPOINT)**D2))
 
             IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
               DO IXYZ = 1,3
@@ -1410,7 +1411,7 @@ C=======================================================================
      &          P(0:NMAX),
      &          DP(NMAX)
 
-      X_OLD = -D1
+      X_OLD = -D1 + THRESHOLD
       CALL LEGENDRE_POLYNOMIAL(P,N,X_OLD)
       CALL LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X_OLD)
 
@@ -1430,8 +1431,6 @@ C=======================================================================
 
           X_OLD = X_NEW
         ENDDO
-
- 1      CONTINUE
         X(I) = X_NEW
 
         W(I) = N*(N - 1)*P(N-1)*P(N-1)
@@ -1485,8 +1484,6 @@ C=======================================================================
 
           X_OLD = X_NEW
         ENDDO
-
- 1      CONTINUE
         X(I) = X_NEW
 
         CALL LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X(I))
@@ -1528,6 +1525,57 @@ C=======================================================================
       REWIND LUNIT
 
       CALL LEGENDRE_1D_GRID(N,X,W)
+
+      IPOINT = 0
+      DO I = 1,N
+        DO J = 1,N
+          IPOINT = IPOINT + 1
+
+          PX(IPOINT) = D0
+          PY(IPOINT) = (X(I)+D1)*DIMI/D2
+          PZ(IPOINT) = (X(J)+D1)*DIMJ/D2 - DIMJ/D2
+
+          WEIGHT(IPOINT) = W(I)*W(J)*(DIMI/D2)*(DIMJ/D2)
+        ENDDO
+      ENDDO
+      NR_POINTS = IPOINT
+
+      CALL WRTQUA(PX,PY,PZ,WEIGHT,LUNIT,NR_POINTS)
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck LOBATTO_2D_GRID */
+      SUBROUTINE LOBATTO_2D_GRID(N,DIMI,DIMJ,LUNIT)
+C=======================================================================
+C                                                           radovan bast
+C                                           last revision: november 2006
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      PARAMETER (NMAX = 1000)
+
+      CHARACTER*30 FILE_NAME
+      DIMENSION PX(NMAX*NMAX),
+     &          PY(NMAX*NMAX),
+     &          PZ(NMAX*NMAX),
+     &          WEIGHT(NMAX*NMAX),
+     &          X(NMAX),
+     &          W(NMAX)
+
+      WRITE(FILE_NAME,'(A5,I2)') 'GRID.', LUNIT
+
+      OPEN(LUNIT,
+     &     FILE = FILE_NAME,
+     &     STATUS = 'UNKNOWN',
+     &     ACCESS = 'SEQUENTIAL',
+     &     FORM = 'UNFORMATTED')
+      REWIND LUNIT
+
+      CALL LOBATTO_1D_GRID(N,X,W)
 
       IPOINT = 0
       DO I = 1,N
