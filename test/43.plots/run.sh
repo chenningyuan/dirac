@@ -57,7 +57,7 @@ for symmetry in auto c1 c2 c2h c2v ci cs d2 d2h; do
   MENU=$property.dc; export MENU
   ../run.sh -get "PAMXVC" -outcmo
 
-  quantity=spindensity
+  quantity=magnetization
   MENU=3d.$quantity.readxvec.dc.$symmetry; export MENU
   ../run.sh -copy "PAMXVC" -get "PLOT*" -incmo; for file in PLOT*; do echo $file; mv $file $MENU\_$MOL.PLOT; done
 
