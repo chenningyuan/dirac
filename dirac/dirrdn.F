@@ -6158,9 +6158,9 @@ C=======================================================================
      &            '.3D    ','.DENSIT','.MAGNET','.CURREN', !  5  6  7  8
      &            '.ELF   ','.1DSTEP','.3DADD ','.XXXXXX', !  9 10 11 12
      &            '.CUBE  ','.XXXXXX','.NXVEC ','.STRING', ! 13 14 15 16
-     &            '.SKIPEP','.SKIPEE','.RXJ   ','.FORMAT', ! 17 18 19 20
-     &            '.CUTXY ','.CUTXYS','.CUTYZ ','.CUTYZS', ! 21 22 23 24
-     &            '.DIVSPI','.DIVCUR','.ROTSPI','.ROTCUR', ! 25 26 27 28
+     &            '.SKIPEP','.SKIPEE','.RXJ   ','.XXXXXX', ! 17 18 19 20
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 21 22 23 24
+     &            '.DIVMAG','.DIVCUR','.ROTMAG','.ROTCUR', ! 25 26 27 28
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 29 30 31 32
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 33 34 35 36
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 37 38 39 40
@@ -6191,7 +6191,6 @@ C=======================================================================
 
       LBIT_PLOT_GENERAL    = 0
       LBIT_PLOT_QUANTITY   = 0
-      LBIT_PLOT_2D_OPTIONS = 0
 
       STEP_1D              = 0.01D0
       ADD_3D               = 4.0D0
@@ -6283,21 +6282,14 @@ C=======================================================================
    19     CONTINUE
           CALL SET_LBIT(LBIT_PLOT_QUANTITY,5)
           GOTO 100
+
    20     CONTINUE
-          CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,5)
-          GOTO 100
    21     CONTINUE
-          CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,1)
-          GOTO 100
    22     CONTINUE
-          CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,2)
-          GOTO 100
    23     CONTINUE
-          CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,3)
-          GOTO 100
    24     CONTINUE
-          CALL SET_LBIT(LBIT_PLOT_2D_OPTIONS,4)
           GOTO 100
+
    25     CONTINUE
           CALL SET_LBIT(LBIT_PLOT_QUANTITY,6)
           GOTO 100

@@ -30,12 +30,6 @@ C     LBIT(LBIT_PLOT_QUANTITY,17) .OPT7 (debug and testing of new functionalitie
 C     LBIT(LBIT_PLOT_QUANTITY,18) .OPT8 (debug and testing of new functionalities)
 C     LBIT(LBIT_PLOT_QUANTITY,19) .OPT9 (debug and testing of new functionalities)
 C
-C     LBIT(LBIT_PLOT_2D_OPTIONS,1) xy cut
-C     LBIT(LBIT_PLOT_2D_OPTIONS,2) xy cut, "small"
-C     LBIT(LBIT_PLOT_2D_OPTIONS,3) yz cut
-C     LBIT(LBIT_PLOT_2D_OPTIONS,4) yz cut, "small"
-C     LBIT(LBIT_PLOT_2D_OPTIONS,5) format 200
-C
       CHARACTER*6     XVECFILE
       CHARACTER*8     ORBSTRING1, ORBSTRING2
       LOGICAL         DOPLOT
@@ -44,6 +38,5 @@ C
       COMMON /CPLOTL/ DOPLOT
       COMMON /CPLOTI/ NCUBE(0:3), NXVEC, IREP_PLOT,                     &
      &                LBIT_PLOT_GENERAL,                                &
-     &                LBIT_PLOT_QUANTITY,                               &
-     &                LBIT_PLOT_2D_OPTIONS
+     &                LBIT_PLOT_QUANTITY
       COMMON /CPLOTR/ STEP_1D, ADD_3D

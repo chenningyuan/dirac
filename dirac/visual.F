@@ -230,7 +230,6 @@ C=======================================================================
      &          PAIR_NAME_B(MAX_NR_PAIRS)*3,
      &          ORIENTATION(3)*2
 
-      CHARACTER*20 FORMAT_STRING
       CHARACTER*50 FILE_NAME
 
 #include "visual.h"
@@ -303,6 +302,10 @@ C=======================================================================
       QUANTITY_IS_A_VECTOR(17) = .FALSE.
       QUANTITY_IS_A_VECTOR(18) = .FALSE.
       QUANTITY_IS_A_VECTOR(19) = .FALSE.
+
+      ORIENTATION(1) = 'xy'
+      ORIENTATION(2) = 'xz'
+      ORIENTATION(3) = 'yz'
 
 !     open files
 
@@ -403,6 +406,77 @@ C=======================================================================
         ENDDO
       ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,1)) THEN !1D
 
+      IF(LBIT(LBIT_PLOT_GENERAL,2)) THEN !2D
+        DO IORIENTATION = 1,3
+
+          NI = NCUBE(1)
+          NJ = NCUBE(2)
+          NK = NCUBE(3)
+
+          IF(ORIENTATION(IORIENTATION) .EQ. 'xy') THEN
+            NK = 1
+          ELSEIF(ORIENTATION(IORIENTATION) .EQ. 'xz') THEN
+            NJ = 1
+          ELSEIF(ORIENTATION(IORIENTATION) .EQ. 'yz') THEN
+            NI = 1
+          ENDIF
+
+          DO IQUANTITY = 1,NR_QUANTITIES
+            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+              WRITE(LUNIT(2,IQUANTITY),'(A)')
+              WRITE(LUNIT(2,IQUANTITY),'(A)')
+              WRITE(LUNIT(2,IQUANTITY),'(A2)') ORIENTATION(IORIENTATION)
+              WRITE(LUNIT(2,IQUANTITY),'(A)')
+            ENDIF
+          ENDDO
+
+          DO I = 1,NI
+            DO J = 1,NJ
+              DO K = 1,NK
+
+                PX = -6.0D0 + (I-1)*12.0D0/(NI-1)
+                PY = -6.0D0 + (J-1)*12.0D0/(NJ-1)
+                PZ = -6.0D0 + (K-1)*12.0D0/(NK-1)
+
+                IF(ORIENTATION(IORIENTATION) .EQ. 'xy') THEN
+                  PZ = D0
+                ELSEIF(ORIENTATION(IORIENTATION) .EQ. 'xz') THEN
+                  PY = D0
+                ELSEIF(ORIENTATION(IORIENTATION) .EQ. 'yz') THEN
+                  PX = D0
+                ENDIF
+
+                CALL GET_QUANTITY_IN_POINT(DMAT_AO,
+     &                                     GAO,GAO1,GAO2,
+     &                                     PX,PY,PZ,
+     &                                     NCNT,BUF,
+     &                                     QUANTITY,
+     &                                     WORK,KFREE,LFREE)
+
+!               write buffer
+
+                DO IQUANTITY = 1,NR_QUANTITIES
+                  IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+                    IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
+                      WRITE(LUNIT(2,IQUANTITY),'(7F20.10)')
+     &                      PX, PY, PZ,
+     &                      QUANTITY(IQUANTITY,0,1),
+     &                      QUANTITY(IQUANTITY,1,1),
+     &                      QUANTITY(IQUANTITY,2,1),
+     &                      QUANTITY(IQUANTITY,3,1)
+                    ELSE
+                      WRITE(LUNIT(2,IQUANTITY),'(4F20.10)')
+     &                      PX, PY, PZ,
+     &                      QUANTITY(IQUANTITY,0,1)
+                    ENDIF
+                  ENDIF
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO !DO IORIENTATION = 1,3
+      ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,2)) THEN !2D
+
       IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
 
 !       calculate cube parameters
@@ -473,15 +547,6 @@ C=======================================================================
 
 !       grid walk
 
-        IF(LBIT(LBIT_PLOT_2D_OPTIONS,1) .OR.
-     &     LBIT(LBIT_PLOT_2D_OPTIONS,2)) THEN
-          NCUBE(3) = 1
-        ENDIF
-        IF(LBIT(LBIT_PLOT_2D_OPTIONS,3) .OR.
-     &     LBIT(LBIT_PLOT_2D_OPTIONS,4)) THEN
-          NCUBE(1) = 1
-        ENDIF
-
         DO ICUBE = 1,NCUBE(1)
           DO JCUBE = 1,NCUBE(2)
             DO KCUBE = 1,NCUBE(3)
@@ -496,27 +561,6 @@ C=======================================================================
      &                          + (JCUBE-1)*STEP_3D(3,2)
      &                          + (KCUBE-1)*STEP_3D(3,3)
 
-              IF(LBIT(LBIT_PLOT_2D_OPTIONS,1)) THEN
-                PX = -6.0D0+(ICUBE-1)*(12.0D0/(NCUBE(1)-1))
-                PY = -6.0D0+(JCUBE-1)*(12.0D0/(NCUBE(2)-1))
-                PZ = D0
-              ENDIF
-              IF(LBIT(LBIT_PLOT_2D_OPTIONS,2)) THEN
-                PX = -2.0D0+(ICUBE-1)*(4.0D0/(NCUBE(1)-1))
-                PY = -2.0D0+(JCUBE-1)*(4.0D0/(NCUBE(2)-1))
-                PZ = D0
-              ENDIF
-              IF(LBIT(LBIT_PLOT_2D_OPTIONS,3)) THEN
-                PY = -6.0D0+(KCUBE-1)*(12.0D0/(NCUBE(3)-1))
-                PZ = -6.0D0+(JCUBE-1)*(12.0D0/(NCUBE(2)-1))
-                PX = D0
-              ENDIF
-              IF(LBIT(LBIT_PLOT_2D_OPTIONS,4)) THEN
-                PY = -2.0D0+(KCUBE-1)*(4.0D0/(NCUBE(3)-1))
-                PZ = -2.0D0+(JCUBE-1)*(4.0D0/(NCUBE(2)-1))
-                PX = D0
-              ENDIF
-
               CALL GET_QUANTITY_IN_POINT(DMAT_AO,
      &                                   GAO,GAO1,GAO2,
      &                                   PX,PY,PZ,
@@ -527,14 +571,9 @@ C=======================================================================
 
 !           write buffer
 
-            FORMAT_STRING = '(6E13.5)'
-            IF(LBIT(LBIT_PLOT_2D_OPTIONS,5)) THEN
-              FORMAT_STRING = '(200E13.5)'
-            ENDIF
-
             DO IQUANTITY = 1,NR_QUANTITIES
               IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
-                WRITE(LUNIT(3,IQUANTITY),FORMAT_STRING)
+                WRITE(LUNIT(3,IQUANTITY),'(6E13.5)')
      &               (QUANTITY(IQUANTITY,0,M),M=1,NCUBE(3))
               ENDIF
             ENDDO
@@ -559,48 +598,72 @@ C=======================================================================
 
 !       3D integration
 
-!       LUNIT_3D_GRID = 44
+        CALL AROUND('3D numerical integration')
 
-!       CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
+        LUNIT_3D_GRID = 44
 
-!       REWIND LUNIT_3D_GRID
-!       READ(LUNIT_3D_GRID) NR_POINTS
+        CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
 
-!       CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
-!       CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
-!       CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
-!       CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
+        REWIND LUNIT_3D_GRID
+        READ(LUNIT_3D_GRID) NR_POINTS
 
-!       CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
-!    &              WORK(KW),
-!    &              LUNIT_3D_GRID,NR_POINTS)
+        CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
 
-!       CALL AROUND('3D quadrature')
-!       CALL INTEGRATE_QUANTITY(DMAT_AO,
-!    &                          GAO,GAO1,GAO2,
-!    &                          WORK(KX),WORK(KY),WORK(KZ),
-!    &                          WORK(KW),
-!    &                          NR_POINTS,
-!    &                          NCNT,BUF,
-!    &                          WORK,KFREE,LFREE)
+        CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
+     &              WORK(KW),
+     &              LUNIT_3D_GRID,NR_POINTS)
 
-!       CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
+        CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
+     &              WORK(KW),
+     &              LUNIT_3D_GRID,NR_POINTS)
 
+        CALL INTEGRATE_QUANTITY(QUANTITY_INTEGRAL,
+     &                          DMAT_AO,
+     &                          GAO,GAO1,GAO2,
+     &                          WORK(KX),WORK(KY),WORK(KZ),
+     &                          WORK(KW),
+     &                          NR_POINTS,
+     &                          NCNT,BUF,
+     &                          WORK,KFREE,LFREE)
 
+        CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
 
+        CLOSE(LUNIT_3D_GRID,STATUS = 'DELETE')
 
+        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
+     &                               'scalar/norm',
+     &                               'x-component',
+     &                               'y-component',
+     &                               'z-component'
+        WRITE(LUPRI,'(A)')
 
+        DO IQUANTITY = 1,NR_QUANTITIES
+          IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+            IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
+              WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                 QUANTITY_INTEGRAL(IQUANTITY,0),
+     &                                 QUANTITY_INTEGRAL(IQUANTITY,1),
+     &                                 QUANTITY_INTEGRAL(IQUANTITY,2),
+     &                                 QUANTITY_INTEGRAL(IQUANTITY,3)
+            ELSE
+              WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                QUANTITY_INTEGRAL(IQUANTITY,0)
+            ENDIF
+          ENDIF
+        ENDDO
 
-
-
+        WRITE(LUPRI,'(A)')
+        CALL PRSYMB(LUPRI,'-',100,0)
+        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A)')
 
 !       2D integration
 
         CALL AROUND('2D Gauss-Lobatto numerical integration')
-
-        ORIENTATION(1) = 'xy'
-        ORIENTATION(2) = 'xz'
-        ORIENTATION(3) = 'yz'
 
         DO IORIENTATION = 2,3
           WRITE(LUPRI,'(A)')
@@ -802,15 +865,6 @@ C=======================================================================
      &                          + VECTOR(2)**D2
      &                          + VECTOR(3)**D2
           QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
-
-          IF(LBIT(LBIT_PLOT_2D_OPTIONS,1) .OR.
-     &       LBIT(LBIT_PLOT_2D_OPTIONS,2)) THEN
-            WRITE(0,'(4F30.20)') PX, PY, (VECTOR(IXYZ),IXYZ=1,2)
-          ENDIF
-          IF(LBIT(LBIT_PLOT_2D_OPTIONS,3) .OR.
-     &       LBIT(LBIT_PLOT_2D_OPTIONS,4)) THEN
-            WRITE(0,'(4F30.20)') PX, PY, (VECTOR(IXYZ),IXYZ=2,3)
-          ENDIF
 #else
           CALL QUIT('not implemented')
 #endif
@@ -843,15 +897,6 @@ C=======================================================================
      &                          + VECTOR(2)**D2
      &                          + VECTOR(3)**D2
           QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
-
-          IF(LBIT(LBIT_PLOT_2D_OPTIONS,1) .OR.
-     &       LBIT(LBIT_PLOT_2D_OPTIONS,2)) THEN
-            WRITE(0,'(4F30.20)') PX, PY, (VECTOR(IXYZ),IXYZ=1,2)
-          ENDIF
-          IF(LBIT(LBIT_PLOT_2D_OPTIONS,3) .OR.
-     &       LBIT(LBIT_PLOT_2D_OPTIONS,4)) THEN
-            WRITE(0,'(4F30.20)') PX, PY, (VECTOR(IXYZ),IXYZ=2,3)
-          ENDIF
 #else
           CALL QUIT('not implemented')
 #endif
