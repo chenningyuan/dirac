@@ -19,6 +19,7 @@ C     LBIT(LBIT_PLOT_QUANTITY,6)   divergence(magnetization)
 C     LBIT(LBIT_PLOT_QUANTITY,7)   divergence(current density)
 C     LBIT(LBIT_PLOT_QUANTITY,8)   curl(magnetization)
 C     LBIT(LBIT_PLOT_QUANTITY,9)   curl(current density)
+C
 C     LBIT(LBIT_PLOT_QUANTITY,10) .OPT0 (debug and testing of new functionalities)
 C     LBIT(LBIT_PLOT_QUANTITY,11) .OPT1 (debug and testing of new functionalities)
 C     LBIT(LBIT_PLOT_QUANTITY,12) .OPT2 (debug and testing of new functionalities)
@@ -37,6 +38,5 @@ C
       COMMON /CPLOTC/ XVECFILE, ORBSTRING1, ORBSTRING2
       COMMON /CPLOTL/ DOPLOT
       COMMON /CPLOTI/ NCUBE(0:3), NXVEC, IREP_PLOT,                     &
-     &                LBIT_PLOT_GENERAL,                                &
-     &                LBIT_PLOT_QUANTITY
+     &                LBIT_PLOT_GENERAL, LBIT_PLOT_QUANTITY
       COMMON /CPLOTR/ STEP_1D, ADD_3D

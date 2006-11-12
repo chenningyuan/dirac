@@ -315,12 +315,13 @@ C=======================================================================
           DO IQUANTITY = 1,NR_QUANTITIES
             IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
               WRITE(FILE_NAME,'(A5,I1,A2,A)') 'PLOT.', I, 'D.',
-     &                                  QUANTITY_NAME(IQUANTITY)
+     &                                        QUANTITY_NAME(IQUANTITY)
               OPEN(LUNIT_BASE,
      &             FILE = FILE_NAME,
      &             STATUS = 'NEW',
      &             ACCESS = 'SEQUENTIAL',
      &             FORM = 'FORMATTED')
+
               LUNIT(I,IQUANTITY) = LUNIT_BASE
               LUNIT_BASE = LUNIT_BASE + 1
             ENDIF
@@ -393,7 +394,7 @@ C=======================================================================
      &                                 QUANTITY,
      &                                 WORK,KFREE,LFREE)
 
-!           write buffer
+!           write fo file(s)
 
             PP  = XTANG*PP
             DO IQUANTITY = 1,NR_QUANTITIES
@@ -404,7 +405,7 @@ C=======================================================================
             ENDDO
           ENDDO
         ENDDO
-      ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,1)) THEN !1D
+      ENDIF !1D
 
       IF(LBIT(LBIT_PLOT_GENERAL,2)) THEN !2D
         DO IORIENTATION = 1,3
@@ -453,7 +454,7 @@ C=======================================================================
      &                                     QUANTITY,
      &                                     WORK,KFREE,LFREE)
 
-!               write buffer
+!               write to file(s)
 
                 DO IQUANTITY = 1,NR_QUANTITIES
                   IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
@@ -474,8 +475,8 @@ C=======================================================================
               ENDDO
             ENDDO
           ENDDO
-        ENDDO !DO IORIENTATION = 1,3
-      ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,2)) THEN !2D
+        ENDDO
+      ENDIF !2D
 
       IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
 
@@ -569,7 +570,7 @@ C=======================================================================
      &                                   WORK,KFREE,LFREE)
             ENDDO
 
-!           write buffer
+!           write fo file(s)
 
             DO IQUANTITY = 1,NR_QUANTITIES
               IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
@@ -579,7 +580,7 @@ C=======================================================================
             ENDDO
           ENDDO
         ENDDO
-      ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
+      ENDIF !3D
 
 !     close files
 
@@ -587,14 +588,13 @@ C=======================================================================
         IF(LBIT(LBIT_PLOT_GENERAL,I)) THEN
           DO IQUANTITY = 1,NR_QUANTITIES
             IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
-              CLOSE(LUNIT(I,IQUANTITY),
-     &              STATUS = 'KEEP')
+              CLOSE(LUNIT(I,IQUANTITY), STATUS = 'KEEP')
             ENDIF
           ENDDO
         ENDIF
       ENDDO
 
-      IF(LBIT(LBIT_PLOT_GENERAL,8)) THEN !integrate
+      IF(LBIT(LBIT_PLOT_GENERAL,8)) THEN !integration
 
 !       3D integration
 
@@ -611,10 +611,6 @@ C=======================================================================
         CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
-
-        CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
-     &              WORK(KW),
-     &              LUNIT_3D_GRID,NR_POINTS)
 
         CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
      &              WORK(KW),
@@ -756,7 +752,7 @@ C=======================================================================
         WRITE(LUPRI,'(A)')
         CALL PRSYMB(LUPRI,'-',100,0)
 
-      ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,8)) THEN !integrate
+      ENDIF !integration
 
       RETURN
       END
@@ -803,17 +799,14 @@ C=======================================================================
      &          DMATRIX(3,3),
      &          WORK(*)
 
-      CALL DZERO(QUANTITY,NR_QUANTITIES)
+      CALL DZERO(QUANTITY,NR_QUANTITIES*4)
+
+      CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
+     &            BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
 
       IF(LBIT(LBIT_PLOT_QUANTITY,4)) THEN !ELF
-        CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
-     &              BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
-
         CALL GETGRHO(VECTOR,IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
         GRADIENT_SQUARED = VECTOR(1)**D2 + VECTOR(2)**D2 + VECTOR(3)**D2
-      ELSE
-        CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
-     &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,0)
       ENDIF
 
 !     density
