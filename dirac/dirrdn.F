@@ -1330,9 +1330,7 @@ C&&& OLEVEL: Open-shell level shifts
                  IF(NOPEN.EQ.0) THEN
                    CALL QUIT('OLEVEL: No open shells defined !')
                  ELSE
-                   DO IOPEN = 1,NOPEN
-                     READ(LUCMD,*) OLEV(IOPEN)
-                   ENDDO
+                   READ(LUCMD,*) (OLEV(IOPEN),IOPEN=1,NOPEN)
                    DOLEVEL = .TRUE.
                  ENDIF
                GOTO 100
