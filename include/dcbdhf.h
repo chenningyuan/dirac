@@ -29,13 +29,14 @@
      &        FCKCNV, DODSCF, DODAMP, DODIIS, DIISON, FIXDIF,           &
      &        DIISAO, DIISMO, OVLSEL, DYNSEL, DOBOSSEL, AUTOCC, INIOCC, &
      &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,DOCCNV,              &
-     &                 ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE            &
+     &        ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE, DOLEVEL            &
 
       COMMON /DCLDHF/ ERGCNV, EVCCNV, FCKCNV, DHFCONV, DHFEXIT, TRIVEC, &
      &                TRIFCK, DODSCF, DODAMP, DODIIS, DIISON, OVLSEL,   &
      &                FIXDIF, DIISAO, DIISMO, DYNSEL, DOBOSSEL, AUTOCC, &
      &                INIOCC, DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,     &
-     &                ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE,DOCCNV      &
+     &                ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE,DOCCNV,     &
+     &                DOLEVEL                                           &
 
       INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
      &        INTDEF, INTDEF_SAVE, INTFLG,                              &
@@ -48,15 +49,13 @@
      &               MAXITR2, NMOFREEZE(2), IMOFREEZE(MXMOFREEZE)       &
 
       COMMON /DCIDHF/ NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS,     &
-     &                NELMBM, INTDEF, INTDEF_SAVE, INTFLG,              &
-     &                                        INTBUF, ITRINT, IPREIG,   &
-     &                NEVEC, N2EVECQ, I2EVECTQ, N2EVECTQ, NSMOTQ, ISMOQ,&
-     &                ITRSCF, NFMAT, ISYMOP, IFCKOP, IHRMOP, NEWOCC,    &
-     &                MXMACRO, MXMICRO, MAXBCK, NFRAG,   NTMO, I2TMOT,  &
-     &                N2TMOTQ, NISHMF,                                  &
-     &                NACSHMF, NASHMFT, NOCCMF, NPRJNUC,                &
-     &                       MAXITR2,                                   &
-     &                    NMOFREEZE, IMOFREEZE                          &
+     &                NELMBM, INTDEF, INTDEF_SAVE, INTFLG, INTBUF,      &
+     &                ITRINT, IPREIG, NEVEC, N2EVECQ, I2EVECTQ,         &
+     &                N2EVECTQ, NSMOTQ, ISMOQ, ITRSCF, NFMAT, ISYMOP,   &
+     &                IFCKOP, IHRMOP, NEWOCC, MXMACRO, MXMICRO, MAXBCK, &
+     &                NFRAG, NTMO, I2TMOT, N2TMOTQ, NISHMF, NACSHMF,    &
+     &                NASHMFT, NOCCMF, NPRJNUC, MAXITR2, NMOFREEZE,     &
+     &                IMOFREEZE                                         &
 
 !..number of closed and open shell orbitals with frozen ones subtracted
 
@@ -70,7 +69,7 @@
      &                DNSDHF, DAMPFC, DIISTH, BMCOND, CNVINT, SCFTID,   &
      &                ESOLVE, ESOLVN, PRJTHR, SCFCNV2, DLSHIF           &
 
-      REAL*8 DF(0:MXOPEN), DA(0:MXOPEN), DALPHA(0:MXOPEN)
+      REAL*8 DF(0:MXOPEN), DA(0:MXOPEN), DALPHA(0:MXOPEN), OLEV(MXOPEN)
       INTEGER MAX_BOS_BL
       PARAMETER (MAX_BOS_BL = 16)
 !     MAX_BOS_BL must be equal to MAX_SUB_BL in dcborb.h /hjaaj oct 2004
@@ -78,9 +77,9 @@
      &        NPSH_DHF(2), NFRO_DHF(2), NELEC_DHF(2), NELECT_DHF,       &
      &        NAELEC_DHF, NACSH(2, MXOPEN), NOPEN,                      &
      &        NISH_BOS(MAX_BOS_BL), NACSH_BOS(MAX_BOS_BL,MXOPEN)
-      COMMON /DCODHF/ DF, DA, DALPHA, NISH_DHF, NASH_DHF, NSSH_DHF,     &
-     &                NESH_DHF, NPSH_DHF, NFRO_DHF, NELEC_DHF,          &
-     &                NELECT_DHF, NAELEC_DHF, NACSH, NOPEN,             &
+      COMMON /DCODHF/ DF, DA, DALPHA, OLEV, NISH_DHF, NASH_DHF,         &
+     &                NSSH_DHF, NESH_DHF, NPSH_DHF, NFRO_DHF,           &
+     &                NELEC_DHF, NELECT_DHF, NAELEC_DHF, NACSH, NOPEN,  &
      &                NISH_BOS, NACSH_BOS
 
       INTEGER LUCYCL, LUFCK1, LUFCK2, LUFOCK, LUDIIS, LUDENS, LUEVEC,   &

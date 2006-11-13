@@ -765,7 +765,7 @@ C
      &            '.XXXXXX','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
-     &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.XXXXXX',
+     &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
@@ -891,7 +891,9 @@ CMI   ... criteria of convergence for prelim.BSS-SCF
       CNVINT(1) = DUMMY
       CNVINT(2) = DUMMY
       PRJTHR  = 1.0D-10
-      DLSHIF = -D1
+      DOLEVEL  = .FALSE.
+      DLSHIF = D0
+      CALL DZERO(OLEV,MXOPEN)
       CALL DZERO(SCFTID,8)
       CALL IZERO(ITRSCF,8)
 C
@@ -1251,6 +1253,7 @@ C&&& FOCC: Fractional Occupation
  44            CONTINUE
 C&&& LSHIFT: Level shift
                READ(LUCMD,*) DLSHIF
+               DOLEVEL = .TRUE.
                GOTO 100
  45            CONTINUE
 CMI&&& Specify the maximum number of preliminary BSS-SCF iterations
@@ -1304,7 +1307,7 @@ C&&& FCKCNV2: Convergence on total Fock matrix
                ENDIF
                GOTO 100
  49            CONTINUE
-C     .MOFREEZE
+C&&&  .MOFREEZE
                DOMOFREEZE = .TRUE.
                WRITE (LUPRI,*) 'WARNING: .MOFREEZE is experimental!'
                DO I = 1,NFSYM
@@ -1323,6 +1326,15 @@ C     .MOFREEZE
                ENDIF
                GOTO 100
  50            CONTINUE
+C&&& OLEVEL: Open-shell level shifts
+                 IF(NOPEN.EQ.0) THEN
+                   CALL QUIT('OLEVEL: No open shells defined !')
+                 ELSE
+                   DO IOPEN = 1,NOPEN
+                     READ(LUCMD,*) OLEV(IOPEN)
+                   ENDDO
+                   DOLEVEL = .TRUE.
+                 ENDIF
                GOTO 100
  51            CONTINUE
                GOTO 100
@@ -1757,9 +1769,18 @@ C
      &     ' * Damping of Fock matrix. Weight of old matrix    : ',
      &     DAMPFC
       END IF
-      IF(DLSHIF.GT.D0) THEN
-        WRITE(LUPRI,'(A,F8.3)')
-     &     ' * Level shift activated : ',DLSHIF
+      IF(DOLEVEL) THEN
+        IF(DLSHIF.NE.D0) THEN
+          WRITE(LUPRI,'(A,F8.3)')
+     &     ' * Level shift for virtuals activated : ',DLSHIF
+        ENDIF
+        DO IOPEN = 1,NOPEN
+          IF(OLEV(IOPEN).NE.D0) THEN
+            WRITE(LUPRI,'(A,I2,A,F8.3)')
+     &      ' * Level shift for open-shell ',
+     &      IOPEN,' activated : ',OLEV(IOPEN)
+          ENDIF
+        ENDDO
       ENDIF
       WRITE(LUPRI,'(A,I4)')
      &   ' * Maximum number of SCF iterations  : ',MAXITR

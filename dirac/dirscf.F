@@ -392,7 +392,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbreo.h"
-      LOGICAL TOBE,DOSEL,DSCFON,BARNUC
+      LOGICAL TOBE,DOSEL,DOLEV,DSCFON,BARNUC
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
@@ -671,17 +671,12 @@ C
       ENDIF !
 C
       IF(.NOT.TRIVEC) THEN
-        DLBUF = DLSHIF
-        DLSHIF = DM1
-        TOBE = .TRUE.
+        DOLEV = .FALSE.
       ELSE
-        TOBE = .FALSE.
+        DOLEV = DOLEVEL
       ENDIF
       CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
-     &            DOSEL,WORK(KFREE),LFREE)
-      IF(TOBE) THEN
-        DLSHIF = DLBUF
-      ENDIF
+     &            DOSEL,DOLEV,WORK(KFREE),LFREE)
 C
 C     Add vacuum polarisation in case of ONESYS
 C
@@ -787,7 +782,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dfsolv */
       SUBROUTINE DFSOLV(FMO,EIG,IBEIG,FAO,DMAT,BMAT,ICHKCNV,DOSEL,
-     &                  WORK,LWORK)
+     &                  DOLEV,WORK,LWORK)
 C*****************************************************************************
 C
 C     Solve Dirac-Fock eigenvalue equation
@@ -825,7 +820,7 @@ C
 #include "dgroup.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
-      LOGICAL DOSEL,FNDLAB,TEST
+      LOGICAL DOSEL,DOLEV,FNDLAB,TEST
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),DMAT(*),BMAT(*),
      &          WORK(LWORK)
 C
@@ -958,7 +953,7 @@ C
 C     Level shift
 C     ===========
 C
-      IF(DLSHIF.GT.D0) CALL LEVSHI(FMO,FAO)
+      IF(DOLEV) CALL LEVSHI(FMO,FAO)
 C
 C     Diagonalize Fock matrix
 C     =======================
@@ -1450,7 +1445,7 @@ C
 CMI    ... we may get the DHFEXIT  
          ICHKCNV = 1
          CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
-     &               OVLSEL,WORK(KFREE),LFREE)
+     &               OVLSEL,DOLEVEL,WORK(KFREE),LFREE)
 
         IF(IPRSCF.GE.1) THEN
           CPUTID = SECTID(TDF2)
@@ -4300,8 +4295,6 @@ C***********************************************************************
 C
 C     Level shift
 C
-C     Called from: DFSOLV if DLSHIF > 0 
-C
 C     Written by T. Saue July 4 2006
 C
 C  MI July 6,2006: Requires DFCOEF with written MO's
@@ -4310,7 +4303,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D1 = 1.0D0,D0=0.0D0)
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -4330,13 +4323,21 @@ C
       DO I = 1,NFSYM
         ISTART = NPSH(I)+NISHMF(I)+1
         DO IOPEN = 1,NOPEN
+          IF(OLEV(IOPEN).NE.D0) THEN
+            CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &              OLEV(IOPEN),D1,
+     &              CMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &              ISTART,NACSHMF(I,IOPEN),NTMO(I))
+          ENDIF
           ISTART = ISTART + NACSHMF(I,IOPEN)
         ENDDO
         NVEC = NESH(I) - NOCCMF(I)
-        CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+        IF(DLSHIF.NE.D0) THEN
+          CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &              DLSHIF,D1,
      &              CMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &              ISTART,NVEC,NTMO(I))
+        ENDIF
       ENDDO
 C
       CALL QEXIT('LEVSHI')
