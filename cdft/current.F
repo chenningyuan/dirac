@@ -143,28 +143,30 @@ C=======================================================================
         IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
         IOFF = IOFF*(IQ-1)
 
+        INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),IREPOP)
+
         IF(LBIT(LBIT_CURRENT,2)) THEN !density
           CALL GET_CURRENT_SUB(CURRENT(IXYZ),
-     &                         F,IU,IV,ITRANSFORM,IXYZ,
+     &                         F,IU,IV,
      &                         GAO,GAO,
-     &                         IREPOP,DMAT(1+IOFF),BUF)
+     &                         INTERMEDIATE,DMAT(1+IOFF),BUF)
           CALL GET_CURRENT_SUB(CURRENT(IXYZ),
-     &                         G,IX,IY,ITRANSFORM,IXYZ,
+     &                         G,IX,IY,
      &                         GAO,GAO,
-     &                         IREPOP,DMAT(1+IOFF),BUF)
+     &                         INTERMEDIATE,DMAT(1+IOFF),BUF)
         ENDIF
         IF(LBIT(LBIT_CURRENT,3)) THEN !derivatives
           DO JXYZ = 1,3
             CALL GET_CURRENT_SUB(CURRENT_DERVS(IXYZ,JXYZ),
-     &                           F,IU,IV,ITRANSFORM,IXYZ,
+     &                           F,IU,IV,
      &                           GAO,
      &                           GAO1(1+JOFF*(JXYZ-1)),
-     &                           IREPOP,DMAT(1+IOFF),BUF)
+     &                           INTERMEDIATE,DMAT(1+IOFF),BUF)
             CALL GET_CURRENT_SUB(CURRENT_DERVS(IXYZ,JXYZ),
-     &                           G,IX,IY,ITRANSFORM,IXYZ,
+     &                           G,IX,IY,
      &                           GAO,
      &                           GAO1(1+JOFF*(JXYZ-1)),
-     &                           IREPOP,DMAT(1+IOFF),BUF)
+     &                           INTERMEDIATE,DMAT(1+IOFF),BUF)
             CURRENT_DERVS(IXYZ,JXYZ) =
      &               CURRENT_DERVS(IXYZ,JXYZ) + CURRENT_DERVS(IXYZ,JXYZ)
           ENDDO
@@ -176,7 +178,7 @@ C=======================================================================
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck GET_CURRENT_SUB */
       SUBROUTINE GET_CURRENT_SUB(CURRENT,
-     &                           F,IC1,IC2,ITRANSFORM,IXYZ,
+     &                           F,IC1,IC2,
      &                           GAOL,
      &                           GAOR,
      &                           IREPOP,DMAT,BUF)
@@ -213,15 +215,13 @@ C=======================================================================
 
 #include "ibtfun.h"
 
-      INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),IREPOP)
-
       DO IREP1 = 0,NBSYM-1
 
         N1 = NBBAS(IREP1,IC1)
         IF(N1 .GT. 0) THEN
 
           I1 = IBBAS(IREP1,IC1)+1
-          IREP2 = IBTXOR(IREP1,INTERMEDIATE)
+          IREP2 = IBTXOR(IREP1,IREPOP)
           N2 = NBBAS(IREP2,IC2)
           IF(N2 .GT. 0) THEN
 
@@ -280,6 +280,61 @@ C=======================================================================
       CURRENT_ROT(1) = -CURRENT_DERVS(2,3) + CURRENT_DERVS(3,2)
       CURRENT_ROT(2) = -CURRENT_DERVS(3,1) + CURRENT_DERVS(1,3)
       CURRENT_ROT(3) = -CURRENT_DERVS(1,2) + CURRENT_DERVS(2,1)
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_GAMMA5_DENSITY */
+      SUBROUTINE GET_GAMMA5_DENSITY(GAMMA5_DENSITY,
+     &                              IREPOP,GAO,DMAT,BUF)
+C=======================================================================
+C     routine returns
+C     \psi^\dag(r) \gamma_5 \psi(r)
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                           last revision: november 2006
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
+#include "cdft.h"
+
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+#endif
+      DIMENSION GAO(*),
+     &          DMAT(*),
+     &          BUF(*)
+
+#include "ibtfun.h"
+
+      F  = D1
+      G  = D1
+      IU = 1
+      IV = 2
+      IX = 2
+      IY = 1
+
+      GAMMA5_DENSITY = D0
+
+      CALL GET_CURRENT_SUB(GAMMA5_DENSITY,
+     &                     F,IU,IV,
+     &                     GAO,GAO,
+     &                     IREPOP,DMAT,BUF)
+      CALL GET_CURRENT_SUB(GAMMA5_DENSITY,
+     &                     G,IX,IY,
+     &                     GAO,GAO,
+     &                     IREPOP,DMAT,BUF)
 
       RETURN
       END
