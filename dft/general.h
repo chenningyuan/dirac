@@ -118,11 +118,9 @@ struct SecondDrv_ {
 struct ThirdDrv_ {
     real fR;   /* d/drho  F */
     real fZ;   /* d/dzeta F */
-    real fG;   /* d/dgamma F */
     real fRR;  /* d/drho%Gï¿¿%@ F */
     real fRZ;  /* d/(drho dzeta) F */
     real fZZ;  /* d/dzeta%Gï¿¿%@ F */
-    real fRG;  /* d/(drho dgamma) F */
     real fRRR; /* d/drho%Gï¿¿%@ F */
     real fRRZ; /* d/(drho%Gï¿¿%@ dzeta) F */
     /* two forms of fRRG needed as the formulae is non symmetric */
@@ -130,6 +128,8 @@ struct ThirdDrv_ {
     real fRRGX; /* d/(drho? dgamma) F */
     real fRZZ; /* d/(drho dzeta%Gï¿¿%@) F */
     real fZZZ; /* d/dzeta%Gï¿¿%@ F */
+    real fG;   /* d/dgamma F */
+    real fRG;  /* d/(drho dgamma) F */
 };
 
 void dftpot0_(FirstDrv *ds, const real* weight,

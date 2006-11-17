@@ -199,21 +199,21 @@ C
       IF(IHRMOP(1).EQ.1) THEN
          CALL GETRHO(B0,IREPBOP,GAO,DTRMAT(1,1,1,1),BUF)
       ELSE
-         CALL QUIT('DFTQR program general case!')
+         CALL QUIT('DFTQR general case not implemented!')
       END IF
 C
       IREPCOP = ISYMOP(2)-1
       IF(IHRMOP(2).EQ.1) THEN
          CALL GETRHO(C0,IREPCOP,GAO,DTRMAT(1,1,1,2),BUF)
       ELSE
-         CALL QUIT('DFTQR program general case!')
+         CALL QUIT('DFTQR general case not implemented!')
       END IF
 C
       IREPBCOP = ISYMOP(3)-1
       IF(IHRMOP(3).EQ.1) THEN
          CALL GETRHO(BC0,IREPBCOP,GAO,DTRMAT(1,1,1,3),BUF)
       ELSE
-         CALL QUIT('DFTQR program general case!')
+         CALL QUIT('DFTQR general case not implemented!')
       END IF
 C
 C       ***************
@@ -224,6 +224,7 @@ C
 C
 C     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
          CALL DFTPOT2(VXC,WGHT,RHO,0D0)
+c         CALL DFTPOT1(VXC,WGHT,RHO,0D0)
 C
 C     Constructing G_B matrix
          IF(DABS(B0).GT.DFTHRL) THEN 
@@ -269,7 +270,6 @@ C
 C     Write me!
 C
       END IF
-!      ENDDO
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

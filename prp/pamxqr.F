@@ -2383,7 +2383,6 @@ C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,WORK(KF1AO),WORK(KD1AO),3,
      &     WORK(KPOS),INTFLG,IPRXQR,WORK(KFREE),LFREE)
 c
-c
 cjohhe     
 c     In accordance with linear response, this is where the fock matrix
 c     is to be changed in order to include the exchange-correlation
@@ -2411,8 +2410,6 @@ cC       Generate standard density matrix
         CALL MEMREL('E3DRV.dft',WORK,1,KDMAT,KFREE,LFREE)
       END IF
 #endif
-c
-c
 C
 C     Scale all Fock matrices with a factor 4 to agree with
 C     convention used in TWOFCK as of Aug 2004.
@@ -2947,6 +2944,12 @@ C
       IHRMOP(1) = 0
       IHRMOP(2) = 0
       IHRMOP(3) = 0
+cjohhe changed 0 to 1 to get anything at all out of DFT static QR
+#if defined (MOD_DFT)
+      IHRMOP(1) = 1
+      IHRMOP(2) = 1
+      IHRMOP(3) = 1
+#endif
 C     IFOCKOP:  1 - C+E: (3,2,2,2), 2 - C: (1,0,0,0), 3 - E: (2,2,2,2)
       IFCKOP(1)=1
       IFCKOP(2)=1

@@ -206,18 +206,21 @@ dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
         selected_func->third(&drvs, *w, &dp);
     
     ds->fR  = 0; /* NOT USED */
-    ds->fZ  = drvs.df0010 + 0.5*drvs.df00001* *grad;
+//    ds->fZ  = drvs.df0010 + 0.5*drvs.df00001* *grad;
     ds->fRR = 0.5*(drvs.df2000 + drvs.df1100);
 /*
 //    ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001 + drvs.df10001* *grad);
-//    ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011 + drvs.df00001) + drvs.df00101* * grad + 0.25*drvs.df00002* *grad* *grad;
-//    ds->fRG = 0;
-//    ds->fZG = 0;
-//    ds->fGG = 0;
-//    ds->fG  = 0;
-*/
-    ds->fRRR = 0.25*(drvs.df3000 + 3*drvs.df2100);
-/*
+//    ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011 + drvs.df00001) + 
+//              drvs.df00101* * grad + 0.25*drvs.df00002* *grad* *grad;
+//    ds->fRG = 0; /* NOT USED */
+//    ds->fZG = 0; /* NOT USED */
+//    ds->fGG = 0; /* NOT USED */
+//    ds->fG  = 0; /* NOT USED */
+//johhe: According to the formulae I think a factor 1/2 is missing here, i.e.,
+//       it should be 
+//         ds->fRRR = 0.25*(drvs.df3000 + 3*drvs.df2100);
+//       However, compared to Dalton, no such factor exists at all?!?
+    ds->fRRR = 0.5*(drvs.df3000 + 3*drvs.df2100);
 //    ds->fRRZ = 0.25*(drvs.df2010 + drvs.df2001 + 2*drvs.df1110 + 
 //	            (drvs.df20001 + drvs.df11001)* *grad);
 //    ds->fRZZ = 0.25*(drvs.df1020 + *drvs.df1002) + 0.5*drvs.df1011 +
@@ -226,7 +229,6 @@ dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
 //    ds->fZZZ = 0.25*drvs.df0030 + 0.75*drvs.df0021 + 0.75*drvs.df00201* *grad +
 //	       0.75*drvs.df00111* *grad + 0.75*drvs.df00102* *grad* *grad +
 //	       0.125*drvs.df00003* *grad* *grad* *grad + 1.5*drvs.df00101 + 0.75*drvs.df00002* *grad;
-*/
 }
 
 void
