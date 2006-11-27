@@ -1,129 +1,199 @@
-       Program QJACOBITEST
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+C  Program for testing (and improving) the quaternion Jacobi (block) diagonalization procedure.
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-C       PARAMETER(N=2,NZ=4,MAXBLOCKS=3)
-C       PARAMETER(N=4,NZ=4,MAXBLOCKS=3)
-        PARAMETER(N=20,NZ=2,NBLOCKS=0)
-C       PARAMETER(N=30,NZ=4,MAXBLOCKS=3)
-C       PARAMETER(N=50,NZ=4,MAXBLOCKS=3)
+      Program QJACOBITEST
+
+      PARAMETER(MAXMTX=900000,MAXBL=400)
 #include"implicit.h"
 #include"priunit.h"
-         DIMENSION AMTX(N,N,NZ)
-         DIMENSION EV(N,N,NZ)
+      LOGICAL DOEVE,ISFILE
+      DIMENSION A(MAXMTX),EV(MAXMTX),IBL(MAXBL)
 
-C        DIMENSION IBLOCKS(NBLOCKS,1:4)
-         LOGICAL DOEVE
-
-
-C          ...  start - row
-C        IBLOCKS(1,1)=1
-C          ...  start - col.
-C        IBLOCKS(1,2)=2
-C          ...  end  - row
-C        IBLOCKS(1,3)=1
-C          ... c end - col.
-C        IBLOCKS(1,4)=4
-
-C          ...  start - row
-C        IBLOCKS(2,1)=2
-C          ...  start - col.
-C        IBLOCKS(2,2)=3
-C          ...  end  - row
-C        IBLOCKS(2,3)=2
-C          ... c end - col.
-C        IBLOCKS(2,4)=4
+     
+C    ... get N,NZ from the file
+      CALL GETNNZ(N,NZ,NBL,LUF,ISFILE,IPRINT)
+      IF (MAXMTX.LT.N*N*NZ) CALL QUIT('too big N! increase the MAXMTX!')
 
 C       ... prepare a hermitian (quaternion) matrix
-        CALL PREPMATRIX(AMTX,N,NZ)
+      CALL PREPMATRIX(A,N,NZ,NBL,IBL,DOEVE,IPRINT,LUF,ISFILE)
+ 
+C     ... call of the main routine ...
+      CALL QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT)
 
-        IPRINT=2
+      STOP "QJACOBI test finished"
+      END
 
-
-        DOEVE=.TRUE.
-C       DOEVE=.FALSE.
-        MXB=0
-        IBL=0 
-C       CALL QJACOBI(AMTX,EVXDUMMY,N,NZ,NBLOCKS,MXB,
-C       CALL QJACOBI(AMTX,EVXDUMMY,N,NZ,NBLOCKS,MAXBLOCKS,
-        CALL QJACOBI(AMTX,EV,N,NZ,NBLOCKS,
-     &                IBL,DOEVE,IPRINT) 
-C    &                IBL,DOEVE,IPRINT) 
-
-       END
-
-       SUBROUTINE PREPMATRIX(A,N,NZ)
+C *******************************************************************8
+C
+C  Get basic date: N,NZ,NBL,IPRINT
+C
+C *******************************************************************8
+      SUBROUTINE GETNNZ(N,NZ,NBL,LUF,ISFILE,IPRINT)
 #include"implicit.h"
+      PARAMETER (D0=0.0D0)
 #include"priunit.h"
-       DIMENSION A(N,N,NZ)
-       LOGICAL DORAND
+      LOGICAL DOEVE,ISFILE,FROMFILE
 
-C      DORAND=.FALSE.
-       DORAND=.TRUE.
-
-       IF (DORAND) THEN
-       DO I=1,N
-       DO J=I,N
-         IF (I.EQ.J) THEN
-C          A(I,I,1)=RAND(0)
-C          A(I,I,1)=DFLOAT(3*I+4*J)
-           A(I,I,1)=DFLOAT(3*I+4*J)*RAND(0)
-C          A(I,I,1)=DFLOAT(3*I+4*J)/DFLOAT(J)
-C          A(I,I,1)=DFLOAT(3*I+4*J)+1.8
-C          A(I,I,1)=DFLOAT(3*I+4*J)+1.8+RAND(0)
-           DO IZ=2,NZ
-            A(I,I,IZ)=0.0D0
-           ENDDO
-         ELSE
-           A(I,J,1)=DFLOAT(I+J)*RAND(0)
-C          A(I,J,1)=DFLOAT(I+J+J)
-           DO IZ=2,NZ
-           A(I,J,IZ)=RAND(0)*DFLOAT(J+10+I) 
-C          A(I,J,IZ)=DFLOAT(J+10+I)
-           ENDDO
-           A(J,I,1)=A(I,J,1)
-           DO IZ=2,NZ
-           A(J,I,IZ)=-A(I,J,IZ)
-           ENDDO
-         ENDIF
-       ENDDO 
-       ENDDO 
-
+      luf = 10
+      INQUIRE(FILE="matrix_input",EXIST=ISFILE)
+      IF (ISFILE) THEN
+         write(lupri,*) '...going to read the "matrix_input" file' 
+         open(luf,file="matrix_input",status="old")
+         read(luf,*)
+         read(luf,*) N,NZ
+         read(luf,*)
+         read(luf,*) IPRINT
+         read(luf,*)
+         read(luf,*) NBL
       ELSE
-C...  read matrix from the file...
-       LU=12
-
-       OPEN(LU,FILE="matica",STATUS="OLD")
-
-       READ(LU,*) N1,NZ1
-       IF (N.NE.N1.OR.NZ.NE.NZ1) THEN
-           write(lupri,*) 'N1,NZ1:',N1,NZ1
-          CALL QUIT('PREPMATRIX....')
-       ENDIF
-
-       IF (NZ.EQ.4) THEN
-       DO I=1,N
-       DO J=I,N
-         
-         read(lu,*) I1,J1,AR,AI,AJ,AK
-         IF (I.NE.I1.OR.J.NE.J1) CALL QUIT('wrond order !')
-
-          A(I,J,1)=AR
-          A(I,J,2)=AI
-          A(I,J,3)=AJ
-          A(I,J,4)=AK
-
-          A(J,I,1)=AR
-          A(J,I,2)=-AI
-          A(J,I,3)=-AJ
-          A(J,I,4)=-AK
-
-       ENDDO 
-       ENDDO 
-
-       ENDIF
-
-       CLOSE(LU,status="keep")
-
+         write(lupri,*) 'No matrix input file !'
+         write(lupri,*) 'Enter the N,NZ :'
+         read(*,*) N,NZ
+         NBL = 0
+         write(lupri,*) 'Enter the NBL :'
+         read(*,*) NBL
+         write(lupri,*) 'Enter IPRINT :'
+         read(*,*) IPRINT
       ENDIF
 
-       RETURN
-       END
+      RETURN
+      END    
+C ============================================================
+C            ... prepare testing matrix
+C ============================================================
+      SUBROUTINE PREPMATRIX(A,N,NZ,NBL,IBL,DOEVE,IPRINT,LUF,ISFILE)
+#include"implicit.h"
+      PARAMETER (D0=0.0D0)
+#include"priunit.h"
+      DIMENSION A(N,N,NZ)
+      INTEGER IBL(NBL,1:4)
+      REAL*8  RANDOMNUMBER
+      LOGICAL DOEVE,ISFILE,FROMFILE
+
+      FROMFILE=.FALSE.
+      DOEVE = .TRUE.
+      IF (ISFILE) THEN
+         write(lupri,*) 'PRINT level=',IPRINT
+         write(lupri,*) 'Number of blocks=',NBL
+         IF (NBL.GT.0) THEN
+C         ... read the indexes of blocks
+          DO I = 1, NBL
+           read(luf,*) IBL1,IBL2,IBL3,IBL4
+              IBL(I,1) = IBL1
+              IBL(I,2) = IBL2 
+              IBL(I,3) = IBL3 
+              IBL(I,4) = IBL4
+           IF (IPRINT.GE.2) THEN
+            write(lupri,*) 'Read block coordinates:',
+     &      IBL(I,1),IBL(I,2),IBL(I,3),IBL(I,4)
+           ENDIF
+          ENDDO
+         ENDIF
+         read(luf,*)
+         read(luf,*) FROMFILE
+         read(luf,*)
+      ELSE
+         IPRINT = 1
+         IF (NBL.GT.0) THEN
+          DO I=1,NBL
+            write(*,*) 'Enter ',I,'. block coordinates:'
+            read(*,*)  IBL(I,1),IBL(I,2),IBL(I,3),IBL(I,4)
+          ENDDO
+         ELSE
+           write(*,*) 'No blocks....full diagonalization'
+         ENDIF
+      ENDIF
+
+      DO I = 1, N
+      DO J = I, N
+          IF (FROMFILE) THEN
+            AI = D0
+            AJ = D0
+            AK = D0
+            IF (NZ.EQ.1) THEN
+             read(luf,*) I1,J1,AR
+            ELSE IF (NZ.EQ.2) THEN
+             read(luf,*) I1,J1,AR,AI
+            ELSE IF (NZ.EQ.4) THEN
+             read(luf,*) I1,J1,AR,AI,AJ,AK
+             If (IPRINT.GE.2) THEN
+              write(lupri,*) 'read i1,j1,ar,ai,aj,ak:',I1,J1,AR,AI,AJ,AK
+             EndIf
+            ENDIF
+            IF (I1.NE.I.OR.J1.NE.J) THEN
+             write(lupri,*) '   read I,J:',I1,J1
+             write(lupri,*) 'desired I,J:',I,J
+             CALL QUIT('...wrong indexes !')
+            ENDIF
+            IF (I1.EQ.J1) THEN
+             IF (AI.NE.D0.OR.AJ.NE.D0.OR.AK.NE.D0) THEN
+              write(lupri,*) 'I1,J1 --> AI,AJ,AK:',I1,J1,AI,AJ,AK
+              call QUIT('diagonal i,j,k elements must be zero !!!')
+             ENDIF
+            ENDIF
+          ELSE
+C          ... fill with random numbers
+           IF (I.NE.J) THEN
+            AR = RANDOMNUMBER(I,J)
+            AI = RANDOMNUMBER(I,J)
+            AJ = RANDOMNUMBER(I,J)
+            AK = RANDOMNUMBER(I,J)
+           ELSE
+            AR = RANDOMNUMBER(I,J)
+            AI = D0
+            AJ = D0
+            AK = D0
+           ENDIF
+          ENDIF
+
+C       ....now fill the matrix 
+          IF (NZ.EQ.1) THEN
+            A(I,J,1) = AR
+            A(J,I,1) = AR
+          ELSE IF (NZ.EQ.2) THEN
+            A(I,J,1) = AR
+            A(J,I,1) = AR
+            A(I,J,2) = AI
+            A(J,I,2) = -AI
+          ELSE IF (NZ.EQ.4) THEN
+            A(I,J,1) =  AR
+            A(J,I,1) =  AR
+            A(I,J,2) =  AI
+            A(J,I,2) = -AI
+            A(I,J,3) =  AJ
+            A(J,I,3) = -AJ
+            A(I,J,4) =  AK
+            A(J,I,4) = -AK
+            if (IPRINT.GE.10) then
+             write(lupri,*) 'A filled:',
+     &       I,J,':',A(I,J,1),A(I,J,2),A(I,J,3),A(I,J,4)
+            endif
+          ENDIF
+          IF (IPRINT.GE.2) THEN
+            write(lupri,*)
+     &     'filled ready matrix element A(',I,';',J,')=',
+     &     (A(I,J,IZ),IZ=1,NZ)
+          ENDIF
+      ENDDO 
+      ENDDO 
+
+      IF (ISFILE) CLOSE(LUF,STATUS='KEEP')
+
+      RETURN
+      END
+
+C****************************************************************
+C    Function used to generate numbers for filling the matrix
+C****************************************************************
+      REAL*8 FUNCTION RANDOMNUMBER(I,J)
+#include"implicit.h"
+#include"priunit.h"
+      RANDOMNUMBER = DFLOAT(3*I+4*J)*RAND(0) 
+      RETURN
+      END
+

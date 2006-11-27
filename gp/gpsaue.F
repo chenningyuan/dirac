@@ -4336,7 +4336,7 @@ C        .... file number and file name of the check file
        CALL GETTIM(CPU1,WALL1)
       ENDIF
 
-C     ... do always test the blocks
+C     ... do test the blocks
       IF (NBL.GT.0) THEN
        CALL TESTBLOCKS(N,NZ,NBL,IBL,IPRINT)
       ENDIF
@@ -4345,7 +4345,7 @@ C     ... do always test the blocks
       SUMSQA(1)=SUMSQ
       SUMSQA(2)=SUMSQ
 
-C      ... do make unit matrixes of future eigenvector
+C      ... do make unit matrixes for accumulation of future eigenvector
       IF (DOEVE) THEN
         CALL DUNIT(EV(1,1,1),N)
         IF (NZ.GE.2) THEN 
@@ -4377,6 +4377,7 @@ C            ... write matrix elements to file for later checking...
              DO IZ=1,NZ
               write(LUF,1000) I,J,IZ,A(I,J,IZ)
              ENDDO
+C            write(luf,*) I,J,(A(I,J,IZ),IZ=1,NZ)
             ENDDO
             ENDDO
         ENDIF
@@ -4464,7 +4465,7 @@ C           ... Update REAL diagonal  MTX elements
 C...        do eliminate REAL off-diagonal pq, qp elements
 C               .... (1,i).r = (1,i) = (0,i)
             A(IP,IQ,1)=D0
-            A(IQ,IP,1)=D0
+C           A(IQ,IP,1)=D0
 
 C           ... check the A_pq  elements !
             IF (IPRINT.GE.6) THEN
@@ -4481,31 +4482,45 @@ C           ... check the A_pq  elements !
             ENDIF
 
 C   ...   do modify the MTX matrix alement A_ip, A_iq (A_pi,A_qi)
-            DO I=1,N
-             IF (I.NE.IP.AND.I.NE.IQ) THEN
-
+            DO I=1,IP-1
+C               I < IP, I < IQ
                TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
                TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
-
                A(I,IP,1) =  TOAIPR 
                A(I,IQ,1) =  TOAIQR
-
+C              A(IP,I,1) =  TOAIPR
+C              A(IQ,I,1) =  TOAIQR
+            ENDDO
+            DO I=IP+1,IQ-1
+C               I > IP, I < IQ
+CC             TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
+               TOAIPR = A(IP,I,1)*CU - A(I,IQ,1)*SU
+CC             TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
+               TOAIQR = A(IP,I,1)*SU + A(I,IQ,1)*CU
+C              A(I,IP,1) =  TOAIPR 
+               A(I,IQ,1) =  TOAIQR
+               A(IP,I,1) =  TOAIPR
+C              A(IQ,I,1) =  TOAIQR
+            ENDDO
+            DO I=IQ+1,N
+C               I > IP, I > IQ
+CC             TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
+               TOAIPR = A(IP,I,1)*CU - A(IQ,I,1)*SU
+CC             TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
+               TOAIQR = A(IP,I,1)*SU + A(IQ,I,1)*CU
+C              A(I,IP,1) =  TOAIPR 
+C              A(I,IQ,1) =  TOAIQR
                A(IP,I,1) =  TOAIPR
                A(IQ,I,1) =  TOAIQR
-
-             ENDIF
             ENDDO
 
 C          ... do update the eigenvectors...
             IF (DOEVE) THEN
                DO I=1,N
-
                 TOPIPR = EV(I,IP,1)*CU - EV(I,IQ,1)*SU
                 TOPIQR = EV(I,IP,1)*SU + EV(I,IQ,1)*CU
-
                 EV(I,IP,1) = TOPIPR
                 EV(I,IQ,1) = TOPIQR
-
                ENDDO
 
               IF (IPRINT.GE.7) THEN
@@ -4575,7 +4590,7 @@ C           ... Update REAL diagonal  MTX elements
 C...        do eliminate REAL off-diagonal pq, qp elements
 C               .... (1,i).r = (1,i) = (0,i)
             A(IP,IQ,1)=D0
-            A(IQ,IP,1)=D0
+C           A(IQ,IP,1)=D0
 
 C           ... check the A_pq  elements !
             IF (IPRINT.GE.6) THEN
@@ -4592,34 +4607,63 @@ C           ... check the A_pq  elements !
             ENDIF
 
 C   ...   do modify the MTX matrix alement A_ip, A_iq (A_pi,A_qi)
-            DO I=1,N
-             IF (I.NE.IP.AND.I.NE.IQ) THEN
-
+            DO I=1,IP-1
+C               I < IP, I < IQ
                TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
                TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
-
                TOAIPI = A(I,IP,2)*CU - A(I,IQ,2)*SU
                TOAIQI = A(I,IP,2)*SU + A(I,IQ,2)*CU
-
                 A(I,IP,1) =  TOAIPR 
                 A(I,IQ,1) =  TOAIQR
-
                 A(I,IP,2) =  TOAIPI
                 A(I,IQ,2) =  TOAIQI
-
+C               A(IP,I,1) =  TOAIPR
+C               A(IQ,I,1) =  TOAIQR
+C               A(IP,I,2) = -TOAIPI
+C               A(IQ,I,2) = -TOAIQI
+            ENDDO
+            DO I=IP+1,IQ-1
+C              I > IP, I < IQ
+C              TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
+               TOAIPR = A(IP,I,1)*CU - A(I,IQ,1)*SU
+C              TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
+               TOAIQR = A(IP,I,1)*SU + A(I,IQ,1)*CU
+C              TOAIPI =  A(I,IP,2)*CU - A(I,IQ,2)*SU
+               TOAIPI = -A(IP,I,2)*CU - A(I,IQ,2)*SU
+C              TOAIQI =  A(I,IP,2)*SU + A(I,IQ,2)*CU
+               TOAIQI = -A(IP,I,2)*SU + A(I,IQ,2)*CU
+C               A(I,IP,1) =  TOAIPR 
+                A(I,IQ,1) =  TOAIQR
+C               A(I,IP,2) =  TOAIPI
+                A(I,IQ,2) =  TOAIQI
+                A(IP,I,1) =  TOAIPR
+C               A(IQ,I,1) =  TOAIQR
+                A(IP,I,2) = -TOAIPI
+C               A(IQ,I,2) = -TOAIQI
+            ENDDO
+            DO I=IQ+1,N
+C               I > IP, I > IQ
+C              TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
+               TOAIPR = A(IP,I,1)*CU - A(IQ,I,1)*SU
+C              TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
+               TOAIQR = A(IP,I,1)*SU + A(IQ,I,1)*CU
+C              TOAIPI =  A(I,IP,2)*CU - A(I,IQ,2)*SU
+               TOAIPI = -A(IP,I,2)*CU + A(IQ,I,2)*SU
+C              TOAIQI =  A(I,IP,2)*SU + A(I,IQ,2)*CU
+               TOAIQI = -A(IP,I,2)*SU - A(IQ,I,2)*CU
+C               A(I,IP,1) =  TOAIPR 
+C               A(I,IQ,1) =  TOAIQR
+C               A(I,IP,2) =  TOAIPI
+C               A(I,IQ,2) =  TOAIQI
                 A(IP,I,1) =  TOAIPR
                 A(IQ,I,1) =  TOAIQR
-
                 A(IP,I,2) = -TOAIPI
                 A(IQ,I,2) = -TOAIQI
-
-               ENDIF
             ENDDO
 
 C          ... do update the eigenvectors...
             IF (DOEVE) THEN
                DO I=1,N
-
                  TOPIPR = EV(I,IP,1)*CU - EV(I,IQ,1)*SU
                  TOPIQR = EV(I,IP,1)*SU + EV(I,IQ,1)*CU
 
@@ -4689,7 +4733,7 @@ C ...          (1,i).i = (i,-1) = (i,0)
             XAI = A(IP,IQ,1)
 
             A(IP,IQ,2)= XAI
-            A(IQ,IP,2)=-XAI
+C           A(IQ,IP,2)=-XAI
                
 C           ... check the A_pq  elements !
             IF (IPRINT.GE.6) THEN
@@ -4706,34 +4750,63 @@ C           ... check the A_pq  elements !
             ENDIF
 
 C      ...  update Aip, Aiq (i<>p,q) after elimination!
-            DO I=1,N
-             IF (I.NE.IP.AND.I.NE.IQ) THEN
 C .....   A_ip(n+1) = A_ip(n).i.c - A_iq(n).s    
 C         A_iq(n+1) = A_ip(n).i.s + A_iq(n).c
 C 
 C                  (1,i).i = (i,-1)
-
+            DO I=1,IP-1
+C               I < IP, I < IQ
                TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
                TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
-
-               TOAIPI = A(I,IP,1)*CU - A(I,IQ,2)*SU
-               TOAIQI = A(I,IP,1)*SU + A(I,IQ,2)*CU
-
+               TOAIPI =  A(I,IP,1)*CU - A(I,IQ,2)*SU
+               TOAIQI =  A(I,IP,1)*SU + A(I,IQ,2)*CU
                A(I,IP,1) = TOAIPR 
                A(I,IQ,1) = TOAIQR
-
                A(I,IP,2) = TOAIPI
                A(I,IQ,2) = TOAIQI
-
+C              A(IP,I,1) = TOAIPR
+C              A(IQ,I,1) = TOAIQR
+C              A(IP,I,2) = -TOAIPI
+C              A(IQ,I,2) = -TOAIQI
+            ENDDO
+            DO I=IP+1,IQ-1
+C              I > IP, I < IQ
+C              TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
+               TOAIPR =  A(IP,I,2)*CU - A(I,IQ,1)*SU
+C              TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
+               TOAIQR =  A(IP,I,2)*SU + A(I,IQ,1)*CU
+C              TOAIPI = A(I,IP,1)*CU - A(I,IQ,2)*SU
+               TOAIPI = A(IP,I,1)*CU - A(I,IQ,2)*SU
+C              TOAIQI = A(I,IP,1)*SU + A(I,IQ,2)*CU
+               TOAIQI = A(IP,I,1)*SU + A(I,IQ,2)*CU
+C              A(I,IP,1) = TOAIPR 
+               A(I,IQ,1) = TOAIQR
+C              A(I,IP,2) = TOAIPI
+               A(I,IQ,2) = TOAIQI
+               A(IP,I,1) = TOAIPR
+C              A(IQ,I,1) = TOAIQR
+               A(IP,I,2) = -TOAIPI
+C              A(IQ,I,2) = -TOAIQI
+            ENDDO
+            DO I=IQ+1,N
+C              I > IP, I > IQ
+C              TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
+               TOAIPR =  A(IP,I,2)*CU - A(IQ,I,1)*SU
+C              TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
+               TOAIQR =  A(IP,I,2)*SU + A(IQ,I,1)*CU
+C              TOAIPI = A(I,IP,1)*CU - A(I,IQ,2)*SU
+               TOAIPI = A(IP,I,1)*CU + A(IQ,I,2)*SU
+C              TOAIQI = A(I,IP,1)*SU + A(I,IQ,2)*CU
+               TOAIQI = A(IP,I,1)*SU - A(IQ,I,2)*CU
+C              A(I,IP,1) = TOAIPR 
+C              A(I,IQ,1) = TOAIQR
+C              A(I,IP,2) = TOAIPI
+C              A(I,IQ,2) = TOAIQI
                A(IP,I,1) = TOAIPR
                A(IQ,I,1) = TOAIQR
-
                A(IP,I,2) = -TOAIPI
                A(IQ,I,2) = -TOAIQI
-
-             ENDIF
             ENDDO
-
 
 C      ...  update P after "i" elimination!
             IF (DOEVE) THEN
@@ -4827,7 +4900,7 @@ C           ... Update REAL diagonal  MTX elements
 C...        do eliminate REAL off-diagonal pq, qp elements
 C               .... (1,i,j,k).r = (1,i,j,k) = (0,i,j,k)
             A(IP,IQ,1)=D0
-            A(IQ,IP,1)=D0
+C           A(IQ,IP,1)=D0
 
 C           ... check the A_pq  elements !
             IF (IPRINT.GE.6) THEN
@@ -4844,46 +4917,102 @@ C           ... check the A_pq  elements !
             ENDIF
 
 C   ...   do modify the MTX matrix alement A_ip, A_iq (A_pi,A_qi)
-            DO I=1,N
-             IF (I.NE.IP.AND.I.NE.IQ) THEN
-
+            DO I=1, IP-1
+C            I < IP, I < IQ
                TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
                TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
-
                TOAIPI = A(I,IP,2)*CU - A(I,IQ,2)*SU
                TOAIQI = A(I,IP,2)*SU + A(I,IQ,2)*CU
-
                TOAIPJ = A(I,IP,3)*CU - A(I,IQ,3)*SU
                TOAIQJ = A(I,IP,3)*SU + A(I,IQ,3)*CU
-
                TOAIPK = A(I,IP,4)*CU - A(I,IQ,4)*SU
                TOAIQK = A(I,IP,4)*SU + A(I,IQ,4)*CU
-
                 A(I,IP,1) =  TOAIPR 
                 A(I,IQ,1) =  TOAIQR
-
                 A(I,IP,2) =  TOAIPI
                 A(I,IQ,2) =  TOAIQI
-
                 A(I,IP,3) =  TOAIPJ
                 A(I,IQ,3) =  TOAIQJ
-
                 A(I,IP,4) =  TOAIPK
                 A(I,IQ,4) =  TOAIQK
-
+C               A(IP,I,1) =  TOAIPR
+C               A(IQ,I,1) =  TOAIQR
+C               A(IP,I,2) = -TOAIPI
+C               A(IQ,I,2) = -TOAIQI
+C               A(IP,I,3) = -TOAIPJ
+C               A(IQ,I,3) = -TOAIQJ
+C               A(IP,I,4) = -TOAIPK
+C               A(IQ,I,4) = -TOAIQK
+            ENDDO
+            DO I=IP+1,IQ-1
+C               I > IP,  I < IQ
+C              TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
+               TOAIPR = A(IP,I,1)*CU - A(I,IQ,1)*SU
+C              TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
+               TOAIQR = A(IP,I,1)*SU + A(I,IQ,1)*CU
+C              TOAIPI =  A(I,IP,2)*CU - A(I,IQ,2)*SU
+               TOAIPI = -A(IP,I,2)*CU - A(I,IQ,2)*SU
+C              TOAIQI =  A(I,IP,2)*SU + A(I,IQ,2)*CU
+               TOAIQI = -A(IP,I,2)*SU + A(I,IQ,2)*CU
+C              TOAIPJ =  A(I,IP,3)*CU - A(I,IQ,3)*SU
+               TOAIPJ = -A(IP,I,3)*CU - A(I,IQ,3)*SU
+C              TOAIQJ =  A(I,IP,3)*SU + A(I,IQ,3)*CU
+               TOAIQJ = -A(IP,I,3)*SU + A(I,IQ,3)*CU
+C              TOAIPK =  A(I,IP,4)*CU - A(I,IQ,4)*SU
+               TOAIPK = -A(IP,I,4)*CU - A(I,IQ,4)*SU
+C              TOAIQK =  A(I,IP,4)*SU + A(I,IQ,4)*CU
+               TOAIQK = -A(IP,I,4)*SU + A(I,IQ,4)*CU
+C               A(I,IP,1) =  TOAIPR 
+                A(I,IQ,1) =  TOAIQR
+C               A(I,IP,2) =  TOAIPI
+                A(I,IQ,2) =  TOAIQI
+C               A(I,IP,3) =  TOAIPJ
+                A(I,IQ,3) =  TOAIQJ
+C               A(I,IP,4) =  TOAIPK
+                A(I,IQ,4) =  TOAIQK
+                A(IP,I,1) =  TOAIPR
+C               A(IQ,I,1) =  TOAIQR
+                A(IP,I,2) = -TOAIPI
+C               A(IQ,I,2) = -TOAIQI
+                A(IP,I,3) = -TOAIPJ
+C               A(IQ,I,3) = -TOAIQJ
+                A(IP,I,4) = -TOAIPK
+C               A(IQ,I,4) = -TOAIQK
+            ENDDO
+            DO I=IQ+1,N
+C               I > IP, I > IQ
+C              TOAIPR =  A(I,IP,1)*CU - A(I,IQ,1)*SU
+               TOAIPR =  A(IP,I,1)*CU - A(IQ,I,1)*SU
+C              TOAIQR =  A(I,IP,1)*SU + A(I,IQ,1)*CU
+               TOAIQR =  A(IP,I,1)*SU + A(IQ,I,1)*CU
+C              TOAIPI =  A(I,IP,2)*CU - A(I,IQ,2)*SU
+               TOAIPI = -A(IP,I,2)*CU + A(IQ,I,2)*SU
+C              TOAIQI =  A(I,IP,2)*SU + A(I,IQ,2)*CU
+               TOAIQI = -A(IP,I,2)*SU - A(IQ,I,2)*CU
+C              TOAIPJ =  A(I,IP,3)*CU - A(I,IQ,3)*SU
+               TOAIPJ = -A(IP,I,3)*CU + A(IQ,I,3)*SU
+C              TOAIQJ =  A(I,IP,3)*SU + A(I,IQ,3)*CU
+               TOAIQJ = -A(IP,I,3)*SU - A(IQ,I,3)*CU
+C              TOAIPK =  A(I,IP,4)*CU - A(I,IQ,4)*SU
+               TOAIPK = -A(IP,I,4)*CU + A(IQ,I,4)*SU
+C              TOAIQK =  A(I,IP,4)*SU + A(I,IQ,4)*CU
+               TOAIQK = -A(IP,I,4)*SU - A(IQ,I,4)*CU
+C               A(I,IP,1) =  TOAIPR 
+C               A(I,IQ,1) =  TOAIQR
+C               A(I,IP,2) =  TOAIPI
+C               A(I,IQ,2) =  TOAIQI
+C               A(I,IP,3) =  TOAIPJ
+C               A(I,IQ,3) =  TOAIQJ
+C               A(I,IP,4) =  TOAIPK
+C               A(I,IQ,4) =  TOAIQK
                 A(IP,I,1) =  TOAIPR
                 A(IQ,I,1) =  TOAIQR
-
                 A(IP,I,2) = -TOAIPI
                 A(IQ,I,2) = -TOAIQI
-
                 A(IP,I,3) = -TOAIPJ
                 A(IQ,I,3) = -TOAIQJ
-
                 A(IP,I,4) = -TOAIPK
                 A(IQ,I,4) = -TOAIQK
-
-               ENDIF
             ENDDO
 
 C          ... do update the eigenvectors...
@@ -4977,9 +5106,9 @@ C ...          (1,i,j,k).i = (i,-1,-k,+j) = (i,0,-k,j)
             A(IP,IQ,4)=-XAK
 
 C           ... the same for qp elements...
-            A(IQ,IP,2)=-XAI
-            A(IQ,IP,3)=-XAJ
-            A(IQ,IP,4)= XAK
+C           A(IQ,IP,2)=-XAI
+C           A(IQ,IP,3)=-XAJ
+C           A(IQ,IP,4)= XAK
                
 C           ... check the A_pq  elements !
             IF (IPRINT.GE.6) THEN
@@ -4996,51 +5125,106 @@ C           ... check the A_pq  elements !
             ENDIF
 
 C      ...  update Aip, Aiq (i<>p,q) after elimination!
-            DO I=1,N
-             IF (I.NE.IP.AND.I.NE.IQ) THEN
-
 C .....   A_ip(n+1) = A_ip(n).i.c - A_iq(n).s    
 C         A_iq(n+1) = A_ip(n).i.s + A_iq(n).c
 C 
 C                  (1,i,j,k).i = (i,-1,-k,j)
-
+            DO I=1,IP-1
+C             I  <  IP,  I < IQ
                TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
                TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
-
                TOAIPI = A(I,IP,1)*CU - A(I,IQ,2)*SU
                TOAIQI = A(I,IP,1)*SU + A(I,IQ,2)*CU
-
                TOAIPJ = A(I,IP,4)*CU - A(I,IQ,3)*SU
                TOAIQJ = A(I,IP,4)*SU + A(I,IQ,3)*CU
-
                TOAIPK = -A(I,IP,3)*CU - A(I,IQ,4)*SU
                TOAIQK = -A(I,IP,3)*SU + A(I,IQ,4)*CU
-
                 A(I,IP,1) = TOAIPR 
                 A(I,IQ,1) = TOAIQR
-
                 A(I,IP,2) = TOAIPI
                 A(I,IQ,2) = TOAIQI
-
                 A(I,IP,3) = TOAIPJ
                 A(I,IQ,3) = TOAIQJ
-
                 A(I,IP,4) = TOAIPK
                 A(I,IQ,4) = TOAIQK
-
+C               A(IP,I,1) = TOAIPR
+C               A(IQ,I,1) = TOAIQR
+C               A(IP,I,2) = -TOAIPI
+C               A(IQ,I,2) = -TOAIQI
+C               A(IP,I,3) = -TOAIPJ
+C               A(IQ,I,3) = -TOAIQJ
+C               A(IP,I,4) = -TOAIPK
+C               A(IQ,I,4) = -TOAIQK
+            ENDDO
+            DO I=IP+1,IQ-1
+C                I > IP, I < IQ
+C              TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
+               TOAIPR =  A(IP,I,2)*CU - A(I,IQ,1)*SU
+C              TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
+               TOAIQR =  A(IP,I,2)*SU + A(I,IQ,1)*CU
+C              TOAIPI = A(I,IP,1)*CU - A(I,IQ,2)*SU
+               TOAIPI = A(IP,I,1)*CU - A(I,IQ,2)*SU
+C              TOAIQI = A(I,IP,1)*SU + A(I,IQ,2)*CU
+               TOAIQI = A(IP,I,1)*SU + A(I,IQ,2)*CU
+C              TOAIPJ =  A(I,IP,4)*CU - A(I,IQ,3)*SU
+               TOAIPJ = -A(IP,I,4)*CU - A(I,IQ,3)*SU
+C              TOAIQJ =  A(I,IP,4)*SU + A(I,IQ,3)*CU
+               TOAIQJ = -A(IP,I,4)*SU + A(I,IQ,3)*CU
+C              TOAIPK = -A(I,IP,3)*CU - A(I,IQ,4)*SU
+               TOAIPK =  A(IP,I,3)*CU - A(I,IQ,4)*SU
+C              TOAIQK = -A(I,IP,3)*SU + A(I,IQ,4)*CU
+               TOAIQK =  A(IP,I,3)*SU + A(I,IQ,4)*CU
+C               A(I,IP,1) = TOAIPR 
+                A(I,IQ,1) = TOAIQR
+C               A(I,IP,2) = TOAIPI
+                A(I,IQ,2) = TOAIQI
+C               A(I,IP,3) = TOAIPJ
+                A(I,IQ,3) = TOAIQJ
+C               A(I,IP,4) = TOAIPK
+                A(I,IQ,4) = TOAIQK
+                A(IP,I,1) = TOAIPR
+C               A(IQ,I,1) = TOAIQR
+                A(IP,I,2) = -TOAIPI
+C               A(IQ,I,2) = -TOAIQI
+                A(IP,I,3) = -TOAIPJ
+C               A(IQ,I,3) = -TOAIQJ
+                A(IP,I,4) = -TOAIPK
+C               A(IQ,I,4) = -TOAIQK
+            ENDDO
+            DO I=IQ+1,N
+C             I > IP,  I > IQ
+C              TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
+               TOAIPR =  A(IP,I,2)*CU - A(IQ,I,1)*SU
+C              TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
+               TOAIQR =  A(IP,I,2)*SU + A(IQ,I,1)*CU
+C              TOAIPI = A(I,IP,1)*CU - A(I,IQ,2)*SU
+               TOAIPI = A(IP,I,1)*CU + A(IQ,I,2)*SU
+C              TOAIQI = A(I,IP,1)*SU + A(I,IQ,2)*CU
+               TOAIQI = A(IP,I,1)*SU - A(IQ,I,2)*CU
+C              TOAIPJ =  A(I,IP,4)*CU - A(I,IQ,3)*SU
+               TOAIPJ = -A(IP,I,4)*CU + A(IQ,I,3)*SU
+C              TOAIQJ =  A(I,IP,4)*SU + A(I,IQ,3)*CU
+               TOAIQJ = -A(IP,I,4)*SU - A(IQ,I,3)*CU
+C              TOAIPK = -A(I,IP,3)*CU - A(I,IQ,4)*SU
+               TOAIPK =  A(IP,I,3)*CU + A(IQ,I,4)*SU
+C              TOAIQK = -A(I,IP,3)*SU + A(I,IQ,4)*CU
+               TOAIQK =  A(IP,I,3)*SU - A(IQ,I,4)*CU
+C               A(I,IP,1) = TOAIPR 
+C               A(I,IQ,1) = TOAIQR
+C               A(I,IP,2) = TOAIPI
+C               A(I,IQ,2) = TOAIQI
+C               A(I,IP,3) = TOAIPJ
+C               A(I,IQ,3) = TOAIQJ
+C               A(I,IP,4) = TOAIPK
+C               A(I,IQ,4) = TOAIQK
                 A(IP,I,1) = TOAIPR
                 A(IQ,I,1) = TOAIQR
-
                 A(IP,I,2) = -TOAIPI
                 A(IQ,I,2) = -TOAIQI
-
                 A(IP,I,3) = -TOAIPJ
                 A(IQ,I,3) = -TOAIQJ
-
                 A(IP,I,4) = -TOAIPK
                 A(IQ,I,4) = -TOAIQK
-
-             ENDIF
             ENDDO
 
 
@@ -5121,7 +5305,6 @@ C         ... do calculate Cu,Su...
            SU2 = SU*SU
            CUSU = CU*SU
 
-
 C           ... Update (only REAL) diagonal elements
             A(IP,IP,1)= APPR*CU2 + AQQR*SU2 - D2*CUSU*APQJ 
             A(IQ,IQ,1)= APPR*SU2 + AQQR*CU2 + D2*CUSU*APQJ
@@ -5140,9 +5323,9 @@ C      ...  update off diag. Apq ...(1,i,j,k).j = (j,k,0,-i)
             A(IP,IQ,4)= XAK
 
 C           ... the same for Aqp elements...
-            A(IQ,IP,2)= XAI
-            A(IQ,IP,3)=-XAJ
-            A(IQ,IP,4)=-XAK
+C           A(IQ,IP,2)= XAI
+C           A(IQ,IP,3)=-XAJ
+C           A(IQ,IP,4)=-XAK
 
 C           ... check the A_pq  elements !
             IF (IPRINT.GE.6) THEN
@@ -5159,52 +5342,108 @@ C           ... check the A_pq  elements !
             ENDIF
 
 C      ...  update Aip, Aiq (i<>p,q) after elimination!
-
-            DO I=1,N
-             IF (I.NE.IP.AND.I.NE.IQ) THEN
 C
 C .....   A_ip(n+1) = A_ip(n).j.c - A_iq(n).s  
 C         A_iq(n+1) = A_ip(n).j.s + A_iq(n).c
 C             
 C                 (1,i,j,k).j = (j,k,-1,-i)
 
+            DO I=1,IP-1
+C            I < IP,  I < IQ
                TOAIPR = -A(I,IP,3)*CU - A(I,IQ,1)*SU
                TOAIQR = -A(I,IP,3)*SU + A(I,IQ,1)*CU
-
                TOAIPI = -A(I,IP,4)*CU - A(I,IQ,2)*SU
                TOAIQI = -A(I,IP,4)*SU + A(I,IQ,2)*CU
-
                TOAIPJ = A(I,IP,1)*CU - A(I,IQ,3)*SU
                TOAIQJ = A(I,IP,1)*SU + A(I,IQ,3)*CU
-
                TOAIPK = A(I,IP,2)*CU - A(I,IQ,4)*SU
                TOAIQK = A(I,IP,2)*SU + A(I,IQ,4)*CU
-
                 A(I,IP,1) = TOAIPR 
                 A(I,IQ,1) = TOAIQR
-
                 A(I,IP,2) = TOAIPI
                 A(I,IQ,2) = TOAIQI
-
                 A(I,IP,3) = TOAIPJ
                 A(I,IQ,3) = TOAIQJ
-
                 A(I,IP,4) = TOAIPK
                 A(I,IQ,4) = TOAIQK
-
+C               A(IP,I,1) = TOAIPR
+C               A(IQ,I,1) = TOAIQR
+C               A(IP,I,2) = -TOAIPI
+C               A(IQ,I,2) = -TOAIQI
+C               A(IP,I,3) = -TOAIPJ
+C               A(IQ,I,3) = -TOAIQJ
+C               A(IP,I,4) = -TOAIPK
+C               A(IQ,I,4) = -TOAIQK
+            ENDDO
+            DO I=IP+1,IQ-1
+C               I > IP, I < IQ
+C              TOAIPR = -A(I,IP,3)*CU - A(I,IQ,1)*SU
+               TOAIPR =  A(IP,I,3)*CU - A(I,IQ,1)*SU
+C              TOAIQR = -A(I,IP,3)*SU + A(I,IQ,1)*CU
+               TOAIQR =  A(IP,I,3)*SU + A(I,IQ,1)*CU
+C              TOAIPI = -A(I,IP,4)*CU - A(I,IQ,2)*SU
+               TOAIPI =  A(IP,I,4)*CU - A(I,IQ,2)*SU
+C              TOAIQI = -A(I,IP,4)*SU + A(I,IQ,2)*CU
+               TOAIQI =  A(IP,I,4)*SU + A(I,IQ,2)*CU
+C              TOAIPJ = A(I,IP,1)*CU - A(I,IQ,3)*SU
+               TOAIPJ = A(IP,I,1)*CU - A(I,IQ,3)*SU
+C              TOAIQJ = A(I,IP,1)*SU + A(I,IQ,3)*CU
+               TOAIQJ = A(IP,I,1)*SU + A(I,IQ,3)*CU
+C              TOAIPK =  A(I,IP,2)*CU - A(I,IQ,4)*SU
+               TOAIPK = -A(IP,I,2)*CU - A(I,IQ,4)*SU
+C              TOAIQK =  A(I,IP,2)*SU + A(I,IQ,4)*CU
+               TOAIQK = -A(IP,I,2)*SU + A(I,IQ,4)*CU
+C               A(I,IP,1) = TOAIPR 
+                A(I,IQ,1) = TOAIQR
+C               A(I,IP,2) = TOAIPI
+                A(I,IQ,2) = TOAIQI
+C               A(I,IP,3) = TOAIPJ
+                A(I,IQ,3) = TOAIQJ
+C               A(I,IP,4) = TOAIPK
+                A(I,IQ,4) = TOAIQK
+                A(IP,I,1) = TOAIPR
+C               A(IQ,I,1) = TOAIQR
+                A(IP,I,2) = -TOAIPI
+C               A(IQ,I,2) = -TOAIQI
+                A(IP,I,3) = -TOAIPJ
+C               A(IQ,I,3) = -TOAIQJ
+                A(IP,I,4) = -TOAIPK
+C               A(IQ,I,4) = -TOAIQK
+            ENDDO
+            DO I=IQ+1,N
+C               I > IP, I > IQ
+C              TOAIPR = -A(I,IP,3)*CU - A(I,IQ,1)*SU
+               TOAIPR =  A(IP,I,3)*CU - A(IQ,I,1)*SU
+C              TOAIQR = -A(I,IP,3)*SU + A(I,IQ,1)*CU
+               TOAIQR =  A(IP,I,3)*SU + A(IQ,I,1)*CU
+C              TOAIPI = -A(I,IP,4)*CU - A(I,IQ,2)*SU
+               TOAIPI =  A(IP,I,4)*CU + A(IQ,I,2)*SU
+C              TOAIQI = -A(I,IP,4)*SU + A(I,IQ,2)*CU
+               TOAIQI =  A(IP,I,4)*SU - A(IQ,I,2)*CU
+C              TOAIPJ =  A(I,IP,1)*CU - A(I,IQ,3)*SU
+               TOAIPJ =  A(IP,I,1)*CU + A(IQ,I,3)*SU
+C              TOAIQJ =  A(I,IP,1)*SU + A(I,IQ,3)*CU
+               TOAIQJ =  A(IP,I,1)*SU - A(IQ,I,3)*CU
+C              TOAIPK =  A(I,IP,2)*CU - A(I,IQ,4)*SU
+               TOAIPK = -A(IP,I,2)*CU + A(IQ,I,4)*SU
+C              TOAIQK =  A(I,IP,2)*SU + A(I,IQ,4)*CU
+               TOAIQK = -A(IP,I,2)*SU - A(IQ,I,4)*CU
+C               A(I,IP,1) = TOAIPR 
+C               A(I,IQ,1) = TOAIQR
+C               A(I,IP,2) = TOAIPI
+C               A(I,IQ,2) = TOAIQI
+C               A(I,IP,3) = TOAIPJ
+C               A(I,IQ,3) = TOAIQJ
+C               A(I,IP,4) = TOAIPK
+C               A(I,IQ,4) = TOAIQK
                 A(IP,I,1) = TOAIPR
                 A(IQ,I,1) = TOAIQR
-
                 A(IP,I,2) = -TOAIPI
                 A(IQ,I,2) = -TOAIQI
-
                 A(IP,I,3) = -TOAIPJ
                 A(IQ,I,3) = -TOAIQJ
-
                 A(IP,I,4) = -TOAIPK
                 A(IQ,I,4) = -TOAIQK
-
-             ENDIF
             ENDDO
 
 C      ...  update P after the A_pq"j" elimination!
@@ -5305,9 +5544,9 @@ C               (1,i,j,k).k = (k, -j, i, -1)
             A(IP,IQ,4)=  XAK
 
 C           ... the same for Aqp elements...
-            A(IQ,IP,2)= -XAI
-            A(IQ,IP,3)=  XAJ
-            A(IQ,IP,4)= -XAK
+C           A(IQ,IP,2)= -XAI
+C           A(IQ,IP,3)=  XAJ
+C           A(IQ,IP,4)= -XAK
 
 C           ... check the A_pq  elements !
             IF (IPRINT.GE.6) THEN
@@ -5324,52 +5563,107 @@ C           ... check the A_pq  elements !
             ENDIF
 
 C      ...  update Aip, Aiq (i<>p,q) after elimination!
-
-            DO I=1,N
-             IF (I.NE.IP.AND.I.NE.IQ) THEN
-
 C .....   A_ip(n+1) = A_ip(n).k.c - A_iq(n).s  
 C         A_iq(n+1) = A_ip(n).k.s + A_iq(n).c
 C             
 C                 (1,i,j,k).k = (k,-j,i,-1)
 
+            DO I=1,IP-1
+C             I < IP, I < IQ
                TOAIPR = -A(I,IP,4)*CU - A(I,IQ,1)*SU
                TOAIQR = -A(I,IP,4)*SU + A(I,IQ,1)*CU
-
                TOAIPI =  A(I,IP,3)*CU - A(I,IQ,2)*SU
                TOAIQI =  A(I,IP,3)*SU + A(I,IQ,2)*CU
-
                TOAIPJ = -A(I,IP,2)*CU - A(I,IQ,3)*SU
                TOAIQJ = -A(I,IP,2)*SU + A(I,IQ,3)*CU
-
                TOAIPK =  A(I,IP,1)*CU - A(I,IQ,4)*SU
                TOAIQK =  A(I,IP,1)*SU + A(I,IQ,4)*CU
-
                 A(I,IP,1) = TOAIPR 
                 A(I,IQ,1) = TOAIQR
-
                 A(I,IP,2) = TOAIPI
                 A(I,IQ,2) = TOAIQI
-
                 A(I,IP,3) = TOAIPJ
                 A(I,IQ,3) = TOAIQJ
-
                 A(I,IP,4) = TOAIPK
                 A(I,IQ,4) = TOAIQK
-
+C               A(IP,I,1) = TOAIPR
+C               A(IQ,I,1) = TOAIQR
+C               A(IP,I,2) = -TOAIPI
+C               A(IQ,I,2) = -TOAIQI
+C               A(IP,I,3) = -TOAIPJ
+C               A(IQ,I,3) = -TOAIQJ
+C               A(IP,I,4) = -TOAIPK
+C               A(IQ,I,4) = -TOAIQK
+            ENDDO
+            DO I=IP+1,IQ-1
+C               I > IP, I < IQ
+C              TOAIPR = -A(I,IP,4)*CU - A(I,IQ,1)*SU
+               TOAIPR =  A(IP,I,4)*CU - A(I,IQ,1)*SU
+C              TOAIQR = -A(I,IP,4)*SU + A(I,IQ,1)*CU
+               TOAIQR =  A(IP,I,4)*SU + A(I,IQ,1)*CU
+C              TOAIPI =  A(I,IP,3)*CU - A(I,IQ,2)*SU
+               TOAIPI = -A(IP,I,3)*CU - A(I,IQ,2)*SU
+C              TOAIQI =  A(I,IP,3)*SU + A(I,IQ,2)*CU
+               TOAIQI = -A(IP,I,3)*SU + A(I,IQ,2)*CU
+C              TOAIPJ = -A(I,IP,2)*CU - A(I,IQ,3)*SU
+               TOAIPJ =  A(IP,I,2)*CU - A(I,IQ,3)*SU
+C              TOAIQJ = -A(I,IP,2)*SU + A(I,IQ,3)*CU
+               TOAIQJ =  A(IP,I,2)*SU + A(I,IQ,3)*CU
+C              TOAIPK =  A(I,IP,1)*CU - A(I,IQ,4)*SU
+               TOAIPK =  A(IP,I,1)*CU - A(I,IQ,4)*SU
+C              TOAIQK =  A(I,IP,1)*SU + A(I,IQ,4)*CU
+               TOAIQK =  A(IP,I,1)*SU + A(I,IQ,4)*CU
+C               A(I,IP,1) = TOAIPR 
+                A(I,IQ,1) = TOAIQR
+C               A(I,IP,2) = TOAIPI
+                A(I,IQ,2) = TOAIQI
+C               A(I,IP,3) = TOAIPJ
+                A(I,IQ,3) = TOAIQJ
+C               A(I,IP,4) = TOAIPK
+                A(I,IQ,4) = TOAIQK
+                A(IP,I,1) = TOAIPR
+C               A(IQ,I,1) = TOAIQR
+                A(IP,I,2) = -TOAIPI
+C               A(IQ,I,2) = -TOAIQI
+                A(IP,I,3) = -TOAIPJ
+C               A(IQ,I,3) = -TOAIQJ
+                A(IP,I,4) = -TOAIPK
+C               A(IQ,I,4) = -TOAIQK
+            ENDDO
+            DO I=IQ+1,N
+C              I > IP,  I > IQ
+C              TOAIPR = -A(I,IP,4)*CU - A(I,IQ,1)*SU
+               TOAIPR =  A(IP,I,4)*CU - A(IQ,I,1)*SU
+C              TOAIQR = -A(I,IP,4)*SU + A(I,IQ,1)*CU
+               TOAIQR =  A(IP,I,4)*SU + A(IQ,I,1)*CU
+C              TOAIPI =  A(I,IP,3)*CU - A(I,IQ,2)*SU
+               TOAIPI = -A(IP,I,3)*CU + A(IQ,I,2)*SU
+C              TOAIQI =  A(I,IP,3)*SU + A(I,IQ,2)*CU
+               TOAIQI = -A(IP,I,3)*SU - A(IQ,I,2)*CU
+C              TOAIPJ = -A(I,IP,2)*CU - A(I,IQ,3)*SU
+               TOAIPJ =  A(IP,I,2)*CU + A(IQ,I,3)*SU
+C              TOAIQJ = -A(I,IP,2)*SU + A(I,IQ,3)*CU
+               TOAIQJ =  A(IP,I,2)*SU - A(IQ,I,3)*CU
+C              TOAIPK =  A(I,IP,1)*CU - A(I,IQ,4)*SU
+               TOAIPK =  A(IP,I,1)*CU + A(IQ,I,4)*SU
+C              TOAIQK =  A(I,IP,1)*SU + A(I,IQ,4)*CU
+               TOAIQK =  A(IP,I,1)*SU - A(IQ,I,4)*CU
+C               A(I,IP,1) = TOAIPR 
+C               A(I,IQ,1) = TOAIQR
+C               A(I,IP,2) = TOAIPI
+C               A(I,IQ,2) = TOAIQI
+C               A(I,IP,3) = TOAIPJ
+C               A(I,IQ,3) = TOAIQJ
+C               A(I,IP,4) = TOAIPK
+C               A(I,IQ,4) = TOAIQK
                 A(IP,I,1) = TOAIPR
                 A(IQ,I,1) = TOAIQR
-
                 A(IP,I,2) = -TOAIPI
                 A(IQ,I,2) = -TOAIQI
-
                 A(IP,I,3) = -TOAIPJ
                 A(IQ,I,3) = -TOAIQJ
-
                 A(IP,I,4) = -TOAIPK
                 A(IQ,I,4) = -TOAIQK
-
-             ENDIF
             ENDDO
 
 C      ...  update P after the A_pq"k" elimination!
@@ -5495,6 +5789,16 @@ C    &        FINISHED=.TRUE.
        CALL FLSHFO(LUPRI)
       ENDIF
 CC *********************************************************************************
+
+CC DO the symmetrization of the (diagonal/block-diagonal) A matrix
+      DO I = 1,N-1
+      DO J = I+1, N
+       A(J,I,1)=A(I,J,1)
+       DO IZ=2,NZ
+        A(J,I,IZ)=-A(I,J,IZ)
+       ENDDO
+      ENDDO
+      ENDDO
 
 C ==== Finished === 
 C ===  if full diagonalization, do sort eigenvalues on the main diagonal...
@@ -5653,6 +5957,7 @@ C     (D.PH)_kj = Sum(l) D_kl.PH_lj = Sum(l) D_kl.(P_jl)*
 
 C         ... read elements from the file...
            READ(LUF,1000) I1,J1,IZ1,AIJFR
+C          READ(LUF,*) I1,J1,AIJFR
 
            IF (IPRINT.GE.3) THEN
            write(lupri,*)
@@ -5809,7 +6114,7 @@ C           a*w + b*z - c*y + d*x)
 C         ... read elements from the file...
            READ(LUF,1000) I1,J1,IZ1,AIJFR
            READ(LUF,1000) I1,J1,IZ1,AIJFI
-
+C          READ(LUF,*) I1,J1,AIJFR,AIJFI
 
            IF (IPRINT.GE.3) THEN
            write(lupri,*)
@@ -6044,7 +6349,7 @@ C         ... read elements from the file...
            READ(LUF,1000) I1,J1,IZ1,AIJFI
            READ(LUF,1000) I1,J1,IZ1,AIJFJ
            READ(LUF,1000) I1,J1,IZ1,AIJFK
-
+C          READ(LUF,*) I1,J1,AIJFR,AIJFI,AIJFJ,AIJFK
 
            IF (IPRINT.GE.3) THEN
            write(lupri,*)
@@ -6086,14 +6391,16 @@ C           ... check the differences...
          RETURN
          END
 
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck  */
+C  /* Deck FINDSUMBL  */
          SUBROUTINE FINDSUMBL(A,N,NZ,NBL,IBL,IP,IQ,SUMSQ,IPRINT)
 C****************************************************************************
 C
-C  ... find the largest off diagonal element (in block)
+C  ... find the largest off diagonal element (in block) in the upper triangular
 C       and the sum of absolute values of its elements (r,i,j,k)
+C
+C     On output:  IP < IQ
+C                 SUMSQ
 C
 C****************************************************************************
 #include"implicit.h"
@@ -6152,11 +6459,20 @@ C          ... run only over specified blocks !!
            ENDDO
           ENDDO
          ELSE
-          CALL QUIT('Bad NBLOCKS in QJACOBI!')
+          CALL QUIT('FINDSUMBL: Bad NBLOCKS in QJACOBI!')
          ENDIF
 
          IF (IMAX.EQ.JMAX) THEN 
-            CALL QUIT('IMAX=JMAX ')
+          IF (IPRINT.GE.7) THEN
+            write(lupri,*) 'FINDSUMBL: Find IMAX=',IMAX,' JMAX=',JMAX
+            write(lupri,*) 'FINDSUMBL: IBL(1:',NBL,';1:4) elements:'
+            do i=1,NBL
+             write(lupri,*)
+     &      '>>> IBL(',i,';1)=',IBL(i,1),' IBL(',i,';2)=',IBL(i,2),
+     &      ' IBL(',i,';3)=',IBL(i,3),' IBL(',i,';4)=',IBL(i,4)
+            enddo 
+           ENDIF
+C           CALL QUIT('Error in FINDSUMBL: IMAX=JMAX ')
          ELSE IF(IMAX.GT.JMAX) THEN
             IMAX1 = IMAX
             IMAX = JMAX
@@ -6192,7 +6508,7 @@ C  /* Deck testblocks  */
       SUBROUTINE TESTBLOCKS(N,NZ,NBL,IBL,IPRINT)
 C****************************************************************************
 C
-C   DO check of the blocks of hermitian matrix to be diagonalized.
+C   Check specifix blocks of hermitian matrix to be diagonalized.
 C
 C****************************************************************************
 #include"implicit.h"
@@ -6222,8 +6538,9 @@ C     ... do own check
        J2=IBL(I,4)
 
        IF (I1.GT.I2.OR.J1.GT.J2) THEN
-           write(lupri,*) 'I1>I2 or J1>J2!'
-           BAD=.TRUE.
+        write(lupri,*) 'I1,I2:',I1,I2,' J1,J2:',J1,J2,' * N=',N
+        write(lupri,*) 'I1>I2 or J1>J2!'
+        BAD=.TRUE.
        ENDIF
 
        IF (I1.LT.1.OR.I1.GT.N-1.OR.J1.LT.1.OR.J1.GT.N
@@ -6246,7 +6563,7 @@ C     ... do own check
       ELSE
        IF (IPRINT.GE.1) THEN
        write(lupri,'(/2X,A)')
-     &' The off-elements (indexes) to be diagonalized are OK:'
+     &' The off-elements (indexes) to be diagonalized (zeroed) are OK:'
        ENDIF
         IF (IPRINT.GE.2) THEN
         DO I=1,NBL
@@ -6262,7 +6579,7 @@ C     ... do own check
 
       IF (IPRINT.GE.2) THEN
         write(lupri,*)
-     & 'Number of elements (upper triang.) to be eliminated:',
+     & 'Number of elements (upper triangular) to be eliminated:',
      &  INUMEL
         write(lupri,*)
       ENDIF
