@@ -4323,7 +4323,7 @@ C        .... file number and file name of the check file
       DATA LUF / 33  /
       DATA FILENAME / 'QJACO.MTX' /
 
-      IF (IPRINT.GE.1) THEN
+      IF (IPRINT.GE.2) THEN
        CALL HEADER(
      &'QJACOBI, selective diagonalization of the quaternion matrix.',-1)
        write(lupri,*)
@@ -5764,15 +5764,11 @@ C        ... after elimination of Apq find indexes of the next largest element
           IF (IPRINT.GE.3) THEN
             write(lupri,*) ' ... ITER=',ITER, ' SUMSQ=',SUMSQ
           ENDIF
-C         ... find out the end of oterations...
-C         IF ((SUMSQA(1).LE.ZEROTHRS1.AND.SUMSQA(2).LE.ZEROTHRS1).AND.
-C    &         DABS(SUMSQA(1)-SUMSQA(2)).LE.DIAGTHRS.AND.ITER.GE.2)
-C    &        FINISHED=.TRUE.
           IF (.NOT.ELIM(1).AND..NOT.ELIM(2)) FINISHED=.TRUE.
 
       IF (.NOT.FINISHED) GOTO 10
 
-      IF (IPRINT.GE.1) THEN
+      IF (IPRINT.GE.2) THEN
        CALL GETTIM(CPU2,WALL2)
        CPU    = CPU2 - CPU1
        WALL   = WALL2 - WALL1
@@ -6402,6 +6398,10 @@ C
 C     On output:  IP < IQ
 C                 SUMSQ
 C
+C     Called from QJACOBI
+C
+C     Written by Miro Ilias, Strasbourg, 2006
+C
 C****************************************************************************
 #include"implicit.h"
 #include"priunit.h"
@@ -6510,6 +6510,10 @@ C****************************************************************************
 C
 C   Check specifix blocks of hermitian matrix to be diagonalized.
 C
+C   Called from QJACOBI
+C
+C   Written by Miro Ilias, Strasbourg, 2006
+C
 C****************************************************************************
 #include"implicit.h"
 #include"priunit.h"
@@ -6520,7 +6524,7 @@ C****************************************************************************
       BAD = .FALSE.
 
 C       ... print info on blocks first
-      IF (IPRINT.GE.1) THEN
+      IF (IPRINT.GE.2) THEN
         write(lupri,*) 'QJACOBI(TESTBLOCKS): # of subblocks=',NBL
         IF (NBL.GT.0) THEN
          DO I=1, NBL
@@ -6561,11 +6565,12 @@ C     ... do own check
       IF (BAD) THEN
        CALL QUIT('BAD BLOCKS !')
       ELSE
-       IF (IPRINT.GE.1) THEN
-       write(lupri,'(/2X,A)')
-     &' The off-elements (indexes) to be diagonalized (zeroed) are OK:'
+       IF (IPRINT.GE.2) THEN
+        write(lupri,'(/2X,A)')
+     &'QJACOBI(TESTBLOCKS): The off-elements (indexes) to be'//
+     &' diagonalized (zeroed) are OK:'
        ENDIF
-        IF (IPRINT.GE.2) THEN
+        IF (IPRINT.GE.3) THEN
         DO I=1,NBL
         DO I1=IBL(I,1),IBL(I,3)
         DO J1=IBL(I,2),IBL(I,4)
@@ -6577,7 +6582,7 @@ C     ... do own check
         ENDIF
       ENDIF
 
-      IF (IPRINT.GE.2) THEN
+      IF (IPRINT.GE.3) THEN
         write(lupri,*)
      & 'Number of elements (upper triangular) to be eliminated:',
      &  INUMEL
@@ -6788,5 +6793,90 @@ C
       ENDDO
 C
       CALL QEXIT('OCCUPY')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck matrix_inversion */
+      subroutine matrix_inversion ( A, NP, IPIV, INDXR, INDXC )
+C     !-------------------------------------------------------------------------
+C     !
+C     !	      Taken from "Numeric recipes".  The original program was
+C     !       GAUSSJ which solves linear equations by the Gauss_Jordon
+C     !       elimination method.  Only the parts required to invert
+C     !	      matrices have been retained.
+C     !
+C     !	      J.P. Griffith  6/88
+C     !
+C     !  Added by Miro Ilias, Strasbourg, 2005
+C     !  Called from dirbss.F.
+C     !-------------------------------------------------------------------------
+#include "implicit.h" 
+#include "priunit.h"  
+
+CMI     PARAMETER (NMAX=50)
+
+      DIMENSION A(NP,NP), IPIV(*), INDXR(*), INDXC(*)
+
+      n = np
+
+      DO 11 J=1,N
+        IPIV(J)=0
+11    CONTINUE
+      DO 22 I=1,N
+        BIG=0.
+        DO 13 J=1,N
+          IF(IPIV(J).NE.1)THEN
+            DO 12 K=1,N
+              IF (IPIV(K).EQ.0) THEN
+                IF (ABS(A(J,K)).GE.BIG)THEN
+                  BIG=ABS(A(J,K))
+                  IROW=J
+                  ICOL=K
+                ENDIF
+              ELSE IF (IPIV(K).GT.1) THEN
+CMI             PAUSE 'Singular matrix'
+                CALL QUIT('matrix_inversion: Singular matrix!')
+              ENDIF
+12          CONTINUE
+          ENDIF
+13      CONTINUE
+
+        IPIV(ICOL)=IPIV(ICOL)+1
+        IF (IROW.NE.ICOL) THEN
+          DO 14 L=1,N
+            DUM=A(IROW,L)
+            A(IROW,L)=A(ICOL,L)
+            A(ICOL,L)=DUM
+14        CONTINUE
+        ENDIF
+        INDXR(I)=IROW
+        INDXC(I)=ICOL
+CMI     IF (A(ICOL,ICOL).EQ.0.) PAUSE 'Singular matrix.'
+        IF (A(ICOL,ICOL).EQ.0.) CALL QUIT('Singular matrix.')
+        PIVINV=1./A(ICOL,ICOL)
+        A(ICOL,ICOL)=1.
+        DO 16 L=1,N
+          A(ICOL,L)=A(ICOL,L)*PIVINV
+16      CONTINUE
+        DO 21 LL=1,N
+          IF(LL.NE.ICOL)THEN
+            DUM=A(LL,ICOL)
+            A(LL,ICOL)=0.
+            DO 18 L=1,N
+              A(LL,L)=A(LL,L)-A(ICOL,L)*DUM
+18          CONTINUE
+          ENDIF
+21      CONTINUE
+22    CONTINUE
+      DO 24 L=N,1,-1
+        IF(INDXR(L).NE.INDXC(L))THEN
+          DO 23 K=1,N
+            DUM=A(K,INDXR(L))
+            A(K,INDXR(L))=A(K,INDXC(L))
+            A(K,INDXC(L))=DUM
+23        CONTINUE
+        ENDIF
+24    CONTINUE
       RETURN
       END

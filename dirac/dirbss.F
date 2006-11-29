@@ -1266,9 +1266,10 @@ C      ... treat the NOFPB & BLOCKD
        ENDIF
 C      ... by default do not use pure numerical block-diagonalizating approach
 C       this is still TODO ...
-       BLOCKD = .FALSE.
+C      BLOCKD = .FALSE.
        IF (BLOCKD) THEN
-        WRITE(LUPRI,*) 'The block diagonalization applied (QJACOBI) !'
+        WRITE(LUPRI,*)
+     &  'The block diagonalization method applied (QJACOBI) !'
        ELSE
         WRITE(LUPRI,'(2X,A,$)') 'R-equation solving applied :'
         IF (YREQ1) THEN
@@ -3278,23 +3279,24 @@ C  /* Deck get_hinf_bd */
      &                   GETPCTM,SF_BEG,WORK,LWORK,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C    PURPOSE: Get the H_inf 2c Hamiltonian in the FP ON "k" basis
+C    PURPOSE: Get the H_inf 2c Hamiltonian in the ON RKB/"k" basis
 C    ========  
-C             - save H "k"_block diagonal (full, both pp and ee blocks)
-C             - save 4c "k"->2c "k" (full) picture change transf.matrix
+C             - save H1 ON RKB/"k"_block diagonal (full, both pp and ee blocks)
+C             - save 4c ON RKB/"k"->2c ON RKB/"k" (full) picture change transf.matrix
 C             - save 4c "xhi" -> 2c "k" (only ee) picture change transf.matrix 
 C             - save Hinf(2c) in "k" basis to the file
 C
 C  On input:
 C --------------
 C    TBUF - BNDH in ON RKB/"k" basis
-C    VMAT "k" in SA-AO "xhi" basis
+C    VMAT ON RKB/"k" in SA-AO "xhi" basis
 C
 C  On output:
 C --------------
+C    TBUF - H2c (ee) in ON RKB/"k" basis set, needed in the subsequent H2CFINAL routine
 C
-C Written by:  M.Ilias, HJ Aa Jensen, Odense, 2002,
-C            last revison: M.Ilias, Strasbourg, february 2005
+C Written by:  M.Ilias, Strasbourg, February 2006   
+C                 revisons: M.Ilias, Prievidza, November 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"                                       
@@ -3320,7 +3322,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
         IF(IPRINT.GE.5) THEN
           CALL HEADER(
-     &  'GET_HINF_FPM: Entering H1 Dirac matrix in 4c "k" basis '//
+     &  'GET_HINF_BD: Entering H1 Dirac matrix in 4c "k" basis '//
      &  'TBUF',-1)
           WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &     '*** Fermion corep ',I,'/',NFSYM
@@ -3335,30 +3337,29 @@ C     ... ending point
         IBL(1,3)=NPSH(I)
         IBL(1,4)=NORB(I)
 
-C     ... problem ! it takes too long time  !
-        CALL QJACOBI(TBUF(IOFT),TMAT(IOFT),NORB(I),NZ,NBL,IBL,.TRUE.,1)
+C     one disadvantage  ... this routine is taking too long time ...
+        CALL QJACOBI(TBUF(IOFT),TMAT(IOFT),NORB(I),
+     &               NZ,NBL,IBL,.TRUE.,IPRINT)
 
         IF(IPRINT.GE.5) THEN
-          CALL HEADER(
-     &  'GET_HINF_FPM: H1 FULL BLOCK DIAGONAL Dirac matrix '//
-     &  'in 4c "k" basis, TBUF',-1)
-          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-          CALL PRQMAT(TBUF(IOFT),NORB(I),NORB(I),NORB(I),
-     &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         CALL HEADER(
+     &  'GET_HINF_BD: Block-diagonalized full matrix H2c '//
+     &  'in 4c ON RKB/"k" basis, TBUF',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IOFT),NORB(I),NORB(I),NORB(I),
+     &               NORB(I),NZ,IPQTOQ(1,0),LUPRI)
 
           CALL HEADER(
-     &  'GET_HINF_FPM: Picture change tranf.matrix,  '//
-     &  'full 4c "k" -> 2c "k", TMAT',-1)
-          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-          CALL PRQMAT(TMAT(IOFT),NORB(I),NORB(I),NORB(I),
-     &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+     &  'GET_HINF_BD: Full picture change tranf.matrix,  '//
+     &  ' 4c ON RKB/"k" -> 2c ON RKB/"k", TMAT',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TMAT(IOFT),NORB(I),NORB(I),NORB(I),
+     &                NORB(I),NZ,IPQTOQ(1,0),LUPRI)
 
         ENDIF
-   
         IOFT = IOFT + NORB(I)*NORB(I)*NZ
-
       ENDIF
       ENDDO
 
@@ -3366,26 +3367,30 @@ C     ... problem ! it takes too long time  !
       ISIZE2=NORB(1)*NORB(1)*NZ
       IF (NFSYM.EQ.2) THEN
         ISIZE1=ISIZE1+NFBAS(2,0)*NORB(2)*NZ
+C       ... full matrix ....
         ISIZE2=ISIZE2+NORB(2)*NORB(2)*NZ
       ENDIF
 
-C ... save H1 block diagonal as well as picture change matrix
-      CALL W2BSSMAT(4,.TRUE.,'H1FPM_BD','GET_HINF_FPM',
+C ... save he H1 block diagonalized Hamiltonian 
+      CALL W2BSSMAT(1,.TRUE.,'H1ONB_BD','GET_HINF_FPM',
      &              TBUF,ISIZE2,LUBSS,IPRINT)
-      WRITE(LUPRI,'(/2X,A)')
-     &'H1 "k" block-diagonal  matrix is '//
-     &' written to the BSSMAT file.'
+      IF (IPRINT.GE.2) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     & 'GET_HINF_BD: H1 ON RKB/"k" block-diagonalized matrix is '//
+     & ' written to the BSSMAT file.'
+      ENDIF
 
-      CALL W2BSSMAT(4,.TRUE.,'PCTM_FPM','GET_HINF_FPM',
-     &              TMAT,ISIZE1,LUBSS,IPRINT)
-
-      WRITE(LUPRI,'(/2X,A)')
-     &'4c "k" -> 2c "k" picture change  '//
-     &'transformation matrix written to the BSSMAT file.'
+C     ... save the full picture change transformation matrix
+      CALL W2BSSMAT(1,.TRUE.,'PCTM_ONB','GET_HINF_BD',
+     &                 TMAT,ISIZE2,LUBSS,IPRINT)
+      IF (IPRINT.GE.2) THEN
+       WRITE(LUPRI,'(/2X,A)')
+     &'GET_HINF_BD: Full 4c ON RKB/"k" -> 2c ON/"k" picture change '//
+     &'transformation matrix written to the BSSMAT file (PCTM_ONB).'
+      ENDIF
 
 C  ... get the picture change transformation matric 4c "xhi" -> 2c "k" K.U 
 C  ... into the TBUF = VMAT*TMAT
-
       IMAT=1
       IPC =1 
       IOFT = 1
@@ -3394,8 +3399,10 @@ C  ... into the TBUF = VMAT*TMAT
 
         IF(IPRINT.GE.5) THEN
           CALL HEADER(
-     & 'GET_HINF_FPM: Entering |k> matrix, VMAT, in SO basis "xhi" ',-1)
-          WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',I
+     & 'GET_HINF_BD: Entering RKB/"k" matrix, VMAT,'//
+     & ' in 4c SA-AO basis "xhi" ',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &    '*** Fermion corep ',I,'/',NFSYM
           CALL PRQMAT(VMAT(IMAT),NFBAS(I,0),NORB(I),
      &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
@@ -3410,12 +3417,13 @@ C  ... into the TBUF = VMAT*TMAT
      &         NFBAS(I,0),NESH(I),NZ)
 
         IF(IPRINT.GE.5) THEN
-          CALL HEADER(
-     & 'GET_HINF_FPM: 4c "xhi" - 2c "k" picture change'//
+         CALL HEADER(
+     & 'GET_HINF_BD: 4c "xhi" - 2c ON RKB/"k" picture change'//
      & ' transformation matrix ',-1)
-          WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',I
-          CALL PRQMAT(TBUF(IOFT),NFBAS(I,0),NESH(I),
-     &             NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IOFT),NFBAS(I,0),NESH(I),
+     &          NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
 
         IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
@@ -3429,16 +3437,52 @@ C  ... save the picture change transformation matrix, TBUF...
       ISIZE1=NFBAS(1,0)*NESH(1)*NZ
       IF (NFSYM.EQ.2) ISIZE1=ISIZE1+NFBAS(2,0)*NESH(2)*NZ
 
-      CALL W2BSSMAT(3,.TRUE.,'PCTM4C2K','GET_HINF_FPM',
+      CALL W2BSSMAT(1,.TRUE.,'PCTM4C2K','GET_HINF_BD',
      &              TBUF,ISIZE1,LUBSS,IPRINT)
       IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
-     &  '4c SA-AO"xhi" -> 2c "k" picture change '//
+     &  'GET_HINF_BD: 4c SA-AO"xhi" -> 2c "k" picture change '//
      & 'transformation matrix (PCTM4C2K) is written to the BSSMAT file.'
         WRITE(LUPRI,'(2X,A)') 'EOFLABEL is added.'
       ENDIF
+
+C     ... extract U1_ONBAS, TMAT -> TBUF
+      INAT = 1
+      IBUF = 1
+      DO I=1,NFSYM
+       DO IZ=1,NZ
+       DO J=1,NESH(I)
+        CALL DCOPY(NORB(I),
+     &    TMAT(IMAT+(NORB(I)*NPSH(I))+
+     &        (IZ-1)*NORB(I)*NORB(I)+(J-1)*NORB(I)),1,
+     &    TBUF(IBUF+(IZ-1)*NORB(I)*NESH(I)+(J-1)*NORB(I)),1)
+       ENDDO
+       ENDDO
+       IF (IPRINT.GE.6) THEN
+         CALL HEADER(
+     &   'GET_HINF_BD: Final U1(+e) picture change '//
+     &   'transformation matrix in ON RKB/"k" basis, TBUF',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IBUF),NORB(I),NESH(I),NORB(I),NESH(I),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+       IMAT = IMAT + NORB(I)*NORB(I)*NZ
+       IBUF = IBUF + NORB(I)*NESH(I)*NZ
+      ENDDO
+
+      ISIZE = NESH(1)*NORB(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NORB(2)*NZ
+      CALL W2BSSMAT(1,.TRUE.,'U1_ONBAS','GET_HINF_BD',
+     &              TBUF,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.2) THEN
+       WRITE(LUPRI,'(/2X,A)')
+     &'GET_HINF_BD: 4c ON RKB/"k"-> 2c ON RKB/"k" (ee) picture change'//
+     &' transf. matrix (U1_ONBAS) saved, EOFLABEL renewed '
+      ENDIF
+
 C  ... read the block diagonal matrix for extracting the (ee) block only !
-       CALL RFBSSMAT('H1FPM_BD',.TRUE.,'GET_HINF_FPM',TBUF,
+       CALL RFBSSMAT('H1ONB_BD',.TRUE.,'GET_HINF_BD',TBUF,
      &               ISIZE2,LUBSS,IPRINT)
       
       IBUF = 1
@@ -3446,15 +3490,16 @@ C  ... read the block diagonal matrix for extracting the (ee) block only !
       DO I = 1, NFSYM
 
        IF(IPRINT.GE.5) THEN
-          CALL HEADER(
-     & 'GET_HINF_FPM: H1 "k" BLOCK DIAGONAL '//
+         CALL HEADER(
+     & 'GET_HINF_BD: Full H1 ON RKB/"k" BLOCK DIAGONALIZED '//
      & ' Hamiltonian, TBUF ',-1)
-          WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',I
-          CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),
-     &          NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),
+     &        NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
-C      ... copy TBUF -> VMAT
+C  ... extract ee (bottom right block) ,  TBUF -> VMAT
        DO IZ=1,NZ
        DO J=1,NESH(I)
         CALL DCOPY(NESH(I),
@@ -3465,13 +3510,14 @@ C      ... copy TBUF -> VMAT
        ENDDO
 
        IF(IPRINT.GE.5) THEN
-          CALL HEADER(
-     & 'GET_HINF_FPM: H2c "k" (ee)'//
-     & ' Hamiltonian, VMAT ',-1)
-          WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',I
-          CALL PRQMAT(VMAT(IMAT),NESH(I),NESH(I),
-     &          NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
+        CALL HEADER(
+     &  'GET_HINF_BD: Extracted H2c RKB/"k" (ee)'//
+     &  ' Hamiltonian, VMAT ',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+        CALL PRQMAT(VMAT(IMAT),NESH(I),NESH(I),
+     &       NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
 
        IBUF = IBUF + NORB(I)*NORB(I)*NZ
        IMAT = IMAT + NESH(I)*NESH(I)*NZ
@@ -3479,19 +3525,23 @@ C      ... copy TBUF -> VMAT
 
       ISIZE3 = NESH(1)*NESH(1)*NZ
       IF (NFSYM.EQ.2) ISIZE3 = ISIZE3 + NESH(2)*NESH(2)*NZ
-      CALL W2BSSMAT(1,.TRUE.,'H2C_FPM ','GET_HINF_FPM',
+      CALL W2BSSMAT(1,.TRUE.,'H2C_ONBA','GET_HINF_BD',
      &              VMAT,ISIZE3,LUBSS,IPRINT)
       IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
-     &'GET_HINF_FPM: H2c "k" (ee) written to BSSMAT, EOFLABEL renewed '
+     &'GET_HINF_BD: H2c_infinite in ON RKB/"k" (ee) written to BSSMAT'//
+     &' (H2C_ONBA), EOFLABEL renewed '
       ENDIF
+
+C Copy VMAT into TBUF as TBUF is leaving this routine...
+      CALL DCOPY(ISIZE3,VMAT,1,TBUF,1)
 
       CALL QEXIT('GET_HINF_BD')
       RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
-C  /* Deck get_hinf_fpm */      
+C  /* Deck get_hinf_r */      
       SUBROUTINE GET_HINF_R(TBUF,TMAT,VMAT,FACKIN,EIG,IBEIG,FPB,
      &                   YREQ1,GETPCTM,SF_BEG,WORK,LWORK,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -4627,8 +4677,8 @@ C
       CALL RFBSSMAT('U1_ONBAS',.TRUE.,'GETPCTMAT',
      &               TBUF,ISIZE,LUBSS,IPRINT)
       IF (IPRINT.GE.2) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     &  'GETPCTMAT: U1_ONBAS (4c ON->2c ON) read into TBUF.'
+        WRITE(LUPRI,'(/2X,A)')
+     & 'GETPCTMAT: U1_ONBAS (4c ON->2c ON) read into TBUF.'
       ENDIF
 
       IF (FPB) THEN
@@ -9041,89 +9091,6 @@ C  SAVE THE CSC TRANSFOMED INTEGRALS
       CALL QEXIT('AMFI_STUFF')
       RETURN
       END
-
-      subroutine matrix_inversion ( A, NP, IPIV, INDXR, INDXC )
-      !-------------------------------------------------------------------------
-      !
-      !	      Taken from "Numeric recipes".  The original program was
-      !       GAUSSJ which solves linear equations by the Gauss_Jordon
-      !       elimination method.  Only the parts required to invert
-      !	      matrices have been retained.
-      !
-      !	      J.P. Griffith  6/88
-      !
-CMI       A - input/output....
-      !-------------------------------------------------------------------------
-#include "implicit.h" 
-#include "priunit.h"  
-
-C     PARAMETER (NMAX=50)
-
-      DIMENSION A(NP,NP), IPIV(*), INDXR(*), INDXC(*)
-
-      n = np
-
-      DO 11 J=1,N
-        IPIV(J)=0
-11    CONTINUE
-      DO 22 I=1,N
-        BIG=0.
-        DO 13 J=1,N
-          IF(IPIV(J).NE.1)THEN
-            DO 12 K=1,N
-              IF (IPIV(K).EQ.0) THEN
-                IF (ABS(A(J,K)).GE.BIG)THEN
-                  BIG=ABS(A(J,K))
-                  IROW=J
-                  ICOL=K
-                ENDIF
-              ELSE IF (IPIV(K).GT.1) THEN
-CMI             PAUSE 'Singular matrix'
-                CALL QUIT('matrix_inversion: Singular matrix!')
-              ENDIF
-12          CONTINUE
-          ENDIF
-13      CONTINUE
-
-        IPIV(ICOL)=IPIV(ICOL)+1
-        IF (IROW.NE.ICOL) THEN
-          DO 14 L=1,N
-            DUM=A(IROW,L)
-            A(IROW,L)=A(ICOL,L)
-            A(ICOL,L)=DUM
-14        CONTINUE
-        ENDIF
-        INDXR(I)=IROW
-        INDXC(I)=ICOL
-CMI     IF (A(ICOL,ICOL).EQ.0.) PAUSE 'Singular matrix.'
-        IF (A(ICOL,ICOL).EQ.0.) CALL QUIT('Singular matrix.')
-        PIVINV=1./A(ICOL,ICOL)
-        A(ICOL,ICOL)=1.
-        DO 16 L=1,N
-          A(ICOL,L)=A(ICOL,L)*PIVINV
-16      CONTINUE
-        DO 21 LL=1,N
-          IF(LL.NE.ICOL)THEN
-            DUM=A(LL,ICOL)
-            A(LL,ICOL)=0.
-            DO 18 L=1,N
-              A(LL,L)=A(LL,L)-A(ICOL,L)*DUM
-18          CONTINUE
-          ENDIF
-21      CONTINUE
-22    CONTINUE
-      DO 24 L=N,1,-1
-        IF(INDXR(L).NE.INDXC(L))THEN
-          DO 23 K=1,N
-            DUM=A(K,INDXR(L))
-            A(K,INDXR(L))=A(K,INDXC(L))
-            A(K,INDXC(L))=DUM
-23        CONTINUE
-        ENDIF
-24    CONTINUE
-      RETURN
-      END
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck sph_iotc */
       SUBROUTINE SPH_IOTC(HCAR,HSPH,NSPH,IPRINT,WORK,LWORK)
