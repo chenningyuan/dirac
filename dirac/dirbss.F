@@ -1268,10 +1268,11 @@ C      ... by default do not use pure numerical block-diagonalizating approach
 C       this is still TODO ...
 C      BLOCKD = .FALSE.
        IF (BLOCKD) THEN
-        WRITE(LUPRI,*)
-     &  'The block diagonalization method applied (QJACOBI) !'
+        WRITE(LUPRI,'(2X,A)')
+     &  '* The block diagonalization method (QJACOBI) applied !'
        ELSE
-        WRITE(LUPRI,'(2X,A,$)') 'R-equation solving applied :'
+        WRITE(LUPRI,'(2X,A,$)')
+     &  '* R-equation solving applied :'
         IF (YREQ1) THEN
           WRITE(LUPRI,'(A)') ' YR-equation 1 (HJAaJ) '
         ELSE
@@ -1307,24 +1308,24 @@ C      ... to secure that no spin-orbit terms appear
      &           .AND.(.NOT.SPINFR)) THEN
 C        ... DKH2sfB + SO1
         DK2SO1 = .TRUE.
-        WRITE (LUPRI,'(A)')
+        WRITE (LUPRI,'(2X,A)')
      &  '* spin-orbit terms only to the first order -'//
      &  ' (within the DKH2 Hamilt. generation)'//
      &  ' - DKH2sfBSO1 Hamiltonian'
       ELSE IF (.NOT.SPINFR) THEN
          DK2SO1 = .FALSE.
-         WRITE (LUPRI,'(A)')
+         WRITE (LUPRI,'(2X,A)')
      &   '* spin-orbit terms are included'
       END IF
 
       IF (IPX .GE. 1 .AND. SPINFR) THEN  
          SF0 = .TRUE.
-         WRITE (LUPRI,'(A)')
+         WRITE (LUPRI,'(2X,A)')
      & '* Elimination of spin-orbit terms from the Dirac bare '//
      & 'nuclei in RKB/"k" basis (spinfree "BEFORE / AT THE BEGINNING")' 
       ELSE IF(IPX .EQ. 0 .AND. SPINFR) THEN
          SF0 = .FALSE.
-         IF (SPINFR) WRITE (LUPRI,'(A)')
+         IF (SPINFR) WRITE (LUPRI,'(2X,A)')
      & '* Elimination of spin-orbit terms from the 2comp.Ham. '//
      & ' in RKB/"k" basis (spinfree "AFTER / AT THE END")'
       ENDIF
@@ -1361,7 +1362,7 @@ C      .... flag IBSS=010 - activate the ONLYSO1 flag
       ONLYSO1=.FALSE.
       ADD_AMFI=.FALSE.
       IF (IPX.EQ.0.AND.IPY.EQ.1.AND.IPZ.EQ.0) THEN
-         WRITE (LUPRI,'(/A)')
+         WRITE (LUPRI,'(/2X,A)')
      &  '* only SO1 terms (for comparison with AMFI, then quit)'
         ONLYSO1=.TRUE.
 C       ... AMFI gives only SO1 integrals
@@ -1376,38 +1377,38 @@ C       ... AMFI gives only SO1 integrals
 C     ... AMFI gives SO1+MFSO2 integrals,
 C        but these are added to the Hamiltionian with ZERO weight
         IC_AMFI = 3
-        WRITE(LUPRI,'(/A)')
+        WRITE(LUPRI,'(/2X,A)')
      &'* C->S->C transformation + AMFI run(test), but no adding'//
      &' of AMFI integrals.'  
       ELSE IF (IPA.EQ.2) THEN
         ADD_AMFI=.TRUE.
         IC_AMFI = 2
-        WRITE(LUPRI,'(/A)')
+        WRITE(LUPRI,'(/2X,A)')
      &'* AMFI: MFSSO2 terms (spin-same orbit only) added.'  
       ELSE IF (IPA.EQ.3) THEN
         ADD_AMFI=.TRUE.
         IC_AMFI = 3
-        WRITE(LUPRI,'(/A)')
+        WRITE(LUPRI,'(/2X,A)')
      &'* AMFI: MFSO2 terms (both spin-same&spin-other orbit) added.'  
       ELSE IF (IPA.EQ.4) THEN
         ADD_AMFI=.TRUE.
         IC_AMFI = 4
-        WRITE(LUPRI,'(/A)')
+        WRITE(LUPRI,'(/2X,A)')
      &'* AMFI: SO1+MFSSO2 terms (only spin-same orbit) added.'
       ELSE IF (IPA.EQ.5) THEN
         ADD_AMFI=.TRUE.
         IC_AMFI = 5
-        WRITE(LUPRI,'(/A)')
+        WRITE(LUPRI,'(/2X,A)')
      &'* AMFI: SO1+MFSO2 terms (spin-same&spin-other orbit) added.'  
       ELSE IF (IPA.EQ.6) THEN
         ADD_AMFI=.TRUE.
         IC_AMFI = 1
-        WRITE(LUPRI,'(/A)')
+        WRITE(LUPRI,'(/2X,A)')
      &'* AMFI: SO1 terms added.'  
       ENDIF
 
       IF (.NOT.ADD_AMFI) THEN
-        WRITE (LUPRI,'(A)')
+        WRITE (LUPRI,'(2X,A)')
      &  '* AMFI contribution is NOT included.'
       ENDIF
 
@@ -1418,12 +1419,12 @@ C     IF (.NOT.SPINFR.AND..NOT.SAVESO1.AND.IPZ.EQ.9) THEN
       IF (.NOT.SAVESO1.AND.IPZ.EQ.9) THEN
        GETPCTM = .TRUE. 
        WRITE(LUPRI,'(2X,A)')
-     & '...prepare the picture-change transformation matrixes'
+     & '* Prepare the picture-change transformation matrixes'
        IF (SPINFR) WRITE(LUPRI,'(4X,A)')
-     & '   - special case - spin-free  '
+     & '  - special case - spin-free  '
       ELSE
        WRITE(LUPRI,'(2X,A)')
-     & '...do NOT make the picture-change transformation matrix !'
+     & '* Do NOT prepare the picture-change transformation matrix !'
       ENDIF
 
 C     ... consistency checks - do not repeat 1-el SO interactions !!!
@@ -3272,7 +3273,6 @@ C         ... do transform it to the "k" basis into TBUF !
       RETURN
       END
 
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck get_hinf_bd */      
       SUBROUTINE GET_HINF_BD(TBUF,TMAT,VMAT,IBEIG,
@@ -3447,7 +3447,7 @@ C  ... save the picture change transformation matrix, TBUF...
       ENDIF
 
 C     ... extract U1_ONBAS, TMAT -> TBUF
-      INAT = 1
+      IMAT = 1
       IBUF = 1
       DO I=1,NFSYM
        DO IZ=1,NZ
@@ -3459,12 +3459,12 @@ C     ... extract U1_ONBAS, TMAT -> TBUF
        ENDDO
        ENDDO
        IF (IPRINT.GE.6) THEN
-         CALL HEADER(
-     &   'GET_HINF_BD: Final U1(+e) picture change '//
-     &   'transformation matrix in ON RKB/"k" basis, TBUF',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TBUF(IBUF),NORB(I),NESH(I),NORB(I),NESH(I),
+        CALL HEADER(
+     &  'GET_HINF_BD: Extracted U1(+e) picture change '//
+     &  'transformation matrix 4c->2c ON RKB/"k" basis, TBUF',-1)
+        WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &  '*** Fermion corep ',I,'/',NFSYM
+        CALL PRQMAT(TBUF(IBUF),NORB(I),NESH(I),NORB(I),NESH(I),
      &                NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
        IMAT = IMAT + NORB(I)*NORB(I)*NZ
@@ -3502,10 +3502,10 @@ C  ... read the block diagonal matrix for extracting the (ee) block only !
 C  ... extract ee (bottom right block) ,  TBUF -> VMAT
        DO IZ=1,NZ
        DO J=1,NESH(I)
-        CALL DCOPY(NESH(I),
-     &    TBUF(IBUF+(NORB(I)*NPSH(I))+NESH(I)+
-     &        (IZ-1)*NORB(I)*NORB(I)+(J-1)*NORB(I)),1,
-     &    VMAT(IMAT+(IZ-1)*NESH(I)*NESH(I)+(J-1)*NESH(I)),1)
+         CALL DCOPY(NESH(I),
+     &   TBUF(IBUF+(NORB(I)*NPSH(I))+NESH(I)+
+     &              (IZ-1)*NORB(I)*NORB(I)+(J-1)*NORB(I)),1,
+     &   VMAT(IMAT+(IZ-1)*NESH(I)*NESH(I)+(J-1)*NESH(I)),1)
        ENDDO
        ENDDO
 
@@ -3513,8 +3513,8 @@ C  ... extract ee (bottom right block) ,  TBUF -> VMAT
         CALL HEADER(
      &  'GET_HINF_BD: Extracted H2c RKB/"k" (ee)'//
      &  ' Hamiltonian, VMAT ',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
+        WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &  '*** Fermion corep ',I,'/',NFSYM
         CALL PRQMAT(VMAT(IMAT),NESH(I),NESH(I),
      &       NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
@@ -4706,7 +4706,7 @@ C        ...
         IF (IPRINT.GE.6) THEN
           CALL HEADER(
      & 'GETPCTMAT: Picture change transf.matrix '//
-     & ' H4c in ON -> H2c in ON',-1)
+     & 'ON RKB/"k" H4c -> H2c, U1_ONBAS ',-1)
           WRITE(LUPRI,'(3X,A,I1,A,I1)')
      & '*** Fermion corep ',I,'/',NFSYM
           CALL PRQMAT(TBUF(IBUF),NORB(I),NESH(I),
