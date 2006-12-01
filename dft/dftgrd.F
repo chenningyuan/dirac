@@ -51,9 +51,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dftcom.h"
 #include "symmet.h"
 #include "ccom.h"
-      PARAMETER (MAXCEN=100)
+Caspg, removing hardcoded limit and infoa common
+C     PARAMETER (MAXCEN=100)
       PARAMETER (D0=0.0D0)
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
 #include "dftwrk.h"
 
@@ -70,33 +71,20 @@ C     ********************************
 C     ***** Set up common blocks *****
 C     ********************************
 C
-C     INFOA
+C     INFOA has been replaced
 C     =====
-      NAT = 0
-      NUM = NBASIS
-      DO ICENT = 1, NUCIND
-         MULCNT = ISTBNU(ICENT)
-         ZCNT   = CHARGE(ICENT)
-         IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
-           DO ISYMOP = 0, MAXOPR         
-           IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-             NAT = NAT + 1
-             ZAN(NAT) = ZCNT
-             C(1,NAT) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-             C(2,NAT) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-             C(3,NAT) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-           ENDIF
-           ENDDO
-         ENDIF
-      ENDDO
+
+      CALL MEMGET('REAL',KZAN,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KC  ,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL SET_GRID_INFO(NAT,NUM,WORK(KZAN),WORK(KC))
 C
 C     DFTWRK
 C     ======
 C
-      RNDMAX = 20.0D0
-      RADERR = RADINT
+      RNDMAX  = 20.0D0
+      RADERR  = RADINT
       NSCHEME = ANGINT
-      LEBMIN = ANGMIN
+      LEBMIN  = ANGMIN
 
 C
 C     *******************************************
@@ -104,10 +92,10 @@ C     ***** Prepare arguments for CONSTRUCT *****
 C     *******************************************
 C
 CTROND      IBIG  = 100000
-      IBIG  = 1000000
-      IVECL = 100
-      NNAT  = NAT*(NAT-1)/2
-      N2AT = NAT*NAT 
+      IBIG    = 1000000
+      IVECL   = 100
+      NNAT    = NAT*(NAT-1)/2
+      N2AT    = NAT*NAT 
 
       CALL MEMGET('REAL',KSP   ,4*NUM    ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KX8   ,IBIG     ,WORK,KFREE,LFREE)
@@ -148,7 +136,8 @@ C
      &              WORK(KXMUJN),WORK(KXMUJ2),
      &              WORK(KRIJ),WORK(KAIJ),IVECL,IBIG,
      &              WORK(KRBC),WORK(KRVEC),
-     &              WORK(KNUCO),WORK(KAA),DMAT,WORK(KCHIMT),LUQUAD,
+     &              WORK(KNUCO),WORK(KAA),DMAT,WORK(KCHIMT),
+     &              NAT,NUM,WORK(KZAN),WORK(KC),LUQUAD,
      &              IPRINT,WORK(KFREE),LFREE)
 C
 C     Close unit LUQUAD
@@ -170,6 +159,8 @@ C
       CALL TIMTXT('>>>> Time used in DFTGRD:',TIMGRD,LUPRI)
       WRITE (LUPRI,'(1X)')
 
+C call to memrel here?
+
       RETURN
       END
 
@@ -178,7 +169,8 @@ C                                                                      C
 C  /* Deck construc */
       SUBROUTINE CONSTRUC(WRKSP,X8,Y8,Z8,WT8,PSMU,RJ,ACCUM,XMUIJN,
      &                    XMUIJ2,RIJ,AIJ,IVECL,IBIG,RBC,RVEC,
-     &                    NUCORB,AA,DMAT,CHIMT,LUQUAD,IPRINT,WORK,LWORK)
+     &                    NUCORB,AA,DMAT,CHIMT,
+     &                    NAT,NUM,ZAN,C,LUQUAD,IPRINT,WORK,LWORK)
 C                                                                      C
 C      Creates a quadrature grid and writes it to disk                 C
 C      Original version by C.W.Murray. Rewritten by                    C
@@ -197,12 +189,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL SWITCH
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
 
-      PARAMETER (MAXCEN=100)
+Caspg, removing hardcoded limit and infoa common
+C     PARAMETER (MAXCEN=100)
       CHARACTER SPDCAR*1
 
 #include "dftwrk.h"
 
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+      DIMENSION ZAN(*), C(*)
 
 #include "dummy.h"
 #include "maxaqn.h"
@@ -251,7 +245,8 @@ C     exist.
 C
       IF(ATSIZE) THEN
          CALL TITLER('Density based atomic size estimates','*',122)
-         CALL GETCHI(DMAT,CHIMT,IPRINT,WORK,LWORK)
+C        CALL GETCHI(DMAT,CHIMT,IPRINT,WORK,LWORK)
+         CALL GETCHI(DMAT,CHIMT,NAT,C,IPRINT,WORK,LWORK)
          CALL HEADER('Density based relative atomic sizes',-1)
          CALL OUTPUT(CHIMT,1,NAT,1,NAT,NAT,NAT,1,LUPRI)
          WRITE(LUPRI,*)
@@ -292,9 +287,15 @@ C
       DO 7 INA=1,NAT
       DO 7 JNA=1,INA-1
           ITEMP=ITEMP+1
-          RIJ(ITEMP) = 1.0D0/(DSQRT((C(1,INA)-C(1,JNA))**2
-     &                             +(C(2,INA)-C(2,JNA))**2
-     &                             +(C(3,INA)-C(3,JNA))**2))
+          istride1 = ina 
+          jstride1 = jna 
+          istride2 = ina + nat
+          jstride2 = jna + nat
+          istride3 = ina + 2*nat
+          jstride3 = jna + 2*nat
+          RIJ(ITEMP) = 1.0D0/(DSQRT((C(istride1)-C(jstride1))**2
+     &                             +(C(istride2)-C(jstride2))**2
+     &                             +(C(istride3)-C(jstride3))**2))
           RBC(INA,JNA) = 1.0D0/RIJ(ITEMP)
           RBC(JNA,INA) = 1.0D0/RIJ(ITEMP)
           CHI = CHIMT(INA,JNA)
@@ -418,9 +419,9 @@ C
             DO 30 IQ = 1, NANG
                IPT   = IPT + 1
                INDEX = INDEX + 1
-               X8(INDEX)  = XANG(IQ)*RNODE+C(1,NATOM)
-               Y8(INDEX)  = YANG(IQ)*RNODE+C(2,NATOM)
-               Z8(INDEX)  = ZANG(IQ)*RNODE+C(3,NATOM)
+               X8(INDEX)  = XANG(IQ)*RNODE+C(NATOM)
+               Y8(INDEX)  = YANG(IQ)*RNODE+C(NATOM+nat)
+               Z8(INDEX)  = ZANG(IQ)*RNODE+C(NATOM+2*nat)
                WT8(INDEX) = RWT*ANGWT(IQ)
 C
 C              Becke partitioning
@@ -429,6 +430,7 @@ C
                IF (IPT.EQ.IVECL) THEN
                   CALL BWGHT(RJ,PSMU,RIJ,AIJ,APASC,XPASC,
      &                       X8(NDEX),Y8(NDEX),Z8(NDEX),WT8(NDEX),
+     &                       NAT,NUC,ZAN,C,
      &                       ACCUM,XMUIJN,XMUIJ2,IVECL,IPT,NTRANS,
      &                       NATOM)
                   NDEX   = NDEX  + IPT
@@ -446,7 +448,8 @@ C
          IF (IPT.NE.0) THEN
             JPT = IPT
             CALL BWGHT(RJ,PSMU,RIJ,AIJ,APASC,XPASC,
-     &                 X8(NDEX),Y8(NDEX),Z8(NDEX),WT8(NDEX),ACCUM,
+     &                 X8(NDEX),Y8(NDEX),Z8(NDEX),WT8(NDEX),
+     &                 NAT,NUC,ZAN,C,ACCUM,
      &                 XMUIJN,XMUIJ2,IVECL,IPT,NTRANS,NATOM)
             NDEX   = NDEX   + IPT
 CVT         NTOTAL = NTOTAL + IPT
@@ -778,6 +781,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck bweght */                                                   C
       SUBROUTINE BWGHT(RJ,PSMU,RIJ,AIJ,APASC,XPASC,X,Y,Z,WT,
+     &                 NAT,NUC,ZAN,C,
      &                 ACCUM,XMUIJN,XMUIJ2,IVECL,IPT,NTRANS,NATOM)
 C                                                                      C
 C      Written by C. W. Murray                                         C
@@ -788,24 +792,26 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "implicit.h" 
 
-      PARAMETER (MAXBFN=1000)
-      PARAMETER (MAXCEN=100)
+C     PARAMETER (MAXBFN=1000)
+Caspg, removing hardcoded limit and infoa common
+C     PARAMETER (MAXCEN=100)
       DIMENSION RJ(IVECL,NAT),
      &          PSMU(IVECL,NAT),
      &          RIJ(NAT*(NAT-1)/2),
      &          AIJ(NAT*(NAT-1)/2),
      &          X(IVECL),Y(IVECL),Z(IVECL),WT(IVECL),
-     &          XMUIJN(IVECL),XMUIJ2(IVECL),ACCUM(IVECL),XPASC(20)
+     &          XMUIJN(IVECL),XMUIJ2(IVECL),ACCUM(IVECL),XPASC(20),
+     &          ZAN(*),C(*)
 
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 C
 C     WORK OUT THE WEIGHT FUNCTION BY BECKE PARTITIONING
 C
       DO 100 INA=1,NAT
       DO 100 M=1,IPT
-         RJ(M,INA)=DSQRT((C(1,INA)-X(M))**2
-     &                  +(C(2,INA)-Y(M))**2
-     &                  +(C(3,INA)-Z(M))**2)
+         RJ(M,INA)=DSQRT((C(INA)-X(M))**2
+     &                  +(C(INA+nat)-Y(M))**2
+     &                  +(C(INA+2*nat)-Z(M))**2)
          PSMU(M,INA)=1.0D0
   100 CONTINUE
 
@@ -1049,7 +1055,7 @@ C     Newton-Raphson search
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gt1wt  */
-      SUBROUTINE GETCHI(DMAT,CHIMT,IPRINT,WORK,LWORK)
+      SUBROUTINE GETCHI(DMAT,CHIMT,NAT,C,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C     Get relative atomic size estimates by analyzing atomic
@@ -1062,10 +1068,12 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION DMAT(*),WORK(LWORK)
+      DIMENSION C(*)
 C
-      PARAMETER(MAXCEN = 100)
+Caspg, removing hardcoded limit and infoa common
+C     PARAMETER(MAXCEN = 100)
 C
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 C
 #include "mxcent.h"
 #include "dcbgen.h"
@@ -1105,7 +1113,7 @@ C
 C
 C     Get atomic size estimates
 C
-      CALL CHI1(CHIMT,WORK(KDMTAO),WORK(KGAO),WORK(KSMAT),
+      CALL CHI1(CHIMT,NAT,C,WORK(KDMTAO),WORK(KGAO),WORK(KSMAT),
      &     WORK(KASMAT),WORK(KICLAB),WORK(KCOOR),IPRINT,WORK,KFREE,
      &     LFREE)
 C
@@ -1123,8 +1131,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gt1rh1 */
-      SUBROUTINE CHI1(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,COORD,IPRINT,
-     &     WORK,KFREE,LFREE)
+      SUBROUTINE CHI1(CHIMT,NAT,C,DMAT,GAO,SMAT,ASMAT,ICLAB,COORD,
+     &     IPRINT,WORK,KFREE,LFREE)
 C
 C     Get atomic size estimates by analyzing pairwise partial densities
 C     in one dimension, along bonds.
@@ -1144,9 +1152,11 @@ C***********************************************************************
 #include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
+Caspg, removing hardcoded limit and infoa common
 C
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 C
+      DIMENSION C(*)
 #if defined (VAR_G77) || defined (SYS_SX)
 C     g77 fails in the complicated dimension statement that was used
 C     in the original version, make things easier for the compiler with an
@@ -1173,12 +1183,12 @@ C
       DO 10 I = 1,NAT
          DO 20 J = 1,I-1
             CHIMT(I,J) = 1.0D0
-            COORD(1,1) = C(1,I)
-            COORD(2,1) = C(2,I)
-            COORD(3,1) = C(3,I)
-            COORD(1,2) = C(1,J)
-            COORD(2,2) = C(2,J)
-            COORD(3,2) = C(3,J)
+            COORD(1,1) = C(I)
+            COORD(2,1) = C(I+nat)
+            COORD(3,1) = C(I+nat*2)
+            COORD(1,2) = C(J)
+            COORD(2,2) = C(J+nat)
+            COORD(3,2) = C(J+nat*2)
             CALL CHI2(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,I,J,COORD,
      &              IPRINT,WORK(KFREE),LFREE)
  20      END DO
@@ -1200,14 +1210,15 @@ C***********************************************************************
 #include "priunit.h"
 
       PARAMETER(D0=0.0D0,D2=2.0D0)
-      PARAMETER(MAXCEN = 100)
+Caspg, removing hardcoded limit and infoa common
+C     PARAMETER(MAXCEN = 100)
 
 #include "codata.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "dcbbas.h"
 C
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 #if defined (VAR_G77) || defined (SYS_SX)
 C     g77 fails in the complicated dimension statement that was used
 C     in the original version, make things easier for the compiler with an
@@ -1509,4 +1520,36 @@ C
         BRAGG = RAD(NCHARGE)
       ENDIF
       RETURN
+      END
+
+
+      SUBROUTINE SET_GRID_INFO(NAT,NUM,ZAN,C)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "symmet.h"
+#include "ccom.h"
+      DIMENSION ZAN(*), C(*)
+#include "ibtfun.h"
+      NAT = 0
+      NUM = NBASIS
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         ZCNT   = CHARGE(ICENT)
+         IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
+           DO ISYMOP = 0, MAXOPR
+           IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+             NAT = NAT + 1
+             ZAN(NAT) = ZCNT
+             C(NAT) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+             C(NAT+nucdep)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+            C(NAT+nucdep*2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+           ENDIF
+           ENDDO
+         ENDIF
+      ENDDO
       END
