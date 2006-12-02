@@ -4,6 +4,10 @@
 # Andreas Hesselmann <andreas@theochem.uni-duesseldorf.de>, 2003
 # Adapted to new density property input and unrestricted functionals
 # by Pawel Salek.
+#
+# comment (radovan 02/12/2006):
+#   i had problems to run it with my version of
+#   maxima and had to change "BLOCK" to "block"
 #----------------------------------
 # needs: maxima 
 # usage: codegen.py 'file.max'
@@ -221,6 +225,7 @@ def read_maximaout(outfil):
         if data[0]=="\n": continue
         if len(data)>=2:
             if len(data[1])>=5:
+              # if data[1][0:5]=="block":
                 if data[1][0:5]=="BLOCK":
                     block=1
                     expr=""
