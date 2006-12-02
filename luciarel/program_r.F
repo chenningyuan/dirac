@@ -76,8 +76,10 @@ C
 *
 *. Common block for communicating with sigma
 #include "cands.inc"
-*
 #include "spinfo.inc"
+*
+#include "include/dgroup.h"
+*
 *./CECORE/
       COMMON/CECORER/ECORE
 *
@@ -123,15 +125,25 @@ C
 *
       ECORE = ECORE_KRMC
       NDET = XISPSM(ISM,ISPC)
+*
 *. real or complex eigenvectors
       IF(IRELACI.EQ.0) THEN
 *. real
         IRC = 1
       ELSE
-*. Well, complex
         IRC = 2
+*. Well, generally complex, but
+        if (NZ.eq.1) then
+*  quaternion real
+          IRC = 1
+        end if
       END IF
-      WRITE(6,*) ' Number of determinants/combinations  ',NDET
+      write(6,*)
+      if (IRELACI.eq.1.and.NZ.eq.1) then
+        write(6,*) ' Quaternion real relativistic CI '
+      end if
+*
+      write(6,*) ' Number of determinants/combinations  ',NDET
 *
 *.Transfer to CANDS
       ICSM = ISM
@@ -144,8 +156,7 @@ C
       ELSE
         NVAR = NCSASM(ISM)
       END IF
-      IF(IPRNT.GE.5)
-     &WRITE(6,*) '  NVAR in GASCI ', NVAR
+      IF (IPRNT.GE.5) WRITE(6,*) '  NVAR in GASCI ', NVAR
 *
 *. Allocate memory for diagonalization
       IF(ICISTR.EQ.1) THEN
@@ -204,7 +215,7 @@ C
      &               SIGDEN_ROUTE,IRECO)
 *. End of real part
         CALL ITODS(-1,1,-1,LUDIA)
-        IF(IRC.EQ.2) THEN
+        IF (IRC.EQ.2) THEN
 * Diagonal once again- for the imaginary part
           IRECO = 2
           CALL GASDIAT_REL(WORK(KVEC1),LUDIA,ECOREP,ICISTR,IHAM12,
@@ -248,6 +259,10 @@ C
       ELSE
 *. Well, complex
         IRC = 2
+        if (NZ.eq.1) then
+*  quaternion real
+          IRC = 1
+        end if
       END IF
 *
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -255,11 +270,6 @@ C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
             call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),LUC,LUHC,
      &                       WORK(KT_CC),1)
-            call rmemchk
-C           print*,'C VECTOR'
-C           call wrtvcdc(WORK(KVEC1),LUC,1,-1)
-C           print*,'SIGMA VECTOR'
-C           call wrtvcdc(WORK(KVEC2),LUHC,1,-1)
           else
 *
 * Allocate some scratch space
@@ -288,9 +298,9 @@ C           call wrtvcdc(WORK(KVEC2),LUHC,1,-1)
      &     E_CONV,C_CONV,ICLSSEL,
      &     NOCCLS,
      &     LBLOCK,IRC,IDCOMH,IHAM12,SIGDEN_ROUTE)
+*
       EREF = EROOT(IRFROOT)
-CTF   WRITE(6,*) ' Memcheck after CIEIG5'
-CTF   CALL RMEMCHK
+*
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
           end if
         end if
@@ -302,7 +312,7 @@ CTF   CALL RMEMCHK
       call rewino(LUC)
       do JROOT=1,NROOT,1
         call rewino(LUSC61)
-        call copvcdc(LUC,LUSC61,WORK(KVEC2),0,LBLK)
+        call copvcdc(LUC,LUSC61,WORK(KVEC2),0,IRC,LBLK)
         call rewino(LUSC61)
         WRITE(6,*)
         WRITE(6,'(1H ,A,I3)')
@@ -314,7 +324,7 @@ CTF   CALL RMEMCHK
 *
         call gasana_rel(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
      &                  WORK(KPCBLTP),LUSC61,LUSC37,
-     &                  ICISTR)
+     &                  ICISTR,IRC)
       end do
 *
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -383,56 +393,69 @@ C           write(6,*) '  I hope you have set SIGDEN_ROUTE = SIGDEN!'
 C
 C  MCSCF: C vectors are placed to files outside in KR_LUCI_IO.
 C
-c           call copvcdc(LUC,LUHC,WORK(KVEC2),1,LBLK)
+c           call copvcdc(LUC,LUHC,WORK(KVEC2),1,IRC,LBLK)
 c           do IRT=1,JROOT-2,1
-c             call copvcdc(LUC,LUHC,WORK(KVEC2),0,LBLK)
+c             call copvcdc(LUC,LUHC,WORK(KVEC2),0,IRC,LBLK)
 c           end do
 c           rewind(LUSC61)
 c           rewind(LUSC62)
-c           call copvcdc(LUC,LUSC61,WORK(KVEC2),0,LBLK)
-c           call copvcdc(LUSC61,LUSC62,WORK(KVEC2),1,LBLK)
+c           call copvcdc(LUC,LUSC61,WORK(KVEC2),0,IRC,LBLK)
+c           call copvcdc(LUSC61,LUSC62,WORK(KVEC2),1,IRC,LBLK)
 c         else if (JROOT.eq.1) then
-c           call copvcdc(LUC,LUSC61,WORK(KVEC2),1,LBLK)
-c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,LBLK)
+c           call copvcdc(LUC,LUSC61,WORK(KVEC2),1,IRC,LBLK)
+c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,IRC,LBLK)
           end if
 *
           if (IPRDEN.ge.500) then
             write(6,*) 'Current vector ',JROOT,'  on unit ',LUSC61
-            call wrtvcdc(WORK(KVEC1),LUSC61,1,LBLK)
+            call wrtvcdc(WORK(KVEC1),LUSC61,1,IRC,LBLK)
             write(6,*) 'Current vector ',JROOT,'  on unit ',LUSC62
-            call wrtvcdc(WORK(KVEC2),LUSC62,1,LBLK)
+            call wrtvcdc(WORK(KVEC2),LUSC62,1,IRC,LBLK)
           end if
 *
           if (SIGDEN_ROUTE.eq.'TRADIT') then
             call dbg_rho(WORK(KVEC1),WORK(KVEC2),INONREL,IDEN12,JROOT)
           else if (SIGDEN_ROUTE.eq.'SIGDEN') then
+*
+            if (CIRUN.eq.'DENS1 ') then
+              NTERMS = N1ELINT
+            else if (CIRUN.eq.'DENS2 ') then
+              NTERMS = NALLINT
+            end if
+*
 * Erase T amplitudes from sigma calculation
             ZERO = 0.D0
-            call setvec(WORK(KT_CC),ZERO,NALLINT)
+            call setvec(WORK(KT_CC),ZERO,NTERMS)
+*
+            if (CIRUN.eq.'DENS1 ') then
+              print*,'CHECKING MEMORY AFTER ZEROING ...'
+              print*,'NTERMS ',NTERMS
+              call rmemchk
+            end if
 *
 * Compute density matrix elements
             call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),LUSC61,LUSC62,
      &                       WORK(KT_CC),2)
 *
-            call memmar(KINDEX,NALLINT*4,'ADDL  ',1,'KINDEX')
-            call read_indices(WORK(KINDEX),NALLINT)
+            call memmar(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
+            call read_indices(WORK(KINDEX),NTERMS)
 *
+            IPRDEN = 1
             if (IPRDEN.ge.10) then
               write(6,*) '======================================='
               write(6,'(A,I4)') ' Density matrix for root ',JROOT
               write(6,*) '======================================='
-              IRC_D = 2
               call wrtdens(WORK(KT_CC),WORK(KINDEX),WORK(KLIHIND),
      &                     WORK(KSIGNNHX),NTOOB2,WORK(KLABEXTP),
-     &                     WORK(KLOP_REO),WORK(KSIOPREO),IRC_D)
+     &                     WORK(KLOP_REO),WORK(KSIOPREO),IRC)
             end if
 *
 * Transfer density matrices to KRMC format
-            IRC_D = 2
+            call rmemchk
             call trnsfdens(F1,F2,WORK(KT_CC),
      &                    WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
      &                    WORK(KSIGNNHX),WORK(KLOP_REO),WORK(KSIOPREO),
-     &                    IRC_D,NTOOB2,NIRREP,IPRDEN)
+     &                    IRC,NTOOB2,IPRDEN)
 *
           else
             write(6,*) 'SIGDEN_ROUTE with unallowed value in gasci.'

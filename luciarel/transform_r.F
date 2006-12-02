@@ -1677,6 +1677,8 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 #include "oper.inc"
 #include "ctcc.inc"
 *
+#include "dgroup.h"
+*
       character*72 ENVIRO
       character*6 SIGDEN_ROUTE
       character*1 COORD
@@ -1816,14 +1818,12 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
         else
           IRIMLT = 2
         end if
-        IRIMLT = 2
-* !! Still enforced
         NALLINT = LEN_T_VEC * IRIMLT
         write(6,*) ' Allocating for ',NALLINT,' integrals.'
         call memmar(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
 *
 * Diagonal integrals
-        NDIAMINT = 2*NDIM_TOT + 3*((2*NDIM_TOT)**2)
+        NDIAMINT = (2*NDIM_TOT + 3*((2*NDIM_TOT)**2)) * IRIMLT/2
         call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
         call memmar(KPOSDIA,NDIAMINT,'ADDS  ',1,'POSDIA')
         write(6,*) ' Allocating for ',NDIAMINT,' diagonal integrals.'

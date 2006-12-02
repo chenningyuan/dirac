@@ -286,8 +286,10 @@ C        hjaaj Sep 2005: However, do NOT transform orbitals to NO.
 C        (not yet, because not used now, to do: transform and write to KRMCSCF)
 C
          IPRGNO = MAX(IPROPT,2)
-         CALL RGETNO(WORK(KCREF),WORK(KOCCNO),WORK(KUNO),WORK(KCMO),
-     &            .FALSE.,MOISNO,IPRGNO,WORK,KFREE,LFREE)
+         IF ( OPT_CIPROGRAM .NE. 'LUCIAREL' ) THEN
+           CALL RGETNO(WORK(KCREF),WORK(KOCCNO),WORK(KUNO),WORK(KCMO),
+     &                 .FALSE.,MOISNO,IPRGNO,WORK,KFREE,LFREE)
+         END IF
 C
 C        Write natural orbitals back to KRMCSCF
 C

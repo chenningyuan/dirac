@@ -3335,8 +3335,8 @@ C?       WRITE(6,*) ' Perturbative solver '
 C?       WRITE(6,*) ' Variational  solver '
        END IF
 *
-C      IPRT = 6000
-       IPRT = IPRTXX
+       IPRT = 000
+c      IPRT = IPRTXX
 *
        IOLSTM = 1
        IF(IPRT.GT.1.AND.IOLSTM.NE.0)
@@ -3590,6 +3590,7 @@ CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
 *. Loop over iterations
 * ======================
 *
+         print*,'NP1,NP2,NQ ',NP1,NP2,NQ
  1000 CONTINUE
         CALL GETTIM(CPUITR1,WALLITR1)
         write(6,*)
@@ -3650,6 +3651,7 @@ CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
 *. 1.2 : Multiply with inverse Hessian approximation to get new directio
 * =====================================================================
 *. (H0-E) -1 *(HX-EX) on LU6
+         print*,'NP1,NP2,NQ ',NP1,NP2,NQ
          IF( .NOT. RTCNV(IROOT) ) THEN
            IF(IPRT.GE.3) THEN
              WRITE(6,*) ' Correction vector added for root',IROOT
@@ -3668,6 +3670,7 @@ C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG)
              WRITE(6,*) '  (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU6,1,LBLK)
            END IF
+        print*,'IOLSTM ',IOLSTM
 *
            IF(IOLSTM .NE. 0 ) THEN
 * add Olsen correction if neccessary
@@ -3714,7 +3717,7 @@ C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG)
             END IF
 *. 1.3 Orthogonalize to all previous vectors
 *.. Vectors on LU1
-
+*
            CALL REWINE( LU1 ,LBLK)
            DO IVEC = 1, NROOT
                CALL REWINO(LU6)
@@ -4363,14 +4366,14 @@ C     CALL PRSYM(XJEP(1000),NVEC)
         EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
       END DO
 *
-       IF(IPRT .GE. 3 ) THEN
-         WRITE(6,'(A,I4)') ' Eigenvalues of iteration ..', ITER
-         WRITE(6,'(5F18.13)')
-     &   ( EIG(ITER,IROOT)+EIGSHF,IROOT=1,NROOT)
-         WRITE(6,'(A)') ' Norm of Residuals (Previous it) '
-         WRITE(6,'(5F18.13)')
-     &   ( RNRM(ITER-1,IROOT),IROOT=1,NROOT)
-       END IF
+      IF(IPRT .GE. 3 ) THEN
+        WRITE(6,'(A,I4)') ' Eigenvalues of iteration ..', ITER
+        WRITE(6,'(5F18.13)')
+     &  ( EIG(ITER,IROOT)+EIGSHF,IROOT=1,NROOT)
+        WRITE(6,'(A)') ' Norm of Residuals (Previous it) '
+        WRITE(6,'(5F18.13)')
+     &  ( RNRM(ITER-1,IROOT),IROOT=1,NROOT)
+      END IF
 *
       IF( IPRT  .GE. 5 ) THEN
         WRITE(6,*) ' Projected matrix and eigen pairs '

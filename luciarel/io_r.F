@@ -168,7 +168,7 @@ C
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE COPVCDC(LUIN,LUOUT,VEC1,IREW,LBLK)
+      SUBROUTINE COPVCDC(LUIN,LUOUT,VEC1,IREW,IRI,LBLK)
 *
 * Copy complex vector from LUIN to LUOUT
 *
@@ -183,8 +183,11 @@ C
 *
 *. Real part
       CALL COPVCD_REL(LUIN,LUOUT,VEC1,0,LBLK)
+*
+      if (IRI.eq.2) then
 *. Imaginary part
-      CALL COPVCD_REL(LUIN,LUOUT,VEC1,0,LBLK)
+        CALL COPVCD_REL(LUIN,LUOUT,VEC1,0,LBLK)
+      end if
 *
       RETURN
       END
@@ -337,7 +340,7 @@ C  avoid unit 66. Used in DALTON
 *
 *    Timo Fleig, March 16, 2002
 *
-      subroutine savevcdc(VECT,SCR,LU,IRILP_LOC,IPRNT)
+      subroutine savevcdc(VECT,SCR,LU,IRILP,IPRNT)
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
@@ -347,7 +350,7 @@ C  avoid unit 66. Used in DALTON
 *
       dimension VECT(*),SCR(*)
 *
-      NTESTL = 000
+      NTESTL = 00
       NTEST = max(NTESTL,IPRNT)
 *
       ZERO = 0.D0
@@ -374,9 +377,11 @@ C  avoid unit 66. Used in DALTON
 *
       JOFF = 1
       LENGTH = 0
-      IRILP_GLB = 2
 *
-      DO IRI = 1,IRILP_GLB,1
+      DO IRI = 1,IRILP,1
+* Write end of vector mark between real and imaginary part.
+        if (IRI.eq.2) call itods(-1,1,-1,LU)
+*
         JBATABS = 0
         if (NTEST.ge.10) write(6,*) '  REAL/IMAG = ',IRI
         DO IMK2 = 1, NMK2VAL
@@ -410,19 +415,7 @@ C  avoid unit 66. Used in DALTON
                 write(6,*) '     Block length:   ',LEN_V
               end if
               call itods(LEN_V,1,-1,LU)
-              if (IRI.eq.2.and.IRILP_GLB.ne.IRILP_LOC) then
-* Write zeroes to imaginary vector parts:
-                if (NTEST.ge.10) then
-                  write(6,*) ' Writing zero block of length '
-                  write(6,*) LEN_V,' to vector '
-                end if
-                do ISCR = 1,LEN_V,1
-                  SCR(ISCR) = ZERO
-                end do
-                call todsc(SCR,LEN_V,-1,LU)
-              else
-                call todsc(VECT(JOFF+IOFF-1),LEN_V,-1,LU)
-              end if
+              call todsc(VECT(JOFF+IOFF-1),LEN_V,-1,LU)
             end do
             JOFF = JOFF + LS
 *
@@ -430,9 +423,6 @@ C  avoid unit 66. Used in DALTON
 *         ^ End loop over S batches of given MK2 value
         end do
 *       ^ End of loop over IMK2
-*
-* Write end of vector mark between real and imaginary part.
-        call itods(-1,1,-1,LU)
 *
       end do
 *     ^ End of loop over IRI

@@ -202,7 +202,7 @@ C     WRITE(6,*) ' MEMCHECK passed '
 *                                                                     *
 ***********************************************************************
       SUBROUTINE ALG_ROUTERX(ILOC,IROC,NOP,IOP_TYP,IOP_AC,IOP_REO,
-     &                      SIGN)
+     &                       SIGN)
 *
 * Decide route for calculating <ILOC! operator string !ROC>
 * with smallest amount of operations/storage

@@ -441,7 +441,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
 *                                                                     *
 ***********************************************************************
 *
-      SUBROUTINE GASANA_REL(C,NBLOCK,IBLOCK,IBLTP,LUC,LUSCR,ICISTR)
+      SUBROUTINE GASANA_REL(C,NBLOCK,IBLOCK,IBLTP,LUC,LUSCR,ICISTR,IRC)
 *
 *
 * Analyze CI vector
@@ -493,7 +493,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
       call itods(-1,1,-1,LUSCR)
 *
 * Type of alpha and beta strings
-      do IRIR = 1,2,1
+      do IRIR = 1,IRC,1
         if (NTEST.ge.50) write(6,*) 'right r/i is  ',IRIR
         if (IRIR.EQ.2) then
 *
@@ -614,7 +614,6 @@ CTF       IF (ICISTR.NE.1) CALL REWINO(LUC)
 *
       CALL QEXIT('ANACI')
 *
-C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
       RETURN
       END
 ***********************************************************************

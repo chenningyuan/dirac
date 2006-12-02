@@ -2042,9 +2042,10 @@ C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE IDIM_TCC_DBG(ITSOSO_TP,NTSOSO_TP,ISYM,
-     &           MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
-     &           LTSOSO_TP,IBTSOSO_TP,IDIM_T,MSCOMB_CC,
-     &           MX_TBLK_AS,IFTONE,IFTTWO,ILTTWO,N1ELINT,N2ELINT,IPRCC)
+     &                        MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
+     &                        LTSOSO_TP,IBTSOSO_TP,IDIM_T,MSCOMB_CC,
+     &                        MX_TBLK_AS,IFTONE,IFTTWO,ILTTWO,
+     &                        N1ELINT,N2ELINT,IPRCC)
 *
 * Dimension of T operators in spin-orbital basis
 *
@@ -2875,6 +2876,8 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 #include "ctcc.inc"
 #include "clunit.inc"
 *
+#include "include/dgroup.h"
+*
 * Batches of sigma
       integer LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
       dimension HC(*),C(*)
@@ -2927,26 +2930,30 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 *
       LBLK = -1
 *
+* LUCIAREL is a relativistic CI program. 
+*          However, for quaternion real groups, we use real
+*          algebra.
+      IRILP = 2
+      if (NZ.eq.1) then
+        IRILP = 1
+      end if
+*
       if (NTEST.ge.1000) then
         write(6,*) '--------------------------------------'
         write(6,*) ' Printing vectors in SIGDEN_REL.      '
         write(6,*) '--------------------------------------'
         write(6,*) '  Right vector: '
-        call wrtvcdc(C,LLUC,1,-1)
+        call wrtvcdc(C,LLUC,1,IRILP,-1)
         if (ISIGDEN.eq.2) then
           write(6,*) '  Left vector: '
-          call wrtvcdc(HC,LLUHC,1,-1)
+          call wrtvcdc(HC,LLUHC,1,IRILP,-1)
         end if
       end if
 *
       CALL REWINO(LLUC)
       CALL REWINO(LLUHC)
-      IRILP = 2
-* LUCIAREL is a relativistic CI program. Spinfree formalism not
-*          supported, only for testing purposes. Therefore:
-*          ALWAYS real AND imaginary!
 *
-*. Loop over vectors of sigma and C : MK2 space + Real/Imag
+*. Loop over vectors of sigma and C : MK2 space
       DO IRIS = 1,IRILP,1
         if (NTEST.ge.50) then
           write(6,*)

@@ -1550,7 +1550,7 @@ C?      CALL WRTVCD(VEC1,LU,1,LBLK)
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE WRTVCDC(SEGMNT,LU,IREW,LBLK)
+      SUBROUTINE WRTVCDC(SEGMNT,LU,IREW,IRC,LBLK)
 C
 C PRINT COMPLEX VECTOR ON FILE LU
 C
@@ -1569,7 +1569,7 @@ C
 C LOOP OVER BLOCKS
 C
       IBLK = 0
-      DO IRI = 1, 2
+      DO IRI = 1,IRC,1
         IF(IRI.EQ.1) THEN
            WRITE(6,*) ' Real Part '
         ELSE

@@ -57,17 +57,19 @@ C         -----------------
 C          D2h      C2h
 C          D2       C2
 C          C2v      C2
-C      Imaginary integrals are zeroed, rest of the code remains
-C      unchanged.
-C      IRIQ (1 for real, 2 for complex and quaternion) controls
-C      real/imaginary mismatch of vector handling in this case.
 C                               T. Fleig         - Aug 25, 2003
+C
+C      Only real-valued quantities treated for real matrix groups.
+C      Changed energy convergence threshold (THRES_E) to 0.5D-5
+C          (complex case) and 1.0D-10 (real case).
+C                               T. Fleig         - Oct 09, 2006
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "pgroup.h"
+#include "dgroup.h"
 C
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/lucinp.inc"
@@ -211,7 +213,11 @@ C 50-51: GAS shells and constraints.
       CALL LUCI_TRAVA(CIRUN,'GASSPC',IGSOCCX,DUMMY)
 C
 C 53: Energy convergence threshold
-      THRES_E = 1.D-10
+      IF (NZ.EQ.1) THEN
+        THRES_E = 1.0D-10
+      ELSE
+        THRES_E = 0.5D-5
+      END IF
 C
 C 54: Sequence of CI calculations (here one!)
       NSEQCI(1) = 1
@@ -796,8 +802,13 @@ C    &    '     Spin multiplicity ....  ', MULTS
       WRITE(LUPRI,'(A)')
      &  '        Diagonalizer : PICO2  '
       ELSE IF(IDIAG.EQ.1.AND.ICISTR.GE.3) THEN
-        WRITE(LUPRI,'(A)')
-     &    '        Diagonalizer : CMICDV '
+        IF (NZ.EQ.1) THEN
+          WRITE(LUPRI,'(A)')
+     &      '        Diagonalizer : MICDV6 '
+        ELSE
+          WRITE(LUPRI,'(A)')
+     &      '        Diagonalizer : CMICDV '
+        END IF
       END IF
 *
 *. No restart in CI calc 2
@@ -816,10 +827,10 @@ C    &    '     Spin multiplicity ....  ', MULTS
      &  '        Allowed number of iterations    ',MAXIT
 *. Number of CI vectors in subspace
       WRITE(LUPRI,'(A,I2)')
-     &  '        Allowed Dimension of CI subspace',MXCIV
+     &  '        Allowed Dimension of CI subspace ',MXCIV
 *
       WRITE(LUPRI,'(A,1P,E11.5/)')
-     &  '        Convergence threshold for energy',THRES_E
+     &  '        Convergence threshold for energy ',THRES_E
       IF(IDIAG.EQ.2) THEN
         WRITE(LUPRI,'(A,1P,E11.5)')
      &   '        Individual second order energy threshold ',E_THRE
@@ -1334,13 +1345,15 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
 *   (position changed as not required for TASK = NDET)
         CALL ALLOC_REL
 *
-        IDGTYP = -1
+* IDGSTYP determines the integral classes and corresponding operator
+*         classes depending on the double group in use.
+        IDGSTYP = -1
         if (PNTGRP.le.4) then
-          IDGTYP = 1
+          IDGSTYP = 1
         else if (PNTGRP.eq.6.or.PNTGRP.eq.5) then
-          IDGTYP = 3
+          IDGSTYP = 3
         else if (PNTGRP.ge.7.and.PNTGRP.le.9) then
-          IDGTYP = 2
+          IDGSTYP = 2
         end if
         if (SIGDEN_ROUTE.eq.'SIGDEN') then
 *. Space for Hamiltonian in form suitable for SIGDEN
@@ -1357,12 +1370,12 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
           else if (ISO1.eq.1.and.ISO2.eq.1.and.ENVIRO(1:6).eq.'DIRAC ')
 *    Dirac-Coulomb case.
      &         then
-            if (IDGTYP.le.2) then
+            if (IDGSTYP.le.2) then
               IHTYPE = 4
-            else if (IDGTYP.eq.3) then
+            else if (IDGSTYP.eq.3) then
               IHTYPE = 5
             else
-              write(6,*) 'Unallowed value of IDGTYP : ',IDGTYP
+              write(6,*) 'Unallowed value of IDGSTYP : ',IDGSTYP
               stop 'Quitting.'
             end if
           else
@@ -1761,7 +1774,7 @@ C
       IF (IPROPT.GE.5) THEN
         WRITE(LUPRI,'(A)') 'Active Fock matrix:'
         DO I=1,N2ASHXQ,1
-          WRITE(6,'(1I3,1F16.10)') I,WORK(KFCAC+I-1)
+          WRITE(6,'(1I3,1F18.14)') I,WORK(KFCAC+I-1)
         END DO
       END IF
 C
@@ -1773,12 +1786,12 @@ C
         WRITE(LUPRI,'(A)') 'Molfdir format FCAC:'
         WRITE(LUPRI,'(A)') 'Real part:'
         DO I=1,(2*NASHT)*(2*NASHT)*MZ/2
-          WRITE(6,'(1I3,1F16.10)') I,WORK(KFCACM+I-1)
+          WRITE(6,'(1I3,1F18.14)') I,WORK(KFCACM+I-1)
         END DO
         WRITE(LUPRI,'(A)') 'Imaginary part:'
         DO I=(2*NASHT)*(2*NASHT)*MZ/2+1,
      &       (2*NASHT)*(2*NASHT)*MZ
-          WRITE(6,'(1I3,1F16.10)') I,WORK(KFCACM+I-1)
+          WRITE(6,'(1I3,1F18.14)') I,WORK(KFCACM+I-1)
         END DO
       END IF
 C
@@ -2025,7 +2038,11 @@ C     Write current CI vector(s) to file
       END IF
 C
 C     Density run of LUCIAREL only
-      CALL KRMC_LUCI(RHO1,RHO2,WORK(KFREE),LFREE,DUMMY,CIRUN)
+      if (CALCR2) then
+        CALL KRMC_LUCI(RHO1,RHO2,WORK(KFREE),LFREE,DUMMY,CIRUN)
+      else
+        CALL KRMC_LUCI(RHO1,DUMMY,WORK(KFREE),LFREE,DUMMY,CIRUN)
+      end if
 C
 C     Write CI densities to file or keep the arrays
 C     Currently, densities are directly passed up to LUCI_DENS.
@@ -2249,7 +2266,7 @@ C***********************************************************************
       dimension VA(IDIMA),VB(IDIMB),X1(IDIM1),X2(IDIM2),SCR(*)
       dimension ISCR(*)
 *
-      NTESTL = 00
+      NTESTL = 0
       NTEST = max(NTESTL,IPRNT)
 *
       if (NTEST.ge.5) then

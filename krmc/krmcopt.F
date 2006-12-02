@@ -492,12 +492,15 @@ C
      &           ' Total gradient     (It. ',I3,') : ',F25.15,/)
 C
          IF (IPROPT .GE. 1) THEN
-            IPRNO = 3*IPROPT
-            CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
-            CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &                  .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
-            CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
+            IF ( OPT_CIPROGRAM .NE. 'LUCIAREL' ) THEN
+              IPRNO = 3*IPROPT
+              CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+              CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
+     &                    .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
+              CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,
+     &                    KFREE,LFREE)
+            END IF
          END IF
 C
          CALL FLSHFO(LUPRI)
@@ -746,6 +749,7 @@ C     *** Calculate active density matrices *************
 C     ***************************************************
 C
       IF (NASHT .NE. 0) THEN
+         print*,'RGRAD calling ...'
          CALL RMAKDM(.TRUE.,.TRUE.,DV,PV,CREF,WORK,KFREE,LFREE)
       END IF
 C
@@ -981,9 +985,7 @@ C
 C
 C        Calculate density matrices in MOLFDIR format
 C
-         IF (CALCPV .OR. OPT_CIPROGRAM.eq.'LUCIAREL') THEN
-C  TODO FOR TIMO: remove check for LUCIAREL when it has been
-C                 implemented in LUCIAREL to only calc. 1-del. d.m.
+         IF (CALCPV) THEN
             LPV = (2*NASHT)**4 * MIN(2,NZ)
          ELSE
             LPV = 0

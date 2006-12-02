@@ -1796,6 +1796,13 @@ C
 C     Get active-active part of FCmo:
 C
       CALL RGETAC(WORK(KFC),WORK(KFCAC),IPROPT)
+      ipropt = 5
+      IF (IPROPT.GE.5) THEN
+        WRITE(LUPRI,'(A)') 'Active Fock matrix:'
+        DO I=1,N2ASHXQ,1
+          WRITE(6,'(1I3,1F18.14)') I,WORK(KFCAC+I-1)
+        END DO
+      END IF
 C
 C     Transform quaternion FCACmo to molfdir type FCAC.
 C

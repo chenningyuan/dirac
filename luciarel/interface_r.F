@@ -1276,7 +1276,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 #include "glbbas.inc"
 #include "clunit.inc"
 *
-#include "dgroup.h"
+#include "include/dgroup.h"
 *
       character*6 CIRUN
       dimension NICA_STR(MXPNGAS),NICB_STR(MXPNGAS),
@@ -1307,7 +1307,8 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
         IDGTYP = 1
         write(6,*) 
         write(6,*) ' NOTICE from DIST_INTS_SIGDEN: '
-        write(6,*) ' Imaginary parts treated, but zeroed out. '
+        write(6,*) '   Running in real algebra. '
+        write(6,*) '   Imaginary loops eliminated. '
       else if (NZ.eq.2) then
         IDGTYP = 2
       else if (NZ.eq.4) then
@@ -1334,8 +1335,6 @@ C       call reo_info_molcas()
         else
           IRILP = 2
         end if
-      IRILP = 2
-* !! Still enforced
       else if (INTIMP.eq.7) then
         call reo_info_dirac(NDIM_TOT,NIRR_PN,SYMDIM,IBOSYM,
      &                      SYDI,DOUGRP,WORK(KISREO),WORK(KINVREO),
@@ -1346,8 +1345,6 @@ C       call reo_info_molcas()
           IRILP = 2
         end if
       end if
-      IRILP = 2
-* !! Still enforced
 *
 * Open ASCII unit for checking integral sorting information
       if (NTEST.ge.1) then
@@ -1872,13 +1869,13 @@ C    &             ' at ',ICOUNT
      &                                  ') Value: ',T(ICOUNT)
 *                           write integral to file (for debugging):
                               if (IXCH.eq.0) then
-                                write(LUINGR,'(I4,4X,4I3,1F18.10)') 
+                                write(LUINGR,'(I4,4X,4I3,1F18.14)') 
      &                                ICOUNT,INDEX(1),
      &                                       INDEX(2),
      &                                       INDEX(3),
      &                                       INDEX(4),T(ICOUNT)
                               else
-                        write(LUINGR,'(I4,4X,4I3,1X,A,1X,4I3,1F18.10)')
+                        write(LUINGR,'(I4,4X,4I3,1X,A,1X,4I3,1F18.14)')
      &                                ICOUNT,INDEX(1),
      &                                       INDEX(2),
      &                                       INDEX(3),
@@ -8958,10 +8955,12 @@ Cjan      end do
 *   November 12, 2001, Timo Fleig
 *                - updated for correct one-particle function ordering
 *                  Timo Fleig, June 2004
+*                - Revised FSM/IUB ordering section             
+*                  Timo Fleig, November 2006
 *--------------------------------------------------------------------*
 *
       subroutine trnsfdens(F1,F2,DENS,INDEX,LABEL,IHINDX,SIGN,IOP_REO,
-     &                     SIGN_OPREO,ISF,NASHT,NIRREP,IPRNT)
+     &                     SIGN_OPREO,ISF,NASHTL,IPRNT)
 *
 *  Input:  DENS
 *  Output: F1,F2
@@ -8977,19 +8976,19 @@ Cjan      end do
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "glbbas.inc"
-#include "cgas.inc"
 #include "ctcc.inc"
 *
 #include "dgroup.h"
+#include "dcborb.h"
 *
       dimension F1(*),F2(*)
       dimension DENS(NALLINT),SIGN(NSPOBEX_TP),SIGN_OPREO(NSPOBEX_TP)
       dimension INDEX(4,NALLINT),ICSAVE(4),INDEX_L(4),IND_R(4)
       dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
-     &          IOP_REO(4,NSPOBEX_TP),IOFFKF(MXPIRR,MXPNGAS,2),
+     &          IOP_REO(4,NSPOBEX_TP),IOFFKF(2,MXPNGAS,2),
      &          IREOKF(MXPORB)
 *
-      NTESTL = 000
+      NTESTL = 00
       NTEST = max(IPRNT,NTESTL)
 *
       NINT_TOT = N1ELINT + N2ELINT
@@ -9002,7 +9001,7 @@ Cjan      end do
 *
       ONE = 1.0D0
       ONEM = -1.0D0
-      NASHT2 = NASHT * 2
+      NASHTL2 = NASHTL * 2
 *
       if (NTEST.ge.2) then
         write(6,*)
@@ -9017,34 +9016,42 @@ Cjan      end do
 *               - GAS loop
 * Determine offset array
       IADDKF = 1
-      do IFSM = 1,NIRREP/2
+      do IFSM = 1,NFSYM
         do IUBT = 1,2
           do KGAS = 1,NGAS
             IOFFKF(IFSM,KGAS,IUBT) = IADDKF
-            IADDKF = IADDKF + NGSSH(IFSM,KGAS)
+            IADDKF = IADDKF + NGSH(IFSM,KGAS)
+            print*
           end do
         end do
       end do
+*
       if (NTEST.ge.5) then
         do IUBT = 1,2
           if (IUBT.eq.1) write(6,*) ' IOFFKF for unbarred.'
           if (IUBT.eq.2) write(6,*) ' IOFFKF for   barred.'
-          call iwrtma(IOFFKF(1,1,IUBT),NIRREP/2,NGAS,MXPIRR,MXPNGAS)
+c         call iwrtma(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS)
+          do IGS = 1,NGAS
+            do IFSM = 1,2
+              print*,IOFFKF(IFSM,IGS,IUBT)
+            end do
+          end do
         end do
       end if
 *
 * Determine reordering array
       II = 1
       do IUBT = 1,2
-        do IFSM = 1,NIRREP/2
+        do IFSM = 1,NFSYM
           do KGAS = 1,NGAS
-            do IRN = 1,NGSSH(IFSM,KGAS)
+            do IRN = 1,NGSH(IFSM,KGAS)
               IREOKF(II) = IOFFKF(IFSM,KGAS,IUBT) + IRN - 1
               II = II + 1
             end do
           end do
         end do
       end do
+*
       if (NTEST.ge.5) then
         call iwrtma(IREOKF,1,II-1,1,MXPORB)
       end if
@@ -9095,16 +9102,16 @@ Cjan      end do
 *
             if (NCT.eq.2) then
               I = IREOKF(INDEX_L(ICSAVE(1))  
-     &            - (LABEL(IHINDX(1,IXTP),IXTP) - 1)/2 * NASHT)
+     &            - (LABEL(IHINDX(1,IXTP),IXTP) - 1)/2 * NASHTL)
               J = IREOKF(INDEX_L(ICSAVE(2))  
-     &            - (LABEL(IHINDX(2,IXTP),IXTP) - 1)/2 * NASHT)
+     &            - (LABEL(IHINDX(2,IXTP),IXTP) - 1)/2 * NASHTL)
 *
-              IOUT =  (IRI-1)*NASHT2*NASHT2 +
-     &                 (J-1) *NASHT2 +
+              IOUT =  (IRI-1)*NASHTL2*NASHTL2 +
+     &                 (J-1) *NASHTL2 +
      &                  I
               F1(IOUT) = DENS(IRUN+IRIOFF)
               if (NTEST.ge.10) then
-                write(6,'(2I3,1F18.10,A,I4)') 
+                write(6,'(2I3,1F18.14,A,I4)') 
      &                    I,J,F1(IOUT),' to pos.',IOUT
               end if
 *
@@ -9121,7 +9128,7 @@ Cjan      end do
 *  generated correctly within DIST_INTS_SIGDEN for all excitation 
 *  types. An overall sign for all 2-particle densities is accounted
 *  for in GET_HX_RELA (here called SIGN_OPREO):
-                IND_R(1) = IREOKF(INDEX_L(1)-(LABEL(1,IXTP)-1)/2*NASHT)
+                IND_R(1) = IREOKF(INDEX_L(1)-(LABEL(1,IXTP)-1)/2*NASHTL)
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' operator I '
@@ -9129,7 +9136,7 @@ Cjan      end do
                   write(6,*) ' LABEL(1,IXTP) ',LABEL(1,IXTP)
                 end if
 *
-                IND_R(2) = IREOKF(INDEX_L(2)-(LABEL(2,IXTP)-1)/2*NASHT)
+                IND_R(2) = IREOKF(INDEX_L(2)-(LABEL(2,IXTP)-1)/2*NASHTL)
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' operator L '
@@ -9137,7 +9144,7 @@ Cjan      end do
                   write(6,*) ' LABEL(2,IXTP) ',LABEL(2,IXTP)
                 end if
 *
-                IND_R(3) = IREOKF(INDEX_L(3)-(LABEL(3,IXTP)-1)/2*NASHT)
+                IND_R(3) = IREOKF(INDEX_L(3)-(LABEL(3,IXTP)-1)/2*NASHTL)
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' operator K '
@@ -9145,7 +9152,7 @@ Cjan      end do
                   write(6,*) ' LABEL(3,IXTP) ',LABEL(3,IXTP)
                 end if
 *
-                IND_R(4) = IREOKF(INDEX_L(4)-(LABEL(4,IXTP)-1)/2*NASHT)
+                IND_R(4) = IREOKF(INDEX_L(4)-(LABEL(4,IXTP)-1)/2*NASHTL)
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' operator J '
@@ -9153,16 +9160,16 @@ Cjan      end do
                   write(6,*) ' LABEL(4,IXTP) ',LABEL(4,IXTP)
                 end if
 *
-                IOUT = (IRI-1)*NASHT2*NASHT2*NASHT2*NASHT2 +
-     &                  (IND_R(4)-1) *NASHT2*NASHT2*NASHT2 +
-     &                  (IND_R(3)-1) *NASHT2*NASHT2 +
-     &                  (IND_R(2)-1) *NASHT2 +
+                IOUT = (IRI-1)*NASHTL2*NASHTL2*NASHTL2*NASHTL2 +
+     &                  (IND_R(4)-1) *NASHTL2*NASHTL2*NASHTL2 +
+     &                  (IND_R(3)-1) *NASHTL2*NASHTL2 +
+     &                  (IND_R(2)-1) *NASHTL2 +
      &                   IND_R(1)
                 F2(IOUT) = DENS(IRUN+IRIOFF) * SIGN(IXTP) 
      &                                       * SIGN_OPREO(IXTP)
                 if (NTEST.ge.10) then
                   write(6,*)
-                  write(6,'(4I3,1F18.10,A,I4)') 
+                  write(6,'(4I3,1F18.14,A,I4)') 
      &                      IND_R(1),IND_R(2),IND_R(3),IND_R(4),
      &                      F2(IOUT),' to pos.',IOUT
                 end if
@@ -9175,14 +9182,14 @@ Cjan      end do
                 K_R = IND_R(3)
                 J_R = IND_R(4)
                 SIGN_CP = -1 * ONE
-                IOUT_CP = (IRI-1) *NASHT2*NASHT2*NASHT2*NASHT2 +
-     &                    (L_R-1) *NASHT2*NASHT2*NASHT2 +
-     &                    (K_R-1) *NASHT2*NASHT2 +
-     &                    (J_R-1) *NASHT2 +
+                IOUT_CP = (IRI-1) *NASHTL2*NASHTL2*NASHTL2*NASHTL2 +
+     &                    (L_R-1) *NASHTL2*NASHTL2*NASHTL2 +
+     &                    (K_R-1) *NASHTL2*NASHTL2 +
+     &                    (J_R-1) *NASHTL2 +
      &                     I_R
                 F2(IOUT_CP) = F2(IOUT) * SIGN_CP
                 if (NTEST.ge.10) then
-                  write(6,'(4I3,1F18.10,A,I4)') 
+                  write(6,'(4I3,1F18.14,A,I4)') 
      &                      I_R,J_R,K_R,L_R,F2(IOUT_CP),
      &                      ' to pos.',IOUT_CP
                 end if

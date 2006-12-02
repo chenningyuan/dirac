@@ -2863,7 +2863,7 @@ C?            write(6,*) 'RASSG3 : IOFF, SB(IOFF)',IOFF,SB(IOFF)
 *
       IF(NTEST.GE.01) THEN
         WRITE(6,*) ' Final S-vector on disc'
-        CALL WRTVCDC(SB,LLUHC,1,-1)
+        CALL WRTVCDC(SB,LLUHC,1,2,-1)
       END IF
 *
       CALL QEXIT('RASSG3')

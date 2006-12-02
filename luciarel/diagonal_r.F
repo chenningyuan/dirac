@@ -414,7 +414,6 @@ C     CALL MEMMAR(KLH1D ,NACOBTOT, 'ADDL  ',2,'KLH1D ')
      &                    ISPSF_MO,ENVIRO,SIGDEN_ROUTE,IPRDIA)
         end if
       end if
-C     stop 'after setting up diagonal integrals.'
 *
       DO IMK2 = 1, NMS2VAL
         if (NTEST.ge.10) then
@@ -471,7 +470,7 @@ C     stop 'after setting up diagonal integrals.'
 *
       END DO
 *     ^End of loop over MK2 spaces
-c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
+*
 *.Flush local memory
       call memmar(KDUM,  IDUM,    'FLUSM ',IDUM,'GASDIA')
       CALL QEXIT('CIDIA')
@@ -1181,9 +1180,9 @@ C         L = INDEX(IKPERM(3),INT) * IKFAC
 C           write(6,'(A,X,A,I5,3X,4I3,1F18.10)') 
 C    &            'Diagonal int type ',TYPE,
 C    &             INT,(INDEX(II,INT),II=1,4),XINT(INT)
-            write(6,'(A,1X,A,I5,3X,4I3,1F18.10)') 
+            write(6,'(A,1X,A,1I4,3X,4I3,1F18.10)') 
      &            'Diagonal int type ',TYPE,
-     &             IPOSDIA(INT),(MDIASV(II,IPOSDIA(INT)),II=1,4),
+     &             IPOSDIA(INT),(MDIASV(II,INT),II=1,4),
      &             XINT(IPOSDIA(INT))
             write(6,*)
           end if
