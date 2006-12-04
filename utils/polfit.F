@@ -95,9 +95,12 @@ C
       WRITE(ILOGG,'(3X,A)') '* Coefficients:'
       WRITE(ILOGG,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
      &      C(I),I=1,NDIM)  
+      WRITE(LUPRI,'(8X,A,4X,2A)')
+     &   'X',' Predicted Y',' Relative error'
       DO I = 1,NP
-        YP = (POLVAL(NORDER,C,X(I))-Y(I))/Y(I)
-        WRITE(LUPRI,'(3X,F6.3,4X,E12.4)') X(I),YP
+        YP = POLVAL(NORDER,C,X(I))
+        DEV = (YP-Y(I))/Y(I)
+        WRITE(LUPRI,'(3X,F6.3,4X,2E12.4)') X(I),YP,DEV
       ENDDO
       WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
       WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
@@ -140,23 +143,19 @@ C* Calculate derivatives:
      &  '* Do you want derivatives of curve at some point(y/n) ?'
       READ(LUCMD,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 667
+      WRITE(LUPRI,'(A)') 'Give maximal order of derivative..'
+      READ(LUCMD,*) MAXDER
+      MAXDER = MIN(MAXDER,NORDER)
       WRITE(LUPRI,'(A)') 
      &  '* Give point:'
       READ(LUCMD,*) XMIN   
-      WRITE(LUPRI,'(A,1P,E18.10)') 'X = ',TMP
-      WRITE(ILOGG,'(A,1P,E18.10)') 'X = ',TMP
-      TMP = POLNDER(NORDER,C,XMIN,1)
-      WRITE(LUPRI,'(A,1P,E18.10)') '1st derivative : ',TMP
-      WRITE(ILOGG,'(A,1P,E18.10)') '1st derivative : ',TMP
-      TMP = POLNDER(NORDER,C,XMIN,2)
-      WRITE(LUPRI,'(A,1P,E18.10)') '2nd derivative : ',TMP
-      WRITE(ILOGG,'(A,1P,E18.10)') '2nd derivative : ',TMP
-      TMP = POLNDER(NORDER,C,XMIN,3)
-      WRITE(LUPRI,'(A,1P,E18.10)') '3rd derivative : ',TMP
-      WRITE(ILOGG,'(A,1P,E18.10)') '3rd derivative : ',TMP
-      TMP = POLNDER(NORDER,C,XMIN,4)
-      WRITE(LUPRI,'(A,1P,E18.10)') '4th derivative : ',TMP
-      WRITE(ILOGG,'(A,1P,E18.10)') '4th derivative : ',TMP
+      WRITE(LUPRI,'(A,1P,E18.10)') 'X = ',XMIN
+      WRITE(ILOGG,'(A,1P,E18.10)') 'X = ',XMIN
+      DO I = 1,MAXDER
+        TMP = POLNDER(NORDER,C,XMIN,I)
+        WRITE(LUPRI,'(I2,A,1P,E18.10)') I,'. derivative : ',TMP
+        WRITE(ILOGG,'(I2,A,1P,E18.10)') I,'. derivative : ',TMP
+      ENDDO
       GOTO 666
  667  CONTINUE
       WRITE(LUPRI,'(A)') '* Do you want a new polynomial fit ?(y/n)'
