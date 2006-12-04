@@ -104,8 +104,11 @@ C=======================================================================
 #include "ibtfun.h"
 
       IF(      LBIT(LBIT_CURRENT,1)) THEN !current
-        F  = -CVAL
-        G  = -CVAL
+!       F  = -CVAL
+!       G  = -CVAL
+!       dirty fix
+        F  = -137.0359998D0
+        G  = -137.0359998D0
         IU = 1
         IV = 2
         IX = 2

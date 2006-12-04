@@ -112,7 +112,7 @@ C     only for Hermitian densities
         IF(IHRMOP(IM).EQ.1) NHM = NHM + 1
       ENDDO
 #if defined (MOD_CDFT)
-      IF(.NOT. LBIT(LBIT_CDFT,1) .OR. .NOT. LBIT(LBIT_CDFT,2)) THEN !if no spin or current density contribution
+      IF(.NOT. (LBIT(LBIT_CDFT,1) .OR. LBIT(LBIT_CDFT,2))) THEN !if no spin or current density contribution
         IF(NHM .EQ. 0) GOTO 10
       ENDIF
 #else

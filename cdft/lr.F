@@ -223,11 +223,14 @@ C=======================================================================
 
 #include "ibtfun.h"
 
-      IF(.NOT. LBIT(LBIT_CDFT,5)) !X\alpha type current density contribution not requested
-     &         CALL QUIT('problem in cdft linear response')
+!     IF(.NOT. LBIT(LBIT_CDFT,5)) !X\alpha type current density contribution not requested
+!    &         CALL QUIT('problem in cdft linear response')
 
-      F  = -CVAL
-      G  = -CVAL
+!     F  = -CVAL
+!     G  = -CVAL
+!     dirty fix
+      F  = -137.0359998D0
+      G  = -137.0359998D0
       IU = 1
       IV = 2
       IX = 2
@@ -239,15 +242,20 @@ C=======================================================================
      &                 DUMMY,
      &                 IREPOP,GAO,DUMMY,DTRMAT,BUF)
 
+      CALL JPBE_DERIVATIVES(WEIGHT,
+     &                      DENSITY,
+     &                      DENSITY_GRADIENT_NORM,
+     &                      D0,
+     &                      DEXC_J_J)
+
       DO IXYZ = 1,3
         CURRENT_DENSITY(IXYZ) = DABS(CURRENT_DENSITY(IXYZ))
-        IF(CURRENT_DENSITY(IXYZ) .LT. DFTHRL) GOTO 1
+!       IF(CURRENT_DENSITY(IXYZ) .LT. DFTHRL) GOTO 1
 
         IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
         IOFF = NBAST*NBAST*(IQ-1)
 
-        VXC_S = CURRENT_DENSITY(IXYZ)**(-D23)
-        VXC_S = VXC_S*WEIGHT*CDFT_ALPHA
+        VXC_S = DEXC_J_J*CURRENT_DENSITY(IXYZ)
 
         CALL CDFT_EXC(VXC_S,
      &                F,IU,IV,ITRANSFORM,IXYZ,
@@ -257,7 +265,7 @@ C=======================================================================
      &                G,IX,IY,ITRANSFORM,IXYZ,
      &                GAO,
      &                IREPOP,EXCMAT(1+IOFF),BUF)
- 1      CONTINUE
+!1      CONTINUE
       ENDDO
 
       RETURN
