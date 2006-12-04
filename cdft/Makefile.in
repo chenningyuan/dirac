@@ -6,7 +6,7 @@
 
 include ../Makefile.config
 
-F77_OBJS = lr.o current.o
+F77_OBJS = lr.o current.o functional_derivatives.o
 
 F90_OBJS =
 
