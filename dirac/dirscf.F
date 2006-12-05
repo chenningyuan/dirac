@@ -3718,10 +3718,6 @@ C
           CALL MEMGET('REAL',KVLL,NZ*NLL,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KVSL,NZ*NLS,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KVSS,NZ*NSS,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KWLL,NZ*NLL,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KWLS,NZ*NLS,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KWSL,NZ*NLS,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KWSS,NZ*NSS,WORK,KFREE,LFREE)
 C
 C         Extract LL block of Fock matrix
           CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
@@ -3743,7 +3739,6 @@ C         Do the diagonalization using the ZORA approximation
 C
           CALL ZORADG(NZ,NL,NS,WORK(KFLL),WORK(KFLS),WORK(KFSS),
      &         WORK(KVLL),WORK(KVSL),WORK(KVSS),
-     &         WORK(KWLL),WORK(KWLS),WORK(KWSL),WORK(KWSS),
      &         EIG(IEIGE),EIG(IEIGP),
      &         WORK,KFREE,LFREE)
 C
@@ -3764,11 +3759,6 @@ C
           CALL EXTRSBR (2,I,0,0,1,1,1,NZ,WORK(KVLL),NL,NL,NZ,
      &                 FAO(I2ORBT(I)+1),NT,NT)
           CALL EXTRSBR (2,I,0,0,2,1,1,NZ,WORK(KVSL),NS,NL,NZ,
-     &                 FAO(I2ORBT(I)+1),NT,NT)
-          CALL EXTRSBR (2,I,0,0,2,2,1,NZ,WORK(KVSS),NS,NS,NZ,
-     &                 FAO(I2ORBT(I)+1),NT,NT)
-          CALL DZERO (WORK(KWLS),NZ*NLS)
-          CALL EXTRSBR (2,I,0,0,1,2,1,NZ,WORK(KWLS),NL,NS,NZ,
      &                 FAO(I2ORBT(I)+1),NT,NT)
 C
 C         Done; release the extra memory used in ZORA
@@ -3809,10 +3799,6 @@ C
               CALL MEMGET('REAL',KVLL,NZ*NLL,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KVSL,NZ*NLS,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KVSS,NZ*NSS,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KWLL,NZ*NLL,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KWLS,NZ*NLS,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KWSL,NZ*NLS,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KWSS,NZ*NSS,WORK,KFREE,LFREE)
 C
 C             Extract LL block of Fock matrix
               CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
@@ -3834,7 +3820,6 @@ C             Do the diagonalization using the ZORA approximation
 C
               CALL ZORADG(NZ,NL,NS,WORK(KFLL),WORK(KFLS),WORK(KFSS),
      &             WORK(KVLL),WORK(KVSL),WORK(KVSS),
-     &             WORK(KWLL),WORK(KWLS),WORK(KWSL),WORK(KWSS),
      &             EIG(IEIGE),EIG(IEIGP),
      &             WORK,KFREE,LFREE)
 C
@@ -3852,17 +3837,6 @@ C             Insert SL block of Fock matrix
               CALL EXTRSB (2,I,NBORB,4,NBRP,NBORB,4,NBRP,
      &                     ISUB,ISUB,2,1,1,NZS,
      &                     WORK(KVSL),NS,NL,NZS,
-     &                     FAO(I2ORBT(I)+1),NT,NT,NZ)
-C             Insert SS block of Fock matrix
-              CALL EXTRSB (2,I,NBORB,4,NBRP,NBORB,4,NBRP,
-     &                     ISUB,ISUB,2,2,1,NZS,
-     &                     WORK(KVSS),NS,NS,NZS,
-     &                     FAO(I2ORBT(I)+1),NT,NT,NZ)
-C             Insert LS block of Fock matrix
-              CALL DZERO (WORK(KWLS),NZ*NLS)
-              CALL EXTRSB (2,I,NBORB,4,NBRP,NBORB,4,NBRP,
-     &                     ISUB,ISUB,1,2,1,NZS,
-     &                     WORK(KWLS),NL,NS,NZS,
      &                     FAO(I2ORBT(I)+1),NT,NT,NZ)
 C
 C             Done; release the extra memory used in ZORA
@@ -3932,8 +3906,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck zoradg */
       SUBROUTINE ZORADG(NZS,NL,NS,FLL,FLS,FSS,VLL,VSL,VSS,
-     &                  WLL,WLS,WSL,WSS,EIGE,EIGP,
-     &                  WORK,KFREE,LFREE)
+     &                  EIGE,EIGP,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Diagonalize the Dirac matrix using the ZORA approximation :
@@ -3988,8 +3961,6 @@ C
       DIMENSION EIGP(NS),EIGE(NL),WORK(*)
       DIMENSION FLL(NL,NL,NZS),FSS(NS,NS,NZS),FLS(NL,NS,NZS)
       DIMENSION VLL(NL,NL,NZS),VSS(NS,NS,NZS),VSL(NS,NL,NZS)
-      DIMENSION WLL(NL,NL,NZS),WSS(NS,NS,NZS)
-      DIMENSION WLS(NL,NS,NZS),WSL(NS,NL,NZS)
 C
 C     Create ZORA modified kinetic energy operator
 C     via diagonalisation of F(SS)
@@ -4001,18 +3972,17 @@ C        U^(dagger) F U = f
 C
 C.....diagonalize F(SS) 
 C
-      CALL QDIAG(NZS,NS,FSS,NS,NS,
-     &           EIGP,1,VSS,NS,NS,
+      CALL QDIAG(NZS,NS,FSS,NS,NS,EIGP,1,VSS,NS,NS,
      &           WORK(KFREE),LFREE,IERR)
 C
 C.....form WSS = U * f^(-1/2)
 C
-      CALL DZERO (WSS,NZS*NS*NS)
+      CALL DZERO (FSS,NZS*NS*NS)
       DO IZ = 1, NZS
-         DO J = 1, NS
-            EIGINV = D1 / SQRT(-EIGP(J))
-            CALL DAXPY(NS,EIGINV,VSS(1,J,IZ),1,WSS(1,J,IZ),1)
-         ENDDO
+        DO J = 1, NS
+          EIGINV = D1 / SQRT(-EIGP(J))
+          CALL DAXPY(NS,EIGINV,VSS(1,J,IZ),1,FSS(1,J,IZ),1)
+        ENDDO
       ENDDO
 C
 C     Form intermediate WLS = FLS*WSS
@@ -4020,22 +3990,18 @@ C     ===============================
 C
       CALL QGEMM(NL,NS,NS,D1,
      &     'N','N',IPQTOQ(1,0),FLS,NL,NS,NZS,
-     &     'N','N',IPQTOQ(1,0),WSS,NS,NS,NZS,
-     &      D0,IPQTOQ(1,0),WLS,NL,NS,NZS)
+     &     'N','N',IPQTOQ(1,0),FSS,NS,NS,NZS,
+     &      D0,IPQTOQ(1,0),VSL,NL,NS,NZS)
 C
-C     Form WLL = F(LS)*{-F(SS)}^(-1)*F(SL)
-C     This is the ZORA modified K.E. matrix
+C     Form the ZORA modified K.E. matrix
+C     WLL = F(LS)*{-F(SS)}^(-1)*F(SL)
+C     and add to FLL
 C     ======================================
 C
       CALL QGEMM(NL,NL,NS,D1,
-     &     'N','N',IPQTOQ(1,0),WLS,NL,NS,NZS,
-     &     'H','N',IPQTOQ(1,0),WLS,NL,NS,NZS,
-     &      D0,IPQTOQ(1,0),WLL,NL,NL,NZS)
-C
-C     Add the ZORA modified K.E. matrix to the LL-block
-C     =================================================
-C
-      CALL DAXPY (NZS*NL*NL,D1,WLL,1,FLL,1)
+     &     'N','N',IPQTOQ(1,0),VSL,NL,NS,NZS,
+     &     'H','N',IPQTOQ(1,0),VSL,NL,NS,NZS,
+     &      D1,IPQTOQ(1,0),FLL,NL,NL,NZS)
 C
 C     Diagonalize the ZORA matrix
 C     ===========================
@@ -4052,12 +4018,12 @@ C
 C     to be stored in VSL.
 C
       CALL QGEMM(NS,NL,NS,D1,
-     &     'N','N',IPQTOQ(1,0),WSS,NS,NS,NZS,
-     &     'H','N',IPQTOQ(1,0),WLS,NL,NS,NZS,
-     &      D0,IPQTOQ(1,0),WSL,NS,NL,NZS)
+     &     'N','N',IPQTOQ(1,0),FSS,NS,NS,NZS,
+     &     'H','N',IPQTOQ(1,0),VSL,NL,NS,NZS,
+     &      D0,IPQTOQ(1,0),FLS,NS,NL,NZS)
 C
       CALL QGEMM(NS,NL,NL,D1,
-     &     'N','N',IPQTOQ(1,0),WSL,NS,NL,NZS,
+     &     'N','N',IPQTOQ(1,0),FLS,NS,NL,NZS,
      &     'N','N',IPQTOQ(1,0),VLL,NL,NL,NZS,
      &      D0,IPQTOQ(1,0),VSL,NS,NL,NZS)
 C
@@ -4066,13 +4032,13 @@ C
       CALL QGEMM(NL,NL,NS,D1,
      &     'H','N',IPQTOQ(1,0),VSL,NS,NL,NZS,
      &     'N','N',IPQTOQ(1,0),VSL,NS,NL,NZS,
-     &      D0,IPQTOQ(1,0),WLL,NL,NL,NZS)
+     &      D0,IPQTOQ(1,0),FLL,NL,NL,NZS)
 C
 C     Normalize the vectors for ZORA-4
 C
       IF (ZORA4)  THEN
          DO J = 1, NL
-            FACTOR = D1 / SQRT(D1+WLL(J,J,1))
+            FACTOR = D1 / SQRT(D1+FLL(J,J,1))
             DO IZ = 1, NZS
                CALL DSCAL (NL,FACTOR,VLL(1,J,IZ),1)
                CALL DSCAL (NS,FACTOR,VSL(1,J,IZ),1)
@@ -4084,7 +4050,7 @@ C     Calculate the scaled ZORA eigenvalues
 C
       IF (ZORASC)  THEN
          DO J = 1, NL
-            FACTOR = D1 / (D1 + WLL(J,J,1))
+            FACTOR = D1 / (D1 + FLL(J,J,1))
             EIGE(J) = EIGE(J) * FACTOR
          ENDDO
       ENDIF
