@@ -9021,7 +9021,6 @@ Cjan      end do
           do KGAS = 1,NGAS
             IOFFKF(IFSM,KGAS,IUBT) = IADDKF
             IADDKF = IADDKF + NGSH(IFSM,KGAS)
-            print*
           end do
         end do
       end do
@@ -9030,12 +9029,7 @@ Cjan      end do
         do IUBT = 1,2
           if (IUBT.eq.1) write(6,*) ' IOFFKF for unbarred.'
           if (IUBT.eq.2) write(6,*) ' IOFFKF for   barred.'
-c         call iwrtma(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS)
-          do IGS = 1,NGAS
-            do IFSM = 1,2
-              print*,IOFFKF(IFSM,IGS,IUBT)
-            end do
-          end do
+          call iwrtma(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS)
         end do
       end if
 *
