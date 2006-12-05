@@ -1788,6 +1788,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D0=0.0D0)
 C
 C Used from COMMON blocks:
 C   DCBBAS: N2BBASX
@@ -1853,7 +1854,7 @@ C    it is again set to .true.
         KTMAT = KVMAT
  
         IF (TWOCOMP) THEN
-         SSMTRC = 0.0D0
+         SSMTRC = D0
          MC = 1
         ENDIF
 
@@ -2049,7 +2050,6 @@ C  DGROUP:
 #include "cbihr1.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
-CMI   DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(*)
       LOGICAL SLGROUP,LSYMAD
       CALL QENTER('MODHAM')
 #include "memint.h" 
@@ -2067,14 +2067,10 @@ C
 C     Generate free particle (or bare nucleus) matrix in Lowdin-basis
 C     ===============================================================
 C
-C     CALL MEMGET('REAL',KVOLACO,1,WORK,KFREE,LFREE)
-C     CALL MEMCHK('MODHAM 1',WORK,1)
 
       IF(VEXTPJ) THEN
-CMI     CALL ONEFCK(TBUF,IPRONE,WORK,LWORK)
         CALL ONEFCK(TBUF,IPRONE,WORK(KFREE),LFREE)
       ELSE
-C       CALL FREEMT(TBUF,IPRONE,WORK,LWORK)
         CALL FREEMT(TBUF,IPRONE,WORK(KFREE),LFREE)
       ENDIF
       IOFT = 1
@@ -2105,238 +2101,20 @@ CMI      ... transform to the Lowdin basis "Theta"
         IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
    10 CONTINUE
 C
-C     The Levy-Leblond equation:
-C     ==========================
-C
-C       Set up basis for Levy-Leblond equation as:
-C
-C              [                (Psi(L), 0 ]
-C        Psi = [                           ]
-C              [(2mc)^-1 sigma.p Psi(L), 0 ]
-C
+      NZT = NZ
       IF(LEVYLE) THEN
-        NZT   = NZ
-        FAC2  = -D1/FAC
-        IBUF  = 1
-        IMAT  = 1
-        DO 20 I = 1,NFSYM
-          NESH(I)  = NFORB(I,1)
-          NPSH(I)  = 0
-          NORB(I)  = NESH(I) + NPSH(I)
-          NTMO(I)  = NORB(I)
-          IF(NORB(I).EQ.0) GOTO 20
-          CALL DZERO(TBUF(IBUF),NFORB(I,0)*NORB(I)*NZT)
-          JBUF = IBUF
-          DO J = 1, NFORB(I,1)
-            TBUF(JBUF) = D1
-            JBUF = JBUF + NFORB(I,0) + 1
-          ENDDO
-          DO IZ = 1, NZ
-            JBUF = IBUF + NFORB(I,1)
-            JMAT = IMAT + NFORB(I,1)
-            DO J = 1, NFORB(I,1)
-              CALL DCOPY (NFORB(I,2),TMAT(JMAT),1,TBUF(JBUF),1)
-              CALL DSCAL (NFORB(I,2),FAC2,TBUF(JBUF),1)
-              JMAT = JMAT + NFORB(I,0)
-              JBUF = JBUF + NFORB(I,0)
-            ENDDO
-            IF (IPRHAM.GE.6) THEN
-             CALL HEADER('Transformation matrix in orthon. basis',-1)
-             CALL PRQMAT(TBUF(IBUF),NFORB(I,0),NORB(I),
-     &                   NFORB(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-            ENDIF
-            IMAT = IMAT + NFORB(I,0) * NFORB(I,0)
-            IBUF = IBUF + NFORB(I,0) * NORB(I)
-          ENDDO
-C         Finish by adjusting the number of positron solutions to zero
-          DO ISYM = 1, NSYM
-            NBORB(ISYM,I,2) = 0
-            NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)
-          ENDDO
-   20   CONTINUE
 C
-C     Generate transformation matrix
-C     ==============================
+C       The Levy-Leblond equation
+C       ==========================
 C
-        IBUF = 1
-        IMAT = 1
-        IOFV = 1
-        DO 30 I = 1,NFSYM
-          IF(NORB(I).EQ.0) GOTO 30
-          CALL BCKTR1(TMAT(IMAT),NFBAS(I,0),NFORB(I,1),
-     &                TBUF(IBUF),NFORB(I,0),NFORB(I,1),
-     &                NFORB(I,0),NZ,
-     &                NFORB(I,1),1,NFBAS(I,0),
-     &                VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,
-     &                IPRGEN)
-          IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
-          IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
-          IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
-   30   CONTINUE
+        CALL LL_EQ(TMAT,TBUF,VMAT)
       ELSE      
 C
 C       The modified Dirac eqation:
 C       ===========================
-C
-C       Basis as in Levy-Leblond but without fixed ratio
-C
-C
-C               [                (Psi(L),                      0  ]
-C         Psi = [                                                 ]
-C               [                      0, (2mc)^-1 sigma.p Psi(L) ]
-        FAC2 = D1/FAC/DM2
-        NZT  = NZ
-        IMAT = 1
-        IBUF = 1
-        DO 40 I = 1,NFSYM
-          NESH(I)  = NFORB(I,1)
-          NPSH(I)  = NFORB(I,1)
-          NORB(I)  = NESH(I) + NPSH(I)
-          NTMO(I)  = NORB(I)
-          IF(NORB(I).EQ.0) GOTO 40
-C
-C         Prepare small component part
-C         ----------------------------
-C
-          LWRK = MXBBAS*MXBBAS*NSYM
-          CALL MEMGET('REAL',KSMT,LWRK,WORK,KFREE,LFREE)
-          LWRK = NFORB(I,1) * NFORB(I,1)
-          CALL MEMGET('REAL',KVMT,LWRK,WORK,KFREE,LFREE)
-          IVMT  = KVMT
-          IBOL  = 0
-          NEFF  = 0
-          DO ISYM = 1,NSYM
-          IF(NBORB(ISYM,I,1).GT.0) THEN
-C
-C           Make (sigma.p)(sigma.p) = p2
-C
-            IREP = JFSYM(ISYM,I) - 1
-            JSL = IMAT + IBOL * NFORB(I,0) + NFORB(I,1)
-            JLS = IMAT + NFORB(I,1) * NFORB(I,0) + IBOL
-            CALL QGEMM(NBORB(ISYM,I,1),NBORB(ISYM,I,1),NFORB(I,2),D1,
-     &          'N','N',IPQTOQ(1,0),TMAT(JLS),NFORB(I,0),NFORB(I,0),NZ,
-     &          'N','N',IPQTOQ(1,0),TMAT(JSL),NFORB(I,0),NFORB(I,0),NZ,
-     &          D0,IPQTOQ(1,0),WORK(KSMT),
-     &          NBORB(ISYM,I,1),NBORB(ISYM,I,1),1)
-            IF (IPRHAM.GE.7) THEN
-              WRITE(LUPRI,'(A,A3)') ' * Boson irrep: ',REP(IREP)
-              CALL HEADER('Kinetic energy matrix in orthon. basis',-1)
-              CALL PRQMAT(WORK(KSMT),NBORB(ISYM,I,1),NBORB(ISYM,I,1),
-     &                    NBORB(ISYM,I,1),NBORB(ISYM,I,1),
-     &                    1,IPQTOQ(1,0),LUPRI)
-            ENDIF
-            CALL LOWGEN(WORK(KSMT),NBORB(ISYM,I,1),WORK(IVMT),NEFFI,
-     &                  NBORB(ISYM,I,1),STOL(2),IPRONE,EIG,
-     &                  WORK(KFREE),LFREE)
-            IF (NEFFI.LT.NBORB(ISYM,I,1)) WRITE(LUPRI,'(A)') 
-     &            '*** WARNING *** Linear dependence in RKB basis'
-            NEFF = NEFF + NEFFI
-            NBORB(ISYM,I,2) = NEFFI
-             IF (IPRHAM.GE.7) THEN
-              CALL HEADER('Ext.transf. matrix in orthon. basis',-1)
-              CALL PRQMAT(WORK(IVMT),NBORB(ISYM,I,1),NBORB(ISYM,I,2),
-     &                    NBORB(ISYM,I,1),NBORB(ISYM,I,2),
-     &                    1,IPQTOQ(1,0),LUPRI)
-             ENDIF
-            IVMT = IVMT + NBORB(ISYM,I,1)*NBORB(ISYM,I,2)
-            IBOL = IBOL + NBORB(ISYM,I,1)
-          ELSE
-            NBORB(ISYM,I,2) = 0
-          ENDIF
-          NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)
-          ENDDO
-          NPSH(I)  = NEFF
-          NORB(I)  = NESH(I) + NPSH(I)
-          NTMO(I)  = NORB(I)
-C
-          CALL DZERO(TBUF(IBUF),NFORB(I,0)*NORB(I)*NZ)
-          IBO  = 0
-          IBOL = 0
-          IVMT = KVMT
-          DO ISYM = 1,NSYM
-          IF(NBORB(ISYM,I,1).GT.0) THEN
-            IREP = JFSYM(ISYM,I) - 1
-C
-C           Small component part
-C
-            JBUF = IBUF + NFORB(I,0)*IBO + NFORB(I,1)
-            JSL  = IMAT + IBOL * NFORB(I,0) + NFORB(I,1)
-            CALL QGEMM(NFORB(I,2),NBORB(ISYM,I,2),NBORB(ISYM,I,1),D1,
-     &           'N','N',IPQTOQ(1,0),TMAT(JSL),NFORB(I,0),NFORB(I,0),NZ,
-     &           'N','N',IPQTOQ(1,0),WORK(IVMT),
-     &                   NBORB(ISYM,I,1),NBORB(ISYM,I,2),1,
-     &           D0,IPQTOQ(1,0),TBUF(JBUF),NFORB(I,0),NORB(I),NZ)
-            IBO = IBO + NBORB(ISYM,I,2)
-C
-C           Large component part
-C
-            JBUF = IBUF + NFORB(I,0)*IBO + IBOL
-            DO J = 1, NBORB(ISYM,I,1)
-              TBUF(JBUF) = D1
-              JBUF = JBUF + NFORB(I,0) + 1
-            ENDDO
-            IBO = IBO + NBORB(ISYM,I,1)
-C
-C           Update offsets
-C
-            IBOL = IBOL + NBORB(ISYM,I,1)
-            IVMT = IVMT + NBORB(ISYM,I,1)*NBORB(ISYM,I,2)
-          ENDIF
-          ENDDO
-          IF (IPRHAM.GE.6) THEN
-           CALL HEADER('Transformation matrix in orthon. basis',-1)
-           CALL PRQMAT(TBUF(IBUF),NFORB(I,0),NORB(I),
-     &                 NFORB(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-          ENDIF
-          IMAT = IMAT + NFORB(I,0)*NFORB(I,0)*NZ
-          IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
-   40   CONTINUE
-        CALL MEMREL('MODHAM',WORK,KSMT,KSMT,KFREE,LFREE)
-C
-        IF(VEXTPJ.OR.FREEPJ) THEN
-C       These variables are later set by SETDC2, but needed here...
-          N2TMT  = 0
-          NORBT  = 0
-          N2ORBT = 0
-          N2TMOTQ = 0
-          DO I = 1,NFSYM
-            I2TMT(I) = N2TMT
-            N2TMT    = N2TMT + NFORB(I,0)*NORB(I)*NZT
-            IORB(I)  = NORBT
-            NORBT    = NORBT  + NORB(I)
-            I2ORBT(I)= N2ORBT*NZ
-            N2ORBT   = N2ORBT + NFBAS(I,0)*NORB(I)
-            I2TMOT(I) = N2TMOTQ
-            N2TMOTQ = N2TMOTQ + NTMO(I)*NTMO(I)*NZ
-          ENDDO
-          CALL MEMGET('REAL',KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-          CALL DELPOS(TMAT,TBUF,WORK(KBUF),EIG,WORK(KBEIG),
-     &                VMAT,WORK,KFREE,LFREE)
-          CALL MEMREL('DELPOS',WORK,KBUF,KBUF,KFREE,LFREE)
-        ELSE
-C
-C       Generate transformation matrix
-C       ==============================
-C
-          IMAT = 1
-          IBUF = 1
-          IOFV = 1
-          DO 70 I = 1,NFSYM
-            IF(NFORB(I,0).EQ.0) GOTO 70
-            CALL BCKTR1(TMAT(IMAT),NFBAS(I,0),NORB(I),
-     &                  TBUF(IBUF),NFORB(I,0),NORB(I),
-     &                  NFORB(I,0),NZ,
-     &                  NORB(I),1,NFBAS(I,0),
-     &                  VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,
-     &                  IPRGEN)
-            IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
-            IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
-            IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
-   70     CONTINUE
-        ENDIF
-      ENDIF   
 
+        CALL MOD_DIREQ(TMAT,TBUF,VMAT,EIG,WORK(KFREE),LFREE)
+      ENDIF   
 C
 C     Print section
 C
@@ -6330,3 +6108,306 @@ C         Finish by adjusting the number of positron solutions to zero
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck LL_EQ */
+      SUBROUTINE LL_EQ(TMAT,TBUF,VMAT)
+C***********************************************************************
+C
+C     The Levy-Leblond equation:
+C     ==========================
+C
+C       Set up basis for Levy-Leblond equation as:
+C
+C              [                (Psi(L), 0 ]
+C        Psi = [                           ]
+C              [(2mc)^-1 sigma.p Psi(L), 0 ]
+C
+C     Reference:
+C       L. Visscher and T. Saue, J. Chem. Phys. 113(2000) 3996
+C       "Approximate relativistic electronic structure methods based on 
+C       the quaternion modified Dirac equation"
+C
+C     On input:
+C       TMAT - free particle matrix in Lowdin orthonormal basis     
+C       VMAT - Lowdin transformation matrix
+C
+C     On output:
+C       TMAT - transformation matrix with Levy-Leblond equation embedded
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0, D2 = 2.0D0, D0 = 0.0D0)
+C
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "cbihr1.h"
+C
+      DIMENSION TMAT(*),TBUF(*),VMAT(*)
+C      
+      FAC  = D2*CVAL*CVAL
+      FAC  = D1/FAC
+      NSYM = 4/NZ
+C
+      IBUF  = 1
+      IMAT  = 1
+      DO 10 IFRP = 1,NFSYM
+        NESH(IFRP)  = NFORB(IFRP,1)
+        NPSH(IFRP)  = 0
+        NORB(IFRP)  = NESH(IFRP) + NPSH(IFRP)
+        NTMO(IFRP)  = NORB(IFRP)
+        IF(NORB(IFRP).EQ.0) GOTO 10
+        CALL DZERO(TBUF(IBUF),NFORB(IFRP,0)*NORB(IFRP)*NZT)
+C.......set LL block to unit matrix
+        JJ = IBUF
+        DO J = 1, NFORB(IFRP,1)
+          TBUF(JJ) = D1
+          JJ = JJ + NFORB(IFRP,0) + 1
+        ENDDO
+C.......set SL block to (2mc)^-1 sigma.p
+        DO IZ = 1, NZ
+          JSL = IBUF + NFORB(IFRP,1)
+          ISL = IMAT + NFORB(IFRP,1)
+          DO J = 1, NFORB(IFRP,1)
+            CALL DCOPY (NFORB(IFRP,2),TMAT(ISL),1,TBUF(JSL),1)
+            CALL DSCAL (NFORB(IFRP,2),FAC,TBUF(JSL),1)
+            ISL = ISL + NFORB(IFRP,0)
+            JSL = JSL + NFORB(IFRP,0)
+          ENDDO
+          IF (IPRHAM.GE.6) THEN
+           CALL HEADER('Transformation matrix in orthon. basis',-1)
+           CALL PRQMAT(TBUF(IBUF),NFORB(IFRP,0),NORB(IFRP),
+     &                 NFORB(IFRP,0),NORB(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+          IMAT = IMAT + NFORB(IFRP,0) * NFORB(IFRP,0)
+          IBUF = IBUF + NFORB(IFRP,0) * NORB(IFRP)
+        ENDDO
+C.......finish by adjusting the number of positron solutions to zero
+        DO ISYM = 1, NSYM
+          NBORB(ISYM,IFRP,2) = 0
+          NBORB(ISYM,IFRP,0) = NBORB(ISYM,IFRP,1) + NBORB(ISYM,IFRP,2)
+        ENDDO
+   10 CONTINUE
+C
+C    Generate transformation matrix
+C    ==============================
+C
+      IBUF = 1
+      IMAT = 1
+      IOFV = 1
+      DO 20 IFRP = 1,NFSYM
+        IF(NORB(IFRP).EQ.0) GOTO 20
+        CALL BCKTR1(TMAT(IMAT),NFBAS(IFRP,0),NFORB(IFRP,1),
+     &              TBUF(IBUF),NFORB(IFRP,0),NFORB(IFRP,1),
+     &              NFORB(IFRP,0),NZ,
+     &              NFORB(IFRP,1),1,NFBAS(IFRP,0),
+     &              VMAT(IOFV),NFBAS(IFRP,0),NFORB(IFRP,0),1,
+     &              IPRGEN)
+        IMAT = IMAT + NFBAS(IFRP,0)*NORB(IFRP)*NZ
+        IBUF = IBUF + NFORB(IFRP,0)*NORB(IFRP)*NZ
+        IOFV = IOFV + NFORB(IFRP,0)*NFBAS(IFRP,0)
+   20   CONTINUE
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck MOD_DIREQ */
+      SUBROUTINE MOD_DIREQ(TMAT,TBUF,VMAT,EIG,WORK,LWORK)
+C***********************************************************************
+C
+C       The modified Dirac eqation:
+C       ===========================
+C
+C       Basis as in Levy-Leblond but without fixed ratio
+C
+C
+C               [                (Psi(L),                      0  ]
+C         Psi = [                                                 ]
+C               [                      0, (2mc)^-1 sigma.p Psi(L) ]
+C
+C     Reference:
+C       L. Visscher and T. Saue, J. Chem. Phys. 113(2000) 3996
+C       "Approximate relativistic electronic structure methods based on 
+C       the quaternion modified Dirac equation"
+C
+C     On input:
+C       TMAT - free particle matrix in Lowdin orthonormal basis     
+C       VMAT - Lowdin transformation matrix
+C
+C     On output:
+C       TMAT - transformation matrix with modified Dirac equation embedded
+C
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0, DM2 = -2.0D0, D0 = 0.0D0)
+C
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+      DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(*)
+#include "memint.h"
+
+      NSYM = 4/NZ
+      IMAT = 1
+      IBUF = 1
+      DO 10 I = 1,NFSYM
+        NESH(I)  = NFORB(I,1)
+        NPSH(I)  = NFORB(I,1)
+        NORB(I)  = NESH(I) + NPSH(I)
+        NTMO(I)  = NORB(I)
+        IF(NORB(I).EQ.0) GOTO 10
+C
+C       Prepare small component part
+C       ----------------------------
+C
+        LWRK = MXBBAS*MXBBAS*NSYM
+        CALL MEMGET('REAL',KSMT,LWRK,WORK,KFREE,LFREE)
+        LWRK = NFORB(I,1) * NFORB(I,1)
+        CALL MEMGET('REAL',KVMT,LWRK,WORK,KFREE,LFREE)
+        IVMT  = KVMT
+        IBOL  = 0
+        NEFF  = 0
+        DO ISYM = 1,NSYM
+        IF(NBORB(ISYM,I,1).GT.0) THEN
+C
+C         Make (sigma.p)(sigma.p) = p2
+C
+          IREP = JFSYM(ISYM,I) - 1
+          JSL = IMAT + IBOL * NFORB(I,0) + NFORB(I,1)
+          JLS = IMAT + NFORB(I,1) * NFORB(I,0) + IBOL
+          CALL QGEMM(NBORB(ISYM,I,1),NBORB(ISYM,I,1),NFORB(I,2),D1,
+     &          'N','N',IPQTOQ(1,0),TMAT(JLS),NFORB(I,0),NFORB(I,0),NZ,
+     &          'N','N',IPQTOQ(1,0),TMAT(JSL),NFORB(I,0),NFORB(I,0),NZ,
+     &          D0,IPQTOQ(1,0),WORK(KSMT),
+     &          NBORB(ISYM,I,1),NBORB(ISYM,I,1),1)
+          IF (IPRHAM.GE.7) THEN
+            WRITE(LUPRI,'(A,A3)') ' * Boson irrep: ',REP(IREP)
+            CALL HEADER('Kinetic energy matrix in orthon. basis',-1)
+            CALL PRQMAT(WORK(KSMT),NBORB(ISYM,I,1),NBORB(ISYM,I,1),
+     &                  NBORB(ISYM,I,1),NBORB(ISYM,I,1),
+     &                  1,IPQTOQ(1,0),LUPRI)
+          ENDIF
+          CALL LOWGEN(WORK(KSMT),NBORB(ISYM,I,1),WORK(IVMT),NEFFI,
+     &                NBORB(ISYM,I,1),STOL(2),IPRONE,EIG,
+     &                WORK(KFREE),LFREE)
+          IF (NEFFI.LT.NBORB(ISYM,I,1)) WRITE(LUPRI,'(A)') 
+     &            '*** WARNING *** Linear dependence in RKB basis'
+          NEFF = NEFF + NEFFI
+          NBORB(ISYM,I,2) = NEFFI
+          IF (IPRHAM.GE.7) THEN
+            CALL HEADER('Ext.transf. matrix in orthon. basis',-1)
+            CALL PRQMAT(WORK(IVMT),NBORB(ISYM,I,1),NBORB(ISYM,I,2),
+     &                  NBORB(ISYM,I,1),NBORB(ISYM,I,2),
+     &                  1,IPQTOQ(1,0),LUPRI)
+           ENDIF
+          IVMT = IVMT + NBORB(ISYM,I,1)*NBORB(ISYM,I,2)
+          IBOL = IBOL + NBORB(ISYM,I,1)
+        ELSE
+          NBORB(ISYM,I,2) = 0
+        ENDIF
+        NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)
+        ENDDO
+        NPSH(I)  = NEFF
+        NORB(I)  = NESH(I) + NPSH(I)
+        NTMO(I)  = NORB(I)
+C
+        CALL DZERO(TBUF(IBUF),NFORB(I,0)*NORB(I)*NZ)
+        IBO  = 0
+        IBOL = 0
+        IVMT = KVMT
+        DO ISYM = 1,NSYM
+        IF(NBORB(ISYM,I,1).GT.0) THEN
+          IREP = JFSYM(ISYM,I) - 1
+C
+C         Small component part
+C
+          JBUF = IBUF + NFORB(I,0)*IBO + NFORB(I,1)
+          JSL  = IMAT + IBOL * NFORB(I,0) + NFORB(I,1)
+          CALL QGEMM(NFORB(I,2),NBORB(ISYM,I,2),NBORB(ISYM,I,1),D1,
+     &         'N','N',IPQTOQ(1,0),TMAT(JSL),NFORB(I,0),NFORB(I,0),NZ,
+     &         'N','N',IPQTOQ(1,0),WORK(IVMT),
+     &                 NBORB(ISYM,I,1),NBORB(ISYM,I,2),1,
+     &         D0,IPQTOQ(1,0),TBUF(JBUF),NFORB(I,0),NORB(I),NZ)
+          IBO = IBO + NBORB(ISYM,I,2)
+C
+C         Large component part
+C
+          JBUF = IBUF + NFORB(I,0)*IBO + IBOL
+          DO J = 1, NBORB(ISYM,I,1)
+            TBUF(JBUF) = D1
+            JBUF = JBUF + NFORB(I,0) + 1
+          ENDDO
+          IBO = IBO + NBORB(ISYM,I,1)
+C
+C         Update offsets
+C
+          IBOL = IBOL + NBORB(ISYM,I,1)
+          IVMT = IVMT + NBORB(ISYM,I,1)*NBORB(ISYM,I,2)
+        ENDIF
+        ENDDO
+        IF (IPRHAM.GE.6) THEN
+         CALL HEADER('Transformation matrix in orthon. basis',-1)
+         CALL PRQMAT(TBUF(IBUF),NFORB(I,0),NORB(I),
+     &                 NFORB(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+        IMAT = IMAT + NFORB(I,0)*NFORB(I,0)*NZ
+        IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
+   10 CONTINUE
+      CALL MEMREL('MOD_DIREQ',WORK,KSMT,KSMT,KFREE,LFREE)
+C
+      IF(VEXTPJ.OR.FREEPJ) THEN
+C     These variables are later set by SETDC2, but needed here...
+        N2TMT  = 0
+        NORBT  = 0
+        N2ORBT = 0
+        N2TMOTQ = 0
+        DO I = 1,NFSYM
+          I2TMT(I) = N2TMT
+          N2TMT    = N2TMT + NFORB(I,0)*NORB(I)*NZT
+          IORB(I)  = NORBT
+          NORBT    = NORBT  + NORB(I)
+          I2ORBT(I)= N2ORBT*NZ
+          N2ORBT   = N2ORBT + NFBAS(I,0)*NORB(I)
+          I2TMOT(I) = N2TMOTQ
+          N2TMOTQ = N2TMOTQ + NTMO(I)*NTMO(I)*NZ
+        ENDDO
+        CALL MEMGET('REAL',KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+        CALL DELPOS(TMAT,TBUF,WORK(KBUF),EIG,WORK(KBEIG),
+     &              VMAT,WORK,KFREE,LFREE)
+        CALL MEMREL('MOD_DIREQ.delpos',WORK,KBUF,KBUF,KFREE,LFREE)
+      ELSE
+C
+C     Generate transformation matrix
+C     ==============================
+C
+        IMAT = 1
+        IBUF = 1
+        IOFV = 1
+        DO 20 I = 1,NFSYM
+          IF(NFORB(I,0).EQ.0) GOTO 20
+          CALL BCKTR1(TMAT(IMAT),NFBAS(I,0),NORB(I),
+     &                TBUF(IBUF),NFORB(I,0),NORB(I),
+     &                NFORB(I,0),NZ,
+     &                NORB(I),1,NFBAS(I,0),
+     &                VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,
+     &                IPRGEN)
+          IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+          IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
+          IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
+   20   CONTINUE
+      ENDIF
+C
+      RETURN
+      END
+
