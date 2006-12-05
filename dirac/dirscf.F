@@ -3696,169 +3696,42 @@ C
 C       3 : ZORA; diagonalize modified LL block
 C
         ELSEIF (ZORA.AND.(.NOT.SUB_BL)) THEN
-C
-C         Set dimensions
-C
           NL = NESH(I)
           NS = NPSH(I)
           NT = NORB(I)
-          NLL = NL * NL
-          NLS = NL * NS
-          NSS = NS * NS
-          NTT = NT * NT
           IEIGP = IORB(I) + 1
           IEIGE = IEIGP + NS
-C
-C         Allocate memory for the ZORA diagonalization. We need to
-C         have the LL, LS, SL and SS blocks in separate blocks.
-C
-          CALL MEMGET('REAL',KFLL,NZ*NLL,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KFLS,NZ*NLS,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KFSS,NZ*NSS,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KVLL,NZ*NLL,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KVSL,NZ*NLS,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KVSS,NZ*NSS,WORK,KFREE,LFREE)
-C
-C         Extract LL block of Fock matrix
-          CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
-     &                 0,0,1,1,1,NZ,
-     &                 WORK(KFLL),NL,NL,NZ,
-     &                 FMO(I2ORBT(I)+1),NT,NT,NZ)
-C         Extract LS block of Fock matrix
-          CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
-     &                 0,0,1,2,1,NZ,
-     &                 WORK(KFLS),NL,NS,NZ,
-     &                 FMO(I2ORBT(I)+1),NT,NT,NZ)
-C         Extract SS block of Fock matrix
-          CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
-     &                 0,0,2,2,1,NZ,
-     &                 WORK(KFSS),NS,NS,NZ,
-     &                 FMO(I2ORBT(I)+1),NT,NT,NZ)
-C
-C         Do the diagonalization using the ZORA approximation
-C
-          CALL ZORADG(NZ,NL,NS,WORK(KFLL),WORK(KFLS),WORK(KFSS),
-     &         WORK(KVLL),WORK(KVSL),WORK(KVSS),
-     &         EIG(IEIGE),EIG(IEIGP),
-     &         WORK,KFREE,LFREE)
-C
-C         Put the MO vectors in the FAO matrix, actually only the
-C         electron solutions are calculated (and stored in FAO(LL),
-C         FAO(SL)) but we put the eigenvectors of the equation
-C         (VSS-2C^2) CS = E CS in the SS block and zero the LS block.
-C
-C         Note that we cannot use EXTRSB as this routine will sort the
-C         eigenctors assuming a boson block structure which does not
-C         apply here. The point is that we now have the solutions
-C         on the right index (ordered as positron, electron) while
-C         the basis is on the left ordered via boson irreps first.
-C         In the spinfree ZORA case we do use EXTRSB because the
-C         boson subblocking is now also (enforced) present for the
-C         solutions.
-C
-          CALL EXTRSBR (2,I,0,0,1,1,1,NZ,WORK(KVLL),NL,NL,NZ,
-     &                 FAO(I2ORBT(I)+1),NT,NT)
-          CALL EXTRSBR (2,I,0,0,2,1,1,NZ,WORK(KVSL),NS,NL,NZ,
-     &                 FAO(I2ORBT(I)+1),NT,NT)
-C
-C         Done; release the extra memory used in ZORA
-C
-          CALL MEMREL('DFDIAG',WORK,KFLL,KFLL,KFREE,LFREE)
+          CALL ZORAEQ(I,0,NZ,NL,NS,NT,EIG,IEIGP,IEIGE,
+     &                FMO,FAO,WORK,KFREE,LFREE)
 C
 C       4 : Spinfree ZORA : Make modified matrix but do it block by block
 C
         ELSEIF (ZORA.AND.SPINFR) THEN
-C
-C           The total dimension of the fermion irrep can be set now
-C
-            NT = NORB(I)
-            NTT = NT * NT
-C
-            IEIGP = IORB(I) + 1
-            DO 21 ISUB = 1, N_SUB_BL(I)
-C
-C             Set dimensions within the boson subblock
-C
-              NBO = NORB_SUB(ISUB,I,0)
-              IF (NBO.EQ.0) GOTO 21
-              NBO2 = NBO * NBO
-              NL = NORB_SUB(ISUB,I,1)
-              NS = NORB_SUB(ISUB,I,2)
-              NLL = NL * NL
-              NLS = NL * NS
-              NSS = NS * NS
-              NZS = 1
-              IEIGE = IEIGP + NS
-C
-C             Allocate memory for the ZORA diagonalization. We need to
-C             have the LL, LS, SL and SS blocks in separate blocks.
-C
-              CALL MEMGET('REAL',KFLL,NZ*NLL,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KFLS,NZ*NLS,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KFSS,NZ*NSS,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KVLL,NZ*NLL,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KVSL,NZ*NLS,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KVSS,NZ*NSS,WORK,KFREE,LFREE)
-C
-C             Extract LL block of Fock matrix
-              CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
-     &                     ISUB,ISUB,1,1,1,NZS,
-     &                     WORK(KFLL),NL,NL,NZS,
-     &                     FMO(I2ORBT(I)+1),NT,NT,NZ)
-C             Extract LS block of Fock matrix
-              CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
-     &                     ISUB,ISUB,1,2,1,NZS,
-     &                     WORK(KFLS),NL,NS,NZS,
-     &                     FMO(I2ORBT(I)+1),NT,NT,NZ)
-C             Extract SS block of Fock matrix
-              CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,
-     &                     ISUB,ISUB,2,2,1,NZS,
-     &                     WORK(KFSS),NS,NS,NZS,
-     &                     FMO(I2ORBT(I)+1),NT,NT,NZ)
-C
-C             Do the diagonalization using the ZORA approximation
-C
-              CALL ZORADG(NZ,NL,NS,WORK(KFLL),WORK(KFLS),WORK(KFSS),
-     &             WORK(KVLL),WORK(KVSL),WORK(KVSS),
-     &             EIG(IEIGE),EIG(IEIGP),
-     &             WORK,KFREE,LFREE)
-C
-C             Put the MO vectors in the FAO matrix, actually only the
-C             electron solutions are calculated (and stored in FAO(LL),
-C             FAO(SL)) but we put the eigenvectors of the equation
-C             (VSS-2C^2) CS = E CS in the SS block and zero the LS block.
-C
-C             Insert LL block of Fock matrix
-              CALL EXTRSB (2,I,NBORB,4,NBRP,NBORB,4,NBRP,
-     &                     ISUB,ISUB,1,1,1,NZS,
-     &                     WORK(KVLL),NL,NL,NZS,
-     &                     FAO(I2ORBT(I)+1),NT,NT,NZ)
-C             Insert SL block of Fock matrix
-              CALL EXTRSB (2,I,NBORB,4,NBRP,NBORB,4,NBRP,
-     &                     ISUB,ISUB,2,1,1,NZS,
-     &                     WORK(KVSL),NS,NL,NZS,
-     &                     FAO(I2ORBT(I)+1),NT,NT,NZ)
-C
-C             Done; release the extra memory used in ZORA
-C
-              CALL MEMREL('DFDIAG',WORK,KFLL,KFLL,KFREE,LFREE)
-C
-C             Update pointers for the eigenvalues
-C
-              IEIGP = IEIGP + NBO
-  21        CONTINUE
+          NT = NORB(I)
+          IEIGP = IORB(I) + 1
+          DO 21 ISUB = 1, N_SUB_BL(I)
+            NBO = NORB_SUB(ISUB,I,0)
+            IF (NBO.EQ.0) GOTO 21
+            NL = NORB_SUB(ISUB,I,1)
+            NS = NORB_SUB(ISUB,I,2)
+            NZS = 1
+            IEIGE = IEIGP + NS
+            CALL ZORAEQ(I,ISUB,NZS,NL,NS,NT,EIG,IEIGP,IEIGE,
+     &                  FMO,FAO,WORK,KFREE,LFREE)
+            IEIGP = IEIGP + NBO
+  21      CONTINUE
 C
 C           Sort the eigenvalues according to energy : keep track of
 C           the boson symmetry. (Use FMO as scratch space for the
 C           vector sort)
 C
-            CALL INIBOS(IBEIG(IORB(I)+1),I,.FALSE.,IPRHAM)
-            CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
-            CALL SELBOS (I,NORB(I),WORK(KINDX),EIG(IORB(I)+1),
+          CALL INIBOS(IBEIG(IORB(I)+1),I,.FALSE.,IPRHAM)
+          CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
+          CALL SELBOS (I,NORB(I),WORK(KINDX),EIG(IORB(I)+1),
      &                   IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
      &                   FMO(I2ORBT(I)+1),WORK(KIDUM),IPRHAM)
-            CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
+          CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
 C
 C       End of different diagonalization cases
 C
@@ -4553,4 +4426,97 @@ C
             ENDDO               
          ENDDO
       ENDDO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Zoraeq */
+      SUBROUTINE ZORAEQ(IFRP,ISUB,NZS,NL,NS,NT,EIG,IEIGP,IEIGE,
+     &                  FMO,FAO,WORK,KFREE,LFREE)
+C***********************************************************************
+C         
+C         Set up and solve the ZORA equation.
+C         A cut and paste job by T. Saue Dec 5 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbham.h"
+      DIMENSION EIG(*),FAO(*),FMO(*),WORK(*)
+C
+      KFRSAV = KFREE
+      NBRP = 4 / NZ
+C
+C     Allocate memory for the ZORA diagonalization. We need to
+C     have the LL, LS, SL and SS blocks in separate blocks.
+C
+      NLL = NL * NL
+      NLS = NL * NS
+      NSS = NS * NS
+      NTT = NT * NT
+      CALL MEMGET('REAL',KFLL,NZ*NLL,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFLS,NZ*NLS,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFSS,NZ*NSS,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KVLL,NZ*NLL,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KVSL,NZ*NLS,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KVSS,NZ*NSS,WORK,KFREE,LFREE)
+C
+C     Extract LL block of Fock matrix
+      CALL EXTRSB (1,IFRP,NBORB,4,NBRP,NBORB,4,NBRP,
+     &             ISUB,ISUB,1,1,1,NZS,
+     &             WORK(KFLL),NL,NL,NZS,
+     &             FMO(I2ORBT(IFRP)+1),NT,NT,NZ)
+C     Extract LS block of Fock matrix
+      CALL EXTRSB (1,IFRP,NBORB,4,NBRP,NBORB,4,NBRP,
+     &             ISUB,ISUB,1,2,1,NZS,
+     &             WORK(KFLS),NL,NS,NZS,
+     &             FMO(I2ORBT(IFRP)+1),NT,NT,NZ)
+C     Extract SS block of Fock matrix
+      CALL EXTRSB (1,IFRP,NBORB,4,NBRP,NBORB,4,NBRP,
+     &             ISUB,ISUB,2,2,1,NZS,
+     &             WORK(KFSS),NS,NS,NZS,
+     &             FMO(I2ORBT(IFRP)+1),NT,NT,NZ)
+C
+C     Do the diagonalization using the ZORA approximation
+C
+      CALL ZORADG(NZ,NL,NS,WORK(KFLL),WORK(KFLS),WORK(KFSS),
+     &         WORK(KVLL),WORK(KVSL),WORK(KVSS),EIG(IEIGE),
+     &         EIG(IEIGP),WORK,KFREE,LFREE)
+C
+C     Put the MO vectors in the FAO matrix
+C
+      IF(SUB_BL) THEN
+C
+C       Insert LL block of Fock matrix
+        CALL EXTRSB (2,IFRP,NBORB,4,NBRP,NBORB,4,NBRP,
+     &               ISUB,ISUB,1,1,1,NZS,
+     &               WORK(KVLL),NL,NL,NZS,
+     &               FAO(I2ORBT(IFRP)+1),NT,NT,NZ)
+C       Insert SL block of Fock matrix
+        CALL EXTRSB (2,IFRP,NBORB,4,NBRP,NBORB,4,NBRP,
+     &               ISUB,ISUB,2,1,1,NZS,
+     &               WORK(KVSL),NS,NL,NZS,
+     &               FAO(I2ORBT(IFRP)+1),NT,NT,NZ)
+      ELSE
+C
+C         Note that we cannot use EXTRSB as this routine will sort the
+C         eigenctors assuming a boson block structure which does not
+C         apply here. The point is that we now have the solutions
+C         on the right index (ordered as positron, electron) while
+C         the basis is on the left ordered via boson irreps first.
+C         In the spinfree ZORA case we do use EXTRSB because the
+C         boson subblocking is now also (enforced) present for the
+C         solutions.
+C
+        CALL EXTRSBR (2,IFRP,0,0,1,1,1,NZ,WORK(KVLL),NL,NL,NZ,
+     &                FAO(I2ORBT(IFRP)+1),NT,NT)
+        CALL EXTRSBR (2,IFRP,0,0,2,1,1,NZ,WORK(KVSL),NS,NL,NZ,
+     &                FAO(I2ORBT(IFRP)+1),NT,NT)
+      ENDIF
+C
+C     Done; release the extra memory used in ZORA
+C
+      CALL MEMREL('DFDIAG',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
       END
