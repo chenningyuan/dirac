@@ -2615,6 +2615,8 @@ C        Extract or insert a sub block out of the full matrix
 C        that is ordered on boson irreps for the left and on small, 
 C        large or positron, electron on the right index.
 C
+C        IMODE                 - 1 : extract, 2 : insert
+C
 C        Written by L. Visscher
 C        September 2000
 C
@@ -3876,7 +3878,6 @@ C           Sort the eigenvalues according to energy : keep track of
 C           the boson symmetry. (Use FMO as scratch space for the
 C           vector sort)
 C
-CMI         CALL INIBOS(IBEIG(IORB(I)+1),I,.FALSE.,0)
             CALL INIBOS(IBEIG(IORB(I)+1),I,.FALSE.,IPRHAM)
             CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
@@ -3939,8 +3940,39 @@ C     Diagonalize the Dirac matrix using the ZORA approximation :
 C     first fold in the small components and build an effective large
 C     component equation.
 C
+C     Consider the general (modified) Dirac equation:
+C
+C     [ FLL FLS ] [C(L)]   [ SLL   0   ] [C(L)]
+C     [         ] [    ] = [           ] [    ] * E
+C     [ FSL FSS ] [C(S)]   [   0   SSS ] [C(S)]
+C
+C     The ZORA approximation is obtained by setting the SSS block
+C     of the metric to zero and then performing an unnormalized
+C     elimination of the small components (UESC).
+C
+C     C(S) = {-FSS}^(-1/2) * FSL * C(L)
+C
+C     This leads to the following equation for the large components
+C
+C     [ FLL + FLS*{-FSS}^(-1)*FSL ] C(L) = SLL * C(S) * E
+C
+C     On input:
+C       FLL - LL block of MO Fock matrix
+C       FLS - SL block of MO Fock matrix
+C       FSS - SS block of MO Fock matrix
+C
+C     On output:
+C       VLL - large component ZORA positive-energy solutions     
+C       VSL - small component ZORA positive-energy solutions     
+C       VSS - eigenvectors of F(SS)
+C
+C     Reference:
+C       L. Visscher and T. Saue, J. Chem. Phys. 113(2000) 3996
+C       "Approximate relativistic electronic structure methods based on 
+C       the quaternion modified Dirac equation"
+C
 C     Taken out of DFDIAG and modified by L.Visscher Aug 28 2000
-C     Last revision: Aug 28 2000
+C     Polish Dec 5 2006 T. Saue
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3959,13 +3991,21 @@ C
       DIMENSION WLL(NL,NL,NZS),WSS(NS,NS,NZS)
       DIMENSION WLS(NL,NS,NZS),WSL(NS,NL,NZS)
 C
-C     Diagonalize SS block of the matrix
+C     Create ZORA modified kinetic energy operator
+C     via diagonalisation of F(SS)
+C     ============================================
+C
+C     Let U be the matrix that diagonalizes F(SS):
+C
+C        U^(dagger) F U = f
+C
+C.....diagonalize F(SS) 
 C
       CALL QDIAG(NZS,NS,FSS,NS,NS,
      &           EIGP,1,VSS,NS,NS,
      &           WORK(KFREE),LFREE,IERR)
 C
-C     Form U * (2c^2-V)**-1/2
+C.....form WSS = U * f^(-1/2)
 C
       CALL DZERO (WSS,NZS*NS*NS)
       DO IZ = 1, NZS
@@ -3975,15 +4015,17 @@ C
          ENDDO
       ENDDO
 C
-C     Form c(sigma.p) * U * (2c^2-V)**-1/2
+C     Form intermediate WLS = FLS*WSS
+C     ===============================
 C
       CALL QGEMM(NL,NS,NS,D1,
      &     'N','N',IPQTOQ(1,0),FLS,NL,NS,NZS,
      &     'N','N',IPQTOQ(1,0),WSS,NS,NS,NZS,
      &      D0,IPQTOQ(1,0),WLS,NL,NS,NZS)
 C
-C     Form c(sigma.p) * U * (2c^2-V)**-1 * U+ * c(sigma.p)
+C     Form WLL = F(LS)*{-F(SS)}^(-1)*F(SL)
 C     This is the ZORA modified K.E. matrix
+C     ======================================
 C
       CALL QGEMM(NL,NL,NS,D1,
      &     'N','N',IPQTOQ(1,0),WLS,NL,NS,NZS,
@@ -3991,21 +4033,23 @@ C
      &      D0,IPQTOQ(1,0),WLL,NL,NL,NZS)
 C
 C     Add the ZORA modified K.E. matrix to the LL-block
+C     =================================================
 C
       CALL DAXPY (NZS*NL*NL,D1,WLL,1,FLL,1)
 C
 C     Diagonalize the ZORA matrix
+C     ===========================
 C
       CALL QDIAG(NZS,NL,FLL,NL,NL,
      &           EIGE,1,VLL,NL,NL,
      &           WORK(KFREE),LFREE,IERR)
 C
+C     Form the coefficients for the small components:
+C     ===============================================
 C
-C     Form C[S] = U * (2c^2-V)**-1 * U+ * c(sigma.p) * C[L]
-C               = {U * (2c^2-V)**-1/2} *
-C                 {(2c^2-V)**-1/2 * U+ * c(sigma.p)} * C[L]
+C     C(S) = {-FSS}^(-1/2) * FSL * C(L)
 C
-C     The coefficients for the small components.
+C     to be stored in VSL.
 C
       CALL QGEMM(NS,NL,NS,D1,
      &     'N','N',IPQTOQ(1,0),WSS,NS,NS,NZS,
@@ -4065,55 +4109,39 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C#include "dgroup.h"
 #include "dcborb.h"
       DIMENSION IBOS(*)
       LOGICAL SORTLS
 C
       NSUB = N_SUB_BL(IFRP)
+      IX = 1
 
       IF (.NOT.SORTLS) THEN
-      IX = 1
-      DO ISUB = 1, NSUB
-        ID = ID_SUB_BL(ISUB,IFRP)
-        DO IC = 2, 1, -1
-          NBO = NORB_SUB(ISUB,IFRP,IC)
-          IF(NBO.GT.0) THEN
-            CALL ICOPY(NBO,ID,0,IBOS(IX),1)
+        DO ISUB = 1, NSUB
+          ID = ID_SUB_BL(ISUB,IFRP)
+          DO IC = 2, 1, -1
+            NBO = NORB_SUB(ISUB,IFRP,IC)
+            IF(NBO.GT.0) THEN
+              CALL ICOPY(NBO,ID,0,IBOS(IX),1)
 C           write(lupri,*)'IX=',IX, 
 C    &       ' IBOS(J),J=IX,IX+NBO:',(IBOS(J),J=IX,IX+NBO-1)
-            IX = IX + NBO
-          ENDIF
+              IX = IX + NBO
+            ENDIF
+          ENDDO
         ENDDO
-      ENDDO
-
       ELSE
-C     ...  
-      IX = 1
-      DO ISUB = 1, NSUB
-        ID = ID_SUB_BL(ISUB,IFRP)
-          IC = 2
-          NBO = NORB_SUB(ISUB,IFRP,IC)
-          IF(NBO.GT.0) THEN
-            CALL ICOPY(NBO,ID,0,IBOS(IX),1)
+        DO IC = 2, 1, -1
+          DO ISUB = 1, NSUB
+            ID = ID_SUB_BL(ISUB,IFRP)
+            NBO = NORB_SUB(ISUB,IFRP,IC)
+            IF(NBO.GT.0) THEN
+              CALL ICOPY(NBO,ID,0,IBOS(IX),1)
 C           write(lupri,*)'IX=',IX, 
 C    &       ' IBOS(J),J=IX,IX+NBO:',(IBOS(J),J=IX,IX+NBO-1)
-            IX = IX + NBO
-          ENDIF
-      ENDDO
-
-      DO ISUB = 1, NSUB
-        ID = ID_SUB_BL(ISUB,IFRP)
-          IC = 1
-          NBO = NORB_SUB(ISUB,IFRP,IC)
-          IF(NBO.GT.0) THEN
-            CALL ICOPY(NBO,ID,0,IBOS(IX),1)
-C           write(lupri,*)'IX=',IX, 
-C    &       ' IBOS(J),J=IX,IX+NBO:',(IBOS(J),J=IX,IX+NBO-1)
-            IX = IX + NBO
-          ENDIF
-      ENDDO
-
+              IX = IX + NBO
+            ENDIF
+          ENDDO
+        ENDDO
       ENDIF
    
       IF (IPRINT.GE.4) THEN
