@@ -4196,7 +4196,7 @@ C     ===================================================
 C
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
-      IF(SPINFR) THEN
+      IF(SUB_BL) THEN
         IOPT = 15
         CALL MEMGET('REAL',KIBE,NORBT,WORK,KFREE,LFREE)
       ELSE
@@ -4255,7 +4255,7 @@ CTROND        IF(NFRO(IFRP).EQ.0) GOTO 21
         ENDIF
 C       Initialize unit matrix (transformation matrix in MO-basis)
         CALL DUNIT2(WORK(KBUF),NORB(IFRP),NORB(IFRP),NORB(IFRP),NZ)
-        IF(SPINFR) THEN
+        IF(SUB_BL) THEN
 C         Spin-free case: Fill array with boson irrep info
           CALL INISUB
           CALL INIBOS(WORK(KIBOS),IFRP,.FALSE.,0)
@@ -6254,6 +6254,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
+#include "cbihr1.h"
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(*)
 #include "memint.h"
 
