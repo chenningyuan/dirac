@@ -38,7 +38,7 @@ C     /* JPBE_DERIVATIVES */
      &                            DENSITY,
      &                            DENSITY_GRADIENT_NORM,
      &                            CURRENT_DENSITY_NORM,
-     &                            DEXC_J_J)
+     &                            DEXC_J)
 C=======================================================================
 C     description ...
 C-----------------------------------------------------------------------
@@ -52,11 +52,11 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
       PARAMETER (D5 = 5.0D0,D6 = 6.0D0,D7 = 7.0D0,D8 = 8.0D0,D9 = 9.0D0)
 
-      PARAMETER (D12 = D1/D2)
-      PARAMETER (D13 = D1/D3)
-      PARAMETER (D23 = D2/D3)
-      PARAMETER (D43 = D4/D3)
-      PARAMETER (D83 = D8/D3)
+      PARAMETER (DP12 = D1/D2)
+      PARAMETER (DP13 = D1/D3)
+      PARAMETER (DP23 = D2/D3)
+      PARAMETER (DP43 = D4/D3)
+      PARAMETER (DP83 = D8/D3)
 
       RHOA = DENSITY/D2
       RHOB = RHOA
@@ -72,44 +72,38 @@ C=======================================================================
 #ifdef dont_include_me
 !     debug: DEXC_N_N
 
-      F1  = D2**D13
+      F1  = D2**DP13
       F2  = GRADA**D2
-      F3  = D1/(RHOA**D83)
+      F3  = D1/(RHOA**DP83)
       F4  = JA**D2
       F5  = 0.27303041196629D0
      &       *(0.10558462307238D0*F4*F3 + 0.01645530784602D0*F2*F3) + D1
       F6  = D1/(RHOA**3.666666666666667D0)
       F7  = -0.28155899485969D0*F4*F6 - 0.04388082092272D0*F2*F6
       F8  = D1/(F5**D2)
-      F9  = RHOA**D43
+      F9  = RHOA**DP43
       F10 = D1/(RHOA**4.666666666666667D0)
 
       DEXC_2000000 = 0.5*(-0.65649668122846D0*F1*(1.804D0 - 0.804D0/F5)
-     &                        /(RHOA**D23) - 0.86467093020941D0*F1*F7*F8
-     &                              *(RHOA**D13) - 0.32425159882853D0*F1
+     &                       /(RHOA**DP23) - 0.86467093020941D0*F1*F7*F8
+     &                             *(RHOA**DP13) - 0.32425159882853D0*F1
      &   *(1.032382981152195D0*F4*F10 + 0.16089634338331D0*F2*F10)*F8*F9
      &                     + 0.17706109521776D0*F1*(F7**D2)*F9/(F5**D3))
 
-      X_J_J    = D12*DEXC_2000000
+      DEX_J = DP12*DEXC_2000000
+      DEC_J = D0
 #endif
 
-      F1  = D2**D13
-!     F2  = JA**D2
-      F3  = D1/(RHOA**D83)
-      F4  = 0.27303041196629D0*(0.01645530784602D0*F3
-!    &                     *(GRADA**D2) + 0.10558462307238D0*F2*F3) + D1
-     &                     *(GRADA**D2)) + D1
+      F1 = RHOA**DP83
+      F2 = 0.01645530784602D0*F1*(GRADA**D2)
+      F3 = (0.27303041196629D0*F2 + D1)**D2
 
-!     DEXC_0000020 = 0.00394779406352D0*F1*F2
-!    &                                            /((F4**D3)*(RHOA**D4))
-      DEXC_0000020 =
-     &                      - 0.03423598284293*F1/((F4**D2)*(RHOA**D43))
+      DEXC_0000010 = -0.01711799142146D0*(D2**DP13)/(F3*(RHOA**DP13))
 
-      X_J_J    = D12*DEXC_0000020
+      DEX_J = DEXC_0000010
+      DEC_J = D0
 
-      C_J_J    = D0
-      DEXC_J_J = X_J_J + C_J_J
-      DEXC_J_J = WEIGHT*DEXC_J_J
+      DEXC_J = WEIGHT*(DEX_J + DEC_J)
 
       RETURN
       END

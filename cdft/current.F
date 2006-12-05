@@ -179,7 +179,7 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck GET_CURRENT_SUB */
+C     /* GET_CURRENT_SUB */
       SUBROUTINE GET_CURRENT_SUB(CURRENT,
      &                           F,IC1,IC2,
      &                           GAOL,
@@ -239,7 +239,7 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck GET_CURRENT_DIV */
+C     /* GET_CURRENT_DIV */
       SUBROUTINE GET_CURRENT_DIV(CURRENT_DERVS,CURRENT_DIV)
 C=======================================================================
 C     calculate divergence
@@ -263,7 +263,7 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck GET_CURRENT_ROT */
+C     /* GET_CURRENT_ROT */
       SUBROUTINE GET_CURRENT_ROT(CURRENT_DERVS,CURRENT_ROT)
 C=======================================================================
 C     calculate curl

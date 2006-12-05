@@ -107,16 +107,14 @@ C=======================================================================
             IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
             IOFF = NBAST*NBAST*(IQ-1)
 
+            INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),IREPOP)
+
             VXC_S = VXC(FRR)*SPIN_DENSITY(IXYZ)
 
-            CALL CDFT_EXC(VXC_S,
-     &                    F,IU,IV,ITRANSFORM,IXYZ,
-     &                    GAO,
-     &                    IREPOP,EXCMAT(1+IOFF),BUF)
-            CALL CDFT_EXC(VXC_S,
-     &                    G,IX,IY,ITRANSFORM,IXYZ,
-     &                    GAO,
-     &                    IREPOP,EXCMAT(1+IOFF),BUF)
+            CALL CDFT_EXC(VXC_S,F,IU,IV,
+     &                    GAO,INTERMEDIATE,EXCMAT(1+IOFF),BUF)
+            CALL CDFT_EXC(VXC_S,G,IX,IY,
+     &                    GAO,INTERMEDIATE,EXCMAT(1+IOFF),BUF)
           ENDDO
         ENDIF
 
@@ -229,8 +227,10 @@ C=======================================================================
 !     F  = -CVAL
 !     G  = -CVAL
 !     dirty fix
-      F  = -137.0359998D0
-      G  = -137.0359998D0
+!     F  = -137.0359998D0
+!     G  = -137.0359998D0
+      F  = D1
+      G  = D1
       IU = 1
       IV = 2
       IX = 2
@@ -246,26 +246,24 @@ C=======================================================================
      &                      DENSITY,
      &                      DENSITY_GRADIENT_NORM,
      &                      D0,
-     &                      DEXC_J_J)
+     &                      DEXC_J)
 
       DO IXYZ = 1,3
-        CURRENT_DENSITY(IXYZ) = DABS(CURRENT_DENSITY(IXYZ))
-!       IF(CURRENT_DENSITY(IXYZ) .LT. DFTHRL) GOTO 1
+!       CURRENT_DENSITY(IXYZ) = DABS(CURRENT_DENSITY(IXYZ))
+        IF(CURRENT_DENSITY(IXYZ) .LT. DFTHRL) GOTO 1
 
         IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
         IOFF = NBAST*NBAST*(IQ-1)
 
-        VXC_S = DEXC_J_J*CURRENT_DENSITY(IXYZ)
+        INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),IREPOP)
 
-        CALL CDFT_EXC(VXC_S,
-     &                F,IU,IV,ITRANSFORM,IXYZ,
-     &                GAO,
-     &                IREPOP,EXCMAT(1+IOFF),BUF)
-        CALL CDFT_EXC(VXC_S,
-     &                G,IX,IY,ITRANSFORM,IXYZ,
-     &                GAO,
-     &                IREPOP,EXCMAT(1+IOFF),BUF)
-!1      CONTINUE
+        VXC_S = D2*DEXC_J*CURRENT_DENSITY(IXYZ)
+
+        CALL CDFT_EXC(VXC_S,F,IU,IV,
+     &                GAO,INTERMEDIATE,EXCMAT(1+IOFF),BUF)
+        CALL CDFT_EXC(VXC_S,G,IX,IY,
+     &                GAO,INTERMEDIATE,EXCMAT(1+IOFF),BUF)
+ 1      CONTINUE
       ENDDO
 
       RETURN
@@ -339,10 +337,7 @@ C=======================================================================
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* CDFT_EXC */
-      SUBROUTINE CDFT_EXC(VXC_S,
-     &                    F,IC1,IC2,ITRANSFORM,IXYZ,
-     &                    GAO,
-     &                    IREPOP,EXCMAT,BUF)
+      SUBROUTINE CDFT_EXC(VXC_S,F,IC1,IC2,GAO,IREPOP,EXCMAT,BUF)
 C=======================================================================
 C     contribution of current or spin density to
 C     to g_pq (upon integration G_pq)
@@ -376,15 +371,13 @@ C=======================================================================
 
 #include "ibtfun.h"
 
-      INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),IREPOP)
-
       DO IREP1 = 0,NBSYM-1
 
         N1 = NBBAS(IREP1,IC1)
         IF(N1 .GT. 0) THEN
 
           I1 = IBBAS(IREP1,IC1)
-          IREP2 = IBTXOR(IREP1,INTERMEDIATE)
+          IREP2 = IBTXOR(IREP1,IREPOP)
           N2 = NBBAS(IREP2,IC2)
           IF(N2 .GT. 0) THEN
 
