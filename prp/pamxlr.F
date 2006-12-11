@@ -1121,7 +1121,7 @@ C
 C
       IF(XLRANA) THEN
         CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
-        CALL DEFORB(WORK(KLRO),NCLS,3,XLR_INDSTR,
+        CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
      &              WORK,KFREE,LFREE,IPRXLR)
       ELSE
         KLRO=KFREE
@@ -1397,8 +1397,8 @@ C
               ABLRF(IFREQ,INDAP,INDBP,1)  =
      &        D2*DDOT(NBDIM,GPO,1,XPO(1,1,IFREQ),1)
               IF(XLRANA.OR.IPRXLR.GE.2) THEN
-              FREQ = EVALR(IFREQ)
-              WRITE(LUPRI,1000)
+                FREQ = EVALR(IFREQ)
+                WRITE(LUPRI,1000)
      &            '<<',INDAP,',',INDBP,'>>:',ABLRF(IFREQ,INDAP,INDBP,1),
      &            ' a.u.,  ',BVTYP(ITYP),
      &            '-contribution at frequency',FREQ,' a.u.'
@@ -1413,10 +1413,6 @@ C
                   ENDDO
                 ENDDO
                 CALL DSCAL(NXPAR,D2,BBUF,1)
-CTROND
-                TMP = DSUM(NXPAR,BBUF,1)
-                WRITE(6,*) 'Compare ..',
-     &       TMP,ABLRF(IFREQ,INDAP,INDBP,1)
                 TMP = 100.0D0/ABLRF(IFREQ,INDAP,INDBP,1)
                 CALL DZERO(RIBF,NI)
                 CALL DZERO(RVBF,NV)
