@@ -337,160 +337,10 @@ C     LINAD = ( DO4C2C.AND.USEDF.AND.LINEAR )
       CALL MODHAM(WORK(KTMAT),VMAT,WORK(KTBUF),WORK(KEIG),.NOT.FPB,
      &            LINAD,WORK(KFREE),LFREE)
 
-C      ... NTMO is set up !!!!
-C .... this settings are needed (DFDIAG!!!) for the RKB option !!!
-C .. NZT is in dcbbas.h, after MODHAM for RKB is equal to  NZ !
-      N2TMT   = 0
-      N2TMOTQ = 0
-      NORBT  = 0
-      N2ORBT = 0
-      DO IFRP = 1,NFSYM
-        NISHMF(IFRP) = NISH(IFRP)
-        NOCCMF(IFRP) = NOCC(IFRP)
-        I2TMT(IFRP) = N2TMT
-C       N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZ
-        I2TMOT(IFRP) = N2TMOTQ
-        N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
-        IORB(IFRP)  = NORBT
-C          ....  Count total number of orbitals...
-        NORBT    = NORBT  + NORB(IFRP)
-        I2ORBT(IFRP)= N2ORBT*NZ
-        N2ORBT   = N2ORBT + NORB(IFRP)*NORB(IFRP)
-      ENDDO
+      CALL SET_TMT(IPRHAM)
 
-      IF (IPRHAM.GE.5) THEN
-        IMAT = KTMAT
-        IVMAT = 1
-        IBUF = KTBUF
-        DO I = 1,NFSYM                                              
-        IF(NORB(I).GT.0) THEN 
-
-          CALL HEADER(
-     &   'MAKE_BSS: Non-linsym RKB transformation matrix 4c AO->MO',-1)
-          WRITE(LUPRI,'(A,I1,A,I1)')
-     &    '* Fermion ircop no.',I,'/',NFSYM                          
-          CALL PRQMAT(WORK(IMAT),NFBAS(I,0),NORB(I),              
-     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
-
-          IF (LINAD) THEN
-           CALL HEADER(
-     &     'MAKE_BSS: RKB MO to LINSYM RKB_MO: ',-1)
-           WRITE(LUPRI,'(A,I1,A,I1)')
-     &     '* Fermion ircop no.',I,'/',NFSYM                          
-           CALL PRQMAT(WORK(IBUF),NORB(I),NORB(I),              
-     &          NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
-          ENDIF
-
-          IF (.NOT.FPB) THEN
-           CALL HEADER(
-     &    'MAKE_BSS: (non-linear) SL resorted RKB AO to MO  ',-1)
-           WRITE(LUPRI,'(A,I1,A,I1)')
-     &     '* Fermion ircop no.',I,'/',NFSYM                          
-           CALL PRQMAT(VMAT(IVMAT),NFBAS(I,0),NORB(I),              
-     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
-          ENDIF
-
-          IBUF = IBUF  + NORB(I)*NORB(I)
-          IMAT = IMAT  + NFBAS(I,0)*NORB(I)*NZ                         
-         IVMAT = IVMAT + NFBAS(I,0)*NORB(I)*NZ  
-
-        ENDIF                                                   
-        ENDDO                                                         
-      ENDIF
-
-      IF (.NOT.FPB) THEN
-C      ... we need to transform to SL sorted ON basis ...
-C      CALL NEWLAB('SL_TM_4C',LUBSS,LUPRI)
-C      CALL WRITT(LUBSS,N2TMT,VMAT)
-       CALL W2BSSMAT(4,.TRUE.,'SL_TM_4C',
-     &     'MAKE_BSS',VMAT,N2TMT,LUBSS,IPRHAM)
-       IF (IPRHAM.GE.2) THEN
-        write(lupri,*)
-     & 'MAKE_BSS: SL_TM_4C (VMAT) was written to the BSSMAT !!'
-       ENDIF
-      ENDIF
-
-C     CALL NEWLAB('TMAT4C  ',LUBSS,LUPRI)
-C     CALL WRITT(LUBSS,N2TMT,WORK(KTMAT))
-      CALL W2BSSMAT(4,.TRUE.,'TMAT4C  ','MAKE_BSS',WORK(KTMAT),
-     &               N2TMT,LUBSS,IPRHAM)
-      IF (IPRHAM.GE.3) THEN
-        WRITE(LUPRI,'(/2X,A)')
-     & 'MAKE_BSS: RKB transf. matrix (TMAT, basic) '//
-     & 'has been written to the BSSMAT file.'
-      ENDIF
-
-c     call quit('here stop')
-
-      IF (LINAD) THEN
-       ISIZE = NORB(1)*NORB(1)
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
-C      CALL NEWLAB('TMAT_LSY',LUBSS,LUPRI)
-C      CALL WRITT(LUBSS,ISIZE,WORK(KTBUF))
-       CALL W2BSSMAT(4,.TRUE.,'TMAT_LSY','MAKE_BSS',
-     &      WORK(KTBUF),ISIZE,LUBSS,IPRHAM)
-       IF (IPRHAM.GE.3) THEN
-        WRITE(LUPRI,'(/2X,A)')
-     & 'MAKE_BSS: RKB MO to MO_LSYM (WORK(KTBUF)) '//
-     & 'was written to the BSSMAT file.'
-       ENDIF
-      ENDIF
-
-C    ... one-step approach and NOT the linear symmetry 
-      IF (.NOT.FPB.AND.LINAD) THEN
-       IVMAT = 1
-       IBUF = KTBUF
-       IMAT = KTMAT 
-       DO I = 1, NFSYM
-       IF(NORB(I).GT.0) THEN
-C     ... construct original AO->RKB_MO basis:
-C           VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
-        CALL QGEMM(NFBAS(I,0),NORB(I),NORB(I),D1,
-     &    'N','N',IPQTOQ(1,0),WORK(IMAT),
-     &     NFBAS(I,0),NORB(I),NZ,
-     &     'H','N',IPQTOQ(1,0),
-     &     WORK(IBUF),NORB(I),NORB(I),1,
-     &     D0,IPQTOQ(1,0),VMAT(IVMAT),
-     &     NFBAS(I,0),NORB(I),NZ)
-
-         IF (IPRHAM.GE.5) THEN
-          CALL HEADER(
-     &  'MAKE_BSS: NONLINSYM RKB transformation matrix 4c AO->MO ',-1)
-          WRITE(LUPRI,'(A,I1,A,I1)')
-     &    '* Fermion ircop no.',I,'/',NFSYM                          
-          CALL PRQMAT(VMAT(IVMAT),NFBAS(I,0),NORB(I),              
-     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
-         ENDIF
-
-         IBUF = IBUF  + NORB(I)*NORB(I)
-         IMAT = IMAT  + NFBAS(I,0)*NORB(I)*NZ                         
-        IVMAT = IVMAT + NFBAS(I,0)*NORB(I)*NZ  
-
-       ENDIF
-       ENDDO
-
-C      CALL NEWLAB('TMAT4C_1',LUBSS,LUPRI)
-C      CALL WRITT(LUBSS,N2TMT,VMAT)
-       CALL W2BSSMAT(4,.TRUE.,'TMAT4C_1','MAKE_BSS',
-     &               VMAT,N2TMT,LUBSS,IPRHAM)
-       IF (IPRHAM.GE.2) THEN
-        write(lupri,*)
-     & 'MAKE_BSS: TMAT4C_1 (VMAT) was written into the BSSMAT !'
-       ENDIF
-
-      ENDIF
-
-C     CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-C       ... dummy vars
-      CALL W2BSSMAT(6,.TRUE.,'XXXXXXXX','MAKE_BSS',
-     &               VMAT,N2TMT,LUBSS,IPRHAM)
-
-      IF (IPRHAM.GE.3) THEN
-       WRITE(LUPRI,'(/2X,A)')
-     & 'MAKE_BSS: BSSMAT file - '//
-     & ' EOFLABEL added.'
-      ENDIF
+      CALL HANDLE_RKB(VMAT,WORK(KTMAT),WORK(KTBUF),LINAD,
+     &                  FPB,IPRHAM,WORK(KFREE),LFREE)
 
 C      ... allocate memmory 
       CALL MEMGET('INTE',KIBEIG,NTBAS(0),WORK,KFREE,LFREE)
@@ -513,6 +363,8 @@ C ===============================================================
        IF (SPINFR.OR.DO4C2C) THEN
         CALL INI_SF_RKB(WORK(KIBEIG),IPRHAM)
        ENDIF
+C       ... we need to zero them as in enters GET_A_FAC routine !
+       CALL DZERO(WORK(KEIG),NTBAS(0))
       ENDIF
 
 C NOTE: If SPINFR=.true. we utilize later the WORK(KIBEIG) array with boson info !!!
@@ -640,6 +492,327 @@ C   ... release the rest of allocated memmory ...
       CALL MEMREL('MAKE_BSS',WORK,KWORK,KWORK,KFREE,LFREE)
 
       CALL QEXIT('MAKE_BSS')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck set_tmt */
+      SUBROUTINE SET_TMT(IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C   Set up variables - needed for DFDIAG routine !
+C
+C  Written by Miro Ilias, Prievidza, December 2006
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbdhf.h"
+      CALL QENTER('SET_TMT')
+
+      IF (IPRINT.GE.5) THEN
+       WRITE(LUPRI,*) 'SET_TMT: setting variables'
+      ENDIF
+
+C      ... NTMO is set up !!!!
+C .... this settings are needed (DFDIAG!!!) for the RKB option !!!
+C .. NZT is in dcbbas.h, and after MODHAM for RKB is equal to NZ !
+      N2TMT   = 0
+      N2TMOTQ = 0
+      NORBT  = 0
+      N2ORBT = 0
+      DO IFRP = 1,NFSYM
+        NISHMF(IFRP) = NISH(IFRP)
+        NOCCMF(IFRP) = NOCC(IFRP)
+        I2TMT(IFRP) = N2TMT
+C       N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
+        N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZ
+        I2TMOT(IFRP) = N2TMOTQ
+        N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+        IORB(IFRP)  = NORBT
+C          ....  Count total number of orbitals...
+        NORBT    = NORBT  + NORB(IFRP)
+        I2ORBT(IFRP)= N2ORBT*NZ
+        N2ORBT   = N2ORBT + NORB(IFRP)*NORB(IFRP)
+      ENDDO
+
+      IF (IPRINT.GE.3) THEN
+       DO I = 1, NFSYM
+        write(lupri,*) 'fermion symm:',I,'/',NFSYM
+        write(lupri,*) 'NISHMF(',I,')=',NISHMF(I)
+        write(lupri,*) 'NOCCMF(',I,')=',NOCCMF(I)
+        write(lupri,*) 'I2TMT(',I,')=',I2TMT(I)
+        write(lupri,*) 'IORB(',I,')=',IORB(I)
+        write(lupri,*) 'I2ORBT(',I,')=',I2ORBT(I)
+       ENDDO
+        write(lupri,*) 'SET_TMT: N2TMT=',N2TMT
+      ENDIF
+
+      CALL QEXIT('SET_TMT')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck handle_rkb */
+      SUBROUTINE HANDLE_RKB(VMAT,TMAT,TBUF,LINAD,FPB,IPRINT,WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C      After the MODHAM routine take care of matrixes
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+      DIMENSION VMAT(*),TMAT(*),TBUF(*),WORK(LWORK)
+      LOGICAL LINAD,FPB
+
+      CALL QENTER('HANDLE_RKB')
+
+      IF (IPRINT.GE.5) THEN
+        IMAT =  1
+        IVMAT = 1
+        IBUF = 1
+        DO I = 1,NFSYM                                              
+        IF(NORB(I).GT.0) THEN 
+          CALL HEADER(
+     &  'HANDLE_RKB: Non-linsym RKB transformation matrix 4c AO->MO',-1)
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM                          
+          CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),              
+     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
+
+          IF (LINAD) THEN
+           CALL HEADER(
+     & 'HANDLE_RKB: RKB MO to LINSYM RKB_MO: ',-1)
+           WRITE(LUPRI,'(A,I1,A,I1)')
+     &     '* Fermion ircop no.',I,'/',NFSYM                          
+           CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),              
+     &          NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
+          ENDIF
+
+          IF (.NOT.FPB) THEN
+           CALL HEADER(
+     & 'HANDLE_RKB: (non-linear) SL resorted RKB AO to MO  ',-1)
+           WRITE(LUPRI,'(A,I1,A,I1)')
+     &     '* Fermion ircop no.',I,'/',NFSYM                          
+           CALL PRQMAT(VMAT(IVMAT),NFBAS(I,0),NORB(I),              
+     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
+          ENDIF
+
+          IBUF = IBUF  + NORB(I)*NORB(I)
+          IMAT = IMAT  + NFBAS(I,0)*NORB(I)*NZ                         
+         IVMAT = IVMAT + NFBAS(I,0)*NORB(I)*NZ  
+
+        ENDIF                                                   
+        ENDDO                                                         
+      ENDIF
+
+      IF (.NOT.FPB) THEN
+C      ... save the 'SL' resorted transformation matrix
+       CALL W2BSSMAT(4,.TRUE.,'SL_TM_4C',
+     & 'HANDLE_RKB',VMAT,N2TMT,LUBSS,IPRHAM)
+       IF (IPRINT.GE.2) THEN
+        write(lupri,*)
+     & 'HANDLE_RKB: SL_TM_4C (VMAT) was written to the BSSMAT !!'
+       ENDIF
+      ENDIF
+
+      CALL W2BSSMAT(4,.TRUE.,'TMAT4C  ','MAKE_BSS',TMAT,
+     &               N2TMT,LUBSS,IPRHAM)
+      IF (IPRINT.GE.2) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     & 'MAKE_BSS: RKB transf. matrix (TMAT, basic) '//
+     & 'has been written to the BSSMAT file.'
+      ENDIF
+
+      IF (LINAD) THEN
+       ISIZE = NORB(1)*NORB(1)
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
+       CALL W2BSSMAT(4,.TRUE.,'TMAT_LSY','MAKE_BSS',
+     &      TBUF,ISIZE,LUBSS,IPRHAM)
+       IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     & 'MAKE_BSS: RKB MO to MO_LSYM (WORK(KTBUF)) '//
+     & 'was written to the BSSMAT file.'
+       ENDIF
+      ENDIF
+
+C    ... one-step approach and NOT the linear symmetry 
+      IF (.NOT.FPB.AND.LINAD) THEN
+       IVMAT = 1
+       IBUF = 1
+       IMAT = 1
+       DO I = 1, NFSYM
+       IF(NORB(I).GT.0) THEN
+C     ... construct original AO->RKB_MO basis:
+C           VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
+        CALL QGEMM(NFBAS(I,0),NORB(I),NORB(I),D1,
+     &    'N','N',IPQTOQ(1,0),TMAT(IMAT),
+     &     NFBAS(I,0),NORB(I),NZ,
+     &     'H','N',IPQTOQ(1,0),
+     &     TBUF(IBUF),NORB(I),NORB(I),1,
+     &     D0,IPQTOQ(1,0),VMAT(IVMAT),
+     &     NFBAS(I,0),NORB(I),NZ)
+
+         IF (IPRINT.GE.5) THEN
+          CALL HEADER(
+     &  'MAKE_BSS: NONLINSYM RKB transformation matrix 4c AO->MO ',-1)
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM                          
+          CALL PRQMAT(VMAT(IVMAT),NFBAS(I,0),NORB(I),              
+     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
+         ENDIF
+
+         IBUF = IBUF  + NORB(I)*NORB(I)
+         IMAT = IMAT  + NFBAS(I,0)*NORB(I)*NZ                         
+        IVMAT = IVMAT + NFBAS(I,0)*NORB(I)*NZ  
+
+       ENDIF
+       ENDDO
+
+C    save
+       CALL W2BSSMAT(4,.TRUE.,'TMAT4C_1','MAKE_BSS',
+     &               VMAT,N2TMT,LUBSS,IPRHAM)
+       IF (IPRINT.GE.2) THEN
+        write(lupri,*)
+     & 'MAKE_BSS: TMAT4C_1 (VMAT) was written into the BSSMAT !'
+       ENDIF
+
+      ENDIF
+
+C       ... dummy vars
+      CALL W2BSSMAT(6,.TRUE.,'XXXXXXXX','MAKE_BSS',
+     &               VMAT,N2TMT,LUBSS,IPRHAM)
+      IF (IPRINT.GE.3) THEN
+       WRITE(LUPRI,'(/2X,A)')
+     & 'MAKE_BSS: BSSMAT file - '//
+     & ' EOFLABEL added.'
+      ENDIF
+      CALL QEXIT('HANDLE_RKB')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck lowd2c */
+      SUBROUTINE LOWD2C(VMAT,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  Reorder the Lowdin matrix for 2component calculations and write it to the file
+C
+C  Written by Miro Ilias, December 2006, Prievidza
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+      DIMENSION VMAT(*)
+      LOGICAL PURLO
+
+      CALL QENTER('LOWD2C')
+
+C  ===================================================================
+C     ... get AND reorganize the Lowdin transformation matrix VMAT
+C  ===================================================================
+      CALL RFBSSMAT('VMAT4C  ',.TRUE.,'LOWD2C',
+     &               VMAT,N2BBASX,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A)')
+     &  'LOWD2C: VMAT4C was read from BSSMAT.'
+      ENDIF
+
+      IF (IPRINT.GE.6) THEN
+        CALL HEADER(
+     &'LOWD2C: The total Lowdin matrix before BSS reordering',-1)
+        IVMAT=1
+        DO I=1, NFSYM
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &    '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(VMAT(IVMAT),
+     &         NFBAS(I,0),NFORB(I,0),NFBAS(I,0),NFORB(I,0),
+     &         1,IPQTOQ(1,0),LUPRI)
+          IVMAT = IVMAT + NFBAS(I,0)*NFORB(I,0)
+        ENDDO
+      ENDIF
+
+      PURLO = .TRUE.
+      IF (PURLO) THEN
+C  ...  purify the Lowdin matrix !!!
+C  ...  1. remove zeros for LL !
+       IVMAT = 1
+       DO I=1,NFSYM
+        IPOS=IVMAT
+        DO J=1,NFORB(I,1)
+         CALL DZERO( VMAT(IPOS+NFBAS(I,1)),NFBAS(I,2) )
+         IPOS = IPOS + NFBAS(I,0)
+        ENDDO
+        IPOS = IVMAT + (NFBAS(I,0)*NFORB(I,1))
+        CALL DZERO( VMAT(IPOS), (NFORB(I,2)*NFBAS(I,0)) )
+        IVMAT = IVMAT + ( NFBAS(I,0)*NFORB(I,0) )
+       ENDDO
+      ENDIF
+
+C ===================================================================
+C  ... reorder the Lowdin matrix for 2component Hamiltonians ...
+C ===================================================================
+      IF (NFSYM.EQ.2) THEN
+C    HJJ:For TMAT: copy the VMAT for the L block ifsym=2 to
+C        follow immediately after the L block ifsym=1.
+           NDIM2 = NFBAS(2,0)*NESH(2)
+           JV2   = 1 + NFBAS(1,0)*NFORB(1,0)
+           JT2   = 1 + NFBAS(1,0)*NESH(1)
+           CALL DCOPY(NDIM2,VMAT(JV2),1,VMAT(JT2),1)
+      ENDIF
+
+      IF (IPRINT.GE.6) THEN
+        CALL HEADER(
+     &'LOWD2C: Lowdin matrix (symm.blocked) AFTER BSS reordering',-1)
+        IVMAT=1
+        DO I=1, NFSYM
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &    '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(VMAT(IVMAT),
+     &          NFBAS(I,0),NFORB(I,0),NFBAS(I,0),NFORB(I,0),
+     &          1,IPQTOQ(1,0),LUPRI)
+          IVMAT = IVMAT + NFBAS(I,0)*NFORB(I,0)
+        ENDDO
+
+        CALL HEADER(
+     &'LOWD2C:Lowdin matrix (symm.blocked -Le) AFTER BSS reordering',-1)
+        IVMAT=1
+        DO I=1, NFSYM
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &    '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(VMAT(IVMAT),
+     &          NFBAS(I,0),NESH(I),NFBAS(I,0),NESH(I),
+     &          1,IPQTOQ(1,0),LUPRI)
+          IVMAT = IVMAT + NFBAS(I,0)*NESH(I)
+        ENDDO
+      ENDIF
+
+C ==========================================================
+C .... write the 2c-adapted Lowdin matrix into the file
+C .. this is the non-linear symmetry case !!!!
+C ==========================================================
+      CALL W2BSSMAT(1,.TRUE.,'VMAT2C  ','LOWD2C',
+     &               VMAT,N2BBASX,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+       WRITE(LUPRI,'(/2X,A)')
+     & 'LOWD2C: Adapted (non-linsym) Lowdin matrix, VMAT2C,'//
+     & ' was written into the BSSMAT file, EOFLABEL was renewed.'
+      ENDIF
+
+
+
+      CALL QEXIT('LOWD2C')
       RETURN
       END
 
@@ -1106,7 +1279,7 @@ C****************************************************************************
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck TEST_DIAG_MTX */
-      SUBROUTINE TEST_DIAG_MTX(S,N,LR,LC,NZ)
+      SUBROUTINE TEST_DIAG_MTX(S,N,LR,LC,NZX)
 C****************************************************************************
 C
 C  PURPOSE: Check the enterning matrix - is it a diagonal matrix ?
@@ -1120,24 +1293,28 @@ C****************************************************************************
 #include <priunit.h>
       PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00, THRNULL = 1.00D-09 )
 
-      DIMENSION S(LR,LC,NZ)
+      DIMENSION S(LR,LC,NZX)
 
-      SUM_DE  = SUM_DIAG_EL(S,N,LR,LC,NZ)
+      SUM_DE  = SUM_DIAG_EL(S,N,LR,LC,NZX)
       SUM_DEN = SUM_DE/DFLOAT(N)
-      SUM_ODE = SUM_OFFDIAG_EL(S,N,LR,LC,NZ)
+      SUM_ODE = SUM_OFFDIAG_EL(S,N,LR,LC,NZX)
 
       WRITE(LUPRI,'(/2X,A,D12.5)') 
      &'Sum of diagonal elements /N :',SUM_DEN
       WRITE(LUPRI,'(2X,A,D12.5)') 
      &'Sum of off-diagonal elements :',SUM_ODE 
 
-      IF (.NOT.(SUM_DEN.GT.THRNULL.AND.SUM_DEN.LT.D1)) 
-     & WRITE(LUPRI,'(2X,A)') 
-     &'WARNING, SUM OF DIAG.ELEM/N DIFFERS IS NOT IN RANGE (0;1)!'
+      IF (DABS(SUM_DEN-D1).GT.THRNULL) THEN
+        WRITE(LUPRI,'(2X,A)') 
+     & 'TEST_DIAG_MTX: WARNING, sum of diagonal elements/N'//
+     &' of a unit matrix differs too much from 1!'
+      ENDIF
 
-      IF (DABS(SUM_ODE-D0).GT.THRNULL) 
-     & WRITE(LUPRI,'(2X,A)') 
-     &'WARNING, SUM OF OFF_DIAG.ELEM DIFFERS TOO MUCH FROM 0!'
+      IF (DABS(SUM_ODE-D0).GT.THRNULL) THEN 
+       WRITE(LUPRI,'(2X,A)') 
+     &'TEST_DIAG_MTX: WARNING, sum of off-diagonal elements of a unit'//
+     &' matrix differs too much from 0!'
+      ENDIF
 
       RETURN
       END
@@ -2305,11 +2482,14 @@ C    PURPOSE:  Construct (and check for PPB) the diagonal elements of the A fact
 C    ========
 C                                                         
 C    On input: 
-C              EIG  - free particle eigenvalues  if FPB=.true.                                                   
-C
+C  ------------
+C              EIG  - free particle eigenvalues  if FPB=.true.,otherwise zeroes 
+C           
 C              FPB
 C
-C   Output:  FACKIN - normalization factors   
+C   Output: 
+C -------------
+C            FACKIN - normalization factors   
 C            TMAT - the transformation matrix...but it is possible to read it
 C                any time from the open BSSMAT file...                               
 C                                                         
@@ -2388,11 +2568,11 @@ C       ... TBUF subst  WORK(KBUF)
           CALL HEADER(
      &    'GET_A_FAC: Diagonal (MUST BE!) RKB/<k_e|k_e>=A+.A'//
      &    ' overlap matrix, VMAT',-1)
-          WRITE(LUPRI,'(A,I1,A,I1)')'* Fermion irp no.',I,'/',NFSYM
+          WRITE(LUPRI,'(A,I1,A,I1)')'* Fermion irep no.',I,'/',NFSYM
           CALL TEST_DIAG_MTX(VMAT(IKUN1),NESH(I),NESH(I),NESH(I),1)
           IF(IPRINT.GE.7) THEN
            CALL PRQMAT(VMAT(IKUN1),NESH(I),NESH(I),
-     &            NESH(I),NESH(I),1,IPQTOQ(1,0),LUPRI)
+     &          NESH(I),NESH(I),1,IPQTOQ(1,0),LUPRI)
           ENDIF
          ENDIF
 
@@ -2400,29 +2580,30 @@ C       ... TBUF subst  WORK(KBUF)
 *        Extract the A kinematic factors into FACKIN(1,*)   *
 *************************************************************
          IF (IPRINT.GE.3) THEN 
-           WRITE(LUPRI,'(/9X,A,I1,A,I1,//,12X,A/)')
-     & 'GET_A_FAC: "A" kinem. electr. factors; ferm irp:',I,'/',NFSYM,
-     & 'A^2_ovlp          A^2_calc          diff;'
+          CALL HEADER(
+     &    'GET_A_FAC: "A" kinematic electronic factors',-1)
+          WRITE(LUPRI,'(A,I1,A,I1)')'* Fermion irep no.',I,'/',NFSYM
+          WRITE(LUPRI,'(/14X,A/)')
+     &    'A^2_ovlp          A^2_calc          diff.'
          ENDIF
 
          SUMDIFF = D0
          DO J = 1, NESH(I)
           DAA = VMAT(IKUN1+(J-1)*NESH(I)+J-1)
           FACKIN(IFC+J) = DAA
+C         --------------------------------------------
           X1 = (EIG(IORB(I)+NESH(I)+J)/CVAL2) + D2
           X2 = D2*(EIG(IORB(I)+NESH(I)+J)/CVAL2) + D2
           XD = (X1/X2)
+C         --------------------------------------------
           DIFF = FACKIN(IFC+J)-XD
           SUMDIFF = SUMDIFF + DABS(DIFF)
-
           IF (IPRINT.GE.3) THEN
-          WRITE(LUPRI,"(5X,2F18.10,4X,D11.5)")
-     &         FACKIN(IFC+J),XD,DIFF
+           WRITE(LUPRI,"(1X,I4,1X,2F18.10,4X,D11.5)")
+     &     J,FACKIN(IFC+J),XD,DIFF
           ENDIF
-
          ENDDO 
          SUMDIFF = SUMDIFF/DFLOAT(NESH(I))         
-
          
          IF (IPRINT.GE.1) THEN
           WRITE(LUPRI,'(/2X,A,I1,A,I1,A,D14.8)')
@@ -2438,6 +2619,7 @@ C       ... TBUF subst  WORK(KBUF)
           CALL FLSHFO(LUPRI)
          ENDIF
 
+C       ... off-sets
          IFC   = IFC + NESH(I)
          IKUN1 = IKUN1 + NESH(I)*NESH(I)
          IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
@@ -2447,7 +2629,6 @@ C       ... TBUF subst  WORK(KBUF)
       ENDDO
 
       CALL QEXIT('GET_A_FAC')
-
       RETURN
       END
 
@@ -5046,86 +5227,9 @@ C  ======== End of handling Fock-Dirac 2c =========
 C  ======== End of handling Fock-Dirac 2c =========
 
 C      ... this option does not matter....
-         DOJACOBI = .FALSE.
+      DOJACOBI = .FALSE.
 
-C  ===================================================================
-C     ... get AND reorganize the Lowdin transformation matrix VMAT
-C  ===================================================================
-      CALL RFBSSMAT('VMAT4C  ',.TRUE.,'CMP_EIGVAL',
-     &               VMAT,N2BBASX,LUBSS,IPRINT)
-      IF (IPRINT.GE.3) THEN
-         WRITE(LUPRI,'(/2X,A)')
-     &  'CMP_EIGVAL: VMAT4C was read from BSSMAT.'
-      ENDIF
-
-      IF (IPRINT.GE.6) THEN
-        CALL HEADER(
-     &'CMP_EIGVAL: The total Lowdin matrix before BSS reordering',-1)
-        IVMAT=1
-        DO I=1, NFSYM
-          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &    '*** Fermion corep ',I,'/',NFSYM
-          CALL PRQMAT(VMAT(IVMAT),
-     &         NFBAS(I,0),NFORB(I,0),NFBAS(I,0),NFORB(I,0),
-     &         1,IPQTOQ(1,0),LUPRI)
-          IVMAT = IVMAT + NFBAS(I,0)*NFORB(I,0)
-        ENDDO
-      ENDIF
-
-      PURLO = .TRUE.
-      IF (PURLO) THEN
-C  ...  purify the Lowdin matrix !!!
-C  ...  1. remove zeros for LL !
-       IVMAT = 1
-       DO I=1,NFSYM
-        IPOS=IVMAT
-        DO J=1,NFORB(I,1)
-         CALL DZERO( VMAT(IPOS+NFBAS(I,1)),NFBAS(I,2) )
-         IPOS = IPOS + NFBAS(I,0)
-        ENDDO
-        IPOS = IVMAT + (NFBAS(I,0)*NFORB(I,1))
-        CALL DZERO( VMAT(IPOS), (NFORB(I,2)*NFBAS(I,0)) )
-        IVMAT = IVMAT + ( NFBAS(I,0)*NFORB(I,0) )
-       ENDDO
-      ENDIF
-
-C ===================================================================
-C  ... reorder the Lowdin matrix for 2component Hamiltonians ...
-C ===================================================================
-      IF (NFSYM.EQ.2) THEN
-C    HJJ:For TMAT: copy the VMAT for the L block ifsym=2 to
-C        follow immediately after the L block ifsym=1.
-           NDIM2 = NFBAS(2,0)*NESH(2)
-           JV2   = 1 + NFBAS(1,0)*NFORB(1,0)
-           JT2   = 1 + NFBAS(1,0)*NESH(1)
-           CALL DCOPY(NDIM2,VMAT(JV2),1,VMAT(JT2),1)
-      ENDIF
-
-      IF (IPRINT.GE.6) THEN
-        CALL HEADER(
-     &'CMP_EIGVAL: The total Lowdin matrix AFTER BSS reordering',-1)
-        IVMAT=1
-        DO I=1, NFSYM
-          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &    '*** Fermion corep ',I,'/',NFSYM
-          CALL PRQMAT(VMAT(IVMAT),
-     &          NFBAS(I,0),NFORB(I,0),NFBAS(I,0),NFORB(I,0),
-     &          1,IPQTOQ(1,0),LUPRI)
-          IVMAT = IVMAT + NFBAS(I,0)*NFORB(I,0)
-        ENDDO
-      ENDIF
-
-C ==========================================================
-C .... write the 2c-adapted Lowdin matrix into the file
-C .. this is the non-linear symmetry case !!!!
-C ==========================================================
-      CALL W2BSSMAT(1,.TRUE.,'VMAT2C  ','CMP_EIGVAL',
-     &               VMAT,N2BBASX,LUBSS,IPRINT)
-      IF (IPRINT.GE.3) THEN
-       WRITE(LUPRI,'(/2X,A)')
-     & 'CMP_EIGVAL: Adapted (non-linsym) Lowdin matrix, VMAT2C,'//
-     & ' was written into the BSSMAT file, EOFLABEL was renewed.'
-      ENDIF
+      CALL LOWD2C(VMAT,IPRINT)
 
       IF (LINEAR) THEN
 C     ... for the linear symmetry DO ADAPT the Lowdin matrix !
