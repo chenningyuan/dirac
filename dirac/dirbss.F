@@ -565,6 +565,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
@@ -616,29 +617,29 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       IF (.NOT.FPB) THEN
 C      ... save the 'SL' resorted transformation matrix
        CALL W2BSSMAT(4,.TRUE.,'SL_TM_4C',
-     & 'HANDLE_RKB',VMAT,N2TMT,LUBSS,IPRHAM)
+     & 'HANDLE_RKB',VMAT,N2TMT,LUBSS,IPRINT)
        IF (IPRINT.GE.2) THEN
         write(lupri,*)
      & 'HANDLE_RKB: SL_TM_4C (VMAT) was written to the BSSMAT !!'
        ENDIF
       ENDIF
 
-      CALL W2BSSMAT(4,.TRUE.,'TMAT4C  ','MAKE_BSS',TMAT,
-     &               N2TMT,LUBSS,IPRHAM)
+      CALL W2BSSMAT(4,.TRUE.,'TMAT4C  ','HANDLE_RKB',TMAT,
+     &               N2TMT,LUBSS,IPRINT)
       IF (IPRINT.GE.2) THEN
         WRITE(LUPRI,'(/2X,A)')
-     & 'MAKE_BSS: RKB transf. matrix (TMAT, basic) '//
+     & 'HANDLE_RKB: RKB transf. matrix (TMAT, basic) '//
      & 'has been written to the BSSMAT file.'
       ENDIF
 
       IF (LINAD) THEN
        ISIZE = NORB(1)*NORB(1)
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
-       CALL W2BSSMAT(4,.TRUE.,'TMAT_LSY','MAKE_BSS',
-     &      TBUF,ISIZE,LUBSS,IPRHAM)
+       CALL W2BSSMAT(4,.TRUE.,'TMAT_LSY','HANDLE_RKB',
+     &      TBUF,ISIZE,LUBSS,IPRINT)
        IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
-     & 'MAKE_BSS: RKB MO to MO_LSYM (WORK(KTBUF)) '//
+     & 'HANDLE_RKB: RKB MO to MO_LSYM (WORK(KTBUF)) '//
      & 'was written to the BSSMAT file.'
        ENDIF
       ENDIF
@@ -651,7 +652,7 @@ C    ... one-step approach and NOT the linear symmetry
        DO I = 1, NFSYM
        IF(NORB(I).GT.0) THEN
 C     ... construct original AO->RKB_MO basis:
-C           VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
+C        VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
         CALL QGEMM(NFBAS(I,0),NORB(I),NORB(I),D1,
      &    'N','N',IPQTOQ(1,0),TMAT(IMAT),
      &     NFBAS(I,0),NORB(I),NZ,
@@ -662,11 +663,11 @@ C           VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
 
          IF (IPRINT.GE.5) THEN
           CALL HEADER(
-     &  'MAKE_BSS: NONLINSYM RKB transformation matrix 4c AO->MO ',-1)
-          WRITE(LUPRI,'(A,I1,A,I1)')
-     &    '* Fermion ircop no.',I,'/',NFSYM                          
-          CALL PRQMAT(VMAT(IVMAT),NFBAS(I,0),NORB(I),              
-     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
+     & 'HANDLE_RKB: NONLINSYM RKB transformation matrix 4c AO->MO ',-1)
+         WRITE(LUPRI,'(A,I1,A,I1)')
+     &   '* Fermion ircop no.',I,'/',NFSYM                          
+         CALL PRQMAT(VMAT(IVMAT),NFBAS(I,0),NORB(I),              
+     &       NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
          ENDIF
 
          IBUF = IBUF  + NORB(I)*NORB(I)
@@ -677,21 +678,21 @@ C           VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
        ENDDO
 
 C    save
-       CALL W2BSSMAT(4,.TRUE.,'TMAT4C_1','MAKE_BSS',
-     &               VMAT,N2TMT,LUBSS,IPRHAM)
+       CALL W2BSSMAT(4,.TRUE.,'TMAT4C_1','HANDLE_RKB',
+     &               VMAT,N2TMT,LUBSS,IPRINT)
        IF (IPRINT.GE.2) THEN
         write(lupri,*)
-     & 'MAKE_BSS: TMAT4C_1 (VMAT) was written into the BSSMAT !'
+     & 'HANDLE_RKB: TMAT4C_1 (VMAT) was written into the BSSMAT !'
        ENDIF
 
       ENDIF
 
 C       ... dummy vars
-      CALL W2BSSMAT(6,.TRUE.,'XXXXXXXX','MAKE_BSS',
-     &               VMAT,N2TMT,LUBSS,IPRHAM)
+      CALL W2BSSMAT(6,.TRUE.,'XXXXXXXX','HANDLE_RKB',
+     &               VMAT,N2TMT,LUBSS,IPRINT)
       IF (IPRINT.GE.3) THEN
        WRITE(LUPRI,'(/2X,A)')
-     & 'MAKE_BSS: BSSMAT file - '//
+     & 'HANDLE_RKB: BSSMAT file - '//
      & ' EOFLABEL added.'
       ENDIF
       CALL QEXIT('HANDLE_RKB')
@@ -2438,8 +2439,6 @@ C ===============================================================
        ISIZE = NORB(1)*NORB(1)*NZ
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
 
-C      CALL NEWLAB('FPMAT_TH',LUBSS,LUPRI)
-C      CALL WRITT(LUBSS,ISIZE,TBUF)
        CALL W2BSSMAT(4,.TRUE.,'FPMAT_TH','MAKE_FPM',
      &       TBUF,ISIZE,LUBSS,IPRHAM)
 
