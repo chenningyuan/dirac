@@ -538,12 +538,11 @@ C Define special operators for the list of properties programmed in DIRAC
 C===========================================================================
       CALL PRPDEF(WORK,LWORK)
 
-CMI   ... when there is a change in gauge origin...
-C     write(lupri,*) GAGORGX,GAGORGY,GAGORGZ
+C .... check the change of the gauge origin ....
       THRS1=1.0D-7
       CHGO= DABS(GAGORGX-GAGORG(1)).GE.THRS1.OR.
      &      DABS(GAGORGY-GAGORG(2)).GE.THRS1.OR.
-     &      DABS(GAGORGZ-GAGORG(3)).GE.THRS2
+     &      DABS(GAGORGZ-GAGORG(3)).GE.THRS1
       IF (CHGO) THEN
        WRITE (LUPRI,'(1X,A,3F18.10)')
      &     '* Operator center:', (ORIGIN(I),I=1,3),
