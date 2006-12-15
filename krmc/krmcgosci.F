@@ -1796,7 +1796,6 @@ C
 C     Get active-active part of FCmo:
 C
       CALL RGETAC(WORK(KFC),WORK(KFCAC),IPROPT)
-      ipropt = 5
       IF (IPROPT.GE.5) THEN
         WRITE(LUPRI,'(A)') 'Active Fock matrix:'
         DO I=1,N2ASHXQ,1
