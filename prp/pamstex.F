@@ -1,23 +1,65 @@
 #ifdef MOD_STEX
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dirac-admin@dirac.chem.sdu.dk
+C...
+C...   For information on how to get a licence see:
+C...      http://dirac.chem.sdu.dk
+C 
+C
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : pamstex.F
+C ORIGINAL AUTHOR: Ulf Ekstroem 2005-2006.
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 c
 c     EVEC(NVIRT*NORB,4,NVEC)
 c     
 c     TODO: DIPVEL is time antisym?
 c
-      SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbstex.h>
+SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbstex.h"
       PARAMETER (NTABLE = 4)
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
@@ -28,7 +70,7 @@ C
       DATA TABLE /'.HOLES ','.PRINT ','.BATCH ','.CUBE  '/
       DATA SET/.FALSE./
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       WRITE (LUPRI,*) 'STEX input section'
       IF (SET) THEN
@@ -156,18 +198,18 @@ C     .CUBE
 
       SUBROUTINE MOMIX45(CMO)
 C     Rotate each Kramers pair 45 deg. internally.
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
       DIMENSION CMO(NTBAS(0),NORBT,4)
       DSQRT2 = DSQRT(2.0D0)
       DO JJ=1,NORBT
@@ -189,25 +231,25 @@ C     At this point we expect a converged groundstate DFCOEF in
 C     the working directory, plus an optional DFCOEF.ION for the
 C     core-relaxed determinant.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
-#include <dcbdhf.h>
-#include <dcbstex.h>
-C#include <dcbrho.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
+#include "dcbdhf.h"
+#include "dcbstex.h"
+C#include "dcbrho.h"
       DOUBLE COMPLEX REFGSOVL
       DIMENSION WORK(LWORK)
       LOGICAL LION,LTOBE
-#include <memint.h>      
+#include "memint.h"
       CALL QENTER('STEX')
       WRITE(LUPRI,*) 'Start of STEX'
 C
@@ -397,21 +439,21 @@ c      WRITE(LUPRI,*) 'Diagonalizing the STEX Hamiltonian'
 C     Calculate the Fock matrix and total energy of the CMO
 C     determinant (only inactive part). Assumes 1-e part is
 C     on disk in DFFCK1
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
-#include <dcbdhf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
+#include "dcbdhf.h"
       DIMENSION WORK(LWORK),FMAT(N2BBASXQ),CMO(NCMOTQ)
-#include <memint.h>      
+#include "memint.h"
 
       CALL MEMGET('REAL',KF1,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KF2,N2BBASXQ,WORK,KFREE,LFREE)
@@ -475,9 +517,9 @@ C     4 Virtual
 C     IORBI is the number of the orbital "in its symmetry and type"
 C     Example: CALL ORB_INDEX(IORBT,3,1,4) will put the index
 C     of the third gerade virtual orbital in IORBT.  
-#include <implicit.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "implicit.h"
+#include "dgroup.h"
+#include "dcborb.h"
       IF (IFSYM.GT.NFSYM.OR.IORBTYP.LT.1.OR.IORBTYP.GT.4.OR.IORBI.LT.1)
      $     GOTO 666
       IORBT = IORBI
@@ -504,8 +546,8 @@ C     2 Inactive
 C     3 Active 
 C     4 Virtual
 C     Also determine the index within the orbitals symmetry and class (IORBI).
-#include <implicit.h>
-#include <dcborb.h>
+#include "implicit.h"
+#include "dcborb.h"
       IF (IORBT.LE.NORB(1)) THEN
          IFSYM = 1
          IOFF = 0
@@ -544,22 +586,22 @@ C         2 -> -0.5*(  |i><j| - |i'><j'| )
 C         3 -> -0.5*(  |i><j'| - |i'><j| )
 C         4 -> -0.5*(  |i><j'| + |i'><j| )
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
       DIMENSION WORK(LWORK),CMO(NTBAS(0),NORBT,NZ),DAO(N2BBASXQ)
       DIMENSION CORB1(NTBAS(0),NZ),CORB2(NTBAS(0),NZ)
       CHARACTER OP
-#include <memint.h>      
+#include "memint.h"
 c      WRITE(LUPRI,*) 'PAIRDENS2 for pair ',IIORB,JJORB,', type =', IJK
 
       DO IZ=1,NZ
@@ -649,20 +691,20 @@ C     it is done in pamset.F ?
 C     
 C     Calculate the needed 2e integrals and transform them to 
 C     mo basis. put the result on unit STEX_LUINT in mo basis
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
-#include <dcbstex.h>
-#include <dcbdhf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
+#include "dcbstex.h"
+#include "dcbdhf.h"
       DIMENSION WORK(*),CMO(NCMOTQ),
      &     ISYMO(STEX_BATCHSIZE),
      &     IHRMO(STEX_BATCHSIZE),
@@ -762,21 +804,21 @@ c     go to mo basis (put mo integrals on disk)
       END
 
       SUBROUTINE MOD_INTEGRALS(FMAT,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
-#include <dcbstex.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
+#include "dcbstex.h"
       DIMENSION FMAT(NORBT,NORBT,NZ), WORK(LWORK)
-#include <memint.h>      
+#include "memint.h"
       CALL MEMGET('REAL',KTMP,N2ORBXQ,WORK,KFREE,LFREE)
       N = 1
       DO II=1,STEX_NHOLES
@@ -816,19 +858,19 @@ C     Write out modified integrals
  
       SUBROUTINE ADD_VPART(AMAT,FMAT,IZ,FAC)
 C     Add the virtual IZ part of FMAT, times FAC, to AMAT.
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
-#include <dcbstex.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
+#include "dcbstex.h"
       DIMENSION AMAT(STEX_NPARAM,*), FMAT(NORBT,NORBT,NZ)
       IIA=1
       DO ISYM=1,NFSYM
@@ -851,22 +893,22 @@ C     Build the A matrix.
 C     Vectors are ordered as V(NVIRT,4,NHOLE)
 C     AMAT - Output CI Hamiltonian (A matrix)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
-#include <dcbstex.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
+#include "dcbstex.h"
       DIMENSION WORK(LWORK),AMAT(STEX_NVIRT,4
      $     ,STEX_NHOLES,STEX_NVIRT,4,STEX_NHOLES)
-#include <memint.h>
+#include "memint.h"
       CALL QENTER('STEX_BUILD_A')
       CALL DZERO(AMAT,STEX_NPARAM**2)
       CALL MEMGET('REAL',KTMP,N2ORBXQ,WORK,KFREE,LFREE)
@@ -1005,19 +1047,19 @@ C
 C     Out:
 C     XPRPGRAD(STEX_NVIRT,4) - in the order written above
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
-#include <dcbstex.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
+#include "dcbstex.h"
       DOUBLE COMPLEX XPRPGRAD
       DIMENSION XPRPGRAD(STEX_NVIRT,4),AMO(NORBT,NORBT,NZ)
       IF (ITIM.NE.1) THEN
@@ -1045,24 +1087,24 @@ C
       END
 
       SUBROUTINE FROZEN_PRPGRAD(XPRPGRAD,CMO,IBEIG,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
-#include <dcbstex.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
+#include "dcbstex.h"
       DOUBLE COMPLEX XPRPGRAD
       DIMENSION CMO(NCMOTQ),XPRPGRAD(STEX_NVIRT,4,STEX_NHOLES,STEX_NR_OP
      $     ),WORK(LWORK),IBEIG(*)
       LOGICAL LOPEN
-#include <memint.h>            
+#include "memint.h"
       CALL QENTER('FROZEN_PRPGRAD')
       CALL MEMGET('REAL',KPROP,N2ORBXQ,WORK,KFREE,LFREE)
       INQUIRE(FILE='AOPROPER',OPENED=LOPEN)
@@ -1106,25 +1148,25 @@ C     Check this for dipvel (p?)
      $     ,REFGSOVL,WORK,LWORK)
 C     
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
-#include <dcbstex.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
+#include "dcbstex.h"
       DOUBLE COMPLEX XMOM,PRPGRAD,DZDOT,REFGSOVL
       DIMENSION EVEC(STEX_NVIRT,4,STEX_NHOLES,NVEC),EVAL(NVEC),
      $     PRPGRAD(STEX_NVIRT,4,STEX_NHOLES,STEX_NR_OP),WORK(LWORK)
      $     ,OSCL(3), OSCV(3),DOMCHANW(50),
      &     IDOMCHANH(50),IDOMCHANV(50), HOLEWEIGHT(STEX_NHOLES)
-#include <memint.h>      
+#include "memint.h"
       CALL QENTER('STEX_ANALYZE')
       WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
      &     ' <f_l>/3   <f_v>/3     f_lx     f_ly  '//
@@ -1411,21 +1453,21 @@ C     matrix OVL = <i1|j2>,
 C     Place a complexified version of <i1|A|j2> in AC. i runs over
 C     all inactive orbitals, while j runs over inactive and virtual.
 C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
       DOUBLE COMPLEX AC
       DIMENSION AC(*),AQ(N2ORBXQ),OVL(N2ORBXQ),WORK(LWORK)
-#include <memint.h>            
+#include "memint.h"
       CALL MEMGET('REAL',KAQ12, N2ORBXQ, WORK,KFREE,LFREE)
       CALL QGEMM(NORBT,NORBT,NORBT,1.0D0,
      &     'N','N',IPQTOQ(1,0),AQ,NORBT,NORBT,NZ,
@@ -1440,20 +1482,20 @@ C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
 
       SUBROUTINE OVL12(QOVL,CMO1,CMO2,WORK,LWORK)
 C     Calculate the overlap between the mo's in cmo1 and cmo2
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
       DIMENSION CMO1(NCMOTQ),CMO2(NCMOTQ),QOVL(N2ORBXQ),WORK(LWORK)
-#include <memint.h>            
+#include "memint.h"
       CALL MEMGET('REAL',KOVL, N2BBASX, WORK,KFREE,LFREE)
       CALL GTOVLX(WORK(KOVL),SSMTRC,WORK(KFREE),LFREE)
       CALL FAOMO2(QOVL,WORK(KOVL),1,1,1,1,CMO1,CMO2,WORK(KFREE)
@@ -1591,26 +1633,26 @@ C     CMO2 - the reference state
 C     Output:
 C     REFGSOVL - overlap between CMO1 and CMO2
 C     XPRPGRAD - the property gradient
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
-#include <dipole.h>
-#include <dcbstex.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
+#include "dipole.h"
+#include "dcbstex.h"
       LOGICAL LOPEN
       DOUBLE COMPLEX XPRPGRAD,DETS,MOM,REFGSOVL
       DIMENSION XPRPGRAD(STEX_NVIRT,4,STEX_NHOLES,STEX_NR_OP),
      $     WORK(LWORK),IBEIG(*),CMO1(NCMOTQ),CMO2(NCMOTQ),MOM(STEX_NR_OP
      $     )
-#include <memint.h>    
+#include "memint.h"
       CALL QENTER('COF_PRPGRAD') 
       WRITE(LUPRI,*) 'Calculating property gradient by cofactors'
       CALL FLUSH(LUPRI)
@@ -1744,21 +1786,21 @@ C         2  i -> -0.5*( ???i(|i><j| - |i'><j'|))
 C         3  j -> -0.5*( ??? |i><j'| - |i'><j|  )
 C         4  k -> -0.5*( ???i(|i><j'| + |i'><j|))
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
       DIMENSION WORK(LWORK),CMO(NCMOTQ),DAO(N2BBASXQ)
       CHARACTER T
-#include <memint.h>
+#include "memint.h"
       CALL MEMGET('REAL',KDMO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KDMO),N2ORBXQ)
       IF (IJK.EQ.3.OR.IJK.EQ.4) THEN
@@ -1788,22 +1830,22 @@ C
 
 
       SUBROUTINE ORBDENS(CMO,IIORB,DAO,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <dcbgen.h>
-#include <dcbprp.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbbas.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbbas.h"
       DIMENSION WORK(LWORK),CMO(NTBAS(0),NORBT,NZ),DAO(N2BBASXQ)
       DIMENSION CORB1(NTBAS(0),NZ),CORB2(NTBAS(0),NZ)
       CHARACTER OP
-#include <memint.h>      
+#include "memint.h"
 
       DO IZ=1,NZ
          DO II=1,NTBAS(0)

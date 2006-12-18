@@ -1,3 +1,7 @@
+C
+C     dcbstex.h -- information for STEX model in prp/
+C                  (Ulf Ekstroem, 2005-2006)
+C
       INTEGER STEX_MAX_HOLES, STEX_NR_OP
       PARAMETER (STEX_MAX_HOLES = 10,STEX_NR_OP = 6)
 c
