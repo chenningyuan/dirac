@@ -47,7 +47,7 @@ c     EVEC(NVIRT*NORB,4,NVEC)
 c     
 c     TODO: DIPVEL is time antisym?
 c
-SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
+      SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
