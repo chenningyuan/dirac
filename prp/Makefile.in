@@ -18,7 +18,10 @@ F77_CPPS = $(F77_OBJS:.o=.i)
 pre:	$(F77_CPPS)
 
 ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+	ftnchek $(CHEKFLAGS) $(F77_CPPS) > prp.ftnchek
+
+calltree:pre
+	ftnchek $(CHEKFLAGS) -calltree=tree -nocheck -mkhtml *.i > prp.calltree
 
 all:	$(F77_OBJS) $(F90_OBJS)
 
