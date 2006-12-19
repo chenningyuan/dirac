@@ -1,5 +1,5 @@
 #ifdef MOD_STEX
-C 
+C
 C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -32,21 +32,19 @@ C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
-C 
+C
 C
 C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : pamstex.F
-C ORIGINAL AUTHOR: Ulf Ekstroem 2005-2006.
+C
+C MAIN AUTHOR : Ulf Ekstroem, 2005-2006.
+C ORIGINAL PUBLICATION OF THIS WORK :
+C           U.Ekstroem, P. Norman, V. Carraveta,
+C           Phys.Rev.A 73(2006)022501
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-c
-c     EVEC(NVIRT*NORB,4,NVEC)
-c     
-c     TODO: DIPVEL is time antisym?
-c
       SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
 #include "implicit.h"
 #include "priunit.h"
@@ -94,7 +92,7 @@ C     Couple the excitations from different holes
       STEX_NOCOUPLING = .FALSE.
 C     Nr of simultanous Fock matrices to build.
 C     What is the optimal fock matrix calculation order?
-C     speed is cut in half if the matrices are not 
+C     speed is cut in half if the matrices are not
 C     (anti)hermitian, so batch size 4 is maybe good.
       STEX_BATCHSIZE = 4
 C     Don't write cube files by default.
@@ -112,10 +110,10 @@ C     Add diplen and dipvel to DCBPRP
          CALL XPRIND(PNAME(I),1,1,1.0D0,PNAME(I),INDXPR,STEX_OP_SYM(I),
      &        STEX_OP_TIM(I),WORK,LWORK,7)
          CALL OP1IND('STXDOP',IND1OP,STEX_OP_IND,NSTXOP,INDXPR
-     $        ,STEX_NR_OP)         
+     $        ,STEX_NR_OP)
       END DO
 C
-C     Process input 
+C     Process input
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*STEX  ')
@@ -146,8 +144,9 @@ C
                CALL QUIT('Illegal keyword in STXINP.')
 C     .HOLES
 C     Expects format like (NFSYM=2)
-C     2 1  - nr of holes in each fs.
+C     2    - nr of holes in fs 1.
 C     5 9  - holes in fs 1
+C     1    - nr of holes in fs 2.
 C     1    - holes in fs 2
 C
     1          CONTINUE
@@ -160,13 +159,13 @@ C
                      WRITE (LUPRI,*) 'STEX_MAX_HOLES =',STEX_MAX_HOLES
                      CALL QUIT('STEX input error')
                   ENDIF
-                  READ (LUCMD,*)                   
+                  READ (LUCMD,*)
      &                 (STEX_HOLES(II+STEX_NHOLES),II=1,NHOLES)
                   DO II=1,NHOLES
                      STEX_IFSYM(II+STEX_NHOLES) = IFSYM
                   ENDDO
                   STEX_NHOLES = STEX_NHOLES + NHOLES
-               ENDDO 
+               ENDDO
 
                GOTO 100
 C     .PRINT
@@ -178,7 +177,7 @@ C     .BATCH SIZE
                READ (LUCMD,*) STEX_BATCHSIZE
                GOTO 100
 C     .CUBE
-    4          CONTINUE               
+    4          CONTINUE
                READ (LUCMD,*) STEX_NCUBE
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -196,38 +195,9 @@ C     .CUBE
       WRITE (LUPRI,*) 'End of STEX input section'
       END
 
-      SUBROUTINE MOMIX45(CMO)
-C     Rotate each Kramers pair 45 deg. internally.
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
-#include "dcborb.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
-#include "dcbbas.h"
-      DIMENSION CMO(NTBAS(0),NORBT,4)
-      DSQRT2 = DSQRT(2.0D0)
-      DO JJ=1,NORBT
-         DO II=1,NTBAS(0)
-            TMP1 = CMO(II,JJ,1)
-            TMP2 = CMO(II,JJ,2)
-            CMO(II,JJ,1) = (CMO(II,JJ,1) + CMO(II,JJ,3)) / DSQRT2
-            CMO(II,JJ,2) = (CMO(II,JJ,2) + CMO(II,JJ,4)) / DSQRT2
-            CMO(II,JJ,3) = (CMO(II,JJ,3) - TMP1) / DSQRT2
-            CMO(II,JJ,4) = (CMO(II,JJ,4) - TMP2) / DSQRT2
-         ENDDO
-      ENDDO
-      END
-
-
       SUBROUTINE STEX(WORK,LWORK)
 C
-C     At this point we expect a converged groundstate DFCOEF in 
+C     At this point we expect a converged groundstate DFCOEF in
 C     the working directory, plus an optional DFCOEF.ION for the
 C     core-relaxed determinant.
 C
@@ -260,7 +230,7 @@ C
       DO IFSYM=1,NFSYM
          IF (NASH(IFSYM).GT.0) THEN
             CALL QUIT
-     $         ('ERROR: Active shells not supported in STEX, quitting.') 
+     $         ('ERROR: Active shells not supported in STEX, quitting.')
          ENDIF
       ENDDO
       IF (NZ.LT.4) THEN
@@ -272,23 +242,31 @@ C
 
 
 C     plus the same space for the eigenvectors.
-      STEX_NVIRT = NSSH(1) + NSSH(2)
+      STEX_NVIR(1) = NSSH(1)
+      STEX_NVIR(2) = NSSH(2)
+      STEX_NVIRT = STEX_NVIR(1) + STEX_NVIR(2)
+      STEX_N2VIRX = STEX_NVIRT*STEX_NVIRT
+      STEX_N2VIRXQ = NZ*STEX_N2VIRX
+      STEX_I2VIRX(1,1) = 1
+      STEX_I2VIRX(2,1) = 1 + STEX_NVIR(1)
+      STEX_I2VIRX(1,2) = 1 + STEX_NVIR(1)*STEX_NVIRT
+      STEX_I2VIRX(2,2) = STEX_I2VIRX(1,2) + STEX_NVIR(1)
 c      WRITE(LUPRI,*) 'STEX: Dimension of A matrix is',STEX_NVIRT,'*'
 c     $     ,STEX_NHOLES,'*4'
       WRITE(LUPRI,*) 'STEX holes in orbitals (total orbital index)'
       DO II=1,STEX_NHOLES
-         CALL ORB_INDEX(IORBT,STEX_HOLES(II),STEX_IFSYM(II),2)
+         CALL STEX_ORB_INDEX(IORBT,STEX_HOLES(II),STEX_IFSYM(II),2)
          STEX_HOLES(II) = IORBT
          WRITE(LUPRI,*) STEX_HOLES(II)
       ENDDO
-      
+
       STEX_NPARAM=STEX_NVIRT*STEX_NHOLES*4
       WRITE(LUPRI,*) 'STEX: Nr of variational parameters is ',
      &     STEX_NPARAM
       NHOLECMB = (STEX_NHOLES*(STEX_NHOLES+1))/2
 
       IF (LFREE.LT.2*STEX_NPARAM**2) THEN
-         WRITE (LUPRI,*) 
+         WRITE (LUPRI,*)
      &        'Error: Not enough memory for STEX Hamiltonian and'
      &        ,' eigenvectors. '
          WRITE (LUPRI) 'Needed words (approx): ',
@@ -303,8 +281,8 @@ C     See if a separate reference state will be used.
          WRITE(LUPRI,*) 'for STEX calculation'
 C     Move groundstate DFCOEF to DFCOEF.GS
 C     ulfek: bug here on some systems
-         ISYS1 = MYSYSTEM('mv DFCOEF DFCOEF.GS')
-         ISYS2 = MYSYSTEM('mv DFCOEF.ION DFCOEF')
+         ISYS1 = SYSTEM('mv DFCOEF DFCOEF.GS')
+         ISYS2 = SYSTEM('mv DFCOEF.ION DFCOEF')
          PRINT *,'mv return codes',ISYS1,ISYS2
          STEX_COFACTOR = .TRUE.
       ELSE
@@ -313,7 +291,7 @@ C     ulfek: bug here on some systems
          STEX_COFACTOR = .FALSE.
       ENDIF
 
-C     Allocate memory for prpgrad.
+C     Allocate memory for STEX_TM.
 C     property gradients are complex, so *2 size of double.
       CALL MEMGET('REAL',KPRP,STEX_NPARAM*STEX_NR_OP*2,WORK,KFREE,LFREE)
 
@@ -383,7 +361,7 @@ C     Write integrals to disk (to save memory)
      &     ' that will be computed in batches of at most',STEX_BATCHSIZE
       STEX_LUINT = 22
       OPEN(STEX_LUINT,FILE='STEXINT',FORM='UNFORMATTED',
-     +     ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='UNKNOWN')
+     +     ACCESS='DIRECT',RECL=8*STEX_N2VIRXQ,STATUS='UNKNOWN')
       CALL STEX_CALC_INTEGRALS(WORK(KCMO),WORK,KFREE,LFREE)
 C     Add the reference state Fock matrix to the integrals
       WRITE(LUPRI,*) 'Calculating reference Fock matrix'
@@ -393,16 +371,16 @@ C     If we use a separate reference state the 2e Fock matrices
 C     on disk have to be re-evaluated. This is done automatically
 C     if we delete the old ones.
          I = SYSTEM('rm -f DFFCK2')
-         I = SYSTEM('rm -f DFFOCK')      
+         I = SYSTEM('rm -f DFFOCK')
       ENDIF
       CALL MEMGET('REAL',KFOCKREF,N2BBASXQ,WORK,KFREE,LFREE)
       CALL FLUSH(LUPRI)
 C     Calculate Fock matrix and energy for the reference determinant
       CALL STEX_GETFCK(WORK(KCMO),WORK(KFOCKREF),REFERG,
      &     WORK(KFREE),LFREE)
-      WRITE (LUPRI,*) 
+      WRITE (LUPRI,*)
       WRITE (LUPRI,*) '--------------- STEX Final Output --------------'
-      WRITE (LUPRI,*) 
+      WRITE (LUPRI,*)
       WRITE (LUPRI,*) 'STEX reference state energy (au)        :',REFERG
       IF (STEX_COFACTOR) THEN
          WRITE (LUPRI,*) 'Ground state energy (au)                :'
@@ -412,8 +390,8 @@ C     Calculate Fock matrix and energy for the reference determinant
          WRITE (LUPRI,*) 'DSCF Ionization potential (eV)          :',
      &        (ERGION-GSERG)*27.211383
       ENDIF
-      WRITE (LUPRI,*) 
-      CALL MOD_INTEGRALS(WORK(KFOCKREF),WORK(KFREE),LFREE)
+      WRITE (LUPRI,*)
+      CALL STEX_MOD_INTEGRALS(WORK(KFOCKREF),WORK(KFREE),LFREE)
 c     Build A matrix
       CALL MEMGET('REAL',KAMAT,STEX_NPARAM**2,WORK,KFREE,LFREE)
       CALL STEX_BUILD_A(WORK(KAMAT) ,WORK(KFREE),LFREE)
@@ -426,11 +404,11 @@ c      WRITE(LUPRI,*) 'Diagonalizing the STEX Hamiltonian'
      $     ,WORK(KVAL),1,WORK(KVEC),STEX_NPARAM,STEX_NPARAM,WORK(KFREE)
      $     ,LFREE,IERR)
       IF (IERR.NE.0) THEN
-         PRINT *,'QDIAG IERR=',IERR     
+         PRINT *,'QDIAG IERR=',IERR
          CALL QUIT('QDIAG failed')
       ENDIF
       CALL STEX_ANALYZE(STEX_NPARAM,WORK(KVEC),WORK(KVAL),WORK(KPRP),
-     &     GSERG,REFERG,REFGSOVL,WORK,LWORK,)
+     &     GSERG,REFERG,REFGSOVL,WORK,LWORK)
       PRINT *,'STEX End'
       CALL QEXIT('STEX')
       END
@@ -469,10 +447,10 @@ C     Calculate 2e part
       IFCKOP(1) = 1
       IHRMOP(1) = 1
       IPRINT = 0
-      CALL GET_NPOS(NPOS)
+      CALL STEX_GET_NPOS(NPOS)
       CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,WORK(KF2),WORK(KDEN),1,
-     &     WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)     
+     &     WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
 C     Calculate energy
       CALL ERGCAL(WORK(KF1),WORK(KF2),WORK(KDEN),WORK(KFREE),LFREE)
 C     Add 2e part to 1e part
@@ -506,17 +484,17 @@ c     A = FAC*i*A
       ENDDO
       END
 
-      SUBROUTINE ORB_INDEX(IORBT, IORBI, IFSYM, IORBTYP)
+      SUBROUTINE STEX_ORB_INDEX(IORBT, IORBI, IFSYM, IORBTYP)
 C     Give the "total" orbital index IORBT from fermion symmetry of
-C     the orbital (IFSYM = 1,2), and orbital type: 
-C     IORBTYP 
+C     the orbital (IFSYM = 1,2), and orbital type:
+C     IORBTYP
 C     1 Positronic
-C     2 Inactive 
-C     3 Active 
+C     2 Inactive
+C     3 Active
 C     4 Virtual
 C     IORBI is the number of the orbital "in its symmetry and type"
-C     Example: CALL ORB_INDEX(IORBT,3,1,4) will put the index
-C     of the third gerade virtual orbital in IORBT.  
+C     Example: CALL STEX_ORB_INDEX(IORBT,3,1,4) will put the index
+C     of the third gerade virtual orbital in IORBT.
 #include "implicit.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -533,17 +511,17 @@ C     of the third gerade virtual orbital in IORBT.
       IF (IORBTYP.EQ.4.AND.IORBI.GT.NSSH(IFSYM)) GOTO 666
       RETURN
  666  CONTINUE
-         PRINT *,'ORB_INDEX: Invalid orbital: ',IORBI,IFSYM,IORBTYP
-         CALL QUIT('Error in ORB_INDEX')
+         PRINT *,'STEX_ORB_INDEX: Invalid orbital: ',IORBI,IFSYM,IORBTYP
+         CALL QUIT('Error in STEX_ORB_INDEX')
       END
 
-      SUBROUTINE ORB_CLASSIFY(IORBT, IORBI, IFSYM, IORBTYP)
+      SUBROUTINE STEX_ORB_CLASSIFY(IORBT, IORBI, IFSYM, IORBTYP)
 C     Given a "total" orbital index IORBT determine fermion symmetry of
-C     the orbital (IFSYM = 1,2), and orbital type: 
-C     IORBTYP 
+C     the orbital (IFSYM = 1,2), and orbital type:
+C     IORBTYP
 C     1 Positronic
-C     2 Inactive 
-C     3 Active 
+C     2 Inactive
+C     3 Active
 C     4 Virtual
 C     Also determine the index within the orbitals symmetry and class (IORBI).
 #include "implicit.h"
@@ -565,7 +543,7 @@ C     Also determine the index within the orbitals symmetry and class (IORBI).
             IORBTYP = 2
          ELSE
             IORBI = IORBI - NISH(IFSYM)
-            IF (IORBT.LE.IOFF+NPSH(IFSYM)+NISH(IFSYM)+NASH(IFSYM)) 
+            IF (IORBT.LE.IOFF+NPSH(IFSYM)+NISH(IFSYM)+NASH(IFSYM))
      &           THEN
                IORBTYP = 3
             ELSE
@@ -577,8 +555,8 @@ C     Also determine the index within the orbitals symmetry and class (IORBI).
       END
 
 
-      SUBROUTINE PAIRDENS2(CMO,IIORB,JJORB,DAO,IJK,WORK,LWORK)
-C     
+      SUBROUTINE STEX_PAIRDENS(CMO,IIORB,JJORB,DAO,IJK,WORK,LWORK)
+C
 C
 C     IJK determines the quaternion phase, leading to
 C     IJK=1 -> -0.5*(  |i><j| + |i'><j'| )
@@ -602,7 +580,8 @@ C
       DIMENSION CORB1(NTBAS(0),NZ),CORB2(NTBAS(0),NZ)
       CHARACTER OP
 #include "memint.h"
-c      WRITE(LUPRI,*) 'PAIRDENS2 for pair ',IIORB,JJORB,', type =', IJK
+c      WRITE(LUPRI,*)
+c    & 'STEX_PAIRDENS for pair ',IIORB,JJORB,', type =', IJK
 
       DO IZ=1,NZ
          DO II=1,NTBAS(0)
@@ -615,19 +594,19 @@ c      WRITE(LUPRI,*) 'PAIRDENS2 for pair ',IIORB,JJORB,', type =', IJK
             DO II=1,NTBAS(0)
                CORB2(II,IZ) = CMO(II,JJORB,IZ)
             ENDDO
-         ENDDO      
-      ELSE 
+         ENDDO
+      ELSE
 c     Multiply with -j from the right
          DO IZ=1,2
             DO II=1,NTBAS(0)
                CORB2(II,IZ) = CMO(II,JJORB,IZ+2)
             ENDDO
-         ENDDO      
+         ENDDO
          DO IZ=3,4
             DO II=1,NTBAS(0)
                CORB2(II,IZ) = -CMO(II,JJORB,IZ-2)
             ENDDO
-         ENDDO      
+         ENDDO
       ENDIF
 
       IF (IJK.EQ.2.OR.IJK.EQ.4) THEN
@@ -643,23 +622,7 @@ c     Multiply with -j from the right
       END
 
 
-      SUBROUTINE VECOVL(LUPRI,VEC,DIM,NVEC)
-C     Print the overlap matrix between the NVEC vectors in VEC.
-      IMPLICIT NONE
-      INTEGER NVEC,DIM,I,J
-      DOUBLE PRECISION VEC,DDOT,LUPRI
-      DIMENSION VEC(DIM,NVEC)
-      DO I=1,NVEC
-         PRINT 777,
-     &        (DDOT(DIM,VEC(1,I),1,VEC(1,J),1)/
-     &        SQRT(DDOT(DIM,VEC(1,I),1,VEC(1,I),1)*
-     &        DDOT(DIM,VEC(1,J),1,VEC(1,J),1)),J=1,NVEC)
-      ENDDO
- 777  format (100F16.8)
-      END
-
-
-      SUBROUTINE GET_NPOS(NPOS)
+      SUBROUTINE STEX_GET_NPOS(NPOS)
 C     Parallel calculations require an integer array describing the
 C     slave tasks as argument to TWOFCK. This subroutine calculates
 C     its length, and sets the FIRST* variables to make TWOFCK fill
@@ -686,11 +649,12 @@ C     it is done in pamset.F ?
          NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
        ENDIF
       END
-      
+
       SUBROUTINE STEX_CALC_INTEGRALS(CMO,WORK,KFREE,LFREE)
-C     
-C     Calculate the needed 2e integrals and transform them to 
+C
+C     Calculate the needed 2e integrals and transform them to
 C     mo basis. put the result on unit STEX_LUINT in mo basis
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -712,8 +676,8 @@ C     mo basis. put the result on unit STEX_LUINT in mo basis
       CALL QENTER('STEX_CALC_INTEGRALS')
       CALL MEMCHK('INT0',WORK,1)
 C     NPOS is for parallel stuff
-      CALL GET_NPOS(NPOS)
-      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)      
+      CALL STEX_GET_NPOS(NPOS)
+      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
       IPRINT=1
       ITWOFCKPRINT = 0
       CALL MEMGET('REAL',KDEN,STEX_BATCHSIZE*N2BBASXQ,WORK,KFREE,LFREE)
@@ -729,17 +693,17 @@ c     put the density in the FMAT matrix
          DO JJ=II,STEX_NHOLES
             DO IJK=1,4
                IDMAT = IDMAT + 1
-               CALL PAIRDENS2(CMO,STEX_HOLES(II),STEX_HOLES(JJ),
+               CALL STEX_PAIRDENS(CMO,STEX_HOLES(II),STEX_HOLES(JJ),
      &              WORK(KF),IJK,
      &              WORK(KFREE),LFREE)
                IF (IJK.EQ.2.OR.IJK.EQ.4) THEN
-C     Multiply in an i to get a trev matrix.
+C     Multiply in an imaginary i to get a trev matrix.
                   CALL QIMUL(WORK(KF),NTBAS(0),NZ,1.0D0)
                ENDIF
 C     Set properties of the corresponding Fock matrices
                ISYMO(IDMAT) = 1
                IF (II.EQ.JJ) THEN
-                  IF (IJK.EQ.1) THEN 
+                  IF (IJK.EQ.1) THEN
                      IHRMO(IDMAT) = 1
                   ELSE
                      IHRMO(IDMAT) = -1
@@ -749,7 +713,7 @@ C     Set properties of the corresponding Fock matrices
                ENDIF
                IF (II.EQ.JJ) THEN
                   IF (IJK.EQ.1) THEN
-                     IFCKO(IDMAT) = 1   
+                     IFCKO(IDMAT) = 1
                   ELSE
 C     Coulomb term vanishes for i = j
                      IFCKO(IDMAT) = 3
@@ -768,7 +732,8 @@ C     the run.
                IF (IDMAT.GE.STEX_BATCHSIZE.OR.(II.EQ.STEX_NHOLES.AND.
      &              JJ.EQ.STEX_NHOLES.AND.IJK.EQ.4)) THEN
 c     put the AO integrals in WORK(KDEN)
-                  WRITE (LUPRI,*) 'Integral batch ',IBATCH
+                  WRITE (LUPRI,*) 'Integral batch, i, j, herm. ',
+     &                 IBATCH,II,JJ,IHRMO(IDMAT)
                   CALL FLUSH(LUPRI)
                   CALL TWOFCK(ISYMO,IHRMO,IFCKO,WORK(KDEN),WORK(KFMAT)
      $                 ,IDMAT,WORK(KPOS),INTFLG,ITWOFCKPRINT,
@@ -778,32 +743,32 @@ c     go to mo basis (put mo integrals on disk)
                   IFER = 1
                   ITIM = 1
                   DO KK=0,IDMAT-1
-                     CALL QRFAOMO(WORK(KFMAT),
+                     CALL STEXFAOMO(WORK(KFMAT),
      &                    WORK(KDEN+KK*N2BBASXQ),
      &                    ISYM,ITIM,IFER,IPRINT,CMO,WORK(KFREE),LFREE)
                      IMOD = MOD(KK+ITOT,2)
                      IF (IMOD.EQ.1) THEN
                         CALL QIMUL(WORK(KFMAT),
-     &                       NORBT,NZ,-1.0D0)
+     &                       STEX_NVIRT,NZ,-1.0D0)
                      ENDIF
                      IREC = ITOT+KK+1
-                     WRITE (STEX_LUINT, REC=IREC) 
-     &                    (WORK(KFMAT+IJ),IJ=0,N2ORBXQ-1)
-                  ENDDO     
-                  ITOT = ITOT + IDMAT         
+                     WRITE (STEX_LUINT, REC=IREC)
+     &                    (WORK(KFMAT+IJ),IJ=0,STEX_N2VIRXQ-1)
+                  ENDDO
+                  ITOT = ITOT + IDMAT
                   IDMAT = 0
                   KF = KFMAT
                   IBATCH = IBATCH + 1
                ENDIF
             ENDDO
-         ENDDO         
+         ENDDO
       ENDDO
       WRITE (LUPRI,*) 'Integrals done'
       CALL FLUSH(LUPRI)
       CALL QEXIT('STEX_CALC_INTEGRALS')
       END
 
-      SUBROUTINE MOD_INTEGRALS(FMAT,WORK,LWORK)
+      SUBROUTINE STEX_MOD_INTEGRALS(FMAT,WORK,LWORK)
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -819,19 +784,20 @@ c     go to mo basis (put mo integrals on disk)
 #include "dcbstex.h"
       DIMENSION FMAT(NORBT,NORBT,NZ), WORK(LWORK)
 #include "memint.h"
-      CALL MEMGET('REAL',KTMP,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMP,STEX_N2VIRXQ,WORK,KFREE,LFREE)
       N = 1
       DO II=1,STEX_NHOLES
          DO JJ=II,STEX_NHOLES
             DO KK=0,3
 C     Read integrals to modify
-               READ (STEX_LUINT,REC=N) (WORK(KTMP+IJ),IJ=0,N2ORBXQ-1)
+               READ (STEX_LUINT,REC=N)
+     &         (WORK(KTMP+IJ),IJ=0,STEX_N2VIRXQ-1)
 C     Add d_ij F_ab part
                IF (KK.EQ.0.AND.II.EQ.JJ.AND.MOD(N-1,4).EQ.0) THEN
                   DO IJK=1,4
-                     DO IJ=1,NORBT*NORBT
-                        WORK(KTMP+IJ-1+(IJK-1)*N2ORBX) = 
-     &                       WORK(KTMP+IJ-1+(IJK-1)*N2ORBX) +
+                     DO IJ=1,STEX_N2VIRX
+                        WORK(KTMP+IJ-1+(IJK-1)*STEX_N2VIRX) =
+     &                       WORK(KTMP+IJ-1+(IJK-1)*STEX_N2VIRX) +
      &                       FMAT(IJ,1,IJK)
                      ENDDO
                   ENDDO
@@ -849,14 +815,15 @@ c     &              CSIGN*FMAT(STEX_HOLES(II),STEX_HOLES(JJ),KK+1)
      &                 CSIGN*FMAT(STEX_HOLES(II),STEX_HOLES(JJ),KK+1)
                ENDDO
 C     Write out modified integrals
-               WRITE (STEX_LUINT,REC=N) (WORK(KTMP+IJ),IJ=0,N2ORBXQ-1)
+               WRITE (STEX_LUINT,REC=N)
+     &         (WORK(KTMP+IJ),IJ=0,STEX_N2VIRXQ-1)
                N = N + 1
             ENDDO
          ENDDO
       ENDDO
       END
- 
-      SUBROUTINE ADD_VPART(AMAT,FMAT,IZ,FAC)
+
+      SUBROUTINE STEX_ADD_VPART(AMAT,FMAT,IZ,FAC)
 C     Add the virtual IZ part of FMAT, times FAC, to AMAT.
 #include "implicit.h"
 #include "priunit.h"
@@ -877,7 +844,7 @@ C     Add the virtual IZ part of FMAT, times FAC, to AMAT.
          DO II=NPSH(ISYM)+NISH(ISYM)+NASH(ISYM)+1,NORB(ISYM)
             JJA=1
             DO JSYM=1,NFSYM
-               DO JJ=NPSH(JSYM)+NISH(JSYM)+NASH(JSYM)+1,NORB(JSYM)            
+               DO JJ=NPSH(JSYM)+NISH(JSYM)+NASH(JSYM)+1,NORB(JSYM)
                   AMAT(IIA,JJA) = AMAT(IIA,JJA) + FAC*FMAT(II,JJ,IZ)
                   JJA=JJA+1
                ENDDO
@@ -888,7 +855,7 @@ C     Add the virtual IZ part of FMAT, times FAC, to AMAT.
       END
 
       SUBROUTINE STEX_BUILD_A(AMAT,WORK,LWORK)
-C     
+C
 C     Build the A matrix.
 C     Vectors are ordered as V(NVIRT,4,NHOLE)
 C     AMAT - Output CI Hamiltonian (A matrix)
@@ -906,91 +873,95 @@ C
 #include "dcbxpr.h"
 #include "dcbbas.h"
 #include "dcbstex.h"
-      DIMENSION WORK(LWORK),AMAT(STEX_NVIRT,4
-     $     ,STEX_NHOLES,STEX_NVIRT,4,STEX_NHOLES)
+      DIMENSION WORK(LWORK),
+     $     AMAT(STEX_NVIRT,4,STEX_NHOLES,STEX_NVIRT,4,STEX_NHOLES)
 #include "memint.h"
       CALL QENTER('STEX_BUILD_A')
       CALL DZERO(AMAT,STEX_NPARAM**2)
-      CALL MEMGET('REAL',KTMP,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMP,STEX_N2VIRXQ,WORK,KFREE,LFREE)
       IFMAT = 0
       DO II=1,STEX_NHOLES
-         DO JJ=II,STEX_NHOLES   
+         DO JJ=II,STEX_NHOLES
             IFMAT = IFMAT + 1
-            READ (STEX_LUINT, REC=IFMAT) (WORK(KTMP+KK),KK=0,N2ORBXQ-1)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 1,JJ),WORK(KTMP), 1,1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 2,JJ),WORK(KTMP), 2,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 3,JJ),WORK(KTMP), 3,1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 4,JJ),WORK(KTMP), 4,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 2,JJ),WORK(KTMP), 1,1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 3,JJ),WORK(KTMP), 4,1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 4,JJ),WORK(KTMP), 3,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 3,JJ),WORK(KTMP), 1,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 4,JJ),WORK(KTMP), 2,1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 4,JJ),WORK(KTMP), 1,1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 1,JJ),WORK(KTMP), 2,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 1,JJ),WORK(KTMP), 3,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 2,JJ),WORK(KTMP), 4,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 1,JJ),WORK(KTMP), 4,1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 2,JJ),WORK(KTMP), 3,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 3,JJ),WORK(KTMP), 2,-1.0D0)
-            
-            IFMAT = IFMAT + 1
-            READ (STEX_LUINT, REC=IFMAT) (WORK(KTMP+KK),KK=0,N2ORBXQ-1)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 1,JJ),WORK(KTMP), 1,1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 2,JJ),WORK(KTMP), 2,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 3,JJ),WORK(KTMP), 3,1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 4,JJ),WORK(KTMP), 4,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 2,JJ),WORK(KTMP), 1,1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 3,JJ),WORK(KTMP), 4,1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 4,JJ),WORK(KTMP), 3,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 3,JJ),WORK(KTMP), 1,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 4,JJ),WORK(KTMP), 2,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 4,JJ),WORK(KTMP), 1,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 1,JJ),WORK(KTMP), 2,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 1,JJ),WORK(KTMP), 3,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 2,JJ),WORK(KTMP), 4,1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 1,JJ),WORK(KTMP), 4,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 2,JJ),WORK(KTMP), 3,1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 3,JJ),WORK(KTMP), 2,1.0D0)
+            READ (STEX_LUINT, REC=IFMAT)
+     &      (WORK(KTMP+KK),KK=0,STEX_N2VIRXQ-1)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,1,JJ),WORK(KTMP),1,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,2,JJ),WORK(KTMP),2,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,3,JJ),WORK(KTMP),3,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,4,JJ),WORK(KTMP),4,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,2,JJ),WORK(KTMP),1,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,3,JJ),WORK(KTMP),4,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,4,JJ),WORK(KTMP),3,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,3,JJ),WORK(KTMP),1,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,4,JJ),WORK(KTMP),2,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,4,JJ),WORK(KTMP),1,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,1,JJ),WORK(KTMP),2,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,1,JJ),WORK(KTMP),3,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,2,JJ),WORK(KTMP),4,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,1,JJ),WORK(KTMP),4,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,2,JJ),WORK(KTMP),3,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,3,JJ),WORK(KTMP),2,-1.0D0)
 
             IFMAT = IFMAT + 1
-            READ (STEX_LUINT, REC=IFMAT) (WORK(KTMP+KK),KK=0,N2ORBXQ-1)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 1,JJ),WORK(KTMP), 3,1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 2,JJ),WORK(KTMP), 4,1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 3,JJ),WORK(KTMP), 1,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 4,JJ),WORK(KTMP), 2,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 2,JJ),WORK(KTMP), 3,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 3,JJ),WORK(KTMP), 2,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 4,JJ),WORK(KTMP), 1,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 3,JJ),WORK(KTMP), 3,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 4,JJ),WORK(KTMP), 4,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 4,JJ),WORK(KTMP), 3,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 1,JJ),WORK(KTMP), 4,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 1,JJ),WORK(KTMP), 1,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 2,JJ),WORK(KTMP), 2,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 1,JJ),WORK(KTMP), 2,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 2,JJ),WORK(KTMP), 1,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 3,JJ),WORK(KTMP), 4,-1.0D0)
-            
+            READ (STEX_LUINT, REC=IFMAT)
+     &      (WORK(KTMP+KK),KK=0,STEX_N2VIRXQ-1)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,1,JJ),WORK(KTMP),1,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,2,JJ),WORK(KTMP),2,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,3,JJ),WORK(KTMP),3,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,4,JJ),WORK(KTMP),4,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,2,JJ),WORK(KTMP),1,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,3,JJ),WORK(KTMP),4,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,4,JJ),WORK(KTMP),3,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,3,JJ),WORK(KTMP),1,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,4,JJ),WORK(KTMP),2,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,4,JJ),WORK(KTMP),1,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,1,JJ),WORK(KTMP),2,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,1,JJ),WORK(KTMP),3,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,2,JJ),WORK(KTMP),4,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,1,JJ),WORK(KTMP),4,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,2,JJ),WORK(KTMP),3,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,3,JJ),WORK(KTMP),2,1.0D0)
+
             IFMAT = IFMAT + 1
-            READ (STEX_LUINT, REC=IFMAT) (WORK(KTMP+KK),KK=0,N2ORBXQ-1)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 1,JJ),WORK(KTMP), 3,1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 2,JJ),WORK(KTMP), 4,1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 3,JJ),WORK(KTMP), 1,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 1,II,1, 4,JJ),WORK(KTMP), 2,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 2,JJ),WORK(KTMP), 3,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 3,JJ),WORK(KTMP), 2,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 4,JJ),WORK(KTMP), 1,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 3,JJ),WORK(KTMP), 3,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 4,JJ),WORK(KTMP), 4,1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 4,JJ),WORK(KTMP), 3,1.0D0)
-            CALL ADD_VPART(AMAT(1, 2,II,1, 1,JJ),WORK(KTMP), 4,1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 1,JJ),WORK(KTMP), 1,-1.0D0)
-            CALL ADD_VPART(AMAT(1, 3,II,1, 2,JJ),WORK(KTMP), 2,1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 1,JJ),WORK(KTMP), 2,1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 2,JJ),WORK(KTMP), 1,1.0D0)
-            CALL ADD_VPART(AMAT(1, 4,II,1, 3,JJ),WORK(KTMP), 4,1.0D0)
-            
+            READ (STEX_LUINT, REC=IFMAT)
+     &      (WORK(KTMP+KK),KK=0,STEX_N2VIRXQ-1)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,1,JJ),WORK(KTMP),3,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,2,JJ),WORK(KTMP),4,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,3,JJ),WORK(KTMP),1,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,4,JJ),WORK(KTMP),2,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,2,JJ),WORK(KTMP),3,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,3,JJ),WORK(KTMP),2,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,4,JJ),WORK(KTMP),1,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,3,JJ),WORK(KTMP),3,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,4,JJ),WORK(KTMP),4,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,4,JJ),WORK(KTMP),3,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,1,JJ),WORK(KTMP),4,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,1,JJ),WORK(KTMP),1,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,2,JJ),WORK(KTMP),2,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,1,JJ),WORK(KTMP),2,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,2,JJ),WORK(KTMP),1,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,3,JJ),WORK(KTMP),4,-1.0D0)
+
+            IFMAT = IFMAT + 1
+            READ (STEX_LUINT, REC=IFMAT)
+     &      (WORK(KTMP+KK),KK=0,STEX_N2VIRXQ-1)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,1,JJ),WORK(KTMP),3,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,2,JJ),WORK(KTMP),4,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,3,JJ),WORK(KTMP),1,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,1,II,1,4,JJ),WORK(KTMP),2,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,2,JJ),WORK(KTMP),3,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,3,JJ),WORK(KTMP),2,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,4,JJ),WORK(KTMP),1,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,3,JJ),WORK(KTMP),3,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,4,JJ),WORK(KTMP),4,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,4,JJ),WORK(KTMP),3,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,2,II,1,1,JJ),WORK(KTMP),4,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,1,JJ),WORK(KTMP),1,-1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,3,II,1,2,JJ),WORK(KTMP),2,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,1,JJ),WORK(KTMP),2,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,2,JJ),WORK(KTMP),1,1.0D0)
+            CALL STEX_ADD_VPART(AMAT(1,4,II,1,3,JJ),WORK(KTMP),4,1.0D0)
+
         ENDDO
       ENDDO
       IF (STEX_NOCOUPLING) THEN
@@ -1016,27 +987,28 @@ c     Zero all non-diagonal elements. Mainly for testing.
             DO JJ=1,STEX_NPARAM
                IF (II.NE.JJ) AMAT(II,1,1,JJ,1,1) = 0.0D0
             ENDDO
-         ENDDO   
-      ELSE         
+         ENDDO
+      ELSE
 C     Make symmetric
          DO II=2,STEX_NPARAM
             DO JJ=1,II
                AMAT(II,1,1,JJ,1,1) = AMAT(JJ,1,1,II,1,1)
             ENDDO
-         ENDDO      
+         ENDDO
       ENDIF
       CALL QEXIT('STEX_BUILD_A')
       END
 
-      SUBROUTINE PRPGRAD1(XPRPGRAD,AMO,ITIM,IHOLE)
-c     Calculate the moments
+      SUBROUTINE STEX_TM(XPRPTM,AMO,ITIM,IHOLE)
+c
+c     Calculate the transition moment elements
 c
 c     sqrt(2)*
 c     <0|A[q+_ai + q+_a'i']|0>
 c     <0|A[q+_ai - q+_a'i']|0>
 c     <0|A[q+_a'i - q+_ai']|0>
 c     <0|A[q+_a'i + q+_ai']|0>
-c     
+c
 C     The index a runs over all virtual orbitals
 C
 C     In:
@@ -1045,7 +1017,7 @@ C     ITIM - Timer reversal symmetry of A
 C     IHOLE - the hole index "i".
 C
 C     Out:
-C     XPRPGRAD(STEX_NVIRT,4) - in the order written above
+C     XPRPTM(STEX_NVIRT,4) - in the order written above
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1060,30 +1032,35 @@ C
 #include "dcbxpr.h"
 #include "dcbbas.h"
 #include "dcbstex.h"
-      DOUBLE COMPLEX XPRPGRAD
-      DIMENSION XPRPGRAD(STEX_NVIRT,4),AMO(NORBT,NORBT,NZ)
+      DOUBLE COMPLEX XPRPTM(STEX_NVIRT,4)
+      DIMENSION AMO(NORBT,NORBT,NZ)
+      CALL QENTER('STEX_TM')
       IF (ITIM.NE.1) THEN
          CALL QUIT('ITIM=-1 not implemented, sorry.')
       ENDIF
-      DSQRT2 = DSQRT(2.0D0)
-      DO IVIRT=1,STEX_NVIRT
-         XPRPGRAD(IVIRT,1) =  DSQRT2*AMO(STEX_HOLES(IHOLE),
+      IF (NFSYM .EQ. 2) THEN
+         CALL QUIT('NFSYM.eq.2 not implemented, sorry.')
+      END IF
+      DSQRT2 = SQRT(2.0D0)
+      DO IVIRT=1,STEX_NVIR(1)
+         XPRPTM(IVIRT,1) =  DSQRT2*AMO(STEX_HOLES(IHOLE),
      &        NPSH(1) + NISH(1) + IVIRT,1)
       ENDDO
       DO IVIRT=1,STEX_NVIRT
-         XPRPGRAD(IVIRT,2) = -DSQRT2*AMO(STEX_HOLES(IHOLE),
+         XPRPTM(IVIRT,2) = -DSQRT2*AMO(STEX_HOLES(IHOLE),
      &        NPSH(1) + NISH(1) + IVIRT,2)
 
       ENDDO
       DO IVIRT=1,STEX_NVIRT
-         XPRPGRAD(IVIRT,3) =  DSQRT2*AMO(STEX_HOLES(IHOLE),
+         XPRPTM(IVIRT,3) =  DSQRT2*AMO(STEX_HOLES(IHOLE),
      &        NPSH(1) + NISH(1) + IVIRT,3)
 
       ENDDO
       DO IVIRT=1,STEX_NVIRT
-         XPRPGRAD(IVIRT,4) = -DSQRT2*AMO(STEX_HOLES(IHOLE),
-     &        NPSH(1) + NISH(1) + IVIRT,4) 
-      ENDDO      
+         XPRPTM(IVIRT,4) = -DSQRT2*AMO(STEX_HOLES(IHOLE),
+     &        NPSH(1) + NISH(1) + IVIRT,4)
+      ENDDO
+      CALL QEXIT('STEX_TM')
       END
 
       SUBROUTINE FROZEN_PRPGRAD(XPRPGRAD,CMO,IBEIG,WORK,LWORK)
@@ -1113,7 +1090,7 @@ C
      &        FILE='AOPROPER')
       ENDIF
       DO IPRP=1,STEX_NR_OP
-         CALL WRIXPR(I,STEX_OP_IND(IPRP))
+         CALL WRIXPR(IPRP,STEX_OP_IND(IPRP))
          call flush(lupri)
          CALL PRPMAT(STEX_OP_IND(IPRP),IDUM,WORK(KPROP),CMO,IBEIG,ICMOQ
      $        ,NORB,WORK,KFREE,LFREE,1)
@@ -1124,9 +1101,9 @@ C     Check this for dipvel (p?)
             ITIM=1
          ENDIF
          DO IHOLE=1,STEX_NHOLES
-            CALL PRPGRAD1(XPRPGRAD(1,1,IHOLE,IPRP),WORK(KPROP), ITIM,
+            CALL STEX_TM(XPRPGRAD(1,1,IHOLE,IPRP),WORK(KPROP), ITIM,
      $           IHOLE)
-         ENDDO       
+         ENDDO
       ENDDO
       CALL QEXIT('FROZEN_PRPGRAD')
       END
@@ -1146,7 +1123,7 @@ C     Check this for dipvel (p?)
 
       SUBROUTINE STEX_ANALYZE(NVEC,EVEC,EVAL,PRPGRAD,GSERG,REFERG
      $     ,REFGSOVL,WORK,LWORK)
-C     
+C
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1172,24 +1149,24 @@ C
      &     ' <f_l>/3   <f_v>/3     f_lx     f_ly  '//
      &     '   f_lz     f_vx     f_vy     f_vz'
       WRITE(LUPRI,*) '-------------------------------------'/
-     $     /'---------------------------------------' 
+     $     /'---------------------------------------'
       DERG = REFERG - GSERG
 C     Check sum rule for oscillator strengths
       SUML = 0.0D0
       SUMV = 0.0D0
-      DO IVEC=1,NVEC 
+      DO IVEC=1,NVEC
 c     transition moments
          DO IPRP=1,3
 c     Length gauge
             XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
-     &           PRPGRAD(1,1,1,IPRP))            
+     &           PRPGRAD(1,1,1,IPRP))
             OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(EVAL(IVEC) + DERG)
 C     Velocity gauge
             XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
      &           PRPGRAD(1,1,1,IPRP+3))
             OSCV(IPRP) = 2.0D0*ABS(XMOM)**2/(EVAL(IVEC) + DERG)
          ENDDO
-         WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')  
+         WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
      &        IVEC,(EVAL(IVEC) + DERG)*27.211383,
      &        (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
      &        (OSCV(1)+OSCV(2)+OSCV(3))/3.0D0,
@@ -1203,10 +1180,9 @@ C     Velocity gauge
      $     '   Sum of oscillator strengths (length, velocity gauge): '
      $     ,SUML ,SUMV
 
-      WRITE (LUPRI,*) 
-      WRITE (LUPRI,*) 
-      WRITE (LUPRI,*) 'Dominant excitation channels for each state'
-      DO IVEC=1,NVEC 
+      WRITE (LUPRI,'(//A)')
+     &   ' Dominant excitation channels for each state'
+      DO IVEC=1,NVEC
 C     Find the dominant channels
          NDOMCHAN = 0
          DO IH=1,STEX_NHOLES
@@ -1227,25 +1203,27 @@ C     Find the dominant channels
      &        (IDOMCHANH(II),' ->',IDOMCHANV(II),' (',DOMCHANW(II),
      &        ')',II=1,NDOMCHAN)
       ENDDO
-      WRITE (LUPRI,*) 'Hole contribution to each state'
-      DO IVEC=1,NVEC 
+      IF (STEX_NHOLES .GT. 1) THEN
+        WRITE (LUPRI,'(/A)') ' Hole contribution to each state'
+        DO IVEC=1,NVEC
          DO IH=1,STEX_NHOLES
             HOLEWEIGHT(IH) = 0.0D0
             DO IV=1,STEX_NVIRT
                DO IT=1,4
-                  HOLEWEIGHT(IH) = 
+                  HOLEWEIGHT(IH) =
      &                 HOLEWEIGHT(IH) + EVEC(IV,IT,IH,IVEC)**2
                ENDDO
             ENDDO
          ENDDO
          WRITE(LUPRI,'(1I5,50(1I3,1A,1F6.3,1A))') IVEC,
      &        (IH,' ',HOLEWEIGHT(IH),' ',IH=1,STEX_NHOLES)
-      ENDDO
+        ENDDO
+      END IF
       CALL QEXIT('STEX_ANALYZE')
       END
 
 
-      SUBROUTINE ADJUGATE(N,LDA,A,TMP)
+      SUBROUTINE COF_ADJUGATE(N,LDA,A,TMP)
 C     Compute the adjugate of the NxN double complex matrix A by
 C     using a SVD factorization and perturbing the smallest singular
 C     value if it is too close to zero.
@@ -1255,13 +1233,13 @@ C     TMP should be of size N+2*N**2+3*N*4+5*N (double complex)
       DOUBLE COMPLEX A,TMP
       DIMENSION A(LDA,N),TMP(*)
 c     assume that a double complex is twice the size of a double
-C     LWORK should be at least 3*N double complex numbers 
+C     LWORK should be at least 3*N double complex numbers
       LWORK = 3*N *4
-      CALL ADJUGAT1(N,LDA,A,TMP(1),TMP(N+1),TMP(N+N**2+1),
+      CALL COF_ADJUGAT1(N,LDA,A,TMP(1),TMP(N+1),TMP(N+N**2+1),
      & TMP(N+2*N**2+1),LWORK,TMP(N+2*N**2+LWORK+1))
       END
 
-      SUBROUTINE ADJUGAT1(N,LDA,A,SIGMA,U,VT,WORK,LWORK,RWORK)
+      SUBROUTINE COF_ADJUGAT1(N,LDA,A,SIGMA,U,VT,WORK,LWORK,RWORK)
 C     A = USV'
 C     adj(A) = det(U)det(V)det(S)VS^-1U'
       IMPLICIT NONE
@@ -1275,7 +1253,7 @@ C     adj(A) = det(U)det(V)det(S)VS^-1U'
       CALL ZGESVD('A','A',N,N,A,LDA,SIGMA,U,N,VT,N,WORK,LWORK,RWORK
      &     ,INFO)
       IF (INFO.NE.0) THEN
-         PRINT *,'ADJUGATE: ZGESVD returned ',INFO
+         PRINT *,'COF_ADJUGATE: ZGESVD returned ',INFO
       ENDIF
 C     Compute det(sigma)
 c      print *,'sigma',sigma
@@ -1340,19 +1318,19 @@ C     Compute determinant and inverse of general double complex matrix A.
       END
 
       SUBROUTINE QTOC(QMAT,CMAT,ITIM,NROW,NCOL,NLDR,NLDC)
-C     Convert a quaternion matrix 
-C     QMAT = A+Bj 
+C     Convert a quaternion matrix
+C     QMAT = A+Bj
 C     to complex form
-C     CMAT = ( A1    B1   A2    B2  ..) 
+C     CMAT = ( A1    B1   A2    B2  ..)
 C            (-tB1* tA1* -tB2* tA2* ..)
 C     where t = ITIM is the time reversal character
 C     NCOL and NROW is the dimension of A (and B).
-C     CMAT is stored in interlaced format, so that columns C_ai and C_ai' are 
+C     CMAT is stored in interlaced format, so that columns C_ai and C_ai' are
 C     next to each other. The rows are also interlaced, so we have
 C     Q_ai -> ( C_ai  C_ai'  )
 C             ( C_a'i C_a'i' )
 C
-      IMPLICIT NONE 
+      IMPLICIT NONE
       INTEGER I,J,NROW,NCOL,ITIM,NLDR,NLDC
       DOUBLE PRECISION QMAT
       DOUBLE COMPLEX CMAT
@@ -1374,7 +1352,7 @@ C     tA*
       END
 
 
-      SUBROUTINE FAOMO2(FMO,FAO,MZ,ISYM,ITIM,IFER,CMO1,CMO2,
+      SUBROUTINE STEX_FAOMO2(FMO,FAO,MZ,ISYM,ITIM,IFER,CMO1,CMO2,
      &     WORK,LWRK)
 C     Compute <i|F|j>, where i are orbitals from CMO1 and j are obitals
 C     from CMO2
@@ -1394,9 +1372,9 @@ C
       DIMENSION FAO(N2BBASX,MZ),FMO(N2ORBX,MZ)
       DIMENSION T(-1:1),CMO1(*),CMO2(*),WORK(LWRK)
 C
-      CALL QENTER('FAOMO2')
+      CALL QENTER('STEX_FAOMO2')
 C
-      KFREE = 1 
+      KFREE = 1
       LFREE = LWRK
 C
       T(1)='S'
@@ -1418,11 +1396,11 @@ C
      &           WORK(KFREE),LFREE,IPRINT)
          END IF
       END DO
-      CALL QEXIT('FAOMO2')
-C     
+      CALL QEXIT('STEX_FAOMO2')
+C
       RETURN
       END
-      
+
       SUBROUTINE ZCOLSWAP(A,ROWS,COLS,I,J)
       IMPLICIT NONE
       DOUBLE COMPLEX A,TMP
@@ -1447,7 +1425,7 @@ C
       ENDDO
       END
 
-      SUBROUTINE PRPMO12(AQ,AC,OVL,WORK,LWORK)
+      SUBROUTINE STEX_PRPMO12(AQ,AC,OVL,WORK,LWORK)
 C     Given a property matrix in mo basis (AQ), and an overlap
 C     matrix OVL = <i1|j2>,
 C     Place a complexified version of <i1|A|j2> in AC. i runs over
@@ -1471,7 +1449,7 @@ C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
       CALL MEMGET('REAL',KAQ12, N2ORBXQ, WORK,KFREE,LFREE)
       CALL QGEMM(NORBT,NORBT,NORBT,1.0D0,
      &     'N','N',IPQTOQ(1,0),AQ,NORBT,NORBT,NZ,
-     &     'N','N',IPQTOQ(1,0),OVL,NORBT,NORBT,NZ, 
+     &     'N','N',IPQTOQ(1,0),OVL,NORBT,NORBT,NZ,
      $     0.0D0,IPQTOQ(1,0),WORK(KAQ12),NORBT,NORBT,NZ)
       NOCCT = NISH(1)
       NOCCVIRT = NORB(1) - NPSH(1)
@@ -1480,7 +1458,7 @@ C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
       END
 
 
-      SUBROUTINE OVL12(QOVL,CMO1,CMO2,WORK,LWORK)
+      SUBROUTINE STEX_OVL12(QOVL,CMO1,CMO2,WORK,LWORK)
 C     Calculate the overlap between the mo's in cmo1 and cmo2
 #include "implicit.h"
 #include "priunit.h"
@@ -1498,7 +1476,7 @@ C     Calculate the overlap between the mo's in cmo1 and cmo2
 #include "memint.h"
       CALL MEMGET('REAL',KOVL, N2BBASX, WORK,KFREE,LFREE)
       CALL GTOVLX(WORK(KOVL),SSMTRC,WORK(KFREE),LFREE)
-      CALL FAOMO2(QOVL,WORK(KOVL),1,1,1,1,CMO1,CMO2,WORK(KFREE)
+      CALL STEX_FAOMO2(QOVL,WORK(KOVL),1,1,1,1,CMO1,CMO2,WORK(KFREE)
      $     ,LFREE)
       END
 
@@ -1529,7 +1507,7 @@ C     A is destroyed in the process.
       ZCOF = (-1)**(I+J)*ZCOF
       END
 
-      SUBROUTINE COFSUM(NORB,NOVORB,PRP,NPRP,S,SINV,SDET
+      SUBROUTINE COF_SUM(NORB,NOVORB,PRP,NPRP,S,SINV,SDET
      $     ,NUCDIP,MOM,IHOLE,IVIRT,WORK,LWORK)
 C     Given a property matrix <i1|A|j2>, and the overlap matrix
 C     <i1|j2>, between two sets of orbitals, compute the
@@ -1548,7 +1526,7 @@ C     NORB is number of occupied
       DOUBLE PRECISION NUCDIP,WORK
       LOGICAL LCOF,LSVD
       DIMENSION PRP(NORB,NOVORB,NPRP),SINV(NORB,NORB),S(NORB,NORB),
-     &     MOM(NPRP), NUCDIP(3)     
+     &     MOM(NPRP), NUCDIP(3)
       DO IPRP=1,NPRP
          MOM(IPRP) = 0.0
       ENDDO
@@ -1566,8 +1544,8 @@ c         print *,'calling adjugate, det = ',ABS(SDET)
             DO L=1,NORB
                SINV(L,K) = S(L,K)
             ENDDO
-         ENDDO   
-         CALL ADJUGATE(NORB,NORB,SINV,WORK)
+         ENDDO
+         CALL COF_ADJUGATE(NORB,NORB,SINV,WORK)
          LSVD = .TRUE.
       ENDIF
       DO I=1,NORB
@@ -1581,7 +1559,7 @@ C     Copy S to SINV, because zcof destroys its argument
                      DO L=1,NORB
                         SINV(L,K) = S(L,K)
                      ENDDO
-                  ENDDO   
+                  ENDDO
                   COF = ZCOF(SINV,NORB,I,J)
                ENDIF
             ELSE
@@ -1622,7 +1600,7 @@ C     add nuclear dipole moment term
       SUBROUTINE COF_PRPGRAD(XPRPGRAD,CMO1,IBEIG,CMO2,REFGSOVL,WORK
      $     ,LWORK)
 C     Calculate the overlap between the determinants formed from
-C     the occupied orbitals of CMO1 and the occupied orbitals of 
+C     the occupied orbitals of CMO1 and the occupied orbitals of
 C     CMO2, where the IHOLE orbital in CMO2 has been replace with
 C     the IVIRT orbital. The indices start at electronic orbitals.
 C     IHBAR and IVBAR indicate if it is the "primary" (0) orbital or its
@@ -1653,7 +1631,7 @@ C     XPRPGRAD - the property gradient
      $     WORK(LWORK),IBEIG(*),CMO1(NCMOTQ),CMO2(NCMOTQ),MOM(STEX_NR_OP
      $     )
 #include "memint.h"
-      CALL QENTER('COF_PRPGRAD') 
+      CALL QENTER('COF_PRPGRAD')
       WRITE(LUPRI,*) 'Calculating property gradient by cofactors'
       CALL FLUSH(LUPRI)
       NOCCT = NISH(1)
@@ -1663,7 +1641,7 @@ C     NCSIZE - nr of doubles for the nocc*2 x noccvirt*2 dcmplx matrix
       CALL MEMGET('REAL',KCOVL, NCSIZE, WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KQOVL, N2ORBXQ, WORK,KFREE,LFREE)
 C     Get overlap between CMO1 and CMO2
-      CALL OVL12(WORK(KQOVL),CMO1,CMO2,WORK(KFREE),LFREE)
+      CALL STEX_OVL12(WORK(KQOVL),CMO1,CMO2,WORK(KFREE),LFREE)
 C     Put the complex overlap matrix in WORK(KCOVL)
       CALL QTOC(WORK(KQOVL+NPSH(1)*(1+NORBT)),WORK(KCOVL),1,NOCCT,
      &     NOCCVIRT,NORBT,NORBT)
@@ -1679,18 +1657,18 @@ C     Load the property matrices and convert them to complex form.
       DO IPRP=1,STEX_NR_OP
          CALL PRPMAT(STEX_OP_IND(IPRP),IDUM,WORK(KQA),CMO1,IBEIG,ICMOQ
      $        ,NORB,WORK,KFREE,LFREE,0)
-         CALL PRPMO12(WORK(KQA),WORK(KCPRP+(IPRP-1)*NCSIZE),WORK(KQOVL),
-     &        WORK(KFREE),LFREE)
+         CALL STEX_PRPMO12(WORK(KQA),WORK(KCPRP+(IPRP-1)*NCSIZE),
+     &        WORK(KQOVL),WORK(KFREE),LFREE)
       ENDDO
-c     Get <gs|ref> 
-      CALL DCOPY(NOCCT**2*8,WORK(KCOVL),1,WORK(KQA),1)      
+c     Get <gs|ref>
+      CALL DCOPY(NOCCT**2*8,WORK(KCOVL),1,WORK(KQA),1)
       CALL ZDETER(WORK(KQA),NOCCT*2,NOCCT*2,REFGSOVL)
 C     Calculate nuclear dipole moment
       CALL DIPNUC(0,.FALSE.)
       WRITE (LUPRI,*) 'Nuclear dipole moment:',DIPMN
 c     prepare for cofactors
       CALL DZERO(XPRPGRAD,STEX_NVIRT*4*STEX_NHOLES*STEX_NR_OP*2)
-      DSQRT2 = DSQRT(2.0D0)
+      DSQRT2I = 1.0D0/SQRT(2.0D0)
 C     Loop over excitations. Indices starting with I are over holes
 C     and those starting with J are over virtuals
       DO II=1,STEX_NHOLES
@@ -1708,48 +1686,48 @@ C     Try to invert the overlap matrix to get cofactors.
 C     reuse KQOVL for this, since it's no longer needed.
                   CALL DCOPY(NOCCT**2*8,WORK(KCOVL),1,WORK(KQOVL),1)
                   CALL ZINVER(WORK(KQOVL),NOCCT*2,DETS)
-                  CALL COFSUM(NOCCT*2,NOCCVIRT*2,WORK(KCPRP),STEX_NR_OP,
-     $                 WORK(KCOVL),WORK(KQOVL),DETS ,DIPMN,MOM,IHOLE
-     $                 ,IVIRT,WORK(KFREE),LFREE)
+                  CALL COF_SUM(NOCCT*2,NOCCVIRT*2,WORK(KCPRP),
+     $                 STEX_NR_OP,WORK(KCOVL),WORK(KQOVL),DETS,
+     $                 DIPMN,MOM,IHOLE,IVIRT,WORK(KFREE),LFREE)
 c                  PRINT *,II,IBAR,JJ,JBAR,ABS(DETS)**2,MOM(1)
 C     Now we have a moment <gs|A a+_j a_i |ref>, where
 C     j is given by JJ and JBAR and i is given by II and IBAR.
 C     Transform to the order given in the header of this subroutine.
                   DO IPRP=1,STEX_NR_OP
                      IF (IBAR.EQ.0.AND.JBAR.EQ.0) THEN
-                        XPRPGRAD(JJ,1,II,IPRP) = 
-     &                       XPRPGRAD(JJ,1,II,IPRP) + MOM(IPRP)/DSQRT2
-                        XPRPGRAD(JJ,2,II,IPRP) = 
-     &                       XPRPGRAD(JJ,2,II,IPRP) + 
-     &                       DCMPLX(0,1)*MOM(IPRP)/DSQRT2
+                        XPRPGRAD(JJ,1,II,IPRP) =
+     &                       XPRPGRAD(JJ,1,II,IPRP) + MOM(IPRP)*DSQRT2I
+                        XPRPGRAD(JJ,2,II,IPRP) =
+     &                       XPRPGRAD(JJ,2,II,IPRP) +
+     &                       DCMPLX(0,1)*MOM(IPRP)*DSQRT2I
                      ELSE IF (IBAR.EQ.1.AND.JBAR.EQ.1) THEN
-                        XPRPGRAD(JJ,1,II,IPRP) = 
-     &                       XPRPGRAD(JJ,1,II,IPRP) + MOM(IPRP)/DSQRT2
-                        XPRPGRAD(JJ,2,II,IPRP) = 
+                        XPRPGRAD(JJ,1,II,IPRP) =
+     &                       XPRPGRAD(JJ,1,II,IPRP) + MOM(IPRP)*DSQRT2I
+                        XPRPGRAD(JJ,2,II,IPRP) =
      &                       XPRPGRAD(JJ,2,II,IPRP) -
-     &                       DCMPLX(0,1)*MOM(IPRP)/DSQRT2
+     &                       DCMPLX(0,1)*MOM(IPRP)*DSQRT2I
                      ELSE IF (IBAR.EQ.0.AND.JBAR.EQ.1) THEN
-                        XPRPGRAD(JJ,3,II,IPRP) = 
-     &                       XPRPGRAD(JJ,3,II,IPRP) + MOM(IPRP)/DSQRT2
-                        XPRPGRAD(JJ,4,II,IPRP) = 
-     &                       XPRPGRAD(JJ,4,II,IPRP) + 
-     &                       DCMPLX(0,1)*MOM(IPRP)/DSQRT2
-                     ELSE                        
-                        XPRPGRAD(JJ,3,II,IPRP) = 
-     &                       XPRPGRAD(JJ,3,II,IPRP) - MOM(IPRP)/DSQRT2
-                        XPRPGRAD(JJ,4,II,IPRP) = 
-     &                       XPRPGRAD(JJ,4,II,IPRP) + 
-     &                       DCMPLX(0,1)*MOM(IPRP)/DSQRT2
+                        XPRPGRAD(JJ,3,II,IPRP) =
+     &                       XPRPGRAD(JJ,3,II,IPRP) + MOM(IPRP)*DSQRT2I
+                        XPRPGRAD(JJ,4,II,IPRP) =
+     &                       XPRPGRAD(JJ,4,II,IPRP) +
+     &                       DCMPLX(0,1)*MOM(IPRP)*DSQRT2I
+                     ELSE
+                        XPRPGRAD(JJ,3,II,IPRP) =
+     &                       XPRPGRAD(JJ,3,II,IPRP) - MOM(IPRP)*DSQRT2I
+                        XPRPGRAD(JJ,4,II,IPRP) =
+     &                       XPRPGRAD(JJ,4,II,IPRP) +
+     &                       DCMPLX(0,1)*MOM(IPRP)*DSQRT2I
                      ENDIF
                   ENDDO
-C     Swap back columns 
+C     Swap back columns
                   CALL ZCOLSWAP(WORK(KCOVL),NOCCT*2,NOCCVIRT*2,
      &                 IHOLE,IVIRT)
                ENDDO
             ENDDO
          ENDDO
       ENDDO
-      CALL QEXIT('COF_PRPGRAD') 
+      CALL QEXIT('COF_PRPGRAD')
       END
 
 
@@ -1774,61 +1752,70 @@ C     Swap back columns
       ENDDO
       END
 
-      SUBROUTINE PAIRDENS(CMO,IIORB,JJORB,DAO,IJK,WORK,LWORK)
-C     Used only for analysis at the moment.
+      SUBROUTINE STEXFAOMO(FMO,FAO,ISYM,ITIM,IFER,IPRINT,CMO,WORK,LWRK)
+C*****************************************************************************
 C
-C     Compute the transition density in AO basis for the orbital pair i,j
-C     Do this by an mo-ao transform.
+C     Transform Fock matrix from AO to MO basis using QTRANS
 C
-C     IJK determines the quaternion phase, leading to
-C     IJK=1  1 -> -0.5*(  |i><j| + |i'><j'|  )
-C         2  i -> -0.5*( ???i(|i><j| - |i'><j'|))
-C         3  j -> -0.5*( ??? |i><j'| - |i'><j|  )
-C         4  k -> -0.5*( ???i(|i><j'| + |i'><j|))
+C     Written by panor 1999
 C
+C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
+#include "dcbqal.h"
 #include "dcborb.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
 #include "dcbbas.h"
-      DIMENSION WORK(LWORK),CMO(NCMOTQ),DAO(N2BBASXQ)
-      CHARACTER T
-#include "memint.h"
-      CALL MEMGET('REAL',KDMO,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KDMO),N2ORBXQ)
-      IF (IJK.EQ.3.OR.IJK.EQ.4) THEN
-         IOFF = 2
-      ELSE
-         IOFF = 0
+#include "dgroup.h"
+#include "dcbxrs.h"
+#include "dcbstex.h"
+C
+      PARAMETER ( D0 = 0.0D0 )
+C
+      CHARACTER T*1
+C
+      DIMENSION FAO(N2BBASXQ),FMO(STEX_N2VIRXQ)
+      DIMENSION T(-1:1),CMO(*),WORK(LWRK)
+      INTEGER   JCMO(2)
+C
+      CALL QENTER('STEXFAOMO')
+C
+      KFREE = 1 
+      LFREE = LWRK
+C
+      JCMO(1) = ICMOQ(1) + NFBAS(1,0)*(NPSH(1)+NISH(1))
+      JCMO(2) = ICMOQ(2) + NFBAS(2,0)*(NPSH(2)+NISH(2))
+C
+      CALL DZERO(FMO,STEX_N2VIRXQ)
+C
+      DO I1=1,NFSYM
+         I2 = MOD(I1+IFER,2) + 1
+         IF(STEX_NVIR(I1).GT.0 .AND. STEX_NVIR(I2).GT.0) THEN
+            CALL QTRANS('AOMO','S',
+     &           D0,NFBAS(I1,0),NFBAS(I2,0),STEX_NVIR(I1),STEX_NVIR(I2),
+     &           FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
+     &           IPQTOQ(1,ISYM-1),
+     &           FMO(STEX_I2VIRX(I1,I2)+1),STEX_NVIRT,STEX_NVIRT,NZ,
+     &           IPQTOQ(1,ISYM-1),
+     &           CMO(JCMO(I1)),NFBAS(I1,0),STEX_NVIR(I1),NZ,IPQTOQ(1,0),
+     &           CMO(JCMO(I2)),NFBAS(I2,0),STEX_NVIR(I2),NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRINT)
+         END IF
+      END DO
+C
+C     Print
+C
+      IF (IPRINT.GE.10) THEN
+         CALL HEADER('STEXFAOMO: Fock matrix in MO-basis',-1)
+         CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,NZ,
+     &        IPQTOQ(1,ISYM-1),LUPRI)
       ENDIF
-      IF (IJK.EQ.1.OR.IJK.EQ.3) THEN
-         T = 'S'
-      ELSE
-         T = 'A'
-      ENDIF
-      WORK(KDMO + IOFF*N2ORBX + (IIORB - 1)*NORBT + JJORB - 1)
-     &     = -0.5D0
-      CALL ORB_CLASSIFY(IIORB,IDUM1,I1,IDUM2)
-      CALL ORB_CLASSIFY(JJORB,IDUM1,I2,IDUM2)
-      CALL QTRANS('MOAO',T,D0,
-     &     NFBAS(I1,0),NFBAS(I2,0),NORB(I1),NORB(I2),
-     &     DAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
-     &     IPQTOQ(1,0),
-     &     WORK(KDMO + I2ORBX(I1,I2)),NORBT,NORBT,NZ,
-     &     IPQTOQ(1,0),
-     &     CMO(ICMOQ(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-     &     CMO(ICMOQ(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
-     &     WORK(KFREE),LFREE,IPRINT)
+C
+      CALL QEXIT('STEXFAOMO')
+C     
+      RETURN
       END
 
-
+#ifdef NOTUSED
       SUBROUTINE ORBDENS(CMO,IIORB,DAO,WORK,LWORK)
 #include "implicit.h"
 #include "priunit.h"
@@ -1857,7 +1844,7 @@ C
          DO II=1,NTBAS(0)
             CORB2(II,IZ) = CMO(II,IIORB,IZ)
          ENDDO
-      ENDDO      
+      ENDDO
 
       OP = 'N'
 
@@ -1866,6 +1853,7 @@ C
      &     'H','N',IPQTOQ(1,0),CORB2,NTBAS(0),1,NZ,
      &     0.0D0,IPQTOQ(1,0),DAO,NTBAS(0),NTBAS(0),NZ)
       END
+#endif
 #else
       SUBROUTINE STEX_DUMMY
       END
