@@ -58,15 +58,17 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "pgroup.h"
 #include "dcbxpr.h"
 #include "dcbstex.h"
-      PARAMETER (NTABLE = 4)
+#include "codata.h"
+      PARAMETER (NTABLE = 6)
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
      &          PNAME(STEX_NR_OP)*16
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.HOLES ','.PRINT ','.BATCH ','.CUBE  '/
-      DATA SET/.FALSE./
+      DATA TABLE /'.HOLES ','.PRINT ','.BATCH ','.CUBE  ',
+     &            '.CUTOFF','.SCREEN'/
+      DATA SET/.FALSE./ 
 C
 #include "ibtfun.h"
 C
@@ -97,9 +99,14 @@ C     (anti)hermitian, so batch size 4 is maybe good.
       STEX_BATCHSIZE = 4
 C     Don't write cube files by default.
       STEX_NCUBE = 0
+C     Set default cutoff in eV
+      STEX_CUTOFFEV = 100.0D0
+      STEX_CUTOFF = STEX_CUTOFFEV/XTEV
+C     Screening (-1 means not set here)
+      STEX_SCRFCK = -1.0D0
 
 C     Add diplen and dipvel to DCBPRP
-      PNAME(1) = 'XDIPLEN'
+      PNAME(1) = 'XDIPLEN '
       PNAME(2) = 'YDIPLEN '
       PNAME(3) = 'ZDIPLEN '
       PNAME(4) = 'XDIPVEL '
@@ -131,7 +138,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1, 2, 3, 4), I
+                     GO TO (1, 2, 3, 4, 5, 6), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -176,9 +183,19 @@ C     .BATCH SIZE
     3          CONTINUE
                READ (LUCMD,*) STEX_BATCHSIZE
                GOTO 100
+C     TODO: move .CUBE to analyze
 C     .CUBE
     4          CONTINUE
                READ (LUCMD,*) STEX_NCUBE
+               GOTO 100
+C     .CUTOFF
+    5          CONTINUE
+               READ (LUCMD,*) STEX_CUTOFFEV
+               STEX_CUTOFF = STEX_CUTOFFEV/XTEV
+               GOTO 100
+C     .SCREEN
+    6          CONTINUE
+               READ (LUCMD,*) STEX_SCREEN
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -190,8 +207,15 @@ C     .CUBE
             END IF
       END IF
   300 CONTINUE
-  999 CONTINUE
-      IF (INPERR.GT.0) CALL QUIT('Input error in *STEX')
+  999 CONTINUE           
+      WRITE (LUPRI,*) 'STEX CUTOFF:',STEX_CUTOFFEV
+      WRITE (LUPRI,*) 'STEX SCRFCK:',STEX_SCRFCK
+      WRITE (LUPRI,*) 'STEX NHOLES:',STEX_NHOLES
+      WRITE (LUPRI,*) 'Hole orbital   Fermion symmetry'
+      DO I=1,STEX_NHOLES
+         WRITE (LUPRI,*) STEX_HOLES(I),STEX_IFSYM(I)
+      ENDDO
+      IF (INPERR.GT.0) CALL QUIT('Input error in *STEX')      
       WRITE (LUPRI,*) 'End of STEX input section'
       END
 
@@ -240,16 +264,67 @@ C
          CALL QUIT('NFSYM > 1 not yet supported in STEX, run in C1')
       ENDIF
 
+C     See if a separate reference state will be used.
+      INQUIRE(FILE='DFCOEF.ION',EXIST=LION)
+      IF (LION) THEN
+         WRITE(LUPRI,*) 'DFCOEF.ION found, using it as reference state'
+         WRITE(LUPRI,*) 'for STEX calculation'
+C     Move groundstate DFCOEF to DFCOEF.GS
+C     ulfek: bug here on some systems
+         ISYS1 = CSYSTEM('mv DFCOEF DFCOEF.GS')
+         ISYS2 = CSYSTEM('mv DFCOEF.ION DFCOEF')
+         PRINT *,'Debug: mv return codes',ISYS1,ISYS2
+         STEX_COFACTOR = .TRUE.
+      ELSE
+         WRITE(LUPRI,*) 'No separate reference state (DFCOEF.ION) found'
+         WRITE(LUPRI,*) 'using groundstate as STEX reference state.'
+         STEX_COFACTOR = .FALSE.
+      ENDIF
 
-C     plus the same space for the eigenvectors.
-      STEX_NVIR(1) = NSSH(1)
-      STEX_NVIR(2) = NSSH(2)
+C     Read reference state to WORK(KCMO)
+      INQUIRE(FILE='DFCOEF',EXIST=LTOBE)
+      IF(.NOT.LTOBE) THEN
+         WRITE(LUPRI,*) 'Missing DFCOEF'
+         CALL QUIT('File DFCOEF missing')
+      ENDIF
+C     Save ground state energy
+      GSERG = DHFERG
+C     Read reference orbitals
+      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KBREP,NORBT,WORK,KFREE,LFREE)
+      LUBUF=22
+      CALL OPNFIL(LUBUF,'DFCOEF','OLD','STEX  ')
+      IOPT = 2+4+8
+      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &     WORK(KBREP),TOTERG,IOPT,WORK,KFREE,LFREE)
+      CLOSE(LUBUF,STATUS='KEEP')
+
+
+C     Set up cutoff and indices
+      STEX_NVIR(2) = 0
+      print *,'cutoff',STEX_CUTOFF
+      DO ISYM=1,NFSYM
+         JEIG = KEIG + IORB(ISYM) + NPSH(ISYM) + NISH(ISYM) - 1
+         I = 1
+         DO WHILE (I.LE.NSSH(ISYM).AND.
+     &        (WORK(JEIG+I).LT.STEX_CUTOFF
+     &        .OR.WORK(JEIG+I)-WORK(JEIG+I-1).LT.0.05D0)) 
+            I = I + 1
+         ENDDO
+         STEX_NVIR(ISYM) = I - 1
+      ENDDO
+      WRITE (LUPRI,*) 'STEX Nr virtuals:',(STEX_NVIR(I),I=1,NFSYM)
       STEX_NVIRT = STEX_NVIR(1) + STEX_NVIR(2)
+      IF (STEX_NVIRT .LE. 0) THEN
+         WRITE (LUPRI,*) 'STEX aborting, no virtuals below cutoff'
+         RETURN
+      END IF
       STEX_N2VIRX = STEX_NVIRT*STEX_NVIRT
       STEX_N2VIRXQ = NZ*STEX_N2VIRX
-      STEX_I2VIRX(1,1) = 1
-      STEX_I2VIRX(2,1) = 1 + STEX_NVIR(1)
-      STEX_I2VIRX(1,2) = 1 + STEX_NVIR(1)*STEX_NVIRT
+      STEX_I2VIRX(1,1) = 0
+      STEX_I2VIRX(2,1) = STEX_NVIR(1)
+      STEX_I2VIRX(1,2) = STEX_NVIR(1)*STEX_NVIRT
       STEX_I2VIRX(2,2) = STEX_I2VIRX(1,2) + STEX_NVIR(1)
 c      WRITE(LUPRI,*) 'STEX: Dimension of A matrix is',STEX_NVIRT,'*'
 c     $     ,STEX_NHOLES,'*4'
@@ -274,62 +349,29 @@ c     $     ,STEX_NHOLES,'*4'
          CALL QUIT('Out of memory in STEX')
       ENDIF
 
-C     See if a separate reference state will be used.
-      INQUIRE(FILE='DFCOEF.ION',EXIST=LION)
-      IF (LION) THEN
-         WRITE(LUPRI,*) 'DFCOEF.ION found, using it as reference state'
-         WRITE(LUPRI,*) 'for STEX calculation'
-C     Move groundstate DFCOEF to DFCOEF.GS
-C     ulfek: bug here on some systems
-         ISYS1 = SYSTEM('mv DFCOEF DFCOEF.GS')
-         ISYS2 = SYSTEM('mv DFCOEF.ION DFCOEF')
-         PRINT *,'mv return codes',ISYS1,ISYS2
-         STEX_COFACTOR = .TRUE.
-      ELSE
-         WRITE(LUPRI,*) 'No separate reference state (DFCOEF.ION) found'
-         WRITE(LUPRI,*) 'using groundstate as STEX reference state.'
-         STEX_COFACTOR = .FALSE.
-      ENDIF
-
-C     Allocate memory for STEX_TM.
+C     Allocate memory for STEX_TM. (transition moments)
 C     property gradients are complex, so *2 size of double.
       CALL MEMGET('REAL',KPRP,STEX_NPARAM*STEX_NR_OP*2,WORK,KFREE,LFREE)
 
-C     Read reference state to WORK(KCMO)
-      INQUIRE(FILE='DFCOEF',EXIST=LTOBE)
-      IF(.NOT.LTOBE) THEN
-         WRITE(LUPRI,*) 'Missing DFCOEF'
-         CALL QUIT('File DFCOEF missing')
-      ENDIF
-C     Save groundstate energy
-      GSERG = DHFERG
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      LUBUF=22
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','STEX  ')
-      CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-      IOPT = 2+8
-      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,
-     &     WORK(KIBRP),TOTERG,IOPT,WORK,KFREE,LFREE)
-      CLOSE(LUBUF,STATUS='KEEP')
-      IF (STEX_COFACTOR) THEN
+      IF (STEX_COFACTOR) THEN         
          ERGION = TOTERG
          CALL MEMGET('REAL',KCMOGS,NCMOTQ,WORK,KFREE,LFREE)
          CALL OPNFIL(LUBUF,'DFCOEF.GS','OLD','STEX  ')
+         IOPT = 2+8
          CALL REACMO(LUBUF,'DFCOEF.GS',WORK(KCMOGS),DUM,
-     &        WORK(KIBRP),TOTERG,IOPT,WORK,KFREE,LFREE)
-C todo:    Mix ref state mo's to improve speed of cofactor algo.
-         CALL COF_PRPGRAD(WORK(KPRP),WORK(KCMOGS),WORK(KIBRP)
+     &        WORK(KBREP),TOTERG,IOPT,WORK,KFREE,LFREE)
+         CALL COF_PRPGRAD(WORK(KPRP),WORK(KCMOGS),WORK(KBREP)
      $        ,WORK(KCMO),REFGSOVL,WORK(KFREE),LFREE)
-         CALL MEMREL('STEX',WORK,KCMOGS,KCMOGS,KFREE,LFREE)
       ELSE
          ERGION = 0.0D0
          REFGSOVL = 1.0D0
 C     Calculate the property gradient the normal way
-         CALL FROZEN_PRPGRAD(WORK(KPRP),WORK(KCMO),WORK(KIBRP)
+         CALL FROZEN_PRPGRAD(WORK(KPRP),WORK(KCMO),WORK(KBREP)
      $        ,WORK(KFREE),LFREE)
       ENDIF
 C     Check and release memory
-      CALL MEMREL('STEX',WORK,KIBRP,KIBRP,KFREE,LFREE)
+c     TODO: Can't release here, then KPRP is lost as well.
+C      CALL MEMREL('STEX',WORK,1,KEIG,KFREE,LFREE)
 
 C       IF (STEX_NCUBE.GT.0) THEN
 C          WRITE (LUPRI,*) 'Writing cube files'
@@ -558,6 +600,7 @@ C     Also determine the index within the orbitals symmetry and class (IORBI).
       SUBROUTINE STEX_PAIRDENS(CMO,IIORB,JJORB,DAO,IJK,WORK,LWORK)
 C
 C
+C     Calculate psi_i Q psi_j^\dag, where Q is a quaternion phase {1,i,j,k}
 C     IJK determines the quaternion phase, leading to
 C     IJK=1 -> -0.5*(  |i><j| + |i'><j'| )
 C         2 -> -0.5*(  |i><j| - |i'><j'| )
@@ -580,15 +623,15 @@ C
       DIMENSION CORB1(NTBAS(0),NZ),CORB2(NTBAS(0),NZ)
       CHARACTER OP
 #include "memint.h"
-c      WRITE(LUPRI,*)
-c    & 'STEX_PAIRDENS for pair ',IIORB,JJORB,', type =', IJK
+C     FIXME: NZ < 4 and IFSYM = 2 not handled.
+c     maybe unpack, run and pack?
 
       DO IZ=1,NZ
          DO II=1,NTBAS(0)
             CORB1(II,IZ) = CMO(II,IIORB,IZ)
          ENDDO
       ENDDO
-
+c     insert the quaternion phase according to ijk
       IF (IJK.LE.2) THEN
          DO IZ=1,NZ
             DO II=1,NTBAS(0)
@@ -745,13 +788,14 @@ c     go to mo basis (put mo integrals on disk)
                   DO KK=0,IDMAT-1
                      CALL STEXFAOMO(WORK(KFMAT),
      &                    WORK(KDEN+KK*N2BBASXQ),
-     &                    ISYM,ITIM,IFER,IPRINT,CMO,WORK(KFREE),LFREE)
+     &                    ISYM,ITIM,IFER,0,CMO,WORK(KFREE),LFREE)
                      IMOD = MOD(KK+ITOT,2)
                      IF (IMOD.EQ.1) THEN
                         CALL QIMUL(WORK(KFMAT),
      &                       STEX_NVIRT,NZ,-1.0D0)
                      ENDIF
                      IREC = ITOT+KK+1
+c     TODO: optimize write below (one big block is better)
                      WRITE (STEX_LUINT, REC=IREC)
      &                    (WORK(KFMAT+IJ),IJ=0,STEX_N2VIRXQ-1)
                   ENDDO
@@ -786,6 +830,7 @@ c     go to mo basis (put mo integrals on disk)
 #include "memint.h"
       CALL MEMGET('REAL',KTMP,STEX_N2VIRXQ,WORK,KFREE,LFREE)
       N = 1
+      IVIROFF = NPSHT + NISHT
       DO II=1,STEX_NHOLES
          DO JJ=II,STEX_NHOLES
             DO KK=0,3
@@ -794,12 +839,15 @@ C     Read integrals to modify
      &         (WORK(KTMP+IJ),IJ=0,STEX_N2VIRXQ-1)
 C     Add d_ij F_ab part
                IF (KK.EQ.0.AND.II.EQ.JJ.AND.MOD(N-1,4).EQ.0) THEN
-                  DO IJK=1,4
-                     DO IJ=1,STEX_N2VIRX
-                        WORK(KTMP+IJ-1+(IJK-1)*STEX_N2VIRX) =
-     &                       WORK(KTMP+IJ-1+(IJK-1)*STEX_N2VIRX) +
-     &                       FMAT(IJ,1,IJK)
-                     ENDDO
+                  DO IZ=1,4
+                     DO I=1,STEX_NVIRT
+                        K = KTMP + (I-1)*STEX_NVIRT - 1 + 
+     &                       (IZ-1)*STEX_N2VIRX
+                        DO J=1,STEX_NVIRT
+                           WORK(K+J) = WORK(K+J) + 
+     &                          FMAT(IVIROFF+J,IVIROFF+I,IZ)
+                        ENDDO
+                     ENDDO                       
                   ENDDO
                ENDIF
 C     Add d_ab F_ij part
@@ -808,10 +856,9 @@ C     Add d_ab F_ij part
                ELSE
                   CSIGN=1.0D0
                ENDIF
-c               PRINT *,'I,J =',II,JJ,' Adding to diagonal of F',N,' :',
-c     &              CSIGN*FMAT(STEX_HOLES(II),STEX_HOLES(JJ),KK+1)
-               DO IJ=0,NORBT-1
-                  WORK(KTMP+IJ+NORBT*IJ) = WORK(KTMP+IJ+NORBT*IJ) +
+               DO IJ=0,STEX_NVIRT-1
+                  WORK(KTMP+IJ+STEX_NVIRT*IJ) = 
+     &                 WORK(KTMP+IJ+STEX_NVIRT*IJ) +
      &                 CSIGN*FMAT(STEX_HOLES(II),STEX_HOLES(JJ),KK+1)
                ENDDO
 C     Write out modified integrals
@@ -824,7 +871,9 @@ C     Write out modified integrals
       END
 
       SUBROUTINE STEX_ADD_VPART(AMAT,FMAT,IZ,FAC)
-C     Add the virtual IZ part of FMAT, times FAC, to AMAT.
+C     Add the IZ part of FMAT, times FAC, to AMAT.
+C     perhaps this could be done with BLAS with the odense
+C     simplification (only virtual part stored on disk)
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -838,19 +887,9 @@ C     Add the virtual IZ part of FMAT, times FAC, to AMAT.
 #include "dcbxpr.h"
 #include "dcbbas.h"
 #include "dcbstex.h"
-      DIMENSION AMAT(STEX_NPARAM,*), FMAT(NORBT,NORBT,NZ)
-      IIA=1
-      DO ISYM=1,NFSYM
-         DO II=NPSH(ISYM)+NISH(ISYM)+NASH(ISYM)+1,NORB(ISYM)
-            JJA=1
-            DO JSYM=1,NFSYM
-               DO JJ=NPSH(JSYM)+NISH(JSYM)+NASH(JSYM)+1,NORB(JSYM)
-                  AMAT(IIA,JJA) = AMAT(IIA,JJA) + FAC*FMAT(II,JJ,IZ)
-                  JJA=JJA+1
-               ENDDO
-            ENDDO
-            IIA=IIA+1
-         ENDDO
+      DIMENSION AMAT(STEX_NPARAM,*), FMAT(STEX_NVIRT,STEX_NVIRT,NZ)
+      DO II=1,STEX_NVIRT
+         CALL DAXPY(STEX_NVIRT,FAC,FMAT(1,II,IZ),1,AMAT(1,II),1)
       ENDDO
       END
 
@@ -885,6 +924,7 @@ C
             IFMAT = IFMAT + 1
             READ (STEX_LUINT, REC=IFMAT)
      &      (WORK(KTMP+KK),KK=0,STEX_N2VIRXQ-1)
+C     FIXME: expand to quaternion format if NZ < 4 
             CALL STEX_ADD_VPART(AMAT(1,1,II,1,1,JJ),WORK(KTMP),1,1.0D0)
             CALL STEX_ADD_VPART(AMAT(1,1,II,1,2,JJ),WORK(KTMP),2,-1.0D0)
             CALL STEX_ADD_VPART(AMAT(1,1,II,1,3,JJ),WORK(KTMP),3,1.0D0)
@@ -1009,7 +1049,7 @@ c     <0|A[q+_ai - q+_a'i']|0>
 c     <0|A[q+_a'i - q+_ai']|0>
 c     <0|A[q+_a'i + q+_ai']|0>
 c
-C     The index a runs over all virtual orbitals
+C     The index a runs over all included virtual orbitals
 C
 C     In:
 C     AMO - Property matrix in mo basis
@@ -1038,8 +1078,12 @@ C
       IF (ITIM.NE.1) THEN
          CALL QUIT('ITIM=-1 not implemented, sorry.')
       ENDIF
+c     FIXME: symmetry
       IF (NFSYM .EQ. 2) THEN
          CALL QUIT('NFSYM.eq.2 not implemented, sorry.')
+      END IF
+      IF (NZ .NE. 4) THEN
+         CALL QUIT('NZ != 4 not implemented, sorry.')
       END IF
       DSQRT2 = SQRT(2.0D0)
       DO IVIRT=1,STEX_NVIR(1)
@@ -1049,12 +1093,10 @@ C
       DO IVIRT=1,STEX_NVIRT
          XPRPTM(IVIRT,2) = -DSQRT2*AMO(STEX_HOLES(IHOLE),
      &        NPSH(1) + NISH(1) + IVIRT,2)
-
       ENDDO
       DO IVIRT=1,STEX_NVIRT
          XPRPTM(IVIRT,3) =  DSQRT2*AMO(STEX_HOLES(IHOLE),
      &        NPSH(1) + NISH(1) + IVIRT,3)
-
       ENDDO
       DO IVIRT=1,STEX_NVIRT
          XPRPTM(IVIRT,4) = -DSQRT2*AMO(STEX_HOLES(IHOLE),
@@ -1078,8 +1120,8 @@ C
 #include "dcbbas.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XPRPGRAD
-      DIMENSION CMO(NCMOTQ),XPRPGRAD(STEX_NVIRT,4,STEX_NHOLES,STEX_NR_OP
-     $     ),WORK(LWORK),IBEIG(*)
+      DIMENSION CMO(NCMOTQ),WORK(LWORK),IBEIG(*),
+     &     XPRPGRAD(STEX_NVIRT,4,STEX_NHOLES,STEX_NR_OP)
       LOGICAL LOPEN
 #include "memint.h"
       CALL QENTER('FROZEN_PRPGRAD')
@@ -1094,6 +1136,9 @@ C
          call flush(lupri)
          CALL PRPMAT(STEX_OP_IND(IPRP),IDUM,WORK(KPROP),CMO,IBEIG,ICMOQ
      $        ,NORB,WORK,KFREE,LFREE,1)
+c         CALL HEADER('FROZEN_PRPGRAD: Property matrix in MO-basis',-1)
+c         CALL PRQMAT(WORK(KPROP),NORBT,NORBT,NORBT,NORBT,NZ,
+c     &        IPQTOQ(1,0),LUPRI)
          IF (IPRP.LE.3) THEN
             ITIM=1
          ELSE
@@ -1105,6 +1150,10 @@ C     Check this for dipvel (p?)
      $           IHOLE)
          ENDDO
       ENDDO
+c     debug
+      print *,'frozen debug'
+      print *,(XPRPGRAD(II,1,1,1),II=1,100)
+c     end debug
       CALL QEXIT('FROZEN_PRPGRAD')
       END
 
@@ -1145,6 +1194,10 @@ C
      &     IDOMCHANH(50),IDOMCHANV(50), HOLEWEIGHT(STEX_NHOLES)
 #include "memint.h"
       CALL QENTER('STEX_ANALYZE')
+c     debug
+      print *,'analyze debug'
+      print *,(PRPGRAD(II,1,1,1),II=1,100)
+c     end debug
       WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
      &     ' <f_l>/3   <f_v>/3     f_lx     f_ly  '//
      &     '   f_lz     f_vx     f_vy     f_vz'
@@ -1597,7 +1650,7 @@ C     add nuclear dipole moment term
       PRINT *,'ZMATNORM ',NAME,' ',SQRT(NOR)
       END
 
-      SUBROUTINE COF_PRPGRAD(XPRPGRAD,CMO1,IBEIG,CMO2,REFGSOVL,WORK
+      SUBROUTINE COF_PRPGRAD(XPRPGRAD,CMO1,IBREP,CMO2,REFGSOVL,WORK
      $     ,LWORK)
 C     Calculate the overlap between the determinants formed from
 C     the occupied orbitals of CMO1 and the occupied orbitals of
@@ -1628,7 +1681,7 @@ C     XPRPGRAD - the property gradient
       LOGICAL LOPEN
       DOUBLE COMPLEX XPRPGRAD,DETS,MOM,REFGSOVL
       DIMENSION XPRPGRAD(STEX_NVIRT,4,STEX_NHOLES,STEX_NR_OP),
-     $     WORK(LWORK),IBEIG(*),CMO1(NCMOTQ),CMO2(NCMOTQ),MOM(STEX_NR_OP
+     $     WORK(LWORK),IBREP(*),CMO1(NCMOTQ),CMO2(NCMOTQ),MOM(STEX_NR_OP
      $     )
 #include "memint.h"
       CALL QENTER('COF_PRPGRAD')
@@ -1655,7 +1708,7 @@ C     Load the property matrices and convert them to complex form.
       CALL MEMGET('REAL',KQA, N2ORBXQ, WORK,KFREE,LFREE)
 
       DO IPRP=1,STEX_NR_OP
-         CALL PRPMAT(STEX_OP_IND(IPRP),IDUM,WORK(KQA),CMO1,IBEIG,ICMOQ
+         CALL PRPMAT(STEX_OP_IND(IPRP),IDUM,WORK(KQA),CMO1,IBREP,ICMOQ
      $        ,NORB,WORK,KFREE,LFREE,0)
          CALL STEX_PRPMO12(WORK(KQA),WORK(KCPRP+(IPRP-1)*NCSIZE),
      &        WORK(KQOVL),WORK(KFREE),LFREE)
@@ -1755,9 +1808,9 @@ C     Swap back columns
       SUBROUTINE STEXFAOMO(FMO,FAO,ISYM,ITIM,IFER,IPRINT,CMO,WORK,LWRK)
 C*****************************************************************************
 C
-C     Transform Fock matrix from AO to MO basis using QTRANS
+C     Transform the virtual part of a (Fock) matrix from AO to MO basis using QTRANS
 C
-C     Written by panor 1999
+C     Written by panor 1999/ulfek&hjj 2006
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1778,12 +1831,18 @@ C
       INTEGER   JCMO(2)
 C
       CALL QENTER('STEXFAOMO')
+      IF (IPRINT.GE.10) THEN
+         CALL HEADER('STEXFAOMO: Fock matrix in AO-basis',-1)
+         CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &        IPQTOQ(1,ISYM-1),LUPRI)
+      ENDIF
+
 C
       KFREE = 1 
       LFREE = LWRK
 C
-      JCMO(1) = ICMOQ(1) + NFBAS(1,0)*(NPSH(1)+NISH(1))
-      JCMO(2) = ICMOQ(2) + NFBAS(2,0)*(NPSH(2)+NISH(2))
+      JCMO(1) = ICMOQ(1) + NFBAS(1,0)*(NPSH(1)+NISH(1)) + 1
+      JCMO(2) = ICMOQ(2) + NFBAS(2,0)*(NPSH(2)+NISH(2)) + 1      
 C
       CALL DZERO(FMO,STEX_N2VIRXQ)
 C
@@ -1796,8 +1855,8 @@ C
      &           IPQTOQ(1,ISYM-1),
      &           FMO(STEX_I2VIRX(I1,I2)+1),STEX_NVIRT,STEX_NVIRT,NZ,
      &           IPQTOQ(1,ISYM-1),
-     &           CMO(JCMO(I1)),NFBAS(I1,0),STEX_NVIR(I1),NZ,IPQTOQ(1,0),
-     &           CMO(JCMO(I2)),NFBAS(I2,0),STEX_NVIR(I2),NZ,IPQTOQ(1,0),
+     &           CMO(JCMO(I1)),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &           CMO(JCMO(I2)),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRINT)
          END IF
       END DO
@@ -1806,7 +1865,7 @@ C     Print
 C
       IF (IPRINT.GE.10) THEN
          CALL HEADER('STEXFAOMO: Fock matrix in MO-basis',-1)
-         CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,NZ,
+         CALL PRQMAT(FMO,STEX_NVIRT,STEX_NVIRT,STEX_NVIRT,STEX_NVIRT,NZ,
      &        IPQTOQ(1,ISYM-1),LUPRI)
       ENDIF
 C
