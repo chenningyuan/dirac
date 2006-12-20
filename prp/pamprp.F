@@ -4972,7 +4972,8 @@ C     Define  operators for conventional orbitals
        PFAC(1)  = DI2*CVAL
        PFAC(2)  = DI2*CVAL
 C   ....X componete of B-field
-       PNAME     = 'MAGFLDX'
+C      PNAME     = 'MAGFLDX'
+       PNAME     = 'X magnetic field'
        IPTYP     = IOP(1)
        PLABEL(1) = 'ZDIPLEN'
        PLABEL(2) = 'YDIPLEN'
@@ -4984,7 +4985,8 @@ C   ....X componete of B-field
      &     ,MAXLLR)
 #if !defined (XH4)
 C Y componete of B-field
-       PNAME     = 'MAGFLDY'
+C      PNAME     = 'MAGFLDY'
+       PNAME     = 'Y magnetic field'
        IPTYP     = IOP(2)
        PLABEL(1) = 'XDIPLEN'
        PLABEL(2) = 'ZDIPLEN'
@@ -4995,7 +4997,8 @@ C Y componete of B-field
        CALL OP1IND('XFIELDB',IPMSUSC(2,2),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
 C Z componete of B-field
-       PNAME     = 'MAGFLDZ'
+C      PNAME     = 'MAGFLDZ'
+       PNAME     = 'Z magnetic field'
        IPTYP     = IOP(3)
        PLABEL(1) = 'YDIPLEN'
        PLABEL(2) = 'XDIPLEN'
@@ -5866,7 +5869,7 @@ C ===========================================================================
           ENDIF
          ELSE
           IBX = IPMSUSC(2,IB)
-CMI  ...     first character, like 'X magnetic field'
+CMI  ...    extract first character, like 'X magnetic field'
           READ (PRPNAM(LLRBPU(IBX)),'(A1)') JCB
           JB = ICONVXYZ(JCB)
           IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3)  THEN
