@@ -5663,6 +5663,19 @@ C**            END IF
         END IF
 *
         IF(ILOOPC.EQ.0) THEN
+* Initialize sigma blocks
+          DO JSBLOCK = 1, NSBLOCK
+            IATP = ISBLOCK(1,JSBLOCK)
+            IBTP = ISBLOCK(2,JSBLOCK)
+            IASM = ISBLOCK(3,JSBLOCK)
+            IBSM = ISBLOCK(4,JSBLOCK)
+            IOFF = ISBLOCK(5,JSBLOCK)
+            NASTR = NSSOA(IASM,IATP)
+            NBSTR = NSSOB(IBSM,IBTP)
+            ZERO = 0.0D0
+            IF(ISBLOCK(1,JSBLOCK).GT.0)
+     &       CALL SETVEC(SB(IOFF),ZERO,NASTR*NBSTR)
+          END DO
           GOTO 20001
         END IF
         ISKIPR = 0
