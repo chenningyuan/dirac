@@ -195,7 +195,7 @@ C     .CUTOFF
                GOTO 100
 C     .SCREEN
     6          CONTINUE
-               READ (LUCMD,*) STEX_SCREEN
+               READ (LUCMD,*) STEX_SCRFCK
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -289,7 +289,7 @@ C     Read reference state to WORK(KCMO)
       ENDIF
 C     Save ground state energy
       GSERG = DHFERG
-C     Read reference orbitals
+C     Read reference orbitals and eigenvalues
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KBREP,NORBT,WORK,KFREE,LFREE)
@@ -369,10 +369,6 @@ C     Calculate the property gradient the normal way
          CALL FROZEN_PRPGRAD(WORK(KPRP),WORK(KCMO),WORK(KBREP)
      $        ,WORK(KFREE),LFREE)
       ENDIF
-C     Check and release memory
-c     TODO: Can't release here, then KPRP is lost as well.
-C      CALL MEMREL('STEX',WORK,1,KEIG,KFREE,LFREE)
-
 C       IF (STEX_NCUBE.GT.0) THEN
 C          WRITE (LUPRI,*) 'Writing cube files'
 C          CALL FLUSH(LUPRI)
@@ -405,8 +401,6 @@ C     Write integrals to disk (to save memory)
       OPEN(STEX_LUINT,FILE='STEXINT',FORM='UNFORMATTED',
      +     ACCESS='DIRECT',RECL=8*STEX_N2VIRXQ,STATUS='UNKNOWN')
       CALL STEX_CALC_INTEGRALS(WORK(KCMO),WORK,KFREE,LFREE)
-C     Add the reference state Fock matrix to the integrals
-      WRITE(LUPRI,*) 'Calculating reference Fock matrix'
       CALL FLUSH(LUPRI)
       IF (STEX_COFACTOR) THEN
 C     If we use a separate reference state the 2e Fock matrices
@@ -417,6 +411,8 @@ C     if we delete the old ones.
       ENDIF
       CALL MEMGET('REAL',KFOCKREF,N2BBASXQ,WORK,KFREE,LFREE)
       CALL FLUSH(LUPRI)
+C     Add the reference state Fock matrix to the integrals
+      WRITE(LUPRI,*) 'Calculating reference Fock matrix'
 C     Calculate Fock matrix and energy for the reference determinant
       CALL STEX_GETFCK(WORK(KCMO),WORK(KFOCKREF),REFERG,
      &     WORK(KFREE),LFREE)
@@ -472,6 +468,8 @@ C     on disk in DFFCK1
 #include "dcbxpr.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
+#include "cbihr2.h"
+#include "dcbstex.h"
       DIMENSION WORK(LWORK),FMAT(N2BBASXQ),CMO(NCMOTQ)
 #include "memint.h"
 
@@ -491,8 +489,16 @@ C     Calculate 2e part
       IPRINT = 0
       CALL STEX_GET_NPOS(NPOS)
       CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      SCRFCK_SAVE = SCRFCK
+      print *,'SCRFCK:',SCRFCK
+      IF (STEX_SCRFCK.GE.0.0D0) THEN
+         SCRFCK = STEX_SCRFCK
+         print *,'SCRFCK:',SCRFCK
+      ENDIF
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,WORK(KF2),WORK(KDEN),1,
      &     WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
+      SCRFCK = SCRFCK_SAVE 
+      print *,'SCRFCK:',SCRFCK
 C     Calculate energy
       CALL ERGCAL(WORK(KF1),WORK(KF2),WORK(KDEN),WORK(KFREE),LFREE)
 C     Add 2e part to 1e part
@@ -712,6 +718,7 @@ C
 #include "dcbbas.h"
 #include "dcbstex.h"
 #include "dcbdhf.h"
+c#include "cbihr2.h"
       DIMENSION WORK(*),CMO(NCMOTQ),
      &     ISYMO(STEX_BATCHSIZE),
      &     IHRMO(STEX_BATCHSIZE),
@@ -778,9 +785,14 @@ c     put the AO integrals in WORK(KDEN)
                   WRITE (LUPRI,*) 'Integral batch, i, j, herm. ',
      &                 IBATCH,II,JJ,IHRMO(IDMAT)
                   CALL FLUSH(LUPRI)
+c                  SCRFCK_SAVE = SCRFCK
+c                  IF (STEX_SCRFCK.GE.0.0D0) THEN
+c                     SCRFCK = STEX_SCRFCK
+c                  ENDIF
                   CALL TWOFCK(ISYMO,IHRMO,IFCKO,WORK(KDEN),WORK(KFMAT)
      $                 ,IDMAT,WORK(KPOS),INTFLG,ITWOFCKPRINT,
      &                 WORK(KFREE),LFREE)
+c                  SCRFCK = SCRFCK_SAVE 
 c     go to mo basis (put mo integrals on disk)
                   ISYM = 1
                   IFER = 1
@@ -1150,10 +1162,6 @@ C     Check this for dipvel (p?)
      $           IHOLE)
          ENDDO
       ENDDO
-c     debug
-      print *,'frozen debug'
-      print *,(XPRPGRAD(II,1,1,1),II=1,100)
-c     end debug
       CALL QEXIT('FROZEN_PRPGRAD')
       END
 
@@ -1194,10 +1202,6 @@ C
      &     IDOMCHANH(50),IDOMCHANV(50), HOLEWEIGHT(STEX_NHOLES)
 #include "memint.h"
       CALL QENTER('STEX_ANALYZE')
-c     debug
-      print *,'analyze debug'
-      print *,(PRPGRAD(II,1,1,1),II=1,100)
-c     end debug
       WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
      &     ' <f_l>/3   <f_v>/3     f_lx     f_ly  '//
      &     '   f_lz     f_vx     f_vy     f_vz'
@@ -1370,7 +1374,7 @@ C     Compute determinant and inverse of general double complex matrix A.
       DET = VDET(1)*10.0**vdet(2)
       END
 
-      SUBROUTINE QTOC(QMAT,CMAT,ITIM,NROW,NCOL,NLDR,NLDC)
+      SUBROUTINE QTOC(QMAT,CMAT,ITIM,NROW,NCOL,NLDR,NLDC,MZ)
 C     Convert a quaternion matrix
 C     QMAT = A+Bj
 C     to complex form
@@ -1384,10 +1388,14 @@ C     Q_ai -> ( C_ai  C_ai'  )
 C             ( C_a'i C_a'i' )
 C
       IMPLICIT NONE
-      INTEGER I,J,NROW,NCOL,ITIM,NLDR,NLDC
+      INTEGER I,J,NROW,NCOL,ITIM,NLDR,NLDC,MZ
       DOUBLE PRECISION QMAT
       DOUBLE COMPLEX CMAT
-      DIMENSION QMAT(NLDR,NLDC,4), CMAT(NROW*2, NCOL*2)
+      DIMENSION QMAT(NLDR,NLDC,MZ), CMAT(NROW*2, NCOL*2)
+C     FIXME: implement MZ < 4
+      IF (MZ.NE.4) THEN
+         CALL QUIT('QTOC: NZ != 4')
+      ENDIF
       DO J = 1,NCOL
          DO I = 1,NROW
 C     A
@@ -1507,7 +1515,7 @@ C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
       NOCCT = NISH(1)
       NOCCVIRT = NORB(1) - NPSH(1)
       CALL QTOC(WORK(KAQ12+NPSH(1)*(1+NORBT)),AC,1,NOCCT
-     $     ,NOCCVIRT,NORBT,NORBT)
+     $     ,NOCCVIRT,NORBT,NORBT,NZ)
       END
 
 
@@ -1601,6 +1609,7 @@ c         print *,'calling adjugate, det = ',ABS(SDET)
          CALL COF_ADJUGATE(NORB,NORB,SINV,WORK)
          LSVD = .TRUE.
       ENDIF
+c     TODO: can we always use the SVD approach now?
       DO I=1,NORB
          DO J=1,NORB
             IF (LCOF) THEN
@@ -1627,7 +1636,7 @@ C     Copy S to SINV, because zcof destroys its argument
             ENDDO
          ENDDO
       ENDDO
-C     add nuclear dipole moment term
+C     add nuclear dipole moment term for the length gauge
       DO IPRP=1,3
          MOM(IPRP) = MOM(IPRP) - SDET*NUCDIP(IPRP)
       ENDDO
@@ -1697,7 +1706,7 @@ C     Get overlap between CMO1 and CMO2
       CALL STEX_OVL12(WORK(KQOVL),CMO1,CMO2,WORK(KFREE),LFREE)
 C     Put the complex overlap matrix in WORK(KCOVL)
       CALL QTOC(WORK(KQOVL+NPSH(1)*(1+NORBT)),WORK(KCOVL),1,NOCCT,
-     &     NOCCVIRT,NORBT,NORBT)
+     &     NOCCVIRT,NORBT,NORBT,NZ)
 C     Load the property matrices and convert them to complex form.
       INQUIRE(FILE='AOPROPER',OPENED=LOPEN)
       IF (.NOT. LOPEN) THEN
