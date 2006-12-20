@@ -59,9 +59,9 @@
 
 /*
   Workaround for buggy fortran SYSTEM() on some
-  platforms (intel fortran 8.x)
+  platforms (intel fortran 8.x-9.x)
 */
-int mysystem_(const char *cmd, int cmdlen)
+int csystem_(const char *cmd, int cmdlen)
 {
   int i;
   char *s;
