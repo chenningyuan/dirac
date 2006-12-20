@@ -190,7 +190,8 @@ C
      &          GAO(NBAST), GAO1(NBAST,3), 
      &          RHG(3),VT(3), VXC(DERVS3), BUF(*)
 !johhe Check DERVS3
-      DIMENSION B3(3)
+      DIMENSION B3(3), C3(3), BC3(3)
+      DOUBLE PRECISION BR, CR, BCR
 C
 C     Get perturbed densities
 C     =======================
@@ -224,7 +225,6 @@ C
 C
 C     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
          CALL DFTPOT2(VXC,WGHT,RHO,0D0)
-c         CALL DFTPOT1(VXC,WGHT,RHO,0D0)
 C
 C     Constructing G_B matrix
          IF(DABS(B0).GT.DFTHRL) THEN 
@@ -255,7 +255,7 @@ C     Constructing H_BC matrix
 C
 C           Calculated VT
 C
-            SXC = VXC(FRRR)*B0*C0 + VXC(FRR)*BC0
+            SXC = 2.0D0*VXC(FRRR)*B0*C0 + VXC(FRR)*BC0
 C
 C           Linear transformation
 C  
@@ -267,7 +267,55 @@ C         ***************
 C         ***** GGA *****
 C         ***************
 C
-C     Write me!
+         CALL GETGRHO(B3,IREPBOP,GAO,GAO1,DTRMAT(1,1,1,1),BUF)
+         CALL GETGRHO(C3,IREPCOP,GAO,GAO1,DTRMAT(1,1,1,2),BUF)
+         CALL GETGRHO(BC3,IREPBCOP,GAO,GAO1,DTRMAT(1,1,1,3),BUF)
+C
+         BR = 2.0D0*(B3(1)*RHG(1)+ B3(2)*RHG(2)+ B3(3)*RHG(3))
+         CR = 2.0D0*(C3(1)*RHG(1)+ C3(2)*RHG(2)+ C3(3)*RHG(3))
+         IF ( IREPBOP.EQ.IREPCOP ) THEN
+            foo = BR-CR
+            IF ( foo .gt. 1.0D-14 ) THEN
+               WRITE(LUPRI,*) 'ERROR', foo
+               WRITE(LUPRI,*) B3(1),B3(2),B3(3)
+               WRITE(LUPRI,*) C3(1),C3(2),C3(3)
+            END IF
+         END IF
+         BCR = 2.0D0*(BC3(1)*RHG(1)+ BC3(2)*RHG(2)+ BC3(3)*RHG(3)) +
+     &         B3(1)*C3(1) + B3(2)*C3(2) + B3(3)*C3(3)
+
+C
+C     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
+         CALL DFTPOT2(VXC,WGHT,RHO,RHOGRD)
+C
+         SXC  = VXC(FRR)*B0 + VXC(FRZ)*BR
+         FACR = VXC(FRZ)*B0 + VXC(FZZ)*BR
+         DO I=1,3
+            VT(I) = 2.0D0 * FACR * C3(I)
+         END DO
+C
+         CALL DOEXC2(SXC,VT,IREPBOP,EXCMAT(1,1,1,1),GAO,GAO1)
+C
+         SXC  = VXC(FRR)*C0 + VXC(FRZ)*CR
+         FACR = VXC(FRZ)*C0 + VXC(FZZ)*CR
+         DO I=1,3
+            VT(I) = 2.0D0 * FACR * B3(I)
+         END DO
+C
+         CALL DOEXC2(SXC,VT,IREPCOP,EXCMAT(1,1,1,2),GAO,GAO1)
+C
+         SXC =  2.0D0*VXC(FRRR)*B0*C0 + VXC(FRRZ)*(B0*CR+C0*BR) +
+     &          2.0D0*VXC(FRZZ)*BR*CR + VXC(FRR)*BC0 + VXC(FRZ)*BCR
+         FACR = 2.0D0*VXC(FZZZ)*BR*CR + VXC(FRZZ)*(B0*CR+BR*C0) +
+     &          2.0D0*VXC(FRRZ)*B0*C0 + VXC(FRZ)*BC0 + VXC(FZZ)*BCR
+         DO I=1,3
+            VT(I) = FACR * RHG(I)
+         END DO
+C
+         CALL DOEXC2(SXC,VT,IREPBCOP,EXCMAT(1,1,1,3),GAO,GAO1)
+c
+c     What remains to be implemented is to take care of the term
+c     \frac{\partial e_{xc}}{\partial\zeta} \zeta_{ia}^{BC}
 C
       END IF
       RETURN
