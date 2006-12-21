@@ -1548,7 +1548,7 @@ C
 C
 C     Cartesian/spherical/electronic solvent moments integrals
 C
-      IF(LABINT(2:2).EQ.'M') THEN
+      ELSE IF(LABINT(2:2).EQ.'M') THEN
         IF(LABINT(1:1).EQ.'C') THEN
           CLASSLB = 'CARMOM '    
           READ(LABINT(3:4),'(I2)') NX
@@ -1559,7 +1559,6 @@ C
           CLASSLB = 'SPHMOM '
           READ(LABINT(3:4),'(I2)') IORDER
         ENDIF
-      ENDIF
 C
 C     One-electron Fermi contact integrals
 C
