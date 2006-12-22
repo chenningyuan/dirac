@@ -387,7 +387,7 @@ C    ... that is  the RKB  or FP "k" basis; WORK(KTMAT) entering ... !
 
 
 C ===================================================================
-C    get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in FP k basis
+C    get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in ON ("k"/RKB) basis
 C ===================================================================
       IF (IPZ.EQ.9) THEN
        
@@ -414,7 +414,7 @@ C       ... second order DKH - only in the free-partcle basis
      &                    WORK(KIBEIG),DK2SO1,
      &                    IPRHAM,WORK(KFREE),LFREE)
       ELSE
-C       ...this is very rough first order, or SO1 integrals only... needed FREE PARTICLE BASIS !!!
+C       ...the roughest first order, or SO1 integrals; only FP "k" basis 
         CALL GET_HDK1_FPM(WORK(KTBUF),VMAT, WORK(KIBEIG),ONLYSO1,
      &                            IPRHAM,WORK(KFREE),LFREE)
       ENDIF
@@ -434,7 +434,7 @@ C      ... after preparing final H2c Hamiltonian do renew the full relatvity !
       ENDIF
 
 C   ===============================================================
-C     ... do prepare picture change transformation matrixes...
+C     ... prepare picture change transformation matrixes...
 C   ===============================================================
       IF (GETPCTM) THEN
         CALL GETPCTMAT(WORK(KTBUF),WORK(KTMAT),VMAT,FPB,USEDF,
@@ -462,7 +462,7 @@ C      ... consider the spin-free case !!!
      &              IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 
-C     ...      before calling AMFI stuff do release ALL
+C     ...      before calling AMFI stuff release ALL
 C     ...    allocated memmory (except entering VMAT)
       CALL MEMREL('AMFI',WORK,KWORK,KFACKIN,KFREE,LFREE)
       CALL MEMREL('AMFI',WORK,KWORK,KIBEIG,KFREE,LFREE)
@@ -471,12 +471,10 @@ C     ... release of two of three big (N2BBASXQ) arrays !
       CALL MEMREL('AMFI',WORK,KWORK,KTMAT,KFREE,LFREE)
       CALL MEMREL('AMFI',WORK,KWORK,KTBUF,KFREE,LFREE)
 
-C     IF (I2CHAM.NE.3.AND.I2CHAM.NE.4.AND.I2CHAM.NE.5) I2CHAM = 1
       IF (ADD_AMFI) THEN
 C    ... transformation cartesian -> spherical, calling the AMFI stuff,
 C        fitting AMFI integrals in the DIRAC order, saving to the BSSMAT
        IF (SPINFR.AND.ELIM_SF) SPINFR=.FALSE.
-C       CALL AMFI_STUFF(WORK(KTBUF),ONLYSO1,ONLYTRA,IC_AMFI,
 C      ... VMAT is reused as helping array...
         CALL AMFI_STUFF(VMAT,ONLYSO1,ONLYTRA,IC_AMFI,
      &                 WORK(KFREE),LFREE,IPRHAM,IMFCH)
@@ -513,10 +511,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbdhf.h"
       CALL QENTER('SET_TMT')
 
-      IF (IPRINT.GE.5) THEN
-       WRITE(LUPRI,*) 'SET_TMT: setting variables'
-      ENDIF
-
 C      ... NTMO is set up !!!!
 C .... this settings are needed (DFDIAG!!!) for the RKB option !!!
 C .. NZT is in dcbbas.h, and after MODHAM for RKB is equal to NZ !
@@ -539,7 +533,8 @@ C          ....  Count total number of orbitals...
         N2ORBT   = N2ORBT + NORB(IFRP)*NORB(IFRP)
       ENDDO
 
-      IF (IPRINT.GE.3) THEN
+      IF (IPRINT.GE.5) THEN
+       WRITE(LUPRI,*) 'SET_TMT: setting variables'
        DO I = 1, NFSYM
         write(lupri,*) 'fermion symm:',I,'/',NFSYM
         write(lupri,*) 'NISHMF(',I,')=',NISHMF(I)
@@ -560,7 +555,9 @@ C  /* Deck handle_rkb */
       SUBROUTINE HANDLE_RKB(VMAT,TMAT,TBUF,LINAD,FPB,IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C      After the MODHAM routine take care of matrixes
+C  After the MODHAM routine take care of matrixes
+C
+C  Written by Miro Ilias, Prievidza, December 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -579,7 +576,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         IMAT =  1
         IVMAT = 1
         IBUF = 1
-        DO I = 1,NFSYM                                              
+        DO I = 1, NFSYM                                              
         IF(NORB(I).GT.0) THEN 
           CALL HEADER(
      &  'HANDLE_RKB: Non-linsym RKB transformation matrix 4c AO->MO',-1)
@@ -690,11 +687,12 @@ C    save
 C       ... dummy vars
       CALL W2BSSMAT(6,.TRUE.,'XXXXXXXX','HANDLE_RKB',
      &               VMAT,N2TMT,LUBSS,IPRINT)
-      IF (IPRINT.GE.3) THEN
+      IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'HANDLE_RKB: BSSMAT file - '//
      & ' EOFLABEL added.'
       ENDIF
+
       CALL QEXIT('HANDLE_RKB')
       RETURN
       END
@@ -810,8 +808,6 @@ C ==========================================================
      & 'LOWD2C: Adapted (non-linsym) Lowdin matrix, VMAT2C,'//
      & ' was written into the BSSMAT file, EOFLABEL was renewed.'
       ENDIF
-
-
 
       CALL QEXIT('LOWD2C')
       RETURN
@@ -3831,18 +3827,14 @@ C ... read the FPMAT_TH 4c "k"-> 4c "theta" transf. matrix into TBUF
         END IF
 
         IBUF = 1
-        
         DO I=1,NFSYM
         IF (NORB(I).GT.0) THEN
-
           IF(IPRINT.GE.5) THEN
-
           CALL HEADER(
      &   'GET_HINF_R (T1): Eigenvectors of H1 bare nucl. matrix in '//
      &   'ON "k"/RKB basis, TMAT',-1)
          CALL PRQMAT(TMAT(IBUF),NORB(I),NORB(I),NORB(I),
      &                 NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-
           CALL HEADER(
      &  'GET_HINF_R (T1): 4c "k"-> 4c "theta" transf.'//
      & ' matrix FPMAT_TH  in TBUF',-1)
@@ -3921,7 +3913,6 @@ C  -- make b matrix (store in VMAT); B := - Y--.Y+-^+
      &     'H','N',IPQTOQ(1,0),
      &      TMAT(IBUF+NPSH(I)),NORB(I),NORB(I),NZ,
      &      D0,IPQTOQ(1,0),VMAT(IBUFE),NREF,NREF,NZ)
-
        ENDIF
 
        IF (IPRINT.GE.7) THEN
@@ -3938,7 +3929,7 @@ C  -- make b matrix (store in VMAT); B := - Y--.Y+-^+
      &   '*** Fermion corep ',I,'/',NFSYM
          CALL PRQMAT(VMAT(IBUFE),NREF,NREF,NREF,NREF,
      &                 NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
+       ENDIF
 
        IBUF = IBUF + NORB(I)*NORB(I)*NZ
        IBUFE = IBUFE + N2EQ
@@ -3946,7 +3937,7 @@ C  -- make b matrix (store in VMAT); B := - Y--.Y+-^+
       ENDIF
       ENDDO
 
-C ... now we have eigenvectors: do prepare for solving R equation !
+C ... now we have eigenvectors: prepare for solving R equation !
 C        (1-Y-+.Y-+^+) R = Y-+.Y++^+ or
 C        (Y--.Y--^+) R = -Y--.Y+^+
 
@@ -3973,14 +3964,12 @@ C ... THRUNULL of 1.0D-20 OR 0.0D0 HAS NO INFLUENCE...
      &   'Reduced dimensionality: ',NREF,' --> ',NEFF
          CALL QUIT('GET_HINF_R: Cholesky decompos.problem !')
        ENDIF
-
-
        CALL QCHOLS(TBUF(IBUFE),NREF,NEFF,NREF,NZ,NREF,NREF,
      &           EIG(IEIG),VMAT(IBUFE),NREF,NREF,
      &                     TMAT(IBUFE),NREF,NREF,
      &           JOB,IBEIG(IEIG),WORK(KW))
 
-C   ... Do print out the R
+C   ... print the R
        IF (IPRINT.GE.7) THEN
          CALL HEADER(
      &   'GET_HINF_R (1): Obtained R after CHoleski, TMAT',-1)
@@ -4090,7 +4079,7 @@ C      ... do TBUF. TMAT. TBUF^+ = VMAT (MOAO transf.)
         CALL QUIT('R(SL): "k"->"theta" transform')
       ENDIF
 
-C ... do generate the Omega+ matrix  
+C ...  generate the Omega+ matrix  
 C ... first get TBUF = 1 + R^+.R matrix
       IBUFE = 1
       IEIG =  1
@@ -4230,7 +4219,6 @@ C      ... add 1 and O
 
       ENDIF
       ENDDO
-
 
       IBUFE  = 1
       IBUF2E = 1
@@ -4426,7 +4414,7 @@ C   DO the V U1 V+ into TMAT
       ENDIF
 C     ... end of blind "if"
 
-C ... do prepare the resulting Hamiltonian in ON RKB/"k" basis
+C ...  prepare the resulting Hamiltonian in ON RKB/"k" basis
 C   after the picture change transformation
 C ... read the Dirac Hamiltonian in the ON RKB/"k" basis into  TMAT
       ISIZE = NORB(1)*NORB(1)*NZ
@@ -4514,7 +4502,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     PURPOSE:
 C    ==========
-C
 C        Do the transformation of the H2c(ee) from ON MO(ee) basis
 C    to the final SA-AO(LL) basis.
 C
@@ -4691,7 +4678,7 @@ C      ... do eliminate spinèorbit terms !
      &          NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
 
-C        ... do add H_SO1 into TBUF !!!
+C        ...  add H_SO1 into TBUF !!!
          CALL DAXPY(N2EQ,D1,TMAT(IMAT),1,TBUF(IMAT),1)
 
          IMAT = IMAT + N2EQ
@@ -4834,7 +4821,6 @@ C
 C    sfE: H4c AO ->  H2c "k"  &   H2c"k" -> H2c AO
 C
 C    Written:  M.Ilias, Strasbourg 2005
-C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -5465,8 +5451,8 @@ C        ... eliminate spin-free terms utilizing IBEIG(*)...
      &             NORB(I),WORK(KFREE),LFREE,IERR)
         IF (IERR.NE.0) CALL QUIT('CMP_EIGVAL: FAILED QDIAG 2!')
 
-        IF (IPRINT.GE.3) THEN
-       CALL HEADER(
+        IF (IPRINT.GE.2) THEN
+         CALL HEADER(
      &'CMP_EIGVAL: Eigenvalues of H4c and H2c '//
      &' Hamiltonians - comparison',-1)
          WRITE(LUPRI,'(8X,A,I1,A,I1/)')
