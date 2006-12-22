@@ -184,7 +184,7 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
        IFAC = 2
       END IF
       MEIG = MRNRM + (MXCIIT+1)*NROOT
-      MAPROJ = MEIG  + (MXCIIT+1)*2*MAXVEC + NROOT
+      MAPROJ = MEIG  + (MXCIIT+1)*2*(MAXVEC + NROOT)
       IF(IRC.EQ.2) THEN
         MAPROJI = MAPROJ +  MAXVEC*(MAXVEC+1)/2
       ELSE
@@ -207,7 +207,7 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
         call memmar(KAPROJ,MAPROJI-MAPROJ,'ADDL  ',2,'KAPROJ')
         call memmar(KAPROJI,MAVEC-MAPROJI,'ADDL  ',2,'KAPROI')
       else
-        call memmar(KAPROJ,(MXCIIT+1)*2*MAXVEC + NROOT,'ADDL  ',
+        call memmar(KAPROJ,(MAXVEC*(MAXVEC+1)/2),'ADDL  ',
      &              2,'KAPROJ')
       end if
       call memmar(KAVEC,MWORK-MAVEC,'ADDL  ',2,'KAVECS')
