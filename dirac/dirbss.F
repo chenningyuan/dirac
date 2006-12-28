@@ -283,7 +283,7 @@ C    ... refrence
      &   ' modified Dirac equation. I:',
      & '   from Douglas-Kroll-Hess second order method to the infi'//
      &   'nite order two-component method.",',
-     & '  J. Chem. Phys., submitted (hoping 2006) .'
+     & '  J. Chem. Phys., in preparation.'
 
 C ======================================================================
 C            extract information about the BSS Hamiltonian 
@@ -294,7 +294,8 @@ C ======================================================================
      &     DO2C4C,INI2C,I2COFK,
      &     YREQ1,IC_AMFI,GETPCTM,IPRHAM)
 
-C     ... do initiate the important FreeParticleBasis flag! If .false., we use the one-step RKB approach.
+C     ... do initiate the important FreeParticleBasis flag!
+C     If .false., we use the one-step RKB approach.
       FPB = .NOT.NOPRTR
 
 C get transf. matrix (RKB)
@@ -310,12 +311,6 @@ C get transf. matrix (RKB)
 
 C     ... choose the file number !
       LUBSS = 35
-C     ... this is the first opening
-C     CALL OPNFIL(LUBSS,'BSSMAT','UNKNOWN','GMOTRA')
-C ... save Lowdin matrix into the BSSMAT file...
-C     CALL NEWLAB('VMAT4C  ',LUBSS,LUPRI)
-C     CALL WRITT(LUBSS,N2BBASX,VMAT)
-
       CALL W2BSSMAT(4,.TRUE.,'VMAT4C  ','MAKE_BSS',
      &              VMAT,N2BBASX,LUBSS,IPRHAM)
       IF (IPRHAM.GE.2) THEN
@@ -323,9 +318,6 @@ C     CALL WRITT(LUBSS,N2BBASX,VMAT)
      & 'MAKE_BSS: 4c Lowdin AO to MO transf. matrix is '//
      & ' written to the BSSMAT file.'
       ENDIF
-c      close(LUBSS)
-c     call quit('xxxx')
-c
 C ============================================================
 C ... get the RKB transformation matrix into WORK(KTMAT)
 C ============================================================
@@ -370,14 +362,14 @@ C       ... we need to zero them as in enters GET_A_FAC routine !
 C NOTE: If SPINFR=.true. we utilize later the WORK(KIBEIG) array with boson info !!!
 
 C get A factors into WORK(KFACKIN), nothing enters...
-       CALL GET_A_FAC(WORK(KFACKIN),WORK(KEIG),VMAT,WORK(KTMAT),
+      CALL GET_A_FAC(WORK(KFACKIN),WORK(KEIG),VMAT,WORK(KTMAT),
      &              WORK(KTBUF),FPB,USEDF,IPRHAM,WORK(KFREE),LFREE)
 
 C ===============================================================
 C    ... Do prepare the MO->AO transformation matrix ...
 C ===============================================================
 C        ...entering WORK(KTMAT) contains the transformation matrix in AO
-       CALL MKSAOMO_Le(WORK(KTBUF),WORK(KTMAT),VMAT,
+      CALL MKSAOMO_Le(WORK(KTBUF),WORK(KTMAT),VMAT,
      &         WORK(KFACKIN),FPB,IPRHAM,WORK(KFREE),LFREE)
 
 C get H1 (Dirac bare nucleus) Hamiltonian in the ON basis into WORK(KBUF)
@@ -385,15 +377,14 @@ C    ... that is  the RKB  or FP "k" basis; WORK(KTMAT) entering ... !
       CALL GET_H1_ONB(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KIBEIG),
      &                   SF_BEG,FPB,LINAD,SAVESO1,WORK(KFREE),LFREE)
 
-
 C ===================================================================
 C    get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in ON ("k"/RKB) basis
 C ===================================================================
       IF (IPZ.EQ.9) THEN
-       
+C       ... infinite order - either block diagonalization, or YR equation solving
         IF (BLOCKD) THEN
          CALL GET_HINF_BD(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KIBEIG),
-     &                       GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
+     &                    GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
         ELSE
 C        ... we need additional integer array...
          ISIZE=NORB(1)
@@ -407,9 +398,10 @@ C        ... both for FPM "k" & RKB
      &               GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
          CALL MEMREL('AFTER_INF_R',WORK,KWORK,KIPIVOT,KFREE,LFREE)
         ENDIF
-
-      ELSE IF (IPZ.EQ.2) THEN
+C =======================================================================
 C       ... second order DKH - only in the free-partcle basis
+C =======================================================================
+      ELSE IF (IPZ.EQ.2) THEN
         CALL GET_HDK2_FPM(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KEIG),
      &                    WORK(KIBEIG),DK2SO1,
      &                    IPRHAM,WORK(KFREE),LFREE)
@@ -481,7 +473,7 @@ C      ... VMAT is reused as helping array...
         I2CHAM = 2
       ENDIF
 
-CMI   ... prepare the screened 2comp. bare nucleus - only for infinite order !
+C     ... prepare the screened 2comp. bare nucleus - only for the infinite order !
       IF (BNCRON .AND. .NOT. ONESYS .AND. GETPCTM) THEN
        CALL MAKEBNCR2C(VMAT,WORK(KFREE),LFREE)
       ENDIF
@@ -717,7 +709,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL PURLO
 
       CALL QENTER('LOWD2C')
-
 C  ===================================================================
 C     ... get AND reorganize the Lowdin transformation matrix VMAT
 C  ===================================================================
@@ -875,8 +866,7 @@ C     ... array for the picture change transformed operator
        CALL PRQMAT(VMAT,NTBAS(0),NTBAS(0),                
      &    NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI) 
       END IF 
-
-CMI   ... do save the pctra screened bare nucleus into the BSSMAT file ...
+C     ... save the pctra screened bare nucleus into the BSSMAT file ...
       CALL W2BSSMAT(1,.FALSE.,'BNCR2C_4','PREPBNCR',
      &               VMAT,N2BBASXQ,LUBSS,IPRHAM)
 
@@ -1387,7 +1377,7 @@ C     ... do extract a,x,y,z digits of the entering IBSS=axyz value
       ENDIF
 
       IF (DO4C2C) THEN
-       WRITE(LUPRI,'(2X,A/)')
+       WRITE(LUPRI,'(2X,A)')
      & '* After the Dirac-Fock procedure continue'//
      & ' in the TWO-COMPONENT (infinite order) MODE !'
        IF (USEDF) THEN
@@ -5442,7 +5432,7 @@ C        ... eliminate spin-free terms utilizing IBEIG(*)...
      & '*** Fermion corep ',I,'/',NFSYM
           CALL PRQMAT(TBUF(IH1FP),NORB(I),NORB(I),
      &             NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-         ENDIF
+        ENDIF
 
 
         CALL QDIAG(NZ,NORB(I),TBUF(IH1FP),NORB(I),NORB(I), 
