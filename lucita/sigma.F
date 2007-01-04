@@ -5493,7 +5493,7 @@ C    &                  LUCBLK,IPERTOP,IH0INSPC,IH0SPC)
       CHARACTER CPUTIDX*12, WALLTIDX*12
       CHARACTER CPUTIDXX*12, WALLTIDXX*12
 
-      INTEGER NJJJBLK
+      INTEGER NJJJBLK,ISUMUP,REDGRP,JCOLOR,JKEY
       DIMENSION ICBLINF(NJJJBLK),IRMBNP(NEWCOMM_PROC)
 *      INTEGER VERSION, SUBVERSION
 *
@@ -5504,6 +5504,11 @@ C    &                  LUCBLK,IPERTOP,IH0INSPC,IH0SPC)
       CALL QENTER('SBLOC')
 CME   WRITE(6,*) ' MEMCHK at start of SBLOCKS'
 CME   CALL MEMCHK
+*
+*. create a new group for mpi_reduce at the end of all loops
+*
+      ISUMUP = 0
+      IF(MYNEW_ID.EQ.0) ISUMUP = 1
 *
       DO I = 1, NJJJBLK
         ICTCMP(I,1) = 0
@@ -5676,6 +5681,7 @@ C**            END IF
             IF(ISBLOCK(1,JSBLOCK).GT.0)
      &       CALL SETVEC(SB(IOFF),ZERO,NASTR*NBSTR)
           END DO
+          ISUMUP = 0
           GOTO 20001
         END IF
         ISKIPR = 0
@@ -5764,6 +5770,7 @@ C?    WRITE(6,*) ' IDOH2, MXEXC',IDOH2,MXEXC
      &           ILENSUM,ICBLINF,NJJJBLK,IRMBNP,ICTCMP,
      &           SSCLFAC,ICSBTCHB,ILOOPC,ILOOPCS,ICALCC,ISKIPR,
      &           IDISTLIST,MXEXC)
+        ISUMUP = 1
 *
 *
         GOTO 20001
@@ -6069,6 +6076,8 @@ C?   &                         IPTSPC,JPTSPC,IJOP
      &               IPRNT,IPERTOP,IPTSPC,JPTSPC,IJOP,0,IDUM,XFAC,
      &               IUSE_PH,IPHGAS,I_RES_AB,IUSE_PA,CJPA,SIPA,
      &               MXTSOB,SOMESCR,SOMEH,XIJILS)
+                ISUMUP = 1
+
 C?            IF(IATP.EQ.1.AND.IBTP.EQ.1) THEN
 C?              WRITE(6,*) ' First element in updates S11 :',SB(1)
 C?            END IF
@@ -6101,43 +6110,23 @@ CME     CALL MEMCHK
 #if defined (VAR_MPI)
 *
       IF(NPARWAY.GT.0) THEN
-*           CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-***              CALL GETTIM(CPUSIGX2,WALLSIGX2)
-***              CPUTIDX = SECTID(CPUSIGX2-CPUSIGX1)
-***              WALLTIDX = SECTID(WALLSIGX2-WALLSIGX1)
-***              WRITE(6,11409) CPUTIDX,WALLTIDX,mynew_id
-***11409  FORMAT(' >>> CPU(WALL) TIME in 20000 loop : ',
-***     &A,'(',A,')',I4)
-
-*            CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-***            IF(mynew_id.EQ.MASTER)THEN
-***            CALL GETTIM(CPUSIGXXX2,WALLSIGXXX2)
-***             CPUTIDXXX = SECTID(CPUSIGXXX2-CPUSIGX1)
-***             WALLTIDXXX = SECTID(WALLSIGXXX2-WALLSIGX1)
-***             WRITE(6,11407) CPUTIDXXX,WALLTIDXXX,mynew_id
-***11407 FORMAT(' >>> total CPU(WALL) TIME in 20000 loop (incl. wait): ',
-***     &A,'(',A,')',I4)
-***            END IF
-*
-*
-**           IF(mynew_id.EQ.MASTER) THEN
-**             CALL GETTIM(CPUSIGXXX1,WALLSIGXXX1)
-**           END IF
-*
-*          WRITE(6,*)'i am here at reduce', myproc
-*          write(6,*)'SB(1) = ',SB(1),myproc 
+        IF(MYNEW_ID.EQ.0) ISUMUP = 1
+        IF(ISUMUP.GT.0)THEN
+          JKEY = MYNEW_ID
+          JCOLOR = 2
+        ELSE IF(ISUMUP.EQ.0)THEN
+          JKEY = MYNEW_ID
+          JCOLOR = 3
+        END IF
+        CALL MPI_COMM_SPLIT(MYNEW_COMM,JCOLOR,JKEY,REDGRP,IERR)
+        IF(ISUMUP.EQ.0) GOTO 20002
+CSK        CALL MPI_REDUCE(SB,C2,ILENSUM,MPI_DOUBLE_PRECISION,MPI_SUM,
+CSK     &                  0,MYNEW_COMM,IERR)
         CALL MPI_REDUCE(SB,C2,ILENSUM,MPI_DOUBLE_PRECISION,MPI_SUM,
-     &                  0,MYNEW_COMM,IERR)
+     &                  0,REDGRP,IERR)
+20002   CONTINUE
+        CALL MPI_COMM_FREE(REDGRP,IERR)
         IF(MYNEW_ID.EQ.0) THEN
-*
-**             CALL GETTIM(CPUSIGXXX2,WALLSIGXXX2)
-**             CPUTIDXXX = SECTID(CPUSIGXXX2-CPUSIGXXX1)
-**             WALLTIDXXX = SECTID(WALLSIGXXX2-WALLSIGXXX1)
-**             WRITE(6,11407) CPUTIDXXX,WALLTIDXXX
-**             WRITE(6,*) 'ILENSUM = ', ILENSUM
-**11407 FORMAT(' >>> CPU(WALL) TIME in reducing SB of length ILENSUM: ',
-**     &A,'(',A,')',I4)
-*
           CALL COPVEC(C2,SB,ILENSUM)
         ELSE IF(MYNEW_ID.NE.0)THEN
           GOTO 21000
@@ -6179,10 +6168,6 @@ CME     CALL MEMCHK
 *
       
       INI_ITS = 0
-C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
-C?    WRITE(6,*) ' MXAADST,MXACJ,MXACIJ', MXAADST,MXACJ,MXACIJ
-C?    WRITE(6,*) ' MEMCHK at END of SBLOCKS'
-C?    CALL MEMCHK
 21000 CONTINUE
       CALL QEXIT('SBLOC')
       RETURN
