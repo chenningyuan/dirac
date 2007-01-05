@@ -283,6 +283,7 @@ C
          END IF
          BCR = 2.0D0*(BC3(1)*RHG(1)+ BC3(2)*RHG(2)+ BC3(3)*RHG(3)) +
      &         B3(1)*C3(1) + B3(2)*C3(2) + B3(3)*C3(3)
+         BC  = B3(1)*C3(1) + B3(2)*C3(2) + B3(3)*C3(3)
 
 C
 C     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
@@ -291,7 +292,7 @@ C
          SXC  = VXC(FRR)*B0 + VXC(FRZ)*BR
          FACR = VXC(FRZ)*B0 + VXC(FZZ)*BR
          DO I=1,3
-            VT(I) = 2.0D0 * FACR * C3(I)
+            VT(I) = 2.0D0 * ( FACR*RHG(I) + VXC(FZ0)*B3(I) )
          END DO
 C
          CALL DOEXC2(SXC,VT,IREPBOP,EXCMAT(1,1,1,1),GAO,GAO1)
@@ -299,23 +300,25 @@ C
          SXC  = VXC(FRR)*C0 + VXC(FRZ)*CR
          FACR = VXC(FRZ)*C0 + VXC(FZZ)*CR
          DO I=1,3
-            VT(I) = 2.0D0 * FACR * B3(I)
+            VT(I) = 2.0D0 * ( FACR*RHG(I) + VXC(FZ0)*C3(I) )
          END DO
 C
          CALL DOEXC2(SXC,VT,IREPCOP,EXCMAT(1,1,1,2),GAO,GAO1)
 C
-         SXC =  2.0D0*VXC(FRRR)*B0*C0 + VXC(FRRZ)*(B0*CR+C0*BR) +
-     &          2.0D0*VXC(FRZZ)*BR*CR + VXC(FRR)*BC0 + VXC(FRZ)*BCR
-         FACR = 2.0D0*VXC(FZZZ)*BR*CR + VXC(FRZZ)*(B0*CR+BR*C0) +
-     &          2.0D0*VXC(FRRZ)*B0*C0 + VXC(FRZ)*BC0 + VXC(FZZ)*BCR
+         SXC =  2.0D0*VXC(FRRR)*B0*C0 + 2.0d0*VXC(FRRZ)*(B0*CR+C0*BR) +
+     &          2.0D0*VXC(FRZZ)*BR*CR + VXC(FRR)*BC0 + 
+     &          VXC(FRZ)*(BCR+BC)
+         FACR = 2.0D0*VXC(FZZZ)*BR*CR + 2.0d0*VXC(FRZZ)*(B0*CR+C0*BR) +
+     &          2.0D0*VXC(FRRZ)*B0*C0 + VXC(FRZ)*BC0 + 
+     &          VXC(FZZ)*(BCR+BC)
+         FACB = VXC(FRZ)*C0 + VXC(FZZ)*CR
+         FACC = VXC(FRZ)*B0 + VXC(FZZ)*BR
          DO I=1,3
-            VT(I) = FACR * RHG(I)
+            VT(I) = 2.0D0 * ( FACR*RHG(I) + FACB*B3(I) + FACC*C3(I) +
+     &                        VXC(FZ0) * BC3(I) )
          END DO
 C
          CALL DOEXC2(SXC,VT,IREPBCOP,EXCMAT(1,1,1,3),GAO,GAO1)
-c
-c     What remains to be implemented is to take care of the term
-c     \frac{\partial e_{xc}}{\partial\zeta} \zeta_{ia}^{BC}
 C
       END IF
       RETURN

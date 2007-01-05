@@ -212,16 +212,17 @@ dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
     ds->fR   = drvs.df1000;
     ds->fZ   = 0.5* (drvs.df0010/ *grad + 0.5*drvs.df00001);
     ds->fRR  = 0.5* (drvs.df2000 + drvs.df1100);
-    ds->fRZ  = 0.25* ((drvs.df1010 + drvs.df1001)/ *grad + drvs.df10001);
-    ds->fZZ  = 0.25* (drvs.df0020 + drvs.df0011 + drvs.df00001)/ grad2;
     ds->fRRR = 0.25*(drvs.df3000 + 3*drvs.df2100);
     ds->fRRZ = 0.125* ((drvs.df2010 + drvs.df2001 + 2.0*drvs.df1110)/ *grad +
                        drvs.df20001 + drvs.df11001);
-    ds->fRZZ = 0.0625* (drvs.df1020 + drvs.df1002 + 2*drvs.df1011)/ grad2 -
-               0.125* (drvs.df1010 + drvs.df1001)/ grad3;
     ds->fZZZ = 0.03125* (drvs.df0030 + 3* drvs.df0021)/ grad3 -
                0.0625*3* (drvs.df0020 + drvs.df0011)/ grad4 +
                0.125*3* drvs.df0010/ grad5;
+
+    ds->fRZ  = 0.25* ((drvs.df1010 + drvs.df1001)/ *grad + drvs.df10001);
+    ds->fZZ  = 0.125* (drvs.df0020 + drvs.df0011)/grad2 - 0.25*drvs.df0010/grad3;
+    ds->fRZZ = 0.0625* (drvs.df1020 + drvs.df1002 + 2*drvs.df1011)/ grad2 -
+               0.125* (drvs.df1010 + drvs.df1001)/ grad3;
 
 }
 
