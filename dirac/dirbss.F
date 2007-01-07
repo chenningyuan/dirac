@@ -5082,7 +5082,7 @@ C   ==========
 C    Do comparison of the eigenvalues of the Dirac and H2c Hamiltonians;
 C  transform each of them to the ON basis and do the diagonalization
 C
-C  On input: arrays to be utilized, and flags
+C  On input: arrays to be utilized inside, and flags
 C
 C  On output: VMAT reorganized for H2c                                                    
 C                                                         
@@ -5107,7 +5107,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       CALL QENTER('CMP_EIGVAL')
 #include "memint.h"         
-
 
 C ====================================================================
 C   ... do the picture change of FD4C_ONB using 4c ONB -> 2c SA-AO
@@ -5206,34 +5205,35 @@ C      ... this option does not matter....
 
       CALL LOWD2C(VMAT,IPRINT)
 
-      IF (LINEAR) THEN
-C     ... for the linear symmetry DO ADAPT the Lowdin matrix !
+C     ... for the linear symmetry ADAPT the Lowdin matrix !
 C      ... the proper setting for the 2c mode is needed !
 C   ... when we have Fock-Dirac matrix SCF in linear symmetry, we need
 C      the H2c in LINSYM_MO basis !!!
-      NSYM = 4/NZ                                               
-      DO I=1,NFSYM                     
-       NPSHX(I) = NPSH(I)
-       NPSH(I) = 0   
-       NORB(I) = NESH(I) + NPSH(I)                               
-       DO ISYM = 1, NSYM                                         
+C   ... in the spin-free mode do not do the linear adaptation !
+      IF (LINEAR.AND..NOT.SPFR) THEN
+       NSYM = 4/NZ                                               
+       DO I=1,NFSYM                     
+        NPSHX(I) = NPSH(I)
+        NPSH(I) = 0   
+        NORB(I) = NESH(I) + NPSH(I)                               
+        DO ISYM = 1, NSYM                                         
          NBORBX(ISYM,I,2) =  NBORB(ISYM,I,2)                  
          NBORB(ISYM,I,2) = 0                                     
          NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)     
-       ENDDO                                                     
-      ENDDO            
-      CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
-      CALL DCOPY(N2BBASX,TMAT,1,VMAT,1)
-      DO I=1,NFSYM                     
-       NPSH(I) = NPSHX(I)
-       NORB(I) = NESH(I) + NPSH(I)                               
-       DO ISYM = 1, NSYM                                         
-         NBORB(ISYM,I,2) =  NBORBX(ISYM,I,2)               
-         NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)     
-       ENDDO                                       
-      ENDDO  
+        ENDDO                                                     
+       ENDDO            
+       CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
+       CALL DCOPY(N2BBASX,TMAT,1,VMAT,1)
+       DO I=1,NFSYM                     
+         NPSH(I) = NPSHX(I)
+         NORB(I) = NESH(I) + NPSH(I)                               
+         DO ISYM = 1, NSYM                                         
+           NBORB(ISYM,I,2) =  NBORBX(ISYM,I,2)               
+           NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)     
+         ENDDO                                       
+       ENDDO  
 
-      IF (IPRINT.GE.6) THEN
+       IF (IPRINT.GE.6) THEN
         CALL HEADER(
      &'CMP_EIGVAL: Total Lowdin 2c_matrix AFTER LINEAR adaptation',-1)
         IVMAT=1
@@ -5245,17 +5245,15 @@ C      the H2c in LINSYM_MO basis !!!
      &        1,IPQTOQ(1,0),LUPRI)
           IVMAT = IVMAT + NFBAS(I,0)*NFORB(I,0)
         ENDDO
-      ENDIF
-
+       ENDIF
 C .... write the 2c-adapted lin-sym adapted Lowdin matrix into the file
-      CALL W2BSSMAT(1,.TRUE.,'VMAT2C_L','CMP_EIGVAL',
+       CALL W2BSSMAT(1,.TRUE.,'VMAT2C_L','CMP_EIGVAL',
      &              VMAT,N2BBASX,LUBSS,IPRINT)
-      IF (IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(/2X,A)')
+       IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A)')
      &  'CMP_EIGVAL: 2c LinSym adapted Lowdin matrix, VMAT2C_L,'//
      &  ' was written to the BSSMAT file, EOFLABEL was renewed.'
-      ENDIF
-
+       ENDIF
       ENDIF
 
 C ... read H_2c/FD_2c in SA-AO basis into TBUF
@@ -5354,7 +5352,7 @@ C      FOR THE DIAGONALIZATION...REUSE TBUF for eigenvectors
       DO I = 1, NFSYM
       IF (NORB(I).GT.0) THEN
 
-C      ... do the diagonalization of the H2c in MO(ee) basis !
+C      ... diagonalize the H2c in MO(ee) basis !
        IF (DOJACOBI.AND.NZ.EQ.1) THEN
          write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
          CALL RSJACO(NESH(I),NESH(I),NESH(I),TMAT(IH2MO),
@@ -5378,8 +5376,8 @@ C      ... do the diagonalization of the H2c in MO(ee) basis !
      &             NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
-        IEIG  = IEIG  + NESH(I)
-        IH2MO = IH2MO + NESH(I)*NESH(I)*NZ 
+       IEIG  = IEIG  + NESH(I)
+       IH2MO = IH2MO + NESH(I)*NESH(I)*NZ 
       ENDIF
       ENDDO
 
@@ -5388,11 +5386,8 @@ C ... write the TBUF - H1 in RKB/"k" to the file...
       ISIZE=NORB(1)*NORB(1)*NZ
       IF (NFSYM.EQ.2) ISIZE=ISIZE+NORB(2)*NORB(2)*NZ
 C ... get H1_ONB into TBUF
-C     REWIND LUBSS
-
       LABELH1 = 'H1_ONBAS'
       IF (SAVESO1) LABELH1 = 'H1_ONB  '
-
       CALL RFBSSMAT(LABELH1,.TRUE.,'CMP_EIGVAL',TBUF,ISIZE,LUBSS,IPRINT)
       IF (IPRINT.GE.3) THEN
        WRITE(LUPRI,'(/2X,A,A,A)')
