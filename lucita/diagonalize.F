@@ -4722,7 +4722,7 @@ C
 *      if everything is finished; goto waiting loop
 *
  160  CONTINUE
-      
+       
 #if defined (VAR_MPI)
       IF(MYPROC.EQ.MASTER.AND.IRUNPA.EQ.1) THEN
         endtime = MPI_WTIME()
