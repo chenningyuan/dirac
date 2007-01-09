@@ -1921,6 +1921,10 @@ C
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
         ENDDO
+      ELSEIF(CLASSLB .EQ. 'SPHMOM ') THEN
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        CALL SMTYP(IORDER,NOPTYP,INTREP,LABINT)
       ELSE
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
