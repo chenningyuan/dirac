@@ -1025,6 +1025,1577 @@ C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
 *
       RETURN
       END
+*
+#if !defined(SYS_LOCALDISKS)
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COPVC_SERPAR_CSCF(LCFILE,SCR,ACT_SCLFAC,IBKLH,NBLK,
+     &           IWRTSCF,JOFF,IREW,LBLK)
+*
+*. copy vector from serial I/O file LCFILE to 
+*. parallel I/O file IFILE
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      INTEGER IREW
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET,ISTART,JOFFSET
+*
+*. Output
+      DIMENSION ACT_SCLFAC(*)
+*. Scratch
+      DIMENSION SCR(*),IBKLH(*)
+*
+      IOFFSET = 0
+      IF(IREW.GT.0) THEN
+*      write(6,*)'view set in progress'
+        CALL MPI_FILE_SET_VIEW(ICVECFL,IOFFSET,MPI_REAL8,
+     &       MPI_REAL8,'native',MPI_INFO_NULL,IERR)
+        IF(IWRTSCF.GT.0)THEN
+          CALL MPI_FILE_SET_VIEW(ISCLFCFL,IOFFSET,MPI_REAL8,
+     &         MPI_REAL8,'native',MPI_INFO_NULL,IERR)
+        END IF
+      END IF
+*      write(6,*)'view set done'
+      IBLK = 0
+      NBLK_A = 0
+      IF(JOFF.GT.0)THEN
+*
+        DO II = 1, JOFF
+          DO IJ = 1, NBLK
+            ISTART = ISTART + IBKLH(IJ)
+          END DO
+        END DO
+*
+      ELSE
+        ISTART = 0
+      END IF
+      IOFFSET = IOFFSET + ISTART
+*      write(6,*)'IOFFSET at start = ',IOFFSET
+*. Loop over blocks
+ 1000 CONTINUE
+        IBLK = IBLK + 1
+        IF(LBLK .GT. 0 ) THEN
+          LBL = LBLK
+        ELSE IF ( LBLK .EQ. 0 ) THEN
+          READ(LCFILE) LBL
+        ELSE IF  (LBLK .LT. 0 ) THEN
+*      write(6,*)'here we go II'
+          CALL IFRMDS(LBL,1,-1,LCFILE)
+        END IF
+        IF( LBL .GE. 0 ) THEN
+          IF(LBLK .GE.0 ) THEN
+            KBLK = LBL
+          ELSE
+            KBLK = -1
+          END IF
+          NO_ZEROING = 1
+*      write(6,*)'here we go III'
+          CALL FRMDSC2(SCR,LBL,KBLK,LCFILE,IMZERO,IAMPACK,
+     &                 NO_ZEROING)
+          IF(IMZERO.EQ.0) THEN
+            ACT_SCLFAC(IBLK) = 1.0D0
+*            write(6,*)'write in progress'
+            CALL MPI_FILE_WRITE_AT(ICVECFL,IOFFSET,SCR,LBL,MPI_REAL8,
+     &           MPI_STATUS_IGNORE,IERR)
+*            write(6,*)'write done'
+CSK            CALL WRTMAT(SCR,1,LBL,1,LBL)
+          ELSE
+            ACT_SCLFAC(IBLK) = 0.0D0
+            ZERO = 0.0D0
+            CALL SETVEC(SCR,ZERO,LBL)
+            CALL MPI_FILE_WRITE_AT(ICVECFL,IOFFSET,SCR,LBL,MPI_REAL8,
+     &           MPI_STATUS_IGNORE,IERR)
+CSK            write(6,*)'write zero done'
+CSK            CALL WRTMAT(SCR,1,LBL,1,LBL)
+          END IF
+        END IF
+        IOFFSET = IOFFSET + LBL
+      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
+      IBLK = IBLK -1
+*
+      IF(IWRTSCF.GT.0)THEN
+            JOFFSET = 0
+        CALL MPI_FILE_WRITE_AT(ISCLFCFL,JOFFSET,ACT_SCLFAC,NBLK,
+     &       MPI_REAL8,MPI_STATUS_IGNORE,IERR)
+CSK        WRITE(6,*) ' Active blocks '
+CSK        CALL WRTMAT(ACT_SCLFAC,1,NBLK,1,NBLK)
+      END IF
+*
+      END
+*
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COPVC_SERPAR_C1(LCFILE,SCR,IBKLH,NBLK,
+     &           JOFF,IREW,LBLK)
+*
+*. copy vector from serial I/O file LCFILE to 
+*. parallel I/O file ILU1
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      INTEGER IREW
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET,ISTART
+*
+*. Scratch
+      DIMENSION SCR(*),IBKLH(*)
+*
+      IOFFSET = 0
+      IF(IREW.GT.0) THEN
+*      write(6,*)'view set in progress'
+*        CALL MPI_FILE_SET_VIEW(ILU1,IOFFSET,MPI_REAL8,
+*     &       MPI_REAL8,'native',MPI_INFO_NULL,IERR)
+        call rewine(lcfile,1)
+      END IF
+*      write(6,*)'view set done'
+      IBLK = 0
+      NBLK_A = 0
+      IF(JOFF.GT.0)THEN
+*
+        DO II = 1, JOFF
+          DO IJ = 1, NBLK
+            ISTART = ISTART + IBKLH(IJ)
+          END DO
+        END DO
+*
+      ELSE
+        ISTART = 0
+      END IF
+      IOFFSET = IOFFSET + ISTART
+*. Loop over blocks
+*      write(6,*)'we go in loop'
+ 1000 CONTINUE
+        IBLK = IBLK + 1
+        IF(LBLK .GT. 0 ) THEN
+          LBL = LBLK
+        ELSE IF ( LBLK .EQ. 0 ) THEN
+          READ(LCFILE) LBL
+        ELSE IF  (LBLK .LT. 0 ) THEN
+          CALL IFRMDS(LBL,1,-1,LCFILE)
+        END IF
+        IF( LBL .GE. 0 ) THEN
+          IF(LBLK .GE.0 ) THEN
+            KBLK = LBL
+          ELSE
+            KBLK = -1
+          END IF
+          NO_ZEROING = 1
+          CALL FRMDSC2(SCR,LBL,KBLK,LCFILE,IMZERO,IAMPACK,
+     &                 NO_ZEROING)
+          IF(IMZERO.EQ.0) THEN
+*            write(6,*)'scr(1)',scr(1),lbl
+            CALL MPI_FILE_WRITE_AT(ILU1,IOFFSET,SCR,LBL,MPI_REAL8,
+     &           MPI_STATUS_IGNORE,IERR)
+*            write(6,*)'written at offset',ioffset
+          ELSE
+            ZERO = 0.0D0
+            CALL SETVEC(SCR,ZERO,LBL)
+            CALL MPI_FILE_WRITE_AT(ILU1,IOFFSET,SCR,LBL,MPI_REAL8,
+     &           MPI_STATUS_IGNORE,IERR)
+          END IF
+        END IF
+            IOFFSET = IOFFSET + LBL
+*      write(6,*)'we are in loop at step',IBLK,'with lbl',lbl
+      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
+*      write(6,*)'we left the loop',IBLK
+*      IBLK = IBLK -1
+*
+      END
+*
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COPVC_SERPAR_C2(LCFILE,SCR,IBKLH,NBLK,
+     &           JOFF,IREW,LBLK)
+*
+*. copy vector from serial I/O file LCFILE to 
+*. parallel I/O file ILU1
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      INTEGER IREW
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET,ISTART
+*
+*. Scratch
+      DIMENSION SCR(*),IBKLH(*)
+*
+      IOFFSET = 0
+      IF(IREW.GT.0) THEN
+*      write(6,*)'view set in progress'
+*        CALL MPI_FILE_SET_VIEW(ILU2,IOFFSET,MPI_REAL8,
+*     &       MPI_REAL8,'native',MPI_INFO_NULL,IERR)
+       call rewine(lcfile,1)
+      END IF
+*      write(6,*)'view set done c2'
+      IBLK = 0
+      NBLK_A = 0
+      IF(JOFF.GT.0)THEN
+*
+        DO II = 1, JOFF
+          DO IJ = 1, NBLK
+            ISTART = ISTART + IBKLH(IJ)
+          END DO
+        END DO
+*
+      ELSE
+        ISTART = 0
+      END IF
+      IOFFSET = IOFFSET + ISTART
+*. Loop over blocks
+ 1000 CONTINUE
+        IBLK = IBLK + 1
+        IF(LBLK .GT. 0 ) THEN
+          LBL = LBLK
+        ELSE IF ( LBLK .EQ. 0 ) THEN
+          READ(LCFILE) LBL
+        ELSE IF  (LBLK .LT. 0 ) THEN
+          CALL IFRMDS(LBL,1,-1,LCFILE)
+        END IF
+        IF( LBL .GE. 0 ) THEN
+          IF(LBLK .GE.0 ) THEN
+            KBLK = LBL
+          ELSE
+            KBLK = -1
+          END IF
+          NO_ZEROING = 1
+          CALL FRMDSC2(SCR,LBL,KBLK,LCFILE,IMZERO,IAMPACK,
+     &                 NO_ZEROING)
+          IF(IMZERO.EQ.0) THEN
+            CALL MPI_FILE_WRITE_AT(ILU2,IOFFSET,SCR,LBL,MPI_REAL8,
+     &           MPI_STATUS_IGNORE,IERR)
+          ELSE
+            ZERO = 0.0D0
+            CALL SETVEC(SCR,ZERO,LBL)
+            CALL MPI_FILE_WRITE_AT(ILU2,IOFFSET,SCR,LBL,MPI_REAL8,
+     &           MPI_STATUS_IGNORE,IERR)
+          END IF
+        END IF
+            IOFFSET = IOFFSET + LBL
+*      write(6,*)'c2: we are in loop at step',IBLK,'with lbl',lbl
+      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
+*      write(6,*)'we left the loop c2',IBLK
+*
+      END
+*
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COPVC_SERPAR_C3(LCFILE,SCR,IBKLH,NBLK,
+     &           JOFF,IREW,LBLK)
+*
+*. copy vector from serial I/O file LCFILE to 
+*. parallel I/O file ILU1
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      INTEGER IREW
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET,ISTART
+*
+*. Scratch
+      DIMENSION SCR(*),IBKLH(*)
+*
+      IOFFSET = 0
+      IF(IREW.GT.0) THEN
+*      write(6,*)'view set in progress'
+        CALL MPI_FILE_SET_VIEW(ILU3,IOFFSET,MPI_REAL8,
+     &       MPI_REAL8,'native',MPI_INFO_NULL,IERR)
+      END IF
+*      write(6,*)'view set done'
+      IBLK = 0
+      NBLK_A = 0
+      IF(JOFF.GT.0)THEN
+*
+        DO II = 1, JOFF
+          DO IJ = 1, NBLK
+            ISTART = ISTART + IBKLH(IJ)
+          END DO
+        END DO
+*
+      ELSE
+        ISTART = 0
+      END IF
+      IOFFSET = IOFFSET + ISTART
+*. Loop over blocks
+ 1000 CONTINUE
+        IBLK = IBLK + 1
+        IF(LBLK .GT. 0 ) THEN
+          LBL = LBLK
+        ELSE IF ( LBLK .EQ. 0 ) THEN
+          READ(LCFILE) LBL
+        ELSE IF  (LBLK .LT. 0 ) THEN
+          CALL IFRMDS(LBL,1,-1,LCFILE)
+        END IF
+        IF( LBL .GE. 0 ) THEN
+          IF(LBLK .GE.0 ) THEN
+            KBLK = LBL
+          ELSE
+            KBLK = -1
+          END IF
+          NO_ZEROING = 1
+          CALL FRMDSC2(SCR,LBL,KBLK,LCFILE,IMZERO,IAMPACK,
+     &                 NO_ZEROING)
+          IF(IMZERO.EQ.0) THEN
+*            write(6,*)'scr(1) ilu3',scr(1),lbl
+            CALL MPI_FILE_WRITE_AT(ILU3,IOFFSET,SCR,LBL,MPI_REAL8,
+     &           MPI_STATUS_IGNORE,IERR)
+*            write(6,*)'written at offset',ioffset
+          ELSE
+            ZERO = 0.0D0
+            CALL SETVEC(SCR,ZERO,LBL)
+*            write(6,*)'scr(1) ilu3',scr(1),lbl
+            CALL MPI_FILE_WRITE_AT(ILU3,IOFFSET,SCR,LBL,MPI_REAL8,
+     &           MPI_STATUS_IGNORE,IERR)
+          END IF
+        END IF
+            IOFFSET = IOFFSET + LBL
+      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
+      IBLK = IBLK -1
+*
+      END
+*
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COPVC_SERPAR_C4(LCFILE,SCR,IBKLH,NBLK,
+     &           JOFF,IREW,LBLK)
+*
+*. copy vector from serial I/O file LCFILE to 
+*. parallel I/O file ILU1
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      INTEGER IREW
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET,ISTART
+*
+*. Scratch
+      DIMENSION SCR(*),IBKLH(*)
+*
+      IOFFSET = 0
+      IF(IREW.GT.0) THEN
+*      write(6,*)'view set in progress'
+        CALL MPI_FILE_SET_VIEW(ILU4,IOFFSET,MPI_REAL8,
+     &       MPI_REAL8,'native',MPI_INFO_NULL,IERR)
+      END IF
+*      write(6,*)'view set done'
+      IBLK = 0
+      NBLK_A = 0
+      IF(JOFF.GT.0)THEN
+*
+        DO II = 1, JOFF
+          DO IJ = 1, NBLK
+            ISTART = ISTART + IBKLH(IJ)
+          END DO
+        END DO
+*
+      ELSE
+        ISTART = 0
+      END IF
+      IOFFSET = IOFFSET + ISTART
+*. Loop over blocks
+ 1000 CONTINUE
+        IBLK = IBLK + 1
+        IF(LBLK .GT. 0 ) THEN
+          LBL = LBLK
+        ELSE IF ( LBLK .EQ. 0 ) THEN
+          READ(LCFILE) LBL
+        ELSE IF  (LBLK .LT. 0 ) THEN
+          CALL IFRMDS(LBL,1,-1,LCFILE)
+        END IF
+        IF( LBL .GE. 0 ) THEN
+          IF(LBLK .GE.0 ) THEN
+            KBLK = LBL
+          ELSE
+            KBLK = -1
+          END IF
+          NO_ZEROING = 1
+          CALL FRMDSC2(SCR,LBL,KBLK,LCFILE,IMZERO,IAMPACK,
+     &                 NO_ZEROING)
+          IF(IMZERO.EQ.0) THEN
+            CALL MPI_FILE_WRITE_AT(ILU4,IOFFSET,SCR,LBL,MPI_REAL8,
+     &           MPI_STATUS_IGNORE,IERR)
+          ELSE
+            ZERO = 0.0D0
+            CALL SETVEC(SCR,ZERO,LBL)
+            CALL MPI_FILE_WRITE_AT(ILU4,IOFFSET,SCR,LBL,MPI_REAL8,
+     &           MPI_STATUS_IGNORE,IERR)
+          END IF
+        END IF
+            IOFFSET = IOFFSET + LBL
+      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
+      IBLK = IBLK -1
+*
+      END
+*
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COPVC_PARSER_SF(LUOUT,SCR,IBKLH,NBLK,JOFF,IREW,LBLK)
+*
+*. copy vector from parallel I/O file LUIN to 
+*. serial I/O file LUOUT
+*
+*.              INPUT
+*. IBKLH: array of blocklenth of all blocks 
+*. NBLK: total number of blocks
+*. JOFFS: OFFSET in file LUIN
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      DIMENSION IBKLH(*),SCR(*)
+      INTEGER IBLOCK,IAMPACK,IAMZERO,LBL
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET,ISTART
+      REAL*8 INPROD
+      INTEGER ISCR(2)
+*     
+      IF(IREW.GT.0) THEN
+        CALL REWINE(LUOUT,LBLK)
+      END IF
+      IBLOCK = 1
+      IF(JOFF.GT.0) THEN
+*
+        DO II = 1, JOFF
+          DO IJ = 1, NBLK
+            ISTART = ISTART + IBKLH(IJ)
+          END DO
+        END DO
+*
+      ELSE
+        ISTART = 0
+      END IF
+      IOFFSET = 0
+      IOFFSET = IOFFSET + ISTART
+1000  CONTINUE
+      LBL = IBKLH(IBLOCK)
+      IF(LBL.EQ.0) THEN
+        CALL ITODS(LBL,1,-1,LUOUT)
+        IAMZERO = 1
+        IAMPACK = 0
+        CALL ZERORC(LBL,LUOUT,IAMPACK)
+      ELSE IF(LBL.GT.0) THEN
+        CALL ITODS(LBL,1,-1,LUOUT)
+        CALL MPI_FILE_READ_AT(ISVECFL,IOFFSET,SCR,LBL,
+     &       MPI_REAL8,ISTAT,IERR)
+* 
+CSK        write(6,*)'i copy back scr'
+CSK        CALL WRTMAT(SCR,1,LBL,1,LBL)
+        CALL TODSC(SCR,LBL,-1,LUOUT) 
+*. find the intermediate offset
+        IOFFSET = IOFFSET + LBL
+      END IF
+*.   /\ LBL.GE.0 ?
+      IBLOCK = IBLOCK + 1 
+      IF( IBLOCK .LE. NBLK .AND. LBLK .LE. 0 ) GOTO 1000
+*
+      CALL ITODS(-1,1,-1,LUOUT)
+*
+      END
+*
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      REAL*8 FUNCTION INPRDD_MPIIO(VEC1,VEC2,LU1,LU2,JBKINF,JBLOCKI,
+     &                JOFF,IREW,LBLK)
+C
+C DISC VERSION FEATURING MPI-IO OF INPROD
+C
+C LBLK DEFINES STRUCTURE OF FILE LU1
+C
+C IBKINF CONTAINS BLOCK LENTGTH 
+C IBLOCKI DEFINES NUMBER OF BLOCKS 
+C JOFF DEFINES OFFSET IN FILE LU2 
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      REAL*8 INPROD
+      DIMENSION VEC1(*),VEC2(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET, ISTART
+      LOGICAL DIFVEC
+      INTEGER JCOUNT
+C
+      ICOUNT = 0
+      X = 0.0D0
+      IF( LU1 .NE. LU2 ) THEN
+        DIFVEC = .TRUE.
+      ELSE
+        DIFVEC =  .FALSE.
+      END IF
+C
+      IF( IREW .NE. 0 ) THEN
+        IF( LBLK .GE. 0 ) THEN
+          REWIND LU1
+        ELSE
+          CALL REWINE( LU1,LBLK)
+        END IF
+      END IF
+C
+C FIND OFFSET FOR MPI-FILE
+C
+      IF(JOFF.GT.0) THEN
+*
+        DO II = 1, JOFF
+          DO IJ = 1, JBLOCKI
+            ISTART = ISTART + JBKINF(IJ)
+          END DO
+        END DO
+*
+      ELSE IF(JOFF.EQ.0) THEN
+        ISTART = 0
+      END IF
+C
+C
+C
+C LOOP OVER BLOCKS OF VECTORS
+C
+      IBLKI = 1
+      IOFFSET = 0
+      IOFFSET = IOFFSET + ISTART
+ 1000 CONTINUE
+C
+        IF( LBLK .GT. 0 ) THEN
+          NBL1 = LBLK
+          NBL2 = LBLK
+        ELSE IF ( LBLK .EQ. 0 ) THEN
+          READ(LU1) NBL1
+          IF( DIFVEC) READ(LU2) NBL2
+        ELSE IF ( LBLK .LT. 0 ) THEN
+          CALL IFRMDS(NBL1,1,-1,LU1)
+CSK          IF( DIFVEC)CALL IFRMDS(NBL2,1,-1,LU2)
+        END IF
+C
+      IF(NBL1 .GE. 0 ) THEN
+        IF(LBLK .GE.0 ) THEN
+          KBLK = NBL1
+        ELSE
+          KBLK = -1
+        END IF
+        CALL FRMDSC(VEC1,NBL1,KBLK,LU1,IMZERO,IAMPACK)
+        IF( DIFVEC) THEN
+CSK          CALL FRMDSC(VEC2,NBL1,KBLK,LU2,IMZERO,IAMPACK)
+           NBL2 = JBKINF(IBLKI)
+           CALL MPI_FILE_READ_AT(LU2,IOFFSET,VEC2,NBL2,
+     &          MPI_REAL8,ISTAT,IERR)
+* find intermediate offset!
+           IOFFSET = IOFFSET + NBL2
+CSK               CALL MPI_GET_COUNT(ISTAT,MPI_REAL8,JCOUNT,IERR)
+CSK               WRITE(6,*)'MASTER read',JCOUNT,'REAL*8'
+           IF(NBL1 .GT. 0 )
+     &     X = X + INPROD(VEC1,VEC2,NBL1)
+C?          write(6,*) ' vec1 and vec2 in INPRDD '
+C?         CALL WRTMAT(VEC1,1,NBL1,1,NBL1)
+C?         CALL WRTMAT(VEC2,1,NBL1,1,NBL1)
+        ELSE
+        IF(NBL1 .GT. 0 )
+     &  X = X + INPROD(VEC1,VEC1,NBL1)
+        END IF
+      END IF
+      IBLKI = IBLKI + 1
+      IF(NBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
+C
+      INPRDD_MPIIO = X
+C
+      END
+*
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      REAL*8 FUNCTION INPRDD_MPIIO_SF(VEC1,VEC2,LUIN,JBKINF,JBLOCKI,
+     &                JOFF,IREW,LBLK)
+C
+C DISC VERSION FEATURING MPI-IO OF INPROD
+C
+C LBLK DEFINES STRUCTURE OF FILE LU1
+C
+C IBKINF CONTAINS BLOCK LENTGTH 
+C IBLOCKI DEFINES NUMBER OF BLOCKS 
+C JOFF DEFINES OFFSET IN SIGMA-VECTOR FILE 
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      REAL*8 INPROD
+      DIMENSION VEC1(*),VEC2(*),JBKINF(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET, ISTART
+      LOGICAL DIFVEC
+      INTEGER JCOUNT
+C
+      ICOUNT = 0
+      X = 0.0D0
+      LU2 = ISVECFL
+      IF( LUIN .NE. LU2 ) THEN
+        DIFVEC = .TRUE.
+      ELSE
+        DIFVEC =  .FALSE.
+      END IF
+C
+      IF( IREW .NE. 0 ) THEN
+        IF( LBLK .GE. 0 ) THEN
+          REWIND LUIN
+        ELSE
+          CALL REWINE( LUIN,LBLK)
+        END IF
+      END IF
+C
+C FIND OFFSET FOR MPI-FILE
+C
+      IF(JOFF.GT.0) THEN
+*
+        DO II = 1, JOFF
+          DO IJ = 1, JBLOCKI
+            ISTART = ISTART + JBKINF(IJ)
+          END DO
+        END DO
+*
+      ELSE IF(JOFF.EQ.0) THEN
+        ISTART = 0
+      END IF
+C
+C
+C
+C LOOP OVER BLOCKS OF VECTORS
+C
+      IBLKI = 1
+      IOFFSET = 0
+      IOFFSET = IOFFSET + ISTART
+*      write(6,*)'my offset is ',IOFFSET
+ 1000 CONTINUE
+C
+        IF( LBLK .GT. 0 ) THEN
+          NBL1 = LBLK
+          NBL2 = LBLK
+        ELSE IF ( LBLK .EQ. 0 ) THEN
+          READ(LUIN) NBL1
+          IF( DIFVEC) READ(LU2) NBL2
+        ELSE IF ( LBLK .LT. 0 ) THEN
+          CALL IFRMDS(NBL1,1,-1,LUIN)
+        END IF
+C
+      IF(NBL1 .GE. 0 ) THEN
+        IF(LBLK .GE.0 ) THEN
+          KBLK = NBL1
+        ELSE
+          KBLK = -1
+        END IF
+        CALL FRMDSC(VEC1,NBL1,KBLK,LUIN,IMZERO,IAMPACK)
+        IF( DIFVEC) THEN
+           IF(NBL1.GT.0) THEN
+*             write(6,*)'nbl1',nbl1
+             CALL MPI_FILE_READ_AT(ISVECFL,IOFFSET,VEC2,NBL1,
+     &            MPI_REAL8,ISTAT,IERR)
+CSK               CALL MPI_GET_COUNT(ISTAT,MPI_REAL8,JCOUNT,IERR)
+CSK               WRITE(6,*)'MASTER read',JCOUNT,'REAL*8'
+           ENDIF
+           IF(NBL1 .GT. 0 )
+     &     X = X + INPROD(VEC1,VEC2,NBL1)
+CSK          write(6,*) ' vec1 and vec2 in INPRDD '
+CSK         CALL WRTMAT(VEC1,1,NBL1,1,NBL1)
+CSK         CALL WRTMAT(VEC2,1,NBL1,1,NBL1)
+        ELSE
+        IF(NBL1 .GT. 0 )
+     &  X = X + INPROD(VEC1,VEC1,NBL1)
+        END IF
+      END IF
+* find intermediate offset!
+           IOFFSET = IOFFSET + NBL1
+*           write(6,*)'IOFFSET is now',IOFFSET
+      IBLKI = IBLKI + 1
+      IF(NBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
+C
+      INPRDD_MPIIO_SF = X
+CSK      WRITE(6,*)'INPRDD_MPIIO_SF is ',INPRDD_MPIIO_SF
+C
+      END
+*
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      REAL*8 FUNCTION INPRDD_DMPIIO(VEC1,VEC2,LU1,LU2,JBKINF,JBLOCKI,
+     &                JOFF,KOFF)
+C
+C DOUBLE DISC MPI-IO OF INPROD
+C
+C IBKINF CONTAINS BLOCK LENTGTH 
+C IBLOCKI DEFINES NUMBER OF BLOCKS 
+C JOFF DEFINES OFFSET IN FILE LU1 
+C KOFF DEFINES OFFSET IN FILE LU2
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      REAL*8 INPROD
+      DIMENSION VEC1(*),VEC2(*), JBKINF(JBLOCKI)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET1,IOFFSET2,ISTART1,ISTART2
+      LOGICAL DIFVEC
+      INTEGER JCOUNT
+C
+      ICOUNT = 0
+      X = 0.0D0
+      IF( LU1 .NE. LU2 ) THEN
+        DIFVEC = .TRUE.
+      ELSE
+        DIFVEC =  .FALSE.
+      END IF
+C
+C FIND OFFSET FOR MPI-FILEs
+C
+C LU1
+*      write(6,*)'hideho',myproc
+      IF(JOFF.GT.0) THEN
+*
+        DO II = 1, JOFF
+          DO IJ = 1, JBLOCKI
+            ISTART1 = ISTART1 + JBKINF(IJ)
+          END DO
+        END DO
+*
+      ELSE IF(JOFF.EQ.0) THEN
+        ISTART1 = 0
+      END IF
+C LU2
+      IF(KOFF.GT.0) THEN
+*
+        DO II = 1, KOFF
+          DO IJ = 1, JBLOCKI
+            ISTART2 = ISTART2 + JBKINF(IJ)
+          END DO
+        END DO
+*
+      ELSE IF(KOFF.EQ.0) THEN
+        ISTART2 = 0
+      END IF
+*      write(6,*)'hideho again',myproc
+C
+C
+C
+C LOOP OVER BLOCKS OF VECTORS
+C
+      IBLKI = 1
+      IOFFSET1 = 0
+      IOFFSET1 = IOFFSET1 + ISTART1
+      IOFFSET2 = 0
+      IOFFSET2 = IOFFSET2 + ISTART2
+ 1000 CONTINUE
+C
+      NBL1 = JBKINF(IBLKI)
+*      write(6,*)'hideho II, NBL1',myproc,NBL1
+      IF(NBL1 .GT. 0 ) THEN
+*        write(6,*)'read in ISVECFL'
+        CALL MPI_FILE_READ_AT(ISVECFL,IOFFSET1,VEC1,NBL1,
+     &          MPI_REAL8,ISTAT,IERR)
+*         write(6,*)'VEC1'
+*         do i = 1, NBL1
+*           write(6,*) VEC1(i)
+*         end do
+*        write(6,*)'read in ISVECFL done'
+* find intermediate offset!
+        IOFFSET1 = IOFFSET1 + NBL1
+        IF( DIFVEC) THEN
+           NBL2 = JBKINF(IBLKI)
+           IF(NBL2.GT.0)THEN
+*        write(6,*)'read in ICVECFL'
+           CALL MPI_FILE_READ_AT(ICVECFL,IOFFSET2,VEC2,NBL2,
+     &          MPI_REAL8,ISTAT,IERR)
+*        write(6,*)'read in ICVECFL done'
+*         write(6,*)'VEC2'
+*         do i = 1, NBL2
+*           write(6,*) VEC2(i)
+*         end do
+
+           END IF
+* find intermediate offset!
+           IOFFSET2 = IOFFSET2 + NBL2
+CSK               CALL MPI_GET_COUNT(ISTAT,MPI_REAL8,JCOUNT,IERR)
+CSK               WRITE(6,*)'MASTER read',JCOUNT,'REAL*8'
+           IF(NBL1 .GT. 0 )
+     &     X = X + INPROD(VEC1,VEC2,NBL1)
+
+CSK         write(6,*) ' vec1 and vec2 in INPRDD '
+CSK         CALL WRTMAT(VEC1,1,NBL1,1,NBL1)
+CSK         CALL WRTMAT(VEC2,1,NBL1,1,NBL1)
+        ELSE
+CSK        write(6,*) ' here???'       
+        IF(NBL1 .GT. 0 )
+     &  X = X + INPROD(VEC1,VEC1,NBL1)
+        END IF
+      END IF
+      IBLKI = IBLKI + 1
+      IF(IBLKI.LE. JBLOCKI) GOTO 1000
+C
+      INPRDD_DMPIIO = X
+CSK      write(6,*)'INPRDD_DMPIIO = ',INPRDD_DMPIIO
+C
+      END
+*
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE PART3_PARALLEL(VEC1,VEC2,LU1,LU2,EIG,
+     &       LU3,LU4,LU5,LU6,LU7,NROOT,MAXVEC,NVEC,
+     &       APROJ,AVEC,WORK,LBLK,IROOTHOMING,BSCRFAC,IBKINF,
+     &       IBLOCKI,IADD,ITER,MAXIT)
+*
+       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+#include "lucipar.inc"
+#include "infpar.h"
+#include "mpif.h"
+       DIMENSION ISTAT(MPI_STATUS_SIZE)
+       INTEGER STATUS_ARRAY(MPI_STATUS_SIZE,NUMNOD), IERR, IREQ(NUMNOD)
+       CHARACTER SECTID*12
+       CHARACTER CPUTSTEP*12, WALLTSTEP*12
+       DIMENSION VEC1(*),VEC2(*)
+       DIMENSION EIG(MAXIT,NROOT)
+       DIMENSION APROJ(*),AVEC(*),WORK(*)
+*       CHARACTER*6 PLU1,PLU2,PLU3,PLU4,PLU5,PLU6,PLU7,PLU8
+*       INTEGER ILU1,ILU2,ILU3,ILU4,ILU5,ILU6,ILU7,ILU8
+*
+* Dimensioning required of local vectors
+*      APROJ  : MAXVEC*(MAXVEC+1)/2
+*      AVEC   : MAXVEC ** 2
+*      WORK   : MAXVEC*(MAXVEC+1)/2
+*
+*      IROOTHOMING : Do roothoming, i.e. select the
+*      eigenvectors in iteration n+1 as the approximations
+*      with largest overlap with the previous space
+*
+       REAL*8 INPRDD, INPROD, INPRDD_DPCIO_55
+       REAL*8 INPRDD_DPCIO_71, INPRDD_DPCIO_75
+       REAL*8 INPRDD_DPCIO_88, INPRDD_DPCIO_52, INPRDD_DPCIO_54
+*. Notice XJEP is also used for ROOTHOMING, should be allocated
+* outside (for roothoming :dim = 3*MAXVEC )
+       DIMENSION XJEP(10000)
+       INTEGER   IXJEP(10000), ITOTBLL, JCOLOR,JKEY, IFILEOFF
+       DIMENSION BSCRFAC(*), IBKINF(*)
+       INTEGER(KIND=MPI_OFFSET_KIND) JOFFS,JDISP,IFLOFF1,IFLOFF2
+*
+       IPRT = 0
+       IFILEOFF = 0
+       JOFFS = 0
+       JDISP = 0
+       ITOTBLL = 0
+       DO II = 1, IBLOCKI
+          ITOTBLL = ITOTBLL + IBKINF(II)
+       END DO
+CSK       WRITE(6,*)'ITOTBLL is',ITOTBLL 
+*
+*  check timing for this part
+       IF(MYNEW_ID.EQ.0) THEN
+         CALL GETTIM(CPUSTEP3,WALLSTEP3)
+       END IF
+*. 2.3 Diagonalize projected matrix
+      NVEC = NVEC + IADD
+      IF(MYNEW_ID.EQ.0) THEN
+        CALL COPVEC(APROJ,WORK(KAPROJ),NVEC*(NVEC+1)/2)
+        CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
+      END IF
+*
+      CALL MPI_BCAST(AVEC,MAXVEC**2,MPI_REAL8,0,MYNEW_COMM,IERR)
+*
+*. Test : transform projected matrix
+C TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
+C     CALL TRAN_SYM_BLOC_MAT(APROJ,AVEC,1,NVEC,XJEP(1000),XJEP(1))
+C     WRITE(6,*) ' Explicitly transformed matrix'
+C     CALL PRSYM(XJEP(1000),NVEC)
+*
+      IF(IROOTHOMING.EQ.1.AND.MYNEW_ID.EQ.MASTER) THEN
+*
+*. Reorder roots so the NROOT with the largest overlap with
+*  the original roots become the first
+*
+*. Norm of wavefunction in previous space
+       DO IVEC = 1, NVEC
+         XJEP(IVEC) = INPROD(AVEC(1+(IVEC-1)*NROOT),
+     &                AVEC(1+(IVEC-1)*NROOT),NROOT)
+       END DO
+       WRITE(6,*)
+     & ' Norm of projections to previous vector space '
+       CALL WRTMAT(XJEP,1,NVEC,1,NVEC)
+*. My sorter arranges in increasing order, multiply with minus 1
+*  so the eigenvectors with largest overlap comes out first
+       ONEM = -1.0D0
+       CALL SCALVE(XJEP,ONEM,NVEC)
+       CALL SORLOW(XJEP,XJEP(1+NVEC),IXJEP,NVEC,NVEC,NSORT,IPRT)
+       IF(NSORT.LT.NVEC) THEN
+         WRITE(6,*) ' Warning : Some elements lost in sorting '
+         WRITE(6,*) ' NVEC,NSORT = ', NSORT,NVEC
+       END IF
+*. Reorder
+       DO INEW = 1, NVEC
+         IOLD = IXJEP(INEW)
+         CALL COPVEC(AVEC(1+(IOLD-1)*NVEC),XJEP(1+(INEW-1)*NVEC),NVEC)
+       END DO
+       CALL COPVEC(XJEP,AVEC,NROOT*NVEC)
+       DO INEW = 1, NVEC
+         IOLD = IXJEP(INEW)
+         XJEP(INEW*(INEW+1)/2) = WORK(IOLD*(IOLD+1)/2)
+       END DO
+       DO INEW = 1, NVEC
+         WORK(INEW*(INEW+1)/2) = XJEP(INEW*(INEW+1)/2)
+       END DO
+*
+      END IF
+*     ^ End of root homing procedure (master only)
+      IF(MYNEW_ID.EQ.0) THEN
+        DO IROOT = 1, NROOT
+          EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
+        END DO
+      END IF
+      IF(IROOTHOMING.EQ.1) THEN
+        CALL MPI_BCAST(AVEC,MAXVEC**2,MPI_REAL8,0,MYNEW_COMM,IERR)
+      END IF
+        IF(MYPROC.NE.0) THEN
+        WRITE(6,*) ' Projected matrix and eigen pairs '
+*        CALL PRSYM(APROJ,NVEC)
+*        WRITE(6,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
+        CALL WRTMAT(AVEC,NVEC,NROOT,NVEC,NROOT)
+
+        END IF
+*
+**  perhaps reset or assemble converged eigenvectors
+*
+  901 CONTINUE
+*
+*. Reset
+*
+*
+* case 1 : Only NROOT vectors can be stored
+*          save current eigenvector approximations
+* Case 2 : Atleast 2*NROOT eigenvectors can be saved
+*          Current eigenvactor approximations+
+*          vectors allowing generation of previous approxs.
+*
+C     IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
+*
+*. 3.1 : Current wave function approximations, collect on LU7
+*
+*
+        PLU1 = 'LU1PAR'
+        PLU2 = 'LU2PAR'
+        PLU3 = 'LU3PAR'
+        PLU4 = 'LU4PAR'
+        PLU5 = 'LU5PAR'
+        PLU6 = 'LU6PAR'
+        PLU7 = 'LU7PAR'
+        PLU8 = 'LU8PAR'
+        IF(MYNEW_ID.GT.NROOT-1) THEN
+          JCOLOR = 4
+          JKEY = MYNEW_ID
+        ELSE IF(MYNEW_ID.LE.NROOT-1) THEN
+          JCOLOR = 5
+          JKEY = MYNEW_ID
+        END IF
+        CALL MPI_COMM_SPLIT(MYNEW_COMM,JCOLOR,JKEY,JCOMCOM,IERR)
+*
+        IF(MYNEW_ID.GT.NROOT-1) GOTO 905
+*. open the files
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU1,
+     &       MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU1,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU2,
+     &       MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU2,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU3,
+     &       MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU3,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU4,
+     &       MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU4,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU5,
+     &       MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU5,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU6,
+     &       MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU6,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU7,
+     &       MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU7,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU8,
+     &       MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU8,IERR)
+*. set fileview
+        CALL MPI_FILE_SET_VIEW(ILU1,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU2,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU3,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU4,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU5,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU6,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU7,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU8,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+*copy the files in MPI-IO readable format...
+        IF(MYNEW_ID.EQ.0) THEN
+*
+          CALL REWINE(LU1,-1)
+          CALL REWINE(LU2,-1)
+          CALL REWINE(LU3,-1)
+          CALL REWINE(LU4,-1)
+*          write(6,*)'nroot,nvec...',nroot,nvec
+          DO 903 II = 1,NROOT
+            CALL COPVC_SERPAR_C1(LU1,VEC1,IBKINF,IBLOCKI,II-1,1,-1)
+            CALL COPVC_SERPAR_C2(LU2,VEC1,IBKINF,IBLOCKI,II-1,1,-1)
+ 903      CONTINUE
+*          write(6,*)'i survived I',mynew_id
+          
+          IF(MAX(NVEC-NROOT,NROOT).LE.NVEC-NROOT)THEN
+                 ICOPY = MAX(NVEC-NROOT,NROOT)
+          ELSE
+                 ICOPY = MIN(NVEC-NROOT,NROOT)
+          END IF
+*          write(6,*)'ICOPY is ',ICOPY
+          DO 904 II = 1,ICOPY
+            CALL COPVC_SERPAR_C3(LU3,VEC1,IBKINF,IBLOCKI,II-1,0,-1)
+            CALL COPVC_SERPAR_C4(LU4,VEC1,IBKINF,IBLOCKI,II-1,0,-1)
+ 904      CONTINUE
+*          write(6,*)'i survived II',mynew_id
+CSK          WRITE(6,*) ' Initial vectors on LU1'
+CSK          CALL REWINO(LU1)
+CSK          DO IVEC = 1, NROOT
+CSK             CALL WRTVCD(VEC1,LU1,0,LBLK)
+CSK          END DO
+CSK          WRITE(6,*) ' Initial vectors on LU3'
+CSK          CALL REWINO(LU3)
+CSK          DO IVEC = 1, NROOT
+CSK             CALL WRTVCD(VEC1,LU3,0,LBLK)
+CSK          END DO 
+CSK           JOFFS = 0
+CSK           call MPI_FILE_READ_AT(ILU1,JOFFS,VEC2,ITOTBLL,
+CSK     &          MPI_REAL8,ISTAT,IERR)
+CSK           DO I = 1, ITOTBLL
+CSK           write(6,*)'ilu1 ',VEC2(I)
+CSK           end do
+CSK           JOFFS = 0
+CSK           call MPI_FILE_READ_AT(ILU3,JOFFS,VEC2,ITOTBLL,
+CSK     &          MPI_REAL8,ISTAT,IERR)
+CSK           DO I = 1, ITOTBLL
+CSK           write(6,*)'ilu3 ',VEC2(I)
+CSK           end do
+*          write(6,*)'IPRT',IPRT
+*
+        END IF
+*          write(6,*)'IPRT of myproc',IPRT,myproc
+         
+*. From ILU1 to ILU5
+        IFILEOFF = MYNEW_ID
+        call mpi_barrier(JCOMCOM,ierr)
+* lu1 lu5 lu6!!!
+        CALL MVCSMD_PCIO_1(AVEC(MYNEW_ID*NVEC+1),
+     &       VEC1,VEC2,NROOT,1,IFILEOFF,ITOTBLL,
+     &       IBKINF,IBLOCKI)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of c reset, part 1'
+*. and add LU3 to LU5
+        ONE = 1.0D0
+* lu3 lu5 lu6!!!
+        CALL MVCSMD2_PCIO_3(AVEC(MYNEW_ID*NVEC+NROOT+1),ONE,
+     &       VEC1,VEC2,NVEC-NROOT,1,IFILEOFF,ITOTBLL,IBKINF,IBLOCKI)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of c reset, part 2'
+* lu5!!!
+        XNORM = INPRDD_DPCIO_55(VEC1,VEC2,ITOTBLL,IBKINF,
+     &          IBLOCKI,IFILEOFF,IFILEOFF,1)
+        SCALE  = 1.0D0/SQRT(XNORM)
+        WRITE(6,*) ' SCALE = ', SCALE
+        WORK(MYNEW_ID+1) = SCALE
+*        write(6,*) 'WORK(MYNEW_ID+1)', WORK(MYNEW_ID+1)
+*. scale LU5 => LU7
+CSK          CALL REWINO(LU5)
+        IFLOFF1 = MYNEW_ID * ITOTBLL
+        IFLOFF2 = MYNEW_ID * ITOTBLL
+*        write(6,*)'i survived III',mynew_id
+        CALL SCLVCD_PCIO_57(SCALE,VEC1,IFLOFF1,IFLOFF2,
+     &       IBKINF,IBLOCKI,1)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of c reset, part 3'
+*. Transfer C vectors from LU7 to LU1
+        CALL CPVC_PARPAR_71(VEC1,IBKINF,IBLOCKI,IFLOFF1,
+     &       IFLOFF2,1)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of c reset, part 4'
+        IF(IPRT.GE.1000) THEN
+          WRITE(6,*) ' Reset C-vectors on LU1 '
+           JOFFS = 0
+           call MPI_FILE_READ_AT(ILU1,JOFFS,VEC2,ITOTBLL,
+     &          MPI_REAL8,ISTAT,IERR)
+           DO I = 1, ITOTBLL
+           write(6,*)'ilu1 ',VEC2(I)
+           end do
+CSK          CALL REWINO(LU1)
+CSK         DO IVEC = 1, NROOT
+CSK          CALL WRTVCD(VEC1,LU1,0,LBLK)
+CSK          END DO
+        END IF
+*. 3.2 : corresponding sigma vectors
+*. From LU2 to LU5
+*. lu2 lu5 lu6
+        CALL MVCSMD_PCIO_2(AVEC(MYNEW_ID*NVEC+1),
+     &       VEC1,VEC2,NROOT,1,IFILEOFF,ITOTBLL,
+     &       IBKINF,IBLOCKI)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of s reset, part 1'
+*. and add LU4 to LU5
+        CALL MVCSMD2_PCIO_4(AVEC(MYNEW_ID*NVEC+NROOT+1),ONE,
+     &       VEC1,VEC2,NVEC-NROOT,1,IFILEOFF,ITOTBLL,
+     &       IBKINF,IBLOCKI)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of s reset, part 2'
+        SCALE  = WORK(MYNEW_ID+1)
+        write(6,*) ' SCALE for s',SCALE
+*. scale LU5 => LU7
+        IFLOFF1 = MYNEW_ID * ITOTBLL
+        IFLOFF2 = MYNEW_ID * ITOTBLL
+        CALL SCLVCD_PCIO_57(SCALE,VEC1,IFLOFF1,IFLOFF2,
+     &       IBKINF,IBLOCKI,1)
+          IF(IPRT.GE.1000)
+     &    write(6,*) ' end of s reset, part 3'
+*. Transfer sigma  vectors from LU7 to LU2
+        CALL CPVC_PARPAR_72(VEC1,IBKINF,IBLOCKI,IFLOFF1,
+     &       IFLOFF2,1)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of s reset, part 4'
+        IF(IPRT.GE.1000) THEN
+          WRITE(6,*) ' Reset s-vectors on ilu2 '
+           JOFFS = 0
+           call MPI_FILE_READ_AT(ILU2,JOFFS,VEC2,ITOTBLL,
+     &          MPI_REAL8,ISTAT,IERR)
+           call wrtmat(VEC2,1,ITOTBLL,1,1)
+        END IF
+        NNVEC = NROOT
+* close the files ...
+       CALL MPI_FILE_CLOSE(ILU1,IERR)
+       CALL MPI_FILE_CLOSE(ILU2,IERR)
+       CALL MPI_FILE_CLOSE(ILU3,IERR)
+       CALL MPI_FILE_CLOSE(ILU4,IERR)
+       CALL MPI_FILE_CLOSE(ILU5,IERR)
+       CALL MPI_FILE_CLOSE(ILU6,IERR)
+       CALL MPI_FILE_CLOSE(ILU7,IERR)
+ 905    CONTINUE
+*. we will wait for all nodes ...
+        CALL MPI_BARRIER(MYNEW_COMM,IERR)
+        CALL MPI_COMM_FREE(JCOMCOM,IERR)
+*
+        IF(3*NROOT.LE.MAXVEC) THEN
+*
+*  create new communicator!!!
+        IF(MYNEW_ID.GT.IADD-1) THEN
+          JCOLOR = 4
+          JKEY = MYNEW_ID
+        ELSE IF(MYNEW_ID.LE.IADD-1) THEN
+          JCOLOR = 5
+          JKEY = MYNEW_ID
+        END IF
+        CALL MPI_COMM_SPLIT(MYNEW_COMM,JCOLOR,JKEY,JCOMCOM,IERR)
+*
+        IF(MYNEW_ID.GT.NROOT-1) GOTO 908
+*. open the files again
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU1,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU1,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU2,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU2,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU3,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU3,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU4,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU4,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU5,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU5,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU6,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU6,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU7,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU7,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU8,
+     &       MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU8,IERR)
+*. set fileview
+        CALL MPI_FILE_SET_VIEW(ILU1,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU2,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU3,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU4,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU5,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU6,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU7,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU8,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+*. size of communicator
+        CALL MPI_COMM_SIZE(JCOMCOM,NEWCOMM_PROC,IERR)
+*
+*. Orthogonalize the
+*. last set of correction vectors to the current
+*. eigenvectors on LU1, and save on LU2
+*. Overlap with root approximations
+*. Start of last set of trial vectors
+          IFILEOFF = MYNEW_ID
+          ISTART = NVEC-NROOT-IADD+1
+*          CALL REWINO(LU5)
+*. Orthogonalize to vectors on LU1
+            IFLOFF1 = ((ISTART-1) * ITOTBLL) + (MYNEW_ID * ITOTBLL)
+            IFLOFF2 = MYNEW_ID * ITOTBLL
+            CALL CPVC_PARPAR_37(VEC1,IBKINF,IBLOCKI,IFLOFF1,
+     &           IFLOFF2,1)
+            CALL CPVC_PARPAR_38(VEC1,IBKINF,IBLOCKI,IFLOFF1,
+     &           IFLOFF2,1)
+*            IF(myproc.eq.0) THEN
+            
+*            JOFFS = 0
+            write(6,*) ' Initial vector on iLU7',mynew_id
+            call MPI_FILE_READ_AT(ILU7,IFLOFF2,VEC2,ITOTBLL,
+     &           MPI_REAL8,ISTAT,IERR)
+            call wrtmat(VEC2,1,ITOTBLL,1,1)
+
+*            CALL WRTVCD(VEC1,LU7,1,LBLK)
+*            END IF
+            DO IROOT = 1, NROOT
+              WORK(IROOT+(MYNEW_ID)*2*NROOT) =
+     &        -INPRDD_DPCIO_71(VEC1,VEC2,ITOTBLL,IBKINF,
+     &         IBLOCKI,IFILEOFF,IROOT-1,1)
+            END DO
+            ONE = 1.0D0
+* lu1 lu8, lu6!!!
+            CALL MVCSMD2_PCIO_1(WORK(1+(MYNEW_ID)*2*NROOT),ONE,
+     &           VEC1,VEC2,NROOT,1,IFILEOFF,ITOTBLL,
+     &           IBKINF,IBLOCKI)
+*
+            IF(MYNEW_ID.EQ.0) THEN
+              DO IJ = 1, NEWCOMM_PROC-1
+                 DO IK = 1,NROOT
+                   CALL MPI_RECV(WORK(IK+(IJ)*2*NROOT),1,MPI_REAL8,
+     &                IJ,800,JCOMCOM,ISTAT,IERR)
+                 END DO
+              END DO
+            ELSE
+              DO II = 1, NROOT
+                 CALL MPI_SEND(WORK(II+(MYNEW_ID)*2*NROOT),1,MPI_REAL8,
+     &                0,800,JCOMCOM,IERR)
+              END DO
+              GOTO 906
+            END IF
+*            
+            IF(IPRT.GE.1000)
+     &      write(6,*) ' c, part1 finito'
+*. And to trial vectors on LU5 (master only!)
+*
+         DO JVEC = 1, IADD
+           DO KVEC = 1, JVEC-1
+             WORK(NROOT+KVEC+(JVEC-1)*2*NROOT) =
+     &       -INPRDD_DPCIO_75(VEC1,VEC2,ITOTBLL,IBKINF,IBLOCKI,
+     &        JVEC-1,KVEC-1,0)
+           END DO
+           WORK(NROOT+JVEC+(JVEC-1)*2*NROOT) = 1.0D0
+           IF(IPRT.GE.1000)
+     &     write(6,*) ' c, part2 finito'
+*
+           ONE = 1.0D0
+* lu5 lu8 lu6!!!
+           CALL MVCSMD2_PSIO_5(WORK(1+(JVEC-1)*2*NROOT),ONE,
+     &          VEC1,VEC2,JVEC-1,1,JVEC-1,ITOTBLL,
+     &          IBKINF,IBLOCKI)
+           IF(IPRT.GE.1000) THEN
+             write(6,*) ' c, part4 finito'
+*             write(6,*) ' Vector after sec ort'
+*             CALL WRTVCD(VEC1,LU7,1,LBLK)
+           END IF
+*
+           FACTOR = INPRDD_DPCIO_88(VEC1,VEC2,ITOTBLL,
+     &              IBKINF,IBLOCKI,JVEC-1,JVEC-1,0)
+           SCALE = 1.0D0/SQRT(FACTOR)
+           write(6,*)'scale for lu5',SCALE
+           CALL SCALVE(WORK((JVEC-1)*2*NROOT+1),SCALE,
+     &          NROOT+JVEC)
+           IFLOFF1 = (JVEC-1) * ITOTBLL
+           IFLOFF2 = (JVEC-1) * ITOTBLL
+           CALL SCLVCD_PSIO_85(SCALE,VEC1,IFLOFF1,IFLOFF2,
+     &          IBKINF,IBLOCKI)
+           IF(IPRT.GE.1000)
+     &       write(6,*) ' c, part6 finito'
+         END DO
+*        /\ End of loop over orthogonalized directions
+ 906     CONTINUE
+         CALL MPI_BARRIER(JCOMCOM,IERR)
+*. Transfer modified directions to LU3
+         IFLOFF1 = MYNEW_ID * ITOTBLL
+         IFLOFF2 = MYNEW_ID * ITOTBLL
+         CALL CPVC_PARPAR_53(VEC1,IBKINF,IBLOCKI,IFLOFF1,
+     &        IFLOFF2,1)
+
+*         IF(IPRT.GE.1000) THEN
+           write(6,*) ' c, part7 finito'
+           WRITE(6,*) ' Additional trial vectors on LU3'
+            IF(MYPROC.EQ.0)THEN
+            IFLOFF2 = 0
+            call MPI_FILE_READ_AT(ILU3,IFLOFF2,VEC2,ITOTBLL,
+     &           MPI_REAL8,ISTAT,IERR)
+            call wrtmat(VEC2,1,ITOTBLL,1,1)
+            END IF
+*           CALL REWINO(LU3)
+*           DO JVEC = 1, IADD
+*            CALL WRTVCD(VEC1,LU3,0,LBLK)
+*           END DO
+*         END IF
+
+* Sigma vectors corresponding to orthogonalized directions
+         IFILEOFF = MYNEW_ID
+         IFLOFF1 = ((ISTART-1) * ITOTBLL) + (MYNEW_ID * ITOTBLL)
+         IFLOFF2 = MYNEW_ID * ITOTBLL
+         CALL CPVC_PARPAR_47(VEC1,IBKINF,IBLOCKI,IFLOFF1,
+     &        IFLOFF2,1)
+CSK         CALL CPVC_PARPAR_48(VEC1,IBKINF,IBLOCKI,IFLOFF1,
+CSK     &        IFLOFF2,1)
+*
+         CALL MPI_BCAST(WORK,(MAXVEC*(MAXVEC+1)/2),MPI_REAL8,0,
+     &        JCOMCOM,IERR)
+*. well, alia iacta est...
+         FACT = WORK(NROOT+(MYNEW_ID+1)+(MYNEW_ID)*2*NROOT)
+* lu2 lu7 lu6
+         CALL MVCSMD2_PCIO_2(WORK(1+(MYNEW_ID)*2*NROOT),FACT,
+     &        VEC1,VEC2,NROOT,1,IFILEOFF,ITOTBLL,
+     &        IBKINF,IBLOCKI)
+*
+         IF(MYNEW_ID.NE.0) GOTO 907
+*
+            IF(IPRT.GE.1000)
+     &      write(6,*) ' s, part 1 finito '
+         DO JVEC = 1, IADD
+            ONE = 1.0D0
+* lu5 lu7 lu6
+           CALL MVCSMD2_PSIO_5B(WORK(NROOT+1+(JVEC-1)*2*NROOT),ONE,
+     &          VEC1,VEC2,JVEC-1,1,JVEC-1,ITOTBLL,
+     &          IBKINF,IBLOCKI)
+            IF(IPRT.GE.1000)
+     &      write(6,*) ' s, part 2 finito '
+CSK            CALL REWINO(LU7)
+CSK            CALL COPVCD(LU7,LU5,VEC1,0,LBLK)
+            IFLOFF1 = (JVEC-1) * ITOTBLL
+            IFLOFF2 = (JVEC-1) * ITOTBLL
+            CALL CPVC_PARPAR_75(VEC1,IBKINF,IBLOCKI,IFLOFF1,
+     &           IFLOFF2,0)
+            IF(IPRT.GE.1000)
+     &      write(6,*) ' s, part 3 finito '
+         END DO
+*        /\ End of loop over orthogonalized directions
+*. Copy back to LU4
+ 907    CONTINUE
+        CALL MPI_BARRIER(JCOMCOM,IERR)
+        IFLOFF1 = MYNEW_ID * ITOTBLL
+        IFLOFF2 = MYNEW_ID * ITOTBLL
+        CALL CPVC_PARPAR_54(ILU5,ILU4,VEC1,IBKINF,IBLOCKI,IFLOFF1,
+     &       IFLOFF2,1)
+         IF(IPRT.GE.1000)
+     &   write(6,*) ' s, part 4 finito '
+C         WRITE(6,*) 'I was in 3.1 setting NNVEC=NROOT+IADD',
+C     &myproc,(NROOT + IADD)
+* close the files ...
+       CALL MPI_FILE_CLOSE(ILU1,IERR)
+       CALL MPI_FILE_CLOSE(ILU2,IERR)
+       CALL MPI_FILE_CLOSE(ILU3,IERR)
+       CALL MPI_FILE_CLOSE(ILU4,IERR)
+       CALL MPI_FILE_CLOSE(ILU5,IERR)
+       CALL MPI_FILE_CLOSE(ILU6,IERR)
+       CALL MPI_FILE_CLOSE(ILU7,IERR)
+       CALL MPI_FILE_CLOSE(ILU8,IERR)
+ 908    CONTINUE
+*. we will wait for all nodes ...
+ 
+         CALL MPI_BARRIER(MYNEW_COMM,IERR)
+         CALL MPI_COMM_FREE(JCOMCOM,IERR)
+*
+         NNVEC = NROOT + IADD
+       END IF
+*     /\ End if more than NROOT vectors to be reset
+       IF(IPRT.GE.1000) THEN
+         WRITE(6,*) ' Additional sigma vectors on LU4'
+CSK         CALL REWINO(LU4)
+CSK         DO JVEC = 1, IADD
+CSK           CALL WRTVCD(VEC1,LU4,0,LBLK)
+CSK         END DO
+       END IF
+*
+       NVEC = NNVEC
+*  create new communicator!!!
+        IF(MYNEW_ID.GT.NVEC-1) THEN
+          JCOLOR = 4
+          JKEY = MYNEW_ID
+        ELSE IF(MYNEW_ID.LE.NVEC-1) THEN
+          JCOLOR = 5
+          JKEY = MYNEW_ID
+        END IF
+        CALL MPI_COMM_SPLIT(MYNEW_COMM,JCOLOR,JKEY,JCOMCOM,IERR)
+*
+        IF(MYNEW_ID.GT.NVEC-1) GOTO 911
+*. open the files again, we know that already
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU1,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU1,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU2,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU2,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU3,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU3,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU4,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU4,IERR)
+        CALL MPI_FILE_OPEN(JCOMCOM,PLU5,
+     &       MPI_MODE_RDWR,MPI_INFO_NULL,ILU5,IERR)
+*. set fileview
+        CALL MPI_FILE_SET_VIEW(ILU1,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU2,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU3,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU4,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+        CALL MPI_FILE_SET_VIEW(ILU5,JDISP,MPI_REAL8,MPI_REAL8,
+     &          "native",MPI_INFO_NULL,IERR)
+*. size of communicator
+        CALL MPI_COMM_SIZE(JCOMCOM,NEWCOMM_PROC,IERR)
+*
+
+*. New subspace
+*. Calculate subspace Hamiltonian from actual vectors
+*. on disc
+       IF(IPRT.GE.1000) write(6,*) ' Subspace hamiltonian'
+CSK       CALL REWINO(LU1)
+CSK       CALL REWINO(LU3)
+CSK       DO IVEC = 1, NVEC
+*
+CSK         CALL REWINO(LU5)
+*         write(6,*) ' go on here',myproc
+
+        IFLOFF1 = MYNEW_ID * ITOTBLL
+        IFLOFF2 = MYNEW_ID * ITOTBLL
+        IF(MYNEW_ID.LE.NROOT-1) THEN
+          CALL CPVC_PARPAR_15(VEC1,IBKINF,IBLOCKI,IFLOFF1,
+     &         IFLOFF2,0)
+        ELSE
+          CALL CPVC_PARPAR_35(VEC1,IBKINF,IBLOCKI,IFLOFF1,
+     &         IFLOFF2,0)
+        END IF
+*
+        DO JVEC = 1, MIN(MYNEW_ID+1,NROOT)
+*         write(6,*) ' go on here II',myproc
+           IJ = (MYNEW_ID+1)*(MYNEW_ID)/2+JVEC
+           APROJ(IJ) = INPRDD_DPCIO_52(VEC1,VEC2,ITOTBLL,IBKINF,IBLOCKI,
+     &                 IFLOFF1,JVEC-1,0)
+         write(6,*)'myproc: IJ and APROJ(IJ)',myproc,IJ,APROJ(IJ)
+        END DO
+        IFLOFF2 = 0
+        DO JVEC = NROOT+1,MYNEW_ID+1
+*         write(6,*) ' go on here III',myproc
+          IJ = (MYNEW_ID+1)*(MYNEW_ID)/2+JVEC
+          APROJ(IJ) = INPRDD_DPCIO_54(VEC1,VEC2,ITOTBLL,IBKINF,IBLOCKI,
+     &                IFLOFF1,IFLOFF2,0)
+          IFLOFF2 = IFLOFF2 + 1
+         write(6,*)'myproc: IJ and APROJ(IJ)',myproc,IJ,APROJ(IJ)
+        END DO
+*
+         write(6,*) ' Reset hamiltonian',myproc
+         call prsym(aproj,nvec)
+
+        IF(MYNEW_ID.EQ.0) THEN
+*          IGETMSG = 0
+*          DO I = 1, NVEC-1
+*             CALL MPI_RECV()
+*          END DO
+*. copy files back to fortran readable format
+          CALL REWINE(LU1,-1)
+          CALL REWINE(LU2,-1)
+          CALL REWINE(LU3,-1)
+          CALL REWINE(LU4,-1)
+CSK          DO II = 1,NROOT
+CSK           CALL COPVC_PARSER_C1(LU1,VEC1,IBKINF,IBLOCKI,II-1,0,-1)
+CSK           CALL COPVC_PARSER_C2(LU2,VEC1,IBKINF,IBLOCKI,II-1,0,-1)
+CSK         END DO
+CSK         IF(MAX(NVEC-NROOT,NROOT).LE.NVEC-NROOT)THEN
+CSK                ICOPY = MAX(NVEC-NROOT,NROOT)
+CSK         ELSE
+CSK                ICOPY = MIN(NVEC-NROOT,NROOT)
+CSK         END IF
+CSK         DO II = 1,ICOPY
+CSK           CALL COPVC_PARSER_C3(LU3,VEC1,IBKINF,IBLOCKI,II-1,0,-1)
+CSK           CALL COPVC_PARSER_C4(LU4,VEC1,IBKINF,IBLOCKI,II-1,0,-1)
+CSK         END DO
+*
+        END IF
+* close the files ...
+       CALL MPI_FILE_CLOSE(ILU1,IERR)
+       CALL MPI_FILE_CLOSE(ILU2,IERR)
+       CALL MPI_FILE_CLOSE(ILU3,IERR)
+       CALL MPI_FILE_CLOSE(ILU4,IERR)
+       CALL MPI_FILE_CLOSE(ILU5,IERR)
+ 911   CONTINUE
+       CALL MPI_BARRIER(MYNEW_COMM,IERR)
+       CALL MPI_COMM_FREE(JCOMCOM,IERR)
+*  check timing of step 3 for current iteration
+       IF(MYNEW_ID.EQ.0) THEN
+         CALL GETTIM(CPUSTEP4,WALLSTEP4)
+         CPUTSTEP = SECTID(CPUSTEP4-CPUSTEP3)
+         WALLTSTEP = SECTID(WALLSTEP4-WALLSTEP3)
+         WRITE(6,9600) CPUTSTEP,WALLTSTEP
+ 9600 FORMAT(' >>>  CPU (WALL) TIME IN STEP3 OF ILOOP: ',A,'(',A,')')
+       END IF
+*. End of resetting business
+*
+      END
+#endif /* !defined(SYS_LOCALDISKS) */
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
@@ -1290,6 +2861,9 @@ C    &                  LUCBLK,IPERTOP,IH0INSPC,IH0SPC)
       DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
       DIMENSION SCLFAC(*),SSCLFAC(*),ICTCMP(NJJJBLK,4)
       INTEGER*8 IMPINFA,MYTOTB,ICSBTCHB
+#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+#endif
       DIMENSION IMPINFA(NEWCOMM_PROC,2),MYTOTB(NJJJBLK)
       DIMENSION ICSBTCHB(NJJJBLK),IDISTLIST(NJJJBLK)
 * new scratch
@@ -1311,10 +2885,10 @@ C    &                  LUCBLK,IPERTOP,IH0INSPC,IH0SPC)
 *.
       REAL * 8 INPROD
 *
-*        write(6,*)'ILOOPC = ',ILOOPC, myproc
-*        write(6,*)'ISKIPR = ',ISKIPR, myproc
-*        write(6,*)'SCLFAC(37) = ',SCLFAC(4), myproc
-*        write(6,*)'LCBLOCK(1) = ',LCBLOCK(1), myproc
+CSK        write(6,*)'ILOOPC = ',ILOOPC, myproc
+CSK        write(6,*)'ISKIPR = ',ISKIPR, myproc
+CSK        write(6,*)'SCLFAC(37) = ',SCLFAC(4), myproc
+CSK        write(6,*)'LCBLOCK(1) = ',LCBLOCK(1), myproc
 *
 *
 *. Find batches of C - strings
@@ -1405,8 +2979,26 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, mynew_id
           IF(INTERACT.EQ.1) THEN
 *            WRITE(6,*)'i am here to go for GSTTBL', mynew_id
             IF((MYNEW_ID.NE.0.AND.NPARWAY.GT.3).OR.(NPARWAY.LT.4))THEN
-**              WRITE(6,*)'i am here to go for GSTTBL', mynew_id
+CSK              WRITE(6,*)'i am here to go for GSTTBL', mynew_id
 **              WRITE(6,*)'JOFF =',JOFF
+#if !defined(SYS_LOCALDISKS)
+*
+*. we need the explicit offset!
+*
+              IOFFSET = 0
+*
+              DO IFND = 1, JBLOCK -1
+                IOFFSET = IOFFSET + ICBLINF(IFND)
+              END DO
+              CALL MPI_FILE_READ_AT(ICVECFL,IOFFSET,CB(JOFF),
+     &             ICBLINF(JBLOCK),MPI_REAL8,ISTAT,IERR)
+CSK              write(6,*)'read in done'
+CSK              CALL WRTMAT(CB(JOFF),NSSOB(JBSM,JBTP),
+CSK     &                    NSSOA(JASM,JATP),NSSOB(JBSM,JBTP),
+CSK     &                    NSSOA(JASM,JATP))
+
+*
+#else
               CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
      &                    NOCTPA,NOCTPB,NSSOA,NSSOB,PS,ICOOSC,IDC,
      &                    PL,LUC,C2,NSMST,ISCALE,SCLFAC(JBLOCK))
@@ -1414,17 +3006,19 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, mynew_id
 **              CALL WRTMAT(CB(JOFF),NSSOB(JBSM,JBTP),
 **     &                    NSSOA(JASM,JATP),NSSOB(JBSM,JBTP),
 **     &                    NSSOA(JASM,JATP))
+#endif
 
             END IF
 **            SCLFAC(JBLOCK) = 1.0D0
 *. Note in GSTTBL : ICOOSC only used for CI vectors in core,
           ELSE
-*. not relevant
-C             WRITE(6,*) ' TTSS for C block skipped  '
-C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
             IF((MYNEW_ID.NE.0.AND.NPARWAY.GT.3).OR.(NPARWAY.LT.4))THEN
+#if !defined(SYS_LOCALDISKS)
+              CALL DO_NOTHING(MYNEW_ID)
+#else
               CALL IFRMDS(LBL,-1,1,LUC)
               CALL SKPRCD2(LBL,-1,LUC)
+#endif
             END IF
             SCLFAC(JBLOCK) = 0.0D0
           END IF
@@ -2559,13 +4153,16 @@ C
       RETURN
       END
 *****************************************************
-#else
 * dummy routine for normal compilation
        SUBROUTINE DO_NOTHING(NOTHING)
-       implicit none
-       integer NOTHING
-        write(6,*) 'let us do nothing',nothing  
-       RETURN 
+       IMPLICIT REAL*8(A-H,O-Z)
+*        write(6,*) 'let us do nothing',nothing
+       END
+*****************************************************
+#else
+* dummy routine for normal compilation
+       SUBROUTINE DO_NOTHING2(NOTHING)
+       IMPLICIT REAL*8(A-H,O-Z)
+*        write(6,*) 'let us do nothing',nothing  
        END 
-
 #endif 
