@@ -3923,9 +3923,11 @@ CSK        print*,'IOLSTM ',IOLSTM
       END IF
 *
 *. 
+#if defined (VAR_MPI)
       IF(MYPROC.EQ.MASTER) THEN
         starttime = MPI_WTIME()
       END IF
+#endif
 *. determine the parallel route --> here we go!
 *. NPARWAY controls the parallel fine-grain version that is used
 *. NPARWAY = 0 --> fine-grain route disabled
@@ -4721,12 +4723,14 @@ C
 *
  160  CONTINUE
       
+#if defined (VAR_MPI)
       IF(MYPROC.EQ.MASTER.AND.IRUNPA.EQ.1) THEN
         endtime = MPI_WTIME()
         tottime = 0.D0
         tottime = endtime - starttime
       write(6,*)'>>>  TIME SPENT IN PART 2.1 - 2.3 :',tottime,'SECONDS'
       END IF
+#endif
 *
 #if defined (VAR_MPI)
       IF((IRUNPCG.NE.1).OR.(IRUNPCG.NE.2)) THEN
