@@ -187,7 +187,7 @@ class dyall_set :
 		start      = re.compile (r'^Exponents of '+type.replace('(','\(').replace(')','\)')+
 					  ' functions?\w*$', re.IGNORECASE)
 		symmetries = re.compile (r'\s+([spdfghik])')
-		atom       = re.compile (self.element)
+		atom       = re.compile (self.element+' ')
 		number     = re.compile (r'(?P<num>[-+]?(\d+(\.\d*)?|\d*\.\d+)([eE][-+]?\d+)?)')
 
 		f = file(self.filename, 'r')
