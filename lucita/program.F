@@ -729,13 +729,6 @@ C      CALL SLASK
 *
       CALL LUMSTI
 *
-*      CALL MPI_GET_VERSION(IVER,ISUBV,IERR)
-*#if MPI_VERSION == 2
-*      WRITE(6,*)'first way: MPI_VERSION is',IVER,'.',ISUBV
-*#else
-*      WRITE(6,*)'second way: MPI_VERSION is',IVER,'.',ISUBV
-*#endif
-*
 *      Enter the generic LUCITA routine (master becomes 
 *      now somewhat like primus inter parens)
 *
