@@ -5973,9 +5973,12 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, mynew_id
                 IOFFSET = IOFFSET + ICBLINF(IFND)
               ENDDO                
 *              write(6,*)'read in start',myproc
-#if defined (VAR_MPI)
+#if defined(VAR_MPI)
               CALL MPI_FILE_READ_AT(ICVECFL,IOFFSET,CB(JOFF),
      &             ICBLINF(JBLOCK),MPI_REAL8,ISTAT,IERR)
+#else
+         WRITE(6,*)'nonlocal disk mode only in parallel mode!'
+         CALL QUIT('stop in lucita/sigma.F: nonlocal disk mode failure')
 #endif
 *              write(6,*)'read in done',myproc
 *  
