@@ -240,7 +240,7 @@ if [ ! -z "$arg_tests" ]; then
          if [ $RUNTYPE="undefined" ]; then RUNTYPE="large_benchmark" ; export RUNTYPE; fi
          ;;
       "all")
-         tests=$all_test
+         tests=$all_test;
          ;;
       *)
 #        hjaaj: extract and test users list of tests
@@ -272,8 +272,14 @@ else
       echo "Running default: <<short>> sequential tests ..."
       tests=$short_test;
    fi
-   if [ $RUNTYPE="undefined" ]; then RUNTYPE="short" ; export RUNTYPE; fi
 #  tests=$all_test
+fi
+#
+# default to RUNTYPE="short" /hjaaj 070111
+#
+if [ $RUNTYPE="undefined" ]; then
+   RUNTYPE="short" ; export RUNTYPE
+   echo "RUNTYPE defaults to short"
 fi
 
 echo
