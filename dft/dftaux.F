@@ -273,18 +273,8 @@ C
 C
          BR = 2.0D0*(B3(1)*RHG(1)+ B3(2)*RHG(2)+ B3(3)*RHG(3))
          CR = 2.0D0*(C3(1)*RHG(1)+ C3(2)*RHG(2)+ C3(3)*RHG(3))
-         IF ( IREPBOP.EQ.IREPCOP ) THEN
-            foo = BR-CR
-            IF ( foo .gt. 1.0D-14 ) THEN
-               WRITE(LUPRI,*) 'ERROR', foo
-               WRITE(LUPRI,*) B3(1),B3(2),B3(3)
-               WRITE(LUPRI,*) C3(1),C3(2),C3(3)
-            END IF
-         END IF
          BCR = 2.0D0*(BC3(1)*RHG(1)+ BC3(2)*RHG(2)+ BC3(3)*RHG(3)) +
-     &         B3(1)*C3(1) + B3(2)*C3(2) + B3(3)*C3(3)
-         BC  = B3(1)*C3(1) + B3(2)*C3(2) + B3(3)*C3(3)
-
+     &         4.0d0*(B3(1)*C3(1) + B3(2)*C3(2) + B3(3)*C3(3))
 C
 C     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
          CALL DFTPOT2(VXC,WGHT,RHO,RHOGRD)
@@ -307,12 +297,12 @@ C
 C
          SXC =  2.0D0*VXC(FRRR)*B0*C0 + 2.0d0*VXC(FRRZ)*(B0*CR+C0*BR) +
      &          2.0D0*VXC(FRZZ)*BR*CR + VXC(FRR)*BC0 + 
-     &          VXC(FRZ)*(BCR+BC)
+     &          VXC(FRZ)*BCR
          FACR = 2.0D0*VXC(FZZZ)*BR*CR + 2.0d0*VXC(FRZZ)*(B0*CR+C0*BR) +
-     &          2.0D0*VXC(FRRZ)*B0*C0 + VXC(FRZ)*BC0 + 
-     &          VXC(FZZ)*(BCR+BC)
-         FACB = VXC(FRZ)*C0 + VXC(FZZ)*CR
-         FACC = VXC(FRZ)*B0 + VXC(FZZ)*BR
+     &          2.0D0*VXC(FRRZ)*B0*C0 + VXC(FRZ)*BC0 +
+     &          VXC(FZZ)*BCR
+         FACB = 2.0d0*VXC(FRZ)*C0 + 2.0d0*VXC(FZZ)*CR
+         FACC = 2.0d0*VXC(FRZ)*B0 + 2.0d0*VXC(FZZ)*BR
          DO I=1,3
             VT(I) = 2.0D0 * ( FACR*RHG(I) + FACB*B3(I) + FACC*C3(I) +
      &                        VXC(FZ0) * BC3(I) )
