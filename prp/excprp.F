@@ -878,6 +878,7 @@ C
       REAL*8 WORK(*)
       INTEGER LWRK, KFREE, LFREE, IQRF, NFC, cnt
       INTEGER ifer1,ifer2,ibos1,ibos2,leftsym,rightsym
+      INTEGER EXCOPFROMSYM
       INTEGER iop,iop2,opsym,opsym2,opptr,opptr2,
      &     excop,excsym
       INTEGER I,J,K,NFR
