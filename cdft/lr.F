@@ -74,7 +74,7 @@ C=======================================================================
      &          BUF(*),
      &          SPIN_DENSITY(3),
      &          SPIN_DENSITY_DERVS(3,3),
-     &          VXC(DERVS2),
+     &          VXC(99), !dirty fix
      &          VXC_V(3)
 
 #include "ibtfun.h"
@@ -216,7 +216,7 @@ C=======================================================================
      &          BUF(*),
      &          CURRENT_DENSITY(3),
      &          CURRENT_DENSITY_DERVS(3,3),
-     &          VXC(DERVS2),
+     &          VXC(99), !dirty fix
      &          VXC_V(3)
 
 #include "ibtfun.h"
