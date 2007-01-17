@@ -8080,9 +8080,13 @@ C
       character*8 xa,ya,za
       DIMENSION xa(4),ya(4),za(5)
       CHARACTER*16 AFN
+#include "amfi_if.h"
+c     logical dirbss_verbose
 
       CALL QENTER('AMFIIN')
 #include "memint.h"
+
+c     dirbss_verbose = .false.
 
       IF (IPRINT.GE.3) THEN
       CALL HEADER('*** Output from AMFIIN ***',-1)
@@ -8365,12 +8369,14 @@ C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
         CALL QUIT('AMFIIN: The nucleus does not exist is system!')
        ENDIF 
  
-       write(lupri,*) 'The AMFI unique nuclei Z=',ICHARGE,
-     &              ' index=',INDXMINCH,
-     &              ' is degenerate: ',NICHARGE
-       write(lupri,*) ' partial charge is (real):',CHPNUC(INDXMINCH)
        IACHNUC=NINT(CHPNUC(INDXMINCH))
-       write(lupri,*) ' partial charge is (round int):',IACHNUC
+       if (dirbss_verbose) then
+          write(lupri,*) 'The AMFI unique nuclei Z=',ICHARGE,
+     &                 ' index=',INDXMINCH,
+     &                 ' is degenerate: ',NICHARGE
+          write(lupri,*) ' partial charge is (real):',CHPNUC(INDXMINCH)
+          write(lupri,*) ' partial charge is (round int):',IACHNUC
+       endif
 
 C      ... find NICHARGE centers on IZTNUCS of H2CAO with ICHARGE !
 C       use IANUCS(1-NTNUC)
@@ -8387,7 +8393,7 @@ C       use IANUCS(1-NTNUC)
         ENDIF
 
         WRITE(LUPRI,'(/2X,A,$)')
-     &  '***  AMFIIN: corresponding DIRAC nuclei :'
+     &  '    *** AMFIIN: corresponding DIRAC nuclei :'
         WRITE(LUPRI,*) (IANUCS(I),I=1,NICHARGE)
 
 C ... now find out if all these (AMFI) nuclei are to be skipped...
@@ -8415,11 +8421,11 @@ C     ... file name for AMFI integrals of center
 
        IF (NOAMFC) THEN
          WRITE(LUPRI,'(/3X,A/)')
-     &   '*** This (AMFI) unique nuclei is not to be calculated !'//
+     &   '    *** This (AMFI) unique nuclei is not to be calculated !'//
      &   ' Only pass (to read input basis) through the AMFI routine.'
        ELSE
          WRITE(LUPRI,'(2X,A,A)')
-     &   'AMFIIN: The file name with AMFI integrals: ',AFN
+     &   '    *** AMFIIN: The file name with AMFI integrals: ',AFN
        ENDIF
 
 C      ... decide whether to calculate or not the AOPROPER_MNF.XY file
@@ -8446,7 +8452,7 @@ C      ... find out the correct index of nuclear exponent
         IF (IATOM1.EQ.0) THEN
          CALL QUIT('AMFIIN: IATOM1 not found')
         ELSE
-         write(lupri,*) ' indx=',IATOM1,' CHARGE=',
+         if (dirbss_verbose) write(lupri,*) ' indx=',IATOM1,' CHARGE=',
      &        CHARGE(IATOM1),ICHARGE,
      &   ' nucl. exponent:',GNUEXP(IATOM1)
          EXPNUCL = GNUEXP(IATOM1)
@@ -8483,17 +8489,18 @@ C  ... allocate memmory for this AMFI center
 
       CALL MEMCHK('after AMFI 2',WORK,1)
 
-      WRITE(LUPRI,'(/,2X,A)')
+      if (dirbss_verbose) WRITE(LUPRI,'(/,2X,A)')
      & 'AMFI order of (centre specific) basis function: '
       DO I = 1, numballcart
         READ(MNFPRP) IPTA(I),INDXLMA(I)
-        write(lupri,*) ' amfi fu no:',I,' type(indx)',LABINT(IPTA(I)),
+        if (dirbss_verbose)
+     &    write(lupri,*) ' amfi fu no:',I,' type(indx)',LABINT(IPTA(I)),
      &                '(',INDXLMA(I),')'
       ENDDO
 
       READ(MNFPRP)  Lhigh,(ncontrac(I),I=0,Lhigh) 
 
-      write(lupri,*) 'Lhigh=',Lhigh,' ncontrac:',
+      if (dirbss_verbose) write(lupri,*) 'Lhigh=',Lhigh,' ncontrac:',
      &     (ncontrac(I),I=0,Lhigh)
       iscontr=0
       DO I=0,Lhigh
@@ -8553,7 +8560,7 @@ C   ... write out mapping function correspondance....
        ENDDO
        ENDDO
 
-       write(lupri,*)
+      if (dirbss_verbose) write(lupri,*)
       READ(MNFPRP) (WORK(KSOX+irun),irun=0,length3-1)
       READ(MNFPRP) ya
       READ(MNFPRP) (WORK(KSOY+irun),irun=0,length3-1)
@@ -8575,7 +8582,7 @@ C ************************************************************************
       IYPOS=IQPOS(3)
       IZPOS=IQPOS(2)
 
-      write(lupri,*)
+      if (dirbss_verbose) write(lupri,*)
      &  'AMFIIN: quaternions x,y,z:',IQPOS(4),IQPOS(3),IQPOS(2)
       IF (IXPOS.EQ.IYPOS.OR.IXPOS.EQ.IZPOS.OR.IYPOS.EQ.IZPOS.OR.
      & (IXPOS+IYPOS+IZPOS).NE.9) THEN
@@ -8591,11 +8598,11 @@ C ************************************************************************
 
        IF (ISREMOVED.NE.0) THEN
         WRITE(LUPRI,'(/2X,A,I2,A,I3,A/)')
-     &  'AMFIIN: the nuclei ',IANUCS(IANUC),
-     &  ' with charge ',ICHARGE,' is NOT ADDED to the BSSn Hamiltonian.'
+     &  '      *** AMFIIN: nucleus ',IANUCS(IANUC),
+     &  ' with charge ',ICHARGE,' NOT ADDED to the BSSn Hamiltonian.'
        ELSE
-        WRITE(LUPRI,'(/2X,A,I3,A,I3,A/)')
-     &  'AMFIIN: going TO ADD the nuclei  ',IANUCS(IANUC),
+        WRITE(LUPRI,'(2X,A,I3,A,I3,A)')
+     &  '    *** AMFIIN: ADDING nucleus  ',IANUCS(IANUC),
      &  ' with charge ',ICHARGE,' to the BSSn Hamiltonian.'
 
         IX = 0
@@ -8736,7 +8743,8 @@ C  ==================================================
       ENDDO
       ENDDO
       ENDIF
-        write(lupri,*) '*******************************************'
+        if (dirbss_verbose) 
+     &     write(lupri,*) '*******************************************'
       ENDDO ! of IANUC....
 
 C     ... when you have integrals, compare them..

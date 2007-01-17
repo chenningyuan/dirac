@@ -1213,6 +1213,11 @@ cbs   integrals for the four angular momenta l1-l4
 #include "param.h"
       logical makemean,bonn,breit,sameorb 
       dimension cont4SO(*),cont4OO(*),WRK(LFREE)
+
+#include "amfi_if.h"
+c     logical amfi3_verbose
+c     amfi3_verbose = .false.
+
       max1=1  !starting values for limits of precalculated 
 c             ! powers of function Cfunct(X)
       max2=1
@@ -1283,8 +1288,8 @@ cbs                                       due to parity conservation
       if (Lblocks(1).gt.0) then    ! integrals have to be calculated 
 cbs### check, whether integrals fit on array ################
       if  (Lstarter(1)+nanz*Lblocks(1).gt.icont4) then 
-      write(LUPRI,*) 'end at: ',Lstarter(1)+nanz*Lblocks(1) 
-      CALL QUIT('increase icont4 in amfi.F')
+         write(LUPRI,*) 'end at: ',Lstarter(1)+nanz*Lblocks(1) 
+         CALL QUIT('increase icont4 in amfi.F')
       endif 
 cbs### check, whether integrals fit on array ################
       istart=Lstarter(1) ! gives the address, where to write the contracted integrals 
@@ -1788,6 +1793,11 @@ cbs   get expansions of atomic orbitals in contracted functions
       character*12    occtext,occread
       character*18  textnorbmf,textnorbmf2    
       logical EX
+
+#include "amfi_if.h"
+c     logical amfi3_verbose
+c     amfi3_verbose = .true. 
+
       occtext='OCCUPATION: ' 
       textnorbmf='Number of orbitals'
       Inquire(File='AO-expansion',exist=EX) 
@@ -1799,24 +1809,30 @@ CBS   write(6,*) 'get occupations from DATA-block'
       LUAOEX = 0
       CALL GPOPEN(LUAOEX,'AO-expansion','UNKNOWN',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
-      write(LUPRI,*) 'Orbitals for mean-field' 
+      if (amfi3_verbose) write(LUPRI,*) 'Orbitals for mean-field' 
       do lrun=0,lhigh 
-      write(LUPRI,'(A3,I3)') 'L= ',lrun 
-      read(LUAOEX,'(A18,I3)') textnorbmf2,noccorb(lrun)
-      if (textnorbmf.ne.textnorbmf2) 
-     *CALL QUIT('wrong keyword for number of orbitals in getAOsx')
-      write(LUPRI,*) 'number of orbitals ',noccorb(lrun)
-      do iorbital=1,noccorb(lrun)     
-      read(LUAOEX,'(A12,F5.3)')  occread,occup(iorbital,lrun)
-      write(LUPRI,'(A,F8.4)') occtext,occup(iorbital,lrun)
-      if (occread.ne.occtext) CALL QUIT('error reading AOs')
-      read(LUAOEX,*) (AOcoeffs(icont,iorbital,lrun),
-     *icont=1,ncontrac(lrun))
-      write(LUPRI,'(8F10.4)') (AOcoeffs(icont,iorbital,lrun),
-     *icont=1,ncontrac(lrun))
-      write(LUPRI,*) ' '
-      read(LUAOEX,*) 
-      enddo
+         if (amfi3_verbose) write(LUPRI,'(A3,I3)') 'L= ',lrun 
+         read(LUAOEX,'(A18,I3)') textnorbmf2,noccorb(lrun)
+         if (textnorbmf.ne.textnorbmf2) 
+     *      CALL QUIT('wrong keyword for number of orbitals in getAOsx')
+         if (amfi3_verbose) 
+     &      write(LUPRI,*) 'number of orbitals ',noccorb(lrun)
+         do iorbital=1,noccorb(lrun)     
+            read(LUAOEX,'(A12,F5.3)')  occread,occup(iorbital,lrun)
+            if (amfi3_verbose) 
+     &         write(LUPRI,'(A,F8.4)') occtext,occup(iorbital,lrun)
+            if (occread.ne.occtext) 
+     &         CALL QUIT('error reading AOs')
+            read(LUAOEX,*) 
+     &         (AOcoeffs(icont,iorbital,lrun),icont=1,ncontrac(lrun))
+
+            if ( amfi3_verbose ) then 
+               write(LUPRI,'(8F10.4)') (AOcoeffs(icont,iorbital,lrun),
+     &            icont=1,ncontrac(lrun))
+               write(LUPRI,*) ' '
+            endif
+            read(LUAOEX,*) 
+         enddo
       enddo
       call gpclose(LUAOEX,'KEEP')
       return 
@@ -1837,7 +1853,12 @@ cbs   get expansions of atomic orbitals in contracted functions
       dimension ovlpprimcont(MxcontL,MxprimL),
      *dummytrafo(MxcontL,MxprimL)
 
+#include "amfi_if.h"
+c     logical amfi3_verbose
+
       data doscf / .true. /
+
+c     amfi3_verbose = .false.
 
       null=0
       ione=1   
@@ -1870,11 +1891,13 @@ CBS   PREPARE INPUT FOR SCF-CODE
       write(17,'(4I3)') (openshells(i),i=0,Lmax_occ)
 
 CMI    .... write out info....
-      write(lupri,*) '****   Written to the file TOSCF ****'
-      write(lupri,*) '         charge: ',charge
-      write(lupri,*) '        nprimit: ',(nprimit(i),i=0,Lmax_occ)    
-      write(lupri,*) '   closedshells: ', (closedshells(i),i=0,Lmax_occ)
-      write(lupri,*) '     openshells: ',(openshells(i),i=0,Lmax_occ)
+      if (amfi3_verbose) then
+         write(lupri,*) '****   Written to the file TOSCF ****'
+         write(lupri,*) '       charge: ',charge
+         write(lupri,*) '      nprimit: ',(nprimit(i),i=0,Lmax_occ)  
+         write(lupri,*) '   closed sh.: ',(closedshells(i),i=0,Lmax_occ)
+         write(lupri,*) '     open sh.: ',(openshells(i),i=0,Lmax_occ)
+      endif
 
 CMI   if(breit) then
 CMI   write(17,'(I5)') null   
@@ -1909,35 +1932,38 @@ cbs   set the ocupation numbers
 cbs    
 cbs   read the MO coefficients   
 CMI ======================================================
-      write(LUPRI,*) 'orbitals to be read from fort.7' 
-      write(LUPRI,*) 'lhigh = ',lhigh   
+      if (amfi3_verbose) then
+         write(LUPRI,*) 'orbitals to be read from fort.7' 
+         write(LUPRI,*) 'lhigh = ',lhigh   
+      endif
 
       do lrun=0,lhigh
-
-      write(LUPRI,*) 'lrun = ',lrun,
-     & ' nprimit=',nprimit(lrun),' nocc=',noccorb(lrun)
+         if (amfi3_verbose) 
+     &      write(LUPRI,*) 'lrun = ',lrun,
+     &         ' nprimit=',nprimit(lrun),' nocc=',noccorb(lrun)
      
-      if (noccorb(lrun).gt.0) then
+         if (noccorb(lrun).gt.0) then
+            read(7,*) itest1,itest2 
 
-      read(7,*) itest1,itest2 
+            if (itest1.ne.nprimit(lrun)) stop 'fuck 1' 
+            if (itest2.ne.noccorb(lrun)) stop 'fuck 2' 
 
-      if (itest1.ne.nprimit(lrun)) stop 'fuck 1' 
-      if (itest2.ne.noccorb(lrun)) stop 'fuck 2' 
+            do irun=1,nprimit(lrun)
 
-      do irun=1,nprimit(lrun)
+CMI            write(lupri,*) '...reading for irun=',irun,'/',nprimit(lrun)
 
-CMI    write(lupri,*) '...reading for irun=',irun,'/',nprimit(lrun)
-
-       read(7,*) (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun))
-       WRITE(LUPRI,*) (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun)) 
-      enddo   
-
-      endif   
-
+               read(7,*) (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun))
+               if (amfi3_verbose) 
+     &            WRITE(LUPRI,*) 
+     &                   (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun)) 
+            enddo   
+         endif   
       enddo   
 
       close(7)
-      write(LUPRI,*) '-- orbitals read from fort.7' 
+      
+      if (amfi3_verbose) write(LUPRI,*) '-- orbitals read from fort.7' 
+
       do lrun=0,lhigh
       if (noccorb(lrun).gt.0) then
 cbs     prepare projection and normalization of SCF-vectors
@@ -1984,7 +2010,8 @@ CMI ... hmm.. a possible source of dammage...
 cbs   normalize orbitals
       dnorm=getnorm(ncontrac(lrun),AOcoeffs(1,iorb,lrun),
      *ovlpcont(1,1,lrun),MxcontL)
-      write(LUPRI,*) 'squared overlap of orbital ',iorb,' L-value ',
+      if (amfi3_verbose)
+     &   write(LUPRI,*) 'squared overlap of orbital ',iorb,' L-value ',
      *lrun,dnorm
       do icont=1,ncontrac(lrun)
       AOcoeffs(icont,iorb,lrun)=
@@ -2035,6 +2062,8 @@ cbs
       dimension iopocc(0:Lmax_occ,0:ichargemax)
       character*30 occtxt(0:ichargemax) 
       character*32 txt  
+#include "amfi_if.h"
+c     logical amfi3_verbose
       data txt/'SO-integrals are calculated for '/
       dimension iclosed(0:LMAX),iopen(0:LMAX)
       data (occtxt(i),i=0,ichargemax) /
@@ -2356,14 +2385,19 @@ c
      & 0 , 5, 0, 0,    ! 117  
      & 0 , 0, 0, 0/    ! 118  
 cbs
+c     amfi3_verbose = .false.
       if (icharge.gt.ichargemax) then
          CALL QUIT('occupations not implemented')
       endif
-CMI   write(LUPRI,'(A32,A30)') txt,occtxt(icharge)
-      write(LUPRI,*) ' charge of the atom:',IACH
-      write(LUPRI,*) ' Mean-field summation for # of electrons:',
-     &                 icharge-IACH
-      write(LUPRI,'(A32,A30)') txt,occtxt(icharge-IACH)
+
+      if (amfi3_verbose) then
+CMI      write(LUPRI,'(A32,A30)') txt,occtxt(icharge)
+         write(LUPRI,*) ' charge of the atom:',IACH
+         write(LUPRI,*) ' Mean-field summation for # of electrons:',
+     &                    icharge-IACH
+         write(LUPRI,'(A32,A30)') txt,occtxt(icharge-IACH)
+      endif
+
       do irun=0,min(lmax,lmax_occ)
 CMI      iclosed(irun)=iclocc(irun,icharge)
          iclosed(irun)=iclocc(irun,icharge-IACH)

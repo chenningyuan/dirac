@@ -21,6 +21,11 @@ cbs   functions, the exponents and contraction coefficients
       common /nucleus/ charge,Exp_finite 
       Integer ibeginIRED(8),idelpersym(8) 
       dimension INOFT(Mxcart),INOFF(MxCart)
+
+#include "amfi_if.h"
+c     logical amfi1_verbose
+c     amfi1_verbose = .false.
+
       stars='********************************************************'//
      * '*********************'
       Llimit='MAX. L-VALUE:'
@@ -29,7 +34,8 @@ cbs   functions, the exponents and contraction coefficients
       Nofcont=' NUMBER OF CONTRACTED FUNCTIONS:' 
       addtext='ADDITIONAL FUNCTIONS in IRS:'
 CBS   write(LUPRI,*)                                                      
-      write(LUPRI,*) 'ATOMIC NO-PAIR SO-MF CODE starts'
+      if (amfi1_verbose) 
+     &   write(LUPRI,*) 'ATOMIC NO-PAIR SO-MF CODE starts'
 CBS   write(LUPRI,*)                                                      
       bonn=.false.
       aimp=.false.
@@ -38,42 +44,43 @@ CBS   write(LUPRI,*) stars
 CBS   write(LUPRI,*) '2e-integrals for the mean-field only'
 CBS   write(LUPRI,*) '    mean-field will be generated         ' 
 CBS   write(LUPRI,*) stars                                                
-        do i=0,Lmax 
-        icore(i)=0
-        enddo   
+      do i=0,Lmax 
+         icore(i)=0
+      enddo   
 
 CMI    write(lupri,*) 'ifinite=',ifinite 
 CMI    write(lupri,*) 'Exp_finite,EXP_FIN=',Exp_finite,EXP_FIN
 
-       if (ifinite.eq.1) Exp_finite=EXP_FIN
+      if (ifinite.eq.1) Exp_finite=EXP_FIN
+
+      symmetry='D2H' 
+      numbofsym=8    
 
       if (BONN) then
 CBS   write(LUPRI,*) 'Bonn-approach for spin-other-orbit part'
       endif 
-      if (BREIT) then
-       write(LUPRI,*) ' Breit-Pauli-Approximation'
-      else
-       write(LUPRI,*) 'Douglas-Kroll type operators '
+      if (amfi1_verbose) then
+         if (BREIT) then
+            write(LUPRI,*) 'Breit-Pauli-Approximation'
+         else
+            write(LUPRI,*) 'Douglas-Kroll type operators '
+         endif 
+         if (ifinite.eq.0) then 
+            write(LUPRI,*) 'Point-nucleus '
+         else
+            write(LUPRI,*) 'Finite Nucleus' 
+            write(LUPRI,*) '   nuclear exponent=',Exp_finite
+         endif  
+         write(LUPRI,*) stars
+         write(LUPRI,*) 'write out one-electron integrals in '//
+     &                  'MOLCAS-style and with MOLCAS normalization ' 
+         write(LUPRI,*) stars                               
+         write(LUPRI,*) stars                                         
+         write(LUPRI,*) 'Symmetry is D2H'
+         if (AIMP) then 
+            write(LUPRI,*) 'CORE removed for use with AIMP' 
+         endif
       endif 
-      if (ifinite.eq.0) then 
-       write(LUPRI,*) 'Point-nucleus '
-      else
-       write(LUPRI,*) 'Finite Nucleus' 
-       write(LUPRI,*) ' nuclear exponent=',Exp_finite
-      endif  
-      write(LUPRI,*) stars
-      write(LUPRI,*) 'write out one-electron integrals in MOLCAS-style'
-      write(LUPRI,*) '   and with MOLCAS normalization ' 
-      write(LUPRI,*) stars                               
-      write(LUPRI,*) stars                                         
-CBS   write(LUPRI,*) 
-      symmetry='D2H' 
-      write(LUPRI,*) 'Symmetry is D2H'
-CBS   write(LUPRI,*) 'check whether order of IRs is correct!!!'
-      numbofsym=8    
-      if (AIMP) then 
-      write(LUPRI,*) 'CORE removed for use with AIMP' 
-      endif
 CMI ... reading in  
       read(IN,*) charge,Lhigh
       if (Lhigh.gt.Lmax) then 
@@ -81,8 +88,10 @@ CMI ... reading in
      *'with maximum l-values of ',Lmax
       CALL QUIT('Too high angular momentum values in AMFI')            
       endif  
-      write(LUPRI,*) ' Functions will go up to an L-value of : ',Lhigh
-      write(LUPRI,'(A19,F7.2)') chcharge,charge    
+      if (amfi1_verbose) then 
+         write(LUPRI,*) ' Functions will go up to an L-value of : ',Lhigh
+         write(LUPRI,'(A19,F7.2)') chcharge,charge    
+      endif
       call initired
       Do iredrun=1,numbofsym
       do Lrun=0,Lhigh  
@@ -90,9 +99,10 @@ CMI ... reading in
       enddo 
       enddo 
       do Lrun=0,Lhigh 
-      write(LUPRI,*) 'ANGULAR MOMENTUM ',LRUN  
+      if (amfi1_verbose) write(LUPRI,*) 'ANGULAR MOMENTUM ',LRUN  
          read(IN,*) nprimit(Lrun),ncontrac(Lrun) 
-      write(LUPRI,'(I3,I3)') nprimit(Lrun),ncontrac(Lrun) 
+      if (amfi1_verbose) 
+     &   write(LUPRI,'(I3,I3)') nprimit(Lrun),ncontrac(Lrun) 
 cbs   check keywords
 cbs   check maximum numbers
          if (nprimit(Lrun).gt.MxprimL) then 
@@ -114,14 +124,16 @@ cbs   check maximum numbers
      *           'that. Sorry!! '
             CALL QUIT('Inconsistent input detected in AMFI')            
          endif
-      write(LUPRI,'(A7,I3,A15,I3,A33,I3,A24)') 'For L= ',Lrun,
-     *' there will be ',
-     *ncontrac(Lrun),' contracted functions, built from ',
-     *nprimit(Lrun),
-     *' uncontracted functions.' 
+         if (amfi1_verbose)
+     &      write(LUPRI,'(A7,I3,A15,I3,A33,I3,A24)') 'For L= ',Lrun,
+     *         ' there will be ',
+     *         ncontrac(Lrun),' contracted functions, built from ',
+     *         nprimit(Lrun),
+     *         ' uncontracted functions.' 
+
 CMI ... this works only for uncontracted basis functions
-       IF (ncontrac(Lrun).ne.nprimit(Lrun)) 
-     &   CALL QUIT('AMFI: only decontracted basis sets needed!')
+         IF (ncontrac(Lrun).ne.nprimit(Lrun)) 
+     &      CALL QUIT('AMFI: only decontracted basis sets needed!')
 
          do ILINE=1,nprimit(Lrun)
 CMI         read(IN,*) exponents(ILINE,Lrun), 
@@ -165,16 +177,22 @@ cbs   setting the numbers of cartesians per IR
      *           nmbMperIRL(ipOw2ired(ipowxyz(1,mrun,Lrun),
      *           ipowxyz(2,mrun,Lrun),IpowxYz(3,mrun,Lrun)),lruN)+1
          enddo
-      write(LUPRI,*) stars                                        
-      write(LUPRI,'(A,8I4)') 
-     *'Number of functions per IR: ',(nfunctions(iredrun,Lrun),
-     *iredrun=1,numbofsym)
-      write(LUPRI,*) stars                                     
+         if (amfi1_verbose) then
+            write(LUPRI,*) stars                                        
+            write(LUPRI,'(A,8I4)') 
+     *      'Number of functions per IR: ',(nfunctions(iredrun,Lrun),
+     *      iredrun=1,numbofsym)
+            write(LUPRI,*) stars                                     
+        endif
       enddo                     ! enddo for loop over L-values 
-      write(LUPRI,*) 'distribution of M-values'
-      do Lrun=0,Lhigh
-      write(LUPRI,*) (nmbMperIRL(nsym,Lrun),nsym=1,numbofsym)
-      endDo 
+
+      if (amfi1_verbose) then
+         write(LUPRI,*) 'distribution of M-values'
+         do Lrun=0,Lhigh
+            write(LUPRI,*) (nmbMperIRL(nsym,Lrun),nsym=1,numbofsym)
+         endDo 
+      endif
+
       numbofcart=0
       do lrun=0,Lhigh 
       numbofcart=numbofcart+(Lrun+Lrun+1)*
@@ -189,11 +207,15 @@ cbs   setting the numbers of cartesians per IR
      *nfunctions(iredrun,Lrun)
       enddo
       enddo
-      write(LUPRI,*) stars                            
-      write(LUPRI,'(A,8I3)')
-     &     'total number of atomic functions per IRED ',
-     *(nfunctperIRED(iredrun),iredrun=1,numbofsym) 
-      write(LUPRI,*) stars                          
+
+      if (amfi1_verbose) then
+         write(LUPRI,*) stars                            
+         write(LUPRI,'(A,8I3)')
+     &      'total number of atomic functions per IRED ',
+     *      (nfunctperIRED(iredrun),iredrun=1,numbofsym) 
+         write(LUPRI,*) stars                          
+      endif
+
       isum=0
       do iredrun=1,numbofsym
       itotalperIR(iredrun)=nfunctperIRED(iredrun)
@@ -213,10 +235,15 @@ CMI... verify the total number of basis function
       IREDoffunctnew(Iorbrun)=iredrun 
       enddo 
       enddo 
-      write(LUPRI,*) stars                                  
-      write(LUPRI,'(A,8I3)') 'including additional functions per IRED ',
-     *(itotalperIR(iredrun),iredrun=1,numbofsym) 
-      write(LUPRI,*) stars           
+
+      if (amfi1_verbose) then
+         write(LUPRI,*) stars                                  
+         write(LUPRI,'(A,8I3)') 
+     &      'including additional functions per IRED ',
+     *      (itotalperIR(iredrun),iredrun=1,numbofsym) 
+         write(LUPRI,*) stars           
+      endif
+
       do iredrun=1,numbofsym  
       ibeginIRED(iredrun)=0                              
       enddo
@@ -282,21 +309,24 @@ cbs
       enddo
       enddo
       enddo
-      write(LUPRI,*) stars
-      write(LUPRI,*) 'SYMMETRY-INFORMATION ON FUNCTIONS '
-      write(LUPRI,*) stars
 
-      do irun = 1, numbofcart
-      write(LUPRI,'(4(A,I3))') 'Number of function: ',
-     *irun,
-     *' IR of function: ',IREDoffunction(irun),
-     *' L-value: ',Loffunction(irun),
-     *' M-value: ',Moffunction(irun)
+      if (amfi1_verbose) then
+         write(LUPRI,*) stars
+         write(LUPRI,*) 'SYMMETRY-INFORMATION ON FUNCTIONS '
+         write(LUPRI,*) stars
+
+         do irun = 1, numbofcart
+            write(LUPRI,'(4(A,I3))') 'Number of function: ',
+     *         irun,
+     *         ' IR of function: ',IREDoffunction(irun),
+     *         ' L-value: ',Loffunction(irun),
+     *         ' M-value: ',Moffunction(irun)
 C     numboffunct(irun)=irun
-      INOFF(irun)=irun
-      if (IREDoffunction(irun).ne.IREDoffunction(irun+1)) 
-     *write(LUPRI,*)   
-      enddo
+            INOFF(irun)=irun
+            if (IREDoffunction(irun).ne.IREDoffunction(irun+1)) 
+     *         write(LUPRI,*)   
+         enddo
+      endif
 
       do nsymrun=1,numbofsym
       idelpersym(nsymrun)=0
@@ -339,9 +369,13 @@ cbs   generate list of orbitals to be removed
       ikeeporb=ikeeporb+nrtofiperIR(nsymrun)                        
       enddo
 CBS   write(LUPRI,*) stars                                                          
-      write(LUPRI,'(A,8I3)')'# of funct. per IRED after removing core ',
-     *(nrtofiperIR(iredrun),iredrun=1,numbofsym) 
-      write(LUPRI,*) ikeeporb,' orbitals left after deleting core' 
+      if (amfi1_verbose)
+     &   write(LUPRI,'(A,8I3)') 
+     &      '# of funct. per IRED after removing core',
+     *      (nrtofiperIR(iredrun),iredrun=1,numbofsym) 
+      if (amfi1_verbose) 
+     &   write(LUPRI,*) 
+     &      ikeeporb,' orbitals left after deleting core' 
       endif 
 CBS   write(LUPRI,*) stars
       nmax=max(6,ncontrac(0))  

@@ -1,3 +1,98 @@
+      subroutine AMFIINI
+#include "implicit.h"
+#include "amfi_if.h"
+      LOGICAL IS_VERBOSE 
+      IS_VERBOSE     = .true.
+
+      AMFI_VERBOSE   = IS_VERBOSE
+      AMFI1_VERBOSE  = IS_VERBOSE
+      AMFI2_VERBOSE  = IS_VERBOSE
+      AMFI3_VERBOSE  = IS_VERBOSE
+      RELSCF_VERBOSE = IS_VERBOSE
+      DIRBSS_VERBOSE = IS_VERBOSE
+      END
+
+      subroutine AMFIINP(WORD)
+#include "implicit.h"
+#include "priunit.h"
+#include "amfi_if.h"
+      PARAMETER ( NTABLE = 8 )
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      DATA TABLE /'.A0VERB','.A1VERB','.A2VERB','.A3VERB','.SCFVER',
+     &            '.BSSVER','.VERBOS','.SILENT'/
+C
+      WORD1 = WORD
+ 100  CONTINUE
+         READ (LUCMD, '(A7)') WORD
+         PROMPT = WORD(1:1)
+
+         IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+            GO TO 100
+         ELSE IF (PROMPT .EQ. '.') THEN
+            DO 200 I = 1, NTABLE
+               IF (TABLE(I) .EQ. WORD) THEN
+                  GO TO (1,2,3,4,5,6,7,8), I
+               END IF
+ 200       CONTINUE
+           WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *           '" not recognized in AMFIINP.'
+           CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+           CALL QUIT('Illegal keyword in AMFIINP.')
+ 1    CONTINUE
+        !.a0verb switches on all printout from amfi.F 
+        AMFI_VERBOSE  = .true. 
+      GO TO 100
+ 2    CONTINUE
+        !.a1verb switches on all printout from amfi1.F 
+        AMFI1_VERBOSE = .true. 
+      GO TO 100
+ 3    CONTINUE
+        !.a2verb switches on all printout from amfi2.F 
+        AMFI2_VERBOSE = .true. 
+      GO TO 100
+ 4    CONTINUE
+        !.a3verb switches on all printout from amfi3.F 
+        AMFI3_VERBOSE = .true. 
+      GO TO 100
+ 5    CONTINUE
+        !.scfver switches on all printout from relscf.F 
+        RELSCF_VERBOSE = .true. 
+      GO TO 100
+ 6    CONTINUE
+        !.bssver switches on some printout from dirbss.F 
+        DIRBSS_VERBOSE = .true. 
+      GO TO 100
+ 7    CONTINUE
+        !.verbose makes the output be just like the "original"
+        AMFI_VERBOSE  = .true. 
+        AMFI1_VERBOSE = .true. 
+        AMFI2_VERBOSE = .true. 
+        AMFI3_VERBOSE = .true. 
+        RELSCF_VERBOSE = .true. 
+        DIRBSS_VERBOSE = .true. 
+      GO TO 100
+ 8    CONTINUE
+        !.silent suppresses all output from amfi/relscf not related to errors
+        AMFI_VERBOSE  = .false. 
+        AMFI1_VERBOSE = .false. 
+        AMFI2_VERBOSE = .false. 
+        AMFI3_VERBOSE = .false. 
+        RELSCF_VERBOSE = .false. 
+        DIRBSS_VERBOSE = .false. 
+      GO TO 100
+ 9    CONTINUE
+           ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+              WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in DFIINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 CALL QUIT('Illegal keyword in DFIINP.')
+            END IF
+ 300  CONTINUE
+      RETURN
+      END
+
 
 
 CMI AMFI include files:
@@ -140,6 +235,10 @@ CBS                        schemes are used
       common ipowxyz(3,-Lmax:Lmax,0:Lmax)
       dimension WRK(LFREE)
 
+#include "amfi_if.h"
+c     logical amfi_verbose
+c     amfi_verbose = .false.
+
 CMI   ... when we have CVEL, do calculate ALPHAC, ALPHA2
       CVEL = CVEL_AMFI
       ALPHAC = 1.0D0/CVEL
@@ -187,9 +286,9 @@ cbs   read the input
      *symmetry,AIMP,ncont4,numballcart,IN,
      *ifinite,EXP_FIN,DOEXIT) 
 
-      IF (EXAMF) THEN
+      IF (EXAMF.and.amfi_verbose) THEN
        WRITE(LUPRI,*)
-     & 'Leaving the AMFI, because AOPROPER_MNF.xx file exist!'
+     & 'Leaving AMFI, because AOPROPER_MNF.xx file exist!'
        RETURN
       ENDIF
 
@@ -197,47 +296,61 @@ CMI    .... when AOPROPER file exit, leave the AMFI !
 
 CMI    set the oneonly option !!
        IC_AMFI = IC_AMFIX
-       WRITE(LUPRI,*) 'AMFI: IC_AMFI=',IC_AMFI
-       WRITE(LUPRI,*) 'AMFI: charge of atom IACH=',IACH
-       WRITE(LUPRI,'(A,F18.7)') 'AMFI: the speed of light:',CVEL
+       if (amfi_verbose) then
+          WRITE(LUPRI,*) 'AMFI: IC_AMFI=',IC_AMFI
+          WRITE(LUPRI,*) 'AMFI: charge of atom IACH=',IACH
+          WRITE(LUPRI,'(A,F18.7)') 'AMFI: the speed of light:',CVEL
+       endif
        IF (DOEXIT) THEN
         IF (IC_AMFI.EQ.2.OR.IC_AMFI.EQ.3.OR.
      &      IC_AMFI.EQ.4.OR.IC_AMFI.EQ.5)  THEN
-         WRITE(LUPRI,*) '...zero charge, so no mean-field orbitals !'
+           if (amfi_verbose) 
+     &     WRITE(LUPRI,*) '...zero charge, so no mean-field orbitals !'
         ENDIF
         IC_AMFI = 1
-        WRITE(LUPRI,*) 'The charge read in MNF.INP is ZERO!'//
-     &  ' IC_AMFI set to 1 !'
+        if (amfi_verbose)
+     &     WRITE(LUPRI,*) 'The charge read in MNF.INP is ZERO!'//
+     &     ' IC_AMFI set to 1 !'
        ENDIF
        IF (IC_AMFI.EQ.1) THEN
         oneonly=.true.
         ADDSO1=.TRUE.
-        WRITE(LUPRI,*) 'AMFI: ONLY SO1!' 
-        IF (DOEXIT) WRITE(LUPRI,*) 'AMFI: charge=0! Zero integrals!'
+C       WRITE(LUPRI,*) 'AMFI: ONLY SO1!' 
+        IF (DOEXIT) 
+     &     WRITE(LUPRI,*) 'AMFI: charge=0! Zero integrals!'
        ELSE IF (IC_AMFI.EQ.2) THEN
         oneonly=.false.
         sameorb=.true.   
         ADDSO1=.FALSE.
-        WRITE(LUPRI,*) 'AMFI: ONLY MFSSO2 !' 
+C       WRITE(LUPRI,*) 'AMFI: ONLY MFSSO2 !' 
        ELSE IF (IC_AMFI.EQ.3) THEN
         oneonly=.false.
         sameorb=.false.   
         ADDSO1=.FALSE.
-        WRITE(LUPRI,*) 'AMFI: ONLY MFSO2 !' 
+C       WRITE(LUPRI,*) 'AMFI: ONLY MFSO2 !' 
        ELSE IF (IC_AMFI.EQ.4) THEN
         oneonly=.false.
         sameorb=.true.   
         ADDSO1=.TRUE.
-        WRITE(LUPRI,*) 'AMFI: SO1 + MFSSO2 !' 
+C       WRITE(LUPRI,*) 'AMFI: SO1 + MFSSO2 !' 
        ELSE IF (IC_AMFI.EQ.5) THEN
         oneonly=.false.
         sameorb=.false.   
         ADDSO1=.TRUE.
-        WRITE(LUPRI,*) 'AMFI: SO1 + MFSO2 !' 
+C       WRITE(LUPRI,*) 'AMFI: SO1 + MFSO2 !' 
        ELSE
         CALL QUIT('AMFI: IC_AMFI out of range')
        ENDIF    
 
+       if (amfi_verbose) then
+          if (IC_AMFI.eq.1) then
+             WRITE(LUPRI,*) 'AMFI: ONLY SO1!'
+          else if (IC_AMFI.le.3) then
+             WRITE(LUPRI,*) 'AMFI: ONLY MFSSO2 !'
+          else if (IC_AMFI.le.5) then
+             WRITE(LUPRI,*) 'AMFI: SO1 + MFSO2 !'
+          endif
+       endif
 cbs
  123  if (ifinite.eq.2) call finsub  
 cbs
@@ -264,7 +377,7 @@ cbs
 cbs        beginning the angular part  
       if (.not.oneonly) then  
 CBS   write(6,*) '***************************************************' 
-      write(LUPRI,*)
+      if (amfi_verbose) write(LUPRI,*)
      &      '********   beginning the 2e-part ******************' 
 CBS   write(6,*) '***************************************************' 
 cbs                        
@@ -285,7 +398,7 @@ cbs ############################################################################
 cbs ########################################################################################
 cbs ########################################################################################
 CBS   write(6,*) '***************************************************' 
-      write(LUPRI,*)
+      if (amfi_verbose) write(LUPRI,*)
      &      '*******   beginning the 1-electron-part  **********' 
 CBS   write(6,*) '***************************************************' 
 
@@ -296,7 +409,7 @@ cbs    the one-electron spin-orbit integrals
      *     ifinite,OLDNRM,WRK,LFREE) ! multiplies radial integrals with l,m-dependent
 cbs                             factors and contraction coefficients 
 CBS   write(6,*) '***************************************************' 
-      write(LUPRI,*)
+      if (amfi_verbose) write(LUPRI,*)
      &         '*******   end of  the 1-electron-part    **********' 
 CBS   write(6,*) '***************************************************' 
 cbs ########################################################################################
@@ -350,6 +463,9 @@ cbs   integrals are thrown away after each l,l,l,l-block
 #include "param.h"
       logical keep,keepcart,icheck,mcheckxy,mcheckz,makemean,bonn,   
      *breiT,sameorb,cleaner,NFINI
+
+#include "amfi_if.h"
+c     logical amfi_verbose
 cbs   NFINI means not finite nucleus  
       dimension l2block(0:Lmax,0:Lmax,0:Lmax,0:Lmax)
       dimension WRK(LFREE)
@@ -358,6 +474,7 @@ cbs   some preparation of factors needed later on..                     #
 cbs ######################################################################
       ipnt(i,j)=(max(i,j)*max(i,j)-max(i,j))/2+min(i,j) 
       roottwo=dsqrt(2d0) 
+c     amfi_verbose = .false.
 cbs   calculate some prefactors that will be needed quite often      
       call prefac(Lmax,preroots,clebsch) 
         if (ifinite.ne.2) then 
@@ -707,7 +824,7 @@ cbs #####################################################################
       enddo
       enddo
 cbs   loop over all possible < l1 l2, l3 l4 > blocks
-      write(LUPRI,'(A)') '   L1   L2   L3   L4' 
+      if (amfi_verbose) write(LUPRI,'(A)') '   L1   L2   L3   L4' 
       do l1=0,Lhigh   ! improving is probably possible...
       do l2=0,Lhigh
       do l3=0,l1
@@ -725,7 +842,7 @@ cbs   a difference of two means two spin flips and is therefore not allowed
 cbs   additional check for mean-field
       if ((l1.eq.l3.and.l2.eq.l4).or.(l1.eq.l2.and.l3.eq.l4)) then
       if (l1+l3.ne.0) then
-      write(LUPRI,'(4I5)') l1,l2,l3,l4
+         if (amfi_verbose) write(LUPRI,'(4I5)') l1,l2,l3,l4
 CBS   now I determine the size of the angular integral arrays
         jblock=0
         do m1=-l1,l1
