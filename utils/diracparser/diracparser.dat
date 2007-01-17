@@ -1,0 +1,63 @@
+# Contains the translationkeys for dirac output files. 
+# Column 1: The key we can use in the class parse dirac.
+# Column 2: Line from where we should start reading. 
+# Column 3: Keyword for blocks of information.
+# Column 4: Line where we should stop reading.
+# Column 5: Keyword for stop reading a single block of information. A number
+#	    denotes the number of empty lines we should encounter before we stop reading.
+# Column 6: How the info that comes after the block keyword (column3) should be interpreted.
+# Column 7-...: The columns that should be read in the block of information.
+# Column 8: Factor for converting the column to different energyscale.
+
+XYZ "Original Coordinates" " -------" " Symmetry" 1 "data" "" 1
+SCF "@ SCF energy :" ""
+CCSD(T) "@ Total CCSD(T) energy :" ""
+CCSD "@ Total CCSD energy :" ""
+CCSD+T "@ Total CCSD+T  energy :" ""
+CCSD-T "@ Total CCSD-T  energy :" ""
+GOSCIP " DIRect Relativistic CI program" " Level  eigenvalue (eV)  Eigenvalue (cm-1) " "(NORMAL END OF PROGRAM)" 2 "label" "eigenvalue (eV) " 0.036745226
+FSCC " Fock space CCSD Energy calculations" " Level  eigenvalue (eV)  Eigenvalue (cm-1) " "-------------------" 2 "label" "eigenvalue (eV) " 0.036745226
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
