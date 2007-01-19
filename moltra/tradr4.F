@@ -40,7 +40,7 @@ C FILE    : tradr4.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR4T */
-      SUBROUTINE TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,
+      SUBROUTINE TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,GABRAO,DRIJ,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C***********************************************************************
 C
@@ -96,7 +96,7 @@ C***********************************************************************
 
 #include "blocks.h"
       LOGICAL ANTIS,LMP2,TRIAN(2),LBIT
-      DIMENSION NSTR(2,0:2,4),
+      DIMENSION NSTR(2,0:2,4),DRIJ(*),GABRAO(*),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
       CHARACTER*7 CIC(3)
       DATA CIC/'(LL|??)', '(SS|??)', '(LS|??)'/
@@ -111,18 +111,6 @@ C
       TRIAN(1) = ISAME(1).EQ.ISAME(2)
       TRIAN(2) = .FALSE.
       CALL PCK2IN(NSTR,TRIAN,IPRINT)
-C
-C     Prepare for screening
-C
-      IF(SCRTRA.GT.D0) THEN
-        CALL PR4SCR(KGAB,KDRIJ,WORK,KFREE,LFREE,DINTSKP,
-     &              WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &              WORK(KQ(1,3)),WORK(KQ(1,4)),
-     &              NDMOQR,ICMOQR,NSTR,ISAME,IPRINT)
-      ELSE
-        KDRIJ = KFREE
-        KGAB  = KFREE
-      ENDIF
 C
 C     *****************************************
 C     ****** P A R A L L E L    C O D E  ******
@@ -139,7 +127,7 @@ C
 C       Initialize
 C
         CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &               KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &               KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C       Initialize scratch file as permanent file for Master if NOMDCINT.
 C
@@ -275,7 +263,7 @@ CLV:Gaunt  DO IC = 1, 3
               CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                   NSTR,ANTIS,LMP2,WORK(KINDX),TRIAN,
      &                   KQ,KE,KIBE,IC,I2TYP,IBSTRT,IBEND,
-     &                   WORK(KDRIJ),WORK(KGAB),DINTSKP)
+     &                   GABRAO,DRIJ,DINTSKP)
            ENDDO
         ENDIF
         ENDDO
@@ -399,7 +387,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDRV4 */
       SUBROUTINE TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,INDX,TRIAN,KQ,KE,KIBE,
-     &                  IC,I2TYP,IBSTRT,IBEND,DRIJ,GABRAO,DINTSKP)
+     &                  IC,I2TYP,IBSTRT,IBEND,GABRAO,DRIJ,DINTSKP)
 C
 C     Written by Luuk Visscher, december 1996
 C     Screening by T.Saue Sep 8 1998
@@ -1126,7 +1114,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Tr4par */
       SUBROUTINE TR4PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &             KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,
+     &             KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,
      &             LMP2,EMP2,DINTSKP)
 C***********************************************************************
 C
@@ -1153,6 +1141,7 @@ C
 #include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4),NSTR(2,0:2,4)
+      DIMENSION DRIJ(*),GABRAO(*)
       DIMENSION DINTSKP(*),WORK(*), IBUFMPI(5)
 C
 C     Define the packing of the 2-index transformed integrals
@@ -1193,7 +1182,7 @@ C
          CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &               NSTR(1,0,1),ANTIS,LMP2,WORK(KINDX),TRIAN,
      &               KQ,KE,KIBE,IC,I2TYP,ISHLBS,ISHLBE,
-     &               WORK(KDRIJ),WORK(KGAB),DINTSKP)
+     &               GABRAO,DRIJ,DINTSKP)
          CALL XTIME(5,2,' Computing+transform. integrals')
          GOTO 100
   200 CONTINUE

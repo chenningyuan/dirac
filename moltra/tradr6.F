@@ -34,7 +34,7 @@ C...      http://dirac.chem.sdu.dk
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR6T */
-      SUBROUTINE TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
+      SUBROUTINE TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,GABRAO,DRIJ,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C***********************************************************************
 C
@@ -95,6 +95,7 @@ C***********************************************************************
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
+      REAL*8 GABRAO(*),DRIJ(*)
 C
       CALL QENTER('TRDR6T')
       KFRSAV = KFREE
@@ -138,18 +139,6 @@ C     Initialize the buffer files for the halftransformed integrals
 C
       CALL BUFFER_FILE_INIT (1)
 C
-C     Prepare for screening
-C
-      IF(SCRTRA.GT.D0) THEN
-        CALL PR4SCR(KGAB,KDRIJ,WORK,KFREE,LFREE,DINTSKP,
-     &              WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &              WORK(KQ(1,3)),WORK(KQ(1,4)),
-     &              NDMOQR,ICMOQR,NSTR,ISAME,IPRINT)
-      ELSE
-        KDRIJ = KFREE
-        KGAB  = KFREE
-      ENDIF
-C
 C     Perform the first half transformation
 C
       CALL XTIME(5,1,' First halftransformation      ')
@@ -158,16 +147,14 @@ C
 #endif
          CALL FIRST_HALFTR_SERIAL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                     WORK(KGAB),WORK(KDRIJ),
+     &                     GABRAO,DRIJ,
      &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
 #if defined (VAR_MPI)
       ELSE
-C        We do indeed need to send the KGAB and not WORK(KGAB) due to
-C        the way the initialization routine works for this.
          CALL FIRST_HALFTR_PARALLEL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                     KGAB,KDRIJ,WORK(KRGBUF),WORK(KIGBUF),
-     &                     WORK(KLSORT))
+     &                     GABRAO,DRIJ,
+     &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
       ENDIF
 #endif
       CALL MEMREL('TRDR6T',WORK,KRGBUF,KRGBUF,KFREE,LFREE)
@@ -307,7 +294,7 @@ CLV:Gaunt       DO IC = 1, 3
              CALL TRDRV6(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,WORK(KINDX),TRIAN,
      &                  KQ,KE,KIBE,IC,I2TYP,IBSTRT,IBEND,
-     &                  DRIJ,GABRAO,DINTSKP,
+     &                  GABRAO,DRIJ,DINTSKP,
      &                  LSORT,RGBUF,IGBUF)
           ENDDO
        ENDDO
@@ -319,7 +306,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck First_HalfTr_Parallel */
       SUBROUTINE FIRST_HALFTR_PARALLEL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                  KGAB,KDRIJ,RGBUF,IGBUF,LSORT)
+     &                  GABRAO,DRIJ,RGBUF,IGBUF,LSORT)
 C***********************************************************************
 C
 C     Loop over distributions (**|rs), transform 2 indices 
@@ -362,6 +349,7 @@ C***********************************************************************
 #include "dgroup.h"
 
 #include "blocks.h"
+      DIMENSION GABRAO(*),DRIJ(*)
       DIMENSION LSORT(3,NFPCK12T,0:7)
       DIMENSION RGBUF(*)
       DIMENSION IGBUF(2,*)
@@ -382,7 +370,7 @@ C
 C       Initialize (for the slave this is done in TRANOD)
 C
         CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &               KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &               KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C     We send out all the tasks (shell pairs in this case) to the slaves
 C     - reverse order of IC and ISHLA to get better load balancing
@@ -493,7 +481,7 @@ C
          CALL TRDRV6(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &               NSTR(1,0,1),WORK(KINDX),TRIAN,
      &               KQ,KE,KIBE,IC,I2TYP,ISHLBS,ISHLBE,
-     &               WORK(KDRIJ),WORK(KGAB),DINTSKP,
+     &               GABRAO,DRIJ,DINTSKP,
      &               LSORT,RGBUF,IGBUF)
          GOTO 100
   200    CONTINUE
@@ -668,7 +656,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDRV6 */
       SUBROUTINE TRDRV6(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,INDX,TRIAN,KQ,KE,KIBE,
-     &                  IC,I2TYP,IBSTRT,IBEND,DRIJ,GABRAO,
+     &                  IC,I2TYP,IBSTRT,IBEND,GABRAO,DRIJ,
      &                  DINTSKP,LSORT,RGBUF,IGBUF)
 C
 C     Do first half transformation and write integrals to file.

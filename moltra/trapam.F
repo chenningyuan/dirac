@@ -1277,6 +1277,19 @@ C     In all cases we transform in mulliken notation
 C
       CALL QENTER('PAMTR1')
 C
+C
+C     Prepare for screening
+C
+      IF(SCRTRA.GT.D0) THEN
+        CALL PR4SCR(KGAB,KDRIJ,WORK,KFREE,LFREE,DINTSKP,
+     &              WORK(KQ(1,1)),WORK(KQ(1,2)),
+     &              WORK(KQ(1,3)),WORK(KQ(1,4)),
+     &              NDMOQR,ICMOQR,NSTR,ISAME,IPRINT)
+      ELSE
+        KDRIJ = KFREE
+        KGAB  = KFREE
+      ENDIF
+C
       IF (ANTIS) THEN
          CALL QUIT('PAMTR1: .ANTIS is not implemented!')
       ENDIF
@@ -1306,13 +1319,15 @@ C
      &    CALL QUIT('PAMTR1: not MSOUT not implemented for strategy 4')
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 4')
-          CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
+          CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,
+     &                WORK(KGAB),WORK(KDRIJ),NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.5) THEN
           CALL QUIT('PAMTR1: strategy 5 can only do lagrangians')
       ELSEIF (ISTRAT.EQ.6) THEN
 c..not yet activated
-          CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
+          CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
+     &                WORK(KGAB),WORK(KDRIJ),NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
         WRITE(LUPRI,'(A)')
@@ -3934,7 +3949,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
 C/* Deck TRAPARI*/
       SUBROUTINE TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &                   KINDX,KGABAO,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &                   KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher (based on HERNOD) August 1997
@@ -3964,6 +3979,7 @@ C
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4),
      &          WORK(*)
+      DIMENSION DRIJ(*),GABRAO(*)
       LOGICAL NODV,NOPV,NOCONT,RETUR,NEWGEO,FINISH
 C
       CALL QENTER('TRAPARI')
@@ -4010,7 +4026,7 @@ C
 C        I2TYP will defined at each node
          CALL SDINIT(DUMMY,NDMAT,IDUMMY,IDUMMY,ITYPE,MAXDIF,IDUMMY,
      &               NODV,NOPV,NOCONT,TKTIME,RTNTWO,IDUMMY,
-     &               IDUMMY,SCRTRA,WORK(KGABAO),WORK(KDRIJ),DUMMY)
+     &               IDUMMY,SCRTRA,GABRAO,DRIJ,DUMMY)
 C
       ELSE
 C
@@ -4021,7 +4037,7 @@ C
          CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &               IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
      &               TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCRTRA,
-     &               KFMAT,KDMAT,KIFC,KIRD,KDRIJ,KGABAO,KDMRSO)
+     &               KFMAT,KDMAT,KIFC,KIRD,GABRAO,DRIJ,KDMRSO)
       ENDIF
 C
 C        *****************************************************
@@ -4029,7 +4045,7 @@ C        ***** Send or receive DIRAC initialization data *****
 C        *****************************************************
 C
       CALL TRAPRD(WORK,KFREE,LFREE,KQ,KE,KIBE,KINDX,
-     &            KGABAO,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &            GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C     Do not call MEMREL since the variable size arrays are represented
 C     as pointers when the routine is called from a slave
@@ -4041,7 +4057,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck traprd */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TRAPRD (WORK,KFREE,LFREE,KQ,KE,KIBE,KINDX,
-     &                   KGABAO,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &                   GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C     Communicate DIRAC common blocks for parallel 4-index transform.
 C     Communicate arguments received from main program
@@ -4078,6 +4094,7 @@ C
 C
       LOGICAL ANTIS,LMP2,NSAME
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
+      DIMENSION DRIJ(*),GABRAO(*)
       DIMENSION WORK(*)
 C
 C
@@ -4267,9 +4284,9 @@ C       If screening send GAB-matrix and screening matrix
         IF(SCRTRA.GT.D0) THEN
           N2GAB   = NSYMBL*NSYMBL
           NDRIJ   = N2GAB*NFSYM*2
-          CALL MPI_BCAST(WORK(KGABAO),N2GAB,MPI_DOUBLE_PRECISION,
+          CALL MPI_BCAST(GABRAO,N2GAB,MPI_DOUBLE_PRECISION,
      &                   MPARID,MPI_COMM_WORLD,IERR)
-          CALL MPI_BCAST(WORK(KDRIJ),NDRIJ,MPI_DOUBLE_PRECISION,
+          CALL MPI_BCAST(DRIJ,NDRIJ,MPI_DOUBLE_PRECISION,
      &                   MPARID,MPI_COMM_WORLD,IERR)
         ENDIF
       ELSE
@@ -4328,16 +4345,10 @@ C       If screening receive GAB-matrix and screening matrix
         IF(SCRTRA.GT.D0) THEN
           N2GAB   = NSYMBL*NSYMBL
           NDRIJ   = N2GAB*NFSYM*2
-          CALL MEMGET('REAL',KGABAO,N2GAB,WORK,KFREE,LFREE)
-          CALL MPI_BCAST(WORK(KGABAO),N2GAB,MPI_DOUBLE_PRECISION,
+          CALL MPI_BCAST(GABRAO,N2GAB,MPI_DOUBLE_PRECISION,
      &                   MPARID,MPI_COMM_WORLD,IERR)
-          CALL MEMGET('REAL',KDRIJ,NDRIJ,WORK,KFREE,LFREE)
-          CALL MPI_BCAST(WORK(KDRIJ),NDRIJ,MPI_DOUBLE_PRECISION,
+          CALL MPI_BCAST(DRIJ,NDRIJ,MPI_DOUBLE_PRECISION,
      &                   MPARID,MPI_COMM_WORLD,IERR)
-        ELSE
-C         to not get e.g. WORK(nan) in calls in TRANOD
-          CALL MEMGET('REAL',KGABAO,0,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KDRIJ,0,WORK,KFREE,LFREE)
         ENDIF
       ENDIF
 C
@@ -4363,6 +4374,9 @@ C
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "blocks.h"
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION WORK(*),DINTSKP(8),TIM1(7)
@@ -4371,11 +4385,19 @@ C
 #include "memint.h"
       KFRSAV = KFREE
 C
+C     Get memory for screening matrices
+C
+      N2GAB   = NSYMBL*NSYMBL
+      NDRIJ   = N2GAB*NFSYM*2
+      CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDRIJ,NDRIJ,WORK,KFREE,LFREE)
+C
 C     Initialize the common blocks.
 C
       IPRINT = -1
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &             KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &             KINDX,WORK(KGAB),WORK(KDRIJ),
+     &             INTFLG,NSTR,ANTIS,LMP2)
 C
       IF (ISTRAT.EQ.1) THEN
          WRITE(LUPRI,'(A)')
@@ -4397,7 +4419,7 @@ C
          CALL QUIT('TRANOD: No parallel strategy 3 (yet)!')
       ELSEIF (ISTRAT.EQ.4) THEN
           CALL TR4PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &             KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,
+     &             KINDX,WORK(KGAB),WORK(KDRIJ),INTFLG,NSTR,ANTIS,
      &             LMP2,EMP2,DINTSKP)
       ELSEIF (ISTRAT.EQ.5) THEN
          WRITE(LUPRI,'(A)')
@@ -4405,7 +4427,8 @@ C
          CALL QUIT('TRANOD: No parallel strategy 5 (yet)!')
       ELSEIF (ISTRAT.EQ.6) THEN
           CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &              NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
+     &                WORK(KGAB),WORK(KDRIJ),NSTR,
+     &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
          WRITE(LUPRI,'(A,I10,A)')
      &     'TRANOD: Strategy ',ISTRAT,' not implemented'
