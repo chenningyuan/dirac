@@ -9,6 +9,12 @@ MENU=GLLBsaopLBalpha; export MENU;
 ../run.sh
 MOL=He; export MOL;
 ../run.sh
+if [ "$RUNTYPE" = "short" ]; then
+   echo
+   echo "Completed short test"
+   echo "<-----"
+   exit
+fi
 MOL=Be; export MOL;
 ../run.sh
 MOL=Ar; export MOL;
