@@ -90,6 +90,11 @@ C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
 *
       dimension ISYMS(MXPIRR)
 *
+#if defined (VAR_MPI)
+      IODENSEPAR = 1
+#else
+      IODENSEPAR = 0
+#endif
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GASCI ')
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
@@ -104,6 +109,7 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
       IH2FORM = 1
 *. CI not CC
       ICC_EXC = 0
+      NNULL = 0
 *
 C      IF(NTEST.GE.1) THEN
         WRITE(LUWRTOUT,*)
@@ -349,25 +355,41 @@ CSK      END IF
 CSK new variable
       CALL MEMMAN(KBSCLFC,NBLOCK,'ADDL  ',2,'BSCLFC')
       CALL MEMMAN(KBLCKIF,NBLOCK,'ADDL  ',2,'IBLINF')
+      CALL MEMMAN(KBLCKPD,NBLOCK,'ADDL  ',2,'IBLCKP')
+      CALL MEMMAN(KBLCKWT,2*NMPROC,'ADDL  ',2,'IBLCKW')
       CALL COPVEC(WORK(KLCI1BT),WORK(KBLCKIF),NBLOCK)
+      CALL ISETVC(WORK(KBLCKWT),NNULL,2*NMPROC)
+      
 *
 *. CI diagonal - if required
 *
+      IF(IODENSEPAR.GT.0) THEN
+        CALL DISTBLKND(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),WORK(KBLCKWT))
+      END IF
       IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
       END IF
+CSK      IF(MYPROC.EQ.MASTER) WRITE(6,*)'IRESTR and IDIAG',IRESTR,IDIAG
       IF(.NOT.(IDIAG.EQ.2.AND.IRESTR.EQ.1)) THEN
         ECOREP = 0.0D0
         IF(ICISTR.GE.2) CALL REWINO(LUDIA)
         I12 = 2
         SHIFT = ECORE_ORIG-ECORE
-        CALL GASDIAT(WORK(KVEC1),LUDIA,SHIFT,ICISTR,I12,
-     &               WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
-        IF(NOCSF.EQ.1.AND.ICISTR.EQ.1) THEN
-          CALL REWINO(LUDIA)
-          CALL TODSC(WORK(KVEC1),NVAR,-1,LUDIA)
+CSK        write(6,*)'LUDIA is',LUDIA
+        IF(IODENSEPAR.EQ.0) THEN
+          CALL GASDIAT(WORK(KVEC1),LUDIA,SHIFT,ICISTR,I12,
+     &                 WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),
+     &                 WORK(KBLCKPD))
+          IF(NOCSF.EQ.1.AND.ICISTR.EQ.1) THEN
+            CALL REWINO(LUDIA)
+            CALL TODSC(WORK(KVEC1),NVAR,-1,LUDIA)
+          END IF
+          IF(IPRCIX.GE.2) WRITE(LUWRTOUT,*) ' Diagonal constructed  '
+        ELSE
+          CALL GASDIAT_PAR(WORK(KVEC1),LUDIA,SHIFT,ICISTR,I12,
+     &                    WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),
+     &                    WORK(KBLCKPD))
         END IF
-        IF(IPRCIX.GE.2) WRITE(LUWRTOUT,*) ' Diagonal constructed  '
       ELSE
          WRITE(LUWRTOUT,*) ' Diagonal not calculated '
       END IF
@@ -478,7 +500,8 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
      &     WORK(KLCLSD),WORK(KLCLSDT),ISKIPEI,WORK(KLC2B),WORK(KLCLSA2),
      &     LBLOCK,IROOTHOMING,WORK(KLBASSPC),WORK(KLEBASC),
      &     WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,ISPC,LUWRTOUT,
-     &     WORK(KBSCLFC),WORK(KBLCKIF),NBLOCK)
+     &     WORK(KBSCLFC),WORK(KBLCKIF),NBLOCK,WORK(KBLCKPD),
+     &     WORK(KBLCKWT))
       EREF = EROOT(IRFROOT)
 C?    WRITE(6,*) ' Memcheck after CIEIG5'
 C?    CALL MEMCHK
@@ -791,9 +814,7 @@ C      CALL SLASK
       DIMENSION WRK(LWRK)
 *.Scratch : A character line
       CHARACTER*72 CARD
-      CHARACTER*10 INTFCE,TESTFX
-      CHARACTER TESTF*8
-      INTEGER MYRNRO, IAMSER,FH
+      INTEGER*8 k8base
 #if defined (VAR_MPI)
       MASTER = MPARID
       MYPROC = MYTID
@@ -822,7 +843,16 @@ C
 C
 C     Compute offset from WRK to WORK
 C
-      CALL COMPOFF(WRK,WORK,KBASE)
+      CALL COMPOFF(WRK(100),WRK(1),K8BASE)
+      call flshfo(luout)
+      if (k8base .ne. 100) then
+        write (luout,*)
+     & 'lucita/pamlu error in compoff call, kbase',kbase
+        call quit('lucita/pamlu: problem in compoff call')
+      end if
+      CALL COMPOFF(WRK,WORK,K8BASE)
+      kbase = k8base
+      write (ludumpf,*)'k8base,kbase=',k8base,kbase
 C
       MXPWRD = LWRK
       KADD = MXPWRD
@@ -836,7 +866,7 @@ C
 *
 *. Header
 c     call hello
-      WRITE(LUOUT,'(10X,A,I12)')
+      WRITE(LUOUT,'(10X,A,I18)')
      &'Dimension of R*8 workspace : ', MXPWRD
 * ======================================================
 * 1 : .Read input,insert defaults and cross check input
