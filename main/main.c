@@ -79,10 +79,17 @@ extern int main( int argc, char** argv )
 
 {
 
+#if defined (INT_STAR8)	  
+   long mytid, size, parcal, mparid, numnod;
+   errhandler_type errhandler;
+   long *mempointer;
+   get_time_struct *gt_first, *gt_last;
+#else
    int mytid, size, parcal, mparid, numnod;
    errhandler_type errhandler;
    int *mempointer;
    get_time_struct *gt_first, *gt_last;
+#endif
 
    /*
     * Start timing
