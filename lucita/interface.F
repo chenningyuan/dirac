@@ -5971,6 +5971,8 @@ CC        IVFLEV = 1               ! could be made more flexible
 *
 #include "mxpdim.inc"
 #include "multd2h.inc"
+#include "files.inc"
+#include "clunit.inc"
 *
       integer SYDI
       dimension SYDI(NIRR_PN)
@@ -5980,10 +5982,10 @@ CC        IVFLEV = 1               ! could be made more flexible
       NTEST = max(NTESTL,IPRINT)
 *
       if (NTEST.ge.1) then
-        write(6,*)
-        write(6,*) '=========================='
-        write(6,*) ' numints_red speaking:    '
-        write(6,*) '=========================='
+        write(LUDUMPF,*)
+        write(LUDUMPF,*) '=========================='
+        write(LUDUMPF,*) ' numints_red speaking:    '
+        write(LUDUMPF,*) '=========================='
       end if
 *
 * Set up triangular array
@@ -6007,45 +6009,47 @@ CC        IVFLEV = 1               ! could be made more flexible
    10   continue
       end do
       if (NTEST.ge.5) then
-        write(6,*) 'Symmetry packing labels:'
+        write(LUDUMPF,*) 'Symmetry packing labels:'
         call iwrtma(IQISYM,NOCC,1,NOCC,1)
       end if
 *
 * Number of symmetry blocks and total number of integrals
       INIT = 1
       do ISP=1,NIRR_PN,1
-        if (NTEST.ge.10) write(6,*) 'ISP =',ISP
+        if (NTEST.ge.10) write(LUDUMPF,*) 'ISP =',ISP
         NSP=IQISYM(ISP)
         if (NSP.eq.0.and.NTEST.ge.1) then
-          write(6,*) 'Number of symm for P is  ',NSP
-          write(6,*) 'Skipping two-el. int. read.'
+          write(LUDUMPF,*) 'Number of symm for P is  ',NSP
+          write(LUDUMPF,*) 'Skipping two-el. int. read.'
           goto 333
         end if
-        if (NTEST.ge.10) write(6,*) 'NSP =',NSP
+        if (NTEST.ge.10) write(LUDUMPF,*) 'NSP =',NSP
         NOP=SYDI(NSP)
         do ISQ=1,ISP,1
-          if (NTEST.ge.10) write(6,*) 'ISQ =',ISQ
+          if (NTEST.ge.10) write(LUDUMPF,*) 'ISQ =',ISQ
           NSQ = IQISYM(ISQ)
           NOQ = SYDI(NSQ)
           ISPQ = MULTD2H(NSP,NSQ)
-          if (NTEST.ge.10) write(6,*) 'NSQ =',NSQ
+          if (NTEST.ge.10) write(LUDUMPF,*) 'NSQ =',NSQ
+          ntest = 10
           do ISR=1,ISP,1
-            if (NTEST.ge.10) write(6,*) 'ISR =',ISR
+            if (NTEST.ge.10) write(LUDUMPF,*) 'ISR =',ISR
             NSR = IQISYM(ISR)
             NOR = SYDI(NSR)
             ISPQR = MULTD2H(ISPQ,NSR)
             ISSM=ISR
             if (ISR.EQ.ISP) ISSM=ISQ
-            if (NTEST.ge.10) write(6,*) 'NSR =',NSR
+            if (NTEST.ge.10) write(LUDUMPF,*) 'NSR =',NSR
             do 40 ISS=1,ISSM,1
-              if (NTEST.ge.10) write(6,*) 'ISS =',ISS
+              if (NTEST.ge.10) write(LUDUMPF,*) 'ISS =',ISS
               NSS=IQISYM(ISS)
               NOS=SYDI(NSS)
               if (NTEST.ge.10) then
-                write(6,'(A,4I6)') 'NOP,NOQ,NOR,NOS',NOP,NOQ,NOR,NOS
-                write(6,'(A,2I3)') 'ISPQ,ISPQR',ISPQ,ISPQR
+                write(LUDUMPF,'(A,4I6)') 
+     &          'NOP,NOQ,NOR,NOS',NOP,NOQ,NOR,NOS
+                write(LUDUMPF,'(A,2I3)') 'ISPQ,ISPQR',ISPQ,ISPQR
               end if
-              if (NTEST.ge.10) write(6,*) 'NSS =',NSS
+              if (NTEST.ge.10) write(LUDUMPF,*) 'NSS =',NSS
               if(NSS.NE.ISPQR) goto 40
               if(NOS*NOR*NOQ*NOP.eq.0) goto 40
 *
@@ -6078,7 +6082,7 @@ CC        IVFLEV = 1               ! could be made more flexible
               INIT = INIT + 1
               IGLSUM = IGLSUM + NIGL
               if (NTEST.ge.1) then
-                 write(6,601) NSP,NSQ,NSR,NSS,NIGL
+                 write(LUDUMPF,601) NSP,NSQ,NSR,NSS,NIGL
               end if
 40          continue
           end do
@@ -6090,6 +6094,7 @@ CC        IVFLEV = 1               ! could be made more flexible
 601   FORMAT(' NUMBER OF INTEGRALS IN SYMMETRYBLOCK '
      &             ,4I2,' IS : ',I10)
 *
+      close(LUDUMPF)
       return
       end
 ***********************************************************************
@@ -6335,8 +6340,8 @@ C    &           ' MO orbitals obtained from LUCIA ')
       call memman(KDITWOE,NUM_TWEI,'ADDL  ',2,'IDITWO')
       call memman(KINVREO,ISYDISUM,'ADDL  ',2,'INVREO')
       call memman(KKR,(2*ISYDISUM+1),'ADDL  ',2,'IKR   ')
-      call memman(KINDK,NUM_TWEI/2+1,'ADDL  ',2,'INDK  ')
-      call memman(KINDL,NUM_TWEI/2+1,'ADDL  ',2,'INDL  ')
+      call memman(KINDK,num_twei,'ADDL  ',1,'INDK  ')
+      call memman(KINDL,num_twei,'ADDL  ',1,'INDL  ')
       call memman(KIOFF12,(2*ISYDISUM)**2,'ADDL  ',2,'IOFF12')
       call memman(KNUMINT,(2*ISYDISUM)**2,'ADDL  ',2,'NUMINT')
       call findhigh(NTOOBS(1),NIRREP,IMXDIM)
@@ -6356,6 +6361,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
      &                 WORK(KKR),WORK(KIOFF12),WORK(KNUMINT),
      &                 WORK(KINDK),WORK(KINDL),NTEST)
 *
+CSK      call lmemchk
       IHAM12 = 2
       ISYDISUM2 = ISYDISUM*2
       call dist_ints_dirac2(WORK(KPICHE2),WORK(KDIONEE),
@@ -6369,6 +6375,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
      &                     INVERSM,
      &                     IHAM12,ISPINFREE,IMXDIM,NIRREP,NTEST)
 *
+CSK      call lmemchk
       call memman(IDUM,IDUM,'FLUSM ',IDUM,'RDIRAC')
 *
       return
@@ -7569,12 +7576,6 @@ C     Add the master node
       mytimexl = 0
       mydatexl = 0
 *
-*
-****  IF (MYPROC.NE.MASTER) THEN
-****  CALL GETTIM(CPU1,WALL1)
-****  END IF
-
-*
 * Determine name of file (default is 'MDCINT  ')
    30 if (N2EFIL.ge.1.and.N2EFIL.le.9) then
         write(DIRACTWO,'(A7,I1)') 'MDCINT0',N2EFIL
@@ -7592,21 +7593,11 @@ C
         if (myproc.eq.master) then
           read (LUTWO) datex,timex,nkr,
      &          (kr(i),kr(-i),i=1,nkr)
-*          mytimexl = Str_Length(timex)
-*          mydatexl = Str_Length(datex)
         end if
       end if
 #if defined (VAR_MPI)
       if (N2EFIL.eq.0) then
           if (nmproc.gt.1) then
-*              call mpi_bcast(mytimexl,1,mpi_integer,master,
-*     &                      mpi_comm_world,ierr)
-*              call mpi_bcast(mydatexl,1,mpi_integer,master,
-*     &                      mpi_comm_world,ierr)
-*              call mpi_bcast(timex,mytimexl,mpi_character,master,
-*     &                      mpi_comm_world,ierr)
-*              call mpi_bcast(datex,mydatexl,mpi_character,master,
-*     &                      mpi_comm_world,ierr)
               call mpi_bcast(nkr,1,mpi_integer,master,
      &                      mpi_comm_world,ierr)
               do j = 1, nkr
@@ -7631,9 +7622,6 @@ C
       if (myproc.eq.master) then
         write(6,*) 'Integrals have been calculated on the'
         write(6,'(A12,1X,A)') '            ',DATEX,' at ',TIMEX
-*      else
-*        write(12,*) 'Integrals have been calculated on the'
-*        write(12,'(A12,1X,A)') '            ',DATEX,' at ',TIMEX
       end if
       if (NTEST.ge.5) then
         
@@ -7657,7 +7645,6 @@ C
         rewind (LUTWO)
       end if
         if (N2EFIL.eq.0) read (LUTWO)
-*      endif
 *
       IKR = 0
       JKR = 0
@@ -7729,17 +7716,10 @@ C
       end if
 *
       ISYMOFF = ISYMOFF + NZ
-**    IF (MYPROC.NE.MASTER) THEN
-**     CALL GETTIM(CPU2,WALL2)
-**     CPUSTEP = SECTID(CPU2-CPU1)
-**     WALLSTEP = SECTID(WALL2-WALL1)
-**     WRITE(6,9550) CPUSTEP,WALLSTEP, MYPROC
-**    END IF
 **
       GOTO 10
 *
    20 if (NTEST.ge.50) then
-C       if (NTEST.ge.50) then
         write(6,*)
         write(6,*) '===================='
         write(6,*) 'rdtwo_dirac speaking'
@@ -7757,12 +7737,6 @@ C       if (NTEST.ge.50) then
           end do
         end do
       end if
-***   IF (MYPROC.NE.MASTER) THEN
-***    CALL GETTIM(CPU2,WALL2)
-***    CPUSTEP = SECTID(CPU2-CPU1)
-***    WALLSTEP = SECTID(WALL2-WALL1)
-***    WRITE(6,9550) CPUSTEP,WALLSTEP, MYPROC
-***   END IF
 *
 #if defined (VAR_MPI)
       CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
@@ -7779,9 +7753,6 @@ C       if (NTEST.ge.50) then
  1002 FORMAT (/' Real arithmetic will be used in EXPAND and TWOLIN')
  1003 FORMAT (/' Complex arithmetic will be used')
  1010 FORMAT (//' CAUTION : No non-zero integrals found on ',A//)
- 9550 FORMAT(' >>>  CPU (WALL) TIME IN BCAST OF C-INTs:',A,'(',A,')',I2)
- 9555 FORMAT(' >>>  CPU (WALL) TIME IN STEPS OF BCAST:',A,'(',A,')',I2)
-
       END
 ***********************************************************************
 *                                                                     *
