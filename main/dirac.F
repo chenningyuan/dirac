@@ -52,11 +52,16 @@ C
 C
 C
       ISIZE = ICOMMSIZE(NZ,ITOT)
-      WRITE(6,*) 'Size of COMMON=',ISIZE
+      WRITE(6,*) 'Size of COMMON    :',ISIZE
       PARCAL = (IPARCAL .NE. 0)
 C
 C     Transfer variables to common blocks
 C
+      IF(PARCAL) THEN
+      write(6,*) 'Parallel Run      : 
+     &MPI_COMM_WORLD is set as',MPI_COMM_WORLD
+CSK        if(MPI_COMM_WORLD.ne.0) MPI_COMM_WORLD = 0
+      END IF
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
       NUMNOD = INUMNOD - 1
@@ -67,7 +72,8 @@ C
 C     Let the slaves sleep for now (where implemented) ...
 C        ( ITASK = 0 )
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( 0 )
+      ITASK = 0
+      IF (PARCAL) CALL DIRAC_PARCTL( ITASK )
 C
 C     Set basis set directory
 C
@@ -605,7 +611,6 @@ C
       LWORK = MWORK
 #include "memint.h"
 C
-C
 C     Transfer variables to common blocks
 C
       MPARID = IMPARID
@@ -668,6 +673,7 @@ C
 C
 C        Start calculating integrals for Fock matrices.
 C
+CSK         write(6,*)'node',mytid,' calls hernod'
          CALL HERNOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 2) THEN
 C
@@ -877,7 +883,7 @@ C        go back from submenu to main menu via MPI_BCAST
 C        slave should be in main menu, ready to receive task
          DO NODE = 1,NUMNOD
             CALL MPI_SEND(ITASK,1,MPI_INTEGER,NODE,27,
-     &                 MPI_COMM_WORLD,IERR)
+     &           MPI_COMM_WORLD,IERR)
          END DO
       END IF
 
