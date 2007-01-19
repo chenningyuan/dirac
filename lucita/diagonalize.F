@@ -47,7 +47,8 @@ C
      &           NCLS,CLS_C,CLS_E,CLS_CT,CLS_ET,CLS_A,ICLS_L,BLKS_A,
      &           CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,ICLS_A2,MXLNG,
      &           IROOTHOMING,IBASSPC,EBASC,CBASC,NSPC,
-     &           MULSPC,IPAT,LPAT,ISPC,LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKI)
+     &           MULSPC,IPAT,LPAT,ISPC,LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKI,
+     &           IBLKDSTND,IBLKNDNB)
 *
 * Master routine for CI diagonalization
 *
@@ -93,12 +94,18 @@ C?    WRITE(6,*) ' IROOTHOMING in CIEIG5 ', IROOTHOMING
 * ==================================================
 * In order treat degeneracies, the lowest 4 * NROOT elements are
 *.obtained
-CSK       IF(MYPROC.EQ.MASTER) THEN
-CSK        write(LUWRTOUT,*) ' CIEIG5 NDIM NROOT ', NDIM,NROOT
-CSK       END IF
+       IF(MYPROC.EQ.MASTER) THEN
+        write(LUWRTOUT,*) ' CIEIG5 NDIM NROOT ', NDIM,NROOT
+       END IF
           NFINDM = MIN(NDIM,4*NROOT)
-          CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,ISCR1(1+2*NFINDM),
-     &                SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
+          IF(IODENSEPAR.EQ.0) THEN
+            CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,ISCR1(1+2*NFINDM),
+     &                  SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
+          ELSE
+            CALL FNDMND_PAR(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
+     &                      ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,
+     &                      SCR1,IPRT)
+          END IF
           CALL REWINO(LU1)
           IBASE = 1
           TEST = 1.0D-10
@@ -120,7 +127,7 @@ C?          WRITE(6,*) ' IROOT NDEG ', IROOT,NDEG
               WRITE(LUWRTOUT,*) ' WARNING WARNING WARNING WARNING ! '
               WRITE(LUWRTOUT,*) ' DEGENERATE INITIAL VECTORS FOR CI '
               WRITE(LUWRTOUT,*) ' I AM NOT ALLOWED TO TAKE THIS INTO '
-              WRITE(LUWRTOUT,*) ' CONSIDERATION SINCE  INIDEG = 0 '
+              WRITE(LUWRTOUT,*) ' CONSIDERATION SINCE INIDEG = 0 '
               WRITE(LUWRTOUT,*)
               WRITE(LUWRTOUT,*) ' I hope you know what you are doing '
               NDEG = 1
@@ -143,6 +150,7 @@ C?          WRITE(6,*) ' IROOT NDEG ', IROOT,NDEG
             ELSE
               JPACK = 0
             END IF
+CSK            IF(MYPROC.EQ.MASTER) WRITE(LUWRTOUT,*) 'JPACK = ',JPACK
 C           WRITE(6,*) ' Initial guess modified '
 C           WRITE(6,*) ' Initial guess modified '
 C           WRITE(6,*) ' Initial guess modified '
@@ -154,8 +162,13 @@ C           WRITE(6,*) ' Initial guess modified '
 C           ONE = 1.0D0
 C           CALL WRSVCD(LU1,LBLK,VEC1,2    ,ONE,1,NDIM,
 C    &           LUDIA,JPACK)
+          IF(IODENSEPAR.EQ.0) THEN
             CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
      &           LUDIA,JPACK)
+          ELSE
+            CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
+     &           LUDIA,JPACK)
+          END IF
             IBASE = IBASE + NDEG
   100     CONTINUE
         ELSE
@@ -248,15 +261,25 @@ CJO-End
 *
         I_USE_MICDV6 = 1
         IF(.NOT.(MAXVEC.EQ.2.AND.NROOT.EQ.1)) THEN
+          IF(IODENSEPAR.EQ.0) THEN
 C?       WRITE(6,*) ' MICDV6 will be called '
-         CALL MICDV6(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-     &              EROOT     ,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
-     &              LUDIA,NROOT,
-     &              MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
-     &              SCR1(KWORK) ,IPRT,
-     &              NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &              THRES_E,IROOTHOMING,LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKI)
-*     &              THRES_E,IROOTHOMING,LUWRTOUT)
+            CALL MICDV6(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
+     &                 EROOT,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
+     &                 LUDIA,NROOT,
+     &                 MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
+     &                 SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
+     &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,LUWRTOUT,
+     &                 BSCLFAC,IBLOCKAR,IBLKI)
+C?       WRITE(6,*) ' MICDV6_PAR will be called '
+          ELSE
+            CALL MICDV6_PAR(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
+     &                     EROOT,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
+     &                     LUDIA,NROOT,
+     &                     MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
+     &                     SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
+     &                     H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
+     &                     LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKI)
+          END IF
         ELSE
 *. Special version for one root 2 vectors
 C?       WRITE(6,*) ' MICDV5 will be called '
@@ -2459,7 +2482,7 @@ C     END IF
      &         + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
 C?      WRITE(6,*) ' HINTV : Number of blocks ', NBLOCK
         CALL GASDIAT(VECIN,LUSC3,ECOREX,ICISTR,I12,
-     &               WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
+     &               WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),IDUMMY)
 C      CALL GASDIAT(VECIN,ISSM,ISSPC,LUSC3,ECOREX,ICISTR,I12)
 *. Clean up time
        IF(IH0INSPC(1).EQ.1.OR.IH0INSPC(1).EQ.3) THEN
