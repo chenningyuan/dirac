@@ -10,7 +10,8 @@ include ../Makefile.config
 F77_OBJS = ciinfo.o  density.o  diagonal.o  diagonalize.o  \
            fock.o  interface.o  io.o  lucia_cc.o  lucia_icci.o  memory.o \
            program.o  property.o  sigma.o  strings.o  transform.o  utils.o  \
-           vecmat.o  par_lucia.o  par_io.o  par_collective_io.o
+           vecmat.o  par_lucia.o  par_io.o  par_collective_io.o  \
+	     par_solver.o 
 
 F90_OBJS =
 
