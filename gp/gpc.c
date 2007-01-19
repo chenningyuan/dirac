@@ -74,7 +74,7 @@ int csystem_(const char *cmd, int cmdlen)
   return i;
 }
 
-#if defined (SYS_CRAY) || defined (SYS_T3D)
+#if defined (SYS_CRAY) || defined (SYS_T3D) 
 #include <fortran.h>
 #define frac2i FRAC2I
 #define creadreorder CREADREORDER
@@ -227,7 +227,7 @@ void sysinf(int parcal)
    free(un);
 }
 
-#if defined (IA64)
+#if defined (IA64) || defined (INT_STAR8)
 void compoff_(double *wrk,double *work, long *kbase) {
   *kbase = (long) (wrk-work+1);
 /*
@@ -240,6 +240,11 @@ void compoff_(double *wrk,double *work, long *kbase) {
 #else
 void compoff_(double *wrk,double *work, int *kbase) {
   *kbase = (int) (wrk-work+1);
+/*
+  printf( "compoff in gpc.c: wrk=%p work=%p diff=%p\n", wrk, work, wrk-work+1);
+  printf( "kbase=%d\n", *kbase );
+  printf( "int %d long %d short int %d\n", sizeof(int), sizeof(long), sizeof(short int));
+*/  
 }
 #endif
 
