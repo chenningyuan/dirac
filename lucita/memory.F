@@ -255,6 +255,8 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *. Info from matml7
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
 *
+CSK      write(6,*)'IRAT',IRAT,'for IR',IR
+CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
       ISTOP = 0
       ITSOK  = 1
       IPRNTMP = 0
@@ -266,9 +268,14 @@ C     COMMON/BIGGY/WORK(MXPWRD)
         NS = 0
         NL = 0
         NSNLI = 0
-        NM = 0
         KFREES = KBASE
         KFREEL = KBASE
+*
+        NM = 1
+        MARKC(NM) = '-INI--'
+        IMARK(NM) = KFREEL
+        MARKL(NM) = NL
+        MARKS(NM) = NS
 *       NWORD = MXPWRD
 *
 *       Compute pointer to end element
@@ -448,12 +455,13 @@ C     COMMON/BIGGY/WORK(MXPWRD)
                   WRITE(6,'(1H ,4X,A,I10,4X,A)')
      &            IIDENT(IL),IBASE(IL),'     -       OKAY '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'     -       -    '
+                 WRITE(6,'(1H ,4X,A,I10,4X,A)')
+     &            IIDENT(IL),IBASE(IL),'     -       -    '
                END IF
             END IF
           END DO
   100   CONTINUE
+CSK        iprntmp = 1
       END IF
  1001 CONTINUE
 *
@@ -463,8 +471,8 @@ C     COMMON/BIGGY/WORK(MXPWRD)
           IF(ITSOK.EQ.0)
      &    WRITE(6,*) '  Sorry to say it , but memory is CORRUPTED '
           WRITE(6,*) '  Memory map : '
-          WRITE(6,*) '  Identifier   Offset    Pad1 okay Pad2 okay '
-          WRITE(6,*) '  ========== ==========  ========= ========= '
+          WRITE(6,*) '  Identifier    Offset     Pad1 okay Pad2 okay '
+          WRITE(6,*) '  ========== ============  ========= ========= '
           DO 200 IL = 1, NSNLI
             JBASE = IBASE(IL)
             IF(IL.NE.NSNLI) THEN
@@ -480,21 +488,23 @@ C     COMMON/BIGGY/WORK(MXPWRD)
             DO 50 IPAD = 1, NPAD
               IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
    50       CONTINUE
+C           find local off-set to WORK for print
+            IBASE_L = IBASE(IL) - IMARK(1)
             IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &         IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
+               WRITE(6,'(4X,A,I12,4X,A)')
+     &         IIDENT(IL),IBASE_L,'    OKAY     OKAY '
             ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &         IIDENT(IL),IBASE(IL),'    OKAY       -  '
+               WRITE(6,'(4X,A,I12,4X,A)')
+     &         IIDENT(IL),IBASE_L,'    OKAY       -  '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &         IIDENT(IL),IBASE(IL),'     -       OKAY '
+               WRITE(6,'(4X,A,I12,4X,A)')
+     &         IIDENT(IL),IBASE_L,'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &         IIDENT(IL),IBASE(IL),'     -       OKAY '
+               WRITE(6,'(4X,A,I12,4X,A)')
+     &         IIDENT(IL),IBASE_L,'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &         IIDENT(IL),IBASE(IL),'     -       -    '
+               WRITE(6,'(4X,A,I12,4X,A)')
+     &         IIDENT(IL),IBASE_L,'     -       -    '
             END IF
   200     CONTINUE
 *
@@ -509,7 +519,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
           WRITE(6,*) ' Identifier  Start of free memory '
           WRITE(6,*) ' ================================='
           DO JMARK = 1, NM
-            WRITE(6,'(3X,A6,10X,I10)') MARKC(JMARK),IMARK(JMARK)
+            WRITE(6,'(3X,A6,10X,I18)') MARKC(JMARK),IMARK(JMARK)
           END DO
 *
         IF (ITSOK.EQ.0)
