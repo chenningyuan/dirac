@@ -426,6 +426,7 @@ amfi/relscf.o\\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpbast.o \\
+gp/gplupar.o \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
 prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\
@@ -442,7 +443,7 @@ dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \\
 lucita/ciinfo.o  lucita/density.o  lucita/diagonal.o  lucita/diagonalize.o  \\
 lucita/fock.o  lucita/interface.o  lucita/io.o  lucita/lucia_cc.o  lucita/lucia_icci.o  lucita/memory.o \\
 lucita/program.o  lucita/property.o  lucita/sigma.o  lucita/strings.o  lucita/transform.o  lucita/utils.o  \\
-lucita/vecmat.o  lucita/par_lucia.o  lucita/par_io.o  lucita/par_collective_io.o
+lucita/vecmat.o  lucita/par_lucia.o  lucita/par_io.o  lucita/par_collective_io.o  lucita/par_solver.o
 
 #
 # All .o files for C routines in .c files are listed separately from OBJS
@@ -492,7 +493,8 @@ DIRRCI_MAIN = dirrci/cimain.o
 GP_OBJS = \\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
-gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpc.o  
+gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpc.o \\
+gp/gplupar.o
 
 EOF
 #
