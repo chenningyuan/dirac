@@ -58,8 +58,13 @@
 
 #if defined (VAR_MPI)
 
+#if defined (INT_STAR8)
+   long len;
+   char *errorstring;
+#else
    int len;
    char *errorstring;
+#endif
 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
     FLSHFO(stdout);

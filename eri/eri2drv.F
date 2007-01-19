@@ -674,7 +674,7 @@ C
          NPERTS = 1
          NCORS = 1
       END IF
-#if defined (SYS_CRAY) || defined (SYS_T90) || defined (SYS_NEC) 
+#if defined (SYS_CRAY) || defined (SYS_T90) || defined (SYS_NEC) || defined (INT_STAR8) 
       NIBUF = 1
       IF (NBASE .LE. 255) THEN
          NBITS = 8

@@ -1534,7 +1534,8 @@ C  /* Deck lset */
    10 CONTINUE
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (SYS_CRAY) || defined (SYS_T3D)
+#if defined (SYS_CRAY) || defined (SYS_T3D) 
+CSK|| defined (INT_STAR8)
       REAL FUNCTION GAMMP(A,X)
 #else
       DOUBLE PRECISION FUNCTION GAMMP(A,X)

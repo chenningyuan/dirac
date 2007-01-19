@@ -86,7 +86,7 @@ C
          WRITE (LUPRI,'(2X,A, L5)') 'SHABAB', SHABAB
       END IF
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
       NIBUF = 1
       IF (NBASIS .LE. 255) THEN
          NBITS = 8
@@ -1453,7 +1453,7 @@ C
          WRITE (LUPRI,'(2X,A, I5)') 'NDIST ', NDIST
       END IF
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
       NIBUF = 1
       IF (NBASIS .LE. 255) THEN
          NBITS = 8

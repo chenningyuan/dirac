@@ -326,7 +326,7 @@ C
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLDDX, FEXIST
 #include "priunit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (INT_STAR8)
 C
 C     CRAY has 8 byte integers.
 C
@@ -371,7 +371,7 @@ C
                WRITE(102,'(A,I4,A)') '    (try explain lib-',IOS,')'
             ENDIF
             CALL FLUSH(102,IOS)
-            CALL TRBK()
+CSK            CALL TRBK()
 #if defined(SYS_T3D)
             CALL STOP_ALL()
 #else
@@ -380,7 +380,8 @@ C
          ENDIF
   600 CONTINUE
 #endif
-#if defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_DARWIN)
+#if defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_DARWIN) 
+CSK|| defined (SYS_LINUX)
 C
 C     Assume same for CONVEX --  1-Nov-1989 hjaaj
 C     Assume same for IBM-AIX--  1-Oct-1990 hjaaj
@@ -494,7 +495,7 @@ C
       IF (LEN .EQ. 0) RETURN
 #if defined (VAR_SPLITFILES)
       INQUIRE(UNIT=LU,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
       LRECL = LRECL/8
 #else
 #if !defined (SYS_NEC) && !defined (SYS_IRIX)
@@ -575,7 +576,7 @@ C
 C
 #if defined (VAR_SPLITFILES)
       INQUIRE(UNIT=LU,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
       LRECL = LRECL/8
 #else
 #if !defined (SYS_NEC) && !defined (SYS_IRIX)
@@ -989,7 +990,7 @@ C
          INQUIRE(UNIT=LUNIT,NAME=FNNAME)
          IF (IODIR .EQ. 'YES') THEN
             INQUIRE(UNIT=LUNIT,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
             LRECL = LRECL/8
 #endif
 #if !defined (SYS_NEC) && !defined (SYS_IRIX)

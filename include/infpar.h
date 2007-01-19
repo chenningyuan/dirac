@@ -6,6 +6,9 @@ struct common_infpar {
     int node, nodes, numnod, ntask, ncode, parher, timing;
 } infpar_;
 #else /* __CVERSION__ */
+#if defined (INT_STAR8)
+#define MPI_INTEGER MPI_INTEGER8
+#endif
 !     .. mpi variables (used to be in an infmpi.h /hjaaj Jan 2003):
 !        NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
 !        MYTID  = mpi ID of this process (from MPI_Comm_rank)

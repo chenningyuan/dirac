@@ -70,9 +70,13 @@
 
 #if defined (VAR_MPI)
 
+#if defined (INT_STAR8)
+   long par,ierr;
+   char *dirpar;
+#else
    int par,ierr;
    char *dirpar;
-
+#endif /* INT_STAR8*/
    /*
     * Check if this is a parallel calculation or not;
     * check for DIRPAR in environment
@@ -127,6 +131,7 @@
          printf("MPI_Comm_size error %i in ini_mpi()\n",ierr);
 
       /* printf(" mytid and numnod %i %i\n",*mytid,*numnod); */
+/*       printf(" mytid and numnod %i %i\n",*mytid,*numnod); */
 
       if ( *mytid == 0 ) sleep(1);
       /* if master then sleep 1 second

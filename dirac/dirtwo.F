@@ -316,7 +316,7 @@ C
 C     Define bit packing
 C     ==================
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
       NIBUF = 1
       IF (NTBAS(0) .LE. 255) THEN
          NBITS = 8

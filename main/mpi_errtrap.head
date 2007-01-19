@@ -17,7 +17,11 @@ void mpi_errtrap(MPI_Comm *comm,int *err,char *errmesg,int *oeh1,int *oeh2)
 
 #else /* SYS_AIX */
 
+#if defined (INT_STAR8)
+void mpi_errtrap(MPI_Comm *comm, long *err, ...)
+#else
 void mpi_errtrap(MPI_Comm *comm, int *err, ...)
+#endif
 
 #endif /* SYS_AIX */
 
