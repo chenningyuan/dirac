@@ -1277,7 +1277,7 @@ C
 *    V3(I) = (V1(I)+FAC)-1 * V2(I)
 *    LU3      LU1            LU2
 *
-* For INV.NE. 0 :
+* For INV.EQ. 0 :
 *
 *    V3(I) = (V1(I)+FAC) * V2(I)
 *    LU3         LU1        LU2
@@ -1962,13 +1962,20 @@ C    &     I_BLK_TO_CLS(IBLK)
 *OUTPUT
 *======
 * NSUB : ACTUAL NUMBER OF ELEMENTS OBTAINED. CAN BE SMALLER
-*       THAN NSUBMX IF THE LATST ELEMENT BELONGS TO A DEGENERATE
+*       THAN NSUBMX IF THE LAST ELEMENT BELONGS TO A DEGENERATE
 *       SET
 *ISCAT: SCATTERING ARRAY, ISCAT(I) GIVES FULL ADRESS OF SORTED
 *       ELEMENT I
 *       SUBVAL : VALUE OF SORTED ELEMENTS
 
       IMPLICIT REAL*8           ( A-H,O-Z)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "../lucita/lucipar.inc"
+      
       DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
 *
       CALL REWINE(LU,-1)
@@ -2057,10 +2064,12 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
       NSUB = LSUB
       CALL ICOPVE(ISCR,ISCAT,NSUB)
       IF(NTEST .GE. 10) THEN
-        WRITE(6,*) ' Lowest elements and their original place '
-        WRITE(6,*) ' Number of elements obtained ', NSUB
-       CALL WRTMAT(SUBVAL,1,NSUB,1,NSUB)
-       CALL IWRTMA(ISCAT,1,NSUB,1,NSUB)
+        IF(MYPROC.EQ.MASTER) THEN
+          WRITE(6,*) ' Lowest elements and their original place '
+          WRITE(6,*) ' Number of elements obtained ', NSUB
+          CALL WRTMAT(SUBVAL,1,NSUB,1,NSUB)
+          CALL IWRTMA(ISCAT,1,NSUB,1,NSUB)
+        END IF
       END IF
 *
       RETURN
