@@ -1042,7 +1042,7 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
      &           NORB,DIAG,NSMST,H,XA,XB,SCR,RJ,RK,
      &           NSSOA,NSSOB,LUDIA,ECORE,
      &           PLSIGN,PSSIGN,IPRNT,NTOOB,ICISTR,RJKAA,I12,
-     &           IBLTP,NBLOCK,IBLKFO)
+     &           IBLTP,NBLOCK,IBLKFO,NPARBLOCK)
 *
 * Calculate determinant diagonal
 * Turbo-ras version
@@ -1058,13 +1058,21 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 * I12 = 1 => only one-body part
 *     = 2 =>      one+two-body part
 *
+* Parallel adaption in January 2007, Stefan Knecht
+*
       IMPLICIT REAL*8           (A-H,O-Z)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar.inc"
 C     REAL * 8  INPROD
 *.General input
       DIMENSION NSSOA(NSMST,*),NSSOB(NSMST,*)
       DIMENSION H(NORB)
 *. Specific input
-      DIMENSION IBLTP(*),IBLKFO(8,NBLOCK)
+      DIMENSION IBLTP(*),IBLKFO(8,NBLOCK),NPARBLOCK(NBLOCK)
 *. Scratch
       DIMENSION RJ(NTOOB,NTOOB),RK(NTOOB,NTOOB)
       DIMENSION XA(NORB),XB(NORB),SCR(2*NORB)
@@ -1203,8 +1211,10 @@ C     REAL * 8  INPROD
 *. Yet a RAS block of the diagonal has been constructed
         IF(ICISTR.GE.2) THEN
           IF(NTEST.GE.100) THEN
+            if(myproc.eq.master)then
             write(6,*) ' number of diagonal elements to disc ',IDET
             CALL WRTMAT(DIAG,1,IDET,1,IDET)
+            endif
           END IF
           CALL ITODS(IDET,1,-1,LUDIA)
           CALL TODSC(DIAG,IDET,-1,LUDIA)
@@ -1233,7 +1243,7 @@ C     REAL * 8  INPROD
 C     GASDIAT(WORK(KVEC1),LUDIA,ECOREP,ICISTR,I12,
 C    &        WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
       SUBROUTINE GASDIAT(DIAG,LUDIA,ECORE,ICISTR,I12,
-     &                   IBLTP,NBLOCK,IBLKFO)
+     &                   IBLTP,NBLOCK,IBLKFO,NPARBLOCK)
 *
 * CI diagonal in SD basis for state with symmetry ISM in internal
 * space ISPC
@@ -1263,7 +1273,7 @@ C    &        WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
 #include "gasstr.inc"
 *
       DIMENSION IBLTP(*)
-      DIMENSION IBLKFO(8,NBLOCK)
+      DIMENSION IBLKFO(8,NBLOCK),NPARBLOCK(NBLOCK)
 *
 * ======
 *.Output
@@ -1341,7 +1351,7 @@ C    &            NELFGP,MXPNGAS,NGAS,WORK(KLIOIO),IPRDIA)
      &     WORK(KLXA),WORK(KLXB),WORK(KLSCR),WORK(KLJ),
      &     WORK(KLK),WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
      &     LUDIA,ECORE,PLSIGN,PSSIGN,IPRDIA,NTOOB,ICISTR,
-     &     WORK(KLRJKA),I12,IBLTP,NBLOCK,IBLKFO)
+     &     WORK(KLRJKA),I12,IBLTP,NBLOCK,IBLKFO,NPARBLOCK)
 *.Flush local memory
       CALL MEMMAN(IDUM,  IDUM,    'FLUSM ',IDUM,'GASDIA')
       CALL QEXIT('CIDIA')

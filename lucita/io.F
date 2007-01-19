@@ -343,6 +343,11 @@ C
 *  LUCITA converted input unit for parallel calculations
       LU_LUWRT = 95
 *
+*. dumpf file
+      LUDUMPF = 98
+      NDUMPF = 'DUMPFL'
+      Open(Unit=LUDUMPF,File=NDUMPF,
+     &     Status='UNKNOWN',Form='FORMATTED')
       RETURN
       END
 ***********************************************************************

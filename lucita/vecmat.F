@@ -2326,6 +2326,13 @@ C    &           LUDIA)
 *.Vector is always written in packed form
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar.inc"
+      
 *.Input
       DIMENSION IPLAC(*),VAL(*)
 *.Scratch
@@ -2353,12 +2360,18 @@ C?        write(6,*) ' IBOT, LBL  ',IBOT, LBL
           DO 200 IEFF = 1, NSCAT
             IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
      &      VEC1(IPLAC(IEFF)-IBOT+1) = VAL(IEFF)
-C?          IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
-C?   &      write(6,*) ' Catch : IPLAC(IEFF) VAL(IEFF) ',
-C?   &      IPLAC(IEFF),VAL(IEFF)
+*.CSK
+CSK            IF(MYPROC.EQ.MASTER) THEN
+CSK              IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
+CSK     &        write(6,*) ' Catch : IPLAC(IEFF) VAL(IEFF) ',
+CSK     &        IPLAC(IEFF),VAL(IEFF)
+CSK            END IF
+*.CSK
   200     CONTINUE
-C         write(6,*)  'record to be disced '
-C         CALL WRTMAT(VEC1,1,LBL,1,LBL)
+CSK          IF(MYPROC.EQ.MASTER) THEN
+CSK           write(6,*)  'record to be disced '
+CSK           CALL WRTMAT(VEC1,1,LBL,1,LBL)
+CSK          END IF
           IF(JPACK.EQ.1) THEN
             CALL TODSCP(VEC1,LBL,-1,LU)
           ELSE
@@ -2370,8 +2383,10 @@ C         CALL WRTMAT(VEC1,1,LBL,1,LBL)
           GOTO 1000
         END IF
 *
-C       WRITE(6,*) ' output from WRSVCD '
-C       CALL WRTVCD(VEC1,LU,1,LBLK)
+CSK        if(myproc.eq.master)then
+CSK       WRITE(6,*) ' output from WRSVCD '
+CSK       CALL WRTVCD(VEC1,LU,1,LBLK)
+CSK        endif
       END IF
 *
       RETURN
