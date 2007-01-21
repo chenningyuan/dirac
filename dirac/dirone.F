@@ -404,7 +404,7 @@ C     Written by Trond Saue May 1996
 C     Last revision: May 19 1996
 C
 C MI&HJAaJ (2003): If BSS=.TRUE., read the TWO-COMPONENT
-C                   relativistic bare nuclei(in AO basis) from the file
+C                   relativistic bare nuclei (in AO basis) from the file
 C                   BSSMAT (label='H1AO_DK')
 C   MI/Strasbg,2005 added new labels containing
 C        various modified atomic integrals of H2c AO
@@ -1219,9 +1219,12 @@ C  /* Deck lowdin */
       SUBROUTINE LOWDIN(VMAT,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
+C     LOWDIN and LOWDI1 routines
+C     ===========================
+C
 C     PURPOSE:
-C        Construction of the transformation matrix for Lowdin
-C        ortogonalization
+C        Construction of the transformation matrix for Lowdin's
+C        canonical ortonormalization
 C
 C     METHOD:
 C        In this subroutine V+ is computed.  As the basis set is
@@ -1229,10 +1232,9 @@ C        real it reduces to the transpose:
 C
 C           V+ = TRN(V) = t(s**(-0.5))
 C
-C     Routine is called from: GMOTRA.
-C
 C     Written by T.Saue
 C     Last revision: Nov 23 1994 - tsaue
+C     Last revision: Jan.2006 modified for pure nonrel.case...
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1271,21 +1273,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lowdi1 */
       SUBROUTINE LOWDI1(VMAT,SMAT,EIG,WORK,LWORK,IPRINT)
 C*****************************************************************************
-C
-C     PURPOSE:
-C        Construction of the transformation matrix for Lowdin
-C        ortogonalization
-C
-C     METHOD:
-C        In this subroutine V+ is computed.  As the basis set is
-C        real it reduces to the transpose:
-C
-C           V+ = TRN(V) = t(s**(-0.5))
-C
-C        Written by T.Saue
-C        Last revision: Nov 23 1994 - tsaue
-C        Last revision: Jan.2006 modified for pure nonrel.case...
-C
+C     See SUBROUTINE LOWDIN for explanation
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1867,7 +1855,8 @@ C    it is again set to .true.
       ELSE IF (BSS) THEN
         CALL MAKE_DKH(WORK(KVMAT),WORK(KFREE),LFREE)
         CALL MEMCHK('GMOTRA.BSS',WORK,1)
-CMI     ... transformation matrix is the Le part of the adapted Lowdin matrix
+CMI    ... transformation matrix is the Large-electronic part of
+C          the adapted Lowdin matrix VMAT
 C      ... when linear symmetry is on, it is later adapted for linear symmetry...
         KTMAT = KVMAT
         IF (IPRHAM.GE.5) THEN
@@ -1997,8 +1986,9 @@ C  /* Deck modham */
       SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,LSYMAD,WORK,LWORK)
 C*****************************************************************************
 C
-C     Generate transformation matrix to MO-basis with the modified
-C     Dirac equation embedded.
+C     Generate transformation matrix to MO-basis with the
+C     quaternion modified Dirac equation embedded.
+C     Ref: Visscher and Saue, JCP 113 (2000) 3996.
 C
 C     Extended (MI) for linear symmmetry (flag LSYMAD)
 C     and for S-L resorting of columns (flag SLGROUP).
@@ -2007,6 +1997,7 @@ C     On input:
 C   ============= 
 C
 C     VMAT - 4comp Lowdin transformation matrix for canonical orthonormalization
+C            possibly with sperical and RKB transformations embedded.
 C            (is destroyed!)
 C
 C     SLGROUP - if .true. (=Trond's 2comp.approach-one step BSS transformation)
@@ -2087,11 +2078,11 @@ CMI      ... transform to the Lowdin basis "Theta"
      &            WORK,LWORK,IPRGEN)
         IF (IPRHAM.GE.6) THEN
            IF(VEXTPJ) THEN
-             CALL HEADER(
-     &     'MODHAM: Bare nucleus matrix in orthon. L basis',-1)
+             CALL HEADER('MODHAM: '//
+     &       'Bare nucleus Dirac matrix in orthonormal Lowdin basis',-1)
            ELSE
-             CALL HEADER(
-     &     'MODHAM: Free particle matrix in orthon. L basis',-1)
+             CALL HEADER('MODHAM: '//
+     &      'Free particle Dirac matrix in orthonormal Lowdin basis',-1)
            ENDIF
            WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
            CALL PRQMAT(TMAT(IOFT),NFORB(I,0),NFORB(I,0),NFORB(I,0),
@@ -2104,8 +2095,8 @@ C
       NZT = NZ
       IF(LEVYLE) THEN
 C
-C       The Levy-Leblond equation
-C       ==========================
+C       Generate transformation matrix for the Levy-Leblond equation
+C       ============================================================
 C
         CALL LL_EQ(TMAT,TBUF,VMAT)
       ELSE      
@@ -2758,7 +2749,8 @@ C /* Deck sphlow */
      &                  EIG,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
-C     Generate Lowdin matrix with spherical transformation embedded.
+C     Generate Lowdin's canoncial orthonormalization matrix with 
+C     cartesian to spherical transformation embedded.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2787,7 +2779,8 @@ C /* Deck sphlo1 */
      &                  TMAT,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
-C     Generate Lowdin matrix with spherical transformation embedded.
+C     Generate Lowdin's canoncial orthonormalization matrix with 
+C     cartesian to spherical transformation embedded.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2840,7 +2833,9 @@ C /* Deck rkblow */
      &                  EIG,LMAX,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
-C     Generate Lowdin matrix with RKB transformation embedded.
+C     Generate Lowdin's canoncial orthonormalization matrix with 
+C     the restricted kinetic balance (RKB) transformation embedded.
+C     See SUBROUTINE RKBLO1 for further explanations.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2882,7 +2877,8 @@ C /* Deck rkblo1 */
      &                  IFUN,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
-C     Generate Lowdin matrix with RKB transformation embedded.
+C     Generate Lowdin's canoncial orthonormalization matrix with 
+C     the restricted kinetic balance (RKB) transformation embedded.
 C
 C     For each center and L value a transformation matrix is extracted
 C     from spherical transformation matric CSP according to allowed symmetries.
@@ -3239,7 +3235,7 @@ C
 C     V_ij = U_ij/SQRT(s_j) where U_ij is the matrix that diagonalizes
 C     the overlap matrix S and s_j is eigenvalue j.
 C     Linear dependence is removed by eliminating columns of V
-C     corresponding to eigenvalues of the overlap matric beyond
+C     corresponding to eigenvalues of the overlap matrix below
 C     the given threshold.
 C
 C     Written by T.Saue Sep 11 1995
@@ -6052,11 +6048,11 @@ C
      &       WORK(KFREE),LFREE,IPRHAM)
         IF (IPRHAM.GE.6) THEN
           IF(VEXTPJ) THEN
-            CALL HEADER(
-     &       'DELPOS: Bare nucleus matrix in mod.MO-basis',-1)
+            CALL HEADER('DELPOS: '//
+     &      'Bare nucleus Dirac matrix in mod. Dirac eq. MO-basis',-1)
           ELSE
-            CALL HEADER(
-     &      'DELPOS: Free particle matrix in mod.MO-basis',-1)
+            CALL HEADER('DELPOS: '//
+     &      'Free particle Dirac matrix in mod. Dirac eq. MO-basis',-1)
           ENDIF
           CALL PRQMAT(FMAT(1+I2TMOT(I)),NTMO(I),NTMO(I),
      &              NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)

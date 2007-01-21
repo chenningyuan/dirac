@@ -387,7 +387,7 @@ C  /* Deck pcmou1 */
       SUBROUTINE PCMOU1(CMO,EIG,IBEIG,WORK,LWORK)
 C*****************************************************************************
 C
-C     Write DHF-coefficients and eigenvalues from FORMATTED file
+C     Write DHF-coefficients and eigenvalues to FORMATTED file
 C
 C     Written by T.Saue Feb 1997
 C
