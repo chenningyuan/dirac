@@ -331,19 +331,13 @@ C
 C     turn asymptotic correction on ?
 C     ===============================
 C
-      IF(LBIT(LBIT_DFTAC,3)) THEN !SAOP
-        IF(.NOT. LBIT(LBIT_DFTAC,4)) !SAOP is not active
-     &                               LBIT_DFTAC = LBIT_DFTAC + 8 !activate SAOP
-      ENDIF
+      IF(LBIT(LBIT_DFTAC,3)) CALL SET_LBIT(LBIT_DFTAC,4)
 C
       DELTA_HOMO = ABS(OLD_HOMO_EIGENVALUE - HOMO_EIGENVALUE)
       OLD_HOMO_EIGENVALUE = HOMO_EIGENVALUE
 C
       IF(DELTA_HOMO .LE. DFTAC_THRESHOLD) THEN
-        IF(LBIT(LBIT_DFTAC,1)) THEN !GRAC
-          IF(.NOT. LBIT(LBIT_DFTAC,2)) !GRAC is not active
-     &                                 LBIT_DFTAC = LBIT_DFTAC + 2 !activate GRAC
-        ENDIF
+        IF(LBIT(LBIT_DFTAC,1)) CALL SET_LBIT(LBIT_DFTAC,2)
       ENDIF
 C
       IF(LBIT(LBIT_DFTAC,2)) !GRAC is active
