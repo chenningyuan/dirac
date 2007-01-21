@@ -704,6 +704,28 @@ echo
 echo
 echo 'MATHEMATICAL LIBRARIES'
 echo
+echo 'Use of an optimized BLAS implementation is very important,'
+echo 'especially for the performance of MOLTRA and RELCCSD.'
+echo
+
+lquick=$quick
+#
+#  Check if use LIB_LIST from old Makefile.config
+#
+   libguess=`./config.status LIB_LIST`
+   if [ ! -z "$libguess" ]; then
+      echo Old Makefile.config file uses $libguess
+      $echo 'Do you want to use that again ? (Y/n) \c'
+      read defblas
+      case "$defblas" in   
+      "No" | "n" | "N" )
+       ;;
+      *)
+       LIB=$libguess
+       lquick=1
+       ;;
+   esac
+   fi
 
 #
 #  Modify for SGI that may have both 32 and 64 bit architectures
@@ -720,18 +742,16 @@ nolib ()
    rm -f gnyf.F gnyf.x gnyf.o 
    exit 1;
 }
+
 if [ ! -z "$LIB" ]; then
    rm -f gnyf.F
    echo '      PROGRAM GNYF' >  gnyf.F
    echo '      END         ' >> gnyf.F
-   $F77 gnyf.F -o gnyf.x -l$LIB 2> /dev/null || nolib
+   $F77 gnyf.F -o gnyf.x $LIB 2> /dev/null || nolib
    rm -f gnyf.F gnyf.x gnyf.o
-   if [ ! -z "$LIB" ]; then
-      LIB="-l$LIB"
-   fi
 fi
 extlist='.so .a'
-if [ -n "$liblist" ]; then
+if [ -z "$LIB" -a -n "$liblist" ]; then
   for testlib in $liblist; do
      for ext in $extlist; do
        for testdir in $dirlist; do
@@ -772,6 +792,7 @@ fi
 #      
 # Check whether we found an optimized BLAS, if not ask user what to do
 #
+
 if [ -z "$LIB" ] ; then
    $echo 'No optimized BLAS library was found, do you want to use default - VERY SLOW - implementation ? (y/N) \c'
    read defblas
@@ -784,9 +805,7 @@ if [ -z "$LIB" ] ; then
        ;;
    esac
 else
-   $echo 'Use of an optimized BLAS implementation is very important,'
-   $echo 'especially for the performance of MOLTRA and RELCCSD.'
-   if [ $quick = 0 ]; then
+   if [ $lquick = 0 ]; then
      $echo "We propose to use the implementation give above. Is this OK ? (Y/n) \c"
      read defblas
    else
@@ -1490,7 +1509,6 @@ case $machine in
       g95)
          opt='-O3 -ffast-math -Wno=155'
 	 c_opt='-O3'
-         LIB="$LIB"
          ;;
       g77)
          opt='-O2 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
