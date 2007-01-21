@@ -458,7 +458,6 @@ C
       CALL DZERO(WORK(KDMAT_OUTER_MO),N2ORBX)
 C             SAOP with response part
       IF(LBIT(LBIT_DFTAC,5)) THEN
-        WRITE(LUPRI,*) 'here', N2BBASX
         CALL DZERO(DMAT_RESP_AO,N2BBASX)
         CALL DZERO(WORK(KDMAT_RESP_MO),N2ORBX)
       ENDIF
