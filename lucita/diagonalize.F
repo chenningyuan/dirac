@@ -102,9 +102,11 @@ C?    WRITE(6,*) ' IROOTHOMING in CIEIG5 ', IROOTHOMING
             CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,ISCR1(1+2*NFINDM),
      &                  SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
           ELSE
+#if defined (VAR_MPI)
             CALL FNDMND_PAR(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
      &                      ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,
      &                      SCR1,IPRT)
+#endif
           END IF
           CALL REWINO(LU1)
           IBASE = 1
@@ -166,8 +168,10 @@ C    &           LUDIA,JPACK)
             CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
      &           LUDIA,JPACK)
           ELSE
+#if defined (VAR_MPI)
             CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
      &           LUDIA,JPACK)
+#endif
           END IF
             IBASE = IBASE + NDEG
   100     CONTINUE
@@ -272,6 +276,7 @@ C?       WRITE(6,*) ' MICDV6 will be called '
      &                 BSCLFAC,IBLOCKAR,IBLKI)
 C?       WRITE(6,*) ' MICDV6_PAR will be called '
           ELSE
+#if defined (VAR_MPI)
             CALL MICDV6_PAR(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
      &                     EROOT,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
      &                     LUDIA,NROOT,
@@ -279,6 +284,7 @@ C?       WRITE(6,*) ' MICDV6_PAR will be called '
      &                     SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &                     H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
      &                     LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKI)
+#endif
           END IF
         ELSE
 *. Special version for one root 2 vectors

@@ -364,7 +364,9 @@ CSK new variable
 *. CI diagonal - if required
 *
       IF(IODENSEPAR.GT.0) THEN
+#if defined (VAR_MPI)
         CALL DISTBLKND(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),WORK(KBLCKWT))
+#endif
       END IF
       IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
@@ -386,9 +388,11 @@ CSK        write(6,*)'LUDIA is',LUDIA
           END IF
           IF(IPRCIX.GE.2) WRITE(LUWRTOUT,*) ' Diagonal constructed  '
         ELSE
+#if defined (VAR_MPI)
           CALL GASDIAT_PAR(WORK(KVEC1),LUDIA,SHIFT,ICISTR,I12,
      &                    WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),
      &                    WORK(KBLCKPD))
+#endif
         END IF
       ELSE
          WRITE(LUWRTOUT,*) ' Diagonal not calculated '
