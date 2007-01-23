@@ -7,9 +7,6 @@ C MPI information for LUCITA
 C
 C     General MPI information
 C
-#if defined (VAR_MPI) && defined (INT_STAR8)
-#define MPI_INTEGER MPI_INTEGER8
-#endif
       CHARACTER*12 CVECTOTN,SCLFTOTN
       CHARACTER*10 SVECNAME
       CHARACTER*6 PLU1,PLU2,PLU3,PLU4,PLU5,PLU6,PLU7,PLU8
