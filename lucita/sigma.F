@@ -5960,6 +5960,7 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, mynew_id
           ISCALE = 0
           IF(INTERACT.EQ.1) THEN
 *            WRITE(6,*)'i am here to go for GSTTBL', mynew_id
+#if defined(VAR_MPI)
             IF((MYNEW_ID.NE.0.AND.NPARWAY.GT.3).OR.(NPARWAY.LT.4))THEN
 **              WRITE(6,*)'i am here to go for GSTTBL', mynew_id
 **              WRITE(6,*)'JOFF =',JOFF
@@ -5973,15 +5974,18 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, mynew_id
                 IOFFSET = IOFFSET + ICBLINF(IFND)
               ENDDO                
 *              write(6,*)'read in start',myproc
-#if defined(VAR_MPI)
               CALL MPI_FILE_READ_AT(ICVECFL,IOFFSET,CB(JOFF),
      &             ICBLINF(JBLOCK),MPI_REAL8,ISTAT,IERR)
+*              write(6,*)'read in done',myproc
 #else
-         WRITE(6,*)'nonlocal disk mode only in parallel mode!'
-         CALL QUIT('stop in lucita/sigma.F: nonlocal disk mode failure')
-#endif
+              CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
+     &                    NOCTPA,NOCTPB,NSSOA,NSSOB,PS,ICOOSC,IDC,
+     &                    PL,LUC,C2,NSMST,ISCALE,SCLFAC(JBLOCK))
+*              write(6,*)'read in done',myproc
+#endif /* !defined(SYS_LOCALDISKS) */
 *              write(6,*)'read in done',myproc
 *  
+            END IF
 #else
               CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
      &                    NOCTPA,NOCTPB,NSSOA,NSSOB,PS,ICOOSC,IDC,
@@ -5991,22 +5995,26 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, mynew_id
 CSK              CALL WRTMAT(CB(JOFF),NSSOB(JBSM,JBTP),
 CSK     &                    NSSOA(JASM,JATP),NSSOB(JBSM,JBTP),
 CSK     &                    NSSOA(JASM,JATP))
-#endif
-            END IF
+#endif /* defined(VAR_MPI) */
 **            SCLFAC(JBLOCK) = 1.0D0
 *. Note in GSTTBL : ICOOSC only used for CI vectors in core,
           ELSE
 *. not relevant
 C             WRITE(6,*) ' TTSS for C block skipped  '
 C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
+#if defined (VAR_MPI)
             IF((MYNEW_ID.NE.0.AND.NPARWAY.GT.3).OR.(NPARWAY.LT.4))THEN
 #if !defined(SYS_LOCALDISKS)
 *              CALL DO_NOTHING(MYNEW_ID)
 #else
               CALL IFRMDS(LBL,-1,1,LUC)
               CALL SKPRCD2(LBL,-1,LUC)
-#endif
+#endif /* !defined(SYS_LOCALDISKS) */
             END IF
+#else 
+              CALL IFRMDS(LBL,-1,1,LUC)
+              CALL SKPRCD2(LBL,-1,LUC)
+#endif /* defined(VAR_MPI) */
             SCLFAC(JBLOCK) = 0.0D0
           END IF
 *
