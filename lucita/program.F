@@ -849,6 +849,7 @@ C     Compute offset from WRK to WORK
 C
       CALL COMPOFF(WRK(100),WRK(1),K8BASE)
       call flshfo(luout)
+#if defined (INT_STAR8)
       if (k8base .ne. 100) then
         write (luout,*)
      & 'lucita/pamlu error in compoff call, kbase',kbase
@@ -857,6 +858,11 @@ C
       CALL COMPOFF(WRK,WORK,K8BASE)
       kbase = k8base
       write (ludumpf,*)'k8base,kbase=',k8base,kbase
+#else
+      CALL COMPOFF(WRK,WORK,K8BASE)
+      kbase = k8base
+      write (ludumpf,*)'k8base,kbase=',k8base,kbase
+#endif
 C
       MXPWRD = LWRK
       KADD = MXPWRD
