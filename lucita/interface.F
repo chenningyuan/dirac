@@ -7353,7 +7353,7 @@ C
 #endif
 #include "files.inc"
       character*8 DIRACTWO
-      character*10 DATEX,DATEXB,TIMEX*8,TIMEXB*8
+      character*10 DATEX,TIMEX*8
       logical REALAR
       INTEGER MODREST
 c     logical BREIT
@@ -7539,15 +7539,11 @@ C?    write(6,*) 'ISYMOFF = ',ISYMOFF
 #endif
 #include "files.inc"
 *
-*      INTEGER Str_Length, MYTIMEXL, MYDATEXL, intkrm, intkrp, INTITER  
       INTEGER intkrm, intkrp, INTITER  
       character*8 DIRACTWO
-      character*10 DATEX,DATEXB,TIMEX*8,TIMEXB*8
+      character*10 DATEX,TIMEX*8
       logical REALAR
       REAL*8 INDKRL, INDLRL, RKLRRL
-      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
-*      New characters used for timing 
-      CHARACTER CPUSTEP*12, WALLSTEP*12, CPUSTEPX*12,WALLSTEPX*12
 c     logical BREIT
 *
       dimension RKLR((2*NDIM)**4)
@@ -7602,12 +7598,12 @@ C
 #if defined (VAR_MPI)
       if (N2EFIL.eq.0) then
           if (nmproc.gt.1) then
-              call mpi_bcast(nkr,1,my_mpi_integer,master,
+              call mpi_bcast(nkr,1,my_MPI_INTEGER,master,
      &                      mpi_comm_world,ierr)
               do j = 1, nkr
-              call mpi_bcast(kr(-j),1,my_mpi_integer,master,
+              call mpi_bcast(kr(-j),1,my_MPI_INTEGER,master,
      &                      mpi_comm_world,ierr)
-              call mpi_bcast(kr(j),1,my_mpi_integer,master,
+              call mpi_bcast(kr(j),1,my_MPI_INTEGER,master,
      &                      mpi_comm_world,ierr)
               end do
           end if
@@ -7644,26 +7640,43 @@ C
 *
       if (myproc.eq.master) then
         rewind (LUTWO)
-      else 
-        open(LUTWO,FILE=DIRACTWO,FORM='UNFORMATTED')
-        rewind (LUTWO)
-      end if
         if (N2EFIL.eq.0) read (LUTWO)
+       end if
 *
       IKR = 0
       JKR = 0
   10  IKR_SAVE = IKR
       JKR_SAVE = JKR
+      IF(MYPROC.EQ.MASTER) THEN
          read (LUTWO) IKR,JKR,NZ,
      &               (indk(inz+ISYMOFF),indl(inz+ISYMOFF),inz=1,NZ,1),
      &               (rklr(inz+ISYMOFF),inz=1,NZ,1)
+      ENDIF
 *
+#if defined (VAR_MPI)
+      if(nmproc.gt.1) then
+      istart = 1
+        call mpi_bcast(ikr,1,my_MPI_INTEGER,master,
+     &                 mpi_comm_world,ierr)
+        call mpi_bcast(jkr,1,my_MPI_INTEGER,master,
+     &                 mpi_comm_world,ierr)
+        call mpi_bcast(nz,1,my_MPI_INTEGER,master,
+     &                 mpi_comm_world,ierr)
+        do ii = 1, nz
+        call mpi_bcast(indk(ii+isymoff),1,my_MPI_INTEGER,master,
+     &                 mpi_comm_world,ierr)
+        call mpi_bcast(indl(ii+isymoff),1,my_MPI_INTEGER,master,
+     &                 mpi_comm_world,ierr)
+        call mpi_bcast(rklr(ii+isymoff),1,MPI_REAL8,master,
+     &                 mpi_comm_world,ierr)
+        end do
+      end if
+#endif
       if (IKR.eq.0) then
         if (myproc.eq. master) then
           close (LUTWO)
           write(6,*) 'End of file MDCINT.'
         else 
-          close(LUTWO)
          write(12,*) 'End of file MDCINT.' 
         end if
         if (JKR.eq.0) then
@@ -7742,11 +7755,6 @@ C
         end do
       end if
 *
-#if defined (VAR_MPI)
-      CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
-#endif
-*
-      RETURN
  1000 FORMAT (
      &/I8,' Unique Coulomb integrals read from MDCINT (',A10,1X,A8,')'
      &/I8,' Coulomb integrals written to MRCTWOE')
