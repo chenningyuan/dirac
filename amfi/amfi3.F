@@ -15,19 +15,25 @@
       DIMENSION WRK(LWRK)
       common /nucleus/ charge,Exp_Finite
       double precision normasHERMIT(-Lmax:Lmax,0:Lmax)
+Chjaaj jan07:  sss_normasHERMIT is a "trick" so the data
+C     statement later also works for gfortran compiler;
+C     it would not accept the variable loop limits in the ml loop.
+      double precision sss_normasHERMIT(25)
+      equivalence (normasHERMIT, sss_normasHERMIT)
 CMI   ... addition 
       integer function indx_LML
 
-      data ((normasHERMIT(ml,l),ml=-l,l),l=0,lmax) /1.0d0,
-     &     1.0d0,1.0d0,1.0d0,
+c     data ((normasHERMIT(ml,l),ml=-l,l),l=0,lmax)
+      data sss_normasHERMIT
+     &    /1.0d0, 1.0d0,1.0d0,1.0d0,
      &     1.0d0,1.0d0,3.46410162d0,1.0d0,2.0d0,
      &     4.8989795d0,1.0d0,6.3245553d0,-2.5819889d0,6.3245553d0,
      &     2.0d0,-1.6329932d0,
+     &   3.4641016d0,4.89897949d0,9.16515139d0,4.3204938d0,
+     &  -3.4156503d0,4.3204938d0,18.330303d0,-1.6329932d0,-6.9282032d0/ 
 CMI  &     2.0000,2.828427124746190d0,9.16515139d0,4.3204938d0,
 CMI  &   -3.4156503d0,4.3204938d0,18.330303d0,-0.942809041582d0,-4.0d0/
 CMI    ... old (last) g-factors...
-     &   3.4641016d0,4.89897949d0,9.16515139d0,4.3204938d0,
-     &  -3.4156503d0,4.3204938d0,18.330303d0,-1.6329932d0,-6.9282032d0/ 
       IPNT(I,J)=(J*J-J)/2+I 
 cbs   get back the real number of functions for the finite nucleus   
       if (ifinite.eq.2) ncontrac(0)=ncontrac_keep
