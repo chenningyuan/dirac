@@ -626,7 +626,7 @@ C
 C
  100  CONTINUE
 C
-      CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
+      CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
      &              MPI_COMM_WORLD,ISTAT,IERR)
 C
 C     The code below may be useful for some architectures but 
@@ -644,7 +644,7 @@ C
 C     CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
 C    &                NEWTASK,ISTAT,IERR)
 C     IF (NEWTASK) THEN
-C        CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
+C        CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
 C    &                 MPI_COMM_WORLD,ISTAT,IERR)
 C     ELSE
 C        CALL SLEEP(1)
@@ -740,7 +740,7 @@ C
 C
  100  CONTINUE
 C
-      CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
+      CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
      &              MPI_COMM_WORLD,ISTAT,IERR)
 C
 C     ***************************************************
@@ -878,11 +878,12 @@ C
 C
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(ITASK,1,my_MPI_INTEGER,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
       ELSE
 C        slave should be in main menu, ready to receive task
          DO NODE = 1,NUMNOD
-            CALL MPI_SEND(ITASK,1,MPI_INTEGER,NODE,27,
+            CALL MPI_SEND(ITASK,1,my_MPI_INTEGER,NODE,27,
      &           MPI_COMM_WORLD,IERR)
          END DO
       END IF

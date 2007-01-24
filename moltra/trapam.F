@@ -4118,28 +4118,28 @@ C     dcborb.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DCBORB,I2_DCBORB)
-      CALL MPI_BCAST(I1_DCBORB,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(I1_DCBORB,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     dcbbas.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
-      CALL MPI_BCAST(I1_DCBBAS,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(I1_DCBBAS,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     dcbham.h
 C     --------
 C
       NUMELM = NDCLHAM
-      CALL MPI_BCAST(ONESYS,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(ONESYS,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     dgroup.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
-      CALL MPI_BCAST(I1_DGROUP,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(I1_DGROUP,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     dcbtra.h
@@ -4148,7 +4148,7 @@ C
 C     integers...
 C
       NUMELM = NDCBTRI
-      CALL MPI_BCAST(IPRTRA,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(IPRTRA,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     reals...
@@ -4167,7 +4167,7 @@ C     comdis.h
 C     --------
 C
       NUMELM = NCOMDIS
-      CALL MPI_BCAST(NSPCK,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(NSPCK,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     symmet.h
@@ -4176,7 +4176,7 @@ C
 C     integers...
 C
       NUMELM = ICOMMSIZE(I1_SYMMTI,I2_SYMMTI)
-      CALL MPI_BCAST(I1_SYMMTI,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(I1_SYMMTI,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     reals...
@@ -4210,7 +4210,7 @@ C
       CALL MPI_BCAST(TPRI44,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
       NUMELM = 1
-      CALL MPI_BCAST(INTFLG,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(INTFLG,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       NUMELM = 1
       CALL MPI_BCAST(ANTIS,NUMELM,MPI_LOGICAL,MPARID,
@@ -4219,13 +4219,13 @@ C
       CALL MPI_BCAST(LMP2,NUMELM,MPI_LOGICAL,MPARID,
      &               MPI_COMM_WORLD,IERR)
       NUMELM = 24
-      CALL MPI_BCAST(NSTR,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(NSTR,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       NUMELM = 16
-      CALL MPI_BCAST(NDMOQR,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(NDMOQR,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       NUMELM = 8
-      CALL MPI_BCAST(ICMOQR,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(ICMOQR,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C
@@ -4233,7 +4233,7 @@ C
 C     HERMIT memory estimates
 C     -----------------------
 C
-      CALL MPI_BCAST(MXHERMEM,4,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(MXHERMEM,4,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C
@@ -4244,7 +4244,7 @@ C     ****** MASTER send ******
 C     *************************
 C
 C       Symmetry packing information
-        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,MPI_INTEGER,MPARID,
+        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,my_MPI_INTEGER,MPARID,
      &                 MPI_COMM_WORLD,IERR)
 C       Coefficients; use sameness relations to compress
         DO I = 1,4
@@ -4276,7 +4276,7 @@ C       Send orbital energies
 C       Send orbital (single group) info
         DO I = 1,4
           DO J = 1,NFSYM
-            CALL MPI_BCAST(WORK(KIBE(J,I)),NSTR(J,0,I),MPI_INTEGER,
+            CALL MPI_BCAST(WORK(KIBE(J,I)),NSTR(J,0,I),my_MPI_INTEGER,
      &                     MPARID,MPI_COMM_WORLD,IERR)
           ENDDO
         ENDDO
@@ -4297,7 +4297,7 @@ C     **************************
 C
 C       Symmetry packing information
         CALL MEMGET('INTE',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,MPI_INTEGER,MPARID,
+        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,my_MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
 C       Coefficients; use sameness relations to compress
         DO I = 1,4
@@ -4337,7 +4337,7 @@ C       Receive orbital (single group) info
         DO I = 1,4
           DO J = 1,NFSYM
             CALL MEMGET('REAL',KIBE(J,I),NSTR(J,0,I),WORK,KFREE,LFREE)
-            CALL MPI_BCAST(WORK(KIBE(J,I)),NSTR(J,0,I),MPI_INTEGER,
+            CALL MPI_BCAST(WORK(KIBE(J,I)),NSTR(J,0,I),my_MPI_INTEGER,
      &                     MPARID,MPI_COMM_WORLD,IERR)
           ENDDO
         ENDDO
@@ -4438,7 +4438,7 @@ C
 C     We check whether all the work is done and return to the
 C     main slave menu.
 C
-      CALL MPI_BCAST(NTEST,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NTEST,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IF (NTEST.NE.-1) CALL QUIT('TRANOD: Received wrong NTEST message')
 C
       CALL MEMREL('TRANOD',WORK,1,KFRSAV,KFREE,LFREE)
@@ -4496,7 +4496,7 @@ C       signal the slave to stop computing & transforming integrals.
 #if defined (MPE)
           CALL MPE_LOG_EVENT(3, 0, "start wait")
 #endif
-          CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+          CALL MPI_RECV(ITEST,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,ISTAT,IERR)
 #if defined (MPE)
           CALL MPE_LOG_EVENT(4, 0, "end wait")
@@ -4515,7 +4515,7 @@ C         ... this node sends the wrong message, abort
      &           '- Process ',NWHO,
      &           ' finished at ',WALLST-WALLBEF,' seconds after start'
           CALL FLSHFO(LUPRI)
-          CALL MPI_SEND(IBUFMPI,5,MPI_INTEGER,NWHO,30,
+          CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,NWHO,30,
      &                    MPI_COMM_WORLD,IERR)
           CALL MPI_RECV(WORK(KBUF),8,MPI_DOUBLE_PRECISION,
      &          NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)

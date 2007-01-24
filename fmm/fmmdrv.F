@@ -1078,10 +1078,10 @@ c ---------------------------------------------------------------------------
       IPRINT = 0
       IF(mynum.EQ.MASTER) THEN
 c        IPRTYP and IPRINT are received by eri slave dispatch routines
-         CALL MPI_Bcast(IPRTYP,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
-         CALL MPI_Bcast(IPRINT,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+         CALL MPI_Bcast(IPRTYP,1,my_MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+         CALL MPI_Bcast(IPRINT,1,my_MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
 c        nbast is received by fmm_slave_fock 
-         CALL MPI_Bcast(NBAST, 2,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+         CALL MPI_Bcast(NBAST, 2,my_MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
       END IF
       END
 !
@@ -1095,7 +1095,7 @@ c        nbast is received by fmm_slave_fock
 #include "priunit.h"
 #include "densfit.h"
       INCLUDE  'mpif.h'
-      CALL MPI_Bcast(NBAST, 2,MPI_INTEGER,master,MPI_COMM_WORLD,IERR)
+      CALL MPI_Bcast(NBAST, 2,my_MPI_INTEGER,master,MPI_COMM_WORLD,IERR)
       KHMSQ = 1
       LWRK  = KHMSQ+NBAST*NBAST
 !     check mem here.

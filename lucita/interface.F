@@ -1645,7 +1645,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
       IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
 C       CALL GETOBS2(ECORE_ENV,NAOS_ENV,NMOS_ENV)
-        stop 'No MOLCAS ENVIRONMENT!'
+        call quit( 'No MOLCAS ENVIRONMENT!' )
       ELSE IF(ENVIRO(1:6).EQ.'DALTON' ) THEN
         CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV)
       ELSE IF(ENVIRO(1:5).EQ.'LUCIA') THEN
@@ -3660,36 +3660,41 @@ C     Distribute the information read from MRCONEE
 C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-         CALL MPI_BCAST(MORB,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NFSYM,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NZ,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMMY,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(DUMCHA,IDUMMY,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUM2,IDUMMY,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(IDUM2,IDUMMY,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NSTR,NFSYM,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(NSTR,NFSYM,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUM2,NFSYM,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NCORE,NFSYM,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(NCORE,NFSYM,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUM2,NFSYM,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NDELE,NFSYM,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(NDELE,NFSYM,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMAR,2*MORB,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(IDUMAR,2*MORB,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(DUMAR,MORB,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(DUMAR,MORB,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMAR,MORB,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(IDUMAR,MORB,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUM2,NFSYM,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NBREPD,1,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(NBREPD,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
       END IF
 #endif
@@ -7234,22 +7239,25 @@ C     Distribute the information read from MRCONEE
 C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-         CALL MPI_BCAST(MORB,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMMY,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(DUMCHA,IDUMMY,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMAR,IDUMMY,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(IDUMAR,IDUMMY,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NSTR,NFSYM,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(NSTR,NFSYM,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMAR,2*MORB,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(IDUMAR,2*MORB,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(DUMAR,MORB,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(DUMAR,MORB,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IBOSYM,MORB,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(IBOSYM,MORB,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
       END IF
 #endif
@@ -7305,7 +7313,7 @@ C
       IF (NMPROC.GT.1) THEN
          CALL MPI_BCAST(ONEINT,MORB*MORB,MPI_DOUBLE_PRECISION,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(TDUM,1,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(TDUM,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
       END IF
 #endif
@@ -7391,13 +7399,9 @@ C     Add the master node
 *
       if (2*NKR.ne.MORB) then
         write(6,*) 'MRCONEE and MDCINT are incompatible.'
-        stop 'Quitting.'
+        call quit( 'MRCONEE and MDCINT are incompatible.' )
       end if
 *
-      if (2*NKR.ne.MORB) then
-        write(6,*) 'MRCONEE and MDCINT are incompatible.'
-        stop 'Quitting.'
-      end if
       write(6,*) 'Integrals have been calculated on the'
       write(6,'(A12,1X,A)') '            ',DATEX,' at ',TIMEX
       if (NTEST.ge.5) then
@@ -7449,7 +7453,7 @@ C
         write(6,*) 'Redundant integral block detected.'
         write(6,*) 'IKR,IKR_SAVE,JKR,JKR_SAVE ',
      &              IKR,IKR_SAVE,JKR,JKR_SAVE
-        stop 'Quitting.'
+        call quit( 'Quitting.' )
       end if
 *
       if (NTEST.ge.10) then
@@ -7598,12 +7602,12 @@ C
 #if defined (VAR_MPI)
       if (N2EFIL.eq.0) then
           if (nmproc.gt.1) then
-              call mpi_bcast(nkr,1,mpi_integer,master,
+              call mpi_bcast(nkr,1,my_mpi_integer,master,
      &                      mpi_comm_world,ierr)
               do j = 1, nkr
-              call mpi_bcast(kr(-j),1,mpi_integer,master,
+              call mpi_bcast(kr(-j),1,my_mpi_integer,master,
      &                      mpi_comm_world,ierr)
-              call mpi_bcast(kr(j),1,mpi_integer,master,
+              call mpi_bcast(kr(j),1,my_mpi_integer,master,
      &                      mpi_comm_world,ierr)
               end do
           end if
@@ -7613,10 +7617,10 @@ C
       if (2*NKR.ne.MORB) then
         if (myproc.eq.master) then
           write(6,*) 'MRCONEE and MDCINT are incompatible.'
-          stop 'Quitting.'
+          call quit( 'Quitting.' )
         else
           write(12,*) 'MRCONEE and MDCINT are incompatible.'
-          stop 'Quitting.'
+          call quit( 'Quitting.' )
         end if
       end if
       if (myproc.eq.master) then
@@ -7696,7 +7700,7 @@ C
         write(6,*) 'Redundant integral block detected.'
         write(6,*) 'IKR,IKR_SAVE,JKR,JKR_SAVE ',
      &              IKR,IKR_SAVE,JKR,JKR_SAVE
-        stop 'Quitting.'
+        call quit( 'Quitting.' )
       end if
 *
       if (NTEST.ge.10) then
@@ -8022,16 +8026,16 @@ C       this is necessary! - sk -
 C 
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-      CALL MPI_BCAST(NBSYM,1,MPI_INTEGER,
-     &  MASTER,MPI_COMM_WORLD,IERR)
-      DO I = 1,NBSYM,1 
-      CALL MPI_BCAST(NISH_L(I),1,MPI_INTEGER,
-     &  MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NASH_L(I),1,MPI_INTEGER,
-     &  MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NSSH_L(I),1,MPI_INTEGER,
-     &  MASTER,MPI_COMM_WORLD,IERR)
-      END DO
+        CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,
+     &    MASTER,MPI_COMM_WORLD,IERR)
+        DO I = 1,NBSYM,1 
+          CALL MPI_BCAST(NISH_L(I),1,my_MPI_INTEGER,
+     &      MASTER,MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(NASH_L(I),1,my_MPI_INTEGER,
+     &      MASTER,MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(NSSH_L(I),1,my_MPI_INTEGER,
+     &      MASTER,MPI_COMM_WORLD,IERR)
+        END DO
       END IF
 #endif
 C
@@ -8045,7 +8049,7 @@ C
           write(6,*) ' NOCC_L(ISM=',ISM,') = ', NOCC_L(ISM)
           write(6,*) ' Use GASCI setup (user option) '
           write(6,*) '  or increase parameter MXTSOB from: ',MXTSOB
-          stop 'Quitting.'
+          call quit( 'Quitting.' )
         end if
         NORB_L(ISM) = NOCC_L(ISM) + NSSH_L(ISM)
         if ((ICT(ISM)/2).ne.NORB_L(ISM)) then
@@ -8055,7 +8059,7 @@ C
         if (NISH_L(ISM).lt.0) then
           write(6,*) 'Impossible number of inactive shells.'
           write(6,*) 'NISH_L for symm. ',ISM,' is ',NISH_L(ISM)
-          stop 'Quitting.'
+          call quit( 'Quitting.' )
         end if
       end do
 C
@@ -8067,7 +8071,7 @@ C
           write(6,*) ' NOCC_L(ISM) is ',NOCC_L(ISM)
           write(6,*) ' NORB_L(ISM) is ',NORB_L(ISM)
         end do
-        stop 'Quitting.'
+        call quit( 'Quitting.' )
       end if
 *
 * Determine double group label
@@ -8099,7 +8103,7 @@ C
         write(6,*) 'You have specified open-shell electrons in DIRAC.'
         write(6,*) 'Im am not allowed to run WAFFCT = DHFSCF'
         write(6,*) 'in this case. Use OSHSCF instead.'
-        stop 'Quitting.'
+        call quit( 'Quitting.' )
       end if
       NACTELD = NAELEC
 *

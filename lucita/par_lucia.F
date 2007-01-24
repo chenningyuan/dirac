@@ -3280,25 +3280,25 @@ C
         IF(LBLK .GT. 0 ) THEN
           LBL = LBLK
             if (MYNEW_ID.EQ.0.and.ISENDN.GT.0) then
-              call mpi_send(LBL,1,MPI_INTEGER,ISENDN,60,
+              call mpi_send(LBL,1,my_MPI_INTEGER,ISENDN,60,
      &                      JCOMM,ISTAT,IERR)
             end if
             if (MYNEW_ID.NE.0.AND.MYNEW_ID.EQ.ISENDN) then
-              call mpi_recv(LBL,1,MPI_INTEGER,0,60,
+              call mpi_recv(LBL,1,my_MPI_INTEGER,0,60,
      &                      JCOMM,ISTAT,IERR)
             end if
         ELSE IF ( LBLK .EQ. 0 ) THEN
           if (MYNEW_ID.EQ.0) then
             READ(LUIN) LBL
           if (MYNEW_ID.EQ.0.and.ISENDN.GT.0) then
-            call mpi_send(LBL,1,MPI_INTEGER,ISENDN,60,
+            call mpi_send(LBL,1,my_MPI_INTEGER,ISENDN,60,
      &                    JCOMM,ISTAT,IERR)
           end if
           end if
 
 
           if (MYNEW_ID.NE.0.AND.MYNEW_ID.EQ.ISENDN) then
-            call mpi_recv(LBL,1,MPI_INTEGER,0,60,
+            call mpi_recv(LBL,1,my_MPI_INTEGER,0,60,
      &                    JCOMM,ISTAT,IERR)
             WRITE(LUOUT) LBL
         end if
@@ -3311,7 +3311,7 @@ C
 *            write(6,*)'master reads in block',NROUND
             CALL IFRMDS(LBL,1,-1,LUIN)
           if (MYNEW_ID.EQ.0.and.ISENDN.GT.0) then
-            call mpi_send(LBL,1,MPI_INTEGER,ISENDN,60,
+            call mpi_send(LBL,1,my_MPI_INTEGER,ISENDN,60,
      &                    JCOMM,ISTAT,IERR)
 *            write(6,*)'master has sent block',NROUND
           end if
@@ -3319,7 +3319,7 @@ C
 *
 *
           if (MYNEW_ID.NE.0.AND.MYNEW_ID.EQ.ISENDN) then
-            call mpi_recv(LBL,1,MPI_INTEGER,0,60,
+            call mpi_recv(LBL,1,my_MPI_INTEGER,0,60,
      &                    JCOMM,ISTAT,IERR)
             CALL ITODS(LBL,1,-1,LUOUT)
 C?        write(6,*) ' COPVCD LBL : ', LBL
@@ -3340,9 +3340,9 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
           CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
      &                 NO_ZEROING)
             if (ISENDN.GT.0) then
-              call mpi_send(IMZERO,1,MPI_INTEGER,ISENDN,61,
+              call mpi_send(IMZERO,1,my_MPI_INTEGER,ISENDN,61,
      &             JCOMM,ISTAT,IERR)
-              call mpi_send(IAMPACK,1,MPI_INTEGER,ISENDN,62,
+              call mpi_send(IAMPACK,1,my_MPI_INTEGER,ISENDN,62,
      &             JCOMM,ISTAT,IERR)
               call mpi_send(SEGMNT,LBL,MPI_REAL8,ISENDN,63,
      &             JCOMM,ISTAT,IERR)
@@ -3351,9 +3351,9 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
 *
 *
           if (MYNEW_ID.NE.0.AND.MYNEW_ID.EQ.ISENDN) then
-             call mpi_recv(IMZERO,1,MPI_INTEGER,0,61,
+             call mpi_recv(IMZERO,1,my_MPI_INTEGER,0,61,
      &                     JCOMM,ISTAT,IERR)
-             call mpi_recv(IAMPACK,1,MPI_INTEGER,0,62,
+             call mpi_recv(IAMPACK,1,my_MPI_INTEGER,0,62,
      &                     JCOMM,ISTAT,IERR)
              call mpi_recv(SEGMNT,LBL,MPI_REAL8,0,63,
      &                     JCOMM,ISTAT,IERR)
@@ -3429,13 +3429,13 @@ C
  1000 CONTINUE
         IF(LBLK .GT. 0 ) THEN
           LBL = LBLK
-              call mpi_bcast(LBL,1,MPI_INTEGER,MASTER,
+              call mpi_bcast(LBL,1,my_MPI_INTEGER,MASTER,
      &                      COMM,IERR)
         ELSE IF ( LBLK .EQ. 0 ) THEN
           if (myproc.eq.master) then
             READ(LUIN) LBL
           end if
-            call mpi_bcast(LBL,1,MPI_INTEGER,MASTER,
+            call mpi_bcast(LBL,1,my_MPI_INTEGER,MASTER,
      &                    COMM,IERR)
            if (myproc.ne.master) then
             WRITE(LUOUT) LBL
@@ -3446,7 +3446,7 @@ C?        write(6,*) ' COPVCD LBL : ', LBL
           if (myproc.eq.master) then
             CALL IFRMDS(LBL,1,-1,LUIN)
           end if
-            call mpi_bcast(LBL,1,MPI_INTEGER,MASTER,
+            call mpi_bcast(LBL,1,my_MPI_INTEGER,MASTER,
      &                    COMM,IERR)
 *
 *
@@ -3470,9 +3470,9 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
             CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
      &                   NO_ZEROING)
           end if
-          call mpi_bcast(IMZERO,1,MPI_INTEGER,MASTER,
+          call mpi_bcast(IMZERO,1,my_MPI_INTEGER,MASTER,
      &                  COMM,IERR)
-          call mpi_bcast(IAMPACK,1,MPI_INTEGER,MASTER,
+          call mpi_bcast(IAMPACK,1,my_MPI_INTEGER,MASTER,
      &                  COMM,IERR)
           call mpi_bcast(SEGMNT,LBL,MPI_REAL8,MASTER,
      &                  COMM,IERR)
@@ -3647,26 +3647,26 @@ C?      write(6,*) ' COPVCD LBLK : ', LBLK
           LBL = LBLK
             if (MYNEW_ID.eq.0.and.NEWCOMM_PROC.gt.1) then
               if(nodex.gt.0) then
-                call mpi_send(LBL,1,MPI_INTEGER,NODEX,MTAG-2,
+                call mpi_send(LBL,1,my_MPI_INTEGER,NODEX,MTAG-2,
      &                        NYCOMM,IERR)
               end if
             end if
             if (MYNEW_ID.ne.0) then
-              call mpi_recv(LBL,1,MPI_INTEGER,0,MTAG-2,
+              call mpi_recv(LBL,1,my_MPI_INTEGER,0,MTAG-2,
      &                      NYCOMM,ISTAT,IERR)
             end if
         ELSE IF ( LBLK .EQ. 0 ) THEN
           if (MYNEW_ID.eq.0) then
             READ(LUCFF) LBL
             if(nodex.gt.0.and.NEWCOMM_PROC.gt.1) then
-              call mpi_send(LBL,1,MPI_INTEGER,NODEX,MTAG-2,
+              call mpi_send(LBL,1,my_MPI_INTEGER,NODEX,MTAG-2,
      &                      NYCOMM,IERR)
             end if
           end if
 *
 *
           if (MYNEW_ID.ne.0) then
-            call mpi_recv(LBL,1,MPI_INTEGER,0,MTAG-2,
+            call mpi_recv(LBL,1,my_MPI_INTEGER,0,MTAG-2,
      &                    NYCOMM,ISTAT,IERR)
             WRITE(LUCFF) LBL
 C?        write(6,*) ' COPVCD LBL : ', LBL
@@ -3676,14 +3676,14 @@ C?        write(6,*) ' COPVCD LBL : ', LBL
           if (MYNEW_ID.eq.0) then
             CALL IFRMDS(LBL,1,-1,LUCFF)
             if(nodex.gt.0.and.NEWCOMM_PROC.gt.1) then
-              call mpi_send(LBL,1,MPI_INTEGER,NODEX,MTAG-2,
+              call mpi_send(LBL,1,my_MPI_INTEGER,NODEX,MTAG-2,
      &                      NYCOMM,IERR)
             end if
           end if
 *
 *
           if (MYNEW_ID.ne.0) then
-            call mpi_recv(LBL,1,MPI_INTEGER,MASTER,MTAG-2,
+            call mpi_recv(LBL,1,my_MPI_INTEGER,MASTER,MTAG-2,
      &                    NYCOMM,ISTAT,IERR)
             CALL ITODS (LBL,1,-1,LUCFF)
           end if
@@ -3702,9 +3702,9 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
             CALL FRMDSC2(SEGMNT,LBL,KBLK,LUCFF,IMZERO,IAMPACK,
      &                 NO_ZEROING)
             if(nodex.gt.0.and.NEWCOMM_PROC.gt.1) then
-              call mpi_send(IMZERO,1,MPI_INTEGER,NODEX,MTAG+1,
+              call mpi_send(IMZERO,1,my_MPI_INTEGER,NODEX,MTAG+1,
      &                      NYCOMM,IERR)
-              call mpi_send(IAMPACK,1,MPI_INTEGER,NODEX,MTAG+2,
+              call mpi_send(IAMPACK,1,my_MPI_INTEGER,NODEX,MTAG+2,
      &                      NYCOMM,IERR)
               call mpi_send(SEGMNT,LBL,MPI_REAL8,NODEX,MTAG+3,
      &                      NYCOMM,IERR)
@@ -3713,9 +3713,9 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
 *
 *
           if (MYNEW_ID.ne.0) then
-             call mpi_recv(IMZERO,1,MPI_INTEGER,0,MTAG+1,
+             call mpi_recv(IMZERO,1,my_MPI_INTEGER,0,MTAG+1,
      &                     NYCOMM,ISTAT,IERR)
-             call mpi_recv(IAMPACK,1,MPI_INTEGER,0,MTAG+2,
+             call mpi_recv(IAMPACK,1,my_MPI_INTEGER,0,MTAG+2,
      &                     NYCOMM,ISTAT,IERR)
              call mpi_recv(SEGMNT,LBL,MPI_REAL8,0,MTAG+3,
      &                     NYCOMM,ISTAT,IERR)
@@ -3853,23 +3853,23 @@ C?      write(6,*) ' COPVCD LBLK : ', LBLK
         IF(LBLK .GT. 0 ) THEN
           LBL = LBLK
             if (myproc.eq.master) then
-              call mpi_send(LBL,1,MPI_INTEGER,MYNSLV,80,
+              call mpi_send(LBL,1,my_MPI_INTEGER,MYNSLV,80,
      &                      JCOMM,IERR)
             end if
             if (myproc.ne.master) then
-              call mpi_recv(LBL,1,MPI_INTEGER,MASTER,80,
+              call mpi_recv(LBL,1,my_MPI_INTEGER,MASTER,80,
      &                      JCOMM,ISTAT,IERR)
             end if
         ELSE IF ( LBLK .EQ. 0 ) THEN
           if (myproc.eq.master) then
             READ(LUIN) LBL
-            call mpi_send(LBL,1,MPI_INTEGER,MYNSLV,80,
+            call mpi_send(LBL,1,my_MPI_INTEGER,MYNSLV,80,
      &                    JCOMM,IERR)
           end if
 *
 *
           if (myproc.ne.master) then
-            call mpi_recv(LBL,1,MPI_INTEGER,MASTER,80,
+            call mpi_recv(LBL,1,my_MPI_INTEGER,MASTER,80,
      &                    JCOMM,ISTAT,IERR)
             WRITE(LUOUT) LBL
 C?        write(6,*) ' COPVCD LBL : ', LBL
@@ -3878,13 +3878,13 @@ C?        write(6,*) ' COPVCD LBL : ', LBL
         ELSE IF  (LBLK .LT. 0 ) THEN
           if (myproc.eq.master) then
             CALL IFRMDS(LBL,1,-1,LUIN)
-            call mpi_send(LBL,1,MPI_INTEGER,MYNSLV,80,
+            call mpi_send(LBL,1,my_MPI_INTEGER,MYNSLV,80,
      &                    JCOMM,IERR)
           end if
 *
 *
           if (myproc.ne.master) then
-            call mpi_recv(LBL,1,MPI_INTEGER,MASTER,80,
+            call mpi_recv(LBL,1,my_MPI_INTEGER,MASTER,80,
      &                    JCOMM,ISTAT,IERR)
             CALL ITODS (LBL,1,-1,LUOUT)
           end if
@@ -3902,9 +3902,9 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
           if (myproc.eq.master) then
           CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
      &                 NO_ZEROING)
-          call mpi_send(IMZERO,1,MPI_INTEGER,MYNSLV,81,
+          call mpi_send(IMZERO,1,my_MPI_INTEGER,MYNSLV,81,
      &                  JCOMM,IERR)
-          call mpi_send(IAMPACK,1,MPI_INTEGER,MYNSLV,82,
+          call mpi_send(IAMPACK,1,my_MPI_INTEGER,MYNSLV,82,
      &                  JCOMM,IERR)
           call mpi_send(SEGMNT,LBL,MPI_REAL8,MYNSLV,83,
      &                  JCOMM,IERR)
@@ -3912,9 +3912,9 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
 *
 *
           if (myproc.ne.master) then
-             call mpi_recv(IMZERO,1,MPI_INTEGER,MASTER,81,
+             call mpi_recv(IMZERO,1,my_MPI_INTEGER,MASTER,81,
      &                     JCOMM,ISTAT,IERR)
-             call mpi_recv(IAMPACK,1,MPI_INTEGER,MASTER,82,
+             call mpi_recv(IAMPACK,1,my_MPI_INTEGER,MASTER,82,
      &                     JCOMM,ISTAT,IERR)
              call mpi_recv(SEGMNT,LBL,MPI_REAL8,MASTER,83,
      &                     JCOMM,ISTAT,IERR)
@@ -4065,23 +4065,23 @@ C?      write(6,*) ' COPVCD LBLK : ', LBLK
         IF(LBLK .GT. 0 ) THEN
           LBL = LBLK
             if (myproc.ne.master) then
-              call mpi_send(LBL,1,MPI_INTEGER,MASTER,90,
+              call mpi_send(LBL,1,my_MPI_INTEGER,MASTER,90,
      &                      JCOMM,IERR)
             end if
             if (myproc.eq.master) then
-              call mpi_recv(LBL,1,MPI_INTEGER,MYNSLV,90,
+              call mpi_recv(LBL,1,my_MPI_INTEGER,MYNSLV,90,
      &                      JCOMM,ISTAT,IERR)
             end if
         ELSE IF ( LBLK .EQ. 0 ) THEN
           if (myproc.ne.master) then
             READ(LUIN) LBL
-            call mpi_send(LBL,1,MPI_INTEGER,MASTER,90,
+            call mpi_send(LBL,1,my_MPI_INTEGER,MASTER,90,
      &                    JCOMM,IERR)
           end if
 *
 *
           if (myproc.eq.master) then
-            call mpi_recv(LBL,1,MPI_INTEGER,MYNSLV,90,
+            call mpi_recv(LBL,1,my_MPI_INTEGER,MYNSLV,90,
      &                    JCOMM,ISTAT,IERR)
             WRITE(LUOUT) LBL
 C?        write(6,*) ' COPVCD LBL : ', LBL
@@ -4090,13 +4090,13 @@ C?        write(6,*) ' COPVCD LBL : ', LBL
         ELSE IF  (LBLK .LT. 0 ) THEN
           if (myproc.ne.master) then
             CALL IFRMDS(LBL,1,-1,LUIN)
-            call mpi_send(LBL,1,MPI_INTEGER,MASTER,90,
+            call mpi_send(LBL,1,my_MPI_INTEGER,MASTER,90,
      &                    JCOMM,IERR)
           end if
 *
 *
           if (myproc.eq.master) then
-            call mpi_recv(LBL,1,MPI_INTEGER,MYNSLV,90,
+            call mpi_recv(LBL,1,my_MPI_INTEGER,MYNSLV,90,
      &                    JCOMM,ISTAT,IERR)
             CALL ITODS (LBL,1,-1,LUOUT)
           end if
@@ -4114,9 +4114,9 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
           if (myproc.ne.master) then
           CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
      &                 NO_ZEROING)
-          call mpi_send(IMZERO,1,MPI_INTEGER,MASTER,91,
+          call mpi_send(IMZERO,1,my_MPI_INTEGER,MASTER,91,
      &                  JCOMM,IERR)
-          call mpi_send(IAMPACK,1,MPI_INTEGER,MASTER,92,
+          call mpi_send(IAMPACK,1,my_MPI_INTEGER,MASTER,92,
      &                  JCOMM,IERR)
           call mpi_send(SEGMNT,LBL,MPI_REAL8,MASTER,93,
      &                  JCOMM,IERR)
@@ -4124,9 +4124,9 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
 *
 *
           if (myproc.eq.master) then
-             call mpi_recv(IMZERO,1,MPI_INTEGER,MYNSLV,91,
+             call mpi_recv(IMZERO,1,my_MPI_INTEGER,MYNSLV,91,
      &                     JCOMM,ISTAT,IERR)
-             call mpi_recv(IAMPACK,1,MPI_INTEGER,MYNSLV,92,
+             call mpi_recv(IAMPACK,1,my_MPI_INTEGER,MYNSLV,92,
      &                     JCOMM,ISTAT,IERR)
              call mpi_recv(SEGMNT,LBL,MPI_REAL8,MYNSLV,93,
      &                     JCOMM,ISTAT,IERR)

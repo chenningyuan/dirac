@@ -171,7 +171,8 @@ C     /MULBAS/
 #include "nuclei.h"
 #include "densfit.h"
       INCLUDE "mpif.h"
-      CALL MPI_BCAST(NBASISAUX,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NBASISAUX,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DOFIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
       RETURN
       END                  

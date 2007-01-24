@@ -1375,7 +1375,7 @@ C
 #if defined (VAR_MPI)
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
          IJOB = 0
-         CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MOTHER),
+         CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MOTHER),
      &                  MPI_COMM_WORLD,IERR)
       END IF
 #endif      

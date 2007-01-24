@@ -1,4 +1,4 @@
-C 
+C
 C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -31,7 +31,7 @@ C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
-C 
+C
 C
 C
 C VERSION : $Revision$
@@ -448,14 +448,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,EV,
      &                   INDX,IRPS,IND)
-C 
+C
 #include "implicit.h"
 C
 C---------------Description--------------------------------------------
 C
 C     Print list of eigenvalues from different symmetries, sorted on
 C     increasing energy value.
-C 
+C
 C     An offset is added to this value so that e.g. the constant
 C     CCSD nergy can be added to the Fockspace eigenvalues.
 C
@@ -498,7 +498,7 @@ C
       PARAMETER (DEGEN=1.D-9)
 C
 C---------------Executable code----------------
-C     
+C
 C     Compute the total number of eigenvalues and fill
 C     the array with the identication
 C
@@ -509,7 +509,7 @@ C
       ENDDO
 C
       IF (N_TOTAL.EQ.0) RETURN
-C     
+C
 C     Sort them from low to high
 C
       CALL INDEXX(N_TOTAL,EV,INDX)
@@ -590,16 +590,16 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV_VEC (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,EV,
      &                       INDX,IRPS,IND,VEC,LBL_SEC1,LBL_SEC2,
-     &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV, 
+     &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV,
      &                       TSHOLD)
-C 
+C
 #include "implicit.h"
 C
 C---------------Description--------------------------------------------
 C
 C     Print list of eigenvalues from different symmetries, sorted on
 C     increasing energy value.
-C 
+C
 C     An offset is added to this value so that e.g. the constant
 C     CCSD energy can be added to the Fockspace eigenvalues.
 C
@@ -610,8 +610,8 @@ C     Parameters :
 C     - LUPRI   : Output unit
 C     - N_IRPS  : Number of irrep
 C     - N_EV    : Number of eigenvalues in each irrep
-C     - REPNA   : Name of each irrep after adding particles   
-C     - REPNAO  : Name of each irrep before adding particles 
+C     - REPNA   : Name of each irrep after adding particles
+C     - REPNAO  : Name of each irrep before adding particles
 C     - E_OFF   : Energy offset
 C     - EV      : Eigenvalues
 C     - VEC     : Eigenvectors
@@ -636,15 +636,15 @@ C
 C---------------Calling variables--------------------------------------
 C
       DIMENSION N_EV(*),INDX(*), INDXV(600)
-      DIMENSION EV(*), VEC(*), VEC_TMP(600*600) 
-      DIMENSION LBL_SEC1(*), LBL_SEC2(*) 
-      DIMENSION IRSEC1(*), IRSEC2(*), IRSEC12(*) 
-      DIMENSION LSEC1(600*600), LSEC2(600*600) 
-      DIMENSION IRPSEC1(600*600), IRPSEC2(600*600), IRPSEC12(600*600) 
-      DIMENSION N_TOT_EV(64), N_TOT_VEC(64), NACTV(*) 
+      DIMENSION EV(*), VEC(*), VEC_TMP(600*600)
+      DIMENSION LBL_SEC1(*), LBL_SEC2(*)
+      DIMENSION IRSEC1(*), IRSEC2(*), IRSEC12(*)
+      DIMENSION LSEC1(600*600), LSEC2(600*600)
+      DIMENSION IRPSEC1(600*600), IRPSEC2(600*600), IRPSEC12(600*600)
+      DIMENSION N_TOT_EV(64), N_TOT_VEC(64), NACTV(*)
       DIMENSION IRPS(*),IND(*)
       CHARACTER*4 REPNA(*), REPNAO(*)
-      INTEGER TSHOLD 
+      INTEGER TSHOLD
       REAL*8 E_OFF
 
 C
@@ -657,23 +657,23 @@ C
       PARAMETER (DEGEN=1.D-9)
 C
 C---------------Executable code----------------
-C     
+C
 C     Compute the total number of eigenvalues and fill
 C     the array with the identication
 C     Select total number of eigenvectors to use like offset later
 C
       N_TOTAL = 0
-      N_TOT_EV(1) = 0 
-      N_TOT_VEC(1) = 0 
+      N_TOT_EV(1) = 0
+      N_TOT_VEC(1) = 0
       DO IRP = 1, N_IRPS
          CALL ICOPY(N_EV(IRP),IRP,0,IRPS(N_TOTAL+1),1)
          N_TOTAL = N_TOTAL + N_EV(IRP)
-         N_TOT_EV(IRP+1) = N_TOT_EV(IRP) + N_EV(IRP) 
-         N_TOT_VEC(IRP+1) = N_TOT_VEC(IRP) + N_EV(IRP)* N_EV(IRP) 
+         N_TOT_EV(IRP+1) = N_TOT_EV(IRP) + N_EV(IRP)
+         N_TOT_VEC(IRP+1) = N_TOT_VEC(IRP) + N_EV(IRP)* N_EV(IRP)
       ENDDO
 C
       IF (N_TOTAL.EQ.0) RETURN
-C     
+C
 C
 C
 C     Sort them from low to high
@@ -716,8 +716,8 @@ C
         END DO
         DO 140 I=1,N_TOTAL
           E=EV(INDX(I))
-          IVEC = (INDX(I)-N_TOT_EV(IRPS(INDX(I)))-1)*N_EV(IRPS(INDX(I))) 
-     &            + N_TOT_VEC(IRPS(INDX(I))) + 1  
+          IVEC = (INDX(I)-N_TOT_EV(IRPS(INDX(I)))-1)*N_EV(IRPS(INDX(I)))
+     &            + N_TOT_VEC(IRPS(INDX(I))) + 1
           IF (ABS(E-EW).GT.DEGEN) THEN
              IF (NEW.NE.0) THEN
                WRITE(LUPRI,1030) ILEVEL,
@@ -737,7 +737,7 @@ C
              EW=((NEW-1)*EW+E)/DBLE(NEW)
           ENDIF
  140     CONTINUE
-         IF (NEW.NE.0) THEN 
+         IF (NEW.NE.0) THEN
              WRITE(LUPRI,1030) ILEVEL,
      &                XTEV*(EW-EWF),XTKAYS*(EW-EWF),
      &                (IND(JRP),JRP=IRP1,IRP2)
@@ -747,23 +747,23 @@ C
 C     New part (I.I.):
 C     Print composition of each excited state
 C     PS: It should be generalized for other sectors
-C 
+C
       ILEVEL=1
       EWF=EV(INDX(1))
       LBL = 0
       WRITE(LUPRI,1080)
       DO IRP = 1, N_IRPS
          DO I = 1, NACTV(IRP)
-            LBL = LBL + 1 
-            WRITE(LUPRI,1085) LBL, REPNAO(IRP) 
+            LBL = LBL + 1
+            WRITE(LUPRI,1085) LBL, REPNAO(IRP)
          ENDDO
       ENDDO
       DO I=1,N_TOTAL
         E = EV(INDX(I))
-        IVEC = (INDX(I)-N_TOT_EV(IRPS(INDX(I)))-1)*N_EV(IRPS(INDX(I))) 
-     &          + N_TOT_VEC(IRPS(INDX(I))) + 1  
+        IVEC = (INDX(I)-N_TOT_EV(IRPS(INDX(I)))-1)*N_EV(IRPS(INDX(I)))
+     &          + N_TOT_VEC(IRPS(INDX(I))) + 1
         WRITE(LUPRI,1055) ILEVEL,E-EWF,XTEV*(E-EWF),XTKAYS*(E-EWF)
-        WRITE(LUPRI,1090) E_OFF + E 
+        WRITE(LUPRI,1090) E_OFF + E
         CALL DCOPY(N_EV(IRPS(INDX(I))),VEC(IVEC),1,VEC_TMP,1)
         CALL ICOPY(N_EV(IRPS(INDX(I))),LBL_SEC1(IVEC),1,LSEC1,1)
         CALL ICOPY(N_EV(IRPS(INDX(I))),LBL_SEC2(IVEC),1,LSEC2,1)
@@ -772,11 +772,11 @@ C
         CALL ICOPY(N_EV(IRPS(INDX(I))),IRSEC12(IVEC),1,IRPSEC12,1)
         WRITE(LUPRI,1060)
         DO J = 1, N_EV(IRPS(INDX(I)))
-          VEC_TMP(J) =  VEC_TMP(J)*VEC_TMP(J)*100 
+          VEC_TMP(J) =  VEC_TMP(J)*VEC_TMP(J)*100
           IF (VEC_TMP(J).GT.TSHOLD) THEN
-           WRITE(LUPRI,1065) LSEC2(J),REPNAO(IRPSEC2(J)), 
+           WRITE(LUPRI,1065) LSEC2(J),REPNAO(IRPSEC2(J)),
      &                       LSEC1(J),REPNAO(IRPSEC1(J)),
-     &                       REPNA(IRPSEC12(J)),VEC_TMP(J)  
+     &                       REPNA(IRPSEC12(J)),VEC_TMP(J)
            ENDIF
         ENDDO
         ILEVEL=ILEVEL+1
@@ -799,11 +799,11 @@ C
  1055 FORMAT(//'Energy ',I5,':',F12.9,' (au)',3X,F12.5,' (eV)',3X,F19.5
      +       ,' (cm-1)')
  1060 FORMAT(/,6x,'Composition:'/,11x,'Spinor 2',2x,'Rep',6x,'Spinor 1',
-     +       2x,'Rep',5x,'Tot Rep',3x,'weight (%)') 
- 1065 FORMAT(10x,I5,4x,A4,7x,I5,4x,A4,5x,A4,5x,F10.5) 
- 1080 FORMAT(/,2x,'Composition of all excited states in (0h,2p) sector' 
+     +       2x,'Rep',5x,'Tot Rep',3x,'weight (%)')
+ 1065 FORMAT(10x,I5,4x,A4,7x,I5,4x,A4,5x,A4,5x,F10.5)
+ 1080 FORMAT(/,2x,'Composition of all excited states in (0h,2p) sector'
      +        /'  Active Spinor',5x,'Abelian'/)
- 1085 FORMAT(4x,I5,9x,A6) 
+ 1085 FORMAT(4x,I5,9x,A6)
  1090 FORMAT('Total CCSD energy + affinity: ',F20.12)
       RETURN
       END
@@ -813,8 +813,8 @@ C
 C     Initial routine written by M. Pernpointner
 C     Documented and revised by L. Visscher
 C
-C     Input parameters 
-C         - TIMERT : Type of timer (Used in MPE calls 
+C     Input parameters
+C         - TIMERT : Type of timer (Used in MPE calls
 C                                   0:Do not log in MPE
 C                                   1:Initialization
 C                                   2:Wait,
@@ -843,7 +843,7 @@ C
 C     Check first for operations that involve all timers
 C
       IF (FUNCT.EQ.TINIT) THEN
-C     
+C
 C        Initialization of all timers
 C
          DO I = 1, MXTIMF
@@ -855,7 +855,7 @@ C
          LAST_MPE_STATE  = 0
          RETURN
       ELSEIF (FUNCT.EQ.TPRNTA) THEN
-C     
+C
 C        Print out of all timers
 C
         IF (MYTID.EQ.MPARID) WRITE(LUPRI,220) NAME
@@ -866,7 +866,7 @@ C       Serial code : no need to communicate with slaves
         ENDDO
 #else
 C
-C       We may have the parallel version running in serial mode, 
+C       We may have the parallel version running in serial mode,
 C       handle this first (same code as serial)
 C
         IF (NUMNOD.EQ.0) THEN
@@ -874,7 +874,7 @@ C
             IF(CPUTFT(I).NE.D0) WRITE(LUPRI,222) CPUTT(I),CPUTFT(I)
           ENDDO
         ELSE
-C      
+C
 C        The parallel version runs in parallel. We need to communicate
 C        to gather all data on the master.
 C
@@ -982,7 +982,7 @@ C
       DO I = 1, MXTIMF
          IF (NAME.EQ.CPUTT(I)) TIMERN = I
       ENDDO
-C 
+C
 C     We may have a new timer, look for free slots
 C
       IF (TIMERN.EQ.-1) THEN
@@ -996,7 +996,7 @@ C           Use the first free slot and initialize
             CPUTT(TIMERF)=NAME
             CPUTFT(TIMERF)=D0
             TIMERN = TIMERF
-         ELSE 
+         ELSE
 C           Too bad, we ran out of slots
             WRITE(LUPRI,130) MYTID,NAME
             RETURN
@@ -1025,7 +1025,7 @@ C          Announce the new state if necessary
               I_MPE = 2 * TIMERT - 1
               CALL MPE_LOG_EVENT(I_MPE,0,NAME)
               LAST_MPE_STATE  = TIMERT
-              LAST_MPE_ACTION = 1    
+              LAST_MPE_ACTION = 1
            ENDIF
         ENDIF
 #endif
@@ -1041,7 +1041,7 @@ C          Only do something if everything matches
               I_MPE = 2 * TIMERT
               CALL MPE_LOG_EVENT(I_MPE,0,NAME)
               LAST_MPE_STATE  = TIMERT
-              LAST_MPE_ACTION = 2    
+              LAST_MPE_ACTION = 2
            ENDIF
         ENDIF
 #endif
@@ -1071,7 +1071,7 @@ C
      &          T68,'Average'/)
  340  FORMAT(T2,A30,T33,F10.1,T43,F10.1,T53,F10.1,T63,F10.1)
  350  FORMAT(/'------ End of timing report ------'/)
-     
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1099,7 +1099,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LFNAM */
       CHARACTER*10 FUNCTION LFNAM (FILNAM)
-C     
+C
 C     Add the node identification to the file name for shared disk systems
 C     Written by Luuk Visscher, February 1998
 C
@@ -1126,12 +1126,12 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUFFER_FILE_INFO (NBUF,NSIZE)
-C     
-C     Report the maximum number of buffer and record size that 
+C
+C     Report the maximum number of buffer and record size that
 C     will be used in the sort
 C
 C     Calling parameters
-C     
+C
 C     NBUF   : Maximum number of buffers (hardwired in the common block)
 C
 C     Written by Luuk Visscher, August 2004
@@ -1148,13 +1148,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUFFER_FILE_INIT (I_FILE)
-C     
+C
 C     Initialize a buffer file to transpose a large matrix that is generated in parts
 C     Currently used in MOLTRA for the halftransformed two-electron
 C     integrals but it may be useful at other places as well.
 C
 C     Calling parameters
-C     
+C
 C     I_FILE   : Bucket sort indentifier (we may have more than one active)
 C     Written by Luuk Visscher, August 2004
 C
@@ -1175,7 +1175,7 @@ C
 C     The opening of a file is a bit tricky in FORTRAN, pray that the unit
 C     is not yet in use....
 C
-      WRITE (NAME,'(A4,I1)') 'BUFF',I_FILE 
+      WRITE (NAME,'(A4,I1)') 'BUFF',I_FILE
       FNODE = LFNAM(NAME)
       LGFIL = I_BF_UNIT+I_FILE
       OPEN (UNIT=LGFIL,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
@@ -1197,12 +1197,12 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUFFER_FILE_OUT (I_FILE,RGBUF,IGBUF,IROWS,
-     &                            A,NROWS,ICOL,TRESHOLD)                              
-C     
+     &                            A,NROWS,ICOL,TRESHOLD)
+C
 C     Scatter row of matrix A over the buffers, flush them if necessary
-C     
+C
 C     Calling parameters
-C     
+C
 C     I_FILE   : File unit
 C     RGBUF    : Real data in buffers
 C     IGBUF    : Integer data data in buffers
@@ -1213,7 +1213,7 @@ C     ICOL     : Column index of A
 C     TRESHOLD : Treshold for writing the matrix element
 C
 C     Written by Luuk Visscher, August 2004
-C     
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
@@ -1232,7 +1232,7 @@ C
             RGBUF(N,IBUF) = A(I)
             IGBUF(1,N,IBUF) = ICOL
             IGBUF(2,N,IBUF) = IROWS(2,I)
-            IF (N.GE.NGBFSZ) THEN 
+            IF (N.GE.NGBFSZ) THEN
                INODE = IROWS(3,I)
 #if defined (VAR_MPI)
                IF (INODE.NE.MYTID) THEN
@@ -1255,11 +1255,11 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUFFER_FILE_WRITE (I_FILE,IBUF,RGBUF,IGBUF,N)
-C     
+C
 C     Write local integrals
-C     
+C
 C     Calling parameters
-C     
+C
 C     I_FILE   : File unit
 C     IBUF     : Buffer number
 C     RGBUF    : One buffer with real data
@@ -1267,7 +1267,7 @@ C     IGBUF    : One buffer with integer data
 C     N        : Actual size of the buffer
 C
 C     Written by Luuk Visscher, August 2004
-C     
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
@@ -1290,20 +1290,20 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BUFFER_FILE_FLUSH (I_FILE,RGBUF,IGBUF,IROWS,NROWS)                              
-C     
+      SUBROUTINE BUFFER_FILE_FLUSH (I_FILE,RGBUF,IGBUF,IROWS,NROWS)
+C
 C     Flush the buffers
-C     
+C
 C     Calling parameters
-C     
+C
 C     LGFIL    : File unit
 C     RBUF     : Real data in buffers
 C     IBUF     : Integer data data in buffers
 C     IROWS    : Pointer from rows to buffer and node
 C     NROWS    : Number of rows
-C     
+C
 C     Written by Luuk Visscher, August 2004
-C     
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
@@ -1318,7 +1318,7 @@ C
       DO I = 1, NROWS
          IBUF = IROWS(1,I)
          N = LGBUF(IBUF,I_FILE)
-         IF (IBUF.GT.0.AND.N.GT.0) THEN 
+         IF (IBUF.GT.0.AND.N.GT.0) THEN
             INODE = IROWS(3,I)
 #if defined (VAR_MPI)
             IF (INODE.NE.MYTID) THEN
@@ -1339,7 +1339,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BUFFER_FILE_READ (I_FILE,IBUF,A,NROW,ICOL)                              
+      SUBROUTINE BUFFER_FILE_READ (I_FILE,IBUF,A,NROW,ICOL)
 C
 C     Read back the sorted integrals and put them at the right position
 C
@@ -1386,16 +1386,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUFFER_FILE_FREE (IFREE)
-C     
+C
 C     Check the status of buffers that were sent via a nonblocking send
-C     
+C
 C     Calling parameters
-C     
+C
 C     IFREE    : Contains on output the first free send buffer or zero
 C                if none is free.
 C
 C     Written by Luuk Visscher, October 2004
-C     
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "bucket_sort.h"
@@ -1418,9 +1418,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF,IGBUF,N,INODE)
-C     
-C     Send buffer IBUF to node INODE 
-C     
+C
+C     Send buffer IBUF to node INODE
+C
 C     Calling parameters
 C
 C     I_FILE   : File unit
@@ -1431,7 +1431,7 @@ C     N        : Actual size of the buffer
 C     INODE    : Node where the buffer should go
 C
 C     Written by Luuk Visscher, October 2004
-C     
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
@@ -1454,20 +1454,20 @@ C     Pack all data in the integer array ISGBUF
       ISGBUF(4,IFREE) = IFREE
       CALL ICOPY (2*N,IGBUF,1,ISGBUF(5,IFREE),1)
       CALL DCOPY (N,RGBUF,1,ISGBUF(5+2*N,IFREE),1)
-      CALL MPI_ISSEND(ISGBUF(1,IFREE),4*NGBFSZ+4,MPI_INTEGER,INODE,95,
-     &               MPI_COMM_WORLD,IREQ(IFREE),IERR)
+      CALL MPI_ISSEND(ISGBUF(1,IFREE),4*NGBFSZ+4,my_MPI_INTEGER,
+     &               INODE,95,MPI_COMM_WORLD,IREQ(IFREE),IERR)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUFFER_FILE_RECV ()
-C     
-C     Receive and write buffers that were sent to this node 
-C     
+C
+C     Receive and write buffers that were sent to this node
+C
 C     Calling parameters
 C
 C     Written by Luuk Visscher, October 2004
-C     
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
@@ -1486,14 +1486,14 @@ C
 C        Find out who was sending this
          INODE = ISTAT(MPI_SOURCE)
 C        Receive the buffer
-         CALL MPI_RECV(IHBUF,4*NGBFSZ+4,MPI_INTEGER,INODE,95,
+         CALL MPI_RECV(IHBUF,4*NGBFSZ+4,my_MPI_INTEGER,INODE,95,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
 C        Decode the information and determine where the buffer should go
          N      = IHBUF(1)
          IBUF   = IHBUF(2)
          I_FILE = IHBUF(3)
          IFREE  = IHBUF(4)
-C        Write the buffers 
+C        Write the buffers
          CALL BUFFER_FILE_WRITE (I_FILE,IBUF,IHBUF(5+2*N),IHBUF(5),N)
 C        There may be more messages still waiting, go back to the start
          NEWMAIL = .FALSE.
@@ -1504,14 +1504,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUFFER_FILE_END ()
-C     
+C
 C     Monitor status of our own pending messages and
-C     stay in receiving mode until master tells us to stop 
-C     
+C     stay in receiving mode until master tells us to stop
+C
 C     Calling parameters
 C
 C     Written by Luuk Visscher, October 2004
-C     
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
@@ -1525,7 +1525,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER IBUFMPI(5)
       LOGICAL READY, ALLRECV
 C
-C     The actual value of IEND does not matter, we need to send 
+C     The actual value of IEND does not matter, we need to send
 C     something. Likewise for IBUFMPI, only the third element is used
 C
       CALL IZERO (IBUFMPI,5)
@@ -1546,14 +1546,14 @@ C     Verify status of our own messages
          CALL MPI_TESTALL(MAX_SEND_BUFFERS,IREQ, ALLRECV,
      &                    ISTATS, IERR)
 C        Tell master in case all our messages were received
-         IF (ALLRECV) CALL MPI_ISEND(IEND,1,MPI_INTEGER,MPARID,98,
+         IF (ALLRECV) CALL MPI_ISEND(IEND,1,my_MPI_INTEGER,MPARID,98,
      &               MPI_COMM_WORLD,IREQ(1),IERR)
       ENDIF
 C     Check for end signal
       CALL MPI_IPROBE(MPARID,99,MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
       IF (NEWMAIL) THEN
 C        Receive the end signal message and return
-         CALL MPI_RECV(IEND,1,MPI_INTEGER,MPARID,99,
+         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,MPARID,99,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
          RETURN
       ELSE
@@ -1578,9 +1578,9 @@ C
 C        Find out who was sending this
          INODE = ISTAT(MPI_SOURCE)
 C        Receive this signal
-         CALL MPI_RECV(IEND,1,MPI_INTEGER,INODE,20,
+         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,INODE,20,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-         CALL MPI_SEND(IBUFMPI,5,MPI_INTEGER,INODE,30,
+         CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,INODE,30,
      &                 MPI_COMM_WORLD,IERR)
       ENDIF
 C
@@ -1592,7 +1592,7 @@ C
 C        Find out who was sending this
          INODE = ISTAT(MPI_SOURCE)
 C        Receive this signal
-         CALL MPI_RECV(IEND,1,MPI_INTEGER,INODE,98,
+         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,INODE,98,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
          NREADY = NREADY + 1
       ENDIF
@@ -1601,7 +1601,7 @@ C     Send out end signal when all nodes are ready
 C
       IF (NREADY.EQ.NODES) THEN
          DO INODE = 1, NODES
-            CALL MPI_SEND(IEND,1,MPI_INTEGER,INODE,99,
+            CALL MPI_SEND(IEND,1,my_MPI_INTEGER,INODE,99,
      &                    MPI_COMM_WORLD,IERR)
          ENDDO
          RETURN

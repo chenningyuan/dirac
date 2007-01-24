@@ -1,19 +1,25 @@
+#if defined (INT_STAR8)
+#define my_MPI_INTEGER MPI_INTEGER8
+#else
+#define my_MPI_INTEGER MPI_INTEGER4
+#endif
+
 #ifdef __CVERSION__
-#define MAXNOD 100
+#define MAXNOD 200
 struct common_infpar {
     double totval;
     int icount, kprint, mtids[MAXNOD], mparid, mytid;
     int node, nodes, numnod, ntask, ncode, parher, timing;
 } infpar_;
 #else /* __CVERSION__ */
-#if defined (INT_STAR8)
-#define MPI_INTEGER MPI_INTEGER8
-#endif
+!     my_MPI_INTEGER is used both in .c and .F routines in MPI calls
+!        so we can handle "-i8" compilations on 32-bit machines,
+!        using INT_STAR8 /Jan-2007 hjaaj
 !     .. mpi variables (used to be in an infmpi.h /hjaaj Jan 2003):
 !        NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
 !        MYTID  = mpi ID of this process (from MPI_Comm_rank)
       INTEGER MAXNOD, MAXCL2
-      PARAMETER (MAXNOD = 100, MAXCL2 = 10000)
+      PARAMETER (MAXNOD = 200, MAXCL2 = 10000)
 
       REAL*8 TOTWAL
       LOGICAL PARHER, TIMING, SLAVE, DEBUG

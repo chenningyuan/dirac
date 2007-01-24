@@ -5369,10 +5369,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       NTEST = -1
 #if defined (VAR_MPI)
       DO I = 1,NUMNOD
-         CALL MPI_IRECV(NODE,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,IREQ,IERR)
          CALL MPI_WAIT(IREQ,ISTAT,IERR)
-         CALL MPI_SEND(NTEST,1,MPI_INTEGER,NODE,30,
+         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
      &                  MPI_COMM_WORLD,IERR)
       ENDDO
 #endif
@@ -5519,7 +5519,7 @@ C     Add the master node, NUMNOD = number of slaves
 
       LUEND = .FALSE.
 #if defined (VAR_MPI)
-      CALL MPI_ISEND(MYTID,1,MPI_INTEGER,MPARID,20,
+      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
      &              MPI_COMM_WORLD,IREQ,IERR)
 
     1    CONTINUE
@@ -5527,7 +5527,7 @@ C     Add the master node, NUMNOD = number of slaves
          CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,LUEND,ISTAT,IERR)
          IF (.NOT.LUEND) GOTO 1
 
-      CALL MPI_RECV(NTEST,1,MPI_INTEGER,MPARID,30,
+      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
      &               MPI_COMM_WORLD,ISTAT,IERR)
 #endif
       RETURN

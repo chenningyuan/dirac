@@ -171,7 +171,7 @@ C
 #if defined (MPE)
             CALL MPE_LOG_EVENT(3, 0, "start wait")
 #endif
-            CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+            CALL MPI_RECV(ITEST,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &           MPI_COMM_WORLD,ISTAT,IERR)
 #if defined (MPE)
             CALL MPE_LOG_EVENT(4, 0, "end wait")
@@ -185,9 +185,9 @@ C     .. ITEST .eq. 0: code for "send me new task"
 #if defined (MPE)
             CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
 #endif
-            CALL MPI_SEND(IJTSK,1,MPI_INTEGER,NODE,30,
+            CALL MPI_SEND(IJTSK,1,my_MPI_INTEGER,NODE,30,
      &           MPI_COMM_WORLD,IERR)
-            CALL MPI_SEND(LENTSK,1,MPI_INTEGER,NODE,30,
+            CALL MPI_SEND(LENTSK,1,my_MPI_INTEGER,NODE,30,
      &           MPI_COMM_WORLD,IERR)
 #if defined (MPE)
             CALL MPE_LOG_EVENT(6, 0, "end sndtsk")
@@ -2675,7 +2675,8 @@ C
      &        CALL MP2HDR(LUPRI,MAXTSK,NDSLST,NODES)
          IBTNFO(1) = IJBTCH
          IBTNFO(2) = LENTSK
-         CALL MPI_BCAST(IBTNFO,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IBTNFO,2,my_MPI_INTEGER,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
          IF (CMMNFO) WRITE(LUPRI,'(/A,I4,/A,I4)')
      &      ' <COMMINFO> Master broadcasted batch number: ', IBTNFO(1),
      &      ' <COMMINFO>             and length of batch: ', IBTNFO(2)
@@ -2698,11 +2699,11 @@ C
          CALL FLSHFO(LUPRI)
 #if defined (MPE)
          CALL MPE_LOG_EVENT(3, 0, "start wait")
-         CALL MPI_RECV(NODINT,1,MPI_INTEGER,MPI_ANY_SOURCE,90,
+         CALL MPI_RECV(NODINT,1,my_MPI_INTEGER,MPI_ANY_SOURCE,90,
      &        MPI_COMM_WORLD,ISTAT,IERR)
          CALL MPE_LOG_EVENT(4, 0, "end wait")
 #else
-         CALL MPI_RECV(NODINT,1,MPI_INTEGER,MPI_ANY_SOURCE,90,
+         CALL MPI_RECV(NODINT,1,my_MPI_INTEGER,MPI_ANY_SOURCE,90,
      &        MPI_COMM_WORLD,ISTAT,IERR)
 #endif
          NODE = ISTAT(MPI_SOURCE)
@@ -2720,11 +2721,11 @@ C
             END DO
 #if defined (MPE)
             CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
-            CALL MPI_SEND(IDSNFO,6,MPI_INTEGER,NODE,92,
+            CALL MPI_SEND(IDSNFO,6,my_MPI_INTEGER,NODE,92,
      &           MPI_COMM_WORLD,IERR)
             CALL MPE_LOG_EVENT(6, 0, "end sndtsk")
 #else
-            CALL MPI_SEND(IDSNFO,6,MPI_INTEGER,NODE,92,
+            CALL MPI_SEND(IDSNFO,6,my_MPI_INTEGER,NODE,92,
      &           MPI_COMM_WORLD,IERR)
 #endif
             IF (CMMNFO) WRITE(LUPRI,*) '<COMMINFO> Master sent task ',
@@ -2734,7 +2735,7 @@ C     Slave is idle but there are no more tasks available:
 C        Release slave by sending negative shell number
 C
          ELSE IF ((NODINT .EQ. 0) .AND. (ITSKSD .GE. NDSLST)) THEN
-            CALL MPI_SEND(IRELEA,6,MPI_INTEGER,NODE,92,
+            CALL MPI_SEND(IRELEA,6,my_MPI_INTEGER,NODE,92,
      &           MPI_COMM_WORLD,IERR)
             IF (CMMNFO) WRITE(LUPRI,'(A,I4)')
      &           ' <COMMINFO> Master released node #', NODE
@@ -2949,7 +2950,7 @@ C     There's an outer loop over batches of occupied spinors,
 C     and an inner loop over tasks (shells) for a given IJ-batch
 C ======================================================================
  100  CONTINUE
-      CALL MPI_BCAST(IBTNFO,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IBTNFO,2,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IJBTCH = IBTNFO(1)
       LENTSK = IBTNFO(2)
       IF (CMMNFO) WRITE(LUPRI,'(3(A,I4),A)')
@@ -3005,16 +3006,16 @@ C
      &     ' <COMMINFO> Sending 0 from node #', MYTID
 #if defined (MPE)
       CALL MPE_LOG_EVENT(3, 0, "start wait")
-      CALL MPI_SEND(0,1,MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
+      CALL MPI_SEND(0,1,my_MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
       CALL MPE_LOG_EVENT(4, 0, "end wait")
 C
       CALL MPE_LOG_EVENT(5, 0, "start rcvtsk")
-      CALL MPI_RECV(IDSNFO,6,MPI_INTEGER,MPARID,92,
+      CALL MPI_RECV(IDSNFO,6,my_MPI_INTEGER,MPARID,92,
      &     MPI_COMM_WORLD,ISTAT,IERR)
       CALL MPE_LOG_EVENT(6, 0, "end rcvtsk")
 #else
-      CALL MPI_SEND(0,1,MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
-      CALL MPI_RECV(IDSNFO,6,MPI_INTEGER,MPARID,92,
+      CALL MPI_SEND(0,1,my_MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
+      CALL MPI_RECV(IDSNFO,6,my_MPI_INTEGER,MPARID,92,
      &     MPI_COMM_WORLD,ISTAT,IERR)
 #endif
 C
@@ -3081,7 +3082,8 @@ C
      &     INTGTH, ' from node #', MYTID
 #if defined (MPE)
       CALL MPE_LOG_EVENT(3, 0, "start wait")
-      CALL MPI_SEND(INTGTH,1,MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
+      CALL MPI_SEND(INTGTH,1,my_MPI_INTEGER,
+     &     MPARID,90,MPI_COMM_WORLD,IERR)
       CALL MPE_LOG_EVENT(4, 0, "end wait")
 C
       CALL MPE_LOG_EVENT(7, 0, "start sndint")
@@ -3089,7 +3091,8 @@ C
      &     MPARID,94,MPI_COMM_WORLD,IERR)
       CALL MPE_LOG_EVENT(8, 0, "end sndint")
 #else
-      CALL MPI_SEND(INTGTH,1,MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
+      CALL MPI_SEND(INTGTH,1,my_MPI_INTEGER,
+     &     MPARID,90,MPI_COMM_WORLD,IERR)
       CALL MPI_SEND(WORK(K4QMAT),N4QMT,MPI_DOUBLE_PRECISION,
      &     MPARID,94,MPI_COMM_WORLD,IERR)
 #endif
@@ -3173,19 +3176,19 @@ C     Wait for tasks until we receive the end message
 C
   100 CONTINUE
          ITEST = 0
-         CALL MPI_SEND(ITEST,1,MPI_INTEGER,MPARID,20,
+         CALL MPI_SEND(ITEST,1,my_MPI_INTEGER,MPARID,20,
      &                 MPI_COMM_WORLD,IERR)
 C        ITEST .eq. 0: code for "send me new task"
 #if defined (MPE)
          CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
 #endif
-         CALL MPI_RECV(IJTSK,1,MPI_INTEGER,MPARID,30,
+         CALL MPI_RECV(IJTSK,1,my_MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
 #if defined (MPE)
          CALL MPE_LOG_EVENT(6, 0, "end sndtsk")
 #endif
          IF (IJTSK.EQ.-1) GOTO 200
-         CALL MPI_RECV(LENTSK,1,MPI_INTEGER,MPARID,30,
+         CALL MPI_RECV(LENTSK,1,my_MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
          CALL UNPKIJ(IJTSK,ISPNR,JSPNR)
          CALL TSKARR(ISPNR,JSPNR,LENTSK,NSTRT,
