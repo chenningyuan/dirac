@@ -71,7 +71,7 @@ C
 C
 #include "gamcom.h"
 C
-      SAVE MAXJ0, SQRPIH
+      SAVE MAXJ0
       DATA MAXJ0 /-1/
 C
 #include "sdpre.h"
@@ -98,7 +98,7 @@ C
          RWVAL = D1/WVAL
          REXPW = EXP(-WVAL)
          GVAL = GFAC30 + RWVAL*(GFAC31 + RWVAL*(GFAC32 + RWVAL*GFAC33))
-         FJW(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+         FJW(0) = HALF*SQRTPI*SQRT(RWVAL) - REXPW*GVAL*RWVAL
          FACTOR = HALF*RWVAL
          TERM = FACTOR*REXPW
          DO 200 J = 1, JMAX0
@@ -107,7 +107,7 @@ C
   200    CONTINUE
       ELSE
          RWVAL  = D1/WVAL
-         FJW(0) = SQRPIH*SQRT(RWVAL)
+         FJW(0) = HALF*SQRTPI*SQRT(RWVAL)
          FACTOR = HALF*RWVAL
          DO 300 J = 1, JMAX0
             FJW(J) = FACTOR*FJW(J-1)
@@ -119,7 +119,6 @@ C
 C     ***** Tabulation of incomplete gamma function *****
 C
       ENTRY GAMTAB(JMX)
-      SQRPIH = SQRT(PI)/D2
 C
 C     For J = JMX a power series expansion is used, see for
 C     example Eq.(39) given by V. Saunders in "Computational
