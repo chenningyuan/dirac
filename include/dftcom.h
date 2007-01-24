@@ -8,7 +8,7 @@ C
       LOGICAL DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, NOPRUN,   &
      &        ATSIZE, ALDAON
       INTEGER IPRDFT, LEBMIN, INTCHK, ANGINT, ANGMIN
-      REAL*8 RADINT, DFTELS, DFTHR0, DFTHRL, DFTHRI, DOVWN3
+      REAL*8 RADINT, DFTELS, DFTHR0, DFTHRL, DFTHRI
 C     
 C aspg, 2006-04-23 
 C additional elements for DFTCOM common block in eri syncronization.
@@ -28,7 +28,7 @@ C
      &                IPRDFT, NOPRUN, ATSIZE, ALDAON,                   &
 C    &                HFXFAC, HFXATT, HFXMU,                            &
 C    &                HFXATT, HFXMU,                                    &
-     &                DFTHES, DFTHRS, DOVWN3, DFTEST, DOVWNI, DFTIMG    &
+     &                DFTHES, DFTHRS, DFTEST, DOVWNI, DFTIMG            &
 C     
       COMMON /DFTRRR/ RADINT, DFTELS, DFTHR0, DFTHRL, DFTHRI
       COMMON /DFTCHR/ DFTTYP
