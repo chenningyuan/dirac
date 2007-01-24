@@ -1076,12 +1076,12 @@ case $machine in
 #
     t3e-cray) 
        if [ "$mesp" = "dummy" ]; then
-          cpp="$cpp -DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST"
-          ccp="-DSYS_T3D -D'INSTALL_WRKMEM=\${WRKMEM}'"
+          cpp="$cpp -DPRG_DIRAC -DSYS_T3D -DINT_STAR8 -DVAR_NONAMELIST"
+          ccp="-DSYS_T3D -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}'"
           def='dirac.x'
        else
-          cpp="$cpp -DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST $parop"
-          ccp="-DSYS_T3D -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+          cpp="$cpp -DPRG_DIRAC -DSYS_T3D -DINT_STAR8 -DVAR_NONAMELIST $parop"
+          ccp="-DSYS_T3D -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
           def='dirmpi.x'
        fi
@@ -1095,12 +1095,12 @@ case $machine in
 #
     *-cray)
        if [ "$mesp" = "dummy" ]; then
-          cpp="$cpp -DPRG_DIRAC -DSYS_CRAY  -D'INSTALL_WRKMEM=\${WRKMEM}'"
-          ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}'"
+          cpp="$cpp -DPRG_DIRAC -DSYS_CRAY -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}'"
+          ccp="-DSYS_CRAY -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}'"
           def='dirac.x'
        else
-          cpp="$cpp -DPRG_DIRAC -DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-          ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+          cpp="$cpp -DPRG_DIRAC -DSYS_CRAY -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+          ccp="-DSYS_CRAY -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
           def='dirmpi.x'
        fi
