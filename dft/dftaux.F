@@ -143,36 +143,40 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
       ENDDO
       RETURN
       END
-      SUBROUTINE DFT_QUADRES(DTRMAT,EXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
-     &                       RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
-C***********************************************************************
-C
-C     Based on DFT_LINRES
-C
-C     Driver for DFT contributions to quadratic response.
-C
-C     On input:
-C     DTRMAT(*,*,*,1) --- B density matrix
-C     DTRMAT(*,*,*,2) --- C density matrix
-C     DTRMAT(*,*,*,3) --- BC density matrix
-C     GAO             --- 
-C
-C     On output:
-C     EXCMAT(*,*,*,1) --- G_B matrix
-C     EXCMAT(*,*,*,2) --- G_C matrix
-C     EXCMAT(*,*,*,3) --- H_BC matrix
-C
-C     tsaue & johhe Aug. 2006
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
+      subroutine dft_quadres(dtrmat,excmat,isymop,ihrmop,gao,gao1,
+     &                       rho,rhogrd,rhg,wght,dogga,buf)
+!***********************************************************************
+!
+!     Calculate the DFT contributions the quadratic response.
+!
+!     Input:
+!     dtrmat(*,*,*,1) --- B density matrix
+!     dtrmat(*,*,*,2) --- C density matrix
+!     dtrmat(*,*,*,3) --- BC density matrix
+!     isymop          --- operator symmetry
+!     ihrmop          --- operator hermiticity
+!     gao             --- 
+!     gao1            --- 
+!     rho             --- \rho in current grid point
+!     rhogrd          --- |\nabla\rho| in current grid point
+!     rhg             --- \nabla\rho in current grid point
+!     wght            --- 
+!     dogga           --- LDA or GGA
+!     buf             --- scratch memory
+!
+!     Output:
+!     excmat(*,*,*,1) --- G^{[B]C} matrix
+!     excmat(*,*,*,2) --- G^{[C]B} matrix
+!     excmat(*,*,*,3) --- H^{[BC]} matrix
+!
+!     Written by johhe Jan 2007
+!
+!***********************************************************************
+!
+      implicit none
+!
 #include "mxcent.h"
-C
-      PARAMETER(D0=0.0D0,D1=1.0D0,DP5 = 0.5D0,D2=2.0D0)
-C
 #include "inforb.h"
-#include "nuclei.h"
 #if defined (PRG_DIRAC)
 #include "dgroup.h"
 #else
@@ -181,138 +185,192 @@ C
 #endif
 #include "dftcom.h"
 #include "functionals.h"
-C
-      INTEGER A, B
-      LOGICAL DOGGA, TRPLET
-      DIMENSION DTRMAT(NBAST,NBAST,NZ,3),
-     &          EXCMAT(NBAST,NBAST,NZ,3),
-     &          ISYMOP(3),IHRMOP(3),
-     &          GAO(NBAST), GAO1(NBAST,3), 
-     &          RHG(3),VT(3), VXC(DERVS3), BUF(*)
-!johhe Check DERVS3
-      DIMENSION B3(3), C3(3), BC3(3)
-      DOUBLE PRECISION BR, CR, BCR
-C
-C     Get perturbed densities
-C     =======================
-C
-      IREPBOP = ISYMOP(1)-1
-      IF(IHRMOP(1).EQ.1) THEN
-         CALL GETRHO(B0,IREPBOP,GAO,DTRMAT(1,1,1,1),BUF)
-      ELSE
-         CALL QUIT('DFTQR general case not implemented!')
-      END IF
-C
-      IREPCOP = ISYMOP(2)-1
-      IF(IHRMOP(2).EQ.1) THEN
-         CALL GETRHO(C0,IREPCOP,GAO,DTRMAT(1,1,1,2),BUF)
-      ELSE
-         CALL QUIT('DFTQR general case not implemented!')
-      END IF
-C
-      IREPBCOP = ISYMOP(3)-1
-      IF(IHRMOP(3).EQ.1) THEN
-         CALL GETRHO(BC0,IREPBCOP,GAO,DTRMAT(1,1,1,3),BUF)
-      ELSE
-         CALL QUIT('DFTQR general case not implemented!')
-      END IF
-C
-C       ***************
-C       ***** LDA *****
-C       ***************
-C
-      IF(.NOT.DOGGA) THEN
-C
-C     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
-         CALL DFTPOT2(VXC,WGHT,RHO,0D0)
-C
-C     Constructing G_B matrix
-         IF(DABS(B0).GT.DFTHRL) THEN 
-C
-C           Calculated VT
-C
-            SXC = VXC(FRR)*B0
-C
-C           Linear transformation
-C  
-            CALL DOEXC1(SXC,IREPBOP,EXCMAT(1,1,1,1),GAO)
+!
+!     I/O VARIABLES
+!
+      double precision dtrmat(nbast,nbast,nz,3)
+      double precision excmat(nbast,nbast,nz,3)
+      integer isymop(3), ihrmop(3)
+      integer irepbop, irepcop, irepbcop
+      double precision gao(nbast), gao1(nbast,3)
+      double precision rho, rhogrd,  rhg(3), wght, buf(*)
+      logical dogga
+!
+!     INTERNAL VARIABLES
+!
+      double precision b3(3), c3(3), bc3(3)
+      double precision b0, br, c0, cr, bc0, bcr
+      double precision sxc, vt(3)
+      double precision vxc(dervs3)
+      double precision facr, facb, facc, bmax, cmax, bcmax
+      integer i
+!
+!     Calculate the ireps for the different perturbing operators
+      irepbop = isymop(1)-1
+      irepcop = isymop(2)-1
+      irepbcop = isymop(3)-1
+!
+!     Get perturbed densities
+!     =======================
+!
+!     B-op density
+      if(ihrmop(1).eq.1) then
+         call getrho(b0,irepbop,gao,dtrmat(1,1,1,1),buf)
+      else
+         call quit('DFT-QR general case not implemented!')
+      end if
+!
+!     C-op density
+      if(ihrmop(2).eq.1) then
+         call getrho(c0,irepcop,gao,dtrmat(1,1,1,2),buf)
+      else
+         call quit('DFT-QR general case not implemented!')
+      end if
+!
+!     BC-op density
+      if(ihrmop(3).eq.1) then
+         call getrho(bc0,irepbcop,gao,dtrmat(1,1,1,3),buf)
+      else
+         call quit('DFT-QR general case not implemented!')
+      end if
+!
+!       ***************
+!       ***** LDA *****
+!       ***************
+!
+      if(.not.dogga) then
+!
+!     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
+!     Get the functional derivatives
+         call dftpot2(vxc,wght,rho,0D0)
+!
+!     Constructing g^{[C]B} 
+         if(dabs(b0).gt.dfthrl) then 
+!
+!           Calculate sxc
+            sxc = vxc(frr)*b0
+!
+!           Linear transformation
+            call doexc1(sxc,irepbop,excmat(1,1,1,1),gao)
+         end if
+!
+!     Constructing g^{[B]C}
+         if(dabs(c0).gt.dfthrl) then 
+!
+!           Calculate sxc
+            sxc = vxc(frr)*c0
+!
+!           Linear transformation
+            call doexc1(sxc,irepcop,excmat(1,1,1,2),gao)
          END IF
-C
-C     Constructing G_C matrix
-         IF(DABS(C0).GT.DFTHRL) THEN 
-C
-C           Calculated VT
-C
-            SXC = VXC(FRR)*C0
-C
-C           Linear transformation
-C  
-            CALL DOEXC1(SXC,IREPCOP,EXCMAT(1,1,1,2),GAO)
-         END IF
-C
-C     Constructing H_BC matrix
-         IF(DABS(BC0).GT.DFTHRL) THEN 
-C
-C           Calculated VT
-C
-            SXC = 2.0D0*VXC(FRRR)*B0*C0 + VXC(FRR)*BC0
-C
-C           Linear transformation
-C  
-            CALL DOEXC1(SXC,IREPBCOP,EXCMAT(1,1,1,3),GAO)
-         END IF
-      ELSE  
-C
-C         ***************
-C         ***** GGA *****
-C         ***************
-C
-         CALL GETGRHO(B3,IREPBOP,GAO,GAO1,DTRMAT(1,1,1,1),BUF)
-         CALL GETGRHO(C3,IREPCOP,GAO,GAO1,DTRMAT(1,1,1,2),BUF)
-         CALL GETGRHO(BC3,IREPBCOP,GAO,GAO1,DTRMAT(1,1,1,3),BUF)
-C
-         BR = 2.0D0*(B3(1)*RHG(1)+ B3(2)*RHG(2)+ B3(3)*RHG(3))
-         CR = 2.0D0*(C3(1)*RHG(1)+ C3(2)*RHG(2)+ C3(3)*RHG(3))
-         BCR = 2.0D0*(BC3(1)*RHG(1)+ BC3(2)*RHG(2)+ BC3(3)*RHG(3)) +
-     &         4.0d0*(B3(1)*C3(1) + B3(2)*C3(2) + B3(3)*C3(3))
-C
-C     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
-         CALL DFTPOT2(VXC,WGHT,RHO,RHOGRD)
-C
-         SXC  = VXC(FRR)*B0 + VXC(FRZ)*BR
-         FACR = VXC(FRZ)*B0 + VXC(FZZ)*BR
-         DO I=1,3
-            VT(I) = 2.0D0 * ( FACR*RHG(I) + VXC(FZ0)*B3(I) )
-         END DO
-C
-         CALL DOEXC2(SXC,VT,IREPBOP,EXCMAT(1,1,1,1),GAO,GAO1)
-C
-         SXC  = VXC(FRR)*C0 + VXC(FRZ)*CR
-         FACR = VXC(FRZ)*C0 + VXC(FZZ)*CR
-         DO I=1,3
-            VT(I) = 2.0D0 * ( FACR*RHG(I) + VXC(FZ0)*C3(I) )
-         END DO
-C
-         CALL DOEXC2(SXC,VT,IREPCOP,EXCMAT(1,1,1,2),GAO,GAO1)
-C
-         SXC =  2.0D0*VXC(FRRR)*B0*C0 + 2.0d0*VXC(FRRZ)*(B0*CR+C0*BR) +
-     &          2.0D0*VXC(FRZZ)*BR*CR + VXC(FRR)*BC0 + 
-     &          VXC(FRZ)*BCR
-         FACR = 2.0D0*VXC(FZZZ)*BR*CR + 2.0d0*VXC(FRZZ)*(B0*CR+C0*BR) +
-     &          2.0D0*VXC(FRRZ)*B0*C0 + VXC(FRZ)*BC0 +
-     &          VXC(FZZ)*BCR
-         FACB = 2.0d0*VXC(FRZ)*C0 + 2.0d0*VXC(FZZ)*CR
-         FACC = 2.0d0*VXC(FRZ)*B0 + 2.0d0*VXC(FZZ)*BR
-         DO I=1,3
-            VT(I) = 2.0D0 * ( FACR*RHG(I) + FACB*B3(I) + FACC*C3(I) +
-     &                        VXC(FZ0) * BC3(I) )
-         END DO
-C
-         CALL DOEXC2(SXC,VT,IREPBCOP,EXCMAT(1,1,1,3),GAO,GAO1)
-C
-      END IF
-      RETURN
-      END
+!
+!     Constructing h^{[BC]}
+         if(dabs(bc0).gt.dfthrl) then 
+!
+!           Calculate sxc
+            sxc = 2.0D0*vxc(frrr)*b0*c0 + vxc(frr)*bc0
+!
+!           Linear transformation
+            call doexc1(sxc,irepbcop,excmat(1,1,1,3),gao)
+         end if
+!
+      else  
+!
+!         ***************
+!         ***** GGA *****
+!         ***************
+!
+!     Get gradients of perturbed densities
+!     ====================================
+!
+!     B-, C, and BC-op gradient densityíes
+         call getgrho(b3, irepbop, gao,gao1,dtrmat(1,1,1,1),buf)
+         call getgrho(c3, irepcop, gao,gao1,dtrmat(1,1,1,2),buf)
+         call getgrho(bc3,irepbcop,gao,gao1,dtrmat(1,1,1,3),buf)
+!
+!     \frac{\partial\zeta}{\partial\epsilon_B}
+         br = 2.0D0*(b3(1)*rhg(1)+ b3(2)*rhg(2)+ b3(3)*rhg(3))
+!
+!     \frac{\partial\zeta}{\partial\epsilon_C}
+         cr = 2.0D0*(c3(1)*rhg(1)+ c3(2)*rhg(2)+ c3(3)*rhg(3))
+!
+!     \frac{\partial^2\zeta}{\partial\epsilon_B\partial\epsilon_C}
+!     Not the extra factor 2 on the second line!!!
+         bcr = 2.0D0*(bc3(1)*rhg(1)+ bc3(2)*rhg(2)+ bc3(3)*rhg(3)) +
+     &         4.0d0*(b3(1)*c3(1) + b3(2)*c3(2) + b3(3)*c3(3))
+!
+!     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
+   !     Get the functional derivatives
+         call dftpot2(vxc,wght,rho,rhogrd)
+!
+!     Constructing g^{[B]C}
+!     
+         bmax = max(abs(b0),abs(b3(1)),abs(b3(2)),abs(b3(3)))
+         if (bmax.gt.dfthrl) then
+!
+!           Calculate sxc
+            sxc  = vxc(frr)*b0 + vxc(frz)*br
+!     
+!           Calculate vt
+            facr = vxc(frz)*b0 + vxc(fzz)*br
+            do i=1,3
+               vt(i) = 2.0D0 * ( facr*rhg(i) + vxc(fz0)*b3(i) )
+            end do
+!
+!           Linear transformation
+            call doexc2(sxc,vt,irepbop,excmat(1,1,1,1),gao,gao1)
+!
+         end if
+!
+!     Constructing g^{[C]B}
+!     
+         cmax = max(abs(c0),abs(c3(1)),abs(c3(2)),abs(c3(3)))
+         if (cmax.gt.dfthrl) then
+!
+!           Calculate sxc
+            sxc  = vxc(frr)*c0 + vxc(frz)*cr
+!     
+!           Calculate vt
+            facr = vxc(frz)*c0 + vxc(fzz)*cr
+            do I=1,3
+               vt(i) = 2.0D0 * ( facr*rhg(i) + vxc(fz0)*c3(i) )
+            end do
+!
+!           Linear transformation
+            call doexc2(sxc,vt,irepcop,excmat(1,1,1,2),gao,gao1)
+!
+         end if
+!
+!     Constructing h^{[BC]}
+!     
+         bcmax = max(abs(bc0),abs(bc3(1)),abs(bc3(2)),abs(bc3(3)),
+     &               bmax,cmax)
+         if (bcmax.gt.dfthrl) then
+!
+!           Calculate sxc
+            sxc =  2.0D0*vxc(frrr)*b0*c0+2.0d0*vxc(frrz)*(b0*cr+c0*br)+
+     &             2.0D0*vxc(frzz)*br*cr+vxc(frr)*bc0 + 
+     &             vxc(frz)*bcr
+!     
+!           Calculate vt
+            facr = 2.0D0*vxc(fzzz)*br*cr+2.0d0*vxc(frzz)*(b0*cr+c0*br) +
+     &             2.0D0*vxc(frrz)*b0*c0 + vxc(frz)*bc0 +
+     &             vxc(fzz)*bcr
+            facb = 2.0d0*vxc(frz)*c0 + 2.0d0*vxc(fzz)*cr
+            facc = 2.0d0*vxc(frz)*b0 + 2.0d0*vxc(fzz)*br
+            do i=1,3
+               vt(i) = 2.0D0 * ( facr*rhg(i) + facb*b3(i) + facc*c3(i) +
+     &                           vxc(fz0) * bc3(i) )
+            end do
+!
+!           Linear transformation
+            call doexc2(sxc,vt,irepbcop,excmat(1,1,1,3),gao,gao1)
+!
+         end if
+!
+      end if
+      return
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dolrg */
       SUBROUTINE DOLRG(VT,IREPOP,EXCMAT,GAO,GAO1)

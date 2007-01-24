@@ -192,37 +192,65 @@ void
 dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
          const int* triplet)
 {
+/***********************************************************************/
+/*                                                                     */
+/*    Function that will return the derivatives needed for quadratic   */
+/*    response calculations.                                           */
+/*                                                                     */
+/*    This routine will return the derivatives of the exchange         */
+/*    correlation potential w.r.t. the electron density and the        */
+/*    entity \zeta = \nabla\rho \cdot \nabla\rho, which is what        */
+/*    the quadratic response equations are expressed in.               */
+/*                                                                     */
+/*    Input:                                                           */
+/*    w       --- weight                                               */
+/*    rho     --- electron density                                     */
+/*    grad    --- gradient of the electron density                     */
+/*    triplet --- triplet flag                                         */
+/*                                                                     */
+/*    Output:                                                          */
+/*    *ds --- contains the required derivatives up to third order.     */
+/*                                                                     */
+/*     Written by johhe Jan 2007                                       */
+/*                                                                     */
+/***********************************************************************/
+
+    /* Calculated different powers of the norm of the gradient needed */
     real grad2 = *grad* *grad;
     real grad3 = grad2* *grad;
     real grad4 = grad3* *grad;
     real grad5 = grad4* *grad;
+
     FunThirdFuncDrv drvs;
     FunDensProp dp;
     drv3_clear(&drvs);
+
     /* HP does not grok C99's { *rho*0.5, *rho*0.5, *grad*0.5, *grad*0.5 }; */
     dp.rhoa  = dp.rhob  = *rho *0.5;
     dp.grada = dp.gradb = *grad*0.5; 
     dp.gradab = dp.grada * dp.gradb;
     dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
+
+    /* Get the functional derivatives for the appropriate functional */
     if(do_alda)
         LDAFunctional.third(&drvs, *w, &dp);
     else
         selected_func->third(&drvs, *w, &dp);
     
+    /* Evaluate the different derivatives */
     ds->fR   = drvs.df1000;
     ds->fZ   = 0.5* (drvs.df0010/ *grad + 0.5*drvs.df00001);
     ds->fRR  = 0.5* (drvs.df2000 + drvs.df1100);
+    ds->fRZ  = 0.25* ((drvs.df1010 + drvs.df1001)/ *grad + drvs.df10001);
+    ds->fZZ  = 0.125* (drvs.df0020 + drvs.df0011)/grad2 - 0.25*drvs.df0010/grad3;
     ds->fRRR = 0.25*(drvs.df3000 + 3*drvs.df2100);
     ds->fRRZ = 0.125* ((drvs.df2010 + drvs.df2001 + 2.0*drvs.df1110)/ *grad +
                        drvs.df20001 + drvs.df11001);
+    ds->fRZZ = 0.0625* (drvs.df1020 + drvs.df1002 + 2*drvs.df1011)/ grad2 -
+               0.125* (drvs.df1010 + drvs.df1001)/ grad3;
     ds->fZZZ = 0.03125* (drvs.df0030 + 3* drvs.df0021)/ grad3 -
                0.0625*3* (drvs.df0020 + drvs.df0011)/ grad4 +
                0.125*3* drvs.df0010/ grad5;
-
-    ds->fRZ  = 0.25* ((drvs.df1010 + drvs.df1001)/ *grad + drvs.df10001);
-    ds->fZZ  = 0.125* (drvs.df0020 + drvs.df0011)/grad2 - 0.25*drvs.df0010/grad3;
-    ds->fRZZ = 0.0625* (drvs.df1020 + drvs.df1002 + 2*drvs.df1011)/ grad2 -
-               0.125* (drvs.df1010 + drvs.df1001)/ grad3;
 
 }
 
