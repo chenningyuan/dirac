@@ -194,18 +194,24 @@ dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
 {
 /***********************************************************************/
 /*                                                                     */
-/*    Function that will return the derivatives needed for quadratic   */
-/*    response calculations.                                           */
+/*    Function that will return the functional derivatives needed for  */
+/*    quadratic response calculations.                                 */
 /*                                                                     */
-/*    This routine will return the derivatives of the exchange         */
-/*    correlation potential w.r.t. the electron density and the        */
-/*    entity \zeta = \nabla\rho \cdot \nabla\rho, which is what        */
-/*    the quadratic response equations are expressed in.               */
+/*      E_{xc} = \int e_{xc} d\tau                                     */
+/*                                                                     */
+/*    This routine will return the derivatives of e_{xc}  w.r.t.       */
+/*    the electron density \rho and the entity                         */
+/*      \zeta = \nabla\rho \cdot \nabla\rho,                           */
+/*    which is the quadratic response equations are expressed in.      */
+/*                                                                     */
+/*    Below:                                                           */
+/*    R corresponds to derivative w.r.t. \rho                          */
+/*    Z corresponds to derivative w.r.t. \zeta                         */
 /*                                                                     */
 /*    Input:                                                           */
 /*    w       --- weight                                               */
-/*    rho     --- electron density                                     */
-/*    grad    --- gradient of the electron density                     */
+/*    rho     --- \rho in current grid point                           */
+/*    grad    --- |\nabla\rho| in current grid point                   */
 /*    triplet --- triplet flag                                         */
 /*                                                                     */
 /*    Output:                                                          */

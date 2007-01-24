@@ -144,7 +144,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
       RETURN
       END
       subroutine dft_quadres(dtrmat,excmat,isymop,ihrmop,gao,gao1,
-     &                       rho,rhogrd,rhg,wght,dogga,buf)
+     &                       rho,nrmgrd,grdrho,wght,dogga,buf)
 !***********************************************************************
 !
 !     Calculate the DFT contributions the quadratic response.
@@ -158,8 +158,10 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !     gao             --- 
 !     gao1            --- 
 !     rho             --- \rho in current grid point
-!     rhogrd          --- |\nabla\rho| in current grid point
-!     rhg             --- \nabla\rho in current grid point
+!     nrmgrd          --- |\nabla\rho| in current grid point
+!                         (corresponds to rhogrd in LR)
+!     grdrho          --- \nabla\rho in current grid point
+!                         (corresponds to rhg in LR)
 !     wght            --- 
 !     dogga           --- LDA or GGA
 !     buf             --- scratch memory
@@ -191,45 +193,68 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
       double precision dtrmat(nbast,nbast,nz,3)
       double precision excmat(nbast,nbast,nz,3)
       integer isymop(3), ihrmop(3)
-      integer irepbop, irepcop, irepbcop
       double precision gao(nbast), gao1(nbast,3)
-      double precision rho, rhogrd,  rhg(3), wght, buf(*)
+      double precision rho, nrmgrd, grdrho(3), wght, buf(*)
       logical dogga
 !
 !     INTERNAL VARIABLES
 !
-      double precision b3(3), c3(3), bc3(3)
-      double precision b0, br, c0, cr, bc0, bcr
-      double precision sxc, vt(3)
+!     Symmetry of the different operators
+      integer irepbop, irepcop, irepbcop
+!
+!     One and two times modified densities w.r.t. perturbations B and C
+!     (rho_B corresponds to b0 in LR)
+      double precision rho_B, rho_C, rho_BC
+!
+!     Gradients of the modified densities
+!     (grdrho_B corresponds to b3 in LR)
+      double precision grdrho_B(3), grdrho_C(3), grdrho_BC(3)
+!
+!     \zeta^X=|\nabla\rho^X|^2 for the different modified densities
+!     (zeta_B corresponds to br in LR)
+      double precision zeta_B, zeta_C, zeta_BC
+!
+!     xc-potential (functional derivatives of e_{xc} w.r.t. \rho and \zeta)
       double precision vxc(dervs3)
-      double precision facr, facb, facc, bmax, cmax, bcmax
+!
+!     s and v in the equation
+!       f_{pq} = s \Omega_{pq} + \mathbf{v} \cdot \nabla\Omega_{pq}
+      double precision sxc, vt(3)
+!
+!     Pre-factors associated with different parts of \mathbf{v}
+      double precision facr, facb, facc
+!
+!     To check if a point needs to be included or not.
+      double precision bmax, cmax, bcmax
+!
+!     Loop index
       integer i
 !
 !     Calculate the ireps for the different perturbing operators
-      irepbop = isymop(1)-1
-      irepcop = isymop(2)-1
+      irepbop  = isymop(1)-1
+      irepcop  = isymop(2)-1
       irepbcop = isymop(3)-1
 !
 !     Get perturbed densities
 !     =======================
 !
-!     B-op density
+!     Modified density w.r.t. B
       if(ihrmop(1).eq.1) then
-         call getrho(b0,irepbop,gao,dtrmat(1,1,1,1),buf)
+         call getrho(rho_B,irepbop,gao,dtrmat(1,1,1,1),buf)
       else
          call quit('DFT-QR general case not implemented!')
       end if
 !
-!     C-op density
+!     Modified density w.r.t. C
       if(ihrmop(2).eq.1) then
-         call getrho(c0,irepcop,gao,dtrmat(1,1,1,2),buf)
+         call getrho(rho_C,irepcop,gao,dtrmat(1,1,1,2),buf)
       else
          call quit('DFT-QR general case not implemented!')
       end if
 !
-!     BC-op density
+!     Two times modified density w.r.t. B and C
       if(ihrmop(3).eq.1) then
-         call getrho(bc0,irepbcop,gao,dtrmat(1,1,1,3),buf)
+         call getrho(rho_BC,irepbcop,gao,dtrmat(1,1,1,3),buf)
       else
          call quit('DFT-QR general case not implemented!')
       end if
@@ -240,35 +265,34 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !
       if(.not.dogga) then
 !
-!     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
 !     Get the functional derivatives
          call dftpot2(vxc,wght,rho,0D0)
 !
 !     Constructing g^{[C]B} 
-         if(dabs(b0).gt.dfthrl) then 
+         if(dabs(rho_B).gt.dfthrl) then 
 !
 !           Calculate sxc
-            sxc = vxc(frr)*b0
+            sxc = vxc(frr)*rho_B
 !
 !           Linear transformation
             call doexc1(sxc,irepbop,excmat(1,1,1,1),gao)
          end if
 !
 !     Constructing g^{[B]C}
-         if(dabs(c0).gt.dfthrl) then 
+         if(dabs(rho_C).gt.dfthrl) then 
 !
 !           Calculate sxc
-            sxc = vxc(frr)*c0
+            sxc = vxc(frr)*rho_C
 !
 !           Linear transformation
             call doexc1(sxc,irepcop,excmat(1,1,1,2),gao)
          END IF
 !
 !     Constructing h^{[BC]}
-         if(dabs(bc0).gt.dfthrl) then 
+         if(dabs(rho_BC).gt.dfthrl) then 
 !
 !           Calculate sxc
-            sxc = 2.0D0*vxc(frrr)*b0*c0 + vxc(frr)*bc0
+            sxc = 2.0D0*vxc(frrr)*rho_B*rho_C + vxc(frr)*rho_BC
 !
 !           Linear transformation
             call doexc1(sxc,irepbcop,excmat(1,1,1,3),gao)
@@ -283,38 +307,44 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !     Get gradients of perturbed densities
 !     ====================================
 !
-!     B-, C, and BC-op gradient densityíes
-         call getgrho(b3, irepbop, gao,gao1,dtrmat(1,1,1,1),buf)
-         call getgrho(c3, irepcop, gao,gao1,dtrmat(1,1,1,2),buf)
-         call getgrho(bc3,irepbcop,gao,gao1,dtrmat(1,1,1,3),buf)
+!     Gradients of the different modified densities
+         call getgrho(grdrho_B, irepbop, gao,gao1,dtrmat(1,1,1,1),buf)
+         call getgrho(grdrho_C, irepcop, gao,gao1,dtrmat(1,1,1,2),buf)
+         call getgrho(grdrho_BC,irepbcop,gao,gao1,dtrmat(1,1,1,3),buf)
 !
-!     \frac{\partial\zeta}{\partial\epsilon_B}
-         br = 2.0D0*(b3(1)*rhg(1)+ b3(2)*rhg(2)+ b3(3)*rhg(3))
+!     \zeta^B = \frac{\partial\zeta}{\partial\epsilon_B}
+         zeta_B = 2.0D0*(grdrho_B(1)*grdrho(1) + grdrho_B(2)*grdrho(2) +
+     &                   grdrho_B(3)*grdrho(3))
 !
-!     \frac{\partial\zeta}{\partial\epsilon_C}
-         cr = 2.0D0*(c3(1)*rhg(1)+ c3(2)*rhg(2)+ c3(3)*rhg(3))
+!     \zeta^B = \frac{\partial\zeta}{\partial\epsilon_C}
+         zeta_C = 2.0D0*(grdrho_C(1)*grdrho(1) + grdrho_C(2)*grdrho(2) +
+     &                   grdrho_C(3)*grdrho(3))
 !
-!     \frac{\partial^2\zeta}{\partial\epsilon_B\partial\epsilon_C}
+!     \zeta^{BC} = \frac{\partial^2\zeta}{\partial\epsilon_B\partial\epsilon_C}
 !     Not the extra factor 2 on the second line!!!
-         bcr = 2.0D0*(bc3(1)*rhg(1)+ bc3(2)*rhg(2)+ bc3(3)*rhg(3)) +
-     &         4.0d0*(b3(1)*c3(1) + b3(2)*c3(2) + b3(3)*c3(3))
+         zeta_BC = 2.0D0*(grdrho_BC(1)*grdrho(1) + 
+     &                    grdrho_BC(2)*grdrho(2) +
+     &                    grdrho_BC(3)*grdrho(3)) +
+     &             4.0d0*(grdrho_B(1)*grdrho_C(1) +
+     &                    grdrho_B(2)*grdrho_C(2) +
+     &                    grdrho_B(3)*grdrho_C(3))
 !
-!     Possibly check sizes of B0, C0, and BC0, if all small, skip this.
-   !     Get the functional derivatives
-         call dftpot2(vxc,wght,rho,rhogrd)
+!     Get the functional derivatives
+         call dftpot2(vxc,wght,rho,nrmgrd)
 !
 !     Constructing g^{[B]C}
 !     
-         bmax = max(abs(b0),abs(b3(1)),abs(b3(2)),abs(b3(3)))
+         bmax = max(abs(rho_B),
+     &              abs(grdrho_B(1)),abs(grdrho_B(2)),abs(grdrho_B(3)))
          if (bmax.gt.dfthrl) then
 !
 !           Calculate sxc
-            sxc  = vxc(frr)*b0 + vxc(frz)*br
+            sxc  = vxc(frr)*rho_B + vxc(frz)*zeta_B
 !     
 !           Calculate vt
-            facr = vxc(frz)*b0 + vxc(fzz)*br
+            facr = vxc(frz)*rho_B + vxc(fzz)*zeta_B
             do i=1,3
-               vt(i) = 2.0D0 * ( facr*rhg(i) + vxc(fz0)*b3(i) )
+               vt(i) = 2.0D0 * (facr*grdrho(i) + vxc(fz0)*grdrho_B(i))
             end do
 !
 !           Linear transformation
@@ -324,16 +354,17 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !
 !     Constructing g^{[C]B}
 !     
-         cmax = max(abs(c0),abs(c3(1)),abs(c3(2)),abs(c3(3)))
+         cmax = max(abs(rho_C),
+     &              abs(grdrho_C(1)),abs(grdrho_C(2)),abs(grdrho_C(3)))
          if (cmax.gt.dfthrl) then
 !
 !           Calculate sxc
-            sxc  = vxc(frr)*c0 + vxc(frz)*cr
+            sxc  = vxc(frr)*rho_C + vxc(frz)*zeta_C
 !     
 !           Calculate vt
-            facr = vxc(frz)*c0 + vxc(fzz)*cr
+            facr = vxc(frz)*rho_C + vxc(fzz)*zeta_C
             do I=1,3
-               vt(i) = 2.0D0 * ( facr*rhg(i) + vxc(fz0)*c3(i) )
+               vt(i) = 2.0D0 * (facr*grdrho(i) + vxc(fz0)*grdrho_C(i))
             end do
 !
 !           Linear transformation
@@ -343,24 +374,27 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !
 !     Constructing h^{[BC]}
 !     
-         bcmax = max(abs(bc0),abs(bc3(1)),abs(bc3(2)),abs(bc3(3)),
-     &               bmax,cmax)
+         bcmax = max(bmax,cmax,abs(rho_BC),
+     &            abs(grdrho_BC(1)),abs(grdrho_BC(2)),abs(grdrho_BC(3)))
          if (bcmax.gt.dfthrl) then
 !
 !           Calculate sxc
-            sxc =  2.0D0*vxc(frrr)*b0*c0+2.0d0*vxc(frrz)*(b0*cr+c0*br)+
-     &             2.0D0*vxc(frzz)*br*cr+vxc(frr)*bc0 + 
-     &             vxc(frz)*bcr
+            sxc =  2.0D0*vxc(frrr)*rho_B*rho_C +
+     &             2.0d0*vxc(frrz)*(rho_B*zeta_C+rho_C*zeta_B) +
+     &             2.0D0*vxc(frzz)*zeta_B*zeta_C+vxc(frr)*rho_BC + 
+     &             vxc(frz)*zeta_BC
 !     
 !           Calculate vt
-            facr = 2.0D0*vxc(fzzz)*br*cr+2.0d0*vxc(frzz)*(b0*cr+c0*br) +
-     &             2.0D0*vxc(frrz)*b0*c0 + vxc(frz)*bc0 +
-     &             vxc(fzz)*bcr
-            facb = 2.0d0*vxc(frz)*c0 + 2.0d0*vxc(fzz)*cr
-            facc = 2.0d0*vxc(frz)*b0 + 2.0d0*vxc(fzz)*br
+            facr = 2.0D0*vxc(fzzz)*zeta_B*zeta_C +
+     &             2.0d0*vxc(frzz)*(rho_B*zeta_C+rho_C*zeta_B) +
+     &             2.0D0*vxc(frrz)*rho_B*rho_C + vxc(frz)*rho_BC +
+     &             vxc(fzz)*zeta_BC
+            facb = 2.0d0*vxc(frz)*rho_C + 2.0d0*vxc(fzz)*zeta_C
+            facc = 2.0d0*vxc(frz)*rho_B + 2.0d0*vxc(fzz)*zeta_B
             do i=1,3
-               vt(i) = 2.0D0 * ( facr*rhg(i) + facb*b3(i) + facc*c3(i) +
-     &                           vxc(fz0) * bc3(i) )
+               vt(i) = 2.0D0 * ( facr*grdrho(i) + 
+     &                           facb*grdrho_B(i) + facc*grdrho_C(i) +
+     &                           vxc(fz0) * grdrho_BC(i) )
             end do
 !
 !           Linear transformation
@@ -369,7 +403,6 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
          end if
 !
       end if
-      return
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dolrg */
