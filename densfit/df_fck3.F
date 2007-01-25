@@ -1136,7 +1136,12 @@ C set to true
      &               DF_CONSTR,WORK(KFREE),LFREE)
       ENDIF
       IF (SAVE_CFIT) THEN
+          if (DODFLR) then
+          write (*,*) 'debug: saving intermediate fit coefs for lr'
+          CALL SAVE_MATRIX(CFIT,1,NBASISAUX,'LRDFC1')
+          else
           CALL SAVE_MATRIX(CFIT,1,NBASISAUX,'FITCO1')
+          endif
       ENDIF
 Caspg+rbast, 2006-09-21
 C
@@ -1158,7 +1163,12 @@ C
 C if we are asked to save the fit coefficients, those for the charge
 C conservation constraint are also saved, but in a different file
          IF (SAVE_CFIT) THEN
-             CALL SAVE_MATRIX(WORK(KCORR),1,NBASISAUX,'FITCHC')
+            if (DODFLR) then
+            write (*,*) 'debug: saving second fit coefs for lr'
+            CALL SAVE_MATRIX(CFIT,1,NBASISAUX,'LRDFCH')
+            else
+            CALL SAVE_MATRIX(WORK(KCORR),1,NBASISAUX,'FITCHC')
+            endif
          ENDIF
 Cdebug
          if (.false.) then
@@ -1226,7 +1236,12 @@ C fit coefficients for this iteration are saved to file
       write (6,*) 'goo'
       IF (SAVE_CFIT) THEN
           write (6,*) 'foo'
+          if (DODFLR) then
+          write (*,*) 'debug: saving final fit coefs for lr'
+          CALL SAVE_MATRIX(CFIT,1,NBASISAUX,'LRDFCE')
+          else
           CALL SAVE_MATRIX(CFIT,1,NBASISAUX,'FITCOE')
+          endif
       ENDIF
       IF (DF_FITVXC) THEN
          CALL MEMREL('dfgendrv-kgjk',WORK,KGJK,KGJK,KFREE,LFREE)
@@ -2496,6 +2511,7 @@ C
       DF_SCRTHR = 1.0E-10
       SAVE_CFIT = .FALSE.
       SAVE_VAB  = .FALSE.
+      DODFLR    = .FALSE.
 C
 C     using_diffdens = .false.
       using_diffdens = .true.

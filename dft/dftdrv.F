@@ -90,7 +90,11 @@ C prepare for accumulating integrals...
       IF (DF_FITVXC) THEN ! 
          CALL MEMGET('REAL',KXCVEB,NBASISAUX,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KXCVEB),NBASISAUX)
+         if (DOERG) then 
          CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'FITVXC')
+         else if (DOLR) then 
+         CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'LRDFVX')
+         endif
       ENDIF
 Caspg+rbast
 #endif
@@ -100,7 +104,7 @@ C     Initial expectation value of two-electron matrix
       IF (DOERG.AND..NOT.DF_FITVXC) THEN
 #else
       IF (DOERG) THEN
-#endif
+#endif /* MOD_DNF */
          ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1)
       END IF 
 C     Check for Hermitian density matrices;
@@ -124,7 +128,14 @@ C
 C     Scale density matrices
 C
       CALL DSCAL(N2BBASX,D2,DMAT,1)
+#if defined (MOD_DNF)
+C aspg, how wil this symmetrization work with density fitting? 
+C up to now the code is skipped for df_fitvxc since we pass
+C 'dummy' in the place of dtrmat...
+      IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
+#else
       IF (DOLR.OR.DOQR) THEN
+#endif /*MOD_DNF */
         CALL DSCAL(N2BBASXQ*NXCMAT,D2,DTRMAT,1)
 C       Insert half-phases:
 C       The symmetry scheme tries to pack the real symemtric and three 
@@ -228,7 +239,11 @@ C    &              KFREE,LFREE)
 #endif
       IF(DFTISGGA().AND..NOT.DF_FITVXC) 
      &   CALL SYMSYM(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
+#if defined (MOD_DNF)
+      IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
+#else
       IF (DOLR.OR.DOQR) THEN
+#endif /* MOD_DNF */
 C       Insert half-phases
         IF(NZ.LT.4) THEN
            DO IM = 1,NXCMAT
@@ -249,7 +264,11 @@ C     Rescale density matrices
 C
       CALL DSCAL(N2BBASX,DP5,DMAT,1)
       IF(NASHT.GT.0) CALL GTDOAV(DMAT,-1)
+#if defined (MOD_DNF)
+      IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
+#else
       IF (DOLR.OR.DOQR) THEN
+#endif /* MOD_DNF */
         CALL DSCAL(N2BBASXQ*NXCMAT,DP5,DTRMAT,1)
       END IF
 C
@@ -443,6 +462,7 @@ C
 C     Test on the number of electrons
 C
       ELCTRX = NELECT+NAELEC
+      write(*,*) 'debug: naelec=',naelec,' nelect=',nelect
       ERROR  = ELCTRN - ELCTRX
       IF (ABS(ERROR) .GT. DFTELS) THEN
          WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
@@ -552,16 +572,19 @@ C
       DOQR  = LBIT(IOPTS,4)
       DOLND = LBIT(IOPTS,5)
 C
+      
       NDIMENSION = NBAST
 #if defined (MOD_DNF)
+      ELCTRB = 0.0D0
+      nskipped = 0
 C aspg+rbast 2006-09-21
 C memory allocation for variables to hold information related
 C to density fitting. used in connection to the scheme of
 C Birkenheuer et at (IJQC 102, 743, 2005) to compute the 
 C exchange-correlation contibutions together with density fitting 
       IF (DF_FITVXC) THEN ! 
+C actions disabled so far...
          DOGRD = .false.
-         DOLR  = .false.
          DOQR  = .false.
          DOLND = .false.
          CALL MEMGET('REAL',KCFIT,NBASISAUX,WORK,KFREE,LFREE)
@@ -573,8 +596,31 @@ C exchange-correlation contibutions together with density fitting
             CALL READ_MATRIX(WORK(KCFIT),1,NBASISAUX,'FITCOE')
          endif
          NDIMENSION = MAX(NBAST,NBASISAUX)
+C aspg+rb, 2007-01-19
+C aspg: will we need this really for linear response?
+c        write (*,*) ' DEBUG: fit coefficients'
+c        do i=1,ndimension
+c           write (*,*) i,WORK(KCFIT+I-1)
+c        enddo
+         if (DOLR) then
+c           DF_FITVXC_LR = .true.
+            CALL MEMGET('REAL',KLRCFIT,NBASISAUX,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KLRXCVEC,NBASISAUX,WORK,KFREE,LFREE)
+            CALL READ_MATRIX(WORK(KLRXCVEC),1,NBASISAUX,'LRDFVX')
+            if (using_diffdens) then
+               CALL READ_MATRIX(WORK(KLRCFIT),1,NBASISAUX,'LRDFCD')
+            else
+               CALL READ_MATRIX(WORK(KLRCFIT),1,NBASISAUX,'LRDFCE')
+            endif
+         write (*,*) ' '
+         write (*,*) ' DEBUG: perturbed fit coefficients'
+c        do i=1,ndimension
+c           write (*,*) i,WORK(KLRCFIT+I-1)
+c        enddo
+         endif
+C aspg+rb, 2007-01-19
       ENDIF
-Caspg+rbast
+Caspg+rbast, 2006-09-21
 #endif
       DO 300 IPNT = 1, NPOINT
        
@@ -618,6 +664,10 @@ C
               IOFF = NBASISAUX * (IXYZ - 1) + 1
               RHG(IXYZ) = 
      &          D1*DDOT(NBASISAUX,GAO1(IOFF),1,WORK(KCFIT),1)
+C enable this later...
+c             if (dolr) 
+c    &           b3(ixyz) = 
+c    &              D1*DDOT(NBASISAUX,GAO1(IOFF),1,WORK(KLRCFIT),1)
              ENDDO
           ELSE
 #endif
@@ -694,46 +744,32 @@ C       Exchange-correlation contribution to Kohn-Sham matrix
 C       =====================================================
 C
         IF (DOERG) THEN
-          IREPOP = 0
-C aspg+rbast, 2006-09-21
+           IREPOP = 0
 #if defined (MOD_DNF)
-           IF (DF_FITVXC) THEN ! using densifit
+C aspg+rb, 2007-01-19, df-vxc modularized code
+           if (DF_FITVXC) then
+               IF (DOGGA) THEN
+                  DO I = 1,3
+                     VT(I) = VX(FZ0)*RHG(I)
+                  ENDDO
+               ENDIF
+               CALL fit_DOEXC(DOGGA,VX(FR0),VT,GAO,GAO1,
+     &                     WORK(KXCVEC),NBASISAUX)
+           else  ! df_fitvxc
+#endif
+C conventional code...
              IF (DOGGA .AND. .NOT.FROMVX) THEN
-               DO I = 1,3
-                  VT(I) = VX(FZ0)*RHG(I)
-               ENDDO
-               DO I = 1, NBASISAUX
-                  IOFF1 = I 
-                  IOFF2 = IOFF1 + NBASISAUX
-                  IOFF3 = IOFF2 + NBASISAUX
-                  WORK(KXCVEC - 1 + I)= WORK(KXCVEC - 1 + I)
-     &                          + D1 * VX(FR0) * GAO(I)
-! be careful with the factor below, compared to dalton and to the 
-! evaluation over orbital basis 
-     &                          + D1 * VT(1)   * GAO1(IOFF1)
-     &                          + D1 * VT(2)   * GAO1(IOFF2)
-     &                          + D1 * VT(3)   * GAO1(IOFF3)
-               ENDDO
-             ELSE ! only lda
-               DO I = 1, NBASISAUX
-                  WORK(KXCVEC - 1 + I) = WORK(KXCVEC - 1 + I)
-     &                                 + VX(FR0)*GAO(I)
-               ENDDO
+                DO I = 1,3
+                   VT(I) = VX(FZ0)*RHG(I)
+                ENDDO
+                CALL DOEXC2(VX(FR0),VT,IREPOP,EXCMAT,GAO,GAO1)      
+             ELSE
+                CALL DOEXC1(VX(FR0),IREPOP,EXCMAT,GAO)
              END IF
-          ELSE ! normal code
-#endif
-             IF (DOGGA .AND. .NOT.FROMVX) THEN
-              DO I = 1,3
-                 VT(I) = VX(FZ0)*RHG(I)
-              ENDDO
-               CALL DOEXC2(VX(FR0),VT,IREPOP,EXCMAT,GAO,GAO1)      
-              ELSE
-               CALL DOEXC1(VX(FR0),IREPOP,EXCMAT,GAO)
-              END IF
 #if defined (MOD_DNF)
-          ENDIF ! densfit if
+           endif ! df_fitvxc
 #endif
-        END IF
+        END IF ! DOERG
 C aspg+rbast, 2006-09-21
 C
 C       Exchange-correlation contribution to molecular gradient
@@ -754,8 +790,22 @@ C       Hessian transformation
 C       ======================
 C
         IF (DOLR) THEN
-          CALL DFT_LINRES(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
-     &                    RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+#if defined (MOD_DNF)
+C aspg+rb, 2007-01-19, df-vxc modularized code
+           if (DF_FITVXC) then
+              call fit_DFT_LINRES(WORK(KLRCFIT),WORK(KLRXCVEC),
+     &                            NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
+     &                            RHO,RHOGRD,RHG,WGHT,DOGGA,B0,
+     &                            nskipped)
+           else  ! df_fitvxc
+              CALL DFT_LINRES(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
+     &                        GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
+           endif
+#else
+              CALL DFT_LINRES(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
+     &                        GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+#endif /* MOD_DNF */
+          ELCTRB = ELCTRB + WGHT*B0
         END IF
 C
         IF (DOQR) THEN
@@ -765,12 +815,26 @@ C
   300 CONTINUE
 Caspg+rbast, 2006-09-21
 #if defined (MOD_DNF)
+      write(LUPRI,'(2(A,E20.12))') 
+     &     ' DEBUG, integrated number of electrons: '//
+     &     ' nelect: ',ELCTRN,' electb: ',ELCTRB
+      write(LUPRI,*) ' a total of ',nskipped,' out of ',npoint,
+     &               ' integration were skipped while getting b0'
       IF (DF_FITVXC) THEN ! releasing temp space used for the df code
+C aspg+rb, 2007-01-19
+C aspg: do we really need this for linear response?
+         if (DOLR) then
+            CALL SAVE_MATRIX(WORK(KXLRCVEC),1,NBASISAUX,'LRDFVX')
+          CALL MEMREL('dftdr1-lrvxc',WORK,KLRXCVEC,KLRXCVEC,KFREE,LFREE)
+          CALL MEMREL('dftdr1-lrfc', WORK,KLRCFIT ,KLRCFIT ,KFREE,LFREE)
+         endif
+C aspg+rb, 2007-01-19
+C
          CALL SAVE_MATRIX(WORK(KXCVEC),1,NBASISAUX,'FITVXC')
          CALL MEMREL('dftdr1-xcvec',WORK,KXCVEC,KXCVEC,KFREE,LFREE)
          CALL MEMREL('dftdr1-fitco',WORK,KCFIT ,KCFIT ,KFREE,LFREE)
       ENDIF
-#endif
+#endif /* MOD_DNF */
 Caspg+rbast, 2006-09-21
       RETURN
       END
@@ -1819,3 +1883,47 @@ C
       RETURN
       END
 #endif
+
+#if defined (MOD_DNF)
+C /* deck fit_DOEXC */
+      SUBROUTINE fit_DOEXC(ISGGA,VXC_scalar,VXC_vector,GAO,GAO1,
+     &                     VXC_integrals,NDIM)
+C***********************************************************************
+C
+C     Construct the set of integrals of Vxc over fit fucntions,
+C     <V_{xc}|\Chi_i>
+C
+C     Written by Andre Gomes and Radovan Bast
+C     Strasbourg, January 2007
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
+C
+      DIMENSION GAO(*), GAO1(*), VXC_vector(3), VXC_integrals(*)
+      LOGICAL ISGGA
+C
+C ndim should be equal to nbasisaux...
+C
+      IF (ISGGA) THEN
+         DO I = 1, NDIM
+            IOFF1 = I
+            IOFF2 = IOFF1 + NDIM
+            IOFF3 = IOFF2 + NDIM
+            VXC_integrals(I) = VXC_integrals(I)
+     &                       + D1 * VXC_scalar * GAO(I)
+! be careful with the factor below, compared to dalton and to the 
+! evaluation over orbital basis 
+     &                       + D1 * VXC_vector(1) * GAO1(IOFF1)
+     &                       + D1 * VXC_vector(2) * GAO1(IOFF2)
+     &                       + D1 * VXC_vector(3) * GAO1(IOFF3)
+         ENDDO
+      ELSE ! only lda
+         DO I = 1, NDIM 
+            VXC_integrals(I) = VXC_integrals(I)
+     &                       + D1 * VXC_scalar * GAO(I)
+         ENDDO
+      END IF
+      END
+#endif /* MOD_DNF */

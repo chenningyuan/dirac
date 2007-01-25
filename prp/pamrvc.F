@@ -3550,6 +3550,9 @@ C
 #if defined (MOD_DFT)
 #include "dftcom.h"
 #endif
+#if defined (MOD_DNF)
+#include "densfit.h"
+#endif
 C
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
@@ -3593,6 +3596,9 @@ C
 C     Calculate AO Fock matrices
 C     --------------------------
 C
+#if defined (MOD_DNF)
+      DODFLR = .TRUE.
+#endif
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
 #if defined (MOD_DFT)
@@ -3600,7 +3606,11 @@ C
 C     Construct Kohn-Sham contribution
 C     ================================
 C
+#if defined (MOD_DNF)
+      IF(DFTADD.AND..NOT.DF_FITVXC) THEN
+#else
       IF(DFTADD) THEN
+#endif
         IF (NCSIM.GT.0) CALL QUIT('GMOLITX1: MCSCF-DFT not implemented')
 C       Generate standard density matrix
         IREPOP = JSYMOP-1

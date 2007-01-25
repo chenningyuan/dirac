@@ -95,7 +95,12 @@ C first step is to numerically integrate <V_{XC}[\rho_{fit}]|\alpha>
 C
 C     NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
 #if defined (PRG_DIRAC)
+      if (DODFLR) then
+      IOPTS = 4
+      else
       IOPTS = 1
+      endif
+      write (*,*) ' DEBUG, from df_vxc, IOPTS=',IOPTS
       CALL DFTEXC(DMAT,DUMMY,DUMMY,1,1,1,IOPTS,WORK(KFREE),LFREE,
      &              IPRSCF)
 #else
@@ -112,7 +117,11 @@ C
       endif
 
       CALL READ_MATRIX(WORK(KGJK),NBASISAUX,NBASISAUX,'FITXCG')
+      if (DODFLR) then 
+      CALL READ_MATRIX(WORK(KVXCI),1,NBASISAUX,'LRDFVX')
+      else
       CALL READ_MATRIX(WORK(KVXCI),1,NBASISAUX,'FITVXC')
+      endif
 C .. and create b_k = \sum_j [<integral above>]Gjk 
 C    which is then used to update cfit...
 C
