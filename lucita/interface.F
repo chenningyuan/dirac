@@ -1645,7 +1645,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
       IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
 C       CALL GETOBS2(ECORE_ENV,NAOS_ENV,NMOS_ENV)
-        call quit( 'No MOLCAS ENVIRONMENT!' )
+        stop 'No MOLCAS ENVIRONMENT!'
       ELSE IF(ENVIRO(1:6).EQ.'DALTON' ) THEN
         CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV)
       ELSE IF(ENVIRO(1:5).EQ.'LUCIA') THEN
@@ -3660,42 +3660,39 @@ C     Distribute the information read from MRCONEE
 C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-         CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(DUMCHA,IDUMMY,MPI_CHARACTER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUM2,IDUMMY,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NSTR,NFSYM,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NCORE,NFSYM,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NDELE,NFSYM,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMAR,2*MORB,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(DUMAR,MORB,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMAR,MORB,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NBREPD,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(DUMCHA,IDUMMY,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUM2,IDUMMY,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NSTR,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NCORE,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NDELE,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUMAR,2*MORB,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(DUMAR,MORB,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUMAR,MORB,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NBREPD,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
       END IF
 #endif
 
@@ -7241,8 +7238,7 @@ C
       IF (NMPROC.GT.1) THEN
          CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,MASTER,
@@ -7326,7 +7322,190 @@ C
 C
       ECORE = ECORE_DIR
 *
+      return
       end
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*                                                                     *
+***********************************************************************
+*  Read DIRAC-COULOMB two-electron integrals
+*  (Later also BREIT integrals)
+*  (GAUNT integrals can be included in COULOMB type ints.,
+*   because they have the same symmetry.)
+*
+      subroutine rdtwo_diracxx(RKLR,
+     &                       LUTWO,DIRACTWO,
+     &                       NDIM,ISPINFREE,MORB,
+     &                       KR,IOFF12,NUMINT,INDK,INDL,IPRINT)
+*
+      implicit real*8 (A-H,O-Z)
+*
+#include "lucipar.inc"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "files.inc"
+      character*8 DIRACTWO
+      character*10 DATEX,DATEXB,TIMEX*8,TIMEXB*8
+      logical REALAR
+      INTEGER MODREST
+c     logical BREIT
+*
+      dimension RKLR((2*NDIM)**4)
+      dimension KR(-NDIM:NDIM),INDK((2*NDIM)**4),INDL((2*NDIM)**4),
+     &          IOFF12(MORB,MORB),NUMINT(MORB,MORB)
+*
+#if defined (VAR_MPI)
+      MASTER = MPARID
+      MYPROC = MYTID
+C     Add the master node
+      NMPROC = NUMNOD + 1
+#else
+      MASTER = 0
+      MYPROC = 0
+      NMPROC = 1
+#endif
+      NTESTL = 00
+      NTEST = max(NTESTL,IPRINT)
+*
+      REALAR = .TRUE.
+      TRESINT = 1.D-12
+      NINT = 0
+      N2EFIL = 0
+      ISYMOFF = 0
+      INITRD = 0
+*
+* Determine name of file (default is 'MDCINT  ')
+   30 if (N2EFIL.ge.1.and.N2EFIL.le.9) then
+        write(DIRACTWO,'(A7,I1)') 'MDCINT0',N2EFIL
+      else if (N2EFIL.ge.10.and.N2EFIL.le.99) then
+        write(DIRACTWO,'(A6,I2)') 'MDCINT',N2EFIL
+      end if
+*
+* Open file (using same logical unit for all files)
+      open (LUTWO,FILE=DIRACTWO,FORM='UNFORMATTED')
+      rewind (LUTWO)
+      if (N2EFIL.eq.0) then
+        read (LUTWO) datex,timex,nkr,
+     &   (kr(i),kr(-i),i=1,nkr)
+      end if
+*
+      if (2*NKR.ne.MORB) then
+        write(6,*) 'MRCONEE and MDCINT are incompatible.'
+        stop 'Quitting.'
+      end if
+*
+      if (2*NKR.ne.MORB) then
+        write(6,*) 'MRCONEE and MDCINT are incompatible.'
+        stop 'Quitting.'
+      end if
+      write(6,*) 'Integrals have been calculated on the'
+      write(6,'(A12,1X,A)') '            ',DATEX,' at ',TIMEX
+      if (NTEST.ge.5) then
+        write(6,*)
+        write(6,*) 'Info from MDCINT file'
+        write(6,*) 'NKR is ',NKR
+        write(6,*) 'KR array:'
+        do I=1,NKR,1
+          write(6,'(2I8)') KR(-I),KR(I)
+        end do
+      end if
+C
+C     -------------------------
+C     READ IN COULOMB INTEGRALS
+C     -------------------------
+C
+      rewind (LUTWO)
+      if (N2EFIL.eq.0) read (LUTWO)
+      IKR = 0
+      JKR = 0
+  10  IKR_SAVE = IKR
+      JKR_SAVE = JKR
+      read (LUTWO) IKR,JKR,NZ,
+     &             (indk(inz+ISYMOFF),indl(inz+ISYMOFF),inz=1,NZ,1),
+     &             (rklr(inz+ISYMOFF),inz=1,NZ,1)
+*
+      if (IKR.eq.0) then
+        close (LUTWO)
+        write(6,*) 'End of file MDCINT.'
+        if (JKR.eq.0) then
+          write(6,*) 'Only or last 2-el. integral file.'
+          goto 20
+        else if (JKR.ne.0) then
+          N2EFIL = N2EFIL + 1
+          if (N2EFIL.le.9) then
+            write(6,'(A,A7,I1)') 'Reading next file ','MDCINT0',N2EFIL
+          else if (N2EFIL.gt.9.and.N2EFIL.le.99) then
+            write(6,'(A,A6,I2)') 'Reading next file ','MDCINT',N2EFIL
+          end if
+          goto 30
+        end if
+      end if
+*
+      if (IKR.ne.IKR_SAVE.or.JKR.ne.JKR_SAVE) then
+*  Otherwise redundant Kramers block has been read (symmetric)
+        IOFF12(KR(IKR),KR(JKR)) = ISYMOFF
+        NUMINT(KR(IKR),KR(JKR)) = NZ
+      else
+        write(6,*) 'Redundant integral block detected.'
+        write(6,*) 'IKR,IKR_SAVE,JKR,JKR_SAVE ',
+     &              IKR,IKR_SAVE,JKR,JKR_SAVE
+        stop 'Quitting.'
+      end if
+*
+      if (NTEST.ge.10) then
+        write(6,'(A,2I6)') 'IKR,JKR : ',IKR,JKR
+        write(6,'(A,2I4,A,I6)')
+     &        'IOFF12(',KR(IKR),KR(JKR),') = ',IOFF12(KR(IKR),KR(JKR))
+        write(6,'(A,2I4,A,I6)')
+     &        'NUMINT(',KR(IKR),KR(JKR),') = ',NUMINT(KR(IKR),KR(JKR))
+        write(6,'(A,1X,2I6)') 'Integral block: ',KR(IKR),KR(JKR)
+        if (NTEST.ge.100) then
+          do INT=1,NZ,1
+            write(6,'(A,2I8,1X,1F18.12)')
+     &      'Indices K,L ',KR(INDK(INT+ISYMOFF)),KR(INDL(INT+ISYMOFF)),
+     &                     RKLR(INT+ISYMOFF)
+          end do
+        end if
+      end if
+*
+      ISYMOFF = ISYMOFF + NZ
+C?    write(6,*) 'ISYMOFF = ',ISYMOFF
+      GOTO 10
+*
+   20 if (NTEST.ge.50) then
+        write(6,*)
+        write(6,*) '===================='
+        write(6,*) 'rdtwo_dirac speaking'
+        write(6,*) '===================='
+        write(6,*) 'Full two-electron integral list:'
+        do IJ=1,MORB,1
+          do II=1,MORB,1
+            write(6,*) 'Block :',II,IJ
+            do INT=1,NUMINT(II,IJ),1
+              write(6,'(2I4,2F18.12)')
+     &              KR(INDK(INT+IOFF12(II,IJ))),
+     &              KR(INDL(INT+IOFF12(II,IJ))),
+     &              RKLR(INT+IOFF12(II,IJ))
+            end do
+          end do
+        end do
+      end if
+*
+      RETURN
+ 1000 FORMAT (
+     &/I8,' Unique Coulomb integrals read from MDCINT (',A10,1X,A8,')'
+     &/I8,' Coulomb integrals written to MRCTWOE')
+ 1001 FORMAT (
+     &/I8,' Unique Coulomb integrals read from MDCINT (',A10,1X,A8,')'
+     &/I8,' Unique Breit integrals read from MDBINT (',A10,1X,A8,')'
+     &/I8,' Combined integrals written to MRCTWOE')
+ 1002 FORMAT (/' Real arithmetic will be used in EXPAND and TWOLIN')
+ 1003 FORMAT (/' Complex arithmetic will be used')
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -7360,11 +7539,15 @@ C
 #endif
 #include "files.inc"
 *
+*      INTEGER Str_Length, MYTIMEXL, MYDATEXL, intkrm, intkrp, INTITER  
       INTEGER intkrm, intkrp, INTITER  
       character*8 DIRACTWO
-      character*10 DATEX,TIMEX*8
+      character*10 DATEX,DATEXB,TIMEX*8,TIMEXB*8
       logical REALAR
       REAL*8 INDKRL, INDLRL, RKLRRL
+      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
+*      New characters used for timing 
+      CHARACTER CPUSTEP*12, WALLSTEP*12, CPUSTEPX*12,WALLSTEPX*12
 c     logical BREIT
 *
       dimension RKLR((2*NDIM)**4)
@@ -7434,10 +7617,10 @@ C
       if (2*NKR.ne.MORB) then
         if (myproc.eq.master) then
           write(6,*) 'MRCONEE and MDCINT are incompatible.'
-          call quit( 'Quitting.' )
+          stop 'Quitting.'
         else
           write(12,*) 'MRCONEE and MDCINT are incompatible.'
-          call quit( 'Quitting.' )
+          stop 'Quitting.'
         end if
       end if
       if (myproc.eq.master) then
@@ -7461,43 +7644,26 @@ C
 *
       if (myproc.eq.master) then
         rewind (LUTWO)
+      else 
+        open(LUTWO,FILE=DIRACTWO,FORM='UNFORMATTED')
+        rewind (LUTWO)
+      end if
         if (N2EFIL.eq.0) read (LUTWO)
-       end if
 *
       IKR = 0
       JKR = 0
   10  IKR_SAVE = IKR
       JKR_SAVE = JKR
-      IF(MYPROC.EQ.MASTER) THEN
          read (LUTWO) IKR,JKR,NZ,
      &               (indk(inz+ISYMOFF),indl(inz+ISYMOFF),inz=1,NZ,1),
      &               (rklr(inz+ISYMOFF),inz=1,NZ,1)
-      ENDIF
 *
-#if defined (VAR_MPI)
-      if(nmproc.gt.1) then
-      istart = 1
-        call mpi_bcast(ikr,1,my_MPI_INTEGER,master,
-     &                 mpi_comm_world,ierr)
-        call mpi_bcast(jkr,1,my_MPI_INTEGER,master,
-     &                 mpi_comm_world,ierr)
-        call mpi_bcast(nz,1,my_MPI_INTEGER,master,
-     &                 mpi_comm_world,ierr)
-        do ii = 1, nz
-        call mpi_bcast(indk(ii+isymoff),1,my_MPI_INTEGER,master,
-     &                 mpi_comm_world,ierr)
-        call mpi_bcast(indl(ii+isymoff),1,my_MPI_INTEGER,master,
-     &                 mpi_comm_world,ierr)
-        call mpi_bcast(rklr(ii+isymoff),1,MPI_REAL8,master,
-     &                 mpi_comm_world,ierr)
-        end do
-      end if
-#endif
       if (IKR.eq.0) then
         if (myproc.eq. master) then
           close (LUTWO)
           write(6,*) 'End of file MDCINT.'
         else 
+          close(LUTWO)
          write(12,*) 'End of file MDCINT.' 
         end if
         if (JKR.eq.0) then
@@ -7534,7 +7700,7 @@ C
         write(6,*) 'Redundant integral block detected.'
         write(6,*) 'IKR,IKR_SAVE,JKR,JKR_SAVE ',
      &              IKR,IKR_SAVE,JKR,JKR_SAVE
-        call quit( 'Quitting.' )
+        stop 'Quitting.'
       end if
 *
       if (NTEST.ge.10) then
@@ -7576,6 +7742,11 @@ C
         end do
       end if
 *
+#if defined (VAR_MPI)
+      CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
+#endif
+*
+      RETURN
  1000 FORMAT (
      &/I8,' Unique Coulomb integrals read from MDCINT (',A10,1X,A8,')'
      &/I8,' Coulomb integrals written to MRCTWOE')
@@ -7855,16 +8026,16 @@ C       this is necessary! - sk -
 C 
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-        CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,
-     &    MASTER,MPI_COMM_WORLD,IERR)
-        DO I = 1,NBSYM,1 
-          CALL MPI_BCAST(NISH_L(I),1,my_MPI_INTEGER,
-     &      MASTER,MPI_COMM_WORLD,IERR)
-          CALL MPI_BCAST(NASH_L(I),1,my_MPI_INTEGER,
-     &      MASTER,MPI_COMM_WORLD,IERR)
-          CALL MPI_BCAST(NSSH_L(I),1,my_MPI_INTEGER,
-     &      MASTER,MPI_COMM_WORLD,IERR)
-        END DO
+      CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,
+     &  MASTER,MPI_COMM_WORLD,IERR)
+      DO I = 1,NBSYM,1 
+      CALL MPI_BCAST(NISH_L(I),1,my_MPI_INTEGER,
+     &  MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NASH_L(I),1,my_MPI_INTEGER,
+     &  MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NSSH_L(I),1,my_MPI_INTEGER,
+     &  MASTER,MPI_COMM_WORLD,IERR)
+      END DO
       END IF
 #endif
 C
@@ -7878,7 +8049,7 @@ C
           write(6,*) ' NOCC_L(ISM=',ISM,') = ', NOCC_L(ISM)
           write(6,*) ' Use GASCI setup (user option) '
           write(6,*) '  or increase parameter MXTSOB from: ',MXTSOB
-          call quit( 'Quitting.' )
+          stop 'Quitting.'
         end if
         NORB_L(ISM) = NOCC_L(ISM) + NSSH_L(ISM)
         if ((ICT(ISM)/2).ne.NORB_L(ISM)) then
@@ -7888,7 +8059,7 @@ C
         if (NISH_L(ISM).lt.0) then
           write(6,*) 'Impossible number of inactive shells.'
           write(6,*) 'NISH_L for symm. ',ISM,' is ',NISH_L(ISM)
-          call quit( 'Quitting.' )
+          stop 'Quitting.'
         end if
       end do
 C
@@ -7900,7 +8071,7 @@ C
           write(6,*) ' NOCC_L(ISM) is ',NOCC_L(ISM)
           write(6,*) ' NORB_L(ISM) is ',NORB_L(ISM)
         end do
-        call quit( 'Quitting.' )
+        stop 'Quitting.'
       end if
 *
 * Determine double group label
@@ -7932,7 +8103,7 @@ C
         write(6,*) 'You have specified open-shell electrons in DIRAC.'
         write(6,*) 'Im am not allowed to run WAFFCT = DHFSCF'
         write(6,*) 'in this case. Use OSHSCF instead.'
-        call quit( 'Quitting.' )
+        stop 'Quitting.'
       end if
       NACTELD = NAELEC
 *
