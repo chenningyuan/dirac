@@ -443,7 +443,8 @@ dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \\
 lucita/ciinfo.o  lucita/density.o  lucita/diagonal.o  lucita/diagonalize.o  \\
 lucita/fock.o  lucita/interface.o  lucita/io.o  lucita/lucia_cc.o  lucita/lucia_icci.o  lucita/memory.o \\
 lucita/program.o  lucita/property.o  lucita/sigma.o  lucita/strings.o  lucita/transform.o  lucita/utils.o  \\
-lucita/vecmat.o  lucita/par_lucia.o  lucita/par_io.o  lucita/par_collective_io.o  lucita/par_solver.o
+lucita/vecmat.o  lucita/par_lucia.o  lucita/par_io.o \\
+lucita/par_collective_io.o  lucita/par_solver.o  lucita/par_sigma.o \\
 
 #
 # All .o files for C routines in .c files are listed separately from OBJS
