@@ -332,10 +332,9 @@ C quick hack to get the projection analysis to work, before IREPB and ITIMB
 C were undefined, hence the crash.
 C  irepb: Molecular point group symmetry
 C  itimb: Time reversal symmetry
-      IREPB = IPRPSYM(INDXPR)-1
-      ITIMB = IPRPTIM(INDXPR)
-C
-           CALL PRJEX1(WORK(KPFMT),PMAT,WORK(KRVEC),
+            IREPB = IPRPSYM(INDXPR)-1
+            ITIMB = IPRPTIM(INDXPR)
+            CALL PRJEX1(WORK(KPFMT),PMAT,WORK(KRVEC),
      &                  INDXPR,IREPB,ITIMB,NP(1,0),FIRST,IPREXP,
      &                  WORK,KFREE,LFREE)
 Caspg
@@ -450,7 +449,7 @@ Caspg
             CALL PRJEX2(EXPVAL(I),IDIMENS,WORK(KPTRI),
      &                  WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
      &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
-     &                  WORK(KNR),NTOT,WORK(KPM),WORK(KFMAT),
+     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KPM),
      &                  WORK(KINDX),IPREXP,PMAT,WORK,KFREE,LFREE)
             CALL PRSYMB(LUPRI,'-',76,0)
           ENDIF
@@ -691,7 +690,6 @@ CMI ... test ouput - print the PMAT and DMAT matrixes
       ENDIF
       ENDDO
       EXPVAL = EXPVAL + EXPVAL
-CTROND      CALL MEMCHK('PRPEX3 2.0',WORK,1)
 C
       CALL QEXIT('PRPEX3')
       RETURN
@@ -728,9 +726,6 @@ C
 C
 C     Transform on the fly
 C
-
-      CALL MEMCHK('PRJEX1 1.0',WORK,1)
-
       IOPTYP = IPRPTYP(INDXPR)
       NDIM = 0
       DO IFRP = 1,NFSYM
@@ -813,9 +808,7 @@ CTROND
           CLOSE(LUBUF,STATUS='KEEP')
         ENDDO       
       ENDIF
-
-      CALL MEMCHK('PRJEX1 1.0',WORK,1)
-
+C
       CALL QEXIT('PRJEX1')
       RETURN
       END
@@ -823,7 +816,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjex2 */
       SUBROUTINE PRJEX2(EXPVAL,IDIMENS,PTRI,PFO,DFO,BVEC,IBUF,
      &                  INDXPR,NCNT,NMO,
-     &                  NR,NTOT,PM,FMAT,INDX,
+     &                  NR,NTOT,FMAT,PM,INDX,
      &                  IPRINT,PBUF,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -856,7 +849,7 @@ C
       CALL DZERO(FMAT,N2TOT)
       CALL DZERO(PM,NTOT)
 C
-C     Make density matrix in fragment orbitals
+C     Make population matrix in fragment orbitals
 C
       IPD = 1
       DO 10 IFRP = 1,NFSYM
@@ -898,7 +891,7 @@ C
         WRITE(LUPRI,'(9X,A,E16.8,E16.5)')
      &    '- hybridization   : ',TMP,TMP/EXPVAL
       ENDDO
-      WRITE(LUPRI,'(3X,A,19X,E16.8,E16.5)') 'Total: ',TOT,TOT/EXPVAL
+      WRITE(LUPRI,'(3X,A,19X,E16.8,E16.5)') 'Total: ',TOT,TOT/EXPVAL 
       WRITE(LUPRI,'(A)') ' * Interatomic contributions:'
       TOT = D0
       DO J = 1,NREFS
@@ -1444,7 +1437,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck prjex3 */
+C/* Deck prjex3 */
       SUBROUTINE PRJEX3(EXPVAL,IDIMENS,PTRI,PFO,DFO,NCNT,
      &                  NR,NMO,IBUF,PBUF,
      &                  FMAT,PM,INDX,NTOT,INDXPR,IPRINT)
@@ -1467,12 +1460,10 @@ C
      &          NR(*),PBUF(*),IBUF(*),FMAT(NTOT,NTOT),PM(NTOT),INDX(2,*)
 C
 #include "sdpre.h"
-      NTRI = NCNT*(NCNT+1)/2
-Caspg
-C     write (6,*) 'debug: ntri',ntri,idimens
 C
 C     Make population matrix
 C
+      NTRI = NCNT*(NCNT+1)/2
       CALL DZERO(PTRI,NTRI)
       DO IZ = 1,NZ
         IJ = 0
