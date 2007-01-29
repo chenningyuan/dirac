@@ -76,3 +76,38 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck ibtabini */
+      SUBROUTINE IBTABINI(IBTAB)
+C***********************************************************************
+C
+C     Initialize table with IBTAB(I) = NBITS(I)
+C
+C     Input : none
+C
+C     Output:
+C       IBTAB
+C
+C     Written by J. Thyssen - Feb 27 2001
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION IBTAB(0:255)
+C
+#include "ibtfun.h"
+C
+      DO I = 0, 255
+         ID = I
+         NB = 0
+         DO J = 1, 8
+            NB = NB + IBTAND(1,ID)
+            ID = ID / 2
+         END DO
+         IBTAB(I) = NB
+      END DO
+C
+      RETURN
+      END
