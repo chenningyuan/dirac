@@ -349,9 +349,9 @@ CSK      END IF
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
 CSK new variable
       CALL MEMMAN(KBSCLFC,NBLOCK,'ADDL  ',2,'BSCLFC')
-      CALL MEMMAN(KBLCKIF,NBLOCK,'ADDL  ',1,'IBLINF')
-      CALL MEMMAN(KBLCKPD,NBLOCK,'ADDL  ',1,'IBLCKP')
-      CALL MEMMAN(KBLCKWT,2*NMPROC,'ADDL  ',1,'IBLCKW')
+      CALL MEMMAN(KBLCKIF,NBLOCK,'ADDS  ',1,'IBLINF')
+      CALL MEMMAN(KBLCKPD,NBLOCK,'ADDS  ',1,'IBLCKP')
+      CALL MEMMAN(KBLCKWT,2*NMPROC,'ADDS  ',1,'IBLCKW')
       CALL COPVEC(WORK(KLCI1BT),WORK(KBLCKIF),NBLOCK)
       CALL ISETVC(WORK(KBLCKWT),NNULL,2*NMPROC)
       IMAXALLO = MAX(MXCIV**2,MXCIV*(MXCIV+1)/2)
@@ -541,6 +541,20 @@ CSK     &    CALL SKPVCD(LUSC41,JROOT-1,WORK(KVEC1),0,LBLK)
           ENDDO
           CALL REWINO(LUC)
         ENDIF
+        IF(NROOT.EQ.1)THEN
+          CALL REWINO(LUHC)
+          CALL REWINO(LUSC41)
+          CALL COPVCD_PAR_BDRIV(LUHC,LUSC41,WORK(KVEC1),WORK(KBLCKPD),
+     &                          NBLOCK,MPI_COMM_WORLD,0,-1,LUDUMPF)
+          IF(MYPROC.EQ.MASTER) CALL COPVCD(LUSC41,LUHC,WORK(KVEC1),1,
+     &                                     LBLK)
+          CALL REWINO(LUSC1)
+          CALL REWINO(LUSC41)
+          CALL COPVCD_PAR_BDRIV(LUSC1,LUSC41,WORK(KVEC1),WORK(KBLCKPD),
+     &                          NBLOCK,MPI_COMM_WORLD,0,-1,LUDUMPF)
+          IF(MYPROC.EQ.MASTER) CALL COPVCD(LUSC41,LUSC1,WORK(KVEC1),1,
+     &                                     LBLK)
+        ENDIF
       ENDIF
 *
 #endif
@@ -708,6 +722,7 @@ csk      write(6,*)'problem here (GASCI) 3', myproc
       close(unit=LUSC39,status='DELETE')
       close(unit=LUSC40,status='DELETE')
       close(unit=LUSC41,status='DELETE')
+      close(unit=LUDUMPF,status='KEEP')
 *
       RETURN
       END
