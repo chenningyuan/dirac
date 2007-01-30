@@ -38,7 +38,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE CIEIG5(MV7,INICI,EROOT,VEC1,
-     &           VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
+     &           VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,LU41,
      &           NDIM,NBLK,NROOT,MAXVEC,MXCIIT,LUINCI,
      &           IPRT,PEIGVC,NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,
      &           EIGSHF,ICISTR,LBLK,IDIAG,VEC3,THRES_E,
@@ -48,7 +48,7 @@ C
      &           CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,ICLS_A2,MXLNG,
      &           IROOTHOMING,IBASSPC,EBASC,CBASC,NSPC,
      &           MULSPC,IPAT,LPAT,ISPC,LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKI,
-     &           IBLKDSTND,IBLKNDNB)
+     &           IBLKDSTND,IBLKNDNB,SCRRED)
 *
 * Master routine for CI diagonalization
 *
@@ -94,9 +94,9 @@ C?    WRITE(6,*) ' IROOTHOMING in CIEIG5 ', IROOTHOMING
 * ==================================================
 * In order treat degeneracies, the lowest 4 * NROOT elements are
 *.obtained
-       IF(MYPROC.EQ.MASTER) THEN
-        write(LUWRTOUT,*) ' CIEIG5 NDIM NROOT ', NDIM,NROOT
-       END IF
+CSK       IF(MYPROC.EQ.MASTER) THEN
+CSK        write(LUWRTOUT,*) ' CIEIG5 NDIM NROOT ', NDIM,NROOT
+CSK       END IF
           NFINDM = MIN(NDIM,4*NROOT)
           IF(IODENSEPAR.EQ.0) THEN
             CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,ISCR1(1+2*NFINDM),
@@ -105,7 +105,7 @@ C?    WRITE(6,*) ' IROOTHOMING in CIEIG5 ', IROOTHOMING
 #if defined (VAR_MPI)
             CALL FNDMND_PAR(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
      &                      ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,
-     &                      SCR1,IPRT)
+     &                      SCR1,IBLOCKAR,IBLKDSTND,IBLKI,IPRT)
 #endif
           END IF
           CALL REWINO(LU1)
@@ -122,19 +122,18 @@ C?    WRITE(6,*) ' IROOTHOMING in CIEIG5 ', IROOTHOMING
                 GOTO 90
               END IF
             END IF
-C?          WRITE(6,*) ' IROOT NDEG ', IROOT,NDEG
 *
-           IF(MYPROC.EQ.MASTER) THEN
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
-              WRITE(LUWRTOUT,*) ' WARNING WARNING WARNING WARNING ! '
-              WRITE(LUWRTOUT,*) ' DEGENERATE INITIAL VECTORS FOR CI '
-              WRITE(LUWRTOUT,*) ' I AM NOT ALLOWED TO TAKE THIS INTO '
-              WRITE(LUWRTOUT,*) ' CONSIDERATION SINCE INIDEG = 0 '
-              WRITE(LUWRTOUT,*)
-              WRITE(LUWRTOUT,*) ' I hope you know what you are doing '
+              IF(MYPROC.EQ.MASTER) THEN
+                WRITE(LUWRTOUT,*) ' WARNING WARNING WARNING WARNING ! '
+                WRITE(LUWRTOUT,*) ' DEGENERATE INITIAL VECTORS FOR CI '
+                WRITE(LUWRTOUT,*) ' I AM NOT ALLOWED TO TAKE THIS INTO '
+                WRITE(LUWRTOUT,*) ' CONSIDERATION SINCE INIDEG = 0 '
+                WRITE(LUWRTOUT,*)
+                WRITE(LUWRTOUT,*) ' I hope you know what you are doing '
+              END IF
               NDEG = 1
             END IF
-           END IF
 
 *. Initial guess in compressed form in SCR1
             SCALE = 1.0D0/SQRT(DFLOAT(NDEG))
@@ -152,25 +151,13 @@ C?          WRITE(6,*) ' IROOT NDEG ', IROOT,NDEG
             ELSE
               JPACK = 0
             END IF
-CSK            IF(MYPROC.EQ.MASTER) WRITE(LUWRTOUT,*) 'JPACK = ',JPACK
-C           WRITE(6,*) ' Initial guess modified '
-C           WRITE(6,*) ' Initial guess modified '
-C           WRITE(6,*) ' Initial guess modified '
-C           WRITE(6,*) ' Initial guess modified '
-C           WRITE(6,*) ' Initial guess modified '
-C           WRITE(6,*) ' Initial guess modified '
-C           WRITE(6,*) ' Initial guess modified '
-C           WRITE(6,*) ' Initial guess modified '
-C           ONE = 1.0D0
-C           CALL WRSVCD(LU1,LBLK,VEC1,2    ,ONE,1,NDIM,
-C    &           LUDIA,JPACK)
           IF(IODENSEPAR.EQ.0) THEN
             CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
-     &           LUDIA,JPACK)
+     &                  LUDIA,JPACK)
           ELSE
 #if defined (VAR_MPI)
-            CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
-     &           LUDIA,JPACK)
+            CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,
+     &                      IBLOCKAR,IBLKDSTND,IBLKI,JPACK)
 #endif
           END IF
             IBASE = IBASE + NDEG
@@ -200,6 +187,25 @@ C    &           LUDIA,JPACK)
 *. Vectors assumed already in LU1
         IF(IPRT.GT. 1 )
      &  WRITE(LUWRTOUT,*)' Initial CI vector assumed in place '
+#if defined (VAR_MPI)
+        IF(NPRDET.EQ.0.AND.IODENSEPAR.GT.0)THEN
+          IF(MYPROC.EQ.MASTER) THEN
+            CALL REWINO(LU1)
+            CALL REWINO(LU41)
+            DO IROOT = 1, NROOT
+              CALL COPVCD(LU1,LU41,VEC1,0,LBLK)
+            END DO
+          ENDIF
+            CALL REWINO(LU1)
+            CALL REWINO(LU41)
+          DO IROOT = 1, NROOT 
+            CALL COPVCD_PAR_BDRIV2(LU41,LU1,VEC1,IBLKDSTND,
+     &                            IBLKI,MPI_COMM_WORLD,0,-1,LUDUMPF)
+          END DO
+          CALL REWINO(LU1)
+          CALL REWINO(LU41)
+        ENDIF
+#endif
       END IF
 *
 *                 ========================
@@ -229,7 +235,7 @@ C    &   '  Largest allowed number of vectors..',MAXVEC
       KLFREE = KWORK + MAXVEC*(MAXVEC+1)
       IF( IPRT .GE. 5 ) THEN
          WRITE(6,*) ' KRNRM KEIG KFIN KAPROJ KAVEC KWORK KLFREE '
-         WRITE(6,'(6I4)')  KRNRM,KEIG,KFIN,KAPROJ,KAVEC,KWORK,KLFREE
+         WRITE(6,'(6I8)')  KRNRM,KEIG,KFIN,KAPROJ,KAVEC,KWORK,KLFREE
       END IF
       IF( KLFREE-1 .GT. LLWRK) THEN
            WRITE(6,'(A,2I5)' )
@@ -283,7 +289,8 @@ C?       WRITE(6,*) ' MICDV6_PAR will be called '
      &                     MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
      &                     SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &                     H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
-     &                     LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKI)
+     &                     LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKDSTND,IBLKI,
+     &                     SCRRED)
 #endif
           END IF
         ELSE
@@ -3253,7 +3260,6 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
      &                  LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRTXX,
      &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-*     &                  E_CONV,IROOTHOMING,LUWRTOUT)
      &                  E_CONV,IROOTHOMING,LUWRTOUT,BSCRFAC,IBKINF,
      &                  IBLOCKI)
 *
@@ -3309,7 +3315,7 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
        DIMENSION H0(*),IPNTR(1)
        DIMENSION H0SCR(*)
        INTEGER ITEST, IRTNDRAT
-       INTEGER ICOMM, ICOLOR, IKEY
+       INTEGER ICOLOR, IKEY
 
 *
 * Dimensioning required of local vectors
@@ -3401,6 +3407,13 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
 *.Initial iteration
 * ===================
        ITER = 1
+CSK       CALL REWINO(LU1)
+CSK       IF(MYPROC.EQ.MASTER) THEN
+CSK        DO I = 1, NINVEC
+CSK          write(6,*)'initial vector',I
+CSK          CALL WRTVCD(VEC1,LU1,0,-1)
+CSK        END DO
+CSK       END IF
        CALL REWINO(LU1)
        CALL REWINO(LU2)
 *
@@ -3527,6 +3540,10 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
 #endif
 *
 *
+CSK       IF(MYPROC.EQ.MASTER)THEN
+CSK         WRITE(6,*)'MAXVEC = ',MAXVEC
+CSK         CALL WRTMAT(APROJ,1,MAXVEC*(MAXVEC+1)/2,1,MAXVEC*(MAXVEC+1)/2)
+CSK       ENDIF
 *
 *. determine the (initial) parallel route --> here we go!
 *. NPARWAY controls the parallel fine-grain version that is used
@@ -3802,12 +3819,14 @@ CSK        print*,'IOLSTM ',IOLSTM
              CALL REWINO(LU5)
              CALL REWINO(LU7)
              GAMMA = INPRDD(VEC1,VEC2,LU5,LU7,0,LBLK)
+CSK             WRITE(6,*) ' Gamma = ', Gamma
              IF(IPRT.GE.1000) WRITE(6,*) ' Gamma = ', Gamma
 * is X an eigen vector for (H0 - 1 ) - 1
              CALL REWINO(LU5)
              CALL REWINO(LU7)
               VNORM =
      &        SQRT(VCSMDN(VEC1,VEC2,-GAMMA,1.0D0,LU7,LU5,0,LBLK))
+CSK              write(6,*) ' VNORM = ', VNORM
               IF(IPRT.GE.1000) write(6,*) ' VNORM = ', VNORM
               IF(VNORM .GT. 1.0D-7 ) THEN
                 IOLSAC = 1
@@ -3816,10 +3835,13 @@ CSK        print*,'IOLSTM ',IOLSTM
               END IF
               IF(IOLSAC .EQ. 1 ) THEN
                 IF(IPRT.GE.5) WRITE(6,*) ' Olsen Correction active '
+CSK                WRITE(6,*) ' Olsen Correction active '
                 DELTA = INPRDD(VEC1,VEC2,LU7,LU6,1,LBLK)
                 FACTOR = -(DELTA/GAMMA)
                 IF(IPRT.GE.5) WRITE(6,*) ' DELTA,GAMMA,FACTOR'
                 IF(IPRT.GE.5) WRITE(6,*)   DELTA,GAMMA,FACTOR
+CSK                WRITE(6,*) ' DELTA,GAMMA,FACTOR'
+CSK                WRITE(6,*)   DELTA,GAMMA,FACTOR
                 CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU6,LU5,LU7,1,LBLK)
                 CALL COPVCD(LU7,LU6,VEC1,1,LBLK)
 *
@@ -4586,8 +4608,8 @@ CSK        write(6,*)'IRDWR of myproc',IRDWR,myproc
 #if !defined(SYS_LOCALDISKS)
         IF(MYPROC.NE.MASTER) THEN
           IF(MYNEW_ID.EQ.0) THEN
-            CALL MPI_RECV(LUSCR_MPI,1,my_MPI_INTEGER,0,11,
-     &                    ICOMM,ISTAT,IERR)
+            CALL MPI_RECV(LUSCR_MPI,1,my_MPI_INTEGER,0,11,ICOMM,
+     &                    ISTAT,IERR)
           END IF
           CALL MPI_BARRIER(MYNEW_COMM,IERR)
         END IF
@@ -4799,6 +4821,8 @@ CSK#endif
       END IF
 *
  170  CONTINUE
+CSK      write(6,*)'APROJ is'
+CSK      CALL WRTMAT(APROJ,1,MAXVEC*(MAXVEC+1)/2,1,MAXVEC*(MAXVEC+1)/2)
 *
 *. 2.3 Diagonalize projected matrix
       NVEC = NVEC + IADD
@@ -4955,7 +4979,7 @@ C    &         VEC1,VEC2,NVEC,IREW,LBLK)
           XNORM = INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK)
           CALL REWINE(LU5,LBLK)
           SCALE  = 1.0D0/SQRT(XNORM)
-C         WRITE(6,*) ' SCALE = ', SCALE
+CSK          WRITE(6,*) ' SCALE = ', SCALE
           WORK(IROOT) = SCALE
 *. scale LU5 => LU7
           CALL REWINO(LU5)
@@ -5011,7 +5035,7 @@ C         WRITE(6,*) ' SCALE = ', SCALE
         NNVEC = NROOT
 *. Overlap between first vectors on LU1 and LU2
         E11 = INPRDD(VEC1,VEC2,LU1,LU2,1,LBLK)
-C?      WRITE(6,*) ' <Lu1!Lu2> = ', E11
+CSK        WRITE(6,*) ' <Lu1!Lu2> = ', E11
         IF(3*NROOT.LE.MAXVEC) THEN
 *
 *. Orthogonalize the
@@ -5159,14 +5183,12 @@ CSK       write(6,*)'NVEC = ', NVEC
            CALL REWINO(LU5)
            IJ = IVEC*(IVEC-1)/2+JVEC
            APROJ(IJ) = INPRDD(VEC1,VEC2,LU5,LU2,0,LBLK)
-CSK           write(6,*)'myproc: IJ and APROJ(IJ)',myproc,IJ,APROJ(IJ)
          END DO
          CALL REWINO(LU4)
          DO JVEC = NROOT+1,IVEC
            CALL REWINO(LU5)
            IJ = IVEC*(IVEC-1)/2+JVEC
            APROJ(IJ) = INPRDD(VEC1,VEC2,LU5,LU4,0,LBLK)
-CSK           write(6,*)'myproc: IJ and APROJ(IJ)',myproc,IJ,APROJ(IJ)
          END DO
 CSK        ididaproj = ididaproj + 1
        END DO
