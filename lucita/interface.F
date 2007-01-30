@@ -6108,7 +6108,7 @@ CC        IVFLEV = 1               ! could be made more flexible
 601   FORMAT(' NUMBER OF INTEGRALS IN SYMMETRYBLOCK '
      &             ,4I2,' IS : ',I10)
 *
-      close(LUDUMPF)
+*      close(LUDUMPF)
       return
       end
 ***********************************************************************
