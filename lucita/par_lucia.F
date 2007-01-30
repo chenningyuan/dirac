@@ -39,12 +39,13 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE FIND_ACTIVE_BLOCKS_FG(LUIN,LBLK,BLK_A,SEGMNT,ISTBLK)
+      SUBROUTINE FIND_ACTIVE_BLOCKS_PAR(LUIN,LBLK,BLK_A,SEGMNT,
+     &                                  NBLOCK,IBLOCKD)
 *
 *. Find the active (nonvanishing blocks) on LUIN
 *. Non vanishing block is flagged by a 1.0 ( note : real)
 *  in BLK_A
-*  slave version
+*  parallel version
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. Output
@@ -55,57 +56,47 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "lucipar.inc"
-*      INTEGER ISTBLK
+      DIMENSION IBLOCKD(NBLOCK)
 *
       CALL REWINE(LUIN,LBLK)
 *
-      IBLK = 0
-      IBLK = ISTBLK
       NBLK_A = 0
-      NBLK = 0
-*      write(6,*)'ISTBLK',ISTBLK, myproc
 *. Loop over blocks
- 1000 CONTINUE
-        IBLK = IBLK + 1
-*        write(6,*)'IBLK =',IBLK
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          READ(LUIN) LBL
-        ELSE IF  (LBLK .LT. 0 ) THEN
+      DO 500 IBLK = 1, NBLOCK
+*        
+        IF(MYPROC.NE.IBLOCKD(IBLK))THEN
+          BLK_A(IBLK) = 0.0D0
+          GOTO 300
+        ELSE IF(MYPROC.EQ.IBLOCKD(IBLK))THEN
           CALL IFRMDS(LBL,1,-1,LUIN)
-        END IF
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
+          IF( LBL .GE. 0 ) THEN
+            IF(LBLK .GE.0 ) THEN
+              KBLK = LBL
+            ELSE
+              KBLK = -1
+            END IF
+            NO_ZEROING = 1
+            CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                   NO_ZEROING)
+            IF(IMZERO.EQ.0) THEN
+             NBLK_A = NBLK_A + 1
+             BLK_A(IBLK) = 1.0D0
+            ELSE
+             BLK_A(IBLK) = 0.0D0
+            END IF
           END IF
-          NO_ZEROING = 1
-          CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
-          IF(IMZERO.EQ.0) THEN
-           NBLK_A = NBLK_A + 1
-           BLK_A(IBLK) = 1.0D0
-          ELSE
-           BLK_A(IBLK) = 0.0D0
-          END IF
         END IF
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-      NBLK =  (IBLK - ( 1 + ISTBLK))
+ 300  CONTINUE
+*
+ 500  CONTINUE
 *
       NTEST = 0
       IF(NTEST.GE.1) THEN
+        WRITE(6,*)'myproc',MYPROC
         WRITE(6,'(A,I8,I8)')
-     &  ' FIND_A.... Number of total and active Blocks',NBLK,NBLK_A
-      END IF
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Active blocks (slave)',myproc
-        CALL WRTMAT(BLK_A,1,NBLK+ISTBLK,1,NBLK+ISTBLK)
+     &  ' FIND_A.... Number of total and active Blocks',NBLOCK,NBLK_A
       END IF
 *
-      RETURN
       END
 *
 ***********************************************************************
