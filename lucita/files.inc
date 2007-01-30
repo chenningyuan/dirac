@@ -16,7 +16,7 @@ C     The standard input and output units may be redefined in the code
      &               LUSC36_MPIN, LUSC37_MPIN, LUSC38_MPIN, LUSC39_MPIN,
      &               LUSC40_MPIN, NLUSC34_MPI, NLUSC35_MPI, NLUSC36_MPI,
      &               NLUSC37_MPI, NLUSC38_MPI, NLUSC39_MPI, NLUSC40_MPI,
-     &               NDUMPF
+     &               NLUSC41_MPI,NDUMPF
       CHARACTER*10 LUCITABASF  ! generic name for LUCITA output file
       CHARACTER*14 LUCIFILN    ! node-unique LUCITA output file name
       CHARACTER*5 LUDIA_MPIN
@@ -29,7 +29,8 @@ C     The standard input and output units may be redefined in the code
       CHARACTER*9 NLUSC1_MPI, NLUSC2_MPI, NLUSC3_MPI
       CHARACTER*6 LUSC34_MPIN,LUSC35_MPIN,LUSC36_MPIN,LUSC37_MPIN
       CHARACTER*6 LUSC38_MPIN,LUSC39_MPIN,LUSC40_MPIN
+      CHARACTER*6 LUSC41_MPIN
       CHARACTER*10 NLUSC34_MPI, NLUSC35_MPI, NLUSC36_MPI,NLUSC37_MPI
-      CHARACTER*10 NLUSC38_MPI, NLUSC39_MPI, NLUSC40_MPI
+      CHARACTER*10 NLUSC38_MPI, NLUSC39_MPI, NLUSC40_MPI, NLUSC41_MPI
 
 
