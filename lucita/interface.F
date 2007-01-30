@@ -3247,7 +3247,7 @@ c       Write(*,Fmt) '*'//Line//'*'
 *----------------------------------------------------------------------*
       Write(LUOUT,*)
       Write(LUOUT,*)
-      nLine=36
+      nLine=37
       Do i=1,nLine
         Line=BlLine
         If ( i.eq.1 .or. i.eq.2 .or. i.eq.nLine )
@@ -3295,16 +3295,18 @@ c       Write(*,Fmt) '*'//Line//'*'
         If ( i.eq.28)
      &  Line='Heinrich-Heine-Universitaet Duesseldorf           '
         If ( i.eq.29)
-     &  Line='Citation:                                         '
+     &  Line='                                                  '
         If ( i.eq.30)
-     &  Line='  S. Knecht, T. Fleig,                            '
+     &  Line='Citation:                                         '
         If ( i.eq.31)
-     &  Line='          in preparation.                         '
+     &  Line='  S. Knecht, T. Fleig,                            '
         If ( i.eq.32)
-     &  Line='  S. Knecht, H. J. Aa. Jensen,                    '
-        If ( i.eq.33)
      &  Line='          in preparation.                         '
-        If ( i.eq.35 .or. i.eq.36 )
+        If ( i.eq.33)
+     &  Line='  S. Knecht, H. J. Aa. Jensen,                    '
+        If ( i.eq.34)
+     &  Line='          in preparation.                         '
+        If ( i.eq.36 .or. i.eq.37 )
      &  Line = StLine
         write(LUOUT,*) Line
       End Do
