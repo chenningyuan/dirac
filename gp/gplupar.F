@@ -47,6 +47,336 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE COPVCD_PAR_BDRIV(LUIN,LUOUT,SEGMNT,NDISTND,NBLOCK,
+     &                            JCOMM,IREW,LBLK,LUDUMPF)
+*
+* Read vector from disc file luin to array segmnt
+* and send to master if necessary using communicator jcomm.
+* vector is written in file luout
+*
+* Stefan Knecht, Jan07
+* NOFSLV: process-# of the node
+*
+* LBLK DEFINES STRUCTURE OF FILE
+*
+* Type of file LUOUT is inherited from LUIN
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+      DIMENSION SEGMNT(*),NDISTND(NBLOCK)
+C
+*
+      MYNSLV = 0
+*
+CSK      WRITE(LUDUMPF,*)'NDISTND(1)=',NDISTND(1)
+CSK      WRITE(LUDUMPF,*)'LUOUT =',LUOUT
+      IF( IREW .NE. 0 ) THEN
+        IF (MYPROC.NE.MASTER) THEN
+          CALL REWINE( LUIN ,LBLK)
+        ELSE IF (MYPROC.EQ.MASTER) THEN
+          CALL REWINE( LUOUT ,LBLK)
+          CALL REWINE( LUIN ,LBLK)
+        END IF
+      END IF
+C
+C LOOP OVER BLOCKS
+C
+       DO 500 II = 1, NBLOCK 
+*. slaves first ...
+         IF(MYPROC.NE.MASTER)THEN
+           IF(NDISTND(II).NE.MYPROC)THEN 
+             GOTO 500
+           ELSE IF(NDISTND(II).EQ.MYPROC)THEN
+             GOTO 100
+           ENDIF
+*. master follows ...
+         ELSE IF(MYPROC.EQ.MASTER) THEN
+           IF(NDISTND(II).NE.MYPROC)THEN
+             IF(NDISTND(II).EQ.-2)THEN
+               LBL = 0
+               CALL ITODS(LBL,1,-1,LUOUT)
+               IMZERO = 1
+               IAMPACK = 0
+               CALL ZERORC(LBL,LUOUT,IAMPACK)
+               GOTO 500
+             ELSE IF(NDISTND(II).GT.0)THEN
+               MYNSLV = NDISTND(II) 
+               GOTO 100 
+             END IF
+           ELSE IF(NDISTND(II).EQ.MYPROC)THEN
+             CALL IFRMDS(LBL,1,-1,LUIN)
+             CALL ITODS(LBL,1,-1,LUOUT)
+             IF( LBL .GE. 0 ) THEN
+                KBLK = -1
+                NO_ZEROING = 1
+                CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                       NO_ZEROING)
+                IF(IMZERO.EQ.0) THEN
+                  IF(IAMPACK.EQ.0) THEN
+                   CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
+                  ELSE
+                   CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
+                  END IF
+                ELSE
+                  CALL ZERORC(LBL,LUOUT,IAMPACK)
+                END IF
+*
+             END IF
+*           /\LBL GE 0
+                GOTO 500
+           END IF
+*          /\NDISTND eq 0 or ne 0
+         END IF
+*. ... continue
+ 100     CONTINUE
+          IF(MYPROC.NE.MASTER) THEN
+            CALL IFRMDS(LBL,1,-1,LUIN)
+            CALL MPI_SEND(LBL,1,my_MPI_INTEGER,MASTER,90,
+     &                    JCOMM,IERR)
+          END IF
+*
+*
+          IF(MYPROC.EQ.MASTER) THEN
+            CALL MPI_RECV(LBL,1,my_MPI_INTEGER,MYNSLV,90,
+     &                    JCOMM,ISTAT,IERR)
+            CALL ITODS(LBL,1,-1,LUOUT)
+          END IF
+*
+        IF( LBL .GE. 0 ) THEN
+          IF(LBLK .GE.0 ) THEN
+            KBLK = LBL
+          ELSE
+            KBLK = -1
+          END IF
+C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
+          NO_ZEROING = 1
+*
+          IF(MYPROC.NE.MASTER) THEN
+          CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                 NO_ZEROING)
+          CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,MASTER,91,
+     &                  JCOMM,IERR)
+          CALL MPI_SEND(IAMPACK,1,my_MPI_INTEGER,MASTER,92,
+     &                  JCOMM,IERR)
+          CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,MASTER,93,
+     &                  JCOMM,IERR)
+          END IF
+*
+*
+          IF(MYPROC.EQ.MASTER) THEN
+             CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,MYNSLV,91,
+     &                     JCOMM,ISTAT,IERR)
+             CALL MPI_RECV(IAMPACK,1,my_MPI_INTEGER,MYNSLV,92,
+     &                     JCOMM,ISTAT,IERR)
+             CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,93,
+     &                     JCOMM,ISTAT,IERR)
+          END IF
+*
+*
+          IF(IMZERO.EQ.0) THEN
+            IF(IAMPACK.EQ.0) THEN
+              IF(MYPROC.EQ.MASTER) THEN
+                CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
+              END IF
+            ELSE
+              CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
+            END IF
+          ELSE
+            IF(MYPROC.EQ.MASTER) THEN
+              CALL ZERORC(LBL,LUOUT,IAMPACK)
+            END IF
+          END IF
+        END IF
+ 500    CONTINUE
+        IF(MYPROC.EQ.MASTER)THEN
+*. write an EOF-mark
+          CALL ITODS(-1,1,-1,LUOUT)
+        ENDIF
+        CALL IFRMDS(LBL,1,-1,LUIN)
+        IF(LBL.LT.0) WRITE(LUDUMPF,*)'I am fine',myproc
+        IF(LBL.GE.0) THEN
+          WRITE(6,*) 'Error in gathering of optimal c-vectors
+     & detected',myproc
+          CALL Abend2('I assume all blocks to be on the master 
+     & but there are still some left')
+        ENDIF
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COPVCD_PAR_BDRIV2(LUIN,LUOUT,SEGMNT,NDISTND,NBLOCK,
+     &                             JCOMM,IREW,LBLK,LUDUMPF)
+*
+* Read vector from disc file luin to array segmnt
+* and send to nodes if necessary using communicator jcomm.
+* vector is written in file luout
+*
+* Stefan Knecht, Jan07
+* NOFSLV: process-# of the node
+*
+* LBLK DEFINES STRUCTURE OF FILE
+*
+* Type of file LUOUT is inherited from LUIN
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+      DIMENSION SEGMNT(*),NDISTND(NBLOCK)
+C
+*
+      MYNSLV = 0
+*
+      IF( IREW .NE. 0 ) THEN
+        IF (MYPROC.NE.MASTER) THEN
+          CALL REWINE( LUOUT ,LBLK)
+        ELSE IF (MYPROC.EQ.MASTER) THEN
+          CALL REWINE( LUOUT ,LBLK)
+          CALL REWINE( LUIN ,LBLK)
+        END IF
+      END IF
+C
+C LOOP OVER BLOCKS
+C
+       DO 500 II = 1, NBLOCK 
+*. slaves first ...
+         IF(MYPROC.NE.MASTER)THEN
+           IF(NDISTND(II).NE.MYPROC)THEN 
+             GOTO 500
+           ELSE IF(NDISTND(II).EQ.MYPROC)THEN
+             GOTO 100
+           ENDIF
+*. master follows ...
+         ELSE IF(MYPROC.EQ.MASTER) THEN
+           IF(NDISTND(II).NE.MYPROC)THEN
+             IF(NDISTND(II).EQ.-2)THEN
+               CALL IFRMDS(LBL,1,-1,LUIN) 
+               IF(LBL.NE.0) THEN
+                 WRITE(6,*)'Error in restart detected'
+                 CALL Abend2('COPVCD_PAR_BDRIV2: Input vector is not
+     &                       compatible to current calculation')
+               ENDIF
+               KBLK = -1
+               NO_ZEROING = 1
+               CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                      NO_ZEROING)
+               GOTO 500
+             ELSE IF(NDISTND(II).GT.0)THEN
+               MYNSLV = NDISTND(II) 
+               GOTO 100 
+             END IF
+           ELSE IF(NDISTND(II).EQ.MYPROC)THEN
+             CALL IFRMDS(LBL,1,-1,LUIN)
+             CALL ITODS(LBL,1,-1,LUOUT)
+             IF( LBL .GE. 0 ) THEN
+                KBLK = -1
+                NO_ZEROING = 1
+                CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                       NO_ZEROING)
+                IF(IMZERO.EQ.0) THEN
+                  IF(IAMPACK.EQ.0) THEN
+                   CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
+                  ELSE
+                   CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
+                  END IF
+                ELSE
+                  CALL ZERORC(LBL,LUOUT,IAMPACK)
+                END IF
+*
+             END IF
+*           /\LBL GE 0
+                GOTO 500
+           END IF
+*          /\NDISTND eq 0 or ne 0
+         END IF
+*. ... continue
+ 100     CONTINUE
+          IF(MYPROC.EQ.MASTER) THEN
+            CALL IFRMDS(LBL,1,-1,LUIN)
+            CALL MPI_SEND(LBL,1,my_MPI_INTEGER,MYNSLV,90,
+     &                    JCOMM,IERR)
+          END IF
+*
+*
+          IF(MYPROC.NE.MASTER) THEN
+            CALL MPI_RECV(LBL,1,my_MPI_INTEGER,MASTER,90,
+     &                    JCOMM,ISTAT,IERR)
+            CALL ITODS (LBL,1,-1,LUOUT)
+          END IF
+*
+        IF( LBL .GE. 0 ) THEN
+          IF(LBLK .GE.0 ) THEN
+            KBLK = LBL
+          ELSE
+            KBLK = -1
+          END IF
+C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
+          NO_ZEROING = 1
+*
+          IF(MYPROC.EQ.MASTER) THEN
+            CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                   NO_ZEROING)
+            CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,MYNSLV,91,
+     &                  JCOMM,IERR)
+            CALL MPI_SEND(IAMPACK,1,my_MPI_INTEGER,MYNSLV,92,
+     &                    JCOMM,IERR)
+            CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,MYNSLV,93,
+     &                    JCOMM,IERR)
+            GOTO 500
+          ENDIF
+*
+*
+          IF(MYPROC.NE.MASTER) THEN
+             CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,MASTER,91,
+     &                     JCOMM,ISTAT,IERR)
+             CALL MPI_RECV(IAMPACK,1,my_MPI_INTEGER,MASTER,92,
+     &                     JCOMM,ISTAT,IERR)
+             CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MASTER,93,
+     &                     JCOMM,ISTAT,IERR)
+          ENDIF
+*
+*
+          IF(IMZERO.EQ.0) THEN
+            IF(IAMPACK.EQ.0) THEN
+              IF(MYPROC.NE.MASTER) THEN
+                CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
+              END IF
+            ELSE
+              CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
+            END IF
+          ELSE
+            IF(MYPROC.NE.MASTER) THEN
+              CALL ZERORC(LBL,LUOUT,IAMPACK)
+            END IF
+          END IF
+        END IF
+ 500    CONTINUE
+*. write an EOF-mark
+        CALL ITODS(-1,1,-1,LUOUT)
+*. MASTER looks for the end of the input file
+        IF(MYPROC.EQ.MASTER) THEN
+          CALL IFRMDS(LBL,1,-1,LUIN)
+          IF(LBL.LT.0) WRITE(LUDUMPF,*)'I am fine'
+          IF(LBL.GE.0) THEN
+            WRITE(6,*) 'Error in restart detected'
+            CALL Abend2('I assume all blocks to be distributed among the
+     & nodes but there are still some left')
+          ENDIF
+        ENDIF  
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
       SUBROUTINE DISTBLKND(NDIM,NBLOCKL,NPARBLOCK,NPARBLKWT)
 *
 *. Find distribution for (nonvanishing blocks) among the nodes
@@ -207,7 +537,8 @@ CSK      NTEST = 10
       END 
 ***********************************************************************
 *                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE DMTVDS_PAR(VEC1,VEC2,LU1,LU2,LU3,FAC,IREW,INV,
@@ -318,11 +649,13 @@ CSK      NTEST = 10
       END
 ***********************************************************************
 *                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE FNDMND_PAR(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,
-     &                     SCR,ISCAT,SUBVAL,NTESTG)
+     &                     SCR,ISCAT,SUBVAL,IBLOCKL,IBLOCKD,
+     &                     NBLOCK,NTESTG)
 *
 * FIND NSUB LOWEST ELEMENTS OF VECTOR RESIDING ON FILE
 * LU. ENSURE THAT NO DEGENERENCIES ARE SPLIT
@@ -348,8 +681,10 @@ CSK      NTEST = 10
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "../lucita/lucipar.inc"
+#include "../lucita/wrkspc.inc"
       
       DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
+      DIMENSION IBLOCKL(NBLOCK), IBLOCKD(NBLOCK)
 *
       CALL REWINE(LU,-1)
 *
@@ -359,20 +694,23 @@ C     write(6,*) ' FNDMND NSUBMX = ', NSUBMX
 *
       NTESTL = 0000
       NTEST = MAX(NTESTG,NTESTL)
+      NTEST = 0
 *
-      IBLK = 0
       IBASE = 1
       LSUB = 0
- 1000 CONTINUE
-        IF ( LBLK .GT. 0 ) THEN
-          LBL = LBLK
-        ELSE
+*. Loop over blocks
+      DO 1000 II = 1, NBLOCK    
+*
+        IF(IBLOCKD(II).EQ.MYPROC)THEN
           CALL IFRMDS(LBL,1,-1,LU)
-        END IF
-        IBLK = IBLK + 1
+        ELSE
+*.        useful to set all other blocks to 0?
+          LBL = 0
+        ENDIF
+*
         IF(NTEST.GE.10) THEN
-          WRITE(6,*) ' Info about block ',IBLK
-          WRITE(6,*) ' Number of elements ', LBL
+          WRITE(6,*) ' Info about block ',II
+          WRITE(6,*) ' Number of elements ',LBL
         END IF
         IF(LBL .GE. 0 ) THEN
           IF(LBLK .GE.0 ) THEN
@@ -380,59 +718,55 @@ C     write(6,*) ' FNDMND NSUBMX = ', NSUBMX
           ELSE
             KBLK = -1
           END IF
-           CALL FRMDSC(SEGMNT,LBL ,-1,LU,IMZERO,IAMPACK)
-           IF(NTEST.GE.100) THEN
-             WRITE(6,*) ' Elements read in '
-             CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
-           END IF
-           IF(LBL .GE. 0 ) THEN
+          IF(IBLOCKD(II).EQ.MYPROC)THEN 
+            CALL FRMDSC(SEGMNT,LBL ,-1,LU,IMZERO,IAMPACK)
+          ENDIF
+          IF(NTEST.GE.100) THEN
+            WRITE(6,*) ' Elements read in '
+            CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
+          END IF
+          IF(LBL .GE. 0 ) THEN
 *. LOWEST ELEMENTS IN SEGMNT  ( ADD TO PREVIOUS LIST )
-             MSUBMX = MIN(NSUBMX,LBL)
-C     SUBROUTINE SORLOW(WRK,STVAL,ISTART,KZVAR,KEXSTV,JEXSTV,IPRT)
-             IF(LBL.GE.1) THEN
-               CALL SORLOW(SEGMNT,SCR(1+LSUB),ISCR(1+LSUB),LBL,
-     &                     MSUBMX,MSUB,NTEST)
-C              WRITE(6,*)
-C    &       ' After SORLOW 1 , Scatter array for combined list '
-C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
-             ELSE
+            MSUBMX = MIN(NSUBMX,LBL)
+            IF(LBL.GE.1) THEN
+              CALL SORLOW(SEGMNT,SCR(1+LSUB),ISCR(1+LSUB),LBL,
+     &                    MSUBMX,MSUB,NTEST)
+            ELSE
               MSUB = 0
-             END IF
-             DO 10 I = 1, MSUB
-   10        ISCR(LSUB+I) = ISCR(LSUB+I) + IBASE - 1
-C            Write(6,*)
-C    &       ' After 10 , Scatter array for combined list '
-C            call iwrtma(ISCR,1,LSUB+MSUB,1,LSUP+MSUP)
+            END IF
+            DO 10 I = 1, MSUB
+   10         ISCR(LSUB+I) = ISCR(LSUB+I) + IBASE - 1
 * SORT COMBINED LIST
-             MSUBMX = MIN(NSUBMX,LSUB+MSUB)
-             IF(MSUBMX.GT.0) THEN
-             CALL SORLOW(SCR,SUBVAL,ISCAT,LSUB+MSUB,MSUBMX,LLSUB,
-     &         NTEST)
-C              WRITE(6,*)
-C    &       ' After SORLOW 2 , Scatter array for combined list '
-C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
-             ELSE
-               LLSUB = 0
-             END IF
-             LSUB = LLSUB
-             DO 20 I = 1, LSUB
-               ISCR(I+2*NSUBMX) = ISCR(ISCAT(I))
-   20        CONTINUE
+            MSUBMX = MIN(NSUBMX,LSUB+MSUB)
+            IF(MSUBMX.GT.0) THEN
+              CALL SORLOW(SCR,SUBVAL,ISCAT,LSUB+MSUB,MSUBMX,LLSUB,
+     &                    NTEST)
+            ELSE
+              LLSUB = 0
+            END IF
+            LSUB = LLSUB
+            DO 20 I = 1, LSUB
+              ISCR(I+2*NSUBMX) = ISCR(ISCAT(I))
+   20       CONTINUE
 *
-             CALL ICOPVE(ISCR(1+2*NSUBMX),ISCR(1),LSUB)
-             CALL COPVEC(SUBVAL,SCR,LSUB)
-             IBASE = IBASE + LBL
-             IF(NTEST .GE. 20 ) THEN
-               WRITE(6,*) ' Lowest elements and their original place '
-               WRITE(6,*) ' Number of elements obtained ', LSUB
-               CALL WRTMAT(SUBVAL,1,LSUB,1,LSUB)
-               CALL IWRTMA(ISCR,1,LSUB,1,LSUB)
-             END IF
+            CALL ICOPVE(ISCR(1+2*NSUBMX),ISCR(1),LSUB)
+            CALL COPVEC(SUBVAL,SCR,LSUB)
+*. set to lbl to true value
+            LBL = IBLOCKL(II)
+*.
+            IBASE = IBASE + LBL
+*.
+            IF(NTEST .GE. 20 ) THEN
+              WRITE(6,*) ' Lowest elements and their original place '
+              WRITE(6,*) ' Number of elements obtained ', LSUB
+              CALL WRTMAT(SUBVAL,1,LSUB,1,LSUB)
+              CALL IWRTMA(ISCR,1,LSUB,1,LSUB)
+            END IF
           END IF
 *
         END IF
 *
-      IF( LBL.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
+ 1000 CONTINUE
 *
       NSUB = LSUB
       CALL ICOPVE(ISCR,ISCAT,NSUB)
@@ -446,10 +780,47 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
         END IF
       END IF
 *
+      IDUM = 0
+      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GATHER')
+*
+      CALL MEMMAN(KGATHERA,NMPROC*NSUBMX,'ADDL  ',2,'PARRA1')
+      CALL MEMMAN(KGATHERB,NMPROC*NSUBMX,'ADDL  ',2,'PARRA2')
+      CALL MEMMAN(KGATHERC,NMPROC*NSUBMX,'ADDL  ',1,'PARIA1')
+      CALL MEMMAN(KGATHERD,NMPROC*NSUBMX,'ADDL  ',1,'PARIA2')
+      CALL MEMMAN(KGATHERE,NSUBMX,'ADDL  ',1,'PARIA3')
+*. We gather all lowest values from each node 
+*. and build up a combined list of those
+      CALL GATHER_LOW_PAR(NSUB,NSUBMX,SUBVAL,ISCAT,
+     &                    WORK(KGATHERA),WORK(KGATHERB),
+     &                    WORK(KGATHERC),WORK(KGATHERD),
+     &                    WORK(KGATHERE),MPI_COMM_WORLD,NTESTG)
+*. update SCR1 and ISCR1
+      CALL COPVEC(SUBVAL,SCR,NSUBMX)
+      CALL ICOPVE(ISCAT,ISCR,NSUBMX)
+     
+CSK      NTEST = 20
+      IF(MYPROC.EQ.MASTER.AND.NTEST.GE.20)THEN
+        WRITE(6,*)'after search: SUBVAL and ISCAT'
+        CALL WRTMAT(SUBVAL,1,NSUBMX,1,NSUBMX)
+        CALL IWRTMA(ISCAT,1,NSUBMX,1,NSUBMX)
+      END IF
+CSK      NTEST = 0
+           
+      IF(NSUB.NE.NSUBMX.AND.MYPROC.EQ.MASTER.AND.NTEST.GE.20)THEN
+        WRITE(6,*)'Warning! NSUB is lower than NSUBMX'
+        WRITE(6,*)'NSUB is set to be equal to NSUBMX'
+        NSUB = NSUBMX
+      END IF
+*
+*. Eliminate local memory
+      IDUM = 0
+      CALL MEMMAN(IDUM ,IDUM,'FLUSM ',2,'GATHER')
+*
       END
 ***********************************************************************
 *                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
 *
@@ -461,7 +832,7 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
 *
 * Jeppe Olsen, September 1993
 *
-      IMPLICIT REAL*8           (A-H,O-Z)
+      IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -509,57 +880,239 @@ C?   &                         I,IGAT(I),XGAT(I)
       END
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-C                WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
-C    &           LUDIA)
-      SUBROUTINE WRSVCD_PAR(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,
-     &                     LUFORM,JPACK)
+      SUBROUTINE MVCSMD_PAR(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,
+     &                      NVEC,IREW,LBLK)
+C
+C ADD VECTORS ON FILE LUIN TIMES FACTOR AND STORE ON LUOUT
+C
+C LUOUT AND LUSCR ARE INITIALLY REWOUND
+C
+      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      DIMENSION VEC1(1),VEC2(1)
+      DIMENSION FAC(NVEC)
+C
+      IF( MOD(NVEC,2) .EQ. 0 ) THEN
+        LLUOUT = LUSCR
+        LLUSCR = LUOUT
+      ELSE
+        LLUOUT = LUOUT
+        LLUSCR = LUSCR
+      END IF
+C
+      IF(IREW .NE. 0 ) CALL REWINE(LUIN,LBLK)
+C
+      DO 100 IVEC = 1, NVEC
+        CALL REWINE(LLUSCR,LBLK)
+        CALL REWINE(LLUOUT,LBLK)
+        IF( IVEC .EQ. 1 ) THEN
+          CALL SCLVCD(LUIN,LLUOUT,FAC(IVEC),VEC1,0,LBLK)
+        ELSE
+          CALL VECSMD(VEC1,VEC2,FAC(IVEC),1.0D0,LUIN,LLUSCR,LLUOUT,
+     &                0,LBLK)
+        END IF
+C
+        LBUF = LLUOUT
+        LLUOUT = LLUSCR
+        LLUSCR = LBUF
+  100 CONTINUE
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE MVCSMD2_PAR(LUIN,FAC,FACLUOUT,LUOUT,LUSCR,
+     &                       VEC1,VEC2,NVEC,IREW,LBLK)
 *
-* Write scattered vector to disc.
+* LUOUT = Factor * LUOUT + sum(I=1,nvec)fac(I) LUIN(I)
+*
+* LUOUT and LUSCR are rewinded and input data 
+* on these files are lost.
+*
+* MVCSMD2 is identical MVCSMD, except that
+* the input vector on LUOUT can be included
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION VEC1(1),VEC2(1)
+      DIMENSION FAC(1)
+*
+      IF(IREW .NE. 0 ) CALL REWINE(LUIN,LBLK)
+*
+      LLUOUT = LUOUT
+      LLUSCR = LUSCR
+      DO IVEC = 1, NVEC
+        CALL REWINE(LLUSCR,LBLK)
+        CALL REWINE(LLUOUT,LBLK)
+        IF( IVEC .EQ. 1 ) THEN
+          IF(FACLUOUT.NE.0.0D0) THEN
+            CALL VECSMD(VEC1,VEC2,FAC(1),FACLUOUT,LUIN,
+     &                  LUOUT,LUSCR,0,LBLK)
+          ELSE
+            CALL SCLVCD(LUIN,LUSCR,FAC(1),VEC1,0,LBLK)
+          END IF
+        ELSE
+          ONE = 1.0D0
+          CALL VECSMD(VEC1,VEC2,FAC(IVEC),ONE,LUIN,LLUOUT,LLUSCR,
+     &                0,LBLK)
+        END IF
+*
+        LBUF = LLUOUT
+        LLUOUT = LLUSCR
+        LLUSCR = LBUF
+      END DO
+*
+      IF(LLUOUT.NE.LUOUT) THEN
+C            COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
+        CALL COPVCD(LLUOUT,LUOUT,VEC1,1,LBLK)
+      END IF
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE REDVEC(VECIN,VECOUT,NDIM,NTYPE,NOP,NCOMM,NTARGET)
+*
+*. Reduce an array VECIN of dimension NDIM that is distributed over 
+*. NCOMM to VECOUT on either a single process (NTARGET >= 0) or on 
+*. all processes (NTARGET < 0). NTYPE determines the MPI_DATATYPE 
+*. used in the reduce-call. NOP is the reduce-operation.
+*
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+      DIMENSION VECIN(*),VECOUT(*)
+      INTEGER DATATYPE
+*
+      IF(NTYPE .EQ. 1) THEN
+        DATATYPE = my_MPI_INTEGER
+      ELSE IF (NTYPE .EQ. 2) THEN
+C MPI_REAL8 is equivalent to MPI_DOUBLE_PRECISION
+        DATATYPE = MPI_REAL8
+      ELSE IF (NTYPE .EQ. 3)THEN
+        DATATYPE = MPI_REAL
+      ELSE IF (NTYPE .EQ. 4 .OR. NTYPE .EQ. 5) THEN
+        DATATYPE  =  MPI_CHARACTER 
+      ELSE
+        WRITE(6,*)' REDVEC: TYPE "',NTYPE,'" does not exist!'
+        CALL Abend2('ERROR in REDVEC: Nonexisting DATATYPE')
+      END IF
+*
+      IF(NTARGET.GE.0)THEN
+        CALL MPI_REDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,NTARGET,
+     &                  NCOMM,IERR)
+      ELSE IF(NTARGET.LT.0)THEN
+        CALL MPI_ALLREDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,
+     &                     NCOMM,IERR)
+      ENDIF
+*. return since everything is reduced now!
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE TRAVCD_PAR(VEC1,VEC2,X,NVECIN,NVECOUT,LUIN,LUOUT,
+     &                      ICOPY,LBLK,LUSCR1,LUSCR2)
+*
+* NVECIN vectors reside on LU1, Transform these vectors,
+*  using LUSCR1 and  LUSCR2  as
+* scratch files,  with matrix X to produce output file LUOUT.
+*
+* Since LUIN is accessed several times it is always
+* REWOUND. LUOUT is written to from current start.
+*
+* I ICOPY .ne. 0 the transformed vectors are written back to LUIN
+*
+* Jeppe Olsen, April 1997
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*. Input
+      DIMENSION X(NVECIN,NVECOUT)
+*. Scratch
+      DIMENSION VEC1(*),VEC2(*)
+*
+C             MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
+      DO IVECOUT = 1, NVECOUT
+         CALL MVCSMD_PAR(LUIN,X(1,IVECOUT),LUSCR1,LUSCR2,VEC1,VEC2,
+     &               NVECIN,1,LBLK)
+         CALL REWINO(LUSCR1)
+         CALL COPVCD(LUSCR1,LUOUT,VEC1,0,LBLK)
+      END DO
+*
+      IF(ICOPY.EQ.1) THEN
+        CALL REWINO(LUIN)
+        CALL REWINO(LUOUT)
+        DO IVECOUT = 1, NVECOUT
+          CALL COPVCD(LUOUT,LUIN,VEC1,0,LBLK)
+        END DO
+      END IF
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE WRSVCD_PAR(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,
+     &                     IBLOCKL,IBLOCKD,NBLOCK,JPACK)
+*
+* Write scattered vector to disc, every node writes only it's part.
+* Information about the length of a blcok is stored in IBLOCKL.
+* Information about which block belongs to which node is stored in
+* IBLOCKD. 
+*
+      IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "../lucita/lucipar.inc"
       
 *.Input
-      DIMENSION IPLAC(*),VAL(*)
+      DIMENSION IPLAC(*),VAL(*),IBLOCKL(NBLOCK),IBLOCKD(NBLOCK)
 *.Scratch
       DIMENSION VEC1(*)
 *
       NTEST = 0
-      IF(LBLK.GT.0) THEN
-*. Write the vector without markers in one block
-         CALL SETVEC(VEC1,0.0D0,NDIM)
-         DO 100 IEFF = 1, NSCAT
-           VEC1(IPLAC(IEFF)) = VAL(IEFF)
-  100    CONTINUE
-         CALL TODSC(VEC1,NDIM,-1,LU)
-      ELSE
-*. Write the vector with the block format of file LUFORM
-        CALL REWINO(LUFORM)
-        IBOT = 1
-*. Loop over records
- 1000   CONTINUE
+      IBOT = 1
+*. Loop over blocks
+      DO 500 II = 1, NBLOCK
+        IF(IBLOCKD(II).NE.MYPROC) GOTO 300
 *.Length
-        CALL IFRMDS(LBL,1,-1,LUFORM)
+        LBL = IBLOCKL(II)
         CALL ITODS (LBL,1,-1,LU)
-        IF(LBL.GE.0) THEN
-C?        write(6,*) ' IBOT, LBL  ',IBOT, LBL
-          CALL SETVEC(VEC1,0.0D0,LBL)
-          DO 200 IEFF = 1, NSCAT
+CSK        write(6,*) ' IBOT, LBL  ',IBOT, LBL
+        CALL SETVEC(VEC1,0.0D0,LBL)
+C       *******************************************************
+C       *******************************************************
+C              Find the places where a 1.0 should be set 
+C       *******************************************************
+C       *******************************************************
+        DO 200 IEFF = 1, NSCAT
+          IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
+     &    VEC1(IPLAC(IEFF)-IBOT+1) = VAL(IEFF)
+*
+          IF(NTEST.GE.10) THEN
             IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
-     &      VEC1(IPLAC(IEFF)-IBOT+1) = VAL(IEFF)
-*.CSK
-CSK            IF(MYPROC.EQ.MASTER) THEN
-CSK              IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
-CSK     &        write(6,*) ' Catch : IPLAC(IEFF) VAL(IEFF) ',
-CSK     &        IPLAC(IEFF),VAL(IEFF)
-CSK            END IF
-*.CSK
+     &      write(6,*) 'IBOT,IBOT+LBL-1',IBOT,IBOT+LBL-1
+            IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
+     &      write(6,*) ' Catch : IPLAC(IEFF) VAL(IEFF) ',
+     &      IPLAC(IEFF),VAL(IEFF)
+          END IF
+*
   200     CONTINUE
           IF(NTEST.GT.10) THEN
             IF(MYPROC.EQ.MASTER) THEN
@@ -572,25 +1125,27 @@ CSK            END IF
           ELSE
             CALL TODSC(VEC1,LBL,-1,LU)
           END IF
-*.Skip record on LUFORM
-          CALL FRMDSC(VEC1,LBL,-1,LUFORM,IMZERO,IAMPACK)
+ 300      CONTINUE
+          LBL = IBLOCKL(II)
           IBOT = IBOT + LBL
-          GOTO 1000
-        END IF
+ 500  CONTINUE
 *
-        IF(NTEST.GT.10) THEN
-          if(myproc.eq.master)then
-            WRITE(6,*) ' output from WRSVCD '
-            CALL WRTVCD(VEC1,LU,1,LBLK)
-          endif
-        END IF
+      IF(NTEST.GT.10)THEN
+        IF(MYPROC.EQ.MASTER)THEN
+          WRITE(6,*) ' output from WRSVCD'
+          CALL WRTVCD(VEC1,LU,1,LBLK)
+        ENDIF
       END IF
+*. work is done, all is needed now is writing and EOF
+      LBL = -1
+      CALL ITODS(LBL,1,-1,LU)
 *
       END
 #else
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PAR_DUMMY2
