@@ -90,11 +90,6 @@ C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
 *
       dimension ISYMS(MXPIRR)
 *
-#if defined (VAR_MPI)
-      IODENSEPAR = 0
-#else
-      IODENSEPAR = 0
-#endif
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GASCI ')
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
@@ -359,29 +354,28 @@ CSK new variable
       CALL MEMMAN(KBLCKWT,2*NMPROC,'ADDL  ',1,'IBLCKW')
       CALL COPVEC(WORK(KLCI1BT),WORK(KBLCKIF),NBLOCK)
       CALL ISETVC(WORK(KBLCKWT),NNULL,2*NMPROC)
+      IMAXALLO = MAX(MXCIV**2,MXCIV*(MXCIV+1)/2)
+      CALL MEMMAN(KSCRREDSP,IMAXALLO,'ADDL  ',2,'SCRRED')
       
 *
 *. CI diagonal - if required
 *
-      IF(IODENSEPAR.GT.0) THEN
 #if defined (VAR_MPI)
+      IF(IODENSEPAR.GT.0) THEN
         CALL DISTBLKND(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),WORK(KBLCKWT))
-#endif
       END IF
+#endif
       IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
       END IF
-CSK      IF(MYPROC.EQ.MASTER) WRITE(6,*)'IRESTR and IDIAG',IRESTR,IDIAG
       IF(.NOT.(IDIAG.EQ.2.AND.IRESTR.EQ.1)) THEN
         ECOREP = 0.0D0
         IF(ICISTR.GE.2) CALL REWINO(LUDIA)
         I12 = 2
         SHIFT = ECORE_ORIG-ECORE
-CSK        write(6,*)'LUDIA is',LUDIA
         IF(IODENSEPAR.EQ.0) THEN
           CALL GASDIAT(WORK(KVEC1),LUDIA,SHIFT,ICISTR,I12,
-     &                 WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),
-     &                 WORK(KBLCKPD))
+     &                 WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
           IF(NOCSF.EQ.1.AND.ICISTR.EQ.1) THEN
             CALL REWINO(LUDIA)
             CALL TODSC(WORK(KVEC1),NVAR,-1,LUDIA)
@@ -491,7 +485,7 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
       END IF
 *
       CALL CIEIG5(MV7,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
-     &     MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,
+     &     MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,LUSC41,
      &     NVAR,NBLK,NROOT,MXCIV,MAXIT,LUCIVI,IPRNT,WORK(KSBEVC),
      &     NPRDET,WORK(KH0),WORK(KSBIDT),
      &     MXP1,MXP2,MXQ,WORK(KH0SCR),ECORE,ICISTR,LBLK,
@@ -505,7 +499,7 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
      &     LBLOCK,IROOTHOMING,WORK(KLBASSPC),WORK(KLEBASC),
      &     WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,ISPC,LUWRTOUT,
      &     WORK(KBSCLFC),WORK(KBLCKIF),NBLOCK,WORK(KBLCKPD),
-     &     WORK(KBLCKWT))
+     &     WORK(KBLCKWT),WORK(KSCRREDSP))
       EREF = EROOT(IRFROOT)
 C?    WRITE(6,*) ' Memcheck after CIEIG5'
 C?    CALL MEMCHK
@@ -521,8 +515,35 @@ CTF
         NROOT = 1
       end if
 *
+      
       CALL REWINO(LUC)
-*      write(6,*)'problem here GASCI', myproc
+#if defined (VAR_MPI)
+      IF(IODENSEPAR.GT.0)THEN
+         LBLK = -1
+*. copy c-vectors from nodes and master back to the master
+*. purpose: master does the ana-stuff
+        CALL REWINO(LUC)
+        CALL REWINO(LUSC41)
+        DO JROOT = 1, NROOT
+CSK          CALL REWINO(LUC)
+CSK          CALL REWINO(LUSC41)
+CSK          IF(JROOT.NE.1) CALL SKPVCD(LUC,JROOT-1,WORK(KVEC1),0,LBLK)
+CSK          IF(JROOT.NE.1.AND.MYPROC.EQ.MASTER) 
+CSK     &    CALL SKPVCD(LUSC41,JROOT-1,WORK(KVEC1),0,LBLK)
+          CALL COPVCD_PAR_BDRIV(LUC,LUSC41,WORK(KVEC1),WORK(KBLCKPD),
+     &                          NBLOCK,MPI_COMM_WORLD,0,-1,LUDUMPF)
+        END DO 
+        IF(MYPROC.EQ.MASTER) THEN
+          CALL REWINO(LUSC41)
+          CALL REWINO(LUC)
+          DO JROOT = 1, NROOT
+            CALL COPVCD(LUSC41,LUC,WORK(KVEC1),0,LBLK)
+          ENDDO
+          CALL REWINO(LUC)
+        ENDIF
+      ENDIF
+*
+#endif
       IF(MYPROC.EQ.MASTER) THEN
       DO JROOT = 1, NROOT
         if (IPRNCIV.ge.1) then
@@ -559,11 +580,15 @@ CTF
         ELSE
           IF(IDENSI.GE.1.OR.NROOT.GT.1) THEN
              CALL REWINO(LUSC1)
+csk      write(6,*)'problem here by LUC --> LUSC!', myproc
              CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
              CALL COPVCD(LUSC1,LUHC,WORK(KVEC1),1,LBLK)
+csk      write(6,*)'problem here 2!', myproc
           END IF
+csk      write(6,*)'problem here 3!', myproc
           CALL DENSI2(IDENSI,WORK(KRHO1),WORK(KRHO2),
      &          WORK(KVEC1),WORK(KVEC2),LUSC1,LUHC,EXPS2)
+csk      write(6,*)'problem here 4!', myproc
 *
           IF (NROOT.GT.1) THEN
             if (IPRNCIV.ge.1) then
@@ -671,7 +696,7 @@ C?      WRITE(6,*) ' Home from CI_RESPONS'
 *
       CALL MEMMAN(IDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI')
 *
-*      write(6,*)'problem here (GASCI) 3', myproc
+csk      write(6,*)'problem here (GASCI) 3', myproc
 * Eliminate scratch units:
       close(unit=LUSC2,status='DELETE')
       close(unit=LUSC3,status='DELETE')
@@ -682,6 +707,7 @@ C?      WRITE(6,*) ' Home from CI_RESPONS'
       close(unit=LUSC38,status='DELETE')
       close(unit=LUSC39,status='DELETE')
       close(unit=LUSC40,status='DELETE')
+      close(unit=LUSC41,status='DELETE')
 *
       RETURN
       END
@@ -824,10 +850,14 @@ C      CALL SLASK
       MYPROC = MYTID
 C     Add the master node
       NMPROC = NUMNOD + 1
+CSK   we want to use the new parallel version per default
+      IODENSEPAR = 1
 #else
       MASTER = 0
       MYPROC = 0
       NMPROC = 1
+*
+      IODENSEPAR = 0
 #endif
 C
       IN = IUNIN
@@ -847,9 +877,9 @@ C
 C
 C     Compute offset from WRK to WORK
 C
+#if defined (INT_STAR8)
       CALL COMPOFF(WRK(100),WRK(1),K8BASE)
       call flshfo(luout)
-#if defined (INT_STAR8)
       if (k8base .ne. 100) then
         write (luout,*)
      & 'lucita/pamlu error in compoff call, kbase',kbase
@@ -857,11 +887,11 @@ C
       end if
       CALL COMPOFF(WRK,WORK,K8BASE)
       kbase = k8base
-      write (ludumpf,*)'k8base,kbase=',k8base,kbase
+CSK      write (ludumpf,*)'k8base,kbase=',k8base,kbase
 #else
-      CALL COMPOFF(WRK,WORK,K8BASE)
-      kbase = k8base
-      write (ludumpf,*)'k8base,kbase=',k8base,kbase
+      k8base = 0
+      CALL COMPOFF(WRK,WORK,KBASE)
+CSK      write (ludumpf,*)'k8base,kbase=',k8base,kbase
 #endif
 C
       MXPWRD = LWRK
@@ -883,22 +913,17 @@ c     call hello
 * ======================================================
       CALL INPCTL(LUIN,LUCMOL,LUOUT)
 C
-*. determine the calculation mode in case of a parallel run
-*  --> coarse-grain version; --> fine-grain version; 
-*  --> hybrid version
 *
-      IF(IRUNPA.EQ.1) THEN
-*
-        IF(NMPROC.LT.2) THEN
-           WRITE (LUOUT,1234) 
-1234       FORMAT('You need more than 1 processor in a parallel run!!!')
-           CALL Abend2('STOP! Increase the number of processors!')
-        END IF
-*
-      ELSE IF(IRUNPA.EQ.0) THEN
+*. set some parallel variables to default for sequential runs 
+      IF(IRUNPA.EQ.0) THEN
         IRTNDRAT = 0
         NPARWAY = 0
         IRUNPCG = 0
+      ELSE IF(IRUNPA.GT.0.AND.IODENSEPAR.EQ.0)THEN
+        IF(NMPROC.EQ.1) WRITE(6,*) 'This parallel 
+     & version is not running for one CPU!'
+        CALL Abend2('Sorry, I need more than one CPU to run this 
+     & version in parallel')
       END IF
 *
 *. Ratio beteeen real and integer word length
