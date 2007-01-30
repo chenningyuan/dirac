@@ -2361,12 +2361,6 @@ C?        write(6,*) ' IBOT, LBL  ',IBOT, LBL
             IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
      &      VEC1(IPLAC(IEFF)-IBOT+1) = VAL(IEFF)
 *.CSK
-CSK            IF(MYPROC.EQ.MASTER) THEN
-CSK              IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
-CSK     &        write(6,*) ' Catch : IPLAC(IEFF) VAL(IEFF) ',
-CSK     &        IPLAC(IEFF),VAL(IEFF)
-CSK            END IF
-*.CSK
   200     CONTINUE
 CSK          IF(MYPROC.EQ.MASTER) THEN
 CSK           write(6,*)  'record to be disced '
@@ -2383,13 +2377,8 @@ CSK          END IF
           GOTO 1000
         END IF
 *
-CSK        if(myproc.eq.master)then
-CSK       WRITE(6,*) ' output from WRSVCD '
-CSK       CALL WRTVCD(VEC1,LU,1,LBLK)
-CSK        endif
       END IF
 *
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
