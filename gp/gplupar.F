@@ -387,6 +387,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "../lucita/lucipar.inc"
+#include "../lucita/clunit.inc"
 *
       DIMENSION NBLOCKL(NDIM), NPARBLKWT(2,NMPROC)
 *. Scratch
@@ -399,11 +400,11 @@ C
 *. array NPARBLOCK that contains the final block distribution
       DIMENSION NPARBLOCK(NDIM)
 *. 
-      MXSIZE = 3900000000
+      MXSIZE = 1000000000
       MXSZTMP = 0
       MXNUMB = 0
       IRUN = 0
-      ITEMPW1 = 3900000000
+      ITEMPW1 = 1000000000
       ITEMPW2 = 0
       ITEMPN = 0
       ITEMPL = 0
@@ -521,17 +522,17 @@ CSK      NTEST = 10
       GOTO 200
 *
 500   CONTINUE
-      IF(NTEST.GT.0) THEN
+CSK      IF(NTEST.GT.0) THEN
         IF(MYPROC.EQ.MASTER) THEN
-          WRITE(6,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
+          WRITE(LUDUMPF,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
      &    MYPROC:',MYPROC
           DO ISTI = 1, IMINNP
-            WRITE(6,'(3X,A,I17,A,I17,A,1X,I17)')
+            WRITE(LUDUMPF,'(3X,A,I17,A,I17,A,1X,I17)')
      &      'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
      &      ' blocks with a total length of',NPARBLKWT(2,ISTI)
           END DO
         END IF
-      END IF
+CSK      END IF
 1001  CONTINUE
 *      
       END 
@@ -998,7 +999,10 @@ C            COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
         DATATYPE = my_MPI_INTEGER
       ELSE IF (NTYPE .EQ. 2) THEN
 C MPI_REAL8 is equivalent to MPI_DOUBLE_PRECISION
-        DATATYPE = MPI_REAL8
+C the old LAM-MPI library does not support MPI_ALLREDUCE for MPI_REAL8
+C so we use instead MPI_DOUBLE_PRECISION
+CSK        DATATYPE = MPI_REAL8
+        DATATYPE = MPI_DOUBLE_PRECISION
       ELSE IF (NTYPE .EQ. 3)THEN
         DATATYPE = MPI_REAL
       ELSE IF (NTYPE .EQ. 4 .OR. NTYPE .EQ. 5) THEN
