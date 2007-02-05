@@ -84,11 +84,18 @@ class diracparser(object):
                     else:
                       # Read the columns.
                       if lcount==0:
+                        tmplist=[]
                         for i in range(0, len(startcol)):
-                          tmpenergy.append([float(key['factor'])*float(tmpc[startcol[i][0]:startcol[i][0]+startcol[i][1]]),''])
+                          try:
+                            tmplist.append(float(key['factor'])*float(tmpc[startcol[i][0]:startcol[i][0]+startcol[i][1]]))
+                          except:                            
+                              if self._resultfile: self.resultfile.write('ERROR (diracparser.py): Numerical data expected. File= '+filename+'\n'+tmpc+'\n')
+                              else: diracparser._log.error('Numerical data expected. File= '+filename+'\n'+tmpc)
+                              tmplist.append('*')                            
+                        tmplist.append('')
+                        tmpenergy.append(tmplist)
                       ilast=startlen
                       count=0
-                      count=lcount
                       # Get the labeling information form the block.
                       if key['type']=='label' or key['type']=='':  
                         # For type=label we read the symmetry of the orbitals. And put it at the end of the list containing the energy values.
@@ -96,13 +103,21 @@ class diracparser(object):
                           if tmpc[i:i+1]==' ':
                             if i-ilast>1:
                               if int(tmpc[ilast:i]):
-                                if len(tmpenergy[ecount][1]): tmpenergy[ecount][1]=tmpenergy[ecount][1]+'<->'+readlist[lcount+count]
-                                else: tmpenergy[ecount][1]=readlist[lcount+count]
+                                if len(tmpenergy[ecount][-1]): tmpenergy[ecount][-1]=tmpenergy[ecount][-1]+'<->'+readlist[lcount+count]
+                                else: tmpenergy[ecount][-1]=readlist[lcount+count]
                               count=count+1
                             ilast=i
                         ecount=ecount+1
+                      elif key['type'][0:5]=='label':
+                        # Labeling with fixed with.
+                        for i in range(ilast+1, len(tmpc), step):
+                          if int(tmpc[i:i+step]):
+                            if len(tmpenergy[ecount][-1]): tmpenergy[ecount][-1]=tmpenergy[ecount][-1]+'<->'+readlist[lcount+count]
+                            else: tmpenergy[ecount][-1]=readlist[lcount+count]
+                          count=count+1
+                        ecount=ecount+1                        
                       elif key['type']=='data':  
-                        # For type=label we read the symmetry of the orbitals. And put it at the end of the list containing the energy values.
+                        # For type=data we interpret the datablock as numbers (like coordinates).
                         tmplist=[]
                         for tmpn in tmpc[ilast:].split():
                           tmplist.append(float(tmpn))
@@ -126,9 +141,10 @@ class diracparser(object):
                           if (i-ilast)>1:
                             try:
                               tmpdat.append(key['factor']*float(tmpc[ilast+1:i]))
-                            except:
-                              if self._resultfile: self.resultfile.write('ERROR (diracparser.py): Numirical data expected. File= '+filename+'\n'+tmpc+'\n')
+                            except:                              
+                              if self._resultfile: self.resultfile.write('ERROR (diracparser.py): Numerical data expected. File= '+filename+'\n'+tmpc+'\n')
                               else: diracparser._log.error('Numerical data expected. File= '+filename+'\n'+tmpc)
+                              tmpdat.append('*')
                           ilast=i
                     else:
                       # Read the positions of the columns containing energy information.
@@ -141,12 +157,23 @@ class diracparser(object):
                       count=0
                       ecount=0
                       # Read the labels after the block start commando.
-                      for i in range(ilast, len(tmpc)-1):
-                        if tmpc[i:i+1]==' ':
-                          if i-ilast>1:
-                            readlist.append(tmpc[ilast+1:i])
-                            count=count+1
-                          ilast=i
+                      if key['type'][0:5]=='label' and not(key['type']=='label'):                    
+                        for i in reversed(range(0, len(key['type']))):
+                          try:
+                            step=int(key['type'][i:])
+                          except:
+                            step=int(key['type'][i+1:])
+                            break
+                        for i in range(ilast+1, len(tmpc)+1-step, step):
+                          readlist.append(tmpc[i:i+step])
+                          count=count+1
+                      else:
+                        for i in range(ilast, len(tmpc)-1):
+                          if tmpc[i:i+1]==' ':
+                            if i-ilast>1:
+                              readlist.append(tmpc[ilast+1:i])
+                              count=count+1
+                            ilast=i
               elif tmpc.count(key['start']):
                 tmp=key['start']
                 tmpenergy=[]
@@ -164,24 +191,39 @@ class diracparser(object):
                 tmpn=tmpc.count(key['start'])
                 if tmpn:
                   ilast=tmpc.index(key['start'])+len(key['start'])
-                  for i in range(ilast, len(tmpc)):
-                    if tmpc[i:i+1] in (' ', '\n'):
-                      if (i-ilast)>1:
-                        try:
-                          tmpdat.append(key['factor']*float(tmpc[ilast+1:i]))
-                        except:
-                          if self._resultfile: self.resultfile.write('ERROR (diracparser.py): Numirical data expected. File= '+filename+'\n'+tmpc+'\n')
-                          else:
-                            diracparser._log.error('Numirical data expected. File= '+filename+'\n'+tmpc)
-                      ilast=i
+                  if key['type'][0:5]=='label' and not(key['type']=='label'):                    
+                    for i in reversed(range(0, len(key['type']))):
+                      try:
+                        step=int(key['type'][i:])
+                      except:
+                        step=int(key['type'][i+1:])
+                        break
+                    for i in range(ilast+1, len(tmpc)+1-step, step):
+                      try:
+                        tmpdat.append(key['factor']*float(tmpc[i:i+step]))
+                      except:
+                        if self._resultfile: self.resultfile.write('ERROR (diracparser.py): Numirical data expected. File= '+filename+'\n'+tmpc+'\n')
+                        else:
+                          diracparser._log.error('Numirical data expected. File= '+filename+'\n'+tmpc)                      
+                  else:
+                    for i in range(ilast, len(tmpc)):
+                      if tmpc[i:i+1] in (' ', '\n'):
+                        if (i-ilast)>1:
+                          try:
+                            tmpdat.append(key['factor']*float(tmpc[ilast+1:i]))
+                          except:
+                            if self._resultfile: self.resultfile.write('ERROR (diracparser.py): Numirical data expected. File= '+filename+'\n'+tmpc+'\n')
+                            else:
+                              diracparser._log.error('Numirical data expected. File= '+filename+'\n'+tmpc)
+                        ilast=i
             if tmpdat==['ERROR']:
               infile.close()
               break
           infile.close()
       # Temporary debug statements
-      diracparser._log.debug(filename)
-      diracparser._log.debug(self._keys)
-      diracparser._log.debug(tmpdat)
+      diracparser._log.log(5,filename)
+      diracparser._log.log(5,self._keys)
+      diracparser._log.log(5,tmpdat)
       energy.append(tmpdat)
     return energy
   
@@ -215,8 +257,13 @@ class diracparser(object):
         for i in range(0, len(tmpc)):
           if tmpc[i:i+1]=='#' and not(quoted): break
           elif (tmpc[i:i+1]==' ' and not(quoted)) or i==len(tmpc)-1:
-            if ilast==0 and key==tmpc[ilast:i]:
-              tmpdat=[tmpc[ilast:i]]
+            if ilast==0:
+              if tmpc[ilast:ilast+1]=='"' and key==tmpc[ilast+1:i-1]:
+                tmpdat=[tmpc[ilast+1:i-1]]
+              elif key==tmpc[ilast:i]:
+                tmpdat=[tmpc[ilast:i]]
+              else:
+                break
               ilast=i
             elif ilast>0:
               if tmpc[ilast:ilast+1]=='"': tmpdat.append(tmpc[ilast+1:i-1])
@@ -242,7 +289,7 @@ class diracparser(object):
         for i in range(0, len(diracparser._keyname)):
           if i<len(tmpdat):
             if i==len(diracparser._keyname)-2:
-              tmpkey.append(diracparser._keyname[i])
+              tmpkey.append((diracparser._keyname[i][0], []))
               for j in range(i, len(tmpdat)-1):
                 tmpkey[i][1].append(tmpdat[j])
               j=len(tmpdat)-1
@@ -259,7 +306,6 @@ class diracparser(object):
               else: tmpkey.append(diracparser._keyname[i])
             else: tmpkey.append(diracparser._keyname[i])
 
-
         self._keydict.append(dict(tmpkey))
         self._keys.append(key)
         self._energy=self.readenergy(self._filelist)
@@ -274,12 +320,15 @@ class diracparser(object):
     if self._resultfile: self._resultfile.write("Keys in datafile: "+self._datafile+'\n')
     else: diracparser._log.info("Keys in datafile: "+self._datafile)
     for tmpc in infile:
+      quoted=False
       for i in range(0, len(tmpc)):
         if tmpc[i:i+1]=='#': break
-        elif tmpc[i:i+1]==' ':
+        elif tmpc[i:i+1]==' ' and not(quoted):
           if self._resultfile: self._resultfile.write(tmpc[0:i]+'\n')
           else: print tmpc[0:i]
           break
+        elif tmpc[i:i+1]=='"':
+          quoted=not(quoted)
     if self._resultfile: self._resultfile.write(tmpc[0:i]+'\n')
     else: print tmpc[0:i]+'\n'
                        
