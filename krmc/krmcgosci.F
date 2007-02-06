@@ -41,7 +41,7 @@ C main authors: H.J.Aa. Jensen & J. Thyssen
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_setup */
-      SUBROUTINE GOSCI_SETUP()
+      SUBROUTINE GOSCI_SETUP(UCIBOS,ISYM,IPRINT)
 C***********************************************************************
 C
 C     Setup and initialize variables in dcbgosci.h
@@ -65,9 +65,9 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "dcbgosci.h"
 #include "pgroup.h"
+      LOGICAL UCIBOS
 C
 C
       CALL QENTER('GOSCI_SETUP')
@@ -80,7 +80,7 @@ C       NREP     : #(boson irreps) = #(fermion irreps);
 C       REPNA    : strings identifying the irreps
 C       MULTB    : mult. table
 C
-      IF (OPT_UCIBOS) THEN
+      IF (UCIBOS) THEN
 C        Use boson symmetry (for spin free and Levy-Leblond)
 C        or use approximate boson symmetry
          CALL GMULTSF(NREP,REPNA,MULTB(1,1))
@@ -101,7 +101,7 @@ C
 C     Setup symmetry
 C     --------------
 C
-C     IRP  : IOPT_SYMMETRY is user input for CI symmetry
+C     IRP  : ISYM is user input for CI symmetry
 C     IRRP : symmetry of wave function according to:
 C            1 .. NREP           : fermion irreps
 C            NREP + 1 .. 2 * NREP: boson irreps
@@ -118,7 +118,7 @@ C     C2v  :  1E, 2E                a, b
 C     D2h  :  1Eg, 2Eg, 1Eu, 2Eu    ag, bg, au, bu
 C
 C
-      IRP = IOPT_SYMMETRY
+      IRP = ISYM
       IF (IRP.LE.0) THEN
 C        ... code for include all symmetries
          IRRP = IRP
@@ -136,8 +136,8 @@ C
 C     IRPAMO is the symmetry of each spinor.
 C     IREPA counts fermion irrep of double group (see GMULTA)
 C     (use boson irreps without spin for SPINFR .OR. LEVYLE,
-C      which implies OPT_UCIBOS true, or use approx. boson symmetry
-C      if OPT_UCIBOS true for relativistic calculation)
+C      which implies UCIBOS true, or use approx. boson symmetry
+C      if UCIBOS true for relativistic calculation)
 C
       II    = 0
       IREPA = 0
@@ -145,19 +145,19 @@ C
          IREPA = IREPA + 1
          DO ISTR = 1, NASH(I)
             II = II + 1
-            IF (OPT_UCIBOS) THEN
+            IF (UCIBOS) THEN
                IG = IDXU2G(IASH(I)+ISTR)
                IRPAMO(II) = IBOSYM(IG)
             ELSE
                IRPAMO(II) = IREPA
             END IF
          ENDDO
-         IF (NZ.NE.4.OR.SPINFR.OR.LEVYLE) IREPA = IREPA + 1
+         IF (NZ.NE.4.OR.SPINFR) IREPA = IREPA + 1
 C        for NZ.eq.4: unbarred and barred in same fermion irrep !
 C        (see GMULTA for def. of fermion irreps)
          DO ISTR = 1, NASH(I)
             II = II + 1
-            IF (OPT_UCIBOS) THEN
+            IF (UCIBOS) THEN
                IG = IDXU2G(IASH(I)+ISTR)
                IRPAMO(II) = IBOSYM(IG)
 C              to use spin symmetry here with MULTB from GMULTSF
@@ -192,7 +192,7 @@ C
 C     Print section
 C     -------------
 C
-      IF ( IPROPT .GE. 2 ) THEN
+      IF (IPRINT .GE. 2 ) THEN
          WRITE(LUPRI,'(A,3I3/A)')
      &      ' (GOSCI_SETUP) NREP, IRP, IRRP = ', NREP, IRP, IRRP,
      &      ' -> IRRP.lt.0 means include all symmetries'
@@ -203,7 +203,7 @@ C
          DO I = 1,NASHT
             IA = IPTA2O(I)
             IB = IPTB2O(I)
-            IF (.NOT. OPT_UCIBOS) THEN
+            IF (.NOT. UCIBOS) THEN
                WRITE(LUPRI,'(I15,2(5X,A))')
      &         I, REPNA(IRPAMO(IA)), REPNA(IRPAMO(IB))
             ELSE
@@ -252,7 +252,7 @@ C
 C
 C     Use GOSCI:
 C
-      CALL GOSCI_SETUP()
+      CALL GOSCI_SETUP(OPT_UCIBOS,IOPT_SYMMETRY,IPROPT)
 C
       IF ( IPROPT .GE. 3 ) THEN
          WRITE(LUPRI,'(/A)')
