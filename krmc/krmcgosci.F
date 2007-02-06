@@ -685,8 +685,8 @@ C
 C
 C     Do full CI
 C
-      CALL GOSCI_FULLCI(IDET,CMO,WORK(KEIGVL),WORK(KEIGVC),
-     &                  ECORE,WORK,KFREE,LFREE)
+      CALL GOSCI_FULLCI(NDET,IDET,CMO,WORK(KEIGVL),WORK(KEIGVC),
+     &                  ECORE,IPRINT,WORK,KFREE,LFREE)
 C
 C     Get CI vector:
 C     --------------
@@ -756,8 +756,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_fullci */
-      SUBROUTINE GOSCI_FULLCI(IDET,CMO,EIGVAL,EIGVEC,ECORE,
-     &                        WORK,KFREE,LFREE)
+      SUBROUTINE GOSCI_FULLCI(NDET,IDET,CMO,EIGVAL,EIGVEC,ECORE,
+     &                        IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Generate CI start vectors from GOSCI by diagonalizing the
@@ -778,7 +778,6 @@ C***********************************************************************
 C
 #include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "dgroup.h"
 C
       DIMENSION WORK(*), EIGVAL(*), EIGVEC(*), CMO(*), IDET(*)
@@ -787,8 +786,8 @@ C
 C
       KFRSAV = KFREE
       MZ = MIN(2,NZ)
-      N2ZCONF = NZCONF * NZCONF
-      N2ZCONFQ = N2ZCONF * MZ
+      N2DET = NDET * NDET
+      N2DETQ = N2DET * MZ
 C
 C     Calculate core Hamiltonian:
 C     ---------------------------
@@ -807,11 +806,11 @@ C
 C
 C     Get active-active part of FCmo:
 C
-      CALL RGETAC(WORK(KFC),WORK(KFCAC),IPROPT)
+      CALL RGETAC(WORK(KFC),WORK(KFCAC),IPRINT)
 C
 C     Transform quaternion FCACmo to molfdir type FCAC.
 C
-      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPROPT)
+      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPRINT)
 C
       CALL MEMREL('GOSCI_FULLCI after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
@@ -826,17 +825,17 @@ C
 C     Read integrals from 4IND1XXXX0:
 C
       CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
-     &     WORK(KFREE),LFREE,IPROPT)
+     &     WORK(KFREE),LFREE,IPRINT)
 C
 C     Transform integrals to Molfdir format:
 C
-      CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPROPT)
+      CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
       CALL MEMREL('GOSCI_FULLCI.H2AC',WORK,1,KH2AC,KFREE,LFREE)
 C
 C     Allocate memory for matrices:
 C
-      CALL MEMGET('REAL',KHR,N2ZCONFQ,WORK,KFREE,LFREE)
-      KHI = KHR + N2ZCONF
+      CALL MEMGET('REAL',KHR,N2DETQ,WORK,KFREE,LFREE)
+      KHI = KHR + N2DET
 C
 C     Construct Hamiltonian:
 C     ----------------------
@@ -848,12 +847,12 @@ C
 C     Diagonalize Hamiltonian:
 C     ------------------------
 C
-      IF ( IPROPT .GE. 20 ) THEN
+      IF ( IPRINT .GE. 20 ) THEN
          WRITE(LUPRI,'(A)') ' (GOSCI_FULLCI) CI matrix - real part:'
-         CALL OUTPUT(WORK(KHR),1,NZCONF,1,NZCONF,NZCONF,NZCONF,1,LUPRI)
+         CALL OUTPUT(WORK(KHR),1,NDET,1,NDET,NDET,NDET,1,LUPRI)
         IF (MZ .GT. 1) THEN
          WRITE(LUPRI,'(A)') ' (GOSCI_FULLCI) CI matrix - imag part:'
-         CALL OUTPUT(WORK(KHI),1,NZCONF,1,NZCONF,NZCONF,NZCONF,1,LUPRI)
+         CALL OUTPUT(WORK(KHI),1,NDET,1,NDET,NDET,NDET,1,LUPRI)
         END IF
       END IF
       CALL FLSHFO(LUPRI)
@@ -863,12 +862,12 @@ C
          IJOB = 1
          IORDER = 1
          IPACK = 0
-         CALL RSJACO(NZCONF,NZCONF,NZCONF,WORK(KHR),EIGVAL,
+         CALL RSJACO(NDET,NDET,NDET,WORK(KHR),EIGVAL,
      &        IJOB,IORDER,IPACK,EIGVEC,WORK(KFREE),LFREE)
       ELSE
          MATZ = 1
-         CALL QDIAG(2,NZCONF,WORK(KHR),NZCONF,NZCONF,
-     &        EIGVAL,MATZ,EIGVEC,NZCONF,NZCONF,
+         CALL QDIAG(2,NDET,WORK(KHR),NDET,NDET,
+     &        EIGVAL,MATZ,EIGVEC,NDET,NDET,
      &        WORK(KFREE),LFREE,IERR)
          IF (IERR .NE. 0) THEN
             WRITE(LUPRI,'(/2A,I4)')
@@ -880,23 +879,22 @@ C
 C
 C     Add core energy
 C
-      DO I = 1,NZCONF
+      DO I = 1,NDET
          EIGVAL(I) = EIGVAL(I) + ECORE
       END DO
 C
-      IF ( IPROPT .GE. 5 ) THEN
+      IF ( IPRINT .GE. 5 ) THEN
          WRITE(LUPRI,'(/A)') ' (GOSCI_FULLCI) CI eigenvalues'
-         CALL OUTPUT(EIGVAL,1,1,1,NZCONF,1,NZCONF,1,LUPRI)
-       IF ( IPROPT .GE. 20 .OR. NZCONF .LE. 12) THEN
+         CALL OUTPUT(EIGVAL,1,1,1,NDET,1,NDET,1,LUPRI)
+       IF ( IPRINT .GE. 20 .OR. NDET .LE. 12) THEN
          WRITE(LUPRI,'(/A)')
      &   ' (GOSCI_FULLCI) CI eigenvectors (real part)'
-         CALL OUTPUT(EIGVEC,1,NZCONF,1,NZCONF,
-     &        NZCONF,NZCONF,1,LUPRI)
+         CALL OUTPUT(EIGVEC,1,NDET,1,NDET,NDET,NDET,1,LUPRI)
          IF (NZ .GT. 1) THEN
             WRITE(LUPRI,'(/A)')
      &      ' (GOSCI_FULLCI) CI eigenvectors (imag part)'
-            CALL OUTPUT(EIGVEC(1+N2ZCONF),1,NZCONF,1,NZCONF,
-     &           NZCONF,NZCONF,1,LUPRI)
+            CALL OUTPUT(EIGVEC(1+N2DET),1,NDET,1,NDET,
+     &           NDET,NDET,1,LUPRI)
          END IF
        END IF
       END IF
