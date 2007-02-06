@@ -41,7 +41,7 @@ C main authors: H.J.Aa. Jensen & J. Thyssen
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_setup */
-      SUBROUTINE GOSCI_SETUP(UCIBOS,ISYM,IPRINT)
+      SUBROUTINE GOSCI_SETUP(UCIBOS,ICIREP,IPRINT)
 C***********************************************************************
 C
 C     Setup and initialize variables in dcbgosci.h
@@ -101,7 +101,7 @@ C
 C     Setup symmetry
 C     --------------
 C
-C     IRP  : ISYM is user input for CI symmetry
+C     IRP  : ICIREP is user input for CI symmetry
 C     IRRP : symmetry of wave function according to:
 C            1 .. NREP           : fermion irreps
 C            NREP + 1 .. 2 * NREP: boson irreps
@@ -118,7 +118,7 @@ C     C2v  :  1E, 2E                a, b
 C     D2h  :  1Eg, 2Eg, 1Eu, 2Eu    ag, bg, au, bu
 C
 C
-      IRP = ISYM
+      IRP = ICIREP
       IF (IRP.LE.0) THEN
 C        ... code for include all symmetries
          IRRP = IRP
@@ -218,7 +218,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_gendet */
-      SUBROUTINE GOSCI_GENDET(NDET,IDET,IASTR,IBSTR,MAXDET)
+      SUBROUTINE GOSCI_GENDET(NDET,IDET,IASTR,IBSTR,MAXDET,UCIBOS,
+     &                        ICIREP,MINMK2,MAXMK2,IPRINT)
 C***********************************************************************
 C
 C     Find determinants.
@@ -237,14 +238,13 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbgosci.h"
-#include "dcbopt.h"
 #include "dcborb.h"
 #include "pgroup.h"
 #include "dgroup.h"
 C
       DIMENSION NA(MAXASH_GOSCI), NB(MAXASH_GOSCI)
       DIMENSION IDET(2,*), IASTR(*), IBSTR(*)
-      LOGICAL   GOSCI_GASOK, GOSCI_SYMOK
+      LOGICAL GOSCI_GASOK,GOSCI_SYMOK,UCIBOS
 C
       INTEGER MSKGAS(MXMCGAS), IBTAB(0:255)
 C
@@ -252,17 +252,17 @@ C
 C
 C     Use GOSCI:
 C
-      CALL GOSCI_SETUP(OPT_UCIBOS,IOPT_SYMMETRY,IPROPT)
+      CALL GOSCI_SETUP(UCIBOS,ICIREP,IPRINT)
 C
-      IF ( IPROPT .GE. 3 ) THEN
+      IF ( IPRINT .GE. 3 ) THEN
          WRITE(LUPRI,'(/A)')
      &       ' (GOSCI_GENDET) Output from generation of determinants:'
-         IF (OPT_UCIBOS) WRITE(LUPRI,'(15X,A)')
+         IF (UCIBOS) WRITE(LUPRI,'(15X,A)')
      &    'Using boson spinor symmetry (exact or approximate) in the CI'
          IF (IRRP .LE. 0) THEN
             WRITE(LUPRI,'(15X,A)')
      &        'Generating determinants of all symmetries'
-         ELSE IF (OPT_UCIBOS) THEN
+         ELSE IF (UCIBOS) THEN
             WRITE(LUPRI,'(15X,3A,I4,A,I3)')
      &        'Generating dets. with spatial symmetry ', REP(IRP-1),
      &        ' and 2*MS interval:',MINMK2,' to',MAXMK2
@@ -407,7 +407,7 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
-      IF (IPROPT .GE. 10 .OR. NDET .LE. 50) THEN
+      IF (IPRINT .GE. 10 .OR. NDET .LE. 50) THEN
          WRITE(LUPRI,9001)
          DO MK2 = MINMK2, MAXMK2
             IF (NMK2(MK2) .GT. 0) THEN

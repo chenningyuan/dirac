@@ -2027,8 +2027,9 @@ Chj         ... this GOSCI version is not suitable for very big CI spaces
             CALL MEMGET('INTE',KIDET ,2*KALLOC,WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIASTR,KALLOC  ,WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIBSTR,KALLOC  ,WORK,KFREE,LFREE)
-            CALL GOSCI_GENDET(NZCONF,WORK(KIDET),
-     &           WORK(KIASTR),WORK(KIBSTR),KALLOC)
+            CALL GOSCI_GENDET(NZCONF,WORK(KIDET),WORK(KIASTR),
+     &                        WORK(KIBSTR),KALLOC,OPT_UCIBOS,
+     &                        IOPT_SYMMETRY,MINMK2,MAXMK2,IPROPT)
             CALL MEMREL('RSETCI.GOSCI',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C           note: the above release should make sure that KZCONF .eq. KIDET,
