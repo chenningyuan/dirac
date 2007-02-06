@@ -269,7 +269,7 @@ C&&& NO CI : debug flag: no CI rotations.
                KRMC_NOCI = .TRUE.
                GO TO 100
    17          CONTINUE
-C&&& THRPCI:
+C&&& THRPCI: threshold for printing CI vector
                   READ(LUCMD,*) KRMC_THRPCI
                GO TO 100
    18          CONTINUE

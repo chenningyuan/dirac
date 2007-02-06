@@ -240,9 +240,8 @@ C
          CALL DNZ32M(H2AC,WORK(KMUUUU),IPROPT)
 C
 C        Calculate CI gradient with CI program GOSCI.
-         CALL GOSCI_SVC(.TRUE.,WORK(KDIAG),GCI,WORK(KZCONF),CREF,
-     &        WORK(KMOLFFC),WORK(KMUUUU))
-C        CALL GOSCI_SVC(SAVDIA,DIAG,SCVEC,IDET,BCVEC,HCORE,VMUUUU)
+         CALL GOSCI_SVC(.TRUE.,WORK(KDIAG),GCI,NZCONF,WORK(KZCONF),
+     &        CREF,WORK(KMOLFFC),WORK(KMUUUU),IPROPT)
       ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
 C
          CALL LUCI_SIGMA(.TRUE.,WORK(KDIAG),CREF,GCI,
@@ -311,7 +310,8 @@ C     ----------------------
 C
       CALL DZERO(WORK(KHR),NZCONF2)
       CALL DZERO(WORK(KHI),NZCONF2)
-      CALL GOSCI_MAKEH(IDET,WORK(KHR),WORK(KHI),
+CTROND..check this call !!!
+      CALL GOSCI_MAKEH(.TRUE.,1,NZCONF,IDET,WORK(KHR),WORK(KHI),
      &     WORK(KMOLFFC),WORK(KMUUUU))
       write(6,*) 'debug hamil'
       call prqmat(work(khr),nzconf,nzconf,nzconf,nzconf,

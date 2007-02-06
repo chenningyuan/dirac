@@ -219,7 +219,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_gendet */
       SUBROUTINE GOSCI_GENDET(NDET,IDET,IASTR,IBSTR,MAXDET,UCIBOS,
-     &                        ICIREP,MINMK2,MAXMK2,IPRINT)
+     &                        ICIREP,IPRINT)
 C***********************************************************************
 C
 C     Find determinants.
@@ -364,7 +364,7 @@ C
          DO IA = 1, NASTR
             DO IB = 1, NBSTR
                IF (GOSCI_GASOK(IASTR(IA),IBSTR(IB),MSKGAS,IBTAB)) THEN
-                  IF (GOSCI_SYMOK(IASTR(IA),IBSTR(IB))) THEN
+                  IF (GOSCI_SYMOK(IASTR(IA),IBSTR(IB),UCIBOS)) THEN
                      NDET = NDET + 1
                      IF (NDET .GE. MAXDET) THEN
                         WRITE(LUPRI,'(/A,I12/A)')
@@ -467,7 +467,6 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbgosci.h"
-#include "dcbopt.h"
 #include "dcborb.h"
 C
       DIMENSION MSKGAS(*), IBTAB(*)
@@ -578,7 +577,7 @@ C     write(lupri,*) 'id1',id1
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_symok */
-      LOGICAL FUNCTION GOSCI_SYMOK(IA,IB)
+      LOGICAL FUNCTION GOSCI_SYMOK(IA,IB,UCIBOS)
 C***********************************************************************
 C
 C     Find symmetry of determinant (IA,IB).
@@ -592,14 +591,14 @@ C***********************************************************************
 C
 #include "dcbgosci.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 C
+      LOGICAL UCIBOS
 #include "ibtfun.h"
 C
       IF (IRP .LE. 0) THEN
 C        ... include all symmetries
          GOSCI_SYMOK = .TRUE.
-      ELSE IF (.NOT. OPT_UCIBOS) THEN
+      ELSE IF (.NOT. UCIBOS) THEN
 C
 C        The normal symmetry scheme.
 C
@@ -840,7 +839,7 @@ C
 C     Construct Hamiltonian:
 C     ----------------------
 C
-      CALL GOSCI_MAKEH(.TRUE.,1,IDET,WORK(KHR),WORK(KHI),
+      CALL GOSCI_MAKEH(.TRUE.,1,NDET,IDET,WORK(KHR),WORK(KHI),
      &                 WORK(KFCACM),WORK(KMUUUU))
 C
 C
@@ -957,7 +956,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_rmakdm */
-      SUBROUTINE GOSCI_RMAKDM(CALCDV,CALCPV,IDET,CL,CR,DV,PV,IPRINT)
+      SUBROUTINE GOSCI_RMAKDM(NDET,CALCDV,CALCPV,IDET,CL,CR,DV,PV,
+     &                        IPRINT)
 C***********************************************************************
 C
 C     Construct one- and two-electron active density matrix
@@ -990,10 +990,9 @@ C
 C
 #include "dcbgosci.h"
 #include "dgroup.h"
-#include "dcbopt.h"
 #include "dcborb.h"
 C
-      DIMENSION CL(NZCONF,NZ),CR(NZCONF,NZ),DV(2*NASHT,2*NASHT,2)
+      DIMENSION CL(NDET,NZ),CR(NDET,NZ),DV(2*NASHT,2*NASHT,2)
       DIMENSION PV(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
       DIMENSION IDET(*)
 C
@@ -1012,7 +1011,7 @@ C
 C     Calculate density matrices
 C     --------------------------
 C
-      CALL GOSCI_MAKETDM(CALCPV,IDET,CL,CR,DV,PV)
+      CALL GOSCI_MAKETDM(CALCPV,NDET,IDET,CL,CR,DV,PV,IPRINT)
 C
 C     Print section
 C     -------------
@@ -1071,7 +1070,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_maketdn */
-      SUBROUTINE GOSCI_MAKETDM(DOPV,IDET,CL,CR,DV,PV)
+      SUBROUTINE GOSCI_MAKETDM(DOPV,NDET,IDET,CL,CR,DV,PV,IPRINT)
 C***********************************************************************
 C
 C     Calculate density matrices: <CL|Pq|CR>
@@ -1100,12 +1099,7 @@ C
      &     .FALSE.,DUMMY,
      &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &     .TRUE.,CL,CR,DV,PV,
-     &     DOPV,IDET)
-C     CALL GOSCI_CI(
-C    &     DODIA,DIAG,
-C    &     DOSIG,SVEC,BVEC,HCORE,VMUUUU,
-C    &     DODEN,CL,CR,DV,PV,
-C    &     DO2EL,IDET)
+     &     DOPV,NDET,IDET,IPRINT)
 C
       CALL QEXIT('GOSCI_MAKETDM')
       RETURN
@@ -1140,7 +1134,6 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "dcbgosci.h"
 C
       LOGICAL   DOPV, DOIMAG
@@ -1280,7 +1273,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_maketdn */
-      SUBROUTINE GOSCI_MAKEH(DO2EL,IHRM,IDET,HR,HI,HCORE,VMUUUU)
+      SUBROUTINE GOSCI_MAKEH(DO2EL,IHRM,NDET,IDET,HR,HI,HCORE,VMUUUU)
 C***********************************************************************
 C
 C     Construct Hamiltonian for use in gosci.
@@ -1310,9 +1303,8 @@ C
 #include "dcbgosci.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbopt.h"
 C
-      DIMENSION HR(NZCONF,NZCONF),HI(NZCONF,NZCONF)
+      DIMENSION HR(NDET,NDET),HI(NDET,NDET)
       DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
       DIMENSION HCORE(*), IDET(2,*)
       LOGICAL   DO2EL,DOIMAG
@@ -1326,8 +1318,8 @@ C
       CALL IBTABINI(IBTAB)
       HFULL = IHRM .EQ. 0
       DOIMAG  = NZ.GT.1
-      CALL DZERO(HR,NZCONF*NZCONF)
-      IF (DOIMAG) CALL DZERO(HI,NZCONF*NZCONF)
+      CALL DZERO(HR,NDET*NDET)
+      IF (DOIMAG) CALL DZERO(HI,NDET*NDET)
 C
       IF (DO2EL) THEN
 C        ... one and two electron terms
@@ -1338,7 +1330,7 @@ C        ... only one electron terms
       END IF
 C
       IDAOLD = -1
-      DO I = 1, NZCONF
+      DO I = 1, NDET
 C
 C        Use that outer loop in gosci_gendet is over A-strings,
 C        inner loop is over B-strings
@@ -1367,11 +1359,9 @@ C
      &      CALL QUIT('GOSCI_MAKEH: IELEC.ne.NAELEC')
 C
          IF (HFULL) THEN
-            JEND = NZCONF
+            JEND = NDET
          ELSE
 chj aug 2002: code generalized to non-hermitian operators
-chj         CALL GOSCI_HMAT(DO2EL,.FALSE.,0,IOCCI,IOCCI,0,0,0,0,
-chj  &           HR(I,I),DUMMY,HCORE,VMUUUU)
             CALL GOSCI_HMAT(DO2EL,DOIMAG,0,IOCCI,IOCCI,0,0,0,0,
      &           HR(I,I),HI(I,I),HCORE,VMUUUU)
             JEND = I - 1
@@ -1597,7 +1587,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_svc */
-      SUBROUTINE GOSCI_SVC(SAVDIA,DIAG,SVEC,IDET,BVEC,HCORE,VMUUUU)
+      SUBROUTINE GOSCI_SVC(SAVDIA,DIAG,SVEC,NDET,IDET,BVEC,HCORE,VMUUUU,
+     &                     IPRINT)
 C***********************************************************************
 C
 C     Calculate CI sigma vectors: SVEC(I) = \sum_J H_{IJ} B_{J}
@@ -1620,7 +1611,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "dcbopt.h"
 C
       LOGICAL   SAVDIA
       DIMENSION DIAG(*), SVEC(*), BVEC(*), HCORE(*), VMUUUU(*)
@@ -1628,37 +1618,31 @@ C
 C
       CALL QENTER('GOSCI_SVC')
 C
-      IF (NZCONF .GT. 1000) THEN
+      IF (NDET .GT. 1000) THEN
 C hj 16-jun-2004 new sigma code with screening
          THRSCR = 1.0D-10
          CALL GOSCI_CISIG_SCREEN(SVEC,BVEC,HCORE,VMUUUU,.TRUE.,
-     &      IDET,THRSCR)
+     &      NDET,IDET,THRSCR,IPRINT)
          IF (SAVDIA) CALL GOSCI_CI(SAVDIA,DIAG,
      &     .FALSE.,SVEC,BVEC,HCORE,VMUUUU,
      &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
-     &     .TRUE.,IDET)
+     &     .TRUE.,NDET,IDET,IPRINT)
       ELSE
          CALL GOSCI_CI(SAVDIA,DIAG,
      &     .TRUE.,SVEC,BVEC,HCORE,VMUUUU,
      &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
-     &     .TRUE.,IDET)
+     &     .TRUE.,NDET,IDET,IPRINT)
       END IF
-C
-C     CALL GOSCI_CI(
-C    &     DODIA,DIAG,
-C    &     DOSIG,SVEC,BVEC,HCORE,VMUUUU,
-C    &     DODEN,CL,CR,DV,PV,
-C    &     DO2EL,IDET)
 C
       CALL QEXIT('GOSCI_SVC')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_hdiag */
-      SUBROUTINE GOSCI_HDIAG(DIAG,IDET,HCORE,VMUUUU)
+      SUBROUTINE GOSCI_HDIAG(DIAG,NDET,IDET,HCORE,VMUUUU,IPRINT)
 C***********************************************************************
 C
-C     Calcualte diagonal of CI Hamiltonian.
+C     Calculate diagonal of CI Hamiltonian.
 C
 C     Input:
 C        HCORE  - core Fock matrix
@@ -1682,20 +1666,14 @@ C
       CALL GOSCI_CI(.TRUE.,DIAG,
      &     .FALSE.,DUMMY,DUMMY,HCORE,VMUUUU,
      &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
-     &     .TRUE.,IDET)
-C
-C     CALL GOSCI_CI(
-C    &     DODIA,DIAG,
-C    &     DOSIG,SVEC,BVEC,HCORE,VMUUUU,
-C    &     DODEN,CL,CR,DV,PV,
-C    &     DO2EL,IDET)
+     &     .TRUE.,NDET,IDET,IPRINT)
 C
       CALL QEXIT('GOSCI_HDIAG')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_rcistd */
-      SUBROUTINE GOSCI_RCISTD(IDET,CMO,CREF,ECI,NDET,NCIROOT,ISTATE,
+      SUBROUTINE GOSCI_RCISTD(NDET,IDET,CMO,CREF,ECI,NCIROOT,ISTATE,
      &                        MAXCIT,THRPCI,CIPROG,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
@@ -1815,15 +1793,11 @@ C
 C     Calculate diagonal of CI matrix:
 C     --------------------------------
 C
-c     CALL GOSCI_HDIAG(WORK(KHDIAG),IDET,WORK(KFCACM),WORK(KMUUUU))
+c     CALL GOSCI_HDIAG(WORK(KHDIAG),NDET,IDET,WORK(KFCACM),WORK(KMUUUU))
       CALL GOSCI_CI(.TRUE.,WORK(KHDIAG),
      &     .FALSE.,DUMMY,DUMMY,WORK(KFCACM),WORK(KMUUUU),
      &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
-     &     .TRUE.,IDET)
-C     CALL GOSCI_CI(DODIA,DIAG,
-C                   DOSIG,SVEC,BVEC,HCORE,VMUUUU,
-C                   DODEN,CL,CR,DV,PV,
-C                   DO2EL,IDET)
+     &     .TRUE.,NDET,IDET,IPRINT)
       IF (IPRINT .GE. 10) THEN
          WRITE(LUPRI,'(A)') ' (GOSCI_RCISTD) Diagonal of Hamiltonian'
          CALL OUTPUT(WORK(KHDIAG),1,NDET,1,1,NDET,1,1,LUPRI)
@@ -1891,31 +1865,22 @@ C        Calculate sigma vector(s)
 C        -------------------------
 C
          DO I = 1, NCSIM
-c           CALL GOSCI_SVC(.FALSE.,DUMMY,
-c    &           WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
-c    &           IDET,WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
-c    &           WORK(KFCACM),WORK(KMUUUU))
             IF (NDET .GT. 1000) THEN
 C hj 16-jun-2004 new sigma code with screening
                CALL GOSCI_CISIG_SCREEN(
      &           WORK(KSCVEC+(I-1+JCRED)*NDETQ),
      &           WORK(KBCVEC+(I-1+JCRED)*NDETQ),
      &           WORK(KFCACM),WORK(KMUUUU),
-     &           .TRUE.,IDET,THRSCR)
+     &           .TRUE.,NDET,IDET,THRSCR,IPRINT)
             ELSE
                CALL GOSCI_CI(.FALSE.,DUMMY,
      &           .TRUE.,WORK(KSCVEC+(I-1+JCRED)*NDETQ),
      &           WORK(KBCVEC+(I-1+JCRED)*NDETQ),
      &           WORK(KFCACM),WORK(KMUUUU),
      &           .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
-     &           .TRUE.,IDET)
+     &           .TRUE.,NDET,IDET,IPRINT)
             END IF
-C           CALL GOSCI_CI(DODIA,DIAG,
-C                         DOSIG,SVEC,BVEC,
-C                         HCORE,VMUUUU,
-C                         DODEN,CL,CR,DV,PV,
-C                         DO2EL,IDET)
-C
+c
             IF (IPRINT .GE. 10) THEN
 C
 C              Trial vector
@@ -2357,7 +2322,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_anaci */
-      SUBROUTINE GOSCI_ANACI(CREF,IDET,WORK,LWORK)
+      SUBROUTINE GOSCI_ANACI(CREF,NDET,IDET,THRPCI,WORK,LWORK)
 C***********************************************************************
 C
 C     Print nice analysis of CI vector.
@@ -2376,14 +2341,13 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "consts.h"
-      PARAMETER (D10 = 10.0D0)
+      PARAMETER (D1=1.0D0,D10 = 10.0D0)
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbopt.h"
 #include "dcbgosci.h"
 C
-      DIMENSION CREF(NZCONF,*), IDET(2,*), WORK(*)
+      DIMENSION CREF(NDET,*), IDET(2,*), WORK(*)
 C
       DIMENSION IASTR(2*MAXASH_GOSCI), IBSTR(2*MAXASH_GOSCI)
 C
@@ -2397,7 +2361,7 @@ C
          WRITE(LUPRI,'(/A,1P,D7.1,A,D7.1/)')
      &     ' Print of CI coefficients in range ',DMN,' to ',DMX
          K = 0
-         DO I = 1, NZCONF
+         DO I = 1, NDET
             DI = D0
             DO IZ = 1, MZ
                DI = DI + CREF(I,IZ) * CREF(I,IZ)
@@ -2431,7 +2395,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_chkkr */
-      SUBROUTINE GOSCI_CHKKR(DOIMAG,BVEC,WORK,LWORK)
+      SUBROUTINE GOSCI_CHKKR(DOIMAG,BVEC,NDET,WORK,LWORK)
 C***********************************************************************
 C
 C     Check that BVEC is Kramers restricted.
@@ -2450,7 +2414,6 @@ C***********************************************************************
 C
 #include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 C
       LOGICAL   DOIMAG
       DIMENSION BVEC(*), WORK(*)
@@ -2459,15 +2422,15 @@ C
 C
       IF ( MOD(NAELEC,2) .NE. 0) RETURN
 C
-      CALL MEMGET('INTE',KRLIST,NZCONF,WORK,KFREE,LFREE)
-      CALL IREAKRMC(LUKRMC,'KRLIST  ',WORK(KRLIST),NZCONF)
-      CALL GOSCI_CHKKR1(DOIMAG,BVEC,WORK(KRLIST))
+      CALL MEMGET('INTE',KRLIST,NDET,WORK,KFREE,LFREE)
+      CALL IREAKRMC(LUKRMC,'KRLIST  ',WORK(KRLIST),NDET)
+      CALL GOSCI_CHKKR1(DOIMAG,BVEC,NDET,WORK(KRLIST))
       CALL MEMREL('GOSCI_CHKKR',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_chkkr1 */
-      SUBROUTINE GOSCI_CHKKR1(DOIMAG,BVEC,KRLIST)
+      SUBROUTINE GOSCI_CHKKR1(DOIMAG,BVEC,NDET,KRLIST)
 C***********************************************************************
 C
 C     Check that BVEC is Kramers restricted.
@@ -2485,13 +2448,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbopt.h"
 #include "dgroup.h"
 C
       LOGICAL   DOIMAG
-      DIMENSION BVEC(NZCONF,*), KRLIST(*)
+      DIMENSION BVEC(NDET,*), KRLIST(*)
 C
-      DO I = 1, NZCONF
+      DO I = 1, NDET
          IK = KRLIST(I)
          IF (IK .NE. I) THEN
 C HJAaJ TODO aug 2002: we may divide by zero in next line!
@@ -2537,7 +2499,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbopt.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbgosci.h"
@@ -2566,11 +2527,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_ci */
-      SUBROUTINE GOSCI_CI(
-     &     DODIA,DIAG,
-     &     DOSIG,SVEC,BVEC,HCORE,VMUUUU,
-     &     DODEN,CL,CR,DV,PV,
-     &     DO2EL,IDET)
+      SUBROUTINE GOSCI_CI(DODIA,DIAG,DOSIG,SVEC,BVEC,HCORE,VMUUUU,
+     &                    DODEN,CL,CR,DV,PV,DO2EL,NDET,IDET,IPRINT)
 C***********************************************************************
 C
 C     Calculate:
@@ -2610,14 +2568,13 @@ C
 #include "dcbgosci.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbopt.h"
 C
       DIMENSION DIAG(*)
 C
-      DIMENSION SVEC(NZCONF,*), BVEC(NZCONF,*)
+      DIMENSION SVEC(NDET,*), BVEC(NDET,*)
       DIMENSION VMUUUU(*), HCORE(*)
 C
-      DIMENSION CL(NZCONF,*), CR(NZCONF,*)
+      DIMENSION CL(NDET,*), CR(NDET,*)
       DIMENSION DV(2*NASHT,2*NASHT,*)
       DIMENSION PV(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
 C
@@ -2639,6 +2596,8 @@ C
 C     Initialization
 C     --------------
 C
+      NDETQ = NDET*NZ
+C   
 C     Bit table:
 C
       CALL IBTABINI(IBTAB)
@@ -2650,8 +2609,8 @@ C
 C     Zero vectors:
 C
       MZ = MIN(NZ,2)
-      IF (DODIA) CALL DZERO(DIAG,NZCONF)
-      IF (DOSIG) CALL DZERO(SVEC,NZCONFQ)
+      IF (DODIA) CALL DZERO(DIAG,NDET)
+      IF (DOSIG) CALL DZERO(SVEC,NDETQ)
       IF (DODEN) THEN
          CALL DZERO(DV,(2*NASHT)**2 * MZ)
          IF (DO2EL) CALL DZERO(PV,(2*NASHT)**4 * MZ)
@@ -3055,9 +3014,9 @@ C
 C
  10   CONTINUE
 C
-      IF (IPROPT .GT. 0) THEN
+      IF (IPRINT .GT. 0) THEN
          CALL GETTIM(CPU2,WLL2)
-       IF ((WLL2-WLL1)*IPROPT .GT. 5.D0) THEN
+       IF ((WLL2-WLL1)*IPRINT .GT. 5.D0) THEN
 C        ... do not print all the small numbers
          CPUTID  = SECTID(CPU2-CPU1)
          WALLTID = SECTID(WLL2-WLL1)
@@ -3065,8 +3024,8 @@ C        ... do not print all the small numbers
      &   ' CPU (Wall) time in GOSCI_CI kernel: ',CPUTID,' (',WALLTID,')'
          IF (NDSKIP .GT. 0) WRITE(LUPRI,'(A,I10,A,I10)')
      &   ' Number of configuration elements skipped:',NDSKIP,
-     &   ' out of',NZCONF
-        IF (IPROPT .GT. 2) THEN
+     &   ' out of',NDET
+        IF (IPRINT .GT. 2) THEN
          CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
          write(lupri,*) '#calls to nbits: ',cncalls,fncalls
         END IF
@@ -3079,7 +3038,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_cisig_screen */
       SUBROUTINE GOSCI_CISIG_SCREEN(SVEC,BVEC,HCORE,VMUUUU,
-     &                              DO2EL,IDET,THRSCR)
+     &                              DO2EL,NDET,IDET,THRSCR,IPRINT)
 C***********************************************************************
 C
 C     Calculate:
@@ -3110,9 +3069,8 @@ C
 #include "dcbgosci.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbopt.h"
 C
-      DIMENSION SVEC(NZCONF,*), BVEC(NZCONF,*)
+      DIMENSION SVEC(NDET,*), BVEC(NDET,*)
       DIMENSION VMUUUU(*), HCORE(*)
 C
 C
@@ -3134,6 +3092,8 @@ C
 C     Initialization
 C     --------------
 C
+      NDETQ = NDET*NZ
+C
 C     Bit table:
 C
       CALL IBTABINI(IBTAB)
@@ -3145,7 +3105,7 @@ C
 C     Zero vectors:
 C
       MZ = MIN(NZ,2)
-      CALL DZERO(SVEC,NZCONFQ)
+      CALL DZERO(SVEC,NDETQ)
 C
       IF (DO2EL) THEN
 C        max 4 differences between 2 determinants
@@ -3329,17 +3289,17 @@ C        end loop 100 I and end loop 10 MKI
  100     CONTINUE
  10   CONTINUE
 C
-      IF (IPROPT .GT. 0) THEN
+      IF (IPRINT .GT. 0) THEN
          CALL GETTIM(CPU2,WLL2)
-       IF ((WLL2-WLL1)*IPROPT .GT. 5.D0) THEN
+       IF ((WLL2-WLL1)*IPRINT .GT. 5.D0) THEN
 C        ... do not print all the small numbers
          CPUTID  = SECTID(CPU2-CPU1)
          WALLTID = SECTID(WLL2-WLL1)
          WRITE(LUPRI,'(/5A/A,I10,A,I10)')
      &   ' CPU (Wall) time in GOSCI_CISIG_SCREEN kernel: ',CPUTID,' (',
      &   WALLTID,')',' Number of BVEC elements skipped:',NBSKIP,
-     &   ' out of',NZCONF
-        IF (IPROPT .GT. 2) THEN
+     &   ' out of',NDET
+        IF (IPRINT .GT. 2) THEN
          CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
          write(lupri,*) '#calls to nbits: ',cncalls,fncalls
         END IF

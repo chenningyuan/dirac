@@ -354,6 +354,25 @@ C***********************************************************************
 C
       IF(DOLUCT.AND.DOPSI) CALL PAMLUCITA(WORK,LWORK)
 C
+C***********************************************************************
+C***** C O S C I        stand-alone version of RESOVE    ***************
+C*****                  some routines in krmc are merged ***************
+C*****                  to get efficiency and make it    ***************
+C*****                  possible to calculate density
+C*****                  matrix.                          ***************
+C*****                  added by sya,2007.01.23,ulp      ***************
+C***********************************************************************
+C
+      IF(DOCOSCI.AND.DOPSI) THEN
+!@d      IF (.NOT.DOSCF) THEN
+C           ... Transfer DHF info to common block DCBORB
+C           ... and recalculate DCBORB.
+!@d         CALL TDHFORB
+!@d         CALL SETDC2(0)
+!@d      END IF
+         CALL SY_COSCI(WORK,LWORK)
+      END IF
+C
 C
 #if defined (UNDEF)
 C
@@ -396,6 +415,7 @@ C
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "dcbgosci.h"
 C
       CALL QENTER('TDHFORB')
 C
@@ -505,6 +525,7 @@ C
 #include "dcborb.h"
 #include "dcbkrmc.h"
 #include "dcbopt.h"
+#include "dcbgosci.h"
 C
       CALL QENTER('TKRMCORB')
 C
