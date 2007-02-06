@@ -434,7 +434,7 @@ C
 C     Use boson symmetry for CI expansion for the spin-free and
 C     the Levy-Leblond Hamiltonian, if KRMC_UCIBOS not set in input.
 C
-      IF (IKWSET(18).LE.1 .AND. (SPINFR.OR.LEVYLE)) THEN
+      IF (IKWSET(18).LE.1 .AND. (SPINFR)) THEN
          KRMC_UCIBOS = .TRUE.
       END IF
 c     krmc_ucibos = .false.
@@ -508,7 +508,7 @@ C
 C
 C     Boson symmetry in the CI expansion
 C
-      IF ((SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) THEN
+      IF ((SPINFR).AND.KRMC_UCIBOS) THEN
          NREP = NBSYM
          WRITE(LUPRI,'(A)')
      &     ' * Boson spatial spinor symmetry used in CI expansion.'
@@ -518,7 +518,7 @@ C
          WRITE(LUPRI,'(A,I4,A,I3)')
      &     ' * Allowed interval of 2 * MS :',
      &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
-      ELSE IF (.NOT.(SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) THEN
+      ELSE IF (.NOT.(SPINFR).AND.KRMC_UCIBOS) THEN
          NREP = NBSYM
          WRITE(LUPRI,'(A)') ' * Approximate boson spatial spinor'//
      &     ' symmetry (as non-rel) used in CI expansion.'
@@ -529,7 +529,7 @@ C
      &     ' * Allowed interval of approximate 2 * MS :',
      &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
       ELSE
-         IF (SPINFR.OR.LEVYLE) THEN
+         IF (SPINFR) THEN
             CALL GMULTSF(NREP,REPNA,MULTB_TMP)
          ELSE
             CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
