@@ -647,7 +647,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_startvec */
-      SUBROUTINE GOSCI_STARTVEC(IDET,CMO,CREF,ECI,WORK,KFREE,LFREE)
+      SUBROUTINE GOSCI_STARTVEC(IDET,CMO,CREF,ECI,NDET,ISTATE,THRPCI,
+     &                          CIPROG,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Generate CI start vectors from GOSCI by diagonalizing the
@@ -667,19 +668,19 @@ C***********************************************************************
 C
 #include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "dgroup.h"
 C
-      DIMENSION WORK(*), CREF(NZCONF,*), CMO(*), IDET(*)
+      CHARACTER CIPROG*8
+      DIMENSION WORK(*), CREF(NDET,*), CMO(*), IDET(*)
 C
       CALL QENTER('GOSCI_STARTVEC')
 C
       KFRSAV = KFREE
       MZ = MIN(2,NZ)
-      N2ZCONF = NZCONF*NZCONF
+      N2DET = NDET*NDET
 C
-      CALL MEMGET('REAL',KEIGVL,NZCONF,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIGVC,N2ZCONF*MZ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIGVL,NDET,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIGVC,N2DET*MZ,WORK,KFREE,LFREE)
 C
 C
 C     Do full CI
@@ -690,18 +691,18 @@ C
 C     Get CI vector:
 C     --------------
 C
-C     The CI vector is stored in colunms; the lowest eigenstate is in
+C     The CI vector is stored in columns; the lowest eigenstate is in
 c     the first column.
 C
-      IOFF = KEIGVC - 1 + ( IOPT_ISTATE - 1 ) * NZCONF
+      IOFF = KEIGVC - 1 + (ISTATE-1) * NDET
       IF ( NZ .EQ. 1 ) THEN
-         DO I = 1,NZCONF
+         DO I = 1,NDET
             CREF(I,1) = WORK(IOFF + I)
          END DO
       ELSE
-         DO I = 1,NZCONF
+         DO I = 1,NDET
             CREF(I,1) = WORK(IOFF + I )
-            CREF(I,2) = WORK((IOFF + N2ZCONF) + I )
+            CREF(I,2) = WORK((IOFF + N2DET) + I )
          END DO
       END IF
 C
@@ -713,23 +714,23 @@ c      cref(2,2) = 1.0d0/sqrt(2.0d0)
 c      else
 c         CREF(2,2) = 1.0D00
 c      endif
-c      DO I = 2, NZCONF
+c      DO I = 2, NDET
 c         CREF(I,1) = 0.0D00
 c      END DO
-c      IF ( NZCONF .GE. 2) THEN
+c      IF ( NDET .GE. 2) THEN
 c         CREF(1,1) = 0.8
 c         CREF(2,1) = 0.6
 c      END IF
 c      CREF(1,1) = 0.8D00
-c      IF ( NZCONF .GE. 2) CREF(2,1) = 0.6D00
-c      DO I = 3, NZCONF
+c      IF ( NDET .GE. 2) CREF(2,1) = 0.6D00
+c      DO I = 3, NDET
 c         CREF(I,1) = 0.0D00
 c      END DO
 C
 C
 C     Get CI energy
 C
-      ECI = WORK(KEIGVL + IOPT_ISTATE - 1)
+      ECI = WORK(KEIGVL + ISTATE - 1)
       WRITE(LUPRI,'(/A,F20.8)')
      &     ' (GOSCI_STARTVEC) Core energy    = ',ECORE
       WRITE(LUPRI,'(A,F20.8)')
@@ -741,9 +742,9 @@ C     Check norm of CI vector
 C
       CALL RCINORM(CREF,10)
 C
-      IF ( IPROPT .GE. 5 ) THEN
+      IF (IPRINT .GE. 5 ) THEN
          WRITE(LUPRI,'(A)') ' (GOSCI_STARTVEC) CI start vector'
-         CALL RPRCI(CREF,NZCONF,NZ,OPT_CIPROGRAM, THRPCI,LUPRI)
+         CALL RPRCI(CREF,NDET,NZ,CIPROG, THRPCI,LUPRI)
       END IF
 C
       CALL MEMREL('GOSCI_STARTVEC',WORK,1,KFRSAV,KFREE,LFREE)
@@ -1696,7 +1697,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_rcistd */
-      SUBROUTINE GOSCI_RCISTD(IDET,CMO,CREF,ECI,WORK,LWORK)
+      SUBROUTINE GOSCI_RCISTD(IDET,CMO,CREF,ECI,NDET,NCIROOT,ISTATE,
+     &                        MAXCIT,THRPCI,CIPROG,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C     Do MAXCIT CI iterations.
@@ -1722,10 +1724,10 @@ C
 C
 #include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "dgroup.h"
 C
-      DIMENSION WORK(*), CREF(NZCONF,*), CMO(*), IDET(2,*)
+      CHARACTER CIPROG*8
+      DIMENSION WORK(*), CREF(NDET,*), CMO(*), IDET(2,*)
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 C
 #include "memint.h"
@@ -1760,8 +1762,8 @@ C
 C
 C     Get active-active part of FCmo:
 C
-      CALL RGETAC(WORK(KFC),WORK(KFCAC),IPROPT)
-      IF (IPROPT.GE.5) THEN
+      CALL RGETAC(WORK(KFC),WORK(KFCAC),IPRINT)
+      IF (IPRINT.GE.5) THEN
         WRITE(LUPRI,'(A)') 'Active Fock matrix:'
         DO I=1,N2ASHXQ,1
           WRITE(6,'(1I3,1F18.14)') I,WORK(KFCAC+I-1)
@@ -1770,7 +1772,7 @@ C
 C
 C     Transform quaternion FCACmo to molfdir type FCAC.
 C
-      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPROPT)
+      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPRINT)
 C
       CALL MEMREL('RCISTD after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
@@ -1783,7 +1785,7 @@ C
 C     Read integrals from 4IND1XXXX0:
 C
       CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
-     &     WORK(KFREE),LFREE,IPROPT)
+     &     WORK(KFREE),LFREE,IPRINT)
 C
 C     Make sure imag(VMUUUU) = 0 for NZ=1
 C     (DNZ32M only DZERO'es real part for NZ = 1)
@@ -1792,7 +1794,7 @@ C
 C
 C     Transform integrals to Molfdir format:
 C
-      CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPROPT)
+      CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
       CALL MEMREL('GOSCI_RCISTD.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
 C
 C
@@ -1801,15 +1803,16 @@ C     *** Find start trial vectors ***
 C     ********************************
 C
 C
-      CALL MEMGET('REAL',KHDIAG,NZCONF,WORK,KFREE,LFREE)
+      NDETQ = NDET*NZ
+      CALL MEMGET('REAL',KHDIAG,NDET,WORK,KFREE,LFREE)
 C
 C     Assume we can have all sigma and trial vectors in memory.
 C     This could get a little expensive for large CI's.
 C
       MAXR = MAX(50,MAXCIT+4)
 C     MAXCIT+4: allocating space for up to 5-double degeneracy in diagonal
-      CALL MEMGET('REAL',KBCVEC,MAXR * NZCONFQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSCVEC,MAXR * NZCONFQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBCVEC,MAXR*NDETQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSCVEC,MAXR*NDETQ,WORK,KFREE,LFREE)
 C
 C     Calculate diagonal of CI matrix:
 C     --------------------------------
@@ -1823,14 +1826,14 @@ C     CALL GOSCI_CI(DODIA,DIAG,
 C                   DOSIG,SVEC,BVEC,HCORE,VMUUUU,
 C                   DODEN,CL,CR,DV,PV,
 C                   DO2EL,IDET)
-      IF (IPROPT .GE. 10) THEN
+      IF (IPRINT .GE. 10) THEN
          WRITE(LUPRI,'(A)') ' (GOSCI_RCISTD) Diagonal of Hamiltonian'
-         CALL OUTPUT(WORK(KHDIAG),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
+         CALL OUTPUT(WORK(KHDIAG),1,NDET,1,1,NDET,1,1,LUPRI)
       END IF
 C
 C     Find lowest elements in HDIAG:
 C
-      II = IDMIN(NZCONF,WORK(KHDIAG),1)
+      II = IDMIN(NDET,WORK(KHDIAG),1)
 C
 C     Set first trial vector equal to:
 C     BCVEC(I) = DELTA(I,II) / HDIAG(II)
@@ -1838,12 +1841,12 @@ C     add trial vectors for degenerate determinants within 1.0D-5
 C
       HDIAGTST = WORK(KHDIAG-1+II) + 1.0D-5
       NCSIM = 0
-      DO  II = 1, NZCONF
+      DO  II = 1, NDET
           IF (WORK(KHDIAG-1+II) .LE. HDIAGTST) THEN
-             JBCVEC = KBCVEC +  NCSIM*NZCONFQ
-             CALL DZERO(WORK(JBCVEC),NZCONFQ)
+             JBCVEC = KBCVEC +  NCSIM*NDETQ
+             CALL DZERO(WORK(JBCVEC),N)
              WORK(JBCVEC + (II-1)) = D1
-             CALL RCINORM(WORK(JBCVEC),IPROPT)
+             CALL RCINORM(WORK(JBCVEC),IPRINT)
              NCSIM = NCSIM + 1
           END IF
       END DO
@@ -1858,7 +1861,7 @@ C
 c     RTHRCI = 1.0D-12
 c     RTHRCI = 1.0D-6
       ECI = D0
-C     GOSCI screening, a calculation in C2 symmetry showd that
+C     GOSCI screening, a calculation in C2 symmetry showed that
 C     THRSCR = RTHRCI**2 was not good enough for the complex group /hjaaj July 04
       THRSCR = RTHRCI**2 * 0.01D0
 C
@@ -1894,17 +1897,17 @@ c           CALL GOSCI_SVC(.FALSE.,DUMMY,
 c    &           WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
 c    &           IDET,WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
 c    &           WORK(KFCACM),WORK(KMUUUU))
-            IF (NZCONF .GT. 1000) THEN
+            IF (NDET .GT. 1000) THEN
 C hj 16-jun-2004 new sigma code with screening
                CALL GOSCI_CISIG_SCREEN(
-     &           WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
-     &           WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
+     &           WORK(KSCVEC+(I-1+JCRED)*NDETQ),
+     &           WORK(KBCVEC+(I-1+JCRED)*NDETQ),
      &           WORK(KFCACM),WORK(KMUUUU),
      &           .TRUE.,IDET,THRSCR)
             ELSE
                CALL GOSCI_CI(.FALSE.,DUMMY,
-     &           .TRUE.,WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
-     &           WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
+     &           .TRUE.,WORK(KSCVEC+(I-1+JCRED)*NDETQ),
+     &           WORK(KBCVEC+(I-1+JCRED)*NDETQ),
      &           WORK(KFCACM),WORK(KMUUUU),
      &           .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &           .TRUE.,IDET)
@@ -1915,21 +1918,21 @@ C                         HCORE,VMUUUU,
 C                         DODEN,CL,CR,DV,PV,
 C                         DO2EL,IDET)
 C
-            IF (IPROPT .GE. 10) THEN
+            IF (IPRINT .GE. 10) THEN
 C
 C              Trial vector
 C
                WRITE(LUPRI,'(/A,I3)')
      &              ' (GOSCI_RCISTD) Trial vector no. ',I
-               CALL OUTPUT(WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
-     &              1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
+               CALL OUTPUT(WORK(KBCVEC+(I-1+JCRED)*NDETQ),
+     &              1,NDET,1,MZ,NDET,MZ,1,LUPRI)
 C
 C              Sigma vector
 C
                WRITE(LUPRI,'(/A,I3)')
      &              ' (GOSCI_RCISTD) Sigma vector no. ',I
-               CALL OUTPUT(WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
-     &              1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
+               CALL OUTPUT(WORK(KSCVEC+(I-1+JCRED)*NDETQ),
+     &              1,NDET,1,MZ,NDET,MZ,1,LUPRI)
             END IF
          END DO
 C
@@ -1943,14 +1946,14 @@ C
          DO J = 1, JCRED
             DO I = JCRED+1, NCRED
                WORK(KHRED+(I-1)*MAXR+(J-1)) =
-     &              DDOT(NZCONFQ,WORK(KBCVEC+(I-1)*NZCONFQ),1,
-     &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+     &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &              WORK(KSCVEC+(J-1)*NDETQ),1)
                IF (MZ .GT. 1) THEN
                   WORK(KHREDI+(I-1)*MAXR+(J-1)) =
-     &              DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ),1,
-     &              WORK(KSCVEC+(J-1)*NZCONFQ+NZCONF),1)
-     &            - DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ+NZCONF),1,
-     &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+     &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &              WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
+     &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
+     &              WORK(KSCVEC+(J-1)*NDETQ),1)
                END IF
             END DO
          END DO
@@ -1960,14 +1963,14 @@ C
          DO J = JCRED+1, NCRED
             DO I = 1, JCRED
                WORK(KHRED+(I-1)*MAXR+(J-1)) =
-     &              DDOT(NZCONFQ,WORK(KBCVEC+(I-1)*NZCONFQ),1,
-     &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+     &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &              WORK(KSCVEC+(J-1)*NDETQ),1)
                IF (MZ .GT. 1) THEN
                   WORK(KHREDI+(I-1)*MAXR+(J-1)) =
-     &              DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ),1,
-     &              WORK(KSCVEC+(J-1)*NZCONFQ+NZCONF),1)
-     &            - DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ+NZCONF),1,
-     &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+     &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &              WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
+     &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
+     &              WORK(KSCVEC+(J-1)*NDETQ),1)
                END IF
             END DO
          END DO
@@ -1977,14 +1980,14 @@ C
          DO J = JCRED+1, NCRED
             DO I = JCRED+1, NCRED
                WORK(KHRED+(I-1)*MAXR+(J-1)) =
-     &              DDOT(NZCONFQ,WORK(KBCVEC+(I-1)*NZCONFQ),1,
-     &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+     &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &              WORK(KSCVEC+(J-1)*NDETQ),1)
                IF (MZ .GT. 1) THEN
                   WORK(KHREDI+(I-1)*MAXR+(J-1)) =
-     &              DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ),1,
-     &              WORK(KSCVEC+(J-1)*NZCONFQ+NZCONF),1)
-     &            - DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ+NZCONF),1,
-     &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+     &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &              WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
+     &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
+     &              WORK(KSCVEC+(J-1)*NDETQ),1)
                END IF
             END DO
          END DO
@@ -2005,7 +2008,7 @@ chj      THRDAS = 1.0D-10
      &              WORK(KHREDI + (I-1) + (J-1)*MAXR) )
             END DO
          END DO
-         IF (IPROPT .GE. 6 .OR. DAS .GT. THRDAS) THEN
+         IF (IPRINT .GE. 6 .OR. DAS .GT. THRDAS) THEN
             WRITE(LUPRI,'(/A)')
      &           ' (GOSCI_RCISTD) Reduced Hamiltonian, real part'
             CALL OUTPUT(WORK(KHRED),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
@@ -2015,7 +2018,7 @@ chj      THRDAS = 1.0D-10
             CALL OUTPUT(WORK(KHREDI),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
            END IF
          END IF
-         IF (IPROPT .GE. 5 .OR. DAS .GT. 0.01D0*THRDAS) THEN
+         IF (IPRINT .GE. 5 .OR. DAS .GT. 0.01D0*THRDAS) THEN
             WRITE(LUPRI,'(A,1P,D10.3)')
      &      ' (GOSCI_RCISTD) Anti-hermiticity of red. Hamiltonian = ',
      &      DAS
@@ -2050,12 +2053,12 @@ C
      &         WORK,KWORK,KHREDCP,KFREE,LFREE)
          END IF
 C
-         IF (IPROPT .GE. 5) THEN
+         IF (IPRINT .GE. 5) THEN
             WRITE(LUPRI,'(/A)')
      &      ' (GOSCI_RCISTD) Eigenvalues of reduced Hamiltonian'
             CALL OUTPUT(WORK(KEIGVL),1,1,1,NCRED,1,MAXR,1,LUPRI)
          END IF
-         IF (IPROPT .GE. 6) THEN
+         IF (IPRINT .GE. 6) THEN
             WRITE(LUPRI,'(/A)') ' (GOSCI_RCISTD)'//
      &      ' Eigenvectors of reduced Hamiltonian, real part'
             CALL OUTPUT(WORK(KEIGVC),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
@@ -2066,9 +2069,9 @@ C
            END IF
          END IF
          ECIOLD = ECI
-         ECIA = WORK(KEIGVL + IOPT_ISTATE - 1)
+         ECIA = WORK(KEIGVL + ISTATE - 1)
          ECI = ECORE + ECIA
-         IF (IPROPT .GE. 4) THEN
+         IF (IPRINT .GE. 4) THEN
             WRITE(LUPRI,'(2(/A,F20.10))')
      &        '                Core energy        = ',ECORE,
      &        '                Active energy      = ',ECIA
@@ -2085,22 +2088,22 @@ C        r = (H-E)x  (store in CREF)
 C          = Hx - Ex
 C          = SUM_J C(J) SCVEC(J) - ECIA * SUM_J C(J) BCVEC(J)
 C
-         CALL DZERO(CREF,NZCONFQ)
+         CALL DZERO(CREF,NDETQ)
          DO I = 1, NCRED
-            FAC = WORK(KEIGVC+(I-1)+(IOPT_ISTATE-1)*MAXR)
-            CALL DAXPY(NZCONFQ,FAC,WORK(KSCVEC+(I-1)*NZCONFQ),1,
+            FAC = WORK(KEIGVC+(I-1)+(ISTATE-1)*MAXR)
+            CALL DAXPY(NDETQ,FAC,WORK(KSCVEC+(I-1)*NDETQ),1,
      &           CREF,1)
-            CALL DAXPY(NZCONFQ,-ECIA*FAC,WORK(KBCVEC+(I-1)*NZCONFQ),1,
+            CALL DAXPY(NDETQ,-ECIA*FAC,WORK(KBCVEC+(I-1)*NDETQ),1,
      &           CREF,1)
          END DO
-         DNRES = DNORM2(NZCONFQ,CREF,1)
+         DNRES = DNORM2(NDETQ,CREF,1)
          WRITE(LUPRI,'(A,1P,D18.3,A,D8.2,A)')
      &        '                Norm of residual   =',DNRES,
      &        '  (thr = ',RTHRCI,')'
-         IF (IPROPT .GE. 10) THEN
+         IF (IPRINT .GE. 10) THEN
             WRITE(LUPRI,'(/A)')
      &           ' (GOSCI_RCISTD) Residual'
-            CALL OUTPUT(CREF,1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
+            CALL OUTPUT(CREF,1,NDET,1,MZ,NDET,MZ,1,LUPRI)
             WRITE(LUPRI,'()')
          END IF
 C
@@ -2127,18 +2130,18 @@ C
          NCSIM = 1
 C
          DO IZ = 1, MZ
-            DO I = 1, NZCONF
+            DO I = 1, NDET
                HD = WORK(KHDIAG+I-1)
                IF (ABS(HD-ECIA) .GT. THRZER) THEN
-                  WORK(KBCVEC+(I-1)+(NCRED-1)*NZCONFQ + (IZ-1)*NZCONF) =
+                  WORK(KBCVEC+(I-1)+(NCRED-1)*NDETQ + (IZ-1)*NDET) =
      &                 - CREF(I,IZ)/(HD - ECIA)
                ELSE
-                  WORK(KBCVEC+(I-1)+(NCRED-1)*NZCONFQ + (IZ-1)*NZCONF) =
+                  WORK(KBCVEC+(I-1)+(NCRED-1)*NDETQ + (IZ-1)*NDET) =
      &                 - CREF(I,IZ)
                END IF
             END DO
          END DO
-         CALL RCINORM(WORK(KBCVEC+(NCRED-1)*NZCONFQ),IPROPT)
+         CALL RCINORM(WORK(KBCVEC+(NCRED-1)*NDETQ),IPRINT)
 C
 C        Orthogonalize trial vector(s)
 C        -----------------------------
@@ -2156,7 +2159,7 @@ C
 C
 C           Project out all previous trial vectors
 C
-            DNBEF = DNORM2(NZCONFQ,WORK(KBCVEC+(NCRED-1)*NZCONFQ),1)
+            DNBEF = DNORM2(NDETQ,WORK(KBCVEC+(NCRED-1)*NDETQ),1)
             DO I = 1, JCRED
 C
 C              FIXME: loop over new trial vectors
@@ -2164,20 +2167,20 @@ C
 C              Calculate <B(new)|B(old)> / <B(old)|B(old)>
 C              = <B(new)|B(old)>  (as trial vectors are normed to 1)
 C
-               OVLP = DDOT(NZCONFQ,WORK(KBCVEC+(I-1)*NZCONFQ),1,
-     &              WORK(KBCVEC+(NCRED-1)*NZCONFQ),1)
+               OVLP = DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &              WORK(KBCVEC+(NCRED-1)*NDETQ),1)
 C
 C              Calculate B(new) = B(new) - OVLP * B(old)
 C
                IF (ABS(OVLP) .GT. THRZER) THEN
-                  CALL DAXPY(NZCONFQ,-OVLP,WORK(KBCVEC+(I-1)*NZCONFQ),1,
-     &                 WORK(KBCVEC+(NCRED-1)*NZCONFQ),1)
+                  CALL DAXPY(NDETQ,-OVLP,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &                 WORK(KBCVEC+(NCRED-1)*NDETQ),1)
                END IF
             END DO
 C
 C           FIXME: Orthogonalize new trial vectors against each other
 C
-            DNAFT = DNORM2(NZCONFQ,WORK(KBCVEC+(NCRED-1)*NZCONFQ),1)
+            DNAFT = DNORM2(NDETQ,WORK(KBCVEC+(NCRED-1)*NDETQ),1)
             IF (ABS(DNAFT) .LE. THRZER) THEN
                ICONV = -1
                GO TO 200
@@ -2185,7 +2188,7 @@ C
             IF (DNAFT .LE. 1.0D-4 * DNBEF .AND. ITURN .EQ. 1)
      &           IROUND = IROUND + 1
 C
-            CALL DSCAL(NZCONFQ,1/DNAFT,WORK(KBCVEC+(NCRED-1)*NZCONFQ),1)
+            CALL DSCAL(NDETQ,1/DNAFT,WORK(KBCVEC+(NCRED-1)*NDETQ),1)
 C hj 16-jun-2004 TODO: screen on elements here ...
 C
             IF (IROUND .GT. 0) THEN
@@ -2197,7 +2200,7 @@ C
 C
 C           Print timings
 C
-            IF (IPROPT .GE. 2) THEN
+            IF (IPRINT .GE. 2) THEN
                CALL GETTIM(CPU4,WLL4)
                CPUTID = SECTID(CPU4-CPU3)
                WALLTID = SECTID(WLL4-WLL3)
@@ -2213,14 +2216,14 @@ C
 C     Print timings
 C
       CALL GETTIM(CPU4,WLL4)
-      IF (IPROPT .GE. 2) THEN
+      IF (IPRINT .GE. 2) THEN
          CPUTID = SECTID(CPU4-CPU3)
          WALLTID = SECTID(WLL4-WLL3)
          WRITE(LUPRI,'(/A,I4,5A)')
      &        ' (GOSCI_RCISTD) CPU (Wall) time for iteration',
      &        ITMIC,': ',CPUTID,' (',WALLTID,')'
       END IF
-      IF (IPROPT .GE. 0) THEN
+      IF (IPRINT .GE. 0) THEN
          CPUTID = SECTID(CPU4-CPU2)
          WALLTID = SECTID(WLL4-WLL2)
          WRITE(LUPRI,'(/6A)')
@@ -2261,23 +2264,23 @@ C
 C
 C     Construct CREF:
 C
-      CALL DZERO(CREF,NZCONFQ)
+      CALL DZERO(CREF,NDETQ)
       DO I = 1, NCRED
-         CALL DAXPY(NZCONFQ,WORK(KEIGVC+(I-1)+(IOPT_ISTATE-1)*MAXR),
-     &        WORK(KBCVEC+(I-1)*NZCONFQ),1,CREF,1)
+         CALL DAXPY(NDETQ,WORK(KEIGVC+(I-1)+(ISTATE-1)*MAXR),
+     &        WORK(KBCVEC+(I-1)*NDETQ),1,CREF,1)
       END DO
 C
 C     Check norm of CI vector
 C
       CALL RCINORM(CREF,10)
 C
-      IF ( IPROPT .GE. 5 ) THEN
+      IF ( IPRINT .GE. 5 ) THEN
          WRITE(LUPRI,'(/A)') ' (GOSCI_RCISTD) CI start vector'
-         CALL RPRCI(CREF,NZCONF,NZ,OPT_CIPROGRAM, THRPCI,LUPRI)
+         CALL RPRCI(CREF,NDET,NZ,CIPROG, THRPCI,LUPRI)
       END IF
 C
       CALL GETTIM(CPU2,WLL2)
-      IF (IPROPT .GE. 0) THEN
+      IF (IPRINT .GE. 0) THEN
          CPUTID = SECTID(CPU2-CPU1)
          WALLTID = SECTID(WLL2-WLL1)
          WRITE(LUPRI,9000) CPUTID,WALLTID
