@@ -37,8 +37,9 @@ C     /* SDFT_QR */
       SUBROUTINE SDFT_QR(DTRMAT,
      &                   EXCMAT,
      &                   ISYMOP,
-     &                   IREPOP,
-     &                   GAO,GAO1,
+     &                   IHRMOP,
+     &                   GAO,
+     &                   GAO1,
      &                   DENSITY,
      &                   DENSITY_GRADIENT,
      &                   DENSITY_GRADIENT_NORM,
@@ -55,6 +56,39 @@ C=======================================================================
 #include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "dgroup.h"
+#include "dftcom.h"
+#include "cdft.h"
+#include "../dft/functionals.h"
+
+      LOGICAL   DOGGA, LBIT
+      DIMENSION DTRMAT(*),
+     &          EXCMAT(*),
+     &          ISYMOP(3),
+     &          IHRMOP(3),
+     &          GAO(*),
+     &          GAO1(*),
+     &          DENSITY_GRADIENT(3),
+     &          BUF(*),
+     &          SPIN_DENSITY_B(3),
+     &          SPIN_DENSITY_C(3),
+     &          SPIN_DENSITY_BC(3),
+     &          SPIN_DENSITY_DERVS(3,3),
+     &          VXC(99), !dirty fix
+     &          VXC_V(3)
+
+#include "ibtfun.h"
+
+      ICHECK = IHRMOP(1) + IHRMOP(2) + IHRMOP(3)
+      IF(ICHECK .GT. -3) CALL QUIT('problem in SDFT QR')
+
+      IF(DOGGA) CALL QUIT('SDFT QR implemented only for AL(S)DA')
 
       RETURN
       END
