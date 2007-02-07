@@ -363,15 +363,17 @@ C*****                  matrix.                          ***************
 C*****                  added by sya,2007.01.23,ulp      ***************
 C***********************************************************************
 C
-      IF(DOCOSCI.AND.DOPSI) THEN
+CMI ... please declare the DOCOSCI variable !
+CMI   IF(DOCOSCI.AND.DOPSI) THEN
 !@d      IF (.NOT.DOSCF) THEN
 C           ... Transfer DHF info to common block DCBORB
 C           ... and recalculate DCBORB.
 !@d         CALL TDHFORB
 !@d         CALL SETDC2(0)
 !@d      END IF
-         CALL SY_COSCI(WORK,LWORK)
-      END IF
+CMI      CALL SY_COSCI(WORK,LWORK)
+CMI   END IF
+
 C
 C
 #if defined (UNDEF)
