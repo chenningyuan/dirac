@@ -926,6 +926,7 @@ C
 #include "eqns.inc"
 #include "inpt.inc"
 #include "ccpar.inc"
+#include "dgroup.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -951,10 +952,21 @@ C
 C
 C     A number of different formats are possible. 
       IF (CARITH) THEN 
+       IF (NZ.EQ.1) THEN
+CMI     ... for real DIRAC symmetries zero imaginary part
+         DO INZ=1,NONZR
+          CBUF(2,INZ) = 0.0D0
+         ENDDO
+         READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
+     &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
+     &        (CBUF(1,INZ),INZ=1,NONZR) 
+       ELSE
 C     For complex groups we read the real and imaginary part.
          READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
      &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
      &        (CBUF(1,INZ),CBUF(2,INZ),INZ=1,NONZR) 
+       ENDIF
+
       ELSEIF (INTERFACE(1:7).NE.'MOLFDIR') THEN
 C     For real groups we read only the real part in DIRAC format.
          READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
