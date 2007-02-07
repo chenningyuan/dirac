@@ -2341,7 +2341,9 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "consts.h"
-      PARAMETER (D1=1.0D0,D10 = 10.0D0)
+CMI   PARAMETER (D1=1.0D0,D10 = 10.0D0)
+CMI   ...D1 is defined in "consts.h"
+      PARAMETER (D10 = 10.0D0)
 C
 #include "dcborb.h"
 #include "dgroup.h"
