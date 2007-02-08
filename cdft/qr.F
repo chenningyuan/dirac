@@ -69,16 +69,18 @@ C=======================================================================
 
       LOGICAL   DOGGA, LBIT
       DIMENSION DTRMAT(NBAST,NBAST,NZ,3),
-     &          EXCMAT(*),
+     &          EXCMAT(NBAST,NBAST,NZ,3),
      &          ISYMOP(3),
      &          IHRMOP(3),
      &          GAO(*),
      &          GAO1(*),
      &          DENSITY_GRADIENT(3),
      &          BUF(*),
-     &          SPIN_DENSITY(3,3),
-     &          SPIN_DENSITY_NORM(3),
+     &          SPIN_DENSITY_B(3),
+     &          SPIN_DENSITY_C(3),
+     &          SPIN_DENSITY_BC(3),
      &          VXC(99), !dirty fix
+     &          VXC_S(3,3),
      &          VXC_V(3)
 
 #include "ibtfun.h"
@@ -92,56 +94,135 @@ C=======================================================================
       IY = 2
       ITRANSFORM = 2
 
-      ICHECK = IHRMOP(1) + IHRMOP(2) + IHRMOP(3)
-      IF(ICHECK .GT. -3) CALL QUIT('problem in SDFT QR')
+      IH_B  = IHRMOP(1)
+      IH_C  = IHRMOP(2)
+      IH_BC = IHRMOP(3)
+
+      ICHECK = IH_B + IH_C + IH_BC
+
+      IF(ICHECK .EQ. 3) GOTO 999
 
       IF(DOGGA) CALL QUIT('SDFT QR implemented only for AL(S)DA')
+
+      IREP_B  = ISYMOP(1) - 1
+      IREP_C  = ISYMOP(2) - 1
+      IREP_BC = ISYMOP(3) - 1
+
+      SPIN_DENSITY_B  = D0
+      SPIN_DENSITY_C  = D0
+      SPIN_DENSITY_BC = D0
+
+      DENSITY_B  = D0
+      DENSITY_C  = D0
+
+      IF(.NOT. IH_B .EQ. 1) THEN
+        CALL GET_CURRENT(2,
+     &                   SPIN_DENSITY_B,
+     &                   DUMMY,
+     &                   IREP_B,GAO,DUMMY,DTRMAT(1,1,1,1),BUF)
+
+        SPIN_DENSITY_NORM_B = DSQRT(DDOT(3,
+     &                                   SPIN_DENSITY_B,1,
+     &                                   SPIN_DENSITY_B,1
+     &                                  ))
+      ENDIF
+
+      IF(.NOT. IH_B .EQ. -1) THEN
+        CALL GETRHO(DENSITY_B,IREP_B,GAO,DTRMAT(1,1,1,1),BUF)
+      ENDIF
+
+      IF(.NOT. IH_C .EQ. 1) THEN
+        CALL GET_CURRENT(2,
+     &                   SPIN_DENSITY_C,
+     &                   DUMMY,
+     &                   IREP_C,GAO,DUMMY,DTRMAT(1,1,1,2),BUF)
+
+        SPIN_DENSITY_NORM_C = DSQRT(DDOT(3,
+     &                                   SPIN_DENSITY_C,1,
+     &                                   SPIN_DENSITY_C,1
+     &                                  ))
+      ENDIF
+
+      IF(.NOT. IH_C .EQ. -1) THEN
+        CALL GETRHO(DENSITY_C,IREP_C,GAO,DTRMAT(1,1,1,2),BUF)
+      ENDIF
+
+      IF(.NOT. IH_BC .EQ. 1) THEN
+        CALL GET_CURRENT(2,
+     &                   SPIN_DENSITY_BC,
+     &                   DUMMY,
+     &                   IREP_BC,GAO,DUMMY,DTRMAT(1,1,1,3),BUF)
+
+        SPIN_DENSITY_NORM_BC = DSQRT(DDOT(3,
+     &                                    SPIN_DENSITY_BC,1,
+     &                                    SPIN_DENSITY_BC,1
+     &                                   ))
+      ENDIF
+
+      CALL SDFTPOT2(VXC,WEIGHT,DENSITY,D0)
 
       ISTART = 1
       IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !collinear approximation
 
-      DO IBC = 1,3
-        CALL GET_CURRENT(2,
-     &                   SPIN_DENSITY(1,IBC),
-     &                   DUMMY,
-     &                   ISYMOP(IBC)-1,GAO,DUMMY,DTRMAT(1,1,1,IBC),BUF)
+      IF(SPIN_DENSITY_NORM_B .GT. DFTHRL) THEN
+        IBC = 2
+        DO IXYZ = ISTART,3
+          VXC_S = VXC(FRR)*SPIN_DENSITY_B(IXYZ)
 
-        SPIN_DENSITY_NORM(IBC) = DSQRT(DDOT(3,
-     &                                      SPIN_DENSITY(1,IBC),1,
-     &                                      SPIN_DENSITY(1,IBC),1
-     &                                     ))
-      ENDDO
+          IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+          IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP(IBC)-1)
+
+          CALL CDFT_EXC(VXC_S,F,IU,IV,
+     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+          CALL CDFT_EXC(VXC_S,G,IX,IY,
+     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+        ENDDO
+      ENDIF
+
+      IF(SPIN_DENSITY_NORM_C .GT. DFTHRL) THEN
+        IBC = 1
+        DO IXYZ = ISTART,3
+          VXC_S = VXC(FRR)*SPIN_DENSITY_C(IXYZ)
+
+          IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+          IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP(IBC)-1)
+
+          CALL CDFT_EXC(VXC_S,F,IU,IV,
+     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+          CALL CDFT_EXC(VXC_S,G,IX,IY,
+     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+        ENDDO
+      ENDIF
 
       TEST_MAX = MAX(
-     &               SPIN_DENSITY_NORM(1),
-     &               SPIN_DENSITY_NORM(2),
-     &               SPIN_DENSITY_NORM(3)
+     &               SPIN_DENSITY_NORM_B,
+     &               SPIN_DENSITY_NORM_C,
+     &               SPIN_DENSITY_NORM_BC
      &              )
 
       IF(TEST_MAX .GT. DFTHRL) THEN
+        IBC = 3
+        DO IXYZ = ISTART,3
 
-!       CALL SDFTPOT2(VXC,WEIGHT,DENSITY,D0)
+          PART1 = SPIN_DENSITY_BC(IXYZ)
+          PART2 = DENSITY_B*SPIN_DENSITY_C(IXYZ)
+          PART3 = DENSITY_C*SPIN_DENSITY_B(IXYZ)
 
-        DO IBC = 1,3
-          IF(SPIN_DENSITY_NORM(IBC) .GT. DFTHRL) THEN
-            DO IXYZ = ISTART,3
-              IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
-              IOFF = NBAST*NBAST*(IQ-1)
-              IOFF = IOFF + NBAST*NBAST*NZ*(IBC-1)
+          VXC_S = VXC(FRR)*PART1 + VXC(FRRR)*(PART2 + PART3)
 
-              IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP(IBC)-1)
+          IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+          IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP(IBC)-1)
 
-              VXC_S = VXC(FRR)*SPIN_DENSITY(IXYZ,IBC)
-
-              CALL CDFT_EXC(VXC_S,F,IU,IV,
-     &                      GAO,IREPOP,EXCMAT(1+IOFF),BUF)
-              CALL CDFT_EXC(VXC_S,G,IX,IY,
-     &                      GAO,IREPOP,EXCMAT(1+IOFF),BUF)
-            ENDDO
-          ENDIF
+          CALL CDFT_EXC(VXC_S,F,IU,IV,
+     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+          CALL CDFT_EXC(VXC_S,G,IX,IY,
+     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
         ENDDO
-
       ENDIF
+
+!     rrr ub cdot uc rho_pq missing ...
+
+ 999  CONTINUE
 
       RETURN
       END
