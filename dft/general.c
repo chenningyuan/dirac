@@ -261,6 +261,37 @@ dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
 }
 
 void
+sdftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad)
+{
+  FunThirdFuncDrv drvs;
+  FunDensProp dp;
+
+  drv2_clear(&drvs);
+
+  dp.rhoa   = dp.rhob  = *rho *0.5;
+  dp.grada  = dp.gradb = *grad*0.5;
+  dp.gradab = dp.grada * dp.gradb;
+
+  dp.subsystem[0] = NULL;
+  dp.subsystem[1] = NULL;
+
+  if(do_alda)
+    LDAFunctional.third(&drvs, *w, &dp);
+  else
+    selected_func->third(&drvs, *w, &dp);
+       
+  ds->fR   = 0; /* NOT USED */
+  ds->fZ   = 0; /* NOT USED */
+  ds->fRR  = 0.5*(drvs.df2000 - drvs.df1100);
+  ds->fRZ  = 0; /* NOT USED */
+  ds->fZZ  = 0; /* NOT USED */
+  ds->fRRR = 0.25*(drvs.df3000 - drvs.df2100);
+  ds->fRRZ = 0; /* NOT USED */
+  ds->fRZZ = 0; /* NOT USED */
+  ds->fZZZ = 0; /* NOT USED */
+}
+
+void
 sdftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad)
 {
   FunSecondFuncDrv drvs;
