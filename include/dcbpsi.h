@@ -8,10 +8,11 @@
 !  DORES - resolution of open-shell manifold with GOSCIP
 !  DOMVO - make modified virtual orbitals
 !  DOCCM - perform coupled-cluster calculation with RELCCSD
+!  DOCOSCI - perform CI calculation with GOSCIP
 !  DOCIM - perform CI calculation with DIRRCI/GOSCIP
 !  DOLUCT- perform CI calculation with LUCITA
       LOGICAL DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
-     &        DOLUCT, DOKRMC, DOLUCIAR, L1ORBM, L2ORBM,PHCOEF
+     &        DOLUCT, DOKRMC, DOLUCIAR, L1ORBM, L2ORBM, PHCOEF, DOCOSCI
       COMMON /DCLPSI/ DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM,  &
      &                DOCIM, DOLUCT, DOKRMC, DOLUCIAR, L1ORBM, L2ORBM,  &
-     &                PHCOEF
+     &                PHCOEF, DOCOSCI
