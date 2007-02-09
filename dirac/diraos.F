@@ -306,6 +306,7 @@ C
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &          GAB1(NBAST,3), WORK(LWORK), NCNT(NBAST)
 C
+#include "dcbham.h"
 #include "onecom.h"
 #include "lmns.h"
 #include "nuclei.h"
@@ -338,6 +339,11 @@ C remember that kmaxtot=nbasis(L)+nbasis(S)+nbasisaux+1
 #endif
          ISHBEGIN=1
          ISHEND  =KMAX
+
+!     if Levy-Leblond or IOTC
+!     don't work on small component shells
+      IF (MC .EQ. 1) ISHEND = NLRGSH
+
 #if defined (MOD_DNF)
       ENDIF
 #endif
