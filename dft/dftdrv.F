@@ -462,7 +462,7 @@ C
 C     Test on the number of electrons
 C
       ELCTRX = NELECT+NAELEC
-      write(*,*) 'debug: naelec=',naelec,' nelect=',nelect
+!     write(*,*) 'debug: naelec=',naelec,' nelect=',nelect
       ERROR  = ELCTRN - ELCTRX
       IF (ABS(ERROR) .GT. DFTELS) THEN
          WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
