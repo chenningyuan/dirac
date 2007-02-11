@@ -2947,11 +2947,11 @@ C
       IHRMOP(3) = 0
 #if defined (MOD_DFT)
 cjohhe changed 0 to 1 to get anything at all out of DFT static QR
-      IF(DFTADD) THEN
-      IHRMOP(1) = 1
-      IHRMOP(2) = 1
-      IHRMOP(3) = 1
-      END IF
+!     IF(DFTADD) THEN
+!     IHRMOP(1) = 1
+!     IHRMOP(2) = 1
+!     IHRMOP(3) = 1
+!     END IF
 #endif
 C     IFOCKOP:  1 - C+E: (3,2,2,2), 2 - C: (1,0,0,0), 3 - E: (2,2,2,2)
       IFCKOP(1)=1

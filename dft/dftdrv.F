@@ -70,7 +70,12 @@ C
 #include "dgroup.h"
 #include "functionals.h"
 #include "densfit.h"
-      LOGICAL DOERG, DOGRD, DOLND, DOLR,LBIT,DOQR
+      LOGICAL DOERG, 
+     &        DOGRD, 
+     &        DOLND, 
+     &        DOLR,
+     &        LBIT,
+     &        DOQR
       DIMENSION DMAT(N2BBASX,NZ,*),EXCMAT(N2BBASX,NZ,*),
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &          DTRMAT(N2BBASX,NZ,*),WORK(LWORK)
@@ -107,22 +112,51 @@ C     Initial expectation value of two-electron matrix
 #endif /* MOD_DNF */
          ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1)
       END IF 
-C     Check for Hermitian density matrices;
-C     The present implementation uses only total density and no
-C     spin polarization nor current density so DFT contributes
-C     only for Hermitian densities
-      NHM = 0
-      DO IM = 1,NXCMAT
-        IF(IHRMOP(IM).EQ.1) NHM = NHM + 1
+
+
+!     check hermiticity of density matrices
+
+      NR_HERMITIAN     = 0
+      NR_ANTIHERMITIAN = 0
+      NR_GENERAL       = 0
+
+      DO I = 1,NXCMAT
+        IF(IHRMOP(I) .EQ. -1) NR_ANTIHERMITIAN = NR_ANTIHERMITIAN + 1
+        IF(IHRMOP(I) .EQ.  0) NR_GENERAL       = NR_GENERAL       + 1
+        IF(IHRMOP(I) .EQ.  1) NR_HERMITIAN     = NR_HERMITIAN     + 1
       ENDDO
+
 #if defined (MOD_CDFT)
       IF(.NOT. (LBIT(LBIT_CDFT,1) .OR. LBIT(LBIT_CDFT,2))) THEN !if no spin or current density contribution
-        IF(NHM .EQ. 0) GOTO 10
+        IF(DOQR) THEN
+          IF(NR_ANTIHERMITIAN .GT. 0)
+     &    CALL QUIT('QR not implemented for antihermitian matrices')
+          IF(NR_GENERAL .GT. 0)
+     &    CALL QUIT('QR not implemented for general matrices')
+        ELSE
+          IF(NR_HERMITIAN .EQ. 0) GOTO 10
+        ENDIF
+      ELSE
+        IF(NR_GENERAL .GT. 0) THEN
+          IF(DFTISGGA())
+     &    CALL QUIT('GGA QR not implemented for general matrices')
+        ENDIF
       ENDIF
 #else
-      IF(NHM .EQ. 0) GOTO 10
+      IF(DOQR) THEN
+        IF(NR_ANTIHERMITIAN .GT. 0)
+     &  CALL QUIT('QR not implemented for antihermitian matrices')
+        IF(NR_GENERAL .GT. 0)
+     &  CALL QUIT('QR not implemented for general matrices')
+      ELSE
+        IF(NR_HERMITIAN .EQ. 0) GOTO 10
+      ENDIF
 #endif
-C
+
+!     end of check hermiticity of density matrices
+
+
+
       IF(NASHT.GT.0) CALL GTDOAV(DMAT,1)
 C
 C     Scale density matrices
@@ -237,8 +271,25 @@ C    &              KFREE,LFREE)
 #if defined (VAR_MPI)
       ENDIF
 #endif
-      IF(DFTISGGA().AND..NOT.DF_FITVXC) 
-     &   CALL SYMSYM(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
+
+
+!     in case of GGA symmetrize matrices
+!     see DFT RPA notes for more info
+
+      IF(DFTISGGA() .AND. .NOT. DF_FITVXC) THEN
+        IF(NR_HERMITIAN .GT. 0) THEN
+          CALL SYM_HERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
+        ENDIF
+#if defined (MOD_CDFT)
+        IF(LBIT(LBIT_CDFT,1) .OR. LBIT(LBIT_CDFT,2)) THEN !if spin or current density contribution
+          IF(NR_ANTIHERMITIAN .GT. 0) THEN
+            CALL SYM_ANTIHERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
+          ENDIF
+        ENDIF
+#endif
+      ENDIF
+
+
 #if defined (MOD_DNF)
       IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
 #else
@@ -256,10 +307,7 @@ C       Insert half-phases
           ENDDO
         ENDIF
       ENDIF
-C
-C     Symmetrize matrices
-C     ..include DOGGA check !
-C
+
 C     Rescale density matrices
 C
       CALL DSCAL(N2BBASX,DP5,DMAT,1)
@@ -1150,125 +1198,174 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Symsym */
-      SUBROUTINE SYMSYM(AMAT,NMAT,ISYMOP,IHRMOP)
-C***********************************************************************
-C
-C     Symmetrize only specific symmetry blocks of a matrix
-C
-C     Written by T. Saue Mar 10 2004
-C
-C***********************************************************************
+C     /* SYM_ANTIHERMITIAN */
+      SUBROUTINE SYM_ANTIHERMITIAN(AMAT,
+     &                             NMAT,
+     &                             ISYMOP,
+     &                             IHRMOP)
+C=======================================================================
+C     symmetrize only specific symmetry blocks of a matrix
+C     written by Trond Saue march 2004
+C     adapted to antihermitian matrices
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                           last revision: february 2007
+C=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (DP5 = 0.5D0,D2=2.0D0)
-C
+
+      PARAMETER (DP5 = 0.5D0,D2 = 2.0D0)
+
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#if defined (MOD_CDFT)
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
-#endif
+
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION AMAT(NBAST,NBAST,NZ,NMAT)
 #else
       DIMENSION AMAT(NTBAS(0),NTBAS(0),NZ,NMAT)
 #endif
+      DIMENSION ISYMOP(NMAT),
+     &          IHRMOP(NMAT)
 
-      DIMENSION ISYMOP(NMAT),IHRMOP(NMAT)
 #include "ibtfun.h"
-C
+
       DO IM = 1,NMAT
-      IF(IHRMOP(IM).EQ.1) THEN
-        IREPOP = ISYMOP(IM)-1
-        DO 10 IRP1 = 0,NBSYM-1
-          IRP2 = IBTXOR(IRP1,IREPOP)
-          IF(IRP2.LT.IRP1) THEN
-          DO 20 IC = 1,MC
-            NB1 = NBBAS(IRP1,IC)
-            IF(NB1.EQ.0) GOTO 20
-            NB2 = NBBAS(IRP2,IC)
-            IF(NB2.EQ.0) GOTO 20
-            JB1 = IBBAS(IRP1,IC)
-            JB2 = IBBAS(IRP2,IC)
-            DO I = 1,NB1
-              II = JB1+I
-              DO J = 1,NB2
-                JJ = JB2+J
-                AVERAG = DP5*(AMAT(II,JJ,1,IM) + AMAT(JJ,II,1,IM))
-                AMAT(II,JJ,1,IM) = AVERAG 
-                AMAT(JJ,II,1,IM) = AVERAG 
-              ENDDO
-            ENDDO
-   20     CONTINUE
-          ELSEIF(IRP2.EQ.IRP1) THEN
-          DO 30 IC = 1,MC
-            NB = NBBAS(IRP1,IC)
-            IF(NB.EQ.0) GOTO 30
-            JB = IBBAS(IRP1,IC)
-            DO I = 1,NB
-              II = JB+I
-              DO J = 1,I-1
-                JJ = JB+J
-                AVERAG = DP5*(AMAT(II,JJ,1,IM) + AMAT(JJ,II,1,IM))
-                AMAT(II,JJ,1,IM) = AVERAG 
-                AMAT(JJ,II,1,IM) = AVERAG 
-              ENDDO
-            ENDDO
-   30     CONTINUE
-          ENDIF
-   10   CONTINUE
-#if defined (MOD_CDFT)
-      ELSEIF(IHRMOP(IM).EQ.-1) THEN
-        DO IXYZ = 1,3
-          IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
-          IREPOP = IBTXOR(ISYMAX(IXYZ,2),ISYMOP(IM)-1)
-          DO 110 IRP1 = 0,NBSYM-1
-            IRP2 = IBTXOR(IRP1,IREPOP)
-            IF(IRP2.LT.IRP1) THEN
-            DO 120 IC = 1,MC
-              NB1 = NBBAS(IRP1,IC)
-              IF(NB1.EQ.0) GOTO 120
-              NB2 = NBBAS(IRP2,IC)
-              IF(NB2.EQ.0) GOTO 120
-              JB1 = IBBAS(IRP1,IC)
-              JB2 = IBBAS(IRP2,IC)
-              DO I = 1,NB1
-                II = JB1+I
-                DO J = 1,NB2
-                  JJ = JB2+J
-                  AVERAG = DP5*(AMAT(II,JJ,IQ,IM) + AMAT(JJ,II,IQ,IM))
-                  AMAT(II,JJ,IQ,IM) = AVERAG 
-                  AMAT(JJ,II,IQ,IM) = AVERAG 
+        IF(IHRMOP(IM) .EQ. -1) THEN
+          DO IXYZ = 1,3
+            IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+            IREPOP = IBTXOR(ISYMAX(IXYZ,2),ISYMOP(IM)-1)
+            DO 110 IREP1 = 0,NBSYM-1
+              IREP2 = IBTXOR(IREP1,IREPOP)
+              IF(IREP2 .LT. IREP1) THEN
+                DO 120 IC = 1,MC
+                  NB1 = NBBAS(IREP1,IC)
+                  IF(NB1 .EQ. 0) GOTO 120
+                  NB2 = NBBAS(IREP2,IC)
+                  IF(NB2 .EQ. 0) GOTO 120
+                  JB1 = IBBAS(IREP1,IC)
+                  JB2 = IBBAS(IREP2,IC)
+                  DO I = 1,NB1
+                    II = JB1 + I
+                    DO J = 1,NB2
+                      JJ = JB2 + J
+                      AVERAGE = DP5*(AMAT(II,JJ,IQ,IM) 
+     &                             + AMAT(JJ,II,IQ,IM))
+                      AMAT(II,JJ,IQ,IM) = AVERAGE 
+                      AMAT(JJ,II,IQ,IM) = AVERAGE 
+                    ENDDO
+                  ENDDO
+  120           CONTINUE
+              ELSEIF(IREP2 .EQ. IREP1) THEN
+                DO 130 IC = 1,MC
+                  NB = NBBAS(IREP1,IC)
+                  IF(NB .EQ. 0) GOTO 130
+                  JB = IBBAS(IREP1,IC)
+                  DO I = 1,NB
+                    II = JB + I
+                    DO J = 1,I-1
+                      JJ = JB + J
+                      AVERAGE = DP5*(AMAT(II,JJ,IQ,IM) 
+     &                             + AMAT(JJ,II,IQ,IM))
+                      AMAT(II,JJ,IQ,IM) = AVERAGE 
+                      AMAT(JJ,II,IQ,IM) = AVERAGE 
+                    ENDDO
+                  ENDDO
+  130           CONTINUE
+              ENDIF
+  110       CONTINUE
+          ENDDO
+        ENDIF
+      ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* SYM_HERMITIAN */
+      SUBROUTINE SYM_HERMITIAN(AMAT,
+     &                             NMAT,
+     &                             ISYMOP,
+     &                             IHRMOP)
+C=======================================================================
+C     symmetrize only specific symmetry blocks of a matrix
+C     written by Trond Saue march 2004
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (DP5 = 0.5D0,D2 = 2.0D0)
+
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION AMAT(NBAST,NBAST,NZ,NMAT)
+#else
+      DIMENSION AMAT(NTBAS(0),NTBAS(0),NZ,NMAT)
+#endif
+      DIMENSION ISYMOP(NMAT),
+     &          IHRMOP(NMAT)
+
+#include "ibtfun.h"
+
+      DO IM = 1,NMAT
+        IF(IHRMOP(IM) .EQ. 1) THEN
+          IREPOP = ISYMOP(IM) - 1
+          DO 110 IREP1 = 0,NBSYM-1
+            IREP2 = IBTXOR(IREP1,IREPOP)
+            IF(IREP2 .LT. IREP1) THEN
+              DO 120 IC = 1,MC
+                NB1 = NBBAS(IREP1,IC)
+                IF(NB1 .EQ. 0) GOTO 120
+                NB2 = NBBAS(IREP2,IC)
+                IF(NB2 .EQ. 0) GOTO 120
+                JB1 = IBBAS(IREP1,IC)
+                JB2 = IBBAS(IREP2,IC)
+                DO I = 1,NB1
+                  II = JB1 + I
+                  DO J = 1,NB2
+                    JJ = JB2 + J
+                    AVERAGE = DP5*(AMAT(II,JJ,1,IM) 
+     &                           + AMAT(JJ,II,1,IM))
+                    AMAT(II,JJ,1,IM) = AVERAGE 
+                    AMAT(JJ,II,1,IM) = AVERAGE 
+                  ENDDO
                 ENDDO
-              ENDDO
-  120       CONTINUE
-            ELSEIF(IRP2.EQ.IRP1) THEN
-            DO 130 IC = 1,MC
-              NB = NBBAS(IRP1,IC)
-              IF(NB.EQ.0) GOTO 130
-              JB = IBBAS(IRP1,IC)
-              DO I = 1,NB
-                II = JB+I
-                DO J = 1,I-1
-                  JJ = JB+J
-                  AVERAG = DP5*(AMAT(II,JJ,IQ,IM) + AMAT(JJ,II,IQ,IM))
-                  AMAT(II,JJ,IQ,IM) = AVERAG 
-                  AMAT(JJ,II,IQ,IM) = AVERAG 
+  120         CONTINUE
+            ELSEIF(IREP2 .EQ. IREP1) THEN
+              DO 130 IC = 1,MC
+                NB = NBBAS(IREP1,IC)
+                IF(NB .EQ. 0) GOTO 130
+                JB = IBBAS(IREP1,IC)
+                DO I = 1,NB
+                  II = JB + I
+                  DO J = 1,I-1
+                    JJ = JB + J
+                    AVERAGE = DP5*(AMAT(II,JJ,1,IM) 
+     &                           + AMAT(JJ,II,1,IM))
+                    AMAT(II,JJ,1,IM) = AVERAGE 
+                    AMAT(JJ,II,1,IM) = AVERAGE 
+                  ENDDO
                 ENDDO
-              ENDDO
-  130       CONTINUE
+  130         CONTINUE
             ENDIF
   110     CONTINUE
-        ENDDO
-#endif
-      ENDIF
+        ENDIF
       ENDDO
-C
+
       RETURN
       END
 #if defined (VAR_MPI)
