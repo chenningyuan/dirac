@@ -61,6 +61,7 @@ C=======================================================================
 #include "symmet.h"
 #include "inforb.h"
 #include "dgroup.h"
+#include "dcbham.h"
 #include "dftcom.h"
 #include "cdft.h"
 #include "../dft/functionals.h"
@@ -113,8 +114,10 @@ C=======================================================================
 
             CALL CDFT_EXC(VXC_S,F,IU,IV,
      &                    GAO,INTERMEDIATE,EXCMAT(1+IOFF),BUF)
-            CALL CDFT_EXC(VXC_S,G,IX,IY,
-     &                    GAO,INTERMEDIATE,EXCMAT(1+IOFF),BUF)
+            IF(MC .EQ. 2) THEN
+              CALL CDFT_EXC(VXC_S,G,IX,IY,
+     &                      GAO,INTERMEDIATE,EXCMAT(1+IOFF),BUF)
+            ENDIF
           ENDDO
         ENDIF
 

@@ -63,6 +63,7 @@ C=======================================================================
 #include "symmet.h"
 #include "inforb.h"
 #include "dgroup.h"
+#include "dcbham.h"
 #include "dftcom.h"
 #include "cdft.h"
 #include "../dft/functionals.h"
@@ -174,8 +175,10 @@ C=======================================================================
 
           CALL CDFT_EXC(VXC_S,F,IU,IV,
      &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-          CALL CDFT_EXC(VXC_S,G,IX,IY,
-     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+          IF(MC .EQ. 2) THEN
+            CALL CDFT_EXC(VXC_S,G,IX,IY,
+     &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+          ENDIF
         ENDDO
       ENDIF
 
@@ -189,8 +192,10 @@ C=======================================================================
 
           CALL CDFT_EXC(VXC_S,F,IU,IV,
      &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-          CALL CDFT_EXC(VXC_S,G,IX,IY,
-     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+          IF(MC .EQ. 2) THEN
+            CALL CDFT_EXC(VXC_S,G,IX,IY,
+     &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+          ENDIF
         ENDDO
       ENDIF
 
@@ -215,8 +220,10 @@ C=======================================================================
 
           CALL CDFT_EXC(VXC_S,F,IU,IV,
      &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-          CALL CDFT_EXC(VXC_S,G,IX,IY,
-     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+          IF(MC .EQ. 2) THEN
+            CALL CDFT_EXC(VXC_S,G,IX,IY,
+     &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+          ENDIF
         ENDDO
       ENDIF
 
