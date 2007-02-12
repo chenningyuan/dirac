@@ -109,9 +109,9 @@ C=======================================================================
       IREP_C  = ISYMOP(2) - 1
       IREP_BC = ISYMOP(3) - 1
 
-      SPIN_DENSITY_B  = D0
-      SPIN_DENSITY_C  = D0
-      SPIN_DENSITY_BC = D0
+      SPIN_DENSITY_NORM_B  = D0
+      SPIN_DENSITY_NORM_C  = D0
+      SPIN_DENSITY_NORM_BC = D0
 
       DENSITY_B  = D0
       DENSITY_C  = D0

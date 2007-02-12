@@ -845,12 +845,14 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 !    &                ISYMOP,IHRMOP,GAO,GAO1,
 !    &                RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
 !
+#if defined (MOD_CDFT)
 !         magnetization (a.k.a. spin density) contribution
 !         IF(LBIT(LBIT_CDFT,1)) THEN
 !           CALL SDFT_LR(DTRMAT,EXCMAT,
 !    &                   ISYMOP,IHRMOP,GAO,GAO1,
 !    &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
 !         ENDIF
+#endif
         ENDIF
 
 
@@ -860,12 +862,14 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                ISYMOP,IHRMOP,GAO,GAO1,
      &                RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
           
+#if defined (MOD_CDFT)
 !         magnetization (a.k.a. spin density) contribution
 !         IF(LBIT(LBIT_CDFT,1)) THEN
 !           CALL SDFT_QR(DTRMAT,EXCMAT,
 !    &                   ISYMOP,IHRMOP,GAO,GAO1,
 !    &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
 !         ENDIF
+#endif
         ENDIF
 
 
