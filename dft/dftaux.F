@@ -337,7 +337,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
      &                   grdrho_C(3)*grdrho(3))
 !
 !     \zeta^{BC} = \frac{\partial^2\zeta}{\partial\epsilon_B\partial\epsilon_C}
-!     Not the extra factor 2 on the second line!!!
+!     Note the extra factor 2 on the second line!!!
          zeta_BC = 2.0D0*(grdrho_BC(1)*grdrho(1) + 
      &                    grdrho_BC(2)*grdrho(2) +
      &                    grdrho_BC(3)*grdrho(3)) +
