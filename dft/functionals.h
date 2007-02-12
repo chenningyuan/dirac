@@ -257,23 +257,6 @@ c     The derivatives with respect to rho and zeta
       INTEGER DERVS1, DERVS2, DERVS3
       PARAMETER(FR0=1,  FZ0=2,   FRR=3,  FRZ=4)
       PARAMETER(FZZ=5,  FRRR=6,  FRRZ=7, FRZZ=8, FZZZ=9)
-      PARAMETER(DERVS1=3, DERVS2=5, DERVS3=9)
+      PARAMETER(DERVS1=2, DERVS2=5, DERVS3=9)
 
-c     The derivatives are a vector that can be declared as
-c     DIMENSION DRVS(DERVS3)
-c     where 3 stands for the functional derivative order.
-c     Second order derivatives can be declared as
-c     DIMENSION DRVS(DERVS2)
-c     etc.
-c     The derivatives can be accessed as DRVS(F1000), DRVS(F0010) etc.
-c
-      INTEGER F1000, F0010, F2000, F1100, F1010, F1001, F0020
-      INTEGER F3000, F2100, F2010, F1110, F2001
-      INTEGER F1020, F0120, F0030, F1011, F0021
-      INTEGER FUN_DERVS1, FUN_DERVS2, FUN_DERVS3
-      PARAMETER(F1000=1, F0010=2, F2000=3, F1100=4, F1010=5, F1001=6)
-      PARAMETER(F0020=7)
-      PARAMETER(F3000=8, F2100=9, F2010=10,F1110=11,F2001=12)
-      PARAMETER(F1020=13,F0120=14,F0030=15,F1011=16,F0021=17)
-      PARAMETER(FUN_DERVS1=2, FUN_DERVS2=7, FUN_DERVS3=17)
 #endif /* __CVERSION__ */

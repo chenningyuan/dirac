@@ -181,11 +181,8 @@ dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
     ds->fZ  = drvs.df0010 + 0.5*drvs.df00001* *grad;
     ds->fRR = 0.5*(drvs.df2000 + drvs.df1100);
     ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001 + drvs.df10001* *grad);
-    ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011 + drvs.df00001) + drvs.df00101* * grad + 0.25*drvs.df00002* *grad* *grad;
-    ds->fRG = 0; /* NOT USED */
-    ds->fZG = 0; /* NOT USED */
-    ds->fGG = 0; /* NOT USED */
-    ds->fG  = 0; /* NOT USED */
+    ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011 + drvs.df00001) + 
+              drvs.df00101* * grad + 0.25*drvs.df00002* *grad* *grad;
 }
 
 void
@@ -257,7 +254,6 @@ dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
     ds->fZZZ = 0.03125* (drvs.df0030 + 3* drvs.df0021)/ grad3 -
                0.0625*3* (drvs.df0020 + drvs.df0011)/ grad4 +
                0.125*3* drvs.df0010/ grad5;
-
 }
 
 void
@@ -316,10 +312,6 @@ sdftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad)
   ds->fRR = 0.5*(drvs.df2000 - drvs.df1100);
   ds->fRZ = 0.5*(drvs.df1010 - drvs.df1001);
   ds->fZZ = 0.5*(drvs.df0020 - drvs.df0011 - drvs.df00001);
-  ds->fRG = 0; /* NOT USED */
-  ds->fZG = 0; /* NOT USED */
-  ds->fGG = 0; /* NOT USED */
-  ds->fG  = 0; /* NOT USED */
 }
 
 extern void quit_(const char* str, int len);

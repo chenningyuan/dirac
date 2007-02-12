@@ -101,15 +101,9 @@ struct FirstDrv_ {
 struct SecondDrv_ {
     real fR; /* d/drho  F */
     real fZ; /* d/dzeta F */
-    real fRR; /* d/drho%Gï¿¿%@ F */
-    real fRZ; /* d/(drho dzeta) F */
-    real fZZ; /* d/dzeta%Gï¿¿%@ F */
-    /* additional derivatives required by  */
-    /* general linear response scheme     */
-    real fRG; /* d/(drho dgamma) F */
-    real fZG; /* d/(dzeta dgamma) F */
-    real fGG; /* d/dzgamma%Gï¿¿%@ F */
-    real fG;  /* d/dgamma F */
+    real fRR; /* d^2/drho^2 F */
+    real fRZ; /* d^2/(drho dzeta) F */
+    real fZZ; /* d^2/dzeta^2 F */
 };
 
 /* ThirdDrv: matrix of third derivatives with respect to two parameters:
@@ -118,18 +112,13 @@ struct SecondDrv_ {
 struct ThirdDrv_ {
     real fR;   /* d/drho  F */
     real fZ;   /* d/dzeta F */
-    real fRR;  /* d/drho%Gï¿¿%@ F */
-    real fRZ;  /* d/(drho dzeta) F */
-    real fZZ;  /* d/dzeta%Gï¿¿%@ F */
-    real fRRR; /* d/drho%Gï¿¿%@ F */
-    real fRRZ; /* d/(drho%Gï¿¿%@ dzeta) F */
-    real fRZZ; /* d/(drho dzeta%Gï¿¿%@) F */
-    real fZZZ; /* d/dzeta%Gï¿¿%@ F */
-    /* two forms of fRRG needed as the formulae is non symmetric */
-    real fRRG;     /* d/(drho? dgamma) F */
-    real fRRGX; /* d/(drho? dgamma) F */
-    real fG;   /* d/dgamma F */
-    real fRG;  /* d/(drho dgamma) F */
+    real fRR;  /* d^2/drho^2 F */
+    real fRZ;  /* d^2/(drho dzeta) F */
+    real fZZ;  /* d^2/dzeta^2 F */
+    real fRRR; /* d^3/drho^3 F */
+    real fRRZ; /* d^3/(drho^2 dzeta) F */
+    real fRZZ; /* d^3/(drho dzeta^2) F */
+    real fZZZ; /* d^3/dzeta^3 F */
 };
 
 void dftpot0_(FirstDrv *ds, const real* weight,

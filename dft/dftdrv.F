@@ -823,18 +823,17 @@ CTROND          CALL DFTMAG
 #if defined (MOD_DNF)
 C aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then
-              call fit_DFT_LINRES(WORK(KLRCFIT),WORK(KLRXCVEC),
-     &                            NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
-     &                            RHO,RHOGRD,RHG,WGHT,DOGGA,B0,
-     &                            nskipped)
+              call fit_DFT_LR(WORK(KLRCFIT),WORK(KLRXCVEC),
+     &                        NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
+     &                        RHO,RHOGRD,RHG,WGHT,DOGGA,B0,nskipped)
            else  ! df_fitvxc
-              CALL DFT_LINRES(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
-     &                        GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
+              CALL DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
+     &                    GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
            endif
           ELCTRB = ELCTRB + WGHT*B0
 #else
-              CALL DFT_LINRES(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
-     &                        GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+              CALL DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
+     &                    GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
 #endif /* MOD_DNF */
         END IF
 

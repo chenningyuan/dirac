@@ -35,11 +35,11 @@ C
 C /* Deck dft_linres */
 #if defined (MOD_DNF)
 Caspg: extra argument to keep track of b0, used for debugging of df-vxc-lr
-      SUBROUTINE DFT_LINRES(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
-     &                      RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
+      SUBROUTINE DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
+     &                  RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
 #else
-      SUBROUTINE DFT_LINRES(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
-     &                      RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+      SUBROUTINE DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
+     &                  RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
 #endif /* MOD_DNF */
 C
 C     T. Helgaker sep 99/oct 00
@@ -81,7 +81,7 @@ C       =====================
 C
         CALL GETRHO(B0,IREPOP,GAO,DTRMAT(1,1,1,IM),BUF)
 #if defined (MOD_DNF)
-c       write (*,*) 'debug, in dft_linres: b0',b0
+c       write (*,*) 'debug, in dft_lr: b0',b0
 #endif /* MOD_DNF */
 C
 C       ***************
@@ -490,13 +490,13 @@ c
       HFXMU = W
       HFXATT = BETA 
       END
-C /* Deck dft_df_linres */
+C /* Deck dft_df_lr */
 #if defined (MOD_DNF) 
-      SUBROUTINE fit_DFT_LINRES(pCFIT,pVXCint,NXCMAT,ISYMOP,IHRMOP,
-     &                          GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,B0,
-     &                          nskipped)
+      SUBROUTINE fit_DFT_LR(pCFIT,pVXCint,NXCMAT,ISYMOP,IHRMOP,
+     &                      GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,B0,
+     &                      nskipped)
 C
-C adapted from DFT_LINRES for density fitting
+C adapted from DFT_LR for density fitting
 C andre gomes and radovan bast, january 2007 
 C
 #include "implicit.h"
