@@ -123,11 +123,11 @@ struct ThirdDrv_ {
     real fZZ;  /* d/dzeta%Gï¿¿%@ F */
     real fRRR; /* d/drho%Gï¿¿%@ F */
     real fRRZ; /* d/(drho%Gï¿¿%@ dzeta) F */
+    real fRZZ; /* d/(drho dzeta%Gï¿¿%@) F */
+    real fZZZ; /* d/dzeta%Gï¿¿%@ F */
     /* two forms of fRRG needed as the formulae is non symmetric */
     real fRRG;     /* d/(drho? dgamma) F */
     real fRRGX; /* d/(drho? dgamma) F */
-    real fRZZ; /* d/(drho dzeta%Gï¿¿%@) F */
-    real fZZZ; /* d/dzeta%Gï¿¿%@ F */
     real fG;   /* d/dgamma F */
     real fRG;  /* d/(drho dgamma) F */
 };
