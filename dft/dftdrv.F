@@ -127,33 +127,16 @@ C     Initial expectation value of two-electron matrix
       ENDDO
 
 #if defined (MOD_CDFT)
-      IF(.NOT. (LBIT(LBIT_CDFT,1) .OR. LBIT(LBIT_CDFT,2))) THEN !if no spin or current density contribution
-        IF(DOQR) THEN
-          IF(NR_ANTIHERMITIAN .GT. 0)
-     &    CALL QUIT('QR not implemented for antihermitian matrices')
-          IF(NR_GENERAL .GT. 0)
-     &    CALL QUIT('QR not implemented for general matrices')
-        ELSE
-          IF(NR_HERMITIAN .EQ. 0) GOTO 10
-        ENDIF
-      ELSE
-        IF(NR_GENERAL .GT. 0) THEN
-          IF(DFTISGGA())
-     &    CALL QUIT('GGA QR not implemented for general matrices')
-        ENDIF
-      ENDIF
 #else
       IF(DOQR) THEN
-        IF(NR_ANTIHERMITIAN .GT. 0)
-     &  CALL QUIT('QR not implemented for antihermitian matrices')
-        IF(NR_GENERAL .GT. 0)
-     &  CALL QUIT('QR not implemented for general matrices')
+        IF(NR_GENERAL .GT. 0) THEN
+          IF(DFTISGGA())
+     &          CALL QUIT('GGA QR not implemented for general matrices')
+        ENDIF
       ELSE
         IF(NR_HERMITIAN .EQ. 0) GOTO 10
       ENDIF
 #endif
-
-!     end of check hermiticity of density matrices
 
 
 
@@ -277,14 +260,12 @@ C    &              KFREE,LFREE)
 !     see DFT RPA notes for more info
 
       IF(DFTISGGA() .AND. .NOT. DF_FITVXC) THEN
-        IF(NR_HERMITIAN .GT. 0) THEN
-          CALL SYM_HERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
-        ENDIF
+        IF(.NOT. NR_ANTIHERMITIAN .EQ. NXCMAT)
+     &                   CALL SYM_HERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
 #if defined (MOD_CDFT)
         IF(LBIT(LBIT_CDFT,1) .OR. LBIT(LBIT_CDFT,2)) THEN !if spin or current density contribution
-          IF(NR_ANTIHERMITIAN .GT. 0) THEN
-            CALL SYM_ANTIHERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
-          ENDIF
+          IF(.NOT. NR_HERMITIAN .EQ. NXCMAT)
+     &               CALL SYM_ANTIHERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
         ENDIF
 #endif
       ENDIF
@@ -597,6 +578,7 @@ C
 #include "dftbuf.h"
 #include "dftcom.h"
 #include "dftac.h"
+#include "cdft.h"
 #include "dfterg.h"
 #include "functionals.h"
 #include "dgroup.h"
@@ -855,12 +837,34 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 #endif /* MOD_DNF */
           ELCTRB = ELCTRB + WGHT*B0
         END IF
-C
-        IF (DOQR) THEN
-          CALL DFT_QUADRES(DTRMAT,EXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
-     &                     RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
-        END IF
-  300 CONTINUE
+
+
+
+
+
+!       quadratic response
+        IF(DOQR) THEN
+          CALL DFT_QR(DTRMAT,EXCMAT,
+     &                ISYMOP,IHRMOP,GAO,GAO1,
+     &                RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+          
+!         magnetization (a.k.a. spin density) contribution
+!         IF(LBIT(LBIT_CDFT,1)) THEN
+!           CALL SDFT_QR(DTRMAT,EXCMAT,
+!    &                   ISYMOP,IHRMOP,GAO,GAO1,
+!    &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+!         ENDIF
+        ENDIF
+
+
+  300 CONTINUE !end of loop over grid points
+
+
+
+
+
+
+
 Caspg+rbast, 2006-09-21
 #if defined (MOD_DNF)
       write(LUPRI,'(2(A,E20.12))') 
@@ -1289,9 +1293,9 @@ C=======================================================================
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* SYM_HERMITIAN */
       SUBROUTINE SYM_HERMITIAN(AMAT,
-     &                             NMAT,
-     &                             ISYMOP,
-     &                             IHRMOP)
+     &                         NMAT,
+     &                         ISYMOP,
+     &                         IHRMOP)
 C=======================================================================
 C     symmetrize only specific symmetry blocks of a matrix
 C     written by Trond Saue march 2004

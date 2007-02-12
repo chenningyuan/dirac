@@ -41,8 +41,8 @@ C     /* SDFT_QR */
      &                   GAO,
      &                   GAO1,
      &                   DENSITY,
-     &                   DENSITY_GRADIENT,
      &                   DENSITY_GRADIENT_NORM,
+     &                   DENSITY_GRADIENT,
      &                   WEIGHT,DOGGA,BUF)
 C=======================================================================
 C     contribution of magnetization to the sigma vector of QR

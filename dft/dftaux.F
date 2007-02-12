@@ -159,8 +159,8 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
       ENDDO
       RETURN
       END
-      subroutine dft_quadres(dtrmat,excmat,isymop,ihrmop,gao,gao1,
-     &                       rho,nrmgrd,grdrho,wght,dogga,buf)
+      subroutine dft_qr(dtrmat,excmat,isymop,ihrmop,gao,gao1,
+     &                  rho,nrmgrd,grdrho,wght,dogga,buf)
 !***********************************************************************
 !
 !     Calculate the DFT contributions the quadratic response.
@@ -255,25 +255,25 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !     =======================
 !
 !     Modified density w.r.t. B
-      if(ihrmop(1).eq.1) then
+!!    if(ihrmop(1).eq.1) then
          call getrho(rho_B,irepbop,gao,dtrmat(1,1,1,1),buf)
-      else
-         call quit('DFT-QR general case not implemented!')
-      end if
+!!    else
+!!       call quit('DFT-QR general case not implemented!')
+!!    end if
 !
 !     Modified density w.r.t. C
-      if(ihrmop(2).eq.1) then
+!!    if(ihrmop(2).eq.1) then
          call getrho(rho_C,irepcop,gao,dtrmat(1,1,1,2),buf)
-      else
-         call quit('DFT-QR general case not implemented!')
-      end if
+!!    else
+!!       call quit('DFT-QR general case not implemented!')
+!!    end if
 !
 !     Two times modified density w.r.t. B and C
-      if(ihrmop(3).eq.1) then
+!!    if(ihrmop(3).eq.1) then
          call getrho(rho_BC,irepbcop,gao,dtrmat(1,1,1,3),buf)
-      else
-         call quit('DFT-QR general case not implemented!')
-      end if
+!!    else
+!!       call quit('DFT-QR general case not implemented!')
+!!    end if
 !
 !       ***************
 !       ***** LDA *****
