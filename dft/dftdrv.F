@@ -815,10 +815,10 @@ C
         IF (DOLND) THEN
 CTROND          CALL DFTMAG         
         ENDIF
-C
-C       Hessian transformation
-C       ======================
-C
+
+
+
+
         IF (DOLR) THEN
 #if defined (MOD_DNF)
 C aspg+rb, 2007-01-19, df-vxc modularized code
@@ -831,15 +831,27 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
               CALL DFT_LINRES(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
      &                        GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
            endif
+          ELCTRB = ELCTRB + WGHT*B0
 #else
               CALL DFT_LINRES(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
      &                        GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
 #endif /* MOD_DNF */
-          ELCTRB = ELCTRB + WGHT*B0
         END IF
 
 
-
+!       linear response
+        IF(DOLR) THEN
+!         CALL DFT_LR(DTRMAT,EXCMAT,
+!    &                ISYMOP,IHRMOP,GAO,GAO1,
+!    &                RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+!
+!         magnetization (a.k.a. spin density) contribution
+!         IF(LBIT(LBIT_CDFT,1)) THEN
+!           CALL SDFT_LR(DTRMAT,EXCMAT,
+!    &                   ISYMOP,IHRMOP,GAO,GAO1,
+!    &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+!         ENDIF
+        ENDIF
 
 
 !       quadratic response
