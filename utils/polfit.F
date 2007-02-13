@@ -42,14 +42,17 @@ C
       PARAMETER(NITER=10)
       DIMENSION A(MP,MDIM),B(MDIM),C(MDIM),D(MDIM)
       DIMENSION X(MP),Y(MP)
-      CHARACTER RESFIL*10,REPLY*1,POTFIL*6
+      CHARACTER RESFIL*40,REPLY*1,POTFIL*44
       IUNIT = 1
       ILOGG = 2
-      WRITE(LUPRI,'(A)') 'Name input file with potential curve(A6)'
+      WRITE(LUPRI,'(A)') 'Name input file with potential curve(A16)'
       READ(LUCMD,'(A)') POTFIL
+      i=LNBLNK(POTFIL)
+      RESFIL = POTFIL(1:i)//'.res'
+CTROND
+      WRITE(6,*) POTFIL,POTFIL(1:i)
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=5)
-      RESFIL = POTFIL//'.res'
       OPEN(ILOGG,FILE=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL')
       GOTO 6
