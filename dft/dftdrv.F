@@ -134,6 +134,8 @@ C     Initial expectation value of two-electron matrix
      &          CALL QUIT('GGA QR not implemented for general matrices')
         ENDIF
       ELSE
+        IF(NR_GENERAL .GT. 0)
+     &          CALL QUIT('DFT LR not implemented for general matrices')
         IF(NR_HERMITIAN .EQ. 0) GOTO 10
       ENDIF
 #endif
@@ -817,10 +819,9 @@ CTROND          CALL DFTMAG
         ENDIF
 
 
-
-
-        IF (DOLR) THEN
+!       Hessian transformation via density fitting
 #if defined (MOD_DNF)
+        IF(DOLR) THEN
 C aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then
               call fit_DFT_LR(WORK(KLRCFIT),WORK(KLRXCVEC),
@@ -831,23 +832,26 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                    GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
            endif
           ELCTRB = ELCTRB + WGHT*B0
-#else
-              CALL DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
-     &                    GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
-#endif /* MOD_DNF */
-        END IF
+        ENDIF
+#endif
+!       sorry Andre for this non-elegant solution but
+!       i have difficulties to filter out the ifdefs
+!       during debugging ...
+!                                                  radovan
 
 
 !       linear response
         IF(DOLR) THEN
-!         CALL DFT_LR(DTRMAT,EXCMAT,
-!    &                ISYMOP,IHRMOP,GAO,GAO1,
-!    &                RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+#if !defined (MOD_DNF)
+          CALL DFT_LR(DTRMAT,EXCMAT,NXCMAT,
+     &                ISYMOP,IHRMOP,GAO,GAO1,
+     &                RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+#endif
 !
 #if defined (MOD_CDFT)
 !         magnetization (a.k.a. spin density) contribution
 !         IF(LBIT(LBIT_CDFT,1)) THEN
-!           CALL SDFT_LR(DTRMAT,EXCMAT,
+!           CALL SDFT_LR(DTRMAT,EXCMAT,NXCMAT,
 !    &                   ISYMOP,IHRMOP,GAO,GAO1,
 !    &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
 !         ENDIF
