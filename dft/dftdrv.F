@@ -129,13 +129,11 @@ C     Initial expectation value of two-electron matrix
 #if defined (MOD_CDFT)
 #else
       IF(DOQR) THEN
-        IF(NR_GENERAL .GT. 0) THEN
-          IF(DFTISGGA())
+        IF((NR_GENERAL .GT. 0) .AND. DFTISGGA())
      &          CALL QUIT('GGA QR not implemented for general matrices')
-        ENDIF
       ELSE
         IF(NR_GENERAL .GT. 0)
-     &          CALL QUIT('DFT LR not implemented for general matrices')
+     &           CALL QUIT('DFT LR: general density matrix or matrices')
         IF(NR_HERMITIAN .EQ. 0) GOTO 10
       ENDIF
 #endif
