@@ -9,7 +9,7 @@ default: utils
 include ../Makefile.config
 
 #F77_OBJS = twofit.o labread.o rspread.o polfit.o
-F77_OBJS = twofit.o labread.o rspread.o polfit.o qjaco.o mx2fit.o
+F77_OBJS = twofit.o labread.o rspread.o polfit.o qjaco.o mx2fit.o vibcal.o
 
 F90_OBJS =
 

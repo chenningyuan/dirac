@@ -727,7 +727,8 @@ utils	: GP_OBJ PD_OBJ UTIL_OBJ
 	utils/polfit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/qjaco.x \\
 	utils/qjaco.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
-
+	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/vibcal.x \\
+	utils/vibcal.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 EOF
 #
 # Clean targets
