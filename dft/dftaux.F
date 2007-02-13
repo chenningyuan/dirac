@@ -60,7 +60,6 @@ C
 #include "dftinf.h"
 #endif
 #include "dftcom.h"
-#include "cdft.h"
 #include "functionals.h"
 C
       INTEGER A, B
@@ -131,30 +130,6 @@ C
 CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
           END IF
         END IF
-#if defined (MOD_CDFT)
-      ELSEIF(IHRMOP(IM) .EQ. -1) THEN
-
-        IF(LBIT(LBIT_CDFT,1)) THEN !spin density contribution to linear response
-          CALL SDFT_LR(DTRMAT(1,1,1,IM),
-     &                 EXCMAT(1,1,1,IM),
-     &                 IREPOP,
-     &                 GAO,GAO1,
-     &                 RHO,RHG,RHOGRD,
-     &                 WGHT,DOGGA,BUF)
-        ENDIF
-
-        IF(LBIT(LBIT_CDFT,2)) THEN !current density contribution to linear response
-          CALL CDFT_LR(DTRMAT(1,1,1,IM),
-     &                 EXCMAT(1,1,1,IM),
-     &                 IREPOP,
-     &                 GAO,GAO1,
-     &                 RHO,RHG,RHOGRD,
-     &                 WGHT,DOGGA,BUF)
-        ENDIF
-
-      ELSE
-        CALL QUIT('DTRMAT has to be hermitian or antihermitian')
-#endif
       ENDIF
       ENDDO
       RETURN
@@ -514,7 +489,6 @@ C
 #include "dftinf.h"
 #endif
 #include "dftcom.h"
-#include "cdft.h"
 #include "functionals.h"
 C
       INTEGER A, B
@@ -593,31 +567,6 @@ C
           END IF
         END IF
 
-#if 0 /* wait to do spin density LR ... */ 
-C#if defined (MOD_CDFT)
-      ELSEIF(IHRMOP(IM) .EQ. -1) THEN
-
-        IF(LBIT(LBIT_CDFT,1)) THEN !spin density contribution to linear response
-          CALL SDFT_LR(DTRMAT(1,1,1,IM),
-     &                 EXCMAT(1,1,1,IM),
-     &                 IREPOP,
-     &                 GAO,GAO1,
-     &                 RHO,RHG,RHOGRD,
-     &                 WGHT,DOGGA,BUF)
-        ENDIF
-
-        IF(LBIT(LBIT_CDFT,2)) THEN !current density contribution to linear response
-          CALL CDFT_LR(DTRMAT(1,1,1,IM),
-     &                 EXCMAT(1,1,1,IM),
-     &                 IREPOP,
-     &                 GAO,GAO1,
-     &                 RHO,RHG,RHOGRD,
-     &                 WGHT,DOGGA,BUF)
-        ENDIF
-
-      ELSE
-        CALL QUIT('DTRMAT has to be hermitian or antihermitian')
-#endif
       ENDIF
       ENDDO
       RETURN
