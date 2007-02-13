@@ -36,15 +36,17 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* SDFT_LR */
       SUBROUTINE SDFT_LR(DTRMAT,
      &                   EXCMAT,
-     &                   IREPOP,
-     &                   GAO,GAO1,
+     &                   NXCMAT,
+     &                   ISYMOP,
+     &                   IHRMOP,
+     &                   GAO,
+     &                   GAO1,
      &                   DENSITY,
-     &                   DENSITY_GRADIENT,
      &                   DENSITY_GRADIENT_NORM,
+     &                   DENSITY_GRADIENT,
      &                   WEIGHT,DOGGA,BUF)
 C=======================================================================
-C     contribution of spin density to g_pq (upon integration G_pq)
-C     adaptation of DFTLTR in dftaux.F
+C     contribution of spin density to the sigma vector
 C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                            last revision: october 2006
@@ -69,6 +71,8 @@ C=======================================================================
       LOGICAL   DOGGA, LBIT
       DIMENSION DTRMAT(*),
      &          EXCMAT(*),
+     &          ISYMOP(*),
+     &          IHRMOP(*),
      &          GAO(*),
      &          GAO1(*),
      &          DENSITY_GRADIENT(3),
@@ -89,34 +93,41 @@ C=======================================================================
       IY = 2
       ITRANSFORM = 2
 
+      ISTART = 1
+      IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !collinear approximation
+
+      DO IMAT = 1,NXCMAT
+        IF(IHRMOP(IMAT) .EQ. -1) THEN
+
+      JOFF = NBAST*NBAST*NZ*(IMAT-1)
+
       CALL GET_CURRENT(2,
      &                 SPIN_DENSITY,
      &                 DUMMY,
-     &                 IREPOP,GAO,DUMMY,DTRMAT,BUF)
-
-      ISTART = 1
-      IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !collinear approximation
+     &                 ISYMOP(IMAT)-1,GAO,DUMMY,DTRMAT(1+JOFF),BUF)
 
       SPIN_DENSITY_NORM = DSQRT(DDOT(3,SPIN_DENSITY,1,SPIN_DENSITY,1))
 
       IF(.NOT. DOGGA) THEN !LDA
+
         IF(SPIN_DENSITY_NORM .GT. DFTHRL) THEN
 
           CALL SDFTPOT1(VXC,WEIGHT,DENSITY,D0)
 
           DO IXYZ = ISTART,3
-            IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
-            IOFF = NBAST*NBAST*(IQ-1)
-
-            INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),IREPOP)
 
             VXC_S = VXC(FRR)*SPIN_DENSITY(IXYZ)
 
+            IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP(IMAT)-1)
+            IQ     = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+            IOFF   = NBAST*NBAST*(IQ-1)
+            IOFF   = IOFF + JOFF
+
             CALL CDFT_EXC(VXC_S,F,IU,IV,
-     &                    GAO,INTERMEDIATE,EXCMAT(1+IOFF),BUF)
+     &                    GAO,IREPOP,EXCMAT(1+IOFF),BUF)
             IF(MC .EQ. 2) THEN
               CALL CDFT_EXC(VXC_S,G,IX,IY,
-     &                      GAO,INTERMEDIATE,EXCMAT(1+IOFF),BUF)
+     &                      GAO,IREPOP,EXCMAT(1+IOFF),BUF)
             ENDIF
           ENDDO
         ENDIF
@@ -126,7 +137,7 @@ C=======================================================================
         CALL GET_CURRENT(4,
      &                   DUMMY,
      &                   SPIN_DENSITY_DERVS,
-     &                   IREPOP,GAO,GAO1,DTRMAT,BUF)
+     &                   ISYMOP(IMAT)-1,GAO,GAO1,DTRMAT(1+JOFF),BUF)
 
         TEST_MAX = MAX(
      &                 SPIN_DENSITY_NORM,
@@ -146,8 +157,6 @@ C=======================================================================
           CALL SDFTPOT1(VXC,WEIGHT,DENSITY,DENSITY_GRADIENT_NORM)
 
           DO IXYZ = ISTART,3
-            IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
-            IOFF = NBAST*NBAST*(IQ-1)
 
             FACTOR_1 = D0
             DO JXYZ = 1,3
@@ -167,11 +176,20 @@ C=======================================================================
               VXC_V(JXYZ) = VXC_V(JXYZ)*D2 !because of SYMSYM later in the code
             ENDDO
 
+            IQ     = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+            IOFF   = NBAST*NBAST*(IQ-1)
+            IOFF   = IOFF + JOFF
+
             CALL SDFT_EXC_GGA(VXC_S,VXC_V,
-     &                        IREPOP,IXYZ,EXCMAT(1+IOFF),GAO,GAO1)
+     &                        ISYMOP(IMAT)-1,IXYZ,
+     &                        EXCMAT(1+IOFF),
+     &                        GAO,GAO1)
           ENDDO
         ENDIF
       ENDIF
+
+        ENDIF !IF(IHRMOP(IMAT) .EQ. -1) THEN
+      ENDDO !DO IMAT = 1,NXCMAT
 
       RETURN
       END
@@ -186,8 +204,7 @@ C     /* CDFT_LR */
      &                   DENSITY_GRADIENT_NORM,
      &                   WEIGHT,DOGGA,BUF)
 C=======================================================================
-C     contribution of current density to g_pq (upon integration G_pq)
-C     adaptation of DFTLTR in dftaux.F
+C     contribution of current density to the sigma vector
 C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                            last revision: october 2006
@@ -276,8 +293,7 @@ C     /* SDFT_EXC_GGA */
       SUBROUTINE SDFT_EXC_GGA(VXC_S,VXC_V,
      &                        IREPOP,IXYZ,EXCMAT,GAO,GAO1)
 C=======================================================================
-C     contribution of spin density to g_pq (upon integration G_pq)
-C     adaptation of DOEXC1 in dftdrv.F
+C     contribution of spin density to the sigma vector
 C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                            last revision: october 2006
@@ -342,9 +358,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* CDFT_EXC */
       SUBROUTINE CDFT_EXC(VXC_S,F,IC1,IC2,GAO,IREPOP,EXCMAT,BUF)
 C=======================================================================
-C     contribution of current or spin density to
-C     to g_pq (upon integration G_pq)
-C     adaptation of DOEXC1 in dftdrv.F
+C     contribution of current or spin density to the sigma vector
 C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                            last revision: october 2006
