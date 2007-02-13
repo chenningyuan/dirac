@@ -36,19 +36,16 @@ C      PARAMETER(V4=6.2052157257E+00)
      &     STATUS='UNKNOWN',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL')
 C
-      WRITE(0,*) 'here'
-C      READ(IPRP,*,ERR=30,END=30) U,V2,V3,V4
-      READ(IPOT,*) U,V2,V3,V4
-      WRITE(0,*) 'Reduced mass: ',U
-      WRITE(0,*) '2nd potential derivative: ', V2
-      WRITE(0,*) '3rd potential derivative: ', V3
-      WRITE(0,*) '4th potential derivative: ', V4
-      WRITE(0,*) 'there'
+      READ(IPOT,*,ERR=30,END=30) U,V2,V3,V4
+      WRITE(ILOGG,*) 'Reduced mass: ',U
+      WRITE(ILOGG,*) '2nd potential derivative: ', V2
+      WRITE(ILOGG,*) '3rd potential derivative: ', V3
+      WRITE(ILOGG,*) '4th potential derivative: ', V4
+C
       READ(IPRP,*,ERR=50,END=50) P0,P1,P2
-      WRITE(0,*) '0th property derivative: ', P0
-      WRITE(0,*) '1st property derivative: ', P1
-      WRITE(0,*) '2nd property derivative: ', P2
-      WRITE(0,*) 'zhere'
+      WRITE(ILOGG,*) '0th property derivative: ', P0
+      WRITE(ILOGG,*) '1st property derivative: ', P1
+      WRITE(ILOGG,*) '2nd property derivative: ', P2
       UM = U*XFAMU
       OMEGA = SQRT(V2/UM)
       FAC=D1/UM/OMEGA
@@ -71,15 +68,15 @@ C      READ(IPRP,*,ERR=30,END=30) U,V2,V3,V4
       ENDDO
       DIF = B(1)-B(0)
       DIF2 = DIF*XTHZ*1000.0D0
-      WRITE(ILOGG,'(A,E16.8,A,F5.1,A)') 'Difference :',DIF, ' au = ',
+      WRITE(ILOGG,'(A,E16.8,A,F10.1,A)') 'Difference :',DIF, ' au = ',
      &     DIF2, ' mHz'
-      WRITE(ILOGG,'(A,F5.1,A)') 'PV shift:',2.0D0*DIF2,' mHz'
+      WRITE(ILOGG,'(A,F10.1,A)') 'PV shift:',2.0D0*DIF2,' mHz'
       WRITE(ILOGG,'(A)') 'Harmonic model:'
       DIF = H(1)-H(0)
       DIF2 = DIF*XTHZ*1000.0D0
-      WRITE(ILOGG,'(A,E16.8,A,F5.1,A)') 'Difference :',DIF, ' au = ',
+      WRITE(ILOGG,'(A,E16.8,A,F10.1,A)') 'Difference :',DIF, ' au = ',
      &     DIF2, ' mHz'
-      WRITE(ILOGG,'(A,F5.1,A)') 'PV shift:',2.0D0*DIF2,' mHz'
+      WRITE(ILOGG,'(A,F10.1,A)') 'PV shift:',2.0D0*DIF2,' mHz'
       GOTO 100
  20   STOP 'Error opening POTFIL '
  30   STOP 'Error reading POTFIL '
