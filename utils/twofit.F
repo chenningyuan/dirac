@@ -63,7 +63,7 @@ C
       PARAMETER(MDIM=MORDER+1)
       DIMENSION A(MP,MDIM),B(MP),C(MDIM),D(MDIM)
       DIMENSION X(MP),Y(MP),P(MP,MXPRP)
-      CHARACTER POTFIL*16,RESFIL*20,REPLY*1
+      CHARACTER POTFIL*40,REPLY*1
 C
 C     Heading
 C
@@ -104,11 +104,10 @@ C
      &  'Note that bond lengths should be given in Angstroms',
      &  ' and all other quantities in atomic units !'
       i=LNBLNK(POTFIL)
-      RESFIL = POTFIL(1:i)//'.res'
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=20)
-      OPEN(ILOGG,FILE=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',
-     &     ACCESS='SEQUENTIAL')
+      OPEN(ILOGG,FILE=POTFIL(1:i)//'.res',STATUS='UNKNOWN',
+     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
       GOTO 30
  20   CONTINUE
       STOP 'Error opening POTFIL'
@@ -127,7 +126,7 @@ C
       ENDIF
  40   CONTINUE
       WRITE(LUPRI,'(A,I5)') '* Number of points read:',NP
-      WRITE(ILOGG,'(A,A6)') '* Points read from ',POTFIL
+      WRITE(ILOGG,'(A,A40)') '* Points read from ',POTFIL
       WRITE(ILOGG,'(3X,F6.3,4X,F20.10)') (X(I),Y(I),I=1,NP)
       DO I = 1,NP
        X(I) = X(I)/XTANG
@@ -144,7 +143,7 @@ C
       READ(LUCMD,*) NORDER
       IF(NORDER.LT.2) THEN
         WRITE(LUPRI,'(A)') 
-     &    '* This program requires at least a quartic fit.'
+     &    '* This program requires at least a quadratic fit.'
         STOP 'Too low order fit !'
       ENDIF
       IF(NORDER.LT.4) THEN
@@ -175,9 +174,12 @@ C
       WRITE(ILOGG,'(3X,A)') '* Coefficients:'
       WRITE(ILOGG,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
      &      C(I),I=1,NDIM)  
+      WRITE(LUPRI,'(8X,A,4X,2A)')
+     &   'X',' Predicted Y',' Relative error'
       DO I = 1,NP
-        YP = (POLVAL(NORDER,C,X(I))-Y(I))/Y(I)
-        WRITE(LUPRI,'(3X,F6.3,4X,E12.4)') XTANG*X(I),YP
+        YP = POLVAL(NORDER,C,X(I))
+        DEV = (YP-Y(I))/Y(I)
+        WRITE(LUPRI,'(3X,F6.3,4X,2E12.4)') XTANG*X(I),YP,DEV
       ENDDO
       WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
       WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
