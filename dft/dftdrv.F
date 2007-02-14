@@ -1764,7 +1764,11 @@ C
       CALL MPI_BCAST(CDFT_ALPHA,1,MPI_REAL,MPARID,MPI_COMM_WORLD,IERR)
 #endif
 
-C
+!     broadcast DFTTHR
+      CALL MPI_BCAST(DFTHR0,1,
+     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+
+
 C     transfer parameters for asymptotic correction
 C     =============================================
 C
@@ -1895,6 +1899,10 @@ C
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(CDFT_ALPHA,1,MPI_REAL,MPARID,MPI_COMM_WORLD,IERR)
 #endif
+
+!     broadcast DFTTHR
+      CALL MPI_BCAST(DFTHR0,1,
+     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
 
 C     receive parameters for asymptotic correction
 C     ============================================
