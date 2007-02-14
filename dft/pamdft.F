@@ -66,7 +66,7 @@ C
 #include "functionals.h"
 C
       SAVE SET
-      DATA TABLE /'.XXXXXX','.FROMVX','.XXXXXX','.RADINT',
+      DATA TABLE /'.XXXXXX','.FROMVX','.RYOGRI','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.COLLIN',
@@ -105,6 +105,7 @@ C          geometry in a geometry optimization) /hjaaj
       NOPRUN = .FALSE.
       ANGMIN = 15
       ATSIZE = .FALSE.
+      RYOGRID = .FALSE.
 C
 C
 C     initialize /DFTAC/
@@ -160,6 +161,8 @@ C&&& DFTPOT: calculate Kohn-Sham matrix directly using v_xc
                  DFTPOT = .TRUE.
                  GO TO 100
  3               CONTINUE
+                 RYOGRID = .TRUE.
+                 READ(LUCMD,'(A30)') GRIDFILE
                  GO TO 100
  4               CONTINUE
 C&&& RADINT: Give relative precision of the radial integration

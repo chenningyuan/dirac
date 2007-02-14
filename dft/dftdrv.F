@@ -415,15 +415,30 @@ C
       REWIND LUQUAD
       R2TOT = D0
       NPNTS = 0
+
   100 CONTINUE
-      READ(LUQUAD) NPOINT
+
+      IF(RYOGRID) THEN
+        READ(LUQUAD,*) NPOINT
+      ELSE
+        READ(LUQUAD) NPOINT
+      ENDIF
+
       IF (NPOINT.GT.0) THEN
          NPNTS = NPNTS + NPOINT
          CALL MEMGET('REAL',KX,NPOINT,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KY,NPOINT,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KZ,NPOINT,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KW,NPOINT,WORK,KFREE,LFREE)
-         CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),LUQUAD,NPOINT)
+
+         IF(RYOGRID) THEN
+           CALL RYO_GRID(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
+     &                   LUQUAD,NPOINT)
+         ELSE
+           CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
+     &                 LUQUAD,NPOINT)
+         ENDIF
+
 #if defined (VAR_MPI) 
          IF(PARCAL) THEN
            NBATCH = NPOINT/NODES
@@ -872,7 +887,6 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 !         ENDIF
 #endif
         ENDIF
-
 
   300 CONTINUE !end of loop over grid points
 

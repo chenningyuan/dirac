@@ -5,8 +5,9 @@ C     MXBLLEN.
       PARAMETER (MXBLLEN=100)
 C
       CHARACTER*6 DFTTYP
+      CHARACTER*30 GRIDFILE
       LOGICAL DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, NOPRUN,   &
-     &        ATSIZE, ALDAON
+     &        ATSIZE, ALDAON, RYOGRID
       INTEGER IPRDFT, LEBMIN, INTCHK, ANGINT, ANGMIN
       REAL*8 RADINT, DFTELS, DFTHR0, DFTHRL, DFTHRI
 C     
@@ -25,10 +26,10 @@ C      REAL*8  HFXATT, HFXMU
 C     
       COMMON /DFTCOM/ DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC,   &
      &                INTCHK, ANGINT, ANGMIN, LEBMIN,                   &
-     &                IPRDFT, NOPRUN, ATSIZE, ALDAON,                   &
+     &                IPRDFT, NOPRUN, ATSIZE, ALDAON, RYOGRID,          &
 C    &                HFXFAC, HFXATT, HFXMU,                            &
 C    &                HFXATT, HFXMU,                                    &
      &                DFTHES, DFTHRS, DFTEST, DOVWNI, DFTIMG            &
 C     
       COMMON /DFTRRR/ RADINT, DFTELS, DFTHR0, DFTHRL, DFTHRI
-      COMMON /DFTCHR/ DFTTYP
+      COMMON /DFTCHR/ DFTTYP, GRIDFILE

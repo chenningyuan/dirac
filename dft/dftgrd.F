@@ -122,11 +122,23 @@ C
 C     Open unit LUQUAD
 C     ================
 C
-CTROND      LUQUAD = 29
       LUQUAD = 44
-      OPEN(LUQUAD,FORM='UNFORMATTED',STATUS='UNKNOWN',
-     &     ACCESS='SEQUENTIAL',FILE='DIRAC.QUAD')
+      IF(RYOGRID) THEN
+        OPEN(LUQUAD,
+     &       FORM   = 'FORMATTED',
+     &       STATUS = 'UNKNOWN',
+     &       ACCESS = 'SEQUENTIAL',
+     &       FILE   =  GRIDFILE)
+      ELSE
+        OPEN(LUQUAD,
+     &       FORM   = 'UNFORMATTED',
+     &       STATUS = 'UNKNOWN',
+     &       ACCESS = 'SEQUENTIAL',
+     &       FILE   = 'DIRAC.QUAD')
+      ENDIF
       REWIND LUQUAD
+      IF(RYOGRID) GOTO 999
+
 C
 C     Calculate abscissas and weights
 C     ===============================
@@ -160,6 +172,8 @@ C
       WRITE (LUPRI,'(1X)')
 
 C call to memrel here?
+
+ 999  CONTINUE
 
       RETURN
       END
@@ -549,7 +563,32 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* RYO_GRID */
+      SUBROUTINE RYO_GRID(X,Y,Z,W,LUNIT,NR_POINTS)
+C=======================================================================
+C     read your own grid from file
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                           last revision: february 2007
+C=======================================================================
 
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+      DIMENSION X(NR_POINTS),
+     &          Y(NR_POINTS),
+     &          Z(NR_POINTS),
+     &          W(NR_POINTS)
+
+      DO I = 1,NR_POINTS
+        READ(LUNIT,*) X(I), Y(I), Z(I), W(I)
+      ENDDO
+
+      RETURN
+      END
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck nleb */                                                     C
