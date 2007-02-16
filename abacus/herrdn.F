@@ -2437,10 +2437,10 @@ CMI   ... prepare the MNF.INP file with basis set exponents....
      &           KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
 
 CMI   ... prepare the input for CAP with L(+S) (contracted) basis sets
-      CALL CAPOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,
-     &           JCO,NUC,NRC,SEG,
-     &           KATOM,KANG,KSETS,KBLOCK,
-     &           KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
+C     CALL CAPOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,
+C    &           JCO,NUC,NRC,SEG,
+C    &           KATOM,KANG,KSETS,KBLOCK,
+C    &           KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
 
 C
 C     Print the references to the basis sets
@@ -8334,7 +8334,7 @@ C
      &    ' unique order of atomic basis functions. '
          ENDIF
 
-         IF (IPRINT.GE.2) THEN
+         IF (IPREAD.GE.2) THEN
            CALL HEADER('WRIBAS2: Contracted Orbitals again',1)
          ENDIF
 
