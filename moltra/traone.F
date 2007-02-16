@@ -109,6 +109,9 @@ C
 C     Get core Fock-matrix in MO-basis; 
 C     use active coefficients for MO-transformation
 C
+C     Called from traone.F/TRAONE
+C                 trapam.F/RESOLV
+C
 C     Based on Trond Saue's GETFCK, Luuk Visscher, Mar 17 1997
 C
 C*****************************************************************************
@@ -444,6 +447,7 @@ C
 C
       CALL MEMREL('TRAONE',WORK,KFRSAV,KFMOM,KFREE,LFREE)
 C
+      CALL QEXIT('MRCONE')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -456,6 +460,8 @@ C     Luuk Visscher, Mar 18 1997
 C
 C     Added number of boson symmetry reps (of parent group).
 C      Timo Fleig, Mar 28, 2002
+C
+C     Miro Ilias, Febr.2007   
 C
 C***********************************************************************
 #include "implicit.h"
@@ -483,6 +489,10 @@ C
       DIMENSION NSTR(2),IPHS(4),NAEL(8),NSPC(2,0:2)
       DIMENSION MULTB(64,64), MJ_TO_REP(-2*NORDER:2*NORDER,2)
       DATA IPHS/ 1,-1,-1, 1/
+
+      CALL QENTER('MRCON1')
+
+      KFRSAV = KFREE
 C
 C
 C     Fixed information. At the moment we cannot treat the Breit 
@@ -603,10 +613,36 @@ C
 C     Fill in complete core-Fock matrix in complex form
 C
       CALL MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD)
-C
+
+CMI   CAP = .FALSE.
+      IF (CAP) THEN
+C      ... allocate space for CAP_IM
+        CALL MEMGET('REAL',KCAPI,N2BBASXQ,WORK,KFREE,LFREE)
+C      .... get CAP_IM (as a real operator) in the MO basis 
+        CALL GETCAPI(WORK(KCAPI),WORK,KFREE,LFREE)
+
+C       ... allocate space for MOLFDIR like CAP
+        CALL MEMGET('REAL',KCAPIM,NSTRT*NSTRT*8,WORK,KFREE,LFREE)
+C       ... turn it in the MOLFDIR like form
+        CALL MOLTODIR(WORK(KCAPI),WORK(KCAPIM),NSTR,NSTRT,FORWARD)
+
+C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM
+C       CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,IPRINT)
+        CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,IPRHAM)
+
+      ENDIF
+
+CMI    ... FMOM is in MOLFDIR format now
       IF (IPRINT.GE.5) THEN
+          IF (CAP.AND.NZ.EQ.1) THEN
+             NZX=2
+            WRITE(LUPRI,'(/3X,A,I2/)')
+     &       '*** Core Fock matrix with i.CAP_IM part ***'
+          ELSE
+          NZX = NZ
           WRITE(LUPRI,'(/3X,A,I2/)') '*** Core Fock matrix ***'
-          CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZ,2),
+          ENDIF
+          CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZX,2),
      &                IPQTOQ(1,0),LUPRI)
       ENDIF
 C
@@ -659,7 +695,7 @@ C     Matrix elements over the core Fock operator.
 C
       WRITE (LUPRI,1000) 
 C
-      CALL QEXIT('MRCONE')
+      CALL QEXIT('MRCON1')
 C
  1000 FORMAT (//' MOLFDIR file MRCONEE is written')
       RETURN
@@ -1094,6 +1130,9 @@ C/* Deck moltodir */
       SUBROUTINE MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD)
 C***********************************************************************
 C     
+C Purpose: Transform DIRAC Fock matrix, FMO, into MOLFDIR format, FMOM
+C          (if FORWARD=.true, otherwise tarnsform back)     
+C     
 C     Luuk Visscher, Mar 26 2002
 C
 C***********************************************************************
@@ -1112,7 +1151,7 @@ C
       DIMENSION NSTR(2)
 C
 C
-C     Transform from matrix in quaternion DIRAC form to complex MOLFDIR form
+C     Transform from matrix in quaternion DIRAC form to complex MOLFDIR form 
 C     ... or backwards if we want to go from RELCCSD back to DIRAC
 C
       IF (FORWARD) THEN

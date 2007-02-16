@@ -34,6 +34,10 @@
       LOGICAL LINEAR
       COMMON /DGRPL/ LINEAR
 
+! CMI ... number of operator types in DIRAC is now in NOPTYP
+      INTEGER NOPTYP
+      PARAMETER (NOPTYP = 19)
+
 ! *** 4-component operators : Matrix part ***
 !
 !     M = I_4,iA_z,iA_y,iA_x
@@ -43,13 +47,12 @@
 !                   (1,2(i),3(j),4(k))
 !     JM4FAS(0:7) - sign of matrix operator (+/- 1)
 !
-!     OPERATORS (19 types):
+!     OPERATORS (NOPTYP types):
 !
 !     MCMP  - number of components for a given operator
 !     JM4   - pointer to matrix operator for a given component
 !     JCOM  - coefficient of component
 !
-      INTEGER MCMP(19), JM4(3, 19), JCOM(3, 19), JM4REP(0:7),           &
-     &        JM4POS(0:7), JM4FAS(0:7)
+      INTEGER MCMP(NOPTYP), JM4(3,NOPTYP), JCOM(3,NOPTYP),              &
+     &         JM4REP(0:7),   JM4POS(0:7),     JM4FAS(0:7)
       COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS, JM4FAS
-

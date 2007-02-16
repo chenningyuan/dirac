@@ -295,7 +295,8 @@ C
 #include "iratdef.h"
 #include "efield.h"
 C     PARAMETER (NTABLE = 58)
-      PARAMETER (NTABLE = 66)
+CMI   PARAMETER (NTABLE = 66)
+      PARAMETER (NTABLE = 68)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -326,7 +327,7 @@ C
      &            'EFTNTL ', 'NUCFIEL',
      &            'RM1H3  ', 'RM1RN  ', 'RM1H2  ',
      &            'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 'RM2H3  ',
-     &            'RM2H2  '
+     &            'RM2H2  ', 'CAP_RE ','CAP_IM '
      &                         /
 
 C
@@ -346,7 +347,7 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,
-     &              59,60,61,62,63,64,65,66), I
+     &              59,60,61,62,63,64,65,66,67,68), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1720,7 +1721,42 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
+C       Complex CAP integrals
+C   ------------------------------------------------------------
+C   
+C    MI, Tel Aviv, 2007
 C
+ 67   CONTINUE
+         INTTYP = 208
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &'PR1DIR: CAP_re integrals'
+         NOPTYP = 1
+C        CALL NTYPTS(NOPTYP)
+C        CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'CAP_RE '
+C        INTREP(1) = IBTXOR(ISYMAX(1,2),ISYMAX(1,2)) ! Rx.Rx
+         INTREP(1) = 0
+         SQUARE = .FALSE.
+C        SQUARE = .TRUE.
+         ANTI = .FALSE.
+      GOTO 200
+C   
+ 68   CONTINUE
+         INTTYP = 209
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &'PR1DIR: CAP_im integrals'
+         NOPTYP = 1
+C        CALL NTYPTS(NOPTYP)
+C        CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'CAP_IM '
+         INTREP(1) = 0
+C        INTREP(1) = 0
+C        INTREP(1) = ISYMAX(3,1)
+         SQUARE = .FALSE.
+C        SQUARE = .TRUE.
+         ANTI = .FALSE.
+C        ANTI = .TRUE.
+      GOTO 200
 C
 C
   200 CONTINUE
@@ -1732,6 +1768,7 @@ C
          WRITE (LUPRI,'(A,I5)') ' Integral type:', INTTYP
          WRITE (LUPRI,'(A,L5)') ' TRASPH:', TRASPH
          WRITE (LUPRI,'(A,L5)') ' SQUARE:', SQUARE
+         WRITE (LUPRI,'(A,L5)') '   ANTI:', ANTI    
          WRITE (LUPRI,'(A,L5)') ' SOLVNT:', SOLVNT
          WRITE (LUPRI,'(A,I5)') ' Number of operator components:',NOPTYP
          DO 300 I = 1, NOPTYP

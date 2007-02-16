@@ -635,7 +635,7 @@ C
 
           CALL HEADER('PRPMA1: Symm.blocked MO-matrix',-1)
           WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
-     &    '* Fermion irps no.',I1,I2,' of',NFSYM
+     &    '* Fermion irps no.',I1,I2,' of ',NFSYM
           CALL PRQMAT(PRPMO(I2PMOX(I1,I2)+1,1),NPMO(I1),NPMO(I2),
      &           NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),LUPRI)
           CALL FLSHFO(LUPRI)
@@ -645,7 +645,7 @@ C
           CALL HEADER(
      &    'PRPMA1: Symm.blocked MO-coefficients',-1)
           WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
-     &    '* Fermion ircop no.',I1,I2,' of',NFSYM
+     &    '* Fermion ircop no.',I1,I2,' of ',NFSYM
           CALL PRQMAT(CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),
      &         NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),LUPRI)
           CALL FLSHFO(LUPRI)

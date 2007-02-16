@@ -65,6 +65,8 @@ C***********************************************************************
 #include "cbirea.h"
       DIMENSION WORK(*)
       LOGICAL DELSMALL
+
+      CALL QENTER('PAMINP')
 C
 C     Initializations
 C
@@ -131,8 +133,12 @@ CMI/Febr.2006 If DELSMALL=.true. and BSS=.true. and TWOCOMP.=.true.
       OPEN(LUCMD,FILE='DIRAC.INP')
       CALL HAMINP(DELSMALL,WORK,LWORK)
       CLOSE(LUCMD)
-CMI ... instead of calling OP1INI in HAMINP, call it after
+
+CMI   ... instead of calling OP1INI in HAMINP, call it after
       CALL OP1INI(WORK,LWORK)
+
+CMI     ... call CAP integrals generation here
+      IF (CAP) CALL CAPINTS(WORK,LWORK)
 C
 C     Give estimate of memory needed for two-electron integrals
 C
@@ -189,6 +195,7 @@ C
 C
       CALL TITLER('End of input processing','*',124)
 C
+      CALL QEXIT('PAMINP')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3656,7 +3663,7 @@ C
       DIMENSION KSOP(0:7),WORK(LWORK)
 C
       SAVE SETFUN
-      DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','XXXXXXX',
+      DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             'XXXXXXX','XXXXXXX','XXXXXXX','XXXXXXX'/
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
      &            '.LVCORR','.LVNEW ','.SOLVEN','.FREEPJ',
@@ -3667,7 +3674,7 @@ C
      &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
      &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C',
      &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
-     &            '.IOTC  ','.ALTVAC','.XXXXXX','.XXXXXX',
+     &            '.IOTC  ','.ALTVAC','.CAP   ','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
@@ -3706,6 +3713,7 @@ C
       SMLV1C  = .FALSE.
       ONECOFF = .FALSE.
       VACPOL  = .FALSE.
+      CAP     = .FALSE.
       ALTVAC  = .FALSE.
       INTV1C  = 0
       ONECNV  = D0
@@ -4081,7 +4089,8 @@ C&&& ALTVAC: Alternative definition of vacuum polarisation
              ALTVAC = .TRUE.
              GO TO 100
   139     CONTINUE
-C&&& XXXX
+C&&& Activate the CAP calculation for the complex Fock space method
+             CAP  =  .TRUE.
              GO TO 100
   140     CONTINUE
 C&&& XXXX
@@ -4393,6 +4402,14 @@ C         write(lupri,*)
      &      '- alternative definition of vacuum polariation'
         ENDIF
       ENDIF
+
+CMI ...  CAP processing
+      IF (CAP) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &  '* Activated calculation of the Complex'//
+     &  ' Absorption Potential (CAP) integrals '
+      ENDIF
+
       IF(SPINFR) THEN
          WRITE(LUPRI,'(3X,A)') '- Spin-orbit interactions neglected'
       ELSE IF(SPINFR2) THEN
@@ -4549,7 +4566,6 @@ C
 
       ENDIF
 
-C
 C ==================================================================
 C   ... Check that the selected One-center model is reasonable,
 C       and write appropriate output.
@@ -4684,14 +4700,21 @@ C         Operator must be totally symmetric
 C         Operator must be symmetric under time reversal
           ITRXPR = IPRPTIM(INDXPR)
           IF(ITRXPR.NE.1) THEN
+           IF (PRPLBL(INDXPR).NE.'CAP_IM  ') THEN
             SYMSTP = .TRUE.
             WRITE(LUPRI,'(4X,A)') '***** HAMINP ERROR *****'
             WRITE(LUPRI,'(4X,A,A)')
-     &         'The operator is not totally symmetric under ',
-     &         'time reversal'
-             WRITE(LUPRI,'(4X,A)') '* Possible actions:'
-             WRITE(LUPRI,'(6X,A)')
+     &       'The operator is not totally symmetric under ',
+     &       'time reversal'
+            WRITE(LUPRI,'(4X,A)') '* Possible actions:'
+            WRITE(LUPRI,'(6X,A)')
      &       '1. Include operator as perturbation.'
+           ELSE
+            WRITE(LUPRI,'(4X,A)') '***** HAMINP NOTE *****'
+            WRITE(LUPRI,'(4X,A,A8,A)') 'Operator ',PRPLBL(INDXPR),
+     &      ' is time reversal antisymmetric - designed'//
+     &      ' only for the complex FSCC method.'
+           ENDIF
           ENDIF
         ENDDO
       ENDIF
@@ -4848,6 +4871,8 @@ C       if *DFT in input but MOD_DFT not defined !!!
 #endif
         GO TO 200
     4 CONTINUE
+CMI    ... reading the CAP integrals characteristic
+        CALL CAPINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     5 CONTINUE
         GO TO 200
@@ -4866,6 +4891,8 @@ CJuly2003
       CALL DFTINP(WORD,.TRUE.,WORK,LWORK)
 #endif
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
+
+      IF (CAP) CALL CAPINP(WORD,.TRUE.,WORK,LWORK)
 C
  500  CONTINUE
 C

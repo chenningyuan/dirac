@@ -14,6 +14,8 @@
 !     IPKINERG   - Pointer to kinetic energy in DCBXPR
 !     IPANGMOM   - Pointer to z-component of angular momentum in DCBXPR
 !     IPSPNMOM   - Pointer to z-component of spin in DCBXPR
+!     IPCAPR     - Pointer to real part of CAP operator
+!     IPCAPI     - Pointer to imaginary part of CAP operator
 !     MC         - number of components (1=only large, 2=large+small)
 !     N1OPER     - Number of additional operators (finite field calculations)
 !     IPR1OP     - Pointer to DCBXPR for additional operators
@@ -46,7 +48,7 @@
 !     IBSS       - what kind of BSS Hamiltonian(1.,2. or infinite order; scalar of full
 !                  relativity)
 !     IMFCH      - charge for the mean-field summation in the AMFI
-!     NOPRTR     - do not perform the preliminary transformation to the ON basis in 2c mode
+!     NOPRTR     - do not perform the preliminary transformation to the ON basis in the 2c mode
 !                  (only for infinite order Tronds approach), if .false., we do the preliminary
 !                  transformation to the free-particle basis or to the Vext-particle ON basis
 !     BLOCKD     - do the numerical block diagonalization (only for the infinite order)
@@ -70,6 +72,9 @@
 !     ALLAMFA    - flag about if all atoms are present for the AMFI contributions.
 !
 !     GAUNT      - Include Gaunt interaction in the 2-e operator
+!
+!     CAP        - complex absoption potential to be used at the (FSCC) correlated level only
+!
 
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
@@ -77,7 +82,7 @@
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
      &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
-     &        INI2C, I2COFK                                             &
+     &        INI2C, I2COFK, IPCAPR, IPCAPI                             &
 !
 !     IMPORTANT !!!
 !     =============
@@ -88,7 +93,8 @@
       COMMON /DCIHAM/ I1_HAM, IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,     &
      &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
      &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,                &
-     &                IMFCH, I2CHAM, INI2C, I2COFK, I2_HAM              &
+     &                IMFCH, I2CHAM, INI2C, I2COFK, IPCAPR, IPCAPI,     &
+     &                I2_HAM                                            &
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
@@ -98,7 +104,7 @@
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
-     &        VACPOL, RDSUSLLMOD, ALTVAC                                &
+     &        VACPOL, RDSUSLLMOD, ALTVAC , CAP                          &
 
 ! keep and actualize here number of elements in the DCLHAM common block
       INTEGER NDCLHAM
@@ -110,7 +116,7 @@
      &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
-     &                RDSUSLLMOD,ALTVAC                                 &
+     &                RDSUSLLMOD, ALTVAC , CAP                          &
 C
 C aspg, 2006-04-21
 C checking should be done as to whether or not HFXFAC can leave 

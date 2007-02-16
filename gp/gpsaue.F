@@ -3982,6 +3982,9 @@ C
      &          TM2(LR2,LC2,*),IQTM2(*),
      &          BUF(LBUF)
       DIMENSION IQW(4)
+CMI   .... IPRINT threshold 
+      DATA IPRLIM / 200 /
+
 C
       CALL QENTER('QTRANS')
 C
@@ -4028,6 +4031,24 @@ C
      &   ' >>> QTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
           ENDIF
+         
+          IF (IPRINT.GE.IPRLIM) THEN
+            CALL HEADER('QTRANS: AO-to-MO-transformation',-1)
+
+            WRITE(LUPRI,'(2X,A,4I2)')
+     &      'QTRANS: The AO matrix; IQAO=',(IQAO(IZ),IZ=1,NZAO)
+            CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
+
+            WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: The transformation matrix TM1; IQTM1=',
+     &      (IQTM1(IZ),IZ=1,NZTM1)
+            CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+
+            WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: The transformation matrix TM2; IQTM2=',
+     &      (IQTM2(IZ),IZ=1,NZTM2)
+            CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+          ENDIF
 C
 C         First part of transformation: W = FC
 C         ------------------------------------
@@ -4036,6 +4057,13 @@ C
      &              'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
      &              'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &               D0,IQW,BUF,NRAO,NCMO,NZW)
+
+          IF (IPRINT.GE.IPRLIM) THEN
+            WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: First part transformation matrix W, W=FC;'//
+     &      ' IQW=',(IQW(IZ),IZ=1,NZW)
+            CALL PRQMAT(BUF,NRAO,NCMO,NRAO,NCMO,NZW,IQW,LUPRI)
+          ENDIF
 C
 C         Second part of transformation: H = (C+)W
 C         ----------------------------------------
@@ -4044,6 +4072,14 @@ C
      &               'H',TRA,IQTM1,TM1,LR1,LC1,NZTM1,
      &               'N','N',IQW,BUF,NRAO,NCMO,NZW,
      &               FADD,IQMO,FMO,LRMO,LCMO,NZMO)
+
+          IF (IPRINT.GE.IPRLIM) THEN
+            WRITE(LUPRI,'(/2X,A,4I2)')
+     &     'QTRANS: Second part of transformation H,H=(C+).W; '//
+     &     'IQMO=',(IQMO(IZ),IZ=1,NZMO)
+            CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
+          ENDIF
+
         ELSE
 C
 C         Perform the two steps:

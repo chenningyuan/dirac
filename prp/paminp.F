@@ -1174,13 +1174,22 @@ C  XCBPRI: LUPRI,NINFO
 C
 #include "dcbxpr.h"
 #include "dcbprl.h"
-CMIinclude "dcbprp.h"
 C
       CALL QENTER('XPRIND')
       INDXPR = -1
-C
-C     Search for this property operator in existing list
-C
+
+      IF (IPRINT.GE.18) THEN
+        WRITE(LUPRI,*) 'Output from XPRIND'
+        WRITE(LUPRI,*) 'Entering PNAME=',PNAME
+        WRITE(LUPRI,*) 'Entering NPCOMP=',NPCOMP
+        WRITE(LUPRI,*) 'Entering IPTYP=',IPTYP,' INDXPR=',INDXPR
+        WRITE(LUPRI,*) 'Entering PLABEL=',(PLABEL(I),I=1,NPCOMP)
+        WRITE(LUPRI,*) 'Entering PFAC=',(PFAC(I),I=1,NPCOMP)
+      ENDIF
+
+C================================================================
+C       Search for this property operator in existing list
+C================================================================
       DO 200 I = 1,NPRPS
 C        Check operator type
          IF (IPRPTYP(I) .NE. IPTYP) GO TO 200
@@ -1202,10 +1211,11 @@ C        Operator exists, but under another name; rename
          INDXPR = I
          GO TO 1000
   200 CONTINUE
-C
+
+C========================================================================
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
-C
+C=========================================================================
       CALL XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,
      &            WORK,LWORK,IPRINT)
 C
@@ -1258,7 +1268,7 @@ C
 C
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
-C
+
 
       IF (IPRINT .GE. 6) THEN
          WRITE (LUPRI,'(/A/2A/A,I5/A,I5/A,1P,3(D20.10))')
@@ -1334,6 +1344,7 @@ C
          GO TO 100
 C
   100    CONTINUE
+
 CMI  ... for the Levy-Leblond mode cancel the SS block!
 CMI ... check first if PLABEL(1) is not operator from
 CMI ... pilot Dirac bare nucleus (from subroutine OP1INI)
@@ -1500,7 +1511,6 @@ C     Jan-18-1995 - tsaue
 C
 C  2003, MI,HJAaJ extended list for integrals over LAO
 C        for NMR shielding and magnetic susceptibilities
-C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
@@ -1807,6 +1817,12 @@ CMI
 CMI  London orbital contribution to exp.value of nuclear shielding tensor integrals
       ELSE IF(LABINT(3:6).EQ.'RNST') THEN
         CLASSLB = 'RM1N1H '
+
+CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
+      ELSE IF(LABINT(1:6).EQ.'CAP_RE') THEN
+        CLASSLB = 'CAP_RE  '
+      ELSE IF(LABINT(1:6).EQ.'CAP_IM') THEN
+        CLASSLB = 'CAP_IM  '
 C
 C     Unknown LABINT
 C   
@@ -1892,6 +1908,9 @@ C
 #include "dcbprl.h"
 #include "cbiher.h"
 #include "nuclei.h"
+C#include "maxorb.h"
+C#include "symmet.h"
+
       LOGICAL ANTI, TRASPH, SOLVNT, SQUARE,LABERR,
      &        DOATOM(*)
       CHARACTER PLABEL*8,CLASSLB*7,LABINT*8,PCOMB*4
@@ -2001,7 +2020,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpsym */
       SUBROUTINE PRPSYM(INDXPR,IPRINT)
-C***********************************************************************
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     This subroutine finds the symmetry of the unique operator no.
 C     INDXPR in COMMON /DCBPRP/.
@@ -2023,7 +2042,8 @@ C     - routine assumed general operators which can be symmetric, antisymm.
 C       and square
 C     - removing the program stop when indeterminate symmetry of operator
 C     - print out
-C***********************************************************************
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2040,6 +2060,8 @@ C
       LOGICAL DIFSYM,DIFTIM
       DIMENSION ICREP(3),ICTIM(3)
 #include "ibtfun.h"
+
+      CALL QENTER('PRPSYM')
 C
 C     Investigate property label no. INDXPR
 C
@@ -2063,7 +2085,10 @@ C
 C     Time reversal symmetry
 C     ======================
 C
-C     Matrix operator
+C     Matrix operator 
+C - assign IATIM according to the IAIND = JM4(1,ITYP) = 
+C            = JM4(1,IPRPTYP(INDXPR)) = JM4(1,1-20)
+C
       IF(IAIND.EQ.0 .OR. IAIND.EQ.4 .OR.
      &   (IAIND.GE.16 .AND.IAIND.LE.18) ) THEN
 C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA:
@@ -2072,6 +2097,7 @@ C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA:
 C       [XYZ]SIGMA, [XYZ]ALPHA:
         IATIM = -1
       ENDIF
+
 C     Scalar operator
       IBTIM    = IPRLTYP(IBIND)
 C     Total operator
@@ -2114,16 +2140,53 @@ C
    30   CONTINUE
         CALL QUIT('PRPSYM: Components of different symmetry !!!')
       ENDIF
+
+CMI   ... assigned symmetries
       IPRPSYM(INDXPR) = ICREP(1)+1
       IPRPTIM(INDXPR) = ICTIM(1)
+
+CMI ... control print out
+      IF (IPRINT.GE.20) THEN
+C     IF (IPRINT.GE.0) THEN
+        CALL HEADER('Output from PRPSYM',-1)
+
+        WRITE(LUPRI,'(2X,A,I3,A,I2)')
+     &  'Operator index, INDXPR =',INDXPR,
+     &  ' operator type (1-20), IPRPTYP() =',IPRPTYP(INDXPR)
+
+C       WRITE(LUPRI,'(2X,A,I1)')
+C    &  'boson irrep of scalar operator (0-7), IPRLREP() =',
+C    &  IPRLREP(INDXPR)
+
+        WRITE(LUPRI,'(2X,A,I2)')
+     & 'symmetry of scalar operator under matrix transpose(-1,0,1),'//
+     & ' IPRLTYP() =',IPRLTYP(INDXPR)
+        WRITE(LUPRI,'(2X,A,I1)')
+     &   'Number of operator components, NLBL (1-3) =',NLBL   
+        WRITE(LUPRI,'(20X,A,14X,A)')
+     &     '--- boson irrep ---','--- time rever symm ---'
+        DO ILBL = 1, NLBL
+          IAREP       = JM4REP(JM4(ILBL,ITYP))
+          IBREP       = IPRLREP(IPRPLBL(ILBL,INDXPR))
+          WRITE(LUPRI,'(3X,A8,1X,A4,1X,3(3X,A3,A1,I1,A1,3X,A4),I5)')
+     &      PRPLBL(IPRPLBL(ILBL,INDXPR)),PDOINT(IPRPLBL(ILBL,INDXPR)),
+     &      REP(IAREP),'(',(IAREP+1),')','X',
+     &      REP(IBREP),'(',(IBREP+1),')','=',
+     &      REP(ICREP(ILBL)),'(',(ICREP(ILBL)+1),')','  |  ',
+     &      ICTIM(ILBL)
+        ENDDO
+        WRITE(LUPRI,'(2X,A,I2,A,I2/)')
+     & '* assigned IPRPSYM() =',IPRPSYM(INDXPR),
+     & ' and time rev symm, IPRPTIM() =',IPRPTIM(INDXPR)
+      ENDIF
 C
       IF(IPRINT.GE.7) THEN
         CALL HEADER('Output from PRPSYM',-1)
         CALL WRIXPR(0,INDXPR)
       ENDIF
 C
+      CALL QEXIT('PRPSYM')
       RETURN
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrixpr */
@@ -2134,6 +2197,7 @@ C     Write out data on a operator specified by pointer INDXPR
 C
 C     Written by T.Saue - May 1996
 C     Last revision: May 18 1996 - tsaue
+C                    M.Ilias - Febr.2007 - new operator type 20
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2174,87 +2238,88 @@ C
      &      'Factor     : ',FACPRP(1,INDXPR)
       GOTO 30
       ENDIF
-      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19 ), ITYP
+      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), ITYP
         WRITE(LUPRI,'(6X,A,I5)')
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
     1 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'DIAGONAL : scalar operator'
-      GOTO 20
+      GOTO 200
     2 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'XALPHA   : [alpha_x]P'
-      GOTO 20
+      GOTO 200
     3 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'YALPHA   : [alpha_y]P'
-      GOTO 20
+      GOTO 200
     4 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'ZALPHA   : [alpha_z]P'
-      GOTO 20
+      GOTO 200
     5 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'XAVECTOR : [alpha x P]_x'
-      GOTO 20
+      GOTO 200
     6 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'YAVECTOR : [alpha x P]_y'
-      GOTO 20
+      GOTO 200
     7 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'ZAVECTOR : [alpha x P]_z'
-      GOTO 20
+      GOTO 200
     8 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'ALPHADOT : [alpha.P]'
-      GOTO 20
+      GOTO 200
     9 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'GAMMA5   : [gamma_5]P'
-      GOTO 20
+      GOTO 200
    10 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'XSIGMA   : [Sigma_x]P'
-      GOTO 20
+      GOTO 200
    11 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'YSIGMA   : [Sigma_y]P'
-      GOTO 20
+      GOTO 200
    12 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'ZSIGMA   : [Sigma_z]P'
-      GOTO 20
+      GOTO 200
    13 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'XBETASIG : [beta Sigma_x]P'
-      GOTO 20
+      GOTO 200
    14 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'YBETASIG : [beta Sigma_y]P'
-      GOTO 20
+      GOTO 200
    15 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'ZBETASIG : [beta Sigma_z]P'
-      GOTO 20
+      GOTO 200
    16 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'XiBETAAL : i[beta alpha_x]P'
-      GOTO 20
+      GOTO 200
    17 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'YiBETAAL : i[beta alpha_y]P'
-      GOTO 20
+      GOTO 200
    18 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'ZiBETAAL : i[beta alpha_z]P'
+      GOTO 200
    19 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'BETA     : scalar operator'
-      GOTO 20
+      GOTO 200
 C
-   20 CONTINUE
+  200 CONTINUE
 C
 C     Labels and factors
 C     ==================

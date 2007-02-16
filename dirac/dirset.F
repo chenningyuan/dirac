@@ -65,12 +65,20 @@ C
 #include "infpar.h"
 C
       DIMENSION WORK(LWORK)
+
+      CALL QENTER('PAMSET')
+
 C
 C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
+
       CALL ONEGEN(WORK,LWORK)
+
+CMI ... take care of CAP integrals here
+CMI   IF (CAP) CALL CAPINTS(WORK,LWORK)
+
       IF(DOHRM) RETURN
 C
 C     Generate MO-transformation matrix and write to file
@@ -138,6 +146,7 @@ C     ==============================================
 C
       CALL RELINF
 C
+      CALL QEXIT('PAMSET')
       RETURN
       END
 

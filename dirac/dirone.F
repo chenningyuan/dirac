@@ -102,9 +102,15 @@ C
       ELSEIF(CLSINT(I).EQ.'BETAMAT') THEN
         CALL BETAMT(COMB,WORK,LWORK,IPRONE)
 C
-C     All other integrals
+C     Contribution from CAP integrals 
 C
+      ELSEIF(CLSINT(I).EQ.'CAP_RE '.OR.CLSINT(I).EQ.'CAP_IM ') THEN
+C     ... this serves only for 'catching' CAP_.. labels as these
+C     integrals are calculated after ONEGEN routine
       ELSE
+C
+C Process all other integrals, which are coded in the abacus part !
+C
         CALL OP1GEN(CLSINT(I),COMB,IORDCL(I),WORK,LWORK,IPRONE)
       ENDIF
       CLSCAL(I) = .FALSE.
@@ -121,7 +127,9 @@ C  /* Deck op1gen */
 C*****************************************************************************
 C
 C     Driver for the generation of one-electron integrals
-C     to be placed on file AOPROPER.
+C     to be placed on the file AOPROPER.
+C
+C     Called from ONEGEN.
 C
 C     Written by Trond Saue - May 1996
 C
@@ -175,6 +183,7 @@ C
          TRIANG = .TRUE.
          MTFORM = 'TRIANG'
       END IF
+C     ... calling of ../abacus/her1pro.F
       CALL PR1IN1(WORK(KFREE),LFREE,WORK(KINTRP),WORK(KINTAD),
      &            LABINT,WORD,IORDER,NPQUAD,TRIANG,
      &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,MTFORM, 
@@ -577,7 +586,7 @@ C
 C     Finite field: 
 C     Loop through list of one-electron operators in CBIHAM
 C     =====================================================
-C
+CMI   ... only ordinary (symmetric) operators added to the Hamiltonian
       DO I = 1,N1OPER
         IOP = IPR1OP(I)
         CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,OP1INT,FIRST,
@@ -622,17 +631,18 @@ C
 C     Generates  lower triangular/square  matrix of one-electron integrals
 C     corresponding to property IOP of COMMON block XCBPRP
 C
-C     On input:  LU1INT  
+C     On input:  LU1INT  - 
 C                IOP - index of the property
 C                IDIMENS - dimension of array (either triangular or square)
-C                FIRST - must be set to true
+C                FIRST - array, must be set to true
 C
 C     On output: PMAT - accumulated property matrix (boson unsorted)
 C
 C
 C     Written by Trond Saue May 1996
 C     Last revision: May 19 1996 - tsaue
-C     Dec.2005, MI - adapted for square properties (IDIMENS = NNBBASX or N2BBASX)
+C     Dec.2005, MI - generalized for square properties (IDIMENS = NNBBASX or N2BBASX)
+C
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -722,7 +732,7 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
      &          (PDOINT(KLBL)(4:4) .EQ. '0')) THEN 
           IC = 2
         ELSE
-          write(lupri,*) 'PRPMAO: PDOINT=',PDOINT
+          write(lupri,'(2X,A4)') 'PRPMAO: illegal PDOINT=',PDOINT
           CALL QUIT('PRPMAO: illegal PDOINT!')
         ENDIF
         IBRP = IPRLREP(KLBL)
@@ -770,9 +780,9 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
           WRITE(LUPRI,'(A,L1,A,I2)')
      &    'FIRST = ',FIRST(IQP),' and IC(1 or 2):',IC
         ENDIF
-C
-C       Get integral from file
-C
+C =============================================================
+C               Get integral from AOPROPER file
+C =============================================================
 CMI        ... use IDIMENS ...
         CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &              OP1INT,IDIMENS,IPRINT)
@@ -892,14 +902,11 @@ C         ... accumulate the property ...
           END IF
         ENDDO
       ENDIF
-CLuuk:  Here is the right place to generalize the spinfree formalism to
-Cluuk:  properties. Add a call to a generalized version of SPFAO or
-Cluuk:  TBOSON (and backtransformation) here. This will make the 
-Cluuk:  property matrices spinfree once and for all ! (but)
-CLuuk:  In addition you may need to explicity zero out the 2e-so
-CLuuk:  contribution when doing second or higher order calculations
-CMI   ----------------------------------------------------------------
-CMI ... Trond has already made it at another place in the code...  :)
+
+CMI ... operator type 20 - move real part into imaginary (it's a cheat)
+C     IF (NZ.GT.1.AND.IPRPTYP(IOP).EQ.20) THEN
+C       call QUIT('in PRPMAO with CAP_IM !')
+C     ENDIF 
 
       CALL QEXIT('PRPMAO')
       RETURN
@@ -944,7 +951,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,PTOL = 1.0D-12)
+      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, PTOL = 1.0D-12)
 C
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -1038,10 +1045,10 @@ C     ... do resort PTRI to the boson sorted basis
         IPRINT2 = MAX(IPRPRP,IPRINT)
         IF (IS_SQUARE) THEN
 
-           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PMAT,OP1INT,FIRST,
+          CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PMAT,OP1INT,FIRST,
      &                WORK(KFREE),LFREE,IPRINT2)   
 
-           CALL SORT2SAO(IDIMENS,DUMMY,PMAT,FIRST,
+          CALL SORT2SAO(IDIMENS,DUMMY,PMAT,FIRST,
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ELSE
 
@@ -1051,6 +1058,17 @@ C     ... do resort PTRI to the boson sorted basis
           CALL SORT2SAO(IDIMENS,PTRI,PMAT,FIRST,
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ENDIF
+
+CMI     ... for the CAP_IM operator, simply move "r" to "i" (for NZ>1)
+CMI   ==================================================================
+C       IF (CAP.AND.NZ.GT.1.AND.IPRPTYP(INDXPR).EQ.20) THEN
+C        DO I = 1, N2BBASX
+C         PMAT(I,2) = PMAT(I,1)
+C         PMAT(I,1) = D0
+C        ENDDO
+C        WRITE(LUPRI,'(2X,A)')
+C    &   'PRPMSAO: switch of CAP_IM fo "i" operator !'
+C       ENDIF
 
 C ====================================================================
 C       ... decide if the picture change transformation is needed
@@ -2250,7 +2268,7 @@ C     Return integrals in PRPINT and return labels in RTNLBL
 C
 C     Called from: PRPMAO - general routine to get AO integrals from file
 C                  GTOVLX - to get overlap integrals
-C                  GTOVLT - to get overlap integrals 
+C                  GTOVLT - to get symmetry packed overlap integrals 
 C
 C     Written by T.Saue, January 1995
 C     Last revision: May 19 1996 - tsaue
@@ -2276,24 +2294,30 @@ Chj   corresponding to a factor of +1, -1, or 0 on that block.
       END DO
 C
       REWIND LU1INT
-      IF(FNDLB3(PRPLBL,COMB,RTNLBL,LU1INT)) THEN
-        IF (IPRINT.GE.17) THEN
-           WRITE(LUPRI,'(A,I4)')
-     &    'PRPREA: >>> Going to read the property '//PRPLBL//' '//COMB//
-     &    ' from the file with LU1INT = ',LU1INT
-        ENDIF
+
+      IF (IPRINT.GE.12) THEN
+       WRITE(LUPRI,'(A,I4)')
+     & 'PRPREA: >>> Going to read the property '//PRPLBL//
+     & ' with COMB '//COMB//
+     & ' from the file with LU1INT = ',LU1INT
+       WRITE(LUPRI,'(A,A8,A,A8)')
+     & 'labels> RTNLBL(1): ',RTNLBL(1),
+     & 'RTNLBL(2): ',RTNLBL(2)
+      ENDIF
+
+      IF(FNDLB3(PRPLBL,COMB,RTNLBL,LU1INT,IPRINT)) THEN
         CALL READT(LU1INT,NDIM,PRPINT)
         IF (IPRINT.GE.17) THEN
            WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
      &    'succesfully read from the file with LU1INT = ',LU1INT
         ENDIF
-
       ELSE
         WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
      &                     ' not found on LU1INT = ',LU1INT
-        CALL QUIT('PRPREA:Property '//PRPLBL//' not found')
+        CALL QUIT('PRPREA:Property '//PRPLBL//
+     &   ' of COMB '//COMB//' not found')
       ENDIF
 
       CALL FLSHFO(LUPRI)
@@ -2302,7 +2326,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fndlb3 */
-      LOGICAL FUNCTION FNDLB3(SRCLBL,COMB,RTNLBL,LU)
+      LOGICAL FUNCTION FNDLB3(SRCLBL,COMB,RTNLBL,LU,IPRINT)
 C***********************************************************************
 C
 C  18-Jan-1995 tsaue
@@ -2319,7 +2343,15 @@ C***********************************************************************
    10 CONTINUE
       IF(FNDLB2(SRCLBL,RTNLBL,LU)) THEN
 C     Found label SRCLBL on LU; check COMB
-        IF(RTNLBL(2)(5:8).NE.COMB) GOTO 10
+        IF(RTNLBL(2)(5:8).NE.COMB) THEN
+CMI       ... control print out ...
+          IF (IPRINT.GE.19) THEN
+            WRITE(LUPRI,*) 'FNDLB3: COMB=',COMB
+            WRITE(LUPRI,*) 'FNDLB3: RTNLBL(2)(5:8)',RTNLBL(2)(5:8)
+            WRITE(LUPRI,*) 'FNDLB3: RTNLBL(2)(5:8).NE.COMB!'
+          ENDIF
+          GOTO 10
+        ENDIF
         FNDLB3 = .TRUE.
       ENDIF
       RETURN
