@@ -1964,7 +1964,7 @@ C      IMPLICIT REAL*8 (A-H,O-Z)
 #include "priunit.h"
 
       integer *4 NSTEP
-      integer *4 NGR
+C     integer *4 NGR
       
       real *8 R_CM(2),R_CN(2),R_KM(2),R_KN(2),R_LM(2),R_LN(2)
       real *8 R_m(4),R_n(4)
