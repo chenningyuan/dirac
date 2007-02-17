@@ -384,7 +384,7 @@ CSK       WRITE(6,*)'ICISTR',ICISTR
      & 'largest block in CI-expansion',LBLOCK
 *
 #if defined (VAR_MPI)
-      IDISTROUTE = 2
+      IDISTROUTE = 1
       IF(IODENSEPAR.GT.0) THEN
         IF(IDISTROUTE.EQ.1) THEN
           CALL DISTBLKND(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),

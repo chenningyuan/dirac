@@ -2262,6 +2262,11 @@ CSK        CALL DO_NOTHING(MYNEW_ID)
 #endif
       ICOMPUTE = 1
 *
+*
+CSK      IF(MYNEW_ID.EQ.0)THEN
+CSK      WRITE(6,*)'test in rassg3',myproc
+CSK        CALL WRTMAT(SSCLFAC,NMBLOCK,1,NMBLOCK,1)
+CSK      END IF
 * Loop over batches over sigma blocks
       DO JBATS = 1, NBATS
 *. Obtain sigma for batch of blocks
@@ -2318,8 +2323,10 @@ CSK      END IF
       END IF
 #endif
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Final S-vector on disc'
-        CALL WRTVCD(SB,LUHC,1,-1)
+        IF(MYPROC.EQ.MASTER)THEN
+          WRITE(6,*) ' Final S-vector on disc'
+          CALL WRTVCD(SB,LUHC,1,-1)
+        ENDIF
       END IF
 *
       CALL QEXIT('RASSG')
@@ -5905,7 +5912,7 @@ C?    WRITE(6,*) ' IDOH2, MXEXC',IDOH2,MXEXC
             END IF
           END IF
           INTERACT = 0
-          IF(SCLFAC(JBLOCK).EQ. 1.0D0) THEN
+          IF(SCLFAC(JBLOCK).NE. 0.0D0) THEN
 C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, mynew_id
           JATP = ICBLOCK(1,JBLOCK)
           JBTP = ICBLOCK(2,JBLOCK)

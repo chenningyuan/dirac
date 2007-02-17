@@ -4066,6 +4066,11 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * /STRINP/,/STINF/,/STRBAS/ and string information in STIN
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+
 *. Input
 *     (and /LUCINP/ not occuring here )
 #include "mxpdim.inc"
@@ -4263,7 +4268,8 @@ C     DIMENSION IOCTYP(MXPNGAS)
         CALL ZSPGPIB(WORK(KNSTSO(ITP)),WORK(KISTSO(ITP)),
      &                NSPGPFTP(ITP),NSMST)
 *
-        IF(NTEST.GE.5) THEN
+       IF(NTEST.GE.5) THEN
+        IF(MYPROC.EQ.MASTER)THEN
           WRITE(6,*)
      &    ' Number of strings per sym (row) and supergroup(column)',
      &    ' for type = ', ITP
@@ -4272,7 +4278,8 @@ C     DIMENSION IOCTYP(MXPNGAS)
           WRITE(6,'(A,3I6)') ' NSMCLS,NSMCLSE,NSMCLSE1=',
      &                         NSMCLS,NSMCLSE,NSMCLSE1
           WRITE(6,*)
-        END IF
+        ENDIF
+       END IF
 *
       END DO
 *. Number of electron in each AS for each supergroup

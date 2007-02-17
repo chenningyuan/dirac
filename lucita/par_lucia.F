@@ -67,7 +67,7 @@ C
         IF(MYPROC.NE.IBLOCKD(IBLK))THEN
           BLK_A(IBLK) = 0.0D0
           GOTO 300
-        ELSE IF(MYPROC.EQ.IBLOCKD(IBLK))THEN
+        ELSE
           CALL IFRMDS(LBL,1,-1,LUIN)
           IF( LBL .GE. 0 ) THEN
             IF(LBLK .GE.0 ) THEN

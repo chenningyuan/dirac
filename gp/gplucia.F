@@ -2063,6 +2063,7 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
 *
       NSUB = LSUB
       CALL ICOPVE(ISCR,ISCAT,NSUB)
+CSK      NTEST = 10
       IF(NTEST .GE. 10) THEN
         IF(MYPROC.EQ.MASTER) THEN
           WRITE(6,*) ' Lowest elements and their original place '
@@ -5472,7 +5473,7 @@ C          NO DEGENERACIES OCCUR AMONG THE HIGHEST ELEMENTS
 * KZVAR : LENGTH OG WRK
 * OUTPUT
 *=======
-* STVAL  : STVAL(I) IS VALUES OF SORTED ELEMENT I
+* STVAL  : STVAL(I) IS VALUE OF SORTED ELEMENT I
 * ISTART : SCATTER POINTER ISTART(I) IS ADRESS IN FULL LIST OF
 *          SORTED ELEMENT I
 * KZVAR : LENGTH OG WRK
@@ -6624,6 +6625,49 @@ C
  1010 FORMAT(1H0,I3,2X,4(1X,E14.8),/,(1H ,5X,4(1X,E14.8)))
   100 CONTINUE
       RETURN
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE IWRTMA8(MAT,NROW,NCOL,NMROW,NMCOL)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION MAT(NMROW,NMCOL)
+C
+      DO 100 I=1,NROW
+      WRITE(6,1010) I,(MAT(I,J),J=1,NCOL)
+ 1010 FORMAT(1H0,I3,2X,4(1X,I18),/,(1H ,5X,4(1X,I18)))
+  100 CONTINUE
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE IWRTMAS(MAT,NROW,NCOL,NMROW,NMCOL)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION MAT(NMROW,NMCOL)
+      INTEGER ITEST,INACTIVE
+      INACTIVE = 0
+C
+      DO 100 I=1,NROW
+         ITEST = 0
+        DO II = 1, NCOL
+         ITEST = ITEST + MAT(I,II) 
+        ENDDO
+      IF(ITEST.EQ.0) INACTIVE = INACTIVE + 1
+      IF(ITEST.EQ.0) GOTO 100
+      WRITE(6,1010) I,(MAT(I,J),J=1,NCOL)
+ 1010 FORMAT(1X,I4,2X,60(1X,I1),/,(1H ,6X,60(1X,I1)))
+  100 CONTINUE
+      WRITE(6,*)'  ' 
+      WRITE(6,'(1X,A,1X,I3)')'TOTAL    NUMBER:',NCOL
+      WRITE(6,'(1X,A,1X,I3)')'ACTIVE   BLOCKS:',NCOL-INACTIVE
+      WRITE(6,'(1X,A,1X,I3)')'INACTIVE BLOCKS:',INACTIVE 
+      WRITE(6,*)'  ' 
       END
 ***********************************************************************
 *                                                                     *

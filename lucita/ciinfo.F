@@ -1431,14 +1431,14 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
             WRITE(6,'(1H , 4E22.15)') (XISPSM(II,ICI),II=1,NSMCI)
 C           CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
   200   CONTINUE
-        if (NTEST.ge.1) then
+       if (NTEST.ge.1) then
           WRITE(6,*)
           WRITE(6,*) ' Largest symmetry block           ',MXSB
           WRITE(6,*) ' Largest Symmetry-type-type block ',MXSOOB
           WRITE(6,*)
-        end if
+       end if
 *
-        IF(NTEST.GE.5) THEN
+       IF(NTEST.GE.5) THEN
           WRITE(6,*)
      &  ' Number of TTS subblocks per CI expansion '
           WRITE(6,*)
@@ -1993,6 +1993,13 @@ C       END DO
       DIMENSION NSSOA(NSMST,*),NSSOB(NSMST,*),NELFGP(*)
 *. block types
       DIMENSION IBLTP(*)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar.inc"
+            
 *
       CALL QENTER('NGASD')
       NTEST = 000
@@ -2035,6 +2042,7 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
              MXBTP = NOCTPB
            END IF
            LTSSA = NSSOA(IASM,IATP)
+CSK           IF(MYPROC.EQ.MASTER) write(6,*)'LTSSA',LTSSA
            XLTSSA = FLOAT(LTSSA)
            DO 100 IBTP = 1, MXBTP
 *
@@ -2047,12 +2055,15 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
              IF(IOCOC(IATP,IBTP).EQ.1) THEN
 *. Size of unpacked block
                LTTSUP =  LTSSA*NSSOB(IBSM,IBTP)
+CSK               IF(MYPROC.EQ.MASTER) write(6,*)'LTTSUP',LTTSUP
 *. Size of packed block
                IF(ISYM.EQ.0.OR.IATP.NE.IBTP) THEN
                  LTTSBL = LTSSA*NSSOB(IBSM,IBTP)
+CSK                 IF(MYPROC.EQ.MASTER) write(6,*)'LTTSBL',LTTSBL
                  XNCOMB = XNCOMB + XLTSSA*FLOAT(NSSOB(IBSM,IBTP))
                ELSE
                  LTTSBL = LTSSA *(LTSSA +1)/2
+CSK                 IF(MYPROC.EQ.MASTER) write(6,*)'LTTSBL 2',LTTSBL
                  XNCOMB = XNCOMB + XLTSSA*(XLTSSA+1.0D0)*0.5
                END IF
                NCOMB = NCOMB + LTTSBL
