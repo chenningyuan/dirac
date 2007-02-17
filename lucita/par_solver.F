@@ -36,6 +36,293 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE FIND_IMAT_SC(IBLINF,SCALFAC,ICCTOS,ICWEIGHT,IBTOTW,
+     &                        ICWEIGHTF,NBLOCK)
+*
+* Compute the connection matrix ICCTOS between the sigma and c vector 
+* Store the contribution of one c-block to sigma-blocks in ICWEIGHT.
+*
+      IMPLICIT REAL*8           (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      DIMENSION IBLINF(NBLOCK),SCALFAC(NBLOCK),ICCTOS(NBLOCK,NBLOCK)
+      DIMENSION ICWEIGHT(NBLOCK),ICWEIGHTF(NBLOCK)
+      DIMENSION IBTOTW(NBLOCK,NBLOCK)
+*.Definition of c and sigma
+      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
+      INTEGER*8 IST8NULL
+*
+#include "mxpdim.inc"
+*./ORBINP/ : NACOB used
+#include "orbinp.inc"
+#include "cicisp.inc"
+#include "strbas.inc"
+#include "cstate.inc"
+#include "strinp.inc"
+#include "stinf.inc"
+#include "csm.inc"
+#include "wrkspc.inc"
+#include "crun.inc"
+#include "gasstr.inc"
+#include "cgas.inc"
+*. Used : NSMOB
+#include "lucinp.inc"
+#include "cprnt.inc"
+#include "glbbas.inc"
+#include "oper.inc"
+*
+      IDUM = 0
+      IST8NULL = 0
+      CALL ISETVC(IBTOTW,IST8NULL,NBLOCK)
+      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'IMAT_S')
+*
+      IATP = 1
+      IBTP = 2
+*
+      NOCTPA = NOCTYP(IATP)
+      NOCTPB = NOCTYP(IBTP)
+*. Offset for supergroups
+      IOCTPA = IBSPGPFTP(IATP)
+      IOCTPB = IBSPGPFTP(IBTP)
+*
+      NAEL = NELEC(IATP)
+      NBEL = NELEC(IBTP)
+*. Arrays giving allowed type combinations
+      CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
+      CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
+*. Arrays for additional symmetry operation
+      KSVST = 1
+*. Arrays giving block type
+      CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
+      CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP),WORK(KSVST))
+*. Arrays for partitioning of sigma
+      NTTS = MXNTTS
+      CALL MEMMAN(KLSLBT ,NTTS  ,'ADDL  ',1,'CLBT  ')
+      CALL MEMMAN(KLSLEBT ,NTTS  ,'ADDL  ',1,'CLEBT ')
+      CALL MEMMAN(KLSI1BT,NTTS  ,'ADDL  ',1,'CI1BT ')
+      CALL MEMMAN(KLSIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
+*. Batches  of S vector
+      IF (ICISTR.EQ.2) THEN
+        LBLOCK = MXSB
+      ELSE IF (ICISTR.EQ.3) THEN
+CSK   ICISTR is alway 3!!!
+        LBLOCK = MXSOOB
+      END IF
+CSK   LCSBLK = 100000 as default, MXSOOB is set in ciinfo.F with the
+C     length of the largest block!!!  
+      LBLOCK = MAX(LBLOCK,LCSBLK)
+      ITTSS_ORD = 2
+      CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
+     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
+     &     WORK(KSIOIO),ISMOST(1,ISSM),
+     &     NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &     WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD)
+
+      IF(I12.EQ.2) THEN
+        IDOH2 = 1
+      ELSE
+        IDOH2 = 0
+      END IF
+      IF(IDOH2.EQ.1) THEN
+        MXEXC  = 2
+      ELSE
+        MXEXC = 1
+      END IF
+* Info for this internal space
+*. alpha and beta strings with an electron removed
+      IATPM1 = 3
+      IBTPM1 = 4
+*. alpha and beta strings with two electrons removed
+      IATPM2 = 5
+      IBTPM2 = 6
+*. connection matrices for supergroups
+      CALL MEMMAN(KCONSPA,NOCTPA**2,'ADDL  ',1,'CONSPA')
+      CALL MEMMAN(KCONSPB,NOCTPB**2,'ADDL  ',1,'CONSPB')
+      CALL SPGRPCON(IOCTPA,NOCTPA,NGAS,MXPNGAS,NELFSPGP,
+     &              WORK(KCONSPA),IPRCIX)
+      CALL SPGRPCON(IOCTPB,NOCTPB,NGAS,MXPNGAS,NELFSPGP,
+     &              WORK(KCONSPB),IPRCIX)
+*. Offsets for alpha and beta supergroups
+      IOCTPA = IBSPGPFTP(IATP)
+      IOCTPB = IBSPGPFTP(IBTP)
+*. Arrays giving block type
+      CALL MEMMAN(KCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
+*. Arrays for additional symmetry operation
+      KSVST = 1
+*. Arrays giving allowed type combinations '
+      CALL MEMMAN(KCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
+      CALL IAIBCM(ICSPC,WORK(KCIOIO))
+      CALL ZBLTP(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP),WORK(KSVST))
+*.Some TTS arrays
+      NTTS = MXNTTS
+*. for partitioning of vector
+      CALL MEMMAN(KLLBT ,NTTS  ,'ADDL  ',1,'LBTC  ')
+      CALL MEMMAN(KLLEBT,NTTS  ,'ADDL  ',1,'LECTC ')
+      CALL MEMMAN(KLI1BT,NTTS  ,'ADDL  ',1,'I1BTC ')
+      CALL MEMMAN(KLIBT ,8*NTTS,'ADDL  ',1,'IBTC  ')
+*
+*
+*. Find batches of C - strings
+      ITTSS_ORD = 2
+      NCBATCH = 0
+      CALL PART_CIV2(IDC,WORK(KCBLTP),WORK(KNSTSO(IATP)),
+     &               WORK(KNSTSO(IBTP)),
+     &               NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KCIOIO),
+     &               ISMOST(1,ICSM),NCBATCH,
+     &               WORK(KLLBT),WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),
+     &               0,ITTSS_ORD)
+                      
+*
+*. Initialize SCALFAC as it should look like after the first iteration...
+      DO II = 1, NBLOCK
+        LBL = IBLINF(II)
+        IF(LBL.NE.0) THEN 
+          SCALFAC(II) = 1.0D0
+        ELSE
+          SCALFAC(II) = 0.0D0
+        END IF
+      ENDDO
+CSK      IF(MYPROC.EQ.MASTER) CALL WRTMAT(SCALFAC,1,NBLOCK,1,NBLOCK)
+*. start the search for the INTERACT-MATRIX...
+      CALL FIND_INTERACT_MAT(NBLOCK,SCALFAC,ICCTOS,ICWEIGHT,ICWEIGHTF,
+     &                      IDC,WORK(KSVST),WORK(KCONSPA),WORK(KCONSPB),
+     &                      WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
+     &                      NOCTPA,NOCTPB,WORK(KLIBT),WORK(KLSIBT),
+     &                      PSSIGN,MXEXC,NSMST)
+      NTEST = 100
+CSK      IF(MYPROC.EQ.MASTER) THEN
+        IF(NTEST.GE.100)THEN
+           IF(NTEST.GE.500.AND.MYPROC.EQ.MASTER) THEN
+             WRITE(6,*)'CONNECTION MATRIX BETWEEN C- AND SIGMA-BLOCKS'
+             CALL IWRTMAS(ICCTOS,NBLOCK,NBLOCK,NBLOCK,NBLOCK)
+           END IF
+          CALL PRINT_BATCH_INFO(NCBATCH,WORK(KLLBT),WORK(KLLEBT),
+     &         WORK(KLI1BT),WORK(KLIBT),ICCTOS,ICWEIGHT,NBLOCK,IBTOTW,
+     &         ICWEIGHTF)
+        END IF
+CSK        IF(MYPROC.EQ.MASTER) THEN
+CSK          WRITE(6,*)'CONNECTION FACTOR MATRIX'
+CSK          CALL IWRTMA(ICWEIGHTF,1,NBLOCK,1,NBLOCK)
+CSK        END IF
+CSK      ENDIF
+*. Set SCALFAC back to default 
+      ZERO = 0.0D0
+      CALL SETVEC(SCALFAC,ZERO,NBLOCK)
+*. Eliminate local memory
+      IDUM = 0
+      CALL MEMMAN(IDUM ,IDUM,'FLUSM ',2,'IMAT_S')
+            
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE FIND_INTERACT_MAT(NBLOCK,SCALFAC,ICCTOS,ICWEIGHT,
+     &           ICWEIGHTF,IDC,ISTRFL,ICONSPA,ICONSPB,NSSOA,NSSOB,
+     &           NOCTPA,NOCTPB,ICBLOCK,ISBLOCK,PS,MXEXC,NSMST)
+*
+      IMPLICIT REAL*8           (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      DIMENSION SCALFAC(NBLOCK),ICCTOS(NBLOCK,NBLOCK)
+      DIMENSION ICWEIGHT(NBLOCK),ICWEIGHTF(NBLOCK)
+      DIMENSION ICONSPA(NOCTPA,NOCTPA),ICONSPB(NOCTPB,NOCTPB)
+      DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
+      DIMENSION ICBLOCK(8,*),ISBLOCK(8,*)
+      INTEGER NSSOA(NSMST ,*),NSSOB(NSMST ,*)
+      INTEGER NTEST
+      NTEST = 0
+      
+CSK      IF(MYPROC.EQ.MASTER) THEN
+CSK       WRITE(6,*)'NBLOCK is',NBLOCK
+CSK       WRITE(6,*)'MXEXC  is',MXEXC
+CSK      ENDIF
+CSK      IF(MYPROC.EQ.MASTER) THEN
+CSK        WRITE(6,*)'connection matrix'
+CSK        CALL IWRTMA(ICONSPA,NOCTPA,NOCTPA,NOCTPA,NOCTPA)
+CSK      ENDIF
+      DO JBLOCK = 1, NBLOCK
+*
+        INTERACT = 0
+        JJJ = 0
+*. calculation of a certain block is node-dependent!
+*
+        IF(SCALFAC(JBLOCK).EQ. 1.0D0) THEN
+C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, MYPROC
+          JATP = ICBLOCK(1,JBLOCK)
+          JBTP = ICBLOCK(2,JBLOCK)
+          JASM = ICBLOCK(3,JBLOCK)
+          JBSM = ICBLOCK(4,JBLOCK)
+          JOFF = ICBLOCK(5,JBLOCK)
+          CALL PRMBLK(IDC,ISTRFL,JASM,JBSM,JATP,JBTP,PS,PL,
+     &                LATP,LBTP,LASM,LBSM,LSGN,LTRP,NPERM)
+          DO IPERM = 1, NPERM
+            LLASM = LASM(IPERM)
+            LLBSM = LBSM(IPERM)
+            LLATP = LATP(IPERM)
+            LLBTP = LBTP(IPERM)
+*.Loop over Sigma blocks in batch
+            DO JSBLOCK = 1, NBLOCK
+CSK              IF(MYPROC.EQ.MASTER) THEN
+CSK                WRITE(6,*)'ISBLOCK(1,JSBLOCK)',ISBLOCK(1,JSBLOCK)
+CSK                WRITE(6,*)'JSBLOCK =',JSBLOCK
+CSK              ENDIF
+              IF(ISBLOCK(1,JSBLOCK).GT.0) THEN
+                INTERACT = 0
+                IATP = ISBLOCK(1,JSBLOCK)
+                IBTP = ISBLOCK(2,JSBLOCK)
+                IASM = ISBLOCK(3,JSBLOCK)
+                IBSM = ISBLOCK(4,JSBLOCK)
+                NIA = NSSOA(IASM,IATP)
+                NIB = NSSOB(IBSM,IBTP)
+                IF(NIA*NIB.NE.0) THEN        
+*. Are the two blocks connected by allowed excitation
+                  IF(MXEXC.EQ.2) THEN
+                    IF((ICONSPA(IATP,LLATP).LE.1.AND.
+     &                  ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
+     &                 (ICONSPA(IATP,LLATP).EQ.MXEXC.AND.
+     &                  IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM) .OR.
+     &                 (ICONSPB(IBTP,LLBTP).EQ.MXEXC.AND.
+     &                  IATP.EQ.LLATP.AND.IASM.EQ.LLASM)     )THEN
+                           INTERACT = 1
+                    END IF
+                  END IF
+                  IF(INTERACT.NE.0) THEN
+                   JJJ = JJJ + 1
+                   ICCTOS(JSBLOCK,JBLOCK) = 1
+                   ICWEIGHT(JJJ) = JSBLOCK
+                  END IF
+                END IF
+              END IF
+            END DO
+*          /\ loop over s-blocks
+          END DO
+*.       /\ loop over nperm
+        END IF
+        IF(MYPROC.EQ.MASTER.AND.JJJ.GT.0.AND.NTEST.GE.100) THEN
+          WRITE(6,'(A,1X,I5,1X,A,1X,I5,1X,A)') 
+     & 'C BLOCK',JBLOCK,'IS CONNECTING TO',JJJ,'S-BLOCKS:'
+          CALL IWRTMA(ICWEIGHT,1,JJJ,1,JJJ)
+        END IF
+      END DO 
+*    /\ loop over c-blocks
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GASDIAS_PAR(NAEL,IASTR,NBEL,IBSTR,
@@ -239,6 +526,7 @@ CSK      WRITE(6,*) ' Number of diagonal elements generated by node',ITDET,mypro
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GASDIAT_PAR(DIAG,LUDIA,ECORE,ICISTR,I12,
@@ -347,6 +635,7 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GATHER_LOW_PAR(NSUB,NSUBMX,SUBVAL,ISCAT,
@@ -531,6 +820,7 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE H0LNSL_PAR(PHP,PHQ,QHQ,NP1DM,NP2DM,NQDM,
@@ -736,6 +1026,7 @@ C             DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE H0M1TD_PAR(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
@@ -885,13 +1176,15 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MICDV6_PAR(VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
      &                  NVAR,LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,
      &                  NINVEC,APROJ,AVEC,WORK,IPRTXX,NPRDIM,H0,IPNTR,
      &                  NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,E_CONV,IROOTHOMING,
-     &                  LUWRTOUT,BSCRFAC,IBKINF,NBLOCKDN,IBLOCKI,SCRRED)
+     &                  LUWRTOUT,BSCRFAC,IBKINF,NBLOCKDN,IBLOCKI,SCRRED,
+     &                  ICCTOS)
 *
 * Iterative eigen solver, requires two blocks in core
 *
@@ -960,14 +1253,19 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 *      characters used for timing
        CHARACTER WALLTSTEP*12,  WPART22*12
+C      including a scratch file
+       CHARACTER PLUSCR*11, PLUSCRTOT*15
+       INTEGER PLUSCRFL
 *. Notice XJEP is also used for ROOTHOMING, should be allocated
 * outside (for roothoming :dim = 3*MAXVEC )
        DIMENSION XJEP(10000)
        INTEGER   IXJEP(10000)
-       DIMENSION BSCRFAC(*)
+       DIMENSION BSCRFAC(*),ICCTOS(IBLOCKI,IBLOCKI)
        DIMENSION IBKINF(*),NBLOCKDN(IBLOCKI)
        INTEGER NDATATYPE,NREDTYPE
        REAL*8 REDSCRVAR
+       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+       
 *
        WRITE(LUWRTOUT,*) 
      & ' '
@@ -985,13 +1283,11 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
      & ' '
 *
        IPICO = 0
-       IF(IPICO.EQ.0) THEN
-C?       WRITE(6,*) ' Variational  solver '
-       END IF
 *
        IPRT = 000
-c      IPRT = IPRTXX
-*
+CSK       WRITE(6,*) ' LU1 LU2 LU3 LU4 LU5 LU6,LU7',
+CSK     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
+       
        IOLSTM = 1
        IF(IPRT.GT.1.AND.IOLSTM.NE.0)
      & WRITE(LUWRTOUT,*) ' Inverse iteration modified Davidson '
@@ -1012,28 +1308,32 @@ c      IPRT = IPRTXX
        KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
        TEST = 1.0D-8
        CONVER = .FALSE.
+C      use mpi direct acces file in MV7_PAR
+       IF(IODENSEPAR.EQ.2.AND.IIOMOD.NE.0) THEN
+         PLUSCR = 'LUCBSCR_PAR'
+         IF(MYPROC.LT.10)THEN        ! MPI ID has one digit
+           WRITE (PLUSCRTOT,'(A11,A1,I1)') PLUSCR,'.',MYPROC
+           PLUSCRFL = 13
+         ELSE IF(MYPROC.LT.100)THEN  ! MPI ID has two digits
+           WRITE (PLUSCRTOT,'(A11,A1,I2)') PLUSCR,'.',MYPROC
+           PLUSCRFL = 14
+         ELSE                        ! MPI ID has three digits
+           WRITE (PLUSCRTOT,'(A11,A1,I3)') PLUSCR,'.',MYPROC
+           PLUSCRFL = 15
+         END IF
+         IOFFSET = 0
+         CALL MPI_FILE_OPEN(MPI_COMM_SELF,PLUSCRTOT(1:PLUSCRFL),
+     &                      MPI_MODE_CREATE+MPI_MODE_RDWR+
+     &                      MPI_MODE_DELETE_ON_CLOSE,MPI_INFO_NULL,
+     &                      MPILUSCR,IERR)
+         CALL MPI_FILE_SET_VIEW(MPILUSCR,IOFFSET,MPI_REAL8,MPI_REAL8,
+     &                          "native",MPI_INFO_NULL,IERR)
+       ENDIF
 *
 * ===================
 *.Initial iteration
 * ===================
        ITER = 1
-CSK       CALL REWINO(LU1)
-CSK       IF(MYPROC.EQ.MASTER) THEN
-       IROUNDIT = 0
- 4    CONTINUE
-CSK       DO I = 1, NINVEC
-CSK         IF(IROUNDIT.EQ.MYPROC)THEN
-CSK           write(6,*)'initial vector',I,'of myproc',myproc
-CSK           CALL WRTVCD(VEC1,LU1,0,-1)
-CSK         END IF
-CSK         CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK       END DO
-CSK       IROUNDIT = IROUNDIT + 1
-CSK       IF(IROUNDIT.LT.NMPROC) GOTO 4
-       
-CSK       END IF
-                    
-                                                  
        CALL REWINO(LU1)
        CALL REWINO(LU2)
 *
@@ -1041,7 +1341,8 @@ CSK       END IF
          CALL REWINO(LU5)
          CALL REWINO(LU6)
          CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
-         CALL MV7_PAR(VEC1,VEC2,LU5,LU6,BSCRFAC,IBKINF,NBLOCKDN,IBLOCKI)
+         CALL MV7_PAR(VEC1,VEC2,LU5,LU6,LU7,BSCRFAC,IBKINF,
+     &               NBLOCKDN,ICCTOS,IBLOCKI)
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
          CALL REWINO(LU6)
          CALL COPVCD(LU6,LU2,VEC1,0,LBLK)
@@ -1265,10 +1566,10 @@ CSK             WRITE(LUWRTOUT,*) ' Gamma = ', Gamma
 * is X an eigen vector for (H0 - 1 ) - 1
              CALL REWINO(LU5)
              CALL REWINO(LU7)
-             SCRRED(1) = VCSMDN(VEC1,VEC2,-GAMMA,1.0D0,LU7,LU5,0,LBLK)
-             CALL REDVEC(SCRRED(1),REDSCRVAR,1,2,MPI_SUM,
+             REDSCRVAR = VCSMDN(VEC1,VEC2,-GAMMA,1.0D0,LU7,LU5,0,LBLK)
+             CALL REDVEC(REDSCRVAR,VNORM,1,2,MPI_SUM,
      &                   MPI_COMM_WORLD,-1)
-              VNORM = SQRT(REDSCRVAR)
+              VNORM = SQRT(VNORM)
               IF(IPRT.GE.1000) write(6,*) ' VNORM = ', VNORM
 CSK              write(LUWRTOUT,*) ' VNORM = ', VNORM
               IF(VNORM .GT. 1.0D-7 ) THEN
@@ -1306,7 +1607,12 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR,MYPROC
                CALL REWINO(LU6)
                WORK(IVEC) = -INPRDD(VEC1,VEC2,LU1,LU6,0,LBLK)
            END DO
+CSK           startwork = MPI_WTIME()
            CALL REDVEC(WORK,SCRRED,NROOT,2,MPI_SUM,MPI_COMM_WORLD,-1)
+CSK           endwork   = MPI_WTIME()
+CSK           tottime = endwork - startwork
+CSK           WALLTID = SECTID(tottime)
+CSK           WRITE(LUWRTOUT,9410) WALLTID
            CALL COPVEC(SCRRED,WORK,NROOT)
            IF(IPRT.GE.1000) THEN
              Write(LUWRTOUT,*) ' Overlap with vectors on LU1',myproc
@@ -1327,8 +1633,13 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR,MYPROC
                  CALL REWINO(LU6)
                  WORK(IVEC) = -INPRDD(VEC1,VEC2,LU3,LU6,0,LBLK)
              END DO
+CSK             startwork = MPI_WTIME()
              CALL REDVEC(WORK,SCRRED,NVEC+IADD-1-NROOT,2,MPI_SUM,
      &                   MPI_COMM_WORLD,-1)
+CSK             endwork   = MPI_WTIME()
+CSK             tottime = endwork - startwork
+CSK             WALLTID = SECTID(tottime)
+CSK             WRITE(LUWRTOUT,9420) WALLTID, NVEC+IADD-1-NROOT
              CALL COPVEC(SCRRED,WORK,NVEC+IADD-1-NROOT)
              ONE = 1.0D0
              CALL REWINO(LU3)
@@ -1393,10 +1704,14 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR,MYPROC
 *.      Check timings for sigma vector generation
 ***********************************************************************
         sigmatime = MPI_WTIME()
-        CALL MV7_PAR(VEC1,VEC2,LU5,LU6,BSCRFAC,IBKINF,NBLOCKDN,IBLOCKI)
+*
+        CALL MV7_PAR(VEC1,VEC2,LU5,LU6,LU7,BSCRFAC,IBKINF,
+     &               NBLOCKDN,ICCTOS,IBLOCKI)
+*     
         sigmatime2 = MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
         WRITE(LUWRTOUT,9400) WALLTID
+        WRITE(LUWRTOUT,*) '   '
 ***********************************************************************
         CALL REWINE(LU6,LBLK)
         CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
@@ -1419,8 +1734,12 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR,MYPROC
         END DO
       END DO
 *     /\ End do over new trial vectors
+      sigmatime = MPI_WTIME()
       CALL REDVEC(APROJ(ISTRED),SCRRED,IMUSTRED,2,MPI_SUM,
      &            MPI_COMM_WORLD,-1)
+      sigmatime2 = MPI_WTIME()
+      WALLTID = SECTID(sigmatime2-sigmatime)
+      WRITE(LUWRTOUT,9430) WALLTID,IMUSTRED
       CALL COPVEC(SCRRED,APROJ(ISTRED),IMUSTRED)
       
 CSK      IF(MYPROC.EQ.MASTER) THEN
@@ -1640,8 +1959,8 @@ CSK        WRITE(6,*) ' SCALE = ', SCALE
      &  write(6,*) ' end of s reset, part 4'
         NNVEC = NROOT
 *. Overlap between first vectors on LU1 and LU2
-        REDSCR = INPRDD(VEC1,VEC2,LU1,LU2,1,LBLK)
-        CALL REDVEC(REDSCR,E11,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+CSK        REDSCR = INPRDD(VEC1,VEC2,LU1,LU2,1,LBLK)
+CSK        CALL REDVEC(REDSCR,E11,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
 CSK        WRITE(LUWRTOUT,*) ' MYPROC: <Lu1!Lu2> = ', MYPROC,E11
         IF(3*NROOT.LE.MAXVEC) THEN
 *
@@ -1671,8 +1990,12 @@ CSK        WRITE(LUWRTOUT,*) ' MYPROC: <Lu1!Lu2> = ', MYPROC,E11
               IF(IROOT.EQ.1) ISTRED = IROOT+(JVEC-1)*2*NROOT
               IMUSTRED = IMUSTRED + 1
             END DO
+            starttime = MPI_WTIME()
             CALL REDVEC(WORK(ISTRED),SCRRED,IMUSTRED,2,
      &                  MPI_SUM,MPI_COMM_WORLD,-1)
+            endtime = MPI_WTIME()
+            WALLTID = SECTID(endtime-starttime)
+            WRITE(LUWRTOUT,9440) WALLTID,IMUSTRED
             CALL COPVEC(SCRRED,WORK(ISTRED),IMUSTRED)
                  
             IF(IPRT.GE.1000)
@@ -1688,8 +2011,12 @@ CSK        WRITE(LUWRTOUT,*) ' MYPROC: <Lu1!Lu2> = ', MYPROC,E11
               IMUSTRED = IMUSTRED + 1
             END DO
             IF(IMUSTRED.GT.0)THEN
+              starttime = MPI_WTIME()
               CALL REDVEC(WORK(ISTRED),SCRRED,IMUSTRED,2,
      &                    MPI_SUM,MPI_COMM_WORLD,-1)
+              endtime = MPI_WTIME()
+              WALLTID = SECTID(endtime-starttime)
+              WRITE(LUWRTOUT,9450)WALLTID,IMUSTRED
               CALL COPVEC(SCRRED,WORK(ISTRED),IMUSTRED)
             ENDIF
             WORK(NROOT+JVEC+(JVEC-1)*2*NROOT) = 1.0D0
@@ -1779,7 +2106,7 @@ CSK        WRITE(LUWRTOUT,*) ' MYPROC: <Lu1!Lu2> = ', MYPROC,E11
          END DO
        END IF
 CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK      IF(IODENSEPAR.EQ.1) THEN
+CSK      IF(IODENSEPAR.GT.0) THEN
 CSK         CALL Abend2('Stefan forced me to stop at s part4 finito... 
 CSK     & DV6_PAR')
 CSK      END IF
@@ -1816,45 +2143,20 @@ CSK      END IF
            IMUSTRED = IMUSTRED + 1
          END DO
        END DO
+       starttime = MPI_WTIME()
        CALL REDVEC(APROJ(ISTRED),SCRRED,IMUSTRED,2,MPI_SUM,
      &             MPI_COMM_WORLD,-1)
+       endtime = MPI_WTIME()
+       WALLTID = SECTID(endtime-starttime)
+       WRITE(LUWRTOUT,9460)WALLTID,IMUSTRED
        CALL COPVEC(SCRRED,APROJ(ISTRED),IMUSTRED)
        if (IPRT.ge.2) then
          write(6,*) ' Reset hamiltonian'
          call prsym(aproj,nvec)
        end if
-*. Test : Orthogonality of new vectors
-CSK       CALL REWINO(LU1)
-CSK       CALL REWINO(LU3)
-CSK       DO IVEC = 1, NVEC
-CSK*
-CSK         CALL REWINO(LU5)
-CSK         IF(IVEC.LE.NROOT) THEN
-CSK           CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
-CSK         ELSE
-CSK           CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
-CSK         END IF
-CSK*
-CSK         CALL REWINO(LU1)
-CSK         DO JVEC = 1, MIN(IVEC,NROOT)
-CSK           CALL REWINO(LU5)
-CSK           IJ = IVEC*(IVEC-1)/2+JVEC
-CSK           XJEP(IJ) = INPRDD(VEC1,VEC2,LU5,LU1,0,LBLK)
-CSK         END DO
-CSK         CALL REWINO(LU3)
-CSK         DO JVEC = NROOT+1,IVEC
-CSK           CALL REWINO(LU5)
-CSK           IJ = IVEC*(IVEC-1)/2+JVEC
-CSK           XJEP(IJ) = INPRDD(VEC1,VEC2,LU5,LU3,0,LBLK)
-CSK         END DO
-CSK       END DO
-CSK       if (IPRT.ge.2) then
-CSK         write(6,*) ' Overlap matrix    '
-CSK         call prsym(xjep,nvec)
-CSK       end if
-*
 *
 *  check timing of part3 in loop iteration
+*
        WALLSTEP4 = MPI_WTIME()
        WALLTSTEP = SECTID(WALLSTEP4-WALLSTEP3)
        WRITE(LUWRTOUT,9600) WALLTSTEP
@@ -1955,13 +2257,29 @@ CSK       end if
 *
       Call Add_Info('E_CI',FINEIG,NROOT)
 *
+C     close the scratch file when leaving
+       IF(IODENSEPAR.EQ.2.AND.IIOMOD.NE.0) THEN
+         CALL MPI_FILE_CLOSE(MPILUSCR,IERR)
+       END IF
+*
       RETURN
  1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
  1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
- 9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION         : ',A)
- 9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL         : ',A)
- 9600 FORMAT(' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION: ',A)
- 9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2            : ',A)
+ 9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
+ 9410 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH NROOT: ',A)
+ 9420 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
+     & ',A,I4)
+ 9430 FORMAT(' >>>  WALL TIME FOR REDUCING APROJ OF LENGTH     :
+     & ',A,I4)
+ 9440 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
+     & ',A,I4)
+ 9450 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
+     & ',A,I4)
+ 9460 FORMAT(' >>>  WALL TIME FOR REDUCING APROJ OF LENGTH     :
+     & ',A,I4)
+ 9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
+ 9600 FORMAT(' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
+ 9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A)
       END
 ***********************************************************************
 #else

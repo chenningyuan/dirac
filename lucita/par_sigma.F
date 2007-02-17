@@ -39,7 +39,8 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE MV7_PAR(C,HC,LUC,LUHC,SSCRFAC,IBLOCKL,IBLOCKD,NUMBLOCK)
+      SUBROUTINE MV7_PAR(C,HC,LUC,LUHC,LUCSCR,SSCRFAC,IBLOCKL,
+     &                  IBLOCKD,ICCTOS,NUMBLOCK)
 *
 * Outer routine for sigma vector generation
 * GAS version !!!!
@@ -62,8 +63,9 @@ C
 *.Input
 * =====
 *
-*. array of blocklength and distribution
+*. array of blocklength, cpu-distribution and connection matrix
       DIMENSION IBLOCKL(NUMBLOCK),IBLOCKD(NUMBLOCK)
+      DIMENSION ICCTOS(NUMBLOCK,NUMBLOCK)
 *.Definition of c and sigma
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
@@ -156,7 +158,9 @@ C
 *
       LLUC = LUC
       LLUHC = LUHC
+      LLUCSCR = LUCSCR
 *
+      CALL MEMMAN(KSCALLOC,NUMBLOCK,'ADDL  ',2,'SCLLOC')
 *. read in scalfac only once!
 *. IRDSCF = 1 else IRDSCF = 0
       IRDSCF = 1
@@ -166,8 +170,8 @@ C
         Call Abend2('MV7 : ICISTR = 1 route currently not active')
       ELSE
         CALL RASSG3_PAR(C,HC,NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
-     &       WORK(KLSI1BT),WORK(KLSIBT),LLUC,LLUHC,NUMBLOCK,
-     &       IBLOCKL,IBLOCKD,SSCRFAC)
+     &       WORK(KLSI1BT),WORK(KLSIBT),LLUC,LLUHC,LLUCSCR,NUMBLOCK,
+     &       IBLOCKL,IBLOCKD,SSCRFAC,WORK(KSCALLOC),ICCTOS)
       END IF
 *. Eliminate local memory
       CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'MV7   ')
@@ -182,7 +186,8 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE RASSG3_PAR(CB,SB,NBATS,LBATS,LEBATS,I1BATS,IBATS,
-     &           LUC,LUHC,NBLOCK,IBLOCKL,IBLOCKD,SSCLFAC)
+     &           LUC,LUHC,LUCSCR,NBLOCK,IBLOCKL,IBLOCKD,SSCLFAC,
+     &           SCALFAC_LOCAL,ICCTOS)
 *
 * Direct RAS routine employing combined MOC/n-1 resolution method
 *
@@ -204,10 +209,12 @@ C
 *. Batches of sigma
       INTEGER LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
 * new scratch
-      INTEGER MYLENSUM
+      INTEGER MYLENSUM,NZERO,JCOLOR,JKEY,NREDGRP
 *.Scratch
       DIMENSION SB(*),CB(*),SSCLFAC(*),IBLOCKL(NBLOCK)
-      DIMENSION IBLOCKD(NBLOCK)
+      DIMENSION IBLOCKD(NBLOCK),SCALFAC_LOCAL(NBLOCK)
+      DIMENSION ICCTOS(NBLOCK,NBLOCK)
+      CHARACTER SECTID*12,WALLTID*12,WALLTID2*12,WALLTID3*12
 *
       CALL QENTER('RASSG3_PAR')
       NTEST = 00
@@ -219,48 +226,143 @@ C     NTEST = MAX(NTEST,IPRNT)
         WRITE(6,*) ' RASSG3 : NBATS = ',NBATS
       END IF
 *
+*. 
+      NZERO = 0
+      ZERO = 0.0D0
+C     fill complete local scalfac array with zero's 
+      CALL SETVEC(SCALFAC_LOCAL,ZERO,NBLOCK)
+*
       IF(LUHC.GT.0) CALL REWINO(LUHC)
       IF(IRDSCF.GT.0) THEN
+        CALL REWINO(LUCSCR)
+        CALL REWINO(LUC)
 CSK        WRITE(6,*)'MY BLOCK DISTR',MYPROC
 CSK        CALL IWRTMA(IBLOCKD,1,NBLOCK,1,NBLOCK)
-        CALL FIND_ACTIVE_BLOCKS_PAR(LUC,-1,SSCLFAC,CB,NBLOCK,IBLOCKD)
+C       find number of non-zero local C-blocks in SB(1:NBLOCK)
+        CALL FIND_ACTIVE_BLOCKS_PAR(LUC,-1,SB,CB,NBLOCK,IBLOCKD)
+CSK        NTEST = 50
+*        
+C       "mpi_allsum" local SB's to SSCLFAC which then on all
+C       nodes will contain the number of non-zero C-elements in
+C       each block.
+        CALL REDVEC(SB,SSCLFAC,NBLOCK,2,MPI_SUM,MPI_COMM_WORLD,-1)
+*          
+        IF(NTEST.GE.50) THEN
+          CALL WRTMAT(SSCLFAC,1,NBLOCK,1,NBLOCK)
+        END IF
+*        
+        NTEST = 00
+*        
+CSK        write(6,*)'problem here?',myproc
       END IF
+      
+*. Purpose for parallel scheme 2:
+*. - Gather all c-blocks needed for the sigma-vector-blocks to compute
+*. - Use the MPI-Broadcast scheme - use of another scheme possible?
+*. --> no MPI_REDUCE is needed inside the loop over s-batches!
+      IF(IODENSEPAR.EQ.2) THEN
+*
+        blocktime = 0.0D0
+        starttimer = MPI_WTIME()
+        CALL REWINO(LUCSCR)
+        CALL REWINO(LUC)
+*
+C       find all c-blocks connecting to a given sigma-block. 
+C       The information will be stored in SCALFAC_LOCAL.
+C       
+        CALL FIND_CCTOS(SCALFAC_LOCAL,IBLOCKD,ICCTOS,NBLOCK)
+*
+        IF(IIOMOD.EQ.0) THEN
+          CALL COPVCD_PAR_BDRIV3(CB,IBLOCKD,SSCLFAC,SCALFAC_LOCAL,
+     &                           IBLOCKL,NBLOCK,MPI_COMM_WORLD,LUC,
+     &                           LUCSCR,0,-1)
+        ELSE
+          CALL COPVCD_PAR_BDRIV4(CB,IBLOCKD,SSCLFAC,SCALFAC_LOCAL,
+     &                           IBLOCKL,NBLOCK,MPI_COMM_WORLD,LUC,
+     &                           0,-1)
+        END IF 
+*
+        CALL REWINO(LUCSCR)
+        
+        blocktime = blocktime + MPI_WTIME() - starttimer
+*
+      ENDIF
 * Loop over batches over sigma blocks
       DO 500 JBATS = 1, NBATS
+        ICOMPUTE = 0
+        ncblocks_used = 0
 *. Obtain sigma for batch of blocks
+        starttime = mpi_wtime()
+        sbatchtime = 0.0D0
+        writetime = 0.0D0
         MYLENSUM = 0
-        DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
-          LEN  = IBATS(8,ISBLK)
-          MYLENSUM = MYLENSUM + LEN
-        END DO
+        IF(IODENSEPAR.EQ.1) THEN
+          DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
+            LEN  = IBATS(8,ISBLK)
+            MYLENSUM = MYLENSUM + LEN
+          END DO
+        ELSE
+C         check whether a cpu needs to call SBLOCK_PAR
+          DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
+            IF(IBLOCKD(ISBLK).EQ.MYPROC) ICOMPUTE = 1
+          END DO
+          IF(ICOMPUTE.EQ.0) GOTO 60
+        ENDIF
         CALL SBLOCK_PAR(LBATS(JBATS),IBATS(1,I1BATS(JBATS)),1,
      &       CB,SB,LUC,0,0,0,0,0,MYLENSUM,NBLOCK,SSCLFAC,IBLOCKL,
-     &       IBLOCKD,I1BATS(JBATS))
+     &       IBLOCKD,I1BATS(JBATS),SCALFAC_LOCAL,LUCSCR)
 *. Transfer S block to permanent storage
-        DO 50 ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
-          IF(IBLOCKD(ISBLK).NE.MYPROC) GOTO 5
-          IATP = IBATS(1,ISBLK)
-          IBTP = IBATS(2,ISBLK)
-          IASM = IBATS(3,ISBLK)
-          IBSM = IBATS(4,ISBLK)
-          IOFF = IBATS(6,ISBLK)
-          LEN  = IBATS(8,ISBLK)
-C?      write(6,*) 'RASSG3 : IOFF, SB(IOFF)',IOFF,SB(IOFF)
-          CALL ITODS(LEN,1,-1,LUHC)
-          CALL TODSC(SB(IOFF),LEN,-1,LUHC)
-  5      CONTINUE
- 50     CONTINUE
+          starttimer = MPI_WTIME()
+          DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
+            IF(IBLOCKD(ISBLK).NE.MYPROC) GOTO 5
+            IOFF = IBATS(6,ISBLK)
+            LEN  = IBATS(8,ISBLK)
+            CALL ITODS(LEN,1,-1,LUHC)
+            CALL TODSC(SB(IOFF),LEN,-1,LUHC)
+  5         CONTINUE
+          END DO
+ 60       CONTINUE
+          writetime = writetime + MPI_WTIME() - starttimer
+          sbatchtime = sbatchtime + MPI_WTIME() - starttime
+          WALLTID = SECTID(writetime)
+          WALLTID2 = SECTID(sbatchtime)
+          IF(MYPROC.EQ.MASTER)THEN
+            WRITE(6,50000) WALLTID
+            WRITE(6,60000) WALLTID2,JBATS
+            WRITE(6,70000) ncblocks_used 
+          ELSE
+            WRITE(12,50000) WALLTID
+            WRITE(12,60000) WALLTID2,JBATS
+            WRITE(12,70000) ncblocks_used 
+          ENDIF
 500   CONTINUE
 *
 *. write an EOF-mark
         CALL ITODS(-1,1,-1,LUHC)
 *
+C       print the statistic for COPVCD_PAR_BDRIV3/4
+        IF(IODENSEPAR.EQ.2) WALLTID3 = SECTID(blocktime)
+        IF(MYPROC.EQ.MASTER)THEN
+          IF(IODENSEPAR.EQ.2) WRITE(6,80000) WALLTID3
+        ELSE
+          IF(IODENSEPAR.EQ.2) WRITE(12,80000) WALLTID3
+        ENDIF
+*
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Final S-vector on disc for myproc',myproc
         CALL WRTVCD(SB,LUHC,1,-1)
       END IF
-*
       CALL QEXIT('RASSG3_PAR')
+*
+50000 FORMAT(' >>>  WALL TIME FOR WRITING SB TO DISK           :
+     & ',A)
+60000 FORMAT(' >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :
+     & ',A,I4)
+70000 FORMAT(' >>>  NUMBER OF C-BLOCKS USED FOR COMPUTATION    :
+     & ',I4)
+80000 FORMAT(' >>>  WALL TIME FOR BROADCASTING C-COEFFICIENTS  :
+     & ',A)
+     
 *
       END
 ***********************************************************************
@@ -272,7 +374,7 @@ C?      write(6,*) 'RASSG3 : IOFF, SB(IOFF)',IOFF,SB(IOFF)
       SUBROUTINE SBLOCK_PAR(NBLOCK,IBLOCK,IBOFF,CB,HCB,LUC,IRESTRICT,
      &                      LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END,
      &                      LENSUM,NUMBLOCK,SSCLFAC,IBLOCKL,IBLOCKD,
-     &                      INSBLK)
+     &                      INSBLK,SCALFAC_LOCAL,LUCSCR)
 *
 * Generate a set of sigma blocks,
 * The NBLOCK specified in IBLOCK starting from IBOFF,
@@ -334,6 +436,7 @@ C?      write(6,*) 'RASSG3 : IOFF, SB(IOFF)',IOFF,SB(IOFF)
 *
       dimension XIJILS(MXTSOB)
       DIMENSION SSCLFAC(*),IBLOCKL(NUMBLOCK),IBLOCKD(NUMBLOCK)
+      DIMENSION SCALFAC_LOCAL(NUMBLOCK)
 *
       IDUM = 0
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'SBLCKP')
@@ -351,9 +454,6 @@ CTF   dimension SOMEH(MXTSOB*MXTSOB)
       IF(NTEST.GE.5)
      &WRITE(6,*) ' SBLOCK_PAR : ISSPC,ICSPC ', ISSPC,ICSPC
 C?    WRITE(6,*) ' LUC in SBLOCK ', LUC
-      IF(LUCBLK.GT.0) THEN
-        CALL REWINO(LUCBLK)
-      END IF
 *
 * Info for this internal space
 *. type of alpha and beta strings
@@ -545,11 +645,6 @@ C  I assume memory was allocated for blocks, so
       END DO
       CALL MEMMAN(KLZSCR,LZSCR,'ADDL  ',1,'KLZSCR')
 *
-      IF(I12.EQ.2) THEN
-        IDOH2 = 1
-      ELSE
-        IDOH2 = 0
-      END IF
 *. Place perturbation integrals over one body integrals
 CINSERT_START
       IF(I12.EQ.2) THEN
@@ -595,7 +690,7 @@ CINSERT_START
      &     LUCBLK,IPERTOP,IH0INSPC,WORK(KLH0SPC),
      &     ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,I_RES_AB,
      &     IUSE_PA,WORK(KCJPA),WORK(KSIPA),LENSUM,NUMBLOCK,
-     &     IBLOCKL,IBLOCKD,SSCLFAC,INSBLK)
+     &     IBLOCKL,IBLOCKD,SSCLFAC,INSBLK,SCALFAC_LOCAL,LUCSCR)
 *
       IF(IDC.EQ.2) THEN
 *. reform
@@ -609,9 +704,6 @@ CINSERT_START
      &              IDC,1,NTEST)
       END IF
 *
-      IF(LUCBLK.GT.0) THEN
-        CALL ITODS(-1,1,-1,LUCBLK)
-      END IF
 *. Eliminate local memory
       IDUM = 0
       CALL MEMMAN(IDUM ,IDUM,'FLUSM ',2,'SBLCKP')
@@ -640,7 +732,8 @@ CINSERT_START
      &           LUCBLK,IPERTOP,IH0INSPC,IH0SPC,
      &           ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,
      &           I_RES_AB,IUSE_PA,CJPA,SIPA,
-     &           ILENSUM,NUMBLOCK,IBLOCKL,IBLOCKD,SSCLFAC,INSBLK)
+     &           ILENSUM,NUMBLOCK,IBLOCKL,IBLOCKD,SSCLFAC,INSBLK,
+     &           SCALFAC_LOCAL,LUCSCR)
 *
 *
 * Direct RAS routine employing combined MOC/n-1 resolution method
@@ -728,18 +821,26 @@ CINSERT_START
       INTEGER IH0INSPC(*)
       DIMENSION CJRES(*),SIRES(*)
       DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
-      DIMENSION SCLFAC(*),SSCLFAC(*)
+      DIMENSION SCLFAC(*),SSCLFAC(*),SCALFAC_LOCAL(NUMBLOCK)
 * new scratch
-      INTEGER ILENSUM
-      INTEGER ISUMUP,REDGRP,JCOLOR,JKEY
+      INTEGER ILENSUM,JSIGMABLOCK
+      INTEGER ISUMUP,NREDGRP,JCOLOR,JKEY,INTERNALSIZE
       DIMENSION IBLOCKL(NUMBLOCK),IBLOCKD(NUMBLOCK) 
+      CHARACTER SECTID*12, WALLTID2*12, WALLTID*12
+      CHARACTER WALLTID3*12, WALLTID4*12,WALLTID5*12
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
 *.
       CALL QENTER('SBLOC')
 *
 *. create a new group for mpi_reduce at the end of all loops
 *
       ISUMUP = 0
+      JSIGMABLOCK = 0
 *
+CSK      IF(MYPROC.EQ.MASTER) THEN
+CSK       WRITE(6,*)'IRESTRICT is ',IRESTRICT
+CSK       CALL IWRTMA(ICONSPA,NOCTPA,NOCTPA,NOCTPA,NOCTPA)
+CSK      ENDIF
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
       IF(NTEST.GE.10) THEN
@@ -760,8 +861,13 @@ CINSERT_START
       END IF
 *
       IF(NTEST.GE.50) THEN
-        WRITE(6,*) ' Initial C vector '
-        CALL WRTVCD(CB,LUC,1,-1)
+        WRITE(6,*) ' Initial C vector of myproc',myproc
+        IF(IODENSEPAR.EQ.1) THEN
+          CALL WRTVCD(CB,LUC,1,-1)
+        ELSE
+          IF(IIOMOD.EQ.0) CALL WRTVCD(CB,LUCSCR,1,-1)
+        ENDIF
+CSK        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
       END IF
 * ===========================
 * 1 : Arrays for accessing C
@@ -775,7 +881,11 @@ CINSERT_START
      &              I1CBLOCK,ICBLOCK,0,ITTSS_ORD)
 *
 *. Get actual scalfac array from backup-array
-      CALL COPVEC(SSCLFAC,SCLFAC,NUMBLOCK)
+      IF(IODENSEPAR.EQ.1) THEN
+        CALL COPVEC(SSCLFAC,SCLFAC,NUMBLOCK)
+      ELSE
+        CALL COPVEC(SCALFAC_LOCAL,SCLFAC,NUMBLOCK)
+      END IF
 CSK      WRITE(6,*)'This is my sclfac',myproc
 CSK      CALL WRTMAT(SCLFAC,1,NUMBLOCK,1,NUMBLOCK)
 *
@@ -799,7 +909,12 @@ CSK      CALL WRTMAT(SCLFAC,1,NUMBLOCK,1,NUMBLOCK)
         MXEXC = 1
       END IF
 C?    WRITE(6,*) ' IDOH2, MXEXC',IDOH2,MXEXC
-      REWIND LUC
+      IF(IODENSEPAR.EQ.1) THEN
+        REWIND LUC
+      ELSE 
+        REWIND LUCSCR
+      END IF
+      
       IF(ICBAT_RES.EQ.1) THEN
         WRITE(6,*) ' Restricted set of C batches '
         WRITE(6,*) ' ICBAT_INI ICBAT_END', ICBAT_INI,ICBAT_END
@@ -810,6 +925,12 @@ C?    WRITE(6,*) ' IDOH2, MXEXC',IDOH2,MXEXC
         JCBAT_END = NCBATCH
       END IF
 *
+*
+      waittime   = 0.0d0
+      readtime   = 0.0d0
+      sigmatime  = 0.0d0
+      reducetime = 0.0d0
+      IOFFSET = 0
       DO 20000 JCBATCH = JCBAT_INI,JCBAT_END
 *
 *. Read C blocks into core
@@ -819,12 +940,13 @@ C?    WRITE(6,*) ' IDOH2, MXEXC',IDOH2,MXEXC
 *        IF(MYPROC.EQ.MASTER) THEN
 *          WRITE(6,*)'NJBLOCK (MYPROC) = ', NJBLOCK, MYPROC
 *        END IF
+        starttimer = mpi_wtime()
         DO JJCBLOCK = 1, NJBLOCK
           JBLOCK = I1CBLOCK(JCBATCH)-1+JJCBLOCK
+*. calculation of a certain block is node-dependent!
+          IF(IODENSEPAR.EQ.1.AND.IBLOCKD(JBLOCK).NE.MYPROC) GOTO 30
 *
           INTERACT = 0
-*. calculation of a certain block is node-dependent!
-          IF(IBLOCKD(JBLOCK).NE.MYPROC) GOTO 30
 *
           IF(SCLFAC(JBLOCK).EQ. 1.0D0) THEN
 C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, MYPROC
@@ -842,8 +964,13 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, MYPROC
             LLBTP = LBTP(IPERM)
 *.Loop over Sigma blocks in batch
             DO JSBLOCK = 1, NSBLOCK
+CSK            WRITE(6,*)'ISBLOCK(1,JSBLOCK)',ISBLOCK(1,JSBLOCK)
+CSK            WRITE(6,*)'JSBLOCK =',JSBLOCK
             IDENT = 0
             IF(ISBLOCK(1,JSBLOCK).GT.0) THEN
+              JSIGMABLOCK = INSBLK + JSBLOCK - 1
+              IF(IODENSEPAR.EQ.2.AND.MYPROC.NE.IBLOCKD(JSIGMABLOCK)) 
+     &          GOTO 25
               IATP = ISBLOCK(1,JSBLOCK)
               IBTP = ISBLOCK(2,JSBLOCK)
               IASM = ISBLOCK(3,JSBLOCK)
@@ -871,6 +998,7 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, MYPROC
               IF(IASM.EQ.JASM.AND.IATP.EQ.JATP.AND.
      &           IBSM.EQ.JBSM.AND.IBTP.EQ.JBTP) IDENT = 1
 *
+ 25           CONTINUE
             END IF
             END DO
           END DO
@@ -880,18 +1008,48 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, MYPROC
 *
           ISCALE = 0
           IF(INTERACT.EQ.1) THEN
-CSK            write(6,*)'read in start',myproc
-            CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
-     &                  NOCTPA,NOCTPB,NSSOA,NSSOB,PS,ICOOSC,IDC,
-     &                  PL,LUC,C2,NSMST,ISCALE,SCLFAC(JBLOCK))
+CSK             IF(MYPROC.EQ.MASTER+2) THEN
+CSK               WRITE(6,*) ' TTSS for C block read in  '
+CSK               CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
+CSK             ENDIF
+            IF(IODENSEPAR.EQ.1) THEN
+              CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
+     &                    NOCTPA,NOCTPB,NSSOA,NSSOB,PS,ICOOSC,IDC,
+     &                    PL,LUC,C2,NSMST,ISCALE,SCLFAC(JBLOCK))
+            ELSE
+              IF(IIOMOD.EQ.0) THEN
+                CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
+     &                      NOCTPA,NOCTPB,NSSOA,NSSOB,PS,ICOOSC,IDC,
+     &                      PL,LUCSCR,C2,NSMST,ISCALE,SCLFAC(JBLOCK))
+              ELSE
+                LBL = IBLOCKL(JBLOCK)
+                CALL MPI_FILE_READ_AT(MPILUSCR,IOFFSET,CB(JOFF),
+     &                                LBL,MPI_REAL8,ISTAT,IERR)
+                IOFFSET = IOFFSET + LBL
+CSK                WRITE(6,*)'IOFFSET',IOFFSET,MYPROC
+              ENDIF
+            ENDIF
               
 *. Note in GSTTBL : ICOOSC only used for CI vectors in core
           ELSE
 *. not relevant
 C             WRITE(6,*) ' TTSS for C block skipped  '
 C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
-            CALL IFRMDS(LBL,-1,1,LUC)
-            CALL SKPRCD2(LBL,-1,LUC)
+            IF(IODENSEPAR.EQ.1) THEN
+              CALL IFRMDS(LBL,-1,1,LUC)
+              CALL SKPRCD2(LBL,-1,LUC)
+            ELSE
+              IF(SCALFAC_LOCAL(JBLOCK).NE.0.0D0) THEN
+                IF(IIOMOD.EQ.0) THEN
+                  CALL IFRMDS(LBL,-1,1,LUCSCR)
+                  CALL SKPRCD2(LBL,-1,LUCSCR)
+                ELSE
+                  IOFFSET = IOFFSET + IBLOCKL(JBLOCK)
+CSK                  WRITE(6,*)'IOFFSET2',IOFFSET,MYPROC
+                END IF
+              END IF
+            END IF 
+C           mark c-block as unused
             SCLFAC(JBLOCK) = 0.0D0
           END IF
 *
@@ -908,11 +1066,15 @@ C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
  30       CONTINUE
 *
         END DO
+        readtime = readtime + mpi_wtime() - starttimer
+CSK        write(6,*)'problem here3?',myproc
 *
+        starttimer = mpi_wtime()
         DO 9000 ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK
 *
 *. calculation of a certain block is node-dependent!
-          IF(IBLOCKD(ICBLK).NE.MYPROC) GOTO 8999
+          IF(SCLFAC(ICBLK).NE.0.0D0) THEN
+          IF(IODENSEPAR.EQ.1.AND.IBLOCKD(ICBLK).NE.MYPROC) GOTO 8999
 
             JATP = ICBLOCK(1,ICBLK)
             JBTP = ICBLOCK(2,ICBLK)
@@ -922,7 +1084,6 @@ C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
             NJA = NSSOA(JASM,JATP)
             NJB = NSSOB(JBSM,JBTP)
 *
-            IF(SCLFAC(ICBLK).NE.0.0D0) THEN
 *. Other symmetry blocks that can be obtained from this block
               CALL PRMBLK(IDC,ISTRFL,JASM,JBSM,JATP,JBTP,PS,PL,
      &                    LATP,LBTP,LASM,LBSM,LSGN,LTRP,NPERM)
@@ -955,8 +1116,12 @@ CTF                   CALL SCALVE(CB(ICOFF),-1.0D0,LROW*LCOL)
                   END IF
                 END IF
 *
+                ncblocks_used = ncblocks_used + 1
                 DO 10000 ISBLK = 1, NSBLOCK
                 IF(ISBLOCK(1,ISBLK) .GT. 0 ) THEN
+                  JSIGMABLOCK = INSBLK + ISBLK - 1
+                  IF(IODENSEPAR.EQ.2.AND.MYPROC.NE.IBLOCKD(JSIGMABLOCK))
+     &              GOTO 10000
                   IATP = ISBLOCK(1,ISBLK)
                   IBTP = ISBLOCK(2,ISBLK)
                   IASM = ISBLOCK(3,ISBLK)
@@ -1083,6 +1248,7 @@ C?            END IF
  8888       CONTINUE
  8999       CONTINUE
  9000     CONTINUE
+      sigmatime = sigmatime + mpi_wtime() - starttimer
 *. /\ End of loop over C blocks in Batch
 *. End of loop over S blocks in batch
 20000   CONTINUE
@@ -1095,6 +1261,10 @@ C?            END IF
 *. every node writes its corresponding blcok on disk in 
 *. RASSG3!
 *
+      INTERNALSIZE = 0
+      IF(IODENSEPAR.eq.1) then
+CSK      WRITE(6,*)'ISUMUP,MYPROC',ISUMUP,MYPROC
+        starttimer = mpi_wtime()
 *.      only nodes that need the sblock
         DO JSB = INSBLK, NSBLOCK+INSBLK-1
           IF(IBLOCKD(JSB).EQ.MYPROC) ISUMUP = 1
@@ -1107,24 +1277,35 @@ C?            END IF
           JKEY = MYPROC
           JCOLOR = 3
         END IF
-        CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,JCOLOR,JKEY,REDGRP,IERR)
-        IF(ISUMUP.EQ.0) GOTO 20001
+        CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,JCOLOR,JKEY,NREDGRP,IERR)
+        CALL MPI_COMM_SIZE(NREDGRP,INTERNALSIZE,IERR)
+        IF(ISUMUP.EQ.0) GOTO 21000
 *. Reduce the sigma-vector to C2 with operation MPI_SUM 
-*. use MPI_REAL8 as datatype: NDATATYPE == 2 
-*. reduce to all nodes:       NREDTYPE == -1
+*. use MPI_REAL8 as datatype: NDATATYPE ==  2 
+*. reduce to all nodes:       NREDTYPE  == -1
         NDATATYPE = 2
         NREDTYPE = -1
 *
-        CALL REDVEC(SB,C2,ILENSUM,NDATATYPE,MPI_SUM,REDGRP,NREDTYPE)
+        waittime = waittime + mpi_wtime() - starttimer
+        starttimer = MPI_WTIME()
+          CALL REDVEC(SB,C2,ILENSUM,NDATATYPE,MPI_SUM,NREDGRP,NREDTYPE)
+CSK          INTERNALSIZE = NMPROC
+CSK          CALL REDVEC(SB,C2,ILENSUM,2,MPI_SUM,MPI_COMM_WORLD,NREDTYPE)
+        reducetime = reducetime + MPI_WTIME() - starttimer
 *
-20001   CONTINUE
-        CALL MPI_COMM_FREE(REDGRP,IERR)
-        IF(ISUMUP.EQ.0) GOTO 20002
-*. sigma-vecor is expected to reside an SB ...
+21000   CONTINUE
+CSKCSK        CALL MPI_COMM_FREE(NREDGRP,IERR)
+        IF(ISUMUP.EQ.0) GOTO 22000
+*. sigma-vecor is expected to reside on SB ...
         CALL COPVEC(C2,SB,ILENSUM)
+      end if
+C    /\ IODENSEPAR = 1
 *. Order the fresh sigma-vector
       DO  ISBLK = 1 , NSBLOCK
         IF(ISBLOCK(1,ISBLK).GT.0) THEN
+CSK          JSIGMABLOCK = INSBLK + ISBLK - 1
+CSK          IF(IODENSEPAR.EQ.2.AND.MYPROC.NE.IBLOCKD(JSIGMABLOCK))
+CSK     &      GOTO 21500
           IATP = ISBLOCK(1,ISBLK)
           IBTP = ISBLOCK(2,ISBLK)
           IASM = ISBLOCK(3,ISBLK)
@@ -1143,9 +1324,10 @@ C?            END IF
           IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP)
      &    CALL TRPAD3(SB(ISOFF),PS,NSSOA(IASM,IATP))
 *
+21500     CONTINUE
         END IF
       END DO
-20002   CONTINUE
+22000   CONTINUE
 *
       IF(NTEST.GE.50) THEN
         WRITE(6,*) ' output blocks from SBLOCKS for myproc',MYPROC
@@ -1153,8 +1335,36 @@ C?            END IF
      &              NSMST,NOCTPA,NOCTPB,NSSOA,NSSOB,1)
       END IF
 *
+          WALLTID2  = SECTID(waittime)
+          WALLTID = SECTID(reducetime)
+          WALLTID3 = SECTID(readtime)
+          WALLTID4 = SECTID(sigmatime)
+          IF(MYPROC.EQ.MASTER)THEN
+            WRITE(6,50000) WALLTID3
+            WRITE(6,60000) WALLTID4
+            IF(IODENSEPAR.EQ.1) THEN
+              WRITE(6,40000) WALLTID2
+              WRITE(6,30000) WALLTID,ILENSUM,INTERNALSIZE
+            END IF
+          ELSE
+            WRITE(12,50000) WALLTID3
+            WRITE(12,60000) WALLTID4
+            IF(IODENSEPAR.EQ.1) THEN
+              WRITE(12,40000) WALLTID2
+              WRITE(12,30000) WALLTID,ILENSUM,INTERNALSIZE
+            END IF
+          ENDIF
       CALL QEXIT('SBLOC')
+      RETURN
 *
+30000 FORMAT(' >>>  WALL TIME FOR REDUCING THE SVEC OF L W CPUs:
+     & ',A,I12,I4)
+40000 FORMAT(' >>>  WALL TIME FOR WAITING TO REDUCE THE S-VEC  :
+     & ',A)
+50000 FORMAT(' >>>  WALL TIME FOR READING AND SKIPPING C-BLOCKS:
+     & ',A)
+60000 FORMAT(' >>>  WALL TIME FOR COMPUTING THE S-VECTOR       :
+     & ',A)
       END
 #else
 ***********************************************************************
