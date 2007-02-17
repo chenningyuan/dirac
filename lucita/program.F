@@ -89,6 +89,7 @@ C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
       dimension ISYMS(MXPIRR)
+      INTEGER IDISTROUTE
 *
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GASCI ')
       NTEST = 0
@@ -339,6 +340,7 @@ C?      WRITE(6,*) ' MAXB1 2', MAXB1
      &  WRITE(LUWRTOUT,*) ' Space for resolution matrices ',LSCR2
 *. for Passive/active division
         LSCR12 = MAX(LBLOCK,2*LSCR2)
+        WRITE(LUWRTOUT,*) 'LSCR12 is max(LBLOCK,2*LSCR2) is ',LSCR12
 C       LSCR12 = MAX(LBLOCK,4*LSCR2)
         CALL MEMMAN(KVEC3,LSCR12,'ADDL  ',2,'KC2   ')
       END IF
@@ -347,22 +349,52 @@ CSK         WRITE(6,*)'LBLOCK = ',LBLOCK
 CSK      END IF
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
-CSK new variable
+* let us check the connections between sigma and c-blocks
       CALL MEMMAN(KBSCLFC,NBLOCK,'ADDL  ',2,'BSCLFC')
       CALL MEMMAN(KBLCKIF,NBLOCK,'ADDS  ',1,'IBLINF')
+      CALL COPVEC(WORK(KLCI1BT),WORK(KBLCKIF),NBLOCK)
+      CALL MEMMAN(KICCTOS,NBLOCK**2,'ADDS  ',1,'ICCTOS')
+      CALL ISETVC(WORK(KICCTOS),NNULL,NBLOCK**2)
+#if defined (VAR_MPI)
+      CALL MEMMAN(KIBTOTW,NBLOCK,'ADDS  ',2,'IBTOTW')
+      CALL MEMMAN(KCWEIGHT,NBLOCK,'ADDS  ',1,'ICWHT  ')
+      CALL MEMMAN(KCWEIGHTF,NBLOCK,'ADDS  ',1,'ICWHTF  ')
+      CALL ISETVC(WORK(KCWEIGHT),NNULL,NBLOCK)
+      CALL ISETVC(WORK(KCWEIGHTF),NNULL,NBLOCK)
+      CALL FIND_IMAT_SC(WORK(KBLCKIF),WORK(KBSCLFC),WORK(KICCTOS),
+     &                  WORK(KCWEIGHT),WORK(KIBTOTW),WORK(KCWEIGHTF),
+     &                  NBLOCK)
+#endif
+C     allocation of c <--> sigma connection matrix,
+C     block distribution among cpu's (parallel run),
+C     and some scratch arrays needed for communication in the 
+C     diagonalizer
       CALL MEMMAN(KBLCKPD,NBLOCK,'ADDS  ',1,'IBLCKP')
       CALL MEMMAN(KBLCKWT,2*NMPROC,'ADDS  ',1,'IBLCKW')
-      CALL COPVEC(WORK(KLCI1BT),WORK(KBLCKIF),NBLOCK)
       CALL ISETVC(WORK(KBLCKWT),NNULL,2*NMPROC)
+      IMIN2 = -2
+      CALL ISETVC(WORK(KBLCKPD),IMIN2,NBLOCK)
       IMAXALLO = MAX(MXCIV**2,MXCIV*(MXCIV+1)/2)
-      CALL MEMMAN(KSCRREDSP,IMAXALLO,'ADDL  ',2,'SCRRED')
-      
+      CALL MEMMAN(KSCRREDSP,2*IMAXALLO,'ADDL  ',2,'SCRRED')
+CSK
 *
 *. CI diagonal - if required
+CSK       WRITE(6,*)'ICISTR',ICISTR
+      IF(MYPROC.EQ.MASTER) WRITE(6,'(1X,A,1X,I10)')
+     & 'largest block in CI-expansion',LBLOCK
 *
 #if defined (VAR_MPI)
+      IDISTROUTE = 2
       IF(IODENSEPAR.GT.0) THEN
-        CALL DISTBLKND(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),WORK(KBLCKWT))
+        IF(IDISTROUTE.EQ.1) THEN
+          CALL DISTBLKND(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
+     &                   WORK(KBLCKWT))
+*. DISTBLKND_2 is only working if PRINT_BATCH_INFO in FIND_IMAT_SC is enabled!
+*:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ELSE
+          CALL DISTBLKND_2(NBLOCK,WORK(KICCTOS),WORK(KCWEIGHTF),
+     &                     WORK(KBLCKPD),WORK(KIBTOTW),WORK(KBLCKWT))
+        END IF
       END IF
 #endif
       IF(IDIAG.EQ.2) THEN
@@ -499,7 +531,7 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
      &     LBLOCK,IROOTHOMING,WORK(KLBASSPC),WORK(KLEBASC),
      &     WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,ISPC,LUWRTOUT,
      &     WORK(KBSCLFC),WORK(KBLCKIF),NBLOCK,WORK(KBLCKPD),
-     &     WORK(KBLCKWT),WORK(KSCRREDSP))
+     &     WORK(KBLCKWT),WORK(KSCRREDSP),WORK(KICCTOS))
       EREF = EROOT(IRFROOT)
 C?    WRITE(6,*) ' Memcheck after CIEIG5'
 C?    CALL MEMCHK
@@ -866,13 +898,13 @@ C      CALL SLASK
 C     Add the master node
       NMPROC = NUMNOD + 1
 CSK   we want to use the new parallel version per default
-      IODENSEPAR = 1
+CSK      IODENSEPAR = 1
 #else
       MASTER = 0
       MYPROC = 0
       NMPROC = 1
 *
-      IODENSEPAR = 0
+CSK      IODENSEPAR = 0
 #endif
 C
       IN = IUNIN
@@ -928,7 +960,11 @@ c     call hello
 * ======================================================
       CALL INPCTL(LUIN,LUCMOL,LUOUT)
 C
+CSK
+*. TEST VALUE FOR LCSBLK
+CSK      LCSBLK = 9000000
 *
+CSK
 *. set some parallel variables to default for sequential runs 
       IF(IRUNPA.EQ.0) THEN
         IRTNDRAT = 0
@@ -937,7 +973,8 @@ C
       ELSE IF(IRUNPA.GT.0.AND.IODENSEPAR.EQ.0)THEN
         IF(NMPROC.EQ.1) WRITE(6,*) 'This parallel 
      & version is not running for one CPU!'
-        CALL Abend2('Sorry, I need more than one CPU to run this 
+        IF(NMPROC.EQ.1) 
+     & CALL Abend2('Sorry, I need more than one CPU to run this 
      & version in parallel')
       END IF
 *
@@ -1361,7 +1398,7 @@ C
       CHARACTER*72 LASTCARD
       COMMON/CTITLE/TITLEC(3)
       CHARACTER*6 KEYWOR
-      PARAMETER(MXPKW = 97)
+      PARAMETER(MXPKW = 98)
       DIMENSION KEYWOR(MXPKW)
       DIMENSION ISETKW(MXPKW)
 *. Local scratch for decoding multi-item lines, atmost 32 items per line
@@ -1387,7 +1424,7 @@ C
      &     'TRAPRP','RESPON','MXITLE','IPRRSP','RTHOME',
      &     'USE_PH','ADVICE','TRACI ','USE_PS','PTFOCK',
      &     'PRNCIV','RES_CC','TRA_FI','TRA_IN','MUL_SP',
-     &     'RELAX ','EXPERT'/
+     &     'RELAX ','EXPERT','PARMOD'/
 
 *
       INTEGER CITYP
@@ -3273,6 +3310,14 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
       IF(CARD(2:7).EQ.'EXPERT') THEN
          ISETKW(97) = 1
          IEXPERT= 1
+         GOTO 999
+      END IF
+* ====================================================================
+* 98 : Use of parallel scheme
+* ====================================================================
+      IF(CARD(2:7).EQ.'PARMOD') THEN
+         READ(LUCMOL,*) IPARMODEL
+         ISETKW(98) = 1
          GOTO 999
       END IF
 *
@@ -5372,11 +5417,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 *     ITASK = 5 for parallel LUCITA
 *
       IF (PARCAL) CALL DIRAC_PARCTL( 5 )
-      IF (PARCAL) THEN
-         IRUNPA = 1
-      ELSE
-         IRUNPA = 0
-      END IF
+CSK      IF (PARCAL) THEN
+CSK         IRUNPA = 1
+CSK      ELSE
+CSK         IRUNPA = 0
+CSK      END IF
 *      write(6,*)'irunpa =',irunpa
 *
       RETURN
@@ -5485,7 +5530,7 @@ C     Add the master node, NUMNOD = number of slaves
 *
 *     let the nodes know that we perform a parallel run! --> why?
 *     well, that's the way it goes !
-      IRUNPA = 1
+CSK      IRUNPA = 1
 *
 *     create a node-unique filename as output file. Important on
 *     shared file systems. Otherwise all the output gets mingled in one
