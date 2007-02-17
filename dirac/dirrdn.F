@@ -2457,7 +2457,8 @@ C
       DATA TABLE /'.TITLE ','.INIWFC','.CITYPE','.NROOTS','.SYMMET',
      &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
-     &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE'/
+     &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
+     &            '.PARMOD','.PIOMOD','.MAXITR','XXXXXXX','XXXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2495,7 +2496,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18,19,20), I
+     &                     11,12,13,14,15,16,17,18,19,20,21,22,23), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -2615,6 +2616,21 @@ C&&& RSTRCI: Restart option from CI vector
 C&&& MXCIVE: Maximum number of subspace CI vectors
                   READ(LUCMD,*) MXCIVE
                   IMOKW(20) = 1
+               GO TO 100
+   21          CONTINUE
+C&&& IPARMODEL: Parallel model to use for diagonalization
+                  READ(LUCMD,*) IPARMODEL
+                  IMOKW(21) = 1
+               GO TO 100
+   22          CONTINUE
+C&&& IPARIOMOD: Parallel I/O model to use in diagonalization
+                  READ(LUCMD,*) IPARIOMOD
+                  IMOKW(22) = 1
+               GO TO 100
+   23          CONTINUE
+C&&& ICIMAXITER: Maximum number of CI Iterations
+                  READ(LUCMD,*) ICIMAXITER
+                  IMOKW(23) = 1
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
