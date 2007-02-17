@@ -48,7 +48,7 @@ C
      &           CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,ICLS_A2,MXLNG,
      &           IROOTHOMING,IBASSPC,EBASC,CBASC,NSPC,
      &           MULSPC,IPAT,LPAT,ISPC,LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKI,
-     &           IBLKDSTND,IBLKNDNB,SCRRED)
+     &           IBLKDSTND,IBLKNDNB,SCRRED,ICCTOS)
 *
 * Master routine for CI diagonalization
 *
@@ -74,7 +74,7 @@ C     DIMENSION INIDET(100)
 *. Output from Subspace dagonalization
       DIMENSION H0(*),IPNTR(*),H0SCR(*),PEIGVC(*)
 *.
-      DIMENSION EROOT(NROOT)
+      DIMENSION EROOT(NROOT),ICCTOS(IBLKI,IBLKI)
 C
 *
       IF( IPRT.GT. 1 )  WRITE(6,'(/A)')
@@ -290,7 +290,7 @@ C?       WRITE(6,*) ' MICDV6_PAR will be called '
      &                     SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &                     H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
      &                     LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKDSTND,IBLKI,
-     &                     SCRRED)
+     &                     SCRRED,ICCTOS)
 #endif
           END IF
         ELSE
