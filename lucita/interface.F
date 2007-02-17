@@ -110,8 +110,8 @@ C
       parameter (MXPLNC = 72)
       dimension IMOKW(NTABLE)
       character*1 CRDHEL
-      character*3 SCR3
-      character*8 PERFORMCI
+      character*3 SCR3,YESSTATEMENT
+      character*10 PERFORMCI
       character*4 COMMAND,CMD(NCMD)
       character*6 SCR6,MOLUCENV
       character*72 LINE,CARD(MXPNGAS),CARD2(MXPNGAS,MXPICI),CARD3(5)
@@ -134,13 +134,6 @@ C
 *     IMOKW(N) = 2           keyword has been set to default value
 *     IMOKW(N) = 3           keyword ignored, default is used
 *
-*
-*
-      if(irunpa.eq.1) then
-        performci = 'parallel'
-      else if(irunpa.eq.0) then
-        performci = 'serial'
-      endif
 *
 *
 *  1: Default Title
@@ -475,6 +468,94 @@ C
          IRSTRT = IRSTLT
       end if
 *
+* 21: Type of parallel calculation
+*
+      if (IMOKW(21).eq.0) then
+#if defined (VAR_MPI)
+         IODENSEPAR = 1
+         IRUNPA = 1
+         IMOKW(21) = 2
+#else
+         IODENSEPAR = 0
+         IRUNPA = 0
+         IMOKW(21) = 2
+#endif
+      else if (IMOKW(21).eq.1) then
+#if defined (VAR_MPI)
+         if (IPARMODEL.GT.2) then
+            write(6,*) 'Keyword PARMOD not compatible with input ',
+     &                  IPARMODEL
+            write(6,*) 'I will ignore your input.'
+            write(6,*) 'Program will continue.'
+            IMOKW(21) = 3
+            IPARMODEL = 0
+         endif  
+         IF(IPARMODEL.EQ.0)THEN
+           IODENSEPAR = 1
+           IRUNPA = 1
+         ELSE IF(IPARMODEL.EQ.1) THEN
+           IODENSEPAR = 2
+           IRUNPA = 1
+         ELSE IF(IPARMODEL.EQ.2) THEN
+           IODENSEPAR = 0
+           IRUNPA = 1
+         END IF
+#else
+         write(6,*) 'Keyword PARMOD does not make sense in a sequential
+     & run. I will ignore and continue.'
+         IODENSEPAR = 0
+         IRUNPA = 0
+         IMOKW(21) = 3
+#endif
+      end if
+*
+* 22: Type of I/O model in parallel calculation
+*
+      if (IMOKW(22).eq.0) then
+         IIOMOD = 0
+         IMOKW(22) = 2
+      else if (IMOKW(22).eq.1) then
+#if defined (VAR_MPI)
+        if(IPARIOMOD.eq.0) then
+          IIOMOD = 0
+        else if(IPARIOMOD.eq.1) then
+          IIOMOD = 1
+          YESSTATEMENT = 'Yes'
+        else
+          write(6,*) 'Keyword PIOMOD not compatible with input ',
+     &                IPARIOMOD
+          write(6,*) 'I will ignore your input.'
+          write(6,*) 'Program will continue.'
+          IMOKW(22) = 3
+          IIOMOD = 0
+        end if
+#else
+         write(6,*) 'Keyword PIOMOD does not make sense in a sequential
+     & run. I will ignore and continue.'
+         IIOMOD = -1
+         IMOKW(22) = 3 
+#endif
+      end if
+*
+* 23: Number of maximum CI Iterations
+*
+      if (IMOKW(23).eq.0) then
+         IMAXCIITER = 100
+         IMOKW(23) = 2
+      else if (IMOKW(23).eq.1) then
+         if(ICIMAXITER.le.0) then
+           IMAXCIITER = 100
+         else
+           IMAXCIITER = ICIMAXITER
+         end if
+      end if
+*
+      if(irunpa.eq.1) then
+        performci = 'parallel'
+      else if(irunpa.eq.0) then
+        performci = 'sequential'
+      endif
+*
 *
 *-----------------------------------------------------------------*
 *  Print section
@@ -556,6 +637,24 @@ C
       write(LUOUT,'(A42,A8)')
      &  ' Running the CI calculation ........... ',performci
       write(LUOUT,*)
+*
+*
+* 10c: runtype of parallel calculation
+*
+      if(irunpa.gt.0)then
+        write(LUOUT,'(A42,I3)')
+     &  ' Applying parallel scheme ............. ',iparmodel
+        write(LUOUT,*)
+      endif
+*
+*
+* 10d: runtype of parallel calculation
+*
+      if(iiomod.gt.0)then
+        write(LUOUT,'(A42,A3)')
+     &  ' Using MPI-FILE I/O ................... ',YESSTATEMENT
+        write(LUOUT,*)
+      endif
 *
 * 11: INAC specification of inactive orbitals per symmetry
 *
@@ -4206,7 +4305,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
       character*6 MACHINE
       character*72 TITLE(MXTIT),HESTR
       CHARACTER LUCIAIN_MPIN*7, NLUCIAIN_MPI*11
-      INTEGER LUCIAIN_MPIL
+      INTEGER LUCIAIN_MPIL,ISCRVAR
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
       data KOMMA /1H,/
 *
@@ -4339,6 +4438,14 @@ CTF      write(*,'(1X,A6)') MACHINE
          if (CALSIZ.ne.'NOR') then
             write(*,'(A6)') 'CLSSEL'
          end if
+         if(irunpa.eq.0)then
+           write(*,'(A6)') 'PARMOD'
+           ISCRVAR = -1
+           write(*,'(1X,I3,A)') ISCRVAR
+         else 
+           write(*,'(A6)') 'PARMOD'
+           write(*,'(1X,I3,A)') IPARMODEL 
+         endif
 *
          write(*,'(A12)') 'END OF INPUT'
 *
@@ -4490,6 +4597,15 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
          if (CALSIZ.ne.'NOR') then
             write(LUINP,'(A6)') 'CLSSEL'
          end if
+*
+         if(irunpa.eq.0)then
+           write(LUINP,'(A6)') 'PARMOD'
+           ISCRVAR = -1
+           write(LUINP,'(1X,I3)') ISCRVAR
+         else 
+           write(LUINP,'(A6)') 'PARMOD'
+           write(LUINP,'(1X,I3)') IPARMODEL 
+         endif
 *
          write(LUINP,'(A12)') 'END OF INPUT'
 *
@@ -4746,10 +4862,10 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 100
+          MAXIT = IMAXCIITER
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
         end if
@@ -5085,10 +5201,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 100
+          MAXIT = IMAXCIITER
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
         end if
@@ -5423,10 +5539,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 100
+          MAXIT = IMAXCIITER
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
         end if
@@ -5573,10 +5689,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 100
+          MAXIT = IMAXCIITER
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
         end if
@@ -5769,10 +5885,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 100
+          MAXIT = IMAXCIITER
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
         end if
@@ -6454,6 +6570,7 @@ CSK      call lmemchk
 *
       NTIT = 0
 *
+*
       call qenter('ReadIn')
 *
 *---  Read input from standard input ----------------------------------*
@@ -6848,6 +6965,7 @@ CSK      call lmemchk
 *
       if (IMOKW(10).eq.0) then
          CALSIZ = 'NOR'
+         IMAXCIITER = 100
          IMOKW(10) = 2
       else
          if (CALSIZ.ne.'NOR'.and.CALSIZ.ne.'LAR'.and.
@@ -6856,6 +6974,8 @@ CSK      call lmemchk
            write(6,*) 'This is an unknown type.'
            Call Abend2('Quitting.')
          end if
+         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') IMAXCIITER = 100
+         if (CALSIZ.eq.'HUG') IMAXCIITER = 50
       end if
 *
 * 11: Orbital distribution in inactive space (no defaults if RASCI)
