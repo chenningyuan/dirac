@@ -377,6 +377,207 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE COPVCD_PAR_BDRIV3(SEGMNT,IBLOCKD,SCALFAC,
+     &                             SCALFAC_LOCAL,IBLOCKL,NBLOCK,JCOMM,
+     &                             LUIN,LUOUT,IREW,LBLK)
+*
+* Read blocks of the vector from disc file luin to array segment
+* and broadcast to nodes that need the block, save on diskfile luout 
+* if necessary. 
+* Using communicator jcomm.
+* OUTPUT: Blocks on LUOUT, modified SCALFAC_LOCAL.
+*
+* Stefan Knecht, Odense, Feb07
+*
+* LBLK DEFINES STRUCTURE OF FILE
+*
+* Type of file LUOUT is inherited from LUIN
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+      DIMENSION SEGMNT(*),IBLOCKD(NBLOCK),IBLOCKL(NBLOCK)
+      DIMENSION SCALFAC(NBLOCK),SCALFAC_LOCAL(NBLOCK)
+*
+      IF( IREW .NE. 0 ) THEN
+          CALL REWINE( LUOUT ,LBLK)
+          CALL REWINE( LUIN ,LBLK)
+      END IF
+C
+C LOOP OVER BLOCKS
+C
+      DO IBLK = 1, NBLOCK 
+C        check if block is active
+        IF(SCALFAC(IBLK).NE.0.0D0)THEN
+*
+          IF(IBLOCKD(IBLK).EQ.MYPROC)THEN
+*
+            CALL IFRMDS(LBL,1,-1,LUIN)
+CSK            IF(LBLK .GE.0 ) THEN
+CSK              KBLK = LBL
+CSK            ELSE
+              KBLK = -1
+CSK            END IF
+            NO_ZEROING = 1
+*
+C           read block in memory
+            CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                   NO_ZEROING)
+C           check for consistency
+            IF(LBL.NE.IBLOCKL(IBLK)) THEN
+              WRITE(6,*)'Error detected in subroutine COPVCD_PAR_BDRIV3.
+     &        Length of block in memory does not fit with the listed 
+     &        block length, so I stop!'
+               CALL Abend2('Error in subroutine COPVCD_PAR_BDRIV3!')
+            END IF
+*
+          END IF
+*
+          LBL = IBLOCKL(IBLK)
+*
+C         broadcast the nonvanishing block
+          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,IBLOCKD(IBLK),
+     &                   JCOMM,IERR)
+C         some test writing, enable for debugging!        
+CSK          IF(MYPROC.NE.IBLOCKD(IBLK)) THEN
+CSK            WRITE(6,*)'THIS IS WHAT I GOT',MYPROC
+CSK            CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
+CSK          END IF
+C         transfer the recieved block to disk if necessary
+          IF(SCALFAC_LOCAL(IBLK).NE.0.0D0) THEN 
+            KBLK = -1
+            CALL ITODS(LBL,1,-1,LUOUT)
+            CALL TODSC(SEGMNT,LBL,KBLK,LUOUT)
+          END IF
+*
+        ELSE 
+*
+          IF(IBLOCKD(IBLK).EQ.MYPROC)THEN
+C           skip over this block
+            CALL IFRMDS(LBL,1,-1,LUIN)
+            NO_ZEROING = 1
+            KBLK = -1
+            CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                   NO_ZEROING)
+          END IF
+C         set local scalfac to 0.0D0
+          SCALFAC_LOCAL(IBLK) = 0.0D0
+*
+        END IF
+*
+      END DO
+C     write an EOF-mark
+      CALL ITODS(-1,1,-1,LUOUT)
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COPVCD_PAR_BDRIV4(SEGMNT,IBLOCKD,SCALFAC,
+     &                             SCALFAC_LOCAL,IBLOCKL,NBLOCK,JCOMM,
+     &                             LUIN,IREW,LBLK)
+*
+* Read blocks of the vector from disc file luin to array segment
+* and broadcast to nodes that need the block, save on diskfile luout 
+* if necessary. 
+* Using communicator jcomm.
+* OUTPUT: Blocks on LUOUT, modified SCALFAC_LOCAL.
+*
+* Stefan Knecht, Odense, Feb07
+*
+* LBLK DEFINES STRUCTURE OF FILE
+*
+* Type of file LUOUT is inherited from LUIN
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+      DIMENSION SEGMNT(*),IBLOCKD(NBLOCK),IBLOCKL(NBLOCK)
+      DIMENSION SCALFAC(NBLOCK),SCALFAC_LOCAL(NBLOCK)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+*
+      IF(IREW.NE.0) THEN
+        CALL REWINE(LUIN,LBLK)
+      END IF
+C     file offset for each cpu is 0
+      IOFFSET = 0
+C
+C LOOP OVER BLOCKS
+C
+      DO IBLK = 1, NBLOCK 
+C        check if block is active
+        IF(SCALFAC(IBLK).NE.0.0D0)THEN
+*
+          IF(IBLOCKD(IBLK).EQ.MYPROC)THEN
+*
+            CALL IFRMDS(LBL,1,-1,LUIN)
+CSK            IF(LBLK .GE.0 ) THEN
+CSK              KBLK = LBL
+CSK            ELSE
+              KBLK = -1
+CSK            END IF
+            NO_ZEROING = 1
+*
+C           read block in memory
+            CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                   NO_ZEROING)
+C           check for consistency
+            IF(LBL.NE.IBLOCKL(IBLK)) THEN
+              WRITE(6,*)'Error detected in subroutine COPVCD_PAR_BDRIV4.
+     &        Length of block in memory does not fit with the listed 
+     &        block length, so I stop!'
+               CALL Abend2('Error in subroutine COPVCD_PAR_BDRIV4!')
+            END IF
+*
+          END IF
+*
+          LBL = IBLOCKL(IBLK)
+*
+C         broadcast the nonvanishing block
+          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,IBLOCKD(IBLK),
+     &                   JCOMM,IERR)
+C         some test writing, enable for debugging!        
+CSK          IF(MYPROC.NE.IBLOCKD(IBLK)) THEN
+CSK            WRITE(6,*)'THIS IS WHAT I GOT',MYPROC
+CSK            CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
+CSK          END IF
+C         transfer the recieved block to disk if necessary
+          IF(SCALFAC_LOCAL(IBLK).NE.0.0D0) THEN 
+            KBLK = -1
+            CALL MPI_FILE_WRITE_AT(MPILUSCR,IOFFSET,SEGMNT,LBL,
+     &                             MPI_REAL8,ISTAT,IERR)
+            IOFFSET = IOFFSET + LBL
+          END IF
+*
+        ELSE 
+*
+          IF(IBLOCKD(IBLK).EQ.MYPROC)THEN
+C           skip over this block
+            CALL IFRMDS(LBL,1,-1,LUIN)
+            NO_ZEROING = 1
+            KBLK = -1
+            CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                   NO_ZEROING)
+          END IF
+C         set local scalfac to 0.0D0
+          SCALFAC_LOCAL(IBLK) = 0.0D0
+*
+        END IF
+*
+      END DO
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
       SUBROUTINE DISTBLKND(NDIM,NBLOCKL,NPARBLOCK,NPARBLKWT)
 *
 *. Find distribution for (nonvanishing blocks) among the nodes
@@ -524,10 +725,15 @@ CSK      NTEST = 10
 500   CONTINUE
 CSK      IF(NTEST.GT.0) THEN
         IF(MYPROC.EQ.MASTER) THEN
-          WRITE(LUDUMPF,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
+CSK          WRITE(LUDUMPF,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
+CSK     &    MYPROC:',MYPROC
+          WRITE(6,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
      &    MYPROC:',MYPROC
           DO ISTI = 1, IMINNP
-            WRITE(LUDUMPF,'(3X,A,I17,A,I17,A,1X,I17)')
+CSK            WRITE(LUDUMPF,'(3X,A,I17,A,I17,A,1X,I17)')
+CSK     &      'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
+CSK     &      ' blocks with a total length of',NPARBLKWT(2,ISTI)
+            WRITE(6,'(3X,A,I17,A,I17,A,1X,I17)')
      &      'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
      &      ' blocks with a total length of',NPARBLKWT(2,ISTI)
           END DO
@@ -535,6 +741,222 @@ CSK      IF(NTEST.GT.0) THEN
 CSK      END IF
 1001  CONTINUE
 *      
+      END 
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE DISTBLKND_2(NDIM,ICCTOS,ICWEIGHTF,NPARBLOCK,NBLKWT)
+*
+*. Find distribution for (nonvanishing blocks) among the nodes
+*. Non vanishing block has a nonzero blocklength
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+*. input
+* NNJJJBLK: total number of c-blocks
+* NTEMPP: number of processes available for the distribution
+* ICSBTCHB(NNJJJBLK): total length of each block
+*. output
+* IDISTLIST(NNJJJBLK): list containing the number of a node  
+* that computes the block
+*
+      INTEGER ICOUNTABLK, NTEST,MWEIGHT
+      INTEGER*8 ITOTBLCKL,MMPINFA
+      DIMENSION ICCTOS(NDIM,NDIM),ICWEIGHTF(NDIM)
+      DIMENSION NPARBLOCK(NDIM),NBLKWT(NDIM),MMPINFA(NMPROC)
+      DIMENSION MWEIGHT(NMPROC)
+*.scratch
+* MXSIZE: actual maximum size for one of all blocks
+* MXNUMB: number of the current largest block
+*   MMPINFA(*,1): total number of blocks for the n-th proc
+*   MMPINFA(*,2): total length ('weight') of the blocks
+      INTEGER*8 MXSIZE, MXSZTMP, ITEMPL, ITEMPW1, ITEMPW2,ILEN
+      INTEGER ITEMPN, IAMGPROC, IAMTPROC, MXNUMB, IRUN
+*
+      NTEST = 0
+      ICOUNTABLK = 0
+      MXSIZE = 0
+      MXSZTMP = 0
+      MXNUMB = 0
+      IRUN = 0
+      ITEMPW1 = 0
+      ITEMPW2 = 0
+      ITEMPN = 0
+      ITEMPL = 0
+      IAMGPROC = 0
+      IAMTPROC = 0
+      ITOTBLCKL = 0
+      DO I = 1, NMPROC
+        MMPINFA(I) = 0
+        MWEIGHT(I) = 0
+      END DO
+*. end of initializtion
+      DO ICBL = 1, NDIM
+*
+        ILEN = NBLKWT(ICBL)
+        IF(ILEN.NE.0) THEN
+           ICOUNTABLK = ICOUNTABLK + 1
+           ITOTBLCKL = ITOTBLCKL + ILEN
+           NPARBLOCK(ICBL) = -1
+        END IF
+        IF(ILEN.GE.MXSIZE) MXSIZE = ILEN
+*
+      END DO
+*
+CSK      WRITE(6,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
+      ITEMPW1 = MXSIZE
+*
+      IF(NTEST.GT.0) THEN
+       IF(MYPROC.EQ.0) THEN
+         WRITE(6,*) '  total number of processes to distribute on:',
+     &                 NMPROC
+         WRITE(6,*) '  total number of active blocks:', ICOUNTABLK
+         WRITE(6,*) '  overall active block length:', ITOTBLCKL
+       END IF
+      END IF
+*
+      IMINNP = NMPROC
+      NTEMPP = IMINNP
+      IF(ICOUNTABLK.LT.NMPROC) THEN
+        IMINNP = MIN(ICOUNTABLK,IMINNP)
+        IF(NTEST.EQ.0) THEN
+          IF(MYPROC.EQ.0) THEN
+            WRITE(6,*) 'subroutine FIND_SBATCH_DISTR speaking!'
+            WRITE(6,*) 'number of active blocks lower than number of
+     & procs --> I only use',IMINNP,'procs'
+          END IF
+        END IF
+        NTEMPP = IMINNP
+        IF(MYPROC.GE.ICOUNTABLK) GOTO 101
+      END IF
+*
+*. starting the treausure quest for the ?optimal? c-block distribution
+*
+100   CONTINUE
+*
+      IRUN = IRUN + 1
+      IF(IRUN.LE.ICOUNTABLK) THEN
+*
+        MXSZTMP = 0
+*
+        DO 3000 II = 1, NDIM
+*
+          ITEMPL = NBLKWT(II)
+          ITEMPD = NPARBLOCK(II)
+          ITEMPN = II
+
+CSK          IF(MYPROC.EQ.0) 
+CSK     & WRITE(6,*) 'ITEMPL,ITEMPD,ITEMPN:',ITEMPL,ITEMPD,ITEMPN
+*
+CSK          IF(MYPROC.EQ.0) WRITE(6,*) 'MXSIZE:',MXSIZE
+CSK          IF(MYPROC.EQ.0) WRITE(6,*) 'MXSZTMP:',MXSZTMP
+          IF(ITEMPL.GT.0)THEN
+            IF(ITEMPD.EQ.-1) THEN
+              IF(ITEMPL.LE.MXSIZE)THEN
+                IF(ITEMPL.GT.MXSZTMP) THEN
+                   MXSZTMP = ITEMPL
+                   MXNUMB = ITEMPN
+CSK                  WRITE(6,*) 'MXSZTMP (2):',MXSZTMP
+                END IF
+              END IF
+            END IF
+          END IF
+*
+3000    CONTINUE
+*
+CSK       IF(MYPROC.EQ.0) WRITE(6,*)'NTEMPP:',NTEMPP
+        DO 4000 IPR = 1, NTEMPP
+*
+          ITEMPW2 = MMPINFA(IPR) 
+CSK         IF(MYPROC.EQ.0) 
+CSK     & WRITE(6,*) 'ITEMPW2 and ITEMPW1:',ITEMPW2,ITEMPW1
+* attention: IAMTPROC = 1 --> MYNEW_ID = 0 !
+          IAMTPROC = IPR
+CSK         IF(MYPROC.EQ.0) WRITE(6,*) 'IAMTPROC',IAMTPROC
+*
+          IF(IPR.EQ.1) ITEMPW1 = ITEMPW2
+*
+          IF(ITEMPW2.LE.ITEMPW1) THEN
+             ITEMPW1 = ITEMPW2
+             IAMGPROC = IAMTPROC
+CSK         IF(MYPROC.EQ.0) WRITE(6,*)'ITEMPW1,IAMGPROC',ITEMPW1,IAMGPROC
+          END IF
+*
+4000    CONTINUE
+*. now we should have found a proc and a block --> put both together !
+*
+*.      calculation of block MXNUMB by proc IAMGPROC -1 (M excl.)
+       IF(NTEST.GT.0) THEN
+         IF(MYPROC.EQ.0) 
+     & WRITE(6,*)'calculation of block MXNUMB by proc',MXNUMB,IAMGPROC-1
+       ENDIF
+*
+*.     raising MMPINFA(proc,1) by 1
+*.     adding on MMPINFA(proc,2) the weight of the new block
+       IAMTPROC = IAMGPROC-1
+       MXSIZE = MXSZTMP
+       MWEIGHT(IAMGPROC) = MWEIGHT(IAMGPROC) + 1
+       MMPINFA(IAMGPROC) = MMPINFA(IAMGPROC) + MXSZTMP
+       NPARBLOCK(MXNUMB)     = IAMTPROC
+*
+      ELSE
+        GOTO 101
+      END IF
+*     /\ IRUN !!!
+*
+      GOTO 100
+*
+101   CONTINUE
+*
+CSK      IF(NTEST.GT.0) THEN
+        IF(MYPROC.EQ.0) THEN
+      WRITE(6,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF MYPROC:',
+     &MYPROC
+      DO ISTI = 1, NTEMPP
+        WRITE(6,'(3X,A,I2,A,I5,A,1X,I17)')
+     & 'process',ISTI -1,' calculates',MWEIGHT(ISTI),' blocks with a
+     & total length of',MMPINFA(ISTI)
+      END DO
+*
+*      WRITE(6,'(3X,A)') 'even distribution finished!'
+*
+        END IF
+CSK      END IF
+*
+CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE DISTWORK(NDIM,ICCTOS,ICWEIGHTF,NPARBLOCK,NBLKWT,NBATCH,
+     &                    LBATS)
+*
+*. Find distribution for (nonvanishing blocks) among the nodes
+*. Non vanishing block has a nonzero blocklength
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+      DIMENSION ICCTOS(NDIM,NDIM),ICWEIGHTF(NDIM),NPARBLOCK(NDIM)
+      DIMENSION NBLKWT(NDIM),LBATS(NBATCH)
+      INTEGER*8 MWEIGHT,NWEIGHT
+      DIMENSION MWEIGHT(NMPROC*NBATCH),NWEIGHT(NBATCH)
+*
+*. find a distribution of work for a given batch as even as possible 
+*
+       
+*
       END 
 ***********************************************************************
 *                                                                     *
@@ -646,6 +1068,50 @@ CSK      END IF
         END IF
 *
       IF( LBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE FIND_CCTOS(SCALFAC_LOCAL,IBLOCKD,ICCTOS,NBLOCK)
+*
+*. Find all c-blocks connecting to a given sigma-block for each cpu
+*  using the connection matrix ICCTOS.
+*. Each cpu stores the information in SCALFAC_LOCAL.
+*. Connection is marked by 1.0D0
+*
+      IMPLICIT REAL*8           ( A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+*     ==========
+*       INPUT
+*     ==========
+      DIMENSION ICCTOS(NBLOCK,NBLOCK),IBLOCKD(NBLOCK)
+*
+*     ===========
+*       OUTPUT
+*     ===========
+*
+      DIMENSION SCALFAC_LOCAL(NBLOCK)
+*
+      DO IBLK = 1, NBLOCK
+*
+        IF(IBLOCKD(IBLK).EQ.MYPROC) THEN
+*
+          DO JBLK = 1,NBLOCK
+*
+            IF(ICCTOS(JBLK,IBLK).NE.0) SCALFAC_LOCAL(JBLK) = 1.0D0
+*
+          END DO
+*
+        END IF
+*
+      END DO
 *
       END
 ***********************************************************************
@@ -971,6 +1437,231 @@ C
       IF(LLUOUT.NE.LUOUT) THEN
 C            COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
         CALL COPVCD(LLUOUT,LUOUT,VEC1,1,LBLK)
+      END IF
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE PART_CIV_PAR(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
+     &                        NSMST,MXLNG,IOCOC,ISMOST,
+     &                        NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
+     &                        ICOMP,ITTSS_ORD,NODEMXLNG,
+     &                        ICWEIGHT,IBTOTW,ICWEIGHTF,NBLOCK,REORDER)
+*
+* Partition a CI vector into batches of blocks.
+* The length of a batch must be atmost MXLNG
+*
+* IF ICOMP. eq. 1: the complete CI vector is constructed in just one
+* batch
+*
+* OUTPUT
+*
+* NBATCH : Number of batches
+* LBATCH : Number of blocks in a given batch
+* LEBATCH : Number of elements in a given batch ( packed ) !
+* I1BATCH : Number of first block in a given batch
+* IBATCH : TTS blocks in Start of a given TTS block with respect to start
+*          of batch
+*   IBATCH(1,*) : Alpha type
+*   IBATCH(2,*) : Beta  type
+*   IBATCH(3,*) : Sym of alpha
+*   IBATCH(4,*) : Sym of beta
+*   IBATCH(5,*) : Offset of block with respect to start of block in
+*                 expanded form
+*   IBATCH(6,*) : Offset of block with respect to start of block in
+*                 packed form
+*   IBATCH(7,*) : Length of block, expandend form
+*   IBATCH(8,*) : Length of block, packed form
+*
+*
+*
+* Jeppe Olsen, August 1995
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*.Input
+      INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
+      INTEGER IOCOC(NOCTPA,NOCTPB)
+      INTEGER IBLTP(*)
+      INTEGER ISMOST(*)
+*.Output
+      INTEGER LBATCH(*)
+      INTEGER LEBATCH(*)
+      INTEGER I1BATCH(*)
+      INTEGER IBATCH(8,*)
+*
+      NTEST = 0000
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*)
+        WRITE(6,*) ' ==================='
+        WRITE(6,*) '     PART_CIV_PAR   '
+        WRITE(6,*) ' ==================='
+        WRITE(6,*) ' IDC = ', IDC
+        WRITE(6,*)
+        WRITE(6,*) ' IOCOC Array '
+        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
+        if (NTEST.ge.500) then
+          WRITE(6,*) ' NSSOA array ( input ) '
+          CALL IWRTMA(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA)
+          WRITE(6,*) ' NSSOB array ( input ) '
+          CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
+          write(6,*) ' IBLTP array: '
+          call iwrtma(IBLTP,1,NSMST,1,NSMST)
+        end if
+      END IF
+*
+*. block zero
+*
+      IB = 1
+      IA = 1
+      ISM = 1
+      IFRST = 1
+      NBATCH = 0
+      IBLOCK = 0
+      IFINI = 0
+*. Loop over batches of blocks
+ 2000 CONTINUE
+      NBATCH = NBATCH + 1
+      LBATCH(NBATCH) = 0
+      I1BATCH(NBATCH) = IBLOCK  + 1
+      LENGTH = 0
+      LENGTHP= 0
+      NBLOCK = 0
+      IFRST = 1
+*. Loop over blocks in batch
+ 1000 CONTINUE
+      IF(IFRST.EQ.0) THEN
+        call nxt_tts(ITTSS_ORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
+      END IF
+      IFRST = 0
+      IF (IFINI.EQ.1) GOTO 2002
+*. Should this block be included
+      IF(IBLTP(ISM).EQ.0) GOTO 1000
+      IF(IBLTP(ISM).EQ.2.AND.IA.LT.IB) GOTO 1000
+      IF(IOCOC(IA,IB).EQ.0) GOTO 1000
+*. can this block be included
+      IBSM = ISMOST(ISM)
+      NSTA = NSSOA(ISM,IA)
+      NSTB = NSSOB(IBSM,IB)
+      LBLOCK= NSTA*NSTB
+      IF(IBLTP(ISM).EQ.1.OR.(IBLTP(ISM).EQ.2.AND.IA.NE.IB)) THEN
+        LBLOCKP = NSTA*NSTB
+      ELSE IF (IBLTP(ISM) .EQ. 2.AND.IA.EQ.IB) THEN
+        LBLOCKP = NSTA*(NSTA+1)/2
+      END IF
+C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
+      IF(LENGTH+LBLOCK.LE.MXLNG.OR.ICOMP.EQ.1) THEN
+        NBLOCK = NBLOCK + 1
+        IBLOCK = IBLOCK + 1
+        LBATCH(NBATCH) = LBATCH(NBATCH)+1
+        IBATCH(1,IBLOCK) = IA
+        IBATCH(2,IBLOCK) = IB
+        IBATCH(3,IBLOCK) = ISM
+        IBATCH(4,IBLOCK) = IBSM
+        IBATCH(5,IBLOCK) = LENGTH+1
+        IBATCH(6,IBLOCK) = LENGTHP+1
+        IBATCH(7,IBLOCK) = LBLOCK
+        IBATCH(8,IBLOCK) = LBLOCKP
+        LENGTH = LENGTH + LBLOCK
+        LENGTHP= LENGTHP+ LBLOCKP
+        LEBATCH(NBATCH) = LENGTHP
+        GOTO 1000
+      ELSE IF(ICOMP.EQ.0.AND.
+     &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
+        WRITE(6,*) ' Not enough scratch space to include a single Block'
+        WRITE(6,*) ' Since I cannot procede I will stop '
+        WRITE(6,*) ' Insufficient buffer detected in PART_CIV2'
+        write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
+        WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
+        call quit( ' Insufficient buffer space in PART_CIV2. ' )
+      ELSE
+*. This batch is finished, goto next batch
+        GOTO 2000
+      END IF
+ 2002 CONTINUE
+*
+      IF(NTEST.NE.0) THEN
+C?      WRITE(6,*) 'Output from PART_CIV'
+C?      WRITE(6,*) '====================='
+        WRITE(6,*)
+        WRITE(6,*) ' Number of batches ', NBATCH
+        DO JBATCH = 1, NBATCH
+          WRITE(6,*)
+          WRITE(6,*) ' Info on batch ', JBATCH
+          WRITE(6,*) ' *********************** '
+          WRITE(6,*)
+          WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
+          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
+            WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
+          END DO
+        END DO
+      END IF
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE PRINT_BATCH_INFO(NCBATCH,LBATC,LEBATC,
+     &           I1BATC,IBATC,ICCTOS,ICWEIGHT,NBLOCK,IBTOTW,ICWEIGHTF)
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+      DIMENSION LBATC(*),LEBATC(*),I1BATC(*),IBATC(8,*)
+      DIMENSION ICCTOS(NBLOCK,NBLOCK),ICWEIGHT(NBLOCK)
+      DIMENSION IBTOTW(NBLOCK),ICWEIGHTF(NBLOCK)
+*
+      NTEST = 100
+      IF(MYPROC.EQ.MASTER)THEN
+        WRITE(6,*) ' OUTPUT from PRINT_BATCH_INFO'
+        WRITE(6,*) ' ============================'
+        WRITE(6,*) ' '
+        WRITE(6,*) ' Number of batches ', NCBATCH
+      END IF
+      DO JBATCH = 1, NCBATCH
+        IF(MYPROC.EQ.MASTER) THEN
+          WRITE(6,*)
+          WRITE(6,*) ' Info on batch ', JBATCH
+          WRITE(6,*) ' *********************** '
+          WRITE(6,*) ' '
+          WRITE(6,*) ' Number of blocks included ', LBATC(JBATCH)
+        END IF
+CSK        WRITE(6,*) '   TTSS and offsets and lenghts of each block '
+        DO IBLOCK =I1BATC(JBATCH),I1BATC(JBATCH)+ LBATC(JBATCH)-1
+CSK          WRITE(6,'(10X,4I3,4I8)') (IBATC(II,IBLOCK),II=1,8)
+          IF(IBATC(8,IBLOCK).NE.0.AND.MYPROC.EQ.MASTER.AND.NTEST.GE.10) 
+     &       WRITE(6,'(2X,A,1X,I5,1X,A,1X,I8)') 'Block number',IBLOCK,
+     & 'has length',(IBATC(II,IBLOCK),II=8,8)
+          JJJ = 0
+          DO IJ = 1, NBLOCK
+            IF(ICCTOS(IJ,IBLOCK).NE.0) THEN
+              JJJ = JJJ + 1
+              ICWEIGHT(JJJ) = IJ
+            ENDIF
+          END DO
+          ICWEIGHTF(IBLOCK) = JJJ
+          IF(JJJ.GT.0.AND.MYPROC.EQ.MASTER.AND.NTEST.GE.100) THEN
+            WRITE(6,'(2X,A,I4)')'Number of connections for this block:',
+     &                           JJJ
+            CALL IWRTMA(ICWEIGHT,1,JJJ,1,JJJ)
+            
+            WRITE(6,*)'  '
+          ENDIF
+          IBTOTW(IBLOCK) = (JJJ) * IBATC(8,IBLOCK)
+        END DO
+      END DO
+      IF(MYPROC.EQ.MASTER.AND.NTEST.GE.10) THEN
+        WRITE(6,'(2X,A)')'TOTAL WEIGHT FOR EACH BLOCK'
+        CALL IWRTMA8(IBTOTW,1,NBLOCK,1,NBLOCK)
       END IF
 *
       END
