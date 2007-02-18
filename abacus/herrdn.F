@@ -2430,17 +2430,17 @@ C
      &    ' Threshold for integrals (to be written to file):',THRS
       END IF
 
-CMI   ... prepare the MNF.INP file with basis set exponents....
+CMI   ... prepare the MNF.INP basis set input file for AMFI
       CALL MNFOUT(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
      &           JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),
      &           KATOM,KANG,KBLOCK,
-     &           KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
+     &           KPRIM,CPRIMU)
 
-CMI   ... prepare the input for CAP with L(+S) (contracted) basis sets
-C     CALL CAPOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,
-C    &           JCO,NUC,NRC,SEG,
-C    &           KATOM,KANG,KSETS,KBLOCK,
-C    &           KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
+CMI   ... prepare the basis set input files for the CAP program
+      CALL CAPOUT(IPREAD,NONTYP,NONT,IQM,NBLCK,
+     &           JCO,NUC,NRC,SEG,
+     &           KATOM,KANG,KSETS,KBLOCK,
+     &           KPRIM,CPRIMU,WORK,LWORK)
 
 C
 C     Print the references to the basis sets
@@ -7967,8 +7967,8 @@ C
 
 C  /* Deck mnfout */
       SUBROUTINE MNFOUT(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM,
-     &     NSYMOP)
+     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU)
+CMI  &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM)
 C
 C     Now also dumps a file MNF.INP for use for SO mean-field approximation
 C     Written by K.Ruud 160297 
@@ -7991,8 +7991,8 @@ C
 
 #include "infpar.h"
 
-      LOGICAL SEG, NRMPRI
-      CHARACTER KASYM(3,3)*1, CRT*1
+      LOGICAL SEG
+C     CHARACTER KASYM(3,3)*1, CRT*1
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &     JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &     CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)
@@ -8101,78 +8101,70 @@ C     end of SUBROUTINE MNFOUT
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck capout */
-      SUBROUTINE CAPOUT(WORK,LWORK,
-     &     NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &     KATOM,KANG,KSETS,KBLOCK,
-     &     KPRIM,CPRIMU,NRMPRI,KASYM,
-     &     NSYMOP)
+      SUBROUTINE CAPOUT(IPRINT,
+     &  NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+     &  KATOM,KANG,KSETS,KBLOCK,
+     &  KPRIM,CPRIMU,WORK,LWORK)
 C***********************************************************************
 C
-C    Dumps a file for the CAP integral module.
+C    Dumps files for the CAP integral module.
 C
 C    Written by Miro Ilias, January 2007, Tel Aviv
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+
+C#include "dcbgen.h"
 #include "mxcent.h"
 #include "maxorb.h"
-C#include "mx2orb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
-#include "cbirea.h"
-#include "dcbgen.h"
+#include "primit.h"
+C#include "cbirea.h"
 #include "chrxyz.h"
-
-C#include "frame.h"
-
-C#include "molinp.h"
+#include "nuclei.h"
+#include "symmet.h"
 #include "dummy.h"
-
 #include "infpar.h"
 
-      LOGICAL SEG,HERMIT,NRMPRI
+      LOGICAL SEG,HERMIT
       DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
      &     NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
      &     SEG(KBLOCK,KSETS),
-     &     ALPHA(KPRIM,KBLOCK,KSETS),CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
+     &     ALPHA(KPRIM,KBLOCK,KSETS),
      &     CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
+
       DIMENSION WORK(LWORK)
 C     CHARACTER SPDCAR
       CHARACTER*4 ATOMNAME
-C#include "ccom.h"
-#include "nuclei.h"
-#include "shells.h"
-#include "primit.h"
-#include "symmet.h"
-#include "aosotr.h"
 #include "ibtfun.h"
-C
 
 C     .... only for master or single process !!! 
+      write(lupri,*) 'MYTID,MPARID=',MYTID,MPARID
+
       IF (MYTID .EQ. MPARID) THEN
 
-       KIPCON = 1
-       KLAST  = KIPCON + KPRIM
+      KIPCON = 1
+      KLAST  = KIPCON + KPRIM
 C      IF (KLAST.GT.LWORK) CALL STOPIT('BASOUT','CAPOUT',KLAST,LWORK)
-       IF (KLAST.GT.LWORK) CALL QUIT('CAPOUT: KLAST.GT.LWORK !')
+      IF (KLAST.GT.LWORK) CALL QUIT('CAPOUT: KLAST.GT.LWORK !')
+
+      IF (IPRINT.GE.2) THEN
+       CALL HEADER('Output from CAPOUT ',-1)
+       WRITE(LUPRI,'(2X,A)')
+     & 'Preparing formatted file "CAPINT.inp" for the CAP module.'
+      ENDIF
 C
 C   Prepare another unique file with basis functions for Sajeev's code
 C
       LUTMP2 = 0
       LUTMP  = 0
-      CALL GPOPEN(LUTMP2,
-     &  'CAPINT.inp',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUTMP2,'CAPINT.inp',
+     & 'UNKNOWN',' ','FORMATTED',IDUMMY,.FALSE.)
 
 C     CALL GPOPEN(LUTMP,
 C    &  'CAPLBL.inp',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-
-      IF (IPREAD.GE.2) THEN
-        CALL HEADER('Output from CAPOUT ',-1)
-        WRITE(LUPRI,'(2X,A)')
-     &  'Preparing formatted file "CAPINT.inp" for the CAP module.'
-      ENDIF
 
 C     ... count the total number of nuclei
       NUCTOT = 0
@@ -8182,7 +8174,7 @@ C     ... count the total number of nuclei
 
 C      ... write the total number of nuclei
       WRITE(LUTMP2,'(1X,I3)') NUCTOT
-      IF (IPREAD.GT.3) THEN
+      IF (IPRINT.GT.3) THEN
         WRITE(LUPRI,'(2X,A,I3)')
      &  '...total number of nuclei:',NUCTOT
       ENDIF
@@ -8195,7 +8187,7 @@ C      ... cycle over all nuclei ...
       IATOM = 0
       DO ICENT = 1, NUCIND
 C ............... basis functions ..................
-         IF (IPREAD.GE.3) THEN
+         IF (IPRINT.GE.3) THEN
           write(LUPRI,'(2X,A,I2,A,I2)')
      &    'ICENT=',ICENT, '  NDEG=',NUCDEG(ICENT)
          ENDIF
@@ -8203,7 +8195,7 @@ C ............... basis functions ..................
          MULCNT = ISTBNU(ICENT)
          ATOMNAME   = NAMEX(3*ICENT)(1:4)
             IF (MULT(MULCNT) .EQ. 1) THEN
-              IF (IPREAD.GE.3) THEN
+              IF (IPRINT.GE.3) THEN
                WRITE (LUPRI,'(I4,3X,A,5X,A,3X,F15.10)')
      *               ICRX, ATOMNAME,CHRXYZ(-1), CORD(1,ICENT)
                WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
@@ -8222,31 +8214,31 @@ C ............... basis functions ..................
      &         ICENT,'  ',ATOMNAME,' charge:',CHARGE(ICENT)
                write(LUTMP2,*) CORD(1,ICENT),CORD(2,ICENT),CORD(3,ICENT)
 
-              IF (IPREAD.GE.3) THEN
+              IF (IPRINT.GE.3) THEN
                write(LUPRI,*)
      &         ICENT,'  ',ATOMNAME,' charge:',CHARGE(ICENT)
                write(LUPRI,*) CORD(1,ICENT),CORD(2,ICENT),CORD(3,ICENT)
               ENDIF
 
 C             ...   write out basis functions, exponents and contraction coefficients
-             IF (IPREAD.GE.3) THEN
+             IF (IPRINT.GE.3) THEN
               WRITE(LUPRI,'(/A)')
      &        'Large component basis functions for CAP'
              ENDIF
              CALL WRIBAS(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
      &           JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),WORK(KIPCON),
-     &         KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM,
-     &          NSYMOP,LUTMP2,LUTMP,ICENT,IATOM,0,IPREAD)
+     &         KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
+     &          LUTMP2,LUTMP,ICENT,IATOM,0,IPRINT)
 
              IF (NBASIS.GT.NLARGE) THEN
-               IF (IPREAD.GE.3) THEN
+               IF (IPRINT.GE.3) THEN
                  WRITE(LUPRI,'(/A)')
      &           'Small component basis functions for CAP'
                ENDIF
                CALL WRIBAS(NONTYP,NONT,IQM(1,2),NBLCK(1,2),
      &             JCO(1,1,2),NUC(1,2),NRC(1,2),SEG(1,2),WORK(KIPCON),
-     &            KATOM,KANG,KBLOCK,KPRIM,CPRIMU(1,1,1,2),NRMPRI,KASYM,
-     &            NSYMOP,LUTMP2,LUTMP,ICENT,IATOM,NPLSH,IPREAD)
+     &            KATOM,KANG,KBLOCK,KPRIM,CPRIMU(1,1,1,2),
+     &            LUTMP2,LUTMP,ICENT,IATOM,NPLSH,IPRINT)
              ENDIF
              write(lutmp2,*) 'E   0   0'
 
@@ -8257,7 +8249,7 @@ C             ...   write out basis functions, exponents and contraction coeffic
                   IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                      JATOM = JATOM + 1
 
-                    IF (IPREAD.GE.3) THEN
+                    IF (IPRINT.GE.3) THEN
                      WRITE (LUPRI,'(I4,3X,A,I2,3X,A,3X,F15.10)')
      *                     ICRX, ATOMNAME,JATOM,CHRXYZ(-1),
      *                     PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
@@ -8284,7 +8276,7 @@ C               ... coordinates
      &              PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT),
      &              PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
 
-               IF (IPREAD.GE.3) THEN
+               IF (IPRINT.GE.3) THEN
                write(LUPRI,*) ICENT,'  ',ATOMNAME,' ',JATOM,
      &              ' charge:',CHARGE(ICENT)
 C               ... coordinates
@@ -8295,24 +8287,23 @@ C               ... coordinates
                ENDIF
 
 C             ...   write out basis functions, exponents and contraction coefficients
-             IF (IPREAD.GE.3) THEN
+             IF (IPRINT.GE.3) THEN
                write(LUPRI,'(/A)') '--- large component basis set !'
              ENDIF
 
             CALL WRIBAS(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &     NUC(1,1),NRC(1,1),SEG(1,1),WORK(KIPCON),
-     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM,
-     &     NSYMOP,LUTMP2,LUTMP,ICENT,IATOM,0,IPREAD)
+     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
+     &     LUTMP2,LUTMP,ICENT,IATOM,0,IPRINT)
 
              IF (NBASIS.GT.NLARGE) THEN
-               IF (IPREAD.GE.3) THEN
+               IF (IPRINT.GE.3) THEN
                  write(LUPRI,'(/A)') '--- small component basis set !'
                ENDIF
                CALL WRIBAS(NONTYP,NONT,IQM(1,2),NBLCK(1,2),
-     &           JCO(1,1,2),NUC(1,2),NRC(1,2),SEG(1,2),WORK(KIPCON),
-     &         KATOM,KANG,KBLOCK,KPRIM,CPRIMU(1,1,1,2),NRMPRI,KASYM,
-     &          NSYMOP,LUTMP2,LUTMP,ICENT,IATOM,NPLSH,IPREAD)
-
+     &        JCO(1,1,2),NUC(1,2),NRC(1,2),SEG(1,2),WORK(KIPCON),
+     &        KATOM,KANG,KBLOCK,KPRIM,CPRIMU(1,1,1,2),
+     &        LUTMP2,LUTMP,ICENT,IATOM,NPLSH,IPRINT)
              ENDIF
              write(lutmp2,*) 'E   0   0'
             END IF
@@ -8328,27 +8319,27 @@ C
      &  'CAPDIR.inp',' ',' ','FORMATTED',IDUMMY,.FALSE.)
          WRITE(LUTMP3,*) 'DIRAC unique order of atomic basis functions'
 
-         IF (IPREAD.GE.0) THEN
+         IF (IPRINT.GE.0) THEN
           WRITE(LUPRI,'(2X,A)')
      &    'CAPOUT: preparing the "CAPDIR.inp" file with DIRAC'//
      &    ' unique order of atomic basis functions. '
          ENDIF
 
-         IF (IPREAD.GE.2) THEN
+         IF (IPRINT.GE.2) THEN
            CALL HEADER('WRIBAS2: Contracted Orbitals again',1)
          ENDIF
 
           CALL WRIBAS2(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &     NUC(1,1),NRC(1,1),SEG(1,1),WORK(KIPCON),
-     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM,
-     &     NSYMOP,LUTMP3,0,IPREAD)
+     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
+     &     LUTMP3,0,IPRINT)
 
          IF (NBASIS.GT.NLARGE) THEN
 C          ... small component set
           CALL WRIBAS2(NONTYP,NONT,IQM(1,2),NBLCK(1,2),
      &      JCO(1,1,2),NUC(1,2),NRC(1,2),SEG(1,2),WORK(KIPCON),
-     &      KATOM,KANG,KBLOCK,KPRIM,CPRIMU(1,1,1,2),NRMPRI,KASYM,
-     &      NSYMOP,LUTMP3,NPLSH,IPREAD)
+     &      KATOM,KANG,KBLOCK,KPRIM,CPRIMU(1,1,1,2),
+     &      LUTMP3,NPLSH,IPRINT)
          ENDIF
          CALL GPCLOSE(LUTMP3,'KEEP')
 
@@ -8356,15 +8347,14 @@ C          ... small component set
 
       ENDIF
 
-
       RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wribas */
       SUBROUTINE WRIBAS(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,IPCON,
-     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM,
-     &     NSYMOP,LUTMP2,LUTMP,ICENT,IATOM,IPOSEXP,IPRINT)
+     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
+     &     LUTMP2,LUTMP,ICENT,IATOM,IPOSEXP,IPRINT)
 C*************************************************************************
 C
 C    Called from CAPOUT
@@ -8480,8 +8470,8 @@ C         write(LUTMP2,*) 'TYPE:',BLNK(1+J)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wribas2 */
       SUBROUTINE WRIBAS2(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,IPCON,
-     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM,
-     &     NSYMOP,LUTMP3,IPOSEXP,IPRINT)
+     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
+     &     LUTMP3,IPOSEXP,IPRINT)
 C*************************************************************************
 C
 C    Fill the file LU=LUTMP3 with DIRAC atomic basis functions order
@@ -8503,7 +8493,7 @@ C*************************************************************************
 #include "mxcent.h"
 #include "nuclei.h"
 
-      LOGICAL SEG, NRMPRI
+      LOGICAL SEG
       CHARACTER*1 BLNK(5)
       CHARACTER CHRSEG*10,DEG*2
 

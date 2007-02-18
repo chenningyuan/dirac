@@ -178,18 +178,19 @@ C#include "dcbham.h"
 
       DIMENSION WORK(LWORK)
 #include "memint.h"
-
       CALL QENTER('CAPINTS')
 
+      CALL MEMCHK('CAPINTS',WORK,1)
 C      ... allocate memmory
+
       ISIZE1=10
-      ISIZE1=20
+      ISIZE2=20
       CALL MEMGET('INTE',KI,ISIZE1,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KF,ISIZE2,WORK,KFREE,LFREE)
 
       CALL SAJEEV(WORK,LWORK)
 
-      CALL MEMREL('CAPINTS',WORK,KWORK,KWORK,KFREE,LFREE)
+C     CALL MEMREL('CAPINTS',WORK,KWORK,KWORK,KFREE,LFREE)
 
       CALL CAPADAPT(WORK,LWORK)
             
@@ -1035,7 +1036,7 @@ C     CALL MOINTEGRAL(N_B,AOMO,PE_AO,EL1_MO)
          open(unit=14,file='PEMAT',STATUS='UNKNOWN',FORM='FORMATTED')
          do ii=1,n_b
             do jj=1,n_b
-               IPU=IPOINT(ii,jj)
+               IPU=IPOINTIJ(ii,jj)
                if (jj.gt.ii)go to 301
                write(14,*)ii,jj,PE_AO(IPU)
             end do
@@ -1396,7 +1397,7 @@ CMI   IMPLICIT REAL*8 (A-H,O-Z)
       
       do i=1,n_b
          do j=1,n_b
-            IPU=IPOINT(i,j)
+            IPU=IPOINTIJ(i,j)
             PE_AO(IPU)=(0.d0,0.d0)
          end do
       end do
@@ -1405,6 +1406,7 @@ CMI   IMPLICIT REAL*8 (A-H,O-Z)
          if(i.eq.1)then
             iasp=0
          else
+CMI: ftnchek note: Variables may be used before! 
             iasp=basis_ord(i-1)
          endif
          basis_ord(i)=iasp+basis_n(i)
@@ -1413,7 +1415,7 @@ CMI   IMPLICIT REAL*8 (A-H,O-Z)
       DO ii=1,n_b
 C         write(*,*)ii
       DO jj=1,ii
-         IPU=IPOINT(ii,jj)
+         IPU=IPOINTIJ(ii,jj)
 
          if (ii.eq.1)then
             iangii=0
@@ -1463,18 +1465,18 @@ C     COMPLEX *16 AOINT(25000),MOINT(25000)
       
 C     Do i=1,n_b
 C        do j=1,i
-C           IPU=IPOINT(i,j)
+C           IPU=IPOINTIJ(i,j)
 C           MOINT(IPU)=(0.d0,0.d0)
 C        end do
 C     End do
       
 C     DO ii=1,n_b
 C        Do jj=1,ii
-C            IPU=IPOINT(ii,jj)
+C            IPU=IPOINTIJ(ii,jj)
 C           do i=1,n_b
 C              do j=1,n_b
-C                 IPS=IPOINT(i,j)
-C                 if(j.gt.i)IPS=IPOINT(j,i)
+C                 IPS=IPOINTIJ(i,j)
+C                 if(j.gt.i)IPS=IPOINTIJ(j,i)
 C                 COMULT=AOMO(jj,j)*AOMO(ii,i)
 C                 MOINT(IPU)= MOINT(IPU)+COMULT*AOINT(IPS)
 C              end do
@@ -1509,7 +1511,7 @@ C     DO JCI=1,ICI
 C        Read(12,*)IDET,JDET,IACON1,IACON2,IBCON1,IBCON2
 C        CALL HELEM(N_B,MOINT,IACON1,IBCON1,IACON2,IBCON2,IDET,
 C    *        JDET,INDEXI,ELEM)
-C        IPU=IPOINT(IDET,JDET)
+C        IPU=IPOINTIJ(IDET,JDET)
 C        DETINT(IPU)=ELEM
 C     END DO
 C     END DO
@@ -1822,9 +1824,10 @@ C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       RETURN
       END
 
-      FUNCTION IPOINT(ii,jj)
+CMI     IPOINT replaced by IPOINTIJ 
+      FUNCTION IPOINTIJ(ii,jj)
       IMPLICIT REAL*8 (A-H,O-Z)
-      IPOINT=(ii*(ii-1)/2)+jj
+      IPOINTIJ=(ii*(ii-1)/2)+jj
       END 
 
 C**********************************************
@@ -2116,10 +2119,12 @@ C*************************************************************
 
          XR=X-R_n(1)
          XRM=X-R_m(1)
-         DGr=K_n*(XR**-1)
+CMI      DGr=K_n*(XR**-1)
+         DGr=K_n*(XR**(-1))
          DG=DGr-(2*R_n(2)*(XR))
        
-         D2G1X=K_n*(K_n-1)*(XR**-2)
+CMI      D2G1X=K_n*(K_n-1)*(XR**-2)
+         D2G1X=K_n*(K_n-1)*(XR**(-2))
          D2G2X=2*R_n(2)*(2*K_n+1)
          D2G3X=4*(R_n(2)**2)*(XR**2)
          D2GX=D2G1X-D2G2X+D2G3X

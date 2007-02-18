@@ -627,13 +627,12 @@ C       ... turn it in the MOLFDIR like form
         CALL MOLTODIR(WORK(KCAPI),WORK(KCAPIM),NSTR,NSTRT,FORWARD)
 
 C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM
-C       CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,IPRINT)
         CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,IPRHAM)
 
       ENDIF
 
 CMI    ... FMOM is in MOLFDIR format now
-      IF (IPRINT.GE.5) THEN
+      IF (IPRHAM.GE.5) THEN
           IF (CAP.AND.NZ.EQ.1) THEN
              NZX=2
             WRITE(LUPRI,'(/3X,A,I2/)')
