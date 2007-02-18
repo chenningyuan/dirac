@@ -377,7 +377,8 @@ C==================================================================
       DO J = 1, I
         IX = IX + 1
         READ(LUPM,*) II,JJ,CAP
-        CAPRE = DREAL(CAP)
+CC      CAPRE = DREAL(CAP)
+        CAPRE = REAL(CAP)
 CC      CAPIM = DIMAG(CAP)
         CAPIM = IMAG(CAP)
         IF (I.NE.II.OR.J.NE.JJ) THEN
