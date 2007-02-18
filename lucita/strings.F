@@ -4066,11 +4066,12 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * /STRINP/,/STINF/,/STRBAS/ and string information in STIN
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#if defined (VAR_MPI)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "lucipar.inc"
-
+#endif
 *. Input
 *     (and /LUCINP/ not occuring here )
 #include "mxpdim.inc"
