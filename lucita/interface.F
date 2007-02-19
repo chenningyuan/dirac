@@ -4294,10 +4294,10 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
 #include "units.inc"
 #if defined (VAR_MPI)
 #include "infpar.h"
-#include "lucipar.inc"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
+#include "lucipar.inc"
 *
       logical MSCOMB
       character*2 TYPELUC(MXSEQ)
@@ -4305,7 +4305,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
       character*6 MACHINE
       character*72 TITLE(MXTIT),HESTR
       CHARACTER LUCIAIN_MPIN*7, NLUCIAIN_MPI*11
-      INTEGER LUCIAIN_MPIL,ISCRVAR
+      INTEGER LUCIAIN_MPIL
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
       data KOMMA /1H,/
 *
@@ -4438,14 +4438,6 @@ CTF      write(*,'(1X,A6)') MACHINE
          if (CALSIZ.ne.'NOR') then
             write(*,'(A6)') 'CLSSEL'
          end if
-         if(irunpa.eq.0)then
-           write(*,'(A6)') 'PARMOD'
-           ISCRVAR = -1
-           write(*,'(1X,I3,A)') ISCRVAR
-         else 
-           write(*,'(A6)') 'PARMOD'
-           write(*,'(1X,I3,A)') IPARMODEL 
-         endif
 *
          write(*,'(A12)') 'END OF INPUT'
 *
@@ -4597,15 +4589,6 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
          if (CALSIZ.ne.'NOR') then
             write(LUINP,'(A6)') 'CLSSEL'
          end if
-*
-         if(irunpa.eq.0)then
-           write(LUINP,'(A6)') 'PARMOD'
-           ISCRVAR = -1
-           write(LUINP,'(1X,I3)') ISCRVAR
-         else 
-           write(LUINP,'(A6)') 'PARMOD'
-           write(LUINP,'(1X,I3)') IPARMODEL 
-         endif
 *
          write(LUINP,'(A12)') 'END OF INPUT'
 *
