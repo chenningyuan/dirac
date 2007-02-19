@@ -1398,7 +1398,7 @@ C
       CHARACTER*72 LASTCARD
       COMMON/CTITLE/TITLEC(3)
       CHARACTER*6 KEYWOR
-      PARAMETER(MXPKW = 98)
+      PARAMETER(MXPKW = 97)
       DIMENSION KEYWOR(MXPKW)
       DIMENSION ISETKW(MXPKW)
 *. Local scratch for decoding multi-item lines, atmost 32 items per line
@@ -1424,7 +1424,7 @@ C
      &     'TRAPRP','RESPON','MXITLE','IPRRSP','RTHOME',
      &     'USE_PH','ADVICE','TRACI ','USE_PS','PTFOCK',
      &     'PRNCIV','RES_CC','TRA_FI','TRA_IN','MUL_SP',
-     &     'RELAX ','EXPERT','PARMOD'/
+     &     'RELAX ','EXPERT'/
 
 *
       INTEGER CITYP
@@ -3310,14 +3310,6 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
       IF(CARD(2:7).EQ.'EXPERT') THEN
          ISETKW(97) = 1
          IEXPERT= 1
-         GOTO 999
-      END IF
-* ====================================================================
-* 98 : Use of parallel scheme
-* ====================================================================
-      IF(CARD(2:7).EQ.'PARMOD') THEN
-         READ(LUCMOL,*) IPARMODEL
-         ISETKW(98) = 1
          GOTO 999
       END IF
 *
