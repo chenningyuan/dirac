@@ -2452,10 +2452,13 @@ C     Read in the Fock matrix in MO basis from file, and transform the
 C     modified Fock matrices constructed above from AO to MO basis
 C
       CALL GETFCK(WORK(KFMO),IPRXQR,WORK,KFREE,LFREE)
+C.....Gb aka F1
       CALL QRFAOMO(WORK(KF1MO),WORK(KF1AO),ISYMB,ITIMB,IFERB,
      &     IPRXQR,CMO,WORK(KFREE),LFREE)
+C.....Gc aka F2
       CALL QRFAOMO(WORK(KF2MO),WORK(KF2AO),ISYMC,ITIMC,IFERC,
      &     IPRXQR,CMO,WORK(KFREE),LFREE)
+C.....Gbc aka F3
       CALL QRFAOMO(WORK(KF3MO),WORK(KF3AO),ISYMA,ITIMB*ITIMC,IFERA,
      &     IPRXQR,CMO,WORK(KFREE),LFREE)
 
@@ -2465,16 +2468,16 @@ C
       CALL DSCAL(N2ORBXQ,D2,WORK(KB),1)
       CALL DSCAL(N2ORBXQ,D2,WORK(KC),1)
 C
-C     [Wb,F] ---> F1
-C     [Wc,F] ---> F2
+C     F1: Gb = Gb + [Wb,F] 
+C     F2: Gc = Gc + [Wc,F] 
 C
       CALL OITMAT(WORK(KFMO),1,1,WORK(KB),ISYMB,IFERB,
      &     WORK(KF1MO),ISYMB,IFERB,IPRXQR)
       CALL OITMAT(WORK(KFMO),1,1,WORK(KC),ISYMC,IFERC,
      &     WORK(KF2MO),ISYMC,IFERC,IPRXQR)
 C
-C     [Wc, F1+[Wb,F]] ---> F3
-C     [Wb, F2+[Wc,F]] ---> F3
+C     [Wc, Gb+[Wb,F]] ---> F3
+C     [Wb, Gc+[Wc,F]] ---> F3
 C
       CALL OITMAT(WORK(KF1MO),ISYMB,IFERB,WORK(KC),ISYMC,IFERC,
      &     WORK(KF3MO),ISYMA,IFERA,IPRXQR)
