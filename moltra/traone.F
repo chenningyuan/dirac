@@ -614,11 +614,10 @@ C     Fill in complete core-Fock matrix in complex form
 C
       CALL MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD)
 
-CMI   CAP = .FALSE.
       IF (CAP) THEN
 C      ... allocate space for CAP_IM
         CALL MEMGET('REAL',KCAPI,N2BBASXQ,WORK,KFREE,LFREE)
-C      .... get CAP_IM (as a real operator) in the MO basis 
+C      .... get CAP_IM (as a "real" operator) in the MO basis 
         CALL GETCAPI(WORK(KCAPI),WORK,KFREE,LFREE)
 
 C       ... allocate space for MOLFDIR like CAP
@@ -627,19 +626,19 @@ C       ... turn it in the MOLFDIR like form
         CALL MOLTODIR(WORK(KCAPI),WORK(KCAPIM),NSTR,NSTRT,FORWARD)
 
 C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM
-        CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,IPRHAM)
+        CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,.TRUE.)
 
       ENDIF
 
 CMI    ... FMOM is in MOLFDIR format now
-      IF (IPRHAM.GE.5) THEN
-          IF (CAP.AND.NZ.EQ.1) THEN
-             NZX=2
-            WRITE(LUPRI,'(/3X,A,I2/)')
-     &       '*** Core Fock matrix with i.CAP_IM part ***'
+      IF (IPRTRA.GE.5) THEN
+         IF (CAP.AND.NZ.EQ.1) THEN
+           NZX=2
+           WRITE(LUPRI,'(/3X,A,I2/)')
+     &     '*** Core Fock matrix with i.CAP_IM part ***'
           ELSE
-          NZX = NZ
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Core Fock matrix ***'
+           NZX = NZ
+           WRITE(LUPRI,'(/3X,A,I2/)') '*** Core Fock matrix ***'
           ENDIF
           CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZX,2),
      &                IPQTOQ(1,0),LUPRI)

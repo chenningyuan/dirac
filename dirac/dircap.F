@@ -9,7 +9,9 @@ C  /* Deck capinp */
       SUBROUTINE CAPINP(WORD,RESET,WORK,LWORK)
 C*****************************************************************************
 C
-C   Input section for CAP-module
+C  Input section for CAP-module
+C
+C  Called from HAMINP (dirrdn.F)
 C
 C  Written by  Miro ILIAS, Febr. 2007, Tel Aviv
 C
@@ -24,10 +26,6 @@ C
       LOGICAL SET, NEWDEF,RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
-
-C#include "mxcent.h"
-C#include "dcbgen.h"
-C#include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbcap.h"
 C
@@ -145,7 +143,7 @@ C
 C
        WRITE(LUPRI,'(2X,A,D25.10)') 'read INPQD = ',PW
        WRITE(LUPRI,'(2X,A)') 
-     & 'read integration parameters'
+     & 'read integration parameters:'
 CMI    ...  write out integration parameters
        DO I=1,3
          WRITE(LUPRI,*) X0(I),LAMDA(I)
@@ -183,14 +181,23 @@ C#include "dcbham.h"
       CALL MEMCHK('CAPINTS',WORK,1)
 C      ... allocate memmory
 
-      ISIZE1=10
-      ISIZE2=20
-      CALL MEMGET('INTE',KI,ISIZE1,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KF,ISIZE2,WORK,KFREE,LFREE)
+      ISIZE1=200
+      CALL MEMGET('INTE',KBASIS_N,ISIZE1,WORK,KFREE,LFREE)
+      ISIZE2=250*3
+      CALL MEMGET('INTE',KANG_POW,ISIZE2,WORK,KFREE,LFREE)
 
-      CALL SAJEEV(WORK,LWORK)
+      ISIZE3=250
+      CALL MEMGET('REAL',KORDEXPON,ISIZE3,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KORDCOE,ISIZE3,WORK,KFREE,LFREE)
 
-C     CALL MEMREL('CAPINTS',WORK,KWORK,KWORK,KFREE,LFREE)
+      ISIZE4=200*3
+      CALL MEMGET('REAL',KRMS,ISIZE4,WORK,KFREE,LFREE)
+
+CMI:    allocated arrays enters the SAJEEV routine !
+      CALL SAJEEV(WORK(KBASIS_N),WORK(KANG_POW),
+     &            WORK(KORDEXPON),WORK(KORDCOE),WORK(KRMS),WORK,LWORK)
+
+      CALL MEMREL('CAPINTS',WORK,KWORK,KWORK,KFREE,LFREE)
 
       CALL CAPADAPT(WORK,LWORK)
             
@@ -378,9 +385,7 @@ C==================================================================
       DO J = 1, I
         IX = IX + 1
         READ(LUPM,*) II,JJ,CAP
-CC      CAPRE = DREAL(CAP)
         CAPRE = REAL(CAP)
-CC      CAPIM = DIMAG(CAP)
         CAPIM = IMAG(CAP)
         IF (I.NE.II.OR.J.NE.JJ) THEN
          CALL QUIT('CAPADAPT: wrong indexes in PEMAT !')
@@ -501,6 +506,8 @@ C   Purpose: get CAP_IM operator in MO basis into CAPI(*)
 C
 C   First get it (using PRPMAO) as the real operator
 C
+C   Called from MRCON1 (traone.F)
+C
 C   Written by Miro ILIAS, Tel Aviv, febr. 2007
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -518,16 +525,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbxpr.h"
 #include "dcbgen.h"
 #include "dcbham.h"
+#include "dcbcap.h"
 #include "dummy.h"
 
       DIMENSION CAPI(NORBT,NORBT,NZ),WORK(*)
-      LOGICAL SWITCH
 
       CALL QENTER('GETCAPI')
 
       KFRSAV = KFREE
 
-      IPRINT = IPRHAM
+      IPRINT = IPRCAP
 
 C  ...array for MO coefficients
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
@@ -555,67 +562,31 @@ C     ... Open property file
       IOPSY = JBTOF(ISYM-1,1)
       CALL DZERO(CAPI,N2ORBXQ)
       CALL PRPMAT(INDXPR,IOPSY,CAPI,WORK(KCMO),WORK(KBEIG),
-     &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+     &               ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 
       IF (IPRINT.GE.5) THEN
-       WRITE(LUPRI,'(2A)')
+       WRITE(LUPRI,'(2X,2A)')
      & 'GETCAPI: Get MO matrix of property: ',PRPNAM(INDXPR)
        CALL PRQMAT(CAPI,NORBT,NORBT,NORBT,
      &         NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
       ENDIF
 
-C     ... make the real operator in MO basis "i"-operator
-      SWITCH=.FALSE.
-      IF (SWITCH) THEN
-       IF (NCMOTQ.LT.NORBT*NORBT*NZ) THEN
-         CALL QUIT('GETCAPIM: fix the size !!!')
-       ENDIF
-CMI    switch in MO-basis is NOT theoretically established !!!!
-      IF (NZ.GT.1) THEN
-C      ... switch between IZ=1 and IZ=2
-       DO I = 1, NORBT
-       DO J = 1, NORBT
-        TEMP = CAPI(I,J,1)
-        CAPI(I,J,1) = -CAPI(I,J,2)    
-        CAPI(I,J,2) = TEMP
-       ENDDO
-       ENDDO
-
-C      ... switch between IZ=3 and IZ=4
-       IF (NZ.EQ.4) THEN
-        SF = D1
-CMI     SF = DM1
-        DO I = 1, NORBT
-        DO J = 1, NORBT
-          TEMP = CAPI(I,J,3)
-          CAPI(I,J,3) = SF*CAPI(I,J,4)
-          CAPI(I,J,4) = -SF*TEMP
-        ENDDO
-        ENDDO
-       ENDIF
-
-       WRITE(LUPRI,'(2A)')
-     & 'GETCAPIM: "i"-changed MO matrix of property: ',PRPNAM(INDXPR)
-       CALL PRQMAT(CAPI,NORBT,NORBT,NORBT,
-     &         NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
-      ENDIF
-
-      ENDIF
-
-      CALL MEMREL('MRCON1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
-CC
-CC    call quit('GETCAPIM ...')
-
+      CALL MEMREL('GETCAPI',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('GETCAPI')
       RETURN
       END 
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck addcapim */
-      SUBROUTINE ADDCAPIM(NSTRT,CAPIM,FMOM,IPRINT)
+      SUBROUTINE ADDCAPIM(NSTRT,CAPIM,FMOM,MULTIM)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C   Purpose: add MOLFDIR like i.CAP_IM to the FMOM
+C  Purpose: add MOLFDIR like i.CAP_IM to the FMOM
+C
+C  On input: CAPIM - to be added to FMOM
+C            MULTIM - flag to decide the multiplication by the imag.unit
+C
+C  Called from the MRCON1 routine (traone.F).
 C
 C  Written by Miro ILIAS, Tel Aviv, febr. 2007 
 C
@@ -625,12 +596,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "dgroup.h"
+#include "dcbcap.h"
 
       DIMENSION CAPIM(NSTRT*2,NSTRT*2,2), FMOM(NSTRT*2,NSTRT*2,2)
+      LOGICAL MULTIM
 
       CALL QENTER('ADDCAPIM')
 
-      IF (IPRINT.GE.5) THEN
+      IF (IPRCAP.GE.5) THEN
           WRITE(LUPRI,'(/3X,A)')
      &    'ADDCAPIM:  *** Entering core Fock matrix in MOLFDIR'//
      &    ' format, FMOM ***'
@@ -643,22 +616,25 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &                IPQTOQ(1,0),LUPRI)
       ENDIF
 
-C     ... multiply CAPIM with i:
-
-      DO I = 1, NSTRT*2
-      DO J = 1, NSTRT*2
-       TEMP = CAPIM(I,J,2)
-       CAPIM(I,J,2) = CAPIM(I,J,1)
-       CAPIM(I,J,1) = - TEMP
-C      FMOM(I,J,2) = CAPIM(I,J,1)
-      ENDDO
-      ENDDO
-
-      IF (IPRINT.GE.5) THEN
+C     ... multiply CAPIM with i
+      IF (MULTIM) THEN
+        DO I = 1, NSTRT*2
+        DO J = 1, NSTRT*2
+C         i.(a+ib) = -b + i.a
+          TEMP = CAPIM(I,J,2)
+          CAPIM(I,J,2) = CAPIM(I,J,1)
+          CAPIM(I,J,1) = - TEMP
+        ENDDO
+        ENDDO
+        IF (IPRCAP.GE.5) THEN
           WRITE(LUPRI,'(/3X,A)')
      &    'ADDCAPIM:  *** Modified i.CAPIM ***'
-          CALL PRQMAT(CAPIM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(2,2),
+           CALL PRQMAT(CAPIM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(2,2),
      &                IPQTOQ(1,0),LUPRI)
+        ENDIF
+      ELSE
+       WRITE(LUPRI,'(2X,A)')
+     & 'ADDCAPIM: Warning - no multiplication with imaginary unit !'
       ENDIF
 
 C      ...Add CAPIM into FMOM
@@ -669,11 +645,11 @@ C      ...Add CAPIM into FMOM
       ENDDO
       ENDDO
 
-
-      IF (IPRINT.GE.5) THEN
-          WRITE(LUPRI,'(/3X,A)')
-     &    'ADDCAPIM:  *** Core Fock matrix with CAP_IM (NZ=2) ***'
-          CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(2,2),
+      IF (IPRCAP.GE.5) THEN
+       WRITE(LUPRI,'(/3X,A)')
+     & 'ADDCAPIM:  *** Core Fock matrix (molfdir format)'//
+     & ' with i.CAP_IM added (NZ=2) ***'
+       CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(2,2),
      &                IPQTOQ(1,0),LUPRI)
       ENDIF
 
@@ -686,9 +662,9 @@ C /* Deck savecap */
       SUBROUTINE SAVECAP(CAPR,CAPI,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Save complex - CAPR,CAPI - integrals into AOPROPER
+C  Save CAPR,CAPI integrals into the AOPROPER file.
 C
-C Written by Miro ILIAS, Tel Aviv, febr. 2007
+C  Written by Miro ILIAS, Tel Aviv, febr. 2007
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -945,15 +921,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sajeev */
-      SUBROUTINE SAJEEV(WORK,LWORK)
+      SUBROUTINE SAJEEV(basis_n,ang_pow,ord_expon,
+     &                  ord_coe,r_ms,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Main program from Sajeev. Adapted into DIRAC enviroment
 C  as the subroutine.
 C
-C  On input: IPRINT - print level
+C   On input: IPRINT - print level
 C
-C  called from CAPINTS
+C   called from CAPINTS
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 ! this file  reads  all input datas for CAP and generates  
@@ -967,7 +944,7 @@ CMI   IMPLICIT REAL*8 (A-H,O-Z)
       
       DIMENSION WORK(LWORK)
 
-CMI    ... make allocations in the calling routine !!
+CMI    ... arrays are entering subroutine, check the size !!!!!
       integer *4 basis_n(200)
       integer *4 ang_pow(250,3)
 
@@ -1779,50 +1756,50 @@ C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  300  continue
       END  
       
-      SUBROUTINE AOMOCOE(COE)
-      IMPLICIT REAL*8 (A-H,O-Z)
-      real *8  coe(200,200)
+C     SUBROUTINE AOMOCOE(COE)
+C     IMPLICIT REAL*8 (A-H,O-Z)
+C     real *8  coe(200,200)
       
-      OPEN(4,FILE='COINP',FORM='FORMATTED',ACCESS='SEQUENTIAL',
-     *     STATUS='UNKNOWN')
-      OPEN(3,FILE='AOMOCOE',FORM='FORMATTED',ACCESS='SEQUENTIAL',
-     *     STATUS='UNKNOWN')
+C     OPEN(4,FILE='COINP',FORM='FORMATTED',ACCESS='SEQUENTIAL',
+C    *     STATUS='UNKNOWN')
+C     OPEN(3,FILE='AOMOCOE',FORM='FORMATTED',ACCESS='SEQUENTIAL',
+C    *     STATUS='UNKNOWN')
       
 
-      irb=5
-      kr=1
+C     irb=5
+C     kr=1
       
-      read(4,*)nbasis
-      kl=nbasis/5
-      if(kl*5.NE.nbasis)then
-         kls=nbasis-(kl*5)
-         kl=kl+1
-      endif
-      kr=0
-      Do kkkk=1,nbasis
-         Do kk=1,kl
+C     read(4,*)nbasis
+C     kl=nbasis/5
+C     if(kl*5.NE.nbasis)then
+C        kls=nbasis-(kl*5)
+C        kl=kl+1
+C     endif
+C     kr=0
+C     Do kkkk=1,nbasis
+C        Do kk=1,kl
             
-            if (kk.eq.kl.and.kl*5.NE.NBASIS)then
-               krb=kls
-            else
-               krb=5
-            endif
-            read(4,*)kcol,icol,(coe(kcol,is+(kk-1)*5),is=1,krb)
+C           if (kk.eq.kl.and.kl*5.NE.NBASIS)then
+C              krb=kls
+C           else
+C              krb=5
+C           endif
+C           read(4,*)kcol,icol,(coe(kcol,is+(kk-1)*5),is=1,krb)
    
-         kr=kr+5
-      End do
-      End do
+C        kr=kr+5
+C     End do
+C     End do
 
- 110  format(i3,i2,5E15.12)
+C110  format(i3,i2,5E15.12)
 
-      do i=1,nbasis
-         write(3,*)(coe(i,j),j=1,nbasis)
-      end do
-      CLOSE(3)
-      CLOSE(4)
+C     do i=1,nbasis
+C        write(3,*)(coe(i,j),j=1,nbasis)
+C     end do
+C     CLOSE(3)
+C     CLOSE(4)
       
-      RETURN
-      END
+C     RETURN
+C     END
 
 CMI     IPOINT replaced by IPOINTIJ 
       FUNCTION IPOINTIJ(ii,jj)
@@ -1961,7 +1938,7 @@ C     REAL *8 PA,PB
 
 
 C*******************************************************
-CMI entering theta is from the INPQD file  
+CMI entering parameter theta is from the INPQD file  
       SUBROUTINE CAPM(R_m,R_n,K_m,K_n,theta,VCAP)
 C      IMPLICIT REAL*8 (A-H,O-Z)
 #include "implicit.h"
