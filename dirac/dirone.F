@@ -2300,9 +2300,9 @@ C
      & 'PRPREA: >>> Going to read the property '//PRPLBL//
      & ' with COMB '//COMB//
      & ' from the file with LU1INT = ',LU1INT
-       WRITE(LUPRI,'(A,A8,A,A8)')
-     & 'labels> RTNLBL(1): ',RTNLBL(1),
-     & 'RTNLBL(2): ',RTNLBL(2)
+C      WRITE(LUPRI,'(A,A8,A,A8)')
+C    & 'labels> RTNLBL(1): ',RTNLBL(1),
+C    & 'RTNLBL(2): ',RTNLBL(2)
       ENDIF
 
       IF(FNDLB3(PRPLBL,COMB,RTNLBL,LU1INT,IPRINT)) THEN
