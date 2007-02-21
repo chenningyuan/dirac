@@ -50,28 +50,17 @@ C
 C
       DIMENSION WORK(LWORK)
 C
+C     Set up basic information for parallel execution, to be stored in the
+C     common block infpar
 C
-      ISIZE = ICOMMSIZE(NZ,ITOT)
-      WRITE(6,*) 'Size of COMMON    :',ISIZE
       PARCAL = (IPARCAL .NE. 0)
-C
-C     Transfer variables to common blocks
-C
-      IF(PARCAL) THEN
-      write(6,*) 'Parallel Run      : 
-     &MPI_COMM_WORLD is set as',MPI_COMM_WORLD
-CSK        if(MPI_COMM_WORLD.ne.0) MPI_COMM_WORLD = 0
-      END IF
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
       NUMNOD = INUMNOD - 1
       MYTID  = IMYTID
-C
+C Additional check for parallelism, parallel with only a master is the same as serial
       PARCAL = PARCAL.AND.NUMNOD.ne.0
-C
-C     Let the slaves sleep for now (where implemented) ...
-C        ( ITASK = 0 )
-C
+C Test the communication by sending an empty task
       ITASK = 0
       IF (PARCAL) CALL DIRAC_PARCTL( ITASK )
 C
@@ -696,7 +685,6 @@ C
 C
 C        Start calculating integrals for Fock matrices.
 C
-CSK         write(6,*)'node',mytid,' calls hernod'
          CALL HERNOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 2) THEN
 C
@@ -822,21 +810,6 @@ C
  999  CALL QEXIT('DIRNOD2')
       END
 #endif /* VAR_MPI */
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-#ifdef SYS_SX
-C
-C     Small dummy program that calls the main c-routine, because
-C     some linkers are worthless (eg. NEC SX).
-C     If you call the linker through the fortran compiler the 'main'
-C     program has one name, and if you call the linker through the C
-C     compiler it has another name. Marvellous work!
-C
-      PROGRAM SXMAIN
-      CALL C_MAIN
-      STOP
-      END
-#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE GETBASDIR()
