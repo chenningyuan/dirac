@@ -57,25 +57,12 @@ C up to the moment of the last call while the program continues
 C executing (provided the computer allows shared access).
 C This subroutine may be a dummy routine.
 C
-#if defined (SYS_VAX)
-C The implementation below is for VAX/VMS, the main
-C function of the close is that it empties the output buffer.
-      CLOSE (UNIT=IUNIT,ERR=100)
-  100 CONTINUE
-      OPEN (UNIT=IUNIT,FORM='FORMATTED',STATUS='UNKNOWN',
-     X      INITIALSIZE=24,EXTENDSIZE=24,
-     X      ACCESS='APPEND',SHARED,CARRIAGECONTROL='FORTRAN')
-#endif
-#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_HPUX) || defined (SYS_DARWIN)
-C
 C     Force transfer of all buffered output to the file or device
 C     associated with logical unit IUNIT.
 C
+C 21-02-2007  LV : Removed outdated machines, after 24 years (!) the
+C                  whole routine can now probably be deleted (we always call FLUSH)
       CALL FLUSH(IUNIT)
-#endif
-#if defined (SYS_PARAGON)
-      CALL FORFLUSH(IUNIT)
-#endif
       RETURN
       END
 C  /* Deck getdat */
@@ -86,12 +73,12 @@ C
 C     Return date and time as character*8, for labels.
 C
       CHARACTER*(8) CDATE, CTIME
-#if defined (SYS_VAX)
-      CHARACTER CCDATE*9
-      CALL DATE(CCDATE)
-      CALL TIME(CTIME)
-      CDATE = CCDATE(1:2)//CCDATE(4:6)//CCDATE(8:9)//' '
-#else
+C
+C     The fortran90 variables
+C
+      character*8 date_f90,time_f90*10,zone_f90*5
+      integer values(8)
+CLV : Kept the old code, we may consider calling always the f90 implementation...
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       INTEGER IDATE, ITIME, DATE, CLOCK
       IDATE = DATE()
@@ -113,9 +100,11 @@ C
       CALL DATE(DAOFWK,CDATE)
       CALL TIME(CTIME)
 #else
-      CDATE = ' -date- '
-      CTIME = ' -time- '
-#endif
+C
+C     LV : Use fortran90 implementation
+      CALL DATE_AND_TIME(date_f90,time_f90,zone_f90,values)
+      CDATE = DATE_F90(1:8)
+      CTIME = TIME_F90(1:2)//':'//TIME_F90(3:4)//':'//TIME_F90(5:6)
 #endif
 #endif
 #endif
@@ -130,21 +119,6 @@ C Return elapsed CPU time and elapsed real time.
 C
 #include "implicit.h"
 C
-#if defined (SYS_VAX)
-      REAL*4 WALL0,S0,SECNDS
-      PARAMETER (S0 = 0.0E0)
-      LOGICAL FIRST
-      SAVE WALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-         WALL0 = SECNDS(S0)
-      ENDIF
-C
-      TIMCPU = SECOND()
-      TIMWAL = SECNDS(WALL0)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 C...  Cray unicos timing code
       REAL    TCPU0, TWALL0
@@ -222,52 +196,6 @@ C
       TIMWAL = ITIMWL
 #endif
 #endif
-#if defined (SYS_CONVEX)
-C...  CONVEX code
-      integer stime
-      real*4  etime, tarray(2)
-      logical first
-      save    first,iwall0
-      data    first /.true./
-C
-      if (first) then
-         first = .false.
-         iwall0 = stime()
-      end if
-      TIMCPU = etime(tarray)
-      itimwl = stime() - iwall0
-      TIMWAL = itimwl
-#endif
-#ifdef UNDEF
-C
-C     The SGI code above should work on Linux machines as well./jth-980704
-C
-#if defined (SYS_LINUX)
-C...  Linux code
-      integer stime
-      real*4  etime, tarray(2)
-C
-      TIMCPU = etime(tarray)
-      TIMWAL = 0.
-#endif
-#endif
-#if defined (SYS_ALLIANT)
-C...  Alliant FX/FORTRAN
-      real*4 etime, tarray(2)
-      REAL*4 WALL0,S0,SECNDS
-      LOGICAL FIRST
-      PARAMETER (S0 = 0.0E0)
-      SAVE WALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-         WALL0 = SECNDS(S0)
-      ENDIF
-C
-      TIMCPU = etime(tarray)
-      TIMWAL = SECNDS(WALL0)
-#endif
 #if defined (SYS_IBM)
       LOGICAL FIRST
       SAVE    FIRST
@@ -282,23 +210,6 @@ C
          TIMCPU = CPUA
          TIMWAL = TIOA
       END IF
-#endif
-#if defined (SYS_PARAGON)
-C 900521-hjaaj timer for IBM AIX operating system
-C 941013-hjaaj: and for Intel PARAGON
-C 010309-lv : modified because AIX times gives uptime of the machine
-      integer*4 itime(4),times,iwall,IWALL0
-      LOGICAL FIRST
-      SAVE IWALL0, FIRST
-      DATA FIRST /.TRUE./
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-         IWALL0 = TIMES(ITIME)
-      ENDIF
-      iwall = times(itime) - IWALL0
-C     iwall = elapsed time, itime(1:2) = system and user time
-      TIMWAL = dfloat (iwall) * 0.01d0
-      TIMCPU = dfloat (itime(1) + itime(2)) * 0.01d0
 #endif
 #if !defined (SYS_VAX)    && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) \
  && !defined (SYS_CONVEX) && !defined (SYS_IBM)  && !defined (SYS_AIX) \
@@ -350,46 +261,6 @@ C
       END
 #endif
 #if !defined (VAR_MOTECC) && !defined (SYS_IBM)
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX)
-      SUBROUTINE SETTIM
-C
-C  Alliant and Convex timing routines emulating Lund IBM timing routines
-C  5-Dec-1988 hjaaj
-C
-      REAL*4 ECPU, ESYST, ETCPU
-      REAL*4 SCPU, SSYST, STCPU
-      REAL*4 PCPU, PSYST, PTCPU
-      REAL*4 ETIME,SECNDS,TARRAY(2)
-      REAL*8 CPUE, CPUA, TIOE, TIOA
-      SAVE   SCPU, SSYST, STCPU
-      SAVE   PCPU, PSYST, PTCPU
-C
-C     STIME  = SECNDS()
-      STCPU  = ETIME(TARRAY)
-      SCPU   = TARRAY(1)
-      SSYST  = TARRAY(2)
-      PCPU   = SCPU
-      PSYST  = SSYST
-      PTCPU  = STCPU
-      RETURN
-C
-C     ----- entry timing -----
-C
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-C     ETIME  = SECNDS()
-      ETCPU  = ETIME(TARRAY)
-      ECPU   = TARRAY(1)
-      ESYST  = TARRAY(2)
-      CPUA   = ECPU - SCPU
-      CPUE   = ECPU - PCPU
-      PCPU   = ECPU
-      TIOA   = ESYST - SSYST
-      TIOE   = ESYST - PSYST
-      PSYST  = ESYST
-C
-      RETURN
-      END
-#else
       SUBROUTINE SETTIM()
 #include "implicit.h"
       PARAMETER ( D0 = 0.0D0 )
@@ -403,7 +274,6 @@ C
       PRINT *,'DUMMY TIMING called'
       RETURN
       END
-#endif
 #endif
 C  /* Deck timtxt */
       SUBROUTINE TIMTXT(TEXT,TIMUSD,LUPRIN)
@@ -460,9 +330,6 @@ C
 #include "implicit.h"
       CHARACTER*(*) TEXT
 C
-#if defined (SYS_VAX)
-      CHARACTER CDATE*9,CTIME*8
-#endif
 #if defined (SYS_IBM)
       CHARACTER CDATE*8,CTIME*8,DAOFWK*9
 #endif
@@ -477,12 +344,6 @@ C
       ELSE
          WRITE (LUPRIN,'()')
       END IF
-#if defined (SYS_VAX)
-      CALL DATE(CDATE)
-      CALL TIME(CTIME)
-      WRITE (LUPRIN,'(T6,A,A9,1X,A8)')
-     *   'Date and time (VAX) : ',CDATE,CTIME
-#endif
 #if defined (SYS_IBM)
       CALL DATE(DAOFWK,CDATE)
       CALL TIME(CTIME)
@@ -495,12 +356,6 @@ C
       WRITE (LUPRIN,'(T6,A,A8,1X,A8)')
      *   'Date and time (CRAY) : ',CDATE,CTIME
 #endif
-#if defined (SYS_ALLIANT)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Alliant): ',FDATE()
-#endif
-#if defined (SYS_CONVEX)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Convex) : ',FDATE()
-#endif
 #if 0 && defined (SYS_HPUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
 #endif
@@ -512,12 +367,6 @@ C
 #endif
 #if defined (SYS_SUN)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (SUN)    : ',FDATE()
-#endif
-#if defined (SYS_PARAGON)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Paragon): ',FDATE()
-#endif
-#if defined (SYS_SX)
-      WRITE (LUPRIN,'(T6,2A)') 'Data and time (SX)     : ',FDATE()
 #endif
 #if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Data and time (Linux)  : ',FDATE()
@@ -692,90 +541,18 @@ C  /* Deck trace */
 C
 C Written 4-Dec-1983 hjaaj
 C
-#if !defined (SYS_VAX) && !defined (VAR_SECSEC)\
-&& !defined (SYS_CRAY) && !defined (SYS_IBM)\
-&& !defined (SYS_ALLIANT) && !defined (SYS_CONVEX)\
-&& !defined (SYS_AIX) && !defined (SYS_IRIX)\
-&& !defined (SYS_PARAGON) && !defined (SYS_T3D)\
-&& !defined (SYS_LINUX) && !defined (SYS_SUN)\
-&& !defined (SYS_HPUX) && !defined(SYS_DEC)\
-&& !defined (SYS_SX)
-      INTEGER A,B,C
-      SAVE    A,B,C
-      DATA    A/1/,B/0/,C/0/
-      C = C + A/B
-#endif
-#if defined (SYS_ALLIANT)
-      CALL QTRACE(6)
-      WRITE(*,*) 'Alliant does not provide a system traceback facility.'
-#endif
-#if defined (SYS_IRIX)
-      CALL QTRACE(6)
+C Major clean-up LV (feb. 2007)
 C
-C     jth 980716:
-C     For some machines you can compile with -ltrace and use
-C     the function below.
-C
-C     call trace_back_stack_and_print()
-C
-      WRITE(*,*) 'IRIX has no obvious system traceback facility.'
-#endif
-#if defined (SYS_SUN)
-      CALL QTRACE(6)
-      WRITE(*,*) 'SUN has no obvious system traceback facility.'
-#endif
-#if defined (SYS_PARAGON)
-      CALL QTRACE(6)
-      WRITE (*,*) 'PARAGON has no obvious system traceback facility.'
-#endif
-#if defined (SYS_LINUX)
-      CALL QTRACE(6)
-      WRITE(*,*) 'Linux has no obvious system traceback facility.'
-#endif
-#if defined (SYS_HPUX)
-      CALL QTRACE(6)
-      WRITE(*,*) 'HP_UX has no obvious system traceback facility.'
-#endif
-#if defined (SYS_SX)
-      CALL QTRACE(6)
-      WRITE(*,*) 'SX has no obvious system traceback facility.'
-#endif
-#if defined (SYS_CONVEX)
-      CALL QTRACE(6)
-      CALL TRACEBACK
-#endif
-#if defined (VAR_SECSEC)
-      CALL QTRACE(6)
-      CALL STRACE
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL QTRACE(6)
       CALL TRBK()
-#endif
-#if defined (SYS_VAX)
-C Revised 12-Jan-1984 hjaaj (use LIB$SIGNAL for VAX,
-C                            traceback without exit)
-      CALL QTRACE(6)
-      CALL LIB$SIGNAL(%VAL(0))
 #endif
 #if defined (SYS_IBM)
       CALL QTRACE(6)
       CALL ERRTRA
 #endif
-#if defined (SYS_AIX)
-C  920522-hjaaj -- ad hoc routine for creating traceback on IBM-AIX
-C  Note: integer divide by zero is the only error which
-C        always will cause an exception
-C  941013-hjaaj: also for PARAGON
-C
-      include 'fexcp.h'
-      save i,j
-      data i,j /1,0/
-C
       CALL QTRACE(6)
-      call SIGNAL(SIGTRAP,xl__trce)
-      i = i/j
-#endif
+      WRITE(*,*) 'This OS has no obvious system traceback facility.'
       RETURN
       END
 C  /* Deck canon */
@@ -1689,15 +1466,6 @@ D 503 FORMAT(' ',Z10/' ',4Z10/' ',I12/(6I12))
       IF( ISTAT.NE.1 .OR. ILEN.NE.4 ) CALL QUIT('SECOND: CPUTIM ERROR')
       SECOND=IBUF(1)/100.0
 #endif
-#if defined (SYS_PARAGON)
-#include "implicit.h"
-C 900521-hjaaj timer for IBM AIX operating system
-C 941013-hjaaj and for Intel Paragon
-      integer*4 itime(4),times,idum
-      idum = times(itime)
-C     idum = elapsed time, itime(1:2) = system and user time
-      second = dfloat (itime(1) + itime(2)) * 0.01d0
-#endif
 #if defined (SYS_IBM)
 #include "implicit.h"
       LOGICAL FIRST
@@ -1712,7 +1480,6 @@ C     idum = elapsed time, itime(1:2) = system and user time
          SECOND = CPUA
       END IF
 #endif
-CMI#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX) || defined (SYS_DARWIN)
 #if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) \
       || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) \
       || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) \

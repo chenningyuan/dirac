@@ -48,7 +48,7 @@ C
 C     August 1997
 C
 #include "implicit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
+#if defined (INT_STAR8)
       PARAMETER (NBITS=64)
 #else
       PARAMETER (NBITS=32)
@@ -82,7 +82,7 @@ C
 C     August 1997
 C
 #include "implicit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
+#if defined (INT_STAR8)
       PARAMETER (NBITS=64)
 #else
       PARAMETER (NBITS=32)
@@ -205,10 +205,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
       INTEGER NREAL,NINTE,NLOGI,IRECLEN
 C
-#if defined (SYS_VAX)
-      IRECL = 2 * NREAL + 1 * NINTE + 1 * NLOGI
-#else
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
+#if  defined (INT_STAR8)
       IRECL = 8 * NREAL + 8 * NINTE + 8 * NLOGI
 #else
 #if defined (SYS_IRIX) || defined (SYS_SX) || defined (SYS_DEC)
@@ -222,7 +219,6 @@ C     SGI IRIX counts recl in *4 words
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
 #else
      ===== insert definition for specification of record length
-#endif
 #endif
 #endif
 #endif
@@ -438,7 +434,7 @@ C     format of TIJD: '00:00:00'
       End
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER FUNCTION INTOWP(N)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
+#if  defined (INT_STAR8)
       INTOWP = N
 #else
       INTOWP=2*N
