@@ -496,12 +496,9 @@ C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
 #if defined (CC_ALONE)
-#if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_T3D) || defined (SYS_DEC)
+      This construction works for most systems
       POINTER (ICC,CC(1))
       REAL*8 CC
-#else
-      check dynamic memory allocation
-#endif
 #else
       REAL*8 CC(MAXCORE)
 #endif
@@ -602,9 +599,6 @@ C     Allow for file buffers (Cray only) : NCCFIL files with 20 blocks each
 C
 #if defined (CC_ALONE)
          MAXCOR = MAXCOR - 800 * 1024
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-         MAXCOR = MAXCOR - NCCFIL * 20 * 512
-#endif
 #endif
 C
 C     Report memory in megaBytes
@@ -683,9 +677,6 @@ C node. ===> if any subroutine would need more core memory we quit.
       IF (MXCORR.GT.MAXCOR) THEN
 #if defined (CC_ALONE)
          MXCORR = MXCORR+800*1024
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-         MXCORR = MXCORR+NCCFIL*20*512
-#endif
 #endif
          MWORD = MXCORR / (1024 * 1024)
          IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
