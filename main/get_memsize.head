@@ -8,4 +8,9 @@
  *
  */
 
+#if defined (INT_STAR8)
+long get_memsize(long mytid, long *size)
+#else
 int get_memsize(int mytid, int *size)
+#endif
+

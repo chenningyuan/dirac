@@ -10,5 +10,10 @@
 
 #include "mpi_errtrap.h"
 
+#if defined (INT_STAR8)
+void end_mpi(long mparid, long mytid, errhandler_type errhandler)
+#else
 void end_mpi(int mparid, int mytid, errhandler_type errhandler)
+#endif
+
 

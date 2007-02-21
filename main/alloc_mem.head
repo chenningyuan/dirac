@@ -8,4 +8,9 @@
  *
  */
 
+#if defined (INT_STAR8)
+long *alloc_mem(long mytid, long *size)
+#else
 int *alloc_mem(int mytid, int *size)
+#endif
+

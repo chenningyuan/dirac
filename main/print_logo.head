@@ -8,4 +8,8 @@
  *
  */
 
+#if defined (INT_STAR8)
+void print_logo(long parcal)
+#else
 void print_logo(int parcal)
+#endif

@@ -10,5 +10,10 @@
 
 #include "get_time.struct"
 
+#if defined (INT_STAR8)
+void pr_timing(get_time_struct *gt_first, get_time_struct *gt_last, \
+               long numnod, long mytid)
+#else
 void pr_timing(get_time_struct *gt_first, get_time_struct *gt_last, \
                int numnod, int mytid)
+#endif

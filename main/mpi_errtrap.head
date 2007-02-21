@@ -27,6 +27,10 @@ void mpi_errtrap(MPI_Comm *comm, int *err, ...)
 
 #else /* VAR_MPI */
 
+#if defined (INT_STAR8)
+void mpi_errtrap(long *bla1, long *bla2)
+#else
 void mpi_errtrap(int *bla1, int *bla2)
+#endif
 
 #endif /* VAR_MPI */
