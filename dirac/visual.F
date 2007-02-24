@@ -220,7 +220,7 @@ C=======================================================================
 #include "codata.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_QUANTITIES = 19)
+      PARAMETER (NR_QUANTITIES = 20)
       PARAMETER (MAX_NR_PAIRS = 200)
 
 #include "dcbgen.h"
@@ -282,6 +282,7 @@ C=======================================================================
       QUANTITY_NAME(17) = 'opt7'
       QUANTITY_NAME(18) = 'opt8'
       QUANTITY_NAME(19) = 'opt9'
+      QUANTITY_NAME(20) = 'diamagnetic_current_density'
 
       QUANTITY_IS_A_VECTOR(1)  = .FALSE.
       QUANTITY_IS_A_VECTOR(2)  = .TRUE.
@@ -302,6 +303,7 @@ C=======================================================================
       QUANTITY_IS_A_VECTOR(17) = .FALSE.
       QUANTITY_IS_A_VECTOR(18) = .FALSE.
       QUANTITY_IS_A_VECTOR(19) = .FALSE.
+      QUANTITY_IS_A_VECTOR(20) = .TRUE.
 
       ORIENTATION(1) = 'xy'
       ORIENTATION(2) = 'xz'
@@ -777,7 +779,7 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
       PARAMETER (D23 = 2.0D0/3.0D0,D53 = 5.0D0/3.0D0)
       PARAMETER (D32 = 3.0D0/2.0D0,D54 = 5.0D0/4.0D0)
-      PARAMETER (NR_QUANTITIES = 19)
+      PARAMETER (NR_QUANTITIES = 20)
 
 #include "visual.h"
 #include "dcborb.h"
@@ -838,6 +840,26 @@ C=======================================================================
         QUANTITY(4,0) = D1/(D1 + ELFCHI*ELFCHI)
 !       QUANTITY(4,0) = ELF**D32 !MBE1
 !       QUANTITY(4,0) = ELF**D54 !MBE2
+      ENDIF
+
+!     diamagnetic current density
+
+      IQUANTITY = 20
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+        CALL GETRHO(DENSITY,0,GAO,DMAT_AO,BUF)
+
+        VECTOR(1) = -(D1/D2)*PY*DENSITY
+        VECTOR(2) =  (D1/D2)*PX*DENSITY
+        VECTOR(3) =   D0
+
+        QUANTITY(IQUANTITY,1) = VECTOR(1)
+        QUANTITY(IQUANTITY,2) = VECTOR(2)
+        QUANTITY(IQUANTITY,3) = VECTOR(3)
+
+        QUANTITY(IQUANTITY,0) = VECTOR(1)**D2
+     &                        + VECTOR(2)**D2
+     &                        + VECTOR(3)**D2
+        QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
       ENDIF
 
 !     magnetization and current density
@@ -1416,7 +1438,7 @@ C=======================================================================
 #include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_QUANTITIES = 19)
+      PARAMETER (NR_QUANTITIES = 20)
 
 #include "visual.h"
 
@@ -1455,6 +1477,7 @@ C=======================================================================
       QUANTITY_IS_A_VECTOR(17) = .FALSE.
       QUANTITY_IS_A_VECTOR(18) = .FALSE.
       QUANTITY_IS_A_VECTOR(19) = .FALSE.
+      QUANTITY_IS_A_VECTOR(20) = .TRUE.
 
       CALL DZERO(QUANTITY_INTEGRAL,NR_QUANTITIES*4)
 

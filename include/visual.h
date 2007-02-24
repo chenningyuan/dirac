@@ -31,6 +31,8 @@ C     LBIT(LBIT_PLOT_QUANTITY,17) .OPT7 (debug and testing of new functionalitie
 C     LBIT(LBIT_PLOT_QUANTITY,18) .OPT8 (debug and testing of new functionalities)
 C     LBIT(LBIT_PLOT_QUANTITY,19) .OPT9 (debug and testing of new functionalities)
 C
+C     LBIT(LBIT_PLOT_QUANTITY,20)  diamagnetic current density
+C
       CHARACTER*6     XVECFILE
       CHARACTER*8     ORBSTRING1, ORBSTRING2
       LOGICAL         DOPLOT
