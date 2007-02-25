@@ -48,6 +48,8 @@ C
 C     Written by T.Saue October 1995
 C     Last revision 971028-jth: Lot of changes to make one open shell work.
 C
+C     Miro ILIAS, febr.2007, Tel Aviv - fix for 2c->4c restart
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -191,7 +193,12 @@ C     then we must restart DIIS
 C     Likewise if One-center app. is turned off in this iteration     /jkp
 C
       IF (INTFLG.NE.INTBUF.OR.ONECOFF.OR..NOT.DIISON) THEN
-        IF(ITDIIS.GT.0) CLOSE(LUDIIS,STATUS='DELETE')
+CMI     IF(ITDIIS.GT.0) CLOSE(LUDIIS,STATUS='DELETE')
+        IF(ITDIIS.GT.0) THEN
+          IF (.NOT.(START2C.AND..NOT.DO4C2C)) THEN
+            CLOSE(LUDIIS,STATUS='DELETE')
+          ENDIF
+         ENDIF
         ITDIIS = 0
       END IF
 C
@@ -715,6 +722,7 @@ C     Driver for DIIS - Direct Inversion of Iterative Subspaces
 C
 C     Written by T.Saue Aug 28 1995
 C     Last revision Aug 28 1995
+C                   Miro ILIAS, febr.2007, Tel Aviv - fix for 2c->4c restart
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -724,9 +732,11 @@ C
 C Used from COMMON blocks:
 C   DHFCAL: LUEVEC,IPRSCF,ITDIIS,MXDIIS
 C
+#include "dcbham.h"
 #include "dcbdhf.h"
       DIMENSION BMAT(MXDIIS*MXDIIS),EVEC(*),FOCK(*),EBUF(*),CVEC(*),
      &          WORK(*)
+
       IPRINT = IPRSCF
 C
 C     Write current error vector to direct access unit
@@ -764,7 +774,9 @@ C
         REWIND LUDIIS
         WRITE (LUDIIS) ITDIIS,MXDIIS,NELMBM,BMAT
       ELSEIF(IBSTAT.EQ.1) THEN
-        CLOSE(LUDIIS,STATUS='DELETE')
+         IF (.NOT.(START2C.AND..NOT.DO4C2C)) THEN
+           CLOSE(LUDIIS,STATUS='DELETE')
+         ENDIF
       ENDIF
 C
       IF(IPRINT.GE.1) THEN
