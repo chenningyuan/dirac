@@ -7522,6 +7522,8 @@ C  On input : only arrays
 C
 C  On output:  the initial 4c MO are written into BSSMAT
 C
+C  Call from PSIDHF (dirscf.F)
+C
 C  Written by Miro Ilias, Sept 2005, Strasbourg
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -7578,7 +7580,7 @@ C   then TMAT . CMO^ = TBUF
        IF (IPRSCF.GE.5) THEN
 
         CALL HEADER(
-     &  'CMOTR4C: U matrix',-1)
+     &  'CMOTR4C: U matrix 4c AO-> 2c AO',-1)
         WRITE(LUPRI,'(A,I1,A,I1)')
      &  '* Fermion ircop no.',I,'/',NFSYM                          
         CALL PRQMAT(TMAT(IPCTM),NFBAS(I,0),NFBAS(I,1),              
@@ -7618,6 +7620,9 @@ C ===============================================================
       ENDIF
       ENDDO
 
+C     ... check the  orthonormalization of so obtained starting MO's
+      CALL NRMSTMO(TBUF,TMAT,CMO,WORK,LWORK,IPRSCF)
+
 C ********************************************************
 C *
 C *       Restarting from unmodified 2c MO
@@ -7640,7 +7645,7 @@ C    ... read 2c CMO into TBUF ...
       ENDIF
 
 C =========================================
-C ... do save initial 4c MO into BSSMAT 
+C ... do save initial 4c MO into BSSMAT - TBUF
 C =========================================
       ISIZE = (NESH(1)*NFBAS(1,0)*NZ)
       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
@@ -7648,6 +7653,94 @@ C =========================================
      &               TBUF,ISIZE,LUBSS,IPRSCF)
 
       CALL QEXIT('CMOTR4C')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck cmoini4c */
+      SUBROUTINE NRMSTMO(TBUF,TMAT,CMO,WORK,LWORK,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  Purpose: CHECK the normalization of pseudo-4c(LS,e) CMO.
+C
+C  On input/output: TBUF - normalized MO (LS,e) pseudo-4comp coefficients
+C
+C Written by Miro ILIAS, February 2007, Tel Aviv
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
+#include "dcbgen.h" 
+#include "dgroup.h" 
+C#include "dcbdhf.h" 
+C#include "dcbham.h" 
+#include "dcbbas.h" 
+#include "dcborb.h" 
+
+      DIMENSION TBUF(*),CMO(*),TMAT(*),WORK(LWORK)
+
+      CALL QENTER('NRMSTMO')
+#include "memint.h"
+
+C ... get full S matrix
+      CALL GTOVLT(TMAT,D1,WORK(KFREE),LFREE)
+
+C ...  transform S to the MO's:   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(e,e)
+
+      IMAT = 1
+      IBUF = 1
+      IMO = 1
+
+      DO I = 1, NFSYM
+      IF (NESH(I).GT.0) THEN
+
+        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &       NESH(I),NESH(I),
+     &       TMAT(IMAT),NFBAS(I,0),NFBAS(I,0),1,IPQTOQ(1,0),
+     &       CMO(IMO),NESH(I),NESH(I),NZ,IPQTOQ(1,0),
+     &       TBUF(IBUF),
+     &       NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),
+     &       TBUF(IBUF),
+     &       NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),
+     &       WORK(KFREE),LFREE,IPRINT)
+
+         IF (IPRINT.GE.5) THEN
+          CALL HEADER(
+     &    'NRMSTMO: Obtained (GTOVLT) Sovlp(LL+SS) matrix'//
+     &    ' in SO basis "xhi"',-1)
+          WRITE(LUPRI,'(A,I1,A,I1)')'* Fermion irp no.',I,'/',NFSYM
+          CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NFBAS(I,0),
+     &        NFBAS(I,0),NFBAS(I,0),1,IPQTOQ(1,0),LUPRI)
+
+          CALL HEADER(
+     &   'NRMSTMO: Unnormalized U.CMO_2C starting MOs(LS,e), TBUF',-1)
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &   '* Fermion ircop no.',I,'/',NFSYM                          
+          CALL PRQMAT(TBUF(IBUF),NFBAS(I,0),NESH(I),              
+     &      NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+
+          CALL HEADER(
+     &   'NRMSTMO: Sovlp(ee) in pseudo4c MO',-1)
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &   '* Fermion ircop no.',I,'/',NFSYM                          
+          CALL PRQMAT(CMO(IMO),NESH(I),NESH(I),              
+     &      NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+         ENDIF
+
+CMI    ... check unity matrix !!!
+      WRITE(LUPRI,'(2X,A)') 'Check of the unit matrix, C+.S.C'
+      CALL TEST_UNIT_MTX(CMO(IMO),NESH(I),NESH(I),NESH(I),NZ)
+
+      ENDIF
+
+       IMAT = IMAT + NFBAS(I,0)*NFBAS(I,0)
+       IBUF = IBUF + (NFBAS(I,0)*NESH(I)*NZ)
+       IMO = IMO + NESH(I)*NESH(I)*NZ
+
+      ENDDO
+
+      CALL QEXIT('NRMSTMO')
       RETURN
       END
 
