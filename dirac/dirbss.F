@@ -7399,7 +7399,7 @@ C  ... read full picture change transf. matrix into VMAT
      &       NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
 
          CALL HEADER(
-     &   'FDTR4C: FD4C+H1_PP '//
+     &   'FDTR4C: 4c (FD4C+H1_PP) '//
      &   'in ON RKB/"k" basis, TMAT',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &  '*** Fermion corep ',I,'/',NFSYM
@@ -7417,7 +7417,7 @@ C  ... read full picture change transf. matrix into VMAT
 
        IF (IPRHAM.GE.5) THEN
         CALL HEADER(
-     & 'FDTR4C: FD4c+H1_4c_pp in 4c SA-AO matrix "xhi",'//
+     & 'FDTR4C: 4c (FD4c+H1_4c_pp) in SA-AO matrix "xhi",'//
      & ' VMAT',-1)
         WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &  '*** Fermion corep ',I,'/',NFSYM
@@ -7488,7 +7488,7 @@ C
       ENDIF
       ENDDO
 
-C ... do save FD4C+H1PP into the BSSMAT to be used as a starting Fock MO matrix
+C ... save (FD4C+H1PP) into the BSSMAT to be used as a starting Fock MO matrix
 C ..  for DC-SCF ... FD4C_RKB
       ISIZE = NORB(1)*NORB(1)*NZ
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
