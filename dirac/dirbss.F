@@ -7749,8 +7749,8 @@ C  /* Deck cmoini4c */
       SUBROUTINE CMOINI4C(CMO,TMAT,EIG,IBEIG,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  PURPOSE:   Do the reverse picture change transformation of 2c CMO into 4c CMO
-C ----------   for silly restarting the DC-SCF from BSS-SCF
+C  PURPOSE:   After the reverse picture change transformation of 2c CMO into 4c CMO (in CMOTR4C)
+C ----------  fill positronic MOs with zeroes for silly restarting the DC-SCF from BSS-SCF
 C
 C  On input: only arrays, but needed CMO 2c-4c from BSSMAT,
 C             also DFCOEF file is needed
@@ -7850,12 +7850,10 @@ C     ... do read the DFCOEF file from previous iterations ...
 C     Write transformed coefficients
       CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
-      IF (IPRSCF.GE.2) THEN
-        write(lupri,*)
-     & 'CMOINI4C: The DFCOEF file was filled with initial 4c MO !'
-      ENDIF
+      WRITE (LUPRI,'(/2X,A)')
+     & 'The DFCOEF file was renewed for restarting 4c SCF'//
+     & ' with pseudo-4c MO from previous 2c SCF cycle.'
 
-C      call quit('in CMOINI4C !') 
       CALL QEXIT('CMOINI4C')
       RETURN
       END

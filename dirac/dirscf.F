@@ -239,11 +239,16 @@ C         .... prepare the DFCOEF file with staring MO's
 CMI    ... TODO: it would be good to generalize the title printout (DFT or SCF)
         CALL TITLER('Hartree-Fock calculation','*',125)
 
-        CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
+CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
+        IF (MAXITR.GT.0) THEN
+         CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &        WORK(KFREE),LFREE)
 
-        CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
+         CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &            LFREE,IPRINT)
+        ELSE
+         DHFCONV(1)=.TRUE.
+        ENDIF
 
         CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
