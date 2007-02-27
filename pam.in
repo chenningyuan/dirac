@@ -365,7 +365,7 @@ remove_work_dir()
 #
    master=`hostname -s`
    if test -f $WRK/dirac_machines; then
-       for node in ` uniq $WRK/dirac_machines `; do
+       for node in ` uniq $WRK/dirac_machines | sed s/:.//`; do
           if [ $node != $master ]; then
              echo "Contents of work directory $WRK on slave node $node"
              $RSH $node "ls -l $WRK"
@@ -451,7 +451,7 @@ distribute_work_dir()
 #  Loop over the remote machines and copy the contents of the work directory.
 #
    if test -f dirac_machines; then
-      for node in `grep -v -E "\<$master\>" dirac_machines | sort | uniq`; do
+      for node in `grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`; do
          echo "copying contents of $master:$WRK to $node:$WRK"
          $RSH $node "mkdir -p $WRK"
          if [ -n "$RMSCR" ]; then
