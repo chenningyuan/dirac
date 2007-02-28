@@ -1016,6 +1016,251 @@ C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
       RETURN
       END
 *
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE FNDMND_PAR(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,
+     &                     SCR,ISCAT,SUBVAL,IBLOCKL,IBLOCKD,
+     &                     NBLOCK,NTESTG)
+*
+* FIND NSUB LOWEST ELEMENTS OF VECTOR RESIDING ON FILE
+* LU. ENSURE THAT NO DEGENERENCIES ARE SPLIT
+*
+*
+* INPUT
+*=======
+* LU :    FILE WHERE VECTOR OF INTEREST IS RESIDING, REWOUND
+* LBLK :  DEFINES FILE STRUCTURE ON FILE LU
+* NSUBMX: LARGEST ALLOWED NUMBER OF SORTED ELEMENTS
+*
+* OUTPUT
+*=======
+* NSUB : ACTUAL NUMBER OF ELEMENTS OBTAINED. CAN BE SMALLER
+*        THAN NSUBMX IF THE LAST ELEMENT BELONGS TO A DEGENERATE
+*        SET
+*ISCAT:  SCATTERING ARRAY, ISCAT(I) GIVES FULL ADRESS OF SORTED
+*        ELEMENT I
+*SUBVAL: VALUE OF SORTED ELEMENTS
+
+      IMPLICIT REAL*8           ( A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+#include "../lucita/wrkspc.inc"
+      
+      DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
+      DIMENSION IBLOCKL(NBLOCK), IBLOCKD(NBLOCK)
+*
+      CALL REWINE(LU,-1)
+*
+*.LOOP OVER BLOCKS
+*
+C     write(6,*) ' FNDMND NSUBMX = ', NSUBMX
+*
+      NTESTL = 0000
+      NTEST = MAX(NTESTG,NTESTL)
+      NTEST = 0
+*
+      IBASE = 1
+      LSUB = 0
+*. Loop over blocks
+      DO 1000 II = 1, NBLOCK    
+*
+        IF(IBLOCKD(II).EQ.MYPROC)THEN
+          CALL IFRMDS(LBL,1,-1,LU)
+        ELSE
+*.        useful to set all other blocks to 0?
+          LBL = 0
+        ENDIF
+*
+        IF(NTEST.GE.10) THEN
+          WRITE(6,*) ' Info about block ',II
+          WRITE(6,*) ' Number of elements ',LBL
+        END IF
+        IF(LBL .GE. 0 ) THEN
+          IF(LBLK .GE.0 ) THEN
+            KBLK = LBL
+          ELSE
+            KBLK = -1
+          END IF
+          IF(IBLOCKD(II).EQ.MYPROC)THEN 
+            CALL FRMDSC(SEGMNT,LBL ,-1,LU,IMZERO,IAMPACK)
+          ENDIF
+          IF(NTEST.GE.100) THEN
+            WRITE(6,*) ' Elements read in '
+            CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
+          END IF
+          IF(LBL .GE. 0 ) THEN
+*. LOWEST ELEMENTS IN SEGMNT  ( ADD TO PREVIOUS LIST )
+            MSUBMX = MIN(NSUBMX,LBL)
+            IF(LBL.GE.1) THEN
+              CALL SORLOW(SEGMNT,SCR(1+LSUB),ISCR(1+LSUB),LBL,
+     &                    MSUBMX,MSUB,NTEST)
+            ELSE
+              MSUB = 0
+            END IF
+            DO 10 I = 1, MSUB
+   10         ISCR(LSUB+I) = ISCR(LSUB+I) + IBASE - 1
+* SORT COMBINED LIST
+            MSUBMX = MIN(NSUBMX,LSUB+MSUB)
+            IF(MSUBMX.GT.0) THEN
+              CALL SORLOW(SCR,SUBVAL,ISCAT,LSUB+MSUB,MSUBMX,LLSUB,
+     &                    NTEST)
+            ELSE
+              LLSUB = 0
+            END IF
+            LSUB = LLSUB
+            DO 20 I = 1, LSUB
+              ISCR(I+2*NSUBMX) = ISCR(ISCAT(I))
+   20       CONTINUE
+*
+            CALL ICOPVE(ISCR(1+2*NSUBMX),ISCR(1),LSUB)
+            CALL COPVEC(SUBVAL,SCR,LSUB)
+*. set to lbl to true value
+            LBL = IBLOCKL(II)
+*.
+            IBASE = IBASE + LBL
+*.
+            IF(NTEST .GE. 20 ) THEN
+              WRITE(6,*) ' Lowest elements and their original place '
+              WRITE(6,*) ' Number of elements obtained ', LSUB
+              CALL WRTMAT(SUBVAL,1,LSUB,1,LSUB)
+              CALL IWRTMA(ISCR,1,LSUB,1,LSUB)
+            END IF
+          END IF
+*
+        END IF
+*
+ 1000 CONTINUE
+*
+      NSUB = LSUB
+      CALL ICOPVE(ISCR,ISCAT,NSUB)
+      IF(NTEST .GE. 20) THEN
+        IF(MYPROC.EQ.MASTER) then
+          WRITE(6,*) ' Lowest elements and their original place '
+          WRITE(6,*) ' Number of elements obtained ', NSUB
+          WRITE(6,*) ' WRITTEN BY MASTER ', MASTER
+          CALL WRTMAT(SUBVAL,1,NSUB,1,NSUB)
+          CALL IWRTMA(ISCAT,1,NSUB,1,NSUB)
+        END IF
+      END IF
+*
+      IDUM = 0
+      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GATHER')
+*
+      CALL MEMMAN(KGATHERA,NMPROC*NSUBMX,'ADDL  ',2,'PARRA1')
+      CALL MEMMAN(KGATHERB,NMPROC*NSUBMX,'ADDL  ',2,'PARRA2')
+      CALL MEMMAN(KGATHERC,NMPROC*NSUBMX,'ADDL  ',1,'PARIA1')
+      CALL MEMMAN(KGATHERD,NMPROC*NSUBMX,'ADDL  ',1,'PARIA2')
+      CALL MEMMAN(KGATHERE,NSUBMX,'ADDL  ',1,'PARIA3')
+*. We gather all lowest values from each node 
+*. and build up a combined list of those
+      CALL GATHER_LOW_PAR(NSUB,NSUBMX,SUBVAL,ISCAT,
+     &                    WORK(KGATHERA),WORK(KGATHERB),
+     &                    WORK(KGATHERC),WORK(KGATHERD),
+     &                    WORK(KGATHERE),MPI_COMM_WORLD,NTESTG)
+*. update SCR1 and ISCR1
+      CALL COPVEC(SUBVAL,SCR,NSUBMX)
+      CALL ICOPVE(ISCAT,ISCR,NSUBMX)
+     
+CSK      NTEST = 20
+      IF(MYPROC.EQ.MASTER.AND.NTEST.GE.20)THEN
+        WRITE(6,*)'after search: SUBVAL and ISCAT'
+        CALL WRTMAT(SUBVAL,1,NSUBMX,1,NSUBMX)
+        CALL IWRTMA(ISCAT,1,NSUBMX,1,NSUBMX)
+      END IF
+CSK      NTEST = 0
+           
+      IF(NSUB.NE.NSUBMX.AND.MYPROC.EQ.MASTER.AND.NTEST.GE.20)THEN
+        WRITE(6,*)'Warning! NSUB is lower than NSUBMX'
+        WRITE(6,*)'NSUB is set to be equal to NSUBMX'
+        NSUB = NSUBMX
+      END IF
+*
+*. Eliminate local memory
+      IDUM = 0
+      CALL MEMMAN(IDUM ,IDUM,'FLUSM ',2,'GATHER')
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COPVCD_SPAR_CCOEFF(LCFILE,SCR,SCALFAC,IBLOCKL,IBLOCKD,
+     &                              NDIM,IGROUPLIST)
+C
+C     copy vector from serial I/O file LCFILE to 
+C     parallel I/O file MPILUSCR
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar.inc"
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+C     INPUT 
+      DIMENSION SCR(*), IBLOCKL(NDIM), IBLOCKD(NDIM)
+      DIMENSION IPROCLIST(NMPROC)
+C     OUTPUT
+      DIMENSION SCALFAC(NDIM)
+C     SCRATCH
+      INTEGER MYGROUPNR,MIN2
+      MYGROUPNR = IPROCLIST(MYPROC+1)
+      MIN2 = -2
+C
+C     Initialize SCALFAC to 0.0D0
+C
+      ZERO = 0.0D0
+      CALL SETVEC(SCALFAC,ZERO,NDIM) 
+C
+C     file offset is at 0
+      IOFFSET = 0
+C
+C     Loop over blocks
+C
+      DO IBLK = 1, NDIM
+C
+        LBL = IBLOCKL(IBLK)
+        NDBLOCK = IBLOCKD(IBLK)
+C
+        IF( NDBLOCK .eq. MIN2 ) GOTO 500
+        IF( NDBLOCK .eq. MYPROC ) GOTO 100
+        IGROUPBLK = 0
+        IF(NEWCOMM_PROC .ne. NMPROC ) THEN
+          DO IPROC = 1, NEWCOMM_PROC
+            IF( NDBLOCK .eq. IGROUPLIST(IPROC) ) IGROUPBLK = 1 
+          END DO
+          IF( IGROUPBLK .eq. 0) GOTO 500
+        END IF
+C       ... well this nonzero block is at least inside this file-group
+ 100    CONTINUE
+        IF( MYPROC .eq. NDBLOCK ) THEN
+          CALL IFRMDS(LBL,1,-1,LCFILE)
+          KBLK = -1
+          NO_ZEROING = 1
+          CALL FRMDSC2(SCR,LBL,KBLK,LCFILE,IMZERO,IAMPACK,
+     &                 NO_ZEROING)
+          IF( IMZERO .eq. 0 ) THEN
+            SCALFAC(IBLK) = 1.0D0
+            CALL MPI_FILE_WRITE_AT(MPILUSCR2,IOFFSET,SCR,LBL,MPI_REAL8,
+     &           MPI_STATUS_IGNORE,IERR)
+          END IF
+          IOFFSET = IOFFSET + LBL
+        ELSE
+        IOFFSET = IOFFSET + LBL
+        END IF
+ 500    CONTINUE
+      END DO  
+C
+      END
+*
 #if !defined(SYS_LOCALDISKS)
 ***********************************************************************
 *                                                                     *
