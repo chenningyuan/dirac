@@ -514,10 +514,12 @@ C
       if (IMOKW(22).eq.0) then
          IIOMOD = 0
          IMOKW(22) = 2
+         YESSTATEMENT = 'No'
       else if (IMOKW(22).eq.1) then
 #if defined (VAR_MPI)
         if(IPARIOMOD.eq.0) then
           IIOMOD = 0
+          YESSTATEMENT = 'No'
         else if(IPARIOMOD.eq.1) then
           IIOMOD = 1
           YESSTATEMENT = 'Yes'
@@ -528,12 +530,14 @@ C
           write(6,*) 'Program will continue.'
           IMOKW(22) = 3
           IIOMOD = 0
+          YESSTATEMENT = 'No'
         end if
 #else
          write(6,*) 'Keyword PIOMOD does not make sense in a sequential
      & run. I will ignore and continue.'
          IIOMOD = -1
          IMOKW(22) = 3 
+         YESSTATEMENT = 'No'
 #endif
       end if
 *
@@ -548,6 +552,36 @@ C
          else
            IMAXCIITER = ICIMAXITER
          end if
+      end if
+*
+* 24: Largest allowed batchsize (if larger than biggest block!) 
+*
+      if (IMOKW(24).eq.0) then
+         IMAXBLKSIZE = 100 000 000
+         IMAXLBLKSZ = IMAXBLKSIZE
+         IMOKW(24) = 2
+      else if (IMOKW(24).eq.1) then
+         IMAXLBLKSZ = MAX(100 000,IMAXBLKSIZE)
+C        .. we do not accept user input of less than 100 000 !
+      end if
+*
+* 25: File system in use (local/parallel)
+*
+      if (IMOKW(25).eq.0) then
+         IFILESYSTEM = 0
+         IMOKW(25) = 2
+      else if (IMOKW(25).eq.1) then
+        if(IFILESYS.lt.0) then 
+          IFILESYSTEM = 0
+        else 
+          IFILESYSTEM = MIN(IFILESYS,1)
+          if( IIOMOD .eq. 0 .and. IFILESYSTEM .eq. 1 ) then 
+            write(6,*) 'Keyword FILSYS not set correctly. 
+     &      You should define PIOMOD properly (1 instead of 0). 
+     &      I will ignore and continue with a zero value for FILSYS.'
+            IFILESYSTEM = 0
+          end if
+        end if
       end if
 *
       if(irunpa.eq.1) then
@@ -648,14 +682,30 @@ C
       endif
 *
 *
-* 10d: runtype of parallel calculation
+* 10d: file version to use in parallel calculation
 *
-      if(iiomod.gt.0)then
-        write(LUOUT,'(A42,A3)')
+      write(LUOUT,'(A42,A3)')
      &  ' Using MPI-FILE I/O ................... ',YESSTATEMENT
-        write(LUOUT,*)
-      endif
+      write(LUOUT,*)
 *
+*
+* 10e: file system in parallel calculation
+*
+      if( irunpa .gt. 0 ) then
+        if( ifilesystem .eq. 0 ) THEN
+          YESSTATEMENT = 'No'
+        else
+          YESSTATEMENT = 'Yes'
+        end if
+        write(LUOUT,'(A42,A3)')
+     &  ' Parallel Filesystem in use ........... ',YESSTATEMENT
+        write(LUOUT,*)
+        if(ifilesystem .eq. 1 ) then
+        write(LUOUT,'(A)')
+     &  '   WARNING! I expect now to work on a parallel filesystem.'
+        write(LUOUT,*)
+        end if
+      end if
 * 11: INAC specification of inactive orbitals per symmetry
 *
 *     No printing. Will be directed to luciwrt after resolution
@@ -4428,7 +4478,7 @@ CTF      write(*,'(1X,A6)') MACHINE
          write(*,'(1X,I4)') IRESDIM
 *
          write(*,'(A6)') 'LCSBLK'
-         write(*,'(1X,I7)') LCSBLK
+         write(*,'(I20)') LCSBLK
 *
          if (IUSE_PH.eq.1) then
             write(*,'(A6)') 'USE_PH'
@@ -4579,7 +4629,7 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
          write(LUINP,'(1X,I4)') IRESDIM
 *
          write(LUINP,'(A6)') 'LCSBLK'
-         write(LUINP,'(1X,I7)') LCSBLK
+         write(LUINP,'(I20)') LCSBLK
 *
          if (IUSE_PH.eq.1) then
             write(LUINP,'(A6)') 'USE_PH'
@@ -7353,7 +7403,8 @@ C
       IF (NMPROC.GT.1) THEN
          CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,MASTER,
