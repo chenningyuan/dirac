@@ -578,6 +578,91 @@ C         set local scalfac to 0.0D0
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE COPVCD_PAR_BDRIV5(SEGMNT,IBLOCKD,SCALFAC,SCALFAC_LOCAL,
+     &                             IBLOCKL,NBLOCK,JCOMM,IGROUPLIST)
+C
+C     Read blocks of the vector from disc file luin to array segment
+C     and broadcast to nodes that need the block, save on diskfile luout 
+C     if necessary. 
+C     Using communicator jcomm.
+C     OUTPUT: Blocks on LUOUT, modified SCALFAC_LOCAL.
+C
+C     Stefan Knecht, Odense, Feb07
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+      DIMENSION SEGMNT(*),IBLOCKD(NBLOCK),IBLOCKL(NBLOCK)
+      DIMENSION SCALFAC(NBLOCK),SCALFAC_LOCAL(NBLOCK)
+      DIMENSION IGROUPLIST(NMPROC)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN, IOFFSET_OUT
+      INTEGER IGROUPBLK
+C
+C     file offset for each cpu is 0
+      IOFFSET_IN  = 0
+      IOFFSET_OUT = 0
+C
+C LOOP OVER BLOCKS
+C
+      DO IBLK = 1, NBLOCK 
+C        check if block is active
+        IF( SCALFAC(IBLK) .ne. 0.0D0 ) THEN
+C
+          LBL = IBLOCKL(IBLK)
+          IGROUPBLK = 0
+          DO IPROC = 1, NEWCOMM_PROC
+            IF( IBLOCKD(IBLK) .eq. IGROUPLIST(IPROC) ) IGROUPBLK = 1
+          END DO
+          IF( IGROUPBLK .eq. 1 ) THEN
+C
+            CALL MPI_FILE_READ_AT(MPILUSCR2,IOFFSET_IN,SEGMNT,LBL,
+     &                            MPI_REAL8,ISTAT,IERR)
+C
+          END IF
+C
+C
+C         broadcast the nonvanishing block
+          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,IBLOCKD(IBLK),
+     &                   JCOMM,IERR)
+C         some test writing, enable for debugging!        
+CSK          IF(MYPROC.NE.IBLOCKD(IBLK)) THEN
+CSK            WRITE(6,*)'THIS IS WHAT I GOT',MYPROC
+CSK            CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
+CSK          END IF
+C         transfer the recieved block to disk if necessary
+          IF(SCALFAC_LOCAL(IBLK).NE.0.0D0) THEN 
+            KBLK = -1
+            CALL MPI_FILE_WRITE_AT(MPILUSCR,IOFFSET_OUT,SEGMNT,LBL,
+     &                             MPI_REAL8,ISTAT,IERR)
+            IOFFSET_OUT = IOFFSET_OUT + LBL
+          END IF
+C
+        ELSE 
+C
+          IF(IBLOCKD(IBLK).EQ.MYPROC)THEN
+C           skip over this block
+            CALL IFRMDS(LBL,1,-1,LUIN)
+            NO_ZEROING = 1
+            KBLK = -1
+            CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                   NO_ZEROING)
+          END IF
+C         set local scalfac to 0.0D0
+          SCALFAC_LOCAL(IBLK) = 0.0D0
+C
+        END IF
+C
+      END DO
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
       SUBROUTINE DISTBLKND(NDIM,NBLOCKL,NPARBLOCK,NPARBLKWT)
 *
 *. Find distribution for (nonvanishing blocks) among the nodes
@@ -937,6 +1022,187 @@ CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE DISTBLKND_3(NDIM,NBLOCKL,NPARBLOCK,NPARBLKWT,
+     &                       NBATCH,LBATCH,LEBATCH,I1BATCH)
+*
+*. Find distribution for (nonvanishing blocks) among the nodes
+*. Non vanishing block has a nonzero blocklength
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+#include "../lucita/clunit.inc"
+*
+      DIMENSION NBLOCKL(NDIM), NPARBLKWT(2,NMPROC)
+      DIMENSION LBATCH(*),LEBATCH(*),I1BATCH(*)
+*. Scratch
+      INTEGER INONVAN,MAXLBL,LBL,IWEIGHT,LABEL,IBLOCKN
+      INTEGER MXSZTMP,MXNUMB,ITEMPL,ITEMPD
+      INTEGER*8 ITOTBLL 
+*. ======
+*. Output
+*. ======
+*. array NPARBLOCK that contains the final block distribution
+      DIMENSION NPARBLOCK(NDIM)
+*. 
+      MXSZTMP = 0
+      MXNUMB = 0
+      IRUN = 0
+      ITEMPW1 = 1000000000
+      ITEMPW2 = 0
+      ITEMPN = 0
+      ITEMPL = 0
+      IAMGPROC = 0
+      IAMTPROC = 0
+      INONVAN = 0
+      ITOTBLL = 0
+      MAXLBL = 0 
+      LABEL = 0
+      MIN2 = -2
+      NTEST = 0
+      CALL ISETVC(NPARBLOCK,MIN2,NDIM)
+      DO 100 II = 1, NDIM
+        LBL = NBLOCKL(II)
+        IF(LBL.GT.0) THEN
+          NPARBLOCK(II) = -1
+          ITOTBLL = ITOTBLL + LBL
+        ENDIF
+        IF(LBL.GT.MAXLBL) THEN
+          MAXLBL = LBL
+          LABEL = II
+        END IF
+ 100  CONTINUE
+*
+*
+CSK      NTEST = 10
+      IF(NTEST.GT.0) THEN
+       IF(MYPROC.EQ.MASTER) THEN
+         WRITE(6,*) '  total number of processes to distribute on:',
+     &                 NMPROC
+         WRITE(6,*) '  overall active block length:  ', ITOTBLL 
+         WRITE(6,*) '  largest active block:         ', LABEL
+         WRITE(6,*) '  size of largest active block: ', MAXLBL
+       END IF
+      END IF
+*
+*. gather batch information for distribution of batches to cpu's (nodes)
+*
+         if(myproc.eq.master) then
+         write(6,*)'NUMBER OF BATCHES:', NBATCH
+         do II = 1, NBATCH
+         write(6,*)'TOTAL LENGTH OF BATCH:', II,LEBATCH(II)
+         write(6,*)'FIRST BLOCK OF THIS BATCH:', I1BATCH(II)
+         write(6,*)'TOTAL NUMBER OF BLOCKS FOR THIS BATCH:',LBATCH(II)
+         end do
+         endif
+         call mpi_barrier(mpi_comm_world,ierr)
+
+CSK      LEBATCHTOT = DASUM(NBATCH,LEBATCH,1)
+CSK      LEBATCHAVE = LEBATCHTOT / NMPROC
+*
+*. starting the treausure quest for the ?optimal? c-block distribution
+*
+ 200  CONTINUE
+*
+      IRUN = IRUN + 1
+      IF(IRUN.LE.NBATCH) THEN
+*
+*       Find biggest batch not assigned to a CPU yet:
+*       
+        MXSZTMP = 0
+*
+        DO II = 1, NBATCH
+*
+*         Has this batch already been assigned to a CPU ?
+          IBLK1 = I1BATCH(II)
+          DO IBLK = IBLK1, IBLK1-1+LBATCH(II)
+             ITEMPD = NPARBLOCK(IBLK)
+             IF (ITEMPD .GE. 0) GO TO 300
+*            .. Yes! by CPU no. ITEMPD
+          END DO
+*
+          ITEMPL = LEBATCH(II)
+          IF(ITEMPL.GE.MXSZTMP) THEN
+            MXSZTMP = ITEMPL
+            JBATCH = II
+          END IF
+*
+  300   CONTINUE
+        END DO
+*
+*       Find least loaded CPU:
+*
+        ITEMPW1 = NPARBLKWT(2,1)
+        IAMGPROC = 1
+*       Is anyone less loaded than the master (IPR = 1) ?
+        DO 400 IPR = 2, NMPROC
+*
+          ITEMPW2 = NPARBLKWT(2,IPR)
+*
+          IF(ITEMPW2.LE.ITEMPW1) THEN
+            ITEMPW1 = ITEMPW2
+            IAMGPROC = IPR
+          END IF
+*
+ 400    CONTINUE
+*. now we should have found a proc and a batch --> put both together !
+*
+*. calculation of batch JBATCH by proc IAMGPROC
+        IF(NTEST.GT.0) THEN
+          IF(MYPROC.EQ.MASTER) THEN
+            WRITE(6,*)'calculation of batch by proc',JBATCH,
+     &      IAMGPROC-1
+          END IF
+        ENDIF
+*. raising NPARBLKWT(1,proc) by 1
+*. adding on NPARBLKWT(2,proc) the weight of the new block
+        NPARBLKWT(1,IAMGPROC) = NPARBLKWT(1,IAMGPROC) + LBATCH(JBATCH)
+        NPARBLKWT(2,IAMGPROC) = NPARBLKWT(2,IAMGPROC) + MXSZTMP 
+        IBLK1 = I1BATCH(JBATCH)
+        DO IBLK = IBLK1, IBLK1-1+LBATCH(JBATCH)
+          IF (NBLOCKL(IBLK) .GT. 0) THEN
+*           .. assign this block to the selected cpu
+            NPARBLOCK(IBLK) = IAMGPROC - 1
+          ELSE
+*           .. insert code -2 for zero length block
+            NPARBLOCK(IBLK) = -2
+          END IF
+        END DO
+*
+      ELSE
+        GOTO 500
+      END IF
+*     /\ IRUN !!!
+      GOTO 200
+*
+500   CONTINUE
+CSK      IF(NTEST.GT.0) THEN
+        IF(MYPROC.EQ.MASTER) THEN
+CSK          WRITE(LUDUMPF,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
+CSK     &    MYPROC:',MYPROC
+          WRITE(6,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
+     &    MYPROC:',MYPROC
+          DO ISTI = 1, NMPROC
+CSK            WRITE(LUDUMPF,'(3X,A,I17,A,I17,A,1X,I17)')
+CSK     &      'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
+CSK     &      ' blocks with a total length of',NPARBLKWT(2,ISTI)
+            WRITE(6,'(3X,A,I17,A,I17,A,1X,I17)')
+     &      'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
+     &      ' blocks with a total length of',NPARBLKWT(2,ISTI)
+          END DO
+        END IF
+CSK      END IF
+1001  CONTINUE
+*      
+      END 
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
       SUBROUTINE DISTWORK(NDIM,ICCTOS,ICWEIGHTF,NPARBLOCK,NBLKWT,NBATCH,
      &                    LBATS)
 *
@@ -1120,169 +1386,105 @@ CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE FNDMND_PAR(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,
-     &                     SCR,ISCAT,SUBVAL,IBLOCKL,IBLOCKD,
-     &                     NBLOCK,NTESTG)
-*
-* FIND NSUB LOWEST ELEMENTS OF VECTOR RESIDING ON FILE
-* LU. ENSURE THAT NO DEGENERENCIES ARE SPLIT
-*
-*
-* INPUT
-*=======
-* LU :    FILE WHERE VECTOR OF INTEREST IS RESIDING, REWOUND
-* LBLK :  DEFINES FILE STRUCTURE ON FILE LU
-* NSUBMX: LARGEST ALLOWED NUMBER OF SORTED ELEMENTS
-*
-* OUTPUT
-*=======
-* NSUB : ACTUAL NUMBER OF ELEMENTS OBTAINED. CAN BE SMALLER
-*        THAN NSUBMX IF THE LAST ELEMENT BELONGS TO A DEGENERATE
-*        SET
-*ISCAT:  SCATTERING ARRAY, ISCAT(I) GIVES FULL ADRESS OF SORTED
-*        ELEMENT I
-*SUBVAL: VALUE OF SORTED ELEMENTS
-
-      IMPLICIT REAL*8           ( A-H,O-Z)
+      SUBROUTINE FIND_GROUP_OF_PROCS(MYOWNNAME,MYNAMELENGTH,
+     &                               IPROCLIST,NAMELENGTHLIST)
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+C
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "../lucita/lucipar.inc"
-#include "../lucita/wrkspc.inc"
-      
-      DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
-      DIMENSION IBLOCKL(NBLOCK), IBLOCKD(NBLOCK)
-*
-      CALL REWINE(LU,-1)
-*
-*.LOOP OVER BLOCKS
-*
-C     write(6,*) ' FNDMND NSUBMX = ', NSUBMX
-*
-      NTESTL = 0000
-      NTEST = MAX(NTESTG,NTESTL)
-      NTEST = 0
-*
-      IBASE = 1
-      LSUB = 0
-*. Loop over blocks
-      DO 1000 II = 1, NBLOCK    
-*
-        IF(IBLOCKD(II).EQ.MYPROC)THEN
-          CALL IFRMDS(LBL,1,-1,LU)
-        ELSE
-*.        useful to set all other blocks to 0?
-          LBL = 0
-        ENDIF
-*
-        IF(NTEST.GE.10) THEN
-          WRITE(6,*) ' Info about block ',II
-          WRITE(6,*) ' Number of elements ',LBL
-        END IF
-        IF(LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-          IF(IBLOCKD(II).EQ.MYPROC)THEN 
-            CALL FRMDSC(SEGMNT,LBL ,-1,LU,IMZERO,IAMPACK)
-          ENDIF
-          IF(NTEST.GE.100) THEN
-            WRITE(6,*) ' Elements read in '
-            CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
-          END IF
-          IF(LBL .GE. 0 ) THEN
-*. LOWEST ELEMENTS IN SEGMNT  ( ADD TO PREVIOUS LIST )
-            MSUBMX = MIN(NSUBMX,LBL)
-            IF(LBL.GE.1) THEN
-              CALL SORLOW(SEGMNT,SCR(1+LSUB),ISCR(1+LSUB),LBL,
-     &                    MSUBMX,MSUB,NTEST)
-            ELSE
-              MSUB = 0
-            END IF
-            DO 10 I = 1, MSUB
-   10         ISCR(LSUB+I) = ISCR(LSUB+I) + IBASE - 1
-* SORT COMBINED LIST
-            MSUBMX = MIN(NSUBMX,LSUB+MSUB)
-            IF(MSUBMX.GT.0) THEN
-              CALL SORLOW(SCR,SUBVAL,ISCAT,LSUB+MSUB,MSUBMX,LLSUB,
-     &                    NTEST)
-            ELSE
-              LLSUB = 0
-            END IF
-            LSUB = LLSUB
-            DO 20 I = 1, LSUB
-              ISCR(I+2*NSUBMX) = ISCR(ISCAT(I))
-   20       CONTINUE
-*
-            CALL ICOPVE(ISCR(1+2*NSUBMX),ISCR(1),LSUB)
-            CALL COPVEC(SUBVAL,SCR,LSUB)
-*. set to lbl to true value
-            LBL = IBLOCKL(II)
-*.
-            IBASE = IBASE + LBL
-*.
-            IF(NTEST .GE. 20 ) THEN
-              WRITE(6,*) ' Lowest elements and their original place '
-              WRITE(6,*) ' Number of elements obtained ', LSUB
-              CALL WRTMAT(SUBVAL,1,LSUB,1,LSUB)
-              CALL IWRTMA(ISCR,1,LSUB,1,LSUB)
-            END IF
-          END IF
-*
-        END IF
-*
- 1000 CONTINUE
-*
-      NSUB = LSUB
-      CALL ICOPVE(ISCR,ISCAT,NSUB)
-      IF(NTEST .GE. 20) THEN
-        IF(MYPROC.EQ.MASTER) then
-          WRITE(6,*) ' Lowest elements and their original place '
-          WRITE(6,*) ' Number of elements obtained ', NSUB
-          WRITE(6,*) ' WRITTEN BY MASTER ', MASTER
-          CALL WRTMAT(SUBVAL,1,NSUB,1,NSUB)
-          CALL IWRTMA(ISCAT,1,NSUB,1,NSUB)
-        END IF
+C
+      DIMENSION IPROCLIST(NMPROC),NAMELENGTHLIST(NMPROC)
+      CHARACTER*72 PNAMELIST(NMPROC),MYOWNNAME,MYSCRNAME
+      CHARACTER*72 OLD_NAME
+      INTEGER INUMBER, IFINI, NTEST,ICOUNT_GROUPS
+C
+C     NTEST =  0
+      NTEST = 10
+      INUMBER = 0
+      IFINI = 0
+      ICOUNT_GROUPS = 0
+C
+C     start with an all_gather of all name length
+C
+      CALL MPI_ALLGATHER(MYNAMELENGTH,1,my_MPI_INTEGER,
+     &                   NAMELENGTHLIST,1,my_MPI_INTEGER,
+     &                   MPI_COMM_WORLD,IERR)
+C
+C     ... all name length are stored now!
+C     ... save own name in scratch array!
+C
+      PNAMELIST(MYPROC+1) = MYOWNNAME
+C
+C     ... we start to gather the names ... 
+      DO IPROC = 1, NMPROC
+C
+         MYSCRNAME = MYOWNNAME
+         CALL MPI_BCAST(MYSCRNAME,NAMELENGTHLIST(IPROC),MPI_CHARACTER,
+     &                 IPROC-1,MPI_COMM_WORLD,IERR)
+         IF( MYPROC .NE. IPROC -1 ) THEN
+           PNAMELIST(IPROC) = MYSCRNAME(1:NAMELENGTHLIST(IPROC))
+         END IF
+C
+      END DO
+C
+C     test writing if needed
+C
+      IF( MYPROC .EQ. MASTER .AND. NTEST .GE. 10 ) THEN
+       DO IPROC = 1, NMPROC
+        MYSCRNAME = PNAMELIST(IPROC)(1:NAMELENGTHLIST(IPROC))
+        WRITE(6,'(1X,A,1X,I4,1X,A7,1X,A)')'Processor ',IPROC -1,
+     & ' alias ',MYSCRNAME(1:NAMELENGTHLIST(IPROC))
+C    & MYSCRNAME
+       END DO
       END IF
-*
-      IDUM = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GATHER')
-*
-      CALL MEMMAN(KGATHERA,NMPROC*NSUBMX,'ADDL  ',2,'PARRA1')
-      CALL MEMMAN(KGATHERB,NMPROC*NSUBMX,'ADDL  ',2,'PARRA2')
-      CALL MEMMAN(KGATHERC,NMPROC*NSUBMX,'ADDL  ',1,'PARIA1')
-      CALL MEMMAN(KGATHERD,NMPROC*NSUBMX,'ADDL  ',1,'PARIA2')
-      CALL MEMMAN(KGATHERE,NSUBMX,'ADDL  ',1,'PARIA3')
-*. We gather all lowest values from each node 
-*. and build up a combined list of those
-      CALL GATHER_LOW_PAR(NSUB,NSUBMX,SUBVAL,ISCAT,
-     &                    WORK(KGATHERA),WORK(KGATHERB),
-     &                    WORK(KGATHERC),WORK(KGATHERD),
-     &                    WORK(KGATHERE),MPI_COMM_WORLD,NTESTG)
-*. update SCR1 and ISCR1
-      CALL COPVEC(SUBVAL,SCR,NSUBMX)
-      CALL ICOPVE(ISCAT,ISCR,NSUBMX)
-     
-CSK      NTEST = 20
-      IF(MYPROC.EQ.MASTER.AND.NTEST.GE.20)THEN
-        WRITE(6,*)'after search: SUBVAL and ISCAT'
-        CALL WRTMAT(SUBVAL,1,NSUBMX,1,NSUBMX)
-        CALL IWRTMA(ISCAT,1,NSUBMX,1,NSUBMX)
+C
+C     find all processors on the same deck and reorder (if necessary) 
+C     to get the processors as close as possible, starting with the
+C     master 
+C
+      INUMBER = MASTER + 1
+ 100  CONTINUE
+      IFINI = 0
+      ICOUNT_GROUPS = ICOUNT_GROUPS + 1
+      OLD_NAME = PNAMELIST( INUMBER)(1:NAMELENGTHLIST( INUMBER))
+C
+      DO IPROC = 1, NMPROC
+C
+        MYSCRNAME(1:NAMELENGTHLIST(IPROC)) = 
+     &  PNAMELIST(IPROC)(1:NAMELENGTHLIST(IPROC))
+C
+        IF(MYSCRNAME(1:NAMELENGTHLIST(IPROC)) .eq. 
+     &     OLD_NAME(1:NAMELENGTHLIST(INUMBER)))
+     &     IPROCLIST(IPROC) = INUMBER
+C
+      END DO
+C
+C     if finished: IFINI = 1, else 0
+C
+      IFINI = 1
+      DO IPRC = 1, NMPROC
+        IF(IFINI .ne. 0 .and. IPROCLIST(IPRC) .eq. -1) THEN
+          IFINI = 0
+          INUMBER = IPRC
+        END IF
+      END DO
+      IF(IFINI .eq. 0 ) GOTO 100
+C
+C     write the count of 'groups' formed by processes
+C
+      IF( MYPROC .eq. MASTER .and. NTEST .ge. 10) THEN
+        WRITE(6,'(1X,A,I4,1X,A)') 'There are ',ICOUNT_GROUPS,
+     & 'different groups of processes'
+        CALL IWRTMA(IPROCLIST,1,NMPROC,1,NMPROC)
       END IF
-CSK      NTEST = 0
-           
-      IF(NSUB.NE.NSUBMX.AND.MYPROC.EQ.MASTER.AND.NTEST.GE.20)THEN
-        WRITE(6,*)'Warning! NSUB is lower than NSUBMX'
-        WRITE(6,*)'NSUB is set to be equal to NSUBMX'
-        NSUB = NSUBMX
-      END IF
-*
-*. Eliminate local memory
-      IDUM = 0
-      CALL MEMMAN(IDUM ,IDUM,'FLUSM ',2,'GATHER')
-*
+C
+C     Transfer information to common block
+C
+      NFLGRPS = ICOUNT_GROUPS
+C
       END
 ***********************************************************************
 *                                                                     *
@@ -1394,6 +1596,39 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE MVCSMD_B_PAR(LUIN,FAC,LUOUT,VEC1,VEC2,
+     &                      NVEC,IREW,LBLK)
+C
+C ADD VECTORS ON FILE LUIN TIMES FACTOR AND STORE ON LUOUT
+C
+C LUOUT ARE INITIALLY REWOUND
+C
+      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      DIMENSION VEC1(*),VEC2(*)
+      DIMENSION FAC(NVEC)
+C
+C
+      DO IBATCH = 1, NBATCH
+C       ! open LUIN = LUIN_IBATCH for this batch
+        CALL REWINE(LUIN,LBLK)
+        CALL SETVEC(VEC2,0.0D0,LBATCH)
+        DO 100 IVEC = 1, NVEC
+C         ! read batch from LUIN to VEC1
+          CALL DAXPY(LBATCH,FAC(IVEC),VEC1,1,VEC2,1)
+  100   CONTINUE
+C       ! close LUIN
+C       ! open LUOUT = LUOUT_IBATCH
+C       ! write VEC2 to LUOUT
+C       ! close LUOUT
+      END DO
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
       SUBROUTINE MVCSMD2_PAR(LUIN,FAC,FACLUOUT,LUOUT,LUSCR,
      &                       VEC1,VEC2,NVEC,IREW,LBLK)
 *
@@ -1460,12 +1695,12 @@ C            COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 *
 * OUTPUT
 *
-* NBATCH : Number of batches
-* LBATCH : Number of blocks in a given batch
-* LEBATCH : Number of elements in a given batch ( packed ) !
-* I1BATCH : Number of first block in a given batch
-* IBATCH : TTS blocks in Start of a given TTS block with respect to start
-*          of batch
+* NBATCH      : Number of batches
+* LBATCH(*)   : Number of blocks in a given batch
+* LEBATCH(*)  : Number of elements in a given batch ( packed ) !
+* I1BATCH(*)  : Number of first block in a given batch
+* IBATCH(8,*) : TTS blocks in Start of a given TTS block with respect to start
+*               of batch --
 *   IBATCH(1,*) : Alpha type
 *   IBATCH(2,*) : Beta  type
 *   IBATCH(3,*) : Sym of alpha
@@ -1712,6 +1947,46 @@ CSK        DATATYPE = MPI_REAL8
       ENDIF
 *. return since everything is reduced now!
 *
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE SET_GROUP_TABLE(IGROUPLIST,IPROCLIST,ICOLOR)
+C
+C     fill in the array IGROUPLIST. At the end it should contain all 
+C     processes numbers belonging to the same group
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "../lucita/lucipar.inc"
+C     INPUT
+      DIMENSION IPROCLIST(NMPROC)
+C     OUTPUT
+      DIMENSION IGROUPLIST(NMPROC)
+C
+      INUMB = 1
+      DO IPROC = 1, NMPROC
+C
+        IF( IPROCLIST(IPROC) .eq. ICOLOR ) THEN
+C          put in the process tag ( master is 0 )
+           IGROUPLIST(INUMB) = IPROC - 1
+           INUMB = INUMB + 1
+        END IF
+C
+      END DO
+C
+      IF( INUMB-1 .gt. NEWCOMM_PROC ) THEN
+        WRITE(6,*) 'Error in SET_GROUP_TABLE: more processes assigned 
+     & than in this group included!'
+        WRITE(6,*) 'assigned processes, group size',INUMB-1,NEWCOMM_PROC
+        CALL Abend2('Error detected in gp/gplupar.F: SET_GROUP_TABLE')
+      END IF
+C
       END
 ***********************************************************************
 *                                                                     *
