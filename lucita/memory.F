@@ -228,6 +228,7 @@ CADDE
 *         = FREE  : Return first Free word in KBASE
 *         = MARK  : Set a mark at current free adress
 *         = FLUSM : Flush local memory to previous mark
+*         = SFREEM: Return the free memory currently available in real*8 words
 * IR    : 1 => integer , 2 => real,
 *         ratio between integer and real is IRAT
 * IDENT : identifier of memory slice,Character*6
@@ -414,6 +415,9 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
         CALL GFLUSH(LU6)
       ELSE IF( TASK(1:5).EQ.'CHECK') THEN
         NSNLI = NS+ NL
+      ELSE IF( TASK(1:6) .EQ. 'SFREEM') THEN
+        KBASE = NWORD - KFREEL - 1
+        NSNLI = NS+ NL
       ELSE
           WRITE(6,*) ' MEMMAN : Unknown task parameter ',TASK
           WRITE(6,*) ' Too confused to continue  '
@@ -443,19 +447,19 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
                IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
                IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
                IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                WRITE(6,'(4X,A,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
                ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                WRITE(6,'(4X,A,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'    OKAY       -  '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                WRITE(6,'(4X,A,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'     -       OKAY '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                  WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                  WRITE(6,'(4X,A,I20,4X,A)')
      &            IIDENT(IL),IBASE(IL),'     -       OKAY '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-                 WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                 WRITE(6,'(4X,A,I20,4X,A)')
      &            IIDENT(IL),IBASE(IL),'     -       -    '
                END IF
             END IF
@@ -466,7 +470,7 @@ CSK        iprntmp = 1
  1001 CONTINUE
 *
         IF(ITSOK.EQ.0.OR.IPRNTMP.NE.0) THEN
-          WRITE(6,'(A,A)') ' Current task : ', TASK
+          WRITE(6,'(A,A,1X,A)') ' Current task : ', TASK, IDENT
           WRITE(6,*) ' NS, NL, NSNLI',NS,NL,NSNLI
           IF(ITSOK.EQ.0)
      &    WRITE(6,*) '  Sorry to say it , but memory is CORRUPTED '
