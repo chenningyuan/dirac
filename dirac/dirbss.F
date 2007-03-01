@@ -7714,7 +7714,7 @@ C ...  transform S to the MO's:   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(
      &        NFBAS(I,0),NFBAS(I,0),1,IPQTOQ(1,0),LUPRI)
 
           CALL HEADER(
-     &   'NRMSTMO: Unnormalized U.CMO_2C starting MOs(LS,e), TBUF',-1)
+     &   'NRMSTMO: Normalized U.CMO_2C starting MOs(LS,e), TBUF',-1)
           WRITE(LUPRI,'(A,I1,A,I1)')
      &   '* Fermion ircop no.',I,'/',NFSYM                          
           CALL PRQMAT(TBUF(IBUF),NFBAS(I,0),NESH(I),              
@@ -7728,8 +7728,9 @@ C ...  transform S to the MO's:   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(
      &      NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
          ENDIF
 
-CMI    ... check unity matrix !!!
-      WRITE(LUPRI,'(2X,A)') 'Check of the unit matrix, C+.S.C'
+CMI    ... check the unit matrix !!!
+      WRITE(LUPRI,'(/2X,A)')
+     &  'Check of the unit matrix, C+.S.C, C(LS,e) - new 2c4c MOs'
       CALL TEST_UNIT_MTX(CMO(IMO),NESH(I),NESH(I),NESH(I),NZ)
 
       ENDIF
@@ -7847,11 +7848,13 @@ C     ... do read the DFCOEF file from previous iterations ...
      &              WORK,KFREE,LFREE)
       ENDIF
 
-C     Write transformed coefficients
+C ===================================================
+C   Write 2c->4c transformed coefficients ()
+C ===================================================
       CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
-      WRITE (LUPRI,'(/2X,A)')
-     & 'The DFCOEF file was renewed for restarting 4c SCF'//
+      WRITE (LUPRI,'(/2X,A/)')
+     & '>>> The DFCOEF file was renewed for restarting 4c SCF'//
      & ' with pseudo-4c MO from previous 2c SCF cycle.'
 
       CALL QEXIT('CMOINI4C')
