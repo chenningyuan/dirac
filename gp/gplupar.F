@@ -578,8 +578,9 @@ C         set local scalfac to 0.0D0
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE COPVCD_PAR_BDRIV5(SEGMNT,IBLOCKD,SCALFAC,SCALFAC_LOCAL,
-     &                             IBLOCKL,NBLOCK,JCOMM,IGROUPLIST)
+      SUBROUTINE COPVCD_PAR_BDRIV5(SEGMNT,IBLOCKD,SCALFAC,SCALFAC_GROUP,
+     &                             IBLOCKL,NBLOCK,JCOMM,
+     &                             IGROUPLIST,IPROCLIST)
 C
 C     Read blocks of the vector from disc file luin to array segment
 C     and broadcast to nodes that need the block, save on diskfile luout 
@@ -595,64 +596,69 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "../lucita/lucipar.inc"
       DIMENSION SEGMNT(*),IBLOCKD(NBLOCK),IBLOCKL(NBLOCK)
-      DIMENSION SCALFAC(NBLOCK),SCALFAC_LOCAL(NBLOCK)
-      DIMENSION IGROUPLIST(NMPROC)
+      DIMENSION SCALFAC(NBLOCK),SCALFAC_GROUP(NBLOCK)
+      DIMENSION IGROUPLIST(NMPROC),IPROCLIST(NMPROC)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN, IOFFSET_OUT
-      INTEGER IGROUPBLK
+      INTEGER IGROUPBLK,ROOTPROC
 C
+      ROOTPROC = 0
 C     file offset for each cpu is 0
       IOFFSET_IN  = 0
       IOFFSET_OUT = 0
 C
 C LOOP OVER BLOCKS
 C
+csk      write(6,*)'hurray ho, i am here!',myproc
       DO IBLK = 1, NBLOCK 
+C       get length of block
+        LBL = IBLOCKL(IBLK)
 C        check if block is active
         IF( SCALFAC(IBLK) .ne. 0.0D0 ) THEN
-C
-          LBL = IBLOCKL(IBLK)
+C         check if block belongs to own group
           IGROUPBLK = 0
+          ISCRNODE = IBLOCKD(IBLK)
           DO IPROC = 1, NEWCOMM_PROC
-            IF( IBLOCKD(IBLK) .eq. IGROUPLIST(IPROC) ) IGROUPBLK = 1
+            IF( ISCRNODE .eq. IGROUPLIST(IPROC) ) IGROUPBLK = 1
           END DO
           IF( IGROUPBLK .eq. 1 ) THEN
 C
+CSKT            WRITE(6,*) 'ACTIVE BLOCK ',IBLK
+CSKT            WRITE(6,*) 'START READING AT IOFFSET_IN = ',IOFFSET_IN
             CALL MPI_FILE_READ_AT(MPILUSCR2,IOFFSET_IN,SEGMNT,LBL,
      &                            MPI_REAL8,ISTAT,IERR)
 C
           END IF
 C
+C         find the sending root processor
+csk          write(6,*) ' processor list:myproc,mynew_id,icomm_id',
+csk     &    myproc,mynew_id,icomm_id
+csk          CALL IWRTMA(IPROCLIST,1,NMPROC,1,NMPROC)
+csk          CALL MPI_BARRIER(ICOMM,IERR)
+          ROOTPROC = IPROCLIST(ISCRNODE+1) - 1
+csk          write(6,*)' ROOT proc should send: ICOMM_ID, ROOTPROC',
+csk     &    ICOMM_ID,ROOTPROC
 C
 C         broadcast the nonvanishing block
-          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,IBLOCKD(IBLK),
+          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,ROOTPROC,
      &                   JCOMM,IERR)
-C         some test writing, enable for debugging!        
+C         some test writing, enable for debugging!
 CSK          IF(MYPROC.NE.IBLOCKD(IBLK)) THEN
-CSK            WRITE(6,*)'THIS IS WHAT I GOT',MYPROC
-CSK            CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
 CSK          END IF
 C         transfer the recieved block to disk if necessary
-          IF(SCALFAC_LOCAL(IBLK).NE.0.0D0) THEN 
-            KBLK = -1
+          IF( SCALFAC_GROUP(IBLK) .ne. 0.0D0 ) THEN 
+CSKT            WRITE(6,*)'THIS IS WHAT I GOT',ICOMM_ID
+CSKT            CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
+CSKT            WRITE(6,*) 'IOFFSET_OUT = ',IOFFSET_OUT
             CALL MPI_FILE_WRITE_AT(MPILUSCR,IOFFSET_OUT,SEGMNT,LBL,
      &                             MPI_REAL8,ISTAT,IERR)
-            IOFFSET_OUT = IOFFSET_OUT + LBL
           END IF
 C
         ELSE 
-C
-          IF(IBLOCKD(IBLK).EQ.MYPROC)THEN
-C           skip over this block
-            CALL IFRMDS(LBL,1,-1,LUIN)
-            NO_ZEROING = 1
-            KBLK = -1
-            CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
-     &                   NO_ZEROING)
-          END IF
 C         set local scalfac to 0.0D0
-          SCALFAC_LOCAL(IBLK) = 0.0D0
-C
+          SCALFAC_GROUP(IBLK) = 0.0D0
         END IF
+        IOFFSET_OUT = IOFFSET_OUT + LBL
+        IOFFSET_IN = IOFFSET_IN + LBL
 C
       END DO
 C
@@ -1444,6 +1450,7 @@ C
 C     find all processors on the same deck and reorder (if necessary) 
 C     to get the processors as close as possible, starting with the
 C     master 
+C     reordering is currently NOT done
 C
       INUMBER = MASTER + 1
  100  CONTINUE
@@ -1463,6 +1470,7 @@ C
       END DO
 C
 C     if finished: IFINI = 1, else 0
+C     search for the next lowest cpu building the 'local group master'
 C
       IFINI = 1
       DO IPRC = 1, NMPROC
