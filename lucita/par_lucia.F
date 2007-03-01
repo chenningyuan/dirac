@@ -1192,8 +1192,8 @@ CSK      NTEST = 0
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE COPVCD_SPAR_CCOEFF(LCFILE,SCR,SCALFAC,IBLOCKL,IBLOCKD,
-     &                              NDIM,IGROUPLIST)
+      SUBROUTINE COPVCD_SPAR_CCOEFF(LCFILE,LUOUT,SCR,SCALFAC,
+     &                              IBLOCKL,IBLOCKD,NDIM,IGROUPLIST)
 C
 C     copy vector from serial I/O file LCFILE to 
 C     parallel I/O file MPILUSCR
@@ -1207,18 +1207,18 @@ C
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
 C     INPUT 
       DIMENSION SCR(*), IBLOCKL(NDIM), IBLOCKD(NDIM)
-      DIMENSION IPROCLIST(NMPROC)
+      DIMENSION IGROUPLIST(NMPROC)
 C     OUTPUT
       DIMENSION SCALFAC(NDIM)
 C     SCRATCH
-      INTEGER MYGROUPNR,MIN2
-      MYGROUPNR = IPROCLIST(MYPROC+1)
+      INTEGER MIN2
       MIN2 = -2
 C
 C     Initialize SCALFAC to 0.0D0
 C
       ZERO = 0.0D0
       CALL SETVEC(SCALFAC,ZERO,NDIM) 
+CSKT      write(6,*) 'I arrived at the copy routine',myproc
 C
 C     file offset is at 0
       IOFFSET = 0
@@ -1243,6 +1243,7 @@ C       ... well this nonzero block is at least inside this file-group
  100    CONTINUE
         IF( MYPROC .eq. NDBLOCK ) THEN
           CALL IFRMDS(LBL,1,-1,LCFILE)
+          CALL ITODS (LBL,1,-1,LUOUT)
           KBLK = -1
           NO_ZEROING = 1
           CALL FRMDSC2(SCR,LBL,KBLK,LCFILE,IMZERO,IAMPACK,
@@ -1251,13 +1252,40 @@ C       ... well this nonzero block is at least inside this file-group
             SCALFAC(IBLK) = 1.0D0
             CALL MPI_FILE_WRITE_AT(MPILUSCR2,IOFFSET,SCR,LBL,MPI_REAL8,
      &           MPI_STATUS_IGNORE,IERR)
+CSKT           WRITE(6,*) 'THIS IS WHAT I HAVE WRITTEN',MYPROC
+CSKT           WRITE(6,*) 'IOFFSET',IOFFSET
+CSKT            CALL WRTMAT(SCR,1,LBL,1,LBL)
+            IF(IAMPACK.EQ.0) THEN
+              CALL TODSC (SCR,LBL,KBLK,LUOUT)
+            ELSE
+              CALL TODSCP(SCR,LBL,KBLK,LUOUT)
+            END IF
+          ELSE
+            CALL ZERORC(LBL,LUOUT,IAMPACK)
           END IF
-          IOFFSET = IOFFSET + LBL
+CSK          IOFFSET = IOFFSET + LBL
         ELSE
-        IOFFSET = IOFFSET + LBL
+CSK        IOFFSET = IOFFSET + LBL
         END IF
  500    CONTINUE
-      END DO  
+        IOFFSET = IOFFSET + LBL
+      END DO
+C
+C     find EOF-mark
+C
+      IF( NROOT_INFO .gt. 0 ) THEN
+        CALL IFRMDS(LBL,1,-1,LCFILE)
+CSK        IF(LBL.LT.0) WRITE(LUDUMPF,*)'I am fine'
+        IF(LBL.GE.0) THEN
+          WRITE(6,*) 'Error in COPVCD_SPAR_CCOEFF detected'
+          CALL Abend2('I assume all blocks to be distributed among the
+     & nodes but there are still some left')
+        ENDIF
+      END IF
+C
+C     write EOF-mark
+C
+      CALL ITODS(-1,1,-1,LUOUT)
 C
       END
 *

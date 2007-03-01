@@ -110,15 +110,6 @@ C
       CALL MEMMAN(KLSI1BT,NTTS  ,'ADDL  ',1,'CI1BT ')
       CALL MEMMAN(KLSIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
 *. Batches  of S vector
-      IF (ICISTR.EQ.2) THEN
-        LBLOCK = MXSB
-      ELSE IF (ICISTR.EQ.3) THEN
-CSK   ICISTR is alway 3!!!
-        LBLOCK = MXSOOB
-      END IF
-CSK   LCSBLK = 100000 as default, MXSOOB is set in ciinfo.F with the
-C     length of the largest block!!!  
-      LBLOCK = MAX(LBLOCK,LCSBLK)
       ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
      &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
@@ -157,7 +148,7 @@ C     length of the largest block!!!
       CALL MEMMAN(KCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
 *. Arrays for additional symmetry operation
       KSVST = 1
-*. Arrays giving allowed type combinations '
+*. Arrays giving allowed type combinations
       CALL MEMMAN(KCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
       CALL IAIBCM(ICSPC,WORK(KCIOIO))
       CALL ZBLTP(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP),WORK(KSVST))
@@ -1184,7 +1175,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
      &                  NINVEC,APROJ,AVEC,WORK,IPRTXX,NPRDIM,H0,IPNTR,
      &                  NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,E_CONV,IROOTHOMING,
      &                  LUWRTOUT,BSCRFAC,IBKINF,NBLOCKDN,IBLOCKI,SCRRED,
-     &                  ICCTOS)
+     &                  ICCTOS,IPROCLIST,IGROUPLIST)
 *
 * Iterative eigen solver, requires two blocks in core
 *
@@ -1255,17 +1246,19 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
        CHARACTER WALLTSTEP*12,  WPART22*12
 C      including a scratch file
        CHARACTER PLUSCR*11, PLUSCRTOT*15
+       CHARACTER PLUSCR2*11, PLUSCRTOT2*15
        INTEGER PLUSCRFL
 *. Notice XJEP is also used for ROOTHOMING, should be allocated
 * outside (for roothoming :dim = 3*MAXVEC )
        DIMENSION XJEP(10000)
        INTEGER   IXJEP(10000)
-       DIMENSION BSCRFAC(*),ICCTOS(IBLOCKI,IBLOCKI)
-       DIMENSION IBKINF(*),NBLOCKDN(IBLOCKI)
-       INTEGER NDATATYPE,NREDTYPE
+       DIMENSION BSCRFAC(*),ICCTOS(IBLOCKI,IBLOCKI), IGROUPLIST(NMPROC)
+       DIMENSION IBKINF(*),NBLOCKDN(IBLOCKI), IPROCLIST(NMPROC)
+       INTEGER NDATATYPE,NREDTYPE,ICOLOR,IKEY,JCOLOR,JKEY
        REAL*8 REDSCRVAR
        INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
-       
+       ICOLOR = 0
+       IKEY = 0
 *
        WRITE(LUWRTOUT,*) 
      & ' '
@@ -1281,6 +1274,12 @@ C      including a scratch file
      & ' '
        WRITE(LUWRTOUT,*) 
      & ' '
+*
+C
+C      transfer root information to common block lucipar
+C
+       NROOT_INFO = NROOT
+C
 *
        IPICO = 0
 *
@@ -1308,64 +1307,115 @@ CSK     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
        KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
        TEST = 1.0D-8
        CONVER = .FALSE.
+C
 C      use mpi direct acces file in MV7_PAR
+C
        IF(IODENSEPAR.EQ.2.AND.IIOMOD.NE.0) THEN
-         PLUSCR = 'LUCBSCR_PAR'
-         IF(MYPROC.LT.10)THEN        ! MPI ID has one digit
-           WRITE (PLUSCRTOT,'(A11,A1,I1)') PLUSCR,'.',MYPROC
+CSK         IF( MYPROC .eq. MASTER)CALL IWRTMA(IPROCLIST,1,NMPROC,1,NMPROC)
+         PLUSCR = 'LUCASCR_PAR'
+         PLUSCR2 = 'LUCBSCR_PAR'
+C        construct new communication groups w.r.t. MPI-FILE I/O
+         IKEY = MYPROC 
+CSKT         WRITE(LUWRTOUT,*) 'IPROCLIST(MYPROC+1)',IPROCLIST(MYPROC+1)
+         ICOLOR = IPROCLIST(MYPROC+1)
+         CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ICOLOR,IKEY,MYNEW_COMM,IERR)
+C        collect useful information about each group, 
+C        store on common block
+         CALL MPI_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC,IERR)
+         CALL MPI_COMM_RANK(MYNEW_COMM,MYNEW_ID,IERR)
+         IF( MYNEW_ID .eq. 0 ) THEN
+           JKEY = IPROCLIST(MYPROC+1)
+           JCOLOR = 2
+         ELSE
+           JKEY = IPROCLIST(MYPROC+1)
+           JCOLOR = 3
+         END IF
+         CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,JCOLOR,JKEY,ICOMM,IERR)
+         CALL MPI_COMM_RANK(ICOMM,ICOMM_ID,IERR)
+         CALL MPI_COMM_SIZE(ICOMM,ICOMM_SIZE,IERR)
+C
+C        fill group information array
+         IF( NEWCOMM_PROC .eq. NMPROC ) THEN
+           CALL ISETVC(IGROUPLIST,1,NMPROC)
+         ELSE
+           CALL SET_GROUP_TABLE(IGROUPLIST,IPROCLIST,ICOLOR)
+         END IF
+         IF(ICOLOR.LT.10)THEN        ! MPI ID has one digit
+           WRITE (PLUSCRTOT,'(A11,A1,I1)')  PLUSCR,'.',ICOLOR
+           WRITE (PLUSCRTOT2,'(A11,A1,I1)') PLUSCR2,'.',ICOLOR
            PLUSCRFL = 13
-         ELSE IF(MYPROC.LT.100)THEN  ! MPI ID has two digits
-           WRITE (PLUSCRTOT,'(A11,A1,I2)') PLUSCR,'.',MYPROC
+         ELSE IF(ICOLOR.LT.100)THEN  ! MPI ID has two digits
+           WRITE (PLUSCRTOT,'(A11,A1,I2)')  PLUSCR,'.',ICOLOR
+           WRITE (PLUSCRTOT2,'(A11,A1,I2)') PLUSCR2,'.',ICOLOR
            PLUSCRFL = 14
          ELSE                        ! MPI ID has three digits
-           WRITE (PLUSCRTOT,'(A11,A1,I3)') PLUSCR,'.',MYPROC
+           WRITE (PLUSCRTOT,'(A11,A1,I3)')  PLUSCR,'.',ICOLOR
+           WRITE (PLUSCRTOT2,'(A11,A1,I3)') PLUSCR2,'.',ICOLOR
            PLUSCRFL = 15
          END IF
          IOFFSET = 0
-         CALL MPI_FILE_OPEN(MPI_COMM_SELF,PLUSCRTOT(1:PLUSCRFL),
+         CALL MPI_FILE_OPEN(MYNEW_COMM,PLUSCRTOT(1:PLUSCRFL),
      &                      MPI_MODE_CREATE+MPI_MODE_RDWR+
      &                      MPI_MODE_DELETE_ON_CLOSE,MPI_INFO_NULL,
      &                      MPILUSCR,IERR)
+         CALL MPI_FILE_OPEN(MYNEW_COMM,PLUSCRTOT2(1:PLUSCRFL),
+     &                      MPI_MODE_CREATE+MPI_MODE_RDWR+
+     &                      MPI_MODE_DELETE_ON_CLOSE,MPI_INFO_NULL,
+     &                      MPILUSCR2,IERR)
          CALL MPI_FILE_SET_VIEW(MPILUSCR,IOFFSET,MPI_REAL8,MPI_REAL8,
      &                          "native",MPI_INFO_NULL,IERR)
+         CALL MPI_FILE_SET_VIEW(MPILUSCR2,IOFFSET,MPI_REAL8,MPI_REAL8,
+     &                          "native",MPI_INFO_NULL,IERR)
+C
+CSKT       WRITE(6,*)'SETUP IS DONE, READY TO START',MYPROC
        ENDIF
-*
-* ===================
-*.Initial iteration
-* ===================
+C      ===================
+C       Initial iteration
+C      ===================
        ITER = 1
        CALL REWINO(LU1)
        CALL REWINO(LU2)
-*
+C
        DO IVEC = 1,NINVEC
          CALL REWINO(LU5)
          CALL REWINO(LU6)
-         CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
+C        use MPI-FILE I/O copy routine, BSCRFAC is also initialized        
+         IF(IODENSEPAR.EQ.2.AND.IIOMOD.NE.0) THEN
+           CALL COPVCD_SPAR_CCOEFF(LU1,LU5,VEC1,BSCRFAC,IBKINF,NBLOCKDN,
+     &                             IBLOCKI,IGROUPLIST)
+         ELSE
+           CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
+         END IF
+C
+C                   start calculation: sigma = H x C         
+C
+************************************************************************
          CALL MV7_PAR(VEC1,VEC2,LU5,LU6,LU7,BSCRFAC,IBKINF,
-     &               NBLOCKDN,ICCTOS,IBLOCKI)
-*. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
+     &               NBLOCKDN,ICCTOS,IGROUPLIST,IPROCLIST,IBLOCKI)
+************************************************************************
+C
+C        Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
          CALL REWINO(LU6)
          CALL COPVCD(LU6,LU2,VEC1,0,LBLK)
-*. Projected matrix
+C        Projected matrix
          CALL REWINO(LU2)
            DO JVEC = 1, IVEC
               CALL REWINO(LU5)
               IJ = IVEC*(IVEC-1)/2 + JVEC
               APROJ(IJ) = INPRDD(VEC1,VEC2,LU2,LU5,0,LBLK)
            END DO
-*          ^ End of loop over JVEC
+C          ^ End of loop over JVEC
        END DO
-*      ^ End of loop over IVEC
-*. end of initial loop
-*
-*. every node has its part of APROJ --> reduce to each node!
+C      ^ End of loop over IVEC
+C      end of initial loop
+C       every node has its part of APROJ --> reduce to each node!
         NDATATYPE = 2
         NREDTYPE = -1
         IREDL = NINVEC*(NINVEC-1)/2 + NINVEC
         CALL REDVEC(APROJ,SCRRED,IREDL,NDATATYPE,MPI_SUM,
      &              MPI_COMM_WORLD,NREDTYPE)
         CALL COPVEC(SCRRED,APROJ,IREDL)
-*
+C
 CSK       IF(MYPROC.EQ.MASTER+1) THEN
 CSK         WRITE(6,*)'MAXVEC = ',MAXVEC
 CSK         CALL WRTMAT(APROJ,1,MAXVEC*(MAXVEC+1)/2,1,MAXVEC*(MAXVEC+1)/2)
@@ -1381,30 +1431,18 @@ CSK       ENDIF
      &'         ::::::::::::::::::::::::::::::::::::::::::::::
      &:::::::: '
            WRITE(LUWRTOUT,'(A)')' '
-*
+C
        IF( IPRT .GE.5 ) THEN
          WRITE(6,*) ' INITIAL PROJECTED MATRIX  '
          CALL PRSYM(APROJ,NINVEC)
        END IF
-*. Diagonalize initial projected matrix
-CSK       IF(MYPROC.EQ.MASTER) THEN
-         CALL COPVEC(APROJ,WORK(KAPROJ),NINVEC*(NINVEC+1)/2)
-         CALL EIGEN(WORK(KAPROJ),AVEC,NINVEC,0,1)
-         DO IROOT = 1, NROOT
-           EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
-         END DO
-CSK       END IF
-*. Master shares all eigenvalues with the nodes
-*. SK: disabled because of the fact that all nodes can also execute the same 
-*. code above, saves communication.
-CSK       DO IROOT = 1, NROOT
-CSK         CALL MPI_BCAST(EIG(1,IROOT),1,MPI_REAL8,MASTER,
-CSK     &                  MPI_COMM_WORLD,IERR)
-CSK       END DO
-CSK       CALL MPI_BCAST(AVEC,MAXVEC**2,MPI_REAL8,MASTER,
-CSK     &                MPI_COMM_WORLD,IERR)
-*
-*. end of disabled code!
+C      Diagonalize initial projected matrix
+       CALL COPVEC(APROJ,WORK(KAPROJ),NINVEC*(NINVEC+1)/2)
+       CALL EIGEN(WORK(KAPROJ),AVEC,NINVEC,0,1)
+       DO IROOT = 1, NROOT
+         EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
+       END DO
+C
        IF(IPRT .GE. 3 ) THEN
          WRITE(6,*) ' Eigenvalues of initial iteration (with
      &   shift)',myproc
@@ -1415,18 +1453,16 @@ CSK     &                MPI_COMM_WORLD,IERR)
          WRITE(6,*) ' Initial set of eigen values (no shift) ',myproc
          CALL WRTMAT(EIG(1,1),1,NROOT,MAXIT,NROOT)
        END IF
-*. Transform vectors on LU1 so they become the actual
-*. eigenvector approximations
-C     TRAVCD(VEC1,VEC2,NVECIN,NVECOUT,LUIN,LUOUT,
-C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
+C      Transform vectors on LU1 so they become the actual
+C      eigenvector approximations
        CALL REWINO(LU3)
        CALL TRAVCD_PAR(VEC1,VEC2,AVEC,NINVEC,NROOT,LU1,LU3,1,
      &                 LBLK,LU4,LU5)
-*. And the sigma vectors
+C      ... and the sigma vectors
        CALL REWINO(LU3)
        CALL TRAVCD_PAR(VEC1,VEC2,AVEC,NINVEC,NROOT,LU2,LU3,1,
      &                 LBLK,LU4,LU5)
-*
+C
        IF(IPRT.GE.600) THEN
          WRITE(6,*) ' Initial set of eigenvectors '
          CALL REWINO(LU1)
@@ -1435,7 +1471,7 @@ C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
  1066 FORMAT(/'lets see IROOT =', 3I4/)
            CALL WRTVCD(VEC1,LU1,0,LBLK)
          END DO
-*
+C
          WRITE(6,*) ' Initial set of sigma vectors '
          CALL REWINO(LU2)
          DO IROOT = 1, NROOT
@@ -1444,14 +1480,14 @@ C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
            CALL WRTVCD(VEC1,LU2,0,LBLK)
          END DO
        END IF
-*. And the corresponding Hamiltonian matrix, no problems
-*. with numerical stabilities, so just use eigenvalues
+C      And the corresponding Hamiltonian matrix, no problems
+C      with numerical stabilities, so just use eigenvalues
        ZERO = 0.0D0
        CALL SETVEC(APROJ,ZERO,NROOT*(NROOT+1)/2)
        DO IROOT = 1, NROOT
         APROJ(IROOT*(IROOT+1)/2) = EIG(1,IROOT)
        END DO
-*
+C
        NVEC = NROOT
        IF (MAXIT .EQ. 1 ) GOTO  1001
 *
@@ -1700,22 +1736,30 @@ CSK             WRITE(LUWRTOUT,9420) WALLTID, NVEC+IADD-1-NROOT
       
  150  DO IVEC = 1, IADD
         CALL REWINE(LU5,LBLK)
-        CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
-*.      Check timings for sigma vector generation
-***********************************************************************
+        IF(IODENSEPAR.EQ.2.AND.IIOMOD.NE.0) THEN
+          CALL COPVCD_SPAR_CCOEFF(LU3,LU5,VEC1,BSCRFAC,IBKINF,NBLOCKDN,
+     &                            IBLOCKI,IGROUPLIST)
+        ELSE
+          CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
+        END IF
+C       timing this sigma-vector computation
         sigmatime = MPI_WTIME()
-*
+C
+C                start calculation: sigma = H x C         
+C
+*******************************************************************
         CALL MV7_PAR(VEC1,VEC2,LU5,LU6,LU7,BSCRFAC,IBKINF,
-     &               NBLOCKDN,ICCTOS,IBLOCKI)
-*     
+     &               NBLOCKDN,ICCTOS,IGROUPLIST,IPROCLIST,IBLOCKI)
+*******************************************************************
+C       stop timing and write on file
         sigmatime2 = MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
         WRITE(LUWRTOUT,9400) WALLTID
         WRITE(LUWRTOUT,*) '   '
-***********************************************************************
+C
         CALL REWINE(LU6,LBLK)
         CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
-*2.2 Augment projected matrix
+C       2.2 Augment projected matrix
         CALL REWINE( LU1,LBLK)
         DO JVEC = 1, NROOT
           CALL REWINE(LU6,LBLK)
@@ -1724,7 +1768,6 @@ CSK             WRITE(LUWRTOUT,9420) WALLTID, NVEC+IADD-1-NROOT
           IMUSTRED = IMUSTRED + 1
           IF(IVEC.EQ.1.AND.JVEC.EQ.1) ISTRED = IJ
         END DO
-
         CALL REWINE(LU3,LBLK)
         DO JVEC = NROOT+1, NVEC+IVEC
          CALL REWINE(LU6,LBLK)
@@ -1733,7 +1776,7 @@ CSK             WRITE(LUWRTOUT,9420) WALLTID, NVEC+IADD-1-NROOT
          IMUSTRED = IMUSTRED + 1
         END DO
       END DO
-*     /\ End do over new trial vectors
+C     /\ End do over new trial vectors
       sigmatime = MPI_WTIME()
       CALL REDVEC(APROJ(ISTRED),SCRRED,IMUSTRED,2,MPI_SUM,
      &            MPI_COMM_WORLD,-1)
@@ -1759,25 +1802,6 @@ C
       NVEC = NVEC + IADD
       CALL COPVEC(APROJ,WORK(KAPROJ),NVEC*(NVEC+1)/2)
       CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
-*
-CSK Jan07: since IPICO is set to 0, I comment this part out
-C      IF(IPICO.NE.0) THEN
-C        E0VAR = WORK(KAPROJ)
-C        C0VAR = AVEC(1)
-C        C1VAR = AVEC(2)
-C        C1NRM = SQRT(C0VAR**2+C1VAR**2)
-C*. overwrite with pert solution
-C        AVEC(1) = 1.0D0/SQRT(1.0D0+C1NRM**2)
-C        AVEC(2) = -(C1NRM/SQRT(1.0D0+C1NRM**2))
-C        E0PERT = AVEC(1)**2*APROJ(1)
-C     &         + 2.0D0*AVEC(1)*AVEC(2)*APROJ(2)
-C     &         + AVEC(2)**2*APROJ(3)
-C        WORK(KAPROJ) = E0PERT
-C        WRITE(6,*) ' Var and Pert solution, energy and coefficients'
-C        WRITE(6,'(4X,3E15.7)') E0VAR,C0VAR,C1VAR
-C        WRITE(6,'(4X,3E15.7)') E0PERT,AVEC(1),AVEC(2)
-C      END IF
-CSK end-of 
 *
       IF(IROOTHOMING.EQ.1) THEN
 *
@@ -1900,15 +1924,19 @@ CSK end-of
         IF(IPRT.GE.1000)
      &  write(6,*) ' end of c reset, part 2'
 *
-        REDSCR = INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK)
-        CALL REDVEC(REDSCR,XNORM,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
-        CALL REWINE(LU5,LBLK)
-        SCALE  = 1.0D0/SQRT(XNORM)
-CSK        WRITE(6,*) ' SCALE = ', SCALE
+C       TEST: vector should be normalized --> we do not need this step!
+CSK        REDSCR = INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK)
+CSK        CALL REDVEC(REDSCR,XNORM,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+CSK        CALL REWINE(LU5,LBLK)
+CSK        SCALE  = 1.0D0/SQRT(XNORM)
+        SCALE  = 1.0D0
+CSKCSK        WRITE(6,*) ' SCALE in part 3.1 = ', SCALE
         WORK(IROOT) = SCALE
 *. scale LU5 => LU7
         CALL REWINO(LU5)
-        CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
+CSK        CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
+C       instead of scaling, a simple copy!
+        CALL COPVCD(LU5,LU7,VEC1,0,LBLK)
         IF(IPRT.GE.1000)
      &  write(6,*) ' end of c reset, part 3'
       END DO
@@ -1945,7 +1973,9 @@ CSK        WRITE(6,*) ' SCALE = ', SCALE
           SCALE  = WORK(IROOT)
 *. scale LU5 => LU7
           CALL REWINO(LU5)
-          CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
+CSK       no scaling, just copy...
+CSK          CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
+          CALL COPVCD(LU5,LU7,VEC1,0,LBLK)
           IF(IPRT.GE.1000)
      &    write(6,*) ' end of s reset, part 3'
         END DO
@@ -1958,10 +1988,7 @@ CSK        WRITE(6,*) ' SCALE = ', SCALE
         IF(IPRT.GE.1000)
      &  write(6,*) ' end of s reset, part 4'
         NNVEC = NROOT
-*. Overlap between first vectors on LU1 and LU2
-CSK        REDSCR = INPRDD(VEC1,VEC2,LU1,LU2,1,LBLK)
-CSK        CALL REDVEC(REDSCR,E11,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
-CSK        WRITE(LUWRTOUT,*) ' MYPROC: <Lu1!Lu2> = ', MYPROC,E11
+*
         IF(3*NROOT.LE.MAXVEC) THEN
 *
 *. Orthogonalize the
@@ -2039,6 +2066,7 @@ CSK        WRITE(LUWRTOUT,*) ' MYPROC: <Lu1!Lu2> = ', MYPROC,E11
             REDSCR = INPRDD(VEC1,VEC1,LU7,LU7,1,LBLK)
             CALL REDVEC(REDSCR,FACTOR,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
             SCALE = 1.0D0/SQRT(FACTOR)
+CSKT            WRITE(6,*) ' SCALE in part 3.2 = ', SCALE
             CALL SCALVE(WORK((JVEC-1)*2*NROOT+1),SCALE,
      &           NROOT+JVEC)
             CALL REWINO(LU7)
@@ -2260,6 +2288,9 @@ CSK      END IF
 C     close the scratch file when leaving
        IF(IODENSEPAR.EQ.2.AND.IIOMOD.NE.0) THEN
          CALL MPI_FILE_CLOSE(MPILUSCR,IERR)
+         CALL MPI_FILE_CLOSE(MPILUSCR2,IERR)
+         CALL MPI_COMM_FREE(MYNEW_COMM,IERR)
+         CALL MPI_COMM_FREE(ICOMM,IERR)
        END IF
 *
       RETURN

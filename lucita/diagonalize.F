@@ -48,7 +48,7 @@ C
      &           CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,ICLS_A2,MXLNG,
      &           IROOTHOMING,IBASSPC,EBASC,CBASC,NSPC,
      &           MULSPC,IPAT,LPAT,ISPC,LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKI,
-     &           IBLKDSTND,IBLKNDNB,SCRRED,ICCTOS)
+     &           IBLKDSTND,IBLKNDNB,SCRRED,ICCTOS,IPROCLIST,IGROUPLIST)
 *
 * Master routine for CI diagonalization
 *
@@ -290,7 +290,7 @@ C?       WRITE(6,*) ' MICDV6_PAR will be called '
      &                     SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &                     H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
      &                     LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKDSTND,IBLKI,
-     &                     SCRRED,ICCTOS)
+     &                     SCRRED,ICCTOS,IPROCLIST,IGROUPLIST)
 #endif
           END IF
         ELSE
@@ -2468,19 +2468,6 @@ C     END IF
 *
       CALL MEMMAN(KLCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
       CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KLCBLTP),0)
-*. Allocate memory for diagonalization
-      IF(ICISTR.EQ.1) THEN
-        NDET = 0
-        LBLOCK = NDET
-        write(6,*) 'NDET is undefined in hintv '
-        write(6,*) 'and ICISTR = 1 '
-        Call Abend2('Quitting.')
-      ELSE IF (ICISTR.EQ.2) THEN
-        LBLOCK = MXSB
-      ELSE IF (ICISTR.EQ.3) THEN
-        LBLOCK = MXSOOB
-      END IF
-      LBLOCK = MAX(LBLOCK,LCSBLK)
 *
 *. Batches  of C vector
       ITTSS_ORD = 2
@@ -6642,16 +6629,6 @@ C     END IF
       CALL MEMMAN(KLSCR,NPERT+1,'ADDL  ',2,'SCR   ' )
 
 
-*. Allocate memory for diagonalization
-      IF(ICISTR.EQ.1) THEN
-        LBLOCK = NDET
-      ELSE IF (ICISTR.EQ.2) THEN
-        LBLOCK = MXSB
-      ELSE IF (ICISTR.EQ.3) THEN
-        LBLOCK = MXSOOB
-      END IF
-C?    WRITE(6,*) ' ICISTR = ', ICISTR
-      LBLOCK = MAX(LCSBLK,LBLOCK)
       CALL MEMMAN(KVEC1,LBLOCK,'ADDL  ',2,'VEC1  ')
 *. Vec2 will also be used as scratch in explicit hamiltonian generation
 *. for CSF's
