@@ -428,6 +428,7 @@ C     diagonalizer
       CALL MEMMAN(KSCRREDSP,2*IMAXALLO,'ADDL  ',2,'SCRRED')
 C     Allocate with maximal group size = NMPROC
       CALL MEMMAN(KGROUPLIST,NMPROC,'ADDS  ',1,'GROUPL')
+      CALL ISETVC(WORK(KGROUPLIST),NNULL,NMPROC)
 CSK
 *
 *. CI diagonal - if required
@@ -1052,6 +1053,9 @@ C         than we can simulate a shared filesystem ( IFILESYSTEM = 1 )
 C     in case of a parallel filesystem, we should use it
       IF( IIOMOD .eq. 1 .and. IFILESYSTEM .eq. 0 ) THEN
         IFILESYSTEM = 1
+        NFLGRPS = 1
+        CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+      ELSE IF( IIOMOD .eq. 1 .and. IFILESYSTEM .eq. 1 ) THEN
         NFLGRPS = 1
         CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
       END IF
