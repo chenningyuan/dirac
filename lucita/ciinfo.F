@@ -961,15 +961,6 @@ CTF   print*,'MOMO transformation saved in WORK(KMOMO)'
         WRITE(6,*) ' Space for resolution matrices ',LSCR2
       END IF
 *
-      IF(ICISTR.EQ.1) THEN
-        WRITE(6,*) ' ICISTR = 0 not in action ANYMORE'
-        Call Abend2( ' ICISTR = 0 not in action ANYMORE' )
-      ELSE IF (ICISTR.EQ.2) THEN
-        LBLOCK = MXSB
-      ELSE IF (ICISTR.EQ.3) THEN
-        LBLOCK = MXSOOB
-      END IF
-      LBLOCK = MAX(LBLOCK,LCSBLK)
 *. For Passive/active division
       LSCR12 = MAX(LBLOCK,4*LSCR2)
 C     LSCR12 = MAX(LBLOCK,2*LSCR2)
@@ -3859,18 +3850,9 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
          KSVST = 1
       END IF
       CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,WORK(KPCBLTP),WORK(KSVST))
-*. Allowed length of each batch
-      IF(ICISTR.EQ.1) THEN
-*. assumes determinants
-        LBLOCK =  XISPSM(ISM,ISPC)
-      ELSE IF (ICISTR.EQ.2) THEN
-        LBLOCK = MXSB
-      ELSE IF (ICISTR.EQ.3) THEN
-        LBLOCK = MXSOOB
-      END IF
-      LBLOCK = MAX(LBLOCK,LCSBLK)
 *
       IF(NTEST.GE.10) THEN
+*. Allowed length of each batch
         WRITE(6,*) ' LBLOCK = ', LBLOCK
       END IF
 *

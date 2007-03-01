@@ -1921,16 +1921,8 @@ C               END IF
 *     ========================
 *
 *. Allocate space for two vector chunks
-      IF(ICISTR.LE.2) THEN
-        LSCR1 = MXSB
-      ELSE IF(ICISTR.EQ.3) THEN
-        LSCR1 = MXSOOB
-      END IF
-      IF(IPRCIX.GE.1)
-     &WRITE(6,*) ' PTEKT  : LCSBLK = ', LCSBLK
-      LSCR1 = MAX(LCSBLK,LSCR1)
-      CALL MEMMAN(KLVEC1,LSCR1,'ADDL  ',2,'VEC1  ')
-      CALL MEMMAN(KLVEC2,LSCR1,'ADDL  ',2,'VEC2  ')
+      CALL MEMMAN(KLVEC1,LBLOCK,'ADDL  ',2,'VEC1  ')
+      CALL MEMMAN(KLVEC2,LBLOCK,'ADDL  ',2,'VEC2  ')
 * space for one-body Density matrices through order n
       NMAT = N+1
       LENGTH = NMAT * NTOOB ** 2
@@ -2156,16 +2148,8 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
 *     ========================
 *
 *. Allocate space for two vector chunks
-      IF(ICISTR.LE.2) THEN
-        LSCR1 = MXSB
-      ELSE IF(ICISTR.EQ.3) THEN
-        LSCR1 = MXSOOB
-      END IF
-      IF(IPRCIX.GE.1)
-     &WRITE(6,*) ' PTEKT  : LCSBLK = ', LCSBLK
-      LSCR1 = MAX(LCSBLK,LSCR1)
-      CALL MEMMAN(KLVEC1,LSCR1,'ADDL  ',2,'VEC1  ')
-      CALL MEMMAN(KLVEC2,LSCR1,'ADDL  ',2,'VEC2  ')
+      CALL MEMMAN(KLVEC1,LBLOCK,'ADDL  ',2,'VEC1  ')
+      CALL MEMMAN(KLVEC2,LBLOCK,'ADDL  ',2,'VEC2  ')
 * one-body Density matrices through order n
       NMAT = N+1
       LENGTH = NMAT * NTOOB ** 2

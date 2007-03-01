@@ -268,16 +268,10 @@ C     END IF
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'DIRDR1')
 * The calculation of (H-E0) will be processed in blocks,
 * allocate blocks for (H-E0)!0> and !0>
-      IF(ICISTR.LE.2) THEN
-        LSCR1 = MXSB
-      ELSE IF(ICISTR.EQ.3) THEN
-        LSCR1 = MXSOOB
-      END IF
-      LSCR1 = MAX(LSCR1,LCSBLK)
-      WRITE(6,*) ' Size of BATCH ', LSCR1
-      CALL MEMMAN(KCB,LSCR1,'ADDL  ',2,'KCB   ')
-      CALL MEMMAN(KSB,LSCR1,'ADDL  ',2,'KSB   ')
-CM    CALL MEMMAN(KLB,LSCR1,'ADDL  ',2,'KLB   ')
+      WRITE(6,*) ' Size of BATCH ', LBLOCK
+      CALL MEMMAN(KCB,LBLOCK,'ADDL  ',2,'KCB   ')
+      CALL MEMMAN(KSB,LBLOCK,'ADDL  ',2,'KSB   ')
+CM    CALL MEMMAN(KLB,LBLOCK,'ADDL  ',2,'KLB   ')
 *
 *. Structure and dimensions of output CI vector.
 *
@@ -399,7 +393,7 @@ C    &          NOCTPA,NOCTPB,IDC,WORK(KCIOOSE),WORK(KCNOOSE),NSCMBE,1)
         LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB,MXCIJAB)
         IF(IPRCIX.GE.2)
      &  WRITE(6,*) ' Space for resolution matrices ',LSCR2
-        LSCR12 = MAX(LSCR1,2*LSCR2)
+        LSCR12 = MAX(LBLOCK,2*LSCR2)
         CALL MEMMAN(KVEC3,LSCR12,'ADDL  ',2,'KLB   ')
         KLB = KVEC3
       END IF
@@ -448,7 +442,7 @@ C?      write(6,*) ' memchk passed '
         CALL MEMMAN(KLIBT2 ,8*NTTS,'ADDL  ',1,'IBT2  ')
 *
 C       CALL PART_CIV(IDC,WORK(KLBLTP2),WORK(KNOOS2E),WORK(KNOOS2),
-C    &                NOCTPA,NOCTPB,NSMST,LSCR1,WORK(KLIOIO2),
+C    &                NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLIOIO2),
 C    &                ISMOST(1,ISM),
 C    &                NBATCH2,WORK(KLLBT2),WORK(KLLEBT2),
 C    &                WORK(KLI1BT2), WORK(KLIBT2),0)
@@ -459,7 +453,7 @@ C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP)
         ITTSS_ORD = 2
         CALL PART_CIV2(IDC,WORK(KLBLTP2),WORK(KNSTSO(IATP)),
      &       WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,
-     &       NSMST,LSCR1,WORK(KLIOIO2),
+     &       NSMST,LBLOCK,WORK(KLIOIO2),
      &       ISMOST(1,ISM),
      &       NBATCH2,WORK(KLLBT2),WORK(KLLEBT2),
      &       WORK(KLI1BT2), WORK(KLIBT2),0,ITTSS_ORD)
@@ -477,7 +471,7 @@ C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP)
         LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB,MXCIJAB)
         IF(IPRCIX.GE.2)
      &  WRITE(6,*) ' Space for resolution matrices ',LSCR2
-        LSCR12 = MAX(LSCR1,2*LSCR2)
+        LSCR12 = MAX(LBLOCK,2*LSCR2)
         CALL MEMMAN(KVEC3,LSCR12,'ADDL  ',2,'KLB   ')
         KLB = KVEC3
        END IF
@@ -492,7 +486,7 @@ C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP)
       CALL MEMMAN(KLSIBT ,8*NTTS,'ADDL  ',1,'SIBT  ')
 *
 C     CALL PART_CIV(IDC,WORK(KLSBLTP),WORK(KSNOOSE),WORK(KSNOOS),
-C    &              NOCTPA,NOCTPB,NSMST,LSCR1,WORK(KLSIOIO),
+C    &              NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLSIOIO),
 C    &              ISMOST(1,ISM),
 C    &              NSBATCH,WORK(KLSLBT),WORK(KLSLEBT),
 C    &              WORK(KLSI1BT), WORK(KLSIBT),0)
@@ -502,7 +496,7 @@ C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP)
       ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KLSBLTP),WORK(KNSTSO(IATP)),
      &     WORK(KNSTSO(IBTP)),
-     &     NOCTPA,NOCTPB,NSMST,LSCR1,WORK(KLSIOIO),
+     &     NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLSIOIO),
      &     ISMOST(1,ISM),
      &     NSBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &     WORK(KLSI1BT), WORK(KLSIBT),0,ITTSS_ORD)
@@ -521,14 +515,14 @@ C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP)
       CALL MEMMAN(KLISCR2,3*NTTS,'ADDL  ',1,'ISCR2 ')
 *. The complete C vector (for disk reference )
 C     CALL PART_CIV(IDC,WORK(KLCBLTP),WORK(KCNOOSE),WORK(KCNOOS),
-C    &              NOCTPA,NOCTPB,NSMST,LSCR1,WORK(KLCIOIO),
+C    &              NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLCIOIO),
 C    &              ISMOST(1,ISM),
 C    &              NBATCHC,WORK(KLCLBT),WORK(KLCLEBT),
 C    &              WORK(KLCI1BT),WORK(KLCIBT),1)
       ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KLCBLTP),WORK(KNSTSO(IATP)),
      &     WORK(KNSTSO(IBTP)),
-     &     NOCTPA,NOCTPB,NSMST,LSCR1,WORK(KLCIOIO),
+     &     NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLCIOIO),
      &     ISMOST(1,ISM),
      &     NBATCHC,WORK(KLCLBT),WORK(KLCLEBT),
      &     WORK(KLCI1BT),WORK(KLCIBT),1,ITTSS_ORD)
@@ -1992,16 +1986,8 @@ C?    WRITE(6,*) ' LUC in SBLOCK ', LUC
 C?    WRITE(6,*) ' MXTSOB_L = ', MXTSOB_L
       MAXIJ = MXTSOB_L ** 2
 *.Local scratch arrays for blocks of C and sigma
-      IF(ICISTR.LE.2) THEN
-        LSCR1 = MXSB
-      ELSE IF(ICISTR.EQ.3) THEN
-        LSCR1 = MXSOOB
-      END IF
-      IF(IPRCIX.GE.1)
-     &WRITE(6,*) ' SBATCH  : LCSBLK = ', LCSBLK
-      LSCR1 = MAX(LCSBLK,LSCR1)
       IF(IPRCIX.GE.2)
-     &WRITE(6,*) ' ICISTR,LSCR1 ',ICISTR,LSCR1
+     &WRITE(6,*) ' ICISTR,LBLOCK ',ICISTR,LBLOCK
 
 *.vectors able to hold strings of given sym and type
 C     MAXIK = MAX(MAXI,MAXK)
@@ -2064,7 +2050,7 @@ C          IAIBCM(ICISPC,IAIB)
 *
       IF(IPRCIX.GE.2)  WRITE(6,*) ' LSCR2 = ', LSCR2
 *
-      LSCR12 = MAX(LSCR1,2*LSCR2)
+      LSCR12 = MAX(LBLOCK,2*LSCR2)
       CALL MEMMAN(KC2,LSCR12,'ADDL  ',2,'KC2   ')
       KCJRES = KC2
       KSIRES = KC2 + LSCR2
@@ -2143,8 +2129,8 @@ C          IAIBCM(ICISPC,IAIB)
 **     &            NAEL,IATP,NBEL,IBTP,
 **     &            IOCTPA,IOCTPB,NOCTPA,NOCTPB,
 **     &            NSMST,NSMOB,NSMSX,NSMDX,NOBPTS,IOBPTS,MXPNGAS,
-**     &            ITSOB,MAXIJ,MAXK,MAXI,INSCR,LSCR1,
-**     &            LSCR1,WORK(KINSCR),WORK(KCSCR),WORK(KSSCR),
+**     &            ITSOB,MAXIJ,MAXK,MAXI,INSCR,LBLOCK,
+**     &            LBLOCK,WORK(KINSCR),WORK(KCSCR),WORK(KSSCR),
 **     &            SXSTSM,WORK(KSTSTS),WORK(KSTSTD),SXDXSX,
 **     &            ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
 **     &            WORK(KOOS1),WORK(KOOS2),WORK(KOOS3),WORK(KOOS4),

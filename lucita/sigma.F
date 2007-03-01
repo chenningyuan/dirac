@@ -1146,18 +1146,6 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
       CALL MEMMAN(KLSI1BT,NTTS  ,'ADDL  ',1,'CI1BT ')
       CALL MEMMAN(KLSIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
 *. Batches  of C vector
-      IF(ICISTR.EQ.1) THEN
-        NDET = 0
-        LBLOCK = NDET
-        write(6,*) 'NDET is undefined in mv7 '
-        write(6,*) 'and ICISTR = 1 '
-        Call Abend2('Quitting.')
-      ELSE IF (ICISTR.EQ.2) THEN
-        LBLOCK = MXSB
-      ELSE IF (ICISTR.EQ.3) THEN
-        LBLOCK = MXSOOB
-      END IF
-      LBLOCK = MAX(LBLOCK,LCSBLK)
       ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
      &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
@@ -5249,14 +5237,8 @@ C     SPGRPCON(IOFSPGRP,NSPGRP,NGAS,MXPNGAS,IELFSPGRP,ISPGRPCON,IPRNT)
 C?    WRITE(6,*) ' MXTSOB_L = ', MXTSOB_L
       MAXIJ = MXTSOB_L ** 2
 *.Local scratch arrays for blocks of C and sigma
-      IF(ICISTR.LE.2) THEN
-        LSCR1 = MXSB
-      ELSE IF(ICISTR.EQ.3) THEN
-        LSCR1 = MXSOOB
-      END IF
-      LSCR1 = MAX(LSCR1,LCSBLK)
       IF(IPRCIX.GE.3)
-     &WRITE(6,*) ' ICISTR,LSCR1 ',ICISTR,LSCR1
+     &WRITE(6,*) ' ICISTR,LBLOCK ',ICISTR,LBLOCK
 *.SCRATCH space for integrals
 * A 4 index integral block with four indeces belonging OS class
       INTSCR = MXTSOB_L ** 4
@@ -5304,7 +5286,7 @@ C          IAIBCM(ICISPC,IAIB)
 *
       IF(IPRCIX.GE.3)  WRITE(6,*) ' LSCR2 = ', LSCR2
 *
-      LSCR12 = MAX(LSCR1,2*LSCR2)
+      LSCR12 = MAX(LBLOCK,2*LSCR2)
 C     CALL MEMMAN(KC2,LSCR12,'ADDL  ',2,'KC2   ')
 C  I assume memory was allocated for blocks, so
       KC2 = KVEC3
@@ -5403,8 +5385,8 @@ CINSERT_START
      &     NAEL,IATP,NBEL,IBTP,
      &     IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &     NSMST,NSMOB,NSMSX,NSMDX,NOBPTS,IOBPTS,MXPNGAS,
-     &     ITSOB,MAXIJ,MAXK,MAXI,INSCR,LSCR1,
-     &     LSCR1,WORK(KINSCR),WORK(KCSCR),WORK(KSSCR),
+     &     ITSOB,MAXIJ,MAXK,MAXI,INSCR,LBLOCK,
+     &     LBLOCK,WORK(KINSCR),WORK(KCSCR),WORK(KSSCR),
      &     SXSTSM,WORK(KSTSTS),WORK(KSTSTD),SXDXSX,
      &     ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
      &     MXTSOB,WORK(KSOMESCR),WORK(KSOMEH),XIJILS,
