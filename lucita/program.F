@@ -38,7 +38,7 @@ C
 *                                                                     *
 ***********************************************************************
 *
-      SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT)
+      SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT,IPROCLIST)
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
@@ -88,7 +88,7 @@ C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
 *./CECORE/
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
-      dimension ISYMS(MXPIRR)
+      dimension ISYMS(MXPIRR),IPROCLIST(NMPROC)
       INTEGER IDISTROUTE
 *
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GASCI ')
@@ -107,13 +107,13 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
       ICC_EXC = 0
       NNULL = 0
 *
-C      IF(NTEST.GE.1) THEN
+      IF(NTEST.GE.1) THEN
         WRITE(LUWRTOUT,*)
         WRITE(LUWRTOUT,*) ' ====================================='
         WRITE(LUWRTOUT,*) ' Control has been transferred to GASCI'
         WRITE(LUWRTOUT,*) ' ====================================='
         WRITE(LUWRTOUT,*)
-C      END IF
+      END IF
       IF(NTEST.GE.5) THEN
         WRITE(LUWRTOUT,'(A)') '  A few pertinent data : '
         WRITE(LUWRTOUT,*)
@@ -168,17 +168,48 @@ C      END IF
       ELSE
         NVAR = NCSASM(ISM)
       END  IF
-      IF(IPRNT.GE.5)
-     &WRITE(LUOUT,*) '  NVAR in GASCI ', NVAR
 *. Allocate memory for diagonalization
       IF(ICISTR.EQ.1) THEN
-        LBLOCK = NDET
+        L0BLOCK = NDET
       ELSE IF (ICISTR.EQ.2) THEN
-        LBLOCK = MXSB
+        L0BLOCK = MXSB
       ELSE IF (ICISTR.EQ.3) THEN
-        LBLOCK = MXSOOB
+        L0BLOCK = MXSOOB
       END IF
-      LBLOCK = MAX(LBLOCK,LCSBLK)
+C     L1BLOCK = even distribution on all processors
+C.. NOT NEEDED ANY MORE BECAUSE WE HAVE FOUND A
+C   BETTER WAY OF DISTRIBUTING ON PROCESSORS.
+C      IF (NMPROC .EQ. 1) THEN
+C         L1BLOCK = NVAR
+C      ELSE
+C         L1BLOCK = NVAR / (NMPROC-1)
+C      END IF
+C     L2BLOCK = max memory for c-vec and sigma-vec from
+C     (total mem - h2ac mem - 2 mio for string info etc.)
+      CALL MEMMAN(L2BLOCK,0,'SFREEM',2,'SHOWMM')
+      WRITE(LUOUT,'(1X,A,1X,I20)')
+     & 'Current available free memory in double words:',L2BLOCK
+CSKT      WRITE(LUOUT,'(1X,A,1X,I20)') 
+CSKT     & 'MXNTTS**2 in GASCI',MXNTTS**2
+      
+C     we want to keep three blocks in memory at the same time
+C     CB,SB,VEC3(=C2). estimated scratch memory: 500 000 real*8
+C     subtraction by a factor of MXNTTS**2 because of the current 
+C     allocation of a matrix(nblock,nblock)! 4 = safety!
+      L2BLOCK = (L2BLOCK - 1 500 000 - (MXNTTS**2))/4
+
+C     IF (IPRNT.GE.5) THEN
+        WRITE(LUOUT,*) '  NVAR in GASCI         ', NVAR
+        WRITE(LUOUT,*) '  L0BLOCK,L1BLOCK,L2BLOCK,LCSBLK ',
+     &                    L0BLOCK,L1BLOCK,L2BLOCK,LCSBLK
+C     END IF
+
+C     L1BLOCK = MIN(L1BLOCK,LCSBLK,L2BLOCK)
+      L2BLOCK = MIN(LCSBLK,L2BLOCK)
+C     LBLOCK  = MAX(L0BLOCK,L1BLOCK)
+      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+      WRITE(LUOUT,*) '  LBLOCK in GASCI       ', LBLOCK
+Cold     LBLOCK = MAX(LBLOCK,LCSBLK)
 *
 *. Information about block structure- needed by new PICO2 routine.
 *. Memory for partitioning of C vector
@@ -210,17 +241,33 @@ CTF
 *
 *. Batches  of C vector
       ITTSS_ORD = 2
+c     DELTA_LBLOCK = (L1BLOCK-L0BLOCK)/10
+c     NBATCH = 0
+c     ISTOP = 0
+c 100 CONTINUE
+c     NBATCH_OLD = NBATCH
       CALL PART_CIV2(IDC,WORK(KLCBLTP),WORK(KNSTSO(IATP)),
      &              WORK(KNSTSO(IBTP)),
      &              NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLCIOIO),
      &              ISMOST(1,ISM),
      &              NBATCH,WORK(KLCLBT),WORK(KLCLEBT),
      &              WORK(KLCI1BT),WORK(KLCIBT),0,ITTSS_ORD)
+c     write (luwrtout,*) 'nbatch_old,nbatch =',nbatch_old,nbatch
+c     IF (LBLOCK .GT. L0BLOCK) THEN
+c     IF (NBATCH .GT. NMPROC .AND. NBATCH .LT. 2*NMPROC) THEN
+c     IF (LBLOCK - DELTA_LBLOCK .GE. L0BLOCK) THEN
+c        LBLOCK = LBLOCK - DELTA_LBLOCK
+c        GO TO 100
+c     END IF
+c     END IF
+c     END IF
 *. Number of BLOCKS
         NBLOCK = IFRMR(WORK(KLCI1BT),1,NBATCH)
      &         + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
         WRITE(LUWRTOUT,*) ' Number of blocks ', NBLOCK
         WRITE(LUWRTOUT,*) ' Number of batches ', NBATCH
+      CALL MEMMAN(KLCI1BTSCR,NTTS  ,'ADDL  ',1,'CI1BTS')
+      CALL COPVEC(WORK(KLCI1BT),WORK(KLCI1BTSCR),NTTS)
 *. Length of each block
       CALL EXTRROW(WORK(KLCIBT),8,8,NBLOCK,WORK(KLCI1BT))
 *. Class divisions of  dets
@@ -347,6 +394,7 @@ C       LSCR12 = MAX(LBLOCK,4*LSCR2)
 CSK      IF(MYPROC.EQ.MASTER)THEN
 CSK         WRITE(6,*)'LBLOCK = ',LBLOCK
 CSK      END IF
+      WRITE(LUOUT,*) '  LBLOCK in GASCI MEMMAN', LBLOCK
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
 * let us check the connections between sigma and c-blocks
@@ -354,6 +402,8 @@ CSK      END IF
       CALL MEMMAN(KBLCKIF,NBLOCK,'ADDS  ',1,'IBLINF')
       CALL COPVEC(WORK(KLCI1BT),WORK(KBLCKIF),NBLOCK)
       CALL MEMMAN(KICCTOS,NBLOCK**2,'ADDS  ',1,'ICCTOS')
+C     CALL MEMMAN(KICCTOS,2*NBLOCK,'ADDS  ',1,'ICCTOS')
+C     CALL ISETVC(WORK(KICCTOS),NNULL,NBLOCK*2)
       CALL ISETVC(WORK(KICCTOS),NNULL,NBLOCK**2)
 #if defined (VAR_MPI)
       CALL MEMMAN(KIBTOTW,NBLOCK,'ADDS  ',2,'IBTOTW')
@@ -376,6 +426,8 @@ C     diagonalizer
       CALL ISETVC(WORK(KBLCKPD),IMIN2,NBLOCK)
       IMAXALLO = MAX(MXCIV**2,MXCIV*(MXCIV+1)/2)
       CALL MEMMAN(KSCRREDSP,2*IMAXALLO,'ADDL  ',2,'SCRRED')
+C     Allocate with maximal group size = NMPROC
+      CALL MEMMAN(KGROUPLIST,NMPROC,'ADDS  ',1,'GROUPL')
 CSK
 *
 *. CI diagonal - if required
@@ -387,8 +439,10 @@ CSK       WRITE(6,*)'ICISTR',ICISTR
       IDISTROUTE = 1
       IF(IODENSEPAR.GT.0) THEN
         IF(IDISTROUTE.EQ.1) THEN
-          CALL DISTBLKND(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
-     &                   WORK(KBLCKWT))
+          CALL DISTBLKND_3(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
+     &                   WORK(KBLCKWT),NBATCH,WORK(KLCLBT),
+     &                   WORK(KLCLEBT),WORK(KLCI1BTSCR))
+CSK                      WORK(KLCI1BT))
 *. DISTBLKND_2 is only working if PRINT_BATCH_INFO in FIND_IMAT_SC is enabled!
 *:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ELSE
@@ -531,7 +585,8 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
      &     LBLOCK,IROOTHOMING,WORK(KLBASSPC),WORK(KLEBASC),
      &     WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,ISPC,LUWRTOUT,
      &     WORK(KBSCLFC),WORK(KBLCKIF),NBLOCK,WORK(KBLCKPD),
-     &     WORK(KBLCKWT),WORK(KSCRREDSP),WORK(KICCTOS))
+     &     WORK(KBLCKWT),WORK(KSCRREDSP),WORK(KICCTOS),IPROCLIST,
+     &     WORK(KGROUPLIST))
       EREF = EROOT(IRFROOT)
 C?    WRITE(6,*) ' Memcheck after CIEIG5'
 C?    CALL MEMCHK
@@ -889,38 +944,34 @@ C      CALL SLASK
 *.Memory
 #include "wrkspc.inc"
       DIMENSION WRK(LWRK)
-*.Scratch : A character line
-      CHARACTER*72 CARD
+C     character line and machinename
+      CHARACTER*72 CARD,MACHINENAME
+      INTEGER NAMELENGTH
       INTEGER*8 k8base
 #if defined (VAR_MPI)
       MASTER = MPARID
       MYPROC = MYTID
 C     Add the master node
       NMPROC = NUMNOD + 1
-CSK   we want to use the new parallel version per default
-CSK      IODENSEPAR = 1
 #else
       MASTER = 0
       MYPROC = 0
       NMPROC = 1
-*
-CSK      IODENSEPAR = 0
 #endif
-C
+      NAMELENGTH = 0
       IN = IUNIN
       IW = IUNUT
       LUIN = IUNIN
       LUOUT = IUNUT
-*
-*.
+C 
       CALL QENTER('REST ')
-*.    No floating point underflow
+C     No floating point underflow
       CALL XUFLOW
-*. Assign diskunits
+C     Assign diskunits
 C
       CALL DISKUN
-*
-*. Static memory, initialization and allocation
+C
+C     Static memory, initialization and allocation
 C
 C     Compute offset from WRK to WORK
 C
@@ -934,38 +985,81 @@ C
       end if
       CALL COMPOFF(WRK,WORK,K8BASE)
       kbase = k8base
-CSK      write (ludumpf,*)'k8base,kbase=',k8base,kbase
 #else
       k8base = 0
       CALL COMPOFF(WRK,WORK,KBASE)
-CSK      write (ludumpf,*)'k8base,kbase=',k8base,kbase
 #endif
 C
       MXPWRD = LWRK
       KADD = MXPWRD
       CALL MEMMAN(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
 C
+C     Call input conversion program MOLUC (subroutine now)
 C
-*
-*  Call input conversion program MOLUC (subroutine now)
-*
       call dirluc
-*
-*. Header
-c     call hello
+C
       WRITE(LUOUT,'(10X,A,I18)')
      &'Dimension of R*8 workspace : ', MXPWRD
-* ======================================================
-* 1 : .Read input,insert defaults and cross check input
-* ======================================================
+C    ======================================================
+C    1 : .Read input,insert defaults and cross check input
+C    ======================================================
       CALL INPCTL(LUIN,LUCMOL,LUOUT)
 C
-CSK
-*. TEST VALUE FOR LCSBLK
-CSK      LCSBLK = 9000000
-*
-CSK
-*. set some parallel variables to default for sequential runs 
+C     check value for LCSBLK
+      IF(IMAXLBLKSZ.NE.LCSBLK) THEN
+        LCSBLK = IMAXLBLKSZ
+      END IF
+C
+C     usage of parallel file I/O in the davidson routine needs to be 
+C     checked and set properly
+C
+      CALL MEMMAN(KPROCLIST,NMPROC,'ADDS  ',1,'IHOSTL')
+      CALL MEMMAN(KPROCLENGTH,NMPROC,'ADDL  ',1,'INAMEL')
+C
+      CALL ISETVC(WORK(KPROCLIST),-1,NMPROC)
+C     initialize number of process groups sharing a c-vector file
+      NFLGRPS = 0
+C
+#if defined (VAR_MPI)
+#if defined (SYS_LOCALDISKS)
+C     checking only if parallel file I/O in general is requested
+      IF( IIOMOD .eq. 1 ) THEN
+C
+          CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+C
+          CALL FIND_GROUP_OF_PROCS(MACHINENAME,NAMELENGTH,
+     &         WORK(KPROCLIST),WORK(KPROCLENGTH))
+C       
+        IF( IFILESYSTEM .eq. 0 ) THEN
+C         number of groups sharing a file ( = NFLGRPS ) is determined 
+C         in the subroutine above. If there is only one group  
+C         than we can simulate a shared filesystem ( IFILESYSTEM = 1 )
+          IF( NFLGRPS .eq. 1 ) IFILESYSTEM = 1
+        ELSE
+          IF( NFLGRPS .gt. 1 ) THEN
+           WRITE(LUOUT,*) ' WARNING!!! Keyword .FILSYS not set properly.
+     & I recognized it, therefore I will continue'
+           WRITE(LUOUT,*) ' Setting .FILSYS to 0 would have avoided this
+     & warning.'
+           IFILESYSTEM = 0
+           GOTO 10
+          END IF
+          CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+        END IF
+ 10     CONTINUE
+      END IF
+#else
+C     in case of a parallel filesystem, we should use it
+      IF( IIOMOD .eq. 1 .and. IFILESYSTEM .eq. 0 ) THEN
+        IFILESYSTEM = 1
+        NFLGRPS = 1
+        CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+      END IF
+#endif
+#endif
+C
+C     set some parallel variables to default for sequential runs 
+C
       IF(IRUNPA.EQ.0) THEN
         IRTNDRAT = 0
         NPARWAY = 0
@@ -977,72 +1071,73 @@ CSK
      & CALL Abend2('Sorry, I need more than one CPU to run this 
      & version in parallel')
       END IF
-*
-*. Ratio beteeen real and integer word length
+C
+C
+C
+C     Ratio beteeen real and integer word length
       CALL ZIRAT
-*. From shells to orbitals
+C     From shells to orbitals
       CALL ORBINF(LUOUT,IPRORB)
-*. Number of string types
+C     Number of string types
       CALL STRTYP_GAS(IPRSTR)
-*. Divide orbital spaces into inactive/active/secondary
+C     Divide orbital spaces into inactive/active/secondary
       CALL GASSPC
-*. Symmetry information
+C     Symmetry information
       CALL SYMINF(IPRORB)
-*. Number of integrals
+C     Number of integrals
       CALL INTDIM(IPRORB)
-*. Allocate local and global arrays
+C     Allocate local and global arrays
       CALL ALLOC
-*. Read in integrals
+C     Read in integrals
       IF(NOINT.EQ.0) THEN
         CALL INTIM(IPRORB)
       ELSE
         WRITE(LUOUT,*) ' No integrals imported '
       END IF
-*. READ in MO-AO matrix
-      IF(NOMOFL.EQ.0) then
+C     READ in MO-AO matrix
+      IF(NOMOFL.EQ.0) THEN
         write(LUOUT,*) 'KMOAOIN not defined. '
         write(LUOUT,*) 'And NOMOFL = ',NOMOFL
         Call Abend2('Quitting.')
 CTF     CALL GET_CMOAO(WORK(KMOAOIN))
-      end if
-*. Internal string information (stored in WORK, bases in /STRBAS/)
+      END IF
+C     Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS(WORK,IPRSTR)
-*. Internal subspaces
+C     Internal subspaces
       CALL LCISPC(IPRCIX)
-*
-*. Symmetry of reference
+C     Symmetry of reference
       IF(PNTGRP.GT.1) CALL MLSM(IREFSM,IREFPA,IREFSM,'CI',1)
       IF(NOINT.EQ.1) THEN
         WRITE(LUOUT,*) ' End of calculation without integrals'
         Call Abend2(' End of calculation without integrals')
       END IF
-*
-*. Last space where CI vectors were stored
-*
+C
+C     Last space where CI vectors were stored
+C
       ISTOSPC = 0
       IF(IRESTR.EQ.1) ISTOSPC = 1
       IRESTR_ORIG=IRESTR
-*
-* =======================================================
-*. Restarted Lambda calculations need special attention
-* =======================================================
-*
-*  Restart is realized in in SECOND calculation
-*  First calculation is used to establish H0
-*  we do therefore first copy vectors on LUC to LUSC39
-*  so we can restart from this file later
-*
+C
+C     ======================================================
+C      Restarted Lambda calculations need special attention
+C     ======================================================
+C
+C     Restart is realized in in SECOND calculation
+C     First calculation is used to establish H0
+C     we do therefore first copy vectors on LUC to LUSC39
+C     so we can restart from this file later
+C
       IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0) THEN
         CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'VCSAVE')
         WRITE(LUOUT,*) ' Restart vectors from previous run'
         WRITE(LUOUT,*) ' will be saved on LUSC39   '
-*
+C
         IF(ICISTR.EQ.1) THEN
           LBLK = XISPSM(IREFSM,1)
         ELSE
           LBLK = -1
         END IF
-*
+C
         IF(ICISTR.EQ.1) THEN
           LBLOCK = XISPSM(IREFSM,1)
         ELSE IF (ICISTR.EQ.2) THEN
@@ -1051,7 +1146,7 @@ CTF     CALL GET_CMOAO(WORK(KMOAOIN))
           LBLOCK = MXSOOB
         END IF
         CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
-*
+C
         CALL REWINO(LUC)
         CALL REWINO(LUSC39)
         IF(MYPROC.EQ.MASTER)THEN
@@ -1061,13 +1156,13 @@ CTF     CALL GET_CMOAO(WORK(KMOAOIN))
         END IF
         CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'VCSAVE')
       END IF
-*     ^ End of special handling of restarted calc with lambda modified op.
-*
-*
-* ==============================================================
-* Loop over GAS spaces and perform calcalations : CI, PERT, ....
-* ==============================================================
-*
+C     ^ End of special handling of restarted calc with lambda modified op.
+C
+C
+C     ==============================================================
+C     Loop over GAS spaces and perform calcalations : CI, PERT, ....
+C     ==============================================================
+C
       ISKIPEI_INI = ISKIPEI
       I_HAVE_DONE_CC = 0
       DO JCMBSPC = 1, NCMBSPC
@@ -1094,12 +1189,12 @@ CTF     CALL GET_CMOAO(WORK(KMOAOIN))
         WRITE(LUOUT,*)
 C       WRITE(LUOUT,'(A,I3)')
 C    &  ' Number of calculation in this CI space ', NSEQCI(JCMBSPC)
-*. Special treatment of lambda calc in first calc
+C       Special treatment of lambda calc in first calc
         IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0.AND.JCMBSPC.EQ.1) THEN
           WRITE(LUOUT,*) ' Remember No restart in calc 1 (Lambda calc)'
           IRESTR = 0
         END IF
-*
+C
         I_EXPAND = 1
         IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.GT.1) THEN
           WRITE(LUOUT,*) ' =================================='
@@ -1112,15 +1207,15 @@ C    &  ' Number of calculation in this CI space ', NSEQCI(JCMBSPC)
           WRITE(LUOUT,*) '   Modified operator will be used'
           WRITE(LUOUT,*) ' =================================='
 CMO       IF(JCMBSPC.EQ.2) THEN
-*. Obtain modified operator for lambda calculations
+C           Obtain modified operator for lambda calculations
 CMO         WRITE(LUOUT,*) ' Operator will be modified '
 CMO         CALL GENH1(XLAMBDA)
 CMO         CALL SCLH2(XLAMBDA)
 CMO       END IF
         END IF
-*
+C
         IF(JCMBSPC.EQ.2.AND.IRESTR_ORIG.EQ.1.AND.XLAMBDA.NE.1.0D0)  THEN
-*.Obtain restart vectors for Lambda calculations from LUSC39
+C         Obtain restart vectors for Lambda calculations from LUSC39
           WRITE(LUOUT,*) ' Restart vectors will be copied to LUC'
           WRITE(LUOUT,*) ' CI will restart with vectors from prev. calc'
           IF(ICISTR.EQ.1) THEN
@@ -1137,7 +1232,7 @@ CMO       END IF
             LBLOCK = MXSOOB
           END IF
           CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
-*. Copy vectors from LUSC39 to LUC
+C         Copy vectors from LUSC39 to LUC
           CALL REWINO(LUC)
           CALL REWINO(LUSC39)
           IF(MYPROC.EQ.MASTER) THEN
@@ -1146,29 +1241,29 @@ CMO       END IF
             END DO
           END IF
           CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'VCSAVE')
-*. No expansion should follow
+C         No expansion should follow
           I_EXPAND = 0
-*. But normal restart
+C          But normal restart
           IRESTR = 1
         END IF
-*       ^ End of section copying restart vectors from LUSC39
-*. Loop over Calculations in given space
+C       ^ End of section copying restart vectors from LUSC39
+C       Loop over Calculations in given space
         DO JSEQ = 1,  NSEQCI(JCMBSPC)
         CARD = CSEQCI(JSEQ,JCMBSPC)
-*
-* =======================
-*. Expansion of CI VECTORS
-* =======================
-*
+C
+C       =======================
+C       Expansion of CI VECTORS
+C       =======================
+C
           IF((CARD(1:2).EQ.'CI'.OR.CARD(1:4).EQ.'PERT'
      &        .OR.CARD(1:2).EQ.'CC'.OR.CARD(1:2).EQ.'IC')
      &   .AND. JCMBSPC.NE.1.AND.ISTOSPC.NE.JCMBSPC.AND.I_EXPAND.EQ.1
      &                                                           )THEN
-*
-*. Restart from previous spaces ( Assuming a progressing sequence :
-*  spaces are just added, not subtracted )
-*  ( Used for perturbation calculations and CI calculations and CC )
-*
+C
+C           Restart from previous spaces ( Assuming a progressing sequence :
+C           spaces are just added, not subtracted )
+C           ( Used for perturbation calculations and CI calculations and CC )
+C
             LUIN = LUC
             LUOUT = LUSC2
             IF(ICISTR.EQ.1) THEN
@@ -1180,34 +1275,30 @@ C           WRITE(LUOUT,*) ' LBLK = ', LBLK
             CALL EXPCIV(IREFSM,ISTOSPC  ,LUIN,JCMBSPC,LUOUT,
      &                  LBLK,LUSC2,
      &                  NROOT,1,IDC,IPRDIA)
-*. Last space where vectors were stored
+C           Last space where vectors were stored
             ISTOSPC = JCMBSPC
             ISKIPEI = ISKIPEI_INI
-*. Expanded vector will be used as initial vector in the
-*. zero space calculation. Tell next CI to restart from
-*. CI vectors
+C           Expanded vector will be used as initial vector in the
+C           zero space calculation. Tell next CI to restart from
+C           CI vectors
             IRESTR = 1
           END IF
-*         ^ End of Expansion section
-* ==
-* CI
-* ==
+C         ^ End of Expansion section
+C         ====
+C          CI
+C         ====
+C
           IF(CARD(1:2).EQ.'CI') THEN
             IF(JSEQ.EQ.1.AND.JCMBSPC.EQ.2.AND.IRST2.EQ.0) THEN
-*. No restart from previous vectors - IRST2 has been set to zero
+C             No restart from previous vectors - IRST2 has been set to zero
               IRESTR = 0
               WRITE(6,*) ' No restart from previous vectors'
             END IF
-*. Good old normal CI !!!!
-*. do CI in space JCMBPSC
+C           Good old normal CI !!!!
+C           do CI in space JCMBPSC
             MAXIT = ISEQCI(JSEQ,JCMBSPC)
 C
-C
-C
-            CALL GASCI(IREFSM,JCMBSPC,IPRDIA,EREF,LUOUT)
-C
-*            write(6,*)'problem here?', myproc
-C
+            CALL GASCI(IREFSM,JCMBSPC,IPRDIA,EREF,LUOUT,WORK(KPROCLIST))
 C
 *. Modified one-electron operator in first it
             IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.EQ.1) THEN
