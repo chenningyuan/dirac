@@ -4,6 +4,7 @@
 ! FILE    : dcbdhf.h
 !
 !*** Dirac-Fock calculations ***
+!
 !     PROJEC     - any projection, defined by a set of coefficients
 !     ... (descriptions are to be added)
 !
@@ -12,11 +13,15 @@
 !
 
 
-      INTEGER MFMAT, MXOPEN
+      INTEGER MFMAT, MXOPEN, MXMOFREEZE
       PARAMETER (MFMAT = 10, MXOPEN = 10, MXMOFREEZE = 100)
 
       INTEGER MFRAG
       PARAMETER (MFRAG = 6)
+
+      INTEGER MAX_BOS_BL
+      PARAMETER (MAX_BOS_BL = 16)
+!     MAX_BOS_BL must be equal to MAX_SUB_BL in dcborb.h /hjaaj oct 2004
 
       CHARACTER*12 DHF_INTTYP
       CHARACTER*8 CACC
@@ -29,14 +34,14 @@
      &        FCKCNV, DODSCF, DODAMP, DODIIS, DIISON, FIXDIF,           &
      &        DIISAO, DIISMO, OVLSEL, DYNSEL, DOBOSSEL, AUTOCC, INIOCC, &
      &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,DOCCNV,              &
-     &        ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE, DOLEVEL            &
+     &        ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE, DOLEVEL          
 
       COMMON /DCLDHF/ ERGCNV, EVCCNV, FCKCNV, DHFCONV, DHFEXIT, TRIVEC, &
      &                TRIFCK, DODSCF, DODAMP, DODIIS, DIISON, OVLSEL,   &
      &                FIXDIF, DIISAO, DIISMO, DYNSEL, DOBOSSEL, AUTOCC, &
      &                INIOCC, DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,     &
      &                ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE,DOCCNV,     &
-     &                DOLEVEL                                           &
+     &                DOLEVEL                                           
 
       INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
      &        INTDEF, INTDEF_SAVE, INTFLG,                              &
@@ -46,7 +51,7 @@
      &        IHRMOP(MFMAT), NEWOCC, MXMACRO, MXMICRO, MAXBCK, NFRAG,   &
      &        NTMO(2), I2TMOT(2), N2TMOTQ, NISHMF(2),                   &
      &        NACSHMF(2, MXOPEN), NASHMFT, NOCCMF(2), NPRJNUC(MFRAG),   &
-     &               MAXITR2, NMOFREEZE(2), IMOFREEZE(MXMOFREEZE)       &
+     &               MAXITR2, NMOFREEZE(2), IMOFREEZE(MXMOFREEZE)       
 
       COMMON /DCIDHF/ NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS,     &
      &                NELMBM, INTDEF, INTDEF_SAVE, INTFLG, INTBUF,      &
@@ -55,24 +60,22 @@
      &                IFCKOP, IHRMOP, NEWOCC, MXMACRO, MXMICRO, MAXBCK, &
      &                NFRAG, NTMO, I2TMOT, N2TMOTQ, NISHMF, NACSHMF,    &
      &                NASHMFT, NOCCMF, NPRJNUC, MAXITR2, NMOFREEZE,     &
-     &                IMOFREEZE                                         &
+     &                IMOFREEZE                                         
 
 !..number of closed and open shell orbitals with frozen ones subtracted
 
       REAL*8 SCFCNV(2), ERGVAL, EVCVAL, FCKVAL, DHFERG, ELERGY, E1PART, &
      &       E2PART, ERGBUF, CONVRG, TDF2, TDDG, DNSDHF, DAMPFC, DIISTH,&
      &       BMCOND, CNVINT(2), SCFTID(0:15), ESOLVE, ESOLVN, PRJTHR,   &
-     &       SCFCNV2(2), DLSHIF                                         &  
+     &       SCFCNV2(2), DLSHIF  
 
       COMMON /DCRDHF/ SCFCNV, ERGVAL, EVCVAL, FCKVAL, DHFERG, ELERGY,   &
      &                E1PART, E2PART, ERGBUF, CONVRG, TDF2, TDDG,       &
      &                DNSDHF, DAMPFC, DIISTH, BMCOND, CNVINT, SCFTID,   &
-     &                ESOLVE, ESOLVN, PRJTHR, SCFCNV2, DLSHIF           &
+     &                ESOLVE, ESOLVN, PRJTHR, SCFCNV2, DLSHIF          
 
-      REAL*8 DF(0:MXOPEN), DA(0:MXOPEN), DALPHA(0:MXOPEN), OLEV(MXOPEN)
-      INTEGER MAX_BOS_BL
-      PARAMETER (MAX_BOS_BL = 16)
-!     MAX_BOS_BL must be equal to MAX_SUB_BL in dcborb.h /hjaaj oct 2004
+      REAL*8 DF(0:MXOPEN), DA(0:MXOPEN), DALPHA(0:MXOPEN), OLEV(MXOPEN) 
+
       INTEGER NISH_DHF(2), NASH_DHF(2), NSSH_DHF(2), NESH_DHF(2),       &
      &        NPSH_DHF(2), NFRO_DHF(2), NELEC_DHF(2), NELECT_DHF,       &
      &        NAELEC_DHF, NACSH(2, MXOPEN), NOPEN,                      &
