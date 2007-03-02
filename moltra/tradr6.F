@@ -206,8 +206,10 @@ C     Screening statistics
 C     Note : it would be more logical to have the call to MPI_REDUCE inside
 C     ST4SCR, but this would create a conflict with the other transformation schemes.
 C
+#if defined (VAR_MPI)
       CALL MPI_REDUCE(DINTSKP,DINTSKP,8,MPI_DOUBLE_PRECISION,
      &                MPI_SUM,MPARID,MPI_COMM_WORLD,IERR)
+#endif
       IF(SCRTRA.GT.D0.AND.MYTID.EQ.0) CALL ST4SCR(DINTSKP)
 C
 C     Print timing report
