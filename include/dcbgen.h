@@ -40,7 +40,7 @@
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
      &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
-     &                TWOCOMPBSS, DOLINK, DOFMM                         &
+     &                TWOCOMPBSS, DOLINK, DOFMM                         
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
      &        ILLDIR, ISLDIR, ISSDIR, IGTDIR
