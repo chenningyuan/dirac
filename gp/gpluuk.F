@@ -1166,7 +1166,7 @@ C
 C     The record size needs to be NGBFSZ real + (2*NGBFSZ + 2) integer
 C     because we also need to store the labels
 C
-      IRECL = IRECLEN(NGBFSZ,2*NGBFSZ+2,0)
+      IRECL = IRECLEN(NGBFSZ+1,2*NGBFSZ+2,0)
 C
 C     The opening of a file is a bit tricky in FORTRAN, pray that the unit
 C     is not yet in use....
@@ -1383,6 +1383,29 @@ C
 C     We read in reverse order, if we have the first block we're done
 C
       GOTO 1
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_REMOVE (I_FILE)
+C
+C     Write local integrals
+C
+C     Calling parameters
+C
+C     I_FILE   : File unit
+C
+C     Delete the buffer file (free some disk space)
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+C
+C     Get file unit number and file pointer
+C
+      LGFIL  = I_BF_UNIT+I_FILE
+      CLOSE (LGFIL,STATUS='DELETE')
 C
       RETURN
       END

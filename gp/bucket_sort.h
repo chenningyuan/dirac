@@ -8,7 +8,9 @@ C     The maximum number of files that can be opened.
       PARAMETER (MAX_BUFF_FILES=5)
 C
 C     The length of records, measured in integer words.
-      PARAMETER (NGBFSZ=2048)
+C     Performance tip : Make this an multiple of 1024 MINUS 1 (to leave space for the 2 additional administrative ints)
+C
+      PARAMETER (NGBFSZ=2*1024-1)
 C
 C     The maximum number of buckets per file.
       PARAMETER (N_BUFFER=1024)
