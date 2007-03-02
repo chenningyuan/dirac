@@ -133,7 +133,7 @@ CONTAINS
              end IF
           END IF
 
-          call DftEmbReport ()
+!         call DftEmbReport ()   !MI: this routine is nowhere defined....
 
       ELSE
           WRITE (LUPRI, *) "Embedding is switched OFF"
