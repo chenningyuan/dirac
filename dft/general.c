@@ -144,6 +144,7 @@ doalda_(const int *alda)
 }
 
 
+
 void
 dftpot0_(FirstDrv *ds, const real* weight, const real* rho, const real* grad)
 {
@@ -335,7 +336,11 @@ int
 fort_print(const char* format, ...)
 {
     char line[128];
+#if defined(INT_STAR8)
+    long len; 
+#else 
     int len;
+#endif
     va_list a;
 
 /* DEC does not recognize the vsnprintf command */
@@ -369,7 +374,6 @@ dftsyncfunc_(int* amImaster)
     int dft_conf_len =  DftConfString ? strlen(DftConfString)+1 : 0;
     
     if(infpar_.nodes==0||Initialized) return;
-
     MPI_Bcast(&do_alda,      1, MPI_INT, infpar_.mparid, MPI_COMM_WORLD);
     MPI_Bcast(&dft_conf_len, 1, MPI_INT, infpar_.mparid, MPI_COMM_WORLD);
     if(dft_conf_len>0) {
