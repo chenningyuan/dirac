@@ -182,22 +182,24 @@ google, you will almost certainly find very relevant websites).
 
 CHAPTER 3: DEBUGGING THE DIRAC PROGRAMME  
 
-In this chapter we present the simple example of an effective debugging of the DIRAC
-progamme system. The latest version of the widely used the GNU/gdb debugger is recommended.
+Here we present the simple example of an effective debugging of the DIRAC
+program system. For this, the latest version of the widely used the GNU/gdb debugger is needed.
 Make sure that the 'dirac.x' file is compiled with the -g flag.
 
 Go to the working directory and
  make a link of the 'dirac.x' executable file there.
 Ensure that the 'DIRAC.INP', 'MOLECULE.INP', 'gdb_demo' and of other needed files 
-(e.g. 'DFCOEF') are there as well. The file 'gdb_demo' given in the $DIRAC/utils directory is an example
-of using of the gdb debugger.
+(e.g. 'DFCOEF') are there as well. The file 'gdb_demo' given in the $DIRAC/utils directory is the example
+of using commands of the gdb debugger.
 
-Run the 'dirac.x' in the debuggin mode - type 'gdb dirac.x'. When the gdb command
+Run the 'dirac.x' in the debugging mode - type 'gdb dirac.x'. When the gdb command
 line appear, type 'source gdb_demo' to read the source file
 with demonstration commands for the gdb debugger.
 
 Each time when you modify and compile DIRAC source files type 'file dirac.x'
-in the gdb mode to reload latest changes. When you modify the 'gdb_demo'
+in the gdb mode to reload latest changes in the executable. 
+
+When you modify the 'gdb_demo'
 source file apply the gdb command 'source gdb_demo' to reload it.
 
 More GNU/gdb know-how is given at the web-page
