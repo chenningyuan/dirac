@@ -370,7 +370,8 @@ C
             ELSE IF (IOS .LT. 6000) THEN
                WRITE(102,'(A,I4,A)') '    (try explain lib-',IOS,')'
             ENDIF
-            CALL FLUSH(102,IOS)
+CMI         CALL FLUSH(102,IOS)
+            CALL FLUSH(102)
 CSK            CALL TRBK()
 #if defined(SYS_T3D)
             CALL STOP_ALL()
