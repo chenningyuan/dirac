@@ -523,18 +523,24 @@ C
 C
 C     Print section
 C
-      IF (IPRINT .GE. 2) THEN 
-         WRITE (LUPRI,'(/2X,A,I24)')
-     &      ' Number of quadrature points:       ', NPNTS
-         WRITE (LUPRI,'( 2X,A,F24.16)')
-     &      ' Number of electrons:               ', ELCTRN
-         IF (DOERG) THEN
-CTROND            CALL DFT_ENE_REPORT()
-            WRITE (LUPRI,'(2X,A,13X,F24.16)') 
-     &          ' DFT exchange-correlation energy:', 
-     &          EDFTY
-         END IF
-      END IF
+      IF(IPRINT .GE. 2) THEN 
+        WRITE(LUPRI,'(2X,A,I24)')
+     &              ' Number of quadrature points:       ', NPNTS
+        WRITE(LUPRI,'(2X,A,F24.16)')
+     &              ' Number of electrons:               ', ELCTRN
+        IF(DOERG) THEN
+          WRITE(LUPRI,'(2X,A,F24.16)')
+     &                ' DFT exchange-correlation energy:   ', EDFTY
+        ENDIF
+        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A)') '   thresholds'
+        WRITE(LUPRI,'(2X,A,E20.8)')
+     &              ' DFTHR0:                                ', DFTHR0
+        WRITE(LUPRI,'(2X,A,E20.8)')
+     &              ' DFTHRL:                                ', DFTHRL
+      ENDIF
+
+
       IF (IPRINT .GE. 100) THEN
          IF (DOERG) THEN
             CALL HEADER('EXCMAT in DFTDRV ',-1)
