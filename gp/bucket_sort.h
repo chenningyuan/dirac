@@ -45,3 +45,6 @@ C     Buffers for sending integrals
       COMMON /BF_SENDI/ ISGBUF(4+4*NGBFSZ,MAX_SEND_BUFFERS),
      &                  IREQ(MAX_SEND_BUFFERS)
 C
+C     Statistics
+      INTEGER*8 N_WRITTEN, N_DELETED
+      COMMON /BF_SENDI8/ N_WRITTEN, N_DELETED

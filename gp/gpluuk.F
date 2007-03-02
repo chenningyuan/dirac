@@ -1182,6 +1182,8 @@ C
       BF_NAME(I_FILE) = FNODE
       CALL IZERO(LGREC(1,I_FILE),N_BUFFER)
       CALL IZERO(LGBUF(1,I_FILE),N_BUFFER)
+      N_WRITTEN = 0
+      N_DELETED = 0
 C
 #if defined (VAR_MPI)
       DO I = 1, MAX_SEND_BUFFERS
@@ -1224,6 +1226,7 @@ C
       DO I = 1, NROWS
          IBUF = IROWS(1,I)
          IF (IBUF.GT.0.AND.ABS(A(I)).GT.TRESHOLD) THEN
+            N_WRITTEN = N_WRITTEN + 1
             N = LGBUF(IBUF,I_FILE) + 1
             RGBUF(N,IBUF) = A(I)
             IGBUF(1,N,IBUF) = ICOL
@@ -1244,7 +1247,9 @@ C
                N = 0
             ENDIF
             LGBUF(IBUF,I_FILE) = N
-        ENDIF
+         ELSE
+            N_DELETED = N_DELETED + 1
+         ENDIF
       ENDDO
 C
       RETURN
@@ -1332,6 +1337,12 @@ C
          LGBUF(IBUF,I_FILE) = N
       ENDDO
 C
+      PERC = N_WRITTEN+N_DELETED
+      PERC = 100.D0/PERC
+      PERC = PERC*N_WRITTEN
+      WRITE (LUPRI,1000) N_WRITTEN,PERC
+ 1000 FORMAT (/" Buffers flushed:",I16," HT integrals written (",
+     &        F6.2,"% )") 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
