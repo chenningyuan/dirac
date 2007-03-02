@@ -198,8 +198,16 @@ C     Close integral file
 C     
       CALL MDINTF  
 C
-C     Screening statistics
+C     Remove buffer file
 C
+      CALL BUFFER_FILE_REMOVE (1)
+C
+C     Screening statistics
+C     Note : it would be more logical to have the call to MPI_REDUCE inside
+C     ST4SCR, but this would create a conflict with the other transformation schemes.
+C
+      CALL MPI_REDUCE(DINTSKP,DINTSKP,8,MPI_DOUBLE_PRECISION,
+     &                MPI_SUM,MPARID,MPI_COMM_WORLD,IERR)
       IF(SCRTRA.GT.D0.AND.MYTID.EQ.0) CALL ST4SCR(DINTSKP)
 C
 C     Print timing report
@@ -208,7 +216,7 @@ C
 C
 C     It is the masters duty to release the slaves
 C
-      IF (PARCAL.AND.MYTID.EQ.0) CALL DIRAC_PARCTL( -1 )
+      IF (PARCAL.AND.MYTID.EQ.MPARID) CALL DIRAC_PARCTL( -1 )
 C
       CALL MEMREL('TRDR6T',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRDR6T')
