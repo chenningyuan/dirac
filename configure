@@ -1024,6 +1024,7 @@ else
     paropibm=
 fi
 
+#INCLUDE_DIR=include
 INCLUDE_DIR=include
 arflag=
 case $machine in
@@ -1606,7 +1607,8 @@ CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet 
  -usage=var-unitialized
 # -usage=var-unitialized:arg-const-modified:arg-alias
 # -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
-INCLUDE_DIR = $inc
+#INCLUDE_DIR = $inc
+INCLUDE_DIR = $inc -Imodules
 C_INCLUDE_DIR = $c_inc
 LIB_LIST    = $LIB
 INSTALLDIR  = $INSTALL_DIR
