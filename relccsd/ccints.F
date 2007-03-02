@@ -143,32 +143,28 @@ C           The newer MOLFDIR file format = identical to older DIRAC
      &       (KR(I),KR(-I),I=1,NKR)
    11       CONTINUE
          ENDIF
-#if defined (VAR_MPI)
-         IF (NMPROC .GT. 1) THEN
-            CALL MPI_BCAST(NKR,1,my_MPI_INTEGER,
-     &                     MASTER,MPI_COMM_WORLD,IERR)
-            CALL MPI_BCAST(KR,2*NSP+1,my_MPI_INTEGER,
-     &                     MASTER,MPI_COMM_WORLD,IERR)
-         END IF
-#endif
       ELSEIF (INTERFACE(1:5).EQ.'DIRAC') THEN
          IF (MYPROC.EQ.MASTER.OR.INTERFACE(6:6).EQ.'6') THEN
          READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
      &                                    (KR(I),KR(-I),I=1,NKR)
          ENDIF
          MREADER = MASTER
-#if defined (VAR_MPI)
-         IF (NMPROC .GT. 1) THEN
-            CALL MPI_BCAST(NKR,1,my_MPI_INTEGER,
-     &                     MASTER,MPI_COMM_WORLD,IERR)
-            CALL MPI_BCAST(KR,2*NSP+1,my_MPI_INTEGER,
-     &                     MASTER,MPI_COMM_WORLD,IERR)
-         END IF
-#endif
       ELSE
          WRITE (IW,'(//1X,3A)') 'Interface ',INTERFACE,' not defined'
          CALL QUIT('Adapt RDINTS')
       ENDIF
+C
+C     In the older schemes, the slaves have no knowledge of nkr and kr, broadcast
+C     and check for consistency afterwards
+C
+#if defined (VAR_MPI)
+      IF (NMPROC .GT. 1) THEN
+         CALL MPI_BCAST(NKR,1,my_MPI_INTEGER,
+     &                  MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(KR,2*NSP+1,my_MPI_INTEGER,
+     &                  MASTER,MPI_COMM_WORLD,IERR)
+      END IF
+#endif
       IF (2*NKR.NE.NSP) 
      &   CALL QUIT("INCONSISTENT MRCONEE AND MDCINT FILES")
       ITRSGN = 1
@@ -180,6 +176,8 @@ C
       CALL WAIO_OPEN(ITAPT+2)
       CALL WAIO_OPEN(ITAPT+3)
       CALL WAIO_OPEN(ITAPT+4)
+C
+C  We may have already sorted these integrals when restarting, in that case jump ahead
 C
       IF (IMSTAT(1).GT.1.AND..NOT.FOCKSP) THEN
          WRITE (IW,1010)
@@ -205,10 +203,13 @@ C
   100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
      &               NONZR,NZE,CBUF,IBUF,MREADER)
       IF (NONZR.LT.0) THEN
+C        We ran out of integrals on this node
          IF (MREADER.LT.NMPROC-1.AND.INTERFACE(6:6).EQ.'6') THEN
+C            There will be more integrals to read on the next node
              MREADER = MREADER + 1
              GOTO 100
          ELSE
+C            This was the last node, we're done processing the integrals, goto the antisymmetrization step
              GOTO 110
          ENDIF
       ELSE
@@ -297,6 +298,8 @@ C
       CALL FLSHFO (IW)
 C
       CALL WAIO_OPEN(ITAPT+5)
+C
+C  We may have already sorted these integrals when restarting, in that case jump ahead
 C
       IF (IMSTAT(2).GT.1.AND..NOT.FOCKSP) THEN
          WRITE (IW,1011)
