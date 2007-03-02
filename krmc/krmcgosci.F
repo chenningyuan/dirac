@@ -1816,7 +1816,7 @@ C
       DO  II = 1, NDET
           IF (WORK(KHDIAG-1+II) .LE. HDIAGTST) THEN
              JBCVEC = KBCVEC +  NCSIM*NDETQ
-             CALL DZERO(WORK(JBCVEC),N)
+             CALL DZERO(WORK(JBCVEC),NDETQ)
              WORK(JBCVEC + (II-1)) = D1
              CALL RCINORM(WORK(JBCVEC),IPRINT)
              NCSIM = NCSIM + 1
