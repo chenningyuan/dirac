@@ -532,12 +532,6 @@ C
           WRITE(LUPRI,'(2X,A,F24.16)')
      &                ' DFT exchange-correlation energy:   ', EDFTY
         ENDIF
-        WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A)') '   thresholds'
-        WRITE(LUPRI,'(2X,A,E20.8)')
-     &              ' DFTHR0:                                ', DFTHR0
-        WRITE(LUPRI,'(2X,A,E20.8)')
-     &              ' DFTHRL:                                ', DFTHRL
       ENDIF
 
 
