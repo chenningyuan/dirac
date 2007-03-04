@@ -2344,3 +2344,175 @@ C***********************************************************************
 *
       return
       end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LUMSTI_REL
+C
+C     Call the slaves if we run in parallel for KRMC-LUCIAREL
+C
+C     adaption of the corresp. RELCCSD routine written by Luuk Visscher
+C     KRMC-LUCIAREL adaption: S. Knecht
+C
+C     Last revision: S. Knecht           - March  2007
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "dcbgen.h"
+C
+C     ITASK = 6 for parallel KRMC-LUCIAREL
+C
+      IF (PARCAL) CALL DIRAC_PARCTL( 6 )
+CSK      write(6,*)'slaves should be up und running'
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LUMSTE_REL
+C
+C     Release the slaves if we run in parallel for KRMC-LUCIAREL
+C
+C     adaption of the corresp. RELCCSD routine written by Luuk Visscher
+C     KRMC-LUCIAREL adaption: S. Knecht
+C
+C     Last revision: S. Knecht           - March  2007
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "dcbgen.h"
+#include "infpar.h"
+C
+      IF (.NOT.PARCAL) RETURN
+C
+C     Find the slaves and release them
+
+      NTEST = -1
+#if defined (VAR_MPI)
+      DO I = 1,NUMNOD
+         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
+     &                  MPI_COMM_WORLD,IREQ,IERR)
+         CALL MPI_WAIT(IREQ,ISTAT,IERR)
+CSK         write(6,*)'node recieved',node,mparid
+         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
+     &                  MPI_COMM_WORLD,IERR)
+      ENDDO
+#endif
+
+C
+C     Let the slaves sleep (if relevant for this operating system)
+C
+      CALL DIRAC_PARCTL( 0 )
+C
+      END
+#if defined (VAR_MPI)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LUCINOD_REL(WRK,LWRK)
+C
+C     KRMC-LUCIAREL driver routine for the slaves
+C
+C     adapted version of the slave RELCCSD routine 
+C     written by Luuk Visscher.
+C     KRMC-LUCIAREL adaption: S. Knecht
+C
+C     Last revision: S. Knecht           - March  2007
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      IMPLICIT REAL*8(A-H,O-Z)
+C
+#include "infpar.h"
+#include "mpif.h"
+C
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION WRK(LWRK)
+      LOGICAL LUEND
+      CHARACTER LUCITABASF*12, LUCIFILN*16
+*
+*
+*     arrange for the MPI stuff and correct node number
+*     to the total number of running invocations.
+*
+      MASTER = MPARID
+      MYPROC = MYTID
+C     Add the master node, NUMNOD = number of slaves
+      NMPROC = NUMNOD + 1
+*
+*     create a node-unique filename as output file. Important on
+*     shared file systems. Otherwise all the output gets mingled in one
+*     file. You don't really want to do this.
+*
+      LUCITABASF="LUCIAREL.OUT"
+*
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (LUCIFILN,'(A12,A1,I1)') LUCITABASF,'.',MYPROC
+         LUFIL=14
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (LUCIFILN,'(A12,A1,I2)') LUCITABASF,'.',MYPROC
+         LUFIL=15
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (LUCIFILN,'(A12,A1,I3)') LUCITABASF,'.',MYPROC
+         LUFIL=16
+      ELSE
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD_REL MODULE")
+      ENDIF
+*
+*     open the local input file and the node specific output file.
+*     Every access to the local stdout handle then automatically writes
+*     to the corresponding output file.
+*
+*
+CSK      OPEN(LUCMD,FILE = 'DIRAC.INP')
+CSK      OPEN(MSLVOUT,FILE = LUCIFILN(1:LUFIL))
+*
+*     ==============
+*     **** Find Lucita input *****
+*
+CSK      REWIND (LUCMD,IOSTAT=IOS)
+*     ... IOSTAT to avoid program abort on some systems
+*         if reading input from a terminal
+*
+*     ... IOSTAT to avoid program abort on some systems
+*         if reading input from a terminal
+CSK  900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+CSK      IF (WORD .EQ. '*LUCITA') THEN
+CSK         GO TO 930
+CSK      ELSE
+CSK         GO TO 900
+CSK      END IF
+CSK  910 CONTINUE
+CSK         CALL QUIT('End of file on LUCMD, no Lucita input found')
+CSK  920 CONTINUE
+CSK         CALL QUIT('Error reading LUCMD, no Lucita input found')
+CSK  930 CONTINUE
+CSK      WORD3 = WORD
+*
+*    pointer in DIRAC.INP should now be positioned behind *LUCITA
+*
+CSK        CALL LUCTINP(WORD,.FALSE.,WORK,LWRK)
+CSK        CALL LUCTINP(WORD,.TRUE.,WORK,LWRK)
+*
+*     now let's call the working routine!
+*
+CSK        CALL PAMLU(WRK,LWRK,LUCMD,MSLVOUT)
+CSK      CLOSE (MSLVOUT,STATUS='KEEP')
+CSK      CLOSE (LUCMD,STATUS='KEEP')
+*
+*
+*     The slave is finished, wait for the master
+C
+      LUEND = .FALSE.
+C
+      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
+     &              MPI_COMM_WORLD,IREQ,IERR)
+
+    1    CONTINUE
+         CALL SLEEP(1)
+         CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,LUEND,ISTAT,IERR)
+         IF (.NOT.LUEND) GOTO 1
+
+      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
+     &               MPI_COMM_WORLD,ISTAT,IERR)
+C
+      END
+#endif    /* ifdef VAR_MPI */
+
