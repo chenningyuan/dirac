@@ -2453,6 +2453,7 @@ C
 C
       LOGICAL LBIT
       CHARACTER SZTRA(2,4)*80
+CSK only for test      IPRINT = 5
 C
       CALL QENTER('ROPTST')
       KFRSAV = KFREE
@@ -2815,8 +2816,16 @@ C
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
 C
+C        wake the slaves
+C
+         IF(PARCAL) CALL LUMSTI_REL
 C
          CALL LUCI_RCIST(CREF,CMO,WORK(KFREE),LFREE)
+C
+C        sent slaves sleeping
+C
+         IF(PARCAL) CALL LUMSTE_REL
+C
          call memchk('after CALL LUCI_RCIST',WORK,KFREE)
          IF (IANACI.EQ.1) THEN
            CALL LUCI_ANAL(CREF,WORK,KFREE,LFREE)
