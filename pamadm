@@ -1025,12 +1025,13 @@ for link in $dirs; do
       rm -f $link/include
    fi
    ln -sf ../include $link/include
-#
-   echo "Making link from module to $link/modules"
-   if [ -d $link/modules ]; then
-      rm -f $link/modules
+   if [ $link != modules  ]; then
+     echo "Making link from module to $link/modules"
+     if [ -d $link/modules ]; then
+        rm -f $link/modules
+     fi
+     ln -sf ../modules $link/modules
    fi
-   ln -sf ../modules $link/modules
 done
 }
 #
@@ -1076,10 +1077,12 @@ fi
 if [ -n "$XPPFLG" ]; then
    dirs="$dirs prp/xpp"
 fi
-## take care of F90/95 modules - this is for cleaning !
-#if [ -n "$MODULES" ]; then
-#   dirs="$dirs modules"
-#fi
+##
+##  take care of F90/95 modules - this is for the cleaning !
+##
+if [ -n "$MODULES" ]; then
+   dirs="$dirs modules"
+fi
 }
 
 #
