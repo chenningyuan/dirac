@@ -1,0 +1,8 @@
+include ../Makefile.config
+
+clean : 
+	$(RM) -f *.mod *.MOD
+
+
+# DO NOT DELETE
+
