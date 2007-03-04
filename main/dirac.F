@@ -707,6 +707,11 @@ C
 C        Enter the LUCITA module
 C
          CALL LUCINOD(WORK,LWORK)
+      ELSE IF (ITASK .EQ. 6) THEN
+C
+C        start KRMC-LUCIAREL calculation.
+C
+         CALL LUCINOD_REL(WORK,LWORK)
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -794,6 +799,11 @@ C
 C        Enter the LUCITA module
 C
          CALL LUCINOD(WORK,LWORK)
+      ELSE IF (ITASK .EQ. 6) THEN
+C
+C        start KRMC-LUCIAREL calculation.
+C
+         CALL LUCINOD_REL(WORK,LWORK)
       ELSE
 C
 C        Unknown task. Abort execution.
