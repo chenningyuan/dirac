@@ -803,6 +803,10 @@ fi
 if [ -n "$CDFTMOD" ]; then
    echo '	cd cdft  ; $(MAKE) clean' >> Makefile
 fi
+### also take care of cleaning of Fortran90/95 modules (ie of "*.mod" files)
+if [ -n "$MODULES" ]; then
+   echo '	cd modules  ; $(MAKE) clean' >> Makefile
+fi
 
 cat <<EOF>> Makefile
 	cd gp       ; \$(MAKE) clean
@@ -997,7 +1001,7 @@ for ff in $TEMP; do
 EOF
 done
 echo
-echo "Making module Makefiles..."
+#echo "Making module Makefiles..."
 for makefile in $dirs; do
    echo "Making $makefile/Makefile from $makefile/Makefile.in"
 # make backup first !
@@ -1071,6 +1075,10 @@ if [ -n "$ESRFLG" ]; then
 fi
 if [ -n "$XPPFLG" ]; then
    dirs="$dirs prp/xpp"
+fi
+## take care of F90/95 modules
+if [ -n "$MODULES" ]; then
+   dirs="$dirs modules"
 fi
 }
 
