@@ -158,6 +158,11 @@ C
 C     CLOSE(LUQUAD,STATUS='KEEP')
 C
 
+
+
+
+
+
 C
 C     Check accuracy of numerical integration
 C     =======================================
@@ -477,6 +482,12 @@ C          Scale weights with multiplicity of center
            CALL DSCAL(NTHIS,FAC,WT8,1)
          ENDIF
          NTHAT = NTHIS
+
+
+!        drop points that are redundant and rescale
+         IF(ZIPGRID) CALL ZIP_GRID(IATOM,X8,Y8,Z8,WT8,NTHIS)
+
+
 C
 C        Write to file LUQUAD
 C        ====================
@@ -1591,4 +1602,86 @@ C
            ENDDO
          ENDIF
       ENDDO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* ZIP_GRID */
+      SUBROUTINE ZIP_GRID(IATOM,X,Y,Z,W,NR_POINTS)
+C=======================================================================
+C                                                           radovan bast
+C                                           last revision: february 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "dftcom.h"
+#include "nuclei.h"
+
+      DIMENSION X(*),
+     &          Y(*),
+     &          Z(*),
+     &          W(*)
+
+      IF(ZIPGRID_TEXT(1:1) .EQ. 'X') THEN
+        IF(CORD(1,IATOM) .EQ. D0) THEN
+          CALL ZIP_GRID_SUB(X,Y,Z,W,NR_POINTS)
+        ENDIF
+      ENDIF
+      IF(ZIPGRID_TEXT(2:2) .EQ. 'Y') THEN
+        IF(CORD(2,IATOM) .EQ. D0) THEN
+          CALL ZIP_GRID_SUB(Y,Z,X,W,NR_POINTS)
+        ENDIF
+      ENDIF
+      IF(ZIPGRID_TEXT(3:3) .EQ. 'Z') THEN
+        IF(CORD(3,IATOM) .EQ. D0) THEN
+          CALL ZIP_GRID_SUB(Z,X,Y,W,NR_POINTS)
+        ENDIF
+      ENDIF
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* ZIP_GRID_SUB */
+      SUBROUTINE ZIP_GRID_SUB(X,Y,Z,W,NR_POINTS)
+C=======================================================================
+C                                                           radovan bast
+C                                           last revision: february 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+      DIMENSION X(*),
+     &          Y(*),
+     &          Z(*),
+     &          W(*)
+
+      IWRITE = 1
+      DO IREAD = 1,NR_POINTS
+        IF(X(IREAD) .GT. D0) THEN
+          X(IWRITE) = X(IREAD)
+          Y(IWRITE) = Y(IREAD)
+          Z(IWRITE) = Z(IREAD)
+          W(IWRITE) = W(IREAD)
+          IWRITE    = IWRITE + 1
+        ELSEIF(X(IREAD) .LT. D0) THEN
+!         drop these points
+        ELSE
+          X(IWRITE) = X(IREAD)
+          Y(IWRITE) = Y(IREAD)
+          Z(IWRITE) = Z(IREAD)
+          W(IWRITE) = W(IREAD)/D2
+          IWRITE    = IWRITE + 1
+        ENDIF
+      ENDDO
+      NR_POINTS = IWRITE - 1
+
+      CALL DSCAL(NR_POINTS,D2,W,1)
+
+      RETURN
       END

@@ -70,7 +70,7 @@ C
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.COLLIN',
-     &            '.BETA  ','.CDFT  ','.XACDFT','.XXXXXX'/
+     &            '.BETA  ','.CDFT  ','.ZIPGRI','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -106,6 +106,7 @@ C          geometry in a geometry optimization) /hjaaj
       ANGMIN = 15
       ATSIZE = .FALSE.
       RYOGRID = .FALSE.
+      ZIPGRID = .FALSE.
 C
 C
 C     initialize /DFTAC/
@@ -269,10 +270,8 @@ C                                      asymptotic part is LBalpha
 #endif
                  GO TO 100
  19              CONTINUE
-#if defined (MOD_CDFT)
-                 CALL SET_LBIT(LBIT_CDFT,5)
-                 READ(LUCMD,*) CDFT_ALPHA
-#endif
+                 ZIPGRID = .TRUE.
+                 READ(LUCMD,'(A30)') ZIPGRID_TEXT
                  GO TO 100
  20              CONTINUE
                  GO TO 100
