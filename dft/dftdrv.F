@@ -1272,7 +1272,7 @@ C=======================================================================
 #include "ibtfun.h"
 
       DO IM = 1,NMAT
-        IF(IHRMOP(IM) .EQ. -1) THEN
+        IF(.NOT. IHRMOP(IM) .EQ. 1) THEN
           DO IXYZ = 1,3
             IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
             IREPOP = IBTXOR(ISYMAX(IXYZ,2),ISYMOP(IM)-1)
@@ -1357,7 +1357,7 @@ C=======================================================================
 #include "ibtfun.h"
 
       DO IM = 1,NMAT
-        IF(IHRMOP(IM) .EQ. 1) THEN
+        IF(.NOT. IHRMOP(IM) .EQ. -1) THEN
           IREPOP = ISYMOP(IM) - 1
           DO 110 IREP1 = 0,NBSYM-1
             IREP2 = IBTXOR(IREP1,IREPOP)

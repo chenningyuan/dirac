@@ -299,9 +299,33 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !     ====================================
 !
 !     Gradients of the different modified densities
-         call getgrho(grdrho_B, irepbop, gao,gao1,dtrmat(1,1,1,1),buf)
-         call getgrho(grdrho_C, irepcop, gao,gao1,dtrmat(1,1,1,2),buf)
-         call getgrho(grdrho_BC,irepbcop,gao,gao1,dtrmat(1,1,1,3),buf)
+      if(irepbop .eq. 1) then
+        call getgrho(grdrho_b,irepbop,
+     &               gao,gao1,
+     &               dtrmat(1,1,1,1),buf)
+      else
+        call density_gradient_general(grdrho_b,irepbop,
+     &                                gao,gao1,
+     &                                dtrmat(1,1,1,1),buf)
+      endif
+      if(irepcop .eq. 1) then
+        call getgrho(grdrho_c,irepcop,
+     &               gao,gao1,
+     &               dtrmat(1,1,1,2),buf)
+      else
+        call density_gradient_general(grdrho_c,irepcop,
+     &                                gao,gao1,
+     &                                dtrmat(1,1,1,2),buf)
+      endif
+      if(irepbcop .eq. 1) then
+        call getgrho(grdrho_bc,irepbcop,
+     &               gao,gao1,
+     &               dtrmat(1,1,1,3),buf)
+      else
+        call density_gradient_general(grdrho_bc,irepbcop,
+     &                                gao,gao1,
+     &                                dtrmat(1,1,1,3),buf)
+      endif
 !
 !     \zeta^B = \frac{\partial\zeta}{\partial\epsilon_B}
          zeta_B = 2.0D0*(grdrho_B(1)*grdrho(1) + grdrho_B(2)*grdrho(2) +
@@ -572,3 +596,65 @@ C
       RETURN
       END
 #endif /* MOD_DNF */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* EXC_GENERAL */
+      SUBROUTINE EXC_GENERAL(VXC_S,
+     &                       IREPOP,
+     &                       EXCMAT,
+     &                       GAO_LEFT,
+     &                       GAO_RIGHT)
+C=======================================================================
+c                                                           radovan bast
+c                                           last revision: february 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+
+#if defined (var_g77) || defined (sys_sx)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAO_LEFT(NBAST),
+     &          GAO_RIGHT(NBAST),
+     &          EXCMAT(NBAST,NBAST)
+#else
+      DIMENSION GAO_LEFT(NTBAS(0)),
+     &          GAO_RIGHT(NTBAS(0)),
+     &          EXCMAT(NTBAS(0),NTBAS(0))
+#endif
+
+#include "ibtfun.h"
+
+      DO IREP1 = 0,NBSYM-1
+        DO IC = 1,MC
+
+          N1 = NBBAS(IREP1,IC)
+          IF(N1 .GT. 0) THEN
+
+            I1    = IBBAS(IREP1,IC)
+            IREP2 = IBTXOR(IREP1,IREPOP)
+            N2    = NBBAS(IREP2,IC)
+            IF(N2 .GT. 0) THEN
+
+              I2 = IBBAS(IREP2,IC)
+              DO J = 1,N2
+                FACTOR = VXC_S*GAO_RIGHT(I2+J)
+                CALL DAXPY(N1,FACTOR,GAO_LEFT(I1+1),1,
+     &                     EXCMAT(I1+1,I2+J),1)
+              ENDDO
+            ENDIF
+          ENDIF
+        ENDDO
+      ENDDO
+
+      RETURN
+      END
