@@ -762,11 +762,11 @@ clean   :
 	cd abacus   ; \$(MAKE) clean
 	cd amfi     ; \$(MAKE) clean
 	cd prp      ; \$(MAKE) clean
-	cd main ; \$(MAKE) clean
+	cd main     ; \$(MAKE) clean
 	cd moltra   ; \$(MAKE) clean
 	cd relccsd  ; \$(MAKE) clean
-	cd dirrci  ; \$(MAKE) clean
-	cd lucita  ; \$(MAKE) clean
+	cd dirrci   ; \$(MAKE) clean
+	cd lucita   ; \$(MAKE) clean
 EOF
 ###
 #     .... cleaning of individual modules
@@ -839,9 +839,9 @@ cat <<EOF>> Makefile
 ######################################
 export:
 	./export
-#
-#  Objects
-#
+###########################################################
+#                  Objects
+###########################################################
 
 MAIN_OBJ:
 	cd main ; \$(MAKE) all
@@ -1026,7 +1026,7 @@ for link in $dirs; do
    fi
    ln -sf ../include $link/include
 #
-   echo "Making link from include to $link/modules"
+   echo "Making link from module to $link/modules"
    if [ -d $link/modules ]; then
       rm -f $link/modules
    fi
@@ -1076,10 +1076,10 @@ fi
 if [ -n "$XPPFLG" ]; then
    dirs="$dirs prp/xpp"
 fi
-## take care of F90/95 modules
-if [ -n "$MODULES" ]; then
-   dirs="$dirs modules"
-fi
+## take care of F90/95 modules - this is for cleaning !
+#if [ -n "$MODULES" ]; then
+#   dirs="$dirs modules"
+#fi
 }
 
 #
