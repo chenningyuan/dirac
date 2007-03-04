@@ -863,3 +863,61 @@ C
   100 CONTINUE
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_CURRENT_SUB */
+      SUBROUTINE GET_CURRENT_SUB(CURRENT,
+     &                           F,IC1,IC2,
+     &                           GAOL,
+     &                           GAOR,
+     &                           IREPOP,DMAT,BUF)
+C=======================================================================
+C                                                           radovan bast
+C                                            last revision: october 2006
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAOL(NBAST),
+     &          GAOR(NBAST),
+     &          DMAT(NBAST,NBAST)
+#else
+      DIMENSION GAOL(NTBAS(0)),
+     &          GAOR(NTBAS(0)),
+     &          DMAT(NTBAS(0),NTBAS(0))
+#endif
+      DIMENSION BUF(*)
+
+#include "ibtfun.h"
+
+      DO IREP1 = 0,NBSYM-1
+
+        N1 = NBBAS(IREP1,IC1)
+        IF(N1 .GT. 0) THEN
+
+          I1 = IBBAS(IREP1,IC1)+1
+          IREP2 = IBTXOR(IREP1,IREPOP)
+          N2 = NBBAS(IREP2,IC2)
+          IF(N2 .GT. 0) THEN
+
+            I2 = IBBAS(IREP2,IC2)+1
+            CALL DGEMV('N',NBBAS(IREP1,IC1),NBBAS(IREP2,IC2),D1,
+     &                 DMAT(I1,I2),NTBAS(0),GAOR(I2),1,D0,BUF,1)
+            CURRENT = CURRENT+F*DDOT(NBBAS(IREP1,IC1),GAOL(I1),1,BUF,1)
+          ENDIF
+        ENDIF
+      ENDDO
+
+      RETURN
+      END
