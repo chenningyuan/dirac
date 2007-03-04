@@ -4,7 +4,7 @@ F77_OBJS =
 
 F90_OBJS = embedding.o emb_settings.o emb_frozen_orbitals.o
 
-EMBMODS = emb_settings.mod   emb_frozen_orbitals.mod  embedding.mod
+#EMBMODS = ../modules/emb_settings.mod   ../modules/emb_frozen_orbitals.mod  ../modules/embedding.mod
 
 F_CPPS = $(F77_OBJS:.o=.i)
 
@@ -18,11 +18,19 @@ all:	$(F77_OBJS) $(F90_OBJS)
 clean : 
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod
 
-mod :  ;\
+mod : ../modules/emb_settings.mod ../modules/emb_frozen_orbitals.mod ../modules/embedding.mod  ;\
+
+../modules/emb_settings.mod: emb_settings.F90 ;\
 $(F77) $(DEPEND_FLAGS) $(MODS) -c emb_settings.F90  ;\
+mv emb_settings.mod ../modules/.
+
+../modules/emb_frozen_orbitals.mod: emb_frozen_orbitals.F90 ;\
 $(F77) $(DEPEND_FLAGS) $(MODS) -c emb_frozen_orbitals.F90 ;\
+mv emb_frozen_orbitals.mod  ../modules/.
+
+../modules/embedding.mod: emb_frozen_orbitals.F90 emb_settings.F90 embedding.F90 ;\
 $(F77) $(DEPEND_FLAGS) $(MODS) -c embedding.F90 ;\
-cp *.mod modules/. 
+mv embedding.mod  ../modules/.
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
