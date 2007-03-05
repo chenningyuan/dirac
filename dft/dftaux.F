@@ -299,7 +299,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !     ====================================
 !
 !     Gradients of the different modified densities
-      if(irepbop .eq. 1) then
+      if(ihrmop(1) .eq. 1) then
         call getgrho(grdrho_b,irepbop,
      &               gao,gao1,
      &               dtrmat(1,1,1,1),buf)
@@ -308,7 +308,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
      &                                gao,gao1,
      &                                dtrmat(1,1,1,1),buf)
       endif
-      if(irepcop .eq. 1) then
+      if(ihrmop(2) .eq. 1) then
         call getgrho(grdrho_c,irepcop,
      &               gao,gao1,
      &               dtrmat(1,1,1,2),buf)
@@ -317,7 +317,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
      &                                gao,gao1,
      &                                dtrmat(1,1,1,2),buf)
       endif
-      if(irepbcop .eq. 1) then
+      if(ihrmop(3) .eq. 1) then
         call getgrho(grdrho_bc,irepbcop,
      &               gao,gao1,
      &               dtrmat(1,1,1,3),buf)
