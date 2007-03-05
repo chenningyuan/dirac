@@ -4,7 +4,8 @@
 !
       INTEGER MXQLVL
       PARAMETER (MXQLVL = 100)
-      CHARACTER*20  QNAMES(MXQLVL)
+!     ... keep this length in "qpack.F" as well
+      CHARACTER*30 QNAMES(MXQLVL)
       COMMON /QSTACC/ QNAMES
 
 

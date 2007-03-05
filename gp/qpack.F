@@ -145,7 +145,9 @@ C
 Chj1  IDENT8 = IDENT//BLANK8
 Chj1  IF (QNAMES(LEVELQ) .EQ. IDENT8) THEN
 Cjth: check only first 8 letters in IDENT
-      ICHECK = MIN(8,LEN(IDENT))
+CMI   ICHECK = MIN(8,LEN(IDENT))
+CMI ... keep this length in "qnames.h" as well
+      ICHECK = MIN(30,LEN(IDENT))
       IF (QNAMES(LEVELQ) .EQ. IDENT(1:ICHECK)) THEN
          LEVELQ = LEVELQ - 1
       ELSE
