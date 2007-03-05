@@ -119,9 +119,10 @@ C
 #include "priunit.h"
 C
       COMMON /QSTACK/ LEVELQ, LQTREE
-      PARAMETER (MXQLVL = 100)
-      CHARACTER*8  QNAMES(MXQLVL)
-      COMMON /QSTACC/ QNAMES
+#include "qnames.h"
+CMI   PARAMETER (MXQLVL = 100)
+CMI   CHARACTER*8  QNAMES(MXQLVL)
+CMI   COMMON /QSTACC/ QNAMES
 C
 Chj1  CHARACTER*8  IDENT8, BLANK8
 Chj1  PARAMETER (BLANK8 = '        ')
@@ -172,9 +173,10 @@ C
 C  /* Deck qbdinit */
       BLOCK DATA QBDINIT
       COMMON /QSTACK/ LEVELQ, LQTREE
-      PARAMETER (MXQLVL = 100)
-      CHARACTER*8  QNAMES(MXQLVL)
-      COMMON /QSTACC/ QNAMES
+CMI   PARAMETER (MXQLVL = 100)
+CMI   CHARACTER*8  QNAMES(MXQLVL)
+CMI   COMMON /QSTACC/ QNAMES
+#include "qnames.h"
 C
       DATA LEVELQ, LQTREE /0, 0/
       DATA QNAMES /MXQLVL*'-noname-'/
@@ -183,9 +185,10 @@ C  /* Deck qdump */
       SUBROUTINE QDUMP(LUPRI)
 C
       COMMON /QSTACK/ LEVELQ, LQTREE
-      PARAMETER (MXQLVL = 100)
-      CHARACTER*8   QNAMES(MXQLVL)
-      COMMON /QSTACC/ QNAMES
+CMI   PARAMETER (MXQLVL = 100)
+CMI   CHARACTER*8   QNAMES(MXQLVL)
+CMI   COMMON /QSTACC/ QNAMES
+#include "qnames.h"
 C
       IF (LEVELQ .GT. 0) THEN
          WRITE (LUPRI,'(//A)')
@@ -202,24 +205,26 @@ C
 C  Printe traceback from Q stack
 C
       COMMON /QSTACK/ LEVELQ, LQTREE
-      PARAMETER (MXQLVL = 100)
-      CHARACTER*8   QNAMES(MXQLVL)
-      COMMON /QSTACC/ QNAMES
+CMI   PARAMETER (MXQLVL = 100)
+CMI   CHARACTER*8   QNAMES(MXQLVL)
+CMI   COMMON /QSTACC/ QNAMES
+#include "qnames.h"
 C
       IF (LEVELQ .EQ. 0) GO TO 9000
       WRITE (LUPRI,'(//A)') ' QTRACE dump of internal trace stack'
       WRITE (LUPRI,'(3(/A))')
-     *   ' ====================',
-     *   '      level    module',
-     *   ' ===================='
+     *   ' =============================================',
+     *   ' level    module',
+     *   ' ============================================='
       DO 100 I = LEVELQ,1,-1
          IF (I .LE. MXQLVL) THEN
-            WRITE (LUPRI,'(I11,4X,A)') I,QNAMES(I)
+            WRITE (LUPRI,'(I3,4X,A)') I,QNAMES(I)
          ELSE
-            WRITE (LUPRI,'(I11,4X,A)') I,'not recorded'
+            WRITE (LUPRI,'(I3,4X,A)') I,'not recorded'
          END IF
   100 CONTINUE
-      WRITE (LUPRI,'(A/)') ' ===================='
+      WRITE (LUPRI,'(A/)')
+     & ' ==============================================='
 C920522-hjaaj: do not call TRACE because it will abort on some computers
 C9000 CALL TRACE
  9000 CONTINUE
