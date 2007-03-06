@@ -193,7 +193,7 @@ setup()
          OOF_TAR=1
          echo " - OOF module - requires Fotran 90/95 compiler"
       else
-         echo "OOF module not included"
+       #  echo "OOF module not included"
    fi
 ############################################################################
 #
@@ -203,7 +203,7 @@ setup()
   if [ -n "$MODULES" ]; then
      echo "***    Fortran90/95 modules mode is active !   ****"
   else
-     echo "Fortran90/95 modules mode is inactive."
+#     echo "Fortran90/95 modules mode is inactive."
   fi
 #  exit
    #
@@ -1072,7 +1072,7 @@ for link in $dirs; do
    fi
    ln -sf ../include $link/include
    if [ $link != modules  ]; then
-     echo "Making link from module to $link/modules"
+     echo "Making link from modules to $link/modules"
      if [ -d $link/modules ]; then
         rm -f $link/modules
      fi
