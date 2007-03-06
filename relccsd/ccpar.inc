@@ -24,3 +24,12 @@ C     Third index : irrep
 C
       INTEGER*8 NV6PAR,NV5PAR,IDIST
       COMMON/CCPARV/ NV6PAR,NV5PAR,IDIST(6,10,32)
+C
+C DIRAC-specific preprocessor statement to solve 32/64 bit compatibility problems 
+C
+#if defined (INT_STAR8)
+#define my_MPI_INTEGER MPI_INTEGER8
+#else
+#define my_MPI_INTEGER MPI_INTEGER4
+#endif
+
