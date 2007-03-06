@@ -67,19 +67,17 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      WRITE (IW,1000) "2.3 ","September 2002"
+      WRITE (IW,1000)
       WRITE (IW,1002)
       CALL DAYTIME (DATEX,TIMEX)
       WRITE (IW,1001) DATEX,TIMEX
 C
  1000 FORMAT (//" Relativistic Coupled Cluster program RELCCSD"
-     &/" Version number ",A
-     &/" Version date ",A
      &//" Written by :",/" Lucas (Luuk) Visscher"/
      &/" NASA Ames Research Center    (1994)"
      &/" Rijks Universiteit Groningen (1995)"
      &/" Odense Universitet           (1996-1997)" 
-     &/" Vrije Universiteit Amsterdam (1998-2002)")
+     &/" Vrije Universiteit Amsterdam (1998-present)")
  1001 FORMAT (//" Today is :",T15,A10/" The time is :",T17,A8)
  1002 FORMAT (//" This module is documented in"
      &/"  - Initial implementation :",T30,
@@ -94,6 +92,8 @@ C
 C
       RETURN
 C---------------Record of modifications made in the code-------------
+C     modifications after 2000 are documented in the cvs system
+C--------------------------------------------------------------------
 C     July 1999: Implemented Fock space Coupled Cluster
 C                Parallelized (part of) the program using MPI
 C--------------------------------------------------------------------
