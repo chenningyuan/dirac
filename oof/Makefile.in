@@ -15,6 +15,7 @@ all:	$(F77_OBJS) $(F90_OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod
+	$(RM) ../modules/*.mod
 
 mod : ../modules/memmory.mod ../modules/memmory_handling.mod ../modules/qmatrixes.mod  ;\
 

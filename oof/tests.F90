@@ -6,21 +6,23 @@
   SUBROUTINE TEST_OOF(work,lwork)
 
    use Memmory_handling
-!  use Memmory
+!   use Memmory
    use QMatrixes
 
 #include "priunit.h"
 
- double precision :: work(lwork)
+ double precision, intent(inout) :: work(lwork) ! for testing...
  type(QMatrix) :: qmat 
 call qenter('TEST_OOF')
 
   write(lupri,*)
   write(lupri,*) 'in test_oof routine'
 
+   call Stick_array(WORK,LWORK) ! take in WORK(LWORK) array ...
+
+
 !      WORK is already in, continue
-   call Stick_array(WORK,LWORK)
-   call Allocate_QMATRIX(qmat,3,3,1,IREP)
+   call Allocate_QMATRIX(qmat,3,3,1,0) ! allocate array...
    call DeAllocate_QMATRIX(qmat)
 
  call qexit('TEST_OOF')
