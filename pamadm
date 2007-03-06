@@ -194,6 +194,7 @@ setup()
          echo " - OOF module - requires Fotran 90/95 compiler"
       else
        #  echo "OOF module not included"
+       echo 
    fi
 ############################################################################
 #
@@ -202,8 +203,6 @@ setup()
 ############################################################################
   if [ -n "$MODULES" ]; then
      echo "***    Fortran90/95 modules mode is active !   ****"
-  else
-#     echo "Fortran90/95 modules mode is inactive."
   fi
 #  exit
    #
