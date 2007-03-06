@@ -34,6 +34,7 @@ usage()
    echo '     -krmc            : Include KR-MCSCF and LUCIAREL modules'
    echo '     -emb             : Include ab initio/DFT-embedding module (with the F90/95 modularity feature)'
    echo '     -cdft            : Include CDFT module'
+   echo '     -oom             : Include object oriented modularity of Fotran 90/95'
    echo '     tarfile=make     : only generate new Makefile'
    echo '     tarfile=export   : Make DIRAC.new.tar.gz'
 }
@@ -182,22 +183,29 @@ setup()
          echo "CDFT module not included - depends on DFT module "
       fi
    fi
+   #
+   # Object oriented fortran90/95 mocularity module
+   #
+   if [ -n "$OOFMOD" ]; then
+         OOF_FLG='-DMOD_OOF'
+         OOF_OBJ='$(OOF_OBJS)'
+         OOF_MAK=OOF_OBJ
+         OOF_TAR=1
+         echo " - OOF module - requires Fotran 90/95 compiler"
+      else
+         echo "OOF module not included"
+   fi
 ############################################################################
 #
-#
+#        Add info on (in-)/active Fotran90/95 modularity model
 #
 ############################################################################
   if [ -n "$MODULES" ]; then
-     echo 
      echo "***    Fortran90/95 modules mode is active !   ****"
-     echo 
   else
-     echo 
      echo "Fortran90/95 modules mode is inactive."
-     echo 
   fi
 #  exit
-
    #
    # Defining the tarfile that is used for export
    #
@@ -373,6 +381,12 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/luciarel/{*.c,*.F,*.F90,*.f90,Makefile.in,*.inc,*.c} 2>> export.log
 EOF
    fi
+   if [ "$OOF_TAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/oof/{*.F,*.F90,*.f90,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/oof/{*.c,*.F,*.F90,*.f90,Makefile.in,*.inc,*.c} 2>> export.log
+EOF
+   fi
 # A DIRAC administrator should have everything
    if [ "$PAMADM" ]; then
       cat <<EOF>> ./export
@@ -404,8 +418,8 @@ make_makefile()
 {
    echo "*** Making general Makefile"
    echo
-   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $CDFTOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ"
-   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $CDFTMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK"
+   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $CDFTOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $CDFTMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
    #
    # Write current Makefile
    #
@@ -660,6 +674,16 @@ cdft/lr.o cdft/qr.o cdft/current.o cdft/functional_derivatives.o
 EOF
 fi
 #
+#  Object-files for OOF module
+#
+if [ -n "$OOFMOD" ]; then
+cat <<EOF>> Makefile
+
+OOF_OBJS = \\
+  oof/routines.o oof/tests.o
+EOF
+fi
+#
 #  The targets
 #
 cat <<EOF>> Makefile
@@ -667,7 +691,9 @@ cat <<EOF>> Makefile
 OBJSMXM = gp/mxmpack.o
 
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
-	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS)
+	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \\
+        \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS) \\
+        \$(OOF_OBJS)
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
@@ -803,6 +829,10 @@ fi
 if [ -n "$CDFTMOD" ]; then
    echo '	cd cdft  ; $(MAKE) clean' >> Makefile
 fi
+# cleaning of *.o files
+if [ -n "$OOFMOD" ]; then
+   echo '	cd oof  ; $(MAKE) clean' >> Makefile
+fi
 ### also take care of cleaning of Fortran90/95 modules (ie of "*.mod" files)
 if [ -n "$MODULES" ]; then
    echo '	cd modules  ; $(MAKE) clean' >> Makefile
@@ -927,6 +957,13 @@ CDFT_OBJ :
 	cd cdft; \$(MAKE) all
 EOF
 fi
+if [ -n "$OOFMOD" ]; then
+cat <<EOF>> Makefile
+
+OOF_OBJ :
+	cd oof; \$(MAKE) all
+EOF
+fi
 if [ -n "$ERIMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -990,6 +1027,9 @@ fi
 if [ -n "$CDFTMOD" ]; then
    TEMP="$TEMP cdft"
 fi
+if [ -n "$OOFMOD" ]; then
+   TEMP="$TEMP oof"
+fi
 
 cat <<EOF>> Makefile
 
@@ -1047,8 +1087,8 @@ which_modules()
 {
 #  
 #
-MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $LRGMOLFLG"
-MODS_IBM="$ERIFLG,$DNFFLG,$FMMFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG,$EMBFLG,$CDFTFLG,$LRGMOLFLG"
+MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $LRGMOLFLG $OOF_FLG"
+MODS_IBM="$ERIFLG,$DNFFLG,$FMMFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG,$EMBFLG,$CDFTFLG,$LRGMOLFLG,$OOF_FLG"
 dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
@@ -1067,6 +1107,9 @@ if [ -n "$EMBFLG" ]; then
 fi
 if [ -n "$CDFTFLG" ]; then
    dirs="$dirs cdft"
+fi
+if [ -n "$OOF_FLG" ]; then
+   dirs="$dirs oof"
 fi
 if [ -n "$KRMCFLG" ]; then
    dirs="$dirs krmc luciarel"
@@ -1120,6 +1163,7 @@ while [ -n "$1" ]; do
          ERIMOD=1
          DNFMOD=1
          FMMMOD=1
+	 MODULES=1
          ;;
       -densfit|-dnf)
          DNFMOD=1
@@ -1142,6 +1186,10 @@ while [ -n "$1" ]; do
          ;;
       -cdft)
          CDFTMOD=1
+         ;;
+      -oom)
+         OOFMOD=1
+	 MODULES=1
          ;;
       -*)
          echo "Option \"$1\" not recognized."
