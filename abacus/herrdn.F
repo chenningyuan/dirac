@@ -8141,7 +8141,6 @@ C     CHARACTER SPDCAR
 #include "ibtfun.h"
 
 C     .... only for master or single process !!! 
-      write(lupri,*) 'MYTID,MPARID=',MYTID,MPARID
 
       IF (MYTID .EQ. MPARID) THEN
 
