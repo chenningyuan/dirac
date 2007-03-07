@@ -3,32 +3,44 @@
 !
 MODULE Memmory
 
-   integer :: KWORK, KFREE, LFREE, LWORK
-   double precision,  pointer :: PW(:) ! points to the big WORK array
+integer :: KWORK, KFREE, LFREE, LWORK ! basic variables of memmory handling
+double precision,  pointer :: PW(:) ! points to the big WORK array
 
   contains
 
    subroutine print_mem_param() ! print out basic memmory variables
-     #include "priunit.h"
+#include "priunit.h"
      write(LUPRI,*) 'Memmory parameters KWORK, KFREE, LFREE, LWORK:', &
      KWORK, KFREE, LFREE, LWORK
    end subroutine print_mem_param
 
-SUBROUTINE Stick_array(WORK,IWORK)
- #include "priunit.h"
- integer, intent(in) :: IWORK
- double precision, intent(in),  target :: WORK(IWORK)
- CALL QENTER('Stick_array')
-  PW => WORK ! PW points to the big WORK array ... 
-!  write(LUPRI,*) 'Array WORK(',IWORK,') is sticked into PW!'
-!  write(LUPRI,*) 'length=',size(WORK)
-   if (size(PW) /= IWORK) then
-      write(LUPRI,*) 'somme error in array sticking !'
-      CALL QUIT('Stick_array: error in length !')
-   endif
-  LWORK = IWORK ! part of memmory
-  CALL QEXIT('Stick_array')
-END SUBROUTINE Stick_array
+SUBROUTINE Stick_into_array(WORK,LLWORK)
+#include "priunit.h"
+ integer, intent(in) :: LLWORK
+ double precision, intent(in),  target :: WORK(LLWORK)
+ CALL QENTER('Stick_into_array')
+
+ if (associated(PW)) then
+   write(LUPRI,*) 'PW is associated !'
+ else
+   write(LUPRI,*) 'PW is NOT associated !'
+ endif
+
+ PW => WORK ! PW points now to the big WORK array ... 
+ if (size(PW) /= LLWORK) then
+    write(LUPRI,*) 'somme error in array sticking !'
+    CALL QUIT('Stick_array: error in length !')
+ endif
+ LWORK = LLWORK ! story into module variable
+
+ if (associated(PW)) then
+   write(LUPRI,*) 'PW is associated !'
+ else
+   write(LUPRI,*) 'PW is NOT associated !'
+ endif
+
+ CALL QEXIT('Stick_into_array')
+END SUBROUTINE Stick_into_array
 
 END MODULE Memmory
 
@@ -46,24 +58,23 @@ private
   integer::  IREP=-1
   integer::  kstart = -1 ! contains position on PW (WORK) array !
   logical::  isalloc=.false.
-  ! double precision, allocatable :: QM(:,:,:) !...problematic
-  ! double precision, pointer :: QM(:,:,:) !...problematic
-  ! double precision, pointer :: QM(:) !...problematic
 end type QMatrix 
 
 contains
 
+!
+! Constructor for a simple quaternion matrix.
+!
 SUBROUTINE Allocate_QMATRIX(qmat,nrows,ncols,nz,IREP)
-
-!use Memmory  
-
 #include "priunit.h"
 type(QMatrix),intent(inout) :: qmat
 integer, intent(in) :: nrows,ncols,nz,IREP
 integer :: isize
-
-!      ...  assign entering parameters  ...
   CALL QENTER('Allocate_QMATRIX')
+
+! Check is PW pointer is associated with the DIRAC WORK array
+  if (.NOT.associated(PW)) call QUIT('PW pointer MUST be associated with the &
+ DIRAC WORK array!')
 
 !      ...  assign entering parameters  ...
   qmat%nrows = nrows
@@ -90,12 +101,13 @@ integer :: isize
 END SUBROUTINE Allocate_QMATRIX
 
 !
+! Something like a destructor.
 !
 SUBROUTINE DeAllocate_QMATRIX(qmat)
 type(QMatrix),intent(inout) :: qmat
 
 #include "priunit.h"
-!      ...  assign entering parameters  ...
+
   CALL QENTER('DeAllocate_QMATRIX')
 
 !    CALL print_mem_param()
@@ -117,7 +129,8 @@ type(QMatrix),intent(inout) :: qmat
 
 call QENTER('MakeUnitQMATRIX')
 
- if (qmat%isalloc == .false.) then
+! if (qmat%isalloc == .false.) then
+ if (.not.qmat%isalloc) then
    call QUIT('MakeUnitQMATRIX: matrix is not allocated !')
  endif
 
@@ -125,6 +138,7 @@ call QENTER('MakeUnitQMATRIX')
    call QUIT('MakeUnitQMATRIX: matrix is not SQUARE !')
  endif
 
+ ! call it to make (:,:,:) dimension structure of the PW matrix array !
  CALL MakeUnitQMATRIX2(qmat,PW(qmat%kstart))
 
 call QEXIT('MakeUnitQMATRIX')
@@ -133,26 +147,29 @@ END SUBROUTINE MakeUnitQMATRIX
 
 SUBROUTINE  MakeUnitQMATRIX2(qmat,QM)
 type(QMatrix),intent(in) :: qmat
-double precision, intent(inout) :: QM(qmat%nrows,qmat%ncols,qmat%nz)
+double precision, intent(inout) :: QM(qmat%nrows,qmat%ncols,qmat%nz) 
+ CALL QENTER('MakeUnitQMATRIX2')
 
 !  call basic routine from gp/gpsaue.F
    CALL DUNIT2(QM,qmat%nrows,qmat%nrows,qmat%ncols,qmat%nz) 
 
+ CALL QEXIT('MakeUnitQMATRIX2')
 END SUBROUTINE  MakeUnitQMATRIX2
 
 SUBROUTINE PrintQMATRIX(qmat)
 type(QMatrix),intent(in) :: qmat
 #include "priunit.h"
-
  CALL QENTER('PrintQMATRIX')
 
- if (qmat%isalloc == .false.) then
+! if (qmat%isalloc == .false.) then
+ if (.NOT.qmat%isalloc) then
    call QUIT('PrintQMATRIX: matrix is not allocated !')
  endif
-!
+
+ ! call it to make (:,:,:) dimension structure of the PW matrix array !
   Call PrintQMATRIX2(qmat,PW(qmat%kstart))
 
- CALL QEXIT('PrintQMATRIX')
+CALL QEXIT('PrintQMATRIX')
 
 END SUBROUTINE PrintQMATRIX
 
@@ -162,13 +179,13 @@ SUBROUTINE PrintQMATRIX2(qmat,QM)
 type(QMatrix),intent(in) :: qmat
 double precision, intent(inout) :: QM(qmat%nrows,qmat%ncols,qmat%nz)
 
-  CALL QENTER('PrintQMATRIX2')
+CALL QENTER('PrintQMATRIX2')
 
-  CALL PRQMAT(QM,qmat%nrows,qmat%ncols,qmat%nrows,qmat%ncols,qmat%nz,  &
-           IPQTOQ(1,qmat%IREP),LUPRI)
+! this is lower layer routine.
+CALL PRQMAT(QM,qmat%nrows,qmat%ncols,qmat%nrows,qmat%ncols,qmat%nz,  &
+            IPQTOQ(1,qmat%IREP),LUPRI)
 
-  CALL QEXIT('PrintQMATRIX2')
-
+CALL QEXIT('PrintQMATRIX2')
 END SUBROUTINE PrintQMATRIX2
 
 END MODULE QMatrixes
