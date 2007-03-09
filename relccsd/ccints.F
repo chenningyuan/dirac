@@ -930,6 +930,7 @@ C
 #include "inpt.inc"
 #include "ccpar.inc"
 #include "dgroup.h"
+#include "dcbham.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -965,9 +966,15 @@ CMI     ... for real DIRAC symmetries zero imaginary part
      &        (CBUF(1,INZ),INZ=1,NONZR) 
        ELSE
 C     For complex groups we read the real and imaginary part.
-         READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
-     &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
-     &        (CBUF(1,INZ),CBUF(2,INZ),INZ=1,NONZR) 
+         IF (LEVYLE) THEN
+          READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
+     &         (INDK(INZ),INDL(INZ),INZ=1,NONZR),
+     &         (CBUF(1,INZ),INZ=1,NONZR) 
+         ELSE
+          READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
+     &         (INDK(INZ),INDL(INZ),INZ=1,NONZR),
+     &         (CBUF(1,INZ),CBUF(2,INZ),INZ=1,NONZR) 
+         ENDIF
        ENDIF
 
       ELSEIF (INTERFACE(1:7).NE.'MOLFDIR') THEN

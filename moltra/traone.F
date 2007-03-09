@@ -474,6 +474,7 @@ C
 #include "dcbham.h"
 #include "dcbtra.h"
 #include "dgroup.h"
+#include "dcbcap.h"
 C
 C     NORDER gives the order of the Abelian subgroup used linear molecules. 
 C    NORDER=16 (default) uses C_16_h for D_inf_h and C_32 for C_inf_v.
@@ -627,21 +628,28 @@ C       ... turn it in the MOLFDIR like form
 
 C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM
         CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,.TRUE.)
+C       CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,.FALSE.)
 
       ENDIF
 
 CMI    ... FMOM is in MOLFDIR format now
-      IF (IPRTRA.GE.5) THEN
-         IF (CAP.AND.NZ.EQ.1) THEN
-           NZX=2
+      IF (IPRCAP.GE.5.OR.IPRTRA.GE.5) THEN
+         IF (CAP) THEN
+           IF (NZ.EQ.1) THEN
+            NZX=2
+           ELSE
+            NZX=NZ
+           ENDIF
            WRITE(LUPRI,'(/3X,A,I2/)')
-     &     '*** Core Fock matrix with i.CAP_IM part ***'
-          ELSE
+     &     '*** Core Fock matrix with i.CAP_IM part'//
+     &     ' (MOLFDIR format) ***'
+         ELSE
            NZX = NZ
-           WRITE(LUPRI,'(/3X,A,I2/)') '*** Core Fock matrix ***'
-          ENDIF
-          CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZX,2),
-     &                IPQTOQ(1,0),LUPRI)
+           WRITE(LUPRI,'(/3X,A,I2/)')
+     &     '*** Core Fock matrix (MOLFDIR format) ***'
+         ENDIF
+         CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZX,2),
+     &               IPQTOQ(1,0),LUPRI)
       ENDIF
 C
 C     Write MRCONEE file
