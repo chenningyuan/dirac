@@ -101,10 +101,22 @@ C=======================================================================
 
       JOFF = NBAST*NBAST*NZ*(IMAT-1)
 
-      CALL GET_CURRENT(2,
+      CALL GET_CURRENT(.TRUE.,
+     &                 .FALSE.,
      &                 SPIN_DENSITY,
-     &                 DUMMY,
-     &                 ISYMOP(IMAT)-1,GAO,DUMMY,DTRMAT(1+JOFF),BUF)
+     &                 UNUSED,
+     &                 F,
+     &                 G,
+     &                 IU,
+     &                 IV,
+     &                 IX,
+     &                 IY,
+     &                 ITRANSFORM,
+     &                 ISYMOP(IMAT)-1,
+     &                 GAO,
+     &                 UNUSED,
+     &                 DTRMAT(1+JOFF),
+     &                 BUF)
 
       SPIN_DENSITY_NORM = DSQRT(DDOT(3,SPIN_DENSITY,1,SPIN_DENSITY,1))
 
@@ -134,10 +146,22 @@ C=======================================================================
 
       ELSE !GGA
 
-        CALL GET_CURRENT(4,
-     &                   DUMMY,
+        CALL GET_CURRENT(.FALSE.,
+     &                   .TRUE.,
+     &                   UNUSED,
      &                   SPIN_DENSITY_DERVS,
-     &                   ISYMOP(IMAT)-1,GAO,GAO1,DTRMAT(1+JOFF),BUF)
+     &                   F,
+     &                   G,
+     &                   IU,
+     &                   IV,
+     &                   IX,
+     &                   IY,
+     &                   ITRANSFORM,
+     &                   ISYMOP(IMAT)-1,
+     &                   GAO,
+     &                   GAO1,
+     &                   DTRMAT(1+JOFF),
+     &                   BUF)
 
         TEST_MAX = MAX(
      &                 SPIN_DENSITY_NORM,

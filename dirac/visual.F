@@ -59,8 +59,6 @@ C=======================================================================
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGAO1    ,3*NTBAS(0),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO2    ,6*NTBAS(0),
-     &            WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNCNT    ,NTBAS(0),
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBUF     ,NTBAS(0)*4,
@@ -186,7 +184,6 @@ C=======================================================================
       CALL PLOT_SUB(WORK(KDMAT_AO),
      &              WORK(KGAO),
      &              WORK(KGAO1),
-     &              WORK(KGAO2),
      &              WORK(KNCNT),
      &              WORK(KBUF),
      &              WORK(KFREE),LFREE)
@@ -199,10 +196,12 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck PLOT_SUB */
+C     /* PLOT_SUB */
       SUBROUTINE PLOT_SUB(DMAT_AO,
-     &                    GAO,GAO1,GAO2,
-     &                    NCNT,BUF,
+     &                    GAO,
+     &                    GAO1,
+     &                    NCNT,
+     &                    BUF,
      &                    WORK,LWORK)
 C=======================================================================
 C     do the {1,2,3}-dimensional plot
@@ -220,7 +219,7 @@ C=======================================================================
 #include "codata.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_QUANTITIES = 20)
+      PARAMETER (NR_QUANTITIES = 23)
       PARAMETER (MAX_NR_PAIRS = 200)
 
 #include "dcbgen.h"
@@ -240,7 +239,6 @@ C=======================================================================
       DIMENSION DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
-     &          GAO2(*),
      &          NCNT(*),
      &          BUF(*),
      &          WORK(LWORK),
@@ -283,26 +281,19 @@ C=======================================================================
       QUANTITY_NAME(18) = 'opt8'
       QUANTITY_NAME(19) = 'opt9'
       QUANTITY_NAME(20) = 'diamagnetic_current_density'
+      QUANTITY_NAME(21) = 'kinetic_energy_density'
+      QUANTITY_NAME(22) = 'helicity'
+      QUANTITY_NAME(23) = 'gamma_5_density'
 
-      QUANTITY_IS_A_VECTOR(1)  = .FALSE.
+      DO IQUANTITY = 1,NR_QUANTITIES
+        QUANTITY_IS_A_VECTOR(IQUANTITY) = .FALSE.
+      ENDDO
+
       QUANTITY_IS_A_VECTOR(2)  = .TRUE.
       QUANTITY_IS_A_VECTOR(3)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(4)  = .FALSE.
       QUANTITY_IS_A_VECTOR(5)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(6)  = .FALSE.
-      QUANTITY_IS_A_VECTOR(7)  = .FALSE.
       QUANTITY_IS_A_VECTOR(8)  = .TRUE.
       QUANTITY_IS_A_VECTOR(9)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(10) = .FALSE.
-      QUANTITY_IS_A_VECTOR(11) = .FALSE.
-      QUANTITY_IS_A_VECTOR(12) = .FALSE.
-      QUANTITY_IS_A_VECTOR(13) = .FALSE.
-      QUANTITY_IS_A_VECTOR(14) = .FALSE.
-      QUANTITY_IS_A_VECTOR(15) = .FALSE.
-      QUANTITY_IS_A_VECTOR(16) = .FALSE.
-      QUANTITY_IS_A_VECTOR(17) = .FALSE.
-      QUANTITY_IS_A_VECTOR(18) = .FALSE.
-      QUANTITY_IS_A_VECTOR(19) = .FALSE.
       QUANTITY_IS_A_VECTOR(20) = .TRUE.
 
       ORIENTATION(1) = 'xy'
@@ -319,10 +310,10 @@ C=======================================================================
               WRITE(FILE_NAME,'(A5,I1,A2,A)') 'PLOT.', I, 'D.',
      &                                        QUANTITY_NAME(IQUANTITY)
               OPEN(LUNIT_BASE,
-     &             FILE = FILE_NAME,
+     &             FILE   = FILE_NAME,
      &             STATUS = 'NEW',
      &             ACCESS = 'SEQUENTIAL',
-     &             FORM = 'FORMATTED')
+     &             FORM   = 'FORMATTED')
 
               LUNIT(I,IQUANTITY) = LUNIT_BASE
               LUNIT_BASE = LUNIT_BASE + 1
@@ -390,7 +381,7 @@ C=======================================================================
             PZ  = PAIR_COOR_A(IPAIR,3) + PP*DZ
 
             CALL GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                                 GAO,GAO1,GAO2,
+     &                                 GAO,GAO1,
      &                                 PX,PY,PZ,
      &                                 NCNT,BUF,
      &                                 QUANTITY,
@@ -450,7 +441,7 @@ C=======================================================================
                 ENDIF
 
                 CALL GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                                     GAO,GAO1,GAO2,
+     &                                     GAO,GAO1,
      &                                     PX,PY,PZ,
      &                                     NCNT,BUF,
      &                                     QUANTITY,
@@ -565,7 +556,7 @@ C=======================================================================
      &                          + (KCUBE-1)*STEP_3D(3,3)
 
               CALL GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                                   GAO,GAO1,GAO2,
+     &                                   GAO,GAO1,
      &                                   PX,PY,PZ,
      &                                   NCNT,BUF,
      &                                   QUANTITY(1,0,KCUBE),
@@ -598,134 +589,38 @@ C=======================================================================
 
       IF(LBIT(LBIT_PLOT_GENERAL,8)) THEN !integration
 
-!       3D integration
+        IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
 
-        CALL AROUND('3D numerical integration')
+          CALL AROUND('3D numerical integration')
 
-        LUNIT_3D_GRID = 44
+          LUNIT_3D_GRID = 44
 
-        CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
+          CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
 
-        REWIND LUNIT_3D_GRID
-        READ(LUNIT_3D_GRID) NR_POINTS
+          REWIND LUNIT_3D_GRID
+          READ(LUNIT_3D_GRID) NR_POINTS
 
-        CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
 
-        CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
-     &              WORK(KW),
-     &              LUNIT_3D_GRID,NR_POINTS)
+          CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
+     &                WORK(KW),
+     &                LUNIT_3D_GRID,NR_POINTS)
 
-        CALL INTEGRATE_QUANTITY(QUANTITY_INTEGRAL,
-     &                          DMAT_AO,
-     &                          GAO,GAO1,GAO2,
-     &                          WORK(KX),WORK(KY),WORK(KZ),
-     &                          WORK(KW),
-     &                          NR_POINTS,
-     &                          NCNT,BUF,
-     &                          WORK,KFREE,LFREE)
+          CALL INTEGRATE_QUANTITY(QUANTITY_INTEGRAL,
+     &                            DMAT_AO,
+     &                            GAO,GAO1,
+     &                            WORK(KX),WORK(KY),WORK(KZ),
+     &                            WORK(KW),
+     &                            NR_POINTS,
+     &                            NCNT,BUF,
+     &                            WORK,KFREE,LFREE)
 
-        CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
+          CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
 
-        CLOSE(LUNIT_3D_GRID,STATUS = 'DELETE')
-
-        WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
-     &                               'scalar/norm',
-     &                               'x-component',
-     &                               'y-component',
-     &                               'z-component'
-        WRITE(LUPRI,'(A)')
-
-        DO IQUANTITY = 1,NR_QUANTITIES
-          IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
-            IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
-              WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                 QUANTITY_INTEGRAL(IQUANTITY,0),
-     &                                 QUANTITY_INTEGRAL(IQUANTITY,1),
-     &                                 QUANTITY_INTEGRAL(IQUANTITY,2),
-     &                                 QUANTITY_INTEGRAL(IQUANTITY,3)
-            ELSE
-              WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                QUANTITY_INTEGRAL(IQUANTITY,0)
-            ENDIF
-          ENDIF
-        ENDDO
-
-        WRITE(LUPRI,'(A)')
-        CALL PRSYMB(LUPRI,'-',100,0)
-        WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A)')
-
-!       2D integration
-
-        CALL AROUND('2D Gauss-Lobatto numerical integration')
-
-        DO IORIENTATION = 2,3
-          WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A12,A3,A17,A19,A20)') 'orientation:',
-     &                                        ORIENTATION(IORIENTATION),
-     &                                        'pieces',
-     &                                        'order',
-     &                                        'error'
-          WRITE(LUPRI,'(A)')
-
-          NR_PIECES = 5
-          N = 10
-          DIMI = 10.0D0
-          DIMJ = 10.0D0
-          LUNIT_2D_GRID = 45
-
-          CALL DZERO(QUANTITY_INTEGRAL_LAST,NR_QUANTITIES*4)
-
-          DO WHILE(.TRUE.)
-            CALL LOBATTO_2D_GRID(ORIENTATION(IORIENTATION),
-     &                           NR_PIECES,N,DIMI,DIMJ,LUNIT_2D_GRID)
-
-            REWIND LUNIT_2D_GRID
-            READ(LUNIT_2D_GRID) NR_POINTS
-
-            CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
-
-            CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
-     &                  WORK(KW),
-     &                  LUNIT_2D_GRID,NR_POINTS)
-
-            CALL INTEGRATE_QUANTITY(QUANTITY_INTEGRAL,
-     &                              DMAT_AO,
-     &                              GAO,GAO1,GAO2,
-     &                              WORK(KX),WORK(KY),WORK(KZ),
-     &                              WORK(KW),
-     &                              NR_POINTS,
-     &                              NCNT,BUF,
-     &                              WORK,KFREE,LFREE)
-
-            CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
-
-            CLOSE(LUNIT_2D_GRID,STATUS = 'DELETE')
-
-            ERROR = D0
-            DO IQUANTITY = 1,NR_QUANTITIES
-              DO IXYZ = 0,3
-                SOMETHING = QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
-     &                    - QUANTITY_INTEGRAL_LAST(IQUANTITY,IXYZ)
-                ERROR = ERROR + DABS(SOMETHING)
-              ENDDO
-            ENDDO
-            WRITE(LUPRI,'(I30,I20,E30.10)') NR_PIECES, N, ERROR
-            IF(ERROR .LT. 1.0D-6) GOTO 1
-
-            N = N + 10
-            CALL DZERO(QUANTITY_INTEGRAL_LAST,NR_QUANTITIES*4)
-            CALL DAXPY(NR_QUANTITIES*4,D1,QUANTITY_INTEGRAL,1,
-     &                                    QUANTITY_INTEGRAL_LAST,1)
-          ENDDO
- 1        CONTINUE
+          CLOSE(LUNIT_3D_GRID,STATUS = 'DELETE')
 
           WRITE(LUPRI,'(A)')
           WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
@@ -749,7 +644,106 @@ C=======================================================================
               ENDIF
             ENDIF
           ENDDO
-        ENDDO !DO IORIENTATION = 1,3
+
+          WRITE(LUPRI,'(A)')
+          CALL PRSYMB(LUPRI,'-',100,0)
+          WRITE(LUPRI,'(A)')
+          WRITE(LUPRI,'(A)')
+
+        ENDIF !3D
+
+        IF(LBIT(LBIT_PLOT_GENERAL,2)) THEN !2D
+
+          CALL AROUND('2D Gauss-Lobatto numerical integration')
+
+          DO IORIENTATION = 1,3
+            WRITE(LUPRI,'(A)')
+            WRITE(LUPRI,'(A12,A3,A17,A19,A20)') 'orientation:',
+     &                                        ORIENTATION(IORIENTATION),
+     &                                          'pieces',
+     &                                          'order',
+     &                                          'error'
+            WRITE(LUPRI,'(A)')
+
+            NR_PIECES = 5
+            N = 10
+            DIMI = 10.0D0
+            DIMJ = 10.0D0
+            LUNIT_2D_GRID = 45
+
+            CALL DZERO(QUANTITY_INTEGRAL_LAST,NR_QUANTITIES*4)
+
+            DO WHILE(.TRUE.)
+              CALL LOBATTO_2D_GRID(ORIENTATION(IORIENTATION),
+     &                             NR_PIECES,N,DIMI,DIMJ,LUNIT_2D_GRID)
+
+              REWIND LUNIT_2D_GRID
+              READ(LUNIT_2D_GRID) NR_POINTS
+
+              CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
+
+              CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
+     &                    WORK(KW),
+     &                    LUNIT_2D_GRID,NR_POINTS)
+
+              CALL INTEGRATE_QUANTITY(QUANTITY_INTEGRAL,
+     &                                DMAT_AO,
+     &                                GAO,GAO1,
+     &                                WORK(KX),WORK(KY),WORK(KZ),
+     &                                WORK(KW),
+     &                                NR_POINTS,
+     &                                NCNT,BUF,
+     &                                WORK,KFREE,LFREE)
+
+              CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
+
+              CLOSE(LUNIT_2D_GRID,STATUS = 'DELETE')
+
+              ERROR = D0
+              DO IQUANTITY = 1,NR_QUANTITIES
+                DO IXYZ = 0,3
+                  SOMETHING = QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
+     &                      - QUANTITY_INTEGRAL_LAST(IQUANTITY,IXYZ)
+                  ERROR = ERROR + DABS(SOMETHING)
+                ENDDO
+              ENDDO
+              WRITE(LUPRI,'(I30,I20,E30.10)') NR_PIECES, N, ERROR
+              IF(ERROR .LT. 1.0D-6) GOTO 1
+
+              N = N + 10
+              CALL DZERO(QUANTITY_INTEGRAL_LAST,NR_QUANTITIES*4)
+              CALL DAXPY(NR_QUANTITIES*4,D1,QUANTITY_INTEGRAL,1,
+     &                                      QUANTITY_INTEGRAL_LAST,1)
+            ENDDO
+ 1          CONTINUE
+
+            WRITE(LUPRI,'(A)')
+            WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
+     &                                   'scalar/norm',
+     &                                   'x-component',
+     &                                   'y-component',
+     &                                   'z-component'
+            WRITE(LUPRI,'(A)')
+
+            DO IQUANTITY = 1,NR_QUANTITIES
+              IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+                IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
+                  WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,1),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,2),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,3)
+                ELSE
+                  WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,0)
+                ENDIF
+              ENDIF
+            ENDDO
+          ENDDO !DO IORIENTATION = 1,3
+        ENDIF !2D
 
         WRITE(LUPRI,'(A)')
         CALL PRSYMB(LUPRI,'-',100,0)
@@ -759,16 +753,14 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck GET_QUANTITY_IN_POINT */
+C     /* GET_QUANTITY_IN_POINT */
       SUBROUTINE GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                                 GAO,GAO1,GAO2,
+     &                                 GAO,GAO1,
      &                                 PX,PY,PZ,
      &                                 NCNT,BUF,
      &                                 QUANTITY,
      &                                 WORK,KFREE,LFREE)
 C=======================================================================
-C     get quantity in point
-C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                            last revision: october 2006
 C=======================================================================
@@ -779,7 +771,7 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
       PARAMETER (D23 = 2.0D0/3.0D0,D53 = 5.0D0/3.0D0)
       PARAMETER (D32 = 3.0D0/2.0D0,D54 = 5.0D0/4.0D0)
-      PARAMETER (NR_QUANTITIES = 20)
+      PARAMETER (NR_QUANTITIES = 23)
 
 #include "visual.h"
 #include "dcborb.h"
@@ -789,11 +781,11 @@ C=======================================================================
 #include "dcbham.h"
 #include "dcbxrs.h"
 
-      LOGICAL   LBIT
+      LOGICAL   LBIT,
+     &          QUANTITY_IS_A_VECTOR(NR_QUANTITIES)
       DIMENSION DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
-     &          GAO2(*),
      &          NCNT(*),
      &          BUF(*),
      &          QUANTITY(NR_QUANTITIES,0:3),
@@ -801,22 +793,35 @@ C=======================================================================
      &          DMATRIX(3,3),
      &          WORK(*)
 
+      DO IQUANTITY = 1,NR_QUANTITIES
+        QUANTITY_IS_A_VECTOR(IQUANTITY) = .FALSE.
+      ENDDO
+
+      QUANTITY_IS_A_VECTOR(2)  = .TRUE.
+      QUANTITY_IS_A_VECTOR(3)  = .TRUE.
+      QUANTITY_IS_A_VECTOR(5)  = .TRUE.
+      QUANTITY_IS_A_VECTOR(8)  = .TRUE.
+      QUANTITY_IS_A_VECTOR(9)  = .TRUE.
+      QUANTITY_IS_A_VECTOR(20) = .TRUE.
+
       CALL DZERO(QUANTITY,NR_QUANTITIES*4)
 
       CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
      &            BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
 
-      IF(LBIT(LBIT_PLOT_QUANTITY,4)) THEN !ELF
-        CALL GETGRHO(VECTOR,IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
-        GRADIENT_SQUARED = VECTOR(1)**D2 + VECTOR(2)**D2 + VECTOR(3)**D2
-      ENDIF
-
 !     density
 
+      IQUANTITY = 1
       CALL GETRHO(DENSITY,IREP_PLOT,GAO,DMAT_AO,BUF)
-      QUANTITY(1,0) = DENSITY
+      QUANTITY(IQUANTITY,0) = DENSITY
 
-      IF(LBIT(LBIT_PLOT_QUANTITY,4)) THEN !ELF
+!     ELF
+
+      IQUANTITY = 4
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+
+        CALL GETGRHO(VECTOR,IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
+        GRADIENT_SQUARED = VECTOR(1)**D2 + VECTOR(2)**D2 + VECTOR(3)**D2
 
         ELFKIN = D0
         DO I = 1,3
@@ -837,9 +842,7 @@ C=======================================================================
 
         ELFCHI = G/H
 
-        QUANTITY(4,0) = D1/(D1 + ELFCHI*ELFCHI)
-!       QUANTITY(4,0) = ELF**D32 !MBE1
-!       QUANTITY(4,0) = ELF**D54 !MBE2
+        QUANTITY(IQUANTITY,0) = D1/(D1 + ELFCHI*ELFCHI)
       ENDIF
 
 !     diamagnetic current density
@@ -848,116 +851,397 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
         CALL GETRHO(DENSITY,0,GAO,DMAT_AO,BUF)
 
-        VECTOR(1) = -(D1/D2)*PY*DENSITY
-        VECTOR(2) =  (D1/D2)*PX*DENSITY
-        VECTOR(3) =   D0
+        QUANTITY(IQUANTITY,1) = -(D1/D2)*PY*DENSITY
+        QUANTITY(IQUANTITY,2) =  (D1/D2)*PX*DENSITY
+        QUANTITY(IQUANTITY,3) =   D0
+      ENDIF
+
+!     magnetization
+
+      IQUANTITY = 2
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+#if defined (MOD_CDFT)
+
+        F  = D1
+        G  = D1
+        IU = 1
+        IV = 1
+        IX = 2
+        IY = 2
+        ITRANSFORM = 2
+
+        CALL GET_CURRENT(.TRUE.,
+     &                   .FALSE.,
+     &                   VECTOR,
+     &                   UNUSED,
+     &                   F,
+     &                   G,
+     &                   IU,
+     &                   IV,
+     &                   IX,
+     &                   IY,
+     &                   ITRANSFORM,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   GAO1,
+     &                   DMAT_AO,
+     &                   BUF)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
         QUANTITY(IQUANTITY,3) = VECTOR(3)
-
-        QUANTITY(IQUANTITY,0) = VECTOR(1)**D2
-     &                        + VECTOR(2)**D2
-     &                        + VECTOR(3)**D2
-        QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
+#else
+        CALL QUIT('not implemented')
+#endif
       ENDIF
 
-!     magnetization and current density
+!     current density
 
-      DO IQUANTITY = 2,3
-        IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IQUANTITY = 3
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
-          CALL GET_CURRENT(IQUANTITY,
-     &                     VECTOR,
-     &                     UNUSED,
-     &                     IREP_PLOT,GAO,UNUSED,DMAT_AO,BUF)
 
-          QUANTITY(IQUANTITY,1) = VECTOR(1)
-          QUANTITY(IQUANTITY,2) = VECTOR(2)
-          QUANTITY(IQUANTITY,3) = VECTOR(3)
+        F  = -137.0359998D0
+        G  = -137.0359998D0
+        IU = 1
+        IV = 2
+        IX = 2
+        IY = 1
+        ITRANSFORM = 1
 
-          QUANTITY(IQUANTITY,0) = VECTOR(1)**D2
-     &                          + VECTOR(2)**D2
-     &                          + VECTOR(3)**D2
-          QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
+        CALL GET_CURRENT(.TRUE.,
+     &                   .FALSE.,
+     &                   VECTOR,
+     &                   UNUSED,
+     &                   F,
+     &                   G,
+     &                   IU,
+     &                   IV,
+     &                   IX,
+     &                   IY,
+     &                   ITRANSFORM,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   GAO1,
+     &                   DMAT_AO,
+     &                   BUF)
+
+        QUANTITY(IQUANTITY,1) = VECTOR(1)
+        QUANTITY(IQUANTITY,2) = VECTOR(2)
+        QUANTITY(IQUANTITY,3) = VECTOR(3)
 #else
-          CALL QUIT('not implemented')
+        CALL QUIT('not implemented')
 #endif
-        ENDIF
-      ENDDO
+      ENDIF
 
 !     r \times j
 
-      DO IQUANTITY = 5,5
-        IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IQUANTITY = 5
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
-          CALL GET_CURRENT(3,
-     &                     VECTOR,
-     &                     UNUSED,
-     &                     IREP_PLOT,GAO,UNUSED,DMAT_AO,BUF)
 
-          VECTOR_1 = PY*VECTOR(3) - PZ*VECTOR(2)
-          VECTOR_2 = PZ*VECTOR(1) - PX*VECTOR(3)
-          VECTOR_3 = PX*VECTOR(2) - PY*VECTOR(1)
+        F  = -137.0359998D0
+        G  = -137.0359998D0
+        IU = 1
+        IV = 2
+        IX = 2
+        IY = 1
+        ITRANSFORM = 1
 
-          VECTOR(1) = VECTOR_1
-          VECTOR(2) = VECTOR_2
-          VECTOR(3) = VECTOR_3
+        CALL GET_CURRENT(.TRUE.,
+     &                   .FALSE.,
+     &                   VECTOR,
+     &                   UNUSED,
+     &                   F,
+     &                   G,
+     &                   IU,
+     &                   IV,
+     &                   IX,
+     &                   IY,
+     &                   ITRANSFORM,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   GAO1,
+     &                   DMAT_AO,
+     &                   BUF)
 
-          QUANTITY(IQUANTITY,1) = VECTOR(1)
-          QUANTITY(IQUANTITY,2) = VECTOR(2)
-          QUANTITY(IQUANTITY,3) = VECTOR(3)
+        VECTOR(1) = PY*VECTOR(3) - PZ*VECTOR(2)
+        VECTOR(2) = PZ*VECTOR(1) - PX*VECTOR(3)
+        VECTOR(3) = PX*VECTOR(2) - PY*VECTOR(1)
 
-          QUANTITY(IQUANTITY,0) = VECTOR(1)**D2
-     &                          + VECTOR(2)**D2
-     &                          + VECTOR(3)**D2
-          QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
+        QUANTITY(IQUANTITY,1) = VECTOR(1)
+        QUANTITY(IQUANTITY,2) = VECTOR(2)
+        QUANTITY(IQUANTITY,3) = VECTOR(3)
 #else
-          CALL QUIT('not implemented')
+        CALL QUIT('not implemented')
 #endif
-        ENDIF
-      ENDDO
+      ENDIF
 
-!     divergence of magnetization and current density
+!     kinetic energy density
 
-      DO IQUANTITY = 6,7
-        IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IQUANTITY = 21
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
-          CALL GET_CURRENT(IQUANTITY-2,
-     &                     UNUSED,
-     &                     DMATRIX,
-     &                     IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
 
-          CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
+        F  =  137.0359998D0/D2
+        G  = -137.0359998D0/D2
+        IU = 1
+        IV = 2
+        IX = 2
+        IY = 1
+        ITRANSFORM = 1
+
+        CALL GET_CURRENT(.FALSE.,
+     &                   .TRUE.,
+     &                   UNUSED,
+     &                   DMATRIX,
+     &                   F,
+     &                   G,
+     &                   IU,
+     &                   IV,
+     &                   IX,
+     &                   IY,
+     &                   ITRANSFORM,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   GAO1,
+     &                   DMAT_AO,
+     &                   BUF)
+
+        CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
 #else
-          CALL QUIT('not implemented')
+        CALL QUIT('not implemented')
 #endif
-        ENDIF
-      ENDDO
+      ENDIF
 
-!     curl of magnetization and current density
+!     helicity
 
-      DO IQUANTITY = 8,9
-        IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IQUANTITY = 22
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
-          CALL GET_CURRENT(IQUANTITY-4,
-     &                     UNUSED,
-     &                     DMATRIX,
-     &                     IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
 
-          CALL GET_CURRENT_ROT(DMATRIX,VECTOR)
+        F  = -D1
+        G  =  D1
+        IU = 1
+        IV = 1
+        IX = 2
+        IY = 2
+        ITRANSFORM = 2
 
-          QUANTITY(IQUANTITY,1) = VECTOR(1)
-          QUANTITY(IQUANTITY,2) = VECTOR(2)
-          QUANTITY(IQUANTITY,3) = VECTOR(3)
+        CALL GET_CURRENT(.FALSE.,
+     &                   .TRUE.,
+     &                   UNUSED,
+     &                   DMATRIX,
+     &                   F,
+     &                   G,
+     &                   IU,
+     &                   IV,
+     &                   IX,
+     &                   IY,
+     &                   ITRANSFORM,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   GAO1,
+     &                   DMAT_AO,
+     &                   BUF)
 
-          QUANTITY(IQUANTITY,0) = VECTOR(1)**D2
-     &                          + VECTOR(2)**D2
-     &                          + VECTOR(3)**D2
-          QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
+        CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
 #else
-          CALL QUIT('not implemented')
+        CALL QUIT('not implemented')
 #endif
+      ENDIF
+
+!     divergence of magnetization
+
+      IQUANTITY = 6
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+#if defined (MOD_CDFT)
+
+        F  = D1
+        G  = D1
+        IU = 1
+        IV = 1
+        IX = 2
+        IY = 2
+        ITRANSFORM = 2
+
+        CALL GET_CURRENT(.FALSE.,
+     &                   .TRUE.,
+     &                   UNUSED,
+     &                   DMATRIX,
+     &                   F,
+     &                   G,
+     &                   IU,
+     &                   IV,
+     &                   IX,
+     &                   IY,
+     &                   ITRANSFORM,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   GAO1,
+     &                   DMAT_AO,
+     &                   BUF)
+
+        CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+!     divergence of current density
+
+      IQUANTITY = 7
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+#if defined (MOD_CDFT)
+
+        F  = -137.0359998D0
+        G  = -137.0359998D0
+        IU = 1
+        IV = 2
+        IX = 2
+        IY = 1
+        ITRANSFORM = 1
+
+        CALL GET_CURRENT(.FALSE.,
+     &                   .TRUE.,
+     &                   UNUSED,
+     &                   DMATRIX,
+     &                   F,
+     &                   G,
+     &                   IU,
+     &                   IV,
+     &                   IX,
+     &                   IY,
+     &                   ITRANSFORM,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   GAO1,
+     &                   DMAT_AO,
+     &                   BUF)
+
+        CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+!     curl of magnetization
+
+      IQUANTITY = 8
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+#if defined (MOD_CDFT)
+
+        F  = D1
+        G  = D1
+        IU = 1
+        IV = 1
+        IX = 2
+        IY = 2
+        ITRANSFORM = 2
+
+        CALL GET_CURRENT(.FALSE.,
+     &                   .TRUE.,
+     &                   UNUSED,
+     &                   DMATRIX,
+     &                   F,
+     &                   G,
+     &                   IU,
+     &                   IV,
+     &                   IX,
+     &                   IY,
+     &                   ITRANSFORM,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   GAO1,
+     &                   DMAT_AO,
+     &                   BUF)
+
+        CALL GET_CURRENT_ROT(DMATRIX,VECTOR)
+
+        QUANTITY(IQUANTITY,1) = VECTOR(1)
+        QUANTITY(IQUANTITY,2) = VECTOR(2)
+        QUANTITY(IQUANTITY,3) = VECTOR(3)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+!     curl of current density
+
+      IQUANTITY = 9
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+#if defined (MOD_CDFT)
+
+        F  = -137.0359998D0
+        G  = -137.0359998D0
+        IU = 1
+        IV = 2
+        IX = 2
+        IY = 1
+        ITRANSFORM = 1
+
+        CALL GET_CURRENT(.FALSE.,
+     &                   .TRUE.,
+     &                   UNUSED,
+     &                   DMATRIX,
+     &                   F,
+     &                   G,
+     &                   IU,
+     &                   IV,
+     &                   IX,
+     &                   IY,
+     &                   ITRANSFORM,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   GAO1,
+     &                   DMAT_AO,
+     &                   BUF)
+
+        CALL GET_CURRENT_ROT(DMATRIX,VECTOR)
+
+        QUANTITY(IQUANTITY,1) = VECTOR(1)
+        QUANTITY(IQUANTITY,2) = VECTOR(2)
+        QUANTITY(IQUANTITY,3) = VECTOR(3)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+!     \gamma_5 density
+
+      IQUANTITY = 23
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+
+        QUANTITY(IQUANTITY,0) = D0
+
+        F  = D1
+        G  = D1
+        IU = 1
+        IV = 2
+        IX = 2
+        IY = 1
+
+        CALL GET_CURRENT_SUB(QUANTITY(IQUANTITY,0),
+     &                       F,IU,IV,
+     &                       GAO,GAO,
+     &                       IREP_PLOT,DMAT_AO,BUF)
+        CALL GET_CURRENT_SUB(QUANTITY(IQUANTITY,0),
+     &                       G,IX,IY,
+     &                       GAO,GAO,
+     &                       IREP_PLOT,DMAT_AO,BUF)
+      ENDIF
+
+!     get norm for quantities that are vectors
+
+      DO IQUANTITY = 1,NR_QUANTITIES
+        IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+          IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
+            QUANTITY(IQUANTITY,0) = QUANTITY(IQUANTITY,1)**D2
+     &                            + QUANTITY(IQUANTITY,2)**D2
+     &                            + QUANTITY(IQUANTITY,3)**D2
+
+            QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
+          ENDIF
         ENDIF
       ENDDO
 
@@ -1421,7 +1705,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck INTEGRATE_QUANTITY */
       SUBROUTINE INTEGRATE_QUANTITY(QUANTITY_INTEGRAL,
      &                              DMAT_AO,
-     &                              GAO,GAO1,GAO2,
+     &                              GAO,GAO1,
      &                              PX,PY,PZ,
      &                              WEIGHT,
      &                              NR_POINTS,
@@ -1438,7 +1722,7 @@ C=======================================================================
 #include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_QUANTITIES = 20)
+      PARAMETER (NR_QUANTITIES = 23)
 
 #include "visual.h"
 
@@ -1449,7 +1733,6 @@ C=======================================================================
      &          DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
-     &          GAO2(*),
      &          PX(*),
      &          PY(*),
      &          PZ(*),
@@ -1458,32 +1741,22 @@ C=======================================================================
      &          BUF(*),
      &          WORK(*)
 
-      QUANTITY_IS_A_VECTOR(1)  = .FALSE.
+      DO IQUANTITY = 1,NR_QUANTITIES
+        QUANTITY_IS_A_VECTOR(IQUANTITY) = .FALSE.
+      ENDDO
+
       QUANTITY_IS_A_VECTOR(2)  = .TRUE.
       QUANTITY_IS_A_VECTOR(3)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(4)  = .FALSE.
       QUANTITY_IS_A_VECTOR(5)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(6)  = .FALSE.
-      QUANTITY_IS_A_VECTOR(7)  = .FALSE.
       QUANTITY_IS_A_VECTOR(8)  = .TRUE.
       QUANTITY_IS_A_VECTOR(9)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(10) = .FALSE.
-      QUANTITY_IS_A_VECTOR(11) = .FALSE.
-      QUANTITY_IS_A_VECTOR(12) = .FALSE.
-      QUANTITY_IS_A_VECTOR(13) = .FALSE.
-      QUANTITY_IS_A_VECTOR(14) = .FALSE.
-      QUANTITY_IS_A_VECTOR(15) = .FALSE.
-      QUANTITY_IS_A_VECTOR(16) = .FALSE.
-      QUANTITY_IS_A_VECTOR(17) = .FALSE.
-      QUANTITY_IS_A_VECTOR(18) = .FALSE.
-      QUANTITY_IS_A_VECTOR(19) = .FALSE.
       QUANTITY_IS_A_VECTOR(20) = .TRUE.
 
       CALL DZERO(QUANTITY_INTEGRAL,NR_QUANTITIES*4)
 
       DO IPOINT = 1,NR_POINTS
         CALL GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                             GAO,GAO1,GAO2,
+     &                             GAO,GAO1,
      &                             PX(IPOINT),
      &                             PY(IPOINT),
      &                             PZ(IPOINT),
