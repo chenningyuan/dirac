@@ -145,6 +145,7 @@ CMI ... NEW ...basis up to "F"
       real *8 ord_expon(250),ord_coe(250)
       real *8 R_m(4),R_n(4)
       real *8 R_ms(200,3)
+      LOGICAL OVLP
 
       DATA BLNK /'E','S','P','D','F'/
       DATA shell_p /'PX','PY','PZ'/
@@ -390,9 +391,9 @@ C        write(16,*)i, basis_n(i)
        
        write(16,*)'sh_ty,Pgua_expo,nor_pg_coe,angu_pow,cartesian'
        
-        GETOVLP = .TRUE.
-C       GETOVLP = .FALSE.
-       IF (GETOVLP) THEN
+        OVLP = .TRUE.
+C       OVLP = .FALSE.
+       IF (OVLP) THEN
 C!NORMALIZATION PART
 C!Only the primitives are normalized
 C!The Contracted guassian is kept unnormalized
@@ -478,7 +479,6 @@ CMI   IMPLICIT REAL*8 (A-H,O-Z)
 
       COMPLEX *16 PEINT,PE_AO(25000)
       COMPLEX *16 BETA
-      LOGICAL GETOVLP
 
       CALL QENTER('AOINTEGRAL') 
       
