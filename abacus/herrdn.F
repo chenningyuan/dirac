@@ -2436,12 +2436,13 @@ CMI   ... prepare the MNF.INP basis set input file for AMFI
      &           KATOM,KANG,KBLOCK,
      &           KPRIM,CPRIMU)
 
+#ifdef MOD_CAP
 CMI   ... prepare the basis set input files for the CAP program
       CALL CAPOUT(IPREAD,NONTYP,NONT,IQM,NBLCK,
      &           JCO,NUC,NRC,SEG,
      &           KATOM,KANG,KSETS,KBLOCK,
      &           KPRIM,CPRIMU,WORK,LWORK)
-
+#endif
 C
 C     Print the references to the basis sets
 C

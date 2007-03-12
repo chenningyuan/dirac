@@ -137,8 +137,10 @@ CMI/Febr.2006 If DELSMALL=.true. and BSS=.true. and TWOCOMP.=.true.
 CMI   ... instead of calling OP1INI in HAMINP, call it after
       CALL OP1INI(WORK,LWORK)
 
+#ifdef MOD_CAP
 CMI     ... call CAP integrals generation here
       IF (CAP) CALL CAPINTS(WORK,LWORK)
+#endif
 C
 C     Give estimate of memory needed for two-electron integrals
 C
@@ -4117,7 +4119,11 @@ C&&& ALTVAC: Alternative definition of vacuum polarisation
              GO TO 100
   139     CONTINUE
 C&&& Activate the CAP calculation for the complex Fock space method
+#ifdef MOD_CAP
              CAP  =  .TRUE.
+#else
+             CAP  =  .TRUE.
+#endif
              GO TO 100
   140     CONTINUE
 C&&& XXXX
@@ -4898,8 +4904,10 @@ C       if *DFT in input but MOD_DFT not defined !!!
 #endif
         GO TO 200
     4 CONTINUE
+#ifdef MOD_CAP
 CMI    ... reading the CAP integrals characteristic
         CALL CAPINP(WORD,.FALSE.,WORK,LWORK)
+#endif
         GO TO 200
     5 CONTINUE
         GO TO 200
@@ -4919,7 +4927,9 @@ CJuly2003
 #endif
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
 
+#ifdef MOD_CAP
       IF (CAP) CALL CAPINP(WORD,.TRUE.,WORK,LWORK)
+#endif
 C
  500  CONTINUE
 C

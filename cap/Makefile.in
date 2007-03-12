@@ -1,0 +1,35 @@
+#
+# VERSION : $Revision$
+# DATE    : $Date$
+# FILE    : Makefile.in
+#
+
+include ../Makefile.config
+
+F77_OBJS = dircap.o prepcap.o
+
+F90_OBJS =
+
+F77_CPPS = $(F77_OBJS:.o=.i)
+
+pre:	$(F77_CPPS)
+
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+
+all:	$(F77_OBJS) $(F90_OBJS)
+
+clean :
+	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
+
+dirac.x:
+	cd .. ; $(MAKE) dirac.x
+
+dirmpi.x:
+	cd .. ; $(MAKE) dirmpi.x
+
+depend:
+	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

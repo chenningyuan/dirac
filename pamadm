@@ -34,6 +34,7 @@ usage()
    echo '     -krmc            : Include KR-MCSCF and LUCIAREL modules'
    echo '     -emb             : Include ab initio/DFT-embedding module (with the F90/95 modularity feature)'
    echo '     -cdft            : Include CDFT module'
+   echo '     -cap             : Include CAP module'
    echo '     -oof             : Include object oriented modularity of Fotran 90/95'
    echo '     tarfile=make     : only generate new Makefile'
    echo '     tarfile=export   : Make DIRAC.new.tar.gz'
@@ -183,6 +184,18 @@ setup()
          echo "CDFT module not included - depends on DFT module "
       fi
    fi
+   #
+   #         CAP module
+   #
+   if [ -n "$CAPMOD" ]; then
+         CAPFLG='-DMOD_CAP'
+         CAPOBJ='$(CAPOBJS)'
+         CAPMAK=CAP_OBJ
+         CAPTAR=1
+         echo " - CAP module"
+    else
+        echo "CAP module not is included "
+    fi
    #
    # Object oriented fortran90/95 mocularity module
    #
@@ -359,6 +372,11 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/cdft/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
+   if [ "$CAPTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/cap/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
    if [ "$ERITAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
@@ -417,8 +435,8 @@ make_makefile()
 {
    echo "*** Making general Makefile"
    echo
-   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $CDFTOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
-   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $CDFTMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
+   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $CDFTOBJ $CAPOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $CDFTMAK $CAPMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
    #
    # Write current Makefile
    #
@@ -437,7 +455,7 @@ dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o dirac/dirv1c.o \\
 dirac/dirout.o dirac/dirana.o dirac/visual.o dirac/dirrdn.o dirac/dirscf.o \\
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \\
 dirac/dirgrd.o dirac/dirsol.o dirac/dirgeo.o dirac/dirspf.o \\
-dirac/diropen.o dirac/diraos.o  dirac/dirbss.o dirac/dircap.o \\
+dirac/diropen.o dirac/diraos.o  dirac/dirbss.o \\
 main/dirac.o \\
 abacus/her1ave.o    abacus/her1car.o    abacus/her1cat.o    abacus/her1drv.o    abacus/her1int.o\\
 abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\\
@@ -673,6 +691,16 @@ cdft/lr.o cdft/qr.o cdft/current.o cdft/functional_derivatives.o
 EOF
 fi
 #
+#  Object-files for CAP module
+#
+if [ -n "$CAPMOD" ]; then
+cat <<EOF>> Makefile
+
+CAPOBJS = \\
+cap/dircap.o cap/prepcap.o
+EOF
+fi
+#
 #  Object-files for OOF module
 #
 if [ -n "$OOFMOD" ]; then
@@ -828,6 +856,9 @@ fi
 if [ -n "$CDFTMOD" ]; then
    echo '	cd cdft  ; $(MAKE) clean' >> Makefile
 fi
+if [ -n "$CAPMOD" ]; then
+   echo '	cd cap  ; $(MAKE) clean' >> Makefile
+fi
 # cleaning of *.o files
 if [ -n "$OOFMOD" ]; then
    echo '	cd oof  ; $(MAKE) clean' >> Makefile
@@ -962,6 +993,13 @@ CDFT_OBJ :
 	cd cdft; \$(MAKE) all
 EOF
 fi
+if [ -n "$CAPMOD" ]; then
+cat <<EOF>> Makefile
+
+CAP_OBJ :
+	cd cap; \$(MAKE) all
+EOF
+fi
 if [ -n "$OOFMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -1031,6 +1069,9 @@ if [ -n "$EMBMOD" ]; then
 fi
 if [ -n "$CDFTMOD" ]; then
    TEMP="$TEMP cdft"
+fi
+if [ -n "$CAPMOD" ]; then
+   TEMP="$TEMP cap"
 fi
 if [ -n "$OOFMOD" ]; then
    TEMP="$TEMP oof"
@@ -1113,6 +1154,9 @@ fi
 if [ -n "$CDFTFLG" ]; then
    dirs="$dirs cdft"
 fi
+if [ -n "$CAPFLG" ]; then
+   dirs="$dirs cap"
+fi
 if [ -n "$OOF_FLG" ]; then
    dirs="$dirs oof"
 fi
@@ -1187,10 +1231,12 @@ while [ -n "$1" ]; do
          EMBMOD=1
          # echo "embedding with fortran90/95 modules is on !!!"
 	 MODULES=1
-### exit 
          ;;
       -cdft)
          CDFTMOD=1
+         ;;
+      -cap)
+         CAPMOD=1
          ;;
       -oof)
          OOFMOD=1
