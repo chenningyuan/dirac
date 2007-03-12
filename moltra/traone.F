@@ -615,6 +615,7 @@ C     Fill in complete core-Fock matrix in complex form
 C
       CALL MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD)
 
+#ifdef MOD_CAP
       IF (CAP) THEN
 C      ... allocate space for CAP_IM
         CALL MEMGET('REAL',KCAPI,N2BBASXQ,WORK,KFREE,LFREE)
@@ -629,8 +630,8 @@ C       ... turn it in the MOLFDIR like form
 C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM
         CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,.TRUE.)
 C       CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,.FALSE.)
-
       ENDIF
+#endif
 
 CMI    ... FMOM is in MOLFDIR format now
       IF (IPRCAP.GE.5.OR.IPRTRA.GE.5) THEN
