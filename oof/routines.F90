@@ -11,6 +11,7 @@ double precision,  pointer :: PW(:) ! points to the big WORK array
    ! print out basic memmory variables
    subroutine print_mem_param 
 #include "priunit.h"
+   CALL QENTER('print_mem_param')
    write(LUPRI,*) 'Memmory parameters: KWORK=',KWORK,' KFREE=',KFREE,' LFREE=',LFREE, &
    ' LWORK=',LWORK 
 
@@ -19,7 +20,8 @@ double precision,  pointer :: PW(:) ! points to the big WORK array
    else
      write(LUPRI,*) 'Pointer PW is NOT associated with the WORK array.'
   endif
-   end subroutine print_mem_param
+  CALL QEXIT('print_mem_param')
+  end subroutine print_mem_param
 
 SUBROUTINE Stick_into_array(WORK,LLWORK)
 #include "priunit.h"
@@ -32,12 +34,23 @@ SUBROUTINE Stick_into_array(WORK,LLWORK)
  endif
  PW => WORK ! PW points now to the big WORK array ... 
  if (size(PW) /= LLWORK) then
+    write(LUPRI,*) 'Stick_into_array:  size(PW)=',size(PW),' while LWORK=',LWORK
     write(LUPRI,*) 'somme error in array sticking !'
     CALL QUIT('Stick_into_array: error in length !')
  endif
  LWORK = LLWORK ! story into module variable
  CALL QEXIT('Stick_into_array')
 END SUBROUTINE Stick_into_array
+
+SUBROUTINE UnStickArray
+#include "priunit.h"
+ if (associated(PW)) then
+   write(LUPRI,*) 'PW is already associated'
+ else
+   write(LUPRI,*) 'PW is NOT associated !'
+ endif
+ nullify(PW)
+END SUBROUTINE UnStickArray
 
 END MODULE Memmory
 
@@ -49,6 +62,7 @@ MODULE QMatrixes
 
 use Memmory  
 
+! this is the primitive ...
 type QMatrix
 private
   integer::  nrows=-1,ncols=-1,nz=-1 ! 
@@ -57,14 +71,76 @@ private
   logical::  isalloc=.false.
 end type QMatrix 
 
+!
+! hoping it's more advanced structure
+!
+type QMtx
+private
+  ! symm.distingiushed dimensions (1:NFSYM)
+  integer, dimension(2)  :: nrows=-1, ncols=-1
+  ! total dimensions if matrix is not symmetry packed
+  integer                :: nrows_t=-1, ncols_t=-1
+  !
+  integer::  IREP=-1, nz=-1
+  !
+  integer::  kstart = -1 ! contains position on the PW (WORK) array !
+  logical::  isalloc=.false.
+  !
+  logical ::  symm_packed=.true.
+  integer ::  offset_packed = -1
+  ! for FULL symmetry distinguished matrixes
+  integer :: offset_rows=-1, offset_cols=-1 
+end type QMtx
+
 interface assignment ( = )
-  module procedure assign_qmatrix
+  module procedure assign_qmatrix ! for QMatrix
 end interface 
 
 contains
+!
+! 
+!
+!
+SUBROUTINE QMtxInfo(qmatx)
+#include "priunit.h"
+#include "dgroup.h"
+type(QMtx),intent(in) :: qmatx
+integer :: ifsym
+CALL QENTER('QMtxInfo')
+write(LUPRI,*) 'QMtx: '
+if (qmatx%symm_packed.and.qmatx%offset_packed.NE.-1) then
+ write(LUPRI,*) 'fermion symmetry packed matrix !!!'
+ do ifsym =1 , NFSYM
+  write(LUPRI,*) 'fermion symmetry ',ifsym,'/',NFSYM,  &
+  'nrows,ncols:',qmatx%nrows(ifsym),qmatx%ncols(ifsym)
+  if (ifsym==1) then
+     write(LUPRI,*) 'offset=',0  
+  else
+     write(LUPRI,*) 'offset=',qmatx%offset_packed
+  endif
+ enddo
+else
+ write(LUPRI,*) 'fermion symmetry distinguished full matrix !!!'
+ write(LUPRI,*) ' nrows_t,ncols_t,nz:',qmatx%nrows_t,qmatx%ncols_t,qmatx%nz
+endif
+CALL QEXIT('QMtxInfo')
+END SUBROUTINE QMtxInfo
 
 !
-!    Constructor for a simple quaternion matrix.
+! Somehow fill all == QMtx === characteristics
+!
+SUBROUTINE MakeQMtxPacked(qmat, nr1, nc1, nr2, nc2, nz, irep)
+#include "priunit.h"
+#include "dgroup.h"
+type(QMtx),intent(inout) :: qmat
+integer, intent(in) :: nr1, nc1, nr2, nc2, nz
+CALL QENTER('MakeQMtxPacked')
+
+CALL QEXIT('MakeQMtxPacked')
+END SUBROUTINE  MakeQMtxPacked
+
+!
+!  Constructor for a simple quaternion matrix.
 !
 SUBROUTINE Allocate_QMATRIX(qmat,nrows,ncols,nz,IREP)
 #include "priunit.h"

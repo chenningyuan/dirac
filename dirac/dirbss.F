@@ -2920,6 +2920,11 @@ C
          MZ = NZ
       END IF
 
+#ifdef MOD_OOF
+! ... perform the QTRANS inside the highly modularized routine
+       call handle_matrixes(VMAT,TMAT,WORK(KFREE),LFREE)
+#endif
+
       IOFT = 1
       IMAT = 1
 
