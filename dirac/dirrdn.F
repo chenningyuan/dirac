@@ -4122,7 +4122,7 @@ C&&& Activate the CAP calculation for the complex Fock space method
 #ifdef MOD_CAP
              CAP  =  .TRUE.
 #else
-             CAP  =  .TRUE.
+             CAP  =  .FALSE.
 #endif
              GO TO 100
   140     CONTINUE
@@ -4907,8 +4907,13 @@ C       if *DFT in input but MOD_DFT not defined !!!
 #ifdef MOD_CAP
 CMI    ... reading the CAP integrals characteristic
         CALL CAPINP(WORD,.FALSE.,WORK,LWORK)
-#endif
+#else
+CMI       dirac.x went into an infinite loop here
+C       if *CAP in input but MOD_CAP is not defined !!!
+        CALL QUIT(
+     &  '*CAP specified, but CAP is not included in this version')
         GO TO 200
+#endif
     5 CONTINUE
         GO TO 200
     6 CONTINUE

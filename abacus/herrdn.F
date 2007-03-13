@@ -3260,11 +3260,30 @@ C
   100 CONTINUE
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nrmorb */
       SUBROUTINE NRMORB(I,NRCIJ,NUCIJ,ALPHA,CPRIM,CPRIMU,KPRIM,NBLOCK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Purpose: do the normalization of incoming atomic orbitals, GTO -> CGTP
+C
+C On entry:
+C           I - of 1 - IQM
+C           NRCIJ, NUCIJ - number of contracted/unkontracted AO
+C           ALPHA - exponents  
+C           CPRIMU - contraction coefficients read from the basis set input
+C           KPRIM, NBLOCK - dimensions
+C
+C On output: 
+C            CPRIM - normalized contraction coefficients
+C
+C Description added by Miro ILIAS, March 2007, Tel Aviv
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
+#include "cbirea.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
      &           DP25 = 0.25D0, DP5 = 0.5D0, DP75 = 0.75D0,
      &           THRMIN = 1.D-17)
@@ -3285,6 +3304,21 @@ C
             CPRIM(L,N)=CPRIMU(L,N)*SUM*(D4*ALPHA(L))**(DP5*I+DP25)*PIPPI
   300    CONTINUE
   100 CONTINUE
+
+C     ... control print out
+      IF (IPREAD.GE.10) THEN
+       WRITE(LUPRI,'(/,2X,A,I3)')
+     & 'Output from NRMORB, block :',I
+       WRITE(LUPRI,'(2X,A,2I3)')
+     & 'NUCIJ,NRCIJ:',NUCIJ,NRCIJ
+       WRITE(LUPRI,'(2X,A)')
+     & 'CPRIMU - read contr.coeff. and CPRIM - normalized contr.coeff:'
+       DO N = 1, NRCIJ
+        WRITE(LUPRI,*) N,'. CPRIMU:',(CPRIMU(L,N),L=1,NUCIJ)
+        WRITE(LUPRI,*) N,'.  CPRIM:',( CPRIM(L,N),L=1,NUCIJ)
+       ENDDO
+      ENDIF
+
       RETURN
  1000 CONTINUE
         WRITE (LUPRI,'(/1X,A,2(I3,A),A1,A/A,2I4)')
@@ -3293,6 +3327,7 @@ C
      &    ' Contraction matrix: ',NUCIJ,NRCIJ
          CALL QUIT('CGTO with zero norm.')
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck orbpro */
       SUBROUTINE ORBPRO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
