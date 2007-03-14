@@ -47,22 +47,29 @@ call qenter('TEST_OOF')
   END SUBROUTINE TEST_OOF
 
 !
-!    Handle the one-electron Fock matrix, VMAT - on entry
+!  Handle the one-electron Fock matrix, VMAT - on entry
 !
-SUBROUTINE HANDLE_MATRIXES(VMAT,TMAT,WORK,LLWORK)
+SUBROUTINE HANDLE_MATRIXES(VMAT1,TMAT1,WORK,LLWORK)
 ! VMAT - Fock SAAO matrix, TMAT - symm.packed transf. matrix
 !
   use Memmory
   use QMatrixes
 #include "priunit.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
  double precision, intent(inout) :: work(llwork) 
- double precision, intent(in) ::  vmat(*),tmat(*)
+ double precision, intent(in) ::  vmat1(*),tmat1(*)
+ type(QMtx) :: tmat
 
 call qenter('HANDLE_MATRIXES')
 ! make new allocation for VMAT
     
    call UnStickArray ! release the previous work array
    call Stick_into_array(work,llwork) ! plug into entering WORK(LWORK) array
+
+    call MakeQMtxPacked(tmat,NFBAS(1,0),NORB(1),NFBAS(2,0),NORB(2),NZ,0)
+    call QMtxInfo(tmat)
 
 call qexit('HANDLE_MATRIXES')
 END SUBROUTINE HANDLE_MATRIXES

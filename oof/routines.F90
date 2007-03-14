@@ -80,7 +80,7 @@ private
   integer, dimension(2)  :: nrows=-1, ncols=-1
   ! total dimensions if matrix is not symmetry packed
   integer                :: nrows_t=-1, ncols_t=-1
-  !
+  ! IREP and NZ
   integer::  IREP=-1, nz=-1
   !
   integer::  kstart = -1 ! contains position on the PW (WORK) array !
@@ -98,8 +98,6 @@ end interface
 
 contains
 !
-! 
-!
 !
 SUBROUTINE QMtxInfo(qmatx)
 #include "priunit.h"
@@ -108,7 +106,7 @@ type(QMtx),intent(in) :: qmatx
 integer :: ifsym
 CALL QENTER('QMtxInfo')
 write(LUPRI,*) 'QMtx: '
-if (qmatx%symm_packed.and.qmatx%offset_packed.NE.-1) then
+if (qmatx%symm_packed) then
  write(LUPRI,*) 'fermion symmetry packed matrix !!!'
  do ifsym =1 , NFSYM
   write(LUPRI,*) 'fermion symmetry ',ifsym,'/',NFSYM,  &
@@ -123,18 +121,81 @@ else
  write(LUPRI,*) 'fermion symmetry distinguished full matrix !!!'
  write(LUPRI,*) ' nrows_t,ncols_t,nz:',qmatx%nrows_t,qmatx%ncols_t,qmatx%nz
 endif
+ write(LUPRI,*) 'qmat%kstart=',qmatx%kstart
 CALL QEXIT('QMtxInfo')
 END SUBROUTINE QMtxInfo
 
 !
 ! Somehow fill all == QMtx === characteristics
 !
-SUBROUTINE MakeQMtxPacked(qmat, nr1, nc1, nr2, nc2, nz, irep)
+SUBROUTINE MakeQMtxPacked(qmat, nr1, nc1, nr2, nc2, nz1, irep)
 #include "priunit.h"
 #include "dgroup.h"
 type(QMtx),intent(inout) :: qmat
-integer, intent(in) :: nr1, nc1, nr2, nc2, nz
+integer, intent(in) :: nr1, nc1, nz1
+integer, intent(in) ::  nr2, nc2 ! when NFSYM=2 !!!
+integer :: isize
+logical, save :: was_called = .false.
 CALL QENTER('MakeQMtxPacked')
+
+!IF (NFSYM.eq.1.AND.(present(nr2).or.present(nc2))) then
+! call quit('MakeQMtxPacked: nr2,nc2 for NFSYM=1 are present !')
+!endif
+
+!IF (NFSYM.eq.2.AND..NOT.(present(nr2).and.present(nc2))) then
+! write(LUPRI,*) 'NFSYM=',NFSYM,' and nr2,nc2 parameters are not present!'
+! call quit('MakeQMtxPacked: nr,nc for NFSYM=2 are not present')
+!endif
+
+if (nz1.ne.1.and.nz1.ne.2.and.nz1.ne.4) then
+   write(LUPRI,*) ' entering NZ=',nz1
+   CALL QUIT('NZ  must be 1 or 2 or 4 !')
+endif
+
+if (qmat%nz > NZ) then
+ write(LUPRI,*) 'NZ (dgroup.h)=',NZ,' qmat%NZ=',qmat%nz
+ call quit('qmat%NZ > NZ ! ')
+endif
+
+qmat%nz = nz1; qmat%IREP = irep
+qmat%nrows(1)=nr1; qmat%ncols(1)=nc1
+
+if (NFSYM.eq.2) then
+ qmat%nrows(2)=nr2; qmat%ncols(2)=nc2
+ offset_packed = qmat%nrows(1)* qmat%ncols(1) * qmat%nz
+endif
+
+
+! Check is PW pointer is associated with the DIRAC WORK array
+  if (.NOT.associated(PW)) call QUIT('PW pointer MUST be associated with the &
+ DIRAC WORK array!')
+
+  if (qmat%kstart.ne.-1) then
+    call QUIT('The matrix is already allocated !')
+  endif
+
+if (.not.was_called) then
+#include "memint.h"
+was_called=.true.
+write(LUPRI,*) '1.calling!'
+else
+write(LUPRI,*) 'not 1.calling!'
+endif
+
+! calculate the isize
+isize = qmat%nrows(1) * qmat%ncols(1) * qmat%nz
+if (NFSYM.eq.2) isize = isize + ( qmat%nrows(2) * qmat%ncols(2) * qmat%nz )
+
+  CALL print_mem_param()
+
+  CALL MEMGET('REAL',qmat%kstart,isize,PW,KFREE,LFREE) ! WORK(kstart)
+  qmat%isalloc = .true.
+  write(LUPRI,*) 'memmory is allocated ...KSTART=',qmat%kstart
+
+  CALL print_mem_param()
+ 
+! by default, fill the matrix with zeroes 
+  CALL DZERO(PW(qmat%kstart),isize) 
 
 CALL QEXIT('MakeQMtxPacked')
 END SUBROUTINE  MakeQMtxPacked
@@ -160,7 +221,7 @@ logical, save :: was_called = .false.
   endif
 
 ! Check dimensions of the quaternion matrix
-  if (nz.ne.1.and.nz.ne.2.and.ne.ne.4) then
+  if (nz.ne.1.and.nz.ne.2.and.nz.ne.4) then
    write(LUPRI,*) 'Allocate_QMATRIX: entering NZ=',nz
    CALL QUIT('Allocate_QMATRIX: NZ  must be 1 or 2 or 4 !')
   endif
