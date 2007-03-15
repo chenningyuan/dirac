@@ -1,9 +1,3 @@
-C
-C
-C  File including Sajeev's program for generation
-C of the CAP one-electron integrals, plus interface
-C routines.
-C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck capinp */
       SUBROUTINE CAPINP(WORD,RESET,WORK,LWORK)

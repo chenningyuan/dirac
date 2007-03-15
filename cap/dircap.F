@@ -262,10 +262,10 @@ CMI NEW
              
              DO n_c_g=1,n_con_guass
                 sh=sh+1
-                READ(LUinp,*)nj,expon,coe
+                READ(LUinp,*) nj,expon,coe
 
            IF (IPRINT.GE.3) THEN
-          write(lupri,*)'P: nj=',nj,' expon=',expon,' contr.coef=',coe
+            write(lupri,*)'P: nj=',nj,' expon=',expon,' contr.coef=',coe
            ENDIF
 
                 do i=1,3
@@ -367,9 +367,13 @@ CMI NEW
        
 C     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
        
-       write(16,*)'number  of primitive guassians=',sh
-       write(16,*)'number of bais',n_b 
-       write(16,*)'no. of pri gua in each basis'
+CMI    write(16,*)'number  of primitive guassians=',sh
+       write(LUPRI,*)'number  of primitive guassians=',sh
+CMI    write(16,*)'number of bais',n_b 
+       write(LUPRI,*)'number of bais',n_b 
+CMI    write(16,*)'no. of pri gua in each basis'
+       write(LUPRI,*)'no. of pri gua in each basis'
+
 CMI NEW
         LUCAP=0
         CALL GPOPEN(LUCAP,
@@ -377,8 +381,10 @@ CMI NEW
         WRITE(LUCAP,*) 'CAP unique order of atomic basis functions'
 
        do i=1,n_b
-C        write(16,*)i, basis_n(i)
-         write(16,'(2i4,A6)')i,SHELL_ATOM(i),Shell_basis(i)
+CMI      write(16,*)i, basis_n(i)
+         write(LUPRI,*)i, basis_n(i)
+CMI      write(16,'(2i4,A6)')i,SHELL_ATOM(i),Shell_basis(i)
+         write(LUPRI,'(2i4,A6)')i,SHELL_ATOM(i),Shell_basis(i)
          WRITE(LUCAP,'(i4,2x,i3,2x,A6)')i,SHELL_ATOM(i),Shell_basis(i)
        end do
 
@@ -389,10 +395,11 @@ C        write(16,*)i, basis_n(i)
      &  ' functions ready.'
        ENDIF
        
-       write(16,*)'sh_ty,Pgua_expo,nor_pg_coe,angu_pow,cartesian'
+CMI    write(16,*)'sh_ty,Pgua_expo,nor_pg_coe,angu_pow,cartesian'
+       write(LUPRI,*)'sh_ty,Pgua_expo,nor_pg_coe,angu_pow,cartesian'
        
-        OVLP = .TRUE.
-C       OVLP = .FALSE.
+C       OVLP = .TRUE.
+        OVLP = .FALSE.
        IF (OVLP) THEN
 C!NORMALIZATION PART
 C!Only the primitives are normalized
@@ -409,12 +416,12 @@ C!one may have to modify this
 
             R_m(4)=ord_expon(i)
 
-CMI         CALL PEM(R_m,R_m,K_m,K_m,PEINT)
-            CALL PEM(R_m,R_m,K_m,K_m,PW,PEINT)
+            CALL PEM(R_m,R_m,K_m,K_m,PEINT)
+CMI         CALL PEM(R_m,R_m,K_m,K_m,PW,PEINT)
             ord_coe(i)=ord_coe(i)/sqrt(PEINT)
 
-            write (LUPRI,*)i,shell_arr(i),ord_expon(i),
-     &             ord_coe(i),'PEINT=',PEINT
+            write (LUPRI,*)i,'fu=',shell_arr(i),ord_expon(i),
+     &             ord_coe(i),' PEINT=',PEINT
 
 C           write (16,*)i,shell_arr(i),ord_expon(i),ord_coe(i)
 C           write(16,*) (ang_pow(i,j),j=1,3)
@@ -433,11 +440,16 @@ C       call QUIT('only overlap integrals over primitives')
           R_m(4)=ord_expon(i)
           R_n(4)=ord_expon(i)
           
-          CALL PEM(R_m,R_n,K_m,K_n,PW,PEINT)
+CMI       CALL PEM(R_m,R_n,K_m,K_n,PW,PEINT)
+          CALL PEM(R_m,R_n,K_m,K_n,PEINT)
           ord_coe(i)=ord_coe(i)/sqrt(PEINT)
-          write (16,*)i,shell_arr(i),ord_expon(i),ord_coe(i)
-          write(16,*) (ang_pow(i,j),j=1,3)
-          write(16,*) (R_ms(i,j),j=1,3)
+
+CMI       write (16,*)i,shell_arr(i),ord_expon(i),ord_coe(i)
+          write (LUPRI,*)i,shell_arr(i),ord_expon(i),ord_coe(i)
+CMI       write(16,*) (ang_pow(i,j),j=1,3)
+          write(LUPRI,*) (ang_pow(i,j),j=1,3)
+CMI       write(16,*) (R_ms(i,j),j=1,3)
+          write(LUPRI,*) (R_ms(i,j),j=1,3)
        end do
        ENDIF
 
@@ -456,11 +468,7 @@ C*******************************************************************************
      *                       PW,PE_AO,IPRINT)      
 CMI
 C
-C
-C   entering PW is from INPQD file
-C
-C
-C  Entering big PE_AO arrary !!!
+C  Entering the big PE_AO arrary !!!
 C
 C
 #include "implicit.h"
@@ -542,187 +550,7 @@ C      If(ii.NE.jj) PE_AO(jj,ii)= PE_AO(ii,jj)
       RETURN
       END
      
-C************************************************************
-CMI ... not used here ...
-
-C     SUBROUTINE MOINTEGRAL(N_B,AOMO,AOINT,MOINT)
-C     IMPLICIT REAL*8 (A-H,O-Z)
-C     real *8 AOMO(200,200)
-C     COMPLEX *16 AOINT(25000),MOINT(25000)
-      
-C     Do i=1,n_b
-C        do j=1,i
-C           IPU=IPOINTIJ(i,j)
-C           MOINT(IPU)=(0.d0,0.d0)
-C        end do
-C     End do
-      
-C     DO ii=1,n_b
-C        Do jj=1,ii
-C            IPU=IPOINTIJ(ii,jj)
-C           do i=1,n_b
-C              do j=1,n_b
-C                 IPS=IPOINTIJ(i,j)
-C                 if(j.gt.i)IPS=IPOINTIJ(j,i)
-C                 COMULT=AOMO(jj,j)*AOMO(ii,i)
-C                 MOINT(IPU)= MOINT(IPU)+COMULT*AOINT(IPS)
-C              end do
-C           end do
-C        End  Do
-C     END DO
-      
-C     RETURN
-C     END
-
-C***************************************************
-CMI ... not used here....
-C     SUBROUTINE CIHAMILTONIAN(N_B,NSIZE,MOINT,DETINT)
-C     IMPLICIT REAL*8 (A-H,O-Z)
-C     COMPLEX *16  MOINT(25000),DETINT(10000000)
-C     COMPLEX *16 ELEM
-C     DIMENSION INDEXI((N_B*(N_B+1))/2,(N_B*(N_B+1))/2)
-     
-
-C     DO 7 I=1,(N_B*(N_B+1))/2                                        
-C        DO 8 J=1,I                                                     
-C           INDEXI(I,J) = I*(I-1)/2 + J                                 
-C           INDEXI(J,I) = INDEXI(I,J)                 
-C8       CONTINUE                  
-C7    CONTINUE       
-
-C     OPEN (12,FILE='CIINDEX',FORM='FORMATTED',ACCESS='SEQUENTIAL')
-C     REWIND 12
-C     READ (12,*)NSIZE
-C     DO ICI=1,NSIZE
-C     DO JCI=1,ICI
-C        Read(12,*)IDET,JDET,IACON1,IACON2,IBCON1,IBCON2
-C        CALL HELEM(N_B,MOINT,IACON1,IBCON1,IACON2,IBCON2,IDET,
-C    *        JDET,INDEXI,ELEM)
-C        IPU=IPOINTIJ(IDET,JDET)
-C        DETINT(IPU)=ELEM
-C     END DO
-C     END DO
-
-C         RETURN
-C         END
-
-C     --------------------------------------------------------          
-CMI ... not used here....
-C     SUBROUTINE HELEM(N_B,SINT1,IACON1,IBCON1,      
-C    *     IACON2,IBCON2,IJ,JI,INDEXI,ELEM)               
-C     --------------------------------------------------------          
-
-C     IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-C     INTEGER DIFF1(2),DIFF2(2),IPOS1(2),IPOS2(2)      
-C     COMPLEX *16 SINT1(25000),ELEM
-C     DIMENSION IACON1(1),IBCON1(1)                             
-C     DIMENSION IACON2(1),IBCON2(1)                             
-C     DIMENSION INDEXI((N_B*(N_B+1))/2,(N_B*(N_B+1))/2)              
-                 
-C                                                                       
-C     Returns the matrix element < K | H | L > where K, L are           
-C     determinants.  Alpha and Beta occupations are stored in           
-C     iacon1, ibcon1 for K and iacon2, ibcon2 for L.                    
-C                                                                       
-C     ELEM = (0.0D0,0.d0)   
-
-C     NAELE=1
-C     NBELE=1
-C     NCOR=0
-C                                                                       
-C                                                                       
-C    If Determinants are same                                           
-C                                                                       
-C     IF (IJ.EQ.JI) THEN                                                
-C        DO 200 I=1,NAELE                                               
-C           IA = IACON1(I)                                              
-C           I1 = INDEXI(IA,IA)     
-C            if(ij.eq.10)write(*,*)I1,   SINT1(I1)                        
-C           ELEM = ELEM + SINT1(I1)
-
-C200        END DO
-
-C        DO 210 I=1,NBELE                                               
-C           IB = IBCON1(I)                                              
-C           I1 = INDEXI(IB,IB)                                           
-
-C           ELEM = ELEM + SINT1(I1)
-C210         END DO
-C     RETURN                                                            
-C     ENDIF                                                             
-C                                                                       
-C     IDEA=0                                                            
-C     IDEB=0                                                            
-C                                                                       
-C     Different orbitals in first deterinant                            
-C                                                                       
-C     DO 20 I=NCOR+1,NAELE                                              
-C        DO 15 J=NCOR+1,NAELE                                           
-C           IF (IACON1(I).EQ.IACON2(J)) GOTO 20                         
-C  15    CONTINUE                                                       
-C        IDEA = IDEA + 1                                                
-C        IF (IDEA.GT.2) RETURN                                          
-C        DIFF1(IDEA) = IACON1(I)                                        
-C        IPOS1(IDEA) = I                                                
-C  20 CONTINUE                                                          
-C                                                                       
-C     DO 30 I=NCOR+1,NBELE                                              
-C        DO 25 J=NCOR+1,NBELE                                           
-C           IF (IBCON1(I).EQ.IBCON2(J)) GOTO 30                         
-C  25    CONTINUE                                                       
-C        IDEB = IDEB + 1                                                
-C        IF (IDEA+IDEB.GT.2) RETURN                                     
-C        DIFF1(IDEA+IDEB) = IBCON1(I)                                   
-C        IPOS1(IDEA+IDEB) = I                                           
-C  30 CONTINUE                                                          
-C                                                                       
-C                                                                       
-C    To find the different orbitals in second determinant               
-C                                                                       
-C     IST = NCOR+1                                                      
-C     DO 63 II=1,IDEA                                                   
-C           DO 50 I=IST,NAELE                                           
-C              DO 45 J=NCOR+1,NAELE                                     
-C                 IF (IACON2(I).EQ.IACON1(J)) GOTO 50                   
-C  45          CONTINUE                                                 
-C              GOTO 60                                                  
-C  50       CONTINUE                                                    
-C                                                                       
-C  60       DIFF2(II) = IACON2(I)                                       
-C           IPOS2(II) = I                                               
-C           IST = I+1                                                   
-C  63 CONTINUE                                                          
-C                                                                       
-C     IST = NCOR+1                                                      
-C     DO 163 II=1,IDEB                                                  
-C           DO 150 I=IST,NBELE                                          
-C              DO 145 J=NCOR+1,NBELE                                    
-C                 IF (IBCON2(I).EQ.IBCON1(J)) GOTO 150                  
-C 145          CONTINUE                                                 
-C              GOTO 160                                                 
-C 150       CONTINUE                                                    
-C 160       DIFF2(II+IDEA) = IBCON2(I)                                  
-C           IPOS2(II+IDEA) = I                                          
-C           IST = I+1                                                   
-C 163 CONTINUE                                                          
-
-C    If determinants differ by one orbital                              
-
-C      IF (IDEA+IDEB.EQ.1) THEN                                         
-
-C   One particle density contribution                                   
-
-C         IND1 = INDEXI(DIFF1(1),DIFF2(1))                               
-C         IPERM = (-1)**(IPOS1(1)-IPOS2(1))
-                             
-C         ELEM = ELEM + IPERM*SINT1(IND1)  
-
-C         ENDIF                                                         
-C         RETURN                                                        
-
-C     RETURN                                                            
-C     END                  
-   
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PEMC(R_m,R_n,K_m,K_n,BETA,PEINT)
       IMPLICIT REAL*8 (A-H,O-Z)
       
@@ -766,6 +594,7 @@ C      write(*,*)BETA
        RETURN
        END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine SMATC(R_m,R_n,K_m,K_n,BETA,Int_GR)
       IMPLICIT REAL*8 (A-H,O-Z)
       integer *4 k_m,k_n
@@ -802,8 +631,8 @@ C      if (DABS(premult).lt.0.000000000d0)PREMULT=0.000000000d0
       RETURN
       END
 
-C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION IFACT(l)
       IMPLICIT REAL*8 (A-H,O-Z)
       ifact=1
@@ -818,8 +647,8 @@ C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  300  continue
       END 
       
-C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE F_INTC(k,PA,PB,k_m,K_n,FINTM) 
       
       IMPLICIT REAL*8 (A-H,O-Z)
@@ -851,8 +680,8 @@ C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       RETURN
       END
  
-C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION JFACT(l)
       IMPLICIT REAL*8 (A-H,O-Z)
       jfact=1
@@ -865,72 +694,22 @@ C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  300  continue
       END  
       
-C     SUBROUTINE AOMOCOE(COE)
-C     IMPLICIT REAL*8 (A-H,O-Z)
-C     real *8  coe(200,200)
-      
-C     OPEN(4,FILE='COINP',FORM='FORMATTED',ACCESS='SEQUENTIAL',
-C    *     STATUS='UNKNOWN')
-C     OPEN(3,FILE='AOMOCOE',FORM='FORMATTED',ACCESS='SEQUENTIAL',
-C    *     STATUS='UNKNOWN')
-      
-
-C     irb=5
-C     kr=1
-      
-C     read(4,*)nbasis
-C     kl=nbasis/5
-C     if(kl*5.NE.nbasis)then
-C        kls=nbasis-(kl*5)
-C        kl=kl+1
-C     endif
-C     kr=0
-C     Do kkkk=1,nbasis
-C        Do kk=1,kl
-            
-C           if (kk.eq.kl.and.kl*5.NE.NBASIS)then
-C              krb=kls
-C           else
-C              krb=5
-C           endif
-C           read(4,*)kcol,icol,(coe(kcol,is+(kk-1)*5),is=1,krb)
-   
-C        kr=kr+5
-C     End do
-C     End do
-
-C110  format(i3,i2,5E15.12)
-
-C     do i=1,nbasis
-C        write(3,*)(coe(i,j),j=1,nbasis)
-C     end do
-C     CLOSE(3)
-C     CLOSE(4)
-      
-C     RETURN
-C     END
-
-CMI     IPOINT replaced by IPOINTIJ 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION IPOINTIJ(ii,jj)
       IMPLICIT REAL*8 (A-H,O-Z)
       IPOINTIJ=(ii*(ii-1)/2)+jj
       END 
 
-C**********************************************
- 
-  
-   
-C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-      SUBROUTINE PEM(R_m,R_n,K_m,K_n,BETA,PEINT)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+CMI   SUBROUTINE PEM(R_m,R_n,K_m,K_n,BETA,PEINT)
+      SUBROUTINE PEM(R_m,R_n,K_m,K_n,PEINT)
       IMPLICIT REAL*8 (A-H,O-Z)
       
       real *8 R_CM(2),R_CN(2),R_KM(2),R_KN(2),R_LM(2),R_LN(2)
       real *8 R_m(4),R_n(4)
       integer *4 K_m(3),K_n(3)
-      real *8 BETA,OVRLPI,OVRLPJ,OVRLPK,PEINT
-C      write(*,*)BETA
+CMI   real *8 BETA,OVRLPI,OVRLPJ,OVRLPK,PEINT
+      real *8 OVRLPI,OVRLPJ,OVRLPK,PEINT
          PEINT=0.d0
          i=1
          k=2
@@ -968,7 +747,7 @@ C         write(*,*)PEINT
        RETURN
        END
  
-C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine SMAT(R_m,R_n,K_m,K_n,BETA,Int_GR)
       IMPLICIT REAL*8 (A-H,O-Z)
       integer *4 k_m,k_n
@@ -1008,8 +787,8 @@ C         if (i.eq.4)write(*,*)IFACT(i),'IFA'
       RETURN
       END
 
-C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE F_INT(k,PA,PB,k_m,K_n,FINTM) 
       
       IMPLICIT REAL*8 (A-H,O-Z)
