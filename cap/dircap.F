@@ -1,20 +1,24 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sajeev */
       SUBROUTINE SAJEEV(basis_n,ang_pow,ord_expon,
-     &                  ord_coe,r_ms,WORK,LWORK)
+     &                  ord_coe,r_ms,PE_AOr,PE_AOi,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Main program from Sajeev. Adapted into DIRAC enviroment
 C  as the subroutine.
 C
+C On input: 
+C              basis_n
+C              ang_pow
+C              ord_expon
+C              ord_coe
+C
+C On output: 
+C             complex CAP integrals written into formatted file          
+C
 C   called from CAPINTS
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-! this file  reads  all input datas for CAP and generates  
-! CAP 1-e integrals in MO basis                                        
-! Sajeev.Y.       
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-CMI   IMPLICIT REAL*8 (A-H,O-Z)
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbcap.h"
@@ -29,23 +33,17 @@ CMI    ... arrays are entering subroutine, check the size !!!!!
       real *8 R_m(4),R_n(4)
       real *8 R_ms(200,3)
 
-C     real *8 ZEL_AO(25000)
-C     real *8 KE_AO(25000)
-
 CMI   ... this variable is beeing sent into AOINTEGRAL
 CMI   ... split it into real and imaginary parts !!!
-      COMPLEX *16 PE_AO(25000)
+C     COMPLEX *16 PE_AO(25000)
+      REAL*8 PE_AOr(25000),PE_AOi(25000)
 C     real *8 AOMO(200,200)
       real *8 BETA0,PE0
       
       LOGICAL ISFILE
 
-CMI   ... are all these allocations needed ???
-CMI   complex *16 EL1_AO(25000),EL1_MO(25000),EL1_CI(10000000)
-C     Real *8 TWOE(10000000)
-C     complex *16 HAM_CI(10000000)
       COMPLEX *16 THETA,THETA2,CI,BETA
-      data CI/(0.d0,-1.d0)/
+C     data CI/(0.d0,-1.d0)/
 
       CALL QENTER('SAJEEV')
 
@@ -83,16 +81,17 @@ CMI   ... evaluate CAP complex atomic untegrals
      &   'PEMAT files in not present, going to evaluate CAP integrals.'
         ENDIF
         CALL AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     *                 PW,PE_AO,IPRCAP)
+C    *                 PW,PE_AO,IPRCAP)
+     *                 PW,PE_AOr,PE_AOi,IPRCAP)
         
 CMI   ... write out atomic integrals into the file
-C     CALL MOINTEGRAL(N_B,AOMO,PE_AO,EL1_MO)
          open(unit=14,file='PEMAT',STATUS='UNKNOWN',FORM='FORMATTED')
          do ii=1,n_b
             do jj=1,n_b
                IPU=IPOINTIJ(ii,jj)
                if (jj.gt.ii)go to 301
-               write(14,*)ii,jj,PE_AO(IPU)
+CMI            write(14,*)ii,jj,PE_AO(IPU)
+               write(14,*)ii,jj,CMPLX(PE_AOr(IPU),PE_AOi(IPU))
             end do
  301        continue
          end do
@@ -111,23 +110,23 @@ C     call quit(' end in sajeev...')
       RETURN
       END
       
-C***************************
-C ... read the input ...
-C***************************      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck inpread */
       SUBROUTINE INPREAD(
      & N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,IPRINT)
-C ...
-CMI   IMPLICIT REAL*8 (A-H,O-Z)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  Called from: 
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
-C#include "dummy.h"
       
       CHARACTER *1 shell_type,BLNK(5)
       CHARACTER *2 shell_p(3),shell_d(6),Shell_arr(200)   
       CHARACTER *3 shell_f(10)   
       CHARACTER *8 IA
 
-CMI ... NEW ...basis up to "F"
       character *3 Shell_basis(200)
 
       integer *4 Shell_atom(200)
@@ -295,9 +294,9 @@ CMI NEW
                 sh=sh+1
                 READ(LUinp,*)nj,expon,coe
 
-           IF (IPRINT.GE.3) THEN
-          write(lupri,*)'D: nj=',nj,' expon=',expon,' contr.coef=',coe
-           ENDIF
+          IF (IPRINT.GE.3) THEN
+           write(lupri,*)'D: nj=',nj,' expon=',expon,' contr.coef=',coe
+          ENDIF
 
                 do i=1,6
                    shell_arr(sh+(i-1)*n_con_guass)=shell_d(i)
@@ -365,38 +364,35 @@ CMI NEW
        END DO
        n_b=g_n-1
        
-C     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-       
-CMI    write(16,*)'number  of primitive guassians=',sh
-       write(LUPRI,*)'number  of primitive guassians=',sh
-CMI    write(16,*)'number of bais',n_b 
-       write(LUPRI,*)'number of bais',n_b 
-CMI    write(16,*)'no. of pri gua in each basis'
-       write(LUPRI,*)'no. of pri gua in each basis'
+       WRITE(LUPRI,'(/2X,A,I3,A,I3)')
+     & 'Number of primitive guassians / number of'//
+     & 'contracted basis functions=',sh,'/',n_b
 
 CMI NEW
-        LUCAP=0
-        CALL GPOPEN(LUCAP,
+       LUCAP=0
+       CALL GPOPEN(LUCAP,
      &  'CAPLBL.inp',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-        WRITE(LUCAP,*) 'CAP unique order of atomic basis functions'
+
+       WRITE(LUCAP,*) 'CAP unique order of atomic basis functions'
+       WRITE(LUPRI,*) 'CAP unique order of atomic basis functions'
 
        do i=1,n_b
-CMI      write(16,*)i, basis_n(i)
-         write(LUPRI,*)i, basis_n(i)
-CMI      write(16,'(2i4,A6)')i,SHELL_ATOM(i),Shell_basis(i)
-         write(LUPRI,'(2i4,A6)')i,SHELL_ATOM(i),Shell_basis(i)
-         WRITE(LUCAP,'(i4,2x,i3,2x,A6)')i,SHELL_ATOM(i),Shell_basis(i)
+         write(LUPRI,'(2i4,A6,A,I3)')i,SHELL_ATOM(i),Shell_basis(i),
+     &   ' contr->',basis_n(i)  
+C        .... write into file
+         WRITE(LUCAP,'(i4,2x,i3,2x,A6)') i,SHELL_ATOM(i),Shell_basis(i)
        end do
 
        CALL GPCLOSE(LUCAP,'KEEP')
+
        IF (IPRINT.GE.1) THEN
         WRITE(LUPRI,'(2X,A)')
      &  'File "CAPLBL.inp" with CAP unique order of atomic basis'//
      &  ' functions ready.'
        ENDIF
        
-CMI    write(16,*)'sh_ty,Pgua_expo,nor_pg_coe,angu_pow,cartesian'
-       write(LUPRI,*)'sh_ty,Pgua_expo,nor_pg_coe,angu_pow,cartesian'
+       WRITE(LUPRI,'(/,2X,A)')
+     & ' sh_ty,Pgua_expo,nor_pg_coe,angu_pow,cartesian '
        
 C       OVLP = .TRUE.
         OVLP = .FALSE.
@@ -417,7 +413,7 @@ C!one may have to modify this
             R_m(4)=ord_expon(i)
 
             CALL PEM(R_m,R_m,K_m,K_m,PEINT)
-CMI         CALL PEM(R_m,R_m,K_m,K_m,PW,PEINT)
+
             ord_coe(i)=ord_coe(i)/sqrt(PEINT)
 
             write (LUPRI,*)i,'fu=',shell_arr(i),ord_expon(i),
@@ -429,6 +425,7 @@ C           write(16,*) (R_ms(i,j),j=1,3)
          end do
 C       call QUIT('only overlap integrals over primitives')
        ELSE
+
        do i=1,sh
           do isw=1,3
              R_m(isw)=R_ms(i,isw)
@@ -440,40 +437,50 @@ C       call QUIT('only overlap integrals over primitives')
           R_m(4)=ord_expon(i)
           R_n(4)=ord_expon(i)
           
-CMI       CALL PEM(R_m,R_n,K_m,K_n,PW,PEINT)
           CALL PEM(R_m,R_n,K_m,K_n,PEINT)
           ord_coe(i)=ord_coe(i)/sqrt(PEINT)
 
 CMI       write (16,*)i,shell_arr(i),ord_expon(i),ord_coe(i)
-          write (LUPRI,*)i,shell_arr(i),ord_expon(i),ord_coe(i)
+          write (LUPRI,*) i,' ',shell_arr(i),' ',ord_expon(i),ord_coe(i)
 CMI       write(16,*) (ang_pow(i,j),j=1,3)
-          write(LUPRI,*) (ang_pow(i,j),j=1,3)
+          write(LUPRI,*) 'ang_pow:',(ang_pow(i,j),j=1,3)
 CMI       write(16,*) (R_ms(i,j),j=1,3)
-          write(LUPRI,*) (R_ms(i,j),j=1,3)
+          write(LUPRI,*) 'R_ms:',(R_ms(i,j),j=1,3)
        end do
        ENDIF
+
+       CALL FLSHFO(LUPRI)
 
 CMI ... I have to close it due to interference with her1pro.F:3403 
 CMI    close(19,status="keep")
        close(LUinp,status="keep")
 C      CALL GPCLOSE(LUinp,'KEEP')
 
-C       call quit('CAP:INPREAD')
        CALL QEXIT('INPREAD')
        RETURN
        END
 
-C*******************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck aointegral */
       SUBROUTINE AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     *                       PW,PE_AO,IPRINT)      
-CMI
+     *                       PW,PE_AOr,PE_AOi,IPRINT)      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Entering the big PE_AO arrary !!!
+C Core routine for calculating CAP integrals.
 C
+C On input:
+C           N_B number of atomic basis functions
+C           ord_expon
+C           ord_coe
+C           R_ms
+C           basis_n
+C           ang_pow
+C           PW
+C           PE_AOr,PE_AOi
 C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
-CMI   IMPLICIT REAL*8 (A-H,O-Z)
 
       integer *4 n_b
       integer *4 ang_pow(250,3)
@@ -485,7 +492,8 @@ CMI   IMPLICIT REAL*8 (A-H,O-Z)
       real *8 R_m(4),R_n(4)
       real *8 R_ms(200,3)
 
-      COMPLEX *16 PEINT,PE_AO(25000)
+      COMPLEX *16 PEINT
+      REAL*8 PE_AOr(25000),PE_AOi(25000)
       COMPLEX *16 BETA
 
       CALL QENTER('AOINTEGRAL') 
@@ -493,7 +501,9 @@ CMI   IMPLICIT REAL*8 (A-H,O-Z)
       do i=1,n_b
          do j=1,n_b
             IPU=IPOINTIJ(i,j)
-            PE_AO(IPU)=(0.d0,0.d0)
+C           PE_AO(IPU)=(0.d0,0.d0)
+            PE_AOr(IPU)=0.d0
+            PE_AOi(IPU)=0.d0
          end do
       end do
 
@@ -508,8 +518,8 @@ CMI: ftnchek note: Variables may be used before!
       end do
       
       DO ii=1,n_b
-C         write(*,*)ii
       DO jj=1,ii
+
          IPU=IPOINTIJ(ii,jj)
 
          if (ii.eq.1)then
@@ -523,6 +533,7 @@ C         write(*,*)ii
             iangjj=basis_ord(jj-1)
          endif
          
+C        ... run over contraction coefficients         
          Do i=iangii+1,basis_ord(ii)
          do j=iangjj+1,basis_ord(jj)
 
@@ -536,101 +547,18 @@ C         write(*,*)ii
             R_n(4)=ord_expon(j)
 
             COMUL=ord_coe(i)*ord_coe(j)
-C            CALL PEMC(R_m,R_n,K_m,K_n,BETA,PEINT)
             CALL CAPM(R_m,R_n,K_m,K_n,PW,PEINT)
-          
-            PE_AO(IPU)= PE_AO(IPU)+COMUL*PEINT
+C           ... save real and imaginary part of integrals
+            PE_AOr(IPU)= PE_AOr(IPU)+COMUL*DREAL(PEINT)
+            PE_AOi(IPU)= PE_AOi(IPU)+COMUL*DIMAG(PEINT)
          end do
       End Do
-C      If(ii.NE.jj) PE_AO(jj,ii)= PE_AO(ii,jj)
       END DO
       END DO
       
       CALL QEXIT('AOINTEGRAL') 
       RETURN
       END
-     
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PEMC(R_m,R_n,K_m,K_n,BETA,PEINT)
-      IMPLICIT REAL*8 (A-H,O-Z)
-      
-      real *8 R_CM(2),R_CN(2),R_KM(2),R_KN(2),R_LM(2),R_LN(2)
-      real *8 R_m(4),R_n(4)
-      integer *4 K_m(3),K_n(3)
-      COMPLEX *16 BETA,OVRLPI,OVRLPJ,OVRLPK,PEINT
-      
-C      write(*,*)BETA
-         PEINT=(0.d0,0.d0)
-         i=1
-         k=2
-         L=3
-         R_CM(1)=R_m(i)
-         R_KM(1)=R_m(k)
-         R_LM(1)=R_m(L)
-
-         R_CN(1)=R_n(i)
-         R_KN(1)=R_n(k)
-         R_LN(1)=R_n(L)
-
-         R_CM(2)=R_m(4)
-         R_KM(2)=R_m(4)
-         R_LM(2)=R_m(4)
-
-         R_CN(2)=R_n(4) 
-         R_KN(2)=R_n(4)
-         R_LN(2)=R_n(4)
-  
-         K_CM=K_m(i)
-         K_KM=K_m(k)
-         K_LM=K_m(L)
-
-         K_CN=K_n(i)
-         k_KN=K_n(k)     
-         K_LN=k_n(L)
-         CALL SMATC(R_KM,R_KN,K_KM,K_KN,BETA,OVRLPI)
-         CALL SMATC(R_LM,R_LN,K_LM,K_LN,BETA,OVRLPJ)
-         CALL SMATC(R_CM,R_CN,K_CM,K_CN,BETA,OVRLPK)
-         PEINT=PEINT+OVRLPI*OVRLPJ*OVRLPK
-       RETURN
-       END
-
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine SMATC(R_m,R_n,K_m,K_n,BETA,Int_GR)
-      IMPLICIT REAL*8 (A-H,O-Z)
-      integer *4 k_m,k_n
-      real *8  R_m(2),R_n(2)
-      COMPLEX *16 BETA,INT_GR,PIG,PREMULT,PA,PB
-      COMPLEX *16 GAM,P,GAMP,RMULT,RMULTI,FINTM
-      data PI/3.14/
-      EXTERNAL  IFACT
-   
-      GAM=R_m(2)+(R_n(2)+BETA)
-      P=(R_m(1)*R_m(2)+R_n(1)*(R_n(2)+BETA))/GAM
-      PA=P-R_m(1)
-      PB=P-R_n(1)
-      AB=R_m(1)-R_n(1) 
-
-      DO i=0,(K_m+k_n)/2
-         INT_GR=(0.d0,0.d0)
-         if (i.eq.0)go to 150
-     
- 150     continue
-         IFI=IFACT(2*i)
-         GAMP=(2*gam)**(-i)
-         PIG=(PI/GAM)**0.5
-         RMULT=IFI*PIG*gamp
-         CALL F_INTC(2*i,PA,PB,k_m,K_n,FINTM)
-         RMULTI=RMULT*FINTM 
-         INT_GR=INT_GR+RMULTI 
- 100     continue
-      END DO
-      
-      PREMULT=exp((-1.d0*R_m(2)*(R_n(2)+BETA)*((AB)**2))/gam)
-C      if (DABS(premult).lt.0.000000000d0)PREMULT=0.000000000d0
-      INT_GR=INT_GR*PREMULT
-      RETURN
-      END
-
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION IFACT(l)
@@ -701,15 +629,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END 
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-CMI   SUBROUTINE PEM(R_m,R_n,K_m,K_n,BETA,PEINT)
+C  /* Deck PEM */
       SUBROUTINE PEM(R_m,R_n,K_m,K_n,PEINT)
-      IMPLICIT REAL*8 (A-H,O-Z)
-      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  Called from: INPREAD 
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
       real *8 R_CM(2),R_CN(2),R_KM(2),R_KN(2),R_LM(2),R_LN(2)
       real *8 R_m(4),R_n(4)
       integer *4 K_m(3),K_n(3)
-CMI   real *8 BETA,OVRLPI,OVRLPJ,OVRLPK,PEINT
       real *8 OVRLPI,OVRLPJ,OVRLPK,PEINT
+      CALL QENTER('PEM')
+
          PEINT=0.d0
          i=1
          k=2
@@ -737,19 +671,36 @@ CMI   real *8 BETA,OVRLPI,OVRLPJ,OVRLPK,PEINT
          K_CN=K_n(i)
          k_KN=K_n(k)     
          K_LN=k_n(L)
-C         write(*,*)'SMAT'
+
          CALL SMAT(R_KM,R_KN,K_KM,K_KN,0.d0,OVRLPI)
-C         write(*,*)OVERLPI
+
          CALL SMAT(R_LM,R_LN,K_LM,K_LN,0.d0,OVRLPJ)
+
          CALL SMAT(R_CM,R_CN,K_CM,K_CN,0.d0,OVRLPK)
+
          PEINT=PEINT+OVRLPI*OVRLPJ*OVRLPK
-C         write(*,*)PEINT
-       RETURN
-       END
+
+      CALL QEXIT('PEM')
+
+      RETURN
+      END
  
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck SMAT */
       subroutine SMAT(R_m,R_n,K_m,K_n,BETA,Int_GR)
-      IMPLICIT REAL*8 (A-H,O-Z)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C On input:
+C            R_m,R_n
+C            K_m,K_n
+C            BETA,Int_GR
+C
+C  Called from: PEM
+C               CAPM
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
       integer *4 k_m,k_n
       real *8  R_m(2),R_n(2)
       real *8 BETA, INT_GR
@@ -821,12 +772,18 @@ C     REAL *8 PA,PB
       RETURN
       END
 
-
-
-C*******************************************************
-CMI entering parameter theta is from the INPQD file  
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck capm */
       SUBROUTINE CAPM(R_m,R_n,K_m,K_n,theta,VCAP)
-C      IMPLICIT REAL*8 (A-H,O-Z)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C   Called from AOINTEGRAL (from within 4-fold cycle)
+C
+C   entering parameter theta is from the INPQD file
+C
+C   returns VCAP
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 
@@ -885,7 +842,6 @@ CMI   CAP_PAR(1)=X0
             L=2
          endif
 
-
          R_CM(1)=R_m(i)
          R_KM(1)=R_m(k)
          R_LM(1)=R_m(L)
@@ -910,7 +866,6 @@ CMI   CAP_PAR(1)=X0
          k_KN=K_n(k)     
          K_LN=k_n(L)
        
-       
          VCAPS(i)=(0.d0,0.d0)
 
 CMI      do j=1,NGR-1
@@ -927,26 +882,30 @@ CMI         NSTEP=NGRS(j)
 
          CALL SMAT(R_KM,R_KN,K_KM,K_KN,0.d0,OVRLPK)
          CALL SMAT(R_LM,R_LN,K_LM,K_LN,0.d0,OVRLPL)
+
          VCAPS(i)=VCAPS(i)*OVRLPK*OVRLPL
-C         write(23,*)OVRLPK,OVRLPL
 
-      END DO ! of I=1,3
+      ENDDO ! of I=1,3
              
-       VCAP=VCAPS(1)+VCAPS(2)+VCAPS(3)
-
-CMI    CLOSE(8) 
+C     ... finally add all theree terms
+      VCAP=VCAPS(1)+VCAPS(2)+VCAPS(3)
 
       CALL QEXIT('CAPM')
       RETURN
       END
 
-C*************************************************************
-C
-C Sajeev sent me update ...
-C
-C*************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck capm */
       subroutine CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_m,R_n,K_m,K_n,VCAPT)
-      IMPLICIT REAL*8 (A-H,O-Z)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  returns VCAPT 
+C
+C  Called from CAPM
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
 
       integer *4 k_m,k_n
       integer *4 NSTEP
@@ -972,7 +931,6 @@ C*************************************************************
       
       data CI/(0.0d0,1.0d0)/
       data M/1.0d00/
-     
 
       STEP=(GRSTP(2)-GRSTP(1))/(NSTEP)
       X0=CAP_PAR(1)
@@ -983,7 +941,6 @@ C*************************************************************
       VCAPXTy=(0.d0,0.d0)
       XI=GRSTP(1)
       itx=0
-     
  
       DO ix=1,NSTEP
          X=(XI+(ix-1)*STEP)
@@ -1013,7 +970,6 @@ C*************************************************************
          D2G3Xy=4*(R_n(2)**2)*(XRy**2)
          D2GXy=D2G1Xy-D2G2Xy+D2G3Xy
          D2Gy=D2GXy
-
 
          GG1M=(XRM**2)
          GG1N=(XR**2)
@@ -1075,7 +1031,6 @@ C************************************************************************
       FF = DCMPLX(X) + FF*DCMPLX(AUX)
       END
 
-
       DOUBLE COMPLEX FUNCTION F0(THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8 THETA,LAMBDA,X0,X
@@ -1095,7 +1050,6 @@ C************************************************************************
       F1 = DCMPLX(LAMBDA)*F1*DCMPLX(AUX)/(2.0D0,0.0D0)
       END
 
-
       DOUBLE COMPLEX FUNCTION F2(THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8 THETA,LAMBDA,X0,X
@@ -1105,7 +1059,6 @@ C************************************************************************
       F2 = CDEXP(+(0.0D0,1.0D0)*DCMPLX(THETA))-(1.0D0,0.0D0)
       F2 = DCMPLX(LAMBDA**2)*F2*(DCMPLX(AUX1)-DCMPLX(AUX2)) 
       END
-
 
       DOUBLE COMPLEX FUNCTION V0(M,THETA,LAMBDA,X0,X)
       IMPLICIT NONE
