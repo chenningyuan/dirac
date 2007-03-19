@@ -8386,6 +8386,7 @@ C     Open Mean-field input file generated in READIN
       BREIT = .FALSE.
 
 C  ++++ Find out individual charges on atoms
+      CALL DZERO(CHPNUC,NUCDEP)
       IF (IMFCHA.NE.0) THEN
 C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
         IMINCHA=IZTNUCS(1)
@@ -9140,7 +9141,6 @@ C     ...allocations for AMFI integrals: typ and index
        CALL MEMGET('INTE',KANUCS,NUCDEP,WORK,KFREE,LFREE)
 C      .... charges per nucleis
        CALL MEMGET('REAL',KCHPNUC,NUCDEP,WORK,KFREE,LFREE)
-       CALL DZERO(WORK(KCHPNUC),NUCDEP)
 
        CALL MEMCHK('before AMFI2',WORK,1)
 
