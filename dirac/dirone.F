@@ -520,6 +520,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D1 = 1.0D0)
 #include "dummy.h"
 C
 #include "dcbbas.h"
@@ -527,8 +528,10 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
 C
-      LOGICAL FIRST(NZ),TOBE,BARNUC
+      LOGICAL FIRST(NZ),TOBE
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
 C
@@ -584,13 +587,21 @@ CMI/Febr.2006 Beta matrix is not initialized in OP1INI for the two-component mod
 
 C
 C     Finite field: 
-C     Loop through list of one-electron operators in CBIHAM
-C     =====================================================
+C     Loop through list of one-electron operators in CBIHAM;
+C     ======================================================
+C     ...skip Fock-matrices for now ...
 CMI   ... only ordinary (symmetric) operators added to the Hamiltonian
+      TOBE = .FALSE.
       DO I = 1,N1OPER
         IOP = IPR1OP(I)
-        CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,OP1INT,FIRST,
-     &              WORK(KFREE),LFREE,IPRHAM)
+        IOPTYP = IPRPTYP(IOP)
+        IF(IOPTYP.EQ.0) THEN
+C.........Fock matrix
+          TOBE = .TRUE.
+        ELSE
+          CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,OP1INT,FIRST,
+     &                WORK(KFREE),LFREE,IPRHAM)
+        ENDIF
       ENDDO
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -616,7 +627,34 @@ C     Reindex to sorted basis
 C     =======================
 C
       CALL BUTOBS(FOCK,NZ,WORK(KFREE),LFREE)
+C   
+C     Add Fock matrices when requested
 C
+      IF(TOBE) THEN
+        CALL MEMGET('REAL',KFBUF,N2BBASXQ,WORK,KFREE,LFREE)
+        DO I = 1,N1OPER
+          IOP = IPR1OP(I)
+          IOPTYP = IPRPTYP(IOP)
+          IF(IOPTYP.EQ.0) THEN
+            KLBL  = IPRPLBL(1,IOP)
+            INQUIRE(FILE=PRPLBL(KLBL),EXIST=FIRST(1))
+            IF(FIRST(1)) THEN
+              CALL OPNFIL(2,PRPLBL(KLBL),'OLD','ONEFC1')
+              CALL REAFCK(2,WORK(KFBUF),.FALSE.,1)
+              CLOSE(2,STATUS = 'KEEP')
+              PFAC = FACPRP(1,IOP)
+              CALL DAXPY(N2BBASXQ,PFAC,WORK(KFBUF),1,FOCK,1)
+              CALL LSET(NZ,.FALSE.,FIRST)
+            ELSE
+              WRITE(LUPRI,'(A,A8,A,A16,A)')
+     &        'Property file ',PRPLBL(KLBL),' for operator ',
+     &        PRPNAM(IOP),' not found !'
+              CALL QUIT('ONEFC1: Fock matrix file not found !')
+            ENDIF
+          ENDIF
+        ENDDO
+        CALL MEMREL('ONEFC1.fock',WORK,KWORK,KFBUF,KFREE,LFREE)
+      ENDIF
       CALL QEXIT('ONEFCK1')
       RETURN
       END
