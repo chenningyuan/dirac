@@ -131,10 +131,7 @@ C
 C     If semiclassical QED, write density of bare vacuum to file
 C     ==========================================================
 C
-      IF(VACPOL) THEN
-        CALL BARVAC(WORK,LWORK,IPRGEN)      
-      ENDIF
-
+      IF(VACPOL.AND.VACREF) CALL BARVAC(WORK,LWORK,IPRGEN)      
 C
 C     Prepare for two-electron integrals
 C     ==================================
@@ -1502,16 +1499,24 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbbas.h"
+      LOGICAL TOBE
       DIMENSION WORK(LWORK)
 #include "memint.h"
-      CALL MEMGET('REAL',KFAO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMAT,N2TMT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-      CALL BARVA1(WORK(KFAO),WORK(KFMO),WORK(KTMAT),
+      INQUIRE(FILE='DFBVAC',EXIST=TOBE)
+      IF(TOBE) THEN
+        WRITE(6,'(A)') 
+     &   '* Warning: BARVAC found file DFBVAC. '//
+     &   'No reference vacuum generated.'
+      ELSE
+        CALL MEMGET('REAL',KFAO ,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KFMO ,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KTMAT,N2TMT   ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+        CALL BARVA1(WORK(KFAO),WORK(KFMO),WORK(KTMAT),
      &            WORK(KEIG),WORK(KIBRP),IPRINT,WORK,KFREE,LFREE)
-      CALL MEMREL('BARVAC',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL MEMREL('BARVAC',WORK,KWORK,KWORK,KFREE,LFREE)
+      ENDIF
       RETURN
 C
       END
@@ -1551,6 +1556,14 @@ C     Diagonalize
 C
       CALL DFDIAG (FMO,EIG,IBEIG,FAO,.FALSE.,WORK,KFREE,LFREE)
 C
+C     Inspect eigenvalues
+C
+      DO I = 1,NFSYM
+        WRITE(LUPRI,*) '* BARVAC fermion ircop :',I
+        DO J = 1,NORB(I)
+          WRITE(6,'(I5,E20.10)') J,EIG(IORB(I)+J)
+        ENDDO
+      ENDDO
 C     Backtransform solutions to FMO
 C
       DO 10 I = 1,NFSYM

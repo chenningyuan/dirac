@@ -3703,8 +3703,8 @@ C
      &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
      &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C',
      &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
-     &            '.IOTC  ','.ALTVAC','.CAP   ','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.IOTC  ','.MIXVAC','.CAP   ','.NOVREF',
+     &            '.POSVAC','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
@@ -3742,8 +3742,10 @@ C
       SMLV1C  = .FALSE.
       ONECOFF = .FALSE.
       VACPOL  = .FALSE.
+      MIXVAC  = .FALSE.
+      POSVAC  = .FALSE.
+      VACREF  = .TRUE.
       CAP     = .FALSE.
-      ALTVAC  = .FALSE.
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
@@ -4113,9 +4115,9 @@ CMI  with other flags...
              IBSS = 2999
              GO TO 100
   138     CONTINUE
-C&&& ALTVAC: Alternative definition of vacuum polarisation
+C&&& MIXVAC: Alternative definition of vacuum polarisation
              VACPOL = .TRUE.
-             ALTVAC = .TRUE.
+             MIXVAC = .TRUE.
              GO TO 100
   139     CONTINUE
 C&&& Activate the CAP calculation for the complex Fock space method
@@ -4126,10 +4128,13 @@ C&&& Activate the CAP calculation for the complex Fock space method
 #endif
              GO TO 100
   140     CONTINUE
-C&&& XXXX
+C&&& NOVREF: Do not generate reference vacuum
+             VACREF = .FALSE.
              GO TO 100
   141     CONTINUE
-C&&& XXXX
+C&&& POSVAC: Use positronic vacuum polarisation
+             VACPOL = .TRUE.
+             POSVAC = .TRUE.
              GO TO 100
   142     CONTINUE
 C&&& XXXX
@@ -4430,9 +4435,17 @@ C         write(lupri,*)
      &    '   with the following modifications:'
       IF(VACPOL) THEN
         WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
-        IF(ALTVAC) THEN
+        IF(MIXVAC) THEN
           WRITE(LUPRI,'(6X,A)')
-     &      '- alternative definition of vacuum polariation'
+     &      '- alternative definition of vacuum polariation.'
+        ENDIF
+        IF(POSVAC) THEN
+          WRITE(LUPRI,'(6X,A)')
+     &      '- using posittronic vacuum.'
+        ENDIF
+        IF(.NOT.VACREF) THEN
+          WRITE(LUPRI,'(6X,A)')
+     &      '- no reference vacuum generated.'
         ENDIF
       ENDIF
 

@@ -104,7 +104,7 @@
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
-     &        VACPOL, RDSUSLLMOD, ALTVAC , CAP                         
+     &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP           &
 
 ! keep and actualize here number of elements in the DCLHAM common block
       INTEGER NDCLHAM
@@ -116,12 +116,12 @@
      &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
-     &                RDSUSLLMOD, ALTVAC , CAP                          
-!
-! aspg, 2006-04-21
-! checking should be done as to whether or not HFXFAC can leave 
-! DCRHAM and go to DFTCOM in dftcom.h, for now it stays here
-!
+     &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP               &
+C
+C aspg, 2006-04-21
+C checking should be done as to whether or not HFXFAC can leave 
+C DCRHAM and go to DFTCOM in dftcom.h, for now it stays here
+C
       REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, HFXFAC,        &
      &       HFXATT, HFXMU, ONECNV
       COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV,       & 

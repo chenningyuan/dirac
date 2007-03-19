@@ -233,6 +233,7 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbham.h"
 C
 #include "ibtfun.h"
 C
@@ -241,7 +242,7 @@ C
 C
 C     Initialize matrix
 C
-      IF (LBIT(IFLAG,6)) THEN
+      IF (LBIT(IFLAG,6).AND.VACREF) THEN
         LUBVAC = 14
         CALL OPNFIL(LUBVAC,'DFBVAC','OLD','GENDEN')
         CALL READT(LUBVAC,N2BBASXQ,DMAT)
@@ -275,6 +276,8 @@ C
             ITEST  = NPSH(IFRP)
             ISTART = 1
             ILOOP  = NPSH(IFRP)
+CTROND            ISTART = 80
+CTROND            ILOOP  = NPSH(IFRP) - 80
           ELSEIF (I.EQ.5) THEN
             ITEST  = NORB(IFRP)
             ISTART = 1
@@ -390,7 +393,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0,DM1=-1.0D0)
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
@@ -399,11 +402,17 @@ C
       CALL QENTER('DENMAT')
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
       IDEN = 1
-      IF(VACPOL.AND..NOT.ALTVAC) THEN
-        IDEN = IDEN + 8 + 32
+      IF(VACPOL.AND..NOT.MIXVAC) THEN
+        IF(POSVAC) THEN
+          IDEN = IDEN + 4 + 32
+        ELSE
+          IDEN = IDEN + 8 + 32
+        ENDIF
       ENDIF
       CALL GENDEN(DMAT,CMO,IDEN,IPRINT)
-      IF(ALTVAC) CALL GENALTVAC(DMAT,CMO,IPRINT)
+CTROND...This only works for zero electrons !!!
+      IF(POSVAC) CALL DSCAL(N2BBASXQ,DM1,DMAT,1)
+      IF(MIXVAC) CALL GENMIXVAC(DMAT,CMO,IPRINT)
       IF(AOC) THEN
 C.......Average of Configuration
         DO IOPEN = 1,NOPEN
@@ -711,7 +720,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck genaltvac */
-      SUBROUTINE GENALTVAC(DMAT,CMO,IPRINT)
+      SUBROUTINE GENMIXVAC(DMAT,CMO,IPRINT)
 C*****************************************************************************
 C
 C     Calculate alternative definition of density matrix of 
@@ -743,7 +752,7 @@ C
 C
 #include "ibtfun.h"
 C
-      CALL QENTER('GENALTVAC')
+      CALL QENTER('GENMIXVAC')
 C
 C     Calculate negative energy part
 C
@@ -766,7 +775,7 @@ C
         ENDIF
       ENDDO
       IF (IPRINT.GE.10) THEN
-        WRITE(LUPRI,'(A)') '* Output from GENALTVAC:'
+        WRITE(LUPRI,'(A)') '* Output from GENMIXVAC:'
         DO IFRP = 1,NFSYM
           WRITE(LUPRI,'(/A,A3)')
      &      '* Fermion ircop ',FREP(IFRP)
@@ -777,7 +786,7 @@ C
       END IF
 C   
  999  CONTINUE
-      CALL QEXIT('GENALTVAC')
+      CALL QEXIT('GENMIXVAC')
       CALL FLSHFO(LUPRI)
       RETURN
       END
