@@ -393,7 +393,6 @@ C
 C
       CALL QENTER('TWOLOP')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOLOP','*',103)
-
       FIRST = .TRUE.
       DIRAC = RELCAL
       IF (EXPECT .AND. .NOT.NOPV) THEN
