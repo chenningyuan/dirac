@@ -8119,7 +8119,7 @@ C      write(lupri,*) 'IREP=',IREP
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck amfiin */
-      SUBROUTINE AMFIIN(H2SAO,NB,NTNUC,IPTYPAO,INDXLM,IPNUC,IZTNUCS,
+      SUBROUTINE AMFIIN(H2SAO,NB,IPTYPAO,INDXLM,IPNUC,IZTNUCS,
      &                  IPTA,INDXLMA,IAMFU,IANUCS,ISTNUCTYP,CHPNUC,
      &                   NSPH,LABINT,ONLYSO1,ONLYTRA,
      &             IMFCHA,IC_AMFI,IQPOS,CVAL_AMFI,IPRINT,WORK,LWORK)
@@ -8129,14 +8129,13 @@ C  Interface to B.Schimmelpfennig's atomic mean-field integral code, AMFI
 C
 C  On input:  H2SAO - atomic integrals in spherical unsorted basis
 C             NB - total number of basis functions(L+S)
-C             NTNUC - total number (all) of nucleis 
 C              
 C          ... IZTNUCS - array for charges (int) of all nuclei of the system
 C             
 C          ... for each sperical AO in H2CAO matrix: 
 C             IPTYPAO - typ of spherical AO
 C             INDXLM - index of typ
-C             IPNUC - index nuclei (1-NTNUC)
+C             IPNUC - index nuclei (1-NUCDEP)
 C             ISTNUCTYP - integer array for storing ICENT, INDXLM 
 C 
 C 
@@ -8176,7 +8175,7 @@ C
       DIMENSION WORK(LWORK),H2SAO(NB,NB,4),IQPOS(1:8)  
       DIMENSION IPTYPAO(NSPH),INDXLM(NSPH),IPNUC(NSPH),
      &          IPTA(*),INDXLMA(*),IAMFU(NSPH),ISTNUCTYP(NSPH,2),
-     &          IZTNUCS(NTNUC),IANUCS(NTNUC),CHPNUC(NTNUC)
+     &          IZTNUCS(NUCDEP),IANUCS(NUCDEP),CHPNUC(NUCDEP)
       DIMENSION ncontrac(0:4)
 
       CHARACTER*(*) LABINT(*)
@@ -8197,7 +8196,7 @@ c     dirbss_verbose = .false.
       write(lupri,*) 'NLRGSH=',NLRGSH
       write(lupri,*) 'charge:',(charge(i),i=1,nucind)
       write(lupri,*) 'nuc_deg:',(nucdeg(i),i=1,nucind)
-      write(lupri,*) 'Total number of centers:',NTNUC
+      write(lupri,*) 'Total number of centers:',NUCDEP
 C   ... fill IZTNUCS - LIST OF ALL NUCLEIS
       WRITE(LUPRI,'(2X,A)') 'Total list of nucleis:'
       ENDIF
@@ -8392,7 +8391,7 @@ C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
         IMINCHA=IZTNUCS(1)
         INDXMINCH=1
         ISUMCH=0
-        DO I = 1, NTNUC
+        DO I = 1, NUCDEP
 C        .... NOTE: The minimal charge MUST NOT be zero !
          IF ( (IMINCHA.GT.IZTNUCS(I).AND.IZTNUCS(I).NE.0)
      &        .OR.(IMINCHA.EQ.0)) THEN
@@ -8412,7 +8411,7 @@ C     .... find out the individual charges on atoms
           WRITE(LUPRI,*)
      &     'The total nonzero charge of the system:',IMFCHA
            CHSUM = D0
-          DO I=1,NTNUC
+          DO I=1,NUCDEP
             CHPNUC(I)=DFLOAT(IZTNUCS(I))/DFLOAT(IZTNUCS(INDXMINCH))
             CHSUM=CHSUM+CHPNUC(I)
 C           write(lupri,*) I,' -',CHPNUC(I)
@@ -8420,7 +8419,7 @@ C           write(lupri,*) I,' -',CHPNUC(I)
           FACCHA=DFLOAT(IMFCHA)/CHSUM
           write(lupri,*) ' factor is :',FACCHA
           CHSUM = D0
-          DO I=1,NTNUC
+          DO I=1,NUCDEP
             CHPNUC(I)=FACCHA*CHPNUC(I)
             CHSUM = CHSUM + CHPNUC(I)
             write(lupri,*) I,'.atom-nucleus charge:',IZTNUCS(I),
@@ -8462,7 +8461,7 @@ C *************************************************************************
 C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
        NICHARGE = 0
        INDXMINCH=0
-       DO I = 1, NTNUC
+       DO I = 1, NUCDEP
         IF (IZTNUCS(I).EQ.ICHARGE) THEN
           NICHARGE=NICHARGE+1
           INDXMINCH=I
@@ -8482,10 +8481,10 @@ C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
        endif
 
 C      ... find NICHARGE centers on IZTNUCS of H2CAO with ICHARGE !
-C       use IANUCS(1-NTNUC)
-        CALL IZERO(IANUCS,NTNUC)
+C       use IANUCS(1-NUCDEP)
+        CALL IZERO(IANUCS,NUCDEP)
         IX = 0
-        DO I=1,NTNUC
+        DO I=1,NUCDEP
          IF (ICHARGE.EQ.IZTNUCS(I)) THEN
            IX = IX + 1
            IANUCS(IX)=I
@@ -9137,27 +9136,17 @@ C     ...allocations for AMFI integrals: typ and index
        CALL MEMGET('INTE',KAMFU,NSPH,WORK,KFREE,LFREE)
        CALL MEMGET('INTE',KSTNUCTYP,2*NSPH,WORK,KFREE,LFREE)
 
-C      ... find out total number of atomic centers of the system
-       NTNUC = 0
-       DO I=1,NUCIND
-         NTNUC = NTNUC + NUCDEG(I)
-       ENDDO
-       IF (IPRINT.GE.3) THEN
-         write(lupri,*)
-     &   'AMFI_STUFF: Total number of centers:',NTNUC
-       ENDIF
-
-       CALL MEMGET('INTE',KZTNUCS,NTNUC,WORK,KFREE,LFREE)
-       CALL MEMGET('INTE',KANUCS,NTNUC,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KZTNUCS,NUCDEP,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KANUCS,NUCDEP,WORK,KFREE,LFREE)
 C      .... charges per nucleis
-       CALL MEMGET('REAL',KCHPNUC,NTNUC,WORK,KFREE,LFREE)
-       CALL DZERO(WORK(KCHPNUC),NTNUC)
+       CALL MEMGET('REAL',KCHPNUC,NUCDEP,WORK,KFREE,LFREE)
+       CALL DZERO(WORK(KCHPNUC),NUCDEP)
 
        CALL MEMCHK('before AMFI2',WORK,1)
 
        CVAL_AMFI = CVAL
 
-       CALL AMFIIN(WORK(KBUF2),NB,NTNUC,WORK(KIPTYPAO),WORK(KHINLM),
+       CALL AMFIIN(WORK(KBUF2),NB,WORK(KIPTYPAO),WORK(KHINLM),
      &  WORK(KIPNUC),WORK(KZTNUCS),WORK(KAIPT),WORK(KAILM),WORK(KAMFU),
      &  WORK(KANUCS),WORK(KSTNUCTYP),WORK(KCHPNUC),
      &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCHA,IC_AMFI,JM4POS,
