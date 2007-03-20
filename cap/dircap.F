@@ -1,7 +1,7 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sajeev */
       SUBROUTINE SAJEEV(basis_n,ang_pow,ord_expon,
-     &                  ord_coe,r_ms,PE_AOr,PE_AOi,WORK,LWORK)
+     &         ord_coe,r_ms,PE_AOr,PE_AOi,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Main program from Sajeev. Adapted into DIRAC enviroment
@@ -14,9 +14,14 @@ C              ord_expon
 C              ord_coe
 C
 C On output: 
-C             complex CAP integrals written into formatted file          
+C            complex CAP integrals written into formatted file, or test
+C            calculation of overlap integrals only for comparison with
+C            DIRAC
 C
 C   called from CAPINTS
+C
+C  Written by Sajeev, adapted to DIRAC by Miro Ilias, Tel Aviv, March
+C  2007
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -33,11 +38,9 @@ CMI    ... arrays are entering subroutine, check the size !!!!!
       real *8 R_m(4),R_n(4)
       real *8 R_ms(200,3)
 
-CMI   ... this variable is beeing sent into AOINTEGRAL
-CMI   ... split it into real and imaginary parts !!!
-C     COMPLEX *16 PE_AO(25000)
+C     COMPLEX *16 PE_AO(25000) ! former variable split into real and
+C     imaginary parts
       REAL*8 PE_AOr(25000),PE_AOi(25000)
-C     real *8 AOMO(200,200)
       real *8 BETA0,PE0
       
       LOGICAL ISFILE
@@ -47,29 +50,16 @@ C     data CI/(0.d0,-1.d0)/
 
       CALL QENTER('SAJEEV')
 
-CMI    ... no need of MO coefficients from GAMESS now, they are read later in moltra
-C     open(unit=3,file='AOMOCOE',STATUS='UNKNOWN',FORM='FORMATTED')
-
       IF (IPRCAP.GE.2) THEN
         CALL HEADER('*** Output from SAJEEV ***',-1)
       ENDIF
 
-CMI   ... this is for the "theta" parameter
-C     open(unit=8,file='INPQD',STATUS='OLD',FORM='FORMATTED')
-C     READ(8,*)PW
-C     close(8,status="keep")
       IF (IPRCAP.GE.3) THEN
         write(LUPRI,*) ' read INPQD (theta) =',PW
       ENDIF
 
-      CALL INPREAD(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,IPRCAP)
-
-C      read(3,*)N_B
-C      do i=1,N_B
-C         DO j=1,N_B
-C            READ(3,*)k,l,AOMO(i,j)
-C         END DO
-C      END DO
+      CALL INPREAD(N_B,ord_expon,ord_coe,R_ms,basis_n,
+     &              ang_pow,CAPOVLP,IPRCAP)
 
 CMI ... check the presence of PEMAT in order to decide whether to run 
 CMI   or not the CAP integral evaluation
@@ -80,22 +70,25 @@ CMI   ... evaluate CAP complex atomic untegrals
          WRITE(LUPRI,'(2X,A)')
      &   'PEMAT files in not present, going to evaluate CAP integrals.'
         ENDIF
+
         CALL AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-C    *                 PW,PE_AO,IPRCAP)
-     *                 PW,PE_AOr,PE_AOi,IPRCAP)
+     &                 PW,PE_AOr,PE_AOi,CAPOVLP,IPRCAP)
         
-CMI   ... write out atomic integrals into the file
-         open(unit=14,file='PEMAT',STATUS='UNKNOWN',FORM='FORMATTED')
+C ============================================================
+CMI     ... write complex atomic integrals into the file
+C ============================================================
+         LUPEMAT=14
+         open(unit=LUPEMAT,file='PEMAT',
+     &    STATUS='UNKNOWN',FORM='FORMATTED')
          do ii=1,n_b
             do jj=1,n_b
                IPU=IPOINTIJ(ii,jj)
                if (jj.gt.ii)go to 301
-CMI            write(14,*)ii,jj,PE_AO(IPU)
-               write(14,*)ii,jj,CMPLX(PE_AOr(IPU),PE_AOi(IPU))
+               write(LUPEMAT,*) ii,jj,CMPLX(PE_AOr(IPU),PE_AOi(IPU))
             end do
  301        continue
          end do
-         close(14)
+         close(LUPEMAT)
          IF (IPRCAP.GE.0) THEN
           WRITE(LUPRI,'(2X,A)')
      &    'PEMAT file with CAP integrals generated.'
@@ -104,7 +97,6 @@ CMI            write(14,*)ii,jj,PE_AO(IPU)
        WRITE(LUPRI,'(2X,A)')
      & 'SAJEEV: PEMAT file is present, not calculating CAP integrals.'
       ENDIF
-C     call quit(' end in sajeev...')
 
       CALL QEXIT('SAJEEV')
       RETURN
@@ -113,10 +105,17 @@ C     call quit(' end in sajeev...')
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck inpread */
       SUBROUTINE INPREAD(
-     & N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,IPRINT)
+     & N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,CAPOVLP,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Called from: 
+C  Read the GAMESS-like input file with basis set
+C
+C  Parameters:
+C
+C           CAPOVLP - calculate only overlap integrals (for comparison
+C           with DIRAC)
+C
+C  Called from: SAJEEV
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -144,13 +143,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real *8 ord_expon(250),ord_coe(250)
       real *8 R_m(4),R_n(4)
       real *8 R_ms(200,3)
-      LOGICAL OVLP
+      LOGICAL CAPOVLP
 
       DATA BLNK /'E','S','P','D','F'/
       DATA shell_p /'PX','PY','PZ'/
       DATA shell_d /'XX','YY','ZZ','XY','XZ','YZ'/
       DATA shell_f /'XXX','YYY','ZZZ','XXY','XXZ','YYX','YYZ',
-     *     'ZZX','ZZY','XYZ'/
+     &              'ZZX','ZZY','XYZ'/
       DATA angu_pow_S /0,0,0/
       DATA angu_pow_P /1,0,0,0,1,0,0,0,1/
       DATA angu_pow_D /2,0,0,1,1,0,
@@ -163,61 +162,45 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dummy.h"
       CALL QENTER('INPREAD')
 
-C     CALL HEADER('*** Output from SAJEEV:INPREAD ***',-1)
-
+C     ... zero array for number of contracted basis function
       do i=1,200
         Basis_N(i)=0
       End do
 
+C     ... open file for reading integrals
       LUinp = 57
-      CLOSE(LUinp)
-
-C     OPEN(unit=5,file='CAPINT.inp',STATUS='OLD',FORM='FORMATTED')
-C     OPEN(unit=LUinp,file='CAPINT.inp',STATUS='OLD',FORM='FORMATTED')
-
-C     LUinp = 0
-C     CALL GPOPEN(LUinp,'CAPINT.inp','OLD',' ','FORMATTED',
-C    &            IDUMMY,.FALSE.)
-
       OPEN(unit=LUinp,file='CAPINT.inp',STATUS='OLD',FORM='FORMATTED')
-CC    OPEN(unit=LUinp,file='CAPINT.inp',STATUS='UNKNOWN',
-CC   &      FORM='FORMATTED')
-
-C     READ(5,*) n_atoms
       READ(LUinp,*) n_atoms
 
       IF (IPRINT.GE.3) THEN
-       write(lupri,*) 'INPREAD: n_atoms= ',n_atoms
+       write(LUPRI,'(/2X,A)') 'Output for INPREAD'
+       write(lupri,*) ' n_atoms= ',n_atoms
       ENDIF
 
       g_n=1
       sh=0
       iiii=1
-
       DO  k=1,n_atoms
+        READ(LUinp,*) IA
 
-         READ(LUinp,*) IA
+        IF (IPRINT.GE.3) THEN
+          write(lupri,*) 'label  IA=',IA
+        ENDIF
 
-      IF (IPRINT.GE.3) THEN
-         write(lupri,*) 'label  IA=',IA
-      ENDIF
+        READ(LUinp,*)(re(k,i),i=1,3)
 
-CMI      write(19,*)IA
-
-         READ(LUinp,*)(re(k,i),i=1,3)
-
-      IF (IPRINT.GE.3) THEN
-         write(lupri,*) '> coordinate: ',(re(k,i),i=1,3)
-      ENDIF
+        IF (IPRINT.GE.3) THEN
+           write(lupri,*) '> coordinate: ',(re(k,i),i=1,3)
+        ENDIF
           
-         Do ISNEW=1,1000  
+        Do ISNEW=1,1000  
 
-           READ(LUinp,*) shell_type, n_con_guass 
+          READ(LUinp,*) shell_type, n_con_guass 
            
-           IF (IPRINT.GE.3) THEN
-            write(lupri,*) 'shell_type=',shell_type
-            write(lupri,*) 'n_con_guass=',n_con_guass
-           ENDIF
+          IF (IPRINT.GE.3) THEN
+           write(lupri,*) 'shell_type=',shell_type,
+     &     ' n_con_guass=',n_con_guass 
+          ENDIF
 
 CMI       'E', means end
             if(shell_type.eq.BLNK(1))go to 201
@@ -233,9 +216,10 @@ CMI       'F' shell
  200        continue
           
             DO n_c_g=1,n_con_guass
-               sh=sh+1
 
-               READ(LUinp,*)nj,expon,coe
+             sh=sh+1
+
+             READ(LUinp,*)nj,expon,coe
 
           IF (IPRINT.GE.3) THEN
             write(lupri,*)'S: nj=',nj,' expon=',expon,' contr.coef=',coe
@@ -244,7 +228,6 @@ CMI       'F' shell
                ord_expon(sh)=expon
                ord_coe(sh)=coe
                shell_arr(sh)=shell_type
-CMI NEW 
                Shell_basis(g_n)=shell_type
                Shell_atom(g_n)=k
 
@@ -263,13 +246,13 @@ CMI NEW
                 sh=sh+1
                 READ(LUinp,*) nj,expon,coe
 
-           IF (IPRINT.GE.3) THEN
-            write(lupri,*)'P: nj=',nj,' expon=',expon,' contr.coef=',coe
-           ENDIF
+          IF (IPRINT.GE.3) THEN
+           write(lupri,*)
+     &     'P: nj=',nj,' expon=',expon,' contr.coef=',coe
+          ENDIF
 
-                do i=1,3
+             do i=1,3
                    shell_arr(sh+(i-1)*n_con_guass)=shell_p(i)
-CMI NEW
                    Shell_basis(g_n+i-1)=shell_p(i)
                    Shell_atom(g_n+i-1)=k
 
@@ -278,8 +261,8 @@ CMI NEW
                    do ia_p=1,3
                    ang_pow(sh+(i-1)*n_con_guass,ia_p)=angu_pow_p(i,ia_p)
                    end do
-                end do                              
-             END DO
+              end do                              
+           END DO
           
           do  iji=1,3
              basis_n(g_n)=basis_n(g_n)+n_con_guass
@@ -290,9 +273,9 @@ CMI NEW
              
  400         continue
              
-             DO   n_c_g=1,n_con_guass
-                sh=sh+1
-                READ(LUinp,*)nj,expon,coe
+             DO n_c_g=1,n_con_guass
+               sh=sh+1
+               READ(LUinp,*)nj,expon,coe
 
           IF (IPRINT.GE.3) THEN
            write(lupri,*)'D: nj=',nj,' expon=',expon,' contr.coef=',coe
@@ -300,15 +283,16 @@ CMI NEW
 
                 do i=1,6
                    shell_arr(sh+(i-1)*n_con_guass)=shell_d(i)
-CMI NEW
                    Shell_basis(g_n+i-1)=shell_d(i)
                    Shell_atom(g_n+i-1)=k
 
                    ord_expon(sh+(i-1)*n_con_guass)=expon
                    ord_coe(sh+(i-1)*n_con_guass)=coe
+
                    do ia_p=1,3
                  ang_pow(sh+(i-1)*n_con_guass,ia_p)= angu_pow_d(i,ia_p)
                    end do
+
                 end do
              END DO
        
@@ -323,6 +307,7 @@ CMI NEW
              
              DO  n_c_g=1,n_con_guass
                 sh=sh+1
+
                 READ(LUinp,*)nj,expon,coe
 
            IF (IPRINT.GE.3) THEN
@@ -331,7 +316,6 @@ CMI NEW
 
                 do i=1,10
                    shell_arr(sh+(i-1)*n_con_guass)=shell_f(i)
-CMI NEW
                    Shell_basis(g_n+i-1)=shell_f(i)
                    Shell_atom(g_n+i-1)=k
 
@@ -366,9 +350,8 @@ CMI NEW
        
        WRITE(LUPRI,'(/2X,A,I3,A,I3)')
      & 'Number of primitive guassians / number of'//
-     & 'contracted basis functions=',sh,'/',n_b
+     & ' contracted basis functions=',sh,'/',n_b
 
-CMI NEW
        LUCAP=0
        CALL GPOPEN(LUCAP,
      &  'CAPLBL.inp',' ',' ','FORMATTED',IDUMMY,.FALSE.)
@@ -379,7 +362,7 @@ CMI NEW
        do i=1,n_b
          write(LUPRI,'(2i4,A6,A,I3)')i,SHELL_ATOM(i),Shell_basis(i),
      &   ' contr->',basis_n(i)  
-C        .... write into file
+C        ... write into file
          WRITE(LUCAP,'(i4,2x,i3,2x,A6)') i,SHELL_ATOM(i),Shell_basis(i)
        end do
 
@@ -394,9 +377,7 @@ C        .... write into file
        WRITE(LUPRI,'(/,2X,A)')
      & ' sh_ty,Pgua_expo,nor_pg_coe,angu_pow,cartesian '
        
-C       OVLP = .TRUE.
-        OVLP = .FALSE.
-       IF (OVLP) THEN
+       IF (CAPOVLP) THEN
 C!NORMALIZATION PART
 C!Only the primitives are normalized
 C!The Contracted guassian is kept unnormalized
@@ -413,17 +394,14 @@ C!one may have to modify this
             R_m(4)=ord_expon(i)
 
             CALL PEM(R_m,R_m,K_m,K_m,PEINT)
-
             ord_coe(i)=ord_coe(i)/sqrt(PEINT)
 
             write (LUPRI,*)i,'fu=',shell_arr(i),ord_expon(i),
      &             ord_coe(i),' PEINT=',PEINT
-
 C           write (16,*)i,shell_arr(i),ord_expon(i),ord_coe(i)
 C           write(16,*) (ang_pow(i,j),j=1,3)
 C           write(16,*) (R_ms(i,j),j=1,3)
          end do
-C       call QUIT('only overlap integrals over primitives')
        ELSE
 
        do i=1,sh
@@ -434,27 +412,27 @@ C       call QUIT('only overlap integrals over primitives')
              k_n(isw)=(ang_pow(i,isw))
           end do
           
-          R_m(4)=ord_expon(i)
-          R_n(4)=ord_expon(i)
+         R_m(4)=ord_expon(i)
+         R_n(4)=ord_expon(i)
           
-          CALL PEM(R_m,R_n,K_m,K_n,PEINT)
-          ord_coe(i)=ord_coe(i)/sqrt(PEINT)
+         CALL PEM(R_m,R_n,K_m,K_n,PEINT)
 
-CMI       write (16,*)i,shell_arr(i),ord_expon(i),ord_coe(i)
-          write (LUPRI,*) i,' ',shell_arr(i),' ',ord_expon(i),ord_coe(i)
-CMI       write(16,*) (ang_pow(i,j),j=1,3)
-          write(LUPRI,*) 'ang_pow:',(ang_pow(i,j),j=1,3)
-CMI       write(16,*) (R_ms(i,j),j=1,3)
-          write(LUPRI,*) 'R_ms:',(R_ms(i,j),j=1,3)
+         unnormcoe=ord_coe(i)
+         ord_coe(i)=ord_coe(i)/sqrt(PEINT)
+
+         write(LUPRI,*) i,'. bfu: ',shell_arr(i),
+     &   ' exponent:',ord_expon(i)
+         write(LUPRI,*) 
+     &   ' contr.coeff:',unnormcoe,' normal.contr. coeff:',ord_coe(i)
+         write(LUPRI,*) 'ang_pow:',(ang_pow(i,j),j=1,3)
+         write(LUPRI,*) 'R_ms:',(R_ms(i,j),j=1,3)
+
        end do
        ENDIF
 
        CALL FLSHFO(LUPRI)
 
-CMI ... I have to close it due to interference with her1pro.F:3403 
-CMI    close(19,status="keep")
        close(LUinp,status="keep")
-C      CALL GPCLOSE(LUinp,'KEEP')
 
        CALL QEXIT('INPREAD')
        RETURN
@@ -463,20 +441,23 @@ C      CALL GPCLOSE(LUinp,'KEEP')
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck aointegral */
       SUBROUTINE AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     *                       PW,PE_AOr,PE_AOi,IPRINT)      
+     *            PW,PE_AOr,PE_AOi,CAPOVLP,IPRINT)      
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C Core routine for calculating CAP integrals.
+C   Core routine for calculating CAP integrals.
 C
-C On input:
-C           N_B number of atomic basis functions
-C           ord_expon
-C           ord_coe
+C    Parameters:
+C -------------------
+C           N_B          number of atomic basis functions
+C           ord_expon    exponents of primitives
+C           ord_coe      contraction coefficients
 C           R_ms
 C           basis_n
 C           ang_pow
 C           PW
 C           PE_AOr,PE_AOi
+C           CAPOVLP
+C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -492,37 +473,40 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real *8 R_m(4),R_n(4)
       real *8 R_ms(200,3)
 
+      LOGICAL CAPOVLP
       COMPLEX *16 PEINT
       REAL*8 PE_AOr(25000),PE_AOi(25000)
       COMPLEX *16 BETA
 
       CALL QENTER('AOINTEGRAL') 
       
+C     ... zero array for integrals
       do i=1,n_b
          do j=1,n_b
             IPU=IPOINTIJ(i,j)
-C           PE_AO(IPU)=(0.d0,0.d0)
             PE_AOr(IPU)=0.d0
             PE_AOi(IPU)=0.d0
          end do
       end do
 
+C ... prepare offsets for contracted basis functions
       do i=1,n_b
          if(i.eq.1)then
-            iasp=0
+           iasp=0
          else
-CMI: ftnchek note: Variables may be used before! 
-            iasp=basis_ord(i-1)
+           iasp=basis_ord(i-1)
          endif
          basis_ord(i)=iasp+basis_n(i)
+         IF (IPRINT.GE.3) THEN
+          WRITE(LUPRI,*) 'b.fu: ',i,' contr.shells:',basis_n(i),
+     &    ' offset:',basis_ord(i)
+         ENDIF
       end do
-      
+C     ... run over contracted basis functions
       DO ii=1,n_b
       DO jj=1,ii
-
          IPU=IPOINTIJ(ii,jj)
-
-         if (ii.eq.1)then
+         if (ii.eq.1) then
             iangii=0
          else
             iangii=basis_ord(ii-1)
@@ -532,11 +516,9 @@ CMI: ftnchek note: Variables may be used before!
          else
             iangjj=basis_ord(jj-1)
          endif
-         
-C        ... run over contraction coefficients         
+C        ... run over primitives in contracted basis functions
          Do i=iangii+1,basis_ord(ii)
          do j=iangjj+1,basis_ord(jj)
-
             do isw=1,3
                R_m(isw)=R_ms(i,isw)
                R_n(isw)=R_ms(j,isw)
@@ -546,16 +528,21 @@ C        ... run over contraction coefficients
             R_m(4)=ord_expon(i)
             R_n(4)=ord_expon(j)
 
+            IF (CAPOVLP) THEN
+             CALL PEM(R_m,R_n,K_m,K_n,PEINT)
+            ELSE
+             CALL CAPM(R_m,R_n,K_m,K_n,PW,PEINT)
+            ENDIF
+
+C           ... contraction coefficients of i,j
             COMUL=ord_coe(i)*ord_coe(j)
-            CALL CAPM(R_m,R_n,K_m,K_n,PW,PEINT)
 C           ... save real and imaginary part of integrals
             PE_AOr(IPU)= PE_AOr(IPU)+COMUL*DREAL(PEINT)
             PE_AOi(IPU)= PE_AOi(IPU)+COMUL*DIMAG(PEINT)
          end do
-      End Do
+         End Do
       END DO
       END DO
-      
       CALL QEXIT('AOINTEGRAL') 
       RETURN
       END
@@ -607,7 +594,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       end do
       RETURN
       END
- 
       
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION JFACT(l)
@@ -632,6 +618,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PEM */
       SUBROUTINE PEM(R_m,R_n,K_m,K_n,PEINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  On input: 
+C           R_m
+C           R_n
+C           K_m
+C           K_n
+C
+C  On output: PEINT
 C
 C  Called from: INPREAD 
 C
@@ -678,7 +672,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
          CALL SMAT(R_CM,R_CN,K_CM,K_CN,0.d0,OVRLPK)
 
-         PEINT=PEINT+OVRLPI*OVRLPJ*OVRLPK
+         PEINT=PEINT+(OVRLPI*OVRLPJ*OVRLPK)
 
       CALL QEXIT('PEM')
 
@@ -958,7 +952,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
          DGry=K_n*(XRy**(-1))
          DGy=DGry-(2*R_n(2)*(XRy))
 
-
          D2G1X=K_n*(K_n-1)*(XR**(-2))
          D2G2X=2*R_n(2)*(2*K_n+1)
          D2G3X=4*(R_n(2)**2)*(XR**2)
@@ -1006,8 +999,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
          VCAPXT=VCAPXT+0.5*(VCAPX(2)+VCAPX(1))*STEP
          VCAPXTy=VCAPXTy+0.5*(VCAPXy(2)+VCAPXy(1))*STEP
 
-         if(ix.ne.1)VCAPX(2)=VCAPX(1)
-         if(ix.ne.1)VCAPXy(2)=VCAPXy(1)
+         if (ix.ne.1) VCAPX(2)=VCAPX(1)
+         if (ix.ne.1) VCAPXy(2)=VCAPXy(1)
          itx=0
 C         if((zabs(vcap)).lt.(0.00000000001))exit
 

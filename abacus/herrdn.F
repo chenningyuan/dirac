@@ -4325,7 +4325,7 @@ C   * DO-loops:
 C       400     - run over irreducible representations
 C       410     - run over shells
 C       420     - run over components, thus (60+70):run over orbitals
-C       430     - run over the symmetryoperations that have no part in the
+C       430     - run over the symmetry operations that have no part in the
 C               stabilizer of the center, that is run over a unique set
 C               of symmetry operations transforming between symmetry
 C               dependent centers
@@ -8190,9 +8190,9 @@ C      IF (KLAST.GT.LWORK) CALL STOPIT('BASOUT','CAPOUT',KLAST,LWORK)
        WRITE(LUPRI,'(2X,A)')
      & 'Preparing formatted file "CAPINT.inp" for the CAP module.'
       ENDIF
-C
-C   Prepare another unique file with basis functions for Sajeev's code
-C
+C!
+C!   Prepare another unique file with basis functions for Sajeev's code
+C!
       LUTMP2 = 0
       LUTMP  = 0
       CALL GPOPEN(LUTMP2,'CAPINT.inp',
@@ -8676,19 +8676,19 @@ C***********************************************************************
       RETURN
       END
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck capsymout */
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!  /* Deck capsymout */
       SUBROUTINE CAPSYMOUT
-C*****************************************************************************
-C 
-C    Prepare identical CAPDIRSYM1.inp,CAPDIRSYM2.inp files for further using
-C    in CAP procedures.
-C
-C    Called from CAPOUT.
-C
-C    Copy&Paste mainly by Miro Ilias, Tel Aviv, 2007
-C
-C*****************************************************************************
+!*****************************************************************************
+! 
+!    Prepare identical CAPDIRSYM1.inp,CAPDIRSYM2.inp files for subsequent 
+!    symmetry adaptation of CAP integrals obtained from Sajeev's code
+!
+!    Called from CAPOUT.
+!
+!    Copy&Paste mainly by Miro Ilias, Tel Aviv, 2007
+!
+!*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -8769,12 +8769,15 @@ C    &            CTRAN(I,K),' ',NINT(CTRAN(I,K)),' ',
      &         ( (NINT(CTRAN(I,K))*ITRAN(I,K)), K=2, J )
             ENDIF
 
-C           ... write to the file
+C                  ... write to the file
+C      ==================================================
             WRITE (LUTMP1,*) I,'       ',J
             WRITE (LUTMP2,*) I,'       ',J
+
             WRITE (LUTMP1,*)
      +        '               ',ITRAN(I,1), ' ',
      *    ( (NINT(CTRAN(I,K))*ITRAN(I,K)), K = 2, J )
+
             WRITE (LUTMP2,*)
      +        '               ',ITRAN(I,1), ' ',
      *    ( (NINT(CTRAN(I,K))*ITRAN(I,K)), K = 2, J )
@@ -8820,11 +8823,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Getsph */
       SUBROUTINE GETSPH(WORK,LWORK,IPRINT)
 C***********************************************************************
-C
-C     Get spherical transformation matrices up to LMAX
-C     Written by T.Saue May 1 1998 
-C     Rewrite by cut'n paste 2006 Trond Saue
-C
+C!
+C!     Get spherical transformation matrices up to LMAX
+C!     Written by T.Saue May 1 1998 
+C!     Rewrite by cut'n paste 2006 Trond Saue
+C!
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"

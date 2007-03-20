@@ -24,7 +24,7 @@ C
 #include "dcbcap.h"
 C
       SAVE SET
-      DATA TABLE /'.INPQD ','.INPCAP','.PRINT ','.XXXXXX',
+      DATA TABLE /'.INPQD ','.INPCAP','.PRINT ','.OVLCAP',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
@@ -41,6 +41,14 @@ C
       ELSE
          SET = .TRUE.
       END IF
+
+      CALL TITLER('CAP operator defined','*',127)
+
+C
+C  *** Initialize ****
+C
+      CAPOVLP = .FALSE.
+
 C
 C
 C     Process input for CAPINP
@@ -85,7 +93,8 @@ C&&& INPCAP: read integration parameters
                  WRITE(LUPRI,'(2X,A,I4)')
      & 'CAPINT: Increase the parameter MAXSPL in the dcbcap. file !'//
      & ' Current value is ',MAXSPL
-                 CALL QUIT('CAPINT: Increase dimension parameter !')
+                 CALL QUIT(
+     & 'CAPINT: Increase dimension parameter MAXSPL !')
                 ENDIF
                 READ(LUCMD,*)(GINTPT(I,J),J=1,NGR(I))
                 READ(LUCMD,*)(NGRS(I,J),J=1,NGR(I)-1)
@@ -96,7 +105,8 @@ C&&& Read print level
                  READ(LUCMD,*) IPRCAP
                  GO TO 100
  4               CONTINUE
-C&&& XXXXXX
+C&&& Comparison between DIRAC and CAP overlap integrals
+                 CAPOVLP = .TRUE.
                  GO TO 100
  5               CONTINUE
 C&&& XXXXXX
@@ -126,25 +136,29 @@ C
       IF(.NOT.CAP) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(4X,A)')
-     &   'CAPINP: Set-up for CAP calculation'
+     & 'CAPINP: Set-up for CAP calculations'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A,I5)') ' * Print level: ',IPRCAP
 C
- 90   CONTINUE
-      WRITE(LUPRI,'(A)')
-     &     ' * CAP integrals  according to',
-     &     '          Sajeev ....         '
+      IF (.NOT.CAPOVLP) THEN
+        WRITE(LUPRI,'(A)')
+     &  ' * CAP integrals  according to',
+     &  '          Sajeev ....         '
 C
-       WRITE(LUPRI,'(2X,A,D25.10)') 'read INPQD = ',PW
-       WRITE(LUPRI,'(2X,A)') 
+        WRITE(LUPRI,'(2X,A,D25.10)') 'read INPQD = ',PW
+        WRITE(LUPRI,'(2X,A)') 
      & 'read integration parameters:'
 CMI    ...  write out integration parameters
-       DO I=1,3
-         WRITE(LUPRI,*) X0(I),LAMDA(I)
-         WRITE(LUPRI,*) NGR(I)
-         WRITE(LUPRI,*) (GINTPT(I,J),J=1,NGR(I))
-         WRITE(LUPRI,*) (NGRS(I,J),J=1,NGR(I)-1)
-       ENDDO
+        DO I=1,3
+          WRITE(LUPRI,*) X0(I),LAMDA(I)
+          WRITE(LUPRI,*) NGR(I)
+          WRITE(LUPRI,*) (GINTPT(I,J),J=1,NGR(I))
+          WRITE(LUPRI,*) (NGRS(I,J),J=1,NGR(I)-1)
+        ENDDO
+       ELSE
+         WRITE(LUPRI,'(2X,A)') 
+     &   'Only comparison between CAP and DIRAC overlap integrals.'
+       ENDIF
 
   999 CONTINUE
 C
@@ -254,6 +268,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PARAMETER (MXABF=2000)
 #include "dcbbas.h"
 #include "dcbcap.h"
+#include "dgroup.h"
 #include "mxcent.h"
 C#include "maxorb.h"
 #include "nuclei.h"
@@ -265,7 +280,7 @@ C#include "maxorb.h"
       DIMENSION ILC1(1:MXCENT),ILC2(1:MXCENT)
       INTEGER AONUM,CMNINDX
       CHARACTER*6 AO1,AO2
-      LOGICAL CHPRES
+      LOGICAL CHPRES,OLDADAPT
       COMPLEX CAP
 #include "memint.h"
 
@@ -296,7 +311,7 @@ C#include "maxorb.h"
       ENDIF
 
 C ...  read DIRAC/CAP basis functions ...
-C     .. skip text lines
+C       .. skip text lines
       READ(LUCD,*)
       READ(LUCL,*)
       DO I = 1, NBASIS
@@ -359,14 +374,13 @@ C       ENDIF
       IF (IPRCAP.GE.2) THEN
        WRITE(LUPRI,'(2X,A,I4)')
      & 'Matching between CAP and DIRAC atomic basis'//
-     & ' functions - basic order. NBASIS=',NBASIS
+     & ' functions - basic order, NBASIS fu=',NBASIS
        DO I = 1, NBASIS
          WRITE(LUPRI,'(1X,I3,A,I3,A,$)') I,'->',ICAPBFO(I),'|'
          IF (MOD(I,8).EQ.0) WRITE(LUPRI,*)
        ENDDO
        WRITE(LUPRI,*)
       ENDIF
-
 
       LUPM = 0
       CALL GPOPEN(LUPM,'PEMAT','OLD',' ','FORMATTED',
@@ -394,16 +408,13 @@ C==================================================================
         IF (I.NE.II.OR.J.NE.JJ) THEN
          CALL QUIT('CAPADAPT: wrong indexes in PEMAT !')
         ENDIF
-C       IX1 = (I*(I-1)/2) + J
         IX1 = CMNINDX(I,J)
         IF (IX.NE.IX1) THEN
          CALL QUIT('CAPADAPT: wrong IX !')
         ENDIF
-C       write(LUPRI,*) II,JJ,CAP,' ',CAPRE,CAPIM
-C       write(LUPRI,*) II,JJ,CAPRE,CAPIM
 
 C       -------------------------------------------------
-C       .. store the integrals in the DIRAC 'C1' order ..
+C       .. store  integrals in the DIRAC basic order ..
 C       -------------------------------------------------
         WORK(KPMR+CMNINDX(ICAPBFO(I),ICAPBFO(J))-1)=CAPRE
         WORK(KPMI+CMNINDX(ICAPBFO(I),ICAPBFO(J))-1)=CAPIM
@@ -423,6 +434,11 @@ C===========================================================
       IF (IPRCAP.GE.4) THEN
        WRITE(LUPRI,'(/,5X,A/)') 'CAPADAPT: Symmetry adaptation:'
       ENDIF
+
+      OLDADAPT = .FALSE.
+C ======================================================================
+
+      IF (OLDADAPT) THEN
 
       LUCDS1 = 0
       CALL GPOPEN(LUCDS1,'CAPDIRSYM1.inp','OLD',' ','FORMATTED',
@@ -488,12 +504,32 @@ C      ... symmetry adapt CAP_(I,J):
       CALL GPCLOSE(LUCDS1,'KEEP')
       CALL GPCLOSE(LUCDS2,'KEEP')
 
+      ELSE
+
+       CALL NTAOSO(WORK(KPMR),WORK(KPMRSA),NBAST,0,IPRCAP)
+       IF (.NOT.CAPOVLP) THEN
+        CALL NTAOSO(WORK(KPMI),WORK(KPMISA),NBAST,0,IPRCAP)
+       ENDIF
+      ENDIF
+
+C     .. compare with Sovlp integrals
+      IF (CAPOVLP) THEN
+C      CALL GTOVLX(WORK(KPMR),1.0D0,WORK(KFREE),LFREE)
+C      CALL PRQMAT(WORK(KPMR),NBAST,NBAST,NBAST,NBAST,
+C    &              1,IPQTOQ(1,0),LUPRI)
+
+C      CALL PRQMAT(WORK(KPMRSA),NBAST,NBAST,NBAST,NBAST,
+C    &              1,IPQTOQ(1,0),LUPRI)
+C      call quit('end')
+      ENDIF
+
 C =======================================================================
 C     Save HERMIT symmetry adapted integrals into the AOPROPER file.
 C =======================================================================
       CALL SAVECAP(WORK(KPMRSA),WORK(KPMISA),IPRCAP)
 
-      CALL CAPREADY(WORK,LWORK,IPRCAP)
+C     CALL CAPREADY(WORK,LWORK,IPRCAP)
+      CALL CAPREADY(WORK(KFREE),LFREE,IPRCAP)
 
       CALL MEMREL('CAPADAPT',WORK,KWORK,KWORK,KFREE,LFREE)
 
@@ -749,7 +785,7 @@ C /* Deck capready */
       SUBROUTINE CAPREADY(WORK,LWORK,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C     Add cap operators into integral list.
+C   Add cap operators into integral list.
 C
 C   Written by Miro ILIAS, Tel Aviv, febr. 2007
 C

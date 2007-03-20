@@ -45,6 +45,8 @@ C***********************************************************************
 C
 C      Generate primitive labels for basis functions in dcblab.h
 C
+C      Called from PAMINP
+C
 C      Written by T.Saue - November 1994
 C      Last revision: Nov 23 1994 - tsaue
 C***********************************************************************
