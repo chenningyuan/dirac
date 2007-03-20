@@ -6,9 +6,7 @@
 
 include ../Makefile.config
 
-F77_OBJS = dircap.o prepcap.o
-
-F90_OBJS =
+F90_OBJS = dircap.o prepcap.o
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 

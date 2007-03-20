@@ -165,6 +165,7 @@ setup()
          EMBOBJ='$(EMBOBJS)'
          EMBMAK=EMB_OBJ
          EMBTAR=1
+	 F90MODS=ALL_F90MODS
          echo " - ab initio/DFT embedding module (with Fortran90/95 modules)"
       else
          echo "ab initio/DFT embedding module not included - depends on DFT module "
@@ -192,6 +193,7 @@ setup()
          CAPOBJ='$(CAPOBJS)'
          CAPMAK=CAP_OBJ
          CAPTAR=1
+	 F90MODS=ALL_F90MODS
          echo " - CAP module"
     else
         echo "CAP module not is included "
@@ -204,6 +206,7 @@ setup()
          OOF_OBJ='$(OOF_OBJS)'
          OOF_MAK=OOF_OBJ
          OOF_TAR=1
+	 F90MODS=ALL_F90MODS
          echo " - OOF module - requires Fotran 90/95 compiler"
       else
        #  echo "OOF module not included"
@@ -707,7 +710,7 @@ if [ -n "$OOFMOD" ]; then
 cat <<EOF>> Makefile
 
 OOF_OBJS = \\
-  oof/routines.o oof/tests.o
+  oof/mem_mod.o oof/qmtx_mod.o oof/tests.o
 EOF
 fi
 #
@@ -724,7 +727,7 @@ TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
-dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ AMFI_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
+dirac.x: $F90MODS MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ AMFI_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ $AUXMAK 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \\
@@ -742,7 +745,7 @@ EOF
 # Parallel targets
 #
 cat <<EOF>> Makefile
-dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ AMFI_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
+dirmpi.x: $F90MODS MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ AMFI_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	TRA_OBJ CCM_OBJ LUCITA_OBJ CI_OBJ $AUXMAK  SLAVE_OBJ
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \$(OBJSLAVE) \\
@@ -878,20 +881,23 @@ EOF
 #########################################################
 echo "       " >> Makefile
 if [ -n "$MODULES" ]; then
-  echo '# Treat Fortran90/95 modules # ' >> Makefile
+  echo '#       Fortran90/95 modules # ' >> Makefile
   echo '#--------------------------- # ' >> Makefile
- #  echo 'mod  :  EMBMODS    ;\' >> Makefile
- # echo 'mod  :             ;\' >> Makefile
   echo 'mod  :             ;\' >> Makefile
   if [ -n "$EMBMOD" ]; then
-   # echo '     cd  embedding  ; $(MAKE) mod' >> Makefile
-   # echo '     cd  embedding  ; $(MAKE) mod ;\' >> Makefile
      echo '     cd  embedding  ; $(MAKE) mod ; cd .. ;\' >> Makefile
   fi
   if [ -n "$OOFMOD" ]; then
-  #  echo '     cd  oof  ; $(MAKE) mod' >> Makefile
      echo '     cd  oof  ; $(MAKE) mod ; cd .. ' >> Makefile
   fi
+#
+#
+  echo '#                                                    ' >> Makefile
+  echo '#   make all modules - recursive use of Makefile     ' >> Makefile
+  echo '#                                                    ' >> Makefile
+  echo '                                                     ' >> Makefile
+  echo 'ALL_F90MODS:  ;\'          >> Makefile
+  echo '        $(MAKE) mod'       >> Makefile
 fi
 echo "       " >> Makefile
 #
@@ -1237,6 +1243,9 @@ while [ -n "$1" ]; do
          ;;
       -cap)
          CAPMOD=1
+#      ... now in Fotran 90 !
+         OOFMOD=1
+	 MODULES=1
          ;;
       -oof)
          OOFMOD=1
