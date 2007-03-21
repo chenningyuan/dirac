@@ -25,20 +25,30 @@ double precision,  pointer :: PW(:) ! points to the big WORK array
 
 SUBROUTINE Stick_into_array(WORK,LLWORK)
 #include "priunit.h"
- integer, intent(in) :: LLWORK
+! integer, intent(in) :: LLWORK
+ integer*4, intent(in) :: LLWORK
  double precision, intent(in),  target :: WORK(LLWORK)
  CALL QENTER('Stick_into_array')
  if (associated(PW)) then
    write(LUPRI,*) 'Stick_into_array: PW is already associated - Exit !'
    CALL QUIT('Stick_into_array: PW is already associated !')
+ else
+   write(LUPRI,*) 'Stick_into_array: PW is not associated'
  endif
+
  PW => WORK ! PW points now to the big WORK array ... 
+ LWORK = LLWORK ! actualize module variable
+
+ write(LUPRI,*) 'LLWORK=',LLWORK
  if (size(PW) /= LLWORK) then
     write(LUPRI,*) 'Stick_into_array:  size(PW)=',size(PW),' while LWORK=',LWORK
     write(LUPRI,*) 'somme error in array sticking !'
     CALL QUIT('Stick_into_array: error in length !')
  endif
- LWORK = LLWORK ! story into module variable
+
+ CALL MEMCHK('Stick_into_array',PW,1)
+
+ write(LUPRI,*) 'Stick_into_array: PW sticked into WORK, memmory checked !'
  CALL QEXIT('Stick_into_array')
 END SUBROUTINE Stick_into_array
 

@@ -9,10 +9,11 @@ use Memmory
 ! this is the primitive ...
 type QMatrix
 private
+ ! integer*4::  nrows=-1,ncols=-1,nz=-1 ! 
   integer::  nrows=-1,ncols=-1,nz=-1 ! 
   integer::  IREP=-1
   integer::  kstart = -1 ! contains position on PW (WORK) array !
-  logical::  isalloc=.false.
+  logical  ::  isalloc=.false.
 end type QMatrix 
 
 !
@@ -21,19 +22,19 @@ end type QMatrix
 type QMtx
 private
   ! symm.distingiushed dimensions (1:NFSYM)
-  integer, dimension(2)  :: nrows=-1, ncols=-1
+  integer*4, dimension(2)  :: nrows=-1, ncols=-1
   ! total dimensions if matrix is not symmetry packed
-  integer                :: nrows_t=-1, ncols_t=-1
+  integer*4                :: nrows_t=-1, ncols_t=-1
   ! IREP and NZ
-  integer::  IREP=-1, nz=-1
+  integer*4 ::  IREP=-1, nz=-1
   !
-  integer::  kstart = -1 ! contains position on the PW (WORK) array !
+  integer*4 ::  kstart = -1 ! contains position on the PW (WORK) array !
   logical::  isalloc=.false.
   !
   logical ::  symm_packed=.true.
-  integer ::  offset_packed = -1
+  integer*4 ::  offset_packed = -1
   ! for FULL symmetry distinguished matrixes
-  integer :: offset_rows=-1, offset_cols=-1 
+  integer*4 :: offset_rows=-1, offset_cols=-1 
 end type QMtx
 
 interface assignment ( = )
@@ -75,11 +76,16 @@ END SUBROUTINE QMtxInfo
 SUBROUTINE MakeQMtxPacked(qmat, nr1, nc1, nr2, nc2, nz1, irep)
 #include "priunit.h"
 #include "dgroup.h"
+#include "iratdef.h"
 type(QMtx),intent(inout) :: qmat
-integer, intent(in) :: nr1, nc1, nz1
-integer, intent(in) ::  nr2, nc2 ! when NFSYM=2 !!!
+!integer (kind=4), intent(in) :: nr1, nc1, nz1, nr2, nc2, IREP
+!integer (kind=8), intent(in) :: nr1, nc1, nz1, nr2, nc2, IREP
+integer (kind=8/IRAT), intent(in) :: nr1, nc1, nz1, nr2, nc2, IREP
+
 integer :: isize
+
 logical, save :: was_called = .false.
+
 CALL QENTER('MakeQMtxPacked')
 
 !IF (NFSYM.eq.1.AND.(present(nr2).or.present(nc2))) then
@@ -114,9 +120,9 @@ endif
   if (.NOT.associated(PW)) call QUIT('PW pointer MUST be associated with the &
  DIRAC WORK array!')
 
-  if (qmat%kstart.ne.-1) then
-    call QUIT('The matrix is already allocated !')
-  endif
+!  if (qmat%kstart.ne.-1) then
+!    call QUIT('The matrix is already allocated !')
+!  endif
 
 if (.not.was_called) then
 #include "memint.h"
@@ -132,6 +138,8 @@ if (NFSYM.eq.2) isize = isize + ( qmat%nrows(2) * qmat%ncols(2) * qmat%nz )
 
   CALL print_mem_param()
 
+  CALL MEMCHK('MakeQMtxPacked',PW,1)
+
   CALL MEMGET('REAL',qmat%kstart,isize,PW,KFREE,LFREE) ! WORK(kstart)
   qmat%isalloc = .true.
   write(LUPRI,*) 'memmory is allocated ...KSTART=',qmat%kstart
@@ -145,12 +153,17 @@ CALL QEXIT('MakeQMtxPacked')
 END SUBROUTINE  MakeQMtxPacked
 
 !
-!  Constructor for a simple quaternion matrix.
+!  Constructor for a primitive quaternion matrix.
 !
 SUBROUTINE Allocate_QMATRIX(qmat,nrows,ncols,nz,IREP)
 #include "priunit.h"
+#include "iratdef.h"
 type(QMatrix),intent(inout) :: qmat
-integer, intent(in) :: nrows,ncols,nz,IREP
+
+!integer(kind=4), intent(in) :: nrows,ncols,nz,IREP
+!integer(kind=8), intent(in) :: nrows,ncols,nz,IREP
+integer(kind=8/IRAT), intent(in) :: nrows,ncols,nz,IREP
+
 integer :: isize
 logical, save :: was_called = .false.
 
@@ -160,8 +173,13 @@ logical, save :: was_called = .false.
   if (.NOT.associated(PW)) call QUIT('PW pointer MUST be associated with the &
  DIRAC WORK array!')
 
+  write(LUPRI,*) ' IRAT=',IRAT
+
   if (qmat%kstart.ne.-1) then
-   call QUIT('The matrix is already allocated !')
+!   write(LUPRI,*) 'entering nrows,nocols,nz,IREP=',nrows,ncols,nz,IREP
+!   write(LUPRI,*) 'qmat nrows,nocols,nz,IREP=',qmat%nrows,qmat%ncols,qmat%nz,qmat%IREP
+!   write(LUPRI,*) 'qmat%kstart=',qmat%kstart
+!  call QUIT('The matrix is already allocated !')
   endif
 
 ! Check dimensions of the quaternion matrix
@@ -194,9 +212,12 @@ else
 write(LUPRI,*) 'not 1.calling!'
 endif
 
-    CALL print_mem_param()
+  CALL print_mem_param()
+
+  CALL MEMCHK('Allocate_QMATRIX',PW,1)
 
   CALL MEMGET('REAL',qmat%kstart,isize,PW,KFREE,LFREE) ! WORK(kstart)
+
   qmat%isalloc = .true.
   write(LUPRI,*) 'memmory is allocated ...KSTART=',qmat%kstart
      CALL print_mem_param()

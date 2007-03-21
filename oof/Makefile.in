@@ -22,11 +22,13 @@ clean :
 mod : $(F90_MODS) ;\
 ln -sf $(PWD)/*.mod ../modules/. 
 
+FLAGS=$(DEPEND_FLAGS) $(MODS) $(OPTFLAGS)
+
 memmory.mod: mem_mod.F90  ;\
-$(F77) $(DEPEND_FLAGS) $(MODS) -c mem_mod.F90  ;\
+$(F77) $(FLAGS) -c mem_mod.F90  ;\
 
 qmatrixes.mod:  memmory.mod qmtx_mod.F90 ;\
-$(F77) $(DEPEND_FLAGS) $(MODS) -c qmtx_mod.F90 ;\
+$(F77) $(FLAGS) -c qmtx_mod.F90 ;\
 
 
 dirac.x:

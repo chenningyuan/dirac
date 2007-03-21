@@ -11,13 +11,16 @@
 #include "priunit.h"
 
  double precision, intent(inout) :: work(llwork) ! for testing...
+ integer*4, intent(in) :: llwork
+! integer, intent(in) :: llwork
  type(QMatrix) :: pmat,qmat,rmat  ! derived data type from the "QMATRIXES" module
 call qenter('TEST_OOF')
 
   write(lupri,*)
   write(lupri,*) 'in test_oof routine'
+  write(lupri,*)
 
-   call Stick_into_array(work,llwork) ! take in WORK(LWORK) array ...
+   call Stick_into_array(work,llwork)  ! take in WORK(LWORK) array ...
 
    call Allocate_QMATRIX(qmat,3,3,1,0) ! allocate quaternion matrix
    call Allocate_QMATRIX(pmat,3,3,1,0) ! allocate quaternion matrix
@@ -54,10 +57,12 @@ SUBROUTINE HANDLE_MATRIXES(VMAT1,TMAT1,WORK,LLWORK)
 !
   use Memmory
   use QMatrixes
+#include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+ integer*4, intent(in) :: llwork
  double precision, intent(inout) :: work(llwork) 
  double precision, intent(in) ::  vmat1(*),tmat1(*)
  type(QMtx) :: tmat
@@ -66,10 +71,12 @@ call qenter('HANDLE_MATRIXES')
 ! make new allocation for VMAT
     
    call UnStickArray ! release the previous work array
+
    call Stick_into_array(work,llwork) ! plug into entering WORK(LWORK) array
 
-    call MakeQMtxPacked(tmat,NFBAS(1,0),NORB(1),NFBAS(2,0),NORB(2),NZ,0)
-    call QMtxInfo(tmat)
+   call MakeQMtxPacked(tmat,NFBAS(1,0),NORB(1),NFBAS(2,0),NORB(2),NZ,0) 
+
+   call QMtxInfo(tmat)
 
 call qexit('HANDLE_MATRIXES')
 END SUBROUTINE HANDLE_MATRIXES
