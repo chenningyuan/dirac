@@ -195,3 +195,32 @@ C=======================================================================
 
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_VORTICITY */
+      SUBROUTINE GET_VORTICITY(CURRENT_DERVS,
+     &                         DENSITY,
+     &                         VORTICITY)
+C=======================================================================
+C     calculate vorticity
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: march 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+      DIMENSION CURRENT_DERVS(3,3),
+     &          VORTICITY(3)
+
+      CALL GET_CURRENT_ROT(CURRENT_DERVS,
+     &                     VORTICITY(3))
+      
+      DO IXYZ = 1,3
+        VORTICITY(IXYZ) = VORTICITY(IXYZ)/DENSITY
+      ENDDO
+
+      RETURN
+      END
