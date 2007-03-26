@@ -117,10 +117,10 @@ C=======================================================================
       DENSITY_C  = D0
 
       IF(.NOT. IH_B .EQ. 1) THEN
-        CALL GET_CURRENT(2,
-     &                   SPIN_DENSITY_B,
-     &                   DUMMY,
-     &                   IREP_B,GAO,DUMMY,DTRMAT(1,1,1,1),BUF)
+!       CALL GET_CURRENT(2,
+!    &                   SPIN_DENSITY_B,
+!    &                   DUMMY,
+!    &                   IREP_B,GAO,DUMMY,DTRMAT(1,1,1,1),BUF)
 
         SPIN_DENSITY_NORM_B = DSQRT(DDOT(3,
      &                                   SPIN_DENSITY_B,1,
@@ -133,10 +133,10 @@ C=======================================================================
       ENDIF
 
       IF(.NOT. IH_C .EQ. 1) THEN
-        CALL GET_CURRENT(2,
-     &                   SPIN_DENSITY_C,
-     &                   DUMMY,
-     &                   IREP_C,GAO,DUMMY,DTRMAT(1,1,1,2),BUF)
+!       CALL GET_CURRENT(2,
+!    &                   SPIN_DENSITY_C,
+!    &                   DUMMY,
+!    &                   IREP_C,GAO,DUMMY,DTRMAT(1,1,1,2),BUF)
 
         SPIN_DENSITY_NORM_C = DSQRT(DDOT(3,
      &                                   SPIN_DENSITY_C,1,
@@ -149,10 +149,10 @@ C=======================================================================
       ENDIF
 
       IF(.NOT. IH_BC .EQ. 1) THEN
-        CALL GET_CURRENT(2,
-     &                   SPIN_DENSITY_BC,
-     &                   DUMMY,
-     &                   IREP_BC,GAO,DUMMY,DTRMAT(1,1,1,3),BUF)
+!       CALL GET_CURRENT(2,
+!    &                   SPIN_DENSITY_BC,
+!    &                   DUMMY,
+!    &                   IREP_BC,GAO,DUMMY,DTRMAT(1,1,1,3),BUF)
 
         SPIN_DENSITY_NORM_BC = DSQRT(DDOT(3,
      &                                    SPIN_DENSITY_BC,1,
@@ -173,12 +173,12 @@ C=======================================================================
           IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
           IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP(IBC)-1)
 
-          CALL CDFT_EXC(VXC_S,F,IU,IV,
-     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-          IF(MC .EQ. 2) THEN
-            CALL CDFT_EXC(VXC_S,G,IX,IY,
-     &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-          ENDIF
+!         CALL CDFT_EXC(VXC_S,F,IU,IV,
+!    &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+!         IF(MC .EQ. 2) THEN
+!           CALL CDFT_EXC(VXC_S,G,IX,IY,
+!    &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+!         ENDIF
         ENDDO
       ENDIF
 
@@ -190,12 +190,12 @@ C=======================================================================
           IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
           IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP(IBC)-1)
 
-          CALL CDFT_EXC(VXC_S,F,IU,IV,
-     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-          IF(MC .EQ. 2) THEN
-            CALL CDFT_EXC(VXC_S,G,IX,IY,
-     &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-          ENDIF
+!         CALL CDFT_EXC(VXC_S,F,IU,IV,
+!    &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+!         IF(MC .EQ. 2) THEN
+!           CALL CDFT_EXC(VXC_S,G,IX,IY,
+!    &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+!         ENDIF
         ENDDO
       ENDIF
 
@@ -218,12 +218,12 @@ C=======================================================================
           IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
           IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP(IBC)-1)
 
-          CALL CDFT_EXC(VXC_S,F,IU,IV,
-     &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-          IF(MC .EQ. 2) THEN
-            CALL CDFT_EXC(VXC_S,G,IX,IY,
-     &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-          ENDIF
+!         CALL CDFT_EXC(VXC_S,F,IU,IV,
+!    &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+!         IF(MC .EQ. 2) THEN
+!           CALL CDFT_EXC(VXC_S,G,IX,IY,
+!    &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
+!         ENDIF
         ENDDO
       ENDIF
 

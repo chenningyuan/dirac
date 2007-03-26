@@ -53,15 +53,15 @@ C     /* GET_CURRENT */
 C=======================================================================
 C
 C     CURRENT_DERVS(1,1) = derivative of x-component wrt x
-C     CURRENT_DERVS(1,2) = derivative of x-component wrt y
-C     CURRENT_DERVS(1,3) = derivative of x-component wrt z
+C     CURRENT_DERVS(2,1) = derivative of x-component wrt y
+C     CURRENT_DERVS(3,1) = derivative of x-component wrt z
 C
-C     CURRENT_DERVS(2,1) = derivative of y-component wrt x
+C     CURRENT_DERVS(1,2) = derivative of y-component wrt x
 C     CURRENT_DERVS(2,2) = derivative of y-component wrt y
-C     CURRENT_DERVS(2,3) = derivative of y-component wrt z
+C     CURRENT_DERVS(3,2) = derivative of y-component wrt z
 C
-C     CURRENT_DERVS(3,1) = derivative of z-component wrt x
-C     CURRENT_DERVS(3,2) = derivative of z-component wrt y
+C     CURRENT_DERVS(1,3) = derivative of z-component wrt x
+C     CURRENT_DERVS(2,3) = derivative of z-component wrt y
 C     CURRENT_DERVS(3,3) = derivative of z-component wrt z
 C
 C-----------------------------------------------------------------------
@@ -129,18 +129,16 @@ C=======================================================================
         ENDIF
         IF(DO_DERVS) THEN
           DO JXYZ = 1,3
-            CALL GET_CURRENT_SUB(CURRENT_DERVS(IXYZ,JXYZ),
-     &                           F,IU,IV,
+            CALL GET_CURRENT_SUB(CURRENT_DERVS(JXYZ,IXYZ),
+     &                           D2*F,IU,IV,
      &                           GAO,
      &                           GAO1(1+JOFF*(JXYZ-1)),
      &                           INTERMEDIATE,DMAT(1+IOFF),BUF)
-            CALL GET_CURRENT_SUB(CURRENT_DERVS(IXYZ,JXYZ),
-     &                           G,IX,IY,
+            CALL GET_CURRENT_SUB(CURRENT_DERVS(JXYZ,IXYZ),
+     &                           D2*G,IX,IY,
      &                           GAO,
      &                           GAO1(1+JOFF*(JXYZ-1)),
      &                           INTERMEDIATE,DMAT(1+IOFF),BUF)
-            CURRENT_DERVS(IXYZ,JXYZ) =
-     &               CURRENT_DERVS(IXYZ,JXYZ) + CURRENT_DERVS(IXYZ,JXYZ)
           ENDDO
         ENDIF
       ENDDO
@@ -191,9 +189,9 @@ C=======================================================================
       DIMENSION CURRENT_DERVS(3,3),
      &          CURRENT_ROT(3)
 
-      CURRENT_ROT(1) = -CURRENT_DERVS(2,3) + CURRENT_DERVS(3,2)
-      CURRENT_ROT(2) = -CURRENT_DERVS(3,1) + CURRENT_DERVS(1,3)
-      CURRENT_ROT(3) = -CURRENT_DERVS(1,2) + CURRENT_DERVS(2,1)
+      CURRENT_ROT(1) = CURRENT_DERVS(2,3) - CURRENT_DERVS(3,2)
+      CURRENT_ROT(2) = CURRENT_DERVS(3,1) - CURRENT_DERVS(1,3)
+      CURRENT_ROT(3) = CURRENT_DERVS(1,2) - CURRENT_DERVS(2,1)
 
       RETURN
       END
