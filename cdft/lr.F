@@ -48,7 +48,7 @@ C     /* SDFT_LR */
      &                   DOGGA,
      &                   BUF)
 C=======================================================================
-C     contribution of current or spin density to the sigma vector
+C     contribution of spin density to the sigma vector
 C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                              last revision: march 2007
@@ -162,15 +162,15 @@ C=======================================================================
 
             TEST_MAX = MAX(
      &                     SPIN_DENSITY_NORM,
-     &                     SPIN_DENSITY_DERVS(1,1),
-     &                     SPIN_DENSITY_DERVS(1,2),
-     &                     SPIN_DENSITY_DERVS(1,3),
-     &                     SPIN_DENSITY_DERVS(2,1),
-     &                     SPIN_DENSITY_DERVS(2,2),
-     &                     SPIN_DENSITY_DERVS(2,3),
-     &                     SPIN_DENSITY_DERVS(3,1),
-     &                     SPIN_DENSITY_DERVS(3,2),
-     &                     SPIN_DENSITY_DERVS(3,3)
+     &                     DABS(SPIN_DENSITY_DERVS(1,1)),
+     &                     DABS(SPIN_DENSITY_DERVS(1,2)),
+     &                     DABS(SPIN_DENSITY_DERVS(1,3)),
+     &                     DABS(SPIN_DENSITY_DERVS(2,1)),
+     &                     DABS(SPIN_DENSITY_DERVS(2,2)),
+     &                     DABS(SPIN_DENSITY_DERVS(2,3)),
+     &                     DABS(SPIN_DENSITY_DERVS(3,1)),
+     &                     DABS(SPIN_DENSITY_DERVS(3,2)),
+     &                     DABS(SPIN_DENSITY_DERVS(3,3))
      &                    )
 
             IF(TEST_MAX .GT. DFTHRL) THEN
@@ -205,7 +205,7 @@ C     /* SDFT_LR_LSDA_COLLINEAR */
      &                                  IXYZ,
      &                                  SPIN_DENSITY)
 C=======================================================================
-C     contribution of current or spin density to the sigma vector
+C     contribution of spin density to the sigma vector
 C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                              last revision: march 2007
@@ -271,7 +271,7 @@ C     /* SDFT_LR_GGA_COLLINEAR */
      &                                 DENSITY_GRADIENT,
      &                                 DENSITY_GRADIENT_NORM)
 C=======================================================================
-C     contribution of current or spin density to the sigma vector
+C     contribution of spin density to the sigma vector
 C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                              last revision: march 2007
