@@ -79,11 +79,11 @@ C***********************************************************************
       PARAMETER(D0=0.0D0)
 #include "maxorb.h"
 #include "aovec.h"
+#include "infpar.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
-#include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
@@ -349,8 +349,8 @@ C***********************************************************************
 #include "maxorb.h"
 #include "aovec.h"
       INCLUDE 'mpif.h'
-      INTEGER ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
 #include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
@@ -534,11 +534,11 @@ C***********************************************************************
 C
 #include "dcbtra.h"
 #include "dgroup.h"
+#include "infpar.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "infpar.h"
       LOGICAL TRIAN(2)
       DIMENSION NSTR(2,0:2,4)
       DIMENSION LDIST(NSTR2T),LSORT(3,NFPCK12T,0:7)

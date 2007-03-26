@@ -57,10 +57,10 @@ C
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "infpar.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "infpar.h"
 #endif
 #include "nuclei.h"
 #include "dftcom.h"
@@ -334,8 +334,8 @@ C
 C
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -394,9 +394,18 @@ C
       DOGGA = DFTISGGA()
       DOGRHO = .FALSE.
       DOLRHO = .FALSE.
+      WRITE(lupri,*) 'DOGGA', DOGGA
+#if defined (VAR_MPI) 
+      DO NODE = 1,NODES
+        write(lupri,*) 'Sending DOGGA to node', DOGGA, NODE
+        CALL MPI_SEND(DOGGA,1,MPI_LOGICAL,NODE,11,
+     &                MPI_COMM_WORLD,IERR)
+      END DO             
+#endif
 C
       IF (DOGGA) THEN
          FROMVX = DFTPOT
+         WRITE(lupri,*) 'FROMVX,MYTID', FROMVX,MYTID
          DOGRHO = .TRUE.
          NDER = NDER + 1 
          IF (FROMVX) THEN
@@ -418,6 +427,7 @@ C
 
   100 CONTINUE
 
+      write(lupri,*) 'RYOGRID and MYTID',RYOGRID,mytid
       IF(RYOGRID) THEN
         READ(LUQUAD,*) NPOINT
       ELSE
@@ -449,7 +459,6 @@ C
            KWB = KW
            NTEST = 1
            DO NODE = 1,NODES
-C             write(lupri,*) 'Sending to node', NODE
              CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,ISTAT,IERR)
              NWHO = ISTAT(MPI_SOURCE)
@@ -472,7 +481,7 @@ C             write(lupri,*) 'Sending to node', NODE
            ENDDO
          ELSE
 #endif
-C     write(lupri,*) 'Sent, calling DFTDR1'
+      write(lupri,*) 'Sent, calling DFTDR1'
            CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
      &                 DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &                 DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
@@ -759,6 +768,8 @@ C       ==============================
 C
         IF (DOERG.OR.DOGRD.OR.DOLND) THEN
            CALL DFTPOT0(VX, WGHT, RHO, RHOGRD)
+           
+           WRITE(lupri,*) 'DOGGA2', DOGGA
            IF (DOGGA) THEN
              VX(FZ0) = VX(FZ0)/RHOGRD
            ENDIF
@@ -793,6 +804,7 @@ C
 #if defined (MOD_DNF)
 C aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then
+           WRITE(lupri,*) 'DOGGA3', DOGGA
                IF (DOGGA) THEN
                   DO I = 1,3
                      VT(I) = VX(FZ0)*RHG(I)
@@ -803,6 +815,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
            else  ! df_fitvxc
 #endif
 C conventional code...
+             WRITE(lupri,*) 'DOGGA4', DOGGA
              IF (DOGGA .AND. .NOT.FROMVX) THEN
                 DO I = 1,3
                    VT(I) = VX(FZ0)*RHG(I)
@@ -1419,11 +1432,11 @@ C***********************************************************************
 C
 #include "maxorb.h"
 #include "mxcent.h"
+#include "infpar.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "infpar.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1476,11 +1489,14 @@ C     ***********************
 C     ***** Slave send  *****
 C     ***********************
 C
+         write(lupri,*) 'sending to master',MYTID
          CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
+         write(lupri,*) 'sending ELCTRN',ELCTRN
          IF(DOERG) THEN
            CALL MPI_SEND(EDFTY,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                   MPI_COMM_WORLD,IERR)
+         write(lupri,*) 'sending EDFTY',EDFTY
          ENDIF
          CALL MPI_SEND(EXCMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,45,
      &                 MPI_COMM_WORLD,IERR)
@@ -1559,6 +1575,8 @@ C
       END IF
 C
       DOGGA = DFTISGGA()
+      CALL MPI_RECV(DOGGA,1,MPI_LOGICAL,MPARID,11,
+     &              MPI_COMM_WORLD,ISTAT,IERR)
       DOGRHO = .FALSE.
       DOLRHO = .FALSE.
 C
@@ -1591,6 +1609,8 @@ C
       CALL MEMGET('REAL',KY,NPOINT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KZ,NPOINT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KW,NPOINT,WORK,KFREE,LFREE)
+      WRITE(lupri,*) 'KX', KX,MYTID
+      
       CALL MPI_RECV(WORK(KX),NPOINT,MPI_DOUBLE_PRECISION,
      &               MPARID,32,MPI_COMM_WORLD,ISTAT,IERR)
       CALL MPI_RECV(WORK(KY),NPOINT,MPI_DOUBLE_PRECISION,
@@ -1908,6 +1928,9 @@ C     Receive some dftcom variables
       DFTPOT = LSEND(4)
       DFTORD = LSEND(5)
       DFTASC = LSEND(6)
+      DO I = 1, 6
+       write(lupri,*)'LSEND(',I,')=',LSEND(I)
+      END DO
 C
 
 #if defined (MOD_CDFT)

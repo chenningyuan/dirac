@@ -255,12 +255,14 @@ C
 C     and transfer screening information to twocom.h
 C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
       SCRTHR = SCREEN
+CSK      write(6,*)'master has been here',master
 C
 C-----------------------
 C     Start calculation.
 C-----------------------
 C
       CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
+CSK      write(6,*)'master has been here again',master
       CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
 C
@@ -642,9 +644,9 @@ C
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
+#include "infpar.h"
 #include "priunit.h"
 #include "maxorb.h"
-#include "infpar.h"
 C
       DIMENSION INDEX(MTOTTK), NSTAT(NODES), ISHELL(2)
 C
@@ -669,6 +671,7 @@ C
          CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
      &                 MPI_COMM_WORLD,IERR)
 #endif
+CSK         write(6,*)'send and recieve done',mytid
 C
          DO 200 J = 1,NTASK
             IPLACE = IPLACE + 1
@@ -737,7 +740,6 @@ C
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-C
 #endif
       PARAMETER (D1 = 1.0D0)
 C
@@ -786,6 +788,7 @@ C
          ICOUNT = ICOUNT + ITASK
 C
          NWHO = ISTAT(MPI_SOURCE)
+C         write(6,*)'NWHO is',NWHO,mytid
 C
          IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2) THEN
              CALL MPI_RECV(DNSKBF,LDINTSKP,MPI_DOUBLE_PRECISION,

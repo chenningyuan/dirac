@@ -613,10 +613,10 @@ C***********************************************************************
 #include "priunit.h"
 C
       INCLUDE 'mpif.h'
-      INTEGER ISTAT(MPI_STATUS_SIZE)
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
       LOGICAL NEWTASK
 C
-#include "infpar.h"
 C
       DIMENSION WORK(MWORK)
 C
@@ -639,8 +639,10 @@ C
 C
  100  CONTINUE
 C
+Csk      write(6,*) 'node will recieve itask',MYTID
       CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
      &              MPI_COMM_WORLD,ISTAT,IERR)
+Csk      write(6,*) 'node has recieved itask',MYTID,itask
 C
 C     The code below may be useful for some architectures but 
 C     fixes a MPI implementation problem and has as side effect
@@ -744,10 +746,10 @@ C***********************************************************************
 #include "priunit.h"
 C
       INCLUDE 'mpif.h'
-      INTEGER ISTAT(MPI_STATUS_SIZE)
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
       LOGICAL NEWTASK
 C
-#include "infpar.h"
 C
       DIMENSION WORK(MWORK)
 C

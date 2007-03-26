@@ -1430,8 +1430,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "bucket_sort.h"
       INCLUDE 'mpif.h'
-      INTEGER ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
       LOGICAL READY
 C
       IFREE = 0
@@ -1503,8 +1503,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "bucket_sort.h"
       INCLUDE 'mpif.h'
-      INTEGER ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
       LOGICAL NEWMAIL
       INTEGER IHBUF(4*NGBFSZ+4)
 C
@@ -1547,9 +1547,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "bucket_sort.h"
       INCLUDE 'mpif.h'
-      INTEGER ISTAT(MPI_STATUS_SIZE)
-      INTEGER ISTATS(MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
 #include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTATS(MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
       LOGICAL NEWMAIL
       INTEGER IEND
       INTEGER IBUFMPI(5)
