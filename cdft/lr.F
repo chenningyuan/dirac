@@ -80,8 +80,8 @@ C=======================================================================
      &          GAO1(*),
      &          DENSITY_GRADIENT(3),
      &          BUF(*),
-     &          SPIN_DENSITY(3),
-     &          SPIN_DENSITY_DERVS(3,3),
+     &          FO_SPIN_DENSITY(3),
+     &          FO_SPIN_DENSITY_DERVS(3,3),
      &          VXC(99) !dirty fix
 
 #include "ibtfun.h"
@@ -106,8 +106,8 @@ C=======================================================================
           IF(DOGGA) THEN
             CALL GET_CURRENT(.TRUE.,
      &                       .TRUE.,
-     &                       SPIN_DENSITY,
-     &                       SPIN_DENSITY_DERVS,
+     &                       FO_SPIN_DENSITY,
+     &                       FO_SPIN_DENSITY_DERVS,
      &                       F,
      &                       G,
      &                       IU,
@@ -123,7 +123,7 @@ C=======================================================================
           ELSE !LDA
             CALL GET_CURRENT(.TRUE.,
      &                       .FALSE.,
-     &                       SPIN_DENSITY,
+     &                       FO_SPIN_DENSITY,
      &                       UNUSED,
      &                       F,
      &                       G,
@@ -139,12 +139,12 @@ C=======================================================================
      &                       BUF)
           ENDIF
 
-          SPIN_DENSITY_NORM = DSQRT(DDOT(3,SPIN_DENSITY,1,
-     &                                     SPIN_DENSITY,1))
+          FO_SPIN_DENSITY_NORM = DSQRT(DDOT(3,FO_SPIN_DENSITY,1,
+     &                                        FO_SPIN_DENSITY,1))
 
           IF(.NOT. DOGGA) THEN !LDA
 
-            IF(SPIN_DENSITY_NORM .GT. DFTHRL) THEN
+            IF(FO_SPIN_DENSITY_NORM .GT. DFTHRL) THEN
 
               CALL SDFTPOT1(VXC,WEIGHT,DENSITY,D0)
 
@@ -154,23 +154,23 @@ C=======================================================================
      &                                      ISYMOP(IMAT),
      &                                      GAO,
      &                                      IXYZ,
-     &                                      SPIN_DENSITY(IXYZ))
+     &                                      FO_SPIN_DENSITY(IXYZ))
               ENDDO
             ENDIF
 
           ELSE !GGA
 
             TEST_MAX = MAX(
-     &                          SPIN_DENSITY_NORM,
-     &                     DABS(SPIN_DENSITY_DERVS(1,1)),
-     &                     DABS(SPIN_DENSITY_DERVS(1,2)),
-     &                     DABS(SPIN_DENSITY_DERVS(1,3)),
-     &                     DABS(SPIN_DENSITY_DERVS(2,1)),
-     &                     DABS(SPIN_DENSITY_DERVS(2,2)),
-     &                     DABS(SPIN_DENSITY_DERVS(2,3)),
-     &                     DABS(SPIN_DENSITY_DERVS(3,1)),
-     &                     DABS(SPIN_DENSITY_DERVS(3,2)),
-     &                     DABS(SPIN_DENSITY_DERVS(3,3))
+     &                          FO_SPIN_DENSITY_NORM,
+     &                     DABS(FO_SPIN_DENSITY_DERVS(1,1)),
+     &                     DABS(FO_SPIN_DENSITY_DERVS(1,2)),
+     &                     DABS(FO_SPIN_DENSITY_DERVS(1,3)),
+     &                     DABS(FO_SPIN_DENSITY_DERVS(2,1)),
+     &                     DABS(FO_SPIN_DENSITY_DERVS(2,2)),
+     &                     DABS(FO_SPIN_DENSITY_DERVS(2,3)),
+     &                     DABS(FO_SPIN_DENSITY_DERVS(3,1)),
+     &                     DABS(FO_SPIN_DENSITY_DERVS(3,2)),
+     &                     DABS(FO_SPIN_DENSITY_DERVS(3,3))
      &                    )
 
             IF(TEST_MAX .GT. DFTHRL) THEN
@@ -178,16 +178,16 @@ C=======================================================================
               CALL SDFTPOT1(VXC,WEIGHT,DENSITY,DENSITY_GRADIENT_NORM)
 
               DO IXYZ = ISTART,3
-                CALL SDFT_LR_GGA_COLLINEAR(VXC,
-     &                                     EXCMAT(1+JOFF),
-     &                                     ISYMOP(IMAT),
-     &                                     GAO,
-     &                                     GAO1,
-     &                                     IXYZ,
-     &                                     SPIN_DENSITY(IXYZ),
-     &                                     SPIN_DENSITY_DERVS(1,IXYZ),
-     &                                     DENSITY_GRADIENT,
-     &                                     DENSITY_GRADIENT_NORM)
+               CALL SDFT_LR_GGA_COLLINEAR(VXC,
+     &                                    EXCMAT(1+JOFF),
+     &                                    ISYMOP(IMAT),
+     &                                    GAO,
+     &                                    GAO1,
+     &                                    IXYZ,
+     &                                    FO_SPIN_DENSITY(IXYZ),
+     &                                    FO_SPIN_DENSITY_DERVS(1,IXYZ),
+     &                                    DENSITY_GRADIENT,
+     &                                    DENSITY_GRADIENT_NORM)
               ENDDO
             ENDIF
           ENDIF
@@ -203,7 +203,7 @@ C     /* SDFT_LR_LSDA_COLLINEAR */
      &                                  ISYMOP,
      &                                  GAO,
      &                                  IXYZ,
-     &                                  SPIN_DENSITY)
+     &                                  FO_SPIN_DENSITY)
 C=======================================================================
 C     contribution of spin density to the sigma vector
 C-----------------------------------------------------------------------
@@ -247,7 +247,7 @@ C=======================================================================
       IQ     = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
       IOFF   = NBAST*NBAST*(IQ-1)
 
-      VXC_S = VXC(FRR)*SPIN_DENSITY
+      VXC_S = VXC(FRR)*FO_SPIN_DENSITY
 
       CALL CDFT_EXC(VXC_S,F,IU,IV,
      &              IREPOP,EXCMAT(1+IOFF),GAO)
@@ -266,8 +266,8 @@ C     /* SDFT_LR_GGA_COLLINEAR */
      &                                 GAO,
      &                                 GAO1,
      &                                 IXYZ,
-     &                                 SPIN_DENSITY,
-     &                                 SPIN_DENSITY_DERVS,
+     &                                 FO_SPIN_DENSITY,
+     &                                 FO_SPIN_DENSITY_DERVS,
      &                                 DENSITY_GRADIENT,
      &                                 DENSITY_GRADIENT_NORM)
 C=======================================================================
@@ -298,7 +298,7 @@ C=======================================================================
      &          EXCMAT(*),
      &          GAO(*),
      &          GAO1(*),
-     &          SPIN_DENSITY_DERVS(3),
+     &          FO_SPIN_DENSITY_DERVS(3),
      &          DENSITY_GRADIENT(3),
      &          VXC_V(3)
 
@@ -317,15 +317,15 @@ C=======================================================================
       IQ     = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
       IOFF   = NBAST*NBAST*(IQ-1)
 
-      PART1 = DDOT(3,SPIN_DENSITY_DERVS,1,DENSITY_GRADIENT,1)
+      PART1 = DDOT(3,FO_SPIN_DENSITY_DERVS,1,DENSITY_GRADIENT,1)
       PART1 = PART1/DENSITY_GRADIENT_NORM
 
       PART2 = VXC(FZZ) - VXC(FZ0)/DENSITY_GRADIENT_NORM
-      PART2 = PART1*PART2 + VXC(FRZ)*SPIN_DENSITY
+      PART2 = PART1*PART2 + VXC(FRZ)*FO_SPIN_DENSITY
 
-      VXC_S = VXC(FRR)*SPIN_DENSITY + VXC(FRZ)*PART1
+      VXC_S = VXC(FRR)*FO_SPIN_DENSITY + VXC(FRZ)*PART1
       DO JXYZ = 1,3
-        VXC_V(JXYZ) = (VXC(FZ0)*SPIN_DENSITY_DERVS(JXYZ)
+        VXC_V(JXYZ) = (VXC(FZ0)*FO_SPIN_DENSITY_DERVS(JXYZ)
      &             + PART2*DENSITY_GRADIENT(JXYZ))/DENSITY_GRADIENT_NORM
       ENDDO
 
