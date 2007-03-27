@@ -217,7 +217,7 @@ C=======================================================================
 
       CALL GET_CURRENT_ROT(CURRENT_DERVS,
      &                     VORTICITY(3))
-      
+
       DO IXYZ = 1,3
         VORTICITY(IXYZ) = VORTICITY(IXYZ)/DENSITY
       ENDDO

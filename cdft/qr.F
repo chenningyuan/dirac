@@ -36,6 +36,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* SDFT_QR */
       SUBROUTINE SDFT_QR(DTRMAT,
      &                   EXCMAT,
+!    &                   NXCMAT,
      &                   ISYMOP,
      &                   IHRMOP,
      &                   GAO,
@@ -43,13 +44,15 @@ C     /* SDFT_QR */
      &                   DENSITY,
      &                   DENSITY_GRADIENT_NORM,
      &                   DENSITY_GRADIENT,
-     &                   WEIGHT,DOGGA,BUF)
+     &                   WEIGHT,
+     &                   DOGGA,
+     &                   BUF)
 C=======================================================================
-C     contribution of magnetization to the sigma vector of QR
+C     contribution of spin density to the sigma vector
 C     adaptation of Johan's dft_quadres, so thanks for his efforts!
 C-----------------------------------------------------------------------
 C                                                           radovan bast
-C                                           last revision: february 2007
+C                                              last revision: march 2007
 C=======================================================================
 
 #include "implicit.h"
@@ -68,7 +71,8 @@ C=======================================================================
 #include "cdft.h"
 #include "../dft/functionals.h"
 
-      LOGICAL   DOGGA, LBIT
+      LOGICAL   DOGGA,
+     &          LBIT
       DIMENSION DTRMAT(NBAST,NBAST,NZ,3),
      &          EXCMAT(NBAST,NBAST,NZ,3),
      &          ISYMOP(3),
@@ -77,157 +81,122 @@ C=======================================================================
      &          GAO1(*),
      &          DENSITY_GRADIENT(3),
      &          BUF(*),
-     &          SPIN_DENSITY_B(3),
-     &          SPIN_DENSITY_C(3),
-     &          SPIN_DENSITY_BC(3),
-     &          VXC(99), !dirty fix
-     &          VXC_S(3,3),
-     &          VXC_V(3)
+     &          FO_DENSITY(3),
+     &          FO_SPIN_DENSITY(3,3),
+     &          FO_SPIN_DENSITY_NORM(3),
+     &          VXC(99) !dirty fix
 
 #include "ibtfun.h"
 
-      F  = D1
-      G  = D1
-      IF(LBIT(LBIT_CDFT,4)) G = -D1 !spin density operator is \beta*\Sigma instead of \Sigma
-      IU = 1
-      IV = 1
-      IX = 2
-      IY = 2
+      F = D1
+      G = D1
+      IF(LBIT(LBIT_CDFT,4)) G = -D1 !operator is \beta\sigma instead of \sigma
+      IU         = 1
+      IV         = 1
+      IX         = 2
+      IY         = 2
       ITRANSFORM = 2
-
-      IH_B  = IHRMOP(1)
-      IH_C  = IHRMOP(2)
-      IH_BC = IHRMOP(3)
-
-      ICHECK = IH_B + IH_C + IH_BC
-
-      IF(ICHECK .EQ. 3) GOTO 999
-
-      IF(DOGGA) CALL QUIT('SDFT QR implemented only for AL(S)DA')
-
-      IREP_B  = ISYMOP(1) - 1
-      IREP_C  = ISYMOP(2) - 1
-      IREP_BC = ISYMOP(3) - 1
-
-      SPIN_DENSITY_NORM_B  = D0
-      SPIN_DENSITY_NORM_C  = D0
-      SPIN_DENSITY_NORM_BC = D0
-
-      DENSITY_B  = D0
-      DENSITY_C  = D0
-
-      IF(.NOT. IH_B .EQ. 1) THEN
-!       CALL GET_CURRENT(2,
-!    &                   SPIN_DENSITY_B,
-!    &                   DUMMY,
-!    &                   IREP_B,GAO,DUMMY,DTRMAT(1,1,1,1),BUF)
-
-        SPIN_DENSITY_NORM_B = DSQRT(DDOT(3,
-     &                                   SPIN_DENSITY_B,1,
-     &                                   SPIN_DENSITY_B,1
-     &                                  ))
-      ENDIF
-
-      IF(.NOT. IH_B .EQ. -1) THEN
-        CALL GETRHO(DENSITY_B,IREP_B,GAO,DTRMAT(1,1,1,1),BUF)
-      ENDIF
-
-      IF(.NOT. IH_C .EQ. 1) THEN
-!       CALL GET_CURRENT(2,
-!    &                   SPIN_DENSITY_C,
-!    &                   DUMMY,
-!    &                   IREP_C,GAO,DUMMY,DTRMAT(1,1,1,2),BUF)
-
-        SPIN_DENSITY_NORM_C = DSQRT(DDOT(3,
-     &                                   SPIN_DENSITY_C,1,
-     &                                   SPIN_DENSITY_C,1
-     &                                  ))
-      ENDIF
-
-      IF(.NOT. IH_C .EQ. -1) THEN
-        CALL GETRHO(DENSITY_C,IREP_C,GAO,DTRMAT(1,1,1,2),BUF)
-      ENDIF
-
-      IF(.NOT. IH_BC .EQ. 1) THEN
-!       CALL GET_CURRENT(2,
-!    &                   SPIN_DENSITY_BC,
-!    &                   DUMMY,
-!    &                   IREP_BC,GAO,DUMMY,DTRMAT(1,1,1,3),BUF)
-
-        SPIN_DENSITY_NORM_BC = DSQRT(DDOT(3,
-     &                                    SPIN_DENSITY_BC,1,
-     &                                    SPIN_DENSITY_BC,1
-     &                                   ))
-      ENDIF
-
-      CALL SDFTPOT2(VXC,WEIGHT,DENSITY,D0)
 
       ISTART = 1
       IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !collinear approximation
 
-      IF(SPIN_DENSITY_NORM_B .GT. DFTHRL) THEN
-        IBC = 2
-        DO IXYZ = ISTART,3
-          VXC_S = VXC(FRR)*SPIN_DENSITY_B(IXYZ)
+      ICHECK = IHRMOP(1) + IHRMOP(2) + IHRMOP(3)
+      IF(ICHECK .EQ. 3) GOTO 999
 
-          IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
-          IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP(IBC)-1)
+      IF(DOGGA) CALL QUIT('SDFT QR implemented only for AL(S)DA')
 
-!         CALL CDFT_EXC(VXC_S,F,IU,IV,
-!    &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-!         IF(MC .EQ. 2) THEN
-!           CALL CDFT_EXC(VXC_S,G,IX,IY,
-!    &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-!         ENDIF
-        ENDDO
-      ENDIF
+      CALL DZERO(FO_DENSITY,3)
+      CALL DZERO(FO_SPIN_DENSITY,9)
+      CALL DZERO(FO_SPIN_DENSITY_NORM,3)
 
-      IF(SPIN_DENSITY_NORM_C .GT. DFTHRL) THEN
-        IBC = 1
-        DO IXYZ = ISTART,3
-          VXC_S = VXC(FRR)*SPIN_DENSITY_C(IXYZ)
+      DO IBC = 1,3
+        IF(.NOT. IHRMOP(IBC) .EQ. 1) THEN
+            CALL GET_CURRENT(.TRUE.,
+     &                       .FALSE.,
+     &                       FO_SPIN_DENSITY(1,IBC),
+     &                       UNUSED,
+     &                       F,
+     &                       G,
+     &                       IU,
+     &                       IV,
+     &                       IX,
+     &                       IY,
+     &                       ITRANSFORM,
+     &                       ISYMOP(IBC)-1,
+     &                       GAO,
+     &                       UNUSED,
+     &                       DTRMAT(1,1,1,IBC),
+     &                       BUF)
 
-          IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
-          IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP(IBC)-1)
+          FO_SPIN_DENSITY_NORM(IBC)
+     &                         = DSQRT(DDOT(3,FO_SPIN_DENSITY(1,IBC),1,
+     &                                        FO_SPIN_DENSITY(1,IBC),1))
+        ENDIF
+        IF(.NOT. IHRMOP(IBC) .EQ. -1) THEN
+          CALL GETRHO(FO_DENSITY(IBC),
+     &                ISYMOP(IBC)-1,
+     &                GAO,
+     &                DTRMAT(1,1,1,IBC),
+     &                BUF)
+        ENDIF
+      ENDDO
 
-!         CALL CDFT_EXC(VXC_S,F,IU,IV,
-!    &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-!         IF(MC .EQ. 2) THEN
-!           CALL CDFT_EXC(VXC_S,G,IX,IY,
-!    &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-!         ENDIF
-        ENDDO
-      ENDIF
+      CALL SDFTPOT2(VXC,WEIGHT,DENSITY,D0)
+
+      DO IBC = 1,3
+        IF(FO_SPIN_DENSITY_NORM(IBC) .GT. DFTHRL) THEN
+
+          DO IXYZ = ISTART,3
+            CALL SDFT_LR_LSDA_COLLINEAR(VXC,
+     &                                  EXCMAT(1,1,1,IBC),
+     &                                  ISYMOP(IBC)-1,
+     &                                  GAO,
+     &                                  IXYZ,
+     &                                  FO_SPIN_DENSITY(IXYZ,IBC))
+          ENDDO
+        ENDIF
+      ENDDO
 
       TEST_MAX = MAX(
-     &               SPIN_DENSITY_NORM_B,
-     &               SPIN_DENSITY_NORM_C,
-     &               SPIN_DENSITY_NORM_BC
+     &               FO_SPIN_DENSITY_NORM(1),
+     &               FO_SPIN_DENSITY_NORM(2),
+     &               FO_SPIN_DENSITY_NORM(3)
      &              )
 
       IF(TEST_MAX .GT. DFTHRL) THEN
+
+        IB  = 1
+        IC  = 2
         IBC = 3
+
+        VXC_FRR  = VXC(FRR)
+        VXC_FRRR = VXC(FRRR)
+
+        BC_NORM = DSQRT(DDOT(3,FO_SPIN_DENSITY(1,IB),1,
+     &                         FO_SPIN_DENSITY(1,IC),1))
+
+        CALL DOEXC1(VXC_FRRR*BC_NORM,
+     &              ISYMOP(IBC)-1,
+     &              EXCMAT(1,1,1,IBC),
+     &              GAO)
+
         DO IXYZ = ISTART,3
 
-          PART1 = SPIN_DENSITY_BC(IXYZ)
-          PART2 = DENSITY_B*SPIN_DENSITY_C(IXYZ)
-          PART3 = DENSITY_C*SPIN_DENSITY_B(IXYZ)
+          PART1 = FO_SPIN_DENSITY(IXYZ,IBC)
+          PART2 = FO_DENSITY(IB)*FO_SPIN_DENSITY(IXYZ,IC)
+          PART3 = FO_DENSITY(IC)*FO_SPIN_DENSITY(IXYZ,IB)
 
-          VXC_S = VXC(FRR)*PART1 + VXC(FRRR)*(PART2 + PART3)
+!         cheating to keep the lazy structure
+          VXC(FRR) = VXC_FRR*PART1 + VXC_FRRR*(PART2 + PART3)
 
-          IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
-          IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP(IBC)-1)
-
-!         CALL CDFT_EXC(VXC_S,F,IU,IV,
-!    &                  GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-!         IF(MC .EQ. 2) THEN
-!           CALL CDFT_EXC(VXC_S,G,IX,IY,
-!    &                    GAO,IREPOP,EXCMAT(1,1,IQ,IBC),BUF)
-!         ENDIF
+          CALL SDFT_LR_LSDA_COLLINEAR(VXC,
+     &                                EXCMAT(1,1,1,IBC),
+     &                                ISYMOP(IBC)-1,
+     &                                GAO,
+     &                                IXYZ,
+     &                                D1)
         ENDDO
       ENDIF
-
-!     rrr ub cdot uc rho_pq missing ...
 
  999  CONTINUE
 

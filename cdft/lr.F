@@ -96,9 +96,9 @@ C=======================================================================
       ITRANSFORM = 2
 
       ISTART = 1
-      IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !COLLINEAR APPROXIMATION
+      IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !collinear approximation
 
-      DO IMAT = 1,NXCMAT !LOOP OVER ALL FREQUENCIES
+      DO IMAT = 1,NXCMAT !loop over all frequencies
         IF(IHRMOP(IMAT) .EQ. -1) THEN
 
           JOFF = NBAST*NBAST*NZ*(IMAT-1)
@@ -161,7 +161,7 @@ C=======================================================================
           ELSE !GGA
 
             TEST_MAX = MAX(
-     &                     SPIN_DENSITY_NORM,
+     &                          SPIN_DENSITY_NORM,
      &                     DABS(SPIN_DENSITY_DERVS(1,1)),
      &                     DABS(SPIN_DENSITY_DERVS(1,2)),
      &                     DABS(SPIN_DENSITY_DERVS(1,3)),
@@ -317,16 +317,16 @@ C=======================================================================
       IQ     = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
       IOFF   = NBAST*NBAST*(IQ-1)
 
-      FACTOR_1 = DDOT(3,SPIN_DENSITY_DERVS,1,DENSITY_GRADIENT,1)
-      FACTOR_1 = FACTOR_1/DENSITY_GRADIENT_NORM
+      PART1 = DDOT(3,SPIN_DENSITY_DERVS,1,DENSITY_GRADIENT,1)
+      PART1 = PART1/DENSITY_GRADIENT_NORM
 
-      FACTOR_2 = VXC(FZZ) - VXC(FZ0)/DENSITY_GRADIENT_NORM
-      FACTOR_2 = FACTOR_1*FACTOR_2 + VXC(FRZ)*SPIN_DENSITY
+      PART2 = VXC(FZZ) - VXC(FZ0)/DENSITY_GRADIENT_NORM
+      PART2 = PART1*PART2 + VXC(FRZ)*SPIN_DENSITY
 
-      VXC_S = VXC(FRR)*SPIN_DENSITY + VXC(FRZ)*FACTOR_1
+      VXC_S = VXC(FRR)*SPIN_DENSITY + VXC(FRZ)*PART1
       DO JXYZ = 1,3
         VXC_V(JXYZ) = (VXC(FZ0)*SPIN_DENSITY_DERVS(JXYZ)
-     &          + FACTOR_2*DENSITY_GRADIENT(JXYZ))/DENSITY_GRADIENT_NORM
+     &             + PART2*DENSITY_GRADIENT(JXYZ))/DENSITY_GRADIENT_NORM
       ENDDO
 
       CALL DSCAL(3,D2,VXC_V,1) !because of symmetrization later in the code
