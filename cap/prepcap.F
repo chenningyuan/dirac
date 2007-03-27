@@ -162,7 +162,6 @@ CMI    ...  write out integration parameters
 
   999 CONTINUE
 C
-C
       RETURN
       END
 
@@ -171,13 +170,16 @@ C  /* Deck capints */
       SUBROUTINE CAPINTS(WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C   Interface for the CAP integral program.
+C    Interface for the CAP integral program.
 C
 C   Called from PAMINP.
 C
 C   Written by Miro ILIAS, Tel Aviv, January 2007
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C       USE CAP
+       USE CAP, only: cap_init
+
 #include "implicit.h"
 #include "priunit.h"
 C#include "dcbham.h"
@@ -187,7 +189,9 @@ C#include "dcbham.h"
       CALL QENTER('CAPINTS')
 
       CALL MEMCHK('CAPINTS',WORK,1)
-C      ... allocate memmory
+
+C    ...  call F90 routine from the module cap
+       call cap_init
 
       ISIZE1=200
       CALL MEMGET('INTE',KBASIS_N,ISIZE1,WORK,KFREE,LFREE)
@@ -386,10 +390,11 @@ C       ENDIF
       CALL GPOPEN(LUPM,'PEMAT','OLD',' ','FORMATTED',
      &       IDUMMY,.FALSE.)
 
-      ISIZE = NBASIS*(NBASIS+1)/2
-      IF (ISIZE.NE.NNBBASX) THEN
-       WRITE(LUPRI,*) "ISIZE=",ISIZE," NNBBASX=",NNBBASX
-       CALL QUIT('CAPADAPT: ISIZE <> NNBBASX !')
+      ISIZE1 = NBASIS*(NBASIS+1)/2
+      ISIZE = ( NBASIS*NBASIS )
+      IF (ISIZE1.NE.NNBBASX) THEN
+       WRITE(LUPRI,*) "ISIZE=",ISIZE1," NNBBASX=",NNBBASX
+       CALL QUIT('CAPADAPT: ISIZE1 <> NNBBASX !')
       ENDIF
       
       CALL MEMGET('REAL',KPMR,ISIZE,WORK,KFREE,LFREE)
@@ -506,21 +511,14 @@ C      ... symmetry adapt CAP_(I,J):
 
       ELSE
 
-       CALL NTAOSO(WORK(KPMR),WORK(KPMRSA),NBAST,0,IPRCAP)
+       CALL NTAOSO(WORK(KPMR),WORK(KPMRSA),NBASIS,0,IPRCAP)
+
        IF (.NOT.CAPOVLP) THEN
-        CALL NTAOSO(WORK(KPMI),WORK(KPMISA),NBAST,0,IPRCAP)
+         CALL NTAOSO(WORK(KPMI),WORK(KPMISA),NBASIS,0,IPRCAP)
+       ELSE
+         CALL DZERO(WORK(KPMISA),ISIZE)
        ENDIF
-      ENDIF
 
-C     .. compare with Sovlp integrals
-      IF (CAPOVLP) THEN
-C      CALL GTOVLX(WORK(KPMR),1.0D0,WORK(KFREE),LFREE)
-C      CALL PRQMAT(WORK(KPMR),NBAST,NBAST,NBAST,NBAST,
-C    &              1,IPQTOQ(1,0),LUPRI)
-
-C      CALL PRQMAT(WORK(KPMRSA),NBAST,NBAST,NBAST,NBAST,
-C    &              1,IPQTOQ(1,0),LUPRI)
-C      call quit('end')
       ENDIF
 
 C =======================================================================

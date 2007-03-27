@@ -5,7 +5,7 @@
 MODULE QMatrixes
 
 ! for allocation/deallocations
-use Memmory  
+use Memory  
 
 #include "iratdef.h"
 

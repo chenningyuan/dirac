@@ -4,7 +4,7 @@ F77_OBJS =
 
 F90_OBJS = tests.o mem_mod.o qmtx_mod.o
 
-F90_MODS = qmatrixes.mod memmory.mod
+F90_MODS = qmatrixes.mod memory.mod
 
 F_CPPS = $(F77_OBJS:.o=.i)
 

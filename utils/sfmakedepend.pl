@@ -70,6 +70,9 @@
 # debugging info of the script execution, default value is 0,what means
 # no debugging print-out
 #
+#  The [-d cpp_variables] option is not implemented now.
+#
+#
 # The final arguments contain the list of source files to be
 # searched for dependencies.
 #
@@ -208,8 +211,10 @@ sub find_includes {
 	# Fortran 90 module
 	} elsif (/^\s*module\s+(\w+)/i) {
 	    $modname = $1;
+	#   $modname = "modules/".$1;
+        #    print "MODNAME: $modname\n";
 	    if ($ipr >=5 ) {
-	    print "find module $1\n"; }
+	      print "found module $1\n"; }
 	    if ($main::sgi || $main::hp) {
 		$modname = uc($modname);
 	    } else {
@@ -281,6 +286,9 @@ sub inc_mods {
     my %printed = ();
 
     foreach $mod (keys %{$self->{'uses'}}) {
+
+#       print "mod is here ! $mod \n";
+
 	print $mod,"\n";
 	push(@list, $mod);
     }
@@ -296,7 +304,9 @@ sub inc_mods {
 #   print @list,"\n";
 }
 
-# filenames containing the list of modules used by file and all its includes
+################################################################################
+#  filenames containing the list of modules used by file and all its includes
+################################################################################
 sub find_mods {
     my $self = shift;
     my($ref, $modname, $file, @list, $base);
@@ -316,13 +326,29 @@ sub find_mods {
 
 # add them to the uses list (hash ensures uniqueness)
     foreach $modname (@mod_list) {
-	$self->{'uses'}{$modname} = 1;
+        $self->{'uses'}{$modname} = 1;
     }
     
 #
 # now find the filename that contains the module information
 #
+
     foreach $modname (keys %{$self->{'uses'}}) {
+
+#         $modname = "modules/".$modname;
+#         print "HERE modified : $modname\n";
+
+  #       print "HERE 1 ! xxxx/$modname\n";
+  #       print " and $main::mymodnames\n";
+         if ( index($main::mymodnames,$modname)==-1) 
+         { $modname="modules/".$modname; 
+   #        print "module modname : $modname \n"
+           }
+         else
+         {
+             #  print " xxxx/$modname\n"; 
+         }
+
 	if ($main::cray || $main::parasoft) {
 	    if ($file = $main::mod_files{$modname}) {
                 $base = &main::basename($file, @main::suffixes);
@@ -335,15 +361,31 @@ sub find_mods {
 	    $modname .= "." . $main::mod_ext;
 	    push(@module_files, $modname);
 	}
+
+  #       print "HERE 2 ! xxxx/$modname\n";
+  #       print " and $main::mymodnames\n";
+  #       if ( index($main::mymodnames,$modname)==-1) 
+  #       { $modname="modules/".$modname; 
+  #         print "module modname : $modname \n"
+  #         }
+  #       else
+  #       { print " xxxx/$modname\n"; 
+  #       }
+
     }
     sort(@module_files);
 }
 
+############################################################################
+#
+############################################################################
 sub print {
     my $self = shift;
     my $source = $self->{'source_file'};
     my $compile_string = "\t" . '$(CFT) $(FFLAGS) -c';
     my($base, $object, $modname, $flag, $target, $ftarget);
+
+###   print "v subrutine print !\n";
 
     $base = &main::basename($source, @main::suffixes);
     $target = $base . "." . $main::obj_ext;
@@ -366,6 +408,7 @@ sub print {
 	    $target .= " $base.$main::add_ext";
 	    $len_sum += length($base) + length($main::add_ext) + 2;
 	}
+   ###   print " volaco tu je 2: $target\n";
         print "$target:";
         $self->print_includes($target, $len_sum);
         print "\n";
@@ -377,6 +420,7 @@ sub print {
         }
     }
 
+# ---------------------------------------------------------
 #    clean out "use" of modules in own file
 # ---------------------------------------------------------
     foreach $mod ( keys %{$self->{'uses'}} ) {
@@ -390,6 +434,7 @@ sub print {
     if (%{$self->{'uses'}} || %{$self->{'includes'}}) {
 	@module_files = $self->find_mods();
 	my $len_sum = length($target) + 1;
+     ##  print "volaco tu je 1: $target\n";
 	print "$target:";
 	foreach $file (@module_files) {
 	    my $len = length($file) + 1;
@@ -424,6 +469,7 @@ sub print {
 	    }
 	}
     }
+# print "koniec subrutiny print \n";
 }
 
 #######################################
@@ -436,7 +482,6 @@ if ($] < 5.000) { die "Exit ! Need perl 5.000 or newer !\n"; }
 
 use File::Basename;
 use Getopt::Long;
-
 
 # list of supported suffixes
 @suffixes = qw( .c .C .cc .cxx .cpp .f .F .fcm .FCM .f90 .F90 .for);
@@ -545,8 +590,9 @@ if ($opt_a) {
     $add_ext = $opt_a;
 }
 
-#      place in Makefile
-$mystring = '# DO NOT DELETE THIS LINE - used by make depend';
+#                   place in Makefile
+#$mystring = '# DO NOT DELETE THIS LINE - used by make depend';
+$mystring = '# DO NOT DELETE THIS LINE -- make depend depends on it.';
 
 # Search for the includes in all the files
 foreach $file (@ARGV) {
@@ -567,27 +613,65 @@ select(NMFILE);
 
 while (<MFILE>) {
     if (!/$mystring/) {
+      # print "pred subr_print\n";
         print;
     } else {
         last;
     }
 }
 
-print $mystring, "\n";
+ print $mystring, "\n";
 
-# Now print out include and use dependencies in sorted order.
+## print "string is out!\n";
+
+########################################################################
+#
+#       Now print out include and use dependencies in sorted order.
+#
+########################################################################
+
+# first get lost of module files (*.mod) arising from entering source (*.F90) files
+$mymodnames="";
+foreach $modname (sort keys(%mod_files)) {
+ $mn=$modname.".".$mod_ext;
+ $mymodnames=$mymodnames.$mn." ";
+##     print ":::> $modname.$mod_ext\n";  
+##     print ":::> $mymodnames\n";  
+}
+
 foreach $target (sort keys(%sources)) {
-    $sources{$target}->print();
+###  print "---> calling print for target :  $target \n";
+   # $sources{$target}->print();
+    $sources{$target}->print($mymodnames);
 }
 
 ##################################################################
+#
 ####            print out module dependencies                 ####
+#
 ##################################################################
+#print "======  module dependencies now ==========\n";
+#print "mod_files: $mod_files ...\n";
+# print (sort keys(%mod_files)); print "\n";
+# print (keys(%mod_files)); print "\n";
+
+#foreach $modname (sort keys(%mod_files)) {
+#     print ":::> $modname.$mod_ext\n";  }
+
 if ( !( $cray || $parasoft) ) {
+#   print (sort keys(%mod_files));
     foreach $modname (sort keys(%mod_files)) {
+#     print ":::> $name $path $suffix \n";
         ($name, $path, $suffix) =
 		&fileparse($sources{$mod_files{$modname}}->{'filepath'}, @suffixes);
+#     print " :::> $name $path $suffix \n";
 	$object = $path . "/" . $name . "." . $obj_ext;
+
+#       if ($obj_ext =="mod") {
+#       print "--->  $obj_ext \n" ; }
+
+ ##print ">>> $modname.$mod_ext + $object\n";
+
 	print "$modname.$mod_ext: $object\n";
     }
 }

@@ -700,7 +700,7 @@ if [ -n "$CAPMOD" ]; then
 cat <<EOF>> Makefile
 
 CAPOBJS = \\
-cap/dircap.o cap/prepcap.o
+cap/dircap.o cap/prepcap.o cap/prepcap90.o
 EOF
 fi
 #
@@ -888,7 +888,10 @@ if [ -n "$MODULES" ]; then
      echo '     cd  embedding  ; $(MAKE) mod ; cd .. ;\' >> Makefile
   fi
   if [ -n "$OOFMOD" ]; then
-     echo '     cd  oof  ; $(MAKE) mod ; cd .. ' >> Makefile
+     echo '     cd  oof  ; $(MAKE) mod ; cd .. ;\' >> Makefile
+  fi
+  if [ -n "$CAPMOD" ]; then
+     echo '     cd  cap  ; $(MAKE) mod ; cd .. ' >> Makefile
   fi
 #
 #

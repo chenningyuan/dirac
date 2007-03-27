@@ -273,7 +273,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #if defined (MOD_OOF)
        CALL TEST_OOF(WORK(KFREE),LFREE)
-!      CALL TEST_OOF(WORK,LWORK)
 #endif /* MOD_OOF  */
 C
 C     Print section
@@ -2922,7 +2921,7 @@ C
 
 #ifdef MOD_OOF
 ! ... perform the QTRANS inside the highly modularized routine
-       call handle_matrixes(VMAT,TMAT,WORK(KFREE),LFREE)
+      call handle_matrixes(VMAT,TMAT,WORK(KFREE),LFREE)
 #endif
 
       IOFT = 1

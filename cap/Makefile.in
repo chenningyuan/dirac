@@ -6,11 +6,11 @@
 
 include ../Makefile.config
 
-F77_OBJS =
+F77_OBJS = dircap.o prepcap.o
 
-F90_OBJS = dircap.o prepcap.o
+F90_OBJS = prepcap90.o
 
-F90_MODS = 
+F90_MODS = cap.mod
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
@@ -19,10 +19,11 @@ pre:	$(F77_CPPS)
 ftnchek:pre
 	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-all:	$(F77_OBJS) $(F90_OBJS)
+all:	$(F90_MODS) $(F77_OBJS) $(F90_OBJS)
 
 clean :
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod
+	$(RM) -f ../modules/*.mod
 
 mod : $(F90_MODS) ;\
 ln -sf $(PWD)/*.mod ../modules/.

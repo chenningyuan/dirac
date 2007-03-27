@@ -1,7 +1,7 @@
 !
 ! Module contains basic variables of the DIRAC memmory array
 !
-MODULE Memmory
+MODULE Memory
 
 ! it's dangerously public !
 integer :: KWORK, KFREE, LFREE, LWORK ! basic variables of memmory handling
@@ -24,11 +24,10 @@ endif
 CALL QEXIT('print_mem_param')
 end subroutine print_mem_param
 
-SUBROUTINE Stick_into_array(WORK,LLWORK)
+SUBROUTINE Stick_into_array(WORK,LWORK_IN)
 #include "priunit.h"
-! integer, intent(in) :: LLWORK
-integer*4, intent(in) :: LLWORK
-double precision, intent(in),  target :: WORK(LLWORK)
+integer*4, intent(in) :: LWORK_IN
+double precision, intent(in),  target :: WORK(LWORK_IN)
 CALL QENTER('Stick_into_array')
 if (associated(PW)) then
   write(LUPRI,*) 'Stick_into_array: PW is already associated - Exit !'
@@ -38,9 +37,8 @@ else
 endif
 PW => WORK ! PW points now to the big WORK array ... 
 LWORK = LLWORK ! actualize module variable
-write(LUPRI,*) 'LLWORK=',LLWORK
-if (size(PW) /= LLWORK) then
- write(LUPRI,*) 'Stick_into_array:  size(PW)=',size(PW),' while LWORK=',LWORK
+if (size(PW) /= LWORK_IN) then
+ write(LUPRI,*) 'Stick_into_array:  size(PW)=',size(PW),' while entering LWORK=',LWORK_IN
  write(LUPRI,*) 'somme error in array sticking !'
  CALL QUIT('Stick_into_array: error in length !')
 endif
@@ -60,4 +58,4 @@ endif
 nullify(PW)
 END SUBROUTINE UnStickArray
 
-END MODULE Memmory
+END MODULE Memory

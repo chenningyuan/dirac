@@ -76,8 +76,12 @@ C
 
       CALL ONEGEN(WORK,LWORK)
 
-CMI ... take care of CAP integrals here
-CMI   IF (CAP) CALL CAPINTS(WORK,LWORK)
+#ifdef MOD_CAP
+CMI ... check if CAP is not for everlap control
+CMI  ... call of F90 routine
+        call TEST_OOF(WORK,LWORK)
+        call cap_ovlp(WORK,LWORK)
+#endif
 
       IF(DOHRM) RETURN
 C

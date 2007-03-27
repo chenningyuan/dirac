@@ -3,7 +3,7 @@
 !
   SUBROUTINE TEST_OOF(work,llwork)
 !  ... this is very simple test of
-   use Memmory
+!   use Memory
    use QMatrixes
 
 #include "priunit.h"
@@ -67,7 +67,7 @@ call QMtxInfo(pmat)
   END SUBROUTINE TEST_OOF
 
  subroutine test_oof1
-   use Memmory
+!   use Memmory
    use QMatrixes
 #include "priunit.h"
 #include "dcbbas.h"
@@ -87,7 +87,7 @@ call QMtxInfo(pmat)
 SUBROUTINE HANDLE_MATRIXES(VMAT1,TMAT1,WORK,LLWORK)
 ! VMAT - Fock SAAO matrix, TMAT - symm.packed transf. matrix
 !
-  use Memmory
+! use Memory
   use QMatrixes
 #include "implicit.h"
 #include "priunit.h"
