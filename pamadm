@@ -437,7 +437,7 @@ EOF
 make_makefile()
 {
    echo "*** Making general Makefile"
-   echo
+#   echo
    AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $CDFTOBJ $CAPOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
    AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $CDFTMAK $CAPMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
    #
@@ -679,7 +679,7 @@ if [ -n "$EMBMOD" ]; then
 cat <<EOF>> Makefile
 
 EMBOBJS = \\
-embedding/embedding.o embedding/emb_frozen_orbitals.o embedding/emb_settings.o
+embedding/embd.o embedding/emb_froz_orb.o embedding/emb_set.o
 
 EOF
 fi
@@ -1045,10 +1045,11 @@ UTIL_OBJ:
 	cd utils ; \$(MAKE) all
 
 EOF
-#
-#  Add makedepend targets
-#
+########################################################################
+###                   Add makedepend targets                         ###
+########################################################################
 TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
+TEMPOOF=
 if [ -n "$ESRMOD" ]; then
    TEMP="$TEMP prp/esr"
 fi
@@ -1072,15 +1073,18 @@ if [ -n "$KRMCMOD" ]; then
 fi
 if [ -n "$EMBMOD" ]; then
    TEMP="$TEMP embedding"
+   TEMPOOF="$TEMPOOF embedding"
 fi
 if [ -n "$CDFTMOD" ]; then
    TEMP="$TEMP cdft"
 fi
 if [ -n "$CAPMOD" ]; then
    TEMP="$TEMP cap"
+   TEMPOOF="$TEMPOOF cap"
 fi
 if [ -n "$OOFMOD" ]; then
    TEMP="$TEMP oof"
+   TEMPOOF="$TEMPOOF oof"
 fi
 
 cat <<EOF>> Makefile
@@ -1093,7 +1097,23 @@ for ff in $TEMP; do
 EOF
 done
 echo
+##########################################
+######## take care of f90depend  #########
+##########################################
+if [ -n "$OOFMOD" ]; then
+cat <<EOF>> Makefile
+
+f90dep:
+EOF
+for ff in $TEMPOOF; do
+   cat <<EOF>> Makefile
+	cd $ff; \$(MAKE) f90dep
+EOF
+done
+fi
+################################################
 #echo "Making module Makefiles..."
+################################################
 for makefile in $dirs; do
    echo "Making $makefile/Makefile from $makefile/Makefile.in"
 # make backup first !

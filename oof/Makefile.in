@@ -24,13 +24,6 @@ ln -sf $(PWD)/*.mod ../modules/.
 
 FLAGS=$(DEPEND_FLAGS) $(MODS) $(OPTFLAGS)
 
-memmory.mod: mem_mod.F90  ;\
-$(F77) $(FLAGS) -c mem_mod.F90  ;\
-
-qmatrixes.mod:  memmory.mod qmtx_mod.F90 ;\
-$(F77) $(FLAGS) -c qmtx_mod.F90 ;\
-
-
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
 
@@ -40,6 +33,7 @@ dirmpi.x:
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
 
-#embedding.o: emb_frozen_orbitals.o emb_settings.o
+f90dep: ;\
+       ../utils/sfmakedepend.pl -I include $(F90_OBJS:.o=.F90)
  
 # DO NOT DELETE

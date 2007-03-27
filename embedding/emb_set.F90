@@ -1,4 +1,5 @@
-MODULE emb_settings
+
+MODULE emb_settings !MI: module name can not be identical with the file name
 
   IMPLICIT NONE
 

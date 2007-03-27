@@ -10,6 +10,14 @@
 #include "dcbbas.h"
 #include "dcborb.h"
 
+#ifdef VARX
+#include "dcbham.h"
+#endif
+
+#ifdef VARY
+#include "dcbdhf.h"
+#endif
+
  double precision, intent(inout) :: work(llwork) ! for testing...
  integer*4, intent(in) :: llwork
  type(QMtx) :: smat,pmat
