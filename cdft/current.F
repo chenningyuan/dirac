@@ -150,8 +150,6 @@ C     /* GET_CURRENT_DIV */
       SUBROUTINE GET_CURRENT_DIV(CURRENT_DERVS,
      &                           CURRENT_DIV)
 C=======================================================================
-C     calculate divergence
-C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                            last revision: october 2006
 C=======================================================================
@@ -175,8 +173,6 @@ C     /* GET_CURRENT_ROT */
       SUBROUTINE GET_CURRENT_ROT(CURRENT_DERVS,
      &                           CURRENT_ROT)
 C=======================================================================
-C     calculate curl
-C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                            last revision: october 2006
 C=======================================================================
@@ -195,6 +191,9 @@ C=======================================================================
 
       RETURN
       END
+
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_VORTICITY */
       SUBROUTINE GET_VORTICITY(CURRENT_DERVS,
@@ -221,6 +220,118 @@ C=======================================================================
       DO IXYZ = 1,3
         VORTICITY(IXYZ) = VORTICITY(IXYZ)/DENSITY
       ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_M */
+      SUBROUTINE GET_M(VECTOR,
+     &                 IREPOP,
+     &                 GAO,
+     &                 DMAT,
+     &                 BUF)
+C=======================================================================
+C     calculate magnetization m(r)
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: march 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "cdft.h"
+
+      LOGICAL   LBIT
+      DIMENSION VECTOR(*),
+     &          GAO(*),
+     &          DMAT(*),
+     &          BUF(*)
+
+      F = D1
+      G = D1
+      IF(LBIT(LBIT_CDFT,4)) G = -D1 !operator is \beta\sigma instead of \sigma
+      IU         = 1
+      IV         = 1
+      IX         = 2
+      IY         = 2
+      ITRANSFORM = 2
+
+      CALL GET_CURRENT(.TRUE.,
+     &                 .FALSE.,
+     &                 VECTOR,
+     &                 UNUSED,
+     &                 F,
+     &                 G,
+     &                 IU,
+     &                 IV,
+     &                 IX,
+     &                 IY,
+     &                 ITRANSFORM,
+     &                 IREPOP,
+     &                 GAO,
+     &                 UNUSED,
+     &                 DMAT,
+     &                 BUF)
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_M_DERVS */
+      SUBROUTINE GET_M_DERVS(VECTOR_DERVS,
+     &                       IREPOP,
+     &                       GAO,
+     &                       GAO1,
+     &                       DMAT,
+     &                       BUF)
+C=======================================================================
+C     calculate derivatives of magnetization m(r)
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: march 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "cdft.h"
+
+      LOGICAL   LBIT
+      DIMENSION VECTOR_DERVS(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          DMAT(*),
+     &          BUF(*)
+
+      F = D1
+      G = D1
+      IF(LBIT(LBIT_CDFT,4)) G = -D1 !operator is \beta\sigma instead of \sigma
+      IU         = 1
+      IV         = 1
+      IX         = 2
+      IY         = 2
+      ITRANSFORM = 2
+
+      CALL GET_CURRENT(.FALSE.,
+     &                 .TRUE.,
+     &                 UNUSED,
+     &                 VECTOR_DERVS,
+     &                 F,
+     &                 G,
+     &                 IU,
+     &                 IV,
+     &                 IX,
+     &                 IY,
+     &                 ITRANSFORM,
+     &                 IREPOP,
+     &                 GAO,
+     &                 GAO1,
+     &                 DMAT,
+     &                 BUF)
 
       RETURN
       END

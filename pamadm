@@ -690,7 +690,7 @@ if [ -n "$CDFTMOD" ]; then
 cat <<EOF>> Makefile
 
 CDFTOBJS = \\
-cdft/lr.o cdft/qr.o cdft/current.o cdft/functional_derivatives.o
+cdft/exc.o cdft/lr.o cdft/qr.o cdft/current.o cdft/functional_derivatives.o
 EOF
 fi
 #

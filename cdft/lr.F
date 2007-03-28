@@ -45,7 +45,7 @@ C     /* SDFT_LR */
      &                   DENSITY_GRADIENT_NORM,
      &                   DENSITY_GRADIENT,
      &                   WEIGHT,
-     &                   DOGGA,
+     &                   IS_GGA,
      &                   BUF)
 C=======================================================================
 C     contribution of spin density to the sigma vector
@@ -63,14 +63,14 @@ C=======================================================================
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
-#include "inforb.h"
-#include "dgroup.h"
 #include "dcbham.h"
-#include "dftcom.h"
+#include "dgroup.h"
+#include "inforb.h"
 #include "cdft.h"
+#include "dftcom.h"
 #include "../dft/functionals.h"
 
-      LOGICAL   DOGGA,
+      LOGICAL   IS_GGA,
      &          LBIT
       DIMENSION DTRMAT(*),
      &          EXCMAT(*),
@@ -84,17 +84,6 @@ C=======================================================================
      &          FO_SPIN_DENSITY_DERVS(3,3),
      &          VXC(99) !dirty fix
 
-#include "ibtfun.h"
-
-      F = D1
-      G = D1
-      IF(LBIT(LBIT_CDFT,4)) G = -D1 !operator is \beta\sigma instead of \sigma
-      IU         = 1
-      IV         = 1
-      IX         = 2
-      IY         = 2
-      ITRANSFORM = 2
-
       ISTART = 1
       IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !collinear approximation
 
@@ -103,38 +92,17 @@ C=======================================================================
 
           JOFF = NBAST*NBAST*NZ*(IMAT-1)
 
-          IF(DOGGA) THEN
-            CALL GET_CURRENT(.TRUE.,
-     &                       .TRUE.,
-     &                       FO_SPIN_DENSITY,
-     &                       FO_SPIN_DENSITY_DERVS,
-     &                       F,
-     &                       G,
-     &                       IU,
-     &                       IV,
-     &                       IX,
-     &                       IY,
-     &                       ITRANSFORM,
+          CALL GET_M(FO_SPIN_DENSITY,
+     &               ISYMOP(IMAT)-1,
+     &               GAO,
+     &               DTRMAT(1+JOFF),
+     &               BUF)
+
+          IF(IS_GGA) THEN
+            CALL GET_M_DERVS(FO_SPIN_DENSITY_DERVS,
      &                       ISYMOP(IMAT)-1,
      &                       GAO,
      &                       GAO1,
-     &                       DTRMAT(1+JOFF),
-     &                       BUF)
-          ELSE !LDA
-            CALL GET_CURRENT(.TRUE.,
-     &                       .FALSE.,
-     &                       FO_SPIN_DENSITY,
-     &                       UNUSED,
-     &                       F,
-     &                       G,
-     &                       IU,
-     &                       IV,
-     &                       IX,
-     &                       IY,
-     &                       ITRANSFORM,
-     &                       ISYMOP(IMAT)-1,
-     &                       GAO,
-     &                       UNUSED,
      &                       DTRMAT(1+JOFF),
      &                       BUF)
           ENDIF
@@ -142,7 +110,7 @@ C=======================================================================
           FO_SPIN_DENSITY_NORM = DSQRT(DDOT(3,FO_SPIN_DENSITY,1,
      &                                        FO_SPIN_DENSITY,1))
 
-          IF(.NOT. DOGGA) THEN !LDA
+          IF(.NOT. IS_GGA) THEN !LDA
 
             IF(FO_SPIN_DENSITY_NORM .GT. DFTHRL) THEN
 
@@ -205,8 +173,6 @@ C     /* SDFT_LR_LSDA_COLLINEAR */
      &                                  IXYZ,
      &                                  FO_SPIN_DENSITY)
 C=======================================================================
-C     contribution of spin density to the sigma vector
-C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                              last revision: march 2007
 C=======================================================================
@@ -220,41 +186,27 @@ C=======================================================================
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
-#include "inforb.h"
-#include "dgroup.h"
 #include "dcbham.h"
-#include "dftcom.h"
+#include "dgroup.h"
+#include "inforb.h"
 #include "cdft.h"
+#include "dftcom.h"
 #include "../dft/functionals.h"
 
-      LOGICAL   LBIT
       DIMENSION VXC(*),
      &          EXCMAT(*),
      &          GAO(*)
 
-#include "ibtfun.h"
-
-      F = D1
-      G = D1
-      IF(LBIT(LBIT_CDFT,4)) G = -D1 !operator is \beta\sigma instead of \sigma
-      IU         = 1
-      IV         = 1
-      IX         = 2
-      IY         = 2
-      ITRANSFORM = 2
-
-      IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP-1)
-      IQ     = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
-      IOFF   = NBAST*NBAST*(IQ-1)
-
       VXC_S = VXC(FRR)*FO_SPIN_DENSITY
 
-      CALL CDFT_EXC(VXC_S,F,IU,IV,
-     &              IREPOP,EXCMAT(1+IOFF),GAO)
-      IF(MC .EQ. 2) THEN
-        CALL CDFT_EXC(VXC_S,G,IX,IY,
-     &                IREPOP,EXCMAT(1+IOFF),GAO)
-      ENDIF
+      CALL EXC_M(.FALSE.,
+     &           VXC_S,
+     &           UNUSED,
+     &           IXYZ,
+     &           ISYMOP,
+     &           EXCMAT,
+     &           GAO,
+     &           UNUSED)
 
       RETURN
       END
@@ -271,8 +223,6 @@ C     /* SDFT_LR_GGA_COLLINEAR */
      &                                 DENSITY_GRADIENT,
      &                                 DENSITY_GRADIENT_NORM)
 C=======================================================================
-C     contribution of spin density to the sigma vector
-C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                              last revision: march 2007
 C=======================================================================
@@ -286,14 +236,13 @@ C=======================================================================
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
-#include "inforb.h"
-#include "dgroup.h"
 #include "dcbham.h"
-#include "dftcom.h"
+#include "dgroup.h"
+#include "inforb.h"
 #include "cdft.h"
+#include "dftcom.h"
 #include "../dft/functionals.h"
 
-      LOGICAL   LBIT
       DIMENSION VXC(*),
      &          EXCMAT(*),
      &          GAO(*),
@@ -301,21 +250,6 @@ C=======================================================================
      &          FO_SPIN_DENSITY_DERVS(3),
      &          DENSITY_GRADIENT(3),
      &          VXC_V(3)
-
-#include "ibtfun.h"
-
-      F = D1
-      G = D1
-      IF(LBIT(LBIT_CDFT,4)) G = -D1 !operator is \beta\sigma instead of \sigma
-      IU         = 1
-      IV         = 1
-      IX         = 2
-      IY         = 2
-      ITRANSFORM = 2
-
-      IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP-1)
-      IQ     = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
-      IOFF   = NBAST*NBAST*(IQ-1)
 
       PART1 = DDOT(3,FO_SPIN_DENSITY_DERVS,1,DENSITY_GRADIENT,1)
       PART1 = PART1/DENSITY_GRADIENT_NORM
@@ -331,141 +265,14 @@ C=======================================================================
 
       CALL DSCAL(3,D2,VXC_V,1) !because of symmetrization later in the code
 
-      CALL CDFT_EXC_GGA(VXC_S,VXC_V,F,IU,IV,
-     &                  IREPOP,EXCMAT(1+IOFF),GAO,GAO1)
-      IF(MC .EQ. 2) THEN
-        CALL CDFT_EXC_GGA(VXC_S,VXC_V,F,IU,IV,
-     &                    IREPOP,EXCMAT(1+IOFF),GAO,GAO1)
-      ENDIF
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* CDFT_EXC */
-      SUBROUTINE CDFT_EXC(VXC_S,
-     &                    F,
-     &                    IC1,IC2,
-     &                    IREPOP,
-     &                    EXCMAT,
-     &                    GAO)
-C=======================================================================
-C     contribution of current or spin density to the sigma vector
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: march 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),
-     &          EXCMAT(NBAST,NBAST)
-#else
-      DIMENSION GAO(NTBAS(0)),
-     &          EXCMAT(NTBAS(0),NTBAS(0))
-#endif
-
-#include "ibtfun.h"
-
-      DO IREP1 = 0,NBSYM-1
-
-        N1 = NBBAS(IREP1,IC1)
-        IF(N1 .GT. 0) THEN
-
-          IREP2 = IBTXOR(IREP1,IREPOP)
-          N2 = NBBAS(IREP2,IC2)
-          IF(N2 .GT. 0) THEN
-
-            I1 = IBBAS(IREP1,IC1)
-            I2 = IBBAS(IREP2,IC2)
-            DO J = 1,N2
-              FACTOR = F*VXC_S*GAO(I2+J)
-              CALL DAXPY(N1,FACTOR,GAO(I1+1),1,EXCMAT(I1+1,I2+J),1)
-            ENDDO
-          ENDIF
-        ENDIF
-      ENDDO
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* CDFT_EXC_GGA */
-      SUBROUTINE CDFT_EXC_GGA(VXC_S,
-     &                        VXC_V,
-     &                        F,
-     &                        IC1,IC2,
-     &                        IREPOP,
-     &                        EXCMAT,
-     &                        GAO,
-     &                        GAO1)
-C=======================================================================
-C     contribution of current or spin density to the sigma vector
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: march 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),
-     &          GAO1(NBAST,3),
-     &          EXCMAT(NBAST,NBAST)
-#else
-      DIMENSION GAO(NTBAS(0)),
-     &          GAO1(NTBAS(0),3),
-     &          EXCMAT(NTBAS(0),NTBAS(0))
-#endif
-      DIMENSION VXC_V(3)
-
-#include "ibtfun.h"
-
-      DO IREP1 = 0,NBSYM-1
-
-        N1 = NBBAS(IREP1,IC1)
-        IF(N1 .GT. 0) THEN
-
-          IREP2 = IBTXOR(IREP1,IREPOP)
-          N2 = NBBAS(IREP2,IC2)
-          IF(N2 .GT. 0) THEN
-
-            I1 = IBBAS(IREP1,IC1)
-            I2 = IBBAS(IREP2,IC2)
-            DO J = 1,N2
-              FACTOR = VXC_S   *GAO (I2+J  )
-     &               + VXC_V(1)*GAO1(I2+J,1)
-     &               + VXC_V(2)*GAO1(I2+J,2)
-     &               + VXC_V(3)*GAO1(I2+J,3)
-              FACTOR = FACTOR*F
-              CALL DAXPY(N1,FACTOR,GAO(I1+1),1,EXCMAT(I1+1,I2+J),1)
-            ENDDO
-          ENDIF
-        ENDIF
-      ENDDO
+      CALL EXC_M(.TRUE.,
+     &           VXC_S,
+     &           VXC_V,
+     &           IXYZ,
+     &           ISYMOP,
+     &           EXCMAT,
+     &           GAO,
+     &           GAO1)
 
       RETURN
       END
