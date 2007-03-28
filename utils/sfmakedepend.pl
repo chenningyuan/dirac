@@ -130,7 +130,15 @@
 #       Please let me know if you find any others.
 #	Kate Hedstrom
 #	kate@ahab.rutgers.edu
+#	
+######################################################################
 #
+#      recent changes by Miro Ilias, March 2007, Tel Aviv
+#
+# This script is still in the development in order to make it more 
+# powerfull for exact Fotran90 dependencies.
+#
+######################################################################
 
 package source_file;
 
@@ -152,11 +160,13 @@ sub new {
     bless $self;
 }
 
-#
-#  ... 
-#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 sub find_includes {
-
+#==================================================================================
+#  
+# Search throughout the file to find keyword of included files
+#
+#==================================================================================
     my $self = shift;
     my $file = $self->{'filepath'};
     my($after, $filepath, $ref, $included, $use, $modname);
@@ -174,11 +184,8 @@ sub find_includes {
 	return;
     }
 
-    $ipr = $main::iprint;
-#   if ($main::iprint >= 5) {
-    if ($ipr >= 5) {
-     print "---- searching for includes throughout the open file : $file \n"; 
-     print "NEW d_list: @main::d_list \n"; }
+   if ($main::iprint >= 5) {
+     print "\tSEARCH throughout the open file: $file \n"; }
 
     while (<FILE>) {
 	$included = "";
@@ -186,20 +193,20 @@ sub find_includes {
         # look for Fortran style includes
         if (/^\s*include\s*['"]([^"']*)["']/i) {
             $included = $1; 
-	    if ($ipr >=5) {
-	    print "found $1 $included \n"; }
+	    if ($main::iprint >=5) {
+	    print "found \"include\"> $included \n"; }
 	    $after = $';
 	# C preprocessor style includes
         } elsif (/^#\s*include\s*["<]([^">]*)[">]/) {
             $included = $1;
-	    if ($ipr >= 5) {
-	    print "found #include $1 $included\n"; }
+	    if ($main::iprint >= 5) {
+	      print "found #include> $included\n"; }
 	    $after = $';
         # Fortran 90 "use"
         } elsif (/^\s*use\s+(\w+)/i) {   
 	    $use = $1;
-	    if ($ipr >=5) {
-	    print "find use $1\n"; }
+	    if ($main::iprint >=5) {
+	    print "found use> $1\n"; }
 # Make the module name lowercase except for SGI & HP.
 # May be compiler dependent!!
 	    if ($main::sgi || $main::hp) {
@@ -213,15 +220,15 @@ sub find_includes {
 	    $modname = $1;
 	#   $modname = "modules/".$1;
         #    print "MODNAME: $modname\n";
-	    if ($ipr >=5 ) {
-	      print "found module $1\n"; }
+	    if ($main::iprint >=5 ) {
+	      print "found module> $1\n"; }
 	    if ($main::sgi || $main::hp) {
 		$modname = uc($modname);
 	    } else {
 		$modname = lc($modname);
 	    }
 	    unless (lc($modname) eq "procedure") {
-		$main::mod_files{$modname} = $file;
+	        $main::mod_files{$modname} = $file;
 		$self->{'modules'}{$modname} = 1;
 	    }
 	}
@@ -251,35 +258,61 @@ sub find_includes {
 #   ...close file
     close FILE;
 }
+# end sub find_includes
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 sub print_includes {
+#================================================================================
+#
+# print include files (*.h, *.mod) after print target into makefile
+#
+#================================================================================
     my $self = shift;
     my $target = shift;
     my $len_sum = shift;
     my($file, $ref);
     my %printed = ();
 
+    if ($main::iprint >=5) {
+      print STDOUT "call of print_includes for target >> $target:\n"; }
+
     foreach $file (keys %{$self->{'includes'}}) {
+
 	next if $printed{$file};
+
 	$ref = $inc_files{$file};
+
 	my $len = length($ref->{'filepath'}) + 1;
+
 	if (($len_sum + $len > 80) &&
 	       (length($target) + 1 < $len_sum)) {
 	    print "\n$target:";
+            # control print out on the screen
+	    if ($main::iprint >=5) { 
+             print STDOUT "$target:\n"; }
 	    $len_sum = length($target) + 1;
 	}
 	print " " . $ref->{'filepath'};
+            # control print out on the screen
+	    if ($main::iprint >=5) { 
+             print STDOUT " " . $ref->{'filepath'} ."\n"; }
+
 	$printed{$file} = 1;
 	$len_sum += $len;
 	$len_sum = $ref->print_includes($target, $len_sum);
+	# if ($main::iprint >=5) { print STDOUT " " . $ref->print_includes($target, $len_sum);}
     }
     $len_sum;
 }
+# end sub print_includes
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+sub inc_mods {
+#====================================================================
 #
 # return list of modules used by included files
 #
-sub inc_mods {
+#====================================================================
     my $self = shift;
     my($file, $ref, $mod, @sub_list);
     my @list = ();
@@ -287,7 +320,7 @@ sub inc_mods {
 
     foreach $mod (keys %{$self->{'uses'}}) {
 
-#       print "mod is here ! $mod \n";
+        print STDOUT "mod is here ! $mod \n";
 
 	print $mod,"\n";
 	push(@list, $mod);
@@ -303,11 +336,16 @@ sub inc_mods {
     @list;
 #   print @list,"\n";
 }
+# end sub inc_mods
 
-################################################################################
-#  filenames containing the list of modules used by file and all its includes
-################################################################################
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 sub find_mods {
+################################################################################
+#
+#  filenames containing the list of modules used by file and all its includes
+#
+################################################################################
+
     my $self = shift;
     my($ref, $modname, $file, @list, $base);
     my @module_files = ();
@@ -336,10 +374,11 @@ sub find_mods {
     foreach $modname (keys %{$self->{'uses'}}) {
 
 #         $modname = "modules/".$modname;
-#         print "HERE modified : $modname\n";
-
+         # print STDOUT "HERE modified : $modname\n";
+         # print "HERE modified : $modname\n";
   #       print "HERE 1 ! xxxx/$modname\n";
   #       print " and $main::mymodnames\n";
+  #
          if ( index($main::mymodnames,$modname)==-1) 
          { $modname="modules/".$modname; 
    #        print "module modname : $modname \n"
@@ -376,19 +415,23 @@ sub find_mods {
     sort(@module_files);
 }
 
-############################################################################
-#
-############################################################################
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 sub print {
+#===========================================================================
+#
+# print basic (include,modules) dependencies of object files
+#
+#===========================================================================
     my $self = shift;
     my $source = $self->{'source_file'};
     my $compile_string = "\t" . '$(CFT) $(FFLAGS) -c';
     my($base, $object, $modname, $flag, $target, $ftarget);
 
-###   print "v subrutine print !\n";
-
     $base = &main::basename($source, @main::suffixes);
+
+    # ... define target
     $target = $base . "." . $main::obj_ext;
+
     if ($main::stupid) {
 	$ftarget = $base . "." . $main::ext;
     }
@@ -408,10 +451,15 @@ sub print {
 	    $target .= " $base.$main::add_ext";
 	    $len_sum += length($base) + length($main::add_ext) + 2;
 	}
-   ###   print " volaco tu je 2: $target\n";
+       # ... print here
         print "$target:";
-        $self->print_includes($target, $len_sum);
+         $self->print_includes($target, $len_sum);
         print "\n";
+
+	if ($main::iprint >=5) {
+         # print STDOUT "$target:";
+        }
+
         if ($main::stupid) {
 	    $len_sum = length($ftarget) + 1;
             print "$ftarget:";
@@ -445,6 +493,10 @@ sub print {
 	    }
 	    $len_sum += $len;
 	    print " " . $file;
+	    if ($main::iprint >=5) {
+	     print STDOUT "module file: $file ... hash: $main::mod_obj{$file} \n"; }
+	    # ... adding object dependency through hash !
+            print " " . $main::mod_obj{$file};
 	}
 	if ($main::need_f) {
 	    my $len = length($ftarget) + 1;
@@ -469,17 +521,166 @@ sub print {
 	    }
 	}
     }
-# print "koniec subrutiny print \n";
 }
-
+#end sub print
+#end package source_file
+#
 #######################################
 ###    Start of the main program    ###
 #######################################
 package main;
 
-if ($] < 5.000) { die "Exit ! Need perl 5.000 or newer !\n"; }
-#{print "perl version is OK...\n";}
+check_perl_ver();
 
+get_inline_args();
+
+get_mystring($mystring);
+
+# Search for the includes in all the files
+search_includes();
+
+# Create new Makefile with new dependencies.
+open(MFILE, $mf) || die "can't read Makefile $mf: $!\n";
+open(NMFILE, "> Makefile.new") || die "can't write Makefile.new: $!\n";
+select(NMFILE);
+
+while (<MFILE>) {
+    if (!/$mystring/) {
+      # print "pred subr_print\n";
+        print;
+    } else {
+        last;
+    }
+}
+
+ print $mystring, "\n";
+
+##################################################################
+#                                                                #
+#               print out module dependencies                    #
+#                                                                #
+##################################################################
+  if ($main::iprint >=5) {
+     print STDOUT "\n======  print of module dependencies  ==========\n";
+  }
+
+#  first get list of module files (*.mod) arising from entering source (*.F90) files
+$mymodnames="";
+foreach $modname (sort keys(%mod_files)) {
+ $mn=$modname.".".$mod_ext;
+ $mymodnames=$mymodnames.$mn." ";
+}
+
+if ($main::iprint >=5) {
+    print STDOUT "   locale module files: $mymodnames\n";
+}
+
+
+%main::mod_obj = ();
+
+if ( !( $cray || $parasoft) ) {
+   foreach $modname (sort keys(%mod_files)) {
+        ($name, $path, $suffix) =
+          &fileparse($sources{$mod_files{$modname}}->{'filepath'}, @suffixes);
+
+	  $object = $path . "/" . $name . "." . $obj_ext;
+
+	  $object =~ s#^\.//##; # convert .//xxx.o to xxx.o
+
+	  $modnameindx = $modname.".".$mod_ext;
+          $main::mod_obj{$modnameindx} = $object;
+
+	if ($main::iprint >=5) {
+	  print STDOUT "$modname.$mod_ext: $object \
+	   ... in hash table: $main::mod_obj{$modnameindx} \n";
+	 }
+	  print "$modname.$mod_ext: $object\n";
+    }
+}
+
+########################################################################
+#
+#
+#       Now print out include and use dependencies in sorted order.
+#
+#
+########################################################################
+  if ($main::iprint >=5) {
+     print STDOUT "\n======  print of object dependencies  ==========\n";
+  }
+
+foreach $target (sort keys(%sources)) {
+  if ($main::iprint >=5) {
+    print STDOUT "---> calling print for target : $target \n";
+  }
+    $sources{$target}->print();
+}
+
+ sort_make();
+
+#########################################################
+#            End of main function                       #
+#########################################################
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+sub sort_make {
+# ----------------------------------------------------------------
+#                    Sort out the Makefiles
+# ----------------------------------------------------------------
+rename($mf, "$mf.old") || warn "can't overwrite $mf.old: $!\n";
+rename('Makefile.new', $mf) ||
+     warn "can't move Makefile.new to $mf: $!\n";
+
+# Delete those RCS files we checked out
+foreach $file (keys %rcs) {
+    unlink($file); }
+
+} #end sub sort_make
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+sub get_mystring {
+# ----------------------------------------------------------------
+#
+# ----------------------------------------------------------------
+#            place in Makefile
+#$mystring = '# DO NOT DELETE THIS LINE - used by make depend';
+ $mystring = '# DO NOT DELETE THIS LINE -- make depend depends on it.';
+
+}
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+sub search_includes{
+# ----------------------------------------------------------------
+# Search for the includes in all the files
+# ----------------------------------------------------------------
+foreach $file (@ARGV) {
+    if ($iprint >= 5)
+     { print "\n\t >>>> source file in the argument list: $file \n"; }
+    $sources{$file} = new source_file($file, $file);
+ #   ... process the file
+    $sources{$file}->find_includes();
+ }
+} #end sub search_includes
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+sub check_perl_ver{
+#============================================================================
+#
+# check the current perl version 
+#
+#============================================================================
+if ($] < 5.000) { die "Exit ! Need perl 5.000 or newer !!!!\n";}
+else { print STDOUT "current perl version $] is OK...\n";}
+}
+#end sub check_perl_ver
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+sub get_inline_args{
+#============================================
+#
+#        get inline arguments
+#
+#============================================
 use File::Basename;
 use Getopt::Long;
 
@@ -509,9 +710,7 @@ if (@opt_I) {
 }
 #print "include directories: @incdirs \n";
 
-#
-# list of -Dxxx preprocessor statements for which *.F, *.F90 source files are going to be checked
-#
+# list of -Dxxx preprocessor variables for which *.F, *.F90 source files are going to be checked
 if ($opt_d) {
   $d_list = $opt_d;
 #  print "d_list: $d_list \n";
@@ -532,16 +731,12 @@ if ( !(-f $mf)) {
     system "touch $mf";
 }
 
-#------------------------------------------------------------------
 #    extension used for compiler's private module information
-#------------------------------------------------------------------
 if ($opt_m) {
   $mod_ext = $opt_m;
 } else {
   $mod_ext = 'mod';
 }
-
-# print "mod: $mod_ext\n";
 
 if ($opt_c) {
     $cray = 1;
@@ -565,7 +760,7 @@ if ($opt_pl) {
 #    print "setting print level $opt_pl \n";
 } else { $iprint = 0; }
 
-#  print "debugging print level set to: $iprint \n";
+  print STDOUT "debugging print level set to: $iprint \n";
 
 #
 # need to add some more dependencies so the .f file gets created
@@ -590,110 +785,29 @@ if ($opt_a) {
     $add_ext = $opt_a;
 }
 
-#                   place in Makefile
-#$mystring = '# DO NOT DELETE THIS LINE - used by make depend';
-$mystring = '# DO NOT DELETE THIS LINE -- make depend depends on it.';
-
-# Search for the includes in all the files
-foreach $file (@ARGV) {
-
-    if ($iprint >= 5)
-     { print "\t >>>> file in argument $file \n"; }
-
-    $sources{$file} = new source_file($file, $file);
- #   ... process the file
-    $sources{$file}->find_includes();
+# --- now print out entered arguments
+if ($iprint >= 5){
+ print "\n *** Verbose output from this perl script ***\n";
+ print "print level: $iprint\n";
+ if (@opt_I || @opt_i) {
+   print "read include directories : @incdirs \n"; }
+ if ($opt_d) {
+   print "preprocessor statements: $d_list\n"; }
+ print "the file to be modified: $mf\n";
+ print "modules extension: $mod_ext\n";
+ print "object files extension: $obj_ext\n";
+ if ($opt_a) {
+   print "additional target extension: $add_ext \n";
+ }
 }
-
-# Create new Makefile with new dependencies.
-
-open(MFILE, $mf) || die "can't read Makefile $mf: $!\n";
-open(NMFILE, "> Makefile.new") || die "can't write Makefile.new: $!\n";
-select(NMFILE);
-
-while (<MFILE>) {
-    if (!/$mystring/) {
-      # print "pred subr_print\n";
-        print;
-    } else {
-        last;
-    }
 }
+# end sub ....
 
- print $mystring, "\n";
-
-## print "string is out!\n";
-
-########################################################################
-#
-#       Now print out include and use dependencies in sorted order.
-#
-########################################################################
-
-# first get lost of module files (*.mod) arising from entering source (*.F90) files
-$mymodnames="";
-foreach $modname (sort keys(%mod_files)) {
- $mn=$modname.".".$mod_ext;
- $mymodnames=$mymodnames.$mn." ";
-##     print ":::> $modname.$mod_ext\n";  
-##     print ":::> $mymodnames\n";  
-}
-
-foreach $target (sort keys(%sources)) {
-###  print "---> calling print for target :  $target \n";
-   # $sources{$target}->print();
-    $sources{$target}->print($mymodnames);
-}
-
-##################################################################
-#
-####            print out module dependencies                 ####
-#
-##################################################################
-#print "======  module dependencies now ==========\n";
-#print "mod_files: $mod_files ...\n";
-# print (sort keys(%mod_files)); print "\n";
-# print (keys(%mod_files)); print "\n";
-
-#foreach $modname (sort keys(%mod_files)) {
-#     print ":::> $modname.$mod_ext\n";  }
-
-if ( !( $cray || $parasoft) ) {
-#   print (sort keys(%mod_files));
-    foreach $modname (sort keys(%mod_files)) {
-#     print ":::> $name $path $suffix \n";
-        ($name, $path, $suffix) =
-		&fileparse($sources{$mod_files{$modname}}->{'filepath'}, @suffixes);
-#     print " :::> $name $path $suffix \n";
-	$object = $path . "/" . $name . "." . $obj_ext;
-
-#       if ($obj_ext =="mod") {
-#       print "--->  $obj_ext \n" ; }
-
- ##print ">>> $modname.$mod_ext + $object\n";
-
-	print "$modname.$mod_ext: $object\n";
-    }
-}
-
-# ----------------------------------------------------------------
-#                    Sort out the Makefiles
-# ----------------------------------------------------------------
-rename($mf, "$mf.old") || warn "can't overwrite $mf.old: $!\n";
-rename('Makefile.new', $mf) ||
-     warn "can't move Makefile.new to $mf: $!\n";
-
-# Delete those RCS files we checked out
-foreach $file (keys %rcs) {
-    unlink($file);
-}
-
-#########################################################
-#                  End of main                          #
-#########################################################
-
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 sub preproc_list {
-# process list of preprocessor statements which are in the array @d_list
+#================================================================================
+#  process list of preprocessor statements which are in the array @d_list
+#================================================================================
   print "  ...  d_list:  $d_list \n";
   @d_list = split(/ /,$d_list);
   print "  splitted  @d_list \n";
@@ -705,26 +819,31 @@ sub preproc_list {
    print "new member: @d_list[$i]\n ";
       $i++;
   }
-  print "newly modified array:  @d_list \n";
+  # print "newly modified array:  @d_list \n";
 }
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 sub findfile {
+#=============================================================================
+#
 # Let's see if we can find the included file.  Look in current
 # directory first, then in directories from -I arguments.  Finally,
 # look for RCS files in current directory.
+#
+#=============================================================================
     my $file = shift;
     my($found, $i, $filepath);
     $found = 0;
     if ( -f $file ) {
         $found = 1;
-        $file =~ s#^\./##;          # convert ./foo.h to foo.h
+        $file =~ s#^\./##; # convert ./foo.h to foo.h
         return $file;
     }
     foreach $i (0 .. $#incdirs) {
         $filepath = $incdirs[$i]."/".$file;
         if ( -f $filepath ) {
 	    $found = 1;
-            $filepath =~ s#^\./##;    # convert ./foo.h to foo.h
+            $filepath =~ s#^\./##;  # convert ./foo.h to foo.h
             return $filepath;
         }
     }
@@ -742,6 +861,7 @@ sub findfile {
     }
     $filepath;
 }
+#end sub findfile
 
 #
 #    End of the program file
