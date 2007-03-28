@@ -394,10 +394,10 @@ C
       DOGGA = DFTISGGA()
       DOGRHO = .FALSE.
       DOLRHO = .FALSE.
-      WRITE(lupri,*) 'DOGGA', DOGGA
+!     WRITE(lupri,*) 'DOGGA', DOGGA
 #if defined (VAR_MPI) 
       DO NODE = 1,NODES
-        write(lupri,*) 'Sending DOGGA to node', DOGGA, NODE
+!       write(lupri,*) 'Sending DOGGA to node', DOGGA, NODE
         CALL MPI_SEND(DOGGA,1,MPI_LOGICAL,NODE,11,
      &                MPI_COMM_WORLD,IERR)
       END DO             
@@ -769,7 +769,7 @@ C
         IF (DOERG.OR.DOGRD.OR.DOLND) THEN
            CALL DFTPOT0(VX, WGHT, RHO, RHOGRD)
            
-           WRITE(lupri,*) 'DOGGA2', DOGGA
+!          WRITE(lupri,*) 'DOGGA2', DOGGA
            IF (DOGGA) THEN
              VX(FZ0) = VX(FZ0)/RHOGRD
            ENDIF
@@ -804,7 +804,7 @@ C
 #if defined (MOD_DNF)
 C aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then
-           WRITE(lupri,*) 'DOGGA3', DOGGA
+!          WRITE(lupri,*) 'DOGGA3', DOGGA
                IF (DOGGA) THEN
                   DO I = 1,3
                      VT(I) = VX(FZ0)*RHG(I)
@@ -815,7 +815,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
            else  ! df_fitvxc
 #endif
 C conventional code...
-             WRITE(lupri,*) 'DOGGA4', DOGGA
+!            WRITE(lupri,*) 'DOGGA4', DOGGA
              IF (DOGGA .AND. .NOT.FROMVX) THEN
                 DO I = 1,3
                    VT(I) = VX(FZ0)*RHG(I)
