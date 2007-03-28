@@ -9,8 +9,13 @@
 #define MAXNOD 200
 struct common_infpar {
     double totval;
+#if defined (INT_STAR8)
+    long icount, kprint, mtids[MAXNOD], mparid, mytid;
+    long node, nodes, numnod, ntask, ncode, parher, timing;
+#else
     int icount, kprint, mtids[MAXNOD], mparid, mytid;
     int node, nodes, numnod, ntask, ncode, parher, timing;
+#endif
 } infpar_;
 #else /* __CVERSION__ */
 !     my_MPI_INTEGER is used both in .c and .F routines in MPI calls
