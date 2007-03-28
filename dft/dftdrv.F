@@ -405,7 +405,6 @@ C
 C
       IF (DOGGA) THEN
          FROMVX = DFTPOT
-         WRITE(lupri,*) 'FROMVX,MYTID', FROMVX,MYTID
          DOGRHO = .TRUE.
          NDER = NDER + 1 
          IF (FROMVX) THEN
@@ -427,7 +426,6 @@ C
 
   100 CONTINUE
 
-      write(lupri,*) 'RYOGRID and MYTID',RYOGRID,mytid
       IF(RYOGRID) THEN
         READ(LUQUAD,*) NPOINT
       ELSE
@@ -481,7 +479,6 @@ C
            ENDDO
          ELSE
 #endif
-      write(lupri,*) 'Sent, calling DFTDR1'
            CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
      &                 DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &                 DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
@@ -1489,14 +1486,11 @@ C     ***********************
 C     ***** Slave send  *****
 C     ***********************
 C
-         write(lupri,*) 'sending to master',MYTID
          CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-         write(lupri,*) 'sending ELCTRN',ELCTRN
          IF(DOERG) THEN
            CALL MPI_SEND(EDFTY,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                   MPI_COMM_WORLD,IERR)
-         write(lupri,*) 'sending EDFTY',EDFTY
          ENDIF
          CALL MPI_SEND(EXCMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,45,
      &                 MPI_COMM_WORLD,IERR)
@@ -1609,7 +1603,6 @@ C
       CALL MEMGET('REAL',KY,NPOINT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KZ,NPOINT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KW,NPOINT,WORK,KFREE,LFREE)
-      WRITE(lupri,*) 'KX', KX,MYTID
       
       CALL MPI_RECV(WORK(KX),NPOINT,MPI_DOUBLE_PRECISION,
      &               MPARID,32,MPI_COMM_WORLD,ISTAT,IERR)
@@ -1928,9 +1921,6 @@ C     Receive some dftcom variables
       DFTPOT = LSEND(4)
       DFTORD = LSEND(5)
       DFTASC = LSEND(6)
-      DO I = 1, 6
-       write(lupri,*)'LSEND(',I,')=',LSEND(I)
-      END DO
 C
 
 #if defined (MOD_CDFT)
