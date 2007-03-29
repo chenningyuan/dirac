@@ -6256,12 +6256,12 @@ C=======================================================================
 
       SAVE SET
       DATA TABLE /'.INTEGR','.READXV','.1D    ','.2D    ', !  1  2  3  4
-     &            '.3D    ','.DENSIT','.MAGNET','.CURREN', !  5  6  7  8
+     &            '.3D    ','.N     ','.M     ','.J     ', !  5  6  7  8
      &            '.ELF   ','.1DSTEP','.3DADD ','.XXXXXX', !  9 10 11 12
      &            '.CUBE  ','.XXXXXX','.NXVEC ','.STRING', ! 13 14 15 16
-     &            '.SKIPEP','.SKIPEE','.RXJ   ','.DIACUR', ! 17 18 19 20
-     &            '.KEDENS','.HELICI','.GAMMA5','.XXXXXX', ! 21 22 23 24
-     &            '.DIVMAG','.DIVCUR','.ROTMAG','.ROTCUR', ! 25 26 27 28
+     &            '.SKIPEP','.SKIPEE','.RXJ   ','.JDIA  ', ! 17 18 19 20
+     &            '.K     ','.H     ','.GAMMA5','.XXXXXX', ! 21 22 23 24
+     &            '.DIVM  ','.DIVJ  ','.ROTM  ','.ROTJ  ', ! 25 26 27 28
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 29 30 31 32
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 33 34 35 36
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 37 38 39 40
