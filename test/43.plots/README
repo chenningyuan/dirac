@@ -1,4 +1,16 @@
-! Test for various plots in 1D and 3D using Dirac-Coulomb (dc) and L\'evy-Leblond (ll).
+! this test will plot several scalar and vector first-order densities
+! in the xy-, xz-, and yz-plane
+! induced by the electric or magnetic field
+! in x-, y-, and z-direction
+! for different atoms and symmetries
 !
-! We assume that the correlation consistent basis sets are available in your standard path. These sets can be
-! obtained from the DALTON distribution and may later be included in the DIRAC distribution as well.
+!
+! howto
+! =====
+!
+! edit common.py (recommended, otherwise you get many many output files and a huge summary.htm)
+! execute create_files.py
+! run this test the usual way (using runtest)
+! analyze using diff.py (which compares symmetries to C1 and creates summary.htm)
+! grep FF0000 summary.htm (grep for red numbers)
+! if you see nothing (no red numbers), be happy
