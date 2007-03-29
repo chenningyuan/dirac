@@ -790,7 +790,7 @@ C=======================================================================
      &          BUF(*),
      &          QUANTITY(NR_QUANTITIES,0:3),
      &          VECTOR(3),
-     &          DMATRIX(3,3),
+     &          VECTOR_DERVS(3,3),
      &          WORK(*)
 
       DO IQUANTITY = 1,NR_QUANTITIES
@@ -862,30 +862,11 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        F  = D1
-        G  = D1
-        IU = 1
-        IV = 1
-        IX = 2
-        IY = 2
-        ITRANSFORM = 2
-
-        CALL GET_CURRENT(.TRUE.,
-     &                   .FALSE.,
-     &                   VECTOR,
-     &                   UNUSED,
-     &                   F,
-     &                   G,
-     &                   IU,
-     &                   IV,
-     &                   IX,
-     &                   IY,
-     &                   ITRANSFORM,
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   GAO1,
-     &                   DMAT_AO,
-     &                   BUF)
+        CALL GET_M(VECTOR,
+     &             IREP_PLOT,
+     &             GAO,
+     &             DMAT_AO,
+     &             BUF)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -901,30 +882,11 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        F  = -137.0359998D0
-        G  = -137.0359998D0
-        IU = 1
-        IV = 2
-        IX = 2
-        IY = 1
-        ITRANSFORM = 1
-
-        CALL GET_CURRENT(.TRUE.,
-     &                   .FALSE.,
-     &                   VECTOR,
-     &                   UNUSED,
-     &                   F,
-     &                   G,
-     &                   IU,
-     &                   IV,
-     &                   IX,
-     &                   IY,
-     &                   ITRANSFORM,
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   GAO1,
-     &                   DMAT_AO,
-     &                   BUF)
+        CALL GET_J(VECTOR,
+     &             IREP_PLOT,
+     &             GAO,
+     &             DMAT_AO,
+     &             BUF)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -940,30 +902,11 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        F  = -137.0359998D0
-        G  = -137.0359998D0
-        IU = 1
-        IV = 2
-        IX = 2
-        IY = 1
-        ITRANSFORM = 1
-
-        CALL GET_CURRENT(.TRUE.,
-     &                   .FALSE.,
-     &                   VECTOR,
-     &                   UNUSED,
-     &                   F,
-     &                   G,
-     &                   IU,
-     &                   IV,
-     &                   IX,
-     &                   IY,
-     &                   ITRANSFORM,
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   GAO1,
-     &                   DMAT_AO,
-     &                   BUF)
+        CALL GET_J(VECTOR,
+     &             IREP_PLOT,
+     &             GAO,
+     &             DMAT_AO,
+     &             BUF)
 
         VECTOR(1) = PY*VECTOR(3) - PZ*VECTOR(2)
         VECTOR(2) = PZ*VECTOR(1) - PX*VECTOR(3)
@@ -977,112 +920,20 @@ C=======================================================================
 #endif
       ENDIF
 
-!     kinetic energy density
-
-      IQUANTITY = 21
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        F  =  137.0359998D0/D2
-        G  = -137.0359998D0/D2
-        IU = 1
-        IV = 2
-        IX = 2
-        IY = 1
-        ITRANSFORM = 1
-
-        CALL GET_CURRENT(.FALSE.,
-     &                   .TRUE.,
-     &                   UNUSED,
-     &                   DMATRIX,
-     &                   F,
-     &                   G,
-     &                   IU,
-     &                   IV,
-     &                   IX,
-     &                   IY,
-     &                   ITRANSFORM,
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   GAO1,
-     &                   DMAT_AO,
-     &                   BUF)
-
-        CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     helicity
-
-      IQUANTITY = 22
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        F  = -D1
-        G  =  D1
-        IU = 1
-        IV = 1
-        IX = 2
-        IY = 2
-        ITRANSFORM = 2
-
-        CALL GET_CURRENT(.FALSE.,
-     &                   .TRUE.,
-     &                   UNUSED,
-     &                   DMATRIX,
-     &                   F,
-     &                   G,
-     &                   IU,
-     &                   IV,
-     &                   IX,
-     &                   IY,
-     &                   ITRANSFORM,
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   GAO1,
-     &                   DMAT_AO,
-     &                   BUF)
-
-        CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
 !     divergence of magnetization
 
       IQUANTITY = 6
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        F  = D1
-        G  = D1
-        IU = 1
-        IV = 1
-        IX = 2
-        IY = 2
-        ITRANSFORM = 2
-
-        CALL GET_CURRENT(.FALSE.,
-     &                   .TRUE.,
-     &                   UNUSED,
-     &                   DMATRIX,
-     &                   F,
-     &                   G,
-     &                   IU,
-     &                   IV,
-     &                   IX,
-     &                   IY,
-     &                   ITRANSFORM,
+        CALL GET_M_DERVS(VECTOR_DERVS,
      &                   IREP_PLOT,
      &                   GAO,
      &                   GAO1,
      &                   DMAT_AO,
      &                   BUF)
 
-        CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
+        CALL DIV_VECTOR(QUANTITY(IQUANTITY,0),VECTOR_DERVS)
 #else
         CALL QUIT('not implemented')
 #endif
@@ -1094,32 +945,14 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        F  = -137.0359998D0
-        G  = -137.0359998D0
-        IU = 1
-        IV = 2
-        IX = 2
-        IY = 1
-        ITRANSFORM = 1
-
-        CALL GET_CURRENT(.FALSE.,
-     &                   .TRUE.,
-     &                   UNUSED,
-     &                   DMATRIX,
-     &                   F,
-     &                   G,
-     &                   IU,
-     &                   IV,
-     &                   IX,
-     &                   IY,
-     &                   ITRANSFORM,
+        CALL GET_J_DERVS(VECTOR_DERVS,
      &                   IREP_PLOT,
      &                   GAO,
      &                   GAO1,
      &                   DMAT_AO,
      &                   BUF)
 
-        CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
+        CALL DIV_VECTOR(QUANTITY(IQUANTITY,0),VECTOR_DERVS)
 #else
         CALL QUIT('not implemented')
 #endif
@@ -1131,32 +964,14 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        F  = D1
-        G  = D1
-        IU = 1
-        IV = 1
-        IX = 2
-        IY = 2
-        ITRANSFORM = 2
-
-        CALL GET_CURRENT(.FALSE.,
-     &                   .TRUE.,
-     &                   UNUSED,
-     &                   DMATRIX,
-     &                   F,
-     &                   G,
-     &                   IU,
-     &                   IV,
-     &                   IX,
-     &                   IY,
-     &                   ITRANSFORM,
+        CALL GET_M_DERVS(VECTOR_DERVS,
      &                   IREP_PLOT,
      &                   GAO,
      &                   GAO1,
      &                   DMAT_AO,
      &                   BUF)
 
-        CALL GET_CURRENT_ROT(DMATRIX,VECTOR)
+        CALL ROT_VECTOR(VECTOR,VECTOR_DERVS)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -1172,32 +987,14 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        F  = -137.0359998D0
-        G  = -137.0359998D0
-        IU = 1
-        IV = 2
-        IX = 2
-        IY = 1
-        ITRANSFORM = 1
-
-        CALL GET_CURRENT(.FALSE.,
-     &                   .TRUE.,
-     &                   UNUSED,
-     &                   DMATRIX,
-     &                   F,
-     &                   G,
-     &                   IU,
-     &                   IV,
-     &                   IX,
-     &                   IY,
-     &                   ITRANSFORM,
+        CALL GET_J_DERVS(VECTOR_DERVS,
      &                   IREP_PLOT,
      &                   GAO,
      &                   GAO1,
      &                   DMAT_AO,
      &                   BUF)
 
-        CALL GET_CURRENT_ROT(DMATRIX,VECTOR)
+        CALL ROT_VECTOR(VECTOR,VECTOR_DERVS)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -1206,6 +1003,13 @@ C=======================================================================
         CALL QUIT('not implemented')
 #endif
       ENDIF
+
+
+
+
+
+
+
 
 !     \gamma_5 density
 
@@ -1230,6 +1034,91 @@ C=======================================================================
      &                       GAO,GAO,
      &                       IREP_PLOT,DMAT_AO,BUF)
       ENDIF
+
+!     kinetic energy density
+
+      IQUANTITY = 21
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+#if defined (MOD_CDFT)
+
+        CALL QUIT('not implemented')
+!       F  =  137.0359998D0/D2
+!       G  = -137.0359998D0/D2
+!       IU = 1
+!       IV = 2
+!       IX = 2
+!       IY = 1
+!       ITRANSFORM = 1
+
+!       CALL GET_CURRENT(.FALSE.,
+!    &                   .TRUE.,
+!    &                   UNUSED,
+!    &                   DMATRIX,
+!    &                   F,
+!    &                   G,
+!    &                   IU,
+!    &                   IV,
+!    &                   IX,
+!    &                   IY,
+!    &                   ITRANSFORM,
+!    &                   IREP_PLOT,
+!    &                   GAO,
+!    &                   GAO1,
+!    &                   DMAT_AO,
+!    &                   BUF)
+
+!       CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+!     helicity
+
+      IQUANTITY = 22
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+#if defined (MOD_CDFT)
+
+        CALL QUIT('not implemented')
+!       F  = -D1
+!       G  =  D1
+!       IU = 1
+!       IV = 1
+!       IX = 2
+!       IY = 2
+!       ITRANSFORM = 2
+
+!       CALL GET_CURRENT(.FALSE.,
+!    &                   .TRUE.,
+!    &                   UNUSED,
+!    &                   DMATRIX,
+!    &                   F,
+!    &                   G,
+!    &                   IU,
+!    &                   IV,
+!    &                   IX,
+!    &                   IY,
+!    &                   ITRANSFORM,
+!    &                   IREP_PLOT,
+!    &                   GAO,
+!    &                   GAO1,
+!    &                   DMAT_AO,
+!    &                   BUF)
+
+!       CALL GET_CURRENT_DIV(DMATRIX,QUANTITY(IQUANTITY,0))
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+
+
+
+
+
+
+
+
 
 !     get norm for quantities that are vectors
 

@@ -146,61 +146,11 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_CURRENT_DIV */
-      SUBROUTINE GET_CURRENT_DIV(CURRENT_DERVS,
-     &                           CURRENT_DIV)
+C     /* DIV_VECTOR */
+      SUBROUTINE DIV_VECTOR(S,
+     &                      A_DERVS)
 C=======================================================================
-C                                                           radovan bast
-C                                            last revision: october 2006
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-      DIMENSION CURRENT_DERVS(3,3)
-
-      CURRENT_DIV = D0
-      DO IXYZ = 1,3
-        CURRENT_DIV = CURRENT_DIV + CURRENT_DERVS(IXYZ,IXYZ)
-      ENDDO
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_CURRENT_ROT */
-      SUBROUTINE GET_CURRENT_ROT(CURRENT_DERVS,
-     &                           CURRENT_ROT)
-C=======================================================================
-C                                                           radovan bast
-C                                            last revision: october 2006
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-      DIMENSION CURRENT_DERVS(3,3),
-     &          CURRENT_ROT(3)
-
-      CURRENT_ROT(1) = CURRENT_DERVS(2,3) - CURRENT_DERVS(3,2)
-      CURRENT_ROT(2) = CURRENT_DERVS(3,1) - CURRENT_DERVS(1,3)
-      CURRENT_ROT(3) = CURRENT_DERVS(1,2) - CURRENT_DERVS(2,1)
-
-      RETURN
-      END
-
-
-
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_VORTICITY */
-      SUBROUTINE GET_VORTICITY(CURRENT_DERVS,
-     &                         DENSITY,
-     &                         VORTICITY)
-C=======================================================================
-C     calculate vorticity
+C     s = \nabla \cdot a
 C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                              last revision: march 2007
@@ -211,14 +161,108 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
-      DIMENSION CURRENT_DERVS(3,3),
-     &          VORTICITY(3)
+      DIMENSION A_DERVS(3,3)
 
-      CALL GET_CURRENT_ROT(CURRENT_DERVS,
-     &                     VORTICITY(3))
+      S = 0.0D0
+      DO IXYZ = 1,3
+        S = S + A_DERVS(IXYZ,IXYZ)
+      ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* ROT_VECTOR */
+      SUBROUTINE ROT_VECTOR(V,
+     &                      A_DERVS)
+C=======================================================================
+C     v = \nabla \times a
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: march 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+      DIMENSION V(3),
+     &          A_DERVS(3,3)
+
+      V(1) = A_DERVS(2,3) - A_DERVS(3,2)
+      V(2) = A_DERVS(3,1) - A_DERVS(1,3)
+      V(3) = A_DERVS(1,2) - A_DERVS(2,1)
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* VECTOR_CROSS_VECTOR */
+      SUBROUTINE VECTOR_CROSS_VECTOR(V,
+     &                               A,
+     &                               B)
+C=======================================================================
+C     v = a \times b
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: march 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+      DIMENSION V(3),
+     &          A(3),
+     &          B(3)
+
+      V(1) = A(2)*B(3) - A(3)*B(2)
+      V(2) = A(3)*B(1) - A(1)*B(3)
+      V(3) = A(1)*B(2) - A(2)*B(1)
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_V */
+      SUBROUTINE GET_V(VECTOR_V,
+     &                 VECTOR_J,
+     &                 VECTOR_J_DERVS,
+     &                 DENSITY,
+     &                 DENSITY_GRADIENT)
+C=======================================================================
+C
+C                                            j(r)
+C     returns vorticity v(r) = \nabla \times ----
+C                                            n(r)
+C
+C     needs j, derivatives of j, n, and grad(n)
+C
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: march 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+      DIMENSION VECTOR_V(3),
+     &          VECTOR_TEMP(3),
+     &          VECTOR_J(3),
+     &          VECTOR_J_DERVS(3,3),
+     &          DENSITY_GRADIENT(3)
 
       DO IXYZ = 1,3
-        VORTICITY(IXYZ) = VORTICITY(IXYZ)/DENSITY
+        VECTOR_TEMP(IXYZ) = DENSITY_GRADIENT(IXYZ)/DENSITY
+      ENDDO
+
+      CALL VECTOR_CROSS_VECTOR(VECTOR_V,VECTOR_TEMP,VECTOR_J)
+
+      CALL ROT_VECTOR(VECTOR_TEMP,VECTOR_J_DERVS)
+
+      DO IXYZ = 1,3
+        VECTOR_V(IXYZ) = (VECTOR_TEMP(IXYZ) - VECTOR_V(IXYZ))/DENSITY
       ENDDO
 
       RETURN
@@ -315,6 +359,116 @@ C=======================================================================
       IX         = 2
       IY         = 2
       ITRANSFORM = 2
+
+      CALL GET_CURRENT(.FALSE.,
+     &                 .TRUE.,
+     &                 UNUSED,
+     &                 VECTOR_DERVS,
+     &                 F,
+     &                 G,
+     &                 IU,
+     &                 IV,
+     &                 IX,
+     &                 IY,
+     &                 ITRANSFORM,
+     &                 IREPOP,
+     &                 GAO,
+     &                 GAO1,
+     &                 DMAT,
+     &                 BUF)
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_J */
+      SUBROUTINE GET_J(VECTOR,
+     &                 IREPOP,
+     &                 GAO,
+     &                 DMAT,
+     &                 BUF)
+C=======================================================================
+C     calculate magnetization m(r)
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: march 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "cdft.h"
+
+      LOGICAL   LBIT
+      DIMENSION VECTOR(*),
+     &          GAO(*),
+     &          DMAT(*),
+     &          BUF(*)
+
+      F          = -137.0359998D0
+      G          = -137.0359998D0
+      IU         = 1
+      IV         = 2
+      IX         = 2
+      IY         = 1
+      ITRANSFORM = 1
+
+      CALL GET_CURRENT(.TRUE.,
+     &                 .FALSE.,
+     &                 VECTOR,
+     &                 UNUSED,
+     &                 F,
+     &                 G,
+     &                 IU,
+     &                 IV,
+     &                 IX,
+     &                 IY,
+     &                 ITRANSFORM,
+     &                 IREPOP,
+     &                 GAO,
+     &                 UNUSED,
+     &                 DMAT,
+     &                 BUF)
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_J_DERVS */
+      SUBROUTINE GET_J_DERVS(VECTOR_DERVS,
+     &                       IREPOP,
+     &                       GAO,
+     &                       GAO1,
+     &                       DMAT,
+     &                       BUF)
+C=======================================================================
+C     calculate derivatives of magnetization m(r)
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: march 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "cdft.h"
+
+      LOGICAL   LBIT
+      DIMENSION VECTOR_DERVS(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          DMAT(*),
+     &          BUF(*)
+
+      F          = -137.0359998D0
+      G          = -137.0359998D0
+      IU         = 1
+      IV         = 2
+      IX         = 2
+      IY         = 1
+      ITRANSFORM = 1
 
       CALL GET_CURRENT(.FALSE.,
      &                 .TRUE.,
