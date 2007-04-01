@@ -70,8 +70,8 @@ write(LUPRI,*) 'test_oof: after pmat called ... '
 
   END SUBROUTINE TEST_OOF
 
- subroutine test_oof1
-   use QMatrixes
+  subroutine test_oof1
+use QMatrixes
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -79,8 +79,8 @@ write(LUPRI,*) 'test_oof: after pmat called ... '
 
 CALL HEADER( 'in test_oof1 routine !',-1)
 
-! make a new matrix
-pmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1))
+!   make a new matrix ...
+pmat = MakeQMtx( set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)), set_irp(0), set_nz(1) )
 call QMtxInfo(pmat)
 
  end subroutine test_oof1

@@ -323,9 +323,15 @@ qm%symm_packed = .false.
 ! size of array to be allocated
 isize = (qm%nr(1)+qm%nr(2))*(qm%nr(1)+qm%nr(2))*qm%nz
 
+if (iprqmtx >=5 ) then
+ call print_mem_param()
+! write(lupri,*) 'KFREE,LFREE=',KFREE,LFREE
+ write(lupri,*) 'isize=',isize
+endif
+
 ! allocate array for the matrix
 !CALL MEMGET('REAL',qm%kstart,isize,PW,KFREE,LFREE)
-CALL mymemget('REAL',qm%kstart,isize)
+ CALL mymemget('REAL',qm%kstart,isize)
 
 qm%is_alloc = .true.
 

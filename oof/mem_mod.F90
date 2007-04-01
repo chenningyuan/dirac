@@ -24,12 +24,20 @@ subroutine mymemget( datatype, kbase, length )
 !
 !************************************************************************
 #include "priunit.h"
+!#include "iratdef.h"
 character*(*), intent(in) :: datatype
-integer, intent(inout) :: kbase
+integer(kind=4), intent(inout) :: kbase
+!integer(kind=8/IRAT), intent(inout) :: kbase
+!integer, intent(inout) :: kbase
 integer (kind=8), intent(inout) :: length
+integer :: kbase_temp ! needs to fit into internal MEM_stuff 
 call QENTER('mymemget')
-  CALL MEMCHK('mymemget',PW,1) 
-  CALL MEMGET(datatype,kbase,isize,PW,KFREE,LFREE)
+ CALL MEMCHK('mymemget',PW,1) 
+  
+   kbase_temp = kbase
+! CALL MEMGET(datatype,kbase,isize,PW,KFREE,LFREE)
+ CALL MEMGET(datatype,kbase_temp,isize,PW,KFREE,LFREE)
+   kbase = kbase_temp
 call QEXIT('mymemget')
 end subroutine mymemget
 
@@ -43,9 +51,14 @@ subroutine mymemrel (datatype, kfirst,krel)
 !************************************************************************
 #include "priunit.h"
 character*(*), intent(in) :: datatype
-integer, intent (inout) :: kfirst,krel
+integer(kind=4), intent (inout) :: kfirst,krel
+integer :: kfirst_temp, krel_temp
+
 call QENTER('mymemrel')
-  call MEMREL(datatype,PW,kfirst,krel,KFREE,LFREE)
+ kfirst_temp = kfirst; krel_temp  = krel
+  !call MEMREL(datatype,PW,kfirst,krel,KFREE,LFREE)
+ call MEMREL(datatype,PW,kfirst_temp,krel_temp,KFREE,LFREE)
+ kfirst = kfirst_temp;  krel  =  krel_temp
 call QEXIT('mymemrel')
 end subroutine mymemrel
  
@@ -102,7 +115,9 @@ SUBROUTINE StickMemory(WORK,LWORK_IN)
 !
 !------------------------------------------------------------------------
 #include "priunit.h"
-integer*4, intent(in) :: LWORK_IN
+#include "iratdef.h"
+!integer*4, intent(in) :: LWORK_IN
+integer(kind=8/IRAT), intent(in) :: LWORK_IN
 real*8, intent(in), target :: WORK(LWORK_IN)
 CALL QENTER('StickMemory')
 if (iprmem > 10) then

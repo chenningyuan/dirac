@@ -2,7 +2,7 @@
 ! common block for handling CAP integrals
 ! to replace tedious reading from INPCAP,INPQD files
 !
-! PW
+! PW 'theta'
 !
 ! IPRCAP - print level
 !

@@ -81,7 +81,7 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in CAPINP.')
  1             CONTINUE
-C&&& INPQD: read the PW number
+C&&& INPQD: read the PW number 'theta'
                READ(LUCMD,*) PW
                GO TO 100
  2             CONTINUE
