@@ -790,7 +790,6 @@ C=======================================================================
      &          BUF(*),
      &          QUANTITY(NR_QUANTITIES,0:3),
      &          VECTOR(3),
-     &          VECTOR_DERVS(3,3),
      &          WORK(*)
 
       DO IQUANTITY = 1,NR_QUANTITIES
@@ -862,11 +861,16 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_M(VECTOR,
-     &             IREP_PLOT,
-     &             GAO,
-     &             DMAT_AO,
-     &             BUF)
+        CALL GET_DENSITY(1,
+     &                   VECTOR,
+     &                   1,
+     &                   1,
+     &                   3,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   UNUSED,
+     &                   DMAT_AO,
+     &                   BUF)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -882,11 +886,16 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_J(VECTOR,
-     &             IREP_PLOT,
-     &             GAO,
-     &             DMAT_AO,
-     &             BUF)
+        CALL GET_DENSITY(1,
+     &                   VECTOR,
+     &                   1,
+     &                   1,
+     &                   2,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   UNUSED,
+     &                   DMAT_AO,
+     &                   BUF)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -902,11 +911,16 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_J(VECTOR,
-     &             IREP_PLOT,
-     &             GAO,
-     &             DMAT_AO,
-     &             BUF)
+        CALL GET_DENSITY(1,
+     &                   VECTOR,
+     &                   1,
+     &                   1,
+     &                   2,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   UNUSED,
+     &                   DMAT_AO,
+     &                   BUF)
 
         VECTOR(1) = PY*VECTOR(3) - PZ*VECTOR(2)
         VECTOR(2) = PZ*VECTOR(1) - PX*VECTOR(3)
@@ -926,14 +940,16 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_M_DERVS(VECTOR_DERVS,
+        CALL GET_DENSITY(1,
+     &                   QUANTITY(IQUANTITY,0),
+     &                   2,
+     &                   2,
+     &                   3,
      &                   IREP_PLOT,
      &                   GAO,
      &                   GAO1,
      &                   DMAT_AO,
      &                   BUF)
-
-        CALL DIV_VECTOR(QUANTITY(IQUANTITY,0),VECTOR_DERVS)
 #else
         CALL QUIT('not implemented')
 #endif
@@ -945,14 +961,16 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_J_DERVS(VECTOR_DERVS,
+        CALL GET_DENSITY(1,
+     &                   QUANTITY(IQUANTITY,0),
+     &                   2,
+     &                   2,
+     &                   2,
      &                   IREP_PLOT,
      &                   GAO,
      &                   GAO1,
      &                   DMAT_AO,
      &                   BUF)
-
-        CALL DIV_VECTOR(QUANTITY(IQUANTITY,0),VECTOR_DERVS)
 #else
         CALL QUIT('not implemented')
 #endif
@@ -964,14 +982,16 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_M_DERVS(VECTOR_DERVS,
+        CALL GET_DENSITY(1,
+     &                   VECTOR,
+     &                   2,
+     &                   3,
+     &                   3,
      &                   IREP_PLOT,
      &                   GAO,
      &                   GAO1,
      &                   DMAT_AO,
      &                   BUF)
-
-        CALL ROT_VECTOR(VECTOR,VECTOR_DERVS)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -987,14 +1007,16 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_J_DERVS(VECTOR_DERVS,
+        CALL GET_DENSITY(1,
+     &                   VECTOR,
+     &                   2,
+     &                   3,
+     &                   2,
      &                   IREP_PLOT,
      &                   GAO,
      &                   GAO1,
      &                   DMAT_AO,
      &                   BUF)
-
-        CALL ROT_VECTOR(VECTOR,VECTOR_DERVS)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)

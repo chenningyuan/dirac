@@ -267,74 +267,53 @@ C=======================================================================
 
       RETURN
       END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_M */
-      SUBROUTINE GET_M(VECTOR,
-     &                 IREPOP,
-     &                 GAO,
-     &                 DMAT,
-     &                 BUF)
-C=======================================================================
-C     calculate magnetization m(r)
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: march 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "cdft.h"
-
-      LOGICAL   LBIT
-      DIMENSION VECTOR(*),
-     &          GAO(*),
-     &          DMAT(*),
-     &          BUF(*)
-
-      F = D1
-      G = D1
-      IF(LBIT(LBIT_CDFT,4)) G = -D1 !operator is \beta\sigma instead of \sigma
-      IU         = 1
-      IV         = 1
-      IX         = 2
-      IY         = 2
-      ITRANSFORM = 2
-
-      CALL GET_CURRENT(.TRUE.,
-     &                 .FALSE.,
-     &                 VECTOR,
-     &                 UNUSED,
-     &                 F,
-     &                 G,
-     &                 IU,
-     &                 IV,
-     &                 IX,
-     &                 IY,
-     &                 ITRANSFORM,
-     &                 IREPOP,
-     &                 GAO,
-     &                 UNUSED,
-     &                 DMAT,
-     &                 BUF)
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_M_DERVS */
-      SUBROUTINE GET_M_DERVS(VECTOR_DERVS,
+C     /* GET_DENSITY */
+      SUBROUTINE GET_DENSITY(IGET,
+     &                       DENSITY,
+     &                       IOPERATOR_LEFT,
+     &                       ICOMBINE,
+     &                       IOPERATOR_RIGHT,
      &                       IREPOP,
      &                       GAO,
      &                       GAO1,
      &                       DMAT,
      &                       BUF)
 C=======================================================================
-C     calculate derivatives of magnetization m(r)
+C
+C     IOPERATOR_LEFT  = 1      "nothing"
+C                       2      \nabla
+C
+C     ICOMBINE        = 1      "nothing"
+C                       2      \cdot
+C                       3      \times
+C
+C     IOPERATOR_RIGHT = 1      1_{4x4}
+C                       2      c \alpha
+C                       3      \Sigma
+C                       4      \beta\Sigma
+C                       5      \gamma_5
+C
 C-----------------------------------------------------------------------
 C                                                           radovan bast
-C                                              last revision: march 2007
+C                                              last revision: april 2007
 C=======================================================================
 
 #include "implicit.h"
@@ -342,55 +321,166 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
-#include "cdft.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
 
-      LOGICAL   LBIT
-      DIMENSION VECTOR_DERVS(*),
+      DIMENSION DENSITY(*),
      &          GAO(*),
      &          GAO1(*),
      &          DMAT(*),
      &          BUF(*)
 
-      F = D1
-      G = D1
-      IF(LBIT(LBIT_CDFT,4)) G = -D1 !operator is \beta\sigma instead of \sigma
-      IU         = 1
-      IV         = 1
-      IX         = 2
-      IY         = 2
-      ITRANSFORM = 2
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      JOFF = NBAST
+#else
+      JOFF = NTBAS(0)
+#endif
 
-      CALL GET_CURRENT(.FALSE.,
-     &                 .TRUE.,
-     &                 UNUSED,
-     &                 VECTOR_DERVS,
-     &                 F,
-     &                 G,
-     &                 IU,
-     &                 IV,
-     &                 IX,
-     &                 IY,
-     &                 ITRANSFORM,
-     &                 IREPOP,
-     &                 GAO,
-     &                 GAO1,
-     &                 DMAT,
-     &                 BUF)
+      K = 1
+      L = 1
+      M = 2
+      N = 2
+      A = D1
+      B = D1
+      ITRANSFORM = 0
+
+      IF((IOPERATOR_RIGHT .EQ. 2) .OR. (IOPERATOR_RIGHT .EQ. 5)) THEN
+        K = 1
+        L = 2
+        M = 2
+        N = 1
+      ENDIF
+
+      IF(IOPERATOR_RIGHT .EQ. 4) THEN
+        A = -137.0359998D0
+        B = -137.0359998D0
+      ENDIF
+      IF(IOPERATOR_RIGHT .EQ. 4) B = -D1
+
+      IF((IOPERATOR_RIGHT .EQ. 3) .OR. (IOPERATOR_RIGHT .EQ. 4)) THEN
+        ITRANSFORM = 2
+      ENDIF
+      IF(IOPERATOR_RIGHT .EQ. 2) ITRANSFORM = 1
+
+      IF(ICOMBINE .EQ. 1) THEN
+
+        IEND = 3
+        IF(IOPERATOR_RIGHT .EQ. 1) IEND = 1
+
+        DO IXYZ = 1,IEND
+
+          IF(IOPERATOR_LEFT .EQ. 1) THEN
+
+            IF(IGET .EQ. 1) DENSITY(IXYZ) = D0
+            CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
+     &                           A,K,L,
+     &                           IXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO,
+     &                           DMAT,BUF)
+            CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
+     &                           B,M,N,
+     &                           IXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO,
+     &                           DMAT,BUF)
+
+          ELSEIF(IOPERATOR_LEFT .EQ. 2) THEN
+
+            DO JXYZ = 1,3
+
+              IF(IGET .EQ. 1) DENSITY(JXYZ+3*(IXYZ-1)) = D0
+              CALL GET_DENSITY_SUB(IGET,DENSITY(JXYZ+3*(IXYZ-1)),
+     &                             D2*A,K,L,
+     &                             IXYZ,ITRANSFORM,IREPOP,
+     &                             GAO,GAO1(1+JOFF*(JXYZ-1)),
+     &                             DMAT,BUF)
+              CALL GET_DENSITY_SUB(IGET,DENSITY(JXYZ+3*(IXYZ-1)),
+     &                             D2*B,M,N,
+     &                             IXYZ,ITRANSFORM,IREPOP,
+     &                             GAO,GAO1(1+JOFF*(JXYZ-1)),
+     &                             DMAT,BUF)
+            ENDDO
+          ENDIF
+        ENDDO
+
+      ELSEIF(ICOMBINE .EQ. 2) THEN
+
+        IF(IGET .EQ. 1) DENSITY(1) = D0
+        DO JXYZ = 1,3
+
+          CALL GET_DENSITY_SUB(IGET,DENSITY(1),
+     &                         D2*A,K,L,
+     &                         JXYZ,ITRANSFORM,IREPOP,
+     &                         GAO,GAO1(1+JOFF*(JXYZ-1)),
+     &                         DMAT,BUF)
+          CALL GET_DENSITY_SUB(IGET,DENSITY(1),
+     &                         D2*B,M,N,
+     &                         JXYZ,ITRANSFORM,IREPOP,
+     &                         GAO,GAO1(1+JOFF*(JXYZ-1)),
+     &                         DMAT,BUF)
+        ENDDO
+
+      ELSEIF(ICOMBINE .EQ. 3) THEN
+
+        DO IXYZ = 1,3
+
+          IF(IGET .EQ. 1) DENSITY(IXYZ) = D0
+   
+          JXYZ = IXYZ + 1
+          KXYZ = JXYZ + 1
+
+          IF(JXYZ .GT. 3) JXYZ = JXYZ - 3
+          IF(KXYZ .GT. 3) KXYZ = KXYZ - 3
+
+          CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
+     &                         D2*A,K,L,
+     &                         JXYZ,ITRANSFORM,IREPOP,
+     &                         GAO,GAO1(1+JOFF*(KXYZ-1)),
+     &                         DMAT,BUF)
+          CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
+     &                         D2*B,M,N,
+     &                         JXYZ,ITRANSFORM,IREPOP,
+     &                         GAO,GAO1(1+JOFF*(KXYZ-1)),
+     &                         DMAT,BUF)
+          CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
+     &                         -D2*A,K,L,
+     &                         KXYZ,ITRANSFORM,IREPOP,
+     &                         GAO,GAO1(1+JOFF*(JXYZ-1)),
+     &                         DMAT,BUF)
+          CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
+     &                         -D2*B,M,N,
+     &                         KXYZ,ITRANSFORM,IREPOP,
+     &                         GAO,GAO1(1+JOFF*(JXYZ-1)),
+     &                         DMAT,BUF)
+
+        ENDDO
+
+      ENDIF
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_J */
-      SUBROUTINE GET_J(VECTOR,
-     &                 IREPOP,
-     &                 GAO,
-     &                 DMAT,
-     &                 BUF)
+C     /* GET_DENSITY_SUB */
+      SUBROUTINE GET_DENSITY_SUB(IGET,
+     &                           DENSITY,
+     &                           F,
+     &                           IC1,
+     &                           IC2,
+     &                           IXYZ,
+     &                           ITRANSFORM,
+     &                           IREPOP,
+     &                           GAO_LEFT,
+     &                           GAO_RIGHT,
+     &                           DMAT,
+     &                           BUF)
 C=======================================================================
-C     calculate magnetization m(r)
-C-----------------------------------------------------------------------
 C                                                           radovan bast
-C                                              last revision: march 2007
+C                                              last revision: april 2007
 C=======================================================================
 
 #include "implicit.h"
@@ -398,54 +488,79 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
-#include "cdft.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
 
-      LOGICAL   LBIT
-      DIMENSION VECTOR(*),
-     &          GAO(*),
+      DIMENSION GAO_LEFT(*),
+     &          GAO_RIGHT(*),
      &          DMAT(*),
      &          BUF(*)
 
-      F          = -137.0359998D0
-      G          = -137.0359998D0
-      IU         = 1
-      IV         = 2
-      IX         = 2
-      IY         = 1
-      ITRANSFORM = 1
+#include "ibtfun.h"
 
-      CALL GET_CURRENT(.TRUE.,
-     &                 .FALSE.,
-     &                 VECTOR,
-     &                 UNUSED,
-     &                 F,
-     &                 G,
-     &                 IU,
-     &                 IV,
-     &                 IX,
-     &                 IY,
-     &                 ITRANSFORM,
-     &                 IREPOP,
-     &                 GAO,
-     &                 UNUSED,
-     &                 DMAT,
-     &                 BUF)
+      ICHECK = IC1 + IC2
+      IF((MC .EQ. 1) .AND. (ICHECK .GT. 2)) GOTO 999
+
+      IF(ITRANSFORM .EQ. 0) THEN
+
+        CALL GET_DENSITY_SUBSUB(IGET,
+     &                          DENSITY,
+     &                          F,
+     &                          IC1,
+     &                          IC2,
+     &                          IREPOP,
+     &                          GAO_LEFT,
+     &                          GAO_RIGHT,
+     &                          DMAT,
+     &                          BUF)
+
+      ELSE
+
+#if defined (VAR_G77) || defined (SYS_SX)
+        IOFF = NBAST*NBAST
+#else
+        IOFF = NTBAS(0)*NTBAS(0)
+#endif
+        IQ   = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+
+        CALL GET_DENSITY_SUBSUB(IGET,
+     &                          DENSITY,
+     &                          F,
+     &                          IC1,
+     &                          IC2,
+     &                          IBTXOR(ISYMAX(IXYZ,ITRANSFORM),IREPOP),
+     &                          GAO_LEFT,
+     &                          GAO_RIGHT,
+     &                          DMAT(1+IOFF*(IQ-1)),
+     &                          BUF)
+
+      ENDIF
+
+999   CONTINUE
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_J_DERVS */
-      SUBROUTINE GET_J_DERVS(VECTOR_DERVS,
-     &                       IREPOP,
-     &                       GAO,
-     &                       GAO1,
-     &                       DMAT,
-     &                       BUF)
+C     /* GET_DENSITY_SUBSUB */
+      SUBROUTINE GET_DENSITY_SUBSUB(IGET,
+     &                              DENSITY,
+     &                              F,
+     &                              IC1,
+     &                              IC2,
+     &                              IREPOP,
+     &                              GAO_LEFT,
+     &                              GAO_RIGHT,
+     &                              DMAT,
+     &                              BUF)
 C=======================================================================
-C     calculate derivatives of magnetization m(r)
-C-----------------------------------------------------------------------
 C                                                           radovan bast
-C                                              last revision: march 2007
+C                                              last revision: april 2007
 C=======================================================================
 
 #include "implicit.h"
@@ -453,39 +568,56 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
-#include "cdft.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
 
-      LOGICAL   LBIT
-      DIMENSION VECTOR_DERVS(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          DMAT(*),
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION DMAT(NBAST,NBAST)
+#else
+      DIMENSION DMAT(NTBAS(0),NTBAS(0))
+#endif
+      DIMENSION GAO_LEFT(*),
+     &          GAO_RIGHT(*),
      &          BUF(*)
 
-      F          = -137.0359998D0
-      G          = -137.0359998D0
-      IU         = 1
-      IV         = 2
-      IX         = 2
-      IY         = 1
-      ITRANSFORM = 1
+#include "ibtfun.h"
 
-      CALL GET_CURRENT(.FALSE.,
-     &                 .TRUE.,
-     &                 UNUSED,
-     &                 VECTOR_DERVS,
-     &                 F,
-     &                 G,
-     &                 IU,
-     &                 IV,
-     &                 IX,
-     &                 IY,
-     &                 ITRANSFORM,
-     &                 IREPOP,
-     &                 GAO,
-     &                 GAO1,
-     &                 DMAT,
-     &                 BUF)
+      DO IREP1 = 0,NBSYM-1
+
+        N1 = NBBAS(IREP1,IC1)
+        IF(N1 .GT. 0) THEN
+
+          IREP2 = IBTXOR(IREP1,IREPOP)
+          N2    = NBBAS(IREP2,IC2)
+          IF(N2 .GT. 0) THEN
+
+            I1 = IBBAS(IREP1,IC1) + 1
+            I2 = IBBAS(IREP2,IC2) + 1
+
+            IF(IGET .EQ. 1) THEN !get
+
+              CALL DGEMV('N',NBBAS(IREP1,IC1),NBBAS(IREP2,IC2),D1,
+     &                   DMAT(I1,I2),NTBAS(0),GAO_RIGHT(I2),1,D0,BUF,1)
+              DENSITY = DENSITY
+     &                + F*DDOT(NBBAS(IREP1,IC1),GAO_LEFT(I1),1,BUF,1)
+
+            ELSE !put (DMAT is then EXCMAT)
+
+              DO J = 1,N2
+                FACTOR = F*DENSITY*GAO_RIGHT(I2+J)
+                CALL DAXPY(N1,FACTOR,GAO_LEFT(I1+1),1,DMAT(I1+1,I2+J),1)
+              ENDDO
+
+            ENDIF
+          ENDIF
+        ENDIF
+      ENDDO
 
       RETURN
       END
