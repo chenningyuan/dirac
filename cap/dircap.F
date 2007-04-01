@@ -945,6 +945,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
          XR=X-R_n(1)
          XRM=X-R_m(1)
          DGr=K_n*(XR**(-1))
+C       ... 1st derivative
          DG=DGr-(2*R_n(2)*(XR))
        
          XRy=Xy-R_n(1)
@@ -956,6 +957,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
          D2G2X=2*R_n(2)*(2*K_n+1)
          D2G3X=4*(R_n(2)**2)*(XR**2)
          D2GX=D2G1X-D2G2X+D2G3X
+C        ... 2nd derivative
          D2G=D2GX
 
          D2G1Xy=K_n*(K_n-1)*(XRy**(-2))
@@ -980,6 +982,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        
          v0x=V0(M,THETA,LAMDA,X0,X)
          V1x=v1(M,THETA,LAMDA,X0,X)*DG
+
          v2x=v2(M,THETA,LAMDA,X0,X)*D2G
 
          v0xy=V0(M,THETA,LAMDA,X0,Xy)
@@ -1014,6 +1017,7 @@ C         if((zabs(vcap)).lt.(0.00000000001))exit
 C************************************************************************
 C     Implements the basic functions from the paper.
 C************************************************************************
+C       ... Nimerod:1998, eq. 18
       DOUBLE COMPLEX FUNCTION FF(THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8 THETA,LAMBDA,X0,X
@@ -1024,6 +1028,7 @@ C************************************************************************
       FF = DCMPLX(X) + FF*DCMPLX(AUX)
       END
 
+C     ... eq.4 in Nimrod:1998
       DOUBLE COMPLEX FUNCTION F0(THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8 THETA,LAMBDA,X0,X
@@ -1034,6 +1039,7 @@ C************************************************************************
       F0 = (1.0D0,0.0D0) + F0*DCMPLX(AUX)
       END
 
+C        ... first derivative of small f(x), eq. 20 of Nimrod:1998
       DOUBLE COMPLEX FUNCTION F1(THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8  THETA,LAMBDA,X0,X
@@ -1043,6 +1049,7 @@ C************************************************************************
       F1 = DCMPLX(LAMBDA)*F1*DCMPLX(AUX)/(2.0D0,0.0D0)
       END
 
+C     .... eq.21 of Nimrod:1998
       DOUBLE COMPLEX FUNCTION F2(THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8 THETA,LAMBDA,X0,X
@@ -1064,6 +1071,11 @@ C************************************************************************
       CA2 = (F1(THETA,LAMBDA,X0,X)**2)/(F0(THETA,LAMBDA,X0,X)**4)
       CA2 = CA2/DCMPLX(5.0D0*M/8.0D0)
       V0 = CA1 - CA2
+
+CNEW for DIrac Ham.
+C     CA1 = F1(THETA,LAMBDA,X0,X)/(F0(THETA,LAMBDA,X0,X)
+C     V0 = CA1 
+
       END
 
       DOUBLE COMPLEX FUNCTION V1(M,THETA,LAMBDA,X0,X)
@@ -1073,6 +1085,8 @@ C************************************************************************
       DOUBLE COMPLEX F0,F1
       V1 = F1(THETA,LAMBDA,X0,X)/(F0(THETA,LAMBDA,X0,X)**3)
       V1 = V1/DCMPLX(M)
+CMI  ... for the DIRAC Ham.
+CNEW  V1 = ( 1/F1(THETA,LAMBDA,X0,X) ) - 1
       END
 
       DOUBLE COMPLEX FUNCTION V2(M,THETA,LAMBDA,X0,X)

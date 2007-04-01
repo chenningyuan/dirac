@@ -3,15 +3,68 @@
 !
 MODULE Memory
 
-! it's dangerously public !
-integer :: KWORK, KFREE, LFREE, LWORK ! basic variables of memmory handling
-!integer, private :: KWORK, KFREE, LFREE, LWORK ! basic variables of memmory handling
-double precision,  pointer :: PW(:) ! points to the big WORK array
+!integer :: KWORK, KFREE, LFREE, LWORK ! basic variables of memmory handling
+integer, private :: KWORK, KFREE, LFREE, LWORK ! basic variables of memmory handling
+
+! print level
+integer, private :: iprmem  = 0
+
+! pointer to the working array; public status needed !
+real (kind=8),  pointer :: PW(:) 
+!real (kind=8), private,  pointer :: PW(:) ! points to the big WORK array
 
   contains
 
-! print out basic memmory variables
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine mymemget( datatype, kbase, length )
+!************************************************************************
+!
+!  public procedure to replace the common MEMGET procedure
+! with the hide private variables: KFREE,LFREE
+!
+!************************************************************************
+#include "priunit.h"
+character*(*), intent(in) :: datatype
+integer, intent(inout) :: kbase
+integer (kind=8), intent(inout) :: length
+call QENTER('mymemget')
+  CALL MEMCHK('mymemget',PW,1) 
+  CALL MEMGET(datatype,kbase,isize,PW,KFREE,LFREE)
+call QEXIT('mymemget')
+end subroutine mymemget
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine mymemrel (datatype, kfirst,krel)
+!************************************************************************
+!
+!  Public procedure to replace common MEMREL subroutine to hide 
+! KFREE,LFREE variables
+!
+!************************************************************************
+#include "priunit.h"
+character*(*), intent(in) :: datatype
+integer, intent (inout) :: kfirst,krel
+call QENTER('mymemrel')
+  call MEMREL(datatype,PW,kfirst,krel,KFREE,LFREE)
+call QEXIT('mymemrel')
+end subroutine mymemrel
+ 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!subroutine mem_ini
+!************************************************************************
+!
+!
+!************************************************************************
+
+!end subroutine mem_ini
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_mem_param 
+!************************************************************************
+!
+!     print out the DIRAC memmory parameters
+!
+!************************************************************************
 #include "priunit.h"
 CALL QENTER('print_mem_param')
 write(LUPRI,*) 'Memmory parameters: KWORK=',KWORK,' KFREE=',KFREE,' LFREE=',LFREE, &
@@ -21,41 +74,96 @@ if (associated(PW)) then
 else
    write(LUPRI,*) 'Pointer PW is NOT associated with the WORK array.'
 endif
+CALL MEMCHK('print_mem_param',PW,1)
 CALL QEXIT('print_mem_param')
 end subroutine print_mem_param
 
-SUBROUTINE Stick_into_array(WORK,LWORK_IN)
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine set_iprmem(i)
+!------------------------------------------------------------------------
+!
+!                  set up the module printing parameter
+!
+!------------------------------------------------------------------------
+integer, intent(in) :: i
+call QENTER('set_iprmem')
+if (i<0) call QUIT('set_iprmem: print level must be greater than 0 !')
+iprmem = i
+call QEXIT('set_iprmem')
+end subroutine set_iprmem
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+SUBROUTINE StickMemory(WORK,LWORK_IN)
+!------------------------------------------------------------------------
+!
+! Stick into the WORK array as the primary source of the memory
+!
+!                     On input: WORK(LWORK_IN)
+!
+!------------------------------------------------------------------------
 #include "priunit.h"
 integer*4, intent(in) :: LWORK_IN
-double precision, intent(in),  target :: WORK(LWORK_IN)
-CALL QENTER('Stick_into_array')
+real*8, intent(in), target :: WORK(LWORK_IN)
+CALL QENTER('StickMemory')
+if (iprmem > 10) then
+  call HEADER('Output from StickMemory',-1)
+endif
+
 if (associated(PW)) then
-  write(LUPRI,*) 'Stick_into_array: PW is already associated - Exit !'
-  CALL QUIT('Stick_into_array: PW is already associated !')
+  if (iprmem > 10) then
+    write(LUPRI,*) 'PW is already associated - Exit !'
+  endif
+  CALL QUIT('PW is already associated !')
 else
-  write(LUPRI,*) 'Stick_into_array: PW is not associated'
+  if (iprmem > 10) then
+    write(LUPRI,*) 'PW is not associated'
+  endif
 endif
 PW => WORK ! PW points now to the big WORK array ... 
-LWORK = LLWORK ! actualize module variable
+LWORK = LWORK_IN ! actualize module variable
 if (size(PW) /= LWORK_IN) then
- write(LUPRI,*) 'Stick_into_array:  size(PW)=',size(PW),' while entering LWORK=',LWORK_IN
- write(LUPRI,*) 'somme error in array sticking !'
- CALL QUIT('Stick_into_array: error in length !')
+ if (iprmem > 10) then
+   write(LUPRI,*) ' size(PW)=',size(PW), &
+                  ' while entering LWORK=',LWORK_IN
+   write(LUPRI,*) 'somme error in array sticking !'
+ endif
+ CALL QUIT('StickMemory: error in length !')
 endif
+! initialize the memmory
 #include "memint.h"
-CALL MEMCHK('Stick_into_array',PW,1)
-write(LUPRI,*) 'Stick_into_array: PW sticked into WORK, memmory checked !'
-CALL QEXIT('Stick_into_array')
-END SUBROUTINE Stick_into_array
 
-SUBROUTINE UnStickArray
+! check it
+CALL MEMCHK('StickMemory',PW,1)
+
+if (iprmem > 10 ) then
+  CALL print_mem_param()
+  write(LUPRI,*) 'StickMemory: PW sticked into WORK, memmory checked !'
+endif
+CALL QEXIT('StickMemory')
+END SUBROUTINE StickMemory
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+SUBROUTINE UnStickMemory
+!--------------------------------------------------------------
+!
+! release the PW pointer sticked into WORK array
+!
+!--------------------------------------------------------------
 #include "priunit.h"
 if (associated(PW)) then
-  write(LUPRI,*) 'PW is already associated'
+  if (iprmem > 10) then
+    write(LUPRI,*) 'Entering PW is already associated'
+  endif
 else
-  write(LUPRI,*) 'PW is NOT associated !'
+  if (iprmem > 10) then
+    write(LUPRI,*) 'Entering PW is NOT associated !'
+  endif
 endif
-nullify(PW)
-END SUBROUTINE UnStickArray
+nullify(PW);
+
+if (iprmem > 10) then
+  write(LUPRI,*) 'PW deassociated!'
+endif
+END SUBROUTINE UnStickMemory
 
 END MODULE Memory

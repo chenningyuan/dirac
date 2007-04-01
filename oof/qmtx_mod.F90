@@ -2,6 +2,7 @@
 !
 ! This module contains tools for working with quaternion matrixes
 !
+!
 MODULE QMatrixes
 
 ! for allocation/deallocations
@@ -10,7 +11,7 @@ use Memory
 #include "iratdef.h"
 
 !     print parameter
-integer(kind=4), private :: iprqmt=0
+integer(kind=4), private :: iprqmtx=0
 
 type, public :: irp
 private
@@ -68,20 +69,24 @@ end interface
 
 contains
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine set_iprqmtx(iprint)
 !=================================================
 !            set up print variable
 !=================================================
-subroutine set_iprqmt(iprint)
+#include "priunit.h"
 integer (kind=8/IRAT), intent(in) :: iprint
 CALL QENTER('QMatrixes: set_iprqmt')
-  iprqmt = iprint
+  iprqmtx = iprint
+!  write(LUPRI,*) 'set_iprqmtx: set iprint=',iprqmtx
 CALL QEXIT('QMatrixes: set_iprqmt')
-end subroutine set_iprqmt
+end subroutine set_iprqmtx
 
-!
-!    define setting of irp
-!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function set_irp (irep_in) result (irep_out)
+!================================================================
+!        define setting of irp
+!================================================================
 #include "priunit.h"
 type(irp) :: irep_out
 !integer (kind=4), intent(in) :: irep_in
@@ -95,10 +100,11 @@ irep_out%irep = irep_in
 CALL QEXIT('QMatrixes: set_irp')
 end function set_irp
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function set_nz (nz_in) result (nz_out)
 !
 ! define setting of NZ
 !
-function set_nz (nz_in) result (nz_out)
 #include "priunit.h"
 type(nzp) :: nz_out
 !integer (kind=4), intent(in) :: nz_in
@@ -113,10 +119,11 @@ CALL QENTER('QMatrixes: set_nz')
 CALL QEXIT('QMatrixes: set_nz')
 end function set_nz
 
+!=======================================================================
+function set_qmtx_pck (nr1in,nc1in,nr2in,nc2in) result(qmtx_pck_out)
 !
 ! set dimensions (NFSYM=2) of a symmetry packed quaternion matrix
 !
-function set_qmtx_pck (nr1in,nc1in,nr2in,nc2in) result(qmtx_pck_out)
 #include "priunit.h"
 type(qmtx_pck) :: qmtx_pck_out
 integer (kind=8/IRAT), intent(in) :: nr1in,nc1in
@@ -134,10 +141,13 @@ else
 endif
 CALL QEXIT('QMatrixes: set_qmtx_pck')
 end function set_qmtx_pck
-!
-! set dimensions (NFSYM=2) of a symmetry unpacked SQUARE quaternion matrix
-!
+
 function set_qmtx_unpck (n1in,n2in) result(qmtx_unpck_out)
+!==============================================================================
+!
+!   set dimensions (NFSYM=2) of a symmetry unpacked SQUARE quaternion matrix
+!
+!==============================================================================
 #include "priunit.h"
 type(qmtx_unpck) :: qmtx_unpck_out
 integer (kind=8/IRAT), intent(in) :: n1in
@@ -184,19 +194,20 @@ if (.not.qm%simple_mtx.and.qm%symm_packed) then
  enddo
 
 else if (.not.qm%simple_mtx.and..not.qm%symm_packed) then
-! ... symmetry unpacked quaternion matrix
+! ... symmetry unpacked (full) quaternion matrix
   if (qm%is_alloc) then
 ! ... print TOTAL QMatrix
     nt = ( qm%nr(1) + qm%nr(2) )
     CALL PRQMAT(PW(qm%kstart),nt,nt,nt,nt,qm%nz,IPQTOQ(1,qm%irep),LUPRI) 
   else
-    write(LUPRI,*) 'this matrix is not allocated, no print out'
+    write(LUPRI,*) 'this matrix is not allocated, so no print out'
   endif
 
 else if (qm%simple_mtx) then
+! ... print out of a trivial quaternion matrix
 
 else
- call quit('...')
+ call quit('QMtxInfo: blind "if" branch ')
 endif
 
  write(LUPRI,*) 'qm%kstart=',qm%kstart
@@ -204,24 +215,27 @@ endif
 CALL QEXIT('QMtxInfo')
 END SUBROUTINE QMtxInfo
 
-!
-! basic constructor for quaternion matrix
-!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 FUNCTION MakeQMtxPck(qm_pk_in, irp_in, nz_in) result(qm)
+!-------------------------------------------------------------------
+!
+!    basic constructor for symmetry packed quaternion matrix
+!
+!-------------------------------------------------------------------
 #include "priunit.h"
 #include "dgroup.h"
 #include "iratdef.h"
 type(QMtx) :: qm
-type(qmtx_pck),  intent(in) :: qm_pk_in
+type(qmtx_pck), intent(in) :: qm_pk_in
 type(irp), optional, intent(in) ::  irp_in
 type(nzp), optional, intent(in) ::  nz_in
 integer (kind=8) :: isize
 CALL QENTER('QMatrixes: MakeQMtxPck')
 
 if (present(irp_in)) then
- qm%irep = irp_in%irep
+  qm%irep = irp_in%irep
 else
- qm%irep = 0 
+  qm%irep = 0 
 endif
 
 if (present(nz_in)) then
@@ -241,20 +255,33 @@ else
 endif
 qm%simple_mtx  = .false.
 qm%symm_packed = .true.
-! size of array
+!  array size of the symmetry packed matrix
 isize = qm%nr(1)*qm%nc(1)*qm%nz + qm%nr(2)*qm%nc(2)*qm%nz
 
-! allocate array for the matrix
-CALL MEMCHK('QMatrixes: MakeQMtx',PW,1)
-if (iprqmtx>=5) then
+! check the array
+!CALL MEMCHK('QMatrixes: MakeQMtx',PW,1)
+if (iprqmtx >=5 ) then
  call print_mem_param()
+! write(lupri,*) 'KFREE,LFREE=',KFREE,LFREE
+ write(lupri,*) 'isize=',isize
 endif
-CALL MEMGET('REAL',qm%kstart,isize,PW,KFREE,LFREE)
-qm%is_alloc = .true.
+
+! allocate array for the matrix
+!CALL MEMGET('REAL',qm%kstart,isize,PW,KFREE,LFREE)
+CALL mymemget('REAL',qm%kstart,isize)
+
+qm%is_alloc = .true. ! array is allocated
+
 CALL QEXIT('QMatrixes: MakeQMtxPck')
 END FUNCTION MakeQMtxPck
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 FUNCTION MakeQMtxUnPck(qm_upk_in, irp_in, nz_in) result(qm)
+!---------------------------------------------------------------------
+!
+!  Make quaternion full (unpacked) matrix.
+!
+!---------------------------------------------------------------------
 #include "priunit.h"
 #include "dgroup.h"
 #include "iratdef.h"
@@ -267,7 +294,7 @@ logical, save :: was_called = .false.
 CALL QENTER('QMatrixes: MakeQMtxUnPck')
 
 if (present(irp_in)) then
- qm%irep = irp_in%irep
+  qm%irep = irp_in%irep
 else
   qm%irep = 0 
 endif
@@ -292,22 +319,16 @@ else
 endif
 qm%simple_mtx  = .false.
 qm%symm_packed = .false.
+
 ! size of array to be allocated
 isize = (qm%nr(1)+qm%nr(2))*(qm%nr(1)+qm%nr(2))*qm%nz
-!
-!if (.not.was_called) then
-!#include "memint.h"
-!was_called=.true.
-!write(LUPRI,*) '1.calling!'
-!else
-! write(LUPRI,*) 'not 1.calling!'
-!endif
 
 ! allocate array for the matrix
-CALL MEMCHK('QMatrixes: MakeQMtxUnPck',PW,1)
-CALL MEMGET('REAL',qm%kstart,isize,PW,KFREE,LFREE)
+!CALL MEMGET('REAL',qm%kstart,isize,PW,KFREE,LFREE)
+CALL mymemget('REAL',qm%kstart,isize)
+
 qm%is_alloc = .true.
-!
+
 CALL QEXIT('QMatrixes: MakeQMtxUnPck')
 END FUNCTION MakeQMtxUnPck
 
@@ -315,8 +336,12 @@ SUBROUTINE DeAllocQMtx(qm)
 #include "priunit.h"
 type(QMtx) :: qm
 call QENTER('QMatrixes: DeAllocQMtx')
-call MEMREL('QMatrixes: DestroyQMtx',PW,qm%kstart,qm%kstart,KFREE,LFREE)
+
+!call MEMREL('QMatrixes: DestroyQMtx',PW,qm%kstart,qm%kstart,KFREE,LFREE)
+call mymemrel('QMatrixes: DestroyQMtx',qm%kstart,qm%kstart)
+
 qm%is_alloc = .false.
+
 call QEXIT('QMatrixes: DeAllocQMtx')
 END SUBROUTINE DeAllocQMtx
 

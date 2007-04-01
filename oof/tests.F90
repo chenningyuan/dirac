@@ -1,9 +1,9 @@
 !
 !    Tests of Object oriented Fortran90/95 features in DIRAC
 !
-  SUBROUTINE TEST_OOF(work,llwork)
-!  ... this is very simple test of
-!   use Memory
+ ! SUBROUTINE TEST_OOF(work,llwork)
+  SUBROUTINE TEST_OOF
+
    use QMatrixes
 
 #include "priunit.h"
@@ -18,30 +18,34 @@
 #include "dcbdhf.h"
 #endif
 
- double precision, intent(inout) :: work(llwork) ! for testing...
- integer*4, intent(in) :: llwork
+! double precision, intent(inout) :: work(llwork) ! for testing...
+! integer*4, intent(in) :: llwork
  type(QMtx) :: smat,pmat
 call qenter('TEST_OOF')
 
 CALL HEADER( 'in test_oof routine',-1)
 
-call set_iprqmt(5)
+call set_iprqmtx(100)
+call set_iprmem(100)
 
-call Stick_into_array(work,llwork)  ! take in WORK(LWORK) array ...
+!call StickMemory(work,llwork)  ! take in WORK(LWORK) array ...
 
+write(LUPRI,*) 'test_oof: smat called ... '
 smat = MakeQMtx( set_qmtx_pck(NFBAS(1,0),NFBAS(1,0),NFBAS(2,0),NFBAS(2,0)) )
 call QMtxInfo(smat)
+write(LUPRI,*) 'test_oof: after smat called ... '
 
 !pmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1))
 pmat = MakeQMtx(  set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0))  )
 call QMtxInfo(pmat)
+write(LUPRI,*) 'test_oof: after pmat called ... '
 
  call DeAllocQMtx(pmat)
  call DeAllocQMtx(smat)
 
  call test_oof1
 
-  call UnStickArray
+ call UnStickMemory
 
 !   call Allocate_QMATRIX(qmat,3,3,1,0) ! allocate quaternion matrix
 !   call Allocate_QMATRIX(pmat,3,3,1,0) ! allocate quaternion matrix
@@ -67,15 +71,15 @@ call QMtxInfo(pmat)
   END SUBROUTINE TEST_OOF
 
  subroutine test_oof1
-!   use Memmory
    use QMatrixes
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dcborb.h"
  type(QMtx) :: pmat
 
-CALL HEADER( 'in test_oof1 routine',-1)
+CALL HEADER( 'in test_oof1 routine !',-1)
 
+! make a new matrix
 pmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1))
 call QMtxInfo(pmat)
 

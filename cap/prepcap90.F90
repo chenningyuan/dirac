@@ -13,13 +13,14 @@
 !   integer(kind=4), private :: iprint
 !   integer(kind=4), private :: iprcap
 
-   type cap_int_param
-   end type cap_int_param
+ !  type cap_int_param
+ !  end type cap_int_param
 
   contains
 
   subroutine cap_init
-!#include "implicit.h"
+use QMatrixes
+#include "implicit.h"
 #include "priunit.h"
 !#include "dcbcap.h"
 
@@ -36,7 +37,7 @@
 
    end subroutine cap_init
 
-  end module cap
+ end module cap
 
  subroutine cap_ovlp(WORK,LWORK)
 use Memory
