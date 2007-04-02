@@ -51,6 +51,8 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
+#include "dummy.h"
+
       LOGICAL   LGET
       DIMENSION VECTOR(*),
      &          GAO(*),
@@ -62,11 +64,11 @@ C=======================================================================
       IF(LGET) IOPTION = 1113
 
       CALL GET_DENSITY(IOPTION,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 VECTOR,
      &                 IREPOP,
      &                 GAO,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 DMAT,
      &                 BUF)
 
@@ -91,6 +93,8 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
+#include "dummy.h"
+
       LOGICAL   LGET
       DIMENSION VECTOR_DERVS(*),
      &          GAO(*),
@@ -102,7 +106,7 @@ C=======================================================================
       IF(LGET) IOPTION = 1213
 
       CALL GET_DENSITY(IOPTION,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 VECTOR_DERVS,
      &                 IREPOP,
      &                 GAO,
@@ -131,6 +135,8 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
+#include "dummy.h"
+
       LOGICAL   LGET
       DIMENSION VECTOR(*),
      &          GAO(*),
@@ -142,11 +148,11 @@ C=======================================================================
       IF(LGET) IOPTION = 1112
 
       CALL GET_DENSITY(IOPTION,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 VECTOR,
      &                 IREPOP,
      &                 GAO,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 DMAT,
      &                 BUF)
 
@@ -171,6 +177,8 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
+#include "dummy.h"
+
       LOGICAL   LGET
       DIMENSION VECTOR_DERVS(*),
      &          GAO(*),
@@ -182,7 +190,7 @@ C=======================================================================
       IF(LGET) IOPTION = 1212
 
       CALL GET_DENSITY(IOPTION,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 VECTOR_DERVS,
      &                 IREPOP,
      &                 GAO,
@@ -211,6 +219,8 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
+#include "dummy.h"
+
       LOGICAL   LGET
       DIMENSION GAO(*),
      &          GAO1(*),
@@ -221,7 +231,7 @@ C=======================================================================
       IF(LGET) IOPTION = 1223
 
       CALL GET_DENSITY(IOPTION,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 SCALAR,
      &                 IREPOP,
      &                 GAO,
@@ -250,6 +260,8 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
+#include "dummy.h"
+
       LOGICAL   LGET
       DIMENSION GAO(*),
      &          GAO1(*),
@@ -260,7 +272,7 @@ C=======================================================================
       IF(LGET) IOPTION = 1222
 
       CALL GET_DENSITY(IOPTION,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 SCALAR,
      &                 IREPOP,
      &                 GAO,
@@ -289,6 +301,8 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
+#include "dummy.h"
+
       LOGICAL   LGET
       DIMENSION VECTOR(*),
      &          GAO(*),
@@ -300,7 +314,7 @@ C=======================================================================
       IF(LGET) IOPTION = 1233
 
       CALL GET_DENSITY(IOPTION,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 VECTOR,
      &                 IREPOP,
      &                 GAO,
@@ -329,6 +343,8 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
+#include "dummy.h"
+
       LOGICAL   LGET
       DIMENSION VECTOR(*),
      &          GAO(*),
@@ -340,7 +356,7 @@ C=======================================================================
       IF(LGET) IOPTION = 1232
 
       CALL GET_DENSITY(IOPTION,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 VECTOR,
      &                 IREPOP,
      &                 GAO,
@@ -369,6 +385,8 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
+#include "dummy.h"
+
       LOGICAL   LGET
       DIMENSION GAO(*),
      &          GAO1(*),
@@ -379,7 +397,7 @@ C=======================================================================
       IF(LGET) IOPTION = 1115
 
       CALL GET_DENSITY(IOPTION,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 SCALAR,
      &                 IREPOP,
      &                 GAO,
@@ -409,6 +427,8 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
       PARAMETER (DP12 = 1.0D0/2.0D0)
 
+#include "dummy.h"
+
       LOGICAL   LGET
       DIMENSION VECTOR(*),
      &          GAO(*),
@@ -422,7 +442,7 @@ C=======================================================================
       IF(.NOT. LGET) CALL DSCAL(3,-DP12,VECTOR(1),1)
 
       CALL GET_DENSITY(IOPTION,
-     &                 UNUSED,
+     &                 DUMMY,
      &                 VECTOR,
      &                 IREPOP,
      &                 GAO,
@@ -498,6 +518,104 @@ C=======================================================================
      &                       1,ITRANSFORM,IREPOP,
      &                       GAO1(1+JOFF*(KXYZ-1)),
      &                       GAO1(1+JOFF*(JXYZ-1)),
+     &                       DMAT,BUF)
+
+      ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_V */
+      SUBROUTINE GET_V(LGET,
+     &                 VECTOR,
+     &                 DENSITY,
+     &                 DENSITY_GRADIENT,
+     &                 IREPOP,
+     &                 GAO,
+     &                 GAO1,
+     &                 DMAT,
+     &                 BUF)
+C=======================================================================
+C                                                           radovan bast
+C                                              last revision: april 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+      LOGICAL   LGET
+      DIMENSION VECTOR(*),
+     &          DENSITY_GRADIENT(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          DMAT(*),
+     &          BUF(*)
+
+#include "dcbbas.h"
+
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      JOFF = NBAST
+#else
+      JOFF = NTBAS(0)
+#endif
+
+      K = 1
+      L = 1
+      M = 2
+      N = 2
+      A = D1
+      B = D1
+      ITRANSFORM = 0
+
+      BY = D1/DENSITY
+
+      DO IXYZ = 1,3
+
+        JXYZ = IXYZ + 1
+        KXYZ = JXYZ + 1
+
+        IF(JXYZ .GT. 3) JXYZ = JXYZ - 3
+        IF(KXYZ .GT. 3) KXYZ = KXYZ - 3
+
+        CALL GET_DENSITY_SUB(LGET,.TRUE.,
+     &                       VECTOR(IXYZ),
+     &                       BY*A,
+     &                       BY*B,
+     &                       K,L,M,N,
+     &                       1,ITRANSFORM,IREPOP,
+     &                       GAO1(1+JOFF*(JXYZ-1)),
+     &                       GAO1(1+JOFF*(KXYZ-1)),
+     &                       DMAT,BUF)
+        CALL GET_DENSITY_SUB(LGET,.FALSE.,
+     &                       VECTOR(IXYZ),
+     &                       -BY*A,
+     &                       -BY*B,
+     &                       K,L,M,N,
+     &                       1,ITRANSFORM,IREPOP,
+     &                       GAO1(1+JOFF*(KXYZ-1)),
+     &                       GAO1(1+JOFF*(JXYZ-1)),
+     &                       DMAT,BUF)
+
+        CALL GET_DENSITY_SUB(LGET,.FALSE.,
+     &                       VECTOR(IXYZ),
+     &                       -BY*BY*DENSITY_GRADIENT(KXYZ)*A,
+     &                       -BY*BY*DENSITY_GRADIENT(KXYZ)*B,
+     &                       K,L,M,N,
+     &                       1,ITRANSFORM,IREPOP,
+     &                       GAO,
+     &                       GAO1(1+JOFF*(JXYZ-1)),
+     &                       DMAT,BUF)
+        CALL GET_DENSITY_SUB(LGET,.FALSE.,
+     &                       VECTOR(IXYZ),
+     &                       BY*BY*DENSITY_GRADIENT(JXYZ)*A,
+     &                       BY*BY*DENSITY_GRADIENT(JXYZ)*B,
+     &                       K,L,M,N,
+     &                       1,ITRANSFORM,IREPOP,
+     &                       GAO,
+     &                       GAO1(1+JOFF*(KXYZ-1)),
      &                       DMAT,BUF)
 
       ENDDO
