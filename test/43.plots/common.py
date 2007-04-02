@@ -50,8 +50,8 @@ bz = ''' 'b field'
  COMFACTOR
  68.517999904721'''
 
-d_operator['b'] = [bx, by, bz]
 d_operator['e'] = [ex, ey, ez]
+d_operator['b'] = [bx, by, bz]
 
 #-------------------------------------------------------------------------------
 

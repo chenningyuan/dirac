@@ -286,11 +286,9 @@ C=======================================================================
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_DENSITY */
-      SUBROUTINE GET_DENSITY(IGET,
+      SUBROUTINE GET_DENSITY(IOPTION,
+     &                       SOME_VECTOR,
      &                       DENSITY,
-     &                       IOPERATOR_LEFT,
-     &                       ICOMBINE,
-     &                       IOPERATOR_RIGHT,
      &                       IREPOP,
      &                       GAO,
      &                       GAO1,
@@ -298,18 +296,13 @@ C     /* GET_DENSITY */
      &                       BUF)
 C=======================================================================
 C
-C     IOPERATOR_LEFT  = 1      "nothing"
-C                       2      \nabla
+C     IOPTION is a four digit integer:
 C
-C     ICOMBINE        = 1      "nothing"
-C                       2      \cdot
-C                       3      \times
-C
-C     IOPERATOR_RIGHT = 1      1_{4x4}
-C                       2      c \alpha
-C                       3      \Sigma
-C                       4      \beta\Sigma
-C                       5      \gamma_5
+C     1  get           1  "nothing"     1 "nothing"      1 1_{4x4}
+C     2  put           2  \nabla        2 \cdot          2 c \alpha
+C                      3  some vector   3 \times         3 \Sigma
+C                                                        4 \beta\Sigma
+C                                                        5 \gamma_5
 C
 C-----------------------------------------------------------------------
 C                                                           radovan bast
@@ -329,7 +322,9 @@ C=======================================================================
 #include "dcbbas.h"
 #include "dcbgen.h"
 
-      DIMENSION DENSITY(*),
+      LOGICAL   LDEC, LGET
+      DIMENSION SOME_VECTOR(*),
+     &          DENSITY(*),
      &          GAO(*),
      &          GAO1(*),
      &          DMAT(*),
@@ -342,6 +337,8 @@ C=======================================================================
       JOFF = NTBAS(0)
 #endif
 
+      LGET = LDEC(IOPTION,1,1)
+
       K = 1
       L = 1
       M = 2
@@ -350,56 +347,58 @@ C=======================================================================
       B = D1
       ITRANSFORM = 0
 
-      IF((IOPERATOR_RIGHT .EQ. 2) .OR. (IOPERATOR_RIGHT .EQ. 5)) THEN
+      IF(LDEC(IOPTION,4,2) .OR.
+     &   LDEC(IOPTION,4,5)) THEN
         K = 1
         L = 2
         M = 2
         N = 1
       ENDIF
 
-      IF(IOPERATOR_RIGHT .EQ. 4) THEN
+      IF(LDEC(IOPTION,4,2)) THEN
         A = -137.0359998D0
         B = -137.0359998D0
       ENDIF
-      IF(IOPERATOR_RIGHT .EQ. 4) B = -D1
+      IF(LDEC(IOPTION,4,4)) B = -D1
 
-      IF((IOPERATOR_RIGHT .EQ. 3) .OR. (IOPERATOR_RIGHT .EQ. 4)) THEN
+      IF(LDEC(IOPTION,4,3) .OR.
+     &   LDEC(IOPTION,4,4)) THEN
         ITRANSFORM = 2
       ENDIF
-      IF(IOPERATOR_RIGHT .EQ. 2) ITRANSFORM = 1
+      IF(LDEC(IOPTION,4,2)) ITRANSFORM = 1
 
-      IF(ICOMBINE .EQ. 1) THEN
+      IF(LDEC(IOPTION,3,1)) THEN
 
         IEND = 3
-        IF(IOPERATOR_RIGHT .EQ. 1) IEND = 1
+        IF(LDEC(IOPTION,4,1)) IEND = 1
 
         DO IXYZ = 1,IEND
 
-          IF(IOPERATOR_LEFT .EQ. 1) THEN
+          IF(LDEC(IOPTION,2,1)) THEN
 
-            IF(IGET .EQ. 1) DENSITY(IXYZ) = D0
-            CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
+            IF(LGET) DENSITY(IXYZ) = D0
+            CALL GET_DENSITY_SUB(LGET,DENSITY(IXYZ),
      &                           A,K,L,
      &                           IXYZ,ITRANSFORM,IREPOP,
      &                           GAO,GAO,
      &                           DMAT,BUF)
-            CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
+            CALL GET_DENSITY_SUB(LGET,DENSITY(IXYZ),
      &                           B,M,N,
      &                           IXYZ,ITRANSFORM,IREPOP,
      &                           GAO,GAO,
      &                           DMAT,BUF)
 
-          ELSEIF(IOPERATOR_LEFT .EQ. 2) THEN
+          ELSEIF(LDEC(IOPTION,2,2)) THEN
 
             DO JXYZ = 1,3
 
-              IF(IGET .EQ. 1) DENSITY(JXYZ+3*(IXYZ-1)) = D0
-              CALL GET_DENSITY_SUB(IGET,DENSITY(JXYZ+3*(IXYZ-1)),
+              IF(LGET) DENSITY(JXYZ+3*(IXYZ-1)) = D0
+              CALL GET_DENSITY_SUB(LGET,DENSITY(JXYZ+3*(IXYZ-1)),
      &                             D2*A,K,L,
      &                             IXYZ,ITRANSFORM,IREPOP,
      &                             GAO,GAO1(1+JOFF*(JXYZ-1)),
      &                             DMAT,BUF)
-              CALL GET_DENSITY_SUB(IGET,DENSITY(JXYZ+3*(IXYZ-1)),
+              CALL GET_DENSITY_SUB(LGET,DENSITY(JXYZ+3*(IXYZ-1)),
      &                             D2*B,M,N,
      &                             IXYZ,ITRANSFORM,IREPOP,
      &                             GAO,GAO1(1+JOFF*(JXYZ-1)),
@@ -408,55 +407,100 @@ C=======================================================================
           ENDIF
         ENDDO
 
-      ELSEIF(ICOMBINE .EQ. 2) THEN
+      ELSEIF(LDEC(IOPTION,3,2)) THEN
 
-        IF(IGET .EQ. 1) DENSITY(1) = D0
+        IF(LGET) DENSITY(1) = D0
         DO JXYZ = 1,3
 
-          CALL GET_DENSITY_SUB(IGET,DENSITY(1),
-     &                         D2*A,K,L,
-     &                         JXYZ,ITRANSFORM,IREPOP,
-     &                         GAO,GAO1(1+JOFF*(JXYZ-1)),
-     &                         DMAT,BUF)
-          CALL GET_DENSITY_SUB(IGET,DENSITY(1),
-     &                         D2*B,M,N,
-     &                         JXYZ,ITRANSFORM,IREPOP,
-     &                         GAO,GAO1(1+JOFF*(JXYZ-1)),
-     &                         DMAT,BUF)
+          IF(LDEC(IOPTION,2,2)) THEN
+
+            CALL GET_DENSITY_SUB(LGET,DENSITY(1),
+     &                           D2*A,K,L,
+     &                           JXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO1(1+JOFF*(JXYZ-1)),
+     &                           DMAT,BUF)
+            CALL GET_DENSITY_SUB(LGET,DENSITY(1),
+     &                           D2*B,M,N,
+     &                           JXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO1(1+JOFF*(JXYZ-1)),
+     &                           DMAT,BUF)
+
+          ELSEIF(LDEC(IOPTION,2,3)) THEN
+
+            CALL GET_DENSITY_SUB(LGET,DENSITY(1),
+     &                           SOME_VECTOR(JXYZ)*A,K,L,
+     &                           JXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO,
+     &                           DMAT,BUF)
+            CALL GET_DENSITY_SUB(LGET,DENSITY(1),
+     &                           SOME_VECTOR(JXYZ)*B,M,N,
+     &                           JXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO,
+     &                           DMAT,BUF)
+
+          ENDIF
+
         ENDDO
 
-      ELSEIF(ICOMBINE .EQ. 3) THEN
+      ELSEIF(LDEC(IOPTION,3,3)) THEN
 
         DO IXYZ = 1,3
 
-          IF(IGET .EQ. 1) DENSITY(IXYZ) = D0
-   
+          IF(LGET) DENSITY(IXYZ) = D0
+
           JXYZ = IXYZ + 1
           KXYZ = JXYZ + 1
 
           IF(JXYZ .GT. 3) JXYZ = JXYZ - 3
           IF(KXYZ .GT. 3) KXYZ = KXYZ - 3
 
-          CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
-     &                         D2*A,K,L,
-     &                         JXYZ,ITRANSFORM,IREPOP,
-     &                         GAO,GAO1(1+JOFF*(KXYZ-1)),
-     &                         DMAT,BUF)
-          CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
-     &                         D2*B,M,N,
-     &                         JXYZ,ITRANSFORM,IREPOP,
-     &                         GAO,GAO1(1+JOFF*(KXYZ-1)),
-     &                         DMAT,BUF)
-          CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
-     &                         -D2*A,K,L,
-     &                         KXYZ,ITRANSFORM,IREPOP,
-     &                         GAO,GAO1(1+JOFF*(JXYZ-1)),
-     &                         DMAT,BUF)
-          CALL GET_DENSITY_SUB(IGET,DENSITY(IXYZ),
-     &                         -D2*B,M,N,
-     &                         KXYZ,ITRANSFORM,IREPOP,
-     &                         GAO,GAO1(1+JOFF*(JXYZ-1)),
-     &                         DMAT,BUF)
+          IF(LDEC(IOPTION,2,2)) THEN
+
+            CALL GET_DENSITY_SUB(LGET,DENSITY(IXYZ),
+     &                           D2*A,K,L,
+     &                           JXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO1(1+JOFF*(KXYZ-1)),
+     &                           DMAT,BUF)
+            CALL GET_DENSITY_SUB(LGET,DENSITY(IXYZ),
+     &                           D2*B,M,N,
+     &                           JXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO1(1+JOFF*(KXYZ-1)),
+     &                           DMAT,BUF)
+            CALL GET_DENSITY_SUB(LGET,DENSITY(IXYZ),
+     &                           -D2*A,K,L,
+     &                           KXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO1(1+JOFF*(JXYZ-1)),
+     &                           DMAT,BUF)
+            CALL GET_DENSITY_SUB(LGET,DENSITY(IXYZ),
+     &                           -D2*B,M,N,
+     &                           KXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO1(1+JOFF*(JXYZ-1)),
+     &                           DMAT,BUF)
+
+          ELSEIF(LDEC(IOPTION,2,3)) THEN
+
+            CALL GET_DENSITY_SUB(LGET,DENSITY(IXYZ),
+     &                           SOME_VECTOR(KXYZ)*A,K,L,
+     &                           JXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO,
+     &                           DMAT,BUF)
+            CALL GET_DENSITY_SUB(LGET,DENSITY(IXYZ),
+     &                           SOME_VECTOR(KXYZ)*B,M,N,
+     &                           JXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO,
+     &                           DMAT,BUF)
+            CALL GET_DENSITY_SUB(LGET,DENSITY(IXYZ),
+     &                           -SOME_VECTOR(JXYZ)*A,K,L,
+     &                           KXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO,
+     &                           DMAT,BUF)
+            CALL GET_DENSITY_SUB(LGET,DENSITY(IXYZ),
+     &                           -SOME_VECTOR(JXYZ)*B,M,N,
+     &                           KXYZ,ITRANSFORM,IREPOP,
+     &                           GAO,GAO,
+     &                           DMAT,BUF)
+
+          ENDIF
 
         ENDDO
 
@@ -466,7 +510,7 @@ C=======================================================================
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_DENSITY_SUB */
-      SUBROUTINE GET_DENSITY_SUB(IGET,
+      SUBROUTINE GET_DENSITY_SUB(LGET,
      &                           DENSITY,
      &                           F,
      &                           IC1,
@@ -497,6 +541,7 @@ C=======================================================================
 #include "dcbbas.h"
 #include "dcbgen.h"
 
+      LOGICAL   LGET
       DIMENSION GAO_LEFT(*),
      &          GAO_RIGHT(*),
      &          DMAT(*),
@@ -509,7 +554,7 @@ C=======================================================================
 
       IF(ITRANSFORM .EQ. 0) THEN
 
-        CALL GET_DENSITY_SUBSUB(IGET,
+        CALL GET_DENSITY_SUBSUB(LGET,
      &                          DENSITY,
      &                          F,
      &                          IC1,
@@ -529,7 +574,7 @@ C=======================================================================
 #endif
         IQ   = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
 
-        CALL GET_DENSITY_SUBSUB(IGET,
+        CALL GET_DENSITY_SUBSUB(LGET,
      &                          DENSITY,
      &                          F,
      &                          IC1,
@@ -548,7 +593,7 @@ C=======================================================================
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_DENSITY_SUBSUB */
-      SUBROUTINE GET_DENSITY_SUBSUB(IGET,
+      SUBROUTINE GET_DENSITY_SUBSUB(LGET,
      &                              DENSITY,
      &                              F,
      &                              IC1,
@@ -576,6 +621,7 @@ C=======================================================================
 #include "dcbbas.h"
 #include "dcbgen.h"
 
+      LOGICAL   LGET
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION DMAT(NBAST,NBAST)
@@ -600,14 +646,14 @@ C=======================================================================
             I1 = IBBAS(IREP1,IC1) + 1
             I2 = IBBAS(IREP2,IC2) + 1
 
-            IF(IGET .EQ. 1) THEN !get
+            IF(LGET) THEN
 
               CALL DGEMV('N',NBBAS(IREP1,IC1),NBBAS(IREP2,IC2),D1,
      &                   DMAT(I1,I2),NTBAS(0),GAO_RIGHT(I2),1,D0,BUF,1)
               DENSITY = DENSITY
      &                + F*DDOT(NBBAS(IREP1,IC1),GAO_LEFT(I1),1,BUF,1)
 
-            ELSE !put (DMAT is then EXCMAT)
+            ELSE !DMAT is then EXCMAT
 
               DO J = 1,N2
                 FACTOR = F*DENSITY*GAO_RIGHT(I2+J)

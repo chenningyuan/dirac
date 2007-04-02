@@ -36,6 +36,32 @@
       END
 
 
+      LOGICAL FUNCTION LDEC(I,N,M)
+!     say integer I = 4242
+!     then LDEC(I,3,4) is .TRUE.
+!     since the 3rd digit is indeed a 4
+#include "implicit.h"
+#include "priunit.h"
+      CHARACTER*10 WORD
+
+      LDEC = .FALSE.
+
+      WRITE(WORD,'(I10)') I
+
+      JDIGIT = 0
+      DO IDIGIT = 1,10
+        IF(.NOT. WORD(IDIGIT:IDIGIT) .EQ. ' ') GOTO 1
+        JDIGIT = JDIGIT + 1
+      ENDDO
+
+ 1    CONTINUE
+      READ(WORD(JDIGIT+N:JDIGIT+N),'(I1)') J
+
+      IF(M .EQ. J) LDEC = .TRUE.
+
+      END
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* CUBIC_SPLINE_SETUP */
       SUBROUTINE CUBIC_SPLINE_SETUP(N,XA,YA,D2YA)
