@@ -164,8 +164,6 @@ C=======================================================================
 
 !     generate density matrix
 
-!     CALL GENDEN(WORK(KBUF),CMO,1,IPRXRS)
-
       IF(LBIT(LBIT_PLOT_GENERAL,4)) THEN !read solution vector
         CALL MODIFIED_DMAT_AO(WORK(KCMO),
      &                        WORK(KDMAT_AO),WORK(KTMAT_AO),
@@ -221,7 +219,7 @@ C=======================================================================
 #include "codata.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_QUANTITIES = 23)
+      PARAMETER (NR_QUANTITIES = 24)
       PARAMETER (MAX_NR_PAIRS = 200)
 
 #include "dcbgen.h"
@@ -286,6 +284,7 @@ C=======================================================================
       QUANTITY_NAME(21) = 'kinetic_energy_density'
       QUANTITY_NAME(22) = 'helicity'
       QUANTITY_NAME(23) = 'gamma_5_density'
+      QUANTITY_NAME(24) = 'paramagnetic_current_density'
 
       DO IQUANTITY = 1,NR_QUANTITIES
         QUANTITY_IS_A_VECTOR(IQUANTITY) = .FALSE.
@@ -297,6 +296,7 @@ C=======================================================================
       QUANTITY_IS_A_VECTOR(8)  = .TRUE.
       QUANTITY_IS_A_VECTOR(9)  = .TRUE.
       QUANTITY_IS_A_VECTOR(20) = .TRUE.
+      QUANTITY_IS_A_VECTOR(24) = .TRUE.
 
       ORIENTATION(1) = 'xy'
       ORIENTATION(2) = 'xz'
@@ -658,7 +658,7 @@ C=======================================================================
 
           CALL AROUND('2D Gauss-Lobatto numerical integration')
 
-          DO IORIENTATION = 1,3
+          DO IORIENTATION = 2,2
             WRITE(LUPRI,'(A)')
             WRITE(LUPRI,'(A12,A3,A17,A19,A20)') 'orientation:',
      &                                        ORIENTATION(IORIENTATION),
@@ -771,9 +771,10 @@ C=======================================================================
 #include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (D23 = 2.0D0/3.0D0,D53 = 5.0D0/3.0D0)
-      PARAMETER (D32 = 3.0D0/2.0D0,D54 = 5.0D0/4.0D0)
-      PARAMETER (NR_QUANTITIES = 23)
+      PARAMETER (DP12 = 1.0D0/2.0D0)
+      PARAMETER (DP23 = 2.0D0/3.0D0)
+      PARAMETER (DP53 = 5.0D0/3.0D0)
+      PARAMETER (NR_QUANTITIES = 24)
 
 #include "visual.h"
 #include "dcborb.h"
@@ -804,6 +805,7 @@ C=======================================================================
       QUANTITY_IS_A_VECTOR(8)  = .TRUE.
       QUANTITY_IS_A_VECTOR(9)  = .TRUE.
       QUANTITY_IS_A_VECTOR(20) = .TRUE.
+      QUANTITY_IS_A_VECTOR(24) = .TRUE.
 
       CALL DZERO(QUANTITY,NR_QUANTITIES*4)
 
@@ -836,9 +838,9 @@ C=======================================================================
         ELFKIN = ELFKIN/D2
 
         PI =  3.1415926536D0
-        FACTOR = 0.3D0*((D3*PI*PI)**D23)
+        FACTOR = 0.3D0*((D3*PI*PI)**DP23)
 
-        H = FACTOR*(DENSITY**D53)
+        H = FACTOR*(DENSITY**DP53)
         G = ELFKIN - GRADIENT_SQUARED/(8.0D0*DENSITY)
 
         ELFCHI = G/H
@@ -855,6 +857,31 @@ C=======================================================================
         QUANTITY(IQUANTITY,1) = -(D1/D2)*PY*DENSITY
         QUANTITY(IQUANTITY,2) =  (D1/D2)*PX*DENSITY
         QUANTITY(IQUANTITY,3) =   D0
+      ENDIF
+
+!     paramagnetic current density
+
+      IQUANTITY = 24
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+#if defined (MOD_CDFT)
+
+        CALL GET_DENSITY(1211,
+     &                   UNUSED,
+     &                   VECTOR,
+     &                   IREP_PLOT,
+     &                   GAO,
+     &                   GAO1,
+     &                   DMAT_AO,
+     &                   BUF)
+
+        CALL DSCAL(3,-DP12,VECTOR,1)
+
+        QUANTITY(IQUANTITY,1) = VECTOR(1)
+        QUANTITY(IQUANTITY,2) = VECTOR(2)
+        QUANTITY(IQUANTITY,3) = VECTOR(3)
+#else
+        CALL QUIT('not implemented')
+#endif
       ENDIF
 
 !     magnetization
@@ -1538,7 +1565,7 @@ C=======================================================================
 #include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_QUANTITIES = 23)
+      PARAMETER (NR_QUANTITIES = 24)
 
 #include "visual.h"
 
@@ -1567,6 +1594,7 @@ C=======================================================================
       QUANTITY_IS_A_VECTOR(8)  = .TRUE.
       QUANTITY_IS_A_VECTOR(9)  = .TRUE.
       QUANTITY_IS_A_VECTOR(20) = .TRUE.
+      QUANTITY_IS_A_VECTOR(24) = .TRUE.
 
       CALL DZERO(QUANTITY_INTEGRAL,NR_QUANTITIES*4)
 

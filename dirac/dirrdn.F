@@ -6260,7 +6260,7 @@ C=======================================================================
      &            '.ELF   ','.1DSTEP','.3DADD ','.XXXXXX', !  9 10 11 12
      &            '.CUBE  ','.XXXXXX','.NXVEC ','.STRING', ! 13 14 15 16
      &            '.SKIPEP','.SKIPEE','.RXJ   ','.JDIA  ', ! 17 18 19 20
-     &            '.K     ','.H     ','.GAMMA5','.XXXXXX', ! 21 22 23 24
+     &            '.K     ','.H     ','.GAMMA5','.JPARA ', ! 21 22 23 24
      &            '.DIVM  ','.DIVJ  ','.ROTM  ','.ROTJ  ', ! 25 26 27 28
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 29 30 31 32
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 33 34 35 36
@@ -6396,6 +6396,7 @@ C=======================================================================
           CALL SET_LBIT(LBIT_PLOT_QUANTITY,23)
           GOTO 100
    24     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,24)
           GOTO 100
 
    25     CONTINUE
