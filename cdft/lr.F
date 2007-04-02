@@ -92,18 +92,16 @@ C=======================================================================
 
           JOFF = NBAST*NBAST*NZ*(IMAT-1)
 
-          CALL GET_DENSITY(1113,
-     &                     UNUSED,
-     &                     FO_SPIN_DENSITY,
-     &                     ISYMOP(IMAT)-1,
-     &                     GAO,
-     &                     UNUSED,
-     &                     DTRMAT(1+JOFF),
-     &                     BUF)
+          CALL GET_M(.TRUE.,
+     &               FO_SPIN_DENSITY,
+     &               ISYMOP(IMAT)-1,
+     &               GAO,
+     &               UNUSED,
+     &               DTRMAT(1+JOFF),
+     &               BUF)
 
           IF(IS_GGA) THEN
-            CALL GET_DENSITY(1213,
-     &                       UNUSED,
+            CALL GET_M_DERVS(.TRUE.,
      &                       FO_SPIN_DENSITY_DERVS,
      &                       ISYMOP(IMAT)-1,
      &                       GAO,

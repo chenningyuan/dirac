@@ -15,10 +15,10 @@ C     LBIT(LBIT_PLOT_QUANTITY,2)   magnetization
 C     LBIT(LBIT_PLOT_QUANTITY,3)   current density
 C     LBIT(LBIT_PLOT_QUANTITY,4)   ELF
 C     LBIT(LBIT_PLOT_QUANTITY,5)   r \times j
-C     LBIT(LBIT_PLOT_QUANTITY,6)   divergence(magnetization)
-C     LBIT(LBIT_PLOT_QUANTITY,7)   divergence(current density)
-C     LBIT(LBIT_PLOT_QUANTITY,8)   curl(magnetization)
-C     LBIT(LBIT_PLOT_QUANTITY,9)   curl(current density)
+C     LBIT(LBIT_PLOT_QUANTITY,6)   div(magnetization)
+C     LBIT(LBIT_PLOT_QUANTITY,7)   div(current density)
+C     LBIT(LBIT_PLOT_QUANTITY,8)   rot(magnetization)
+C     LBIT(LBIT_PLOT_QUANTITY,9)   rot(current density)
 C
 C     LBIT(LBIT_PLOT_QUANTITY,10) .OPT0 (debug and testing of new functionalities)
 C     LBIT(LBIT_PLOT_QUANTITY,11) .OPT1 (debug and testing of new functionalities)
@@ -35,6 +35,9 @@ C     LBIT(LBIT_PLOT_QUANTITY,20)  diamagnetic current density
 C     LBIT(LBIT_PLOT_QUANTITY,21)  kinetic energy density
 C     LBIT(LBIT_PLOT_QUANTITY,22)  helicity density
 C     LBIT(LBIT_PLOT_QUANTITY,23)  \gamma_5 density
+C     LBIT(LBIT_PLOT_QUANTITY,24)  paramagnetic current density
+C     LBIT(LBIT_PLOT_QUANTITY,25)  div(paramagnetic current density)
+C     LBIT(LBIT_PLOT_QUANTITY,26)  rot(paramagnetic current density)
 C
       CHARACTER*6     XVECFILE
       CHARACTER*8     ORBSTRING1, ORBSTRING2

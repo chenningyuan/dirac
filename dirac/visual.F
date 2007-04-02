@@ -219,7 +219,7 @@ C=======================================================================
 #include "codata.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_QUANTITIES = 24)
+      PARAMETER (NR_QUANTITIES = 26)
       PARAMETER (MAX_NR_PAIRS = 200)
 
 #include "dcbgen.h"
@@ -266,10 +266,10 @@ C=======================================================================
       QUANTITY_NAME(3)  = 'current_density'
       QUANTITY_NAME(4)  = 'ELF'
       QUANTITY_NAME(5)  = 'r_times_j'
-      QUANTITY_NAME(6)  = 'divergence_magnetization'
-      QUANTITY_NAME(7)  = 'divergence_current_density'
-      QUANTITY_NAME(8)  = 'curl_magnetization'
-      QUANTITY_NAME(9)  = 'curl_current_density'
+      QUANTITY_NAME(6)  = 'div_magnetization'
+      QUANTITY_NAME(7)  = 'div_current_density'
+      QUANTITY_NAME(8)  = 'rot_magnetization'
+      QUANTITY_NAME(9)  = 'rot_current_density'
       QUANTITY_NAME(10) = 'opt0'
       QUANTITY_NAME(11) = 'opt1'
       QUANTITY_NAME(12) = 'opt2'
@@ -285,6 +285,8 @@ C=======================================================================
       QUANTITY_NAME(22) = 'helicity'
       QUANTITY_NAME(23) = 'gamma_5_density'
       QUANTITY_NAME(24) = 'paramagnetic_current_density'
+      QUANTITY_NAME(25) = 'div_paramagnetic_current_density'
+      QUANTITY_NAME(26) = 'rot_paramagnetic_current_density'
 
       DO IQUANTITY = 1,NR_QUANTITIES
         QUANTITY_IS_A_VECTOR(IQUANTITY) = .FALSE.
@@ -297,6 +299,7 @@ C=======================================================================
       QUANTITY_IS_A_VECTOR(9)  = .TRUE.
       QUANTITY_IS_A_VECTOR(20) = .TRUE.
       QUANTITY_IS_A_VECTOR(24) = .TRUE.
+      QUANTITY_IS_A_VECTOR(26) = .TRUE.
 
       ORIENTATION(1) = 'xy'
       ORIENTATION(2) = 'xz'
@@ -774,7 +777,7 @@ C=======================================================================
       PARAMETER (DP12 = 1.0D0/2.0D0)
       PARAMETER (DP23 = 2.0D0/3.0D0)
       PARAMETER (DP53 = 5.0D0/3.0D0)
-      PARAMETER (NR_QUANTITIES = 24)
+      PARAMETER (NR_QUANTITIES = 26)
 
 #include "visual.h"
 #include "dcborb.h"
@@ -806,6 +809,7 @@ C=======================================================================
       QUANTITY_IS_A_VECTOR(9)  = .TRUE.
       QUANTITY_IS_A_VECTOR(20) = .TRUE.
       QUANTITY_IS_A_VECTOR(24) = .TRUE.
+      QUANTITY_IS_A_VECTOR(26) = .TRUE.
 
       CALL DZERO(QUANTITY,NR_QUANTITIES*4)
 
@@ -865,16 +869,13 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_DENSITY(1211,
-     &                   UNUSED,
-     &                   VECTOR,
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   GAO1,
-     &                   DMAT_AO,
-     &                   BUF)
-
-        CALL DSCAL(3,-DP12,VECTOR,1)
+        CALL GET_JPARA(.TRUE.,
+     &                 VECTOR,
+     &                 IREP_PLOT,
+     &                 GAO,
+     &                 GAO1,
+     &                 DMAT_AO,
+     &                 BUF)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -890,14 +891,13 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_DENSITY(1113,
-     &                   UNUSED,
-     &                   VECTOR,
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   UNUSED,
-     &                   DMAT_AO,
-     &                   BUF)
+        CALL GET_M(.TRUE.,
+     &             VECTOR,
+     &             IREP_PLOT,
+     &             GAO,
+     &             UNUSED,
+     &             DMAT_AO,
+     &             BUF)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -913,14 +913,13 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_DENSITY(1112,
-     &                   UNUSED,
-     &                   VECTOR,
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   UNUSED,
-     &                   DMAT_AO,
-     &                   BUF)
+        CALL GET_J(.TRUE.,
+     &             VECTOR,
+     &             IREP_PLOT,
+     &             GAO,
+     &             UNUSED,
+     &             DMAT_AO,
+     &             BUF)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -936,22 +935,17 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_DENSITY(1112,
-     &                   UNUSED,
-     &                   VECTOR,
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   UNUSED,
-     &                   DMAT_AO,
-     &                   BUF)
+        CALL GET_J(.TRUE.,
+     &             VECTOR,
+     &             IREP_PLOT,
+     &             GAO,
+     &             UNUSED,
+     &             DMAT_AO,
+     &             BUF)
 
-        VECTOR(1) = PY*VECTOR(3) - PZ*VECTOR(2)
-        VECTOR(2) = PZ*VECTOR(1) - PX*VECTOR(3)
-        VECTOR(3) = PX*VECTOR(2) - PY*VECTOR(1)
-
-        QUANTITY(IQUANTITY,1) = VECTOR(1)
-        QUANTITY(IQUANTITY,2) = VECTOR(2)
-        QUANTITY(IQUANTITY,3) = VECTOR(3)
+        QUANTITY(IQUANTITY,1) = PY*VECTOR(3) - PZ*VECTOR(2)
+        QUANTITY(IQUANTITY,2) = PZ*VECTOR(1) - PX*VECTOR(3)
+        QUANTITY(IQUANTITY,3) = PX*VECTOR(2) - PY*VECTOR(1)
 #else
         CALL QUIT('not implemented')
 #endif
@@ -963,14 +957,13 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_DENSITY(1223,
-     &                   UNUSED,
-     &                   QUANTITY(IQUANTITY,0),
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   GAO1,
-     &                   DMAT_AO,
-     &                   BUF)
+        CALL GET_DIVM(.TRUE.,
+     &                QUANTITY(IQUANTITY,0),
+     &                IREP_PLOT,
+     &                GAO,
+     &                GAO1,
+     &                DMAT_AO,
+     &                BUF)
 #else
         CALL QUIT('not implemented')
 #endif
@@ -982,17 +975,23 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_DENSITY(1222,
-     &                   UNUSED,
-     &                   QUANTITY(IQUANTITY,0),
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   GAO1,
-     &                   DMAT_AO,
-     &                   BUF)
+        CALL GET_DIVJ(.TRUE.,
+     &                QUANTITY(IQUANTITY,0),
+     &                IREP_PLOT,
+     &                GAO,
+     &                GAO1,
+     &                DMAT_AO,
+     &                BUF)
 #else
         CALL QUIT('not implemented')
 #endif
+      ENDIF
+
+!     divergence of paramagnetic current density
+
+      IQUANTITY = 25
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+        CALL QUIT('not implemented')
       ENDIF
 
 !     curl of magnetization
@@ -1001,14 +1000,13 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_DENSITY(1233,
-     &                   UNUSED,
-     &                   VECTOR,
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   GAO1,
-     &                   DMAT_AO,
-     &                   BUF)
+        CALL GET_ROTM(.TRUE.,
+     &                VECTOR,
+     &                IREP_PLOT,
+     &                GAO,
+     &                GAO1,
+     &                DMAT_AO,
+     &                BUF)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -1024,14 +1022,35 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_DENSITY(1232,
-     &                   UNUSED,
-     &                   VECTOR,
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   GAO1,
-     &                   DMAT_AO,
-     &                   BUF)
+        CALL GET_ROTJ(.TRUE.,
+     &                VECTOR,
+     &                IREP_PLOT,
+     &                GAO,
+     &                GAO1,
+     &                DMAT_AO,
+     &                BUF)
+
+        QUANTITY(IQUANTITY,1) = VECTOR(1)
+        QUANTITY(IQUANTITY,2) = VECTOR(2)
+        QUANTITY(IQUANTITY,3) = VECTOR(3)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+!     curl of paramagnetic current density
+
+      IQUANTITY = 26
+      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+#if defined (MOD_CDFT)
+
+        CALL GET_ROTJPARA(.TRUE.,
+     &                    VECTOR,
+     &                    IREP_PLOT,
+     &                    GAO,
+     &                    GAO1,
+     &                    DMAT_AO,
+     &                    BUF)
 
         QUANTITY(IQUANTITY,1) = VECTOR(1)
         QUANTITY(IQUANTITY,2) = VECTOR(2)
@@ -1047,14 +1066,13 @@ C=======================================================================
       IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
-        CALL GET_DENSITY(1115,
-     &                   UNUSED,
-     &                   QUANTITY(IQUANTITY,0),
-     &                   IREP_PLOT,
-     &                   GAO,
-     &                   UNUSED,
-     &                   DMAT_AO,
-     &                   BUF)
+        CALL GET_GAMMA5(.TRUE.,
+     &                  QUANTITY(IQUANTITY,0),
+     &                  IREP_PLOT,
+     &                  GAO,
+     &                  UNUSED,
+     &                  DMAT_AO,
+     &                  BUF)
 #else
         CALL QUIT('not implemented')
 #endif
@@ -1565,7 +1583,7 @@ C=======================================================================
 #include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_QUANTITIES = 24)
+      PARAMETER (NR_QUANTITIES = 26)
 
 #include "visual.h"
 
@@ -1595,6 +1613,7 @@ C=======================================================================
       QUANTITY_IS_A_VECTOR(9)  = .TRUE.
       QUANTITY_IS_A_VECTOR(20) = .TRUE.
       QUANTITY_IS_A_VECTOR(24) = .TRUE.
+      QUANTITY_IS_A_VECTOR(26) = .TRUE.
 
       CALL DZERO(QUANTITY_INTEGRAL,NR_QUANTITIES*4)
 

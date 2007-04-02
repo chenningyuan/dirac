@@ -6262,7 +6262,7 @@ C=======================================================================
      &            '.SKIPEP','.SKIPEE','.RXJ   ','.JDIA  ', ! 17 18 19 20
      &            '.K     ','.H     ','.GAMMA5','.JPARA ', ! 21 22 23 24
      &            '.DIVM  ','.DIVJ  ','.ROTM  ','.ROTJ  ', ! 25 26 27 28
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 29 30 31 32
+     &            '.DIVJPA','.ROTJPA','.XXXXXX','.XXXXXX', ! 29 30 31 32
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 33 34 35 36
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 37 38 39 40
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 41 42 43 44
@@ -6398,7 +6398,6 @@ C=======================================================================
    24     CONTINUE
           CALL SET_LBIT(LBIT_PLOT_QUANTITY,24)
           GOTO 100
-
    25     CONTINUE
           CALL SET_LBIT(LBIT_PLOT_QUANTITY,6)
           GOTO 100
@@ -6411,9 +6410,13 @@ C=======================================================================
    28     CONTINUE
           CALL SET_LBIT(LBIT_PLOT_QUANTITY,9)
           GOTO 100
-
    29     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,25)
+          GOTO 100
    30     CONTINUE
+          CALL SET_LBIT(LBIT_PLOT_QUANTITY,26)
+          GOTO 100
+
    31     CONTINUE
    32     CONTINUE
    33     CONTINUE

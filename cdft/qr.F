@@ -111,22 +111,22 @@ C=======================================================================
 
       DO IBC = 1,3
         IF(.NOT. IHRMOP(IBC) .EQ. 1) THEN
-            CALL GET_CURRENT(.TRUE.,
-     &                       .FALSE.,
-     &                       FO_SPIN_DENSITY(1,IBC),
-     &                       UNUSED,
-     &                       F,
-     &                       G,
-     &                       IU,
-     &                       IV,
-     &                       IX,
-     &                       IY,
-     &                       ITRANSFORM,
-     &                       ISYMOP(IBC)-1,
-     &                       GAO,
-     &                       UNUSED,
-     &                       DTRMAT(1,1,1,IBC),
-     &                       BUF)
+!           CALL GET_CURRENT(.TRUE.,
+!    &                       .FALSE.,
+!    &                       FO_SPIN_DENSITY(1,IBC),
+!    &                       UNUSED,
+!    &                       F,
+!    &                       G,
+!    &                       IU,
+!    &                       IV,
+!    &                       IX,
+!    &                       IY,
+!    &                       ITRANSFORM,
+!    &                       ISYMOP(IBC)-1,
+!    &                       GAO,
+!    &                       UNUSED,
+!    &                       DTRMAT(1,1,1,IBC),
+!    &                       BUF)
 
           FO_SPIN_DENSITY_NORM(IBC)
      &                         = DSQRT(DDOT(3,FO_SPIN_DENSITY(1,IBC),1,
