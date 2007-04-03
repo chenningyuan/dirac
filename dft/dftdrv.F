@@ -673,6 +673,26 @@ C aspg+rb, 2007-01-19
       ENDIF
 Caspg+rbast, 2006-09-21
 #endif
+
+!     IF(LBIT(LBIT_DFTAC,8)) THEN !debug or plot something
+
+!       IHOWMANY = 1000
+
+!       NPOINT = 0
+!       DO IDEBUG = 1,IHOWMANY+1
+
+!         NPOINT = NPOINT + 1
+
+!         CORX(IDEBUG)   = D0
+!         CORY(IDEBUG)   = D0
+!         CORZ(IDEBUG)   = (IDEBUG-1)*(10.0D0/IHOWMANY)
+
+!         WEIGHT(IDEBUG) = D1
+
+!       ENDDO
+!     ENDIF
+
+
       DO 300 IPNT = 1, NPOINT
        
         IF (IPRINT .GE. 100) THEN
@@ -912,6 +932,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 
   300 CONTINUE !end of loop over grid points
 
+!     IF(LBIT(LBIT_DFTAC,8)) CALL QUIT('debug or plot something')
 
 
 
