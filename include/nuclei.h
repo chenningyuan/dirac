@@ -7,7 +7,7 @@
      &        NUCNET, INCENT(MXCENT), INUNIQ(MXCENT), NDEGNM(MXCENT),   &
      &        NAMFA, IAMFA(MXCENT),                                     &
      &                NBASISAUX, NPBASAUX, NAUX, NPAUX,                 &
-C density fitting basis info
+!C density fitting basis info
      &        NBASIS_FIT, NLARGE_FIT, NSMALL_FIT, NPBAS_FIT, NPLRG_FIT, &
      &        NPSML_FIT
       COMMON /NUCLEI/ CHARGE, CORD, NOORBT, NUCPRE, NUCNUM, NUCDEG,     &
@@ -15,7 +15,7 @@ C density fitting basis info
      &                ITRACO, NATOMS, NFLOAT, NBASIS, NLARGE, NSMALL,   &
      &                NPBAS, NPLRG, NPSML, NUCNET, INCENT, INUNIQ,      &
      &                GAUNUC, NDEGNM, NAMFA, IAMFA,                     &
-C density fitting basis info
+!C density fitting basis info
      &                NBASISAUX, NPBASAUX, NAUX, NPAUX,                 &
      &        NBASIS_FIT, NLARGE_FIT, NSMALL_FIT, NPBAS_FIT, NPLRG_FIT, &
      &        NPSML_FIT
