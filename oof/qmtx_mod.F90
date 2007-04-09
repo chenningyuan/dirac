@@ -37,7 +37,7 @@ private
 end type
 
 !
-! universal structure for quaternion matrix, either symmetry packed, symmetry unpacked
+! universal structure for the quaternion matrix, either symmetry packed, symmetry unpacked
 ! or simple unsymmetric
 !
 type QMtx
@@ -55,7 +55,13 @@ private
 !  
   logical ::  simple_mtx=.false.
   logical ::  symm_packed=.false.
+! ...important flag to check if matrix is allocated !
   logical ::  is_alloc = .false.
+! matrix may be real or integer
+  logical ::  is_real = .true.
+! short text attached to the matrix
+  !character, dimension(:), allocatable :: qmtx_text 
+  character (len=30) :: qmtx_text 
 end type QMtx
 
 ! common name for contructors
@@ -68,6 +74,38 @@ end interface
 !end interface 
 
 contains
+
+subroutine set_isalloc(qmat)
+type(QMtx), intent(inout) :: qmat
+call QENTER('set_isalloc')
+ qmat%is_alloc = .true.
+call QEXIT('set_isalloc')
+end subroutine set_isalloc
+
+subroutine unset_isalloc(qmat)
+type(QMtx), intent(inout) :: qmat
+call QENTER('unset_isalloc')
+ qmat%is_alloc = .false.
+call QEXIT('unset_isalloc')
+end subroutine unset_isalloc
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function get_qmtx_kstart(qmat) result (kstart_out)
+!----------------------------------------------------------------------
+! returns kstart value of entering quaternion matrix "qmtx"
+!----------------------------------------------------------------------
+#include "priunit.h"
+type(QMtx), intent(in) :: qmat
+integer(kind=4) :: kstart_out
+!integer :: kstart_out
+call QENTER('get_qmtx_kstart')
+  if (.not.qmat%is_alloc) then
+    call QUIT('get_qmtx_kstart: can not return "kstart" when memory is NOT allocated !')
+  else
+    kstart_out =  ( qmat%kstart )
+  endif
+call QEXIT('get_qmtx_kstart')
+end function get_qmtx_kstart
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine set_iprqmtx(iprint)
@@ -102,9 +140,9 @@ end function set_irp
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function set_nz (nz_in) result (nz_out)
-!
-! define setting of NZ
-!
+!-----------------------------------------------
+!   define setting of NZ
+!-----------------------------------------------
 #include "priunit.h"
 type(nzp) :: nz_out
 !integer (kind=4), intent(in) :: nz_in
@@ -121,9 +159,9 @@ end function set_nz
 
 !=======================================================================
 function set_qmtx_pck (nr1in,nc1in,nr2in,nc2in) result(qmtx_pck_out)
-!
+!---------------------------------------------------------------------
 ! set dimensions (NFSYM=2) of a symmetry packed quaternion matrix
-!
+!---------------------------------------------------------------------
 #include "priunit.h"
 type(qmtx_pck) :: qmtx_pck_out
 integer (kind=8/IRAT), intent(in) :: nr1in,nc1in
@@ -142,6 +180,7 @@ endif
 CALL QEXIT('QMatrixes: set_qmtx_pck')
 end function set_qmtx_pck
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function set_qmtx_unpck (n1in,n2in) result(qmtx_unpck_out)
 !==============================================================================
 !
@@ -163,17 +202,27 @@ endif
 CALL QEXIT('QMatrixes: set_qmtx_unpck')
 end function set_qmtx_unpck
 
-!======================================================
-!         print out the quaternion matrix
-!======================================================
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 SUBROUTINE QMtxInfo(qm)
+!=========================================================================
+!
+!       print info of the quaternion matrix, plus the matrix
+!
+!=========================================================================
 #include "priunit.h"
 #include "dgroup.h"
 type(QMtx),intent(in) :: qm
 integer(kind=4) :: ifsym,nt
 integer (kind=8) :: ioff
 CALL QENTER('QMtxInfo')
-write(LUPRI,'(/,4x,a)') 'QMtx: info '
+
+CALL HEADER('Output from QMtxInfo',-1)
+
+If (LEN(qm%qmtx_text) > 0) then
+ write(LUPRI,'(4x,a,a)') 'Attached text:',qm%qmtx_text
+endif
+
+write(LUPRI,'(4x,a,i1,1x,a,i1)') 'IREP=',qm%irep, 'NZ=',qm%nz
 
 if (.not.qm%simple_mtx.and.qm%symm_packed) then
  write(LUPRI,*) 'fermion symmetry packed matrix !!!'
@@ -186,7 +235,7 @@ if (.not.qm%simple_mtx.and.qm%symm_packed) then
   if (qm%is_alloc) then
 ! ... print QMatrix
    CALL PRQMAT(PW(ioff),qm%nr(ifsym),qm%nc(ifsym),qm%nr(ifsym),qm%nc(ifsym),qm%nz,  &
-              IPQTOQ(1,qm%irep),LUPRI)
+                IPQTOQ(1,qm%irep),LUPRI)
   else
     write(LUPRI,*) 'matrix is not allocated,no print out'
   endif
@@ -195,6 +244,7 @@ if (.not.qm%simple_mtx.and.qm%symm_packed) then
 
 else if (.not.qm%simple_mtx.and..not.qm%symm_packed) then
 ! ... symmetry unpacked (full) quaternion matrix
+ write(LUPRI,*) 'full (symmetry unpacked) quaternion matrix '
   if (qm%is_alloc) then
 ! ... print TOTAL QMatrix
     nt = ( qm%nr(1) + qm%nr(2) )
@@ -216,7 +266,7 @@ CALL QEXIT('QMtxInfo')
 END SUBROUTINE QMtxInfo
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-FUNCTION MakeQMtxPck(qm_pk_in, irp_in, nz_in) result(qm)
+FUNCTION MakeQMtxPck(qm_pk_in, irp_in, nz_in, text) result(qm)
 !-------------------------------------------------------------------
 !
 !    basic constructor for symmetry packed quaternion matrix
@@ -229,7 +279,9 @@ type(QMtx) :: qm
 type(qmtx_pck), intent(in) :: qm_pk_in
 type(irp), optional, intent(in) ::  irp_in
 type(nzp), optional, intent(in) ::  nz_in
+character(*), optional, intent(in) :: text
 integer (kind=8) :: isize
+integer(kind=4) :: good_alloc
 CALL QENTER('QMatrixes: MakeQMtxPck')
 
 if (present(irp_in)) then
@@ -242,6 +294,12 @@ if (present(nz_in)) then
  qm%nz = nz_in%nz
 else
  qm%nz = NZ ! from dgroup.h
+endif
+
+if (present(text)) then
+! allocate(qm%qmtx_text, STAT=good_alloc)
+! if (good_alloc.NE.0) call QUIT('wrong allocation of chatacters !')
+   qm%qmtx_text = text
 endif
 
 qm%nr(1) = qm_pk_in%nr1
@@ -263,7 +321,7 @@ isize = qm%nr(1)*qm%nc(1)*qm%nz + qm%nr(2)*qm%nc(2)*qm%nz
 if (iprqmtx >=5 ) then
  call print_mem_param()
 ! write(lupri,*) 'KFREE,LFREE=',KFREE,LFREE
- write(lupri,*) 'isize=',isize
+! write(lupri,*) 'isize=',isize
 endif
 
 ! allocate array for the matrix
@@ -276,7 +334,7 @@ CALL QEXIT('QMatrixes: MakeQMtxPck')
 END FUNCTION MakeQMtxPck
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-FUNCTION MakeQMtxUnPck(qm_upk_in, irp_in, nz_in) result(qm)
+FUNCTION MakeQMtxUnPck(qm_upk_in, irp_in, nz_in, text) result(qm)
 !---------------------------------------------------------------------
 !
 !  Make quaternion full (unpacked) matrix.
@@ -289,6 +347,7 @@ type(QMtx) :: qm
 type(irp), optional, intent(in) ::  irp_in
 type(nzp), optional, intent(in) ::  nz_in
 type(qmtx_unpck),  intent(in) :: qm_upk_in
+character(*), optional, intent(in) :: text
 integer (kind=8) :: isize
 logical, save :: was_called = .false.
 CALL QENTER('QMatrixes: MakeQMtxUnPck')
@@ -303,6 +362,11 @@ if (present(nz_in)) then
  qm%nz = nz_in%nz
 else
   qm%nz = NZ ! from dgroup.h
+endif
+
+if (present(text)) then
+! save the entering matrix label
+  qm%qmtx_text = text
 endif
 
 qm%nr(1) = qm_upk_in%n1
@@ -326,15 +390,16 @@ isize = (qm%nr(1)+qm%nr(2))*(qm%nr(1)+qm%nr(2))*qm%nz
 if (iprqmtx >=5 ) then
  call print_mem_param()
 ! write(lupri,*) 'KFREE,LFREE=',KFREE,LFREE
- write(lupri,*) 'isize=',isize
+ write(lupri,*) 'matrix , isize=',isize
 endif
-
 ! allocate array for the matrix
 !CALL MEMGET('REAL',qm%kstart,isize,PW,KFREE,LFREE)
- CALL mymemget('REAL',qm%kstart,isize)
+CALL mymemget('REAL',qm%kstart,isize)
 
+if (iprqmtx >=5 ) then
+ call print_mem_param()
+endif
 qm%is_alloc = .true.
-
 CALL QEXIT('QMatrixes: MakeQMtxUnPck')
 END FUNCTION MakeQMtxUnPck
 
@@ -347,6 +412,7 @@ call QENTER('QMatrixes: DeAllocQMtx')
 call mymemrel('QMatrixes: DestroyQMtx',qm%kstart,qm%kstart)
 
 qm%is_alloc = .false.
+qm%qmtx_text=''
 
 call QEXIT('QMatrixes: DeAllocQMtx')
 END SUBROUTINE DeAllocQMtx

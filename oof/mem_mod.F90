@@ -20,7 +20,11 @@ subroutine mymemget( datatype, kbase, length )
 !************************************************************************
 !
 !  public procedure to replace the common MEMGET procedure
-! with the hide private variables: KFREE,LFREE
+! with hidding of private variables: KFREE,LFREE
+!
+! Parameters:  datatype
+!              kbase
+!              length
 !
 !************************************************************************
 #include "priunit.h"
@@ -32,12 +36,17 @@ integer(kind=4), intent(inout) :: kbase
 integer (kind=8), intent(inout) :: length
 integer :: kbase_temp ! needs to fit into internal MEM_stuff 
 call QENTER('mymemget')
+
  CALL MEMCHK('mymemget',PW,1) 
   
-   kbase_temp = kbase
-! CALL MEMGET(datatype,kbase,isize,PW,KFREE,LFREE)
- CALL MEMGET(datatype,kbase_temp,isize,PW,KFREE,LFREE)
-   kbase = kbase_temp
+ kbase_temp = kbase
+
+ CALL MEMGET(datatype,kbase_temp,length,PW,KFREE,LFREE)
+
+ kbase = kbase_temp
+
+ CALL MEMCHK('mymemget',PW,1) 
+
 call QEXIT('mymemget')
 end subroutine mymemget
 
@@ -55,8 +64,8 @@ integer(kind=4), intent (inout) :: kfirst,krel
 integer :: kfirst_temp, krel_temp
 
 call QENTER('mymemrel')
+ ! this substitution is needed due to old DIRAC memory stuff
  kfirst_temp = kfirst; krel_temp  = krel
-  !call MEMREL(datatype,PW,kfirst,krel,KFREE,LFREE)
  call MEMREL(datatype,PW,kfirst_temp,krel_temp,KFREE,LFREE)
  kfirst = kfirst_temp;  krel  =  krel_temp
 call QEXIT('mymemrel')
@@ -80,14 +89,23 @@ subroutine print_mem_param
 !************************************************************************
 #include "priunit.h"
 CALL QENTER('print_mem_param')
-write(LUPRI,*) 'Memmory parameters: KWORK=',KWORK,' KFREE=',KFREE,' LFREE=',LFREE, &
- ' LWORK=',LWORK 
+write(LUPRI,'(3(A,I10,/),A,I10)')                &
+   '  Actual memory parameters:   KWORK=',KWORK, &
+   '----------------------------  KFREE=',KFREE, &
+   '                              LFREE=',LFREE, &
+   '                              LWORK=',LWORK 
 if (associated(PW)) then
-   write(LUPRI,*) 'Pointer PW is associated with the WORK array.'
+   !write(LUPRI,'(A)') '----> Pointer PW is associated with the WORK array.'
+   if (size(PW) /= LWORK) then
+     write(LUPRI,*) ' size(PW), LWORK:',size(PW), LWORK
+     call quit('print_mem_param: LWORK .ne. size(PW) !')
+   endif
+   CALL MEMCHK('print_mem_param',PW,1)
+  ! CALL MEMCHK('print_mem_param',PW(KFREE),LFREE) 
+   write(LUPRI,'(A)') '----> Pointer PW is associated with the WORK array, memory checked.'
 else
-   write(LUPRI,*) 'Pointer PW is NOT associated with the WORK array.'
+   write(LUPRI,'(A)') '----> Pointer PW is NOT associated with the WORK array.'
 endif
-CALL MEMCHK('print_mem_param',PW,1)
 CALL QEXIT('print_mem_param')
 end subroutine print_mem_param
 
@@ -175,10 +193,44 @@ else
   endif
 endif
 nullify(PW);
-
+!  ... 
 if (iprmem > 10) then
-  write(LUPRI,*) 'PW deassociated!'
+  write(LUPRI,'(A)') 'PW pointer was deassociated!'
 endif
 END SUBROUTINE UnStickMemory
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+FUNCTION get_kfree() result(kfree_out)
+!------------------------------------------------------------------------
+! return the (private) KFREE value
+!------------------------------------------------------------------------
+integer :: kfree_out
+CALL QENTER('get_kfree')
+ kfree_out = KFREE
+CALL QEXIT('get_kfree')
+END FUNCTION get_kfree
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+FUNCTION get_lfree() result(lfree_out)
+!------------------------------------------------------------------------
+! return the (protected) LFREE value
+!------------------------------------------------------------------------
+integer :: lfree_out
+CALL QENTER('get_lfree')
+ lfree_out = LFREE
+CALL QEXIT('get_lfree')
+END FUNCTION get_lfree
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+FUNCTION get_lwork() result(lwork_out)
+!------------------------------------------------------------------------
+! return the (protected) LWORK value
+!------------------------------------------------------------------------
+integer :: lwork_out
+CALL QENTER('get_lwork')
+ lwork_out = LWORK
+CALL QEXIT('get_lwork')
+END FUNCTION get_lwork
+
 
 END MODULE Memory

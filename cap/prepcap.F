@@ -400,7 +400,7 @@ C       ENDIF
       CALL MEMGET('REAL',KPMR,ISIZE,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMI,ISIZE,WORK,KFREE,LFREE)
 C==================================================================
-C     ... read PEMAT in cycle and resort the matrix elements
+C     ... read PEMAT in the cycle and resort the matrix elements
 C    from CAP order to the DIRAC basic order into WORK arrays
 C==================================================================
       IX = 0
@@ -421,12 +421,27 @@ C==================================================================
 C       -------------------------------------------------
 C       .. store  integrals in the DIRAC basic order ..
 C       -------------------------------------------------
-        WORK(KPMR+CMNINDX(ICAPBFO(I),ICAPBFO(J))-1)=CAPRE
-        WORK(KPMI+CMNINDX(ICAPBFO(I),ICAPBFO(J))-1)=CAPIM
+!       WORK(KPMR+CMNINDX(ICAPBFO(I),ICAPBFO(J))-1)=CAPRE
+!       WORK(KPMI+CMNINDX(ICAPBFO(I),ICAPBFO(J))-1)=CAPIM
+
+         indx_i =  NBASIS*(ICAPBFO(I)-1) + ICAPBFO(J)  - 1
+         indx_j =  NBASIS*(ICAPBFO(J)-1) + ICAPBFO(I)  - 1
+
+        WORK(KPMR+ indx_i ) = CAPRE
+        WORK(KPMR+ indx_j ) = CAPRE
+
+        WORK(KPMI+ indx_i ) = CAPIM
+        WORK(KPMI+ indx_j ) = CAPIM
 
       ENDDO 
       ENDDO 
       CALL GPCLOSE(LUPM,'KEEP')
+
+      IF (IPRCAP.GE.4) THEN
+        WRITE(LUPRI,*) 'CAP_RE in basic DIRAC order'
+        CALL PRQMAT(WORK(KPMR),NBASIS,NBASIS,NBASIS,NBASIS,1,
+     &     IPQTOQ(1,0),LUPRI)
+      ENDIF
 
 C===========================================================
 C
@@ -511,10 +526,10 @@ C      ... symmetry adapt CAP_(I,J):
 
       ELSE
 
-       CALL NTAOSO(WORK(KPMR),WORK(KPMRSA),NBASIS,0,IPRCAP)
+       CALL MTAOSO(WORK(KPMR),WORK(KPMRSA),NBASIS,0,IPRCAP)
 
        IF (.NOT.CAPOVLP) THEN
-         CALL NTAOSO(WORK(KPMI),WORK(KPMISA),NBASIS,0,IPRCAP)
+         CALL MTAOSO(WORK(KPMI),WORK(KPMISA),NBASIS,0,IPRCAP)
        ELSE
          CALL DZERO(WORK(KPMISA),ISIZE)
        ENDIF
@@ -524,7 +539,14 @@ C      ... symmetry adapt CAP_(I,J):
 C =======================================================================
 C     Save HERMIT symmetry adapted integrals into the AOPROPER file.
 C =======================================================================
-      CALL SAVECAP(WORK(KPMRSA),WORK(KPMISA),IPRCAP)
+      ISIZE1 = NBASIS*(NBASIS+1)/2
+      CALL MEMGET('REAL',KPMRSAT,ISIZE1,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMISAT,ISIZE1,WORK,KFREE,LFREE)
+!         only triangular matrixes are needed !!!
+       CALL DAMATR( NBASIS, WORK(KPMRSA), NBASIS, WORK(KPMRSAT) )
+       CALL DAMATR( NBASIS, WORK(KPMISA), NBASIS, WORK(KPMISAT) )
+
+       CALL SAVECAP(WORK(KPMRSAT),WORK(KPMISAT),IPRCAP)
 
 C     CALL CAPREADY(WORK,LWORK,IPRCAP)
       CALL CAPREADY(WORK(KFREE),LFREE,IPRCAP)
@@ -829,6 +851,12 @@ C     IPTYP            = 20
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPCAPI           = INDXPR
 
+      IF (IPRINT.GE.2) THEN
+       WRITE(LUPRI,'(2X,A,2I3)')
+     & 'CAPREADY: CAP_re,CAP_im in operator list with indexes:',
+     & IPCAPR,IPCAPI
+      ENDIF
+
 C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 CMI     keep rather as real symmetric...
 C      IPRPTIM(IPCAPI) = -1
@@ -852,7 +880,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C    Common index for lower triangular element (I >= J)
 C
-C Written by Miro ILIAS, Tel Aviv, febr. 2007
+C   Written by Miro ILIAS, Tel Aviv, febr. 2007
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"

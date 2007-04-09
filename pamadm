@@ -710,7 +710,7 @@ if [ -n "$OOFMOD" ]; then
 cat <<EOF>> Makefile
 
 OOF_OBJS = \\
-  oof/mem_mod.o oof/qmtx_mod.o oof/tests.o
+  oof/mem_mod.o oof/qmtx_mod.o oof/tests.o oof/string_mod.o
 EOF
 fi
 #

@@ -30,6 +30,8 @@ call set_iprmem(100)
 
 !call StickMemory(work,llwork)  ! take in WORK(LWORK) array ...
 
+! call print_mem_param
+
 write(LUPRI,*) 'test_oof: smat called ... '
 smat = MakeQMtx( set_qmtx_pck(NFBAS(1,0),NFBAS(1,0),NFBAS(2,0),NFBAS(2,0)) )
 call QMtxInfo(smat)
