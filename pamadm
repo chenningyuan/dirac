@@ -114,8 +114,6 @@ setup()
    if [ -n "$LARGEMOL" ]; then
       LRGMOLFLG='-DLARGE_MOLECULES'
       echo " - Increasing common block sizes to handle larger systems"
-   else
-      LRGMOLFLG=' '
    fi
    #
    #  ERI two-electron integral module
