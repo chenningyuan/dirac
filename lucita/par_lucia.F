@@ -39,6 +39,53 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE BLOCK_DISTR_DRV(NBLOCK,IBLOCKL,NBLOCKD,ICWEIGHTF,
+     &                           NBLKWT,NPARBLKWT,CBLOCKS_FNODE,
+     &                           SCALFAC,ICWEIGHT,NVAR,IPROCLIST)
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+#include "lucipar.inc"
+#include "wrkspc.inc"
+      INTEGER*8 IABSOLUTE_WEIGHT
+      IABSOLUTE_WEIGHT = 0
+C
+      NNULL = 0
+      IDUM  = 0
+      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'BLKDRV')
+C
+C     allocate local ICCTOS array
+C
+      CALL MEMMAN(KICCTOS,NBLOCK**2,'ADDL  ',1,'ICCTOS')
+      CALL ISETVC(WORK(KICCTOS),NNULL,NBLOCK**2)
+C
+      CALL FIND_IMAT_SC(IBLOCKL,SCALFAC,WORK(KICCTOS),ICWEIGHT,NBLKWT,
+     &                  ICWEIGHTF,NBLOCK,IABSOLUTE_WEIGHT)
+C
+      IF(IDISTROUTE.EQ.1) THEN
+        CALL DISTBLKND_1(NBLOCK,ICWEIGHTF,NBLOCKD,NBLKWT,NPARBLKWT,
+     &                   NVAR,WORK(KICCTOS),IBLOCKL,IPROCLIST,ICWEIGHT,
+     &                   IABSOLUTE_WEIGHT)
+      ELSE
+        CALL DISTBLKND_2(NBLOCK,ICWEIGHTF,NBLOCKD,NBLKWT)
+      END IF
+C
+C     find all c-blocks connecting to a given sigma-block,
+C     information will be stored in CBLOCKS_FNODE
+C
+      CALL FIND_CCTOS(CBLOCKS_FNODE,NBLOCKD,WORK(KICCTOS),NBLOCK)
+C
+C     eliminate local memory
+      IDUM = 0
+      CALL MEMMAN(IDUM ,IDUM,'FLUSM ',2,'BLKDRV')
+C
+      END 
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
       SUBROUTINE FIND_ACTIVE_BLOCKS_PAR(LUIN,LBLK,BLK_A,SEGMNT,
      &                                  NBLOCK,IBLOCKD)
 *
@@ -1479,7 +1526,6 @@ CSK        CALL WRTMAT(ACT_SCLFAC,1,NBLK,1,NBLK)
 *      IBLK = IBLK -1
 *
       END
-*
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
@@ -2367,31 +2413,6 @@ C     IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
             CALL COPVC_SERPAR_C3(LU3,VEC1,IBKINF,IBLOCKI,II-1,0,-1)
             CALL COPVC_SERPAR_C4(LU4,VEC1,IBKINF,IBLOCKI,II-1,0,-1)
  904      CONTINUE
-*          write(6,*)'i survived II',mynew_id
-CSK          WRITE(6,*) ' Initial vectors on LU1'
-CSK          CALL REWINO(LU1)
-CSK          DO IVEC = 1, NROOT
-CSK             CALL WRTVCD(VEC1,LU1,0,LBLK)
-CSK          END DO
-CSK          WRITE(6,*) ' Initial vectors on LU3'
-CSK          CALL REWINO(LU3)
-CSK          DO IVEC = 1, NROOT
-CSK             CALL WRTVCD(VEC1,LU3,0,LBLK)
-CSK          END DO 
-CSK           JOFFS = 0
-CSK           call MPI_FILE_READ_AT(ILU1,JOFFS,VEC2,ITOTBLL,
-CSK     &          MPI_REAL8,ISTAT,IERR)
-CSK           DO I = 1, ITOTBLL
-CSK           write(6,*)'ilu1 ',VEC2(I)
-CSK           end do
-CSK           JOFFS = 0
-CSK           call MPI_FILE_READ_AT(ILU3,JOFFS,VEC2,ITOTBLL,
-CSK     &          MPI_REAL8,ISTAT,IERR)
-CSK           DO I = 1, ITOTBLL
-CSK           write(6,*)'ilu3 ',VEC2(I)
-CSK           end do
-*          write(6,*)'IPRT',IPRT
-*
         END IF
 *          write(6,*)'IPRT of myproc',IPRT,myproc
          

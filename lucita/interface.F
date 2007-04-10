@@ -584,6 +584,49 @@ C        .. we do not accept user input of less than 100 000 !
         end if
       end if
 *
+* 26: Distribution routine to use (only relevant in parallel case) 
+*
+      IDISTROUTE = 0
+      if (IMOKW(26).eq.0) then
+        IDISTROUTE = 2
+        IMOKW(26) = 2
+      else if (IMOKW(26).eq.1) then
+        if( I_USE_DIST_ROUTE .eq. 1 ) then
+          IDISTROUTE = I_USE_DIST_ROUTE
+        else if ( I_USE_DIST_ROUTE .eq. 2 ) then
+          IDISTROUTE = I_USE_DIST_ROUTE
+        else
+          write(6,*) 'Value for keyword DISTRT incorrect ',
+     &               I_USE_DIST_ROUTE
+          write(6,*) 'I will ignore your input.'
+          write(6,*) 'Program will continue.'
+          IDISTROUTE = 2   
+          IMOKW(26) = 2
+        endif
+      end if
+*
+* 27: Fractional Files in DAVIDSON ROUTINE (?)
+*
+      CHUNK_FILE = .FALSE.
+*
+      if (IMOKW(27).eq.0) then
+        CHUNK_FILE = .FALSE.
+        IMOKW(27) = 2
+      else if (IMOKW(27).eq.1) then
+        if( IFRACTFILE .eq. 0 ) then
+          CHUNK_FILE = .FALSE.
+        else if ( IFRACTFILE .eq. 1 ) then
+          CHUNK_FILE = .TRUE.
+        else
+          write(6,*) 'Value for keyword FRCTFL incorrect ',
+     &               IFRACTFILE
+          write(6,*) 'I will ignore your input.'
+          write(6,*) 'Program will continue.'
+          IDISTROUTE = .FALSE.   
+          IMOKW(27) = 2
+        endif
+      end if
+*
       if(irunpa.eq.1) then
         performci = 'parallel'
       else if(irunpa.eq.0) then
@@ -692,6 +735,17 @@ C        .. we do not accept user input of less than 100 000 !
 * 10e: file system in parallel calculation
 *
       if( irunpa .gt. 0 ) then
+        if( CHUNK_FILE ) THEN
+          YESSTATEMENT = 'Yes'
+        else
+          YESSTATEMENT = 'No'
+        end if
+        write(LUOUT,'(A42,I1)')
+     &  ' Parallel distribution routine ........ ',IDISTROUTE
+        write(LUOUT,*)
+        write(LUOUT,'(A42,A3)')
+     &  ' Fractional Files ..................... ',YESSTATEMENT
+        write(LUOUT,*)
         if( ifilesystem .eq. 0 ) THEN
           YESSTATEMENT = 'No'
         else

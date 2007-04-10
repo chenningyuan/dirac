@@ -40,7 +40,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MV7_PAR(C,HC,LUC,LUHC,LUCSCR,SSCRFAC,IBLOCKL,
-     &                  IBLOCKD,ICCTOS,IGROUPLIST,IPROCLIST,NUMBLOCK)
+     &                  IBLOCKD,RCCTOS,IGROUPLIST,IPROCLIST,NUMBLOCK)
 *
 * Outer routine for sigma vector generation
 * GAS version !!!!
@@ -65,7 +65,7 @@ C
 *
 *. array of blocklength, cpu-distribution and connection matrix
       DIMENSION IBLOCKL(NUMBLOCK),IBLOCKD(NUMBLOCK)
-      DIMENSION ICCTOS(NUMBLOCK,NUMBLOCK)
+      DIMENSION RCCTOS(NUMBLOCK)
 *.Definition of c and sigma
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
@@ -86,29 +86,29 @@ C
 #include "cprnt.inc"
 #include "glbbas.inc"
 #include "oper.inc"
-      CALL QENTER('MV7  ')
+      CALL QENTER('MV7PAR')
       IDUM = 0
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'MV7   ')
 
-*
+C
       IF(ICISTR.EQ.1) THEN
-        WRITE(6,*) ' MV7 does not work for ICISTR = 1'
+        WRITE(6,*) ' MV7_PAR does not work for ICISTR = 1'
         WRITE(6,*) ' SWITCH to ICISTR = 2,3 or program'
-        Call Abend2(' MV7 does not work for ICISTR = 1')
+        Call Abend2(' MV7_PAR does not work for ICISTR = 1')
       END IF
-*
+C
       IATP = 1
       IBTP = 2
-*
+C
       NOCTPA = NOCTYP(IATP)
       NOCTPB = NOCTYP(IBTP)
-*. Offset for supergroups
+C     Offset for supergroups
       IOCTPA = IBSPGPFTP(IATP)
       IOCTPB = IBSPGPFTP(IBTP)
-*
+C
       NAEL = NELEC(IATP)
       NBEL = NELEC(IBTP)
-*. Arrays giving allowed type combinations
+C     Arrays giving allowed type combinations
       CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
       CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
      &                IGSOCCX,NOCTPA,NOCTPB,
@@ -121,23 +121,38 @@ C
       ELSE
          KSVST = 1
       END IF
-*. Arrays giving block type
+C     Arrays giving block type
       CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
       CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP),WORK(KSVST))
-*. Arrays for partitioning of sigma
+C     Arrays for partitioning of sigma
       NTTS = MXNTTS
                        
       CALL MEMMAN(KLSLBT ,NTTS  ,'ADDL  ',1,'CLBT  ')
       CALL MEMMAN(KLSLEBT ,NTTS  ,'ADDL  ',1,'CLEBT ')
       CALL MEMMAN(KLSI1BT,NTTS  ,'ADDL  ',1,'CI1BT ')
       CALL MEMMAN(KLSIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
-*. Batches  of C vector
+C     Batches  of S-vector
       ITTSS_ORD = 2
-      CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
-     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
-     &     WORK(KSIOIO),ISMOST(1,ISSM),
-     &     NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
-     &     WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD)
+      
+C?      IF( IODENSEPAR .eq. 2 .and. IDISTROUTE .eq. 2 ) THEN
+      IF( IODENSEPAR .eq. 2 ) THEN
+C       
+C       partition ci-vector w.r.t to LBLOCK AND IBLOCKD
+C
+        CALL PART_CIV_PAR1(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
+     &                     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,
+     &                     LBLOCK,WORK(KSIOIO),ISMOST(1,ISSM),
+     &                     NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &                     WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD,
+     &                     IBLOCKD,NUMBLOCK)
+      ELSE
+C       good old normal partitioning      
+        CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
+     &                 WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
+     &                 WORK(KSIOIO),ISMOST(1,ISSM),
+     &                 NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &                 WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD)
+      END IF
 
       IF(I12.EQ.2) THEN
         IDOH2 = 1
@@ -151,26 +166,20 @@ C
 *
       CALL MEMMAN(KSCALLOC,NUMBLOCK,'ADDL  ',2,'SCLLOC')
       CALL MEMMAN(KSCALLOC2,NUMBLOCK,'ADDL  ',2,'SCLLC2')
-*. read in scalfac only once!
-*. IRDSCF = 1 else IRDSCF = 0
+C     read in scalfac only once!
       IRDSCF = 1
-CSK      write(6,*) 'hello from mv7_par',myproc
-*
-      IF(ICISTR.EQ.1) THEN
-        WRITE(6,*) 'ICISTR = 1 route currently not active'
-        Call Abend2('MV7 : ICISTR = 1 route currently not active')
-      ELSE
-        CALL RASSG3_PAR(C,HC,NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
-     &                  WORK(KLSI1BT),WORK(KLSIBT),LLUC,LLUHC,LLUCSCR,
-     &                  NUMBLOCK,IBLOCKL,IBLOCKD,
-     &                  SSCRFAC,WORK(KSCALLOC),WORK(KSCALLOC2),
-     &                  IGROUPLIST,IPROCLIST,ICCTOS)
-      END IF
-*. Eliminate local memory
+C
+      CALL RASSG3_PAR(C,HC,NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &                WORK(KLSI1BT),WORK(KLSIBT),LLUC,LLUHC,LLUCSCR,
+     &                NUMBLOCK,IBLOCKL,IBLOCKD,
+     &                SSCRFAC,WORK(KSCALLOC),WORK(KSCALLOC2),
+     &                IGROUPLIST,IPROCLIST,RCCTOS)
+C     Eliminate local memory
+      IDUM = 0
       CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'MV7   ')
-*
-      CALL QEXIT('MV7  ')
-*
+C
+      CALL QEXIT('MV7PAR')
+C
       END
 ***********************************************************************
 *                                                                     *
@@ -181,7 +190,7 @@ CSK      write(6,*) 'hello from mv7_par',myproc
       SUBROUTINE RASSG3_PAR(CB,SB,NBATS,LBATS,LEBATS,I1BATS,IBATS,
      &           LUC,LUHC,LUCSCR,NBLOCK,IBLOCKL,IBLOCKD,SSCLFAC,
      &           SCALFAC_LOCAL,SCALFAC_GROUP,IGROUPLIST,IPROCLIST,
-     &           ICCTOS)
+     &           RCCTOS)
 *
 * Direct RAS routine employing combined MOC/n-1 resolution method
 *
@@ -207,7 +216,7 @@ CSK      write(6,*) 'hello from mv7_par',myproc
 *.Scratch
       DIMENSION SB(*),CB(*),SSCLFAC(*),IBLOCKL(NBLOCK)
       DIMENSION IBLOCKD(NBLOCK),SCALFAC_LOCAL(NBLOCK)
-      DIMENSION SCALFAC_GROUP(NBLOCK),ICCTOS(NBLOCK,NBLOCK)
+      DIMENSION SCALFAC_GROUP(NBLOCK),RCCTOS(NBLOCK)
       DIMENSION IGROUPLIST(NMPROC)
       CHARACTER SECTID*12,WALLTID*12,WALLTID2*12,WALLTID3*12
 *
@@ -234,8 +243,8 @@ C     fill complete local scalfac arrays with zero's
         CALL REWINO(LUC)
 C       find number of non-zero local C-blocks in SB(1:NBLOCK)
         IF( IODENSEPAR .eq. 2 .and. IIOMOD .ne. 0 ) THEN
-          CALL COPVEC(SSCLFAC,SB,NBLOCK)
-          CALL COPVEC(SSCLFAC,SCALFAC_GROUP,NBLOCK)
+          CALL DCOPY(NBLOCK,SSCLFAC,1,SB,1)
+          CALL DCOPY(NBLOCK,SSCLFAC,1,SCALFAC_GROUP,1)
           CALL SETVEC(SSCLFAC,ZERO,NBLOCK)
 CSK          WRITE(6,*) 'I arrived here0a! myproc,mynew_id',myproc,mynew_id
         ELSE
@@ -268,12 +277,11 @@ C
         starttimer = MPI_WTIME()
         CALL REWINO(LUCSCR)
         CALL REWINO(LUC)
-*
-C       find all c-blocks connecting to a given sigma-block. 
-C       The information will be stored in SCALFAC_LOCAL.
-C       
-        CALL FIND_CCTOS(SCALFAC_LOCAL,IBLOCKD,ICCTOS,NBLOCK)
-*
+C
+C       find all c-blocks connecting to all sigma-blocks on each cpu 
+C
+        CALL DCOPY(NBLOCK,RCCTOS,1,SCALFAC_LOCAL,1)
+C
         IF(IIOMOD.EQ.0) THEN
           CALL COPVCD_PAR_BDRIV3(CB,IBLOCKD,SSCLFAC,SCALFAC_LOCAL,
      &                           IBLOCKL,NBLOCK,MPI_COMM_WORLD,LUC,
@@ -314,14 +322,7 @@ C
                   END IF
                 END IF
               END DO
-C              IF(MYPROC.EQ.MASTER+3) THEN
-C                WRITE(6,*)'SSCLFAC, SCALFAC_GROUP AND SCALFAC_LOCAL'
-C                CALL WRTMAT(SSCLFAC,1,NBLOCK,1,NBLOCK)
-C                CALL WRTMAT(SCALFAC_GROUP,1,NBLOCK,1,NBLOCK)
-C                CALL WRTMAT(SCALFAC_LOCAL,1,NBLOCK,1,NBLOCK)
-C              END IF
-C              CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-            
+C            
             END IF
           END IF
         END IF 
@@ -439,7 +440,7 @@ C       print the statistic for COPVCD_PAR_BDRIV3/4
 * ICBAT_RES, ICBAT_INI, IBBAT_END added august 1997
 *
 * If ICBAT_RES .eq.1 then it as assumed that only
-* Cbatches ICBAT_INI to ICBAT_END are stored on  LUC
+* batches ICBAT_INI to ICBAT_END are stored on  LUC
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
@@ -915,40 +916,53 @@ CSK      ENDIF
         ENDIF
 CSK        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
       END IF
-* ===========================
-* 1 : Arrays for accessing C
-* ============================
-*. Find batches of C - strings
-*. Should be changed to REPART or ??
-*. Not neccesary, all zero blocks detected otherwise
-      ITTSS_ORD = 2
-      CALL PART_CIV2(IDC,ICBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,NSMST,
-     &              LC,ICOCOC,ICSMOS,NCBATCH,LCBLOCK,LECBLOCK,
-     &              I1CBLOCK,ICBLOCK,0,ITTSS_ORD)
-*
-*. Get actual scalfac array from backup-array
+C
+C     Get actual scalfac array from backup-array
       IF(IODENSEPAR.EQ.1) THEN
-        CALL COPVEC(SSCLFAC,SCLFAC,NUMBLOCK)
+        CALL DCOPY(NUMBLOCK,SSCLFAC,1,SCLFAC,1)
       ELSE
         IF( IIOMOD .eq. 0 ) THEN
-          CALL COPVEC(SCALFAC_LOCAL,SCLFAC,NUMBLOCK)
+          CALL DCOPY(NUMBLOCK,SCALFAC_LOCAL,1,SCLFAC,1)
         ELSE
           IF( ITESTTHISWAY .eq. 0 ) THEN
-            CALL COPVEC(SCALFAC_LOCAL,SCLFAC,NUMBLOCK)
+            CALL DCOPY(NUMBLOCK,SCALFAC_LOCAL,1,SCLFAC,1)
           ELSE
             IF( NEWCOMM_PROC .ne. NMPROC) THEN
 CSK              CALL COPVEC(SCALFAC_LOCAL,SCLFAC,NUMBLOCK)
-              CALL COPVEC(SCALFAC_GROUP,SCLFAC,NUMBLOCK)
+              CALL DCOPY(NUMBLOCK,SCALFAC_GROUP,1,SCLFAC,1)
             ELSE
-              CALL COPVEC(SCALFAC_LOCAL,SCLFAC,NUMBLOCK)
+              CALL DCOPY(NUMBLOCK,SCALFAC_LOCAL,1,SCLFAC,1)
             END IF
           END IF
         END IF
       END IF
 CSK      WRITE(6,*)'This is my sclfac',myproc
 CSK      CALL WRTMAT(SCLFAC,1,NUMBLOCK,1,NUMBLOCK)
-*
-*. Initialize sigma blocks
+C
+C     ============================
+C      1 : Arrays for accessing C
+C     ============================
+C
+C     Find batches of C - strings
+      ITTSS_ORD = 2
+C     ... well we want the number of read in keep as small as possible
+C         works ( --> ? ) currently only for IDISTROUTE = 2
+C         each node creates its own batch structure since the need for 
+C         C-blocks is different for a given s-block
+C?      IF ( IODENSEPAR .eq. 2 .and. IDISTROUTE.EQ.2 ) THEN
+      IF ( IODENSEPAR .eq. 2 ) THEN
+        CALL PART_CIV_PAR2(IDC,ICBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,NSMST,
+     &                     LC,ICOCOC,ICSMOS,NCBATCH,LCBLOCK,LECBLOCK,
+     &                     I1CBLOCK,ICBLOCK,0,ITTSS_ORD,
+     &                     SCLFAC,NUMBLOCK,0)
+      ELSE
+      
+        CALL PART_CIV2(IDC,ICBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,NSMST,
+     &                LC,ICOCOC,ICSMOS,NCBATCH,LCBLOCK,LECBLOCK,
+     &                I1CBLOCK,ICBLOCK,0,ITTSS_ORD)
+      END IF
+C
+C     Initialize sigma blocks
       DO JSBLOCK = 1, NSBLOCK
         IATP = ISBLOCK(1,JSBLOCK)
         IBTP = ISBLOCK(2,JSBLOCK)
@@ -961,7 +975,6 @@ CSK      CALL WRTMAT(SCLFAC,1,NUMBLOCK,1,NUMBLOCK)
         IF(ISBLOCK(1,JSBLOCK).GT.0)
      &  CALL SETVEC(SB(IOFF),ZERO,NASTR*NBSTR)
       END DO
-* Loop over batches over C blocks
       IF(IDOH2.EQ.1) THEN
         MXEXC  = 2
       ELSE
@@ -990,23 +1003,25 @@ C?    WRITE(6,*) ' IDOH2, MXEXC',IDOH2,MXEXC
       sigmatime  = 0.0d0
       reducetime = 0.0d0
       IOFFSET = 0
+C
+C     Loop over batches over C blocks
+C
       DO 20000 JCBATCH = JCBAT_INI,JCBAT_END
-*
-*. Read C blocks into core
-*
+C
+C       Read C blocks into core
         ICOFF = 1
         NJBLOCK = LCBLOCK(JCBATCH)
-*        IF(MYPROC.EQ.MASTER) THEN
-*          WRITE(6,*)'NJBLOCK (MYPROC) = ', NJBLOCK, MYPROC
-*        END IF
+C        IF(MYPROC.EQ.MASTER) THEN
+C          WRITE(6,*)'NJBLOCK (MYPROC) = ', NJBLOCK, MYPROC
+C        END IF
         starttimer = mpi_wtime()
         DO JJCBLOCK = 1, NJBLOCK
           JBLOCK = I1CBLOCK(JCBATCH)-1+JJCBLOCK
-*. calculation of a certain block is node-dependent!
+C         calculation of a certain block is node-dependent!
           IF(IODENSEPAR.EQ.1.AND.IBLOCKD(JBLOCK).NE.MYPROC) GOTO 30
-*
+C
           INTERACT = 0
-*
+C
           IF( SCLFAC(JBLOCK) .ne. 0.0D0 ) THEN
 C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, MYPROC
           JATP = ICBLOCK(1,JBLOCK)
@@ -1021,7 +1036,7 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, MYPROC
             LLBSM = LBSM(IPERM)
             LLATP = LATP(IPERM)
             LLBTP = LBTP(IPERM)
-*.Loop over Sigma blocks in batch
+C           Loop over Sigma blocks in batch
             DO JSBLOCK = 1, NSBLOCK
 CSK            WRITE(6,*)'ISBLOCK(1,JSBLOCK)',ISBLOCK(1,JSBLOCK)
 CSK            WRITE(6,*)'JSBLOCK =',JSBLOCK
@@ -1034,7 +1049,9 @@ CSK            WRITE(6,*)'JSBLOCK =',JSBLOCK
               IBTP = ISBLOCK(2,JSBLOCK)
               IASM = ISBLOCK(3,JSBLOCK)
               IBSM = ISBLOCK(4,JSBLOCK)
-*. Are the two blocks connected by allowed excitation
+C
+C             Are the two blocks connected by allowed excitation?
+C
               IF(MXEXC.EQ.1) THEN
                  IF((ICONSPA(IATP,LLATP).LE.MXEXC.AND.
      &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM  ) .OR.
@@ -1052,7 +1069,7 @@ CSK            WRITE(6,*)'JSBLOCK =',JSBLOCK
                         INTERACT = 1
                  END IF
               END IF
-*. Are they identical ?
+C             Are they identical ?
               IDENT = 0
               IF(IASM.EQ.JASM.AND.IATP.EQ.JATP.AND.
      &           IBSM.EQ.JBSM.AND.IBTP.EQ.JBTP) IDENT = 1
@@ -1180,12 +1197,12 @@ CSK        write(6,*)'problem here3?',myproc
                   IF(IDC.EQ.2.AND.JATP.EQ.JBTP.AND.JASM.EQ.JBSM) THEN
 *. Diagonal blocks, Transposing corresponds to scaling
                     IF(PS.EQ.-1.0D0) THEN
-                      CALL SCALVE(CB(ICOFF),PS,NJA*NJB)
+                      CALL DSCAL(NJA*NJB,PS,CB(ICOFF),1)
                     END IF
                   ELSE
 *. offdiagonal blocks, explicit transposing
                     CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
-                    CALL COPVEC(C2,CB(ICOFF),NJA*NJB)
+                    CALL DCOPY(NJA*NJB,C2,1,CB(ICOFF),1)
                     if (LSGN(IPERM).eq.-1) then
                       write(6,*) 'LROW,LCOL undef. in sblocks'
                       write(6,*) 'and LSGN(IPERM).eq.-1'
@@ -1377,7 +1394,7 @@ CSK          CALL REDVEC(SB,C2,ILENSUM,2,MPI_SUM,MPI_COMM_WORLD,NREDTYPE)
 CSKCSK        CALL MPI_COMM_FREE(NREDGRP,IERR)
         IF(ISUMUP.EQ.0) GOTO 22000
 *. sigma-vecor is expected to reside on SB ...
-        CALL COPVEC(C2,SB,ILENSUM)
+        CALL DCOPY(ILENSUM,C2,1,SB,1)
       end if
 C    /\ IODENSEPAR = 1
 *. Order the fresh sigma-vector
@@ -1398,8 +1415,8 @@ CSK     &      GOTO 21500
 *. Tranpose sigma block was obtained, transpose to obtain correct block
              CALL TRPMT3(SB(ISOFF),NSSOB(IBSM,IBTP),
      &                   NSSOA(IASM,IATP),C2)
-             CALL COPVEC(C2,SB(ISOFF),
-     &                   NSSOA(IASM,IATP)* NSSOB(IBSM,IBTP))
+             CALL DCOPY(NSSOA(IASM,IATP)* NSSOB(IBSM,IBTP),C2,1,
+     &                  SB(ISOFF),1)
           END IF
           IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP)
      &    CALL TRPAD3(SB(ISOFF),PS,NSSOA(IASM,IATP))

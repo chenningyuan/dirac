@@ -40,7 +40,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE FIND_IMAT_SC(IBLINF,SCALFAC,ICCTOS,ICWEIGHT,IBTOTW,
-     &                        ICWEIGHTF,NBLOCK)
+     &                        ICWEIGHTF,NBLOCK,IABSOLUTE_WEIGHT)
 *
 * Compute the connection matrix ICCTOS between the sigma and c vector 
 * Store the contribution of one c-block to sigma-blocks in ICWEIGHT.
@@ -172,7 +172,7 @@ C
      &               0,ITTSS_ORD)
                       
 *
-*. Initialize SCALFAC as it should look like after the first iteration...
+*. Initialize SCALFAC as it should look like after a few iterations ...
       DO II = 1, NBLOCK
         LBL = IBLINF(II)
         IF(LBL.NE.0) THEN 
@@ -197,7 +197,7 @@ CSK      IF(MYPROC.EQ.MASTER) THEN
            END IF
           CALL PRINT_BATCH_INFO(NCBATCH,WORK(KLLBT),WORK(KLLEBT),
      &         WORK(KLI1BT),WORK(KLIBT),ICCTOS,ICWEIGHT,NBLOCK,IBTOTW,
-     &         ICWEIGHTF)
+     &         ICWEIGHTF,IABSOLUTE_WEIGHT)
         END IF
 CSK        IF(MYPROC.EQ.MASTER) THEN
 CSK          WRITE(6,*)'CONNECTION FACTOR MATRIX'
@@ -236,22 +236,12 @@ CSK      ENDIF
       INTEGER NTEST
       NTEST = 0
       
-CSK      IF(MYPROC.EQ.MASTER) THEN
-CSK       WRITE(6,*)'NBLOCK is',NBLOCK
-CSK       WRITE(6,*)'MXEXC  is',MXEXC
-CSK      ENDIF
-CSK      IF(MYPROC.EQ.MASTER) THEN
-CSK        WRITE(6,*)'connection matrix'
-CSK        CALL IWRTMA(ICONSPA,NOCTPA,NOCTPA,NOCTPA,NOCTPA)
-CSK      ENDIF
       DO JBLOCK = 1, NBLOCK
-*
+C
         INTERACT = 0
         JJJ = 0
-*. calculation of a certain block is node-dependent!
-*
+C
         IF(SCALFAC(JBLOCK).EQ. 1.0D0) THEN
-C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, MYPROC
           JATP = ICBLOCK(1,JBLOCK)
           JBTP = ICBLOCK(2,JBLOCK)
           JASM = ICBLOCK(3,JBLOCK)
@@ -264,12 +254,8 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, MYPROC
             LLBSM = LBSM(IPERM)
             LLATP = LATP(IPERM)
             LLBTP = LBTP(IPERM)
-*.Loop over Sigma blocks in batch
+C           loop over Sigma blocks in batch
             DO JSBLOCK = 1, NBLOCK
-CSK              IF(MYPROC.EQ.MASTER) THEN
-CSK                WRITE(6,*)'ISBLOCK(1,JSBLOCK)',ISBLOCK(1,JSBLOCK)
-CSK                WRITE(6,*)'JSBLOCK =',JSBLOCK
-CSK              ENDIF
               IF(ISBLOCK(1,JSBLOCK).GT.0) THEN
                 INTERACT = 0
                 IATP = ISBLOCK(1,JSBLOCK)
@@ -279,7 +265,7 @@ CSK              ENDIF
                 NIA = NSSOA(IASM,IATP)
                 NIB = NSSOB(IBSM,IBTP)
                 IF(NIA*NIB.NE.0) THEN        
-*. Are the two blocks connected by allowed excitation
+C                 are the two blocks connected by allowed excitation?
                   IF(MXEXC.EQ.2) THEN
                     IF((ICONSPA(IATP,LLATP).LE.1.AND.
      &                  ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
@@ -298,9 +284,9 @@ CSK              ENDIF
                 END IF
               END IF
             END DO
-*          /\ loop over s-blocks
+C          /\ loop over s-blocks
           END DO
-*.       /\ loop over nperm
+C        /\ loop over nperm
         END IF
         IF(MYPROC.EQ.MASTER.AND.JJJ.GT.0.AND.NTEST.GE.100) THEN
           WRITE(6,'(A,1X,I5,1X,A,1X,I5,1X,A)') 
@@ -308,7 +294,7 @@ CSK              ENDIF
           CALL IWRTMA(ICWEIGHT,1,JJJ,1,JJJ)
         END IF
       END DO 
-*    /\ loop over c-blocks
+C    /\ loop over c-blocks
       END
 ***********************************************************************
 *                                                                     *
@@ -1150,8 +1136,16 @@ C            GATVCD(LU,LBLK,NGAT,IGAT,XGAT,SEGMNT,NTESTG)
 *. Write to file LUOUT
 C     DMTVDS(VEC1,VEC2,LU1,LU2,LU3,FAC,IREW,INV,
 C    &                  ISCAT,XSCAT,NSCAT,LBLK,XINOUT)
-      CALL DMTVDS_PAR(VEC1,VEC2,LUDIA,LUIN,LUOUT,SHIFT,1,1,
-     &               IPNTR,WORK(KLV2),NPQDM,LBLK,XH0PSX)
+CSK      WRITE(6,*) 'I call DMTVDS_PAR with LUIN,LUOUT',LUIN,LUOUT,myproc
+      IF(CSCREEN) THEN
+C
+        CALL DMTVDS_PAR2(VEC1,VEC2,LUDIA,LUIN,LUOUT,SHIFT,1,1,
+     &                  IPNTR,WORK(KLV2),NPQDM,LBLK,XH0PSX)
+C
+      ELSE
+        CALL DMTVDS_PAR(VEC1,VEC2,LUDIA,LUIN,LUOUT,SHIFT,1,1,
+     &                 IPNTR,WORK(KLV2),NPQDM,LBLK,XH0PSX)
+      END IF
 *
       IF(NTEST.GT. 100 ) THEN
         WRITE(6,*) ' Output vector from H0M1TD_PAR '
@@ -1175,7 +1169,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
      &                  NINVEC,APROJ,AVEC,WORK,IPRTXX,NPRDIM,H0,IPNTR,
      &                  NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,E_CONV,IROOTHOMING,
      &                  LUWRTOUT,BSCRFAC,IBKINF,NBLOCKDN,IBLOCKI,SCRRED,
-     &                  ICCTOS,IPROCLIST,IGROUPLIST)
+     &                  RCCTOS,IPROCLIST,IGROUPLIST)
 *
 * Iterative eigen solver, requires two blocks in core
 *
@@ -1252,7 +1246,7 @@ C      including a scratch file
 * outside (for roothoming :dim = 3*MAXVEC )
        DIMENSION XJEP(10000)
        INTEGER   IXJEP(10000)
-       DIMENSION BSCRFAC(*),ICCTOS(IBLOCKI,IBLOCKI), IGROUPLIST(NMPROC)
+       DIMENSION BSCRFAC(*),RCCTOS(IBLOCKI), IGROUPLIST(NMPROC)
        DIMENSION IBKINF(*),NBLOCKDN(IBLOCKI), IPROCLIST(NMPROC)
        INTEGER NDATATYPE,NREDTYPE,ICOLOR,IKEY,JCOLOR,JKEY,IONE
        REAL*8 REDSCRVAR
@@ -1288,8 +1282,8 @@ C
        IPICO = 0
 *
        IPRT = 000
-CSK       WRITE(6,*) ' LU1 LU2 LU3 LU4 LU5 LU6,LU7',
-CSK     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
+C?       WRITE(LUWRTOUT,*) ' LU1 LU2 LU3 LU4 LU5 LU6,LU7',
+C?     &                     LU1,LU2,LU3,LU4,LU5,LU6,LU7
        
        IOLSTM = 1
        IF(IPRT.GT.1.AND.IOLSTM.NE.0)
@@ -1311,6 +1305,13 @@ CSK     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
        KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
        TEST = 1.0D-8
        CONVER = .FALSE.
+C     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+C     DO NOT FORGET THE IIOMOD == 0 CASE 
+C     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      IF( IIOMOD .eq. 0 ) IAMSURE = 0
+C
+C      IAMSURE = 1
+C
 C
 C      use mpi direct acces file in MV7_PAR
 C
@@ -1329,6 +1330,12 @@ C        collect useful information about each group,
 C        store on common block
          CALL MPI_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC,IERR)
          CALL MPI_COMM_RANK(MYNEW_COMM,MYNEW_ID,IERR)
+C
+C       set file units for parallel files used in the routine below 
+C       file handles on common block LUCIPAR
+C
+         IF ( IAMSURE .eq. 1) CALL SETUNITS_PAR_OPEN(ICOLOR)
+C
          IF( MYNEW_ID .eq. 0 ) THEN
            JKEY = IPROCLIST(MYPROC+1)
            JCOLOR = 2
@@ -1386,6 +1393,7 @@ C
          CALL REWINO(LU6)
 C        use MPI-FILE I/O copy routine, BSCRFAC is also initialized        
          IF(IODENSEPAR.EQ.2.AND.IIOMOD.NE.0) THEN
+          CALL MPI_BARRIER(MYNEW_COMM,IERR)
            CALL COPVCD_SPAR_CCOEFF(LU1,LU5,VEC1,BSCRFAC,IBKINF,NBLOCKDN,
      &                             IBLOCKI,IGROUPLIST)
          ELSE
@@ -1396,7 +1404,7 @@ C                   start calculation: sigma = H x C
 C
 ************************************************************************
          CALL MV7_PAR(VEC1,VEC2,LU5,LU6,LU7,BSCRFAC,IBKINF,
-     &               NBLOCKDN,ICCTOS,IGROUPLIST,IPROCLIST,IBLOCKI)
+     &               NBLOCKDN,RCCTOS,IGROUPLIST,IPROCLIST,IBLOCKI)
 ************************************************************************
 C
 C        Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
@@ -1419,7 +1427,7 @@ C       every node has its part of APROJ --> reduce to each node!
         IREDL = NINVEC*(NINVEC-1)/2 + NINVEC
         CALL REDVEC(APROJ,SCRRED,IREDL,NDATATYPE,MPI_SUM,
      &              MPI_COMM_WORLD,NREDTYPE)
-        CALL COPVEC(SCRRED,APROJ,IREDL)
+        CALL DCOPY(IREDL,SCRRED,1,APROJ,1)
 C
 CSK       IF(MYPROC.EQ.MASTER+1) THEN
 CSK         WRITE(6,*)'MAXVEC = ',MAXVEC
@@ -1442,7 +1450,7 @@ C
          CALL PRSYM(APROJ,NINVEC)
        END IF
 C      Diagonalize initial projected matrix
-       CALL COPVEC(APROJ,WORK(KAPROJ),NINVEC*(NINVEC+1)/2)
+       CALL DCOPY(NINVEC*(NINVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
        CALL EIGEN(WORK(KAPROJ),AVEC,NINVEC,0,1)
        DO IROOT = 1, NROOT
          EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
@@ -1502,7 +1510,6 @@ C
 *
 CSK         print*,'NP1,NP2,NQ ',NP1,NP2,NQ
  1000 CONTINUE
-        CALL GETTIM(CPUITR1,WALLITR1)
         WALLITR1 = MPI_WTIME()
         write(LUWRTOUT,*)
         write(LUWRTOUT,'(A21,3X,I3)') ' Info from iteration ',ITER
@@ -1552,6 +1559,12 @@ CSK         print*,'NP1,NP2,NQ ',NP1,NP2,NQ
 *
          CALL FLSHFO(6)
 *
+C
+C        screening of new trial vector
+C
+         RNORM_FAC = RNORM
+         TRUNC_FAC = 1.0D-3
+C
          IF(RNORM.LT. TEST .OR.
      &      (ITER.GT.2.AND.
      &      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.E_CONV)) THEN
@@ -1574,6 +1587,8 @@ CSK         print*,'NP1,NP2,NQ ',NP1,NP2,NQ
            CALL REWINO(LUDIA)
            CALL REWINO(LU5)
            CALL REWINO(LU6)
+C           CSCREEN = .TRUE.
+           CSCREEN = .FALSE.
            CALL H0M1TD_PAR(LU6,LUDIA,LU5,LBLK,NP1+NP2+NQ,IPNTR,
      &                 H0,-EIGAPR,H0SCR,XH0IX,
      &                 NP1,NP2,NQ,VEC1,VEC2,IPRT)
@@ -1584,27 +1599,29 @@ C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG)
              WRITE(6,*) '  (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU6,1,LBLK)
            END IF
-CSK        print*,'IOLSTM ',IOLSTM
-*
            IF(IOLSTM .NE. 0 ) THEN
-* add Olsen correction if neccessary
-* (H0 - E )-1  * X on LU5
+C
+C            add Olsen correction if neccessary
+C            (H0 - E )-1  * X on LU5
+C
              CALL REWINO(LU5)
              CALL REWINO(LU7)
              CALL REWINO(LUDIA)
-*
+C
+             CSCREEN = .FALSE.
+C
              CALL H0M1TD_PAR(LU5,LUDIA,LU7,LBLK,Np1+Np2+NQ,
      &                   IPNTR,H0,-EIGAPR,H0SCR,XH0IX,
      &                   NP1,NP2,NQ,VEC1,VEC2,IPRT)
-*
-* Gamma = X(T) * (H0 - E) ** -1 * X
+C
+C            Gamma = X(T) * (H0 - E) ** -1 * X
              CALL REWINO(LU5)
              CALL REWINO(LU7)
              REDSCRVAR = INPRDD(VEC1,VEC2,LU5,LU7,0,LBLK)
              CALL REDVEC(REDSCRVAR,GAMMA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
 CSK             WRITE(LUWRTOUT,*) ' Gamma = ', Gamma
              IF(IPRT.GE.1000) WRITE(6,*) ' Gamma = ', Gamma
-* is X an eigen vector for (H0 - 1 ) - 1
+C            is X an eigen vector for (H0 - 1 ) - 1 ?
              CALL REWINO(LU5)
              CALL REWINO(LU7)
              REDSCRVAR = VCSMDN(VEC1,VEC2,-GAMMA,1.0D0,LU7,LU5,0,LBLK)
@@ -1640,9 +1657,9 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR,MYPROC
 *
               END IF
             END IF
-*. 1.3 Orthogonalize to all previous vectors
-*.. Vectors on LU1
-*
+C          1.3 Orthogonalize to all previous vectors
+C          Vectors on LU1
+C
            CALL REWINE( LU1 ,LBLK)
            DO IVEC = 1, NROOT
                CALL REWINO(LU6)
@@ -1667,7 +1684,7 @@ CSK           WRITE(LUWRTOUT,9410) WALLTID
              write(6,*) ' orthogonalized to vectors on LU1'
              CALL WRTVCD(VEC1,LU5,1,LBLK)
            END IF
-*.. Vectors on LU3
+C          Vectors on LU3
            IF(NVEC+IADD-1-NROOT.GT.0) THEN
              CALL REWINE( LU3 ,LBLK)
              DO IVEC = 1, NVEC+IADD-1-NROOT
@@ -1681,7 +1698,7 @@ CSK             endwork   = MPI_WTIME()
 CSK             tottime = endwork - startwork
 CSK             WALLTID = SECTID(tottime)
 CSK             WRITE(LUWRTOUT,9420) WALLTID, NVEC+IADD-1-NROOT
-             CALL COPVEC(SCRRED,WORK,NVEC+IADD-1-NROOT)
+             CALL DCOPY(NVEC+IADD-1-NROOT,SCRRED,1,WORK,1)
              ONE = 1.0D0
              CALL REWINO(LU3)
              CALL MVCSMD(LU3,WORK,LU7,LU6,VEC1,VEC2,NVEC+IADD-1-NROOT,
@@ -1691,7 +1708,7 @@ CSK             WRITE(LUWRTOUT,9420) WALLTID, NVEC+IADD-1-NROOT
              CALL REWINO(LU3)
              CALL COPVCD(LU5,LU6,VEC1,1,LBLK)
            END IF
-*. 1.4 Normalize vector
+C          1.4 Normalize vector
            REDSCRVAR = INPRDD(VEC1,VEC1,LU6,LU6,1,LBLK)
            CALL REDVEC(REDSCRVAR,SCALE,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
            FACTOR = 1.0D0/SQRT(SCALE)
@@ -1702,7 +1719,7 @@ CSK             WRITE(LUWRTOUT,9420) WALLTID, NVEC+IADD-1-NROOT
              WRITE(6,*) '   normalized     (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU7,1,LBLK)
            END IF
-*
+C
          END IF
   100 CONTINUE
       IF( CONVER ) THEN
@@ -1742,6 +1759,7 @@ CSK             WRITE(LUWRTOUT,9420) WALLTID, NVEC+IADD-1-NROOT
  150  DO IVEC = 1, IADD
         CALL REWINE(LU5,LBLK)
         IF(IODENSEPAR.EQ.2.AND.IIOMOD.NE.0) THEN
+          CALL MPI_BARRIER(MYNEW_COMM,IERR)
           CALL COPVCD_SPAR_CCOEFF(LU3,LU5,VEC1,BSCRFAC,IBKINF,NBLOCKDN,
      &                            IBLOCKI,IGROUPLIST)
         ELSE
@@ -1754,7 +1772,7 @@ C                start calculation: sigma = H x C
 C
 *******************************************************************
         CALL MV7_PAR(VEC1,VEC2,LU5,LU6,LU7,BSCRFAC,IBKINF,
-     &               NBLOCKDN,ICCTOS,IGROUPLIST,IPROCLIST,IBLOCKI)
+     &               NBLOCKDN,RCCTOS,IGROUPLIST,IPROCLIST,IBLOCKI)
 *******************************************************************
 C       stop timing and write on file
         sigmatime2 = MPI_WTIME()
@@ -1788,7 +1806,7 @@ C     /\ End do over new trial vectors
       sigmatime2 = MPI_WTIME()
       WALLTID = SECTID(sigmatime2-sigmatime)
       WRITE(LUWRTOUT,9430) WALLTID,IMUSTRED
-      CALL COPVEC(SCRRED,APROJ(ISTRED),IMUSTRED)
+      CALL DCOPY(IMUSTRED,SCRRED,1,APROJ(ISTRED),1)
       
 CSK      IF(MYPROC.EQ.MASTER) THEN
 CSK        write(LUWRTOUT,*)'APROJ is'
@@ -1799,21 +1817,21 @@ C
       endtime = MPI_WTIME()
       tottime = 0.D0
       tottime = endtime - starttime
-*. TIMING FOR PARTS 2.1 - 2.2 
+C     TIMING FOR PARTS 2.1 - 2.2 
       WPART22 = SECTID(tottime) 
       WRITE(LUWRTOUT,9350) WPART22
-*
-*. 2.3 Diagonalize projected matrix
+C
+C     2.3 Diagonalize projected matrix
       NVEC = NVEC + IADD
-      CALL COPVEC(APROJ,WORK(KAPROJ),NVEC*(NVEC+1)/2)
+      CALL DCOPY(NVEC*(NVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
       CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
-*
+C
       IF(IROOTHOMING.EQ.1) THEN
-*
-*. Reorder roots so the NROOT with the largest overlap with
-*  the original roots become the first
-*
-*. Norm of wavefunction in previous space
+C
+C      Reorder roots so the NROOT with the largest overlap with
+C      the original roots become the first
+C
+C      Norm of wavefunction in previous space
        DO IVEC = 1, NVEC
          XJEP(IVEC) = INPROD(AVEC(1+(IVEC-1)*NROOT),
      &                AVEC(1+(IVEC-1)*NROOT),NROOT)
@@ -1823,8 +1841,8 @@ C
        WRITE(LUWRTOUT,*)
      & ' Norm of projections to previous vector space '
        CALL WRTMAT(XJEP,1,NVEC,1,NVEC)
-*. My sorter arranges in increasing order, multiply with minus 1
-*  so the eigenvectors with largest overlap comes out first
+C      My sorter arranges in increasing order, multiply with minus 1
+C      so the eigenvectors with largest overlap comes out first
        ONEM = -1.0D0
        CALL SCALVE(XJEP,ONEM,NVEC)
        CALL SORLOW(XJEP,XJEP(1+NVEC),IXJEP,NVEC,NVEC,NSORT,IPRT)
@@ -1836,7 +1854,7 @@ C
          WRITE(LUWRTOUT,*) ' New roots choosen as vectors '
          CALL IWRTMA(IXJEP,1,NROOT,1,NROOT)
        END IF
-*. Reorder
+C      Reorder
        DO INEW = 1, NVEC
          IOLD = IXJEP(INEW)
          CALL COPVEC(AVEC(1+(IOLD-1)*NVEC),XJEP(1+(INEW-1)*NVEC),NVEC)
@@ -1849,19 +1867,19 @@ C
        DO INEW = 1, NVEC
          WORK(INEW*(INEW+1)/2) = XJEP(INEW*(INEW+1)/2)
        END DO
-*
+C
        IF(IPRT.GE.3) THEN
          WRITE(LUWRTOUT,*) ' Reordered WORK and AVEC arrays '
          CALL PRSYM(WORK,NVEC)
          CALL WRTMAT(AVEC,NVEC,NVEC,NVEC,NVEC)
        END IF
-*
+C
       END IF
-*     ^ End of root homing procedure
+C     ^ End of root homing procedure
       DO IROOT = 1, NROOT
         EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
       END DO
-*
+C
       IF(IPRT .GE. 3 ) THEN
         WRITE(LUWRTOUT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
         WRITE(LUWRTOUT,'(5F18.13)')
@@ -1870,343 +1888,73 @@ C
         WRITE(LUWRTOUT,'(5F18.13)')
      &  ( RNRM(ITER-1,IROOT),IROOT=1,NROOT)
       END IF
-*
+C
       IF( IPRT  .GE. 5 ) THEN
         WRITE(LUWRTOUT,*) ' Projected matrix and eigen pairs '
         CALL PRSYM(APROJ,NVEC)
         WRITE(LUWRTOUT,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
         CALL WRTMAT(AVEC,NVEC,NROOT,NVEC,NROOT)
       END IF
-*
-**  perhaps reset or assemble converged eigenvectors
-*
-  901 CONTINUE
-*
-*. Reset
-*
-* case 1 : Only NROOT vectors can be stored
-*          save current eigenvector approximations
-* case 2 : Atleast 2*NROOT eigenvectors can be saved
-*          Current eigenvactor approximations+
-*          vectors allowing generation of previous approxs.
-*
-*. 3.1 : Current wave function approximations, collect on LU7
-*
-*  check timing of part3 in loop iteration
-      CALL GETTIM(CPUSTEP3,WALLSTEP3)
-      WALLSTEP3 = MPI_WTIME()
-*
+C
       IF(IPRT.GE.1000) THEN
-      write(LUWRTOUT,*) ' I am going to reset '
-      write(LUWRTOUT,*) ' nroot, nvec ', nroot,nvec
+        write(LUWRTOUT,*) ' I am going to reset '
+        write(LUWRTOUT,*) ' nroot, nvec ', nroot,nvec
       END IF
+C
       IF(IPRT.GE.1000) THEN
-        WRITE(LUWRTOUT,*) ' Initial vectors on LU1'
+        WRITE(LUWRTOUT,*) ' Initial vectors on LU1',myproc
         CALL REWINO(LU1)
         DO IVEC = 1, NROOT
            CALL WRTVCD(VEC1,LU1,0,LBLK)
         END DO
-        WRITE(LUWRTOUT,*) ' Initial vectors on LU3'
+        WRITE(LUWRTOUT,*) ' Initial vectors on LU3',myproc
         CALL REWINO(LU3)
         DO IVEC = 1, NROOT
            CALL WRTVCD(VEC1,LU3,0,LBLK)
         END DO
       END IF
+C
+C     perhaps reset or assemble converged eigenvectors
+C
+C     Reset
+C
+C     case 1 : Only NROOT vectors can be stored
+C              save current eigenvector approximations
+C     case 2 : Atleast 2*NROOT eigenvectors can be saved
+C              Current eigenvactor approximations+
+C              vectors allowing generation of previous approxs.
 *
-      CALL REWINE( LU7,LBLK)
-      DO IROOT = 1, NROOT
-*. From LU1 to LU5
-        CALL REWINO(LU1)
-        CALL MVCSMD_PAR(LU1,AVEC((IROOT-1)*NVEC+1),
-     &  LU5,LU6,VEC1,VEC2,NROOT,1,LBLK)
-        IF(IPRT.GE.1000)
-     &  write(6,*) ' end of c reset, part 1'
-*. and add LU3 to LU5
-        CALL REWINO(LU3)
-        ONE = 1.0D0
-        CALL MVCSMD2_PAR(LU3,AVEC((IROOT-1)*NVEC+NROOT+1),ONE,
-     &  LU5,LU6,VEC1,VEC2,NVEC-NROOT,1,LBLK)
-        IF(IPRT.GE.1000)
-     &  write(6,*) ' end of c reset, part 2'
-*
-C       TEST: vector should be normalized --> we do not need this step!
-CSK        REDSCR = INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK)
-CSK        CALL REDVEC(REDSCR,XNORM,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
-CSK        CALL REWINE(LU5,LBLK)
-CSK        SCALE  = 1.0D0/SQRT(XNORM)
-        SCALE  = 1.0D0
-CSKCSK        WRITE(6,*) ' SCALE in part 3.1 = ', SCALE
-        WORK(IROOT) = SCALE
-*. scale LU5 => LU7
-        CALL REWINO(LU5)
-CSK        CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
-C       instead of scaling, a simple copy!
-        CALL COPVCD(LU5,LU7,VEC1,0,LBLK)
-        IF(IPRT.GE.1000)
-     &  write(6,*) ' end of c reset, part 3'
-      END DO
-*. Transfer C vectors from LU7 to LU1
-      CALL REWINE( LU7,LBLK)
-      CALL REWINE( LU1,LBLK)
-      DO IVEC = 1,NROOT
-        CALL COPVCD(LU7,LU1,VEC1,0,LBLK)
-      END DO
-      IF(IPRT.GE.1000)
-     &write(6,*) ' end of c reset, part 4'
-      IF(IPRT.GE.1000) THEN
-        WRITE(6,*) ' Reset C-vectors on LU1 (myproc)',myproc
-        CALL REWINO(LU1)
-        DO IVEC = 1, NROOT
-           CALL WRTVCD(VEC1,LU1,0,LBLK)
-        END DO
-      END IF
-*. 3.2 : corresponding sigma vectors
-        CALL REWINE( LU7,LBLK)
-        DO IROOT = 1, NROOT
-*. From LU2 to LU5
-          CALL REWINO(LU2)
-          CALL MVCSMD_PAR(LU2,AVEC((IROOT-1)*NVEC+1),
-     &    LU5,LU6,VEC1,VEC2,NROOT,1,LBLK)
-          IF(IPRT.GE.1000)
-     &    write(6,*) ' end of s reset, part 1'
-*. and add LU4 to LU5
-          CALL REWINO(LU4)
-          CALL MVCSMD2_PAR(LU4,AVEC((IROOT-1)*NVEC+NROOT+1),ONE,
-     &    LU5,LU6,VEC1,VEC2,NVEC-NROOT,1,LBLK)
-          IF(IPRT.GE.1000)
-     &    write(6,*) ' end of s reset, part 2'
-          SCALE  = WORK(IROOT)
-*. scale LU5 => LU7
-          CALL REWINO(LU5)
-CSK       no scaling, just copy...
-CSK          CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
-          CALL COPVCD(LU5,LU7,VEC1,0,LBLK)
-          IF(IPRT.GE.1000)
-     &    write(6,*) ' end of s reset, part 3'
-        END DO
-*. Transfer sigma  vectors from LU7 to LU2
-        CALL REWINE( LU7,LBLK)
-        CALL REWINE( LU2,LBLK)
-        DO IVEC = 1,NROOT
-          CALL COPVCD(LU7,LU2,VEC1,0,LBLK)
-        END DO
-        IF(IPRT.GE.1000)
-     &  write(6,*) ' end of s reset, part 4'
-        NNVEC = NROOT
-*
-        IF(3*NROOT.LE.MAXVEC) THEN
-*
-*. Orthogonalize the
-*. last set of correction vectors to the current
-*. eigenvectors on LU1, and save on LU2
-*. Overlap with root approximations
-*. Start of last set of trial vectors
-          ISTART = NVEC-NROOT-IADD+1
-          CALL SKPVCD(LU3,ISTART-1,VEC1,1,LBLK)
-*
-          CALL REWINO(LU5)
-          DO JVEC = 1, IADD
-*. Orthogonalize to vectors on LU1
-            CALL REWINO(LU7)
-            CALL COPVCD(LU3,LU7,VEC1,0,LBLK)
-            IF(IPRT.GE.1000) THEN
-            write(6,*) ' Initial vector on LU7'
-            CALL WRTVCD(VEC1,LU7,1,LBLK)
-            END IF
-            CALL REWINO(LU1)
-            IMUSTRED = 0
-            DO IROOT = 1, NROOT
-              CALL REWINO(LU7)
-              WORK(IROOT+(JVEC-1)*2*NROOT) = 
-     &       -INPRDD(VEC1,VEC2,LU7,LU1,0,LBLK)
-              IF(IROOT.EQ.1) ISTRED = IROOT+(JVEC-1)*2*NROOT
-              IMUSTRED = IMUSTRED + 1
-            END DO
-            starttime = MPI_WTIME()
-            CALL REDVEC(WORK(ISTRED),SCRRED,IMUSTRED,2,
-     &                  MPI_SUM,MPI_COMM_WORLD,-1)
-            endtime = MPI_WTIME()
-            WALLTID = SECTID(endtime-starttime)
-            WRITE(LUWRTOUT,9440) WALLTID,IMUSTRED
-            CALL COPVEC(SCRRED,WORK(ISTRED),IMUSTRED)
-                 
-            IF(IPRT.GE.1000)
-     &      write(6,*) ' c, part1 finito'
-*. And to trial vectors on LU5
-            CALL REWINO(LU5)
-            IMUSTRED = 0
-            DO KVEC = 1, JVEC-1
-              CALL REWINO(LU7)
-              WORK(NROOT+KVEC+(JVEC-1)*2*NROOT) = 
-     &       -INPRDD(VEC1,VEC2,LU7,LU5,0,LBLK)
-              IF(KVEC.EQ.1) ISTRED = NROOT+KVEC+(JVEC-1)*2*NROOT
-              IMUSTRED = IMUSTRED + 1
-            END DO
-            IF(IMUSTRED.GT.0)THEN
-              starttime = MPI_WTIME()
-              CALL REDVEC(WORK(ISTRED),SCRRED,IMUSTRED,2,
-     &                    MPI_SUM,MPI_COMM_WORLD,-1)
-              endtime = MPI_WTIME()
-              WALLTID = SECTID(endtime-starttime)
-              WRITE(LUWRTOUT,9450)WALLTID,IMUSTRED
-              CALL COPVEC(SCRRED,WORK(ISTRED),IMUSTRED)
-            ENDIF
-            WORK(NROOT+JVEC+(JVEC-1)*2*NROOT) = 1.0D0
-            IF(IPRT.GE.1000)
-     &      write(6,*) ' c, part2 finito'
-*
-            ONE = 1.0D0
-            CALL MVCSMD2_PAR(LU1,WORK(1+(JVEC-1)*2*NROOT),ONE ,
-     &      LU7,LU6,VEC1,VEC2,NROOT,1,LBLK)
-*
-            ONE = 1.0D0
-            CALL MVCSMD2_PAR(LU5,WORK(NROOT+1+(JVEC-1)*2*NROOT),ONE,
-     &           LU7,LU6,VEC1,VEC2,JVEC-1,1,LBLK)
-            IF(IPRT.GE.1000) THEN
-              write(6,*) ' c, part4 finito'
-              write(6,*) ' Vector after sec ort'
-              CALL WRTVCD(VEC1,LU7,1,LBLK)
-            END IF
-*
-            REDSCR = INPRDD(VEC1,VEC1,LU7,LU7,1,LBLK)
-            CALL REDVEC(REDSCR,FACTOR,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
-            SCALE = 1.0D0/SQRT(FACTOR)
-CSKT            WRITE(6,*) ' SCALE in part 3.2 = ', SCALE
-            CALL SCALVE(WORK((JVEC-1)*2*NROOT+1),SCALE,
-     &           NROOT+JVEC)
-            CALL REWINO(LU7)
-            CALL SCLVCD(LU7,LU5,SCALE,VEC1,0,LBLK)
-           IF(IPRT.GE.1000)
-     &       write(6,*) ' c, part6 finito'
-         END DO
-*        /\ End of loop over orthogonalized directions
-*. Transfer modified directions to LU3
-         CALL REWINO(LU3)
-         CALL REWINO(LU5)
-         DO JVEC =1, IADD
-           CALL COPVCD(LU5,LU3,VEC1,0,LBLK)
-         END DO
-         IF(IPRT.GE.1000) THEN
-           write(6,*) ' c, part7 finito'
-           WRITE(6,*) ' Additional trial vectors on LU3 myproc',myproc
-           CALL REWINO(LU3)
-           DO JVEC = 1, IADD
-            CALL WRTVCD(VEC1,LU3,0,LBLK)
-           END DO
-         END IF
-* Sigma vectors corresponding to orthogonalized directions
-         CALL SKPVCD(LU4,ISTART-1,VEC1,1,LBLK)
-         CALL REWINO(LU5)
-         DO JVEC = 1, IADD
-            CALL REWINO(LU7)
-            CALL COPVCD(LU4,LU7,VEC1,0,LBLK)
-*
-            FACT = WORK(NROOT+JVEC+(JVEC-1)*2*NROOT)
-            CALL MVCSMD2_PAR(LU2,WORK(1+(JVEC-1)*2*NROOT),FACT,
-     &      LU7,LU6,VEC1,VEC2,NROOT,1,LBLK)
-*
-            IF(IPRT.GE.1000)
-     &      write(6,*) ' s, part 1 finito '
-            ONE = 1.0D0
-            CALL MVCSMD2_PAR(LU5,WORK(NROOT+1+(JVEC-1)*2*NROOT),ONE,
-     &           LU7,LU6,VEC1,VEC2,JVEC-1,1,LBLK)
-            IF(IPRT.GE.1000)
-     &      write(6,*) ' s, part 2 finito '
-            CALL REWINO(LU7)
-            CALL COPVCD(LU7,LU5,VEC1,0,LBLK)
-            IF(IPRT.GE.1000)
-     &      write(6,*) ' s, part 3 finito '
-         END DO
-*        /\ End of loop over orthogonalized directions
-*. Copy back to LU4
-         CALL REWINO(LU4)
-         CALL REWINO(LU5)
-         DO JVEC = 1, IADD
-            CALL COPVCD(LU5,LU4,VEC1,0,LBLK)
-         END DO
-         IF(IPRT.GE.1000)
-     &   write(LUWRTOUT,*) ' s, part 4 finito '
-*
-         NNVEC = NROOT + IADD
-       END IF
-*      /\ End if more than NROOT vectors to be reset
-*
-       IF(IPRT.GE.1000) THEN
-         WRITE(LUWRTOUT,*)' Additional sigma vectors on LU4'
-         CALL REWINO(LU4)
-         DO JVEC = 1, IADD
-           CALL WRTVCD(VEC1,LU4,0,LBLK)
-         END DO
-       END IF
-CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK      IF(IODENSEPAR.GT.0) THEN
-CSK         CALL Abend2('Stefan forced me to stop at s part4 finito... 
-CSK     & DV6_PAR')
-CSK      END IF
-*
-       NVEC = NNVEC
-*. New subspace
-*. Calculate subspace Hamiltonian from actual vectors
-*. on disc
-       IF(IPRT.GE.1000) write(6,*) ' Subspace hamiltonian'
-       CALL REWINO(LU1)
-       CALL REWINO(LU3)
-       DO IVEC = 1, NVEC
-*
-         CALL REWINO(LU5)
-         IF(IVEC.LE.NROOT) THEN
-           CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
-         ELSE
-           CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
-         END IF
-*
-         CALL REWINO(LU2)
-         DO JVEC = 1, MIN(IVEC,NROOT)
-           CALL REWINO(LU5)
-           IJ = IVEC*(IVEC-1)/2+JVEC
-           APROJ(IJ) = INPRDD(VEC1,VEC2,LU5,LU2,0,LBLK)
-           IF(IVEC.EQ.1.AND.JVEC.EQ.1) ISTRED = IJ
-           IMUSTRED = IMUSTRED + 1
-         END DO
-         CALL REWINO(LU4)
-         DO JVEC = NROOT+1,IVEC
-           CALL REWINO(LU5)
-           IJ = IVEC*(IVEC-1)/2+JVEC
-           APROJ(IJ) = INPRDD(VEC1,VEC2,LU5,LU4,0,LBLK)
-           IMUSTRED = IMUSTRED + 1
-         END DO
-       END DO
-       starttime = MPI_WTIME()
-       CALL REDVEC(APROJ(ISTRED),SCRRED,IMUSTRED,2,MPI_SUM,
-     &             MPI_COMM_WORLD,-1)
-       endtime = MPI_WTIME()
-       WALLTID = SECTID(endtime-starttime)
-       WRITE(LUWRTOUT,9460)WALLTID,IMUSTRED
-       CALL COPVEC(SCRRED,APROJ(ISTRED),IMUSTRED)
-       if (IPRT.ge.2) then
-         write(6,*) ' Reset hamiltonian'
-         call prsym(aproj,nvec)
-       end if
-*
-*  check timing of part3 in loop iteration
-*
-       WALLSTEP4 = MPI_WTIME()
-       WALLTSTEP = SECTID(WALLSTEP4-WALLSTEP3)
-       WRITE(LUWRTOUT,9600) WALLTSTEP
-*
-*  Timing of this iteration
-       CALL GETTIM(CPUITR2,WALLITR2)
-       CPUTID = SECTID(CPUITR2-CPUITR1)
-       WALLITR2 = MPI_WTIME()
-       WALLTID = SECTID(WALLITR2-WALLITR1)
-       WRITE(LUWRTOUT,9300) WALLTID
-*. End of resetting business
+C     check timing
+      timer3 = 0.0D0
+      starttimer = MPI_WTIME()
+C
+      CALL DIREC_OPTDRV(VEC1,VEC2,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
+     &                  NROOT,MAXVEC,NVEC,APROJ,AVEC,WORK,
+     &                  LBLK,IBKINF,NBLOCKDN,IGROUPLIST,IPROCLIST,
+     &                  IBLOCKI,BSCRFAC,IADD,SCRRED,LUWRTOUT,ICOLOR)
+C
+C     finish timing
+C
+      timer3 = timer3 + MPI_WTIME() - starttimer
+      WALLTSTEP = SECTID(timer3)
+      WRITE(LUWRTOUT,9600) WALLTSTEP
+C
+C     timing for this iteration
+C
+      WALLITR2 = MPI_WTIME()
+      WALLTID = SECTID(WALLITR2-WALLITR1)
+      WRITE(LUWRTOUT,9300) WALLTID
+C
+C     End of resetting business
+C
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
+C
  1001 CONTINUE
-* ( End of loop over iterations )
-*
-* let's synchronize all processes!
-*
+C
+C     ( End of loop over iterations )
+C
+C      let's synchronize all processes!
+C
  1003  DO 1004 I = 1, 2
         CALL MPI_BARRIER(ICOMM, IERR)
         TIME1 = MPI_Wtime()
@@ -2214,22 +1962,22 @@ CSK      END IF
         CALL MPI_BARRIER(ICOMM, IERR)
         TOTAL_TIME = MPI_Wtime() - TIME1
  1004  CONTINUE
-*
+C
        WRITE(LUWRTOUT,*) 'SYNC. PROCESS HAS USED', TOTAL_TIME, 'SEC.'
-*
+C
       IF( .NOT. CONVER ) THEN
-*        CONVERGENCE WAS NOT OBTAINED
+C        CONVERGENCE WAS NOT OBTAINED
          IF(IPRT .GE. 2 )
      &   WRITE(LUWRTOUT,1170) MAXIT
  1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
       ELSE
-*        CONVERGENCE WAS OBTAINED
+C        CONVERGENCE WAS OBTAINED
          ITER = ITER - 1
          IF (IPRT .GE. 2 )
      &   WRITE(LUWRTOUT,1180) ITER
  1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
         END IF
-*
+C
       IF ( IPRT .GT. 0 ) THEN
         CALL REWINE(LU1,LBLK)
         DO 1600 IROOT = 1, NROOT
@@ -2285,19 +2033,22 @@ CSK      END IF
      &               ' Final energy ',FINEIG(IROOT)
  1601   CONTINUE
       END IF
-*
+C
       CALL FLSHFO(6)
-*
+C
       Call Add_Info('E_CI',FINEIG,NROOT)
-*
-C     close the scratch file when leaving
+C
+C     close the scratch files when leaving
        IF(IODENSEPAR.EQ.2.AND.IIOMOD.NE.0) THEN
+C       close all files not needed any more
+         IF( IAMSURE .eq. 1) CALL SETUNITS_PAR_CLOSE
+C
          CALL MPI_FILE_CLOSE(MPILUSCR,IERR)
          CALL MPI_FILE_CLOSE(MPILUSCR2,IERR)
          CALL MPI_COMM_FREE(MYNEW_COMM,IERR)
          CALL MPI_COMM_FREE(ICOMM,IERR)
        END IF
-*
+C
       RETURN
  1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
  1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
@@ -2318,7 +2069,1683 @@ C     close the scratch file when leaving
  9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A)
       END
 ***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE DIREC_OPTDRV(VEC1,VEC2,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
+     &                        NROOTS,MAXVEC,NVEC,APROJ,AVEC,WORK_SP,
+     &                        LBLK,IBKINF,NBLOCKDN,IGROUPLIST,IPROCLIST,
+     &                        IBLOCKI,BSCRFAC,IADD,SCRRED,LUWRTOUT,
+     &                        ICOLOR)
+C                                                                       
+C     driver routine for the generation of a new best direction for 
+C     the c-/s-vectors.
+C                                                                      
+C     file structure is adapted to batch scheme used also in MV7_PAR
+C     parallel version: MPI-FILE I/O is used.                            
+C
+C     Last revision: S. Knecht           - March  2007
+C                   
+************************************************************************
+       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+#include "lucipar.inc"
+#include "infpar.h"
+#include "mpif.h"
+#include "mxpdim.inc"
+C
+C     Definition of c and sigma
+      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
+C        /ORBINP/ : NACOB used
+#include "orbinp.inc"
+#include "cicisp.inc"
+#include "strbas.inc"
+#include "cstate.inc"
+#include "strinp.inc"
+#include "stinf.inc"
+#include "csm.inc"
+#include "wrkspc.inc"
+#include "crun.inc"
+#include "gasstr.inc"
+#include "cgas.inc"
+C        Used: NSMOB
+#include "lucinp.inc"
+#include "cprnt.inc"
+#include "glbbas.inc"
+#include "oper.inc"
+      DIMENSION IBKINF(IBLOCKI), BSCRFAC(IBLOCKI), NBLOCKDN(IBLOCKI)
+C     MY_VEC_IOFF == absolute length of 1 vec on a given cpu
+C     IOFF_PROC   == max length of 1 vec for all cpus
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_VEC_IOFF, IOFF_PROC
+C     MY_IOFF_125 == absolute offset for files ILU1,ILU2,ILU5 for a
+C     given cpu
+C     MY_IOFF_347 == absolute offset for files ILU3,ILU4,ILU7 for a
+C     given cpu
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_125, MY_IOFF_347
+      INTEGER ICOPY, IZERO, NBLK_ACT, NACT_MAX
+      INTEGER MY_INT_IOFF_125, MY_INT_IOFF_347
+      CHARACTER*12 SECTID, WALLTIME
+      IZERO = 0
+      ICOPY = 0
+C
+      IDUM = 0
+      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'D_OPTD')
+C
+      IATP = 1
+      IBTP = 2
+      NOCTPA = NOCTYP(IATP)
+      NOCTPB = NOCTYP(IBTP)
+C     Offset for supergroups
+      IOCTPA = IBSPGPFTP(IATP)
+      IOCTPB = IBSPGPFTP(IBTP)
+C
+      NAEL = NELEC(IATP)
+      NBEL = NELEC(IBTP)
+C     Arrays giving allowed type combinations
+      CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
+      CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
+C
+      KSVST = 1
+C     Arrays giving block type
+      CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
+      CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP),WORK(KSVST))
+C     Arrays for partitioning of sigma
+      NTTS = MXNTTS
+      CALL MEMMAN(KLSLBT ,NTTS  ,'ADDL  ',1,'CLBT  ')
+      CALL MEMMAN(KLSLEBT ,NTTS  ,'ADDL  ',1,'CLEBT ')
+      CALL MEMMAN(KLSI1BT,NTTS  ,'ADDL  ',1,'CI1BT ')
+      CALL MEMMAN(KLSIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
+C     initialize bscrfac and assume all cpu-blocks to be active
+C     bscrfac is then used as determing array in the partition routine
+      ZERO = 0.0D0
+      ONE  = 1.0D0
+      CALL SETVEC(BSCRFAC,ZERO,IBLOCKI)
+      CALL SET_ACTIVE(BSCRFAC,NBLOCKDN,ONE,IBLOCKI)
+C     partition the CI-vactor in batches
+      ITTSS_ORD = 2
+      IEXCLBLK  = 1
+      IF (IODENSEPAR.eq.2.and.IAMSURE.eq.1) THEN
+C         
+        CALL PART_CIV_PAR2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
+     &                    WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
+     &                    WORK(KSIOIO),ISMOST(1,ISSM),
+     &                    NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &                    WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD,
+     &                    BSCRFAC,IBLOCKI,IEXCLBLK)
+C
+      ELSE 
+      
+        CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
+     &                 WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
+     &                 WORK(KSIOIO),ISMOST(1,ISSM),
+     &                 NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &                 WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD)
+      END IF
+C
+C
+      IF( IAMSURE .eq. 1 ) THEN
+C
+C       more setup to follow ...
+C
+        MY_VEC_IOFF = 0
+        IOFF_PROC   = 0
+        NBLK_ACT    = 0
+        NACT_MAX    = 0
+C       I know that this is not smart but it is for the moment the 
+C       easiest. -->  TODO: change NMPROC --> NEWCOMM_PROC properly.
+        DO IPROC = 1, NMPROC
+          DO IBLK = 1, IBLOCKI
+            IF(NBLOCKDN(IBLK) .eq. IPROC-1 ) THEN
+              MY_VEC_IOFF = MY_VEC_IOFF + IBKINF(IBLK)
+              NBLK_ACT = NBLK_ACT + 1
+            END IF
+          END DO
+          IOFF_PROC = MAX(IOFF_PROC,MY_VEC_IOFF)
+          NACT_MAX = MAX(NACT_MAX,NBLK_ACT)
+          MY_VEC_IOFF = 0
+          NBLK_ACT = 0
+        END DO 
+C
+        MY_VEC_IOFF = 0
+        NBLK_ACT = 0
+C
+C       length of each vector + number of active blocks on a given cpu
+C
+        DO IBLK = 1, IBLOCKI
+          IF( NBLOCKDN(IBLK) .eq. MYPROC ) THEN 
+            MY_VEC_IOFF = MY_VEC_IOFF + IBKINF(IBLK)
+            NBLK_ACT = NBLK_ACT + 1
+          END IF
+        END DO
+C
+C       check number of copies on LU3/LU4
+C
+        IF(MAX(NVEC-NROOT,NROOTS).LE.NVEC-NROOTS)THEN
+               ICOPY = MAX(NVEC-NROOTS,NROOTS)
+        ELSE
+               ICOPY = MIN(NVEC-NROOTS,NROOTS)
+        END IF
+C       check ICOPY
+        IF( ICOPY .lt. 1 ) CALL Abend2('Problem in DIREC_OPTDRV since 
+     & the number of vectors to copy (ICOPY) is lower than 1')
+C       copy sequential files in MPI-IO readable format
+        CALL REWINE(LU1,-1)
+        CALL REWINE(LU2,-1)
+        CALL REWINE(LU3,-1)
+        CALL REWINE(LU4,-1)
+C
+CSK        CALL MEMMAN(KINFOACTIVE,NBLK_ACT,'ADDL  ',1,'ICPBLA')
+CSK        CALL ISETVC(WORK(KINFOACTIVE),IZERO,NBLK_ACT)
+C
+C       calculate correct offset for each cpu (in a group)
+C
+        MY_IOFF_125      = IOFF_PROC * NROOTS * MYNEW_ID
+        MY_INT_IOFF_125  = NACT_MAX  * NROOTS * MYNEW_ID
+        MY_IOFF_347      = IOFF_PROC * ICOPY * MYNEW_ID
+        MY_INT_IOFF_347  = NACT_MAX  * ICOPY * MYNEW_ID
+C
+        startcopy = MPI_WTIME()
+C
+        IF( CHUNK_FILE ) THEN
+C
+C       allocation for work-control arrays
+C
+          CALL MEMMAN(KCONTRL1,NBLK_ACT*NROOTS,'ADDL  ',1,'ICTRL1')
+          CALL MEMMAN(KCONTRL2,NBLK_ACT*NROOTS,'ADDL  ',1,'ICTRL2')
+          CALL MEMMAN(KCONTRL5,NBLK_ACT*NROOTS,'ADDL  ',1,'ICTRL5')
+          CALL MEMMAN(KCONTRL3,NBLK_ACT*ICOPY,'ADDL  ',1,'ICTRL3')
+          CALL MEMMAN(KCONTRL4,NBLK_ACT*ICOPY,'ADDL  ',1,'ICTRL4')
+          CALL MEMMAN(KCONTRL7,NBLK_ACT*ICOPY,'ADDL  ',1,'ICTRL7')
+          CALL ISETVC(WORK(KCONTRL1),0,NBLK_ACT*NROOTS)
+          CALL ISETVC(WORK(KCONTRL2),0,NBLK_ACT*NROOTS)
+          CALL ISETVC(WORK(KCONTRL5),0,NBLK_ACT*NROOTS)
+          CALL ISETVC(WORK(KCONTRL3),0,NBLK_ACT*ICOPY)
+          CALL ISETVC(WORK(KCONTRL4),0,NBLK_ACT*ICOPY)
+          CALL ISETVC(WORK(KCONTRL7),0,NBLK_ACT*ICOPY)
+C
+          CALL COPY_STOMPI_DRV2(LU1,LU2,LU3,LU4,VEC1,NBLK_ACT,
+     &                          NBATCH,
+     &                          WORK(KLSLBT),WORK(KLSLEBT),
+     &                          WORK(KLSI1BT),WORK(KLSIBT),
+     &                          NROOTS,ICOPY,MY_IOFF_125,
+     &                          MY_IOFF_347,MY_VEC_IOFF,
+     &                          MY_INT_IOFF_125,
+     &                          MY_INT_IOFF_347,
+     &                          WORK(KCONTRL1),WORK(KCONTRL2),
+     &                          WORK(KCONTRL3),WORK(KCONTRL4))
+C
+        ELSE
+C
+          CALL COPY_STOMPI_DRV1(LU1,LU2,LU3,LU4,VEC1,NBLK_ACT,
+     &                          NBATCH,
+     &                          WORK(KLSLBT),WORK(KLSLEBT),
+     &                          WORK(KLSI1BT),WORK(KLSIBT),
+     &                          NROOTS,ICOPY,MY_IOFF_125,
+     &                          MY_IOFF_347,MY_VEC_IOFF)
+C
+        END IF
+C
+        finishcopy = MPI_WTIME()
+        IPRINTSTAT = 1
+        IF ( IPRINTSTAT .eq. 1 ) then
+          WALLTIME = SECTID( finishcopy - startcopy )
+          WRITE(LUWRTOUT,9450) WALLTIME
+        END IF
+C?        IF( MYPROC .eq. MASTER ) THEN
+C?         write(6,*) 'these are my integer arrays!',myproc
+C?         CALL IWRTMA(WORK(KCONTRL1),1,NBLK_ACT*NROOTS,1,NBLK_ACT*NROOTS)
+C?         CALL IWRTMA(WORK(KCONTRL2),1,NBLK_ACT*NROOTS,1,NBLK_ACT*NROOTS)
+C?         CALL IWRTMA(WORK(KCONTRL3),1,NBLK_ACT*ICOPY,1,NBLK_ACT*ICOPY)
+C?         CALL IWRTMA(WORK(KCONTRL4),1,NBLK_ACT*ICOPY,1,NBLK_ACT*ICOPY)
+C?        END IF
+C
+        IALLOCLEN = 0
+        IALLOCLEN = MAX(MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
+        CALL MEMMAN(KSCRRED2,IALLOCLEN,'ADDL  ',2,'SCRRD2')
+        CALL SETVEC(WORK(KSCRRED2),0.0D0,IALLOCLEN)
+C
+C       setup is done, now we can call the proper working horse
+C
+        IF( CHUNK_FILE ) THEN
+C
+        CALL DIREC_OPTWRK_3(VEC1,VEC2,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
+     &                      NROOTS,MAXVEC,NVEC,APROJ,AVEC,WORK_SP,
+     &                      LBLK,IBKINF,NBLOCKDN,IGROUPLIST,IPROCLIST,
+     &                      IBLOCKI,BSCRFAC,IADD,SCRRED,WORK(KSCRRED2),
+     &                      LUWRTOUT,
+     &                      NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &                      WORK(KLSI1BT),WORK(KLSIBT),
+     &                      MY_VEC_IOFF,MY_IOFF_125,MY_IOFF_347,
+     &                      ICOPY,MY_INT_IOFF_125,MY_INT_IOFF_347,
+     &                      NBLK_ACT,
+     &                      WORK(KCONTRL1),WORK(KCONTRL2),
+     &                      WORK(KCONTRL5),WORK(KCONTRL3),
+     &                      WORK(KCONTRL4),WORK(KCONTRL7))
+C
+        ELSE
+C
+        CALL DIREC_OPTWRK_2(VEC1,VEC2,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
+     &                      NROOTS,MAXVEC,NVEC,APROJ,AVEC,WORK_SP,
+     &                      LBLK,IBKINF,NBLOCKDN,IGROUPLIST,IPROCLIST,
+     &                      IBLOCKI,BSCRFAC,IADD,SCRRED,WORK(KSCRRED2),
+     &                      LUWRTOUT,
+     &                      NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &                      WORK(KLSI1BT),WORK(KLSIBT),
+     &                      MY_VEC_IOFF,MY_IOFF_125,MY_IOFF_347,
+     &                      ICOPY,NBLK_ACT)
+C
+        END IF
+C
+C       ... all MPI-File I/O parts finished
+C
+      ELSE
+C
+        IF(MAX(NVEC-NROOT,NROOTS).LE.NVEC-NROOTS)THEN
+               ICOPY = MAX(NVEC-NROOTS,NROOTS)
+        ELSE
+               ICOPY = MIN(NVEC-NROOTS,NROOTS)
+        END IF
+C
+        CALL DIREC_OPTWRK(VEC1,VEC2,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
+     &                    NROOTS,MAXVEC,NVEC,APROJ,AVEC,WORK_SP,
+     &                    LBLK,IBKINF,NBLOCKDN,IGROUPLIST,IPROCLIST,
+     &                    IBLOCKI,BSCRFAC,IADD,SCRRED,LUWRTOUT,
+     &                    NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &                    WORK(KLSI1BT),WORK(KLSIBT))
+C
+C
+      END IF
+C
+C     ... optimization finished ... back to the main DAVIDSON routine
+C
+C     Eliminate local memory
+      IDUM = 0
+      CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'D_OPTD')
+C
+ 9450 FORMAT(' >>>  WALL TIME FOR COPY ROUTINES SQ --> MPI     :
+     & ',A)
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE DIREC_OPTWRK(VEC1,VEC2,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
+     &                        NROOT,MAXVEC,NVEC,APROJ,AVEC,WORK_SP,
+     &                        LBLK,IBKINF,NBLOCKDN,IGROUPLIST,IPROCLIST,
+     &                        IBLOCKI,BSCRFAC,IADD,SCRRED,LUWRTOUT,
+     &                        NBATCH,LBATS,LEBATS,I1BATS,IBATS)
+C                                                                       
+C     working routine for the generation of a new best direction for 
+C     the c-/s-vectors.        
+C                                                                      
+C     file structure is adapted to batch scheme used also in MV7_PAR
+C     no MPI-FILE I/O is used inside this routine.                            
+C
+C     Last revision: S. Knecht           - March  2007
+C                   
+************************************************************************
+#include "implicit.h"
+#include "lucipar.inc"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION VEC1(*), VEC2(*)
+C     batch structure of the CI vector
+      DIMENSION LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
+      DIMENSION IBKINF(IBLOCKI), NBLOCKDN(IBLOCKI)
+      DIMENSION IPROCLIST(NMPROC), IGROUPLIST(NMPROC)
+      INTEGER ISTRED, IMUSTRED
+      INTEGER NNVEC
+C
+C     Dimensioning required of local vectors
+C     APROJ     : MAXVEC*(MAXVEC+1)/2
+C     AVEC      : MAXVEC ** 2
+C     WORK_SP   : MAXVEC*(MAXVEC+1)/2
+C     SCRRED    : MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
+      DIMENSION APROJ(*),AVEC(*),WORK_SP(*), SCRRED(*)
+      REAL*8 INPRDD, INPROD
+      DOUBLE PRECISION tottime,endtime,starttime
+      CHARACTER SECTID*12, WALLTID*12, WALLTIME
+
+C
+      ISTRED   = 0
+      IMUSTRED = 0
+      NNVEC    = 0
+C
+C     3.1 : Current wave function approximations, collect on LU7
+C
+      CALL REWINE( LU7,LBLK)
+      DO IROOT = 1, NROOT
+C       From LU1 to LU5
+        CALL REWINO(LU1)
+CSK        IF(MYPROC.EQ.MASTER) WRITE(6,*) 'FACIN1(IVEC) =',
+CSK     &                       AVEC((IROOT-1)*NVEC+1) 
+        CALL MVCSMD_PAR(LU1,AVEC((IROOT-1)*NVEC+1),
+     &  LU5,LU6,VEC1,VEC2,NROOT,1,LBLK)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of c reset, part 1'
+C
+C       and add LU3 to LU5
+C
+        CALL REWINO(LU3)
+        ONE = 1.0D0
+CSK        IF(MYPROC.EQ.MASTER) WRITE(6,*) 'FACIN2(IVEC) =',
+CSK     &                       AVEC((IROOT-1)*NVEC+NROOT+1)
+        CALL MVCSMD2_PAR(LU3,AVEC((IROOT-1)*NVEC+NROOT+1),ONE,
+     &  LU5,LU6,VEC1,VEC2,NVEC-NROOT,1,LBLK)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of c reset, part 2'
+*
+        SCALE  = 1.0D0
+        WORK_SP(IROOT) = SCALE
+CSKold  scale LU5 => LU7
+C       scaling changed to copy LU5 => LU7
+        CALL REWINO(LU5)
+        CALL COPVCD(LU5,LU7,VEC1,0,LBLK)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of c reset, part 3'
+      END DO
+C     Transfer C vectors from LU7 to LU1
+      CALL REWINE( LU7,LBLK)
+      CALL REWINE( LU1,LBLK)
+      DO IVEC = 1,NROOT
+        CALL COPVCD(LU7,LU1,VEC1,0,LBLK)
+      END DO
+      IF(IPRT.GE.1000)
+     &write(6,*) ' end of c reset, part 4'
+      IF(IPRT.GE.1000) THEN
+        WRITE(6,*) ' Reset C-vectors on LU1 (myproc)',myproc
+        CALL REWINO(LU1)
+        DO IVEC = 1, NROOT
+           CALL WRTVCD(VEC1,LU1,0,LBLK)
+        END DO
+      END IF
+CCC       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CCC       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CCC   IF(MYPROC.EQ.MASTER+1) THEN
+CCC   WRITE(6,*) ' Reset C-vectors on LU1 (myproc)',myproc
+CCC   CALL REWINO(LU1)
+CCC   DO IVEC = 1, NROOT
+CCC      CALL WRTVCD(VEC1,LU1,0,LBLK)
+CCC   END DO
+CCC   END IF
+CCC       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CCC       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+
+CCC    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CCC    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+C     3.2 : corresponding sigma vectors
+      CALL REWINE( LU7,LBLK)
+      DO IROOT = 1, NROOT
+C       From LU2 to LU5
+        CALL REWINO(LU2)
+CSK        IF(MYPROC.EQ.MASTER) WRITE(6,*) 'FACIN1(IVEC) =',
+CSK     &                       AVEC((IROOT-1)*NVEC+1) 
+        CALL MVCSMD_PAR(LU2,AVEC((IROOT-1)*NVEC+1),
+     &                  LU5,LU6,VEC1,VEC2,NROOT,1,LBLK)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of s reset, part 1'
+C       and add LU4 to LU5
+        CALL REWINO(LU4)
+CSK        IF(MYPROC.EQ.MASTER) WRITE(6,*) 'FACIN2(IVEC) =',
+CSK     &                       AVEC((IROOT-1)*NVEC+NROOT+1)
+        CALL MVCSMD2_PAR(LU4,AVEC((IROOT-1)*NVEC+NROOT+1),ONE,
+     &                   LU5,LU6,VEC1,VEC2,NVEC-NROOT,1,LBLK)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of s reset, part 2'
+        SCALE  = WORK_SP(IROOT)
+C       scale LU5 => LU7
+        CALL REWINO(LU5)
+CSK     no scaling, just copy...
+CSKold  CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
+        CALL COPVCD(LU5,LU7,VEC1,0,LBLK)
+        IF(IPRT.GE.1000)
+     &  write(6,*) ' end of s reset, part 3'
+      END DO
+C     Transfer sigma  vectors from LU7 to LU2
+      CALL REWINE( LU7,LBLK)
+      CALL REWINE( LU2,LBLK)
+      DO IVEC = 1,NROOT
+        CALL COPVCD(LU7,LU2,VEC1,0,LBLK)
+      END DO
+CSK          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CSK          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CSK      IF(MYPROC.EQ.MASTER+2) THEN
+CSK      WRITE(6,*) ' Reset s-vectors on LU2 (myproc)',myproc
+CSK      CALL REWINO(LU2)
+CSK      DO IVEC = 1, NROOT
+CSK         CALL WRTVCD(VEC1,LU2,0,LBLK)
+CSK      END DO
+CSK      END IF
+CSK          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CSK          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+      IF(IPRT.GE.1000)
+     &  write(6,*) ' end of s reset, part 4'
+      NNVEC = NROOT
+C
+      IF(3*NROOT.LE.MAXVEC) THEN
+C
+C       Orthogonalize the
+C       last set of correction vectors to the current
+C       eigenvectors on LU1, and save on LU2
+C       Overlap with root approximations
+C       Start of last set of trial vectors
+C
+        ISTART = NVEC-NROOT-IADD+1
+CSK       WRITE(6,*) 'I have to skip ISTART vectors on LU3',ISTART-1,MYPROC
+        CALL SKPVCD(LU3,ISTART-1,VEC1,1,LBLK)
+C
+        CALL REWINO(LU5)
+        DO JVEC = 1, IADD
+C         Orthogonalize to vectors on LU1
+          CALL REWINO(LU7)
+          CALL COPVCD(LU3,LU7,VEC1,0,LBLK)
+CSK            call mpi_barrier(mpi_comm_world,ierr)
+CSK            call mpi_barrier(mpi_comm_world,ierr)
+CSK       IF( MYPROC.EQ.MASTER+1) THEN
+CSK       write(6,*) ' Initial vector on LU7'
+CSK       CALL WRTVCD(VEC1,LU7,1,LBLK)
+CSK       END IF
+CSK            call mpi_barrier(mpi_comm_world,ierr)
+CSK            call mpi_barrier(mpi_comm_world,ierr)
+
+          IF(IPRT.GE.1000) THEN
+            write(6,*) ' Initial vector on LU7'
+            CALL WRTVCD(VEC1,LU7,1,LBLK)
+          END IF
+          CALL REWINO(LU1)
+          IMUSTRED = 0
+          DO IROOT = 1, NROOT
+            CALL REWINO(LU7)
+            WORK_SP(IROOT+(JVEC-1)*2*NROOT) = 
+     &     -INPRDD(VEC1,VEC2,LU7,LU1,0,LBLK)
+            IF(IROOT.EQ.1) ISTRED = IROOT+(JVEC-1)*2*NROOT
+            IMUSTRED = IMUSTRED + 1
+          END DO
+          starttime = MPI_WTIME()
+          CALL REDVEC(WORK_SP(ISTRED),SCRRED,IMUSTRED,2,
+     &                MPI_SUM,MPI_COMM_WORLD,-1)
+          endtime = MPI_WTIME()
+          WALLTID = SECTID(endtime-starttime)
+          WRITE(LUWRTOUT,9440) WALLTID,IMUSTRED
+          CALL COPVEC(SCRRED,WORK_SP(ISTRED),IMUSTRED)
+CSK          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CSK          WRITE(6,*) 'THIS IS WHAT I HAVE REDUCED TO (MYPROC)',MYPROC
+CSK          CALL WRTMAT(WORK_SP(ISTRED),1,NROOT,1,NROOT)
+CSK          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+
+                 
+          IF(IPRT.GE.1000)
+     &    write(6,*) ' c, part1 finito'
+C         and to trial vectors on LU5
+          CALL REWINO(LU5)
+          IMUSTRED = 0
+          DO KVEC = 1, JVEC-1
+            CALL REWINO(LU7)
+            WORK_SP(NROOT+KVEC+(JVEC-1)*2*NROOT) = 
+     &     -INPRDD(VEC1,VEC2,LU7,LU5,0,LBLK)
+            IF(KVEC.EQ.1) ISTRED = NROOT+KVEC+(JVEC-1)*2*NROOT
+            IMUSTRED = IMUSTRED + 1
+          END DO
+          IF(IMUSTRED.GT.0)THEN
+            starttime = MPI_WTIME()
+            CALL REDVEC(WORK_SP(ISTRED),SCRRED,IMUSTRED,2,
+     &                  MPI_SUM,MPI_COMM_WORLD,-1)
+            endtime = MPI_WTIME()
+            WALLTID = SECTID(endtime-starttime)
+            WRITE(LUWRTOUT,9450)WALLTID,IMUSTRED
+            CALL COPVEC(SCRRED,WORK_SP(ISTRED),IMUSTRED)
+          ENDIF
+          WORK_SP(NROOT+JVEC+(JVEC-1)*2*NROOT) = 1.0D0
+          IF(IPRT.GE.1000)
+     &    write(6,*) ' c, part2 finito'
+CSK          write(6,*) ' Vector before ort'
+CSK          CALL WRTVCD(VEC1,LU7,1,LBLK)
+CSK            call mpi_barrier(mpi_comm_world,ierr)
+CSK            call mpi_barrier(mpi_comm_world,ierr)
+CSK       IF( MYPROC.EQ.MASTER+1) THEN
+CSK       write(6,*) ' Vector before ort'
+CSK       CALL WRTVCD(VEC1,LU7,1,LBLK)
+CSK       END IF
+CSK            call mpi_barrier(mpi_comm_world,ierr)
+CSK            call mpi_barrier(mpi_comm_world,ierr)
+C
+          ONE = 1.0D0
+          CALL REWINO(LU1)
+CSK          WRITE(6,*)'FACTOR FOR ORTHO',WORK_SP(1+(JVEC-1)*2*NROOT)
+          CALL MVCSMD2_PAR(LU1,WORK_SP(1+(JVEC-1)*2*NROOT),ONE ,
+     &                     LU7,LU6,VEC1,VEC2,NROOT,1,LBLK)
+CCC         call mpi_barrier(mpi_comm_world,ierr)
+CCC         call mpi_barrier(mpi_comm_world,ierr)
+CSK       IF( MYPROC.EQ.MASTER+1) THEN
+CSK       write(6,*) ' Vector after first ort'
+CSK       CALL WRTVCD(VEC1,LU7,1,LBLK)
+CSK       END IF
+CSK            call mpi_barrier(mpi_comm_world,ierr)
+CSK            call mpi_barrier(mpi_comm_world,ierr)
+C
+          ONE = 1.0D0
+          CALL MVCSMD2_PAR(LU5,WORK_SP(NROOT+1+(JVEC-1)*2*NROOT),ONE,
+     &                     LU7,LU6,VEC1,VEC2,JVEC-1,1,LBLK)
+          IF(IPRT.GE.1000) THEN
+            write(6,*) ' c, part4 finito'
+            write(6,*) ' Vector after sec ort'
+            CALL WRTVCD(VEC1,LU7,1,LBLK)
+          END IF
+CSK          IF( MYPROC.EQ.MASTER+1) THEN
+CSK          write(6,*) ' Vector after sec ort'
+CSK          CALL WRTVCD(VEC1,LU7,1,LBLK)
+CSK          END IF
+C
+          REDSCR = INPRDD(VEC1,VEC1,LU7,LU7,1,LBLK)
+CSK          WRITE(6,*) 'THIS IS REDSCR of myproc',REDSCR,myproc
+          CALL REDVEC(REDSCR,FACTOR,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+          SCALE = 1.0D0/SQRT(FACTOR)
+          WRITE(6,*) ' SCALE in part 3.2 = ', SCALE
+          CALL SCALVE(WORK_SP((JVEC-1)*2*NROOT+1),SCALE,
+     &                NROOT+JVEC)
+CSK          WRITE(6,*) 'THIS IS MY SCALED WORK PART',MYPROC
+CSK          CALL WRTMAT(WORK_SP((JVEC-1)*2*NROOT+1),1,NROOT+JVEC,1,
+CSK     &                NROOT+JVEC)
+          CALL REWINO(LU7)
+          CALL SCLVCD(LU7,LU5,SCALE,VEC1,0,LBLK)
+          IF(IPRT.GE.1000)
+     &      write(6,*) ' c, part6 finito'
+        END DO
+C       /\ End of loop over orthogonalized directions
+C       Transfer modified directions to LU3
+        CALL REWINO(LU3)
+        CALL REWINO(LU5)
+        DO JVEC =1, IADD
+          CALL COPVCD(LU5,LU3,VEC1,0,LBLK)
+        END DO
+        IF(IPRT.GE.1000) THEN
+          write(6,*) ' c, part7 finito'
+          WRITE(6,*) ' Additional trial vectors on LU3 myproc',myproc
+          CALL REWINO(LU3)
+          DO JVEC = 1, IADD
+            CALL WRTVCD(VEC1,LU3,0,LBLK)
+          END DO
+        END IF
+C       Sigma vectors corresponding to orthogonalized directions
+        CALL SKPVCD(LU4,ISTART-1,VEC1,1,LBLK)
+        CALL REWINO(LU5)
+        DO JVEC = 1, IADD
+           CALL REWINO(LU7)
+           CALL COPVCD(LU4,LU7,VEC1,0,LBLK)
+C
+           FACT = WORK_SP(NROOT+JVEC+(JVEC-1)*2*NROOT)
+C?           WRITE(6,*) 'FACT for LU4 is =',FACT
+           CALL MVCSMD2_PAR(LU2,WORK_SP(1+(JVEC-1)*2*NROOT),FACT,
+     &                      LU7,LU6,VEC1,VEC2,NROOT,1,LBLK)
+C
+           IF(IPRT.GE.1000)
+     &      write(6,*) ' s, part 1 finito '
+           ONE = 1.0D0
+           CALL MVCSMD2_PAR(LU5,WORK_SP(NROOT+1+(JVEC-1)*2*NROOT),ONE,
+     &                      LU7,LU6,VEC1,VEC2,JVEC-1,1,LBLK)
+           IF(IPRT.GE.1000)
+     &     write(6,*) ' s, part 2 finito '
+           CALL REWINO(LU7)
+           CALL COPVCD(LU7,LU5,VEC1,0,LBLK)
+           IF(IPRT.GE.1000)
+     &     write(6,*) ' s, part 3 finito '
+        END DO
+C       /\ End of loop over orthogonalized directions
+C       Copy back to LU4
+        CALL REWINO(LU4)
+        CALL REWINO(LU5)
+        DO JVEC = 1, IADD
+           CALL COPVCD(LU5,LU4,VEC1,0,LBLK)
+        END DO
+        IF(IPRT.GE.1000)
+     &  write(LUWRTOUT,*) ' s, part 4 finito '
+C 
+        NNVEC = NROOT + IADD
+      END IF
+C      /\ End if more than NROOT vectors to be reset
+C
+C
+      IF(IPRT.GE.1000) THEN
+        WRITE(LUWRTOUT,*)' Additional sigma vectors on LU4',myproc
+        CALL REWINO(LU4)
+        DO JVEC = 1, IADD
+          CALL WRTVCD(VEC1,LU4,0,LBLK)
+        END DO
+      END IF
+C
+      NVEC = NNVEC
+C
+      IMUSTRED = 0
+C     New subspace
+C     Calculate subspace Hamiltonian from actual vectors
+C     on disc
+      IF(IPRT.GE.1000) write(6,*) ' Subspace hamiltonian'
+        CALL REWINO(LU1)
+        CALL REWINO(LU3)
+      DO IVEC = 1, NVEC
+C
+CSK        IF(MYPROC.EQ.MASTER) THEN
+CSK          WRITE(6,*) 'IVEC,IMUSTRED',IVEC,IMUSTRED
+CSK        END IF
+        CALL REWINO(LU5)
+        IF(IVEC.LE.NROOT) THEN
+          CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
+        ELSE
+          CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
+        END IF
+C
+        CALL REWINO(LU2)
+        DO JVEC = 1, MIN(IVEC,NROOT)
+CSK          IF(MYPROC.EQ.MASTER) write(6,*)'i am in p1 
+CSK     & MIN(IVEC,NROOT) = ',MIN(IVEC,NROOT)
+          CALL REWINO(LU5)
+          IJ = IVEC*(IVEC-1)/2+JVEC
+          APROJ(IJ) = INPRDD(VEC1,VEC2,LU5,LU2,0,LBLK)
+          IF(IVEC.EQ.1.AND.JVEC.EQ.1) ISTRED = IJ
+          IMUSTRED = IMUSTRED + 1
+        END DO
+        CALL REWINO(LU4)
+        DO JVEC = NROOT+1,IVEC
+CSK          IF(MYPROC.EQ.MASTER) write(6,*)'i am in p2: IVEC,IMUSTRED =',
+CSK     & IVEC,IMUSTRED
+          CALL REWINO(LU5)
+          IJ = IVEC*(IVEC-1)/2+JVEC
+          APROJ(IJ) = INPRDD(VEC1,VEC2,LU5,LU4,0,LBLK)
+          IMUSTRED = IMUSTRED + 1
+        END DO
+      END DO
+      CALL SETVEC(SCRRED,0.0D0,IMUSTRED)
+      starttime = MPI_WTIME()
+      CALL REDVEC(APROJ(ISTRED),SCRRED,IMUSTRED,2,MPI_SUM,
+     &            MPI_COMM_WORLD,-1)
+      endtime = MPI_WTIME()
+      WALLTID = SECTID(endtime-starttime)
+      WRITE(LUWRTOUT,9460)WALLTID,IMUSTRED
+      CALL COPVEC(SCRRED,APROJ(ISTRED),IMUSTRED)
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC    WRITE(6,*)'NVEC,NROOT,IMUSTRED,MYP..',NVEC,NROOT,IMUSTRED,MYPROC
+CCC       IF( myproc .eq. master ) then
+CCC         WRITE(6,*)'THIS IS MY NEW SUBSPACE HAMILTONIAN'
+CCC         CALL WRTMAT(APROJ(ISTRED),1,IMUSTRED,1,IMUSTRED)
+CCC       end if
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+C
+ 9440 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
+     & ',A,I4)
+ 9450 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
+     & ',A,I4)
+ 9460 FORMAT(' >>>  WALL TIME FOR REDUCING APROJ OF LENGTH     :
+     & ',A,I4)
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE DIREC_OPTWRK_2(VEC1,VEC2,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
+     &                          NROOT,MAXVEC,NVEC,APROJ,AVEC,WORK_SP,
+     &                          LBLK,IBKINF,NBLOCKDN,IGROUPLIST,
+     &                          IPROCLIST,IBLOCKI,BSCRFAC,IADD,
+     &                          SCRRED,SCRRED2,LUWRTOUT,
+     &                          NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                          MY_VEC_IOFF,MY_IOFF_125,MY_IOFF_347,
+     &                          NOCOPIES,NBLK_ACT)
+
+C                                                                       
+C     working routine for the generation of a new best direction for 
+C     the c-/s-vectors.        
+C                                                                      
+C     read in of blocks is adapted to batch scheme used also in MV7_PAR,
+C     MPI-FILE I/O is used.
+C
+C     Last revision: S. Knecht           - March  2007
+C                   
+************************************************************************
+#include "implicit.h"
+#include "lucipar.inc"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION VEC1(*), VEC2(*)
+      DIMENSION BSCRFAC(*)
+C     batch structure of the CI vector
+      DIMENSION LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
+      DIMENSION IBKINF(IBLOCKI), NBLOCKDN(IBLOCKI)
+      DIMENSION IPROCLIST(NMPROC), IGROUPLIST(NMPROC)
+      INTEGER ISTRED, IMUSTRED, ISETSCRRED
+      INTEGER NNVEC
+C
+C     Dimensioning required of local vectors
+C     APROJ     : MAXVEC*(MAXVEC+1)/2
+C     AVEC      : MAXVEC ** 2
+C     WORK_SP   : MAXVEC*(MAXVEC+1)/2
+C     SCRRED    : MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
+C     SCRRED2   : MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
+      DIMENSION APROJ(*),AVEC(*),WORK_SP(*), SCRRED(*), SCRRED2(*)
+      REAL*8 INPRDD, INPROD
+      DOUBLE PRECISION tottime,endtime,starttime
+      CHARACTER SECTID*12, WALLTID*12, WALLTIME*12
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_VEC_IOFF
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_125,MY_IOFF_347
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_START_ILU1
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_START_ILU2
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_START_ILU3
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_START_ILU4
+C
+      ISTRED     = 0
+      IMUSTRED   = 0
+      NNVEC      = 0
+      IOFF_SCR   = 0
+C
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      DO II = 1, NMPROC
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC        IF (MYPROC.eq.II-1) THEN 
+CCC           WRITE(6,*) 'THIS IS MY BATCH LENGTH:',MYPROC
+CCC        DO ISBATCH = 1, NBATCH
+CCC   WRITE(6,*) 'Length for batch ISBATCH',ISBATCH,'=',LEBATS(ISBATCH)
+CCC        END DO
+CCC        END IF
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      END DO
+CCC      IF(MYPROC.eq.MASTER+1) THEN
+CCC      IOFF_SCR = MY_IOFF_125
+CCC      DO ISR = 1, NROOT
+CCC      DO ISBATCH = 1, NBATCH
+CCC       call setvec(VEC1,0.0D0,LEBATS(ISBATCH))
+CCC       call mpi_file_read_at(ILU1,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CCC  &                       MPI_REAL8,ISTAT,IERR)
+CCC       write(6,*) 'this is my batch isbatch for lu1',isbatch,IOFF_SCR
+CCC       write(6,*) 'this is  for lu1',isbatch,IOFF_SCR
+CCC       call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CCC       IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH) 
+CCC      END DO
+CCC      END DO
+CCC      ENDIF
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   IOFF_SCR = MY_IOFF_347
+CCC   IF(myproc.eq.master+1) then
+CCC   DO ISR = 1, NOCOPIES
+CCC   DO ISBATCH = 1, NBATCH
+CCC    call mpi_file_read_at(ilu3,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CCC  &                       MPI_REAL8,ISTAT,IERR)
+CCC    write(6,*) 'this is my batch isbatch for lu3',isbatch,IOFF_SCR
+CCC    call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CCC    IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH)
+CCC   END DO
+CCC   END DO
+CCC   end if
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+C
+C     3.1 : Current wave function approximations, collect on ILU5
+C
+      DO IROOT = 1, NROOT
+        CALL MVCSMD_BATCH_PAR(VEC1,VEC2,AVEC((IROOT-1)*NVEC+1),
+     &                        AVEC((IROOT-1)*NVEC+NROOT+1),NROOT,
+     &                        NVEC-NROOT,
+     &                        NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                        MY_VEC_IOFF,MY_IOFF_125,MY_IOFF_347,
+     &                        MY_IOFF_125,NBLK_ACT,LU1,LU3,LU5,IROOT-1)
+*
+        WORK_SP(IROOT) = 1.0D0
+      END DO
+C     Transfer C vectors from ILU5 to ILU1
+      DO IROOT = 1, NROOT
+        CALL COPVCD_BATCH_PAR(VEC1,NBATCH,LBATS,LEBATS,
+     &                        I1BATS,IBATS,MY_VEC_IOFF,
+     &                        MY_IOFF_125,MY_IOFF_125,
+     &                        NBLK_ACT,LU5,LU1,IROOT-1)
+      END DO
+C
+C
+C      IF(MYPROC.EQ.MASTER) THEN
+CSK      IOFF_SCR = MY_IOFF_125
+CSK      WRITE(6,*) 'VECTOR(S) on ILU5',MYPROC
+CSK      DO ISR = 1, NROOT
+CSK      DO ISBATCH = 1, NBATCH
+CSK       call mpi_file_read_at(ilu5,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CSK     &                       MPI_REAL8,ISTAT,IERR)
+CSK       write(6,*) 'this is my batch isbatch for lu5',isbatch,myproc
+CSK       call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CSK       IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH)
+CSK      END DO
+CSK      END DO
+
+C      END IF
+C
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC      IF( MYPROC.EQ.MASTER+1) THEN
+CCC      IOFF_SCR = MY_IOFF_125
+CCC      WRITE(6,*) 'reset VECTOR(S) on ILU1',MYPROC
+CCC      DO ISR = 1, NROOT
+CCC      DO ISBATCH = 1, NBATCH
+CCC       CALL SETVEC(VEC1,0.0D0,LEBATS(ISBATCH))
+CCC       call mpi_file_read_at(ilu1,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CCC  &                       MPI_REAL8,ISTAT,IERR)
+CCC       write(6,*) 'this is my batch isbatch for lu1',isbatch,myproc
+CCC       write(6,*) 'this is the corresponding offset',IOFF_SCR
+CCC       call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CCC       IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH)
+CCC      END DO
+CCC      END DO
+CCC      END IF
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC      IF( MYPROC.EQ.MASTER+1) THEN
+CCC      IOFF_SCR = MY_IOFF_125
+CCC      WRITE(6,*) 'reset VECTOR(S) on ILU5',MYPROC
+CCC      DO ISR = 1, NROOT
+CCC      DO ISBATCH = 1, NBATCH
+CCC       CALL SETVEC(VEC1,0.0D0,LEBATS(ISBATCH))
+CCC       call mpi_file_read_at(ilu1,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CCC  &                       MPI_REAL8,ISTAT,IERR)
+CCC       write(6,*) 'this is my batch isbatch for lu5',isbatch,myproc
+CCC       write(6,*) 'this is the corresponding offset',IOFF_SCR
+CCC       call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CCC       IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH)
+CCC      END DO
+CCC      END DO
+CCC      END IF
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      call abend2('stefan wants me to stop here')
+C                  
+C     3.2 : corresponding sigma vectors
+C
+      DO IROOT = 1, NROOT
+        CALL MVCSMD_BATCH_PAR(VEC1,VEC2,AVEC((IROOT-1)*NVEC+1),
+     &                        AVEC((IROOT-1)*NVEC+NROOT+1),NROOT,
+     &                        NVEC-NROOT,
+     &                        NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                        MY_VEC_IOFF,MY_IOFF_125,MY_IOFF_347,
+     &                        MY_IOFF_125,NBLK_ACT,LU2,LU4,LU5,IROOT-1)
+C
+      END DO
+C     Transfer sigma vectors from ILU5 to ILU2
+      DO IROOT = 1, NROOT
+        CALL COPVCD_BATCH_PAR(VEC1,NBATCH,LBATS,LEBATS,
+     &                        I1BATS,IBATS,MY_VEC_IOFF,
+     &                        MY_IOFF_125,MY_IOFF_125,
+     &                        NBLK_ACT,LU5,LU2,IROOT-1)
+      END DO
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   IF( MYPROC.EQ.MASTER +2 ) THEN
+CCC   IOFF_SCR = MY_IOFF_125
+CCC   WRITE(6,*) 'VECTOR(S) on ILU2',MYPROC
+CCC   DO ISR = 1, NROOT
+CCC   DO ISBATCH = 1, NBATCH
+CCC    call mpi_file_read_at(ilu2,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CCC  &                       MPI_REAL8,ISTAT,IERR)
+CCC    write(6,*) 'this is my batch isbatch for ilu2',isbatch,myproc
+CCC    call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CCC    IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH)
+CCC   END DO
+CCC   END DO
+CCC   END IF
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   write(6,*) 'bye bye'
+CCC   stop
+C
+C     first part ready, go on ...
+C
+      NNVEC = NROOT
+C
+      IF(3*NROOT.LE.MAXVEC) THEN
+C
+C       Orthogonalize the
+C       last set of correction vectors to the current
+C       eigenvectors on LU1, and save on LU2
+C       Overlap with root approximations
+C       Start of last set of trial vectors
+C
+        ISTART = NVEC-NROOT-IADD+1
+CSK        WRITE(6,*) 'I have to skip ISTART-1 vectors on ILU3',
+CSK     &              ISTART-1,MYPROC
+        !****************!
+        DO JVEC = 1, IADD
+        !****************!
+C
+C         calculate offset w.r.t ISTART
+C
+          MY_IOFF_START_ILU3     = 0
+          MY_IOFF_START_ILU3 = MY_IOFF_347 +
+     &                       ( MY_VEC_IOFF * (ISTART - 1) ) +
+     &                       ( MY_VEC_IOFF * (JVEC   - 1) )
+C
+C         Orthogonalize to vectors on LU1 and to trial vectors on LU5
+C
+          CALL ORTHG_VEC_BATCH_PAR(VEC1,VEC2,WORK_SP,SCRRED,SCRRED2,
+     &                             NROOT,JVEC-1,
+     &                             NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                             MY_VEC_IOFF,
+     &                             MY_IOFF_START_ILU3,MY_IOFF_125,
+     &                             MY_IOFF_125,MY_IOFF_347,
+     &                             NBLK_ACT,LU3,LU1,LU5,LU7,LUWRTOUT)
+C
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      IOFF_SCR = MY_IOFF_347 +  (MY_VEC_IOFF * (JVEC -1))
+CSK      WRITE(6,*) 'VECTOR on ILU7',MYPROC
+CSK      DO ISBATCH = 1, NBATCH
+CSK       call mpi_file_read_at(ilu7,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CSK     &                       MPI_REAL8,ISTAT,IERR)
+CSK       write(6,*) 'this is my batch isbatch for lu7',isbatch,myproc
+CSK       call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CSK       IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH)
+CSK      END DO
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+C
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      IF( JVEC-1 .gt. 0) THEN
+CSK      IOFF_SCR = MY_IOFF_125 +  (MY_VEC_IOFF * (JVEC - 2))
+CSK      WRITE(6,*) 'VECTOR on ILU5',MYPROC
+CSK      DO ISBATCH = 1, NBATCH
+CSK       call mpi_file_read_at(ilu5,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CSK     &                       MPI_REAL8,ISTAT,IERR)
+CSK       write(6,*) 'this is my batch isbatch for lu5',isbatch,myproc
+CSK       call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CSK       IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH)
+CSK      END DO
+CSK      END IF
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+C
+          WORK_SP(NROOT+JVEC+(JVEC-1)*2*NROOT) = 1.0D0
+C
+CSK          IF(JVEC-1.GT.0) THEN
+CSK            WRITE(6,*) 'WORK_SP(NROOT+1+(JVEC-1)*2*NROOT) = ',
+CSK     &      WORK_SP(NROOT+1+(JVEC-1)*2*NROOT)
+CSK          WRITE(6,*) 'WORK_SP(1+(JVEC-1)*2*NROOT)) = '
+CSK          CALL WRTMAT(WORK_SP(1+(JVEC-1)*2*NROOT),1,NROOT,1,NROOT)
+CSK          END IF
+CSK          WRITE(6,*) 'WORK_SP(NROOT+1+(JVEC-1)*2*NROOT) = '
+C
+C         current vector to work on has been written to ILU7
+C
+          CALL ORTHG_VEC_BATCH_PAR2(VEC1,VEC2,
+     &                              WORK_SP(1+(JVEC-1)*2*NROOT),
+     &                              WORK_SP(NROOT+1+(JVEC-1)*2*NROOT),
+     &                              NROOT,JVEC-1,
+     &                              NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                              MY_VEC_IOFF,MY_IOFF_125,MY_IOFF_347,
+     &                              MY_IOFF_125,MY_IOFF_125,MY_IOFF_347,
+     &                              NBLK_ACT,LU1,LU7,LU5,
+     &                              LU5,LU3,LUWRTOUT,
+     &                              REDSCR,WORK_SP((JVEC-1)*2*NROOT+1),
+     &                              NROOT+JVEC,IADD)
+C
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      IF( JVEC-1 .eq. 0) THEN
+CSK      IOFF_SCR = MY_IOFF_125 +  (MY_VEC_IOFF * (JVEC - 1))
+CSK      WRITE(6,*) 'VECTOR that has been written to ILU5',MYPROC
+CSK      DO ISBATCH = 1, NBATCH
+CSK       call mpi_file_read_at(ilu5,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CSK     &                       MPI_REAL8,ISTAT,IERR)
+CSK       write(6,*) 'this is my written batch isbatch for lu5',isbatch,
+CSK     &             myproc
+CSK       call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CSK       IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH)
+CSK      END DO
+CSK      END IF
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+        !*****!
+        END DO
+        !*****!
+C       end of loop over orthogonalized directions -- IADD
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      IOFF_SCR = MY_IOFF_347
+CSK      DO JVEC = 1, IADD
+CSK        DO ISBATCH = 1, NBATCH
+CSK          call mpi_file_read_at(ilu3,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CSK     &                         MPI_REAL8,ISTAT,IERR)
+CSK          write(6,*) 'this is my batch isbatch for lu3 and offset',
+CSK     &                isbatch,IOFF_SCR,myproc
+CSK          call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CSK          IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH)
+CSK        END DO
+CSK      END DO
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+C
+C       Sigma vectors corresponding to orthogonalized directions
+C
+CSK        WRITE(6,*) 'I have to skip ISTART-1 vectors on ILU4',
+CSK     &              ISTART-1,MYPROC
+        !****************!
+        DO JVEC = 1, IADD
+        !****************!
+C
+C         calculate offset w.r.t ISTART
+C
+          MY_IOFF_START_ILU4     = 0
+          MY_IOFF_START_ILU4 = MY_IOFF_347 +
+     &                       ( MY_VEC_IOFF * (ISTART - 1) ) +
+     &                       ( MY_VEC_IOFF * (JVEC   - 1) )
+C
+          FACT = WORK_SP(NROOT+JVEC+(JVEC-1)*2*NROOT)
+C?         WRITE(LUWRTOUT,*) 'FACT for LU4 is =', FACT
+C
+C         orthogonalize sigma vectors
+C
+          CALL ORTHG_VEC_BATCH_PAR3(VEC1,VEC2,
+     &                              WORK_SP(1+(JVEC-1)*2*NROOT),FACT,
+     &                              WORK_SP(NROOT+1+(JVEC-1)*2*NROOT),
+     &                              NROOT,JVEC-1,
+     &                              NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                              MY_VEC_IOFF,MY_IOFF_START_ILU4,
+     &                              MY_IOFF_125,MY_IOFF_347,MY_IOFF_347,
+     &                              NBLK_ACT,LU4,LU2,LU4,LU4,
+     &                              LUWRTOUT,IADD)
+C
+C
+        !*****!
+        END DO
+        !*****!
+C       End of loop over orthogonalized directions
+C
+        NNVEC = NROOT + IADD
+C
+      END IF
+C    /\ End if more than NROOT vectors to be reset
+C
+C
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+C
+CSK      WRITE(LUWRTOUT,*)' Additional sigma vectors on LU4',myproc
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      IOFF_SCR = MY_IOFF_347
+CSK      DO JVEC = 1, IADD
+CSK        DO ISBATCH = 1, NBATCH
+CSK          call mpi_file_read_at(ilu4,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CSK     &                         MPI_REAL8,ISTAT,IERR)
+CSK          write(6,*) 'this is my batch isbatch for lu4 and offset',
+CSK     &                isbatch,IOFF_SCR,myproc
+CSK          call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CSK          IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH)
+CSK        END DO
+CSK      END DO
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+CSK      call mpi_barrier(mpi_comm_world,ierr)
+C
+      NVEC = NNVEC
+C
+C     New subspace
+C     Calculate subspace Hamiltonian from actual vectors
+C     on disc
+C
+C     set offsets to 0
+      MY_IOFF_START_ILU1     = 0
+      MY_IOFF_START_ILU3     = 0
+      ISTRED   = 0
+      IMUSTRED = 0
+      ILOOP    = 0
+      ISETSCRRED = 0
+      ISETSCRRED = MAX( ISETSCRRED, MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
+CSK      IF(MYPROC.EQ.MASTER) WRITE(6,*)'THIS IS ISETSCRRED',ISETSCRRED
+      CALL DZERO(SCRRED,ISETSCRRED)
+C
+CSK      write(LUWRTOUT,*) ' Subspace hamiltonian'
+C
+      DO IVEC = 1, NVEC
+C
+C       calculate offset for the corresponding file
+        IF( IVEC .le. NROOT )THEN
+C         start with ILU1
+          MY_IOFF_START_ILU1 = MY_IOFF_125 +
+     &                       ( MY_VEC_IOFF * (IVEC - 1) )
+        ELSE
+C       ... ILU3
+          ILOOP = ILOOP + 1
+C
+          MY_IOFF_START_ILU3 = MY_IOFF_347 + 
+     &                       ( MY_VEC_IOFF * ( ILOOP - 1) )
+        END IF
+C
+CSK        IF(MYPROC.EQ.MASTER) THEN
+CSK          WRITE(6,*) 'IVEC,IMUSTRED',IVEC,IMUSTRED
+CSK        END IF
+C
+        CALL CALC_SUBSPACE_H(VEC1,VEC2,SCRRED,IMUSTRED,IVEC,NROOT,
+     &                       ISTRED,
+     &                       NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                       MY_VEC_IOFF,
+     &                       MY_IOFF_START_ILU1,MY_IOFF_START_ILU3,
+     &                       MY_IOFF_125,MY_IOFF_347,
+     &                       NBLK_ACT,LU1,LU3,LU2,LU4)
+C
+CSK      IF(MYPROC.EQ.MASTER) WRITE(6,*)'THIS IS ISTRED',ISTRED
+      END DO
+C
+C     communicate new subspace hamiltonian ...
+C
+      CALL DZERO(APROJ(ISTRED),IMUSTRED)
+      starttime = MPI_WTIME()
+      CALL REDVEC(SCRRED,APROJ(ISTRED),IMUSTRED,2,MPI_SUM,
+     &            MPI_COMM_WORLD,-1)
+      endtime = MPI_WTIME()
+      WALLTID = SECTID(endtime-starttime)
+      WRITE(LUWRTOUT,9460)WALLTID,IMUSTRED
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   WRITE(6,*)'NVEC,NROOT,IMUSTRED,MYP..',NVEC,NROOT,IMUSTRED,MYPROC
+CCC   IF( myproc .eq. master ) then
+CCC     WRITE(6,*)'THIS IS MY NEW SUBSPACE HAMILTONIAN'
+CCC     CALL WRTMAT(APROJ(ISTRED),1,IMUSTRED,1,IMUSTRED)
+CCC   end if
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      write(luwrtout,*) 'Stefan forced me to stop'
+CCC      call Abend2('i want to test')
+C        ... now copy back!
+         startcopy = MPI_WTIME()
+C        LU1 and LU2 first..
+         CALL REWINO(LU1)
+         CALL REWINO(LU2)
+         DO IROOT = 1, NROOT
+C
+C          find correct offset!
+           MY_IOFF_START_ILU1 = MY_IOFF_125 +
+     &                       ( MY_VEC_IOFF * (IROOT - 1) )
+           MY_IOFF_START_ILU2 = MY_IOFF_125 +
+     &                       ( MY_VEC_IOFF * (IROOT - 1) )
+C
+           CALL COPVC_MPITOS_BDRV(LU1,LU1,VEC1,NBLK_ACT,
+     &                            NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                            MY_IOFF_START_ILU1)
+C
+           CALL COPVC_MPITOS_BDRV(LU2,LU2,VEC1,NBLK_ACT,
+     &                            NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                            MY_IOFF_START_ILU2)
+C
+         END DO
+C
+         CALL REWINO(LU3)
+         CALL REWINO(LU4)
+C        ICOPY vectors on LU3 and LU4
+C
+         DO IVEC = 1, NOCOPIES
+C
+           MY_IOFF_START_ILU3 = MY_IOFF_347 +
+     &                       ( MY_VEC_IOFF * (IVEC - 1) )
+           MY_IOFF_START_ILU4 = MY_IOFF_347 +
+     &                       ( MY_VEC_IOFF * (IVEC - 1) )
+C
+           CALL COPVC_MPITOS_BDRV(LU3,LU3,VEC1,NBLK_ACT,
+     &                            NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                            MY_IOFF_START_ILU3)
+C
+           CALL COPVC_MPITOS_BDRV(LU4,LU4,VEC1,NBLK_ACT,
+     &                            NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                            MY_IOFF_START_ILU4)
+C
+         END DO
+         finishcopy = MPI_WTIME()
+         IF ( IPRINTSTAT .eq. 1 ) then
+           WALLTIME = SECTID(finishcopy-startcopy)
+           WRITE(LUWRTOUT,9470) WALLTIME
+         END IF
+C
+ 9440 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
+     & ',A,I4)
+ 9450 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
+     & ',A,I4)
+ 9460 FORMAT(' >>>  WALL TIME FOR REDUCING APROJ OF LENGTH     :
+     & ',A,I4)
+ 9470 FORMAT(' >>>  WALL TIME FOR COPY ROUTINES MPI --> SQ     :
+     & ',A)
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE DIREC_OPTWRK_3(VEC1,VEC2,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
+     &                          NROOT,MAXVEC,NVEC,APROJ,AVEC,WORK_SP,
+     &                          LBLK,IBKINF,NBLOCKDN,IGROUPLIST,
+     &                          IPROCLIST,IBLOCKI,BSCRFAC,IADD,
+     &                          SCRRED,SCRRED2,LUWRTOUT,
+     &                          NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                          MY_VEC_IOFF,MY_IOFF_125,MY_IOFF_347,
+     &                          NOCOPIES,
+     &                          MY_INT_IOFF_125,MY_INT_IOFF_347,
+     &                          NBLK_ACT,
+     &                          IVCOFF_1,IVCOFF_2,IVCOFF_5,
+     &                          IVCOFF_3,IVCOFF_4,IVCOFF_7)
+
+C                                                                       
+C     working routine for the generation of a new best direction for 
+C     the c-/s-vectors. Adopted for use of INTEGER arrays instead of a 
+C     MPI-INTEGER file.
+C                                                                      
+C     read in of blocks is adapted to batch scheme used also in MV7_PAR,
+C     MPI-FILE I/O is used.
+C
+C     Last revision: S. Knecht           - April  2007
+C                   
+************************************************************************
+#include "implicit.h"
+#include "lucipar.inc"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION VEC1(*), VEC2(*)
+      DIMENSION BSCRFAC(*)
+C     batch structure of the CI vector
+      DIMENSION LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
+      DIMENSION IBKINF(IBLOCKI), NBLOCKDN(IBLOCKI)
+      DIMENSION IPROCLIST(NMPROC), IGROUPLIST(NMPROC)
+      DIMENSION IVCOFF_1(*),IVCOFF_2(*),IVCOFF_5(*)
+      DIMENSION IVCOFF_3(*),IVCOFF_4(*),IVCOFF_7(*)
+      INTEGER ISTRED, IMUSTRED, ISETSCRRED
+      INTEGER NNVEC
+C
+C     Dimensioning required of local vectors
+C     APROJ     : MAXVEC*(MAXVEC+1)/2
+C     AVEC      : MAXVEC ** 2
+C     WORK_SP   : MAXVEC*(MAXVEC+1)/2
+C     SCRRED    : MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
+C     SCRRED2   : MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
+C
+      DIMENSION APROJ(*),AVEC(*),WORK_SP(*), SCRRED(*), SCRRED2(*)
+      DOUBLE PRECISION tottime,endtime,starttime
+      CHARACTER SECTID*12, WALLTID*12, WALLTIME*12
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_VEC_IOFF
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_125,MY_IOFF_347
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_START_ILU1
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_START_ILU2
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_START_ILU3
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_START_ILU4
+C
+      ISTRED     = 0
+      IMUSTRED   = 0
+      NNVEC      = 0
+      IOFF_SCR   = 0
+C
+C     3.1 : Current wave function approximations, collect on ILU5
+C
+      DO IROOT = 1, NROOT
+C        
+        CALL MVCSMD_BATCH_PAR_USE_IA(VEC1,VEC2,AVEC((IROOT-1)*NVEC+1),
+     &                               AVEC((IROOT-1)*NVEC+NROOT+1),NROOT,
+     &                               NVEC-NROOT,
+     &                               NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                               MY_VEC_IOFF,MY_IOFF_125,
+     &                               MY_IOFF_347,MY_IOFF_125,
+     &                               NBLK_ACT,LU1,LU3,LU5,
+     &                               IROOT-1,IVCOFF_1,IVCOFF_3,IVCOFF_5)
+C
+        WORK_SP(IROOT) = 1.0D0
+      END DO
+C     Transfer C vectors from ILU5 to ILU1
+      DO IROOT = 1, NROOT
+        CALL COPVCD_BATCH_PAR2(VEC1,NBATCH,LBATS,LEBATS,
+     &                         I1BATS,IBATS,MY_VEC_IOFF,
+     &                         MY_IOFF_125,MY_IOFF_125,
+     &                         NBLK_ACT,LU5,LU1,
+     &                         IROOT-1,IVCOFF_5,IVCOFF_1)
+      END DO
+C                  
+C     3.2 : corresponding sigma vectors
+C
+      DO IROOT = 1, NROOT
+C
+        CALL MVCSMD_BATCH_PAR_USE_IA(VEC1,VEC2,AVEC((IROOT-1)*NVEC+1),
+     &                               AVEC((IROOT-1)*NVEC+NROOT+1),NROOT,
+     &                               NVEC-NROOT,
+     &                               NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                               MY_VEC_IOFF,MY_IOFF_125,
+     &                               MY_IOFF_347,MY_IOFF_125,
+     &                               NBLK_ACT,LU2,LU4,
+     &                               LU5,IROOT-1,
+     &                               IVCOFF_2,IVCOFF_4,IVCOFF_5)
+C
+      END DO
+C     Transfer sigma vectors from ILU5 to ILU2
+      DO IROOT = 1, NROOT
+        CALL COPVCD_BATCH_PAR2(VEC1,NBATCH,LBATS,LEBATS,
+     &                         I1BATS,IBATS,MY_VEC_IOFF,
+     &                         MY_IOFF_125,MY_IOFF_125,
+     &                         NBLK_ACT,LU5,LU2,
+     &                         IROOT-1,IVCOFF_5,IVCOFF_2)
+      END DO
+C
+C     first part ready, go on ...
+C
+C
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   IF( MYPROC.EQ.MASTER +2 ) THEN
+CCC   IOFF_SCR = MY_IOFF_125
+CCC   WRITE(6,*) 'VECTOR(S) on ILU2',MYPROC
+CCC   DO ISR = 1, NROOT
+CCC   DO ISBATCH = 1, NBATCH
+CCC    call mpi_file_read_at(ilu2,IOFF_SCR,VEC1,LEBATS(ISBATCH),
+CCC  &                       MPI_REAL8,ISTAT,IERR)
+CCC    write(6,*) 'this is my batch isbatch for ilu2',isbatch,myproc
+CCC    call wrtmat(VEC1,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CCC    IOFF_SCR = IOFF_SCR + LEBATS(ISBATCH)
+CCC   END DO
+CCC   END DO
+CCC   END IF
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC   write(6,*) 'bye bye'
+CCC   stop
+C
+      NNVEC = NROOT
+C
+      IF(3*NROOT.LE.MAXVEC) THEN
+C
+C       Orthogonalize the
+C       last set of correction vectors to the current
+C       eigenvectors on LU1, and save on LU2
+C       Overlap with root approximations
+C       Start of last set of trial vectors
+C
+        ISTART = NVEC-NROOT-IADD+1
+CSK        WRITE(6,*) 'I have to skip ISTART-1 vectors on ILU3',
+CSK     &              ISTART-1,MYPROC
+        !****************!
+        DO JVEC = 1, IADD
+        !****************!
+C
+C         calculate offset w.r.t ISTART
+C
+          MY_IOFF_START_ILU3     = 0
+          MY_IOFF_START_INT_ILU3 = 0
+          MY_IOFF_START_ILU3 = MY_IOFF_347 +
+     &                       ( MY_VEC_IOFF * (ISTART - 1) ) +
+     &                       ( MY_VEC_IOFF * (JVEC   - 1) )
+C
+          MY_IOFF_START_INT_ILU3 = ( NBLK_ACT * (ISTART - 1) )
+     &                           + ( NBLK_ACT * (JVEC   - 1) )
+     &                           + 1
+C
+C         Orthogonalize to vectors on LU1 and to trial vectors on LU5
+C
+          CALL ORTHG_VEC_BATCH_PAR_USE_IA(VEC1,VEC2,WORK_SP,SCRRED,
+     &                                    SCRRED2,NROOT,JVEC-1,
+     &                                    NBATCH,LBATS,LEBATS,
+     &                                    I1BATS,IBATS,
+     &                                    MY_VEC_IOFF,
+     &                                    MY_IOFF_START_ILU3,
+     &                                    MY_IOFF_125,MY_IOFF_125,
+     &                                    MY_IOFF_347,NBLK_ACT,
+     &                                    LU3,LU1,LU5,LU7,LUWRTOUT,
+     &                                    MY_IOFF_START_INT_ILU3,
+     &                                    IVCOFF_3,IVCOFF_1,IVCOFF_5,
+     &                                    IVCOFF_7)
+C
+C
+          WORK_SP(NROOT+JVEC+(JVEC-1)*2*NROOT) = 1.0D0
+C
+C         current vector to work on has been written to ILU7
+C
+          CALL ORTHG_VEC_BATCH_PAR2_USE_IA(VEC1,VEC2,
+     &                                     WORK_SP(1+(JVEC-1)*2*NROOT),
+     &                                WORK_SP(NROOT+1+(JVEC-1)*2*NROOT),
+     &                                     NROOT,JVEC-1,NBATCH,LBATS,
+     &                                     LEBATS,I1BATS,IBATS,
+     &                                     MY_VEC_IOFF,MY_IOFF_125,
+     &                                     MY_IOFF_347,MY_IOFF_125,
+     &                                     MY_IOFF_125,MY_IOFF_347,
+     &                                     NBLK_ACT,
+     &                                     LU1,LU7,LU5,LU5,LU3,LUWRTOUT,
+     &                                     REDSCR,
+     &                                     WORK_SP((JVEC-1)*2*NROOT+1),
+     &                                     NROOT+JVEC,IADD,
+     &                                     IVCOFF_1,IVCOFF_7,IVCOFF_5,
+     &                                     IVCOFF_5,IVCOFF_3)
+C
+        !*****!
+        END DO
+        !*****!
+C       end of loop over orthogonalized directions -- IADD
+C
+C       Sigma vectors corresponding to orthogonalized directions
+C
+CSK        WRITE(6,*) 'I have to skip ISTART-1 vectors on ILU4',
+CSK     &              ISTART-1,MYPROC
+        !****************!
+        DO JVEC = 1, IADD
+        !****************!
+C
+C         calculate offset w.r.t ISTART
+C
+          MY_IOFF_START_ILU4     = 0
+          MY_IOFF_START_INT_ILU4 = 0
+          MY_IOFF_START_ILU4 = MY_IOFF_347 +
+     &                       ( MY_VEC_IOFF * (ISTART - 1) ) +
+     &                       ( MY_VEC_IOFF * (JVEC   - 1) )
+C
+          MY_IOFF_START_INT_ILU4 = 1 +
+     &                           ( NBLK_ACT * (ISTART - 1) ) +
+     &                           ( NBLK_ACT * (JVEC   - 1) )
+C
+          FACT = WORK_SP(NROOT+JVEC+(JVEC-1)*2*NROOT)
+C?         WRITE(LUWRTOUT,*) 'FACT for LU4 is =', FACT
+C
+C         orthogonalize sigma vectors
+C
+          CALL ORTHG_VEC_BATCH_PAR3_USE_IA(VEC1,VEC2,
+     &                                     WORK_SP(1+(JVEC-1)*2*NROOT),
+     &                                     FACT,
+     &                                WORK_SP(NROOT+1+(JVEC-1)*2*NROOT),
+     &                                     NROOT,JVEC-1,
+     &                                     NBATCH,LBATS,LEBATS,
+     &                                     I1BATS,IBATS,
+     &                                     MY_VEC_IOFF,
+     &                                     MY_IOFF_START_ILU4,
+     &                                     MY_IOFF_125,MY_IOFF_347,
+     &                                     MY_IOFF_347,
+     &                                     NBLK_ACT,
+     &                                     LU4,LU2,LU4,LU4,LUWRTOUT,
+     &                                     IADD,MY_IOFF_START_INT_ILU4,
+     &                                     IVCOFF_4,IVCOFF_2,
+     &                                     IVCOFF_4,IVCOFF_4)
+C
+        !*****!
+        END DO
+        !*****!
+C       End of loop over orthogonalized directions
+C
+        NNVEC = NROOT + IADD
+C
+      END IF
+C    /\ End if more than NROOT vectors to be reset
+C
+C
+      NVEC = NNVEC
+C
+C     New subspace
+C     Calculate subspace Hamiltonian from actual vectors
+C     on disc
+C
+C     set offsets to 0
+      MY_IOFF_START_ILU1     = 0
+      MY_IOFF_START_INT_ILU1 = 0
+      MY_IOFF_START_ILU3     = 0
+      MY_IOFF_START_INT_ILU3 = 0
+      ISTRED   = 0
+      IMUSTRED = 0
+      ILOOP    = 0
+      ISETSCRRED = 0
+      ISETSCRRED = MAX( ISETSCRRED, MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
+CSK      IF(MYPROC.EQ.MASTER) WRITE(6,*)'THIS IS ISETSCRRED',ISETSCRRED
+      CALL DZERO(SCRRED,ISETSCRRED)
+C
+CSK      write(LUWRTOUT,*) ' Subspace hamiltonian'
+C
+      DO IVEC = 1, NVEC
+C
+C       calculate offset for the corresponding file
+        IF( IVEC .le. NROOT )THEN
+C         start with ILU1
+          MY_IOFF_START_ILU1 = MY_IOFF_125 +
+     &                       ( MY_VEC_IOFF * (IVEC - 1) )
+          MY_IOFF_START_INT_ILU1 = 1 +
+     &                          ( NBLK_ACT * (IVEC - 1) )
+        ELSE
+C       ... ILU3
+          ILOOP = ILOOP + 1
+C
+          MY_IOFF_START_ILU3 = MY_IOFF_347 + 
+     &                       ( MY_VEC_IOFF * ( ILOOP - 1) )
+          MY_IOFF_START_INT_ILU3 = 1 + 
+     &                          ( NBLK_ACT * ( ILOOP - 1) )
+        END IF
+C
+CSK        IF(MYPROC.EQ.MASTER) THEN
+CSK          WRITE(6,*) 'IVEC,IMUSTRED',IVEC,IMUSTRED
+CSK        END IF
+C
+        CALL CALC_SUBSPACE_H_USE_IA(VEC1,VEC2,SCRRED,IMUSTRED,
+     &                              IVEC,NROOT,ISTRED,NBATCH,LBATS,
+     &                              LEBATS,I1BATS,IBATS,
+     &                              MY_VEC_IOFF,
+     &                              MY_IOFF_START_ILU1,
+     &                              MY_IOFF_START_ILU3,
+     &                              MY_IOFF_125,MY_IOFF_347,
+     &                              NBLK_ACT,
+     &                              LU1,LU3,LU2,LU4,
+     &                              MY_IOFF_START_INT_ILU1,
+     &                              MY_IOFF_START_INT_ILU3,
+     &                              IVCOFF_1,IVCOFF_3,
+     &                              IVCOFF_2,IVCOFF_4,IVCOFF_5)
+C
+CSK      IF(MYPROC.EQ.MASTER) WRITE(6,*)'THIS IS ISTRED',ISTRED
+      END DO
+C
+C     communicate new subspace hamiltonian ...
+C
+      CALL DZERO(APROJ(ISTRED),IMUSTRED)
+      starttime = MPI_WTIME()
+      CALL REDVEC(SCRRED,APROJ(ISTRED),IMUSTRED,2,MPI_SUM,
+     &            MPI_COMM_WORLD,-1)
+      endtime = MPI_WTIME()
+      WALLTID = SECTID(endtime-starttime)
+      WRITE(LUWRTOUT,9460)WALLTID,IMUSTRED
+CCC   IF( myproc .eq. master ) then
+CCC     WRITE(6,*)'THIS IS MY NEW SUBSPACE HAMILTONIAN'
+CCC     CALL WRTMAT(APROJ(ISTRED),1,IMUSTRED,1,IMUSTRED)
+CCC   end if
+CCC   call mpi_barrier(mpi_comm_world,ierr)
+CCC      call mpi_barrier(mpi_comm_world,ierr)
+CCC      write(luwrtout,*) 'Stefan forced me to stop'
+CCC      call Abend2('i want to test')
+C     ... now copy back!
+      startcopy = MPI_WTIME()
+C     LU1 and LU2 first..
+      CALL REWINO(LU1)
+      CALL REWINO(LU2)
+      DO IROOT = 1, NROOT
+C
+C       find correct offset!
+        MY_IOFF_START_ILU1 = MY_IOFF_125 +
+     &                    ( MY_VEC_IOFF * (IROOT - 1) )
+        MY_IOFF_START_INT_ILU1 = 1 +
+     &                       ( NBLK_ACT * (IROOT - 1) )
+        MY_IOFF_START_ILU2 = MY_IOFF_125 +
+     &                    ( MY_VEC_IOFF * (IROOT - 1) )
+        MY_IOFF_START_INT_ILU2 = 1 +
+     &                       ( NBLK_ACT * (IROOT - 1) )
+C
+        CALL COPVC_MPITOS_BDRV2(LU1,LU1,VEC1,NBLK_ACT,
+     &                          NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                          MY_IOFF_START_ILU1,
+     &                          MY_IOFF_START_INT_ILU1,IVCOFF_1)
+C
+        CALL COPVC_MPITOS_BDRV2(LU2,LU2,VEC1,NBLK_ACT,
+     &                          NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                          MY_IOFF_START_ILU2,
+     &                          MY_IOFF_START_INT_ILU2,IVCOFF_2)
+C
+      END DO
+C
+      CALL REWINO(LU3)
+      CALL REWINO(LU4)
+C     ICOPY vectors on LU3 and LU4
+C
+      DO IVEC = 1, NOCOPIES
+C
+        MY_IOFF_START_ILU3 = MY_IOFF_347 +
+     &                    ( MY_VEC_IOFF * (IVEC - 1) )
+        MY_IOFF_START_INT_ILU3 = 1 +
+     &                       ( NBLK_ACT * (IVEC - 1) )
+        MY_IOFF_START_ILU4 = MY_IOFF_347 +
+     &                    ( MY_VEC_IOFF * (IVEC - 1) )
+        MY_IOFF_START_INT_ILU4 = 1 +
+     &                       ( NBLK_ACT * (IVEC - 1) )
+C
+        CALL COPVC_MPITOS_BDRV2(LU3,LU3,VEC1,NBLK_ACT,
+     &                          NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                          MY_IOFF_START_ILU3,
+     &                          MY_IOFF_START_INT_ILU3,IVCOFF_3)
+C
+        CALL COPVC_MPITOS_BDRV2(LU4,LU4,VEC1,NBLK_ACT,
+     &                          NBATCH,LBATS,LEBATS,I1BATS,IBATS,
+     &                          MY_IOFF_START_ILU4,
+     &                          MY_IOFF_START_INT_ILU4,IVCOFF_4)
+C
+      END DO
+      finishcopy = MPI_WTIME()
+      IF ( IPRINTSTAT .eq. 1 ) THEN
+        WALLTIME = SECTID(finishcopy-startcopy)
+        WRITE(LUWRTOUT,9470) WALLTIME
+      END IF
+C
+ 9440 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
+     & ',A,I4)
+ 9450 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
+     & ',A,I4)
+ 9460 FORMAT(' >>>  WALL TIME FOR REDUCING APROJ OF LENGTH     :
+     & ',A,I4)
+ 9470 FORMAT(' >>>  WALL TIME FOR COPY ROUTINES MPI --> SQ     :
+     & ',A)
+C
+      END
+C
 #else
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
       SUBROUTINE PAR_DUMMY
+C     dummy routine for normal compilation.
       END 
 #endif /* defined (VAR_MPI)*/

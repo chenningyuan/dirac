@@ -89,7 +89,6 @@ C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
       dimension ISYMS(MXPIRR),IPROCLIST(NMPROC)
-      INTEGER IDISTROUTE
 *
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GASCI ')
       NTEST = 0
@@ -193,26 +192,28 @@ CSKT      WRITE(LUOUT,'(1X,A,1X,I20)')
 CSKT     & 'MXNTTS**2 in GASCI',MXNTTS**2
       
 C     we want to keep three blocks in memory at the same time
-C     CB,SB,VEC3(=C2). estimated scratch memory: 500 000 real*8
-C     subtraction by a factor of MXNTTS**2 because of the current 
-C     allocation of a matrix(nblock,nblock)! 4 = safety!
-      L2BLOCK = (L2BLOCK - 1 500 000 - (MXNTTS**2))/4
+C     CB,SB,VEC3(=C2). estimated scratch memory: 3 000 000 real*8
+C     division by a factor of 4 = safety!
+CSKold      L2BLOCK = (L2BLOCK - 1 500 000 - (MXNTTS**2))/4
+      L2BLOCK = (L2BLOCK - 3 000 000 )/4
 
-C     IF (IPRNT.GE.5) THEN
+      IF (IPRNT.GE.5) THEN
         WRITE(LUOUT,*) '  NVAR in GASCI         ', NVAR
         WRITE(LUOUT,*) '  L0BLOCK,L1BLOCK,L2BLOCK,LCSBLK ',
      &                    L0BLOCK,L1BLOCK,L2BLOCK,LCSBLK
-C     END IF
+      END IF
 
 C     L1BLOCK = MIN(L1BLOCK,LCSBLK,L2BLOCK)
       L2BLOCK = MIN(LCSBLK,L2BLOCK)
 C     LBLOCK  = MAX(L0BLOCK,L1BLOCK)
+CtestBATCHES      LBLOCK  = MIN(L0BLOCK,L2BLOCK)
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
-      WRITE(LUOUT,*) '  LBLOCK in GASCI       ', LBLOCK
+Cactual      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+CSK      WRITE(LUOUT,*) '  LBLOCK in GASCI       ', LBLOCK
 Cold     LBLOCK = MAX(LBLOCK,LCSBLK)
 *
-*. Information about block structure- needed by new PICO2 routine.
-*. Memory for partitioning of C vector
+C     Information about block structure- needed by new PICO2 routine.
+C     Memory for partitioning of C vector
       IATP = 1
       IBTP = 2
       NOCTPA = NOCTYP(IATP)
@@ -223,53 +224,83 @@ Cold     LBLOCK = MAX(LBLOCK,LCSBLK)
       CALL MEMMAN(KLCI1BT,NTTS  ,'ADDL  ',1,'CI1BT ')
       CALL MEMMAN(KLCIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
       CALL MEMMAN(KLC2B  ,  NTTS,'ADDL  ',1,'C2BT  ')
-*. Additional info required to construct partitioning
-*
-*
+C
+C     Additional info required to construct partitioning
+C
       CALL MEMMAN(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
       CALL MEMMAN(KLCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
-*
+C
       CALL IAIBCM(ISPC,WORK(KLCIOIO))
 CTF
-* The last argument in the call to ZBLTP is undefined in
-* the original code (at least in gasci). So we initialize
-* a zero array here with the length of the number of
-* symmetries here.
+C     The last argument in the call to ZBLTP is undefined in
+C     the original code (at least in gasci). So we initialize
+C     a zero array here with the length of the number of
+C     symmetries here.
 CTF
       call isetvc(ISYMS,0,NSMST)
       CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,WORK(KLCBLTP),ISYMS)
-*
-*. Batches  of C vector
+C     batches  of C vector
       ITTSS_ORD = 2
-c     DELTA_LBLOCK = (L1BLOCK-L0BLOCK)/10
-c     NBATCH = 0
-c     ISTOP = 0
-c 100 CONTINUE
-c     NBATCH_OLD = NBATCH
       CALL PART_CIV2(IDC,WORK(KLCBLTP),WORK(KNSTSO(IATP)),
      &              WORK(KNSTSO(IBTP)),
      &              NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLCIOIO),
      &              ISMOST(1,ISM),
      &              NBATCH,WORK(KLCLBT),WORK(KLCLEBT),
      &              WORK(KLCI1BT),WORK(KLCIBT),0,ITTSS_ORD)
-c     write (luwrtout,*) 'nbatch_old,nbatch =',nbatch_old,nbatch
-c     IF (LBLOCK .GT. L0BLOCK) THEN
-c     IF (NBATCH .GT. NMPROC .AND. NBATCH .LT. 2*NMPROC) THEN
-c     IF (LBLOCK - DELTA_LBLOCK .GE. L0BLOCK) THEN
-c        LBLOCK = LBLOCK - DELTA_LBLOCK
-c        GO TO 100
-c     END IF
-c     END IF
-c     END IF
-*. Number of BLOCKS
-        NBLOCK = IFRMR(WORK(KLCI1BT),1,NBATCH)
-     &         + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
-        WRITE(LUWRTOUT,*) ' Number of blocks ', NBLOCK
-        WRITE(LUWRTOUT,*) ' Number of batches ', NBATCH
+C     Number of BLOCKS
+      NBLOCK = IFRMR(WORK(KLCI1BT),1,NBATCH)
+     &       + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
+      WRITE(LUWRTOUT,*) ' Number of blocks ', NBLOCK
+CSKold      WRITE(LUWRTOUT,*) ' Number of batches ', NBATCH
       CALL MEMMAN(KLCI1BTSCR,NTTS  ,'ADDL  ',1,'CI1BTS')
       CALL COPVEC(WORK(KLCI1BT),WORK(KLCI1BTSCR),NTTS)
-*. Length of each block
+C     length of each block
       CALL EXTRROW(WORK(KLCIBT),8,8,NBLOCK,WORK(KLCI1BT))
+C
+C     check connections between sigma and c-blocks
+C
+      CALL MEMMAN(KBSCLFC,NBLOCK,'ADDL  ',2,'BSCLFC')
+      CALL MEMMAN(KBLCKIF,NBLOCK,'ADDS  ',1,'IBLINF')
+      CALL COPVEC(WORK(KLCI1BT),WORK(KBLCKIF),NBLOCK)
+#if defined (VAR_MPI)
+      CALL MEMMAN(KIBTOTW,NBLOCK,'ADDS  ',2,'IBTOTW')
+      CALL MEMMAN(KCWEIGHT,NBLOCK,'ADDS  ',1,'ICWHT  ')
+      CALL MEMMAN(KCWEIGHTF,NBLOCK,'ADDS  ',1,'ICWHTF  ')
+      CALL ISETVC(WORK(KCWEIGHT),NNULL,NBLOCK)
+      CALL ISETVC(WORK(KCWEIGHTF),NNULL,NBLOCK)
+#endif
+C     arrays for block distribution among cpu's (parallel run),
+C     some more scratch arrays needed for communication in the 
+C     diagonalizer
+      CALL MEMMAN(KBLCKPD,NBLOCK,'ADDS  ',1,'IBLCKP')
+      CALL MEMMAN(KBLCKWT,2*NMPROC,'ADDS  ',1,'IBLCKW')
+      CALL ISETVC(WORK(KBLCKWT),NNULL,2*NMPROC)
+      IMIN2 = -2
+      CALL ISETVC(WORK(KBLCKPD),IMIN2,NBLOCK)
+      IMAXALLO = MAX(MXCIV**2,MXCIV*(MXCIV+1)/2)
+      CALL MEMMAN(KSCRREDSP,2*IMAXALLO,'ADDL  ',2,'SCRRED')
+C     Allocate with maximal group size = NMPROC
+      CALL MEMMAN(KGROUPLIST,NMPROC,'ADDS  ',1,'GROUPL')
+      CALL ISETVC(WORK(KGROUPLIST),NNULL,NMPROC)
+C
+C     allocate new array that replaces global ICCTOS
+C
+      CALL MEMMAN(KRCCTOS,NBLOCK,'ADDS  ',2,'RCCTOS')
+      CALL DZERO(WORK(KRCCTOS),NBLOCK)
+C
+C     find optimal block distribution among cpu's
+C
+      IF( IPRNT .ge. 5 )
+     &   WRITE(LUWRTOUT,*) 'I am using IDISTROUTE = ', IDISTROUTE,MYPROC
+C
+#if defined (VAR_MPI)
+      IF(IODENSEPAR.GT.0) THEN
+        CALL BLOCK_DISTR_DRV(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
+     &                       WORK(KCWEIGHTF),WORK(KIBTOTW),
+     &                       WORK(KBLCKWT),WORK(KRCCTOS),WORK(KBSCLFC),
+     &                       WORK(KCWEIGHT),NVAR,IPROCLIST)
+      END IF
+#endif
 *. Class divisions of  dets
 *. ( Well, in principle I am against class division, but I
 *    realize that it is a fact so ...)
@@ -387,71 +418,19 @@ C?      WRITE(6,*) ' MAXB1 2', MAXB1
      &  WRITE(LUWRTOUT,*) ' Space for resolution matrices ',LSCR2
 *. for Passive/active division
         LSCR12 = MAX(LBLOCK,2*LSCR2)
-        WRITE(LUWRTOUT,*) 'LSCR12 is max(LBLOCK,2*LSCR2) is ',LSCR12
+CSK        WRITE(LUWRTOUT,*) 'LSCR12 is max(LBLOCK,2*LSCR2) is ',LSCR12
 C       LSCR12 = MAX(LBLOCK,4*LSCR2)
         CALL MEMMAN(KVEC3,LSCR12,'ADDL  ',2,'KC2   ')
       END IF
-CSK      IF(MYPROC.EQ.MASTER)THEN
-CSK         WRITE(6,*)'LBLOCK = ',LBLOCK
-CSK      END IF
-      WRITE(LUOUT,*) '  LBLOCK in GASCI MEMMAN', LBLOCK
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
-* let us check the connections between sigma and c-blocks
-      CALL MEMMAN(KBSCLFC,NBLOCK,'ADDL  ',2,'BSCLFC')
-      CALL MEMMAN(KBLCKIF,NBLOCK,'ADDS  ',1,'IBLINF')
-      CALL COPVEC(WORK(KLCI1BT),WORK(KBLCKIF),NBLOCK)
-      CALL MEMMAN(KICCTOS,NBLOCK**2,'ADDS  ',1,'ICCTOS')
-C     CALL MEMMAN(KICCTOS,2*NBLOCK,'ADDS  ',1,'ICCTOS')
-C     CALL ISETVC(WORK(KICCTOS),NNULL,NBLOCK*2)
-      CALL ISETVC(WORK(KICCTOS),NNULL,NBLOCK**2)
-#if defined (VAR_MPI)
-      CALL MEMMAN(KIBTOTW,NBLOCK,'ADDS  ',2,'IBTOTW')
-      CALL MEMMAN(KCWEIGHT,NBLOCK,'ADDS  ',1,'ICWHT  ')
-      CALL MEMMAN(KCWEIGHTF,NBLOCK,'ADDS  ',1,'ICWHTF  ')
-      CALL ISETVC(WORK(KCWEIGHT),NNULL,NBLOCK)
-      CALL ISETVC(WORK(KCWEIGHTF),NNULL,NBLOCK)
-      CALL FIND_IMAT_SC(WORK(KBLCKIF),WORK(KBSCLFC),WORK(KICCTOS),
-     &                  WORK(KCWEIGHT),WORK(KIBTOTW),WORK(KCWEIGHTF),
-     &                  NBLOCK)
-#endif
-C     allocation of c <--> sigma connection matrix,
-C     block distribution among cpu's (parallel run),
-C     and some scratch arrays needed for communication in the 
-C     diagonalizer
-      CALL MEMMAN(KBLCKPD,NBLOCK,'ADDS  ',1,'IBLCKP')
-      CALL MEMMAN(KBLCKWT,2*NMPROC,'ADDS  ',1,'IBLCKW')
-      CALL ISETVC(WORK(KBLCKWT),NNULL,2*NMPROC)
-      IMIN2 = -2
-      CALL ISETVC(WORK(KBLCKPD),IMIN2,NBLOCK)
-      IMAXALLO = MAX(MXCIV**2,MXCIV*(MXCIV+1)/2)
-      CALL MEMMAN(KSCRREDSP,2*IMAXALLO,'ADDL  ',2,'SCRRED')
-C     Allocate with maximal group size = NMPROC
-      CALL MEMMAN(KGROUPLIST,NMPROC,'ADDS  ',1,'GROUPL')
-      CALL ISETVC(WORK(KGROUPLIST),NNULL,NMPROC)
 CSK
 *
 *. CI diagonal - if required
 CSK       WRITE(6,*)'ICISTR',ICISTR
       IF(MYPROC.EQ.MASTER) WRITE(6,'(1X,A,1X,I10)')
-     & 'largest block in CI-expansion',LBLOCK
+     & 'largest vector block in CI-expansion',LBLOCK
 *
-#if defined (VAR_MPI)
-      IDISTROUTE = 1
-      IF(IODENSEPAR.GT.0) THEN
-        IF(IDISTROUTE.EQ.1) THEN
-          CALL DISTBLKND_3(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
-     &                   WORK(KBLCKWT),NBATCH,WORK(KLCLBT),
-     &                   WORK(KLCLEBT),WORK(KLCI1BTSCR))
-CSK                      WORK(KLCI1BT))
-*. DISTBLKND_2 is only working if PRINT_BATCH_INFO in FIND_IMAT_SC is enabled!
-*:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        ELSE
-          CALL DISTBLKND_2(NBLOCK,WORK(KICCTOS),WORK(KCWEIGHTF),
-     &                     WORK(KBLCKPD),WORK(KIBTOTW),WORK(KBLCKWT))
-        END IF
-      END IF
-#endif
       IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
       END IF
@@ -586,7 +565,7 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
      &     LBLOCK,IROOTHOMING,WORK(KLBASSPC),WORK(KLEBASC),
      &     WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,ISPC,LUWRTOUT,
      &     WORK(KBSCLFC),WORK(KBLCKIF),NBLOCK,WORK(KBLCKPD),
-     &     WORK(KBLCKWT),WORK(KSCRREDSP),WORK(KICCTOS),IPROCLIST,
+     &     WORK(KBLCKWT),WORK(KSCRREDSP),WORK(KRCCTOS),IPROCLIST,
      &     WORK(KGROUPLIST))
       EREF = EROOT(IRFROOT)
 C?    WRITE(6,*) ' Memcheck after CIEIG5'
@@ -834,27 +813,26 @@ C      CALL SLASK
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*
+C
       SUBROUTINE PAMLUCITA(WRK,LWRK)
-*
-* L U C I A
-*
-*
-* CI for program for :FCI
-*                     RASCI
-*                     MRSDCI
-*                     GAS GAS GAS GAS GAS GAS
-*
-* Written by Jeppe Olsen , winter of 1991
-*                          GAS version in action summer of 95
-* 
-* Modification wrt to a parallel version
-* by Stefan Knecht in spring - summer of 2006
-*
-* This routine is originally called from the Dirac menu.
-* In the case of a parallel run, the relevant nodes will be 
-* waken up and sent to sleep.
-*
+C
+C L U C I A
+C
+C
+C CI for program for :FCI
+C                     RASCI
+C                     MRSDCI
+C                     GAS GAS GAS GAS GAS GAS
+C
+C Written by Jeppe Olsen , winter of 1991
+C                          GAS version in action summer of 95
+C 
+C Parallel version: Stefan Knecht in spring - summer of 2006
+C
+C This routine is originally called from the Dirac menu.
+C In the case of a parallel run, the relevant nodes will be 
+C waken up and sent to sleep.
+C
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI)
 #include "infpar.h"
@@ -863,10 +841,9 @@ C      CALL SLASK
 #endif
 #include "priunit.h"
 #include "lucipar.inc"
-*      INTEGER IVER,ISUBV
       DIMENSION WRK(LWRK)
 *
-*---------------Executable code--------------------------------------
+*----------------Executable code--------------------------------------
 *
       IN = LUCMD
       IW = LUPRI
@@ -880,22 +857,22 @@ C      CALL SLASK
       MYPROC = 0
       NMPROC = 1
 #endif
-*
-*     Summon the slaves, who are waiting in the general menu routine.
-*
+C
+C     Summon the slaves, who are waiting in the general menu routine.
+C
       CALL LUMSTI
-*
-*      Enter the generic LUCITA routine (master becomes 
-*      now somewhat like primus inter parens)
-*
+C
+C      Enter the generic LUCITA routine (master becomes 
+C      now somewhat like primus inter parens)
+C
       CALL PAMLU(WRK,LWRK,IN,IW)
-*
-*     Return the slaves to the general menu routine.
-*
+C
+C     Return the slaves to the general menu routine.
+C
       CALL LUMSTE
-*
-*      CLOSE(LUCMD)
-      RETURN
+C
+C
+C
       END
 ***********************************************************************
 *                                                                     *
@@ -5452,7 +5429,8 @@ C    &  '      Core energy : ', ECORE
       END
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE WRTHD(LUOUT)
@@ -5484,45 +5462,48 @@ C    &  '      Core energy : ', ECORE
      &' Telephone : 46 46 2224915, FAX : 46 46 2224543,',
      &' E-mail : TEOJEO@garm.teokem.lu.se'
       WRITE(6,*)
-      RETURN
+C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
       SUBROUTINE LUMSTI
-*
-*     Call the slaves if we run in parallel
-*
-*     Adaption of the corresponding RELCCSD routine 
-*     written by Luuk Visscher, August 1997
-*     LUCITA version by Stefan Knecht, Feb. 06
-*    
+C
+C     Call the slaves if we run in parallel
+C
+C     Adaption of the corresponding RELCCSD routine 
+C     written by Luuk Visscher, August 1997
+C     LUCITA version by Stefan Knecht, Feb. 06
+C    
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "lucipar.inc"
 #include "maxorb.h"
 #include "dcbgen.h"
-*
-*     ITASK = 5 for parallel LUCITA
-*
+C
+C     ITASK = 5 for parallel LUCITA
+C
       IF (PARCAL) CALL DIRAC_PARCTL( 5 )
-CSK      IF (PARCAL) THEN
-CSK         IRUNPA = 1
-CSK      ELSE
-CSK         IRUNPA = 0
-CSK      END IF
-*      write(6,*)'irunpa =',irunpa
-*
-      RETURN
+C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LUMSTE */
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
       SUBROUTINE LUMSTE
-*
-*     Release the slaves if we run in parallel
-*
-*     Adaption of the corresponding RELCCSD routine
-*     written by Luuk Visscher, August 1997
-*     LUCITA version by Stefan Knecht, Feb. 06
-*
+C
+C     Release the slaves if we run in parallel
+C
+C     Adaption of the corresponding RELCCSD routine
+C     written by Luuk Visscher, August 1997
+C     LUCITA version by Stefan Knecht, Feb. 06
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "maxorb.h"
@@ -5533,10 +5514,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbgen.h"
 #include "infpar.h"
 #include "lucipar.inc"
-*
+C
       IF (.NOT.PARCAL) RETURN
-*
-*     Find the slaves and release them
+C
+C     Find the slaves and release them
 
       NTEST = -1
 #if defined (VAR_MPI)
@@ -5549,11 +5530,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ENDDO
 #endif
 
-*
-*     Let the slaves sleep (if relevant for this operating system)
-*
+C
+C     Let the slaves sleep (if relevant for this operating system)
+C
       CALL DIRAC_PARCTL( 0 )
-      RETURN
+C
       END
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5569,11 +5550,9 @@ C/* Deck LUCINOD */
 *
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "lucipar.inc"
 #include "files.inc"
 *. Parameters for dimensioning
@@ -5603,21 +5582,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 *     arrange for the MPI stuff and correct node number
 *     to the total number of running invocations.
 *
-#if defined (VAR_MPI)
       MASTER = MPARID
       MYPROC = MYTID
 C     Add the master node, NUMNOD = number of slaves
       NMPROC = NUMNOD + 1
-#else
-      MASTER = 0
-      MYPROC = 0
-      NMPROC = 1
-#endif
+C
       INTFCE = 'DIRAC     '
-*
-*     let the nodes know that we perform a parallel run! --> why?
-*     well, that's the way it goes !
-CSK      IRUNPA = 1
 *
 *     create a node-unique filename as output file. Important on
 *     shared file systems. Otherwise all the output gets mingled in one
@@ -5625,7 +5595,6 @@ CSK      IRUNPA = 1
 *
       LUCITABASF="LUCITA.OUT"
 *
-#if defined (VAR_MPI)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (LUCIFILN,'(A10,A1,I1)') LUCITABASF,'.',MYPROC
          LUFIL=12
@@ -5638,13 +5607,8 @@ CSK      IRUNPA = 1
       ELSE
          CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
       ENDIF
-#else
-      LUCIFILN=LUCITABASF
-      LUFIL=10
-#endif
 *
 *     open the local input file and the node specific output file.
-*     The associated file handle MSLVOUT is transferred to CCMAIN.
 *     Every access to the local stdout handle then automatically writes
 *     to the corresponding output file.
 *
@@ -5690,7 +5654,6 @@ CSK      IRUNPA = 1
 
 
       LUEND = .FALSE.
-#if defined (VAR_MPI)
       CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
      &              MPI_COMM_WORLD,IREQ,IERR)
 
@@ -5701,45 +5664,6 @@ CSK      IRUNPA = 1
 
       CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
      &               MPI_COMM_WORLD,ISTAT,IERR)
-#endif
-      RETURN
+C
       END
 #endif    /* ifdef VAR_MPI */
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-*
-*      INTEGER FUNCTION STR_LENGTH(STR)
-*
-*     Returns the length of <str> without blanks
-*
-*     LUCITA version by Stefan Knecht, Feb. 06
-*     Originally written by Stephan Raub
-*
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-*
-*#include "implicit.h"
-*
-*
-*      integer lmax
-*      character(*) str
-*
-!--- Begin ---!
-*
-*      lmax=len(str)
-*
-*      do i=lmax, 1, -1
-*
-*         if(str(i:i).ne.' ')then
-*
-*            Str_Length=i
-*
-*            goto 10
-*
-*         end if
-*
-*      end do !. of i
-*
-*      Str_Length=lmax
-*
-* 10   continue
-*      return
-*      end function Str_Length
