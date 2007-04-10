@@ -668,19 +668,19 @@ C
       RETURN
       END
 C  /* Deck izero */
-      SUBROUTINE IZERO(INT,LENGTH)
+      SUBROUTINE IZERO(INTI,LENGTH)
 C...................................................................
 C Written 5-May-1984 by Hans Jorgen Aa. Jensen
 C
 C   Subroutine IZERO sets an integer array of length *LENGTH*
 C   to zero.
 C...................................................................
-      INTEGER INT(*)
+      INTEGER INTI(*),LENGTH
 C
       IF (LENGTH.LE.0) RETURN
 C
       DO 100 I=1,LENGTH
-  100    INT(I) = 0
+  100    INTI(I) = 0
 C
       RETURN
       END

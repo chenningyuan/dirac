@@ -603,15 +603,42 @@ C
       PARAMETER (THRES=1.0D-4)
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)
 C
-      DO 100 I=1,NDIM
-      DIVIDE=DIAG(I)+SHIFT
-      IF(ABS(DIVIDE).LE.THRES) DIVIDE=THRES
-      IF(VECIN(I).EQ.0.0D0) THEN
-        VECOUT(I) = 0.0D0
-      ELSE
-        VECOUT(I)=VECIN(I)/DIVIDE
-      END IF
-  100 CONTINUE
+      DO I=1,NDIM
+         DIVIDE=DIAG(I)+SHIFT
+         IF(ABS(DIVIDE).LE.THRES) DIVIDE=THRES
+         IF(VECIN(I).EQ.0.0D0) THEN
+           VECOUT(I) = 0.0D0
+         ELSE
+           VECOUT(I)=VECIN(I)/DIVIDE
+         END IF
+      END DO
+      RETURN
+      END
+C  /* Deck diavc2_trunc */
+      SUBROUTINE DIAVC2_TRUNC(VECOUT,VECIN,DIAG,SHIFT,NDIM,
+     &                        THR_RTRUNC,THR_ETRUNC)
+C
+C VECOUT(I)=VECIN(I)/(DIAG(I)+SHIFT)
+C
+C Set VECOUT = 0 if VECIN = 0
+C   Timo Fleig, 18-12-2002
+C Implemented THR_RTRUNC and THR_ETRUNC /HJAaJ 28-Mar-2007
+C
+#include "implicit.h"
+      PARAMETER (THRES=1.0D-4)
+      DIMENSION VECOUT(*),VECIN(*),DIAG(*)
+C
+      DO I=1,NDIM
+         IF(ABS(VECIN(I)) .LE. THR_RTRUNC) THEN
+           VECOUT(I) = 0.0D0
+         ELSE
+           DIVIDE=DIAG(I)+SHIFT
+           IF(ABS(DIVIDE).LE.THRES) DIVIDE=THRES
+           VECOUT(I)=VECIN(I)/DIVIDE
+           IF (ABS(VECOUT(I)*VECIN(I)) .LE. THR_ETRUNC)
+     &        VECOUT(I) = 0.0D0
+         END IF
+      END DO
       RETURN
       END
 C  /* Deck gatvec */

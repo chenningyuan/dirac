@@ -882,7 +882,7 @@ C
         JBTP = IBLOCK(2,JBLOCK)
         NELMNT = IBLOCK(8,JBLOCK)
         JCLS = IBLTOCLS(JBLOCK)
-        XTERM = INPROD(VEC1(IOFF),VEC2(IOFF),NELMNT)
+        XTERM = DDOT(NELMNT,VEC1(IOFF),1,VEC2(IOFF),1)
 C?      WRITE(6,*)
 C?   &  ' CLASS_PROD : CLASS and XTERM = ', JCLS,XTERM
           CLSVEC(JCLS) = CLSVEC(JCLS) + XTERM
@@ -1354,7 +1354,7 @@ C
   100       CONTINUE
           END IF
 *
-          XINOUT = XINOUT + INPROD(VEC1,VEC2,LENGTH)
+          XINOUT = XINOUT + DDOT(LENGTH,VEC1,1,VEC2,1)
           CALL TODSC(VEC1,LENGTH,KBLK,LU3)
           IOFF = IOFF + LENGTH
         END IF
@@ -3351,13 +3351,13 @@ C
           IF( DIFVEC) THEN
             CALL FRMDSC(VEC2,NBL1,KBLK,LU2,IMZERO,IAMPACK)
             IF(NBL1 .GT. 0 )
-     &      X = X + INPROD(VEC1,VEC2,NBL1)
+     &      X = X + DDOT(NBL1,VEC1,1,VEC2,1)
 C?          write(6,*) ' vec1 and vec2 in INPRDD '
 C?         CALL WRTMAT(VEC1,1,NBL1,1,NBL1)
 C?         CALL WRTMAT(VEC2,1,NBL1,1,NBL1)
           ELSE
           IF(NBL1 .GT. 0 )
-     &    X = X + INPROD(VEC1,VEC1,NBL1)
+     &    X = X + DDOT(NBL1,VEC1,1,VEC1,1) 
         END IF
       END IF
       IF(NBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
@@ -3391,7 +3391,7 @@ C
         LLBLK = LBLK(IBLK)
 C?      WRITE(6,*) ' INPRODB IBLK LLBLK IOFF ',IBLK,LLBLK,IOFF
         IF(I0BLK(IBLK).EQ.0.AND.LLBLK.GT.0) THEN
-          X = X + INPROD(VEC1(IOFF),VEC2(IOFF),LLBLK)
+          X = X + DDOT(LLBLK,VEC1(IOFF),1,VEC2(IOFF),1)
 C?        WRITE(6,*) ' Vec1 and Vec2 blocks '
 C?        CALL WRTMAT(VEC1(IOFF),1,LLBLK,1,LLBLK)
 C?        CALL WRTMAT(VEC2(IOFF),1,LLBLK,1,LLBLK)
@@ -5907,7 +5907,7 @@ C RECORDS WITH LENGTH NBLOCK.
       IPACK = 1
       IF(IPACK.NE.0) THEN
 *. Check norm of A before writing
-        XNORM = INPROD(A,A,NDIM)
+        XNORM = DDOT(NDIM,A,1,A,1)
         IF(XNORM.EQ.0.0D0) THEN
           IMZERO = 1
         ELSE
@@ -5953,6 +5953,71 @@ C
       END
 ***********************************************************************
 *                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE TODSC2(A,NDIM,MBLOCK,IFIL,IACTIVE)
+C
+C     TRANSFER ARRAY DOUBLE PRECISION  A(LENGTH NDIM) TO DISCFIL IFIL IN
+C     RECORDS WITH LENGTH NBLOCK.
+C
+C     'active' blocks are flagged by a nonzero entry for iactive
+C
+C     Last revision:     S. Knecht       - April  2007
+C
+************************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(*)
+      INTEGER START,STOP
+      INTEGER ISCR(2)
+*
+      IPACK = 1
+      IF(IPACK.NE.0) THEN
+        IF(IACTIVE .eq. 0 ) THEN
+          IMZERO = 1
+        ELSE
+          IMZERO = 0
+        END IF
+        MMBLOCK = MBLOCK
+        IF(MMBLOCK.GT.2) MMBLOCK = 2
+*
+        ISCR(1) = IMZERO
+*. No packing 
+         ISCR(2) = 0
+C       CALL ITODS(ISCR,2,MMBLOCK,IFIL)
+        CALL ITODS(ISCR,2,2,IFIL)
+        IF(IMZERO.EQ.1) GOTO 1001
+      END IF
+*
+      ICRAY = 1
+      IF( MBLOCK .GE.0 .OR.ICRAY .EQ. 1 ) THEN
+C
+      NBLOCK = MBLOCK
+      IF ( MBLOCK .LE. 0 ) NBLOCK = NDIM
+      STOP=0
+      NBACK=NDIM
+C LOOP OVER RECORDS
+  100 CONTINUE
+       IF(NBACK.LE.NBLOCK) THEN
+         NTRANS=NBACK
+         NLABEL=-NTRANS
+       ELSE
+         NTRANS=NBLOCK
+         NLABEL=NTRANS
+       END IF
+       START=STOP+1
+       STOP=START+NBLOCK-1
+       NBACK=NBACK-NTRANS
+       WRITE(IFIL) (A(I),I=START,STOP),NLABEL
+      IF(NBACK.NE.0) GOTO 100
+      END IF
+*
+ 1001 CONTINUE
+C
+      END
+***********************************************************************
+*                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
@@ -5979,7 +6044,7 @@ C?    CALL XFLUSH(6)
       IPACK = 1
       IF(IPACK.NE.0) THEN
 *. Check norm of A before writing
-        XNORM = INPROD(A,A,NDIM)
+        XNORM = DDOT(NDIM,A,1,A,1)
         IF(XNORM.EQ.0.0D0) THEN
           IMZERO = 1
         ELSE
@@ -6488,7 +6553,7 @@ C
         CALL FRMDSC(VEC2,NBL1,KBLK,LU2,IMZERO,IAMPACK)
         IF( NBL1 .GT. 0 ) THEN
           CALL VECSUM(VEC1,VEC1,VEC2,FAC1,FAC2,NBL1)
-          XNORM = XNORM + INPROD(VEC1,VEC1,NBL1)
+          XNORM = XNORM + DDOT(NBL1,VEC1,1,VEC1,1)
         END IF
       END IF
 *

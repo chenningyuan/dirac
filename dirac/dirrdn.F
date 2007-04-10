@@ -2460,7 +2460,8 @@ C
      &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
-     &            '.PARMOD','.PIOMOD','.MAXITR','.LBLKSZ','.FILSYS'/
+     &            '.PARMOD','.PIOMOD','.MAXITR','.LBLKSZ','.FILSYS',
+     &            '.DISTRT','.FRCTFL','XXXXXXX','XXXXXXX','XXXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2499,7 +2500,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
-     &                     21,22,23,24,25), I
+     &                     21,22,23,24,25,26,27), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -2644,6 +2645,16 @@ C&&& IMAXBLKSIZE: Maximum batchsize for c-/sigma-vector
 C&&& IFILESYS: Determination of FILESYSTEM
                   READ(LUCMD,*) IFILESYS
                   IMOKW(25) = 1
+               GO TO 100
+   26          CONTINUE
+C&&& I_USE_DIST_ROUTE: Determination of distribution routine to use
+                  READ(LUCMD,*) I_USE_DIST_ROUTE
+                  IMOKW(26) = 1
+               GO TO 100
+   27          CONTINUE
+C&&& IFRACTFILE: use of fractional files in DAVIDSON diagonalizer
+                  READ(LUCMD,*) IFRACTFILE
+                  IMOKW(27) = 1
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -5520,8 +5531,8 @@ C
 C     Check for LUCIA and parallel
 C
       IF (PARCAL .AND. DOKRMC) THEN
-         IF (KRMC_CIPROGRAM .EQ. 'LUCIAREL')
-     &   CALL QUIT ('LUCIAREL cannot run in parallel mode')
+CSK         IF (KRMC_CIPROGRAM .EQ. 'LUCIAREL')
+CSK     &   CALL QUIT ('LUCIAREL cannot run in parallel mode')
       ENDIF
 C
 C     Check for C1 symmetry if localization requested
