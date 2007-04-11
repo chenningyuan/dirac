@@ -622,7 +622,7 @@ C        .. we do not accept user input of less than 100 000 !
      &               IFRACTFILE
           write(6,*) 'I will ignore your input.'
           write(6,*) 'Program will continue.'
-          IDISTROUTE = .FALSE.   
+          IDISTROUTE = 0  
           IMOKW(27) = 2
         endif
       end if
