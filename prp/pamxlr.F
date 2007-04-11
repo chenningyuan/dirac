@@ -381,7 +381,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.A OPER','.B OPER','.OPERAT',
      &            '.B FREQ','.ALLCMB','.THRESH','.MAXITR',
-     &            '.SKIPEP','.MAXRED','xXXXXXX','.XLRNRM',
+     &            '.SKIPEP','.MAXRED','.TRIPLE','.XLRNRM',
      &            '.ONLYSF','.ONLYSG','.INTFLG','.NOPREC',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','.COMPRE',
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
@@ -461,6 +461,7 @@ C        as the default for LevyLe/BSS
          XLR_INDSTR(1,I) = ' '
          XLR_INDSTR(3,I) = ' '
       ENDDO
+      ALLOW_TRIPLET = .FALSE.
 C
 C     Initialize user-defined linear response properties
 C     ==================================================
@@ -562,7 +563,8 @@ C&&&& MAXRED: max dimension of matrix in reduced system
                   READ(LUCMD,*) MAXRM
                GOTO 100
  11            CONTINUE
-C&&&&
+C&&&& TRIPLET: allow triplet excitations in SPINFREE and LEVY-LEBLOND runs
+               ALLOW_TRIPLET = .TRUE.
                GOTO 100
  12            CONTINUE
 C&&&& XLRNRM: normalize trial vectors
