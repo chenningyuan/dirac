@@ -305,7 +305,36 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
             PX     = SGN12X*COOR12(IOD12,1)
             PY     = SGN12Y*COOR12(IOD12,2)
             PZ     = SGN12Z*COOR12(IOD12,3)
-            IF (PANAS .EQ. D0) THEN
+            IF (HFXMU .NE. D0) THEN
+               DO IOD34 = 1, NUC34
+#if !defined (SYS_IRIX)
+                  IODS = IODS + 1
+#endif
+                  EXPQ   = EXP34(IOD34)
+                  EXPPQI = D1/(EXPP + EXPQ)
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
+                  ALPHA = EXPP*EXPQ*EXPPQI
+                  BETA = HFXMU**2/(ALPHA + HFXMU**2)
+                  SCLFAC(IODS) = SQRT(BETA)*FACTOR
+#if !defined (SYS_IRIX)
+                  NODS = NODS + 1
+#endif
+                  TALPHA(IODS) = - D2*ALPHA*BETA
+                  PQXI = PX - SGN34X*COOR34(IOD34,1)
+                  PQYI = PY - SGN34Y*COOR34(IOD34,2)
+                  PQZI = PZ - SGN34Z*COOR34(IOD34,3)
+                  PQX(IODS) = PQXI
+                  PQY(IODS) = PQYI
+                  PQZ(IODS) = PQZI
+                  WVALU(NODS)=ALPHA*BETA*
+     &               (PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
+                  INDADR(NODS) = IODS
+#if defined (SYS_IRIX)
+                  IODS = IODS + 1
+                  NODS = NODS + 1
+#endif
+               END DO
+            ELSEIF (PANAS .EQ. D0) THEN
                DO 310 IOD34 = 1, NUC34
 #if !defined (SYS_IRIX) && !defined (SYS_DEC) && !defined (SYS_SX)
                   IODS = IODS + 1
