@@ -92,10 +92,12 @@ use cap
  subroutine cap_ovlp_comp
 !----------------------------------------------------------------
 !
-! compare overlap integrals
+!  compare overlap integrals from DIRAC and from Sajeev's CAP integral
+! generator
 !
 !----------------------------------------------------------------
    use QMatrixes
+#include "implicit.h"
 #include "priunit.h"
 type(QMtx) :: smat,capovlp
 
@@ -105,14 +107,20 @@ call QENTER('cap_ovlp_comp')
 
  call GetCapOvlp(capovlp)
 
+!  compare smat & capovlp quaternion matrixes
+   diff = getdiff_qmtx(smat,capovlp)
+   write(LUPRI,*) 'comparison of 2 matrixes: ',diff
+
 call QEXIT('cap_ovlp_comp')
 end subroutine cap_ovlp_comp
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine GetCapOvlp(capovlp)
+!--------------------------------------------------------------------
 !
+! get CAP overlap matrix
 !
-!
+!--------------------------------------------------------------------
    use QMatrixes
 #include "priunit.h"
 !#include "implicit.h"
@@ -123,13 +131,9 @@ subroutine GetCapOvlp(capovlp)
  type(QMtx), intent(inout) :: capovlp
 call QENTER('GetCapOvlp')
 
-! allocate array for matrix
-!capovlp = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1), & 
-!                   'unpacked CAP_overlap matrix' )
-
  call get_prop_saao(IPCAPR,capovlp) 
 
- call QMtxInfo(capovlp)
+  call QMtxInfo(capovlp)
 
 call QEXIT('GetCapOvlp')
 end subroutine GetCapOvlp
@@ -138,10 +142,9 @@ end subroutine GetCapOvlp
  subroutine get_prop_saao(INDXPR,propmat)
 !----------------------------------------------------------------
 !
-! general purpose routine; 
+!   general purpose routine; 
 !
 ! get the SA-AO unpacked matrix "propmat" of the property INDXPR
-!
 !
 !----------------------------------------------------------------
       use QMatrixes
@@ -166,7 +169,6 @@ logical :: is_square
 integer(kind=4) :: KPTRI, KONEIN, KFIRST
  call QENTER('get_prop_saao')
 
-
 !
 !     Extract symmetry information - ISYM, IREP, ITIM
 !     =============================
@@ -179,7 +181,7 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
 
 ! allocate array for matrix
     propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ), & 
-                     'SA-AO property unpacked matrix' )
+                 'SA-AO property unpacked matrix' )
 
      IPRINT = 20
 
@@ -195,7 +197,7 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
       CALL MYMEMGET('REAL',KONEIN ,   IDIMENS) 
      endif
 
-!   check it if it's not neede for property !!!
+!   check it if it's not needed for property !!!
      CALL MYMEMGET('LOGI',KFIRST ,NZ        )
 
      call print_mem_param
@@ -232,12 +234,15 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
  call QEXIT('get_prop_saao')
  end subroutine get_prop_saao
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine GetUnpckOvlpMtx(smat)
-!===============================================================
+!===========================================================================
 !
 !
-!===============================================================
+!     get unpacked overlap matrix, "smat" - allocate inside, then return
+!
+!
+!===========================================================================
    use QMatrixes
    use Memory
 #include "priunit.h"
@@ -249,7 +254,7 @@ call QENTER('GetUnpckOvlpMtx')
  call set_iprqmtx(10)
  call set_iprmem(10)
  smat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1), & 
-                 'unpacked overlap matrix')
+                 'unpacked overlap SA-AO matrix')
  call QMtxInfo(smat)
  call print_mem_param()
 
@@ -262,7 +267,5 @@ call QENTER('GetUnpckOvlpMtx')
 
  call QMtxInfo(smat)
 
-call QEXIT('GetUnpckOvlpMtx')
+  call QEXIT('GetUnpckOvlpMtx')
  end subroutine GetUnpckOvlpMtx
-
- 
