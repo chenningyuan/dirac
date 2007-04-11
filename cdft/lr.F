@@ -119,6 +119,15 @@ C=======================================================================
 
               CALL SDFTPOT1(VXC,WEIGHT,DENSITY,D0)
 
+!             CALL DSCAL(3,VXC(FRR),FO_SPIN_DENSITY,1) !could also be done this way
+!             CALL GET_M(.FALSE.,
+!    &                   FO_SPIN_DENSITY,
+!    &                   ISYMOP(IMAT)-1,
+!    &                   GAO,
+!    &                   UNUSED,
+!    &                   EXCMAT(1+JOFF),
+!    &                   BUF)
+
               DO IXYZ = ISTART,3
                 CALL SDFT_LR_LSDA_COLLINEAR(VXC,
      &                                      EXCMAT(1+JOFF),
