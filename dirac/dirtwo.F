@@ -3607,7 +3607,8 @@ Caspg
 Caspg
       ENDIF
 C
-      IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
+CTROND      IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
+      IF(NBSYM.GT.1) THEN
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
 C
@@ -3618,7 +3619,7 @@ C
         DO I = 1,NFMAT
           IREP = ISYMOP(I)-1
           IPAR = JBTOF(IREP,1)
-          DO IZ = 1,4
+          DO IZ = 1,NZC1
             IREPD = IRQMAT(IZ,IREP)
             IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)            
             IPQ   = IQTOPQ(IQ,IREP)
@@ -3633,7 +3634,7 @@ C
             WRITE(LUPRI,'(A,I5)') '** Matrix no.',I
             CALL HEADER('Backtransformed hph. density matrix',-1)
             CALL PRQMAT(WORK(JOFF),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),4,IQMULT,LUPRI)
+     &                  NTBAS(0),NZC1,IQMULT,LUPRI)
           ENDIF
         ENDDO
 C
@@ -3645,6 +3646,12 @@ C
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
+CTROND
+          IF(IPRINT.GE.5) THEN
+            WRITE(LUPRI,'(A)') 'After DIRAO1'
+            CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NZC1,IQMULT,LUPRI)
+          ENDIF
 C
 C       Transform Fock matrix from AO to QO
 C       ===================================
@@ -3653,7 +3660,7 @@ C
         DO I = 1,NFMAT
           IREP = ISYMOP(I)-1
           IPAR = JBTOF(IREP,1)
-          DO IZ = 1,4
+          DO IZ = 1,NZC1
             IREPD = IRQMAT(IZ,IREP)
             IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)            
             IPQ   = IQTOPQ(IQ,IREP)
@@ -3937,7 +3944,7 @@ C
           CALL HEADER('Symmetrized skeleton FOCK',-1)
           WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
           CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                4,IQMULT,LUPRI)
+     &                NZC1,IQMULT,LUPRI)
         ENDDO
       ENDIF
 Caspg
@@ -4146,6 +4153,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"    
+      PARAMETER (D0 = 0.0D0)
 C
 #include "dcbqal.h"
 #include "pgroup.h"
@@ -4156,7 +4164,6 @@ C     External variables
       DIMENSION IFCTYP(MZ,NFMAT),IREPDM(MZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT)
 C     Local variables
-      PARAMETER (D0 = 0.0D0)
       SAVE IPFCK,HTYP
 c     DIMENSION IPFCK(4,3),IRFCK(4),IQFCK(4)
       DIMENSION IPFCK(4,0:3),IRFCK(4),IQFCK(4)
