@@ -2403,7 +2403,7 @@ C
       PARAMETER ( DP75 = 0.75D00 )
       PARAMETER ( DRTEST = 1.0D-5 )
 C
-      DIMENSION INERTIA(3)
+      DIMENSION INERT(3)
 C
       CALL QENTER('XRSSOL')
 C
@@ -2447,7 +2447,7 @@ C
          DO IFREQ = 1,NFREQ
            AFREQ = EVALR(IFREQ)
            CALL LINRED(NZRED,NREDM,REDE,REDS,AFREQ,REDGP,
-     &          EVECR(1,IFREQ),IBTYP,INERTIA,IPRXRS,
+     &          EVECR(1,IFREQ),IBTYP,INERT,NPRED,IPRXRS,
      &          WORK,KFREE,LFREE)
          ENDDO
 C
@@ -2497,8 +2497,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Linred */
-      SUBROUTINE LINRED(N,LDA,AE,AS,W,G,X,IBTYP,INERT,IPRINT,
-     &                  WORK,KFREE,LFREE)
+      SUBROUTINE LINRED(N,LDA,AE,AS,W,G,X,IBTYP,INERT,
+     &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Solve the reduced linear reponse equation
@@ -2552,7 +2552,7 @@ C    e-p rotations are included, thus not really
 C    a warning (to test for negative elements in
 C    electronic part, we should use INERT(2) - NBPVEC )
 C     IPAR = INERT(2) + INERT(3)
-      IPAR = INERT(3)
+      IPAR = INERT(2) - NPVEC
       IF(IPRINT.GE.3.OR.IPAR.GT.0) THEN
         IF(IPRINT.GE.3) THEN
           WRITE(LUPRI,'(A,F12.5,A)') 
@@ -2564,6 +2564,11 @@ C     IPAR = INERT(2) + INERT(3)
      &    '* Number of positive eigenvalues:',INERT(1),
      &    '* Number of zero     eigenvalues:',INERT(3),
      &    '* Number of negative eigenvalues:',INERT(2)
+        IF(IPAR.GT.0) THEN
+          WRITE(LUPRI,'(A,A)')
+     &    '*** WARNING - Possible instability detected ',
+     &    'in reduced system !'
+        ENDIF
       ENDIF
 C
       CALL MEMREL('LINRED',WORK,1,KFRSAV,KFREE,LFREE)
