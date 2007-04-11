@@ -364,10 +364,10 @@ C=======================================================================
           N2    = NBBAS(IREP2,IC2)
           IF(N2 .GT. 0) THEN
 
-            I1 = IBBAS(IREP1,IC1) + 1
-            I2 = IBBAS(IREP2,IC2) + 1
-
             IF(LGET) THEN
+
+              I1 = IBBAS(IREP1,IC1) + 1
+              I2 = IBBAS(IREP2,IC2) + 1
 
               CALL DGEMV('N',NBBAS(IREP1,IC1),NBBAS(IREP2,IC2),D1,
      &                   DMAT(I1,I2),NTBAS(0),GAO_RIGHT(I2),1,D0,BUF,1)
@@ -375,6 +375,9 @@ C=======================================================================
      &                + F*DDOT(NBBAS(IREP1,IC1),GAO_LEFT(I1),1,BUF,1)
 
             ELSE !DMAT is then EXCMAT
+
+              I1 = IBBAS(IREP1,IC1)
+              I2 = IBBAS(IREP2,IC2)
 
               DO J = 1,N2
                 FACTOR = F*DENSITY*GAO_RIGHT(I2+J)
