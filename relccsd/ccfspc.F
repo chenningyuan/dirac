@@ -75,7 +75,6 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL TEQ
-      real*8 ddot
 C
 C---------------Executable code--------------------------------------
 C
@@ -273,9 +272,16 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE HEFF1(ICURFSS,IPR,S1,S2,FVO,H,BUF1,BUF2,BUF3)
+      SUBROUTINE HEFF1(ICURFSS,IPR,S1,S2,FVO,EPS,H,BUF1,BUF2,BUF3)
 C
       implicit real*8 (a-h,o-z)
+C---------------Description--------------------------------------------
+C
+C     Extract the Hamiltonian dressing terms from the S1 and S2 arrays
+C     and add the zeroth order (CI matrix) terms. Then find the eigen
+C     values and eigenvectors by solving a generalized eigenvalue 
+C     problem. Finish by analyzing the eigenvectors and computing the
+C     transition moments.
 C---------------Calling variables--------------------------------------
 C
       REAL*8 S1(*),FVO(*),H(*)
@@ -295,18 +301,19 @@ C---------------Local variables -----------------------------------
       PARAMETER (NDIMH=600,NDIMH2=NDIMH*NDIMH)
       REAL*8 EV(NDIMH),EVI(NDIMH),HR(NDIMH2),HI(NDIMH2)
       REAL*8 SCR(3*NDIMH),VEC(NDIMH2),VECI(NDIMH2)
-      REAL*8 EV_ALL(NDIMH*MXREP), VEC_ALL(NDIMH2*MXREP)
-      REAL*8 VECI_ALL(NDIMH2*MXREP)
+      REAL*8 EV_ALL(0:NDIMH*MXREP)
+      REAL*8 TRANS_DIPOLE(3,NDIMH*MXREP),INTENSITY(NDIMH*MXREP)
       DIMENSION INDX_ALL(NDIMH*MXREP),IRPS_ALL(NDIMH*MXREP)
-      DIMENSION NDT_ALL(MXREP),IND(MXREP) 
-      REAL*8 FNOR,E_OFF
-      INTEGER INDX(NDIMH), IRP_SEC12(NDIMH)
-      INTEGER IRP_SEC1(NDIMH2), IRP_SEC2(NDIMH2)
-      INTEGER IREP_SEC1(NDIMH2), IREP_SEC2(NDIMH2), IREP_SEC12(NDIMH2)
-      INTEGER SEC1_ALL(NDIMH2*MXREP), SEC2_ALL(NDIMH2*MXREP)
-      INTEGER IRSEC1_ALL(NDIMH2*MXREP), IRSEC2_ALL(NDIMH2*MXREP)
-      INTEGER IRSEC12_ALL(NDIMH2*MXREP)
+      DIMENSION IND(MXREP),NDT_ALL(MXREP)
+      REAL*8 E_OFF
 C---------------Executable code--------------------------------------
+      IF (ICURFSS.EQ.0) THEN
+C-------------------------------------------
+C (0,0)  Sector
+C
+C  Nothing to be done (only one eigenvalue)
+C
+         RETURN
 C-------------------------------------------
 C (0,1)  Sector
 C
@@ -314,7 +321,7 @@ C  1-electron diagram
 C
 C  H01 = FVO(E,F) + S1(E,F) (a=1; i=3)
 C-------------------------------------------
-      IF (ICURFSS.EQ.1) then
+      ELSEIF (ICURFSS.EQ.1) THEN
         TIT = '(0h,1p) space, electron affinities    '
         CALL XCOPY (IAVAV(NREP+1),A0,0,H,1)
 C       Extract the Hamiltonian
@@ -413,152 +420,166 @@ C       Sort the matrix to ordering 4 to diagonalize it.
         CALL SRT16 (NREP,MULTB,LFA,LFA,NAO,NAV,NAO,NAV,MAOAV,
      &              JAOAVAOAV,JJAOAV,JJAOAV,BUF3,H)
       ENDIF
-C   
-      NDT_TOT = 0
-      NDT2_TOT = 0
+
+C     Set dimension of effective Hamiltonian 
+
+      IF (ICURFSS.EQ.1) THEN
+          CALL ICOPY(NREP,NAV,1,NDT_ALL,1)
+      ELSEIF (ICURFSS.EQ.10) THEN
+          CALL ICOPY(NREP,NAO,1,NDT_ALL,1)
+      ELSEIF (ICURFSS.EQ.2) THEN
+          CALL ICOPY(NREP,NAVAVT,1,NDT_ALL,1)
+      ELSEIF (ICURFSS.EQ.20) THEN
+          CALL ICOPY(NREP,NAOAOT,1,NDT_ALL,1)
+      ELSEIF (ICURFSS.EQ.11) THEN
+          CALL ICOPY(NREP,MAOAV,1,NDT_ALL,1)
+      ELSE
+          CALL QUIT ('HEFF1: sector not implemented')
+      ENDIF
+
+C     Initialize also the (relative) energy of the reference (0,0)
+
+      E_OFF = ESCF + ECCSD
+      EV_ALL(0) = 0.D0
+      IF (ICURFSS.NE.11) THEN
+C        Include reference in the print-out
+         IDT = 1
+      ELSE
+C        Do not include reference in the print-out
+         IDT = 0
+      END IF
+
+C
+C.... Diagonalize the effective Hamiltonian (blocked by symmetry).
+C
       IOFF = 1
-C
-C .....labling of each representation  
-C
-      LABEL=0 
-      DO IRP = 1, NREP 
-        DO I = 1, NAV(IRP)
-           LABEL = LABEL + 1
-           IRP_SEC12(LABEL) = IRP
-        ENDDO
-      ENDDO 
-C
+      NDT_TOT = 0
       DO 100 IRP=1,NREP
-         IF (ICURFSS.EQ.1) THEN
-          NDT = NAV(IRP)
-         ELSEIF (ICURFSS.EQ.10) THEN
-          NDT = NAO(IRP)
-         ELSEIF (ICURFSS.EQ.2) THEN
-          NDT = NAVAVT(IRP)
-         ELSEIF (ICURFSS.EQ.20) THEN
-          NDT = NAOAOT(IRP)
-         ELSEIF (ICURFSS.EQ.11) THEN
-          NDT = MAOAV(IRP)
-         ELSE
-          NDT = 0
-         ENDIF
-         NDT_ALL(IRP) = NDT
+         NDT = NDT_ALL(IRP)
          IF (NDT.EQ.0) GOTO 100
-C
-C....... Diagonalize effective Hamiltonian.
-C
-         IF (NDT.GT.NDIMH) CALL QUIT ('Increase NDIMH in HEFF1')
-         NDT2=NDT*NDT
-         IF  (CARITH) THEN
-            CALL DCOPY (NDT2,H(IOFF),2,HR,1)
-            CALL DCOPY (NDT2,H(IOFF+1),2,HI,1)
-            CALL CG(NDT,NDT,HR,HI,EV,EVI,1,VEC,VECI,
-     &               SCR,SCR(NDT+1),SCR(2*NDT+1),IERR)
-Cluuk       uncomment when debugging, gives huge output
-Cluuk       call output (hr,1,ndt,1,ndt,ndt,ndt,1,iw)
-Cluuk       call output (hi,1,ndt,1,ndt,ndt,ndt,1,iw)
-         ELSE
-Cluuk       uncomment when debugging, gives huge output
-Cluuk       call output (h(ioff),1,ndt,1,ndt,ndt,ndt,1,iw)
-            CALL RG(NDT,NDT,H(IOFF),EV,EVI,1,VEC,SCR,SCR(NDT+1),IERR)
-         ENDIF
-C
-C........Check for errors
-C
-         IF (IERR.NE.0) THEN                
-            WRITE (IW,'('' RG IERR='',I4)') IERR
-            CALL QUIT('Error in diagonalization of eff. Hamiltonian')
-         ENDIF
-C
-C........Sort eigenvalues 
-C
-         CALL INDEXX (NDT,EV,INDX)
-C
-         IF (IPR.GT.0) WRITE (IW,8300) TIT,IRP,(EV(INDX(I)),I=1,NDT)
-C
-C........Write  eigenvalues & vectors if desired.
-C
-         DO I = 1, NDT
-C          Calculate pointer to start of vector
-           IVEC = (INDX(I)-1)*NDT + 1
-C          Normalize
-           FNOR = DDOT (NDT,VEC(IVEC),1,VEC(IVEC),1)
-           IF (CARITH) FNOR = FNOR + DDOT(NDT,VECI(IVEC),1,VECI(IVEC),1)
-           FNOR = A1 / DSQRT(FNOR)
-            CALL DSCAL (NDT,FNOR,VEC(IVEC),1)
-           IF (CARITH) CALL DSCAL (NDT,FNOR,VECI(IVEC),1)
-           IF (IPR.GT.1)  
-     &       WRITE (IW,8400) I,EV(INDX(I)),(VEC(IVEC+J-1),J=1,NDT)
-           IF (IPR.GT.0) THEN  
-             IF (ICURFSS.EQ.2) THEN
-                IJ = 0 
-                DO JJ = 1, LABEL-1
-                   DO 80 II = JJ+1, LABEL 
-                      IF (MULTB(IRP_SEC12(II),IRP_SEC12(JJ),1).NE.IRP)
-     &                     GOTO 80
-                      IRP_SEC1(IVEC + IJ) = II
-                      IREP_SEC1(IVEC + IJ) = IRP_SEC12(II)
-                      IRP_SEC2(IVEC + IJ) = JJ 
-                      IREP_SEC2(IVEC + IJ) = IRP_SEC12(JJ)
-                      IREP_SEC12(IVEC + IJ)  = IRP 
-                      IJ = IJ + 1 
-80                 CONTINUE
-                ENDDO
-             ENDIF 
-           ENDIF
-           IF (CARITH.AND.IPR.GT.0) 
-     &         WRITE (IW,8401) I,EVI(INDX(I)),(VECI(IVEC+J-1),J=1,NDT)
-         ENDDO
-         IOFF=IOFF+NDT2*RCW
-C
-C........Store the eigenvalues for later processing by PRT_EV
-C
-         CALL DCOPY (NDT,EV,1,EV_ALL(NDT_TOT+1),1)
-C
-C........Store the eigenvectors for later processing by PRT_EV_VEC
-C
-         CALL DCOPY (NDT2,VEC,1,VEC_ALL(NDT2_TOT+1),1)
-         IF (CARITH)
-     &      CALL DCOPY (NDT2,VECI,1,VECI_ALL(NDT2_TOT+1),1)
-         CALL ICOPY (NDT2,IRP_SEC1,1,SEC1_ALL(NDT2_TOT+1),1)
-         CALL ICOPY (NDT2,IRP_SEC2,1,SEC2_ALL(NDT2_TOT+1),1)
-         CALL ICOPY (NDT2,IREP_SEC1,1,IRSEC1_ALL(NDT2_TOT+1),1)
-         CALL ICOPY (NDT2,IREP_SEC2,1,IRSEC2_ALL(NDT2_TOT+1),1)
-         CALL ICOPY (NDT2,IREP_SEC12,1,IRSEC12_ALL(NDT2_TOT+1),1)
-C
+         CALL SOLVE_CG (NDT,H(IOFF),EV_ALL(NDT_TOT+1))
+         IOFF=IOFF+NDT*NDT*RCW
          NDT_TOT = NDT_TOT + NDT
-         NDT2_TOT = NDT2_TOT + NDT2
 100   CONTINUE
+
+C     Compute transition moments and intensities
+c     CALL FS_COMPUTE_INTENSITY (ICURFSS,H,INTENSITY,TRANS_DIPOLE)
 C
-C     Print an ordered list of eigenvalues to which the ccsd energy is
-C     added.
+C     Print an ordered list of eigenvalues
 C
-      e_off = 0.d0
       IF (ICURFSS.EQ.1.OR.ICURFSS.EQ.10) THEN
-         CALL PRT_EV (IW,NREP,NDT_ALL,REPNA,E_OFF,EV_ALL,
+C        Odd electron case : fermion irreps
+         CALL PRT_EV (IW,NREP,NDT_ALL,REPNA(1),E_OFF,EV_ALL(IDT),
      &                INDX_ALL,IRPS_ALL,IND)
       ELSE
-         IF (IPR.EQ.0) THEN
-            CALL PRT_EV (IW,NREP,NDT_ALL,REPNA(NREP+1),E_OFF,EV_ALL,
-     &                  INDX_ALL,IRPS_ALL,IND)
-         ELSE
-            E_OFF = ESCF + ECCSD
-            CALL PRT_EV_VEC (IW,NREP,NDT_ALL,REPNA(NREP+1),E_OFF,EV_ALL,
-     &               INDX_ALL,IRPS_ALL,IND,VEC_ALL,SEC1_ALL,SEC2_ALL,
-     &               IRSEC1_ALL,IRSEC2_ALL,IRSEC12_ALL,REPNA,NAV,LTSHFS)
-         ENDIF
+C        Even electron case : boson irreps
+         IF (ICURFSS.EQ.11) NDT_ALL(1) = NDT_ALL(1) + 1
+         CALL PRT_EV (IW,NREP,NDT_ALL,REPNA(NREP+1),E_OFF,EV_ALL(IDT),
+     &                INDX_ALL,IRPS_ALL,IND)
+         IF (ICURFSS.EQ.11) NDT_ALL(1) = NDT_ALL(1) - 1
       ENDIF
+C     Detailed print-out
+      CALL FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,EV_ALL,
+     &                  H,INTENSITY,TRANS_DIPOLE) 
 C
 8300  FORMAT (//1x,'Diagonalization of ',A40,' irrep =',I2/
      &' Energies in atomic units:'
      &/(5F16.12))
-8400  FORMAT (/1x,' Energy',i3,1h:,F20.12,' Real Vector:',/(1x,6f12.7))
-8401  FORMAT (' Imaginary energy',i3,1h:,F20.12,' Imag Vector:',
-     & (1x,6F12.7))
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SOLVE_CG (NDT,H,EV)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Find eigenvalues and eigenvectors of a complex or real general matrix
+C     NDT : Dimension of the matrix
+C     H   : Matrix (complex or real, square), on return eigenvectors
+C     EV  : Eigenvalues (real part)
+C
+C---------------Routines called----------------------------------------
+C
+C      CG or RG (from EISPACK)
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "complex.inc"
+C
+C---------------Calling variables--------------------------------------
+
+      REAL*8 H(RCW,NDT,NDT),EV(NDT)
+C---------------Local variables -----------------------------------
+C     Fixed size should be removed (F90 version to be made)
+      PARAMETER (NDIMH=600,NDIMH2=NDIMH*NDIMH)
+      REAL*8 EVR(NDIMH),EVI(NDIMH)
+      REAL*8 HR(NDIMH,NDIMH),HI(NDIMH,NDIMH)
+      REAL*8 VECR(NDIMH2),VECI(NDIMH2)
+      REAL*8 SCR(NDIMH,3)
+      DIMENSION INDX(NDIMH)
+      REAL*8 FNOR(RCW),E_OFF
+C---------------Executable code--------------------------------------
+C
+C....... Diagonalize effective Hamiltonian.
+C
+      IF (NDT.GT.NDIMH) CALL QUIT ('Increase NDIMH in HEFF1')
+      NDT2=NDT*NDT
+      IF  (CARITH) THEN
+         CALL DCOPY (NDT2,H,2,HR,1)
+         CALL DCOPY (NDT2,H(2,1,1),2,HI,1)
+         CALL CG(NDT,NDT,HR,HI,EVR,EVI,1,VECR,VECI,
+     &            SCR,SCR(1,2),SCR(1,3),IERR)
+Cluuk       uncomment when debugging, gives huge output
+Cluuk       call output (hr,1,ndt,1,ndt,ndt,ndt,1,iw)
+Cluuk       call output (hi,1,ndt,1,ndt,ndt,ndt,1,iw)
+      ELSE
+Cluuk       uncomment when debugging, gives huge output
+Cluuk       call output (h,1,ndt,1,ndt,ndt,ndt,1,iw)
+            CALL RG(NDT,NDT,H,EVR,EVI,1,VECR,SCR,SCR(1,2),IERR)
+      ENDIF
+C
+C.....Check for errors
+C
+      IF (IERR.NE.0) THEN
+         WRITE (IW,'('' RG IERR='',I4)') IERR
+         CALL QUIT('Error in diagonalization of matrix')
+      ENDIF
+C
+C.....Sort eigenvalues
+C
+      CALL INDEXX (NDT,EVR,INDX)
+C
+C.....Store the eigenvalues
+C
+      DO I = 1, NDT
+         EV(I) = EVR(INDX(I))
+      ENDDO
+C
+C.....Store the eigenvectors in H
+C
+      DO I = 1, NDT
+         DO J = 1, NDT
+            H(1,J,I) = VECR(J+NDT*(INDX(I)-1))
+            IF (CARITH) H(2,J,I) = VECI(J+NDT*(INDX(I)-1))
+         ENDDO
+      ENDDO
+C
+C.....Normalize the eigenvectors
+C
+      DO I = 1, NDT
+         CALL XDOTC(FNOR,NDT,H(1,1,I),1,H(1,1,I),1)
+         FNOR(1) = SQRT(1.D0 / FNOR(1))
+         IF (CARITH) FNOR(2) = 0.D0
+         CALL XSCAL(NDT,FNOR,H(1,1,I),1)
+      ENDDO
+
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMF (EPS,T1,T2,CT1,CT2,OPTION)
 C
@@ -1025,7 +1046,6 @@ C
      &/' Absolute value ',E15.5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT1 (T1,FT1,ACVMIN,ACVMAX,ICOMIN,ICOMAX,DOINV)
 C
       IMPLICIT INTEGER (A-Z)
@@ -1061,7 +1081,7 @@ C
 C---------------Executable code--------------------------------------
 c
 c
-c The Fock Space blocks constraction:
+c The Fock Space blocks construction:
 c
 c
 c      #       O         V
@@ -1458,7 +1478,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),T2(*)
       COMPLEX*16 CT1(*),CT2(*)
-      REAL*8 TRES
+      REAL*8 TRES,ABS
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1522,12 +1542,12 @@ c
          DO A = IVA(acv-1)+1, IVA(acv)
              AA = AOFF + A
              AI = AI + 1
-             IF (CARITH.AND.ABS(CT1(AI)).GT.TRES) THEN
+             IF (CARITH.AND.ABS(CT1(AI)).GE.TRES) THEN
                WRITE (IW,1001) IRP,
      &                         A,I,
      &                         CLASS(ACV+2),
      &                         CLASS(ICO),CT1(AI)
-             ELSEIF (.NOT.CARITH.AND.ABS(T1(AI)).GT.TRES) THEN
+             ELSEIF (.NOT.CARITH.AND.ABS(T1(AI)).GE.TRES) THEN
                WRITE (IW,1001) IRP,
      &                         A,I,
      &                         CLASS(ACV+2),
@@ -1635,8 +1655,8 @@ C
       RETURN
  1000 FORMAT (//' Debug output : The amplitudes stored in the ',A2,
      &' array'/' Notation : irreps,indices,classes,value')
- 1001 FORMAT (3I5,2(1X,A2),2F20.16)
- 1002 FORMAT (8I5,4(1X,A2),2F20.16)
+ 1001 FORMAT (3I5,2(1X,A2),2G20.8)
+ 1002 FORMAT (8I5,4(1X,A2),2G20.8)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2T(T2,FT2,ABCVMIN,ABCVMAX,IJCOMIN,IJCOMAX,DOINV)
@@ -2069,4 +2089,264 @@ C     Make T2TAU
       CALL GETTAU2(BUF1,BUF3,BUF2)
 C
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,EV_ALL,H,
+     &                        INTENSITY,TRANS_DIPOLE)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Analyze the excited states and calculate transition moments
+C
+C     On input ICURFSS : currently active sector
+C                  EPS : orbital energies
+C                  IPR : print level
+C              NDT_TOT : dimension of the CI matrix
+C                E_OFF : CCSD energy to be added to eigenvalue
+C               EV_ALL : eigenvalues for all irreps
+C                    H : CI coefficients for all irreps (packed)
+C   output   INTENSITY : intensity of the transition
+C         TRANS_DIPOLE : transition dipoles (x,y,z)
+C
+C---------------Routines called----------------------------------------
+C
+C     XCOPY, FS_COMPUTE_INTENSITY
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 TRES, EPS(*), E_OFF
+      REAL*8 EV_ALL(NDT_TOT),H(*)
+      REAL*8 INTENSITY(NDT_TOT),TRANS_DIPOLE(3,NDT_TOT)
+      INTEGER ICURFSS, IPR
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "symm.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      PARAMETER (NDIMH=600)
+      INTEGER I_EIGENVALUE , J_EIGENVALUE, I_COEFF
+      CHARACTER*50 LABEL(NDIMH)
+C---------------Executable code--------------------------------------
+ 
+C     Initialize and gets label for the excited state coefficiens
+      IF (IPR.LE.0) THEN
+         TRES = 0.1
+      ELSEIF (IPR.LE.2) THEN
+         TRES = 0.001
+      ELSE
+         TRES = 0.0
+      END IF
+      I_EIGENVALUE = 0
+      I_COEFF = 0
+      IJ = 0
+      CALL GET_FSLABEL (ICURFSS,EPS,LABEL)
+
+      WRITE (IW,1000) TRES
+
+      DO IRP=1,NREP
+ 
+C     Get the dimension of the space
+ 
+         IF (ICURFSS.EQ.1) THEN
+          NDT = NAV(IRP)
+          IRPOFF = 0
+         ELSEIF (ICURFSS.EQ.10) THEN
+          NDT = NAO(IRP)
+          IRPOFF = 0
+         ELSEIF (ICURFSS.EQ.2) THEN
+          NDT = NAVAVT(IRP)
+          IRPOFF = NREP
+         ELSEIF (ICURFSS.EQ.20) THEN
+          NDT = NAOAOT(IRP)
+          IRPOFF = NREP
+         ELSEIF (ICURFSS.EQ.11) THEN
+          NDT = MAOAV(IRP)
+          IRPOFF = NREP
+         ELSE
+          NDT = 0
+         ENDIF
+         IF (NDT.EQ.0) CYCLE
+
+C        Loop over the eigenvalues
+ 
+         DO J_EIGENVALUE = 1, NDT
+            I_EIGENVALUE = I_EIGENVALUE + 1
+C           intensity not yet implemented
+c           WRITE (IW,1010) REPNA(IRPOFF+IRP),J_EIGENVALUE,
+c    &            E_OFF+EV_ALL(I_EIGENVALUE),
+c    &            INTENSITY(I_EIGENVALUE),
+c    &           (TRANS_DIPOLE(IX,I_EIGENVALUE),IX=1,3)
+            WRITE (IW,1010) REPNA(IRPOFF+IRP),J_EIGENVALUE,
+     &            E_OFF+EV_ALL(I_EIGENVALUE) 
+C           Loop over the coefficients and print the interesting ones
+            DO J_COEFF = 1, NDT
+               K_COEFF = I_COEFF + J_COEFF
+               IJ = IJ + 1
+               IF (ABS(H(IJ)).GT.TRES) 
+     &             WRITE (IW,'(F15.5,3X,A50)') H(IJ),LABEL(K_COEFF)
+            END DO
+         END DO
+         I_COEFF = I_COEFF + NDT
+      END DO
+
+ 1000 FORMAT (//' Analysis of eigenvectors of the effective Hamiltonian'
+C    intensity not yet implemented
+c    &/' First line  : Energy, Intensity, Transition dipole vector'
+     &/' First line  : Energy'
+     &/' other lines : Coefficients of contributing determinants',
+     & ' (above a treshold of ',E6.1,')'))
+ 1010 FORMAT (/' Irrep ',A4,' State ',I5,F20.10,4F12.5)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,H,INTENSITY,TRANS_DIPOLE)
+C
+      IMPLICIT NONE
+C
+C---------------Description--------------------------------------------
+C
+C     Read dipole moment in MO basis and contract with CI vectors
+C
+C     Author : Luuk Visscher
+C
+C---------------Common Blocks--------------------------------------
+C
+C---------------Variables-----------------------------------------------
+C
+      INTEGER ICURFSS,I
+      REAL*8 H(*),INTENSITY(*),TRANS_DIPOLE(3,*)
+      
+      CALL DZERO (INTENSITY,600)
+      CALL DZERO (TRANS_DIPOLE,3*600)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GET_FSLABEL (ICURFSS,EPS,LABEL)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Define the labels of the model space vector
+C
+C     Author : Luuk Visscher
+C
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "symm.inc"
+C
+C---------------Variables-----------------------------------------------
+C
+      CHARACTER*50 LABEL(*),NOT_DEFINED
+      INTEGER ICURFSS,I
+      REAL*8 EPS(*)
+      DIMENSION IAO(MXREP),IAV(MXREP)
+
+C     Determine offsets for start of orbital energies
+ 
+      IAO(1) = NIO(1)
+      IAV(1) = NIO(1) + NAO(1)
+      DO IREP = 1, NREP-1
+         IAO(IREP+1) = IAO(IREP) + NAO(IREP) + NAV(IREP)   + NIO(IREP+1)
+         IAV(IREP+1) = IAV(IREP) + NAV(IREP) + NIO(IREP+1) + NAO(IREP+1)
+      END DO
+      
+      II = 0
+C     II counts the active orbitals
+      IF (ICURFSS .EQ. 01) THEN
+         DO IREP = 1, NREP
+            DO I = 1, NAV(IREP)
+               II = II + 1
+               JJ = JJ + 1
+               WRITE(LABEL(II),1001) REPNA(IREP),I,EPS(IAV(IREP)+I)
+            END DO
+         END DO
+      ELSEIF (ICURFSS .EQ. 10) THEN
+         DO IREP = 1, NREP
+            DO I = 1, NAO(IREP)
+               II = II + 1
+               WRITE(LABEL(II),1001) REPNA(IREP),I,EPS(IAO(IREP)+I)
+            END DO
+         END DO
+C     II counts the double excitations
+      ELSEIF (ICURFSS .EQ. 02) THEN
+         DO IJREP =1, NREP
+            DO JREP = 1, NREP
+               IREP = MULTB(JREP,IJREP+NREP,2)
+               IF (IREP.EQ.JREP) THEN
+                  DO J = 1, NAV(JREP)
+                     DO I = J+1, NAV(IREP)
+                       II = II + 1
+                       WRITE(LABEL(II),1002) 
+     &                       REPNA(IREP),I,EPS(IAV(IREP)+I),
+     &                       REPNA(JREP),J,EPS(IAV(JREP)+J)
+                     END DO
+                  END DO
+               ELSEIF (IREP.GT.JREP) THEN
+                  DO J = 1, NAV(JREP)
+                     DO I = 1, NAV(IREP)
+                       II = II + 1
+                       WRITE(LABEL(II),1002) 
+     &                       REPNA(IREP),I,EPS(IAV(IREP)+I),
+     &                       REPNA(JREP),J,EPS(IAV(JREP)+J)
+                     END DO
+                  END DO
+               END IF
+            END DO
+         END DO
+      ELSEIF (ICURFSS .EQ. 20) THEN
+         DO IJREP =1, NREP
+            DO JREP = 1, NREP
+               IREP = MULTB(JREP,IJREP+NREP,2)
+               IF (IREP.EQ.JREP) THEN
+                  DO J = 1, NAO(JREP)
+                     DO I = J+1, NAO(IREP)
+                       II = II + 1
+                       WRITE(LABEL(II),1002) 
+     &                       REPNA(IREP),I,EPS(IAO(IREP)+I),
+     &                       REPNA(JREP),J,EPS(IAO(JREP)+J)
+                     END DO
+                  END DO
+               ELSEIF (IREP.GT.JREP) THEN
+                  DO J = 1, NAO(JREP)
+                     DO I = 1, NAO(IREP)
+                       II = II + 1
+                       WRITE(LABEL(II),1002) 
+     &                       REPNA(IREP),I,EPS(IAO(IREP)+I),
+     &                       REPNA(JREP),J,EPS(IAO(JREP)+J)
+                     END DO
+                  END DO
+               END IF
+            END DO
+         END DO
+      ELSEIF (ICURFSS .EQ. 11) THEN
+         DO IJREP =1, NREP
+            DO JREP = 1, NREP
+               IREP = MULTB(JREP,IJREP+NREP,1)
+               DO J = 1, NAV(JREP)
+                  DO I = 1, NAO(IREP)
+                     II = II + 1
+                     WRITE(LABEL(II),1011) 
+     &                     REPNA(IREP),I,EPS(IAO(IREP)+I),
+     &                     REPNA(JREP),J,EPS(IAV(JREP)+J)
+                  END DO
+               END DO
+            END DO
+         END DO
+      END IF
+ 1001 FORMAT ('| ',A4,' #',I4,' (',F8.3,') |',25X)
+ 1002 FORMAT ('| ',A4,' #',I4,' (',F8.3,'), ',
+     &             A4,' #',I4,' (',F8.3,') |')
+ 1011 FORMAT (1X,A4,' #',I4,' (',F8.3,') -> ',
+     &             A4,' #',I4,' (',F8.3,')  ')
       END
