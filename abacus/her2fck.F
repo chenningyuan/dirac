@@ -904,8 +904,6 @@ C   a) changed definition of IFCTYP
 C   b) symmetrization/anti-symmetrization is taken out
 C   c) operations containing inversion provided with minus sign
 C      when acting on small components (RELCAL)
-C      For now the program assumes RELCAL if KMAX.GT.NLRGSH,
-C       -- this is a bit shaky .....
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1005,6 +1003,7 @@ C
             END IF
   310       CONTINUE
   300    CONTINUE
+#ifdef PRG_DIRAC
 C
 C        The next paragraph concerns relativistic calculations only !
 C        IPARity is invoked since the operation of inversion
@@ -1026,9 +1025,7 @@ C
             END IF
   350       CONTINUE
   340    CONTINUE
-C
-C        END of relativistic code .....
-C
+#endif
 C
 C        NPOINT and NFACTR
 C
@@ -1108,8 +1105,7 @@ C
          END IF
 C
 C
-C Check for relativistic calculation....
-      IF(KMAX.GT.NLRGSH) RETURN
+#ifndef PRG_DIRAC
 C
 CCTOND:     Matrices must be symmetrized/anti-symmetrized first !
 C
@@ -1228,6 +1224,7 @@ CTROND                              NB    = IBTSHR(IPIND(J),4) - IB*16
                ISTRA = ISTRA + NORBA
   600       CONTINUE
          END IF
+#endif
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("SO Fock matrix in SKLFC1",1)
             DO 700 N = 1, NMAT
