@@ -331,6 +331,7 @@ print_header()
 exitfunc()
 {
    if [ -r "$OUTPUT_FILE" ]; then
+       grep WARNING $OUTPUT_FILE
   	if [ -n "`grep 'SEVERE ERROR' $OUTPUT_FILE`" ]; then
  	     EXIT=1	
 	fi
