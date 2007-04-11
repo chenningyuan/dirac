@@ -363,7 +363,7 @@ C=======================================================================
 
           G = (DKF/236.870506D0)*(CHI_RATIO - D1)
 
-          CALL DSCAL(3,G,FO_VORTICITY,1)
+          CALL DSCAL(3,G*WEIGHT,FO_VORTICITY,1)
 
           CALL GET_V(.FALSE.,
      &               FO_VORTICITY,
