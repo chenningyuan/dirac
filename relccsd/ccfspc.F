@@ -2184,11 +2184,11 @@ C        Loop over the eigenvalues
             I_EIGENVALUE = I_EIGENVALUE + 1
 C           intensity not yet implemented
 c           WRITE (IW,1010) REPNA(IRPOFF+IRP),J_EIGENVALUE,
-c    &            E_OFF+EV_ALL(I_EIGENVALUE),
+c    &            EV_ALL(I_EIGENVALUE),E_OFF+EV_ALL(I_EIGENVALUE),
 c    &            INTENSITY(I_EIGENVALUE),
 c    &           (TRANS_DIPOLE(IX,I_EIGENVALUE),IX=1,3)
             WRITE (IW,1010) REPNA(IRPOFF+IRP),J_EIGENVALUE,
-     &            E_OFF+EV_ALL(I_EIGENVALUE) 
+     &            EV_ALL(I_EIGENVALUE),E_OFF+EV_ALL(I_EIGENVALUE) 
 C           Loop over the coefficients and print the interesting ones
             DO J_COEFF = 1, NDT
                K_COEFF = I_COEFF + J_COEFF
@@ -2203,10 +2203,10 @@ C           Loop over the coefficients and print the interesting ones
  1000 FORMAT (//' Analysis of eigenvectors of the effective Hamiltonian'
 C    intensity not yet implemented
 c    &/' First line  : Energy, Intensity, Transition dipole vector'
-     &/' First line  : Energy'
+     &/' First line  : Eigevalue, Energy'
      &/' other lines : Coefficients of contributing determinants',
      & ' (above a treshold of ',E6.1,')')
- 1010 FORMAT (/' Irrep ',A4,' State ',I5,F20.10,4F12.5)
+ 1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8,4F10.5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,H,INTENSITY,TRANS_DIPOLE)
