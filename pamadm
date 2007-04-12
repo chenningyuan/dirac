@@ -677,7 +677,8 @@ if [ -n "$EMBMOD" ]; then
 cat <<EOF>> Makefile
 
 EMBOBJS = \\
-embedding/embd.o embedding/emb_froz_orb.o embedding/emb_set.o
+embedding/diremb.o
+#embedding/embd.o embedding/emb_froz_orb.o embedding/emb_set.o
 
 EOF
 fi

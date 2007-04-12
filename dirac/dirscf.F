@@ -592,6 +592,7 @@ C
            CALL SOLFCK(FOCK,DMAT,1,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
         ENDIF
+
       ENDIF
 C
 C     2) - using old 2-electron Fock matrix
@@ -1052,9 +1053,9 @@ C  /* Deck dhfscf */
 C*****************************************************************************
 C
 C*****************************************************************************
-#ifdef MOD_EMB
-      USE Embedding
-#endif
+C#ifdef MOD_EMB
+C      USE Embedding
+C#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1067,15 +1068,19 @@ C
 #include "dgroup.h"
 #include "cbihr1.h"
 
+#if defined (MOD_EMB)
+#include "fde.h"
+#endif
+
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          WORK(LWORK)
 
-!     Initialize Embedding Module
-!     ===========================
-
-#ifdef MOD_EMB
-      CALL start_Embedding ()
-#endif
+c!     Initialize Embedding Module
+c!     ===========================
+c
+c#ifdef MOD_EMB
+c      CALL start_Embedding ()
+c#endif
 
 C
 C     Generate one-electron Fock matrix and write to file
@@ -1084,9 +1089,29 @@ C
       CALL ONEFCK(FOCK,IPRONE,WORK,LWORK)
 CMI   ... in the case of BSS-postDHF we read 1el.picture change transformed operator
 C       in ONEFCK ... no need to prepare LUFCK1 !!!!
+
+Caspg, embedding
+C read embedding potential from file, and add it to the one-electro fock matrix
+#if defined (MOD_EMB)
+      if (do_fde) then
+c        call memget ('real',embpot1e,nbast,nbast,work,kfree,lfree)
+         call GetEmbeddingPotentialFromFile(fock,.false.,work,lwork)
+      endif
+#endif
+Caspg, embedding
+
       CALL OPNFIL(LUFCK1,'DFFCK1','UNKNOWN','ONEFC1')
       CALL WRIFCK(LUFCK1,FOCK,1)
       CLOSE(LUFCK1,STATUS='KEEP')
+
+Caspg, embedding
+C get rid of the embedding potential matrix at the end of the scf
+cif defined (MOD_EMB)
+c     if (do_fde) then
+c        call memrel('embpot1e',work,empot1e,embpot1e,kfree,lfree)
+c     endif
+cendif
+Caspg, embedding
 
       IF(ONESYS) THEN
 C
@@ -1113,9 +1138,9 @@ C
 !     Finalize Embedding Module
 !     ===========================
 
-#ifdef MOD_EMB
-      CALL end_Embedding ()
-#endif
+C#ifdef MOD_EMB
+C      CALL end_Embedding ()
+C#endif
 
       RETURN
       END
@@ -1236,6 +1261,7 @@ C
 C
 C     asymptotic correction
       OLD_HOMO_EIGENVALUE = D0
+C
 C
 C
       DO 10 ITER = 2,MAXITR

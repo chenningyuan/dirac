@@ -738,9 +738,9 @@ C     Written by T.Saue - November 1992
 C     Last revision: 1997/09/15 - jth
 C
 C***********************************************************************
-#ifdef MOD_EMB
-      USE Embedding
-#endif
+c#ifdef MOD_EMB
+c      USE Embedding
+c#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -763,6 +763,9 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#ifdef MOD_EMB
+#include "fde.h"
+#endif
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -1367,9 +1370,9 @@ C&&& OLEVEL: Open-shell level shifts
 !     Setup embedding
 !     ===============
 
-#ifdef MOD_EMB
-      CALL init_embedding ()
-#endif
+C#ifdef MOD_EMB
+C      CALL init_embedding ()
+C#endif
 
 C
 C     Determine occupation
@@ -1613,11 +1616,11 @@ C
         CALL QUIT('DHFINP: Zero electrons not allowed!')
       END IF
 
-! Print embedding information
-
-#ifdef MOD_EMB
-      CALL report_embedding ()
-#endif
+C! Print embedding information
+C
+C#ifdef MOD_EMB
+C      CALL report_embedding ()
+C#endif
 
       IF(.NOT.DOSCF) GOTO 999
 C
@@ -3696,6 +3699,9 @@ C
 #include "dftcom.h"
 Cdirac#include "functionals.h"
 #endif
+#if defined (MOD_EMB)
+#include "fde.h"
+#endif
 C
       LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS,DELSMALL
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -3704,7 +3710,7 @@ C
 C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
-     &             'XXXXXXX','XXXXXXX','XXXXXXX','XXXXXXX'/
+     &             '*FDE   ','XXXXXXX','XXXXXXX','XXXXXXX'/
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
      &            '.LVCORR','.LVNEW ','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
@@ -3715,7 +3721,7 @@ C
      &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C',
      &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
      &            '.IOTC  ','.MIXVAC','.CAP   ','.NOVREF',
-     &            '.POSVAC','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.POSVAC','.FDE   ','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
@@ -3757,6 +3763,9 @@ C
       POSVAC  = .FALSE.
       VACREF  = .TRUE.
       CAP     = .FALSE.
+#if defined (MOD_EMB)
+      DO_FDE  = .FALSE.
+#endif
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
@@ -4148,7 +4157,10 @@ C&&& POSVAC: Use positronic vacuum polarisation
              POSVAC = .TRUE.
              GO TO 100
   142     CONTINUE
-C&&& XXXX
+C&&& FDE: Frozen density embedding switch 
+#if defined (MOD_EMB)
+             DO_FDE = .TRUE.
+#endif
              GO TO 100
   143     CONTINUE
 C&&& XXXX
@@ -4478,6 +4490,17 @@ CMI ...  CAP processing
       IF(DFTHAM) CALL DFTREPORT()
 #endif
       IF(DOLVC) ISSINT = 0
+
+Caspg, embedding
+#if defined (MOD_EMB)
+      IF (DO_FDE) THEN
+         WRITE(LUPRI,'(1X,A)') 
+     &  '* Frozen Density Embedding Activated.'
+         WRITE(LUPRI,'(1X,A)') 
+     &  '   By default, an embedding potential should be supplied.'
+      ENDIF
+#endif
+Caspg
 
 C
 C     Reset MC if necessary
@@ -4958,6 +4981,10 @@ CJuly2003
 
 #ifdef MOD_CAP
       IF (CAP) CALL CAPINP(WORD,.TRUE.,WORK,LWORK)
+#endif
+
+#ifdef (MOD_EMB)
+      IF (DO_FDE) CALL FDEINP(WORD,WORK,LWORK)
 #endif
 C
  500  CONTINUE
