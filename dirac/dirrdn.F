@@ -4983,7 +4983,7 @@ CJuly2003
       IF (CAP) CALL CAPINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 
-#ifdef (MOD_EMB)
+#ifdef MOD_EMB
       IF (DO_FDE) CALL FDEINP(WORD,WORK,LWORK)
 #endif
 C

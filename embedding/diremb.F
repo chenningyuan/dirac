@@ -136,7 +136,8 @@ C symmetrization needed?
 
       if (debug) then
          call header ('1-electron embedding matrix',-1)
-         call printdmat(1,ndimension,fdep1e)
+! does not know....
+!         call printdmat(1,ndimension,fdep1e)
       endif
  
       call memrel ('fde-1',work,kx,kx,kfree,lfree)
