@@ -85,7 +85,7 @@ Functional Camb3lypFunctional = {
 /* IMPLEMENTATION PART */
 static int
 parse_table(const char *func, const char *str,
-            int cnt, const char *keywords[], float *weights)
+            int cnt, const char *keywords[], real *weights)
 {
   int res=1;
   while(*str) {
@@ -117,7 +117,7 @@ static const char *cam_keywords[] = { "alpha", "beta", "mu" };
 static int
 camb3lyp_read(const char *conf_line)
 {
-    float weights[ELEMENTS(cam_keywords)];
+    real weights[ELEMENTS(cam_keywords)];
 
     weights[0] = CamAlpha;
     weights[1] = CamBeta;
@@ -125,10 +125,10 @@ camb3lyp_read(const char *conf_line)
     if(!parse_table("CAM-B3LYP", conf_line,
                     ELEMENTS(cam_keywords), cam_keywords, weights))
         return 0;
-    /* sanity checks */
-    if(weights[2]<=0) weights[2] = 1e-30;
     fun_set_hf_weight(weights[0]);
     fun_set_cam_param(weights[2], weights[1]);
+    /* Sanity checks needed for the XC part only. */
+    if(weights[2]<=0) weights[2] = 1e-30;
     CamMuFactor = weights[2]; CamBeta = weights[1];
 
     CamAlpha = weights[0];

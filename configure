@@ -269,13 +269,13 @@ case $machine in
 
    i[3-6]86-*)
       liblist="$liblist libmkl"
-      complist='ifort ifc g95 pgf90 pgf77 g77 f77'
+      complist='ifort ifc g95 pgf90 pgf77 gfortran g77 f77'
       cclist='icc gcc pgcc cc'
       debug='gdb';;
 
     x86_64-*)
 #     liblist=$liblist
-      complist='g95 pgf90 pgf77 pathf90 g77 f77'
+      complist='g95 pgf90 pgf77 pathf90 gfortran g77 f77'
       cclist='gcc pgcc pathcc cc'
       debug='gdb';;
 
