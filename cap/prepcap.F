@@ -332,10 +332,11 @@ C      ... fill in DIRAC abfu characteristics
         CALL IOBFSET(IOBF2,I,IPRCAP)
 
         IF (IPRCAP.GE.3) THEN
-          write(LUPRI,'(I4,A,I3,A,A4,A,I2,A,I3)')
+          write(LUPRI,'(I4,A,I3,A,A4,A,I2,A,I3,A,D14.6)')
      &    II1,'> nucleus:',IOBF1(1,I),' funct: ',AO1,'/',IOBF1(2,I),
      &     ' >  CAP unique fu #:',
-     &        IOBF1(3,I)
+     &        IOBF1(3,I),
+     &        ' factor:  ',GET_CAPAF_FAC(IOBF1(2,I))
           write(LUPRI,'(I4,A,I3,A,A4,A,I2,A,I3)')
      &    II2,'> nucleus:',IOBF2(1,I),' funct: ',AO2,'/',IOBF2(2,I),
      &     ' >dirac unique fu #:',
@@ -427,19 +428,22 @@ C       -------------------------------------------------
          indx_i =  NBASIS*(ICAPBFO(I)-1) + ICAPBFO(J)  - 1
          indx_j =  NBASIS*(ICAPBFO(J)-1) + ICAPBFO(I)  - 1
 
-        WORK(KPMR+ indx_i ) = CAPRE
-        WORK(KPMR+ indx_j ) = CAPRE
+        CAP_FACT = GET_CAPAF_FAC(IOBF1(2,I))*GET_CAPAF_FAC(IOBF1(2,J))
 
-        WORK(KPMI+ indx_i ) = CAPIM
-        WORK(KPMI+ indx_j ) = CAPIM
+        WORK(KPMR+ indx_i ) = CAPRE*CAP_FACT
+        WORK(KPMR+ indx_j ) = CAPRE*CAP_FACT
+
+        WORK(KPMI+ indx_i ) = CAPIM*CAP_FACT
+        WORK(KPMI+ indx_j ) = CAPIM*CAP_FACT
 
       ENDDO 
       ENDDO 
       CALL GPCLOSE(LUPM,'KEEP')
 
       IF (IPRCAP.GE.4) THEN
-        WRITE(LUPRI,*) 'CAP_RE in basic DIRAC order'
-        CALL PRQMAT(WORK(KPMR),NBASIS,NBASIS,NBASIS,NBASIS,1,
+       WRITE(LUPRI,*)
+       WRITE(LUPRI,*) 'CAP_RE in basic DIRAC order'
+       CALL PRQMAT(WORK(KPMR),NBASIS,NBASIS,NBASIS,NBASIS,1,
      &     IPQTOQ(1,0),LUPRI)
       ENDIF
 
@@ -451,8 +455,12 @@ C===========================================================
       CALL MEMGET('REAL',KPMRSA,ISIZE,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMISA,ISIZE,WORK,KFREE,LFREE)
 
+C this is needed !
+      CALL DZERO(WORK(KPMISA),ISIZE)
+      CALL DZERO(WORK(KPMRSA),ISIZE)
+
       IF (IPRCAP.GE.4) THEN
-       WRITE(LUPRI,'(/,5X,A/)') 'CAPADAPT: Symmetry adaptation:'
+        WRITE(LUPRI,'(/,5X,A/)') 'CAPADAPT: Symmetry adaptation:'
       ENDIF
 
       OLDADAPT = .FALSE.
@@ -525,7 +533,7 @@ C      ... symmetry adapt CAP_(I,J):
       CALL GPCLOSE(LUCDS2,'KEEP')
 
       ELSE
-
+! ...internal DIRAC adaptation
        CALL MTAOSO(WORK(KPMR),WORK(KPMRSA),NBASIS,0,IPRCAP)
 
        IF (.NOT.CAPOVLP) THEN
@@ -542,6 +550,7 @@ C =======================================================================
       ISIZE1 = NBASIS*(NBASIS+1)/2
       CALL MEMGET('REAL',KPMRSAT,ISIZE1,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMISAT,ISIZE1,WORK,KFREE,LFREE)
+
 !         only triangular matrixes are needed !!!
        CALL DAMATR( NBASIS, WORK(KPMRSA), NBASIS, WORK(KPMRSAT) )
        CALL DAMATR( NBASIS, WORK(KPMISA), NBASIS, WORK(KPMISAT) )
@@ -993,3 +1002,26 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       RETURN
       END
 
+      DOUBLE PRECISION FUNCTION GET_CAPAF_FAC(I)
+#include "implicit.h"
+#include "priunit.h"
+         IF (I.EQ.5.OR.I.EQ.8.OR.I.EQ.10) THEN
+C     ... d xx,yy,zz - functions
+            GET_CAPAF_FAC =  DSQRT(3)
+C     ... f - functions
+         ELSE IF (I.EQ.11.OR.I.EQ.17.OR.I.EQ.20) THEN
+C        ELSE IF (I.GE.11.OR.I.LE.20) THEN
+C           GET_CAPAF_FAC =  DSQRT(3)
+C           GET_CAPAF_FAC =  1.0D0
+            GET_CAPAF_FAC =  DSQRT(15)
+         ELSE IF (I.EQ.12.OR.I.EQ.13.OR.I.EQ.14.OR.
+     &            I.EQ.16.OR.I.EQ.18.OR.I.EQ.19) THEN
+            GET_CAPAF_FAC =  DSQRT(3)
+         ELSE IF (I.EQ.15) THEN
+            GET_CAPAF_FAC =  1.0D0
+         ELSE
+            GET_CAPAF_FAC = 1.0D0
+         ENDIF
+
+      RETURN
+      END

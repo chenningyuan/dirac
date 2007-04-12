@@ -43,7 +43,7 @@ subroutine make_string(self, text)
   do i = 1, len(text)
     self(1)%strp(i) = text(i:i)
   enddo
-   self(1)%is_alloc=.true.
+  self(1)%is_alloc=.true.
  else
   write(LUPRI,*) 'mystring/make_string: this string is already allocated, see:',self(1)%strp
  endif
@@ -51,7 +51,13 @@ subroutine make_string(self, text)
  call QEXIT('make_string')
  end subroutine make_string
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine cancel_string(self)
+!----------------------------------------------------------------
+!
+!   cancel the string
+!
+!----------------------------------------------------------------
 #include "priunit.h"
  type(string), dimension(:), intent(inout) :: self
  !type(string), intent(inout) :: self

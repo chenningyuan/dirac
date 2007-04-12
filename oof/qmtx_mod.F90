@@ -252,6 +252,36 @@ CALL QEXIT('QMatrixes: set_qmtx_unpck')
 end function set_qmtx_unpck
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+SUBROUTINE  AddTextQMtx(qm,text)
+!-------------------------------------------------------------------------
+!
+!    Attach text(string) attribute to the entering quaternion matrix
+! If there is previous one, replace it; if none "text" input, clear it
+!
+!-------------------------------------------------------------------------
+#include "priunit.h"
+type(QMtx),intent(inout) :: qm
+character(*), intent(in), optional :: text
+call QENTER('AddTextQMtx')
+
+if (len(text).ge.1) then
+! if there is some string, attach it, otherwise do nothing
+  if (is_string(qm%qmtx_text)) then
+    call cancel_string(qm%qmtx_text)
+    call make_string(qm%qmtx_text,text)
+  else
+    call make_string(qm%qmtx_text,text)
+  endif
+else
+! if no string is attached, cancel o
+    call cancel_string(qm%qmtx_text)
+    call set_no_string(qm%qmtx_text)
+endif
+
+call QEXIT('AddTextQMtx')
+END SUBROUTINE 
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 SUBROUTINE QMtxInfo(qm)
 !=========================================================================
 !
@@ -393,6 +423,11 @@ FUNCTION MakeQMtxUnPck(qm_upk_in, irp_in, nz_in, text) result(qm)
 !
 !             Make quaternion full (unpacked) matrix.
 !
+!   On input: 
+!            qm_upk_in  - structure containing dimensions of matrixe
+!            irp_in, nz_in - structures with IREP and NZ 
+!            text - optional text attached to the matrix
+!
 !---------------------------------------------------------------------
 #include "priunit.h"
 #include "dgroup.h"
@@ -481,11 +516,13 @@ END SUBROUTINE DeAllocQMtx
 function getdiff_qmtx(amat,bmat) result(diff)
 !-------------------------------------------------------------------------
 !
+! returns the average difference of two quatern.matrixes
 !
 !-------------------------------------------------------------------------
 type(QMtx), intent(in) :: amat,bmat
 real(kind=8) :: diff
 logical(kind=1) :: compatible
+integer(kind=4) :: i
 call QENTER('getdiff_qmtx')
 ! check matrix compatibilities
 compatible = compatible_2qmtx(amat,bmat)
@@ -506,10 +543,65 @@ call QEXIT('getdiff_qmtx')
 end function getdiff_qmtx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine substract_qmtx(amat,bmat,fac_a,fac_b)
+!--------------------------------------------------------------------
+!
+! DO: amat := fac_a*amat - fac_b*bmat;
+!  returns results in "amat"
+!
+! Substract bmat from amat
+!
+!--------------------------------------------------------------------
+type(QMtx), intent(inout) :: amat
+type(QMtx), intent(in) :: bmat
+real(kind=8),intent(in),optional :: fac_a,fac_b
+real(kind=8) :: temp
+logical(kind=1) :: compatible
+integer(kind=4) :: i
+call QENTER('substract_qmtx')
+! check matrix compatibilities
+compatible = compatible_2qmtx(amat,bmat)
+
+if (.not.compatible) then
+  call print_qmtx_attrib(amat)
+  call print_qmtx_attrib(bmat)
+  call QUIT('getdiff_qmtx: matrixes are not compatible !')
+endif
+
+if (present(fac_a).and.present(fac_b)) then
+
+do i=0,amat%array_size -1
+ temp = PW(amat%kstart+i)
+ PW(amat%kstart+i)  =  fac_a*temp - fac_b*PW(bmat%kstart+i)
+enddo
+
+else if (present(fac_a).and..not.present(fac_b)) then
+
+do i = 0, amat%array_size -1
+ temp = PW(amat%kstart+i)
+ PW(amat%kstart+i)  =  fac_a*temp - PW(bmat%kstart+i)
+enddo
+
+else if (.not.present(fac_a).and..not.present(fac_b)) then
+
+do i=0,amat%array_size -1
+ temp = PW(amat%kstart+i)
+ PW(amat%kstart+i)  =  temp - PW(bmat%kstart+i)
+enddo
+
+else
+ call QUIT('substract_qmtx: dead branch !!!')
+endif
+
+call QEXIT('substract_qmtx')
+end subroutine substract_qmtx
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_qmtx_attrib(amat)
 !-------------------------------------------------------------------
 !
-! print out only attributes of the matrix data type
+!   print out only attributes of the matrix data type (not whole matrixes)
 !
 !-------------------------------------------------------------------
 #include "priunit.h"

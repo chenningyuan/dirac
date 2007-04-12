@@ -88,14 +88,14 @@ use cap
  CALL QEXIT('cap_ovlp')
  end subroutine cap_ovlp
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine cap_ovlp_comp
-!----------------------------------------------------------------
+!---------------------------------------------------------------------------
 !
 !  compare overlap integrals from DIRAC and from Sajeev's CAP integral
 ! generator
 !
-!----------------------------------------------------------------
+!----------------------------------------------------------------------------
    use QMatrixes
 #include "implicit.h"
 #include "priunit.h"
@@ -109,7 +109,12 @@ call QENTER('cap_ovlp_comp')
 
 !  compare smat & capovlp quaternion matrixes
    diff = getdiff_qmtx(smat,capovlp)
+   write(LUPRI,*) 
    write(LUPRI,*) 'comparison of 2 matrixes: ',diff
+   write(LUPRI,*) 
+
+  call substract_qmtx(smat,capovlp)
+  call QMTxInfo(smat)
 
 call QEXIT('cap_ovlp_comp')
 end subroutine cap_ovlp_comp
@@ -132,6 +137,7 @@ subroutine GetCapOvlp(capovlp)
 call QENTER('GetCapOvlp')
 
  call get_prop_saao(IPCAPR,capovlp) 
+ call AddTextQMtx(capovlp,'CAP overlap integrals')
 
   call QMtxInfo(capovlp)
 
@@ -179,9 +185,8 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
 
       write(LUPRI,*) 'property index=',INDXPR,' IREP,ITIM=',IREP,ITIM
 
-! allocate array for matrix
-    propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ), & 
-                 'SA-AO property unpacked matrix' )
+!         allocate array for matrix
+    propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ) )
 
      IPRINT = 20
 
@@ -239,7 +244,7 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
 !===========================================================================
 !
 !
-!     get unpacked overlap matrix, "smat" - allocate inside, then return
+!    get unpacked overlap matrix, "smat" - allocate inside, then return
 !
 !
 !===========================================================================
@@ -254,15 +259,16 @@ call QENTER('GetUnpckOvlpMtx')
  call set_iprqmtx(10)
  call set_iprmem(10)
  smat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1), & 
-                 'unpacked overlap SA-AO matrix')
- call QMtxInfo(smat)
- call print_mem_param()
+                 'DIRAC unpacked overlap SA-AO matrix')
+! call QMtxInfo(smat)
+! call print_mem_param()
 
  write(LUPRI,*) 'N2BAST=',N2BAST
  write(LUPRI,*) 'get_kfree, get_lfree=',get_kfree(),get_lfree()
  write(LUPRI,*) 'get_qmtx_kstart(smat)=',get_qmtx_kstart(smat)
  write(LUPRI,*) 'SSMTRC=',SSMTRC
 
+! call lower level routine
  call GTOVLT(PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree), get_lfree)
 
  call QMtxInfo(smat)

@@ -84,8 +84,8 @@ C
 CMI ... check if CAP is not for everlap control
 CMI  ... call of F90 routine
 !        call TEST_OOF(WORK,LWORK)
-         call StickMemory(WORK,LWORK)
-         call TEST_OOF ! memmory was unsticked here
+!        call StickMemory(WORK,LWORK)
+!        call TEST_OOF ! memmory was unsticked here
 
          call StickMemory(WORK,LWORK) ! stick again
          call cap_ovlp
