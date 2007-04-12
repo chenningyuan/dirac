@@ -479,7 +479,7 @@ C        Even electron case : boson irreps
          IF (ICURFSS.EQ.11) NDT_ALL(1) = NDT_ALL(1) - 1
       ENDIF
 C     Detailed print-out
-      CALL FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,EV_ALL,
+      CALL FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,EV_ALL(1),
      &                  H,INTENSITY,TRANS_DIPOLE) 
 C
 8300  FORMAT (//1x,'Diagonalization of ',A40,' irrep =',I2/
@@ -2203,7 +2203,7 @@ C           Loop over the coefficients and print the interesting ones
  1000 FORMAT (//' Analysis of eigenvectors of the effective Hamiltonian'
 C    intensity not yet implemented
 c    &/' First line  : Energy, Intensity, Transition dipole vector'
-     &/' First line  : Eigevalue, Energy'
+     &/' First line  : Eigenvalue, Energy'
      &/' other lines : Coefficients of contributing determinants',
      & ' (above a treshold of ',E6.1,')')
  1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8,4F10.5)
