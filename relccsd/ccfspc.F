@@ -2205,7 +2205,7 @@ C    intensity not yet implemented
 c    &/' First line  : Energy, Intensity, Transition dipole vector'
      &/' First line  : Energy'
      &/' other lines : Coefficients of contributing determinants',
-     & ' (above a treshold of ',E6.1,')'))
+     & ' (above a treshold of ',E6.1,')')
  1010 FORMAT (/' Irrep ',A4,' State ',I5,F20.10,4F12.5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
