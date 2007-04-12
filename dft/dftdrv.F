@@ -899,11 +899,11 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
           ENDIF
 !         current density contribution
-!         IF(LBIT(LBIT_CDFT,2)) THEN
-!           CALL CDFT_LR(DTRMAT,EXCMAT,NXCMAT,
-!    &                   ISYMOP,IHRMOP,GAO,GAO1,
-!    &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
-!         ENDIF
+          IF(LBIT(LBIT_CDFT,2)) THEN
+            CALL CDFT_LR(DTRMAT,EXCMAT,NXCMAT,
+     &                   ISYMOP,IHRMOP,GAO,GAO1,
+     &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+          ENDIF
 #endif
         ENDIF
 
