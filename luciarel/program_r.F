@@ -275,7 +275,13 @@ C
 * Allocate some scratch space
       NFINDM = min(NVAR,4*NROOT)
       call memmar(KFINDMR,4*NFINDM+1,'ADDL  ',2,'FINDMR')
+CSK   for some reason (?) allocation with 4*NFINDM+1 does not 
+CSK   work with INTEGER*8
+#if defined (INT_STAR8)
+      call memmar(KFINDMI,5*NFINDM,'ADDL  ',1,'FINDMI')
+#else
       call memmar(KFINDMI,4*NFINDM+1,'ADDL  ',1,'FINDMI')
+#endif
       if (NROOT.gt.MXROOT) then
         write(6,*) ' Too many roots. '
         write(6,*) ' Increase MXROOT to ',NROOT
