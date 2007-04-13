@@ -9,7 +9,7 @@ include ../Makefile.config
 
 F77_OBJS = ciinfo_r.o  density_r.o  diagonal_r.o  diagonalize_r.o  fock_r.o  interface_r.o  \
            io_r.o  memory_r.o  program_r.o  sigden_r.o  sigma_r.o  strings_r.o  transform_r.o  \
-           utils_r.o  vecmat_r.o
+           utils_r.o  vecmat_r.o  par_lucia_r.o
 
 F90_OBJS =
 
