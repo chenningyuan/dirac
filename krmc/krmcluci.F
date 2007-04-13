@@ -1231,6 +1231,57 @@ C***********************************************************************
 *
 * L U C I A R E L
 *
+* parallel driver routine,
+* Stefan Knecht - April 2007
+*
+C***********************************************************************
+      IMPLICIT REAL*8(A-H,O-Z)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "../luciarel/lucipar_rel.inc"
+      CHARACTER*6 CIRUN
+C     initial definitions
+#if defined (VAR_MPI)
+      MASTER = MPARID
+      MYPROC = MYTID
+*     Add the master node
+      NMPROC = NUMNOD + 1
+#else
+      MASTER = 0
+      MYPROC = 0
+      NMPROC = 1
+#endif
+C
+C     Summon the slaves, who are waiting in the general menu routine.
+C
+      CALL LUMSTI_REL
+C
+C     communicate necessary information with slaves ...
+C
+      CALL SYNC_NODES_REL_DRV(F1,F2,ECORE_KRMC,CIRUN,6)
+C
+C     Enter the generic LUCIAREL routine 
+C     (master becomes now somewhat like primus inter parens)
+C
+      CALL KRMC_LUCI2(F1,F2,WRK,LWRK,ECORE_KRMC,CIRUN)
+C
+C     Return the slaves to the general menu routine.
+C
+      CALL LUMSTE_REL
+C
+C
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE KRMC_LUCI2(F1,F2,WRK,LWRK,ECORE_KRMC,CIRUN)
+C***********************************************************************
+*
+*
+* L U C I A R E L
+*
 *
 * CI for program for :FCI
 *                     RASCI
@@ -1272,13 +1323,19 @@ C***********************************************************************
 #include "../luciarel/picasso.inc"
 CTF
       character*6 CIRUN
-#if defined (IA64)
+#if defined (IA64) || defined (INT_STAR8)
       integer*8 KBASE
 #endif
       logical MCSCF
 CTF  global reference values for Z_BLKFO needed in MV7 !!
       common/glbref/ISPC,ISM,ITERGLB
       DIMENSION F1(*),F2(*),WRK(LWRK)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "../luciarel/lucipar_rel.inc"
 *
 *  FIXME: VCT1 and VCT2 unused at the moment. They should carry
 *         input/output vectors controlled by outside KR_LUCI_IO
@@ -2357,6 +2414,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbgen.h"
+#include "../luciarel/lucipar_rel.inc"
 C
 C     ITASK = 6 for parallel KRMC-LUCIAREL
 C
@@ -2382,6 +2440,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif
 #include "dcbgen.h"
 #include "infpar.h"
+#include "../luciarel/lucipar_rel.inc"
 C
       IF (.NOT.PARCAL) RETURN
 C
@@ -2422,12 +2481,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 #include "infpar.h"
 #include "mpif.h"
-C
+#include "../luciarel/lucipar_rel.inc"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION WRK(LWRK)
       LOGICAL LUEND
-      CHARACTER LUCITABASF*12, LUCIFILN*16
+      CHARACTER LUCITABASF_REL*12, LUCIFILN_REL*16
+      CHARACTER CIRUN*6
 *
+*       START 
+*     =========
 *
 *     arrange for the MPI stuff and correct node number
 *     to the total number of running invocations.
@@ -2441,16 +2503,16 @@ C     Add the master node, NUMNOD = number of slaves
 *     shared file systems. Otherwise all the output gets mingled in one
 *     file. You don't really want to do this.
 *
-      LUCITABASF="LUCIAREL.OUT"
+      LUCITABASF_REL="LUCIAREL.OUT"
 *
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (LUCIFILN,'(A12,A1,I1)') LUCITABASF,'.',MYPROC
+         WRITE (LUCIFILN_REL,'(A12,A1,I1)') LUCITABASF_REL,'.',MYPROC
          LUFIL=14
       ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (LUCIFILN,'(A12,A1,I2)') LUCITABASF,'.',MYPROC
+         WRITE (LUCIFILN_REL,'(A12,A1,I2)') LUCITABASF_REL,'.',MYPROC
          LUFIL=15
       ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-         WRITE (LUCIFILN,'(A12,A1,I3)') LUCITABASF,'.',MYPROC
+         WRITE (LUCIFILN_REL,'(A12,A1,I3)') LUCITABASF_REL,'.',MYPROC
          LUFIL=16
       ELSE
          CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD_REL MODULE")
@@ -2461,41 +2523,21 @@ C     Add the master node, NUMNOD = number of slaves
 *     to the corresponding output file.
 *
 *
-CSK      OPEN(LUCMD,FILE = 'DIRAC.INP')
-CSK      OPEN(MSLVOUT,FILE = LUCIFILN(1:LUFIL))
+      OPEN(MSLVOUT_REL,FILE = LUCIFILN_REL(1:LUFIL))
 *
-*     ==============
-*     **** Find Lucita input *****
 *
-CSK      REWIND (LUCMD,IOSTAT=IOS)
-*     ... IOSTAT to avoid program abort on some systems
-*         if reading input from a terminal
-*
-*     ... IOSTAT to avoid program abort on some systems
-*         if reading input from a terminal
-CSK  900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
-CSK      IF (WORD .EQ. '*LUCITA') THEN
-CSK         GO TO 930
-CSK      ELSE
-CSK         GO TO 900
-CSK      END IF
-CSK  910 CONTINUE
-CSK         CALL QUIT('End of file on LUCMD, no Lucita input found')
-CSK  920 CONTINUE
-CSK         CALL QUIT('Error reading LUCMD, no Lucita input found')
-CSK  930 CONTINUE
-CSK      WORD3 = WORD
-*
-*    pointer in DIRAC.INP should now be positioned behind *LUCITA
-*
-CSK        CALL LUCTINP(WORD,.FALSE.,WORK,LWRK)
-CSK        CALL LUCTINP(WORD,.TRUE.,WORK,LWRK)
+CSK      CALL MPI_RECV(IVARIAB,1,my_MPI_INTEGER,MPARID,35,
+CSK     &               MPI_COMM_WORLD,ISTAT,IERR)
+      WRITE(MSLVOUT_REL,*) 'I have created my slave file',myproc
+      WRITE(MSLVOUT_REL,*) 'I have created my slave file again',myproc
+CSK      WRITE(MSLVOUT_REL,*) 'THIS IS IVARIAB',IVARIAB
 *
 *     now let's call the working routine!
 *
-CSK        CALL PAMLU(WRK,LWRK,LUCMD,MSLVOUT)
-CSK      CLOSE (MSLVOUT,STATUS='KEEP')
-CSK      CLOSE (LUCMD,STATUS='KEEP')
+C
+      CALL SYNC_NODES_REL_DRV(DUMMY,DUMMY,DUMMY,CIRUN,MSLVOUT_REL)
+C
+      CLOSE (MSLVOUT_REL,STATUS='KEEP')
 *
 *
 *     The slave is finished, wait for the master
