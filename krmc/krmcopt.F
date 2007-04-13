@@ -2590,6 +2590,10 @@ C
       END IF
 C
       IF (LBIT(IWRT,1)) CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+CSK      IF (LBIT(IWRT,1)) THEN
+CSK        WRITE(LUPRI,*) ' (ROPTST) write coefficients to file'
+CSK        CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+CSK      END IF
 C
  1100 CONTINUE
       CALL FLSHFO(LUPRI)
@@ -2678,6 +2682,7 @@ C
 C
 C           Do a 0th order 4-index transformation.
 C
+CSK            WRITE(LUPRI,*) ' (ROPTST) do the 0th order index ...'
             IOPT_INTFLG = IOPT_INTDEF
             JTRLVL = 0
             CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
@@ -2816,15 +2821,7 @@ C
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
 C
-C        wake the slaves
-C
-         IF(PARCAL) CALL LUMSTI_REL
-C
          CALL LUCI_RCIST(CREF,CMO,WORK(KFREE),LFREE)
-C
-C        sent slaves sleeping
-C
-         IF(PARCAL) CALL LUMSTE_REL
 C
          call memchk('after CALL LUCI_RCIST',WORK,KFREE)
          IF (IANACI.EQ.1) THEN
