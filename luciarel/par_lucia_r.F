@@ -36,6 +36,13 @@ C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : par_lucia_r.F
+C
+C
+#if defined (VAR_MPI)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
@@ -135,7 +142,7 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE SYNC_NODES_REL_DRV(F1,F2,ECORE_KRMC,CIRUN,LUWRT)
+      SUBROUTINE SYNC_NODES_REL_DRV(ECORE_KRMC,CIRUN,LUWRT)
 C
 C     Synchronize MASTER and NODES - driver routine
 C
@@ -147,16 +154,36 @@ C**********************************************************************
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "lucipar_rel.inc"
+#include "mxpdim.inc"
+#include "cicisp.inc"
       CHARACTER*6 CIRUN
-      DIMENSION F1(*), F2(*)
 C
 C     introduce CIRUN for NODES
 C
-#if defined (VAR_MPI)
       CALL MPI_BCAST(CIRUN,6,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
-#endif
+C
+      IF( MYPROC .ne. MASTER ) CALL LUCI_TASK_NODES(CIRUN)
 C
 C
+      IF( CIRUN .eq. 'NDET  ') THEN
 C
+        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+C
+      ELSE IF( CIRUN .eq. 'CIINII') THEN
+C
+        CALL MPI_BCAST(ECORE_KRMC,1,MPI_REAL8,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        
+C
+      ELSE IF( CIRUN .eq. 'CIINII') THEN
+C
+       
+C
+      END IF
 C
       END
+#else
+      SUBROUTINE PAR_LUCIAREL_DUMMY
+      END
+#endif
