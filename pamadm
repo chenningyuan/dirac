@@ -585,7 +585,8 @@ luciarel/ciinfo_r.o  luciarel/density_r.o  luciarel/diagonal_r.o  \\
 luciarel/diagonalize_r.o luciarel/fock_r.o  luciarel/interface_r.o  \\
 luciarel/io_r.o  luciarel/memory_r.o luciarel/program_r.o  \\
 luciarel/sigden_r.o  luciarel/sigma_r.o  luciarel/strings_r.o \\
-luciarel/transform_r.o  luciarel/utils_r.o  luciarel/vecmat_r.o
+luciarel/transform_r.o  luciarel/utils_r.o  luciarel/vecmat_r.o \\
+luciarel/par_lucia_r.o
 
 EOF
 fi
