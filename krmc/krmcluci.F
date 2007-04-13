@@ -1261,7 +1261,9 @@ C
 C
 C     communicate necessary information with slaves ...
 C
+#if defined (VAR_MPI)
       CALL SYNC_NODES_REL_DRV(ECORE_KRMC,CIRUN,6)
+#endif
 C
 C     Enter the generic LUCIAREL routine 
 C     (master becomes now somewhat like primus inter parens)
