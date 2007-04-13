@@ -152,7 +152,9 @@ C**********************************************************************
 C
 C     introduce CIRUN for NODES
 C
+#if defined (VAR_MPI)
       CALL MPI_BCAST(CIRUN,6,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
+#endif
 C
 C
 C
