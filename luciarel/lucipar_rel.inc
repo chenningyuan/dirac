@@ -7,6 +7,8 @@ C MPI information for LUCIAREL
 C
 C     General MPI information
 C
+      INTEGER MSLVOUT_REL
+	PARAMETER (MSLVOUT_REL = 7)
       COMMON/LUCIPARREL/ MASTER,MYPROC,NMPROC
 C
 C     MASTER: contains node number of master (0 in general)
