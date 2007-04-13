@@ -1261,7 +1261,7 @@ C
 C
 C     communicate necessary information with slaves ...
 C
-      CALL SYNC_NODES_REL_DRV(F1,F2,ECORE_KRMC,CIRUN,6)
+      CALL SYNC_NODES_REL_DRV(ECORE_KRMC,CIRUN,6)
 C
 C     Enter the generic LUCIAREL routine 
 C     (master becomes now somewhat like primus inter parens)
@@ -2498,6 +2498,10 @@ C
       MYPROC = MYTID
 C     Add the master node, NUMNOD = number of slaves
       NMPROC = NUMNOD + 1
+C
+C     initialize some variables ...
+C
+      ECORE_KRMC = 0.0D0
 *
 *     create a node-unique filename as output file. Important on
 *     shared file systems. Otherwise all the output gets mingled in one
@@ -2535,7 +2539,7 @@ CSK      WRITE(MSLVOUT_REL,*) 'THIS IS IVARIAB',IVARIAB
 *     now let's call the working routine!
 *
 C
-      CALL SYNC_NODES_REL_DRV(DUMMY,DUMMY,DUMMY,CIRUN,MSLVOUT_REL)
+      CALL SYNC_NODES_REL_DRV(ECORE_KRMC,CIRUN,MSLVOUT_REL)
 C
       CLOSE (MSLVOUT_REL,STATUS='KEEP')
 *
