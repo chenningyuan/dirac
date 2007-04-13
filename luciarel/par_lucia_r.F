@@ -174,11 +174,6 @@ C
 C
         CALL MPI_BCAST(ECORE_KRMC,1,MPI_REAL8,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-        
-C
-      ELSE IF( CIRUN .eq. 'CIINII') THEN
-C
-       
 C
       END IF
 C
