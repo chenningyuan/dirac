@@ -1,7 +1,7 @@
 * For IA64 bit machines with large core memory:
 * DIRAC - LUCIAREL memory alignment requires pointers to be
 * on INTEGER*8 
-#if defined (IA64)
+#if defined (IA64) || defined (INT_STAR8)
       INTEGER*8
      &KVEC3, KC2, KISPSAOIN, KISPSAOUT, KLH1D, KLISMDST, KMOAOIN, 
      &KMOAOUT, KSPSAOIN, KSPSAOUT, KBASE, KBOSYM, KDUMMY,
