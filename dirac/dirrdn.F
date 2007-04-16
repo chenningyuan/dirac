@@ -4160,6 +4160,7 @@ C&&& POSVAC: Use positronic vacuum polarisation
 C&&& FDE: Frozen density embedding switch 
 #if defined (MOD_EMB)
              DO_FDE = .TRUE.
+             CALL FDEINI()
 #endif
              GO TO 100
   143     CONTINUE
@@ -4490,18 +4491,6 @@ CMI ...  CAP processing
       IF(DFTHAM) CALL DFTREPORT()
 #endif
       IF(DOLVC) ISSINT = 0
-
-Caspg, embedding
-#if defined (MOD_EMB)
-      IF (DO_FDE) THEN
-         WRITE(LUPRI,'(1X,A)') 
-     &  '* Frozen Density Embedding Activated.'
-         WRITE(LUPRI,'(1X,A)') 
-     &  '   By default, an embedding potential should be supplied.'
-      ENDIF
-#endif
-Caspg
-
 C
 C     Reset MC if necessary
 CMI/Febr.2006 for BSS/TWOCOMP it is set up later
@@ -4962,6 +4951,9 @@ C       if *CAP in input but MOD_CAP is not defined !!!
         GO TO 200
 #endif
     5 CONTINUE
+#if defined (MOD_EMB)
+        CALL FDEINP(WORD,.FALSE.)
+#endif
         GO TO 200
     6 CONTINUE
         GO TO 200
@@ -4984,7 +4976,7 @@ CJuly2003
 #endif
 
 #ifdef MOD_EMB
-      IF (DO_FDE) CALL FDEINP(WORD,WORK,LWORK)
+      IF (DO_FDE) CALL FDEINP(WORD,.TRUE.)
 #endif
 C
  500  CONTINUE

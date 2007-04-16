@@ -1090,28 +1090,15 @@ C
 CMI   ... in the case of BSS-postDHF we read 1el.picture change transformed operator
 C       in ONEFCK ... no need to prepare LUFCK1 !!!!
 
-Caspg, embedding
-C read embedding potential from file, and add it to the one-electro fock matrix
 #if defined (MOD_EMB)
       if (do_fde) then
-c        call memget ('real',embpot1e,nbast,nbast,work,kfree,lfree)
-         call GetEmbeddingPotentialFromFile(fock,.false.,work,lwork)
+         call GetFDEPotential_FromFile(fock,work,lwork)
       endif
 #endif
-Caspg, embedding
 
       CALL OPNFIL(LUFCK1,'DFFCK1','UNKNOWN','ONEFC1')
       CALL WRIFCK(LUFCK1,FOCK,1)
       CLOSE(LUFCK1,STATUS='KEEP')
-
-Caspg, embedding
-C get rid of the embedding potential matrix at the end of the scf
-cif defined (MOD_EMB)
-c     if (do_fde) then
-c        call memrel('embpot1e',work,empot1e,embpot1e,kfree,lfree)
-c     endif
-cendif
-Caspg, embedding
 
       IF(ONESYS) THEN
 C

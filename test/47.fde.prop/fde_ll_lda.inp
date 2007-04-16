@@ -7,7 +7,15 @@ electric properties for frozen density embedding
 .LEVY-LEBLOND
 .DFT
  LDA
+! frozen density embedding selected
 .FDE
+! one can give the file name for the potential here
+! if ommited, the default filename is EMBPOT. regardless
+! of the name, this file has to be transferred to the
+! scratch directory first
+*FDE
+.EMBPOT
+grid.out.full
 **INTEGRALS
 .NUCMOD
 1
