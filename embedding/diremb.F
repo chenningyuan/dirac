@@ -213,10 +213,8 @@ C
 C
 #include "fde.h"
 C
-      logical fdeham
-      SAVE SET
+      logical fdeham,newdef
       DATA TABLE /'.EMBPOT','.PRINT ','.XXXXXX','.XXXXXX'/
-      DATA SET/.FALSE./
 C
 #include "memint.h"
 
