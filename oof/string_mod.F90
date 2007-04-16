@@ -61,14 +61,18 @@ subroutine make_string(self, text)
 #include "priunit.h"
  type(string), dimension(:), intent(inout) :: self
  !type(string), intent(inout) :: self
- integer :: dealloc_stat
+! must be kind=4 otherwise generates error !
+ integer(kind=4) :: dealloc_stat
  call QENTER('mystring:cancel_string')
 
  if ( self(1)%is_alloc) then
+ !    write(LUPRI,*) 'mystring:cancel_string entering string: ',self(1)%strp
+ !    write(LUPRI,*) ' length of string is:',self(1)%str_length
      deallocate(self(1)%strp, stat = dealloc_stat)
      if (dealloc_stat > 0) then
-       write(LUPRI,*) 'dellocation error !'
-       call QUIT('mystring/cancel_string: dellocation error !')
+       write(LUPRI,*) 'dellocation error !, dealloc_stat=',dealloc_stat
+       write(LUPRI,*) ' length of the delloc. string was:',self(1)%str_length
+       call QUIT('mystring/cancel_string: deallocation error !')
      endif
      nullify( self(1)%strp )
      self(1)%is_alloc=.false.

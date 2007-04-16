@@ -400,6 +400,10 @@ C       ENDIF
       
       CALL MEMGET('REAL',KPMR,ISIZE,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMI,ISIZE,WORK,KFREE,LFREE)
+
+      CALL DZERO(WORK(KPMR),ISIZE)
+      CALL DZERO(WORK(KPMI),ISIZE)
+
 C==================================================================
 C     ... read PEMAT in the cycle and resort the matrix elements
 C    from CAP order to the DIRAC basic order into WORK arrays
@@ -430,6 +434,9 @@ C       -------------------------------------------------
 
         CAP_FACT = GET_CAPAF_FAC(IOBF1(2,I))*GET_CAPAF_FAC(IOBF1(2,J))
 
+         write(LUPRI,*) 'indx_i, indx_j, CAPRE, CAPRE*CAP_FACT:',
+     &    indx_i, indx_j, CAPRE, CAPRE*CAP_FACT
+
         WORK(KPMR+ indx_i ) = CAPRE*CAP_FACT
         WORK(KPMR+ indx_j ) = CAPRE*CAP_FACT
 
@@ -439,6 +446,10 @@ C       -------------------------------------------------
       ENDDO 
       ENDDO 
       CALL GPCLOSE(LUPM,'KEEP')
+
+! delete SL/LS integrals
+
+      call delete_ls(WORK(KPMR),NBASIS,IPRCAP)
 
       IF (IPRCAP.GE.4) THEN
        WRITE(LUPRI,*)
@@ -456,8 +467,8 @@ C===========================================================
       CALL MEMGET('REAL',KPMISA,ISIZE,WORK,KFREE,LFREE)
 
 C this is needed !
-      CALL DZERO(WORK(KPMISA),ISIZE)
       CALL DZERO(WORK(KPMRSA),ISIZE)
+      CALL DZERO(WORK(KPMISA),ISIZE)
 
       IF (IPRCAP.GE.4) THEN
         WRITE(LUPRI,'(/,5X,A/)') 'CAPADAPT: Symmetry adaptation:'
@@ -551,6 +562,9 @@ C =======================================================================
       CALL MEMGET('REAL',KPMRSAT,ISIZE1,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMISAT,ISIZE1,WORK,KFREE,LFREE)
 
+      CALL DZERO(WORK(KPMRSAT),ISIZE1)
+      CALL DZERO(WORK(KPMISAT),ISIZE1)
+
 !         only triangular matrixes are needed !!!
        CALL DAMATR( NBASIS, WORK(KPMRSA), NBASIS, WORK(KPMRSAT) )
        CALL DAMATR( NBASIS, WORK(KPMISA), NBASIS, WORK(KPMISAT) )
@@ -565,6 +579,32 @@ C     CALL CAPREADY(WORK,LWORK,IPRCAP)
       CALL QEXIT('CAPADAPT')
       RETURN
       END 
+
+      subroutine delete_ls(V,N,IPRINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+      real*8 V(N,N)
+      call qenter('delete_ls')
+
+      write(LUPRI,*) 'NBASIS,NLARGE,NSMALL:',NBASIS,NLARGE,NSMALL
+
+      do i = 1 ,NBASIS
+      do j = 1, NBASIS
+       if (i.le.nlarge.and.j.gt.nlarge) then
+          V(i,j) = 0.0D0
+       endif
+!      ------------------------------------------------------
+       if (i.gt.nlarge.and.j.le.nlarge) then
+          V(i,j) = 0.0D0
+       endif
+      enddo
+      enddo
+
+      call qexit('delete_ls')
+      return
+      end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck getcapim */

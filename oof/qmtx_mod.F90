@@ -9,11 +9,13 @@ MODULE QMatrixes
 
 ! for allocation/deallocations
 use Memory  
+! deta type for strings
 use mystring
 
+! neede for 64bit machines and -i8 flags
 #include "iratdef.h"
 
-!   printing parameter
+!   print parameter
 integer(kind=4), private :: iprint_qmtx=0
 
 ! own data type for IREP value
@@ -98,7 +100,7 @@ call QENTER('compatible_2qmtx')
                  (amat%nr(2) == bmat%nr(2)) .AND.  &
                  (amat%nc(1) == bmat%nc(1)) .AND.  &  
                  (amat%nc(2) == bmat%nc(2)) .AND.  & 
-                 (amat%array_size == bmat%array_size)  .AND.  & 
+                ! (amat%array_size == bmat%array_size)  .AND.  & 
                  (amat%simple_mtx == bmat%simple_mtx)  .AND.  &
                  (amat%symm_packed == bmat%symm_packed).AND.  &
                  (amat%is_real  == bmat%is_real)       .AND.  &
@@ -187,11 +189,12 @@ end function set_irp
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function set_nz (nz_in) result (nz_out)
 !-----------------------------------------------
-!   define setting of NZ
+!
+!        define setting of NZ
+!
 !-----------------------------------------------
 #include "priunit.h"
 type(nzp) :: nz_out
-!integer (kind=4), intent(in) :: nz_in
 integer (kind=8/IRAT), intent(in) :: nz_in
 CALL QENTER('QMatrixes: set_nz')
   if (.NOT.(nz_in .eq. 1 .or. nz_in .eq. 2  .or. nz_in .eq. 4)) then
@@ -252,17 +255,19 @@ CALL QEXIT('QMatrixes: set_qmtx_unpck')
 end function set_qmtx_unpck
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-SUBROUTINE  AddTextQMtx(qm,text)
+SUBROUTINE AddTextQMtx(qm,text)
 !-------------------------------------------------------------------------
 !
 !    Attach text(string) attribute to the entering quaternion matrix
-! If there is previous one, replace it; if none "text" input, clear it
+! If there is a previous text, replace it; 
+!
+! if there is no "text" variable in the input, clear it
 !
 !-------------------------------------------------------------------------
 #include "priunit.h"
 type(QMtx),intent(inout) :: qm
 character(*), intent(in), optional :: text
-call QENTER('AddTextQMtx')
+call QENTER('QMatrixes: AddTextQMtx')
 
 if (len(text).ge.1) then
 ! if there is some string, attach it, otherwise do nothing
@@ -278,8 +283,22 @@ else
     call set_no_string(qm%qmtx_text)
 endif
 
-call QEXIT('AddTextQMtx')
+call QEXIT('QMatrixes: AddTextQMtx')
 END SUBROUTINE 
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+SUBROUTINE set_qmtx_nz(qm,nz_in)
+!-------------------------------------------------------------------------
+!
+!               set nz_in into "qm"
+!
+!-------------------------------------------------------------------------
+type(QMtx),intent(inout) :: qm
+integer(kind=8/IRAT),intent(in) :: nz_in
+CALL QENTER('set_qmtx_nz')
+  qm%nz = nz_in
+CALL QEXIT('set_qmtx_nz')
+END SUBROUTINE set_qmtx_nz
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 SUBROUTINE QMtxInfo(qm)
@@ -303,11 +322,13 @@ if (is_string(qm%qmtx_text)) then
    !write(LUPRI,*) 'Attached text 1:',get_string(qm%qmtx_text)
   !  write(LUPRI,*) get_string(qm%qmtx_text)
    ! print *,get_string(qm%qmtx_text)
-   write(LUPRI,'(4x,a,$)') 'Matrix attached text:'
+   write(LUPRI,'(4x,a,$)') 'Attached text:'
    call print_string(qm%qmtx_text)
 endif
 
-write(LUPRI,'(4x,a,i1,1x,a,i1)') 'IREP=',qm%irep, 'NZ=',qm%nz
+write(LUPRI,'(4x,a,i1,1x,a,i1)') 'IREP=',qm%irep,'NZ=',qm%nz
+write(LUPRI,'(2x,a,i5,a,i5)') 'start position on the big array:',qm%kstart,   & 
+    ' size of the allocated array:',qm%array_size
 
 if (.not.qm%simple_mtx.and.qm%symm_packed) then
  write(LUPRI,*) 'fermion symmetry packed matrix '
@@ -329,7 +350,7 @@ if (.not.qm%simple_mtx.and.qm%symm_packed) then
 
 else if (.not.qm%simple_mtx.and..not.qm%symm_packed) then
 ! ... symmetry unpacked (full) quaternion matrix
- write(LUPRI,*) 'full (symmetry unpacked) quaternion matrix '
+  write(LUPRI,*) 'full (symmetry unpacked) quaternion matrix '
   if (qm%is_alloc) then
 ! ... print TOTAL QMatrix
     nt = ( qm%nr(1) + qm%nr(2) )
@@ -346,7 +367,7 @@ else
  call quit('QMtxInfo: blind "if" branch ')
 endif
 
- write(LUPRI,*) 'qm%kstart=',qm%kstart, ' size of the array',qm%array_size
+!write(LUPRI,*) 'qm%kstart=',qm%kstart, ' size of the array',qm%array_size
 
 CALL QEXIT('QMtxInfo')
 END SUBROUTINE QMtxInfo
@@ -355,12 +376,11 @@ END SUBROUTINE QMtxInfo
 FUNCTION MakeQMtxPck(qm_pk_in, irp_in, nz_in, text) result(qm)
 !-------------------------------------------------------------------
 !
-!     basic constructor for symmetry packed quaternion matrix
+!   basic constructor for symmetry packed quaternion matrix
 !
 !-------------------------------------------------------------------
 #include "priunit.h"
 #include "dgroup.h"
-#include "iratdef.h"
 type(QMtx) :: qm
 type(qmtx_pck), intent(in) :: qm_pk_in
 type(irp), optional, intent(in) ::  irp_in
@@ -431,7 +451,6 @@ FUNCTION MakeQMtxUnPck(qm_upk_in, irp_in, nz_in, text) result(qm)
 !---------------------------------------------------------------------
 #include "priunit.h"
 #include "dgroup.h"
-#include "iratdef.h"
 type(QMtx) :: qm
 type(irp), optional, intent(in) ::  irp_in
 type(nzp), optional, intent(in) ::  nz_in
@@ -607,7 +626,8 @@ subroutine print_qmtx_attrib(amat)
 #include "priunit.h"
 type(QMtx), intent(in) :: amat
 call QENTER('print_qmtx_attrib')
- write(LUPRI,'(/2x,a)') '---------- Basic attributes of the QMtx matrix data type -----------'
+ write(LUPRI,'(/2x,a)')  & 
+ '---------- Basic attributes of the QMtx matrix data type -----------'
  write(LUPRI,'(a,l1,$)') 'is_alloc:',amat%is_alloc
  write(LUPRI,'(a,l1,$)') '  simple_mtx:',amat%simple_mtx
  write(LUPRI,'(a,l1,$)') '  symmetry packed:',amat%symm_packed
@@ -615,8 +635,13 @@ call QENTER('print_qmtx_attrib')
  if (amat%is_alloc) then
   write(LUPRI,'(a,i7)') 'size of array:',amat%array_size
  endif
- write(LUPRI,'(a,2i3,a,2i3)') 'nr(1),nc(1),nr(2),nc(2):', &
-                amat%nr(1),amat%nc(1),';',amat%nr(2),amat%nc(2)
+ write(LUPRI,'(a,2i3,a,2i3,a,i1,a,i2)') 'nr(1),nc(1);nr(2),nc(2:', &
+       amat%nr(1),amat%nc(1),';',amat%nr(2),amat%nc(2),  & 
+       ' --- NZ:',amat%nz,' IREP:',amat%irep
+ if (is_string(amat%qmtx_text)) then
+  write(LUPRI,'(4x,a,$)') '...attached text:'
+  call print_string(amat%qmtx_text)
+ endif
 call QEXIT('print_qmtx_attrib')
 end subroutine print_qmtx_attrib
 END MODULE QMatrixes

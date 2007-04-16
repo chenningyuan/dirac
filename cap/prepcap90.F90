@@ -63,9 +63,10 @@ use QMatrixes
 #include "infpar.h"
 
 !  write(LUPRI,*) 'CPRIMU ',CPRIMU
-!  write(LUPRI,*) 'ALPHA: ',ALPHA
+  write(LUPRI,*) 'ALPHA: ',ALPHA
 !   write(LUPRI,*) 'NUC: ',NUC
 
+  call quit('end in test files...')
 end subroutine test_files
 
  subroutine cap_ovlp
@@ -113,6 +114,8 @@ call QENTER('cap_ovlp_comp')
    write(LUPRI,*) 'comparison of 2 matrixes: ',diff
    write(LUPRI,*) 
 
+  call  AddTextQMtx(smat,'difference smat - capovlp ')
+ ! call  AddTextQMtx(smat,'')
   call substract_qmtx(smat,capovlp)
   call QMTxInfo(smat)
 
@@ -136,25 +139,27 @@ subroutine GetCapOvlp(capovlp)
  type(QMtx), intent(inout) :: capovlp
 call QENTER('GetCapOvlp')
 
- call get_prop_saao(IPCAPR,capovlp) 
+ call get_prop_saao(IPCAPR,capovlp,1) 
+! call set_qmtx_nz(capovlp,1)
  call AddTextQMtx(capovlp,'CAP overlap integrals')
 
-  call QMtxInfo(capovlp)
+ call QMtxInfo(capovlp)
 
 call QEXIT('GetCapOvlp')
 end subroutine GetCapOvlp
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- subroutine get_prop_saao(INDXPR,propmat)
+ subroutine get_prop_saao(INDXPR,propmat,nz_in)
 !----------------------------------------------------------------
 !
 !   general purpose routine; 
 !
 ! get the SA-AO unpacked matrix "propmat" of the property INDXPR
 !
+! nz_in : optional parameter
+!
 !----------------------------------------------------------------
       use QMatrixes
-   !   use Memory
 #include "implicit.h"
 #include "priunit.h"
 
@@ -162,17 +167,21 @@ end subroutine GetCapOvlp
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbxpr.h"
-!#include "dcbprp.h"
 #include "dcbprl.h"
-!#include "dcbcap.h"
 
 #include "dummy.h"
 
 integer, intent(in) :: INDXPR
+integer(kind=8/IRAT),intent(in),optional :: nz_in
+!integer(kind=4),intent(in),optional :: nz_in
+!integer,intent(in),optional :: nz_in
+
 type(QMtx),intent(inout) :: propmat
 
 logical :: is_square
 integer(kind=4) :: KPTRI, KONEIN, KFIRST
+integer(kind=8/IRAT) :: NZX
+
  call QENTER('get_prop_saao')
 
 !
@@ -183,9 +192,16 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
       IREP = ISYM - 1
       ITIM = IPRPTIM(INDXPR)
 
-      write(LUPRI,*) 'property index=',INDXPR,' IREP,ITIM=',IREP,ITIM
+     write(LUPRI,*) 'property index=',INDXPR,' IREP,ITIM=',IREP,ITIM
+
+    if (present(nz_in)) then
+      NZX = nz_in
+    else
+      NZX = NZ
+    endif
 
 !         allocate array for matrix
+   ! propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZX) )
     propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ) )
 
      IPRINT = 20
