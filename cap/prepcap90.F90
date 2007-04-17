@@ -180,8 +180,7 @@ type(QMtx),intent(inout) :: propmat
 
 logical :: is_square
 integer(kind=4) :: KPTRI, KONEIN, KFIRST
-!integer(kind=8/IRAT) :: NZX, IREPX,NFBASX1,NFBASX2
-integer :: NZX, IREPX,NFBASX1,NFBASX2
+integer(kind=8/IRAT) :: NZX
 
  call QENTER('get_prop_saao')
 
@@ -201,28 +200,21 @@ integer :: NZX, IREPX,NFBASX1,NFBASX2
       NZX = NZ
     endif
 
-!      NZX = NZ
-      IREPX = IREP
-      NFBASX1 = NFBAS(1,0);  NFBASX2 =NFBAS(2,0)
-
 !         allocate array for matrix
    ! propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZX) )
-    !propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ) )
-    propmat = MakeQMtx(set_qmtx_unpck(NFBASX1,NFBASX2),set_irp(IREPX),set_nz(NZX) )
+    propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ) )
 
      IPRINT = 20
 
      if (ITIM == 0) then 
       is_square = .true.
       IDIMENS = N2BBASX
-      !CALL MYMEMGET('REAL',KPTRI  ,NZ*IDIMENS)
-      CALL MYMEMGET('REAL',KPTRI  ,NZX*IDIMENS)
+      CALL MYMEMGET('REAL',KPTRI  ,NZ*IDIMENS)
       CALL MYMEMGET('REAL',KONEIN ,   IDIMENS)
      else
       is_square = .false.
       IDIMENS = NNBBASX
-      !CALL MYMEMGET('REAL',KPTRI  ,NZ*IDIMENS)
-      CALL MYMEMGET('REAL',KPTRI  ,NZX*IDIMENS)
+      CALL MYMEMGET('REAL',KPTRI  ,NZ*IDIMENS)
       CALL MYMEMGET('REAL',KONEIN ,   IDIMENS) 
      endif
 
@@ -278,16 +270,11 @@ integer :: NZX, IREPX,NFBASX1,NFBASX2
 #include "dcbbas.h"
 #include "dcbham.h"
  type(QMtx), intent(inout) :: smat
- !integer(kind=8/IRAT) :: NFBASX1,NFBASX2
- integer :: NFBASX1,NFBASX2
-
 call QENTER('GetUnpckOvlpMtx')
 
  call set_iprqmtx(10)
  call set_iprmem(10)
-
- NFBASX1 = NFBAS(1,0); NFBASX2 = NFBAS(2,0)
- smat = MakeQMtx(set_qmtx_unpck(NFBASX1,NFBASX2),set_irp(0),set_nz(1), & 
+ smat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1), & 
                  'DIRAC unpacked overlap SA-AO matrix')
 ! call QMtxInfo(smat)
 ! call print_mem_param()
