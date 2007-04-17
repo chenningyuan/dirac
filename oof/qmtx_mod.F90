@@ -12,7 +12,7 @@ use Memory
 ! deta type for strings
 use mystring
 
-! neede for 64bit machines and -i8 flags
+! needed for 64bit machines and -i8 flags
 #include "iratdef.h"
 
 !   print parameter
@@ -100,12 +100,21 @@ call QENTER('compatible_2qmtx')
                  (amat%nr(2) == bmat%nr(2)) .AND.  &
                  (amat%nc(1) == bmat%nc(1)) .AND.  &  
                  (amat%nc(2) == bmat%nc(2)) .AND.  & 
-                ! (amat%array_size == bmat%array_size)  .AND.  & 
-                 (amat%simple_mtx == bmat%simple_mtx)  .AND.  &
-                 (amat%symm_packed == bmat%symm_packed).AND.  &
-                 (amat%is_real  == bmat%is_real)       .AND.  &
+
+
+                 (amat%array_size == bmat%array_size)  .AND.  & 
+
+                 !(amat%simple_mtx == bmat%simple_mtx)   .AND.  &
+                 (.not.xor(amat%simple_mtx,bmat%simple_mtx))   .AND.  &
+
+                 !( (amat%symm_packed) == (bmat%symm_packed) ) .AND.  &
+                 (.not.xor(amat%symm_packed,bmat%symm_packed) ) .AND.  &
+
+                 !(amat%is_real  == bmat%is_real)        .AND.  &
+                 (.not.xor(amat%is_real,bmat%is_real))   .AND.  &
+
                  (amat%nz == bmat%nz)
-!
+
 call QEXIT('compatible_2qmtx')
 end function compatible_2qmtx
 
@@ -162,7 +171,9 @@ subroutine set_iprqmtx(iprint)
 !            set up print variable
 !=================================================
 #include "priunit.h"
-integer (kind=8/IRAT), intent(in) :: iprint
+!integer (kind=8/IRAT), intent(in) :: iprint
+!integer (kind=4), intent(in) :: iprint
+integer, intent(in) :: iprint
 CALL QENTER('QMatrixes: set_iprqmt')
  iprint_qmtx = iprint
 CALL QEXIT('QMatrixes: set_iprqmt')
@@ -176,12 +187,14 @@ function set_irp (irep_in) result (irep_out)
 #include "priunit.h"
 type(irp) :: irep_out
 !integer (kind=4), intent(in) :: irep_in
-integer (kind=8/IRAT), intent(in) :: irep_in
+!integer (kind=8/IRAT), intent(in) :: irep_in
+integer, intent(in) :: irep_in
 CALL QENTER('QMatrixes: set_irp')
 if (.NOT.(irep_in .ge. 0 .and. irep_in .le. 8)) then
  write(lupri,*) 'QMatrixes: set_irp, entering irep_in=',irep_in
  call quit('QMatrixes: set_irp - wrong value of irep !!!')
 endif
+! save the irep
 irep_out%irep = irep_in
 CALL QEXIT('QMatrixes: set_irp')
 end function set_irp
@@ -195,7 +208,8 @@ function set_nz (nz_in) result (nz_out)
 !-----------------------------------------------
 #include "priunit.h"
 type(nzp) :: nz_out
-integer (kind=8/IRAT), intent(in) :: nz_in
+!integer (kind=8/IRAT), intent(in) :: nz_in
+integer, intent(in) :: nz_in
 CALL QENTER('QMatrixes: set_nz')
   if (.NOT.(nz_in .eq. 1 .or. nz_in .eq. 2  .or. nz_in .eq. 4)) then
     write(lupri,*) 'QMatrixes: set_nz, entering nz_in=',nz_in
@@ -215,8 +229,10 @@ function set_qmtx_pck (nr1in,nc1in,nr2in,nc2in) result(qmtx_pck_out)
 !-------------------------------------------------------------------------
 #include "priunit.h"
 type(qmtx_pck) :: qmtx_pck_out
-integer (kind=8/IRAT), intent(in) :: nr1in,nc1in
-integer (kind=8/IRAT), intent(in), optional :: nr2in,nc2in
+!integer (kind=8/IRAT), intent(in) :: nr1in,nc1in
+integer, intent(in) :: nr1in,nc1in
+!integer (kind=8/IRAT), intent(in), optional :: nr2in,nc2in
+integer, intent(in), optional :: nr2in,nc2in
 CALL QENTER('QMatrixes: set_qmtx_pck')
 ! set dimensions of fermion irep 1
 qmtx_pck_out%nr1 = nr1in; qmtx_pck_out%nc1 = nc1in 
@@ -241,8 +257,10 @@ function set_qmtx_unpck (n1in,n2in) result(qmtx_unpck_out)
 !==============================================================================
 #include "priunit.h"
 type(qmtx_unpck) :: qmtx_unpck_out
-integer (kind=8/IRAT), intent(in) :: n1in
-integer (kind=8/IRAT), intent(in), optional :: n2in
+!integer (kind=8/IRAT), intent(in) :: n1in
+integer, intent(in) :: n1in
+!integer (kind=8/IRAT), intent(in), optional :: n2in
+integer, intent(in), optional :: n2in
 CALL QENTER('QMatrixes: set_qmtx_unpck')
 qmtx_unpck_out%n1 = n1in
 ! check entering dimensions !

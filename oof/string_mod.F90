@@ -1,7 +1,7 @@
  module mystring
 !--------------------------------------------------------------------
 !
-!       Module for handling simple dynamical strings
+!     Module for handling simple dynamical string
 !
 !--------------------------------------------------------------------
  type string
@@ -17,6 +17,7 @@
 subroutine make_string(self, text)
 !-----------------------------------------------------------------------
 !
+!       create (allocte) the string
 !
 !-----------------------------------------------------------------------
 #include "priunit.h"
@@ -55,7 +56,7 @@ subroutine make_string(self, text)
  subroutine cancel_string(self)
 !----------------------------------------------------------------
 !
-!   cancel the string
+!   cancel (deallocte) the string
 !
 !----------------------------------------------------------------
 #include "priunit.h"
@@ -112,22 +113,23 @@ end subroutine print_string
  end function is_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-function get_string(self) result(str)
+function get_string(self) result(str_out)
 !-------------------------------------------------------------------
 !
-!         returns the string
+!              return the string
 !
 !-------------------------------------------------------------------
   type(string), dimension(:), intent(in) :: self
-  character(*) :: str
+  character :: str_out  !  fix for gfortran
+  !character(*) :: str_out
   integer(kind=4) :: i
   call QENTER('get_string')
   if (self(1)%is_alloc) then
    do i = 1, self(1)%str_length
-    str(i:i) = self(1)%strp(i)
+    str_out(i:i) = self(1)%strp(i)
    enddo
   else
-    str=''
+    str_out=''
   endif
   call QEXIT('get_string')
 end function get_string

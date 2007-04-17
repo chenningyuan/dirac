@@ -1047,16 +1047,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "priunit.h"
          IF (I.EQ.5.OR.I.EQ.8.OR.I.EQ.10) THEN
 C     ... d xx,yy,zz - functions
-            GET_CAPAF_FAC =  DSQRT(3)
+            GET_CAPAF_FAC =  DSQRT(3.0D0)
 C     ... f - functions
          ELSE IF (I.EQ.11.OR.I.EQ.17.OR.I.EQ.20) THEN
 C        ELSE IF (I.GE.11.OR.I.LE.20) THEN
 C           GET_CAPAF_FAC =  DSQRT(3)
 C           GET_CAPAF_FAC =  1.0D0
-            GET_CAPAF_FAC =  DSQRT(15)
+            GET_CAPAF_FAC =  DSQRT(15.0D0)
          ELSE IF (I.EQ.12.OR.I.EQ.13.OR.I.EQ.14.OR.
      &            I.EQ.16.OR.I.EQ.18.OR.I.EQ.19) THEN
-            GET_CAPAF_FAC =  DSQRT(3)
+            GET_CAPAF_FAC =  DSQRT(3.0D0)
          ELSE IF (I.EQ.15) THEN
             GET_CAPAF_FAC =  1.0D0
          ELSE
