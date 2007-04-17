@@ -109,14 +109,14 @@ call QENTER('cap_ovlp_comp')
  call GetCapOvlp(capovlp)
 
 !  compare smat & capovlp quaternion matrixes
-   diff = getdiff_qmtx(smat,capovlp)
+   diff = getdiff_part_qmtx(smat,capovlp)
    write(LUPRI,*) 
    write(LUPRI,*) 'comparison of 2 matrixes: ',diff
    write(LUPRI,*) 
 
   call  AddTextQMtx(smat,'difference smat - capovlp ')
  ! call  AddTextQMtx(smat,'')
-  call substract_qmtx(smat,capovlp)
+  call substract_part_qmtx(smat,capovlp)
   call QMTxInfo(smat)
 
 call QEXIT('cap_ovlp_comp')

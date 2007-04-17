@@ -82,11 +82,11 @@ end interface
 
 contains
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function compatible_2qmtx(amat,bmat) result(compatible)
-!------------------------------------------------------------------
+!---------------------------------------------------------------------------
 !
-! Logical function returning compatibility confirmation of two-matrixes
+!  Logical function returning compatibility confirmation of two-matrixes
 !
 !------------------------------------------------------------------
 type(QMtx), intent(in) :: amat,bmat
@@ -100,21 +100,42 @@ call QENTER('compatible_2qmtx')
                  (amat%nr(2) == bmat%nr(2)) .AND.  &
                  (amat%nc(1) == bmat%nc(1)) .AND.  &  
                  (amat%nc(2) == bmat%nc(2)) .AND.  & 
-                ! (amat%array_size == bmat%array_size)  .AND.  & 
-
-                 !(amat%simple_mtx == bmat%simple_mtx)  .AND.  &
+                 (amat%array_size == bmat%array_size)  .AND.  & 
                  (.not.xor(amat%simple_mtx,bmat%simple_mtx))   .AND.  &   
-
-                !(amat%symm_packed == bmat%symm_packed).AND.  &
                   (.not.xor(amat%symm_packed,bmat%symm_packed) ) .AND.  &
-
-                !(amat%is_real  == bmat%is_real)       .AND.  &
                  (.not.xor(amat%is_real,bmat%is_real))   .AND.  &   
-
                  (amat%nz == bmat%nz)
 !
 call QEXIT('compatible_2qmtx')
 end function compatible_2qmtx
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function compatible_2qmtx_part(amat,bmat) result(compatible)
+!---------------------------------------------------------------------------
+!
+!  Logical function returning compatibility of two-matrixes after their comarison
+!
+! NOTE: the nz may not be identical !
+!
+!------------------------------------------------------------------
+type(QMtx), intent(in) :: amat,bmat
+logical (kind=1) :: compatible
+call QENTER('compatible_2qmtx_part')
+! check matrix compatibilities
+    compatible =                          &
+                 (amat%is_alloc)   .AND.  &
+                 (bmat%is_alloc)   .AND.  & 
+                 (amat%nr(1) == bmat%nr(1)) .AND.  &
+                 (amat%nr(2) == bmat%nr(2)) .AND.  &
+                 (amat%nc(1) == bmat%nc(1)) .AND.  &  
+                 (amat%nc(2) == bmat%nc(2)) .AND.  & 
+                 (.not.xor(amat%simple_mtx,bmat%simple_mtx))   .AND.  &   
+                  (.not.xor(amat%symm_packed,bmat%symm_packed) ) .AND.  &
+                 (.not.xor(amat%is_real,bmat%is_real))  
+!
+call QEXIT('compatible_2qmtx_part')
+end function compatible_2qmtx_part
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine set_isalloc(qmat)
@@ -568,14 +589,48 @@ diff = diff / dfloat(amat%array_size)
 call QEXIT('getdiff_qmtx')
 end function getdiff_qmtx
 
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function getdiff_part_qmtx(amat,bmat) result(diff)
+!-------------------------------------------------------------------------
+!
+! returns the average difference of two quatern.matrixes
+!
+!-------------------------------------------------------------------------
+type(QMtx), intent(in) :: amat,bmat
+real(kind=8) :: diff
+logical(kind=1) :: compatible
+integer(kind=8) :: size_min
+integer(kind=4) :: i
+call QENTER('getdiff_part_qmtx')
+! check matrix compatibilities
+compatible = compatible_2qmtx_part(amat,bmat)
+
+if (.not.compatible) then
+  call print_qmtx_attrib(amat)
+  call print_qmtx_attrib(bmat)
+  call QUIT('getdiff_qmtx: matrixes are not compatible !')
+endif
+
+size_min = min(amat%array_size,bmat%array_size)
+
+diff = 0.D0
+do i=0,size_min -1
+ diff = abs(PW(amat%kstart+i) - PW(bmat%kstart+i)) + diff
+enddo
+diff = diff / dfloat(amat%array_size)
+
+call QEXIT('getdiff_part_qmtx')
+end function getdiff_part_qmtx
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine substract_qmtx(amat,bmat,fac_a,fac_b)
 !--------------------------------------------------------------------
 !
-! DO: amat := fac_a*amat - fac_b*bmat;
+!    DO: amat := fac_a*amat - fac_b*bmat;
 !  returns results in "amat"
 !
-! Substract bmat from amat
+!  Substract bmat from amat
 !
 !--------------------------------------------------------------------
 type(QMtx), intent(inout) :: amat
@@ -589,11 +644,14 @@ call QENTER('substract_qmtx')
 compatible = compatible_2qmtx(amat,bmat)
 
 if (.not.compatible) then
-  call print_qmtx_attrib(amat)
-  call print_qmtx_attrib(bmat)
-  call QUIT('getdiff_qmtx: matrixes are not compatible !')
+ call print_qmtx_attrib(amat)
+ call print_qmtx_attrib(bmat)
+ call QUIT('getdiff_qmtx: matrixes are not compatible !')
 endif
 
+!
+! todo: replace later by DAXPY  !!!
+!
 if (present(fac_a).and.present(fac_b)) then
 
 do i=0,amat%array_size -1
@@ -621,6 +679,67 @@ endif
 
 call QEXIT('substract_qmtx')
 end subroutine substract_qmtx
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine substract_part_qmtx(amat,bmat,fac_a,fac_b)
+!--------------------------------------------------------------------
+!
+!    DO: amat := fac_a*amat - fac_b*bmat;
+!  returns results in "amat"
+!
+!  Substract partially bmat from amat :  find the lowest NZ first 
+!  to set the size
+!
+!--------------------------------------------------------------------
+type(QMtx), intent(inout) :: amat
+type(QMtx), intent(in) :: bmat
+real(kind=8),intent(in),optional :: fac_a,fac_b
+real(kind=8) :: temp
+logical(kind=1) :: compatible
+integer(kind=4) :: i
+integer(kind=8) :: size_min
+call QENTER('substract_part_qmtx')
+! check matrix compatibilities
+compatible = compatible_2qmtx_part(amat,bmat)
+
+if (.not.compatible) then
+ call print_qmtx_attrib(amat)
+ call print_qmtx_attrib(bmat)
+ call QUIT('getdiff_part_qmtx: matrixes are not compatible !')
+endif
+
+size_min = min(amat%array_size,bmat%array_size)
+
+!
+! todo: replace later by DAXPY  !!!
+!
+if (present(fac_a).and.present(fac_b)) then
+
+do i=0,size_min -1
+ temp = PW(amat%kstart+i)
+ PW(amat%kstart+i)  =  fac_a*temp - fac_b*PW(bmat%kstart+i)
+enddo
+
+else if (present(fac_a).and..not.present(fac_b)) then
+
+do i = 0, size_min -1
+ temp = PW(amat%kstart+i)
+ PW(amat%kstart+i)  =  fac_a*temp - PW(bmat%kstart+i)
+enddo
+
+else if (.not.present(fac_a).and..not.present(fac_b)) then
+
+do i=0,size_min -1
+ temp = PW(amat%kstart+i)
+ PW(amat%kstart+i)  =  temp - PW(bmat%kstart+i)
+enddo
+
+else
+ call QUIT('substract_qmtx: dead branch !!!')
+endif
+
+call QEXIT('substract_part_qmtx')
+end subroutine substract_part_qmtx
 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
