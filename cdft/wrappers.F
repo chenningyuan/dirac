@@ -566,11 +566,13 @@ C=======================================================================
       L = 1
       M = 2
       N = 2
-      A = D1
-      B = D1
+      A = D1/DENSITY
+      B = D1/DENSITY
       ITRANSFORM = 0
 
-      BY = D1/DENSITY
+      SIGN1 = D1
+      SIGN2 = D1
+      SIGN3 = -D1
 
       DO IXYZ = 1,3
 
@@ -582,8 +584,8 @@ C=======================================================================
 
         CALL GET_DENSITY_SUB(LGET,.TRUE.,
      &                       VECTOR(IXYZ),
-     &                       BY*A,
-     &                       BY*B,
+     &                       SIGN1*A,
+     &                       SIGN1*B,
      &                       K,L,M,N,
      &                       1,ITRANSFORM,IREPOP,
      &                       GAO1(1+JOFF*(JXYZ-1)),
@@ -591,18 +593,39 @@ C=======================================================================
      &                       DMAT,BUF)
         CALL GET_DENSITY_SUB(LGET,.FALSE.,
      &                       VECTOR(IXYZ),
-     &                       -BY*A,
-     &                       -BY*B,
+     &                       -SIGN1*A,
+     &                       -SIGN1*B,
      &                       K,L,M,N,
      &                       1,ITRANSFORM,IREPOP,
      &                       GAO1(1+JOFF*(KXYZ-1)),
      &                       GAO1(1+JOFF*(JXYZ-1)),
      &                       DMAT,BUF)
 
+        C = SIGN3*DENSITY_GRADIENT(JXYZ)/(DENSITY*D2)
         CALL GET_DENSITY_SUB(LGET,.FALSE.,
      &                       VECTOR(IXYZ),
-     &                       -BY*BY*DENSITY_GRADIENT(KXYZ)*A,
-     &                       -BY*BY*DENSITY_GRADIENT(KXYZ)*B,
+     &                       SIGN1*SIGN2*A*C,
+     &                       SIGN1*SIGN2*B*C,
+     &                       K,L,M,N,
+     &                       1,ITRANSFORM,IREPOP,
+     &                       GAO,
+     &                       GAO1(1+JOFF*(KXYZ-1)),
+     &                       DMAT,BUF)
+        CALL GET_DENSITY_SUB(LGET,.FALSE.,
+     &                       VECTOR(IXYZ),
+     &                       -SIGN1*SIGN2*A*C,
+     &                       -SIGN1*SIGN2*B*C,
+     &                       K,L,M,N,
+     &                       1,ITRANSFORM,IREPOP,
+     &                       GAO1(1+JOFF*(KXYZ-1)),
+     &                       GAO,
+     &                       DMAT,BUF)
+
+        C = -SIGN3*DENSITY_GRADIENT(KXYZ)/(DENSITY*D2)
+        CALL GET_DENSITY_SUB(LGET,.FALSE.,
+     &                       VECTOR(IXYZ),
+     &                       SIGN1*SIGN2*A*C,
+     &                       SIGN1*SIGN2*B*C,
      &                       K,L,M,N,
      &                       1,ITRANSFORM,IREPOP,
      &                       GAO,
@@ -610,12 +633,12 @@ C=======================================================================
      &                       DMAT,BUF)
         CALL GET_DENSITY_SUB(LGET,.FALSE.,
      &                       VECTOR(IXYZ),
-     &                       BY*BY*DENSITY_GRADIENT(JXYZ)*A,
-     &                       BY*BY*DENSITY_GRADIENT(JXYZ)*B,
+     &                       -SIGN1*SIGN2*A*C,
+     &                       -SIGN1*SIGN2*B*C,
      &                       K,L,M,N,
      &                       1,ITRANSFORM,IREPOP,
+     &                       GAO1(1+JOFF*(JXYZ-1)),
      &                       GAO,
-     &                       GAO1(1+JOFF*(KXYZ-1)),
      &                       DMAT,BUF)
 
       ENDDO

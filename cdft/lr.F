@@ -350,23 +350,85 @@ C=======================================================================
      &               DTRMAT(1+JOFF),
      &               BUF)
 
-          RS  = (4.1887902D0*DENSITY)**DP13
+!        IC = 1
+!        DO IXYZ = 1,3
+
+!          FO_VORTICITY(IXYZ) = D0
+
+!          JXYZ = IXYZ + 1
+!          KXYZ = JXYZ + 1
+!          IF(JXYZ .GT. 3) JXYZ = JXYZ - 3
+!          IF(KXYZ .GT. 3) KXYZ = KXYZ - 3
+
+!          S = D1/DENSITY
+
+!          CALL BLUBDEN(A,IC,ISYMOP(IMAT)-1,
+!    &                  DTRMAT(1+JOFF),
+!    &                  GAO1(1+NBAST*(JXYZ-1)),
+!    &                  GAO1(1+NBAST*(KXYZ-1)),
+!    &                  BUF)
+!          FO_VORTICITY(IXYZ) = FO_VORTICITY(IXYZ) + S*A
+
+!          CALL BLUBDEN(A,IC,ISYMOP(IMAT)-1,
+!    &                  DTRMAT(1+JOFF),
+!    &                  GAO1(1+NBAST*(KXYZ-1)),
+!    &                  GAO1(1+NBAST*(JXYZ-1)),
+!    &                  BUF)
+!          FO_VORTICITY(IXYZ) = FO_VORTICITY(IXYZ) - S*A
+
+!          SS = D1/(D2*DENSITY*DENSITY)
+!          S = D1
+
+!          CALL BLUBDEN(A,IC,ISYMOP(IMAT)-1,
+!    &                  DTRMAT(1+JOFF),
+!    &                  GAO,
+!    &                  GAO1(1+NBAST*(KXYZ-1)),
+!    &                  BUF)
+!          FO_VORTICITY(IXYZ) = FO_VORTICITY(IXYZ) 
+!    &                        + (SS)*(S)*A*DENSITY_GRADIENT(JXYZ)
+!          CALL BLUBDEN(A,IC,ISYMOP(IMAT)-1,
+!    &                  DTRMAT(1+JOFF),
+!    &                  GAO1(1+NBAST*(KXYZ-1)),
+!    &                  GAO,
+!    &                  BUF)
+!          FO_VORTICITY(IXYZ) = FO_VORTICITY(IXYZ) 
+!    &                        + (SS)*(-S)*A*DENSITY_GRADIENT(JXYZ)
+!          CALL BLUBDEN(A,IC,ISYMOP(IMAT)-1,
+!    &                  DTRMAT(1+JOFF),
+!    &                  GAO,
+!    &                  GAO1(1+NBAST*(JXYZ-1)),
+!    &                  BUF)
+!          FO_VORTICITY(IXYZ) = FO_VORTICITY(IXYZ) 
+!    &                        + (-SS)*(S)*A*DENSITY_GRADIENT(KXYZ)
+!          CALL BLUBDEN(A,IC,ISYMOP(IMAT)-1,
+!    &                  DTRMAT(1+JOFF),
+!    &                  GAO1(1+NBAST*(JXYZ-1)),
+!    &                  GAO,
+!    &                  BUF)
+!          FO_VORTICITY(IXYZ) = FO_VORTICITY(IXYZ) 
+!    &                        + (-SS)*(-S)*A*DENSITY_GRADIENT(KXYZ)
+!        ENDDO
+
+
+
+
+
+          RS  = (4.1887902D0*DENSITY)**(-DP13)
+
           IF(RS .GT. 10.0D0) GOTO 999
 
           DKF = (29.6088132D0*DENSITY)**DP13
 
-          A0 = 0.042D0
-          A1 = D1
-          A2 = 0.028D0
+          CHI_RATIO = (D1 + 0.028D0*RS)*DEXP(-0.042D0*RS)
 
-          CHI_RATIO = DEXP(-A0*RS)*(A1 + A2*RS)
+          G = D2*WEIGHT*(DKF/236.870506D0)*(CHI_RATIO - D1)
 
-          G = (DKF/236.870506D0)*(CHI_RATIO - D1)
+          CALL DSCAL(3,G,FO_VORTICITY,1)
 
-!         magic factor !?
-          G = G/D4
+          FO_VORTICITY_NORM = DSQRT(DDOT(3,FO_VORTICITY,1,
+     &                                     FO_VORTICITY,1))
 
-          CALL DSCAL(3,G*WEIGHT,FO_VORTICITY,1)
+          IF(FO_VORTICITY_NORM .LT. DFTHRL) GOTO 999
 
           CALL GET_V(.FALSE.,
      &               FO_VORTICITY,
@@ -378,10 +440,176 @@ C=======================================================================
      &               EXCMAT(1+JOFF),
      &               BUF)
 
+
+
+
+!        DO IXYZ = 1,3
+
+!          JXYZ = IXYZ + 1
+!          KXYZ = JXYZ + 1
+!          IF(JXYZ .GT. 3) JXYZ = JXYZ - 3
+!          IF(KXYZ .GT. 3) KXYZ = KXYZ - 3
+
+!          S = D1/DENSITY
+
+!          A = S*FO_VORTICITY(IXYZ)
+!          CALL BLUBEXC(A,ISYMOP(IMAT)-1,
+!    &                  EXCMAT(1+JOFF),
+!    &                  GAO1(1+NBAST*(JXYZ-1)),
+!    &                  GAO1(1+NBAST*(KXYZ-1)))
+!          A = -S*FO_VORTICITY(IXYZ)
+!          CALL BLUBEXC(A,ISYMOP(IMAT)-1,
+!    &                  EXCMAT(1+JOFF),
+!    &                  GAO1(1+NBAST*(KXYZ-1)),
+!    &                  GAO1(1+NBAST*(JXYZ-1)))
+
+!          SS = D1/(D2*DENSITY*DENSITY)
+!          S = D1
+
+
+
+!          A = FO_VORTICITY(IXYZ)*DENSITY_GRADIENT(JXYZ)
+!          A = A*(SS)*(S)
+!          CALL BLUBEXC(A,ISYMOP(IMAT)-1,
+!    &                  EXCMAT(1+JOFF),
+!    &                  GAO,
+!    &                  GAO1(1+NBAST*(KXYZ-1)))
+!          A = FO_VORTICITY(IXYZ)*DENSITY_GRADIENT(JXYZ)
+!          A = A*(SS)*(-S)
+!          CALL BLUBEXC(A,ISYMOP(IMAT)-1,
+!    &                  EXCMAT(1+JOFF),
+!    &                  GAO1(1+NBAST*(KXYZ-1)),
+!    &                  GAO)
+
+
+!          A = FO_VORTICITY(IXYZ)*DENSITY_GRADIENT(KXYZ)
+!          A = A*(-SS)*(S)
+!          CALL BLUBEXC(A,ISYMOP(IMAT)-1,
+!    &                  EXCMAT(1+JOFF),
+!    &                  GAO,
+!    &                  GAO1(1+NBAST*(JXYZ-1)))
+!          A = FO_VORTICITY(IXYZ)*DENSITY_GRADIENT(KXYZ)
+!          A = A*(-SS)*(-S)
+!          CALL BLUBEXC(A,ISYMOP(IMAT)-1,
+!    &                  EXCMAT(1+JOFF),
+!    &                  GAO1(1+NBAST*(JXYZ-1)),
+!    &                  GAO)
+
+
+!        ENDDO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  999      CONTINUE
 
         ENDIF
       ENDDO
 
       RETURN
+      END
+
+
+
+
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE blubexc(VXC,IREPOP,EXCMAT,GAOL,GAOR)
+C***********************************************************************
+C
+C     Construct Kohn-Sham matrix
+C
+C     Written by T.Saue and T.Helgaker
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D2=2.0D0)
+C
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAOL(NBAST),GAOR(NBAST),EXCMAT(NBAST,NBAST)
+#else
+      DIMENSION GAOL(NTBAS(0)),GAOR(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0))
+#endif
+C      
+#include "ibtfun.h"
+C
+      DO 10 IRP1 = 0,NBSYM-1
+        IRP2 = IBTXOR(IRP1,IREPOP)
+        DO 20 IC = 1,MC
+          NB1 = NBBAS(IRP1,IC)
+          IF(NB1.EQ.0) GOTO 20
+          NB2 = NBBAS(IRP2,IC)
+          IF(NB2.EQ.0) GOTO 20
+          JB1 = IBBAS(IRP1,IC)
+          JB2 = IBBAS(IRP2,IC)
+          DO J = 1, NBBAS(IRP2,IC)
+            GVXC = VXC*GAOR(JB2+J)
+            CALL DAXPY(NBBAS(IRP1,IC),GVXC,
+     &                 GAOL(JB1+1),1,EXCMAT(JB1+1,JB2+J),1)
+          ENDDO
+   20   CONTINUE
+   10 CONTINUE
+C
+      END
+
+
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck getrh1 */
+      SUBROUTINE blubden(RHO,IC,IREPOP,DMAT,GAOL,GAOR,BUF)
+C***********************************************************************
+C
+C     Get density in point (PX,PY,PZ).
+C     Gets values of AOs in this point from GAO
+C
+C     Written by T.Saue and T.Helgaker
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
+C
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAOL(NBAST),DMAT(NBAST,NBAST),BUF(*)
+     &          GAOR(NBAST)
+#else
+      DIMENSION GAOL(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*),
+     &          GAOR(NTBAS(0))
+#endif
+C
+#include "ibtfun.h"
+C      
+      RHO = D0
+      DO 10 IRP1 = 0,NBSYM-1
+        NB1 = NBBAS(IRP1,IC)
+        IF(NB1.EQ.0) GOTO 10
+        JB1 = IBBAS(IRP1,IC)+1
+        IRP2 = IBTXOR(IRP1,IREPOP)
+        NB2 = NBBAS(IRP2,IC)
+        IF(NB2.EQ.0) GOTO 10
+        JB2 = IBBAS(IRP2,IC)+1
+        CALL DGEMV('N',NBBAS(IRP1,IC),NBBAS(IRP2,IC),D1,
+     &             DMAT(JB1,JB2),NTBAS(0),GAOR(JB2),1,D0,BUF,1)
+        RHO = RHO + DDOT(NBBAS(IRP1,IC),GAOL(JB1),1,BUF,1)
+   10 CONTINUE
+C
       END
