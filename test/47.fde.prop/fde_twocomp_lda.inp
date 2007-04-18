@@ -9,6 +9,11 @@ Water molecule. tests for frozen density embedding
 .DFT
  LDA
 .FDE
+*FDE
+.EMBPOT
+grid.out.full
+.PRINT
+ 1
 **INTEGRALS
 .NUCMOD
 1
