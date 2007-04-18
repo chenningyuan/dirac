@@ -101,7 +101,7 @@ use cap
 #include "implicit.h"
 #include "priunit.h"
 type(QMtx) :: smat,capovlp
-
+double precision, parameter :: diff_thrs = 1.0D-12
 call QENTER('cap_ovlp_comp')
 
  call GetUnpckOvlpMtx(smat)
@@ -109,15 +109,17 @@ call QENTER('cap_ovlp_comp')
  call GetCapOvlp(capovlp)
 
 !  compare smat & capovlp quaternion matrixes
-   diff = getdiff_part_qmtx(smat,capovlp)
-   write(LUPRI,*) 
-   write(LUPRI,*) 'comparison of 2 matrixes: ',diff
-   write(LUPRI,*) 
+ diff = getdiff_part_qmtx(smat,capovlp)
+  write(LUPRI,*) 
+  write(LUPRI,*) 'comparison of the 2 matrixes: ',diff
+  write(LUPRI,*) 
 
-  call  AddTextQMtx(smat,'difference smat - capovlp ')
+ if (diff > diff_thrs) then
+  call  AddTextQMtx(smat,'******** difference smat - capovlp ***********')
  ! call  AddTextQMtx(smat,'')
   call substract_part_qmtx(smat,capovlp)
   call QMTxInfo(smat)
+ endif
 
 call QEXIT('cap_ovlp_comp')
 end subroutine cap_ovlp_comp
@@ -256,7 +258,7 @@ integer(kind=8/IRAT) :: NZX
  end subroutine get_prop_saao
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- subroutine GetUnpckOvlpMtx(smat)
+subroutine GetUnpckOvlpMtx(smat)
 !===========================================================================
 !
 !
@@ -275,7 +277,7 @@ call QENTER('GetUnpckOvlpMtx')
  call set_iprqmtx(10)
  call set_iprmem(10)
  smat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1), & 
-                 'DIRAC unpacked overlap SA-AO matrix')
+                 'DIRAC unpacked overlap SA-AO matrix' )
 ! call QMtxInfo(smat)
 ! call print_mem_param()
 
@@ -285,9 +287,10 @@ call QENTER('GetUnpckOvlpMtx')
  write(LUPRI,*) 'SSMTRC=',SSMTRC
 
 ! call lower level routine
- call GTOVLT(PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree)
+ call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree )
 
  call QMtxInfo(smat)
 
   call QEXIT('GetUnpckOvlpMtx')
- end subroutine GetUnpckOvlpMtx
+end subroutine GetUnpckOvlpMtx
+
