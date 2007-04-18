@@ -183,20 +183,23 @@ SUBROUTINE UnStickMemory
 !
 !--------------------------------------------------------------
 #include "priunit.h"
+integer(kind=4), parameter :: print_default = 10
+CALL QENTER('UnStickMemory')
 if (associated(PW)) then
-  if (iprmem > 10) then
+  if ( iprmem > print_default ) then
     write(LUPRI,*) 'Entering PW is already associated'
   endif
 else
-  if (iprmem > 10) then
+  if ( iprmem > print_default ) then
     write(LUPRI,*) 'Entering PW is NOT associated !'
   endif
 endif
 nullify(PW);
 !  ... 
-if (iprmem > 10) then
+if ( iprmem > print_default ) then
   write(LUPRI,'(A)') 'PW pointer was deassociated!'
 endif
+CALL QEXIT('UnStickMemory')
 END SUBROUTINE UnStickMemory
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

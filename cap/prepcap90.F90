@@ -84,7 +84,7 @@ use cap
 
   call cap_ovlp_comp
 
-  call quit('cap_ovlp')
+!  call quit('cap_ovlp')
  endif
  CALL QEXIT('cap_ovlp')
  end subroutine cap_ovlp
@@ -101,7 +101,7 @@ use cap
 #include "implicit.h"
 #include "priunit.h"
 type(QMtx) :: smat,capovlp
-double precision, parameter :: diff_thrs = 1.0D-12
+double precision, parameter :: diff_thrs = 1.0D-7
 call QENTER('cap_ovlp_comp')
 
  call GetUnpckOvlpMtx(smat)
@@ -116,7 +116,6 @@ call QENTER('cap_ovlp_comp')
 
  if (diff > diff_thrs) then
   call  AddTextQMtx(smat,'******** difference smat - capovlp ***********')
- ! call  AddTextQMtx(smat,'')
   call substract_part_qmtx(smat,capovlp)
   call QMTxInfo(smat)
  endif
@@ -267,7 +266,7 @@ subroutine GetUnpckOvlpMtx(smat)
 !
 !===========================================================================
    use QMatrixes
-   use Memory
+!   use Memory
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -287,7 +286,7 @@ call QENTER('GetUnpckOvlpMtx')
  write(LUPRI,*) 'SSMTRC=',SSMTRC
 
 ! call lower level routine
- call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree )
+ call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree() )
 
  call QMtxInfo(smat)
 

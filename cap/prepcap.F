@@ -167,6 +167,59 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck capints */
+      SUBROUTINE CAP_STUFF(WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbcap.h"
+
+      DIMENSION WORK(LWORK)
+      CALL QENTER('CAP_STUFF')
+
+      IF (CAPOVLP) THEN
+        CALL CAPINTS(WORK,LWORK)
+        CALL CAP_OVLP_STUFF(WORK,LWORK)
+        call quit('CAP_STUFF: only integral comparison !')
+      ELSE
+        CAPOVLP=.TRUE.
+        CALL CAPINTS(WORK,LWORK)
+        CALL CAP_OVLP_STUFF(WORK,LWORK)
+        CALL SYSTEM('/bin/rm PEMAT')
+        CAPOVLP=.FALSE.
+        CALL CAPINTS(WORK,LWORK)
+      ENDIF
+
+      CALL QEXIT('CAP_STUFF')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck cap_ovlp */
+      SUBROUTINE CAP_OVLP_STUFF(WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+       USE Memory
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION WORK(LWORK)
+      CALL QENTER('CAP_OVLP_STUFF')
+
+      call StickMemory(WORK,LWORK)
+
+      call cap_ovlp
+
+      call UnStickMemory
+
+      CALL QEXIT('CAP_OVLP_STUFF')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck capints */
       SUBROUTINE CAPINTS(WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C

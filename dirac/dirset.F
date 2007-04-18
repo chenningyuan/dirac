@@ -52,7 +52,6 @@ C
 C***********************************************************************
 #ifdef MOD_CAP
       USE Memory
-!     USE Cap
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -86,9 +85,9 @@ CMI  ... call of F90 routine
 !        call TEST_OOF(WORK,LWORK)
 !        call StickMemory(WORK,LWORK)
 !        call TEST_OOF ! memmory was unsticked here
-
-         call StickMemory(WORK,LWORK) ! stick again
-         call cap_ovlp
+!         call StickMemory(WORK,LWORK) ! stick again
+!         call cap_ovlp
+        IF (CAP) CALL CAP_STUFF(WORK,LWORK)
 #endif
 
       IF(DOHRM) RETURN

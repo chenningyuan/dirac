@@ -139,7 +139,7 @@ CMI   ... instead of calling OP1INI in HAMINP, call it after
 
 #ifdef MOD_CAP
 CMI     ... call CAP integrals generation here
-      IF (CAP) CALL CAPINTS(WORK,LWORK)
+!      IF (CAP) CALL CAP_STUFF(WORK,LWORK)
 #endif
 C
 C     Give estimate of memory needed for two-electron integrals

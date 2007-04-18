@@ -36,7 +36,7 @@ depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
 
 f90dep: ;\
-       ../utils/sfmakedepend.pl -I include $(F90_OBJS:.o=.F90)
+       ../utils/sfmakedepend.pl -I include $(F90_OBJS:.o=.F90)  $(F77_OBJS:.o=.F)
 
 #embedding.o: emb_frozen_orbitals.o emb_settings.o
  

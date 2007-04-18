@@ -341,9 +341,12 @@ SUBROUTINE QMtxInfo(qm)
 type(QMtx),intent(in) :: qm
 integer(kind=4) :: ifsym,nt
 integer (kind=8) :: ioff
+!real (kind=8), pointer, dimension(:) :: my_work_p
 CALL QENTER('QMtxInfo')
 
 CALL HEADER('Output from QMtxInfo',-1)
+
+!call get_mem_pointer(my_work_p)
 
 if (is_string(qm%qmtx_text)) then
    !write(LUPRI,'(4x,a,a)') 'Attached text 1:',get_string(qm%qmtx_text)
