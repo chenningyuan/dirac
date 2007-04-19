@@ -2695,7 +2695,7 @@ C
 C
 #include "dcblab.h"
 #include "dcbana.h"
-#include "visual.h"
+#include "visual_old.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
      &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALI',
@@ -2721,7 +2721,7 @@ C
       DOLOC   = .FALSE.
 C
 C
-!     initialize visual.h
+!     initialize visual_old.h
       DOPLOT = .FALSE.
 C
 C
@@ -6276,7 +6276,7 @@ C=======================================================================
 
 #include "dcbgen.h"
 #include "dcbana.h"
-#include "visual.h"
+#include "visual_old.h"
 #include "cdft.h"
 #include "dgroup.h"
 
@@ -6312,7 +6312,7 @@ C=======================================================================
         SET = .TRUE.
       ENDIF
 
-!     initialize visual.h
+!     initialize visual_old.h
 
       NCUBE(1)             = 80
       NCUBE(2)             = 80

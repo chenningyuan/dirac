@@ -33,7 +33,8 @@ usage()
    echo '     -xpp             : Include PP excitation energy module'
    echo '     -krmc            : Include KR-MCSCF and LUCIAREL modules'
    echo '     -emb             : Include ab initio/DFT-embedding module (with the F90/95 modularity feature)'
-   echo '     -cdft            : Include CDFT module'
+   echo '     -cdft            : Include SDFT/CDFT module'
+   echo '     -visual          : Include visualization module'
    echo '     -cap             : Include CAP module'
    echo '     -oof             : Include object oriented modularity of Fotran 90/95'
    echo '     tarfile=make     : only generate new Makefile'
@@ -170,7 +171,7 @@ setup()
       fi
    fi
    #
-   #  CDFT module
+   #  SDFT/CDFT module
    #
    if [ -n "$CDFTMOD" ]; then
       if [ -n "$DFTMOD" ]; then
@@ -178,10 +179,20 @@ setup()
          CDFTOBJ='$(CDFTOBJS)'
          CDFTMAK=CDFT_OBJ
          CDFTTAR=1
-         echo " - CDFT module"
+         echo " - SDFT/CDFT module"
       else
-         echo "CDFT module not included - depends on DFT module "
+         echo "SDFT/CDFT module not included - depends on DFT module "
       fi
+   fi
+   #
+   #  visualization module
+   #
+   if [ -n "$VISUALMOD" ]; then
+      VISUALFLG='-DMOD_VISUAL'
+      VISUALOBJ='$(VISUALOBJS)'
+      VISUALMAK=VISUAL_OBJ
+      VISUALTAR=1
+      echo " - visualization module"
    fi
    #
    #         CAP module
@@ -373,6 +384,11 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/cdft/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
+   if [ "$VISUALTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/visual/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
    if [ "$CAPTAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/cap/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
@@ -436,8 +452,8 @@ make_makefile()
 {
    echo "*** Making general Makefile"
 #   echo
-   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $CDFTOBJ $CAPOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
-   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $CDFTMAK $CAPMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
+   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $CDFTOBJ $VISUALOBJ $CAPOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $CDFTMAK $VISUALMAK $CAPMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
    #
    # Write current Makefile
    #
@@ -453,7 +469,7 @@ include ./Makefile.config
 
 OBJS = \\
 dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o dirac/dirv1c.o \\
-dirac/dirout.o dirac/dirana.o dirac/visual.o dirac/dirrdn.o dirac/dirscf.o \\
+dirac/dirout.o dirac/dirana.o dirac/visual_old.o dirac/dirrdn.o dirac/dirscf.o \\
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \\
 dirac/dirgrd.o dirac/dirsol.o dirac/dirgeo.o dirac/dirspf.o \\
 dirac/diropen.o dirac/diraos.o  dirac/dirbss.o \\
@@ -684,13 +700,23 @@ embedding/diremb.o
 EOF
 fi
 #
-#  Object-files for CDFT module
+#  Object-files for SDFT/CDFT module
 #
 if [ -n "$CDFTMOD" ]; then
 cat <<EOF>> Makefile
 
 CDFTOBJS = \\
 cdft/wrappers.o cdft/exc.o cdft/lr.o cdft/qr.o cdft/current.o cdft/functional_derivatives.o
+EOF
+fi
+#
+#  Object-files for visualization module
+#
+if [ -n "$VISUALMOD" ]; then
+cat <<EOF>> Makefile
+
+VISUALOBJS = \\
+visual/visual.o
 EOF
 fi
 #
@@ -723,7 +749,7 @@ OBJSMXM = gp/mxmpack.o
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
 	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \\
         \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS) \\
-        \$(OOF_OBJS)  \$(CAP_OBJS)
+        \$(OOF_OBJS) \$(CAP_OBJS) \$(VISUALOBJS)
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
@@ -858,6 +884,9 @@ if [ -n "$EMBMOD" ]; then
 fi
 if [ -n "$CDFTMOD" ]; then
    echo '	cd cdft  ; $(MAKE) clean' >> Makefile
+fi
+if [ -n "$VISUALMOD" ]; then
+   echo '	cd visual  ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$CAPMOD" ]; then
    echo '	cd cap  ; $(MAKE) clean' >> Makefile
@@ -1002,6 +1031,13 @@ CDFT_OBJ :
 	cd cdft; \$(MAKE) all
 EOF
 fi
+if [ -n "$VISUALMOD" ]; then
+cat <<EOF>> Makefile
+
+VISUAL_OBJ :
+	cd visual; \$(MAKE) all
+EOF
+fi
 if [ -n "$CAPMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -1080,6 +1116,9 @@ if [ -n "$EMBMOD" ]; then
 fi
 if [ -n "$CDFTMOD" ]; then
    TEMP="$TEMP cdft"
+fi
+if [ -n "$VISUALMOD" ]; then
+   TEMP="$TEMP visual"
 fi
 if [ -n "$CAPMOD" ]; then
    TEMP="$TEMP cap"
@@ -1162,8 +1201,8 @@ which_modules()
 {
 #  
 #
-MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $CAPFLG $LRGMOLFLG $OOF_FLG"
-MODS_IBM="$ERIFLG,$DNFFLG,$FMMFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG,$EMBFLG,$CDFTFLG,$CAPFLG,$LRGMOLFLG,$OOF_FLG"
+MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $CAPFLG $LRGMOLFLG $OOF_FLG"
+MODS_IBM="$ERIFLG,$DNFFLG,$FMMFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG,$EMBFLG,$CDFTFLG,$VISUALFLG,$CAPFLG,$LRGMOLFLG,$OOF_FLG"
 dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
@@ -1182,6 +1221,9 @@ if [ -n "$EMBFLG" ]; then
 fi
 if [ -n "$CDFTFLG" ]; then
    dirs="$dirs cdft"
+fi
+if [ -n "$VISUALFLG" ]; then
+   dirs="$dirs visual"
 fi
 if [ -n "$CAPFLG" ]; then
    dirs="$dirs cap"
@@ -1263,6 +1305,9 @@ while [ -n "$1" ]; do
          ;;
       -cdft)
          CDFTMOD=1
+         ;;
+      -visual)
+         VISUALMOD=1
          ;;
       -cap)
          CAPMOD=1

@@ -18,7 +18,7 @@ C=======================================================================
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
-#include "visual.h"
+#include "visual_old.h"
 #include "maxorb.h"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -231,7 +231,7 @@ C=======================================================================
 
       CHARACTER*50 FILE_NAME
 
-#include "visual.h"
+#include "visual_old.h"
 #include "dcborb.h"
 
       LOGICAL   LBIT,
@@ -779,7 +779,7 @@ C=======================================================================
       PARAMETER (DP53 = 5.0D0/3.0D0)
       PARAMETER (NR_QUANTITIES = 26)
 
-#include "visual.h"
+#include "visual_old.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -1130,7 +1130,7 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
 #include "dcborb.h"
-#include "visual.h"
+#include "visual_old.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
@@ -1431,7 +1431,7 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
 #include "dcborb.h"
-#include "visual.h"
+#include "visual_old.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 
@@ -1585,7 +1585,7 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
       PARAMETER (NR_QUANTITIES = 26)
 
-#include "visual.h"
+#include "visual_old.h"
 
       LOGICAL   LBIT,
      &          QUANTITY_IS_A_VECTOR(NR_QUANTITIES)
