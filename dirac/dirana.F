@@ -113,7 +113,9 @@ C***********************************************************************
 C
 C
 C
-      IF(DOPLOT) CALL PLOT(WORK,LWORK)
+#if defined (MOD_VISUAL)
+      IF(DOPLOT) CALL VISUAL(WORK,LWORK)
+#endif
 C
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CALL ANALYZE_PROPERTY_GRAD(WORK,LWORK)
