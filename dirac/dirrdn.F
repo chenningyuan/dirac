@@ -2695,7 +2695,7 @@ C
 C
 #include "dcblab.h"
 #include "dcbana.h"
-#include "visual_old.h"
+#include "visual.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
      &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALI',
@@ -2721,8 +2721,8 @@ C
       DOLOC   = .FALSE.
 C
 C
-!     initialize visual_old.h
-      DOPLOT = .FALSE.
+!     initialize visual.h
+      DO_VISUAL = .FALSE.
 C
 C
 C     Read menu file
@@ -2809,7 +2809,7 @@ C&&&& LOCALIZE : Molecular orbital localization
   108    CONTINUE
             GO TO 100
   109    CONTINUE
-            DOPLOT = .TRUE.
+            DO_VISUAL = .TRUE.
             NJOBS = NJOBS +1
             GO TO 100
   110    CONTINUE
@@ -2915,7 +2915,7 @@ C
       IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
 #endif
       IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
-      IF(DOPLOT) CALL PLOT_INPUT(WORD,.TRUE.,WORK,LWORK)
+      IF(DO_VISUAL) CALL PLOT_INPUT(WORD,.TRUE.,WORK,LWORK)
 C
       CALL QEXIT('ANWINP')
       RETURN
@@ -6276,7 +6276,7 @@ C=======================================================================
 
 #include "dcbgen.h"
 #include "dcbana.h"
-#include "visual_old.h"
+#include "visual.h"
 #include "cdft.h"
 #include "dgroup.h"
 
@@ -6285,21 +6285,36 @@ C=======================================================================
       DIMENSION WORK(LWORK)
 
       SAVE SET
-      DATA TABLE /'.INTEGR','.READXV','.1D    ','.2D    ', !  1  2  3  4
-     &            '.3D    ','.N     ','.M     ','.J     ', !  5  6  7  8
-     &            '.ELF   ','.1DSTEP','.3DADD ','.XXXXXX', !  9 10 11 12
-     &            '.CUBE  ','.XXXXXX','.NXVEC ','.STRING', ! 13 14 15 16
-     &            '.SKIPEP','.SKIPEE','.RXJ   ','.JDIA  ', ! 17 18 19 20
-     &            '.K     ','.H     ','.GAMMA5','.JPARA ', ! 21 22 23 24
-     &            '.DIVM  ','.DIVJ  ','.ROTM  ','.ROTJ  ', ! 25 26 27 28
-     &            '.DIVJPA','.ROTJPA','.XXXXXX','.XXXXXX', ! 29 30 31 32
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 33 34 35 36
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 37 38 39 40
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 41 42 43 44
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX', ! 45 46 47 48
-     &            '.XXXXXX','.OPT0  ','.OPT1  ','.OPT2  ', ! 49 50 51 52
-     &            '.OPT3  ','.OPT4  ','.OPT5  ','.OPT6  ', ! 53 54 55 56
-     &            '.OPT7  ','.OPT8  ','.OPT9  ','.XXXXXX'/ ! 57 58 59 60
+!                   1         2         3         4
+      DATA TABLE /'.INTEGR','.READXV','.1D    ','.2D    ',
+!                   5         6         7         8
+     &            '.3D    ','.N     ','.M     ','.J     ',
+!                   9        10        11        12
+     &            '.ELF   ','.1DSTEP','.3DADD ','.XXXXXX',
+!                  13        14        15        16
+     &            '.CUBE  ','.XXXXXX','.NXVEC ','.STRING',
+!                  17        18        19        20
+     &            '.SKIPEP','.SKIPEE','.RXJ   ','.JDIA  ',
+!                  21        22        23        24
+     &            '.K     ','.H     ','.GAMMA5','.JPARA ',
+!                  25        26        27        28
+     &            '.DIVM  ','.DIVJ  ','.ROTM  ','.ROTJ  ',
+!                  29        30        31        32
+     &            '.DIVJPA','.ROTJPA','.XXXXXX','.XXXXXX',
+!                  33        34        35        36
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+!                  37        38        39        40
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+!                  41        42        43        44
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+!                  45        46        47        48
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+!                  49        50        51        52
+     &            '.XXXXXX','.OPT0  ','.OPT1  ','.OPT2  ',
+!                  53        54        55        56
+     &            '.OPT3  ','.OPT4  ','.OPT5  ','.OPT6  ',
+!                  57        58        59        60
+     &            '.OPT7  ','.OPT8  ','.OPT9  ','.XXXXXX'/
       DATA SET /.FALSE./
 
       IF(SET) THEN
@@ -6312,7 +6327,7 @@ C=======================================================================
         SET = .TRUE.
       ENDIF
 
-!     initialize visual_old.h
+!     initialize visual.h
 
       NCUBE(1)             = 80
       NCUBE(2)             = 80

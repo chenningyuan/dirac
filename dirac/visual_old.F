@@ -1,224 +1,17 @@
-#if defined (oldcode)
-C     /* deck PLOT */
-      SUBROUTINE PLOT(WORK,LWORK)
-C=======================================================================
-C     prepare {1,2,3}-dimensional plot
-C     adaptation of Trond's plot routines
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                            last revision: october 2006
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
-#include "visual_old.h"
-#include "maxorb.h"
-#include "dcbham.h"
-#include "dgroup.h"
-
-      LOGICAL   FILE_EXISTS, LBIT
-      DIMENSION WORK(LWORK)
-
-      CALL QENTER('PLOT')
-
-#include "memint.h"
-
-      CALL TITLER('{1,2,3}-dimensional plot','*',122)
-
-      INQUIRE(FILE = 'DFCOEF',EXIST = FILE_EXISTS) !check if coefficients are on file
-      IF(.NOT. FILE_EXISTS) THEN
-        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
-        WRITE(LUPRI,'(A)') 'coefficients not found'
-        CALL QUIT('ERROR in PLOT')
-      ENDIF
-
-!     allocate memory
-
-      CALL MEMGET('REAL',KCMO     ,N2BBASXQ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG     ,NORBT,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT_AO ,N2BBASXQ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMAT_AO ,N2BBASXQ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT_MO ,N2ORBXQ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSTRING1 ,NESH(1),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSTRING2 ,NESH(2),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO     ,NTBAS(0),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO1    ,3*NTBAS(0),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNCNT    ,NTBAS(0),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF     ,NTBAS(0)*4,
-     &            WORK,KFREE,LFREE)
-
-!     read coefficients and give info
-
-      CALL DZERO(WORK(KCMO),N2BBASXQ)
-      CALL DZERO(WORK(KEIG),NORBT)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PLOT')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),UNUSED,
-     &            UNUSED,6,WORK,KFREE,LFREE)
-      CLOSE(LUCOEF,STATUS = 'KEEP')
-
-      CALL FNDOCC(WORK(KEIG),WORK,KFREE,LFREE) !find occupation
-
-!     the default here is to set the diagonal elements
-!     of the MO density matrix to D0,
-!     then to put D1 in the diagonal elements of the inactive block
-
-!     if an orbital string is given the elements will be DZEROed again
-!     and only selected elements will be set to D1
-!     and later transformed to AO density matrix
-
-!     this will not happen if a solution vector is read in
-!     then MODIFIED_DMAT_AO will occupy the elements
-!     and transform to AO basis
-
-      CALL DFILL(WORK(KSTRING1),D0,NESH(1))
-      CALL DFILL(WORK(KSTRING1),D1,NISH(1))
-      IF(NFSYM .GT. 1) THEN
-        CALL DFILL(WORK(KSTRING2),D0,NESH(2))
-        CALL DFILL(WORK(KSTRING2),D1,NISH(2))
-      ENDIF
-
-      IF(LBIT(LBIT_PLOT_GENERAL,7)) THEN !use orbital string
-        IF(ORBSTRING1(4:5) .EQ. '..') THEN
-          READ(ORBSTRING1(1:3),'(I3)') ISTRING1_BEGIN
-          READ(ORBSTRING1(6:8),'(I3)') ISTRING1_END
-          GOTO 1
-        ENDIF
-        IF(ORBSTRING1(3:4) .EQ. '..') THEN
-          READ(ORBSTRING1(1:2),'(I3)') ISTRING1_BEGIN
-          READ(ORBSTRING1(5:8),'(I3)') ISTRING1_END
-          GOTO 1
-        ENDIF
-        IF(ORBSTRING1(2:3) .EQ. '..') THEN
-          READ(ORBSTRING1(1:1),'(I3)') ISTRING1_BEGIN
-          READ(ORBSTRING1(4:8),'(I3)') ISTRING1_END
-          GOTO 1
-        ENDIF
-        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
-        WRITE(LUPRI,'(A)') 'wrong orbital string format'
-        CALL QUIT('ERROR in PLOT')
- 1      CONTINUE
-        IF(
-     &          (.NOT. (ISTRING1_BEGIN .LE. ISTRING1_END))
-     &     .OR. (.NOT. (ISTRING1_BEGIN .GE. 0))
-     &     .OR. (.NOT. (ISTRING1_END .LE. NESH(1)))) THEN
-          WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
-          WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
-          CALL QUIT('ERROR in PLOT')
-        ENDIF
-        CALL DFILL(WORK(KSTRING1),D0,NESH(1))
-        DO I = ISTRING1_BEGIN,ISTRING1_END
-          IF(ISTRING1_BEGIN .NE. 0) WORK(KSTRING1-1+I) = D1
-        ENDDO
-
-        IF(NFSYM .GT. 1) THEN
-          IF(ORBSTRING2(4:5) .EQ. '..') THEN
-            READ(ORBSTRING2(1:3),'(I3)') ISTRING2_BEGIN
-            READ(ORBSTRING2(6:8),'(I3)') ISTRING2_END
-            GOTO 2
-          ENDIF
-          IF(ORBSTRING2(3:4) .EQ. '..') THEN
-            READ(ORBSTRING2(1:2),'(I3)') ISTRING2_BEGIN
-            READ(ORBSTRING2(5:8),'(I3)') ISTRING2_END
-            GOTO 2
-          ENDIF
-          IF(ORBSTRING2(2:3) .EQ. '..') THEN
-            READ(ORBSTRING2(1:1),'(I3)') ISTRING2_BEGIN
-            READ(ORBSTRING2(4:8),'(I3)') ISTRING2_END
-            GOTO 2
-          ENDIF
-          WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
-          WRITE(LUPRI,'(A)') 'wrong orbital string format'
-          CALL QUIT('ERROR in PLOT')
- 2        CONTINUE
-          IF(
-     &            (.NOT. (ISTRING2_BEGIN .LE. ISTRING2_END))
-     &       .OR. (.NOT. (ISTRING2_BEGIN .GE. 0))
-     &       .OR. (.NOT. (ISTRING2_END .LE. NESH(2)))) THEN
-            WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
-            WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
-            CALL QUIT('ERROR in PLOT')
-          ENDIF
-          CALL DFILL(WORK(KSTRING2),D0,NESH(2))
-          DO I = ISTRING2_BEGIN,ISTRING2_END
-            IF(ISTRING2_BEGIN .NE. 0) WORK(KSTRING2-1+I) = D1
-          ENDDO
-        ENDIF !IF(NFSYM .GT. 1) THEN
-      ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,7)) THEN !use orbital string
-
-!     generate density matrix
-
-      IF(LBIT(LBIT_PLOT_GENERAL,4)) THEN !read solution vector
-        CALL MODIFIED_DMAT_AO(WORK(KCMO),
-     &                        WORK(KDMAT_AO),WORK(KTMAT_AO),
-     &                        WORK(KSTRING1),WORK(KSTRING2),
-     &                        WORK(KFREE),LFREE)
-      ELSE
-        CALL OCCUPY_DMAT_MO(WORK(KDMAT_MO),
-     &                      WORK(KSTRING1),WORK(KSTRING2))
-        CALL DMAT_MO_2_AO(WORK(KCMO),
-     &                    WORK(KDMAT_AO),
-     &                    WORK(KDMAT_MO),
-     &                    WORK(KFREE),LFREE)
-      ENDIF
-      CALL DSCAL(N2BBASXQ,D2,WORK(KDMAT_AO),1)
-
-!     call PLOT routine
-
-      CALL PLOT_SUB(WORK(KDMAT_AO),
-     &              WORK(KGAO),
-     &              WORK(KGAO1),
-     &              WORK(KNCNT),
-     &              WORK(KBUF),
-     &              WORK(KFREE),LFREE)
-
-!     release memory
-
-      CALL MEMREL('PLOT',WORK,KCMO,KCMO,KFREE,LFREE)
-      CALL QEXIT('PLOT')
-
-      RETURN
-      END
-#endif
-
-
-
-
-
-
-
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* PLOT_SUB */
+C     /* VISUAL_DRIVER */
       SUBROUTINE VISUAL_DRIVER(DMAT_AO,
-     &                    DMAT_AO_TEMP,
-     &                    GAO,
-     &                    GAO1,
-     &                    NCNT,
-     &                    BUF,
-     &                    WORK,LWORK)
+     &                         DMAT_AO_TEMP,
+     &                         GAO,
+     &                         GAO1,
+     &                         NCNT,
+     &                         BUF,
+     &                         WORK,LWORK)
 C=======================================================================
-C     do the {1,2,3}-dimensional plot
-C     adaptation of Trond's plot routines
+C     description in here ...
 C-----------------------------------------------------------------------
 C                                                           radovan bast
-C                                            last revision: october 2006
+C                                              last revision: april 2007
 C=======================================================================
 
 #include "implicit.h"
@@ -228,24 +21,21 @@ C=======================================================================
 #include "maxorb.h"
 #include "codata.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_QUANTITIES = 26)
-      PARAMETER (MAX_NR_PAIRS = 200)
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
 #include "dcbgen.h"
-
-      CHARACTER QUANTITY_NAME(NR_QUANTITIES)*30,
-     &          PAIR_NAME_A(MAX_NR_PAIRS)*3,
-     &          PAIR_NAME_B(MAX_NR_PAIRS)*3,
-     &          ORIENTATION(3)*2
-
-      CHARACTER*50 FILE_NAME
-
-#include "visual_old.h"
+#include "visual.h"
 #include "dcborb.h"
 
-      LOGICAL   LBIT,
-     &          QUANTITY_IS_A_VECTOR(NR_QUANTITIES)
+
+
+
+
+
+
+
+      CHARACTER*50 FILE_NAME
+      LOGICAL   LBIT
       DIMENSION DMAT_AO(*),
      &          DMAT_AO_TEMP(*),
      &          GAO(*),
@@ -257,8 +47,6 @@ C=======================================================================
      &          QUANTITY(NR_QUANTITIES,0:3,NCUBE(3)),
      &          QUANTITY_INTEGRAL(NR_QUANTITIES,0:3),
      &          QUANTITY_INTEGRAL_LAST(NR_QUANTITIES,0:3),
-     &          PAIR_COOR_A(MAX_NR_PAIRS,3),
-     &          PAIR_COOR_B(MAX_NR_PAIRS,3),
      &          STEP_3D(3,0:3),
      &          ATOM_XYZ(4,NUCDEP)
 
@@ -271,6 +59,16 @@ C=======================================================================
 #include "ibtfun.h"
 
 #include "memint.h"
+
+
+
+
+
+
+
+
+
+
 
       QUANTITY_NAME(1)  = 'density'
       QUANTITY_NAME(2)  = 'magnetization'
@@ -337,84 +135,6 @@ C=======================================================================
           ENDDO
         ENDIF
       ENDDO
-
-      IF(LBIT(LBIT_PLOT_GENERAL,1)) THEN !1D
-
-        NR_PAIRS  = 0
-        DO I = 1,NUCDEP
-          DO J = I+1,NUCDEP
-            NR_PAIRS = NR_PAIRS + 1
-
-            WRITE(PAIR_NAME_A(NR_PAIRS),'(A2,I1)') NAMDEP(I), I
-            PAIR_COOR_A(NR_PAIRS,1) = CORD(1,I)
-            PAIR_COOR_A(NR_PAIRS,2) = CORD(2,I)
-            PAIR_COOR_A(NR_PAIRS,3) = CORD(3,I)
-
-            WRITE(PAIR_NAME_B(NR_PAIRS),'(A2,I1)') NAMDEP(J), J
-            PAIR_COOR_B(NR_PAIRS,1) = CORD(1,J)
-            PAIR_COOR_B(NR_PAIRS,2) = CORD(2,J)
-            PAIR_COOR_B(NR_PAIRS,3) = CORD(3,J)
-          ENDDO
-        ENDDO
-
-        DO IPAIR = 1,NR_PAIRS !loop over pairs
-
-!         write pair label to file
-
-          DO IQUANTITY = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
-              WRITE(LUNIT(1,IQUANTITY),'(A5)') '*****'
-              WRITE(LUNIT(1,IQUANTITY),'(A)')
-              WRITE(LUNIT(1,IQUANTITY),'(A3,A1,A3)')
-     &                       PAIR_NAME_A(IPAIR), '-', PAIR_NAME_B(IPAIR)
-              WRITE(LUNIT(1,IQUANTITY),'(A)')
-            ENDIF
-          ENDDO
-
-!         calculate distance and step
-
-          DX = PAIR_COOR_B(IPAIR,1) - PAIR_COOR_A(IPAIR,1)
-          DY = PAIR_COOR_B(IPAIR,2) - PAIR_COOR_A(IPAIR,2)
-          DZ = PAIR_COOR_B(IPAIR,3) - PAIR_COOR_A(IPAIR,3)
-
-          DISTANCE = DSQRT(DX*DX + DY*DY + DZ*DZ)
-
-          DX = DX/DISTANCE
-          DY = DY/DISTANCE
-          DZ = DZ/DISTANCE
-
-          ASTEP = STEP_1D/XTANG !-> angstrom
-          NR_POINTS = INT(DISTANCE/ASTEP)
-          IF(MOD(NR_POINTS,2) .EQ. 1) NR_POINTS = NR_POINTS + 1
-          ASTEP = DISTANCE/SDPRE(NR_POINTS)
-
-          IPOINT1 = -NR_POINTS/2
-          IPOINT2 = NR_POINTS - IPOINT1
-          DO IPOINT = IPOINT1,IPOINT2 !loop along line
-            PP  = SDPRE(IPOINT)*ASTEP
-            PX  = PAIR_COOR_A(IPAIR,1) + PP*DX
-            PY  = PAIR_COOR_A(IPAIR,2) + PP*DY
-            PZ  = PAIR_COOR_A(IPAIR,3) + PP*DZ
-
-            CALL GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                                 GAO,GAO1,
-     &                                 PX,PY,PZ,
-     &                                 NCNT,BUF,
-     &                                 QUANTITY,
-     &                                 WORK,KFREE,LFREE)
-
-!           write fo file(s)
-
-            PP  = XTANG*PP
-            DO IQUANTITY = 1,NR_QUANTITIES
-              IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
-                WRITE(LUNIT(1,IQUANTITY),'(F10.6,3E20.10)')
-     &                PP, QUANTITY(IQUANTITY,0,1)
-              ENDIF
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDIF !1D
 
       IF(LBIT(LBIT_PLOT_GENERAL,2)) THEN !2D
         DO IORIENTATION = 1,3
@@ -603,174 +323,6 @@ C=======================================================================
         ENDIF
       ENDDO
 
-      IF(LBIT(LBIT_PLOT_GENERAL,8)) THEN !integration
-
-        IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
-
-          CALL AROUND('3D numerical integration')
-
-          LUNIT_3D_GRID = 44
-
-          CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
-
-          REWIND LUNIT_3D_GRID
-          READ(LUNIT_3D_GRID) NR_POINTS
-
-          CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
-
-          CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
-     &                WORK(KW),
-     &                LUNIT_3D_GRID,NR_POINTS)
-
-#if defined (MOD_VISUAL)
-          CALL INTEGRATE_QUANTITY(QUANTITY_INTEGRAL,
-     &                            DMAT_AO,
-     &                            GAO,GAO1,
-     &                            WORK(KX),WORK(KY),WORK(KZ),
-     &                            WORK(KW),
-     &                            NR_POINTS,
-     &                            NCNT,BUF,
-     &                            WORK,KFREE,LFREE)
-#endif
-
-          CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
-
-          CLOSE(LUNIT_3D_GRID,STATUS = 'DELETE')
-
-          WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
-     &                                 'scalar/norm',
-     &                                 'x-component',
-     &                                 'y-component',
-     &                                 'z-component'
-          WRITE(LUPRI,'(A)')
-
-          DO IQUANTITY = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
-              IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
-                WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,1),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,2),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,3)
-              ELSE
-                WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                  QUANTITY_INTEGRAL(IQUANTITY,0)
-              ENDIF
-            ENDIF
-          ENDDO
-
-          WRITE(LUPRI,'(A)')
-          CALL PRSYMB(LUPRI,'-',100,0)
-          WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A)')
-
-        ENDIF !3D
-
-        IF(LBIT(LBIT_PLOT_GENERAL,2)) THEN !2D
-
-          CALL AROUND('2D Gauss-Lobatto numerical integration')
-
-          DO IORIENTATION = 2,2
-            WRITE(LUPRI,'(A)')
-            WRITE(LUPRI,'(A12,A3,A17,A19,A20)') 'orientation:',
-     &                                        ORIENTATION(IORIENTATION),
-     &                                          'pieces',
-     &                                          'order',
-     &                                          'error'
-            WRITE(LUPRI,'(A)')
-
-            NR_PIECES = 5
-            N = 10
-            DIMI = 10.0D0
-            DIMJ = 10.0D0
-            LUNIT_2D_GRID = 45
-
-            CALL DZERO(QUANTITY_INTEGRAL_LAST,NR_QUANTITIES*4)
-
-            DO WHILE(.TRUE.)
-#if defined (MOD_VISUAL)
-              CALL LOBATTO_2D_GRID(ORIENTATION(IORIENTATION),
-     &                             NR_PIECES,N,DIMI,DIMJ,LUNIT_2D_GRID)
-#endif
-
-              REWIND LUNIT_2D_GRID
-              READ(LUNIT_2D_GRID) NR_POINTS
-
-              CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
-
-              CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
-     &                    WORK(KW),
-     &                    LUNIT_2D_GRID,NR_POINTS)
-
-#if defined (MOD_VISUAL)
-              CALL INTEGRATE_QUANTITY(QUANTITY_INTEGRAL,
-     &                                DMAT_AO,
-     &                                GAO,GAO1,
-     &                                WORK(KX),WORK(KY),WORK(KZ),
-     &                                WORK(KW),
-     &                                NR_POINTS,
-     &                                NCNT,BUF,
-     &                                WORK,KFREE,LFREE)
-#endif
-
-              CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
-
-              CLOSE(LUNIT_2D_GRID,STATUS = 'DELETE')
-
-              ERROR = D0
-              DO IQUANTITY = 1,NR_QUANTITIES
-                DO IXYZ = 0,3
-                  SOMETHING = QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
-     &                      - QUANTITY_INTEGRAL_LAST(IQUANTITY,IXYZ)
-                  ERROR = ERROR + DABS(SOMETHING)
-                ENDDO
-              ENDDO
-              WRITE(LUPRI,'(I30,I20,E30.10)') NR_PIECES, N, ERROR
-              IF(ERROR .LT. 1.0D-6) GOTO 1
-
-              N = N + 10
-              CALL DZERO(QUANTITY_INTEGRAL_LAST,NR_QUANTITIES*4)
-              CALL DAXPY(NR_QUANTITIES*4,D1,QUANTITY_INTEGRAL,1,
-     &                                      QUANTITY_INTEGRAL_LAST,1)
-            ENDDO
- 1          CONTINUE
-
-            WRITE(LUPRI,'(A)')
-            WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
-     &                                   'scalar/norm',
-     &                                   'x-component',
-     &                                   'y-component',
-     &                                   'z-component'
-            WRITE(LUPRI,'(A)')
-
-            DO IQUANTITY = 1,NR_QUANTITIES
-              IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
-                IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
-                  WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,1),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,2),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,3)
-                ELSE
-                  WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,0)
-                ENDIF
-              ENDIF
-            ENDDO
-          ENDDO !DO IORIENTATION = 1,3
-        ENDIF !2D
-
-        WRITE(LUPRI,'(A)')
-        CALL PRSYMB(LUPRI,'-',100,0)
-
-      ENDIF !integration
 
       RETURN
       END
@@ -794,9 +346,8 @@ C=======================================================================
       PARAMETER (DP12 = 1.0D0/2.0D0)
       PARAMETER (DP23 = 2.0D0/3.0D0)
       PARAMETER (DP53 = 5.0D0/3.0D0)
-      PARAMETER (NR_QUANTITIES = 26)
 
-#include "visual_old.h"
+#include "visual.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -804,8 +355,7 @@ C=======================================================================
 #include "dcbham.h"
 #include "dcbxrs.h"
 
-      LOGICAL   LBIT,
-     &          QUANTITY_IS_A_VECTOR(NR_QUANTITIES)
+      LOGICAL   LBIT
       DIMENSION DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
@@ -1147,7 +697,7 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
 #include "dcborb.h"
-#include "visual_old.h"
+#include "visual.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
@@ -1359,13 +909,16 @@ C=======================================================================
 
       DO IZ = 1,NZ
         IF(NFSYM .EQ. 1) THEN
+#if defined (MOD_VISUAL)
           CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
      &                      ICOUNTER_EE,ICOUNTER_EP,
      &                      WORK(KBMAT),
      &                      IZ,
      &                      1,1)
+#endif
         ELSE
           IF(IHERMITICITY .EQ. 1) THEN
+#if defined (MOD_VISUAL)
             CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
      &                        ICOUNTER_EE,ICOUNTER_EP,
      &                        WORK(KBMAT),
@@ -1376,7 +929,9 @@ C=======================================================================
      &                        WORK(KBMAT),
      &                        IZ,
      &                        2,1)
+#endif
           ELSE
+#if defined (MOD_VISUAL)
             CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
      &                        ICOUNTER_EE,ICOUNTER_EP,
      &                        WORK(KBMAT),
@@ -1387,6 +942,7 @@ C=======================================================================
      &                        WORK(KBMAT),
      &                        IZ,
      &                        2,2)
+#endif
           ENDIF
         ENDIF
       ENDDO
@@ -1421,7 +977,6 @@ C=======================================================================
         ENDDO
       ENDIF
 
-
       CALL DSCAL(N2BBASXQ,D2,DMAT_AO,1)
 
 !     release memory
@@ -1431,68 +986,248 @@ C=======================================================================
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck SCATTER_BVEC */
-      SUBROUTINE SCATTER_BVEC(BVEC_EE,BVEC_EP,
-     &                        ICOUNTER_EE,ICOUNTER_EP,
-     &                        BMAT,
-     &                        IZ,
-     &                        IFSYM1,IFSYM2)
-C=======================================================================
-C     scatter solution vector onto BMAT
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                            last revision: october 2006
-C=======================================================================
 
-#include "implicit.h"
-#include "priunit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
-#include "dcborb.h"
-#include "visual_old.h"
-#include "dgroup.h"
-#include "dcbbas.h"
+#if defined (oldcode)
+      IF(LBIT(LBIT_PLOT_GENERAL,8)) THEN !integration
 
-      LOGICAL   LBIT
-      DIMENSION BVEC_EE(*),
-     &          BVEC_EP(*),
-     &          BMAT(NORBT,NORBT,NZ),
-     &          NEI(2),
-     &          NES(2),
-     &          NP(2)
+        IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
 
-      DO I = 1,2
-        NEI(I) = NISH(I)
-        NES(I) = NESH(I) - NISH(I)
-        NP(I)  = NPSH(I)
-      ENDDO
+          CALL AROUND('3D numerical integration')
 
-      II1 = 1
-      II1 = II1 + (NESH(1) + NPSH(1))*(IFSYM1 - 1)
-      II1 = II1 + NP(IFSYM1)
-      II2 = II1 + NEI(IFSYM1) - 1
-      IS1 = 1
-      IS1 = IS1 + (NESH(1) + NPSH(1))*(IFSYM2 - 1)
-      IS2 = IS1 + NP(IFSYM2)  - 1
-      IS3 = IS2 + NEI(IFSYM2) + 1
-      IS4 = IS3 + NES(IFSYM2) - 1
+          LUNIT_3D_GRID = 44
 
-      DO II = II1,II2
-        IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5)) THEN !if not skip +- (SKIPEP)
-          DO IS = IS1,IS2
-            BMAT(IS,II,IZ) = BVEC_EP(ICOUNTER_EP)
-            ICOUNTER_EP = ICOUNTER_EP + 1
+          CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
+
+          REWIND LUNIT_3D_GRID
+          READ(LUNIT_3D_GRID) NR_POINTS
+
+          CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
+
+          CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
+     &                WORK(KW),
+     &                LUNIT_3D_GRID,NR_POINTS)
+
+#if defined (MOD_VISUAL)
+#endif
+#if defined (MOD_VISUAL)
+          CALL INTEGRATE_QUANTITY(QUANTITY_INTEGRAL,
+     &                            DMAT_AO,
+     &                            GAO,GAO1,
+     &                            WORK(KX),WORK(KY),WORK(KZ),
+     &                            WORK(KW),
+     &                            NR_POINTS,
+     &                            NCNT,BUF,
+     &                            WORK,KFREE,LFREE)
+#endif
+
+          CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
+
+          CLOSE(LUNIT_3D_GRID,STATUS = 'DELETE')
+
+          WRITE(LUPRI,'(A)')
+          WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
+     &                                 'scalar/norm',
+     &                                 'x-component',
+     &                                 'y-component',
+     &                                 'z-component'
+          WRITE(LUPRI,'(A)')
+
+          DO IQUANTITY = 1,NR_QUANTITIES
+            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+              IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
+                WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,1),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,2),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,3)
+              ELSE
+                WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                  QUANTITY_INTEGRAL(IQUANTITY,0)
+              ENDIF
+            ENDIF
           ENDDO
-        ENDIF
-        IF(.NOT. LBIT(LBIT_PLOT_GENERAL,6)) THEN !if not skip ++ (SKIPEE)
-          DO IS = IS3,IS4
-            BMAT(IS,II,IZ) = BVEC_EE(ICOUNTER_EE)
-            ICOUNTER_EE = ICOUNTER_EE + 1
-          ENDDO
-        ENDIF
-      ENDDO
 
-      RETURN
-      END
+          WRITE(LUPRI,'(A)')
+          CALL PRSYMB(LUPRI,'-',100,0)
+          WRITE(LUPRI,'(A)')
+          WRITE(LUPRI,'(A)')
+
+        ENDIF !3D
+
+        IF(LBIT(LBIT_PLOT_GENERAL,2)) THEN !2D
+
+          CALL AROUND('2D Gauss-Lobatto numerical integration')
+
+          DO IORIENTATION = 2,2
+            WRITE(LUPRI,'(A)')
+            WRITE(LUPRI,'(A12,A3,A17,A19,A20)') 'orientation:',
+     &                                        ORIENTATION(IORIENTATION),
+     &                                          'pieces',
+     &                                          'order',
+     &                                          'error'
+            WRITE(LUPRI,'(A)')
+
+            NR_PIECES = 5
+            N = 10
+            DIMI = 10.0D0
+            DIMJ = 10.0D0
+            LUNIT_2D_GRID = 45
+
+            CALL DZERO(QUANTITY_INTEGRAL_LAST,NR_QUANTITIES*4)
+
+            DO WHILE(.TRUE.)
+#if defined (MOD_VISUAL)
+              CALL LOBATTO_2D_GRID(ORIENTATION(IORIENTATION),
+     &                             NR_PIECES,N,DIMI,DIMJ,LUNIT_2D_GRID)
+#endif
+
+              REWIND LUNIT_2D_GRID
+              READ(LUNIT_2D_GRID) NR_POINTS
+
+              CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
+
+              CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
+     &                    WORK(KW),
+     &                    LUNIT_2D_GRID,NR_POINTS)
+
+#if defined (MOD_VISUAL)
+              CALL INTEGRATE_QUANTITY(QUANTITY_INTEGRAL,
+     &                                DMAT_AO,
+     &                                GAO,GAO1,
+     &                                WORK(KX),WORK(KY),WORK(KZ),
+     &                                WORK(KW),
+     &                                NR_POINTS,
+     &                                NCNT,BUF,
+     &                                WORK,KFREE,LFREE)
+#endif
+
+              CALL MEMREL('PLOT_SUB',WORK,KX,KX,KFREE,LFREE)
+
+              CLOSE(LUNIT_2D_GRID,STATUS = 'DELETE')
+
+              ERROR = D0
+              DO IQUANTITY = 1,NR_QUANTITIES
+                DO IXYZ = 0,3
+                  SOMETHING = QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
+     &                      - QUANTITY_INTEGRAL_LAST(IQUANTITY,IXYZ)
+                  ERROR = ERROR + DABS(SOMETHING)
+                ENDDO
+              ENDDO
+              WRITE(LUPRI,'(I30,I20,E30.10)') NR_PIECES, N, ERROR
+              IF(ERROR .LT. 1.0D-6) GOTO 1
+
+              N = N + 10
+              CALL DZERO(QUANTITY_INTEGRAL_LAST,NR_QUANTITIES*4)
+              CALL DAXPY(NR_QUANTITIES*4,D1,QUANTITY_INTEGRAL,1,
+     &                                      QUANTITY_INTEGRAL_LAST,1)
+            ENDDO
+ 1          CONTINUE
+
+            WRITE(LUPRI,'(A)')
+            WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
+     &                                   'scalar/norm',
+     &                                   'x-component',
+     &                                   'y-component',
+     &                                   'z-component'
+            WRITE(LUPRI,'(A)')
+
+            DO IQUANTITY = 1,NR_QUANTITIES
+              IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+                IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
+                  WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,1),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,2),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,3)
+                ELSE
+                  WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
+     &                                   QUANTITY_INTEGRAL(IQUANTITY,0)
+                ENDIF
+              ENDIF
+            ENDDO
+          ENDDO !DO IORIENTATION = 1,3
+        ENDIF !2D
+
+        WRITE(LUPRI,'(A)')
+        CALL PRSYMB(LUPRI,'-',100,0)
+
+      ENDIF !integration
+#endif
+#if defined (oldcode)
+      IF(LBIT(LBIT_PLOT_GENERAL,7)) THEN !use orbital string
+        IF(ORBSTRING1(4:5) .EQ. '..') THEN
+          READ(ORBSTRING1(1:3),'(I3)') ISTRING1_BEGIN
+          READ(ORBSTRING1(6:8),'(I3)') ISTRING1_END
+          GOTO 1
+        ENDIF
+        IF(ORBSTRING1(3:4) .EQ. '..') THEN
+          READ(ORBSTRING1(1:2),'(I3)') ISTRING1_BEGIN
+          READ(ORBSTRING1(5:8),'(I3)') ISTRING1_END
+          GOTO 1
+        ENDIF
+        IF(ORBSTRING1(2:3) .EQ. '..') THEN
+          READ(ORBSTRING1(1:1),'(I3)') ISTRING1_BEGIN
+          READ(ORBSTRING1(4:8),'(I3)') ISTRING1_END
+          GOTO 1
+        ENDIF
+        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+        WRITE(LUPRI,'(A)') 'wrong orbital string format'
+        CALL QUIT('ERROR in PLOT')
+ 1      CONTINUE
+        IF(
+     &          (.NOT. (ISTRING1_BEGIN .LE. ISTRING1_END))
+     &     .OR. (.NOT. (ISTRING1_BEGIN .GE. 0))
+     &     .OR. (.NOT. (ISTRING1_END .LE. NESH(1)))) THEN
+          WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+          WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
+          CALL QUIT('ERROR in PLOT')
+        ENDIF
+        CALL DFILL(WORK(KSTRING1),D0,NESH(1))
+        DO I = ISTRING1_BEGIN,ISTRING1_END
+          IF(ISTRING1_BEGIN .NE. 0) WORK(KSTRING1-1+I) = D1
+        ENDDO
+
+        IF(NFSYM .GT. 1) THEN
+          IF(ORBSTRING2(4:5) .EQ. '..') THEN
+            READ(ORBSTRING2(1:3),'(I3)') ISTRING2_BEGIN
+            READ(ORBSTRING2(6:8),'(I3)') ISTRING2_END
+            GOTO 2
+          ENDIF
+          IF(ORBSTRING2(3:4) .EQ. '..') THEN
+            READ(ORBSTRING2(1:2),'(I3)') ISTRING2_BEGIN
+            READ(ORBSTRING2(5:8),'(I3)') ISTRING2_END
+            GOTO 2
+          ENDIF
+          IF(ORBSTRING2(2:3) .EQ. '..') THEN
+            READ(ORBSTRING2(1:1),'(I3)') ISTRING2_BEGIN
+            READ(ORBSTRING2(4:8),'(I3)') ISTRING2_END
+            GOTO 2
+          ENDIF
+          WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+          WRITE(LUPRI,'(A)') 'wrong orbital string format'
+          CALL QUIT('ERROR in PLOT')
+ 2        CONTINUE
+          IF(
+     &            (.NOT. (ISTRING2_BEGIN .LE. ISTRING2_END))
+     &       .OR. (.NOT. (ISTRING2_BEGIN .GE. 0))
+     &       .OR. (.NOT. (ISTRING2_END .LE. NESH(2)))) THEN
+            WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
+            WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
+            CALL QUIT('ERROR in PLOT')
+          ENDIF
+          CALL DFILL(WORK(KSTRING2),D0,NESH(2))
+          DO I = ISTRING2_BEGIN,ISTRING2_END
+            IF(ISTRING2_BEGIN .NE. 0) WORK(KSTRING2-1+I) = D1
+          ENDDO
+        ENDIF !IF(NFSYM .GT. 1) THEN
+      ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,7)) THEN !use orbital string
+
+#endif

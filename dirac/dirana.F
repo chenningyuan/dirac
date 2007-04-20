@@ -55,7 +55,7 @@ C
 #include "dcbgen.h"
 #include "dcbana.h"
 #include "dcbbas.h"
-#include "visual_old.h"
+#include "visual.h"
 C Used from COMMON blocks:
 C  CBIANA: DOPOP,DOANA,DOEXP
 C  DCBBAS: N2BBASX
@@ -114,7 +114,7 @@ C
 C
 C
 #if defined (MOD_VISUAL)
-      IF(DOPLOT) CALL VISUAL(WORK,LWORK)
+      IF(DO_VISUAL) CALL VISUAL(WORK,LWORK)
 #endif
 C
 #ifdef ANALYZE_PROPERTY_GRADIENT

@@ -716,7 +716,7 @@ if [ -n "$VISUALMOD" ]; then
 cat <<EOF>> Makefile
 
 VISUALOBJS = \\
-visual/visual.o visual/integration.o
+visual/dmat.o visual/visual.o visual/integration.o
 EOF
 fi
 #
