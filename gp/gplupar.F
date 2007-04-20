@@ -1742,11 +1742,12 @@ C     OUTPUT
 C     ------
 *     NPARBLOCK(NDIM): list of blocks with the corresponding assigned node  
 *
-      INTEGER ICOUNTABLK, NTEST,MWEIGHT
-      INTEGER*8 ITOTBLCKL,MMPINFA
+      INTEGER ICOUNTABLK, NTEST
+C?      INTEGER*8 ITOTBLCKL,MMPINFA(NMPROC)
+      INTEGER*8 ITOTBLCKL
       DIMENSION ICWEIGHTF(NDIM)
-      DIMENSION NPARBLOCK(NDIM),IBLOCKL(NDIM),MMPINFA(NMPROC)
-      DIMENSION MWEIGHT(NMPROC)
+      DIMENSION NPARBLOCK(NDIM),IBLOCKL(NDIM)
+C?      DIMENSION MWEIGHT(NMPROC)
 C     -------
 C     SCRATCH
 C     -------
@@ -1755,9 +1756,11 @@ C     MXNUMB: number of the current largest block
 C     MMPINFA(*,1): total number of blocks for the n-th proc
 C     MMPINFA(*,2): total length ('weight') of the blocks
       INTEGER*8 MXSIZE, MXSZTMP, ITEMPL, ITEMPW1, ITEMPW2,ILEN
+      INTEGER*8 ITLTND
       INTEGER ITEMPN, IAMGPROC, IAMTPROC, MXNUMB, IRUN
 *
       NTEST = 0
+      ITLTND = 0
       ICOUNTABLK = 0
       MXSIZE = 0
       MXSZTMP = 0
@@ -1770,11 +1773,11 @@ C     MMPINFA(*,2): total length ('weight') of the blocks
       IAMGPROC = 0
       IAMTPROC = 0
       ITOTBLCKL = 0
-      DO I = 1, NMPROC
-        MMPINFA(I) = 0
-        MWEIGHT(I) = 0
-      END DO
-*. end of initializtion
+C?      DO I = 1, NMPROC
+C?        MMPINFA(I) = 0
+C?        MWEIGHT(I) = 0
+C?      END DO
+*. end of initialization
       DO ICBL = 1, NDIM
 *
         ILEN = IBLOCKL(ICBL) * ICWEIGHTF(ICBL)
@@ -1851,7 +1854,14 @@ CSK                  WRITE(6,*) 'MXSZTMP (2):',MXSZTMP
 CSK       IF(MYPROC.EQ.0) WRITE(6,*)'NTEMPP:',NTEMPP
         DO 4000 IPR = 1, NTEMPP
 *
-          ITEMPW2 = MMPINFA(IPR) 
+C?          ITEMPW2 = MMPINFA(IPR) 
+           ITEMPW2 = 0
+           DO IBLK = 1, NDIM
+            IF( NPARBLOCK(IBLK) .eq. IPR-1 ) THEN
+              ITEMPW2 = ITEMPW2 + ( IBLOCKL(IBLK) * ICWEIGHTF(IBLK) )
+            END IF
+           END DO
+          
 CSK         IF(MYPROC.EQ.0) 
 CSK     & WRITE(6,*) 'ITEMPW2 and ITEMPW1:',ITEMPW2,ITEMPW1
 * attention: IAMTPROC = 1 --> MYNEW_ID = 0 !
@@ -1879,8 +1889,8 @@ CSK         IF(MYPROC.EQ.0) WRITE(6,*)'ITEMPW1,IAMGPROC',ITEMPW1,IAMGPROC
 *.     adding on MMPINFA(proc,2) the weight of the new block
        IAMTPROC = IAMGPROC-1
        MXSIZE = MXSZTMP
-       MWEIGHT(IAMGPROC) = MWEIGHT(IAMGPROC) + 1
-       MMPINFA(IAMGPROC) = MMPINFA(IAMGPROC) + MXSZTMP
+C?       MWEIGHT(IAMGPROC) = MWEIGHT(IAMGPROC) + 1
+C?       MMPINFA(IAMGPROC) = MMPINFA(IAMGPROC) + MXSZTMP
        NPARBLOCK(MXNUMB)     = IAMTPROC
 *
       ELSE
@@ -1897,9 +1907,20 @@ CSK      IF(NTEST.GT.0) THEN
       WRITE(6,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF MYPROC:',
      &MYPROC
       DO ISTI = 1, NTEMPP
+        ITLTND = 0
+        ITLBND = 0
+        DO IBLK = 1, NDIM
+          IF( NPARBLOCK(IBLK) .eq. ISTI -1 ) THEN
+             ITLTND = ITLTND + ( IBLOCKL(IBLK) * ICWEIGHTF(IBLK) )
+             ITLBND = ITLBND + 1
+          END IF
+        END DO
+C?        WRITE(6,'(3X,A,I2,A,I5,A,1X,I17)')
+C?     & 'process',ISTI -1,' calculates',MWEIGHT(ISTI),' blocks with a
+C?     & total length of',MMPINFA(ISTI)
         WRITE(6,'(3X,A,I2,A,I5,A,1X,I17)')
-     & 'process',ISTI -1,' calculates',MWEIGHT(ISTI),' blocks with a
-     & total length of',MMPINFA(ISTI)
+     & 'process',ISTI -1,' calculates',ITLBND,' blocks with a
+     & total length of',ITLTND
       END DO
 *
 *      WRITE(6,'(3X,A)') 'even distribution finished!'
