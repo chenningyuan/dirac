@@ -1720,7 +1720,7 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE DISTBLKND_2(NDIM,ICWEIGHTF,NPARBLOCK,NBLKWT)
+      SUBROUTINE DISTBLKND_2(NDIM,ICWEIGHTF,NPARBLOCK,IBLOCKL)
 *
 *. Find distribution for (nonvanishing blocks) among the nodes
 *. Non vanishing block has a nonzero blocklength
@@ -1730,24 +1730,30 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "../lucita/lucipar.inc"
-*. input
-* NNJJJBLK: total number of c-blocks
-* NTEMPP: number of processes available for the distribution
-* ICSBTCHB(NNJJJBLK): total length of each block
-*. output
-* IDISTLIST(NNJJJBLK): list containing the number of a node  
-* that computes the block
+C     -----
+C     INPUT
+C     -----
+C     NDIM: total number of c-blocks
+C     IBLOCKL(NDIM): total length of each block
+C     ICWEIGHTF(NDIM): total 'weight factors' for each block
+C
+C     ------
+C     OUTPUT
+C     ------
+*     NPARBLOCK(NDIM): list of blocks with the corresponding assigned node  
 *
       INTEGER ICOUNTABLK, NTEST,MWEIGHT
       INTEGER*8 ITOTBLCKL,MMPINFA
       DIMENSION ICWEIGHTF(NDIM)
-      DIMENSION NPARBLOCK(NDIM),NBLKWT(NDIM),MMPINFA(NMPROC)
+      DIMENSION NPARBLOCK(NDIM),IBLOCKL(NDIM),MMPINFA(NMPROC)
       DIMENSION MWEIGHT(NMPROC)
-*.scratch
-* MXSIZE: actual maximum size for one of all blocks
-* MXNUMB: number of the current largest block
-*   MMPINFA(*,1): total number of blocks for the n-th proc
-*   MMPINFA(*,2): total length ('weight') of the blocks
+C     -------
+C     SCRATCH
+C     -------
+C     MXSIZE: actual maximum size for one of all blocks
+C     MXNUMB: number of the current largest block
+C     MMPINFA(*,1): total number of blocks for the n-th proc
+C     MMPINFA(*,2): total length ('weight') of the blocks
       INTEGER*8 MXSIZE, MXSZTMP, ITEMPL, ITEMPW1, ITEMPW2,ILEN
       INTEGER ITEMPN, IAMGPROC, IAMTPROC, MXNUMB, IRUN
 *
@@ -1771,7 +1777,7 @@ C
 *. end of initializtion
       DO ICBL = 1, NDIM
 *
-        ILEN = NBLKWT(ICBL)
+        ILEN = IBLOCKL(ICBL) * ICWEIGHTF(ICBL)
         IF(ILEN.NE.0) THEN
            ICOUNTABLK = ICOUNTABLK + 1
            ITOTBLCKL = ITOTBLCKL + ILEN
@@ -1819,7 +1825,7 @@ CSK      WRITE(6,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
 *
         DO 3000 II = 1, NDIM
 *
-          ITEMPL = NBLKWT(II)
+          ITEMPL = IBLOCKL(II) * ICWEIGHTF(II)
           ITEMPD = NPARBLOCK(II)
           ITEMPN = II
 
@@ -5361,10 +5367,12 @@ C
 #include "../lucita/lucipar.inc"
       DIMENSION LBATC(*),LEBATC(*),I1BATC(*),IBATC(8,*)
       DIMENSION ICCTOS(NBLOCK,NBLOCK),ICWEIGHT(NBLOCK)
-      DIMENSION IBTOTW(NBLOCK),ICWEIGHTF(NBLOCK)
+C?      DIMENSION IBTOTW(NBLOCK),ICWEIGHTF(NBLOCK)
+      DIMENSION ICWEIGHTF(NBLOCK)
+      INTEGER*8 IBTOTW(NBLOCK)
       INTEGER*8 IABSOLUTE_WEIGHT
 *
-      NTEST = 100
+      NTEST = 99
       IF(MYPROC.EQ.MASTER)THEN
         WRITE(6,*) ' OUTPUT from PRINT_BATCH_INFO'
         WRITE(6,*) ' ============================'
@@ -5404,8 +5412,10 @@ CSK          WRITE(6,'(10X,4I3,4I8)') (IBATC(II,IBLOCK),II=1,8)
         END DO
       END DO
       IF(MYPROC.EQ.MASTER.AND.NTEST.GE.10) THEN
-        WRITE(6,'(2X,A)')'TOTAL WEIGHT FOR EACH BLOCK'
-        CALL IWRTMA8(IBTOTW,1,NBLOCK,1,NBLOCK)
+CSK        WRITE(6,'(2X,A)')'TOTAL WEIGHT FOR EACH BLOCK'
+CSK        CALL IWRTMA8(IBTOTW,1,NBLOCK,1,NBLOCK)
+        WRITE(6,'(2X,A)')'WEIGHT MATRIX'
+        CALL IWRTMA(ICWEIGHTF,1,NBLOCK,1,NBLOCK)
       END IF
       DO IBLK = 1, NBLOCK
         IABSOLUTE_WEIGHT = IABSOLUTE_WEIGHT + IBTOTW(IBLK)

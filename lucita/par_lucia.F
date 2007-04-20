@@ -67,7 +67,7 @@ C
      &                   NVAR,WORK(KICCTOS),IBLOCKL,IPROCLIST,ICWEIGHT,
      &                   IABSOLUTE_WEIGHT)
       ELSE
-        CALL DISTBLKND_2(NBLOCK,ICWEIGHTF,NBLOCKD,NBLKWT)
+        CALL DISTBLKND_2(NBLOCK,ICWEIGHTF,NBLOCKD,IBLOCKL)
       END IF
 C
 C     find all c-blocks connecting to a given sigma-block,
