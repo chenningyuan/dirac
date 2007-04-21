@@ -79,16 +79,6 @@ C=======================================================================
       QUANTITY_NAME(7)  = 'div_current_density'
       QUANTITY_NAME(8)  = 'rot_magnetization'
       QUANTITY_NAME(9)  = 'rot_current_density'
-      QUANTITY_NAME(10) = 'opt0'
-      QUANTITY_NAME(11) = 'opt1'
-      QUANTITY_NAME(12) = 'opt2'
-      QUANTITY_NAME(13) = 'opt3'
-      QUANTITY_NAME(14) = 'opt4'
-      QUANTITY_NAME(15) = 'opt5'
-      QUANTITY_NAME(16) = 'opt6'
-      QUANTITY_NAME(17) = 'opt7'
-      QUANTITY_NAME(18) = 'opt8'
-      QUANTITY_NAME(19) = 'opt9'
       QUANTITY_NAME(20) = 'diamagnetic_current_density'
       QUANTITY_NAME(21) = 'kinetic_energy_density'
       QUANTITY_NAME(22) = 'helicity'
@@ -118,9 +108,9 @@ C=======================================================================
 
       LUNIT_BASE = 13
       DO I = 1,3 !1D, 2D, 3D
-        IF(LBIT(LBIT_PLOT_GENERAL,I)) THEN
+        IF(LBIT(LBIT_VISUAL,I)) THEN
           DO IQUANTITY = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+            IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
               WRITE(FILE_NAME,'(A5,I1,A2,A)') 'PLOT.', I, 'D.',
      &                                        QUANTITY_NAME(IQUANTITY)
               OPEN(LUNIT_BASE,
@@ -136,7 +126,7 @@ C=======================================================================
         ENDIF
       ENDDO
 
-      IF(LBIT(LBIT_PLOT_GENERAL,2)) THEN !2D
+      IF(LBIT(LBIT_VISUAL,2)) THEN !2D
         DO IORIENTATION = 1,3
 
           NI = NCUBE(1)
@@ -152,7 +142,7 @@ C=======================================================================
           ENDIF
 
           DO IQUANTITY = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+            IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
               WRITE(LUNIT(2,IQUANTITY),'(A)')
               WRITE(LUNIT(2,IQUANTITY),'(A)')
               WRITE(LUNIT(2,IQUANTITY),'(A2)') ORIENTATION(IORIENTATION)
@@ -186,7 +176,7 @@ C=======================================================================
 !               write to file(s)
 
                 DO IQUANTITY = 1,NR_QUANTITIES
-                  IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+                  IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
                     IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
                       WRITE(LUNIT(2,IQUANTITY),'(7F20.10)')
      &                      PX, PY, PZ,
@@ -207,7 +197,7 @@ C=======================================================================
         ENDDO
       ENDIF !2D
 
-      IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
+      IF(LBIT(LBIT_VISUAL,3)) THEN !3D
 
 !       calculate cube parameters
 
@@ -261,7 +251,7 @@ C=======================================================================
 !       write header
 
         DO IQUANTITY = 1,NR_QUANTITIES
-          IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+          IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
             WRITE(LUNIT(3,IQUANTITY),'(A)') 'some'
             WRITE(LUNIT(3,IQUANTITY),'(A)') 'text'
             DO I = 0,3
@@ -302,7 +292,7 @@ C=======================================================================
 !           write fo file(s)
 
             DO IQUANTITY = 1,NR_QUANTITIES
-              IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+              IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
                 WRITE(LUNIT(3,IQUANTITY),'(6E13.5)')
      &               (QUANTITY(IQUANTITY,0,M),M=1,NCUBE(3))
               ENDIF
@@ -314,9 +304,9 @@ C=======================================================================
 !     close files
 
       DO I = 1,3 !1D, 2D, 3D
-        IF(LBIT(LBIT_PLOT_GENERAL,I)) THEN
+        IF(LBIT(LBIT_VISUAL,I)) THEN
           DO IQUANTITY = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+            IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
               CLOSE(LUNIT(I,IQUANTITY), STATUS = 'KEEP')
             ENDIF
           ENDDO
@@ -386,22 +376,22 @@ C=======================================================================
 !     density
 
       IQUANTITY = 1
-      CALL GETRHO(DENSITY,IREP_PLOT,GAO,DMAT_AO,BUF)
+      CALL GETRHO(DENSITY,IREP_VISUAL,GAO,DMAT_AO,BUF)
       QUANTITY(IQUANTITY,0) = DENSITY
 
 !     ELF
 
       IQUANTITY = 4
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 
-        CALL GETGRHO(VECTOR,IREP_PLOT,GAO,GAO1,DMAT_AO,BUF)
+        CALL GETGRHO(VECTOR,IREP_VISUAL,GAO,GAO1,DMAT_AO,BUF)
         GRADIENT_SQUARED = VECTOR(1)**D2 + VECTOR(2)**D2 + VECTOR(3)**D2
 
         ELFKIN = D0
         DO I = 1,3
           DO IC = 1,MC
             TEMP = D0
-            CALL GETRH1(TEMP,IC,IREP_PLOT,GAO1((I-1)*NTBAS(0)+1),
+            CALL GETRH1(TEMP,IC,IREP_VISUAL,GAO1((I-1)*NTBAS(0)+1),
      &                  DMAT_AO,BUF)
             ELFKIN = ELFKIN + TEMP
           ENDDO
@@ -422,7 +412,7 @@ C=======================================================================
 !     diamagnetic current density
 
       IQUANTITY = 20
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
         CALL GETRHO(DENSITY,0,GAO,DMAT_AO,BUF)
 
         QUANTITY(IQUANTITY,1) = -(D1/D2)*PY*DENSITY
@@ -433,12 +423,12 @@ C=======================================================================
 !     paramagnetic current density
 
       IQUANTITY = 24
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
         CALL GET_JPARA(.TRUE.,
      &                 VECTOR,
-     &                 IREP_PLOT,
+     &                 IREP_VISUAL,
      &                 GAO,
      &                 GAO1,
      &                 DMAT_AO,
@@ -455,12 +445,12 @@ C=======================================================================
 !     magnetization
 
       IQUANTITY = 2
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
         CALL GET_M(.TRUE.,
      &             VECTOR,
-     &             IREP_PLOT,
+     &             IREP_VISUAL,
      &             GAO,
      &             UNUSED,
      &             DMAT_AO,
@@ -477,12 +467,12 @@ C=======================================================================
 !     current density
 
       IQUANTITY = 3
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
         CALL GET_J(.TRUE.,
      &             VECTOR,
-     &             IREP_PLOT,
+     &             IREP_VISUAL,
      &             GAO,
      &             UNUSED,
      &             DMAT_AO,
@@ -499,12 +489,12 @@ C=======================================================================
 !     r \times j
 
       IQUANTITY = 5
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
         CALL GET_J(.TRUE.,
      &             VECTOR,
-     &             IREP_PLOT,
+     &             IREP_VISUAL,
      &             GAO,
      &             UNUSED,
      &             DMAT_AO,
@@ -521,12 +511,12 @@ C=======================================================================
 !     divergence of magnetization
 
       IQUANTITY = 6
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
         CALL GET_DIVM(.TRUE.,
      &                QUANTITY(IQUANTITY,0),
-     &                IREP_PLOT,
+     &                IREP_VISUAL,
      &                GAO,
      &                GAO1,
      &                DMAT_AO,
@@ -539,12 +529,12 @@ C=======================================================================
 !     divergence of current density
 
       IQUANTITY = 7
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
         CALL GET_DIVJ(.TRUE.,
      &                QUANTITY(IQUANTITY,0),
-     &                IREP_PLOT,
+     &                IREP_VISUAL,
      &                GAO,
      &                GAO1,
      &                DMAT_AO,
@@ -557,19 +547,19 @@ C=======================================================================
 !     divergence of paramagnetic current density
 
       IQUANTITY = 25
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
         CALL QUIT('not implemented')
       ENDIF
 
 !     curl of magnetization
 
       IQUANTITY = 8
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
         CALL GET_ROTM(.TRUE.,
      &                VECTOR,
-     &                IREP_PLOT,
+     &                IREP_VISUAL,
      &                GAO,
      &                GAO1,
      &                DMAT_AO,
@@ -586,12 +576,12 @@ C=======================================================================
 !     curl of current density
 
       IQUANTITY = 9
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
         CALL GET_ROTJ(.TRUE.,
      &                VECTOR,
-     &                IREP_PLOT,
+     &                IREP_VISUAL,
      &                GAO,
      &                GAO1,
      &                DMAT_AO,
@@ -608,12 +598,12 @@ C=======================================================================
 !     curl of paramagnetic current density
 
       IQUANTITY = 26
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
         CALL GET_ROTJPARA(.TRUE.,
      &                    VECTOR,
-     &                    IREP_PLOT,
+     &                    IREP_VISUAL,
      &                    GAO,
      &                    GAO1,
      &                    DMAT_AO,
@@ -630,12 +620,12 @@ C=======================================================================
 !     \gamma_5 density
 
       IQUANTITY = 23
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
         CALL GET_GAMMA5(.TRUE.,
      &                  QUANTITY(IQUANTITY,0),
-     &                  IREP_PLOT,
+     &                  IREP_VISUAL,
      &                  GAO,
      &                  UNUSED,
      &                  DMAT_AO,
@@ -648,21 +638,21 @@ C=======================================================================
 !     kinetic energy density
 
       IQUANTITY = 21
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
         CALL QUIT('not implemented')
       ENDIF
 
 !     helicity
 
       IQUANTITY = 22
-      IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
         CALL QUIT('not implemented')
       ENDIF
 
 !     get norm for quantities that are vectors
 
       DO IQUANTITY = 1,NR_QUANTITIES
-        IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+        IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
           IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
             QUANTITY(IQUANTITY,0) = QUANTITY(IQUANTITY,1)**D2
      &                            + QUANTITY(IQUANTITY,2)**D2
@@ -675,324 +665,37 @@ C=======================================================================
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck MODIFIED_DMAT_AO */
-      SUBROUTINE SETUP_FO_DMAT_AO(CMO,DMAT_AO,TMAT_AO,
-     &                            STRING1,STRING2,
-     &                            WORK,LWORK)
-C=======================================================================
-C     fill MO density matrix
-C     with components of the solution vector
-C     these are read in from XVECFILE
-C     then transform to AO density matrix
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                            last revision: october 2006
-C=======================================================================
 
-#include "implicit.h"
-#include "priunit.h"
-#include "dcbqal.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
-#include "dcborb.h"
-#include "visual.h"
-#include "dgroup.h"
-#include "pgroup.h"
-#include "dcbbas.h"
-#include "dcbxrs.h"
 
-      CHARACTER LAB1*16,
-     &          LAB2*16,
-     &          TYP1*2,
-     &          TYP2*2,
-     &          LBUF*16,
-     &          PBUF*1
-      LOGICAL   FILE_EXISTS, LBIT
-      DIMENSION CMO(*),
-     &          DMAT_AO(*),
-     &          TMAT_AO(*),
-     &          STRING1(*),
-     &          STRING2(*),
-     &          WORK(LWORK)
 
-      CALL QENTER('MODIFIED_DMAT_AO')
 
-#include "memint.h"
 
-      INQUIRE(FILE = XVECFILE,EXIST = FILE_EXISTS) !check if solution vector file is there and open it
-      IF(.NOT. FILE_EXISTS) THEN
-        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
-        WRITE(LUPRI,'(A)') 'solution vector file not found'
-        CALL QUIT('ERROR in PLOT')
-      ENDIF
-      LUNIT_XVEC = 17
-      OPEN(LUNIT_XVEC,
-     &     FILE = XVECFILE,
-     &     STATUS = 'OLD',
-     &     ACCESS = 'SEQUENTIAL',
-     &     FORM = 'UNFORMATTED')
 
-!     get dimensions of record NXVEC
 
-      NBDIM_EE    = 0
-      NBDIM_EP    = 0
-      NR_READS    = 0
-      NR_READS_EE = 0
-      NR_READS_EP = 0
 
-      REWIND LUNIT_XVEC
-  1   CONTINUE
-      READ(LUNIT_XVEC) LAB1
-      BACKSPACE(LUNIT_XVEC)
-      IF(LAB1 .EQ. 'END_OF_THIS_FILE') THEN
-        GOTO 10
-      ENDIF
-      READ(LUNIT_XVEC) LAB1, LAB2, TYP1
-      BACKSPACE(LUNIT_XVEC)
 
-      IF(TYP1(1:1) .EQ. 'E') THEN
-        NR_READS    = NR_READS + 1
-        NR_READS_EE = NR_READS_EE + 1
-        IF(TYP1(2:2) .EQ. '+') THEN
-          IH_EE = 1
-        ELSEIF(TYP1(2:2) .EQ. '-') THEN
-          IH_EE = -1
-        ELSE
-          GOTO 12
-        ENDIF
-        READ(LUNIT_XVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
-     &                   JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
-     &                   UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        IF(NR_READS_EE .EQ. NXVEC) THEN
-          JSYMOP_EE = JSYMOP1
-          NBDIM_EE  = LEN/NZ
-        ENDIF
-        READ(LUNIT_XVEC)
 
-      ELSEIF(TYP1(1:1) .EQ. 'P') THEN
-        NR_READS    = NR_READS + 1
-        NR_READS_EP = NR_READS_EP + 1
-        IF(TYP1(2:2) .EQ. '+') THEN
-          IH_EP = 1
-        ELSEIF(TYP1(2:2) .EQ. '-') THEN
-          IH_EP = -1
-        ELSE
-          GOTO 12
-        ENDIF
-        READ(LUNIT_XVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
-     &                   JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
-     &                   UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        IF(NR_READS_EP .EQ. NXVEC) THEN
-          JSYMOP_EP = JSYMOP1
-          NBDIM_EP  = LEN/NZ
-        ENDIF
-        READ(LUNIT_XVEC)
 
-      ELSE
-        GOTO 12
-      ENDIF
-      GOTO 1
- 10   CONTINUE
 
-!     check consistency
 
-!     LBIT(LBIT_PLOT_GENERAL,5) skip +- (SKIPEP)
-!     LBIT(LBIT_PLOT_GENERAL,6) skip ++ (SKIPEE)
 
-      IF(NR_READS .EQ. 0)
-     &   GOTO 11
 
-      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5) .AND.
-     &   .NOT. LBIT(LBIT_PLOT_GENERAL,6) .AND.
-     &   .NOT. NR_READS_EE .EQ. NR_READS_EP)
-     &   GOTO 11
 
-      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5) .AND.
-     &   NR_READS_EP .EQ. 0)
-     &   GOTO 13
 
-      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,6) .AND.
-     &   NR_READS_EE .EQ. 0)
-     &   GOTO 14
 
-      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5) .AND.
-     &   NR_READS_EP .LT. NXVEC)
-     &   GOTO 11
 
-      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,6) .AND.
-     &   NR_READS_EE .LT. NXVEC)
-     &   GOTO 11
 
-      IF(LBIT(LBIT_PLOT_GENERAL,5) .AND .
-     &   LBIT(LBIT_PLOT_GENERAL,6))
-     &   GOTO 15
 
-!     error handling
 
-      GOTO 20
- 11   CONTINUE
-        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
-        WRITE(LUPRI,'(A)') 'invalid NXVEC'
-        WRITE(LUPRI,'(A)') 'or solution vector file corrupt'
-        CALL QUIT('ERROR in PLOT')
- 12   CONTINUE
-        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
-        WRITE(LUPRI,'(A)') 'invalid operator label'
-        WRITE(LUPRI,'(A)') 'solution vector file corrupt'
-        CALL QUIT('ERROR in PLOT')
- 13   CONTINUE
-        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
-        WRITE(LUPRI,'(A)') 'EP requested but no EP rotation'
-        WRITE(LUPRI,'(A)') 'on solution vector file'
-        CALL QUIT('ERROR in PLOT')
- 14   CONTINUE
-        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
-        WRITE(LUPRI,'(A)') 'EE requested but no EE rotation'
-        WRITE(LUPRI,'(A)') 'on solution vector file'
-        CALL QUIT('ERROR in PLOT')
- 15   CONTINUE
-        WRITE(LUPRI,'(A)') 'ERROR in PLOT:'
-        WRITE(LUPRI,'(A)') 'SKIPEP = SKIPEE = .TRUE.'
-        CALL QUIT('ERROR in PLOT')
- 20   CONTINUE
-
-!     allocate memory
-
-      CALL MEMGET('REAL',KBVEC_EE ,NBDIM_EE*NZ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBVEC_EP ,NBDIM_EP*NZ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBMAT    ,N2ORBXQ,
-     &            WORK,KFREE,LFREE)
-
-!     now read the vector
-
-      REWIND LUNIT_XVEC
-      DO I = 1,NXVEC
-        IF(.NOT. LBIT(LBIT_PLOT_GENERAL,6)) THEN ! "EE" part
-          READ(LUNIT_XVEC)
-          IF(I .EQ. NXVEC) THEN
-            CALL DZERO(WORK(KBVEC_EE),NBDIM_EE*NZ)
-            CALL READT(LUNIT_XVEC,NBDIM_EE*NZ,WORK(KBVEC_EE))
-          ELSE
-            READ(LUNIT_XVEC)
-          ENDIF
-        ELSEIF(NR_READS_EE .GT. 0) THEN
-          READ(LUNIT_XVEC)
-          READ(LUNIT_XVEC)
-        ENDIF
-
-        IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5)) THEN ! "EP" part
-          READ(LUNIT_XVEC)
-          IF(I .EQ. NXVEC) THEN
-            CALL DZERO(WORK(KBVEC_EP),NBDIM_EP*NZ)
-            CALL READT(LUNIT_XVEC,NBDIM_EP*NZ,WORK(KBVEC_EP))
-          ELSE
-            READ(LUNIT_XVEC)
-          ENDIF
-        ELSEIF(NR_READS_EP .GT. 0) THEN
-          READ(LUNIT_XVEC)
-          READ(LUNIT_XVEC)
-        ENDIF
-      ENDDO
-
-      CLOSE(LUNIT_XVEC,STATUS = 'KEEP') !close solution vector file
-
-!     scatter vector onto MO density matrix
-
-      IHERMITICITY = IH_EE
-      ICOUNTER_EE  = 1
-      ICOUNTER_EP  = 1
-      CALL DZERO(WORK(KBMAT),N2ORBXQ)
-
-      DO IZ = 1,NZ
-        IF(NFSYM .EQ. 1) THEN
-#if defined (MOD_VISUAL)
-          CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
-     &                      ICOUNTER_EE,ICOUNTER_EP,
-     &                      WORK(KBMAT),
-     &                      IZ,
-     &                      1,1)
-#endif
-        ELSE
-          IF(IHERMITICITY .EQ. 1) THEN
-#if defined (MOD_VISUAL)
-            CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
-     &                        ICOUNTER_EE,ICOUNTER_EP,
-     &                        WORK(KBMAT),
-     &                        IZ,
-     &                        1,2)
-            CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
-     &                        ICOUNTER_EE,ICOUNTER_EP,
-     &                        WORK(KBMAT),
-     &                        IZ,
-     &                        2,1)
-#endif
-          ELSE
-#if defined (MOD_VISUAL)
-            CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
-     &                        ICOUNTER_EE,ICOUNTER_EP,
-     &                        WORK(KBMAT),
-     &                        IZ,
-     &                        1,1)
-            CALL SCATTER_BVEC(WORK(KBVEC_EE),WORK(KBVEC_EP),
-     &                        ICOUNTER_EE,ICOUNTER_EP,
-     &                        WORK(KBMAT),
-     &                        IZ,
-     &                        2,2)
-#endif
-          ENDIF
-        ENDIF
-      ENDDO
-      CALL DSCAL(N2ORBXQ,-D1,WORK(KBMAT),1)
-
-      JSYMOP    = JSYMOP_EE
-      IREP_PLOT = JSYMOP - 1
-      JOPSY     = JBTOF(IREP_PLOT,1)
-
-      DO IZ = 1,NZ
-        IOFF = NORBT*NORBT*(IZ - 1)
-        CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF)) !symmetrize
-      ENDDO
-
-!     get AO density matrix
-
-      CALL DZERO(DMAT_AO,N2BBASXQ)
-      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,6)) THEN !if not skip ++ (SKIPEE)
-        CALL DMOLI3(0,IH_EE,DMAT_AO,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
-      ENDIF
-      IF(.NOT. LBIT(LBIT_PLOT_GENERAL,5)) THEN !if not skip +- (SKIPEP)
-        CALL DZERO(TMAT_AO,N2BBASXQ)
-        CALL DMOLI3(1,IH_EP,TMAT_AO,CMO,WORK(KBMAT),WORK,KFREE,LFREE)
-        CALL DAXPY(N2BBASXQ,D1,TMAT_AO,1,DMAT_AO,1)
-      ENDIF
-
-      IF(NZ .LT. 4) THEN
-        DO IZ = 1,NZ
-          IQ = IPQTOQ(IZ,IREP_PLOT)
-          IOFF = NTBAS(0)*NTBAS(0)*(IZ-1)
-          CALL Q2BPHASE('D',IQ,1,DMAT_AO(1+IOFF)) !insert half-phase
-        ENDDO
-      ENDIF
-
-      CALL DSCAL(N2BBASXQ,D2,DMAT_AO,1)
-
-!     release memory
-
-      CALL MEMREL('MODIFIED_DMAT_AO',WORK,KBVEC_EE,KBVEC_EE,KFREE,LFREE)
-      CALL QEXIT('MODIFIED_DMAT_AO')
-
-      RETURN
-      END
 
 
 
 #if defined (oldcode)
-      IF(LBIT(LBIT_PLOT_GENERAL,8)) THEN !integration
+      IF(LBIT(LBIT_VISUAL,8)) THEN !integration
 
-        IF(LBIT(LBIT_PLOT_GENERAL,3)) THEN !3D
+        IF(LBIT(LBIT_VISUAL,3)) THEN !3D
 
           CALL AROUND('3D numerical integration')
 
@@ -1038,7 +741,7 @@ C=======================================================================
           WRITE(LUPRI,'(A)')
 
           DO IQUANTITY = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+            IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
               IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
                 WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
      &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
@@ -1059,7 +762,7 @@ C=======================================================================
 
         ENDIF !3D
 
-        IF(LBIT(LBIT_PLOT_GENERAL,2)) THEN !2D
+        IF(LBIT(LBIT_VISUAL,2)) THEN !2D
 
           CALL AROUND('2D Gauss-Lobatto numerical integration')
 
@@ -1140,7 +843,7 @@ C=======================================================================
             WRITE(LUPRI,'(A)')
 
             DO IQUANTITY = 1,NR_QUANTITIES
-              IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+              IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
                 IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
                   WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
      &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
@@ -1162,7 +865,7 @@ C=======================================================================
       ENDIF !integration
 #endif
 #if defined (oldcode)
-      IF(LBIT(LBIT_PLOT_GENERAL,7)) THEN !use orbital string
+      IF(LBIT(LBIT_VISUAL,7)) THEN !use orbital string
         IF(ORBSTRING1(4:5) .EQ. '..') THEN
           READ(ORBSTRING1(1:3),'(I3)') ISTRING1_BEGIN
           READ(ORBSTRING1(6:8),'(I3)') ISTRING1_END
@@ -1228,6 +931,6 @@ C=======================================================================
             IF(ISTRING2_BEGIN .NE. 0) WORK(KSTRING2-1+I) = D1
           ENDDO
         ENDIF !IF(NFSYM .GT. 1) THEN
-      ENDIF !IF(LBIT(LBIT_PLOT_GENERAL,7)) THEN !use orbital string
+      ENDIF !IF(LBIT(LBIT_VISUAL,7)) THEN !use orbital string
 
 #endif

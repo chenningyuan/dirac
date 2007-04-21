@@ -340,15 +340,15 @@ C=======================================================================
 
           JOFF = NBAST*NBAST*NZ*(IMAT-1)
 
-          CALL GET_V(.TRUE.,
-     &               FO_VORTICITY,
-     &               DENSITY,
-     &               DENSITY_GRADIENT,
-     &               ISYMOP(IMAT)-1,
-     &               GAO,
-     &               GAO1,
-     &               DTRMAT(1+JOFF),
-     &               BUF)
+          CALL GET_ROTV(.TRUE.,
+     &                  FO_VORTICITY,
+     &                  DENSITY,
+     &                  DENSITY_GRADIENT,
+     &                  ISYMOP(IMAT)-1,
+     &                  GAO,
+     &                  GAO1,
+     &                  DTRMAT(1+JOFF),
+     &                  BUF)
 
           RS  = (4.1887902D0*DENSITY)**(-DP13)
 
@@ -367,15 +367,15 @@ C=======================================================================
 
           IF(FO_VORTICITY_NORM .LT. DFTHRL) GOTO 999
 
-          CALL GET_V(.FALSE.,
-     &               FO_VORTICITY,
-     &               DENSITY,
-     &               DENSITY_GRADIENT,
-     &               ISYMOP(IMAT)-1,
-     &               GAO,
-     &               GAO1,
-     &               EXCMAT(1+JOFF),
-     &               BUF)
+          CALL GET_ROTV(.FALSE.,
+     &                  FO_VORTICITY,
+     &                  DENSITY,
+     &                  DENSITY_GRADIENT,
+     &                  ISYMOP(IMAT)-1,
+     &                  GAO,
+     &                  GAO1,
+     &                  EXCMAT(1+JOFF),
+     &                  BUF)
 
  999      CONTINUE
 

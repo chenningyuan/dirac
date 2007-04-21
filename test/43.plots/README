@@ -13,4 +13,5 @@
 ! run this test the usual way (using runtest)
 ! analyze using diff.py (which compares symmetries to C1 and creates summary.htm)
 ! grep FF0000 summary.htm (grep for red numbers)
-! if you see nothing (no red numbers), be happy
+! if you see nothing (no red numbers), rejoice
+! reference C1 files are in 43.plots/result

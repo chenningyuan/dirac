@@ -112,11 +112,11 @@ C
 C***********************************************************************
 C
 C
-C
+
 #if defined (MOD_VISUAL)
       IF(DO_VISUAL) CALL VISUAL(WORK,LWORK)
 #endif
-C
+
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CALL ANALYZE_PROPERTY_GRAD(WORK,LWORK)
 #endif

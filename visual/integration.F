@@ -62,7 +62,7 @@ C=======================================================================
      &                             WORK,KFREE,LFREE)
 
         DO IQUANTITY = 1,NR_QUANTITIES
-          IF(LBIT(LBIT_PLOT_QUANTITY,IQUANTITY)) THEN
+          IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
             QUANTITY_INTEGRAL(IQUANTITY,0)
      &                            = QUANTITY_INTEGRAL(IQUANTITY,0)
      &                            + QUANTITY(IQUANTITY,0)*WEIGHT(IPOINT)
