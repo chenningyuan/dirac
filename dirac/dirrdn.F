@@ -2699,10 +2699,10 @@ C
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
      &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALI',
-     &             '*PLOT  ','*XXXXXX','*XXXXXX','*XXXXXX'/
+     &             '*VISUAL','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.MULPOP','.PROJEC','.PRIVEC','.RHO1  ',
      &             '.DENSIT','.WT1   ','.LOCALI','.XXXXXX',
-     &             '.PLOT  ','.XXXXXN','.XXXXXX','.XXXXXX'/
+     &             '.VISUAL','.XXXXXN','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
 #include "memint.h"
@@ -2897,7 +2897,7 @@ C
         GO TO 200
     9 CONTINUE
 #if defined (MOD_VISUAL)
-        CALL VISUAL_INPUT(WORD,.TRUE.,WORK,LWORK)
+        CALL VISUAL_INPUT(WORD,.FALSE.,WORK,LWORK)
 #endif
         GO TO 200
    10 CONTINUE
@@ -2917,6 +2917,9 @@ C
       IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
 #endif
       IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
+#if defined (MOD_VISUAL)
+      IF(DO_VISUAL) CALL VISUAL_INPUT(WORD,.TRUE.,WORK,LWORK)
+#endif
 C
       CALL QEXIT('ANWINP')
       RETURN

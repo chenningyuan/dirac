@@ -66,44 +66,6 @@ C=======================================================================
 
 
 
-
-
-
-
-      QUANTITY_NAME(1)  = 'density'
-      QUANTITY_NAME(2)  = 'magnetization'
-      QUANTITY_NAME(3)  = 'current_density'
-      QUANTITY_NAME(4)  = 'ELF'
-      QUANTITY_NAME(5)  = 'r_times_j'
-      QUANTITY_NAME(6)  = 'div_magnetization'
-      QUANTITY_NAME(7)  = 'div_current_density'
-      QUANTITY_NAME(8)  = 'rot_magnetization'
-      QUANTITY_NAME(9)  = 'rot_current_density'
-      QUANTITY_NAME(20) = 'diamagnetic_current_density'
-      QUANTITY_NAME(21) = 'kinetic_energy_density'
-      QUANTITY_NAME(22) = 'helicity'
-      QUANTITY_NAME(23) = 'gamma_5_density'
-      QUANTITY_NAME(24) = 'paramagnetic_current_density'
-      QUANTITY_NAME(25) = 'div_paramagnetic_current_density'
-      QUANTITY_NAME(26) = 'rot_paramagnetic_current_density'
-
-      DO IQUANTITY = 1,NR_QUANTITIES
-        QUANTITY_IS_A_VECTOR(IQUANTITY) = .FALSE.
-      ENDDO
-
-      QUANTITY_IS_A_VECTOR(2)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(3)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(5)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(8)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(9)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(20) = .TRUE.
-      QUANTITY_IS_A_VECTOR(24) = .TRUE.
-      QUANTITY_IS_A_VECTOR(26) = .TRUE.
-
-      ORIENTATION(1) = 'xy'
-      ORIENTATION(2) = 'xz'
-      ORIENTATION(3) = 'yz'
-
 !     open files
 
       LUNIT_BASE = 13
@@ -355,18 +317,27 @@ C=======================================================================
      &          VECTOR(3),
      &          WORK(*)
 
-      DO IQUANTITY = 1,NR_QUANTITIES
-        QUANTITY_IS_A_VECTOR(IQUANTITY) = .FALSE.
-      ENDDO
 
-      QUANTITY_IS_A_VECTOR(2)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(3)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(5)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(8)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(9)  = .TRUE.
-      QUANTITY_IS_A_VECTOR(20) = .TRUE.
-      QUANTITY_IS_A_VECTOR(24) = .TRUE.
-      QUANTITY_IS_A_VECTOR(26) = .TRUE.
+      IPOINT_N        =  1 !    number density
+      IPOINT_M        =  2 !    magnetization
+      IPOINT_DIVM     =  3 !div(magnetization)
+      IPOINT_ROTM     =  4 !rot(magnetization)
+      IPOINT_RXJ      =  5 !    r \times j
+      IPOINT_J        =  6 !    current density
+      IPOINT_DIVJ     =  7 !div(current density)
+      IPOINT_ROTJ     =  8 !rot(current density)
+      IPOINT_JPARA    =  9 !    paramagnetic current density
+      IPOINT_DIVJPARA = 10 !div(paramagnetic current density)
+      IPOINT_ROTJPARA = 11 !rot(paramagnetic current density)
+      IPOINT_JDIA     = 12 !    diamagnetic current density
+      IPOINT_V        = 13 !    velocity density
+      IPOINT_DIVV     = 14 !div(velocity density)
+      IPOINT_ROTV     = 15 !rot(velocity density) a.k.a. vorticity
+      IPOINT_ELF      = 16 !    ELF
+      IPOINT_K        = 17 !    kinetic energy density
+      IPOINT_H        = 18 !    helicity density
+      IPOINT_GAMMA5   = 19 !    \gamma_5 density
+
 
       CALL DZERO(QUANTITY,NR_QUANTITIES*4)
 
@@ -375,13 +346,13 @@ C=======================================================================
 
 !     density
 
-      IQUANTITY = 1
+      IQUANTITY = IPOINT_N        !    number density
       CALL GETRHO(DENSITY,IREP_VISUAL,GAO,DMAT_AO,BUF)
       QUANTITY(IQUANTITY,0) = DENSITY
 
 !     ELF
 
-      IQUANTITY = 4
+      IQUANTITY = IPOINT_ELF      !    ELF
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 
         CALL GETGRHO(VECTOR,IREP_VISUAL,GAO,GAO1,DMAT_AO,BUF)
@@ -411,7 +382,7 @@ C=======================================================================
 
 !     diamagnetic current density
 
-      IQUANTITY = 20
+      IQUANTITY = IPOINT_JDIA     !    diamagnetic current density
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
         CALL GETRHO(DENSITY,0,GAO,DMAT_AO,BUF)
 
@@ -422,7 +393,7 @@ C=======================================================================
 
 !     paramagnetic current density
 
-      IQUANTITY = 24
+      IQUANTITY = IPOINT_JPARA    !    paramagnetic current density
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
@@ -444,7 +415,7 @@ C=======================================================================
 
 !     magnetization
 
-      IQUANTITY = 2
+      IQUANTITY = IPOINT_M        !    magnetization
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
@@ -466,7 +437,7 @@ C=======================================================================
 
 !     current density
 
-      IQUANTITY = 3
+      IQUANTITY = IPOINT_J        !    current density
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
@@ -488,7 +459,7 @@ C=======================================================================
 
 !     r \times j
 
-      IQUANTITY = 5
+      IQUANTITY = IPOINT_RXJ      !    r \times j
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
@@ -510,7 +481,7 @@ C=======================================================================
 
 !     divergence of magnetization
 
-      IQUANTITY = 6
+      IQUANTITY = IPOINT_DIVM     !div(magnetization)
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
@@ -528,7 +499,7 @@ C=======================================================================
 
 !     divergence of current density
 
-      IQUANTITY = 7
+      IQUANTITY = IPOINT_DIVJ     !div(current density)
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
@@ -546,14 +517,14 @@ C=======================================================================
 
 !     divergence of paramagnetic current density
 
-      IQUANTITY = 25
+      IQUANTITY = IPOINT_DIVJPARA !div(paramagnetic current density)
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
         CALL QUIT('not implemented')
       ENDIF
 
 !     curl of magnetization
 
-      IQUANTITY = 8
+      IQUANTITY = IPOINT_ROTM     !rot(magnetization)
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
@@ -575,7 +546,7 @@ C=======================================================================
 
 !     curl of current density
 
-      IQUANTITY = 9
+      IQUANTITY = IPOINT_ROTJ     !rot(current density)
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
@@ -597,7 +568,7 @@ C=======================================================================
 
 !     curl of paramagnetic current density
 
-      IQUANTITY = 26
+      IQUANTITY = IPOINT_ROTJPARA !rot(paramagnetic current density)
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
@@ -619,7 +590,7 @@ C=======================================================================
 
 !     \gamma_5 density
 
-      IQUANTITY = 23
+      IQUANTITY = IPOINT_GAMMA5   !    \gamma_5 density
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
 #if defined (MOD_CDFT)
 
@@ -637,17 +608,21 @@ C=======================================================================
 
 !     kinetic energy density
 
-      IQUANTITY = 21
+      IQUANTITY = IPOINT_K        !    kinetic energy density
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
         CALL QUIT('not implemented')
       ENDIF
 
 !     helicity
 
-      IQUANTITY = 22
+      IQUANTITY = IPOINT_H        !    helicity density
       IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
         CALL QUIT('not implemented')
       ENDIF
+
+!     IQUANTITY = IPOINT_V        !    velocity density
+!     IQUANTITY = IPOINT_DIVV     !div(velocity density)
+!     IQUANTITY = IPOINT_ROTV     !rot(velocity density) a.k.a. vorticity
 
 !     get norm for quantities that are vectors
 

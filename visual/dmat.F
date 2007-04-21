@@ -326,7 +326,7 @@ C=======================================================================
 
       REWIND LUNIT_XVEC
       DO I = 1,NXVEC
-        IF(.NOT. LBIT(LBIT_VISUAL,6)) THEN ! "EE" part
+        IF(.NOT. LBIT(LBIT_VISUAL,6)) THEN !"EE" part
           READ(LUNIT_XVEC)
           IF(I .EQ. NXVEC) THEN
             CALL DZERO(WORK(KBVEC_EE),NBDIM_EE*NZ)
@@ -339,7 +339,7 @@ C=======================================================================
           READ(LUNIT_XVEC)
         ENDIF
 
-        IF(.NOT. LBIT(LBIT_VISUAL,5)) THEN ! "EP" part
+        IF(.NOT. LBIT(LBIT_VISUAL,5)) THEN !"EP" part
           READ(LUNIT_XVEC)
           IF(I .EQ. NXVEC) THEN
             CALL DZERO(WORK(KBVEC_EP),NBDIM_EP*NZ)
