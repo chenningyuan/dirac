@@ -469,7 +469,7 @@ include ./Makefile.config
 
 OBJS = \\
 dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o dirac/dirv1c.o \\
-dirac/dirout.o dirac/dirana.o dirac/visual_old.o dirac/dirrdn.o dirac/dirscf.o \\
+dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \\
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \\
 dirac/dirgrd.o dirac/dirsol.o dirac/dirgeo.o dirac/dirspf.o \\
 dirac/diropen.o dirac/diraos.o  dirac/dirbss.o \\
