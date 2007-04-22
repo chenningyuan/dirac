@@ -21,10 +21,10 @@ C     LBIT(LBIT_VISUAL_QUANTITY, 8) rot(current density)
 C     LBIT(LBIT_VISUAL_QUANTITY, 9)     paramagnetic current density
 C     LBIT(LBIT_VISUAL_QUANTITY,10) div(paramagnetic current density)
 C     LBIT(LBIT_VISUAL_QUANTITY,11) rot(paramagnetic current density)
-C     LBIT(LBIT_VISUAL_QUANTITY,12)     diamagnetic current density
-C     LBIT(LBIT_VISUAL_QUANTITY,13)     velocity density
-C     LBIT(LBIT_VISUAL_QUANTITY,14) div(velocity density)
-C     LBIT(LBIT_VISUAL_QUANTITY,15) rot(velocity density) a.k.a. vorticity
+C     LBIT(LBIT_VISUAL_QUANTITY,12)      diamagnetic current density
+C     LBIT(LBIT_VISUAL_QUANTITY,13)     paramagnetic velocity density
+C     LBIT(LBIT_VISUAL_QUANTITY,14) div(paramagnetic velocity density)
+C     LBIT(LBIT_VISUAL_QUANTITY,15) rot(paramagnetic velocity density) a.k.a. vorticity
 C     LBIT(LBIT_VISUAL_QUANTITY,16)     ELF
 C     LBIT(LBIT_VISUAL_QUANTITY,17)     kinetic energy density
 C     LBIT(LBIT_VISUAL_QUANTITY,18)     helicity density

@@ -525,16 +525,16 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_ROTV */
-      SUBROUTINE GET_ROTV(LGET,
-     &                    VECTOR,
-     &                    DENSITY,
-     &                    DENSITY_GRADIENT,
-     &                    IREPOP,
-     &                    GAO,
-     &                    GAO1,
-     &                    DMAT,
-     &                    BUF)
+C     /* GET_ROTVPARA */
+      SUBROUTINE GET_ROTVPARA(LGET,
+     &                        VECTOR,
+     &                        DENSITY,
+     &                        DENSITY_GRADIENT,
+     &                        IREPOP,
+     &                        GAO,
+     &                        GAO1,
+     &                        DMAT,
+     &                        BUF)
 C=======================================================================
 C                                                           radovan bast
 C                                              last revision: april 2007

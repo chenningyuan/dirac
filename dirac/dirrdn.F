@@ -2702,7 +2702,7 @@ C
      &             '*VISUAL','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.MULPOP','.PROJEC','.PRIVEC','.RHO1  ',
      &             '.DENSIT','.WT1   ','.LOCALI','.XXXXXX',
-     &             '.VISUAL','.XXXXXN','.XXXXXX','.XXXXXX'/
+     &             '.VISUAL','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
 #include "memint.h"

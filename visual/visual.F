@@ -181,7 +181,7 @@ C=======================================================================
 !                  25        26        27        28
      &            '.JPARA ','.DIVJPA','.ROTJPA','.JDIA  ',
 !                  29        30        31        32
-     &            '.V     ','.DIVV  ','.ROTV  ','.ELF   ',
+     &            '.VPARA ','.DIVVPA','.ROTVPA','.ELF   ',
 !                  33        34        35        36
      &            '.K     ','.H     ','.GAMMA5','.XXXXXX',
 !                  37        38        39        40
@@ -224,9 +224,7 @@ C=======================================================================
 
       ADD_3D               = 4.0D0
 
-      DO IQUANTITY = 1,NR_QUANTITIES
-        QUANTITY_IS_A_VECTOR(IQUANTITY) = .FALSE.
-      ENDDO
+      CALL LZERO(QUANTITY_IS_A_VECTOR,NR_QUANTITIES)
 
       ORIENTATION(1) = 'xy'
       ORIENTATION(2) = 'xz'
@@ -385,18 +383,18 @@ C=======================================================================
 
    29     CONTINUE
           CALL SET_LBIT(LBIT_VISUAL_QUANTITY,13)
-          QUANTITY_NAME(13)        = 'v'
+          QUANTITY_NAME(13)        = 'vpara'
           QUANTITY_IS_A_VECTOR(13) = .TRUE.
           GOTO 100
 
    30     CONTINUE
           CALL SET_LBIT(LBIT_VISUAL_QUANTITY,14)
-          QUANTITY_NAME(14)        = 'divv'
+          QUANTITY_NAME(14)        = 'divvpara'
           GOTO 100
 
    31     CONTINUE
           CALL SET_LBIT(LBIT_VISUAL_QUANTITY,15)
-          QUANTITY_NAME(15)        = 'rotv'
+          QUANTITY_NAME(15)        = 'rotvpara'
           QUANTITY_IS_A_VECTOR(15) = .TRUE.
           GOTO 100
 
@@ -457,6 +455,294 @@ C=======================================================================
         ENDIF
       ENDIF
   300 CONTINUE
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_QUANTITY_IN_POINT */
+      SUBROUTINE GET_QUANTITY_IN_POINT(DMAT_AO,
+     &                                 GAO,
+     &                                 GAO1,
+     &                                 PX,PY,PZ,
+     &                                 NCNT,
+     &                                 BUF,
+     &                                 QUANTITY,
+     &                                 WORK,KFREE,LFREE)
+C=======================================================================
+C     description in here ...
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: april 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0)
+      PARAMETER (D1 = 1.0D0)
+      PARAMETER (D2 = 2.0D0)
+      PARAMETER (D3 = 3.0D0)
+      PARAMETER (D4 = 4.0D0)
+      PARAMETER (D5 = 5.0D0)
+
+      PARAMETER (DP12 = D1/D2)
+      PARAMETER (DP23 = D2/D3)
+      PARAMETER (DP53 = D5/D3)
+
+#include "visual.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcbxrs.h"
+
+      LOGICAL   LBIT
+      DIMENSION DMAT_AO(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          NCNT(*),
+     &          BUF(*),
+     &          QUANTITY(0:3,NR_QUANTITIES),
+     &          WORK(*),
+     &          VECTOR(3)
+
+      IQ_N        =  1 !    number density
+      IQ_M        =  2 !    magnetization
+      IQ_DIVM     =  3 !div(magnetization)
+      IQ_ROTM     =  4 !rot(magnetization)
+      IQ_RXJ      =  5 !    r \times j
+      IQ_J        =  6 !    current density
+      IQ_DIVJ     =  7 !div(current density)
+      IQ_ROTJ     =  8 !rot(current density)
+      IQ_JPARA    =  9 !    paramagnetic current density
+      IQ_DIVJPARA = 10 !div(paramagnetic current density)
+      IQ_ROTJPARA = 11 !rot(paramagnetic current density)
+      IQ_JDIA     = 12 !     diamagnetic current density
+      IQ_VPARA    = 13 !    paramagnetic velocity density
+      IQ_DIVVPARA = 14 !div(paramagnetic velocity density)
+      IQ_ROTVPARA = 15 !rot(paramagnetic velocity density) a.k.a. vorticity
+      IQ_ELF      = 16 !    ELF
+      IQ_K        = 17 !    kinetic energy density
+      IQ_H        = 18 !    helicity density
+      IQ_GAMMA5   = 19 !    \gamma_5 density
+
+      CALL DZERO(QUANTITY,NR_QUANTITIES*4)
+
+      CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
+     &            BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
+
+      IQ = IQ_N !number density
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+        CALL GETRHO(QUANTITY(0,IQ),IREP_VISUAL,GAO,DMAT_AO,BUF)
+      ENDIF
+
+      IQ = IQ_ELF !ELF
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+        ELF_KIN = D0
+        DO IXYZ = 1,3
+          DO IC = 1,MC
+            SCALAR = D0
+            CALL GETRH1(SCALAR,IC,IREP_VISUAL,GAO1(1+(IXYZ-1)*NTBAS(0)),
+     &                  DMAT_AO,BUF)
+            ELF_KIN = ELF_KIN + SCALAR/D2
+          ENDDO
+        ENDDO
+
+        PI =  3.1415926536D0
+        FACTOR = 0.3D0*((D3*PI*PI)**DP23)
+
+        CALL GETRHO(DENSITY,IREP_VISUAL,GAO,DMAT_AO,BUF)
+
+        CALL GETGRHO(VECTOR,IREP_VISUAL,GAO,GAO1,DMAT_AO,BUF)
+        GRADIENT_SQUARED = VECTOR(1)**D2
+     &                   + VECTOR(2)**D2
+     &                   + VECTOR(3)**D2
+
+        H = FACTOR*(DENSITY**DP53)
+        G = ELF_KIN - GRADIENT_SQUARED/(8.0D0*DENSITY)
+
+        ELF_CHI = G/H
+
+        QUANTITY(0,IQ) = D1/(D1 + ELF_CHI*ELF_CHI)
+      ENDIF
+
+      IQ = IQ_JDIA !diamagnetic current density
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+        CALL GETRHO(DENSITY,0,GAO,DMAT_AO,BUF)
+
+        QUANTITY(1,IQ) = -(D1/D2)*PY*DENSITY
+        QUANTITY(2,IQ) =  (D1/D2)*PX*DENSITY
+        QUANTITY(3,IQ) =   D0
+      ENDIF
+
+      IQ = IQ_JPARA !paramagnetic current density
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+#if defined (MOD_CDFT)
+        CALL GET_JPARA(.TRUE.,
+     &                 QUANTITY(1,IQ),
+     &                 IREP_VISUAL,
+     &                 GAO,
+     &                 GAO1,
+     &                 DMAT_AO,
+     &                 BUF)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+      IQ = IQ_M !magnetization
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+#if defined (MOD_CDFT)
+        CALL GET_M(.TRUE.,
+     &             QUANTITY(1,IQ),
+     &             IREP_VISUAL,
+     &             GAO,
+     &             GAO1,
+     &             DMAT_AO,
+     &             BUF)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+      IQ = IQ_J !current density
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+#if defined (MOD_CDFT)
+        CALL GET_J(.TRUE.,
+     &             QUANTITY(1,IQ),
+     &             IREP_VISUAL,
+     &             GAO,
+     &             GAO1,
+     &             DMAT_AO,
+     &             BUF)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+      IQ = IQ_RXJ !r \times j
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+#if defined (MOD_CDFT)
+        CALL GET_J(.TRUE.,
+     &             VECTOR,
+     &             IREP_VISUAL,
+     &             GAO,
+     &             GAO1,
+     &             DMAT_AO,
+     &             BUF)
+
+        QUANTITY(1,IQ) = PY*VECTOR(3) - PZ*VECTOR(2)
+        QUANTITY(2,IQ) = PZ*VECTOR(1) - PX*VECTOR(3)
+        QUANTITY(3,IQ) = PX*VECTOR(2) - PY*VECTOR(1)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+      IQ = IQ_DIVM !div(magnetization)
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+#if defined (MOD_CDFT)
+        CALL GET_DIVM(.TRUE.,
+     &                QUANTITY(0,IQ),
+     &                IREP_VISUAL,
+     &                GAO,
+     &                GAO1,
+     &                DMAT_AO,
+     &                BUF)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+      IQ = IQ_DIVJ !div(current density)
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+#if defined (MOD_CDFT)
+        CALL GET_DIVJ(.TRUE.,
+     &                QUANTITY(0,IQ),
+     &                IREP_VISUAL,
+     &                GAO,
+     &                GAO1,
+     &                DMAT_AO,
+     &                BUF)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+      IQ = IQ_ROTM !rot(magnetization)
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+#if defined (MOD_CDFT)
+        CALL GET_ROTM(.TRUE.,
+     &                QUANTITY(1,IQ),
+     &                IREP_VISUAL,
+     &                GAO,
+     &                GAO1,
+     &                DMAT_AO,
+     &                BUF)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+      IQ = IQ_ROTJ !rot(current density)
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+#if defined (MOD_CDFT)
+        CALL GET_ROTJ(.TRUE.,
+     &                QUANTITY(1,IQ),
+     &                IREP_VISUAL,
+     &                GAO,
+     &                GAO1,
+     &                DMAT_AO,
+     &                BUF)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+      IQ = IQ_ROTJPARA !rot(paramagnetic current density)
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+#if defined (MOD_CDFT)
+        CALL GET_ROTJPARA(.TRUE.,
+     &                    QUANTITY(1,IQ),
+     &                    IREP_VISUAL,
+     &                    GAO,
+     &                    GAO1,
+     &                    DMAT_AO,
+     &                    BUF)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+      IQ = IQ_GAMMA5 !\gamma_5 density
+      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+#if defined (MOD_CDFT)
+        CALL GET_GAMMA5(.TRUE.,
+     &                  QUANTITY(0,IQ),
+     &                  IREP_VISUAL,
+     &                  GAO,
+     &                  GAO1,
+     &                  DMAT_AO,
+     &                  BUF)
+#else
+        CALL QUIT('not implemented')
+#endif
+      ENDIF
+
+!     calculate norm for quantities that are vectors
+
+      DO IQ = 1,NR_QUANTITIES
+        IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+          IF(QUANTITY_IS_A_VECTOR(IQ)) THEN
+            QUANTITY(0,IQ) = QUANTITY(1,IQ)**D2
+     &                     + QUANTITY(2,IQ)**D2
+     &                     + QUANTITY(3,IQ)**D2
+
+            QUANTITY(0,IQ) = DSQRT(QUANTITY(0,IQ))
+          ENDIF
+        ENDIF
+      ENDDO
 
       RETURN
       END

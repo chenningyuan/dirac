@@ -36,8 +36,8 @@ C=======================================================================
      &          BUF(*),
      &          WORK(*)
 
-      DO IQUANTITY = 1,NR_QUANTITIES
-        QUANTITY_IS_A_VECTOR(IQUANTITY) = .FALSE.
+      DO IQ = 1,NR_QUANTITIES
+        QUANTITY_IS_A_VECTOR(IQ) = .FALSE.
       ENDDO
 
       QUANTITY_IS_A_VECTOR(2)  = .TRUE.
@@ -61,17 +61,17 @@ C=======================================================================
      &                             QUANTITY,
      &                             WORK,KFREE,LFREE)
 
-        DO IQUANTITY = 1,NR_QUANTITIES
-          IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-            QUANTITY_INTEGRAL(IQUANTITY,0)
-     &                            = QUANTITY_INTEGRAL(IQUANTITY,0)
-     &                            + QUANTITY(IQUANTITY,0)*WEIGHT(IPOINT)
+        DO IQ = 1,NR_QUANTITIES
+          IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+            QUANTITY_INTEGRAL(IQ,0)
+     &                            = QUANTITY_INTEGRAL(IQ,0)
+     &                            + QUANTITY(IQ,0)*WEIGHT(IPOINT)
 
-            IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
+            IF(QUANTITY_IS_A_VECTOR(IQ)) THEN
               DO IXYZ = 1,3
-                QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
-     &                         = QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
-     &                         + QUANTITY(IQUANTITY,IXYZ)*WEIGHT(IPOINT)
+                QUANTITY_INTEGRAL(IQ,IXYZ)
+     &                         = QUANTITY_INTEGRAL(IQ,IXYZ)
+     &                         + QUANTITY(IQ,IXYZ)*WEIGHT(IPOINT)
               ENDDO
             ENDIF
           ENDIF

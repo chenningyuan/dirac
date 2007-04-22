@@ -44,9 +44,9 @@ C=======================================================================
      &          BUF(*),
      &          WORK(LWORK),
      &          LUNIT(3,NR_QUANTITIES),
-     &          QUANTITY(NR_QUANTITIES,0:3,NCUBE(3)),
-     &          QUANTITY_INTEGRAL(NR_QUANTITIES,0:3),
-     &          QUANTITY_INTEGRAL_LAST(NR_QUANTITIES,0:3),
+     &          QUANTITY(0:3,NR_QUANTITIES,NCUBE(3)),
+     &          QUANTITY_INTEGRAL(0:3,NR_QUANTITIES),
+     &          QUANTITY_INTEGRAL_LAST(0:3,NR_QUANTITIES),
      &          STEP_3D(3,0:3),
      &          ATOM_XYZ(4,NUCDEP)
 
@@ -71,17 +71,17 @@ C=======================================================================
       LUNIT_BASE = 13
       DO I = 1,3 !1D, 2D, 3D
         IF(LBIT(LBIT_VISUAL,I)) THEN
-          DO IQUANTITY = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
+          DO IQ = 1,NR_QUANTITIES
+            IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
               WRITE(FILE_NAME,'(A5,I1,A2,A)') 'PLOT.', I, 'D.',
-     &                                        QUANTITY_NAME(IQUANTITY)
+     &                                        QUANTITY_NAME(IQ)
               OPEN(LUNIT_BASE,
      &             FILE   = FILE_NAME,
      &             STATUS = 'NEW',
      &             ACCESS = 'SEQUENTIAL',
      &             FORM   = 'FORMATTED')
 
-              LUNIT(I,IQUANTITY) = LUNIT_BASE
+              LUNIT(I,IQ) = LUNIT_BASE
               LUNIT_BASE = LUNIT_BASE + 1
             ENDIF
           ENDDO
@@ -103,12 +103,12 @@ C=======================================================================
             NI = 1
           ENDIF
 
-          DO IQUANTITY = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-              WRITE(LUNIT(2,IQUANTITY),'(A)')
-              WRITE(LUNIT(2,IQUANTITY),'(A)')
-              WRITE(LUNIT(2,IQUANTITY),'(A2)') ORIENTATION(IORIENTATION)
-              WRITE(LUNIT(2,IQUANTITY),'(A)')
+          DO IQ = 1,NR_QUANTITIES
+            IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+              WRITE(LUNIT(2,IQ),'(A)')
+              WRITE(LUNIT(2,IQ),'(A)')
+              WRITE(LUNIT(2,IQ),'(A2)') ORIENTATION(IORIENTATION)
+              WRITE(LUNIT(2,IQ),'(A)')
             ENDIF
           ENDDO
 
@@ -128,28 +128,30 @@ C=======================================================================
                   PX = D0
                 ENDIF
 
+#if defined (MOD_VISUAL)
                 CALL GET_QUANTITY_IN_POINT(DMAT_AO,
      &                                     GAO,GAO1,
      &                                     PX,PY,PZ,
      &                                     NCNT,BUF,
      &                                     QUANTITY,
      &                                     WORK,KFREE,LFREE)
+#endif
 
 !               write to file(s)
 
-                DO IQUANTITY = 1,NR_QUANTITIES
-                  IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-                    IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
-                      WRITE(LUNIT(2,IQUANTITY),'(7F20.10)')
+                DO IQ = 1,NR_QUANTITIES
+                  IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+                    IF(QUANTITY_IS_A_VECTOR(IQ)) THEN
+                      WRITE(LUNIT(2,IQ),'(7F20.10)')
      &                      PX, PY, PZ,
-     &                      QUANTITY(IQUANTITY,0,1),
-     &                      QUANTITY(IQUANTITY,1,1),
-     &                      QUANTITY(IQUANTITY,2,1),
-     &                      QUANTITY(IQUANTITY,3,1)
+     &                      QUANTITY(0,IQ,1),
+     &                      QUANTITY(1,IQ,1),
+     &                      QUANTITY(2,IQ,1),
+     &                      QUANTITY(3,IQ,1)
                     ELSE
-                      WRITE(LUNIT(2,IQUANTITY),'(4F20.10)')
+                      WRITE(LUNIT(2,IQ),'(4F20.10)')
      &                      PX, PY, PZ,
-     &                      QUANTITY(IQUANTITY,0,1)
+     &                      QUANTITY(0,IQ,1)
                     ENDIF
                   ENDIF
                 ENDDO
@@ -212,16 +214,16 @@ C=======================================================================
 
 !       write header
 
-        DO IQUANTITY = 1,NR_QUANTITIES
-          IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-            WRITE(LUNIT(3,IQUANTITY),'(A)') 'some'
-            WRITE(LUNIT(3,IQUANTITY),'(A)') 'text'
+        DO IQ = 1,NR_QUANTITIES
+          IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+            WRITE(LUNIT(3,IQ),'(A)') 'some'
+            WRITE(LUNIT(3,IQ),'(A)') 'text'
             DO I = 0,3
-              WRITE(LUNIT(3,IQUANTITY),'(I5,4F12.6)')
+              WRITE(LUNIT(3,IQ),'(I5,4F12.6)')
      &                                    NCUBE(I), (STEP_3D(J,I),J=1,3)
             ENDDO
             DO I = 1,NUCDEP
-              WRITE(LUNIT(3,IQUANTITY),'(I5,4F12.6)')
+              WRITE(LUNIT(3,IQ),'(I5,4F12.6)')
      &         NINT(ATOM_XYZ(4,I)), ATOM_XYZ(4,I), (ATOM_XYZ(J,I),J=1,3)
             ENDDO
           ENDIF
@@ -243,20 +245,22 @@ C=======================================================================
      &                          + (JCUBE-1)*STEP_3D(3,2)
      &                          + (KCUBE-1)*STEP_3D(3,3)
 
+#if defined (MOD_VISUAL)
               CALL GET_QUANTITY_IN_POINT(DMAT_AO,
      &                                   GAO,GAO1,
      &                                   PX,PY,PZ,
      &                                   NCNT,BUF,
-     &                                   QUANTITY(1,0,KCUBE),
+     &                                   QUANTITY(0,1,KCUBE),
      &                                   WORK,KFREE,LFREE)
+#endif
             ENDDO
 
 !           write fo file(s)
 
-            DO IQUANTITY = 1,NR_QUANTITIES
-              IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-                WRITE(LUNIT(3,IQUANTITY),'(6E13.5)')
-     &               (QUANTITY(IQUANTITY,0,M),M=1,NCUBE(3))
+            DO IQ = 1,NR_QUANTITIES
+              IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+                WRITE(LUNIT(3,IQ),'(6E13.5)')
+     &               (QUANTITY(0,IQ,M),M=1,NCUBE(3))
               ENDIF
             ENDDO
           ENDDO
@@ -267,9 +271,9 @@ C=======================================================================
 
       DO I = 1,3 !1D, 2D, 3D
         IF(LBIT(LBIT_VISUAL,I)) THEN
-          DO IQUANTITY = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-              CLOSE(LUNIT(I,IQUANTITY), STATUS = 'KEEP')
+          DO IQ = 1,NR_QUANTITIES
+            IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+              CLOSE(LUNIT(I,IQ), STATUS = 'KEEP')
             ENDIF
           ENDDO
         ENDIF
@@ -278,372 +282,6 @@ C=======================================================================
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_QUANTITY_IN_POINT */
-      SUBROUTINE GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                                 GAO,GAO1,
-     &                                 PX,PY,PZ,
-     &                                 NCNT,BUF,
-     &                                 QUANTITY,
-     &                                 WORK,KFREE,LFREE)
-C=======================================================================
-C                                                           radovan bast
-C                                            last revision: october 2006
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (DP12 = 1.0D0/2.0D0)
-      PARAMETER (DP23 = 2.0D0/3.0D0)
-      PARAMETER (DP53 = 5.0D0/3.0D0)
-
-#include "visual.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "pgroup.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "dcbxrs.h"
-
-      LOGICAL   LBIT
-      DIMENSION DMAT_AO(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          NCNT(*),
-     &          BUF(*),
-     &          QUANTITY(NR_QUANTITIES,0:3),
-     &          VECTOR(3),
-     &          WORK(*)
-
-
-      IPOINT_N        =  1 !    number density
-      IPOINT_M        =  2 !    magnetization
-      IPOINT_DIVM     =  3 !div(magnetization)
-      IPOINT_ROTM     =  4 !rot(magnetization)
-      IPOINT_RXJ      =  5 !    r \times j
-      IPOINT_J        =  6 !    current density
-      IPOINT_DIVJ     =  7 !div(current density)
-      IPOINT_ROTJ     =  8 !rot(current density)
-      IPOINT_JPARA    =  9 !    paramagnetic current density
-      IPOINT_DIVJPARA = 10 !div(paramagnetic current density)
-      IPOINT_ROTJPARA = 11 !rot(paramagnetic current density)
-      IPOINT_JDIA     = 12 !    diamagnetic current density
-      IPOINT_V        = 13 !    velocity density
-      IPOINT_DIVV     = 14 !div(velocity density)
-      IPOINT_ROTV     = 15 !rot(velocity density) a.k.a. vorticity
-      IPOINT_ELF      = 16 !    ELF
-      IPOINT_K        = 17 !    kinetic energy density
-      IPOINT_H        = 18 !    helicity density
-      IPOINT_GAMMA5   = 19 !    \gamma_5 density
-
-
-      CALL DZERO(QUANTITY,NR_QUANTITIES*4)
-
-      CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
-     &            BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
-
-!     density
-
-      IQUANTITY = IPOINT_N        !    number density
-      CALL GETRHO(DENSITY,IREP_VISUAL,GAO,DMAT_AO,BUF)
-      QUANTITY(IQUANTITY,0) = DENSITY
-
-!     ELF
-
-      IQUANTITY = IPOINT_ELF      !    ELF
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-
-        CALL GETGRHO(VECTOR,IREP_VISUAL,GAO,GAO1,DMAT_AO,BUF)
-        GRADIENT_SQUARED = VECTOR(1)**D2 + VECTOR(2)**D2 + VECTOR(3)**D2
-
-        ELFKIN = D0
-        DO I = 1,3
-          DO IC = 1,MC
-            TEMP = D0
-            CALL GETRH1(TEMP,IC,IREP_VISUAL,GAO1((I-1)*NTBAS(0)+1),
-     &                  DMAT_AO,BUF)
-            ELFKIN = ELFKIN + TEMP
-          ENDDO
-        ENDDO
-        ELFKIN = ELFKIN/D2
-
-        PI =  3.1415926536D0
-        FACTOR = 0.3D0*((D3*PI*PI)**DP23)
-
-        H = FACTOR*(DENSITY**DP53)
-        G = ELFKIN - GRADIENT_SQUARED/(8.0D0*DENSITY)
-
-        ELFCHI = G/H
-
-        QUANTITY(IQUANTITY,0) = D1/(D1 + ELFCHI*ELFCHI)
-      ENDIF
-
-!     diamagnetic current density
-
-      IQUANTITY = IPOINT_JDIA     !    diamagnetic current density
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-        CALL GETRHO(DENSITY,0,GAO,DMAT_AO,BUF)
-
-        QUANTITY(IQUANTITY,1) = -(D1/D2)*PY*DENSITY
-        QUANTITY(IQUANTITY,2) =  (D1/D2)*PX*DENSITY
-        QUANTITY(IQUANTITY,3) =   D0
-      ENDIF
-
-!     paramagnetic current density
-
-      IQUANTITY = IPOINT_JPARA    !    paramagnetic current density
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        CALL GET_JPARA(.TRUE.,
-     &                 VECTOR,
-     &                 IREP_VISUAL,
-     &                 GAO,
-     &                 GAO1,
-     &                 DMAT_AO,
-     &                 BUF)
-
-        QUANTITY(IQUANTITY,1) = VECTOR(1)
-        QUANTITY(IQUANTITY,2) = VECTOR(2)
-        QUANTITY(IQUANTITY,3) = VECTOR(3)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     magnetization
-
-      IQUANTITY = IPOINT_M        !    magnetization
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        CALL GET_M(.TRUE.,
-     &             VECTOR,
-     &             IREP_VISUAL,
-     &             GAO,
-     &             UNUSED,
-     &             DMAT_AO,
-     &             BUF)
-
-        QUANTITY(IQUANTITY,1) = VECTOR(1)
-        QUANTITY(IQUANTITY,2) = VECTOR(2)
-        QUANTITY(IQUANTITY,3) = VECTOR(3)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     current density
-
-      IQUANTITY = IPOINT_J        !    current density
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        CALL GET_J(.TRUE.,
-     &             VECTOR,
-     &             IREP_VISUAL,
-     &             GAO,
-     &             UNUSED,
-     &             DMAT_AO,
-     &             BUF)
-
-        QUANTITY(IQUANTITY,1) = VECTOR(1)
-        QUANTITY(IQUANTITY,2) = VECTOR(2)
-        QUANTITY(IQUANTITY,3) = VECTOR(3)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     r \times j
-
-      IQUANTITY = IPOINT_RXJ      !    r \times j
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        CALL GET_J(.TRUE.,
-     &             VECTOR,
-     &             IREP_VISUAL,
-     &             GAO,
-     &             UNUSED,
-     &             DMAT_AO,
-     &             BUF)
-
-        QUANTITY(IQUANTITY,1) = PY*VECTOR(3) - PZ*VECTOR(2)
-        QUANTITY(IQUANTITY,2) = PZ*VECTOR(1) - PX*VECTOR(3)
-        QUANTITY(IQUANTITY,3) = PX*VECTOR(2) - PY*VECTOR(1)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     divergence of magnetization
-
-      IQUANTITY = IPOINT_DIVM     !div(magnetization)
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        CALL GET_DIVM(.TRUE.,
-     &                QUANTITY(IQUANTITY,0),
-     &                IREP_VISUAL,
-     &                GAO,
-     &                GAO1,
-     &                DMAT_AO,
-     &                BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     divergence of current density
-
-      IQUANTITY = IPOINT_DIVJ     !div(current density)
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        CALL GET_DIVJ(.TRUE.,
-     &                QUANTITY(IQUANTITY,0),
-     &                IREP_VISUAL,
-     &                GAO,
-     &                GAO1,
-     &                DMAT_AO,
-     &                BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     divergence of paramagnetic current density
-
-      IQUANTITY = IPOINT_DIVJPARA !div(paramagnetic current density)
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-        CALL QUIT('not implemented')
-      ENDIF
-
-!     curl of magnetization
-
-      IQUANTITY = IPOINT_ROTM     !rot(magnetization)
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        CALL GET_ROTM(.TRUE.,
-     &                VECTOR,
-     &                IREP_VISUAL,
-     &                GAO,
-     &                GAO1,
-     &                DMAT_AO,
-     &                BUF)
-
-        QUANTITY(IQUANTITY,1) = VECTOR(1)
-        QUANTITY(IQUANTITY,2) = VECTOR(2)
-        QUANTITY(IQUANTITY,3) = VECTOR(3)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     curl of current density
-
-      IQUANTITY = IPOINT_ROTJ     !rot(current density)
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        CALL GET_ROTJ(.TRUE.,
-     &                VECTOR,
-     &                IREP_VISUAL,
-     &                GAO,
-     &                GAO1,
-     &                DMAT_AO,
-     &                BUF)
-
-        QUANTITY(IQUANTITY,1) = VECTOR(1)
-        QUANTITY(IQUANTITY,2) = VECTOR(2)
-        QUANTITY(IQUANTITY,3) = VECTOR(3)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     curl of paramagnetic current density
-
-      IQUANTITY = IPOINT_ROTJPARA !rot(paramagnetic current density)
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        CALL GET_ROTJPARA(.TRUE.,
-     &                    VECTOR,
-     &                    IREP_VISUAL,
-     &                    GAO,
-     &                    GAO1,
-     &                    DMAT_AO,
-     &                    BUF)
-
-        QUANTITY(IQUANTITY,1) = VECTOR(1)
-        QUANTITY(IQUANTITY,2) = VECTOR(2)
-        QUANTITY(IQUANTITY,3) = VECTOR(3)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     \gamma_5 density
-
-      IQUANTITY = IPOINT_GAMMA5   !    \gamma_5 density
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-#if defined (MOD_CDFT)
-
-        CALL GET_GAMMA5(.TRUE.,
-     &                  QUANTITY(IQUANTITY,0),
-     &                  IREP_VISUAL,
-     &                  GAO,
-     &                  UNUSED,
-     &                  DMAT_AO,
-     &                  BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     kinetic energy density
-
-      IQUANTITY = IPOINT_K        !    kinetic energy density
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-        CALL QUIT('not implemented')
-      ENDIF
-
-!     helicity
-
-      IQUANTITY = IPOINT_H        !    helicity density
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-        CALL QUIT('not implemented')
-      ENDIF
-
-!     IQUANTITY = IPOINT_V        !    velocity density
-!     IQUANTITY = IPOINT_DIVV     !div(velocity density)
-!     IQUANTITY = IPOINT_ROTV     !rot(velocity density) a.k.a. vorticity
-
-!     get norm for quantities that are vectors
-
-      DO IQUANTITY = 1,NR_QUANTITIES
-        IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-          IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
-            QUANTITY(IQUANTITY,0) = QUANTITY(IQUANTITY,1)**D2
-     &                            + QUANTITY(IQUANTITY,2)**D2
-     &                            + QUANTITY(IQUANTITY,3)**D2
-
-            QUANTITY(IQUANTITY,0) = DSQRT(QUANTITY(IQUANTITY,0))
-          ENDIF
-        ENDIF
-      ENDDO
-
-      RETURN
-      END
-
-
-
-
 
 
 
@@ -691,8 +329,6 @@ C=======================================================================
      &                LUNIT_3D_GRID,NR_POINTS)
 
 #if defined (MOD_VISUAL)
-#endif
-#if defined (MOD_VISUAL)
           CALL INTEGRATE_QUANTITY(QUANTITY_INTEGRAL,
      &                            DMAT_AO,
      &                            GAO,GAO1,
@@ -715,17 +351,17 @@ C=======================================================================
      &                                 'z-component'
           WRITE(LUPRI,'(A)')
 
-          DO IQUANTITY = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-              IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
-                WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,1),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,2),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,3)
+          DO IQ = 1,NR_QUANTITIES
+            IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+              IF(QUANTITY_IS_A_VECTOR(IQ)) THEN
+                WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQ),
+     &                                   QUANTITY_INTEGRAL(IQ,0),
+     &                                   QUANTITY_INTEGRAL(IQ,1),
+     &                                   QUANTITY_INTEGRAL(IQ,2),
+     &                                   QUANTITY_INTEGRAL(IQ,3)
               ELSE
-                WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                  QUANTITY_INTEGRAL(IQUANTITY,0)
+                WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQ),
+     &                                  QUANTITY_INTEGRAL(IQ,0)
               ENDIF
             ENDIF
           ENDDO
@@ -792,10 +428,10 @@ C=======================================================================
               CLOSE(LUNIT_2D_GRID,STATUS = 'DELETE')
 
               ERROR = D0
-              DO IQUANTITY = 1,NR_QUANTITIES
+              DO IQ = 1,NR_QUANTITIES
                 DO IXYZ = 0,3
-                  SOMETHING = QUANTITY_INTEGRAL(IQUANTITY,IXYZ)
-     &                      - QUANTITY_INTEGRAL_LAST(IQUANTITY,IXYZ)
+                  SOMETHING = QUANTITY_INTEGRAL(IQ,IXYZ)
+     &                      - QUANTITY_INTEGRAL_LAST(IQ,IXYZ)
                   ERROR = ERROR + DABS(SOMETHING)
                 ENDDO
               ENDDO
@@ -817,17 +453,17 @@ C=======================================================================
      &                                   'z-component'
             WRITE(LUPRI,'(A)')
 
-            DO IQUANTITY = 1,NR_QUANTITIES
-              IF(LBIT(LBIT_VISUAL_QUANTITY,IQUANTITY)) THEN
-                IF(QUANTITY_IS_A_VECTOR(IQUANTITY)) THEN
-                  WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,0),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,1),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,2),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,3)
+            DO IQ = 1,NR_QUANTITIES
+              IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+                IF(QUANTITY_IS_A_VECTOR(IQ)) THEN
+                  WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQ),
+     &                                   QUANTITY_INTEGRAL(IQ,0),
+     &                                   QUANTITY_INTEGRAL(IQ,1),
+     &                                   QUANTITY_INTEGRAL(IQ,2),
+     &                                   QUANTITY_INTEGRAL(IQ,3)
                 ELSE
-                  WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQUANTITY),
-     &                                   QUANTITY_INTEGRAL(IQUANTITY,0)
+                  WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQ),
+     &                                   QUANTITY_INTEGRAL(IQ,0)
                 ENDIF
               ENDIF
             ENDDO
