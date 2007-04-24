@@ -1743,11 +1743,8 @@ C     ------
 *     NPARBLOCK(NDIM): list of blocks with the corresponding assigned node  
 *
       INTEGER ICOUNTABLK, NTEST
-C?      INTEGER*8 ITOTBLCKL,MMPINFA(NMPROC)
-      INTEGER*8 ITOTBLCKL
       DIMENSION ICWEIGHTF(NDIM)
       DIMENSION NPARBLOCK(NDIM),IBLOCKL(NDIM)
-C?      DIMENSION MWEIGHT(NMPROC)
 C     -------
 C     SCRATCH
 C     -------
@@ -1755,11 +1752,15 @@ C     MXSIZE: actual maximum size for one of all blocks
 C     MXNUMB: number of the current largest block
 C     MMPINFA(*,1): total number of blocks for the n-th proc
 C     MMPINFA(*,2): total length ('weight') of the blocks
-      INTEGER*8 MXSIZE, MXSZTMP, ITEMPL, ITEMPW1, ITEMPW2,ILEN
-      INTEGER*8 ITLTND
       INTEGER ITEMPN, IAMGPROC, IAMTPROC, MXNUMB, IRUN
+      INTEGER(KIND=MPI_OFFSET_KIND) ITLTND,MXSIZE,MXSZTMP
+      INTEGER(KIND=MPI_OFFSET_KIND) ITEMPL, ITEMPW1, ITEMPW2
+      INTEGER(KIND=MPI_OFFSET_KIND) ILEN, ITOTBLCKL 
+      INTEGER(KIND=MPI_OFFSET_KIND) IIWEIGHTBLK, IILENGTH 
 *
       NTEST = 0
+      IIWEIGHTBLK = 0
+      IILENGTH = 0
       ITLTND = 0
       ICOUNTABLK = 0
       MXSIZE = 0
@@ -1773,15 +1774,22 @@ C     MMPINFA(*,2): total length ('weight') of the blocks
       IAMGPROC = 0
       IAMTPROC = 0
       ITOTBLCKL = 0
-C?      DO I = 1, NMPROC
-C?        MMPINFA(I) = 0
-C?        MWEIGHT(I) = 0
-C?      END DO
+      ILEN = 0
 *. end of initialization
       DO ICBL = 1, NDIM
-*
-        ILEN = IBLOCKL(ICBL) * ICWEIGHTF(ICBL)
-        IF(ILEN.NE.0) THEN
+C
+        IIWEIGHTBLK = ICWEIGHTF(ICBL)
+        IILENGTH = IBLOCKL(ICBL) 
+C
+        ILEN = IILENGTH * IIWEIGHTBLK 
+C
+        IF( ILEN .lt. 0 ) THEN 
+          WRITE(6,*)'Attention, minus block detected',ICBL
+          WRITE(6,*)'ILEN = ',ILEN
+          WRITE(6,*)'IBLOCKL(ICBL) = ',IBLOCKL(ICBL)
+          WRITE(6,*)'ICWEIGHTF(ICBL) = ',ICWEIGHTF(ICBL)
+        END IF
+        IF(ILEN.ne.0) THEN
            ICOUNTABLK = ICOUNTABLK + 1
            ITOTBLCKL = ITOTBLCKL + ILEN
            NPARBLOCK(ICBL) = -1
@@ -1797,8 +1805,11 @@ CSK      WRITE(6,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
        IF(MYPROC.EQ.0) THEN
          WRITE(6,*) '  total number of processes to distribute on:',
      &                 NMPROC
+         WRITE(6,*) '  total number of blocks:', NDIM
+         CALL IWRTMA(NPARBLOCK,1,NDIM,1,NDIM)
          WRITE(6,*) '  total number of active blocks:', ICOUNTABLK
-         WRITE(6,*) '  overall active block length:', ITOTBLCKL
+         WRITE(6,*) '  overall active block length  :', ITOTBLCKL
+         WRITE(6,*) '  Maximum block size           :', MXSIZE
        END IF
       END IF
 *
@@ -1828,7 +1839,12 @@ CSK      WRITE(6,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
 *
         DO 3000 II = 1, NDIM
 *
-          ITEMPL = IBLOCKL(II) * ICWEIGHTF(II)
+          
+          IIWEIGHTBLK = ICWEIGHTF(II)
+          IILENGTH = IBLOCKL(II)
+C
+          ITEMPL = IILENGTH * IIWEIGHTBLK
+C
           ITEMPD = NPARBLOCK(II)
           ITEMPN = II
 
@@ -1858,7 +1874,9 @@ C?          ITEMPW2 = MMPINFA(IPR)
            ITEMPW2 = 0
            DO IBLK = 1, NDIM
             IF( NPARBLOCK(IBLK) .eq. IPR-1 ) THEN
-              ITEMPW2 = ITEMPW2 + ( IBLOCKL(IBLK) * ICWEIGHTF(IBLK) )
+              IIWEIGHTBLK = ICWEIGHTF(IBLK)
+              IILENGTH = IBLOCKL(IBLK)
+              ITEMPW2 = ITEMPW2 + ( IILENGTH * IIWEIGHTBLK )
             END IF
            END DO
           
@@ -1904,23 +1922,34 @@ C?       MMPINFA(IAMGPROC) = MMPINFA(IAMGPROC) + MXSZTMP
 *
 CSK      IF(NTEST.GT.0) THEN
         IF(MYPROC.EQ.0) THEN
-      WRITE(6,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF MYPROC:',
-     &MYPROC
+        DO II = 1, NDIM
+         IF( NPARBLOCK(II) .eq. -1 ) THEN
+          WRITE(6,*) 'AAAHHHH, block',II,' is not distributed'
+          WRITE(6,*) 'Since I do not know how to proceed, I will stop!'
+            Call Abend2('NE DISTBLKND_2: Block not distributed')
+         END IF
+        END DO
+      WRITE(6,*)' '
+      WRITE(6,'(20X,A)')'================================'
+      WRITE(6,'(20X,A)')' Summation of even distribution '
+      WRITE(6,'(20X,A)')'================================'
+      WRITE(6,*)' '
       DO ISTI = 1, NTEMPP
         ITLTND = 0
         ITLBND = 0
         DO IBLK = 1, NDIM
           IF( NPARBLOCK(IBLK) .eq. ISTI -1 ) THEN
-             ITLTND = ITLTND + ( IBLOCKL(IBLK) * ICWEIGHTF(IBLK) )
+C
+             IIWEIGHTBLK = ICWEIGHTF(IBLK)
+             IILENGTH = IBLOCKL(IBLK)
+C
+             ITLTND = ITLTND + ( IILENGTH * IIWEIGHTBLK )
              ITLBND = ITLBND + 1
           END IF
         END DO
-C?        WRITE(6,'(3X,A,I2,A,I5,A,1X,I17)')
-C?     & 'process',ISTI -1,' calculates',MWEIGHT(ISTI),' blocks with a
-C?     & total length of',MMPINFA(ISTI)
-        WRITE(6,'(3X,A,I2,A,I5,A,1X,I17)')
-     & 'process',ISTI -1,' calculates',ITLBND,' blocks with a
-     & total length of',ITLTND
+        WRITE(6,'(3X,A,1X,I4,1X,A,1X,I6,1X,A,1X,I18)')
+     & 'CPU',ISTI-1,' computes',ITLBND,'blocks with a total weight of',
+     & ITLTND
       END DO
 *
 *      WRITE(6,'(3X,A)') 'even distribution finished!'
@@ -5392,14 +5421,14 @@ C
       INTEGER*8 IABSOLUTE_WEIGHT
 *
       NTEST = 99
-      IF(MYPROC.EQ.MASTER)THEN
+      IF(MYPROC.EQ.MASTER .and. NTEST .ge. 100 )THEN
         WRITE(6,*) ' OUTPUT from PRINT_BATCH_INFO'
         WRITE(6,*) ' ============================'
         WRITE(6,*) ' '
         WRITE(6,*) ' Number of batches ', NCBATCH
       END IF
       DO JBATCH = 1, NCBATCH
-        IF(MYPROC.EQ.MASTER) THEN
+        IF(MYPROC.EQ.MASTER .and. NTEST .ge. 100 ) THEN
           WRITE(6,*)
           WRITE(6,*) ' Info on batch ', JBATCH
           WRITE(6,*) ' *********************** '
@@ -5409,9 +5438,9 @@ C
 CSK        WRITE(6,*) '   TTSS and offsets and lenghts of each block '
         DO IBLOCK =I1BATC(JBATCH),I1BATC(JBATCH)+ LBATC(JBATCH)-1
 CSK          WRITE(6,'(10X,4I3,4I8)') (IBATC(II,IBLOCK),II=1,8)
-          IF(IBATC(8,IBLOCK).NE.0.AND.MYPROC.EQ.MASTER.AND.NTEST.GE.10) 
-     &       WRITE(6,'(2X,A,1X,I5,1X,A,1X,I8)') 'Block number',IBLOCK,
-     & 'has length',(IBATC(II,IBLOCK),II=8,8)
+CSK          IF(IBATC(8,IBLOCK).NE.0.AND.MYPROC.EQ.MASTER.AND.NTEST.GE.10) 
+CSK     &       WRITE(6,'(2X,A,1X,I5,1X,A,1X,I8)') 'Block number',IBLOCK,
+CSK     & 'has length',(IBATC(II,IBLOCK),II=8,8)
           JJJ = 0
           DO IJ = 1, NBLOCK
             IF(ICCTOS(IJ,IBLOCK).NE.0) THEN
@@ -5433,8 +5462,8 @@ CSK          WRITE(6,'(10X,4I3,4I8)') (IBATC(II,IBLOCK),II=1,8)
       IF(MYPROC.EQ.MASTER.AND.NTEST.GE.10) THEN
 CSK        WRITE(6,'(2X,A)')'TOTAL WEIGHT FOR EACH BLOCK'
 CSK        CALL IWRTMA8(IBTOTW,1,NBLOCK,1,NBLOCK)
-        WRITE(6,'(2X,A)')'WEIGHT MATRIX'
-        CALL IWRTMA(ICWEIGHTF,1,NBLOCK,1,NBLOCK)
+CSK        WRITE(6,'(2X,A)')'WEIGHT MATRIX'
+CSK        CALL IWRTMA(ICWEIGHTF,1,NBLOCK,1,NBLOCK)
       END IF
       DO IBLK = 1, NBLOCK
         IABSOLUTE_WEIGHT = IABSOLUTE_WEIGHT + 
