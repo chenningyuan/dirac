@@ -144,7 +144,8 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
       WRITE(LUWRTOUT,*)
       NDET = XISPSM(ISM,ISPC)
       NEL = NELCI(ISPC)
-      WRITE(LUWRTOUT,*) ' Number of determinants/combinations  ',NDET
+      WRITE(LUWRTOUT,'(3X,A,1X,I12)') 
+     & 'Number of determinants/combinations  ',NDET
       IF(NDET.EQ.0) THEN
        WRITE(LUOUT,*) 'the number of determinants/combinations is zero.'
        WRITE(LUOUT,*) ' I am sure that fascinating discussions about '
@@ -186,7 +187,7 @@ C      END IF
 C     L2BLOCK = max memory for c-vec and sigma-vec from
 C     (total mem - h2ac mem - 2 mio for string info etc.)
       CALL MEMMAN(L2BLOCK,0,'SFREEM',2,'SHOWMM')
-      WRITE(LUOUT,'(1X,A,1X,I20)')
+      WRITE(LUOUT,'(3X,A,1X,I20)')
      & 'Current available free memory in double words:',L2BLOCK
 CSKT      WRITE(LUOUT,'(1X,A,1X,I20)') 
 CSKT     & 'MXNTTS**2 in GASCI',MXNTTS**2
@@ -250,7 +251,7 @@ C     batches  of C vector
 C     Number of BLOCKS
       NBLOCK = IFRMR(WORK(KLCI1BT),1,NBATCH)
      &       + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
-      WRITE(LUWRTOUT,*) ' Number of blocks ', NBLOCK
+      WRITE(LUWRTOUT,'(3X,A,1X,I6)') 'Number of blocks ', NBLOCK
 CSKold      WRITE(LUWRTOUT,*) ' Number of batches ', NBATCH
       CALL MEMMAN(KLCI1BTSCR,NTTS  ,'ADDL  ',1,'CI1BTS')
       CALL COPVEC(WORK(KLCI1BT),WORK(KLCI1BTSCR),NTTS)
@@ -428,7 +429,7 @@ CSK
 *
 *. CI diagonal - if required
 CSK       WRITE(6,*)'ICISTR',ICISTR
-      IF(MYPROC.EQ.MASTER) WRITE(6,'(1X,A,1X,I10)')
+      IF(MYPROC.EQ.MASTER) WRITE(6,'(3X,A,1X,I12)')
      & 'largest vector block in CI-expansion',LBLOCK
 *
       IF(IDIAG.EQ.2) THEN
