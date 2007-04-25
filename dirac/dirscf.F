@@ -1091,9 +1091,13 @@ CMI   ... in the case of BSS-postDHF we read 1el.picture change transformed oper
 C       in ONEFCK ... no need to prepare LUFCK1 !!!!
 
 #if defined (MOD_EMB)
+c     call header ('1-electron matrix, before call to FDE',-1)
+c     call printdmat(1,7,fock)
       if (do_fde) then
          call GetFDEPotential_FromFile(fock,work,lwork)
       endif
+c     call header ('1-electron matrix, after call to FDE',-1)
+c     call printdmat(1,ndimension,fock)
 #endif
 
       CALL OPNFIL(LUFCK1,'DFFCK1','UNKNOWN','ONEFC1')

@@ -53,6 +53,7 @@
 #else
 !     maybe better to make implicit size for dalton, or in general?
 !     dimension fdemat(*)
+#include "symmet.h"
       dimension fdemat(nnbasx)
 #endif
       logical debug, embpot_found
@@ -61,7 +62,7 @@
 #include "memint.h"
 
       ndimension   = nbast 
-      debug        = .false.
+      debug        = .true.
 
       if (debug) write (LUPRI,*) 'debug: before opening FDE pot file'
 
@@ -117,9 +118,15 @@
 
 !     we allocate the variables to hold the value of the basis functions
 !     at the grid ponts, and also some work arrays
+#if defined (PRG_DIRAC)
       call memget ('REAL',kgao ,  ndimension,work,kfree,lfree)
       call memget ('REAL',kbuf ,4*ndimension,work,kfree,lfree)
       call memget ('REAL',kncnt,4*ndimension,work,kfree,lfree)
+#else
+      call memget ('REAL',kgao ,  ndimension*ntypso,work,kfree,lfree)
+      call memget ('REAL',kncnt,  ndimension,work,kfree,lfree)
+      call setupsos(0,.false.,idum1,idum2)
+#endif
 
       nder   = 0
       iprint = 0
@@ -130,9 +137,14 @@
       do i = 1, npoints              ! begin numerical integration
          ioff = i-1
 
+
+         if (debug)                                 ! dump of grid points 
+     &   write (lutesting,'(4(E25.18,2X))') work(kx+ioff),work(ky+ioff),
+     &                                      work(kz+ioff),work(kw+ioff)
+
+#if defined (PRG_DIRAC)
 !       we get the value of all gaussians at the current grid point with 
 !       routines from dft
-#if defined (PRG_DIRAC)
          call getsos(work(kgao),dummy,dummy,dummy,
      &               work(kcnt),
      &               work(kx+ioff),
@@ -140,19 +152,6 @@
      &               work(kz+ioff),
      &               work(kbuf),
      &               work,lwork,ndimension,0,.false.,iprfde)
-#else
-         call dftaos(work(kgao),dummy,dummy,dummy,dummy,
-     &               work(kcnt),
-     &               work(kx+ioff),
-     &               work(ky+ioff),
-     &               work(kz+ioff),
-     &               work,lwork,ndimension,
-     &               .false.,.false.,DFTHRI,iprdfe)
-#endif
-
-      if (debug)                                 ! dump of grid points 
-     &   write (lutesting,'(4(E25.18,2X))') work(kx+ioff),work(ky+ioff),
-     &                                      work(kz+ioff),work(kw+ioff)
 
 !         only the upper triangular part of the one electron embedding 
 !         potential matrix is calculated.
@@ -164,20 +163,63 @@
                gamma_pq      = work(kgao+(p-1))*work(kgao+(q-1))
                ep_pq_update  = work(kw+ioff)*gamma_pq
 
-#if !defined (PRG_DIRAC)
-!              dalton will use packed storage so we do the array indexing 
-!              accordingly. something to be careful about. pq index is given 
-!              by the formula for packed storage of the upper triangle.
-               pq = p + q*(q-1)/2
-               fdemat(pq)  = fdemat(pq) + ep_pq_update 
-#else 
 !              in dirac, we can work with the full matrix
                fdemat(p,q) = fdemat(p,q) + ep_pq_update 
                fdemat(q,p) = fdemat(p,q)
-#endif
 
             enddo ! loop over q
          enddo ! loop over p
+!
+#else   /* DALTON */
+!       getsos_fde is a simplification of getsos for our case. if there was
+!       no symmetry, getaos could have been used directly... 
+         call getsos_fde(work(kgao),work(kcnt),
+     &               work(kx+ioff),
+     &               work(ky+ioff),
+     &               work(kz+ioff),
+     &               work,lwork,
+     &               ndimension,dfthri,iprdfe)
+
+!         in order to treat the symmetry blocking with packed storage, 
+!         i (aspg) came up with the following (remember that the matrix
+!         is stored as an array with the upper/lower triangular of the
+!         first irrep coming before the second and so on):
+!         
+!         a. "irrep offset" (irrep_offt) will tell us where in the array a 
+!             given irrep begins 
+!         b. "packed storage offset" (jpkds_offt)) will tell us the number 
+!            of elements from the packed storage within a given irrep that
+!            we've looped over so far 
+!         c. "basis offset" (ibas_offt) will tell us the starting index of 
+!            the basis set in the gao array for the different irreps 
+          irrep_offt = 0 
+          jpkds_offt = 0
+          ibas_offt  = 0
+
+          do lambda = 1, maxrep+1
+             do p = 1,naos(lambda)                 
+                do q = p,naos(lambda)    ! loop over the unique elements
+
+                   gamma_pq      = work(kgao+ibas_offt+(p-1))
+     &                           * work(kgao+ibas_offt+(q-1))
+                   ep_pq_update  = work(kw+ioff)*gamma_pq
+
+!              we do the indexing for packed array storage [ij=i+j(j-1)/2] (see
+!              e.g the lapack documentation), but taking care of the offsetting
+!               due to the symmetry blocking
+                  pq = irrep_offt + p + q*(q-1)/2
+                  jpkds_offt =  jpkds_offt + 1
+
+                  fdemat(pq)  = fdemat(pq) + ep_pq_update 
+               enddo ! loop over q
+            enddo ! loop over p
+
+            irrep_offt = irrep_offt + jpkds_offt 
+            ibas_offt  = ibas_offt  + naos(lambda)
+            jpkds_offt = 0
+
+         enddo ! loop over symmetry representations
+#endif /* DIRAC vs DALTON, matrix update over the grid */
       enddo ! loop over points
 
       if (debug) then
@@ -185,7 +227,11 @@
          call printdmat(1,ndimension,fdemat)
       endif
 
+#if defined (PRG_DIRAC)
+! wonder why this crashes with dalton...
       call memrel ('fde-grid',work,kx,kx,kfree,lfree)
+#endif
+
       if (debug) close (lutesting)
       call qexit('GetFDEPotential_FromFile')
 
@@ -348,4 +394,44 @@ C taken from eri/eri2ftuv.F, added here for convenience
       RETURN
       END
 C
+#endif
+
+#if !defined (PRG_DIRAC)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GETSOS_FDE(GSO,NCNT,PX,PY,PZ,WORK,LWORK,NBAST,
+     &                      DFTHRI,IPRINT)
+C
+C     original implementation of getsos: T. Helgaker feb 01
+C     adaptation to fde case: A. Gomes, apr 07
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <mxcent.h> 
+C        
+      LOGICAL DOLND, DOGGA
+      DIMENSION GSO(NBAST*NTYPSO), WORK(LWORK), NCNT(NBAST)
+C       
+#include <dftinf.h>
+#include <symmet.h> 
+C
+#include <ibtfun.h> 
+C   
+      DOLND = .FALSE.
+      DOGGA = .FALSE.
+
+      IF (MAXREP.EQ.0) THEN
+         CALL DFTAOS(GSO,dummy,dummy,dummy,dummy,
+     &               NCNT,PX,PY,PZ,WORK,LWORK,NBAST,DOLND,
+     &               DOGGA,DFTHRI,IPRINT)
+      ELSE
+         KGAO = 1
+         KLST = KGAO + NTYPSO*NBAST 
+         IF (KLST.GT.LWORK) CALL STOPIT('DFTAOS','LWORK',KLST,LWORK)
+         CALL DFTAOS(WORK(KSO0),dummy,dummy,dummy,dummy,NCNT,PX,PY,PZ,
+     &               WORK,LWORK,NBAST,DOLND,DOGGA,DFTHRI,IPRINT)
+         CALL DFTSOS(WORK(KSO0),GSO,NBAST,NTYPSO,NCNT,IPRINT)
+      END IF
+      END
 #endif
