@@ -1,47 +1,54 @@
 C     visualization/integration common block
 C     ======================================
 C
-C     LBIT(LBIT_VISUAL,1) 1D (not implemented)
+C     LBIT(LBIT_VISUAL,1)
 C     LBIT(LBIT_VISUAL,2) 2D
 C     LBIT(LBIT_VISUAL,3) 3D
-C     LBIT(LBIT_VISUAL,4) read solution vector
+C     LBIT(LBIT_VISUAL,4)
 C     LBIT(LBIT_VISUAL,5) skip +- (SKIPEP)
 C     LBIT(LBIT_VISUAL,6) skip ++ (SKIPEE)
 C     LBIT(LBIT_VISUAL,7) use orbital string
 C     LBIT(LBIT_VISUAL,8) integrate
 C
-C     LBIT(LBIT_VISUAL_QUANTITY, 1)     number density
-C     LBIT(LBIT_VISUAL_QUANTITY, 2)     magnetization
-C     LBIT(LBIT_VISUAL_QUANTITY, 3) div(magnetization)
-C     LBIT(LBIT_VISUAL_QUANTITY, 4) rot(magnetization)
-C     LBIT(LBIT_VISUAL_QUANTITY, 5)     r \times j
-C     LBIT(LBIT_VISUAL_QUANTITY, 6)     current density
-C     LBIT(LBIT_VISUAL_QUANTITY, 7) div(current density)
-C     LBIT(LBIT_VISUAL_QUANTITY, 8) rot(current density)
-C     LBIT(LBIT_VISUAL_QUANTITY, 9)     paramagnetic current density
-C     LBIT(LBIT_VISUAL_QUANTITY,10) div(paramagnetic current density)
-C     LBIT(LBIT_VISUAL_QUANTITY,11) rot(paramagnetic current density)
-C     LBIT(LBIT_VISUAL_QUANTITY,12)      diamagnetic current density
-C     LBIT(LBIT_VISUAL_QUANTITY,13)     paramagnetic velocity density
-C     LBIT(LBIT_VISUAL_QUANTITY,14) div(paramagnetic velocity density)
-C     LBIT(LBIT_VISUAL_QUANTITY,15) rot(paramagnetic velocity density) a.k.a. vorticity
-C     LBIT(LBIT_VISUAL_QUANTITY,16)     ELF
-C     LBIT(LBIT_VISUAL_QUANTITY,17)     kinetic energy density
-C     LBIT(LBIT_VISUAL_QUANTITY,18)     helicity density
-C     LBIT(LBIT_VISUAL_QUANTITY,19)     \gamma_5 density
+C     IQ_N        =  1 !    number density
+C     IQ_M        =  2 !    magnetization
+C     IQ_DIVM     =  3 !div(magnetization)
+C     IQ_ROTM     =  4 !rot(magnetization)
+C     IQ_RXJ      =  5 !    r \times j
+C     IQ_J        =  6 !    current density
+C     IQ_DIVJ     =  7 !div(current density)
+C     IQ_ROTJ     =  8 !rot(current density)
+C     IQ_JPARA    =  9 !    paramagnetic current density
+C     IQ_DIVJPARA = 10 !div(paramagnetic current density)
+C     IQ_ROTJPARA = 11 !rot(paramagnetic current density)
+C     IQ_JDIA     = 12 !     diamagnetic current density
+C     IQ_VPARA    = 13 !    paramagnetic velocity density
+C     IQ_DIVVPARA = 14 !div(paramagnetic velocity density)
+C     IQ_ROTVPARA = 15 !rot(paramagnetic velocity density) a.k.a. vorticity
+C     IQ_ELF      = 16 !    ELF
+C     IQ_K        = 17 !    kinetic energy density
+C     IQ_H        = 18 !    helicity density
+C     IQ_GAMMA5   = 19 !    \gamma_5 density
+C     IQ_NUC_SPIN = 20 !    give me a name ...
 C
-      INTEGER NR_QUANTITIES
-      PARAMETER (NR_QUANTITIES = 19)
+      INTEGER MAX_NR_XVECTORS
+      PARAMETER (MAX_NR_XVECTORS = 20)
 C
-      CHARACTER*6     XVECFILE
-      CHARACTER*8     ORBSTRING1, ORBSTRING2
-      CHARACTER       QUANTITY_NAME(NR_QUANTITIES)*30
-      CHARACTER       ORIENTATION(3)*2
-      LOGICAL         DO_VISUAL, QUANTITY_IS_A_VECTOR(NR_QUANTITIES)
+      CHARACTER       XVECTOR_FILE(MAX_NR_XVECTORS)*6,                  &
+     &                ORBSTRING1*8,                                     &
+     &                ORBSTRING2*8,                                     &
+     &                ORIENTATION(3)*2
+      LOGICAL         DO_VISUAL
 C
-      COMMON /CBVISC/ XVECFILE, ORBSTRING1, ORBSTRING2, QUANTITY_NAME,  &
+      COMMON /CBVISC/ XVECTOR_FILE,                                     &
+     &                ORBSTRING1,                                       &
+     &                ORBSTRING2,                                       &
      &                ORIENTATION
-      COMMON /CBVISL/ DO_VISUAL, QUANTITY_IS_A_VECTOR
-      COMMON /CBVISI/ NCUBE(0:3), NXVEC, IREP_VISUAL,                   &
-     &                LBIT_VISUAL, LBIT_VISUAL_QUANTITY
+      COMMON /CBVISL/ DO_VISUAL
+      COMMON /CBVISI/ LBIT_VISUAL,                                      &
+     &                NCUBE(0:3),                                       &
+     &                NR_XVECTORS,                                      &
+     &                IQ_XVECTOR(MAX_NR_XVECTORS),                      &
+     &                IREP_XVECTOR(MAX_NR_XVECTORS),                    &
+     &                IWHICH_XVECTOR(MAX_NR_XVECTORS)
       COMMON /CBVISR/ ADD_3D

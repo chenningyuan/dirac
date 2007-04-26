@@ -1,7 +1,6 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* SETUP_ZO_DMAT_AO */
       SUBROUTINE SETUP_ZO_DMAT_AO(CMO,
-     &                            DMAT_MO,
      &                            DMAT_AO,
      &                            STRING1,STRING2,
      &                            WORK,LWORK)
@@ -22,7 +21,6 @@ C=======================================================================
 #include "dcbbas.h"
 
       DIMENSION CMO(*),
-     &          DMAT_MO(*),
      &          DMAT_AO(*),
      &          STRING1(*),
      &          STRING2(*),
@@ -30,7 +28,11 @@ C=======================================================================
 
 #include "memint.h"
 
-      CALL DZERO(DMAT_MO,N2ORBXQ)
+!     allocate memory
+
+      CALL MEMGET('REAL',KDMAT_MO,N2ORBXQ,WORK,KFREE,LFREE)
+
+      CALL DZERO(WORK(KDMAT_MO),N2ORBXQ)
       CALL DZERO(DMAT_AO,N2BBASXQ)
 
       K = 0
@@ -42,8 +44,8 @@ C=======================================================================
             JOFF = JOFF + NORB(1)*(I-1) + NPSH(I)
             JOFF = JOFF + (J-1)*NORBT + J - 1
 
-            IF(I .EQ. 1) DMAT_MO(1+JOFF) = STRING1(J)
-            IF(I .EQ. 2) DMAT_MO(1+JOFF) = STRING2(J)
+            IF(I .EQ. 1) WORK(KDMAT_MO+JOFF) = STRING1(J)
+            IF(I .EQ. 2) WORK(KDMAT_MO+JOFF) = STRING2(J)
           ENDDO
         ENDIF
       ENDDO
@@ -53,7 +55,7 @@ C=======================================================================
      &              NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
      &              DMAT_AO(1+I2BASX(I,I)),
      &              NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
-     &              DMAT_MO(1+I2ORBX(I,I)),
+     &              WORK(KDMAT_MO+I2ORBX(I,I)),
      &              NORBT,NORBT,1,IPQTOQ(1,0),
      &              CMO(1+ICMOQ(I)),
      &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
@@ -63,6 +65,10 @@ C=======================================================================
       ENDDO
 
       CALL DSCAL(N2BBASXQ,D2,DMAT_AO,1)
+
+!     release memory
+
+      CALL MEMREL('SETUP_ZO_DMAT_AO',WORK,KDMAT_MO,KDMAT_MO,KFREE,LFREE)
 
       RETURN
       END
@@ -137,8 +143,8 @@ C=======================================================================
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* SETUP_FO_DMAT_AO */
       SUBROUTINE SETUP_FO_DMAT_AO(CMO,
+     &                            IXVECTOR,
      &                            DMAT_AO,
-     &                            DMAT_AO_TEMP,
      &                            STRING1,STRING2,
      &                            WORK,LWORK)
 C=======================================================================
@@ -171,27 +177,26 @@ C=======================================================================
      &          LBIT
       DIMENSION CMO(*),
      &          DMAT_AO(*),
-     &          DMAT_AO_TEMP(*),
      &          STRING1(*),
      &          STRING2(*),
      &          WORK(LWORK)
 
 #include "memint.h"
 
-      INQUIRE(FILE = XVECFILE,EXIST = FILE_EXISTS)
+      INQUIRE(FILE = XVECTOR_FILE(IXVECTOR),EXIST = FILE_EXISTS)
       IF(.NOT. FILE_EXISTS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
         WRITE(LUPRI,'(A)') 'solution vector file not found'
         CALL QUIT('ERROR in VISUAL')
       ENDIF
-      LUNIT_XVEC = 17
-      OPEN(LUNIT_XVEC,
-     &     FILE = XVECFILE,
+      LUNIT_XVECTOR = 17
+      OPEN(LUNIT_XVECTOR,
+     &     FILE = XVECTOR_FILE(IXVECTOR),
      &     STATUS = 'OLD',
      &     ACCESS = 'SEQUENTIAL',
      &     FORM = 'UNFORMATTED')
 
-!     get dimensions of record NXVEC
+!     get dimensions of record IWHICH_XVECTOR(IXVECTOR)
 
       NBDIM_EE    = 0
       NBDIM_EP    = 0
@@ -199,15 +204,15 @@ C=======================================================================
       NR_READS_EE = 0
       NR_READS_EP = 0
 
-      REWIND LUNIT_XVEC
+      REWIND LUNIT_XVECTOR
   1   CONTINUE
-      READ(LUNIT_XVEC) LAB1
-      BACKSPACE(LUNIT_XVEC)
+      READ(LUNIT_XVECTOR) LAB1
+      BACKSPACE(LUNIT_XVECTOR)
       IF(LAB1 .EQ. 'END_OF_THIS_FILE') THEN
         GOTO 10
       ENDIF
-      READ(LUNIT_XVEC) LAB1, LAB2, TYP1
-      BACKSPACE(LUNIT_XVEC)
+      READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1
+      BACKSPACE(LUNIT_XVECTOR)
 
       IF(TYP1(1:1) .EQ. 'E') THEN
         NR_READS    = NR_READS + 1
@@ -219,14 +224,14 @@ C=======================================================================
         ELSE
           GOTO 12
         ENDIF
-        READ(LUNIT_XVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
-     &                   JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
-     &                   UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        IF(NR_READS_EE .EQ. NXVEC) THEN
+        READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
+     &                      JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
+     &                      UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
+        IF(NR_READS_EE .EQ. IWHICH_XVECTOR(IXVECTOR)) THEN
           JSYMOP_EE = JSYMOP1
           NBDIM_EE  = LEN/NZ
         ENDIF
-        READ(LUNIT_XVEC)
+        READ(LUNIT_XVECTOR)
 
       ELSEIF(TYP1(1:1) .EQ. 'P') THEN
         NR_READS    = NR_READS + 1
@@ -238,14 +243,14 @@ C=======================================================================
         ELSE
           GOTO 12
         ENDIF
-        READ(LUNIT_XVEC) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
-     &                   JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
-     &                   UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        IF(NR_READS_EP .EQ. NXVEC) THEN
+        READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
+     &                      JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
+     &                      UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
+        IF(NR_READS_EP .EQ. IWHICH_XVECTOR(IXVECTOR)) THEN
           JSYMOP_EP = JSYMOP1
           NBDIM_EP  = LEN/NZ
         ENDIF
-        READ(LUNIT_XVEC)
+        READ(LUNIT_XVECTOR)
 
       ELSE
         GOTO 12
@@ -275,11 +280,11 @@ C=======================================================================
      &   GOTO 14
 
       IF(.NOT. LBIT(LBIT_VISUAL,5) .AND.
-     &   NR_READS_EP .LT. NXVEC)
+     &   NR_READS_EP .LT. IWHICH_XVECTOR(IXVECTOR))
      &   GOTO 11
 
       IF(.NOT. LBIT(LBIT_VISUAL,6) .AND.
-     &   NR_READS_EE .LT. NXVEC)
+     &   NR_READS_EE .LT. IWHICH_XVECTOR(IXVECTOR))
      &   GOTO 11
 
       IF(LBIT(LBIT_VISUAL,5) .AND .
@@ -289,7 +294,7 @@ C=======================================================================
       GOTO 20
  11   CONTINUE
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'invalid NXVEC'
+        WRITE(LUPRI,'(A)') 'invalid IWHICH_XVECTOR(IXVECTOR)'
         WRITE(LUPRI,'(A)') 'or solution vector file corrupt'
         CALL QUIT('ERROR in VISUAL')
  12   CONTINUE
@@ -321,39 +326,41 @@ C=======================================================================
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBMAT    ,N2ORBXQ,
      &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT_AO_TEMP,N2BBASXQ,
+     &            WORK,KFREE,LFREE)
 
 !     read vector
 
-      REWIND LUNIT_XVEC
-      DO I = 1,NXVEC
+      REWIND LUNIT_XVECTOR
+      DO I = 1,IWHICH_XVECTOR(IXVECTOR)
         IF(.NOT. LBIT(LBIT_VISUAL,6)) THEN !"EE" part
-          READ(LUNIT_XVEC)
-          IF(I .EQ. NXVEC) THEN
+          READ(LUNIT_XVECTOR)
+          IF(I .EQ. IWHICH_XVECTOR(IXVECTOR)) THEN
             CALL DZERO(WORK(KBVEC_EE),NBDIM_EE*NZ)
-            CALL READT(LUNIT_XVEC,NBDIM_EE*NZ,WORK(KBVEC_EE))
+            CALL READT(LUNIT_XVECTOR,NBDIM_EE*NZ,WORK(KBVEC_EE))
           ELSE
-            READ(LUNIT_XVEC)
+            READ(LUNIT_XVECTOR)
           ENDIF
         ELSEIF(NR_READS_EE .GT. 0) THEN
-          READ(LUNIT_XVEC)
-          READ(LUNIT_XVEC)
+          READ(LUNIT_XVECTOR)
+          READ(LUNIT_XVECTOR)
         ENDIF
 
         IF(.NOT. LBIT(LBIT_VISUAL,5)) THEN !"EP" part
-          READ(LUNIT_XVEC)
-          IF(I .EQ. NXVEC) THEN
+          READ(LUNIT_XVECTOR)
+          IF(I .EQ. IWHICH_XVECTOR(IXVECTOR)) THEN
             CALL DZERO(WORK(KBVEC_EP),NBDIM_EP*NZ)
-            CALL READT(LUNIT_XVEC,NBDIM_EP*NZ,WORK(KBVEC_EP))
+            CALL READT(LUNIT_XVECTOR,NBDIM_EP*NZ,WORK(KBVEC_EP))
           ELSE
-            READ(LUNIT_XVEC)
+            READ(LUNIT_XVECTOR)
           ENDIF
         ELSEIF(NR_READS_EP .GT. 0) THEN
-          READ(LUNIT_XVEC)
-          READ(LUNIT_XVEC)
+          READ(LUNIT_XVECTOR)
+          READ(LUNIT_XVECTOR)
         ENDIF
       ENDDO
 
-      CLOSE(LUNIT_XVEC,STATUS = 'KEEP')
+      CLOSE(LUNIT_XVECTOR,STATUS = 'KEEP')
 
 !     scatter vector onto MO density matrix
 
@@ -407,9 +414,9 @@ C=======================================================================
       ENDDO
       CALL DSCAL(N2ORBXQ,-D1,WORK(KBMAT),1)
 
-      JSYMOP      = JSYMOP_EE
-      IREP_VISUAL = JSYMOP - 1
-      JOPSY       = JBTOF(IREP_VISUAL,1)
+      JSYMOP                 = JSYMOP_EE
+      IREP_XVECTOR(IXVECTOR) = JSYMOP - 1
+      JOPSY                  = JBTOF(IREP_XVECTOR(IXVECTOR),1)
 
       DO IZ = 1,NZ
         IOFF = NORBT*NORBT*(IZ - 1)
@@ -424,15 +431,15 @@ C=======================================================================
      &              WORK,KFREE,LFREE)
       ENDIF
       IF(.NOT. LBIT(LBIT_VISUAL,5)) THEN !if not skip +- (SKIPEP)
-        CALL DZERO(DMAT_AO_TEMP,N2BBASXQ)
-        CALL DMOLI3(1,IH_EP,DMAT_AO_TEMP,CMO,WORK(KBMAT),
+        CALL DZERO(WORK(KDMAT_AO_TEMP),N2BBASXQ)
+        CALL DMOLI3(1,IH_EP,WORK(KDMAT_AO_TEMP),CMO,WORK(KBMAT),
      &              WORK,KFREE,LFREE)
-        CALL DAXPY(N2BBASXQ,D1,DMAT_AO_TEMP,1,DMAT_AO,1)
+        CALL DAXPY(N2BBASXQ,D1,WORK(KDMAT_AO_TEMP),1,DMAT_AO,1)
       ENDIF
 
       IF(NZ .LT. 4) THEN
         DO IZ = 1,NZ
-          IQ = IPQTOQ(IZ,IREP_VISUAL)
+          IQ = IPQTOQ(IZ,IREP_XVECTOR(IXVECTOR))
           IOFF = NTBAS(0)*NTBAS(0)*(IZ-1)
           CALL Q2BPHASE('D',IQ,1,DMAT_AO(1+IOFF))
         ENDDO

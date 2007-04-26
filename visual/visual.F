@@ -1,154 +1,4 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* VISUAL */
-      SUBROUTINE VISUAL(WORK,LWORK)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
-
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
-#include "visual.h"
-#include "maxorb.h"
-#include "dcbham.h"
-#include "dgroup.h"
-
-      LOGICAL   LBIT
-      DIMENSION WORK(LWORK)
-
-#include "memint.h"
-
-!     CALL VISUAL_CHECK_CONSISTENCY()
-!     CALL VISUAL_REPORT()
-
-!     allocate memory
-
-      CALL MEMGET('REAL',KCMO         ,N2BBASXQ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG         ,NORBT,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT_MO     ,N2ORBXQ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT_AO     ,N2BBASXQ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT_AO_TEMP,N2BBASXQ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSTRING1     ,NESH(1),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSTRING2     ,NESH(2),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO         ,NTBAS(0),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO1        ,NTBAS(0)*3,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNCNT        ,NTBAS(0),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF         ,NTBAS(0)*4,
-     &            WORK,KFREE,LFREE)
-
-      CALL SETUP_ORBITAL_STRINGS(WORK(KSTRING1),WORK(KSTRING2))
-
-!     coefficients
-
-      CALL DZERO(WORK(KCMO),N2BBASXQ)
-      CALL DZERO(WORK(KEIG),NORBT)
-
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','VISUAL')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),UNUSED,
-     &            UNUSED,6,WORK,KFREE,LFREE)
-      CLOSE(LUCOEF,STATUS = 'KEEP')
-
-      CALL FNDOCC(WORK(KEIG),WORK,KFREE,LFREE)
-
-!     density matrices
-
-      IF(LBIT(LBIT_VISUAL,4)) THEN !using the solution vector
-        CALL SETUP_FO_DMAT_AO(WORK(KCMO),
-     &                        WORK(KDMAT_AO), !this comes back
-     &                        WORK(KDMAT_AO_TEMP),
-     &                        WORK(KSTRING1),WORK(KSTRING2),
-     &                        WORK(KFREE),LFREE)
-
-!       in some cases the ZO DMAT_AO is needed later
-!       so it is set up here as well (and called DMAT_AO_TEMP)
-!       could be checked and skipped ...
-        CALL SETUP_ZO_DMAT_AO(WORK(KCMO),
-     &                        WORK(KDMAT_MO),
-     &                        WORK(KDMAT_AO_TEMP),
-     &                        WORK(KSTRING1),WORK(KSTRING2),
-     &                        WORK(KFREE),LFREE)
-      ELSE !"normal"
-        CALL SETUP_ZO_DMAT_AO(WORK(KCMO),
-     &                        WORK(KDMAT_MO),
-     &                        WORK(KDMAT_AO),
-     &                        WORK(KSTRING1),WORK(KSTRING2),
-     &                        WORK(KFREE),LFREE)
-      ENDIF
-
-      CALL VISUAL_DRIVER(WORK(KDMAT_AO),
-     &                   WORK(KDMAT_AO_TEMP),
-     &                   WORK(KGAO),
-     &                   WORK(KGAO1),
-     &                   WORK(KNCNT),
-     &                   WORK(KBUF),
-     &                   WORK(KFREE),LFREE)
-
-      IF(LBIT(LBIT_VISUAL,8)) THEN !integration
-        CALL VISUAL_INTEGRATION(WORK(KDMAT_AO),
-     &                          WORK(KDMAT_AO_TEMP),
-     &                          WORK(KGAO),
-     &                          WORK(KGAO1),
-     &                          WORK(KNCNT),
-     &                          WORK(KBUF),
-     &                          WORK(KFREE),LFREE)
-      ENDIF
-
-!     release memory
-
-      CALL MEMREL('VISUAL',WORK,KCMO,KCMO,KFREE,LFREE)
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SETUP_ORBITAL_STRINGS */
-      SUBROUTINE SETUP_ORBITAL_STRINGS(STRING1,STRING2)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
-
-#include "dcborb.h"
-#include "dgroup.h"
-
-      DIMENSION STRING1(*),
-     &          STRING2(*)
-
-      CALL DFILL(STRING1,D0,NESH(1))
-      CALL DFILL(STRING1,D1,NISH(1))
-      IF(NFSYM .GT. 1) THEN
-        CALL DFILL(STRING2,D0,NESH(2))
-        CALL DFILL(STRING2,D1,NISH(2))
-      ENDIF
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* VISUAL_INPUT */
       SUBROUTINE VISUAL_INPUT(WORD,RESET,WORK,LWORK)
 C=======================================================================
@@ -177,23 +27,23 @@ C=======================================================================
       SAVE SET
 
 !                   1         2         3         4
-      DATA TABLE /'.XXXXXX','.2D    ','.3D    ','.READXV',
+      DATA TABLE /'.XXXXXX','.2D    ','.3D    ','.QUANTI',
 !                   5         6         7         8
      &            '.SKIPEP','.SKIPEE','.STRING','.INTEGR',
 !                   9        10        11        12
-     &            '.3DADD ','.CUBE  ','.NXVEC ','.XXXXXX',
+     &            '.3DADD ','.CUBE  ','.XXXXXX','.XXXXXX',
 !                  13        14        15        16
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  17        18        19        20
-     &            '.N     ','.M     ','.DIVM  ','.ROTM  ',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  21        22        23        24
-     &            '.RXJ   ','.J     ','.DIVJ  ','.ROTJ  ',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  25        26        27        28
-     &            '.JPARA ','.DIVJPA','.ROTJPA','.JDIA  ',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  29        30        31        32
-     &            '.VPARA ','.DIVVPA','.ROTVPA','.ELF   ',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  33        34        35        36
-     &            '.K     ','.H     ','.GAMMA5','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  37        38        39        40
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  41        42        43        44
@@ -221,20 +71,20 @@ C=======================================================================
 
 !     initialize visual.h
 
-      NCUBE(1)             = 80
-      NCUBE(2)             = 80
-      NCUBE(3)             = 80
+      LBIT_VISUAL = 0
 
-      NXVEC                = 1
+      NCUBE(1)    = 80
+      NCUBE(2)    = 80
+      NCUBE(3)    = 80
 
-      IREP_VISUAL          = 0
+      ADD_3D      = 4.0D0
 
-      LBIT_VISUAL          = 0
-      LBIT_VISUAL_QUANTITY = 0
+      DO IXVECTOR = 1,MAX_NR_XVECTORS
+        IREP_XVECTOR(IXVECTOR)   = 0
+        IWHICH_XVECTOR(IXVECTOR) = 1
+      ENDDO
 
-      ADD_3D               = 4.0D0
-
-      CALL LZERO(QUANTITY_IS_A_VECTOR,NR_QUANTITIES)
+      NR_XVECTORS = 0
 
       ORIENTATION(1) = 'xy'
       ORIENTATION(2) = 'xz'
@@ -270,7 +120,6 @@ C=======================================================================
           CALL QUIT('Illegal keyword in VISUAL_INPUT.')
 
     1     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL,1)
           GOTO 100
 
     2     CONTINUE
@@ -282,8 +131,12 @@ C=======================================================================
           GOTO 100
 
     4     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL,4)
-          READ(LUCMD,'(A6)') XVECFILE
+          READ(LUCMD,*) NR_XVECTORS
+          DO IXVECTOR = 1,NR_XVECTORS
+            READ(LUCMD,*) XVECTOR_FILE(IXVECTOR),
+     &                    IWHICH_XVECTOR(IXVECTOR),
+     &                    IQ_XVECTOR(IXVECTOR)
+          ENDDO
           GOTO 100
 
     5     CONTINUE
@@ -313,121 +166,30 @@ C=======================================================================
           GOTO 100
 
    11     CONTINUE
-          READ(LUCMD,*) NXVEC
-          GOTO 100
-
    12     CONTINUE
    13     CONTINUE
    14     CONTINUE
    15     CONTINUE
    16     CONTINUE
-          GOTO 100
-
    17     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY, 1)
-          QUANTITY_NAME(1)         = 'n'
-          GOTO 100
-
    18     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY, 2)
-          QUANTITY_NAME(2)         = 'm'
-          QUANTITY_IS_A_VECTOR(2)  = .TRUE.
-          GOTO 100
-
    19     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY, 3)
-          QUANTITY_NAME(3)         = 'divm'
-          GOTO 100
-
    20     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY, 4)
-          QUANTITY_NAME(4)         = 'rotm'
-          QUANTITY_IS_A_VECTOR(4)  = .TRUE.
-          GOTO 100
-
    21     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY, 5)
-          QUANTITY_NAME(5)         = 'rxj'
-          QUANTITY_IS_A_VECTOR(5)  = .TRUE.
-          GOTO 100
-
    22     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY, 6)
-          QUANTITY_NAME(6)         = 'j'
-          QUANTITY_IS_A_VECTOR(6)  = .TRUE.
-          GOTO 100
-
    23     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY, 7)
-          QUANTITY_NAME(7)         = 'divj'
-          GOTO 100
-
    24     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY, 8)
-          QUANTITY_NAME(8)         = 'rotj'
-          QUANTITY_IS_A_VECTOR(8)  = .TRUE.
-          GOTO 100
-
    25     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY, 9)
-          QUANTITY_NAME(9)         = 'jpara'
-          QUANTITY_IS_A_VECTOR(9)  = .TRUE.
-          GOTO 100
-
    26     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY,10)
-          QUANTITY_NAME(10)        = 'divjpara'
-          GOTO 100
-
    27     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY,11)
-          QUANTITY_NAME(11)        = 'rotjpara'
-          QUANTITY_IS_A_VECTOR(11) = .TRUE.
-          GOTO 100
-
    28     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY,12)
-          QUANTITY_NAME(12)        = 'jdia'
-          QUANTITY_IS_A_VECTOR(12) = .TRUE.
-          GOTO 100
-
    29     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY,13)
-          QUANTITY_NAME(13)        = 'vpara'
-          QUANTITY_IS_A_VECTOR(13) = .TRUE.
-          GOTO 100
-
    30     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY,14)
-          QUANTITY_NAME(14)        = 'divvpara'
-          GOTO 100
-
    31     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY,15)
-          QUANTITY_NAME(15)        = 'rotvpara'
-          QUANTITY_IS_A_VECTOR(15) = .TRUE.
-          GOTO 100
-
    32     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY,16)
-          QUANTITY_NAME(16)        = 'elf'
-          GOTO 100
-
    33     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY,17)
-          QUANTITY_NAME(17)        = 'k'
-          GOTO 100
-
    34     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY,18)
-          QUANTITY_NAME(18)        = 'h'
-          GOTO 100
-
    35     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL_QUANTITY,19)
-          QUANTITY_NAME(19)        = 'gamma5'
-          GOTO 100
-
    36     CONTINUE
    37     CONTINUE
    38     CONTINUE
@@ -469,16 +231,8 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_QUANTITY_IN_POINT */
-      SUBROUTINE GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                                 DMAT_AO_TEMP,
-     &                                 GAO,
-     &                                 GAO1,
-     &                                 PX,PY,PZ,
-     &                                 NCNT,
-     &                                 BUF,
-     &                                 QUANTITY,
-     &                                 WORK,KFREE,LFREE)
+C     /* VISUAL */
+      SUBROUTINE VISUAL(WORK,LWORK)
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -489,281 +243,101 @@ C=======================================================================
 #include "implicit.h"
 #include "priunit.h"
 
-      PARAMETER (D0 = 0.0D0)
-      PARAMETER (D1 = 1.0D0)
-      PARAMETER (D2 = 2.0D0)
-      PARAMETER (D3 = 3.0D0)
-      PARAMETER (D4 = 4.0D0)
-      PARAMETER (D5 = 5.0D0)
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
-      PARAMETER (DP12 = D1/D2)
-      PARAMETER (DP23 = D2/D3)
-      PARAMETER (DP53 = D5/D3)
-
-#include "visual.h"
 #include "dcborb.h"
-#include "dgroup.h"
-#include "pgroup.h"
 #include "dcbbas.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "visual.h"
+#include "maxorb.h"
 #include "dcbham.h"
-#include "dcbxrs.h"
+#include "dgroup.h"
 
       LOGICAL   LBIT
-      DIMENSION DMAT_AO(*),
-     &          DMAT_AO_TEMP(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          NCNT(*),
-     &          BUF(*),
-     &          QUANTITY(0:3,NR_QUANTITIES),
-     &          WORK(*),
-     &          VECTOR(3)
+      DIMENSION WORK(LWORK)
 
-      IQ_N        =  1 !    number density
-      IQ_M        =  2 !    magnetization
-      IQ_DIVM     =  3 !div(magnetization)
-      IQ_ROTM     =  4 !rot(magnetization)
-      IQ_RXJ      =  5 !    r \times j
-      IQ_J        =  6 !    current density
-      IQ_DIVJ     =  7 !div(current density)
-      IQ_ROTJ     =  8 !rot(current density)
-      IQ_JPARA    =  9 !    paramagnetic current density
-      IQ_DIVJPARA = 10 !div(paramagnetic current density)
-      IQ_ROTJPARA = 11 !rot(paramagnetic current density)
-      IQ_JDIA     = 12 !     diamagnetic current density
-      IQ_VPARA    = 13 !    paramagnetic velocity density
-      IQ_DIVVPARA = 14 !div(paramagnetic velocity density)
-      IQ_ROTVPARA = 15 !rot(paramagnetic velocity density) a.k.a. vorticity
-      IQ_ELF      = 16 !    ELF
-      IQ_K        = 17 !    kinetic energy density
-      IQ_H        = 18 !    helicity density
-      IQ_GAMMA5   = 19 !    \gamma_5 density
+#include "memint.h"
 
-      CALL DZERO(QUANTITY,NR_QUANTITIES*4)
+!     CALL VISUAL_CHECK_CONSISTENCY()
+!     CALL VISUAL_REPORT()
 
-      CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
-     &            BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
+!     allocate memory
 
-      IQ = IQ_N !number density
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-        CALL GETRHO(QUANTITY(0,IQ),IREP_VISUAL,GAO,DMAT_AO,BUF)
-      ENDIF
+      CALL MEMGET('REAL',KCMO      ,N2BBASXQ,
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG      ,NORBT,
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT_AO  ,N2BBASXQ*(MAX_NR_XVECTORS+1),
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSTRING1  ,NESH(1),
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSTRING2  ,NESH(2),
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGAO      ,NTBAS(0),
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGAO1     ,NTBAS(0)*3,
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNCNT     ,NTBAS(0),
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF      ,NTBAS(0)*4,
+     &            WORK,KFREE,LFREE)
 
-      IQ = IQ_ELF !ELF
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-        ELF_KIN = D0
-        DO IXYZ = 1,3
-          DO IC = 1,MC
-            SCALAR = D0
-            CALL GETRH1(SCALAR,IC,IREP_VISUAL,GAO1(1+(IXYZ-1)*NTBAS(0)),
-     &                  DMAT_AO,BUF)
-            ELF_KIN = ELF_KIN + SCALAR/D2
-          ENDDO
-        ENDDO
+      CALL SETUP_ORBITAL_STRINGS(WORK(KSTRING1),WORK(KSTRING2))
 
-        PI =  3.1415926536D0
-        FACTOR = 0.3D0*((D3*PI*PI)**DP23)
+!     coefficients
 
-        CALL GETRHO(DENSITY,IREP_VISUAL,GAO,DMAT_AO,BUF)
+      CALL DZERO(WORK(KCMO),N2BBASXQ)
+      CALL DZERO(WORK(KEIG),NORBT)
 
-        CALL GETGRHO(VECTOR,IREP_VISUAL,GAO,GAO1,DMAT_AO,BUF)
-        GRADIENT_SQUARED = VECTOR(1)**D2
-     &                   + VECTOR(2)**D2
-     &                   + VECTOR(3)**D2
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','VISUAL')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),UNUSED,
+     &            UNUSED,6,WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS = 'KEEP')
 
-        H = FACTOR*(DENSITY**DP53)
-        G = ELF_KIN - GRADIENT_SQUARED/(8.0D0*DENSITY)
+      CALL FNDOCC(WORK(KEIG),WORK,KFREE,LFREE)
 
-        ELF_CHI = G/H
+!     density matrices
 
-        QUANTITY(0,IQ) = D1/(D1 + ELF_CHI*ELF_CHI)
-      ENDIF
-
-!2do  adapt for non-z-orientation and general
-!     gauge origin
-      IQ = IQ_JDIA !diamagnetic current density
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-        CALL GETRHO(DENSITY,0,GAO,DMAT_AO,BUF)
-
-        QUANTITY(1,IQ) = -DP12*PY*DENSITY
-        QUANTITY(2,IQ) =  DP12*PX*DENSITY
-        QUANTITY(3,IQ) =  D0
-      ENDIF
-
-      IQ = IQ_JPARA !paramagnetic current density
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-#if defined (MOD_CDFT)
-        CALL GET_JPARA(.TRUE.,
-     &                 QUANTITY(1,IQ),
-     &                 IREP_VISUAL,
-     &                 GAO,
-     &                 GAO1,
-     &                 DMAT_AO,
-     &                 BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-      IQ = IQ_M !magnetization
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-#if defined (MOD_CDFT)
-        CALL GET_M(.TRUE.,
-     &             QUANTITY(1,IQ),
-     &             IREP_VISUAL,
-     &             GAO,
-     &             GAO1,
-     &             DMAT_AO,
-     &             BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-      IQ = IQ_J !current density
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-#if defined (MOD_CDFT)
-        CALL GET_J(.TRUE.,
-     &             QUANTITY(1,IQ),
-     &             IREP_VISUAL,
-     &             GAO,
-     &             GAO1,
-     &             DMAT_AO,
-     &             BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-      IQ = IQ_RXJ !r \times j
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-#if defined (MOD_CDFT)
-        CALL GET_J(.TRUE.,
-     &             VECTOR,
-     &             IREP_VISUAL,
-     &             GAO,
-     &             GAO1,
-     &             DMAT_AO,
-     &             BUF)
-
-        QUANTITY(1,IQ) = PY*VECTOR(3) - PZ*VECTOR(2)
-        QUANTITY(2,IQ) = PZ*VECTOR(1) - PX*VECTOR(3)
-        QUANTITY(3,IQ) = PX*VECTOR(2) - PY*VECTOR(1)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-      IQ = IQ_DIVM !div(magnetization)
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-#if defined (MOD_CDFT)
-        CALL GET_DIVM(.TRUE.,
-     &                QUANTITY(0,IQ),
-     &                IREP_VISUAL,
-     &                GAO,
-     &                GAO1,
-     &                DMAT_AO,
-     &                BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-      IQ = IQ_DIVJ !div(current density)
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-#if defined (MOD_CDFT)
-        CALL GET_DIVJ(.TRUE.,
-     &                QUANTITY(0,IQ),
-     &                IREP_VISUAL,
-     &                GAO,
-     &                GAO1,
-     &                DMAT_AO,
-     &                BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-      IQ = IQ_ROTM !rot(magnetization)
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-#if defined (MOD_CDFT)
-        CALL GET_ROTM(.TRUE.,
-     &                QUANTITY(1,IQ),
-     &                IREP_VISUAL,
-     &                GAO,
-     &                GAO1,
-     &                DMAT_AO,
-     &                BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-      IQ = IQ_ROTJ !rot(current density)
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-#if defined (MOD_CDFT)
-        CALL GET_ROTJ(.TRUE.,
-     &                QUANTITY(1,IQ),
-     &                IREP_VISUAL,
-     &                GAO,
-     &                GAO1,
-     &                DMAT_AO,
-     &                BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-      IQ = IQ_ROTJPARA !rot(paramagnetic current density)
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-#if defined (MOD_CDFT)
-        CALL GET_ROTJPARA(.TRUE.,
-     &                    QUANTITY(1,IQ),
-     &                    IREP_VISUAL,
-     &                    GAO,
-     &                    GAO1,
-     &                    DMAT_AO,
-     &                    BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-      IQ = IQ_GAMMA5 !\gamma_5 density
-      IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-#if defined (MOD_CDFT)
-        CALL GET_GAMMA5(.TRUE.,
-     &                  QUANTITY(0,IQ),
-     &                  IREP_VISUAL,
-     &                  GAO,
-     &                  GAO1,
-     &                  DMAT_AO,
-     &                  BUF)
-#else
-        CALL QUIT('not implemented')
-#endif
-      ENDIF
-
-!     calculate norm for quantities that are vectors
-
-      DO IQ = 1,NR_QUANTITIES
-        IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-          IF(QUANTITY_IS_A_VECTOR(IQ)) THEN
-            QUANTITY(0,IQ) = QUANTITY(1,IQ)**D2
-     &                     + QUANTITY(2,IQ)**D2
-     &                     + QUANTITY(3,IQ)**D2
-
-            QUANTITY(0,IQ) = DSQRT(QUANTITY(0,IQ))
-          ENDIF
-        ENDIF
+      IOFF = 0
+      DO IXVECTOR = 1,NR_XVECTORS
+        CALL SETUP_FO_DMAT_AO(WORK(KCMO),
+     &                        IXVECTOR,
+     &                        WORK(KDMAT_AO+IOFF),
+     &                        WORK(KSTRING1),WORK(KSTRING2),
+     &                        WORK(KFREE),LFREE)
+        IOFF = IOFF + N2BBASXQ
       ENDDO
+      CALL SETUP_ZO_DMAT_AO(WORK(KCMO),
+     &                      WORK(KDMAT_AO+IOFF),
+     &                      WORK(KSTRING1),WORK(KSTRING2),
+     &                      WORK(KFREE),LFREE)
+
+      CALL VISUAL_DRIVER(WORK(KDMAT_AO),
+     &                   WORK(KGAO),
+     &                   WORK(KGAO1),
+     &                   WORK(KNCNT),
+     &                   WORK(KBUF),
+     &                   WORK(KFREE),LFREE)
+
+      IF(LBIT(LBIT_VISUAL,8)) THEN !integration
+!       CALL VISUAL_INTEGRATION(WORK(KDMAT_AO),
+!    &                          WORK(KGAO),
+!    &                          WORK(KGAO1),
+!    &                          WORK(KNCNT),
+!    &                          WORK(KBUF),
+!    &                          WORK(KFREE),LFREE)
+      ENDIF
+
+!     release memory
+
+      CALL MEMREL('VISUAL',WORK,KCMO,KCMO,KFREE,LFREE)
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* VISUAL_DRIVER */
       SUBROUTINE VISUAL_DRIVER(DMAT_AO,
-     &                         DMAT_AO_TEMP,
      &                         GAO,
      &                         GAO1,
      &                         NCNT,
@@ -789,17 +363,14 @@ C=======================================================================
 #include "visual.h"
 #include "dcborb.h"
 
-      CHARACTER*50 FILE_NAME
       LOGICAL   LBIT
       DIMENSION DMAT_AO(*),
-     &          DMAT_AO_TEMP(*),
      &          GAO(*),
      &          GAO1(*),
      &          NCNT(*),
      &          BUF(*),
      &          WORK(LWORK),
-     &          LUNIT(3,NR_QUANTITIES),
-     &          QUANTITY(0:3,NR_QUANTITIES,NCUBE(3)),
+     &          QUANTITY(0:3,NCUBE(3)),
      &          STEP_3D(3,0:3),
      &          ATOM_XYZ(4,NUCDEP)
 
@@ -815,25 +386,23 @@ C=======================================================================
 
 !     open files
 
-      LUNIT_BASE = 13
-      DO I = 1,3 !1D, 2D, 3D
-        IF(LBIT(LBIT_VISUAL,I)) THEN
-          DO IQ = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-              WRITE(FILE_NAME,'(A5,I1,A2,A)') 'PLOT.', I, 'D.',
-     &                                        QUANTITY_NAME(IQ)
-              OPEN(LUNIT_BASE,
-     &             FILE   = FILE_NAME,
-     &             STATUS = 'NEW',
-     &             ACCESS = 'SEQUENTIAL',
-     &             FORM   = 'FORMATTED')
+      LUNIT_2D = 13
+      LUNIT_3D = 14
 
-              LUNIT(I,IQ) = LUNIT_BASE
-              LUNIT_BASE = LUNIT_BASE + 1
-            ENDIF
-          ENDDO
-        ENDIF
-      ENDDO
+      IF(LBIT(LBIT_VISUAL,2)) THEN !2D
+        OPEN(LUNIT_2D,
+     &       FILE   = 'PLOT_2D',
+     &       STATUS = 'NEW',
+     &       ACCESS = 'SEQUENTIAL',
+     &       FORM   = 'FORMATTED')
+      ENDIF
+      IF(LBIT(LBIT_VISUAL,3)) THEN !3D
+        OPEN(LUNIT_3D,
+     &       FILE   = 'PLOT_3D',
+     &       STATUS = 'NEW',
+     &       ACCESS = 'SEQUENTIAL',
+     &       FORM   = 'FORMATTED')
+      ENDIF
 
       IF(LBIT(LBIT_VISUAL,2)) THEN !2D
         DO IORIENTATION = 1,3
@@ -846,14 +415,10 @@ C=======================================================================
           IF(ORIENTATION(IORIENTATION) .EQ. 'xz') NJ = 1
           IF(ORIENTATION(IORIENTATION) .EQ. 'yz') NI = 1
 
-          DO IQ = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-              WRITE(LUNIT(2,IQ),'(A)')
-              WRITE(LUNIT(2,IQ),'(A)')
-              WRITE(LUNIT(2,IQ),'(A2)') ORIENTATION(IORIENTATION)
-              WRITE(LUNIT(2,IQ),'(A)')
-            ENDIF
-          ENDDO
+          WRITE(LUNIT_2D,'(A)')
+          WRITE(LUNIT_2D,'(A)')
+          WRITE(LUNIT_2D,'(A2)') ORIENTATION(IORIENTATION)
+          WRITE(LUNIT_2D,'(A)')
 
           RANGE_MIN = -6.0D0
           RANGE_MAX = -RANGE_MIN
@@ -871,7 +436,6 @@ C=======================================================================
                 IF(ORIENTATION(IORIENTATION) .EQ. 'yz') PX = D0
 
                 CALL GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                                     DMAT_AO_TEMP,
      &                                     GAO,
      &                                     GAO1,
      &                                     PX,PY,PZ,
@@ -880,24 +444,13 @@ C=======================================================================
      &                                     QUANTITY,
      &                                     WORK,KFREE,LFREE)
 
-!               write to file(s)
+!               write to file
 
-                DO IQ = 1,NR_QUANTITIES
-                  IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-                    IF(QUANTITY_IS_A_VECTOR(IQ)) THEN
-                      WRITE(LUNIT(2,IQ),'(7F20.10)')
-     &                      PX, PY, PZ,
-     &                      QUANTITY(0,IQ,1),
-     &                      QUANTITY(1,IQ,1),
-     &                      QUANTITY(2,IQ,1),
-     &                      QUANTITY(3,IQ,1)
-                    ELSE
-                      WRITE(LUNIT(2,IQ),'(4F20.10)')
-     &                      PX, PY, PZ,
-     &                      QUANTITY(0,IQ,1)
-                    ENDIF
-                  ENDIF
-                ENDDO
+                WRITE(LUNIT_2D,'(7F20.10)') PX, PY, PZ,
+     &                                      QUANTITY(0,1),
+     &                                      QUANTITY(1,1),
+     &                                      QUANTITY(2,1),
+     &                                      QUANTITY(3,1)
               ENDDO
             ENDDO
           ENDDO
@@ -957,19 +510,14 @@ C=======================================================================
 
 !       write header
 
-        DO IQ = 1,NR_QUANTITIES
-          IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-            WRITE(LUNIT(3,IQ),'(A)') 'some'
-            WRITE(LUNIT(3,IQ),'(A)') 'text'
-            DO I = 0,3
-              WRITE(LUNIT(3,IQ),'(I5,4F12.6)')
-     &                                    NCUBE(I), (STEP_3D(J,I),J=1,3)
-            ENDDO
-            DO I = 1,NUCDEP
-              WRITE(LUNIT(3,IQ),'(I5,4F12.6)')
+        WRITE(LUNIT_3D,'(A)') 'some'
+        WRITE(LUNIT_3D,'(A)') 'text'
+        DO I = 0,3
+          WRITE(LUNIT_3D,'(I5,4F12.6)') NCUBE(I), (STEP_3D(J,I),J=1,3)
+        ENDDO
+        DO I = 1,NUCDEP
+          WRITE(LUNIT_3D,'(I5,4F12.6)')
      &         NINT(ATOM_XYZ(4,I)), ATOM_XYZ(4,I), (ATOM_XYZ(J,I),J=1,3)
-            ENDDO
-          ENDIF
         ENDDO
 
 !       grid walk
@@ -989,47 +537,395 @@ C=======================================================================
      &                          + (KCUBE-1)*STEP_3D(3,3)
 
               CALL GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                                   DMAT_AO_TEMP,
      &                                   GAO,
      &                                   GAO1,
      &                                   PX,PY,PZ,
      &                                   NCNT,
      &                                   BUF,
-     &                                   QUANTITY(0,1,KCUBE),
+     &                                   QUANTITY(0,KCUBE),
      &                                   WORK,KFREE,LFREE)
             ENDDO
 
-!           write fo file(s)
+!           write to file
 
-            DO IQ = 1,NR_QUANTITIES
-              IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-                WRITE(LUNIT(3,IQ),'(6E13.5)')
-     &               (QUANTITY(0,IQ,M),M=1,NCUBE(3))
-              ENDIF
-            ENDDO
+            WRITE(LUNIT_3D,'(6E13.5)') (QUANTITY(0,M),M=1,NCUBE(3))
           ENDDO
         ENDDO
       ENDIF !3D
 
 !     close files
 
-      DO I = 1,3 !1D, 2D, 3D
-        IF(LBIT(LBIT_VISUAL,I)) THEN
-          DO IQ = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-              CLOSE(LUNIT(I,IQ), STATUS = 'KEEP')
-            ENDIF
-          ENDDO
+      IF(LBIT(LBIT_VISUAL,2)) CLOSE(LUNIT_2D, STATUS = 'KEEP')
+      IF(LBIT(LBIT_VISUAL,3)) CLOSE(LUNIT_3D, STATUS = 'KEEP')
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* SETUP_ORBITAL_STRINGS */
+      SUBROUTINE SETUP_ORBITAL_STRINGS(STRING1,STRING2)
+C=======================================================================
+C     description in here ...
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: april 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
+
+#include "dcborb.h"
+#include "dgroup.h"
+
+      DIMENSION STRING1(*),
+     &          STRING2(*)
+
+      CALL DFILL(STRING1,D0,NESH(1))
+      CALL DFILL(STRING1,D1,NISH(1))
+      IF(NFSYM .GT. 1) THEN
+        CALL DFILL(STRING2,D0,NESH(2))
+        CALL DFILL(STRING2,D1,NISH(2))
+      ENDIF
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_QUANTITY_IN_POINT */
+      SUBROUTINE GET_QUANTITY_IN_POINT(DMAT_AO,
+     &                                 GAO,
+     &                                 GAO1,
+     &                                 PX,PY,PZ,
+     &                                 NCNT,
+     &                                 BUF,
+     &                                 QUANTITY_ADDMEUP,
+     &                                 WORK,KFREE,LFREE)
+C=======================================================================
+C     description in here ...
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: april 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0)
+      PARAMETER (D1 = 1.0D0)
+      PARAMETER (D2 = 2.0D0)
+      PARAMETER (D3 = 3.0D0)
+      PARAMETER (D4 = 4.0D0)
+      PARAMETER (D5 = 5.0D0)
+
+      PARAMETER (DP12 = D1/D2)
+      PARAMETER (DP23 = D2/D3)
+      PARAMETER (DP53 = D5/D3)
+
+#include "visual.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcbxrs.h"
+
+      LOGICAL   LBIT
+      DIMENSION DMAT_AO(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          NCNT(*),
+     &          BUF(*),
+     &          QUANTITY(0:3),
+     &          QUANTITY_ADDMEUP(0:3),
+     &          WORK(*),
+     &          VECTOR_A(3),
+     &          VECTOR_B(3)
+
+      IQ_N        =  1 !    number density
+      IQ_M        =  2 !    magnetization
+      IQ_DIVM     =  3 !div(magnetization)
+      IQ_ROTM     =  4 !rot(magnetization)
+      IQ_RXJ      =  5 !    r \times j
+      IQ_J        =  6 !    current density
+      IQ_DIVJ     =  7 !div(current density)
+      IQ_ROTJ     =  8 !rot(current density)
+      IQ_JPARA    =  9 !    paramagnetic current density
+      IQ_DIVJPARA = 10 !div(paramagnetic current density)
+      IQ_ROTJPARA = 11 !rot(paramagnetic current density)
+      IQ_JDIA     = 12 !     diamagnetic current density
+      IQ_VPARA    = 13 !    paramagnetic velocity density
+      IQ_DIVVPARA = 14 !div(paramagnetic velocity density)
+      IQ_ROTVPARA = 15 !rot(paramagnetic velocity density) a.k.a. vorticity
+      IQ_ELF      = 16 !    ELF
+      IQ_K        = 17 !    kinetic energy density
+      IQ_H        = 18 !    helicity density
+      IQ_GAMMA5   = 19 !    \gamma_5 density
+      IQ_NUC_SPIN = 20 !    give me a name ...
+
+      CALL DZERO(QUANTITY_ADDMEUP,4)
+
+      CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
+     &            BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
+
+      IOFF = 0
+      DO IXVECTOR = 1,NR_XVECTORS
+
+        CALL DZERO(QUANTITY,4)
+
+        IQ = IQ_N !number density
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GETRHO(DENSITY,
+     &                IREP_XVECTOR(IXVECTOR),
+     &                GAO,
+     &                DMAT_AO(1+IOFF),
+     &                BUF)
+
+          CALL DAXPY(1,D1,DENSITY,1,QUANTITY(0),1)
         ENDIF
+         
+        IQ = IQ_ELF !ELF
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          ELF_KIN = D0
+          DO IXYZ = 1,3
+            DO IC = 1,MC
+              SCALAR = D0
+
+              CALL GETRH1(SCALAR,
+     &                    IC,
+     &                    IREP_XVECTOR(IXVECTOR),
+     &                    GAO1(1+(IXYZ-1)*NTBAS(0)),
+     &                    DMAT_AO(1+IOFF),
+     &                    BUF)
+
+              ELF_KIN = ELF_KIN + SCALAR/D2
+            ENDDO
+          ENDDO
+         
+          PI =  3.1415926536D0
+          FACTOR = 0.3D0*((D3*PI*PI)**DP23)
+         
+          CALL GETRHO(DENSITY,
+     &                IREP_XVECTOR(IXVECTOR),
+     &                GAO,
+     &                DMAT_AO(1+IOFF),
+     &                BUF)
+         
+          CALL GETGRHO(VECTOR_A,
+     &                 IREP_XVECTOR(IXVECTOR),
+     &                 GAO,
+     &                 GAO1,
+     &                 DMAT_AO(1+IOFF),
+     &                 BUF)
+
+          GRADIENT_SQUARED = VECTOR_A(1)**D2
+     &                     + VECTOR_A(2)**D2
+     &                     + VECTOR_A(3)**D2
+         
+          H = FACTOR*(DENSITY**DP53)
+          G = ELF_KIN - GRADIENT_SQUARED/(8.0D0*DENSITY)
+         
+          ELF_CHI = G/H
+         
+          SCALAR = D1/(D1 + ELF_CHI*ELF_CHI)
+
+          CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
+        ENDIF
+        
+        IQ = IQ_JDIA !diamagnetic current density
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GETRHO(DENSITY,
+     &                IREP_XVECTOR(IXVECTOR),
+     &                GAO,
+     &                DMAT_AO(1+IOFF),
+     &                BUF)
+
+          VECTOR_A(1) = -DP12*PY*DENSITY
+          VECTOR_A(2) =  DP12*PX*DENSITY
+          VECTOR_A(3) =  D0
+
+          CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_M !magnetization
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_M(.TRUE.,
+     &               VECTOR_A,
+     &               IREP_XVECTOR(IXVECTOR),
+     &               GAO,
+     &               GAO1,
+     &               DMAT_AO(1+IOFF),
+     &               BUF)
+         
+          CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_J !current density
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_J(.TRUE.,
+     &               VECTOR_A,
+     &               IREP_XVECTOR(IXVECTOR),
+     &               GAO,
+     &               GAO1,
+     &               DMAT_AO(1+IOFF),
+     &               BUF)
+         
+          CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_JPARA !paramagnetic current density
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_JPARA(.TRUE.,
+     &                   VECTOR_A,
+     &                   IREP_XVECTOR(IXVECTOR),
+     &                   GAO,
+     &                   GAO1,
+     &                   DMAT_AO(1+IOFF),
+     &                   BUF)
+         
+          CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_RXJ !r \times j
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_J(.TRUE.,
+     &               VECTOR_A,
+     &               IREP_XVECTOR(IXVECTOR),
+     &               GAO,
+     &               GAO1,
+     &               DMAT_AO(1+IOFF),
+     &               BUF)
+
+          VECTOR_B(1) = PY*VECTOR_A(3) - PZ*VECTOR_A(2)
+          VECTOR_B(2) = PZ*VECTOR_A(1) - PX*VECTOR_A(3)
+          VECTOR_B(3) = PX*VECTOR_A(2) - PY*VECTOR_A(1)
+         
+          CALL DAXPY(3,D1,VECTOR_B,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_DIVM !div(magnetization)
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_DIVM(.TRUE.,
+     &                  SCALAR,
+     &                  IREP_XVECTOR(IXVECTOR),
+     &                  GAO,
+     &                  GAO1,
+     &                  DMAT_AO(1+IOFF),
+     &                  BUF)
+         
+          CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
+        ENDIF
+
+        IQ = IQ_DIVJ !div(current density)
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_DIVJ(.TRUE.,
+     &                  SCALAR,
+     &                  IREP_XVECTOR(IXVECTOR),
+     &                  GAO,
+     &                  GAO1,
+     &                  DMAT_AO(1+IOFF),
+     &                  BUF)
+         
+          CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
+        ENDIF
+
+        IQ = IQ_ROTM !rot(magnetization)
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_ROTM(.TRUE.,
+     &                  VECTOR_A,
+     &                  IREP_XVECTOR(IXVECTOR),
+     &                  GAO,
+     &                  GAO1,
+     &                  DMAT_AO(1+IOFF),
+     &                  BUF)
+         
+          CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_ROTJ !rot(current density)
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_ROTJ(.TRUE.,
+     &                  VECTOR_A,
+     &                  IREP_XVECTOR(IXVECTOR),
+     &                  GAO,
+     &                  GAO1,
+     &                  DMAT_AO(1+IOFF),
+     &                  BUF)
+         
+          CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_ROTJPARA !rot(paramagnetic current density)
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_ROTJPARA(.TRUE.,
+     &                      VECTOR_A,
+     &                      IREP_XVECTOR(IXVECTOR),
+     &                      GAO,
+     &                      GAO1,
+     &                      DMAT_AO(1+IOFF),
+     &                      BUF)
+         
+          CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_GAMMA5 !\gamma_5 density
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_GAMMA5(.TRUE.,
+     &                    SCALAR,
+     &                    IREP_XVECTOR(IXVECTOR),
+     &                    GAO,
+     &                    GAO1,
+     &                    DMAT_AO(1+IOFF),
+     &                    BUF)
+         
+          CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
+        ENDIF
+
+
+
+
+
+         
+         
+!       IQ = IQ_SPNSPN !nuclear spin-spin coupling density
+!       IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+!         CALL GET_J(.TRUE.,
+!    &               VECTOR_A,
+!    &               IREP_VISUAL,
+!    &               GAO,
+!    &               GAO1,
+!    &               DMAT_AO,
+!    &               BUF)
+!        
+!         OX = D0
+!         OY = D0
+!         OZ = 0.5D0
+!        
+!         RX = PX - OX
+!         RY = PY - OY
+!         RZ = PZ - OZ
+!        
+!         R_NORM = RX**D2
+!    &           + RY**D2
+!    &           + RZ**D2
+!        
+!         R_NORM  = DSQRT(R_NORM)
+!        
+!         QUANTITY(1,IQ) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
+!         QUANTITY(2,IQ) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
+!         QUANTITY(3,IQ) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
+!        
+!         QUANTITY(1,IQ) = QUANTITY(1,IQ)/(R_NORM**D3)
+!         QUANTITY(2,IQ) = QUANTITY(2,IQ)/(R_NORM**D3)
+!         QUANTITY(3,IQ) = QUANTITY(3,IQ)/(R_NORM**D3)
+!       ENDIF
+ 
+        CALL DAXPY(4,D1,QUANTITY(0),1,QUANTITY_ADDMEUP(0),1)
+
+        IOFF = IOFF + N2BBASXQ
       ENDDO
 
       RETURN
       END
-
-
-
-
-
 
 
 
@@ -1115,5 +1011,4 @@ C=======================================================================
           ENDDO
         ENDIF !IF(NFSYM .GT. 1) THEN
       ENDIF !IF(LBIT(LBIT_VISUAL,7)) THEN !use orbital string
-
 #endif

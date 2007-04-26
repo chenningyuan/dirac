@@ -1,7 +1,6 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* INTEGRATE_QUANTITY */
       SUBROUTINE INTEGRATE_QUANTITY(DMAT_AO,
-     &                              DMAT_AO_TEMP,
      &                              GAO,
      &                              GAO1,
      &                              PX,PY,PZ,
@@ -11,6 +10,7 @@ C     /* INTEGRATE_QUANTITY */
      &                              WEIGHT,
      &                              NR_POINTS,
      &                              WORK,KFREE,LFREE)
+#if defined (oldcode)
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -27,7 +27,6 @@ C=======================================================================
 
       LOGICAL   LBIT
       DIMENSION DMAT_AO(*),
-     &          DMAT_AO_TEMP(*),
      &          GAO(*),
      &          GAO1(*),
      &          PX(*),
@@ -68,8 +67,10 @@ C=======================================================================
         ENDDO
       ENDDO
 
+#endif
       RETURN
       END
+#if defined (oldcode)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* LEGENDRE_POLYNOMIAL */
       SUBROUTINE LEGENDRE_POLYNOMIAL(P,N,X)
@@ -308,15 +309,16 @@ C=======================================================================
 
       RETURN
       END
+#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* VISUAL_INTEGRATION */
       SUBROUTINE VISUAL_INTEGRATION(DMAT_AO,
-     &                              DMAT_AO_TEMP,
      &                              GAO,
      &                              GAO1,
      &                              NCNT,
      &                              BUF,
      &                              WORK,LWORK)
+#if defined (oldcode)
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -333,7 +335,6 @@ C=======================================================================
 
       LOGICAL   LBIT
       DIMENSION DMAT_AO(*),
-     &          DMAT_AO_TEMP(*),
      &          GAO(*),
      &          GAO1(*),
      &          NCNT(*),
@@ -365,7 +366,6 @@ C=======================================================================
      &              LUNIT,NR_POINTS)
 
         CALL INTEGRATE_QUANTITY(DMAT_AO,
-     &                          DMAT_AO_TEMP,
      &                          GAO,
      &                          GAO1,
      &                          WORK(KX),WORK(KY),WORK(KZ),
@@ -451,7 +451,6 @@ C=======================================================================
      &                  LUNIT,NR_POINTS)
 
             CALL INTEGRATE_QUANTITY(DMAT_AO,
-     &                              DMAT_AO_TEMP,
      &                              GAO,
      &                              GAO1,
      &                              WORK(KX),WORK(KY),WORK(KZ),
@@ -511,5 +510,6 @@ C=======================================================================
         ENDDO
       ENDIF !2D
 
+#endif
       RETURN
       END
