@@ -15,7 +15,7 @@
 .2D
 .QUANTITIES
 1
-PAMXVC 1 quantity
+PAMXVC 1 quantity 0
 .CUBE
 10 10 10
 *END OF

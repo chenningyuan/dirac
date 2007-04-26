@@ -1,4 +1,201 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* VISUAL_INTEGRATION */
+      SUBROUTINE VISUAL_INTEGRATION(DMAT_AO,
+     &                              GAO,
+     &                              GAO1,
+     &                              NCNT,
+     &                              BUF,
+     &                              WORK,LWORK)
+C=======================================================================
+C     description in here ...
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: april 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
+
+#include "visual.h"
+
+      LOGICAL   LBIT
+      DIMENSION DMAT_AO(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          NCNT(*),
+     &          BUF(*),
+     &          WORK(LWORK),
+     &          QUANTITY_INTEGRAL(0:3),
+     &          QUANTITY_INTEGRAL_LAST(0:3)
+
+#include "memint.h"
+
+      IF(LBIT(LBIT_VISUAL,3)) THEN !3D
+
+        CALL AROUND('3D numerical integration')
+
+        LUNIT = 44
+
+        CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
+
+        REWIND LUNIT
+        READ(LUNIT) NR_POINTS
+
+        CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
+
+        CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
+     &              WORK(KW),
+     &              LUNIT,NR_POINTS)
+
+        CALL INTEGRATE_QUANTITY(DMAT_AO,
+     &                          GAO,
+     &                          GAO1,
+     &                          WORK(KX),WORK(KY),WORK(KZ),
+     &                          NCNT,
+     &                          BUF,
+     &                          QUANTITY_INTEGRAL,
+     &                          WORK(KW),
+     &                          NR_POINTS,
+     &                          WORK,KFREE,LFREE)
+
+        CALL MEMREL('VISUAL_INTEGRATION',WORK,KX,KX,KFREE,LFREE)
+
+        CLOSE(LUNIT,STATUS = 'DELETE')
+
+        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A12,A25,2A20)') 'scalar',
+     &                                'x-component',
+     &                                'y-component',
+     &                                'z-component'
+        WRITE(LUPRI,'(A)')
+
+        WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0),
+     &                           QUANTITY_INTEGRAL(1),
+     &                           QUANTITY_INTEGRAL(2),
+     &                           QUANTITY_INTEGRAL(3)
+
+        WRITE(LUPRI,'(A)')
+        CALL PRSYMB(LUPRI,'-',100,0)
+
+        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A)')
+
+      ENDIF !3D
+
+      IF(LBIT(LBIT_VISUAL,2)) THEN !2D
+
+        CALL AROUND('2D Gauss-Lobatto numerical integration')
+
+        DO IORIENTATION = 2,2
+
+          WRITE(LUPRI,'(A)')
+          WRITE(LUPRI,'(A12,A3,A17,A19,A20)') 'orientation:',
+     &                                        ORIENTATION(IORIENTATION),
+     &                                        'pieces',
+     &                                        'order',
+     &                                        'error'
+          WRITE(LUPRI,'(A)')
+
+          NR_PIECES = 5
+          N         = 10
+          DIMI      = 10.0D0
+          DIMJ      = 10.0D0
+          LUNIT     = 45
+
+          CALL DZERO(QUANTITY_INTEGRAL_LAST,4)
+
+          DO WHILE(.TRUE.)
+
+            CALL LOBATTO_2D_GRID(ORIENTATION(IORIENTATION),
+     &                           NR_PIECES,N,DIMI,DIMJ,LUNIT)
+
+            REWIND LUNIT
+            READ(LUNIT) NR_POINTS
+
+            CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
+
+            CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
+     &                  WORK(KW),
+     &                  LUNIT,NR_POINTS)
+
+            CALL INTEGRATE_QUANTITY(DMAT_AO,
+     &                              GAO,
+     &                              GAO1,
+     &                              WORK(KX),WORK(KY),WORK(KZ),
+     &                              NCNT,
+     &                              BUF,
+     &                              QUANTITY_INTEGRAL,
+     &                              WORK(KW),
+     &                              NR_POINTS,
+     &                              WORK,KFREE,LFREE)
+
+            CALL MEMREL('VISUAL_INTEGRATION',WORK,KX,KX,KFREE,LFREE)
+
+            CLOSE(LUNIT,STATUS = 'DELETE')
+
+            ERROR = D0
+            DO IXYZ = 0,3
+              SOMETHING = QUANTITY_INTEGRAL(IXYZ)
+     &                  - QUANTITY_INTEGRAL_LAST(IXYZ)
+              ERROR = ERROR + DABS(SOMETHING)
+            ENDDO
+
+            WRITE(LUPRI,'(I30,I20,E30.10)') NR_PIECES, N, ERROR
+            IF(ERROR .LT. 1.0D-6) GOTO 1
+
+            N = N + 10
+
+            CALL DZERO(QUANTITY_INTEGRAL_LAST,4)
+            CALL DAXPY(4,D1,QUANTITY_INTEGRAL,1,
+     &                      QUANTITY_INTEGRAL_LAST,1)
+          ENDDO
+
+ 1        CONTINUE
+
+
+
+
+
+
+
+
+
+
+!         DO IQ = 1,NR_QUANTITIES
+!           IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
+!             IF(QUANTITY_IS_A_VECTOR(IQ)) THEN
+!               WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQ),
+!    &                                       QUANTITY_INTEGRAL(0,IQ),
+!    &                                       QUANTITY_INTEGRAL(1,IQ),
+!    &                                       QUANTITY_INTEGRAL(2,IQ),
+!    &                                       QUANTITY_INTEGRAL(3,IQ)
+!             ELSE
+!               WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQ),
+!    &                                      QUANTITY_INTEGRAL(0,IQ)
+!             ENDIF
+!           ENDIF
+!         ENDDO
+
+!         WRITE(LUPRI,'(A)')
+!         CALL PRSYMB(LUPRI,'-',100,0)
+
+!         WRITE(LUPRI,'(A)')
+!         WRITE(LUPRI,'(A)')
+
+        ENDDO
+      ENDIF !2D
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* INTEGRATE_QUANTITY */
       SUBROUTINE INTEGRATE_QUANTITY(DMAT_AO,
      &                              GAO,
@@ -10,7 +207,6 @@ C     /* INTEGRATE_QUANTITY */
      &                              WEIGHT,
      &                              NR_POINTS,
      &                              WORK,KFREE,LFREE)
-#if defined (oldcode)
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -34,16 +230,15 @@ C=======================================================================
      &          PZ(*),
      &          NCNT(*),
      &          BUF(*),
-     &          QUANTITY_INTEGRAL(0:3,NR_QUANTITIES),
+     &          QUANTITY_INTEGRAL(0:3),
      &          WEIGHT(*),
      &          WORK(*),
-     &          QUANTITY(0:3,NR_QUANTITIES)
+     &          QUANTITY(0:3)
 
-      CALL DZERO(QUANTITY_INTEGRAL,NR_QUANTITIES*4)
+      CALL DZERO(QUANTITY_INTEGRAL,4)
 
       DO IPOINT = 1,NR_POINTS
         CALL GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                             DMAT_AO_TEMP,
      &                             GAO,
      &                             GAO1,
      &                             PX(IPOINT),
@@ -54,23 +249,12 @@ C=======================================================================
      &                             QUANTITY,
      &                             WORK,KFREE,LFREE)
 
-        DO IQ = 1,NR_QUANTITIES
-          IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-            DO IXYZ = 0,3
-              QUANTITY_INTEGRAL(IXYZ,IQ)
-     &                                = QUANTITY_INTEGRAL(IXYZ,IQ)
-     &                                + QUANTITY(IXYZ,IQ)*WEIGHT(IPOINT)
-              IF(.NOT. QUANTITY_IS_A_VECTOR(IQ)) GOTO 1
-            ENDDO
- 1          CONTINUE
-          ENDIF
-        ENDDO
+        CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1,
+     &                              QUANTITY_INTEGRAL,1)
       ENDDO
 
-#endif
       RETURN
       END
-#if defined (oldcode)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* LEGENDRE_POLYNOMIAL */
       SUBROUTINE LEGENDRE_POLYNOMIAL(P,N,X)
@@ -307,209 +491,5 @@ C=======================================================================
 
       CALL WRTQUA(PX,PY,PZ,WEIGHT,LUNIT,NR_POINTS)
 
-      RETURN
-      END
-#endif
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* VISUAL_INTEGRATION */
-      SUBROUTINE VISUAL_INTEGRATION(DMAT_AO,
-     &                              GAO,
-     &                              GAO1,
-     &                              NCNT,
-     &                              BUF,
-     &                              WORK,LWORK)
-#if defined (oldcode)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
-
-#include "visual.h"
-
-      LOGICAL   LBIT
-      DIMENSION DMAT_AO(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          NCNT(*),
-     &          BUF(*),
-     &          WORK(LWORK),
-     &          QUANTITY_INTEGRAL(0:3,NR_QUANTITIES),
-     &          QUANTITY_INTEGRAL_LAST(0:3,NR_QUANTITIES)
-
-#include "memint.h"
-
-      IF(LBIT(LBIT_VISUAL,3)) THEN !3D
-
-        CALL AROUND('3D numerical integration')
-
-        LUNIT = 44
-
-        CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
-
-        REWIND LUNIT
-        READ(LUNIT) NR_POINTS
-
-        CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
-
-        CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
-     &              WORK(KW),
-     &              LUNIT,NR_POINTS)
-
-        CALL INTEGRATE_QUANTITY(DMAT_AO,
-     &                          GAO,
-     &                          GAO1,
-     &                          WORK(KX),WORK(KY),WORK(KZ),
-     &                          NCNT,
-     &                          BUF,
-     &                          QUANTITY_INTEGRAL,
-     &                          WORK(KW),
-     &                          NR_POINTS,
-     &                          WORK,KFREE,LFREE)
-
-        CALL MEMREL('VISUAL_INTEGRATION',WORK,KX,KX,KFREE,LFREE)
-
-        CLOSE(LUNIT,STATUS = 'DELETE')
-
-        WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A8,A29,3A20)') 'quantity',
-     &                               'scalar/norm',
-     &                               'x-component',
-     &                               'y-component',
-     &                               'z-component'
-        WRITE(LUPRI,'(A)')
-
-        DO IQ = 1,NR_QUANTITIES
-          IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-            IF(QUANTITY_IS_A_VECTOR(IQ)) THEN
-              WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQ),
-     &                                     QUANTITY_INTEGRAL(0,IQ),
-     &                                     QUANTITY_INTEGRAL(1,IQ),
-     &                                     QUANTITY_INTEGRAL(2,IQ),
-     &                                     QUANTITY_INTEGRAL(3,IQ)
-            ELSE
-              WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQ),
-     &                                    QUANTITY_INTEGRAL(0,IQ)
-            ENDIF
-          ENDIF
-        ENDDO
-
-        WRITE(LUPRI,'(A)')
-        CALL PRSYMB(LUPRI,'-',100,0)
-
-        WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A)')
-
-      ENDIF !3D
-
-      IF(LBIT(LBIT_VISUAL,2)) THEN !2D
-
-        CALL AROUND('2D Gauss-Lobatto numerical integration')
-
-        DO IORIENTATION = 2,2
-
-          WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A12,A3,A17,A19,A20)') 'orientation:',
-     &                                        ORIENTATION(IORIENTATION),
-     &                                        'pieces',
-     &                                        'order',
-     &                                        'error'
-          WRITE(LUPRI,'(A)')
-
-          NR_PIECES = 5
-          N         = 10
-          DIMI      = 10.0D0
-          DIMJ      = 10.0D0
-          LUNIT     = 45
-
-          CALL DZERO(QUANTITY_INTEGRAL_LAST,NR_QUANTITIES*4)
-
-          DO WHILE(.TRUE.)
-
-            CALL LOBATTO_2D_GRID(ORIENTATION(IORIENTATION),
-     &                           NR_PIECES,N,DIMI,DIMJ,LUNIT)
-
-            REWIND LUNIT
-            READ(LUNIT) NR_POINTS
-
-            CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
-
-            CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
-     &                  WORK(KW),
-     &                  LUNIT,NR_POINTS)
-
-            CALL INTEGRATE_QUANTITY(DMAT_AO,
-     &                              GAO,
-     &                              GAO1,
-     &                              WORK(KX),WORK(KY),WORK(KZ),
-     &                              NCNT,
-     &                              BUF,
-     &                              QUANTITY_INTEGRAL,
-     &                              WORK(KW),
-     &                              NR_POINTS,
-     &                              WORK,KFREE,LFREE)
-
-            CALL MEMREL('VISUAL_INTEGRATION',WORK,KX,KX,KFREE,LFREE)
-
-            CLOSE(LUNIT,STATUS = 'DELETE')
-
-            ERROR = D0
-            DO IQ = 1,NR_QUANTITIES
-              DO IXYZ = 0,3
-                SOMETHING = QUANTITY_INTEGRAL(IXYZ,IQ)
-     &                    - QUANTITY_INTEGRAL_LAST(IXYZ,IQ)
-                ERROR = ERROR + DABS(SOMETHING)
-              ENDDO
-            ENDDO
-
-            WRITE(LUPRI,'(I30,I20,E30.10)') NR_PIECES, N, ERROR
-            IF(ERROR .LT. 1.0D-6) GOTO 1
-
-            N = N + 10
-
-            CALL DZERO(QUANTITY_INTEGRAL_LAST,NR_QUANTITIES*4)
-            CALL DAXPY(NR_QUANTITIES*4,D1,QUANTITY_INTEGRAL,1,
-     &                                    QUANTITY_INTEGRAL_LAST,1)
-          ENDDO
-
- 1        CONTINUE
-
-          DO IQ = 1,NR_QUANTITIES
-            IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-              IF(QUANTITY_IS_A_VECTOR(IQ)) THEN
-                WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQ),
-     &                                       QUANTITY_INTEGRAL(0,IQ),
-     &                                       QUANTITY_INTEGRAL(1,IQ),
-     &                                       QUANTITY_INTEGRAL(2,IQ),
-     &                                       QUANTITY_INTEGRAL(3,IQ)
-              ELSE
-                WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQ),
-     &                                      QUANTITY_INTEGRAL(0,IQ)
-              ENDIF
-            ENDIF
-          ENDDO
-
-          WRITE(LUPRI,'(A)')
-          CALL PRSYMB(LUPRI,'-',100,0)
-
-          WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A)')
-
-        ENDDO
-      ENDIF !2D
-
-#endif
       RETURN
       END

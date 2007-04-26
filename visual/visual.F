@@ -31,7 +31,7 @@ C=======================================================================
 !                   5         6         7         8
      &            '.SKIPEP','.SKIPEE','.STRING','.INTEGR',
 !                   9        10        11        12
-     &            '.3DADD ','.CUBE  ','.XXXXXX','.XXXXXX',
+     &            '.3DADD ','.CUBE  ','.COMMON','.XXXXXX',
 !                  13        14        15        16
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  17        18        19        20
@@ -73,15 +73,17 @@ C=======================================================================
 
       LBIT_VISUAL = 0
 
-      NCUBE(1)    = 80
-      NCUBE(2)    = 80
-      NCUBE(3)    = 80
+      NCUBE(1) = 80
+      NCUBE(2) = 80
+      NCUBE(3) = 80
 
-      ADD_3D      = 4.0D0
+      ADD_3D        = 4.0D0
+      COMMON_FACTOR = 1.0D0
 
       DO IXVECTOR = 1,MAX_NR_XVECTORS
-        IREP_XVECTOR(IXVECTOR)   = 0
-        IWHICH_XVECTOR(IXVECTOR) = 1
+        IREP_XVECTOR(IXVECTOR)    = 0
+        IWHICH_XVECTOR(IXVECTOR)  = 1
+        IOPTION_XVECTOR(IXVECTOR) = 0
       ENDDO
 
       NR_XVECTORS = 0
@@ -135,7 +137,8 @@ C=======================================================================
           DO IXVECTOR = 1,NR_XVECTORS
             READ(LUCMD,*) XVECTOR_FILE(IXVECTOR),
      &                    IWHICH_XVECTOR(IXVECTOR),
-     &                    IQ_XVECTOR(IXVECTOR)
+     &                    IQ_XVECTOR(IXVECTOR),
+     &                    IOPTION_XVECTOR(IXVECTOR)
           ENDDO
           GOTO 100
 
@@ -166,6 +169,9 @@ C=======================================================================
           GOTO 100
 
    11     CONTINUE
+          READ(LUCMD,*) COMMON_FACTOR
+          GOTO 100
+
    12     CONTINUE
    13     CONTINUE
    14     CONTINUE
@@ -301,11 +307,13 @@ C=======================================================================
 
       IOFF = 0
       DO IXVECTOR = 1,NR_XVECTORS
-        CALL SETUP_FO_DMAT_AO(WORK(KCMO),
-     &                        IXVECTOR,
-     &                        WORK(KDMAT_AO+IOFF),
-     &                        WORK(KSTRING1),WORK(KSTRING2),
-     &                        WORK(KFREE),LFREE)
+        IF(.NOT. XVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER') THEN
+          CALL SETUP_FO_DMAT_AO(WORK(KCMO),
+     &                          IXVECTOR,
+     &                          WORK(KDMAT_AO+IOFF),
+     &                          WORK(KSTRING1),WORK(KSTRING2),
+     &                          WORK(KFREE),LFREE)
+        ENDIF
         IOFF = IOFF + N2BBASXQ
       ENDDO
       CALL SETUP_ZO_DMAT_AO(WORK(KCMO),
@@ -321,12 +329,12 @@ C=======================================================================
      &                   WORK(KFREE),LFREE)
 
       IF(LBIT(LBIT_VISUAL,8)) THEN !integration
-!       CALL VISUAL_INTEGRATION(WORK(KDMAT_AO),
-!    &                          WORK(KGAO),
-!    &                          WORK(KGAO1),
-!    &                          WORK(KNCNT),
-!    &                          WORK(KBUF),
-!    &                          WORK(KFREE),LFREE)
+        CALL VISUAL_INTEGRATION(WORK(KDMAT_AO),
+     &                          WORK(KGAO),
+     &                          WORK(KGAO1),
+     &                          WORK(KNCNT),
+     &                          WORK(KBUF),
+     &                          WORK(KFREE),LFREE)
       ENDIF
 
 !     release memory
@@ -362,6 +370,13 @@ C=======================================================================
 #include "dcbgen.h"
 #include "visual.h"
 #include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "symmet.h"
+#include "sdpre.h"
+#include "ibtfun.h"
 
       LOGICAL   LBIT
       DIMENSION DMAT_AO(*),
@@ -373,14 +388,6 @@ C=======================================================================
      &          QUANTITY(0:3,NCUBE(3)),
      &          STEP_3D(3,0:3),
      &          ATOM_XYZ(4,NUCDEP)
-
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "nuclei.h"
-#include "dgroup.h"
-#include "symmet.h"
-#include "sdpre.h"
-#include "ibtfun.h"
 
 #include "memint.h"
 
@@ -609,6 +616,10 @@ C=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
 
       PARAMETER (D0 = 0.0D0)
       PARAMETER (D1 = 1.0D0)
@@ -621,13 +632,16 @@ C=======================================================================
       PARAMETER (DP23 = D2/D3)
       PARAMETER (DP53 = D5/D3)
 
+#include "dcbgen.h"
 #include "visual.h"
 #include "dcborb.h"
-#include "dgroup.h"
-#include "pgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "dcbxrs.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "symmet.h"
+#include "sdpre.h"
+#include "ibtfun.h"
 
       LOGICAL   LBIT
       DIMENSION DMAT_AO(*),
@@ -641,34 +655,38 @@ C=======================================================================
      &          VECTOR_A(3),
      &          VECTOR_B(3)
 
-      IQ_N        =  1 !    number density
-      IQ_M        =  2 !    magnetization
-      IQ_DIVM     =  3 !div(magnetization)
-      IQ_ROTM     =  4 !rot(magnetization)
-      IQ_RXJ      =  5 !    r \times j
-      IQ_J        =  6 !    current density
-      IQ_DIVJ     =  7 !div(current density)
-      IQ_ROTJ     =  8 !rot(current density)
-      IQ_JPARA    =  9 !    paramagnetic current density
-      IQ_DIVJPARA = 10 !div(paramagnetic current density)
-      IQ_ROTJPARA = 11 !rot(paramagnetic current density)
-      IQ_JDIA     = 12 !     diamagnetic current density
-      IQ_VPARA    = 13 !    paramagnetic velocity density
-      IQ_DIVVPARA = 14 !div(paramagnetic velocity density)
-      IQ_ROTVPARA = 15 !rot(paramagnetic velocity density) a.k.a. vorticity
-      IQ_ELF      = 16 !    ELF
-      IQ_K        = 17 !    kinetic energy density
-      IQ_H        = 18 !    helicity density
-      IQ_GAMMA5   = 19 !    \gamma_5 density
-      IQ_NUC_SPIN = 20 !    give me a name ...
+      IQ_N          =  1 !    number density
+      IQ_M          =  2 !    magnetization
+      IQ_DIVM       =  3 !div(magnetization)
+      IQ_ROTM       =  4 !rot(magnetization)
+      IQ_RXJ        =  5 !    r \times j
+      IQ_J          =  6 !    current density
+      IQ_DIVJ       =  7 !div(current density)
+      IQ_ROTJ       =  8 !rot(current density)
+      IQ_JPARA      =  9 !    paramagnetic current density
+      IQ_DIVJPARA   = 10 !div(paramagnetic current density)
+      IQ_ROTJPARA   = 11 !rot(paramagnetic current density)
+      IQ_JDIA       = 12 !     diamagnetic current density
+      IQ_VPARA      = 13 !    paramagnetic velocity density
+      IQ_DIVVPARA   = 14 !div(paramagnetic velocity density)
+      IQ_ROTVPARA   = 15 !rot(paramagnetic velocity density) a.k.a. vorticity
+      IQ_ELF        = 16 !    ELF
+      IQ_K          = 17 !    kinetic energy density
+      IQ_H          = 18 !    helicity density
+      IQ_GAMMA5     = 19 !    \gamma_5 density
+      IQ_NUC_SPIN_A = 20 !    give me a name ...
+      IQ_NUC_SPIN_B = 21 !    give me a name ...
 
       CALL DZERO(QUANTITY_ADDMEUP,4)
 
       CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
      &            BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
 
-      IOFF = 0
       DO IXVECTOR = 1,NR_XVECTORS
+        IOFF = N2BBASXQ*(IXVECTOR-1)
+
+        IF(XVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER')
+     &                                       IOFF = N2BBASXQ*NR_XVECTORS
 
         CALL DZERO(QUANTITY,4)
 
@@ -682,7 +700,7 @@ C=======================================================================
 
           CALL DAXPY(1,D1,DENSITY,1,QUANTITY(0),1)
         ENDIF
-         
+
         IQ = IQ_ELF !ELF
         IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
           ELF_KIN = D0
@@ -700,16 +718,15 @@ C=======================================================================
               ELF_KIN = ELF_KIN + SCALAR/D2
             ENDDO
           ENDDO
-         
-          PI =  3.1415926536D0
+
           FACTOR = 0.3D0*((D3*PI*PI)**DP23)
-         
+
           CALL GETRHO(DENSITY,
      &                IREP_XVECTOR(IXVECTOR),
      &                GAO,
      &                DMAT_AO(1+IOFF),
      &                BUF)
-         
+
           CALL GETGRHO(VECTOR_A,
      &                 IREP_XVECTOR(IXVECTOR),
      &                 GAO,
@@ -720,17 +737,17 @@ C=======================================================================
           GRADIENT_SQUARED = VECTOR_A(1)**D2
      &                     + VECTOR_A(2)**D2
      &                     + VECTOR_A(3)**D2
-         
+
           H = FACTOR*(DENSITY**DP53)
           G = ELF_KIN - GRADIENT_SQUARED/(8.0D0*DENSITY)
-         
+
           ELF_CHI = G/H
-         
+
           SCALAR = D1/(D1 + ELF_CHI*ELF_CHI)
 
           CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
         ENDIF
-        
+
         IQ = IQ_JDIA !diamagnetic current density
         IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
           CALL GETRHO(DENSITY,
@@ -755,7 +772,7 @@ C=======================================================================
      &               GAO1,
      &               DMAT_AO(1+IOFF),
      &               BUF)
-         
+
           CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
 
@@ -768,7 +785,7 @@ C=======================================================================
      &               GAO1,
      &               DMAT_AO(1+IOFF),
      &               BUF)
-         
+
           CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
 
@@ -781,7 +798,7 @@ C=======================================================================
      &                   GAO1,
      &                   DMAT_AO(1+IOFF),
      &                   BUF)
-         
+
           CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
 
@@ -798,7 +815,7 @@ C=======================================================================
           VECTOR_B(1) = PY*VECTOR_A(3) - PZ*VECTOR_A(2)
           VECTOR_B(2) = PZ*VECTOR_A(1) - PX*VECTOR_A(3)
           VECTOR_B(3) = PX*VECTOR_A(2) - PY*VECTOR_A(1)
-         
+
           CALL DAXPY(3,D1,VECTOR_B,1,QUANTITY(1),1)
         ENDIF
 
@@ -811,7 +828,7 @@ C=======================================================================
      &                  GAO1,
      &                  DMAT_AO(1+IOFF),
      &                  BUF)
-         
+
           CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
         ENDIF
 
@@ -824,7 +841,7 @@ C=======================================================================
      &                  GAO1,
      &                  DMAT_AO(1+IOFF),
      &                  BUF)
-         
+
           CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
         ENDIF
 
@@ -837,7 +854,7 @@ C=======================================================================
      &                  GAO1,
      &                  DMAT_AO(1+IOFF),
      &                  BUF)
-         
+
           CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
 
@@ -850,7 +867,7 @@ C=======================================================================
      &                  GAO1,
      &                  DMAT_AO(1+IOFF),
      &                  BUF)
-         
+
           CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
 
@@ -863,7 +880,7 @@ C=======================================================================
      &                      GAO1,
      &                      DMAT_AO(1+IOFF),
      &                      BUF)
-         
+
           CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
 
@@ -876,52 +893,67 @@ C=======================================================================
      &                    GAO1,
      &                    DMAT_AO(1+IOFF),
      &                    BUF)
-         
+
           CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
         ENDIF
 
+        IQ = IQ_NUC_SPIN_A !give me a name ...
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_J(.TRUE.,
+     &               VECTOR_A,
+     &               IREP_XVECTOR(IXVECTOR),
+     &               GAO,
+     &               GAO1,
+     &               DMAT_AO(1+IOFF),
+     &               BUF)
 
+          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
+          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
+          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
 
+          R_NORM = RX**D2
+     &           + RY**D2
+     &           + RZ**D2
 
+          R_NORM  = DSQRT(R_NORM)
+          R_NORM3 = R_NORM**D3
 
-         
-         
-!       IQ = IQ_SPNSPN !nuclear spin-spin coupling density
-!       IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-!         CALL GET_J(.TRUE.,
-!    &               VECTOR_A,
-!    &               IREP_VISUAL,
-!    &               GAO,
-!    &               GAO1,
-!    &               DMAT_AO,
-!    &               BUF)
-!        
-!         OX = D0
-!         OY = D0
-!         OZ = 0.5D0
-!        
-!         RX = PX - OX
-!         RY = PY - OY
-!         RZ = PZ - OZ
-!        
-!         R_NORM = RX**D2
-!    &           + RY**D2
-!    &           + RZ**D2
-!        
-!         R_NORM  = DSQRT(R_NORM)
-!        
-!         QUANTITY(1,IQ) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-!         QUANTITY(2,IQ) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-!         QUANTITY(3,IQ) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-!        
-!         QUANTITY(1,IQ) = QUANTITY(1,IQ)/(R_NORM**D3)
-!         QUANTITY(2,IQ) = QUANTITY(2,IQ)/(R_NORM**D3)
-!         QUANTITY(3,IQ) = QUANTITY(3,IQ)/(R_NORM**D3)
-!       ENDIF
- 
-        CALL DAXPY(4,D1,QUANTITY(0),1,QUANTITY_ADDMEUP(0),1)
+          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
+          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
+          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
 
-        IOFF = IOFF + N2BBASXQ
+          CALL DAXPY(3,D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_NUC_SPIN_B !give me a name ...
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_J(.TRUE.,
+     &               VECTOR_A,
+     &               IREP_XVECTOR(IXVECTOR),
+     &               GAO,
+     &               GAO1,
+     &               DMAT_AO(1+IOFF),
+     &               BUF)
+
+          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
+          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
+          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
+
+          R_NORM = RX**D2
+     &           + RY**D2
+     &           + RZ**D2
+
+          R_NORM  = DSQRT(R_NORM)
+          R_NORM3 = R_NORM**D3
+
+          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
+          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
+          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
+
+          CALL DAXPY(3,D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
+        ENDIF
+
+        CALL DAXPY(4,COMMON_FACTOR,QUANTITY(0),1,QUANTITY_ADDMEUP(0),1)
       ENDDO
 
       RETURN
