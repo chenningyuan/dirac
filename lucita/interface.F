@@ -472,7 +472,7 @@ C
 *
       if (IMOKW(21).eq.0) then
 #if defined (VAR_MPI)
-         IODENSEPAR = 1
+         IODENSEPAR = 2
          IRUNPA = 1
          IMOKW(21) = 2
 #else
@@ -488,7 +488,7 @@ C
             write(6,*) 'I will ignore your input.'
             write(6,*) 'Program will continue.'
             IMOKW(21) = 3
-            IPARMODEL = 0
+            IPARMODEL = 1
          endif  
          IF(IPARMODEL.EQ.0)THEN
            IODENSEPAR = 1
