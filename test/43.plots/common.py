@@ -62,6 +62,31 @@ d_quantity['b'] = ['J', 'M', 'DIVJ', 'DIVM', 'ROTJ', 'ROTM']
 
 #-------------------------------------------------------------------------------
 
+d_iq = {}
+
+d_iq['N'       ] = ' 1'
+d_iq['M'       ] = ' 2'
+d_iq['DIVM'    ] = ' 3'
+d_iq['ROTM'    ] = ' 4'
+d_iq['RXJ'     ] = ' 5'
+d_iq['J'       ] = ' 6'
+d_iq['DIVJ'    ] = ' 7'
+d_iq['ROTJ'    ] = ' 8'
+d_iq['JPARA'   ] = ' 9'
+d_iq['DIVJPARA'] = '10'
+d_iq['ROTJPARA'] = '11'
+d_iq['JDIA'    ] = '12'
+d_iq['VPARA'   ] = '13'
+d_iq['DIVVPARA'] = '14'
+d_iq['ROTVPARA'] = '15'
+d_iq['ELF'     ] = '16'
+d_iq['K'       ] = '17'
+d_iq['H'       ] = '18'
+d_iq['GAMMA5'  ] = '19'
+d_iq['NUC_SPIN'] = '20'
+
+#-------------------------------------------------------------------------------
+
 d_orientation = {}
 
 d_orientation[0] = 'x'

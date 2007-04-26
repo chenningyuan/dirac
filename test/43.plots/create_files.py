@@ -33,7 +33,7 @@ for field in d_operator:
 
         for quantity in d_quantity[field]:
 
-            plot = string.replace(template_plot, 'quantity', quantity)
+            plot = string.replace(template_plot, 'quantity', d_iq[quantity])
 
             plot_file = 'plot_' + field + d_orientation[orientation] + '_' + quantity + '.inp'
             to_file(plot, plot_file)
