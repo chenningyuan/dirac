@@ -512,9 +512,15 @@ C
 * 22: Type of I/O model in parallel calculation
 *
       if (IMOKW(22).eq.0) then
-         IIOMOD = 0
+#if defined (VAR_MPI)
+         IIOMOD = 1
          IMOKW(22) = 2
          YESSTATEMENT = 'No'
+#else
+         IIOMOD = -1
+         IMOKW(22) = 2
+         YESSTATEMENT = 'No'
+#endif
       else if (IMOKW(22).eq.1) then
 #if defined (VAR_MPI)
         if(IPARIOMOD.eq.0) then
@@ -529,7 +535,7 @@ C
           write(6,*) 'I will ignore your input.'
           write(6,*) 'Program will continue.'
           IMOKW(22) = 3
-          IIOMOD = 0
+          IIOMOD = 1
           YESSTATEMENT = 'No'
         end if
 #else
