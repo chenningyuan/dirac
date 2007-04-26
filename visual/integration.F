@@ -160,35 +160,23 @@ C=======================================================================
 
  1        CONTINUE
 
-
-
-
-
-
-
-
-
-
-!         DO IQ = 1,NR_QUANTITIES
-!           IF(LBIT(LBIT_VISUAL_QUANTITY,IQ)) THEN
-!             IF(QUANTITY_IS_A_VECTOR(IQ)) THEN
-!               WRITE(LUPRI,'(A20,4E20.10)') QUANTITY_NAME(IQ),
-!    &                                       QUANTITY_INTEGRAL(0,IQ),
-!    &                                       QUANTITY_INTEGRAL(1,IQ),
-!    &                                       QUANTITY_INTEGRAL(2,IQ),
-!    &                                       QUANTITY_INTEGRAL(3,IQ)
-!             ELSE
-!               WRITE(LUPRI,'(A20,E20.10)') QUANTITY_NAME(IQ),
-!    &                                      QUANTITY_INTEGRAL(0,IQ)
-!             ENDIF
-!           ENDIF
-!         ENDDO
-
-!         WRITE(LUPRI,'(A)')
-!         CALL PRSYMB(LUPRI,'-',100,0)
-
-!         WRITE(LUPRI,'(A)')
-!         WRITE(LUPRI,'(A)')
+          WRITE(LUPRI,'(A)')
+          WRITE(LUPRI,'(A12,A25,2A20)') 'scalar',
+     &                                  'x-component',
+     &                                  'y-component',
+     &                                  'z-component'
+          WRITE(LUPRI,'(A)')
+         
+          WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0),
+     &                             QUANTITY_INTEGRAL(1),
+     &                             QUANTITY_INTEGRAL(2),
+     &                             QUANTITY_INTEGRAL(3)
+         
+          WRITE(LUPRI,'(A)')
+          CALL PRSYMB(LUPRI,'-',100,0)
+         
+          WRITE(LUPRI,'(A)')
+          WRITE(LUPRI,'(A)')
 
         ENDDO
       ENDIF !2D
