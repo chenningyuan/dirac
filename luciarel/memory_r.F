@@ -289,15 +289,16 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 *         by MEMMAR
 * KADD  : Dimension of array to be added
 *         If TASK = INI, KADD is total length of array
-* TASK  : = INI  : Initialize                 Character*6
-*         = ADDS : Add static memory
-*         = ADDL : Add Local memory
-*         = FLUSH : Flush local memory
-*         = CHECK : Check memory paddings
-*         = FREE  : Return first Free word in KBASE
-*         = MARK  : Set a mark at current free adress
-*         = FLUSM : Flush local memory to previous mark
-*         = PRINT : Print memory allocations
+* TASK  : = INI    : Initialize                 Character*6
+*         = ADDS   : Add static memory
+*         = ADDL   : Add Local memory
+*         = FLUSH  : Flush local memory
+*         = CHECK  : Check memory paddings
+*         = FREE   : Return first Free word in KBASE
+*         = MARK   : Set a mark at current free adress
+*         = FLUSM  : Flush local memory to previous mark
+*         = PRINT  : Print memory allocations
+*         = SFREEM : Print memory allocations
 * IR    : 1 => integer , 2 => real,
 *         ratio between integer and real is IRAT
 * IDENT : identifier of memory slice,Character*6
@@ -306,7 +307,7 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 * is tranferred to static memory
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (IA64)
+#if defined (IA64) || defined (INT_STAR8)
       integer*8 KBASE,KFREES,KFREEL,IBASE,NWORD,JBASE,JBASEN,IMARK
 #endif
       CHARACTER*6 TASK,IDENT,IIDENT,MARKC,MARK_ACT
@@ -492,6 +493,10 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
         LU6 = 6
         CALL GFLUSH(LU6)
       ELSE IF( TASK(1:5).EQ.'CHECK') THEN
+        NSNLI = NS+ NL
+      ELSE IF( TASK(1:6) .EQ. 'SFREEM') THEN
+*. compute current free memory
+        KBASE = NWORD - KFREEL - 1
         NSNLI = NS+ NL
       ELSE
           WRITE(6,*) ' MEMMAR : Unknown task parameter ',TASK
