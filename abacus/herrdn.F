@@ -8378,7 +8378,7 @@ C          ... small component set
          ENDIF
          CALL GPCLOSE(LUTMP3,'KEEP')
 
-         CALL CAPSYMOUT
+CMI      CALL CAPSYMOUT
 
       ENDIF
 

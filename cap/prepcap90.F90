@@ -7,7 +7,7 @@
   module cap
 
 ! private ! must be public that subroutines can be used in F77 parts !
-#include "dcbcap.h"
+!#include "dcbcap.h"
 
 !  logical, private :: cap_ovlp
 !   integer(kind=4), private :: iprint
@@ -69,32 +69,14 @@ use QMatrixes
   call quit('end in test files...')
 end subroutine test_files
 
- subroutine cap_ovlp
-use Memory
-use cap
-#include "priunit.h"
-! check if not make check of DIRAC/CAP overlap integrals
- CALL QENTER('cap_ovlp')
-
- write(LUPRI,*) 'cap_ovlp, CAPOVLP=',CAPOVLP,' IPRCAP=',IPRCAP
- call print_mem_param
- 
- if (CAPOVLP) then
-  call HEADER('Output form cap_ovlp',-1)
-
-  call cap_ovlp_comp
-
-!  call quit('cap_ovlp')
- endif
- CALL QEXIT('cap_ovlp')
- end subroutine cap_ovlp
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine cap_ovlp_comp
 !---------------------------------------------------------------------------
 !
-!  compare overlap integrals from DIRAC and from Sajeev's CAP integral
+!    compare overlap integrals from DIRAC and from Sajeev's CAP integral
 ! generator
+!
+!   called from CAP_STUFF
 !
 !----------------------------------------------------------------------------
    use QMatrixes
@@ -124,7 +106,7 @@ call QEXIT('cap_ovlp_comp')
 end subroutine cap_ovlp_comp
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine GetCapOvlp(capovlp)
+subroutine GetCapOvlp(capovlp_mtx)
 !--------------------------------------------------------------------
 !
 ! get CAP overlap matrix
@@ -135,16 +117,16 @@ subroutine GetCapOvlp(capovlp)
 !#include "implicit.h"
 !#include "dcbbas.h"
 !#include "dcborb.h"
-!#include "dcbcap.h"
-#include "dcbham.h"
- type(QMtx), intent(inout) :: capovlp
+#include "dcbcap.h"
+!#include "dcbham.h"
+ type(QMtx), intent(inout) :: capovlp_mtx
 call QENTER('GetCapOvlp')
 
- call get_prop_saao(IPCAPR,capovlp,1) 
+ call get_prop_saao(IPCAP_S,capovlp_mtx,1) 
 ! call set_qmtx_nz(capovlp,1)
- call AddTextQMtx(capovlp,'CAP overlap integrals')
+ call AddTextQMtx(capovlp_mtx,'CAP overlap integrals')
 
- call QMtxInfo(capovlp)
+ call QMtxInfo(capovlp_mtx)
 
 call QEXIT('GetCapOvlp')
 end subroutine GetCapOvlp
@@ -163,47 +145,35 @@ end subroutine GetCapOvlp
       use QMatrixes
 #include "implicit.h"
 #include "priunit.h"
-
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
-
 #include "dummy.h"
+
+type(QMtx),intent(inout) :: propmat
 
 integer, intent(in) :: INDXPR
 integer(kind=8/IRAT),intent(in),optional :: nz_in
 !integer(kind=4),intent(in),optional :: nz_in
 !integer,intent(in),optional :: nz_in
 
-type(QMtx),intent(inout) :: propmat
-
 logical :: is_square
 integer(kind=4) :: KPTRI, KONEIN, KFIRST
-integer(kind=8/IRAT) :: NZX
 
  call QENTER('get_prop_saao')
 
-!
 !     Extract symmetry information - ISYM, IREP, ITIM
-!     =============================
+!  =====================================================
 !
-      ISYM = IPRPSYM(INDXPR)
-      IREP = ISYM - 1
-      ITIM = IPRPTIM(INDXPR)
+  ISYM = IPRPSYM(INDXPR)
+  IREP = ISYM - 1
+  ITIM = IPRPTIM(INDXPR)
 
-     write(LUPRI,*) 'property index=',INDXPR,' IREP,ITIM=',IREP,ITIM
+  write(LUPRI,*) 'property index=',INDXPR,' IREP,ITIM=',IREP,ITIM
 
-    if (present(nz_in)) then
-      NZX = nz_in
-    else
-      NZX = NZ
-    endif
-
-!         allocate array for matrix
-   ! propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZX) )
-    propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ) )
+  propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ) )
 
      IPRINT = 20
 
@@ -233,6 +203,7 @@ integer(kind=8/IRAT) :: NZX
 #endif
 
      IF (IS_SQUARE) THEN
+! call 'old' F77 routines
        CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PW(get_qmtx_kstart(propmat)),PW(KONEIN),PW(KIRST), &
                     PW(get_KFREE()),get_LFREE,IPRINT)
      ELSE
@@ -292,4 +263,106 @@ call QENTER('GetUnpckOvlpMtx')
 
   call QEXIT('GetUnpckOvlpMtx')
 end subroutine GetUnpckOvlpMtx
+
+subroutine CAP_STUFF(WORK,LWORK)
+!
+!
+!  Called from dirset.F/PAMINP
+!
+!
+!
+use Vectors
+use Memory
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbcap.h"
+#include "mxcent.h"
+#include "nuclei.h"
+
+type(Vect) :: icabfo, iobf1_2
+
+DIMENSION WORK(LWORK)
+CALL QENTER('CAP_STUFF')
+
+
+ call StickMemory(WORK,LWORK)
+
+     icabfo = MakeVector('INTE',NBASIS,'CAP-DIRAC correspondence')   
+
+     iobf1_2 = MakeVector('INTE',NBASIS,'AO function types for obatining factors') 
+
+     IF (CAPOVLP) THEN
+         CALL DOSAJEEV(PW(get_kfree()),get_lfree())
+         CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
+         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
+         CALL CAP_OVLP_COMP
+         call quit('CAP_STUFF: only integral comparison !')
+     ELSE
+       IF (.NOT.NOOVLP) THEN
+!      .... first compare DIRAC-CAP overlap integrals
+         CAPOVLP=.TRUE.
+         CALL DOSAJEEV(PW(get_kfree()),get_lfree())
+         CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
+         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
+         CALL CAP_OVLP_COMP
+        ENDIF
+         CAPOVLP=.FALSE.
+         CALL DOSAJEEV(PW(get_kfree()),get_lfree())
+         CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
+         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
+     ENDIF
+
+! release the memory
+ call UnStickMemory
+
+CALL QEXIT('CAP_STUFF')
+end subroutine CAP_STUFF
+
+subroutine CAP_DIRAC_AO(icapbfo,iobf1_2)
+!
+! returns:  icabfo,iobf1_2
+!
+! called from CAP_STUFF
+!
+use Memory
+use Vectors
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+type(Vect), intent(inout) :: icapbfo, iobf1_2
+integer(kind=4) :: KIOBF1,KIOBF2,KILC1,KILC2
+
+CALL QENTER('CAP_DIRAC_AO')
+
+ call mymemget('INTE',KIOBF1,3*NBASIS)
+ call mymemget('INTE',KIOBF2,3*NBASIS)
+ call mymemget('INTE',KILC1,NUCDEP)
+ call mymemget('INTE',KILC2,NUCDEP)
+
+     CALL IZERO(PW(KIOBF1),3*NBASIS)
+     CALL IZERO(PW(KIOBF2),3*NBASIS)
+     CALL IZERO(PW(KILC1),NUCDEP)
+     CALL IZERO(PW(KILC2),NUCDEP)
+
+   CALL GET_DIR_CAP_AO_MATCH(PW(get_vect_kstart(icapbfo)),PW(get_vect_kstart(iobf1_2)),PW(KIOBF1), &
+           PW(KIOBF2),PW(KILC1),PW(KILC2))
+
+  call mymemrel('..',KILC2,KILC2)
+  call mymemrel('..',KILC1,KILC1)
+  call mymemrel('..',KIOBF2,KIOBF2)
+  call mymemrel('..',KIOBF1,KIOBF1)
+
+! print out icapbfo and iobf1_2
+   call print_vector(icapbfo); 
+   call print_vector(iobf1_2)
+
+CALL QEXIT('CAP_DIRAC_AO')
+
+end subroutine CAP_DIRAC_AO
+
+!
+!
+!
+!
 

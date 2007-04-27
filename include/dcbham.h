@@ -14,8 +14,6 @@
 !     IPKINERG   - Pointer to kinetic energy in DCBXPR
 !     IPANGMOM   - Pointer to z-component of angular momentum in DCBXPR
 !     IPSPNMOM   - Pointer to z-component of spin in DCBXPR
-!     IPCAPR     - Pointer to real part of CAP operator
-!     IPCAPI     - Pointer to imaginary part of CAP operator
 !     MC         - number of components (1=only large, 2=large+small)
 !     N1OPER     - Number of additional operators (finite field calculations)
 !     IPR1OP     - Pointer to DCBXPR for additional operators
@@ -73,7 +71,7 @@
 !
 !     GAUNT      - Include Gaunt interaction in the 2-e operator
 !
-!     CAP        - complex absoption potential to be used at the (FSCC) correlated level only
+!     CAP        - flag for complex absoption potential to be used only at the FSCC correlated level
 !
 
       INTEGER MAX1OPER
@@ -82,7 +80,7 @@
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
      &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
-     &        INI2C, I2COFK, IPCAPR, IPCAPI                             
+     &        INI2C, I2COFK                                             
 !
 !     IMPORTANT !!!
 !     =============
@@ -93,7 +91,7 @@
       COMMON /DCIHAM/ I1_HAM, IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,     &
      &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
      &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,                &
-     &                IMFCH, I2CHAM, INI2C, I2COFK, IPCAPR, IPCAPI,     &
+     &                IMFCH, I2CHAM, INI2C, I2COFK,                     &
      &                I2_HAM                                            
 
       INTEGER INTV1C

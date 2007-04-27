@@ -104,7 +104,8 @@ C
 C
 C     Contribution from CAP integrals 
 C
-      ELSEIF(CLSINT(I).EQ.'CAP_RE '.OR.CLSINT(I).EQ.'CAP_IM ') THEN
+      ELSEIF(CLSINT(I).EQ.'CAP_RE '.OR.CLSINT(I).EQ.'CAP_IM ' .OR.
+     &       CLSINT(I).EQ.'CAP_OVL') THEN
 C     ... this serves only for 'catching' CAP_.. labels as these
 C     integrals are calculated after ONEGEN routine
       ELSE

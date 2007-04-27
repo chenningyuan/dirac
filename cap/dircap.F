@@ -27,13 +27,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbcap.h"
+#include "capint.h"
       
       DIMENSION WORK(LWORK)
 
 CMI    ... arrays are entering subroutine, check the size !!!!!
       integer *4 basis_n(200)
       integer *4 ang_pow(250,3)
-
+      integer *4  N_B   
       real *8 ord_expon(250),ord_coe(250)
       real *8 R_m(4),R_n(4)
       real *8 R_ms(200,3)
@@ -46,16 +47,13 @@ C     imaginary parts
       LOGICAL ISFILE
 
       COMPLEX *16 THETA,THETA2,CI,BETA
-C     data CI/(0.d0,-1.d0)/
+
+      CHARACTER*10 PEMAT_NAME
 
       CALL QENTER('SAJEEV')
 
       IF (IPRCAP.GE.2) THEN
         CALL HEADER('*** Output from SAJEEV ***',-1)
-      ENDIF
-
-      IF (IPRCAP.GE.3) THEN
-        write(LUPRI,*) ' read INPQD (theta) =',PW
       ENDIF
 
       CALL INPREAD(N_B,ord_expon,ord_coe,R_ms,basis_n,
@@ -76,10 +74,22 @@ CMI   ... evaluate CAP complex atomic untegrals
         
 C ============================================================
 CMI     ... write complex atomic integrals into the file
+C
+C ... alter the file name when calculating CAP overlap integrals !
+C
 C ============================================================
          LUPEMAT=14
-         open(unit=LUPEMAT,file='PEMAT',
+ 
+         IF (CAPOVLP) THEN
+           PEMAT_NAME="PEMAT_ovlp"
+         ELSE
+           PEMAT_NAME="PEMAT"
+         ENDIF
+  
+CMI      open(unit=LUPEMAT,file='PEMAT',
+         open(unit=LUPEMAT,file=PEMAT_NAME,
      &    STATUS='UNKNOWN',FORM='FORMATTED')
+
          do ii=1,n_b
             do jj=1,n_b
                IPU=IPOINTIJ(ii,jj)
@@ -346,6 +356,10 @@ CMI       'F' shell
              iiii=iiii+1
           end do
        END DO
+
+       close(LUinp,status="keep")
+
+CMI   ... get the total number of basis functions
        n_b=g_n-1
        
        WRITE(LUPRI,'(/2X,A,I3,A,I3)')
@@ -402,8 +416,9 @@ C           write (16,*)i,shell_arr(i),ord_expon(i),ord_coe(i)
 C           write(16,*) (ang_pow(i,j),j=1,3)
 C           write(16,*) (R_ms(i,j),j=1,3)
          end do
-       ELSE
 
+       ELSE
+CMI  ... no calculation of overlap integrals
        do i=1,sh
           do isw=1,3
              R_m(isw)=R_ms(i,isw)
@@ -432,8 +447,6 @@ C           write(16,*) (R_ms(i,j),j=1,3)
 
        CALL FLSHFO(LUPRI)
 
-       close(LUinp,status="keep")
-
        CALL QEXIT('INPREAD')
        RETURN
        END
@@ -454,7 +467,7 @@ C           ord_coe      contraction coefficients
 C           R_ms
 C           basis_n
 C           ang_pow
-C           PW
+C           PW - theta
 C           PE_AOr,PE_AOi
 C           CAPOVLP
 C
@@ -780,6 +793,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+#include "capint.h"
 
       integer *4 NSTEP
 C     integer *4 NGR
@@ -796,10 +810,8 @@ CMI   integer *4 NGRS(100)
       complex  *16 PE,PE1
       complex *16 VCAP1,VCAP,VCAPS(3)
       COMMON PGRT
-#include "dcbcap.h"
 
       CALL QENTER('CAPM')
-
 CMI   .... no need for reading this file !!!
 C     open(unit=8,file='INPCAP',STATUS='UNKNOWN',FORM='FORMATTED')
 C     REWIND (8)
@@ -807,14 +819,13 @@ C     REWIND (8)
       PE=(0.d0,0.d0)
    
       DO i=1,3
-       
-CMI      ... replaced by X0(1:3), LAMDA(1:3) in dcbcap.h
+CMI      ... replaced by X0(1:3), LAMDA(1:3) in capint.h
 CMI      READ(8,*)X0,LAMDA
-CMI      .... replaced by NGR(1:3) in dcbcap.h
+CMI      .... replaced by NGR(1:3) in capint.h
 CMI      READ(8,*)NGR
-CMI      .... replaced by GINTPT(3,MAXSPL) in dcbcap.h
+CMI      .... replaced by GINTPT(3,MAXSPL) in capint.h
 CMI      READ(8,*)(GINTPT(j),j=1,NGR)
-CMI       .... replaced by NGRS(3,MAXSPL) in dcbcap.h
+CMI       .... replaced by NGRS(3,MAXSPL) in capint.h
 CMI      READ(8,*)(NGRS(j),j=1,NGR-1)
    
       CAP_PAR(3)=THETA
@@ -860,6 +871,7 @@ CMI   CAP_PAR(1)=X0
          k_KN=K_n(k)     
          K_LN=k_n(L)
        
+CMI     ... initialize to zero !
          VCAPS(i)=(0.d0,0.d0)
 
 CMI      do j=1,NGR-1
@@ -870,6 +882,7 @@ CMI         GRSTP(2)=GINTPT(j+1)
             GRSTP(2)=GINTPT(i,j+1)
 CMI         NSTEP=NGRS(j)
             NSTEP=NGRS(i,j)
+CMI         write(LUPRI,*) 'i,j,NGRS(i,j):',i,j,NGRS(i,j)
             CALL CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_CM,R_CN,K_CM,K_CN,VCAP1)
             VCAPS(i)=VCAPS(i)+VCAP1
          end do
@@ -884,13 +897,17 @@ CMI         NSTEP=NGRS(j)
 C     ... finally add all theree terms
       VCAP=VCAPS(1)+VCAPS(2)+VCAPS(3)
 
+CMI   write(LUPRI,*) 'members:',VCAPS(1),VCAPS(2),VCAPS(3)
+C     write(LUPRI,*) 'sum:',VCAPS(1)+VCAPS(2)+VCAPS(3)
+C     write(LUPRI,*) 'sum VCAP:',VCAP
+
       CALL QEXIT('CAPM')
       RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck capm */
-      subroutine CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_m,R_n,K_m,K_n,VCAPT)
+      SUBROUTINE CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_m,R_n,K_m,K_n,VCAPT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  returns VCAPT 
@@ -925,6 +942,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       
       data CI/(0.0d0,1.0d0)/
       data M/1.0d00/
+
+CMI   write(LUPRI,*) 'entering arguments:',
+CMI  &     CAP_PAR,GRSTP,NSTEP 
 
       STEP=(GRSTP(2)-GRSTP(1))/(NSTEP)
       X0=CAP_PAR(1)
@@ -1011,6 +1031,7 @@ C         if((zabs(vcap)).lt.(0.00000000001))exit
 
       END DO
       VCAPT=VCAPXT+VCAPXTy
+CMI   write(LUPRI,*) 'VCAPXT,VCAPXTy:',VCAPXT,VCAPXTy
       RETURN
       END
 
@@ -1071,11 +1092,9 @@ C     .... eq.21 of Nimrod:1998
       CA2 = (F1(THETA,LAMBDA,X0,X)**2)/(F0(THETA,LAMBDA,X0,X)**4)
       CA2 = CA2/DCMPLX(5.0D0*M/8.0D0)
       V0 = CA1 - CA2
-
 CNEW for DIrac Ham.
 C     CA1 = F1(THETA,LAMBDA,X0,X)/(F0(THETA,LAMBDA,X0,X)
 C     V0 = CA1 
-
       END
 
       DOUBLE COMPLEX FUNCTION V1(M,THETA,LAMBDA,X0,X)

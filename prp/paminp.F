@@ -1823,6 +1823,8 @@ CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
         CLASSLB = 'CAP_RE  '
       ELSE IF(LABINT(1:6).EQ.'CAP_IM') THEN
         CLASSLB = 'CAP_IM  '
+      ELSE IF(LABINT(1:6).EQ.'CAP_OV') THEN
+        CLASSLB = 'CAP_OVL '
 C
 C     Unknown LABINT
 C   

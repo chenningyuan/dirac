@@ -1,23 +1,17 @@
+!-----------------------------------------------------------------------------
 !
-! common block for handling CAP integrals
-! to replace tedious reading from INPCAP,INPQD files
+! IPRCAP     - Print level in CAP related routines
+! IPCAPR     - Pointer to real part of CAP operator
+! IPCAPI     - Pointer to imaginary part of CAP operator
+! IPCAP_S    - Pointer for overlap integrals from CAP (to be compared with DIRAC)
 !
-! PW 'theta'
-!
-! IPRCAP - print level
-!
-! ... maximum number of intervals for integration
-!  also check the size MAXSPL when reading !
-
-      PARAMETER (MAXSPL=100)
+!-----------------------------------------------------------------------------
 
 ! ... flag for comparison between DIRAC-CAP overlap integrals
-      LOGICAL CAPOVLP
-      COMMON / DCCAPOVL / CAPOVLP
+      LOGICAL CAPOVLP,NOOVLP
+      COMMON / DCCAPOVL / CAPOVLP,NOOVLP
 
-      REAL*8 PW,  X0(1:3),LAMDA(1:3),GINTPT(3,MAXSPL)
-      COMMON / DCCAPR / PW, X0, LAMDA, GINTPT
-
-      INTEGER*4  NGR(1:3), NGRS(3,MAXSPL), IPRCAP 
-      COMMON / DCCAPI / NGR, NGRS, IPRCAP
+!     INTEGER*4  IPRCAP 
+      INTEGER  IPRCAP, IPCAPR, IPCAPI, IPCAP_S
+      COMMON / DCCAPI / IPRCAP, IPCAPR, IPCAPI, IPCAP_S
 

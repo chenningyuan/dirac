@@ -296,7 +296,7 @@ C
 #include "efield.h"
 C     PARAMETER (NTABLE = 58)
 CMI   PARAMETER (NTABLE = 66)
-      PARAMETER (NTABLE = 68)
+      PARAMETER (NTABLE = 69)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -327,7 +327,7 @@ C
      &            'EFTNTL ', 'NUCFIEL',
      &            'RM1H3  ', 'RM1RN  ', 'RM1H2  ',
      &            'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 'RM2H3  ',
-     &            'RM2H2  ', 'CAP_RE ','CAP_IM '
+     &            'RM2H2  ', 'CAP_RE ', 'CAP_IM ','CAP_OVL'
      &                         /
 
 C
@@ -347,7 +347,7 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,
-     &              59,60,61,62,63,64,65,66,67,68), I
+     &              59,60,61,62,63,64,65,66,67,68,69), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1721,7 +1721,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C       Complex CAP integrals
+C       Complex CAP integrals - real, imaginary; plus overlap
 C   ------------------------------------------------------------
 C   
 C    MI, Tel Aviv, 2007
@@ -1757,7 +1757,22 @@ C        SQUARE = .TRUE.
          ANTI = .FALSE.
 C        ANTI = .TRUE.
       GOTO 200
-C
+ 69   CONTINUE
+         INTTYP = 210
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &'PR1DIR: CAP_ovlp integrals'
+         NOPTYP = 1
+C        CALL NTYPTS(NOPTYP)
+C        CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'CAP_OVL'
+         INTREP(1) = 0
+C        INTREP(1) = 0
+C        INTREP(1) = ISYMAX(3,1)
+         SQUARE = .FALSE.
+C        SQUARE = .TRUE.
+         ANTI = .FALSE.
+C        ANTI = .TRUE.
+      GOTO 200
 C
   200 CONTINUE
 C

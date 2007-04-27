@@ -54,14 +54,15 @@ end subroutine unset_isalloc_vect
 function get_vect_kstart(self) result (kstart_out)
 !----------------------------------------------------------------------
 !
-!      returns kstart value of entering vector data type "self"
+!    returns kstart value of entering vector data type "self"
 !
 !----------------------------------------------------------------------
 #include "priunit.h"
 type(Vect), intent(in) :: self
 integer(kind=4) :: kstart_out
-call QENTER('get_qmtx_kstart')
+call QENTER('get_vect_kstart')
   if (.not.self%is_alloc) then
+    call print_vect_attrib(self)
     call QUIT('get_vect_kstart: can not return "kstart" position &
                when memory for vector is NOT allocated !')
   else
@@ -73,7 +74,9 @@ end function get_vect_kstart
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine set_vect_iprint(iprint)
 !=================================================
+!
 !            set up print variable
+!
 !=================================================
 #include "priunit.h"
 #include "iratdef.h"
@@ -107,6 +110,31 @@ call QENTER('print_vect_attrib')
 call QEXIT('print_vect_attrib')
 end subroutine print_vect_attrib
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine print_vector(self)
+!-------------------------------------------------------------------
+!
+!  print vector attributes and its elements as well
+!
+!  for printing use FOTRAN77 routines as we have to overcome 
+! the REAL*8 -> INTEGER change of data type
+!
+!-------------------------------------------------------------------
+use Memory
+#include "priunit.h"
+type(Vect), intent(in) :: self
+integer(kind=4) :: i
+call QENTER('print_vector')
+call print_vect_attrib(self)
+CALL FLSHFO(LUPRI)
+! calling of F77 routines !
+if (self%is_real) then
+   call print_real_vector(self%array_size,PW(self%kstart))
+else 
+   call print_int_vector(self%array_size,PW(self%kstart))
+endif
+call QEXIT('print_vector')
+end subroutine print_vector
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function MakeVector(char_type,isize,text) result(self)
@@ -118,7 +146,9 @@ function MakeVector(char_type,isize,text) result(self)
 !===============
 !  char_type  'REAL,'INTE','LOGI' for real, integer and logical variables
 !
+!  isize      length of the vector
 !
+!  text     string to be attached to the vector (optional)
 !
 !---------------------------------------------------------------------------
 use Memory
