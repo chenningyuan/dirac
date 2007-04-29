@@ -71,13 +71,13 @@ call QENTER('get_vect_kstart')
 call QEXIT('get_vect_kstart')
 end function get_vect_kstart
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine set_vect_iprint(iprint)
-!=================================================
+!=======================================================
 !
-!            set up print variable
+! set up the print variable in the module: iprint_vect
 !
-!=================================================
+!=======================================================
 #include "priunit.h"
 #include "iratdef.h"
 integer (kind=8/IRAT), intent(in) :: iprint
@@ -85,6 +85,17 @@ CALL QENTER('set_vect_iprint')
  iprint_qmtx = iprint
 CALL QEXIT('set_vect_iprint')
 end subroutine set_vect_iprint
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function get_vect_iprint() result(iprint)
+!-------------------------------------------------------------------
+! returns the printing parameter of the module
+!-------------------------------------------------------------------
+integer(kind=4) :: iprint
+call QENTER('get_vect_iprint')
+ iprint = iprint_vect
+call QEXIT('get_vect_iprint')
+end function get_vect_iprint
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_vect_attrib(self)
@@ -240,4 +251,4 @@ endif
 call QEXIT('DeAllocVect')
 end subroutine DeAllocVect
 
- END MODULE Vectors
+END MODULE Vectors

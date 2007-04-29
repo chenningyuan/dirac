@@ -15,7 +15,7 @@ use mystring
 ! neede for 64bit machines and -i8 flags
 #include "iratdef.h"
 
-!   print parameter
+! common printing parameter in the module 
 integer(kind=4), private :: iprint_qmtx=0
 
 ! own data type for IREP value
@@ -195,6 +195,20 @@ CALL QENTER('QMatrixes: set_iprqmt')
  iprint_qmtx = iprint
 CALL QEXIT('QMatrixes: set_iprqmt')
 end subroutine set_iprqmtx
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function get_iprint_qmtx() result(iprint)
+!----------------------------------------------------------------
+!
+!        get the (protected) printing variable
+!
+!----------------------------------------------------------------
+!integer (kind=8/IRAT) :: iprint
+integer (kind=4) :: iprint
+CALL QENTER('QMatrixes: get_iprqmtx')
+ iprint = iprint_qmtx
+CALL QEXIT('QMatrixes: get_iprqmtx')
+end function get_iprint_qmtx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function set_irp (irep_in) result (irep_out)
@@ -387,7 +401,7 @@ else if (.not.qm%simple_mtx.and..not.qm%symm_packed) then
     nt = ( qm%nr(1) + qm%nr(2) )
     CALL PRQMAT(PW(qm%kstart),nt,nt,nt,nt,qm%nz,IPQTOQ(1,qm%irep),LUPRI) 
   else
-    write(LUPRI,*) 'this matrix is not allocated, so no print out'
+    write(LUPRI,*) 'no printing out - this matrix is not allocated'
   endif
 
 else if (qm%simple_mtx) then
@@ -398,7 +412,7 @@ else
  call quit('QMtxInfo: blind "if" branch ')
 endif
 
-!write(LUPRI,*) 'qm%kstart=',qm%kstart, ' size of the array',qm%array_size
+ call FLSHFO(LUPRI)
 
 CALL QEXIT('QMtxInfo')
 END SUBROUTINE QMtxInfo
@@ -618,7 +632,7 @@ endif
 size_min = min(amat%array_size,bmat%array_size)
 
 diff = 0.D0
-do i=0,size_min -1
+do i=0, size_min -1
  diff = abs(PW(amat%kstart+i) - PW(bmat%kstart+i)) + diff
 enddo
 diff = diff / dfloat(amat%array_size)
@@ -771,6 +785,7 @@ call QENTER('print_qmtx_attrib')
   write(LUPRI,'(4x,a,$)') '...attached text:'
   call print_string(amat%qmtx_text)
  endif
+ call FLSHFO(LUPRI)
 call QEXIT('print_qmtx_attrib')
 end subroutine print_qmtx_attrib
 END MODULE QMatrixes

@@ -222,11 +222,12 @@ CMI:    allocated arrays enters the SAJEEV routine !
       END 
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      LOGICAL FUNCTION CHPRES(IPRHAM)
+      LOGICAL FUNCTION CHPRES(IPRINT)
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbcap.h"
 
-      LOGICAL FILES,FILES2, IS_PEMAT1, IS_PEMAT2
+      LOGICAL FILES, FILES2, IS_PEMAT1, IS_PEMAT2
 
 C  ... check presence of files CAPLBL.inp PEMAT CAPDIRSYM.inp CAPDIR.inp
       FILES = .FALSE.
@@ -238,7 +239,11 @@ C     FILES = .FALSE.
       IS_PEMAT1 = .FALSE.
       INQUIRE(FILE='PEMAT',     EXIST=IS_PEMAT1)
       INQUIRE(FILE='PEMAT_ovlp',EXIST=IS_PEMAT2)
-      FILES2 = FILES2.AND.(IS_PEMAT1.OR.IS_PEMAT2)
+      IF (CAPOVLP) THEN
+        FILES2 = FILES2.AND.(IS_PEMAT2)
+      ELSE
+        FILES2 = FILES2.AND.(IS_PEMAT1)
+      ENDIF
 
 C     FILES = .FALSE.
 C     INQUIRE(FILE='CAPDIRSYM1.inp',EXIST=FILES)
@@ -508,7 +513,7 @@ C   ... fill IOBF1_2 array !
       real*8 V(N,N)
       call qenter('delete_ls')
 
-      write(LUPRI,*) 'NBASIS,NLARGE,NSMALL:',NBASIS,NLARGE,NSMALL
+!     write(LUPRI,*) 'NBASIS,NLARGE,NSMALL:',NBASIS,NLARGE,NSMALL
 
       do i = 1 ,NBASIS
       do j = 1, NBASIS
@@ -720,9 +725,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       
       CALL QENTER('SAVECAP')
 
-      IF (IPRINT.GE.3) THEN
-        CALL HEADER('Output from SAVECAP',-1)
-      ENDIF
 C
 C        Write integrals to file
 C
@@ -790,14 +792,19 @@ C
 
       IF (IPRINT.GE.1) THEN
         IF (ILABEL.EQ.1) THEN
-          WRITE(LUPRI,'(2X,A)')
-     &    'CAP_re integrals written into AOPROPER file.'
+          WRITE(LUPRI,'(/2X,A)')
+     &    'SAVECAP: CAP_re integrals written into AOPROPER file.'
         ELSE IF (ILABEL.EQ.2) THEN
-          WRITE(LUPRI,'(2X,A)')
-     &    'CAP_im integrals written into AOPROPER file.'
+          WRITE(LUPRI,'(/2X,A)')
+     &    'SAVECAP: CAP_im integrals written into AOPROPER file.'
         ELSE IF (ILABEL.EQ.3) THEN
-          WRITE(LUPRI,'(2X,A)')
-     &    'CAP_ovlp integrals written into AOPROPER file.'
+          WRITE(LUPRI,'(/2X,A)')
+     &    'SAVECAP: CAP_ovlp integrals written into AOPROPER file.'
+        ENDIF
+        IF (IPRINT.GE.2) THEN
+           WRITE(LUPRI,'(2X,A,A,A,A4,A,I3)')
+     &     'Operator label (PLABEL):',PLABEL(1),
+     &     ' COMB=',COMB,' operator index(INDXPR)=',INDXPR
         ENDIF
       ENDIF
 
@@ -834,6 +841,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CHARACTER*10 PEMAT_NAME
       COMPLEX*16 CAPINT
       CALL QENTER('CAPREAD')
+
+      IF (IPRINT.GE.2) THEN
+        WRITE(LUPRI,'(/2X,A,A)') 'CAPADAPT: going to read the file ',
+     &  PEMAT_NAME
+      ENDIF
 
       LUPM = 0
       CALL GPOPEN(LUPM,PEMAT_NAME,'OLD',' ','FORMATTED',

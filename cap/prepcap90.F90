@@ -82,23 +82,27 @@ end subroutine test_files
    use QMatrixes
 #include "implicit.h"
 #include "priunit.h"
-type(QMtx) :: smat,capovlp
+#include "dcbcap.h"
+type(QMtx) :: smat,capovl
 double precision, parameter :: diff_thrs = 1.0D-7
 call QENTER('cap_ovlp_comp')
 
+ call set_iprqmtx(IPRCAP);
+! write(LUPRI,*) 'iprqmtx=',get_iprint_qmtx()
+
  call GetUnpckOvlpMtx(smat)
 
- call GetCapOvlp(capovlp)
+ call GetCapOvlp(capovl)
 
 !  compare smat & capovlp quaternion matrixes
- diff = getdiff_part_qmtx(smat,capovlp)
-  write(LUPRI,*) 
-  write(LUPRI,*) 'comparison of the 2 matrixes: ',diff
-  write(LUPRI,*) 
+ diff = getdiff_part_qmtx(smat,capovl)
+  write(LUPRI,'(/A)') '*************************************************************'
+  write(LUPRI,'(A,D22.10)') '*** comparison of CAP-DIRAC overlap matrixes: ',diff
+  write(LUPRI,'(A)')  '*************************************************************'
 
  if (diff > diff_thrs) then
   call  AddTextQMtx(smat,'******** difference smat - capovlp ***********')
-  call substract_part_qmtx(smat,capovlp)
+  call substract_part_qmtx(smat,capovl)
   call QMTxInfo(smat)
  endif
 
@@ -122,24 +126,25 @@ subroutine GetCapOvlp(capovlp_mtx)
  type(QMtx), intent(inout) :: capovlp_mtx
 call QENTER('GetCapOvlp')
 
- call get_prop_saao(IPCAP_S,capovlp_mtx,1) 
-! call set_qmtx_nz(capovlp,1)
+ call get_prop_saao(IPCAP_S,capovlp_mtx) 
  call AddTextQMtx(capovlp_mtx,'CAP overlap integrals')
 
- call QMtxInfo(capovlp_mtx)
+ if (get_iprint_qmtx() >= 7) then 
+  call print_qmtx_attrib(capovlp_mtx)
+  call QMtxInfo(capovlp_mtx)
+ endif
 
 call QEXIT('GetCapOvlp')
 end subroutine GetCapOvlp
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- subroutine get_prop_saao(INDXPR,propmat,nz_in)
+! subroutine get_prop_saao(INDXPR,propmat,nz_in)
+ subroutine get_prop_saao(INDXPR,propmat)
 !----------------------------------------------------------------
 !
 !   general purpose routine; 
 !
 ! get the SA-AO unpacked matrix "propmat" of the property INDXPR
-!
-! nz_in : optional parameter
 !
 !----------------------------------------------------------------
       use QMatrixes
@@ -155,7 +160,7 @@ end subroutine GetCapOvlp
 type(QMtx),intent(inout) :: propmat
 
 integer, intent(in) :: INDXPR
-integer(kind=8/IRAT),intent(in),optional :: nz_in
+!integer(kind=8/IRAT),intent(in),optional :: nz_in
 !integer(kind=4),intent(in),optional :: nz_in
 !integer,intent(in),optional :: nz_in
 
@@ -171,28 +176,31 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
   IREP = ISYM - 1
   ITIM = IPRPTIM(INDXPR)
 
-  write(LUPRI,*) 'property index=',INDXPR,' IREP,ITIM=',IREP,ITIM
+!  write(LUPRI,*) 'property index=',INDXPR,' IREP,ITIM=',IREP,ITIM
 
   propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ) )
 
-     IPRINT = 20
+  IPRINT = get_iprint_qmtx()
 
-     if (ITIM == 0) then 
+  if (ITIM == 0) then 
       is_square = .true.
       IDIMENS = N2BBASX
       CALL MYMEMGET('REAL',KPTRI  ,NZ*IDIMENS)
       CALL MYMEMGET('REAL',KONEIN ,   IDIMENS)
-     else
+  else
       is_square = .false.
       IDIMENS = NNBBASX
       CALL MYMEMGET('REAL',KPTRI  ,NZ*IDIMENS)
       CALL MYMEMGET('REAL',KONEIN ,   IDIMENS) 
-     endif
+  endif
 
 !   check it if it's not needed for property !!!
-     CALL MYMEMGET('LOGI',KFIRST ,NZ        )
+  CALL MYMEMGET('LOGI',KFIRST ,NZ        )
 
+  IF (IPRINT >= 7) THEN
+      write(LUPRI,*) 'get_prop_saao  memmory parameters'
      call print_mem_param
+  ENDIF
 
 #if defined (SYS_IBM)
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED', &
@@ -213,8 +221,10 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
 
      CLOSE(LU1INT,STATUS = 'KEEP')
 
-     call print_mem_param
-    
+     IF (IPRINT >= 7) THEN
+      write(LUPRI,*) 'get_prop_saao 1 memmory parameters'
+      call print_mem_param
+     ENDIF
 !     release all the memmory
      call mymemrel('get_prop_saao',KFIRST,KFIRST)
 !     call print_mem_param
@@ -222,7 +232,10 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
 !     call print_mem_param
      call mymemrel('get_prop_saao',KPTRI,KPTRI)
 
-     call print_mem_param
+     IF (IPRINT >= 7) THEN
+      write(LUPRI,*) 'get_prop_saao 2 memmory parameters'
+      call print_mem_param
+     ENDIF
 
  call QEXIT('get_prop_saao')
  end subroutine get_prop_saao
@@ -237,40 +250,44 @@ subroutine GetUnpckOvlpMtx(smat)
 !
 !===========================================================================
    use QMatrixes
-!   use Memory
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dcbham.h"
- type(QMtx), intent(inout) :: smat
+type(QMtx), intent(inout) :: smat
 call QENTER('GetUnpckOvlpMtx')
 
- call set_iprqmtx(10)
- call set_iprmem(10)
  smat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1), & 
                  'DIRAC unpacked overlap SA-AO matrix' )
 ! call QMtxInfo(smat)
 ! call print_mem_param()
 
- write(LUPRI,*) 'N2BAST=',N2BAST
- write(LUPRI,*) 'get_kfree, get_lfree=',get_kfree(),get_lfree()
- write(LUPRI,*) 'get_qmtx_kstart(smat)=',get_qmtx_kstart(smat)
- write(LUPRI,*) 'SSMTRC=',SSMTRC
+ if (get_iprint_qmtx() >= 7) then
+   write(LUPRI,*) 'N2BAST=',N2BAST
+   write(LUPRI,*) 'get_kfree, get_lfree=',get_kfree(),get_lfree()
+   write(LUPRI,*) 'get_qmtx_kstart(smat)=',get_qmtx_kstart(smat)
+   write(LUPRI,*) 'SSMTRC=',SSMTRC
+ endif
 
 ! call lower level routine
  call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree() )
 
- call QMtxInfo(smat)
+ if (get_iprint_qmtx() >= 5) then
+   call print_qmtx_attrib(smat)
+   call QMtxInfo(smat)
+ endif
 
   call QEXIT('GetUnpckOvlpMtx')
 end subroutine GetUnpckOvlpMtx
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine CAP_STUFF(WORK,LWORK)
+!---------------------------------------------------------------------------
 !
 !
 !  Called from dirset.F/PAMINP
 !
 !
-!
+!---------------------------------------------------------------------------
 use Vectors
 use Memory
 #include "implicit.h"
@@ -281,14 +298,14 @@ use Memory
 
 type(Vect) :: icabfo, iobf1_2
 
-DIMENSION WORK(LWORK)
-CALL QENTER('CAP_STUFF')
+ DIMENSION WORK(LWORK)
+ CALL QENTER('CAP_STUFF')
 
+ call set_vect_iprint(IPRCAP)
 
  call StickMemory(WORK,LWORK)
 
      icabfo = MakeVector('INTE',NBASIS,'CAP-DIRAC correspondence')   
-
      iobf1_2 = MakeVector('INTE',NBASIS,'AO function types for obatining factors') 
 
      IF (CAPOVLP) THEN
@@ -318,12 +335,15 @@ CALL QENTER('CAP_STUFF')
 CALL QEXIT('CAP_STUFF')
 end subroutine CAP_STUFF
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine CAP_DIRAC_AO(icapbfo,iobf1_2)
+!---------------------------------------------------------------------------
 !
 ! returns:  icabfo,iobf1_2
 !
 ! called from CAP_STUFF
 !
+!---------------------------------------------------------------------------
 use Memory
 use Vectors
 #include "implicit.h"
@@ -333,36 +353,33 @@ use Vectors
 type(Vect), intent(inout) :: icapbfo, iobf1_2
 integer(kind=4) :: KIOBF1,KIOBF2,KILC1,KILC2
 
-CALL QENTER('CAP_DIRAC_AO')
+  CALL QENTER('CAP_DIRAC_AO')
 
  call mymemget('INTE',KIOBF1,3*NBASIS)
  call mymemget('INTE',KIOBF2,3*NBASIS)
  call mymemget('INTE',KILC1,NUCDEP)
  call mymemget('INTE',KILC2,NUCDEP)
 
-     CALL IZERO(PW(KIOBF1),3*NBASIS)
-     CALL IZERO(PW(KIOBF2),3*NBASIS)
-     CALL IZERO(PW(KILC1),NUCDEP)
-     CALL IZERO(PW(KILC2),NUCDEP)
+ CALL IZERO(PW(KIOBF1),3*NBASIS)
+ CALL IZERO(PW(KIOBF2),3*NBASIS)
+ CALL IZERO(PW(KILC1),NUCDEP)
+ CALL IZERO(PW(KILC2),NUCDEP)
 
-   CALL GET_DIR_CAP_AO_MATCH(PW(get_vect_kstart(icapbfo)),PW(get_vect_kstart(iobf1_2)),PW(KIOBF1), &
+ CALL GET_DIR_CAP_AO_MATCH(PW(get_vect_kstart(icapbfo)),PW(get_vect_kstart(iobf1_2)),PW(KIOBF1), &
            PW(KIOBF2),PW(KILC1),PW(KILC2))
 
-  call mymemrel('..',KILC2,KILC2)
-  call mymemrel('..',KILC1,KILC1)
-  call mymemrel('..',KIOBF2,KIOBF2)
-  call mymemrel('..',KIOBF1,KIOBF1)
+ call mymemrel('CAP_DIRAC_AO',KILC2,KILC2)
+ call mymemrel('CAP_DIRAC_AO',KILC1,KILC1)
+ call mymemrel('CAP_DIRAC_AO',KIOBF2,KIOBF2)
+ call mymemrel('CAP_DIRAC_AO',KIOBF1,KIOBF1)
 
-! print out icapbfo and iobf1_2
+ if (get_vect_iprint() >= 4) then
+!   print out icapbfo and iobf1_2
    call print_vector(icapbfo); 
    call print_vector(iobf1_2)
+ endif
 
-CALL QEXIT('CAP_DIRAC_AO')
+  CALL QEXIT('CAP_DIRAC_AO')
 
 end subroutine CAP_DIRAC_AO
-
-!
-!
-!
-!
 
