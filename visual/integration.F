@@ -166,15 +166,15 @@ C=======================================================================
      &                                  'y-component',
      &                                  'z-component'
           WRITE(LUPRI,'(A)')
-         
+
           WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0),
      &                             QUANTITY_INTEGRAL(1),
      &                             QUANTITY_INTEGRAL(2),
      &                             QUANTITY_INTEGRAL(3)
-         
+
           WRITE(LUPRI,'(A)')
           CALL PRSYMB(LUPRI,'-',100,0)
-         
+
           WRITE(LUPRI,'(A)')
           WRITE(LUPRI,'(A)')
 

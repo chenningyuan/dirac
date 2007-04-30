@@ -152,8 +152,8 @@ C=======================================================================
 
     7     CONTINUE
           CALL SET_LBIT(LBIT_VISUAL,7)
-          READ(LUCMD,'(A)') ORBSTRING1
-          IF(NFSYM .GT. 1) READ(LUCMD,'(A)') ORBSTRING2
+          READ(LUCMD,'(A)') ORBITAL_STRING(1)
+          IF(NFSYM .GT. 1) READ(LUCMD,'(A)') ORBITAL_STRING(2)
           GOTO 100
 
     8     CONTINUE
@@ -276,9 +276,7 @@ C=======================================================================
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT_AO  ,N2BBASXQ*(MAX_NR_XVECTORS+1),
      &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSTRING1  ,NESH(1),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSTRING2  ,NESH(2),
+      CALL MEMGET('REAL',KSTRING   ,NESH(1) + NESH(2),
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGAO      ,NTBAS(0),
      &            WORK,KFREE,LFREE)
@@ -289,7 +287,7 @@ C=======================================================================
       CALL MEMGET('REAL',KBUF      ,NTBAS(0)*4,
      &            WORK,KFREE,LFREE)
 
-      CALL SETUP_ORBITAL_STRINGS(WORK(KSTRING1),WORK(KSTRING2))
+      CALL SETUP_ORBITAL_STRING(WORK(KSTRING))
 
 !     coefficients
 
@@ -311,14 +309,14 @@ C=======================================================================
           CALL SETUP_FO_DMAT_AO(WORK(KCMO),
      &                          IXVECTOR,
      &                          WORK(KDMAT_AO+IOFF),
-     &                          WORK(KSTRING1),WORK(KSTRING2),
+     &                          WORK(KSTRING),
      &                          WORK(KFREE),LFREE)
         ENDIF
         IOFF = IOFF + N2BBASXQ
       ENDDO
       CALL SETUP_ZO_DMAT_AO(WORK(KCMO),
      &                      WORK(KDMAT_AO+IOFF),
-     &                      WORK(KSTRING1),WORK(KSTRING2),
+     &                      WORK(KSTRING),
      &                      WORK(KFREE),LFREE)
 
       CALL VISUAL_DRIVER(WORK(KDMAT_AO),
@@ -564,36 +562,6 @@ C=======================================================================
 
       IF(LBIT(LBIT_VISUAL,2)) CLOSE(LUNIT_2D, STATUS = 'KEEP')
       IF(LBIT(LBIT_VISUAL,3)) CLOSE(LUNIT_3D, STATUS = 'KEEP')
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SETUP_ORBITAL_STRINGS */
-      SUBROUTINE SETUP_ORBITAL_STRINGS(STRING1,STRING2)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
-
-#include "dcborb.h"
-#include "dgroup.h"
-
-      DIMENSION STRING1(*),
-     &          STRING2(*)
-
-      CALL DFILL(STRING1,D0,NESH(1))
-      CALL DFILL(STRING1,D1,NISH(1))
-      IF(NFSYM .GT. 1) THEN
-        CALL DFILL(STRING2,D0,NESH(2))
-        CALL DFILL(STRING2,D1,NISH(2))
-      ENDIF
 
       RETURN
       END
@@ -958,89 +926,68 @@ C=======================================================================
 
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* SETUP_ORBITAL_STRING */
+      SUBROUTINE SETUP_ORBITAL_STRING(STRING)
+C=======================================================================
+C     description in here ...
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                              last revision: april 2007
+C=======================================================================
 
+#include "implicit.h"
+#include "priunit.h"
 
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
+#include "dcborb.h"
+#include "dgroup.h"
+#include "visual.h"
 
+      LOGICAL   LBIT
+      DIMENSION STRING(*)
 
+      DO IFSYM = 1,NFSYM
+        CALL DFILL(STRING(1+NESH(1)*(IFSYM-1)),D0,NESH(IFSYM))
+        IF(LBIT(LBIT_VISUAL,7)) THEN !use orbital string
 
-
-
-
-
-
-
-
-
-
-
-
-#if defined (oldcode)
-      IF(LBIT(LBIT_VISUAL,7)) THEN !use orbital string
-        IF(ORBSTRING1(4:5) .EQ. '..') THEN
-          READ(ORBSTRING1(1:3),'(I3)') ISTRING1_BEGIN
-          READ(ORBSTRING1(6:8),'(I3)') ISTRING1_END
-          GOTO 1
-        ENDIF
-        IF(ORBSTRING1(3:4) .EQ. '..') THEN
-          READ(ORBSTRING1(1:2),'(I3)') ISTRING1_BEGIN
-          READ(ORBSTRING1(5:8),'(I3)') ISTRING1_END
-          GOTO 1
-        ENDIF
-        IF(ORBSTRING1(2:3) .EQ. '..') THEN
-          READ(ORBSTRING1(1:1),'(I3)') ISTRING1_BEGIN
-          READ(ORBSTRING1(4:8),'(I3)') ISTRING1_END
-          GOTO 1
-        ENDIF
-        WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'wrong orbital string format'
-        CALL QUIT('ERROR in VISUAL')
- 1      CONTINUE
-        IF(
-     &          (.NOT. (ISTRING1_BEGIN .LE. ISTRING1_END))
-     &     .OR. (.NOT. (ISTRING1_BEGIN .GE. 0))
-     &     .OR. (.NOT. (ISTRING1_END .LE. NESH(1)))) THEN
-          WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-          WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
-          CALL QUIT('ERROR in VISUAL')
-        ENDIF
-        CALL DFILL(WORK(KSTRING1),D0,NESH(1))
-        DO I = ISTRING1_BEGIN,ISTRING1_END
-          IF(ISTRING1_BEGIN .NE. 0) WORK(KSTRING1-1+I) = D1
-        ENDDO
-
-        IF(NFSYM .GT. 1) THEN
-          IF(ORBSTRING2(4:5) .EQ. '..') THEN
-            READ(ORBSTRING2(1:3),'(I3)') ISTRING2_BEGIN
-            READ(ORBSTRING2(6:8),'(I3)') ISTRING2_END
-            GOTO 2
+          IF(ORBITAL_STRING(IFSYM)(4:5) .EQ. '..') THEN
+            READ(ORBITAL_STRING(IFSYM)(1:3),'(I3)') ISTART
+            READ(ORBITAL_STRING(IFSYM)(6:8),'(I3)') IEND
+            GOTO 1
           ENDIF
-          IF(ORBSTRING2(3:4) .EQ. '..') THEN
-            READ(ORBSTRING2(1:2),'(I3)') ISTRING2_BEGIN
-            READ(ORBSTRING2(5:8),'(I3)') ISTRING2_END
-            GOTO 2
+          IF(ORBITAL_STRING(IFSYM)(3:4) .EQ. '..') THEN
+            READ(ORBITAL_STRING(IFSYM)(1:2),'(I3)') ISTART
+            READ(ORBITAL_STRING(IFSYM)(5:8),'(I3)') IEND
+            GOTO 1
           ENDIF
-          IF(ORBSTRING2(2:3) .EQ. '..') THEN
-            READ(ORBSTRING2(1:1),'(I3)') ISTRING2_BEGIN
-            READ(ORBSTRING2(4:8),'(I3)') ISTRING2_END
-            GOTO 2
+          IF(ORBITAL_STRING(IFSYM)(2:3) .EQ. '..') THEN
+            READ(ORBITAL_STRING(IFSYM)(1:1),'(I3)') ISTART
+            READ(ORBITAL_STRING(IFSYM)(4:8),'(I3)') IEND
+            GOTO 1
           ENDIF
           WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
           WRITE(LUPRI,'(A)') 'wrong orbital string format'
           CALL QUIT('ERROR in VISUAL')
- 2        CONTINUE
-          IF(
-     &            (.NOT. (ISTRING2_BEGIN .LE. ISTRING2_END))
-     &       .OR. (.NOT. (ISTRING2_BEGIN .GE. 0))
-     &       .OR. (.NOT. (ISTRING2_END .LE. NESH(2)))) THEN
+ 1        CONTINUE
+
+          IF(     (.NOT. (ISTART .LE. IEND))
+     &       .OR. (.NOT. (ISTART .GE. 0))
+     &       .OR. (.NOT. (IEND .LE. NESH(IFSYM)))) THEN
             WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
             WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
             CALL QUIT('ERROR in VISUAL')
           ENDIF
-          CALL DFILL(WORK(KSTRING2),D0,NESH(2))
-          DO I = ISTRING2_BEGIN,ISTRING2_END
-            IF(ISTRING2_BEGIN .NE. 0) WORK(KSTRING2-1+I) = D1
+
+          DO I = ISTART,IEND
+            IF(ISTART .NE. 0) STRING(I+NESH(1)*(IFSYM-1)) = D1
           ENDDO
-        ENDIF !IF(NFSYM .GT. 1) THEN
-      ENDIF !IF(LBIT(LBIT_VISUAL,7)) THEN !use orbital string
-#endif
+
+        ELSE
+          CALL DFILL(STRING(1+NESH(1)*(IFSYM-1)),D1,NISH(IFSYM))
+        ENDIF
+      ENDDO
+
+      RETURN
+      END

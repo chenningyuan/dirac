@@ -2,7 +2,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* SETUP_ZO_DMAT_AO */
       SUBROUTINE SETUP_ZO_DMAT_AO(CMO,
      &                            DMAT_AO,
-     &                            STRING1,STRING2,
+     &                            STRING,
      &                            WORK,LWORK)
 C=======================================================================
 C     description in here ...
@@ -22,8 +22,7 @@ C=======================================================================
 
       DIMENSION CMO(*),
      &          DMAT_AO(*),
-     &          STRING1(*),
-     &          STRING2(*),
+     &          STRING(*),
      &          WORK(LWORK)
 
 #include "memint.h"
@@ -44,8 +43,7 @@ C=======================================================================
             JOFF = JOFF + NORB(1)*(I-1) + NPSH(I)
             JOFF = JOFF + (J-1)*NORBT + J - 1
 
-            IF(I .EQ. 1) WORK(KDMAT_MO+JOFF) = STRING1(J)
-            IF(I .EQ. 2) WORK(KDMAT_MO+JOFF) = STRING2(J)
+            WORK(KDMAT_MO+JOFF) = STRING(J+NESH(1)*(I-1))
           ENDDO
         ENDIF
       ENDDO
@@ -81,7 +79,8 @@ C     /* SCATTER_BVEC */
      &                        BMAT,
      &                        IZ,
      &                        IFSYM1,
-     &                        IFSYM2)
+     &                        IFSYM2,
+     &                        STRING)
 C=======================================================================
 C     scatter solution vector BVEC onto BMAT
 C-----------------------------------------------------------------------
@@ -103,6 +102,7 @@ C=======================================================================
       DIMENSION BVEC_EE(*),
      &          BVEC_EP(*),
      &          BMAT(NORBT,NORBT,NZ),
+     &          STRING(*),
      &          NEI(2),
      &          NES(2),
      &          NP(2)
@@ -113,9 +113,9 @@ C=======================================================================
         NP(I)  = NPSH(I)
       ENDDO
 
-      II1 = 1
-      II1 = II1 + (NESH(1) + NPSH(1))*(IFSYM1 - 1)
-      II1 = II1 + NP(IFSYM1)
+      IOFF = (NESH(1) + NPSH(1))*(IFSYM1 - 1) + NP(IFSYM1)
+
+      II1 = IOFF + 1
       II2 = II1 + NEI(IFSYM1) - 1
       IS1 = 1
       IS1 = IS1 + (NESH(1) + NPSH(1))*(IFSYM2 - 1)
@@ -124,18 +124,22 @@ C=======================================================================
       IS4 = IS3 + NES(IFSYM2) - 1
 
       DO II = II1,II2
+
+        FACTOR = STRING(II - IOFF + NESH(1)*(IFSYM1-1))
+
         IF(.NOT. LBIT(LBIT_VISUAL,5)) THEN !if not skip +- (SKIPEP)
           DO IS = IS1,IS2
-            BMAT(IS,II,IZ) = BVEC_EP(ICOUNTER_EP)
+            BMAT(IS,II,IZ) = BVEC_EP(ICOUNTER_EP)*FACTOR
             ICOUNTER_EP = ICOUNTER_EP + 1
           ENDDO
         ENDIF
         IF(.NOT. LBIT(LBIT_VISUAL,6)) THEN !if not skip ++ (SKIPEE)
           DO IS = IS3,IS4
-            BMAT(IS,II,IZ) = BVEC_EE(ICOUNTER_EE)
+            BMAT(IS,II,IZ) = BVEC_EE(ICOUNTER_EE)*FACTOR
             ICOUNTER_EE = ICOUNTER_EE + 1
           ENDDO
         ENDIF
+
       ENDDO
 
       RETURN
@@ -145,7 +149,7 @@ C     /* SETUP_FO_DMAT_AO */
       SUBROUTINE SETUP_FO_DMAT_AO(CMO,
      &                            IXVECTOR,
      &                            DMAT_AO,
-     &                            STRING1,STRING2,
+     &                            STRING,
      &                            WORK,LWORK)
 C=======================================================================
 C     description in here ...
@@ -177,8 +181,7 @@ C=======================================================================
      &          LBIT
       DIMENSION CMO(*),
      &          DMAT_AO(*),
-     &          STRING1(*),
-     &          STRING2(*),
+     &          STRING(*),
      &          WORK(LWORK)
 
 #include "memint.h"
@@ -377,7 +380,8 @@ C=======================================================================
      &                      ICOUNTER_EP,
      &                      WORK(KBMAT),
      &                      IZ,
-     &                      1,1)
+     &                      1,1,
+     &                      STRING)
         ELSE
           IF(IHERMITICITY .EQ. 1) THEN
             CALL SCATTER_BVEC(WORK(KBVEC_EE),
@@ -386,14 +390,16 @@ C=======================================================================
      &                        ICOUNTER_EP,
      &                        WORK(KBMAT),
      &                        IZ,
-     &                        1,2)
+     &                        1,2,
+     &                        STRING)
             CALL SCATTER_BVEC(WORK(KBVEC_EE),
      &                        WORK(KBVEC_EP),
      &                        ICOUNTER_EE,
      &                        ICOUNTER_EP,
      &                        WORK(KBMAT),
      &                        IZ,
-     &                        2,1)
+     &                        2,1,
+     &                        STRING)
           ELSE
             CALL SCATTER_BVEC(WORK(KBVEC_EE),
      &                        WORK(KBVEC_EP),
@@ -401,14 +407,16 @@ C=======================================================================
      &                        ICOUNTER_EP,
      &                        WORK(KBMAT),
      &                        IZ,
-     &                        1,1)
+     &                        1,1,
+     &                        STRING)
             CALL SCATTER_BVEC(WORK(KBVEC_EE),
      &                        WORK(KBVEC_EP),
      &                        ICOUNTER_EE,
      &                        ICOUNTER_EP,
      &                        WORK(KBMAT),
      &                        IZ,
-     &                        2,2)
+     &                        2,2,
+     &                        STRING)
           ENDIF
         ENDIF
       ENDDO

@@ -36,14 +36,12 @@ C
       PARAMETER (MAX_NR_XVECTORS = 20)
 C
       CHARACTER       XVECTOR_FILE(MAX_NR_XVECTORS)*6,                  &
-     &                ORBSTRING1*8,                                     &
-     &                ORBSTRING2*8,                                     &
+     &                ORBITAL_STRING(2)*8,                              &
      &                ORIENTATION(3)*2
       LOGICAL         DO_VISUAL
 C
       COMMON /CBVISC/ XVECTOR_FILE,                                     &
-     &                ORBSTRING1,                                       &
-     &                ORBSTRING2,                                       &
+     &                ORBITAL_STRING,                                   &
      &                ORIENTATION
       COMMON /CBVISL/ DO_VISUAL
       COMMON /CBVISI/ LBIT_VISUAL,                                      &
