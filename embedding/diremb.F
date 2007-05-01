@@ -159,8 +159,13 @@
             do q = p, ndimension
                
 !              first we get the value of the orbital pair (gamma_pq) at point i
-!              and multiply it by the embedding potential 
-               gamma_pq      = work(kgao+(p-1))*work(kgao+(q-1))
+!              and multiply it by the embedding potential, and just for the
+!              LL or SS blocks... 
+               if ((p.le.nlarge).and.(q.gt.nlarge)) then
+                  gamma_pq      = 0
+               else
+                  gamma_pq      = work(kgao+(p-1))*work(kgao+(q-1))
+               endif
                ep_pq_update  = work(kw+ioff)*gamma_pq
 
 !              in dirac, we can work with the full matrix
