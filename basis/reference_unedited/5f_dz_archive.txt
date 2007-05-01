@@ -3,12 +3,13 @@
 ======================================
 
 
-Date: 25 Mar 2005
+Date: 2 Mar 2007
 
 
 When publishing work that uses these basis sets, please use the following citation:
 
-K.G. Dyall, in preparation. Available from the Dirac web site, http://dirac.chem.sdu.dk.
+K.G. Dyall, Theor. Chem. Acc. (2007) 117:491.
+Available from the Dirac web site, http://dirac.chem.sdu.dk.
 
 
 
