@@ -1,46 +1,46 @@
 #!/bin/sh
 
+# top-level script to generate atchives for the dyall sets
 #
-# template for how to prepare basis set library files for the dyall basis
-#
-# andre gomes, 2006-10-06
-#
-# 1. first we check what kind of polarization functions there are in the basis set files
-
-ARCHIVE_DIR=../basis/reference_unedited
-
-for block in  4p 4d 5s 5p 5d 5f 6p; do
-   for zeta in dz tz qz; do
-
-      python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive.txt" \
-                             --list_polarization > $block"_"$zeta"_polarization-types.txt"
-
-   done
-done
-
-#
-# 2. taking as an example the 'valence correlating' type of functions, we create the files
+# andre gomes, 2007-05-01
 #
 
-for block in  4p 4d 5s 5p 5d 5f 6p; do
-   for zeta in tz qz; do
+# preparation for the 5s/6s/7s elements
+prepare_dyall_sblock_basis.sh
 
-      python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive.txt" \
-                             --print_polarization --print_scfbas --uncontracted \
-                             --polarization_type='valence correlating' \
-                             --output=dyall.$block.$zeta.bas > dyall.$block.$zeta.bas  
+# preparation for the 4p/5p/6p elements
+prepare_dyall_pblock_basis.sh
 
-   done
-done
+# preparation for the 4d/5d elements
+prepare_dyall_dblock_basis.sh
 
-#
-# 3. concatenate the resulting intermediate .bas files by hand, and edit the "elements supported field"
-#
+# preparation for the 5f elements
+prepare_dyall_fblock_basis.sh
 
-for zeta in tz qz; do
-   cat dyall*.$zeta.bas > dyall.valence_correlating.$zeta.bas
-done 
+# concatenating different blocks, first for sets with diffuses 
+cat *.{4p,5p,6p}.dz.aug-val.bas > dyall.av2z
+cat *.{4p,5p,6p}.tz.aug-val.bas > dyall.av3z
+cat *.{4p,5p,6p}.qz.aug-val.bas > dyall.av4z
 
-#
-# 4. repeat 2 and 3 above for other types of correlating functions
-#
+cat *.{4p,5p,6p}.dz.aug-core.bas > dyall.acv2z
+cat *.{4p,5p,6p}.tz.aug-core.bas > dyall.acv3z
+cat *.{4p,5p,6p}.qz.aug-core.bas > dyall.acv4z
+
+# and now withouth diffuses
+cat *.{4d,4p,5s,5p,5d,6p,7s,5f}.dz.val.bas > dyall.v2z
+cat *.{4d,4p,5s,5p,5d,6p,7s,5f}.tz.val.bas > dyall.v3z
+cat *.{4d,4p,5s,5p,5d,6p,7s,5f}.qz.val.bas > dyall.v4z
+
+cat *.{4d,4p,5s,5p,5d,6p,7s,5f}.dz.core{,1}.bas > dyall.cv2z
+cat *.{4d,4p,5s,5p,5d,6p,7s,5f}.tz.core{,1}.bas > dyall.cv3z
+cat *.{4d,4p,5s,5p,5d,6p,7s,5f}.qz.core{,1}.bas > dyall.cv4z
+
+cat *.{4d,4p,5s,5p,5d,6p,7s,5f}.dz.core{,2}.bas > dyall.c2v2z
+cat *.{4d,4p,5s,5p,5d,6p,7s,5f}.tz.core{,2}.bas > dyall.c2v3z
+cat *.{4d,4p,5s,5p,5d,6p,7s,5f}.qz.core{,2}.bas > dyall.c2v4z
+
+# one must now edit the dyall.{a{,c}}v{2,3,4}z files and
+# set the "Elements supported" section correctly by hand.
+# in order to do that, one has to just collect all the 
+# separate "Elements supported" fields, and leave just one
+# with all the atoms

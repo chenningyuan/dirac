@@ -309,7 +309,11 @@ def main():
 	for e in elements:
 		element_list = element_list+" "+e
 
+        print "$ These are the sets of functions selected from the TCA archive (apart from SCF):"
+#       print "$ ",options.selected_pol_set
 	polarization_list = options.selected_pol_set.split(',') 
+#       print "$ ",options.selected_pol_set,polarization_list
+        print "$ ",polarization_list
 
         if options.listelem :
 		print "The following elements are present in "+options.raw_basis_file
