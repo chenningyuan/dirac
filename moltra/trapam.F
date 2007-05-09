@@ -4050,6 +4050,9 @@ C
 C     Do not call MEMREL since the variable size arrays are represented
 C     as pointers when the routine is called from a slave
 C
+#if defined (VAR_PFS)
+      CALL GLOBAL_FILE_OPEN_WRITE
+#endif
       CALL QEXIT('TRAPARI')
       RETURN
       END

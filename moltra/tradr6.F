@@ -155,6 +155,9 @@ C
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
      &                     GABRAO,DRIJ,
      &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
+#if defined (VAR_PFS)
+         CALL GLOBAL_FILE_CLOSE_WRITE
+#endif
       ENDIF
 #endif
       CALL MEMREL('TRDR6T',WORK,KRGBUF,KRGBUF,KFREE,LFREE)
@@ -309,6 +312,9 @@ CLV:Gaunt       DO IC = 1, 3
           ENDDO
        ENDDO
        CALL BUFFER_FILE_FLUSH (1,RGBUF,IGBUF,LSORT,NFPCK12T*NBSYM)
+#if defined (VAR_PFS)
+       CALL GLOBAL_FILE_CLOSE_WRITE
+#endif
        RETURN
        END
 #if defined (VAR_MPI)
@@ -1155,6 +1161,13 @@ C
 #include "dcbibt.h"
 C
       CALL QENTER('MS6IN2')
+#if defined (VAR_PFS)
+      CALL XTIME(5,1,' File transformation           ')
+      CALL SELECT_LOCAL_FROM_GLOBAL
+      CALL XTIME(5,2,' File transformation           ')
+
+      CALL LOCAL_FILE_OPEN_READ
+#endif
       KFRSAV = KFREE
 C
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
@@ -1186,8 +1199,13 @@ C           Allocate space to read halftransformed integrals
             CALL MEMGET('REAL',KGMAT,NZ*NSPCK(IREPPQ,0),
      &                   WORK,KFREE,LFREE)
             ICOL = LSORT(2,IJ,IREPPQ)
+#if defined (VAR_PFS)
+            CALL GLOBAL_FILE_READ (WORK(KGMAT),
+     &                             NZ*NSPCK(IREPPQ,0),ICOL,IBUF)
+#else
             CALL BUFFER_FILE_READ (1,IBUF,WORK(KGMAT),
      &                             NZ*NSPCK(IREPPQ,0),ICOL)
+#endif
             CALL GMAT_SYM (IREPPQ,WORK(KGMAT),NSPCK(IREPPQ,0),ICS,ICF)
             IOFF = KGMAT
             DO IZ = 1, NZ
@@ -1262,6 +1280,9 @@ C         Only call SYMFINT if this matrix was formed
       ENDDO
 C
       CALL MEMREL('MS6IN2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+#if defined (VAR_PFS)
+      CALL LOCAL_FILE_CLOSE_READ
+#endif
       CALL QEXIT('MS6IN2')
 C
       RETURN

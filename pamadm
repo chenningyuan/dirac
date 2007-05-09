@@ -490,7 +490,7 @@ amfi/relscf.o\\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpbast.o \\
-gp/gplupar.o \\
+gp/gplupar.o        gp/global_file.o  \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
 prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\
@@ -559,7 +559,7 @@ GP_OBJS = \\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpc.o \\
-gp/gplupar.o
+gp/gplupar.o        gp/global_file.o
 
 EOF
 #

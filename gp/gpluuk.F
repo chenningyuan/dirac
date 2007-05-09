@@ -1174,7 +1174,10 @@ C
       WRITE (NAME,'(A4,I1)') 'BUFF',I_FILE
       FNODE = LFNAM(NAME)
       LGFIL = I_BF_UNIT+I_FILE
+
+#if !defined (VAR_PFS)
       OPEN (UNIT=LGFIL,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
+#endif
 C
 C     Initialize the data that is kept in the common block
 C
@@ -1233,6 +1236,10 @@ C
             IGBUF(2,N,IBUF) = IROWS(2,I)
             IF (N.GE.NGBFSZ) THEN
                INODE = IROWS(3,I)
+#if defined (VAR_PFS)
+               CALL GLOBAL_FILE_WRITE (
+     &         RGBUF(1,IBUF),IGBUF(1,1,IBUF),N,MYTID,INODE,IBUF)
+#else
 #if defined (VAR_MPI)
                IF (INODE.NE.MYTID) THEN
                    CALL BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF(1,IBUF),
@@ -1243,6 +1250,7 @@ C
      &              IGBUF(1,1,IBUF),N)
 #if defined (VAR_MPI)
                ENDIF
+#endif
 #endif
                N = 0
             ENDIF
@@ -1321,6 +1329,10 @@ C
          N = LGBUF(IBUF,I_FILE)
          IF (IBUF.GT.0.AND.N.GT.0) THEN
             INODE = IROWS(3,I)
+#if defined (VAR_PFS)
+             CALL GLOBAL_FILE_WRITE (
+     &        RGBUF(1,IBUF),IGBUF(1,1,IBUF),N,MYTID,INODE,IBUF)
+#else
 #if defined (VAR_MPI)
             IF (INODE.NE.MYTID) THEN
                 CALL BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF(1,IBUF),
@@ -1331,6 +1343,7 @@ C
      &           IGBUF(1,1,IBUF),N)
 #if defined (VAR_MPI)
             ENDIF
+#endif
 #endif
             N = 0
          ENDIF
