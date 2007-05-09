@@ -1610,6 +1610,31 @@ C
           LAOVOOT(IREP+1) = LAOVOOT(IREP)+NAO(IREP)*NVOOT(IREP)
           LAOAOSOSOT(IREP+1) = LAOAOSOSOT(IREP)+NAO(IREP)*NAOSOSOT(IREP)
          ENDDO
+ 
+C        Set dimension of effective Hamiltonian for Fock space
+
+         DO IREP = 1, NREP
+            NFS_HE(IREP,1) = 0
+            NFS_HE(IREP,2) = NAV(IREP)
+            NFS_HE(IREP,3) = NAO(IREP)
+            NFS_HE(IREP,4) = MAOAV(IREP)
+            NFS_HE(IREP,5) = NAVAVT(IREP)
+            NFS_HE(IREP,6) = NAOAOT(IREP)
+         ENDDO
+
+C        Set offset for addressing symmetry blocks of effective Hamiltonian (IFS_HE) 
+C        or its eigenvalues (IFS_EV)
+
+         DO ICURFSS = 1, 6
+            IFS_HE(IREP,ICURFSS) = 0
+            IFS_HE2(IREP,ICURFSS) = 0
+            DO IREP = 1, NREP
+               IFS_HE(IREP+1,ICURFSS) = IFS_HE(IREP,ICURFSS) +
+     &                                  NFS_HE(IREP,ICURFSS)
+               IFS_HE2(IREP+1,ICURFSS) = IFS_HE2(IREP,ICURFSS) +
+     &                                   NFS_HE(IREP,ICURFSS)**2
+            ENDDO
+         ENDDO
 C
       ENDIF
 C
@@ -2022,7 +2047,7 @@ C
      &           CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &           CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &           CC(CCC),CC(BB1),CC(BB2),
-     &           TOL,NBUF2,NBUF3)
+     &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
          CALL XTIME(5,2,'CCSD equations                ')
 C
 C        This is a restart point: save the amplitudes and update status.
@@ -2675,6 +2700,7 @@ C
       INTEGER IFSS(6)
       REAL*8 TOL
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
+      REAL*8, ALLOCATABLE :: HEFF(:,:),EIGENVALUES(:),EIGENVECTORS(:,:)
 C
 C---------------Executable code--------------------------------------
 C
@@ -2806,22 +2832,28 @@ C
 C
 C     Solve Fock space equation sector by sector
 C
-      DO ISECT = 1, 6
-      IF (FSSECT(ISECT).NE.0) THEN
-      ICURFSS = IFSS(ISECT)
-      IF (ICURFSS.LE.20) THEN
-        WRITE (IW,1009) ICURFSS
+      DO ICURFSS = 1, 6
+      IF (FSSECT(ICURFSS).NE.0) THEN
+        ISECT = IFSS(ICURFSS)
+        WRITE (IW,1009) ISECT
+C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
+        ALLOCATE (HEFF(RCW,IFS_HE2(NREP+1,ICURFSS)))
+        ALLOCATE (EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS)))
+        ALLOCATE (EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS)))
         CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &             CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &             CC(CCC),CC(BB1),CC(BB2),
-     &             TOL,NBUF2,NBUF3)
+     &             TOL,NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
+C       Print the Fock space eigenvalues, compute transition moments
+        CALL FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,EIGENVECTORS)
 C       Save the updated wave function
         CALL FS_PUTAMPT (ICURFSS,CC(T1),CC(T2),CC(BUF1),CC(BUF2))
+C       Deallocate space for the effective Hamiltonian
+        DEALLOCATE (HEFF)
+        DEALLOCATE (EIGENVALUES)
+        DEALLOCATE (EIGENVECTORS)
 C
-      ELSE
-        WRITE (IW,1010) ICURFSS
-      ENDIF
       ENDIF
       ENDDO
 C
@@ -2872,19 +2904,19 @@ C
 C---------------Executable code--------------------------------------
 C    
       DELS1 = 'DD'
-      IF (ICURFSS.EQ. 1) DELS1 = 'DK'
-      IF (ICURFSS.EQ.10) DELS1 = 'KD'
-      IF (ICURFSS.EQ.11) DELS1 = 'KK'
       IF (ICURFSS.EQ. 2) DELS1 = 'DK'
-      IF (ICURFSS.EQ.20) DELS1 = 'KD'
+      IF (ICURFSS.EQ. 3) DELS1 = 'KD'
+      IF (ICURFSS.EQ. 4) DELS1 = 'KK'
+      IF (ICURFSS.EQ. 5) DELS1 = 'DK'
+      IF (ICURFSS.EQ. 6) DELS1 = 'KD'
       DELS2 = 'DDDD'
-      IF (ICURFSS.EQ. 1) DELS2 = 'DDDK'
-      IF (ICURFSS.EQ.10) DELS2 = 'KDDD'
-      IF (ICURFSS.EQ.11) DELS2 = 'KDDK'
-      IF (ICURFSS.EQ. 2) DELS2 = 'DDKK'
-      IF (ICURFSS.EQ.20) DELS2 = 'KKDD'
+      IF (ICURFSS.EQ. 2) DELS2 = 'DDDK'
+      IF (ICURFSS.EQ. 3) DELS2 = 'KDDD'
+      IF (ICURFSS.EQ. 4) DELS2 = 'KDDK'
+      IF (ICURFSS.EQ. 5) DELS2 = 'DDKK'
+      IF (ICURFSS.EQ. 6) DELS2 = 'KKDD'
 C
-      IF (ICURFSS.EQ.0) THEN
+      IF (ICURFSS.EQ.1) THEN
          CALL PUTAMPT(T1,T2)
       ELSE
          CALL GETAMPT(BUF1,BUF2)

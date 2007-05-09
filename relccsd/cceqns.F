@@ -133,7 +133,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCEQN(MAXIT,EPS,FOO,FVO,FVV,T1,S1,T2,S2,AZ,CZ,H,
      &                 HO,HV,HOV,GOO,GVV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
-     &                 NBUF2,NBUF3)
+     &                 NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -163,6 +163,10 @@ C
 C
       REAL*8 RMS,CONV
       REAL*8 DIAG
+C
+C     for Fock space ...
+C
+      REAL*8 HEFF(*),EIGENVECTORS(*),EIGENVALUES(0:*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -210,17 +214,17 @@ C
          TEQ = .TRUE.
          FOCKSP = .TRUE.
          DELS1 = 'DD'
-         IF (ICURFSS.EQ. 1) DELS1 = 'DK'
-         IF (ICURFSS.EQ.10) DELS1 = 'KD'
-         IF (ICURFSS.EQ.11) DELS1 = 'KK'
          IF (ICURFSS.EQ. 2) DELS1 = 'DK'
-         IF (ICURFSS.EQ.20) DELS1 = 'KD'
+         IF (ICURFSS.EQ. 3) DELS1 = 'KD'
+         IF (ICURFSS.EQ. 4) DELS1 = 'KK'
+         IF (ICURFSS.EQ. 5) DELS1 = 'DK'
+         IF (ICURFSS.EQ. 6) DELS1 = 'KD'
          DELS2 = 'DDDD'
-         IF (ICURFSS.EQ. 1) DELS2 = 'DDDK'
-         IF (ICURFSS.EQ.10) DELS2 = 'KDDD'
-         IF (ICURFSS.EQ.11) DELS2 = 'KDDK'
-         IF (ICURFSS.EQ. 2) DELS2 = 'DDKK'
-         IF (ICURFSS.EQ.20) DELS2 = 'KKDD'
+         IF (ICURFSS.EQ. 2) DELS2 = 'DDDK'
+         IF (ICURFSS.EQ. 3) DELS2 = 'KDDD'
+         IF (ICURFSS.EQ. 4) DELS2 = 'KDDK'
+         IF (ICURFSS.EQ. 5) DELS2 = 'DDKK'
+         IF (ICURFSS.EQ. 6) DELS2 = 'KKDD'
 C
 C        Initialize S1 and S2 in case we want to do zero
 C        iterations (tests). In normal runs S1 and S2 will
@@ -466,7 +470,8 @@ C
 C
 C.....when debugging print out energies in every iteration
       IF (FOCKSP.AND.DEBUG) 
-     &   CALL HEFF1(ICURFSS,1,S1,S2,FVO,EPS,H,BUF1,BUF2,BUF3)
+     &   CALL HEFF1(ICURFSS,1,S1,S2,FVO,EPS,BUF1,BUF2,BUF3,
+     &              HEFF,EIGENVALUES,EIGENVECTORS)
 C
 C  EXTRAPOLATE THE AMPLITUDES
 C
@@ -508,7 +513,7 @@ C
       IF (.NOT.FOCKSP) THEN
          PRENE =  TEQ
       ELSE
-         PRENE = ICURFSS .EQ. 0
+         PRENE = ICURFSS .EQ. 1
       ENDIF
 C
       IF (PRENE) THEN
@@ -530,7 +535,8 @@ C
 C
       IF (FOCKSP) THEN
 C        Calculate the energies for this sector
-         CALL HEFF1(ICURFSS,IPRNT,S1,S2,FVO,EPS,H,BUF1,BUF2,BUF3)
+         CALL HEFF1(ICURFSS,IPRNT,S1,S2,FVO,EPS,BUF1,BUF2,BUF3,
+     &              HEFF,EIGENVALUES,EIGENVECTORS)
       ENDIF
 C
 C     Read out timers for the most important contractions
