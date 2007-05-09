@@ -337,7 +337,7 @@ C  H10 = - FVO(M,N) - S1(M,N) (a=3; i=2)
 C-------------------------------------------
       ELSEIF(ICURFSS.EQ.3) then
         TIT = '(1h,0p) space, ionization energies    '
-        CALL XCOPY (IAOAO(NREP+1),A0,0,H,1)
+        CALL XCOPY (IAOAO(NREP+1),A0,0,HEFF,1)
 C       Extract the Hamiltonian
         CALL EXTRT1 (S1,HEFF,3,3,2,2,LFA)
 C       Extract and add the Fock matrix elements
