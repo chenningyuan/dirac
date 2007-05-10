@@ -497,7 +497,6 @@ Cluuk       call output (hr,1,ndt,1,ndt,ndt,ndt,1,iw)
 Cluuk       call output (hi,1,ndt,1,ndt,ndt,ndt,1,iw)
          DEALLOCATE (HR)
          DEALLOCATE (HI)
-         DEALLOCATE (VECI)
       ELSE
 Cluuk       uncomment when debugging, gives huge output
 Cluuk       call output (h,1,ndt,1,ndt,ndt,ndt,1,iw)
@@ -546,6 +545,7 @@ C
       DEALLOCATE (EVR)
       DEALLOCATE (EVI)
       DEALLOCATE (VECR)
+      IF (CARITH) DEALLOCATE (VECI)
       DEALLOCATE (SCR)
       DEALLOCATE (INDX)
 
