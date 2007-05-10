@@ -1,4 +1,4 @@
-Master : DIRAC allocating 64000000 words of memory
+Master : DIRAC allocating 50000000 words of memory
 ******************************************************************************
 *                                                                            *
 *                                O U T P U T                                 *
@@ -128,17 +128,49 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *                                                                            *
 ******************************************************************************
  Version           : Dirac 4.1 (patchlevel 0) 
- Hostname          : frpd.utcpd.sk
- Operating system  : Linux 2.6.10-1.770_FC3
- Machine           : i686
+ Hostname          : radon.chem.vu.nl
+ Operating system  : Darwin 8.9.0
+ Machine           : Power Macintosh
  Run               : Sequential
- Last compilation  : 18:31:27 Apr 25 2005 (by ilias@)
- FORTRAN compiler  : g77 -g -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore 
- C compiler        : cc -g -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore 
- Size of COMMON= 192
- Basis set dir.    : /home/ilias/QCH_Work/qch_softs/Dirac_main_branch/test/11.methods.cosci/:/home/ilias/QCH_Work/qch_softs/Dirac_main_branch/basis/:/home/ilias/QCH_Work/qch_softs/Dirac_main_branch/basis_dalton/
+ Last compilation  : 04:17:50 May 10 2007 (by visscher@radon.chem.vu.nl)
+ FORTRAN compiler  : xlf -O3 -qstrict -qextname 
+ C compiler        : /usr/bin/gcc-3.3 -O3 
+ Basis set dir.    : /Users/visscher/sources/Dirac.autotrunk.serial/test/11.methods.cosci/:/Users/visscher/sources/Dirac.autotrunk.serial/basis/:/Users/visscher/sources/Dirac.autotrunk.serial/basis_dalton/
 
- Date and time (Linux) : Mon Apr 25 20:28:01 2005
+ Date and time (IBM-AIX): Thu May 10 09:23:31 2007
+
+
+ *********************************************************************************
+ *************************** Input read from DIRAC.INP ***************************
+ *********************************************************************************
+
+ **DIRAC                                                                         
+ .TITLE                                                                          
+ Oxygen atom.                                                                    
+ .WAVE F                                                                         
+ **HAMILTONIAN                                                                   
+ .BSS                                                                            
+ 2999                                                                            
+ .PRINT                                                                          
+ 2                                                                               
+ **WAVE FUNCTIONS                                                                
+ .RESOLVE                                                                        
+ *DHFCAL                                                                         
+ .CLOSED SHELL                                                                   
+ 4 0                                                                             
+ .OPEN S                                                                         
+ 1                                                                               
+ 4/0,6                                                                           
+ .MAXITR                                                                         
+ 25                                                                              
+ .EVCCNV                                                                         
+ 1.0E-8                                                                          
+ *RESOLVE                                                                        
+ .SCREEN                                                                         
+ 1.0D-20                                                                         
+ *END OF                                                                         
+                                                                                 
+  $GOSCIP IPRNT=5 &END                                                           
 
 
  **************************************************************************
@@ -147,6 +179,7 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 
  Jobs in this run:
    * Wave function
+HAMSCAN: Found keyword .BSS   
 
 
  **************************************************************************
@@ -164,8 +197,8 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  * Transformation to scalar RKB basis embedded in
    MO-transformation for small components
  * Thresholds for linear dependence:
-   Large components:   1.00E-06
-   Small components:   1.00E-08
+   Large components:   1.00D-06
+   Small components:   1.00D-08
  * General print level   :   0
 
 
@@ -187,7 +220,7 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
   Water                                                                   
   cc-pVDZ basis (note that a tight p has NOT been added)                  
 
-  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655E+08
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
 
 
   Symmetry Operations
@@ -298,13 +331,13 @@ Point group: D2h
   O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                    
                              68      68      S  - [4s10p4d1f|4s10p4d1f]                              
   ----------------------------------------------------------------------
-                             27      27   L - large components
-                             68      68   S - small components
+                             27      27      L  - large components
+                             68      68      S  - small components
   ----------------------------------------------------------------------
   total:      1       8      95      95
 
   Cartesian basis used.
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals (to be written to file):  1.00D-15
 
   MNF.INP input file (for the AMFI stuff) is ready.
 
@@ -322,9 +355,9 @@ Point group: D2h
   Total number of coordinates:  3
 
 
-   1   O        x      0.0000000000
-   2            y      0.0000000000
-   3            z      0.0000000000
+   1   O        x       .0000000000
+   2            y       .0000000000
+   3            z       .0000000000
 
 
 
@@ -347,7 +380,7 @@ Point group: D2h
   Symmetry 5
 
    3   O     z    3
-  Nuclear repulsion energy :    0.000000000000
+  Nuclear repulsion energy :     .000000000000
 
 
                             GETLAB: AO-labels
@@ -469,12 +502,13 @@ Point group: D2h
 
  * Print level :    2
   * Barysz-Sadlej-Snijders Hamiltonian. Type code: 2999
-  * If wished, mean-field AMFI summation is for the charge:    0
+  - to be generated/used in the four-component DIRAC framework
+  - applied preliminary free-particle transformation
  * Default integral flags passed to all modules
-   - LL-integrals: T
-   - LS-integrals: T
-   - SS-integrals: T
-   - GT-integrals: F
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
  * Basis set:
    - uncontracted large component basis set
    - uncontracted small component basis set
@@ -495,10 +529,6 @@ Point group: D2h
 ===========================================================================
  * LL-integrals:
    2(O    Lp)   1(O    Ls)   2(O    Lp)   1(O    Ls)               66113
- * SL-integrals:
-   7(O    Sd)   5(O    Sp)   2(O    Lp)   1(O    Ls)              332225
- * SS-integrals:
-   7(O    Sd)   5(O    Sp)   7(O    Sd)   5(O    Sp)             1558241
 
 
  **************************************************************************
@@ -518,8 +548,8 @@ Point group: D2h
                                         Orbitals
                         #electrons  irrep 1  irrep 2     f        a      alpha
                         ----------  -------  -------  -------  -------  -------
-   Closed shell               4          2        0    1.0000   1.0000   0.0000
-   Open shell no. 1           4          0        3    0.6667   0.9000   0.3000
+   Closed shell               4          2        0    1.0000   1.0000    .0000
+   Open shell no. 1           4          0        3     .6667    .9000    .3000
    ----------------------------------------------------------------------------
    Total                      8          2        3
 
@@ -533,7 +563,6 @@ Point group: D2h
  - write (rs)-batches of half-transformed integrals 
  (ij|rs) to disk; parallel scheme
  * Screening threshold : 1.00E-20
- Check for DOPRP = F
 
 
  ********************************************************************************
@@ -551,393 +580,175 @@ Point group: D2h
                         Generating Lowdin matrix:
                         -------------------------
 
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.5D-02
    L   Ag    * Deleted:          1(Proj:          1, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.0D+00
    L   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.0D+00
    L   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.0D+00
    L   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 2.1D-02
    S   B3u   * Deleted:          1(Proj:          1, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 2.1D-02
    S   B2u   * Deleted:          1(Proj:          1, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 2.1D-02
    S   B1u   * Deleted:          1(Proj:          1, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.0D+00
    S   Au    * Deleted:          0(Proj:          0, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.9D-01
    L   B3u   * Deleted:          0(Proj:          0, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.9D-01
    L   B2u   * Deleted:          0(Proj:          0, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.9D-01
    L   B1u   * Deleted:          0(Proj:          0, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.2D-01
    S   Ag    * Deleted:          4(Proj:          4, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 3.1D-01
    S   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 3.1D-01
    S   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 3.1D-01
    S   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
 
 
                        *** Output from MAKE_BSS ***
                        ----------------------------
 
-  Jensen H.-J.Aa., Ilias M., "Two-component relativistic methods based on the quaternion modified
-  dirac equation: from the Douglas--Kroll to the Barysz--Sadlej--Snijders infinite order";
-  in preparation (2005)
-
-* Order of Barysz-Sadlej_Snijders transformation : 9
-* all spin-orbit terms included (full relativity)
-
-* AMFI: MFSSO2 terms (spin-same orbit only) added.
-
-       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.5E+04
-       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.6E+05
-       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.6E+05
-       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.6E+05
-       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 2.4E+04
-       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 2.4E+04
-       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 2.4E+04
+H. J. Aa. Jensen and M. Ilias,
+  "Two-component relativistic methods based on the quaternion modified Dirac equation. I:
+   from Douglas-Kroll-Hess second order method to the infinite order two-component method.",
+  J. Chem. Phys., in preparation.
 
 
-        DIAG_FP: Free particle (in ON basis "theta") eigenvalues :
-        ----------------------------------------------------------
+              *** Output from the EXTR_BSS_INFO routine ***
+              ---------------------------------------------
 
-   *** Fermion corep  1/ 2
-   Shell no    FP eigval  FP eigval+2c^2  bos.symm.   diff.
-   1   -14 -0.542284E+05 -0.354496E+05    1   -.3856E-09
-   2   -13 -0.414009E+05 -0.226221E+05    1   -.6307E-09
-   3   -12 -0.385980E+05 -0.198192E+05    1   -.4688E-09
-   4   -11 -0.378775E+05 -0.190986E+05    1   -.2734E-09
-   5   -10 -0.376635E+05 -0.188847E+05    1   -.2365E-09
-   6    -9 -0.375925E+05 -0.188137E+05    1   -.7900E-09
-   7    -8 -0.375677E+05 -0.187889E+05    1   0.3259E-08
-   8    -7 -0.375619E+05 -0.187830E+05    1   -.2337E-09
-   9    -6 -0.375619E+05 -0.187830E+05    1   -.2264E-09
-  10    -5 -0.375619E+05 -0.187830E+05    4   -.2264E-09
-  11    -4 -0.375619E+05 -0.187830E+05    7   -.2192E-09
-  12    -3 -0.375619E+05 -0.187830E+05    6   -.2192E-09
-  13    -2 -0.375600E+05 -0.187811E+05    1   -.1351E-07
-  14    -1 -0.375581E+05 -0.187793E+05    1   0.8964E-09
-  15     1  0.398535E+00  0.187793E+05    1   0.8964E-09
-  16     2  0.227427E+01  0.187811E+05    1   -.1351E-07
-  17     3  0.412955E+01  0.187830E+05    4   -.2192E-09
-  18     4  0.412955E+01  0.187830E+05    6   -.2192E-09
-  19     5  0.412955E+01  0.187830E+05    7   -.2264E-09
-  20     6  0.412955E+01  0.187830E+05    1   -.2264E-09
-  21     7  0.412955E+01  0.187830E+05    1   -.2337E-09
-  22     8  0.999643E+01  0.187889E+05    1   0.3259E-08
-  23     9  0.348015E+02  0.188137E+05    1   -.7900E-09
-  24    10  0.105806E+03  0.188847E+05    1   -.2365E-09
-  25    11  0.319769E+03  0.190986E+05    1   -.2734E-09
-  26    12  0.104029E+04  0.198192E+05    1   -.4688E-09
-  27    13  0.384319E+04  0.226221E+05    1   -.6307E-09
-  28    14  0.166707E+05  0.354496E+05    1   -.3856E-09
-  Average difference for e-p pairing of free particle eigenvalues (fsym 1/2) : 0.308227E-08
+  * Transforming the one-electron DIRAC bare nucleus operator.
+  * Order of the Douglas-Kroll-Hess/BSS transformation :...infinite  !
+  * Applied the preliminary free-particle ("k") basis transformation. 
+  * R-equation solving applied : YR-equation 2 (Trond) 
+  * spin-orbit terms are included
+
+  * AMFI: MFSSO2 terms (spin-same orbit only) added.
+  * Prepare the picture-change transformation matrixes
+ 
+
+  MAKE_BSS: 4c Lowdin AO to MO transf. matrix is  written to the BSSMAT file.
 
 
-        DIAG_FP: Free particle (in ON basis "theta") eigenvalues :
-        ----------------------------------------------------------
+                            Output from MODHAM
+                            ------------------
 
-   *** Fermion corep  2/ 2
-   Shell no    FP eigval  FP eigval+2c^2  bos.symm.   diff.
-   1   -12 -0.376124E+05 -0.188335E+05    5   -.5429E-11
-   2   -11 -0.376124E+05 -0.188335E+05    3   -.5436E-11
-   3   -10 -0.376124E+05 -0.188335E+05    2   -.5436E-11
-   4    -9 -0.375700E+05 -0.187912E+05    3   -.2725E-09
-   5    -8 -0.375700E+05 -0.187912E+05    2   -.2725E-09
-   6    -7 -0.375700E+05 -0.187912E+05    5   -.2725E-09
-   7    -6 -0.375608E+05 -0.187820E+05    3   -.1197E-10
-   8    -5 -0.375608E+05 -0.187820E+05    2   -.1197E-10
-   9    -4 -0.375608E+05 -0.187820E+05    5   -.1197E-10
-  10    -3 -0.375584E+05 -0.187795E+05    5   -.3092E-09
-  11    -2 -0.375584E+05 -0.187795E+05    3   -.1709E-09
-  12    -1 -0.375584E+05 -0.187795E+05    2   -.1637E-09
-  13     1  0.637223E+00  0.187795E+05    5   -.1637E-09
-  14     2  0.637223E+00  0.187795E+05    2   -.1709E-09
-  15     3  0.637223E+00  0.187795E+05    3   -.3092E-09
-  16     4  0.308863E+01  0.187820E+05    5   -.1197E-10
-  17     5  0.308863E+01  0.187820E+05    2   -.1197E-10
-  18     6  0.308863E+01  0.187820E+05    3   -.1197E-10
-  19     7  0.122976E+02  0.187912E+05    3   -.2725E-09
-  20     8  0.122976E+02  0.187912E+05    2   -.2725E-09
-  21     9  0.122976E+02  0.187912E+05    5   -.2725E-09
-  22    10  0.546365E+02  0.188335E+05    2   -.5436E-11
-  23    11  0.546365E+02  0.188335E+05    5   -.5436E-11
-  24    12  0.546365E+02  0.188335E+05    3   -.5429E-11
-  Average difference for e-p pairing of free particle eigenvalues (fsym 2/2) : 0.252260E-09
+* Applied strict kinetic balance !
+
+  HANDLE_RKB: RKB transf. matrix (TMAT, basic) has been written to the BSSMAT file.
+
+  HANDLE_RKB: BSSMAT file -  EOFLABEL added.
+
+  GET_A_FAC: Average differences for A-factors (fsym 1/2) :  .10943627D-13
+
+  GET_A_FAC: Average differences for A-factors (fsym 2/2) :  .25627648D-14
+
+  R matrix (in ON basis) was read from BSSMAT into VMAT.
+
+  H2CFINAL: H1AO_DK 
+
+   AO_LL elements were written into the BSSMAT file, EOFLABEL renewed.
+
+  GETPCTMAT: U1_ONBAS (4c ON->2c ON) read into TBUF.
 
 
-                 DIAG_FP: Full unit <k|k>=C+.S.C matrix  
-                 ----------------------------------------
-
-* Fermion irp no.1/2
-
-  Sum of diagonal elements /N: 0.10000E+01
-  Sum of off-diagonal elements : 0.16313E-11
-
-
-                 DIAG_FP: Full unit <k|k>=C+.S.C matrix  
-                 ----------------------------------------
-
-* Fermion irp no.2/2
-
-  Sum of diagonal elements /N: 0.10000E+01
-  Sum of off-diagonal elements : 0.41511E-13
-
-
-                 MAKE_DKH: Diagonal <k_e|k_e>=A+.A matrix
-                 ----------------------------------------
-
-* Fermion irp no.1/2
-
-  Sum of diagonal elements /N : 0.97434E+00
-  Sum of off-diagonal elements :-0.70861E-14
-
-         MAKE_DKH: "A" kinem. electr. factors; ferm irp:1/2
-
-            A^2_ovlp          A^2_calc          diff;
-
-           0.9999893890      0.9999893890    0.97700E-14
-           0.9999394533      0.9999394533    0.22982E-13
-           0.9998900722      0.9998900722    -.11102E-15
-           0.9998900722      0.9998900722    -.11102E-15
-           0.9998900722      0.9998900722    -.11102E-15
-           0.9998900722      0.9998900722    0.00000E+00
-           0.9998900722      0.9998900722    0.33307E-15
-           0.9997339799      0.9997339799    0.15765E-13
-           0.9990751006      0.9990751006    0.75495E-14
-           0.9971986191      0.9971986191    0.23648E-13
-           0.9916284806      0.9916284806    0.16986E-13
-           0.9737555573      0.9737555573    0.26756E-13
-           0.9150566572      0.9150566572    0.17542E-13
-           0.7648673014      0.7648673014    0.12657E-13
-  Average differences for A-factors (fsym 1/2) : 0.11022929E-13
-
-
-                 MAKE_DKH: Diagonal <k_e|k_e>=A+.A matrix
-                 ----------------------------------------
-
-* Fermion irp no.2/2
-
-  Sum of diagonal elements /N : 0.99953E+00
-  Sum of off-diagonal elements :-0.37963E-13
-
-         MAKE_DKH: "A" kinem. electr. factors; ferm irp:2/2
-
-            A^2_ovlp          A^2_calc          diff;
-
-           0.9999830341      0.9999830341    0.28866E-14
-           0.9999830341      0.9999830341    0.26645E-14
-           0.9999830341      0.9999830341    0.28866E-14
-           0.9999177767      0.9999177767    0.33307E-14
-           0.9999177767      0.9999177767    0.32196E-14
-           0.9999177767      0.9999177767    0.34417E-14
-           0.9996727837      0.9996727837    0.55511E-15
-           0.9996727837      0.9996727837    0.55511E-15
-           0.9996727837      0.9996727837    0.44409E-15
-           0.9985494869      0.9985494869    0.47740E-14
-           0.9985494869      0.9985494869    0.49960E-14
-           0.9985494869      0.9985494869    0.52180E-14
-  Average differences for A-factors (fsym 2/2) : 0.29143354E-14
-  Norm of |A.R - B| (ifsym 1/2) : 0.647187E-18
-  Norm of the R-condition, -H(pp)*R - H(pe)+R*H(ee)+R*H(ep)*R (ifsym 1/2): 0.444175E-10
-  Difference between 2 times constructed H2c in ON FP |k> basis(fsym 1/2): 0.388800E-11
-  Norm of |A.R - B| (ifsym 2/2) : 0.808912E-20
-  Norm of the R-condition, -H(pp)*R - H(pe)+R*H(ee)+R*H(ep)*R (ifsym 2/2): 0.381957E-10
-  Difference between 2 times constructed H2c in ON FP |k> basis(fsym 2/2): 0.445836E-13
-  Difference between 2 times constructed H2c in SA-AO basis (fsym 1/2):  0.562790E-11
-  Difference between 2 times constructed H2c in SA-AO basis (fsym 2/2):  0.274685E-13
-
-  BSS relativistic atomic integrals are written to the BSSMAT file.
-  BSS full picture change transformation matrix is written to the BSSMAT file.
-
-
-        CMP_EIGVAL: Electronic eigenv. of H(2c)/H(4c) in ON basis
-        ---------------------------------------------------------
+    CMP_EIGVAL: Eigenvalues of H4c and H2c  Hamiltonians - comparison
+    -----------------------------------------------------------------
 
         *** Fermion corep 1/2
 
      -14        -55253.7417796044
-     -13        -41745.3700318653
-     -12        -38751.3244476822
-     -11        -37956.0697548880
-     -10        -37707.2497034382
-      -9        -37618.0143690865
-      -8        -37582.4434596942
+     -13        -41745.3700318651
+     -12        -38751.3244476826
+     -11        -37956.0697548876
+     -10        -37707.2497034388
+      -9        -37618.0143690862
+      -8        -37582.4434596947
       -7        -37573.4819315654
       -6        -37573.4819315654
       -5        -37568.1996201582
       -4        -37568.1996201582
       -3        -37568.1996201582
-      -2        -37567.4838683106
-      -1        -37561.8452513392
-       1           -32.0261712201           -32.0261712201    0.18971E-11
-       2            -7.9534789452            -7.9534789452   -0.14942E-10
-       3            -3.4901209272            -3.4901209272    0.17292E-10
-       4            -3.2669675200            -3.2669675200   -0.44009E-12
-       5            -3.2669675199            -3.2669675200   -0.52620E-11
-       6            -3.2663868323            -3.2663868323    0.38995E-11
-       7            -3.2663868323            -3.2663868323    0.44409E-13
-       8            -3.2663868323            -3.2663868323   -0.22102E-11
-       9             2.9219676776             2.9219676776   -0.10272E-11
-      10            47.5358454720            47.5358454720    0.12207E-10
-      11           213.1830840120           213.1830840121    0.28109E-10
-      12           831.8912301931           831.8912301930   -0.17963E-10
-      13          3388.2025794895          3388.2025794894   -0.72760E-11
-      14         15444.0036828186         15444.0036828186    0.18190E-10
+      -2        -37567.4838683021
+      -1        -37561.8452512479
+       1           -32.0261712201           -32.0261712201    -.58691D-11
+       2            -7.9534789452            -7.9534789452     .16759D-10
+       3            -3.4901209272            -3.4901209272    -.27383D-11
+       4            -3.2669675200            -3.2669675200    -.57931D-11
+       5            -3.2669675200            -3.2669675200    -.11497D-11
+       6            -3.2663868323            -3.2663868323    -.10204D-10
+       7            -3.2663868323            -3.2663868323    -.34834D-11
+       8            -3.2663868323            -3.2663868323    -.44409D-13
+       9             2.9219676776             2.9219676776    -.10477D-10
+      10            47.5358454720            47.5358454720     .22553D-10
+      11           213.1830840120           213.1830840120    -.94644D-11
+      12           831.8912301930           831.8912301930     .19327D-11
+      13          3388.2025794895          3388.2025794895     .13642D-10
+      14         15444.0036828186         15444.0036828186    -.72760D-11
+ 
 
 
-        CMP_EIGVAL: Electronic eigenv. of H(2c)/H(4c) in ON basis
-        ---------------------------------------------------------
+    CMP_EIGVAL: Eigenvalues of H4c and H2c  Hamiltonians - comparison
+    -----------------------------------------------------------------
 
         *** Fermion corep 2/2
 
      -12        -37682.2348420918
      -11        -37641.4613878118
      -10        -37641.4613878118
-      -9        -37594.9012778351
+      -9        -37594.9012778353
       -8        -37582.7575752770
-      -7        -37582.7575752770
+      -7        -37582.7575752769
       -6        -37572.6282384396
-      -5        -37567.1837328340
-      -4        -37567.1837328340
-      -3        -37564.1229047664
-      -2        -37561.5401118628
-      -1        -37561.5401118628
-       1            -7.9697356341            -7.9697356341    0.14433E-11
-       2            -7.9634489110            -7.9634489109    0.36096E-11
-       3            -7.9634489109            -7.9634489109   -0.82512E-12
-       4            -3.4548841872            -3.4548841872   -0.73634E-11
-       5            -3.4529714240            -3.4529714240   -0.12226E-11
-       6            -3.4529714240            -3.4529714240   -0.42188E-11
-       7            -1.4368537023            -1.4368537023    0.11713E-11
-       8            -1.4335183745            -1.4335183745    0.20399E-11
-       9            -1.4335183745            -1.4335183745   -0.28226E-11
-      10            20.6126082817            20.6126082816   -0.68816E-11
-      11            20.6612390185            20.6612390185   -0.18190E-11
-      12            20.6612390185            20.6612390185   -0.12150E-10
- SPHLAB done, NSPH= 26
- Total number of centers: 1
+      -5        -37567.1837328341
+      -4        -37567.1837328341
+      -3        -37564.1229047665
+      -2        -37561.5401118629
+      -1        -37561.5401118627
+       1            -7.9697356341            -7.9697356341    -.12630D-11
+       2            -7.9634489110            -7.9634489109    -.24070D-11
+       3            -7.9634489109            -7.9634489109     .21663D-11
+       4            -3.4548841872            -3.4548841872     .20535D-11
+       5            -3.4529714240            -3.4529714240    -.47073D-13
+       6            -3.4529714240            -3.4529714240     .42810D-11
+       7            -1.4368537023            -1.4368537023    -.92459D-12
+       8            -1.4335183745            -1.4335183745     .18807D-11
+       9            -1.4335183745            -1.4335183745     .23330D-11
+      10            20.6126082817            20.6126082816     .19682D-11
+      11            20.6612390184            20.6612390185    -.22595D-11
+      12            20.6612390185            20.6612390185     .30127D-11
+ 
+ 
 
+  AMFI_STUFF: H1AO_DK integrals read into H2CAO.
 
-                        *** Output from AMFIIN ***
-                        --------------------------
+  *** MNF.INP - read number of unique nuclei: 1
 
- NUCIND= 1
- NLRGSH= 14
- charge:  8.
- nuc_deg: 1
- Total number of centers: 1
-  Total list of nucleis:
- 1. nuclei of charge: 8
-
-  List of shells of the system:
- SHELL L= 1 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 1
- SHELL L= 1 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 2
- SHELL L= 1 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 3
- SHELL L= 1 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 4
- SHELL L= 1 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 5
- SHELL L= 1 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 6
- SHELL L= 1 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 7
- SHELL L= 1 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 8
- SHELL L= 1 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 9
- SHELL L= 2 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 1
- SHELL L= 2 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 2
- SHELL L= 2 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 3
- SHELL L= 2 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 4
- SHELL L= 3 ICENT= 1 charge:  8. IDEG/NDEG= 1/ 1 centre= 1 INDXLM= 1
-
-  Entering order of basis functions in spher. AO basis:
-  
- 1.fu center: 1 type:1s  ( 1)
- 2.fu center: 1 type:1s  ( 2)
- 3.fu center: 1 type:1s  ( 3)
- 4.fu center: 1 type:1s  ( 4)
- 5.fu center: 1 type:1s  ( 5)
- 6.fu center: 1 type:1s  ( 6)
- 7.fu center: 1 type:1s  ( 7)
- 8.fu center: 1 type:1s  ( 8)
- 9.fu center: 1 type:1s  ( 9)
- 10.fu center: 1 type:2px ( 1)
- 11.fu center: 1 type:2py ( 1)
- 12.fu center: 1 type:2pz ( 1)
- 13.fu center: 1 type:2px ( 2)
- 14.fu center: 1 type:2py ( 2)
- 15.fu center: 1 type:2pz ( 2)
- 16.fu center: 1 type:2px ( 3)
- 17.fu center: 1 type:2py ( 3)
- 18.fu center: 1 type:2pz ( 3)
- 19.fu center: 1 type:2px ( 4)
- 20.fu center: 1 type:2py ( 4)
- 21.fu center: 1 type:2pz ( 4)
- 22.fu center: 1 type:3d2-( 1)
- 23.fu center: 1 type:3d1-( 1)
- 24.fu center: 1 type:3d0 ( 1)
- 25.fu center: 1 type:3d1+( 1)
- 26.fu center: 1 type:3d2+( 1)
-  
- I= 1 J= 1 for INUC= 1 IPTYP= 1 indexes: 1 1
- I= 1 J= 2 for INUC= 1 IPTYP= 1 indexes: 2 2
- I= 1 J= 3 for INUC= 1 IPTYP= 1 indexes: 3 3
- I= 1 J= 4 for INUC= 1 IPTYP= 1 indexes: 4 4
- I= 1 J= 5 for INUC= 1 IPTYP= 1 indexes: 5 5
- I= 1 J= 6 for INUC= 1 IPTYP= 1 indexes: 6 6
- I= 1 J= 7 for INUC= 1 IPTYP= 1 indexes: 7 7
- I= 1 J= 8 for INUC= 1 IPTYP= 1 indexes: 8 8
- I= 1 J= 9 for INUC= 1 IPTYP= 1 indexes: 9 9
- I= 10 J= 10 for INUC= 1 IPTYP= 2 indexes: 1 1
- I= 10 J= 13 for INUC= 1 IPTYP= 2 indexes: 2 2
- I= 10 J= 16 for INUC= 1 IPTYP= 2 indexes: 3 3
- I= 10 J= 19 for INUC= 1 IPTYP= 2 indexes: 4 4
- I= 11 J= 11 for INUC= 1 IPTYP= 3 indexes: 1 1
- I= 11 J= 14 for INUC= 1 IPTYP= 3 indexes: 2 2
- I= 11 J= 17 for INUC= 1 IPTYP= 3 indexes: 3 3
- I= 11 J= 20 for INUC= 1 IPTYP= 3 indexes: 4 4
- I= 12 J= 12 for INUC= 1 IPTYP= 4 indexes: 1 1
- I= 12 J= 15 for INUC= 1 IPTYP= 4 indexes: 2 2
- I= 12 J= 18 for INUC= 1 IPTYP= 4 indexes: 3 3
- I= 12 J= 21 for INUC= 1 IPTYP= 4 indexes: 4 4
- I= 22 J= 22 for INUC= 1 IPTYP= 5 indexes: 1 1
- I= 23 J= 23 for INUC= 1 IPTYP= 6 indexes: 1 1
- I= 24 J= 24 for INUC= 1 IPTYP= 7 indexes: 1 1
- I= 25 J= 25 for INUC= 1 IPTYP= 8 indexes: 1 1
- I= 26 J= 26 for INUC= 1 IPTYP= 9 indexes: 1 1
-  UNITE_INDXS: Order of spher.atomic basis functions:
- 1.fu center: 1 at.fu.type(indx):1s  ( 1)
- 2.fu center: 1 at.fu.type(indx):1s  ( 2)
- 3.fu center: 1 at.fu.type(indx):1s  ( 3)
- 4.fu center: 1 at.fu.type(indx):1s  ( 4)
- 5.fu center: 1 at.fu.type(indx):1s  ( 5)
- 6.fu center: 1 at.fu.type(indx):1s  ( 6)
- 7.fu center: 1 at.fu.type(indx):1s  ( 7)
- 8.fu center: 1 at.fu.type(indx):1s  ( 8)
- 9.fu center: 1 at.fu.type(indx):1s  ( 9)
- 10.fu center: 1 at.fu.type(indx):2px ( 1)
- 11.fu center: 1 at.fu.type(indx):2py ( 1)
- 12.fu center: 1 at.fu.type(indx):2pz ( 1)
- 13.fu center: 1 at.fu.type(indx):2px ( 2)
- 14.fu center: 1 at.fu.type(indx):2py ( 2)
- 15.fu center: 1 at.fu.type(indx):2pz ( 2)
- 16.fu center: 1 at.fu.type(indx):2px ( 3)
- 17.fu center: 1 at.fu.type(indx):2py ( 3)
- 18.fu center: 1 at.fu.type(indx):2pz ( 3)
- 19.fu center: 1 at.fu.type(indx):2px ( 4)
- 20.fu center: 1 at.fu.type(indx):2py ( 4)
- 21.fu center: 1 at.fu.type(indx):2pz ( 4)
- 22.fu center: 1 at.fu.type(indx):3d2-( 1)
- 23.fu center: 1 at.fu.type(indx):3d1-( 1)
- 24.fu center: 1 at.fu.type(indx):3d0 ( 1)
- 25.fu center: 1 at.fu.type(indx):3d1+( 1)
- 26.fu center: 1 at.fu.type(indx):3d2+( 1)
- MNF.INP - read number of unique nuclei: 1
-  >>> AMFI is about to calculate  1. unique nucleus of charge     8
-  AMFIIN: The file name with AMFI integrals: AOPROPER_MNF.8  
-    ...this file does not exist, AMFI is utilized ! 
-  indx= 1 CHARGE=  8. 8 nucl. exponent:  586314367.
- The AMFI unique nuclei Z= 8 index= 1 is degenerate:  1
-  partial charge is (real):  0.
+  >>> AMFI is going to calculate  1. unique nucleus of charge     8
+ The AMFI unique nuclei Z= 8  index= 1  is degenerate:  1
+  partial charge is (real): 0.000000000000000000E+00
   partial charge is (round int): 0
+
+      *** AMFIIN: corresponding DIRAC nuclei : 1
+      *** AMFIIN: The file name with AMFI integrals: AOPROPER_MNF.8  
+  indx= 1  CHARGE= 8.00000000000000000 8  nucl. exponent: 586314366.546569586
  ATOMIC NO-PAIR SO-MF CODE starts
  Douglas-Kroll type operators 
  Finite Nucleus
-  nuclear exponent=  586314367.
+    nuclear exponent= 586314366.546569586
  ****************************************************************************
- write out one-electron integrals in MOLCAS-style
-    and with MOLCAS normalization 
+ write out one-electron integrals in MOLCAS-style and with MOLCAS normalization 
  ****************************************************************************
  ****************************************************************************
  Symmetry is D2H
-  Functions will go up to an L-value of :  2
+  Functions will go up to an L-value of :  0
  CHARGE OF NUCLEUS:   8.00
  ANGULAR MOMENTUM  0
   9  9
@@ -981,28 +792,28 @@ Number of function:   8 IR of function:   1 L-value:   0 M-value:   0
 Number of function:   9 IR of function:   1 L-value:   0 M-value:   0
 Number of function:  10 IR of function:   1 L-value:   2 M-value:   0
 Number of function:  11 IR of function:   1 L-value:   2 M-value:   2
-
+ 
 Number of function:  12 IR of function:   2 L-value:   1 M-value:   1
 Number of function:  13 IR of function:   2 L-value:   1 M-value:   1
 Number of function:  14 IR of function:   2 L-value:   1 M-value:   1
 Number of function:  15 IR of function:   2 L-value:   1 M-value:   1
-
+ 
 Number of function:  16 IR of function:   3 L-value:   1 M-value:  -1
 Number of function:  17 IR of function:   3 L-value:   1 M-value:  -1
 Number of function:  18 IR of function:   3 L-value:   1 M-value:  -1
 Number of function:  19 IR of function:   3 L-value:   1 M-value:  -1
-
+ 
 Number of function:  20 IR of function:   4 L-value:   2 M-value:  -2
-
+ 
 Number of function:  21 IR of function:   5 L-value:   1 M-value:   0
 Number of function:  22 IR of function:   5 L-value:   1 M-value:   0
 Number of function:  23 IR of function:   5 L-value:   1 M-value:   0
 Number of function:  24 IR of function:   5 L-value:   1 M-value:   0
-
+ 
 Number of function:  25 IR of function:   6 L-value:   2 M-value:   1
-
+ 
 Number of function:  26 IR of function:   7 L-value:   2 M-value:  -1
-
+ 
  AMFI: IC_AMFI= 2
  AMFI: charge of atom IACH= 0
 AMFI: the speed of light:       137.0359998
@@ -1011,16 +822,16 @@ AMFI: the speed of light:       137.0359998
   Mean-field summation for # of electrons: 8
 SO-integrals are calculated for  O: [He]2s^2 2p^4             
  ****   Written to the file TOSCF ****
-          charge:   8.
-         nprimit:  9 4 1 0
-    closedshells:  2 0 0 0
-      openshells:  0 4 0 0
+        charge:  8.00000000000000000
+       nprimit:  9 4 1 0
+    closed sh.:  2 0 0 0
+      open sh.:  0 4 0 0
  *** PROGRAM AT34 - ALLIANT - @V ***
 
-       1500000 FREE ALLIANT DOUBLEWORDS
+       2400000 FREE ALLIANT DOUBLEWORDS
 
 
- MAXIMAL NUMBER OF BASIS FUNCTIONS   =       300
+ MAXIMAL NUMBER OF BASIS FUNCTIONS   =       380
  MAXIMAL NUMBER OF OCCUPIED ORBITALS =        65
 
 1    ATOMIC HARTREE-FOCK PROGRAM 
@@ -1036,22 +847,22 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 0     TYPE GAUSS ORBITALS
 0     JACOBI DIAGONALIZATION
 0     CHARGE =  8.000000
-0     DIAGONALIZATION SCF THRESHOLD BIAS  = 0.700E+01        DIAGONALIZATION DIVERGENCE =        0.100E-03
-      NUMBER OF SCF ITERATIONS            = 10                SCF DIVERGENCE             =        0.100E-02
-      NUMBER OF DIAGONALIZATION ITERATIONS= 10                MINIMUM EXPONENT           =        0.110E-02
-      MAXIMUM NUMBER OF ITERATIONS        = 80                MINIMUM EXPONENT DIFFERENCE=        0.110E-02
-      RELATIVE MINIMUM ENERGY DIFFERENCE  = 0.110E-07        RELATIVE MAXIMUM ENERGY DIFFERENCE= 0.990E-01
+0     DIAGONALIZATION SCF THRESHOLD BIAS  =  .700E+01        DIAGONALIZATION DIVERGENCE =         .100E-03
+      NUMBER OF SCF ITERATIONS            = 10                SCF DIVERGENCE             =         .100E-02
+      NUMBER OF DIAGONALIZATION ITERATIONS= 10                MINIMUM EXPONENT           =         .110E-02
+      MAXIMUM NUMBER OF ITERATIONS        = 80                MINIMUM EXPONENT DIFFERENCE=         .110E-02
+      RELATIVE MINIMUM ENERGY DIFFERENCE  =  .110E-07        RELATIVE MAXIMUM ENERGY DIFFERENCE=  .990E-01
 0     SYMMETRY SPECIES           S     P     D     F
       NUMBER OF BASIS FUNCTIONS=  9      4
       NUMBER OF CLOSED SHELLS  =2     0
       OPEN SHELL OCCUPATION    =0     4
 0     VECTOR COUPLING COEFFICIENTS K
 
-       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00
-       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00
-       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00
-       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00
-       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00
+        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00
+        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00
+        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00
+        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00
+        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00
 0     BASIS FUNCTIONS (PRINCIPAL QUANTUM NUMBER, ORBITAL EXPONENTS)
 
                S                            P                            D                            F
@@ -1059,37 +870,37 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
       1.0        11720.000000      2.0           17.700000
       1.0         1759.000000      2.0            3.850000
       1.0          400.800000      2.0            1.040000
-      1.0          113.700000      2.0            0.270000
+      1.0          113.700000      2.0             .270000
       1.0           37.030000
       1.0           13.270000
       1.0            5.020000
       1.0            1.010000
-      1.0            0.300000
+      1.0             .300000
   INPUT VECTORS
   SYMMETRY 1
   VECTOR 1
-  0.00000000000000  0.00000000000000  0.00000000000000  1.00000000000000
-  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
-  0.00000000000000
+   .00000000000000   .00000000000000   .00000000000000  1.00000000000000
+   .00000000000000   .00000000000000   .00000000000000   .00000000000000
+   .00000000000000
   VECTOR 2
-  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
-  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
+   .00000000000000   .00000000000000   .00000000000000   .00000000000000
+   .00000000000000   .00000000000000   .00000000000000   .00000000000000
   1.00000000000000
   SYMMETRY 2
   VECTOR 1
-  0.00000000000000  0.00000000000000  0.00000000000000  1.00000000000000
+   .00000000000000   .00000000000000   .00000000000000  1.00000000000000
   SYMMETRY 3
 0     INPUT TRIAL VECTORS
 
-   0.000000   0.000000   0.000000
-   0.000000   0.000000   0.000000
-   0.000000   0.000000   0.000000
-   1.000000   0.000000   1.000000
-   0.000000   0.000000
-   0.000000   0.000000
-   0.000000   0.000000
-   0.000000   0.000000
-   0.000000   1.000000
+    .000000    .000000    .000000
+    .000000    .000000    .000000
+    .000000    .000000    .000000
+   1.000000    .000000   1.000000
+    .000000    .000000
+    .000000    .000000
+    .000000    .000000
+    .000000    .000000
+    .000000   1.000000
 
  MXBF (LARGEST NO OF FCT. PER SYMM.) =         9
  NBF  (NUMBER OF BASIS FUNCTIONS)    =        13
@@ -1101,29 +912,29 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 
 
  MX100                               =       100
- LOW  EXPONENT THRESHOLDS            =     0.1000E-05     0.1000E-05     0.1000E-05     0.1000E-05
- HIGH EXPONENT THRESHOLDS            =     0.1000E+09     0.1000E+07     0.1000E+06     0.1000E+05
+ LOW  EXPONENT THRESHOLDS            =      .1000D-05      .1000D-05      .1000D-05      .1000D-05
+ HIGH EXPONENT THRESHOLDS            =      .1000D+09      .1000D+07      .1000D+06      .1000D+05
  FOLLOWING OPERATOR(S) WERE SPECIFIED BY IPARM:
      0=NON-REL      2=EV      
- 105482 DOUBLE WORDS ARE REQUIRED TO RUN THIS CASE
+ 105482  DOUBLE WORDS ARE REQUIRED TO RUN THIS CASE
 
  ****** RELATIVISTIC OPERATORS V 1.0 - BERND HESS ******
 
 
 0     AUTOMATIC VECTOR COUPLING COEFFICIENTS K
 
-  0.00000000000000  0.00000000000000 -0.16666666666667 -0.01666666666667
-  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
-  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
-  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
-  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
-  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
- total energy iteration  1             0.000000000000
- total energy iteration  2           -74.588051402278
+   .00000000000000   .00000000000000  -.16666666666667  -.01666666666667
+   .00000000000000   .00000000000000   .00000000000000   .00000000000000
+   .00000000000000   .00000000000000   .00000000000000   .00000000000000
+   .00000000000000   .00000000000000   .00000000000000   .00000000000000
+   .00000000000000   .00000000000000   .00000000000000   .00000000000000
+   .00000000000000   .00000000000000   .00000000000000   .00000000000000
+ total energy iteration  1              .000000000000
+ total energy iteration  2           -74.588051402277
  total energy iteration  3           -74.776228936390
  total energy iteration  4           -74.785409497330
  total energy iteration  5           -74.786013545363
- total energy iteration  6           -74.786101152088
+ total energy iteration  6           -74.786101152087
  total energy iteration  7           -74.786107336079
  total energy iteration  8           -74.786107773616
  total energy iteration  9           -74.786107807215
@@ -1131,20 +942,20 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  total energy iteration 11           -74.786107806916
  total energy iteration 11           -74.786107806936
   ### NON-RELATIVISTIC APPROX. ###
-        11      -0.7478610781E+02      -0.1495653534E+03       0.7477924562E+02      -0.2000091766E+01
-  total energy -74.7861078
- total energy iteration  1           -74.834593425536
- total energy iteration  2           -74.838151127408
- total energy iteration  3           -74.838152239559
- total energy iteration  4           -74.838152307895
- total energy iteration  5           -74.838152316762
- total energy iteration  6           -74.838152312928
- total energy iteration  7           -74.838152312991
- total energy iteration  8           -74.838152312995
- total energy iteration  9           -74.838152317751
- total energy iteration  9           -74.838152312996
+        11       -.7478610781D+02       -.1495653534D+03        .7477924562D+02       -.2000091766D+01
+  total energy -74.7861078069363430
+ total energy iteration  1           -74.834593425534
+ total energy iteration  2           -74.838151127406
+ total energy iteration  3           -74.838152239557
+ total energy iteration  4           -74.838152307894
+ total energy iteration  5           -74.838152316760
+ total energy iteration  6           -74.838152312926
+ total energy iteration  7           -74.838152312989
+ total energy iteration  8           -74.838152312994
+ total energy iteration  9           -74.838152317750
+ total energy iteration  9           -74.838152312994
   ### EV  OPERATOR RESULT      ###
-         9      -0.7483815231E+02      -0.1497787392E+03       0.7494058692E+02      -0.1998633122E+01
+         9       -.7483815231D+02       -.1497787392D+03        .7494058692D+02       -.1998633122D+01
 1
 
      FINAL RESULTS
@@ -1160,11 +971,11 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
       OPEN SHELL OCCUPATION    = 0     4
 0     VECTOR COUPLING COEFFICIENTS K
 
-       0.00000000E+00       0.00000000E+00      -0.16666667E+00      -0.16666667E-01       0.00000000E+00
-       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00
-       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00
-       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00
-       0.00000000E+00       0.00000000E+00       0.00000000E+00       0.00000000E+00
+        .00000000D+00        .00000000D+00       -.16666667D+00       -.16666667D-01        .00000000D+00
+        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00
+        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00
+        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00
+        .00000000D+00        .00000000D+00        .00000000D+00        .00000000D+00
 0     BASIS FUNCTIONS (PRINCIPAL QUANTUM NUMBER, ORBITAL EXPONENTS)
 
                S                            P                            D                            F
@@ -1172,50 +983,54 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
       1.0        11720.000000      2.0           17.700000
       1.0         1759.000000      2.0            3.850000
       1.0          400.800000      2.0            1.040000
-      1.0          113.700000      2.0            0.270000
+      1.0          113.700000      2.0             .270000
       1.0           37.030000
       1.0           13.270000
       1.0            5.020000
       1.0            1.010000
-      1.0            0.300000
-0     FINAL SCF RESULTS OBTAINED AT COMPUTATION NO 9     SCF THRESHOLD = 0.3200E-06
+      1.0             .300000
+0     FINAL SCF RESULTS OBTAINED AT COMPUTATION NO 9     SCF THRESHOLD =  .3200E-06
 0     TOTAL HF ENERGY    POTENTIAL ENERGY    KINETIC ENERGY    VIRIAL THEOREM
-      -0.7483815231E+02  -0.1497787392E+03   0.7494058692E+02  -0.1998633122E+01
+       -.7483815231D+02   -.1497787392D+03    .7494058692D+02   -.1998633122D+01
 0     ORBITAL ENERGIES, EIGENVECTORS, AND DIAGONALIZATION THRESHOLD
-0       -20.68368      -1.24269      -0.62417
+0       -20.68368      -1.24269       -.62417
  
-         0.000978     -0.000221      0.043173
-         0.005811     -0.001344      0.229373
-         0.028362     -0.006402      0.513506
-         0.105445     -0.025935      0.457125
-         0.283388     -0.071130      0.000000
-         0.448526     -0.165721      0.000000
-         0.270221     -0.116093      0.000000
-         0.015240      0.562818      0.000000
-        -0.002529      0.567655      0.000000
-0      0.1616E-08
+          .000978      -.000221       .043173
+          .005811      -.001344       .229373
+          .028362      -.006402       .513506
+          .105445      -.025935       .457125
+          .283388      -.071130       .000000
+          .448526      -.165721       .000000
+          .270221      -.116093       .000000
+          .015240       .562818       .000000
+         -.002529       .567655       .000000
+0       .1616E-08
+0SPIN UP   DENSITY =    3.999993
+ SPIN DOWN DENSITY =    3.999993
+ TOTAL     DENSITY =    7.999985
+0WIGNER CORRECTION =    3.683762          .263694
  orbitals to be read from fort.7
  lhigh =  2
- lrun =  0
-  0.000978 -0.000221
-  0.005811 -0.001344
-  0.028362 -0.006402
-  0.105445 -0.025935
-  0.283388 -0.07113
-  0.448526 -0.165721
-  0.270221 -0.116093
-  0.01524  0.562818
- -0.002529  0.567655
- lrun =  1
-  0.043173
-  0.229373
-  0.513506
-  0.457125
- lrun =  2
+ lrun =  0  nprimit= 9  nocc= 2
+ 0.977999999999999920E-03 -0.221000000000000005E-03
+ 0.581100000000000019E-02 -0.134399999999999993E-02
+ 0.283619999999999983E-01 -0.640199999999999970E-02
+ 0.105444999999999997 -0.259349999999999997E-01
+ 0.283387999999999973 -0.711299999999999988E-01
+ 0.448525999999999980 -0.165721000000000007
+ 0.270220999999999989 -0.116093000000000002
+ 0.152400000000000001E-01 0.562818000000000040
+ -0.252900000000000000E-02 0.567655000000000021
+ lrun =  1  nprimit= 4  nocc= 1
+ 0.431730000000000030E-01
+ 0.229372999999999994
+ 0.513506000000000018
+ 0.457125000000000004
+ lrun =  2  nprimit= 1  nocc= 0
  -- orbitals read from fort.7
- squared overlap of orbital  1 L-value  0  1.00000036
- squared overlap of orbital  2 L-value  0  0.999999673
- squared overlap of orbital  1 L-value  1  0.999999872
+ squared overlap of orbital  1  L-value  0 1.00000036456402164
+ squared overlap of orbital  2  L-value  0 0.999999672602253087
+ squared overlap of orbital  1  L-value  1 0.999999871661837902
  ********   beginning the 2e-part ******************
    L1   L2   L3   L4
     1    0    1    0
@@ -1242,38 +1057,42 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  *******   end of  the 1-electron-part    **********
 
   AMFI order of (centre specific) basis function: 
-  amfi fu no: 1 type(indx)1s  ( 1)
-  amfi fu no: 2 type(indx)1s  ( 2)
-  amfi fu no: 3 type(indx)1s  ( 3)
-  amfi fu no: 4 type(indx)1s  ( 4)
-  amfi fu no: 5 type(indx)1s  ( 5)
-  amfi fu no: 6 type(indx)1s  ( 6)
-  amfi fu no: 7 type(indx)1s  ( 7)
-  amfi fu no: 8 type(indx)1s  ( 8)
-  amfi fu no: 9 type(indx)1s  ( 9)
-  amfi fu no: 10 type(indx)3d0 ( 1)
-  amfi fu no: 11 type(indx)3d2+( 1)
-  amfi fu no: 12 type(indx)2px ( 1)
-  amfi fu no: 13 type(indx)2px ( 2)
-  amfi fu no: 14 type(indx)2px ( 3)
-  amfi fu no: 15 type(indx)2px ( 4)
-  amfi fu no: 16 type(indx)2py ( 1)
-  amfi fu no: 17 type(indx)2py ( 2)
-  amfi fu no: 18 type(indx)2py ( 3)
-  amfi fu no: 19 type(indx)2py ( 4)
-  amfi fu no: 20 type(indx)3d2-( 1)
-  amfi fu no: 21 type(indx)2pz ( 1)
-  amfi fu no: 22 type(indx)2pz ( 2)
-  amfi fu no: 23 type(indx)2pz ( 3)
-  amfi fu no: 24 type(indx)2pz ( 4)
-  amfi fu no: 25 type(indx)3d1+( 1)
-  amfi fu no: 26 type(indx)3d1-( 1)
- Lhigh= 2 ncontrac: 9 4 1
- corresponding H2CAO nuclei: 1
+  amfi fu no: 1  type(indx)1s  ( 1 )
+  amfi fu no: 2  type(indx)1s  ( 2 )
+  amfi fu no: 3  type(indx)1s  ( 3 )
+  amfi fu no: 4  type(indx)1s  ( 4 )
+  amfi fu no: 5  type(indx)1s  ( 5 )
+  amfi fu no: 6  type(indx)1s  ( 6 )
+  amfi fu no: 7  type(indx)1s  ( 7 )
+  amfi fu no: 8  type(indx)1s  ( 8 )
+  amfi fu no: 9  type(indx)1s  ( 9 )
+  amfi fu no: 10  type(indx)3d0 ( 1 )
+  amfi fu no: 11  type(indx)3d2+( 1 )
+  amfi fu no: 12  type(indx)2px ( 1 )
+  amfi fu no: 13  type(indx)2px ( 2 )
+  amfi fu no: 14  type(indx)2px ( 3 )
+  amfi fu no: 15  type(indx)2px ( 4 )
+  amfi fu no: 16  type(indx)2py ( 1 )
+  amfi fu no: 17  type(indx)2py ( 2 )
+  amfi fu no: 18  type(indx)2py ( 3 )
+  amfi fu no: 19  type(indx)2py ( 4 )
+  amfi fu no: 20  type(indx)3d2-( 1 )
+  amfi fu no: 21  type(indx)2pz ( 1 )
+  amfi fu no: 22  type(indx)2pz ( 2 )
+  amfi fu no: 23  type(indx)2pz ( 3 )
+  amfi fu no: 24  type(indx)2pz ( 4 )
+  amfi fu no: 25  type(indx)3d1+( 1 )
+  amfi fu no: 26  type(indx)3d1-( 1 )
+ Lhigh= 2  ncontrac: 9 4 1
+ 
+ AMFIIN: quaternions x,y,z: 4 3 2
+      *** AMFIIN: ADDING nucleus    1 with charge   8 to the BSSn Hamiltonian.
  *******************************************
 
-  New BSS2 relativistic atomic integrals are written to the BSSMAT file.
-  MAKE_BSS: Two-component BSS mode - positronic shells deleted !
+  AMFI_STUFF: CSC transformed relativistic atomic integrals were written into the BSSMAT file, EOFLABEL renewed.
+ >>> Time used in BNCORR is    .01 seconds
+
+  MAKE_DKH: Two-component BSS mode - positronic shells deleted !
 
 
   **********************************************************************
@@ -1333,23 +1152,21 @@ Total no. of orbitals      (NORB):    14      12      26
    ********************************************************************
 
 
- Transformation started at : Mon Apr 25 20:28:02 2005
+ Transformation started at : Thu May 10 09:23:31 2007
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -74.7977619069895638
-* Heading :Oxygen atom.                                      Mon Apr 25 20:26:37 2005
+* REACMO: Coefficients read from file DFCOEF - Total energy: -74.7977619069897486
+* Heading :Oxygen atom.                                      Thu May 10 09:23:29 2007
 
-* GETGAB: label "GABAOXXX" not found; calling GABGEN.
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12   56.02%    0.52%    2.54%   11.79%   0.00799900s
+SOfock:LL  1.00D-12   56.02%     .52%    2.54%   11.79%    .00000000s
 *** WARNING *** GTCFC1: No 1-Fock found. Regenerating.
 
-  ONEFCK: BSS2 transformed one-electron relativistic integrals were read from the file BSSMAT.
 
-
- Core energy (includes nuclear repulsion) :            -68.0085087511
- - Electronic part :                                   -68.0085087511
-   - One-electron terms :                              -77.9499228256
-   - Two-electron terms :                                9.9414140746
+ Core energy (includes nuclear repulsion) :            -68.0085087534
+ - Electronic part :                                   -68.0085087534
+   - One-electron terms :                              -77.9499228318
+   - Two-electron terms :                                9.9414140785
 
 
  MOLFDIR file MRCONEE is written
@@ -1371,49 +1188,49 @@ SOfock:LL  1.00E-12   56.02%    0.52%    2.54%   11.79%   0.00799900s
  ************************************************************************
 
 
- Transformation started at : Mon Apr 25 20:28:02 2005
+ Transformation started at : Thu May 10 09:23:31 2007
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -74.7977619069895638
-* Heading :Oxygen atom.                                      Mon Apr 25 20:26:37 2005
- - Integral class 1 : (LL|??)
- 1 1 3 3
-   - Beginning with task   1 of   3 after      0.00 seconds
-                                and after      0.00 CPU-seconds
-   - Beginning with task   2 of   3 after      0.00 seconds
-                                and after      0.00 CPU-seconds
-   - Beginning with task   3 of   3 after      0.00 seconds
-                                and after      0.01 CPU-seconds
+* REACMO: Coefficients read from file DFCOEF - Total energy: -74.7977619069897486
+* Heading :Oxygen atom.                                      Thu May 10 09:23:29 2007
+ - Integral class 1 : (LL|]  
+   - Beginning task   1 of   3 after      0. seconds and      0. CPU-seconds
+   - Beginning task   2 of   3 after      0. seconds and      0. CPU-seconds
+   - Beginning task   3 of   3 after      0. seconds and      0. CPU-seconds
 * Screening statistics:
    (LL|LL)ints :  88.34%
    Total       :  88.34%
- - Starting symmetrization after           0.00 seconds
- - Finished symmetrization after           0.00 seconds
+ - Starting symmetrization after            .00 seconds
+ - Finished symmetrization after            .00 seconds
  - MOLFDIR file MDCINT was written.
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Computing+transform. i       0.013 seconds
+ Time in  Initializing MS4IND fi        .180 seconds
+ Time in  Computing+transform. i        .010 seconds
 
 
- Total wall time used in RESOLV : 0.00000000s
- Total CPU  time used in RESOLV : 0.01399800s
+ Total wall time used in RESOLV :  .00000000s
+ Total CPU  time used in RESOLV :  .02000000s
 
- Transformation ended at : Mon Apr 25 20:28:02 2005
+ Transformation ended at : Thu May 10 09:23:31 2007
+GASRES: Set up the following information:
+       1Eg  2Eg  1Eu  2Eu
+    4    0    0    3    3
 
 
 
  GOSCIP (Version 1.8)
 
- Today is :   25 Apr 05 
- The time is :  20:28:02
+ Today is :   10 May 07 
+ The time is :  09:23:31
 
 
-&GENERAL 
- TWOC = F/
-&POPAN 
- THRESH =  0.001, 
- DEGEN =  1.E-10, 
- SELPOP =  100./
+ &general
+ twoc=F
+ &end
+ &popan
+ thresh=0.100000000000000002E-02, degen=0.100000000000000004E-09, selpop=100.000000000000000
+ &end
 
 
  All information read from MRCONEE (and input)
@@ -1428,146 +1245,157 @@ SOfock:LL  1.00E-12   56.02%    0.52%    2.54%   11.79%   0.00799900s
  Number of active orbitals :                     6
 
  Orbital Representation        Orbital energy
-     1     Eu 1Eu               -0.3652381287    
-     2     Eu 1Eu               -0.3652381287    
-     3     Eu 1Eu               -0.3652381287    
-     4     Eu 2Eu               -0.3652381287    
-     5     Eu 2Eu               -0.3652381287    
-     6     Eu 2Eu               -0.3652381287    
+     1     Eu 1Eu                -.6074336135    
+     2     Eu 1Eu                -.6074336135    
+     3     Eu 1Eu                -.6074336135    
+     4     Eu 2Eu                -.6074336135    
+     5     Eu 2Eu                -.6074336135    
+     6     Eu 2Eu                -.6074336135    
+Number of determinants:
+   Symmetry   ag  :          9
+   Symmetry   bg  :          6
+   Symmetry   au  :          0
+   Symmetry   bu  :          0
 
- Coulomb integral file was generated at  25Apr05   20:28:02
+ Coulomb integral file was generated at  10May07   09:23:31
  Read      30 unique integrals
 
  Representation   ag;  5 vectors written to file  MDTRIV_  ag
 
- Eigenvalues           -74.838410092193
-                       -74.837691773865
-                       -74.837339290303
-                       -74.757468874750
-                       -74.636600959959
+ Eigenvalues           -74.838410092205
+                       -74.837691773876
+                       -74.837339290314
+                       -74.757468874739
+                       -74.636600959913
 
  CPU time for this representation 
 
- Generation of determinants :      0.0000
- Building the CI matrix :          0.0000
- Diagonalization :                 0.0000
- Writing CI vectors :              0.0000
+ Generation of determinants :       .0000
+ Building the CI matrix :           .0000
+ Diagonalization :                  .0000
+ Writing CI vectors :               .0000
 
  Population analysis for representation   ag
             The first    9 vectors are analyzed
 
 
      -74.83841009
-                        2  101110                0.05382592
-                        3  011110                0.32117638
-                        4  110101                0.02435143
-                        6  011101                0.16837829
-                        7  110011                0.32041614
-                        8  101011                0.11181302
+                        2  101110                         .34775023
+                        3  011110                         .46719810
+                        4  110101                         .11048837
+                        6  011101                         .00958229
+                        7  110011                         .05692161
+                        8  101011                         .00805356
      -74.83841009
-                        2  101110                0.07113946
-                        3  011110                0.01201867
-                        4  110101                0.51369384
-                        6  011101                0.36615397
-                        7  110011                0.01290630
-                        8  101011                0.02405663
+                        2  101110                         .01520587
+                        3  011110                         .10326678
+                        4  110101                         .04737305
+                        6  011101                         .19638830
+                        7  110011                         .43866390
+                        8  101011                         .19906761
      -74.83841009
-                        2  101110                0.45834518
-                        4  110101                0.04526529
-                        6  011101                0.04877831
-                        8  101011                0.44744091
+                        2  101110                         .22035447
+                        3  011110                         .01284569
+                        4  110101                         .42544915
+                        6  011101                         .12736924
+                        7  110011                         .08772505
+                        8  101011                         .12621868
      -74.83769177
-                        2  101110                0.25000000
-                        4  110101                0.25000000
-                        6  011101                0.25000000
-                        8  101011                0.25000000
+                        2  101110                         .25000000
+                        3  011110                         .25000000
+                        4  110101                         .25000000
+                        7  110011                         .25000000
      -74.83733929
-                        2  101110                0.16666244
-                        3  011110                0.16666244
-                        4  110101                0.16666244
-                        6  011101                0.16666244
-                        7  110011                0.16666244
-                        8  101011                0.16666244
+                        2  101110                         .16666244
+                        3  011110                         .16666244
+                        4  110101                         .16666244
+                        6  011101                         .16666244
+                        7  110011                         .16666244
+                        8  101011                         .16666244
      -74.75746887
-                        3  011110                0.49966341
-                        7  110011                0.49935836
+                        1  110110                         .64804665
+                        5  101101                         .08206150
+                        9  011011                         .26889376
      -74.75746887
-                        1  110110                0.04972644
-                        5  101101                0.32332650
-                        9  011011                0.62665006
+                        5  101101                         .01873049
+                        6  011101                         .48138484
+                        8  101011                         .48139759
+                        9  011011                         .01844696
      -74.75746887
-                        1  110110                0.61662783
-                        5  101101                0.34271758
-                        9  011011                0.03993430
+                        1  110110                         .01859291
+                        5  101101                         .56584866
+                        6  011101                         .01827223
+                        8  101011                         .01794796
+                        9  011011                         .37929993
      -74.63660096
-                        1  110110                0.33332487
-                        5  101101                0.33332487
-                        9  011011                0.33332487
+                        1  110110                         .33332487
+                        5  101101                         .33332487
+                        9  011011                         .33332487
 
  Representation   bg;  5 vectors written to file  MDTRIV_  bg
 
- Eigenvalues           -74.838410092193
-                       -74.837691773865
-                       -74.757468874750
-                         0.000000000000
-                         0.000000000000
+ Eigenvalues           -74.838410092205
+                       -74.837691773876
+                       -74.757468874739
+                       -74.757468874739
+                       -74.636600959913
 
  CPU time for this representation 
 
- Generation of determinants :      0.0000
- Building the CI matrix :          0.0000
- Diagonalization :                 0.0000
- Writing CI vectors :              0.0010
+ Generation of determinants :       .0000
+ Building the CI matrix :           .0000
+ Diagonalization :                  .0000
+ Writing CI vectors :               .0000
 
  Population analysis for representation   bg
             The first    6 vectors are analyzed
 
 
      -74.83841009
-                        1  111100                0.17532182
-                        2  111010                0.02296018
-                        3  111001                0.07067592
-                        4  100111                0.17933384
-                        5  010111                0.47702030
-                        6  001111                0.07468794
+                        1  111100                         .02972183
+                        2  111010                         .21736925
+                        3  111001                         .08482952
+                        4  100111                         .03264051
+                        5  010111                         .22028793
+                        6  001111                         .41515097
      -74.83841009
-                        1  111100                0.07468794
-                        2  111010                0.47702030
-                        3  111001                0.17933384
-                        4  100111                0.07067592
-                        5  010111                0.02296018
-                        6  001111                0.17532182
+                        1  111100                         .22028793
+                        2  111010                         .03264051
+                        3  111001                         .41515097
+                        4  100111                         .21736925
+                        5  010111                         .02972183
+                        6  001111                         .08482952
      -74.83769177
-                        1  111100                0.01926968
-                        2  111010                0.11664183
-                        3  111001                0.23073032
-                        4  100111                0.01926968
-                        5  010111                0.38335817
-                        6  001111                0.23073032
+                        1  111100                         .01189007
+                        2  111010                         .23810993
+                        3  111001                         .14358303
+                        4  100111                         .01189007
+                        5  010111                         .23810993
+                        6  001111                         .35641697
      -74.83769177
-                        1  111100                0.23073032
-                        2  111010                0.38335817
-                        3  111001                0.01926968
-                        4  100111                0.23073032
-                        5  010111                0.11664183
-                        6  001111                0.01926968
+                        1  111100                         .23810993
+                        2  111010                         .01189007
+                        3  111001                         .35641697
+                        4  100111                         .23810993
+                        5  010111                         .01189007
+                        6  001111                         .14358303
      -74.75746887
-                        3  111001                0.49995121
-                        6  001111                0.49999024
+                        2  111010                         .49937844
+                        5  010111                         .49964837
      -74.75746887
-                        1  111100                0.49999024
-                        4  100111                0.49995121
+                        1  111100                         .49964837
+                        4  100111                         .49937844
 
 
  Energy eigenvalues in atomic units
 
- Level   Rel eigenvalue     Abs eigenvalue  Degeneracy
+ Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
 
-    1   0.000000000000    -74.838410092193 (   5 * )
-    2   0.000718318329    -74.837691773865 (   3 * )
-    3   0.001070801891    -74.837339290303 (   1 * )
-    4   0.080941217443    -74.757468874750 (   5 * )
-    5   0.201809132234    -74.636600959959 (   1 * )
+    1    .000000000000     -6.829901338834      -74.838410092205 (   5 * )
+    2    .000718318330     -6.829183020505      -74.837691773876 (   3 * )
+    3    .001070801891     -6.828830536943      -74.837339290314 (   1 * )
+    4    .080941217466     -6.748960121368      -74.757468874739 (   5 * )
+    5    .201809132292     -6.628092206542      -74.636600959913 (   1 * )
 
 
  Total average:       -74.7977606938
@@ -1577,22 +1405,22 @@ SOfock:LL  1.00E-12   56.02%    0.52%    2.54%   11.79%   0.00799900s
  Symmetry Classification in the Abelian subgroup
 
  Level  eigenvalue (eV)  Eigenvalue (cm-1)    ag  bg  au  bu
-    1        0.000000000          0.000000   3   2   0   0
-    2        0.019546435        157.652650   1   2   0   0
-    3        0.029138001        235.013850   1   0   0   0
-    4        2.202522504      17764.543854   3   2   0   0
-    5        5.491505678      44291.984886   1   0   0   0
+    1         .000000000           .000000   3   2   0   0
+    2         .019546435        157.652651   1   2   0   0
+    3         .029138001        235.013850   1   0   0   0
+    4        2.202522504      17764.543859   3   2   0   0
+    5        5.491505680      44291.984899   1   0   0   0
 
 
-Total CPU time :                   0.0010
+Total CPU time :                    .0000
 
         (NORMAL END OF PROGRAM)
 
 
 
 
- Date and time (Linux) : Mon Apr 25 20:28:02 2005
+ Date and time (IBM-AIX): Thu May 10 09:23:31 2007
 *****************************************************
->>>> Total CPU  time used in DIRAC:  0.29395602s
->>>> Total WALL time used in DIRAC:  2.00000000s
+>>>> Total CPU  time used in DIRAC:  0.18000000s
+>>>> Total WALL time used in DIRAC:  1.00000000s
 ********** E N D   of   D I R A C  output  **********
