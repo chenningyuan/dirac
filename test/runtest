@@ -277,7 +277,7 @@ fi
 #
 # default to RUNTYPE="short" /hjaaj 070111
 #
-if [ $RUNTYPE="undefined" ]; then
+if [ $RUNTYPE = "undefined" ]; then
    RUNTYPE="short" ; export RUNTYPE
    echo "RUNTYPE defaults to short"
 fi
