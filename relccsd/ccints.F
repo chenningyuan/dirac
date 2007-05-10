@@ -939,6 +939,8 @@ C
 C---------------Local variables--------------------------------------
 C
       INTEGER IKR,JKR,KKR,LKR
+      integer*4 INZ
+
       REAL*8 RDUM
       LOGICAL FOCKSP
       CHARACTER*10 NEXTFIL
@@ -957,13 +959,14 @@ C
 C     A number of different formats are possible. 
       IF (CARITH) THEN 
        IF (NZ.EQ.1) THEN
-CMI     ... for real DIRAC symmetries zero imaginary part
-         DO INZ=1,NONZR
-          CBUF(2,INZ) = 0.0D0
-         ENDDO
          READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
      &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
      &        (CBUF(1,INZ),INZ=1,NONZR) 
+CMI      ... NONZR is read before from MDINT file !
+CMI      ... zero imaginary part of two-el. integrals
+         DO INZ=1,NONZR
+          CBUF(2,INZ) = 0.0D0
+         ENDDO
        ELSE
 C     For complex groups we read the real and imaginary part.
          IF (LEVYLE) THEN
