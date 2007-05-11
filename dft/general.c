@@ -263,7 +263,7 @@ sdftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad)
   FunThirdFuncDrv drvs;
   FunDensProp dp;
 
-  drv2_clear(&drvs);
+  drv3_clear(&drvs);
 
   dp.rhoa   = dp.rhob  = *rho *0.5;
   dp.grada  = dp.gradb = *grad*0.5;
@@ -277,15 +277,15 @@ sdftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad)
   else
     selected_func->third(&drvs, *w, &dp);
        
-  ds->fR   = 0; /* NOT USED */
-  ds->fZ   = 0; /* NOT USED */
-  ds->fRR  = 0.5*(drvs.df2000 - drvs.df1100);
-  ds->fRZ  = 0; /* NOT USED */
-  ds->fZZ  = 0; /* NOT USED */
-  ds->fRRR = 0.25*(drvs.df3000 - drvs.df2100);
-  ds->fRRZ = 0; /* NOT USED */
-  ds->fRZZ = 0; /* NOT USED */
-  ds->fZZZ = 0; /* NOT USED */
+  ds->fR   = 0.0;
+  ds->fZ   = 0.5*(drvs.df2000 - drvs.df1100);
+  ds->fRR  = 0.0;
+  ds->fRZ  = 0.25*(drvs.df3000 - drvs.df2100);
+  ds->fZZ  = 0.0;
+  ds->fRRR = 0.0;
+  ds->fRRZ = 0.0;
+  ds->fRZZ = 0.0;
+  ds->fZZZ = 0.0;
 }
 
 void
