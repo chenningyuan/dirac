@@ -202,3 +202,132 @@ C=======================================================================
 
       RETURN
       END
+
+
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* DFT_QR_GGA */
+      SUBROUTINE DFT_QR_GGA(DTRMAT,
+     &                      EXCMAT,
+     &                      ISYMOP,
+     &                      IHRMOP,
+     &                      GAO,
+     &                      GAO1,
+     &                      DENSITY,
+     &                      DENSITY_GRADIENT_NORM,
+     &                      DENSITY_GRADIENT,
+     &                      WEIGHT,
+     &                      DOGGA,
+     &                      BUF)
+C=======================================================================
+C     does the same thing like Johan's DFT_QR
+C     i use it to debug SDFT_QR
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                                last revision: may 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "dftcom.h"
+#include "cdft.h"
+#include "../dft/functionals.h"
+
+      LOGICAL   DOGGA,
+     &          LBIT
+      DIMENSION DTRMAT(NBAST,NBAST,NZ,3),
+     &          EXCMAT(NBAST,NBAST,NZ,3),
+     &          ISYMOP(3),
+     &          IHRMOP(3),
+     &          GAO(*),
+     &          GAO1(*),
+     &          DENSITY_GRADIENT(3),
+     &          BUF(*),
+     &          FO_DENSITY(3),
+     &          FO_SPIN_DENSITY(3,3),
+     &          FO_SPIN_DENSITY_NORM(3),
+     &          FACTOR(3),
+     &          ZETA(3),
+     &          VXC_S(3),
+     &          VXC_V(3,3),
+     &          VXC(99) !dirty fix
+
+#include "ibtfun.h"
+
+      DO IBC = 1,3
+        CALL GETRHO(FO_DENSITY(IBC),
+     &              ISYMOP(IBC)-1,
+     &              GAO,
+     &              DTRMAT(1,1,1,IBC),
+     &              BUF)
+
+        CALL DENSITY_GRADIENT_GENERAL(FO_SPIN_DENSITY(1,IBC),
+     &                                ISYMOP(IBC)-1,
+     &                                GAO,
+     &                                GAO1,
+     &                                DTRMAT(1,1,1,IBC),
+     &                                BUF)
+
+        ZETA(IBC) = D2*DDOT(3,FO_SPIN_DENSITY(1,IBC),1,
+     &                        DENSITY_GRADIENT,1)
+      ENDDO
+
+      ADDME = D4*DDOT(3,FO_SPIN_DENSITY(1,1),1,
+     &                  FO_SPIN_DENSITY(1,2),1)
+
+      ZETA(3) = ZETA(3) + ADDME
+
+      CALL DFTPOT2(VXC,WEIGHT,DENSITY,DENSITY_GRADIENT_NORM)
+
+      DO IBC = 1,3
+        VXC_S(IBC)  = VXC(FRR)*FO_DENSITY(IBC) + VXC(FRZ)*ZETA(IBC)
+        FACTOR(IBC) = VXC(FRZ)*FO_DENSITY(IBC) + VXC(FZZ)*ZETA(IBC)
+      ENDDO
+
+      F1 = D2*FO_DENSITY(1)*FO_DENSITY(2)
+      F2 = D2*(FO_DENSITY(1)*ZETA(2) + FO_DENSITY(2)*ZETA(1))
+      F3 = D2*ZETA(1)*ZETA(2)
+
+      VXC_S(3) = VXC_S(3) + F1*VXC(FRRR)
+     &                    + F2*VXC(FRRZ)
+     &                    + F3*VXC(FRZZ)
+
+      FACTOR(3) = FACTOR(3) + F1*VXC(FRRZ)
+     &                      + F2*VXC(FRZZ)
+     &                      + F3*VXC(FZZZ)
+
+      DO IBC = 1,3
+        DO IXYZ = 1,3
+          VXC_V(IXYZ,IBC) = D2*(FACTOR(IBC)*DENSITY_GRADIENT(IXYZ)
+     &                        + VXC(FZ0)*FO_SPIN_DENSITY(IXYZ,IBC))
+        ENDDO
+      ENDDO
+
+      DO IXYZ = 1,3
+        ADDME = FACTOR(1)*FO_SPIN_DENSITY(IXYZ,2)
+     &        + FACTOR(2)*FO_SPIN_DENSITY(IXYZ,1)
+
+        VXC_V(IXYZ,3) = VXC_V(IXYZ,3) + D4*ADDME
+      ENDDO
+
+      DO IBC = 1,3
+        CALL DOEXC2(VXC_S(IBC),
+     &              VXC_V(1,IBC),
+     &              ISYMOP(IBC)-1,
+     &              EXCMAT(1,1,1,IBC),
+     &              GAO,
+     &              GAO1)
+      ENDDO
+
+      RETURN
+      END
