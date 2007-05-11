@@ -153,7 +153,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real *8 ord_expon(250),ord_coe(250)
       real *8 R_m(4),R_n(4)
       real *8 R_ms(200,3)
-      LOGICAL CAPOVLP
+      LOGICAL CAPOVLP,DIRAC_NRM
 
       DATA BLNK /'E','S','P','D','F'/
       DATA shell_p /'PX','PY','PZ'/
@@ -391,7 +391,9 @@ C        ... write into file
        WRITE(LUPRI,'(/,2X,A)')
      & ' sh_ty,Pgua_expo,nor_pg_coe,angu_pow,cartesian '
        
-       IF (CAPOVLP) THEN
+       DIRAC_NRM = .TRUE.
+CMI    IF (CAPOVLP) THEN
+       IF (DIRAC_NRM) THEN
 C!NORMALIZATION PART
 C!Only the primitives are normalized
 C!The Contracted guassian is kept unnormalized
@@ -418,7 +420,7 @@ C           write(16,*) (R_ms(i,j),j=1,3)
          end do
 
        ELSE
-CMI  ... no calculation of overlap integrals
+CMI  ... OLD normalization of CAP     
        do i=1,sh
           do isw=1,3
              R_m(isw)=R_ms(i,isw)
