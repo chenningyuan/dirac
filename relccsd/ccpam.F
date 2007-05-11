@@ -86,6 +86,8 @@ C
       IW = LUPRI
       INTFCE = 'DIRAC     '
       CA = NZ.GE.2.AND..NOT.(SPINFR.OR.LEVYLE)
+CMI   ... if CAP is on, switch to complex algebra
+      IF (CAP) CA = .TRUE.
 #if defined (VAR_MPI)
       MASTER = MPARID
       MYPROC = MYTID

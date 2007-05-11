@@ -456,6 +456,7 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
+#include "files.inc"
 #include "complex.inc"
 C
 C---------------Calling variables--------------------------------------
@@ -517,7 +518,11 @@ C
 C.....Store the eigenvalues
 C
       DO I = 1, NDT
-         EV(I) = EVR(INDX(I))
+       EV(I) = EVR(INDX(I))
+CMI    ... temporary print out
+       IF (CARITH) THEN
+        write(IW,*) I,'.  re:',EVR(I),' im:',EVI(I)
+       ENDIF
       ENDDO
 C
 C.....Store the eigenvectors in EVEC
