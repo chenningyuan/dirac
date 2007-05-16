@@ -9043,6 +9043,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "mxcent.h"
 #include "nuclei.h"
 #include "cbieri.h"
+#include "ccom.h"
 
       DIMENSION H2CAO(*),WORK(LWORK)
       CHARACTER LABINT(MXQN**2)*4
@@ -9082,8 +9083,11 @@ C   ... transform to BU basis
       CALL BSTOBU(H2CAO,NZ,WORK(KFREE),LFREE)
 
       CALL MEMGET('REAL',KBUF1,N2BBASX*4,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF2,N2BBASX*4,WORK,KFREE,LFREE)
-
+      IF(DOSPHE) THEN
+        KBUF2 = KBUF1
+      ELSE
+        CALL MEMGET('REAL',KBUF2,N2BBASX*4,WORK,KFREE,LFREE)
+      ENDIF
 C  ... transform to the AO basis ... as in dirone.F/PR1CEX2
       IPAR = JBTOF(IREP,1)
       NB = NTBAS(0)
@@ -9100,28 +9104,30 @@ C  ... transform to the AO basis ... as in dirone.F/PR1CEX2
       IF (IPRINT.GE.4) THEN
         CALL HEADER(
      &'AMFI_STUFF: TOTAL H(2c)_LL in "xhi" C AO basis ' ,-1)
-C        ... use IQDEF instead of IPQTOQ only when beeing in AO basis!
+C        ... use IQDEF instead of IPQTOQ only when being in AO basis!
         CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI)    
       ENDIF
 
-      CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
+      IF(.NOT.DOSPHE) THEN
+        CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
 
 C      ... transform C AO, WORK(KBUF1) -> S AO, WORK(KBUF2) 
-      CALL DZERO(WORK(KBUF2),4*N2BBASX)
-      LCOMP=0 
-      DO IZ = 1, 4
-      CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
+        CALL DZERO(WORK(KBUF2),4*N2BBASX)
+        LCOMP=0 
+        DO IZ = 1, 4
+          CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
      &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
      &         WORK(KFREE),LFREE,IPRINT)
-      ENDDO
+        ENDDO
 
-      IF (IPRINT.GE.4) THEN
-        CALL HEADER(
+        IF (IPRINT.GE.4) THEN
+          CALL HEADER(
      &'AMFI_STUFF: TOTAL ENTERING H(2c)_LL in "xhi" S AO basis ' ,-1)
-        CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
+          CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
+        ENDIF
       ENDIF
 
-C   ... find out total number of L-component spherical functions
+C ... find out total number of L-component spherical functions
       NSPH = NSPHCM(1)
 
       CALL MEMGET('INTE',KHINLM,NSPH,WORK,KFREE,LFREE)
@@ -9159,61 +9165,62 @@ C      .... charges per nucleis
      &  ' in "xhi" S AO basis' ,-1)
         CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
       ENDIF
-
+      IF(.NOT.DOSPHE) THEN
 C ===================================================================
 C     now transform back: S AO, WORK(KBUF2) -> C AO, WORK(KBUF1) 
 C ===================================================================
-      CALL DZERO(WORK(KBUF1),N2BBASX*4)
+        CALL DZERO(WORK(KBUF1),N2BBASX*4)
 C     ... generate with appropriare factors !!
-      CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRINT)
-      DO IZ = 1, 4
-       CALL MTAOSC(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
+        CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRINT)
+        DO IZ = 1, 4
+          CALL MTAOSC(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
      &          WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
      &          WORK(KFREE),LFREE,IPRINT)
-      ENDDO
-
-C   ... point to check H2c in C AO basis again...
-      IF (IPRINT.GE.4) THEN
-        CALL HEADER(
-     &'AMFI_STUFF: TOTAL H(2c)_LL BACK in "xhi" C AO basis ' ,-1)
-        CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI) 
-      ENDIF
-
-C     ... this is only testing sequence...
-      TESTCSC=.FALSE.
-      IF (TESTCSC) THEN
-       CALL DZERO(WORK(KBUF2),N2BBASX*4)
-C       ... needed to go back to S
-       CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
-       DO IZ = 1, 4
-         CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
-     &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
-     &         WORK(KFREE),LFREE,IPRINT)
-       ENDDO
-
-        IF (IPRINT.GE.6) THEN
-          CALL HEADER(
-     &'AMFI_STUFF: TOTAL CSC_H(2c)_LL AGAIN in "xhi" S AO basis ' ,-1)
-          CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
-        ENDIF
-
-       CALL DZERO(WORK(KBUF1),N2BBASX*4)
-      CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRINT)
-
-C        ... and from S to C
-        DO IZ = 1, 4
-         CALL MTAOSC(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
-     &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
-     &         WORK(KFREE),LFREE,IPRINT)
         ENDDO
 
-        IF (IPRINT.GE.6) THEN
+C   ... point to check H2c in C AO basis again...
+        IF (IPRINT.GE.4) THEN
           CALL HEADER(
-     &'AMFI_STUFF: TOTAL CSC_H(2c)_LL AGAIN in "xhi" C AO basis ' ,-1)
-          CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI)    
+     &'AMFI_STUFF: TOTAL H(2c)_LL BACK in "xhi" C AO basis ' ,-1)
+          CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI) 
         ENDIF
 
-        CALL QUIT('CSC  again')
+C     ... this is only testing sequence...
+        TESTCSC=.FALSE.
+        IF (TESTCSC) THEN
+          CALL DZERO(WORK(KBUF2),N2BBASX*4)
+C       ... needed to go back to S
+          CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
+         DO IZ = 1, 4
+           CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
+     &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
+     &         WORK(KFREE),LFREE,IPRINT)
+         ENDDO
+
+          IF (IPRINT.GE.6) THEN
+            CALL HEADER(
+     &'AMFI_STUFF: TOTAL CSC_H(2c)_LL AGAIN in "xhi" S AO basis ' ,-1)
+            CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
+          ENDIF
+
+         CALL DZERO(WORK(KBUF1),N2BBASX*4)
+         CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRINT)
+
+C        ... and from S to C
+          DO IZ = 1, 4
+            CALL MTAOSC(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
+     &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
+     &         WORK(KFREE),LFREE,IPRINT)
+          ENDDO
+
+          IF (IPRINT.GE.6) THEN
+            CALL HEADER(
+     &'AMFI_STUFF: TOTAL CSC_H(2c)_LL AGAIN in "xhi" C AO basis ' ,-1)
+            CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI)    
+          ENDIF
+
+          CALL QUIT('CSC  again')
+        ENDIF
       ENDIF
 
 C ============================================================
