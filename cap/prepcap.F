@@ -315,6 +315,7 @@ C     Save HERMIT symmetry adapted integrals into the AOPROPER file.
 
          CALL CAPREAD(PEMAT_NAME,WORK(KPMR),WORK(KPMRSA),
      &                 ICAPBFO,IOBF1_2,.FALSE.,IPRCAP)
+
          CALL DAMATR( NBASIS, WORK(KPMRSA), NBASIS, WORK(KPMRSAT) )
          CALL SAVECAP(WORK(KPMRSAT),2,WORK(KFREE),LFREE,IPRCAP)
 
@@ -327,8 +328,10 @@ C     Save HERMIT symmetry adapted integrals into the AOPROPER file.
          CALL DZERO(WORK(KPMRSA),N2BBASX)
          CALL MEMGET('REAL',KPMR,N2BBASX,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KPMR),N2BBASX)
+
          CALL CAPREAD(PEMAT_NAME,WORK(KPMR),WORK(KPMRSA),
      &                 ICAPBFO,IOBF1_2,.TRUE.,IPRCAP)
+
 C     Save HERMIT symmetry adapted integrals into the AOPROPER file.
          CALL DAMATR( NBASIS, WORK(KPMRSA), NBASIS, WORK(KPMRSAT) )
          CALL SAVECAP(WORK(KPMRSAT),3,WORK(KFREE),LFREE,IPRCAP)
@@ -533,7 +536,7 @@ C   ... fill IOBF1_2 array !
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck getcapim */
-      SUBROUTINE GETCAPI(CAPI,WORK,KFREE,LFREE)
+      SUBROUTINE GETCAPI(CAPI,CAPI1,WORK,KFREE,LFREE)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Purpose: get CAP_IM operator in MO basis into CAPI(*) 
@@ -562,13 +565,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbcap.h"
 #include "dummy.h"
 
-      DIMENSION CAPI(NORBT,NORBT,NZ),WORK(*)
+      DIMENSION CAPI(NORBT,NORBT,NZ),CAPI1(NORBT,NORBT,NZ),WORK(*)
+      LOGICAL REARR
 
       CALL QENTER('GETCAPI')
 
       KFRSAV = KFREE
 
       IPRINT = IPRCAP
+
+      CALL DZERO(CAPI,NORBT*NORBT*NZ)
 
 C  ...array for MO coefficients
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
@@ -605,6 +611,37 @@ C     ... Open property file
      &         NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
       ENDIF
 
+CMI   ...MOVE ee-part to the upper left part of the MO-matrix
+C     REARR = .FALSE.
+      REARR = .true.
+C     IF (REARR.AND..NOT.LEVYLE) THEN
+
+        CALL DZERO(CAPI1,NORBT*NORBT*NZ)
+
+        IOFF_E = 0
+        IOFF_EP = 0
+        DO IFSYM =1 , NFSYM
+           DO IZ = 1, NZ
+             DO I = 1, NESH(IFSYM)
+             DO J = 1, NESH(IFSYM)
+              CAPI1(I+IOFF_EP,J+IOFF_EP,IZ) = 
+     &        CAPI(I+NPSH(IFSYM)+IOFF_EP,J+NPSH(IFSYM)+IOFF_EP,IZ)
+             ENDDO
+             ENDDO
+           ENDDO
+           IOFF_EP = NORB(IFSYM)
+           IOFF_E  = NESH(IFSYM)
+       ENDDO
+
+       IF (IPRINT.GE.5) THEN
+         WRITE(LUPRI,'(2X,2A)')
+     & 'GETCAPI: Rearranged MO matrix of property: ',PRPNAM(INDXPR)
+        CALL PRQMAT(CAPI1,NORBT,NORBT,NORBT,
+     &         NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
+       ENDIF
+
+C     ENDIF
+
       CALL MEMREL('GETCAPI',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('GETCAPI')
       RETURN
@@ -637,6 +674,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       CALL QENTER('ADDCAPIM')
 
+C ... note: FMOM and CAPIM are in MOLFDIR format !
       IF (IPRCAP.GE.5) THEN
           WRITE(LUPRI,'(/3X,A)')
      &    'ADDCAPIM:  *** Entering core Fock matrix in MOLFDIR'//
@@ -645,7 +683,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &                IPQTOQ(1,0),LUPRI)
 
           WRITE(LUPRI,'(/3X,A)')
-     &    'ADDCAPIM:  *** Entering (Hamiltonian like) CAPIM ***'
+     &    'ADDCAPIM:  *** Entering (MOLFDIR like) CAPIM ***'
           CALL PRQMAT(CAPIM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZ,2),
      &                IPQTOQ(1,0),LUPRI)
       ENDIF
@@ -674,8 +712,10 @@ C         i.(a+ib) = -b + i.a
 C      ...Add CAPIM into FMOM
       DO I = 1, NSTRT*2
       DO J = 1, NSTRT*2
-       FMOM(I,J,1) = FMOM(I,J,1) + CAPIM(I,J,1)
-       FMOM(I,J,2) = FMOM(I,J,2) + CAPIM(I,J,2)
+       TEMP1 = FMOM(I,J,1)
+       FMOM(I,J,1) = TEMP1 + CAPIM(I,J,1)
+       TEMP2 =  FMOM(I,J,2) 
+       FMOM(I,J,2) = TEMP2 + CAPIM(I,J,2)
       ENDDO
       ENDDO
 
@@ -803,7 +843,7 @@ C
         ENDIF
         IF (IPRINT.GE.2) THEN
            WRITE(LUPRI,'(2X,A,A,A,A4,A,I3)')
-     &     'Operator label (PLABEL):',PLABEL(1),
+     &     ' Operator label (PLABEL):',PLABEL(1),
      &     ' COMB=',COMB,' operator index(INDXPR)=',INDXPR
         ENDIF
       ENDIF

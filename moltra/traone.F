@@ -617,19 +617,35 @@ C
 
 #ifdef MOD_CAP
       IF (CAP) THEN
+
+       IF (IPRCAP.GE.5) THEN
+        WRITE(LUPRI,'(/3X,A,I2/)')
+     &   '*** Pure Core Fock matrix (DIRAC format) ***'
+        CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,NZ,
+     &                      IPQTOQ(1,0),LUPRI)
+        WRITE(LUPRI,'(/3X,A,I2/)')
+     &   '*** Pure Core Fock matrix (MOLFDIR format) ***'
+        CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZ,2),
+     &               IPQTOQ(1,0),LUPRI)
+       ENDIF
+
 C      ... allocate space for CAP_IM
-        CALL MEMGET('REAL',KCAPI,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KCAPI,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KCAPI1,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
 C      .... get CAP_IM (as a "real" operator) in the MO basis 
-        CALL GETCAPI(WORK(KCAPI),WORK,KFREE,LFREE)
+        CALL GETCAPI(WORK(KCAPI),WORK(KCAPI1),WORK,KFREE,LFREE)
 
 C       ... allocate space for MOLFDIR like CAP
         CALL MEMGET('REAL',KCAPIM,NSTRT*NSTRT*8,WORK,KFREE,LFREE)
 C       ... turn it in the MOLFDIR like form
-        CALL MOLTODIR(WORK(KCAPI),WORK(KCAPIM),NSTR,NSTRT,FORWARD)
+C       CALL MOLTODIR(WORK(KCAPI),WORK(KCAPIM),NSTR,NSTRT,FORWARD)
+        CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,.TRUE.)
 
-C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM
+C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM (if .true.)
         CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,.TRUE.)
 C       CALL ADDCAPIM(NSTRT,WORK(KCAPIM),FMOM,.FALSE.)
+
+        CALL MEMREL('MRCON1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       ENDIF
 #endif
 
@@ -1138,7 +1154,7 @@ C/* Deck moltodir */
 C***********************************************************************
 C     
 C Purpose: Transform DIRAC Fock matrix, FMO, into MOLFDIR format, FMOM
-C          (if FORWARD=.true, otherwise tarnsform back)     
+C          (if FORWARD=.true, otherwise transform back)     
 C     
 C     Luuk Visscher, Mar 26 2002
 C
@@ -1181,7 +1197,7 @@ C
           ELSE
              CALL DCOPY(NSTR(IFSYM),FMOM(1+IOFF2,J+IOFF2,1),1,
      &                              FMO (1+IOFF1,J+IOFF1,1),1)
-           ENDIF
+          ENDIF
         ENDDO
         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
           DO J = 1, NSTR(IFSYM)

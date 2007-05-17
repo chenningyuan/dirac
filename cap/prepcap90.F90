@@ -216,7 +216,7 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
                     PW(get_KFREE()),get_LFREE,IPRINT)
      ELSE
        CALL PRPMSAO(INDXPR,IDIMENS,PW(KPTRI),PW(get_qmtx_kstart(propmat)),PW(KONEIN),PW(KFIRST), &
-                     PW(get_KFREE()),get_LFREE,IPRINT )
+                    PW(get_KFREE()),get_LFREE,IPRINT )
      ENDIF
 
      CLOSE(LU1INT,STATUS = 'KEEP')
@@ -265,11 +265,12 @@ call QENTER('GetUnpckOvlpMtx')
    write(LUPRI,*) 'N2BAST=',N2BAST
    write(LUPRI,*) 'get_kfree, get_lfree=',get_kfree(),get_lfree()
    write(LUPRI,*) 'get_qmtx_kstart(smat)=',get_qmtx_kstart(smat)
-   write(LUPRI,*) 'SSMTRC=',SSMTRC
+   write(LUPRI,*) 'SSMTRC=',SSMTRC, ' but I set 1.0'
  endif
 
 ! call lower level routine
- call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree() )
+ !call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree() )
+ call GTOVLX( PW(get_qmtx_kstart(smat)), 1.0D0, PW(get_kfree()), get_lfree() )
 
  if (get_iprint_qmtx() >= 5) then
    call print_qmtx_attrib(smat)
