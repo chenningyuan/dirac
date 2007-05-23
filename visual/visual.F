@@ -623,27 +623,31 @@ C=======================================================================
      &          VECTOR_A(3),
      &          VECTOR_B(3)
 
-      IQ_N          =  1 !    number density
-      IQ_M          =  2 !    magnetization
-      IQ_DIVM       =  3 !div(magnetization)
-      IQ_ROTM       =  4 !rot(magnetization)
-      IQ_RXJ        =  5 !    r \times j
-      IQ_J          =  6 !    current density
-      IQ_DIVJ       =  7 !div(current density)
-      IQ_ROTJ       =  8 !rot(current density)
-      IQ_JPARA      =  9 !    paramagnetic current density
-      IQ_DIVJPARA   = 10 !div(paramagnetic current density)
-      IQ_ROTJPARA   = 11 !rot(paramagnetic current density)
-      IQ_JDIA       = 12 !     diamagnetic current density
-      IQ_VPARA      = 13 !    paramagnetic velocity density
-      IQ_DIVVPARA   = 14 !div(paramagnetic velocity density)
-      IQ_ROTVPARA   = 15 !rot(paramagnetic velocity density) a.k.a. vorticity
-      IQ_ELF        = 16 !    ELF
-      IQ_K          = 17 !    kinetic energy density
-      IQ_H          = 18 !    helicity density
-      IQ_GAMMA5     = 19 !    \gamma_5 density
-      IQ_NUC_SPIN_A = 20 !    give me a name ...
-      IQ_NUC_SPIN_B = 21 !    give me a name ...
+      IQ_N           =  1 !    number density
+      IQ_M           =  2 !    magnetization
+      IQ_DIVM        =  3 !div(magnetization)
+      IQ_ROTM        =  4 !rot(magnetization)
+      IQ_RXJ         =  5 !    r \times j
+      IQ_J           =  6 !    current density
+      IQ_DIVJ        =  7 !div(current density)
+      IQ_ROTJ        =  8 !rot(current density)
+      IQ_JPARA       =  9 !    paramagnetic current density
+      IQ_DIVJPARA    = 10 !div(paramagnetic current density)
+      IQ_ROTJPARA    = 11 !rot(paramagnetic current density)
+      IQ_JDIA        = 12 !     diamagnetic current density
+      IQ_VPARA       = 13 !    paramagnetic velocity density
+      IQ_DIVVPARA    = 14 !div(paramagnetic velocity density)
+      IQ_ROTVPARA    = 15 !rot(paramagnetic velocity density) a.k.a. vorticity
+      IQ_ELF         = 16 !    ELF
+      IQ_K           = 17 !    kinetic energy density
+      IQ_H           = 18 !    helicity density
+      IQ_GAMMA5      = 19 !    \gamma_5 density
+      IQ_NUC_SPIN_IX = 20 !    give me a name ...
+      IQ_NUC_SPIN_JX = 21 !    give me a name ...
+      IQ_NUC_SPIN_IY = 22 !    give me a name ...
+      IQ_NUC_SPIN_JY = 23 !    give me a name ...
+      IQ_NUC_SPIN_IZ = 24 !    give me a name ...
+      IQ_NUC_SPIN_JZ = 25 !    give me a name ...
 
       CALL DZERO(QUANTITY_ADDMEUP,4)
 
@@ -865,7 +869,7 @@ C=======================================================================
           CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
         ENDIF
 
-        IQ = IQ_NUC_SPIN_A !give me a name ...
+        IQ = IQ_NUC_SPIN_IX !give me a name ...
         IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
           CALL GET_J(.TRUE.,
      &               VECTOR_A,
@@ -890,10 +894,10 @@ C=======================================================================
           VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
           VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
 
-          CALL DAXPY(3,D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
+          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
         ENDIF
 
-        IQ = IQ_NUC_SPIN_B !give me a name ...
+        IQ = IQ_NUC_SPIN_JX !give me a name ...
         IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
           CALL GET_J(.TRUE.,
      &               VECTOR_A,
@@ -918,7 +922,119 @@ C=======================================================================
           VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
           VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
 
-          CALL DAXPY(3,D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
+          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_NUC_SPIN_IY !give me a name ...
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_J(.TRUE.,
+     &               VECTOR_A,
+     &               IREP_XVECTOR(IXVECTOR),
+     &               GAO,
+     &               GAO1,
+     &               DMAT_AO(1+IOFF),
+     &               BUF)
+
+          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
+          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
+          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
+
+          R_NORM = RX**D2
+     &           + RY**D2
+     &           + RZ**D2
+
+          R_NORM  = DSQRT(R_NORM)
+          R_NORM3 = R_NORM**D3
+
+          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
+          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
+          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
+
+          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_NUC_SPIN_JY !give me a name ...
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_J(.TRUE.,
+     &               VECTOR_A,
+     &               IREP_XVECTOR(IXVECTOR),
+     &               GAO,
+     &               GAO1,
+     &               DMAT_AO(1+IOFF),
+     &               BUF)
+
+          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
+          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
+          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
+
+          R_NORM = RX**D2
+     &           + RY**D2
+     &           + RZ**D2
+
+          R_NORM  = DSQRT(R_NORM)
+          R_NORM3 = R_NORM**D3
+
+          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
+          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
+          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
+
+          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_NUC_SPIN_IZ !give me a name ...
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_J(.TRUE.,
+     &               VECTOR_A,
+     &               IREP_XVECTOR(IXVECTOR),
+     &               GAO,
+     &               GAO1,
+     &               DMAT_AO(1+IOFF),
+     &               BUF)
+
+          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
+          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
+          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
+
+          R_NORM = RX**D2
+     &           + RY**D2
+     &           + RZ**D2
+
+          R_NORM  = DSQRT(R_NORM)
+          R_NORM3 = R_NORM**D3
+
+          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
+          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
+          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
+
+          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_NUC_SPIN_JZ !give me a name ...
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_J(.TRUE.,
+     &               VECTOR_A,
+     &               IREP_XVECTOR(IXVECTOR),
+     &               GAO,
+     &               GAO1,
+     &               DMAT_AO(1+IOFF),
+     &               BUF)
+
+          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
+          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
+          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
+
+          R_NORM = RX**D2
+     &           + RY**D2
+     &           + RZ**D2
+
+          R_NORM  = DSQRT(R_NORM)
+          R_NORM3 = R_NORM**D3
+
+          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
+          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
+          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
+
+          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
         ENDIF
 
         CALL DAXPY(4,COMMON_FACTOR,QUANTITY(0),1,QUANTITY_ADDMEUP(0),1)
