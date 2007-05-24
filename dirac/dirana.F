@@ -2628,19 +2628,23 @@ C
 C Construction of W = Sc (large and small components)
 C
       CALL QGEMM(NBL,NI,NBL,D1,
-     S              'N','N',IPQTOQ(1,0),SMAT,NB,NB,1,
-     S              'N','N',IPQTOQ(1,0),SCOEF,NB,NI,4,
-     S              D0,IPQTOQ(1,0),WORK(KWLMAT),NBL,NI,4)
-      CALL QGEMM(NBS,NI,NBS,D1,
-     S              'N','N',IPQTOQ(1,0),SMAT(1+NB*NBL+NBL),NB,NB,1,
-     S              'N','N',IPQTOQ(1,0),SCOEF(1+NBL),NB,NI,4,
-     S              D0,IPQTOQ(1,0),WORK(KWSMAT),NBS,NI,4)
+     S     'N','N',IPQTOQ(1,0),SMAT,NB,NB,1,
+     S     'N','N',IPQTOQ(1,0),SCOEF,NB,NI,4,
+     S     D0,IPQTOQ(1,0),WORK(KWLMAT),NBL,NI,4)
+      IF(.NOT.TWOCOMPBSS) THEN
+         CALL QGEMM(NBS,NI,NBS,D1,
+     S        'N','N',IPQTOQ(1,0),SMAT(1+NB*NBL+NBL),NB,NB,1,
+     S        'N','N',IPQTOQ(1,0),SCOEF(1+NBL),NB,NI,4,
+     S        D0,IPQTOQ(1,0),WORK(KWSMAT),NBS,NI,4)
+      ENDIF
 C
       IF(IPRLOC.GE.5) THEN
          WRITE(LUPRI,'(/A)') '* WL matrix :'
          CALL PRQMAT(WORK(KWLMAT),NBL,NI,NBL,NI,4,IPQTOQ(1,0),LUPRI)
-         WRITE(LUPRI,'(/A)') '* WS matrix :'
-         CALL PRQMAT(WORK(KWSMAT),NBS,NI,NBS,NI,4,IPQTOQ(1,0),LUPRI)
+         IF(.NOT.TWOCOMPBSS) THEN
+            WRITE(LUPRI,'(/A)') '* WS matrix :'
+            CALL PRQMAT(WORK(KWSMAT),NBS,NI,NBS,NI,4,IPQTOQ(1,0),LUPRI)
+         ENDIF
       ENDIF
 C
 C Construct P_A for each center A
@@ -2649,15 +2653,17 @@ C
       IOFFS = 0
       DO I = 1,NUCDEP
          CALL QGEMM(NI,NI,NFNUC(I),D1,
-     S              'H','N',IPQTOQ(1,0),SCOEF(1+IOFFL),NB,NI,4,
-     S              'N','N',IPQTOQ(1,0),WORK(KWLMAT+IOFFL),NBL,NI,4,
-     S              D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
-         CALL QGEMM(NI,NI,NFNUC(I+NUCDEP),D1,
-     S              'H','N',IPQTOQ(1,0),SCOEF(1+NBL+IOFFS),NB,NI,4,
-     S              'N','N',IPQTOQ(1,0),WORK(KWSMAT+IOFFS),NBS,NI,4,
-     S              D1,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
+     S        'H','N',IPQTOQ(1,0),SCOEF(1+IOFFL),NB,NI,4,
+     S        'N','N',IPQTOQ(1,0),WORK(KWLMAT+IOFFL),NBL,NI,4,
+     S        D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
+         IF(.NOT.TWOCOMPBSS) THEN
+            CALL QGEMM(NI,NI,NFNUC(I+NUCDEP),D1,
+     S           'H','N',IPQTOQ(1,0),SCOEF(1+NBL+IOFFS),NB,NI,4,
+     S           'N','N',IPQTOQ(1,0),WORK(KWSMAT+IOFFS),NBS,NI,4,
+     S           D1,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
+            IOFFS = IOFFS + NFNUC(NUCDEP+I)
+         ENDIF
          IOFFL = IOFFL + NFNUC(I)
-         IOFFS = IOFFS + NFNUC(NUCDEP+I)
       ENDDO
 C
 C P_A matrices symetrisation
