@@ -380,6 +380,7 @@ C
      &               NTBAS(0),NTBAS(0),1,LUPRI)
       END IF
 C
+      DOGGA = DFTISGGA()
       IF (DOGRD) THEN
          NDER = 1
          CALL DZERO(GRADFT,MXCOOR)
@@ -389,15 +390,13 @@ C
       END IF
       IF (DOLR.OR.DOQR) THEN
          NDER = 0
+         IF(ALDAON) DOGGA = .FALSE.
       END IF
 C
-      DOGGA = DFTISGGA()
       DOGRHO = .FALSE.
       DOLRHO = .FALSE.
-!     WRITE(lupri,*) 'DOGGA', DOGGA
 #if defined (VAR_MPI) 
       DO NODE = 1,NODES
-!       write(lupri,*) 'Sending DOGGA to node', DOGGA, NODE
         CALL MPI_SEND(DOGGA,1,MPI_LOGICAL,NODE,11,
      &                MPI_COMM_WORLD,IERR)
       END DO             
