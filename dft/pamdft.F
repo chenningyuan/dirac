@@ -69,8 +69,8 @@ C
       DATA TABLE /'.XXXXXX','.FROMVX','.RYOGRI','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
-     &            '.SAOP  ','.SAOP! ','.SDFT  ','.COLLIN',
-     &            '.BETA  ','.CDFT  ','.ZIPGRI','.XXXXXX'/
+     &            '.SAOP  ','.SAOP! ','.SDFT  ','.CDFT  ',
+     &            '.COLLIN','.XXXXXX','.ZIPGRI','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -118,8 +118,7 @@ C
 C
 
 !     initialize cdft.h
-      LBIT_CDFT  = 0
-      CDFT_ALPHA = D1
+      LBIT_CDFT = 0
 
 C
 C
@@ -249,30 +248,39 @@ C                                      asymptotic part is LBalpha
                  CALL DOALDA(.TRUE.)
 #endif
                  GOTO 100
+
  15              CONTINUE
 #if defined (MOD_CDFT)
                  CALL SET_LBIT(LBIT_CDFT,1)
+#else
+                 CALL QUIT('missing CDFT routines')
 #endif
-                 GO TO 100
+                 GOTO 100
+
  16              CONTINUE
 #if defined (MOD_CDFT)
-                 CALL SET_LBIT(LBIT_CDFT,3)
+                 CALL SET_LBIT(LBIT_CDFT,2)
+#else
+                 CALL QUIT('missing CDFT routines')
 #endif
-                 GO TO 100
+                 GOTO 100
+
  17              CONTINUE
 #if defined (MOD_CDFT)
-                 CALL SET_LBIT(LBIT_CDFT,4)
+                 CALL SET_LBIT(LBIT_CDFT,3)
+#else
+                 CALL QUIT('missing CDFT routines')
 #endif
-                 GO TO 100
+                 GOTO 100
+
  18              CONTINUE
-#if defined (MOD_CDFT)
-                 CALL SET_LBIT(LBIT_CDFT,2)
-#endif
-                 GO TO 100
+                 GOTO 100
+
  19              CONTINUE
                  ZIPGRID = .TRUE.
                  READ(LUCMD,'(A30)') ZIPGRID_TEXT
-                 GO TO 100
+                 GOTO 100
+
  20              CONTINUE
                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN

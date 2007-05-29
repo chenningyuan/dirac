@@ -1820,7 +1820,6 @@ C
 !     transfer parameters for spin/current density response
       CALL MPI_BCAST(LBIT_CDFT,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(CDFT_ALPHA,1,MPI_REAL,MPARID,MPI_COMM_WORLD,IERR)
 #endif
 
 !     broadcast thresholds
@@ -1959,7 +1958,6 @@ C
 !     receive parameters for spin/current density response
       CALL MPI_BCAST(LBIT_CDFT,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(CDFT_ALPHA,1,MPI_REAL,MPARID,MPI_COMM_WORLD,IERR)
 #endif
 
 !     broadcast thresholds
