@@ -598,6 +598,7 @@ C=======================================================================
 
       PARAMETER (DP12 = D1/D2)
       PARAMETER (DP23 = D2/D3)
+      PARAMETER (DP32 = D3/D2)
       PARAMETER (DP53 = D5/D3)
 
 #include "dcbgen.h"
@@ -627,7 +628,7 @@ C=======================================================================
       IQ_M           =  2 !    magnetization
       IQ_DIVM        =  3 !div(magnetization)
       IQ_ROTM        =  4 !rot(magnetization)
-      IQ_RXJ         =  5 !    r \times j
+      IQ_MDIP        =  5 !    magnetic dipole density
       IQ_J           =  6 !    current density
       IQ_DIVJ        =  7 !div(current density)
       IQ_ROTJ        =  8 !rot(current density)
@@ -648,6 +649,7 @@ C=======================================================================
       IQ_NUC_SPIN_JY = 23 !    give me a name ...
       IQ_NUC_SPIN_IZ = 24 !    give me a name ...
       IQ_NUC_SPIN_JZ = 25 !    give me a name ...
+      IQ_EDIP        = 26 !    electric dipole density
 
       CALL DZERO(QUANTITY_ADDMEUP,4)
 
@@ -774,7 +776,7 @@ C=======================================================================
           CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
 
-        IQ = IQ_RXJ !r \times j
+        IQ = IQ_MDIP !magnetic dipole density
         IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
           CALL GET_J(.TRUE.,
      &               VECTOR_A,
@@ -784,11 +786,18 @@ C=======================================================================
      &               DMAT_AO(1+IOFF),
      &               BUF)
 
-          VECTOR_B(1) = PY*VECTOR_A(3) - PZ*VECTOR_A(2)
-          VECTOR_B(2) = PZ*VECTOR_A(1) - PX*VECTOR_A(3)
-          VECTOR_B(3) = PX*VECTOR_A(2) - PY*VECTOR_A(1)
+          RX = PX - D0
+          RY = PY - D0
+          RZ = PZ - D0
 
-          CALL DAXPY(3,D1,VECTOR_B,1,QUANTITY(1),1)
+          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
+          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
+          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
+
+          FACTOR = DP12
+
+          CALL DAXPY(3,FACTOR,VECTOR_B,1,QUANTITY(1),1)
+          CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
         ENDIF
 
         IQ = IQ_DIVM !div(magnetization)
@@ -883,158 +892,31 @@ C=======================================================================
           RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
           RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
 
-          R_NORM = RX**D2
-     &           + RY**D2
-     &           + RZ**D2
-
-          R_NORM  = DSQRT(R_NORM)
-          R_NORM3 = R_NORM**D3
-
           VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
           VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
           VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
 
-          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
+          RSQ = RX*RX + RY*RY + RZ*RZ
+          FACTOR = -D1/(RSQ**DP32)
+
+          CALL DAXPY(3,FACTOR,VECTOR_B,1,QUANTITY(1),1)
+          CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
         ENDIF
 
-        IQ = IQ_NUC_SPIN_JX !give me a name ...
+        IQ = IQ_EDIP !electric dipole density
         IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               GAO1,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
+          CALL GETRHO(DENSITY,
+     &                IREP_XVECTOR(IXVECTOR),
+     &                GAO,
+     &                DMAT_AO(1+IOFF),
+     &                BUF)
 
-          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
+          VECTOR_A(1) = DENSITY*PX
+          VECTOR_A(2) = DENSITY*PY
+          VECTOR_A(3) = DENSITY*PZ
 
-          R_NORM = RX**D2
-     &           + RY**D2
-     &           + RZ**D2
-
-          R_NORM  = DSQRT(R_NORM)
-          R_NORM3 = R_NORM**D3
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
-        ENDIF
-
-        IQ = IQ_NUC_SPIN_IY !give me a name ...
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               GAO1,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
-
-          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
-
-          R_NORM = RX**D2
-     &           + RY**D2
-     &           + RZ**D2
-
-          R_NORM  = DSQRT(R_NORM)
-          R_NORM3 = R_NORM**D3
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
-        ENDIF
-
-        IQ = IQ_NUC_SPIN_JY !give me a name ...
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               GAO1,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
-
-          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
-
-          R_NORM = RX**D2
-     &           + RY**D2
-     &           + RZ**D2
-
-          R_NORM  = DSQRT(R_NORM)
-          R_NORM3 = R_NORM**D3
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
-        ENDIF
-
-        IQ = IQ_NUC_SPIN_IZ !give me a name ...
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               GAO1,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
-
-          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
-
-          R_NORM = RX**D2
-     &           + RY**D2
-     &           + RZ**D2
-
-          R_NORM  = DSQRT(R_NORM)
-          R_NORM3 = R_NORM**D3
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
-        ENDIF
-
-        IQ = IQ_NUC_SPIN_JZ !give me a name ...
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               GAO1,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
-
-          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
-
-          R_NORM = RX**D2
-     &           + RY**D2
-     &           + RZ**D2
-
-          R_NORM  = DSQRT(R_NORM)
-          R_NORM3 = R_NORM**D3
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          CALL DAXPY(3,-D1/R_NORM3,VECTOR_B,1,QUANTITY(1),1)
+          CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
+          CALL DAXPY(1,D1,VECTOR_A(3),1,QUANTITY(0),1)
         ENDIF
 
         CALL DAXPY(4,COMMON_FACTOR,QUANTITY(0),1,QUANTITY_ADDMEUP(0),1)

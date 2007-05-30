@@ -14,7 +14,7 @@ C     IQ_N           =  1 !    number density
 C     IQ_M           =  2 !    magnetization
 C     IQ_DIVM        =  3 !div(magnetization)
 C     IQ_ROTM        =  4 !rot(magnetization)
-C     IQ_RXJ         =  5 !    r \times j
+C     IQ_MDIP        =  5 !    magnetic dipole density
 C     IQ_J           =  6 !    current density
 C     IQ_DIVJ        =  7 !div(current density)
 C     IQ_ROTJ        =  8 !rot(current density)
@@ -35,6 +35,7 @@ C     IQ_NUC_SPIN_IY = 22 !    give me a name ...
 C     IQ_NUC_SPIN_JY = 23 !    give me a name ...
 C     IQ_NUC_SPIN_IZ = 24 !    give me a name ...
 C     IQ_NUC_SPIN_JZ = 25 !    give me a name ...
+C     IQ_EDIP        = 26 !    electric dipole density
 C
       INTEGER MAX_NR_XVECTORS
       PARAMETER (MAX_NR_XVECTORS = 25)
