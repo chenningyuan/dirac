@@ -451,6 +451,7 @@ C
 C
 C           *** Now do the transformation
 C
+            print*,'CALL RTRACTL 1'
             CALL RTRACTL(WORK(KCMO),SZTRA,WORK(KFREE),LFREE)
 C
 C           *** Throw away CMO again
@@ -2686,7 +2687,16 @@ CSK            WRITE(LUPRI,*) ' (ROPTST) do the 0th order index ...'
             IOPT_INTFLG = IOPT_INTDEF
             JTRLVL = 0
             CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
-            CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+C
+            IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
+              IF (KTRLVL.EQ.5) THEN
+                print*,'CALL RTRACTL Integrals only !'
+                CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+                CALL QUIT (' Transforming only. ')
+              ELSE IF (MOPT_MXMACRO.GT.0) THEN
+                CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+              END IF
+            END IF
 C
             CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
 C
@@ -2953,6 +2963,7 @@ C
          IF (MCTYPE .GE. JMCMIN) THEN
             JTRLVL = KTRLVL
             CALL INISZT(JTRLVL,SZTRA,.TRUE.,NOROTC)
+            print*,'CALL RTRACTL 4'
             CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
          END IF
 C

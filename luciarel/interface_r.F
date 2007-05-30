@@ -9299,3 +9299,118 @@ c     stop 'AFTER WRTDENS.'
 *
       return
       end
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*                                                                     *
+***********************************************************************
+*
+      subroutine LCR_RD_MRCMDC(TINTR,TINTI,INDK,INDL,RKLR,RKLI)
+*
+#include "implicit.inc"
+#include "mxpdim.inc"
+#include "clunit.inc"
+*
+      character*4 REPNA(14),REPN(14)
+      character*7 FNAM1
+      character*6 FNAM2,FNAM3
+      character*8 TIMEX
+      character*10 DATEX,DATEXB,TIMEXB(8)
+      character*10 NEXTFIL
+      logical BREIT,SPINFR,REALAR
+*
+      dimension MULTB(MXPIRR*2,MXPIRR*2)
+      dimension IRPMO(MXPORB),IRPAMO(MXPORB),EPS(MXPORB)
+      dimension TINTR(*),TINTI(*)
+      dimension KR(-MXPORB:MXPORB)
+      dimension INDK(*),INDL(*)
+      dimension RKLR(*),RKLI(*)
+*
+      FNAM1 = 'MRCONEE'
+      FNAM2 = 'MDCINT'
+*
+* Read one-electron integrals
+*
+      open (LUSC96,FILE=FNAM1,FORM='UNFORMATTED')
+       print*,'File ',FNAM1,' opened.'
+      rewind (LUSC96)
+      read (LUSC96) NORB,BREIT,ECORE,NFSYM,NZ,SPINFR
+       print*,'NORB,BREIT,ECORE,NFSYM: ',NORB,BREIT,ECORE,NFSYM
+       print*,' (NORB is the number of spinors.)'
+       print*,'NZ,SPINFR: ',NZ,SPINFR
+      REALAR = NZ.eq.1.or.SPINFR
+       print*,'REALAR ',REALAR
+c     IF (NORB.gt.MXPORB) call Q2JOB(3,'P.ORBSIN','MXPORB',NORB)
+      read (LUSC96) NSYMRP,(REPN(IRP),IRP=1,NSYMRP)
+       print*,'NSYMRP: ',NSYMRP
+       print*,'REPN: ',(REPN(IRP),IRP=1,NSYMRP)
+      read (LUSC96) NREP,(REPNA(IRP),IRP=1,2*NREP)
+       print*,'NREP: ',NREP
+       print*,'REPNA: ',(REPNA(IRP),IRP=1,2*NREP)
+      read (LUSC96) ((MULTB(I,J),I=1,2*NREP),J=1,2*NREP)
+       call iwrtma(MULTB(1,1),NREP*2,NREP*2,MXPIRR*2,MXPIRR*2)
+      read (LUSC96) (IRPMO(IMO),IRPAMO(IMO),EPS(IMO),IMO=1,NORB)
+c      print*,'IRPMO: ',(IRPMO(I),I=1,NORB)
+c      print*,'IRPAMO: ',(IRPAMO(I),I=1,NORB)
+c      print*,'EPS: ',(EPS(I),I=1,NORB)
+      if (REALAR) then
+         read (LUSC96) (TINTR(JI),TDUM,JI=1,NORB*NORB)
+      else
+         read (LUSC96) (TINTR(JI),TINTI(JI),JI=1,NORB*NORB)
+      end if
+       do IP=1,NORB**2
+        print*,'TINTR(',IP,') = ',TINTR(IP)
+       end do
+      close (LUSC96)
+*
+* Read two-electron integrals
+*
+      open (LUSC97,file=FNAM2,form='UNFORMATTED')
+       print*,'File ',FNAM2,' opened.'
+      rewind (LUSC97)
+      read (LUSC97,err=10000,end=10000) DATEX,TIMEX,NKR,
+     &                                  (KR(I),KR(-I),I=1,NKR)
+       print*,'DATEX,TIMEX,NKR ',DATEX,TIMEX,NKR
+       print*,'KR(NKR)..KR(-NKR) ',(KR(I),I=-NKR,NKR)
+      IF (2*NKR.NE.NORB)
+     &   CALL QUIT('MRCONEE AND MDCINT ARE INCOMPATIBLE')
+      IF (BREIT) THEN
+        call quit ('BREIT interaction not yet implemented.')
+c       open (MDBINT,file=FNAM(3),form='UNFORMATTED')
+c       read (mdbint,err=10001,end=10001) datexb,timexb,nkrb
+c       IF (NKR.NE.NKRB) CALL QUIT('MDCINT AND MDBINT ARE INCOMPATIBLE')
+      END IF
+      IF (REALAR) THEN
+c        DO I = 1, M1
+c           RKLI(I) = 0.0
+c        ENDDO
+      ENDIF
+
+c     IF (REALAR) THEN
+c        read (LUSC97,ERR=10010,END=10010) ikr,jkr,nz,
+c    &                (indk(inz),indl(inz),inz=1,nz),
+c    &                (rklr(inz),inz=1,nz)
+c     ELSE
+c        read (LUSC97,ERR=10010,END=10010) ikr,jkr,nz,
+c    &                (indk(inz),indl(inz),inz=1,nz),
+c    &                (rklr(inz),rkli(inz),inz=1,nz)
+c     END IF
+       print*,'IKR,JKR,NZ ',IKR,JKR,NZ
+       print*,'INDK : ',(INDK(I),I=1,NZ)
+       print*,'INDL : ',(INDL(I),I=1,NZ)
+       print*,'RKLR : ',(RKLR(I),I=1,NZ)
+
+
+
+      close (LUSC97)
+       print*,'File ',FNAM2,' closed.'
+
+
+      return
+*
+10000 CALL QUIT('ERROR READING HEADER OF MDCINT')
+10001 CALL QUIT('ERROR READING HEADER OF MDBINT')
+10010 CALL QUIT('ERROR READING INTEGRALS FROM MDCINT')
+10011 CALL QUIT('ERROR READING INTEGRALS FROM MDBINT')
+*
+      end

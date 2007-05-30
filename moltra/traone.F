@@ -100,11 +100,11 @@ C
 C
       RETURN
       END      
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gtcfck */
       SUBROUTINE GTCFCK(FMO,IPRINT,Q1,Q2,QCO,NDMOQR,ICMOQR,NSTR,
      &                  NDMOQC,ICMOQC,NSPC,INTFLG2,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
 C     use active coefficients for MO-transformation
@@ -114,7 +114,7 @@ C                 trapam.F/RESOLV
 C
 C     Based on Trond Saue's GETFCK, Luuk Visscher, Mar 17 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -382,11 +382,11 @@ C
       ENDIF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mrcone */
       SUBROUTINE MRCONE(FMO,ORBE,ORBE1,ORBE2,IBORB,IBORB1,IBORB2,
      &                  NSPC,NSTR,NSTRT,IPRINT,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C     
 C     Write core Fock-matrix and other information in MRCONEE format 
 C     A better interface needs to be defined, this will serve for the
@@ -395,7 +395,7 @@ C     modified.
 C
 C     Luuk Visscher, Mar 18 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.D0)

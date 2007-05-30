@@ -306,8 +306,8 @@ C  avoid unit 66. Used in DALTON
       LUSC93 = 93
       LUSC94 = 94
       LUSC95 = 95
-      LUSC96 = 96
-      LUSC97 = 97
+      LUSC96 = 96     ! File MRCONEE
+      LUSC97 = 97     ! File MDCINT
       LUSC98 = 98
       LUSC99 = 99
 * =================

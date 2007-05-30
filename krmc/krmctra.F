@@ -876,8 +876,8 @@ C     Call driver for 4-index transformation
 C     --------------------------------------
 C
       CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
-     &     NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
-     &     TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
+     &            NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &            TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
 C
 C     Print timing information
 C
@@ -1023,6 +1023,9 @@ C
       OPEN (LUINT, FILE = '4INDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(A)') ' Reading from file : 4INDINFO '
+C
 C     Read time & date for creation
 C
       READ (LUINT) DATEX, TIMEX
@@ -1060,6 +1063,7 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
          IRECL = MAX(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
+         WRITE(LUPRI,'(A,A)') ' Reading from file : ',FNODE
          OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',
      &        ACCESS='DIRECT',RECL=IRECL)
          IIKLB = IIKLB + NFPCK34 (IREPIJ)
@@ -1196,7 +1200,7 @@ C
 #endif
 C
 C           Do the gazillion matrix multiplies to construct
-C           the auxililary Fock matrix FQ.
+C           the auxiliary Fock matrix FQ.
 C
             IF (DOFQ) THEN
                CALL RADDFQ(FQ,WORK(KH2XY),WORK(KH2YX),PV,

@@ -924,7 +924,8 @@ C
       IF (CTLSTR.EQ.'MXCIV ') THEN
          IF (MXCIV.EQ.0) THEN
             IVAR(1) = 3*NCIROOT
-            write(LUPRI,'(A,I4)') '   Setting MXCIV to ',3*NCIROOT
+            write(LUPRI,*)
+            write(LUPRI,'(A,I4)') '  Setting MXCIV to ',3*NCIROOT
          ELSE
             IVAR(1) = MXCIV
          END IF
@@ -1782,8 +1783,9 @@ C***********************************************************************
 C
 C     CI start guess.
 C
-C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
-C     Last revision :           T. Fleig         - Nov 30 2001
+C     Written by J. Thyssen and T. Fleig                  - Jan 12 2001
+C     Last revision :                           T. Fleig  - Nov 30 2001
+C                      Read integral files      T. Fleig  - May    2007
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1808,79 +1810,105 @@ C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
 C
-C     Calculate core Hamiltonian:
-C     ---------------------------
+C     Flag for type of integral interface:
+C     I_IITP = 1: Old 4IND1XXXX0 driven interface
+C     I_IITP = 2: New MRCONEE/MDCINT driven interface
 C
-C     The core Hamiltonian is the active-active part of FC,
-C     a.k.a. FCAC.
+      N_FCACM = (2*NASHT)*(2*NASHT)*MZ
 C
-      CALL MEMGET('REAL',KFCACM,(2*NASHT)*(2*NASHT)*MZ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
+      I_IITP = 1
 C
-C     Calculate FCmo (TOFILE false: do not write to LUKRM3) :
+      if (I_IITP.eq.2) then
 C
-      CALL RGETFC(.FALSE.,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+        print*,' Testing new integral interface (MRCONEE/MDCINT)'
 C
-      IF (IPROPT.GE.1) THEN
-        WRITE(LUPRI,'(A,1F18.10)') 'Core energy : ',ECORE
-      END IF
+        CALL MEMGET('REAL',KFCACM,N_FCACM,WORK,KFREE,LFREE)
+        print*,'Allocated for ',N_FCACM,' integrals'
+        CALL LCR_RD_MRCMDC(WORK(KFCACM),WORK(KFCACM+N_FCACM/MZ),
+     &                     WORK(KINDK),WORK(KINDL),
+     &                     WORK(KRKLR),WORK(KRKLI))
+        CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
+     &               WORK,KFREE,LFREE)
+        print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
+        print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
+        CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
+     &               WORK(KFREE),LFREE,IPROPT)
+        stop
 C
-C     Get active-active part of FCmo:
+      else if (I_IITP.eq.1) then
 C
-      CALL RGETAC(WORK(KFC),WORK(KFCAC),IPROPT)
-      IF (IPROPT.GE.5) THEN
-        WRITE(LUPRI,'(A)') 'Active Fock matrix:'
-        DO I=1,N2ASHXQ,1
-          WRITE(6,'(1I3,1F18.14)') I,WORK(KFCAC+I-1)
-        END DO
-      END IF
+C       Calculate core Hamiltonian:
+C       ---------------------------
 C
-C     Transform quaternion FCACmo to molfdir type FCAC.
+C       The core Hamiltonian is the active-active part of FC,
+C       a.k.a. FCAC.
 C
-      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPROPT)
+        CALL MEMGET('REAL',KFCACM,N_FCACM,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
 C
-      IF (IPROPT.GE.5) THEN
-        WRITE(LUPRI,'(A)') 'Molfdir format FCAC:'
-        WRITE(LUPRI,'(A)') 'Real part:'
-        DO I=1,(2*NASHT)*(2*NASHT)*MZ/2
-          WRITE(6,'(1I3,1F18.14)') I,WORK(KFCACM+I-1)
-        END DO
-        WRITE(LUPRI,'(A)') 'Imaginary part:'
-        DO I=(2*NASHT)*(2*NASHT)*MZ/2+1,
-     &       (2*NASHT)*(2*NASHT)*MZ
-          WRITE(6,'(1I3,1F18.14)') I,WORK(KFCACM+I-1)
-        END DO
-      END IF
+C       Calculate FCmo (TOFILE false: do not write to LUKRM3) :
 C
-      CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+        CALL RGETFC(.FALSE.,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+C
+        IF (IPROPT.GE.1) THEN
+          WRITE(LUPRI,'(A,1F18.10)') 'Core energy : ',ECORE
+        END IF
+C
+C       Get active-active part of FCmo:
+C
+        CALL RGETAC(WORK(KFC),WORK(KFCAC),IPROPT)
+        IF (IPROPT.GE.5) THEN
+          WRITE(LUPRI,'(A)') 'Active Fock matrix:'
+          DO I=1,N2ASHXQ,1
+            WRITE(6,'(1I3,1F18.14)') I,WORK(KFCAC+I-1)
+          END DO
+        END IF
+C
+C       Transform quaternion FCACmo to molfdir type FCAC.
+C
+        CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPROPT)
+C
+        IF (IPROPT.GE.5) THEN
+          WRITE(LUPRI,'(A)') 'Molfdir format FCAC:'
+          WRITE(LUPRI,'(A)') 'Real part:'
+          DO I=1,N_FCACM/MZ
+            WRITE(6,'(1I3,1F18.14)') I,WORK(KFCACM+I-1)
+          END DO
+          IF (NZ.GT.1) THEN
+            WRITE(LUPRI,'(A)') 'Imaginary part:'
+            DO I=N_FCACM/MZ+1,N_FCACM
+              WRITE(6,'(1I3,1F18.14)') I,WORK(KFCACM+I-1)
+            END DO
+          END IF
+        END IF
+C
+        CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
 
-C     Read two-electron integrals:
-C     ----------------------------
+C       Read two-electron integrals:
+C       ----------------------------
 C
-CCC   CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
-     &             WORK,KFREE,LFREE)
-      print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
-      print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
+CCC     CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
+     &               WORK,KFREE,LFREE)
+C        print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
+C        print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
 C
-C     Read integrals from 4IND1XXXX0:
+C       Read integrals from 4IND1XXXX0:
 C
-C     FIXME: write me
-C            SPINFR=.TRUE. not yet implemented in RGETH2 (why?)
+C       FIXME: write me
+C              SPINFR=.TRUE. not yet implemented in RGETH2 (why?)
 C
-      CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
-     &             WORK(KFREE),LFREE,IPROPT)
+        CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
+     &               WORK(KFREE),LFREE,IPROPT)
 C
-C     Transform integrals to Molfdir format:
+C       Transform to a list of integrals...
+CCC     CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPROPT)
+CCC     CALL MEMREL('LUCI_RCIST.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
 C
-C     FIXME:
-C     Nope, transform to a list of integrals...
-C
-C
-CCC   CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPROPT)
-CCC   CALL MEMREL('LUCI_RCIST.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
+      else
+        CALL QUIT('LUCI_RCIST: Invalid flag I_IITP.')
+      end if
 C
 C     Transfer data to LUCIAREL common blocks.
       CALL LUCI_TRACOM(CIRUN)

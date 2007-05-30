@@ -945,7 +945,7 @@ C&&& .MXCIVE: Number of CI vectors allowed for subspace
    16          CONTINUE
 C&&& .KTRLVL: default integral transformation level.
                   READ(LUCMD,*) KTRLVL
-                  IF (KTRLVL .LE. -2 .OR. KTRLVL .GT. 4) THEN
+                  IF (KTRLVL .LE. -2 .OR. KTRLVL .GT. 5) THEN
                      WRITE(LUPRI,'(//2A,I10)')
      &                    '*** ERROR in ROPTINP *** ',
      &                    'Illegal transformation level: ',KTRLVL
@@ -987,6 +987,11 @@ C
       ELSE
          WRITE(LUPRI,'(A)')
      &     ' * CI start guess is based on full CI '
+      END IF
+C
+      IF (KTRLVL.EQ.5) THEN
+         WRITE(LUPRI,'(A)')
+     &     ' * Running only integral transformation in KRMC '
       END IF
 C
       IF (IRESTRK.EQ.1) THEN
