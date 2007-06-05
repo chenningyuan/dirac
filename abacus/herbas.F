@@ -47,7 +47,7 @@ C*           the primitives and contraction coefficients are *
 C*           given in (array)                                *
 C*     NUC - Number of primitives for a given                *
 C*           (quantumnuber + 1)                              *
-C*     NRC - Number of coloumns with contraction-coeffecients*
+C*     NRC - Number of columns with contraction-coeffecients*
 C*           for a given (quantumnumber + 1).                *
 C*     SEG - Gives whether the contraction-coeffecients are  *
 C*           segmented (for a given (quantumnumber + 1),     *
@@ -105,6 +105,7 @@ C     gives the number of functions in the small component for that type.
       PARAMETER (MAX_IN_BLOCK=3*15)
       LOGICAL SPLIT
 C
+
       BASTMP = '                                        '//
      &         '                                        '
       BASSAV = BASNAM
@@ -212,7 +213,7 @@ C Finds the right element in the file.
 C
       IF (NQVD) THEN
          CALL FINNQD(BASNAM,INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,NRC,SEG,
-     &               KPRIM,ISGEN,KAOVEC,DSM,POLFUN,IPOLST,LUBAS)
+     &               KPRIM,KAOVEC,DSM,POLFUN,IPOLST,LUBAS)
       ELSE
          CALL FINDEL(BASTMP, INTQ,LUBAS)
 C
@@ -236,7 +237,7 @@ C
          IF ( .NOT. NEWEL) THEN
 
             READNU_CALLED=.FALSE.
-
+            
             IQM = IQM + 1
             JCO(IQM) = 1
   11        CONTINUE
@@ -266,6 +267,7 @@ C
             ELSE
                SPLIT = .FALSE.
             ENDIF
+            
 C     
 C Setting ALPHA, CPRIMU AND CPRIM to zero. 
 C
@@ -315,6 +317,7 @@ C
             NRC(NBLOCK) = INTORB
             SEG(NBLOCK) = SEGEJ
             ISGEN(NBLOCK) = INTISG
+            
 C
 C           Reorder primitive orbitals
 C
@@ -409,6 +412,7 @@ C
 C
 C Closing file
 C
+
       BASNAM = BASSAV
       CLOSE (LUBAS, STATUS = 'KEEP')
       RETURN
@@ -457,7 +461,7 @@ C of contraction coeffecients on the next lines.
 C
       INTEGER CONEOR, CONORB
       PARAMETER(CONEOR = 6, CONORB = 7)
-
+      IPRINT=5
       IF (IPRINT.GE.5) THEN
        CALL HEADER('Output from READNU',-1)
        write(lupri,*) 'entering READNU, IPREAD=',IPRINT
@@ -929,7 +933,7 @@ C
       END 
 C/* Deck finnqd */
       SUBROUTINE FINNQD(BASNAM, INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,
-     &     NRC,SEG,KPRIM,ISGEN,KAOVEC,DSM,POLFUN,IPOLST,
+     &     NRC,SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,
      $     LUBAS)
 #include "implicit.h"
 #include "dummy.h"
@@ -950,7 +954,7 @@ C
       LOGICAL EXST, POLFUN, SEG, SEGEJ, BLANK
       DIMENSION ALPHA(KPRIM,KAOVEC), CPRIMU(KPRIM,KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC), NUC(KAOVEC), NRC(KAOVEC),
-     &          SEG(KAOVEC), ISGEN(KAOVEC)
+     &          SEG(KAOVEC)
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
