@@ -32,6 +32,8 @@ C=======================================================================
 
 #include "memint.h"
 
+      CALL DZERO(QUANTITY_INTEGRAL,4)
+
       IF(LBIT(LBIT_VISUAL,3)) THEN !3D
 
         CALL AROUND('3D numerical integration')
@@ -41,7 +43,11 @@ C=======================================================================
         CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
 
         REWIND LUNIT
+
+ 1      CONTINUE
         READ(LUNIT) NR_POINTS
+
+        IF(NR_POINTS .LE. 0) GOTO 2
 
         CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
@@ -64,6 +70,9 @@ C=======================================================================
      &                          WORK,KFREE,LFREE)
 
         CALL MEMREL('VISUAL_INTEGRATION',WORK,KX,KX,KFREE,LFREE)
+
+        GOTO 1
+ 2      CONTINUE
 
         CLOSE(LUNIT,STATUS = 'DELETE')
 
@@ -149,7 +158,7 @@ C=======================================================================
             ENDDO
 
             WRITE(LUPRI,'(I30,I20,E30.10)') NR_PIECES, N, ERROR
-            IF(ERROR .LT. 1.0D-6) GOTO 1
+            IF(ERROR .LT. 1.0D-6) GOTO 3
 
             N = N + 10
 
@@ -158,7 +167,7 @@ C=======================================================================
      &                      QUANTITY_INTEGRAL_LAST,1)
           ENDDO
 
- 1        CONTINUE
+ 3        CONTINUE
 
           WRITE(LUPRI,'(A)')
           WRITE(LUPRI,'(A12,A25,2A20)') 'scalar',
@@ -222,8 +231,6 @@ C=======================================================================
      &          WEIGHT(*),
      &          WORK(*),
      &          QUANTITY(0:3)
-
-      CALL DZERO(QUANTITY_INTEGRAL,4)
 
       DO IPOINT = 1,NR_POINTS
         CALL GET_QUANTITY_IN_POINT(DMAT_AO,
