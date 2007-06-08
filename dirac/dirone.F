@@ -60,6 +60,7 @@ C*****************************************************************************
 C
 #include "mxcent.h"
       DIMENSION WORK(LWORK)
+      LOGICAL TOBE
       CHARACTER COMB*4
 C
 #include "dcbgen.h"
@@ -70,6 +71,16 @@ C
 #include "cbihr1.h"
 #include "cbiher.h"
       CALL QENTER('ONEGEN')
+C
+C     First check if the integral file is alrady there...
+C
+      INQUIRE(FILE='AOPROPER',EXIST=TOBE)
+      IF(TOBE) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* WARNING: Found one-electron integral file AOPROPER.',
+     &    '  Skipping integral integration.'
+        GOTO 20
+      ENDIF
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
@@ -118,7 +129,7 @@ C
    10 CONTINUE
 C
       CLOSE(LU1INT,STATUS='KEEP')
-
+ 20   CONTINUE
       CALL QEXIT('ONEGEN')
       RETURN
       END
