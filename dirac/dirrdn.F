@@ -234,7 +234,7 @@ C
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
-      DATA TABLE  /'.DIRECT','.CVALUE','.XXXXXX','.DOJACO',
+      DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.TWOCOM','.2C_REL','.XXXXXX',
      &             '.ACMOUT','.XXXXXX','.XXXXXX','.FAMILY',
@@ -311,6 +311,8 @@ C&&&& CVALUE: Set a different value of light
             READ(LUCMD,*) CVAL
             GO TO 100
   103    CONTINUE
+C&&&& NOSET: Skip the PAMSET module 
+            NOSET = .TRUE.
             GO TO 100
   104    CONTINUE
 C&&& DOJACO: Do Jacobi diagonalization if real group
@@ -485,6 +487,8 @@ C
      &     '* MO-coefficients written to formatted file DFPCMO'
       WRITE(LUPRI,'(1X,A,I3)')
      &     '* General print level   : ',IPRGEN
+      IF(NOSET) WRITE(LUPRI,'(1X,A)')
+     &     '* Skipping the PAMSET module. Crossing my fingers..'
 C
 C     Process input for various program sections
 C     ==========================================
@@ -3597,6 +3601,7 @@ C
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
       DENSFIT  = .FALSE.
+      NOSET    = .FALSE.
       IPRGEN   = 0
       ISPHTR   = ILSPH+2*ISSPH
       IDFLAG   = ILLDIR+2*ISLDIR+4*ISSDIR+8*IGTDIR
