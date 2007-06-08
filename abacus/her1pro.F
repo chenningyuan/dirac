@@ -296,7 +296,8 @@ C
 #include "efield.h"
 C     PARAMETER (NTABLE = 58)
 CMI   PARAMETER (NTABLE = 66)
-      PARAMETER (NTABLE = 69)
+CMI   PARAMETER (NTABLE = 69)
+      PARAMETER (NTABLE = 75)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -327,7 +328,9 @@ C
      &            'EFTNTL ', 'NUCFIEL',
      &            'RM1H3  ', 'RM1RN  ', 'RM1H2  ',
      &            'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 'RM2H3  ',
-     &            'RM2H2  ', 'CAP_RE ', 'CAP_IM ','CAP_OVL'
+     &            'RM2H2  ', 'CAP_RE ', 'CAP_IM ','CAP_OVL',
+     &            'CAPD1XR', 'CAPD1YR', 'CAPD1ZR',
+     &            'CAPD1XI', 'CAPD1YI', 'CAPD1ZI'
      &                         /
 
 C
@@ -347,7 +350,8 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,
-     &              59,60,61,62,63,64,65,66,67,68,69), I
+     &             59,60,61,62,63,64,65,66,67,68,69,70,71,72,
+     &             73,74,75), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1733,7 +1737,7 @@ C
          NOPTYP = 1
 C        CALL NTYPTS(NOPTYP)
 C        CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'CAP_RE '
+         LABINT(1) = 'CAP_RE  '
 C        INTREP(1) = IBTXOR(ISYMAX(1,2),ISYMAX(1,2)) ! Rx.Rx
          INTREP(1) = 0
          SQUARE = .FALSE.
@@ -1748,7 +1752,7 @@ C
          NOPTYP = 1
 C        CALL NTYPTS(NOPTYP)
 C        CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'CAP_IM '
+         LABINT(1) = 'CAP_IM  '
          INTREP(1) = 0
 C        INTREP(1) = 0
 C        INTREP(1) = ISYMAX(3,1)
@@ -1764,7 +1768,7 @@ C        ANTI = .TRUE.
          NOPTYP = 1
 C        CALL NTYPTS(NOPTYP)
 C        CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'CAP_OVL'
+         LABINT(1) = 'CAP_OVLP'
          INTREP(1) = 0
 C        INTREP(1) = 0
 C        INTREP(1) = ISYMAX(3,1)
@@ -1773,7 +1777,93 @@ C        SQUARE = .TRUE.
          ANTI = .FALSE.
 C        ANTI = .TRUE.
       GOTO 200
+ 70   CONTINUE
 C
+C       DIRAC CAP integrals - real part
+C   ------------------------------------------------------------
+C   
+C    MI, Tel Aviv, 2007
+C
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   ' Calculation of CAP DIRAC integrals - X real part.'
+         INTTYP = 1
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'CAPD1XR '
+         INTREP(1) = ISYMAX(1,1)
+         ANTI = .TRUE.
+         SQUARE = .FALSE.
+      GO TO 200
+ 71   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &    ' Calculation of CAP DIRAC integrals - Y real part.'
+         INTTYP = 1
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'CAPD1YR '
+         INTREP(1) = ISYMAX(2,1)
+         ANTI = .TRUE.
+         SQUARE = .FALSE.
+      GO TO 200
+ 72   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   ' Calculation of CAP DIRAC integrals - Z real part.'
+         INTTYP = 1
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'CAPD1ZR '
+         INTREP(1) = ISYMAX(3,1)
+         ANTI = .TRUE.
+         SQUARE = .FALSE.
+      GO TO 200
+ 73   CONTINUE
+
+C
+C       DIRAC CAP integrals - imaginary part
+C   ------------------------------------------------------------
+C   
+C    MI, Tel Aviv, 2007
+C
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &' Calculation of CAP DIRAC integrals - X imaginary part.'
+         INTTYP = 1
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'CAPD1XI'
+         INTREP(1) = ISYMAX(1,1)
+         ANTI = .TRUE.
+         SQUARE = .FALSE.
+      GO TO 200
+
+ 74   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &' Calculation of CAP DIRAC integrals - Y imaginary part.'
+         INTTYP = 1
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'CAPD1YI' 
+         INTREP(1) = ISYMAX(2,1)
+         ANTI = .TRUE.
+         SQUARE = .FALSE.
+      GO TO 200
+
+ 75   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &' Calculation of CAP DIRAC integrals - Z imaginary part.'
+         INTTYP = 1
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'CAPD1ZI' 
+         INTREP(1) = ISYMAX(3,1)
+         ANTI = .TRUE.
+         SQUARE = .FALSE.
+      GO TO 200
   200 CONTINUE
 C
 C     ***** Print section *****

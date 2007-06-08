@@ -76,7 +76,7 @@ end subroutine test_files
 !    compare overlap integrals from DIRAC and from Sajeev's CAP integral
 ! generator
 !
-!   called from CAP_STUFF
+!  called from CAP_STUFF
 !
 !----------------------------------------------------------------------------
    use QMatrixes
@@ -91,8 +91,10 @@ call QENTER('cap_ovlp_comp')
 ! write(LUPRI,*) 'iprqmtx=',get_iprint_qmtx()
 
  call GetUnpckOvlpMtx(smat)
+ !call QMTxInfo(smat)
 
  call GetCapOvlp(capovl)
+ !call QMTxInfo(capovl)
 
 !  compare smat & capovlp quaternion matrixes
  diff = getdiff_part_qmtx(smat,capovl)
@@ -101,6 +103,10 @@ call QENTER('cap_ovlp_comp')
   write(LUPRI,'(A)')  '*************************************************************'
 
  if (diff > diff_thrs) then
+! ... print individual matrixes, plus difference between them
+  call QMTxInfo(smat)
+  call QMTxInfo(capovl)
+
   call  AddTextQMtx(smat,'******** difference smat - capovlp ***********')
   call substract_part_qmtx(smat,capovl)
   call QMTxInfo(smat)
@@ -113,7 +119,7 @@ end subroutine cap_ovlp_comp
 subroutine GetCapOvlp(capovlp_mtx)
 !--------------------------------------------------------------------
 !
-! get CAP overlap matrix
+! get CAP overlap matrix into "capovlp_mtx" matrix data type
 !
 !--------------------------------------------------------------------
    use QMatrixes
@@ -130,6 +136,8 @@ call QENTER('GetCapOvlp')
  call AddTextQMtx(capovlp_mtx,'CAP overlap integrals')
 
  if (get_iprint_qmtx() >= 7) then 
+! if (get_iprint_qmtx() >= 0) then 
+  write(LUPRI,*) 'GetCapOvlp: CAP overlap matrix...'
   call print_qmtx_attrib(capovlp_mtx)
   call QMtxInfo(capovlp_mtx)
  endif
@@ -181,6 +189,7 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
   propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ) )
 
   IPRINT = get_iprint_qmtx()
+  !IPRINT = 12
 
   if (ITIM == 0) then 
       is_square = .true.
@@ -298,8 +307,10 @@ use Memory
 #include "nuclei.h"
 
 type(Vect) :: icabfo, iobf1_2
+!LOGICAL*1 IS_FILE,IS_OPEN
+LOGICAL IS_FILE,IS_OPEN
+DIMENSION WORK(LWORK)
 
- DIMENSION WORK(LWORK)
  CALL QENTER('CAP_STUFF')
 
  call set_vect_iprint(IPRCAP)
@@ -308,6 +319,18 @@ type(Vect) :: icabfo, iobf1_2
 
      icabfo = MakeVector('INTE',NBASIS,'CAP-DIRAC correspondence')   
      iobf1_2 = MakeVector('INTE',NBASIS,'AO function types for obatining factors') 
+
+!    CALL CAP_DIRAC_AO(icabfo,iobf1_2)  ! fill vectors
+
+!  .. 1st contact with the PEMAT file
+     LUPEMAT=14
+     INQUIRE(FILE='PEMAT',EXIST=IS_FILE,OPENED=IS_OPEN)
+     IF (IS_FILE) THEN
+      CALL OPNFIL(LUPEMAT,'PEMAT','OLD','CAP_STUFF')
+     ELSE
+      CALL OPNFIL(LUPEMAT,'PEMAT','UNKNOWN','CAP_STUFF')
+      CALL NEWLAB('EOFLABEL',LUPEMAT,LUPRI)
+     ENDIF
 
      IF (CAPOVLP) THEN
          CALL DOSAJEEV(PW(get_kfree()),get_lfree())
@@ -323,11 +346,11 @@ type(Vect) :: icabfo, iobf1_2
          CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
          CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
          CALL CAP_OVLP_COMP
-        ENDIF
-         CAPOVLP=.FALSE.
-         CALL DOSAJEEV(PW(get_kfree()),get_lfree())
-         CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
-         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
+       ENDIF
+        CAPOVLP=.FALSE.
+        CALL DOSAJEEV(PW(get_kfree()),get_lfree())
+        CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
+        CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
      ENDIF
 
 ! release the memory
@@ -340,9 +363,9 @@ end subroutine CAP_STUFF
 subroutine CAP_DIRAC_AO(icapbfo,iobf1_2)
 !---------------------------------------------------------------------------
 !
-! returns:  icabfo,iobf1_2
+! returns filled  icabfo,iobf1_2
 !
-! called from CAP_STUFF
+! called from prepcap90.F90/CAP_STUFF
 !
 !---------------------------------------------------------------------------
 use Memory

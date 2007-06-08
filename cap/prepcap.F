@@ -25,7 +25,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.INPQD ','.INPCAP','.PRINT ','.OVLCAP',
-     &            '.NOOVLP','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.NOOVLP','.NONREL','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
@@ -45,11 +45,13 @@ C
       CALL TITLER('CAP operator defined','*',127)
 
 C
-C  *** Initialize ****
+C        *** Initialize ****
 C
       CAPOVLP = .FALSE.
       NOOVLP = .FALSE.
-
+      DONRCAP = .FALSE.
+CMI   DONRCAP = .TRUE.
+      IF (LEVYLE) DONRCAP = .TRUE.
 C
 C
 C     Process input for CAPINP
@@ -114,7 +116,8 @@ C&&& NO comparison between DIRAC and CAP overlap integrals before calculation of
                  NOOVLP  = .TRUE.
                  GO TO 100
  6               CONTINUE
-C&&& XXXXXX
+C&&& Set the NONRELATIVISTIC version of the CAP operator
+                 DONRCAP = .TRUE.
                  GO TO 100
  7               CONTINUE
 C&&& XXXXXX
@@ -143,27 +146,41 @@ C
       WRITE(LUPRI,'(A,I5)') ' * Print level: ',IPRCAP
 C
       IF (.NOT.CAPOVLP) THEN
-        WRITE(LUPRI,'(A)')
-     &  ' * CAP integrals  according to',
-     &  '          Sajeev ....         '
 C
-        WRITE(LUPRI,'(2X,A,D25.10)') 'read INPQD (theta,PW) = ',PW
+        IF (DONRCAP) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &  '* Using nonrelativistic form of the CAP operator.'
+         WRITE(LUPRI,'(A)')
+     &  ' * CAP integrals  according to',
+     &  '     Sajeev ....         '
+        ELSE
+         WRITE(LUPRI,'(2X,A)')
+     &  '* Using four-component relativistic form of the CAP operator.'
+        ENDIF
+
+        WRITE(LUPRI,'(2X,A,D25.10)')
+     &  '* read INPQD (theta,PW) = ',PW
         WRITE(LUPRI,'(2X,A)') 
      & 'read integration parameters:'
 CMI    ...  write out integration parameters
-        DO I=1,3
-          WRITE(LUPRI,*) X0(I),LAMDA(I)
+        DO I = 1, 3
+          WRITE(LUPRI,'(2X,A,2F26.8)')
+     &    '* XO, LAMDA:',X0(I),LAMDA(I)
           WRITE(LUPRI,*) NGR(I)
+          WRITE(LUPRI,'(2X,A)')
+     &    '* integration subintervals:'
           WRITE(LUPRI,*) (GINTPT(I,J),J=1,NGR(I))
+          WRITE(LUPRI,'(2X,A)')
+     &    '* number of integration points per interval:'
           WRITE(LUPRI,*) (NGRS(I,J),J=1,NGR(I)-1)
         ENDDO
         IF (NOOVLP) THEN
          WRITE(LUPRI,'(2X,A)')
-     &   '*No comparison of CAP-DIRAC overlap integrals !'
+     &   '* no comparison between CAP-DIRAC overlap integrals !'
         ENDIF
        ELSE
          WRITE(LUPRI,'(2X,A)') 
-     &   'Only comparison between CAP and DIRAC overlap integrals.'
+     &   '* only comparison between CAP and DIRAC overlap integrals.'
        ENDIF
 
   999 CONTINUE
@@ -177,22 +194,21 @@ C  /* Deck dosajeev */
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  Prepare arrays as parameters for the core CAP routine
-C and run the CAP routine which prepares PEMAT/PEMAT_ovlp formatted files
+C and run the CAP routine which prepares PEMAT binary file
 C
+C Called from F90 routine CAP_STUFF
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbbas.h"
+#include "dcbcap.h"
+#include "dummy.h"
       DIMENSION WORK(LWORK)
 
       CALL QENTER('DOSAJEEV')
 
 #include "memint.h"
-!     CALL MEMCHK('CAPINTS',WORK,1)
-
-C    ...  call F90 routine from the module cap
-C       call cap_init
-
       ISIZE1=200
       CALL MEMGET('INTE',KBASIS_N,ISIZE1,WORK,KFREE,LFREE)
       ISIZE2=250*3
@@ -205,16 +221,40 @@ C       call cap_init
       ISIZE4=200*3
       CALL MEMGET('REAL',KRMS,ISIZE4,WORK,KFREE,LFREE)
 
-      ISIZE5=25000
-      CALL MEMGET('REAL',KPE_AOr,ISIZE5,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPE_AOi,ISIZE5,WORK,KFREE,LFREE)
+CMI   ISIZE5=25000
+CMI   CALL MEMGET('REAL',KPE_AOr,ISIZE5,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPE_AOr,NNBBASX,WORK,KFREE,LFREE)
+CMI   CALL MEMGET('REAL',KPE_AOi,ISIZE5,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPE_AOi,NNBBASX,WORK,KFREE,LFREE)
 
-CMI:    allocated arrays enters the SAJEEV routine !
-      CALL SAJEEV(WORK(KBASIS_N),WORK(KANG_POW),
+      IF (.NOT.DONRCAP) THEN
+C       ... four-component CAP operator ...
+        CALL MEMGET('REAL',KPEX_AOr,NNBBASX,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KPEX_AOi,NNBBASX,WORK,KFREE,LFREE)
+C       ...
+        CALL MEMGET('REAL',KPEY_AOr,NNBBASX,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KPEY_AOi,NNBBASX,WORK,KFREE,LFREE)
+C       ...
+        CALL MEMGET('REAL',KPEZ_AOr,NNBBASX,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KPEZ_AOi,NNBBASX,WORK,KFREE,LFREE)
+
+        CALL SAJEEV(WORK(KBASIS_N),WORK(KANG_POW),
      &            WORK(KORDEXPON),WORK(KORDCOE),WORK(KRMS),
      &            WORK(KPE_AOr),WORK(KPE_AOi),
+     &          WORK(KPEX_AOr),WORK(KPEX_AOi),
+     &          WORK(KPEY_AOr),WORK(KPEY_AOi),
+     &          WORK(KPEZ_AOr),WORK(KPEZ_AOi),
      &            WORK(KFREE),LFREE)
+      ELSE
 
+        CALL SAJEEV(WORK(KBASIS_N),WORK(KANG_POW),
+     &            WORK(KORDEXPON),WORK(KORDCOE),WORK(KRMS),
+     &            WORK(KPE_AOr),WORK(KPE_AOi),
+     &            DUMMY,DUMMY, DUMMY,DUMMY, DUMMY,DUMMY,
+     &            WORK(KFREE),LFREE)
+      ENDIF
+
+C     ... release all the allocated memmory
       CALL MEMREL('DOSAJEEV',WORK,KWORK,KWORK,KFREE,LFREE)
 
       CALL QEXIT('DOSAJEEV')
@@ -238,12 +278,12 @@ C   ... treat PEMAT / PEMAT_ovlp
 C     FILES = .FALSE.
       IS_PEMAT1 = .FALSE.
       INQUIRE(FILE='PEMAT',     EXIST=IS_PEMAT1)
-      INQUIRE(FILE='PEMAT_ovlp',EXIST=IS_PEMAT2)
-      IF (CAPOVLP) THEN
-        FILES2 = FILES2.AND.(IS_PEMAT2)
-      ELSE
-        FILES2 = FILES2.AND.(IS_PEMAT1)
-      ENDIF
+C     INQUIRE(FILE='PEMAT_ovlp',EXIST=IS_PEMAT2)
+C     IF (CAPOVLP) THEN
+C       FILES2 = FILES2.AND.(IS_PEMAT2)
+C     ELSE
+C       FILES2 = FILES2.AND.(IS_PEMAT1)
+C     ENDIF
 
 C     FILES = .FALSE.
 C     INQUIRE(FILE='CAPDIRSYM1.inp',EXIST=FILES)
@@ -267,8 +307,8 @@ C  /* Deck capadapt */
       SUBROUTINE CAPADAPT(ICAPBFO,IOBF1_2,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C   Adapt the CAP integrals from previously obtained formatted files 
-C   PEMAT/PEMAT_ovlp for the DIRAC calculations.
+C   Adapt the CAP integrals from the previously obtained UNformatted file
+C   PEMAT for the DIRAC calculations.
 C
 C   For this it is using generated text files
 C
@@ -287,62 +327,71 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dummy.h"
 
       DIMENSION WORK(LWORK),ICAPBFO(1:NBASIS),ICAPBFO1_2(1:NBASIS)
-      CHARACTER*10 PEMAT_NAME
+      CHARACTER*8 LBL
 
       CALL QENTER('CAPADAPT')
   
 C ======== first real part (CAPRE or CAP_OVLP)
+
 #include "memint.h"
+      CALL MEMGET('REAL',KPMRSAT,NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMRSA,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMR,N2BBASX,WORK,KFREE,LFREE)
 
       IF (.NOT.CAPOVLP) THEN
-         PEMAT_NAME="PEMAT"
+C       ...  first real part (CAPRE or CAP_OVLP)
 
-         CALL MEMGET('REAL',KPMRSAT,NNBBASX,WORK,KFREE,LFREE)
-         CALL DZERO(WORK(KPMRSAT),NNBBASX)
-         CALL MEMGET('REAL',KPMRSA,N2BBASX,WORK,KFREE,LFREE)
-         CALL DZERO(WORK(KPMRSA),N2BBASX)
-         CALL MEMGET('REAL',KPMR,N2BBASX,WORK,KFREE,LFREE)
-         CALL DZERO(WORK(KPMR),N2BBASX)
-         CALL CAPREAD(PEMAT_NAME,WORK(KPMR),WORK(KPMRSA),
-     &                 ICAPBFO,IOBF1_2,.TRUE.,IPRCAP)
-C     Save HERMIT symmetry adapted integrals into the AOPROPER file.
-         CALL DAMATR( NBASIS, WORK(KPMRSA), NBASIS, WORK(KPMRSAT) )
-         CALL SAVECAP(WORK(KPMRSAT),1,WORK(KFREE),LFREE,IPRCAP)
+         CALL CAPREAD('CAP_RE  ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &          ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-         CALL DZERO(WORK(KPMR),N2BBASX)
-         CALL DZERO(WORK(KPMRSA),N2BBASX)
-         CALL DZERO(WORK(KPMRSAT),NNBBASX)
+         CALL CAPREAD('CAP_IM  ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &          ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-         CALL CAPREAD(PEMAT_NAME,WORK(KPMR),WORK(KPMRSA),
-     &                 ICAPBFO,IOBF1_2,.FALSE.,IPRCAP)
+         IF (.NOT.DONRCAP) THEN
+C        ... continue with relativistic integrals
 
-         CALL DAMATR( NBASIS, WORK(KPMRSA), NBASIS, WORK(KPMRSAT) )
-         CALL SAVECAP(WORK(KPMRSAT),2,WORK(KFREE),LFREE,IPRCAP)
+CMI       CALL CAPREAD('CAP_D1XR',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+          CALL CAPREAD('CAPD1XR ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
+
+C         CALL CAPREAD('CAP_D1XI',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+          CALL CAPREAD('CAPD1XI ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
+
+C         CALL CAPREAD('CAP_D1YR',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+          CALL CAPREAD('CAPD1YR ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
+
+C         CALL CAPREAD('CAP_D1YI',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+          CALL CAPREAD('CAPD1YI ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
+
+C         CALL CAPREAD('CAP_D1ZR',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+          CALL CAPREAD('CAPD1ZR ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
+
+C         CALL CAPREAD('CAP_D1ZI',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+          CALL CAPREAD('CAPD1ZI ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
+
+         ENDIF
 
       ELSE
-         PEMAT_NAME="PEMAT_ovlp"
 
-         CALL MEMGET('REAL',KPMRSAT,NNBBASX,WORK,KFREE,LFREE)
-         CALL DZERO(WORK(KPMRSAT),NNBBASX)
-         CALL MEMGET('REAL',KPMRSA,N2BBASX,WORK,KFREE,LFREE)
-         CALL DZERO(WORK(KPMRSA),N2BBASX)
-         CALL MEMGET('REAL',KPMR,N2BBASX,WORK,KFREE,LFREE)
-         CALL DZERO(WORK(KPMR),N2BBASX)
-
-         CALL CAPREAD(PEMAT_NAME,WORK(KPMR),WORK(KPMRSA),
-     &                 ICAPBFO,IOBF1_2,.TRUE.,IPRCAP)
-
-C     Save HERMIT symmetry adapted integrals into the AOPROPER file.
-         CALL DAMATR( NBASIS, WORK(KPMRSA), NBASIS, WORK(KPMRSAT) )
-         CALL SAVECAP(WORK(KPMRSAT),3,WORK(KFREE),LFREE,IPRCAP)
+          CALL CAPREAD('CAP_OVLP',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &                 ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
       ENDIF
 
+C     ... release all the memory
       CALL MEMREL('CAPADAPT',WORK,KWORK,KWORK,KFREE,LFREE)
+
       CALL QEXIT('CAPADAPT')
       RETURN
       END 
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck dircapao */
       SUBROUTINE DIRCAPAO(ICAPBFO,IOBF1_2,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -360,7 +409,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CALL QENTER('DIRCAPAO')
 
 #include "memint.h"
-
 C     CALL MEMGET('INTE',KICAPBFO,NBASIS,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIOBF1,3*NBASIS,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIOBF2,3*NBASIS,WORK,KFREE,LFREE)
@@ -382,13 +430,18 @@ C     CALL IZERO(WORK(KICAPBFO),NBASIS)
       RETURN
       END 
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck get_dir_cap_ao_match */
       SUBROUTINE GET_DIR_CAP_AO_MATCH(ICAPBFO,IOBF1_2,
-     &           IOBF1,IOBF2,ILC1,ILC2)
+     &             IOBF1,IOBF2,ILC1,ILC2)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
+C   Called from  prepcap90.F90/CAP_DIRAC_AO
 C
-C             Called from  prepcap90.F90/CAP_DIRAC_AO
+C   Needs CAPLBL.inp and CAPDIR.inp files, where CAPLBL.inp is generated in SAJEEV's
+C  routine !
 C
+C   Returns filled ICAPBFO,IOBF1_2
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -505,43 +558,60 @@ C   ... fill IOBF1_2 array !
       RETURN
       END 
 
-      subroutine delete_ls(V,N,IPRINT)
-!
-! delete LS,SL blocks of the matrix ! basic functions are in basis DIRAC order
-!
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck delete_ls */
+      SUBROUTINE DELETE_LS(V,N,IPRINT,DEL_LS)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+C  delete LS,SL blocks of the matrix ! basic functions are in basis DIRAC order
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
-      real*8 V(N,N)
-      call qenter('delete_ls')
+      REAL*8 V(N,N)
+      LOGICAL DEL_LS
+      CALL QENTER('DELETE_LS')
 
-!     write(LUPRI,*) 'NBASIS,NLARGE,NSMALL:',NBASIS,NLARGE,NSMALL
+      DO I = 1 ,NBASIS
+      DO J = 1, NBASIS
+       IF (DEL_LS) THEN
+C    ... delete LS,SL blocks
+         if (i.le.NLARGE.and.j.gt.NLARGE) then
+           V(i,j) = 0.0D0
+         endif
+         if (i.gt.NLARGE.and.j.le.NLARGE) then
+           V(i,j) = 0.0D0
+         endif
+       ELSE
+C    ... delete LL,SS blocks
+         if (i.le.NLARGE.and.j.le.NLARGE) then
+           V(i,j) = 0.0D0
+         endif
+         if (i.gt.NLARGE.and.j.gt.NLARGE) then
+           V(i,j) = 0.0D0
+         endif
+       ENDIF
+      ENDDO
+      ENDDO
 
-      do i = 1 ,NBASIS
-      do j = 1, NBASIS
-       if (i.le.nlarge.and.j.gt.nlarge) then
-          V(i,j) = 0.0D0
-       endif
-!      ------------------------------------------------------
-       if (i.gt.nlarge.and.j.le.nlarge) then
-          V(i,j) = 0.0D0
-       endif
-      enddo
-      enddo
-
-      call qexit('delete_ls')
-      return
-      end
+      CALL QEXIT('DELETE_LS')
+      RETURN
+      END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck getcapim */
-      SUBROUTINE GETCAPI(CAPI,CAPI1,WORK,KFREE,LFREE)
+      SUBROUTINE GETCAPMO(IMAGPART,CAPI,CAPI1,WORK,KFREE,LFREE)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Purpose: get CAP_IM operator in MO basis into CAPI(*) 
 C
 C   First get it (using PRPMAO) as the real operator
+C
+C   IMAGPART - if true, read imaginary part of Ham. otherwise real
 C
 C   Called from MRCON1 (traone.F)
 C
@@ -566,9 +636,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dummy.h"
 
       DIMENSION CAPI(NORBT,NORBT,NZ),CAPI1(NORBT,NORBT,NZ),WORK(*)
-      LOGICAL REARR
+      LOGICAL REARR,IMAGPART
 
-      CALL QENTER('GETCAPI')
+      CALL QENTER('GETCAPMO')
 
       KFRSAV = KFREE
 
@@ -594,9 +664,14 @@ C     open file for MO coefficients
       ENDIF
 
 C     ... Open property file
-      CALL OPNFIL(LU1INT,'AOPROPER','OLD','GETCAPIM')
+      CALL OPNFIL(LU1INT,'AOPROPER','OLD','GETCAPMO')
 
-      INDXPR = IPCAPI
+      IF (IMAGPART) THEN
+        INDXPR = IPCAPI
+      ELSE
+        INDXPR = IPCAPR
+      ENDIF
+
       ISYM  = IPRPSYM(INDXPR)
       IREP = ISYM - 1
       IOPSY = JBTOF(ISYM-1,1)
@@ -604,11 +679,35 @@ C     ... Open property file
       CALL PRPMAT(INDXPR,IOPSY,CAPI,WORK(KCMO),WORK(KBEIG),
      &               ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 
-      IF (IPRINT.GE.5) THEN
+      IF (IPRCAP.GE.5) THEN
        WRITE(LUPRI,'(2X,2A)')
      & 'GETCAPI: Get MO matrix of property: ',PRPNAM(INDXPR)
        CALL PRQMAT(CAPI,NORBT,NORBT,NORBT,
      &         NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
+      ENDIF
+
+C     ... further read DC imaginary part into CAPI1
+      IF (.NOT.DONRCAP) THEN
+        IF (IMAGPART) THEN
+          INDXPR = IPCAP_DI
+        ELSE
+          INDXPR = IPCAP_DR
+        ENDIF
+        ISYM  = IPRPSYM(INDXPR)
+        IREP = ISYM - 1
+        IOPSY = JBTOF(ISYM-1,1)
+        CALL DZERO(CAPI1,N2ORBXQ)
+        CALL PRPMAT(INDXPR,IOPSY,CAPI1,WORK(KCMO),WORK(KBEIG),
+     &               ICMOQ,NORB,WORK,KFREE,LFREE,IPRCAP)
+
+        IF (IPRCAP.GE.5) THEN
+         WRITE(LUPRI,'(2X,2A)')
+     &   'GETCAPMO: MO matrix of property: ',PRPNAM(INDXPR)
+          CALL PRQMAT(CAPI1,NORBT,NORBT,NORBT,
+     &          NORBT,NZ,IPQTOQ(1,IREP),LUPRI)
+        ENDIF
+C       ... add CAPI1 to CAPI
+        CALL DAXPY(N2BBASX,D1,CAPI1,1,CAPI,1)
       ENDIF
 
 CMI   ...MOVE ee-part to the upper left part of the MO-matrix
@@ -621,6 +720,7 @@ C     IF (REARR.AND..NOT.LEVYLE) THEN
         IOFF_E = 0
         IOFF_EP = 0
         DO IFSYM =1 , NFSYM
+         IF ( NORB(IFSYM).GT.NESH(IFSYM) ) THEN
            DO IZ = 1, NZ
              DO I = 1, NESH(IFSYM)
              DO J = 1, NESH(IFSYM)
@@ -631,30 +731,31 @@ C     IF (REARR.AND..NOT.LEVYLE) THEN
            ENDDO
            IOFF_EP = NORB(IFSYM)
            IOFF_E  = NESH(IFSYM)
-       ENDDO
+         ENDIF
+        ENDDO
 
        IF (IPRINT.GE.5) THEN
          WRITE(LUPRI,'(2X,2A)')
-     & 'GETCAPI: Rearranged MO matrix of property: ',PRPNAM(INDXPR)
+     & 'GETCAPMO: Rearranged MO matrix of property: ',PRPNAM(INDXPR)
         CALL PRQMAT(CAPI1,NORBT,NORBT,NORBT,
      &         NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
        ENDIF
 
 C     ENDIF
 
-      CALL MEMREL('GETCAPI',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
-      CALL QEXIT('GETCAPI')
+      CALL MEMREL('GETCAPMO',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('GETCAPMO')
       RETURN
       END 
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C /* Deck addcapim */
-      SUBROUTINE ADDCAPIM(NSTRT,CAPIM,FMOM,MULTIM)
+C /* Deck addcapmom */
+      SUBROUTINE ADDCAPMOM(NSTRT,CAPMOM,FMOM,MULTIM)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Purpose: add MOLFDIR like i.CAP_IM to the FMOM
+C  Purpose: add MOLFDIR like CAPMOM to the FMOM
 C
-C  On input: CAPIM - to be added to FMOM
+C  On input: CAPMOM - to be added to FMOM
 C            MULTIM - flag to decide the multiplication by the imag.unit
 C
 C  Called from the MRCON1 routine (traone.F).
@@ -669,83 +770,176 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dgroup.h"
 #include "dcbcap.h"
 
-      DIMENSION CAPIM(NSTRT*2,NSTRT*2,2), FMOM(NSTRT*2,NSTRT*2,2)
+      DIMENSION CAPMOM(NSTRT*2,NSTRT*2,2), FMOM(NSTRT*2,NSTRT*2,2)
       LOGICAL MULTIM
 
-      CALL QENTER('ADDCAPIM')
+      CALL QENTER('ADDCAPMOM')
 
 C ... note: FMOM and CAPIM are in MOLFDIR format !
       IF (IPRCAP.GE.5) THEN
           WRITE(LUPRI,'(/3X,A)')
-     &    'ADDCAPIM:  *** Entering core Fock matrix in MOLFDIR'//
+     &    'ADDCAPMOM:  *** Entering core Fock matrix in MOLFDIR'//
      &    ' format, FMOM ***'
           CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZ,2),
      &                IPQTOQ(1,0),LUPRI)
 
           WRITE(LUPRI,'(/3X,A)')
-     &    'ADDCAPIM:  *** Entering (MOLFDIR like) CAPIM ***'
-          CALL PRQMAT(CAPIM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZ,2),
+     &    'ADDCAPMOM:  *** Entering (MOLFDIR like) CAPMOM ***'
+          CALL PRQMAT(CAPMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZ,2),
      &                IPQTOQ(1,0),LUPRI)
       ENDIF
 
-C     ... multiply CAPIM with i
+C     ... multiply CAPMOM with "i"
       IF (MULTIM) THEN
         DO I = 1, NSTRT*2
         DO J = 1, NSTRT*2
 C         i.(a+ib) = -b + i.a
-          TEMP = CAPIM(I,J,2)
-          CAPIM(I,J,2) = CAPIM(I,J,1)
-          CAPIM(I,J,1) = - TEMP
+          TEMP = CAPMOM(I,J,2)
+          CAPMOM(I,J,2) = CAPMOM(I,J,1)
+          CAPMOM(I,J,1) = - TEMP
         ENDDO
         ENDDO
         IF (IPRCAP.GE.5) THEN
-          WRITE(LUPRI,'(/3X,A)')
-     &    'ADDCAPIM:  *** Modified i.CAPIM ***'
-           CALL PRQMAT(CAPIM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(2,2),
-     &                IPQTOQ(1,0),LUPRI)
+         WRITE(LUPRI,'(/3X,A)')
+     &   'ADDCAPMOM:  *** Modified i.CAPMOM - mult.by "i"-unit ***'
+         CALL PRQMAT(CAPMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(2,2),
+     &               IPQTOQ(1,0),LUPRI)
         ENDIF
       ELSE
        WRITE(LUPRI,'(2X,A)')
-     & 'ADDCAPIM: Warning - no multiplication with imaginary unit !'
+     & 'ADDCAPMOM: Warning - no multiplication with imaginary unit !'
       ENDIF
 
-C      ...Add CAPIM into FMOM
+C      ...Add CAPMOM into FMOM
       DO I = 1, NSTRT*2
       DO J = 1, NSTRT*2
        TEMP1 = FMOM(I,J,1)
-       FMOM(I,J,1) = TEMP1 + CAPIM(I,J,1)
+       FMOM(I,J,1) = TEMP1 + CAPMOM(I,J,1)
        TEMP2 =  FMOM(I,J,2) 
-       FMOM(I,J,2) = TEMP2 + CAPIM(I,J,2)
+       FMOM(I,J,2) = TEMP2 + CAPMOM(I,J,2)
       ENDDO
       ENDDO
 
       IF (IPRCAP.GE.5) THEN
        WRITE(LUPRI,'(/3X,A)')
-     & 'ADDCAPIM:  *** Core Fock matrix (molfdir format)'//
-     & ' with i.CAP_IM added (NZ=2) ***'
+     & 'ADDCAPMOM:  *** Core Fock matrix (molfdir format)'//
+     & ' with CAPMOM added (NZ=2) ***'
        CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(2,2),
-     &                IPQTOQ(1,0),LUPRI)
+     &             IPQTOQ(1,0),LUPRI)
       ENDIF
 
-      CALL QEXIT('ADDCAPIM')
+      CALL QEXIT('ADDCAPMOM')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck capmfdadapt */
+      SUBROUTINE CAPMFDADAPT(CAP,NSTRT,NSTR,FMO,FMOM,WORK,LWORK) 
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Do the adaptation of the Fock matrix for CAP-FSCCSD calculations. Add CAP real
+C and imaginary contributions.
+C
+C Output: FMOM with CAP (re,im) parts added
+C
+C Written by Miro ILIAS, Mau 2007, Tel Aviv
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
+C
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbcap.h"
+      DIMENSION WORK(LWORK)
+      DIMENSION FMO(NORBT,NORBT,NZ),FMOM(NSTRT*2,NSTRT*2,2)
+      DIMENSION NSTR(2)
+      LOGICAL CAP
+      CALL QENTER('CAPMFDADAPT')
+
+      IF (CAP) THEN
+
+       IF (IPRCAP.GE.5) THEN
+        WRITE(LUPRI,'(/3X,A,I2/)')
+     &   '*** Pure Core Fock matrix (DIRAC format) ***'
+        CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,NZ,
+     &                      IPQTOQ(1,0),LUPRI)
+        WRITE(LUPRI,'(/3X,A,I2/)')
+     &   '*** Pure Core Fock matrix (MOLFDIR format) ***'
+        CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZ,2),
+     &               IPQTOQ(1,0),LUPRI)
+       ENDIF
+#include "memint.h"
+C         ... allocate space for CAP_IM
+       CALL MEMGET('REAL',KCAPI, NORBT*NORBT*NZ,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KCAPI1,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
+
+C      .... get CAP  operator) in the MO basis
+        CALL GETCAPMO(.FALSE.,WORK(KCAPI),WORK(KCAPI1),WORK,KFREE,LFREE)
+C       ... allocate space for MOLFDIR like CAP
+        CALL MEMGET('REAL',KCAPIM,NSTRT*NSTRT*8,WORK,KFREE,LFREE)
+C       ... turn it in the MOLFDIR like form
+        CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,.TRUE.)
+C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM (if .true.)
+        CALL ADDCAPMOM(NSTRT,WORK(KCAPIM),FMOM,.FALSE.)
+
+C      .... get CAP_IM (as a "real" operator) in the MO basis
+        CALL GETCAPMO(.TRUE.,WORK(KCAPI),WORK(KCAPI1),WORK,KFREE,LFREE)
+C       ... allocate space for MOLFDIR like CAP
+        CALL MEMGET('REAL',KCAPIM,NSTRT*NSTRT*8,WORK,KFREE,LFREE)
+C       ... turn it in the MOLFDIR like form
+        CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,.TRUE.)
+C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM (if .true.)
+        CALL ADDCAPMOM(NSTRT,WORK(KCAPIM),FMOM,.TRUE.)
+
+C       ... release all the memory
+        CALL MEMREL('CAPMFDADAPT',WORK,KWORK,KWORK,KFREE,LFREE)
+
+C       ... control printout
+        IF (IPRCAP.GE.5) THEN
+           IF (NZ.EQ.1) THEN
+            NZX=2
+           ELSE
+            NZX=NZ
+           ENDIF
+           WRITE(LUPRI,'(/3X,A,I2/)')
+     &     'CAPMFDADAPT: *** Core Fock matrix with all CAP(re,im) '//
+     &     'added (MOLFDIR format) ***'
+           CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZX,2),
+     &               IPQTOQ(1,0),LUPRI)
+
+        ENDIF
+      ENDIF
+      CALL QEXIT('CAPMFDADAPT')
       RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck savecap */
-      SUBROUTINE SAVECAP(CAPINTS,ILABEL,WORK,LWORK,IPRINT)
+      SUBROUTINE SAVECAP(LBL,CAPINTS,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Save CAP integrals into the AOPROPER file and add corresponding operator to the
-C the list according to the ILABEL 
+C    Save CAP integrals (CAPINTS) in DIRAC symmetry adapted order 
+C  into the AOPROPER file and add corresponding operator to the
+C  the list according to the LBL
+C 
+C  List of permitted labels: 
+C 
+C             CAP_RE
+C             CAP_IM
+C             CAP_OVLP
 C
-C  ILABEL = 1 CAP_RE
-C  ILABEL = 2 CAP_IM
-C  ILABEL = 3 CAP_OVLP
+C             CAPD1XR
+C             CAPD1XI
+C             CAPD1YR
+C             CAPD1YI
+C             CAPD1ZR
+C             CAPD1ZI
 C
-C  Called from prepcap.F/CAPADAPT
+C  Called from prepcap.F/CAPREAD
 C
-C  Written by Miro ILIAS, Tel Aviv, febr. 2007
+C  Written by Miro ILIAS, Tel Aviv, Febr./May 2007
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -757,14 +951,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbham.h"
 #include "dcbxpr.h"
 #include "dcbcap.h"
-      DIMENSION CAPINTS(*),WORK(LWORK)
-      LOGICAL ISFILE
+      DIMENSION CAPINTS(NNBBASX),WORK(LWORK)
+      LOGICAL ISFILE, DOXPRIND
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
       CHARACTER PNAME*16, PLABEL(3)*8
+      CHARACTER*8 LBL
       DIMENSION PFAC(3)
       
       CALL QENTER('SAVECAP')
-
 C
 C        Write integrals to file
 C
@@ -783,176 +977,286 @@ C
      &         FILE='AOPROPER')
 #endif
 
-C
-C  Generate integral labels and write integrals into AOPROPER
-C
-CC    IF (LEVYLE.OR.BSS) THEN
-      IF (LEVYLE) THEN
-        COMB = 'TFFF'
-      ELSE
-        COMB = 'TFFT'
-      ENDIF
-
-      IF (ILABEL.EQ.1) THEN
-        LABEL = 'CAP_RE  '
-        PNAME = 'CAP - real part '
-      ELSE IF (ILABEL.EQ.2) THEN
-        LABEL = 'CAP_IM  '
-        PNAME = 'CAP - imag part '
-      ELSE IF (ILABEL.EQ.3) THEN
-        LABEL = 'CAP_OVL '
-        PNAME = 'CAP - overlap   '
-      ENDIF
-
-      PLABEL(1) = LABEL
-
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
-      RTNLBL(2)(1:2) = 'SY'
+C
+C     Generate integral labels and write integrals into AOPROPER
+C
+      IF (LBL.EQ.'CAP_RE  '.OR.
+     &    LBL.EQ.'CAP_IM  '.OR.
+     &    LBL.EQ.'CAP_OVLP') THEN
+        RTNLBL(2)(1:2) = 'SY'
+        IF (LEVYLE) THEN
+         COMB = 'TFFF'
+        ELSE
+         COMB = 'TFFT'
+        ENDIF
+        LABEL = LBL
+      ELSE IF (LBL.EQ.'CAPD1XR'.OR.
+     &         LBL.EQ.'CAPD1XI'.OR.
+     &         LBL.EQ.'CAPD1YR'.OR.
+     &         LBL.EQ.'CAPD1YI'.OR.
+     &         LBL.EQ.'CAPD1ZR'.OR.
+     &         LBL.EQ.'CAPD1ZI') THEN
+        RTNLBL(2)(1:2) = 'AN'
+        COMB = 'FTTF'
+        LABEL = LBL
+      ELSE
+        WRITE(LUPRI,*) 'unidentified SAVECAP label, LBL=',LBL
+        CALL QUIT('SAVECAP: Unidentified label !')
+      ENDIF
+
       WRITE(RTNLBL(2)(3:4),'(I2)') 1
       RTNLBL(2)(5:8) = COMB
-      CALL WRTPRO(CAPINTS,NNBBASX,LABEL,RTNLBL,IPRINT)
+      CALL WRTPRO(CAPINTS,NNBBASX,LABEL,RTNLBL,IPRCAP)
+C     ... control printout
+      IF (IPRCAP.GE.2) THEN
+       WRITE(LUPRI,'(2X,A,A,A,A4)')
+     & 'SAVECAP: Written to AOPROPER; operator label ',
+     &  LABEL, ';  blocks occupation, COMB=',COMB
+      ENDIF
+      IF (IPRCAP.GE.5) THEN
+C       WRITE(LUPRI,'(2X,A)')
+C    &  'SAVECAP: Triangular matrix written into AOPROPER'
+C       WRITE(LUPRI,*) (CAPINTS(I),I=1,NNBBASX)
+      ENDIF
 
+        PLABEL(1) = LBL
+        PNAME = LBL
+        IF      (LBL.EQ.'CAPD1XR') THEN
+          PLABEL(1)='CAPD1XR'
+             IPTYP = 2
+        ELSE IF (LBL.EQ.'CAPD1XI') THEN
+          PLABEL(1)='CAPD1XI'
+             IPTYP = 2
+        ELSE IF (LBL.EQ.'CAPD1YR') THEN
+          PLABEL(1)='CAPD1YR'
+             IPTYP = 3
+        ELSE IF (LBL.EQ.'CAPD1YI') THEN
+          PLABEL(1)='CAPD1YI'
+             IPTYP = 3
+        ELSE IF (LBL.EQ.'CAPD1ZR') THEN
+          PLABEL(1)='CAPD1ZR'
+             IPTYP = 4
+        ELSE IF (LBL.EQ.'CAPD1ZI') THEN
+          PLABEL(1)='CAPD1ZI'
+             IPTYP = 4
+        ELSE
+             IPTYP = 1
+        ENDIF
 C
-C        CAP integrals - re,im or overlap
+C         CAP integrals according to LBL
 C     ======================================
 C
-      IPTYP            = 1
+C     IPTYP            = 1
       NPCOMP           = 1
       PFAC(1)          = D1
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRCAP)
 
-      IF (ILABEL.EQ.1) THEN
+      IF      (LBL.EQ.'CAP_RE  ') THEN
         IPCAPR    = INDXPR
-      ELSE IF (ILABEL.EQ.2) THEN
+      ELSE IF (LBL.EQ.'CAP_IM  ') THEN
         IPCAPI    = INDXPR
-      ELSE IF (ILABEL.EQ.3) THEN
+      ELSE IF (LBL.EQ.'CAP_OVLP') THEN
         IPCAP_S   = INDXPR
+      ELSE IF (LBL.EQ.'CAPD1XR') THEN
+        IPCAP_DXR = INDXPR
+      ELSE IF (LBL.EQ.'CAPD1XI') THEN
+        IPCAP_DXI = INDXPR
+      ELSE IF (LBL.EQ.'CAPD1YR') THEN
+        IPCAP_DYR = INDXPR
+      ELSE IF (LBL.EQ.'CAPD1YI') THEN
+        IPCAP_DYI = INDXPR
+      ELSE IF (LBL.EQ.'CAPD1ZR') THEN
+        IPCAP_DZR = INDXPR
+      ELSE IF (LBL.EQ.'CAPD1ZI') THEN
+        IPCAP_DZI = INDXPR
+      ELSE
+        WRITE(LUPRI,*) 'SAVECAP: the inidentified label is:',LBL
+        CALL QUIT('SAVECAP: Can not identify INDXPR label !')
+      ENDIF
+      IF (IPRCAP.GE.2) THEN
+        WRITE(LUPRI,'(2X,A,I3)')
+     &  'operator added to the list, index=',INDXPR
+        CALL WRIXPR(1,INDXPR)
       ENDIF
 
-      IF (IPRINT.GE.1) THEN
-        IF (ILABEL.EQ.1) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     &    'SAVECAP: CAP_re integrals written into AOPROPER file.'
-        ELSE IF (ILABEL.EQ.2) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     &    'SAVECAP: CAP_im integrals written into AOPROPER file.'
-        ELSE IF (ILABEL.EQ.3) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     &    'SAVECAP: CAP_ovlp integrals written into AOPROPER file.'
-        ENDIF
-        IF (IPRINT.GE.2) THEN
-           WRITE(LUPRI,'(2X,A,A,A,A4,A,I3)')
-     &     ' Operator label (PLABEL):',PLABEL(1),
-     &     ' COMB=',COMB,' operator index(INDXPR)=',INDXPR
-        ENDIF
+C *************************************************
+C        ... last two labels ...
+C *************************************************
+      IF (LBL.EQ.'CAPD1ZI') THEN
+C     ... last 2 XPRIND
+
+      PNAME    = 'CAP_D_Re '
+      IPTYP    = 8
+      NPCOMP   = 3
+      PFAC(1)  = -CVAL
+      PFAC(2)  = -CVAL
+      PFAC(3)  = -CVAL
+      PLABEL(1) = 'CAPD1XR'
+      PLABEL(2) = 'CAPD1YR'
+      PLABEL(3) = 'CAPD1ZR'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRCAP)
+      IPCAP_DR = INDXPR
+
+      PNAME    = 'CAP_D_Im  '
+      IPTYP    = 8
+      NPCOMP   = 3
+      PFAC(1)  = -CVAL
+      PFAC(2)  = -CVAL
+      PFAC(3)  = -CVAL
+      PLABEL(1) = 'CAPD1XI'
+      PLABEL(2) = 'CAPD1YI'
+      PLABEL(3) = 'CAPD1ZI'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRCAP)
+      IPCAP_DI = INDXPR
+
+      IF (IPRCAP.GE.2) THEN
+        WRITE(LUPRI,'(2X,A,I3)')
+     &  '* CAP_D_Re operator added to the list, index=',IPCAP_DR
+        CALL WRIXPR(1,IPCAP_DR)
+        WRITE(LUPRI,'(2X,A,I3)')
+     &  '* CAP_D_Im operator added to the list, index=',IPCAP_DI
+        CALL WRIXPR(1,IPCAP_DI)
+      ENDIF
+
       ENDIF
 
       CALL QEXIT('SAVECAP')
       RETURN
       END
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck capready */
-      SUBROUTINE CAPREAD(PEMAT_NAME,CAP,CAPSA,
-     &               ICAPBFO,IOBF1_2,REAL_PART,IPRINT)
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      SUBROUTINE CAPREAD(LBL,CAP,CAPSA,CAPSAT,ICAPBFO,IOBF1_2,
+     &                   WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C    read integrals from the file named PEMAT_NAME into CAP 
-C and do the symmetry adaptation intp CAPSA
-C 
-C  return CAPSA - CAP integrals (re,im,Sovlp) in Dirac symmetry adapted order 
-C   depending of the "REAL_PART"
-C 
-C  Called from CAPADAPT
+C   read integrals from the PEMAT file under LBL label into the CAP array
 C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C   do the symmetry adaptation into the CAPSA array
+C   
+C   make triangular matrix of it and save it to the AOPROPER file   
+C   
+C   Called from prepcap.F/CAPADAPT
+C
+C Written by Miro ILIAS, May 2007, Tel Aviv
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "dcbcap.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "dummy.h"
-      DIMENSION CAP(N2BBASX),CAPSA(N2BBASX),
-     &          ICAPBFO(NBASIS),IOBF1_2(NBASIS)
+      DIMENSION CAP(N2BBASX),CAPSA(N2BBASX),CAPSAT(NNBBASX),
+     &       ICAPBFO(NBASIS),IOBF1_2(NBASIS),WORK(LWORK)
       INTEGER CMNINDX
-      LOGICAL REAL_PART
-      CHARACTER*10 PEMAT_NAME
-      COMPLEX*16 CAPINT
+      LOGICAL FNDLAB
+      CHARACTER*8 LBL
+
       CALL QENTER('CAPREAD')
 
-      IF (IPRINT.GE.2) THEN
-        WRITE(LUPRI,'(/2X,A,A)') 'CAPADAPT: going to read the file ',
-     &  PEMAT_NAME
+      CALL DZERO(CAP,N2BBASX)
+      CALL DZERO(CAPSA,N2BBASX)
+      CALL DZERO(CAPSAT,NNBBASX)
+
+      REWIND(LUPEMAT)
+      IF (FNDLAB(LBL,LUPEMAT)) THEN 
+        CALL READT(LUPEMAT,NNBBASX,CAPSA)
+      ELSE
+        write(LUPRI,*) 'CAPREAD: LBL,LUPEMAT:',LBL,LUPEMAT
+        CALL QUIT('CAPREAD: Label not found !')
       ENDIF
 
-      LUPM = 0
-      CALL GPOPEN(LUPM,PEMAT_NAME,'OLD',' ','FORMATTED',
-     &       IDUMMY,.FALSE.)
+      IF (IPRCAP.GE.2) THEN
+       WRITE(LUPRI,'(/2X,A,A,A)')
+     &  'CAPADAPT: CAP integrals of the label ',
+     &  LBL,' succesfully read from PEMAT file into the CAPSA array.'
+      ENDIF
 
 C==================================================================
-C     ... read PEMAT in the cycle and resort the matrix elements
-C    from CAP order to the DIRAC basic order into WORK arrays
+C       ... in the cycle resort the matrix elements
+C    from CAPSA PEMAT order to the DIRAC basic order into WORK arrays
 C==================================================================
       IX = 0
       DO I = 1, NBASIS
       DO J = 1, I
         IX = IX + 1
-        READ(LUPM,*) II,JJ,CAPINT
-        CAPRE = REAL(CAPINT)
-        CAPIM = IMAG(CAPINT)
-        IF (I.NE.II.OR.J.NE.JJ) THEN
-         CALL QUIT(' wrong indexes in PEMAT !')
-        ENDIF
         IX1 = CMNINDX(I,J)
         IF (IX.NE.IX1) THEN
-         write(LUPRI,*) 'read II,JJ,CAPINT:',II,JJ,CAPINT
-         write(LUPRI,*) 'I,J, common index ',I,J,IX1
-         CALL QUIT('CAPADAPT: wrong IX !')
+         write(LUPRI,*) 'I,J: ',IX1,IX
+         write(LUPRI,*) 'common indexes ',IX1,IX
+         CALL QUIT('CAPADAPT: wrong IX,IX1 !')
         ENDIF
 
 C       -------------------------------------------------
 C       .. store  integrals in the DIRAC basic order ..
 C       -------------------------------------------------
 
-         indx_i =  NBASIS*(ICAPBFO(I)-1) + ICAPBFO(J)  
-         indx_j =  NBASIS*(ICAPBFO(J)-1) + ICAPBFO(I) 
+        indx_i =  NBASIS*(ICAPBFO(I)-1) + ICAPBFO(J)
+        indx_j =  NBASIS*(ICAPBFO(J)-1) + ICAPBFO(I)
 
 C       CAP_FACT = GET_CAPAF_FAC(IOBF1(2,I))*GET_CAPAF_FAC(IOBF1(2,J))
         CAP_FACT = GET_CAPAF_FAC(IOBF1_2(I))*GET_CAPAF_FAC(IOBF1_2(J))
 
-        IF (IPRINT.GE.10) THEN
-          write(LUPRI,*) 'indx_i, indx_j, CAPRE, CAPRE*CAP_FACT:',
-     &    indx_i, indx_j, CAPRE, CAPRE*CAP_FACT
-        ENDIF
-
-        IF (REAL_PART) THEN
-          CAP(indx_i) = CAPRE*CAP_FACT
-          CAP(indx_j) = CAPRE*CAP_FACT
-        ELSE
-          CAP(indx_i) = CAPIM*CAP_FACT
-          CAP(indx_j) = CAPIM*CAP_FACT
-        ENDIF
+        CAP(indx_i) = CAPSA(IX)*CAP_FACT
+        CAP(indx_j) = CAPSA(IX)*CAP_FACT
 
       ENDDO 
       ENDDO 
 
-      CALL GPCLOSE(LUPM,'KEEP')
+C   ... delete SL/LS blocks integrals ....
+      IF (LBL.EQ.'CAP_RE  '.OR.
+     &    LBL.EQ.'CAP_IM  '.OR.
+     &    LBL.EQ.'CAP_OVLP') THEN
+        CALL DELETE_LS(CAP,NBASIS,IPRCAP,.TRUE.)
+      ELSE
+        CALL DELETE_LS(CAP,NBASIS,IPRCAP,.FALSE.)
+      ENDIF
 
-C! delete SL/LS blocks integrals
-      call delete_ls(CAP,NBASIS,IPRCAP)
-
-      IF (IPRINT.GE.4) THEN
-       CALL HEADER ('CAPxx in basic DIRAC order',-1)
+      IF (IPRCAP.GE.4) THEN
+       CALL HEADER ('CAPxx integrals in basic DIRAC order'//
+     & ' (cleared blocks) ',-1)
+       WRITE(LUPRI,'(2X,A)') 'The label is:',LBL
        CALL PRQMAT(CAP,NBASIS,NBASIS,NBASIS,NBASIS,1,
      &             IPQTOQ(1,0),LUPRI)
       ENDIF
 
-! ...internal DIRAC symmetry adaptation
-      CALL MTAOSO(CAP,CAPSA,NBASIS,0,IPRINT)
+C   ...internal DIRAC symmetry adaptation into CAPSA
+      IF (LBL.EQ.'CAP_RE  '.OR.
+     &    LBL.EQ.'CAP_IM  '.OR.
+     &    LBL.EQ.'CAP_OVLP') THEN
+C       IREPD = 1
+        IREPD = 0
+C *** Warning: this has to be solved !!!
+      ELSE IF (LBL.EQ.'CAPD1XR '.OR.LBL.EQ.'CAPD1XI ') THEN
+C       IREPD = 1
+        IREPD = 0
+      ELSE IF (LBL.EQ.'CAPD1YR '.OR.LBL.EQ.'CAPD1YI ') THEN
+C       IREPD = 1
+        IREPD = 0
+      ELSE IF (LBL.EQ.'CAPD1ZR '.OR.LBL.EQ.'CAPD1ZI ') THEN
+C       IREPD = 1
+        IREPD = 0
+      ELSE 
+        WRITE(LUPRI,*) 'CAPREAD ... LBL=',LBL
+        CALL QUIT('CAPREAD: wrong LBL !')
+      ENDIF
 
-C     WRITE(LUPRI,'(/,5X,A/)') 'CAPADAPT: Symmetry adaptation:'
+      CALL DZERO(CAPSA,N2BBASX)
+
+      CALL MTAOSO(CAP,CAPSA,NBASIS,IREPD,IPRCAP)
+
+C   ... make triangular matrix of CAPSA into CAPSAT
+      CALL DAMATR(NBASIS,CAPSA,NBASIS,CAPSAT)
+
+C   ... save CAPSAT of LBL to the AOPROPER file
+      CALL SAVECAP(LBL,CAPSAT,WORK,LWORK)
 
       CALL QEXIT('CAPREAD')
       RETURN
@@ -1104,5 +1408,4 @@ C        XYZ
 
       RETURN
       END
-
 
