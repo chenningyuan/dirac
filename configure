@@ -1264,6 +1264,19 @@ case $machine in
          echo   Could not determine which compiler mpif77 is using, assuming it is g77
          echo 
          ;;
+       gfortran)
+         gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+         echo "gfortran version $gfver prc=$prc"
+         cpp="-DVAR_G77 $cpp -DGFORTRAN=$gfver"
+         case $prc in
+           i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
+                     march="-march=$prc -malign-double";;
+           x86_64) march="-march=x86-64";;
+           *) march="";
+         esac
+         copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
+         opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
+         ;;
       pgf90|pgf77)
          opt="-fastsse"
          ccp="$ccp -DVAR_PGCC"
@@ -1419,6 +1432,19 @@ case $machine in
       pgf90|pgf77)
          opt="-fastsse"
          ccp="$ccp -DVAR_PGCC"
+         ;;
+       gfortran)
+         gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+         echo "gfortran version $gfver prc=$prc"
+         cpp="-DVAR_G77 $cpp -DGFORTRAN=$gfver"
+         case $prc in
+           i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
+                     march="-march=$prc -malign-double";;
+           x86_64) march="-march=x86-64";;
+           *) march="";
+         esac
+         copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
+         opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
          ;;
       ifc)
          opt="-O3 -ip -w"
