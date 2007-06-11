@@ -221,13 +221,29 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       ISIZE4=200*3
       CALL MEMGET('REAL',KRMS,ISIZE4,WORK,KFREE,LFREE)
 
-CMI   ISIZE5=25000
-CMI   CALL MEMGET('REAL',KPE_AOr,ISIZE5,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPE_AOr,NNBBASX,WORK,KFREE,LFREE)
-CMI   CALL MEMGET('REAL',KPE_AOi,ISIZE5,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPE_AOi,NNBBASX,WORK,KFREE,LFREE)
+      IF (CAPOVLP) THEN
+       CALL MEMGET('REAL',KPE_AOr,NNBBASX,WORK,KFREE,LFREE)
 
-      IF (.NOT.DONRCAP) THEN
+       CALL SAJEEV(WORK(KBASIS_N),WORK(KANG_POW),
+     &            WORK(KORDEXPON),WORK(KORDCOE),WORK(KRMS),
+     &            WORK(KPE_AOr),DUMMY,        
+     &            DUMMY,DUMMY, DUMMY,DUMMY, DUMMY,DUMMY,
+     &            WORK(KFREE),LFREE)
+      ELSE
+       IF (DONRCAP) THEN
+CMI    ISIZE5=25000
+CMI    CALL MEMGET('REAL',KPE_AOr,ISIZE5,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KPE_AOr,NNBBASX,WORK,KFREE,LFREE)
+CMI    CALL MEMGET('REAL',KPE_AOi,ISIZE5,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KPE_AOi,NNBBASX,WORK,KFREE,LFREE)
+
+        CALL SAJEEV(WORK(KBASIS_N),WORK(KANG_POW),
+     &            WORK(KORDEXPON),WORK(KORDCOE),WORK(KRMS),
+     &            WORK(KPE_AOr),WORK(KPE_AOi),
+     &            DUMMY,DUMMY, DUMMY,DUMMY, DUMMY,DUMMY,
+     &            WORK(KFREE),LFREE)
+
+      ELSE
 C       ... four-component CAP operator ...
         CALL MEMGET('REAL',KPEX_AOr,NNBBASX,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KPEX_AOi,NNBBASX,WORK,KFREE,LFREE)
@@ -240,18 +256,13 @@ C       ...
 
         CALL SAJEEV(WORK(KBASIS_N),WORK(KANG_POW),
      &            WORK(KORDEXPON),WORK(KORDCOE),WORK(KRMS),
-     &            WORK(KPE_AOr),WORK(KPE_AOi),
+     &            DUMMY, DUMMY,     
      &          WORK(KPEX_AOr),WORK(KPEX_AOi),
      &          WORK(KPEY_AOr),WORK(KPEY_AOi),
      &          WORK(KPEZ_AOr),WORK(KPEZ_AOi),
      &            WORK(KFREE),LFREE)
-      ELSE
 
-        CALL SAJEEV(WORK(KBASIS_N),WORK(KANG_POW),
-     &            WORK(KORDEXPON),WORK(KORDCOE),WORK(KRMS),
-     &            WORK(KPE_AOr),WORK(KPE_AOi),
-     &            DUMMY,DUMMY, DUMMY,DUMMY, DUMMY,DUMMY,
-     &            WORK(KFREE),LFREE)
+      ENDIF
       ENDIF
 
 C     ... release all the allocated memmory
@@ -341,43 +352,37 @@ C ======== first real part (CAPRE or CAP_OVLP)
       IF (.NOT.CAPOVLP) THEN
 C       ...  first real part (CAPRE or CAP_OVLP)
 
+       IF (DONRCAP) THEN
          CALL CAPREAD('CAP_RE  ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &          ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
          CALL CAPREAD('CAP_IM  ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &          ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-         IF (.NOT.DONRCAP) THEN
-C        ... continue with relativistic integrals
-
-CMI       CALL CAPREAD('CAP_D1XR',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+       ELSE
+C        ...  relativistic integrals
           CALL CAPREAD('CAPD1XR ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-C         CALL CAPREAD('CAP_D1XI',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
           CALL CAPREAD('CAPD1XI ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-C         CALL CAPREAD('CAP_D1YR',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
           CALL CAPREAD('CAPD1YR ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-C         CALL CAPREAD('CAP_D1YI',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
           CALL CAPREAD('CAPD1YI ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-C         CALL CAPREAD('CAP_D1ZR',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
           CALL CAPREAD('CAPD1ZR ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-C         CALL CAPREAD('CAP_D1ZI',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
           CALL CAPREAD('CAPD1ZI ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
          ENDIF
 
       ELSE
-
+C      ... overlap integrals
           CALL CAPREAD('CAP_OVLP',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &                 ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
@@ -607,13 +612,13 @@ C /* Deck getcapim */
       SUBROUTINE GETCAPMO(IMAGPART,CAPI,CAPI1,WORK,KFREE,LFREE)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C   Purpose: get CAP_IM operator in MO basis into CAPI(*) 
+C   Purpose: get CAP operator in MO basis into CAPI(*) 
 C
 C   First get it (using PRPMAO) as the real operator
 C
 C   IMAGPART - if true, read imaginary part of Ham. otherwise real
 C
-C   Called from MRCON1 (traone.F)
+C   Called from ...  (prepcap.F)
 C
 C   Written by Miro ILIAS, Tel Aviv, febr. 2007
 C
@@ -642,15 +647,15 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       KFRSAV = KFREE
 
-      IPRINT = IPRCAP
-
       CALL DZERO(CAPI,NORBT*NORBT*NZ)
 
 C  ...array for MO coefficients
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-
 C boson irreps identification (read with MO coeff.)
       CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+
+      CALL MEMCHK('getcapmo 1',WORK,1)
+
 C     open file for MO coefficients
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETCAPIM')
       IF (SPINFR) THEN
@@ -667,9 +672,17 @@ C     ... Open property file
       CALL OPNFIL(LU1INT,'AOPROPER','OLD','GETCAPMO')
 
       IF (IMAGPART) THEN
+       IF (DONRCAP) THEN
         INDXPR = IPCAPI
+       ELSE
+        INDXPR = IPCAP_DI
+       ENDIF
       ELSE
+       IF (DONRCAP) THEN
         INDXPR = IPCAPR
+       ELSE
+        INDXPR = IPCAP_DR
+       ENDIF
       ENDIF
 
       ISYM  = IPRPSYM(INDXPR)
@@ -681,39 +694,18 @@ C     ... Open property file
 
       IF (IPRCAP.GE.5) THEN
        WRITE(LUPRI,'(2X,2A)')
-     & 'GETCAPI: Get MO matrix of property: ',PRPNAM(INDXPR)
+     & 'GETCAPMOM: Get MO matrix of property: ',PRPNAM(INDXPR)
        CALL PRQMAT(CAPI,NORBT,NORBT,NORBT,
      &         NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
       ENDIF
 
-C     ... further read DC imaginary part into CAPI1
-      IF (.NOT.DONRCAP) THEN
-        IF (IMAGPART) THEN
-          INDXPR = IPCAP_DI
-        ELSE
-          INDXPR = IPCAP_DR
-        ENDIF
-        ISYM  = IPRPSYM(INDXPR)
-        IREP = ISYM - 1
-        IOPSY = JBTOF(ISYM-1,1)
-        CALL DZERO(CAPI1,N2ORBXQ)
-        CALL PRPMAT(INDXPR,IOPSY,CAPI1,WORK(KCMO),WORK(KBEIG),
-     &               ICMOQ,NORB,WORK,KFREE,LFREE,IPRCAP)
-
-        IF (IPRCAP.GE.5) THEN
-         WRITE(LUPRI,'(2X,2A)')
-     &   'GETCAPMO: MO matrix of property: ',PRPNAM(INDXPR)
-          CALL PRQMAT(CAPI1,NORBT,NORBT,NORBT,
-     &          NORBT,NZ,IPQTOQ(1,IREP),LUPRI)
-        ENDIF
-C       ... add CAPI1 to CAPI
-        CALL DAXPY(N2BBASX,D1,CAPI1,1,CAPI,1)
-      ENDIF
+      CALL MEMCHK('getcapmo 2',WORK,1)
 
 CMI   ...MOVE ee-part to the upper left part of the MO-matrix
 C     REARR = .FALSE.
       REARR = .true.
-C     IF (REARR.AND..NOT.LEVYLE) THEN
+C
+      IF (REARR.AND..NOT.LEVYLE) THEN
 
         CALL DZERO(CAPI1,NORBT*NORBT*NZ)
 
@@ -735,15 +727,18 @@ C     IF (REARR.AND..NOT.LEVYLE) THEN
         ENDDO
 
        IF (IPRINT.GE.5) THEN
-         WRITE(LUPRI,'(2X,2A)')
-     & 'GETCAPMO: Rearranged MO matrix of property: ',PRPNAM(INDXPR)
+        WRITE(LUPRI,'(2X,2A)')
+     &  'GETCAPMO: Rearranged MO matrix of property: ',PRPNAM(INDXPR)
         CALL PRQMAT(CAPI1,NORBT,NORBT,NORBT,
-     &         NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
+     &           NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
        ENDIF
 
-C     ENDIF
+      ENDIF
+
+      CALL MEMCHK('getcapmo 3',WORK,1)
 
       CALL MEMREL('GETCAPMO',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+
       CALL QEXIT('GETCAPMO')
       RETURN
       END 
@@ -840,7 +835,12 @@ C
 C Do the adaptation of the Fock matrix for CAP-FSCCSD calculations. Add CAP real
 C and imaginary contributions.
 C
+C Input: CAP - logical
+C          
+C
 C Output: FMOM with CAP (re,im) parts added
+C
+C Called from MRCON1/traone.F
 C
 C Written by Miro ILIAS, Mau 2007, Tel Aviv
 C
@@ -875,7 +875,7 @@ C         ... allocate space for CAP_IM
        CALL MEMGET('REAL',KCAPI, NORBT*NORBT*NZ,WORK,KFREE,LFREE)
        CALL MEMGET('REAL',KCAPI1,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
 
-C      .... get CAP  operator) in the MO basis
+C      .... get CAP  operator - real part (nonrel/rel) in the MO basis
         CALL GETCAPMO(.FALSE.,WORK(KCAPI),WORK(KCAPI1),WORK,KFREE,LFREE)
 C       ... allocate space for MOLFDIR like CAP
         CALL MEMGET('REAL',KCAPIM,NSTRT*NSTRT*8,WORK,KFREE,LFREE)
@@ -884,10 +884,8 @@ C       ... turn it in the MOLFDIR like form
 C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM (if .true.)
         CALL ADDCAPMOM(NSTRT,WORK(KCAPIM),FMOM,.FALSE.)
 
-C      .... get CAP_IM (as a "real" operator) in the MO basis
+C      .... get CAP nonre/rl (as a "real" operator) in the MO basis
         CALL GETCAPMO(.TRUE.,WORK(KCAPI),WORK(KCAPI1),WORK,KFREE,LFREE)
-C       ... allocate space for MOLFDIR like CAP
-        CALL MEMGET('REAL',KCAPIM,NSTRT*NSTRT*8,WORK,KFREE,LFREE)
 C       ... turn it in the MOLFDIR like form
         CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,.TRUE.)
 C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM (if .true.)
@@ -926,11 +924,12 @@ C  the list according to the LBL
 C 
 C  List of permitted labels: 
 C 
-C             CAP_RE
-C             CAP_IM
-C             CAP_OVLP
+C             CAP_OVLP - overlap integrals for both relativistic and nonrelativistic mode
 C
-C             CAPD1XR
+C             CAP_RE  - real and imaginary integrals for non-relativistic calculations
+C             CAP_IM
+C
+C             CAPD1XR - real and imaginary integrals for relativistic calculations
 C             CAPD1XI
 C             CAPD1YR
 C             CAPD1YI
@@ -1041,6 +1040,7 @@ C       WRITE(LUPRI,*) (CAPINTS(I),I=1,NNBBASX)
           PLABEL(1)='CAPD1ZI'
              IPTYP = 4
         ELSE
+C         ... non-relativ.integrals
              IPTYP = 1
         ENDIF
 C
