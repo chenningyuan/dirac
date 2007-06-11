@@ -864,7 +864,7 @@ C
       CALL LUMSTI
 C
 C      Enter the generic LUCITA routine (master becomes 
-C      now somewhat like primus inter parens)
+C      now somewhat like primus inter pares -- "first among equals")
 C
       CALL PAMLU(WRK,LWRK,IN,IW)
 C
