@@ -132,12 +132,12 @@ void dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
 
 #if defined(radovan_will_merge_me_later)
 /*
- *     R = n = \rho_\alpha + \rho_\beta
- *     S = s = \rho_\alpha - \rho_\beta
+ *     R = \rho_\alpha + \rho_\beta
+ *     S = \rho_\alpha - \rho_\beta
  *    
- *     Z = \nabla n \cdot \nabla n
- *     Y = \nabla n \cdot \nabla s
- *     X = \nabla s \cdot \nabla s
+ *     Z = \nabla R \cdot \nabla R
+ *     Y = \nabla R \cdot \nabla S
+ *     X = \nabla S \cdot \nabla S
  */
 
 struct FirstDrv_ {
@@ -236,10 +236,12 @@ void dftpot0_(FirstDrv *ds,
               const real* weight,
               const real* rho, 
               const real* grad);
+
 void dftpot1_(SecondDrv *ds, 
               const real* weight,
               const real* rho, 
               const real* grad);
+
 void dftpot2_(ThirdDrv *ds, 
               const real* weight,
               const real* rho, 
@@ -249,6 +251,7 @@ void sdftpot1_(SpinPolarizedSecondDrv *ds,
                const real* weight,
                const real* rho, 
                const real* grad);
+
 void sdftpot2_(SpinPolarizedThirdDrv *ds, 
                const real* weight,
                const real* rho, 
