@@ -51,10 +51,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dftcom.h"
 #include "symmet.h"
 #include "ccom.h"
-Caspg, removing hardcoded limit and infoa common
-C     PARAMETER (MAXCEN=100)
       PARAMETER (D0=0.0D0)
-C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
 #include "dftwrk.h"
 
@@ -208,13 +205,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL SWITCH
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
 
-Caspg, removing hardcoded limit and infoa common
-C     PARAMETER (MAXCEN=100)
       CHARACTER SPDCAR*1
 
 #include "dftwrk.h"
 
-C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
       DIMENSION ZAN(*), C(*)
 
 #include "dummy.h"
@@ -842,9 +836,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "implicit.h" 
 
-C     PARAMETER (MAXBFN=1000)
-Caspg, removing hardcoded limit and infoa common
-C     PARAMETER (MAXCEN=100)
       DIMENSION RJ(IVECL,NAT),
      &          PSMU(IVECL,NAT),
      &          RIJ(NAT*(NAT-1)/2),
@@ -853,7 +844,6 @@ C     PARAMETER (MAXCEN=100)
      &          XMUIJN(IVECL),XMUIJ2(IVECL),ACCUM(IVECL),XPASC(20),
      &          ZAN(*),C(*)
 
-C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 C
 C     WORK OUT THE WEIGHT FUNCTION BY BECKE PARTITIONING
 C
@@ -1119,12 +1109,6 @@ C***********************************************************************
 C
       DIMENSION DMAT(*),WORK(LWORK)
       DIMENSION C(*)
-C
-Caspg, removing hardcoded limit and infoa common
-C     PARAMETER(MAXCEN = 100)
-C
-C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
-C
 #include "mxcent.h"
 #include "dcbgen.h"
 #include "nuclei.h"
@@ -1202,10 +1186,6 @@ C***********************************************************************
 #include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
-Caspg, removing hardcoded limit and infoa common
-C
-C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
-C
       DIMENSION C(*)
 #if defined (VAR_G77) || defined (SYS_SX)
 C     g77 fails in the complicated dimension statement that was used
@@ -1260,15 +1240,12 @@ C***********************************************************************
 #include "priunit.h"
 
       PARAMETER(D0=0.0D0,D2=2.0D0)
-Caspg, removing hardcoded limit and infoa common
-C     PARAMETER(MAXCEN = 100)
 
 #include "codata.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "dcbbas.h"
 C
-C     COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 #if defined (VAR_G77) || defined (SYS_SX)
 C     g77 fails in the complicated dimension statement that was used
 C     in the original version, make things easier for the compiler with an
