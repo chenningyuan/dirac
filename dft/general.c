@@ -333,8 +333,6 @@ sdftpot1_(SpinPolarizedSecondDrv *ds,
 
   real grad2 = *grad* *grad;
   real grad3 = grad2* *grad;
-  real grad4 = grad3* *grad;
-  real grad5 = grad4* *grad;
 
   real bygrad  = 1.0/ *grad;
   real bygrad2 = 1.0/grad2;
