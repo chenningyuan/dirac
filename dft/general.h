@@ -138,8 +138,6 @@ void dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
  *     Z = \nabla n \cdot \nabla n
  *     Y = \nabla n \cdot \nabla s
  *     X = \nabla s \cdot \nabla s
- *    
- *     those that are zero at closed-shell are commented
  */
 
 struct FirstDrv_ {
@@ -165,12 +163,6 @@ struct ThirdDrv_ {
        real fRRZ
        real fRZZ
        real fZZZ
-};
-
-struct SpinPolarizedFirstDrv_ {
-       real fS   /* zero at closed-shell */
-       real fY   /* zero at closed-shell */
-       real fX 
 };
 
 struct SpinPolarizedSecondDrv_ {
@@ -253,10 +245,6 @@ void dftpot2_(ThirdDrv *ds,
               const real* rho, 
               const real* grad);
 
-void sdftpot0_(SpinPolarizedFirstDrv *ds, 
-               const real* weight,
-               const real* rho, 
-               const real* grad);
 void sdftpot1_(SpinPolarizedSecondDrv *ds, 
                const real* weight,
                const real* rho, 
