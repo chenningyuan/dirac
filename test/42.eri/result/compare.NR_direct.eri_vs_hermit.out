@@ -1,0 +1,453 @@
+140c140
+<  Date and time (Linux) : Tue Jun 12 18:05:37 2007
+---
+>  Date and time (Linux) : Tue Jun 12 18:05:46 2007
+159,162d158
+<  **INTEGRALS                                                                    
+<   
+<  .RUNERI                                                                        
+<   
+201,209d196
+<  Default print level:        1
+<     Integrals are calculated using ERI instead of HERMIT (where possible)
+<  Nuclear model: Gaussian charge distribution.
+< 
+<  Two-electron integrals not calculated.
+< 
+< 
+<  Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+< 
+294c281
+<   O3          1       8      26      14      L  - [9s4p1d|3s2p1d]                                    
+---
+>   O3          1       8      27      15      L  - [9s4p1d|3s2p1d]                                    
+296c283
+<   O4          1       8      26      14      L  - [9s4p1d|3s2p1d]                                    
+---
+>   O4          1       8      27      15      L  - [9s4p1d|3s2p1d]                                    
+299c286
+<                              66      38      L  - large components
+---
+>                              68      40      L  - large components
+302c289
+<   total:      4      18      66      38
+---
+>   total:      4      18      68      40
+304c291
+<   Spherical harmonic basis used.
+---
+>   Cartesian basis used.
+388,393c375,380
+<    * Large components:   26
+<      1  L H1    1s       2  L H1    2px      3  L H1    2py      4  L H1    2pz      5  L H2    1s       6  L H2    2px 
+<      7  L H2    2py      8  L H2    2pz      9  L O3    1s      10  L O3    2px     11  L O3    2py     12  L O3    2pz 
+<     13  L O3    3d2-    14  L O3    3d1-    15  L O3    3d0     16  L O3    3d1+    17  L O3    3d2+    18  L O4    1s  
+<     19  L O4    2px     20  L O4    2py     21  L O4    2pz     22  L O4    3d2-    23  L O4    3d1-    24  L O4    3d0 
+<     25  L O4    3d1+    26  L O4    3d2+
+---
+>    * Large components:   28
+>      1  L H1    s        2  L H1    px       3  L H1    py       4  L H1    pz       5  L H2    s        6  L H2    px  
+>      7  L H2    py       8  L H2    pz       9  L O3    s       10  L O3    px      11  L O3    py      12  L O3    pz  
+>     13  L O3    dxx     14  L O3    dxy     15  L O3    dxz     16  L O3    dyy     17  L O3    dyz     18  L O3    dzz 
+>     19  L O4    s       20  L O4    px      21  L O4    py      22  L O4    pz      23  L O4    dxx     24  L O4    dxy 
+>     25  L O4    dxz     26  L O4    dyy     27  L O4    dyz     28  L O4    dzz 
+401,402c388,389
+<   Number of orbitals in each symmetry:           38
+<   Number of large orbitals in each symmetry:     38
+---
+>   Number of orbitals in each symmetry:           40
+>   Number of large orbitals in each symmetry:     40
+409,434c396,423
+<         2 functions:    H1 1s  
+<         1 functions:    H1 2px 
+<         1 functions:    H1 2py 
+<         1 functions:    H1 2pz 
+<         2 functions:    H2 1s  
+<         1 functions:    H2 2px 
+<         1 functions:    H2 2py 
+<         1 functions:    H2 2pz 
+<         3 functions:    O3 1s  
+<         2 functions:    O3 2px 
+<         2 functions:    O3 2py 
+<         2 functions:    O3 2pz 
+<         1 functions:    O3 3d2-
+<         1 functions:    O3 3d1-
+<         1 functions:    O3 3d0 
+<         1 functions:    O3 3d1+
+<         1 functions:    O3 3d2+
+<         3 functions:    O4 1s  
+<         2 functions:    O4 2px 
+<         2 functions:    O4 2py 
+<         2 functions:    O4 2pz 
+<         1 functions:    O4 3d2-
+<         1 functions:    O4 3d1-
+<         1 functions:    O4 3d0 
+<         1 functions:    O4 3d1+
+<         1 functions:    O4 3d2+
+---
+>         2 functions:    H1 s   
+>         1 functions:    H1 px  
+>         1 functions:    H1 py  
+>         1 functions:    H1 pz  
+>         2 functions:    H2 s   
+>         1 functions:    H2 px  
+>         1 functions:    H2 py  
+>         1 functions:    H2 pz  
+>         3 functions:    O3 s   
+>         2 functions:    O3 px  
+>         2 functions:    O3 py  
+>         2 functions:    O3 pz  
+>         1 functions:    O3 dxx 
+>         1 functions:    O3 dxy 
+>         1 functions:    O3 dxz 
+>         1 functions:    O3 dyy 
+>         1 functions:    O3 dyz 
+>         1 functions:    O3 dzz 
+>         3 functions:    O4 s   
+>         2 functions:    O4 px  
+>         2 functions:    O4 py  
+>         2 functions:    O4 pz  
+>         1 functions:    O4 dxx 
+>         1 functions:    O4 dxy 
+>         1 functions:    O4 dxz 
+>         1 functions:    O4 dyy 
+>         1 functions:    O4 dyz 
+>         1 functions:    O4 dzz 
+522c511
+<    L   A     * Deleted:          0
+---
+>    L   A     * Deleted:          2(Proj:          2, Lindep:          0)
+543c532
+< ########## START ITERATION NO.   1 ##########   Tue Jun 12 18:05:37 2007
+---
+> ########## START ITERATION NO.   1 ##########   Tue Jun 12 18:05:46 2007
+547c536
+< ########## START ITERATION NO.   2##########   Tue Jun 12 18:05:37 2007
+---
+> ########## START ITERATION NO.   2##########   Tue Jun 12 18:05:46 2007
+552,554c541,543
+< SOfock:LL  1.00D-12    0.00%   21.40%    0.00%    0.00%   0.39000000s
+< >>> Total wall time: 0.00000000s
+< >>> Total CPU-time : 0.42000000s
+---
+> SOfock:LL  1.00D-12    0.00%   22.52%    0.00%    0.00%   0.42000000s
+> >>> Total wall time: 1.00000000s
+> >>> Total CPU-time : 0.45000000s
+556c545
+< ########## END ITERATION NO.   2 ##########   Tue Jun 12 18:05:37 2007
+---
+> ########## END ITERATION NO.   2 ##########   Tue Jun 12 18:05:46 2007
+558c547
+< It.   2    -149.8481953652      9.37D+01  1.13D+00  2.21D+00               0.42000000s   LL             Tue Jun 12
+---
+> It.   2    -149.8481953652      9.37D+01  1.10D+00  2.21D+00               0.45000000s   LL             Tue Jun 12
+560c549
+< ########## START ITERATION NO.   3##########   Tue Jun 12 18:05:37 2007
+---
+> ########## START ITERATION NO.   3##########   Tue Jun 12 18:05:47 2007
+564c553
+< SOfock:LL  1.00D-12    0.00%   21.40%    0.00%    0.00%   0.39000000s
+---
+> SOfock:LL  1.00D-12    0.00%   22.53%    0.00%    0.00%   0.43000000s
+566c555
+< >>> Total CPU-time : 0.40000000s
+---
+> >>> Total CPU-time : 0.43000000s
+568c557
+< ########## END ITERATION NO.   3 ##########   Tue Jun 12 18:05:37 2007
+---
+> ########## END ITERATION NO.   3 ##########   Tue Jun 12 18:05:47 2007
+570c559
+< It.   3    -150.5607765755      7.13D-01 -1.25D+00  1.08D+00   DIIS   2    0.40000000s   LL             Tue Jun 12
+---
+> It.   3    -150.5607765755      7.13D-01 -1.50D+00  1.08D+00   DIIS   2    0.43000000s   LL             Tue Jun 12
+572c561
+< ########## START ITERATION NO.   4##########   Tue Jun 12 18:05:37 2007
+---
+> ########## START ITERATION NO.   4##########   Tue Jun 12 18:05:47 2007
+576c565
+< SOfock:LL  1.00D-12    0.00%   21.40%    0.00%    0.00%   0.38000000s
+---
+> SOfock:LL  1.00D-12    0.00%   22.53%    0.00%    0.00%   0.43000000s
+578c567
+< >>> Total CPU-time : 0.39000000s
+---
+> >>> Total CPU-time : 0.43000000s
+580c569
+< ########## END ITERATION NO.   4 ##########   Tue Jun 12 18:05:37 2007
+---
+> ########## END ITERATION NO.   4 ##########   Tue Jun 12 18:05:47 2007
+582c571
+< It.   4    -150.7715892129      2.11D-01  4.21D-01  5.22D-02   DIIS   3    0.39000000s   LL             Tue Jun 12
+---
+> It.   4    -150.7715892129      2.11D-01  4.98D-01  5.22D-02   DIIS   3    0.43000000s   LL             Tue Jun 12
+584c573
+< ########## START ITERATION NO.   5##########   Tue Jun 12 18:05:38 2007
+---
+> ########## START ITERATION NO.   5##########   Tue Jun 12 18:05:48 2007
+588c577
+< SOfock:LL  1.00D-12    0.00%   21.41%    0.00%    0.00%   0.39000000s
+---
+> SOfock:LL  1.00D-12    0.00%   22.53%    0.00%    0.00%   0.43000000s
+590c579
+< >>> Total CPU-time : 0.39000000s
+---
+> >>> Total CPU-time : 0.43000000s
+592c581
+< ########## END ITERATION NO.   5 ##########   Tue Jun 12 18:05:38 2007
+---
+> ########## END ITERATION NO.   5 ##########   Tue Jun 12 18:05:48 2007
+594c583
+< It.   5    -150.7721189800      5.30D-04 -1.07D-02  8.38D-03   DIIS   4    0.39000000s   LL             Tue Jun 12
+---
+> It.   5    -150.7721189800      5.30D-04 -1.27D-02  8.38D-03   DIIS   4    0.43000000s   LL             Tue Jun 12
+596c585
+< ########## START ITERATION NO.   6##########   Tue Jun 12 18:05:38 2007
+---
+> ########## START ITERATION NO.   6##########   Tue Jun 12 18:05:48 2007
+600,602c589,591
+< SOfock:LL  1.00D-12    0.00%   21.45%    0.00%    0.00%   0.39000000s
+< >>> Total wall time: 1.00000000s
+< >>> Total CPU-time : 0.40000000s
+---
+> SOfock:LL  1.00D-12    0.00%   22.58%    0.00%    0.00%   0.43000000s
+> >>> Total wall time: 0.00000000s
+> >>> Total CPU-time : 0.43000000s
+604c593
+< ########## END ITERATION NO.   6 ##########   Tue Jun 12 18:05:38 2007
+---
+> ########## END ITERATION NO.   6 ##########   Tue Jun 12 18:05:48 2007
+606c595
+< It.   6    -150.7721411839      2.22D-05  4.54D-04  2.00D-03   DIIS   5    0.40000000s   LL             Tue Jun 12
+---
+> It.   6    -150.7721411839      2.22D-05  4.66D-04  2.00D-03   DIIS   5    0.43000000s   LL             Tue Jun 12
+608c597
+< ########## START ITERATION NO.   7##########   Tue Jun 12 18:05:39 2007
+---
+> ########## START ITERATION NO.   7##########   Tue Jun 12 18:05:48 2007
+612,614c601,603
+< SOfock:LL  1.00D-12    0.00%   21.52%    0.01%    0.00%   0.38000000s
+< >>> Total wall time: 0.00000000s
+< >>> Total CPU-time : 0.39000000s
+---
+> SOfock:LL  1.00D-12    0.00%   22.64%    0.00%    0.00%   0.42000000s
+> >>> Total wall time: 1.00000000s
+> >>> Total CPU-time : 0.42000000s
+616c605
+< ########## END ITERATION NO.   7 ##########   Tue Jun 12 18:05:39 2007
+---
+> ########## END ITERATION NO.   7 ##########   Tue Jun 12 18:05:48 2007
+618c607
+< It.   7    -150.7721442690      3.09D-06  3.12D-04  6.92D-04   DIIS   6    0.39000000s   LL             Tue Jun 12
+---
+> It.   7    -150.7721442690      3.09D-06  3.00D-04  6.92D-04   DIIS   6    0.42000000s   LL             Tue Jun 12
+620c609
+< ########## START ITERATION NO.   8##########   Tue Jun 12 18:05:39 2007
+---
+> ########## START ITERATION NO.   8##########   Tue Jun 12 18:05:49 2007
+624c613
+< SOfock:LL  1.00D-12    0.00%   21.68%    0.01%    0.00%   0.39000000s
+---
+> SOfock:LL  1.00D-12    0.00%   22.77%    0.01%    0.00%   0.42000000s
+626c615
+< >>> Total CPU-time : 0.40000000s
+---
+> >>> Total CPU-time : 0.44000000s
+628c617
+< ########## END ITERATION NO.   8 ##########   Tue Jun 12 18:05:39 2007
+---
+> ########## END ITERATION NO.   8 ##########   Tue Jun 12 18:05:49 2007
+630c619
+< It.   8    -150.7721447983      5.29D-07  1.60D-04  2.32D-04   DIIS   7    0.40000000s   LL             Tue Jun 12
+---
+> It.   8    -150.7721447983      5.29D-07  1.55D-04  2.32D-04   DIIS   7    0.44000000s   LL             Tue Jun 12
+632c621
+< ########## START ITERATION NO.   9##########   Tue Jun 12 18:05:39 2007
+---
+> ########## START ITERATION NO.   9##########   Tue Jun 12 18:05:49 2007
+636c625
+< SOfock:LL  1.00D-12    0.00%   21.86%    0.03%    0.00%   0.39000000s
+---
+> SOfock:LL  1.00D-12    0.00%   22.91%    0.06%    0.00%   0.42000000s
+638c627
+< >>> Total CPU-time : 0.39000000s
+---
+> >>> Total CPU-time : 0.43000000s
+640c629
+< ########## END ITERATION NO.   9 ##########   Tue Jun 12 18:05:39 2007
+---
+> ########## END ITERATION NO.   9 ##########   Tue Jun 12 18:05:49 2007
+642c631
+< It.   9    -150.7721448614      6.31D-08  5.73D-05  5.38D-05   DIIS   8    0.39000000s   LL             Tue Jun 12
+---
+> It.   9    -150.7721448614      6.31D-08  5.61D-05  5.38D-05   DIIS   8    0.43000000s   LL             Tue Jun 12
+644c633
+< ########## START ITERATION NO.  10##########   Tue Jun 12 18:05:40 2007
+---
+> ########## START ITERATION NO.  10##########   Tue Jun 12 18:05:50 2007
+648c637
+< SOfock:LL  1.00D-12    0.00%   22.39%    0.11%    0.01%   0.39000000s
+---
+> SOfock:LL  1.00D-12    0.00%   23.38%    0.16%    0.00%   0.42000000s
+650c639
+< >>> Total CPU-time : 0.39000000s
+---
+> >>> Total CPU-time : 0.42000000s
+652c641
+< ########## END ITERATION NO.  10 ##########   Tue Jun 12 18:05:40 2007
+---
+> ########## END ITERATION NO.  10 ##########   Tue Jun 12 18:05:50 2007
+654c643
+< It.  10    -150.7721448644      2.97D-09 -1.42D-05  1.15D-05   DIIS   9    0.39000000s   LL             Tue Jun 12
+---
+> It.  10    -150.7721448644      2.97D-09 -1.46D-05  1.15D-05   DIIS   9    0.42000000s   LL             Tue Jun 12
+656c645
+< ########## START ITERATION NO.  11##########   Tue Jun 12 18:05:40 2007
+---
+> ########## START ITERATION NO.  11##########   Tue Jun 12 18:05:50 2007
+660c649
+< SOfock:LL  1.00D-12    0.00%   23.87%    0.27%    0.02%   0.39000000s
+---
+> SOfock:LL  1.00D-12    0.00%   24.59%    0.36%    0.01%   0.43000000s
+662c651
+< >>> Total CPU-time : 0.40000000s
+---
+> >>> Total CPU-time : 0.43000000s
+664c653
+< ########## END ITERATION NO.  11 ##########   Tue Jun 12 18:05:40 2007
+---
+> ########## END ITERATION NO.  11 ##########   Tue Jun 12 18:05:50 2007
+666c655
+< It.  11    -150.7721448645      1.09D-10 -2.47D-06  3.34D-06   DIIS   9    0.40000000s   LL             Tue Jun 12
+---
+> It.  11    -150.7721448645      1.09D-10 -2.43D-06  3.34D-06   DIIS   9    0.43000000s   LL             Tue Jun 12
+668c657
+< ########## START ITERATION NO.  12##########   Tue Jun 12 18:05:41 2007
+---
+> ########## START ITERATION NO.  12##########   Tue Jun 12 18:05:51 2007
+672c661
+< SOfock:LL  1.00D-12    0.00%   25.89%    0.43%    0.06%   0.38000000s
+---
+> SOfock:LL  1.00D-12    0.00%   26.25%    0.40%    0.04%   0.43000000s
+674c663
+< >>> Total CPU-time : 0.38000000s
+---
+> >>> Total CPU-time : 0.43000000s
+676c665
+< ########## END ITERATION NO.  12 ##########   Tue Jun 12 18:05:41 2007
+---
+> ########## END ITERATION NO.  12 ##########   Tue Jun 12 18:05:51 2007
+678c667
+< It.  12    -150.7721448645      1.12D-11 -7.99D-07  8.83D-07   DIIS   9    0.38000000s   LL             Tue Jun 12
+---
+> It.  12    -150.7721448645      1.06D-11 -7.64D-07  8.83D-07   DIIS   9    0.43000000s   LL             Tue Jun 12
+680c669
+< ########## START ITERATION NO.  13##########   Tue Jun 12 18:05:41 2007
+---
+> ########## START ITERATION NO.  13##########   Tue Jun 12 18:05:51 2007
+684c673
+< SOfock:LL  1.00D-12    0.00%   29.40%    1.26%    0.50%   0.39000000s
+---
+> SOfock:LL  1.00D-12    0.00%   29.35%    1.05%    0.49%   0.42000000s
+686c675
+< >>> Total CPU-time : 0.40000000s
+---
+> >>> Total CPU-time : 0.42000000s
+688c677
+< ########## END ITERATION NO.  13 ##########   Tue Jun 12 18:05:41 2007
+---
+> ########## END ITERATION NO.  13 ##########   Tue Jun 12 18:05:51 2007
+690c679
+< It.  13    -150.7721448645     -1.53D-12 -1.77D-07  1.99D-07   DIIS   9    0.40000000s   LL             Tue Jun 12
+---
+> It.  13    -150.7721448645     -1.76D-12 -1.65D-07  1.99D-07   DIIS   9    0.42000000s   LL             Tue Jun 12
+692c681
+< ########## START ITERATION NO.  14##########   Tue Jun 12 18:05:41 2007
+---
+> ########## START ITERATION NO.  14##########   Tue Jun 12 18:05:51 2007
+696c685
+< SOfock:LL  1.00D-12    0.62%   36.20%    3.51%    1.66%   0.39000000s
+---
+> SOfock:LL  1.00D-12    0.39%   35.77%    3.14%    1.59%   0.42000000s
+698c687
+< >>> Total CPU-time : 0.39000000s
+---
+> >>> Total CPU-time : 0.42000000s
+700c689
+< ########## END ITERATION NO.  14 ##########   Tue Jun 12 18:05:41 2007
+---
+> ########## END ITERATION NO.  14 ##########   Tue Jun 12 18:05:51 2007
+702c691
+< It.  14    -150.7721448645      4.55D-13  5.14D-08  5.68D-08   DIIS   9    0.39000000s   LL             Tue Jun 12
+---
+> It.  14    -150.7721448645      1.14D-13  6.06D-08  5.68D-08   DIIS   9    0.42000000s   LL             Tue Jun 12
+719,731c708,720
+< It.   2    -149.8481953652      9.37D+01  1.13D+00  2.21D+00               0.42000000s   LL             Tue Jun 12
+< It.   3    -150.5607765755      7.13D-01 -1.25D+00  1.08D+00   DIIS   2    0.40000000s   LL             Tue Jun 12
+< It.   4    -150.7715892129      2.11D-01  4.21D-01  5.22D-02   DIIS   3    0.39000000s   LL             Tue Jun 12
+< It.   5    -150.7721189800      5.30D-04 -1.07D-02  8.38D-03   DIIS   4    0.39000000s   LL             Tue Jun 12
+< It.   6    -150.7721411839      2.22D-05  4.54D-04  2.00D-03   DIIS   5    0.40000000s   LL             Tue Jun 12
+< It.   7    -150.7721442690      3.09D-06  3.12D-04  6.92D-04   DIIS   6    0.39000000s   LL             Tue Jun 12
+< It.   8    -150.7721447983      5.29D-07  1.60D-04  2.32D-04   DIIS   7    0.40000000s   LL             Tue Jun 12
+< It.   9    -150.7721448614      6.31D-08  5.73D-05  5.38D-05   DIIS   8    0.39000000s   LL             Tue Jun 12
+< It.  10    -150.7721448644      2.97D-09 -1.42D-05  1.15D-05   DIIS   9    0.39000000s   LL             Tue Jun 12
+< It.  11    -150.7721448645      1.09D-10 -2.47D-06  3.34D-06   DIIS   9    0.40000000s   LL             Tue Jun 12
+< It.  12    -150.7721448645      1.12D-11 -7.99D-07  8.83D-07   DIIS   9    0.38000000s   LL             Tue Jun 12
+< It.  13    -150.7721448645     -1.53D-12 -1.77D-07  1.99D-07   DIIS   9    0.40000000s   LL             Tue Jun 12
+< It.  14    -150.7721448645      4.55D-13  5.14D-08  5.68D-08   DIIS   9    0.39000000s   LL             Tue Jun 12
+---
+> It.   2    -149.8481953652      9.37D+01  1.10D+00  2.21D+00               0.45000000s   LL             Tue Jun 12
+> It.   3    -150.5607765755      7.13D-01 -1.50D+00  1.08D+00   DIIS   2    0.43000000s   LL             Tue Jun 12
+> It.   4    -150.7715892129      2.11D-01  4.98D-01  5.22D-02   DIIS   3    0.43000000s   LL             Tue Jun 12
+> It.   5    -150.7721189800      5.30D-04 -1.27D-02  8.38D-03   DIIS   4    0.43000000s   LL             Tue Jun 12
+> It.   6    -150.7721411839      2.22D-05  4.66D-04  2.00D-03   DIIS   5    0.43000000s   LL             Tue Jun 12
+> It.   7    -150.7721442690      3.09D-06  3.00D-04  6.92D-04   DIIS   6    0.42000000s   LL             Tue Jun 12
+> It.   8    -150.7721447983      5.29D-07  1.55D-04  2.32D-04   DIIS   7    0.44000000s   LL             Tue Jun 12
+> It.   9    -150.7721448614      6.31D-08  5.61D-05  5.38D-05   DIIS   8    0.43000000s   LL             Tue Jun 12
+> It.  10    -150.7721448644      2.97D-09 -1.46D-05  1.15D-05   DIIS   9    0.42000000s   LL             Tue Jun 12
+> It.  11    -150.7721448645      1.09D-10 -2.43D-06  3.34D-06   DIIS   9    0.43000000s   LL             Tue Jun 12
+> It.  12    -150.7721448645      1.06D-11 -7.64D-07  8.83D-07   DIIS   9    0.43000000s   LL             Tue Jun 12
+> It.  13    -150.7721448645     -1.76D-12 -1.65D-07  1.99D-07   DIIS   9    0.42000000s   LL             Tue Jun 12
+> It.  14    -150.7721448645      1.14D-13  6.06D-08  5.68D-08   DIIS   9    0.42000000s   LL             Tue Jun 12
+736c725
+<       LL           :    0.38461538s
+---
+>       LL           :    0.46153846s
+742c731
+<    Electronic energy                        :    -186.92342910199275
+---
+>    Electronic energy                        :    -186.92342910199181
+748c737
+<    Total energy                             :    -150.77214486448619
+---
+>    Total energy                             :    -150.77214486448526
+757,758c746,747
+< -20.63178834567759  ( 2)   -20.63152997074732  ( 2)    -1.45750029640742  ( 2)    -1.21631085397823  ( 2)    -0.73932730152180  ( 2)
+<  -0.64813242439241  ( 2)    -0.58124900819618  ( 2)    -0.54842914673977  ( 2)    -0.47210140949976  ( 2)
+---
+> -20.63178834567421  ( 2)   -20.63152997074833  ( 2)    -1.45750029640677  ( 2)    -1.21631085397789  ( 2)    -0.73932730152212  ( 2)
+>  -0.64813242439209  ( 2)    -0.58124900819575  ( 2)    -0.54842914673948  ( 2)    -0.47210140949951  ( 2)
+760,765c749,754
+<   0.16224583773344  ( 2)     0.18324279226325  ( 2)     0.29592503068412  ( 2)     0.80203165137796  ( 2)     0.81757260749688  ( 2)
+<   1.11671792836648  ( 2)     1.13332196306220  ( 2)     1.18044640777266  ( 2)     1.20426750705044  ( 2)     1.29616356908930  ( 2)
+<   1.30141500911416  ( 2)     1.49856423331680  ( 2)     1.53686509031744  ( 2)     1.54535173828656  ( 2)     1.72182041269348  ( 2)
+<   1.88131325296627  ( 2)     2.03624721940733  ( 2)     2.37621295177624  ( 2)     2.42251260439356  ( 2)     2.71502710457125  ( 2)
+<   2.71860864846742  ( 2)     2.97516340665774  ( 2)     3.25797793090189  ( 2)     3.27141132235578  ( 2)     3.36318457936275  ( 2)
+<   3.49726741808319  ( 2)     3.85593598535079  ( 2)     3.97566086732970  ( 2)     4.18451782711944  ( 2)
+---
+>   0.16224583773349  ( 2)     0.18324279226357  ( 2)     0.29592503068479  ( 2)     0.80203165137785  ( 2)     0.81757260749261  ( 2)
+>   1.11671792836391  ( 2)     1.13332196306279  ( 2)     1.18044640777561  ( 2)     1.20426750704824  ( 2)     1.29616356908889  ( 2)
+>   1.30141500911362  ( 2)     1.49856423331338  ( 2)     1.53686509033065  ( 2)     1.54535173825777  ( 2)     1.72182041269146  ( 2)
+>   1.88131325297340  ( 2)     2.03624721941377  ( 2)     2.37621295175013  ( 2)     2.42251260439669  ( 2)     2.71502710458517  ( 2)
+>   2.71860864845127  ( 2)     2.97516340664477  ( 2)     3.25797793087718  ( 2)     3.27141132236884  ( 2)     3.36318457937339  ( 2)
+>   3.49726741810603  ( 2)     3.85593598539477  ( 2)     3.97566086733129  ( 2)     4.18451782704994  ( 2)
+791c780
+<  Date and time (Linux) : Tue Jun 12 18:05:42 2007
+---
+>  Date and time (Linux) : Tue Jun 12 18:05:52 2007
+793,794c782,783
+< >>>> Total CPU  time used in DIRAC:  5.22000000s
+< >>>> Total WALL time used in DIRAC:  6.00000000s
+---
+> >>>> Total CPU  time used in DIRAC:  5.68000000s
+> >>>> Total WALL time used in DIRAC:  7.00000000s
