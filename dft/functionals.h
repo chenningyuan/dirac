@@ -259,4 +259,141 @@ c     The derivatives with respect to rho and zeta
       PARAMETER(FZZ=5,  FRRR=6,  FRRZ=7, FRZZ=8, FZZZ=9)
       PARAMETER(DERVS1=2, DERVS2=5, DERVS3=9)
 
+
+
+#if defined(radovan_will_merge_me_later)
+      INTEGER fR
+      INTEGER fZ
+      INTEGER fRR
+      INTEGER fRZ
+      INTEGER fZZ
+      INTEGER fRRR
+      INTEGER fRRZ
+      INTEGER fRZZ
+      INTEGER fZZZ
+
+      INTEGER fS  
+      INTEGER fY  
+      INTEGER fX
+      INTEGER fSS
+      INTEGER fYY
+      INTEGER fXX
+      INTEGER fRS 
+      INTEGER fRY 
+      INTEGER fRX
+      INTEGER fSZ 
+      INTEGER fSY
+      INTEGER fSX 
+      INTEGER fZY
+      INTEGER fZX
+      INTEGER fYX 
+      INTEGER fSSS
+      INTEGER fYYY
+      INTEGER fXXX
+      INTEGER fRRS
+      INTEGER fRRY
+      INTEGER fRRX
+      INTEGER fRSS
+      INTEGER fRYY
+      INTEGER fRXX
+      INTEGER fSSZ
+      INTEGER fSSY
+      INTEGER fSSX
+      INTEGER fSZZ
+      INTEGER fSYY
+      INTEGER fSXX
+      INTEGER fZZY
+      INTEGER fZZX
+      INTEGER fZYY
+      INTEGER fZXX
+      INTEGER fYYX
+      INTEGER fYXX
+      INTEGER fRSZ
+      INTEGER fRSY
+      INTEGER fRSX
+      INTEGER fRZY
+      INTEGER fRZX
+      INTEGER fRYX
+      INTEGER fSZY
+      INTEGER fSZX
+      INTEGER fSYX
+      INTEGER fZYX
+
+      INTEGER               DERVS1
+      INTEGER               DERVS2
+      INTEGER               DERVS3
+
+      INTEGER SPINPOLARIZED_DERVS1
+      INTEGER SPINPOLARIZED_DERVS2
+      INTEGER SPINPOLARIZED_DERVS3
+
+      PARAMETER (fR   =  1)
+      PARAMETER (fZ   =  2)
+      PARAMETER (fRR  =  3)
+      PARAMETER (fRZ  =  4)
+      PARAMETER (fZZ  =  5)
+      PARAMETER (fRRR =  6)
+      PARAMETER (fRRZ =  7)
+      PARAMETER (fRZZ =  8)
+      PARAMETER (fZZZ =  9)
+
+      PARAMETER (fS   =  1)
+      PARAMETER (fY   =  2)
+      PARAMETER (fX   =  3)
+      PARAMETER (fSS  =  4)
+      PARAMETER (fYY  =  5)
+      PARAMETER (fXX  =  6)
+      PARAMETER (fRS  =  7)
+      PARAMETER (fRY  =  8)
+      PARAMETER (fRX  =  9)
+      PARAMETER (fSZ  = 10)
+      PARAMETER (fSY  = 11)
+      PARAMETER (fSX  = 12)
+      PARAMETER (fZY  = 13)
+      PARAMETER (fZX  = 14)
+      PARAMETER (fYX  = 15)
+      PARAMETER (fSSS = 16)
+      PARAMETER (fYYY = 17)
+      PARAMETER (fXXX = 18)
+      PARAMETER (fRRS = 19)
+      PARAMETER (fRRY = 20)
+      PARAMETER (fRRX = 21)
+      PARAMETER (fRSS = 22)
+      PARAMETER (fRYY = 23)
+      PARAMETER (fRXX = 24)
+      PARAMETER (fSSZ = 25)
+      PARAMETER (fSSY = 26)
+      PARAMETER (fSSX = 27)
+      PARAMETER (fSZZ = 28)
+      PARAMETER (fSYY = 29)
+      PARAMETER (fSXX = 30)
+      PARAMETER (fZZY = 31)
+      PARAMETER (fZZX = 32)
+      PARAMETER (fZYY = 33)
+      PARAMETER (fZXX = 34)
+      PARAMETER (fYYX = 35)
+      PARAMETER (fYXX = 36)
+      PARAMETER (fRSZ = 37)
+      PARAMETER (fRSY = 38)
+      PARAMETER (fRSX = 39)
+      PARAMETER (fRZY = 40)
+      PARAMETER (fRZX = 41)
+      PARAMETER (fRYX = 42)
+      PARAMETER (fSZY = 43)
+      PARAMETER (fSZX = 44)
+      PARAMETER (fSYX = 45)
+      PARAMETER (fZYX = 46)
+
+      PARAMETER (              DERVS1 =  2)
+      PARAMETER (              DERVS2 =  5)
+      PARAMETER (              DERVS3 =  9)
+
+      PARAMETER (SPINPOLARIZED_DERVS1 =  3)
+      PARAMETER (SPINPOLARIZED_DERVS2 = 15)
+      PARAMETER (SPINPOLARIZED_DERVS3 = 46)
+
+#endif /* (radovan_will_merge_me_later) */
+
+
+
 #endif /* __CVERSION__ */

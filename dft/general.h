@@ -128,6 +128,147 @@ void dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
 void dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
               const int* triplet);
 
+
+
+#if defined(radovan_will_merge_me_later)
+/*
+ *     R = n = \rho_\alpha + \rho_\beta
+ *     S = s = \rho_\alpha - \rho_\beta
+ *    
+ *     Z = \nabla n \cdot \nabla n
+ *     Y = \nabla n \cdot \nabla s
+ *     X = \nabla s \cdot \nabla s
+ *    
+ *     those that are zero at closed-shell are commented
+ */
+
+struct FirstDrv_ {
+       real fR  
+       real fZ  
+};
+
+struct SecondDrv_ {
+       real fR  
+       real fZ  
+       real fRR 
+       real fRZ 
+       real fZZ 
+};
+
+struct ThirdDrv_ {
+       real fR  
+       real fZ  
+       real fRR 
+       real fRZ 
+       real fZZ 
+       real fRRR
+       real fRRZ
+       real fRZZ
+       real fZZZ
+};
+
+struct SpinPolarizedFirstDrv_ {
+       real fS   /* zero at closed-shell */
+       real fY   /* zero at closed-shell */
+       real fX 
+};
+
+struct SpinPolarizedSecondDrv_ {
+       real fS   /* zero at closed-shell */
+       real fY   /* zero at closed-shell */
+       real fX 
+       real fSS
+       real fYY
+       real fXX
+       real fRS  /* zero at closed-shell */
+       real fRY  /* zero at closed-shell */
+       real fRX 
+       real fSZ  /* zero at closed-shell */
+       real fSY 
+       real fSX  /* zero at closed-shell */
+       real fZY
+       real fZX
+       real fYX  /* zero at closed-shell */
+};
+
+struct SpinPolarizedThirdDrv_ {
+       real fS   /* zero at closed-shell */
+       real fY   /* zero at closed-shell */
+       real fX 
+       real fSS
+       real fYY
+       real fXX
+       real fRS  /* zero at closed-shell */
+       real fRY  /* zero at closed-shell */
+       real fRX 
+       real fSZ  /* zero at closed-shell */
+       real fSY 
+       real fSX  /* zero at closed-shell */
+       real fZY
+       real fZX
+       real fYX  /* zero at closed-shell */
+       real fSSS /* zero at closed-shell */
+       real fYYY
+       real fXXX
+       real fRRS /* zero at closed-shell */
+       real fRRY /* zero at closed-shell */
+       real fRRX
+       real fRSS
+       real fRYY
+       real fRXX
+       real fSSZ
+       real fSSY /* zero at closed-shell */
+       real fSSX
+       real fSZZ /* zero at closed-shell */
+       real fSYY
+       real fSXX /* zero at closed-shell */
+       real fZZY
+       real fZZX
+       real fZYY
+       real fZXX
+       real fYYX
+       real fYXX /* zero at closed-shell */
+       real fRSZ /* zero at closed-shell */
+       real fRSY
+       real fRSX /* zero at closed-shell */
+       real fRZY
+       real fRZX
+       real fRYX /* zero at closed-shell */
+       real fSZY
+       real fSZX /* zero at closed-shell */
+       real fSYX
+       real fZYX
+};
+
+void dftpot0_(FirstDrv *ds, 
+              const real* weight,
+              const real* rho, 
+              const real* grad);
+void dftpot1_(SecondDrv *ds, 
+              const real* weight,
+              const real* rho, 
+              const real* grad);
+void dftpot2_(ThirdDrv *ds, 
+              const real* weight,
+              const real* rho, 
+              const real* grad);
+
+void sdftpot0_(SpinPolarizedFirstDrv *ds, 
+               const real* weight,
+               const real* rho, 
+               const real* grad);
+void sdftpot1_(SpinPolarizedSecondDrv *ds, 
+               const real* weight,
+               const real* rho, 
+               const real* grad);
+void sdftpot2_(SpinPolarizedThirdDrv *ds, 
+               const real* weight,
+               const real* rho, 
+               const real* grad);
+#endif /* (radovan_will_merge_me_later) */
+
+
+
 /* Property evaluators */
 void dft_kohn_sham_(real* dmat, real* ksm, real *edfty,
                     real* work, int *lwork, int* ipr);
