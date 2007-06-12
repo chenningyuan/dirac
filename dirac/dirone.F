@@ -72,7 +72,7 @@ C
 #include "cbiher.h"
       CALL QENTER('ONEGEN')
 C
-C     First check if the integral file is alrady there...
+C     First check if the integral file is already there...
 C
       INQUIRE(FILE='AOPROPER',EXIST=TOBE)
       IF(TOBE) THEN
@@ -81,6 +81,7 @@ C
      &    '  Skipping integral integration.'
         GOTO 20
       ENDIF
+      TOBE = .FALSE.
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
