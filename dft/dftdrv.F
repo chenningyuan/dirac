@@ -88,7 +88,7 @@ C
       DOQR  = LBIT(IOPTS,4)
       DOLND = LBIT(IOPTS,5)
       LUQUAD = 44
-CCC
+C
 #if defined (MOD_DNF)
 C aspg+rbast 2006-10-10
 C prepare for accumulating integrals... 
@@ -103,7 +103,7 @@ C prepare for accumulating integrals...
       ENDIF
 Caspg+rbast
 #endif
-CCC
+C
 C     Initial expectation value of two-electron matrix
 #if defined (MOD_DNF)
       IF (DOERG.AND..NOT.DF_FITVXC) THEN
@@ -310,9 +310,11 @@ C     the Kohn-Sham contribution can then be subtracted
 #endif
         ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1) - ERRKS
       END IF 
+#if defined (MOD_DNF)
       IF (DF_FITVXC) THEN
          CALL MEMREL('dftexc-xcvec',WORK,KXCVEB,KXCVEB,KFREE,LFREE)
       ENDIF
+#endif
 C
  10   RETURN
       END
@@ -511,7 +513,6 @@ C
 C     Test on the number of electrons
 C
       ELCTRX = NELECT+NAELEC
-!     write(*,*) 'debug: naelec=',naelec,' nelect=',nelect
       ERROR  = ELCTRN - ELCTRX
       IF (ABS(ERROR) .GT. DFTELS) THEN
          WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
@@ -671,7 +672,7 @@ c        enddo
 C aspg+rb, 2007-01-19
       ENDIF
 Caspg+rbast, 2006-09-21
-#endif
+#endif /* MOD_DNF */
 
 !     IF(LBIT(LBIT_DFTAC,8)) THEN !debug or plot something
 
@@ -935,11 +936,8 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 
 
 
-
-
-
-Caspg+rbast, 2006-09-21
 #if defined (MOD_DNF)
+Caspg+rbast, 2006-09-21
       write(LUPRI,'(2(A,E20.12))') 
      &     ' DEBUG, integrated number of electrons: '//
      &     ' nelect: ',ELCTRN,' electb: ',ELCTRB
@@ -959,8 +957,8 @@ C
          CALL MEMREL('dftdr1-xcvec',WORK,KXCVEC,KXCVEC,KFREE,LFREE)
          CALL MEMREL('dftdr1-fitco',WORK,KCFIT ,KCFIT ,KFREE,LFREE)
       ENDIF
-#endif /* MOD_DNF */
 Caspg+rbast, 2006-09-21
+#endif /* MOD_DNF */
       RETURN
       END
 C  /* Deck reaqua */
