@@ -65,6 +65,8 @@ setup()
       XPPMOD=1
       DFTMOD=1
       KRMCMOD=1
+      CDFTMOD=1
+      VISUALMOD=1
       echo " - DIRAC administrator ..."
    fi
    #
