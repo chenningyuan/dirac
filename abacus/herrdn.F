@@ -679,12 +679,6 @@ C       In 2-component mode spherical Gaussians can be used,
 C       and we switch off the embedded cartesian to spherical
 C       gaussian transformation in LOWDIN()
           ISPHTR = 0
-#if defined (MOD_DNF)
-Caspg, test
-C       ELSE IF (DOSPHE) THEN
-C         ISPHTR = 0
-Caspg
-#endif
         ELSE IF (.NOT. (DOCART .OR. DOOWN)) THEN
 C       In 4-component mode Cartesian Gaussians are always used.  
          IF (IPREAD .GT. 0) THEN
@@ -707,8 +701,6 @@ C
       KLAST  = KISGEN + KBLOCK*KSETS
       LWRK   = LWORK  -  KLAST + 1
 C#if !defined (MOD_DNF)
-C aspg, 2006-060-17: for the time being we go for density fitting
-C       using basinp...
       CALL BASINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NONT,
      &            IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
