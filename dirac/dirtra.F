@@ -818,6 +818,14 @@ C
      &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
                         ASO(I,J) = ASO(I,J)
      &                                 + FACA*FACB*AAO(INDA,INDB)
+CMI        ... control print-out to track the SO matrix construction
+          IF (IPRINT.GE.18) THEN 
+             write(LUPRI,
+     &'(2X,A,I3,A,I3,A,D12.6,A,D10.4,A,D10.4,A,I3,A,I3,A,D12.6)')
+     &'ASO(',I,',',J,') =',ASO(I,J),
+     &'  from :  ',
+     & FACA,'*',FACB,'*AAO(',INDA,',',INDB,')=',AAO(INDA,INDB)
+          ENDIF
                      END IF
   600                CONTINUE
   500             CONTINUE
@@ -936,7 +944,7 @@ C  /* Deck dtaoso */
       SUBROUTINE DTAOSO(AAO,ASO,NBAST,IREPDM,IPRINT)
 C***********************************************************************
 C
-C     Matrix transform: SO-basis to AO-basis
+C     Matrix transform: AO-basis to SO-basis
 C     Based on HERMIT routine DSOTAO (880418  PRT)
 C
 C     Written by T.Saue - Sept 10 1995
