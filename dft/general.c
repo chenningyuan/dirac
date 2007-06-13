@@ -296,6 +296,8 @@ sdftpot1_(SpinPolarizedSecondDrv *ds,
 {
   FunSecondFuncDrv drvs;
   FunDensProp dp;
+  
+  real grada, grada2, grada3,bygrada,bygrada2,bygrada3,by2,by4,by8,by16,by32;
 
   drv2_clear(&drvs);
 
@@ -303,19 +305,19 @@ sdftpot1_(SpinPolarizedSecondDrv *ds,
   dp.grada  = dp.gradb = *grad*0.5;
   dp.gradab = dp.grada * dp.gradb;
 
-  real grada  = *grad*0.5;
-  real grada2 = grada*grada;
-  real grada3 = grada*grada2;
+   grada  = *grad*0.5;
+   grada2 = grada*grada;
+   grada3 = grada*grada2;
 
-  real bygrada  = 1.0/grada;
-  real bygrada2 = 1.0/grada2;
-  real bygrada3 = 1.0/grada3;
+   bygrada  = 1.0/grada;
+   bygrada2 = 1.0/grada2;
+   bygrada3 = 1.0/grada3;
 
-  real by2   = 0.50000000;
-  real by4   = 0.25000000;
-  real by8   = 0.12500000;
-  real by16  = 0.06250000;
-  real by32  = 0.03125000;
+   by2   = 0.50000000;
+   by4   = 0.25000000;
+   by8   = 0.12500000;
+   by16  = 0.06250000;
+   by32  = 0.03125000;
 
   dp.subsystem[0] = NULL;
   dp.subsystem[1] = NULL;
