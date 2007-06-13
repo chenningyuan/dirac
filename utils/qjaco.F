@@ -193,7 +193,8 @@ C****************************************************************
       REAL*8 FUNCTION RANDOMNUMBER(I,J)
 #include"implicit.h"
 #include"priunit.h"
-      RANDOMNUMBER = DFLOAT(3*I+4*J)*RAND(0) 
+C     RANDOMNUMBER = DFLOAT(3*I+4*J)*RAND(0) 
+      RANDOMNUMBER = DFLOAT(3*I+4*J)*RAND()
       RETURN
       END
 
