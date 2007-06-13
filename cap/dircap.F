@@ -1,7 +1,10 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sajeev */
-      SUBROUTINE SAJEEV(basis_n,ang_pow,ord_expon,
-     &         ord_coe,r_ms,PE_AOr,PE_AOi,WORK,LWORK)
+      SUBROUTINE SAJEEV(
+     &   basis_n,ang_pow,ord_expon,
+     &   ord_coe,r_ms,PE_AOr,PE_AOi,
+     &   PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
+     &   WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Main program from Sajeev. Adapted into DIRAC enviroment
@@ -18,14 +21,14 @@ C            complex CAP integrals written into formatted file, or test
 C            calculation of overlap integrals only for comparison with
 C            DIRAC
 C
-C   called from CAPINTS
+C  called from DOSAJEEV
 C
-C  Written by Sajeev, adapted to DIRAC by Miro Ilias, Tel Aviv, March
-C  2007
+C  Written by Sajeev, adapted to DIRAC by Miro Ilias, Tel Aviv, 2007
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbbas.h"
 #include "dcbcap.h"
 #include "capint.h"
       
@@ -41,14 +44,19 @@ CMI    ... arrays are entering subroutine, check the size !!!!!
 
 C     COMPLEX *16 PE_AO(25000) ! former variable split into real and
 C     imaginary parts
-      REAL*8 PE_AOr(25000),PE_AOi(25000)
+CMI   REAL*8 PE_AOr(25000),PE_AOi(25000)
+      REAL*8 PE_AOr(NNBBASX),PE_AOi(NNBBASX)
+      REAL*8 PEXR(*),PEXI(*),PEYR(*),PEYI(*),PEZR(*),PEZI(*)
       real *8 BETA0,PE0
       
-      LOGICAL ISFILE
+CMI   LOGICAL ISFILE, FNDLAB,ARELABS
+CMI   LOGICAL*1 ISFILE, FNDLAB,ARELABS,IS_OPEN
+      LOGICAL ISFILE, FNDLAB,ARELABS,IS_OPEN
 
       COMPLEX *16 THETA,THETA2,CI,BETA
 
       CHARACTER*10 PEMAT_NAME
+      CHARACTER*8 LBL
 
       CALL QENTER('SAJEEV')
 
@@ -61,16 +69,35 @@ C     imaginary parts
 
 CMI ... check the presence of PEMAT in order to decide whether to run 
 CMI   or not the CAP integral evaluation
-      INQUIRE(FILE='PEMAT',EXIST=ISFILE)
-      IF (.NOT.ISFILE) THEN
+      ARELABS = .FALSE.
+      INQUIRE(FILE='PEMAT',EXIST=ISFILE,OPENED=IS_OPEN)
+      IF (ISFILE) THEN
+        IF (.NOT.IS_OPEN) THEN
+          CALL OPNFIL(LUPEMAT,'PEMAT','OLD','SAJEEV')
+        ENDIF
+        REWIND(LUPEMAT)
+        IF (CAPOVLP) THEN
+           LBL = 'CAP_OVLP'
+        ELSE
+         IF  (DONRCAP) THEN
+           LBL = 'CAP_RE  '
+         ELSE
+           LBL = 'ZCAPD1I'
+         ENDIF
+        ENDIF
+        IF (FNDLAB(LBL,LUPEMAT)) ARELABS = .TRUE.
+      ENDIF
+      IF (.NOT.ARELABS) THEN
 CMI   ... evaluate CAP complex atomic untegrals
         IF (IPRCAP.GE.0) THEN
          WRITE(LUPRI,'(2X,A)')
-     &   'PEMAT files in not present, going to evaluate CAP integrals.'
+     &   'CAP integrals are not present, going'//
+     &   ' to calculate them and write them into the PEMAT.'
         ENDIF
 
+CMI   ... evaluate integrals - fill array with them
         CALL AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     &                 PW,PE_AOr,PE_AOi,CAPOVLP,IPRCAP)
+     &         PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI)
         
 C ============================================================
 CMI     ... write complex atomic integrals into the file
@@ -78,34 +105,95 @@ C
 C ... alter the file name when calculating CAP overlap integrals !
 C
 C ============================================================
-         LUPEMAT=14
- 
-         IF (CAPOVLP) THEN
-           PEMAT_NAME="PEMAT_ovlp"
-         ELSE
-           PEMAT_NAME="PEMAT"
-         ENDIF
-  
 CMI      open(unit=LUPEMAT,file='PEMAT',
-         open(unit=LUPEMAT,file=PEMAT_NAME,
-     &    STATUS='UNKNOWN',FORM='FORMATTED')
+C        open(unit=LUPEMAT,file=PEMAT_NAME,
+C    &    STATUS='UNKNOWN',FORM='FORMATTED')
+        
+C        CALL OPNFIL(LUPEMAT,'PEMAT','UNKNOWN','SAJEEV') 
 
-         do ii=1,n_b
-            do jj=1,n_b
-               IPU=IPOINTIJ(ii,jj)
-               if (jj.gt.ii)go to 301
-               write(LUPEMAT,*) ii,jj,CMPLX(PE_AOr(IPU),PE_AOi(IPU))
-            end do
- 301        continue
-         end do
-         close(LUPEMAT)
-         IF (IPRCAP.GE.0) THEN
-          WRITE(LUPRI,'(2X,A)')
-     &    'PEMAT file with CAP integrals generated.'
-        ENDIF
+CMI      do ii=1,n_b
+C           do jj=1,n_b
+C              IPU=IPOINTIJ(ii,jj)
+C              if (jj.gt.ii)go to 301
+C              write(LUPEMAT,*) ii,jj,CMPLX(PE_AOr(IPU),PE_AOi(IPU))
+C           end do
+C301        continue
+C        end do
+
+         REWIND(LUPEMAT)
+         IF (CAPOVLP) THEN
+            LBL='CAP_OVLP'
+            CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+            CALL WRITT(LUPEMAT,NNBBASX,PE_AOr)
+            WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP integrals generated, PEMAT label:',LBL
+         ELSE
+           IF (DONRCAP) THEN
+            IF (FNDLAB('EOFLABEL',LUPEMAT)) THEN 
+              BACKSPACE(LUPEMAT)
+              LBL='CAP_RE  '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PE_AOr)
+              WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP nonrel. integrals generated, PEMAT label:',LBL
+              LBL='CAP_IM  '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PE_AOi)
+             WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP nonrel. integrals generated, PEMAT label:',LBL
+C             ... in 4comp. CAP operator then....
+            ENDIF
+           ELSE 
+            IF (FNDLAB('EOFLABEL',LUPEMAT)) THEN 
+              BACKSPACE(LUPEMAT)
+              LBL='XCAPD1R '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEXR)
+              WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP relativistic integrals generated, PEMAT label:',LBL
+              LBL='XCAPD1I '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEXI)
+              WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP relativistic integrals generated, PEMAT label:',LBL
+              LBL='YCAPD1R '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEYR)
+              WRITE(LUPRI,'(2X,A,A)')
+     &        'CAP relativistic integrals generated, PEMAT label:',LBL
+              LBL='YCAPD1I '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEYI)
+              WRITE(LUPRI,'(2X,A,A)')
+     &        'CAP relativistic integrals generated, PEMAT label:',LBL
+              LBL='ZCAPD1R '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEZR)
+            WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP relativistic integrals generated, PEMAT label:',LBL
+                LBL='ZCAPD1I '
+                CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+                CALL WRITT(LUPEMAT,NNBBASX,PEZI)
+            WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP relativistic integrals generated, PEMAT label:',LBL
+            ENDIF    
+         ENDIF
+         ENDIF
+         CALL NEWLAB('EOFLABEL',LUPEMAT,LUPRI)
+
+C        CLOSE(LUPEMAT,STATUS='KEEP')
+
+         IF (IPRCAP.GE.1) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     &    'PEMAT file with CAP integrals ready.'
+         ENDIF
+
       ELSE
+C================================================================================================
+C
+C================================================================================================
        WRITE(LUPRI,'(2X,A)')
-     & 'SAJEEV: PEMAT file is present, not calculating CAP integrals.'
+     & 'SAJEEV: PEMAT file with integrals is present, not calculating.'
       ENDIF
 
       CALL QEXIT('SAJEEV')
@@ -118,7 +206,7 @@ C  /* Deck inpread */
      & N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,CAPOVLP,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Read the GAMESS-like input file with basis set
+C  Read the GAMESS-like input file with the basis set
 C
 C  Parameters:
 C
@@ -456,10 +544,12 @@ CMI  ... OLD normalization of CAP
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck aointegral */
       SUBROUTINE AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     *            PW,PE_AOr,PE_AOi,CAPOVLP,IPRINT)      
+     *            PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI)      
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C   Core routine for calculating CAP integrals.
+C     Core routine for calculating CAP integrals.
+C
+C  Returns filled arrays PE_AOr,PE_AOi,PEXR,... (if DONRCAP=.false.)
 C
 C    Parameters:
 C -------------------
@@ -471,12 +561,14 @@ C           basis_n
 C           ang_pow
 C           PW - theta
 C           PE_AOr,PE_AOi
-C           CAPOVLP
 C
+C    Called from SAJEEV
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbbas.h"
+#include "dcbcap.h"
 
       integer *4 n_b
       integer *4 ang_pow(250,3)
@@ -488,19 +580,34 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real *8 R_m(4),R_n(4)
       real *8 R_ms(200,3)
 
-      LOGICAL CAPOVLP
-      COMPLEX *16 PEINT
-      REAL*8 PE_AOr(25000),PE_AOi(25000)
+      COMPLEX *16 PEINT,PEINT_D1X,PEINT_D1Y,PEINT_D1Z
+CMI   REAL*8 PE_AOr(25000),PE_AOi(25000)
+CMI   REAL*8 PE_AOr(NNBBASX),PE_AOi(NNBBASX)
+      REAL*8 PE_AOr(*),PE_AOi(*)
+      REAL*8 PEXR(*),PEXI(*),PEYR(*),PEYI(*),PEZR(*),PEZI(*)
       COMPLEX *16 BETA
 
       CALL QENTER('AOINTEGRAL') 
-      
+
 C     ... zero array for integrals
       do i=1,n_b
          do j=1,n_b
-            IPU=IPOINTIJ(i,j)
-            PE_AOr(IPU)=0.d0
-            PE_AOi(IPU)=0.d0
+              IPU=IPOINTIJ(i,j)
+            IF (CAPOVLP) THEN
+              PE_AOr(IPU)=0.d0
+            ELSE 
+             IF (DONRCAP) THEN
+              PE_AOr(IPU)=0.d0
+              PE_AOi(IPU)=0.d0
+             ELSE 
+              PEXR(IPU)=0.d0
+              PEXI(IPU)=0.d0
+              PEYR(IPU)=0.d0
+              PEYI(IPU)=0.d0
+              PEZR(IPU)=0.d0
+              PEZI(IPU)=0.d0
+             ENDIF
+            ENDIF
          end do
       end do
 
@@ -512,7 +619,7 @@ C ... prepare offsets for contracted basis functions
            iasp=basis_ord(i-1)
          endif
          basis_ord(i)=iasp+basis_n(i)
-         IF (IPRINT.GE.3) THEN
+         IF (IPRCAP.GE.3) THEN
           WRITE(LUPRI,*) 'b.fu: ',i,' contr.shells:',basis_n(i),
      &    ' offset:',basis_ord(i)
          ENDIF
@@ -546,18 +653,40 @@ C        ... run over primitives in contracted basis functions
             IF (CAPOVLP) THEN
              CALL PEM(R_m,R_n,K_m,K_n,PEINT)
             ELSE
-             CALL CAPM(R_m,R_n,K_m,K_n,PW,PEINT)
+             CALL CAPM(R_m,R_n,K_m,K_n,PW,PEINT,
+     &           PEINT_D1X,PEINT_D1Y,PEINT_D1Z)
             ENDIF
 
 C           ... contraction coefficients of i,j
             COMUL=ord_coe(i)*ord_coe(j)
 C           ... save real and imaginary part of integrals
-            PE_AOr(IPU)= PE_AOr(IPU)+COMUL*DREAL(PEINT)
-            PE_AOi(IPU)= PE_AOi(IPU)+COMUL*DIMAG(PEINT)
+            IF (CAPOVLP) THEN
+              PE_AOr(IPU)= PE_AOr(IPU)+COMUL*DREAL(PEINT)
+            ELSE 
+             IF (DONRCAP) THEN
+              PE_AOr(IPU)= PE_AOr(IPU)+COMUL*DREAL(PEINT)
+              PE_AOi(IPU)= PE_AOi(IPU)+COMUL*DIMAG(PEINT)
+             ELSE
+CMI           PE_AOr(IPU)= PE_AOr(IPU)+COMUL*DREAL(PEINT)
+CMI           PE_AOi(IPU)= PE_AOi(IPU)+COMUL*DIMAG(PEINT)
+
+              PEXR(IPU)= PEXR(IPU)+COMUL*DREAL(PEINT_D1X)
+              PEXI(IPU)= PEXI(IPU)+COMUL*DIMAG(PEINT_D1X)
+
+              PEYR(IPU)= PEYR(IPU)+COMUL*DREAL(PEINT_D1Y)
+              PEYI(IPU)= PEYI(IPU)+COMUL*DIMAG(PEINT_D1Y)
+
+              PEZR(IPU)= PEZR(IPU)+COMUL*DREAL(PEINT_D1Z)
+              PEZI(IPU)= PEZI(IPU)+COMUL*DIMAG(PEINT_D1Z)
+
+             ENDIF
+            ENDIF
          end do
          End Do
+
       END DO
       END DO
+
       CALL QEXIT('AOINTEGRAL') 
       RETURN
       END
@@ -699,10 +828,11 @@ C  /* Deck SMAT */
       subroutine SMAT(R_m,R_n,K_m,K_n,BETA,Int_GR)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C On input:
+C Parameters:
 C            R_m,R_n
 C            K_m,K_n
-C            BETA,Int_GR
+C            BETA
+C            Int_GR - output
 C
 C  Called from: PEM
 C               CAPM
@@ -783,18 +913,21 @@ C     REAL *8 PA,PB
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck capm */
-      SUBROUTINE CAPM(R_m,R_n,K_m,K_n,theta,VCAP)
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      SUBROUTINE CAPM(R_m,R_n,K_m,K_n,theta,
+     &       VCAP,VCAP_D1X,VCAP_D1Y,VCAP_D1Z)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C   Called from AOINTEGRAL (from within 4-fold cycle)
+C   Called from AOINTEGRAL (from within the 4-fold cycle)
 C
 C   entering parameter theta is from the INPQD file
 C
-C   returns VCAP
+C   returns VCAP - the total CAP term for DONRCAP=.true.
+C   or  VCAP,VCAP_D1X,VCAP_D1Y,VCAP_D1Z terms for DONRCAP=.false.
 C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbcap.h"
 #include "capint.h"
 
       integer *4 NSTEP
@@ -810,7 +943,8 @@ CMI   real *8 X0,theta,LAMDA,GRSTP(2)
       real *8 theta,GRSTP(2)
 CMI   integer *4 NGRS(100)
       complex  *16 PE,PE1
-      complex *16 VCAP1,VCAP,VCAPS(3)
+      complex *16 VCAP1,VCAP,VCAPS(3),VCAP1C
+      complex *16 VCAP_D1X,VCAP_D1Y,VCAP_D1Z,TEMP
       COMMON PGRT
 
       CALL QENTER('CAPM')
@@ -819,7 +953,12 @@ C     open(unit=8,file='INPCAP',STATUS='UNKNOWN',FORM='FORMATTED')
 C     REWIND (8)
      
       PE=(0.d0,0.d0)
-   
+      VCAP_D1X = (0.d0,0.d0)
+      VCAP_D1Y = (0.d0,0.d0)
+      VCAP_D1Z = (0.d0,0.d0)
+C===================================================================
+C         Run over x/y/z... i = 1/2/3 
+C===================================================================
       DO i=1,3
 CMI      ... replaced by X0(1:3), LAMDA(1:3) in capint.h
 CMI      READ(8,*)X0,LAMDA
@@ -876,6 +1015,7 @@ CMI   CAP_PAR(1)=X0
 CMI     ... initialize to zero !
          VCAPS(i)=(0.d0,0.d0)
 
+CMI      ... run over various integration intervals
 CMI      do j=1,NGR-1
          do j=1,NGR(i)-1
 CMI         GRSTP(1)=GINTPT(j)
@@ -885,23 +1025,59 @@ CMI         GRSTP(2)=GINTPT(j+1)
 CMI         NSTEP=NGRS(j)
             NSTEP=NGRS(i,j)
 CMI         write(LUPRI,*) 'i,j,NGRS(i,j):',i,j,NGRS(i,j)
-            CALL CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_CM,R_CN,K_CM,K_CN,VCAP1)
-            VCAPS(i)=VCAPS(i)+VCAP1
+            CALL CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_CM,R_CN,K_CM,K_CN,
+     &                    VCAP1C,VCAP1)
+
+C           ... accumulate for each interval
+            IF (DONRCAP) THEN
+              VCAPS(i)=VCAPS(i)+VCAP1
+            ELSE
+CMI           VCAPS(i)=VCAPS(i)+VCAP1
+              IF (I.EQ.1) THEN
+                VCAP_D1X = VCAP_D1X + VCAP1C 
+              ELSE IF (I.EQ.2) THEN
+                VCAP_D1Y = VCAP_D1Y + VCAP1C
+              ELSE IF (I.EQ.3) THEN
+                VCAP_D1Z = VCAP_D1Z + VCAP1C
+              ELSE
+                write(LUPRI,*) 'I=',I
+                CALL QUIT('CAPM: wrong I!')
+              ENDIF
+            ENDIF
+
          end do
 
          CALL SMAT(R_KM,R_KN,K_KM,K_KN,0.d0,OVRLPK)
          CALL SMAT(R_LM,R_LN,K_LM,K_LN,0.d0,OVRLPL)
 
-         VCAPS(i)=VCAPS(i)*OVRLPK*OVRLPL
+         IF (DONRCAP) THEN
+           VCAPS(i)=VCAPS(i)*OVRLPK*OVRLPL
+         ELSE
+CMI        VCAPS(i)=VCAPS(i)*OVRLPK*OVRLPL
+           IF (I.EQ.1) THEN
+              VCAP_D1X = VCAP_D1X*OVRLPK*OVRLPL
+           ELSE IF (I.EQ.2) THEN
+              VCAP_D1Y = VCAP_D1Y*OVRLPK*OVRLPL
+           ELSE IF (I.EQ.3) THEN
+              VCAP_D1Z = VCAP_D1Z*OVRLPK*OVRLPL
+           ELSE
+              write(LUPRI,*) 'I=',I
+              CALL QUIT('CAPM 2: wrong I!')
+           ENDIF
+         ENDIF
 
       ENDDO ! of I=1,3
              
-C     ... finally add all theree terms
+C     ... finally add all theree terms - for x,y and z - for DONRCAP=.true.!!!
       VCAP=VCAPS(1)+VCAPS(2)+VCAPS(3)
+C ------------------------------------------------------------
 
-CMI   write(LUPRI,*) 'members:',VCAPS(1),VCAPS(2),VCAPS(3)
-C     write(LUPRI,*) 'sum:',VCAPS(1)+VCAPS(2)+VCAPS(3)
-C     write(LUPRI,*) 'sum VCAP:',VCAP
+      IF (IPRCAP.GE.19) THEN
+       IF (.NOT.DONRCAP) THEN
+        write(LUPRI,*) 'VCAP,VCAP_D1X,VCAP_D1Y,VCAP_D1Z:',
+     &     VCAP,VCAP_D1X,VCAP_D1Y,VCAP_D1Z   
+       ENDIF
+      ENDIF
 
       CALL QEXIT('CAPM')
       RETURN
@@ -909,16 +1085,22 @@ C     write(LUPRI,*) 'sum VCAP:',VCAP
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck capm */
-      SUBROUTINE CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_m,R_n,K_m,K_n,VCAPT)
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+CMI   SUBROUTINE CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_m,R_n,K_m,K_n,VCAPT)
+      SUBROUTINE CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_m,R_n,K_m,K_n,
+     &                   VCAP1C,VCAPT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  returns VCAPT 
+C  returns: 
+C
+C      VCAPT (either for x,y or z) when non-relativistic form of CAP is on
+C      or  both VCAP1C, VCAPT (for x/y/z) when Dirac CAP is on
 C
 C  Called from CAPM
 C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbcap.h"
 
       integer *4 k_m,k_n
       integer *4 NSTEP
@@ -929,35 +1111,46 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       complex *16 FFx,fx,Dfx,D2fx
       complex *16 V0x,V1x,V2x
       complex *16 V0xy,V1xy,V2xy
-      
+
+      complex *16  TempV1x,TempV1xy
+
       complex *16 CI,ROT
       complex *16 PEM,XS,PEN
 
       COMPLEX *16 VCAPT,VCAPXT,VCAPYT,VCAPZT
-      COMPLEX *16 VCAPX(4)
+      COMPLEX *16 VCAPX(4),VCAPX_D1C(4),VCAP1C
       COMPLEX *16 VCAP,VADD,VF
+      COMPLEX *16 VCAP_D1C,VCAPy_D1C
       COMPLEX *16 VCAPTy,VCAPXTy,VCAPYTy,VCAPZTy
-      COMPLEX *16 VCAPXy(4)
+      COMPLEX *16 VCAPXy(4),VCAPXy_D1C(4)
       COMPLEX *16 VCAPy,VADDy,VFy
+      COMPLEX *16 VCAPXT_D1C,VCAPXTy_D1C
       EXTERNAL V0,V1,V2,FF
-      double complex v0,v1,v2,FF
+      EXTERNAL V0D,V1D
+      double complex v0,v1,v2,V1D,FF
       
       data CI/(0.0d0,1.0d0)/
       data M/1.0d00/
 
-CMI   write(LUPRI,*) 'entering arguments:',
-CMI  &     CAP_PAR,GRSTP,NSTEP 
+      CALL QENTER('CAPMAT1')
 
       STEP=(GRSTP(2)-GRSTP(1))/(NSTEP)
       X0=CAP_PAR(1)
       LAMDA=CAP_PAR(2)
       THETA=CAP_PAR(3)
     
+CMI   ... initialization of summation variables
       VCAPXT=(0.d0,0.d0)
       VCAPXTy=(0.d0,0.d0)
+
+      VCAPXT_D1C=(0.d0,0.d0)
+      VCAPXTy_D1C=(0.d0,0.d0)
+
+CMI   ... starting position for the integration
       XI=GRSTP(1)
+
+CMI  ... run over the integration interval with NSTEP nodes
       itx=0
- 
       DO ix=1,NSTEP
          X=(XI+(ix-1)*STEP)
          Xy=X*(-1.0d0)
@@ -979,6 +1172,7 @@ C       ... 1st derivative
          D2G2X=2*R_n(2)*(2*K_n+1)
          D2G3X=4*(R_n(2)**2)*(XR**2)
          D2GX=D2G1X-D2G2X+D2G3X
+
 C        ... 2nd derivative
          D2G=D2GX
 
@@ -1001,24 +1195,26 @@ C        ... 2nd derivative
 
          GGEXy=(XRy**K_n)*(XRMy**K_m)
          GGy=GGEXy*DEXP(-GG1y)
+
+         VADD=0.0d0
+         VADDy=0.0d0
        
+         IF (DONRCAP) THEN
+
          v0x=V0(M,THETA,LAMDA,X0,X)
          V1x=v1(M,THETA,LAMDA,X0,X)*DG
-
          v2x=v2(M,THETA,LAMDA,X0,X)*D2G
 
          v0xy=V0(M,THETA,LAMDA,X0,Xy)
          V1xy=v1(M,THETA,LAMDA,X0,Xy)*DGy
          v2xy=v2(M,THETA,LAMDA,X0,Xy)*D2Gy
 
-         VADD=0.0d0
-         VADDy=0.0d0
-
          VCAP=(V0x+V1x+V2x+VADD)*GG
          VCAPy=(V0xy+V1xy+V2xy+VADDy)*GGy
 
          VCAPX(itx)=VCAP
          VCAPXy(itx)=VCAPy
+
          if(ix.eq.1) go to 321 
          
          VCAPXT=VCAPXT+0.5*(VCAPX(2)+VCAPX(1))*STEP
@@ -1026,21 +1222,84 @@ C        ... 2nd derivative
 
          if (ix.ne.1) VCAPX(2)=VCAPX(1)
          if (ix.ne.1) VCAPXy(2)=VCAPXy(1)
+
+         ELSE
+CMI       ... relativistic Hamiltonian
+
+          V0x = V0D(M,THETA,LAMDA,X0,X)
+          V0xy= V0D(M,THETA,LAMDA,X0,Xy)
+
+CMI       V1x=V1D(M,THETA,LAMDA,X0,X)*DG
+          TempV1x = V1D(M,THETA,LAMDA,X0,X)
+          V1x=TempV1x*DG
+CMI       V1xy=V1D(M,THETA,LAMDA,X0,Xy)*DGy
+          TempV1xy = V1D(M,THETA,LAMDA,X0,Xy)
+          V1xy=TempV1xy*DGy
+
+CMI       write(LUPRI,*) 'TempV1x,V1x:',TempV1x,V1x          
+
+CMI       VCAP=(V0x+VADD)*GG
+CMI       VCAPy=(V0xy+VADDy)*GGy
+
+          VCAP_D1C = (V0x+V1x+VADD)*GG
+          VCAPy_D1C = (V0xy+V1xy+VADDy)*GGy
+
+CMI       write(LUPRI,*) '>> VCAP_D1C,VCAPy_D1C:',VCAP_D1C,VCAPy_D1C
+  
+CMI       VCAPX(itx)=VCAP
+CMI       VCAPXy(itx)=VCAPy
+
+          VCAPX_D1C(itx) = VCAP_D1C
+          VCAPXy_D1C(itx)= VCAPy_D1C
+
+C         write(LUPRI,*) 'VCAP_D1C,VCAPy_D1C:',VCAP_D1C,VCAPy_D1C
+C         write(LUPRI,*) 'VCAP,VCAPy:',VCAP,VCAPy
+
+          if(ix.eq.1) go to 321 
+         
+CMI       VCAPXT=VCAPXT+0.5*(VCAPX(2)+VCAPX(1))*STEP
+CMI       VCAPXTy=VCAPXTy+0.5*(VCAPXy(2)+VCAPXy(1))*STEP
+
+C        ... numerical integration 
+          VCAPXT_D1C=VCAPXT_D1C  +0.5*(VCAPX_D1C(2)+VCAPX_D1C(1))*STEP
+          VCAPXTy_D1C=VCAPXTy_D1C+0.5*(VCAPXy_D1C(2)+VCAPXy_D1C(1))*STEP
+
+          if (ix.ne.1) then
+CMI          VCAPX(2)=VCAPX(1)
+CMI          VCAPXy(2)=VCAPXy(1)
+
+             VCAPX_D1C(2)=VCAPX_D1C(1)
+             VCAPXy_D1C(2)=VCAPXy_D1C(1)
+          endif 
+
+         ENDIF
+
          itx=0
 C         if((zabs(vcap)).lt.(0.00000000001))exit
 
  321     CONTINUE
 
       END DO
-      VCAPT=VCAPXT+VCAPXTy
-CMI   write(LUPRI,*) 'VCAPXT,VCAPXTy:',VCAPXT,VCAPXTy
+
+      IF (DONRCAP) THEN
+        VCAPT=VCAPXT+VCAPXTy
+CMI     write(LUPRI,*) 'VCAPXT,VCAPXTy:',VCAPXT,VCAPXTy
+      ELSE
+CMI    ... for V0D term
+CMI     VCAPT=VCAPXT+VCAPXTy
+CMI    ... for V1D_C (x,y,z) term
+        VCAP1C=VCAPXT_D1C+VCAPXTy_D1C
+CMI     write(LUPRI,*) 'VCAPT, VCAP1C:',VCAPT,VCAP1C
+      ENDIF
+
+      CALL QEXIT('CAPMAT1')
       RETURN
       END
 
 C************************************************************************
-C     Implements the basic functions from the paper.
+C     Implementation of basic functions from the paper.
 C************************************************************************
-C       ... Nimerod:1998, eq. 18
+C       ...big F(x);  Nimrod:1998, eq. 18
       DOUBLE COMPLEX FUNCTION FF(THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8 THETA,LAMBDA,X0,X
@@ -1051,7 +1310,7 @@ C       ... Nimerod:1998, eq. 18
       FF = DCMPLX(X) + FF*DCMPLX(AUX)
       END
 
-C     ... eq.4 in Nimrod:1998
+C     ... small f(x);  eq.4 of Nimrod:1998 with g(x) defined in eq.17
       DOUBLE COMPLEX FUNCTION F0(THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8 THETA,LAMBDA,X0,X
@@ -1072,7 +1331,7 @@ C        ... first derivative of small f(x), eq. 20 of Nimrod:1998
       F1 = DCMPLX(LAMBDA)*F1*DCMPLX(AUX)/(2.0D0,0.0D0)
       END
 
-C     .... eq.21 of Nimrod:1998
+C     ...second derivative of small f(x), eq.21 of Nimrod:1998
       DOUBLE COMPLEX FUNCTION F2(THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8 THETA,LAMBDA,X0,X
@@ -1083,6 +1342,7 @@ C     .... eq.21 of Nimrod:1998
       F2 = DCMPLX(LAMBDA**2)*F2*(DCMPLX(AUX1)-DCMPLX(AUX2)) 
       END
 
+CMI     ... Eq. 15 of Sajeev:2006 and Eq. 16 of Nimrod:1998
       DOUBLE COMPLEX FUNCTION V0(M,THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8  M,THETA,LAMBDA,X0,X
@@ -1092,13 +1352,27 @@ C     .... eq.21 of Nimrod:1998
       CA1 = F2(THETA,LAMBDA,X0,X)/(F0(THETA,LAMBDA,X0,X)**3)
       CA1 = CA1/(DCMPLX(4.0D0*M))
       CA2 = (F1(THETA,LAMBDA,X0,X)**2)/(F0(THETA,LAMBDA,X0,X)**4)
-      CA2 = CA2/DCMPLX(5.0D0*M/8.0D0)
+CMI   CA2 = CA2/DCMPLX(5.0D0*M/8.0D0)
+      CA2 = CA2/DCMPLX(8.0D0*M/5.0D0)
       V0 = CA1 - CA2
-CNEW for DIrac Ham.
-C     CA1 = F1(THETA,LAMBDA,X0,X)/(F0(THETA,LAMBDA,X0,X)
-C     V0 = CA1 
       END
 
+CMI    ... new derived V0 for the DIRAC Hamiltonian
+      DOUBLE COMPLEX FUNCTION V0D(M,THETA,LAMBDA,X0,X)
+      IMPLICIT NONE
+#include "priunit.h"
+      real *8  M,THETA,LAMBDA,X0,X
+      DOUBLE COMPLEX CA1,CA2
+      EXTERNAL F0,F1
+      DOUBLE COMPLEX F0,F1
+CMI   CA1 = F1(THETA,LAMBDA,X0,X)/F0(THETA,LAMBDA,X0,X)
+CMI   ... new drivation
+      CA1 = -0.50D0*(F1(THETA,LAMBDA,X0,X)/F0(THETA,LAMBDA,X0,X))
+CMI    write(LUPRI,*) 'V0D function:',CA1
+      V0D = CA1 
+      END
+
+CMI   .... Eq. 16 of Sajeev:2006
       DOUBLE COMPLEX FUNCTION V1(M,THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8 M,THETA,LAMBDA,X0,X
@@ -1106,10 +1380,23 @@ C     V0 = CA1
       DOUBLE COMPLEX F0,F1
       V1 = F1(THETA,LAMBDA,X0,X)/(F0(THETA,LAMBDA,X0,X)**3)
       V1 = V1/DCMPLX(M)
-CMI  ... for the DIRAC Ham.
-CNEW  V1 = ( 1/F1(THETA,LAMBDA,X0,X) ) - 1
       END
 
+CMI  ... V1 for the DIRAC Hamiltonian
+      DOUBLE COMPLEX FUNCTION V1D(M,THETA,LAMBDA,X0,X)
+      IMPLICIT NONE
+#include "priunit.h"
+      real *8 M,THETA,LAMBDA,X0,X
+      EXTERNAL F0
+      DOUBLE COMPLEX F0,CA
+      CA  = ( DCMPLX(M)/F0(THETA,LAMBDA,X0,X) ) - DCMPLX(M)
+C     CA  = ( DCMPLX(M) - CA1 ) / CA1
+C      write(LUPRI,*) 'V1D function:',CA, ' and F1:',CA1,
+C    &   'theta,la,xo=',THETA,LAMBDA,X0
+      V1D = CA
+      END
+
+CMI  ... Eq. 17 of Sajeev:2006
       DOUBLE COMPLEX FUNCTION V2(M,THETA,LAMBDA,X0,X)
       IMPLICIT NONE
       real *8 M,THETA,LAMBDA,X0,X
