@@ -74,14 +74,14 @@ C
 C
 C     First check if the integral file is already there...
 C
-      INQUIRE(FILE='AOPROPER',EXIST=TOBE)
-      IF(TOBE) THEN
-        WRITE(LUPRI,'(A)') 
-     &    '* WARNING: Found one-electron integral file AOPROPER.',
-     &    '  Skipping integral integration.'
-        GOTO 20
-      ENDIF
-      TOBE = .FALSE.
+CTROND      INQUIRE(FILE='AOPROPER',EXIST=TOBE)
+CTROND      IF(TOBE) THEN
+CTROND        WRITE(LUPRI,'(A)') 
+CTROND     &    '* WARNING: Found one-electron integral file AOPROPER.',
+CTROND     &    '  Skipping integral integration.'
+CTROND        GOTO 20
+CTROND      ENDIF
+CTROND      TOBE = .FALSE.
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
