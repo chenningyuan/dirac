@@ -299,8 +299,6 @@ C                INTEXP = INTEXP_SAVE
 
                INTEXP_SAVE = INTEXP
                INTORB_SAVE = INTORB
-CMI            write(lupri,*) 'saved INTORB=',INTORB_SAVE 
-
                CALL READNU(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU,ALPHA,
      +                KPRIM,IAUG,DSM,BASNAM,POLFUN,IPOLST,LUBAS,IPREAD)
 
@@ -461,7 +459,6 @@ C of contraction coeffecients on the next lines.
 C
       INTEGER CONEOR, CONORB
       PARAMETER(CONEOR = 6, CONORB = 7)
-      IPRINT=5
       IF (IPRINT.GE.5) THEN
        CALL HEADER('Output from READNU',-1)
        write(lupri,*) 'entering READNU, IPREAD=',IPRINT
