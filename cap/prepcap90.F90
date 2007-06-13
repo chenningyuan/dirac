@@ -295,7 +295,7 @@ subroutine CAP_STUFF(WORK,LWORK)
 !---------------------------------------------------------------------------
 !
 !
-!  Called from dirset.F/PAMINP
+!    Called from 'main' dirac flow - dirset.F/PAMINP
 !
 !
 !---------------------------------------------------------------------------

@@ -501,14 +501,16 @@ C!one may have to modify this
             ord_coe(i)=ord_coe(i)/sqrt(PEINT)
 
             write (LUPRI,*)i,'fu=',shell_arr(i),ord_expon(i),
-     &             ord_coe(i),' PEINT=',PEINT
+     &             ord_coe(i),' nrm PEINT=',PEINT
+
 C           write (16,*)i,shell_arr(i),ord_expon(i),ord_coe(i)
 C           write(16,*) (ang_pow(i,j),j=1,3)
 C           write(16,*) (R_ms(i,j),j=1,3)
          end do
 
        ELSE
-CMI  ... OLD normalization of CAP     
+CMI  ... OLD normalization of CAP - not used in DIRAC
+C ==========================================================
        do i=1,sh
           do isw=1,3
              R_m(isw)=R_ms(i,isw)
@@ -654,7 +656,7 @@ C        ... run over primitives in contracted basis functions
              CALL PEM(R_m,R_n,K_m,K_n,PEINT)
             ELSE
              CALL CAPM(R_m,R_n,K_m,K_n,PW,PEINT,
-     &           PEINT_D1X,PEINT_D1Y,PEINT_D1Z)
+     &          PEINT_D1X,PEINT_D1Y,PEINT_D1Z)
             ENDIF
 
 C           ... contraction coefficients of i,j
@@ -705,7 +707,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  200  ifact=1
  300  continue
       END 
-      
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE F_INTC(k,PA,PB,k_m,K_n,FINTM) 
@@ -914,15 +915,16 @@ C     REAL *8 PA,PB
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck capm */
       SUBROUTINE CAPM(R_m,R_n,K_m,K_n,theta,
-     &       VCAP,VCAP_D1X,VCAP_D1Y,VCAP_D1Z)
+     &         VCAP,VCAP_D1X,VCAP_D1Y,VCAP_D1Z)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Called from AOINTEGRAL (from within the 4-fold cycle)
 C
 C   entering parameter theta is from the INPQD file
 C
-C   returns VCAP - the total CAP term for DONRCAP=.true.
-C   or  VCAP,VCAP_D1X,VCAP_D1Y,VCAP_D1Z terms for DONRCAP=.false.
+C   returns: 
+C          VCAP - the total nonrel. scalar CAP term for DONRCAP=.true.
+C          VCAP_D1X,VCAP_D1Y,VCAP_D1Z relativ. terms  (DONRCAP=.false.)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -1032,7 +1034,6 @@ C           ... accumulate for each interval
             IF (DONRCAP) THEN
               VCAPS(i)=VCAPS(i)+VCAP1
             ELSE
-CMI           VCAPS(i)=VCAPS(i)+VCAP1
               IF (I.EQ.1) THEN
                 VCAP_D1X = VCAP_D1X + VCAP1C 
               ELSE IF (I.EQ.2) THEN
@@ -1053,7 +1054,6 @@ CMI           VCAPS(i)=VCAPS(i)+VCAP1
          IF (DONRCAP) THEN
            VCAPS(i)=VCAPS(i)*OVRLPK*OVRLPL
          ELSE
-CMI        VCAPS(i)=VCAPS(i)*OVRLPK*OVRLPL
            IF (I.EQ.1) THEN
               VCAP_D1X = VCAP_D1X*OVRLPK*OVRLPL
            ELSE IF (I.EQ.2) THEN
@@ -1068,14 +1068,16 @@ CMI        VCAPS(i)=VCAPS(i)*OVRLPK*OVRLPL
 
       ENDDO ! of I=1,3
              
-C     ... finally add all theree terms - for x,y and z - for DONRCAP=.true.!!!
+C   ... finally add all theree terms - for x,y and z - for DONRCAP=.true.!!!
       VCAP=VCAPS(1)+VCAPS(2)+VCAPS(3)
 C ------------------------------------------------------------
 
       IF (IPRCAP.GE.19) THEN
        IF (.NOT.DONRCAP) THEN
-        write(LUPRI,*) 'VCAP,VCAP_D1X,VCAP_D1Y,VCAP_D1Z:',
-     &     VCAP,VCAP_D1X,VCAP_D1Y,VCAP_D1Z   
+        write(LUPRI,*) '** CAPM >>  VCAP_D1X,VCAP_D1Y,VCAP_D1Z:',
+     &      VCAP_D1X,VCAP_D1Y,VCAP_D1Z   
+       ELSE
+        write(LUPRI,*) '** CAPM >>  VCAP=',VCAP
        ENDIF
       ENDIF
 
@@ -1101,6 +1103,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbcap.h"
+#include "capint.h"
 
       integer *4 k_m,k_n
       integer *4 NSTEP
@@ -1127,7 +1130,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       COMPLEX *16 VCAPXT_D1C,VCAPXTy_D1C
       EXTERNAL V0,V1,V2,FF
       EXTERNAL V0D,V1D
-      double complex v0,v1,v2,V1D,FF
+      double complex v0,v1,v2,V1D,FF,V0D,V1D
       
       data CI/(0.0d0,1.0d0)/
       data M/1.0d00/
@@ -1201,42 +1204,43 @@ C        ... 2nd derivative
        
          IF (DONRCAP) THEN
 
-         v0x=V0(M,THETA,LAMDA,X0,X)
-         V1x=v1(M,THETA,LAMDA,X0,X)*DG
-         v2x=v2(M,THETA,LAMDA,X0,X)*D2G
+           v0x=V0(M,THETA,LAMDA,X0,X)
+           V1x=v1(M,THETA,LAMDA,X0,X)*DG
+           v2x=v2(M,THETA,LAMDA,X0,X)*D2G
 
-         v0xy=V0(M,THETA,LAMDA,X0,Xy)
-         V1xy=v1(M,THETA,LAMDA,X0,Xy)*DGy
-         v2xy=v2(M,THETA,LAMDA,X0,Xy)*D2Gy
+           v0xy=V0(M,THETA,LAMDA,X0,Xy)
+           V1xy=v1(M,THETA,LAMDA,X0,Xy)*DGy
+           v2xy=v2(M,THETA,LAMDA,X0,Xy)*D2Gy
 
-         VCAP=(V0x+V1x+V2x+VADD)*GG
-         VCAPy=(V0xy+V1xy+V2xy+VADDy)*GGy
+           VCAP=(V0x+V1x+V2x+VADD)*GG
+           VCAPy=(V0xy+V1xy+V2xy+VADDy)*GGy
 
-         VCAPX(itx)=VCAP
-         VCAPXy(itx)=VCAPy
+           VCAPX(itx)=VCAP
+           VCAPXy(itx)=VCAPy
 
-         if(ix.eq.1) go to 321 
+           if(ix.eq.1) go to 321 
          
-         VCAPXT=VCAPXT+0.5*(VCAPX(2)+VCAPX(1))*STEP
-         VCAPXTy=VCAPXTy+0.5*(VCAPXy(2)+VCAPXy(1))*STEP
+           VCAPXT=VCAPXT+0.5*(VCAPX(2)+VCAPX(1))*STEP
+           VCAPXTy=VCAPXTy+0.5*(VCAPXy(2)+VCAPXy(1))*STEP
 
-         if (ix.ne.1) VCAPX(2)=VCAPX(1)
-         if (ix.ne.1) VCAPXy(2)=VCAPXy(1)
+           if (ix.ne.1) VCAPX(2)=VCAPX(1)
+           if (ix.ne.1) VCAPXy(2)=VCAPXy(1)
 
          ELSE
 CMI       ... relativistic Hamiltonian
 
-          V0x = V0D(M,THETA,LAMDA,X0,X)
-          V0xy= V0D(M,THETA,LAMDA,X0,Xy)
+           V0x = V0D(M,THETA,LAMDA,X0,X)
+           V0xy= V0D(M,THETA,LAMDA,X0,Xy)
 
 CMI       V1x=V1D(M,THETA,LAMDA,X0,X)*DG
-          TempV1x = V1D(M,THETA,LAMDA,X0,X)
-          V1x=TempV1x*DG
-CMI       V1xy=V1D(M,THETA,LAMDA,X0,Xy)*DGy
-          TempV1xy = V1D(M,THETA,LAMDA,X0,Xy)
-          V1xy=TempV1xy*DGy
+           TempV1x = V1D(M,THETA,LAMDA,X0,X)
+           V1x=TempV1x*DG
 
-CMI       write(LUPRI,*) 'TempV1x,V1x:',TempV1x,V1x          
+CMI       V1xy=V1D(M,THETA,LAMDA,X0,Xy)*DGy
+           TempV1xy = V1D(M,THETA,LAMDA,X0,Xy)
+           V1xy=TempV1xy*DGy
+
+C         write(LUPRI,*) 'TempV1x,V1x:',TempV1x,V1x          
 
 CMI       VCAP=(V0x+VADD)*GG
 CMI       VCAPy=(V0xy+VADDy)*GGy
@@ -1282,14 +1286,14 @@ C         if((zabs(vcap)).lt.(0.00000000001))exit
       END DO
 
       IF (DONRCAP) THEN
+CMI    ... nonrelativistic CAP
         VCAPT=VCAPXT+VCAPXTy
 CMI     write(LUPRI,*) 'VCAPXT,VCAPXTy:',VCAPXT,VCAPXTy
       ELSE
-CMI    ... for V0D term
-CMI     VCAPT=VCAPXT+VCAPXTy
+C      ... relativistic CAP
 CMI    ... for V1D_C (x,y,z) term
         VCAP1C=VCAPXT_D1C+VCAPXTy_D1C
-CMI     write(LUPRI,*) 'VCAPT, VCAP1C:',VCAPT,VCAP1C
+CMI     write(LUPRI,*) '*** CAPMAT1 > VCAP1C:',VCAP1C
       ENDIF
 
       CALL QEXIT('CAPMAT1')
@@ -1368,7 +1372,7 @@ CMI    ... new derived V0 for the DIRAC Hamiltonian
 CMI   CA1 = F1(THETA,LAMBDA,X0,X)/F0(THETA,LAMBDA,X0,X)
 CMI   ... new drivation
       CA1 = -0.50D0*(F1(THETA,LAMBDA,X0,X)/F0(THETA,LAMBDA,X0,X))
-CMI    write(LUPRI,*) 'V0D function:',CA1
+CMI   write(LUPRI,*) 'V0D function:',CA1
       V0D = CA1 
       END
 
@@ -1391,6 +1395,7 @@ CMI  ... V1 for the DIRAC Hamiltonian
       DOUBLE COMPLEX F0,CA
       CA  = ( DCMPLX(M)/F0(THETA,LAMBDA,X0,X) ) - DCMPLX(M)
 C     CA  = ( DCMPLX(M) - CA1 ) / CA1
+CMI    write(LUPRI,*) 'V1D function:',CA
 C      write(LUPRI,*) 'V1D function:',CA, ' and F1:',CA1,
 C    &   'theta,la,xo=',THETA,LAMBDA,X0
       V1D = CA

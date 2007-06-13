@@ -7,11 +7,15 @@
 ! otherwise calculate four-component relativistic CAP
 !
 ! IPRCAP     - Print level in CAP related routines
-! IPCAPR     - Pointer to real part of CAP operator
-! IPCAPI     - Pointer to imaginary part of CAP operator
+!
+! IPCAPR     - Pointer to real part of the non-relativistic CAP operator
+! IPCAPI     - Pointer to imaginary part of the non-relativistic CAP operator
+!
+! IPCAP_DR   - Pointer to real part of the relativistic CAP operator
+! IPCAP_DI   - Pointer to imaginary part of the relativistic CAP operator
+!
 ! IPCAP_S    - Pointer for overlap integrals from CAP (to be compared with DIRAC)
 !
-! IPCAP_DXR,IPCAP_DXI,IPCAP_DYR ... pointers for the real and imaginary parts of the Dirac Ham.components
 !
 ! LUPEMAT    - lu number of the 'PEMAT' file with all CAP integrals
 !
@@ -22,12 +26,8 @@
       COMMON / DCCAPOVL / CAPOVLP, NOOVLP, DONRCAP
 
       INTEGER  IPRCAP, IPCAPR, IPCAPI,                                  &
-     &         IPCAP_DR, IPCAP_DI, IPCAP_S, LUPEMAT,                    &
-     &         IPCAP_DXR, IPCAP_DXI, IPCAP_DYR, IPCAP_DYI,              &
-     &         IPCAP_DZR, IPCAP_DZI 
+     &         IPCAP_DR, IPCAP_DI, IPCAP_S, LUPEMAT
 
       COMMON / DCCAPI / IPRCAP, IPCAPR, IPCAPI,                         &
-     &         IPCAP_DR, IPCAP_DI, IPCAP_S, LUPEMAT,                    &
-     &         IPCAP_DXR, IPCAP_DXI, IPCAP_DYR, IPCAP_DYI,              &
-     &         IPCAP_DZR, IPCAP_DZI
+     &         IPCAP_DR, IPCAP_DI, IPCAP_S, LUPEMAT
  
