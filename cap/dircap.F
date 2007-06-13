@@ -1104,7 +1104,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbcap.h"
-#include "capint.h"
+C#include "capint.h"
 
       integer *4 k_m,k_n
       integer *4 NSTEP
