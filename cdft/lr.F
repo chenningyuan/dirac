@@ -119,7 +119,7 @@ C=======================================================================
 
               CALL SDFTPOT1(VXC,WEIGHT,DENSITY,D0)
 
-!             CALL DSCAL(3,VXC(FRR),FO_SPIN_DENSITY,1) !could also be done this way
+!             CALL DSCAL(3,VXC(fSS),FO_SPIN_DENSITY,1) !could also be done this way
 !             CALL GET_M(.FALSE.,
 !    &                   FO_SPIN_DENSITY,
 !    &                   ISYMOP(IMAT)-1,
@@ -209,7 +209,7 @@ C=======================================================================
      &          EXCMAT(*),
      &          GAO(*)
 
-      VXC_S = VXC(FRR)*FO_SPIN_DENSITY
+      VXC_S = VXC(fSS)*FO_SPIN_DENSITY
 
       CALL EXC_M(.FALSE.,
      &           VXC_S,
@@ -263,16 +263,18 @@ C=======================================================================
      &          DENSITY_GRADIENT(3),
      &          VXC_V(3)
 
-      PART1 = DDOT(3,FO_SPIN_DENSITY_DERVS,1,DENSITY_GRADIENT,1)
-      PART1 = PART1/DENSITY_GRADIENT_NORM
+      GNGS = DDOT(3,DENSITY_GRADIENT,1,FO_SPIN_DENSITY_DERVS,1)
 
-      PART2 = VXC(FZZ) - VXC(FZ0)/DENSITY_GRADIENT_NORM
-      PART2 = PART1*PART2 + VXC(FRZ)*FO_SPIN_DENSITY
+      VXC_S = VXC(fSS)*FO_SPIN_DENSITY
+     &      + VXC(fSY)*GNGS
 
-      VXC_S = VXC(FRR)*FO_SPIN_DENSITY + VXC(FRZ)*PART1
       DO JXYZ = 1,3
-        VXC_V(JXYZ) = (VXC(FZ0)*FO_SPIN_DENSITY_DERVS(JXYZ)
-     &             + PART2*DENSITY_GRADIENT(JXYZ))/DENSITY_GRADIENT_NORM
+        FACTOR = DENSITY_GRADIENT(JXYZ)*GNGS
+
+        VXC_V(JXYZ) = D2*VXC(fX) *FO_SPIN_DENSITY_DERVS(JXYZ)
+     &              +    VXC(fYY)*FACTOR
+     &              + D2*VXC(fZY)*FACTOR
+     &              +    VXC(fSY)*FO_SPIN_DENSITY*DENSITY_GRADIENT(JXYZ)
       ENDDO
 
       CALL DSCAL(3,D2,VXC_V,1) !because of symmetrization later in the code

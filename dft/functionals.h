@@ -252,18 +252,12 @@ int dft_isgga__(void);
 
       LOGICAL  DFTISGGA
       EXTERNAL DFTISGGA, DFTINPUT
-c     The derivatives with respect to rho and zeta
-      INTEGER FR0, FZ0, FRR, FRZ, FZZ, FRRR, FRRZ, FRZZ, FZZZ
-      INTEGER DERVS1, DERVS2, DERVS3
-      PARAMETER(FR0=1,  FZ0=2,   FRR=3,  FRZ=4)
-      PARAMETER(FZZ=5,  FRRR=6,  FRRZ=7, FRZZ=8, FZZZ=9)
-      PARAMETER(DERVS1=2, DERVS2=5, DERVS3=9)
 
-
-
-#if defined(radovan_will_merge_me_later)
-      INTEGER fR
-      INTEGER fZ
+      INTEGER fR0
+      INTEGER fZ0
+!     change me later to ...
+!     INTEGER fR
+!     INTEGER fZ
       INTEGER fRR
       INTEGER fRZ
       INTEGER fZZ
@@ -327,8 +321,11 @@ c     The derivatives with respect to rho and zeta
       INTEGER SPINPOLARIZED_DERVS2
       INTEGER SPINPOLARIZED_DERVS3
 
-      PARAMETER (fR   =  1)
-      PARAMETER (fZ   =  2)
+      PARAMETER (fR0  =  1)
+      PARAMETER (fZ0  =  2)
+!     change me later to ...
+!     PARAMETER (fR   =  1)
+!     PARAMETER (fZ   =  2)
       PARAMETER (fRR  =  3)
       PARAMETER (fRZ  =  4)
       PARAMETER (fZZ  =  5)
@@ -391,9 +388,5 @@ c     The derivatives with respect to rho and zeta
       PARAMETER (SPINPOLARIZED_DERVS1 =  3)
       PARAMETER (SPINPOLARIZED_DERVS2 = 15)
       PARAMETER (SPINPOLARIZED_DERVS3 = 46)
-
-#endif /* (radovan_will_merge_me_later) */
-
-
 
 #endif /* __CVERSION__ */

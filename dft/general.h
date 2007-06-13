@@ -58,6 +58,10 @@ typedef struct FirstDrv_  FirstDrv;
 typedef struct SecondDrv_ SecondDrv;
 typedef struct ThirdDrv_  ThirdDrv;
 
+typedef struct SpinPolarizedFirstDrv_  SpinPolarizedFirstDrv;
+typedef struct SpinPolarizedSecondDrv_ SpinPolarizedSecondDrv;
+typedef struct SpinPolarizedThirdDrv_  SpinPolarizedThirdDrv;
+
 /* Density evaluators */
 typedef struct DftDensity_  DftDensity;
 typedef struct DftGrid_     DftGrid;
@@ -141,95 +145,28 @@ void dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
  */
 
 struct FirstDrv_ {
-       real fR  
-       real fZ  
+       real fR; 
+       real fZ; 
 };
 
 struct SecondDrv_ {
-       real fR  
-       real fZ  
-       real fRR 
-       real fRZ 
-       real fZZ 
+       real fR; 
+       real fZ; 
+       real fRR;
+       real fRZ;
+       real fZZ;
 };
 
 struct ThirdDrv_ {
-       real fR  
-       real fZ  
-       real fRR 
-       real fRZ 
-       real fZZ 
-       real fRRR
-       real fRRZ
-       real fRZZ
-       real fZZZ
-};
-
-struct SpinPolarizedSecondDrv_ {
-       real fS   /* zero at closed-shell */
-       real fY   /* zero at closed-shell */
-       real fX 
-       real fSS
-       real fYY
-       real fXX
-       real fRS  /* zero at closed-shell */
-       real fRY  /* zero at closed-shell */
-       real fRX 
-       real fSZ  /* zero at closed-shell */
-       real fSY 
-       real fSX  /* zero at closed-shell */
-       real fZY
-       real fZX
-       real fYX  /* zero at closed-shell */
-};
-
-struct SpinPolarizedThirdDrv_ {
-       real fS   /* zero at closed-shell */
-       real fY   /* zero at closed-shell */
-       real fX 
-       real fSS
-       real fYY
-       real fXX
-       real fRS  /* zero at closed-shell */
-       real fRY  /* zero at closed-shell */
-       real fRX 
-       real fSZ  /* zero at closed-shell */
-       real fSY 
-       real fSX  /* zero at closed-shell */
-       real fZY
-       real fZX
-       real fYX  /* zero at closed-shell */
-       real fSSS /* zero at closed-shell */
-       real fYYY
-       real fXXX
-       real fRRS /* zero at closed-shell */
-       real fRRY /* zero at closed-shell */
-       real fRRX
-       real fRSS
-       real fRYY
-       real fRXX
-       real fSSZ
-       real fSSY /* zero at closed-shell */
-       real fSSX
-       real fSZZ /* zero at closed-shell */
-       real fSYY
-       real fSXX /* zero at closed-shell */
-       real fZZY
-       real fZZX
-       real fZYY
-       real fZXX
-       real fYYX
-       real fYXX /* zero at closed-shell */
-       real fRSZ /* zero at closed-shell */
-       real fRSY
-       real fRSX /* zero at closed-shell */
-       real fRZY
-       real fRZX
-       real fRYX /* zero at closed-shell */
-       real fSZY
-       real fSZX /* zero at closed-shell */
-       real fSYX
-       real fZYX
+       real fR; 
+       real fZ; 
+       real fRR;
+       real fRZ;
+       real fZZ;
+       real fRRR;
+       real fRRZ;
+       real fRZZ;
+       real fZZZ;
 };
 
 void dftpot0_(FirstDrv *ds, 
@@ -247,18 +184,83 @@ void dftpot2_(ThirdDrv *ds,
               const real* rho, 
               const real* grad);
 
-void sdftpot1_(SpinPolarizedSecondDrv *ds, 
-               const real* weight,
-               const real* rho, 
-               const real* grad);
-
 void sdftpot2_(SpinPolarizedThirdDrv *ds, 
                const real* weight,
                const real* rho, 
                const real* grad);
 #endif /* (radovan_will_merge_me_later) */
 
+struct SpinPolarizedSecondDrv_ {
+       real fS;   /* zero at closed-shell */
+       real fY;   /* zero at closed-shell */
+       real fX;   
+       real fSS; 
+       real fYY; 
+       real fXX; 
+       real fRS;  /* zero at closed-shell */
+       real fRY;  /* zero at closed-shell */
+       real fRX; 
+       real fSZ;  /* zero at closed-shell */
+       real fSY; 
+       real fSX;  /* zero at closed-shell */
+       real fZY;
+       real fZX;
+       real fYX;  /* zero at closed-shell */
+};
 
+struct SpinPolarizedThirdDrv_ {
+       real fS;   /* zero at closed-shell */
+       real fY;   /* zero at closed-shell */
+       real fX;   
+       real fSS; 
+       real fYY; 
+       real fXX; 
+       real fRS;  /* zero at closed-shell */
+       real fRY;  /* zero at closed-shell */
+       real fRX; 
+       real fSZ;  /* zero at closed-shell */
+       real fSY; 
+       real fSX;  /* zero at closed-shell */
+       real fZY;
+       real fZX;
+       real fYX;  /* zero at closed-shell */
+       real fSSS; /* zero at closed-shell */
+       real fYYY;
+       real fXXX;
+       real fRRS; /* zero at closed-shell */
+       real fRRY; /* zero at closed-shell */
+       real fRRX;
+       real fRSS;
+       real fRYY;
+       real fRXX;
+       real fSSZ;
+       real fSSY; /* zero at closed-shell */
+       real fSSX;
+       real fSZZ; /* zero at closed-shell */
+       real fSYY;
+       real fSXX; /* zero at closed-shell */
+       real fZZY;
+       real fZZX;
+       real fZYY;
+       real fZXX;
+       real fYYX;
+       real fYXX; /* zero at closed-shell */
+       real fRSZ; /* zero at closed-shell */
+       real fRSY;
+       real fRSX; /* zero at closed-shell */
+       real fRZY;
+       real fRZX;
+       real fRYX; /* zero at closed-shell */
+       real fSZY;
+       real fSZX; /* zero at closed-shell */
+       real fSYX;
+       real fZYX;
+};
+
+void sdftpot1_(SpinPolarizedSecondDrv *ds, 
+               const real* weight,
+               const real* rho, 
+               const real* grad);
 
 /* Property evaluators */
 void dft_kohn_sham_(real* dmat, real* ksm, real *edfty,
