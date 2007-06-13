@@ -350,9 +350,8 @@ C ======== first real part (CAPRE or CAP_OVLP)
       CALL MEMGET('REAL',KPMR,N2BBASX,WORK,KFREE,LFREE)
 
       IF (.NOT.CAPOVLP) THEN
-C       ...  first real part (CAPRE or CAP_OVLP)
-
        IF (DONRCAP) THEN
+C        ... non-relativistic CAP integrals
          CALL CAPREAD('CAP_RE  ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &          ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
@@ -360,23 +359,23 @@ C       ...  first real part (CAPRE or CAP_OVLP)
      &          ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
        ELSE
-C        ...  relativistic integrals
-          CALL CAPREAD('CAPD1XR ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+C        ...  relativistic CAP integrals
+          CALL CAPREAD('XCAPD1R ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-          CALL CAPREAD('CAPD1XI ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+          CALL CAPREAD('XCAPD1I ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-          CALL CAPREAD('CAPD1YR ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+          CALL CAPREAD('YCAPD1R ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-          CALL CAPREAD('CAPD1YI ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+          CALL CAPREAD('YCAPD1I ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-          CALL CAPREAD('CAPD1ZR ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+          CALL CAPREAD('ZCAPD1R ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-          CALL CAPREAD('CAPD1ZI ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+          CALL CAPREAD('ZCAPD1I ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
          ENDIF
@@ -950,8 +949,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbham.h"
 #include "dcbxpr.h"
 #include "dcbcap.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
       DIMENSION CAPINTS(NNBBASX),WORK(LWORK)
-      LOGICAL ISFILE, DOXPRIND
+      LOGICAL ISFILE, DOXPRIND1,DOXPRIND2
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
       CHARACTER PNAME*16, PLABEL(3)*8
       CHARACTER*8 LBL
@@ -989,90 +992,66 @@ C
         ELSE
          COMB = 'TFFT'
         ENDIF
-        LABEL = LBL
-      ELSE IF (LBL.EQ.'CAPD1XR'.OR.
-     &         LBL.EQ.'CAPD1XI'.OR.
-     &         LBL.EQ.'CAPD1YR'.OR.
-     &         LBL.EQ.'CAPD1YI'.OR.
-     &         LBL.EQ.'CAPD1ZR'.OR.
-     &         LBL.EQ.'CAPD1ZI') THEN
+        INTREP = 1
+        DOXPRIND1=.TRUE.
+        DOXPRIND2=.FALSE.
+      ELSE 
+        DOXPRIND1=.FALSE.
+        DOXPRIND2=.FALSE.
+
         RTNLBL(2)(1:2) = 'AN'
         COMB = 'FTTF'
-        LABEL = LBL
-      ELSE
-        WRITE(LUPRI,*) 'unidentified SAVECAP label, LBL=',LBL
-        CALL QUIT('SAVECAP: Unidentified label !')
+             IF (LBL.EQ.'XCAPD1R'.OR. LBL.EQ.'XCAPD1I') THEN
+          INTREP = ISYMAX(1,1) + 1
+        ELSE IF (LBL.EQ.'YCAPD1R'.OR. LBL.EQ.'YCAPD1I') THEN
+          INTREP = ISYMAX(2,1) + 1
+        ELSE IF (LBL.EQ.'ZCAPD1R'.OR. LBL.EQ.'ZCAPD1I') THEN
+          INTREP = ISYMAX(3,1) + 1
+        ELSE
+          WRITE(LUPRI,*) 'unidentified SAVECAP label, LBL=',LBL
+          CALL QUIT('SAVECAP: Unidentified label !')
+        ENDIF
+        IF (LBL.EQ.'ZCAPD1I') DOXPRIND2=.TRUE.
       ENDIF
 
-      WRITE(RTNLBL(2)(3:4),'(I2)') 1
+      LABEL = LBL
+
+      WRITE(RTNLBL(2)(3:4),'(I2)') INTREP
+
       RTNLBL(2)(5:8) = COMB
       CALL WRTPRO(CAPINTS,NNBBASX,LABEL,RTNLBL,IPRCAP)
-C     ... control printout
+
+C     ... control printout ...
       IF (IPRCAP.GE.2) THEN
-       WRITE(LUPRI,'(2X,A,A,A,A4)')
-     & 'SAVECAP: Written to AOPROPER; operator label ',
-     &  LABEL, ';  blocks occupation, COMB=',COMB
-      ENDIF
-      IF (IPRCAP.GE.5) THEN
-C       WRITE(LUPRI,'(2X,A)')
-C    &  'SAVECAP: Triangular matrix written into AOPROPER'
-C       WRITE(LUPRI,*) (CAPINTS(I),I=1,NNBBASX)
+        WRITE(LUPRI,'(/2X,A,A8,A,A8,A,A)')
+     &  'SAVECAP: CAP integrals written to the AOPROPER'//
+     &  ' file under the label: ',
+     &  RTNLBL(1),' ',RTNLBL(2),' ',LABEL
       ENDIF
 
-        PLABEL(1) = LBL
-        PNAME = LBL
-        IF      (LBL.EQ.'CAPD1XR') THEN
-          PLABEL(1)='CAPD1XR'
-             IPTYP = 2
-        ELSE IF (LBL.EQ.'CAPD1XI') THEN
-          PLABEL(1)='CAPD1XI'
-             IPTYP = 2
-        ELSE IF (LBL.EQ.'CAPD1YR') THEN
-          PLABEL(1)='CAPD1YR'
-             IPTYP = 3
-        ELSE IF (LBL.EQ.'CAPD1YI') THEN
-          PLABEL(1)='CAPD1YI'
-             IPTYP = 3
-        ELSE IF (LBL.EQ.'CAPD1ZR') THEN
-          PLABEL(1)='CAPD1ZR'
-             IPTYP = 4
-        ELSE IF (LBL.EQ.'CAPD1ZI') THEN
-          PLABEL(1)='CAPD1ZI'
-             IPTYP = 4
-        ELSE
-C         ... non-relativ.integrals
-             IPTYP = 1
-        ENDIF
+      IF (DOXPRIND1) THEN
 C
-C         CAP integrals according to LBL
+C       CAP (nr_re,nr_im,overlap) integrals 
 C     ======================================
 C
-C     IPTYP            = 1
+      PLABEL(1) = LBL
+      PNAME = LBL
+      IPTYP            = 1
       NPCOMP           = 1
       PFAC(1)          = D1
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRCAP)
 
+C             ... assign indexes
+C ---------------------------------------------------
       IF      (LBL.EQ.'CAP_RE  ') THEN
         IPCAPR    = INDXPR
       ELSE IF (LBL.EQ.'CAP_IM  ') THEN
         IPCAPI    = INDXPR
       ELSE IF (LBL.EQ.'CAP_OVLP') THEN
         IPCAP_S   = INDXPR
-      ELSE IF (LBL.EQ.'CAPD1XR') THEN
-        IPCAP_DXR = INDXPR
-      ELSE IF (LBL.EQ.'CAPD1XI') THEN
-        IPCAP_DXI = INDXPR
-      ELSE IF (LBL.EQ.'CAPD1YR') THEN
-        IPCAP_DYR = INDXPR
-      ELSE IF (LBL.EQ.'CAPD1YI') THEN
-        IPCAP_DYI = INDXPR
-      ELSE IF (LBL.EQ.'CAPD1ZR') THEN
-        IPCAP_DZR = INDXPR
-      ELSE IF (LBL.EQ.'CAPD1ZI') THEN
-        IPCAP_DZI = INDXPR
-      ELSE
-        WRITE(LUPRI,*) 'SAVECAP: the inidentified label is:',LBL
+      ELSE   
+        write(LUPRI,*) 'SAVECAP: LBL=',LBL
         CALL QUIT('SAVECAP: Can not identify INDXPR label !')
       ENDIF
       IF (IPRCAP.GE.2) THEN
@@ -1081,10 +1060,12 @@ C     IPTYP            = 1
         CALL WRIXPR(1,INDXPR)
       ENDIF
 
+      ENDIF
+
 C *************************************************
 C        ... last two labels ...
 C *************************************************
-      IF (LBL.EQ.'CAPD1ZI') THEN
+      IF (DOXPRIND2) THEN
 C     ... last 2 XPRIND
 
       PNAME    = 'CAP_D_Re '
@@ -1093,9 +1074,9 @@ C     ... last 2 XPRIND
       PFAC(1)  = -CVAL
       PFAC(2)  = -CVAL
       PFAC(3)  = -CVAL
-      PLABEL(1) = 'CAPD1XR'
-      PLABEL(2) = 'CAPD1YR'
-      PLABEL(3) = 'CAPD1ZR'
+      PLABEL(1) = 'XCAPD1R'
+      PLABEL(2) = 'YCAPD1R'
+      PLABEL(3) = 'ZCAPD1R'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRCAP)
       IPCAP_DR = INDXPR
@@ -1106,9 +1087,9 @@ C     ... last 2 XPRIND
       PFAC(1)  = -CVAL
       PFAC(2)  = -CVAL
       PFAC(3)  = -CVAL
-      PLABEL(1) = 'CAPD1XI'
-      PLABEL(2) = 'CAPD1YI'
-      PLABEL(3) = 'CAPD1ZI'
+      PLABEL(1) = 'XCAPD1I'
+      PLABEL(2) = 'YCAPD1I'
+      PLABEL(3) = 'ZCAPD1I'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRCAP)
       IPCAP_DI = INDXPR
@@ -1148,9 +1129,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
+#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcbcap.h"
 #include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
 #include "nuclei.h"
 #include "dummy.h"
       DIMENSION CAP(N2BBASX),CAPSA(N2BBASX),CAPSAT(NNBBASX),
@@ -1231,18 +1216,19 @@ C   ...internal DIRAC symmetry adaptation into CAPSA
       IF (LBL.EQ.'CAP_RE  '.OR.
      &    LBL.EQ.'CAP_IM  '.OR.
      &    LBL.EQ.'CAP_OVLP') THEN
-C       IREPD = 1
+        IREP=0
+C       IREPD = IRQMAT(1,IREP)
+C       IREPD = IRQMAT(JM4POS(1),IREP)
         IREPD = 0
-C *** Warning: this has to be solved !!!
-      ELSE IF (LBL.EQ.'CAPD1XR '.OR.LBL.EQ.'CAPD1XI ') THEN
-C       IREPD = 1
-        IREPD = 0
-      ELSE IF (LBL.EQ.'CAPD1YR '.OR.LBL.EQ.'CAPD1YI ') THEN
-C       IREPD = 1
-        IREPD = 0
-      ELSE IF (LBL.EQ.'CAPD1ZR '.OR.LBL.EQ.'CAPD1ZI ') THEN
-C       IREPD = 1
-        IREPD = 0
+      ELSE IF (LBL.EQ.'XCAPD1R '.OR.LBL.EQ.'XCAPD1I ') THEN
+        IREP = ISYMAX(1,1)
+        IREPD = IRQMAT(JM4POS(4),IREP) 
+      ELSE IF (LBL.EQ.'YCAPD1R '.OR.LBL.EQ.'YCAPD1I ') THEN
+        IREP = ISYMAX(2,1)
+        IREPD = IRQMAT(JM4POS(3),IREP)
+      ELSE IF (LBL.EQ.'ZCAPD1R '.OR.LBL.EQ.'ZCAPD1I ') THEN
+        IREP = ISYMAX(3,1)
+        IREPD = IRQMAT(JM4POS(2),IREP)
       ELSE 
         WRITE(LUPRI,*) 'CAPREAD ... LBL=',LBL
         CALL QUIT('CAPREAD: wrong LBL !')

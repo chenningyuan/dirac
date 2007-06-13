@@ -748,7 +748,7 @@ C  /* Deck mtaoso */
       SUBROUTINE MTAOSO(AAO,ASO,NBAST,IREPDM,IPRINT)
 C***********************************************************************
 C
-C     Matrix transform: SO-basis to AO-basis
+C     Matrix transform: AO-basis to SO-basis
 C     Based on HERMIT routine DSOTAO (880418  PRT)
 C
 C     Written by T.Saue - Sept 10 1995
@@ -768,7 +768,13 @@ C***********************************************************************
 #include "symmet.h"
 #include "pgroup.h"
 #include "ibtfun.h"
-      IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTAOSO',-1)
+
+      CALL QENTER('MTAOSO')
+
+      IF (IPRINT .GE. 10) THEN
+        CALL HEADER('Subroutine MTAOSO',-1)
+        WRITE(LUPRI,'(2X,A,I2)') 'entering symmetry, IREPDM=',IREPDM
+      ENDIF
 C
 C     Loop over all irreps in molecule
 C
@@ -825,12 +831,15 @@ C
          ISTRA = ISTRA + NBA
   150    CONTINUE
   100 CONTINUE
+
       IF (IPRINT .GE. 10) THEN
-         CALL HEADER('INPUT:  Total matrix in AO basis',-1)
+         CALL HEADER('INPUT(MTAOSO):  Total matrix in AO basis',-1)
          CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-         CALL HEADER('OUTPUT: Total matrix in SO basis',-1)
+         CALL HEADER('OUTPUT(MTAOSO): Total matrix in SO basis',-1)
          CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
+
+      CALL QEXIT('MTAOSO')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

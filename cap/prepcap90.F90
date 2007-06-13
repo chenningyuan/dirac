@@ -79,7 +79,7 @@ end subroutine test_files
 !  called from CAP_STUFF
 !
 !----------------------------------------------------------------------------
-   use QMatrixes
+    use QMatrixes
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbcap.h"
@@ -91,16 +91,17 @@ call QENTER('cap_ovlp_comp')
 ! write(LUPRI,*) 'iprqmtx=',get_iprint_qmtx()
 
  call GetUnpckOvlpMtx(smat)
- !call QMTxInfo(smat)
+! call QMTxInfo(smat)
 
  call GetCapOvlp(capovl)
  !call QMTxInfo(capovl)
 
 !  compare smat & capovlp quaternion matrixes
- diff = getdiff_part_qmtx(smat,capovl)
+  diff = getdiff_part_qmtx(smat,capovl)
   write(LUPRI,'(/A)') '*************************************************************'
   write(LUPRI,'(A,D22.10)') '*** comparison of CAP-DIRAC overlap matrixes: ',diff
   write(LUPRI,'(A)')  '*************************************************************'
+  CALL FLSHFO(LUPRI)
 
  if (diff > diff_thrs) then
 ! ... print individual matrixes, plus difference between them

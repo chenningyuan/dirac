@@ -1825,18 +1825,10 @@ CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
         CLASSLB = 'CAP_IM  '
       ELSE IF(LABINT(1:6).EQ.'CAP_OV') THEN
         CLASSLB = 'CAP_OVL '
-      ELSE IF(LABINT(1:7).EQ.'CAPD1XR') THEN
-        CLASSLB = 'CAPD1XR' 
-      ELSE IF(LABINT(1:7).EQ.'CAPD1YR') THEN
-        CLASSLB = 'CAPD1YR' 
-      ELSE IF(LABINT(1:7).EQ.'CAPD1ZR') THEN
-        CLASSLB = 'CAPD1ZR' 
-      ELSE IF(LABINT(1:7).EQ.'CAPD1XI') THEN
-        CLASSLB = 'CAPD1XI' 
-      ELSE IF(LABINT(1:7).EQ.'CAPD1YI') THEN
-        CLASSLB = 'CAPD1YI' 
-      ELSE IF(LABINT(1:7).EQ.'CAPD1ZI') THEN
-        CLASSLB = 'CAPD1ZI' 
+      ELSE IF(LABINT(2:7).EQ.'CAPD1R') THEN
+        CLASSLB = 'CAPD1R' 
+      ELSE IF(LABINT(2:7).EQ.'CAPD1I') THEN
+        CLASSLB = 'CAPD1I' 
 C
 C     Unknown LABINT
 C   
@@ -1847,9 +1839,9 @@ C
 C  Control print out
       IF (IPRINT.GE.5) THEN
        WRITE(LUPRI,'(2A)')
-     & 'GETCLS called: for LABINT=',LABINT
+     & 'GETCLS called for LABINT=',LABINT
        WRITE(LUPRI,'(7X,2A)')
-     & '     assigned the CLASSLB=',CLASSLB
+     & '     assigned  CLASSLB=',CLASSLB
       ENDIF
 C
       CALL QEXIT('GETCLS')
