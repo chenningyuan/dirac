@@ -1207,7 +1207,7 @@ C   ... delete SL/LS blocks integrals ....
       IF (IPRCAP.GE.4) THEN
        CALL HEADER ('CAPxx integrals in basic DIRAC order'//
      & ' (cleared blocks) ',-1)
-       WRITE(LUPRI,'(2X,A)') 'The label is:',LBL
+       WRITE(LUPRI,'(2X,A,A)') 'The label of integrals is:',LBL
        CALL PRQMAT(CAP,NBASIS,NBASIS,NBASIS,NBASIS,1,
      &             IPQTOQ(1,0),LUPRI)
       ENDIF
@@ -1221,14 +1221,18 @@ C       IREPD = IRQMAT(1,IREP)
 C       IREPD = IRQMAT(JM4POS(1),IREP)
         IREPD = 0
       ELSE IF (LBL.EQ.'XCAPD1R '.OR.LBL.EQ.'XCAPD1I ') THEN
-        IREP = ISYMAX(1,1)
-        IREPD = IRQMAT(JM4POS(4),IREP) 
+        IREPD = ISYMAX(1,2)
+C       IREPD = IRQMAT(JM4POS(4),IREP) 
+C       IREPD = ISYMAX(1,2)
+C       IREPD = 6
       ELSE IF (LBL.EQ.'YCAPD1R '.OR.LBL.EQ.'YCAPD1I ') THEN
-        IREP = ISYMAX(2,1)
-        IREPD = IRQMAT(JM4POS(3),IREP)
+        IREPD = ISYMAX(2,2)
+C       IREPD = IRQMAT(JM4POS(3),IREP)
+C       IREPD = 5
       ELSE IF (LBL.EQ.'ZCAPD1R '.OR.LBL.EQ.'ZCAPD1I ') THEN
-        IREP = ISYMAX(3,1)
-        IREPD = IRQMAT(JM4POS(2),IREP)
+        IREPD = ISYMAX(3,2)
+C       IREPD = IRQMAT(JM4POS(2),IREP)
+C       IREPD = 3
       ELSE 
         WRITE(LUPRI,*) 'CAPREAD ... LBL=',LBL
         CALL QUIT('CAPREAD: wrong LBL !')
@@ -1237,6 +1241,7 @@ C       IREPD = IRQMAT(JM4POS(1),IREP)
       CALL DZERO(CAPSA,N2BBASX)
 
       CALL MTAOSO(CAP,CAPSA,NBASIS,IREPD,IPRCAP)
+C     CALL DTAOSO(CAP,CAPSA,NBASIS,IREPD,IPRCAP)
 
 C   ... make triangular matrix of CAPSA into CAPSAT
       CALL DAMATR(NBASIS,CAPSA,NBASIS,CAPSAT)

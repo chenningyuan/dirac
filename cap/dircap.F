@@ -93,6 +93,7 @@ CMI   ... evaluate CAP complex atomic untegrals
          WRITE(LUPRI,'(2X,A)')
      &   'CAP integrals are not present, going'//
      &   ' to calculate them and write them into the PEMAT.'
+         CALL FLSHFO(LUPRI)
         ENDIF
 
 CMI   ... evaluate integrals - fill array with them
