@@ -431,7 +431,8 @@ type(qmtx_pck), intent(in) :: qm_pk_in
 type(irp), optional, intent(in) ::  irp_in
 type(nzp), optional, intent(in) ::  nz_in
 character(*), optional, intent(in) :: text
-integer (kind=8) :: isize
+!integer (kind=8) :: isize
+integer (kind=8/IRAT) :: isize
 integer(kind=4) :: good_alloc
 CALL QENTER('QMatrixes: MakeQMtxPck')
 
@@ -501,7 +502,8 @@ type(irp), optional, intent(in) ::  irp_in
 type(nzp), optional, intent(in) ::  nz_in
 type(qmtx_unpck),  intent(in) :: qm_upk_in
 character(*), optional, intent(in) :: text
-integer (kind=8) :: isize
+!integer (kind=8) :: isize
+integer (kind=8/IRAT) :: isize
 logical, save :: was_called = .false.
 CALL QENTER('QMatrixes: MakeQMtxUnPck')
 

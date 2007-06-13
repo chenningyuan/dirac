@@ -28,12 +28,13 @@ subroutine mymemget( datatype, kbase, length )
 !
 !************************************************************************
 #include "priunit.h"
-!#include "iratdef.h"
+#include "iratdef.h"
 character*(*), intent(in) :: datatype
 integer(kind=4), intent(inout) :: kbase
 !integer(kind=8/IRAT), intent(inout) :: kbase
 !integer, intent(inout) :: kbase
-integer (kind=8), intent(in) :: length
+!integer (kind=8), intent(in) :: length
+integer (kind=8/IRAT), intent(in) :: length
 integer :: kbase_temp ! needs to fit into internal MEM_stuff 
 call QENTER('mymemget')
 

@@ -167,6 +167,7 @@ use Memory
 #include "priunit.h"
 character(*), intent(in) :: char_type
 integer(kind=8/IRAT),intent(in) :: isize
+!integer(kind=8),intent(in) :: isize
 character(*), optional, intent(in) :: text
 type(Vect) :: self
 call QENTER('MakeVector')
