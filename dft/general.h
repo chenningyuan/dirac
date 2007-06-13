@@ -183,11 +183,6 @@ void dftpot2_(ThirdDrv *ds,
               const real* weight,
               const real* rho, 
               const real* grad);
-
-void sdftpot2_(SpinPolarizedThirdDrv *ds, 
-               const real* weight,
-               const real* rho, 
-               const real* grad);
 #endif /* (radovan_will_merge_me_later) */
 
 struct SpinPolarizedSecondDrv_ {
@@ -258,6 +253,11 @@ struct SpinPolarizedThirdDrv_ {
 };
 
 void sdftpot1_(SpinPolarizedSecondDrv *ds, 
+               const real* weight,
+               const real* rho, 
+               const real* grad);
+
+void sdftpot2_(SpinPolarizedThirdDrv *ds, 
                const real* weight,
                const real* rho, 
                const real* grad);

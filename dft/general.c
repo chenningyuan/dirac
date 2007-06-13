@@ -257,37 +257,6 @@ dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
                0.125*3* drvs.df0010/ grad5;
 }
 
-void
-sdftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad)
-{
-  FunThirdFuncDrv drvs;
-  FunDensProp dp;
-
-  drv3_clear(&drvs);
-
-  dp.rhoa   = dp.rhob  = *rho *0.5;
-  dp.grada  = dp.gradb = *grad*0.5;
-  dp.gradab = dp.grada * dp.gradb;
-
-  dp.subsystem[0] = NULL;
-  dp.subsystem[1] = NULL;
-
-  if(do_alda)
-    LDAFunctional.third(&drvs, *w, &dp);
-  else
-    selected_func->third(&drvs, *w, &dp);
-       
-  ds->fR   = 0.0;
-  ds->fZ   = 0.5*(drvs.df2000 - drvs.df1100);
-  ds->fRR  = 0.0;
-  ds->fRZ  = 0.25*(drvs.df3000 - drvs.df2100);
-  ds->fZZ  = 0.0;
-  ds->fRRR = 0.0;
-  ds->fRRZ = 0.0;
-  ds->fRZZ = 0.0;
-  ds->fZZZ = 0.0;
-}
-
 void 
 sdftpot1_(SpinPolarizedSecondDrv *ds,
           const real* weight,
@@ -297,7 +266,9 @@ sdftpot1_(SpinPolarizedSecondDrv *ds,
   FunSecondFuncDrv drvs;
   FunDensProp dp;
   
-  real grada, grada2, grada3,bygrada,bygrada2,bygrada3,by2,by4,by8,by16,by32;
+  real grada, grada2, grada3;
+  real bygrada, bygrada2, bygrada3;
+  real by2, by4, by8, by16, by32;
 
   drv2_clear(&drvs);
 
@@ -305,19 +276,19 @@ sdftpot1_(SpinPolarizedSecondDrv *ds,
   dp.grada  = dp.gradb = *grad*0.5;
   dp.gradab = dp.grada * dp.gradb;
 
-   grada  = *grad*0.5;
-   grada2 = grada*grada;
-   grada3 = grada*grada2;
+  grada  = *grad*0.5;
+  grada2 = grada*grada;
+  grada3 = grada*grada2;
 
-   bygrada  = 1.0/grada;
-   bygrada2 = 1.0/grada2;
-   bygrada3 = 1.0/grada3;
+  bygrada  = 1.0/grada;
+  bygrada2 = 1.0/grada2;
+  bygrada3 = 1.0/grada3;
 
-   by2   = 0.50000000;
-   by4   = 0.25000000;
-   by8   = 0.12500000;
-   by16  = 0.06250000;
-   by32  = 0.03125000;
+  by2   = 0.50000000;
+  by4   = 0.25000000;
+  by8   = 0.12500000;
+  by16  = 0.06250000;
+  by32  = 0.03125000;
 
   dp.subsystem[0] = NULL;
   dp.subsystem[1] = NULL;
@@ -347,7 +318,6 @@ sdftpot1_(SpinPolarizedSecondDrv *ds,
   ds->fYX  = 0.0;
 }
 
-#if defined(radovan_will_merge_me_later)
 void 
 sdftpot2_(SpinPolarizedThirdDrv *ds,
           const real* weight,
@@ -357,32 +327,36 @@ sdftpot2_(SpinPolarizedThirdDrv *ds,
   FunThirdFuncDrv drvs;
   FunDensProp dp;
 
+  real grada, grada2, grada3, grada4, grada5;
+  real bygrada, bygrada2, bygrada3, bygrada4, bygrada5;
+  real by2, by4, by8, by16, by32, by64, by128, by256;
+
   drv3_clear(&drvs);
 
   dp.rhoa   = dp.rhob  = *rho *0.5;
   dp.grada  = dp.gradb = *grad*0.5;
   dp.gradab = dp.grada * dp.gradb;
 
-  real grada  = *grad*0.5;
-  real grada2 = grada*grada;
-  real grada3 = grada*grada2;
-  real grada4 = grada*grada3;
-  real grada5 = grada*grada4;
+  grada  = *grad*0.5;
+  grada2 = grada*grada;
+  grada3 = grada*grada2;
+  grada4 = grada*grada3;
+  grada5 = grada*grada4;
 
-  real bygrada  = 1.0/grada;
-  real bygrada2 = 1.0/grada2;
-  real bygrada3 = 1.0/grada3;
-  real bygrada4 = 1.0/grada4;
-  real bygrada5 = 1.0/grada5;
+  bygrada  = 1.0/grada;
+  bygrada2 = 1.0/grada2;
+  bygrada3 = 1.0/grada3;
+  bygrada4 = 1.0/grada4;
+  bygrada5 = 1.0/grada5;
 
-  real by2   = 0.50000000;
-  real by4   = 0.25000000;
-  real by8   = 0.12500000;
-  real by16  = 0.06250000;
-  real by32  = 0.03125000;
-  real by64  = 0.01562500;
-  real by128 = 0.00781250;
-  real by256 = 0.00390625;
+  by2   = 0.50000000;
+  by4   = 0.25000000;
+  by8   = 0.12500000;
+  by16  = 0.06250000;
+  by32  = 0.03125000;
+  by64  = 0.01562500;
+  by128 = 0.00781250;
+  by256 = 0.00390625;
 
   dp.subsystem[0] = NULL;
   dp.subsystem[1] = NULL;
@@ -397,7 +371,8 @@ sdftpot2_(SpinPolarizedThirdDrv *ds,
   ds->fX   = drvs.df0010*by4*bygrada - drvs.df00001*by4;
   ds->fSS  = drvs.df2000*by2 - drvs.df1100*by2;
   ds->fYY  = drvs.df0020*by8*bygrada2 - drvs.df0011*by8*bygrada2;
-  ds->fXX  = - drvs.df00101*by8*bygrada + drvs.df0020*by32*bygrada2 + drvs.df0011*by32*bygrada2
+/*ds->fXX  = - drvs.df00101*by8*bygrada + drvs.df0020*by32*bygrada2 + drvs.df0011*by32*bygrada2*/
+  ds->fXX  =                              drvs.df0020*by32*bygrada2 + drvs.df0011*by32*bygrada2
            - drvs.df0010*by32*bygrada3;
          /*- drvs.df0010*by32*bygrada3 + drvs.df00002*by16;*/
   ds->fRS  = 0.0;
@@ -413,8 +388,9 @@ sdftpot2_(SpinPolarizedThirdDrv *ds,
   ds->fSSS = 0.0;
   ds->fYYY = 3.0*drvs.df0011*by32*bygrada4 - 3.0*drvs.df0020*by32*bygrada4;
 /*ds->fXXX = 3.0*drvs.df00102*by64*bygrada - 3.0*drvs.df00201*by128*bygrada2 - 3.0*drvs.df00111*by128*bygrada2 + drvs.df0030*by256*bygrada3*/
-  ds->fXXX =                              - 3.0*drvs.df00201*by128*bygrada2 - 3.0*drvs.df00111*by128*bygrada2 + drvs.df0030*by256*bygrada3
-           + 3.0*drvs.df0021*by256*bygrada3 + 3.0*drvs.df00101*by128*bygrada3 - 3.0*drvs.df0020*by256*bygrada4 - 3.0*drvs.df0011*by256*bygrada4
+  ds->fXXX =                                                                                                    drvs.df0030*by256*bygrada3
+           + 3.0*drvs.df0021*by256*bygrada3                                   - 3.0*drvs.df0020*by256*bygrada4 - 3.0*drvs.df0011*by256*bygrada4
+         /*+ 3.0*drvs.df0021*by256*bygrada3 + 3.0*drvs.df00101*by128*bygrada3 - 3.0*drvs.df0020*by256*bygrada4 - 3.0*drvs.df0011*by256*bygrada4*/
            + 3.0*drvs.df0010*by256*bygrada5;
          /*+ 3.0*drvs.df0010*by256*bygrada5 - drvs.df00003*by64;*/
   ds->fRRS = 0.0;
@@ -423,7 +399,8 @@ sdftpot2_(SpinPolarizedThirdDrv *ds,
            - drvs.df11001*by8;
   ds->fRSS = drvs.df3000*by4 - drvs.df2100*by4;
   ds->fRYY = drvs.df1020*by16*bygrada2 - drvs.df1011*by8*bygrada2 + drvs.df1002*by16*bygrada2;
-  ds->fRXX = - drvs.df10101*by16*bygrada - drvs.df10011*by16*bygrada + drvs.df1020*by64*bygrada2
+/*ds->fRXX = - drvs.df10101*by16*bygrada - drvs.df10011*by16*bygrada + drvs.df1020*by64*bygrada2*/
+  ds->fRXX =                                                           drvs.df1020*by64*bygrada2
            + drvs.df1011*by32*bygrada2 + drvs.df1002*by64*bygrada2 - drvs.df1010*by64*bygrada3 - drvs.df1001*by64*bygrada3;
          /*+ drvs.df1011*by32*bygrada2 + drvs.df1002*by64*bygrada2 - drvs.df1010*by64*bygrada3 - drvs.df1001*by64*bygrada3 + drvs.df10002*by16;*/
   ds->fSSZ = drvs.df2010*by16*bygrada + drvs.df2001*by16*bygrada - drvs.df1110*by8*bygrada + drvs.df20001*by8
@@ -434,21 +411,26 @@ sdftpot2_(SpinPolarizedThirdDrv *ds,
   ds->fSZZ = 0.0;
   ds->fSYY = drvs.df1001*by16*bygrada3 - drvs.df1010*by16*bygrada3;
   ds->fSXX = 0.0;
-  ds->fZZY = - drvs.df00101*by32*bygrada3 - drvs.df0020*by64*bygrada4 - drvs.df0011*by64*bygrada4
+/*ds->fZZY = - drvs.df00101*by32*bygrada3 - drvs.df0020*by64*bygrada4 - drvs.df0011*by64*bygrada4*/
+  ds->fZZY =                              - drvs.df0020*by64*bygrada4 - drvs.df0011*by64*bygrada4
            + 3.0*drvs.df0010*by128*bygrada5;
 /*ds->fZZX = - drvs.df00102*by64*bygrada + drvs.df00201*by128*bygrada2 + drvs.df00111*by128*bygrada2*/
-  ds->fZZX =                              drvs.df00201*by128*bygrada2 + drvs.df00111*by128*bygrada2
-           + drvs.df0030*by256*bygrada3 + 3.0*drvs.df0021*by256*bygrada3 - drvs.df00101*by128*bygrada3 - 3.0*drvs.df0020*by256*bygrada4
+  ds->fZZX =                              0.0
+           + drvs.df0030*by256*bygrada3 + 3.0*drvs.df0021*by256*bygrada3                               - 3.0*drvs.df0020*by256*bygrada4
+         /*+ drvs.df0030*by256*bygrada3 + 3.0*drvs.df0021*by256*bygrada3 - drvs.df00101*by128*bygrada3 - 3.0*drvs.df0020*by256*bygrada4*/
            - 3.0*drvs.df0011*by256*bygrada4 + 3.0*drvs.df0010*by256*bygrada5;
          /*- 3.0*drvs.df0011*by256*bygrada4 + 3.0*drvs.df0010*by256*bygrada5 - drvs.df00003*by64;*/
-  ds->fZYY = drvs.df00201*by32*bygrada2 - drvs.df00111*by32*bygrada2 + drvs.df0030*by64*bygrada3 - drvs.df0021*by64*bygrada3
+/*ds->fZYY = drvs.df00201*by32*bygrada2 - drvs.df00111*by32*bygrada2 + drvs.df0030*by64*bygrada3 - drvs.df0021*by64*bygrada3*/
+  ds->fZYY =                                                           drvs.df0030*by64*bygrada3 - drvs.df0021*by64*bygrada3
            + 3.0*drvs.df0010*by64*bygrada5;
 /*ds->fZXX = - drvs.df00102*by64*bygrada - drvs.df00201*by128*bygrada2 - drvs.df00111*by128*bygrada2*/
-  ds->fZXX =                            - drvs.df00201*by128*bygrada2 - drvs.df00111*by128*bygrada2
-           + drvs.df0030*by256*bygrada3 + 3.0*drvs.df0021*by256*bygrada3 + drvs.df00101*by128*bygrada3 - 3.0*drvs.df0020*by256*bygrada4
+  ds->fZXX =                               0.0
+           + drvs.df0030*by256*bygrada3 + 3.0*drvs.df0021*by256*bygrada3                               - 3.0*drvs.df0020*by256*bygrada4
+         /*+ drvs.df0030*by256*bygrada3 + 3.0*drvs.df0021*by256*bygrada3 + drvs.df00101*by128*bygrada3 - 3.0*drvs.df0020*by256*bygrada4*/
            - 3.0*drvs.df0011*by256*bygrada4 + 3.0*drvs.df0010*by256*bygrada5;
          /*- 3.0*drvs.df0011*by256*bygrada4 + 3.0*drvs.df0010*by256*bygrada5 + drvs.df00003*by64;*/
-  ds->fYYX = - drvs.df00201*by32*bygrada2 + drvs.df00111*by32*bygrada2 + drvs.df0030*by64*bygrada3
+/*ds->fYYX = - drvs.df00201*by32*bygrada2 + drvs.df00111*by32*bygrada2 + drvs.df0030*by64*bygrada3*/
+  ds->fYYX =                                                             drvs.df0030*by64*bygrada3
            - drvs.df0021*by64*bygrada3 - drvs.df0020*by32*bygrada4 + drvs.df0011*by32*bygrada4;
   ds->fYXX = 0.0;
   ds->fRSZ = 0.0;
@@ -459,13 +441,15 @@ sdftpot2_(SpinPolarizedThirdDrv *ds,
            - drvs.df1001*by64*bygrada3;
          /*- drvs.df1001*by64*bygrada3 - drvs.df10002*by16;*/
   ds->fRYX = 0.0;
-  ds->fSZY = drvs.df10101*by16*bygrada - drvs.df10011*by16*bygrada + drvs.df1020*by32*bygrada2 - drvs.df1002*by32*bygrada2;
+/*ds->fSZY = drvs.df10101*by16*bygrada - drvs.df10011*by16*bygrada + drvs.df1020*by32*bygrada2 - drvs.df1002*by32*bygrada2;*/
+  ds->fSZY =                                                         drvs.df1020*by32*bygrada2 - drvs.df1002*by32*bygrada2;
   ds->fSZX = 0.0;
-  ds->fSYX = - drvs.df10101*by16*bygrada + drvs.df10011*by16*bygrada + drvs.df1020*by32*bygrada2
+/*ds->fSYX = - drvs.df10101*by16*bygrada + drvs.df10011*by16*bygrada + drvs.df1020*by32*bygrada2*/
+  ds->fSYX =                                                           drvs.df1020*by32*bygrada2
            - drvs.df1002*by32*bygrada2 - drvs.df1010*by32*bygrada3 + drvs.df1001*by32*bygrada3;
-  ds->fZYX = drvs.df00101*by64*bygrada3 - drvs.df0020*by128*bygrada4 - drvs.df0011*by128*bygrada4 + 3.0*drvs.df0010*by128*bygrada5;
+  ds->fZYX =                            - drvs.df0020*by128*bygrada4 - drvs.df0011*by128*bygrada4 + 3.0*drvs.df0010*by128*bygrada5;
+/*ds->fZYX = drvs.df00101*by64*bygrada3 - drvs.df0020*by128*bygrada4 - drvs.df0011*by128*bygrada4 + 3.0*drvs.df0010*by128*bygrada5;*/
 }
-#endif /* (radovan_will_merge_me_later) */
 
 extern void quit_(const char* str, int len);
 void

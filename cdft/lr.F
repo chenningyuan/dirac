@@ -166,8 +166,7 @@ C=======================================================================
      &                                    IXYZ,
      &                                    FO_SPIN_DENSITY(IXYZ),
      &                                    FO_SPIN_DENSITY_DERVS(1,IXYZ),
-     &                                    DENSITY_GRADIENT,
-     &                                    DENSITY_GRADIENT_NORM)
+     &                                    DENSITY_GRADIENT)
               ENDDO
             ENDIF
           ENDIF
@@ -230,10 +229,9 @@ C     /* SDFT_LR_GGA_COLLINEAR */
      &                                 GAO,
      &                                 GAO1,
      &                                 IXYZ,
-     &                                 FO_SPIN_DENSITY,
-     &                                 FO_SPIN_DENSITY_DERVS,
-     &                                 DENSITY_GRADIENT,
-     &                                 DENSITY_GRADIENT_NORM)
+     &                                 S_B,
+     &                                 GS_B,
+     &                                 GR)
 C=======================================================================
 C                                                           radovan bast
 C                                              last revision: march 2007
@@ -259,22 +257,20 @@ C=======================================================================
      &          EXCMAT(*),
      &          GAO(*),
      &          GAO1(*),
-     &          FO_SPIN_DENSITY_DERVS(3),
-     &          DENSITY_GRADIENT(3),
+     &          GS_B(3),
+     &          GR(3),
      &          VXC_V(3)
 
-      GNGS = DDOT(3,DENSITY_GRADIENT,1,FO_SPIN_DENSITY_DERVS,1)
+      Y_B = DDOT(3,GR,1,GS_B,1)
 
-      VXC_S = VXC(fSS)*FO_SPIN_DENSITY
-     &      + VXC(fSY)*GNGS
+      VXC_S = VXC(fSS)*S_B
+     &      + VXC(fSY)*Y_B
 
       DO JXYZ = 1,3
-        FACTOR = DENSITY_GRADIENT(JXYZ)*GNGS
-
-        VXC_V(JXYZ) = D2*VXC(fX) *FO_SPIN_DENSITY_DERVS(JXYZ)
-     &              +    VXC(fYY)*FACTOR
-     &              + D2*VXC(fZY)*FACTOR
-     &              +    VXC(fSY)*FO_SPIN_DENSITY*DENSITY_GRADIENT(JXYZ)
+        VXC_V(JXYZ) =    S_B*VXC(fSY)*GR(JXYZ)
+     &              +    Y_B*VXC(fYY)*GR(JXYZ)
+     &              + D2*Y_B*VXC(fZY)*GR(JXYZ)
+     &              + D2    *VXC(fX) *GS_B(JXYZ)
       ENDDO
 
       CALL DSCAL(3,D2,VXC_V,1) !because of symmetrization later in the code

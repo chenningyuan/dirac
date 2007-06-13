@@ -109,18 +109,18 @@ C=======================================================================
 
       CALL SDFTPOT2(VXC,WEIGHT,DENSITY,D0)
 
-      VXC(FZ0) = VXC(FZ0)/D2
-      VXC(FRZ) = VXC(FRZ)/D2
+      VXC(fSS)  = VXC(fSS)/D2
+      VXC(fRSS) = VXC(fRSS)/D2
 
       DO IBC = 1,3
         DO IXYZ = 1,3
-          VXC_V(IXYZ,IBC) = D2*VXC(FZ0)*FO_SPIN_DENSITY(IXYZ,IBC)
+          VXC_V(IXYZ,IBC) = D2*VXC(fSS)*FO_SPIN_DENSITY(IXYZ,IBC)
         ENDDO
       ENDDO
 
       DO IXYZ = 1,3
-        ADDME = VXC(FRZ)*FO_DENSITY(1)*FO_SPIN_DENSITY(IXYZ,2)
-     &        + VXC(FRZ)*FO_DENSITY(2)*FO_SPIN_DENSITY(IXYZ,1)
+        ADDME = VXC(fRSS)*FO_DENSITY(1)*FO_SPIN_DENSITY(IXYZ,2)
+     &        + VXC(fRSS)*FO_DENSITY(2)*FO_SPIN_DENSITY(IXYZ,1)
 
         VXC_V(IXYZ,3) = VXC_V(IXYZ,3) + D4*ADDME
       ENDDO
