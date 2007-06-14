@@ -25,8 +25,8 @@ C
 C
       SAVE SET
       DATA TABLE /'.INPQD ','.INPCAP','.PRINT ','.OVLCAP',
-     &            '.NOOVLP','.NONREL','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.NOOVLP','.NONREL','.NOREAL','.NOIMAG',
+     &            '.IMASRE','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
@@ -48,10 +48,12 @@ C
 C        *** Initialize ****
 C
       CAPOVLP = .FALSE.
-      NOOVLP = .FALSE.
+      NOOVLP  = .FALSE.
       DONRCAP = .FALSE.
-CMI   DONRCAP = .TRUE.
       IF (LEVYLE) DONRCAP = .TRUE.
+      NOCAPRE = .FALSE.
+      NOCAPIM = .FALSE.
+      CAPIMRE = .FALSE.
 C
 C
 C     Process input for CAPINP
@@ -72,7 +74,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GOTO ( 1, 2, 3, 4,
-     &                      5, 6, 7, 8) , I
+     &                      5, 6, 7, 8, 9, 10, 11) , I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -120,9 +122,22 @@ C&&& Set the NONRELATIVISTIC version of the CAP operator
                  DONRCAP = .TRUE.
                  GO TO 100
  7               CONTINUE
-C&&& XXXXXX
+C&&& Do not use real part of CAP in FSCC
+                 NOCAPRE = .TRUE.
                  GO TO 100
  8               CONTINUE
+C&&& Do not use imaginary part of the CAP operator in FSCC
+                 NOCAPIM = .TRUE.
+                 GO TO 100
+ 9               CONTINUE
+C&&& Use imaginary part of CAP as REAL (in FSCC part)
+                 CAPIMRE = .TRUE.
+                 GO TO 100
+ 10              CONTINUE
+C&&& XXXXXX
+                 GO TO 100
+ 11              CONTINUE
+C&&& XXXXXX
                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -156,6 +171,29 @@ C
         ELSE
          WRITE(LUPRI,'(2X,A)')
      &  '* Using four-component relativistic form of the CAP operator.'
+        ENDIF
+
+        IF (NOCAPRE) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &   '* NOT using REAL part of the CAP in the correlation step.' 
+        ENDIF
+
+        IF (NOCAPIM) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &   '* NOT using IMAGINARY part of the CAP'//
+     &   ' in the correlation step.' 
+        ENDIF
+
+        IF (CAPIMRE.AND..NOT.NOCAPIM) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &   '* Using IMAGINARY part of the CAP'//
+     &   ' as REAL in the correlation step.' 
+        ENDIF
+
+        IF (CAPIMRE.AND..NOT.NOCAPIM.AND..NOT.NOCAPRE) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &   '* Using IMAGINARY part of the CAP as REAL together with'//
+     &   ' the ordinary REAL part in the correlation step.' 
         ENDIF
 
         WRITE(LUPRI,'(2X,A,D25.10)')
@@ -861,11 +899,11 @@ C
 
        IF (IPRCAP.GE.5) THEN
         WRITE(LUPRI,'(/3X,A,I2/)')
-     &   '*** Pure Core Fock matrix (DIRAC format) ***'
+     &   '*** Core Fock matrix (in DIRAC format) ***'
         CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,NZ,
      &                      IPQTOQ(1,0),LUPRI)
         WRITE(LUPRI,'(/3X,A,I2/)')
-     &   '*** Pure Core Fock matrix (MOLFDIR format) ***'
+     &   '*** Core Fock matrix (in MOLFDIR format) ***'
         CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZ,2),
      &               IPQTOQ(1,0),LUPRI)
        ENDIF
@@ -874,21 +912,28 @@ C         ... allocate space for CAP_IM
        CALL MEMGET('REAL',KCAPI, NORBT*NORBT*NZ,WORK,KFREE,LFREE)
        CALL MEMGET('REAL',KCAPI1,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
 
-C      .... get CAP  operator - real part (nonrel/rel) in the MO basis
-        CALL GETCAPMO(.FALSE.,WORK(KCAPI),WORK(KCAPI1),WORK,KFREE,LFREE)
 C       ... allocate space for MOLFDIR like CAP
         CALL MEMGET('REAL',KCAPIM,NSTRT*NSTRT*8,WORK,KFREE,LFREE)
+
+       IF (.NOT.NOCAPRE) THEN
+C      .... get CAP  operator - real part (nonrel/rel) in the MO basis
+        CALL GETCAPMO(.FALSE.,WORK(KCAPI),WORK(KCAPI1),WORK,KFREE,LFREE)
 C       ... turn it in the MOLFDIR like form
         CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,.TRUE.)
 C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM (if .true.)
         CALL ADDCAPMOM(NSTRT,WORK(KCAPIM),FMOM,.FALSE.)
+       ENDIF
 
-C      .... get CAP nonre/rl (as a "real" operator) in the MO basis
+       IF (.NOT.NOCAPIM) THEN
+C      .... get CAP nonre/rel (as a "real" operator) - IMAGINARY part - in the MO basis
         CALL GETCAPMO(.TRUE.,WORK(KCAPI),WORK(KCAPI1),WORK,KFREE,LFREE)
 C       ... turn it in the MOLFDIR like form
-        CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,.TRUE.)
+CC      CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,.TRUE.)
+        CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,.NOT.CAPIMRE)
 C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM (if .true.)
         CALL ADDCAPMOM(NSTRT,WORK(KCAPIM),FMOM,.TRUE.)
+       ENDIF
+
 
 C       ... release all the memory
         CALL MEMREL('CAPMFDADAPT',WORK,KWORK,KWORK,KFREE,LFREE)
