@@ -8,9 +8,8 @@
 .TITLE
 Water molecule. Restricted kinetic balance. Energies, dipole moment.
 .WAVE F
-**GENERAL
-.TWOCOMP
 **HAMILTONIAN
+.NONREL
 .DFT
  LDA
 **INTEGRALS

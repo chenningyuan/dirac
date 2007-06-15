@@ -5,7 +5,6 @@ H2O2 molecule, integral calculations with ERI in pure one-component mode
 **HAMILTONIAN
 .LEVY-LEBLOND
 **GENERAL
-#.TWOCOMP
 ! using disk-based algorithm 
 .DIRECT
  0 0 0

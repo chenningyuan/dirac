@@ -3,9 +3,8 @@
 Water molecule. tests for frozen density embedding
 .WAVE F
 .PROPERTIES
-**GENERAL
-.TWOCOMP
 **HAMILTONIAN
+.NONREL
 .DFT
  LDA
 **INTEGRALS

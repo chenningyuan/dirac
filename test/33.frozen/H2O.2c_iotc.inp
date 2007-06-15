@@ -6,11 +6,7 @@ Water molecule.
 #.ANALYZE
 *OPTIMI
 .NUMGRA
-**GENERAL
-# ...run the IOTC in the PURE two-component mode
-.2C_REL
 **HAMILTONIAN
-#.LVCORR
 # Trond's one-step two-component relativistic approach
 .IOTC
 .PRINT

@@ -3,8 +3,6 @@
 Oxygen atom
 .WAVE F
 .ANALYZE
-**GENERAL
-.2C_REL
 **HAMILTONIAN
 #.LVCORR
 .IOTC
