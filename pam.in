@@ -69,7 +69,8 @@ usage ()
    echo '     -outcmo                : Save DFCOEF to   job directory from work area (for restart)'
    echo '     -infck                 : Copy DFFCK2 from job directory to   work area'
    echo '     -outfck                : Save DFFCK2 to   job directory from work area'
-   echo '     -noarch                : Do not create a .tgz archive of the calculation'
+#   echo '     -noarch                : Do not create a .tgz archive of the calculation'
+   echo '     -arch                  : Do create a .tgz archive of the calculation'
    echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default dirac.x'
    echo '     -run name              : File suffix for output; default "'$RUN'"'
    echo '     -nice                  : execute Dirac with nice/npri'
@@ -680,7 +681,8 @@ initialize()
 
 # Files to include in the .tgz archive file.
    ARCHIVE_FILES="MOLECULE.INP DIRAC.INP DFCOEF *.cube"
-   DO_ARCHIVE=yes
+#  DO_ARCHIVE=yes
+   DO_ARCHIVE=
 
 }
 #
@@ -733,8 +735,9 @@ while [ -n "$1" ]; do
       -outcmo|-utcmo)
          GET_FILES="$GET_FILES DFCOEF"
          ;;
-      -noarch)
-         DO_ARCHIVE=
+#     -noarch)
+      -arch)
+         DO_ARCHIVE=yes
          ;;
       -mw|-memory)
          shift
