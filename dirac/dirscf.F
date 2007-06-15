@@ -436,8 +436,8 @@ C
      +      ACCESS='DIRECT',RECL=8*N2EVECTQ,STATUS='UNKNOWN')
         CALL OPNFIL(LUFCK2,'DFFCK2','UNKNOWN','PREDHF')
         CALL OPNFIL(LUDENS,'DFDENS','UNKNOWN','PREDHF')
-        CALL OPNFIL(LUCMOS,'DFCMOS','UNKNOWN','PREDHF')
       ENDIF
+      CALL OPNFIL(LUCMOS,'DFCMOS','UNKNOWN','PREDHF')
       OPEN (LUFOCK, FILE='DFFOCK', FORM='UNFORMATTED',
      +      ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='UNKNOWN')
       CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PREDHF')
@@ -3547,7 +3547,7 @@ C
 C     Check for special cases :
 C     - Spinfree or Levy-Leblond; diagonalize boson irreps (subblocks)
 C     - Linear symmetry; diagonalize Omega irreps (subblocks)
-C     - ZORA; first diagonalize SS-block, than form and diagonalize
+C     - ZORA; first diagonalize SS-block, then form and diagonalize
 C       modified large component block
 C
       SPECIAL = (ZORA.OR.SUB_BL)
