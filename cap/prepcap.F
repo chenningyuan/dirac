@@ -26,7 +26,7 @@ C
       SAVE SET
       DATA TABLE /'.INPQD ','.INPCAP','.PRINT ','.OVLCAP',
      &            '.NOOVLP','.NONREL','.NOREAL','.NOIMAG',
-     &            '.IMASRE','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.IMASRE','.DIPVEL','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
@@ -54,6 +54,7 @@ C
       NOCAPRE = .FALSE.
       NOCAPIM = .FALSE.
       CAPIMRE = .FALSE.
+      CAPDIPVEL = .FALSE.    
 C
 C
 C     Process input for CAPINP
@@ -134,9 +135,19 @@ C&&& Use imaginary part of CAP as REAL (in FSCC part)
                  CAPIMRE = .TRUE.
                  GO TO 100
  10              CONTINUE
-C&&& XXXXXX
+C&&& Do the comparison between CAP and DIRAC dipole velocity integrals
+                 CAPDIPVEL = .TRUE.
                  GO TO 100
  11              CONTINUE
+C&&& XXXXXX
+                 GO TO 100
+ 12              CONTINUE
+C&&& XXXXXX
+                 GO TO 100
+ 13              CONTINUE
+C&&& XXXXXX
+                 GO TO 100
+ 14              CONTINUE
 C&&& XXXXXX
                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -171,6 +182,19 @@ C
         ELSE
          WRITE(LUPRI,'(2X,A)')
      &  '* Using four-component relativistic form of the CAP operator.'
+        ENDIF
+
+        IF (DONRCAP.AND.CAPDIPVEL) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &  '* Can not compare CAP/DIRAC dipole velocity integrals in'//
+     &  ' the nonrelativistic mode.'
+          CAPDIPVEL = .FALSE.
+        ENDIF
+
+        IF (CAPDIPVEL) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &  '* Comparison between CAP/DIRAC dipole velocity integrals in'//
+     &  ' the relativistic mode (then calculation).'
         ENDIF
 
         IF (NOCAPRE) THEN
@@ -397,6 +421,7 @@ C        ... non-relativistic CAP integrals
      &          ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
        ELSE
+        IF (.NOT.CAPDIPVEL) THEN
 C        ...  relativistic CAP integrals
           CALL CAPREAD('XCAPD1R ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
@@ -416,13 +441,25 @@ C        ...  relativistic CAP integrals
           CALL CAPREAD('ZCAPD1I ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
-         ENDIF
+        ELSE
+C        ... CAP relativistic dipole velocity integrals
+          CALL CAPREAD('XCAPDVE ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
+
+          CALL CAPREAD('XCAPDVE ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
+
+          CALL CAPREAD('YCAPDVE ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
+
+        ENDIF
+
+       ENDIF
 
       ELSE
 C      ... overlap integrals
           CALL CAPREAD('CAP_OVLP',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &                 ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
-
       ENDIF
 
 C     ... release all the memory
@@ -973,12 +1010,17 @@ C
 C             CAP_RE  - real and imaginary integrals for non-relativistic calculations
 C             CAP_IM
 C
-C             CAPD1XR - real and imaginary integrals for relativistic calculations
-C             CAPD1XI
-C             CAPD1YR
-C             CAPD1YI
-C             CAPD1ZR
-C             CAPD1ZI
+C             XCAPD1R - real and imaginary integrals for relativistic calculations
+C             XCAPD1I
+C             YCAPD1R
+C             YCAPD1I
+C             ZCAPD1R
+C             ZCAPD1I
+C
+C           ... dipole velocity integrals calculated by CAP
+C             XCAPDVE
+C             YCAPDVE
+C             ZCAPDVE
 C
 C  Called from prepcap.F/CAPREAD
 C
@@ -999,7 +1041,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "maxaqn.h"
 #include "symmet.h"
       DIMENSION CAPINTS(NNBBASX),WORK(LWORK)
-      LOGICAL ISFILE, DOXPRIND1,DOXPRIND2
+      LOGICAL ISFILE, DOXPRIND1,DOXPRIND2, DOXPRIND3
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
       CHARACTER PNAME*16, PLABEL(3)*8
       CHARACTER*8 LBL
@@ -1046,11 +1088,14 @@ C
 
         RTNLBL(2)(1:2) = 'AN'
         COMB = 'FTTF'
-             IF (LBL.EQ.'XCAPD1R'.OR. LBL.EQ.'XCAPD1I') THEN
+             IF (LBL.EQ.'XCAPD1R'.OR. LBL.EQ.'XCAPD1I'.OR.
+     &           LBL.EQ.'XCAPDVE') THEN
           INTREP = ISYMAX(1,1) + 1
-        ELSE IF (LBL.EQ.'YCAPD1R'.OR. LBL.EQ.'YCAPD1I') THEN
+        ELSE IF (LBL.EQ.'YCAPD1R'.OR. LBL.EQ.'YCAPD1I'.OR.
+     &           LBL.EQ.'YCAPDVE') THEN
           INTREP = ISYMAX(2,1) + 1
-        ELSE IF (LBL.EQ.'ZCAPD1R'.OR. LBL.EQ.'ZCAPD1I') THEN
+        ELSE IF (LBL.EQ.'ZCAPD1R'.OR. LBL.EQ.'ZCAPD1I'.OR.
+     &            LBL.EQ.'ZCAPDVE') THEN
           INTREP = ISYMAX(3,1) + 1
         ELSE
           WRITE(LUPRI,*) 'unidentified SAVECAP label, LBL=',LBL
@@ -1064,6 +1109,8 @@ C
       WRITE(RTNLBL(2)(3:4),'(I2)') INTREP
 
       RTNLBL(2)(5:8) = COMB
+
+C     ... write integrals of each individual label
       CALL WRTPRO(CAPINTS,NNBBASX,LABEL,RTNLBL,IPRCAP)
 
 C     ... control printout ...
@@ -1150,6 +1197,29 @@ C     ... last 2 XPRIND
 
       ENDIF
 
+      IF (LBL.EQ.'ZCAPDVE') THEN
+
+      PNAME    = 'CAP_dip_ve'
+      IPTYP    = 8
+      NPCOMP   = 3
+      PFAC(1)  = -CVAL
+      PFAC(2)  = -CVAL
+      PFAC(3)  = -CVAL
+      PLABEL(1) = 'XCAPDVE'
+      PLABEL(2) = 'YCAPDVE'
+      PLABEL(3) = 'ZCAPDVE'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRCAP)
+      IPCAP_DV = INDXPR
+
+      IF (IPRCAP.GE.2) THEN
+        WRITE(LUPRI,'(2X,A,I3)')
+     &  '* CAP_dip_ve operator added to the list, index=',IPCAP_DV
+        CALL WRIXPR(1,IPCAP_DR)
+      ENDIF
+
+      ENDIF
+
       CALL QEXIT('SAVECAP')
       RETURN
       END
@@ -1164,7 +1234,7 @@ C   read integrals from the PEMAT file under LBL label into the CAP array
 C
 C   do the symmetry adaptation into the CAPSA array
 C   
-C   make triangular matrix of it and save it to the AOPROPER file   
+C   make triangular matrix of it and SAVE it to the AOPROPER file   
 C   
 C   Called from prepcap.F/CAPADAPT
 C
@@ -1265,16 +1335,21 @@ C   ...internal DIRAC symmetry adaptation into CAPSA
 C       IREPD = IRQMAT(1,IREP)
 C       IREPD = IRQMAT(JM4POS(1),IREP)
         IREPD = 0
-      ELSE IF (LBL.EQ.'XCAPD1R '.OR.LBL.EQ.'XCAPD1I ') THEN
+C     ELSE IF (LBL.EQ.'XCAPD1R '.OR.LBL.EQ.'XCAPD1I ') THEN
+      ELSE IF (LBL.EQ.'XCAPD1R '.OR.LBL.EQ.'XCAPD1I '.OR.
+     &         LBL.EQ.'XCAPDVE ') THEN
         IREPD = ISYMAX(1,2)
 C       IREPD = IRQMAT(JM4POS(4),IREP) 
 C       IREPD = ISYMAX(1,2)
 C       IREPD = 6
-      ELSE IF (LBL.EQ.'YCAPD1R '.OR.LBL.EQ.'YCAPD1I ') THEN
+      ELSE IF (LBL.EQ.'YCAPD1R '.OR.LBL.EQ.'YCAPD1I '.OR.
+     &         LBL.EQ.'YCAPDVE ') THEN
         IREPD = ISYMAX(2,2)
 C       IREPD = IRQMAT(JM4POS(3),IREP)
 C       IREPD = 5
-      ELSE IF (LBL.EQ.'ZCAPD1R '.OR.LBL.EQ.'ZCAPD1I ') THEN
+C     ELSE IF (LBL.EQ.'ZCAPD1R '.OR.LBL.EQ.'ZCAPD1I ') THEN
+      ELSE IF (LBL.EQ.'ZCAPD1R '.OR.LBL.EQ.'ZCAPD1I '.OR.
+     &         LBL.EQ.'ZCAPDVE ') THEN
         IREPD = ISYMAX(3,2)
 C       IREPD = IRQMAT(JM4POS(2),IREP)
 C       IREPD = 3
@@ -1286,7 +1361,6 @@ C       IREPD = 3
       CALL DZERO(CAPSA,N2BBASX)
 
       CALL MTAOSO(CAP,CAPSA,NBASIS,IREPD,IPRCAP)
-C     CALL DTAOSO(CAP,CAPSA,NBASIS,IREPD,IPRCAP)
 
 C   ... make triangular matrix of CAPSA into CAPSAT
       CALL DAMATR(NBASIS,CAPSA,NBASIS,CAPSAT)

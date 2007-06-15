@@ -12,6 +12,9 @@
 !
 ! CAPIMRE - in the moltra step add imaginary part of the CAP operator as REAL
 !
+! CAPDIPVEL - flag for comparison between CAP and DIRAC dipole velocity (DIPVEL) integrals
+!            (only if DONRCAP=.false.)
+!
 ! IPRCAP     - Print level in CAP related routines
 !
 ! IPCAPR     - Pointer to real part of the non-relativistic CAP operator
@@ -20,21 +23,23 @@
 ! IPCAP_DR   - Pointer to real part of the relativistic CAP operator
 ! IPCAP_DI   - Pointer to imaginary part of the relativistic CAP operator
 !
-! IPCAP_S    - Pointer for overlap integrals from CAP (to be compared with DIRAC)
+! IPCAP_DV   - Pointer to CAP dipole velocity integrals (to be compared with DIRAC)
 !
+! IPCAP_S    - Pointer for overlap integrals from CAP (to be compared with DIRAC)
 !
 ! LUPEMAT    - lu number of the 'PEMAT' file with all CAP integrals
 !
 !-----------------------------------------------------------------------------
 
-! ... flag for comparison between DIRAC-CAP overlap integrals
-      LOGICAL CAPOVLP, NOOVLP, DONRCAP, NOCAPRE, NOCAPIM, CAPIMRE
-      COMMON / DCCAPOVL / CAPOVLP, NOOVLP, DONRCAP,                     &
-     &        NOCAPRE, NOCAPIM, CAPIMRE
+      LOGICAL CAPOVLP, NOOVLP, DONRCAP, NOCAPRE,                        &
+     &        NOCAPIM, CAPIMRE, CAPDIPVEL
 
-      INTEGER  IPRCAP, IPCAPR, IPCAPI,                                  &
+      COMMON / DCCAPOVL / CAPOVLP, NOOVLP, DONRCAP,                     &
+     &        NOCAPRE, NOCAPIM, CAPIMRE, CAPDIPVEL
+
+      INTEGER  IPRCAP, IPCAPR, IPCAPI, IPCAP_DV,                        &
      &         IPCAP_DR, IPCAP_DI, IPCAP_S, LUPEMAT
 
-      COMMON / DCCAPI / IPRCAP, IPCAPR, IPCAPI,                         &
+      COMMON / DCCAPI / IPRCAP, IPCAPR, IPCAPI, IPCAP_DV,               &
      &         IPCAP_DR, IPCAP_DI, IPCAP_S, LUPEMAT
  

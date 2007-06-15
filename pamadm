@@ -739,7 +739,7 @@ cat <<EOF>> Makefile
 
 OOF_OBJS = \\
   oof/mem_mod.o oof/qmtx_mod.o oof/tests.o oof/string_mod.o oof/vect_mod.o \\
-  oof/tools77.o
+  oof/tools77.o oof/oper_mod.o
 EOF
 fi
 #
