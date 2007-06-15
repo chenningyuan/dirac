@@ -56,7 +56,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
-#include "dcbham.h"
 #include "dgroup.h"
 #include "cbirea.h"
       DIMENSION WORK(*)
@@ -116,10 +115,6 @@ C
 CMI   ... instead of calling OP1INI in HAMINP, call it after
       CALL OP1INI(WORK,LWORK)
 
-#ifdef MOD_CAP
-CMI     ... call CAP integrals generation here
-!      IF (CAP) CALL CAP_STUFF(WORK,LWORK)
-#endif
 C
 C     Give estimate of memory needed for two-electron integrals
 C
