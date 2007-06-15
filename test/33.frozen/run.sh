@@ -8,9 +8,9 @@ MOL=O;
 MENU=O;
 export MOL;
 export MENU;
-../run.sh -utcmo
+../run.sh -outcmo
 mv DFCOEF cf.O
-ln -s cf.O DFPROJ
+ln -sf cf.O DFPROJ
 #
 # Run calculation for water
 #
@@ -33,7 +33,7 @@ export MOL;
 export MENU;
 ../run.sh -utcmo
 mv DFCOEF cf.O
-ln -s cf.O DFPROJ
+ln -sf cf.O DFPROJ
 #
 # Run calculation for water
 #
