@@ -41,17 +41,17 @@ C     /* SDFT_LR */
      &                   IHRMOP,
      &                   GAO,
      &                   GAO1,
-     &                   DENSITY,
-     &                   DENSITY_GRADIENT_NORM,
-     &                   DENSITY_GRADIENT,
-     &                   WEIGHT,
+     &                   R,
+     &                   GR_NORM,
+     &                   GR,
+     &                   W,
      &                   IS_GGA,
      &                   BUF)
 C=======================================================================
-C     contribution of spin density to the sigma vector
+C     describe me ...
 C-----------------------------------------------------------------------
 C                                                           radovan bast
-C                                              last revision: march 2007
+C                                               last revision: june 2007
 C=======================================================================
 
 #include "implicit.h"
@@ -78,10 +78,10 @@ C=======================================================================
      &          IHRMOP(*),
      &          GAO(*),
      &          GAO1(*),
-     &          DENSITY_GRADIENT(3),
+     &          GR(3),
      &          BUF(*),
-     &          FO_SPIN_DENSITY(3),
-     &          FO_SPIN_DENSITY_DERVS(3,3),
+     &          S_B(3),
+     &          GS_B(3,3),
      &          VXC(99) !dirty fix
 
       ISTART = 1
@@ -93,7 +93,7 @@ C=======================================================================
           JOFF = NBAST*NBAST*NZ*(IMAT-1)
 
           CALL GET_M(.TRUE.,
-     &               FO_SPIN_DENSITY,
+     &               S_B,
      &               ISYMOP(IMAT)-1,
      &               GAO,
      &               UNUSED,
@@ -102,7 +102,7 @@ C=======================================================================
 
           IF(IS_GGA) THEN
             CALL GET_M_DERVS(.TRUE.,
-     &                       FO_SPIN_DENSITY_DERVS,
+     &                       GS_B,
      &                       ISYMOP(IMAT)-1,
      &                       GAO,
      &                       GAO1,
@@ -110,65 +110,43 @@ C=======================================================================
      &                       BUF)
           ENDIF
 
-          FO_SPIN_DENSITY_NORM = DSQRT(DDOT(3,FO_SPIN_DENSITY,1,
-     &                                        FO_SPIN_DENSITY,1))
+          TEST_ME_FIRST = DSQRT(DDOT(3,S_B,1,S_B,1))
 
-          IF(.NOT. IS_GGA) THEN !LDA
+          IF(IS_GGA) THEN
+            TEST_ME_FIRST = MAX(
+     &                          TEST_ME_FIRST,
+     &                          DABS(GS_B(1,1)),
+     &                          DABS(GS_B(1,2)),
+     &                          DABS(GS_B(1,3)),
+     &                          DABS(GS_B(2,1)),
+     &                          DABS(GS_B(2,2)),
+     &                          DABS(GS_B(2,3)),
+     &                          DABS(GS_B(3,1)),
+     &                          DABS(GS_B(3,2)),
+     &                          DABS(GS_B(3,3))
+     &                         )
+          ENDIF
 
-            IF(FO_SPIN_DENSITY_NORM .GT. DFTHRL) THEN
+          IF(TEST_ME_FIRST .GT. DFTHRL) THEN
 
-              CALL SDFTPOT1(VXC,WEIGHT,DENSITY,D0)
-
-!             CALL DSCAL(3,VXC(fSS),FO_SPIN_DENSITY,1) !could also be done this way
-!             CALL GET_M(.FALSE.,
-!    &                   FO_SPIN_DENSITY,
-!    &                   ISYMOP(IMAT)-1,
-!    &                   GAO,
-!    &                   UNUSED,
-!    &                   EXCMAT(1+JOFF),
-!    &                   BUF)
-
-              DO IXYZ = ISTART,3
-                CALL SDFT_LR_LSDA_COLLINEAR(VXC,
-     &                                      EXCMAT(1+JOFF),
-     &                                      ISYMOP(IMAT),
-     &                                      GAO,
-     &                                      IXYZ,
-     &                                      FO_SPIN_DENSITY(IXYZ))
-              ENDDO
+            IF(IS_GGA) THEN
+              CALL SDFTPOT1(VXC,W,R,GR_NORM)
+            ELSE
+              CALL SDFTPOT1(VXC,W,R,D0)
             ENDIF
 
-          ELSE !GGA
-
-            TEST_MAX = MAX(
-     &                          FO_SPIN_DENSITY_NORM,
-     &                     DABS(FO_SPIN_DENSITY_DERVS(1,1)),
-     &                     DABS(FO_SPIN_DENSITY_DERVS(1,2)),
-     &                     DABS(FO_SPIN_DENSITY_DERVS(1,3)),
-     &                     DABS(FO_SPIN_DENSITY_DERVS(2,1)),
-     &                     DABS(FO_SPIN_DENSITY_DERVS(2,2)),
-     &                     DABS(FO_SPIN_DENSITY_DERVS(2,3)),
-     &                     DABS(FO_SPIN_DENSITY_DERVS(3,1)),
-     &                     DABS(FO_SPIN_DENSITY_DERVS(3,2)),
-     &                     DABS(FO_SPIN_DENSITY_DERVS(3,3))
-     &                    )
-
-            IF(TEST_MAX .GT. DFTHRL) THEN
-
-              CALL SDFTPOT1(VXC,WEIGHT,DENSITY,DENSITY_GRADIENT_NORM)
-
-              DO IXYZ = ISTART,3
-               CALL SDFT_LR_GGA_COLLINEAR(VXC,
-     &                                    EXCMAT(1+JOFF),
-     &                                    ISYMOP(IMAT),
-     &                                    GAO,
-     &                                    GAO1,
-     &                                    IXYZ,
-     &                                    FO_SPIN_DENSITY(IXYZ),
-     &                                    FO_SPIN_DENSITY_DERVS(1,IXYZ),
-     &                                    DENSITY_GRADIENT)
-              ENDDO
-            ENDIF
+            DO IXYZ = ISTART,3
+              CALL SDFT_LR_COLLINEAR(VXC,
+     &                               EXCMAT(1+JOFF),
+     &                               ISYMOP(IMAT),
+     &                               GAO,
+     &                               GAO1,
+     &                               IXYZ,
+     &                               S_B(IXYZ),
+     &                               GS_B(1,IXYZ),
+     &                               GR,
+     &                               IS_GGA)
+            ENDDO
           ENDIF
         ENDIF
       ENDDO
@@ -176,16 +154,22 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SDFT_LR_LSDA_COLLINEAR */
-      SUBROUTINE SDFT_LR_LSDA_COLLINEAR(VXC,
-     &                                  EXCMAT,
-     &                                  ISYMOP,
-     &                                  GAO,
-     &                                  IXYZ,
-     &                                  FO_SPIN_DENSITY)
+C     /* SDFT_LR_COLLINEAR */
+      SUBROUTINE SDFT_LR_COLLINEAR(VXC,
+     &                             EXCMAT,
+     &                             ISYMOP,
+     &                             GAO,
+     &                             GAO1,
+     &                             IXYZ,
+     &                             S_B,
+     &                             GS_B,
+     &                             GR,
+     &                             IS_GGA)
 C=======================================================================
+C     describe me ...
+C-----------------------------------------------------------------------
 C                                                           radovan bast
-C                                              last revision: march 2007
+C                                               last revision: june 2007
 C=======================================================================
 
 #include "implicit.h"
@@ -204,55 +188,7 @@ C=======================================================================
 #include "dftcom.h"
 #include "../dft/functionals.h"
 
-      DIMENSION VXC(*),
-     &          EXCMAT(*),
-     &          GAO(*)
-
-      VXC_S = VXC(fSS)*FO_SPIN_DENSITY
-
-      CALL EXC_M(.FALSE.,
-     &           VXC_S,
-     &           UNUSED,
-     &           IXYZ,
-     &           ISYMOP,
-     &           EXCMAT,
-     &           GAO,
-     &           UNUSED)
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SDFT_LR_GGA_COLLINEAR */
-      SUBROUTINE SDFT_LR_GGA_COLLINEAR(VXC,
-     &                                 EXCMAT,
-     &                                 ISYMOP,
-     &                                 GAO,
-     &                                 GAO1,
-     &                                 IXYZ,
-     &                                 S_B,
-     &                                 GS_B,
-     &                                 GR)
-C=======================================================================
-C                                                           radovan bast
-C                                              last revision: march 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "inforb.h"
-#include "cdft.h"
-#include "dftcom.h"
-#include "../dft/functionals.h"
-
+      LOGICAL   IS_GGA
       DIMENSION VXC(*),
      &          EXCMAT(*),
      &          GAO(*),
@@ -261,21 +197,24 @@ C=======================================================================
      &          GR(3),
      &          VXC_V(3)
 
-      Y_B = DDOT(3,GR,1,GS_B,1)
+      VXC_S = D0
+      CALL DZERO(VXC_V,3)
 
-      VXC_S = VXC(fSS)*S_B
-     &      + VXC(fSY)*Y_B
+      IF(IS_GGA) THEN
+        Y_B = DDOT(3,GR,1,GS_B,1)
 
-      DO JXYZ = 1,3
-        VXC_V(JXYZ) =    S_B*VXC(fSY)*GR(JXYZ)
-     &              +    Y_B*VXC(fYY)*GR(JXYZ)
-     &              + D2*Y_B*VXC(fZY)*GR(JXYZ)
-     &              + D2    *VXC(fX) *GS_B(JXYZ)
-      ENDDO
+        DO JXYZ = 1,3
+          VXC_V(JXYZ) = (S_B*VXC(fSY) + Y_B*VXC(fYY))*GR(JXYZ)
+     &                + D2*VXC(fX)*GS_B(JXYZ)
+        ENDDO
+        CALL DSCAL(3,D2,VXC_V,1) !because of symmetrization later in the code
 
-      CALL DSCAL(3,D2,VXC_V,1) !because of symmetrization later in the code
+        VXC_S = VXC(fSY)*Y_B
+      ENDIF
 
-      CALL EXC_M(.TRUE.,
+      VXC_S = VXC_S + VXC(fSS)*S_B
+
+      CALL EXC_M(IS_GGA,
      &           VXC_S,
      &           VXC_V,
      &           IXYZ,

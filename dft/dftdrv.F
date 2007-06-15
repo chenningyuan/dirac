@@ -260,8 +260,9 @@ C    &              KFREE,LFREE)
 !     see DFT RPA notes for more info
 
       IF(DFTISGGA() .AND. .NOT. DF_FITVXC) THEN
-        IF(.NOT. NR_ANTIHERMITIAN .EQ. NXCMAT)
-     &                   CALL SYM_HERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
+                         CALL SYM_HERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
+!       IF(.NOT. NR_ANTIHERMITIAN .EQ. NXCMAT)
+!    &                   CALL SYM_HERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
 #if defined (MOD_CDFT)
         IF(LBIT(LBIT_CDFT,1) .OR. LBIT(LBIT_CDFT,2)) THEN !if spin or current density contribution
           IF(.NOT. NR_HERMITIAN .EQ. NXCMAT)
@@ -1397,7 +1398,7 @@ C=======================================================================
 #include "ibtfun.h"
 
       DO IM = 1,NMAT
-        IF(.NOT. IHRMOP(IM) .EQ. -1) THEN
+!       IF(.NOT. IHRMOP(IM) .EQ. -1) THEN
           IREPOP = ISYMOP(IM) - 1
           DO 110 IREP1 = 0,NBSYM-1
             IREP2 = IBTXOR(IREP1,IREPOP)
@@ -1438,7 +1439,7 @@ C=======================================================================
   130         CONTINUE
             ENDIF
   110     CONTINUE
-        ENDIF
+!       ENDIF
       ENDDO
 
       RETURN

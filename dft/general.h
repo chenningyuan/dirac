@@ -186,70 +186,25 @@ void dftpot2_(ThirdDrv *ds,
 #endif /* (radovan_will_merge_me_later) */
 
 struct SpinPolarizedSecondDrv_ {
-       real fS;   /* zero at closed-shell */
-       real fY;   /* zero at closed-shell */
-       real fX;   
-       real fSS; 
-       real fYY; 
-       real fXX; 
-       real fRS;  /* zero at closed-shell */
-       real fRY;  /* zero at closed-shell */
-       real fRX; 
-       real fSZ;  /* zero at closed-shell */
-       real fSY; 
-       real fSX;  /* zero at closed-shell */
-       real fZY;
+       real fX;
+       real fSS;
+       real fYY;
+       real fXX;
+       real fRX;
+       real fSY;
        real fZX;
-       real fYX;  /* zero at closed-shell */
+       real fRSS;
 };
 
 struct SpinPolarizedThirdDrv_ {
-       real fS;   /* zero at closed-shell */
-       real fY;   /* zero at closed-shell */
-       real fX;   
-       real fSS; 
-       real fYY; 
-       real fXX; 
-       real fRS;  /* zero at closed-shell */
-       real fRY;  /* zero at closed-shell */
-       real fRX; 
-       real fSZ;  /* zero at closed-shell */
-       real fSY; 
-       real fSX;  /* zero at closed-shell */
-       real fZY;
+       real fX;
+       real fSS;
+       real fYY;
+       real fXX;
+       real fRX;
+       real fSY;
        real fZX;
-       real fYX;  /* zero at closed-shell */
-       real fSSS; /* zero at closed-shell */
-       real fYYY;
-       real fXXX;
-       real fRRS; /* zero at closed-shell */
-       real fRRY; /* zero at closed-shell */
-       real fRRX;
        real fRSS;
-       real fRYY;
-       real fRXX;
-       real fSSZ;
-       real fSSY; /* zero at closed-shell */
-       real fSSX;
-       real fSZZ; /* zero at closed-shell */
-       real fSYY;
-       real fSXX; /* zero at closed-shell */
-       real fZZY;
-       real fZZX;
-       real fZYY;
-       real fZXX;
-       real fYYX;
-       real fYXX; /* zero at closed-shell */
-       real fRSZ; /* zero at closed-shell */
-       real fRSY;
-       real fRSX; /* zero at closed-shell */
-       real fRZY;
-       real fRZX;
-       real fRYX; /* zero at closed-shell */
-       real fSZY;
-       real fSZX; /* zero at closed-shell */
-       real fSYX;
-       real fZYX;
 };
 
 void sdftpot1_(SpinPolarizedSecondDrv *ds, 
