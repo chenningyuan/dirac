@@ -1851,12 +1851,15 @@ C Used from COMMON blocks:
 C   DCBBAS: N2BBASX
 C   PAMIOU: LUTMAT
 #include "dcbgen.h"
+#include "dcbcls.h"
 #include "dcbham.h"
 #include "cbihr1.h"
+#include "cbirea.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+      LOGICAL TWOBUF
       DIMENSION WORK(LWORK)
       CALL QENTER('GMOTRA')
 #include "memint.h"
@@ -1878,8 +1881,12 @@ C
 C     Get Lowdin matrix
 C     =================
 C
+      IF(BSS) THEN
 CMI ... extended array size N2BBASX->N2BBASXQ because it's beeing used later in MAKE_BSS
-      CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      ELSE
+        CALL MEMGET('REAL',KVMAT,N2BBASX,WORK,KFREE,LFREE)
+      ENDIF
       CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
 C
 C     Unrestricted kinetic balance; use Lowdin matrix
@@ -1890,7 +1897,6 @@ C     the large components are also sorted on boson irreps !!!
 C
       CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
-CMI   IF(.NOT.URKBAL.AND.NTBAS(2).EQ.0) THEN
       IF(.NOT.URKBAL.AND.NTBAS(2).EQ.0.AND..NOT.(TWOCOMP.OR.BSS)) THEN
         URKBAL = .TRUE.
         WRITE(LUPRI,'(A)') 
@@ -1900,7 +1906,7 @@ CMI   IF(.NOT.URKBAL.AND.NTBAS(2).EQ.0) THEN
 CMI   ... even if BSS is true, first calling of GMOTRA desactivate the TWOCOMP,
 C     while in the second calling (after BSS and other LL integrals are ready)
 C    it is again set to .true.
-      IF (URKBAL.OR.(TWOCOMP.AND..NOT.TWOCOMPBSS)) THEN
+      IF (URKBAL.OR.(TWOCOMP.AND..NOT.BSS)) THEN
         NZT = 1
         DO IFRP = 1,NFSYM
           NESH(IFRP)  = NFORB(IFRP,1)
@@ -1932,6 +1938,33 @@ C      ... when linear symmetry is on, it is later adapted for linear symmetry..
           write(lupri,*) 'GMOTRA: branch BSS'
           write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
      &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
+        ENDIF
+        IF(TWOCOMPBSS) THEN
+C
+C         Go back to 2c-mode
+C
+          CALL MEMREL('BSS.2c',WORK,KWORK,KWORK,KFREE,LFREE)
+          TWOCOMP = .TRUE.
+          RDINPC = .FALSE.
+          IPREAD = IPREAD - 5
+          CALL READIN(WORK,LWORK,.FALSE.)
+          CALL SETDC1(IPREAD)
+          IPREAD = IPREAD + 5
+C.........reset NEWPRP to re-initialize AOPROPER
+          NEWPRP = .TRUE.
+          CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
+          CALL ONEGEN(WORK,LWORK)
+          CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
+          CALL LOWDIN(WORK(KTMAT),WORK(KFREE),LFREE,IPRHAM)
+          NZT = 1
+          DO IFRP = 1,NFSYM
+            NESH(IFRP)  = NFORB(IFRP,1)
+            NPSH(IFRP)  = NFORB(IFRP,2)
+            NORB(IFRP)  = NESH(IFRP) + NPSH(IFRP)
+            NTMO(IFRP)  = NORB(IFRP)
+          ENDDO
+          SSMTRC = D0
+          MC = 1
         ENDIF
       ELSE
 C
@@ -1975,11 +2008,10 @@ C
 C     If requested, reduce transformation matrix by projection with
 C     respect to a set of fragment orbitals
 C
-CMI   IF(PROJEC) THEN
-CMI .... we need to fix it for PURE two-component mode, either BSS relativistic, or
-CMI   nonrelativistic
-      IF(PROJEC.AND.((BSS.AND..NOT.TWOCOMPBSS).OR.
-     & (.NOT.BSS.AND.TWOCOMP).OR.(.NOT.BSS.AND..NOT.TWOCOMP))) THEN
+      IF(PROJEC) THEN
+CTROND      IF(PROJEC.AND.((BSS.AND..NOT.TWOCOMPBSS).OR.
+CTROND     & (.NOT.BSS.AND.TWOCOMP).OR.(.NOT.BSS.AND..NOT.TWOCOMP))) THEN
+      IF(PROJEC) THEN
         CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),IPRONE,WORK,KFREE,LFREE)
         N2TMOTQ = 0
         DO IFRP = 1,NFSYM
@@ -2579,7 +2611,6 @@ C
           IOFF = IOFF + N2BAS(I)
         ENDDO
       ENDIF
-C
 C
 C     Memory deallocation
 C     ===================

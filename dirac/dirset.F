@@ -67,18 +67,28 @@ C
 #include "cbirea.h"
 #include "infpar.h"
 C
+      LOGICAL TWOBUF
       DIMENSION WORK(LWORK)
 
       CALL QENTER('PAMSET')
-
+C
+C ... if 2c-mode IOTC, read basis in 4c-mode here
+C
+      IF (TWOCOMPBSS) THEN                     
+        TWOCOMP = .FALSE.
+        RDINPC = .FALSE.
+        IPBUF = IPREAD
+        IPREAD = 0
+        CALL READIN(WORK,LWORK,.FALSE.)
+        CALL SETDC1(IPREAD)
+        IPREAD = IPBUF
+      ENDIF
 C
 C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
-
       CALL ONEGEN(WORK,LWORK)
-
 #ifdef MOD_CAP
 CMI ... check if CAP is not for everlap control
 CMI  ... call of F90 routine
@@ -96,37 +106,8 @@ C     Generate MO-transformation matrix and write to file
 C     ===================================================
 C
 CMI ... in this case do not run 2-component calculations in GMOTRA/MAKE_DKH
-      IF (BSS.AND.DO4C2C.AND..NOT.DO2C4C) BSS=.FALSE.
-
-CMI   ... the first calling
-C     IF (BSS.AND.TWOCOMP) TWOCOMPBSS = .TRUE.
-C     ... BSS or TWOCOMP
+CTROND      IF (BSS.AND.DO4C2C.AND..NOT.DO2C4C) BSS=.FALSE.
       CALL GMOTRA(WORK,LWORK)
-
-CMI   ..  when all two-component quantities are ready, switch to the pure
-CMI   two-component level
-      IF (BSS.AND.TWOCOMPBSS) THEN
-C       CALL HEADER('PAMSET: Repeating the input for pure'//
-C    &               ' two-component mode',-1) 
-        CALL TITLER('PAMSET: Repeating the input for pure'//
-     &               ' BSS-two-component mode','=',126) 
-CMI ... new input reading ... TWOCOMP is set to .true. (after HAMINP)
-        CALL PAMINP(.TRUE.,WORK,LWORK)
-CMI ... generated AOPROPER file with integrals of LL-size only !
-        CALL ONEGEN(WORK,LWORK)
-CMI ... prepare here only the 2c_lowdin transformation matrix
-C       TWOCOMP = .TRUE.
-        TWOCOMPBSS = .FALSE.
-        BSS = .FALSE.
-        CALL GMOTRA(WORK,LWORK)
-CMI     ... continue in BSS mode ...
-        BSS = .TRUE.    
-C       TWOCOMP = .FALSE.
-        TWOCOMP = .TRUE.
-
-CMI     ... needed later in BNCORR
-        TWOCOMPBSS = .TRUE.
-      ENDIF
 C
 C     Use supersymmetry for linear molecules
 C     ======================================

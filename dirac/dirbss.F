@@ -36,17 +36,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbdhf.h"
 
       DIMENSION VMAT(*),WORK(LWORK)
-      LOGICAL DOBSS,V2COUT,FNDLAB
+      LOGICAL DOBSS,V2COUT,FNDLAB,TWOBUF
 #include "memint.h"
 
       CALL QENTER('MAKE_DKH')
-
-C ... verify if we are NOT in the pure two-component mode ...
-      IF (NTBAS(2).EQ.0.OR.TWOCOMP) THEN                     
-       CALL QUIT('MAKE_DKH: BSS & no small component basis sets !')  
-      ENDIF
-C     ...decide whether to run 2comp BSS ....
-C     DOBSS = (USEDF.AND.DO4C2C).OR..NOT.(USEDF.AND.DO4C2C)
+C
 C     IF (DOBSS) THEN
 C       write(lupri,*) 'MAKE_DKH: Going to run MAKE_BSS !'
         CALL MAKE_BSS(VMAT,WORK(KFREE),LFREE) 
