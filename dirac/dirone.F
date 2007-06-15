@@ -2009,9 +2009,6 @@ C     If requested, reduce transformation matrix by projection with
 C     respect to a set of fragment orbitals
 C
       IF(PROJEC) THEN
-CTROND      IF(PROJEC.AND.((BSS.AND..NOT.TWOCOMPBSS).OR.
-CTROND     & (.NOT.BSS.AND.TWOCOMP).OR.(.NOT.BSS.AND..NOT.TWOCOMP))) THEN
-      IF(PROJEC) THEN
         CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),IPRONE,WORK,KFREE,LFREE)
         N2TMOTQ = 0
         DO IFRP = 1,NFSYM
