@@ -265,7 +265,7 @@ sdftpot1_(SpinPolarizedSecondDrv *ds,
 {
   FunSecondFuncDrv drvs;
   FunDensProp dp;
-  
+
   real grada, grada2, grada3;
   real bygrada, bygrada2, bygrada3;
   real by2, by4, by8, by16, by32;
@@ -298,13 +298,21 @@ sdftpot1_(SpinPolarizedSecondDrv *ds,
   else
     selected_func->second(&drvs, *weight, &dp);
        
-  ds->fX  = drvs.df0010*by4*bygrada - drvs.df00001*by4;
-  ds->fSS = drvs.df2000*by2 - drvs.df1100*by2;
-  ds->fYY = drvs.df0020*by8*bygrada2 - drvs.df0011*by8*bygrada2 - drvs.df0010*by8*bygrada3;
-  ds->fXX = drvs.df0020*by32*bygrada2 - drvs.df00101*by8*bygrada + drvs.df0011*by32*bygrada2 - drvs.df0010*by32*bygrada3 + drvs.df00002*by16;
-  ds->fRX = drvs.df1010*by8*bygrada + drvs.df1001*by8*bygrada - drvs.df10001*by4;
-  ds->fSY = drvs.df1010*by4*bygrada - drvs.df1001*by4*bygrada;
-  ds->fZX = drvs.df0020*by32*bygrada2 + drvs.df0011*by32*bygrada2 - drvs.df0010*by32*bygrada3 - drvs.df00002*by16;
+/*ds->fR   = drvs.df1000;
+  ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
+
+  ds->fRR  = drvs.df2000*by2 +drvs.df1100*by2;
+  ds->fZZ  = drvs.df00101*by8*bygrada +drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
+  ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;*/
+
+  ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
+
+  ds->fSS  = drvs.df2000*by2 -drvs.df1100*by2;
+  ds->fYY  = drvs.df0020*by8*bygrada2 -drvs.df0011*by8*bygrada2 -drvs.df0010*by8*bygrada3;
+  ds->fXX  = drvs.df0020*by32*bygrada2 -drvs.df00101*by8*bygrada +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
+  ds->fRX  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada -drvs.df10001*by4;
+  ds->fSY  = drvs.df1010*by4*bygrada -drvs.df1001*by4*bygrada;
+  ds->fZX  = drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 -drvs.df00002*by16;
 }
 
 void 
@@ -354,15 +362,94 @@ sdftpot2_(SpinPolarizedThirdDrv *ds,
     LDAFunctional.third(&drvs, *weight, &dp);
   else
     selected_func->third(&drvs, *weight, &dp);
-       
-  ds->fX   = 0.0;
-  ds->fSS  = drvs.df2000*by2 - drvs.df1100*by2;
-  ds->fYY  = 0.0;
-  ds->fXX  = 0.0;
-  ds->fRX  = 0.0;
-  ds->fSY  = 0.0;
-  ds->fZX  = 0.0;
-  ds->fRSS = drvs.df3000*by4 - drvs.df2100*by4;
+
+/*ds->fR   = drvs.df1000;
+  ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
+
+  ds->fRR  = drvs.df2000*by2 +drvs.df1100*by2;
+  ds->fZZ  = drvs.df00101*by8*bygrada +drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
+  ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;
+
+  ds->fRRR = drvs.df3000*by4 +3.0*drvs.df2100*by4;
+  ds->fZZZ = 3.0*drvs.df00102*by64*bygrada +3.0*drvs.df00201*by128*bygrada2 +3.0*drvs.df00111*by128*bygrada2
+            +drvs.df0030*by256*bygrada3 +3.0*drvs.df0021*by256*bygrada3 -3.0*drvs.df00101*by128*bygrada3
+            -3.0*drvs.df0020*by256*bygrada4 -3.0*drvs.df0011*by256*bygrada4 +3.0*drvs.df0010*by256*bygrada5 +drvs.df00003*by64;
+  ds->fRRZ = drvs.df2010*by16*bygrada +drvs.df2001*by16*bygrada +drvs.df1110*by8*bygrada +drvs.df20001*by8 +drvs.df11001*by8;
+  ds->fRZZ = drvs.df10101*by16*bygrada +drvs.df10011*by16*bygrada +drvs.df1020*by64*bygrada2 +drvs.df1011*by32*bygrada2
+            +drvs.df1002*by64*bygrada2 -drvs.df1010*by64*bygrada3 -drvs.df1001*by64*bygrada3 +drvs.df10002*by16;*/
+
+  ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
+
+  ds->fSS  = drvs.df2000*by2 -drvs.df1100*by2;
+  ds->fYY  = drvs.df0020*by8*bygrada2 -drvs.df0011*by8*bygrada2 -drvs.df0010*by8*bygrada3;
+  ds->fXX  = drvs.df0020*by32*bygrada2                           +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3;
+  ds->fRX  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada -drvs.df10001*by4;
+  ds->fSY  = drvs.df1010*by4*bygrada -drvs.df1001*by4*bygrada;
+  ds->fZX  = drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3;
+
+  ds->fXXX = drvs.df0030*by256*bygrada3 +3.0*drvs.df0021*by256*bygrada3
+            -3.0*drvs.df0020*by256*bygrada4 -3.0*drvs.df0011*by256*bygrada4 +3.0*drvs.df0010*by256*bygrada5;
+  ds->fRRX = drvs.df2010*by16*bygrada +drvs.df2001*by16*bygrada +drvs.df1110*by8*bygrada -drvs.df20001*by8 -drvs.df11001*by8;
+  ds->fRSS = drvs.df3000*by4 -drvs.df2100*by4;
+  ds->fRYY = drvs.df1020*by16*bygrada2 -drvs.df1011*by8*bygrada2 +drvs.df1002*by16*bygrada2 -drvs.df1010*by16*bygrada3 -drvs.df1001*by16*bygrada3;
+  ds->fRXX = drvs.df1020*by64*bygrada2                                                       +drvs.df1011*by32*bygrada2
+            +drvs.df1002*by64*bygrada2 -drvs.df1010*by64*bygrada3 -drvs.df1001*by64*bygrada3;
+  ds->fSSZ = drvs.df2010*by16*bygrada +drvs.df2001*by16*bygrada -drvs.df1110*by8*bygrada +drvs.df20001*by8 -drvs.df11001*by8;
+  ds->fSSX = drvs.df2010*by16*bygrada +drvs.df2001*by16*bygrada -drvs.df1110*by8*bygrada -drvs.df20001*by8 +drvs.df11001*by8;
+  ds->fZZX =                                                                                      drvs.df0030*by256*bygrada3
+            +3.0*drvs.df0021*by256*bygrada3                              -3.0*drvs.df0020*by256*bygrada4
+            -3.0*drvs.df0011*by256*bygrada4 +3.0*drvs.df0010*by256*bygrada5;
+  ds->fZYY =                                                         drvs.df0030*by64*bygrada3 -drvs.df0021*by64*bygrada3
+                                        -3.0*drvs.df0020*by64*bygrada4 +drvs.df0011*by64*bygrada4 +3.0*drvs.df0010*by64*bygrada5;
+  ds->fZXX = drvs.df0030*by256*bygrada3
+            +3.0*drvs.df0021*by256*bygrada3                              -3.0*drvs.df0020*by256*bygrada4
+            -3.0*drvs.df0011*by256*bygrada4 +3.0*drvs.df0010*by256*bygrada5;
+  ds->fYYX =                                                         drvs.df0030*by64*bygrada3 -drvs.df0021*by64*bygrada3
+                                        -3.0*drvs.df0020*by64*bygrada4 +drvs.df0011*by64*bygrada4 +3.0*drvs.df0010*by64*bygrada5;
+  ds->fRSY = drvs.df2010*by8*bygrada -drvs.df2001*by8*bygrada;
+  ds->fRZX = drvs.df1020*by64*bygrada2 +drvs.df1011*by32*bygrada2 +drvs.df1002*by64*bygrada2 -drvs.df1010*by64*bygrada3
+            -drvs.df1001*by64*bygrada3;
+  ds->fSZY =                                                       drvs.df1020*by32*bygrada2 -drvs.df1002*by32*bygrada2
+            -drvs.df1010*by32*bygrada3 +drvs.df1001*by32*bygrada3;
+  ds->fSYX =                                                       drvs.df1020*by32*bygrada2 -drvs.df1002*by32*bygrada2
+            -drvs.df1010*by32*bygrada3 +drvs.df1001*by32*bygrada3;
+
+/*ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
+
+  ds->fSS  = drvs.df2000*by2 -drvs.df1100*by2;
+  ds->fYY  = drvs.df0020*by8*bygrada2 -drvs.df0011*by8*bygrada2 -drvs.df0010*by8*bygrada3;
+  ds->fXX  = drvs.df0020*by32*bygrada2 -drvs.df00101*by8*bygrada +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
+  ds->fRX  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada -drvs.df10001*by4;
+  ds->fSY  = drvs.df1010*by4*bygrada -drvs.df1001*by4*bygrada;
+  ds->fZX  = drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 -drvs.df00002*by16;
+
+  ds->fXXX = 3.0*drvs.df00102*by64*bygrada -3.0*drvs.df00201*by128*bygrada2 -3.0*drvs.df00111*by128*bygrada2
+            +drvs.df0030*by256*bygrada3 +3.0*drvs.df0021*by256*bygrada3 +3.0*drvs.df00101*by128*bygrada3
+            -3.0*drvs.df0020*by256*bygrada4 -3.0*drvs.df0011*by256*bygrada4 +3.0*drvs.df0010*by256*bygrada5 -drvs.df00003*by64;
+  ds->fRRX = drvs.df2010*by16*bygrada +drvs.df2001*by16*bygrada +drvs.df1110*by8*bygrada -drvs.df20001*by8 -drvs.df11001*by8;
+  ds->fRSS = drvs.df3000*by4 -drvs.df2100*by4;
+  ds->fRYY = drvs.df1020*by16*bygrada2 -drvs.df1011*by8*bygrada2 +drvs.df1002*by16*bygrada2 -drvs.df1010*by16*bygrada3 -drvs.df1001*by16*bygrada3;
+  ds->fRXX = drvs.df1020*by64*bygrada2 -drvs.df10101*by16*bygrada -drvs.df10011*by16*bygrada +drvs.df1011*by32*bygrada2
+            +drvs.df1002*by64*bygrada2 -drvs.df1010*by64*bygrada3 -drvs.df1001*by64*bygrada3 +drvs.df10002*by16;
+  ds->fSSZ = drvs.df2010*by16*bygrada +drvs.df2001*by16*bygrada -drvs.df1110*by8*bygrada +drvs.df20001*by8 -drvs.df11001*by8;
+  ds->fSSX = drvs.df2010*by16*bygrada +drvs.df2001*by16*bygrada -drvs.df1110*by8*bygrada -drvs.df20001*by8 +drvs.df11001*by8;
+  ds->fZZX = drvs.df00201*by128*bygrada2 -drvs.df00102*by64*bygrada +drvs.df00111*by128*bygrada2 +drvs.df0030*by256*bygrada3
+            +3.0*drvs.df0021*by256*bygrada3 -drvs.df00101*by128*bygrada3 -3.0*drvs.df0020*by256*bygrada4
+            -3.0*drvs.df0011*by256*bygrada4 +3.0*drvs.df0010*by256*bygrada5 -drvs.df00003*by64;
+  ds->fZYY = drvs.df00201*by32*bygrada2 -drvs.df00111*by32*bygrada2 +drvs.df0030*by64*bygrada3 -drvs.df0021*by64*bygrada3
+            -drvs.df00101*by32*bygrada3 -3.0*drvs.df0020*by64*bygrada4 +drvs.df0011*by64*bygrada4 +3.0*drvs.df0010*by64*bygrada5;
+  ds->fZXX = drvs.df0030*by256*bygrada3 -drvs.df00102*by64*bygrada -drvs.df00201*by128*bygrada2 -drvs.df00111*by128*bygrada2
+            +3.0*drvs.df0021*by256*bygrada3 +drvs.df00101*by128*bygrada3 -3.0*drvs.df0020*by256*bygrada4
+            -3.0*drvs.df0011*by256*bygrada4 +3.0*drvs.df0010*by256*bygrada5 +drvs.df00003*by64;
+  ds->fYYX = drvs.df00111*by32*bygrada2 -drvs.df00201*by32*bygrada2 +drvs.df0030*by64*bygrada3 -drvs.df0021*by64*bygrada3
+            +drvs.df00101*by32*bygrada3 -3.0*drvs.df0020*by64*bygrada4 +drvs.df0011*by64*bygrada4 +3.0*drvs.df0010*by64*bygrada5;
+  ds->fRSY = drvs.df2010*by8*bygrada -drvs.df2001*by8*bygrada;
+  ds->fRZX = drvs.df1020*by64*bygrada2 +drvs.df1011*by32*bygrada2 +drvs.df1002*by64*bygrada2 -drvs.df1010*by64*bygrada3
+            -drvs.df1001*by64*bygrada3 -drvs.df10002*by16;
+  ds->fSZY = drvs.df10101*by16*bygrada -drvs.df10011*by16*bygrada +drvs.df1020*by32*bygrada2 -drvs.df1002*by32*bygrada2
+            -drvs.df1010*by32*bygrada3 +drvs.df1001*by32*bygrada3;
+  ds->fSYX = drvs.df10011*by16*bygrada -drvs.df10101*by16*bygrada +drvs.df1020*by32*bygrada2 -drvs.df1002*by32*bygrada2
+            -drvs.df1010*by32*bygrada3 +drvs.df1001*by32*bygrada3;*/
 }
 
 extern void quit_(const char* str, int len);

@@ -273,7 +273,21 @@ int dft_isgga__(void);
       INTEGER fRX 
       INTEGER fSY 
       INTEGER fZX 
+      INTEGER fXXX
+      INTEGER fRRX
       INTEGER fRSS
+      INTEGER fRYY
+      INTEGER fRXX
+      INTEGER fSSZ
+      INTEGER fSSX
+      INTEGER fZZX
+      INTEGER fZYY
+      INTEGER fZXX
+      INTEGER fYYX
+      INTEGER fRSY
+      INTEGER fRZX
+      INTEGER fSZY
+      INTEGER fSYX
 
       INTEGER               DERVS1
       INTEGER               DERVS2
@@ -303,14 +317,28 @@ int dft_isgga__(void);
       PARAMETER (fRX  =  5)
       PARAMETER (fSY  =  6)
       PARAMETER (fZX  =  7)
-      PARAMETER (fRSS =  8)
+      PARAMETER (fXXX =  8)
+      PARAMETER (fRRX =  9)
+      PARAMETER (fRSS = 10)
+      PARAMETER (fRYY = 11)
+      PARAMETER (fRXX = 12)
+      PARAMETER (fSSZ = 13)
+      PARAMETER (fSSX = 14)
+      PARAMETER (fZZX = 15)
+      PARAMETER (fZYY = 16)
+      PARAMETER (fZXX = 17)
+      PARAMETER (fYYX = 18)
+      PARAMETER (fRSY = 19)
+      PARAMETER (fRZX = 20)
+      PARAMETER (fSZY = 21)
+      PARAMETER (fSYX = 22)
 
-      PARAMETER (              DERVS1 = 2)
-      PARAMETER (              DERVS2 = 5)
-      PARAMETER (              DERVS3 = 9)
-
-      PARAMETER (SPINPOLARIZED_DERVS1 = 1)
-      PARAMETER (SPINPOLARIZED_DERVS2 = 7)
-      PARAMETER (SPINPOLARIZED_DERVS3 = 8)
+      PARAMETER (              DERVS1 =  2)
+      PARAMETER (              DERVS2 =  5)
+      PARAMETER (              DERVS3 =  9)
+                                         
+      PARAMETER (SPINPOLARIZED_DERVS1 =  1)
+      PARAMETER (SPINPOLARIZED_DERVS2 =  7)
+      PARAMETER (SPINPOLARIZED_DERVS3 = 22)
 
 #endif /* __CVERSION__ */

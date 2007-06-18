@@ -186,25 +186,41 @@ void dftpot2_(ThirdDrv *ds,
 #endif /* (radovan_will_merge_me_later) */
 
 struct SpinPolarizedSecondDrv_ {
-       real fX;
-       real fSS;
-       real fYY;
-       real fXX;
-       real fRX;
-       real fSY;
-       real fZX;
-       real fRSS;
+       real fX  ;
+     
+       real fSS ;
+       real fYY ;
+       real fXX ;
+       real fRX ;
+       real fSY ;
+       real fZX ;
 };
 
 struct SpinPolarizedThirdDrv_ {
-       real fX;
-       real fSS;
-       real fYY;
-       real fXX;
-       real fRX;
-       real fSY;
-       real fZX;
+       real fX  ;
+     
+       real fSS ;
+       real fYY ;
+       real fXX ;
+       real fRX ;
+       real fSY ;
+       real fZX ;
+     
+       real fXXX;
+       real fRRX;
        real fRSS;
+       real fRYY;
+       real fRXX;
+       real fSSZ;
+       real fSSX;
+       real fZZX;
+       real fZYY;
+       real fZXX;
+       real fYYX;
+       real fRSY;
+       real fRZX;
+       real fSZY;
+       real fSYX;
 };
 
 void sdftpot1_(SpinPolarizedSecondDrv *ds, 
