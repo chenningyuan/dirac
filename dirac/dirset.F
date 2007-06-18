@@ -1621,7 +1621,7 @@ C
         INQUIRE(FILE='AOPROPER',EXIST=GOFAST)
         IF(GOFAST.AND.BSS) THEN
           INQUIRE(FILE='BSSMAT',EXIST=GOFAST)
-          LUBSS = 35
+          LUBSS = 40
         ENDIF
       ENDIF
       IF(GOFAST) THEN

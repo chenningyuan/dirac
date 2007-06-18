@@ -98,7 +98,6 @@ C ==============================================================================
         CALL RFBSSMAT('VMAT2C  ',.TRUE.,'MAKE_DKH',
      &        VMAT,N2BBASX,LUBSS,IPRHAM)
       ENDIF
-
 C    .. close the BSSMAT file...
       CLOSE(LUBSS,STATUS='KEEP')
 
@@ -307,7 +306,7 @@ C get transf. matrix (RKB)
       ENDIF
 
 C     ... choose the file number !
-      LUBSS = 35
+      LUBSS = 40
       CALL W2BSSMAT(4,.TRUE.,'VMAT4C  ','MAKE_BSS',
      &              VMAT,N2BBASX,LUBSS,IPRHAM)
       IF (IPRHAM.GE.2) THEN
