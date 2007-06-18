@@ -67,10 +67,17 @@ C
 #include "cbirea.h"
 #include "infpar.h"
 C
-      LOGICAL TWOBUF
+      LOGICAL TWOBUF,GOFAST
       DIMENSION WORK(LWORK)
 
       CALL QENTER('PAMSET')
+      CALL TIMER('START ',TIMSTR,TIMEND)
+C
+C     Attempt a restart
+C     =================
+C
+      CALL GOTEST(GOFAST,IPREAD)
+      IF(GOFAST.AND.(.NOT.DOHRM)) GOTO 10
 C
 C ... if 2c-mode IOTC, read basis in 4c-mode here
 C
@@ -100,7 +107,10 @@ CMI  ... call of F90 routine
         IF (CAP) CALL CAP_STUFF(WORK,LWORK)
 #endif
 
-      IF(DOHRM) RETURN
+      IF(DOHRM) THEN
+        CALL TIMER('PAMSET',TIMSTR,TIMEND)
+        RETURN
+      ENDIF
 C
 C     Generate MO-transformation matrix and write to file
 C     ===================================================
@@ -112,8 +122,14 @@ C
 C     Use supersymmetry for linear molecules
 C     ======================================
 C
-       IF (LINEAR) CALL GLINSM(WORK,LWORK)
-
+      IF (LINEAR) CALL GLINSM(WORK,LWORK)
+C
+C     Write orbital output to DFTMAT
+C     ==============================
+C
+CTROND      CALL ORBDAT
+C
+ 10   CONTINUE
 C
 C     Set DCB common blocks - second time
 C     ===================================
@@ -135,6 +151,7 @@ C     ==============================================
 C
       CALL RELINF
 C
+      CALL TIMER('PAMSET',TIMSTR,TIMEND)
       CALL QEXIT('PAMSET')
       RETURN
       END
@@ -1497,7 +1514,7 @@ C
       INQUIRE(FILE='DFBVAC',EXIST=TOBE)
       IF(TOBE) THEN
         WRITE(6,'(A)') 
-     &   '* Warning: BARVAC found file DFBVAC. '//
+     &   '* WARNING: BARVAC found file DFBVAC. '//
      &   'No reference vacuum generated.'
       ELSE
         CALL MEMGET('REAL',KFAO ,N2BBASXQ,WORK,KFREE,LFREE)
@@ -1576,3 +1593,207 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck gofast */
+      SUBROUTINE GOTEST(GOFAST,IPRINT)
+C***********************************************************************
+C
+C     Look for MO-transformation matrices and other necessary
+C     information in order to skip GMOTRA which may be lengthy
+C
+C     Written by T. Saue Jun 15 2007
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+C
+      LOGICAL GOFAST
+      GOFAST = .FALSE.
+      INQUIRE(FILE='DFTMAT',EXIST=GOFAST)
+      IF(GOFAST) THEN
+        INQUIRE(FILE='AOPROPER',EXIST=GOFAST)
+        IF(GOFAST.AND.BSS) THEN
+          INQUIRE(FILE='BSSMAT',EXIST=GOFAST)
+          LUBSS = 35
+        ENDIF
+      ENDIF
+      IF(GOFAST) THEN
+        WRITE(LUPRI,'(A)') 
+     &  '* WARNING: GOTEST found the following files:',
+     &  '    - DFTMAT: transformation matrices',
+     &  '    - AOPROPER: one-electron integrals'
+        IF(BSS) WRITE(LUPRI,'(A)')
+     &  '    - BSSMAT: BSS stuff'
+        WRITE(LUPRI,'(A)')
+     &  '  ...will attempt restart.'
+      ENDIF
+C
+C     The necessary files have been found;
+C     try to get the necessary information from
+C     file DFTMAT
+C
+      IF(GOFAST) THEN
+        NBRP = 4/NZ
+        CALL OPNFIL(LUTMAT,'DFTMAT','OLD','GOFAST')
+C.......skip AO2MO transformation matrix
+        READ(LUTMAT)
+C.......skip inverse transformation matrix
+        READ(LUTMAT)
+C.......read records containing orbital information
+        READ(LUTMAT,END=10) NZT,URKBAL,SUB_BL,I2COFK
+        N2TMT   = 0
+        N2TMOTQ = 0
+        DO IFRP = 1,NFSYM
+          READ(LUTMAT,END=10) 
+     &       NORB(IFRP),(NFORB(IFRP,J),J=0,2),
+     &       ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
+     &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
+     &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
+     &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
+     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN)
+          I2TMT(IFRP) = N2TMT
+          N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
+          I2TMOT(IFRP) = N2TMOTQ
+          N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+        ENDDO
+        IF(SUB_BL) THEN
+          DO IFRP = 1,NFSYM
+            READ(LUTMAT,END=10) N_SUB_BL(IFRP),
+     &       ((NORB_SUB(IB,IFRP,IC),IC=0,2),
+     &       ID_SUB_BL(IB,IFRP),IB=1,N_SUB_BL(IFRP))
+          ENDDO
+        ENDIF
+        CLOSE(LUTMAT,STATUS='KEEP')
+        GOTO 20
+C.......did not find the necessary records. 
+C.......Look for a formatted file with same information
+ 10     CONTINUE
+        CLOSE(LUTMAT,STATUS='KEEP')
+        INQUIRE(FILE='GOFAST',EXIST=GOFAST)
+        IF(GOFAST) THEN
+          OPEN(LUTMAT,FILE ='GOFAST',STATUS='OLD',
+     &             ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
+          READ(LUTMAT,*,END=30) NZT,URKBAL,SUB_BL,I2COFK
+          N2TMT   = 0
+          N2TMOTQ = 0
+          DO IFRP = 1,NFSYM
+            READ(LUTMAT,*,END=30) 
+     &      NORB(IFRP),(NFORB(IFRP,J),J=0,2),
+     &      ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
+     &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
+     &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
+     &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
+     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN)
+            I2TMT(IFRP) = N2TMT
+            N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
+            I2TMOT(IFRP) = N2TMOTQ
+            N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+          ENDDO
+          IF(SUB_BL) THEN
+            DO IFRP = 1,NFSYM
+              READ(LUTMAT,*,END=30) N_SUB_BL(IFRP),
+     &        ((NORB_SUB(IB,IFRP,IC),IC=0,2),
+     &        ID_SUB_BL(IB,IFRP),IB=1,N_SUB_BL(IFRP))
+            ENDDO
+          ENDIF
+          GOTO 20
+ 30       CONTINUE
+          GOFAST = .FALSE.
+        ENDIF
+      ENDIF
+ 20   CONTINUE
+      IF(GOFAST) THEN
+        WRITE(LUPRI,'(A)') 'Restart successful !'
+        IF(IPRINT.GE.2) THEN
+          WRITE(LUPRI,*) NZT,URKBAL,SUB_BL,I2COFK
+          WRITE(LUPRI,*) 'NORB...',(NORB(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NFORB..',
+     &       ((NFORB(IFRP,J),J=0,2),IFRP=1,NFSYM)
+          WRITE(LUPRI,*) 'NISH...',(NISH(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NESH...',(NESH(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NPSH...',(NPSH(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NASH...',(NASH(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NACSH..',
+     &       ((NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),IFRP=1,NFSYM)
+          WRITE(LUPRI,*) 'NFRO...',(NFRO(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NTMO...',(NTMO(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NISHMF.',(NISHMF(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NOCCMF.',(NOCCMF(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NACSHMF',
+     &       ((NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN),IFRP=1,NFSYM)
+          IF(SUB_BL) THEN
+            DO IFRP = 1,NFSYM
+              WRITE(LUPRI,*) N_SUB_BL(IFRP),
+     &        ((NORB_SUB(IB,IFRP,IC),IC=0,2),
+     &        ID_SUB_BL(IB,IFRP),IB=1,N_SUB_BL(IFRP))
+            ENDDO
+          ENDIF
+        ENDIF
+      ENDIF
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Orbdat*/
+      SUBROUTINE ORBDAT
+C***********************************************************************
+C
+C     Dump information from GMOTRA as rec 3 on DFTMAT
+C
+C     Written by T. Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+C
+      WRITE(6,*) 'Enter ORBDAT'
+      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','ORBDAT')
+      NBRP = 4/NZ
+      READ(LUTMAT)
+      READ(LUTMAT)
+CTROND      WRITE(LUTMAT) NZT,URKBAL,SUB_BL,I2COFK
+      WRITE(6,*) 'G..',NZT,URKBAL,SUB_BL,I2COFK
+      DO IFRP = 1,NFSYM
+CTROND        WRITE(LUTMAT) NORB(IFRP),(NFORB(IFRP,J),J=0,2),
+CTROND     &       ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
+CTROND     &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
+CTROND     &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
+CTROND     &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
+CTROND     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN)
+        WRITE(6,*) 'F..',NORB(IFRP),(NFORB(IFRP,J),J=0,2),
+     &        ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
+     &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
+     &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
+     &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
+     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN)
+      ENDDO
+      IF(SUB_BL) THEN
+        DO IFRP = 1,NFSYM
+          NN = N_SUB_BL(IFRP)
+CTROND          WRITE(LUTMAT) 
+CTROND     &     NN,((NORB_SUB(IB,IFRP,IC),IC=0,2),
+CTROND     &     ID_SUB_BL(IB,IFRP),IB=1,NN)
+          WRITE(6,*) 
+     &     'H..',NN,((NORB_SUB(IB,IFRP,IC),IC=0,2),
+     &     ID_SUB_BL(IB,IFRP),IB=1,NN)
+        ENDDO
+      ENDIF
+      CLOSE(LUTMAT,STATUS='KEEP')      
+C
+      RETURN
+      END
+
