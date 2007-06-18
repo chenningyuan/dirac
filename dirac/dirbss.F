@@ -8233,7 +8233,8 @@ C        ... find out the nuclei
          ENDDO
 
          IF (IPRINT.GE.3) THEN
-          write(lupri,*) 'SHELL L=',NHKT(ISHELL),
+          write(lupri,'(A,I2,A,I2,A,D12.6,A,I2,A,I2,A,I2,A,I3)')
+     &  'Shell L=',NHKT(ISHELL),
      &  ' ICENT=',NCENT(ISHELL),' charge:',CHARGE(ICENT),
      &  ' IDEG/NDEG=',IDEG,'/',NUCDEG(ICENT),' centre=',INUCPOS,
      &  ' INDXLM=',INDX
@@ -8906,10 +8907,20 @@ C  /* Deck UNITE_INDXS */
      &                   IPTYPAO,INDXLM,ISTNUCTYP,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  PURPOSE: If the basis set is splitted, unite the INDXLM so that their fit
-C           for entering the AMFI integrals.
+C
+C  PURPOSE: If the basis set is SPLITTED on input (splitted blocks of exponents),
+C    unite the INDXLM indexes so that their fit for placing correctly 
+C    the AMFI integrals.
+C
+C   This is quite complicated algorithm.
+C
+C
+C   Modified quantity on output: INDXLM
+C
 C
 C  Written by Miro Ilias, Strasbourg, 2005
+C             Last modifications: Miro Ilias. Tel Aviv, Jun 2007
+C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -8925,9 +8936,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       IF (IPRINT.GE.3) THEN
        write(lupri,'(/2X,A/)')
      & 'UNITE_INDXS: Entering order of basis'//
-     & ' functions in spher. AO basis:'
+     & ' functions in spherical AO basis:'
        DO I=1, NSPH
-        write(lupri,*) I,'.fu - center:',IPNUC(I),' type:',
+        write(lupri,'(I3,A,I3,A,A4,A,I3,A)')
+     &  I,'.fu - center:',IPNUC(I),' type:',
      &  LABINT(IPTYPAO(I)),'(',INDXLM(I),')'
        ENDDO
        write(lupri,*) ' '
@@ -8939,14 +8951,17 @@ C    ... list of stored INUC&IPTYP
       I = 0
  234  I = I + 1
 
+C     .. skip out before getting out of bonds
+      IF (I.GT.NSPH) GOTO 236
+
       INUC=IPNUC(I)
       IPTYP=IPTYPAO(I)
 
-C     ...find out if INUC&IPTYP are not in the list
+C     ...find out if INUC & IPTYP are not in the list
       ITWAS=.FALSE.
       DO K=1,IL
        IF (INUC.EQ.ISTNUCTYP(K,1).AND.IPTYP.EQ.ISTNUCTYP(K,2))
-     &    ITWAS=.TRUE.
+     &  ITWAS=.TRUE.
       ENDDO
       IF (ITWAS) GOTO 234
 
@@ -8963,35 +8978,41 @@ C     ... check out indexes from J
       JJ = JJ + 1
       IT = IT + 1
         IF (IPRINT.GE.4) THEN
-        write(lupri,*) 'I=',I,' J=',J,
+          write(lupri,'(A,I3,A,I3,A,I3,A,I4,A,2I4)')
+     &   'I=',I,' J=',J,
      &   ' for INUC=',INUC,' IPTYP=',IPTYP,
      &   ' indexes:', JJ,INDXLM(J)
         ENDIF
 
         IF (INDXLM(J).NE.JJ) THEN
          IF (IPRINT.GE.4) THEN
-          write(lupri,*) 'difference in indexes !'
+          write(lupri,'(4X,A,I3,A,I3)')
+     &   'difference in indexes --> changing ',
+     &   INDXLM(J),' to:',JJ
          ENDIF
-C          ... change the index !
-           INDXLM(J)=JJ
+C        ... CORE OF THE ROUTINE: change the index 
+         INDXLM(J)=JJ
         ENDIF
       ENDIF
       IF (J.LT.NSPH) GOTO 235 
+ 236  CONTINUE
       IF (I.LT.NSPH) GOTO 234
 
       IF (IT.NE.NSPH) THEN
         write(lupri,*)
-     &   'UNITE_INDXS:  IT=',IT,' NSPH=',NSPH
+     & 'UNITE_INDXS error output:  IT=',IT,' NSPH=',NSPH
         CALL QUIT('UNITE_INDXS: IT<>NSPH !')
       ENDIF
+
 C ==========================================================================
 C     ... when indexes are changed, print out the AMFI function list....
 C ==========================================================================
       IF (IPRINT.GE.3) THEN
-       write(lupri,'(/2X,A)')
-     &  'UNITE_INDXS: Order of AMFI spherical atomic basis functions:'
+        write(lupri,'(/2X,A)')
+     &  'UNITE_INDXS: Order of (united) AMFI'//
+     &  ' spherical atomic basis functions:'
        DO I=1, NSPH
-         write(lupri,*) '  ', I,
+         write(lupri,'(2X,I3,A,I3,A,A4,A,I3,A)')  I,
      &   '.>  center:',IPNUC(I),' atomic funct. type(indx) : ',
      &   LABINT(IPTYPAO(I)),'(',INDXLM(I),')'
        ENDDO
