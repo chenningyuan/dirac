@@ -8104,24 +8104,18 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbprp.h"
 #include "dcbprl.h"
 #include "dummy.h"
-C#include "dcbdhf.h"
-C#include "dcbprj.h"
 C
       DIMENSION WORK(LWORK),VMAT(*)
       LOGICAL FNDLAB, IS_SQUARE
       CHARACTER*8 PRPLABEL
       CHARACTER*4 NUMSTR
-
+C
       CALL QENTER('PROP2BSS')
 #include "memint.h"
-
-          CALL MEMCHK('PROP2BSS 1',WORK,1)
-
       N2BBASXQ_L = (NTBAS(1)*NTBAS(1)*NZ)                  
       CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
-
 C     ... BSSMAT file is already open...find end label
-        CLOSE(LUBSS,STATUS='KEEP')
+      CLOSE(LUBSS,STATUS='KEEP')
       CALL OPNFIL(LUBSS,'BSSMAT','OLD','PROP2BSS')
       REWIND LUBSS                                 
       IF (FNDLAB('EOFLABEL',LUBSS)) THEN          
@@ -8133,151 +8127,74 @@ C     ... BSSMAT file is already open...find end label
       ELSE
         CALL QUIT('PRP2BSS: EOFLABEL  not found !')
       ENDIF
-
-CMI     .... toto funguje !!!!
-C     CALL NEWLAB('xxxxaaaa',LUBSS,LUPRI)
-
-      CALL MEMCHK('PROP2BSS 1.x1',WORK,1)
-
-
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
       REWIND (LU1INT)
-
-C     CALL NEWLAB('123xaaaa',LUBSS,LUPRI)
-
-      CALL MEMCHK('PROP2BSS 1.x2.1',WORK,1)
-
-C     write(lupri,*) 'NPRPS=',NPRPS
-
-      CALL MEMCHK('PROP2BSS 1.x2.2',WORK,1)
-
       DO I = 1, NPRPS
-
         IREP = IPRPSYM(I) - 1
-
-       IF (IPRPRP.GE.3) THEN
-        write(lupri,*) I,' index=',IPRPTYP(I),' name=',
-     &   PRPNAM(I),' tim.rev.=',IPRPTIM(I),' irep=',IREP,
+        IF (IPRPRP.GE.3) THEN
+          write(lupri,*) I,' index=',IPRPTYP(I),' name=',
+     &    PRPNAM(I),' tim.rev.=',IPRPTIM(I),' irep=',IREP,
      &    ' labels:',IPRPLBL(1,I),PRPLBL(IPRPLBL(1,I)),
      &    ' pdoint=',PDOINT(IPRPLBL(1,I))
-       ENDIF
-
-      IF (IPRPTIM(I).EQ.0) THEN
-       IDIMENS = N2BBASX
-       IS_SQUARE = .TRUE.
-      ELSE IF (IPRPTIM(I).EQ.1.OR.IPRPTIM(I).EQ.-1) THEN
-       IDIMENS = NNBBASX
-       IS_SQUARE = .FALSE.
-      ELSE
-       CALL QUIT('PROP2BSS: wrong parameter ! ')
-      ENDIF
-
-          CALL MEMCHK('PROP2BSS 1.2',WORK,1)
+        ENDIF
+        IF (IPRPTIM(I).EQ.0) THEN
+          IDIMENS = N2BBASX
+          IS_SQUARE = .TRUE.
+        ELSE IF (IPRPTIM(I).EQ.1.OR.IPRPTIM(I).EQ.-1) THEN
+          IDIMENS = NNBBASX
+          IS_SQUARE = .FALSE.
+        ELSE
+          CALL QUIT('PROP2BSS: wrong parameter ! ')
+        ENDIF
 C
-C     Memory allocation
+C       Memory allocation
 C
-C     CALL MEMGET('REAL',KPRPAO ,N2BBASXQ  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
-     
+        CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
+        CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
 C      ... done in PRPMSAO ...
-C     CALL LSET(NZ,.TRUE.,WORK(KFIRST)) 
-
-      INDXPR = I
-
-       CALL MEMCHK('PROP2BSS 2',WORK,1)
-
-C     CALL PRPMSAO(LU1INT,INDXPR,IDIMENS,WORK(KPTRI),VMAT,
-
-      IF (IS_SQUARE) THEN
-
-       CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,VMAT,
-     &             WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
-     &             LFREE,IPRPRP)   
-
-      ELSE
-
-       CALL PRPMSAO(INDXPR,IDIMENS,WORK(KPTRI),VMAT,
-     &             WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
-     &             LFREE,IPRPRP)   
-
-      ENDIF
-
-C     ... dealocate the memmory...
-      CALL MEMREL('KFIRST',WORK,KWORK,KFIRST,KFREE,LFREE)
-      CALL MEMREL('KONEIN',WORK,KWORK,KONEIN,KFREE,LFREE)
-      CALL MEMREL('KPTRI',WORK,KWORK,KPTRI,KFREE,LFREE)
-       
-C      ... allocate the memmory for LL block only ...
-C       ... calculate N2BBASXQ with Lintegrals                                                                                      
-C     N2BBASXQ_L = (NTBAS(1)*NTBAS(1)*NZ)                  
-C     CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
-
+C       CALL LSET(NZ,.TRUE.,WORK(KFIRST)) 
+        INDXPR = I
+        IF (IS_SQUARE) THEN
+          CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,VMAT,
+     &         WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
+     &         LFREE,IPRPRP)   
+        ELSE
+          CALL PRPMSAO(INDXPR,IDIMENS,WORK(KPTRI),VMAT,
+     &         WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
+     &         LFREE,IPRPRP)   
+        ENDIF
+C     ... deallocate the memmory...
+        CALL MEMREL('KPTRI',WORK,KWORK,KPTRI,KFREE,LFREE)
 C       .. extract from VMAT into WORK(KPRLL)
         CALL EXTRLL(IREP,VMAT,WORK(KPRLL),IPRPRP)
-
-        CALL MEMCHK('PROP2BSS 4.1',WORK,1)
-
 C      ... save WORK(KPRLL) into BSSMAT under label PRP2Cxxx, with xxx=INDXPR
         CALL NUM2STR(INDXPR,NUMSTR) 
-         
-       PRPLABEL = 'P2C_'//NUMSTR
-
-C      write(lupri,*) 'num=',NUMSTR,'  label is=',PRPLABEL
-
-      CALL OPNFIL(LUBSS,'BSSMAT','OLD','PROP2BSS')
-      REWIND LUBSS 
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN          
-        BACKSPACE(LUBSS)
-        IF (IPRPRP.GE.4) THEN
-        write(lupri,*)
-     &  'BSSMAT ready for saving 2component prop.operators!'
+        PRPLABEL = 'P2C_'//NUMSTR
+        CALL NEWLAB(PRPLABEL,LUBSS,LUPRI)
+        CALL WRITT(LUBSS,N2BBASXQ_L,WORK(KPRLL))
+        IF (IPRPRP.GE.3) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     &    'PROP2BSS: Picture change transformed 2comp. operator '//
+     &    PRPLABEL//' was written to the BSSMAT file in LL block only.'
         ENDIF
-      ELSE
-        CALL QUIT('PRP2BSS: EOFLABEL  not found !')
-      ENDIF
-
-C     CALL NEWLAB('xxxxaaaa',LUBSS,LUPRI)
-      CALL NEWLAB(PRPLABEL,LUBSS,LUPRI)
-      CALL WRITT( LUBSS, N2BBASXQ_L, WORK(KPRLL) )
-      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-
-      IF (IPRPRP.GE.3) THEN
-       WRITE(LUPRI,'(/2X,A)')
-     & 'PROP2BSS: Picture change transformed 2comp. operator '//
-     & PRPLABEL//' was written to the BSSMAT file in LL block only.'
-      ENDIF
-
-C     CALL MEMREL('KPRLL',WORK,KWORK,KPRLL,KFREE,LFREE)
-
-C      call quit('prop2bss')
-C     ENDIF
-         CALL MEMCHK('PROP2BSS 5',WORK,1)
-
       ENDDO
-
-C     IF (DOEXP) THEN
-C       DO I = 1,NEXPP
-C         INDXPR = LEXPP(I)
-C         write(lupri,*) 'exp.value prop.index=',INDXPR,PRPNAM(INDXPR)
-C       ENDDO
-C     ENDIF
-C     IF (DOXLR) THEN
-C         write(lupri,*) 'linear response activated !!!'
-C     ENDIF
-
+C
+C     Insert EOFlabel and close files
+C
+      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+      CLOSE(LU1INT,STATUS='KEEP')
+      CLOSE(LUBSS,STATUS='KEEP')
+C
       CALL MEMREL('KPRLL',WORK,KWORK,KPRLL,KFREE,LFREE)
-
-C     CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+C
       IF (IPRPRP.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)') 
      & 'PROP2BSS: EOFLABEL was renewed after saving all 2c operators '//
      & 'into BSSMAT.'
       ENDIF
 
-C      call quit('prop2bss')
       CALL QEXIT('PROP2BSS')
       RETURN
       END
