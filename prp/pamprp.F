@@ -8112,21 +8112,8 @@ C
 C
       CALL QENTER('PROP2BSS')
 #include "memint.h"
-      N2BBASXQ_L = (NTBAS(1)*NTBAS(1)*NZ)                  
+      N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
       CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
-C     ... BSSMAT file is already open...find end label
-      CLOSE(LUBSS,STATUS='KEEP')
-      CALL OPNFIL(LUBSS,'BSSMAT','OLD','PROP2BSS')
-      REWIND LUBSS                                 
-      IF (FNDLAB('EOFLABEL',LUBSS)) THEN          
-        BACKSPACE(LUBSS)
-        IF (IPRPRP.GE.4) THEN
-        write(lupri,*)
-     &  'BSSMAT ready for saving 2component prop.operators!'
-        ENDIF
-      ELSE
-        CALL QUIT('PRP2BSS: EOFLABEL  not found !')
-      ENDIF
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
       REWIND (LU1INT)
@@ -8153,8 +8140,7 @@ C
         CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
         CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
-C      ... done in PRPMSAO ...
-C       CALL LSET(NZ,.TRUE.,WORK(KFIRST)) 
+C
         INDXPR = I
         IF (IS_SQUARE) THEN
           CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,VMAT,
@@ -8165,15 +8151,15 @@ C       CALL LSET(NZ,.TRUE.,WORK(KFIRST))
      &         WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
      &         LFREE,IPRPRP)   
         ENDIF
-C     ... deallocate the memmory...
+C     ... deallocate the memory...
         CALL MEMREL('KPTRI',WORK,KWORK,KPTRI,KFREE,LFREE)
 C       .. extract from VMAT into WORK(KPRLL)
         CALL EXTRLL(IREP,VMAT,WORK(KPRLL),IPRPRP)
 C      ... save WORK(KPRLL) into BSSMAT under label PRP2Cxxx, with xxx=INDXPR
         CALL NUM2STR(INDXPR,NUMSTR) 
         PRPLABEL = 'P2C_'//NUMSTR
-        CALL NEWLAB(PRPLABEL,LUBSS,LUPRI)
-        CALL WRITT(LUBSS,N2BBASXQ_L,WORK(KPRLL))
+        CALL W2BSSMAT(1,.TRUE.,PRPLABEL,'PROP2BSS',
+     &              WORK(KPRLL),N2BBASXQ_L,LUBSS,IPRHAM)
         IF (IPRPRP.GE.3) THEN
           WRITE(LUPRI,'(/2X,A)')
      &    'PROP2BSS: Picture change transformed 2comp. operator '//
@@ -8181,11 +8167,9 @@ C      ... save WORK(KPRLL) into BSSMAT under label PRP2Cxxx, with xxx=INDXPR
         ENDIF
       ENDDO
 C
-C     Insert EOFlabel and close files
+C     Close AOPROPER
 C
-      CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
       CLOSE(LU1INT,STATUS='KEEP')
-      CLOSE(LUBSS,STATUS='KEEP')
 C
       CALL MEMREL('KPRLL',WORK,KWORK,KPRLL,KFREE,LFREE)
 C
