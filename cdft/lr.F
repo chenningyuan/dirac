@@ -80,8 +80,8 @@ C=======================================================================
      &          GAO1(*),
      &          GR(3),
      &          BUF(*),
-     &          S_B(3),
-     &          GS_B(3,3),
+     &          S_b(3),
+     &          GS_b(3,3),
      &          VXC(99) !dirty fix
 
       ISTART = 1
@@ -93,7 +93,7 @@ C=======================================================================
           JOFF = NBAST*NBAST*NZ*(IMAT-1)
 
           CALL GET_M(.TRUE.,
-     &               S_B,
+     &               S_b,
      &               ISYMOP(IMAT)-1,
      &               GAO,
      &               UNUSED,
@@ -102,7 +102,7 @@ C=======================================================================
 
           IF(IS_GGA) THEN
             CALL GET_M_DERVS(.TRUE.,
-     &                       GS_B,
+     &                       GS_b,
      &                       ISYMOP(IMAT)-1,
      &                       GAO,
      &                       GAO1,
@@ -110,20 +110,20 @@ C=======================================================================
      &                       BUF)
           ENDIF
 
-          TEST_ME_FIRST = DSQRT(DDOT(3,S_B,1,S_B,1))
+          TEST_ME_FIRST = DSQRT(DDOT(3,S_b,1,S_b,1))
 
           IF(IS_GGA) THEN
             TEST_ME_FIRST = MAX(
      &                          TEST_ME_FIRST,
-     &                          DABS(GS_B(1,1)),
-     &                          DABS(GS_B(1,2)),
-     &                          DABS(GS_B(1,3)),
-     &                          DABS(GS_B(2,1)),
-     &                          DABS(GS_B(2,2)),
-     &                          DABS(GS_B(2,3)),
-     &                          DABS(GS_B(3,1)),
-     &                          DABS(GS_B(3,2)),
-     &                          DABS(GS_B(3,3))
+     &                          DABS(GS_b(1,1)),
+     &                          DABS(GS_b(1,2)),
+     &                          DABS(GS_b(1,3)),
+     &                          DABS(GS_b(2,1)),
+     &                          DABS(GS_b(2,2)),
+     &                          DABS(GS_b(2,3)),
+     &                          DABS(GS_b(3,1)),
+     &                          DABS(GS_b(3,2)),
+     &                          DABS(GS_b(3,3))
      &                         )
           ENDIF
 
@@ -142,8 +142,8 @@ C=======================================================================
      &                               GAO,
      &                               GAO1,
      &                               IXYZ,
-     &                               S_B(IXYZ),
-     &                               GS_B(1,IXYZ),
+     &                               S_b(IXYZ),
+     &                               GS_b(1,IXYZ),
      &                               GR,
      &                               IS_GGA)
             ENDDO
@@ -161,8 +161,8 @@ C     /* SDFT_LR_COLLINEAR */
      &                             GAO,
      &                             GAO1,
      &                             IXYZ,
-     &                             S_B,
-     &                             GS_B,
+     &                             S_b,
+     &                             GS_b,
      &                             GR,
      &                             IS_GGA)
 C=======================================================================
@@ -193,30 +193,41 @@ C=======================================================================
      &          EXCMAT(*),
      &          GAO(*),
      &          GAO1(*),
-     &          GS_B(3),
+     &          GS_b(3),
      &          GR(3),
-     &          VXC_V(3)
+     &          VXC_Y(3),
+     &          VXC_X_b(3),
+     &          VXC_VECTOR(3)
 
-      VXC_S = D0
-      CALL DZERO(VXC_V,3)
+
+      VXC_S = VXC(fSS)*S_b
 
       IF(IS_GGA) THEN
-        Y_B = DDOT(3,GR,1,GS_B,1)
+        Y_b = DDOT(3,GR,1,GS_b,1)
 
         DO JXYZ = 1,3
-          VXC_V(JXYZ) = (S_B*VXC(fSY) + Y_B*VXC(fYY))*GR(JXYZ)
-     &                + D2*VXC(fX)*GS_B(JXYZ)
-        ENDDO
-        CALL DSCAL(3,D2,VXC_V,1) !because of symmetrization later in the code
+          VXC_X_b(JXYZ) = VXC(fX)
 
-        VXC_S = VXC(fSY)*Y_B
+          VXC_Y(JXYZ) = S_b*VXC(fSY) + Y_b*VXC(fYY)
+        ENDDO
+
+        VXC_S = VXC_S + VXC(fSY)*Y_b
       ENDIF
 
-      VXC_S = VXC_S + VXC(fSS)*S_B
+      VXC_SCALAR = VXC_S
+
+      IF(IS_GGA) THEN
+        DO JXYZ = 1,3
+          VXC_VECTOR(JXYZ) = VXC_Y(JXYZ)*GR(JXYZ)
+     &                     + VXC_X_b(JXYZ)*GS_b(JXYZ)*D2
+        ENDDO
+
+        CALL DSCAL(3,D2,VXC_VECTOR,1) !because of symmetrization later in the code
+      ENDIF
 
       CALL EXC_M(IS_GGA,
-     &           VXC_S,
-     &           VXC_V,
+     &           VXC_SCALAR,
+     &           VXC_VECTOR,
      &           IXYZ,
      &           ISYMOP,
      &           EXCMAT,
