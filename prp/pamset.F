@@ -631,7 +631,6 @@ C          Hermitian operator
           CALL READNS(LUBUF,FAO)
           CLOSE(LUBUF,STATUS='KEEP')
         ELSE
-c         CALL DENSTY(FAO,CMO,IPRINT)        
           CALL GENDEN(FAO,CMO,1,IPRINT)
           IF (NASHT .GT. 0) 
      &       CALL GENDEN(FAO(1+N2BBASXQ),CMO,2,IPRINT)
