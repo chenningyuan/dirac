@@ -276,8 +276,6 @@ C
             ITEST  = NPSH(IFRP)
             ISTART = 1
             ILOOP  = NPSH(IFRP)
-CTROND            ISTART = 80
-CTROND            ILOOP  = NPSH(IFRP) - 80
           ELSEIF (I.EQ.5) THEN
             ITEST  = NORB(IFRP)
             ISTART = 1
