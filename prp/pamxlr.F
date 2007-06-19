@@ -392,15 +392,7 @@ C
 #include "ibtfun.h"
 C
 
-C     IF (SET.AND.(TWOCOMP.AND.BSS)) RETURN
-      NEWDEF = (WORD .EQ. '*LINEAR')
       IF (SET) THEN
-C     IF (SET.OR.(TWOCOMP.AND.BSS)) THEN
-C        IF (NEWDEF.AND.(TWOCOMP.AND.BSS)) RETURN
-         IF (NEWDEF)
-C        IF (NEWDEF.AND..NOT.(TWOCOMP.AND.BSS))
-     &      CALL QUIT('Only one "*LINEAR" input section allowed')
-C        hjaaj: repeated input sections give infinite loop ...
          IF (RESET) SET = .FALSE.
          RETURN
       END IF
@@ -469,6 +461,7 @@ C
 C     Process input from CBIXLR
 C     =========================
 C
+      NEWDEF = (WORD .EQ. '*LINEAR')
       ICHANG = 0
       INPERR = 0
       IF (NEWDEF) THEN
