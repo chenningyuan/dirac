@@ -179,6 +179,8 @@ C
 C     get density matrices for SAOP
 C     =============================
 C
+      KDMAT_OUTER_AO = KFREE
+      KDMAT_RESP_AO  = KFREE
       IF(LBIT(LBIT_DFTAC,3)) THEN !SAOP
         CALL SET_LBIT(LBIT_DFTAC,4) !SAOP is active
 
