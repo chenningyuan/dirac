@@ -143,10 +143,6 @@ C       ... by default DO the picture change transformation
      &'PRPINP: Picture change transformation of properties activated !'
       ELSE
         DOPCT = .FALSE.
-CMI  ... no LL blocks of operators !!!!
-CMI     NOPCT = .TRUE.
-CMI     WRITE(LUPRI,'(/3X,A/)')
-CMI  &'PRPINP: No picture change transformation !'
       ENDIF
 C
 C     Read menu file
@@ -221,27 +217,22 @@ C&&&& POLAR - electronic dipole polarizabilities
 C&&&& MAGNET - magnetic susceptibilities
             DOXLR  = .TRUE.
             MSUSCP = .TRUE.
-C            CALL DEF_MSUSCP(WORK,LWORK)   
             GO TO 100
   105    CONTINUE
 C&&&& NMR parameters:
             DOXLR  = .TRUE.
             SHIELD = .TRUE.
-C            CALL DEF_SHIELD(WORK,LWORK)
             SPNSPN = .TRUE.
-C            CALL DEF_SPNSPN(WORK,LWORK)                  
             GO TO 100
   106    CONTINUE
 C&&&& SPIN-S: NMR indirect spin-spin coupling constants:
             DOXLR  = .TRUE.
             SPNSPN = .TRUE.
-C            CALL DEF_SPNSPN(WORK,LWORK)                  
             GO TO 100
   107    CONTINUE
 C&&&& SHIELD: NMR shielding constants:
             DOXLR = .TRUE.
             SHIELD = .TRUE.
-C            CALL DEF_SHIELD(WORK,LWORK)
             GO TO 100
   108    CONTINUE
 C&&&& PRINT: print level
@@ -444,12 +435,7 @@ C
 C     Process input for various program sections
 C     ==========================================
 C
-C     hjaaj Oct 2003:
-C        first initialize common /dcbexp/
-C        because it may be modified both by EXPINP
-C        and elsewhere for diamag. terms for magnetic properties
-C
-      CALL EXPINP('INITIALIZE',.TRUE.,WORK,LWORK)
+      CALL EXPINP(WORD,.TRUE.,WORK,LWORK)
 C
 C     Now read input
 C
@@ -513,7 +499,6 @@ C     *STEX
          GO TO 200
 C
     1 CONTINUE
-      WORD = 'INITLZE'
       IF(DOEXP) CALL EXPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
 CMI ... read again the input
