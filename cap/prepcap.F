@@ -442,14 +442,14 @@ C        ...  relativistic CAP integrals
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
         ELSE
-C        ... CAP relativistic dipole velocity integrals
-          CALL CAPREAD('XCAPDVE ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
-     &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
-
+C         ... CAP relativistic dipole velocity integrals
           CALL CAPREAD('XCAPDVE ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
           CALL CAPREAD('YCAPDVE ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
+
+          CALL CAPREAD('ZCAPDVE ',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
      &         ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
 
         ENDIF
@@ -458,8 +458,8 @@ C        ... CAP relativistic dipole velocity integrals
 
       ELSE
 C      ... overlap integrals
-          CALL CAPREAD('CAP_OVLP',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
-     &                 ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
+        CALL CAPREAD('CAP_OVLP',WORK(KPMR),WORK(KPMRSA),WORK(KPMRSAT),
+     &                ICAPBFO,IOBF1_2,WORK(KFREE),LFREE)
       ENDIF
 
 C     ... release all the memory
@@ -1199,12 +1199,12 @@ C     ... last 2 XPRIND
 
       IF (LBL.EQ.'ZCAPDVE') THEN
 
-      PNAME    = 'CAP_dip_ve'
-      IPTYP    = 8
-      NPCOMP   = 3
-      PFAC(1)  = -CVAL
-      PFAC(2)  = -CVAL
-      PFAC(3)  = -CVAL
+      PNAME     = 'CAP_dip_ve'
+      IPTYP     = 8
+      NPCOMP    = 3
+      PFAC(1)   = -CVAL
+      PFAC(2)   = -CVAL
+      PFAC(3)   = -CVAL
       PLABEL(1) = 'XCAPDVE'
       PLABEL(2) = 'YCAPDVE'
       PLABEL(3) = 'ZCAPDVE'
@@ -1215,7 +1215,7 @@ C     ... last 2 XPRIND
       IF (IPRCAP.GE.2) THEN
         WRITE(LUPRI,'(2X,A,I3)')
      &  '* CAP_dip_ve operator added to the list, index=',IPCAP_DV
-        CALL WRIXPR(1,IPCAP_DR)
+        CALL WRIXPR(1,IPCAP_DV)
       ENDIF
 
       ENDIF

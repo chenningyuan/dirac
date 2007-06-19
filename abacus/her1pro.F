@@ -297,7 +297,7 @@ C
 C     PARAMETER (NTABLE = 58)
 CMI   PARAMETER (NTABLE = 66)
 CMI   PARAMETER (NTABLE = 69)
-      PARAMETER (NTABLE = 71)
+      PARAMETER (NTABLE = 72)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -329,7 +329,7 @@ C
      &            'RM1H3  ', 'RM1RN  ', 'RM1H2  ',
      &            'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 'RM2H3  ',
      &            'RM2H2  ', 'CAP_RE ', 'CAP_IM ','CAP_OVL',
-     &            'CAPD1R ', 'CAPD1I '
+     &            'CAPD1R ', 'CAPD1I ', 'CAPDVE '
      &                         /
 
 C
@@ -349,7 +349,7 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,
-     &             59,60,61,62,63,64,65,66,67,68,69,70,71
+     &             59,60,61,62,63,64,65,66,67,68,69,70,71,72
      &             ), I
          END IF
   100 CONTINUE
@@ -1734,6 +1734,8 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &'PR1DIR: non-relativistic CAP_re integrals'
          NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'CAP_RE  '
          INTREP(1) = 0
          SQUARE = .FALSE.
@@ -1745,6 +1747,8 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &'PR1DIR: nonrelativistic CAP_im integrals'
          NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'CAP_IM  '
          INTREP(1) = 0
          SQUARE = .FALSE.
@@ -1755,6 +1759,8 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &'PR1DIR: CAP_ovlp integrals'
          NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'CAP_OVLP'
          INTREP(1) = 0
          SQUARE = .FALSE.
@@ -1768,9 +1774,11 @@ C
 C    MI, Tel Aviv, 2007
 C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &      ' Calculation of CAR_D_re integrals'
+     &   ' Calculation of CAP_D_re integrals'
          INTTYP = 3
          NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XCAPD1R'
          LABINT(2) = 'YCAPD1R'
          LABINT(3) = 'ZCAPD1R'
@@ -1788,12 +1796,36 @@ C
 C    MI, Tel Aviv, 2007
 C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &   ' Calculation of CAR_D_im integrals'
+     &   ' Calculation of CAP_D_im integrals'
          INTTYP = 3
          NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XCAPD1I'
          LABINT(2) = 'YCAPD1I'
          LABINT(3) = 'ZCAPD1I'
+         INTREP(1) = ISYMAX(1,1)
+         INTREP(2) = ISYMAX(2,1)
+         INTREP(3) = ISYMAX(3,1)
+         ANTI = .TRUE.
+         SQUARE = .FALSE.
+      GO TO 200
+ 72   CONTINUE
+C
+C         DIRAC CAP dipole velocity integrals 
+C   ------------------------------------------------------------
+C   
+C    MI, Tel Aviv, 2007
+C
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   ' Calculation of CAP dipole velocity integrals'
+         INTTYP = 3
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'XCAPDVE'
+         LABINT(2) = 'YCAPDVE'
+         LABINT(3) = 'ZCAPDVE'
          INTREP(1) = ISYMAX(1,1)
          INTREP(2) = ISYMAX(2,1)
          INTREP(3) = ISYMAX(3,1)

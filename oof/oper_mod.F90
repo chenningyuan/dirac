@@ -31,7 +31,6 @@
  end function is_operator_on_list
 
 
-
  END MODULE Operators
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -139,5 +138,4 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
 
  call QEXIT('get_prop_saao')
  end subroutine get_prop_saao
-
 

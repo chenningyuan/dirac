@@ -116,8 +116,8 @@ C
 C
 C     Contribution from CAP integrals 
 C
-      ELSEIF(CLSINT(I).EQ.'CAP_RE '.OR.CLSINT(I).EQ.'CAP_IM ' .OR.
-     &       CLSINT(I).EQ.'CAP_OVL') THEN
+CMI   ELSEIF(CLSINT(I).EQ.'CAP_RE '.OR.CLSINT(I).EQ.'CAP_IM ' .OR.
+CMI  &       CLSINT(I).EQ.'CAP_OVL') THEN
 C     ... this serves only for 'catching' CAP_.. labels as these
 C     integrals are calculated after ONEGEN routine
       ELSE
@@ -1054,14 +1054,16 @@ C     =============================
       IPRINT2 = MAX(IPRPRP,IPRINT)
       IF (IPRINT2.GE.6) THEN
        CALL HEADER('*** Output from PRPMSAO ***',-1)
-       write(lupri,*) '* dealing with the operator with INDXPR=',
+       write(lupri,'(2X,A,I3,A,A)')
+     & '* dealing with the operator with INDXPR=',
      & INDXPR,' name=',PRPNAM(INDXPR)
-       write(lupri,*) '* operator ISYM=',ISYM,' IREP=',
+       write(lupri,'(2X,A,I1,A,I1,A,I1)')
+     & '* operator ISYM=',ISYM,' IREP=',
      & IREP,' ITIM=',ITIM
        IF (IS_SQUARE) THEN
-        write(lupri,*) '* this is SQUARE operator'
+        write(lupri,'(2X,A)') '* this is a SQUARE operator'
        ELSE
-        write(lupri,*) '* this is triangular operator'
+        write(lupri,'(2X,a)') '* this is a TRIANGULAR operator'
        ENDIF
       ENDIF
 
@@ -1073,6 +1075,7 @@ C ==============================================================================
        IPRINT2 = MAX(IPRHAM,IPRINT)
 
        IF (N2BBASXQ.NE.(NTBAS(1)*NTBAS(1)*NZ)) THEN
+         write(lupri,*) 'PRPMSAO error output:'
          write(lupri,*) 'N2BBASXQ=',N2BBASXQ
          write(lupri,*) 'NTBAS(1)=',NTBAS(1)
          write(lupri,*) 'NTBAS(1)*NTBAS(1)*NZ=',
@@ -1115,17 +1118,6 @@ C     ... do resort PTRI to the boson sorted basis
           CALL SORT2SAO(IDIMENS,PTRI,PMAT,FIRST,
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ENDIF
-
-CMI     ... for the CAP_IM operator, simply move "r" to "i" (for NZ>1)
-CMI   ==================================================================
-C       IF (CAP.AND.NZ.GT.1.AND.IPRPTYP(INDXPR).EQ.20) THEN
-C        DO I = 1, N2BBASX
-C         PMAT(I,2) = PMAT(I,1)
-C         PMAT(I,1) = D0
-C        ENDDO
-C        WRITE(LUPRI,'(2X,A)')
-C    &   'PRPMSAO: switch of CAP_IM fo "i" operator !'
-C       ENDIF
 
 C ====================================================================
 C       ... decide if the picture change transformation is needed

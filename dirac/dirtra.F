@@ -818,9 +818,9 @@ C
      &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
                         ASO(I,J) = ASO(I,J)
      &                                 + FACA*FACB*AAO(INDA,INDB)
-CMI        ... control print-out to track the SO matrix construction
-          IF (IPRINT.GE.18) THEN 
-             write(LUPRI,
+          IF (IPRINT.GE.28) THEN 
+CMI        ... control print-out to track the AO-SO matrix construction
+             WRITE(LUPRI,
      &'(2X,A,I3,A,I3,A,D12.6,A,D10.4,A,D10.4,A,I3,A,I3,A,D12.6)')
      &'ASO(',I,',',J,') =',ASO(I,J),
      &'  from :  ',
