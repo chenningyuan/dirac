@@ -261,7 +261,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
         CALL TITLER('Two-component BSS/DKH Kohn-Sham calculation',
      &      '*',125)
 
-        BSS=.TRUE.
+        BSS= .TRUE.
         START2C = .FALSE.
         CALL GMOTRA(WORK(KFREE),LFREE)
 C       .. do adapt transformation matrixes (Lowdin, Saomo) 
