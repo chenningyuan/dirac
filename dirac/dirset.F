@@ -73,10 +73,14 @@ C
       CALL QENTER('PAMSET')
       CALL TIMER('START ',TIMSTR,TIMEND)
 C
-C     Attempt a restart
-C     =================
+C     Attempt a restart unless geometry optimization
+C     ==============================================
 C
-      CALL GOTEST(GOFAST,IPREAD)
+      IF(OPTIMI) THEN
+        GOFAST = .FALSE.
+      ELSE
+        CALL GOTEST(GOFAST,IPREAD)
+      ENDIF
       IF(GOFAST.AND.(.NOT.DOHRM)) GOTO 10
 C
 C ... if 2c-mode IOTC, read basis in 4c-mode here
@@ -1710,7 +1714,7 @@ C.......Look for a formatted file with same information
       ENDIF
  20   CONTINUE
       IF(GOFAST) THEN
-        WRITE(LUPRI,'(A)') 'Restart successful !'
+        WRITE(LUPRI,'(A)') '*** WARNING: Restart successful !'
         IF(IPRINT.GE.2) THEN
           WRITE(LUPRI,*) NZT,URKBAL,SUB_BL,I2COFK
           WRITE(LUPRI,*) 'NORB...',(NORB(I),I=1,NFSYM)
