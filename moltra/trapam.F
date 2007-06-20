@@ -2715,6 +2715,19 @@ C
         ENDDO
       ENDDO
 C
+C     Symmetrize the density screening matrix (to allow for use
+C     of permutation symmetry in the integral generation step)
+C
+      DO IREPIJ = 1, NFSYM
+         DO JR = 1, NSYMBL
+            DO IR = 1, JR-1
+               A = MAX(DRIJ(IR,JR,IREPIJ),DRIJ(JR,IR,IREPIJ))
+               DRIJ(IR,JR,IREPIJ) = A
+               DRIJ(JR,IR,IREPIJ) = A
+            ENDDO
+         ENDDO
+      ENDDO
+C
 C     Print section
 C
       IF(IPRINT.GE.5) THEN
