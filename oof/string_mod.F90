@@ -7,7 +7,7 @@
  type string
   private
    character*1, dimension (:), pointer :: strp  => NULL()
-   logical :: is_alloc = .false. ! the default does not work for older F90 compilars !!
+   logical :: is_alloc = .false. ! this default does not work for older F90 compilars !!
    integer (kind=4) :: str_length = 0
  end type string
 
@@ -17,7 +17,7 @@
 subroutine make_string(self, text)
 !-----------------------------------------------------------------------
 !
-!       create (allocte) the string
+!       create (allocate) the string
 !
 !-----------------------------------------------------------------------
 #include "priunit.h"
@@ -32,10 +32,12 @@ subroutine make_string(self, text)
    self(1)%str_length = size(self(1)%strp)
    if (self(1)%str_length.ne.len(text)) then
      write(LUPRI,*) 'new string lenghts:',len(text),self(1)%str_length
+     call FLSHFO(LUPRI)
      call QUIT('make_string: error in string length !')
    endif
    if ( alloc_stat > 0 ) then
      write(LUPRI,*) 'alloc_stat erro !'
+     call FLSHFO(LUPRI)
      call QUIT('mystring/make_string: erro allocation !')
      stop 
    endif
@@ -46,7 +48,15 @@ subroutine make_string(self, text)
   enddo
   self(1)%is_alloc=.true.
  else
-  write(LUPRI,*) 'mystring/make_string: this string is already allocated, see:',self(1)%strp
+   ! fix for older F90 compilers which do not assign default values 
+ !  call FLSHFO(LUPRI)
+   !write(lupri,*) 'make_string hallooo ! size(self(1)%strp)=',size(self(1)%strp)
+  ! write(lupri,*) 'make_string hallooo ! size(self(1)%strp)=',SIZE(self)
+ !  call FLSHFO(LUPRI)
+ !  if ( size(self(1)%strp) > 0 ) then
+     write(LUPRI,*) 'mystring/make_string: this string '// &
+     'is already allocated, see: ',self(1)%strp
+  ! endif
  endif
 
  call QEXIT('make_string')
@@ -73,6 +83,7 @@ subroutine make_string(self, text)
      if (dealloc_stat > 0) then
        write(LUPRI,*) 'dellocation error !, dealloc_stat=',dealloc_stat
        write(LUPRI,*) ' length of the delloc. string was:',self(1)%str_length
+       call FLSHFO(LUPRI)
        call QUIT('mystring/cancel_string: deallocation error !')
      endif
      nullify( self(1)%strp )

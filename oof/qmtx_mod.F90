@@ -646,10 +646,11 @@ end function getdiff_part_qmtx
 subroutine substract_qmtx(amat,bmat,fac_a,fac_b)
 !--------------------------------------------------------------------
 !
-!    DO: amat := fac_a*amat - fac_b*bmat;
-!  returns results in "amat"
-!
 !  Substract bmat from amat
+!
+!   DO: amat := fac_a*amat - fac_b*bmat;
+!
+!  returns result in "amat"
 !
 !--------------------------------------------------------------------
 type(QMtx), intent(inout) :: amat

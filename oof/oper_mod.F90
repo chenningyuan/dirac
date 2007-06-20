@@ -3,32 +3,63 @@
 !
  MODULE Operators
 
-  use mystring
+ use mystring
 
  type DirOper
   private
- ! ... index of the operator
+  ! ... index of the operator
   integer (kind=4) :: indxpr=-1
- ! ... is on the operator list ?
+  ! ... is on the operator list ?
   logical (kind=1) :: is_on_list=.false. 
- ! ... attached text
+  ! ... attached text
   type(string), dimension(1) :: operator_text 
  end type DirOper
  
  contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-! function is_operator_on_list(self) result(is)
- function is_operator_on_list(oper_indx) result(is)
+ function operator_on_dirac_list(oper_indx) result(is)
 !---------------------------------------------------------------------------
 !
+!
+! Check if this operator is present in the DIRAC list of operators
+!
+!
 !---------------------------------------------------------------------------
- ! type(DiOper), intent(in) :: self
   integer (kind=4), intent(in) :: oper_indx
   logical (kind=1) :: is
- call QENTER('Operators:is_operator_on_list')
+ call QENTER('Operators:operator_on_dirac_list')
 
- call QEXIT('Operators:is_operator_on_list')
- end function is_operator_on_list
+  
+
+ call QEXIT('Operators:operator_on_dirac_list')
+ end function operator_on_dirac_list
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  subroutine add_operator(self,oper_indx_temp)
+!---------------------------------------------------------------------------
+!
+!   add operator to the wrapping structure
+!
+!---------------------------------------------------------------------------
+ type(DirOper), intent(inout):: self
+ integer, intent(in) :: oper_indx_temp
+ integer (kind=4)  :: oper_indx
+ logical (kind=1) :: is
+
+ call QENTER('Operators:add_operator')
+
+  oper_indx = oper_indx_temp
+
+ if (.not.operator_on_dirac_list(oper_indx)) then
+
+   self%is_on_list = .TRUE.
+ else
+   write(LUPRI,*) 'add_operator: operator',oper_indx,' is not in the DIRAC list!'
+   self%is_on_list = .FALSE.
+ endif
+
+ call QEXIT('Operators:add_operator')
+ end subroutine add_operator
 
 
  END MODULE Operators
@@ -38,11 +69,14 @@
  subroutine get_prop_saao(INDXPR,propmat)
 !----------------------------------------------------------------
 !
-!
 ! general purpose F90 routine; 
 !
-! return the SA-AO unpacked matrix "propmat" of the property INDXPR
+! return the SA-AO unpacked matrix "propmat"
+!  of the property operator INDXPR
 !
+! TODO: verify presence of INDXPR on the DIRAC operator list !
+!
+! Written by Miro ILIAS, Tel Aviv, 2007
 !
 !----------------------------------------------------------------
       use QMatrixes
@@ -76,6 +110,7 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
 
 !  write(LUPRI,*) 'property index=',INDXPR,' IREP,ITIM=',IREP,ITIM
 
+! ... allocate the matrix
   propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ) )
 
   IPRINT = get_iprint_qmtx()

@@ -73,21 +73,51 @@ end subroutine test_files
  subroutine CAP_DIPVEL_COMP
 !----------------------------------------------------------------------------
 !
-! compare CAP and DIRAC dipole velocity integrals
+! compare CAP and DIRAC dipole velocity integrals, which are now 
+! adapted and written  on the AOPROPER files
 !
 ! called from CAP_STUFF
 !
 !----------------------------------------------------------------------------
-  use Operators
+ ! use Operators
+ ! use Operators
+   use QMatrixes
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbham.h"
 #include "dcbcap.h"
-  type(DirOper) :: cap_dipvel
-
+ ! type(DirOper) :: cap_dipvel, dir_dipvel
+  type(QMtx) :: cap_dipvel, dir_dipvel 
+ double precision, parameter :: diff_thrs = 1.0D-7
  call QENTER('CAP_DIPVEL_COMP')
 
+! call add_operator(cap_dipvel,IPCAP_DV); call add_operator(dir_dipvel,IPKINERG)
+
+ call get_prop_saao(IPCAP_DV,cap_dipvel)
+ call AddTextQMtx(cap_dipvel,'CAP dipole velocity integrals')
+
+ call get_prop_saao(IPKINERG,dir_dipvel)
+ call AddTextQMtx(dir_dipvel,'DIRAC dipole velocity integrals')
+
+!  compare smat & capovlp quaternion matrixes
+  diff = getdiff_part_qmtx(cap_dipvel,dir_dipvel)
+  write(LUPRI,'(/A)') '*************************************************************'
+  write(LUPRI,'(A,D22.10)') '*** comparison of CAP-DIRAC dipole velocity operators: ',diff
+  write(LUPRI,'(A)')  '*************************************************************'
+  CALL FLSHFO(LUPRI)
+
+ if (diff > diff_thrs) then
+! ... print individual matrixes, plus difference between them
+  call QMTxInfo(cap_dipvel)
+  call QMTxInfo(dir_dipvel)
+
+  call  AddTextQMtx(cap_dipvel,'******** difference  CAP - DIRAC ***********')
+  call substract_part_qmtx(cap_dipvel,dir_dipvel)
+  call QMTxInfo(cap_dipvel)
+ endif
 
  call QEXIT('CAP_DIPVEL_COMP')
+
  end subroutine CAP_DIPVEL_COMP
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -212,7 +242,7 @@ subroutine CAP_STUFF(WORK,LWORK)
 !---------------------------------------------------------------------------
 !
 !
-!    Called from 'main' dirac flow - dirset.F/PAMINP
+!   Called from 'main' dirac flow - dirset.F/PAMINP
 !
 !
 !---------------------------------------------------------------------------
@@ -274,7 +304,7 @@ DIMENSION WORK(LWORK)
           CALL CAP_DIRAC_AO(icabfo,iobf1_2)
           CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree()) 
           CALL CAP_DIPVEL_COMP
-           call QUIT('CAP_STUFF: comparison')
+          call QUIT('CAP_STUFF: comparison')
         ENDIF
         CAPDIPVEL = .FALSE.
         CALL DOSAJEEV(PW(get_kfree()),get_lfree())

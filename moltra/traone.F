@@ -612,7 +612,7 @@ C
 C
 C     Fill in complete core-Fock matrix in complex form
 C
-      CALL MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD)
+      CALL MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD,IPRTRA)
 
 #ifdef MOD_CAP
       CALL CAPMFDADAPT(CAP,NSTRT,NSTR,FMO,FMOM,WORK(KFREE),LFREE)
@@ -1099,13 +1099,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck moltodir */
-      SUBROUTINE MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD)
+      SUBROUTINE MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD,IPRINT)
 C***********************************************************************
 C     
 C Purpose: Transform DIRAC Fock matrix, FMO, into MOLFDIR format, FMOM
 C          (if FORWARD=.true, otherwise transform back)     
 C     
 C     Luuk Visscher, Mar 26 2002
+C         Miro Ilias, June 2007 - added IPRINT
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1121,6 +1122,8 @@ C
       DIMENSION FMO(NORBT,NORBT,NZ)
       DIMENSION FMOM(NSTRT*2,NSTRT*2,2)
       DIMENSION NSTR(2)
+
+      CALL QENTER('MOLTODIR')
 C
 C
 C     Transform from matrix in quaternion DIRAC form to complex MOLFDIR form 
@@ -1187,6 +1190,27 @@ C
         IOFF3 = IOFF3 + NSTR(IFSYM)
       ENDDO
 C
+      IF (IPRINT.GE.7) THEN
+        IF (FORWARD) THEN
+         CALL HEADER(
+     &   'MOLTODIR: transformation from DIRAC into MOLFDIR format',-1)
+        ELSE
+         CALL HEADER(
+     &   'MOLTODIR: transformation from MOLFDIR into DIRAC format',-1)
+        ENDIF
+C       ....  
+        WRITE(LUPRI,'(/3X,A)')
+     &  'MOLTODIR:  *** matrix in DIRAC format, FMO ***'
+        CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,NZ,
+     &               IPQTOQ(1,0),LUPRI)
+        WRITE(LUPRI,'(/3X,A)')
+     &  'MOLTODIR:  *** matrix in MOLFDIR format, FMOM ***'
+C       CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MINO(NZ,2),
+        CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,2,
+     &              IPQTOQ(1,0),LUPRI)
+      ENDIF
+    
+      CALL QEXIT('MOLTODIR')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

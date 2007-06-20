@@ -89,15 +89,15 @@ CMI   or not the CAP integral evaluation
       ENDIF
       IF (.NOT.ARELABS) THEN
 CMI   ... evaluate CAP complex atomic untegrals
-        IF (IPRCAP.GE.0) THEN
-         WRITE(LUPRI,'(2X,A)')
+       IF (IPRCAP.GE.0) THEN
+         WRITE(LUPRI,'(/2X,A)')
      &   'CAP integrals are not present, going'//
-     &   ' to calculate them and write them into the PEMAT.'
+     &   ' to calculate and write them into the PEMAT file.'
          CALL FLSHFO(LUPRI)
-        ENDIF
+       ENDIF
 
 CMI   ... evaluate integrals - fill array with them
-        CALL AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
+       CALL AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
      &         PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI)
         
 C ============================================================
@@ -1148,6 +1148,7 @@ C#include "capint.h"
       COMPLEX *16 VCAPXT_D1C,VCAPXTy_D1C
       EXTERNAL V0,V1,V2,FF
       EXTERNAL V0D,V1D
+CMI   ... declaration must be for gfortran
       double complex v0,v1,v2,V1D,FF,V0D,V1D
       
       data CI/(0.0d0,1.0d0)/
@@ -1181,12 +1182,15 @@ CMI  ... run over the integration interval with NSTEP nodes
          XR=X-R_n(1)
          XRM=X-R_m(1)
          DGr=K_n*(XR**(-1))
-C       ... 1st derivative
+
+C         ... 1st derivative
          DG=DGr-(2*R_n(2)*(XR))
        
          XRy=Xy-R_n(1)
          XRMy=Xy-R_m(1)
          DGry=K_n*(XRy**(-1))
+
+C         ... 1st derivative
          DGy=DGry-(2*R_n(2)*(XRy))
 
          D2G1X=K_n*(K_n-1)*(XR**(-2))
@@ -1201,6 +1205,8 @@ C        ... 2nd derivative
          D2G2Xy=2*R_n(2)*(2*K_n+1)
          D2G3Xy=4*(R_n(2)**2)*(XRy**2)
          D2GXy=D2G1Xy-D2G2Xy+D2G3Xy
+
+C        ... 2nd derivative
          D2Gy=D2GXy
 
          GG1M=(XRM**2)
@@ -1217,7 +1223,9 @@ C        ... 2nd derivative
          GGEXy=(XRy**K_n)*(XRMy**K_m)
          GGy=GGEXy*DEXP(-GG1y)
 
+C        VADD=DCMPLX(0.0d0,0.0d0)
          VADD=0.0d0
+C        VADDy=DCMPLX(0.0d0,0.0d0)
          VADDy=0.0d0
        
          IF (DONRCAP) THEN
@@ -1247,10 +1255,14 @@ CMI       ... relativistic Hamiltonian
            VCAP_D1C  = (V0x +V1x +VADD )*GG
            VCAPy_D1C = (V0xy+V1xy+VADDy)*GGy
           ELSE
-           V1x  =  DCMPLX(1.0D0,0.D0)*DG
-           V1xy =  DCMPLX(1.0D0,0.D0)*DGy
+C          V1x  =  DCMPLX(1.0D0,0.D0)*DG
+           V1x  =  DG
+C          V1xy =  DCMPLX(1.0D0,0.D0)*DGy
+           V1xy =  DGy
            VCAP_D1C  = (V1x +VADD )*GG
+C          VCAP_D1C  = (V1x +VADD )
            VCAPy_D1C = (V1xy+VADDy)*GGy
+C          VCAPy_D1C = (V1xy+VADDy)
           ENDIF
            VCAPX_D1C(itx) = VCAP_D1C
            VCAPXy_D1C(itx)= VCAPy_D1C

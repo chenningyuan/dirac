@@ -667,9 +667,9 @@ C
         ENDIF
         WRITE(LUPRI,'(A,A16)') 
      &  '*MO-matrix of property ',PRPNAM(INDXPR)
-        WRITE(LUPRI,'(2X,A,4I3)')
-     &  'with parameters INDXPR,ISYM,IREP,ITIM:',
-     &  INDXPR,ISYM,IREP,ITIM
+        WRITE(LUPRI,'(2X,A,I3,A,I2,A,I2,A,I2)')
+     &  'with parameters INDXPR=',INDXPR,' ISYM=',ISYM,
+     &  ' IREP=',IREP,' ITIM=',ITIM
         CALL PRQMAT(PRPMO,NPMOT,NPMOT,NPMOT,NPMOT,NZ,
      &              IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)

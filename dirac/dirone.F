@@ -116,10 +116,11 @@ C
 C
 C     Contribution from CAP integrals 
 C
-CMI   ELSEIF(CLSINT(I).EQ.'CAP_RE '.OR.CLSINT(I).EQ.'CAP_IM ' .OR.
-CMI  &       CLSINT(I).EQ.'CAP_OVL') THEN
-C     ... this serves only for 'catching' CAP_.. labels as these
-C     integrals are calculated after ONEGEN routine
+      ELSEIF(CLSINT(I).EQ.'CAP_RE '.OR.CLSINT(I).EQ.'CAP_IM ' .OR.
+     &       CLSINT(I).EQ.'CAP_OVL') THEN
+C     ... this serves only for 'catching' CAP_.. labels when 
+C     these integrals are added as the perturbation to the Hamiltonian
+       CONTINUE
       ELSE
 C
 C Process all other integrals, which are coded in the abacus part !
@@ -959,11 +960,6 @@ C         ... accumulate the property ...
           END IF
         ENDDO
       ENDIF
-
-CMI ... operator type 20 - move real part into imaginary (it's a cheat)
-C     IF (NZ.GT.1.AND.IPRPTYP(IOP).EQ.20) THEN
-C       call QUIT('in PRPMAO with CAP_IM !')
-C     ENDIF 
 
       CALL QEXIT('PRPMAO')
       RETURN

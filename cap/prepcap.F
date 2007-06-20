@@ -686,7 +686,7 @@ C /* Deck getcapim */
       SUBROUTINE GETCAPMO(IMAGPART,CAPI,CAPI1,WORK,KFREE,LFREE)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C   Purpose: get CAP operator in MO basis into CAPI(*) 
+C   Purpose: get CAP operator in MO basis into CAPI(*)  - output CAPI1 array 
 C
 C   First get it (using PRPMAO) as the real operator
 C
@@ -764,12 +764,14 @@ C     ... Open property file
       IOPSY = JBTOF(ISYM-1,1)
       CALL DZERO(CAPI,N2ORBXQ)
       CALL PRPMAT(INDXPR,IOPSY,CAPI,WORK(KCMO),WORK(KBEIG),
-     &               ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+     &               ICMOQ,NORB,WORK,KFREE,LFREE,IPRCAP)
 
       IF (IPRCAP.GE.5) THEN
-       WRITE(LUPRI,'(2X,2A)')
-     & 'GETCAPMOM: Get MO matrix of property: ',PRPNAM(INDXPR)
-       CALL PRQMAT(CAPI,NORBT,NORBT,NORBT,
+        CALL FLSHFO(LUPRI)
+        WRITE(LUPRI,'(/2X,2A)')
+     & 'GETCAPMOM: Get MO matrix of property (to be readjust): ',
+     &  PRPNAM(INDXPR)
+        CALL PRQMAT(CAPI,NORBT,NORBT,NORBT,
      &         NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
       ENDIF
 
@@ -800,16 +802,26 @@ C
          ENDIF
         ENDDO
 
-       IF (IPRINT.GE.5) THEN
-        WRITE(LUPRI,'(2X,2A)')
-     &  'GETCAPMO: Rearranged MO matrix of property: ',PRPNAM(INDXPR)
-        CALL PRQMAT(CAPI1,NORBT,NORBT,NORBT,
-     &           NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
+      ELSE
+C   ... no rearrangement, simply copy
+       IF (IPRCAP.GE.5) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     &  'GETCAPMO: No rearrangement of the matrix.'
+        CALL FLSHFO(LUPRI)
        ENDIF
-
+       CALL DCOPY(NORBT*NORBT*NZ,CAPI,1,CAPI1,1)
       ENDIF
 
-      CALL MEMCHK('getcapmo 3',WORK,1)
+      IF (IPRCAP.GE.5) THEN
+        WRITE(LUPRI,'(/2X,2A)')
+     &  'GETCAPMO: Final MO matrix of property (output):',
+     &  PRPNAM(INDXPR)
+        CALL PRQMAT(CAPI1,NORBT,NORBT,NORBT,
+     &        NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
+      ENDIF
+
+
+C     CALL MEMCHK('getcapmo 3',WORK,1)
 
       CALL MEMREL('GETCAPMO',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 
@@ -827,7 +839,7 @@ C
 C  On input: CAPMOM - to be added to FMOM
 C            MULTIM - flag to decide the multiplication by the imag.unit
 C
-C  Called from the MRCON1 routine (traone.F).
+C  Called from CAPMFADAPT (prepcap.F).
 C
 C  Written by Miro ILIAS, Tel Aviv, febr. 2007 
 C
@@ -950,14 +962,15 @@ C         ... allocate space for CAP_IM
        CALL MEMGET('REAL',KCAPI1,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
 
 C       ... allocate space for MOLFDIR like CAP
-        CALL MEMGET('REAL',KCAPIM,NSTRT*NSTRT*8,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KCAPIM,NSTRT*NSTRT*8,WORK,KFREE,LFREE)
 
        IF (.NOT.NOCAPRE) THEN
-C      .... get CAP  operator - real part (nonrel/rel) in the MO basis
+C       ... get CAP  operator - real part (nonrel/rel) in the MO basis
         CALL GETCAPMO(.FALSE.,WORK(KCAPI),WORK(KCAPI1),WORK,KFREE,LFREE)
 C       ... turn it in the MOLFDIR like form
-        CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,.TRUE.)
-C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM (if .true.)
+        CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),
+     &                NSTR,NSTRT,.TRUE.,IPRCAP)
+C       ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM (if .true.)
         CALL ADDCAPMOM(NSTRT,WORK(KCAPIM),FMOM,.FALSE.)
        ENDIF
 
@@ -965,8 +978,8 @@ C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM 
 C      .... get CAP nonre/rel (as a "real" operator) - IMAGINARY part - in the MO basis
         CALL GETCAPMO(.TRUE.,WORK(KCAPI),WORK(KCAPI1),WORK,KFREE,LFREE)
 C       ... turn it in the MOLFDIR like form
-CC      CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,.TRUE.)
-        CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,.NOT.CAPIMRE)
+        CALL MOLTODIR(WORK(KCAPI1),WORK(KCAPIM),NSTR,NSTRT,
+     &                .NOT.CAPIMRE,IPRCAP)
 C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM (if .true.)
         CALL ADDCAPMOM(NSTRT,WORK(KCAPIM),FMOM,.TRUE.)
        ENDIF
