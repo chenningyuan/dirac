@@ -1962,15 +1962,19 @@ C Largest exchange contribution
                       ULINT = GABRAO(ISYBLA,ISYBLB,0)*
      &                        GABRAO(ISYBLC,ISYBLD,0)
                       DNSMAX = D0
+C                     We take the product of the maximum density for
+C                     electron 1 and the maximum density for electron 2
+C                     These maxima are stored in the array DMRAO that has
+C                     as last dimension twice the number of density matrices
+C                     (first the ones for elec. 1, then those for elec. 2).
+C                     This why the offset is needed.
                       IOFF = NDMAT
                       DO I = 1,NDMAT
                         FAC = DMRAO(ISYBLC,ISYBLD,I)*
      &                        DMRAO(ISYBLA,ISYBLB,I+IOFF)
                         DNSMAX = MAX(DNSMAX,FAC)
                       ENDDO
-CTROND                      FAC = KHKTAB*NORBAB*KHKTCD*NORBCD
                       FAC = D1
-CTROND                      FAC = NORBAB*NORBCD
                       DISMAX = FAC*DNSMAX*ULINT
                       IF(DISMAX.LT.SCRTHR) THEN
                         DINTSKP(2,JDIS) = DINTSKP(2,JDIS) + NCCINT
