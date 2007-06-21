@@ -52,7 +52,6 @@ C                  PAMSET
 C                  LSQMAT
 C
 C     Written by T.Saue - May 1996
-C     Last revision: May 19 1996 - tsaue
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -60,7 +59,6 @@ C*****************************************************************************
 C
 #include "mxcent.h"
       DIMENSION WORK(LWORK)
-      LOGICAL TOBE
       CHARACTER COMB*4
 C
 #include "dcbgen.h"
@@ -71,17 +69,6 @@ C
 #include "cbihr1.h"
 #include "cbiher.h"
       CALL QENTER('ONEGEN')
-C
-C     First check if the integral file is already there...
-C
-CTROND      INQUIRE(FILE='AOPROPER',EXIST=TOBE)
-CTROND      IF(TOBE) THEN
-CTROND        WRITE(LUPRI,'(A)') 
-CTROND     &    '* WARNING: Found one-electron integral file AOPROPER.',
-CTROND     &    '  Skipping integral integration.'
-CTROND        GOTO 20
-CTROND      ENDIF
-CTROND      TOBE = .FALSE.
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
@@ -376,13 +363,6 @@ C
       CALL MEMGET('INTE',KJCENT,  NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGEXP ,  NUCDEP,WORK,KFREE,LFREE)
       LWRK   = LWORK - KFREE + 1
-C
-C     PROPTY = .FALSE.
-C     MAXDIF = 0
-C     DIFDIP = .FALSE.
-C     SECDER = .FALSE.
-C     NOPV   = .FALSE.
-C     NOCV   = .FALSE.
 C
       CALL ONEDR1(WORK(KSTHMA),DUMMY,DUMMY,WORK(KFACIN),
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KNCENT),WORK(KJSYMC),
@@ -715,7 +695,6 @@ C
 C
       CHARACTER MXFORM*6, FMT*6, RTNLBL(2)*8,JCHR*1
       LOGICAL FIRST(*), DOINT(4), SQUARE
-CMI   DIMENSION PMAT(NNBBASX,*),OP1INT(NNBBASX),WORK(LWORK), IDOINT(4)
       DIMENSION PMAT(IDIMENS,*),OP1INT(IDIMENS),WORK(LWORK), IDOINT(4)
 C
       EXTERNAL BDQALGEBRA
@@ -739,7 +718,6 @@ C
       IOPTYP = IPRPTYP(IOP)
       IF(IPRINT.GE.3) THEN
         CALL HEADER('Output from PRPMAO',-1)
-CMI     WRITE(LUPRI,'(A,A16)')
         WRITE(LUPRI,*)
      & 'Generating property matrix for the property ',PRPNAM(IOP)
         IF (SQUARE) THEN
@@ -841,7 +819,6 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
 C =============================================================
 C               Get integral from AOPROPER file
 C =============================================================
-CMI        ... use IDIMENS ...
         CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &              OP1INT,IDIMENS,IPRINT)
         IF(IPRINT.GE.8) THEN
@@ -860,7 +837,6 @@ C
         IFAC  = JCOM(I,IOPTYP)*JM4FAS(IM4)
         PFAC  = FACPRP(I,IOP)*IFAC
         IF(PFAC.NE.D1) THEN
-CMI       CALL DSCAL(NNBBASX,PFAC,OP1INT,1)
           CALL DSCAL(IDIMENS,PFAC,OP1INT,1)
           IF(IPRINT.GE.8) THEN
             WRITE(LUPRI,'(/A,D13.6)')
@@ -897,16 +873,9 @@ Chj     corresponding to a factor of +1, -1, or 0 on that block.
         END DO
 C
         IF (NZ.LT.4 .OR. NM1.GT.0) THEN
-CMI       CALL QNPHASE(IZ,IBRP,OP1INT,IDOINT)
-CMI      TODO: Generalize the routine !!
-C          ... this not works for Vnuc
-CMI       CALL QMPHASE('S',IZ,IBRP,OP1INT,DOINT)
           IF (.NOT.SQUARE) THEN
            CALL QNPHASE(IZ,IBRP,OP1INT,IDOINT)
           ELSE
-CMI        ... check it !!!
-CMI        IQ =  IPQTOQ(IZ,IBRP)
-CMI        CALL Q2PHASE('D',IQ,1,OP1INT,DOINT)
            CALL QMPHASE('S',IZ,IBRP,OP1INT,DOINT)
           ENDIF
 
@@ -925,21 +894,10 @@ CMI        CALL Q2PHASE('D',IQ,1,OP1INT,DOINT)
 C
 C       Determine where integrals go and add them on
 C
-Chj     IH = IHQMAT(IQ,1)
-Chj       IF(IH.EQ.1) THEN
-Chj         CALL DSPTSI(NTBAS(0),FTRI(1,IZ),FOCK(1,IZ))
-Chj       ELSEIF(IH.EQ.2) THEN
-Chj         CALL DAPTGE(NTBAS(0),FTRI(1,IZ),FOCK(1,IZ))
-Chj       ENDIF
-Chj
         IF(FIRST(IQP)) THEN
-Chj       CALL DSPTSI(NTBAS(0),OP1INT,PMAT(1,IQP))
-CMI       CALL DCOPY(NNBBASX,OP1INT,1,PMAT(1,IQP),1)
           CALL DCOPY(IDIMENS,OP1INT,1,PMAT(1,IQP),1)
           FIRST(IQP) = .FALSE.
         ELSE
-Chj       CALL DSPPSI(NTBAS(0),OP1INT,PMAT(1,IQP))
-CMI       CALL DAXPY(NNBBASX,D1,OP1INT,1,PMAT(1,IQP),1)
 C         ... accumulate the property ...
           CALL DAXPY(IDIMENS,D1,OP1INT,1,PMAT(1,IQP),1)
         ENDIF
@@ -1017,9 +975,7 @@ C
 #include "dcbqal.h"
 #include "dummy.h"
 C
-C     CHARACTER MXFORM*6, FMT*6, RTNLBL(2)*8,JCHR*1
       LOGICAL FIRST(NZ),IS_SQUARE, YESPCTRA, MAKEPCTRA
-CMI   DIMENSION PMAT(NNBBASX,*),OP1INT(NNBBASX),WORK(LWORK), IDOINT(4)
       DIMENSION PTRI(IDIMENS,NZ),PMAT(N2BBASX,NZ),
      &          OP1INT(IDIMENS),WORK(LWORK)
       CHARACTER*8 PRPLABEL
@@ -1466,8 +1422,6 @@ CMI     ... control output ...
      &    '*** fermion corep ',IFRP,'/',NFSYM
            CALL PRQMAT(VMAT(IVOFF),NFBAS(IFRP,0),NFORB(IFRP,0),
      &           NFBAS(IFRP,0),NFORB(IFRP,0),1,IPQTOQ(1,0),LUPRI)
-C          CALL OUTPUT(VMAT(IVOFF),1,NFBAS(IFRP,0),1, NFORB(IFRP,0),
-C    &                   NFBAS(IFRP,0),NFORB(IFRP,0),1,LUPRI)
         END IF
         ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
@@ -1659,7 +1613,6 @@ C
       CALL FREEM1(FOCK,WORK(KFTRI),WORK(KONEIN),WORK(KFIRST),
      &              WORK(KFREE),LFREE,IPRINT)
 
-C     CALL MEMGET('REAL',KVOLACO,10,WORK,KFREE,LFREE)
       CALL MEMCHK('FREEMT 3',WORK,1)
 
 C     Memory deallocation
@@ -1724,9 +1677,6 @@ C
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
       CALL QENTER('FREEM1')
-CMI#include "memint.h"
-CMI    CALL MEMGET('REAL',KVOLACO,1,WORK,KFREE,LFREE)
-CMI    CALL MEMCHK('FREEM1 beg',WORK,1)
 
 C
 C     Initialize
@@ -1799,7 +1749,6 @@ C
    10   CONTINUE
       ENDIF
 C
-CMI   CALL MEMCHK('FREEM1 end',WORK,1)
       CALL QEXIT('FREEM1')
       RETURN
       END
@@ -2271,9 +2220,6 @@ CMI   ... adaptation for the linear symmetry
 C ... do always return non-linear symmetry adapted transformation matrix :
         CALL DCOPY(ISIZE,WORK(KBUF1),1,TMAT,1)
 
-C     We need to diagonalize blockwise in the SCF step 
-C      SUB_BL = .TRUE.
-
        IF(IPRHAM.GE.5) THEN
          CALL HEADER(
      &  'MODHAM: AFTER LINSYM final transformation'//
@@ -2374,9 +2320,6 @@ C
      & 'PRPREA: >>> Going to read the property '//PRPLBL//
      & ' with COMB '//COMB//
      & ' from the file with LU1INT = ',LU1INT
-C      WRITE(LUPRI,'(A,A8,A,A8)')
-C    & 'labels> RTNLBL(1): ',RTNLBL(1),
-C    & 'RTNLBL(2): ',RTNLBL(2)
       ENDIF
 
       IF(FNDLB3(PRPLBL,COMB,RTNLBL,LU1INT,IPRINT)) THEN
@@ -2419,11 +2362,6 @@ C***********************************************************************
 C     Found label SRCLBL on LU; check COMB
         IF(RTNLBL(2)(5:8).NE.COMB) THEN
 CMI       ... control print out ...
-          IF (IPRINT.GE.19) THEN
-            WRITE(LUPRI,*) 'FNDLB3: COMB=',COMB
-            WRITE(LUPRI,*) 'FNDLB3: RTNLBL(2)(5:8)',RTNLBL(2)(5:8)
-            WRITE(LUPRI,*) 'FNDLB3: RTNLBL(2)(5:8).NE.COMB!'
-          ENDIF
           GOTO 10
         ENDIF
         FNDLB3 = .TRUE.
@@ -2452,7 +2390,6 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION SMAT(N2BBASX),WORK(LWORK)
-C     DIMENSION SMAT(*),WORK(LWORK)
       CHARACTER*8 RTNLBL(2)
       CALL QENTER('GTOVLX')
 #include "memint.h"
@@ -2465,13 +2402,8 @@ C
 C     Read integral from file
 C     =======================
 C
-#if defined (SYS_IBM)
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
       OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
       CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',WORK(KSBUF),NNBBASX,
      &            IPRONE)
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -2548,13 +2480,8 @@ C
 C     Read integral from file
 C     =======================
 C
-#if defined (SYS_IBM)
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
       OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
       CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',WORK(KSTRI),NNBBASX,
      &            IPRONE)
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -2675,13 +2602,8 @@ C
 C
 C     Initialize
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-#endif
+      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &      FILE='AOPROPER')
       DO IZ = 1,NZ
         FIRST(IZ) = .TRUE.
       ENDDO
@@ -3432,7 +3354,6 @@ C     Memory allocation
 C
 C     Buffer info
 C
-CTROND
       DO I = 1,NUCIND
         CBUF(I) = CHARGE(I)
         GBUF(I) = GNUEXP(I)
@@ -3672,7 +3593,6 @@ c  ... end loop within shells
          ENDDO
 c  ... end loop over shells
       ENDDO
-CMI10    CONTINUE
 C
 C     Symmetry unpack integrals
 C
@@ -3685,16 +3605,6 @@ C
          CALL OUTPUT(WORK(KONEMT),1,NTBAS(0),1,NTBAS(0),
      &        NTBAS(0),NTBAS(0),1,LUPRI)
       END IF
-
-CMI   IF (BSS) THEN
-C     IF (BSS.AND..NOT.TWOCOMPBSS) THEN
-C       CALL DOPCTRA(-1,WORK(KONEMT),1,'S',WORK(KFREE),LFREE)
-C       IF(IPRINT.GE.11) THEN
-C         CALL HEADER('BNCORR correction (pctra) for BSS FMAT',-1)
-C         CALL OUTPUT(WORK(KONEMT),1,NTBAS(0),1,NTBAS(0),
-C    &        NTBAS(0),NTBAS(0),1,LUPRI)
-C       END IF
-C     ENDIF
 
 C
 C     Add correction to (entering) Fock-matrix, FMAT
@@ -3711,7 +3621,6 @@ C     Memory deallocation
 
       ENDIF    
 
-CMI   CALL MEMCHK('BNCORR 2.0',WORK,1)
 C
 c     Stop timer
 c
@@ -3993,156 +3902,6 @@ C      GNU = MAX(GNU,0.50D0)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck oldbncr */
-      SUBROUTINE OLDBNCR(FMAT,WORK,LWORK,IPRINT)
-C*****************************************************************************
-C
-C     OLDBNCR: Generate screened bare nucleus matrix
-C     Aug 2001 Hans Joergen Aa. Jensen (based on TSCORR)
-C     Last revision: Sep 17 2002 - jkp (added timings, adapted for CATDR1)
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-      PARAMETER(D1 = 1.0D0)
-C
-      LOGICAL DOINT(2,2)
-      CHARACTER*4 OMITVNUC
-      DIMENSION WORK(LWORK),FMAT(*)
-      DIMENSION GNUTAB(103)
-      SAVE GNUTAB
-      DATA GNUTAB /2*0.1D0, 8*0.7D0, 8*1.0D0, 18*1.1D0, 18*1.2D0,
-     &             49*2.0D0/
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
-C
-      CALL QENTER('OLDBNCR')
-c
-c     Start timer
-c
-      TIMSTR = SECOND() 
-c
-#include "memint.h"
-C     Memory allocation
-      CALL MEMGET('REAL',KONEMT, N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN, NNBBASX,WORK,KFREE,LFREE)
-      LFCBA = NUCDEP**3
-      CALL MEMGET('REAL',KFCBA ,  LFCBA ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCOORC,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSIGNC,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNCENT,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KJSYMC,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KJCENT,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGEXP ,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KXGEXP,  NUCIND,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCHRG ,  NUCIND,WORK,KFREE,LFREE)
-      LWRK   = LWORK - KFREE + 1
-      CALL DZERO(WORK(KCHRG),NUCIND)
-c
-c     ... set charges and gaussian exponents.
-c     
-C       TODO: check for point charges ...
-C       for now we correct them as well
-c
-      IF(IPRINT .GE. 2) THEN
-         WRITE(LUPRI,'(/,2(4X,A/))') 
-     &' *** Entering OLDBNCR  for <X_A|(-Z*G(a,r_C))/r_C|X_B> terms ***',
-     &'     X=L,S ; G(a,r)=exp(-a*r^2)'
-C
-         WRITE(LUPRI,'(14X,A)')
-     &   ' Nuclei      Charge(-Z)       Exponent(a)'
-         WRITE(LUPRI,'(14X,A)')
-     &   '-----------------------------------------'
-         DO I = 1,NUCIND
-           ICHRG = NINT(CHARGE(I))
-           ICHRG = ABS(ICHRG)
-           IF (ICHRG .GT. 0) THEN
-              WORK(KXGEXP-1+I) =  GNUTAB(ICHRG)
-              WORK(KCHRG-1+I)  = -CHARGE(I)
-           END IF
-           WRITE(LUPRI,'(15X,A5,F15.2,F15.2)')
-     &     NAMN(I),WORK(KCHRG-1+I),WORK(KXGEXP-1+I)
-         ENDDO
-         WRITE(LUPRI,'(14X,A/)')
-     &   '-----------------------------------------'
-      ENDIF
-C
-C     Initialization (calculate LL and SS)
-C
-      DOINT(1,1) = .TRUE.
-      IF (NOSMLV) THEN
-         DOINT(2,2) = .FALSE.
-      ELSE
-         DOINT(2,2) = .TRUE.
-      END IF
-      DOINT(1,2) = .FALSE.
-      DOINT(2,1) = .FALSE.
-C
-C     Omit selected terms depending on OMITVNUC (See CATNUC for details)
-C     In this version one-center terms are calculated with the same
-C     charges/exponents as multi-center terms.
-C
-      OMITVNUC = 'FFFF'
-c
-c     ... Make list of nuclei.
-c
-      CALL CATNUC(NUCDEP,NCENTC,WORK(KCHRG),WORK(KFCBA),WORK(KGEXP),
-     &            WORK(KXGEXP),WORK(KCOORC), WORK(KSIGNC),WORK(KJSYMC),
-     &            WORK(KJCENT),OMITVNUC,IPRINT)
-c
-c    ... Calculate integrals (both LL and SS)
-c
-      CALL DZERO(WORK(KONEMT),N2BBASX)
-      CALL CATDR1(WORK(KONEMT),DUMMY,NCENTC,WORK(KFCBA),
-     &            WORK(KCOORC),WORK(KSIGNC),WORK(KJSYMC),
-     &            WORK(KJCENT),WORK(KGEXP),WORK(KFREE),LWRK,IPRINT,
-     &            .FALSE.,0,NNBBASX,DOINT)
-C
-C     Symmetry unpack integrals
-C
-      CALL SYMUPK(WORK(KONEMT),WORK(KONEIN),1,NNBBASX)
-      CALL DSPTSI(NTBAS(0),WORK(KONEIN),WORK(KONEMT))
-      CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
-C
-      IF(IPRINT.GE.5) THEN
-         CALL HEADER('OLDBNCR correction FMAT',-1)
-         CALL OUTPUT(WORK(KONEMT),1,NTBAS(0),1,NTBAS(0),
-     &        NTBAS(0),NTBAS(0),1,LUPRI)
-      END IF
-C
-C     Add correction to Fock-matrix
-C
-      CALL DAXPY(N2BBASX,D1,WORK(KONEMT),1,FMAT,1)
-      IF(IPRINT.GE.5) THEN
-         CALL HEADER('OLDBNCR: screened corrected bare nucleus FMAT',-1)
-         CALL PRQMAT(FMAT,NTBAS(0),NTBAS(0),
-     &               NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
-      END IF
-C
-C     Memory deallocation
-      CALL MEMREL('OLDBNCR',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-C
-c     Stop timer
-c
-      TIMEND = SECOND()
-      TIME   = TIMEND - TIMSTR
-      IF (IPRINT.GE.2)
-     &  CALL TIMTXT('>>> Time used in OLDBNCR is',TIME,LUPRI)
-      CALL QEXIT('OLDBNCR')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck eonecap */
       SUBROUTINE EONECAP(FMAT,DMAT,WORK,LWORK,IQ)
 C****************************************************************************
@@ -4335,7 +4094,6 @@ C       Transform fragment coefficients to orthonormal basis
         NDEL = 0
         NQ(1) = 0
         NQ(2) = 0
-CTROND        IF(NFRO(IFRP).EQ.0) GOTO 21
         IF(NVECS(IFRP).EQ.0) GOTO 21
         NREF = NORB(IFRP)*NVECS(IFRP)*NZ
         NPRJ = NORB(IFRP)*NORB(IFRP)*NZ
@@ -4601,16 +4359,9 @@ C     Check whether a new round of orthonormalization is
 C     necessary
 C     ==================================================
 C
-CTROND      IF(IROUND.GT.0) THEN
-CTROND         IROUND = 0
          IF (ITURN.EQ.1) THEN
-CTROND           WRITE(LUPRI,'(A)') 
-CTROND     &     '* PRJORT: Second round of orthonormalization !'
            GO TO 10
          ENDIF
-CTROND         CALL QUIT(
-CTROND     &     'PRJOUT error: IROUND .gt. 0 and ITURN .gt. 1')
-CTROND      END IF
 C
       RETURN
 C
@@ -4703,20 +4454,17 @@ C
      &           'H',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1,
      &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
         VNRM=SQRT(VNRM)
-CTROND
+
           IF(IPRINT.GE.2) WRITE(LUPRI,'(A,I3,A,1P,D12.5,3X,A,I5)')
      &      'Pector no.',IVEC,' Norm: ',VNRM,
      &      ' Bsym: ',IBVEC(IVEC)
         THRMAX=MAX(THRMAX,VNRM)
         IF(VNRM.LT.THRLDP) THEN
           IF(IPRINT.GE.1) THEN
-CTROND            WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5)')
-CTROND     &        'Vector no.',IVEC,' removed. Linear dependence: ',VNRM
             WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5,3X,A,I5)')
      &        'Vector no.',IVEC,' removed. Linear dependence: ',VNRM,
      &        ' Bsym: ',IBVEC(IVEC)
           ENDIF
-CTROND          IBVEC(IVEC) = -1-IBVEC(IVEC)
 C         Store information about irrep and neg/pos solution
           IBVEC(IVEC) = -(IP*10+IBVEC(IVEC))
           NDEL = NDEL + 1
@@ -5588,7 +5336,6 @@ C     the rest here). Also initialize the array that counts the number of functi
 C     each Mj value.
 C
       CALL DZERO (TBUF,N2TMT)
-CMI   CALL DZERO (TBUF,N2BBASXQ)
 
 
       CALL IZERO (NORB_SUB,MAX_SUB_BL*3*2)
