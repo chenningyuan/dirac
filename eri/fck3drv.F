@@ -2016,6 +2016,7 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
       FIXTHR    = .FALSE.
       BRFREE    = .FALSE.
       FULL_J    = .FALSE.
+      HERECF    = .FALSE.
 
       SPEXP     = .TRUE.
       PACKFTUV  = .TRUE.
@@ -2052,13 +2053,13 @@ C
 #include "priunit.h"
 #include "cbifck3.h"
 #include "fck3thr.h"
-      PARAMETER ( NTABLE = 17 )
+      PARAMETER ( NTABLE = 18 )
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DATA TABLE /'.FIXTHR','.THRFCK','.PRINT ','.NOSPEX','.NOSCRP',
      &            '.NOSKCL','.NOSKCS','.SCRFBT','.NOPACK','.NOSKAL',
      &            '.FULL_J','.UNCONT','.BRFREE','.CHCKNA','.NCSODB',
-     &            '.NCSTUV','XXXXXXX'/
+     &            '.NCSTUV','XXXXXXX','.HERMIT'/
 C
       IPRINT=IPRFCK3
 C
@@ -2079,8 +2080,8 @@ C
             ELSE IF (PROMPT .EQ. '.') THEN
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17),
-     &                     I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,
+     &                      15,16,17,18),i
                   END IF
  200          CONTINUE
               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -2139,6 +2140,9 @@ C
          NCSTUV  = .TRUE.
       GO TO 100  
  17   CONTINUE
+      GO TO 100
+ 18   CONTINUE
+         HERECF  = .TRUE.
       GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

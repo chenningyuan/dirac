@@ -46,6 +46,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "r12int.h"
+#include "cbifck3.h"
       PARAMETER (D1 = 1.0D0)
       INTEGER X
       DIMENSION ETIJ(NPP12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
@@ -87,10 +88,17 @@ C     Expansion coefficients
 C     ======================
 C
       DO X = 1, 3
-         CALL ERIECF(ETIJ(1,0,0,0,X,1),ETIJ(1,0,0,0,X,2),
-     &               ETIJ(1,0,0,0,X,2),NPP12,MAX1,MAX2,JMAX1,JMAX2,
-     &               SIGN,IAB0(X),PA(1,X),PB(1,X),EXP12,HPI,
-     &               X,0,IPRINT)
+         IF (HERECF) THEN
+           CALL HRECOF(ETIJ(1,0,0,0,X,1),ETIJ(1,0,0,0,X,2),
+     &                 ETIJ(1,0,0,0,X,2),NPP12,MAX1,MAX2,JMAX1,JMAX2,
+     &                 SIGN,IAB0(X),PA(1,X),PB(1,X),EXP12,HPI,
+     &                 X,TEXPA,TEXPB,IPRINT)
+         ELSE
+           CALL ERIECF(ETIJ(1,0,0,0,X,1),ETIJ(1,0,0,0,X,2),
+     &                 ETIJ(1,0,0,0,X,2),NPP12,MAX1,MAX2,JMAX1,JMAX2,
+     &                 SIGN,IAB0(X),PA(1,X),PB(1,X),EXP12,HPI,
+     &                 X,0,IPRINT)
+         ENDIF
          IF (U12INT)
 C           Calculate expansion coefficients for [T1,r12] integrals (WK/UniKA/04-11-2002).
      &      CALL WKEQ30(ETIJ(1,0,0,0,X,1),ETIJ(1,0,0,0,X,2),
@@ -114,6 +122,7 @@ C     Derivative coefficients
 C     =======================
 C
       IF (IDL .GT. 0) THEN
+         IF (HERECF) CALL QUIT('Wrong syntax for HERECF: IDL>1')
          DO X = 1, 3
             CALL ERIECF(ETIJ(1,0,0,0,X,2),ETIJ(1,0,0,0,X,1),
      &                  ETIJ(1,0,0,0,X,1),NPP12,MAX1,MAX2,JMAX1,JMAX2,
@@ -133,6 +142,7 @@ C     Compute TEXPA and TEXPB (WK/UniKA/04-11-2002).
 #include "implicit.h"
 #include "priunit.h"
 #include "r12int.h"
+#include "cbifck3.h"
       PARAMETER (DP5 = 0.5D0, D2 = 2.0D0)
       DIMENSION HPI(NPP12), 
      &          PA(NPP12,3), PB(NPP12,3),
@@ -157,7 +167,7 @@ C
 C     2A, 2B
 C     ======
 C
-      IF (U12INT) THEN
+      IF (U12INT.OR.HERECF) THEN
 C        2a and 2b are needed for [T1,r12] integrals (WK/UniKA/04-11-2002).
          DO I = 1, NPP12
             TEXPA(I) = D2*EXP12(I,1) / EXP12(I,3)
@@ -870,3 +880,295 @@ C
 C
       RETURN
       END
+C  /* Deck hrecof */
+      SUBROUTINE HRECOF(ETIJ,ETIJM1,ETIJM2,NPP12,MAXI,MAXJ,JMAXI,JMAXJ,
+     &                  SIGN,IAB0,PA,PB,EXP12,HPI,X,A2,B2,IPRINT)
+C    
+C     S. Reine feb 2007
+C     Expansion-coefficients for Hermite-basis
+C               
+#include <implicit.h>
+#include <priunit.h> 
+      PARAMETER (D1 = 1.00 D00, D2 = 2.00 D00)
+      INTEGER T, X 
+      CHARACTER WORD*4
+      DIMENSION PA(NPP12), PB(NPP12), EXP12(NPP12,3), HPI(NPP12)
+      DIMENSION A2(NPP12), B2(NPP12) 
+      DIMENSION ETIJ(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
+      DIMENSION ETIJM1(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
+      DIMENSION ETIJM2(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
+#include <ibtfun.h>
+#include <sdpre.h>
+C
+C     ****************************
+C     ********** AB > 0 **********
+C     ****************************
+C             
+      IF (IAB0 .EQ. 0) THEN
+C
+C        Run over I (J = 0)
+C        ==================
+C             
+         DO I = 0, MAXI
+C                 
+C           E(0,0)
+C               
+            TIM = SDPRE(I-1)
+            IF (I .EQ. 0) THEN
+              DO K = 1, NPP12
+                ETIJ(K,0,0,0) = D1
+              END DO
+C
+C           E(1,0)
+C
+            ELSE IF (I .EQ. 1) THEN
+              DO K = 1, NPP12
+                ETIJ(K,0,1,0) = PA(K)
+                ETIJ(K,1,1,0) = HPI(K)
+              END DO
+C
+C           E(2,0)
+C
+            ELSE IF (I .EQ. 2) THEN
+              DO K = 1, NPP12
+                PAK = PA(K)
+                HPK = HPI(K)
+                ETIJ(K,0,2,0) = PAK*PAK+ SIGN*HPK- D1/A2(K)
+                ETIJ(K,1,2,0) = D2*PAK*HPK
+                ETIJ(K,2,2,0) = HPK*HPK
+              END DO
+C
+C            E(I,0)
+C
+            ELSE
+              DO K = 1, NPP12
+                PAK = PA(K)
+                HPK = HPI(K)
+                ETIJ(K,  0,I,0) =  PAK*ETIJ(K, 0,I-1,0)
+     &                          + SIGN*ETIJ(K, 1,I-1,0)
+     &                           - TIM*ETIJ(K, 0,I-2,0)/A2(K)
+                ETIJ(K,I-1,I,0) =  HPK*ETIJ(K,I-2,I-1,0)
+     &                           + PAK*ETIJ(K,I-1,I-1,0)
+                ETIJ(K,  I,I,0) =  HPK*ETIJ(K,I-1,I-1,0)
+              END DO
+              DO T = 1, I - 2
+                T1 = SIGN*SDPRE(T + 1)
+                DO K = 1, NPP12
+                  ETIJ(K,T,I,0) =  HPI(K)*ETIJ(K,T-1,I-1,0)
+     &                            + PA(K)*ETIJ(K,  T,I-1,0)
+     &                               + T1*ETIJ(K,T+1,I-1,0)
+     &                              - TIM*ETIJ(K,  T,I-2,0)/A2(K)
+                END DO
+              END DO
+            END IF
+C
+C           Run over J
+C           ==========
+C
+            DO J = 1, MAXJ
+              IJ = I + J
+              TJM = SDPRE(J-1)
+C
+C             E(0,1)
+C
+              IF (IJ .EQ. 1) THEN
+                DO K = 1, NPP12
+                  ETIJ(K,0,0,1) = PB(K)
+                  ETIJ(K,1,0,1) = HPI(K)
+                END DO
+              ELSE IF (IJ .EQ. 2) THEN
+C
+C               E(0,2)
+C
+                IF (I .EQ. 0) THEN
+                  DO K = 1, NPP12
+                    PBK = PB(K)
+                    HPK = HPI(K)
+                    ETIJ(K,0,0,2) = PBK*PBK+SIGN*HPK-D1/B2(K)
+                    ETIJ(K,1,0,2) = D2*PBK*HPK
+                    ETIJ(K,2,0,2) = HPK*HPK
+                  END DO
+C
+C               E(1,1)
+C
+                ELSE
+                  DO K = 1, NPP12
+                    PAK = PA(K)
+                    PBK = PB(K)
+                    HPK = HPI(K)
+                    ETIJ(K,0,1,1) = PAK*PBK + SIGN*HPK
+                    ETIJ(K,1,1,1) = (PAK + PBK)*HPK
+                    ETIJ(K,2,1,1) = HPK*HPK
+                  END DO
+                END IF
+C
+C             E(I,J)
+C
+              ELSE
+                DO K = 1, NPP12
+                  PBK = PB(K)
+                  HPK = HPI(K)
+                  ETIJ(K,   0,I,J) =  PBK*ETIJ(K,   0,I,J-1)
+     &                             + SIGN*ETIJ(K,   1,I,J-1)
+     &                              - TJM*ETIJ(K,   0,I,J-2)/B2(K)
+                  ETIJ(K,IJ-1,I,J) =  HPK*ETIJ(K,IJ-2,I,J-1)
+     &                              + PBK*ETIJ(K,IJ-1,I,J-1)
+                  ETIJ(K,  IJ,I,J) =  HPK*ETIJ(K,IJ-1,I,J-1)
+                END DO
+                DO T = 1, IJ - 2
+                  T1 = SIGN*SDPRE(T + 1)
+                  DO K = 1, NPP12
+                    ETIJ(K,T,I,J)= HPI(K)*ETIJ(K,T-1,I,J-1)
+     &                            + PB(K)*ETIJ(K,  T,I,J-1)
+     &                               + T1*ETIJ(K,T+1,I,J-1)
+     &                              - TJM*ETIJ(K,  T,I,J-2)/B2(K)
+                  END DO
+                END DO
+              END IF
+            END DO
+         END DO
+C
+C     ****************************
+C     ********** AB = 0 **********
+C     ****************************
+C
+      ELSE
+C
+C        Run over I (J = 0)
+C        ==================
+C
+         DO I = 0, MAXI
+C
+C           E(0,0)
+C
+            IF (I .EQ. 0) THEN
+              DO K = 1, NPP12
+                ETIJ(K,0,0,0) = D1
+              END DO
+C
+C           E(1,0)
+C
+            ELSE IF (I .EQ. 1) THEN
+              DO K = 1, NPP12
+                ETIJ(K,1,1,0) = HPI(K)
+              END DO
+C
+C           E(2,0)
+C
+            ELSE IF (I .EQ. 2) THEN
+              DO K = 1, NPP12
+                HPK = HPI(K)
+                ETIJ(K,0,2,0) = SIGN*HPK - D1/A2(K)
+                ETIJ(K,2,2,0) = HPK*HPK
+              END DO
+C
+C            E(I,0)
+C
+            ELSE
+              TIM = SDPRE(I-1)
+              IF (IBTAND(1,I) .EQ. 0) THEN
+                DO K = 1, NPP12
+                  ETIJ(K,0,I,0) =  SIGN*ETIJ(K,  1,I-1,0)
+     &                            - TIM*ETIJ(K,  0,I-2,0)/A2(K)
+                  ETIJ(K,I,I,0) = HPI(K)*ETIJ(K,I-1,I-1,0)
+                END DO
+              ELSE
+                DO K = 1, NPP12
+                  ETIJ(K,I,I,0) = HPI(K)*ETIJ(K,I-1,I-1,0)
+                END DO
+              END IF
+              DO T = 2 - IBTAND(1,I), I - 2, 2
+                T1 = SIGN*SDPRE(T + 1)
+                DO K = 1, NPP12
+                  ETIJ(K,T,I,0) = HPI(K)*ETIJ(K,T-1,I-1,0)
+     &                              + T1*ETIJ(K,T+1,I-1,0)
+     &                             - TIM*ETIJ(K,  T,I-2,0)/A2(K)
+                END DO
+              END DO
+            END IF
+C
+C           Run over J
+C           ==========
+C
+            DO J = 1, MAXJ
+               IJ = I + J
+               TJM = SDPRE(J-1)
+C
+C              E(0,1)
+C
+               IF (IJ .EQ. 1) THEN
+                 DO K = 1, NPP12
+                   ETIJ(K,1,0,1) = HPI(K)
+                 END DO
+C
+C              E(1,1) AND E(0,2)
+C
+               ELSE IF (IJ .EQ. 2) THEN
+                 DO K = 1, NPP12
+                   HPK = HPI(K)
+                   IF (I .EQ. 1) THEN
+                     ETIJ(K,0,1,1) = SIGN*HPK
+                     ETIJ(K,2,1,1) = HPK*HPK
+                   ELSE
+                     ETIJ(K,0,0,2) = SIGN*HPK-D1/B2(K)
+                     ETIJ(K,2,0,2) = HPK*HPK
+                   ENDIF
+                 END DO
+C
+C              E(I,J)
+C
+               ELSE
+                 TJM = SDPRE(J-1)
+                 IF (IBTAND(1,IJ) .EQ. 0) THEN
+                   DO K = 1, NPP12
+                     ETIJ(K, 0,I,J) =  SIGN*ETIJ(K,   1,I,J-1)
+     &                                - TJM*ETIJ(K,   0,I,J-2)/B2(K)
+
+                     ETIJ(K,IJ,I,J) = HPI(K)*ETIJ(K,IJ-1,I,J-1)
+                   END DO
+                 ELSE
+                   DO K = 1, NPP12
+                     ETIJ(K,IJ,I,J) = HPI(K)*ETIJ(K,IJ-1,I,J-1)
+                   END DO
+                 END IF
+                 DO T = 2 - IBTAND(1,IJ), IJ - 2, 2
+                   T1 = SIGN*SDPRE(T + 1)
+                   DO K = 1, NPP12
+                     ETIJ(K,T,I,J) = HPI(K)*ETIJ(K,T-1,I,J-1)
+     &                              + T1*ETIJ(K,T+1,I,J-1)
+     &                             - TJM*ETIJ(K,T,I,J-2)/B2(K)
+                   END DO
+                 END DO
+               END IF
+            END DO
+         END DO
+      END IF
+C
+C     *************************
+C     ***** PRINT SECTION *****
+C     *************************
+C
+      IF (IPRINT .GT. 10) THEN
+         CALL HEADER('Output from HRECOF',-1)
+         WRITE (LUPRI,'(2X,A,3I5)') 'IDL, IABO, X', IDL,IAB0,X
+         WRITE (LUPRI,'(2X,A,2I5)') 'MAXI,MAXJ   ', MAXI, MAXJ
+         IF (IPRINT .GT. 20) THEN
+            IF (X .EQ. 1) WORD = 'EX00'
+            IF (X .EQ. 2) WORD = 'EY00'
+            IF (X .EQ. 3) WORD = 'EZ00'
+            DO I = 0, MAXI
+            DO J = 0, MAXJ
+            DO T = 0, I + J
+            IF (IBTAND(I + J - T + IDL,IAB0) .EQ. 0) THEN
+               WRITE (LUPRI,'(/,2X,A4,A1,I1,A1,I1,A1,I1,A1,/)')
+     &              WORD, '(', I, ',', J, ', ',  T, ')'
+               WRITE (LUPRI,'(1X,6F12.8)') (ETIJ(K,T,I,J),K=1,NPP12)
+            END IF
+            END DO
+            END DO
+            END DO
+         END IF
+      END IF
+      RETURN
+      END
+
