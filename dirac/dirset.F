@@ -88,11 +88,10 @@ C
       IF (TWOCOMPBSS) THEN                     
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
-        IPBUF = IPREAD
-        IPREAD = 0
+        IPREAD = IPREAD - 5
         CALL READIN(WORK,LWORK,.FALSE.)
         CALL SETDC1(IPREAD)
-        IPREAD = IPBUF
+        IPREAD = IPREAD + 5
       ENDIF
 C
 C     Generate all one-electron integrals
