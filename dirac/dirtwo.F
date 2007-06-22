@@ -3236,9 +3236,30 @@ C*****************************************************************************
       DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &        NPOS(*),WORK(LWORK)
+      LOGICAL SAVE_DOCART
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "densfit.h"
+#include "dcbgen.h"
+#include "maxaqn.h"
+#include "ccom.h"
+C
+C     (SR,ASPG,TS,LV june 2007) A four-component special :
+C     A not-so-clean hack to use the Hermite scheme ONLY for the Coulomb
+C     2-electron integrals, while keeping the Cartesian intermediates for
+C     all other integrals and transformations. This allows most of the code to
+C     be unmodified while having a faster integral evaluation where it counts
+C     1) Switch off DOCART before diving into FCK3
+C     2) FCK3 uses the Hermite scheme (switch HERECF) and builds a Fock matrix 
+C        directly in the restricted kinetic balance scalar basis that is also
+C        used as an intermediary basis in the Cartesian -> 2c RKB transformation.
+C     3) We switch DOCART back to the orginal value.
+C
+      IF (.NOT.(TWOCOMP)) THEN
+         SAVE_DOCART = DOCART
+         DOCART = .FALSE.
+      ENDIF
+C
       NDIM = N2BBASX*NZC1*NFMAT
       CALL DSCAL(NDIM,D2,DSO,1)
       NDMAT = NZC1*NFMAT
@@ -3286,6 +3307,12 @@ Caspg
       ENDIF
 #endif /* DEBUG_DIRAC_FCKBUILD_DF */
 Caspg
+C     Make sure to switch back DOCART....
+      IF (.NOT.(TWOCOMP)) THEN
+         SAVE_DOCART = DOCART
+         DOCART = .FALSE.
+      ENDIF
+C
       RETURN
       END
 #if defined (MOD_ERI) 
