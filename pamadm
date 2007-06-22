@@ -60,13 +60,16 @@ setup()
    unset noclobber
    EXPORTTAR=1
    if [ -n "$PAMADM" ]; then
-      ERITAR=1
+      MODULES=1
+      ERIMOD=1
+      DNFMOD=1
       ESRMOD=1
       XPPMOD=1
       DFTMOD=1
       KRMCMOD=1
       CDFTMOD=1
       VISUALMOD=1
+      EMBMOD=1
       echo " - DIRAC administrator ..."
    fi
    #
@@ -1314,7 +1317,7 @@ while [ -n "$1" ]; do
          ;;
       -cap)
          CAPMOD=1
-#      ... now in Fotran 90 !
+#      ... now in Fortran 90 !
          OOFMOD=1
 	 MODULES=1
          ;;
