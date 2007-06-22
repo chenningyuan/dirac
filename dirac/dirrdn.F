@@ -3668,6 +3668,9 @@ Cdirac#include "functionals.h"
 #if defined (MOD_EMB)
 #include "fde.h"
 #endif
+#if defined (MOD_ERI)
+#include "cbieri.h"
+#endif
 C
       LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS,IOTC
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -3688,7 +3691,7 @@ C
      &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
      &            '.IOTC  ','.MIXVAC','.CAP   ','.NOVREF',
      &            '.POSVAC','.FDE   ','.IOTC4 ','.NONREL',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.BSS4  ','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4027,11 +4030,11 @@ C&&& INTFLG: Specify what two-integrals should be included in this run
 C&&&&&  BSS:  prepare two-component Barysz-Sadlej-Snijders
 C       transformed relativistic Hamiltonian
              BSS = .TRUE.
+             TWOCOMPBSS = .TRUE.
+             TWOCOMP = .TRUE.
 C        ... read 3-digit number
              READ(LUCMD,*) IBSS
-CMI .... problem for open-shell dc2bss scf procedure !!!!
-CMI ...it's used in CALL GTOVLX(SMAT,SSMTRC,WORK,LWORK) ...
-C            SSMTRC = D0 ! Is it necessary ?
+C
 C    Check that we have not defined operators yet,
 C      as they need to be modified within BSS transformations
              IF (I_FINFIELD.GT.0) THEN
@@ -4097,9 +4100,9 @@ CMI  it's BSS_RKB+AMFI; later fix this options when interacting
 CMI  with other flags...
              IOTC = .TRUE.
              BSS = .TRUE.
-             TWOCOMPBSS = .TRUE.
              NOPRTR = .TRUE.
              IBSS = 2999
+             TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
              GO TO 100
   138     CONTINUE
@@ -4142,7 +4145,17 @@ C&&& NONREL: do 2-component non-relativistic calculation
              TWOCOMP = .TRUE.
              GO TO 100
   145     CONTINUE
-C&&& XXXX
+             BSS = .TRUE.
+C        ... read 3-digit number
+             READ(LUCMD,*) IBSS
+C
+C    Check that we have not defined operators yet,
+C      as they need to be modified within BSS transformations
+             IF (I_FINFIELD.GT.0) THEN
+               CALL QUIT(
+     &        'HAMINP:give .BSS option before .OPERAT !')
+             ENDIF
+C&&& BSS4: do BSS in 4c-mode
              GO TO 100
   146     CONTINUE
 C&&& XXXX
@@ -4294,13 +4307,7 @@ C
       NZC1 = 4
       IF (TWOCOMP) THEN
         IF(BSS) THEN
-#if defined (MOD_DNF)
-C aspg, nzc1 set to 1 for the .2c_rel runs with density fitting
-C and link
-          NZC1 = 1
-#else
-          NZC1 = 4
-#endif
+          NZC1 = 4 
         ELSE
           NZC1 = 1
           NZ   = 1
@@ -6259,6 +6266,7 @@ C
 C        Look for 2-component Hamiltonians
 C
          IF (WORD.EQ.'.IOTC  ') TWOCOMP=.TRUE. 
+         IF (WORD.EQ.'.BSS   ') TWOCOMP=.TRUE. 
          IF (WORD.EQ.'.NONREL') TWOCOMP=.TRUE. 
          GOTO 930
       ELSE IF (PROMPT .EQ. '*') THEN
