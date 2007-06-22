@@ -435,8 +435,6 @@ C
 C     Process input for various program sections
 C     ==========================================
 C
-      CALL EXPINP(WORD,.TRUE.,WORK,LWORK)
-C
 C     Now read input
 C
   200 CONTINUE
@@ -499,7 +497,6 @@ C     *STEX
          GO TO 200
 C
     1 CONTINUE
-      IF(DOEXP) CALL EXPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
 CMI ... read again the input
       CALL NMRINP(WORD,.TRUE.,WORK,LWORK)
@@ -507,7 +504,7 @@ CMI ... read again the input
 #if defined (MOD_XPP)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
 #endif
-CMI ... no quandratic response whin BSS yet
+CMI ... no quadratic response whin BSS yet
       IF (BSS.AND.DOXQR) THEN
         WRITE(LUPRI,'(2X,A)')
 C    &'No quadratic response with BSS Hamitonian yet.'
