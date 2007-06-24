@@ -676,21 +676,48 @@ C***********************************************************************
       DOSPHE = CRT .EQ. 'S' .OR. CRT .EQ. 's'
       DOOWN  = CRT. EQ. 'X'
       IF(DIRAC) THEN
-        IF(TWOCOMP.AND.DOSPHE) THEN
-C       In 2-component mode spherical Gaussians can be used,
-C       and we switch off the embedded cartesian to spherical
-C       gaussian transformation in LOWDIN()
-          ISPHTR = 0
-        ELSE IF (.NOT. (DOCART .OR. DOOWN)) THEN
-C       In 4-component mode Cartesian Gaussians are always used.  
-         IF (IPREAD .GT. 0) THEN
-            WRITE(LUPRI,'(/3(A/))')
+         IF(TWOCOMP.AND.DOSPHE) THEN
+C        In 2-component mode spherical Gaussians can be used,
+C        and we switch off the embedded cartesian to spherical
+C        gaussian transformation in LOWDIN()
+            ISPHTR = 0
+            IF (IPREAD .GT. 0) THEN
+               WRITE(LUPRI,'(/3(A/))')
+     &      ' ',
+     &      ' * Two-component calculations will be performed'//
+     &      ' in spherical gaussians.',
+     &      '   Embedded C->S transformation'//
+     &      '   in the Lowdin will be skipped in this step.',
+     &      ' '
+            ENDIF
+         ELSE IF (.NOT. (DOCART .OR. DOOWN)) THEN
+C        In 4-component mode Cartesian Gaussians are always used.  
+            IF (IPREAD .GT. 0) THEN
+               WRITE(LUPRI,'(/3(A/))')
      &      'WARNING!!! Cartesian Gaussians must be specified',
      &      '           in molecule input file.',
      &      '           DIRAC proceeds with readin assuming '//
      &      '           Cartesian Gaussians.'
-         ENDIF
-         DOCART = .TRUE.
+            ENDIF
+            DOCART = .TRUE.
+            IF (TWOCOMPBSS.AND.DOSPHE) THEN
+               ISPHTR = 3
+               IF (IPREAD .GT. 0) THEN
+                  WRITE(LUPRI,'(/3(A/))')
+     &      ' ',
+     &      ' * Two-component calculations will be performed'//
+     &      ' in spherical gaussians,',
+     &      '   but the generation of the hamiltonian from  '//
+     &      ' the Four-component will',
+     &      '   be done in cartesian gaussians.',
+     &      ' ',
+     &      ' * The embedded C->S transformation in the Lowdin'//
+     &      ' orthogonalization procedure', 
+     &      '   will be performed for large and small components'// 
+     &      ' in this step.',
+     &      ' '
+               ENDIF
+            ENDIF
         ENDIF
       ENDIF
       CALL SPHINP(LUINFO,WORK,LWORK,DOOWN,MXSPD)
