@@ -2836,6 +2836,7 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
+      LOGICAL DONRM
       CHARACTER COMP(2)*1
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),TMAT(NCAR,NCAR),WORK(*)
       DATA COMP/'L','S'/
@@ -2846,20 +2847,28 @@ C**************************************************
 C***  Generate spherical transformation matrix  ***
 C**************************************************
 C
+      DONRM = .TRUE.
       CALL SPHCAR(TMAT,IREP,IC,NCAR,NSPH,
-     &            .TRUE.,IPRINT,WORK,LWORK)
+     &            DONRM,IPRINT,WORK,LWORK)
 C
 C*********************************************************
 C***  Transform overlap matrix to spherical basis and  ***
 C***  generate Lowdin matrix                           ***
 C*********************************************************
 C
+      CALL OUTPUT(SMAT,1,NCAR,1,NCAR,LDM,NCAR,1,LUPRI)
       CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
      &            SMAT,LDM ,NCAR,1,IPQTOQ(1,0),
      &            VMAT,LDM ,NSPH,1,IPQTOQ(1,0),
      &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
      &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRINT)
+      IF(IPRINT.GE.6) THEN
+        WRITE(LUPRI,'(A,X,A3,2X,A1)') 
+     &    'SPHLOW: Overlap matrix in solid harmonics for',
+     &    REP(IREP),COMP(IC)
+        CALL OUTPUT(VMAT,1,NSPH,1,NSPH,LDM,NSPH,1,LUPRI)
+      ENDIF
       CALL LOWGEN(VMAT,NSPH,SMAT,NEFF,LDM,STOL,IPRINT,
      &            EIG,WORK,LWORK)
       CALL DGEMM('N','N',NCAR,NEFF,NSPH,D1,TMAT,NCAR,
@@ -2938,6 +2947,7 @@ C
 C
 #include "dgroup.h"
 #include "pgroup.h"
+      LOGICAL DONRM
       CHARACTER COMP(2)*1
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),TMAT(NCAR,NCAR),
      &          IRKB(*),WORK(*)
@@ -2947,20 +2957,28 @@ C**************************************************
 C***  Generate spherical transformation matrix  ***
 C**************************************************
 C
+      DONRM = .TRUE.
       CALL RKBCAR(TMAT,IREP,IC,NCAR,NSPH,
-     &            .TRUE.,IRKB,IPRINT,WORK,LWORK)
+     &            DONRM,IRKB,IPRINT,WORK,LWORK)
 C
 C*********************************************************
 C***  Transform overlap matrix to spherical basis and  ***
 C***  generate Lowdin matrix                           ***
 C*********************************************************
 C
+      CALL OUTPUT(SMAT,1,NCAR,1,NCAR,LDM,NCAR,1,LUPRI)
       CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
      &            SMAT,LDM ,NCAR,1,IPQTOQ(1,0),
      &            VMAT,LDM ,NSPH,1,IPQTOQ(1,0),
      &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
      &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRINT)
+      IF(IPRINT.GE.6) THEN
+        WRITE(LUPRI,'(A,X,A3,2X,A1)') 
+     &    'RKBLOW: Overlap matrix in modified solid harmonics for',
+     &    REP(IREP),COMP(IC)
+        CALL OUTPUT(VMAT,1,NSPH,1,NSPH,LDM,NSPH,1,LUPRI)
+      ENDIF
       CALL LOWGEN(VMAT,NSPH,SMAT,NEFF,LDM,STOL,IPRINT,
      &     EIG,WORK,LWORK)
       CALL DGEMM('N','N',NCAR,NEFF,NSPH,D1,TMAT,NCAR,

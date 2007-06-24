@@ -2184,8 +2184,12 @@ C
       LOGICAL DONRM
       DIMENSION SPHM(*),WORK(LWORK)
 #include "memint.h"
+C.....LMAX is L + 1 where L is top angular momentum quantum number
       LMAX  = NHTYP
+C.....NFUN gives the number of Cartesian functions up to and including LMAX
       NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
+C.....NCRED gives the sum of squares of Cartesian functions up to and 
+C     including LMAX
       NCRED = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
       CALL MEMGET('REAL',KCRED,NCRED ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIRED,3*LMAX,WORK,KFREE,LFREE)
@@ -2416,9 +2420,19 @@ C /* Deck rkbcar */
      &                  DONRM,IRKB,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
-C***  Generate spherical transformation matrix for component IC
-C***  and irrep IREP
+C     Generate spherical transformation matrix for component IC
+C     and irrep IREP
 C
+C     For a given L value there is, in addition to the standard
+C     solid harmonic Gaussians modified functions of the form
+C
+C     X(L-2,M) = N * sum(i+j+k=L-2) [c_{ijk}^{L-2,M}
+C                *(G_{i+2,j,k} + G_{i,j+2,k} + G_{i,j,k+2})-2(2L-1)G_{ijk}]
+C
+C     where the normalization constant is
+C
+C     N = 1/{(2L+1)(2L-1)}
+C     
 C     Input:
 C       IREP - irrep
 C       IC   - L(1),S(2) component
@@ -2427,7 +2441,6 @@ C       NCAR - number of Cartesian Gaussians of this symmetry
 C     Output:
 C       SPHM - transformation matrix
 C       
-C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -2477,7 +2490,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D6=6.0D0,D4=4.0D0)
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2=2.0D0)
 C
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2566,7 +2579,12 @@ C       ---------------------------------------------------
           JRKB = 0
           LOFF = NHKOFF(LL)
           CALL EXTSPH(LL,IREP,JNUC,CRED,LMAX,NFUN,IFUN,IRED,
-     &                 .TRUE.,IOFF,IPRINT)
+     &                 DONRM,IOFF,IPRINT)
+C.........these factors assure the correct normalized linear
+C.........combination of L and (L-2) for the modified solid harmonic
+          L = LL - 1
+          FACL   = D1/SQRT((D2*SDPRE(L)+D1)*(D2*SDPRE(L)-D1))
+          FACLM2 = -D2*(D2*SDPRE(L)-D1)*FACL
         ENDIF
 C
 C       Expand transformation matrix
@@ -2669,37 +2687,38 @@ C
 C**             x**2: (ia  ,ib  )
                 IJX = IJ
                 KOFF = IOFF + IFUN(LOFF+IJX,3)
-                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+                CALL DAXPY(KLMM2,FACL,CRED(IM2+K),KRKB,
      &                    CRED(KOFF),KRKB)
 C**             y**2: (ia+2,ib  )
                 IJY = IJ + IA + IA + 1
                 KOFF = IOFF + IFUN(LOFF+IJY,3)
-                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+                CALL DAXPY(KLMM2,FACL,CRED(IM2+K),KRKB,
      &                     CRED(KOFF),KRKB)
 C**             z**2: (ia+2,ib+2)
                 IJZ = IJY + 2
                 KOFF = IOFF + IFUN(LOFF+IJZ,3)
-                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+                CALL DAXPY(KLMM2,FACL,CRED(IM2+K),KRKB,
      &                    CRED(KOFF),KRKB)
               ENDDO
 C
 C             Scale matrix for L-2 partner
 C
-              FAC =  D6-D4*SDPRE(LL)
               KOFF = IM2+1
               DO K = 1,KLMM2
-                CALL DSCAL(KXYZM2,FAC,CRED(KOFF),1)
+                CALL DSCAL(KXYZM2,FACLM2,CRED(KOFF),1)
                 KOFF = KOFF + KRKB
               ENDDO
 C
 C             Normalize...
 C
-              KOFF = IOFF+1
-              DO J = 1,KLMM2
-                FAC = D1/DNRM2(KRKB,CRED(KOFF),1)
-                CALL DSCAL(KRKB,FAC,CRED(KOFF),1)
-                KOFF = KOFF + KRKB
-              ENDDO
+              IF(DONRM) THEN
+                KOFF = IOFF+1
+                DO J = 1,KLMM2
+                  FAC = D1/DNRM2(KRKB,CRED(KOFF),1)
+                  CALL DSCAL(KRKB,FAC,CRED(KOFF),1)
+                  KOFF = KOFF + KRKB
+                ENDDO
+              ENDIF
               IF(IPRINT.GE.4) THEN
                 WRITE(LUPRI,'(A)') '* RKB part:'
                 CALL OUTPUT(CRED(IOFF+1),1,KRKB,1,KLMM2,
@@ -2731,6 +2750,8 @@ C
 C     Final print section
 C
       IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A,A3,2X,A1)') 
+     &    'RKBCAR: Transformation matrix for ',REP(IREP),COMP(IC)
         CALL PRSYMB(LUPRI,'-',40,0)
         CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NSPH,1,LUPRI)
       ENDIF
