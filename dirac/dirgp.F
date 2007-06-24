@@ -2413,7 +2413,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck rkbcar */
       SUBROUTINE RKBCAR(SPHM,IREP,IC,NCAR,NSPH,
-     &                  DONRM,IPRINT,WORK,LWORK)
+     &                  DONRM,IRKB,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C***  Generate spherical transformation matrix for component IC
@@ -2435,7 +2435,7 @@ C***********************************************************************
 C
 #include "ccom.h"
       LOGICAL DONRM
-      DIMENSION SPHM(*),WORK(LWORK)
+      DIMENSION SPHM(*),IRKB(*),WORK(LWORK)
 #include "memint.h"
       LMAX  = NHTYP
       NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
@@ -2447,15 +2447,15 @@ C
       CALL MEMGET('REAL',KCRED,NCRED ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIRED,3*LMAX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
-      CALL RKBCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,NFUN,
-     &            DONRM,WORK(KCRED),WORK(KIRED),WORK(KIFUN),IPRINT)
+      CALL RKBCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,NFUN,DONRM,
+     &            IRKB,WORK(KCRED),WORK(KIRED),WORK(KIFUN),IPRINT)
       CALL MEMREL('RKBCAR',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck rkbca1 */
       SUBROUTINE RKBCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,
-     &                  NFUN,DONRM,CRED,IRED,IFUN,IPRINT)
+     &                  NFUN,DONRM,IRKB,CRED,IRED,IFUN,IPRINT)
 C***********************************************************************
 C
 C***  Generate modified spherical transformation matrix for component IC
@@ -2483,19 +2483,21 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "maxmom.h"
+#include "aovec.h"
 C
 #include "ccom.h"
 #include "xyzpow.h"
 #include "sphtrm.h"
+#include "primit.h"
 #include "symmet.h"
 #include "pgroup.h"
-#include "dcbrkb.h"
 #include "shells.h"
 #include "nuclei.h"
 #include "dgroup.h"
       LOGICAL DONRM,LRKB
       CHARACTER COMP(2)*1
-      DIMENSION IFUN(NFUN,3),SPHM(NCAR,NCAR),CRED(*),IRED(3,LMAX)
+      DIMENSION IFUN(NFUN,3),SPHM(NCAR,NCAR),CRED(*),IRED(3,LMAX),
+     &          IRKB(NPSHEL)
       DATA COMP/'L','S'/
 #include "ibtfun.h"
 #include "sdpre.h"

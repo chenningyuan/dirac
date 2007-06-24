@@ -307,6 +307,10 @@ C
       ZCMVAL = 1.0D0
       LCMMAX = -1
 C
+C     ***** Cartesian powers *****
+C
+      CALL CARPOW
+C
 C     In MPI runs this initialization needs to be done by the master
 C     because this is the only provess to read the DIRAC.INP file.
 C
@@ -573,7 +577,6 @@ C
 #include "symmet.h"
 #include "aosotr.h"
 #include "infpar.h"
-#include "dcbrkb.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -583,7 +586,6 @@ C
 #endif
 #include "ibtfun.h"
       ZMAT = .FALSE.
-      CALL IZERO(IRKB,MXPRIM)
 C
 C***********************************************************************
 C     Card 1: Keyword (INTGRL/BASIS) - read in READIN
@@ -824,7 +826,7 @@ C
 C
 C     ***** Cartesian powers *****
 C
-      CALL CARPOW
+CTROND      CALL CARPOW
 C
 C     ***** NHKOFF() *****
 C     - offset for components in list of l-functions
@@ -2181,14 +2183,6 @@ C
       IF (KLAST .GT. LWORK) GOTO 5030
       CALL SYMPRO(WORK(KKVAL),WORK(KMVAL),WORK(KNVAL),WORK(KIREP),
      &            DOOWN)
-C
-C FIXME: In principle kinetic balance can be made for contracted
-C FIXME: basis sets if the small component basis set exponents
-C FIXME: are kinetically balanced. Currently, the code resets
-C FIXME: ISPHTR if the small component basis set is explicitly given
-C FIXME: (IBSFLAG .NE. 4, see INFO: above)./hjaaj+jth sep 2000
-C
-      IF (DIRAC.AND.ISPHTR.EQ.3) CALL RKBREL(IPREAD)
 C
       RETURN
 C
@@ -4993,12 +4987,13 @@ C  /* Deck carlab */
 #include "ibtfun.h"
       J = 0
       DO 100 I = 0, IORDER
+         NFUN = (I + 1)*(I + 2)/2
          IF (I .LE. 3) THEN
-            J = J + (I + 1)*(I + 2)/2
+            J = J + NFUN
             CALL SETCLB(I,LABINT,MXQN*(MXQN+1)*(MXQN+2)/6)
          ELSE
-            CALL LMNVAL(I+1,(I + 1)*(I + 2)/2,IX,IY,IZ)
-            DO 200 K = 1, (I + 1)*(I + 2)/2
+            CALL LMNVAL(I+1,NFUN,IX,IY,IZ)
+            DO 200 K = 1, NFUN
                J  = J + 1
                NX = IX(K)
                NY = IY(K)
@@ -7544,7 +7539,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rkbrel */
-      SUBROUTINE RKBREL(IPRINT)
+      SUBROUTINE RKBREL(IRKB,IPRINT)
 C******************************************************************************
 C
 C     Routine for Restricted Kinetic Balance (RKB) Relations.
@@ -7554,6 +7549,66 @@ C       For large shells IRKB points to L+1 small partner
 C       For small shells IRKB points to L-2 small partner
 C       or to the L-1 large partner if the L-2 small partner does
 C       not exist (pointer is negative in this case).
+C
+C     Two examples may make it easier to understand the code:
+C     Consider the large component basis L1s1p1d:
+C     a) the s and d exponents are different
+C       The RKB array will be
+C         IRKB(Ls   1) =   5 : pointing to Sp1
+C         IRKB(Lp   2) =   7 : pointing to Sd
+C         IRKB(Ld   3) =   8 : pointing to Sf
+C         IRKB(Ss   4) =   0 : no (L-2) small partner, no (L-1) large partner 
+C         IRKB(Sp1  5) =  -1 : no (L-2) small partner, pointing to Ls
+C         IRKB(Sp2  6) =   0 : no (L-2) small partner, no (L-1) large partner 
+C         IRKB(Sd   7) =   4 : pointing to (L-2) small partner Ss
+C         IRKB(Sf   8) =   6 : pointing to (L-2) small partner Sp2
+C
+C     b) dual family basis; the s and exponents are identical
+C
+C         IRKB(Ls  1) =   5 : pointing to Sp
+C         IRKB(Lp  2) =   6 : pointing to Sd
+C         IRKB(Ld  3) =   7 : pointing to Sf
+C         IRKB(Ss  4) =   0 : no (L-2) small partner, no (L-1) large partner 
+C         IRKB(Sp  5) =  -1 : pointing to Ls
+C         IRKB(Sd  6) =   4 : pointing to (L-2) small partner Ss
+C         IRKB(Sf  7) =   5 : pointing to (L-2) small partner Sp
+C
+C     Consider next a 1s1p1d1f1g basis:
+C     a) general case
+C        IRKB(Ls   1) =   7 : pointing to Sp1, that is (L+1) small partner
+C        IRKB(Lp   2) =   9 : pointing to Sd1, that is (L+1) small partner
+C        IRKB(Ld   3) =  11 : pointing to Sf1, that is (L+1) small partner
+C        IRKB(Lf   4) =  13 : pointing to Sg , that is (L+1) small partner
+C        IRKB(Lg   5) =  14 : pointing to Sh , that is (L+1) small partner
+C        IRKB(Ss   6) =   0 : no (L-2) small partner, no (L-1) large partner 
+C        IRKB(Sp1  7) =  -1 : pointing to (L-1) large partner
+C        IRKB(Sp2  8) =   0 : no (L-2) small partner, no (L-1) large partner 
+C        IRKB(Sd1  9) =   6 : pointing to (L-2) small partner
+C        IRKB(Sd2 10) =   0 : no (L-2) small partner, no (L-1) large partner 
+C        IRKB(Sf1 11) =   8 : pointing to (L-2) small partner
+C        IRKB(Sf2 12) =   0 : no (L-2) small partner, no (L-1) large partner 
+C        IRKB(Sg  13) =  10 : pointing to (L-2) small partner
+C        IRKB(Sh  14) =  12 : pointing to (L-2) small partner
+C
+C     b) dual family basis
+C        IRKB(Ls  1) =   7  : pointing to Sp, that is (L+1) small partner
+C        IRKB(Lp  2) =   8  : pointing to Sd, that is (L+1) small partner
+C        IRKB(Ld  3) =   9  : pointing to Sf, that is (L+1) small partner
+C        IRKB(Lf  4) =  10  : pointing to Sg, that is (L+1) small partner
+C        IRKB(Lg  5) =  11  : pointing to Sh, that is (L+1) small partner
+C        IRKB(Ss  6) =   0  : no (L-2) small partner, no (L-1) large partner 
+C        IRKB(Sp  7) =  -1  : pointing to (L-1) large partner
+C        IRKB(Sd  8) =   6  : pointing to (L-2) small partner
+C        IRKB(Sf  9) =   7  : pointing to (L-2) small partner
+C        IRKB(Sg 10) =   8  : pointing to (L-2) small partner
+C        IRKB(Sh 11) =   9  : pointing to (L-2) small partner
+C
+C
+C FIXME: In principle kinetic balance can be made for contracted
+C FIXME: basis sets if the small component basis set exponents
+C FIXME: are kinetically balanced. Currently, the code resets
+C FIXME: ISPHTR if the small component basis set is explicitly given
+C FIXME: (IBSFLAG .NE. 4, see INFO: above)./hjaaj+jth sep 2000
 C
 C     Written by Jon K. Laerdahl 05.12.1996
 C     Major surgery by T.Saue May 5 1998
@@ -7572,11 +7627,11 @@ C******************************************************************************
 #include "aovec.h"
       PARAMETER (SML = 1.0D-6)
 #include "primit.h"
-#include "dcbrkb.h"
+      DIMENSION IRKB(NPSHEL)
 C
-      IF (IPRINT.GE.3) WRITE(LUPRI,'(/1X,A)')
+      IF (IPRINT.GE.10) WRITE(LUPRI,'(/1X,A)')
      &   'RKBREL: Constructing relations for scalar RKB transformation'
-      CALL IZERO(IRKB,MXPRIM)
+      CALL IZERO(IRKB,NPSHEL)
 C
 C     New code for generating RKBREL.
 C     This should also work for contracted large component basis set.
@@ -8892,6 +8947,8 @@ C     of angular momentum L of solid harmonics.
 C
 C     The main purpose of the function is to centralize the definition
 C     of the Cartesian to spherical transformation.
+C
+C     Current definition is: -L,..,+L
 C
 C     Written by Trond Saue Aug 19 2006
 C

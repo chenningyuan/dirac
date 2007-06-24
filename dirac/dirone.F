@@ -1259,10 +1259,15 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
 #include "ccom.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
+#include "dcbham.h"
+#include "primit.h"
+      LOGICAL LBIT
       DIMENSION VMAT(*),WORK(LWORK)
 C
       CALL QENTER('LOWDIN')
@@ -1272,11 +1277,17 @@ C     Memory allocation
 C
       CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,MXBBAS ,WORK,KFREE,LFREE)
+C.....generate IRKB array if needed
+      IF(.NOT.TWOCOMP.AND.LBIT(ISPHTR,2)) THEN
+        CALL MEMGET('INTE',KIRKB,NPSHEL,WORK,KFREE,LFREE)
+      ELSE
+        KIRKB = KFREE
+      ENDIF
 C
 C     Make Lowdin matrix
 C     ==================
 C
-      CALL LOWDI1(VMAT,WORK(KSMAT),WORK(KEIG),
+      CALL LOWDI1(VMAT,WORK(KSMAT),WORK(KEIG),WORK(KIRKB),
      &            WORK(KFREE),LFREE,IPRINT)
 C
 C     Memory deallocation
@@ -1290,7 +1301,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lowdi1 */
-      SUBROUTINE LOWDI1(VMAT,SMAT,EIG,WORK,LWORK,IPRINT)
+      SUBROUTINE LOWDI1(VMAT,SMAT,EIG,IRKB,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C     See SUBROUTINE LOWDIN for explanation
 C*****************************************************************************
@@ -1307,9 +1318,9 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
-      CHARACTER COMP(2)*1
-      DIMENSION VMAT(*),SMAT(*),EIG(*),WORK(LWORK)
       LOGICAL LBIT
+      CHARACTER COMP(2)*1
+      DIMENSION VMAT(*),SMAT(*),EIG(*),IRKB(*),WORK(LWORK)
 C
       CALL QENTER('LOWDI1')
       IF(IPRINT.GE.5) CALL TITLER('Output from LOWDI1','*',103)
@@ -1320,6 +1331,13 @@ C     Get overlap matrix packed on fermion irreps
 C     ===========================================
 C
       CALL GTOVLT(SMAT,D1,WORK,LWORK)
+C
+C     Generate IRKB array for use in RKBLOW
+C     =====================================
+C
+      IF(.NOT.TWOCOMP.AND.LBIT(ISPHTR,2)) THEN
+        CALL RKBREL(IRKB,IPRINT)
+      ENDIF
 C
 C     Initialize Lowdin matrix
 C     ========================
@@ -1386,7 +1404,7 @@ C
             IF(LBIT(ISPHTR,IC)) THEN
               CALL RKBLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
      &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
-     &                    WORK,LWORK,IPRINT)
+     &                    IRKB,WORK,LWORK,IPRINT)
               NDEL  = NBBAS(IREP,IC) - NEFF
             ELSE
               CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
@@ -2857,7 +2875,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck rkblow */
       SUBROUTINE RKBLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,
-     &                  EIG,WORK,LWORK,IPRINT)
+     &                  EIG,IRKB,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Generate Lowdin's canoncial orthonormalization matrix with 
@@ -2870,7 +2888,7 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),WORK(*)
+      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),IRKB(*),WORK(*)
 C
       CALL QENTER('RKBLOW')
 #include "memint.h"
@@ -2878,7 +2896,7 @@ C
       NMAT = NCAR*NCAR
       CALL MEMGET('REAL',KTMAT,NMAT,WORK,KFREE,LFREE)
       CALL RKBLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,STOL,EIG,
-     &            WORK(KTMAT),WORK(KFREE),LFREE,IPRINT)
+     &            WORK(KTMAT),IRKB,WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('RKBLOW',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('RKBLOW')
@@ -2887,7 +2905,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck rkblo1 */
       SUBROUTINE RKBLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,STOL,EIG,
-     &                  TMAT,WORK,LWORK,IPRINT)
+     &                  TMAT,IRKB,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Generate Lowdin's canoncial orthonormalization matrix with 
@@ -2922,7 +2940,7 @@ C
 #include "pgroup.h"
       CHARACTER COMP(2)*1
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),TMAT(NCAR,NCAR),
-     &          WORK(*)
+     &          IRKB(*),WORK(*)
       DATA COMP/'L','S'/
 C
 C**************************************************
@@ -2930,7 +2948,7 @@ C***  Generate spherical transformation matrix  ***
 C**************************************************
 C
       CALL RKBCAR(TMAT,IREP,IC,NCAR,NSPH,
-     &            .TRUE.,IPRINT,WORK,LWORK)
+     &            .TRUE.,IRKB,IPRINT,WORK,LWORK)
 C
 C*********************************************************
 C***  Transform overlap matrix to spherical basis and  ***
