@@ -1149,7 +1149,7 @@ C#include "capint.h"
       EXTERNAL V0,V1,V2,FF
       EXTERNAL V0D,V1D
 CMI   ... declaration must be for gfortran
-      double complex v0,v1,v2,V1D,FF,V0D,V1D
+      double complex v0,v1,v2,V1D,FF,V0D
       
       data CI/(0.0d0,1.0d0)/
       data M/1.0d00/
