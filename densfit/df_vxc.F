@@ -228,7 +228,7 @@ C ... We begin by performing a LU factorization of it...
 C ... which is then used to compute the inverse, and place it in Vab
       IF (DEBUG) write(6,*) 'debug, befor dgetri'
 
-      CALL DGETRI(LDA,Vab,LDA,IPIV,WORK,LWORK,INFO)
+CMI   CALL DGETRI(LDA,Vab,LDA,IPIV,WORK,LWORK,INFO)
       IF ( INFO.NE.0 ) THEN
          WRITE (LUPRI,*) 'DGETRI returns ',INFO
          CALL QUIT('DF_FitXC_Build_Gjk: Error in inverting Vab')

@@ -772,8 +772,8 @@ C     Direct Linear equation solver (with Cholesky-decomposition)
           ISTRAUX = NBASISAUX*(IDMT - 1) + 1
 c         Need a copy because DPOSV manipulates the matrix
           CALL DCOPY(NBASISAUX*NBASISAUX,WMAT,1,WORK(KWMATCP),1)
-          CALL DPOSV ( 'L', NBASISAUX, 1, WORK(KWMATCP), NBASISAUX,
-     &                 WORK(KWVECCP+ISTRAUX-1), NBASISAUX, INFO )
+CMI       CALL DPOSV ( 'L', NBASISAUX, 1, WORK(KWMATCP), NBASISAUX,
+CMI  &                 WORK(KWVECCP+ISTRAUX-1), NBASISAUX, INFO )
         ENDDO
         CALL DCOPY(NBASISAUX*NDMT,WORK(KWVECCP),1,CFIT,1)
         CALL MEMREL('FIT_DENSITY',WORK,KWVECCP,KWVECCP,KFREE,LFREE)
@@ -782,8 +782,8 @@ c         Need a copy because DPOSV manipulates the matrix
         CALL MEMGET ('REAL',KWVECCP,NBASISAUX,WORK,
      &               KFREE,LFREE)
         CALL DCOPY(NBASISAUX,WVEC,1,WORK(KWVECCP),1)
-        CALL DPOSV ( 'L', NBASISAUX, 1, WMAT, NBASISAUX,
-     &               WORK(KWVECCP), NBASISAUX, INFO )
+CMI     CALL DPOSV ( 'L', NBASISAUX, 1, WMAT, NBASISAUX,
+CMI  &               WORK(KWVECCP), NBASISAUX, INFO )
         CALL DCOPY(NBASISAUX,WORK(KWVECCP),1,CFIT,1)
         CALL MEMREL('FIT_DENSITY',WORK,KWVECCP,KWVECCP,KFREE,LFREE)
       ENDIF
@@ -2233,11 +2233,11 @@ C     it remains unchanged by this call) or not.
       CALL DCOPY(N*NRHS,BVEC,1,XVEC,1)
       IF (.NOT. MAKECOPY) THEN
 C       Overwrites the matrix AMAT
-        CALL DPOSV ('L',N,NRHS,AMAT,N,XVEC,N,INFO)
+CMI     CALL DPOSV ('L',N,NRHS,AMAT,N,XVEC,N,INFO)
       ELSE IF (N*N.LE.LWORK) THEN
 C       Makes a copy of the AMAT, so that AMAT is unchanged
         CALL DCOPY(N*N,AMAT,1,WORK(1),1)
-        CALL DPOSV ('L',N,NRHS,WORK(1),N,XVEC,N,INFO)
+CMI     CALL DPOSV ('L',N,NRHS,WORK(1),N,XVEC,N,INFO)
       ELSE
         CALL STOPIT('LINSOL','DPOSV ',N*N,LWORK)
       ENDIF
