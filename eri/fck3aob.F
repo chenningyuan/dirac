@@ -53,6 +53,7 @@ C
 #include "nuclei.h"
 #include "fck3aob.h"
 #include "fck3mem.h"
+#include "fck3rel.h"
 #include "ibtfun.h"
       CALL QENTER('SETAOBTCH')
 C
@@ -91,6 +92,7 @@ cSimen also want NBASE and NBASEAUX
          MAXAONHK = MAX( MAXAONHK,  NHKT(I) )  
       END DO
       END DO
+      MAXAONHK = MAXAONHK + NREL
 
       MAXAOKCK =     MAXAONHK * ( MAXAONHK + 1 ) / 2 
       MAXAOKHK = 2 * MAXAONHK - 1

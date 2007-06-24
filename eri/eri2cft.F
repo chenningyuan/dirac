@@ -90,7 +90,7 @@ C
       DO X = 1, 3
          IF (HERECF) THEN
            CALL HRECOF(ETIJ(1,0,0,0,X,1),ETIJ(1,0,0,0,X,2),
-     &                 ETIJ(1,0,0,0,X,2),NPP12,MAX1,MAX2,JMAX1,JMAX2,
+     &                 ETIJ(1,0,0,0,X,2),NPP12,JMAX1,JMAX2,
      &                 SIGN,IAB0(X),PA(1,X),PB(1,X),EXP12,HPI,
      &                 X,TEXPA,TEXPB,IPRINT)
          ELSE
@@ -881,19 +881,19 @@ C
       RETURN
       END
 C  /* Deck hrecof */
-      SUBROUTINE HRECOF(ETIJ,ETIJM1,ETIJM2,NPP12,MAXI,MAXJ,JMAXI,JMAXJ,
+      SUBROUTINE HRECOF(ETIJ,ETIJM1,ETIJM2,NPP12,JMAXI,JMAXJ,
      &                  SIGN,IAB0,PA,PB,EXP12,HPI,X,A2,B2,IPRINT)
-C    
+C
 C     S. Reine feb 2007
 C     Expansion-coefficients for Hermite-basis
-C               
+C
 #include <implicit.h>
-#include <priunit.h> 
+#include <priunit.h>
       PARAMETER (D1 = 1.00 D00, D2 = 2.00 D00)
-      INTEGER T, X 
+      INTEGER T, X
       CHARACTER WORD*4
       DIMENSION PA(NPP12), PB(NPP12), EXP12(NPP12,3), HPI(NPP12)
-      DIMENSION A2(NPP12), B2(NPP12) 
+      DIMENSION A2(NPP12), B2(NPP12)
       DIMENSION ETIJ(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM1(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM2(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
@@ -903,16 +903,16 @@ C
 C     ****************************
 C     ********** AB > 0 **********
 C     ****************************
-C             
+C
       IF (IAB0 .EQ. 0) THEN
 C
 C        Run over I (J = 0)
 C        ==================
-C             
-         DO I = 0, MAXI
-C                 
+C
+         DO I = 0, JMAXI
+C
 C           E(0,0)
-C               
+C
             TIM = SDPRE(I-1)
             IF (I .EQ. 0) THEN
               DO K = 1, NPP12
@@ -947,7 +947,7 @@ C
                 ETIJ(K,  0,I,0) =  PAK*ETIJ(K, 0,I-1,0)
      &                          + SIGN*ETIJ(K, 1,I-1,0)
      &                           - TIM*ETIJ(K, 0,I-2,0)/A2(K)
-                ETIJ(K,I-1,I,0) =  HPK*ETIJ(K,I-2,I-1,0)
+                ETIJ(K,I-1,I,0) =  HPK*ETIJ(K,I-2,I-1,0) 
      &                           + PAK*ETIJ(K,I-1,I-1,0)
                 ETIJ(K,  I,I,0) =  HPK*ETIJ(K,I-1,I-1,0)
               END DO
@@ -965,7 +965,7 @@ C
 C           Run over J
 C           ==========
 C
-            DO J = 1, MAXJ
+            DO J = 1, JMAXJ
               IJ = I + J
               TJM = SDPRE(J-1)
 C
@@ -1037,7 +1037,7 @@ C
 C        Run over I (J = 0)
 C        ==================
 C
-         DO I = 0, MAXI
+         DO I = 0, JMAXI
 C
 C           E(0,0)
 C
@@ -1090,7 +1090,7 @@ C
 C           Run over J
 C           ==========
 C
-            DO J = 1, MAXJ
+            DO J = 1, JMAXJ
                IJ = I + J
                TJM = SDPRE(J-1)
 C
@@ -1135,7 +1135,7 @@ C
                    T1 = SIGN*SDPRE(T + 1)
                    DO K = 1, NPP12
                      ETIJ(K,T,I,J) = HPI(K)*ETIJ(K,T-1,I,J-1)
-     &                              + T1*ETIJ(K,T+1,I,J-1)
+     &                              + T1*ETIJ(K,T+1,I,J-1) 
      &                             - TJM*ETIJ(K,T,I,J-2)/B2(K)
                    END DO
                  END DO
@@ -1151,13 +1151,13 @@ C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Output from HRECOF',-1)
          WRITE (LUPRI,'(2X,A,3I5)') 'IDL, IABO, X', IDL,IAB0,X
-         WRITE (LUPRI,'(2X,A,2I5)') 'MAXI,MAXJ   ', MAXI, MAXJ
+         WRITE (LUPRI,'(2X,A,2I5)') 'JMAXI,JMAXJ   ', JMAXI, JMAXJ
          IF (IPRINT .GT. 20) THEN
             IF (X .EQ. 1) WORD = 'EX00'
             IF (X .EQ. 2) WORD = 'EY00'
             IF (X .EQ. 3) WORD = 'EZ00'
-            DO I = 0, MAXI
-            DO J = 0, MAXJ
+            DO I = 0, JMAXI
+            DO J = 0, JMAXJ
             DO T = 0, I + J
             IF (IBTAND(I + J - T + IDL,IAB0) .EQ. 0) THEN
                WRITE (LUPRI,'(/,2X,A4,A1,I1,A1,I1,A1,I1,A1,/)')
@@ -1171,4 +1171,3 @@ C
       END IF
       RETURN
       END
-

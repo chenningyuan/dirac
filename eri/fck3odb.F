@@ -1003,6 +1003,7 @@ C
 #include "maxorb.h"
 #include "fck3aob.h"
 #include "fck3odb.h"
+#include "fck3rel.h"
 #include "fck3thr.h"
 #include "clsfmm.h"
 #include "priunit.h"
@@ -1038,8 +1039,9 @@ C
         ENDDO
       ENDDO
 
-      MAXODKCK =     MAXODNHK * ( MAXODNHK + 1 ) / 2
-      MAXODKHK = 2 * MAXODNHK -  1
+      MAXODNHK = MAXODNHK + 2*NREL
+      MAXODKCK = MAXAOKCK * MAXAOKCK
+      MAXODKHK = MAXAOKHK * MAXAOKHK
 
       NCSQ1 = NSPHER(0,1,0,0) - 1
       NCSQ2 = 1  

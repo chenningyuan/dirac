@@ -19,6 +19,7 @@
 #include "maxorb.h"
 #include "fck3aob.h"
 #include "fck3odb.h"
+#include "fck3rel.h"
 #include "fck3thr.h"
 #include "fck3mem.h"
 #include "erithr.h"
@@ -44,6 +45,7 @@ C
 #if defined VAR_MPI
       CALL MPI3INI(DMAT, NDMT, GAB, GABFIT, CFIT, WORK, LWORK)
 #endif
+      CALL INIFCK3REL()
 
       WORD2MB = 8.0D-6
       STATISTICS(1) = 0.0D0
@@ -460,6 +462,7 @@ C     ============================
 #include "maxorb.h"
 #include "fck3aob.h"
 #include "fck3odb.h"
+#include "fck3rel.h"
 #include "fck3thr.h"
 #include "fck3mem.h"
 #include "cbifck3.h"
@@ -611,7 +614,8 @@ c     DO IABCLS = IABCLSSTART, IABCLSEND
        CSABCLS   = RODBCLS(1,IABCLS)
 
        JMAXAB = NHKTAB - 1
-       NTUVAB = NHKTAB*(NHKTAB+1)*(NHKTAB+2)/6
+       NHKABR = NHKTAB + NREL 
+       NTUVAB = NHKABR*(NHKABR+1)*(NHKABR+2)/6
 
 #if defined (MOD_PBC)
        if (dopbc .and. pbcactive) then
@@ -683,7 +687,7 @@ C        estimates may be a little different. / ErikT
      &               WORK(KCOORAB),WORK(KEXPAB),WORK(KHPI),WORK(KPA),
      &               WORK(KPB),NPRFA,NHKTA,JMAXA,
      &               NPRFB,NHKTB,JMAXB,NPRFAB,NHKTAB,IELECTR,IPRINT)
-        CALL MXETIJ(WORK(KETIJ),NPRFAB,JMAXA,JMAXB,ETIJAB)
+        CALL MXETIJ(WORK(KETIJ),NPRFAB,JMAXA+NDER,JMAXB+NDER,ETIJAB)
         CALL SETP(WORK(KDATAP),WORK(KIPRAB),
      &            COOR1(1,0),COOR2(1,0),EXPBTCH(KEXPA),
      &            EXPBTCH(KEXPB),NPRFA,NPRFB,NPRFAB,IPRINT)
@@ -715,7 +719,7 @@ c       find largest exponent of the ab distribution
          EXPMCD      = RFTUVCLS(  5, IFCLS ) 
 
          CSFTUVCLS   = RFTUVCLS(  6, IFCLS ) 
-         RUBAB = R1UPPERB(JMAXA+JMAXB,EXPMAB)
+         RUBAB = R1UPPERB(JMAXA+JMAXB+NREL,EXPMAB)
          RUBCD = R1UPPERB(IFTUVCLS(6,IFCLS),EXPMCD)
          IF ( NCLFCK3 .OR. BRFREE ) 
      &    CALL CHECKRMIN(RMIN,RODBTCH(1,IABBTCH),ICENTC,ICENTD,RCD)
@@ -768,7 +772,7 @@ C        Screening test
           KSFTUVBTCH  = IFTUVCLS(  7, IFCLS )
           NTYPF       = IFTUVCLS(  8, IFCLS )
 
-          JMAX = JMAXAB + JMAXF
+          JMAX = JMAXAB + JMAXF + NREL
 
           IF ( PACKFTUV ) THEN
             NTUVCD = ( JMAXF + 1 ) * ( JMAXF + 2 ) * ( JMAXF + 3 ) / 6
@@ -923,29 +927,30 @@ C            translation. Add it to the total R tensor.
           end do            ! PBC end near-field loop (dim. 1)
 
 
+          JMXABR = JMAXAB + NREL
           IF ( NCLFCK3 .AND. ( NPRF .NE. NPRF0 ) ) THEN 
            IF ( PACKFTUV ) THEN
             CALL HR2FTUVNCL1(WORK(KHRINT),WORK(khrint1_aux),
      &                  WORK(KFTUV2),
-     &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMAXAB,JMAXF,
+     &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMXABR,JMAXF,
      &                  NTUVAB,NTUVCD,NTUV,
      &                  NPRFAB,NTFTUVPRIM,NTFTUVPRIM_TOT,NPRF,JTOP)
            ELSE
             CALL HR2FTUVNCL2(WORK(KHRINT),WORK(khrint1_aux),
      &                  WORK(KFTUV2),
-     &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMAXAB,JMAXF,
+     &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMXABR,JMAXF,
      &                  NTUVAB,NTUVCD,NTUV,
      &                  NPRFAB,NTFTUVPRIM,NTFTUVPRIM_TOT,NPRF,JTOP)
            END IF
           ELSE
            IF ( PACKFTUV ) THEN
             CALL HR2FTUV1(WORK(KHRINT),WORK(khrint1_aux),FTUV(KSFTUV),
-     &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMAXAB,JMAXF,
+     &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMXABR,JMAXF,
      &                  NTUVAB,NTUVCD,NTUV,NPRFAB,
      &                  NTFTUVPRIM,NTFTUVPRIM_TOT,NPRF,JTOP )
            ELSE
             CALL HR2FTUV2(WORK(KHRINT),WORK(khrint1_aux),FTUV(KSFTUV),
-     &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMAXAB,JMAXF,
+     &                  INDHER,IODDHR(1,IPQXYZ),NDMAT,JMXABR,JMAXF,
      &                  NTUVAB,NTUVCD,NTUV,NPRFAB,
      &                  NTFTUVPRIM,NTFTUVPRIM_TOT,NPRF,JTOP )
 
@@ -1797,6 +1802,237 @@ C   --------------------------------------------------------------
 C
 
 C
+C     Driver for adding contribution to the Fock-matrix
+C
+      SUBROUTINE ADD2FCK3(FMAT,FMATCP,FMATSP,FTMP,
+     &        NDMAT,ETIJ,PREFAB,IPRAB,HRINT,INDHER,LMNPWR,
+     &        IODDHR,CSQA,CSQB,CCFA,CCFB,ICOMPA,ICOMPB,NPRFAB,
+     &        JA, JB, JMAXA, JMAXB, JMAXAB, NTUVAB,
+     &        KHKTA, KHKTB, KCKTA, KCKTB,
+     &        KCKMAX, NHKMAX,IAOBA,IAOBB,IPRINT )
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3rel.h"
+#include "densfit.h"
+C
+#include "pbc.h"
+C
+      DIMENSION FMAT(*),FMATCP(*),FMATSP(*),FTMP(*),ETIJ(*),
+     &   PREFAB(*),HRINT(*),IPRAB(*),INDHER(*),IODDHR(*),LMNPWR(*),
+     &   CSQA(*),CSQB(*),CCFA(*),CCFB(*)
+
+      IF (NDERLHS.EQ.0) THEN
+C       Regular case
+        CALL ADD2FCK31(FMAT,FMATCP,FMATSP,FTMP,
+     &        NDMAT,ETIJ,PREFAB,IPRAB,HRINT,INDHER,LMNPWR,
+     &        IODDHR,CSQA,CSQB,CCFA,CCFB,ICOMPA,ICOMPB,NPRFAB,
+     &        JA, JB, JMAXA, JMAXB, JMAXAB, NTUVAB,
+     &        KHKTA, KHKTB, KCKTA, KCKTB,
+     &        KCKMAX, NHKMAX,IAOBA,IAOBB,IPRINT )
+      ELSEIF( NDERLHS.EQ.1) THEN
+C       Relativistic case
+        CALL ADD2FCK3REL(FMAT,FMATCP,FMATSP,FTMP,
+     &        NDMAT,ETIJ,PREFAB,IPRAB,HRINT,INDHER,LMNPWR,
+     &        IODDHR,CSQA,CSQB,CCFA,CCFB,ICOMPA,ICOMPB,NPRFAB,
+     &        JA, JB, JMAXA, JMAXB, JMAXAB, NTUVAB,
+     &        KHKTA, KHKTB, KCKTA, KCKTB,
+     &        KCKMAX, NHKMAX,IAOBA,IAOBB,IPRINT )
+      ELSE
+        WRITE(LUPRI,'(1X,A,I2,A)') 'NDERLHS =',NDERLHS,
+     &     ' not a case in ADD2FCK3!'
+        CALL QUIT('ADD2FCK3 case not permitted')
+      ENDIF
+
+      RETURN
+      END
+
+C
+C
+C
+      SUBROUTINE ADD2FCK3REL(FMAT,FMATCP,FMATSP,FTMP,
+     &        NDMAT,ETIJ,PREFAB,IPRAB,HRINT,INDHER,LMNPWR,
+     &        IODDHR,CSQA,CSQB,CCFA,CCFB,ICOMPA,ICOMPB,NPRFAB,
+     &        JA, JB, JMAXA, JMAXB, JMAXAB, NTUVAB,
+     &        KHKTA, KHKTB, KCKTA, KCKTB,
+     &        KCKMAX, NHKMAX,IAOBA,IAOBB,IPRINT )
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
+#include "fck3odb.h"
+#include "fck3rel.h"
+#include "densfit.h"
+C
+#include "pbc.h"
+C
+      INTEGER T,U,V,TUV
+      DIMENSION FMAT(NDIMA,NDIMB,NDMAT),FMATCP(KCKTA,KCKTB,NPRFAB),
+     &   FMATSP(KHKTA,KHKTB,NPRFAB),FTMP(KCKTA,KHKTB),
+     &   ETIJ(NPRFAB,0:JMAXAB+NRELLHS,0:JMAXA+NDERLHS,
+     &        0:JMAXB+NDERLHS,3,*),
+     &   PREFAB(NPRFAB),HRINT(NPRFAB,NTUVAB,NDMAT),IPRAB(2,NPRFAB),
+     &   INDHER(0:JTOP,0:JTOP,0:JTOP),IODDHR(*),
+     &   LMNPWR(MAXODKCK,MAXODNHK,3),
+     &   CSQA(KHKTA,KCKTA), CSQB(KHKTB,KCKTB),
+     &   CCFA(NPRFA,NCTFA), CCFB(NPRFB,NCTFB)
+
+      IF ( IPRINT .GE. 10 ) THEN
+        CALL HEADER('Output from ADD2FCK3REL',-1)
+
+        WRITE(LUPRI,*) 'JMAXA, KHKTA, KCKTA, NPRFA, NCTFA',
+     &                  JMAXA, KHKTA, KCKTA, NPRFA, NCTFA
+        WRITE(LUPRI,*) 'JMAXB, KHKTB, KCKTB, NPRFB, NCTFB',
+     &       JMAXB, KHKTB, KCKTB, NPRFB, NCTFB
+        WRITE(LUPRI,*) 'JMAXAB, NTUVAB, NDMAT, NBASE ',
+     &                  JMAXAB, NTUVAB, NDMAT, NBASE 
+      END IF 
+
+      CALL DZERO(FMATCP, KCKTA*KCKTB*NPRFAB )
+      CALL DZERO(FMATSP, KHKTA*KHKTB*NPRFAB )
+      CALL DZERO(FTMP, KCKTA*KHKTB )
+
+      IDMAT = 1 
+
+      IREPA  = 0
+      IREPB  = 0
+
+      DO IPRFAB = 1, NPRFAB
+
+       IPRFA = IPRAB(1,IPRFAB) 
+       IPRFB = IPRAB(2,IPRFAB) 
+
+       DO JAB = 0,JMAXAB
+        DO T = 0, JAB
+         DO U = 0, JAB - T 
+          V = JAB - T - U
+          TUV = INDHER(T,U,V)
+
+           DO KCA = 1, KCKTA
+            LA = LMNPWR(KCA,JA+1,1)
+            MA = LMNPWR(KCA,JA+1,2)
+            NA = LMNPWR(KCA,JA+1,3)
+ 
+            DO KCB = 1, KCKTB
+             LB = LMNPWR(KCB,JB+1,1)
+             MB = LMNPWR(KCB,JB+1,2)
+             NB = LMNPWR(KCB,JB+1,3)
+
+             FAC = ETIJ(IPRFAB,T,LA,LB,1,1)*
+     &         ETIJ(IPRFAB,U,MA,MB,2,1)*ETIJ(IPRFAB,V,NA,NB,3,1)
+
+             FMATCP(KCA,KCB,IPRFAB) = 
+     &            FMATCP(KCA,KCB,IPRFAB) + FAC*PREFAB(IPRFAB)
+     &                      * HRINT(IPRFAB,TUV,IDMAT)
+            END DO
+           END DO
+
+         END DO
+        END DO
+       END DO
+     
+       CALL DGEMM('N','T', KCKTA, KHKTB, KCKTB, 1.0D0,
+     &             FMATCP(1,1,IPRFAB), KCKTA, CSQB, KHKTB, 
+     &             0.0D0, FTMP, KCKTA  )
+
+       CALL DGEMM('N','N', KHKTA, KHKTB, KCKTA, 1.0D0,
+     &             CSQA, KHKTA, FTMP, KCKTA, 
+     &             0.0D0, FMATSP(1,1,IPRFAB), KHKTA  )      
+
+       IF ( IPRINT .GE. 15 ) THEN
+        CALL HEADER('FMATCP',-1)
+        WRITE( LUPRI, * ) 'IPRFAB, KCKTA, KCKTB: ',
+     &                     IPRFAB, KCKTA, KCKTB   
+        CALL OUTPUT(FMATCP(1,1,IPRFAB),1,KCKTA,1,KCKTB,
+     &                      KCKTA,KCKTB,1,LUPRI)
+        CALL HEADER('FTMP',-1)
+        CALL OUTPUT(FTMP(1,1),1,KCKTA,1,KHKTB,
+     &                     KCKTA,KHKTB,1,LUPRI)
+        CALL HEADER('FMATSP',-1)
+        WRITE( LUPRI, * ) 'IPRFAB, KHKTA, KHKTB: ',
+     &                     IPRFAB, KHKTA, KHKTB   
+        CALL OUTPUT(FMATSP(1,1,IPRFAB),1,KHKTA,1,KHKTB,
+     &                      KHKTA,KHKTB,1,LUPRI)
+       END IF
+
+       DO ICTFA = 1, NCTFA
+        DO ICTFB = 1, NCTFB
+
+          IAOA = INDXBTCH(KNDXBTCH(ICOMPA,IAOBA) - 1 + ICTFA)
+          
+          IOFFSET = 0
+#if defined (MOD_DNF)
+          IF (DOFIT.AND.LHSFIT) THEN
+            IOFFSET = NBASE
+            IAOA = 1
+          END IF
+#endif /* MOD_DNF */
+          IAOB = INDXBTCH(KNDXBTCH(ICOMPB,IAOBB) - 1 + ICTFB) - IOFFSET
+C
+C Here it we should probably put summation over 
+C  FMATSP(ISPA,ISPB,IPRFAB) separately outside 
+C 
+
+C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN 
+#if defined (MOD_PBC)
+         if (dopbc .and. pbcactive) then
+          DO ISPA=1, KHKTA
+           DO ISPB=1, KHKTB
+             FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) = 
+     &            FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) 
+     &          + FMATSP(ISPA,ISPB,IPRFAB) 
+     &          * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
+           END DO
+          END DO
+         else IF ( ( IAOBA .EQ. IAOBB )) THEN 
+#else
+         IF ( ( IAOBA .EQ. IAOBB )) THEN 
+#endif /* MOD_PBC */
+          DO ISPA=1, KHKTA
+           DO ISPB=1, KHKTB
+             FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) = 
+     &            FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) 
+     &          + FMATSP(ISPA,ISPB,IPRFAB) 
+     &          * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
+           END DO
+          END DO
+         ELSE
+          DO ISPA=1, KHKTA
+           DO ISPB=1, KHKTB
+              FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) = 
+     &            FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) 
+     &          + FMATSP(ISPA,ISPB,IPRFAB) 
+     &          * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
+#if defined (MOD_DNF)
+              IF (.NOT.(DOFIT.AND.LHSFIT)) THEN
+#endif /* MOD_DNF  */
+                FMAT(IAOB+ISPB-1,IAOA+ISPA-1,IDMAT) = 
+     &               FMAT(IAOB+ISPB-1,IAOA+ISPA-1,IDMAT) 
+     &               + FMATSP(ISPA,ISPB,IPRFAB) 
+     &               * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
+#if defined (MOD_DNF)
+              ENDIF
+#endif /* MOD_DNF  */
+            END DO
+          END DO
+        END IF
+
+        END DO
+       END DO
+
+      END DO
+ 
+      RETURN
+      END 
+C
 C  FMAT:    - AO is in Spherical Contracted (full)
 C        CP - Cartesian Primitive (submatrix)
 C        SP - Spherical Primitive (submatrix)
@@ -1805,7 +2041,7 @@ C  So far we do not take care about symmetry.
 C  FMAT is assumed to be full dimension without any 
 C  symmetry reduction
 C
-      SUBROUTINE ADD2FCK3(FMAT,FMATCP,FMATSP,FTMP,
+      SUBROUTINE ADD2FCK31(FMAT,FMATCP,FMATSP,FTMP,
      &        NDMAT,ETIJ,PREFAB,IPRAB,HRINT,INDHER,LMNPWR,
      &        IODDHR,CSQA,CSQB,CCFA,CCFB,ICOMPA,ICOMPB,NPRFAB,
      &        JA, JB, JMAXA, JMAXB, JMAXAB, NTUVAB,
@@ -1880,7 +2116,6 @@ C
              FMATCP(KCA,KCB,IPRFAB) = 
      &            FMATCP(KCA,KCB,IPRFAB) + FAC*PREFAB(IPRFAB)
      &                      * HRINT(IPRFAB,TUV,IDMAT)
-
             END DO
            END DO
 
@@ -2413,3 +2648,37 @@ C        and need to have translations added to them.
       END IF
       RETURN
       END 
+
+      SUBROUTINE INIFCK3REL()
+#include "implicit.h"
+#include "priunit.h"
+#include "cbifck3.h"
+#include "fck3rel.h"
+C     FCK3PATH:  1 only on first (ab) electron
+C                2 only on second (ftuv) electron
+C                3 on both electrons electron
+      NRELLHS = 0
+      NRELRHS = 0
+      NDERLHS = 0
+      NDERRHS = 0
+      IF (DOFCK3REL) THEN
+        FCK3PATH = 1
+        IF (FCK3PATH.EQ.1) THEN
+          NRELLHS = 2
+          NRELRHS = 0
+          NDERLHS = 1
+          NDERRHS = 0
+        ELSE
+          WRITE(LUPRI,'(1X,A,I2,A)') 
+     &      'Wrong input in INIFCK3REL. FCK3PATH =',FCK3PATH,
+     &      ' not a case for relativistic calculations.'
+          CALL QUIT('Relativistic (LL|LL) and (SS|LL) only')
+        ENDIF
+        IF (.NOT.HERECF) 
+     &     CALL QUIT('INIFCK3REL error, HERECF must be true!')
+      ENDIF
+      NREL = MAX(NRELLHS,NRELRHS)
+      NDER = MAX(NDERLHS,NDERRHS)
+      RETURN
+      END
+      

@@ -579,17 +579,30 @@ C     &               NTUV,NTFTUVPRIM,NTFTUVBTCH,IPRINT)
 #include "fck3aob.h"
 #include "cbieri.h"
 #include "densfit.h"
+#include "fck3rel.h"
 #include "pbc.h"
       DIMENSION ETIJ(*),PREF12(NPRF12),
      &          COOR12(NPRF12,3),EXP12(NPRF12,3), 
      &          HPI(*), P1(NPRF12,3), P2(NPRF12,3),R12(3),I120(3),
      &          EXPBT1(NPRF1),EXPBT2(NPRF2),IPR12(2,NPRF12)
       REAL*8, ALLOCATABLE :: TEXP1(:), TEXP2(:)
-
       INTEGER X
       LOGICAL NOLOCS_SAVE
 
-      CALL DZERO(ETIJ,NPRF12*NHKT12*NHKT1*NHKT2*3*2)
+C
+C     level of derivatives calculated
+      IDL   = 0
+      IF (IELECTR.EQ.1) THEN
+        IDER  = NDERLHS
+      ELSE
+        IDER  = NDERRHS
+      ENDIF
+
+      JM1 = JMAX1 + IDER
+      JM2 = JMAX2 + IDER
+
+      CALL DZERO(ETIJ,NPRF12*(NHKT12+2*IDER)*(NHKT1+IDER)
+     &           *(NHKT2+IDER)*3*2)
 
       IF (DOFIT .AND. IELECTR.EQ.2 .AND. RHSFIT) THEN
         NOLOCS_SAVE = NOLOCS
@@ -643,17 +656,14 @@ C
 
       ISCAL1 = 0 
       ISCAL2 = 0 
-C
-C  level of derivatives calculated
-C
-      IDL    = 0 
+
       NCNT12 = 0
 
       ALLOCATE(TEXP1(NPRF12))
       ALLOCATE(TEXP2(NPRF12))
 
-      CALL EXPCFT(ETIJ,NPRF12,JMAX1,JMAX2,COOR12,EXP12,I120,HPI,
-     &            P1,P2,IRUTIN,IELECTR,JMAX1,JMAX2,NCNT12,IDL,
+      CALL EXPCFT(ETIJ,NPRF12,JM1,JM2,COOR12,EXP12,I120,HPI,
+     &            P1,P2,IRUTIN,IELECTR,JM1,JM2,NCNT12,IDL,
      &            ISCAL1,ISCAL2,IPRINT,
      &            TEXP1,TEXP2,AOVERP,BOVERP)
 
