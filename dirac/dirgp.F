@@ -2185,21 +2185,20 @@ C
       DIMENSION SPHM(*),WORK(LWORK)
 #include "memint.h"
       LMAX  = NHTYP
-      NXYZ  = (LMAX*(LMAX+1))/2
       NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
-      NCBUF = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
-      CALL MEMGET('REAL',KCBUF,NCBUF ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KICBF,3*LMAX,WORK,KFREE,LFREE)
+      NCRED = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
+      CALL MEMGET('REAL',KCRED,NCRED ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIRED,3*LMAX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
-      CALL SPHCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,MXYZ,NFUN,
-     &            DONRM,WORK(KCBUF),WORK(KICBF),WORK(KIFUN),IPRINT)
-      CALL MEMREL('SPHMAT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SPHCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,NFUN,
+     &            DONRM,WORK(KCRED),WORK(KIRED),WORK(KIFUN),IPRINT)
+      CALL MEMREL('SPHCAR',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck sphma1 */
-      SUBROUTINE SPHCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,MXYZ,
-     &                  NFUN,DONRM,CBUF,ICBF,IFUN,IPRINT)
+      SUBROUTINE SPHCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,
+     &                  NFUN,DONRM,CRED,IRED,IFUN,IPRINT)
 C***********************************************************************
 C
 C***  Generate spherical transformation matrix for component IC
@@ -2229,7 +2228,7 @@ C
       LOGICAL DONRM
       CHARACTER COMP(2)*1
       DIMENSION IFUN(NFUN,3),
-     &          SPHM(NCAR,NCAR),CBUF(*),ICBF(3,LMAX)
+     &          SPHM(NCAR,NCAR),CRED(*),IRED(3,LMAX)
       DATA COMP/'L','S'/
 #include "ibtfun.h"
 C
@@ -2266,7 +2265,6 @@ C
 C       New center; check out allowed symmetries
 C       ----------------------------------------
         IF(JNUC.NE.INUC) THEN
-          MULA = ISTBNU(JNUC)
           INUC = JNUC
           ILL  = 0
           IOFF = 0
@@ -2277,76 +2275,19 @@ C       New L-value; extract relevant transformation matrix
 C       ---------------------------------------------------
         IF(LL.NE.ILL) THEN
           ILL  = LL
-          L    = LL - 1
-          NLM  = 2*L + 1
-          NXYZ = (LL*(LL+1))/2
-          LOFF = NHKOFF(LL)
-C
-C         Cartesian functions
-C
-          KXYZ = 0
-          DO ICMP = 1,NXYZ
-            IVARB = IBTXOR(IREP,ISYMAO(LL,ICMP))
-            IF(IBTAND(MULA,IVARB).EQ.0) THEN
-              KXYZ              = KXYZ + 1
-              IFUN(LOFF+KXYZ,1) = ICMP
-              IFUN(LOFF+ICMP,3) = KXYZ
-            ENDIF
-            ICBF(1,LL) = KXYZ
-          ENDDO
-C
-C         Solid harmonic functions
-C
-          KLM = 0
-          DO ICMP = 1,NLM
-            M = MDEF(L,ICMP)
-            IVARB = IBTXOR(IREP,IREPLM(L,M))
-            IF(IBTAND(MULA,IVARB).EQ.0) THEN
-              KLM               = KLM + 1
-              IFUN(LOFF+KLM,2)  = ICMP
-            ENDIF
-            ICBF(2,LL) = KLM
-          ENDDO
-C
-C         Extract spherical transformation matrix
-C
-          ICBF(3,LL) = IOFF
-          IF(KLM.GT.0) THEN
-            CALL EXTELM('T',CSP(ISPADR(LL)),NLM,NXYZ,
-     &                      CBUF(IOFF+1),KXYZ,KXYZ,KLM,
-     &                      IFUN(LOFF+1,1),IFUN(LOFF+1,2))
-            IF(DONRM) THEN
-              JOFF = IOFF
-              DO J = 1,KLM
-                FAC = D1/DNRM2(KXYZ,CBUF(JOFF+1),1)
-                CALL DSCAL(KXYZ,FAC,CBUF(JOFF+1),1)
-                JOFF = JOFF + KXYZ
-              ENDDO
-            ENDIF
-            IOFF = IOFF + KXYZ*KLM
-          ENDIF
-          IF(IPRINT.GE.4) THEN
-            KOFF = ICBF(3,LL)
-            WRITE(LUPRI,'(A)') '* SPHCAR:'
-            WRITE(LUPRI,'(A,I3)')
-     &       ' * Center : ',JNUC,
-     &       ' * L-value: ',L
-            IF(KLM.GT.0) THEN
-              WRITE(lupri,*) 'KXYZ,KLM=',KXYZ,KLM
-              CALL OUTPUT(CBUF(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,1,LUPRI)
-            ELSE
-              WRITE(LUPRI,'(A)') ' - no functions - '
-            ENDIF
-          ENDIF
+          CALL EXTSPH(LL,IREP,JNUC,CRED,LMAX,NFUN,IFUN,IRED,
+     &                DONRM,IOFF,IPRINT)
         ENDIF
 C
 C       Expand transformation matrix
 C       ============================
 C
+        KLM  = IRED(2,LL)
         IF(KLM.EQ.0) GOTO 10
-        KOFF = ICBF(3,LL)+1
+        KXYZ = IRED(1,LL)
+        KOFF = IRED(3,LL)+1
         DO J = 1,KLM
-          CALL DCOPY(KXYZ,CBUF(KOFF),1,
+          CALL DCOPY(KXYZ,CRED(KOFF),1,
      &                SPHM(IROW+1,ICOL+J),1)   
           KOFF = KOFF + KXYZ
         ENDDO
@@ -2363,5 +2304,434 @@ C
         CALL PRSYMB(LUPRI,'-',40,0)
         CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NPSH,1,LUPRI)
       ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Extsph */
+      SUBROUTINE EXTSPH(LL,IREP,JNUC,CRED,LMAX,NFUN,IFUN,IRED,
+     &                  DONRM,IOFF,IPRINT)
+C***********************************************************************
+C
+C     Extract spherical transformation matrix for symmetry adapted
+C     basis functions of angular momentum L=LL-1 of irrep IREP
+C     and centered on symmetry-independent center JNUC
+C
+C       IFUN(*,1) - points to Cartesian component in full list
+C       IFUN(*,2) - points to spherical component in full list
+C       IFUN(*,3) - points to Cartesian comp. in symmetry-reduced list
+C     The symmetry-reduced spherical transformation matrix is
+C     stored in CRED. For each L value
+C       IRED(1,*) - gives number of symmetry-reduced Cartesians KXYZ
+C       IRED(2,*) - gives number of symmetry-reduced sphericals KLM
+C       IRED(3,*) - gives offsets to each L value
+C     For each L value CRED has the dimension CRED(KXYZ,KLM)
+C
+C     A cut'n paste job. T. Saue Jun 23 2007
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+C
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+C
+#include "ccom.h"
+#include "symmet.h"
+#include "sphtrm.h"
+#include "nuclei.h"
+      LOGICAl DONRM
+      DIMENSION IFUN(NFUN,3),IRED(3,LMAX),CRED(*)
+C
+#include "ibtfun.h"
+      L    = LL - 1
+      NLM  = 2*L + 1
+      NXYZ = (LL*(LL+1))/2
+      LOFF = NHKOFF(LL)
+      MULA = ISTBNU(JNUC)
+C
+C     Cartesian functions
+C
+      KXYZ = 0
+      DO ICMP = 1,NXYZ
+        IVARB = IBTXOR(IREP,ISYMAO(LL,ICMP))
+        IF(IBTAND(MULA,IVARB).EQ.0) THEN
+          KXYZ              = KXYZ + 1
+          IFUN(LOFF+KXYZ,1) = ICMP
+          IFUN(LOFF+ICMP,3) = KXYZ
+        ENDIF
+        IRED(1,LL) = KXYZ
+      ENDDO
+C
+C     Solid harmonic functions
+C
+      KLM = 0
+      DO ICMP = 1,NLM
+        M = MDEF(L,ICMP)
+        IVARB = IBTXOR(IREP,IREPLM(L,M))
+        IF(IBTAND(MULA,IVARB).EQ.0) THEN
+          KLM               = KLM + 1
+          IFUN(LOFF+KLM,2)  = ICMP
+        ENDIF
+        IRED(2,LL) = KLM
+      ENDDO
+C
+C     Extract spherical transformation matrix
+C
+      IRED(3,LL) = IOFF
+      IF(KLM.GT.0) THEN
+        CALL EXTELM('T',CSP(ISPADR(LL)),NLM,NXYZ,
+     &              CRED(IOFF+1),KXYZ,KXYZ,KLM,
+     &              IFUN(LOFF+1,1),IFUN(LOFF+1,2))
+        IF(DONRM) THEN
+          JOFF = IOFF
+          DO J = 1,KLM
+            FAC = D1/DNRM2(KXYZ,CRED(JOFF+1),1)
+            CALL DSCAL(KXYZ,FAC,CRED(JOFF+1),1)
+            JOFF = JOFF + KXYZ
+          ENDDO
+        ENDIF
+        IOFF = IOFF + KXYZ*KLM
+      ENDIF
+      IF(IPRINT.GE.4) THEN
+        KOFF = IRED(3,LL)
+        WRITE(LUPRI,'(A)') '* EXTSPH:'
+        WRITE(LUPRI,'(A,I3)')
+     &       ' * Center : ',JNUC,
+     &       ' * L-value: ',L
+        IF(KLM.GT.0) THEN
+          WRITE(lupri,*) 'KXYZ,KLM=',KXYZ,KLM
+          CALL OUTPUT(CRED(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,1,LUPRI)
+        ELSE
+          WRITE(LUPRI,'(A)') ' - no functions - '
+        ENDIF
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck rkbcar */
+      SUBROUTINE RKBCAR(SPHM,IREP,IC,NCAR,NSPH,
+     &                  DONRM,IPRINT,WORK,LWORK)
+C***********************************************************************
+C
+C***  Generate spherical transformation matrix for component IC
+C***  and irrep IREP
+C
+C     Input:
+C       IREP - irrep
+C       IC   - L(1),S(2) component
+C       DONRM - normalize column by column
+C       NCAR - number of Cartesian Gaussians of this symmetry
+C     Output:
+C       SPHM - transformation matrix
+C       
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+C
+#include "ccom.h"
+      LOGICAL DONRM
+      DIMENSION SPHM(*),WORK(LWORK)
+#include "memint.h"
+      LMAX  = NHTYP
+      NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
+      NCRED = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
+      IF(LMAX.GE.3) THEN
+        L2    = LMAX - 2
+        NCRED = NCRED + ((L2+2)*(L2+1)*(3*L2**2+6*L2+1)*L2)/60
+      ENDIF
+      CALL MEMGET('REAL',KCRED,NCRED ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIRED,3*LMAX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
+      CALL RKBCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,NFUN,
+     &            DONRM,WORK(KCRED),WORK(KIRED),WORK(KIFUN),IPRINT)
+      CALL MEMREL('RKBCAR',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck rkbca1 */
+      SUBROUTINE RKBCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,
+     &                  NFUN,DONRM,CRED,IRED,IFUN,IPRINT)
+C***********************************************************************
+C
+C***  Generate modified spherical transformation matrix for component IC
+C***  and irrep IREP
+C
+C       IFUN(*,1) - points to Cartesian component in full list
+C       IFUN(*,2) - points to spherical component in full list
+C       IFUN(*,3) - points to Cartesian comp. in symmetry-reduced list
+C     The symmetry-reduced spherical transformation matrix is
+C     stored in CRED. For each L value
+C       IRED(1,*) - gives number of symmetry-reduced Cartesians KXYZ
+C       IRED(2,*) - gives number of symmetry-reduced sphericals KLM
+C       IRED(3,*) - gives offsets to each L value
+C     Input:
+C       IREP - irrep
+C       IC   - L(1),S(2) component
+C       
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D6=6.0D0,D4=4.0D0)
+C
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+C
+#include "ccom.h"
+#include "xyzpow.h"
+#include "sphtrm.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "dcbrkb.h"
+#include "shells.h"
+#include "nuclei.h"
+#include "dgroup.h"
+      LOGICAL DONRM,LRKB
+      CHARACTER COMP(2)*1
+      DIMENSION IFUN(NFUN,3),SPHM(NCAR,NCAR),CRED(*),IRED(3,LMAX)
+      DATA COMP/'L','S'/
+#include "ibtfun.h"
+#include "sdpre.h"
+C
+C
+C     Initialize
+C     ==========
+C
+      IF(IC.EQ.1) THEN
+        JA1 = 1
+        JA2 = NLRGSH
+      ELSEIF(IC.EQ.2) THEN
+        JA1 = NLRGSH+1
+        JA2 = KMAX
+      ENDIF
+      N2MAT = NCAR*NCAR
+      CALL DZERO(SPHM,N2MAT)
+C
+C     Initial print section
+C     =====================
+C
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A,A3,2X,A1)') 
+     &    'RKBCAR: Transformation matrix for ',REP(IREP),COMP(IC)
+      ENDIF
+C
+C     Loop over shells
+C     ================
+C     (Shell number will be different from primitive number
+C      if large component is contracted, thus the double
+C      loop structure)
+C
+C     Offset in SO-basis:
+      ISOFF = ICOS(IREP+1,IC)
+C     Offset in AO-basis:
+      NAORB = NSTRT(JA1)
+C
+      INUC = 0
+      ICOL = 0
+      JP1_TEST = 0
+C.....loop over shells
+      DO 10 JA = JA1,JA2
+        JP1  = JSTRT(JA) + 1
+C
+C       Skip primitives already processed in another shell.
+C
+        IF ( JP1_TEST .EQ. JP1 ) GO TO 10
+        JP1_TEST = JP1
+        JP2  = JSTRT(JA) + NUCO(JA)
+C
+        JNUC = NCENT(JA)
+C
+C       New center; check out allowed symmetries
+C       ----------------------------------------
+        IF(JNUC.NE.INUC) THEN
+          INUC = JNUC
+          ILL  = 0
+          IOFF = 0
+        ENDIF
+        LL  = NHKT(JA)
+C
+C       New L-value; extract relevant transformation matrix
+C       ---------------------------------------------------
+        IF(LL.NE.ILL) THEN
+          ILL  = LL
+          JRKB = 0
+          LOFF = NHKOFF(LL)
+          CALL EXTSPH(LL,IREP,JNUC,CRED,LMAX,NFUN,IFUN,IRED,
+     &                 .TRUE.,IOFF,IPRINT)
+        ENDIF
+C
+C       Expand transformation matrix
+C       ============================
+C
+        KLM = IRED(2,LL)
+        IF(KLM.EQ.0) GOTO 10
+        KXYZ = IRED(1,LL)
+C
+C.......Loop over primitives
+        DO 15 JP = JP1, JP2
+C
+C         A function can contribute to kinetic balance in two ways :
+C         a. It balances a (L-1) large component function
+C         b. It balances a (L+1) large component function
+C
+C         In case b it needs to be combined with a (L+2) function,
+C         and we take this combination when we enter this (L+2) shell.
+C         This means we can disgard the functions for the moment,
+C         provided that case a. does not apply as well (as may happen
+C         with family-type basis sets).
+C
+C         Look for (L-2) small function. If it does not exist, 
+C         IRKB returns the pointer to (L-1) large component function
+C         (case b). If this is zero it means that we have the
+C         first function for case b and we may skip it.
+C
+          JB = IRKB(JP)
+          IF (JB.EQ.0) GOTO 15
+C
+          IROW = NSTRT(JA + JP - JP1) + IFUN(LOFF+1,1)
+C                       ^- to get correct shell number
+C
+C         JA is the pointer to the start of this series of uncontracted
+C         shells, increase it by the distance from the start
+C
+          IROW = IPTSYM(IROW,IREP) - ISOFF
+C
+C         Fill in standard spherical transformation matrix
+C
+          KOFF = IRED(3,LL)+1
+          DO J = 1,KLM
+            CALL DCOPY(KXYZ,CRED(KOFF),1,SPHM(IROW,ICOL+J),1)   
+            KOFF = KOFF + KXYZ
+          ENDDO
+          ICOL = ICOL + KLM
+C
+C         Possibly add RKB part
+C
+          LRKB = LL.GE.3
+          IF(LRKB) THEN
+            LLM2   = LL-2
+            KLMM2  = IRED(2,LLM2)
+            LRKB   = KLMM2.GT.0
+          ENDIF
+          IF(LRKB) THEN
+C
+C           Possibly generate RKB matrix
+C
+            IF(JRKB.EQ.0) THEN
+              JRKB = 1
+              NXYZM2 = (LLM2*(LLM2+1))/2
+              NLMM2  = 2*LLM2-1
+              KXYZM2 = IRED(1,LLM2)                            
+              KRKB   = KXYZ + KXYZM2
+              IM2    = IOFF + KXYZ
+              LM2F   = NHKOFF(LLM2)
+              CALL DZERO(CRED(IOFF+1),KRKB*KLMM2)
+C
+C             First extract spherical transformation matrix 
+C             for L-2 partner
+C
+              CALL EXTELM('T',CSP(ISPADR(LLM2)),NLMM2,NXYZM2,
+     &                   CRED(IM2+1),KRKB,KXYZM2,KLMM2,
+     &                   IFUN(LM2F+1,1),IFUN(LM2F+1,2))
+C
+C              Then fill in corresponding number for r**2
+C
+C              A triplet (i,j,k) can be generated by looping over the
+C              lower triangle of a square matrix of dimension L + 1
+C              From an element (a,b) of the matrix the values of the triplet
+C              are given by
+C
+C              i = L + 1 - a; j = a - b; k = b - 1
+C
+C              The inverse relations are:
+C
+C              b = k + 1; a = j + k + 1
+C                 
+C              Consider a triplet (i,j,k) corresponding to a matrix
+C              element (a,b). The above relations show that
+C                (i+2,j,k) --> (a,b)
+C                (i,j+2,k) --> (a+2,b)
+C                (i,j,k+2) --> (a+2,b+2)
+C
+              DO K = 1,KXYZM2
+                IJ = IFUN(LM2F+K,1)
+                IB = NVAL(IJ) + 1
+                IA = MVAL(IJ) + IB
+C**             x**2: (ia  ,ib  )
+                IJX = IJ
+                KOFF = IOFF + IFUN(LOFF+IJX,3)
+                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                    CRED(KOFF),KRKB)
+C**             y**2: (ia+2,ib  )
+                IJY = IJ + IA + IA + 1
+                KOFF = IOFF + IFUN(LOFF+IJY,3)
+                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                     CRED(KOFF),KRKB)
+C**             z**2: (ia+2,ib+2)
+                IJZ = IJY + 2
+                KOFF = IOFF + IFUN(LOFF+IJZ,3)
+                CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                    CRED(KOFF),KRKB)
+              ENDDO
+C
+C             Scale matrix for L-2 partner
+C
+              FAC =  D6-D4*SDPRE(LL)
+              KOFF = IM2+1
+              DO K = 1,KLMM2
+                CALL DSCAL(KXYZM2,FAC,CRED(KOFF),1)
+                KOFF = KOFF + KRKB
+              ENDDO
+C
+C             Normalize...
+C
+              KOFF = IOFF+1
+              DO J = 1,KLMM2
+                FAC = D1/DNRM2(KRKB,CRED(KOFF),1)
+                CALL DSCAL(KRKB,FAC,CRED(KOFF),1)
+                KOFF = KOFF + KRKB
+              ENDDO
+              IF(IPRINT.GE.4) THEN
+                WRITE(LUPRI,'(A)') '* RKB part:'
+                CALL OUTPUT(CRED(IOFF+1),1,KRKB,1,KLMM2,
+     &                      KRKB,KLMM2,1,LUPRI)
+              ENDIF
+              IOFF = IOFF + KRKB*KLMM2
+            ENDIF
+C
+C           Copy extra functions for L
+C            
+            IRM2 = NSTRT(JB) + IFUN(LM2F+1,1)
+            IRM2 = IPTSYM(IRM2,IREP) - ISOFF
+            KOFF = IRED(3,LL)+KXYZ*KLM+1
+            DO J = 1,KLMM2
+              CALL DCOPY(KXYZ,CRED(KOFF),1,
+     &                   SPHM(IROW,ICOL+J),1)   
+              KOFF = KOFF + KXYZ
+              CALL DCOPY(KXYZM2,CRED(KOFF),1,
+     &                   SPHM(IRM2,ICOL+J),1)   
+              KOFF = KOFF + KXYZM2
+            ENDDO
+            IROW = IROW + KXYZ
+            ICOL = ICOL + KLMM2
+          ENDIF
+ 15     CONTINUE
+ 10   CONTINUE
+      NSPH = ICOL
+C
+C     Final print section
+C
+      IF(IPRINT.GE.3) THEN
+        CALL PRSYMB(LUPRI,'-',40,0)
+        CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NSPH,1,LUPRI)
+      ENDIF
+C
       RETURN
       END
