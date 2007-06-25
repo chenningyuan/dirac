@@ -10,17 +10,25 @@ Water molecule. Restricted kinetic balance. Energies, dipole moment.
 .WAVE F
 **HAMILTONIAN
 .NONREL
+.DFT
+ LDA
 **INTEGRALS
+.DENSFIT
 .NUCMOD
 1
+#.RUNERI
 .JENGINE
-.LINK
-.DENSFIT
+*JENGINE
+.HERMIT
 *TWOINT
 .AOFOCK
+*READIN
+.PRINT
+  15
 **WAVE FUNCTIONS
 .DHF
 *DHFCAL
-.NOBNCR
+.PRINT
+2
 *END OF
 
