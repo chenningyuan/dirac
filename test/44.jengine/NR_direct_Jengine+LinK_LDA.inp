@@ -8,7 +8,6 @@ LDA calculations with Jengine in non-relativistic two-component mode
 .NONREL
 **INTEGRALS
 .JENGINE
-.LINK
 .NUCMOD
  1
 *TWOINT

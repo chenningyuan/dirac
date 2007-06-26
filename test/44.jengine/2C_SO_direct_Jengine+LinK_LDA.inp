@@ -8,7 +8,6 @@ LDA calculations with Jengine in pure two-component mode, SO included
 .IOTC
 **INTEGRALS
 .JENGINE
-.LINK
 .NUCMOD
  1
 *READIN

@@ -9,7 +9,6 @@ LDA calculations with Jengine in pure two-component mode
 .SPINFREE
 **INTEGRALS
 .JENGINE
-.LINK
 .NUCMOD
  1 
 *TWOINT

@@ -1,4 +1,4 @@
-Master : DIRAC allocating 67108864 words of memory
+Master : DIRAC allocating 128000000 words of memory
 ******************************************************************************
 *                                                                            *
 *                                O U T P U T                                 *
@@ -128,40 +128,58 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *                                                                            *
 ******************************************************************************
  Version           : Dirac 4.1 (patchlevel 0) 
- Hostname          : bubbles.local
- Operating system  : Darwin 8.9.1
- Machine           : i386
+ Hostname          : login-ng1.irc.sara.nl
+ Operating system  : Linux 2.6.17.11-sara1
+ Machine           : i686
  Run               : Sequential
- Last compilation  : 21:10:16 Jun 24 2007 (by andre@bubbles.local)
- FORTRAN compiler  : g95 -ftrace=full -g -pg -O3 -ffast-math -Wno=155 
- C compiler        : gcc -g -pg -O3 -ffast-math 
- Basis set dir.    : /Users/andre/devel/cvs/snapshots/latest/Dirac/test/44.jengine/:/Users/andre/devel/BUILDS/g95_fmm+dnf+emb/basis/:/Users/andre/devel/BUILDS/g95_fmm+dnf+emb/basis_dalton/
+ Last compilation  : 11:23:18 Jun 26 2007 (by v20@login-ng1.irc.sara.nl)
+ FORTRAN compiler  : ifort -O3 -ip -w -assume byterecl 
+ C compiler        : icc -O3 -ip -w 
+ Basis set dir.    : /home/ncf/vuchemtc/v20/devel/cvs/snapshots/latest/Dirac/test/44.jengine/:/home/ncf/vuchemtc/v20/devel/cvs/snapshots/latest/Dirac/basis/:/home/ncf/vuchemtc/v20/devel/cvs/snapshots/latest/Dirac/basis_dalton/
 
- Date and time (Linux) : Mon Jun 25 00:54:26 2007
+ Date and time (Linux) : Tue Jun 26 11:58:26 2007
 
 
  *********************************************************************************
  *************************** Input read from DIRAC.INP ***************************
  *********************************************************************************
 
- **DIRAC                                                                         
- .TITLE                                                                          
- HF calculations with Jengine+LinK in non-relativistic two-component mode        
- .WAVE F                                                                         
- **HAMILTONIAN                                                                   
- .NONREL                                                                         
- **INTEGRALS                                                                     
- .JENGINE                                                                        
- .LINK                                                                           
- .NUCMOD                                                                         
-  1                                                                              
- *TWOINT                                                                         
- .AOFOCK                                                                         
- *READIN                                                                         
- .UNCONTRACTED                                                                   
- **WAVE FUNCTIONS                                                                
- .DHF                                                                            
- *END OF                                                                         
+ **DIRAC                                                                        
+  
+ .TITLE                                                                         
+  
+ HF calculations with Jengine+LinK in non-relativistic two-component mode       
+  
+ .WAVE F                                                                        
+  
+ **HAMILTONIAN                                                                  
+  
+ .NONREL                                                                        
+  
+ **INTEGRALS                                                                    
+  
+ .JENGINE                                                                       
+  
+ .LINK                                                                          
+  
+ .NUCMOD                                                                        
+  
+  1                                                                             
+  
+ *TWOINT                                                                        
+  
+ .AOFOCK                                                                        
+  
+ *READIN                                                                        
+  
+ .UNCONTRACTED                                                                  
+  
+ **WAVE FUNCTIONS                                                               
+  
+ .DHF                                                                           
+  
+ *END OF                                                                        
+  
 
 
  **************************************************************************
@@ -306,8 +324,8 @@ Point group: C1
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  Ar          1      18      41      41      L  - [12s8p1d|12s8p1d]                                  
-                              0       0      S  - No small component basis functions attached        
+  Ar          1      18      41      41      L  - [12s8p1d|12s8p1d]                                              
+                              0       0      S  - No small component basis functions attached                    
   ----------------------------------------------------------------------
                              41      41      L  - large components
                               0       0      S  - small components
@@ -478,7 +496,7 @@ No. of positronic orbitals (NPSH):     0
 Total no. of orbitals      (NORB):    41
  Enter ORBDAT
 
- >>> Time used in PAMSET is   0.02 seconds
+ >>> Time used in PAMSET is   0.01 seconds
 
 
 
@@ -491,143 +509,152 @@ Total no. of orbitals      (NORB):    41
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Mon Jun 25 00:54:26 2007
+########## START ITERATION NO.   1 ##########   Tue Jun 26 11:58:26 2007
 
-It.   1    -307.2048612814      1.00D+20  0.00D+00  0.00D+00               0.02570300s   Bare nuclei    Mon Jun 25
+It.   1    -307.2048612814      1.00D+20  0.00D+00  0.00D+00               0.01000000s   Bare nuclei    Tue Jun 26
 
-########## START ITERATION NO.   2##########   Mon Jun 25 00:54:26 2007
+########## START ITERATION NO.   2##########   Tue Jun 26 11:58:26 2007
 
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
   Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
 
- >>> Time used in XBUILD is   0.52 seconds
+ >>> Time used in XBUILD is   0.17 seconds
 
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.56257800s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.18000000s
 
-########## END ITERATION NO.   2 ##########   Mon Jun 25 00:54:26 2007
+########## END ITERATION NO.   2 ##########   Tue Jun 26 11:58:26 2007
 
-It.   2    -526.6058849210      2.19D+02  1.16D+01  4.87D+00               0.56257800s   LL             Mon Jun 25
+It.   2    -526.6058849210      2.19D+02  1.16D+01  4.87D+00               0.18000000s   LL             Tue Jun 26
 
-########## START ITERATION NO.   3##########   Mon Jun 25 00:54:26 2007
+########## START ITERATION NO.   3##########   Tue Jun 26 11:58:27 2007
 
     3 *** Differential density matrix. DCOVLP     = 1.0158
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
   Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
 
- >>> Time used in XBUILD is   0.51 seconds
+ >>> Time used in XBUILD is   0.17 seconds
 
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.55098003s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.17000000s
 
-########## END ITERATION NO.   3 ##########   Mon Jun 25 00:54:26 2007
+########## END ITERATION NO.   3 ##########   Tue Jun 26 11:58:27 2007
 
-It.   3    -526.7955023259      1.90D-01 -7.24D-01  4.56D-01   DIIS   2    0.55098003s   LL             Mon Jun 25
+It.   3    -526.7955023259      1.90D-01 -7.24D-01  4.56D-01   DIIS   2    0.17000000s   LL             Tue Jun 26
 
-########## START ITERATION NO.   4##########   Mon Jun 25 00:54:27 2007
+########## START ITERATION NO.   4##########   Tue Jun 26 11:58:27 2007
 
     4 *** Differential density matrix. DCOVLP     = 1.0009
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
   Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
 
- >>> Time used in XBUILD is   0.49 seconds
+ >>> Time used in XBUILD is   0.17 seconds
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.53659296s
+>>> Total CPU-time : 0.18000000s
 
-########## END ITERATION NO.   4 ##########   Mon Jun 25 00:54:27 2007
+########## END ITERATION NO.   4 ##########   Tue Jun 26 11:58:27 2007
 
-It.   4    -526.7997233021      4.22D-03  1.49D-01  5.84D-02   DIIS   3    0.53659296s   LL             Mon Jun 25
+It.   4    -526.7997233021      4.22D-03  1.49D-01  5.84D-02   DIIS   3    0.18000000s   LL             Tue Jun 26
 
-########## START ITERATION NO.   5##########   Mon Jun 25 00:54:27 2007
+########## START ITERATION NO.   5##########   Tue Jun 26 11:58:27 2007
 
     5 *** Differential density matrix. DCOVLP     = 0.9993
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
   Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
 
- >>> Time used in XBUILD is   0.47 seconds
+ >>> Time used in XBUILD is   0.15 seconds
 
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.51312995s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.16000000s
 
-########## END ITERATION NO.   5 ##########   Mon Jun 25 00:54:27 2007
+########## END ITERATION NO.   5 ##########   Tue Jun 26 11:58:27 2007
 
-It.   5    -526.7998624080      1.39D-04 -2.51D-02  5.58D-03   DIIS   4    0.51312995s   LL             Mon Jun 25
+It.   5    -526.7998624080      1.39D-04 -2.51D-02  5.58D-03   DIIS   4    0.16000000s   LL             Tue Jun 26
 
-########## START ITERATION NO.   6##########   Mon Jun 25 00:54:28 2007
+########## START ITERATION NO.   6##########   Tue Jun 26 11:58:27 2007
 
     6 *** Differential density matrix. DCOVLP     = 1.0001
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
   Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
 
- >>> Time used in XBUILD is   0.44 seconds
+ >>> Time used in XBUILD is   0.15 seconds
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.48759270s
+>>> Total CPU-time : 0.16000000s
 
-########## END ITERATION NO.   6 ##########   Mon Jun 25 00:54:28 2007
+########## END ITERATION NO.   6 ##########   Tue Jun 26 11:58:27 2007
 
-It.   6    -526.7998652805      2.87D-06  3.12D-03  4.80D-04   DIIS   5    0.48759270s   LL             Mon Jun 25
+It.   6    -526.7998652805      2.87D-06  3.12D-03  4.80D-04   DIIS   5    0.16000000s   LL             Tue Jun 26
 
-########## START ITERATION NO.   7##########   Mon Jun 25 00:54:28 2007
+########## START ITERATION NO.   7##########   Tue Jun 26 11:58:27 2007
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
   Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
 
- >>> Time used in XBUILD is   0.40 seconds
+ >>> Time used in XBUILD is   0.14 seconds
 
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.44101906s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.14000000s
 
-########## END ITERATION NO.   7 ##########   Mon Jun 25 00:54:28 2007
+########## END ITERATION NO.   7 ##########   Tue Jun 26 11:58:27 2007
 
-It.   7    -526.7998653096      2.90D-08 -2.35D-04  3.69D-05   DIIS   6    0.44101906s   LL             Mon Jun 25
+It.   7    -526.7998653096      2.90D-08 -2.35D-04  3.69D-05   DIIS   6    0.14000000s   LL             Tue Jun 26
 
-########## START ITERATION NO.   8##########   Mon Jun 25 00:54:29 2007
+########## START ITERATION NO.   8##########   Tue Jun 26 11:58:27 2007
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
   Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
 
- >>> Time used in XBUILD is   0.34 seconds
-
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.38580203s
-
-########## END ITERATION NO.   8 ##########   Mon Jun 25 00:54:29 2007
-
-It.   8    -526.7998653095     -8.91D-11 -1.98D-06  1.61D-06   DIIS   7    0.38580203s   LL             Mon Jun 25
-
-########## START ITERATION NO.   9##########   Mon Jun 25 00:54:29 2007
-
-    9 *** Differential density matrix. DCOVLP     = 1.0000
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
-  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
-
- >>> Time used in XBUILD is   0.24 seconds
+ >>> Time used in XBUILD is   0.12 seconds
 
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.29003811s
+>>> Total CPU-time : 0.12000000s
 
-########## END ITERATION NO.   9 ##########   Mon Jun 25 00:54:29 2007
+########## END ITERATION NO.   8 ##########   Tue Jun 26 11:58:27 2007
 
-It.   9    -526.7998653107      1.21D-09 -1.16D-07  1.47D-07   DIIS   8    0.29003811s   LL             Mon Jun 25
+It.   8    -526.7998653095     -8.87D-11 -1.98D-06  1.61D-06   DIIS   7    0.12000000s   LL             Tue Jun 26
 
-########## START ITERATION NO.  10##########   Mon Jun 25 00:54:30 2007
+########## START ITERATION NO.   9##########   Tue Jun 26 11:58:28 2007
 
-   10 *** Differential density matrix. DCOVLP     = 1.0000
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
   Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
 
- >>> Time used in XBUILD is   0.06 seconds
+ >>> Time used in XBUILD is   0.08 seconds
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.09980106s
+>>> Total CPU-time : 0.09000000s
 
-########## END ITERATION NO.  10 ##########   Mon Jun 25 00:54:30 2007
+########## END ITERATION NO.   9 ##########   Tue Jun 26 11:58:28 2007
 
-It.  10    -526.7998653111      3.84D-10  7.84D-08  1.89D-08   DIIS   8    0.09980106s   LL             Mon Jun 25
+It.   9    -526.7998653107      1.21D-09 -1.16D-07  1.47D-07   DIIS   8    0.09000000s   LL             Tue Jun 26
+
+########## START ITERATION NO.  10##########   Tue Jun 26 11:58:28 2007
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.02 seconds
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.03000000s
+
+########## END ITERATION NO.  10 ##########   Tue Jun 26 11:58:28 2007
+
+It.  10    -526.7998653110      3.22D-10  8.00D-08  1.90D-08   DIIS   8    0.03000000s   LL             Tue Jun 26
 
 
                                SCF - CYCLE
@@ -643,33 +670,33 @@ It.  10    -526.7998653111      3.84D-10  7.84D-08  1.89D-08   DIIS   8    0.099
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -307.2048612814      1.00D+20  0.00D+00  0.00D+00               0.02570300s   Bare nuclei    Mon Jun 25
-It.   2    -526.6058849210      2.19D+02  1.16D+01  4.87D+00               0.56257800s   LL             Mon Jun 25
-It.   3    -526.7955023259      1.90D-01 -7.24D-01  4.56D-01   DIIS   2    0.55098003s   LL             Mon Jun 25
-It.   4    -526.7997233021      4.22D-03  1.49D-01  5.84D-02   DIIS   3    0.53659296s   LL             Mon Jun 25
-It.   5    -526.7998624080      1.39D-04 -2.51D-02  5.58D-03   DIIS   4    0.51312995s   LL             Mon Jun 25
-It.   6    -526.7998652805      2.87D-06  3.12D-03  4.80D-04   DIIS   5    0.48759270s   LL             Mon Jun 25
-It.   7    -526.7998653096      2.90D-08 -2.35D-04  3.69D-05   DIIS   6    0.44101906s   LL             Mon Jun 25
-It.   8    -526.7998653095     -8.91D-11 -1.98D-06  1.61D-06   DIIS   7    0.38580203s   LL             Mon Jun 25
-It.   9    -526.7998653107      1.21D-09 -1.16D-07  1.47D-07   DIIS   8    0.29003811s   LL             Mon Jun 25
-It.  10    -526.7998653111      3.84D-10  7.84D-08  1.89D-08   DIIS   8    0.09980106s   LL             Mon Jun 25
+It.   1    -307.2048612814      1.00D+20  0.00D+00  0.00D+00               0.01000000s   Bare nuclei    Tue Jun 26
+It.   2    -526.6058849210      2.19D+02  1.16D+01  4.87D+00               0.18000000s   LL             Tue Jun 26
+It.   3    -526.7955023259      1.90D-01 -7.24D-01  4.56D-01   DIIS   2    0.17000000s   LL             Tue Jun 26
+It.   4    -526.7997233021      4.22D-03  1.49D-01  5.84D-02   DIIS   3    0.18000000s   LL             Tue Jun 26
+It.   5    -526.7998624080      1.39D-04 -2.51D-02  5.58D-03   DIIS   4    0.16000000s   LL             Tue Jun 26
+It.   6    -526.7998652805      2.87D-06  3.12D-03  4.80D-04   DIIS   5    0.16000000s   LL             Tue Jun 26
+It.   7    -526.7998653096      2.90D-08 -2.35D-04  3.69D-05   DIIS   6    0.14000000s   LL             Tue Jun 26
+It.   8    -526.7998653095     -8.87D-11 -1.98D-06  1.61D-06   DIIS   7    0.12000000s   LL             Tue Jun 26
+It.   9    -526.7998653107      1.21D-09 -1.16D-07  1.47D-07   DIIS   8    0.09000000s   LL             Tue Jun 26
+It.  10    -526.7998653110      3.22D-10  8.00D-08  1.90D-08   DIIS   8    0.03000000s   LL             Tue Jun 26
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   10 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL           :    0.44444444s
+      LL           :    0.22222222s
 
 
                                TOTAL ENERGY
                                ------------
 
-   Electronic energy                        :    -526.79986531107238
+   Electronic energy                        :    -526.79986531100985
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :       0.00000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -526.79986531107238
+   Total energy                             :    -526.79986531100985
 
 
                                Eigenvalues
@@ -681,9 +708,9 @@ It.  10    -526.7998653111      3.84D-10  7.84D-08  1.89D-08   DIIS   8    0.099
    -118.6063428895  ( 2)       -12.3178279822  ( 2)        -9.5663596144  ( 6)        -1.2744038917  ( 2)        -0.5880357456  ( 6)
   * Virtual eigenvalues, f = 0.0000
       0.7334428906  ( 6)         0.9329026267  ( 2)         1.1083029412  (10)         4.1363880488  ( 6)        10.9042012760  ( 2)
-     17.7417967675  ( 6)        67.0138349139  ( 6)        69.8001872644  ( 2)       251.3519189762  ( 6)       289.4766103371  ( 2)
-    989.4114250778  ( 2)      1130.9737234641  ( 6)      3295.0617799663  ( 2)     11735.6505260637  ( 2)     49012.8136943422  ( 2)
- 288723.0742129865  ( 2)
+     17.7417967675  ( 6)        67.0138349140  ( 6)        69.8001872644  ( 2)       251.3519189762  ( 6)       289.4766103371  ( 2)
+    989.4114250779  ( 2)      1130.9737234641  ( 6)      3295.0617799663  ( 2)     11735.6505260638  ( 2)     49012.8136943423  ( 2)
+ 288723.0742129864  ( 2)
 
 * Boson symmetry  i 
   * No eigenvalues.
@@ -709,8 +736,8 @@ tot.num. of pos.erg shells:   41    0    0    0
     gap     :     1.32147864 au
 
 
- Date and time (Linux) : Mon Jun 25 00:54:30 2007
+ Date and time (Linux) : Tue Jun 26 11:58:28 2007
 *****************************************************
->>>> Total CPU  time used in DIRAC:  3.93935911s
->>>> Total WALL time used in DIRAC:  5.00000000s
+>>>> Total CPU  time used in DIRAC:  1.26000000s
+>>>> Total WALL time used in DIRAC:  3.00000000s
 ********** E N D   of   D I R A C  output  **********

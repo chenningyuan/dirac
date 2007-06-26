@@ -1,4 +1,4 @@
-Master : DIRAC allocating 67108864 words of memory
+Master : DIRAC allocating 128000000 words of memory
 ******************************************************************************
 *                                                                            *
 *                                O U T P U T                                 *
@@ -128,42 +128,60 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *                                                                            *
 ******************************************************************************
  Version           : Dirac 4.1 (patchlevel 0) 
- Hostname          : bubbles.local
- Operating system  : Darwin 8.9.1
- Machine           : i386
+ Hostname          : login-ng1.irc.sara.nl
+ Operating system  : Linux 2.6.17.11-sara1
+ Machine           : i686
  Run               : Sequential
- Last compilation  : 21:10:16 Jun 24 2007 (by andre@bubbles.local)
- FORTRAN compiler  : g95 -ftrace=full -g -pg -O3 -ffast-math -Wno=155 
- C compiler        : gcc -g -pg -O3 -ffast-math 
- Basis set dir.    : /Users/andre/devel/cvs/snapshots/latest/Dirac/test/44.jengine/:/Users/andre/devel/BUILDS/g95_fmm+dnf+emb/basis/:/Users/andre/devel/BUILDS/g95_fmm+dnf+emb/basis_dalton/
+ Last compilation  : 11:23:18 Jun 26 2007 (by v20@login-ng1.irc.sara.nl)
+ FORTRAN compiler  : ifort -O3 -ip -w -assume byterecl 
+ C compiler        : icc -O3 -ip -w 
+ Basis set dir.    : /home/ncf/vuchemtc/v20/devel/cvs/snapshots/latest/Dirac/test/44.jengine/:/home/ncf/vuchemtc/v20/devel/cvs/snapshots/latest/Dirac/basis/:/home/ncf/vuchemtc/v20/devel/cvs/snapshots/latest/Dirac/basis_dalton/
 
- Date and time (Linux) : Mon Jun 25 00:53:39 2007
+ Date and time (Linux) : Tue Jun 26 11:57:55 2007
 
 
  *********************************************************************************
  *************************** Input read from DIRAC.INP ***************************
  *********************************************************************************
 
- **DIRAC                                                                         
- .TITLE                                                                          
- LDA calculations with Jengine in non-relativistic two-component mode            
- .WAVE F                                                                         
- **HAMILTONIAN                                                                   
- .DFT                                                                            
-  LDA                                                                            
- .NONREL                                                                         
- **INTEGRALS                                                                     
- .JENGINE                                                                        
- .LINK                                                                           
- .NUCMOD                                                                         
-  1                                                                              
- *TWOINT                                                                         
- .AOFOCK                                                                         
- *READIN                                                                         
- .UNCONTRACTED                                                                   
- **WAVE FUNCTIONS                                                                
- .DHF                                                                            
- *END OF                                                                         
+ **DIRAC                                                                        
+  
+ .TITLE                                                                         
+  
+ LDA calculations with Jengine in non-relativistic two-component mode           
+  
+ .WAVE F                                                                        
+  
+ **HAMILTONIAN                                                                  
+  
+ .DFT                                                                           
+  
+  LDA                                                                           
+  
+ .NONREL                                                                        
+  
+ **INTEGRALS                                                                    
+  
+ .JENGINE                                                                       
+  
+ .NUCMOD                                                                        
+  
+  1                                                                             
+  
+ *TWOINT                                                                        
+  
+ .AOFOCK                                                                        
+  
+ *READIN                                                                        
+  
+ .UNCONTRACTED                                                                  
+  
+ **WAVE FUNCTIONS                                                               
+  
+ .DHF                                                                           
+  
+ *END OF                                                                        
+  
 
 
  *************************************************************************
@@ -198,7 +216,6 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 
  Default print level:        1
    J-engine (FCK3) used for Coulomb
-   LinK scheme for exchange
  Nuclear model: Point charge.
 
  Two-electron integrals not calculated.
@@ -308,8 +325,8 @@ Point group: C1
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  He          1       2       7       7      L  - [4s1p|4s1p]                                        
-                              0       0      S  - No small component basis functions attached        
+  He          1       2       7       7      L  - [4s1p|4s1p]                                                    
+                              0       0      S  - No small component basis functions attached                    
   ----------------------------------------------------------------------
                               7       7      L  - large components
                               0       0      S  - small components
@@ -498,13 +515,18 @@ Total no. of orbitals      (NORB):     7
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Mon Jun 25 00:53:39 2007
+########## START ITERATION NO.   1 ##########   Tue Jun 26 11:57:55 2007
 
-It.   1    -1.187855754098      1.00D+20  0.00D+00  0.00D+00               0.00126600s   Bare nuclei    Mon Jun 25
+It.   1    -1.187855754098      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Bare nuclei    Tue Jun 26
 
-########## START ITERATION NO.   2##########   Mon Jun 25 00:53:39 2007
+########## START ITERATION NO.   2##########   Tue Jun 26 11:57:55 2007
 
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
+
+* GETGAB: label "GABAO0XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+AOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
 
 
  ********************************************************************************
@@ -521,7 +543,7 @@ It.   1    -1.187855754098      1.00D+20  0.00D+00  0.00D+00               0.001
        1       1.00000000
 
 DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
-
+ 
 Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
 =============================================================
 He      1   0.998E-05   0.728E+01   0.131E+00      88   25256
@@ -529,162 +551,100 @@ He      1   0.998E-05   0.728E+01   0.131E+00      88   25256
    Number of grid points in quadrature:     25256 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.02 seconds
+ >>>> Time used in DFTGRD:   0.00 seconds
 
- DEBUG, integrated number of electrons:  nelect:   0.399999986980E+01 electb:   0.000000000000E+00
-  a total of  0  out of  25256  integration were skipped while getting b0
-
-   Number of electrons from numerical integration:      4.000000
-   Number of electrons from orbital occupations:        2.000000
-   Error in the number of electrons:                    2.000000
-   Error larger than DFTELS (set input):                0.001000
-   Calculation aborted.
-WARNING !!!
    Number of quadrature points:                          25256
-   Number of electrons:                     3.9999998698018651
-   DFT exchange-correlation energy:        -2.5207173822736997
+   Number of electrons:                     1.9999999349009399
+   DFT exchange-correlation energy:        -1.0153960620179123
 
- >>>> Time used in DFTDRV:   0.29 seconds
+ >>>> Time used in DFTDRV:   0.10 seconds
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.31638300s
+>>> Total CPU-time : 0.11000000s
 
-########## END ITERATION NO.   2 ##########   Mon Jun 25 00:53:39 2007
+########## END ITERATION NO.   2 ##########   Tue Jun 26 11:57:55 2007
 
-It.   2    -6.135783157716      4.95D+00 -1.22D-01  3.95D-02               0.31638300s   LL             Mon Jun 25
+It.   2    -2.822928949739      1.64D+00  1.28D-01  1.59D-01               0.11000000s   LL             Tue Jun 26
 
-########## START ITERATION NO.   3##########   Mon Jun 25 00:53:39 2007
+########## START ITERATION NO.   3##########   Tue Jun 26 11:57:55 2007
 
-    3 *** Differential density matrix. DCOVLP     = 0.9997
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
- DEBUG, integrated number of electrons:  nelect:   0.199999993628E+01 electb:   0.000000000000E+00
-  a total of  0  out of  25256  integration were skipped while getting b0
+    3 *** Differential density matrix. DCOVLP     = 1.0176
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+AOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
    Number of quadrature points:                          25256
-   Number of electrons:                     1.9999999362804994
-   DFT exchange-correlation energy:        -1.0184887680060222
+   Number of electrons:                     1.9999999208043140
+   DFT exchange-correlation energy:        -0.9667424612858561
 
- >>>> Time used in DFTDRV:   0.29 seconds
+ >>>> Time used in DFTDRV:   0.09 seconds
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.29632100s
+>>> Total CPU-time : 0.09000000s
 
-########## END ITERATION NO.   3 ##########   Mon Jun 25 00:53:39 2007
+########## END ITERATION NO.   3 ##########   Tue Jun 26 11:57:55 2007
 
-It.   3    -2.822228565697     -3.31D+00  2.38D-01  1.59D-01   DIIS   2    0.29632100s   LL             Mon Jun 25
+It.   3    -2.826621309678      3.69D-03 -7.19D-02  5.56D-02   DIIS   2    0.09000000s   LL             Tue Jun 26
 
-########## START ITERATION NO.   4##########   Mon Jun 25 00:53:39 2007
+########## START ITERATION NO.   4##########   Tue Jun 26 11:57:55 2007
 
-    4 *** Differential density matrix. DCOVLP     = 1.0012
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
- DEBUG, integrated number of electrons:  nelect:   0.199999993530E+01 electb:   0.000000000000E+00
-  a total of  0  out of  25256  integration were skipped while getting b0
+    4 *** Differential density matrix. DCOVLP     = 0.9910
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+AOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
    Number of quadrature points:                          25256
-   Number of electrons:                     1.9999999353024791
-   DFT exchange-correlation energy:        -1.0149998092928696
+   Number of electrons:                     1.9999999248334341
+   DFT exchange-correlation energy:        -0.9798813596929651
 
- >>>> Time used in DFTDRV:   0.29 seconds
-
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.29809803s
-
-########## END ITERATION NO.   4 ##########   Mon Jun 25 00:53:39 2007
-
-It.   4    -2.823074087491      8.46D-04 -5.07D-03  1.44D-01   DIIS   3    0.29809803s   LL             Mon Jun 25
-
-########## START ITERATION NO.   5##########   Mon Jun 25 00:53:40 2007
-
-    5 *** Differential density matrix. DCOVLP     = 1.0097
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
- DEBUG, integrated number of electrons:  nelect:   0.199999992678E+01 electb:   0.000000000000E+00
-  a total of  0  out of  25256  integration were skipped while getting b0
-   Number of quadrature points:                          25256
-   Number of electrons:                     1.9999999267803272
-   DFT exchange-correlation energy:        -0.9861866436995513
-
- >>>> Time used in DFTDRV:   0.29 seconds
+ >>>> Time used in DFTDRV:   0.09 seconds
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.29589301s
+>>> Total CPU-time : 0.09000000s
 
-########## END ITERATION NO.   5 ##########   Mon Jun 25 00:53:40 2007
+########## END ITERATION NO.   4 ##########   Tue Jun 26 11:57:55 2007
 
-It.   5    -2.827053017622      3.98D-03 -4.21D-02  2.66D-02   DIIS   4    0.29589301s   LL             Mon Jun 25
+It.   4    -2.827194640175      5.73D-04  1.95D-02  7.70D-04   DIIS   3    0.09000000s   LL             Tue Jun 26
 
-########## START ITERATION NO.   6##########   Mon Jun 25 00:53:40 2007
+########## START ITERATION NO.   5##########   Tue Jun 26 11:57:55 2007
 
-    6 *** Differential density matrix. DCOVLP     = 1.0036
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
- DEBUG, integrated number of electrons:  nelect:   0.199999992473E+01 electb:   0.000000000000E+00
-  a total of  0  out of  25256  integration were skipped while getting b0
+    5 *** Differential density matrix. DCOVLP     = 1.0001
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+AOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
    Number of quadrature points:                          25256
-   Number of electrons:                     1.9999999247318563
-   DFT exchange-correlation energy:        -0.9795591672350271
+   Number of electrons:                     1.9999999247724460
+   DFT exchange-correlation energy:        -0.9796862663358623
 
- >>>> Time used in DFTDRV:   0.29 seconds
+ >>>> Time used in DFTDRV:   0.10 seconds
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.29714715s
+>>> Total CPU-time : 0.10000000s
 
-########## END ITERATION NO.   6 ##########   Mon Jun 25 00:53:40 2007
+########## END ITERATION NO.   5 ##########   Tue Jun 26 11:57:55 2007
 
-It.   6    -2.827194703817      1.42D-04 -9.77D-03  5.24D-04   DIIS   5    0.29714715s   LL             Mon Jun 25
+It.   5    -2.827194762408      1.22D-07 -2.89D-04  2.05D-05   DIIS   4    0.10000000s   LL             Tue Jun 26
 
-########## START ITERATION NO.   7##########   Mon Jun 25 00:53:40 2007
+########## START ITERATION NO.   6##########   Tue Jun 26 11:57:55 2007
 
-    7 *** Differential density matrix. DCOVLP     = 0.9999
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
- DEBUG, integrated number of electrons:  nelect:   0.199999992478E+01 electb:   0.000000000000E+00
-  a total of  0  out of  25256  integration were skipped while getting b0
+    6 *** Differential density matrix. DCOVLP     = 1.0000
+ debug: thresholds in fck3drv: scrfck  1.000000000000000E-012 thrsh
+  1.000000000000000E-012
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+AOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
    Number of quadrature points:                          25256
-   Number of electrons:                     1.9999999247816005
-   DFT exchange-correlation energy:        -0.9797157610796652
+   Number of electrons:                     1.9999999247738327
+   DFT exchange-correlation energy:        -0.9796910066408012
 
- >>>> Time used in DFTDRV:   0.29 seconds
-
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.29675007s
-
-########## END ITERATION NO.   7 ##########   Mon Jun 25 00:53:40 2007
-
-It.   7    -2.827194760418      5.66D-08  2.31D-04  1.01D-04   DIIS   6    0.29675007s   LL             Mon Jun 25
-
-########## START ITERATION NO.   8##########   Mon Jun 25 00:53:41 2007
-
-    8 *** Differential density matrix. DCOVLP     = 1.0000
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
- DEBUG, integrated number of electrons:  nelect:   0.199999992477E+01 electb:   0.000000000000E+00
-  a total of  0  out of  25256  integration were skipped while getting b0
-   Number of quadrature points:                          25256
-   Number of electrons:                     1.9999999247735214
-   DFT exchange-correlation energy:        -0.9796902309685178
-
- >>>> Time used in DFTDRV:   0.29 seconds
+ >>>> Time used in DFTDRV:   0.10 seconds
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.29544103s
+>>> Total CPU-time : 0.10000000s
 
-########## END ITERATION NO.   8 ##########   Mon Jun 25 00:53:41 2007
+########## END ITERATION NO.   6 ##########   Tue Jun 26 11:57:55 2007
 
-It.   8    -2.827194762483      2.06D-09 -3.77D-05  3.16D-06   DIIS   7    0.29544103s   LL             Mon Jun 25
-
-########## START ITERATION NO.   9##########   Mon Jun 25 00:53:41 2007
-
-    9 *** Differential density matrix. DCOVLP     = 1.0000
- debug: thresholds in fck3drv: scrfck 1.E-12 thrsh 1.E-12
- DEBUG, integrated number of electrons:  nelect:   0.199999992477E+01 electb:   0.000000000000E+00
-  a total of  0  out of  25256  integration were skipped while getting b0
-   Number of quadrature points:                          25256
-   Number of electrons:                     1.9999999247738687
-   DFT exchange-correlation energy:        -0.9796910062636404
-
- >>>> Time used in DFTDRV:   0.29 seconds
-
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.29444122s
-
-########## END ITERATION NO.   9 ##########   Mon Jun 25 00:53:41 2007
-
-It.   9    -2.827194762485      2.01D-12  1.14D-06  6.94D-11   DIIS   7    0.29444122s   LL             Mon Jun 25
+It.   6    -2.827194762485      7.64D-11  7.01D-06  1.16D-08   DIIS   4    0.10000000s   LL             Tue Jun 26
 
 
                                SCF - CYCLE
@@ -700,32 +660,29 @@ It.   9    -2.827194762485      2.01D-12  1.14D-06  6.94D-11   DIIS   7    0.294
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -1.187855754098      1.00D+20  0.00D+00  0.00D+00               0.00126600s   Bare nuclei    Mon Jun 25
-It.   2    -6.135783157716      4.95D+00 -1.22D-01  3.95D-02               0.31638300s   LL             Mon Jun 25
-It.   3    -2.822228565697     -3.31D+00  2.38D-01  1.59D-01   DIIS   2    0.29632100s   LL             Mon Jun 25
-It.   4    -2.823074087491      8.46D-04 -5.07D-03  1.44D-01   DIIS   3    0.29809803s   LL             Mon Jun 25
-It.   5    -2.827053017622      3.98D-03 -4.21D-02  2.66D-02   DIIS   4    0.29589301s   LL             Mon Jun 25
-It.   6    -2.827194703817      1.42D-04 -9.77D-03  5.24D-04   DIIS   5    0.29714715s   LL             Mon Jun 25
-It.   7    -2.827194760418      5.66D-08  2.31D-04  1.01D-04   DIIS   6    0.29675007s   LL             Mon Jun 25
-It.   8    -2.827194762483      2.06D-09 -3.77D-05  3.16D-06   DIIS   7    0.29544103s   LL             Mon Jun 25
-It.   9    -2.827194762485      2.01D-12  1.14D-06  6.94D-11   DIIS   7    0.29444122s   LL             Mon Jun 25
+It.   1    -1.187855754098      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Bare nuclei    Tue Jun 26
+It.   2    -2.822928949739      1.64D+00  1.28D-01  1.59D-01               0.11000000s   LL             Tue Jun 26
+It.   3    -2.826621309678      3.69D-03 -7.19D-02  5.56D-02   DIIS   2    0.09000000s   LL             Tue Jun 26
+It.   4    -2.827194640175      5.73D-04  1.95D-02  7.70D-04   DIIS   3    0.09000000s   LL             Tue Jun 26
+It.   5    -2.827194762408      1.22D-07 -2.89D-04  2.05D-05   DIIS   4    0.10000000s   LL             Tue Jun 26
+It.   6    -2.827194762485      7.64D-11  7.01D-06  1.16D-08   DIIS   4    0.10000000s   LL             Tue Jun 26
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after    9 iterations.
+* Convergence after    6 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL           :    0.25000000s
+      LL           :    0.00000000s
 
 
                                TOTAL ENERGY
                                ------------
 
-   Electronic energy                        :    -2.8271947624846421
+   Electronic energy                        :    -2.8271947624846292
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :     0.0000000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -2.8271947624846421
+   Total energy                             :    -2.8271947624846292
 
 
                                Eigenvalues
@@ -734,9 +691,9 @@ It.   9    -2.827194762485      2.01D-12  1.14D-06  6.94D-11   DIIS   7    0.294
 
 * Boson symmetry A  
   * Closed shell, f = 1.0000
- -0.55933989938613  ( 2)
+ -0.55933990101650  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.89535970764457  ( 2)     2.11335606875517  ( 6)     7.86993820108606  ( 2)    61.09793061387660  ( 2)
+  0.89535970316162  ( 2)     2.11335607036464  ( 6)     7.86993819465795  ( 2)    61.09793059716311  ( 2)
 
 * Boson symmetry  i 
   * No eigenvalues.
@@ -756,14 +713,14 @@ tot.num. of pos.erg shells:    7    0    0    0
 
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.89535971 au (symmetry A  )
+    E(LUMO) :     0.89535970 au (symmetry A  )
   - E(HOMO) :    -0.55933990 au (symmetry A  )
   ------------------------------------------
-    gap     :     1.45469961 au
+    gap     :     1.45469960 au
 
 
- Date and time (Linux) : Mon Jun 25 00:53:41 2007
+ Date and time (Linux) : Tue Jun 26 11:57:55 2007
 *****************************************************
->>>> Total CPU  time used in DIRAC:  2.41312695s
->>>> Total WALL time used in DIRAC:  3.00000000s
+>>>> Total CPU  time used in DIRAC:  0.50000000s
+>>>> Total WALL time used in DIRAC:  1.00000000s
 ********** E N D   of   D I R A C  output  **********
