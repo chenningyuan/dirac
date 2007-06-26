@@ -870,8 +870,8 @@ C
 C     Solve the equation for the fit coefficients
 C
       CALL TIMER('START ', TIMSTR, TIMEND)
-CMI   CALL DPOSV ( 'L', N_FIT, 1, WORK(KJAB), max(1,N_FIT),
-CMI  &             WORK(KCFTAB), max(1,N_FIT), INFO )
+      CALL DPOSV ( 'L', N_FIT, 1, WORK(KJAB), max(1,N_FIT),
+     &             WORK(KCFTAB), max(1,N_FIT), INFO )
       CALL TIMER('LINSOL', TIMSTR, TIMEND)
 C
 C     We again have some information that may be useful

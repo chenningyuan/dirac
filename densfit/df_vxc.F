@@ -118,9 +118,9 @@ C
 
       CALL READ_MATRIX(WORK(KGJK),NBASISAUX,NBASISAUX,'FITXCG')
       if (DODFLR) then 
-      CALL READ_MATRIX(WORK(KVXCI),1,NBASISAUX,'LRDFVX')
+         CALL READ_MATRIX(WORK(KVXCI),1,NBASISAUX,'LRDFVX')
       else
-      CALL READ_MATRIX(WORK(KVXCI),1,NBASISAUX,'FITVXC')
+         CALL READ_MATRIX(WORK(KVXCI),1,NBASISAUX,'FITVXC')
       endif
 C .. and create b_k = \sum_j [<integral above>]Gjk 
 C    which is then used to update cfit...
@@ -130,7 +130,6 @@ C
             BK = DDOT(NBASISAUX,WORK(KVXCI),1,
      &                       WORK(KGJK + NBASISAUX*(K-1)),1)
             CFIT_OLD = CFIT(K)
-            CFIT(K)  = CFIT(K) + BK 
             if (using_diffdens) then
                CFIT(K)  = (BK - work(kprevbk - 1 + k)) 
                work(kprevbk - 1 + k) = bk 
@@ -228,7 +227,7 @@ C ... We begin by performing a LU factorization of it...
 C ... which is then used to compute the inverse, and place it in Vab
       IF (DEBUG) write(6,*) 'debug, befor dgetri'
 
-CMI   CALL DGETRI(LDA,Vab,LDA,IPIV,WORK,LWORK,INFO)
+      CALL DGETRI(LDA,Vab,LDA,IPIV,WORK,LWORK,INFO)
       IF ( INFO.NE.0 ) THEN
          WRITE (LUPRI,*) 'DGETRI returns ',INFO
          CALL QUIT('DF_FitXC_Build_Gjk: Error in inverting Vab')

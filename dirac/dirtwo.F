@@ -147,32 +147,32 @@ C     =====
       ENDIF
 C     =====
 C
-#if defined (MOD_DNF)
-      IF (DENSFIT) THEN
-         NIND = 2 * NUMBER_OF_NUCLEI(2) + 2
-         CALL MEMGET ('INTE',KINDAO,NTBAS(0),WORK,KFREE,LFREE)
-         CALL MEMGET ('INTE',KINDAOS,NTBAS(0),WORK,KFREE,LFREE)
-         CALL MEMGET ('INTE',KINDNAO,NIND,WORK,KFREE,LFREE)
-         CALL MEMGET ('REAL',KSDMAT,N2BBASX,WORK,KFREE,LFREE)
-         CALL MEMGET ('REAL',KADMAT,N2BBASX,WORK,KFREE,LFREE)
-         CALL INDAOC (WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO))
-C        We allocate the fit-coefficients in work for the time being.
-C        When we have implemented the fit-basis read routine and the Coulomb build routine, they should
-C        probably be allocated at a higher level and passed on to TWOFCK.
-         nfit_coef = 1000 ! something to start with as long as we have not implemented the correct structure
-         CALL MEMGET ('REAL',KCFIT,nfit_coef,WORK,KFREE,LFREE)
-         DO I = 1,NFMAT
-            IREP = ISYMOP(I)-1
-            IF (IREP.NE.0) 
-     &      CALL QUIT ("Only totally symmetric densities can be fitted")
-            CALL DTSOUAO(DMAT(1,1,I),WORK(KSDMAT),WORK,KFREE,LFREE)
-c           CALL DRIVE_FIT(WORK(KSDMAT),WORK(KADMAT),NTBAS(0),
-c    &                     WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO),
-c    &                     IPRINT,WORK(KCFIT))
-         ENDDO
-         CALL MEMREL('TWOFCK',WORK,KINDAO,KINDAO,KFREE,LFREE)
-      ENDIF
-#endif /* MOD_DNF */
+ccc#if defined (MOD_DNF)
+ccc      IF (DENSFIT) THEN
+ccc         NIND = 2 * NUMBER_OF_NUCLEI(2) + 2
+ccc         CALL MEMGET ('INTE',KINDAO,NTBAS(0),WORK,KFREE,LFREE)
+ccc         CALL MEMGET ('INTE',KINDAOS,NTBAS(0),WORK,KFREE,LFREE)
+ccc         CALL MEMGET ('INTE',KINDNAO,NIND,WORK,KFREE,LFREE)
+ccc         CALL MEMGET ('REAL',KSDMAT,N2BBASX,WORK,KFREE,LFREE)
+ccc         CALL MEMGET ('REAL',KADMAT,N2BBASX,WORK,KFREE,LFREE)
+ccc         CALL INDAOC (WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO))
+cccC        We allocate the fit-coefficients in work for the time being.
+cccC        When we have implemented the fit-basis read routine and the Coulomb build routine, they should
+cccC        probably be allocated at a higher level and passed on to TWOFCK.
+ccc         nfit_coef = 1000 ! something to start with as long as we have not implemented the correct structure
+ccc         CALL MEMGET ('REAL',KCFIT,nfit_coef,WORK,KFREE,LFREE)
+ccc         DO I = 1,NFMAT
+ccc            IREP = ISYMOP(I)-1
+ccc            IF (IREP.NE.0) 
+ccc     &      CALL QUIT ("Only totally symmetric densities can be fitted")
+ccc            CALL DTSOUAO(DMAT(1,1,I),WORK(KSDMAT),WORK,KFREE,LFREE)
+cccc           CALL DRIVE_FIT(WORK(KSDMAT),WORK(KADMAT),NTBAS(0),
+cccc    &                     WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO),
+cccc    &                     IPRINT,WORK(KCFIT))
+ccc         ENDDO
+ccc         CALL MEMREL('TWOFCK',WORK,KINDAO,KINDAO,KFREE,LFREE)
+ccc      ENDIF
+ccc#endif /* MOD_DNF */
 C
 C     Initialize and build Fock matrix
 C     ================================
@@ -3295,18 +3295,6 @@ C
 #else /* MOD_ERI */
       CALL QUIT('JENGINE only works if ERI is also present.')
 #endif /* MOD_ERI */
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-      IF(IPRINT.GE.0) THEN
-        DO I = 1,NFMAT
-          write (6,*) 'debug: contribution from jengine to FMAT'
-          CALL PRINTDMAT(I,NTBAS(0),FMAT(1,1,I))
-          write (6,*) 'debug: dmat after lin_df_coulomb'
-          CALL PRINTDMAT(I,NTBAS(0),DSO(1,1,I))
-        ENDDO
-      ENDIF
-#endif /* DEBUG_DIRAC_FCKBUILD_DF */
-Caspg
 C     Make sure to switch back DOCART....
       IF (.NOT.(TWOCOMP)) THEN
          SAVE_DOCART = DOCART
@@ -3404,23 +3392,14 @@ C
      &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &            WORK(KFREE),LFREE)
         CALL DSCAL(NDIM,DP5,DSO,1)
-Caspg moving it ouside the if, so it's always scaled
-C     regardless of exchange being calculated or not..
 CCTROND Scale in accordance with DIRAOF->SKLFC1
-C        CALL DSCAL(NDIM,DP5,FMAT,1)
+        CALL DSCAL(NDIM,DP5,FMAT,1)
+      ELSE
+         WRITE (LUPRI,*) ' Warning! Activating LinK with HFXFAC set '//
+     &                   'to zero may lead to inconsistent results! '//
+     &                   'Remove .LINK from **INTEGRALS and try agan.' 
+         CALL QUIT ('Inconsistent input in the **INTEGRALS section.')
       END IF
-      CALL DSCAL(NDIM,DP5,FMAT,1)
-Caspg
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-      IF(IPRINT.GE.0) THEN
-        DO I = 1,NFMAT
-          write (6,*) 'debug: contribution from linkdr to FMAT'
-          CALL PRINTDMAT(I,NTBAS(0),FMAT(1,1,I))
-        ENDDO
-      ENDIF
-#endif /* DEBUG_DIRAC_FCKBUILD_DF */
-Caspg
       RETURN
       END
 C
@@ -3462,7 +3441,7 @@ C       LinK-exchange
 C
       ELSEIF (DOLINK) THEN
 C
-C       LinK-exchange plus standard (ERI) Coulomb
+C       LinK-exchange plus conventional Coulomb
 C
 C       Turn off exchange. This will affect how IX and IY will be set 
 C       for instance in FCKCON, but IX and IY will be set in SETFCK,
@@ -3482,20 +3461,16 @@ C
         ENDDO
 C     
 C       first add conventional (via 4-center integrals) AO Coulomb
-Caspg
-      write (6,*) 'debug in fastjk: J->eri, K->link'
-      write (6,*) '                 before eri:'
-Caspg
+C
       CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &            IFCKOP_TEMP,NPOS,INTFLG,
      &            IPRINT,WORK,LWORK)
 C   
 C       now adding exchange via LinK... 
 C
-C       at the time of writing (2006-07-27), a temporary
-C       solution to combine J from ERI and K from linK 
-C       is to perform a symmetrization of FMAT and DMAT 
-C       inside DIRAO1 before passing them on to LINKDR,
+C       a "hack"-type solution to combine J from ERI and 
+C       K from linK is to perform a symmetrization of FMAT 
+C       and DMAT inside DIRAO1 before passing them on to LINKDR,
 C       because (a) only the upper triangular elements of the 
 C       fock matrices are placed in FMAT when HRFCK2 is
 C       called, and the full symmetrization of FMAT and
@@ -3504,21 +3479,14 @@ C       creates the symmetrical matrices, so the symmetrization
 C       outside FASTJK gets completely wrong after
 C       exchange is added via LINKDR. /aspg/ 
 C       
-Caspg
-      write (6,*) '                 before link:'
-Caspg
       CALL LINKDR(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
      &            NPOS,INTFLG,IPRINT,WORK,LWORK)
 C
       ELSEIF (DOFCK3) THEN
 C
 C       Jengine Coulomb contribution, regular or density-fitted
-C       plus exchange via the conventional AO code (ERI)
+C       plus exchange via the conventional AO code
 C
-Caspg
-      write (6,*) 'debug in fastjk: J->jengine, K->eri'
-      write (6,*) '                 before jengine:'
-Caspg
         CALL JENGINE(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
      &               NPOS,INTFLG,IPRINT,WORK,LWORK)
 C
@@ -3543,9 +3511,7 @@ C
         ENDDO
 C
 C       Conventional (4-center integrals) AO exchange
-Caspg
-      write (6,*) '                 before exchange via eri:'
-Caspg
+C
         CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &              IFCKOP_TEMP,NPOS,INTFLG,
      &              IPRINT,WORK,LWORK)
@@ -3626,12 +3592,6 @@ C           IGTYP 2 will add also the SL (Gaunt) type integrals
             CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
      &           IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
          ENDIF
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-      ELSE
-         write (6,*) 'eri run, skipping getgab'
-#endif
-Caspg
       ENDIF
 C
 CTROND      IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
@@ -3780,11 +3740,6 @@ C       (Reduced GAB is already present in GABRAO)
 C
            CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
          ENDIF
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-      ELSE
-         write (6,*) 'eri run, skippng mkdrao'
-#endif
       ENDIF
 C
 C     ****************************
@@ -3886,17 +3841,6 @@ C
      &             GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
               CPU = SECOND() - CPU
               CALL SCRSTA(AOTEXT,DNTSKP,CPU)
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-              IF(IPRINT.GE.0) THEN
-                 DO I = 1,NDMAT
-                    write (6,*) 
-     &                'debug: contribution from hermit (J/XC) to FMAT'
-                    CALL PRINTDMAT(I,NTBAS(0),FAO)
-                 ENDDO
-              ENDIF
-#endif /* DEBUG_DIRAC_FCKBUILD_DF */
-Caspg
 #if defined (VAR_MPI)
            ENDIF
 #endif
@@ -3920,21 +3864,10 @@ C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KCCFBT),WORK(KINDXB),IFCKOP,
      &                 WORK(KFREE),LFREE)
            CALL DSCAL(N2BBASX,DP5,DAO,1)
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-         IF(IPRINT.GE.0) THEN
-           DO I = 1,NDMAT
-             write (6,*) 'debug: contribution from eri (J/XC) to FMAT'
-             CALL PRINTDMAT(I,NTBAS(0),FAO)
-           ENDDO
-         ENDIF
-#endif /* DEBUG_DIRAC_FCKBUILD_DF */
-Caspg
            CALL MEMREL('dirao1.hrfck23',WORK,KWORK,KWORK,KFREE,LFREE)
            CPU = SECOND() - CPU
          ENDIF
 #else /* MOD_ERI */
-C        ELSE
             CALL QUIT('*** Direct SCF only possible with HERMIT 
      &                 in this version. Recompile with ERI ***')
          ENDIF
@@ -3974,6 +3907,7 @@ C
      &                NZC1,IQMULT,LUPRI)
         ENDDO
       ENDIF
+#if defined (MOD_ERI)
 Caspg
 C
 C   2006-07-27
@@ -3992,6 +3926,7 @@ C
       ENDIF
 C
 Caspg
+#endif /* MOD_ERI */
 C
       CALL QEXIT('DIRAO1')
       RETURN
@@ -4200,18 +4135,10 @@ c     DATA IPFCK/3,2,2,2, 1,0,0,0, 2,2,2,2/
       DATA IPFCK/0,0,0,0, 3,2,2,2, 1,0,0,0, 2,2,2,2/
 #include "ibtfun.h"
 C
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-      IF (IPRINT.GE.0) THEN
-#else
       IF (IPRINT.GE.2) THEN
-#endif
         CALL HEADER('Output from SETFCK',-1)
         WRITE(LUPRI,'(A,F7.4)') '* Exchange factor: ',HFXFAC
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-        IF (IPRINT.GE.0) THEN
-#else
         IF (IPRINT.GE.3) THEN
-#endif
          WRITE(LUPRI,'(3X,A,I2,A,I2)')
      &   '* Entering parameters:  NFMAT=',NFMAT,' MZ= ',MZ
          WRITE(LUPRI,*) 'ISYMOP(1:NFMAT) >',(ISYMOP(I),I=1,NFMAT)
@@ -4229,22 +4156,12 @@ C       (defined in SETGMT(prp/pamrvc.F)). /hjaaj Apr 2002
         IHRM = IHRMOP(I)
         IPAR = JBTOF(IREP,1)
         IFCK = IFCKOP(I)
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-        write (6,*) 'i,ifckop(i)',i,ifckop(i)
-#endif
-Caspg
 C
 C       First determine contributions
 C
         DO IZ = 1,NZC1
           IRFCK(IZ) = IRQMAT(IZ,IREP)
           IY        = IPFCK(IZ,IFCK)
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-       write (6,*) 'iy,iz,ifck,ipfck(iz,ifck)',iy,iz,ifck,ipfck(iz,ifck)
-#endif
-Caspg
           IC        = MOD(IY,2)
           IE        = IY - IC
           IH        = IHQMAT(IZ,IHRM)

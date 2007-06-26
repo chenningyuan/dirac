@@ -138,12 +138,6 @@ C       Call to grenerate the one-electron integrals over the fit set
 cSimen
         CALL DZERO(WORK(KCFIT),NBASISAUX*NDMT)
 cSimen
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-        CALL HEADER('fmat before df_box',-1)
-        CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-#endif
-Caspg
         DO IBOX=1,NUMBOXES
           CALL DF_BOX(WORK(KCFIT),IBOX,WORK(KNUMBOX),
      &                WORK(KCORDBOX),FMAT,DMAT,NDMT,WORK(KGABAB),
@@ -152,14 +146,11 @@ Caspg
         ENDDO ! Loop over IBOX
 
         IF (IPRINT.GT.25) THEN
-Caspg   if (.true.) then
           CALL HEADER('CFIT',-1)
           CALL OUTPUT(WORK(KCFIT),1,NBASISAUX,1,1,NBASISAUX,1,1,LUPRI)
         ENDIF
-Caspg
-          write (6,*) 'using_diffdens',using_diffdens
+
           IF (df_fitvxc.and.using_diffdens) THEN
-c             write (6,*) 'fobo'
               CALL READ_MATRIX(WORK(KCFTDD),1,NBASISAUX,'FITDDC')
               DO I = 1,NBASISAUX
                  WORK(KCFTDD-1+I) = WORK(KCFTDD-1+I)
@@ -168,12 +159,7 @@ c             write (6,*) 'fobo'
               CALL SAVE_MATRIX(WORK(KCFTDD),1,NBASISAUX,'FITDDC')
               CALL MEMREL('df-fitdd',WORK,KCFTDD,KCFTDD,KFREE,LFREE)
           ENDIF
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-       CALL HEADER('fmat after df_box, before fitfck3',-1)
-       CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-#endif
-Caspg
+
         SU = 0.0d0
         DO I=1,NBASISAUX
           SU = SU + WORK(KCFIT+I-1) * WORK(KAUXINT+I-1)
@@ -186,25 +172,14 @@ Caspg
         CALL SET_ATTGAM(.FALSE.,0.0d0)
 
 c        CALL TIMER('ITSOLV',TIMSTR,TIMEND)
-Caspg+rbast
-C       IF (DF_FITVXC) THEN
-C          CALL DF_AuxVXC_UpdateCFit(DMAT,WORK(KCFIT),WORK(KFREE),LFREE)
-C          CALL TIMER('DF_AuxVXC_UpdateCFit',TIMSTR,TIMEND)
-C       ENDIF
-Caspg+rbast
+
         CALL SETAOBTCH(SPEXP,CONTRACTED,WORK(KFREE),LFREE,IPRINT)
         CALL ACT_ALL_BATCHES
         CALL FITFCK3(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
      &       WORK(KGABAB),WORK(KGABAL),WORK(KCFIT),IPRFCK,
      &       WORK(KFREE),LFREE)
         CALL TIMER('JLINBU',TIMSTR,TIMEND)
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-        CALL HEADER('fmat after fitfck3 #1',-1)
-        CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-        write (6,*) 'debug: before robust fit, vxc'
-#endif
-Caspg
+
 Caspg+rbast
 Ctemporarily adding the exchange-correlation part separately
 Cafter debug will hopefully be only one call (above) to fitfck3...
@@ -227,7 +202,6 @@ Cafter debug will hopefully be only one call (above) to fitfck3...
            errks2=0.0
            do i=1,ndmt
            ERRKS2=errks2+DDOT(NBAST*NBAST,DMAT(1,I),1,FMAT(1,I),1)
-Casp       write (6,*) 'nb,errks step 2',nbast,errks2
            enddo
            if (using_diffdens) then
               errks = (errks2 - errks1)*0.5 + errks
@@ -236,12 +210,7 @@ Casp       write (6,*) 'nb,errks step 2',nbast,errks2
            endif
            write (6,*) 'errks final',errks
 Caspg+rbast
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-           CALL HEADER('fmat after fitfck3 vxc',-1)
-           CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-           write (6,*) 'debug: before robust fit'
-#endif
+
         ENDIF
 Caspg
         IF (ROBUST_E) THEN
@@ -249,14 +218,8 @@ Caspg
      &                      WORK(KGABAL),WORK(KFREE),LFREE,IPRINT)
         ENDIF
 
-C
 Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-        write (6,*) 'debug: after robust fit, end of function'
-        IF (IPRFCK.GE.0) THEN
-#else
         IF (IPRFCK.GT.25) THEN
-#endif
           CALL HEADER('Fitted Fock matrix',-1)
           CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         ENDIF
@@ -580,12 +543,6 @@ c
 #endif
 
 c     CALL TIMER('START ',TIMSTR,TIMEND)
-Caspg
-C#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-C      write (6,*) 'debug: inside fitfck3, ifctyp(idmt):',IFCTYP(IDMT)
-C#endif
-Caspg
- 
       DO IDMT=1,NDMT
         ISTR = N2BASX*(IDMT - 1) + 1
         ISTRAUX = NBASISAUX*(IDMT - 1) + 1
@@ -605,14 +562,8 @@ C
 #else
         IF ( MOD(IFCTYP(IDMT),10) .EQ. 3 ) THEN
 #endif
-Caspg
           RHSFIT = .TRUE.
           LHSFIT = .FALSE.
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-          write (6,*) 'debug: inside fitfck3, calling fck3drv'
-#endif
-Caspg
           CALL FCK3DRV(FMAT(ISTR),DMAT(ISTR),1,GABAB,GABAL,
      &                 DGABAL(ISTRAUX),WORK,LWORK)
 #ifdef MOD_FMM
@@ -622,12 +573,6 @@ Caspg
 #else
 C         IF (DOFMM) CALL QUIT('FMM requested but not enabled')
 #endif
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-        ELSE
-           write (6,*) 'debug: this ifctyp type does nothing'
-#endif /* DEBUG_DIRAC_FCKBUILD_DF */
-Caspg
         END IF
       END DO
 
@@ -772,8 +717,8 @@ C     Direct Linear equation solver (with Cholesky-decomposition)
           ISTRAUX = NBASISAUX*(IDMT - 1) + 1
 c         Need a copy because DPOSV manipulates the matrix
           CALL DCOPY(NBASISAUX*NBASISAUX,WMAT,1,WORK(KWMATCP),1)
-CMI       CALL DPOSV ( 'L', NBASISAUX, 1, WORK(KWMATCP), NBASISAUX,
-CMI  &                 WORK(KWVECCP+ISTRAUX-1), NBASISAUX, INFO )
+          CALL DPOSV ( 'L', NBASISAUX, 1, WORK(KWMATCP), NBASISAUX,
+     &                 WORK(KWVECCP+ISTRAUX-1), NBASISAUX, INFO )
         ENDDO
         CALL DCOPY(NBASISAUX*NDMT,WORK(KWVECCP),1,CFIT,1)
         CALL MEMREL('FIT_DENSITY',WORK,KWVECCP,KWVECCP,KFREE,LFREE)
@@ -782,8 +727,8 @@ CMI  &                 WORK(KWVECCP+ISTRAUX-1), NBASISAUX, INFO )
         CALL MEMGET ('REAL',KWVECCP,NBASISAUX,WORK,
      &               KFREE,LFREE)
         CALL DCOPY(NBASISAUX,WVEC,1,WORK(KWVECCP),1)
-CMI     CALL DPOSV ( 'L', NBASISAUX, 1, WMAT, NBASISAUX,
-CMI  &               WORK(KWVECCP), NBASISAUX, INFO )
+        CALL DPOSV ( 'L', NBASISAUX, 1, WMAT, NBASISAUX,
+     &               WORK(KWVECCP), NBASISAUX, INFO )
         CALL DCOPY(NBASISAUX,WORK(KWVECCP),1,CFIT,1)
         CALL MEMREL('FIT_DENSITY',WORK,KWVECCP,KWVECCP,KFREE,LFREE)
       ENDIF
@@ -1085,20 +1030,18 @@ C*****************************************************************************
 #include "symmet.h"
 C
 #include "memint.h" 
-C aspg, 2006-06-17
-C
-      write (*,*) 'Inside DF_GENDRV... '
 C
       CALL QENTER('DFGENDRV')
       CALL MEMGET('REAL',KGALPHA,NDIMAUX*NDMT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KAUXINT,NDIMAUX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KVMAT,NDIMAUX*NDIMAUX,WORK,KFREE,LFREE)
+
 Caspg+rbast
       IF (DF_FITVXC) THEN
-C        write (6,*) 'allocating kgjk'
          CALL MEMGET('REAL',KGJK,NDIMAUX*NDIMAUX,WORK,KFREE,LFREE)
       ENDIF
 Caspg+rbast
+
 C
       CALL DZERO (CFIT,NDIMAUX*NDMT)
 C     GALPHA = sum_cd (alpha|cd)Dcd
@@ -1116,6 +1059,7 @@ c     CALL OUTPUT(WORK(KVMAT),1,NDIMAUX,1,NDIMAUX,NDIMAUX,NDIMAUX,1,2)
 c     CALL HEADER('GALPHA in DF_GENDRV',-1)
 c     CALL OUTPUT(WORK(KGALPHA),1,NDIMAUX,1,1,NDIMAUX,1,1,2)
 C
+
 Caspg+rbast, 2006-09-21 
       IF (SAVE_VAB) THEN
          CALL SAVE_MATRIX(WORK(KVMAT),NBASISAUX,NBASISAUX,'ALBEMA')
@@ -1137,13 +1081,14 @@ C set to true
       ENDIF
       IF (SAVE_CFIT) THEN
           if (DODFLR) then
-          write (*,*) 'debug: saving intermediate fit coefs for lr'
+          write (lupri,*) 'debug: saving intermediate fit coefs for lr'
           CALL SAVE_MATRIX(CFIT,1,NBASISAUX,'LRDFC1')
           else
           CALL SAVE_MATRIX(CFIT,1,NBASISAUX,'FITCO1')
           endif
       ENDIF
 Caspg+rbast, 2006-09-21
+
 C
       IF (DF_CONSTR) THEN
 C       Grenerate the one-electron integrals over the fitting basis
@@ -1151,6 +1096,7 @@ C       Grenerate the one-electron integrals over the fitting basis
      &                         WORK(KFREE),LFREE,IPRINT)
         CALL MEMGET('REAL',KCORR,NDIMAUX,WORK,KFREE,LFREE)
 C
+
 Caspg+rbast, 2006-09-21
 C
          IF (DF_FITVXC) THEN
@@ -1177,6 +1123,7 @@ Cdebug
         ENDIF
 Cdebug
 Caspg+rbast, 2006-09-21
+
 C
         WRITE(LUPRI,'(A,I4)') 'Charge of density/fitted '//
      &                         'density of IBOX', IBOX
@@ -1208,6 +1155,7 @@ C          write (6,*) 'debug: ook'
      &                           WORK(KVMAT),WORK(KAUXINT),WORK(KCORR))
            CALL SAVE_MATRIX(WORK(KGJK),NBASISAUX,NBASISAUX,'FITXCG')
         ENDIF
+
 Caspg+rbast, 2006-09-21
         CALL MEMREL('DFGENDRV',WORK,KCORR,KCORR,KFREE,LFREE)
       ELSE
@@ -1222,6 +1170,7 @@ Caspg+rbast, 2006-09-21
      &         DDOT(NDIMAUX,WORK(KAUXINT),1,CFIT(1,IDMT),1) 
           WRITE(LUPRI,'(I3,4F18.12)') IDMT,BOX_CHARGE,CHARGE_FIT
         ENDDO
+
 Caspg+rbast, 2006-09-21
 C setting up Gjk matrix for the XC contribution in DFT
         IF (DF_FITVXC) THEN
@@ -1230,6 +1179,7 @@ C setting up Gjk matrix for the XC contribution in DFT
            CALL SAVE_MATRIX(WORK(KGJK),NBASISAUX,NBASISAUX,'FITXCG')
         ENDIF
 Caspg+rbast, 2006-09-21
+
       ENDIF
 Caspg, 2006-09-21
 C fit coefficients for this iteration are saved to file
@@ -1960,11 +1910,6 @@ c     Turn off fmm
       DOFMM_SAVE = DOFMM
       DOFMM = .FALSE.
    
-Caspg
-C#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-C      write (6,*) 'debug: inside itprod, ifctyp(idmt):',IFCTYP(IDMT)
-C#endif
-Caspg
       IF (DOFMM) THEN
         KCLERI = NCLERI
         NCLERI = .TRUE.
@@ -1997,11 +1942,6 @@ Caspg
           NOSCRE = .FALSE.  
           THRFCK3_SAVE = THRFCK3
           THRFCK3 = 1.0d-25
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-          write (6,*) 'debug: inside itprod, calling fck3drv'
-#endif
-Caspg
 cSimen Added temporary to remove segmentation fault in setmaxcsbtch
           CALL FCK3DRV(G_ALPHA(ISTRAUX),DMAT,1,GABAB,GABAL,
 c         CALL FCK3DRV(G_ALPHA(ISTRAUX),dummy,1,dummy,GABAL,
@@ -2017,12 +1957,6 @@ cToDo       implemend LHS-fitting moments.
 #else
           IF (DOFMM) CALL QUIT('FMM requested but not enabled')
 #endif
-Caspg
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-        ELSE
-           write (6,*) 'debug: this ifctyp type does nothing'
-#endif /* DEBUG_DIRAC_FCKBUILD_DF */
-Caspg  
         END IF
       END DO
 
@@ -2233,11 +2167,11 @@ C     it remains unchanged by this call) or not.
       CALL DCOPY(N*NRHS,BVEC,1,XVEC,1)
       IF (.NOT. MAKECOPY) THEN
 C       Overwrites the matrix AMAT
-CMI     CALL DPOSV ('L',N,NRHS,AMAT,N,XVEC,N,INFO)
+        CALL DPOSV ('L',N,NRHS,AMAT,N,XVEC,N,INFO)
       ELSE IF (N*N.LE.LWORK) THEN
 C       Makes a copy of the AMAT, so that AMAT is unchanged
         CALL DCOPY(N*N,AMAT,1,WORK(1),1)
-CMI     CALL DPOSV ('L',N,NRHS,WORK(1),N,XVEC,N,INFO)
+        CALL DPOSV ('L',N,NRHS,WORK(1),N,XVEC,N,INFO)
       ELSE
         CALL STOPIT('LINSOL','DPOSV ',N*N,LWORK)
       ENDIF

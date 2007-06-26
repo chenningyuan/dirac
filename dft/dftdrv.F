@@ -941,11 +941,13 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 
 #if defined (MOD_DNF)
 Caspg+rbast, 2006-09-21
-      write(LUPRI,'(2(A,E20.12))') 
-     &     ' DEBUG, integrated number of electrons: '//
-     &     ' nelect: ',ELCTRN,' electb: ',ELCTRB
-      write(LUPRI,*) ' a total of ',nskipped,' out of ',npoint,
-     &               ' integration were skipped while getting b0'
+c commented code below is still in use! debugging response with dfvxc
+C
+c     write(LUPRI,'(2(A,E20.12))') 
+c    &     ' DEBUG, integrated number of electrons: '//
+c    &     ' nelect: ',ELCTRN,' electb: ',ELCTRB
+c     write(LUPRI,*) ' a total of ',nskipped,' out of ',npoint,
+c    &               ' integration were skipped while getting b0'
       IF (DF_FITVXC) THEN ! releasing temp space used for the df code
 C aspg+rb, 2007-01-19
 C aspg: do we really need this for linear response?
