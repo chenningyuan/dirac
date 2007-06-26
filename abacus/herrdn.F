@@ -8997,4 +8997,28 @@ C***********************************************************************
       ENDIF
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION KHK_SC(L,DELTA_L)
+C***********************************************************************
+C
+C     An integer function that returns the degeneracy of the small
+C     component for a given large component with angular momentum L
+C
+C     Note L is given here as L + 1 to start with one (instead of zero)
+C     Isolated in a function to avoid using ccom.h directly
+C
+C     Written by Lucas Visscher, 26-6-2007
+C
+C***********************************************************************
+#include "maxaqn.h"
+#include "ccom.h"
+      INTEGER DELTA_L
+      IF (L+DELTA_L.GT.0) THEN
+         KHK_SC = KHK(L+DELTA_L)
+      ELSE
+         KHK_SC = 0
+      ENDIF
+      RETURN
+      END
+
 
