@@ -7,7 +7,7 @@
 
 include ../Makefile.config
 
-F77_OBJS = df_dirac.o df_fck3.o dposv.o df_utils.o df_vxc.o 
+F77_OBJS = df_dirac.o df_fck3.o df_utils.o df_vxc.o 
 F90_OBJS = 
 
 F77_CPPS = $(F77_OBJS:.o=.i)

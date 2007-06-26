@@ -673,7 +673,7 @@ if [ -n "$DNFMOD" ]; then
 cat <<EOF>> Makefile
 
 DNFOBJS = \\
-densfit/df_dirac.o  densfit/df_fck3.o  densfit/dposv.o densfit/df_utils.o densfit/df_vxc.o 
+densfit/df_dirac.o  densfit/df_fck3.o  densfit/df_utils.o densfit/df_vxc.o 
 EOF
 fi
 #
