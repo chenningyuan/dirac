@@ -1997,7 +1997,7 @@ C
        DO ICTFB = 1, NCTFB
 
          KNDX = KNDXBTCH(ICOMPA,IAOBA,MODA)
-         IAOA = INDXBTCH(KNDX - 1 + ICTFA)
+         IAOA = INDXBTCH(KNDX - 1 + ICTFA, MODA)
          
          IOFFSET = 0
 #if defined (MOD_DNF)
@@ -2007,7 +2007,7 @@ C
          END IF
 #endif /* MOD_DNF */
          KNDX = KNDXBTCH(ICOMPB,IAOBB,MODB)
-         IAOB = INDXBTCH(KNDX - 1 + ICTFB) - IOFFSET
+         IAOB = INDXBTCH(KNDX - 1 + ICTFB, MODB) - IOFFSET
 C
 C Here it we should probably put summation over 
 C  FMATSP(ISPA,ISPB) separately outside 
@@ -2313,7 +2313,7 @@ C
         DO ICTFB = 1, NCTFB
 
           KNDX = KNDXBTCH(ICOMPA,IAOBA,1)
-          IAOA = INDXBTCH(KNDX - 1 + ICTFA)
+          IAOA = INDXBTCH(KNDX - 1 + ICTFA,1)
           
           IOFFSET = 0
 #if defined (MOD_DNF)
@@ -2323,7 +2323,7 @@ C
           END IF
 #endif /* MOD_DNF */
           KNDX = KNDXBTCH(ICOMPB,IAOBB,1)
-          IAOB = INDXBTCH(KNDX - 1 + ICTFB) - IOFFSET
+          IAOB = INDXBTCH(KNDX - 1 + ICTFB,1) - IOFFSET
 C
 C Here it we should probably put summation over 
 C  FMATSP(ISPA,ISPB,IPRFAB) separately outside 
