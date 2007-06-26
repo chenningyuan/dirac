@@ -115,7 +115,9 @@ C
       ND = -1
 
       DO ISHELL = 1, KMAXTOT
-c       to get rid of Huckel-guess shells
+c       The small component shells (LCLASS.eq.2) are done implicitly, using
+c       kinetic balance on the large component. This generates the modified
+c       solid harmonics from which we can construct all that is needed.
         IF (.NOT.LCLASS(ISHELL).EQ.2) THEN
           IF (NB.NE.NBCH(ISHELL) .OR. NC.NE.NCENT(ISHELL) .OR.
      &        ND.NE.LCLASS(ISHELL) ) THEN
@@ -178,8 +180,8 @@ C
      &   ' #  NCNT  NHKT  NPRF  NCTF  NTYP KNDX1 KNDX2 INDAO1 INDAO2',1)
        DO I = 1, NAOBTCH
         WRITE (LUPRI,'(10I6)') I, NCNTBTCH(I), NHKTBTCH(I), NPRFBTCH(I),
-     &   NCTFBTCH(I),NTYPBTCH(I),KNDXBTCH(1,I),KNDXBTCH(2,I),
-     &   INDXBTCH(KNDXBTCH(1,I)),INDXBTCH(KNDXBTCH(2,I))
+     &   NCTFBTCH(I),NTYPBTCH(I),KNDXBTCH(1,I,1),KNDXBTCH(2,I,1),
+     &   INDXBTCH(KNDXBTCH(1,I,1)),INDXBTCH(KNDXBTCH(2,I,1))
        END DO
       END IF
 
@@ -220,8 +222,8 @@ C       END DO
        CALL HEADER('Orbital indices for AO batches',-1)
        DO I = 1, NAOBTCH
         WRITE (LUPRI,'(2X,I5,3X,(40I3))') I,
-     &        (INDXBTCH(KNDXBTCH(1,I)+J-1),J=1,NCTFBTCH(I))
-C     &        (INDXBTCH(KNDXBTCH(2,I)+J-1),J=1,NCTFBTCH(I))
+     &        (INDXBTCH(KNDXBTCH(1,I,1)+J-1),J=1,NCTFBTCH(I))
+C     &        (INDXBTCH(KNDXBTCH(2,I,1)+J-1),J=1,NCTFBTCH(I))
        END DO
       END IF
 C
@@ -436,8 +438,8 @@ C
 C
 C        orbital indices
 C
-         KNDXBTCH(1,IBATCH) = IADRO
-         KNDXBTCH(2,IBATCH) = 1
+         KNDXBTCH(1,IBATCH,1) = IADRO
+         KNDXBTCH(2,IBATCH,1) = 1
          DO ICNT = 1, NDIMC(IMAT)
           INDXBTCH(IADRO) = IORB + (IPNTC(IMAT,ICNT)-1)*KHKT(ISHELL)
           IADRO = IADRO + 1
@@ -560,7 +562,7 @@ C
        IF ( NTYP .EQ. 2 ) THEN 
          NTYPBTCH( IAOBLASTS-1 ) = 2
          NHKTBTCH( IAOBLASTS-1 ) = 2
-         KNDXBTCH( 2, IAOBLASTS-1 ) = KNDXBTCH( 1, IAOB )
+         KNDXBTCH( 2, IAOBLASTS-1, 1 ) = KNDXBTCH( 1, IAOB, 1 )
          KCCFBTCH( 2, IAOBLASTS-1 ) = KCCFBTCH( 1, IAOB )
          KCLSBTCH( IAOBLAST - 1 )   = KCLSBTCH(IAOB)
          KAOBTCH(  2, IAOBLASTS-1 ) = KAOBTCH(  1, IAOB )     
@@ -573,8 +575,8 @@ C
           NHKTBTCH( IAOBLAST )    = NHKTBTCH( IAOB )
           NCNTBTCH( IAOBLAST )    = NCNTBTCH( IAOB )
           KEXPBTCH( IAOBLAST )    = KEXPBTCH( IAOB )
-          KNDXBTCH( 1, IAOBLAST ) = KNDXBTCH( 1, IAOB )
-          KNDXBTCH( 2, IAOBLAST ) = 1
+          KNDXBTCH( 1, IAOBLAST, 1 ) = KNDXBTCH( 1, IAOB, 1 )
+          KNDXBTCH( 2, IAOBLAST, 1 ) = 1
           KCCFBTCH( 1, IAOBLAST ) = KCCFBTCH( 1, IAOB )
           KCCFBTCH( 2, IAOBLAST ) = 1
           KCLSBTCH( IAOBLAST )    = KCLSBTCH(IAOB)
@@ -670,7 +672,7 @@ C
       DIMENSION WORK(LWORK)
 
       KKNDXTMP = 1 
-      KNHKTTMP = KKNDXTMP + NAOBTCH*2/IRAT + 1
+      KNHKTTMP = KKNDXTMP + NAOBTCH*6/IRAT + 1
       KKEXPTMP = KNHKTTMP + NAOBTCH  /IRAT + 1
       KKCCFTMP = KKEXPTMP + NAOBTCH  /IRAT + 1
       KNTYPTMP = KKCCFTMP + NAOBTCH*2/IRAT + 1
@@ -680,7 +682,7 @@ C
         CALL STOPIT('SETAOBTCH','DECONTRACTAO',KLAST,LWORK)
       END IF 
 
-      CALL ICOPY(2*NAOBTCH,KNDXBTCH,1,WORK(KKNDXTMP),1) 
+      CALL ICOPY(6*NAOBTCH,KNDXBTCH,1,WORK(KKNDXTMP),1) 
       CALL ICOPY(  NAOBTCH,NHKTBTCH,1,WORK(KNHKTTMP),1)
       CALL ICOPY(  NAOBTCH,KEXPBTCH,1,WORK(KKEXPTMP),1)
       CALL ICOPY(2*NAOBTCH,KCCFBTCH,1,WORK(KKCCFTMP),1)
@@ -702,7 +704,7 @@ C
 #include "maxorb.h"
 #include "fck3aob.h"
 #include "iratdef.h"
-      DIMENSION KNDXTMP(2,MXAOBTCH),NHKTTMP(MXAOBTCH),
+      DIMENSION KNDXTMP(2,MXAOBTCH,3),NHKTTMP(MXAOBTCH),
      &          KEXPTMP(MXAOBTCH),KCCFTMP(2,MXAOBTCH),
      &          NTYPTMP(MXAOBTCH)
 
@@ -723,8 +725,8 @@ C
         END IF 
 
         DO I=1,NPRFBTCH(IAOB_OLD)
-         KNDXBTCH(1,IAOB) = KNDXTMP(1,IAOB_OLD) 
-         KNDXBTCH(2,IAOB) = KNDXTMP(2,IAOB_OLD) 
+         KNDXBTCH(1,IAOB,1) = KNDXTMP(1,IAOB_OLD,1) 
+         KNDXBTCH(2,IAOB,1) = KNDXTMP(2,IAOB_OLD,1) 
          NHKTBTCH(IAOB)   = NHKTTMP(IAOB_OLD)
          KEXPBTCH(IAOB)   = KEXPTMP(IAOB_OLD)   + I - 1
          KCCFBTCH(1,IAOB) = KCCFTMP(1,IAOB_OLD) + I - 1

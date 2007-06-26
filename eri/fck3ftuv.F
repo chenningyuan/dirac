@@ -729,10 +729,12 @@ C
        IPRF2 = IPR12(2,IPRF12)
 
         DO ICTF1 = 1, NCTF1
-         ISTAO1 = INDXBTCH(KNDXBTCH(ISPCOMP1,IAOB1) + ICTF1 - 1 )
+C        The last index of KNDXBTCH is hardwired to 1 (L.C.) at the
+C        moment (june 2007), S.C. density contributions come later
+         ISTAO1 = INDXBTCH(KNDXBTCH(ISPCOMP1,IAOB1,1) + ICTF1 - 1 )
 
          DO ICTF2 = 1, NCTF2
-          ISTAO2 = INDXBTCH(KNDXBTCH(ISPCOMP2,IAOB2) + ICTF2 - 1 ) 
+          ISTAO2 = INDXBTCH(KNDXBTCH(ISPCOMP2,IAOB2,1) + ICTF2 - 1 ) 
      &             - IOFFSET
           DO ISP1=1, KHKT1
            IAO1 = ISTAO1+ISP1-1
