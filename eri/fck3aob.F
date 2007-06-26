@@ -92,7 +92,7 @@ cSimen also want NBASE and NBASEAUX
          MAXAONHK = MAX( MAXAONHK,  NHKT(I) )  
       END DO
       END DO
-      MAXAONHK = MAXAONHK + NREL
+      MAXAONHK = MAXAONHK + NDER
 
       MAXAOKCK =     MAXAONHK * ( MAXAONHK + 1 ) / 2 
       MAXAOKHK = 2 * MAXAONHK - 1

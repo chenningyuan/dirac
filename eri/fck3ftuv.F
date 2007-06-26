@@ -141,6 +141,12 @@ C     =================
       NRTOP = (JTOP + 1)*(JTOP + 2)*(JTOP + 3)/6
 
       CALL PUT2HERTOP(JTOP,NRTOP)
+C
+C     Dimensions for CSQ
+C     ==================
+C     
+      CALL SPHDIM
+
 
       KINDHR  = KLAST1
       KINDSQ  = KINDHR + ( JTOP3 - 1 ) / IRAT + 1

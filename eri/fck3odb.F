@@ -1007,6 +1007,7 @@ C
 #include "fck3thr.h"
 #include "clsfmm.h"
 #include "priunit.h"
+#include "maxaqn.h"
       MAXODNHK = 0
       MAXODPRF = 0
       MAXODCTF = 0
@@ -1039,7 +1040,12 @@ C
         ENDDO
       ENDDO
 
-      MAXODNHK = MAXODNHK + 2*NREL
+      MAXODNHK = MAXODNHK + 2*NDER
+      IF (MAXODNHK.GT.MXQN) THEN
+        WRITE(LUPRI,'(1X,A,I2,A,I2,A)') 'MAXODNHK =',MAXODNHK, 
+     &    ' is greater than MXQN =', MXQN, ' in GET_ODPAR'
+        CALL QUIT('Maximum angular momentum greater than MXQN')
+      ENDIF
       MAXODKCK = MAXAOKCK * MAXAOKCK
       MAXODKHK = MAXAOKHK * MAXAOKHK
 
