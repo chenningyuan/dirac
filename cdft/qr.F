@@ -138,25 +138,26 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* DFT_QR_GGA */
-      SUBROUTINE DFT_QR_GGA(DTRMAT,
-     &                      EXCMAT,
-     &                      ISYMOP,
-     &                      IHRMOP,
-     &                      GAO,
-     &                      GAO1,
-     &                      DENSITY,
-     &                      DENSITY_GRADIENT_NORM,
-     &                      DENSITY_GRADIENT,
-     &                      WEIGHT,
-     &                      DOGGA,
-     &                      BUF)
+C     /* SDFT_QR_ALTERNATIVE */
+      SUBROUTINE SDFT_QR_ALTERNATIVE(ADD_GR,
+     &                               ADD_S,
+     &                               ADD_GS,
+     &                               DTRMAT,
+     &                               EXCMAT,
+     &                               ISYMOP,
+     &                               IHRMOP,
+     &                               GAO,
+     &                               GAO1,
+     &                               R,
+     &                               GR_NORM,
+     &                               GR,
+     &                               W,
+     &                               BUF)
 C=======================================================================
-C     does the same thing like Johan's DFT_QR
-C     i use(d) it to reverse-engineer and debug SDFT_QR
+C     describe me ...
 C-----------------------------------------------------------------------
 C                                                           radovan bast
-C                                                last revision: may 2007
+C                                               last revision: june 2007
 C=======================================================================
 
 #include "implicit.h"
@@ -168,110 +169,234 @@ C=======================================================================
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
-#include "inforb.h"
-#include "dgroup.h"
 #include "dcbham.h"
-#include "dftcom.h"
+#include "dgroup.h"
+#include "inforb.h"
 #include "cdft.h"
+#include "dftcom.h"
 #include "../dft/functionals.h"
 
-      LOGICAL   DOGGA,
+      LOGICAL   ADD_GR,
+     &          ADD_S,
+     &          ADD_GS,
      &          LBIT
       DIMENSION DTRMAT(NBAST,NBAST,NZ,3),
      &          EXCMAT(NBAST,NBAST,NZ,3),
      &          ISYMOP(3),
      &          IHRMOP(3),
-     &          GAO(NBAST),
-     &          GAO1(NBAST,3),
-     &          DENSITY_GRADIENT(3),
+     &          GAO(*),
+     &          GAO1(*),
+     &          GR(3),GR_b(3),GR_c(3),GR_bc(3),
      &          BUF(*),
-     &          FO_DENSITY(3),
-     &          FO_SPIN_DENSITY(3,3),
-     &          FO_SPIN_DENSITY_NORM(3),
-     &          FACTOR(3),
-     &          ZETA(3),
-     &          VXC_S(3),
-     &          VXC_V(3,3),
+     &          VXC_VECTOR(3),
      &          VXC(99) !dirty fix
 
 #include "ibtfun.h"
 
-      DO IBC = 1,3
-        CALL GETRHO(FO_DENSITY(IBC),
-     &              ISYMOP(IBC)-1,
-     &              GAO,
-     &              DTRMAT(1,1,1,IBC),
-     &              BUF)
+      ibc = 1
+      CALL GETRHO(R_b,
+     &            ISYMOP(ibc)-1,
+     &            GAO,
+     &            DTRMAT(1,1,1,ibc),
+     &            BUF)
+      ibc = 2
+      CALL GETRHO(R_c,
+     &            ISYMOP(ibc)-1,
+     &            GAO,
+     &            DTRMAT(1,1,1,ibc),
+     &            BUF)
+      ibc = 3
+      CALL GETRHO(R_bc,
+     &            ISYMOP(ibc)-1,
+     &            GAO,
+     &            DTRMAT(1,1,1,ibc),
+     &            BUF)
 
-        CALL DENSITY_GRADIENT_GENERAL(FO_SPIN_DENSITY(1,IBC),
-     &                                ISYMOP(IBC)-1,
+      IF(ADD_GR) THEN
+        ibc = 1
+        CALL DENSITY_GRADIENT_GENERAL(GR_b,
+     &                                ISYMOP(ibc)-1,
      &                                GAO,
      &                                GAO1,
-     &                                DTRMAT(1,1,1,IBC),
+     &                                DTRMAT(1,1,1,ibc),
      &                                BUF)
+        ibc = 2
+        CALL DENSITY_GRADIENT_GENERAL(GR_c,
+     &                                ISYMOP(ibc)-1,
+     &                                GAO,
+     &                                GAO1,
+     &                                DTRMAT(1,1,1,ibc),
+     &                                BUF)
+        ibc = 3
+        CALL DENSITY_GRADIENT_GENERAL(GR_bc,
+     &                                ISYMOP(ibc)-1,
+     &                                GAO,
+     &                                GAO1,
+     &                                DTRMAT(1,1,1,ibc),
+     &                                BUF)
+      ENDIF
 
-        ZETA(IBC) = D2*DDOT(3,FO_SPIN_DENSITY(1,IBC),1,
-     &                        DENSITY_GRADIENT,1)
+
+
+
+
+
+
+
+
+      DMAGIC = D2
+
+      Z_b  =         DDOT(3,GR_b ,1,GR   ,1) + DDOT(3,GR   ,1,GR_b ,1)
+      Z_c  =         DDOT(3,GR_c ,1,GR   ,1) + DDOT(3,GR   ,1,GR_c ,1)
+      Z_bc =         DDOT(3,GR_bc,1,GR   ,1) + DDOT(3,GR   ,1,GR_bc,1)
+     &     + DMAGIC*(DDOT(3,GR_b ,1,GR_c ,1) + DDOT(3,GR_c ,1,GR_b ,1))
+
+      Y_b  =         DDOT(3,GR_b ,1,GS   ,1) + DDOT(3,GR   ,1,GS_b ,1)
+      Y_c  =         DDOT(3,GR_c ,1,GS   ,1) + DDOT(3,GR   ,1,GS_c ,1)
+      Y_bc =         DDOT(3,GR_bc,1,GS   ,1) + DDOT(3,GR   ,1,GS_bc,1)
+     &     + DMAGIC*(DDOT(3,GR_b ,1,GS_c ,1) + DDOT(3,GR_c ,1,GS_b ,1))
+
+      X_b  =         DDOT(3,GS_b ,1,GS   ,1) + DDOT(3,GS   ,1,GS_b ,1)
+      X_c  =         DDOT(3,GS_c ,1,GS   ,1) + DDOT(3,GS   ,1,GS_c ,1)
+      X_bc =         DDOT(3,GS_bc,1,GS   ,1) + DDOT(3,GS   ,1,GS_bc,1)
+     &     + DMAGIC*(DDOT(3,GS_b ,1,GS_c ,1) + DDOT(3,GS_c ,1,GS_b ,1))
+
+      R_pq_bc = D0
+      R_pq_b  = D0
+      R_pq_c  = D0
+      R_pq    = D0
+      S_pq_bc = D0
+      S_pq_b  = D0
+      S_pq_c  = D0
+      S_pq    = D0
+      Z_pq_bc = D0
+      Z_pq_b  = D0
+      Z_pq_c  = D0
+      Z_pq    = D0
+      Y_pq_bc = D0
+      Y_pq_b  = D0
+      Y_pq_c  = D0
+      Y_pq    = D0
+      X_pq_bc = D0
+      X_pq_b  = D0
+      X_pq_c  = D0
+      X_pq    = D0
+
+      IF(ADD_GR) THEN
+        CALL DFTPOT2(VXC,W,R,GR_NORM)
+      ELSE
+        CALL DFTPOT2(VXC,W,R,D0)
+      ENDIF
+
+      IF(ADD_S) THEN
+        IF(ADD_GS) THEN
+          CALL SDFTPOT2(VXC,W,R,GR_NORM)
+        ELSE
+          CALL SDFTPOT2(VXC,W,R,D0)
+        ENDIF
+      ENDIF
+
+
+
+
+
+
+      R_pq_bc = R_pq_bc + VXC(fR0)
+      Z_pq_bc = Z_pq_bc + VXC(fZ0)
+
+      R_pq_b  = R_pq_b
+     &        + R_c *VXC(fRR)
+     &        + Z_c *VXC(fRZ)
+
+      Z_pq_b  = Z_pq_b
+     &        + R_c *VXC(fRZ)
+     &        + Z_c *VXC(fZZ)
+
+      R_pq_c  = R_pq_c
+     &        + R_b *VXC(fRR)
+     &        + Z_b *VXC(fRZ)
+
+      Z_pq_c  = Z_pq_c
+     &        + R_b *VXC(fRZ)
+     &        + Z_b *VXC(fZZ)
+
+      R_pq    = R_pq  
+     &        + R_bc*VXC(fRR)
+     &        + Z_bc*VXC(fRZ)
+
+      Z_pq    = Z_pq  
+     &        + R_bc*VXC(fRZ)
+     &        + Z_bc*VXC(fZZ)
+
+      R_pq    = R_pq
+     &        + (R_b*R_c + R_c*R_b)*VXC(fRRR)
+     &        + (R_b*Z_c + R_c*Z_b)*VXC(fRRZ)
+     &        + (Z_b*R_c + Z_c*R_b)*VXC(fRRZ)
+     &        + (Z_b*Z_c + Z_c*Z_b)*VXC(fRZZ)
+
+      Z_pq    = Z_pq
+     &        + (R_b*R_c + R_c*R_b)*VXC(fRRZ)
+     &        + (R_b*Z_c + R_c*Z_b)*VXC(fRZZ)
+     &        + (Z_b*R_c + Z_c*R_b)*VXC(fRZZ)
+     &        + (Z_b*Z_c + Z_c*Z_b)*VXC(fZZZ)
+
+
+
+
+
+
+
+
+
+      ibc = 2
+      VXC_SCALAR = R_pq_b
+      DO jxyz = 1,3
+        VXC_VECTOR(jxyz) = D2*Z_pq_b *GR(jxyz)
+     &                   + D2*Z_pq_bc*GR_c(jxyz)
       ENDDO
+!     call doexc1(VXC_SCALAR,ISYMOP(ibc)-1,EXCMAT(1,1,1,ibc),GAO)
+      CALL DOEXC2(VXC_SCALAR,
+     &            VXC_VECTOR,
+     &            ISYMOP(ibc)-1,
+     &            EXCMAT(1,1,1,ibc),
+     &            GAO,
+     &            GAO1)
 
-      ADDME = DDOT(3,FO_SPIN_DENSITY(1,1),1,
-     &               FO_SPIN_DENSITY(1,2),1)
-
-      ZETA(3) = ZETA(3) + D4*ADDME
-
-      CALL DFTPOT2(VXC,WEIGHT,DENSITY,DENSITY_GRADIENT_NORM)
-
-      DO IBC = 1,3
-        VXC_S(IBC)  = VXC(FRR)*FO_DENSITY(IBC) + VXC(FRZ)*ZETA(IBC)
-        FACTOR(IBC) = VXC(FRZ)*FO_DENSITY(IBC) + VXC(FZZ)*ZETA(IBC)
+      ibc = 1
+      VXC_SCALAR = R_pq_c
+      DO jxyz = 1,3
+        VXC_VECTOR(jxyz) = D2*Z_pq_c *GR(jxyz)
+     &                   + D2*Z_pq_bc*GR_b(jxyz)
       ENDDO
+!     call doexc1(VXC_SCALAR,ISYMOP(ibc)-1,EXCMAT(1,1,1,ibc),GAO)
+      CALL DOEXC2(VXC_SCALAR,
+     &            VXC_VECTOR,
+     &            ISYMOP(ibc)-1,
+     &            EXCMAT(1,1,1,ibc),
+     &            GAO,
+     &            GAO1)
 
-      F1 = D2*FO_DENSITY(1)*FO_DENSITY(2)
-      F2 = D2*(FO_DENSITY(1)*ZETA(2) + FO_DENSITY(2)*ZETA(1))
-      F3 = D2*ZETA(1)*ZETA(2)
-
-      VXC_S(3) = VXC_S(3) + F1*VXC(FRRR)
-     &                    + F2*VXC(FRRZ)
-     &                    + F3*VXC(FRZZ)
-
-      FACTOR(3) = FACTOR(3) + F1*VXC(FRRZ)
-     &                      + F2*VXC(FRZZ)
-     &                      + F3*VXC(FZZZ)
-
-      DO IBC = 1,3
-        DO IXYZ = 1,3
-          VXC_V(IXYZ,IBC) = D2*(FACTOR(IBC)*DENSITY_GRADIENT(IXYZ)
-     &                        + VXC(FZ0)*FO_SPIN_DENSITY(IXYZ,IBC))
-        ENDDO
+      ibc = 3
+      VXC_SCALAR = R_pq
+      DO jxyz = 1,3
+        VXC_VECTOR(jxyz) = D2*Z_pq   *GR(jxyz)
+     &                   + D2*Z_pq_b *GR_b(jxyz)*D2
+     &                   + D2*Z_pq_c *GR_c(jxyz)*D2
+     &                   + D2*Z_pq_bc*GR_bc(jxyz)
       ENDDO
+!     call doexc1(VXC_SCALAR,ISYMOP(ibc)-1,EXCMAT(1,1,1,ibc),GAO)
+      CALL DOEXC2(VXC_SCALAR,
+     &            VXC_VECTOR,
+     &            ISYMOP(ibc)-1,
+     &            EXCMAT(1,1,1,ibc),
+     &            GAO,
+     &            GAO1)
 
-      DO IXYZ = 1,3
-        ADDME = FACTOR(1)*FO_SPIN_DENSITY(IXYZ,2)
-     &        + FACTOR(2)*FO_SPIN_DENSITY(IXYZ,1)
 
-        VXC_V(IXYZ,3) = VXC_V(IXYZ,3) + D4*ADDME
-      ENDDO
 
-      DO IBC = 1,3
-        CALL DOEXC2(VXC_S(IBC),
-     &              VXC_V(1,IBC),
-     &              ISYMOP(IBC)-1,
-     &              EXCMAT(1,1,1,IBC),
-     &              GAO,
-     &              GAO1)
 
-!       CALL EXC_GENERAL(.FALSE.,VXC_S(IBC),UNUSED,D1,1,1,
-!    &                   ISYMOP(IBC)-1,EXCMAT(1,1,1,IBC),
-!    &                   GAO,GAO)
-!       DO IXYZ = 1,3
-!         CALL EXC_GENERAL(.FALSE.,VXC_V(IXYZ,IBC),UNUSED,D1,1,1,
-!    &                     ISYMOP(IBC)-1,EXCMAT(1,1,1,IBC),
-!    &                     GAO,GAO1(1,IXYZ))
-!         CALL EXC_GENERAL(.FALSE.,VXC_V(IXYZ,IBC),UNUSED,D1,1,1,
-!    &                     ISYMOP(IBC)-1,EXCMAT(1,1,1,IBC),
-!    &                     GAO1(1,IXYZ),GAO)
-!       ENDDO
-      ENDDO
+
+
 
       RETURN
       END

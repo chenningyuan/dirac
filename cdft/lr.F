@@ -135,15 +135,15 @@ C=======================================================================
               CALL SDFTPOT1(VXC,W,R,D0)
             ENDIF
 
-            DO IXYZ = ISTART,3
+            DO ixyz = ISTART,3
               CALL SDFT_LR_COLLINEAR(VXC,
      &                               EXCMAT(1+JOFF),
      &                               ISYMOP(IMAT),
      &                               GAO,
      &                               GAO1,
-     &                               IXYZ,
-     &                               S_b(IXYZ),
-     &                               GS_b(1,IXYZ),
+     &                               ixyz,
+     &                               S_b(ixyz),
+     &                               GS_b(1,ixyz),
      &                               GR,
      &                               IS_GGA)
             ENDDO
@@ -160,7 +160,7 @@ C     /* SDFT_LR_COLLINEAR */
      &                             ISYMOP,
      &                             GAO,
      &                             GAO1,
-     &                             IXYZ,
+     &                             ixyz,
      &                             S_b,
      &                             GS_b,
      &                             GR,
@@ -195,40 +195,40 @@ C=======================================================================
      &          GAO1(*),
      &          GS_b(3),
      &          GR(3),
-     &          VXC_Y(3),
-     &          VXC_X_b(3),
+     &          Y_pq(3),
+     &          X_pq_b(3),
      &          VXC_VECTOR(3)
 
 
-      VXC_S = VXC(fSS)*S_b
+      S_pq = VXC(fSS)*S_b
 
       IF(IS_GGA) THEN
         Y_b = DDOT(3,GR,1,GS_b,1)
 
-        DO JXYZ = 1,3
-          VXC_X_b(JXYZ) = VXC(fX)
+        DO jxyz = 1,3
+          X_pq_b(jxyz) = VXC(fX)
 
-          VXC_Y(JXYZ) = S_b*VXC(fSY) + Y_b*VXC(fYY)
+          Y_pq(jxyz) = S_b*VXC(fSY) + Y_b*VXC(fYY)
         ENDDO
 
-        VXC_S = VXC_S + VXC(fSY)*Y_b
+        S_pq = S_pq + VXC(fSY)*Y_b
       ENDIF
 
-      VXC_SCALAR = VXC_S
+      VXC_SCALAR = S_pq
 
       IF(IS_GGA) THEN
-        DO JXYZ = 1,3
-          VXC_VECTOR(JXYZ) = VXC_Y(JXYZ)*GR(JXYZ)
-     &                     + VXC_X_b(JXYZ)*GS_b(JXYZ)*D2
+        DO jxyz = 1,3
+          VXC_VECTOR(jxyz) = Y_pq(jxyz)*GR(jxyz)
+     &                     + X_pq_b(jxyz)*GS_b(jxyz)*D2
         ENDDO
 
-        CALL DSCAL(3,D2,VXC_VECTOR,1) !because of symmetrization later in the code
+        CALL DSCAL(3,D2,VXC_VECTOR,1) !symmetrization later in the code
       ENDIF
 
       CALL EXC_M(IS_GGA,
      &           VXC_SCALAR,
      &           VXC_VECTOR,
-     &           IXYZ,
+     &           ixyz,
      &           ISYMOP,
      &           EXCMAT,
      &           GAO,
