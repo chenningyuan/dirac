@@ -147,33 +147,6 @@ C     =====
       ENDIF
 C     =====
 C
-ccc#if defined (MOD_DNF)
-ccc      IF (DENSFIT) THEN
-ccc         NIND = 2 * NUMBER_OF_NUCLEI(2) + 2
-ccc         CALL MEMGET ('INTE',KINDAO,NTBAS(0),WORK,KFREE,LFREE)
-ccc         CALL MEMGET ('INTE',KINDAOS,NTBAS(0),WORK,KFREE,LFREE)
-ccc         CALL MEMGET ('INTE',KINDNAO,NIND,WORK,KFREE,LFREE)
-ccc         CALL MEMGET ('REAL',KSDMAT,N2BBASX,WORK,KFREE,LFREE)
-ccc         CALL MEMGET ('REAL',KADMAT,N2BBASX,WORK,KFREE,LFREE)
-ccc         CALL INDAOC (WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO))
-cccC        We allocate the fit-coefficients in work for the time being.
-cccC        When we have implemented the fit-basis read routine and the Coulomb build routine, they should
-cccC        probably be allocated at a higher level and passed on to TWOFCK.
-ccc         nfit_coef = 1000 ! something to start with as long as we have not implemented the correct structure
-ccc         CALL MEMGET ('REAL',KCFIT,nfit_coef,WORK,KFREE,LFREE)
-ccc         DO I = 1,NFMAT
-ccc            IREP = ISYMOP(I)-1
-ccc            IF (IREP.NE.0) 
-ccc     &      CALL QUIT ("Only totally symmetric densities can be fitted")
-ccc            CALL DTSOUAO(DMAT(1,1,I),WORK(KSDMAT),WORK,KFREE,LFREE)
-cccc           CALL DRIVE_FIT(WORK(KSDMAT),WORK(KADMAT),NTBAS(0),
-cccc    &                     WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO),
-cccc    &                     IPRINT,WORK(KCFIT))
-ccc         ENDDO
-ccc         CALL MEMREL('TWOFCK',WORK,KINDAO,KINDAO,KFREE,LFREE)
-ccc      ENDIF
-ccc#endif /* MOD_DNF */
-C
 C     Initialize and build Fock matrix
 C     ================================
 C
@@ -3360,9 +3333,6 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#if defined (VAR_VECTOR)
-#include "veclen.h"
-#endif /* VAR_VECTOR */
 #include "memint.h"
       I2TYP_TEMP = 1
       NDIM = N2BBASX*NZC1*NFMAT
@@ -3374,12 +3344,7 @@ C*****************************************************************************
         KCCFBT = KISYMD + NDMAT
         KINDXB = KCCFBT + MXPRIM*MXCONT
         KFCKTP = KINDXB + 8*MXSHEL*MXCONT
-#if defined (VAR_VECTOR)
-        ICHUNK = MAX(IVECLN/NFMAT,1)
-        KFREE  = KFCKTP + ICHUNK*NFMAT*(NBASIS+NODD)*NBASIS
-#else /* VAR_VECTOR */
         KFREE  = KFCKTP
-#endif /* VAR_VECTOR */
         LFREE  = LWORK - KFREE + 1
         IF (KFREE.GT.LWORK) CALL STOPIT('LINKDR','EXC',KFREE,
      &                           LWORK)
@@ -3858,12 +3823,12 @@ C
            CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP)
 C
            IPRFCK=IPRINT
-           CALL DSCAL(N2BBASX,D2,DAO,1)
+           CALL DSCAL(N2BBASX*NDMAT,D2,DAO,1)
            CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
 C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KCCFBT),WORK(KINDXB),IFCKOP,
      &                 WORK(KFREE),LFREE)
-           CALL DSCAL(N2BBASX,DP5,DAO,1)
+           CALL DSCAL(N2BBASX*NDMAT,DP5,DAO,1)
            CALL MEMREL('dirao1.hrfck23',WORK,KWORK,KWORK,KFREE,LFREE)
            CPU = SECOND() - CPU
          ENDIF

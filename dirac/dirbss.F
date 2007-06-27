@@ -41,10 +41,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       CALL QENTER('MAKE_DKH')
 C
-C     IF (DOBSS) THEN
-C       write(lupri,*) 'MAKE_DKH: Going to run MAKE_BSS !'
-        CALL MAKE_BSS(VMAT,WORK(KFREE),LFREE) 
-C     ENDIF
+      CALL MAKE_BSS(VMAT,WORK(KFREE),LFREE) 
 
 C    ===================================================================================
 C     ... decide whether do the picture change transformation of 4c Fock AO matrixes
@@ -53,7 +50,6 @@ C    ... it's using the picture change transformation matrix obtained from the
 C    transformation of the Dirac bare nucleus or of the Fock-Dirac matrix
 C    (when USEDF=.true.)
       IF (DO4C2C.AND..NOT.START2C) THEN
-C     IF (DO4C2C.AND..NOT.START2C.AND..NOT.CONT2C) THEN
        IF (IPRHAM.GE.1) THEN
         write(lupri,'(/2X,A)')
      &  'MAKE_DKH: Going to do the picture change transformations'//
@@ -82,7 +78,6 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
 C ... store H2c_AO in pure LL form ...
       IF (TWOCOMPBSS.AND.(I2COFK.EQ.1.OR.I2COFK.EQ.2)) THEN
         CALL H2CTOLL(I2COFK,VMAT,WORK(KFREE),LFREE,IPRHAM)
-C       call quit('...preparing for TWOCOMP & BSS !!!')
       ENDIF
 
 C ... for calculating properties in pure 2comp. mode do adapt them 
@@ -93,11 +88,8 @@ C ... for calculating properties in pure 2comp. mode do adapt them
 C ===============================================================================
 C ... export the Lowdin matrix adapted for 2c calculations,
 C ===============================================================================
-      V2COUT = .TRUE.
-      IF (V2COUT) THEN
-        CALL RFBSSMAT('VMAT2C  ',.TRUE.,'MAKE_DKH',
+      CALL RFBSSMAT('VMAT2C  ',.TRUE.,'MAKE_DKH',
      &        VMAT,N2BBASX,LUBSS,IPRHAM)
-      ENDIF
 C    .. close the BSSMAT file...
       CLOSE(LUBSS,STATUS='KEEP')
 
@@ -9097,11 +9089,8 @@ C   ... transform to BU basis
       CALL BSTOBU(H2CAO,NZ,WORK(KFREE),LFREE)
 
       CALL MEMGET('REAL',KBUF1,N2BBASX*4,WORK,KFREE,LFREE)
-      IF(DOSPHE) THEN
-        KBUF2 = KBUF1
-      ELSE
-        CALL MEMGET('REAL',KBUF2,N2BBASX*4,WORK,KFREE,LFREE)
-      ENDIF
+      CALL MEMGET('REAL',KBUF2,N2BBASX*4,WORK,KFREE,LFREE)
+
 C  ... transform to the AO basis ... as in dirone.F/PR1CEX2
       IPAR = JBTOF(IREP,1)
       NB = NTBAS(0)
@@ -9122,24 +9111,22 @@ C        ... use IQDEF instead of IPQTOQ only when being in AO basis!
         CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI)    
       ENDIF
 
-      IF(.NOT.DOSPHE) THEN
-        CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
+      CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
 
 C      ... transform C AO, WORK(KBUF1) -> S AO, WORK(KBUF2) 
-        CALL DZERO(WORK(KBUF2),4*N2BBASX)
-        LCOMP=0 
-        DO IZ = 1, 4
-          CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
-     &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
-     &         WORK(KFREE),LFREE,IPRINT)
-        ENDDO
+      CALL DZERO(WORK(KBUF2),4*N2BBASX)
+      LCOMP=0 
+      DO IZ = 1, 4
+         CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
+     &        WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
+     &        WORK(KFREE),LFREE,IPRINT)
+      ENDDO
 
-        IF (IPRINT.GE.4) THEN
+      IF (IPRINT.GE.4) THEN
           CALL HEADER(
      &'AMFI_STUFF: TOTAL ENTERING H(2c)_LL in "xhi" S AO basis ' ,-1)
           CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
         ENDIF
-      ENDIF
 
 C ... find out total number of L-component spherical functions
       NSPH = NSPHCM(1)
@@ -9179,63 +9166,30 @@ C      .... charges per nucleis
      &  ' in "xhi" S AO basis' ,-1)
         CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
       ENDIF
-      IF(.NOT.DOSPHE) THEN
 C ===================================================================
 C     now transform back: S AO, WORK(KBUF2) -> C AO, WORK(KBUF1) 
 C ===================================================================
         CALL DZERO(WORK(KBUF1),N2BBASX*4)
-C     ... generate with appropriare factors !!
+C       Be very careful here as sphgen resets the common blocks for
+C       spherical transformations. Need to be set back as soon as 
+C       possible (or better revise the code to get rid of these
+C       stupid common blocks, ASPG & LV after one day of debugging)
+C     ... tranformation with appropriate factors for the backtransform !!
         CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRINT)
         DO IZ = 1, 4
           CALL MTAOSC(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
      &          WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
      &          WORK(KFREE),LFREE,IPRINT)
         ENDDO
+C       reset the common blocks (see above)
+        CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
 
 C   ... point to check H2c in C AO basis again...
-        IF (IPRINT.GE.4) THEN
+       IF (IPRINT.GE.4) THEN
           CALL HEADER(
      &'AMFI_STUFF: TOTAL H(2c)_LL BACK in "xhi" C AO basis ' ,-1)
           CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI) 
-        ENDIF
-
-C     ... this is only testing sequence...
-        TESTCSC=.FALSE.
-        IF (TESTCSC) THEN
-          CALL DZERO(WORK(KBUF2),N2BBASX*4)
-C       ... needed to go back to S
-          CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRINT)
-         DO IZ = 1, 4
-           CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
-     &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
-     &         WORK(KFREE),LFREE,IPRINT)
-         ENDDO
-
-          IF (IPRINT.GE.6) THEN
-            CALL HEADER(
-     &'AMFI_STUFF: TOTAL CSC_H(2c)_LL AGAIN in "xhi" S AO basis ' ,-1)
-            CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
-          ENDIF
-
-         CALL DZERO(WORK(KBUF1),N2BBASX*4)
-         CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRINT)
-
-C        ... and from S to C
-          DO IZ = 1, 4
-            CALL MTAOSC(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
-     &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
-     &         WORK(KFREE),LFREE,IPRINT)
-          ENDDO
-
-          IF (IPRINT.GE.6) THEN
-            CALL HEADER(
-     &'AMFI_STUFF: TOTAL CSC_H(2c)_LL AGAIN in "xhi" C AO basis ' ,-1)
-            CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI)    
-          ENDIF
-
-          CALL QUIT('CSC  again')
-        ENDIF
-      ENDIF
+       ENDIF
 
 C ============================================================
 C   ... FINALLY: transform BACK from C AO(BU) to the SA-AO (BS) basis
