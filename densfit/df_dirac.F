@@ -366,9 +366,6 @@ C*****************************************************************************
 #include "erithr.h"
 #include "erimem.h"
 #include "aobtch.h"
-#if defined (VAR_VECTOR)
-#include "veclen.h"
-#endif
 #include "odbtch.h"
 #include "shells.h"
 #include "symmet.h"
@@ -472,9 +469,6 @@ C*****************************************************************************
 #include "erithr.h"
 #include "erimem.h"
 #include "aobtch.h"
-#if defined (VAR_VECTOR)
-#include "veclen.h"
-#endif
 #include "odbtch.h"
 #include "symmet.h"
 #include "infpar.h"
@@ -494,12 +488,6 @@ C     Information about distributions
 C     ===============================
 C
       CALL ERIDSI(INDXBT,IPRINT)
-#if defined (VAR_VECTOR)
-      IF (FCKINT) THEN
-         ICHUNK = MAX(IVECLN/NDMT,1)
-         CALL DZERO(FCKTMP,ICHUNK*NDMT*(NBASE + NODD)*NBASE)
-      ENDIF
-#endif
 C
       KODCL1 = KOD(1)
       KODCL2 = KOD(2)
@@ -516,16 +504,6 @@ C     Calculate integrals
 C     ===================
 C
       IF (SLAVE) THEN
-#if defined (VAR_VECTOR)
-         CALL ODCDRV(WKOD(KODCL1),WKOD(KODCL2),
-     &               WKOD(KODBC1),WKOD(KODBC2),
-     &               WKOD(KRDBC1),WKOD(KRDBC2),
-     &               WKOD(KODPP1),WKOD(KODPP2),
-     &               WKOD(KRDPP1),WKOD(KRDPP2),
-     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
-     &               FCKTMP,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
-     &               INDXBT,WORK,LWORK,IPRINT)
-#else
          CALL ODCDRV(WKOD(KODCL1),WKOD(KODCL2),
      &               WKOD(KODBC1),WKOD(KODBC2),
      &               WKOD(KRDBC1),WKOD(KRDBC2),
@@ -534,19 +512,8 @@ C
      &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &               FMAT,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &               INDXBT,WORK,LWORK,IPRINT)
-#endif
       ELSE
          IF (.NOT.INTSKP) THEN
-#if defined (VAR_VECTOR)
-            CALL ODCDRV(WKOD(KODCL1),WKOD(KODCL2),
-     &                  WKOD(KODBC1),WKOD(KODBC2),
-     &                  WKOD(KRDBC1),WKOD(KRDBC2),
-     &                  WKOD(KODPP1),WKOD(KODPP2),
-     &                  WKOD(KRDPP1),WKOD(KRDPP2),
-     &                  DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
-     &                  FCKTMP,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
-     &                  INDXBT,WORK,LWORK,IPRINT)
-#else
             CALL ODCDRV(WKOD(KODCL1),WKOD(KODCL2),
      &                  WKOD(KODBC1),WKOD(KODBC2),
      &                  WKOD(KRDBC1),WKOD(KRDBC2),
@@ -555,7 +522,6 @@ C
      &                  DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &                  FMAT,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &                  INDXBT,WORK,LWORK,IPRINT)
-#endif
 C
 C           Error message in case of insufficient memory
 C
@@ -578,22 +544,6 @@ C        not with the modified 1-index Fock matrix that is made if
 C        IFITDM .EQ. 2. The IF statement below should catch this.
 C
          IF (FCKINT.AND.ABS(IFITDM).LE.1) THEN
-#if defined (VAR_VECTOR)
-            IOFF = 0
-            DO I = 1, ICHUNK
-               DO J = 1, NDMT
-                  DO L = 1, NBASE
-                     DO K = 1, NBASE
-C                       FMAT(K,L,J) = FMAT(K,L,J) + FCKTMP(IOFF + K)
-                        FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE) =
-     &                       FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE) +
-     &                       FCKTMP(IOFF + K)
-                     END DO
-                     IOFF = IOFF + NBASE+NODD
-                  END DO
-               END DO
-            END DO
-#endif
 C
 C           Print densities and Fock matrix
 C           ===============================

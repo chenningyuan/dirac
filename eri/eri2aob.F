@@ -48,29 +48,16 @@ C  /* Deck setaob */
 #include "shells.h"
 #include "symmet.h"
 #include "aobtch.h"
-#if defined (VAR_VECTOR)
-#include "veclen.h" 
-#endif
 #include "ibtfun.h"
 C
 C     Number of basis functions
 C
-#if defined (DIRAC_ERI_DEBUG)
-      write(*,*) 'kmaxtot = ',kmaxtot
-      write(*,*) 'kmaxmx  = ',kmaxmx
-C     write(*,*) 'kmaxmx2 = ',kmaxmx2
-      write(*,*) 'kmax    = ',kmax
-#endif
       NBASE  = 0
       DO K = 0, MAXREP
       DO I = 1, KMAX
          IF (IBTAND(K,ISTBAO(I)).EQ.0) NBASE = NBASE + KHKT(I)
       END DO
       END DO
-C
-#if defined (VAR_VECTOR)
-      NODD = 1 - MOD(NBASE,2)
-#endif
 C
       NGAB = 0
       DO I = 1, KMAX

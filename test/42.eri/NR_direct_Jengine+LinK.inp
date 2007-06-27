@@ -7,6 +7,10 @@ H2O2 molecule, integral calculations with ERI in pure one-component mode
 **INTEGRALS
 .JENGINE
 .LINK
+.NUCMOD
+ 1
+*TWOINT
+.AOFOCK
 **WAVE FUNCTIONS
 .DHF
 *END OF

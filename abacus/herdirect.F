@@ -490,7 +490,7 @@ C
 C
       CALL QENTER('HERFCK')
 C
-C     The new ERI routines haven't been parallelized yet.
+C     The new ERI routines havent been parallelized yet.
 C     RUNERI is the flag from input processing, to tell that we should use eri,
 C     USEERI is a temporary flag to check if we actually can in the present
 C     passage.
@@ -498,7 +498,7 @@ CNECgh980808: The construction of the Fock Matrix using the Temporary
 C matrices leads to huge bank conflicts in case of an even NBASIS.
 C We therefore assure that the first dimension of FCKTMP is always odd.
 C Changes for eri: HERFCK (allocation), HRFCK2 (zero out and summing)
-C and FCKCON (dimensioning). Analog hermit. NODD added to nuclei.h & aobtch.h
+C and FCKCON (dimensioning). Analog hermit. NODD added to nuclei.h and aobtch.h
 C We need to include nuclei.h here, to have NBASIS and NODD.
 C Initalization of NODD in herrdn.F and eriaob.F
 C
@@ -506,9 +506,6 @@ C
       DO I = 1, NDMT
          USEERI = USEERI .AND. ((IFCTYP(I).EQ.13).OR.(IFCTYP(I).EQ.3))
       END DO
-#if defined (VAR_VECTOR)
-      ICHUNK = MAX(IVECLN/NDMT,1)
-#endif
 C
       IF (.NOT. USEERI) THEN
          CALL HRFCK1(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
@@ -528,12 +525,7 @@ C
          ELSE
            CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
            CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
-#if defined (VAR_VECTOR)
-           CALL MEMGET('REAL',KFCKTP,ICHUNK*NDMT*(NBASIS+NODD)*NBASIS,
-     &                 WORK,KFREE,LFREE)
-#else
            KFCKTP = KFREE
-#endif
            CALL HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KFREE),LFREE)
@@ -541,12 +533,7 @@ C
 #else
          CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
-#if defined (VAR_VECTOR)
-         CALL MEMGET('REAL',KFCKTP,ICHUNK*NDMT*(NBASIS + NODD)*NBASIS,
-     &               WORK,KFREE,LFREE)
-#else
          KFCKTP = KFREE
-#endif
          CALL HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &               WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &               WORK(KFREE),LFREE)

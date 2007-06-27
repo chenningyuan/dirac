@@ -931,9 +931,6 @@ C INFORB : N2BASX
 C
 #include "infpar.h"
 #include "inforb.h"
-#if defined (VAR_VECTOR)
-#include "veclen.h"
-#endif
 C
 #include "memint.h"
 C
@@ -963,20 +960,13 @@ C
 C     Allocate workspace
 C
       NDMAT  = 1
-#if defined (VAR_VECTOR)
-      ICHUNK = MAX(IVECLN/NDMAT,1)
-#endif
 C
       KDMAT  = 1
       KFMAT  = KDMAT  + N2BASX
       KCCFBT = KFMAT  + N2BASX
       KINDXB = KCCFBT + MXPRIM*MXCONT
       KFCKPT = KINDXB + (MXSHEL*MXCONT*8 - 1)/IRAT + 1
-#if defined (VAR_VECTOR)
-      KLAST  = KFCKPT + ICHUNK*NDMAT*(NBASE + NODD)*NBASE
-#else
       KLAST  = KFCKPT
-#endif
       IF (KLAST .GT. LWORK) CALL STOPIT('ERI_NODSTR',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST
 C

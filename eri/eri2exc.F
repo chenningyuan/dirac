@@ -56,9 +56,6 @@ C
 #include "erithr.h"
 #include "erimem.h"
 #include "aobtch.h"
-#if defined (VAR_VECTOR)
-#include "veclen.h"
-#endif
 #include "odbtch.h"
 #include "symmet.h"
 #include "infpar.h"
@@ -195,10 +192,6 @@ C     Information about distributions
 C     ===============================
 C
       CALL ERIDSI(INDXBT,IPRINT)
-#if defined (VAR_VECTOR)
-      ICHUNK = MAX(IVECLN/NDMT,1)
-      CALL DZERO(FCKTMP,ICHUNK*NDMT*(NBASE + NODD)*NBASE)
-#endif
 C
       KGAB    = KFREE
       KDAB    = KGAB + NAOBCH**2
@@ -239,34 +232,6 @@ C     ===================
 C
       EXCINT = .TRUE.
       IF (SLAVE) THEN
-#if defined (VAR_VECTOR)
-C
-#ifndef PRG_DIRAC
-         CALL EXIDRV(WORK(KODCL1),WORK(KODCL2),
-     &               WORK(KODBC1),WORK(KODBC2),
-     &               WORK(KRDBC1),WORK(KRDBC2),
-     &               WORK(KODPP1),WORK(KODPP2),
-     &               WORK(KRDPP1),WORK(KRDPP2),
-     &               WORK(KDAB),  WORK(KGAB),
-     &               WORK(KDNSCNT),WORK(KDNSIDX),
-     &               WORK(KSHLCNT),WORK(KSHLIDX),WORK(KCLSS),
-     &               FCKTMP,DMAT,NDMT,IFCSAV,DUMMY,IDUMMY,CCFBT,
-     &	             INDXBT,WORK(KLAST),LWRK,IPRINT)
-#else /* ! PRG_DIRAC */
-         CALL EXIDRV(WORK(KOD(1)),WORK(KOD(2)),
-     &               WORK(KOD(3)),WORK(KOD(4)),
-     &               WORK(KOD(5)),WORK(KOD(6)),
-     &               WORK(KOD(7)),WORK(KOD(8)),
-     &               WORK(KOD(9)),WORK(KOD(10)),
-     &               WORK(KDAB),  WORK(KGAB),
-     &               WORK(KDNSCNT),WORK(KDNSIDX),
-     &               WORK(KSHLCNT),WORK(KSHLIDX),WORK(KCLSS),
-     &               FCKTMP,DMAT,NDMT,IFCSAV,DUMMY,IDUMMY,CCFBT,
-     &               INDXBT,WORK(KLAST),LWRK,IPRINT)
-#endif /* ! PRG_DIRAC */
-C
-#else /* VAR_VECTOR */
-C
 #ifndef PRG_DIRAC
          CALL EXIDRV(WORK(KODCL1),WORK(KODCL2),
      &               WORK(KODBC1),WORK(KODBC2),
@@ -290,38 +255,8 @@ C
      &               FMAT,DMAT,NDMT,IFCSAV,DUMMY,IDUMMY,CCFBT,
      &               INDXBT,WORK(KLAST),LWRK,IPRINT)
 #endif /* ! PRG_DIRAC */
-C
-#endif /* VAR_VECTOR */
       ELSE
          IF (.NOT.INTSKP) THEN
-#if defined (VAR_VECTOR)
-C
-#ifndef PRG_DIRAC
-             CALL EXIDRV(WORK(KODCL1),WORK(KODCL2),
-     &                  WORK(KODBC1),WORK(KODBC2),
-     &                  WORK(KRDBC1),WORK(KRDBC2),
-     &                  WORK(KODPP1),WORK(KODPP2),
-     &                  WORK(KRDPP1),WORK(KRDPP2),
-     &                  WORK(KDAB),  WORK(KGAB),
-     &                  WORK(KDNSCNT),WORK(KDNSIDX),
-     &                  WORK(KSHLCNT),WORK(KSHLIDX),WORK(KCLSS),
-     &                  FCKTMP,DMAT,NDMT,IFCSAV,DUMMY,IDUMMY,CCFBT,
-     &	                INDXBT,WORK(KLAST),LWRK,IPRINT)
-#else /* ! PRG_DIRAC */
-            CALL EXIDRV(WORK(KOD(1)),WORK(KOD(2)),
-     &                  WORK(KOD(3)),WORK(KOD(4)),
-     &                  WORK(KOD(5)),WORK(KOD(6)),
-     &                  WORK(KOD(7)),WORK(KOD(8)),
-     &                  WORK(KOD(9)),WORK(KOD(10)),
-     &                  WORK(KDAB),  WORK(KGAB),
-     &                  WORK(KDNSCNT),WORK(KDNSIDX),
-     &                  WORK(KSHLCNT),WORK(KSHLIDX),WORK(KCLSS),
-     &                  FCKTMP,DMAT,NDMT,IFCSAV,DUMMY,IDUMMY,CCFBT,
-     &                  INDXBT,WORK(KLAST),LWRK,IPRINT)
-#endif /* ! PRG_DIRAC */
-C
-#else /* VAR_VECTOR */
-C
 #ifndef PRG_DIRAC
             CALL EXIDRV(WORK(KODCL1),WORK(KODCL2),
      &                  WORK(KODBC1),WORK(KODBC2),
@@ -345,26 +280,7 @@ C
      &                  FMAT,DMAT,NDMT,IFCSAV,DUMMY,IDUMMY,CCFBT,
      &                  INDXBT,WORK(KLAST),LWRK,IPRINT)
 #endif /* ! PRG_DIRAC */
-C
-#endif /* VAR_VECTOR */
          END IF
-#if defined (VAR_VECTOR)
-         IOFF = 0
-         DO I = 1, ICHUNK
-            DO J = 1, NDMT
-               DO L = 1, NBASE
-                  DO K = 1, NBASE
-C                    FMAT(K,L,J) = FMAT(K,L,J) + FCKTMP(IOFF + K)
-                     FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE) =
-     &                    FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE) +
-     &                    FCKTMP(IOFF + K)
-                  END DO
-                  IOFF = IOFF + NBASE+NODD
-               END DO
-            END DO
-         END DO
-C
-#endif
          CALL EXISYM(FMAT,IFCTYP,NDMT,NBASE)
 C
 C        Print densities and Fock matrix
@@ -902,9 +818,6 @@ C
 #include "erithr.h"
 #include "erimem.h"
 #include "aobtch.h"
-#if defined (VAR_VECTOR)
-#include "veclen.h"
-#endif
 #include "odbtch.h"
 #include "symmet.h"
 #include "infpar.h"

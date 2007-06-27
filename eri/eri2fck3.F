@@ -110,9 +110,6 @@ c wake up slaves.
 #include "erithr.h"
 #include "erimem.h"
 #include "aobtch.h"
-#if defined (VAR_VECTOR)
-#include "veclen.h"
-#endif
 #include "odbtch.h"
 #include "symmet.h"
 #include "inforb.h"

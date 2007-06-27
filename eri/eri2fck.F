@@ -57,9 +57,6 @@ C
 #include "erithr.h"
 #include "erimem.h"
 #include "aobtch.h"
-#if defined (VAR_VECTOR)
-#include "veclen.h"
-#endif
 #include "odbtch.h"
 #include "symmet.h"
 #include "infpar.h"
@@ -175,10 +172,6 @@ C
 #ifndef PRG_DIRAC
       KLAST = KFREE
       LWRK  = LFREE
-#if defined (VAR_VECTOR)
-      ICHUNK = MAX(IVECLN/NDMT,1)
-      CALL DZERO(FCKTMP,ICHUNK*NDMT*(NBASE + NODD)*NBASE)
-#endif
 C
       KLAST = KFREE
       LWRK  = LFREE
@@ -189,16 +182,6 @@ C     ===================
 C
       IF (SLAVE) THEN
 #ifndef PRG_DIRAC
-#if defined (VAR_VECTOR)
-         CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
-     &               WORK(KODBC1),WORK(KODBC2),
-     &               WORK(KRDBC1),WORK(KRDBC2),
-     &               WORK(KODPP1),WORK(KODPP2),
-     &               WORK(KRDPP1),WORK(KRDPP2),
-     &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
-     &               FCKTMP,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
-     &               INDXBT,WORK(KLAST),LWRK,IPRINT)
-#else
          CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
      &               WORK(KODBC1),WORK(KODBC2),
      &               WORK(KRDBC1),WORK(KRDBC2),
@@ -207,7 +190,6 @@ C
      &               DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &               FMAT,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &               INDXBT,WORK(KLAST),LWRK,IPRINT)
-#endif
 #else /* PRG_DIRAC */
          CALL ODCDRV(WORK(KOD(1)),WORK(KOD(2)),
      &               WORK(KOD(3)),WORK(KOD(4)),
@@ -221,16 +203,6 @@ C
       ELSE
          IF (.NOT.INTSKP) THEN
 #ifndef PRG_DIRAC
-#if defined (VAR_VECTOR)
-            CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
-     &                  WORK(KODBC1),WORK(KODBC2),
-     &                  WORK(KRDBC1),WORK(KRDBC2),
-     &                  WORK(KODPP1),WORK(KODPP2),
-     &                  WORK(KRDPP1),WORK(KRDPP2),
-     &                  DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
-     &                  FCKTMP,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
-     &	                INDXBT,WORK(KLAST),LWRK,IPRINT)
-#else
             CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
      &                  WORK(KODBC1),WORK(KODBC2),
      &                  WORK(KRDBC1),WORK(KRDBC2),
@@ -239,7 +211,6 @@ C
      &                  DUMMY,DUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &                  FMAT,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &                  INDXBT,WORK(KLAST),LWRK,IPRINT)
-#endif
 #else /* PRG_DIRAC */
          CALL ODCDRV(WORK(KOD(1)),WORK(KOD(2)),
      &               WORK(KOD(3)),WORK(KOD(4)),
@@ -265,26 +236,6 @@ C
                CALL QUIT('Insufficient memory in ERIFCK.')
             END IF
          END IF
-#if defined (VAR_VECTOR)
-         IOFF = 0
-         write (6,*) 'debug: ichunk,ndmt,nbase ',ichunk,ndmt,nbase
-         DO I = 1, ICHUNK
-            DO J = 1, NDMT
-               DO L = 1, NBASE
-                  DO K = 1, NBASE
-C                    FMAT(K,L,J) = FMAT(K,L,J) + FCKTMP(IOFF + K)
-                     FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE) =
-     &                    FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE) +
-     &                    FCKTMP(IOFF + K)
-                     write (6,*) 'debug hrfck2, fmat, fcktmp, nbase',
-     &                            FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE),
-     &                    FCKTMP(IOFF + K),nbase,FMAT(I)
-                  END DO
-                  IOFF = IOFF + NBASE+NODD
-               END DO
-            END DO
-         END DO
-#endif
 C
 C        Symmetrize Fock matrix (Not needed!)
 C        ====================================
@@ -624,7 +575,7 @@ C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
 #include "implicit.h"
-      PARAMETER (D4 = 4.0D0, D1 = 1.0D0, DP5 = 0.5D0)
+      PARAMETER (D4 = 4.0D0, D2=2.0D0,D8=8.0D0, D1 = 1.0D0, DP5 = 0.5D0)
       INTEGER P, Q, R, S
 #include "priunit.h"
 #include "inforb.h"
@@ -644,6 +595,10 @@ C NECgh980505  FAC = D2
          ELSE IF (IFCTYP(I).EQ.3)  THEN
 C NECgh980505  FAC = DP5 
  	       FAC = D1
+Caspg
+c        ELSE IF (IFCTYP(I).EQ.22)  THEN
+c           FAC = D8 
+Caspg
          ELSE
             FAC = D4
          END IF
