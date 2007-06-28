@@ -88,7 +88,8 @@ end subroutine test_files
 #include "dcbcap.h"
  ! type(DirOper) :: cap_dipvel, dir_dipvel
   type(QMtx) :: cap_dipvel, dir_dipvel 
- double precision, parameter :: diff_thrs = 1.0D-7
+! adjust the threshold
+ double precision, parameter :: diff_thrs = 1.0D-6
  call QENTER('CAP_DIPVEL_COMP')
 
 ! call add_operator(cap_dipvel,IPCAP_DV); call add_operator(dir_dipvel,IPKINERG)
@@ -114,6 +115,9 @@ end subroutine test_files
   call  AddTextQMtx(cap_dipvel,'******** difference  CAP - DIRAC ***********')
   call substract_part_qmtx(cap_dipvel,dir_dipvel)
   call QMTxInfo(cap_dipvel)
+  CALL FLSHFO(LUPRI)
+  call quit('CAP_DIPVEL_COMP: big differences between'//  &
+            ' CAP/DIRAC dipole velocity integrals !')
  endif
 
  call QEXIT('CAP_DIPVEL_COMP')
@@ -162,6 +166,9 @@ call QENTER('cap_ovlp_comp')
   call  AddTextQMtx(smat,'******** difference smat - capovlp ***********')
   call substract_part_qmtx(smat,capovl)
   call QMTxInfo(smat)
+
+  call quit('CAP_DIPVEL_COMP: big differences between'//  &
+            ' CAP/DIRAC overlap integrals !')
  endif
 
 call QEXIT('cap_ovlp_comp')
@@ -222,12 +229,13 @@ call QENTER('GetUnpckOvlpMtx')
    write(LUPRI,*) 'N2BAST=',N2BAST
    write(LUPRI,*) 'get_kfree, get_lfree=',get_kfree(),get_lfree()
    write(LUPRI,*) 'get_qmtx_kstart(smat)=',get_qmtx_kstart(smat)
-   write(LUPRI,*) 'SSMTRC=',SSMTRC, ' but I set 1.0'
+   !write(LUPRI,*) 'SSMTRC=',SSMTRC, ' but I set 1.0'
+   write(LUPRI,*) 'SSMTRC=',SSMTRC
  endif
 
 ! call lower level routine
- !call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree() )
- call GTOVLX( PW(get_qmtx_kstart(smat)), 1.0D0, PW(get_kfree()), get_lfree() )
+ call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree() )
+ !call GTOVLX( PW(get_qmtx_kstart(smat)), 1.0D0, PW(get_kfree()), get_lfree() )
 
  if (get_iprint_qmtx() >= 5) then
    call print_qmtx_attrib(smat)

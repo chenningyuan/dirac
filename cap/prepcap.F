@@ -50,7 +50,7 @@ C
       CAPOVLP = .FALSE.
       NOOVLP  = .FALSE.
       DONRCAP = .FALSE.
-      IF (LEVYLE) DONRCAP = .TRUE.
+CMI   IF (LEVYLE) DONRCAP = .TRUE.
       NOCAPRE = .FALSE.
       NOCAPIM = .FALSE.
       CAPIMRE = .FALSE.
@@ -182,6 +182,9 @@ C
         ELSE
          WRITE(LUPRI,'(2X,A)')
      &  '* Using four-component relativistic form of the CAP operator.'
+         WRITE(LUPRI,'(A)')
+     &  ' * four-component CAP integrals  according to',
+     &  '    Miro, Sajeev ....         '
         ENDIF
 
         IF (DONRCAP.AND.CAPDIPVEL) THEN
@@ -220,17 +223,16 @@ C
      &   ' the ordinary REAL part in the correlation step.' 
         ENDIF
 
-        WRITE(LUPRI,'(2X,A,D25.10)')
+        WRITE(LUPRI,'(2X,A,F14.5)')
      &  '* read INPQD (theta,PW) = ',PW
         WRITE(LUPRI,'(2X,A)') 
-     & 'read integration parameters:'
+     & '---   read integration parameters: ---'
 CMI    ...  write out integration parameters
         DO I = 1, 3
-          WRITE(LUPRI,'(2X,A,2F26.8)')
-     &    '* XO, LAMDA:',X0(I),LAMDA(I)
-          WRITE(LUPRI,*) NGR(I)
-          WRITE(LUPRI,'(2X,A)')
-     &    '* integration subintervals:'
+          WRITE(LUPRI,'(2X,A,F14.5,A,F14.5)')
+     &    '* XO=',X0(I),' LAMDA=',LAMDA(I)
+          WRITE(LUPRI,'(2X,A,I3)')
+     &    '* integration subintervals, #',NGR(I)
           WRITE(LUPRI,*) (GINTPT(I,J),J=1,NGR(I))
           WRITE(LUPRI,'(2X,A)')
      &    '* number of integration points per interval:'
@@ -642,13 +644,15 @@ C /* Deck delete_ls */
       SUBROUTINE DELETE_LS(V,N,IPRINT,DEL_LS)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
+C  delete LS,SL blocks of the matrix ! 
 C
-C  delete LS,SL blocks of the matrix ! basic functions are in basis DIRAC order
+C  basic functions are in basis DIRAC order with L functions first, than S functions
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbham.h"
 #include "mxcent.h"
 #include "nuclei.h"
       REAL*8 V(N,N)
@@ -665,6 +669,9 @@ C    ... delete LS,SL blocks
          if (i.gt.NLARGE.and.j.le.NLARGE) then
            V(i,j) = 0.0D0
          endif
+         IF (LEVYLE.and.i.gt.NLARGE.and.j.gt.NLARGE) then
+           V(i,j) = 0.0D0
+         ENDIF
        ELSE
 C    ... delete LL,SS blocks
          if (i.le.NLARGE.and.j.le.NLARGE) then
@@ -769,7 +776,7 @@ C     ... Open property file
       IF (IPRCAP.GE.5) THEN
         CALL FLSHFO(LUPRI)
         WRITE(LUPRI,'(/2X,2A)')
-     & 'GETCAPMOM: Get MO matrix of property (to be readjust): ',
+     & 'GETCAPMOM: Get MO matrix of property (to be readjusted): ',
      &  PRPNAM(INDXPR)
         CALL PRQMAT(CAPI,NORBT,NORBT,NORBT,
      &         NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
@@ -781,7 +788,8 @@ CMI   ...MOVE ee-part to the upper left part of the MO-matrix
 C     REARR = .FALSE.
       REARR = .true.
 C
-      IF (REARR.AND..NOT.LEVYLE) THEN
+C     IF (REARR.AND..NOT.LEVYLE) THEN
+      IF (REARR.AND..NOT.LEVYLE.AND..NOT.TWOCOMP) THEN
 
         CALL DZERO(CAPI1,NORBT*NORBT*NZ)
 
@@ -819,7 +827,6 @@ C   ... no rearrangement, simply copy
         CALL PRQMAT(CAPI1,NORBT,NORBT,NORBT,
      &        NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
       ENDIF
-
 
 C     CALL MEMCHK('getcapmo 3',WORK,1)
 
@@ -928,7 +935,7 @@ C Output: FMOM with CAP (re,im) parts added
 C
 C Called from MRCON1/traone.F
 C
-C Written by Miro ILIAS, Mau 2007, Tel Aviv
+C Written by Miro ILIAS, May 2007, Tel Aviv
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -956,6 +963,7 @@ C
         CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZ,2),
      &               IPQTOQ(1,0),LUPRI)
        ENDIF
+
 #include "memint.h"
 C         ... allocate space for CAP_IM
        CALL MEMGET('REAL',KCAPI, NORBT*NORBT*NZ,WORK,KFREE,LFREE)
@@ -984,12 +992,11 @@ C      ... add MOLFDIR like CAP_IM, WORK(KCAPIM), to the imaginary part of FMOM 
         CALL ADDCAPMOM(NSTRT,WORK(KCAPIM),FMOM,.TRUE.)
        ENDIF
 
-
 C       ... release all the memory
-        CALL MEMREL('CAPMFDADAPT',WORK,KWORK,KWORK,KFREE,LFREE)
+       CALL MEMREL('CAPMFDADAPT',WORK,KWORK,KWORK,KFREE,LFREE)
 
 C       ... control printout
-        IF (IPRCAP.GE.5) THEN
+       IF (IPRCAP.GE.5) THEN
            IF (NZ.EQ.1) THEN
             NZX=2
            ELSE
@@ -1000,8 +1007,7 @@ C       ... control printout
      &     'added (MOLFDIR format) ***'
            CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZX,2),
      &               IPQTOQ(1,0),LUPRI)
-
-        ENDIF
+       ENDIF
       ENDIF
       CALL QEXIT('CAPMFDADAPT')
       RETURN
@@ -1128,7 +1134,7 @@ C     ... write integrals of each individual label
 
 C     ... control printout ...
       IF (IPRCAP.GE.2) THEN
-        WRITE(LUPRI,'(/2X,A,A8,A,A8,A,A)')
+        WRITE(LUPRI,'(2X,A,A8,A,A8,A,A)')
      &  'SAVECAP: CAP integrals written to the AOPROPER'//
      &  ' file under the label: ',
      &  RTNLBL(1),' ',RTNLBL(2),' ',LABEL

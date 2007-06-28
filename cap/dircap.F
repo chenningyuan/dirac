@@ -704,6 +704,14 @@ C           ... save real and imaginary part of integrals
          END DO 
          END DO
 
+C        ... control print out of integrals
+         IF (IPRCAP.GE.7) THEN
+          IF (CAPOVLP) THEN
+          WRITE(LUPRI,'(2X,A,I3,A,I3,A,F22.8)') 
+     &    'CAP overlap(',ii,';',jj,')=',PE_AOr(IPU)
+          ENDIF
+         ENDIF
+
       END DO
       END DO
 
@@ -838,11 +846,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
          PEINT=PEINT+(OVRLPI*OVRLPJ*OVRLPK)
 
       CALL QEXIT('PEM')
-
       RETURN
       END
  
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck SMAT */
       subroutine SMAT(R_m,R_n,K_m,K_n,BETA,Int_GR)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1255,6 +1262,7 @@ CMI       ... relativistic Hamiltonian
            VCAP_D1C  = (V0x +V1x +VADD )*GG
            VCAPy_D1C = (V0xy+V1xy+VADDy)*GGy
           ELSE
+CMI       ... CAPDIPVEL = .TRUE.
 C          V1x  =  DCMPLX(1.0D0,0.D0)*DG
            V1x  =  DG
 C          V1xy =  DCMPLX(1.0D0,0.D0)*DGy
@@ -1369,9 +1377,7 @@ CMI    ... new derived V0 for the DIRAC Hamiltonian
       DOUBLE COMPLEX CA1,CA2
       EXTERNAL F0,F1
       DOUBLE COMPLEX F0,F1
-CMI   CA1 = F1(THETA,LAMBDA,X0,X)/F0(THETA,LAMBDA,X0,X)
-CMI   ... new drivation
-      CA1 = -0.50D0*(F1(THETA,LAMBDA,X0,X)/F0(THETA,LAMBDA,X0,X))
+      CA1 = -0.50D0*(F1(THETA,LAMBDA,X0,X)/(F0(THETA,LAMBDA,X0,X)**2))
 CMI   write(LUPRI,*) 'V0D function:',CA1
       V0D = CA1 
       END
@@ -1399,6 +1405,7 @@ CMI    write(LUPRI,*) 'V1D function:',CA
 C      write(LUPRI,*) 'V1D function:',CA, ' and F1:',CA1,
 C    &   'theta,la,xo=',THETA,LAMBDA,X0
       V1D = CA
+CMI   V1D = 2.0D0*CA
       END
 
 CMI  ... Eq. 17 of Sajeev:2006

@@ -104,7 +104,7 @@ C
 C     Contribution from CAP integrals 
 C
       ELSEIF(CLSINT(I).EQ.'CAP_RE '.OR.CLSINT(I).EQ.'CAP_IM ' .OR.
-     &       CLSINT(I).EQ.'CAP_OVL') THEN
+     &       CLSINT(I).EQ.'CAP_OVL'.OR.CLSINT(I).EQ.'CAPD1R ') THEN
 C     ... this serves only for 'catching' CAP_.. labels when 
 C     these integrals are added as the perturbation to the Hamiltonian
        CONTINUE
