@@ -2,7 +2,7 @@
 #include "implicit.h"
 #include "amfi_if.h"
       LOGICAL IS_VERBOSE 
-      IS_VERBOSE     = .true.
+      IS_VERBOSE     = .FALSE.
 
       AMFI_VERBOSE   = IS_VERBOSE
       AMFI1_VERBOSE  = IS_VERBOSE
