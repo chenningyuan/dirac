@@ -3731,8 +3731,9 @@ C
 C     Start bisection iterations to find level-shift
 C     ----------------------------------------------
 C
- 100  CALL LINRED(NZRED,NREDM,REDE,REDS,DLVLSH,REDGP,
-     &     EVECR,IBTYP,INERTIA,IPROPT,WORK,KFREE,LFREE)
+ 100  CONTINUE
+      CALL LINRED(NZRED,NREDM,REDE,REDS,DLVLSH,REDGP,
+     &     EVECR,IBTYP,INERTIA,IINFO(6),IPROPT,WORK,KFREE,LFREE)
       ITER = ITER + 1
       STPL = DP5 * DNRM2(NREDM,EVECR,1)
       INONPOS = INERTIA(2) + INERTIA(3)
