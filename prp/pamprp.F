@@ -8093,6 +8093,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+#include "maxaqn.h"
 #include "mxcent.h"
 #include "cbihr1.h"
 #include "dgroup.h"
@@ -8104,6 +8105,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbprp.h"
 #include "dcbprl.h"
 #include "dummy.h"
+#include "ccom.h"
 C
       DIMENSION WORK(LWORK),VMAT(*)
       LOGICAL FNDLAB, IS_SQUARE
@@ -8158,13 +8160,29 @@ C       .. extract from VMAT into WORK(KPRLL)
 C      ... save WORK(KPRLL) into BSSMAT under label PRP2Cxxx, with xxx=INDXPR
         CALL NUM2STR(INDXPR,NUMSTR) 
         PRPLABEL = 'P2C_'//NUMSTR
-        CALL W2BSSMAT(1,.TRUE.,PRPLABEL,'PROP2BSS',
+caspg
+        if (dosphe) then
+           CALL SPH_IOTC(WORK(KPRLL),VMAT,NSPH,IPRINT,WORK(KFREE),LFREE)
+           NDIM=NSPH*NSPH*NZ
+           CALL W2BSSMAT(1,.TRUE.,PRPLABEL,'PROP2BSS',
+     &              VMAT,NDIM,LUBSS,IPRHAM)
+           IF (IPRPRP.GE.3) THEN
+              WRITE(LUPRI,'(/2X,A)')
+     &        'PROP2BSS: Picture change transformed 2comp. operator '//
+     &        PRPLABEL//
+     &        ' was written to the BSSMAT file in LL block only.'//
+     &        ' A SPHERICAL representation is used.'
+           ENDIF
+        else
+           CALL W2BSSMAT(1,.TRUE.,PRPLABEL,'PROP2BSS',
      &              WORK(KPRLL),N2BBASXQ_L,LUBSS,IPRHAM)
-        IF (IPRPRP.GE.3) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     &    'PROP2BSS: Picture change transformed 2comp. operator '//
-     &    PRPLABEL//' was written to the BSSMAT file in LL block only.'
-        ENDIF
+           IF (IPRPRP.GE.3) THEN
+              WRITE(LUPRI,'(/2X,A)')
+     &        'PROP2BSS: Picture change transformed 2comp. operator '//
+     &     PRPLABEL//' was written to the BSSMAT file in LL block only.'
+           ENDIF
+        endif
+caspg
       ENDDO
 C
 C     Close AOPROPER
