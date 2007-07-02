@@ -84,22 +84,22 @@ C
 #include "dftcom.h"
 #include "densfit.h"
       DOUBLE PRECISION CFIT(*), DMAT(*), WORK(*)
-      LOGICAL ADD_XC_FIT
 #include "memint.h"
-C
-      ADD_XC_FIT = .TRUE.
-C
-C before anything, we should make sure that we are 
 C
 C first step is to numerically integrate <V_{XC}[\rho_{fit}]|\alpha>
 C
 C     NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
 #if defined (PRG_DIRAC)
-      if (DODFLR) then
-      IOPTS = 4
-      else
-      IOPTS = 1
+      if (using_diffdens) then
+         call quit('Unsupported option')
       endif
+
+      if (DODFLR) then
+         IOPTS = 4
+      else
+         IOPTS = 1
+      endif
+
       write (*,*) ' DEBUG, from df_vxc, IOPTS=',IOPTS
       CALL DFTEXC(DMAT,DUMMY,DUMMY,1,1,1,IOPTS,WORK(KFREE),LFREE,
      &              IPRSCF)
@@ -111,45 +111,30 @@ C after that, we get gkj and the integrals above from file...
 C
       CALL MEMGET('REAL',KGJK,NBASISAUX*NBASISAUX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KVXCI,NBASISAUX,WORK,KFREE,LFREE)
-      if (using_diffdens) then
-         CALL MEMGET('REAL',KPREVBK,NBASISAUX,WORK,KFREE,LFREE)
-         CALL READ_MATRIX(WORK(KPREVBK),1,NBASISAUX,'FITDDB')
-      endif
 
       CALL READ_MATRIX(WORK(KGJK),NBASISAUX,NBASISAUX,'FITXCG')
+
       if (DODFLR) then 
          CALL READ_MATRIX(WORK(KVXCI),1,NBASISAUX,'LRDFVX')
       else
          CALL READ_MATRIX(WORK(KVXCI),1,NBASISAUX,'FITVXC')
       endif
+
 C .. and create b_k = \sum_j [<integral above>]Gjk 
 C    which is then used to update cfit...
 C
-      IF (ADD_XC_FIT) THEN ! switch the exchange contrib on/off for testing purposes 
-         DO K = 1, NBASISAUX
-            BK = DDOT(NBASISAUX,WORK(KVXCI),1,
-     &                       WORK(KGJK + NBASISAUX*(K-1)),1)
-            CFIT_OLD = CFIT(K)
-            if (using_diffdens) then
-               CFIT(K)  = (BK - work(kprevbk - 1 + k)) 
-               work(kprevbk - 1 + k) = bk 
-            else
-               CFIT(K)  = BK 
-            endif
-         ENDDO
-      ENDIF
+      DO K = 1, NBASISAUX
+         BK = DDOT(NBASISAUX,WORK(KVXCI),1,
+     &             WORK(KGJK + NBASISAUX*(K-1)),1)
+         CFIT(K)  = CFIT(K) + BK 
+      ENDDO
 C
 C and we're done!
 C
-      if (using_diffdens) then
-         CALL SAVE_MATRIX(WORK(KPREVBK),1,NBASISAUX,'FITDDB')
-         CALL MEMREL('DF_Set_AuxVXC_CFit-3',WORK,KPREVBK,
-     &               KPREVBK,KFREE,LFREE)
-      endif
       CALL MEMREL('DF_Set_AuxVXC_CFit-2',WORK,KVXCI,KVXCI,KFREE,LFREE)
       CALL MEMREL('DF_Set_AuxVXC_CFit-1',WORK,KGJK,KGJK,KFREE,LFREE)
-      RETURN
       END
+
 C /* Deck DF_FitXC_Build_Gjk */
       SUBROUTINE DF_FitXC_Build_GKJ(G,IDimK,IdimJ,Vab,ConsQInt,CFitQ)
 C
@@ -204,40 +189,26 @@ Caspg these array sizes have to be changed, dynamic allocation needed...
          DOUBLE PRECISION Vab(*),WORK(MXPRIM),ConsQInt(*),CFitQ(*),G(*)
 C#include "memint.h"
 C
-      DEBUG = .FALSE.
-C     DEBUG = .TRUE.
-C
+
 C first step: invert Vab. 
 C
 C ... We begin by performing a LU factorization of it...
       LDA   = MAX(1,IDimK)
       LWORK = 2*LDA 
 
-      IF (DEBUG) THEN
-         CALL HEADER('Vab',-1)
-         CALL PRINTDMAT(1,LDA,Vab)
-         write(6,*) 'debug, befor dgetrf'
-      ENDIF
-
       CALL DGETRF(IDimK,IDimJ,Vab,LDA,IPIV,INFO)
       IF ( INFO.NE.0 ) THEN
          WRITE (LUPRI,*) 'DGETRF returns ',INFO
          CALL QUIT('DF_FitXC_Build_Gjk: Error in factoring Vab')
       ENDIF
-C ... which is then used to compute the inverse, and place it in Vab
-      IF (DEBUG) write(6,*) 'debug, befor dgetri'
 
+C ... which is then used to compute the inverse, and place it in Vab
       CALL DGETRI(LDA,Vab,LDA,IPIV,WORK,LWORK,INFO)
       IF ( INFO.NE.0 ) THEN
          WRITE (LUPRI,*) 'DGETRI returns ',INFO
          CALL QUIT('DF_FitXC_Build_Gjk: Error in inverting Vab')
       ENDIF
 
-      IF (DEBUG) THEN
-         write(6,*) 'debug, after dgetri'
-         CALL HEADER('inverse of Vab',-1)
-         CALL PRINTDMAT(1,LDA,Vab)
-      ENDIF
 C
 C second step: get G
 C
@@ -245,12 +216,6 @@ C ... first the denominator in bracket in the formula above is calculated,
 C     provided we have the charge conservation stuff ... 
       IF (DF_CONSTR) THEN
          DENOM = DDOT(NBASISAUX,ConsQInt,1,CFitQ,1)
-         IF (DEBUG) THEN
-            write (6,*) 'debug: denominator',denom
-            DO K = 1, IDimK
-               write (6,*) 'debug Q',ConsQInt(K),'c',CFitQ(K)
-            ENDDO
-         ENDIF
 C        SAFE  = DLAMCH('SFMIN')
          SAFE  = 10E-16 
          IF (DENOM.LT.SAFE) THEN
@@ -258,36 +223,27 @@ C        SAFE  = DLAMCH('SFMIN')
             CALL QUIT('DF_FitXC_Build_Gjk: Error in setting up Gkj')
          ENDIF
       ENDIF ! df_constr
+
 C ... then we loop over the indexes of G, forming the value in brackets
 C     and multiplying it with the  ...
-         DO K = 1, IDimK
-            DO J = 1, IDimJ
-               IF (DF_CONSTR) THEN
-                  dsum = 0
-                  DO M = 1, IDimJ
-                     VINV = Vab((M-1)*IDimK + J)
-                     A    = CFitQ(K) * ConsQInt(M)  
-                     term = (IDLTA(K,M)-(A/DENOM))*VINV
-                     dsum = dsum + term
-Cdebug
-C                    write(6,*) 'm,k,A,term,sum',m,k,a,term,dsum
-Cdebug
-                  ENDDO
-                  G((K-1)*IDimK+J) = dsum 
-               ELSE
-                  VINV = Vab((K-1)*IDimK + J)
-                  G((K-1)*IDimK+J) = VINV 
-               ENDIF
-            ENDDO
+      DO K = 1, IDimK
+         DO J = 1, IDimJ
+            IF (DF_CONSTR) THEN
+               dsum = 0
+               DO M = 1, IDimJ
+                  VINV = Vab((M-1)*IDimK + J)
+                  A    = CFitQ(K) * ConsQInt(M)  
+                  term = (IDLTA(K,M)-(A/DENOM))*VINV
+                  dsum = dsum + term
+               ENDDO
+               G((K-1)*IDimK+J) = dsum 
+            ELSE
+               VINV = Vab((K-1)*IDimK + J)
+               G((K-1)*IDimK+J) = VINV 
+            ENDIF
          ENDDO
+      ENDDO
 C ... and now we are done! 
-
-        IF (DEBUG) THEN
-        CALL HEADER('Final Gkj',-1)
-        CALL PRINTDMAT(1,LDA,G)
-        ENDIF
-
-      RETURN
       END
 C /* Deck IDLTA */
       FUNCTION IDLTA(I,J)

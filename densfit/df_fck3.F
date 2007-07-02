@@ -107,11 +107,11 @@ C       GABAB  GAB (g_abab) matrix
 C       GABAL  Density fitting GALPHA
 C              (alpha|alpha) vector
 C       AUXINT Charge integrals
+           CALL MEMGET ('REAL',KCFITSAV,NBASISAUX*NDMT,WORK,KFREE,LFREE)
         CALL MEMGET ('REAL',KCFIT,NBASISAUX*NDMT,WORK,KFREE,LFREE)
         CALL MEMGET ('REAL',KGABAB,NBASIS*NBASIS,WORK,KFREE,LFREE)
         CALL MEMGET ('REAL',KGABAL,NBASISAUX,WORK,KFREE,LFREE)
         CALL MEMGET ('REAL',KAUXINT,NBASISAUX,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KCFTDD,NBASISAUX,WORK,KFREE,LFREE)
 
 C       We will have no symmetry between density 1 and 2
         ODTR12 = .FALSE.
@@ -150,16 +150,6 @@ cSimen
           CALL OUTPUT(WORK(KCFIT),1,NBASISAUX,1,1,NBASISAUX,1,1,LUPRI)
         ENDIF
 
-          IF (df_fitvxc.and.using_diffdens) THEN
-              CALL READ_MATRIX(WORK(KCFTDD),1,NBASISAUX,'FITDDC')
-              DO I = 1,NBASISAUX
-                 WORK(KCFTDD-1+I) = WORK(KCFTDD-1+I)
-     &                             + WORK(KCFIT-1+I)
-              ENDDO
-              CALL SAVE_MATRIX(WORK(KCFTDD),1,NBASISAUX,'FITDDC')
-              CALL MEMREL('df-fitdd',WORK,KCFTDD,KCFTDD,KFREE,LFREE)
-          ENDIF
-
         SU = 0.0d0
         DO I=1,NBASISAUX
           SU = SU + WORK(KCFIT+I-1) * WORK(KAUXINT+I-1)
@@ -171,8 +161,19 @@ cSimen
 
         CALL SET_ATTGAM(.FALSE.,0.0d0)
 
-c        CALL TIMER('ITSOLV',TIMSTR,TIMEND)
+        CALL TIMER('ITSOLV',TIMSTR,TIMEND)
 
+Caspg+rbast
+        IF (DF_FITVXC) THEN
+           CALL TIMER('START ',TIMSTR,TIMEND)
+           CALL DCOPY  (NBASISAUX*NDMT,WORK(KCFIT),1,WORK(KCFITSAV),1)
+
+           CALL DF_AuxVXC_UpdateCFit(DMAT,WORK(KCFIT),WORK(KFREE),LFREE)
+           CALL TIMER('VxcUpFit',TIMSTR,TIMEND)
+        ENDIF
+Caspg+rbast
+
+        CALL TIMER('START ',TIMSTR,TIMEND)
         CALL SETAOBTCH(SPEXP,CONTRACTED,WORK(KFREE),LFREE,IPRINT)
         CALL ACT_ALL_BATCHES
         CALL FITFCK3(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
@@ -181,44 +182,20 @@ c        CALL TIMER('ITSOLV',TIMSTR,TIMEND)
         CALL TIMER('JLINBU',TIMSTR,TIMEND)
 
 Caspg+rbast
-Ctemporarily adding the exchange-correlation part separately
-Cafter debug will hopefully be only one call (above) to fitfck3...
         IF (DF_FITVXC) THEN
-           CALL DF_AuxVXC_UpdateCFit(DMAT,WORK(KCFIT),WORK(KFREE),LFREE)
-           CALL TIMER('DF_AuxVXC_UpdateCFit',TIMSTR,TIMEND)
-
-           errks1=0.0
-           do i=1,ndmt
-           ERRKS1=errks1+DDOT(NBAST*NBAST,DMAT(1,I),1,FMAT(1,I),1)
-           enddo
-
-           CALL SETAOBTCH(SPEXP,CONTRACTED,WORK(KFREE),LFREE,IPRINT)
-           CALL ACT_ALL_BATCHES
-           CALL FITFCK3(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
-     &       WORK(KGABAB),WORK(KGABAL),WORK(KCFIT),IPRFCK,
-     &       WORK(KFREE),LFREE)
-           CALL TIMER('JLIVXC',TIMSTR,TIMEND)
-
-           errks2=0.0
-           do i=1,ndmt
-           ERRKS2=errks2+DDOT(NBAST*NBAST,DMAT(1,I),1,FMAT(1,I),1)
-           enddo
-           if (using_diffdens) then
-              errks = (errks2 - errks1)*0.5 + errks
-           else
-              errks = (errks2 - errks1)*0.5
-           endif
-           write (6,*) 'errks final',errks
+           CALL TIMER('START ',TIMSTR,TIMEND)
+           CALL DF_CAL_ApproxERRKS(DMAT,FMAT,WORK(KCFITSAV),NDMT,ISYMDM,
+     &                       IFCTYP,WORK(KGABAL),WORK(KFREE),LFREE,
+     &                       IPRINT)
+           CALL TIMER('AERRKS',TIMSTR,TIMEND)
+        ENDIF
 Caspg+rbast
 
-        ENDIF
-Caspg
         IF (ROBUST_E) THEN
           CALL DF_CAL_ROB_E(DMAT,FMAT,WORK(KCFIT),NDMT,ISYMDM,IFCTYP,
      &                      WORK(KGABAL),WORK(KFREE),LFREE,IPRINT)
         ENDIF
 
-Caspg
         IF (IPRFCK.GT.25) THEN
           CALL HEADER('Fitted Fock matrix',-1)
           CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
@@ -231,6 +208,7 @@ C
         CALL MEMREL('LIN_DF',WORK,KGABAL,KGABAL,KFREE,LFREE)
         CALL MEMREL('LIN_DF',WORK,KGABAB,KGABAB,KFREE,LFREE)
         CALL MEMREL('LIN_DF',WORK,KCFIT,KCFIT,KFREE,LFREE)
+        CALL MEMREL('LIN_DF',WORK,KCFITSAV,KCFITSAV,KFREE,LFREE)
       ENDIF
       CALL QEXIT('LIN_DF')
       RETURN
@@ -2271,6 +2249,46 @@ CAREFUL Added temporary to remove segmentation fault in setmaxcsbtch
       CALL QEXIT('CAL_ROB_')
       RETURN
       END
+
+
+C /* deck DF_CAL_ApproxERRKS */
+C aspg, 2007-06-02:
+C calculating approximated ERRKS necessary for DFT (for df-vxc), 
+C as the difference between the enerfy for the (df+dfvxc) fock
+C matrix and the ddot(cfit,j_alpha) matrix. thanks for the tip
+C Simen!
+      SUBROUTINE DF_CAL_ApproxERRKS(DMAT,FMAT,CFIT,NDMT,ISYMDM,
+     &                              IFCTYP,GABAL,WORK,LWORK,IPRINT)
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "densfit.h"
+#include "dfterg.h"
+      DIMENSION DMAT(*),FMAT(*),CFIT(*),ISYMDM(*),IFCTYP(*),GABAL(*),
+     &          WORK(*)
+#include "memint.h"
+
+      CALL QENTER('AppERRKS')
+
+      IF (NDMT.NE.1)
+     &  CALL QUIT('Robust correction not implenented for NDMT .GT. 1')
+
+      ERRKS = TRACE_MAT_PRO(DMAT,FMAT,NBASIS,NBASIS)
+
+      CALL MEMGET('REAL',KJALPHA,NBASISAUX*NDMT,WORK,KFREE,LFREE)
+
+      CALL ITPROD(WORK(KJALPHA),NDMT,ISYMDM,IFCTYP,GABAL,CFIT,DMAT,DMAT,
+     &            IPRINT,WORK(KFREE),LFREE)
+      ERRKS = ERRKS - DDOT(NBASISAUX,CFIT,1,WORK(KJALPHA),1)
+      ERRKS = ERRKS * 0.5d0
+
+      CALL MEMREL('AppERRKS',WORK,KJALPHA,KJALPHA,KFREE,LFREE)
+      CALL QEXIT('AppERRKS')
+      END
+
+
 
 C  /* Deck dfiinp */
       SUBROUTINE DFIINP(WORD)
