@@ -2255,7 +2255,8 @@ C /* deck DF_CAL_ApproxERRKS */
 C aspg, 2007-06-02:
 C calculating approximated ERRKS necessary for DFT (for df-vxc), 
 C as the difference between the enerfy for the (df+dfvxc) fock
-C matrix and the ddot(cfit,j_alpha) matrix. 
+C matrix and the ddot(cfit,j_alpha) matrix. my understanding of
+C a suggestion from simen... 
       SUBROUTINE DF_CAL_ApproxERRKS(DMAT,FMAT,CFIT,NDMT,ISYMDM,
      &                              IFCTYP,GABAL,WORK,LWORK,IPRINT)
 #include "implicit.h"
