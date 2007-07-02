@@ -365,7 +365,7 @@ C        ...entering WORK(KTMAT) contains the transformation matrix in AO
 C get H1 (Dirac bare nucleus) Hamiltonian in the ON basis into WORK(KBUF)
 C    ... that is  the RKB  or FP "k" basis; WORK(KTMAT) entering ... !
       CALL GET_H1_ONB(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KIBEIG),
-     &                   SF_BEG,FPB,LINAD,SAVESO1,WORK(KFREE),LFREE)
+     &                   SF_BEG,FPB,.FALSE.,SAVESO1,WORK(KFREE),LFREE)
 
 C ===================================================================
 C    get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in ON ("k"/RKB) basis
