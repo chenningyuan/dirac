@@ -1577,7 +1577,8 @@ C
      &   ('Fermion irrep ',I,':',NFRO_DHF(I),I=1,NFSYM)
       ENDIF
       IF (NELECT_DHF+NAELEC_DHF.EQ.0.AND.(.NOT.VACPOL)) THEN
-        CALL QUIT('DHFINP: Zero electrons not allowed!')
+CMI     CALL QUIT('DHFINP: Zero electrons not allowed!')
+        WRITE(LUPRI,'(2X,A)') 'Warning: zero electrons in SCF !'
       END IF
 
 C! Print embedding information
