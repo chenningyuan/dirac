@@ -4740,15 +4740,13 @@ C.........construction of Fock matrix using ERIs in SO-basis
         ELSE
 C.........construction of Fock matrix using ERIs in AO-basis:
 C.........skeleton Fock approach
-#if defined (DF_TIME_ROUTINES)
+C aspg, timing
           CALL TIMER('START ',TIMSTR,TIMEND)
-#endif
           CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
-#if defined (DF_TIME_ROUTINES)
           CALL TIMER('fastjk',TIMSTR,TIMEND)
-#endif
+C aspg, timing
         ENDIF
       ELSE
 C

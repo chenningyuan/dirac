@@ -1847,7 +1847,11 @@ CMI ... extended array size N2BBASX->N2BBASXQ because it's beeing used later in 
       ELSE
         CALL MEMGET('REAL',KVMAT,N2BBASX,WORK,KFREE,LFREE)
       ENDIF
+C aspg, timing
+      CALL TIMER('START ',TIMSTR,TIMEND)
       CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
+      CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
+C aspg, timing
 C
 C     Unrestricted kinetic balance; use Lowdin matrix
 C     ===============================================
@@ -1892,7 +1896,11 @@ C
 C       Case 2: Generate 2-component Hamiltonian
 C       ----------------------------------------
 C
+C aspg, timing
+        CALL TIMER('START ',TIMSTR,TIMEND)
         CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
+        CALL TIMER('mk_h2c',TIMSTR,TIMEND)
+C aspg, timing
         CALL MEMCHK('GMOTRA.BSS',WORK,1)
 CMI    ... transformation matrix is the Large-electronic part of
 C          the adapted Lowdin matrix VMAT
@@ -1919,7 +1927,11 @@ C.........reset NEWPRP to re-initialize AOPROPER
           CALL ONEGEN(WORK,LWORK)
           CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C.........do canonical orthonormalization
+C aspg, timing
+          CALL TIMER('START ',TIMSTR,TIMEND)
           CALL LOWDIN(WORK(KTMAT),WORK(KFREE),LFREE,IPRHAM)
+          CALL TIMER('Lwdn_b',TIMSTR,TIMEND)
+C aspg, timing
           NZT = 1
           DO IFRP = 1,NFSYM
             NESH(IFRP)  = NFORB(IFRP,1)

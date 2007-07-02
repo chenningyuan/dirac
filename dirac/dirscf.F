@@ -419,9 +419,6 @@ C     IF (FD2CMO) BARNUC=.FALSE.
 C
 C       Initiate SCF cycle
 C
-#if defined (DF_TIME_ROUTINES)
-        CALL TIMER('START ',TIMSTR,TIMEND)
-#endif
         CALL GTINFO(DAYTID)
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
      +  '########## START ITERATION NO.',NITER,' ##########',
@@ -774,9 +771,6 @@ C
       CALL FLSHFO(LUPRI)
       CALL MEMREL('PREDHF',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-#if defined (DF_TIME_ROUTINES)
-      CALL TIMER('PreDHF',TIMSTR,TIMEND)
-#endif
  666  CONTINUE
       CALL QEXIT('PREDHF')
       RETURN
@@ -1117,13 +1111,7 @@ C
 C     ... or perform SCF-cycle
 C     ========================
 C
-#if defined (DF_TIME_ROUTINES)
-        CALL TIMER('START ',TIMSTR,TIMEND)
-#endif
         CALL SCFCYC(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
-#if defined (DF_TIME_ROUTINES)
-        CALL TIMER('DHFSCF',TIMSTR,TIMEND)
-#endif
       ENDIF
 
 !     Finalize Embedding Module
@@ -1378,10 +1366,7 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
 #if defined (MOD_DNF)
-         IF(DFTADD.AND.DF_FITVXC) THEN
-C add code to calculate errks with the birkenheurer scheme here...
-C           ERRKS = DDOT(N2BBASX,DMAT,1,FOCK,1)
-         ELSEIF (DFTADD) THEN 
+         IF(DFTADD.AND..NOT.DF_FITVXC) THEN
 #else
          IF(DFTADD) THEN
 #endif
@@ -1501,9 +1486,6 @@ CMI    ... we may get the DHFEXIT
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
         CALL FLSHFO(LUPRI)
-#if defined (DF_TIME_ROUTINES)
-        CALL TIMER('SCFCY1',TIMSTR,TIMEND)
-#endif
 C
 C       switch off onecap approximation ?
         IF (ONECOFF) THEN
@@ -1654,13 +1636,6 @@ C
 C...  If DFT correct for contribution from Kohn-Sham potential
 C...  to two-electron energy
       IF(DODFT) THEN
-#if defined (MOD_DNF)
-         IF (DF_FITVXC) THEN
-C add code to do calculate errks for the birkenheuer scheme here
-C           ERRKS = DDOT(N2BBASX,DMAT(1,IZ,JSHELL+1),1,
-C    &                             F2(1,IZ,ISHELL+1),1)
-         END IF
-#endif
         E(1,2,0) = E(1,2,0) - ERRKS
       ENDIF
       DO IZ = 1,NZ
