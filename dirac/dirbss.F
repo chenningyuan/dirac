@@ -361,10 +361,11 @@ C        ...entering WORK(KTMAT) contains the transformation matrix in AO
       CALL MKSAOMO_Le(WORK(KTBUF),WORK(KTMAT),VMAT,
      &         WORK(KFACKIN),FPB,IPRHAM,WORK(KFREE),LFREE)
 
+         CALL MEMCHK('MAKE_BSS 1',WORK,1)
 C get H1 (Dirac bare nucleus) Hamiltonian in the ON basis into WORK(KBUF)
 C    ... that is  the RKB  or FP "k" basis; WORK(KTMAT) entering ... !
       CALL GET_H1_ONB(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KIBEIG),
-     &                   SF_BEG,FPB,SAVESO1,WORK(KFREE),LFREE)
+     &                   SF_BEG,FPB,LINAD,SAVESO1,WORK(KFREE),LFREE)
 
 C ===================================================================
 C    get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in ON ("k"/RKB) basis
@@ -2882,6 +2883,8 @@ C      ... read TMAT - transformation matrix 4c AO-> 4c MO
 
 C First get the bare nucleus Dirac Hamiltonian (BNDH) in the SA-AO basis "xhi"
 C into VMAT array
+
+         CALL MEMCHK('GET_H1_ONB:',WORK,1)
 
        BSS=.FALSE.
        CALL ONEFCK(VMAT,IPRHAM,WORK(KFREE),LFREE) 
