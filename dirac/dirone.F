@@ -1432,8 +1432,7 @@ C
           NBORB(JSYM,IFRP,0) = NBORB(JSYM,IFRP,1) + NBORB(JSYM,IFRP,2)
         ENDDO
         NFORB(IFRP,0) = NFORB(IFRP,1) + NFORB(IFRP,2)
-CMI     ... control output ...
-        IF ( IPRINT .GE. 5) THEN
+        IF (IPRINT.GE.5) THEN
           CALL HEADER(
      &    'LOWDI1: Lowdin matrix (in ferm.symm.blocks) ',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1)')
@@ -1863,11 +1862,12 @@ C
         WRITE(LUPRI,'(A)') 
      &  '*** WARNING *** : No small bases. Setting URKBAL = T !'
       ENDIF
-
-CMI   ... even if BSS is true, first calling of GMOTRA desactivate the TWOCOMP,
-C     while in the second calling (after BSS and other LL integrals are ready)
-C    it is again set to .true.
       IF (URKBAL.OR.(TWOCOMP.AND..NOT.BSS)) THEN
+C
+C       Case 1: Unrestricted kinetic balance 
+C               or 2-component non-relativistic calculation
+C       ---------------------------------------------------
+C
         NZT = 1
         DO IFRP = 1,NFSYM
           NESH(IFRP)  = NFORB(IFRP,1)
@@ -1887,13 +1887,15 @@ C    it is again set to .true.
           write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
      &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
         ENDIF
-
       ELSE IF (BSS) THEN
-        CALL MAKE_DKH(WORK(KVMAT),WORK(KFREE),LFREE)
+C
+C       Case 2: Generate 2-component Hamiltonian
+C       ----------------------------------------
+C
+        CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
         CALL MEMCHK('GMOTRA.BSS',WORK,1)
 CMI    ... transformation matrix is the Large-electronic part of
 C          the adapted Lowdin matrix VMAT
-C      ... when linear symmetry is on, it is later adapted for linear symmetry...
         KTMAT = KVMAT
         IF (IPRHAM.GE.5) THEN
           write(lupri,*) 'GMOTRA: branch BSS'
@@ -1916,6 +1918,7 @@ C.........reset NEWPRP to re-initialize AOPROPER
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
           CALL ONEGEN(WORK,LWORK)
           CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
+C.........do canonical orthonormalization
           CALL LOWDIN(WORK(KTMAT),WORK(KFREE),LFREE,IPRHAM)
           NZT = 1
           DO IFRP = 1,NFSYM
@@ -1929,15 +1932,15 @@ C.........reset NEWPRP to re-initialize AOPROPER
         ENDIF
       ELSE
 C
-C     Transformation matrix with modified Dirac equation embedded
-C     ===========================================================
+C       Case 3: Transformation matrix with modified Dirac equation embedded
+C       -------------------------------------------------------------------
 C
         CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
 
         CALL MEMCHK('GMOTRA  2',WORK,1)
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
-     &             .FALSE.,.FALSE.,WORK(KFREE),LFREE)
+     &             .FALSE.,WORK(KFREE),LFREE)
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
 
         IF (IPRHAM.GE.5) THEN
@@ -1951,6 +1954,8 @@ C
       N2TMT   = 0
       N2TMOTQ = 0
       DO IFRP = 1,NFSYM
+        NESHMF(IFRP) = NESH(IFRP)
+        NPSHMF(IFRP) = NPSH(IFRP)
         NISHMF(IFRP) = NISH(IFRP)
         NOCCMF(IFRP) = NOCC(IFRP)
         I2TMT(IFRP) = N2TMT
@@ -1958,7 +1963,22 @@ C
         I2TMOT(IFRP) = N2TMOTQ
         N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
       ENDDO
-
+C
+C     Copy information from NBORB to the subblock array if we have not
+C     partioned the orbital space otherwise.
+C
+      IF (.NOT.SUB_BL) CALL INISUB
+      IF (SPINFR) THEN
+         SUB_BL = .TRUE.
+      ENDIF
+      IF (LINEAR) THEN
+        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KVMAT),1)
+        CALL GLINSM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),
+     &              WORK(KEIG),WORK(KFREE),LFREE)
+        SUB_BL = .TRUE.
+        CALL MEMREL('LINSYM.out',WORK,KEIG,KEIG,KFREE,LFREE)
+      ENDIF
 C
 C     Construct right index transformed overlap matrix Saomo = Sao T
 C     Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
@@ -1980,22 +2000,14 @@ C
         CALL SETDC2(0)
       ENDIF
 C
-C     Copy information from NBORB to the subblock array if we have not
-C     partioned the orbital space otherwise.
-C
-      IF (.NOT.SUB_BL) CALL INISUB
-      IF (SPINFR) THEN
-         SUB_BL = .TRUE.
-      ENDIF
-C
 C     Output
 C
       CALL TITLER('Orbital dimensions','*',125)
       IF ( NFSYM .EQ. 1 ) THEN
          WRITE(LUPRI,'(A,I5)')
-     &        'No. of electronic orbitals (NESH): ',NESH(1)
+     &        'No. of positive energy orbitals (NESH): ',NESH(1)
          WRITE(LUPRI,'(A,I5)')
-     &        'No. of positronic orbitals (NPSH): ',NPSH(1)
+     &        'No. of negative energy orbitals (NPSH): ',NPSH(1)
          WRITE(LUPRI,'(A,I5)')
      &        'Total no. of orbitals      (NORB): ',NORB(1)
       ELSE
@@ -2024,10 +2036,8 @@ C
      &        (NORB(I),I=1,NFSYM),J
       END IF
 C
-C
 C     Write transformation matrices
-CMI/2004 Note: These transformation matrixes may be later overwritten by the GLINSM
-C   routine when the linear symmetry in on (LINSYM=.true.)
+C
       CALL OPNFIL(LUTMAT,'DFTMAT','UNKNOWN','GMOTRA')
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
@@ -2042,14 +2052,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck modham */
-      SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,LSYMAD,WORK,LWORK)
+      SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,WORK,LWORK)
 C*****************************************************************************
 C
 C     Generate transformation matrix to MO-basis with the
 C     quaternion modified Dirac equation embedded.
 C     Ref: Visscher and Saue, JCP 113 (2000) 3996.
 C
-C     Extended (MI) for linear symmmetry (flag LSYMAD)
 C     and for S-L resorting of columns (flag SLGROUP).
 C
 C     On input:
@@ -2061,16 +2070,11 @@ C            (is destroyed!)
 C
 C     SLGROUP - if .true. (=Trond's 2comp.approach-one step BSS transformation)
 C                do resort columns of the transformation matrix into S-L order)
-C     LSYMAD  - if .true., do apply the LINSYM procedure for adaptation
-C               of the transformation matrix for the linear symmetry...
 C        
 C     On output:
 C   ==============
 C
 C  TMAT - total 4c AO -> MO transformation matrix (may be also linear-symmetry adapted!)
-C
-C  TBUF - if linear symmetry (LSYMAD) is on, it contains the transformation matrix from non-linear MO
-C         to the linear MO
 C
 C  VMAT - if SLGROUP=.true., then it contains the standard (ALWAYS non-linear symmetry) transformation
 C         matrix with SL-resorted columns
@@ -2100,14 +2104,13 @@ C  DGROUP:
 #include "cbihr1.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
-      LOGICAL SLGROUP,LSYMAD
+      LOGICAL SLGROUP
       CALL QENTER('MODHAM')
 #include "memint.h" 
 C
-
 CMI  ... check of keywords..
-      IF ( (SLGROUP.OR.LSYMAD).AND.(VEXTPJ.OR.FREEPJ.OR.LEVYLE)) 
-     &  CALL QUIT('MODHAM: SLGROUP/LSYMAD not correspond with'//
+      IF (SLGROUP.AND.(VEXTPJ.OR.FREEPJ.OR.LEVYLE)) 
+     &  CALL QUIT('MODHAM: SLGROUP not correspond with'//
      &'VEXTPJ/FREEPJ/LEVYLE flags!')
 
       
@@ -2203,70 +2206,6 @@ CMI    ... TMAT remains unchanged, the SL resorted TMAT is in WORK(KBUF)!
       ENDIF
 
 CMI   ... adaptation for the linear symmetry 
-      IF (LSYMAD) THEN
-
-        ISIZE = NFBAS(1,0)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
-
-        CALL MEMGET('REAL',KBUF1,ISIZE,WORK,KFREE,LFREE)
-
-        CALL DCOPY(ISIZE,TMAT,1,VMAT,1)
-        CALL DCOPY(ISIZE,TMAT,1,WORK(KBUF1),1)
-
-       IF(IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &  'MODHAM: BEFORE LINSYM final transformation'//
-     &  ' matrix 4c AO->MO, VMAT(copyied from TMAT) ',-1)
-         IMAT = 1
-         DO I = 1,NFSYM
-         IF(NORB(I).GT.0) THEN
-          WRITE(LUPRI,'(/A,I1,A,I1)') 
-     &   '* Fermion ircop no.',I,'/',NFSYM     
-          CALL PRQMAT(VMAT(IMAT),NFBAS(I,0),NORB(I),
-     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-          IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
-         ENDIF
-         ENDDO     
-        ENDIF
-
-        CALL DZERO(TMAT,N2BBASXQ)
-        CALL DZERO(TBUF,N2BBASXQ)
-
-        CALL LINSYM(TMAT,VMAT,TBUF,EIG,
-     &            WORK(KFREE),LFREE)
-
-C ... do always return non-linear symmetry adapted transformation matrix :
-        CALL DCOPY(ISIZE,WORK(KBUF1),1,TMAT,1)
-
-       IF(IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &  'MODHAM: AFTER LINSYM final transformation'//
-     &  ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
-         IMAT = 1
-         IBUF = 1
-         DO I = 1,NFSYM
-         IF(NORB(I).GT.0) THEN
-          WRITE(LUPRI,'(A,I1,A,I1)')
-     &    '* Fermion ircop no.',I,'/',NFSYM
-          CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
-     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-
-          WRITE(LUPRI,'(/5X,A/)')
-     &    'MODHAM: 4c ON  RKB "theta" -> LSYM "theta" transformation'//
-     &    '  matrix.'
-          WRITE(LUPRI,'(A,I1,A,I1)')
-     &    '* Fermion ircop no.',I,'/',NFSYM
-          CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),
-     &        NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-
-          IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
-          IBUF = IBUF + NORB(I)*NORB(I)*NZ
-
-         ENDIF
-         ENDDO     
-        ENDIF
-
-      ENDIF
 
       IF (SLGROUP) THEN
 C  ... copy the SL resorted transformation matrix to be exported into VMAT ...
@@ -2291,7 +2230,6 @@ C  ... copy the SL resorted transformation matrix to be exported into VMAT ...
        CALL MEMREL('SLGROUP',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDIF
       CALL FLSHFO(LUPRI)
-
       CALL QEXIT('MODHAM')
       RETURN
       END
@@ -2856,7 +2794,6 @@ C***  Transform overlap matrix to spherical basis and  ***
 C***  generate Lowdin matrix                           ***
 C*********************************************************
 C
-      CALL OUTPUT(SMAT,1,NCAR,1,NCAR,LDM,NCAR,1,LUPRI)
       CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
      &            SMAT,LDM ,NCAR,1,IPQTOQ(1,0),
      &            VMAT,LDM ,NSPH,1,IPQTOQ(1,0),
@@ -2966,7 +2903,6 @@ C***  Transform overlap matrix to spherical basis and  ***
 C***  generate Lowdin matrix                           ***
 C*********************************************************
 C
-      CALL OUTPUT(SMAT,1,NCAR,1,NCAR,LDM,NCAR,1,LUPRI)
       CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
      &            SMAT,LDM ,NCAR,1,IPQTOQ(1,0),
      &            VMAT,LDM ,NSPH,1,IPQTOQ(1,0),
@@ -3723,8 +3659,7 @@ C
 C
       LOGICAL TOBE
       DIMENSION TMAT(*),TINV(*),WORK(*)
-      DIMENSION NSTR(2,0:2,MFRAG),KVEC(2,MFRAG),
-     &          KQ(2),KE(2),KI(2),NVECS(2),NQ(2),NE(2),NI(2)
+      DIMENSION NSTR(2,0:2,MFRAG),KVEC(2,MFRAG),NVECS(2)
       DIMENSION IOFF(2)
 C
       KFRSAV = KFREE
@@ -3777,20 +3712,20 @@ C
 C     Calculate dimensions of fragment coefficients array
 C     ====================================================
 C
-C     KQ(IFRP) - start adress for coefficient array
-C     KE(IFRP) - start adress for eigenvalue array
-C     KI(IFRP) - start adress for boson irreps info
+C     KQ - start adress for coefficient array
+C     KE - start adress for eigenvalue array
+C     KI - start adress for boson irreps info
 C
-      NCDIM  = 0
+      NCDIM = 0
+      NEDIM = 0
       DO IFRP = 1,NFSYM
-        NQ(IFRP)         = NFBAS(IFRP,0)*NVECS(IFRP)*NZ
-        NCDIM            = NCDIM + NQ(IFRP)
-        CALL MEMGET('REAL',KE(IFRP),NVECS(IFRP),WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KI(IFRP),NVECS(IFRP),WORK,KFREE,LFREE)
-        CALL IZERO(WORK(KI(IFRP)),NVECS(IFRP))
+        NCDIM = NCDIM + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
+        NEDIM = NEDIM + NVECS(IFRP)
       ENDDO       
-      CALL MEMGET('REAL',KQ(1),NCDIM,WORK,KFREE,LFREE)
-      KQ(2)   = KQ(1) + NQ(1)
+      CALL MEMGET('REAL',KQ,NCDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KE,NEDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KI,NEDIM,WORK,KFREE,LFREE)
+      CALL IZERO(WORK(KI),NEDIM)
 C
 C     Allocate buffer space for coefficients, eigenvalues
 C     and boson irrep information
@@ -3812,7 +3747,7 @@ C
       DO IFRP = 1,NFSYM
         IOFF(IFRP) = 0
       ENDDO
-      CALL SELFRAG(WORK(KQ(1)),NVECS,WORK(KE(1)),WORK(KI(1)),
+      CALL SELFRAG(WORK(KQ),NVECS,WORK(KE),WORK(KI),
      &             NFRAG,NSTR,PRJFIL,PROOWN,NPRJNUC,IOPT,KVEC,
      &             WORK(KCMO),WORK(KEIG),WORK(KIBE),IOFF,
      &             WORK,KFREE,LFREE)
@@ -3820,143 +3755,16 @@ C
 C     Throw away the full set of coefficients and eigenvalues
 C     =======================================================
 C
-      CALL MEMREL('PSIPRJ.cfs',WORK,KCMO,KCMO,KFREE,LFREE)
+      CALL MEMREL('PSIPRJ.cfs',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
 C     Reduce variational space by projection using the fragment orbitals
 C     ===================================================================
 C     If more than one set of fragment orbitals, they must be orthogonalized !
 C
 C     Do projection
-      IF(NFROT.GE.0) CALL OPNFIL(LUCOEF,'DFFROZ','UNKNOWN','PSIPRJ')
-      TOBE = .FALSE.
-      N2TMT = 0
-      DO 20 IFRP = 1,NFSYM
-        WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
-C       Transform fragment coefficients to orthonormal basis
-        NDEL = 0
-        NQ(1) = 0
-        NQ(2) = 0
-        IF(NVECS(IFRP).EQ.0) GOTO 21
-        NREF = NORB(IFRP)*NVECS(IFRP)*NZ
-        NPRJ = NORB(IFRP)*NORB(IFRP)*NZ
-        CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBOS,NORB(IFRP),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
-        CALL QGEMM(NORB(IFRP),NVECS(IFRP),NFBAS(IFRP,0),D1,
-     &            'H','N',IPQTOQ(1,0),TINV(I2TMT(IFRP)+1),
-     &                    NFBAS(IFRP,0),NORB(IFRP),NZT,
-     &            'N','N',IPQTOQ(1,0),WORK(KQ(IFRP)),
-     &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
-     &            D0,IPQTOQ(1,0),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ)
-        IF(IPRINT.GE.5) THEN
-          CALL HEADER('PSIPRJ: Fragment coefs in orthonormal basis',-1)
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',IFRP
-          CALL PRQMAT(WORK(KREF),NORB(IFRP),NVECS(IFRP),
-     &                NORB(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-C       Initialize unit matrix (transformation matrix in MO-basis)
-        CALL DUNIT2(WORK(KBUF),NORB(IFRP),NORB(IFRP),NORB(IFRP),NZ)
-        IF(SUB_BL) THEN
-C         Spin-free case: Fill array with boson irrep info
-          CALL INISUB
-          CALL INIBOS(WORK(KIBOS),IFRP,.FALSE.,0)
-        ELSE
-C         Spin-orbit coupling: Fill array with zeros..
-          CALL ICOPY (NORB(IFRP),0,0,WORK(KIBOS),1) 
-        ENDIF
-C       Do projection
-        IREF  = 1
-        DO IFRAG = 1,NFRAG
-          DO IP = 2,1,-1
-            NREF = NSTR(IFRP,IP,IFRAG)        
-            IF(NREF.GT.0) THEN
-              CALL PRJORT(WORK(KBUF),WORK(KIBOS),
-     &              WORK(KREF),WORK(KI(IFRP)),IREF,NREF,
-     &              PRJTHR,THRMAX,NORB(IFRP),NORB(IFRP),
-     &              NVECS(IFRP),NDEL,IP,IPRHAM)
-              IREF = IREF + NREF
-              NQ(IP) = NQ(IP) + NDEL
-            ENDIF
-          ENDDO
-        ENDDO
-        CALL MEMREL('PSIPRJ.prjort',WORK,KREF,KREF,KFREE,LFREE)
-        NDEL = NQ(1) + NQ(2)
-        WRITE(LUPRI,'(2X,A,I6)') 
-     &     '- Total number of orbitals deleted: ',NDEL,
-     &     '       - positive energy solutions: ',NQ(1),
-     &     '       - negative energy solutions: ',NQ(2)
- 21     CONTINUE
-        NTMO(IFRP) = NORB(IFRP)-NDEL
-        IEFF       = I2TMT(IFRP)+1
-        I2TMT(IFRP) = N2TMT
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
-        IF(NDEL.GT.0) THEN
-          IF(NFRO(IFRP).GT.0) THEN
-            IF(NDEL.LT.NFRO(IFRP)) THEN
-              WRITE(LUPRI,'(2X,A,I6,A)') 
-     &        'is smaller than number of frozen orbitals',
-     &        NFRO(IFRP),'!'
-              WRITE(LUPRI,'(2X,A)')
-     &        'You may rerun with PRINT.GE.2 under **HAMILTONIAN',
-     &        'to see the norms of the remaining vectors.',
-     &        'Based on this, you may set the projection threshold'
-              WRITE(LUPRI,'(2X,A,E12.4)')
-     &        'PRJTHR lower. Current value is ',PRJTHR
-              CALL QUIT
-     &        ('PSIPRJ:Fewer deleted orbitals than frozen ones!')
-            ENDIF
-          ENDIF
-C         Backtransform to SO-basis
-          NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT
-          CALL DCOPY(NDIM,TMAT(IEFF),1,TINV(IEFF),1)
-          CALL PRJCNT(WORK(KBUF),TMAT(I2TMT(IFRP)+1),
-     &                IFRP,NORB(IFRP),NFBAS(IFRP,0),
-     &                NTMO(IFRP),WORK(KIBOS),TINV(IEFF))
-          CALL MEMREL('PSIPRJ.prj',WORK,KBUF,KBUF,KFREE,LFREE)
 C
-C         If frozen orbitals, save to file
-C
-          IF(NFRO(IFRP).GT.0) THEN
-            NBUF = NFBAS(IFRP,0)*NZ
-            CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
-            CALL WRIFRZ(LUCOEF,IFRP,WORK(KQ(IFRP)),WORK(KE(IFRP)),
-     &                  WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
-            CALL MEMREL('PSIPRJ.froz',WORK,KBUF,KBUF,KFREE,LFREE)       
-          ENDIF
-C
-C         Adjust number of positive and negative energy solutions
-C         Note that an adjustment for frozen orbitals takes place
-C         in WRIFRZ
-          NESH(IFRP) = NESH(IFRP)-NQ(1)
-          NPSH(IFRP) = NPSH(IFRP)-NQ(2)
-          TOBE = .TRUE.       
-        ELSEIF((I2TMT(IFRP)+1).NE.IEFF) THEN
-C         Move transformation matrix if columns was deleted in previous
-C         irrep ...
-          NDIM = NFBAS(IFRP,0)*NTMO(IFRP)*NZT
-          CALL DCOPY(NDIM,TMAT(IEFF),1,TMAT(I2TMT(IFRP)+1),1)
-        ENDIF
- 20   CONTINUE
-      IF(NFROT.GE.0) CLOSE(LUCOEF,STATUS='KEEP')
-      IF(IPRHAM.GE.5) THEN
-        CALL HEADER('PSIPRJ: Final transformation matrix ',-1)
-        DO 80 I = 1,NFSYM
-        IF(NTMO(I).GT.0) THEN
-          WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',I
-          CALL PRQMAT(TMAT(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
-     &                NFBAS(I,0),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
- 80     CONTINUE
-      ENDIF
-      IF(TOBE) THEN
-C
-C       Construct right index transformed overlap matrix Saomo = Sao T
-C       Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
-C
-        CALL MKSAOMO(TINV,TMAT,.FALSE.,IPRINT,WORK(KFREE),LFREE)
-      ENDIF
+      CALL PSIPR1(NVECS,WORK(KQ),WORK(KE),WORK(KI),TMAT,TINV,
+     &            NSTR,IPRINT,WORK,KFREE,LFREE)
  30   CONTINUE
       CALL MEMREL('PSIPRJ.final',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
@@ -4187,7 +3995,8 @@ C     Next commence internal orthogonalization
 C     =========================================
 C
       DO 200 IVEC = 1,NVECS
-        IF(IBVEC(IVEC).LT.0) GOTO 200
+CTROND: This is a bit dangerous; should be fixed !
+        IF(IBVEC(IVEC).LT.-100) GOTO 200
 C
 C       Check size of norm
 C       ==================
@@ -4208,7 +4017,7 @@ C
      &        ' Bsym: ',IBVEC(IVEC)
           ENDIF
 C         Store information about irrep and neg/pos solution
-          IBVEC(IVEC) = -(IP*10+IBVEC(IVEC))
+          IBVEC(IVEC) = -(IP*1000+IBVEC(IVEC))
           NDEL = NDEL + 1
           GOTO 200
         ELSE
@@ -4292,24 +4101,30 @@ C
       ENDDO
       II = 0
       DO I = 1,NMO
-      IF(IVEC(I).GE.0) THEN
+      IF(IVEC(I).GE.-100) THEN
         II = II + 1
         CALL QGEMM(NAO,1,NMO,D1,
      &          'N','N',IPQTOQ(1,0),TMAT,NAO,NMO,NZT,
      &          'N','N',IPQTOQ(1,0),VMO(1,I,1), NMO,NMO,NZ,
      &          D0,IPQTOQ(1,0),VAO(1,II,1),NAO,NEFF,NZ)
       ELSE
-        IF(SPINFR) THEN
-          IREP = -MOD(IVEC(I),10)
-          IP   = -(IVEC(I)+IREP)/10
-          ISYM = IBOS(IREP)
-          NBORB(ISYM,IFRP,IP) = NBORB(ISYM,IFRP,IP) - 1
+        IF(SUB_BL) THEN
+          ID = -MOD(IVEC(I),1000)
+          IP   = -(IVEC(I)+ID)/1000
+          DO IB = 1, N_SUB_BL(IFRP)
+            IF(ID.eq.ID_SUB_BL(IB,IFRP)) THEN
+              NORB_SUB(IB,IFRP,IP) = NORB_SUB(IB,IFRP,IP) - 1
+              GOTO 10
+            ENDIF
+          ENDDO
+ 10       CONTINUE
         ENDIF
       ENDIF
       ENDDO
-      DO ISYM = 1, NBRP
-        NBORB(ISYM,IFRP,0) = NBORB(ISYM,IFRP,1) + NBORB(ISYM,IFRP,2)
+      DO IB = 1, N_SUB_BL(IFRP)
+        NORB_SUB(IB,IFRP,0) = NORB_SUB(IB,IFRP,1)+NORB_SUB(IB,IFRP,2)
       ENDDO
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4887,9 +4702,9 @@ C
 C
       RETURN
       END
-C*****************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck glinsm */
-      SUBROUTINE GLINSM(WORK,LWORK)
+      SUBROUTINE GLINSM(TMAT,VMAT,TBUF,EIG,WORK,LWORK)
 C*****************************************************************************
 C
 C     This routine makes an additional transformation from the
@@ -4899,6 +4714,7 @@ C     and Levy-Leblond). This can be used for systems that posess
 C     linear symmetry.
 C
 C     Written by L. Visscher october/november 2003
+C     Modified by T. Saue Jan 12 2007
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -4934,45 +4750,13 @@ C
          RETURN
       ENDIF
 C
-C     Get old transformation matrix
-C     =============================
-C
-      CALL MEMGET('REAL',KVMAT,N2TMT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMAT,N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTBUF,N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-C
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
-      CALL READT(LUTMAT,N2TMT,WORK(KVMAT))
-C
-      CALL LINSYM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
-     &            WORK(KFREE),LFREE)
-C
-C     Construct right index transformed overlap matrix Saomo = Sao C
-C
-      CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),.FALSE.,
-     &              IPRONE,WORK(KFREE),LFREE)
-C
-C     Write the new transformation matrix.
-C
-      REWIND (LUTMAT)
-      CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
-      CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
-      CLOSE(LUTMAT,STATUS='KEEP')
-C
-C     We need to diagonalize blockwise in the SCF step
-CMI ... this is done in the DFDIAG routine...
-C
-      SUB_BL = .TRUE.
-
+      CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
       IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A/)')
      &'GLINSM: TMAT and Saomo were adapted for the linear symmatry.'
 
       ENDIF
 C
-C     Memory deallocation
-      CALL MEMREL('GLINSM',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('GLINSM')
       RETURN
 C
@@ -5454,7 +5238,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Wrifrz */
-      SUBROUTINE WRIFRZ(IUNIT,IFRP,VECS,EIG,IVEC,BUF,IBUF,NVEC,NDEL)
+      SUBROUTINE WRIFRZ(IUNIT,IFRP,CSEL,ESEL,ISEL,IVEC,BUF,IBUF,
+     &                  NVEC,NDEL)
 C***********************************************************************
 C
 C     Dump frozen orbitals to file
@@ -5468,7 +5253,8 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-      DIMENSION VECS(*),BUF(*),IVEC(*),IBUF(*),EIG(*),NDEL(2)
+      DIMENSION CSEL(*),ESEL(*),ISEL(*),
+     &          BUF(*),IVEC(*),IBUF(*),NDEL(2)
 C
 C     Get index array for frozen orbitals;
 C
@@ -5532,6 +5318,8 @@ C         If so, subtract from occupation number
 C
 C     Final adjustments
 C
+      NPSHMF(IFRP) = NPSH(IFRP)
+      NESHMF(IFRP) = NESH(IFRP)
       NPSH(IFRP) = NPSH(IFRP) + NP
       NESH(IFRP) = NESH(IFRP) + NE
       DO I = 1,NFRO(IFRP)
@@ -5551,12 +5339,12 @@ C
         IOFF = NFBAS(IFRP,0)*(I-1)+1
         JOFF = 1
         DO IZ = 1,NZ
-          CALL DCOPY(NFBAS(IFRP,0),VECS(IOFF),1,BUF(JOFF),1)
+          CALL DCOPY(NFBAS(IFRP,0),CSEL(IOFF),1,BUF(JOFF),1)
           IOFF = IOFF + IDIM
           JOFF = JOFF + NFBAS(IFRP,0)
         ENDDO
         CALL WRITT(IUNIT,JDIM,BUF)
-        WRITE(IUNIT) EIG(I)
+        WRITE(IUNIT) ESEL(I),ISEL(I)
       ENDDO
 C
       RETURN
@@ -5831,6 +5619,16 @@ C
 C     On output:
 C       TMAT - transformation matrix with modified Dirac equation embedded
 C
+C     Note that there is a difference in boson irrep ordering 
+C     between TMAT and the Lowdin transformation matrix VMAT:
+C     After transformation with VMAT the boson irrep ordering
+C     in a given fermion ircop is:
+C       L1 - L2 - L3 .. S1 - S2 - S3 - ..
+C     whereas with TMAT the ordering is:
+C       S1 - L1 - S2 - L2 - S3 - L3 ..
+C
+C     where L and S refer to the large and small components,
+C     respectively.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -6001,4 +5799,168 @@ C
 C
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck psipr1 */
+      SUBROUTINE PSIPR1(NVECS,CSEL,ESEL,ISEL,TMAT,TINV,NSTR,
+     &                  IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
+C
+      LOGICAL TOBE
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbdhf.h"
+      DIMENSION CSEL(*),ESEL(*),ISEL(*),TMAT(*),TINV(*),WORK(*)
+      DIMENSION NVECS(2),NQ(2),NSTR(2,0:2,MFRAG)
+C
+      KFRSAV = KFREE
+      NFROT = 0
+      DO IFRP = 1,NFSYM
+        NFROT = NFROT + NFRO(IFRP)
+      ENDDO
+      IF(NFROT.GT.0) CALL OPNFIL(LUCOEF,'DFFROZ','UNKNOWN','PSIPR1')
+      TOBE = .FALSE.
+      N2TMT = 0
+      ICOFF = 1
+      IEOFF = 1
+      DO 10 IFRP = 1,NFSYM
+        WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
+C       Transform fragment coefficients to orthonormal basis
+        NDEL = 0
+        NQ(1) = 0
+        NQ(2) = 0
+        IF(NVECS(IFRP).EQ.0) THEN
+           WRITE(LUPRI,'(2X,A)') '- No orbitals deleted.'
+          GOTO 11
+        ENDIF
+        NREF = NORB(IFRP)*NVECS(IFRP)*NZ
+        NPRJ = NORB(IFRP)*NORB(IFRP)*NZ
+        CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIBOS,NORB(IFRP),WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
+        CALL QGEMM(NORB(IFRP),NVECS(IFRP),NFBAS(IFRP,0),D1,
+     &            'H','N',IPQTOQ(1,0),TINV(I2TMT(IFRP)+1),
+     &                    NFBAS(IFRP,0),NORB(IFRP),NZT,
+     &            'N','N',IPQTOQ(1,0),CSEL(ICOFF),
+     &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
+     &            D0,IPQTOQ(1,0),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ)
+        IF(IPRINT.GE.5) THEN
+          CALL HEADER('PSIPR1: Fragment coefs in orthonormal basis',-1)
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',IFRP
+          CALL PRQMAT(WORK(KREF),NORB(IFRP),NVECS(IFRP),
+     &                NORB(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+C       Initialize unit matrix (transformation matrix in MO-basis)
+        CALL DUNIT2(WORK(KBUF),NORB(IFRP),NORB(IFRP),NORB(IFRP),NZ)
+        IF(SUB_BL) THEN
+C         Spin-free or linear case: Fill array with subblock info
+          CALL INIBOS(WORK(KIBOS),IFRP,.FALSE.,0)
+        ELSE
+C         Spin-orbit coupling: Fill array with zeros..
+          CALL ICOPY (NORB(IFRP),0,0,WORK(KIBOS),1) 
+        ENDIF
+C       Do projection
+        IREF  = 1
+        DO IFRAG = 1,NFRAG
+          DO IP = 2,1,-1
+            NREF = NSTR(IFRP,IP,IFRAG)        
+            IF(NREF.GT.0) THEN
+              CALL PRJORT(WORK(KBUF),WORK(KIBOS),
+     &              WORK(KREF),ISEL(IEOFF),IREF,NREF,
+     &              PRJTHR,THRMAX,NORB(IFRP),NORB(IFRP),
+     &              NVECS(IFRP),NDEL,IP,IPRHAM)
+              IREF = IREF + NREF
+              NQ(IP) = NQ(IP) + NDEL
+            ENDIF
+          ENDDO
+        ENDDO
+        CALL MEMREL('PSIPRJ.prjort',WORK,KFRSAV,KREF,KFREE,LFREE)
+        NDEL = NQ(1) + NQ(2)
+        WRITE(LUPRI,'(2X,A,I6)') 
+     &     '- Total number of orbitals deleted: ',NDEL,
+     &     '       - positive energy solutions: ',NQ(1),
+     &     '       - negative energy solutions: ',NQ(2)
+ 11     CONTINUE
+        NTMO(IFRP)  = NORB(IFRP)-NDEL
+        IEFF        = I2TMT(IFRP)+1
+        I2TMT(IFRP) = N2TMT
+        N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
+        IF(NDEL.GT.0) THEN
+          IF(NFRO(IFRP).GT.0) THEN
+            IF(NDEL.LT.NFRO(IFRP)) THEN
+              WRITE(LUPRI,'(2X,A,I6,A)') 
+     &        'is smaller than number of frozen orbitals',
+     &        NFRO(IFRP),'!'
+              WRITE(LUPRI,'(2X,A)')
+     &        'You may rerun with PRINT.GE.2 under **HAMILTONIAN',
+     &        'to see the norms of the remaining vectors.',
+     &        'Based on this, you may set the projection threshold'
+              WRITE(LUPRI,'(2X,A,E12.4)')
+     &        'PRJTHR lower. Current value is ',PRJTHR
+              CALL QUIT
+     &        ('PSIPRJ:Fewer deleted orbitals than frozen ones!')
+            ENDIF
+          ENDIF
+C         Backtransform to SO-basis
+          NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT
+          CALL DCOPY(NDIM,TMAT(IEFF),1,TINV(IEFF),1)
+          CALL PRJCNT(WORK(KBUF),TMAT(I2TMT(IFRP)+1),
+     &                IFRP,NORB(IFRP),NFBAS(IFRP,0),
+     &                NTMO(IFRP),WORK(KIBOS),TINV(IEFF))
+          CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KBUF,KFREE,LFREE)
+C
+C         If frozen orbitals, save to file
+C
+          IF(NFRO(IFRP).GT.0) THEN
+            NBUF = NFBAS(IFRP,0)*NZ
+            CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
+            CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF),ESEL(IEOFF),ISEL(IEOFF),
+     &                  WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
+            CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)       
+          ENDIF
+C
+C         Adjust number of positive and negative energy solutions
+C         Note that an adjustment for frozen orbitals takes place
+C         in WRIFRZ
+          NESH(IFRP) = NESH(IFRP)-NQ(1)
+          NPSH(IFRP) = NPSH(IFRP)-NQ(2)
+          TOBE = .TRUE.       
+        ELSEIF((I2TMT(IFRP)+1).NE.IEFF) THEN
+C         Move transformation matrix if columns was deleted in previous
+C         irrep ...
+          NDIM = NFBAS(IFRP,0)*NTMO(IFRP)*NZT
+          CALL DCOPY(NDIM,TMAT(IEFF),1,TMAT(I2TMT(IFRP)+1),1)
+        ENDIF
+        ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
+        IEOFF = IEOFF + NVECS(IFRP)
+ 10   CONTINUE
+      IF(NFROT.GT.0) CLOSE(LUCOEF,STATUS='KEEP')
+      IF(IPRHAM.GE.5) THEN
+        CALL HEADER('PSIPRJ: Final transformation matrix ',-1)
+        DO 20 I = 1,NFSYM
+        IF(NTMO(I).GT.0) THEN
+          WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',I
+          CALL PRQMAT(TMAT(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
+     &                NFBAS(I,0),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+ 20     CONTINUE
+      ENDIF
+      IF(TOBE) THEN
+C
+C       Construct right index transformed overlap matrix Saomo = Sao T
+C       Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
+C
+        CALL MKSAOMO(TINV,TMAT,.FALSE.,IPRINT,WORK(KFREE),LFREE)
+      ENDIF
+C
+      RETURN
+      END

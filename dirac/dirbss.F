@@ -1,5 +1,5 @@
 C /* Deck make_dkh */
-       SUBROUTINE MAKE_DKH(VMAT,WORK,LWORK)
+       SUBROUTINE MAKE_H2C(VMAT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  On input : 
@@ -39,8 +39,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL DOBSS,V2COUT,FNDLAB,TWOBUF
 #include "memint.h"
 
-      CALL QENTER('MAKE_DKH')
-C
+      CALL QENTER('MAKE_H2C')
+C ... generate 2-component Hamiltonian
       CALL MAKE_BSS(VMAT,WORK(KFREE),LFREE) 
 
 C    ===================================================================================
@@ -51,8 +51,8 @@ C    transformation of the Dirac bare nucleus or of the Fock-Dirac matrix
 C    (when USEDF=.true.)
       IF (DO4C2C.AND..NOT.START2C) THEN
        IF (IPRHAM.GE.1) THEN
-        write(lupri,'(/2X,A)')
-     &  'MAKE_DKH: Going to do the picture change transformations'//
+        write(LUPRI,'(/2X,A)')
+     &  'MAKE_H2C: Going to do the picture change transformations'//
      &  ' of four-component Fock-Dirac AO matrixes'//
      &  ' (renews files DFFCK1, DFFCK2, get FD1AO_DK)'
         IF (USEDF) THEN
@@ -71,7 +71,7 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
         IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)   
         CALL MEMGET('REAL',KIBEIG,ISIZE,WORK,KFREE,LFREE)
         CALL FDTR2C(VMAT,WORK(KIBEIG),WORK(KFREE),LFREE)
-        CALL MEMREL('MAKE_DKH.FDTR2C',WORK,KWORK,KIBEIG,KFREE,LFREE)
+        CALL MEMREL('MAKE_H2C.FDTR2C',WORK,KWORK,KIBEIG,KFREE,LFREE)
 
       ENDIF
 
@@ -88,7 +88,7 @@ C ... for calculating properties in pure 2comp. mode do adapt them
 C ===============================================================================
 C ... export the Lowdin matrix adapted for 2c calculations,
 C ===============================================================================
-      CALL RFBSSMAT('VMAT2C  ',.TRUE.,'MAKE_DKH',
+      CALL RFBSSMAT('VMAT2C  ',.TRUE.,'MAKE_H2C',
      &        VMAT,N2BBASX,LUBSS,IPRHAM)
 C    .. close the BSSMAT file...
       CLOSE(LUBSS,STATUS='KEEP')
@@ -114,21 +114,20 @@ C    ... Number of transf. matrixes is set to 1 - we use only the Lowdin AO->MO
       NZT = 1
 C **********************************************************************************
       WRITE(LUPRI,'(/2X,A)') 
-     &'MAKE_DKH: Two-component BSS mode - positronic shells deleted !'
-
+     &'MAKE_H2C: Two-component BSS mode - positronic shells deleted !'
 C   .... do set up appropriate integrals...
-         INTDEF_SAVE = INTDEF
-         INTDEF = 1
-         INTGEN = INTDEF
-         IF (IPRHAM.GE.3) THEN
-         write(lupri,*) 'MAKE_DKH: SL,SS,GT integrals not calculated !'
-         ENDIF
-
-         MC = 1
-         SSMTRC_SAVE = SSMTRC
-         SSMTRC = 0.0D0
-
-      CALL QEXIT('MAKE_DKH')
+      INTDEF_SAVE = INTDEF
+      INTDEF = 1
+      INTGEN = INTDEF
+      IF (IPRHAM.GE.3) THEN
+        WRITE(LUPRI,*) 
+     &    'MAKE_H2C: SL,SS,GT integrals not calculated !'
+      ENDIF
+      MC = 1
+      SSMTRC_SAVE = SSMTRC
+      SSMTRC = 0.0D0
+C
+      CALL QEXIT('MAKE_H2C')
       RETURN
       END
 
@@ -151,8 +150,8 @@ C  mode, that is the small components are simply set to zero.
 C  True 2-component mode means that the small components are fully absent.
 C
 C * BSS transformation of one-electron problem:
-C    1 - 2c matrix from 4c
-C    2 - 2c matrix from 4c 
+C    1 - 2c matrix from 4c: h2c from h_D(1)_4C
+C    2 - 2c matrix from 4c: h2c_CSC(+AMFI if present) from hD(1)_4C
 C * BSS transformation after 4c SCF, that is using the mean-field potential:
 C    3 - 2c one-electron matrix 
 C    4 - 2c full Fock matrix
@@ -227,7 +226,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C On input : 
 C =========
-C       VMAT - Lowdin transformation matrix (AO to MO) for 4-comp. Fock matrix
+C  VMAT - Lowdin transformation matrix (AO to MO) for 4-comp. Fock matrix
 C
 C On output :
 C ===========
@@ -250,8 +249,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION VMAT(*),WORK(LWORK)
       LOGICAL DK2SO1,ONLYSO1,SAVESO1,SF_BEG,FPB,FNDLAB,
-     &    GETPCTM,ADD_AMFI,ONLYTRA,ELIM_SF, WRITEH2C,
-     &    LINAD
+     &    GETPCTM,ADD_AMFI,ONLYTRA,ELIM_SF, WRITEH2C
 
         CALL QENTER('MAKE_BSS')
 #include "memint.h"
@@ -264,15 +262,24 @@ C     Print section
 C
       CALL HEADER('*** Output from MAKE_BSS ***',-1)
 
-C    ... refrence
-       WRITE(LUPRI,'(A)')
+      IF(YREQ1) THEN
+         WRITE(LUPRI,'(A)')
+     & '* Reference: ',
      & 'H. J. Aa. Jensen and M. Ilias,',
      & '  "Two-component relativistic methods based on the quaternion'//
      &   ' modified Dirac equation. I:',
      & '   from Douglas-Kroll-Hess second order method to the infi'//
      &   'nite order two-component method.",',
      & '  J. Chem. Phys., in preparation.'
-
+      ELSE
+         WRITE(LUPRI,'(A)')
+     & '* Reference: ',
+     & '  M. Ilias and T. Saue:',
+     & '  "Implementation of an infinite-order two-component '//
+     & 'relativistic Hamiltonian ',
+     & '  by a simple one-step transformation." ',
+     & '    J. Chem. Phys., 126 (2007) 064102. '
+      ENDIF
 C ======================================================================
 C            extract information about the BSS Hamiltonian 
 C ======================================================================
@@ -292,8 +299,8 @@ C get transf. matrix (RKB)
       CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
 
       IF (IPRHAM.GE.5) THEN
-       CALL HEADER('MAKE_BSS: Entering Lowdin matrix',-1)
-       CALL PRQMAT(VMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),1,
+        CALL HEADER('MAKE_BSS: Entering Lowdin matrix',-1)
+        CALL PRQMAT(VMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),1,
      &            IPQTOQ(1,0),LUPRI)
       ENDIF
 
@@ -309,18 +316,13 @@ C     ... choose the file number !
 C ============================================================
 C ... get the RKB transformation matrix into WORK(KTMAT)
 C ============================================================
-C     LINAD = ( DO4C2C.AND.USEDF.AND.LINEAR )
-      LINAD = ( DO4C2C.AND.LINEAR )
-      IF (LINAD.AND.IPRHAM.GE.2) THEN
-        write(lupri,*) 'LIN_adapt for MODHAM active!'
-      ENDIF
       CALL MODHAM(WORK(KTMAT),VMAT,WORK(KTBUF),WORK(KEIG),.NOT.FPB,
-     &            LINAD,WORK(KFREE),LFREE)
-
+     &            WORK(KFREE),LFREE)
+C.....set variables needed in DFDIAG (N2TMT etc.)
       CALL SET_TMT(IPRHAM)
-
-      CALL HANDLE_RKB(VMAT,WORK(KTMAT),WORK(KTBUF),LINAD,
-     &                  FPB,IPRHAM,WORK(KFREE),LFREE)
+C     1. Write transformation matrices to file BSSMAT
+      CALL HANDLE_RKB(VMAT,WORK(KTMAT),WORK(KTBUF),
+     &                  .FALSE.,FPB,IPRHAM,WORK(KFREE),LFREE)
 
 C      ... allocate memmory 
       CALL MEMGET('INTE',KIBEIG,NTBAS(0),WORK,KFREE,LFREE)
@@ -346,7 +348,6 @@ C ===============================================================
 C       ... we need to zero them as in enters GET_A_FAC routine !
        CALL DZERO(WORK(KEIG),NTBAS(0))
       ENDIF
-
 C NOTE: If SPINFR=.true. we utilize later the WORK(KIBEIG) array with boson info !!!
 
 C get A factors into WORK(KFACKIN), nothing enters...
@@ -363,7 +364,7 @@ C        ...entering WORK(KTMAT) contains the transformation matrix in AO
 C get H1 (Dirac bare nucleus) Hamiltonian in the ON basis into WORK(KBUF)
 C    ... that is  the RKB  or FP "k" basis; WORK(KTMAT) entering ... !
       CALL GET_H1_ONB(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KIBEIG),
-     &                   SF_BEG,FPB,LINAD,SAVESO1,WORK(KFREE),LFREE)
+     &                   SF_BEG,FPB,SAVESO1,WORK(KFREE),LFREE)
 
 C ===================================================================
 C    get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in ON ("k"/RKB) basis
@@ -387,7 +388,7 @@ C        ... both for FPM "k" & RKB
          CALL MEMREL('AFTER_INF_R',WORK,KWORK,KIPIVOT,KFREE,LFREE)
         ENDIF
 C =======================================================================
-C       ... second order DKH - only in the free-partcle basis
+C       ... second order DKH - only in the free-particle basis
 C =======================================================================
       ELSE IF (IPZ.EQ.2) THEN
         CALL GET_HDK2_FPM(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KEIG),
@@ -434,7 +435,7 @@ C  .... VMAT contains 2c adapted Lowdind matrix (VMAT2C label in BSSMAT)
       ENDIF
 
 C============================================================
-C ... prepare the FULL picture change transformaion matrix
+C ... prepare the FULL picture change transformation matrix
 C============================================================
       IF (DO2C4C.AND.START2C) THEN
 C      ... consider the spin-free case !!!
@@ -444,11 +445,6 @@ C      ... consider the spin-free case !!!
 
 C     ...      before calling AMFI stuff release ALL
 C     ...    allocated memmory (except entering VMAT)
-      CALL MEMREL('AMFI',WORK,KWORK,KFACKIN,KFREE,LFREE)
-      CALL MEMREL('AMFI',WORK,KWORK,KIBEIG,KFREE,LFREE)
-      CALL MEMREL('AMFI',WORK,KWORK,KEIG,KFREE,LFREE)
-C     ... release of two of three big (N2BBASXQ) arrays ! 
-      CALL MEMREL('AMFI',WORK,KWORK,KTMAT,KFREE,LFREE)
       CALL MEMREL('AMFI',WORK,KWORK,KTBUF,KFREE,LFREE)
 
       IF (ADD_AMFI) THEN
@@ -535,7 +531,12 @@ C  /* Deck handle_rkb */
       SUBROUTINE HANDLE_RKB(VMAT,TMAT,TBUF,LINAD,FPB,IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  After the MODHAM routine take care of matrixes
+C  After the MODHAM routine take care of matrices
+C
+C  On input:
+C    VMAT - (non-linear) SL resorted RKB AO to MO (FPB = F)
+C    TMAT - Non-linsym RKB transformation matrix 4c AO->MO
+C    TBUF - RKB MO to LINSYM RKB_MO (LINAD = T)
 C
 C  Written by Miro Ilias, Prievidza, December 2006
 C
@@ -610,46 +611,46 @@ C      ... save the 'SL' resorted transformation matrix
       ENDIF
 
       IF (LINAD) THEN
-       ISIZE = NORB(1)*NORB(1)
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
-       CALL W2BSSMAT(4,.TRUE.,'TMAT_LSY','HANDLE_RKB',
+        ISIZE = NORB(1)*NORB(1)
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)
+        CALL W2BSSMAT(4,.TRUE.,'TMAT_LSY','HANDLE_RKB',
      &      TBUF,ISIZE,LUBSS,IPRINT)
-       IF (IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(/2X,A)')
-     & 'HANDLE_RKB: RKB MO to MO_LSYM (WORK(KTBUF)) '//
-     & 'was written to the BSSMAT file.'
-       ENDIF
+        IF (IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     &      'HANDLE_RKB: RKB MO to MO_LSYM (WORK(KTBUF)) '//
+     &      'was written to the BSSMAT file.'
+        ENDIF
       ENDIF
 
 C    ... one-step approach and NOT the linear symmetry 
       IF (.NOT.FPB.AND.LINAD) THEN
-       IVMAT = 1
-       IBUF = 1
-       IMAT = 1
-       DO I = 1, NFSYM
-       IF(NORB(I).GT.0) THEN
+        IVMAT = 1
+        IBUF = 1
+        IMAT = 1
+        DO I = 1, NFSYM
+        IF(NORB(I).GT.0) THEN
 C     ... construct original AO->RKB_MO basis:
-C        VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
-        CALL QGEMM(NFBAS(I,0),NORB(I),NORB(I),D1,
-     &    'N','N',IPQTOQ(1,0),TMAT(IMAT),
-     &     NFBAS(I,0),NORB(I),NZ,
-     &     'H','N',IPQTOQ(1,0),
-     &     TBUF(IBUF),NORB(I),NORB(I),1,
-     &     D0,IPQTOQ(1,0),VMAT(IVMAT),
-     &     NFBAS(I,0),NORB(I),NZ)
+C         VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
+          CALL QGEMM(NFBAS(I,0),NORB(I),NORB(I),D1,
+     &      'N','N',IPQTOQ(1,0),TMAT(IMAT),
+     &      NFBAS(I,0),NORB(I),NZ,
+     &      'H','N',IPQTOQ(1,0),
+     &      TBUF(IBUF),NORB(I),NORB(I),1,
+     &      D0,IPQTOQ(1,0),VMAT(IVMAT),
+     &      NFBAS(I,0),NORB(I),NZ)
 
-         IF (IPRINT.GE.5) THEN
-          CALL HEADER(
+          IF (IPRINT.GE.5) THEN
+            CALL HEADER(
      & 'HANDLE_RKB: NONLINSYM RKB transformation matrix 4c AO->MO ',-1)
-         WRITE(LUPRI,'(A,I1,A,I1)')
-     &   '* Fermion ircop no.',I,'/',NFSYM                          
-         CALL PRQMAT(VMAT(IVMAT),NFBAS(I,0),NORB(I),              
-     &       NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
-         ENDIF
+            WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM                          
+            CALL PRQMAT(VMAT(IVMAT),NFBAS(I,0),NORB(I),              
+     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
+          ENDIF
 
-         IBUF = IBUF  + NORB(I)*NORB(I)
-         IMAT = IMAT  + NFBAS(I,0)*NORB(I)*NZ                         
-        IVMAT = IVMAT + NFBAS(I,0)*NORB(I)*NZ  
+         IBUF  = IBUF  + NORB(I)*NORB(I)
+         IMAT  = IMAT  + NFBAS(I,0)*NORB(I)*NZ                         
+         IVMAT = IVMAT + NFBAS(I,0)*NORB(I)*NZ  
 
        ENDIF
        ENDDO
@@ -2216,7 +2217,7 @@ C      VMAT =  TMAT+ * TBUF * TMAT
      &           VMAT(IVMAT),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
      &           TMAT(ITMAT),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &           TMAT(ITMAT),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &           WORK(KFREE),LFREE,IPRINT)
+     &           WORK(KFREE),LFREE,IPRHAM)
 C
 C       Zero the small elements in real part of WORK(KBUF)
 C       which are non-zero because of round-off errors:
@@ -4735,7 +4736,7 @@ C  ********************************************************************
 
 C       Row dimension of H2AO: only L [NFBAS(I,1)] or L+S [NFBAS(I,0)]?
 C       currently we use L+S, to use only L we should delete small Xhi
-C       after MAKE_DKH /5-Aug-2002 hjaaj
+C       after MAKE_H2C /5-Aug-2002 hjaaj
 
         CALL QTRANS('MOAO','S',D0,NFBAS(I,0),NFBAS(I,0),
      &               NESH(I),NESH(I),
@@ -5195,60 +5196,7 @@ C  ======== End of handling Fock-Dirac 2c =========
 
 C      ... this option does not matter....
       DOJACOBI = .FALSE.
-
       CALL LOWD2C(VMAT,IPRINT)
-
-C     ... for the linear symmetry ADAPT the Lowdin matrix !
-C      ... the proper setting for the 2c mode is needed !
-C   ... when we have Fock-Dirac matrix SCF in linear symmetry, we need
-C      the H2c in LINSYM_MO basis !!!
-C   ... in the spin-free mode do not do the linear adaptation !
-      IF (LINEAR.AND..NOT.SPFR) THEN
-       NSYM = 4/NZ                                               
-       DO I=1,NFSYM                     
-        NPSHX(I) = NPSH(I)
-        NPSH(I) = 0   
-        NORB(I) = NESH(I) + NPSH(I)                               
-        DO ISYM = 1, NSYM                                         
-         NBORBX(ISYM,I,2) =  NBORB(ISYM,I,2)                  
-         NBORB(ISYM,I,2) = 0                                     
-         NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)     
-        ENDDO                                                     
-       ENDDO            
-       CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
-       CALL DCOPY(N2BBASX,TMAT,1,VMAT,1)
-       DO I=1,NFSYM                     
-         NPSH(I) = NPSHX(I)
-         NORB(I) = NESH(I) + NPSH(I)                               
-         DO ISYM = 1, NSYM                                         
-           NBORB(ISYM,I,2) =  NBORBX(ISYM,I,2)               
-           NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)     
-         ENDDO                                       
-       ENDDO  
-
-       IF (IPRINT.GE.6) THEN
-        CALL HEADER(
-     &'CMP_EIGVAL: Total Lowdin 2c_matrix AFTER LINEAR adaptation',-1)
-        IVMAT=1
-        DO I=1, NFSYM
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(VMAT(IVMAT),
-     &        NFBAS(I,0),NFORB(I,0),NFBAS(I,0),NFORB(I,0),
-     &        1,IPQTOQ(1,0),LUPRI)
-          IVMAT = IVMAT + NFBAS(I,0)*NFORB(I,0)
-        ENDDO
-       ENDIF
-C .... write the 2c-adapted lin-sym adapted Lowdin matrix into the file
-       CALL W2BSSMAT(1,.TRUE.,'VMAT2C_L','CMP_EIGVAL',
-     &              VMAT,N2BBASX,LUBSS,IPRINT)
-       IF (IPRINT.GE.3) THEN
-         WRITE(LUPRI,'(/2X,A)')
-     &  'CMP_EIGVAL: 2c LinSym adapted Lowdin matrix, VMAT2C_L,'//
-     &  ' was written to the BSSMAT file, EOFLABEL was renewed.'
-       ENDIF
-      ENDIF
-
 C ... read H_2c/FD_2c in SA-AO basis into TBUF
       IF (WRITEH2C) THEN
 C      ... transformed 1 electron Dirac Hamiltonian
@@ -7862,7 +7810,7 @@ C
 C    PURPOSE: Read the H2c_AO integrals, which are in the BSSMAT file 
 C             and rewrite them packed into the LL-matrix under a new label
 C
-C    Called from: MAKE_DKH
+C    Called from: MAKE_H2C
 C
 C    On input:  I2COFK - determines which label from BSSMAT to be read
 C               HMAT - empty field (N2BBASXQ) to be utilized 
@@ -8837,8 +8785,6 @@ C  ==================================================
 
 C     ... when you have integrals, compare them..
 C        ... release memmory...
-      CALL MEMREL('KSOZ',WORK,KWORK,KSOZ,KFREE,LFREE)
-      CALL MEMREL('KSOY',WORK,KWORK,KSOY,KFREE,LFREE)
       CALL MEMREL('KSOX',WORK,KWORK,KSOX,KFREE,LFREE)
 
       ENDIF ! of NOAMFC

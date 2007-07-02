@@ -3699,8 +3699,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Bcktr2 */
-      SUBROUTINE BCKTR2(IFRP,IUNIT,COFT,COFU,EIG,
-     &                  TMAT,IBUF,BUF,EBUF,IPRINT)
+      SUBROUTINE BCKTR2(IFRP,IUNIT,COFT,COFU,EIG,IBEIG,
+     &                  TMAT,IBUF,BUF,EBUF,IBBUF,IPRINT)
 C***********************************************************************
 C
 C     Backtransform coefficients and insert the frozen orbitals
@@ -3710,8 +3710,8 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-      DIMENSION COFT(*),COFU(*),EIG(*),TMAT(*),
-     &          BUF(*),EBUF(*),IBUF(*)
+      DIMENSION COFT(*),COFU(*),EIG(*),IBEIG(*),TMAT(*),
+     &          BUF(*),EBUF(*),IBBUF(*),IBUF(*)
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
@@ -3736,6 +3736,7 @@ C
       JOFT = 1
       JOFU = 1
       CALL DCOPY(NTMO(IFRP),EIG,1,EBUF,1)        
+      CALL ICOPY(NTMO(IFRP),IBEIG,1,IBBUF,1)        
       DO IFO=1,NFRO(IFRP)
         JFRO = IBUF(IFO)
         JEND = JFRO-1
@@ -3748,6 +3749,7 @@ C       Backtransform coefficients inbetween
      &                NTMO(IFRP),NZ,NVEC,JOFU,NFBAS(IFRP,0),
      &                TMAT,NFBAS(IFRP,0),NTMO(IFRP),NZT,0)
           CALL DCOPY(NVEC,EBUF(JOFU),1,EIG(JOFT),1)
+          CALL ICOPY(NVEC,IBBUF(JOFU),1,IBEIG(JOFT),1)
           JOFU = JOFU+NVEC
           JOFT = JOFT+NVEC
         ENDIF
@@ -3760,7 +3762,7 @@ C       Insert frozen orbital
           IB = IB + NFBAS(IFRP,0)
           IC = IC + NOFF
         ENDDO
-        READ(IUNIT) EIG(JFRO)
+        READ(IUNIT) EIG(JFRO),IBEIG(JFRO)
         JOFT = JOFT + 1
       ENDDO
 C
@@ -3774,6 +3776,7 @@ C
      &                NTMO(IFRP),NZ,NVEC,JOFU,NFBAS(IFRP,0),
      &                TMAT,NFBAS(IFRP,0),NTMO(IFRP),NZT,0)
         CALL DCOPY(NVEC,EBUF(JOFU),1,EIG(JOFT),1)
+        CALL ICOPY(NVEC,IBBUF(JOFU),1,IBEIG(JOFT),1)
       ENDIF
 C
       IF(IPRINT.GE.IBPRNT) THEN

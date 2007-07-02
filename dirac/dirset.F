@@ -118,14 +118,18 @@ C
 C     Generate MO-transformation matrix and write to file
 C     ===================================================
 C
-CMI ... in this case do not run 2-component calculations in GMOTRA/MAKE_DKH
+C
+C     DO4C2C=T : after 4c SCF perform IOTC transformation
+C     DO2C4C=T : jump to 4c level after some 2c SCF iterations
+C
+CMI ... in this case do not run 2-component calculations in GMOTRA/MAKE_H2C
 CTROND      IF (BSS.AND.DO4C2C.AND..NOT.DO2C4C) BSS=.FALSE.
       CALL GMOTRA(WORK,LWORK)
 C
 C     Use supersymmetry for linear molecules
 C     ======================================
 C
-      IF (LINEAR) CALL GLINSM(WORK,LWORK)
+CTROND      IF (LINEAR) CALL GLINSM(WORK,LWORK)
 C
 C     Write orbital output to DFTMAT
 C     ==============================

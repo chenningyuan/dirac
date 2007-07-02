@@ -49,9 +49,10 @@
      &        N2EVECQ(2), I2EVECTQ(2), N2EVECTQ, NSMOTQ, ISMOQ(2),      &
      &        ITRSCF(0:15), NFMAT, ISYMOP(MFMAT), IFCKOP(MFMAT),        &
      &        IHRMOP(MFMAT), NEWOCC, MXMACRO, MXMICRO, MAXBCK, NFRAG,   &
-     &        NTMO(2), I2TMOT(2), N2TMOTQ, NISHMF(2),                   &
-     &        NACSHMF(2, MXOPEN), NASHMFT, NOCCMF(2), NPRJNUC(MFRAG),   &
-     &               MAXITR2, NMOFREEZE(2), IMOFREEZE(MXMOFREEZE)       
+     &        NTMO(2), I2TMOT(2), N2TMOTQ, NISHMF(2),NESHMF(2),         &
+     &        NACSHMF(2, MXOPEN), NASHMFT, NOCCMF(2), NPSHMF(2),        &
+     &        NPRJNUC(MFRAG),MAXITR2, NMOFREEZE(2),                     &
+     &        IMOFREEZE(MXMOFREEZE)       
 
       COMMON /DCIDHF/ NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS,     &
      &                NELMBM, INTDEF, INTDEF_SAVE, INTFLG, INTBUF,      &
@@ -59,8 +60,8 @@
      &                N2EVECTQ, NSMOTQ, ISMOQ, ITRSCF, NFMAT, ISYMOP,   &
      &                IFCKOP, IHRMOP, NEWOCC, MXMACRO, MXMICRO, MAXBCK, &
      &                NFRAG, NTMO, I2TMOT, N2TMOTQ, NISHMF, NACSHMF,    &
-     &                NASHMFT, NOCCMF, NPRJNUC, MAXITR2, NMOFREEZE,     &
-     &                IMOFREEZE                                         
+     &                NASHMFT, NOCCMF, NESHMF,NPSHMF,NPRJNUC, MAXITR2,  &
+     &                NMOFREEZE, IMOFREEZE                                         
 
 !..number of closed and open shell orbitals with frozen ones subtracted
 

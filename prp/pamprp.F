@@ -8078,7 +8078,7 @@ C             in DCBPRP and do the picture change
 C             transformation of most of them. Do not transform
 C             certain operators (overlap, connection matrixes...)
 C
-C    Called from: MAKE_DKH (if TWOCOMPBSS and DOPRP are true)
+C    Called from: MAKE_H2C (if TWOCOMPBSS and DOPRP are true)
 C
 C    On input:  
 C              VMAT - empty field (N2BBASXQ) to be utilized inside
