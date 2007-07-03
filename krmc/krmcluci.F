@@ -39,7 +39,7 @@ C DATE    : $Date$
 C FILE    : krmcluci.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCI_TRACOM(CIRUN)
+      SUBROUTINE LUCI_TRACOM(CIRUN,I_COMM_W_ND)
 C***********************************************************************
 C
 C     Transfer information from DIRAC/KRMC to LUCIAREL
@@ -64,9 +64,21 @@ C      Changed energy convergence threshold (THRES_E) to 0.5D-5
 C          (complex case) and 1.0D-10 (real case).
 C                               T. Fleig         - Oct 09, 2006
 C
+C      Parallel adpation for MASTER / NODES
+C      according to I_COMM_W_ND ( 0 or 1 ) MASTER communicates with
+C      NODES 
+C                               S. Knecht        - Apr 17, 2007
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+C
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "../luciarel/lucipar_rel.inc"
 C
 #include "pgroup.h"
 #include "dgroup.h"
@@ -87,6 +99,12 @@ C
       CHARACTER*6 CIRUN
       CHARACTER*72 TITLEC(3)
 C
+C     say hello: MASTER and NODES
+C
+CSK      WRITE(6,*) 'I am here in LUCI_TRACOM with CIRUN and flag',MYPROC,
+CSK     & CIRUN,I_COMM_W_ND
+C
+C
 C***********************
 C  Mandatory settings
 C***********************
@@ -97,6 +115,15 @@ C 1:  TITLE
       TITLEC(3) = ' --------------------------- '
 C
 C 2:  Double group
+C
+#if defined (VAR_MPI)
+C
+      IF( I_COMM_W_ND .eq. 1 ) THEN
+        CALL MPI_BCAST(GROUP,3,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
+      END IF
+C
+#endif
+C
       IF (GROUP.eq.'C1 ') THEN
          PNTGRP = 5
          NIRREP = 2
@@ -137,17 +164,17 @@ C 2:  Double group
       NIRR_DG_LOC = NIRREP
 C
 C 18: Reference symmetry
-      CALL LUCI_TRAVA(CIRUN,'IREFSM',IREFSM,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'IREFSM',IREFSM,DUMMY,I_COMM_W_ND)
 C
 C 19: Roots to be obtained
-      CALL LUCI_TRAVA(CIRUN,'ROOTCI',NROOT,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'ROOTCI',NROOT,DUMMY,I_COMM_W_ND)
 C
       DO IRT = 1,NROOT
          IROOT(IRT) = IRT
       END DO
 C
 C 23: Restart option
-      CALL LUCI_TRAVA(CIRUN,'IRESTR',IRESTR,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'IRESTR',IRESTR,DUMMY,I_COMM_W_ND)
 C
 C 24: Integral environment
       INTIMP = 7
@@ -161,7 +188,7 @@ C     FIXME: The following rescaling should be adapted to the
 C            new (when implemented) print flag system in the
 C            KRMC! The current is for interface debugging only.
 C            Timo
-      CALL LUCI_TRAVA(CIRUN,'IPROPT',IPROPT,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'IPROPT',IPROPT,DUMMY,I_COMM_W_ND)
       IF (IPROPT.EQ.1) THEN
          IPRSTR = 0 * IPROPT
          IPRCIX = 0 * IPROPT
@@ -187,7 +214,7 @@ C            Timo
       END IF
 C
 C 33: Maximum number of CI vectors
-      CALL LUCI_TRAVA(CIRUN,'MXCIV ',MXCIV,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'MXCIV ',MXCIV,DUMMY,I_COMM_W_ND)
 C
 C 34: CI storage mode
       ICISTR = 3
@@ -196,21 +223,21 @@ C 35: Using determinants
       NOCSF = 1
 C
 C 37: No integrals (we use this to calculate just #determinants)
-      CALL LUCI_TRAVA(CIRUN,'NOINT ',NOINT,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'NOINT ',NOINT,DUMMY,I_COMM_W_ND)
 C
 C 39: Dimension of resolution matrices (used in SIGDEN_REL3)
       MXINKA = 50
 C
 C 46: Core energy from DIRAC
-      CALL LUCI_TRAVA(CIRUN,'ECORE ',IDUMMY,ECORE)
+      CALL LUCI_TRAVA(CIRUN,'ECORE ',IDUMMY,ECORE,I_COMM_W_ND)
 C
 C 50-51: GAS shells and constraints.
       IDOGAS = 1
       NCISPC = 1
       NCMBSPC = NCISPC
-      CALL LUCI_TRAVA(CIRUN,'NGAS  ',NGAS,DUMMY)
-      CALL LUCI_TRAVA(CIRUN,'GASSH ',NGSSH,DUMMY)
-      CALL LUCI_TRAVA(CIRUN,'GASSPC',IGSOCCX,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'NGAS  ',NGAS,DUMMY,I_COMM_W_ND)
+      CALL LUCI_TRAVA(CIRUN,'GASSH ',NGSSH,DUMMY,I_COMM_W_ND)
+      CALL LUCI_TRAVA(CIRUN,'GASSPC',IGSOCCX,DUMMY,I_COMM_W_ND)
 C
 C 53: Energy convergence threshold
       IF (NZ.EQ.1) THEN
@@ -221,7 +248,7 @@ C 53: Energy convergence threshold
 C
 C 54: Sequence of CI calculations (here one!)
       NSEQCI(1) = 1
-      CALL LUCI_TRAVA(CIRUN,'MAXIT ',ISEQCI(1,1),DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'MAXIT ',ISEQCI(1,1),DUMMY,I_COMM_W_ND)
 C
 C 62: No combinations of degenerate initial vectors
       INIDEG = 0
@@ -231,7 +258,7 @@ C     LCSBLK = 40 000 000
 C Now calculated and set in LCISPC_REL (ciinfo_r.F)
 C
 C 74: Density matrices requested
-      CALL LUCI_TRAVA(CIRUN,'DENSI ',IDENSI,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'DENSI ',IDENSI,DUMMY,I_COMM_W_ND)
 C
 C 81: Double group CI
       IDBGCI = 1
@@ -240,8 +267,8 @@ C 82: Relativistic CI
       IRELACI = 1
 C
 C 83: Type of operator wrt. relativity
-      CALL LUCI_TRAVA(CIRUN,'IROP1 ',ISO1,DUMMY)
-      CALL LUCI_TRAVA(CIRUN,'IROP2 ',ISO2,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'IROP1 ',ISO1,DUMMY,I_COMM_W_ND)
+      CALL LUCI_TRAVA(CIRUN,'IROP2 ',ISO2,DUMMY,I_COMM_W_ND)
       IF (ISO1.EQ.0.AND.ISO2.EQ.0) THEN
          ISPINFREE = 1
       ELSE
@@ -249,11 +276,11 @@ C 83: Type of operator wrt. relativity
       END IF
 C
 C 84: Reference value for two times M_K projection
-      CALL LUCI_TRAVA(CIRUN,'MK2REF',MK2REF,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'MK2REF',MK2REF,DUMMY,I_COMM_W_ND)
 C
 C 85: Reference value for two times Delta M_K projection
 C     (coupling range)
-      CALL LUCI_TRAVA(CIRUN,'MK2DEL',MK2DEL,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'MK2DEL',MK2DEL,DUMMY,I_COMM_W_ND)
 C
 C 87: Initial spinor expansion type
       ISPEXP_INI = 3
@@ -276,7 +303,7 @@ C 92: Always two-particle (full) Hamiltonian
       IHAM12 = 2
 C
 C 95: Wave function analysis
-      CALL LUCI_TRAVA(CIRUN,'IPRWFC',IPRWFC,DUMMY)
+      CALL LUCI_TRAVA(CIRUN,'IPRWFC',IPRWFC,DUMMY,I_COMM_W_ND)
 C
 C***********************
 C  Default settings
@@ -342,20 +369,83 @@ C
 C 93: External Fock matrix always assumed. Specification not allowed
 C     in DIRAC environment.
       IFOCKEX = 0
+#if defined (VAR_MPI)
+C
+      IF( IFOCKEX .ne. 0 ) THEN
+        IF( I_COMM_W_ND .eq. 1 ) THEN
+          CALL MPI_BCAST(NORB_F,NSMSH,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+        END IF
+      END IF
+C
+#endif
 C
 C 94: No orbitals/spinors on external file.
       ORBFILE = .false.
 C
 C 97: Currently always SIGDEN route (excitation class formalism)
       SIGDEN_ROUTE = 'SIGDEN'
+CSKC
+CSKC 99: No broadcast of integral in parallel CI calculations?
+CSKC
+CSK      IIOMOD_REL = 0
+CSKC
+CSK      CALL LUCI_TRAVA(CIRUN,'PAR IO',IIOMOD_REL,DUMMY,I_COMM_W_ND)      
+CSKC
+C
+C 100: new definition of max. BATCH length
+C
+C
+C     still to come ...
+C
+CSK?      CALL LUCI_TRAVA(CIRUN,'MAXBLK',IMAXBLKSIZE,DUMMY,I_COMM_W_ND) 
+C
+C     ... therefore we use
+C
+      IMAXBLKSIZE = 100 000 000
+C
+      IMAXLBLKSZ = MAX(100 000,IMAXBLKSIZE)
+C
 C
 C     That's it, folks !!
+C
+C     ... except we are running a parallel calculation
+#if defined (VAR_MPI)
+C
+      IF( I_COMM_W_ND .eq. 1 ) THEN
+        IF( PNTGRP .ge. 2 .and. PNTGRP .le. 4 ) THEN
+          CALL MPI_BCAST(IREFML,1,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+        END IF
+        IF( PNTGRP .eq. 3 .or. PNTGRP .eq. 4 ) THEN
+          CALL MPI_BCAST(IREFPA,1,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+        END IF
+        IF( PNTGRP .eq. 4 ) THEN
+          CALL MPI_BCAST(IREFL,1,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+        END IF
+        IF(IDIAG.EQ.2) THEN
+          CALL MPI_BCAST(E_THRE,1,MPI_REAL8,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(C_THRE,1,MPI_REAL8,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+          IF(ICLSSEL.EQ.1) THEN
+            CALL MPI_BCAST(E_CONV,1,MPI_REAL8,MASTER,
+     &                     MPI_COMM_WORLD,IERR)
+            CALL MPI_BCAST(C_CONV,1,MPI_REAL8,MASTER,
+     &                     MPI_COMM_WORLD,IERR)
+          END IF
+        END IF
+      END IF 
+C
+#endif
 C
 C***********************
 C  Print section (only for testing purposes)
 C***********************
 C
-      IF (IPROPT.ge.1) then
+      IF ( IPROPT .ge. 1 .and. MYPROC .eq. MASTER ) then
 
       WRITE(LUPRI,*)
       WRITE(LUPRI,*) '******************'
@@ -884,21 +974,32 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCI_TRAVA(CIRUN,CTLSTR,IVAR,DVAR)
+      SUBROUTINE LUCI_TRAVA(CIRUN,CTLSTR,IVAR,DVAR,I_COMM_W_ND)
 C***********************************************************************
 C
 C     Translate a variable given as CTLSTR
 C     to output value IVAR
+C     MASTER communicates with NODES w.r.t. I_COMM_W_ND ( 0 or 1 )
 C
 C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision : Mar 14, 2001  T. Fleig (bugfix)
 C                     May 17, 2002  T. Fleig (ROOTCI added.)
 C                     May 27, 2002  T. Fleig (MXCIV added.)
 C                     Apr 03, 2003  T. Fleig (IRESTRK added.)
+C                     Apr 17, 2007  S. Knecht (Parallel adaption)
+C
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+C
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "../luciarel/lucipar_rel.inc"
+C
 #include "../luciarel/mxpdim.inc"
 C
 #include "mx2orb.h"
@@ -915,6 +1016,12 @@ C
 C     Set number of CI roots (for start guess only)
 C
       IF (CTLSTR.EQ.'ROOTCI') THEN
+C
+#if defined (VAR_MPI)
+       IF( I_COMM_W_ND .eq. 1 ) 
+     &   CALL MPI_BCAST(NCIROOT,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
          IVAR(1) = NCIROOT
          GOTO 100
       END IF
@@ -922,10 +1029,20 @@ C
 C     Set max. CI subspace dimension
 C
       IF (CTLSTR.EQ.'MXCIV ') THEN
+C
+#if defined (VAR_MPI)
+       IF( I_COMM_W_ND .eq. 1 ) 
+     &   CALL MPI_BCAST(MXCIV,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
          IF (MXCIV.EQ.0) THEN
             IVAR(1) = 3*NCIROOT
-            write(LUPRI,*)
-            write(LUPRI,'(A,I4)') '  Setting MXCIV to ',3*NCIROOT
+            IF( MYPROC .eq. MASTER .AND. I_COMM_W_ND .eq. 0 ) THEN 
+              write(LUPRI,'(A,I4)') '   Setting MXCIV to ',3*NCIROOT
+            ELSE IF( MYPROC .ne. MASTER ) THEN
+              write(MSLVOUT_REL,'(A,I4)') 
+     &'   Setting MXCIV to ',3*NCIROOT
+            END IF
          ELSE
             IVAR(1) = MXCIV
          END IF
@@ -935,6 +1052,12 @@ C
 C     Set CI reference symmetry
 C
       IF (CTLSTR.EQ.'IREFSM') THEN
+C
+#if defined (VAR_MPI)
+       IF( I_COMM_W_ND .eq. 1 ) 
+     &   CALL MPI_BCAST(IOPT_SYMMETRY,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
          IVAR(1) = IOPT_SYMMETRY
          GOTO 100
       END IF
@@ -942,6 +1065,12 @@ C
 C     Set CI restart variable
 C
       IF (CTLSTR .EQ. 'IRESTR') THEN
+C
+#if defined (VAR_MPI)
+       IF( I_COMM_W_ND .eq. 1 ) 
+     &   CALL MPI_BCAST(IRESTRK,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
 C
 C        LUCIAREL  start on CI vectors?
 C
@@ -976,6 +1105,11 @@ C
 C     Core energy
 C
       IF (CTLSTR .EQ. 'ECORE ') THEN
+C
+#if defined (VAR_MPI)
+       IF( I_COMM_W_ND .eq. 1 ) 
+     &   CALL MPI_BCAST(EMY,1,MPI_REAL8,MASTER,MPI_COMM_WORLD,IERR)
+#endif
          DVAR(1) = EMY
          GOTO 100
       END IF
@@ -983,6 +1117,12 @@ C
 C     #GAS shells.
 C
       IF (CTLSTR .EQ. 'NGAS  ') THEN
+C
+#if defined (VAR_MPI)
+       IF( I_COMM_W_ND .eq. 1 ) 
+     &   CALL MPI_BCAST(NGAS,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
          IVAR(1) = NGAS
 C
 C        Also check max dimension same in krmc and luciarel
@@ -1003,8 +1143,35 @@ C     GAS shells.
 C
       IF (CTLSTR .EQ. 'GASSH ') THEN
 C
+#if defined (VAR_MPI)
+        IF( I_COMM_W_ND .eq. 1 ) THEN
+          CALL MPI_BCAST(OPT_UCIBOS,1,MPI_LOGICAL,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+C?          CALL MPI_BCAST(NGSH,NFSYM*NGAS,my_MPI_INTEGER,MASTER,
+          CALL MPI_BCAST(NGSH,2*MXPNGAS,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(IORB,NFSYM,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(NPSH,NFSYM,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(NISH,NFSYM,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(NASH,NFSYM,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+C        FIXME: MAXORB might be to much, find min(bcast length) !!! sk
+          CALL MPI_BCAST(IBOSYM,MAXORB,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+        END IF
+#endif
+C
          IF (IPROPT .GE. 3) THEN
-            WRITE(LUPRI,'(/,1X,A)') '(LUCI_TRAVA) Dirac GAS shells: '
+           IF( I_COMM_W_ND .eq. 1 .and. MYPROC .le. MASTER + 1 ) THEN 
+             WRITE(LUPRI,'(/,1X,A,I4)') '(LUCI_TRAVA) Dirac 
+     & GAS shells: ',MYPROC
             DO I = 1, NGAS
                WRITE(LUPRI,'(1X,A,I3,4X,2I4)')
      &              'GAS shell ',I,(NGSH(J,I),J=1,NFSYM)
@@ -1018,6 +1185,7 @@ C
      &              (IBOSYM(IORB(I)+NPSH(I)+NISH(I)+J),J=1,NASH(I))
                END DO
             END IF
+           END IF
          END IF
 C
 C        Erase IVAR first
@@ -1044,8 +1212,17 @@ C    FIXME: This is hardwired now to be irrep number 3.
 C           Should be made flexible later on to account for
 C           different symmetry generator setup.
             if (CIRUN.eq.'CIINII') then
-            write(lupri,*) 'WARNING FIXME: IBOSYM hardwired to irrep 3'
-            write(lupri,*) 'You have problems if irrep 3 not ungerade!!'
+             if( myproc .eq. master .and. i_comm_w_nd .eq. 1) then
+               write(lupri,*) 'WARNING FIXME: IBOSYM hardwired 
+     & to irrep 3'
+               write(lupri,*) 'You have problems if irrep 3 
+     & not ungerade!!'
+             else
+               write(MSLVOUT_REL,*) 'WARNING FIXME: IBOSYM hardwired 
+     & to irrep 3'
+               write(MSLVOUT_REL,*) 'You have problems if irrep 3 
+     & not ungerade!!'
+             end if
             end if
                   IBOSYMI = IFSYM
                END IF
@@ -1077,6 +1254,13 @@ C     GAS space constraints.
 C
       IF (CTLSTR .EQ. 'GASSPC') THEN
 C
+#if defined (VAR_MPI)
+       IF( I_COMM_W_ND .eq. 1 ) 
+C?     &   CALL MPI_BCAST(NGSP,2*NGAS,my_MPI_INTEGER,MASTER,
+     &   CALL MPI_BCAST(NGSP,2*MXPNGAS,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
+C
 C        Put in the GAS spaces:
 C
          DO I = 1, NGAS
@@ -1090,9 +1274,15 @@ C
 C     Number of CI iterations
 C
       IF (CTLSTR .EQ. 'MAXIT ') THEN
-         IF (CIRUN .EQ. 'SIGMA '.or.CIRUN.eq.'SIGMAD') THEN
+         IF ( CIRUN .eq. 'SIGMA '.or. CIRUN .eq. 'SIGMAD' ) THEN
             IVAR(1) = 1
          ELSE IF (CIRUN .EQ. 'CIINII') THEN
+C
+#if defined (VAR_MPI)
+           IF( I_COMM_W_ND .eq. 1 ) 
+     &       CALL MPI_BCAST(MAXCIT,1,my_MPI_INTEGER,MASTER,
+     &                      MPI_COMM_WORLD,IERR)
+#endif
             IVAR(1) = MAXCIT
          ELSE
             IVAR(1) = 1
@@ -1120,6 +1310,15 @@ C
 C     Relativistic 1-el. operator?
 C
       IF (CTLSTR .EQ. 'IROP1 ') THEN
+C
+#if defined (VAR_MPI)
+        IF( I_COMM_W_ND .eq. 1 ) THEN 
+          CALL MPI_BCAST(SPINFR,1,MPI_LOGICAL,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(LEVYLE,1,MPI_LOGICAL,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+        END IF
+#endif
          IF (SPINFR.OR.LEVYLE) THEN
             IVAR(1) = 0
          ELSE
@@ -1142,6 +1341,12 @@ C
 C     Reference value for 2*M_K
 C
       IF (CTLSTR .EQ. 'MK2REF') THEN
+C
+#if defined (VAR_MPI)
+       IF( I_COMM_W_ND .eq. 1 ) 
+     &   CALL MPI_BCAST(MK2REF,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
          IVAR(1) = MK2REF
          GOTO 100
       END IF
@@ -1149,6 +1354,12 @@ C
 C     Reference value for 2*DeltaM_K
 C
       IF (CTLSTR .EQ. 'MK2DEL') THEN
+C
+#if defined (VAR_MPI)
+       IF( I_COMM_W_ND .eq. 1 ) 
+     &   CALL MPI_BCAST(MK2DEL,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
          IF ((.not.SPINFR).and.(.not.LEVYLE).and.MK2DEL.eq.0) THEN
            WRITE(6,*) 'Spin-dependent calculation and MK2DEL = 0.'
            WRITE(6,*) 'This is not allowed.'
@@ -1177,6 +1388,18 @@ C
          IVAR(1) = IPROPT
          GOTO 100
       END IF
+CSKC
+CSKC     I/O mode (parallel case)
+CSKC
+CSK      IF (CTLSTR .EQ. 'PAR IO') THEN
+CSK#if defined (VAR_MPI)
+CSK       IF( I_COMM_W_ND .eq. 1 )
+CSK     &   CALL MPI_BCAST(IDOPARIO,1,my_MPI_INTEGER,MASTER,
+CSK     &                  MPI_COMM_WORLD,IERR)
+CSK#endif
+CSK        IVAR(1) = IDOPARIO
+CSK        GOTO 100
+CSK      END IF
 C
       WRITE(LUPRI,'(1X,2A)')
      &   '*** ERROR in LUCI_TRAVA *** Illegal keyword : ',CTLSTR
@@ -1237,6 +1460,7 @@ C***********************************************************************
 *
 C***********************************************************************
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #include "mpif.h"
@@ -1263,13 +1487,35 @@ C
 C     communicate necessary information with slaves ...
 C
 #if defined (VAR_MPI)
-      CALL SYNC_NODES_REL_DRV(ECORE_KRMC,CIRUN,6)
+C
+      CALL SYNC_NODES_REL_P1(ECORE_KRMC,CIRUN,LUPRI)
+C
+      IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'SIGMA ' .or.
+     &    CIRUN .eq. 'SIGMAD') THEN
+C
+        CALL SYNC_NODES_REL_P2(F1,F2,CIRUN)
+C
+      END IF
+C
+C     Transfer data to LUCIAREL common blocks (only for NODES) 
+C     --> communication is enabled.
+C
+      CALL LUCI_TRACOM(CIRUN,1)
+C
 #endif
+C
+C     Transfer correct output file handle to common block
+C
+      LUWRT = LUPRI
 C
 C     Enter the generic LUCIAREL routine 
 C     (master becomes now somewhat like primus inter parens)
 C
       CALL KRMC_LUCI2(F1,F2,WRK,LWRK,ECORE_KRMC,CIRUN)
+C
+C     close files ...
+C
+CSK?      CALL LUCI_CLOSEDOWN()
 C
 C     Return the slaves to the general menu routine.
 C
@@ -1297,8 +1543,11 @@ C***********************************************************************
 *                          Timo Fleig + Jeppe Olsen
 *                          1995 - 1999
 *
-*  Simplified and modified from luciarel.f
-*  Execute task given by task parameter CIRUN
+* parallel adaption, Stefan Knecht, April 2007 - ?
+*                  
+*
+* Simplified and modified from luciarel.f
+* Execute task given by task parameter CIRUN
 *
 C***********************************************************************
 *
@@ -1310,6 +1559,7 @@ C***********************************************************************
 #include "dcbbos.h"
 *.Memory
 #include "../luciarel/wrkspc.inc"
+#include "../luciarel/ipoist8.inc"
 *.File numbers
 #include "../luciarel/clunit.inc"
 *.Print flags
@@ -1326,9 +1576,8 @@ C***********************************************************************
 #include "../luciarel/picasso.inc"
 CTF
       character*6 CIRUN
-#if defined (IA64) || defined (INT_STAR8)
-      integer*8 KBASE
-#endif
+      CHARACTER*72 MACHINENAME
+      INTEGER NAMELENGTH
       logical MCSCF
 CTF  global reference values for Z_BLKFO needed in MV7 !!
       common/glbref/ISPC,ISM,ITERGLB
@@ -1350,6 +1599,10 @@ CTF  global reference values for Z_BLKFO needed in MV7 !!
 ********************************************
       CALL QENTER('LUCIAR')
 C
+C
+C??      WRITE(LUWRT,*) 'TEST from KRMC_LUCI2',MYPROC
+C
+C
 C     Compute offset from WRK to WORK
 C
       CALL COMPOFF(WRK,WORK,KBASE)
@@ -1358,12 +1611,12 @@ C 64 bit:  *kbase = (long) (wrk-work+1);
 C
       WORK(KBASE) = 9991.
       IF ((WRK(1).NE.9991.).AND.(CIRUN.EQ.'CIINII')) THEN
-        write(6,*) ' WARNING from KRMC_LUCI:'
-        WRITE(6,'(A,3X,I22)')     '      KBASE  = ',KBASE
-        WRITE(6,'(A,3X,1F22.16)') ' WORK(KBASE) = ',WORK(KBASE)
-        WRITE(6,'(A,3X,1F22.16)') ' WRK(1)      = ',WRK(1)
-        write(6,*) ' Absolute memory addresses do not match.'
-        write(6,*) ' Continuing.'
+        write(LUWRT,*) ' WARNING from KRMC_LUCI:'
+        WRITE(LUWRT,'(A,3X,I22)')     '      KBASE  = ',KBASE
+        WRITE(LUWRT,'(A,3X,1F22.16)') ' WORK(KBASE) = ',WORK(KBASE)
+        WRITE(LUWRT,'(A,3X,1F22.16)') ' WRK(1)      = ',WRK(1)
+        write(LUWRT,*) ' Absolute memory addresses do not match.'
+        write(LUWRT,*) ' Continuing.'
 c       CALL QUIT('Memory addressing error in KRMCLUCI')
       END IF
 *
@@ -1375,35 +1628,110 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
       IMEMCK = 0
       MCSCF = .true.
 *
-*. Internal string information (stored in WORK, bases in /STRBAS/)
+*     debugging print for parallel runs -- control from outside?
+*
+      NPTEST_VAR = 0
+*
+*.    Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS_REL(WORK(1),IPRSTR)
+*
+*.    Internal subspaces
+      CALL LCISPC_REL(LCSBLK,IPRCIX)
 *
 ******************************************
       if (CIRUN.eq.'RSTRMC') then
         ISPC = 1
         CALL Z_BLKFO_REL(IDC,NMS2VAL,ISPC,IREFSM,KPCLBT,KPCLEBT,
      &                   KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
-     &                   NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
+     &                   NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2,-1,0,
+     &                   IDUMMY)
         CALL QEXIT('LUCIAR')
         RETURN
       end if
 ******************************************
       if (IMEMCK.gt.0) then
-        write(6,*) ' Memory map after STRINF_GAS_REL'
+        write(LUWRT,*) ' Memory map after STRINF_GAS_REL'
         IDUM = 0
         call memmar(IDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
       end if
-*
-*. Internal subspaces
-      CALL LCISPC_REL(LCSBLK,IPRCIX)
 *
 *******************************************
       if (CIRUN.ne.'NDET  ') then
 *******************************************
 *
+*.      setting up groups of processors (stored in /LUCIPARREL/)
+*
+        CALL MEMMAR(IDUM,IDUM,'MARK ',IDUM,'GROUPL')
+*
+        CALL MEMMAR(KPROCLIST,NMPROC,'ADDS  ',1,'IHOSTL')
+        CALL MEMMAR(KGROUPLIST,NMPROC,'ADDS  ',1,'IHOST2')
+        CALL MEMMAR(KPROCLENGTH,NMPROC,'ADDS  ',1,'INAMEL')
+*
+        CALL ISETVC(WORK(KPROCLIST),-1,NMPROC)
+        CALL ISETVC(WORK(KGROUPLIST),-1,NMPROC)
+        CALL ISETVC(WORK(KPROCLENGTH),-1,NMPROC)
+*       initialize number of process groups sharing a c-vector file
+        NFLGRPS_REL = 0
+*
+#if defined (VAR_MPI)
+*
+*       hardwired to 1
+*
+        IPARALLELIO = 1
+*
+#if defined (SYS_LOCALDISKS)
+*       checking only if parallel file I/O in general is requested
+        IF( IPARALLELIO .eq. 1 ) THEN
+*  
+            NAMELENGTH = 0
+*
+            CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+*
+            CALL FIND_GROUP_OF_PROCS_REL(MACHINENAME,NAMELENGTH,
+     &                               WORK(KPROCLIST),WORK(KPROCLENGTH))
+*
+*           number of groups sharing a file ( = NFLGRPS ) is determined
+*           in the subroutine above. If there is only one group
+*           than we can simulate a shared filesystem.
+      END IF
+#else
+*       in case of a parallel filesystem, we should use it
+        IF( IPARALLELIO .ge. 0 ) THEN
+          NFLGRPS = 1
+          CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+*         enable parallel I/O mode!!!
+          IPARALLELIO = 1
+        END IF
+#endif /* ifdef SYS_LOCALDISKS */
+*
+*       set-up all useful MPI stuff: communication groups, MPI-files ...
+*                                    all important variables are stored on 
+*                                    common block /LUPARGROUP/
+*
+*       construct new communication groups
+        CALL GROUP_CONSTRUCTOR_REL(WORK(KGROUPLIST),WORK(KPROCLIST))
+*
+        IF( NPTESTVAR .ge. 20 ) THEN
+          WRITE(LUWRT,*) 'this is my old and new rank ',myproc,MYNEW_ID
+          WRITE(LUWRT,*) 'this is my grouplist:'
+          CALL IWRTMAMN(WORK(KGROUPLIST),1,NMPROC,1,NMPROC,LUWRT)
+          WRITE(LUWRT,*) 'this is my proclist:'
+          CALL IWRTMAMN(WORK(KPROCLIST),1,NMPROC,1,NMPROC,LUWRT)
+        END IF
+*
+*       open the files for parallel file I/O
+*
+        CALL SETUNITS_PAR_OPEN_REL(MY_GROUPN)
+*
+#else
+        CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+        NFLGRPS_REL = 0
+#endif
+*
 *. Allocate work space, general
 *   (position changed as not required for TASK = NDET)
         CALL ALLOC_REL
+*
 *
 * IDGSTYP determines the integral classes and corresponding operator
 *         classes depending on the double group in use.
@@ -1435,12 +1763,12 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
             else if (IDGSTYP.eq.3) then
               IHTYPE = 5
             else
-              write(6,*) 'Unallowed value of IDGSTYP : ',IDGSTYP
+              write(LUWRT,*) 'Unallowed value of IDGSTYP : ',IDGSTYP
               stop 'Quitting.'
             end if
           else
-            write(6,*) 'Setting of ISO1,ISO2 not allowed.'
-            write(6,*) 'ISO1,ISO2 : ',ISO1,ISO2
+            write(LUWRT,*) 'Setting of ISO1,ISO2 not allowed.'
+            write(LUWRT,*) 'ISO1,ISO2 : ',ISO1,ISO2
             call abend2('Quitting.')
           end if
           ISYM_T = 1
@@ -1452,7 +1780,7 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
         IF(PNTGRP.GT.1.and.PNTGRP.lt.5)
      &             CALL MLSM_REL(IREFSM,IREFPA,IREFSM,'CI',1)
         IF(NOINT.EQ.1) THEN
-          WRITE(6,*) ' End of calculation without integrals'
+          WRITE(LUWRT,*) ' End of calculation without integrals'
           CALL QEXIT('LUCIAR')
           RETURN
         END IF
@@ -1467,7 +1795,7 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
           IF(NOINT.EQ.0.and.INATIT.eq.1) THEN
             CALL INTIM_REL(IPRTRA)
           ELSE
-            WRITE(6,*)
+            WRITE(LUWRT,*)
      &        ' No integrals imported (or > 1st NS iteration) '
           END IF
 *
@@ -1493,8 +1821,8 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
           IRESTR_ORIG=IRESTR
           IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0) THEN
 *
-            write(6,*) 'THIS ROUTE IS STILL FORBIDDEN !!'
-            write(6,'(A16,I2,1F3.1)')
+            write(LUWRT,*) 'THIS ROUTE IS STILL FORBIDDEN !!'
+            write(LUWRT,'(A16,I2,1F3.1)')
      &            'IRESTR,XLAMBDA =',IRESTR,XLAMBDA
             Call Abend2( 'Quitting.' )
 *
@@ -1509,21 +1837,21 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
 *. Perform GASCI/GASPT calculation for internal space ICISPC
 *
             if (NTEST.ge.1) then
-              WRITE(6,*)
-              WRITE(6,'(A)')
+              WRITE(LUWRT,*)
+              WRITE(LUWRT,'(A)')
      &        ' =============================================='
-              WRITE(6,'(A,I3)')
+              WRITE(LUWRT,'(A,I3)')
      &        ' Information on calculations in space ', JCMBSPC
-              WRITE(6,'(A)')
+              WRITE(LUWRT,'(A)')
      &        ' =============================================='
-              WRITE(6,*)
-              WRITE(6,'(A,I3)')
+              WRITE(LUWRT,*)
+              WRITE(LUWRT,'(A,I3)')
      &        ' Number of calculation in this CI space ',
      &          NSEQCI(JCMBSPC)
             end if
 *
             IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0.AND.JCMBSPC.EQ.1) THEN
-              WRITE(6,*)
+              WRITE(LUWRT,*)
      &              ' Remember No restart in calc 1 (Lambda calc)'
               IRESTR = 0
               Call Abend2( 'Quitting.' )
@@ -1531,20 +1859,20 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
 *
             I_EXPAND = 1
             IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.GT.1) THEN
-              WRITE(6,*) ' =================================='
-              WRITE(6,*) '   Modified operator will be used'
-              WRITE(6,*) ' =================================='
+              WRITE(LUWRT,*) ' =================================='
+              WRITE(LUWRT,*) '   Modified operator will be used'
+              WRITE(LUWRT,*) ' =================================='
               IF(JCMBSPC.EQ.2) THEN
 *. Modify the operator
-                WRITE(6,*) ' Operator will be modified '
-                WRITE(6,*) ' This route is still forbidden! '
+                WRITE(LUWRT,*) ' Operator will be modified '
+                WRITE(LUWRT,*) ' This route is still forbidden! '
                 Call Abend2( 'Quitting.' )
               END IF
             END IF
             IF(JCMBSPC.EQ.2.AND.IRESTR_ORIG.EQ.1
      &                     .AND.XLAMBDA.NE.1.0D0)  THEN
-              WRITE(6,*) ' Restart vectors will be copied to LUC'
-              WRITE(6,*)
+              WRITE(LUWRT,*) ' Restart vectors will be copied to LUC'
+              WRITE(LUWRT,*)
      &              ' CI will restart with vectors from prev. calc'
               IF(ICISTR.EQ.1) THEN
                 LBLK = XISPSM(IREFSM,2)
@@ -1588,7 +1916,7 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
                 ELSE
                   LBLK = -1
                 END IF
-                WRITE(6,*) ' LBLK = ', LBLK
+                WRITE(LUWRT,*) ' LBLK = ', LBLK
                 CALL EXPCIV_REL(IREFSM,ISTOSPC,LUIN,JCMBSPC,LUOUT,
      &                          LBLK,LUSC2,
      &                          NROOT,1,IDC,IPRDIA)
@@ -1604,7 +1932,7 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
                 IF(JSEQ.EQ.1.AND.JCMBSPC.EQ.2.AND.IRST2.EQ.0) THEN
 *. No restart from previous vectors - IRST2 has been set to zero
                   IRESTR = 0
-                  WRITE(6,*) ' No restart from previous vectors'
+                  WRITE(LUWRT,*) ' No restart from previous vectors'
                 END IF
 *. Good old normal CI !!!!
 *. do CI in space JCMBPSC
@@ -1618,7 +1946,8 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
 *
                 CALL GASCI_REL(F1,F2,
      &                         INTSPACE,IREFSM,JCMBSPC,IPRDIA,
-     &                         EREF,ECORE_KRMC,CIRUN)
+     &                         EREF,ECORE_KRMC,CIRUN,
+     &                         WORK(KPROCLIST),WORK(KGROUPLIST))
 *
 *=============================================================
 *
@@ -1637,6 +1966,19 @@ c           CALL FINMO_REL
           end if
         end do
 *       ^ End loop over natural spinor iterations (default=1)
+*
+*       release memory
+*
+        CALL MEMMAR(IDUM,IDUM,'FLUSM',IDUM,'GROUPL')
+*
+*       free groups
+*
+#if defined (VAR_MPI)
+*
+        CALL SETUNITS_PAR_CLOSE_REL
+        CALL GROUP_DESTRUCTOR_REL(MYNEW_COMM,ICOMM)
+*
+#endif
 *
 *******************************************
       end if
@@ -1765,13 +2107,18 @@ C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
 C
 C     Transfer data to LUCIAREL common blocks.
-      CALL LUCI_TRACOM(CIRUN)
+      CALL LUCI_TRACOM(CIRUN,0)
 C
 C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
 C
 C     Compute the number of determinants for this setup and return.
       CALL KRMC_LUCI(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
+C
+C
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
 C
       NDET = INT(XISPSM(ISYM_KRMC,1))
 C
@@ -1797,6 +2144,7 @@ C
 #include "krmcluci_inf.h"
 C
       CHARACTER*6 CIRUN,RCISTFILE
+      LOGICAL PARCAL_SAVE
 C
       DIMENSION WORK(*),CMO(*),CREF(*)
 C
@@ -1807,8 +2155,20 @@ C
       CIRUN = 'CIINII'
       MZ = MIN(NZ,2)
 C
+      KFRSAV = KFREE
+C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
+#if defined (VAR_MPI)
+C
+C     test fock matrix work for slaves
+C
+      ISET_PARCAL = 0
+      IF( ISET_PARCAL .eq. 1 )THEN
+        PARCAL_SAVE = .TRUE.
+        CALL TEST_PAR_CALC(PARCAL_SAVE,0)
+      END IF
+#endif
 C
 C     Flag for type of integral interface:
 C     I_IITP = 1: Old 4IND1XXXX0 driven interface
@@ -1909,9 +2269,17 @@ C
       else
         CALL QUIT('LUCI_RCIST: Invalid flag I_IITP.')
       end if
+#if defined (VAR_MPI)
+C
+C     end of slave reading test
+C
+      IF( ISET_PARCAL .eq. 1 ) THEN
+        CALL TEST_PAR_CALC(PARCAL_SAVE,1)
+      END IF
+#endif
 C
 C     Transfer data to LUCIAREL common blocks.
-      CALL LUCI_TRACOM(CIRUN)
+      CALL LUCI_TRACOM(CIRUN,0)
 C
 C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
@@ -1948,7 +2316,13 @@ C     Read CI vector from LUCIARELs file
         END IF
       END IF
 C
-      CALL MEMREL('LUCI_RCIST',WORK,KWORK,KWORK,KFREE,LFREE)
+CSK      CALL MEMREL('LUCI_RCIST',WORK,KFREE,KFREE,KFREE,LFREE)
+      CALL MEMREL('LUCI_RCIST',WORK,1,KFRSAV,KFREE,LFREE)
+C
+C
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
 C
       RETURN
       END
@@ -1957,7 +2331,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                      WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Calculate sigma vector: SB = H CB, where H is the Hamiltonian
+C     Calculate sigma vector: SB = H x CB, where H is the Hamiltonian
 C     with integrals FCACM and H2ACM.
 C     If (SAVDIA) also calculate H diagonal in DIAG
 C
@@ -1995,7 +2369,7 @@ C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
 C
 C     Setup LUCIAREL common blocks.
-      CALL LUCI_TRACOM(CIRUN)
+      CALL LUCI_TRACOM(CIRUN,0)
 C
 C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
@@ -2005,6 +2379,7 @@ C           FIXME: Control flag setting (IO_SIGMA_IN) from outside.
 C                  (If modification to storage mode is attempted.)
 C
       IO_SIGMA_IN = 1
+CSK      IPROPT = 10
       IF (IO_SIGMA_IN.eq.1) THEN
         REWIND LUC
         CALL MEMGET('REAL',KRSCR,NZCONF,WORK,KFREE,LFREE)
@@ -2014,6 +2389,7 @@ C
      &                  WORK(KRSCR),IDUMMY,2,IRIQ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       END IF
+CSK      IPROPT = 0
 C
 C     Call LUCIAREL
       CALL KRMC_LUCI(FCACM,H2ACM,WORK(KFREE),LFREE,DUMMY,CIRUN)
@@ -2028,20 +2404,43 @@ C     Read sigma vector on file to SB array.
      &                  WORK(KRSCR),IDUMMY,1,IRIQ,
      &                  LUHC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       END IF
+      CALL REWINE(LUC,-1)
+      IO_C_VEC_OUT = 1
+      IF (IO_C_VEC_OUT .eq. 1 ) THEN
+        CALL KR_LUCI_IO(1,0,0,
+     &                  CB,NZCONF*2,DUMMY,1,
+     &                  DUMMY,1,DUMMY,1,
+     &                  WORK(KRSCR),IDUMMY,1,IRIQ,
+     &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+      END IF
 C
       IF (SAVDIA) THEN
 C       Read diagonal on file LUDIA to WORK(KDIAG) array.
-        CALL MEMGET('REAL',KDIAG,2*NZCONF,WORK,KFREE,LFREE)
+C
+C       only "real part" of diagonal needed!
+C       loop over ILOOP_DIA instead of IRIQ! /SK - June 30 2007
+        ILOOP_DIA = 1
+        CALL MEMGET('REAL',KDIAG,NZCONF,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(0,1,0,
-     &                  DUMMY,1,WORK(KDIAG),2*NZCONF,
+     &                  DUMMY,1,WORK(KDIAG),NZCONF,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,1,IRIQ,
+     &                  WORK(KRSCR),IDUMMY,1,ILOOP_DIA,
      &                  IDUMMY,LUDIA,IDUMMY,IDUMMY,IPROPT)
+CSKold        CALL KR_LUCI_IO(0,1,0,
+CSKold     &                  DUMMY,1,WORK(KDIAG),2*NZCONF,
+CSKold     &                  DUMMY,1,DUMMY,1,
+CSKold     &                  WORK(KRSCR),IDUMMY,1,IRIQ,
+CSKold     &                  IDUMMY,LUDIA,IDUMMY,IDUMMY,IPROPT)
 C       Copy "real part" of diagonal to DIAG.
         CALL DCOPY(NZCONF,WORK(KDIAG),1,DIAG,1)
       END IF
+CSK      IPROPT = 0
 C
       CALL MEMREL('LUCI_SIGMA',WORK,1,KFRSAV,KFREE,LFREE)
+C
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
 C
       RETURN
       END
@@ -2064,6 +2463,10 @@ C     Written by T. Fleig                  - Jan 24 2001
 C     Last revision : KR_LUCI_IO calls     - Dec 04 2001    T. Fleig
 C                     CREF added           - Mar 17 2002    T. Fleig
 C                     Only R1 possible     - Feb 01 2005    T. Fleig
+C                     Only one common call 
+C                     to KRMC_LUCI since
+C                     RHO1,RHO2 are always
+C                     allocated.           - Jun 29 2007    S. Knecht
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2099,7 +2502,7 @@ C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
 C
 C     Transfer data to LUCIAREL common blocks.
-      CALL LUCI_TRACOM(CIRUN)
+      CALL LUCI_TRACOM(CIRUN,0)
 C
 C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
@@ -2125,11 +2528,16 @@ C     Write current CI vector(s) to file
       END IF
 C
 C     Density run of LUCIAREL only
-      if (CALCR2) then
+C
+C     RHO1 and RHO2 are always allocated in the calling routines.
+C     RHO2 is essential for communication in parallel runs.
+C     / SK June 29 2007.
+C
+CSK      if (CALCR2) then
         CALL KRMC_LUCI(RHO1,RHO2,WORK(KFREE),LFREE,DUMMY,CIRUN)
-      else
-        CALL KRMC_LUCI(RHO1,DUMMY,WORK(KFREE),LFREE,DUMMY,CIRUN)
-      end if
+CSK      else
+CSK        CALL KRMC_LUCI(RHO1,DUMMY,WORK(KFREE),LFREE,DUMMY,CIRUN)
+CSK      end if
 C
 C     Write CI densities to file or keep the arrays
 C     Currently, densities are directly passed up to LUCI_DENS.
@@ -2147,9 +2555,9 @@ C     FIXME: write me  ??
 C
       CALL MEMREL('LUCI_DENS',WORK,1,KFRSAV,KFREE,LFREE)
 C
-C  Delete file units with vectors
-      close(unit=LUSC61,status='DELETE')
-      close(unit=LUSC62,status='DELETE')
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
 C
       RETURN
       END
@@ -2188,7 +2596,7 @@ C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
 C
 C     Transfer data to LUCIAREL common blocks.
-      CALL LUCI_TRACOM(CIRUN)
+      CALL LUCI_TRACOM(CIRUN,0)
 C
 C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
@@ -2214,6 +2622,10 @@ C
       IF (NCIROOT.EQ.1) THEN
         CALL MEMREL('LUCI_ANALYZ',WORK,1,KFRSAV,KFREE,LFREE)
       END IF
+C
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
 C
       RETURN
       END
@@ -2250,7 +2662,7 @@ C     Introduce LUCIAREL action
 C
 C     Transfer data to LUCIAREL common blocks.
 C     FIXME: Check this here.
-      CALL LUCI_TRACOM(CIRUN)
+      CALL LUCI_TRACOM(CIRUN,0)
 C
 C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
@@ -2280,6 +2692,10 @@ C     Read diagonal vector from LUCIARELs file
 C
       CALL MEMREL('LUCI_DIAG',WORK,KWORK,KWORK,KFREE,LFREE)
 C
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
+C
       RETURN
       END
 #endif /* NOT_USED_ROUTINE */
@@ -2308,13 +2724,17 @@ C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
 C
 C     Transfer data to LUCIAREL common blocks.
-      CALL LUCI_TRACOM(CIRUN)
+      CALL LUCI_TRACOM(CIRUN,0)
 C
 C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
 C
 C     Call LUCIAREL for setting up vector partitioning information.
       CALL KRMC_LUCI(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
+C
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
 C
       RETURN
       END
@@ -2496,7 +2916,7 @@ C
       END
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCINOD_REL(WRK,LWRK)
+      SUBROUTINE LUCINOD_REL(WORK,LWORK)
 C
 C     KRMC-LUCIAREL driver routine for the slaves
 C
@@ -2513,10 +2933,20 @@ C
 #include "mpif.h"
 #include "../luciarel/lucipar_rel.inc"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-      DIMENSION WRK(LWRK)
+      DIMENSION WORK(LWORK)
       LOGICAL LUEND
       CHARACTER LUCITABASF_REL*12, LUCIFILN_REL*16
       CHARACTER CIRUN*6
+C
+#include "../luciarel/mxpdim.inc"
+#include "../luciarel/cicisp.inc"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "memint.h"
+C
+      KFRSAV = KFREE
 *
 *       START 
 *     =========
@@ -2542,10 +2972,10 @@ C
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (LUCIFILN_REL,'(A12,A1,I1)') LUCITABASF_REL,'.',MYPROC
          LUFIL=14
-      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+      ELSE IF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (LUCIFILN_REL,'(A12,A1,I2)') LUCITABASF_REL,'.',MYPROC
          LUFIL=15
-      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+      ELSE IF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
          WRITE (LUCIFILN_REL,'(A12,A1,I3)') LUCITABASF_REL,'.',MYPROC
          LUFIL=16
       ELSE
@@ -2558,23 +2988,175 @@ C
 *
 *
       OPEN(MSLVOUT_REL,FILE = LUCIFILN_REL(1:LUFIL))
-*
-*
-CSK      CALL MPI_RECV(IVARIAB,1,my_MPI_INTEGER,MPARID,35,
-CSK     &               MPI_COMM_WORLD,ISTAT,IERR)
-      WRITE(MSLVOUT_REL,*) 'I have created my slave file',myproc
-      WRITE(MSLVOUT_REL,*) 'I have created my slave file again',myproc
-CSK      WRITE(MSLVOUT_REL,*) 'THIS IS IVARIAB',IVARIAB
-*
-*     now let's call the working routine!
-*
 C
-      CALL SYNC_NODES_REL_DRV(ECORE_KRMC,CIRUN,MSLVOUT_REL)
+C     transfer file handle to common block
+C
+      LUWRT = MSLVOUT_REL
+C
+C     synchronize nodes, part 1
+C
+      CALL SYNC_NODES_REL_P1(ECORE_KRMC,CIRUN,MSLVOUT_REL)
+C
+C
+      MZ = MIN(NZ,2)
+C
+C
+      IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'SIGMA ' .or. 
+     &    CIRUN .eq. 'SIGMAD') THEN
+C
+C       read-in of integrals by nodes... no broadcast in SYNC_NO...P2
+C
+        IF( CIRUN .eq. 'CIINII' .and. IIOMOD_REL .eq. 1 )THEN
+C
+          PARCAL = .FALSE.
+C
+        END IF
+C
+C
+C     Flag for type of integral interface:
+C     I_IITP = 1: Old 4IND1XXXX0 driven interface
+C     I_IITP = 2: New MRCONEE/MDCINT driven interface
+C
+      N_FCACM = (2*NASHT)*(2*NASHT)*MZ
+C
+      I_IITP = 1
+C
+      if (I_IITP.eq.2) then
+C
+        print*,' Testing new integral interface (MRCONEE/MDCINT)'
+C
+        CALL MEMGET('REAL',KFCACM,N_FCACM,WORK,KFREE,LFREE)
+        print*,'Allocated for ',N_FCACM,' integrals'
+        CALL LCR_RD_MRCMDC(WORK(KFCACM),WORK(KFCACM+N_FCACM/MZ),
+     &                     WORK(KINDK),WORK(KINDL),
+     &                     WORK(KRKLR),WORK(KRKLI))
+        CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
+     &               WORK,KFREE,LFREE)
+        print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
+        print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
+        CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
+     &               WORK(KFREE),LFREE,IPROPT)
+        stop
+C
+      else if (I_IITP.eq.1) then
+C
+C       Calculate core Hamiltonian:
+C       ---------------------------
+C
+C       The core Hamiltonian is the active-active part of FC,
+C       a.k.a. FCAC.
+C
+        CALL MEMGET('REAL',KFCACM,N_FCACM,WORK,KFREE,LFREE)
+        CALL DZERO(WORK(KFCACM),N_FCACM)
+C
+C       Read two-electron integrals:
+C       ----------------------------
+C
+        CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
+     &               WORK,KFREE,LFREE)
+C        print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
+C        print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
+C
+C       Read integrals from 4IND1XXXX0:
+C
+C       FIXME: write me
+C              SPINFR=.TRUE. not yet implemented in RGETH2 (why?)
+C
+        IF( CIRUN .eq. 'CIINII' .AND. IIOMOD_REL .eq. 1 )THEN
+C
+          CALL RGETH21_LUCIPAR(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
+     &                         WORK(KFREE),LFREE,IPROPT)
+        END IF
+C
+      else
+        CALL QUIT('LUCI_RCIST: Invalid flag I_IITP.')
+      end if
+C
+C
+        PARCAL = .TRUE.
+C
+C       synchronize nodes, part 2 (now CIRUN dependent!)
+C
+        CALL SYNC_NODES_REL_P2(WORK(KFCACM),WORK(KH2AC),CIRUN)
+C
+      ELSE IF( CIRUN .eq. 'DENS1' .or. CIRUN .eq. 'DENS2' ) THEN 
+C
+C       Initialize density matrices to zero; currently I want to test
+C       this CIRUN, therefore we make no difference between DENS1 and
+C       DENS2 - SK June 2007
+C
+        L1 = (2*NASHT)**2 * MZ
+C
+        CALL MEMGET('REAL',KRHO1,L1,WORK,KFREE,LFREE)
+        CALL DZERO(WORK(KRHO1),L1)
+C
+CSK        IF (CIRUN .eq. 'DENS2' ) THEN
+C
+        L2 = (2*NASHT)**4 * MZ
+        LF2_ZERO = (2*NASHT)**4 * MZ
+C
+        CALL MEMGET('REAL',KRHO2,L2,WORK,KFREE,LFREE)
+        CALL DZERO(WORK(KRHO2),L2)
+C
+CSK        END IF
+C
+      END IF
+C
+C     Transfer data to LUCIAREL common blocks.
+C
+      CALL LUCI_TRACOM(CIRUN,1)
+C
+C     Setup routine for running LUCIAREL
+C
+      CALL LUCI_SETUP()
+C
+C     Run LUCIAREL
+C
+      IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'SIGMA ' .or. 
+     &    CIRUN .eq. 'SIGMAD') THEN
+C
+C       Call LUCIAREL for calculating sigma vector(s).
+        CALL KRMC_LUCI2(WORK(KFCACM),WORK(KH2AC),WORK(KFREE),LFREE,
+     &                 ECORE_KRMC,CIRUN)
+C 
+        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      ELSE IF( CIRUN .eq. 'DENS1' .or. CIRUN .eq. 'DENS2' ) THEN 
+C
+C       Call LUCIAREL for calculating density matrix elements.
+        CALL KRMC_LUCI2(WORK(KRHO1),WORK(KRHO2),WORK(KFREE),
+     &                    LFREE,DUMMY,CIRUN)
+C
+        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      ELSE IF( CIRUN .eq. 'ANALYZ' ) THEN 
+C
+C       Call LUCIAREL for analyzing the wavefunction.
+        CALL KRMC_LUCI2(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
+C
+      ELSE IF( CIRUN .eq. 'NDET  ' ) THEN 
+C
+C       Call LUCIAREL for determining number of dets.
+        CALL KRMC_LUCI2(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
+C
+        NDET = INT(XISPSM(ISYM_KRMC,1))
+C
+      ELSE IF( CIRUN .eq. 'RSTRMC' ) THEN
+C
+C       Call LUCIAREL for setting up vector partitioning information.
+        CALL KRMC_LUCI2(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
+C
+      END IF
+C
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
+C
+C     LUCIAREL run is finished for the slaves ...
 C
       CLOSE (MSLVOUT_REL,STATUS='KEEP')
-*
-*
-*     The slave is finished, wait for the master
+C
+C     .. wait for the master
 C
       LUEND = .FALSE.
 C

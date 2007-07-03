@@ -1015,6 +1015,7 @@ C    &                     CREFL,CREFR,WORK,KFREE,LFREE)
 C
 C        Transform to X+, x++ format for DV and PV
 C
+CSK         IPROPT = 40
          IF (CALCDV) CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
 C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
          IF (CALCPV) THEN
@@ -1022,6 +1023,7 @@ C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
      &           WORK(KPVMOLF),PV,IPROPT)
 C           CALL M2DNZ3(TSYMM,KSYMM,PSYMM,PVM,PVD,IPRINT)
          END IF
+CSK         IPROPT = 00
          CALL MEMREL('RMAKDM',WORK,1,KFRSAV,KFREE,LFREE)
 C
       ELSE IF ( NASHT .EQ. 1 .AND. NAELEC .EQ. 1) THEN
@@ -1087,6 +1089,7 @@ C           TODO FIXME: check trace of PV
 C
          END IF
 C     END IF
+CSK      IPROPT = 5
       IF ( IPROPT .GE. 5 ) THEN
          IF (CALCDV) THEN
             WRITE(LUPRI,'(/A)') ' (RMAKDM) DV density matrix'
@@ -1097,6 +1100,7 @@ C     END IF
             CALL PRDNZ3(PV,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
          END IF
       END IF
+CSK      IPROPT = 0
 C
       CALL RTKTIME(.FALSE.,8)
       CALL QEXIT('RMAKDM')
@@ -2684,6 +2688,7 @@ C
 C           Do a 0th order 4-index transformation.
 C
 CSK            WRITE(LUPRI,*) ' (ROPTST) do the 0th order index ...'
+CSK            WRITE(LUPRI,*) ' KTRLVL',KTRLVL
             IOPT_INTFLG = IOPT_INTDEF
             JTRLVL = 0
             CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
@@ -4225,7 +4230,9 @@ C
      &     3X,'KRMC-GOSCI CI code: ',/,
      &     3X,'Joern Thyssen and Hans Joergen Aa. Jensen',//,
      &     3X,'LUCIAREL CI code: ',/,
-     &     3X,'Timo Fleig and Jeppe Olsen',/,
+     &     3X,'Timo Fleig and Jeppe Olsen',//,
+     &     3X,'Parallel LUCIAREL CI code: ',/,
+     &     3X,'Stefan Knecht, Hans Joergen Aa. Jensen and Timo Fleig',/,
      &     ////,
      &     3X,'``Aha!''''                             ',
      &     '- Fysiska poem, Linkoepings Universitet',///,
@@ -4242,7 +4249,10 @@ C
      &     7X,'                J Chem Phys, 119 (2003)',/,
      &     4X,'KRMC-LUCIAREL: T Fleig, H J Aa Jensen, J Olsen,',/,
      &     4X,'               and L Visscher',/,
-     &     7X,'               J Chem Phys, 124,10 (2006) 104106',
+     &     7X,'               J Chem Phys, 124,10 (2006) 104106',/,
+     &     4X,'PARALLEL KRMC-LUCIAREL: S. Knecht, H J Aa Jensen,',/, 
+     &     4X,'               and T Fleig',/,
+     &     7X,'               manuscript in preparation.',
      &     ///,
      &     1X,78('*'),//)
 C
