@@ -192,8 +192,13 @@ Caspg+rbast
 Caspg+rbast
 
         IF (ROBUST_E) THEN
-          CALL DF_CAL_ROB_E(DMAT,FMAT,WORK(KCFIT),NDMT,ISYMDM,IFCTYP,
-     &                      WORK(KGABAL),WORK(KFREE),LFREE,IPRINT)
+          IF (DF_FITVXC) THEN
+             WRITE (LUPRI,*) 'WARNING! Robust energy correction not '//
+     &                       'yet implemented for fitted XC runs.' 
+          ELSE
+             CALL DF_CAL_ROB_E(DMAT,FMAT,WORK(KCFIT),NDMT,ISYMDM,IFCTYP,
+     &                         WORK(KGABAL),WORK(KFREE),LFREE,IPRINT)
+          ENDIF
         ENDIF
 
         IF (IPRFCK.GT.25) THEN
