@@ -274,6 +274,11 @@ C     (since GCI is the sigma vector)
 C
 C     Real part of energy:
 C
+CSK      WRITE(LUPRI,*) 'C vector'
+CSK      CALL WRTMATMN(CREF,1,NZCONF,1,NZCONF,LUPRI)
+CSK      WRITE(LUPRI,*) 'sigma vector'
+CSK      CALL WRTMATMN(GCI,1,NZCONF,1,NZCONF,LUPRI)
+C
       EMC(1) = DDOT(NZCONF,CREF(1,1),1,GCI(1,1),1)
 C
       IF (NZ .GE. 2) THEN
@@ -375,6 +380,8 @@ C
          END DO
       END DO
 C
+CSK      IPRINT = 20
+C
       IF (IPRINT .GE. 20) THEN
          WRITE(LUPRI,'(A)')
      &        ' (RCIGRD1) CI gradient'
@@ -407,6 +414,7 @@ C
 C
       CALL MEMREL('E2 diag',WORK,1,KFRSAV,KFREE,LFREE)
 C
+CSK      IPRINT = 00
       CALL QEXIT('RCIGRD1')
       RETURN
       END
