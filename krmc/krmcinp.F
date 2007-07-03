@@ -796,12 +796,14 @@ C     Last revision: 17.05.2002
 C                    Added CI keyword CIROOT. Timo Fleig
 C                    05.01.2005
 C                    Added CI keyword ANALYZ. Timo Fleig
+C                    Added keyword PARINT.    Stefan Knecht
+C                    29.06.2007
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 17)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -814,7 +816,7 @@ C
       DATA TABLE /'.MAX CI','.IOPTST','.TRACI ','.NO TRA','.NATONL',
      &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
      &            '.NO PFQ','.NO FQX','.ANALYZ','.CIROOT','.MXCIVE',
-     &            '.KTRLVL'/
+     &            '.KTRLVL','.PARINT'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -846,6 +848,7 @@ C
       NCIROOT = 1
       IANACI = 0
       IRESTRK = 0
+      IDOPARIO = 0
 C
 C
 C     Process input for *OPTIMIZE
@@ -865,7 +868,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16), I
+     &                     11,12,13,14,15,16,17), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -952,6 +955,30 @@ C&&& .KTRLVL: default integral transformation level.
                      CALL QUIT('*** ERROR in ROPTINP *** ' //
      &                    'Illegal transformation level')
                   END IF
+               GO TO 100
+   17          CONTINUE
+C&&& .PARINT: integral handling for slaves in LUCIAREL calculations
+                  READ(LUCMD,*) IDOPARIO
+                  IDOPARIO = ABS(IDOPARIO)
+#if !defined (VAR_MPI)
+                  IF( IDOPARIO .ne. 0 ) THEN
+                    WRITE(LUPRI,'(//3A,I6)')
+     &                    '*** ERROR in ROPTINP *** ',
+     &                    ' No slaves in sequential run, no integral 
+     &                      handling needed: ',
+     &                     IDOPARIO
+                    IDOPARIO = 0
+                  END IF
+#else
+                  IF( IDOPARIO .gt. 1 ) THEN
+                   WRITE(LUPRI,'(//3A,I6)')
+     &                    '*** ERROR in ROPTINP *** ',
+     &                    'Illegal integral handling option for 
+     &                     slaves in parallel run: ',
+     &                     IDOPARIO
+                   IDOPARIO = 0
+                  END IF
+#endif
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1061,6 +1088,13 @@ C
 C
       WRITE(LUPRI,'(A,I3)')
      &     ' * Default integral transformation level  :',KTRLVL
+      
+      IF( IDOPARIO .eq. 1 )THEN
+      WRITE(LUPRI,'(A)')
+     &     ' * Integrals also for slaves assumed to be in place'
+      WRITE(LUPRI,'(A)')
+     &     '   No integral broadcast from MASTER to slaves.'
+      END IF
 C
   400 RETURN
       END
