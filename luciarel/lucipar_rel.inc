@@ -43,12 +43,12 @@ C
      &                  IALL_LU5, IALL_LUC, LUDUMPF
 #if defined (VAR_MPI)
       INTEGER MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL
-	INTEGER*8 MY_VEC1_IOFF, MY_VEC2_IOFF, MY_DIA_OFF, MY_LU1_OFF,
+      INTEGER*8 MY_VEC1_IOFF, MY_VEC2_IOFF, MY_DIA_OFF, MY_LU1_OFF,
      &          MY_LU2_OFF, MY_LU3_OFF, MY_LU4_OFF, MY_LU5_OFF,
      &          MY_LUC_OFF
 	COMMON/LUCIFILEOFF/ MY_VEC1_IOFF, MY_VEC2_IOFF, 
-     &                    MY_DIA_OFF, MY_LU1_OFF, MY_ACT_BLK1,
-     &                    MY_ACT_BLK2, MY_ACT_BLK_ALL,
+     &                    MY_DIA_OFF, MY_LU1_OFF,
      &                    MY_LU2_OFF, MY_LU3_OFF, MY_LU4_OFF, 
-     &                    MY_LU5_OFF, MY_LUC_OFF
+     &                    MY_LU5_OFF, MY_LUC_OFF,
+     &                    MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL
 #endif
