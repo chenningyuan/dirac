@@ -193,7 +193,11 @@ CTF  Currently never used !!!
 C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
             CALL WRSVCD_REL(LU1,LBLK,VEC1,IPNTR,
      &           PEIGVC((IROOT-1)*NPRDET+1),NPRDET,NDIM,LUDIA,
-     &           NUM_BLOCKS,IBLOCKL,NPARBLOCK,IAM_REAL,IROOTS)
+     &           NUM_BLOCKS,IBLOCKL,NPARBLOCK,IAM_REAL,IROOTS 
+#if defined (VAR_MPI)
+     &           ,LU1LIST
+#endif
+     &           )
  1984     CONTINUE
         END IF
       END IF
@@ -1585,15 +1589,30 @@ C!?      ITER = ITER - 1
 *       !ATTENTION! THE CALL TO THIS SUBROUTINE HAS BEEN CHANGED!
 *       THE FOLLOWING CALLS NEED TO BE ADAPTED
         WRITE(6,*) ' I might produce shit! Please look into the code'
-        CALL WRSVCD_REL(LUIN,LBLK,VEC1,I,ONE,1,NVAR,LUDIA)
+        CALL WRSVCD_REL(LUIN,LBLK,VEC1,I,ONE,1,NVAR,LUDIA,
+     &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY
+#if defined (VAR_MPI)
+     &                  ,IDUMMY
+#endif
+     &                  )
 * Imaginary part
-        CALL WRSVCD_REL(LUIN,LBLK,VEC1,I,ONE,0,NVAR,LUDIA)
+        CALL WRSVCD_REL(LUIN,LBLK,VEC1,I,ONE,0,NVAR,LUDIA,
+     &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY
+#if defined (VAR_MPI)
+     &                  ,IDUMMY
+#endif
+     &                  )
 * Do the sigma
         CALL REWINE(LUOUT,LBLK)
         if (SIGDEN_ROUTE.eq.'TRADIT') then
           call mv7_rel(VEC1,VEC2,LUIN,LUOUT,0)
         else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-          call sigden_ctrl(VEC1,VEC2,LUIN,LUOUT,T_CC,1)
+          call sigden_ctrl(VEC1,VEC2,LUIN,LUOUT,T_CC,1
+#if defined (VAR_MPI)
+     &                   ,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
+     &                    IDUMMY,IDUMMY,IDUMMY
+#endif
+     &                   )
         else
           write(6,*) 'Route for sigma and densities not allowed.'
           write(6,*) 'SIGDEN_ROUTE is ',SIGDEN_ROUTE
