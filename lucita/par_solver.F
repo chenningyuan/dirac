@@ -45,7 +45,9 @@ C
 * Compute the connection matrix ICCTOS between the sigma and c vector 
 * Store the contribution of one c-block to sigma-blocks in ICWEIGHT.
 *
-      IMPLICIT REAL*8           (A-H,O-Z)
+* written by S. Knecht  - Feb. 2007
+*
+#include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -221,6 +223,8 @@ CSK      ENDIF
      &           ICWEIGHTF,IDC,ISTRFL,ICONSPA,ICONSPB,NSSOA,NSSOB,
      &           NOCTPA,NOCTPB,ICBLOCK,ISBLOCK,PS,MXEXC,NSMST)
 *
+* written by S. Knecht  - Feb. 2007
+*
       IMPLICIT REAL*8           (A-H,O-Z)
 #include "infpar.h"
 #include "mpif.h"
@@ -283,9 +287,9 @@ C                 are the two blocks connected by allowed excitation?
                 END IF
               END IF
             END DO
-C          /\ loop over s-blocks
+C           ^ loop over s-blocks
           END DO
-C        /\ loop over nperm
+C         ^loop over nperm
         END IF
         IF(MYPROC.EQ.MASTER.AND.JJJ.GT.0.AND.NTEST.GE.100) THEN
           WRITE(6,'(A,1X,I5,1X,A,1X,I5,1X,A)') 
@@ -293,7 +297,8 @@ C        /\ loop over nperm
           CALL IWRTMA(ICWEIGHT,1,JJJ,1,JJJ)
         END IF
       END DO 
-C    /\ loop over c-blocks
+C     ^loop over c-blocks
+C
       END
 ***********************************************************************
 *                                                                     *
@@ -1544,25 +1549,28 @@ CSK         print*,'NP1,NP2,NQ ',NP1,NP2,NQ
          CALL VECSMD(VEC1,VEC2,ONE,FACTOR,LU2,LU7,LU5,0,LBLK)
 *
          IF ( IPRT  .GE. 10 ) THEN
-           WRITE(6,*) '  ( HX - EX ) '
+           WRITE(LUWRTOUT,*) '  ( HX - EX ) '
            CALL WRTVCD(VEC1,LU5,1,LBLK)
          END IF
 *  Strange place to put convergence but ....
          REDSCRVAR = INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK)
          CALL REDVEC(REDSCRVAR,SCRRED,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
-         CALL COPVEC(SCRRED,REDSCRVAR,1)
-         RNORM = SQRT(REDSCRVAR)
+         RNORM = SQRT(SCRRED(1))
          RNRM(ITER-1,IROOT) = RNORM
          WRITE(LUWRTOUT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
      &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
 *
-         CALL FLSHFO(6)
+         CALL FLSHFO(LUWRTOUT)
 *
 C
 C        screening of new trial vector
 C
          RNORM_FAC = RNORM
-         TRUNC_FAC = 1.0D-3
+         IF (TRUNC_FAC .GT. 0.1D0) THEN
+            WRITE (LUWRTOUT,*) 'TRUNC_FAC reset from ',TRUNC_FAC,
+     &         ' to',0.1D0
+            TRUNC_FAC = 0.1D0
+         END IF
 C
          IF(RNORM.LT. TEST .OR.
      &      (ITER.GT.2.AND.
@@ -1586,8 +1594,7 @@ CSK         print*,'NP1,NP2,NQ ',NP1,NP2,NQ
            CALL REWINO(LUDIA)
            CALL REWINO(LU5)
            CALL REWINO(LU6)
-C           CSCREEN = .TRUE.
-           CSCREEN = .FALSE.
+           CSCREEN = .TRUE.
            CALL H0M1TD_PAR(LU6,LUDIA,LU5,LBLK,NP1+NP2+NQ,IPNTR,
      &                 H0,-EIGAPR,H0SCR,XH0IX,
      &                 NP1,NP2,NQ,VEC1,VEC2,IPRT)
