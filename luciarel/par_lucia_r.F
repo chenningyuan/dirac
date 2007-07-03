@@ -1511,7 +1511,7 @@ C     (*_MS2 arrays are in CSTATE )
       CALL Z_BLKFO_REL(IDC,NMS2VAL,JCMBSPC,IREFSM,
      &                 KLSLBT,KLSLEBT,KLSI1BT,KLSIBT,KDUM,
      &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
-     &                 NBAT_MS2,IBAT_MS2,0,IDUMMY)
+     &                 NBAT_MS2,IBAT_MS2,0,3,IDUMMY)
 C
       ISIGDEN = 1
 C

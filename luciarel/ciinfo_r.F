@@ -4117,6 +4117,220 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE PART_CIV4_SPC(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
+     &                         IOFFBLK,IOFFBTC,
+     &                         NSMST,MXLNG,IOCOC,ISMOST,
+     &                         NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
+     &                         ICOMP,ITTSS_ORD,IDEBUGPRNT)
+*
+* Partition a CI vector with given MS2 into batches of blocks.
+* The length of a batch must be atmost MXLNG
+*
+* IF ICOMP. eq. 1 the complete ci vector is constructed
+*
+*. Output
+* NBATCH : Number of batches
+* LBATCH : Number of blocks in a given batch
+* LEBATCH : Number of elements in a given batch ( packed ) !
+* I1BATCH : Number of first block in a given batch
+* IBATCH : TTS blocks in Start of a given TTS block with respect to start
+*          of batch
+*   IBATCH(1,*) : Alpha type , relative to start of supergroup
+*   IBATCH(2,*) : Beta type , relative to start of supergroup
+*   IBATCH(3,*) : Sym of alpha
+*   IBATCH(4,*) : Sym of beta
+*   IBATCH(5,*) : Offset of block with respect to start of block in
+*                 expanded form
+*   IBATCH(6,*) : Offset of block with respect to start of block in
+*                 packed form
+*   IBATCH(7,*) : Length of block, expanded form
+*   IBATCH(8,*) : Length of block, packed form
+*
+*
+*
+* Jeppe Olsen, Jan. 1998
+*
+* Modified from PART_CIV2 for relativistic purposes
+*
+* Compared to PART_CIV2 the changes are
+* 1 : The type numbers are absolute, no need for additional
+*     reference to offset for given type
+* 2 : Blocks filled from a given offset
+*
+*
+* IMPORTANT change compared to PART_CIV3:
+*
+* MXLNG is no longer assumed to be equals to the total number 
+* of dets. Therefore we have to partition the CI vector being aware  
+* of putting symmetry blocks of same TT into different batches.
+*
+*  
+* REASON: SIGMA-vector / DENSITY matrix calculation is done wrt loops
+* over NSMST! 
+* 
+* S. Knecht - July 02 2007
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
+*.Input
+      INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
+      INTEGER IOCOC(NOCTPA,NOCTPB)
+      INTEGER IBLTP(*)
+      INTEGER ISMOST(*)
+*.Output
+      INTEGER LBATCH(*)
+      INTEGER LEBATCH(*)
+      INTEGER I1BATCH(*)
+      INTEGER IBATCH(8,*)
+#include "lucipar_rel.inc"
+*
+      I_SAVE_IBLOCK = 0
+      N_TRY = 0
+*
+      IF(IDEBUGPRNT .ge. 50 ) THEN
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' =================='
+        WRITE(LUWRT,*) '   PART_CIV4_SPC   '
+        WRITE(LUWRT,*) ' =================='
+        WRITE(LUWRT,*) ' IDC = ', IDC
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' NSSOA array ( input ) '
+        CALL IWRTMAMN(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA,LUWRT)
+        WRITE(LUWRT,*) ' NSSOB array ( input ) '
+        CALL IWRTMAMN(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB,LUWRT)
+      END IF
+*
+*. block  zero
+*
+      IB = 1
+      IA = 1
+      ISM = 1
+      IFRST = 1
+      NBATCH = IOFFBTC-1
+      IBLOCK = IOFFBLK-1
+      IFINI = 0
+*. Loop over batches of blocks
+ 2000 CONTINUE
+      NBATCH = NBATCH + 1
+      LBATCH(NBATCH) = 0
+      I1BATCH(NBATCH) = IBLOCK  + 1
+      LENGTH = 0
+      LENGTHP= 0
+      NBLOCK = 0
+      IFRST = 1
+*. Loop over blocks in batch
+ 1000 CONTINUE
+*. Next block : Order is currently : IB, IA, ISM  (leftmost inner loop )
+      IF(IFRST.EQ.0) THEN
+        call nxt_tts(ITTSS_ORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
+      END IF
+      IFRST = 0
+      IF(IFINI.EQ.1) GOTO 2002
+*. Should this block be included
+      IF(IBLTP(ISM).EQ.0) GOTO 1000
+      IF(IBLTP(ISM).EQ.2.AND.IA.LT.IB) GOTO 1000
+      IF(IOCOC(IA,IB).EQ.0) GOTO 1000
+C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
+*. can this block be included
+      IBSM = ISMOST(ISM)
+      NSTA = NSSOA(ISM,IA)
+      NSTB = NSSOB(IBSM,IB)
+      LBLOCK= NSTA*NSTB
+      IF(IBLTP(ISM).EQ.1.OR.(IBLTP(ISM).EQ.2.AND.IA.NE.IB)) THEN
+        LBLOCKP = NSTA*NSTB
+      ELSE IF (IBLTP(ISM) .EQ. 2.AND.IA.EQ.IB) THEN
+        LBLOCKP = NSTA*(NSTA+1)/2
+      END IF
+C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
+      IF(LENGTH+LBLOCK.LE.MXLNG.OR.ICOMP.EQ.1) THEN
+        NBLOCK = NBLOCK + 1
+        IBLOCK = IBLOCK + 1
+        LBATCH(NBATCH) = LBATCH(NBATCH)+1
+        IBATCH(1,IBLOCK) = IA
+        IBATCH(2,IBLOCK) = IB
+        IBATCH(3,IBLOCK) = ISM
+        IBATCH(4,IBLOCK) = IBSM
+        IBATCH(5,IBLOCK) = LENGTH+1
+        IBATCH(6,IBLOCK) = LENGTHP+1
+        IBATCH(7,IBLOCK) = LBLOCK
+        IBATCH(8,IBLOCK) = LBLOCKP
+        LENGTH = LENGTH + LBLOCK
+        LENGTHP= LENGTHP+ LBLOCKP
+        LEBATCH(NBATCH) = LENGTHP
+        GOTO 1000
+      ELSE IF(ICOMP.EQ.0.AND.
+     &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
+        WRITE(LUWRT,*) ' Not enough scratch space to include a '//
+     &                   'single Block'
+        WRITE(LUWRT,*) ' Since I cannot procede I will stop '
+        WRITE(LUWRT,*) ' Insufficient buffer detected in PART_CIV4_SPC'
+        WRITE(LUWRT,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
+        WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from ', MXLNG
+        stop ' In PART_CIV4_SPC. '
+      ELSE
+*
+*     this batch is finished, goto next batch
+*
+*       is this the TT-1 block?
+        IF( ISM .ne. 1 )THEN
+*
+*         go back to ISM == 1 since we loop over NSMST in GNSIDE_REL
+*
+          N_TRY = N_TRY + 1
+*
+          IF( N_TRY .gt. 1 .and. I_SAVE_IBLOCK .eq. IBLOCK ) THEN
+            WRITE(LUWRT,*) ' Not enough scratch space to include a '//
+     &                     ' single Block'
+            WRITE(LUWRT,*) ' Since I cannot procede I will stop '
+            WRITE(LUWRT,*) ' Insufficient buffer detected in '//
+     &                     ' PART_CIV4_SPC'
+            WRITE(LUWRT,*) '  LENGTH ',LENGTH
+            WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from',MXLNG
+            stop ' In PART_CIV4_SPC because of N_TRY .ge. 1. '
+          END IF
+*
+          I_SAVE_IBLOCK = IBLOCK
+*         set batch back to first available TT-1 block
+          call bck_tts(ITTSS_ORD,ISM,LBATCH,LEBATCH,IBATCH,IBLOCK,
+     &                 NBLOCK,LENGTH,LENGTHP,NBATCH,6)
+*
+          GOTO 2000
+*
+        ELSE
+          N_TRY = 0
+          I_SAVE_IBLOCK = 0
+          GOTO 2000
+        END IF
+*       ^ ISM check
+      END IF
+*     ^ length of batch < MXLNG?
+ 2002 CONTINUE
+*
+      IF( IDEBUGPRNT .ge. 10 ) THEN
+        WRITE(LUWRT,*) 'Output from PART_CIV4'
+        WRITE(LUWRT,*) '====================='
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' Number of added batches ', NBATCH-IOFFBTC+1
+        DO JBATCH = IOFFBTC, NBATCH
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) ' Info on batch ', JBATCH
+          WRITE(LUWRT,*) ' *********************** '
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) '  Number of blocks included ', LBATCH(JBATCH)
+          WRITE(LUWRT,*) '  TTSS and offsets and lenghts of each block '
+          DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
+            WRITE(LUWRT,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
+          END DO
+        END DO
+      END IF
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
       SUBROUTINE PART_CIV3_PAR(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
      &                         IOFFBLK,IOFFBTC,
      &                         NSMST,MXLNG,IOCOC,ISMOST,
@@ -5387,6 +5601,28 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
 *     use this line as line 4 for testing more batches ...
 *     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
           GOTO 100
+*
+        ELSE IF( I_USE_PC .eq. 3 )THEN
+*
+*         special routine that uses only node-blocks to determine 
+*         batches of a CI-vector
+*
+          IDEBUGPRNT = 000
+*
+          CALL PART_CIV4_SPC(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                       WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                       IOFFBLK,IOFFBTC,
+     &                       NSMST,LBLOCK,WORK(KLCIOIO),
+     &                       ISMOST(1,ISM),
+     &                       NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                       WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
+     &                       IDEBUGPRNT)
+*
+*     use this line as line 4 for testing more batches ...
+*     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
+          IDEBUGPRNT = 000
+          GOTO 100
+*
 *
 *
         END IF
