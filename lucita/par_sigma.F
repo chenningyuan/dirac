@@ -375,11 +375,11 @@ C         check whether a cpu needs to call SBLOCK_PAR
           WALLTID = SECTID(writetime)
           WALLTID2 = SECTID(sbatchtime)
           IF(MYPROC.EQ.MASTER)THEN
-            WRITE(6,50000) WALLTID
+CSK            WRITE(6,50000) WALLTID
             WRITE(6,60000) WALLTID2,JBATS
             WRITE(6,70000) ncblocks_used 
           ELSE
-            WRITE(12,50000) WALLTID
+CSK            WRITE(12,50000) WALLTID
             WRITE(12,60000) WALLTID2,JBATS
             WRITE(12,70000) ncblocks_used 
           ENDIF
@@ -404,8 +404,8 @@ C       print the statistic for COPVCD_PAR_BDRIV3/4
       END IF
       CALL QEXIT('RASSG3_PAR')
 *
-50000 FORMAT(' >>>  WALL TIME FOR WRITING SB TO DISK           :
-     & ',A)
+CSK50000 FORMAT(' >>>  WALL TIME FOR WRITING SB TO DISK           :
+CSK     & ',A)
 60000 FORMAT(' >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :
      & ',A,I4)
 70000 FORMAT(' >>>  NUMBER OF C-BLOCKS USED FOR COMPUTATION    :
@@ -945,7 +945,8 @@ C     ============================
 C
 C     Find batches of C - strings
       ITTSS_ORD = 2
-C     ... well we want the number of read in keep as small as possible
+C     ... well we want the count of calls for read-in to keep as 
+C         little as possible
 C         works ( --> ? ) currently only for IDISTROUTE = 2
 C         each node creates its own batch structure since the need for 
 C         C-blocks is different for a given s-block
