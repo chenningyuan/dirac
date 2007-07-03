@@ -854,6 +854,28 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE CHECK_CPLX( I_VAR_IN, I_VAR_OUT)
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+C
+C
+      IONE = 1
+      ITWO = 2
+C
+CSK      WRITE(6,*) 'I_VAR_IN',I_VAR_IN
+CSK      WRITE(6,*) 'I_VAR_OUT',I_VAR_OUT
+      IF( I_VAR_IN .eq. IONE ) I_VAR_OUT = IONE
+      IF( I_VAR_IN .eq. ITWO ) I_VAR_OUT = ITWO
+CSK      WRITE(6,*) 'I_VAR_OUT',I_VAR_OUT
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE CLASS_PROD3(VEC1,VEC2,IBLOCK_OFF,NBLOCK,IBLOCK,
@@ -1974,8 +1996,7 @@ C    &     I_BLK_TO_CLS(IBLK)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "../lucita/lucipar.inc"
-      
+
       DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
 *
       CALL REWINE(LU,-1)
@@ -2063,7 +2084,6 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
 *
       NSUB = LSUB
       CALL ICOPVE(ISCR,ISCAT,NSUB)
-CSK      NTEST = 10
       IF(NTEST .GE. 10) THEN
         IF(MYPROC.EQ.MASTER) THEN
           WRITE(6,*) ' Lowest elements and their original place '
@@ -2073,7 +2093,6 @@ CSK      NTEST = 10
         END IF
       END IF
 *
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -3296,6 +3315,25 @@ C       USE FAST IO
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE INI_BLOCKL(IBLOCKI,NDIM,IBATS)
+C
+C     initialize vector containing block length
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION IBLOCKI(NDIM), IBATS(8,*)
+C
+      DO ISBLK = 1, NDIM
+        IBLOCKI( ISBLK ) = IBATS(8,ISBLK)
+      END DO
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       REAL*8 FUNCTION INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
@@ -3369,6 +3407,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       REAL*8 FUNCTION INPRODB(VEC1,VEC2,NBLK,LBLK,I0BLK)
@@ -3407,6 +3446,7 @@ C?        write(6,*) ' Updated x', X
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE INVMAT(A,B,MATDIM,NDIM)
@@ -3450,6 +3490,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE IVCSUM(IA,IB,IC,IFACB,IFACC,NDIM)
@@ -3469,6 +3510,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION ISTRNM(IOCC,NORB,NEL,Z,NEWORD,IREORD)
@@ -3506,6 +3548,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE ITODS(IA,NDIM,MBLOCK,IFIL)
@@ -3547,6 +3590,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE IWRTMA10(IMAT,NROW,NCOL,MAXROW,MAXCOL)
@@ -3563,6 +3607,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE LFTPOS(CARD,LENGTH)
@@ -3597,6 +3642,7 @@ C     WRITE(6,'(1H ,A)') CARD
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MATCAS(CIN,COUT,NROWI,NROWO,IROWO1,NGCOL,ISCA,SCASGN)
@@ -3634,6 +3680,7 @@ C     WRITE(6,'(1H ,A)') CARD
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MATCG(CIN,COUT,NROWI,NROWO,IROWI1,NGCOL,IGAT,GATSGN)
@@ -3676,6 +3723,7 @@ C?      write(6,*) ' igat,sign ',IGAT(IG),GATSGN(IG)
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MATML7(C,A,B,NCROW,NCCOL,NAROW,NACOL,
@@ -3831,6 +3879,7 @@ C     CALL QEXIT('MATML')
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
@@ -3866,6 +3915,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MATVCC(A,VIN,VOUT,NROW,NCOL,ITRNS)
@@ -3901,6 +3951,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION IOFF_SYM_DIST(ISYM,NGASL,IOFF,MAXVAL,MINVAL)
@@ -3949,6 +4000,7 @@ C       write(6,*) ' igas i imult ',igas,i,imult
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MXMNOC_SPGP(MINEL,MAXEL,NORBTP,NORBFTP,NELFTP,
@@ -4014,6 +4066,7 @@ C?      CALL IWRTMA(NORBFTP,1,NORBTP,1,NORBTP)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
@@ -4056,6 +4109,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MVCSMD2(LUIN,FAC,FACLUOUT,LUOUT,LUSCR,
@@ -4108,6 +4162,7 @@ C            COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION NDXFSM(NSMOB,NSMSX,MXPOBS,NO1PS,NO2PS,NO3PS,NO4PS,
@@ -4185,6 +4240,7 @@ C 100     CONTINUE
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NEWTYPS(INSPGP,IACOP,ITPOP,NOP,
@@ -4235,6 +4291,7 @@ C         CALL IWRTMA(ITPOP,1,NOP,1,NOP)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NEXREC(LU,LBLK,REC,IEND,LENGTH)
@@ -4265,6 +4322,7 @@ C         CALL IWRTMA(ITPOP,1,NOP,1,NOP)
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION NSXFSM(NSMOB,MXPOBS,NO1PS,NO2PS,ISXSM,ADSXA,
@@ -4307,6 +4365,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 * Output
@@ -4342,6 +4401,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NXTNUM2(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
@@ -4400,6 +4460,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NXTNUM3(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
@@ -4458,6 +4519,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 * Find next alpha/beta occupation type and symmetry.
@@ -4508,7 +4570,43 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
       END
 ***********************************************************************
 *                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+*     Find back to the first TT-1 block to start next batch from.
+*     Stefan Knecht, July 02, 2007.
+*
+      subroutine bck_tts(IORD,ISM,LBATCH,LEBATCH,IBATCH,IBLOCK,NBLOCK,
+     &                   LENGTH,LENGTHP,NBATCH,LUWRT)
+*
+#include "implicit.h"
+      dimension LBATCH(*), LEBATCH(*), IBATCH(8,*)
+*
+      IF( IORD .eq. 2 ) THEN
+*
+ 100    CONTINUE
+*
+        IF( ISM .gt. 1 ) THEN
+          ISM = ISM - 1 
+          LBATCH(NBATCH)  = LBATCH(NBATCH) - 1
+          LEBATCH(NBATCH) = LEBATCH(NBATCH) - IBATCH(8,IBLOCK)
+          IBLOCK = IBLOCK - 1
+          NBLOCK = NBLOCK - 1
+          GOTO 100 
+        ELSE
+*
+CSK        WRITE(LUWRT,*) ' reset was successful'
+CSK        WRITE(LUWRT,*) ' IBLOCK, NBLOCK are now',IBLOCK,NBLOCK
+*
+        END IF
+      END IF
+*
+      END
+***********************************************************************
+*                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NXTBLK(IATP,IBTP,IASM,NOCTPA,NOCTPB,NSMST,IBLTP,IDC,
@@ -4553,6 +4651,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NXTORD(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
@@ -4609,6 +4708,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
        SUBROUTINE ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
@@ -4682,6 +4782,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PRMBLK(IDC,ISGV,IASM,IBSM,IATP,IBTP,PS,PL,
@@ -4836,6 +4937,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PRTITL(LINES)
@@ -4861,6 +4963,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PRTSTR(ISTR,NEL,NSTR)
@@ -4880,6 +4983,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE REWINE( LU ,LBLK )
@@ -4899,6 +5003,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE REWINO( LU )
@@ -4916,6 +5021,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE RFTTS(BLOCKSI,BLOCKSO,IBLOCK,NBLOCK,
@@ -5032,6 +5138,7 @@ C TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SCLVCD(LUIN,LUOUT,SCALE,SEGMNT,IREW,LBLK)
@@ -5076,7 +5183,7 @@ C
 C
           CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
           IF(LBL .GT. 0 )
-     &    CALL SCALVE(SEGMNT,SCALE,LBL)
+     &    CALL DSCAL(LBL,SCALE,SEGMNT,1)
           CALL TODSC(SEGMNT,LBL,KBLK,LUOUT)
         END IF
 C
@@ -5087,6 +5194,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SCDTTS(BLOCKS,IBLOCK,NBLOCK,
@@ -5181,6 +5289,7 @@ C    &                  NSASO,NSBSO,ISC,IPRNT)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SKPRCD2(NDIM,MBLOCK,IFILE)
@@ -5203,6 +5312,7 @@ C
         CALL IFRMDS(ISCR,2,2,IFILE)
         IMZERO=ISCR(1)
         I_AM_PACKED=ISCR(2)
+CSK        WRITE(6,*) 'IMZERO is',IMZERO
         IF(IMZERO.EQ.1) THEN
           GOTO 1001
         END IF
@@ -5251,6 +5361,7 @@ C       END IF
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
@@ -5295,6 +5406,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SCLDIA(A,FACTOR,NDIM,IPACK)
@@ -5326,6 +5438,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SDCMRF(CSD,CCM,IWAY,IATP,IBTP,IASM,IBSM,NA,NB,
@@ -5392,13 +5505,13 @@ C
           CALL TRIPK3(CSD,CCM,1,NA,NA,SIGN_T)
 C              TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN_T)
         ELSE
-          CALL COPVEC(CSD,CCM,NA*NB)
+          CALL DCOPY(NA*NB,CSD,1,CCM,1)
         END IF
 *. Scale
         IF(FACTOR.NE.1.0D0) THEN
           IF(ISCALE.EQ.1) THEN
             SCLFAC = 1.0D0
-            CALL SCALVE(CCM,FACTOR,LCOMB)
+            CALL DSCAL(LCOMB,FACTOR,CCM,1)
           ELSE
             SCLFAC = FACTOR
           END IF
@@ -5415,13 +5528,13 @@ C              TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN_T)
 *. Unpack from triangular form
           CALL TRIPK3(CSD,CCM,2,NA,NA,SIGN_T)
         ELSE
-           CALL COPVEC(CCM,CSD,NA*NB)
+          CALL DCOPY(NA*NB,CCM,1,CSD,1)
         END IF
 *. Scale
         IF(FACTOR.NE.1.0D0) THEN
           IF(ISCALE.EQ.1) THEN
             SCLFAC = 1.0D0
-            CALL SCALVE(CSD,FACTOR,LDET)
+            CALL DSCAL(LDET,FACTOR,CSD,1)
           ELSE
             SCLFAC = FACTOR
           END IF
@@ -5458,6 +5571,7 @@ C     IF(NTEST.NE.0.AND.IWAY.EQ.1) THEN
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SORLOW(WRK,STVAL,ISTART,KZVAR,KEXST2,JEXSTV,IPRT)
@@ -5573,6 +5687,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 *
@@ -5667,6 +5782,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SPGRPCON(IOFSPGRP,NSPGRP,NGAS,MXPNGAS,IELFSPGRP,
@@ -5745,6 +5861,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 *  Dummy routine for normal compilations
@@ -5755,6 +5872,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SXTYP2_GAS(NSXTYP,ITP,JTP,NGAS,ILTP,IRTP,IPHGAS)
@@ -5830,6 +5948,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SWAPVE(VEC1,VEC2,NDIM)
@@ -5849,6 +5968,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SYMCM1(ITASK,IOBJ,I1,I2,I12)
@@ -5884,6 +6004,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SYMCM2(IDUM1,IDUM2,IDUM3,IDUM4,IDUM5)
@@ -5893,6 +6014,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TODSC(A,NDIM,MBLOCK,IFIL)
@@ -6019,6 +6141,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TODSCP(A,NDIM,MBLOCK,IFIL)
@@ -6106,6 +6229,7 @@ C?    CALL XFLUSH(6)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRAVCD(VEC1,VEC2,X,NVECIN,NVECOUT,LUIN,LUOUT,
@@ -6149,6 +6273,7 @@ C             MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
@@ -6200,6 +6325,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
@@ -6299,6 +6425,7 @@ C       LBLK = 40
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRPAD3(MAT,FACTOR,NDIM)
@@ -6401,6 +6528,7 @@ C?      write(6,*) 'NBLK ',nblk
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRPMT3(XIN,NROW,NCOL,XOUT)
@@ -6463,6 +6591,7 @@ C?      write(6,*) 'NBLK ',nblk
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE UPPCAS(LINE,LENGTH)
@@ -6507,6 +6636,7 @@ C?      write(6,*) 'NBLK ',nblk
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION VCSMDN(VEC1,VEC2,FAC1,FAC2,LU1,LU2,IREW,LBLK)
@@ -6515,7 +6645,6 @@ C?      write(6,*) 'NBLK ',nblk
 *
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION VEC1(*),VEC2(*)
-      REAL*8 INPROD
 *
       XNORM = 0.0D0
       IF(IREW .NE. 0 ) THEN
@@ -6565,6 +6694,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE VECSMD(VEC1,VEC2,FAC1,FAC2,LU1,LU2,LU3,IREW,LBLK)
@@ -6631,6 +6761,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE WEIGHT_SPGP(Z,NORBTP,NELFTP,NORBFTP,
@@ -6678,6 +6809,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE WRTMAT(A,NROW,NCOL,NMROW,NMCOL)
@@ -6694,6 +6826,28 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE WRTMATMN(A,NROW,NCOL,NMROW,NMCOL,LUWRT)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION A(NMROW,NMCOL)
+C
+      XXX = 0.0D0
+      XXX = DDOT(NMCOL,A,1,A,1)
+      IF( XXX .eq. 0.0D0 ) GOTO 200
+C
+      DO 100 I=1,NROW
+      WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL)
+ 1010 FORMAT(1H0,I3,2X,4(1X,E14.8),/,(1H ,5X,4(1X,E14.8)))
+  100 CONTINUE
+  200 CONTINUE
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE IWRTMA8(MAT,NROW,NCOL,NMROW,NMCOL)
@@ -6709,6 +6863,23 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          * 
+*                                                                     *
+***********************************************************************
+      SUBROUTINE IWRTMAMN(MAT,NROW,NCOL,NMROW,NMCOL,LUWRT)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION MAT(NMROW,NMCOL)
+C
+      DO 100 I=1,NROW
+      WRITE(LUWRT,1010) I,(MAT(I,J),J=1,NCOL)
+ 1010 FORMAT(1H0,I3,2X,4(1X,I10),/,(1H ,5X,4(1X,I10)))
+  100 CONTINUE
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE IWRTMAS(MAT,NROW,NCOL,NMROW,NMCOL)
@@ -6737,6 +6908,35 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE GET_BLOCK_LENGTH(IBLOCKL,N_BLK,ILEN)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION IBLOCKL(*)
+C
+      ILEN = IBLOCKL(N_BLK)
+C      WRITE(6,*) 'found block length',ILEN,N_BLK
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE GET_BLOCK_PROC(IBLOCKD,N_BLK,IPROC)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION IBLOCKD(*)
+C
+      IPROC = IBLOCKD(N_BLK)
+C      WRITE(6*) 'found proc <--> block ',IPROC,N_BLK
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE WRTTTS(BLOCKS,IBLOCK,NBLOCK,
@@ -6817,6 +7017,7 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE WRTVCD(SEGMNT,LU,IREW,LBLK)
@@ -6868,6 +7069,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE ZERORC(MBLOCK,IFIL,IAMPACKED)
@@ -6891,6 +7093,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE ZOOS(ISMOST,IBLTP,MAXSYM,IOCOC,NSSOA,NSSOB,
@@ -7007,6 +7210,7 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE ZSPGPIB(NSTSO,ISTSO,NSPGP,NSMST)
@@ -7042,6 +7246,7 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PART_CIV2(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
@@ -7202,5 +7407,218 @@ C?      WRITE(6,*) '====================='
         END DO
       END IF
 *
-      RETURN
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE PART_CIV2_SPC(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
+     &                         NSMST,MXLNG,IOCOC,ISMOST,
+     &                         NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
+     &                         ICOMP,ITTSS_ORD)
+*
+* Partition a CI vector into batches of blocks.
+* The length of a batch must be atmost MXLNG
+*
+* IF ICOMP. eq. 1 the complete CI vector is constructed
+*
+*
+* Compared to PART_CIV, the NOOS arrays have been eliminated.
+* They are becoming the size defining arrays - atleast at
+* the laptop
+*. Output
+* NBATCH : Number of batches
+* LBATCH : Number of blocks in a given batch
+* LEBATCH : Number of elements in a given batch ( packed ) !
+* I1BATCH : Number of first block in a given batch
+* IBATCH : TTS blocks in Start of a given TTS block with respect to start
+*          of batch
+*   IBATCH(1,*) : Alpha type
+*   IBATCH(2,*) : Beta sym
+*   IBATCH(3,*) : Sym of alpha
+*   IBATCH(4,*) : Sym of beta
+*   IBATCH(5,*) : Offset of block with respect to start of block in
+*                 expanded form
+*   IBATCH(6,*) : Offset of block with respect to start of block in
+*                 packed form
+*   IBATCH(7,*) : Length of block, expandend form
+*   IBATCH(8,*) : Length of block, packed form
+*
+*
+*
+* Jeppe Olsen, August 1995
+*
+*
+* IMPORTANT change compared to PART_CIV2:
+*
+* MXLNG is no longer assumed to be equals to the total number
+* of dets. Therefore we have to partition the CI vector being aware
+* of putting symmetry blocks of same TT into different batches.
+*
+*
+* REASON: SIGMA-vector / DENSITY matrix calculation is done wrt loops
+* over NSMST!
+*
+* S. Knecht - July 02 2007
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*.Input
+C     INTEGER NOOS(NOCTPA,NOCTPB,NSMST)
+C     INTEGER NOOSP(NOCTPA,NOCTPB,NSMST)
+      INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
+      INTEGER IOCOC(NOCTPA,NOCTPB)
+      INTEGER IBLTP(*)
+      INTEGER ISMOST(*)
+*.Output
+      INTEGER LBATCH(*)
+      INTEGER LEBATCH(*)
+      INTEGER I1BATCH(*)
+      INTEGER IBATCH(8,*)
+*
+      I_SAVE_IBLOCK = 0
+      N_TRY = 0
+*
+      NTEST = 0000
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*)
+        WRITE(6,*) ' =================='
+        WRITE(6,*) '   PART_CIV2_SPC   '
+        WRITE(6,*) ' =================='
+        WRITE(6,*) ' IDC = ', IDC
+        WRITE(6,*)
+        WRITE(6,*) ' IOCOC Array '
+        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
+        if (NTEST.ge.500) then
+          WRITE(6,*) ' NSSOA array ( input ) '
+          CALL IWRTMA(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA)
+          WRITE(6,*) ' NSSOB array ( input ) '
+          CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
+          write(6,*) ' IBLTP array: '
+          call iwrtma(IBLTP,1,NSMST,1,NSMST)
+        end if
+      END IF
+*
+*. block zero
+*
+      IB = 1
+      IA = 1
+      ISM = 1
+      IFRST = 1
+      NBATCH = 0
+      IBLOCK = 0
+      IFINI = 0
+*. Loop over batches of blocks
+ 2000 CONTINUE
+      NBATCH = NBATCH + 1
+      LBATCH(NBATCH) = 0
+      I1BATCH(NBATCH) = IBLOCK  + 1
+      LENGTH = 0
+      LENGTHP= 0
+      NBLOCK = 0
+      IFRST = 1
+*. Loop over blocks in batch
+ 1000 CONTINUE
+      IF(IFRST.EQ.0) THEN
+        call nxt_tts(ITTSS_ORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
+      END IF
+      IFRST = 0
+      IF (IFINI.EQ.1) GOTO 2002
+*. Should this block be included
+      IF(IBLTP(ISM).EQ.0) GOTO 1000
+      IF(IBLTP(ISM).EQ.2.AND.IA.LT.IB) GOTO 1000
+      IF(IOCOC(IA,IB).EQ.0) GOTO 1000
+*. can this block be included
+      IBSM = ISMOST(ISM)
+      NSTA = NSSOA(ISM,IA)
+      NSTB = NSSOB(IBSM,IB)
+      LBLOCK= NSTA*NSTB
+      IF(IBLTP(ISM).EQ.1.OR.(IBLTP(ISM).EQ.2.AND.IA.NE.IB)) THEN
+        LBLOCKP = NSTA*NSTB
+      ELSE IF (IBLTP(ISM) .EQ. 2.AND.IA.EQ.IB) THEN
+        LBLOCKP = NSTA*(NSTA+1)/2
+      END IF
+C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
+      IF(LENGTH+LBLOCK.LE.MXLNG.OR.ICOMP.EQ.1) THEN
+        NBLOCK = NBLOCK + 1
+        IBLOCK = IBLOCK + 1
+        LBATCH(NBATCH) = LBATCH(NBATCH)+1
+        IBATCH(1,IBLOCK) = IA
+        IBATCH(2,IBLOCK) = IB
+        IBATCH(3,IBLOCK) = ISM
+        IBATCH(4,IBLOCK) = IBSM
+        IBATCH(5,IBLOCK) = LENGTH+1
+        IBATCH(6,IBLOCK) = LENGTHP+1
+        IBATCH(7,IBLOCK) = LBLOCK
+        IBATCH(8,IBLOCK) = LBLOCKP
+        LENGTH = LENGTH + LBLOCK
+        LENGTHP= LENGTHP+ LBLOCKP
+        LEBATCH(NBATCH) = LENGTHP
+        GOTO 1000
+      ELSE IF(ICOMP.EQ.0.AND.
+     &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
+        WRITE(6,*) ' Not enough scratch space to include a single Block'
+        WRITE(6,*) ' Since I cannot procede I will stop '
+        WRITE(6,*) ' Insufficient buffer detected in PART_CIV2_SPC'
+        write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
+        WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
+        call quit( ' Insufficient buffer space in PART_CIV2_SPC. ' )
+      ELSE
+*
+*     this batch is finished, goto next batch
+*
+*       is this the TT-1 block?
+        IF( ISM .ne. 1 )THEN
+*
+*         go back to ISM == 1 since we loop over NSMST in GNSIDE_REL
+*
+          N_TRY = N_TRY + 1
+*
+          IF( N_TRY .gt. 1 .and. I_SAVE_IBLOCK .eq. IBLOCK ) THEN
+            WRITE(6,*) ' Not enough scratch space to include a '//
+     &                     ' single Block'
+            WRITE(6,*) ' Since I cannot procede I will stop '
+            WRITE(6,*) ' Insufficient buffer detected in '//
+     &                     ' PART_CIV2_SPC'
+            WRITE(6,*) '  LENGTH ',LENGTH
+            WRITE(6,*) ' Alter GAS space of raise Buffer from',MXLNG
+            stop ' In PART_CIV2_SPC because of N_TRY .ge. 1. '
+          END IF
+*
+          I_SAVE_IBLOCK = IBLOCK
+*         set batch back to first available TT-1 block
+          call bck_tts(ITTSS_ORD,ISM,LBATCH,LEBATCH,IBATCH,IBLOCK,
+     &                 NBLOCK,LENGTH,LENGTHP,NBATCH,6)
+*
+          GOTO 2000
+*
+        ELSE
+          N_TRY = 0
+          I_SAVE_IBLOCK = 0
+          GOTO 2000
+        END IF
+*       ^ ISM check
+      END IF
+*     ^ length of batch < MXLNG?
+ 2002 CONTINUE
+*
+      IF(NTEST.NE.0) THEN
+C?      WRITE(6,*) 'Output from PART_CIV'
+C?      WRITE(6,*) '====================='
+        WRITE(6,*)
+        WRITE(6,*) ' Number of batches ', NBATCH
+        DO JBATCH = 1, NBATCH
+          WRITE(6,*)
+          WRITE(6,*) ' Info on batch ', JBATCH
+          WRITE(6,*) ' *********************** '
+          WRITE(6,*)
+          WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
+          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
+            WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
+          END DO
+        END DO
+      END IF
+*
       END

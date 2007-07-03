@@ -600,6 +600,7 @@ C Set VECOUT = 0 if VECIN = 0
 C   Timo Fleig, 18-12-2002
 C
 #include "implicit.h"
+CSK#include "../luciarel/lucipar_rel.inc"
       PARAMETER (THRES=1.0D-4)
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)
 C
@@ -607,8 +608,10 @@ C
          DIVIDE=DIAG(I)+SHIFT
          IF(ABS(DIVIDE).LE.THRES) DIVIDE=THRES
          IF(VECIN(I).EQ.0.0D0) THEN
+CSK           WRITE(LUWRT,*) 'I set this to 0',I
            VECOUT(I) = 0.0D0
          ELSE
+CSK           WRITE(LUWRT,*) 'DIVIDE for I',DIVIDE,I
            VECOUT(I)=VECIN(I)/DIVIDE
          END IF
       END DO
@@ -635,8 +638,10 @@ C
            DIVIDE=DIAG(I)+SHIFT
            IF(ABS(DIVIDE).LE.THRES) DIVIDE=THRES
            VECOUT(I)=VECIN(I)/DIVIDE
-           IF (ABS(VECOUT(I)*VECIN(I)) .LE. THR_ETRUNC)
-     &        VECOUT(I) = 0.0D0
+           IF (THR_ETRUNC .GT. 0.0D0) THEN
+              IF (ABS(VECOUT(I)*VECIN(I)) .LE. THR_ETRUNC)
+     &           VECOUT(I) = 0.0D0
+           END IF
          END IF
       END DO
       RETURN
