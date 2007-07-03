@@ -2429,7 +2429,7 @@ C
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
      &            '.PARMOD','.PIOMOD','.MAXITR','.LBLKSZ','.FILSYS',
-     &            '.DISTRT','.FRCTFL','XXXXXXX','XXXXXXX','XXXXXXX'/
+     &            '.DISTRT','.FRCTFL','.TRUNCF','XXXXXXX','XXXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2468,7 +2468,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
-     &                     21,22,23,24,25,26,27), I
+     &                     21,22,23,24,25,26,27,28,29,30), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -2623,6 +2623,16 @@ C&&& I_USE_DIST_ROUTE: Determination of distribution routine to use
 C&&& IFRACTFILE: use of fractional files in DAVIDSON diagonalizer
                   READ(LUCMD,*) IFRACTFILE
                   IMOKW(27) = 1
+               GO TO 100
+   28          CONTINUE
+C&&& TRUNCFactor: truncation factor for residual vectors for next trial
+C                 vector
+                  READ(LUCMD,*) CTRUNC_FAC
+                  IMOKW(28) = 1
+               GO TO 100
+   29          CONTINUE
+               GO TO 100
+   30          CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -4240,7 +4250,7 @@ C     =====================================================
         ENDIF
         IF (URKBAL.OR.SPINFR2) THEN
           CALL QUIT(
-     &  'HAMINP:Conflicting options URKBAL/SPINFR2 & BSS!')
+     &  'HAMINP: Conflicting options URKBAL/SPINFR2 & BSS!')
         ENDIF
 C ...   DIRCON(1) means contracted L component basis set !
         IF (ZORA) THEN
