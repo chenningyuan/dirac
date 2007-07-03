@@ -633,6 +633,17 @@ C        .. we do not accept user input of less than 100 000 !
         endif
       end if
 *
+* 28: Truncate residual vectors before creating new trial vector?
+*     (14-jun-07, hjaaj)
+*
+      if (IMOKW(28).eq.1) then
+        trunc_fac = ctrunc_fac
+      else
+      ! default: remove only very small numbers, less than round-off
+      ! factor
+        trunc_fac = 1.0D-10
+      end if
+*
       if(irunpa.eq.1) then
         performci = 'parallel'
       else if(irunpa.eq.0) then
@@ -748,8 +759,7 @@ C        .. we do not accept user input of less than 100 000 !
         end if
         write(LUOUT,'(A42,I1)')
      &  ' Parallel distribution routine ........ ',IDISTROUTE
-        write(LUOUT,*)
-        write(LUOUT,'(A42,A3)')
+        write(LUOUT,'(/A42,A3)')
      &  ' Fractional Files ..................... ',YESSTATEMENT
         write(LUOUT,*)
         if( ifilesystem .eq. 0 ) THEN
@@ -766,6 +776,13 @@ C        .. we do not accept user input of less than 100 000 !
         write(LUOUT,*)
         end if
       end if
+*
+* 10f: truncation factor
+*
+      write(LUOUT,'(/A42,1P,D10.2)')
+     &  '  Truncation Factor ..................... ',ctrunc_fac
+      write(LUOUT,*)
+                   
 * 11: INAC specification of inactive orbitals per symmetry
 *
 *     No printing. Will be directed to luciwrt after resolution
@@ -3456,7 +3473,7 @@ c       Write(*,Fmt) '*'//Line//'*'
 *----------------------------------------------------------------------*
       Write(LUOUT,*)
       Write(LUOUT,*)
-      nLine=37
+      nLine=34
       Do i=1,nLine
         Line=BlLine
         If ( i.eq.1 .or. i.eq.2 .or. i.eq.nLine )
@@ -3508,14 +3525,10 @@ c       Write(*,Fmt) '*'//Line//'*'
         If ( i.eq.30)
      &  Line='Citation:                                         '
         If ( i.eq.31)
-     &  Line='  S. Knecht, T. Fleig,                            '
+     &  Line='  S. Knecht, H. J. Aa. Jensen and T. Fleig,       '
         If ( i.eq.32)
      &  Line='          in preparation.                         '
-        If ( i.eq.33)
-     &  Line='  S. Knecht, H. J. Aa. Jensen,                    '
-        If ( i.eq.34)
-     &  Line='          in preparation.                         '
-        If ( i.eq.36 .or. i.eq.37 )
+        If ( i.eq.33 .or. i.eq.34 )
      &  Line = StLine
         write(LUOUT,*) Line
       End Do
