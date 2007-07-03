@@ -194,6 +194,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE DISKUN_REL
@@ -210,6 +211,7 @@ C
 *  ---------
 *        5 :  Standard IN
 *        6 :  Standard OUT
+*        7 :  Standard OUT (Slaves)
 *
 *  60 - 69 :  Important files retained (DIAG,C,HC etc.)
 *  ---------
@@ -225,6 +227,7 @@ C
 *  ---------
 *
 *  Timo Fleig    Mar 19, 2002
+*  changes for parallel business: Stefan Knecht   Apr 24, 2007
 *==================================================
 *
 *  Old setup:
@@ -237,7 +240,22 @@ C
 * Files for relativistic business (SO ints etc.) :  70 - 79
 * All files containing final results             :  90 - 99
 *
+*
 #include "clunit.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
+#include "files_r.inc"
+      INTEGER LUSCR_MPIL,LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
+      INTEGER LUSC344_MPIL, LUDUMPFLL
+      CHARACTER*9 LUDUMPFN
+      CHARACTER*13 NLUDUMPF
+*
+CSK      WRITE(6,*) 'I have been in LUCI_SETUP',MYPROC
+*
 * =========================
 * Standard input and output
 * =========================
@@ -278,38 +296,298 @@ C
 * =================
 *. CI diagonal
       LUDIA = 60
+      LUDIA_MPIN ="CIDIA_REL"
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUDIA_MPI,'(A9,A1,I1)') LUDIA_MPIN,'.',MYPROC
+         LUDIA_MPIL=11
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUDIA_MPI,'(A9,A1,I2)') LUDIA_MPIN,'.',MYPROC
+         LUDIA_MPIL=12
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUDIA_MPI,'(A9,A1,I3)') LUDIA_MPIN,'.',MYPROC
+         LUDIA_MPIL=13
+      ELSE
+        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
+      ENDIF
+#else
+      NLUDIA_MPI=LUDIA_MPIN
+      LUDIA_MPIL=9
+#endif
+*
+      Open(Unit=LUDIA,File=NLUDIA_MPI(1:LUDIA_MPIL),Status='UNKNOWN',
+     &     Form='UNFORMATTED')
 *. CI vector
       LUC =   61
+      LUC_MPIN ="LUCVECT_REL"
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUC_MPI,'(A11,A1,I1)') LUC_MPIN,'.',MYPROC
+         LUC_MPIL=13
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUC_MPI,'(A11,A1,I2)') LUC_MPIN,'.',MYPROC
+         LUC_MPIL=14
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUC_MPI,'(A11,A1,I3)') LUC_MPIN,'.',MYPROC
+         LUC_MPIL=15
+      ELSE
+        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
+      ENDIF
+#else
+      NLUC_MPI=LUC_MPIN
+      LUC_MPIL=11
+#endif
+      Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
+     &     Form='UNFORMATTED')
 *. Sigma vector file
       LUHC =  62
+      LUHC_MPIN ="HCFILE_REL"
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUHC_MPI,'(A10,A1,I1)') LUHC_MPIN,'.',MYPROC
+         LUHC_MPIL=12
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUHC_MPI,'(A10,A1,I2)') LUHC_MPIN,'.',MYPROC
+         LUHC_MPIL=13
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUHC_MPI,'(A10,A1,I3)') LUHC_MPIN,'.',MYPROC
+         LUHC_MPIL=14
+      ELSE
+        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
+      ENDIF
+#else
+      NLUHC_MPI=LUHC_MPIN
+      LUHC_MPIL=10
+#endif
+      Open(Unit=LUHC,File=NLUHC_MPI(1:LUHC_MPIL),Status='UNKNOWN',
+     &     Form='UNFORMATTED')
 * =================
 * Scratch files
 * =================
       LUSC1 = 70
+      LUSC1_MPIN ="LUSC1_REL"
       LUSC2 = 71
+      LUSC2_MPIN ="LUSC2_REL"
       LUSC3 = 72
+      LUSC3_MPIN ="LUSC3_REL"
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUSC1_MPI,'(A9,A1,I1)') LUSC1_MPIN,'.',MYPROC
+         WRITE (NLUSC2_MPI,'(A9,A1,I1)') LUSC2_MPIN,'.',MYPROC
+         WRITE (NLUSC3_MPI,'(A9,A1,I1)') LUSC3_MPIN,'.',MYPROC
+         LUSC123_MPIL=11
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUSC1_MPI,'(A9,A1,I2)') LUSC1_MPIN,'.',MYPROC
+         WRITE (NLUSC2_MPI,'(A9,A1,I2)') LUSC2_MPIN,'.',MYPROC
+         WRITE (NLUSC3_MPI,'(A9,A1,I2)') LUSC3_MPIN,'.',MYPROC
+         LUSC123_MPIL=12
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUSC1_MPI,'(A9,A1,I3)') LUSC1_MPIN,'.',MYPROC
+         WRITE (NLUSC2_MPI,'(A9,A1,I3)') LUSC2_MPIN,'.',MYPROC
+         WRITE (NLUSC3_MPI,'(A9,A1,I3)') LUSC3_MPIN,'.',MYPROC
+         LUSC123_MPIL=13
+      ELSE
+        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
+      ENDIF
+#else
+      NLUSC1_MPI=LUSC1_MPIN
+      NLUSC2_MPI=LUSC2_MPIN
+      NLUSC3_MPI=LUSC3_MPIN
+      LUSC123_MPIL=9
+#endif
+      Open(Unit=LUSC1,File=NLUSC1_MPI(1:LUSC123_MPIL),Status='UNKNOWN',
+     &     Form='UNFORMATTED')
+      Open(Unit=LUSC2,File=NLUSC2_MPI(1:LUSC123_MPIL),Status='UNKNOWN',
+     &     Form='UNFORMATTED')
+      Open(Unit=LUSC3,File=NLUSC3_MPI(1:LUSC123_MPIL),Status='UNKNOWN',
+     &     Form='UNFORMATTED')
 *. Scratch space for subspace handling
       LUSC34 = 73
+      LUSC34_MPIN ="LUSC34_REL"
       LUSC35 = 74
+      LUSC35_MPIN ="LUSC35_REL"
       LUSC36 = 75
+      LUSC36_MPIN ="LUSC36_REL"
       LUSC37 = 76
+      LUSC37_MPIN ="LUSC37_REL"
       LUSC38 = 77
+      LUSC38_MPIN ="LUSC38_REL"
       LUSC39 = 78
+      LUSC39_MPIN ="LUSC39_REL"
       LUSC41 = 79
+      LUSC41_MPIN ="LUSC41_REL"
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUSC34_MPI,'(A10,A1,I1)') LUSC34_MPIN,'.',MYPROC
+         WRITE (NLUSC35_MPI,'(A10,A1,I1)') LUSC35_MPIN,'.',MYPROC
+         WRITE (NLUSC36_MPI,'(A10,A1,I1)') LUSC36_MPIN,'.',MYPROC
+         WRITE (NLUSC37_MPI,'(A10,A1,I1)') LUSC37_MPIN,'.',MYPROC
+         WRITE (NLUSC38_MPI,'(A10,A1,I1)') LUSC38_MPIN,'.',MYPROC
+         WRITE (NLUSC39_MPI,'(A10,A1,I1)') LUSC39_MPIN,'.',MYPROC
+         WRITE (NLUSC41_MPI,'(A10,A1,I1)') LUSC41_MPIN,'.',MYPROC
+         LUSC344_MPIL=12
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUSC34_MPI,'(A10,A1,I2)') LUSC34_MPIN,'.',MYPROC
+         WRITE (NLUSC35_MPI,'(A10,A1,I2)') LUSC35_MPIN,'.',MYPROC
+         WRITE (NLUSC36_MPI,'(A10,A1,I2)') LUSC36_MPIN,'.',MYPROC
+         WRITE (NLUSC37_MPI,'(A10,A1,I2)') LUSC37_MPIN,'.',MYPROC
+         WRITE (NLUSC38_MPI,'(A10,A1,I2)') LUSC38_MPIN,'.',MYPROC
+         WRITE (NLUSC39_MPI,'(A10,A1,I2)') LUSC39_MPIN,'.',MYPROC
+         WRITE (NLUSC41_MPI,'(A10,A1,I2)') LUSC41_MPIN,'.',MYPROC
+         LUSC344_MPIL=13
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUSC34_MPI,'(A10,A1,I3)') LUSC34_MPIN,'.',MYPROC
+         WRITE (NLUSC35_MPI,'(A10,A1,I3)') LUSC35_MPIN,'.',MYPROC
+         WRITE (NLUSC36_MPI,'(A10,A1,I3)') LUSC36_MPIN,'.',MYPROC
+         WRITE (NLUSC37_MPI,'(A10,A1,I3)') LUSC37_MPIN,'.',MYPROC
+         WRITE (NLUSC38_MPI,'(A10,A1,I3)') LUSC38_MPIN,'.',MYPROC
+         WRITE (NLUSC39_MPI,'(A10,A1,I3)') LUSC39_MPIN,'.',MYPROC
+         WRITE (NLUSC41_MPI,'(A10,A1,I3)') LUSC41_MPIN,'.',MYPROC
+         LUSC344_MPIL=14
+      ELSE
+        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
+      ENDIF
+#else
+      NLUSC34_MPI=LUSC34_MPIN
+      NLUSC35_MPI=LUSC35_MPIN
+      NLUSC36_MPI=LUSC36_MPIN
+      NLUSC37_MPI=LUSC37_MPIN
+      NLUSC38_MPI=LUSC38_MPIN
+      NLUSC39_MPI=LUSC39_MPIN
+      NLUSC41_MPI=LUSC41_MPIN
+      LUSC344_MPIL=10
+#endif
+      Open(Unit=LUSC34,File=NLUSC34_MPI(1:LUSC344_MPIL),
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LUSC35,File=NLUSC35_MPI(1:LUSC344_MPIL),
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LUSC36,File=NLUSC36_MPI(1:LUSC344_MPIL),
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LUSC37,File=NLUSC37_MPI(1:LUSC344_MPIL),
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LUSC38,File=NLUSC38_MPI(1:LUSC344_MPIL),
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LUSC39,File=NLUSC39_MPI(1:LUSC344_MPIL),
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LUSC41,File=NLUSC41_MPI(1:LUSC344_MPIL),
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+*
 *. Reference vectors for (transition) densities
+*
       LUSC61 = 65
 C     LUSC62 = 66
 C  avoid unit 66. Used in DALTON
-      LUSC62 = 95    ! conflict might occur with LU18 in genh1.F
+CSK      LUSC62 = 95    ! conflict might occur with LU18 in genh1.F
+      LUSC62 = 67    ! might this work? SK April 24, 2007
+      LUSC61_MPIN ="LUSC61_REL"
+      LUSC62_MPIN ="LUSC62_REL"
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUSC61_MPI,'(A10,A1,I1)') LUSC61_MPIN,'.',MYPROC
+         WRITE (NLUSC62_MPI,'(A10,A1,I1)') LUSC62_MPIN,'.',MYPROC
+         LUSC344_MPIL=12
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUSC61_MPI,'(A10,A1,I2)') LUSC61_MPIN,'.',MYPROC
+         WRITE (NLUSC62_MPI,'(A10,A1,I2)') LUSC62_MPIN,'.',MYPROC
+         LUSC344_MPIL=13
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUSC61_MPI,'(A10,A1,I3)') LUSC61_MPIN,'.',MYPROC
+         WRITE (NLUSC62_MPI,'(A10,A1,I3)') LUSC62_MPIN,'.',MYPROC
+         LUSC344_MPIL=14
+      ELSE
+        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
+      ENDIF
+#else
+      NLUSC61_MPI=LUSC61_MPIN
+      NLUSC62_MPI=LUSC62_MPIN
+      LUSC344_MPIL=10
+#endif
+      Open(Unit=LUSC61,File=NLUSC61_MPI(1:LUSC344_MPIL),
+     &     Status='UNKNOWN', Form='UNFORMATTED')
+      Open(Unit=LUSC62,File=NLUSC62_MPI(1:LUSC344_MPIL),
+     &     Status='UNKNOWN', Form='UNFORMATTED')
 *. Some more general purpose scratch
       LUSC92 = 92
       LUSC93 = 93
+      LUSC92_MPIN ="LUSC92_REL"
+      LUSC93_MPIN ="LUSC93_REL"
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUSC92_MPI,'(A10,A1,I1)') LUSC92_MPIN,'.',MYPROC
+         WRITE (NLUSC93_MPI,'(A10,A1,I1)') LUSC93_MPIN,'.',MYPROC
+         LUSC929_MPIL=12
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUSC92_MPI,'(A10,A1,I2)') LUSC92_MPIN,'.',MYPROC
+         WRITE (NLUSC93_MPI,'(A10,A1,I2)') LUSC93_MPIN,'.',MYPROC
+         LUSC929_MPIL=13
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUSC92_MPI,'(A10,A1,I3)') LUSC92_MPIN,'.',MYPROC
+         WRITE (NLUSC93_MPI,'(A10,A1,I3)') LUSC93_MPIN,'.',MYPROC
+         LUSC929_MPIL=14
+      ELSE
+        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
+      ENDIF
+#else
+      NLUSC92_MPI=LUSC92_MPIN
+      NLUSC93_MPI=LUSC93_MPIN
+      LUSC929_MPIL=10
+#endif
+*
       LUSC94 = 94
       LUSC95 = 95
+      LUSC94_MPIN ="INTEGRALS"
+      LUSC95_MPIN ="INDICES"
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUSC94_MPI,'(A9,A1,I1)') LUSC94_MPIN,'.',MYPROC
+         WRITE (NLUSC95_MPI,'(A7,A1,I1)') LUSC95_MPIN,'.',MYPROC
+         LUSC94_MPIL=11
+         LUSC95_MPIL=9
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUSC94_MPI,'(A9,A1,I2)') LUSC94_MPIN,'.',MYPROC
+         WRITE (NLUSC95_MPI,'(A7,A1,I2)') LUSC95_MPIN,'.',MYPROC
+         LUSC94_MPIL=12
+         LUSC95_MPIL=10
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUSC94_MPI,'(A9,A1,I3)') LUSC94_MPIN,'.',MYPROC
+         WRITE (NLUSC95_MPI,'(A7,A1,I3)') LUSC95_MPIN,'.',MYPROC
+         LUSC94_MPIL=13
+         LUSC95_MPIL=11
+      ELSE
+        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
+      ENDIF
+#else
+      NLUSC94_MPI=LUSC94_MPIN
+      NLUSC95_MPI=LUSC95_MPIN
+      LUSC94_MPIL=9
+      LUSC95_MPIL=7
+#endif
+*. open and close of LUSC92 - LUSC95 at relevant places ...
       LUSC96 = 96     ! File MRCONEE
       LUSC97 = 97     ! File MDCINT
       LUSC98 = 98
-      LUSC99 = 99
+      LUDUMPF = 99
+      LUDUMPFN = "LDUMPFILE"
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUDUMPF,'(A9,A1,I1)') LUDUMPFN,'.',MYPROC
+         LUDUMPFLL=11
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUDUMPF,'(A9,A1,I2)') LUDUMPFN,'.',MYPROC
+         LUDUMPFLL=12
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUDUMPF,'(A9,A1,I3)') LUDUMPFN,'.',MYPROC
+         LUDUMPFLL=13
+      ELSE
+        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
+      ENDIF
+#else
+      NLUDUMPF = LUDUMPFN
+      LUDUMPFLL=9
+#endif
+      Open(Unit=LUDUMPF,File=NLUDUMPF(1:LUDUMPFLL),
+     &     Status='UNKNOWN', Form='FORMATTED')
+*           
 * =================
 * Output files
 * =================
@@ -317,9 +595,74 @@ C  avoid unit 66. Used in DALTON
 *.
       LUMOUTR = 90
       LUMOUTI = 91
+      LUMOUTR_MPIN ="NATSPIR" 
+      LUMOUTI_MPIN ="NATSPII" 
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUMOUTR_MPI,'(A7,A1,I1)') LUMOUTR_MPIN,'.',MYPROC
+         WRITE (NLUMOUTI_MPI,'(A7,A1,I1)') LUMOUTI_MPIN,'.',MYPROC
+         LUMOUTRI_MPIL=9
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUMOUTR_MPI,'(A7,A1,I2)') LUMOUTR_MPIN,'.',MYPROC
+         WRITE (NLUMOUTI_MPI,'(A7,A1,I2)') LUMOUTI_MPIN,'.',MYPROC
+         LUMOUTRI_MPIL=10
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUMOUTR_MPI,'(A7,A1,I3)') LUMOUTR_MPIN,'.',MYPROC
+         WRITE (NLUMOUTI_MPI,'(A7,A1,I3)') LUMOUTI_MPIN,'.',MYPROC
+         LUMOUTRI_MPIL=11
+      ELSE
+        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
+      ENDIF
+#else
+      NLUMOUTR_MPI = LUMOUTR_MPIN
+      NLUMOUTI_MPI = LUMOUTI_MPIN
+      LUMOUTRI_MPIL = 7
+#endif
+*. open and close of LUMOUTR and LUMOUTI at relevant places ...
 *
-      RETURN
       END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE LUCI_CLOSEDOWN()
+*
+*     close LUCIAREL files and keep them
+*
+*     Stefan Knecht   April 24, 2007
+*
+      IMPLICIT REAL*8           (A-H,O-Z)
+#include "ipoist8.inc"
+#include "clunit.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
+*
+CSK      WRITE(6,*) 'I have been in LUCI_CLOSEDOWN',MYPROC
+      CLOSE(UNIT=LUDIA,STATUS='KEEP')
+      CLOSE(UNIT=LUC,STATUS='KEEP')
+      CLOSE(UNIT=LUHC,STATUS='KEEP')
+      CLOSE(UNIT=LUSC1,STATUS='KEEP')
+      CLOSE(UNIT=LUSC2,STATUS='KEEP')
+      CLOSE(UNIT=LUSC3,STATUS='KEEP')
+      CLOSE(UNIT=LUSC34,STATUS='KEEP')
+      CLOSE(UNIT=LUSC35,STATUS='KEEP')
+      CLOSE(UNIT=LUSC36,STATUS='KEEP')
+      CLOSE(UNIT=LUSC37,STATUS='KEEP')
+      CLOSE(UNIT=LUSC38,STATUS='KEEP')
+      CLOSE(UNIT=LUSC39,STATUS='KEEP')
+      CLOSE(UNIT=LUSC41,STATUS='KEEP')
+      CLOSE(UNIT=LUSC61,STATUS='DELETE')
+      CLOSE(UNIT=LUSC62,STATUS='DELETE')
+      CLOSE(UNIT=LUDUMPF,STATUS='KEEP')
+CSK      CLOSE(UNIT=LUDUMPF,STATUS='DELETE')
+*
+      END 
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
@@ -328,7 +671,6 @@ C  avoid unit 66. Used in DALTON
 *  Dummy routine for normal compilations
 *
       subroutine opnone
-      return
       end
 ***********************************************************************
 *                                                                     *

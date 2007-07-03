@@ -369,9 +369,16 @@ C              SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
 *
       subroutine read_indices(IN,NINTS)
 #include "clunit.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
+#include "files_r.inc"
       dimension IN(4,NINTS)
 *
-      open(unit=LUSC95,file='INDICES',
+      open(unit=LUSC95,file=NLUSC95_MPI(1:LUSC95_MPIL),
      &       status='OLD',form='FORMATTED')
       rewind(LUSC95)
       do I=1,NINTS,1

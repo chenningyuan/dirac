@@ -45,7 +45,13 @@ C
       subroutine civcinf_mc(IBATS,LBATS,I1BATS,LEBATS,NBAT_MS2,
      &                      NMS2VAL,NBLOCK)
 *
-#include "implicit.inc"
+#include "implicit.h"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 *
@@ -78,7 +84,6 @@ C
         NBAT_MS2_MC(IM) = NBAT_MS2(IM)
       end do
 *
-      return
       end
 ***********************************************************************
 *                                                                     *
@@ -1265,7 +1270,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
      &                            NASHT,F1,F2,MDIASV,IPOSDIA,IBOSYM,
      &                            IBSPOBEX_TP,LABEL,CIRUN,IPRNT)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -1275,6 +1280,13 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 #include "orbinp.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
+#include "files_r.inc"
 *
 #include "include/dgroup.h"
 *
@@ -1305,10 +1317,10 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * Double group type
       if (NZ.eq.1) then
         IDGTYP = 1
-        write(6,*) 
-        write(6,*) ' NOTICE from DIST_INTS_SIGDEN: '
-        write(6,*) '   Running in real algebra. '
-        write(6,*) '   Imaginary loops eliminated. '
+        write(LUWRT,*) 
+        write(LUWRT,*) ' NOTICE from DIST_INTS_SIGDEN: '
+        write(LUWRT,*) '   Running in real algebra. '
+        write(LUWRT,*) '   Imaginary loops eliminated. '
       else if (NZ.eq.2) then
         IDGTYP = 2
       else if (NZ.eq.4) then
@@ -1350,7 +1362,7 @@ C       call reo_info_molcas()
       if (NTEST.ge.1) then
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
           LUINGR = LUSC94
-          open(unit=LUINGR,file='INTEGRALS',
+          open(unit=LUINGR,file=NLUSC94_MPI(1:LUSC94_MPIL),
      &         status='UNKNOWN',form='FORMATTED')
           rewind(LUINGR)
         end if
@@ -1358,7 +1370,7 @@ C       call reo_info_molcas()
 *
 * File for saving index sequence
       LUINSV = LUSC95
-      open(unit=LUINSV,file='INDICES',
+      open(unit=LUINSV,file=NLUSC95_MPI(1:LUSC95_MPIL),
      &     status='UNKNOWN',form='FORMATTED')
       rewind(LUINSV)
 *
@@ -1370,10 +1382,10 @@ C       call reo_info_molcas()
       do IRI=1,IRILP,1
         if (NTEST.ge.1) then
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-            write(6,*)
-            if (IRI.eq.1.and.NTEST.ge.2) write(6,*) 'REAL LOOP'
+            write(LUWRT,*)
+            if (IRI.eq.1.and.NTEST.ge.2) write(LUWRT,*) 'REAL LOOP'
             if (IRI.eq.1) write(LUINGR,'(A)') 'Real  integrals.'
-            if (IRI.eq.2.and.NTEST.ge.2) write(6,*) 'IMAG LOOP'
+            if (IRI.eq.2.and.NTEST.ge.2) write(LUWRT,*) 'IMAG LOOP'
             if (IRI.eq.2) write(LUINGR,'(A)') 'Imag. integrals.'
           end if
         end if
@@ -1388,18 +1400,18 @@ C       call reo_info_molcas()
 *
 * Check for correct pointers to type blocks
           if (IRI.eq.1.and.ICOUNT.ne.IBSPOBEX_TP(IXTP)) then
-            write(6,*) 'Pointers to types do not match numbers'
-            write(6,*) 'of integrals generated.'
-            write(6,*) 'LABEL array: ',(LABEL(I,IXTP),I=1,4,1)
-            write(6,*) 'int.no.,offset: ',ICOUNT,IBSPOBEX_TP(IXTP)
-            write(6,*) 'Current type: ',IXTP
+            write(LUWRT,*) 'Pointers to types do not match numbers'
+            write(LUWRT,*) 'of integrals generated.'
+            write(LUWRT,*) 'LABEL array: ',(LABEL(I,IXTP),I=1,4,1)
+            write(LUWRT,*) 'int.no.,offset: ',ICOUNT,IBSPOBEX_TP(IXTP)
+            write(LUWRT,*) 'Current type: ',IXTP
             call abend2('Quitting.')
           end if
           if (NTEST.ge.2) then
-            write(6,*) '======================'
-            write(6,*) 'Processing type ',IXTP
-            write(6,*) '======================'
-            write(6,*) 'ISOBEX partition:'
+            write(LUWRT,*) '======================'
+            write(LUWRT,*) 'Processing type ',IXTP
+            write(LUWRT,*) '======================'
+            write(LUWRT,*) 'ISOBEX partition:'
             call iwrtma(ISOBEX(1,1,IXTP),NGAS,4,NGAS,4)
           end if
 *
@@ -1417,11 +1429,11 @@ C       call reo_info_molcas()
           call occ_to_grp(ISOBEX(1,3,IXTP),IGRP_AA,1)
           call occ_to_grp(ISOBEX(1,4,IXTP),IGRP_AB,1)
           if (NTEST.ge.5.and.IRI.eq.1) then
-            write(6,*) 'Group information:'
-            write(6,'(A,4I6)') 'IGRP_CA : ',(IGRP_CA(I),I=1,NGAS,1)
-            write(6,'(A,4I6)') 'IGRP_CB : ',(IGRP_CB(I),I=1,NGAS,1)
-            write(6,'(A,4I6)') 'IGRP_AA : ',(IGRP_AA(I),I=1,NGAS,1)
-            write(6,'(A,4I6)') 'IGRP_AB : ',(IGRP_AB(I),I=1,NGAS,1)
+            write(LUWRT,*) 'Group information:'
+            write(LUWRT,'(A,4I6)') 'IGRP_CA : ',(IGRP_CA(I),I=1,NGAS,1)
+            write(LUWRT,'(A,4I6)') 'IGRP_CB : ',(IGRP_CB(I),I=1,NGAS,1)
+            write(LUWRT,'(A,4I6)') 'IGRP_AA : ',(IGRP_AA(I),I=1,NGAS,1)
+            write(LUWRT,'(A,4I6)') 'IGRP_AB : ',(IGRP_AB(I),I=1,NGAS,1)
           end if
 *
 * Corresponding number of electrons
@@ -1430,10 +1442,10 @@ C       call reo_info_molcas()
           NEL_AA = ielsum(ISOBEX(1,3,IXTP),NGAS)
           NEL_AB = ielsum(ISOBEX(1,4,IXTP),NGAS)
           if (NTEST.ge.2.and.IRI.eq.1) then
-            write(6,*) 'NEL_CA = ',NEL_CA
-            write(6,*) 'NEL_CB = ',NEL_CB
-            write(6,*) 'NEL_AA = ',NEL_AA
-            write(6,*) 'NEL_AB = ',NEL_AB
+            write(LUWRT,*) 'NEL_CA = ',NEL_CA
+            write(LUWRT,*) 'NEL_CB = ',NEL_CB
+            write(LUWRT,*) 'NEL_AA = ',NEL_AA
+            write(LUWRT,*) 'NEL_AB = ',NEL_AB
           end if
 *
 * Symmetry loops
@@ -1460,8 +1472,8 @@ C       call reo_info_molcas()
           end if
 *
           if (NTEST.ge.5.and.IRI.eq.1) then
-            write(6,*) 'C  symmetry loop: ',ISMCSTA,ISMCEND
-            write(6,*) 'CA symmetry loop: ',ISMCASTA,ISMCAEND
+            write(LUWRT,*) 'C  symmetry loop: ',ISMCSTA,ISMCEND
+            write(LUWRT,*) 'CA symmetry loop: ',ISMCASTA,ISMCAEND
           end if
 *
 * Symmetry loops
@@ -1472,15 +1484,15 @@ C       call reo_info_molcas()
               do ISM_AA=1,NIRR_DG,1
                 ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
                 if (NTEST.ge.20.and.IRI.eq.1) then
-                  write(6,*)
-                  write(6,*)
-                  write(6,*) 'Printing symmetries:'
-                  write(6,*) 'Creator symm.      :',ISM_C
-                  write(6,*) 'Annihilator symm.  :',ISM_A
-                  write(6,*) 'Creator alpha symm.:',ISM_CA
-                  write(6,*) 'Creator beta symm. :',ISM_CB
-                  write(6,*) 'Annihi. alpha symm.:',ISM_AA
-                  write(6,*) 'Annihi. beta symm. :',ISM_AB
+                  write(LUWRT,*)
+                  write(LUWRT,*)
+                  write(LUWRT,*) 'Printing symmetries:'
+                  write(LUWRT,*) 'Creator symm.      :',ISM_C
+                  write(LUWRT,*) 'Annihilator symm.  :',ISM_A
+                  write(LUWRT,*) 'Creator alpha symm.:',ISM_CA
+                  write(LUWRT,*) 'Creator beta symm. :',ISM_CB
+                  write(LUWRT,*) 'Annihi. alpha symm.:',ISM_AA
+                  write(LUWRT,*) 'Annihi. beta symm. :',ISM_AB
                 end if
 *
 *. Generate strings of these symmetries
@@ -1541,9 +1553,9 @@ C       call reo_info_molcas()
                               INDEX(2) 
      &                              = ISTR_CB(1+NEL_CB*(I_CB-1))
                             else
-                              write(6,*) 
+                              write(LUWRT,*) 
      &                              'Impossible number of creators.'
-                              write(6,*) 
+                              write(LUWRT,*) 
      &                              'NEL_CA,NEL_CB = ',NEL_CA,NEL_CB
                               call abend2('Quitting.')
                             end if
@@ -1557,9 +1569,9 @@ C       call reo_info_molcas()
                               INDEX(4) 
      &                              = ISTR_AB(1+NEL_AB*(I_AB-1))
                             else
-                              write(6,*) 
+                              write(LUWRT,*) 
      &                              'Impossible number of annihil.'
-                              write(6,*) 
+                              write(LUWRT,*) 
      &                              'NEL_AA,NEL_AB = ',NEL_AA,NEL_AB
                               call abend2('Quitting.')
                             end if
@@ -1620,9 +1632,9 @@ C       call reo_info_molcas()
      &                              = ISTR_CB(2+NEL_CB*(I_CB-1))
                               end if
                             else
-                              write(6,*) 
+                              write(LUWRT,*) 
      &                              'Impossible number of creators.'
-                              write(6,*) 
+                              write(LUWRT,*) 
      &                              'NEL_CA,NEL_CB = ',NEL_CA,NEL_CB
                               call abend2('Quitting.')
                             end if
@@ -1684,17 +1696,17 @@ C       call reo_info_molcas()
                                 end do
                               end if
                             else
-                              write(6,*) 
+                              write(LUWRT,*) 
      &                              'Impossible number of annihil.'
-                              write(6,*) 
+                              write(LUWRT,*) 
      &                              'NEL_AA,NEL_AB = ',NEL_AA,NEL_AB
                               call abend2('Quitting.')
                             end if
 *
                           else
-                            write(6,*) 'Impossible number of creators.'
-                            write(6,*) 'NEL_C = ',NEL_C
-                            call abend2('Quitting.')
+                         write(LUWRT,*) 'Impossible number of creators.'
+                         write(LUWRT,*) 'NEL_C = ',NEL_C
+                         call abend2('Quitting.')
                           end if
 *
 *  Stored integrals (DIRAC) refer to symmetry-type ordering.
@@ -1913,14 +1925,15 @@ C    &             ' at ',ICOUNT
       NALLINT = ICOUNT - 1
 *
       if (NTEST.ge.1) then
-        write(6,*) ' DIST_INTS_SIGDEN reporting   : '
-        write(6,*) '  Total number of integrals   : ',NALLINT
-        write(6,*) '  Number of diagonal integrals: ',NDIAINT
-        write(6,*) '    Number of diagonal 1-el. integrals: ',N1DIAINT
-        write(6,*) '    Number of diagonal 2-el. integrals: ',N2DIAINT
+        write(LUWRT,*) ' DIST_INTS_SIGDEN reporting   : '
+        write(LUWRT,*) '  Total number of integrals   : ',NALLINT
+        write(LUWRT,*) '  Number of diagonal integrals: ',NDIAINT
+        write(LUWRT,*) '    Number of diagonal 1-el. integrals: ',
+     &                      N1DIAINT
+        write(LUWRT,*) '    Number of diagonal 2-el. integrals: ',
+     &                      N2DIAINT
       end if
 *
-      return
       end
 ***********************************************************************
 *                                                                     *
@@ -2730,7 +2743,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
       subroutine getind_index(YOUT,IIN,JIN,KIN,LIN,NUMINT,
      &                        KR,INDK,INDL,IOFF12,IRI,XIN,IPRNT)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -3014,7 +3027,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
       subroutine getind_molf(YINT,INDEX,IRI,IDIM,INVREO,
      &                       KR,NASHT,DMFC,VMUUUU,IPRNT)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 *
       dimension VMUUUU(*),DMFC(*)
@@ -3108,7 +3121,7 @@ c       stop
       subroutine getind_nz3(YINT,INDEX,IRI,IDIM,INVREO,
      &                      KR,NASHT,NNASHX,DMFC,H2AC,IPRNT)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "include/dgroup.h"
 *
@@ -3314,7 +3327,7 @@ C         YINT = H2AC(IIN) * IRIFAC * IRIFAC2
      &                         NUMINT,KR,INDK,INDL,INVREO,
      &                         IOFF12,XIN,ONEINT,IPRNT)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 *
       dimension INDEX(4),ICSAVE(4),INVREO(-ITOTDIM:ITOTDIM)
@@ -4668,7 +4681,7 @@ C     STOP ' Jeppe forced me to stop in GETINT '
       subroutine getint_sigden(YINT,INDEX,IRI,ITOTDIM,
      &                         NASHT,F1,F2,IPRNT)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -5167,7 +5180,7 @@ CTF
 ***********************************************************************
       subroutine integral_type(ISOB,NGAS,ITPSV,LUINGR)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
       character*11 CELEC2
       character*13 CELEC
@@ -5679,7 +5692,7 @@ C!    stop ' Jeppe forced my to stop in INTIM '
 *
       subroutine kkr_set(KR,IDIM,ISYDI,NIRR,INVSYM)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 *
       dimension KR(-IDIM:IDIM),ISYDI(NIRR)
@@ -6310,6 +6323,7 @@ C Not required in DIRAC environment.
 #include "coeff.inc"
 #include "input.inc"
 #include "SysDef.inc"
+#include "files_r.inc"
 *
 *   Coefficient common block especially for Jeppe's routines
 *
@@ -6390,7 +6404,7 @@ C?    write(6,*) 'ILEN is    ',ILEN
 *----------------------------------------------------------------------*
 *  Read coefficients from formatted ASCII files LUMOUTR/I (opt. coeffs.)
 *----------------------------------------------------------------------*
-            open(unit=LUMOUTR,file='NATSPIR',
+            open(unit=LUMOUTR,file=NLUMOUTR_MPI(1:LUMOUTRI_MPIL),
      &           status='OLD',form='FORMATTED')
               read(LUMOUTR,'(A)')
               do IRREP=1,IOUTLST-1,1
@@ -6408,7 +6422,7 @@ C?    write(6,*) 'ILEN is    ',ILEN
               end do
             close (unit=LUMOUTR)
 *
-            open(unit=LUMOUTI,file='NATSPII',
+            open(unit=LUMOUTI,file=NLUMOUTI_MPI(1:LUMOUTRI_MPIL),
      &           status='OLD',form='FORMATTED')
               read(LUMOUTI,'(A)')
               do IRREP=1,IOUTLST-1,1
@@ -8433,7 +8447,7 @@ c     IF (BREIT) CLOSE (MDBINT,STATUS='KEEP')
      &                          DOUGRP,ISREO,INVREO,INVSYM,IDGTYP,
      &                          ISPINFREE,IPRNT)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 *
@@ -8971,7 +8985,7 @@ Cjan      end do
 *    -1 for barred   (beta)
 * #############################################
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -8980,6 +8994,7 @@ Cjan      end do
 *
 #include "dgroup.h"
 #include "dcborb.h"
+#include "lucipar_rel.inc"
 *
       dimension F1(*),F2(*)
       dimension DENS(NALLINT),SIGN(NSPOBEX_TP),SIGN_OPREO(NSPOBEX_TP)
@@ -9004,10 +9019,10 @@ Cjan      end do
       NASHTL2 = NASHTL * 2
 *
       if (NTEST.ge.2) then
-        write(6,*)
-        write(6,*) '=========================================='
-        write(6,*) ' Transferring densities to MOLFDIR format.'
-        write(6,*) '=========================================='
+        write(LUWRT,*)
+        write(LUWRT,*) '=========================================='
+        write(LUWRT,*) ' Transferring densities to MOLFDIR format.'
+        write(LUWRT,*) '=========================================='
       end if
 *
 *  Fermion symmetry/Kramers reordering (for output density indexing)
@@ -9027,9 +9042,9 @@ Cjan      end do
 *
       if (NTEST.ge.5) then
         do IUBT = 1,2
-          if (IUBT.eq.1) write(6,*) ' IOFFKF for unbarred.'
-          if (IUBT.eq.2) write(6,*) ' IOFFKF for   barred.'
-          call iwrtma(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS)
+          if (IUBT.eq.1) write(LUWRT,*) ' IOFFKF for unbarred.'
+          if (IUBT.eq.2) write(LUWRT,*) ' IOFFKF for   barred.'
+          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS,LUWRT)
         end do
       end if
 *
@@ -9047,7 +9062,7 @@ Cjan      end do
       end do
 *
       if (NTEST.ge.5) then
-        call iwrtma(IREOKF,1,II-1,1,MXPORB)
+        call iwrtmamn(IREOKF,1,II-1,1,MXPORB,LUWRT)
       end if
 *
 * Process densities
@@ -9060,23 +9075,23 @@ Cjan      end do
 *
         if (NTEST.ge.4) then
           write(6,*)
-          if (IRI.eq.1) write(6,*) ' Real part     : '
-          if (IRI.eq.2) write(6,*) ' Imaginary part: '
+          if (IRI.eq.1) write(LUWRT,*) ' Real part     : '
+          if (IRI.eq.2) write(LUWRT,*) ' Imaginary part: '
           write(6,*) ' -------------------'
         end if
 *
         do IXTP = 1,NSPOBEX_TP,1
 *
           if (NTEST.ge.4) then
-            write(6,*)
-            write(6,'(A,I4)') ' Excitation type ... ',IXTP
-            write(6,*)        ' -------------------------'
-            write(6,*)
-            write(6,*) '  LABEL array (for integral indices!):  '
-            write(6,*) '   Internally, LABEL is reord. for operators.'
-            call iwrtma(LABEL(1,IXTP),1,4,1,4)
-            write(6,*) '   Input LUCIAREL operator order, output dens.'
-            call iwrtma(IOP_REO(1,IXTP),1,4,1,4)
+            write(LUWRT,*)
+            write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
+            write(LUWRT,*)        ' -------------------------'
+            write(LUWRT,*)
+            write(LUWRT,*) ' LABEL array (for integral indices!):  '
+            write(LUWRT,*) ' Internally, LABEL is reord. for operators.'
+            call iwrtmamn(LABEL(1,IXTP),1,4,1,4,LUWRT)
+            write(LUWRT,*) 'Input LUCIAREL operator order, output dens.'
+            call iwrtmamn(IOP_REO(1,IXTP),1,4,1,4,LUWRT)
           end if
 *
           NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
@@ -9105,7 +9120,7 @@ Cjan      end do
      &                  I
               F1(IOUT) = DENS(IRUN+IRIOFF)
               if (NTEST.ge.10) then
-                write(6,'(2I3,1F18.14,A,I4)') 
+                write(LUWRT,'(2I3,1F18.14,A,I4)') 
      &                    I,J,F1(IOUT),' to pos.',IOUT
               end if
 *
@@ -9124,34 +9139,34 @@ Cjan      end do
 *  for in GET_HX_RELA (here called SIGN_OPREO):
                 IND_R(1) = IREOKF(INDEX_L(1)-(LABEL(1,IXTP)-1)/2*NASHTL)
                 if (NTEST.ge.50) then
-                  write(6,*)
-                  write(6,*) ' operator I '
-                  write(6,*) ' INDEX_L(1) ',INDEX_L(1)
-                  write(6,*) ' LABEL(1,IXTP) ',LABEL(1,IXTP)
+                  write(LUWRT,*)
+                  write(LUWRT,*) ' operator I '
+                  write(LUWRT,*) ' INDEX_L(1) ',INDEX_L(1)
+                  write(LUWRT,*) ' LABEL(1,IXTP) ',LABEL(1,IXTP)
                 end if
 *
                 IND_R(2) = IREOKF(INDEX_L(2)-(LABEL(2,IXTP)-1)/2*NASHTL)
                 if (NTEST.ge.50) then
-                  write(6,*)
-                  write(6,*) ' operator L '
-                  write(6,*) ' INDEX_L(2) ',INDEX_L(2)
-                  write(6,*) ' LABEL(2,IXTP) ',LABEL(2,IXTP)
+                  write(LUWRT,*)
+                  write(LUWRT,*) ' operator L '
+                  write(LUWRT,*) ' INDEX_L(2) ',INDEX_L(2)
+                  write(LUWRT,*) ' LABEL(2,IXTP) ',LABEL(2,IXTP)
                 end if
 *
                 IND_R(3) = IREOKF(INDEX_L(3)-(LABEL(3,IXTP)-1)/2*NASHTL)
                 if (NTEST.ge.50) then
-                  write(6,*)
-                  write(6,*) ' operator K '
-                  write(6,*) ' INDEX_L(3) ',INDEX_L(3)
-                  write(6,*) ' LABEL(3,IXTP) ',LABEL(3,IXTP)
+                  write(LUWRT,*)
+                  write(LUWRT,*) ' operator K '
+                  write(LUWRT,*) ' INDEX_L(3) ',INDEX_L(3)
+                  write(LUWRT,*) ' LABEL(3,IXTP) ',LABEL(3,IXTP)
                 end if
 *
                 IND_R(4) = IREOKF(INDEX_L(4)-(LABEL(4,IXTP)-1)/2*NASHTL)
                 if (NTEST.ge.50) then
-                  write(6,*)
-                  write(6,*) ' operator J '
-                  write(6,*) ' INDEX_L(4) ',INDEX_L(4)
-                  write(6,*) ' LABEL(4,IXTP) ',LABEL(4,IXTP)
+                  write(LUWRT,*)
+                  write(LUWRT,*) ' operator J '
+                  write(LUWRT,*) ' INDEX_L(4) ',INDEX_L(4)
+                  write(LUWRT,*) ' LABEL(4,IXTP) ',LABEL(4,IXTP)
                 end if
 *
                 IOUT = (IRI-1)*NASHTL2*NASHTL2*NASHTL2*NASHTL2 +
@@ -9162,8 +9177,8 @@ Cjan      end do
                 F2(IOUT) = DENS(IRUN+IRIOFF) * SIGN(IXTP) 
      &                                       * SIGN_OPREO(IXTP)
                 if (NTEST.ge.10) then
-                  write(6,*)
-                  write(6,'(4I3,1F18.14,A,I4)') 
+                  write(LUWRT,*)
+                  write(LUWRT,'(4I3,1F18.14,A,I4)') 
      &                      IND_R(1),IND_R(2),IND_R(3),IND_R(4),
      &                      F2(IOUT),' to pos.',IOUT
                 end if
@@ -9183,7 +9198,7 @@ Cjan      end do
      &                     I_R
                 F2(IOUT_CP) = F2(IOUT) * SIGN_CP
                 if (NTEST.ge.10) then
-                  write(6,'(4I3,1F18.14,A,I4)') 
+                  write(LUWRT,'(4I3,1F18.14,A,I4)') 
      &                      I_R,J_R,K_R,L_R,F2(IOUT_CP),
      &                      ' to pos.',IOUT_CP
                 end if
@@ -9191,8 +9206,8 @@ Cjan      end do
               end if
 *             ^ Non-redundant density type (see get_hx_rela)
             else 
-              write(6,*) 'No QFT implemented YET in LUCIAREL.'
-              write(6,*) 'you specified ',4-NCT,' indices.'
+              write(LUWRT,*) 'No QFT implemented YET in LUCIAREL.'
+              write(LUWRT,*) 'you specified ',4-NCT,' indices.'
               call abend2('Quitting.')
             end if
             IRUN = IRUN + 1
@@ -9220,12 +9235,13 @@ Cjan      end do
       subroutine wrtdens(DENS,INDEX,IHINDX,SIGN,NASHT,LABEL,IOP_REO,
      &                   SIGN_REO,ISF)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
+#include "lucipar_rel.inc"
 *
       dimension DENS(NALLINT),SIGN(NSPOBEX_TP)
       dimension INDEX(4,NALLINT),IND_R(4),IHINDX(4,NSPOBEX_TP),
@@ -9245,20 +9261,22 @@ Cjan      end do
         do JRI = 1,IRI-1,1
           IRIOFF = IRIOFF + NINT_TOT
         end do
-        write(6,*)
-        write(6,*)
-        write(6,*) 'Writing densities in reordered form (for MCSCF):'
-        write(6,*) '- a+ a b b+  '
-        write(6,*) '(means sign multiplied to all 2-particle densities)'
-        write(6,*) '(done in GET_HX_RELA)'
-        write(6,*)
-        if (IRI.eq.1) write(6,*) ' Real density elements     : '
-        if (IRI.eq.2) write(6,*) ' Imaginary density elements: '
-        write(6,*) ' -------------------------------'
+        write(LUWRT,*) '  '
+        write(LUWRT,*) '  '
+        write(LUWRT,'(2X,A)') 
+     &            'Writing densities in reordered form (for MCSCF):'
+        write(LUWRT,*)'  - a+ a b b+  '
+        write(LUWRT,'(2X,A)') 
+     &            '(means sign multiplied to all 2-particle densities)'
+        write(LUWRT,*)'  (done in GET_HX_RELA)'
+        write(LUWRT,*) '  '
+        if (IRI.eq.1) write(LUWRT,*) ' Real density elements     : '
+        if (IRI.eq.2) write(LUWRT,*) ' Imaginary density elements: '
+        write(LUWRT,*) ' -------------------------------'
         do IXTP = 1,NSPOBEX_TP,1
-          write(6,*)
-          write(6,'(A,I4)') ' Excitation type ... ',IXTP
-          write(6,*)        ' -------------------------'
+          write(LUWRT,*) '  '
+          write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
+          write(LUWRT,*)        ' -------------------------'
           NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
           do INT = 1,NINT_TP,1
 *
@@ -9288,7 +9306,7 @@ Cjan      end do
               IND_R(3) = INDEX(3,IRUN)
               IND_R(4) = INDEX(4,IRUN)
             end if
-            write(6,'(1X,4I3,2X,1F18.10)') 
+            write(LUWRT,'(1X,4I3,2X,1F18.10)') 
      &           (IND_R(I),I=1,4,1),DENS(IRUN+IRIOFF) * SIGN(IXTP)
      &                                                * SIGN_REO(IXTP)
             IRUN = IRUN + 1
@@ -9307,7 +9325,7 @@ c     stop 'AFTER WRTDENS.'
 *
       subroutine LCR_RD_MRCMDC(TINTR,TINTI,INDK,INDL,RKLR,RKLI)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "clunit.inc"
 *

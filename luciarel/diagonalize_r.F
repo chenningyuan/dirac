@@ -35,18 +35,25 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE CIEIG5_REL(MV7_REL,INICI,EROOT,VEC1,
+      SUBROUTINE CIEIG5_REL(MV7_REL,INICI,EROOTS,VEC1,
      &           VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
-     &           NDIM,NBLK,NROOT,MAXVEC,MXCIIT,MXROOT,LUINCI,
+     &           NDIM,NBLK,NROOTS,MAXVEC,MXCIIT,MXROOT,LUINCI,
      &           IPRT,PEIGVC,NPRDET,IPNTR,NP1,NP2,NQ,
      &           SCR1,ISCR1,SCR2,T_CC,
      &           EIGSHF,ICISTR,LBLK,IDIAG,THRES_E,
      &           NBATCH,LBATCHB,LBATCHE,
      &           IBLOCK,INIDEG,E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,
      &           NCLS,
-     &           MXLNG,IRC,IDCOMH,IHAM12,SIGDEN_ROUTE)
+     &           IRC,IDCOMH,IHAM12,SIGDEN_ROUTE,
+     &           IBLOCKL,NPARBLOCK,IPROCLIST,IGROUPLIST
+#if defined (VAR_MPI)
+     &           ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,LUCLIST,
+     &           RCCTOS
+#endif
+     &     )
 *
 * Master routine for CI diagonalization
 *
@@ -56,21 +63,38 @@ C
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "wrkspc.inc"
-      DIMENSION VEC1(*),VEC2(*)
+      DIMENSION VEC1(*), VEC2(*)
       DIMENSION INIDET(100)
-      DIMENSION IPNTR(*),ISCR1(*)
-      dimension PEIGVC(*),SCR1(*),SCR2(*)
+      DIMENSION IPNTR(*), ISCR1(*)
+      DIMENSION PEIGVC(*), SCR1(*), SCR2(*)
+      DIMENSION IBLOCKL(*), NPARBLOCK(*) 
+      DIMENSION IPROCLIST(*),IGROUPLIST(*)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
+      DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
+#include "cstate.inc"
+#endif
+#include "lucipar_rel.inc"
 *
-*. Output from Subspace dagonalization
-*.
-      DIMENSION EROOT(NROOT)
+*     output from subspace diagonalization
 *
-      IF( IPRT.GT. 1 )  WRITE(6,'(/A)')
+*
+      DIMENSION EROOTS(NROOTS)
+*
+      IF( IPRT.GT. 1 )  WRITE(LUWRT,'(/A)')
      &'          *** information from ci diagonalization  ***'
-      WRITE(6,*)
+      WRITE(LUWRT,*) ' '
 *
       NTEST=0
 *
+CSK#if defined (VAR_MPI)
+CSK      WRITE(LUWRT,*)'  THIS IS MY LUCLIST'
+CSK      CALL IWRTMAMN( LUCLIST, 1, IALL_LUC, 1, IALL_LUC, LUWRT)
+CSK      WRITE(LUWRT,*)'  '
+CSK#endif
 *               ====================================
 ** 1 :               INITIAL VARIATIONAL SUBSPACE
 *               ====================================
@@ -83,15 +107,22 @@ C
 * In order to treat degeneracies, the lowest 4 * NROOT elements are
 *.obtained
 
-          NFINDM = MIN(NDIM,4*NROOT)
+          NFINDM = MIN(NDIM,4*NROOTS)
+#if defined (VAR_MPI)
+          CALL FNDMND_PAR_REL(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
+     &                        ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,
+     &                        SCR1,IBLOCKL,NPARBLOCK,NUM_BLOCKS,IPRT)
+C
+#else
           CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,ISCR1(1+2*NFINDM),
      &                SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
 C              FNDMND(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,SCR,ISCAT,SUBVAL
+#endif
           CALL REWINO(LU1)
           IBASE = 1
           TEST = 1.0D-10
 *
-          DO 100 IROOT = 1, NROOT
+          DO 100 IROOTS = 1, NROOTS
 *. Number of degenerate elements
             NDEG = 1
             XVAL = SCR1(IBASE)
@@ -102,11 +133,11 @@ C              FNDMND(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,SCR,ISCAT,SUBVAL
                 GOTO 90
               END IF
             END IF
-            WRITE(6,*) ' IROOT NDEG ', IROOT,NDEG
+            WRITE(LUWRT,*) ' IROOT NDEG ', IROOTS,NDEG
 *
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
-              WRITE(6,*) ' WARNING WARNING WARNING WARNING ! '
-              WRITE(6,*) ' DEGENERATE INITIAL VECTORS FOR CI '
+              WRITE(LUWRT,*) ' WARNING WARNING WARNING WARNING ! '
+              WRITE(LUWRT,*) ' DEGENERATE INITIAL VECTORS FOR CI '
 C             WRITE(6,*) ' I AM NOT ALLOWED TO TAKE THIS INTO '
 C             WRITE(6,*) ' CONSIDERATION SINCE  INIDEG = 0 '
 C             WRITE(6,*)
@@ -129,12 +160,25 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
 * Real part
             CALL REWINE(LUDIA,LBLK)
 c           ISCR1(1) = 16
+            IAM_REAL = 1
             CALL WRSVCD_REL(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
-     &                      LUDIA)
+     &                      LUDIA,NUM_BLOCKS,IBLOCKL,NPARBLOCK,IAM_REAL,
+     &                      IROOTS
+#if defined (VAR_MPI)
+     &                      ,LU1LIST
+#endif
+     &                      )
+            IAM_REAL = 2
 *. Imaginary part
             if (IRC.eq.2) then
               CALL WRSVCD_REL(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,0,NDIM,
-     &                        LUDIA)
+     &                        LUDIA,NUM_BLOCKS,IBLOCKL,NPARBLOCK,
+     &                        IAM_REAL,IROOTS
+#if defined (VAR_MPI)
+     &                        ,LU1LIST
+#endif
+     &                        )
+          
             end if
             IBASE = IBASE + NDEG
   100     CONTINUE
@@ -144,19 +188,27 @@ c           ISCR1(1) = 16
 * =====================================
 CTF  Currently never used !!!
           CALL REWINO(LU1)
-          DO 1984 IROOT = 1, NROOT
+          DO 1984 IROOTS = 1, NROOTS
+                 IAM_REAL = 1
 C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
             CALL WRSVCD_REL(LU1,LBLK,VEC1,IPNTR,
-     &           PEIGVC((IROOT-1)*NPRDET+1),NPRDET,NDIM,LUDIA)
+     &           PEIGVC((IROOT-1)*NPRDET+1),NPRDET,NDIM,LUDIA,
+     &           NUM_BLOCKS,IBLOCKL,NPARBLOCK,IAM_REAL,IROOTS)
  1984     CONTINUE
         END IF
       END IF
+*
+CSK#if defined (VAR_MPI)
+CSK      WRITE(LUWRT,*) 'THIS IS MY LU1LIST'
+CSK      CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
+CSK#endif
 *
 * ======================================================
 * Initial CI vectors are already on file LU1, do nothing
 * ======================================================
 *
-      IF (INICI.LT.0) WRITE(6,*)' Initial CI vector assumed in place '
+      IF (INICI.LT.0) WRITE(LUWRT,*)' Initial CI vector assumed 
+     & in place '
 *. Vectors assumed already in LU1
 *
 *                 ========================
@@ -166,14 +218,14 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
       CALL QENTER('CIEIG5')
 * Inverse iteration modified Davidson with 2 vectors in core
       IF(IPRT .GE. 2 ) THEN
-         WRITE(6,*)
-         WRITE(6,'(A,I3)')
-     &   '  Number of roots to be converged..  ',NROOT
-         WRITE(6,*)
-         WRITE(6,'(A,I3)')
+         WRITE(LUWRT,*)
+         WRITE(LUWRT,'(A,I3)')
+     &   '  Number of roots to be converged..  ',NROOTS
+         WRITE(LUWRT,*)
+         WRITE(LUWRT,'(A,I3)')
      &   '  Largest allowed number of vectors..',MAXVEC
-         WRITE(6,*)
-         WRITE(6,'(A,I3)')
+         WRITE(LUWRT,*)
+         WRITE(LUWRT,'(A,I3)')
      &   '  Allowed number of CI iterations  ..',MXCIIT
       END IF
 *
@@ -183,8 +235,8 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
       ELSE
        IFAC = 2
       END IF
-      MEIG = MRNRM + (MXCIIT+1)*NROOT
-      MAPROJ = MEIG  + (MXCIIT+1)*2*(MAXVEC + NROOT)
+      MEIG = MRNRM + (MXCIIT+1)*NROOTS
+      MAPROJ = MEIG  + (MXCIIT+1)*2*(MAXVEC + NROOTS)
       IF(IRC.EQ.2) THEN
         MAPROJI = MAPROJ +  MAXVEC*(MAXVEC+1)/2
       ELSE
@@ -195,8 +247,8 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
       MLFRSC = MWORK + MAXVEC*(MAXVEC+1)*IFAC*IFAC
 *
       IF( IPRT .GE. 5 ) THEN
-         WRITE(6,*) ' MRNRM MEIG MAPROJ MAVEC MWORK MLFRSC '
-         WRITE(6,'(6I4)')  MRNRM,MEIG,MAPROJ,MAVEC,MWORK,MLFRSC
+         WRITE(LUWRT,*) ' MRNRM MEIG MAPROJ MAVEC MWORK MLFRSC '
+         WRITE(LUWRT,'(6I4)')  MRNRM,MEIG,MAPROJ,MAVEC,MWORK,MLFRSC
       END IF
 *
 * Proper allocation of scratch arrays:
@@ -212,25 +264,73 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
       end if
       call memmar(KAVEC,MWORK-MAVEC,'ADDL  ',2,'KAVECS')
       call memmar(KWORK,MLFRSC-MWORK,'ADDL  ',2,'KWORKS')
+#if defined (VAR_MPI)
+*
+*     scratch array for reducing operations
+      MAXSCRRED = MAX( (MAXVEC*(MAXVEC+1)/2) , MAXVEC**2 )
+      CALL MEMMAR(KSCRRED,MAXSCRRED,'ADDL  ',2,'KREDUC')
+      IF( IRC .eq. 2 )THEN
+        CALL MEMMAR(KSCRRED2,MAXSCRRED,'ADDL  ',2,'KREDU2')
+      END IF
+*
+*.    Arrays for partitioning of the CI vector
+*     (*_MS2 arrays are in CSTATE )
+      JCMBSPC = 1
+      call z_blkfo_rel_par(IDC,NMS2VAL,JCMBSPC,IREFSM,
+     &                     KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDUM,
+     &                     NBATCH,NUM_BLOCKS,NBLK_MS2,IBLK_MS2,
+     &                     NBAT_MS2,IBAT_MS2,0,1,NPARBLOCK)
+CSK      call z_blkfo_rel(IDC,NMS2VAL,JCMBSPC,IREFSM,
+CSK     &                 KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDUM,
+CSK     &                 NBATCH,NUM_BLOCKS,NBLK_MS2,IBLK_MS2,
+CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
+*
+#endif
 *
       IF (IRC.EQ.1) THEN
-        write(6,*) 
-        write(6,*) ' Quaternion real algebra.           '
-	write(6,*) ' Using modified MICDV4 optimizer!   '
-	write(6,*) 
+        write(LUWRT,*) ' '
+        write(LUWRT,*) ' Quaternion real algebra.           '
+        write(LUWRT,*) ' Using modified MICDV4 optimizer!   '
+        write(LUWRT,*) 
      &  ' (Current version: No preconditioner, no root homing) '
-	write(6,*)
+        write(LUWRT,*) ' '
 *
+C
+C#if defined (VAR_MPI)
+C          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+C          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+C          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+C          CALL Abend2('Stefan forced me to stop after WRSVCD_REL')
+C#endif
 *
-* Most general real optimizer.
+*       Most general real optimizer
+*
+#if defined (VAR_MPI)
+*
+        call micdv4_enlmd_rel_par(T_CC,VEC1,VEC2,
+     &                  WORK(KRNRM),WORK(KEIG),
+     &                  EROOTS,MXCIIT,NROOTS,
+     &                  MAXVEC,NROOTS,WORK(KAPROJ),WORK(KAVEC),
+     &                  WORK(KWORK),IPRT,NPRDIM,
+     &                  IPNTR,LBLK,EIGSHF,THRES_E,
+     &                  IBLOCKL,NPARBLOCK,NUM_BLOCKS,
+     &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
+     &                  LUCLIST,NBATCH,
+     &                  WORK(KLVLBT),WORK(KLVLEBT),WORK(KLVI1BT),
+     &                  WORK(KLVIBT),RCCTOS,
+     &                  WORK(KSCRRED),IGROUPLIST,IPROCLIST)
+*
+#else
+*
         call micdv4_enlmd_rel(T_CC,VEC1,VEC2,LU1,LU2,
      &                  WORK(KRNRM),WORK(KEIG),
-     &                  EROOT,MXCIIT,LU3,LU4,LU5,LUDIA,NROOT,
-     &                  MAXVEC,NROOT,WORK(KAPROJ),WORK(KAVEC),
+     &                  EROOTS,MXCIIT,LU3,LU4,LU5,LUDIA,NROOTS,
+     &                  MAXVEC,NROOTS,WORK(KAPROJ),WORK(KAVEC),
      &                  WORK(KWORK),IPRT,NPRDIM,
      &                  H0DUM,IPNTR,NP1,NP2,NQ,H0SCRDUM,
      &                  LBLK,EIGSHF,THRES_E)
 *
+#endif
 *
 * Special optimizer designed for good preconditioning, therefore
 * only 3*NROOT subspace vectors maximum.
@@ -254,14 +354,32 @@ C    &                  E_CONV,IROOTHOMING)
       ELSE
 *. Complex numbers may be encountered
 *
+#if defined (VAR_MPI)
+*
+        CALL CMICDV_PAR(VEC1,VEC2,WORK(KRNRM),
+     &                  WORK(KEIG),SCR2(1),MXCIIT,NDIM,
+     &                  NROOTS,MAXVEC,NROOTS,
+     &                  T_CC,WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),
+     &                  WORK(KWORK),IPRT,NPRDIM,IPNTR,
+     &                  LBLK,EIGSHF,0,0,IDCOMH,IHAM12,SIGDEN_ROUTE,
+     &                  THRES_E,IBLOCKL,NPARBLOCK,NUM_BLOCKS,
+     &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
+     &                  LUCLIST,NBATCH,
+     &                  WORK(KLVLBT),WORK(KLVLEBT),WORK(KLVI1BT),
+     &                  WORK(KLVIBT),RCCTOS,WORK(KSCRRED),
+     &                  WORK(KSCRRED2),IGROUPLIST,IPROCLIST)
+*
+#else
+*
         CALL CMICDV(MV7_REL,VEC1,VEC2,LU1,LU2,WORK(KRNRM),WORK(KEIG),
      &              SCR2(1),MXCIIT,
-     &              NDIM,LU3,LU4,LU5,LU6,LUDIA,NROOT,MAXVEC,NROOT,
+     &              NDIM,LU3,LU4,LU5,LU6,LUDIA,NROOTS,MAXVEC,NROOTS,
      &              T_CC,
      &              WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),WORK(KWORK),
      &              IPRT,NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
      &              0,0,IDCOMH,IHAM12,SIGDEN_ROUTE,THRES_E)
 *
+#endif
 C     SUBROUTINE CMICDV(MV7_REL,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
 C     &                  NVAR,LU3,LU4,LU5,LU6,LUDIA,NROOT,MAXVEC,NINVEC,
 C     &                  T_CC,
@@ -272,7 +390,6 @@ C
       END IF
 *     ^ End if switch real/complex numbers
       call memmar(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
-      ENOT = SCR1(KFIN)
 *
       call qexit('CIEIG5')
       RETURN
@@ -322,7 +439,8 @@ C
 *                                                   (Hr    -Hi)
 * 1 : Assemble lower part of the symmetric matrix   (         )
 *                                                   (Hi     Hr)
-      CALL COPVEC(HR,SCR(1),NDIM*(NDIM+1)/2)
+      CALL DCOPY(NDIM*(NDIM+1)/2,HR,1,SCR(1),1)
+CSK?      CALL COPVEC(HR,SCR(1),NDIM*(NDIM+1)/2)
       DO IROW = NDIM+1,2*NDIM
         IROWOF = (IROW-1)*IROW/2+1
         IROWI = IROW-NDIM
@@ -336,7 +454,8 @@ C
           SCR(IROWOF-1+ICOL) = -HI(ICOL*(ICOL-1)/2+IROWI)
         END DO
 *
-        CALL COPVEC(HR(IROWI*(IROWI-1)/2+1),SCR(IROWOF+NDIM),IROWI)
+        CALL DCOPY(IROWI,HR(IROWI*(IROWI-1)/2+1),1,SCR(IROWOF+NDIM),1)
+CSK?        CALL COPVEC(HR(IROWI*(IROWI-1)/2+1),SCR(IROWOF+NDIM),IROWI)
       END DO
 *
       IF(NTEST.NE.0) THEN
@@ -398,20 +517,26 @@ CTF     end do
 *. Orthogonalize
             DO JVEC = IOFF, IVEC-1
 *. < Vec J | Vec I >
-               XR = INPROD(EIGVEC(1,JVEC),EIGVEC(1,IVEC),NDIM)
-     &            + INPROD(EIGVEC(1+NDIM,JVEC),
-     &              EIGVEC(1+NDIM,IVEC),NDIM)
-               XI = INPROD(EIGVEC(1,JVEC),
-     &              EIGVEC(1+NDIM,IVEC),NDIM)
-     &            - INPROD(EIGVEC(1+NDIM,JVEC),
-     &              EIGVEC(1,IVEC),NDIM)
+               XR = DDOT(NDIM,EIGVEC(1,JVEC),1,EIGVEC(1,IVEC),1)
+     &            + DDOT(NDIM,EIGVEC(1+NDIM,JVEC),1,EIGVEC(1+NDIM,IVEC)
+     &              ,1)
+               XI = DDOT(NDIM,EIGVEC(1,JVEC),1,EIGVEC(1+NDIM,IVEC),1)
+     &            - DDOT(NDIM,EIGVEC(1+NDIM,JVEC),1,EIGVEC(1,IVEC),1)
+CSK?               XR = INPROD(EIGVEC(1,JVEC),EIGVEC(1,IVEC),NDIM)
+CSK?     &            + INPROD(EIGVEC(1+NDIM,JVEC),
+CSK?     &              EIGVEC(1+NDIM,IVEC),NDIM)
+CSK?               XI = INPROD(EIGVEC(1,JVEC),
+CSK?     &              EIGVEC(1+NDIM,IVEC),NDIM)
+CSK?     &            - INPROD(EIGVEC(1+NDIM,JVEC),
+CSK?     &              EIGVEC(1,IVEC),NDIM)
               CALL VECSUMC(EIGVEC(1,IVEC),EIGVEC(1,IVEC),
      &                     EIGVEC(1,JVEC),
      &                     ONE,ZERO,-XR,-XI,NDIM)
              END DO
 *. Normalize
-             XNORM = INPROD(EIGVEC(1,IVEC),EIGVEC(1,IVEC),
-     &                      2*NDIM)
+             XNORM = DDOT(2*NDIM,EIGVEC(1,IVEC),1,EIGVEC(1,IVEC),1)
+CSK?             XNORM = INPROD(EIGVEC(1,IVEC),EIGVEC(1,IVEC),
+CSK?     &                      2*NDIM)
         if(ntest.ge.10) WRITE(6,*) ' ldeg XNORM = ',ldeg, XNORM
              IF(ABS(XNORM).LE.THRES) THEN
 *. This is a zero vector
@@ -419,7 +544,8 @@ CTF     end do
              ELSE
 *. This is not a zero vector
                SCALE = ONE/SQRT(XNORM)
-               CALL SCALVE(EIGVEC(1,IVEC),SCALE,2*NDIM)
+               CALL DSCAL(2*NDIM,SCALE,EIGVEC(1,IVEC),1)
+CSK?               CALL SCALVE(EIGVEC(1,IVEC),SCALE,2*NDIM)
              END IF
            END DO
 *. End of not so simple case
@@ -433,14 +559,15 @@ CTF     end do
 *
       IEFF = 0
       DO IVEC = 1, 2*NDIM
-        XNORM = INPROD(EIGVEC(1,IVEC),
-     &                 EIGVEC(1,IVEC),2*NDIM)
+        XNORM = DDOT(2*NDIM,EIGVEC(1,IVEC),1,EIGVEC(1,IVEC),1)
+CSK?        XNORM = INPROD(EIGVEC(1,IVEC),
+CSK?     &                 EIGVEC(1,IVEC),2*NDIM)
         if(ntest.ge.10) WRITE(6,*) ' XNORM = ',XNORM
         IF(XNORM.NE.0.0D0) THEN
           IEFF = IEFF + 1
           EIGVAL(IEFF) = EIGVAL(IVEC)
-          CALL COPVEC(EIGVEC(1,IVEC),EIGVEC(1,IEFF),
-     &                2*NDIM)
+          CALL DCOPY(2*NDIM,EIGVEC(1,IVEC),1,EIGVEC(1,IEFF),1)
+CSK?          CALL COPVEC(EIGVEC(1,IVEC),EIGVEC(1,IEFF),2*NDIM)
         END IF
       END DO
       IF(NTEST.GE.10) THEN
@@ -739,6 +866,12 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
 *
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "ipoist8.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
       REAL * 8   INPROD,INPRDD
       character*6 SIGDEN_ROUTE
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
@@ -765,30 +898,30 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
       NTEST = 0000
       IPRT = MAX(NTEST,IPRT)
 *
-       WRITE(6,*) '                  :::::::::::::::::::'
-       WRITE(6,*) '                    Entering CMICDV  '
-       WRITE(6,*) '                  :::::::::::::::::::'
+       WRITE(LUWRT,*) '                  :::::::::::::::::::'
+       WRITE(LUWRT,*) '                    Entering CMICDV  '
+       WRITE(LUWRT,*) '                  :::::::::::::::::::'
 *
 *
       if (NTEST.ge.1) then
-        write(6,*)
-        write(6,*) '----------------------------------------------'
-        write(6,*) ' I´ll take you to a place '
-        write(6,*) ' Where we shall find our'
-        write(6,*) '  ROOTS, BLOODY ROOTS '
-        write(6,*)
-        write(6,*) '               Sepultura '
-        write(6,*) '----------------------------------------------'
-        write(6,*)
+        write(LUWRT,*)
+        write(LUWRT,*) '----------------------------------------------'
+        write(LUWRT,*) ' I´ll take you to a place '
+        write(LUWRT,*) ' Where we shall find our'
+        write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
+        write(LUWRT,*)
+        write(LUWRT,*) '               Sepultura '
+        write(LUWRT,*) '----------------------------------------------'
+        write(LUWRT,*)
       end if
 *
-      write(6,*)
-      write(6,*) ' Nuclear repulsion + core energy: ',EIGSHF
+      write(LUWRT,*)
+      write(LUWRT,*) ' Nuclear repulsion + core energy: ',EIGSHF
 *
        IF( MAXVEC .LT. 2 * NROOT ) THEN
-         WRITE(6,*) ' Sorry CMICDV wounded , MAXVEC .LT. 2*NROOT '
-         WRITE(6,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
-         WRITE(6,*) ' Increase MXCIV to be at least 2 * Nroot '
+         WRITE(LUWRT,*) ' Sorry CMICDV wounded , MAXVEC .LT. 2*NROOT '
+         WRITE(LUWRT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
+         WRITE(LUWRT,*) ' Increase MXCIV to be at least 2 * Nroot '
          Call Abend1(' Enforced stop in CMICDV ')
        END IF
 *
@@ -798,15 +931,17 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
        CONVER = .FALSE.
 *
        IF(MAXIT.EQ.0) THEN
-         WRITE(6,*) ' MAXIT = 0, so just a fast visit '
+         WRITE(LUWRT,*) ' MAXIT = 0, so just a fast visit '
          RETURN
        END IF
 *
        if (IPRT.ge.1) then
-         WRITE(6,*) ' Diagonal in CMICDV'
-         WRITE(6,*) ' =================='
-         CALL REWINE(LUDIA,LBLK)
-         CALL WRTVCDC(VEC1,LUDIA,1,IRC,LBLK)
+         IF( MYPROC .eq. MASTER ) THEN
+           WRITE(LUWRT,*) ' Diagonal in CMICDV'
+           WRITE(LUWRT,*) ' =================='
+           CALL REWINE(LUDIA,LBLK)
+           CALL WRTVCDC(VEC1,LUDIA,1,IRC,LBLK)
+         END IF
        end if
 *
        if (IDCOMH.eq.0) then
@@ -814,16 +949,16 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
        else if (IDCOMH.eq.1) then
           I_DO_COMHAM = 1
        else
-          write(6,*) 'Problemo in CMICDV.'
+          write(LUWRT,*) 'Problemo in CMICDV.'
           Call Abend2( 'Quitting.' )
        end if
 *
        IF(I_DO_COMHAM .EQ.1) THEN
-         write(6,*)
-         write(6,*) ' ===================================== '
-         WRITE(6,*) ' Control will be transferred to COMHAM '
-         write(6,*) ' ===================================== '
-         WRITE(6,*) ' NVAR = ', NVAR
+         write(LUWRT,*)
+         write(LUWRT,*) ' ===================================== '
+         WRITE(LUWRT,*) ' Control will be transferred to COMHAM '
+         write(LUWRT,*) ' ===================================== '
+         WRITE(LUWRT,*) ' NVAR = ', NVAR
          CALL COMHAM(NVAR,T_CC,SIGDEN_ROUTE)
          Call Abend2( ' After COMHAM  ' )
        END IF
@@ -835,15 +970,17 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
        NVEC = 0
        IF( MAXIT .GE. 1 ) THEN
 *
-         IF(IPRT.GE.1000) THEN
-           WRITE(6,*) ' Initial vectors '
-           WRITE(6,*) ' ================'
+       IF(IPRT.GE.1000) THEN
+         IF( MYPROC .eq. MASTER ) THEN
+           WRITE(LUWRT,*) ' Initial vectors '
+           WRITE(LUWRT,*) ' ================'
            CALL REWINE(LU1,LBLK)
            DO IVEC = 1, NINVEC
-             WRITE(6,*) ' Initial vector ...  ', IVEC
+             WRITE(LUWRT,*) ' Initial vector ...  ', IVEC
              CALL WRTVCDC(VEC1,LU1,0,IRC,LBLK)
            END DO
          END IF
+       END IF
 *
          CALL REWINE(LU1,LBLK)
          CALL REWINE(LU2,LBLK)
@@ -861,8 +998,8 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
            else if (SIGDEN_ROUTE.eq.'SIGDEN') then
              call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,1)
            else
-             write(6,*) 'Route for sigma and densities not allowed.'
-             write(6,*) 'SIGDEN_ROUTE is ',SIGDEN_ROUTE
+             write(LUWRT,*) 'Route for sigma and densities not allowed.'
+             write(LUWRT,*) 'SIGDEN_ROUTE is ',SIGDEN_ROUTE
              call abend ('Quitting.')
            end if
 *
@@ -880,19 +1017,19 @@ C                 INPRDDC(VEC1,VEC2,LU1,LU2,IOFF1,IOFF2,IREW,LBLK,XR,XI)
    10    CONTINUE
 *
          IF(IPRT.GE.1000) THEN
-           WRITE(6,*) ' Initial sigma vectors '
-           WRITE(6,*) ' ======================'
+           WRITE(LUWRT,*) ' Initial sigma vectors '
+           WRITE(LUWRT,*) ' ======================'
            CALL REWINE(LU2,LBLK)
            DO IVEC = 1, NINVEC
-             WRITE(6,*) ' Initial vector ...  ', IVEC
+             WRITE(LUWRT,*) ' Initial vector ...  ', IVEC
              CALL WRTVCDC(VEC1,LU2,0,IRC,LBLK)
            END DO
          END IF
 *
          IF( IPRT .GE.10.OR.IPREDZN.NE.0 ) THEN
-           WRITE(6,*) ' Initial projected matrix, real part'
+           WRITE(LUWRT,*) ' Initial projected matrix, real part'
            CALL PRSYM(APROJR,NINVEC)
-           WRITE(6,*) ' Initial projected matrix, imag part'
+           WRITE(LUWRT,*) ' Initial projected matrix, imag part'
            CALL PRSYM(APROJI,NINVEC)
           END IF
 *. Diagonalize initial projected matrix
@@ -901,8 +1038,8 @@ C?       write(6,*) 'NINVEC FOR CEIGEN ',NINVEC
          CALL CEIGEN(APROJR,APROJI,NINVEC,EIG(1,1),AVEC,WORK)
 *
          IF(IPRT .GE. 3.OR.IPREDZN.NE.0 ) THEN
-           WRITE(6,'(A,I4)') ' Eigenvalues of initial iteration '
-           WRITE(6,'(F22.13)')
+           WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
+           WRITE(LUWRT,'(F22.13)')
      &     ( EIG(IROOT,1)+EIGSHF,IROOT=1,NROOT)
          END IF
          NVEC = NINVEC
@@ -916,9 +1053,9 @@ C?       write(6,*) 'NINVEC FOR CEIGEN ',NINVEC
 *
  1000 CONTINUE
        CALL GETTIM(CPUITR1,WALLITR1)
-       write(6,*)
-       WRITE(6,*) ' Info from iteration .... ', ITER
-       WRITE(6,*) ' _________________________'
+       write(LUWRT,*)
+       WRITE(LUWRT,*) ' Info from iteration .... ', ITER
+       WRITE(LUWRT,*) ' _________________________'
 *
 * ===============================
 *.1 New directions to be included
@@ -973,7 +1110,7 @@ C               MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
          CALL REWINE(LU5,LBLK)
          CALL VECSMD(VEC1,VEC2,ONE,EIGAPRM,LU3,LU5,LU4,0,LBLK)
          IF ( IPRT  .GE. 600 ) THEN
-           WRITE(6,*) '  ( HX - EX )'
+           WRITE(LUWRT,*) '  ( HX - EX )'
            CALL WRTVCDC(VEC1,LU4,1,IRC,LBLK)
          END IF
 *  Strange place to put convergence but ....
@@ -981,7 +1118,7 @@ C               MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
          RNORM = SQRT( INPRDD(VEC1,VEC1,LU4,LU4,0,LBLK)
      &         +       INPRDD(VEC1,VEC1,LU4,LU4,0,LBLK) )
          RNRM(IROOT,ITER) = RNORM
-         WRITE(6,'(A19,7X,I3,3X,1E18.13,3X,1F19.12)')
+         WRITE(LUWRT,'(A19,7X,I3,3X,1E18.13,3X,1F19.12)')
      &     ' Iter RNORM EIGAPR ', ITER,RNORM,EIGAPR+EIGSHF
 *
 * Flush output buffer
@@ -1011,7 +1148,7 @@ CTF      ITER = ITER + 1
            CALL REWINE(LUDIA,LBLK)
            CALL DMTVCD(VEC1,VEC2,LUDIA,LU4,LU3,-EIGAPR,0,1,LBLK)
            IF ( IPRT  .GE. 600) THEN
-             WRITE(6,*) '(D-E)-1 *( HX - EX ) '
+             WRITE(LUWRT,*) '(D-E)-1 *( HX - EX ) '
              CALL WRTVCDC(VEC1,LU3,1,IRC,LBLK)
            END IF
 * =====================================================================
@@ -1032,7 +1169,7 @@ C    9            INPRDDC(VEC1,VEC2,LU1,LU2,IOFF1,IOFF2,IREW,LBLK,XR,XI)
            THRSLDP = 1.0D-10
            IF(XNORM/XNORMO .LE. THRSLDP) THEN
 *. Linear dependency
-             WRITE(6,*)
+             WRITE(LUWRT,*)
      &       ' CMICDV : Vector eliminated due to linear dependence '
              IADD = IADD -1
              GOTO 100
@@ -1040,7 +1177,7 @@ C    9            INPRDDC(VEC1,VEC2,LU1,LU2,IOFF1,IOFF2,IREW,LBLK,XR,XI)
            SCALE = 1.0D0/SQRT(XNORM)
 C          write(6,*) ' Scale, scale**2*xnorm',scale,
 C    &                scale**2*xnorm
-           CALL SCALVE(WORK,SCALE,2*(NVEC+IADD-1) )
+           CALL DSCAL( 2*(NVEC+IADD-1), SCALE, WORK, 1 )
 *. Real part of orthogonalized vector on LU5
            DO JVEC = 1, NVEC+IADD-1
              WORK(2*(JVEC-1)+2) =
@@ -1068,7 +1205,7 @@ C               MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
            ONEM = -1.0D0
            CALL VECSMD(VEC1,VEC2,SCALE,ONEM,LU3,LU4,LU5,0,LBLK)
            IF ( IPRT  .GE. 600 ) THEN
-             WRITE(6,*) '   Orthonormalized (D-E)-1 *( HX - EX ) '
+             WRITE(LUWRT,*) '   Orthonormalized (D-E)-1 *( HX - EX ) '
              CALL WRTVCDC(VEC1,LU5,1,IRC,LBLK)
            END IF
 C               SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
@@ -1102,7 +1239,7 @@ CTF
         CALL COPVCDC(LU1,LU3,VEC1,0,IRC,LBLK)
         CALL REWINE(LU4,LBLK)
         IF(IPRT.GE.10000) THEN
-          WRITE(6,*) ' Input vector to mV7 '
+          WRITE(LUWRT,*) ' Input vector to mV7 '
           CALL WRTVCDC(VEC1,LU3,1,IRC,LBLK)
         END IF
 *
@@ -1114,7 +1251,7 @@ CTF
         end if
 *
         IF(IPRT.GE.10000) THEN
-          WRITE(6,*) ' Output vector from mv7_rel '
+          WRITE(LUWRT,*) ' Output vector from mv7_rel '
           CALL WRTVCDC(VEC1,LU4,1,IRC,LBLK)
         END IF
         CALL REWINE(LU4,LBLK)
@@ -1133,22 +1270,22 @@ C               INPRDDC(VEC1,VEC2,LU1,LU2,IOFF1,IOFF2,IREW,LBLK,XR,XI)
 *. Diagonalize projected matrix
       NVEC = NVEC + IADD
       IF( IPRT  .GE. 10 ) THEN
-        WRITE(6,*) ' Projected matrices before CEIGEN '
+        WRITE(LUWRT,*) ' Projected matrices before CEIGEN '
         CALL PRSYM(APROJR,NVEC)
         CALL PRSYM(APROJI,NVEC)
       END IF
-      write(6,*) 'Dimension of projected matrix:',NVEC
+      write(LUWRT,*) 'Dimension of projected matrix:',NVEC
       CALL CEIGEN(APROJR,APROJI,NVEC,EIG(1,ITER),AVEC,WORK)
 *
        IF(IPRT .GE. 3 ) THEN
-         WRITE(6,'(A,I4)') ' Eigenvalues of iteration ..', ITER
-         WRITE(6,'(5F22.13)')
+         WRITE(LUWRT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
+         WRITE(LUWRT,'(5F22.13)')
      &   ( EIG(IROOT,ITER)+EIGSHF,IROOT=1,NROOT)
 CJO      call towave(nroot,eig(1,iter))
        END IF
 *
       IF( IPRT  .GE. 5 ) THEN
-        WRITE(6,*) ' Projected matrix and eigen pairs '
+        WRITE(LUWRT,*) ' Projected matrix and eigen pairs '
         CALL PRSYM(APROJR,NVEC)
         CALL PRSYM(APROJI,NVEC)
         CALL WRTMAT(AVEC,2*NVEC,NROOT,2*NVEC,NROOT)
@@ -1179,23 +1316,23 @@ CJO      call towave(nroot,eig(1,iter))
           XNORM = INPRDD(VEC1,VEC1,LU3,LU3,1,LBLK)
      &          + INPRDD(VEC1,VEC1,LU6,LU6,1,LBLK)
           SCALE  = 1.0D0/SQRT(XNORM)
-C          write(6,*) ' Scale, scale**2*xnorm',scale,
+C          write(LUWRT,*) ' Scale, scale**2*xnorm',scale,
 C    &                scale**2*xnorm
           WORK(2*NROOT*NVEC+IROOT) = SCALE
 *. Copy current vector to LU5
-C?        WRITE(6,*) ' Current vector on LU3, IROOT = ', IROOT
+C?        WRITE(LUWRT,*) ' Current vector on LU3, IROOT = ', IROOT
 C?        CALL WRTVCD(VEC1,LU3,1,LBLK)
 *
           CALL REWINE(LU3,LBLK)
           CALL SCLVCD(LU3,LU5,SCALE,VEC1,0,LBLK)
 *
-C?        WRITE(6,*) ' Current vector on LU6, IROOT = ', IROOT
+C?        WRITE(LUWRT,*) ' Current vector on LU6, IROOT = ', IROOT
 C?        CALL WRTVCD(VEC1,LU6,1,LBLK)
 *
           CALL REWINE(LU6,LBLK)
           CALL SCLVCD(LU6,LU5,SCALE,VEC1,0,LBLK)
 CE        IF(IPRT.GT.100) THEN
-CE           WRITE(6,*) ' Normalized vector '
+CE           WRITE(LUWRT,*) ' Normalized vector '
 CE           call rewine(LU5,LBLK)
 CE           CALL WRTVCDC(VEC1,LU5,1,IRC,LBLK)
 CE        END IF
@@ -1203,20 +1340,20 @@ CE        END IF
 *. Transfer C vectors to LU1
 *
         if (IPRT.ge.1000) then
-          WRITE(6,*) ' Initial vectors on LU1 '
+          WRITE(LUWRT,*) ' Initial vectors on LU1 '
           CALL REWINE(LU1,LBLK)
           DO IVEC = 1, NROOT
-            WRITE(6,*) ' Vector ', IVEC
+            WRITE(LUWRT,*) ' Vector ', IVEC
             CALL WRTVCDC(VEC1,LU1,0,IRC,LBLK)
-            WRITE(6,*) ' Writing of vector completed '
+            WRITE(LUWRT,*) ' Writing of vector completed '
           END DO
 *
-          WRITE(6,*) ' Vectors on LU5 '
+          WRITE(LUWRT,*) ' Vectors on LU5 '
           CALL REWINE(LU5,LBLK)
           DO IVEC = 1, NROOT
-            WRITE(6,*) ' Vector ', IVEC
+            WRITE(LUWRT,*) ' Vector ', IVEC
             CALL WRTVCDC(VEC1,LU5,0,IRC,LBLK)
-            WRITE(6,*) ' Writing of vector completed '
+            WRITE(LUWRT,*) ' Writing of vector completed '
           END DO
         end if
 *
@@ -1227,8 +1364,8 @@ CE        END IF
 C?        WRITE(6,*) ' Vector copied : ', IVEC
         END DO
         IF(IPRT.GE.1000) THEN
-          WRITE(6,*) ' New reset C-vectors '
-          WRITE(6,*) ' =================== '
+          WRITE(LUWRT,*) ' New reset C-vectors '
+          WRITE(LUWRT,*) ' =================== '
           CALL REWINO(LU1)
           DO IVEC = 1, NROOT
              CALL WRTVCDC(VEC1,LU1,0,IRC,LBLK)
@@ -1265,8 +1402,8 @@ C?        WRITE(6,*) ' Vector copied : ', IVEC
           CALL COPVCDC(LU5,LU2,VEC1,0,IRC,LBLK)
         END DO
         IF(IPRT.GE.1000) THEN
-          WRITE(6,*) ' New reset sigma -vectors '
-          WRITE(6,*) ' =================== '
+          WRITE(LUWRT,*) ' New reset sigma -vectors '
+          WRITE(LUWRT,*) ' =================== '
           CALL REWINO(LU2)
           DO IVEC = 1, NROOT
              CALL WRTVCDC(VEC1,LU2,0,IRC,LBLK)
@@ -1287,12 +1424,12 @@ C?        WRITE(6,*) ' Vector copied : ', IVEC
       CALL GETTIM(CPUITR2,WALLITR2)
       CPUTID = SECTID(CPUITR2-CPUITR1)
       WALLTID = SECTID(WALLITR2-WALLITR1)
-      WRITE(6,9300) CPUTID,WALLTID
+      WRITE(LUWRT,9300) CPUTID,WALLTID
 *
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER.AND.IPREDZN.EQ.0) THEN
         GOTO 1000
       ELSE IF(IPREDZN.EQ.1) THEN
-        WRITE(6,*) ' PREDIA vectors written to file LUCVECT'
+        WRITE(LUWRT,*) ' PREDIA vectors written to file LUCVECT'
         RETURN
       END IF
  1001 CONTINUE
@@ -1303,13 +1440,13 @@ C?        WRITE(6,*) ' Vector copied : ', IVEC
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
          IF(IPRT .GE. 0 )
-     &   WRITE(6,1170) MAXIT
+     &   WRITE(LUWRT,1170) MAXIT
  1170    FORMAT(/'   Convergence was not obtained in ',I3,' iterations')
       ELSE
 *        CONVERGENCE WAS OBTAINED
 C!?      ITER = ITER - 1
          IF (IPRT .GE. 0 )
-     &   WRITE(6,1180) ITER
+     &   WRITE(LUWRT,1180) ITER
  1180    FORMAT(/'  Convergence was obtained in ',I3,' iterations')
       END IF
       END IF
@@ -1318,40 +1455,41 @@ C!?      ITER = ITER - 1
         CALL REWINE(LU1,LBLK)
         CALL REWINE(LU2,LBLK)
         DO 1600 IROOT = 1, NROOT
-          WRITE(6,'(/A,I3/A/)')
+          WRITE(LUWRT,'(/A,I3/A/)')
      &    ' Information about convergence for root... ' ,IROOT,
      &    ' ============================================'
           FINEIG(IROOT) = EIG(IROOT,ITER)
-          WRITE(6,1190) FINEIG(IROOT)+EIGSHF
+          WRITE(LUWRT,1190) FINEIG(IROOT)+EIGSHF
  1190     FORMAT(' The final approximation to eigenvalue ',F22.10)
           IF(IPRT.GE.10) THEN
-            WRITE(6,1201)
+            WRITE(LUWRT,1201)
  1201       FORMAT(/' The final approximation to eigenvector')
             CALL WRTVCDC(VEC1,LU1,0,IRC,LBLK)
  1200       FORMAT(/' The final sigma vector')
             CALL WRTVCDC(VEC1,LU2,0,IRC,LBLK)
           END IF
-          WRITE(6,1300)
+          WRITE(LUWRT,1300)
  1300     FORMAT(/'  Summary of iterations '
      +           /'  ----------------------')
-          WRITE(6,1310)
+          WRITE(LUWRT,1310)
  1310     FORMAT
      &    (/'  Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
- 1330     WRITE(6,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(IROOT,I)
+ 1330     WRITE(LUWRT,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(IROOT,I)
  1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       else
-        write(6,*)
-        write(6,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(6,*)
+        write(LUWRT,*)
+        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
+        write(LUWRT,*)
         do 1601 IROOT = 1, NROOT
           FINEIG(IROOT) = EIG(IROOT,ITER)+EIGSHF
-          write(6,9000) ' Final Eigenvalue ',IROOT,' : ',FINEIG(IROOT)
+          write(LUWRT,9000) ' Final Eigenvalue ',IROOT,' : ',
+     &                        FINEIG(IROOT)
  1601   continue
-        write(6,*)
-        write(6,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(6,*)
+        write(LUWRT,*)
+        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
+        write(LUWRT,*)
       end if
 *
       ECI = EIG(1,ITER)
@@ -1360,7 +1498,7 @@ C!?      ITER = ITER - 1
 *
       IF(IPRT .EQ. 1 ) THEN
         DO 1607 IROOT = 1, NROOT
-          WRITE(6,'(A,2I3,E13.6,2E10.3)')
+          WRITE(LUWRT,'(A,2I3,E13.6,2E10.3)')
      &    ' >>> CI-OPT Iter Root E g-norm g-red',
      &                 ITER,IROOT,FINEIG(IROOT),RNRM(IROOT,ITER),
      &                 RNRM(IROOT,1)/RNRM(IROOT,ITER)
@@ -1399,6 +1537,14 @@ C!?      ITER = ITER - 1
 #include "wrkspc.inc"
 #include "cprnt.inc"
 #include "clunit.inc"
+#include "files_r.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
+
 *
       character*6 SIGDEN_ROUTE
 *
@@ -1416,6 +1562,12 @@ C!?      ITER = ITER - 1
 *
       LUIN = LUSC92
       LUOUT = LUSC93
+*     node-dependend file names ...
+      Open(Unit=LUIN,File=NLUSC92_MPI(1:LUSC929_MPIL),
+     &     Status='UNKNOWN', Form='UNFORMATTED')
+      Open(Unit=LUOUT,File=NLUSC93_MPI(1:LUSC929_MPIL),
+     &     Status='UNKNOWN', Form='UNFORMATTED')
+*
       LBLK = -1
 *
       LENH = NVAR**2
@@ -1430,6 +1582,9 @@ C!?      ITER = ITER - 1
         CALL REWINE(LUDIA,LBLK)
         CALL REWINE(LUIN,LBLK)
         ONE = 1.0D0
+*       !ATTENTION! THE CALL TO THIS SUBROUTINE HAS BEEN CHANGED!
+*       THE FOLLOWING CALLS NEED TO BE ADAPTED
+        WRITE(6,*) ' I might produce shit! Please look into the code'
         CALL WRSVCD_REL(LUIN,LBLK,VEC1,I,ONE,1,NVAR,LUDIA)
 * Imaginary part
         CALL WRSVCD_REL(LUIN,LBLK,VEC1,I,ONE,0,NVAR,LUDIA)
@@ -1519,7 +1674,7 @@ C       CALL PRSYM(HR,NVAR)
 C     END IF
 C          TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGNTP)
       CALL TRIPAK(WORK(KHI),SCR1,1,NVAR,NVAR,SIGNTP)
-      CALL COPVEC(SCR1,WORK(KHI),NVAR*(NVAR+1)/2)
+      CALL DCOPY(NVAR*(NVAR+1)/2,SCR1,1,WORK(KHI),1)
 *
       write(6,*) 'NVAR : ',NVAR
       NVAR_SAVE = NVAR
@@ -2468,6 +2623,7 @@ C      END IF
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 *
@@ -2515,7 +2671,13 @@ C      END IF
 * On input LU1 is supposed to hold initial guesses to eigenvectors
 *
 *
-       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
        DIMENSION VEC1(*),VEC2(*)
        REAL * 8   INPROD
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
@@ -2536,9 +2698,9 @@ C      END IF
 *
        call qenter('MICDV4')
 *
-       WRITE(6,*) '             ::::::::::::::::::::::::   '
-       WRITE(6,*) '               Entering MICDV4 (rel)    '
-       WRITE(6,*) '             ::::::::::::::::::::::::   '
+       WRITE(LUWRT,*) '             ::::::::::::::::::::::::   '
+       WRITE(LUWRT,*) '               Entering MICDV4 (rel)    '
+       WRITE(LUWRT,*) '             ::::::::::::::::::::::::   '
 *
        IPICO = 0
        IF(IPICO.NE.0) THEN
@@ -2550,14 +2712,14 @@ C?       WRITE(6,*) ' Variational  solver '
 *
        IOLSTM = 1
        IF(IPRT.GT.1.AND.IOLSTM.NE.0)
-     & WRITE(6,*) ' Inverse iteration modified Davidson '
+     & WRITE(LUWRT,*) ' Inverse iteration modified Davidson '
        IF(IPRT.GT.1.AND.IOLSTM.EQ.0)
-     & WRITE(6,*) ' Normal Davidson method '
+     & WRITE(LUWRT,*) ' Normal Davidson method '
        IF( MAXVEC .LT. 2 * NROOT ) THEN
-         WRITE(6,*) ' Sorry MICDV4 wounded , MAXVEC .LT. 2*NROOT '
-         WRITE(6,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
-         WRITE(6,*) ' Raise MXCIV to be at least 2 * Nroot '
-         WRITE(6,*) ' Enforced stop on MICDV4 '
+         WRITE(LUWRT,*) ' Sorry MICDV4 wounded , MAXVEC .LT. 2*NROOT '
+         WRITE(LUWRT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
+         WRITE(LUWRT,*) ' Raise MXCIV to be at least 2 * Nroot '
+         WRITE(LUWRT,*) ' Enforced stop on MICDV4 '
          STOP 20
        END IF
 *
@@ -2591,11 +2753,11 @@ CTF      CALL ENLMD(VEC1,VEC2,LU3,LU4)
    10  CONTINUE
 *
        IF( IPRT .GE.3 ) THEN
-         WRITE(6,*) ' INITIAL PROJECTED MATRIX  '
-         CALL PRSYM(APROJ,NINVEC)
+           WRITE(LUWRT,*) ' INITIAL PROJECTED MATRIX  '
+           CALL PRSYM(APROJ,NINVEC)
        END IF
 *. Diagonalize initial projected matrix
-       CALL COPVEC(APROJ,WORK(KAPROJ),NINVEC*(NINVEC+1)/2)
+       CALL DCOPY(NINVEC*(NINVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
        CALL EIGEN(WORK(KAPROJ),AVEC,NINVEC,0,1)
        DO 20 IROOT = 1, NROOT
          EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
@@ -2603,12 +2765,12 @@ CTF      CALL ENLMD(VEC1,VEC2,LU3,LU4)
 *
 
        IF(IPRT .GE. 3 ) THEN
-         WRITE(6,'(A,I4)') ' Eigenvalues of initial iteration '
-         WRITE(6,'(5F18.13)')
+         WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
+         WRITE(LUWRT,'(5F18.13)')
      &   ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
        END IF
        IF( IPRT  .GE. 5 ) THEN
-         WRITE(6,*) ' Initial set of eigen values (no shift) '
+         WRITE(LUWRT,*) ' Initial set of eigen values (no shift) '
          CALL WRTMAT(EIG(1,1),1,NROOT,MAXIT,NROOT)
        END IF
        NVEC = NINVEC
@@ -2620,9 +2782,9 @@ CTF      CALL ENLMD(VEC1,VEC2,LU3,LU4)
 *
  1000 CONTINUE
         CALL GETTIM(CPUITR1,WALLITR1)
-        write(6,*)
-        write(6,'(A21,3X,I3)') ' Info from iteration ',ITER
-        write(6,*) '_______________________'
+        write(LUWRT,*)
+        write(LUWRT,'(A21,3X,I3)') ' Info from iteration ',ITER
+        write(LUWRT,*) '_______________________'
         ITER = ITER + 1
 *
 * ===============================
@@ -2658,7 +2820,7 @@ C
            CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU3,LU1,LU4,0,LBLK)
    60    CONTINUE
          IF ( IPRT  .GE. 10 ) THEN
-           WRITE(6,*) '  ( HX - EX ) '
+           WRITE(LUWRT,*) '  ( HX - EX ) '
            CALL WRTVCD(VEC1,LU4,1,LBLK)
          END IF
 *  Strange place to put convergence but ....
@@ -2666,9 +2828,9 @@ C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
          RNORM = SQRT( INPRDD(VEC1,VEC1,LU4,LU4,1,LBLK) )
          RNRM(ITER-1,IROOT) = RNORM
 *
-         WRITE(6,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
+         WRITE(LUWRT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
      &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
-         CALL FLSHFO(6)
+         CALL FLSHFO(LUWRT)
 *
          IF(RNORM.LT. TEST .OR. 
      &      (ITER.GT.2.AND.
@@ -2685,7 +2847,7 @@ C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
 *. (H0-E) -1 *(HX-EX) on LU3
          IF( .NOT. RTCNV(IROOT) ) THEN
            IF(IPRT.GE.3) THEN
-             WRITE(6,*) ' Correction vector added for root',IROOT
+             WRITE(LUWRT,*) ' Correction vector added for root',IROOT
            END IF
            IADD = IADD + 1
            CALL REWINO(LUDIA)
@@ -2700,7 +2862,7 @@ C               H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
 C    &                  H0,SHIFT,WORK,XH0PSX,
 C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG,IPRECOND)
            IF ( IPRT  .GE. 600) THEN
-             WRITE(6,*) '  (D-E)-1 *( HX - EX ) '
+             WRITE(LUWRT,*) '  (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU3,1,LBLK)
            END IF
 *
@@ -2726,7 +2888,7 @@ C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG,IPRECOND)
                END IF
    66        CONTINUE
              IF ( IPRT  .GE. 10 ) THEN
-               WRITE(6,*) '  (current  X ) '
+               WRITE(LUWRT,*) '  (current  X ) '
                CALL WRTVCD(VEC1,LU5,1,LBLK)
              END IF
 * (H0 - E )-1  * X on LU4
@@ -2749,16 +2911,16 @@ C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG,IPRECOND)
                 IOLSAC = 0
               END IF
               IF(IOLSAC .EQ. 1 ) THEN
-                IF(IPRT.GE.5) WRITE(6,*) ' Olsen Correction active '
+                IF(IPRT.GE.5) WRITE(LUWRT,*) ' Olsen Correction active '
                 DELTA = INPRDD(VEC1,VEC2,LU5,LU3,1,LBLK)
                 FACTOR = -DELTA/GAMMA
-                IF(IPRT.GE.5) WRITE(6,*) ' DELTA,GAMMA,FACTOR'
-                IF(IPRT.GE.5) WRITE(6,*)   DELTA,GAMMA,FACTOR
+                IF(IPRT.GE.5) WRITE(LUWRT,*) ' DELTA,GAMMA,FACTOR'
+                IF(IPRT.GE.5) WRITE(LUWRT,*)   DELTA,GAMMA,FACTOR
                 CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU3,LU4,LU5,1,LBLK)
                 CALL COPVCD(LU5,LU3,VEC1,1,LBLK)
 *
                 IF(IPRT.GE.600) THEN
-                  WRITE(6,*) ' Modified trial vector '
+                  WRITE(LUWRT,*) ' Modified trial vector '
                   CALL WRTVCD(VEC1,LU3,1,LBLK)
                 END IF
 *
@@ -2781,7 +2943,7 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
              CALL COPVCD(LU4,LU3,VEC1,1,LBLK)
    82      CONTINUE
            IF ( IPRT  .GE. 600 ) THEN
-             WRITE(6,*) '   Orthogonalized (D-E)-1 *( HX - EX ) '
+             WRITE(LUWRT,*) '   Orthogonalized (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU3,1,LBLK)
            END IF
 *. 1.4 Normalize vector
@@ -2791,7 +2953,7 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
            CALL SCLVCD(LU3,LU1,FACTOR,VEC1,0,LBLK)
            IF(IPRT.GE.600) THEN
              CALL SCLVCD(LU3,LU4,FACTOR,VEC1,1,LBLK)
-             WRITE(6,*) '   normalized     (D-E)-1 *( HX - EX ) '
+             WRITE(LUWRT,*) '   normalized     (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU4,1,LBLK)
            END IF
 *
@@ -2825,8 +2987,8 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
   150 CONTINUE
 *. Diagonalize projected matrix
       NVEC = NVEC + IADD
-      write(6,*) 'Dimension of projected matrix:',NVEC
-      CALL COPVEC(APROJ,WORK(KAPROJ),NVEC*(NVEC+1)/2)
+      write(LUWRT,*) 'Dimension of projected matrix:',NVEC
+      CALL DCOPY(NVEC*(NVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
       CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
       IF(IPICO.NE.0) THEN
         E0VAR = WORK(KAPROJ)
@@ -2840,27 +3002,27 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
      &         + 2.0D0*AVEC(1)*AVEC(2)*APROJ(2)
      &         + AVEC(2)**2*APROJ(3)
         WORK(KAPROJ) = E0PERT
-        WRITE(6,*) ' Var and Pert solution, energy and coefficients'
-        WRITE(6,'(4X,3E15.7)') E0VAR,C0VAR,C1VAR
-        WRITE(6,'(4X,3E15.7)') E0PERT,AVEC(1),AVEC(2)
+        WRITE(LUWRT,*) ' Var and Pert solution, energy and coefficients'
+        WRITE(LUWRT,'(4X,3E15.7)') E0VAR,C0VAR,C1VAR
+        WRITE(LUWRT,'(4X,3E15.7)') E0PERT,AVEC(1),AVEC(2)
       END IF
       DO 160 IROOT = 1, NROOT
         EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
  160  CONTINUE
 *
        IF(IPRT .GE. 3 ) THEN
-         WRITE(6,'(A,I4)') ' Eigenvalues of iteration ..', ITER
-         WRITE(6,'(5F18.13)')
+         WRITE(LUWRT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
+         WRITE(LUWRT,'(5F18.13)')
      &   ( EIG(ITER,IROOT)+EIGSHF,IROOT=1,NROOT)
-         WRITE(6,'(A)') ' Norm of Residuals (Previous it) '
-         WRITE(6,'(5F18.13)')
+         WRITE(LUWRT,'(A)') ' Norm of Residuals (Previous it) '
+         WRITE(LUWRT,'(5F18.13)')
      &   ( RNRM(ITER-1,IROOT),IROOT=1,NROOT)
        END IF
 *
       IF( IPRT  .GE. 5 ) THEN
-        WRITE(6,*) ' Projected matrix and eigen pairs '
+        WRITE(LUWRT,*) ' Projected matrix and eigen pairs '
         CALL PRSYM(APROJ,NVEC)
-        WRITE(6,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
+        WRITE(LUWRT,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
         CALL WRTMAT(AVEC,NVEC,NROOT,MAXVEC,NROOT)
       END IF
 *
@@ -2906,7 +3068,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
   400   CONTINUE
         NVEC = NROOT
 *
-        CALL SETVEC(AVEC,0.0D0,NVEC**2)
+        CALL DZERO(AVEC,NVEC**2)
         DO 410 IROOT = 1,NROOT
           AVEC((IROOT-1)*NROOT+IROOT) = 1.0D0
   410   CONTINUE
@@ -2922,7 +3084,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
       CALL GETTIM(CPUITR2,WALLITR2)
       CPUTID = SECTID(CPUITR2-CPUITR1)
       WALLTID = SECTID(WALLITR2-WALLITR1)
-      WRITE(6,9300) CPUTID,WALLTID
+      WRITE(LUWRT,9300) CPUTID,WALLTID
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1001 CONTINUE
  
@@ -2931,66 +3093,67 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
          IF(IPRT .GE. 2 )
-     &   WRITE(6,1170) MAXIT
+     &   WRITE(LUWRT,1170) MAXIT
  1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
       ELSE
 *        CONVERGENCE WAS OBTAINED
          ITER = ITER - 1
          IF (IPRT .GE. 2 )
-     &   WRITE(6,1180) ITER
+     &   WRITE(LUWRT,1180) ITER
  1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
         END IF
 *
       IF ( IPRT .GT. 0 ) THEN
         CALL REWINE(LU1,LBLK)
         DO 1600 IROOT = 1, NROOT
-          WRITE(6,*)
-          WRITE(6,'(A,I3)')
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,'(A,I3)')
      &  ' Information about convergence for root... ' ,IROOT
-          WRITE(6,*)
+          WRITE(LUWRT,*)
      &    '============================================'
-          WRITE(6,*)
+          WRITE(LUWRT,*)
           FINEIG(IROOT) = EIG(ITER,IROOT)
-          WRITE(6,1190) FINEIG(IROOT)+EIGSHF
+          WRITE(LUWRT,1190) FINEIG(IROOT)+EIGSHF
  1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
           IF(IPRT.GE.400) THEN
-            WRITE(6,1200)
+            WRITE(LUWRT,1200)
  1200       FORMAT(' The final approximation to eigenvector ')
             CALL WRTVCD(VEC1,LU1,0,LBLK)
           END IF
-          WRITE(6,1300)
+          WRITE(LUWRT,1300)
  1300     FORMAT(1H0,' Summary of iterations ',/,1H
      +          ,' ----------------------')
-          WRITE(6,1310)
+          WRITE(LUWRT,1310)
  1310     FORMAT
      &    (1H0,' Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
- 1330     WRITE(6,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
+ 1330     WRITE(LUWRT,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
  1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       ELSE
         CALL REWINE(LU1,LBLK)
-        write(6,*)
-        write(6,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(6,*)
+        write(LUWRT,*)
+        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
+        write(LUWRT,*)
         DO 1601 IROOT = 1, NROOT
           FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
-          write(6,9000) ' Final Eigenvalue ',IROOT,' : ',FINEIG(IROOT)
+          write(LUWRT,9000) ' Final Eigenvalue ',IROOT,' : ',
+     & FINEIG(IROOT)
           IF(IPRT.GE.400) THEN
-            WRITE(6,1200)
+            WRITE(LUWRT,1200)
             CALL WRTVCD(VEC1,LU1,0,LBLK)
           END IF
  1601   CONTINUE
-        write(6,*)
-        write(6,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(6,*)
+        write(LUWRT,*)
+        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
+        write(LUWRT,*)
       END IF
 *
  9000 format(A18,1I3,A3,F20.13)
 *
       IF(IPRT .EQ. 1 ) THEN
         DO 1607 IROOT = 1, NROOT
-          WRITE(6,'(A,2I3,E13.6,2E10.3)')
+          WRITE(LUWRT,'(A,2I3,E13.6,2E10.3)')
      &    ' >>> CI-OPT Iter Root E g-norm g-red',
      &                 ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
      &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)
@@ -3002,7 +3165,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
 * Delete scratch units
       close(unit=LU3,status='DELETE')
       close(unit=LU4,status='DELETE')
-      close(unit=LU5,status='DELETE')
+      close(unit=LU5,status='DELETE') ! think about that!!!!!!!!
 C
       RETURN
  1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))

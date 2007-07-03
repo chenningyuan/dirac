@@ -432,6 +432,7 @@ CTF  Shouldn't ABS be .le. 4 instead?
 #include "oper.inc"
 #include "symm.inc"
 #include "clunit.inc"
+#include "files_r.inc"
 *
       common/glbref/ISPC,ISM,ITERGLB
 *
@@ -453,7 +454,7 @@ CTF  Shouldn't ABS be .le. 4 instead?
       CALL Z_BLKFO_REL(IDC,NMS2VAL,
      &                 ISPC,ISM,KLSLBT,KLSLEBT,KLSI1BT,KLSIBT,
      &                 KLSBLTP,NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
-     &                 NBAT_MS2,IBAT_MS2)
+     &                 NBAT_MS2,IBAT_MS2,0,0,IDUMMY)
 *
 *  Erase density matrices
       do IC=1,2,1
@@ -524,9 +525,9 @@ c       I = 2
         else if (INATIT.ge.2) then
           FILESTAT = 'OLD'
         end if
-        open(unit=LUMOUTR,file='NATSPIR',
+        open(unit=LUMOUTR,file=NLUMOUTR_MPI(1:LUMOUTRI_MPIL),
      &       status='UNKNOWN',form='FORMATTED')
-        open(unit=LUMOUTI,file='NATSPII',
+        open(unit=LUMOUTI,file=NLUMOUTI_MPI(1:LUMOUTRI_MPIL),
      &       status='UNKNOWN',form='FORMATTED')
         call rewino(LUMOUTR)
         call rewino(LUMOUTI)
@@ -797,11 +798,12 @@ C     SPGRPCON(IOFSPGRP,NSPGRP,NGAS,MXPNGAS,IELFSPGRP,ISPGRPCON,IPRNT)
       MAXIJ = MXTSOB_L ** 2
 *.Local scratch arrays for blocks of C and sigma
       if (ICISTR.le.2) then
-        LSCR1 = MXSB
+        L0BLOCK = MXSB
       else if (ICISTR.eq.3) then
-        LSCR1 = MXSOOB
+        L0BLOCK = MXSOOB
       end if
-      LSCR1 = max(LSCR1,LCSBLK)
+      LSCR1 = MAX(L0BLOCK,L2BLOCK)
+Cold      LSCR1 = max(LSCR1,LCSBLK)
       if (IPRCIX.ge.2)
      &write(6,*) ' ICISTR,LSCR1 ',ICISTR,LSCR1
 *. Arrays giving allowed type combinations
@@ -1479,11 +1481,12 @@ c
       IF(IPRDEN.GE.2) write(6,*) ' DENSI2 : MXSB MXTSOB_L MXSOOB ',
      &       MXSB,MXTSOB_L,MXSOOB
       IF(ICISTR.LE.2) THEN
-        LSCR1 = MXSB
+        L0BLOCK = MXSB
       ELSE IF(ICISTR.EQ.3) THEN
-        LSCR1 = MXSOOB
+        L0BLOCK = MXSOOB
       END IF
-      LSCR1 = MAX(LSCR1,LCSBLK)
+      LSCR1 = MAX(L0BLOCK,L2BLOCK)
+Cold      LSCR1 = MAX(LSCR1,LCSBLK)
       IF(IPRDEN.GE.2)
      &WRITE(6,*) ' ICISTR,LSCR1 ',ICISTR,LSCR1
       IF(ICISTR.EQ.1) THEN

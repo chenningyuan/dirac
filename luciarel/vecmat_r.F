@@ -896,6 +896,79 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE IOFF_SYMBLK_MAT_PAR(NSMST,NA,NB,ITOTSM,IOFF,IRESTRICT,
+     &                               IACTLIST,IOFF_ACT,IVERS)
+*
+* Offset for symmetry blocked matrix. 
+* Row-symmetry used as primary index
+*
+* Jeppe Olsen, Summer of 99
+*               July 2000 : IRESTRICT added
+* Modified for relativistic case, Timo Fleig, July 2001
+* adaption of sequential routine, Stefan Knecht May 2007
+*
+* IRESTRICT = 0 : No restrictions of symmetry blocks
+*           = 1 : Only blocks with ASM .GE. BSM are included
+*           =-1 : Only blocks with ASM .LT. BSM are included
+* IVERS     = 0 : c-block routine
+*           = 1 : s-block routine
+#include "implicit.inc"
+#include "ipoist8.inc"
+*. General input  
+#include "mxpdim.inc"
+#include "symm.inc"
+#include "lucipar_rel.inc"
+*. Specific input 
+      INTEGER NA(NSMST),NB(NSMST), IACTLIST(*)
+*. Output
+      INTEGER IOFF(NSMST)
+*
+      IB = 1
+      IOFF_SCR = 0
+      IOFF_SCR = IOFF_ACT
+      IF( IVERS .eq. 0 ) THEN
+        DO IASM = 1, NSMST
+          IF( IACTLIST( IOFF_SCR ) .eq. 0 ) GOTO 100
+          IBSM = IDBGMULT(INVELM(IASM),ITOTSM)
+          INCLUDED = 0
+          IF(IRESTRICT.EQ.0) INCLUDED = 1
+          IF(IRESTRICT.EQ.1.AND.IASM.GE.IBSM) INCLUDED = 1
+          IF(IRESTRICT.EQ.-1.AND.IASM.LT.IBSM) INCLUDED = -1
+          IF(INCLUDED.EQ.1) THEN
+            IOFF(IASM) = IB
+            IB = IB + NA(IASM)*NB(IBSM)
+          ELSE
+            IOFF(IASM) = 0
+          END IF
+ 100      CONTINUE
+          IOFF_SCR = IOFF_SCR + 1
+        END DO
+      ELSE
+        DO IASM = 1, NSMST
+          IF( IACTLIST( IOFF_SCR ) .ne. MYPROC ) GOTO 200
+          IBSM = IDBGMULT(INVELM(IASM),ITOTSM)
+          INCLUDED = 0
+          IF(IRESTRICT.EQ.0) INCLUDED = 1
+          IF(IRESTRICT.EQ.1.AND.IASM.GE.IBSM) INCLUDED = 1
+          IF(IRESTRICT.EQ.-1.AND.IASM.LT.IBSM) INCLUDED = -1
+          IF(INCLUDED.EQ.1) THEN
+            IOFF(IASM) = IB
+            IB = IB + NA(IASM)*NB(IBSM)
+          ELSE
+            IOFF(IASM) = 0
+          END IF
+ 200      CONTINUE
+          IOFF_SCR = IOFF_SCR + 1
+        END DO
+      END IF
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
 *
@@ -1495,55 +1568,144 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
+      SUBROUTINE WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM,
+     &                      NBLOCK,IBLOCKL,IBLOCKD,IAM_REAL,JROOT
+#if defined (VAR_MPI)
+     &                      ,LU1LIST
+#endif
+     &                      )
 *
-* Write scattered vector to disc
+* Write scattered vector to disc,
+* every node writes only it's part.
+* Information about the length of a blcok is stored in IBLOCKL.
+* Information about which block belongs to which node is stored in
+* IBLOCKD.
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+      IMPLICIT REAL*8 (A-H,O-Z)
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
 *.Input
-      DIMENSION IPLAC(*),VAL(*)
+      DIMENSION IPLAC(*),VAL(*), IBLOCKL(*), IBLOCKD(*)
 *.Scratch
       DIMENSION VEC1(*)
-*
+      LOGICAL FOUND_ONE
+#if defined (VAR_MPI)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
+      DIMENSION LU1LIST(*)
+#endif
+C
+      FOUND_ONE = .FALSE.
+      IONE = 1
+C
       IF(LBLK.GT.0) THEN
-*. Write the vector without markers in one block
-         CALL SETVEC(VEC1,0.0D0,NDIM)
+C        Write the vector without markers in one block
+         CALL DZERO(VEC1,NDIM)
          DO 100 IEFF = 1, NSCAT
            VEC1(IPLAC(IEFF)) = VAL(IEFF)
   100    CONTINUE
          CALL TODSC(VEC1,NDIM,-1,LU)
       ELSE
-*. Write the vector with the block format of file LUFORM
+C       Write the vector with the block format of file LUFORM
         CALL REWINO(LUFORM)
         IBOT = 1
-*. Loop over records
+C       Loop over records
  1000   CONTINUE
+#if defined (VAR_MPI)
+C       initialize offset
+        IOFF_SCR1 = 0
+        IOFF_SCR2 = 0
+        INT_IOFF1  = 0
+        INT_IOFF2  = 0
+C       
+        IOFF_SCR1 = MY_LU1_OFF  
+     &            + MY_VEC2_IOFF * ( JROOT    - 1 ) 
+     &            + MY_VEC1_IOFF * ( IAM_REAL - 1 )
+        INT_IOFF1  = 1 + MY_ACT_BLK2 * ( JROOT    - 1 ) 
+     &                 + MY_ACT_BLK1 * ( IAM_REAL - 1 )
+CSK        WRITE(LUWRT,*) 'OFFSET at START',IOFF_SCR1
+CSK        WRITE(LUWRT,*) 'INT_IOFF1 at START ',INT_IOFF1
+C
+        DO IBLK = 1, NBLOCK
+          IF( IBLOCKD( IBLK ) .ne. MYPROC ) GOTO 300
+CSK          WRITE(LUWRT,*) 'OFFSET new for block',IOFF_SCR1,IBLK -
+CSK     &                                          INT_IOFF2, INT_IOFF2
+CSK          WRITE(LUWRT,*) 'INT_IOFF1 new for block ',INT_IOFF1,IBLK -
+CSK     &                                              INT_IOFF2, INT_IOFF2
+          LBL = IBLOCKL( IBLK ) 
+C         
+#else
         CALL IFRMDS(LBL,1,-1,LUFORM)
-        CALL ITODS (LBL,1,-1,LU)
+        CALL ITODS(LBL,1,-1,LU)
         IF(LBL.GE.0) THEN
+#endif
 C?        write(6,*) ' IBOT,IBOT + LBL -1 ',IBOT,
 C?   &    IBOT + LBL -1
-          CALL SETVEC(VEC1,0.0D0,LBL)
+          CALL DZERO(VEC1,LBL)
+C         *******************************************************
+C         *******************************************************
+C                Find the places where a 1.0 should be set
+C         *******************************************************
+C         *******************************************************
           DO 200 IEFF = 1, NSCAT
-            IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
-     &      VEC1(IPLAC(IEFF)-IBOT+1) = VAL(IEFF)
-C?          IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
-C?   &      write(6,*) ' Catch : IPLAC(IEFF) VAL(IEFF) ',
-C?   &      IPLAC(IEFF),VAL(IEFF)
+            IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1) THEN
+               VEC1(IPLAC(IEFF)-IBOT+1) = VAL(IEFF)
+               FOUND_ONE = .TRUE.
+            END IF
+CSK          IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
+CSK     &      write(luwrt,*) ' Catch : IPLAC(IEFF) VAL(IEFF) ',
+CSK     &      IPLAC(IEFF),VAL(IEFF)
   200     CONTINUE
+C         
+#if defined (VAR_MPI)
+C
+C         new offset
+C
+          IOFF_SCR1 = IOFF_SCR1 + IOFF_SCR2
+          INT_IOFF1 = INT_IOFF1 + INT_IOFF2
+C
+C
+          IF( FOUND_ONE ) THEN
+CSK          WRITE(LUWRT,*) 'THIS IS WHAT I WILL WRITE',MYPROC
+CSK          CALL WRTMATMN(VEC1,1,LBL,1,LBL,LUWRT)
+CSK          WRITE(LUWRT,*) 'OFFSET',IOFF_SCR1
+CSK          WRITE(LUWRT,*) 'INT_IOFF1 is ',INT_IOFF1
+C
+            LU1LIST( INT_IOFF1 ) = IONE
+            CALL MPI_FILE_WRITE_AT(ILU1,IOFF_SCR1,VEC1,LBL,
+     &                             MPI_REAL8,ISTAT,IERR)
+C
+          END IF
+C
+          FOUND_ONE = .FALSE.
+#else
           CALL TODSC(VEC1,LBL,-1,LU)
-*.Skip record on LUFORM
+#endif
+C         Skip record on LUFORM
+#if !defined (VAR_MPI)
           CALL FRMDSC(VEC1,LBL,-1,LUFORM,IMZERO,IAMPACK)
           IBOT = IBOT + LBL
           GOTO 1000
         END IF
-*
-C?      CALL WRTVCD(VEC1,LU,1,LBLK)
+#else
+C         keep track of correct offset
+          IOFF_SCR2 = LBL
+          INT_IOFF2 = IONE
+  300     CONTINUE
+C         keep IBOT up-to-date for all nodes
+          LBL = IBLOCKL( IBLK )
+          IBOT = IBOT + LBL
+        END DO
+#endif
+C
       END IF
-*
-      RETURN
+C
       END
 ***********************************************************************
 *                                                                     *

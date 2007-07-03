@@ -1668,6 +1668,12 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "symm.inc"
@@ -1718,16 +1724,16 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
       NTEST = max(IPRINT,NTESTL)
 *
       if (NTEST.ge.1) then
-        WRITE(6,*) ' *************************************************'
-        WRITE(6,*) ' *                                               *'
-        WRITE(6,*) ' *  Transformer man                              *'
-        WRITE(6,*) ' *  You run the show                             *'
-        WRITE(6,*) ' *  Remote control                               *'
-        WRITE(6,*) ' *  Direct the action with the push of a button  *'
-        WRITE(6,*) ' *                                               *'
-        WRITE(6,*) ' *                               Neil Young      *'
-        WRITE(6,*) ' *                                               *'
-        WRITE(6,*) ' *************************************************'
+      WRITE(LUWRT,*) ' ************************************************'
+      WRITE(LUWRT,*) ' *                                              *'
+      WRITE(LUWRT,*) ' *  Transformer man                             *'
+      WRITE(LUWRT,*) ' *  You run the show                            *'
+      WRITE(LUWRT,*) ' *  Remote control                              *'
+      WRITE(LUWRT,*) ' *  Direct the action with the push of a button *'
+      WRITE(LUWRT,*) ' *                                              *'
+      WRITE(LUWRT,*) ' *                               Neil Young     *'
+      WRITE(LUWRT,*) ' *                                              *'
+      WRITE(LUWRT,*) ' ************************************************'
       end if
 *
 *  CI or MCSCF transformation?
@@ -1760,10 +1766,10 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
       end if 
 *
       if (IFOCKEX.eq.1.and.ENVIRO(1:6).eq.'DIRAC ') then
-        write(6,*) 'Problem in itrctl.'
-        write(6,*) 'IFOCKEX is  ',IFOCKEX
-        write(6,*) 'and environment is ',ENVIRO(1:6)
-        write(6,*) 'This is not allowed. Omit FOCKEX variable.'
+        write(LUWRT,*) 'Problem in itrctl.'
+        write(LUWRT,*) 'IFOCKEX is  ',IFOCKEX
+        write(LUWRT,*) 'and environment is ',ENVIRO(1:6)
+        write(LUWRT,*) 'This is not allowed. Omit FOCKEX variable.'
         Call Abend2( 'Quitting.' )
       end if
 *
@@ -1772,14 +1778,16 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 *
 *  Transformed integrals, 32 lists
       call findhigh(NGSOBPI,MXPIRR*MXPNGAS,MXGSDIM)
-      if (NTEST.ge.1) write(6,*) 'Highest GAS dimension is  ',MXGSDIM
+      if (NTEST.ge.1) write(LUWRT,*) 'Highest GAS dimension is ',MXGSDIM
       call findhigh(SYMDIM(1),NIRR_DG,IMXDDIM)
       call findhigh(NORB_FULL(1),NIRR_PN,IMXDIM_F)
       if (IMXDDIM.gt.MXNSPIPDMGRP) then
-        write(6,*) 'Spinor expansion too long for double dim. arrays.'
-        write(6,*) 'MXNSPIPDMGRP is  ',MXNSPIPDMGRP
-        write(6,*) 'IMXDDIM is ',IMXDDIM
-        write(6,*) 'Adjust MXNSPIPDMGRP in mxpdim.inc or reconsider.'
+        write(LUWRT,*) 'Spinor expansion too long for 
+     & double dim. arrays.'
+        write(LUWRT,*) 'MXNSPIPDMGRP is  ',MXNSPIPDMGRP
+        write(LUWRT,*) 'IMXDDIM is ',IMXDDIM
+        write(LUWRT,*) 'Adjust MXNSPIPDMGRP in mxpdim.inc or 
+     & reconsider.'
         Call Abend2( 'Quitting.' )
       end if
       call findhigh(SYDI(1),NIRR_DG,IMXDIM)
@@ -1819,14 +1827,15 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
           IRIMLT = 2
         end if
         NALLINT = LEN_T_VEC * IRIMLT
-        write(6,*) ' Allocating for ',NALLINT,' integrals.'
+        write(LUWRT,*) ' Allocating for ',NALLINT,' integrals.'
         call memmar(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
 *
 * Diagonal integrals
         NDIAMINT = (2*NDIM_TOT + 3*((2*NDIM_TOT)**2)) * IRIMLT/2
         call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
         call memmar(KPOSDIA,NDIAMINT,'ADDS  ',1,'POSDIA')
-        write(6,*) ' Allocating for ',NDIAMINT,' diagonal integrals.'
+        write(LUWRT,*) ' Allocating for ',NDIAMINT,
+     &' diagonal integrals.'
       end if
 *
 *
@@ -1893,7 +1902,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
             end if
           else if (ENVIRO(1:6).eq.'DIRAC ') then
             if (IOPER.eq.1) then
-              write(6,*) 'Itrctl: Spinfree Dirac Hamiltonian!'
+              write(LUWRT,*) 'Itrctl: Spinfree Dirac Hamiltonian!'
               call rdone_dirac_rel(WORK(KDIONEE),LU2,DIRACONE,MORB,
      &                             NDIM_TOT,ISPINFREE,WORK(KBOSYM),
      &                             WORK(KIDUMAR),WORK(KDUMAR),NTEST)
@@ -1911,8 +1920,8 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
               end if
             end if
           else
-            write(6,*) 'Problem in itrctl'
-            write(6,'(A21,A6)') 'ENVIRO variable is  :',ENVIRO
+            write(LUWRT,*) 'Problem in itrctl'
+            write(LUWRT,'(A21,A6)') 'ENVIRO variable is  :',ENVIRO
             Call Abend2( 'Stopping execution, fatal error.' )
           end if
         end if
@@ -1935,7 +1944,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
      &                     WORK(KPICLZ),LENTRIA_SO,
      &                     LU69,LU70,LU71,LUSGI2,LUSGI3,LUSGI4)
             else if (ENVIRO(1:6).eq.'DIRAC ') then
-              write(6,*) 'Itrctl: Full Dirac Hamiltonian!'
+              write(LUWRT,*) 'Itrctl: Full Dirac Hamiltonian!'
               call rdone_dirac_rel(WORK(KDIONEE),LU2,DIRACONE,MORB,
      &                             NDIM_TOT,ISPINFREE,WORK(KBOSYM),
      &                             WORK(KIDUMAR),WORK(KDUMAR),NTEST)
@@ -1954,7 +1963,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
             end if
           else if (IFOCKEX.eq.1) then
             if (ENVIRO(1:6).eq.'MOLECU') then
-              write(6,*) 'Case not implemented yet.'
+              write(LUWRT,*) 'Case not implemented yet.'
               Call Abend2( 'Quitting.' )
 c             stop 'Timo forced me to stop after reading di integrals.'
             else if (ENVIRO(1:6).eq.'MOLCAS') then
@@ -1966,9 +1975,9 @@ c             stop 'Timo forced me to stop after reading di integrals.'
           end if
         end if
         if (IOPER.lt.1.or.IOPER.gt.3) then
-          write(6,*) 'Severe problem in itrctl!'
-          write(6,*) 'Type of operator not specified correctly.'
-          write(6,*) 'IOPER is  ',IOPER
+          write(LUWRT,*) 'Severe problem in itrctl!'
+          write(LUWRT,*) 'Type of operator not specified correctly.'
+          write(LUWRT,*) 'IOPER is  ',IOPER
           Call Abend2( 'Quitting.' )
         end if
       end if
@@ -2027,8 +2036,8 @@ c             stop 'Timo forced me to stop after reading di integrals.'
              write(*,*) 'IDIMGRP is ',IDIMGRP
              write(*,*) 'SYMDIM(IDIMGRP) is ',SYMDIM(IDIMGRP)
              if (SYMDIM(IDIMGRP).eq.0) then
-                write(6,*) 'Zero dimension group.'
-                write(6,*) 'Skipping transformation section.'
+                write(LUWRT,*) 'Zero dimension group.'
+                write(LUWRT,*) 'Skipping transformation section.'
                 goto 777
              end if
 *
@@ -2064,12 +2073,13 @@ c             stop 'Timo forced me to stop after reading di integrals.'
       call memmar(KIGSIND,NIRR_PN*IALLOCDIM,'ADDL  ',1,'IGSIND')
 *
            if (NTEST.ge.3) then
-              write(6,*) 'Checking allocations in itrctl ...'
-              write(6,*) 'Name       Length       Start address'
-              write(6,*) 'Transformed integral lists: ',INTSPACE,KPICI1
-              write(6,*) 'AOINT: ',IALLOCDIM_F**2,KPICAOD
-              write(6,*) 'HELPMAT2: ',(IMXDDIM*2)**2,KPICHE2
-              write(6,*) 'TRAINT: ',4*IALLOCDIM**2,KPICTRA
+              write(LUWRT,*) 'Checking allocations in itrctl ...'
+              write(LUWRT,*) 'Name       Length       Start address'
+              write(LUWRT,*) 'Transformed integral lists: ',INTSPACE,
+     &                        KPICI1
+              write(LUWRT,*) 'AOINT: ',IALLOCDIM_F**2,KPICAOD
+              write(LUWRT,*) 'HELPMAT2: ',(IMXDDIM*2)**2,KPICHE2
+              write(LUWRT,*) 'TRAINT: ',4*IALLOCDIM**2,KPICTRA
 *  For correct dimensioning in subroutine:
            if (NIRR_PN.eq.4) then
              NORB_FULL3 = NORB_FULL(3)
@@ -2081,18 +2091,18 @@ c             stop 'Timo forced me to stop after reading di integrals.'
              NORB_FULL3 = 0
              NORB_FULL2 = 0
            end if
-              write(6,*) 'COEF: ',2*IALLOCDIM_F**2,KPICCMO_F
-              write(6,*) 'ADJCO: ',2*IALLOCDIM_F**2,KPICCAD_F
-              write(6,*) 'PROD: ',2*IALLOCDIM**2,KPICPRO
-              write(6,*) 'Unfolded SO ints: ',IALLOCDIM_F**2,KPICSO
-              write(6,*) 'ISMIND: ',IALLOCDIM,KISMIND
-              write(6,*) 'IGSIND: ',NIRR_PN*IALLOCDIM,KIGSIND
-              write(6,*) 'IGSOFF: ',2*NGASPI,KIGSOFF
+              write(LUWRT,*) 'COEF: ',2*IALLOCDIM_F**2,KPICCMO_F
+              write(LUWRT,*) 'ADJCO: ',2*IALLOCDIM_F**2,KPICCAD_F
+              write(LUWRT,*) 'PROD: ',2*IALLOCDIM**2,KPICPRO
+              write(LUWRT,*) 'Unfolded SO ints: ',IALLOCDIM_F**2,KPICSO
+              write(LUWRT,*) 'ISMIND: ',IALLOCDIM,KISMIND
+              write(LUWRT,*) 'IGSIND: ',NIRR_PN*IALLOCDIM,KIGSIND
+              write(LUWRT,*) 'IGSOFF: ',2*NGASPI,KIGSOFF
            end if
       call memmar(KITRAN,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
            if (NTEST.ge.2) then
-              write(6,*) 'First free address after itrctl'
-              write(6,*) KITRAN
+              write(LUWRT,*) 'First free address after itrctl'
+              write(LUWRT,*) KITRAN
            end if
 *
 *  Read coefficients either from file 19 (initial CI run)
@@ -2118,7 +2128,7 @@ c             stop 'Timo forced me to stop after reading di integrals.'
      &                   IFOCKEX,LU19,LUMOUT,ITRA_TYPE,
      &                   LUMOUTR,LUMOUTI)
            else
-             write(6,'(A16,A6)') 'ENVIRO(1:6) is  ',ENVIRO(1:6)
+             write(LUWRT,'(A16,A6)') 'ENVIRO(1:6) is  ',ENVIRO(1:6)
              Call Abend2
      &       ( 'Unknown environment in oneltra. Quitting.' )
            end if
@@ -2135,11 +2145,13 @@ c             stop 'Timo forced me to stop after reading di integrals.'
                COORD = 'Z'
              end if
 *
-             write(6,*)
-             write(6,*) '-------------------------------------------'
-             write(6,'(A6,A1,A19,I2)')
+             write(LUWRT,*)
+             write(LUWRT,*) '---------------------------------------
+     &----'
+             write(LUWRT,'(A6,A1,A19,I2)')
      &             'Doing ',COORD,' integrals for list',IOUTLST
-             write(6,*) '-------------------------------------------'
+             write(LUWRT,*) '---------------------------------------
+     &----'
 *
              call tra_so(WORK(KPICI1),WORK(KPICHE2_F),
      &                   WORK(KPICAOD),WORK(KPICLIN_F),
@@ -2212,13 +2224,13 @@ c    &                   ITRA_TYPE,INTITER)
       else if (IFOCKEX.eq.0) then
         if (IHAM12.ge.2.and.ENVIRO(1:6).ne.'DIRAC ') then
           if (ITRA_TYPE.le.3) then
-            write(6,*)
-            write(6,*) '*****************************************'
-            write(6,*) '*                                       *'
-            write(6,*) '* Distributing sf integrals to DG lists *'
-            write(6,*) '*   (only 2-electron integrals)         *'
-            write(6,*) '*                                       *'
-            write(6,*) '*****************************************'
+            write(LUWRT,*)
+            write(LUWRT,*) '*****************************************'
+            write(LUWRT,*) '*                                       *'
+            write(LUWRT,*) '* Distributing sf integrals to DG lists *'
+            write(LUWRT,*) '*   (only 2-electron integrals)         *'
+            write(LUWRT,*) '*                                       *'
+            write(LUWRT,*) '*****************************************'
 *
             call dist_2eints(NL2D,IUB2D,ISM2D,IPRINT)
 *
@@ -2300,8 +2312,8 @@ c    &                   ITRA_TYPE,INTITER)
              write(*,*) 'IDIMGRP is ',IDIMGRP
              write(*,*) 'SYMDIM(IDIMGRP) is ',SYMDIM(IDIMGRP)
              if (SYMDIM(IDIMGRP).eq.0) then
-                write(6,*) 'Zero dimension group.'
-                write(6,*) 'Skipping transformation section.'
+                write(LUWRT,*) 'Zero dimension group.'
+                write(LUWRT,*) 'Skipping transformation section.'
                 goto 666
              end if
 *
@@ -2334,31 +2346,34 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
              call memmar(KIGSIND,NIRR_PN*IALLOCDIM,'ADDL  ',1,'IGSIND')
 *
              if (NTEST.ge.3) then
-                write(6,*) 'Checking allocations in itrctl ...'
-                write(6,*) 'Name       Length       Start address'
-                write(6,*) 'Transformed integral lists: ',
+                write(LUWRT,*) 'Checking allocations in itrctl ...'
+                write(LUWRT,*) 'Name       Length       Start address'
+                write(LUWRT,*) 'Transformed integral lists: ',
      &                      INTSPACE,KPICI1
-                write(6,*) 'Read AO integrals: ',ITRIASUM,KPICAOT
-                write(6,*) 'Spin-orbit integrals x: ',NTRIAEL,KPICLX
-                write(6,*) 'Spin-orbit integrals y: ',NTRIAEL,KPICLY
-                write(6,*) 'Spin-orbit integrals z: ',NTRIAEL,KPICLZ
-                write(6,*) 'AOINT: ',IALLOCDIM**2,KPICAOD
-                write(6,*) 'HELPMAT2: ',(IMXDDIM*2)**2,KPICHE2
-                write(6,*) 'TRAINT: ',4*IALLOCDIM**2,KPICTRA
-                write(6,*) 'COEF: ',2*IALLOCDIM**2,KPICCMO
-                write(6,*) 'ADJCO: ',2*IALLOCDIM**2,KPICCAD
-                write(6,*) 'PROD: ',2*IALLOCDIM**2,KPICPRO
-                write(6,*) 'Unfolded SO ints x: ',IALLOCDIM**2,KPICSOX
-                write(6,*) 'Unfolded SO ints y: ',IALLOCDIM**2,KPICSOY
-                write(6,*) 'Unfolded SO ints z: ',IALLOCDIM**2,KPICSOZ
-                write(6,*) 'ISMIND: ',IALLOCDIM,KISMIND
-                write(6,*) 'IGSIND: ',NIRR_PN*IALLOCDIM,KIGSIND
-                write(6,*) 'IGSOFF: ',2*NGASPI,KIGSOFF
+                write(LUWRT,*) 'Read AO integrals: ',ITRIASUM,KPICAOT
+                write(LUWRT,*) 'Spin-orbit integrals x: ',NTRIAEL,KPICLX
+                write(LUWRT,*) 'Spin-orbit integrals y: ',NTRIAEL,KPICLY
+                write(LUWRT,*) 'Spin-orbit integrals z: ',NTRIAEL,KPICLZ
+                write(LUWRT,*) 'AOINT: ',IALLOCDIM**2,KPICAOD
+                write(LUWRT,*) 'HELPMAT2: ',(IMXDDIM*2)**2,KPICHE2
+                write(LUWRT,*) 'TRAINT: ',4*IALLOCDIM**2,KPICTRA
+                write(LUWRT,*) 'COEF: ',2*IALLOCDIM**2,KPICCMO
+                write(LUWRT,*) 'ADJCO: ',2*IALLOCDIM**2,KPICCAD
+                write(LUWRT,*) 'PROD: ',2*IALLOCDIM**2,KPICPRO
+                write(LUWRT,*) 'Unfolded SO ints x: ',IALLOCDIM**2,
+     &                          KPICSOX
+                write(LUWRT,*) 'Unfolded SO ints y: ',IALLOCDIM**2,
+     &                          KPICSOY
+                write(LUWRT,*) 'Unfolded SO ints z: ',IALLOCDIM**2,
+     &                          KPICSOZ
+                write(LUWRT,*) 'ISMIND: ',IALLOCDIM,KISMIND
+                write(LUWRT,*) 'IGSIND: ',NIRR_PN*IALLOCDIM,KIGSIND
+                write(LUWRT,*) 'IGSOFF: ',2*NGASPI,KIGSOFF
              end if
              call memmar(KITRAN,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
              if (NTEST.ge.2) then
-                write(6,*) 'First free address after itrctl'
-                write(6,*) KITRAN
+                write(LUWRT,*) 'First free address after itrctl'
+                write(LUWRT,*) KITRAN
              end if
 *
              FNIPH = 'JOBIPH'
@@ -2379,7 +2394,7 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
      &                     IFOCKEX,LU19,LUMOUT,ITRA_TYPE,
      &                     LUMOUTR,LUMOUTI)
              else
-               write(6,'(A16,A6)') 'ENVIRO(1:6) is  ',ENVIRO(1:6)
+               write(LUWRT,'(A16,A6)') 'ENVIRO(1:6) is  ',ENVIRO(1:6)
                Call Abend2
      &         ( 'Unknown environment in oneltra. Quitting.' )
              end if
@@ -2403,12 +2418,12 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
         end if
         if (ENVIRO(1:6).eq.'DIRAC ') then
           if (NTEST.ge.1) then
-            write(6,*)
-            write(6,*) '********************************************'
-            write(6,*) '* Distributing MOLTRA transformed          *'
-            write(6,*) '* dirac one- (and two-) electron integrals *'
-            write(6,*) '* using input integral reordering          *'
-            write(6,*) '********************************************'
+           write(LUWRT,*)
+           write(LUWRT,*) '********************************************'
+           write(LUWRT,*) '* Distributing MOLTRA transformed          *'
+           write(LUWRT,*) '* dirac one- (and two-) electron integrals *'
+           write(LUWRT,*) '* using input integral reordering          *'
+           write(LUWRT,*) '********************************************'
           end if
 *
           IRIOFF = (2*NDIM_TOT)**2
@@ -2447,16 +2462,16 @@ C           stop 'AFTER DIST_INTS_SIGDEN.'
           end if
         end if
       else
-        write(6,*) 'Problem in itrctl.'
-        write(6,*) 'IFOCKEX is  ',IFOCKEX
+        write(LUWRT,*) 'Problem in itrctl.'
+        write(LUWRT,*) 'IFOCKEX is  ',IFOCKEX
         Call Abend2( 'Quitting.' )
       end if
 *     ^ End if external Fock matrix active or not
 *
       if (SIGDEN_ROUTE.eq.'SIGDEN') then
-        write(6,*)
-        write(6,*) ' Number of integrals/CC amplitudes: ',NALLINT
-        write(6,*) ' (including imaginary parts) '
+        write(LUWRT,*)
+        write(LUWRT,*) ' Number of integrals/CC amplitudes: ',NALLINT
+        write(LUWRT,*) ' (including imaginary parts) '
       end if
 *
 *  Flush local memory to mark set at beginning of do loop

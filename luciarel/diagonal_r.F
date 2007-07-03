@@ -35,6 +35,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GASDIAS_REL(IMK2NUM,NMS2VAL,MS2VAL,NAEL,
@@ -44,7 +45,7 @@ C
      &           RK2,NSSOA,NSSOB,LUDIA,ECORE,
      &           PLSIGN,PSSIGN,IPRNT,NTOOB,ICISTR,RJKAA,IHAM12,
      &           IBLTP,NBLOCK,IBLKFO,IASPGPTP,IBSPGPTP,
-     &           ISPINFREE)
+     &           ISPINFREE,NPARBLOCK,ILASTBLK,IDIA_OFFSET)
 *
 * Calculate determinant diagonal
 * Turbo-ras version
@@ -68,10 +69,16 @@ C
 * separate alpha and beta 1-electron integrals  May 1998
       IMPLICIT REAL*8           (A-H,O-Z)
 #include "ipoist8.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
 *
 *.General input
       DIMENSION NSSOA(NSMST,*),NSSOB(NSMST,*)
-      DIMENSION H1A(NORB), H1B(NORB)
+      DIMENSION H1A(NORB), H1B(NORB), NPARBLOCK(*)
 *. Specific input
       DIMENSION IBLTP(*),IBLKFO(8,NBLOCK)
       dimension MS2VAL(NMS2VAL)
@@ -82,6 +89,9 @@ C
       DIMENSION XA(NORB),XB(NORB),SCR(2*NORB)
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
       DIMENSION RJKAA(*)
+#if defined (VAR_MPI)
+      INTEGER(KIND=MPI_OFFSET_KIND) IDIA_OFFSET
+#endif
 *. Output
       DIMENSION DIAG(*)
 *
@@ -141,6 +151,10 @@ C
       ITDET = 0
 *
       DO IBLK = 1, NBLOCK
+#if defined (VAR_MPI)
+        JBLOCK = IBLK + ILASTBLK
+        IF( NPARBLOCK( JBLOCK ) .ne. MYPROC ) GOTO 2425 
+#endif
         if (NTEST.ge.50) then
           write(6,*) '-----------------------------------'
           write(6,'(A14,I8,A13)') 
@@ -297,10 +311,21 @@ C?          WRITE(6,*)  ' IA = ', IA
             write(6,*) ' number of diagonal elements to disc ',IDET
             CALL WRTMAT(DIAG,1,IDET,1,IDET)
           END IF
+#if defined (VAR_MPI)
+CSK          IF( IDET .ne. 0 ) THEN
+CSK          write(LUWRT,*) ' number of diagonal elements to disc ',IDET
+CSK          CALL WRTMATMN(DIAG,1,IDET,1,IDET,LUWRT)
+          CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
+     &                         MPI_REAL8,ISTAT,IERR)
+*         new offset
+          IDIA_OFFSET = IDIA_OFFSET + IDET
+CSK          END IF
+#endif
           CALL ITODS(IDET,1,-1,LUDIA)
           CALL TODSC(DIAG,IDET,-1,LUDIA)
           IDET = 0
         END IF
+2425    CONTINUE
       END DO
 *     ^ End of loop over blocks
       if (NTEST.ge.500) then
@@ -314,16 +339,18 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
       END IF
 *
       call qexit('GASDIAS')
-      RETURN
+*
       END
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GASDIAT_REL(DIAG,LUDIA,ECORE,ICISTR,IHAM12,
      &           IBLTP,NBLOCK,IBLKFO,KPICI1,INTSPACE,
-     &           IDENSI,NIRREP,ISPINFREE,ENVIRO,SIGDEN_ROUTE,IRECO)
+     &           IDENSI,NIRREP,ISPINFREE,ENVIRO,SIGDEN_ROUTE,IRECO,
+     &           NPARBLOCK)
 *
 * CI diagonal in SD basis for state with symmetry ISM in internal
 * space ISPC
@@ -334,6 +361,7 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
 *
 * For DBG-RELCI, March21 98
 * Modifed fetch of 1 electron integrals, May 98
+* Modified for parallel runs, S. Knecht, May 2007
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
@@ -356,9 +384,18 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "symm.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
 *
       DIMENSION IBLTP(*)
-      DIMENSION IBLKFO(8,NBLOCK)
+      DIMENSION IBLKFO(8,NBLOCK), NPARBLOCK(*)
+#if defined (VAR_MPI)
+      INTEGER(KIND=MPI_OFFSET_KIND) IDIA_OFFSET
+#endif
 *
 * ======
 *.Output
@@ -414,20 +451,33 @@ C     CALL MEMMAR(KLH1D ,NACOBTOT, 'ADDL  ',2,'KLH1D ')
      &                    ISPSF_MO,ENVIRO,SIGDEN_ROUTE,IPRDIA)
         end if
       end if
+#if defined (VAR_MPI)
+      IDIA_OFFSET = 0
+*
+*     calculate offset IDIA_OFFSET for LUDIA file
+*
+      IDIA_OFFSET = IDIA_OFFSET + MY_DIA_OFF + 
+     &              MY_VEC1_IOFF  * ( IRECO - 1 )
+CSK      WRITE(LUWRT,*)' Start writing on LUDIA at',IDIA_OFFSET
+*
+#endif
 *
       DO IMK2 = 1, NMS2VAL
         if (NTEST.ge.10) then
-          write(6,*) '=============================='
-          write(6,*) 'Treating MK space in diagonal '
-          write(6,'(A15,I4)') '         MK2 = ',MS2VAL(IMK2)
-          write(6,*) '=============================='
+          write(LUWRT,*) '=============================='
+          write(LUWRT,*) 'Treating MK space in diagonal '
+          write(LUWRT,'(A15,I4)') '         MK2 = ',MS2VAL(IMK2)
+          write(LUWRT,*) '=============================='
         end if
         IF(IMK2.EQ.1) THEN
           IBOFF = 1
+          ILASTBLK = 0
         ELSE
           IBOFF = IBOFF + NBLK_MS2(IMK2-1)
+          ILASTBLK = ILASTBLK + NBLK_MS2(IMK2-1)
         END IF
         NNBLK = NBLK_MS2(IMK2)
+CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 *
         IATP = IST_FOR_DT(1,IMK2)
         IBTP = IST_FOR_DT(2,IMK2)
@@ -445,12 +495,12 @@ C     CALL MEMMAR(KLH1D ,NACOBTOT, 'ADDL  ',2,'KLH1D ')
         IOCTPA = IBSPGPFTP(IATP)
         IOCTPB = IBSPGPFTP(IBTP)
         IF(NTEST.GE.10) THEN
-          WRITE(6,*) ' ================'
-          WRITE(6,*) ' GASDIA speaking '
-          WRITE(6,*) ' ================'
-          WRITE(6,*) ' IATP IBTP NAEL NBEL ',IATP,IBTP,NAEL,NBEL
-          write(6,*) ' NOCTPA NOCTPB  : ', NOCTPA,NOCTPB
-          write(6,*) ' IOCTPA IOCTPB  : ', IOCTPA,IOCTPB
+          WRITE(LUWRT,*) ' ================'
+          WRITE(LUWRT,*) ' GASDIA speaking '
+          WRITE(LUWRT,*) ' ================'
+          WRITE(LUWRT,*) ' IATP IBTP NAEL NBEL ',IATP,IBTP,NAEL,NBEL
+          write(LUWRT,*) ' NOCTPA NOCTPB  : ', NOCTPA,NOCTPB
+          write(LUWRT,*) ' IOCTPA IOCTPB  : ', IOCTPA,IOCTPB
         END IF
 *
 ** Info on block structure of internal state
@@ -466,7 +516,8 @@ C     CALL MEMMAR(KLH1D ,NACOBTOT, 'ADDL  ',2,'KLH1D ')
      &         WORK(KNSTSO(IATP)),WORK(KNSTSO2(IBTP)),
      &         LUDIA,ECORE,PLSIGN,PSSIGN,IPRDIA,NTOOB,ICISTR,
      &         WORK(KLRJKA),IHAM12,IBLTP,NNBLK,IBLKFO(1,IBOFF),
-     &         IASPGPTP,IBSPGPTP,ISPINFREE)
+     &         IASPGPTP,IBSPGPTP,ISPINFREE,NPARBLOCK,ILASTBLK,
+     &         IDIA_OFFSET)
 *
       END DO
 *     ^End of loop over MK2 spaces

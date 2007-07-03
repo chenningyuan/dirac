@@ -2158,7 +2158,7 @@ CTF  Variable INONREL added to list. It is passed from CMICDV
       CALL Z_BLKFO_REL(IDC,NMS2VAL,
      &                 ISPC,ISM,KLSLBT,KLSLEBT,KLSI1BT,KLSIBT,KLSBLTP,
      &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
-     &                 IBAT_MS2)
+     &                 IBAT_MS2,0,0,IDUMMY)
 *
       CALL RASSG3_REL(C,HC,NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &                WORK(KLSI1BT),WORK(KLSIBT),LUC,LUHC)
@@ -4905,11 +4905,12 @@ C     SPGRPCON(IOFSPGRP,NSPGRP,NGAS,MXPNGAS,IELFSPGRP,ISPGRPCON,IPRNT)
       call memmar(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
 *.Local scratch arrays for blocks of C and sigma
       IF(ICISTR.LE.2) THEN
-        LSCR1 = MXSB
+        L0BLOCK = MXSB
       ELSE IF(ICISTR.EQ.3) THEN
-        LSCR1 = MXSOOB
+        L0BLOCK = MXSOOB
       END IF
-      LSCR1 = MAX(LSCR1,LCSBLK)
+      LSCR1 = MAX(L0BLOCK,L2BLOCK)
+Cold      LSCR1 = MAX(LSCR1,LCSBLK)
       if (IPRCIX.ge.2) then
         WRITE(6,*) ' ICISTR,LSCR1 ',ICISTR,LSCR1
       end if
