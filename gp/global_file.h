@@ -11,14 +11,23 @@
       PARAMETER (BLOCKSIZE = 8192)
 
       INTEGER NGBFSZ
-      PARAMETER (NGBFSZ = 2047)
+C aspg, original code from walter
+C     PARAMETER (NGBFSZ = 2047)
+C aspg, enlarged parameter
+      PARAMETER (NGBFSZ = 8191)
 
       INTEGER MAX_MPI_SIZE
-      PARAMETER (MAX_MPI_SIZE = 32)
+C aspg, original code from walter
+C     PARAMETER (MAX_MPI_SIZE = 32)
+C aspg, enlarged parameter
+      PARAMETER (MAX_MPI_SIZE = 128)
 
       INTEGER GF_RECLEN, GF_MAXREC
       PARAMETER (GF_RECLEN = 4 * BLOCKSIZE)
-      PARAMETER (GF_MAXREC = 30000)
+C aspg, original code from walter
+C     PARAMETER (GF_MAXREC = 30000)
+C aspg, enlarged parameter
+      PARAMETER (GF_MAXREC = 30000000000)
 
       INTEGER N_BUFFER
       PARAMETER (N_BUFFER = 1024)
