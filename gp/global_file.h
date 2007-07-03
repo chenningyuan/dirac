@@ -27,7 +27,10 @@ C aspg, enlarged parameter
 C aspg, original code from walter
 C     PARAMETER (GF_MAXREC = 30000)
 C aspg, enlarged parameter
-      PARAMETER (GF_MAXREC = 30000000000)
+CSK   PARAMETER (GF_MAXREC = 30000000000)
+CSK   30000000000 is too optimistic for INT*4 :-)
+CSK   modified enlarged parameter
+      PARAMETER (GF_MAXREC = 2147483647)
 
       INTEGER N_BUFFER
       PARAMETER (N_BUFFER = 1024)
