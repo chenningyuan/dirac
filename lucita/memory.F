@@ -416,6 +416,7 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
       ELSE IF( TASK(1:5).EQ.'CHECK') THEN
         NSNLI = NS+ NL
       ELSE IF( TASK(1:6) .EQ. 'SFREEM') THEN
+*. compute current free memory
         KBASE = NWORD - KFREEL - 1
         NSNLI = NS+ NL
       ELSE

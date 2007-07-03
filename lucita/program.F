@@ -144,8 +144,7 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
       WRITE(LUWRTOUT,*)
       NDET = XISPSM(ISM,ISPC)
       NEL = NELCI(ISPC)
-      WRITE(LUWRTOUT,'(3X,A,1X,I12)') 
-     & 'Number of determinants/combinations  ',NDET
+      WRITE(LUWRTOUT,*) ' Number of determinants/combinations  ',NDET
       IF(NDET.EQ.0) THEN
        WRITE(LUOUT,*) 'the number of determinants/combinations is zero.'
        WRITE(LUOUT,*) ' I am sure that fascinating discussions about '
@@ -176,18 +175,12 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
       ELSE IF (ICISTR.EQ.3) THEN
         L0BLOCK = MXSOOB
       END IF
-C     L1BLOCK = even distribution on all processors
-C.. NOT NEEDED ANY MORE BECAUSE WE HAVE FOUND A
-C   BETTER WAY OF DISTRIBUTING ON PROCESSORS.
-C      IF (NMPROC .EQ. 1) THEN
-C         L1BLOCK = NVAR
-C      ELSE
-C         L1BLOCK = NVAR / (NMPROC-1)
-C      END IF
+C
 C     L2BLOCK = max memory for c-vec and sigma-vec from
 C     (total mem - h2ac mem - 2 mio for string info etc.)
+C
       CALL MEMMAN(L2BLOCK,0,'SFREEM',2,'SHOWMM')
-      WRITE(LUOUT,'(3X,A,1X,I20)')
+      WRITE(LUOUT,'(1X,A,1X,I20)')
      & 'Current available free memory in double words:',L2BLOCK
 CSKT      WRITE(LUOUT,'(1X,A,1X,I20)') 
 CSKT     & 'MXNTTS**2 in GASCI',MXNTTS**2
@@ -203,14 +196,11 @@ CSKold      L2BLOCK = (L2BLOCK - 1 500 000 - (MXNTTS**2))/4
         WRITE(LUOUT,*) '  L0BLOCK,L1BLOCK,L2BLOCK,LCSBLK ',
      &                    L0BLOCK,L1BLOCK,L2BLOCK,LCSBLK
       END IF
-
-C     L1BLOCK = MIN(L1BLOCK,LCSBLK,L2BLOCK)
+C
       L2BLOCK = MIN(LCSBLK,L2BLOCK)
-C     LBLOCK  = MAX(L0BLOCK,L1BLOCK)
 CtestBATCHES      LBLOCK  = MIN(L0BLOCK,L2BLOCK)
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
 Cactual      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
-CSK      WRITE(LUOUT,*) '  LBLOCK in GASCI       ', LBLOCK
 Cold     LBLOCK = MAX(LBLOCK,LCSBLK)
 *
 C     Information about block structure- needed by new PICO2 routine.
@@ -251,7 +241,7 @@ C     batches  of C vector
 C     Number of BLOCKS
       NBLOCK = IFRMR(WORK(KLCI1BT),1,NBATCH)
      &       + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
-      WRITE(LUWRTOUT,'(3X,A,1X,I6)') 'Number of blocks ', NBLOCK
+      WRITE(LUWRTOUT,*) ' Number of blocks ', NBLOCK
 CSKold      WRITE(LUWRTOUT,*) ' Number of batches ', NBATCH
       CALL MEMMAN(KLCI1BTSCR,NTTS  ,'ADDL  ',1,'CI1BTS')
       CALL COPVEC(WORK(KLCI1BT),WORK(KLCI1BTSCR),NTTS)
@@ -429,7 +419,7 @@ CSK
 *
 *. CI diagonal - if required
 CSK       WRITE(6,*)'ICISTR',ICISTR
-      IF(MYPROC.EQ.MASTER) WRITE(6,'(3X,A,1X,I12)')
+      IF(MYPROC.EQ.MASTER) WRITE(6,'(1X,A,1X,I10)')
      & 'largest vector block in CI-expansion',LBLOCK
 *
       IF(IDIAG.EQ.2) THEN
@@ -792,7 +782,6 @@ csk      write(6,*)'problem here (GASCI) 3', myproc
       close(unit=LUSC41,status='DELETE')
       close(unit=LUDUMPF,status='KEEP')
 *
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -1038,6 +1027,8 @@ C     in case of a parallel filesystem, we should use it
         CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
       END IF
 #endif
+CSK      WRITE(LUOUT,*) ' IFILESYSTEM, NFLGRPS, IIOMOD, IODENSEPAR',
+CSK     &                 IFILESYSTEM, NFLGRPS, IIOMOD, IODENSEPAR
 #endif
 C
 C     set some parallel variables to default for sequential runs 

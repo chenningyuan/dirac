@@ -1794,7 +1794,7 @@ C    &                  ISCAT,XSCAT,NSCAT,LBLK,XINOUT)
      &            IPNTR,WORK(KLV2),NPQDM,LBLK,XH0PSX)
 *
       IF(NTEST.GT. 100 ) THEN
-        WRITE(6,*) ' Output vector from H0M1TV '
+        WRITE(6,*) ' Output vector from H0M1TD '
         WRITE(6,*) ' ========================= '
 *. Note : works only if result vector is first file on LUOUT
 C            WRTVCD(SEGMNT,LU,IREW,LBLK)
