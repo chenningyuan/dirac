@@ -3566,7 +3566,7 @@ C                 end if
 *               keep track of correct offset
                 IOFF_SCR2_C = 0
                 DO ICBLK = 1, NBL_C
-                  IOFF_SCR2_C = IOFF_SCR2_C + 
+                  IOFF_SCR2_C = IOFF_SCR2_C
      &                        + IBLOCKL( NUM_BLK + ICBLK )
                 END DO
                 NUM_BLK = NUM_BLK + NBL_C
