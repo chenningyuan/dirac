@@ -181,7 +181,7 @@ C     MXNUMB: number of the current largest block
       INTEGER*8 ITLTND,MXSIZE,MXSZTMP
       INTEGER*8 ITEMPL, ITEMPW1, ITEMPW2
       INTEGER*8 ILEN, ITOTBLCKL, IPRODLEN
-      INTEGER*8 IIWEIGHTBLK, IILENGTH
+      INTEGER*8 IIWEIGHTBLK, IILENGTH, IILENGTH_MAX
 C
       NPTEST = MAX(NPTEST_VAR,0)
       IIWEIGHTBLK = 0
@@ -203,6 +203,7 @@ C
       IONE = 1
       I_AM_ACTIVE = 0
       IPRODLEN = 0
+      IILENGTH_MAX = 0
 *     print some information
       NPTEST = 1
 C     end of initialization
@@ -219,6 +220,7 @@ C
           IPRODLEN = IILENGTH * IIWEIGHTBLK
 C
           ILEN = IPRODLEN
+          IILENGTH_MAX = MAX(IILENGTH_MAX,IILENGTH)
 C
           IF( ILEN .lt. 0 ) THEN
             WRITE(6,*)'Attention, minus block detected',ICBL
@@ -241,19 +243,18 @@ CSK      WRITE(LUWRT,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
       ITEMPW1 = MXSIZE
 *
       IF(NPTEST.GE.0) THEN
-       IF( MYPROC .eq. 0 ) THEN
          WRITE(LUWRT,*)' total number of processes to distribute on :',
      &                     NMPROC
          WRITE(LUWRT,*)' total number of blocks                     :',
      &                     NDIM
-CSK         CALL IWRTMAMN(NPARBLOCK,1,NDIM,1,NDIM,LUWRT)
          WRITE(LUWRT,*)' total number of active blocks              :',
      &                     ICOUNTABLK
+         WRITE(LUWRT,*)' size of largest TTSS blocks                :',
+     &                    IILENGTH_MAX 
          WRITE(LUWRT,*)' overall weighted active block length       :',
      &                     ITOTBLCKL
          WRITE(LUWRT,*)' Maximum weighted block size                :',
      &                     MXSIZE
-        END IF
       END IF
 *
       IMINNP = NMPROC
@@ -6954,6 +6955,122 @@ C
       ELSE
         PARCAL = PARCAL_SAVE
       END IF
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE UPDATE_LUC_LIST(ISCLFAC_GROUP,LUCLIST,RCCTOS,CB,
+     &                           NPARBLOCK,IBLOCKL,IGROUPLIST,
+     &                           IPROCLIST,IRILP,BLOCKTIME)
+C
+C     make an update of of grouplist for c-vector file based on 
+C     different list gathered from MPI_COMM_WORLD
+C
+C
+C     Written by  S. Knecht         - July 04 2007 
+C
+C     OUTPUT: ISCLFAC_GROUP and updated file ILUC
+C
+C**********************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar_rel.inc"
+#include "wrkspc.inc"
+#include "ipoist8.inc"
+      DIMENSION ISCLFAC_GROUP(*), LUCLIST(*) 
+      DIMENSION RCCTOS(*), CB(*)
+      DIMENSION NPARBLOCK(*), IBLOCKL(*)
+      DIMENSION IGROUPLIST(*), IPROCLIST(*)
+      CHARACTER*12 WALLTID3, SECTID
+C     some scratch
+      INTEGER NZERO
+C
+      NZERO = 0
+C
+C     set mark for local memory
+C
+      IDUM = 0
+      CALL MEMMAR(KDUM,  IDUM,    'MARK  ',IDUM,'UPLIST')
+C
+      CALL MEMMAR(KSCALLOC2,NUM_BLOCKS2,'ADDL  ',1,'ICLLC2')
+      CALL MEMMAR(KSCALLOC3,NUM_BLOCKS2,'ADDL  ',1,'ICLLC3')
+C
+C     fill complete local iscalfac arrays with zero's
+      CALL ISETVC(WORK(KSCALLOC2), NZERO, NUM_BLOCKS2)
+      CALL ISETVC(WORK(KSCALLOC3), NZERO, NUM_BLOCKS2)
+      CALL ISETVC(ISCLFAC_GROUP  , NZERO, NUM_BLOCKS2)
+C
+C
+C     "mpi_allsum" local LUCLIST which then on all
+C     nodes will contain the number of non-zero C-blocks in
+C     the complete CI-vector
+C
+      CALL REDVEC_REL(LUCLIST,WORK(KSCALLOC2),NUM_BLOCKS2,1,
+     &                MPI_SUM,MPI_COMM_WORLD,-1)
+C
+C     find all c-blocks connecting to all sigma-blocks on each cpu
+C
+      CALL ICOPVE(RCCTOS,WORK(KSCALLOC3),NUM_BLOCKS2)
+C
+C     case 1: number of CPUs in new group not equal to total number
+C
+C     case 2: number of CPUs in new group equal to total number
+C
+      starttimer = MPI_WTIME()
+C
+*
+      IF( NEWCOMM_PROC .ne. NMPROC ) THEN
+*
+        CALL REDVEC_REL(WORK(KSCALLOC3),ISCLFAC_GROUP,NUM_BLOCKS2,1,
+     &                  MPI_SUM,MYNEW_COMM,0)
+*
+*       all local node-masters call this routine!
+*
+        IF( MYNEW_ID .eq. 0 ) THEN
+           CALL COPVCD_PAR_BDRIV5_REL(ILUC,ILUC,CB,NPARBLOCK,
+     &                                WORK(KSCALLOC2),ISCLFAC_GROUP,
+     &                                IBLOCKL,NUM_BLOCKS,ICOMM,
+     &                                IGROUPLIST,IPROCLIST,IRILP)
+C               COPVCD_PAR_BDRIV5_REL(LUIN,LUOUT,SEGMNT,IBLOCKD,
+C     &                               ISCALFAC,ISCALFAC_GROUP,
+C     &                               IBLOCKL,NBLOCK,JCOMM,
+C     &                               IGROUPLIST,IPROCLIST,IRILP)
+C
+
+        END IF
+           CALL MPI_BCAST(ISCLFAC_GROUP,NUM_BLOCKS2,
+     &                    my_MPI_INTEGER,0,MYNEW_COMM,IERR)
+*
+        ELSE
+*
+         CALL UPDATE_GEN_LIST(WORK(KSCALLOC3),WORK(KSCALLOC2),
+     &                        NUM_BLOCKS2)
+C
+C        to be consistent with output of case 1
+C
+         CALL ISETVC(ISCLFAC_GROUP,NZERO,NUM_BLOCKS2)
+         CALL ICOPVE(WORK(KSCALLOC3),ISCLFAC_GROUP,NUM_BLOCKS2)
+C
+CSK      WRITE(LUWRT,*) 'LUCLIST:'
+CSK      CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+CSK      WRITE(LUWRT,*) 'ISCLFAC_GROUP:'
+CSK      CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+C
+      END IF
+C     ^ NEWCOMM_PROC == NMPROC ?
+C
+C     final timing for block distribution
+      blocktime = blocktime + MPI_WTIME() - starttimer
+C
+C     flush local memory
+C
+      CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'UPLIST')
 C
       END
 ***********************************************************************
