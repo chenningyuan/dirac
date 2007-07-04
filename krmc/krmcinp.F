@@ -49,6 +49,8 @@ C     Written by J. Thyssen - Oct 26 1998
 C     Last revision:
 C         Max. no. of active orbitals only for GOSCI
 C                T. Fleig   - May 24, 2002
+C         added keyword CIONLY 
+C                Stefan Knecht - July 04, 2007
 C
 C***********************************************************************
 #include "implicit.h"
@@ -60,7 +62,7 @@ C#include "mxcent.h"
 C#include "maxorb.h"
 C#include "symmet.h"
 C
-      PARAMETER (NTABLE = 31)
+      PARAMETER (NTABLE = 32)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 C
       LOGICAL SET, NEWDEF, LBIT, RESET
@@ -88,7 +90,7 @@ C
      &            '.NO CI ','.THRPCI','.NR SYM','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
      &            '.CI PRO','.INACTI','.CASSCF','.CI SYM','.SYMMET',
-     &            '.RELSYM'/
+     &            '.RELSYM','.CIONLY'/
       DATA SET/.FALSE./
 C
 C
@@ -141,6 +143,7 @@ C
       NKRMC_MK2DEL    = 0
       NKRMC_MINMK2    = 0
       NKRMC_MAXMK2    = 0
+      ICIONLY         = 0
 C
 C     Initialize /CBRKRMC/
 C     ===================
@@ -191,7 +194,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31), I
+     &                     31,32), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -378,6 +381,15 @@ C              including spin in symmetry
                KRMC_UCIBOS = .FALSE.
                IKWSET(18) = 2
                GO TO 100
+ 32            CONTINUE
+C&&&  CIONLY: runnning only initial CI calculation
+               READ(LUCMD,*) ICIONLY
+               IF( ICIONLY .LT. 0 .OR. ICIONLY .GT. 1 )THEN
+                  WRITE(LUPRI,'(A,I10)') ' *** ERROR in KRMCINP ***'
+     &           //' Illegal value for CIONLY', ICIONLY
+                     CALL QUIT('*** ERROR in KRMCINP ***')
+               END IF 
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -388,6 +400,15 @@ C              including spin in symmetry
             END IF
       END IF
   300 CONTINUE
+C
+C     Check if running only initial CI calculation
+C     --------------------------------------------
+C
+      IF( ICIONLY .EQ. 1 ) THEN
+        MKRMC_MXMACRO = - 1
+        MKRMC_MXMICRO =   0
+      END IF
+C
 C
       IF (.NOT.DOKRMC) GO TO 9999
 C
@@ -565,6 +586,10 @@ C
       END IF
 C
 C
+      IF( ICIONLY .EQ. 1 ) THEN
+        WRITE(LUPRI,'(A)')
+     &   ' * Running only initial CI calculation'
+      END IF
       WRITE(LUPRI,'(A,I4)')
      &   ' * Maximum number of macro iterations  : ',MKRMC_MXMACRO
       WRITE(LUPRI,'(A,I4)')
@@ -796,14 +821,16 @@ C     Last revision: 17.05.2002
 C                    Added CI keyword CIROOT. Timo Fleig
 C                    05.01.2005
 C                    Added CI keyword ANALYZ. Timo Fleig
-C                    Added keyword PARINT.    Stefan Knecht
+C                    Added CI keyword PARINT. Stefan Knecht
 C                    29.06.2007
+C                    Added CI keyword MEMFAC. Stefan Knecht
+C                    04.07.2007
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 17)
+      PARAMETER (NTABLE = 18)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -816,7 +843,7 @@ C
       DATA TABLE /'.MAX CI','.IOPTST','.TRACI ','.NO TRA','.NATONL',
      &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
      &            '.NO PFQ','.NO FQX','.ANALYZ','.CIROOT','.MXCIVE',
-     &            '.KTRLVL','.PARINT'/
+     &            '.KTRLVL','.PARINT','.MEMFAC'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -834,21 +861,22 @@ C
 C     Initialization
 C     --------------
 C
-      MAXCIT = 4
-      MXCIV = 0
-      IOPTST = 1515
-      KTRLVL = 3
+      MAXCIT   =    4
+      MXCIV    =    0
+      IOPTST   = 1515
+      KTRLVL   =    3
+      IKRMCCNO =  - 3
+      NCIROOT  =    1
+      IANACI   =    0
+      IRESTRK  =    0
+      IDOPARIO =    0
+      IMEMFAC  =    9
       OPT_NOPFQ = .FALSE.
       OPT_NOFQX = .FALSE.
-      IKRMCCNO = -3
-      NATONL = .FALSE.
-      FOCKON = .FALSE.
-      COMPROT = .FALSE.
-      COMPFAC = 0.01D00
-      NCIROOT = 1
-      IANACI = 0
-      IRESTRK = 0
-      IDOPARIO = 0
+      NATONL    = .FALSE.
+      FOCKON    = .FALSE.
+      COMPROT   = .FALSE.
+      COMPFAC   = 0.01D00
 C
 C
 C     Process input for *OPTIMIZE
@@ -868,7 +896,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17), I
+     &                     11,12,13,14,15,16,17,18), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -980,6 +1008,20 @@ C&&& .PARINT: integral handling for slaves in LUCIAREL calculations
                   END IF
 #endif
                GO TO 100
+   18          CONTINUE
+C&&& .MEMFAC: multiplier for subtracted scratch memory in
+C             luciarel/ciinfo_r.F - Z_BLKFO_REL
+                  READ(LUCMD,*) IMEMFAC 
+                  IF( IMEMFAC .LE. 0 ) THEN
+                    WRITE(LUPRI,'(//3A,I6)')
+     &                    '*** ERROR in ROPTINP *** ',
+     &                    ' Illegal multiplier for  
+     &                      subtracting scratch memory: ',
+     &                     IMEMFAC
+                    CALL QUIT('*** ERROR in ROPTINP *** ' //
+     &                    'Illegal memory multiplier')
+                  END IF
+                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1050,6 +1092,8 @@ C
 C
       IF ( OPT_NOFQX ) WRITE (LUPRI, '(A)' )
      &     ' * FQX and FQT approximate with DV * FV.'
+      IF( IMEMFAC .NE. 9 ) WRITE (LUPRI, '(A,I3)' )
+     &     ' * Multiplier for memory guess: ',IMEMFAC
 C
 C     Transformation of CI vectors and orbitals.
 C     ------------------------------------------

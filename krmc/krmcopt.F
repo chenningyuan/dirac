@@ -156,20 +156,50 @@ C     *** Memory allocation *****************************
 C     ***************************************************
 C
 C
+C hjaaj + sk 04-jul-07: new memory allocation scheme when calling 
+C                       KR-MCSCF with CIONLY       .eq. 1 .or. 
+C                                     MOPT_MXMACRO .lt. 0
+C
       CALL MEMGET('REAL',KCMO  ,NCMOTQ        ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDV   ,N2ASHXQ       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFC   ,N2ORBXQ       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFV   ,N2ORBXQ       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFQ   ,NZ*NASHT*NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFCAC ,N2ASHXQ       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCREF ,NZCONFQ       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
-     &     WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPV,NASHT*NASHT*NNASHX*NZ*3,
-     &     WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGCI  ,NZCONFQ       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGOEE ,NZHOPEQ       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGOEP ,NZXOPPQ       ,WORK,KFREE,LFREE)
+      IF (MOPT_MXMACRO .LT. 0) THEN
+         CALL MEMGET('REAL',KDV   ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFC   ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFV   ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFQ   ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KPV   ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KGCI  ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KGOEE ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KGOEP ,0          ,WORK,KFREE,LFREE)
+         IF (OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
+            CALL MEMGET('REAL',KFCAC ,0       ,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KH2AC ,0       ,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KCREF ,0       ,WORK,KFREE,LFREE)
+         ELSE
+            CALL MEMGET('REAL',KFCAC ,N2ASHXQ ,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KH2AC ,NASHT*NASHT*NNASHX*NZ*3,
+     &           WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KCREF ,NZCONFQ ,WORK,KFREE,LFREE)
+         END IF
+      ELSE
+         CALL MEMGET('REAL',KDV   ,N2ASHXQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFC   ,N2ORBXQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFV   ,N2ORBXQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFQ   ,NZ*NASHT*NORBT,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KPV   ,NASHT*NASHT*NNASHX*NZ*3,
+     &        WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFCAC ,N2ASHXQ ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KH2AC ,NASHT*NASHT*NNASHX*NZ*3,
+     &        WORK,KFREE,LFREE)
+c hjaaj 03-jul-07: TODO : implement buffered i/o of cref and gci
+c        where nzconfq_buf is max size in memory
+c        for MPI we could perhaps try NZCONFQ_BUF = NZCONFQ / NMPROC
+c        CALL MEMGET('REAL',KCREF ,NZCONFQ_BUF,WORK,KFREE,LFREE)
+c        CALL MEMGET('REAL',KGCI  ,NZCONFQ_BUF,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KCREF ,NZCONFQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KGCI  ,NZCONFQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KGOEE ,NZHOPEQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KGOEP ,NZXOPPQ    ,WORK,KFREE,LFREE)
+      END IF
 C
 C     ***************************************************
 C     *** Call 2nd order optimization *******************
@@ -319,6 +349,8 @@ C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
 C
 C     Check if only do CI (no MCSCF iterations)
 C
+      WRITE(LUPRI,*) ' PROBLEM HERE?',MOPT_MXMACRO
+      CALL FLSHFO(LUPRI)
       IF (MOPT_MXMACRO.LE.0.OR.NCIROOT.GE.2) THEN
          IF (MOPT_MXMACRO.LE.0) THEN
             WRITE(LUPRI,'(/A)')
@@ -2694,13 +2726,14 @@ CSK            WRITE(LUPRI,*) ' KTRLVL',KTRLVL
             CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
 C
             IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
-              IF (KTRLVL.EQ.5) THEN
-                print*,'CALL RTRACTL Integrals only !'
-                CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
-                CALL QUIT (' Transforming only. ')
-              ELSE IF (MOPT_MXMACRO.GT.0) THEN
-                CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
-              END IF
+               EX = .FALSE.
+C              check for existing integral file.
+               INQUIRE ( FILE = '4INDINFO', EXIST = EX )
+               IF ( .NOT. EX ) THEN
+                 IF (KTRLVL.EQ.5) print*,'CALL RTRACTL Integrals only !'
+                 CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+                 IF (KTRLVL.EQ.5) CALL QUIT (' Transforming only. ')
+               END IF
             END IF
 C
             CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
@@ -2738,7 +2771,13 @@ C
 C
 C        Write CREF to file.
 C
+         IF(OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. MOPT_MXMACRO .LT.0 )THEN
+            GOTO 2100
+         END IF
          IF (IPRINT .GE. 30) THEN
+C sk    04-jul-07: writing CI start vector will be errorneous for     
+C       LUCIAREL and MAX MACRO < 0.
+C       TODO: implement proper LUCIAREL interface for large-scale KR-MCSCF
             MZ = MIN(NZ,2)
             WRITE(LUPRI,'(/A)') ' (ROPTST)  CI start vector:'
             CALL OUTPUT(CREF,1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
