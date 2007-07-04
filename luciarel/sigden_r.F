@@ -3026,13 +3026,9 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 *
 #if defined (VAR_MPI)
 *
-*     allocate two integer arrays of length NBLOCK: 
-*     1. group array
-*     2. MPI_COMM_WOLRD array 
-*
+*     ISCLFAC_GROUP array for c-blocks: 
+*     0 = block is not active, > 0: block is active
       CALL MEMMAR(KSCALLOC,NUM_BLOCKS2,'ADDL  ',1,'ICLLOC')
-      CALL MEMMAR(KSCALLOC2,NUM_BLOCKS2,'ADDL  ',1,'ICLLC2')
-      CALL MEMMAR(KSCALLOC3,NUM_BLOCKS2,'ADDL  ',1,'ICLLC3')
 *
 #endif
 *
@@ -3041,8 +3037,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
      &                WORK(KLSI1BT),WORK(KLSIBT),LUC,LUHC,T,ISIGDEN
 #if defined (VAR_MPI)
      &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,
-     &                IGROUPLIST,IPROCLIST,RCCTOS,
-     &                WORK(KSCALLOC),WORK(KSCALLOC2),WORK(KSCALLOC3)
+     &                IGROUPLIST,IPROCLIST,RCCTOS,WORK(KSCALLOC)
 #endif
      &                 )
 *
@@ -3059,9 +3054,8 @@ C    &           N1ELINT,N2ELINT,IPRCC)
       SUBROUTINE SIGDEN_REL(C,HC,NBATS,LBATS,LEBATS,I1BATS,IBATS,
      &                      LLUC,LLUHC,T,ISIGDEN
 #if defined (VAR_MPI)
-     &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,
-     &                IGROUPLIST,IPROCLIST,RCCTOS,
-     &                ISCLFAC,ISCLFAC_LOCAL,ISCLFAC_GROUP
+     &                     ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,
+     &                      IGROUPLIST,IPROCLIST,RCCTOS,ISCLFAC_GROUP
 #endif
      &                 )
 *
@@ -3105,7 +3099,9 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
-      DIMENSION IPROCLIST(*), RCCTOS(*), ISCLFAC(*), ISCLFAC_LOCAL(*)
+C     DIMENSION IPROCLIST(*), RCCTOS(*), ISCLFAC(*), ISCLFAC_LOCAL(*)
+C     DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
+      DIMENSION IPROCLIST(*), RCCTOS(*)
       DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
@@ -3201,93 +3197,13 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 *=====================================================
 #if defined (VAR_MPI)
 *
-      NZERO = 0
-*     fill complete local scalfac arrays with zero's
-      CALL ISETVC(ISCLFAC,NZERO,NUM_BLOCKS2)
-      CALL ISETVC(ISCLFAC_LOCAL,NZERO,NUM_BLOCKS2)
-      CALL ISETVC(ISCLFAC_GROUP,NZERO,NUM_BLOCKS2)
+*     make an update of list ISCLFAC_GROUP using LUCLIST...
 *
-*     gather information about all active blocks, request 
-*     missing required blocks (all blocks needed for a CPU 
-*     are flagged by a value > 0 in RCCTOS).     
+      BLOCKTIME = 0.0D0
 *
-CSK      WRITE(LUWRT,*)'  THIS IS RCCTOS IN SIGDEN'
-CSK      CALL IWRTMAMN(RCCTOS,1,NUM_BLOCKS2,1,NUM_BLOCKS,LUWRT)
-*
-*     "mpi_allsum" local SB's to SSCLFAC which then on all
-*     nodes will contain the number of non-zero C-blocks in
-*     the complete CI-vector
-*
-      CALL REDVEC_REL(LUCLIST,ISCLFAC,NUM_BLOCKS2,1,
-     &                MPI_SUM,MPI_COMM_WORLD,-1)
-*
-*
-*     find all c-blocks connecting to all sigma-blocks on each cpu
-*
-      CALL ICOPVE(RCCTOS,ISCLFAC_LOCAL,NUM_BLOCKS2)
-*
-*     case 1: number of CPUs in new group not equal to total number
-*
-*     case 2: number of CPUs in new group equal to total number
-*
-      blocktime = 0.0D0
-      starttimer = MPI_WTIME()
-*
-      IF( NEWCOMM_PROC .ne. NMPROC ) THEN
-*
-        CALL REDVEC_REL(ISCLFAC_LOCAL,ISCLFAC_GROUP,NUM_BLOCKS2,1,
-     &                  MPI_SUM,MYNEW_COMM,0)
-*
-*       all local node-masters call this routine!
-*
-        IF( MYNEW_ID .eq. 0 ) THEN
-           CALL COPVCD_PAR_BDRIV5_REL(ILUC,ILUC,C,NPARBLOCK,ISCLFAC,
-     &                                ISCLFAC_GROUP,
-     &                                IBLOCKL,NUM_BLOCKS,ICOMM,
-     &                                IGROUPLIST,IPROCLIST,IRILP)
-C               COPVCD_PAR_BDRIV5_REL(LUIN,LUOUT,SEGMNT,IBLOCKD,
-C     &                               ISCALFAC,ISCALFAC_GROUP,
-C     &                               IBLOCKL,NBLOCK,JCOMM,
-C     &                               IGROUPLIST,IPROCLIST,IRILP)
-C
-
-        END IF
-           CALL MPI_BCAST(ISCLFAC_GROUP,NUM_BLOCKS2,
-     &                    my_MPI_INTEGER,0,MYNEW_COMM,IERR)
-*
-        ELSE
-*
-CSK          WRITE(LUWRT,*) 'ISCLFAC_LOCAL before:'
-CSK          CALL IWRTMAMN(ISCLFAC_LOCAL,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-CSK          WRITE(LUWRT,*) 'ISCLFAC_GROUP before:'
-CSK          CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-*
-          DO IBLK = 1, NUM_BLOCKS2
-*
-            IF( ISCLFAC_LOCAL(IBLK) .ne. 0 ) THEN
-              IF( ISCLFAC(IBLK) .eq. 0 ) THEN
-                ISCLFAC_LOCAL(IBLK) = 0
-              END IF
-            END IF
-*
-          END DO
-*
-*         to be consistent with output of case 1
-*
-          CALL ISETVC(ISCLFAC_GROUP,NZERO,NUM_BLOCKS2)
-          CALL ICOPVE(ISCLFAC_LOCAL,ISCLFAC_GROUP,NUM_BLOCKS2)
-*
-CSK          WRITE(LUWRT,*) 'LUCLIST:'
-CSK          CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-CSK          WRITE(LUWRT,*) 'ISCLFAC:'
-CSK          CALL IWRTMAMN(ISCLFAC,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-CSK          WRITE(LUWRT,*) 'ISCLFAC_LOCAL:'
-CSK          CALL IWRTMAMN(ISCLFAC_LOCAL,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-CSK          WRITE(LUWRT,*) 'ISCLFAC_GROUP:'
-CSK          CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-*
-      END IF
-*    /\ NEWCOMM_PROC == NMPROC ?
+      CALL UPDATE_LUC_LIST(ISCLFAC_GROUP,LUCLIST,RCCTOS,C,
+     &                     NPARBLOCK,IBLOCKL,IGROUPLIST,
+     &                     IPROCLIST,IRILP,BLOCKTIME)
 *
 *         debug printing
           NPTESTVAR = 00
@@ -3322,11 +3238,6 @@ CSK          CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
         END IF
         NPTESTVAR = 00
         IOFFSET_SCRATCH = 0
-*
-*     initialize some scratch variables
-*
-*     final timing for block distribution
-      blocktime = blocktime + MPI_WTIME() - starttimer
 *
 *=====================================================
 #else
@@ -3684,7 +3595,8 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
       close(unit=LUSC37,status='DELETE')
 *
 #else
-      WALLTID3 = SECTID(blocktime)
+*
+      WALLTID3 = SECTID(BLOCKTIME)
       WRITE(LUWRT,80000) WALLTID3
 *
 50000 FORMAT(' >>>  WALL TIME FOR WRITING SB TO DISK           :
@@ -3949,41 +3861,40 @@ C
       NTESTL = 00
       IF(NTESTL.GE.5)
      &WRITE(LUWRT,*) ' SIGDE3 : ISSPC,ICSPC ', ISSPC,ICSPC
-*. MXINKA is pt used for length of batch of strings and Toccs
 *
-*.Local scratch arrays for blocks of C and sigma
-Cold      LSCR1 = MXSOOB_AS
-Cold      LSCR1 = MAX(LSCR1,LCSBLK)
+*     local scratch arrays for blocks of C and sigma
       L0BLOCK = MXSOOB
       LSCR1 = MAX(L0BLOCK,L2BLOCK)
-*.T-elements                       
+*     MXINKA is used for length of batch of strings and Toccs
+*     T-elements                       
       INTSCR = MIN(MXINKA**4,MX_TBLK_MX)
       call memmar(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
-      call rmemchk
-*. Offsets for alpha and beta supergroups
+C     call rmemchk
 *
+*     offsets for alpha and beta supergroups
       NOCTPA_C = NOCTYP(IACTP)
       NOCTPB_C = NOCTYP(IBCTP)
 *
       NAEL_C = NELEC(IACTP)
       NBEL_C = NELEC(IBCTP)
 *
-*. Arrays giving allowed type combinations
-      call memmar(KCIOIO,NOCTPA_C*NOCTPB_C,'ADDL  ',2,'CIOIO ')
+*     arrays giving allowed type combinations
+CSK   integer array ...
+      call memmar(KCIOIO,NOCTPA_C*NOCTPB_C,'ADDL  ',1,'CIOIO ')
       CALL IAIBCM_REL(ICSPC,IACTP,IBCTP,WORK(KCIOIO))
 *
       KCJRES = KVEC3
       LSIRES = MXINKA**4
 *
-* Proper allocation of these resolution matrices:
+*     proper allocation of these resolution matrices:
       call memmar(KSIRES,LSIRES,'ADDL  ',2,'KSIRES')
 *
-*. Arrays for storing NEL consecutive annihilations/creations
-*  (resolution matrices)
-* Number of alpha/beta excitation types
+*     arrays for storing NEL consecutive annihilations/creations
+*     (resolution matrices)
+*     number of alpha/beta excitation types
       CALL SPOBEX_TO_ABOBEX(WORK(KLSOBEX),NSPOBEX_TP,NGAS,
      &                      1,NAOBEX_TP,NBOBEX_TP,IDUMMY,IDUMMY)
-*. And the alpha-and beta-excitations
+*     and the alpha-and beta-excitations
       LENA = 2*NGAS*NAOBEX_TP
       LENB = 2*NGAS*NBOBEX_TP
       call memmar(KLAOBEX,LENA,'ADDL  ',2,'IAOBEX')
@@ -3992,7 +3903,7 @@ Cold      LSCR1 = MAX(LSCR1,LCSBLK)
      &                      0,NAOBEX_TP,NBOBEX_TP,
      &                      WORK(KLAOBEX),WORK(KLBOBEX))
 *
-*. For alpha excitations, C and S vector (might be flipped around!)
+*     for alpha excitations, C and S vector (might be flipped around!)
       IOCTPA_C = IBSPGPFTP(IACTP)
       CALL LEN_GENOP_STR_MAP(NAOBEX_TP,WORK(KLAOBEX),NOCTPA_C,
      &                       NELFSPGP(1,IOCTPA_C),NOBPT,NGAS,
@@ -4003,7 +3914,7 @@ Cold      LSCR1 = MAX(LSCR1,LCSBLK)
      &                       NELFSPGP(1,IOCTPA_S),NOBPT,NGAS,
      &                       MAXLENAS)
 *
-*. For beta excitations
+*     for beta excitations
       IOCTPB_C = IBSPGPFTP(IBCTP)
       CALL LEN_GENOP_STR_MAP(NBOBEX_TP,WORK(KLBOBEX),NOCTPB_C,
      &                       NELFSPGP(1,IOCTPB_C),NOBPT,NGAS,
@@ -4030,11 +3941,13 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
       call memmar(KI4  ,LSCR3,'ADDL  ',1,'I4    ')
       call memmar(KXI4S,LSCR3,'ADDL  ',2,'XI4S  ')
 *
-*. Arrays for storing occupations of T-operators
-      call memmar(KTOCC1,MX_ST_TSOSO_BLK_MX,'ADDL  ',2,'TOCC1 ')
-      call memmar(KTOCC2,MX_ST_TSOSO_BLK_MX,'ADDL  ',2,'TOCC2 ')
-      call memmar(KTOCC3,MX_ST_TSOSO_BLK_MX,'ADDL  ',2,'TOCC3 ')
-      call memmar(KTOCC4,MX_ST_TSOSO_BLK_MX,'ADDL  ',2,'TOCC4 ')
+*     arrays for storing occupations of T-operators
+*
+CSK   these are integer arrays...
+      call memmar(KTOCC1,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'TOCC1 ')
+      call memmar(KTOCC2,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'TOCC2 ')
+      call memmar(KTOCC3,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'TOCC3 ')
+      call memmar(KTOCC4,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'TOCC4 ')
 *
 *. Arrays for storing NEL consecutive annihilations/creations
       LSCR4 = MXINKA*MXINKA*MXINKA
@@ -4067,19 +3980,16 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
       call memmar(KLLEBT,NTTS  ,'ADDL  ',1,'LECTC ')
       call memmar(KLI1BT,2*NTTS,'ADDL  ',1,'I1BTC ')
       call memmar(KLIBT ,8*NTTS,'ADDL  ',1,'IBTC  ')
-*. For scaling for each TTS block
-      call memmar(KLSCLFAC ,NTTS,'ADDL  ',2,'SCLFAC')
-*. Arrays giving block type
-      call memmar(KCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
-*. Find batches of C - strings
-      call memmar(KCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
+*
+*     arrays giving block type
+CSK   integer array...
+      call memmar(KCBLTP,NSMST,'ADDL  ',1,'CBLTP ')
       CALL ZBLTP_REL(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP))
-*. Use all symmetryblocks of given TT
+*     use all symmetryblocks of given TT
       ITTSS_ORD = 2
 #if defined (VAR_MPI)
-*     ??????????????????????????????
-*     complex case??????????????????
-*     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*
+*     set proper C-block offset...
       ISTART_BLOCK = INT_IOFF1_C - 1
       IDEBUGPRNT = 00
       CALL PART_CIV_PAR3(IDC,WORK(KCBLTP),WORK(KNSTSO(IACTP)),
@@ -4102,20 +4012,24 @@ CSK     &     WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),0,ITTSS_ORD)
      &     WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),0,ITTSS_ORD)
 *
 #endif
-*. Space for four blocks of string occupations and arrays of 
-*. reordering arrays
-*. Also used to hold an NORB*NORB matrix  
+*     Space for four blocks of string occupations and arrays of 
+*     reordering arrays
+*     also used to hold an NORB*NORB matrix  
       LZSCR = (MAX(NAEL_C,NBEL_C)+3)*(NOCOB+1) 
      &         + 2 * NOCOB + NOCOB*NOCOB
       LZ    = (MAX(NAEL_C,NBEL_C)+2) * NOCOB
-*. Set up to two blocks for orbital conserving operator 
-      DO I1234 = 1, 2
-      call memmar(KLOCSTR(I1234),MAX_STR_OC_BLK,'ADDL  ',1,'KLOCS ')
-      call memmar(KLREO(I1234),MAX_STR_SPGP,'ADDL  ',1,'KLREO ')
-      call memmar(KLZ(I1234),LZ,'ADDL  ',1,'KLZ   ')
-      END DO
-*
-      call memmar(KLZSCR,LZSCR,'ADDL  ',2,'KLZSCR')
+CSK      disabled allocation since it looks like we do not need these
+C        arrays!
+C        --> Timo?
+C
+*        Set up to two blocks for orbital conserving operator 
+CSK      DO I1234 = 1, 2
+CSK      call memmar(KLOCSTR(I1234),MAX_STR_OC_BLK,'ADDL  ',1,'KLOCS ')
+CSK      call memmar(KLREO(I1234),MAX_STR_SPGP,'ADDL  ',1,'KLREO ')
+CSK      call memmar(KLZ(I1234),LZ,'ADDL  ',1,'KLZ   ')
+CSK      END DO
+CSK      call memmar(KLZSCR,LZSCR,'ADDL  ',2,'KLZSCR')
+C
       call memmar(KLSPOBEX_FRZ,NSPOBEX_TP,'ADDL  ',1,'SPOBFR')
 *
       CALL MEMMAR(KLISMDST,MAX_NSYMDIST,'ADDL  ',2,'ISMDST')
@@ -4167,7 +4081,7 @@ CSK     &     WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),0,ITTSS_ORD)
      &           IDIAG,IRIS,IRIC,
      &           NSPOBEX_TP,ITSPOBEX_TP,IBSPOBEX_TP,
      &           ISPOBEX_AC,
-     &           TOCC1,TOCC2,TOCC3,TOCC4,
+     &           ITOCC1,ITOCC2,ITOCC3,ITOCC4,
      &           I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,XI4G,
      &           I1GE,XI1GE,I2GE,XI2GE,I3GE,XI3GE,I4GE,XI4GE,
      &           SIGN_NHX,ISPOBEX_FRZ,ISMDST
@@ -4538,7 +4452,7 @@ CSK     &                                JOFF
      &                  SB(ISOFF),CB(ICOFF),ISSM,ICSM,
      &                  I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                  XINT,CJRES,SIRES,MAXK,
-     &                  TOCC1,TOCC2,TOCC3,TOCC4,
+     &                  ITOCC1,ITOCC2,ITOCC3,ITOCC4,
      &                  I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,XI4G,
      &                  I1GE,XI1GE,I2GE,XI2GE,I3GE,XI3GE,I4GE,XI4GE,
      &                  ITDIAG,ITABTRNSP,ICRESTRICT,ISRESTRICT,
