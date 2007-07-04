@@ -326,12 +326,13 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 #include "mxpdim.inc"
 #include "irat.inc"
 #include "wrkspc.inc"
+#include "lucipar_rel.inc"
 *
       ILPRNT = 0
       IF(ILPRNT .NE. 0 ) THEN
-        WRITE(6,*) ' KBASE KADD, IR ', KBASE,KADD,IR
-        WRITE(6,'(3A)') ' TASK , IDENT ', TASK,IDENT
-        WRITE(6,*) '  NS NL NM ',NS,NL,NM
+        WRITE(LUWRT,*) ' KBASE KADD, IR ', KBASE,KADD,IR
+        WRITE(LUWRT,'(3A)') ' TASK , IDENT ', TASK,IDENT
+        WRITE(LUWRT,*) '  NS NL NM ',NS,NL,NM
       END IF
 *
       ISTOP = 0
@@ -375,18 +376,18 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
           KFREES = KFREEL + KADD + 2*NPAD
         END IF
         IF ( KFREES-1 .GT. NWORD ) THEN
-          WRITE(6,*)
-          WRITE(6,*) ' You can''t always get what you want'
-          WRITE(6,*) ' No, you can''t always get what you want'
-          WRITE(6,*) ' But if you try sometime, you may find '
-          WRITE(6,*) ' you get what you need '
-          WRITE(6,*) '                       Jagger/Richard '
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) ' You can''t always get what you want'
+          WRITE(LUWRT,*) ' No, you can''t always get what you want'
+          WRITE(LUWRT,*) ' But if you try sometime, you may find '
+          WRITE(LUWRT,*) ' you get what you need '
+          WRITE(LUWRT,*) '                       Jagger/Richard '
 *
-          WRITE(6,*) ' MEMMAR : work array too short '
-          WRITE(6,*) ' current and required length ',NWORD,KFREES-1
+          WRITE(LUWRT,*) ' MEMMAR : work array too short '
+          WRITE(LUWRT,*) ' current and required length ',NWORD,KFREES-1
 *
-          WRITE(6,*) ' Trying to allocate : identifer,length'
-          WRITE(6,'(20X,A,I9)')IDENT,KADD
+          WRITE(LUWRT,*) ' Trying to allocate : identifer,length'
+          WRITE(LUWRT,'(20X,A,I9)')IDENT,KADD
           ISTOP = 1
           IPRNTMP = 1
           NSNLI = NS+NL
@@ -396,9 +397,9 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
         NL = 0
         NSNLI = NS + NL
         IF(NS.GT.MAXLVL) THEN
-          WRITE(6,*) ' Too many levels in MEMMAR '
-          write(6,*) ' NS has value  ',NS
-          WRITE(6,*) ' Increase MAXLVL from ', MAXLVL
+          WRITE(LUWRT,*) ' Too many levels in MEMMAR '
+          write(LUWRT,*) ' NS has value  ',NS
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
           Call Abend1( 11 )
         END IF
         IIDENT(NS) = IDENT
@@ -419,17 +420,17 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
           KFREEL = KFREEL + KADD + 2*NPAD
         END IF
         IF ( KFREEL-1 .GT. NWORD ) THEN
-          WRITE(6,*)
-          WRITE(6,*) ' You can''t always get what you want'
-          WRITE(6,*) ' No, you can''t always get what you want'
-          WRITE(6,*) ' But if you try sometime, you may find '
-          WRITE(6,*) ' you get what you need '
-          WRITE(6,*) '                       Jagger/Richard '
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) ' You can''t always get what you want'
+          WRITE(LUWRT,*) ' No, you can''t always get what you want'
+          WRITE(LUWRT,*) ' But if you try sometime, you may find '
+          WRITE(LUWRT,*) ' you get what you need '
+          WRITE(LUWRT,*) '                       Jagger/Richard '
 
-          WRITE(6,*) ' MEMMAR : work array too short '
-          WRITE(6,*) ' current and required length ',NWORD,KFREEL-1
-          WRITE(6,*) ' Trying to allocate : identifer,offset,  length'
-          WRITE(6,'(24X,A,2I9)')IDENT,KBASE,KADD
+          WRITE(LUWRT,*) ' MEMMAR : work array too short '
+          WRITE(LUWRT,*) ' current and required length ',NWORD,KFREEL-1
+          WRITE(LUWRT,*) ' Trying to allocate : identifer,offset,length'
+          WRITE(LUWRT,'(24X,A,2I9)')IDENT,KBASE,KADD
           ISTOP = 1
           IPRNTMP = 1
           NSNLI = NS+NL
@@ -438,8 +439,8 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
         NL =  NL + 1
         NSNLI = NS+NL
         IF(NS+NL.GT.MAXLVL) THEN
-          WRITE(6,*) ' Too many levels in MEMMAR '
-          WRITE(6,*) ' Increase MAXLVL from ', MAXLVL
+          WRITE(LUWRT,*) ' Too many levels in MEMMAR '
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
           Call Abend1( 11 )
         END IF
         IIDENT(NS+NL) = IDENT
@@ -462,8 +463,8 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 *. Set a mark at current free address
         NM = NM + 1
         IF(NM.GT.MAXMRK) THEN
-          WRITE(6,*) ' Too many marks  in MEMMAR '
-          WRITE(6,*) ' Increase MAXMRK from ', MAXMRK
+          WRITE(LUWRT,*) ' Too many marks  in MEMMAR '
+          WRITE(LUWRT,*) ' Increase MAXMRK from ', MAXMRK
           Call Abend1( 11 )
         END IF
         MARKC(NM) = IDENT
@@ -475,8 +476,8 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
       ELSE IF (TASK(1:5).EQ.'FLUSM') THEN
         I_AM_INTOLERANT = 1
         IF(I_AM_INTOLERANT.EQ.1.AND.IDENT(1:6).NE.MARK_ACT(1:6)) THEN
-          WRITE(6,*) ' Error in Flushing :  MARKS not consistent '
-          WRITE(6,'(A,A,A,A)')
+          WRITE(LUWRT,*) ' Error in Flushing :  MARKS not consistent '
+          WRITE(LUWRT,'(A,A,A,A)')
      &    ' Actual MARK and MARK to be flushed ',
      &     IDENT,' versus ',MARK_ACT
           STOP ' Error in memory flushing '
@@ -499,8 +500,8 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
         KBASE = NWORD - KFREEL - 1
         NSNLI = NS+ NL
       ELSE
-          WRITE(6,*) ' MEMMAR : Unknown task parameter ',TASK
-          WRITE(6,*) ' Too confused to continue  '
+          WRITE(LUWRT,*) ' MEMMAR : Unknown task parameter ',TASK
+          WRITE(LUWRT,*) ' Too confused to continue  '
           Call Abend1( 11 )
       END IF
 *
@@ -522,24 +523,24 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
             IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1 .OR.
      &         WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) THEN
                ITSOK = 0
-               WRITE(6,*) ' Memory problem for : '
-               WRITE(6,*) '   Level (IL) ',IL
+               WRITE(LUWRT,*) ' Memory problem for : '
+               WRITE(LUWRT,*) '   Level (IL) ',IL
                IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
                IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
                IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-                WRITE(6,'(4X,A6,2X,I20,4X,A)')
+                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
                ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-                WRITE(6,'(4X,A6,2X,I20,4X,A)')
+                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'    OKAY       -  '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                WRITE(6,'(4X,A6,2X,I20,4X,A)')
+                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'     -       OKAY '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                WRITE(6,'(4X,A6,2X,I20,4X,A)')
+                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &            IIDENT(IL),IBASE(IL),'     -       OKAY '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-                WRITE(6,'(4X,A6,2X,I20,4X,A)')
+                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'     -       -    '
                END IF
             END IF
@@ -549,15 +550,15 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
  1001 CONTINUE
 *
         IF(ITSOK.EQ.0.OR.IPRNTMP.NE.0) THEN
-          WRITE(6,'(A,A)') ' Current task : ', TASK
-          WRITE(6,*) ' NS, NL, NSNLI',NS,NL,NSNLI
-          WRITE(6,'(A,A)') ' Current Identifier : ', IDENT
+          WRITE(LUWRT,'(A,A)') ' Current task : ', TASK
+          WRITE(LUWRT,*) ' NS, NL, NSNLI',NS,NL,NSNLI
+          WRITE(LUWRT,'(A,A)') ' Current Identifier : ', IDENT
           IF (ITSOK.EQ.0) THEN
-            WRITE(6,*) '  Sorry to say it , but memory is CORRUPTED '
-	  END IF
-          WRITE(6,*) '  Memory map : '
-          WRITE(6,*) '  Identifier   Offset    Pad1 okay Pad2 okay '
-          WRITE(6,*) '  ========== ==========  ========= ========= '
+            WRITE(LUWRT,*) '  Sorry to say it , but memory is CORRUPTED'
+          END IF
+          WRITE(LUWRT,*) '  Memory map : '
+          WRITE(LUWRT,*) '  Identifier   Offset    Pad1 okay Pad2 okay '
+          WRITE(LUWRT,*) '  ========== ==========  ========= ========= '
           DO 200 IL = 1, NSNLI
             JBASE = IBASE(IL)
             IF(IL.NE.NSNLI) THEN
@@ -574,35 +575,35 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
               IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
    50       CONTINUE
             IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(4X,A6,2X,I20,4X,A)')
+               WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
             ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-               WRITE(6,'(4X,A6,2X,I20,4X,A)')
+               WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'    OKAY       -  '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(4X,A6,2X,I20,4X,A)')
+               WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(4X,A6,2X,I20,4X,A)')
+               WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-               WRITE(6,'(4X,A6,2X,I20,4X,A)')
+               WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'     -       -    '
             END IF
   200     CONTINUE
 *
 * Marks
 *
-          WRITE(6,*)
-          WRITE(6,*) '======='
-          WRITE(6,*) ' Marks '
-          WRITE(6,*) '======='
-          WRITE(6,*)
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) '======='
+          WRITE(LUWRT,*) ' Marks '
+          WRITE(LUWRT,*) '======='
+          WRITE(LUWRT,*)
 *
-          WRITE(6,*) ' Identifier  Start of free memory '
-          WRITE(6,*) ' ================================='
+          WRITE(LUWRT,*) ' Identifier  Start of free memory '
+          WRITE(LUWRT,*) ' ================================='
           DO JMARK = 1, NM
-            WRITE(6,'(3X,A6,10X,I20)') MARKC(JMARK),IMARK(JMARK)
+            WRITE(LUWRT,'(3X,A6,10X,I20)') MARKC(JMARK),IMARK(JMARK)
           END DO
 *
         IF(ITSOK.EQ.0) 
