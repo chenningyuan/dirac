@@ -11,7 +11,7 @@
 !  Max. number of type-type-symmetry-symmetry blocks allowed:
 !  (dynamically allocated in LUCIAREL)
       INTEGER MXNTTS_MC
-      PARAMETER (MXNTTS_MC = 10000)
+      PARAMETER (MXNTTS_MC = 25000)
 
 !  Max. no. of MK projection values allowed (same in LUCIAREL).
       INTEGER MXMKSTA
