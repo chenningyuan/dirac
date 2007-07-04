@@ -7865,7 +7865,6 @@ C       all blocks are included, but only active blocks have a length
      &                     ' PART_CIV_PAR3'
             WRITE(LUWRT,*) '  LENGTH ',LENGTH
             WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from',MXLNG
-            CALL RMEMCHK
             stop ' In PART_CIV_PAR3 because of N_TRY .ge. 1. '
           END IF
 *
@@ -8081,7 +8080,6 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
         WRITE(LUWRT,*) ' Insufficient buffer detected in PART_CIV4'
         WRITE(LUWRT,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
         WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from ', MXLNG
-        CALL RMEMCHK
         stop ' In PART_CIV4_PAR. '
       ELSE
 *. This batch is finished, goto next batch
@@ -8804,6 +8802,39 @@ C             MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
         END DO
       END IF
 *
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE UPDATE_GEN_LIST(ISLIST1,ISLIST2,NDIM)
+C
+C     OUTPUT
+C     ======
+C
+C     updated content of ISLIST1
+C
+C     Last revision:     S. Knecht       - May  2007
+C
+************************************************************************
+#include "implicit.h"
+      DIMENSION ISLIST1(*), ISLIST2(*)
+      INTEGER NZERO
+C
+      NZERO = 0
+C
+      DO IBLK = 1, NDIM
+C
+        IF( ISLIST1( IBLK ) .ne. NZERO ) THEN
+          IF( ISLIST2( IBLK ) .eq. NZERO ) THEN
+            ISLIST1( IBLK ) = NZERO
+          END IF
+        END IF
+C
+      END DO
+C
       END
 ***********************************************************************
 *                                                                     *
