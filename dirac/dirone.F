@@ -1823,8 +1823,7 @@ C   PAMIOU: LUTMAT
       DIMENSION WORK(LWORK)
       CALL QENTER('GMOTRA')
 #include "memint.h"
-
-      CALL MEMCHK('GMOTRA 1',WORK,1)
+      KFRSAV = KFREE
 C
 C     By default we do not partition the space. This may be
 C     modified if we have linear symmetry or approximate the
@@ -1841,14 +1840,11 @@ C
 C     Get Lowdin matrix
 C     =================
 C
-      IF(BSS) THEN
-CMI ... extended array size N2BBASX->N2BBASXQ because it's beeing used later in MAKE_BSS
-        CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
-      ELSE
-        CALL MEMGET('REAL',KVMAT,N2BBASX,WORK,KFREE,LFREE)
-      ENDIF
 C aspg, timing
       CALL TIMER('START ',TIMSTR,TIMEND)
+CTROND
+C.....we use N2BBASXQ instead of N2BBASX for BSS...to be checked      
+      CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
       CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
       CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
 C aspg, timing
@@ -1859,13 +1855,15 @@ C
 C     LV : The unrestricted procedure should be revised so that
 C     the large components are also sorted on boson irreps !!!
 C
-      CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
-
       IF(.NOT.URKBAL.AND.NTBAS(2).EQ.0.AND..NOT.(TWOCOMP.OR.BSS)) THEN
         URKBAL = .TRUE.
         WRITE(LUPRI,'(A)') 
      &  '*** WARNING *** : No small bases. Setting URKBAL = T !'
       ENDIF
+C
+C     ** Branching point **
+C=======================================================================
+C
       IF (URKBAL.OR.(TWOCOMP.AND..NOT.BSS)) THEN
 C
 C       Case 1: Unrestricted kinetic balance 
@@ -1873,19 +1871,17 @@ C               or 2-component non-relativistic calculation
 C       ---------------------------------------------------
 C
         NZT = 1
+        KTMAT = KVMAT
         DO IFRP = 1,NFSYM
           NESH(IFRP)  = NFORB(IFRP,1)
           NPSH(IFRP)  = NFORB(IFRP,2)
           NORB(IFRP)  = NESH(IFRP) + NPSH(IFRP)
           NTMO(IFRP)  = NORB(IFRP)
         ENDDO
-        KTMAT = KVMAT
- 
         IF (TWOCOMP) THEN
          SSMTRC = D0
          MC = 1
         ENDIF
-
         IF (IPRHAM.GE.5) THEN
           write(lupri,*) 'GMOTRA: branch URKBAL'
           write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
@@ -1901,7 +1897,6 @@ C aspg, timing
         CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
         CALL TIMER('mk_h2c',TIMSTR,TIMEND)
 C aspg, timing
-        CALL MEMCHK('GMOTRA.BSS',WORK,1)
 CMI    ... transformation matrix is the Large-electronic part of
 C          the adapted Lowdin matrix VMAT
         KTMAT = KVMAT
@@ -1949,8 +1944,8 @@ C       -------------------------------------------------------------------
 C
         CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
-        CALL MEMCHK('GMOTRA  2',WORK,1)
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
      &             .FALSE.,WORK(KFREE),LFREE)
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
@@ -1962,7 +1957,11 @@ C
         ENDIF
 
       ENDIF
-
+C
+C     ** End of branching **
+C=======================================================================
+C
+      CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
       N2TMT   = 0
       N2TMOTQ = 0
       DO IFRP = 1,NFSYM
@@ -1984,12 +1983,9 @@ C
          SUB_BL = .TRUE.
       ENDIF
       IF (LINEAR) THEN
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-        CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KVMAT),1)
-        CALL GLINSM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),
-     &              WORK(KEIG),WORK(KFREE),LFREE)
+        CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
+        CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KFREE),LFREE)
         SUB_BL = .TRUE.
-        CALL MEMREL('LINSYM.out',WORK,KEIG,KEIG,KFREE,LFREE)
       ENDIF
 C
 C     Construct right index transformed overlap matrix Saomo = Sao T
@@ -2132,7 +2128,6 @@ C
 C     Generate free particle (or bare nucleus) matrix in Lowdin-basis
 C     ===============================================================
 C
-
       IF(VEXTPJ) THEN
         CALL ONEFCK(TBUF,IPRONE,WORK(KFREE),LFREE)
       ELSE
@@ -3148,8 +3143,6 @@ c
       TIMSTR = SECOND() 
 c
 #include "memint.h"
-
-C     CALL MEMCHK('BNCORR 1.0',WORK,1)
 
       WEHAVE = .FALSE.
       IF (BSS) THEN
@@ -4716,7 +4709,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck glinsm */
-      SUBROUTINE GLINSM(TMAT,VMAT,TBUF,EIG,WORK,LWORK)
+      SUBROUTINE GLINSM(TMAT,VMAT,WORK,LWORK)
 C*****************************************************************************
 C
 C     This routine makes an additional transformation from the
@@ -4737,10 +4730,12 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      DIMENSION WORK(LWORK)
+      DIMENSION WORK(LWORK),TMAT(*),VMAT(*)
       CALL QENTER('GLINSM')
 #include <memint.h>
-C
+      KFRSAV = KFREE
+      CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
       IF (URKBAL) THEN
          WRITE (LUPRI,1000) "unrestricted kinetic balance"
          LINEAR = .FALSE.
@@ -4762,13 +4757,14 @@ C
          RETURN
       ENDIF
 C
-      CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
+      CALL LINSYM(TMAT,VMAT,WORK(KTBUF),EIG,WORK(KFREE),LFREE)
       IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A/)')
      &'GLINSM: TMAT and Saomo were adapted for the linear symmatry.'
 
       ENDIF
 C
+      CALL MEMREL('GLINSM',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('GLINSM')
       RETURN
 C

@@ -5422,11 +5422,7 @@ C ****************************************************************************
       IF (DO4C2C.AND..NOT.USEDF.AND.WRITEH2C.AND..NOT.START2C) THEN
 C      ... do prepare the FD4C_ONB 
 C .... read Lowdin matrix into TMAT
-        IF (LINEAR) THEN
-          LABELH1='VMAT2C_L'
-        ELSE
-          LABELH1='VMAT2C  '
-        ENDIF
+       LABELH1='VMAT2C  '
 
        CALL RFBSSMAT(LABELH1,.TRUE.,'CMP_EIGVAL',
      &               TMAT,N2BBASX,LUBSS,IPRINT)
@@ -7006,12 +7002,7 @@ C       as the next BSS-SCF creates own new files
 
 C      ... read Lowdin 2c MO matrix ... to get 2c AO Fock matrix
 C .... read Lowdin matrix into TMAT
-        IF (LINEAR) THEN
-          LBL='VMAT2C_L'
-        ELSE
-          LBL='VMAT2C  '
-        ENDIF
-
+        LBL='VMAT2C  '
         CALL RFBSSMAT(LBL,.TRUE.,'FDTR4C',TMAT,N2BBASX,LUBSS,IPRHAM)
         IF (IPRHAM.GE.2) THEN
           WRITE(LUPRI,'(/2X,A,A,A)')                  
