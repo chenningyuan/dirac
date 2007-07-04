@@ -5501,10 +5501,10 @@ CSK        WRITE(LUWRT,'(1X,A,1X,I20)')
 CSK     & '  Current available free memory in double words:',L2BLOCK
 *
 *       we want to keep three blocks in memory at the same time
-*       CB,SB,VEC3(=C2). estimated scratch memory: 3 000 000 real*8
+*       CB,SB,VEC3(=C2). estimated scratch memory: 9 000 000 real*8
 *       division by a factor of 4 = safety!
 *
-        L2BLOCK = (L2BLOCK - 5 000 000 )/4
+        L2BLOCK = ( L2BLOCK - ( ISMEMFAC * 1 000 000 ) ) / 4
 *
 CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
 CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
