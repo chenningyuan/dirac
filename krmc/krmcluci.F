@@ -385,13 +385,13 @@ C 94: No orbitals/spinors on external file.
 C
 C 97: Currently always SIGDEN route (excitation class formalism)
       SIGDEN_ROUTE = 'SIGDEN'
-CSKC
-CSKC 99: No broadcast of integral in parallel CI calculations?
-CSKC
-CSK      IIOMOD_REL = 0
-CSKC
-CSK      CALL LUCI_TRAVA(CIRUN,'PAR IO',IIOMOD_REL,DUMMY,I_COMM_W_ND)      
-CSKC
+C
+C 99: multiplier for memory subtraction guess
+C
+      ISMEMFAC = 0
+C
+      CALL LUCI_TRAVA(CIRUN,'MEMFAC',ISMEMFAC,DUMMY,I_COMM_W_ND)
+C
 C
 C 100: new definition of max. BATCH length
 C
@@ -1388,6 +1388,19 @@ C
          IVAR(1) = IPROPT
          GOTO 100
       END IF
+C
+C     memory multiplier
+C
+      IF (CTLSTR .EQ. 'MEMFAC') THEN
+C
+#if defined (VAR_MPI)
+       IF( I_COMM_W_ND .eq. 1 ) 
+     &   CALL MPI_BCAST(IMEMFAC,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
+         IVAR(1) = IMEMFAC
+         GOTO 100
+      END IF
 CSKC
 CSKC     I/O mode (parallel case)
 CSKC
@@ -2297,12 +2310,16 @@ CC   &                  DUMMY,DUMMY,2,IRIQ,
 CC   &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IPROPT)
 CC    END IF
 C
+C
 C     Call LUCIAREL
       CALL KRMC_LUCI(WORK(KFCACM),WORK(KH2AC),WORK(KFREE),LFREE,ECORE,
      &               CIRUN)
 C
 C     Read CI vector from LUCIARELs file
-      IF (MAXCIT.GE.0.AND.NCIROOT.EQ.1) THEN
+      IF (MOPT_MXMACRO .ge. 0 .and. MAXCIT.GE.0.AND.NCIROOT.EQ.1) THEN
+csk+hjaaj, 03JUL07: .MAX MACRO negative is special code for not writing
+c   CREF to disk. Dirty fix for doing large scale CI in LUCIAREL, where
+C   memory is too small for CREF.
         IO_RCIST_OUT = 1
 * FIXME: Future use of file names instead of the primitive fortran
 *        files. Activation flags (IO_RCIST_OUT) should be controlled
