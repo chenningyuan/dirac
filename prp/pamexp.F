@@ -1548,7 +1548,7 @@ C
         CALL DENST1(DFO(IPD),NCNT(IFRP),NCNT(IFRP),D1,D0,
      &              BVEC(IPB),NCNT(IFRP),NMO(IFRP),
      &              1,NMO(IFRP),NCNT(IFRP))  
-        IF(IPRINT.GE.5) THEN
+        IF(IPRINT.GE.2) THEN
           WRITE(LUPRI,'(A,I3)')
      &    'Density matrix in fragment basis..',IFRP
           CALL PRQMAT(DFO(IPD),NCNT(IFRP),NCNT(IFRP),
