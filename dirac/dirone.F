@@ -1983,8 +1983,11 @@ C
          SUB_BL = .TRUE.
       ENDIF
       IF (LINEAR) THEN
+        CALL MEMCHK('gmotra 0.1',WORK,1)
         CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
+        CALL MEMCHK('gmotra 1',WORK,1)
         CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KFREE),LFREE)
+        CALL MEMCHK('gmotra 1.2',WORK,1)
         SUB_BL = .TRUE.
       ENDIF
 C
@@ -2200,15 +2203,13 @@ C
       ENDIF
 
 
-CMI ... for RKB & BSS do resort columns of transformation matrix that
-CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of S1 L1 S2 L2 ...
+CMI ...  For the BSS.RKB (ie 1step approach) do resort columns of transformation matrix so that
+CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of former S1 L1 S2 L2 ...
       IF (SLGROUP) THEN
-
-        ISIZE = NFBAS(1,0)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
-
-        CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
-CMI    ... TMAT remains unchanged, the SL resorted TMAT is in WORK(KBUF)!
+       ISIZE = NFBAS(1,0)*NORB(1)*NZ
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
+       CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
+CMI    ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
        CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 
@@ -2233,9 +2234,11 @@ C  ... copy the SL resorted transformation matrix to be exported into VMAT ...
         ENDIF
         ENDDO
        ENDIF
-
        CALL MEMREL('SLGROUP',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDIF
+
+      CALL MEMCHK('MODHAM end',WORK,1)
+
       CALL FLSHFO(LUPRI)
       CALL QEXIT('MODHAM')
       RETURN
@@ -4732,10 +4735,12 @@ C*****************************************************************************
 #include <dgroup.h>
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*)
       CALL QENTER('GLINSM')
+
 #include <memint.h>
       KFRSAV = KFREE
       CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMCHK('glinsm 0.1',WORK,1)
       IF (URKBAL) THEN
          WRITE (LUPRI,1000) "unrestricted kinetic balance"
          LINEAR = .FALSE.
@@ -4757,15 +4762,25 @@ C
          RETURN
       ENDIF
 C
-      CALL LINSYM(TMAT,VMAT,WORK(KTBUF),EIG,WORK(KFREE),LFREE)
+      CALL MEMCHK('glinsm 1',WORK,1)
+
+      CALL LINSYM(TMAT,VMAT,WORK(KTBUF),WORK(KEIG),WORK(KFREE),LFREE)
+
+      CALL MEMCHK('glinsm 2',WORK,1)
+
       IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A/)')
      &'GLINSM: TMAT and Saomo were adapted for the linear symmatry.'
-
       ENDIF
-C
+      CALL FLSHFO(LUPRI)
+
+C     ... release all allocated memmory in this routine (from the position KFRSAV)
       CALL MEMREL('GLINSM',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+
+      CALL MEMCHK('glinsm 3',WORK,1)
+
       CALL QEXIT('GLINSM')
+      CALL MEMCHK('glinsm 4',WORK,1)
       RETURN
 C
  1000 FORMAT (//" WARNING : linear symmetry is not implemented for ",
@@ -4809,6 +4824,9 @@ C  DGROUP:
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       DIMENSION IQBF(4),IQW(4)
+
+      CALL QENTER('LINSYM')
+
 #include <memint.h>
 C
       CALL HEADER('Output from LINSYM',-1)
@@ -4859,11 +4877,16 @@ C
          CALL PRQMAT(TMAT(IOFT),NORB(I),NORB(I),
      &   NORB(I),NORB(I),1,IPQTOQ(1,0),LUPRI)
 
+         CALL FLSHFO(LUPRI)
+
         ENDIF
 
         IOFT = IOFT + NORB(I)*NORB(I)
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
    10 CONTINUE
+
+CMI   CALL MEMCHK('linsym 0.1',WORK,1)
+
 C
 C     Initialize TBUF to zero (we will fill in parts later and its easier to initialize
 C     the rest here). Also initialize the array that counts the number of functions for 
@@ -4924,6 +4947,7 @@ C
            write(lupri,*) (EIG(IEIGE+II),II=0,NL-1)
            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
+           CALL FLSHFO(LUPRI)
           ENDIF
         ENDIF
 C
@@ -4932,6 +4956,8 @@ C
         CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,0,0,2,2,1,NZ,
      &               WORK(KFSS),NS,NS,1,
      &               TMAT(IOFT),NT,NT,NZ)
+
+      CALL MEMCHK('linsym 0.3',WORK,1)
 C
         IF (NS.GT.0) THEN
           IF(DOJACO) THEN
@@ -4950,8 +4976,11 @@ C
            write(lupri,*) (EIG(IEIGP+II),II=0,NS-1)
            CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
+           CALL FLSHFO(LUPRI)
           ENDIF
         ENDIF
+
+       CALL MEMCHK('linsym 0.4',WORK,1)
 C
 C       Count the Mj-values.
 C       We will either find a negative or a positive value for each Mj.
@@ -5060,6 +5089,7 @@ C
      &   '*** Fermion corep ',I,'/',NFSYM
          CALL PRQMAT(TBUF(IOFT),NT,NT,NT,NT,1,
      &   IPQTOQ(1,0),LUPRI)
+         CALL FLSHFO(LUPRI)
         ENDIF
 
         CALL EXTRSB (2,I,NBORB,4,NBRP,
@@ -5073,6 +5103,7 @@ C
      &   '*** Fermion corep ',I,'/',NFSYM
          CALL PRQMAT(TBUF(IOFT),NT,NT,NT,NT,1,
      &   IPQTOQ(1,0),LUPRI)
+         CALL FLSHFO(LUPRI)
         ENDIF
 C
 C       Done; release the extra memory used for diagonalization
@@ -5084,6 +5115,8 @@ C
         IOFT = IOFT + NORB(I)*NORB(I)
 C
    20 CONTINUE
+
+      CALL MEMCHK('linsym 0.5',WORK,1)
 C
 C     Generate transformation matrix in non-orthogonal basis
 C     ======================================================
@@ -5094,10 +5127,11 @@ C
       DO 30 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 30
         IF (IPRHAM.GE.5) THEN
-           CALL HEADER(
+          CALL HEADER(
      &  'LINSYM: Transformation matrix in orthon. basis',-1)
-           CALL PRQMAT(TBUF(IOFU),NORB(I),NORB(I),NORB(I),
+          CALL PRQMAT(TBUF(IOFU),NORB(I),NORB(I),NORB(I),
      &                 NORB(I),1,IPQTOQ(1,0),LUPRI)
+         CALL FLSHFO(LUPRI)
         ENDIF
 C
 C       Backtransform all solutions
@@ -5114,8 +5148,11 @@ C
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
    30 CONTINUE
 C
+      CALL MEMCHK('linsym end',WORK,1)
+
       CALL FLSHFO(LUPRI)
 CMI    call quit('linsym')
+      CALL QEXIT('LINSYM')
       RETURN
  1000 FORMAT 
      & (/' Parity   MJ  Functions(total) Functions(LC) Functions(SC)')
