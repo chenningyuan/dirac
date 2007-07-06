@@ -2237,7 +2237,7 @@ C  ... copy the SL resorted transformation matrix to be exported into VMAT ...
        CALL MEMREL('SLGROUP',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDIF
 
-      CALL MEMCHK('MODHAM end',WORK,1)
+CMI   CALL MEMCHK('MODHAM end',WORK,1)
 
       CALL FLSHFO(LUPRI)
       CALL QEXIT('MODHAM')
