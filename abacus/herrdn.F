@@ -8293,8 +8293,14 @@ C      ... cycle over all nuclei ...
       ICRY = 2
       ICRZ = 3
 
-      IATOM = 0
-      DO ICENT = 1, NUCIND
+      ICENT = 0
+
+      DO IATYP = 1, NONTYP
+      DO JATYP = 1, NONT(IATYP)
+
+        ICENT = ICENT + 1
+
+C     DO ICENT = 1, NUCIND
 C ............... basis functions ..................
          IF (IPRINT.GE.3) THEN
           write(LUPRI,'(2X,A,I2,A,I2)')
@@ -8317,8 +8323,6 @@ C ............... basis functions ..................
                ICRY = ICRY + 3
                ICRZ = ICRZ + 3
 
-               IATOM = IATOM + 1
-
                write(LUTMP2,*)
      &         ICENT,'  ',ATOMNAME,' charge:',CHARGE(ICENT)
                write(LUTMP2,*) CORD(1,ICENT),CORD(2,ICENT),CORD(3,ICENT)
@@ -8337,7 +8341,7 @@ C             ...   write out basis functions, exponents and contraction coeffic
              CALL WRIBAS(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
      &           JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),WORK(KIPCON),
      &         KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
-     &          LUTMP2,LUTMP,ICENT,IATOM,0,IPRINT)
+     &          LUTMP2,LUTMP,IATYP,0,IPRINT)
 
              IF (NBASIS.GT.NLARGE) THEN
                IF (IPRINT.GE.3) THEN
@@ -8347,7 +8351,7 @@ C             ...   write out basis functions, exponents and contraction coeffic
                CALL WRIBAS(NONTYP,NONT,IQM(1,2),NBLCK(1,2),
      &             JCO(1,1,2),NUC(1,2),NRC(1,2),SEG(1,2),WORK(KIPCON),
      &            KATOM,KANG,KBLOCK,KPRIM,CPRIMU(1,1,1,2),
-     &            LUTMP2,LUTMP,ICENT,IATOM,NPLSH,IPRINT)
+     &            LUTMP2,LUTMP,IATYP,NPLSH,IPRINT)
              ENDIF
              write(lutmp2,*) 'E   0   0'
 
@@ -8374,8 +8378,6 @@ C             ...   write out basis functions, exponents and contraction coeffic
                      ICRY = ICRY + 3
                      ICRZ = ICRZ + 3
 
-               IATOM = IATOM + 1
-
 C              write(LUTMP2,*) ICENT,'  ',ATOMNAME,' ',JATOM,
                write(LUTMP2,'(I3,A,A,A,I2,A,F12.6)')
      &         ICENT,'  ',ATOMNAME,' ',JATOM,' charge:',CHARGE(ICENT)
@@ -8401,9 +8403,9 @@ C             ...   write out basis functions, exponents and contraction coeffic
              ENDIF
 
             CALL WRIBAS(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
-     &     NUC(1,1),NRC(1,1),SEG(1,1),WORK(KIPCON),
-     &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
-     &     LUTMP2,LUTMP,ICENT,IATOM,0,IPRINT)
+     &      NUC(1,1),NRC(1,1),SEG(1,1),WORK(KIPCON),
+     &      KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
+     &      LUTMP2,LUTMP,IATYP,0,IPRINT)
 
              IF (NBASIS.GT.NLARGE) THEN
                IF (IPRINT.GE.3) THEN
@@ -8412,7 +8414,7 @@ C             ...   write out basis functions, exponents and contraction coeffic
                CALL WRIBAS(NONTYP,NONT,IQM(1,2),NBLCK(1,2),
      &        JCO(1,1,2),NUC(1,2),NRC(1,2),SEG(1,2),WORK(KIPCON),
      &        KATOM,KANG,KBLOCK,KPRIM,CPRIMU(1,1,1,2),
-     &        LUTMP2,LUTMP,ICENT,IATOM,NPLSH,IPRINT)
+     &        LUTMP2,LUTMP,IATYP,NPLSH,IPRINT)
              ENDIF
              write(lutmp2,*) 'E   0   0'
             END IF
@@ -8420,6 +8422,8 @@ C             ...   write out basis functions, exponents and contraction coeffic
          ENDIF
 
          ENDDO    
+         ENDDO    
+
          CALL GPCLOSE(LUTMP2,'KEEP')
 
 C        
@@ -8463,7 +8467,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wribas */
       SUBROUTINE WRIBAS(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,IPCON,
      &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
-     &     LUTMP2,LUTMP,ICENT,IATOM,IPOSEXP,IPRINT)
+     &     LUTMP2,LUTMP,ICENT,IPOSEXP,IPRINT)
 C*************************************************************************
 C
 C    Called from CAPOUT
@@ -8495,7 +8499,7 @@ C     CHARACTER CHRSEG*10,DEG*2
 
       IF (IPRINT.GE.3) THEN
          write(LUPRI,*) '*** In WRIBAS ***'
-         write(LUPRI,*) 'ICENT=  ',ICENT,'  IATOM =   ',IATOM
+         write(LUPRI,*) 'ICENT=  ',ICENT
 C       ... run over blocks in NBLCK(I)
          write(LUPRI,*) ' nu of blocks of shells, NBLCK:',NBLCK(ICENT) 
          write(LUPRI,*) ' nu of blocks of shells, IQM:',IQM(ICENT) 
@@ -8520,14 +8524,10 @@ C        IIQM = IIQM + IQM(I)
        IBLOCK = KBLOCK + 1
        DO J = 1, IQM(ICENT)
 CC     DO J = 1, NBLCK(ICENT)
-
 C        IBLOCK = KBLOCK + J
-
 C        ... run over subblocks (small comp. set usually contain some)
         DO K = 1, JCO(J,ICENT)
-
 C        IBLOCK = KBLOCK + J
-
          IF (IPRINT.GE.3) THEN
           write(LUPRI,*) 'IEXP pointer:',IEXP
           write(LUPRI,*) 'INUC pointer:',INUC,' IBLOCK:',IBLOCK
