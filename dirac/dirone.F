@@ -1088,12 +1088,9 @@ C  ... allocate array for the picture change transformation matrix
 C     ... array for the 2-component picture change transformed operator
           CALL MEMGET('REAL',KPCTO,N2BBASXQ,WORK,KFREE,LFREE)
 
-          CALL MEMCHK('xxx 1',WORK,1)
           CALL DOPCTRA(PMAT,WORK(KPCTM),WORK(KPCTO),ISIZE,MAKEPCTRA,
      &                  PRPNAM(INDXPR),ISYM,IREP,ITIM,
      &                 'S',WORK(KFREE),LFREE,IPRINT1)
-
-          CALL MEMCHK('xxx 2',WORK,1)
 
           CALL MEMREL('DOPCTRA',WORK,KWORK,KPCTO,KFREE,LFREE)
           CALL MEMREL('DOPCTRA',WORK,KWORK,KPCTM,KFREE,LFREE)
@@ -1224,7 +1221,7 @@ CMI   ... in this case PTRI is dummy, only PMAT exists
            ENDIF
            CALL BUTOBS(PMAT(1,IZ),1,WORK,LWORK)
          ELSE 
-CMI ... zeored out non-used quaternionic blocks of property matrixes...
+CMI ... zeroed out non-used quaternionic blocks of property matrixes...
            CALL DZERO(PMAT(1,IZ),N2BBASX)  
          ENDIF
       END DO
@@ -1616,21 +1613,14 @@ C
 C
 C     Memory allocation
 C
-CMI ... does not work here !!!...
-C     CALL MEMCHK('FREEMT 1',WORK,1)
-
       CALL MEMGET('REAL',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KONEIN,   NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
-
-      CALL MEMCHK('FREEMT 2',WORK,1)
 C
 C     ****** Construct Fock matrix ******
 C
       CALL FREEM1(FOCK,WORK(KFTRI),WORK(KONEIN),WORK(KFIRST),
      &              WORK(KFREE),LFREE,IPRINT)
-
-      CALL MEMCHK('FREEMT 3',WORK,1)
 
 C     Memory deallocation
       CALL MEMREL('FREEMT.FREEM1',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1983,11 +1973,8 @@ C
          SUB_BL = .TRUE.
       ENDIF
       IF (LINEAR) THEN
-        CALL MEMCHK('gmotra 0.1',WORK,1)
         CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
-        CALL MEMCHK('gmotra 1',WORK,1)
         CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KFREE),LFREE)
-        CALL MEMCHK('gmotra 1.2',WORK,1)
         SUB_BL = .TRUE.
       ENDIF
 C
@@ -2236,8 +2223,6 @@ C  ... copy the SL resorted transformation matrix to be exported into VMAT ...
        ENDIF
        CALL MEMREL('SLGROUP',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDIF
-
-CMI   CALL MEMCHK('MODHAM end',WORK,1)
 
       CALL FLSHFO(LUPRI)
       CALL QEXIT('MODHAM')
@@ -4740,7 +4725,6 @@ C*****************************************************************************
       KFRSAV = KFREE
       CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-      CALL MEMCHK('glinsm 0.1',WORK,1)
       IF (URKBAL) THEN
          WRITE (LUPRI,1000) "unrestricted kinetic balance"
          LINEAR = .FALSE.
@@ -4762,11 +4746,7 @@ C
          RETURN
       ENDIF
 C
-      CALL MEMCHK('glinsm 1',WORK,1)
-
       CALL LINSYM(TMAT,VMAT,WORK(KTBUF),WORK(KEIG),WORK(KFREE),LFREE)
-
-      CALL MEMCHK('glinsm 2',WORK,1)
 
       IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A/)')
@@ -4776,11 +4756,7 @@ C
 
 C     ... release all allocated memmory in this routine (from the position KFRSAV)
       CALL MEMREL('GLINSM',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
-
-      CALL MEMCHK('glinsm 3',WORK,1)
-
       CALL QEXIT('GLINSM')
-      CALL MEMCHK('glinsm 4',WORK,1)
       RETURN
 C
  1000 FORMAT (//" WARNING : linear symmetry is not implemented for ",
@@ -4885,8 +4861,6 @@ C
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
    10 CONTINUE
 
-CMI   CALL MEMCHK('linsym 0.1',WORK,1)
-
 C
 C     Initialize TBUF to zero (we will fill in parts later and its easier to initialize
 C     the rest here). Also initialize the array that counts the number of functions for 
@@ -4956,8 +4930,6 @@ C
         CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,0,0,2,2,1,NZ,
      &               WORK(KFSS),NS,NS,1,
      &               TMAT(IOFT),NT,NT,NZ)
-
-      CALL MEMCHK('linsym 0.3',WORK,1)
 C
         IF (NS.GT.0) THEN
           IF(DOJACO) THEN
@@ -4979,8 +4951,6 @@ C
            CALL FLSHFO(LUPRI)
           ENDIF
         ENDIF
-
-       CALL MEMCHK('linsym 0.4',WORK,1)
 C
 C       Count the Mj-values.
 C       We will either find a negative or a positive value for each Mj.
@@ -5115,8 +5085,6 @@ C
         IOFT = IOFT + NORB(I)*NORB(I)
 C
    20 CONTINUE
-
-      CALL MEMCHK('linsym 0.5',WORK,1)
 C
 C     Generate transformation matrix in non-orthogonal basis
 C     ======================================================
@@ -5148,10 +5116,7 @@ C
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
    30 CONTINUE
 C
-      CALL MEMCHK('linsym end',WORK,1)
-
       CALL FLSHFO(LUPRI)
-CMI    call quit('linsym')
       CALL QEXIT('LINSYM')
       RETURN
  1000 FORMAT 
