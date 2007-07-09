@@ -380,9 +380,12 @@ C
 #include "dummy.h"
       PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER(DM1 = -1.0D0,DM2 = - 2.0D0)
-      DIMENSION W(NORBT,NORBT,NZ,3), ! Array for {T,h(mK)}_ic product
-     &         CONMAT(NORBT,NORBT,NZ), ! Array for h(mK) property matrix
-     &         DMAT(NORBT,NORBT,NZ),  ! Density matrix
+!               Array for {T,h(mK)}_ic product
+      DIMENSION W(NORBT,NORBT,NZ,3),
+!              Array for h(mK) property matrix
+     &         CONMAT(NORBT,NORBT,NZ),
+!              Density matrix
+     &         DMAT(NORBT,NORBT,NZ),
      &         ORTO(3,*),WORK(*)
       LOGICAL AH,EPMIX,DOPCTRA_SAVE
 C
@@ -1533,11 +1536,14 @@ C
      &                  NORB(I1),NOCC(I2),
      &     DMAT(I2BASX(I1,I2)+1,1),
      &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
-     &     TMAT(IORB(I1)+1,IORB(I2)+NPSH(I2)+1,1),  ! T(o,i)
+!          T(o,i)
+     &     TMAT(IORB(I1)+1,IORB(I2)+NPSH(I2)+1,1),
      &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-     &     CMO(ICMOQ(I1)+1),                        ! C(a,o)^+
+!          C(a,o)^+
+     &     CMO(ICMOQ(I1)+1),
      &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-     &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1), ! C(i,b)
+!          C(i,b)
+     &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
      &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &     WORK(KFREE),LFREE,IPRINT)
          ENDIF
@@ -2655,8 +2661,9 @@ C     to deterimine resulting irrep, use irreps in range 0-7,
 C     otherwise use MULTD2H
 C ...it's based on order of irreps in DALTON (invented by J.Almlof,1970)
 C       so logical function XOR works nice...
-         IREP12 = IBTXOR(IREP1,IREP2) ! Direct product of two boson irreps
-         CALL QGEMM(NORBT,NORBT,NORBT,D1, ! 
+!        Direct product of two boson irreps
+         IREP12 = IBTXOR(IREP1,IREP2)
+         CALL QGEMM(NORBT,NORBT,NORBT,D1,
      &    'N','N',IPQTOQ(1,IREP1),
      &     WORK(KSMAT),NORBT,NORBT,NZ,
      &    'N','N',IPQTOQ(1,IREP2),WORK(KWMAT),NORBT,NORBT,NZ,
