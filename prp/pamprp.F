@@ -6866,8 +6866,6 @@ C
       FACTOR = (GFERMI*(D1-D4*STHETAW2)*1.0D6)/(CVEL*SQRT(D2))
 C
       CALL AROUND('PV NMR shielding tensor (in ppm)')
-      WRITE(LUPRI,'(A)') 'WARNING: use only with C1 symmetry'
-      WRITE(LUPRI,'(A)') '         and mind the gauge origin'
       WRITE(LUPRI,*)
 C
       DO IATOM = 1,NUCDEP
@@ -7039,7 +7037,6 @@ C
       FACTOR = FACTOR*1.0D9
 C
       CALL AROUND('PV contribution to spin-spin coupling (in nHz)')
-      WRITE(LUPRI,'(A)') 'WARNING: use only with C1 symmetry'
       WRITE(LUPRI,*)
 C
       DO IATOM = 1,NUCDEP-1

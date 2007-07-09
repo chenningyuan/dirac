@@ -69,6 +69,7 @@ C
 C
 #include "orgcom.h"
 #include "dcbprp.h"
+#include "dgroup.h"
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',
@@ -291,6 +292,7 @@ C&&&& EFTNTL - non-traceless electric field third derivatives
 C&&&& PV contribution to NMR shielding
             DOXLR      = .TRUE.
             PVC_SHIELD = .TRUE.
+            IF(NBSYM .GT. 1) CALL QUIT('.PVCSHI only for C1 symmetry')
             GOTO 100
   120    CONTINUE
 C&&&& EFN: Electric field at nuclei
@@ -349,6 +351,7 @@ C&&&& MSUSCD diamagnetic contribution to the magnetizabilities
 C&&&& PV contribution to spin-spin coupling
             DOXLR        = .TRUE.
             PVC_SPINSPIN = .TRUE.
+            IF(NBSYM .GT. 1) CALL QUIT('.PVCSPN only for C1 symmetry')
             GO TO 100
   129    CONTINUE 
 C&&&& NOPCT - when DOPCT is .true. do NOT do picture change transformation...
