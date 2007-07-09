@@ -196,9 +196,11 @@ C
 C     howto FADE (with D0 .LE. FADE .LE. D1)
 C     ======================================
 C
-      IF(LBIT(LBIT_DFTAC,3)) !SAOP
+!     SAOP
+      IF(LBIT(LBIT_DFTAC,3))
      &                     FADE = RHO_OUTER/RHO
-      IF(LBIT(LBIT_DFTAC,1)) !GRAC
+!     GRAC
+      IF(LBIT(LBIT_DFTAC,1))
      &                     FADE = D1/(D1+EXP(-GRAC_ALPHA*(X-GRAC_BETA)))
 C
 C
@@ -272,9 +274,11 @@ C
         IF(LBIT(LBIT_DFTAC,1)) CALL SET_LBIT(LBIT_DFTAC,2)
       ENDIF
 C
-      IF(LBIT(LBIT_DFTAC,2)) !GRAC is active
+!     GRAC is active
+      IF(LBIT(LBIT_DFTAC,2))
      &                WRITE(LUPRI,*) 'GRAC asymptotic correction active'
-      IF(LBIT(LBIT_DFTAC,4)) !SAOP is active
+!     SAOP is active
+      IF(LBIT(LBIT_DFTAC,4))
      &                WRITE(LUPRI,*) 'SAOP asymptotic correction active'
 C
 C     ICOUNTER_DFTAC_DEBUG = ICOUNTER_DFTAC_DEBUG + 1 !for debug only
@@ -461,7 +465,7 @@ C                 SAOP with response part
      &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &                  WORK(KSAOPCMO+ICMOQ(I)),
      &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                  WORK(KFREE),LFREE,IPRINT)
+     &                  WORK(KFREE),LFREE,0)
           ENDIF
           CALL QTRANS('MOAO','S',D0,
      &                NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
@@ -473,7 +477,7 @@ C                 SAOP with response part
      &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &                WORK(KSAOPCMO+ICMOQ(I)),
      &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                WORK(KFREE),LFREE,IPRINT)
+     &                WORK(KFREE),LFREE,0)
         ENDIF
       ENDDO
 C             SAOP with response part
