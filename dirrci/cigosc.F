@@ -642,13 +642,15 @@ C
          ND = ND + NDETI(I)
       ENDDO
 C
+      IRCW=1
+      EIM=0.0D0
       IF (IRRP.EQ.0) THEN
 C        Even number of electrons, boson irreps
-         CALL PRT_EV (6,NREP,NDETI,REPNA(NREP+1),ECORE,
+         CALL PRT_EV (6,NREP,NDETI,REPNA(NREP+1),ECORE,EIM,IRCW,
      &                DS,INDX,IRPS,IND)
       ELSE
 C        Odd number of electrons, fermion irreps
-         CALL PRT_EV (6,NREP,NDETI,REPNA,ECORE,
+         CALL PRT_EV (6,NREP,NDETI,REPNA,ECORE,EIM,IRCW,
      &                DS,INDX,IRPS,IND)
       ENDIF
 C

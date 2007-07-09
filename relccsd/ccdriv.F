@@ -2700,7 +2700,8 @@ C
       INTEGER IFSS(6)
       REAL*8 TOL
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
-      REAL*8, ALLOCATABLE :: HEFF(:,:),EIGENVALUES(:),EIGENVECTORS(:,:)
+      REAL*8, ALLOCATABLE :: HEFF(:,:),EIGENVALUES(:,:),
+     &                                 EIGENVECTORS(:,:)
 C
 C---------------Executable code--------------------------------------
 C
@@ -2838,7 +2839,9 @@ C
         WRITE (IW,1009) ISECT
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
         ALLOCATE (HEFF(RCW,IFS_HE2(NREP+1,ICURFSS)))
-        ALLOCATE (EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS)))
+CMI     ALLOCATE (EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS)))
+CMI     ALLOCATE (EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS),RCW))
+        ALLOCATE (EIGENVALUES(RCW,0:IFS_HE(NREP+1,ICURFSS)))
         ALLOCATE (EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS)))
         CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),

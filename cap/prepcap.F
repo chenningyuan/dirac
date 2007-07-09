@@ -258,9 +258,9 @@ C  /* Deck dosajeev */
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  Prepare arrays as parameters for the core CAP routine
-C and run the CAP routine which prepares PEMAT binary file
+C and run the CAP routine which prepares PEMAT binary file.
 C
-C Called from F90 routine CAP_STUFF
+C  Called from F90 routine CAP_STUFF
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -268,21 +268,35 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "dcbcap.h"
 #include "dummy.h"
+
+#include "mxcent.h"
+#include "nuclei.h"
+
       DIMENSION WORK(LWORK)
 
       CALL QENTER('DOSAJEEV')
 
 #include "memint.h"
-      ISIZE1=200
+C     ISIZE1=200
+C     ISIZE1=NBASIS
+C      ....          this is rough guess  ....
+       NBASIS1 = NBASIS+30
+      ISIZE1=NBASIS1
       CALL MEMGET('INTE',KBASIS_N,ISIZE1,WORK,KFREE,LFREE)
-      ISIZE2=250*3
+
+C     ISIZE2=250*3
+      NANGPOW = (NBASIS1+70)
+      ISIZE2=NANGPOW*3
       CALL MEMGET('INTE',KANG_POW,ISIZE2,WORK,KFREE,LFREE)
 
-      ISIZE3=250
+C     ISIZE3=250
+      ISIZE3=NANGPOW
       CALL MEMGET('REAL',KORDEXPON,ISIZE3,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KORDCOE,ISIZE3,WORK,KFREE,LFREE)
 
-      ISIZE4=200*3
+C     ISIZE4=200*3
+C     ISIZE4=NBASIS*3
+      ISIZE4=NBASIS1*3
       CALL MEMGET('REAL',KRMS,ISIZE4,WORK,KFREE,LFREE)
 
       IF (CAPOVLP) THEN
@@ -292,7 +306,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &            WORK(KORDEXPON),WORK(KORDCOE),WORK(KRMS),
      &            WORK(KPE_AOr),DUMMY,        
      &            DUMMY,DUMMY, DUMMY,DUMMY, DUMMY,DUMMY,
-     &            WORK(KFREE),LFREE)
+     &            WORK(KFREE),LFREE,NBASIS1,NANGPOW)
       ELSE
        IF (DONRCAP) THEN
 CMI    ISIZE5=25000
@@ -305,7 +319,7 @@ CMI    CALL MEMGET('REAL',KPE_AOi,ISIZE5,WORK,KFREE,LFREE)
      &            WORK(KORDEXPON),WORK(KORDCOE),WORK(KRMS),
      &            WORK(KPE_AOr),WORK(KPE_AOi),
      &            DUMMY,DUMMY, DUMMY,DUMMY, DUMMY,DUMMY,
-     &            WORK(KFREE),LFREE)
+     &            WORK(KFREE),LFREE,NBASIS1,NANGPOW)
 
       ELSE
 C       ... four-component CAP operator ...
@@ -324,7 +338,7 @@ C       ...
      &          WORK(KPEX_AOr),WORK(KPEX_AOi),
      &          WORK(KPEY_AOr),WORK(KPEY_AOi),
      &          WORK(KPEZ_AOr),WORK(KPEZ_AOi),
-     &            WORK(KFREE),LFREE)
+     &            WORK(KFREE),LFREE,NBASIS1,NANGPOW)
 
       ENDIF
       ENDIF

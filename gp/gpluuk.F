@@ -112,6 +112,8 @@ C
 C     This subroutine goes through array ARR and returns the ordering
 C     index array INDX giving indices from smallest to largest
 C
+C     The array ARR is not touched.
+C
 C***********************************************************************
       INTEGER N,INDX(N),M,NSTACK
       REAL*8 ARR(N)
@@ -442,7 +444,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,EV,
+      SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
      &                   INDX,IRPS,IND)
 C
 #include "implicit.h"
@@ -464,6 +466,7 @@ C     - N_IRPS  : Number of irreps
 C     - N_EV    : Number of eigenvalues in each irrep
 C     - REPNA   : Name of each irrep
 C     - E_OFF   : Energy offset
+C     - IRCW    : 1 (real values) or 2 (complex energy values)
 C     - EV      : Eigenvalues
 C     - INDX    : Work array of the same length as EV
 C     - IRPS    : Work array of the same length as EV
@@ -477,13 +480,19 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher, august 2003.
 C
+C     Miro Ilias, July 2007 - absolute imaginary
+C     eigenenergies printed 
+C     if CARITH=T (throught the introduced IRCW,ECCIM parameters)
+C
 C---------------Calling variables--------------------------------------
 C
       DIMENSION N_EV(*),INDX(*)
-      DIMENSION EV(*)
+C     DIMENSION EV(*)
+      DIMENSION EV(IRCW,*)
       DIMENSION IRPS(*),IND(*)
       CHARACTER*4 REPNA(*)
-
+      REAL*8   , ALLOCATABLE :: EVI(:)
+      LOGICAL DODBG
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -508,45 +517,147 @@ C
 C
 C     Sort them from low to high
 C
-      CALL INDEXX(N_TOTAL,EV,INDX)
+      DODBG = .FALSE.
+C     DODBG = .TRUE.
+
+      IF (DODBG) THEN
+      write(LUPRI,*) 'before sorting'
+      DO I =1, N_TOTAL
+       IF (IRCW.EQ.1) THEN
+         write(LUPRI,*) 're:',EV(1,I)
+       ELSE IF (IRCW.EQ.2) THEN
+         write(LUPRI,*) 're:',EV(1,I),' im:',EV(2,I)
+       ENDIF
+      ENDDO
+      write(LUPRI,*)
+      ENDIF
+
+      IF (IRCW.EQ.2) THEN
+        ALLOCATE(EVI(N_TOTAL))
+        DO I=1,N_TOTAL
+         EVI(I) = EV(1,I)
+        ENDDO
+        CALL INDEXX(N_TOTAL,EVI,INDX)
+        DEALLOCATE(EVI)
+      ELSE IF (IRCW.EQ.1) THEN
+        CALL INDEXX(N_TOTAL,EV(1,1),INDX)
+      ELSE
+        write(LUPRI,*) 'IRCW=',IRCW
+        CALL QUIT('PRT_EV...wrong parameter !!! ')
+      ENDIF
+
+      IF (DODBG) THEN
+      write(LUPRI,*) 'after sorting'
+CMI ... own printout
+      IF (IRCW.EQ.2) THEN
+       DO I=1,N_TOTAL
+         write(LUPRI,*) 're:',EV(1,INDX(I)),' im:',EV(2,INDX(I))
+       ENDDO
+      ELSE IF (IRCW.EQ.1) THEN
+       DO I=1,N_TOTAL
+         write(LUPRI,*) 're:',EV(1,INDX(I))
+       ENDDO
+      ENDIF
+      ENDIF
 C
-      WRITE (LUPRI,1005)
+      IF (IRCW.EQ.1) THEN
+        WRITE (LUPRI,1005)
+      ELSE IF (IRCW.EQ.2) THEN
+        WRITE (LUPRI,1007)
+      ELSE
+        WRITE(LUPRI,*) 'PRT_EV: IRCW=',IRCW
+        CALL QUIT('PRT_EV: wrong IRCW value !')
+      ENDIF
+
       ILEVEL=0
       EW=0.0D0
-      EWF=EV(INDX(1))
+      EWIM = 0.0D0
+
+CMI   EWF=EV(INDX(1))
+      EWF=EV(INDX(1),1)
       NEW=0
       AVER=0.0D0
+      AVERIM=0.0D0
+
       DO I=1,N_TOTAL
-        E = EV(INDX(I))
+
+CMI     E = EV(INDX(I))
+        E = EV(1,INDX(I))
+        IF (IRCW.EQ.2) EIM = EV(2,INDX(I))
+
+        IF (DODBG) THEN
+         write(lupri,*) 'I,NEW=',I,NEW,' E=',E,' E-EW=',E-EW
+         IF (IRCW.EQ.2) write(lupri,*) 'EIM=',EIM,' EIM-EWIM=',EIM-EWIM
+        ENDIF
+
         AVER=AVER+E
-        IF (ABS(E-EW).GT.DEGEN) THEN
-          IF (NEW.NE.0)
-     &      WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+        IF (IRCW.EQ.2) AVERIM=AVERIM+EIM
+
+       IF      (IRCW.EQ.1) THEN
+        IF ( ABS(E-EW).GT.DEGEN) THEN
+          IF (NEW.NE.0) THEN
+             WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+          ENDIF
           ILEVEL=ILEVEL+1
           NEW=1
           EW=E
         ELSE
           NEW=NEW+1
           EW=((NEW-1)*EW+E)/DBLE(NEW)
+        ENDIF  
+
+       ELSE IF (IRCW.EQ.2) THEN
+
+        IF ( ABS(E-EW).GT.DEGEN.OR.ABS(EIM-EWIM).GT.DEGEN ) THEN  
+          IF (NEW.NE.0) THEN
+            WRITE(LUPRI,1015) ILEVEL,EW-EWF,EW,EW+E_OFF,
+     &      EWIM+ECCIM, NEW
+          ENDIF
+          ILEVEL=ILEVEL+1
+          NEW=1
+          EW=E
+          EWIM = EIM
+        ELSE
+          NEW=NEW+1
+          EW=((NEW-1)*EW+E)/DBLE(NEW)
+          EWIM=((NEW-1)*EWIM+EIM)/DBLE(NEW)
         ENDIF
+
+       ELSE
+         call quit('prt_ev blind branch !')
+       ENDIF
+
       ENDDO
-      IF (NEW.NE.0)
-     &WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+
+      IF (NEW.NE.0) THEN
+CMI    WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+        IF (IRCW.EQ.1) THEN
+          WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+        ELSE IF (IRCW.EQ.2) THEN
+          WRITE(LUPRI,1015) ILEVEL,EW-EWF,EW,EW+E_OFF,
+     &    EWIM+ECCIM,NEW
+C    &    EV(2,INDX(I)),NEW
+        ENDIF
+      ENDIF
+
       WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
-C
+
+CMI  ... printout with symmetry classification ...real energies only...
       DO IRP1 = 1, N_IRPS, 8
       IRP2 = MIN0(N_IRPS,IRP1+7)
       WRITE(LUPRI,1025) (REPNA(I),I=IRP1,IRP2)
       ILEVEL=0
       EW=0.0D0
-      EWF=EV(INDX(1))
+CMI   EWF=EV(INDX(1))
+      EWF=EV(1,INDX(1))
       NEW=0
       DO JRP = IRP1, IRP2
          IND(JRP) = 0
       END DO
 C
       DO 140 I=1,N_TOTAL
-        E=EV(INDX(I))
+CMI     E=EV(INDX(I))
+        E=EV(1,INDX(I))
         IF (ABS(E-EW).GT.DEGEN) THEN
           IF (NEW.NE.0)
      &      WRITE(LUPRI,1030) ILEVEL,
@@ -575,8 +686,12 @@ C
      +            //' Level   Rel eigenvalue     ',
      +            'Abs eigenvalue      Total Energy    Degeneracy'/)
  1010 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' (',I4,' * )')
+ 1007 FORMAT(//' Energy eigenvalues in atomic units'
+     & //' Level   Rel eigenvalue     Abs eigenvalue     ',
+     & ' Total Energy       Imag abs.eigval   Degeneracy'/)
+ 1015 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' ',F20.15,' (',I4,' * )')
  1020 FORMAT(//' Total average: ',F20.10)
- 1025 FORMAT(//' Relative eigenvalues in other units;'/' Symmetry',
+ 1025 FORMAT(//' Relative real eigenvalues in other units;'/' Symmetry',
      +       ' Classification in the Abelian subgroup',
      +       //' Level  eigenvalue (eV) ',
      +      ' Eigenvalue (cm-1)',2X,8A4/)

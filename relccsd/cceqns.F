@@ -259,7 +259,7 @@ C
       NIT = 0
 C
       CALL T1DIAG(DIAG,T1,BUF1)
-      CALL CCENG (T1,T2,FVO,BUF1,BUF2,ECCSD)
+      CALL CCENG (T1,T2,FVO,BUF1,BUF2,ECCSD,ECCSDIM)
       IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
 C
       IF (IPRNT.GE.1) THEN
@@ -492,7 +492,7 @@ C  EVALUATE CORRELATION ENERGY AND WRITE OUT RESULTS
 C
       IF (TEQ) THEN
          IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
-         CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD)
+         CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD,ECCSDIM)
       ENDIF
 C
       CALL T1DIAG (DIAG,T1,BUF1)
@@ -2056,7 +2056,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCENG(T1,T2,FVO,BUF1,BUF2,ECC)        
+      SUBROUTINE CCENG(T1,T2,FVO,BUF1,BUF2,ECC,ECCIM)        
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -2071,13 +2071,14 @@ C
 C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
+C              Miro Ilias,July 2007 - added imaginary part of CCSD energy
 C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),T2(*)
       REAL*8 FVO(*)
       REAL*8 BUF1(*),BUF2(*)
-      REAL*8 ECC
+      REAL*8 ECC,ECCIM
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -2113,6 +2114,11 @@ C
       IF (CARITH) THEN
          IF (ABS(CECC2(2)).GT.ACCUR) 
      &      WRITE (IW,1000) 'T2',CECC2(2)
+      ENDIF
+
+CMI  ... sum imaginary energies
+      IF (CARITH) THEN
+        ECCIM = CECC1(2) + CECC2(2)
       ENDIF
 C
       RETURN

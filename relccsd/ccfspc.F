@@ -428,7 +428,8 @@ C
          CALL SOLVE_CG (NFS_HE(IRP,ICURFSS),
      &                  HEFF(IFS_HE2(IRP,ICURFSS)*RCW+1),
      &                  EIGENVECTORS(IFS_HE2(IRP,ICURFSS)*RCW+1),
-     &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)+1))
+CMI  &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)+1))
+     &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)*RCW+1))
 100   CONTINUE
 
       RETURN
@@ -443,16 +444,17 @@ C
 C     Find eigenvalues and eigenvectors of a complex or real general matrix
 C     NDT : Dimension of the matrix
 C     H   : Matrix (complex or real, square)
-C     EV  : Eigenvalues (real part)
-C     EVEC: Eigenvalues (real part)
+C     EV  : Eigenvalues (real part, if carith=T also imaginary)
+C     EVEC: Eigenvectors (complex)
 C
 C---------------Routines called----------------------------------------
 C
-C      CG or RG (from EISPACK)
+C      CG or RG (from EISPACK) if complex or real case, respectively
 C
 C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
+C            Miro Ilias - complex eingenenergies carried in EV
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -461,7 +463,8 @@ C
 C
 C---------------Calling variables--------------------------------------
 
-      REAL*8 H(RCW,NDT,NDT),EVEC(RCW,NDT,NDT),EV(NDT)
+CMI   REAL*8 H(RCW,NDT,NDT),EVEC(RCW,NDT,NDT),EV(NDT)
+      REAL*8 H(RCW,NDT,NDT),EVEC(RCW,NDT,NDT),EV(RCW,NDT)
 C---------------Local variables -----------------------------------
       REAL*8, ALLOCATABLE :: EVR(:),EVI(:)
       REAL*8, ALLOCATABLE :: HR(:,:),HI(:,:)
@@ -507,7 +510,7 @@ C
 C.....Check for errors
 C
       IF (IERR.NE.0) THEN
-         WRITE (IW,'('' RG IERR='',I4)') IERR
+         WRITE (IW,'('' CG/RG IERR='',I4)') IERR
          CALL QUIT('Error in diagonalization of matrix')
       ENDIF
 C
@@ -515,14 +518,24 @@ C.....Sort eigenvalues
 C
       CALL INDEXX (NDT,EVR,INDX)
 C
-C.....Store the eigenvalues
-C
+C.....Store the eigenvalues 
+CMI/July07 both real and imaginary
       DO I = 1, NDT
-       EV(I) = EVR(INDX(I))
+CMI    EV(I) = EVR(INDX(I))
+       EV(1,I) = EVR(INDX(I))
+       IF (CARITH) EV(2,I) = EVI(INDX(I))
 CMI    ... temporary print out
        IF (CARITH) THEN
-        write(IW,*) I,'.  re:',EVR(I),' im:',EVI(I)
+C       write(IW,*) I,'.  re:',EVR(I),' im:',EVI(I)
+C       write(IW,*) I,'.> re:',EV(1,I),'> im:',EV(2,I)
+       ELSE
+C       write(IW,*) I,'.  re:',EVR(I)
+C       write(IW,*) I,'.> re:',EV(1,I)
        ENDIF
+C      write(IW,*) I,'.  re:',EVR(I)
+C      write(IW,*) I,'.> re:',EV(1,I)
+C      write(IW,*) I,'+  re:',EVR(INDX(I))
+C      write(IW,*) I,'+> re:',EV(1,INDX(I))
       ENDDO
 C
 C.....Store the eigenvectors in EVEC
@@ -563,6 +576,9 @@ C---------------Description--------------------------------------------
 C
 C     Analyse the eigenvectors of the effective Hamiltonian and
 C     compute oscilator strengths.
+C
+CMI/July07 EIGENVALUES contains imaginary parts in the case of carith=T
+C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*),EIGENVALUES(0:*),EIGENVECTORS(*)
@@ -594,7 +610,8 @@ C     Print an ordered list of eigenvalues
 C
       IF (ICURFSS.EQ.2.OR.ICURFSS.EQ.3) THEN
 C        Odd electron case : fermion irreps
-         CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(1),E_OFF,
+         CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(1),
+     &                E_OFF,ECCSDIM,RCW,
      &                EIGENVALUES(1:IFS_HE(NREP+1,ICURFSS)),
      &                INDX_ALL,IRPS_ALL,IND)
       ELSE IF (ICURFSS.EQ.4) THEN
@@ -603,20 +620,23 @@ C        This makes the routine print excitation energies
          EIGENVALUES(0) = 0.D0
          NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) + 1
 C        Even electron case : boson irreps
-         CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),E_OFF,
+         CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
+     &                E_OFF,ECCSDIM,RCW,
      &                EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS)),
      &                INDX_ALL,IRPS_ALL,IND)
 C        One should not forget this line : the real dimension of the first irrep should be retained !
          NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) - 1
       ELSE
 C        Even electron case : boson irreps
-         CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),E_OFF,
+         CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
+     &                E_OFF,ECCSDIM,RCW,
      &                EIGENVALUES(1:IFS_HE(NREP+1,ICURFSS)),
      &                INDX_ALL,IRPS_ALL,IND)
       ENDIF
 C     Detailed print-out including oscillator strengths
       CALL FS_ANALYSIS (ICURFSS,EPS,IPR,IFS_HE(NREP+1,ICURFSS),
      &                  E_OFF,EIGENVALUES(1),EIGENVECTORS) 
+CMI  &                  E_OFF,EIGENVALUES(1),EIGENVECTORS) 
 C
       DEALLOCATE (INDX_ALL)
       DEALLOCATE (IRPS_ALL)
@@ -2160,10 +2180,14 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
+CMI/July 2007 works only with real ECCSD
+C
 C---------------Calling variables--------------------------------------
 C
+#include "complex.inc"
       REAL*8 TRES, EPS(*), E_OFF
-      REAL*8 EV_ALL(NDT_TOT),H(*)
+CMI   REAL*8 EV_ALL(NDT_TOT),H(*)
+      REAL*8 EV_ALL(RCW,NDT_TOT),H(*)
       REAL*8 INTENSITY(NDT_TOT),TRANS_DIPOLE(3,NDT_TOT)
       INTEGER ICURFSS, IPR
 C
@@ -2171,7 +2195,7 @@ C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
 #include "files.inc"
-#include "complex.inc"
+C#include "complex.inc"
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
@@ -2221,7 +2245,8 @@ c    &            EV_ALL(I_EIGENVALUE),E_OFF+EV_ALL(I_EIGENVALUE),
 c    &            INTENSITY(I_EIGENVALUE),
 c    &           (TRANS_DIPOLE(IX,I_EIGENVALUE),IX=1,3)
             WRITE (IW,1010) REPNA(IRPOFF+IRP),J_EIGENVALUE,
-     &            EV_ALL(I_EIGENVALUE),E_OFF+EV_ALL(I_EIGENVALUE) 
+CMI  &            EV_ALL(I_EIGENVALUE),E_OFF+EV_ALL(I_EIGENVALUE) 
+     &            EV_ALL(1,I_EIGENVALUE),E_OFF+EV_ALL(1,I_EIGENVALUE) 
 C           Loop over the coefficients and print the interesting ones
             DO J_COEFF = 1, NDT
                K_COEFF = I_COEFF + J_COEFF

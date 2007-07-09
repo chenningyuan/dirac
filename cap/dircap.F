@@ -4,7 +4,7 @@ C  /* Deck sajeev */
      &   basis_n,ang_pow,ord_expon,
      &   ord_coe,r_ms,PE_AOr,PE_AOi,
      &   PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
-     &   WORK,LWORK)
+     &   WORK,LWORK,NBASF,NANGPOW)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Main program from Sajeev. Adapted into DIRAC enviroment
@@ -15,6 +15,9 @@ C              basis_n
 C              ang_pow
 C              ord_expon
 C              ord_coe ...
+C
+C              NBASF
+C              NANGPOW
 C
 C On output: 
 C            complex CAP integrals written into formatted file, or test
@@ -35,12 +38,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION WORK(LWORK)
 
 CMI    ... arrays are entering subroutine, check the size !!!!!
-      integer *4 basis_n(200)
-      integer *4 ang_pow(250,3)
+C     integer *4 basis_n(200)
+      integer *4 basis_n(NBASF)
+C     integer *4 ang_pow(250,3)
+      integer *4 ang_pow(NANGPOW,3)
       integer *4  N_B   
-      real *8 ord_expon(250),ord_coe(250)
+C     real *8 ord_expon(250),ord_coe(250)
+      real *8 ord_expon(NANGPOW), ord_coe(NANGPOW)
       real *8 R_m(4),R_n(4)
-      real *8 R_ms(200,3)
+C     real *8 R_ms(200,3)
+      real *8 R_ms(NBASF,3)
 
 C     COMPLEX *16 PE_AO(25000) ! former variable split into real and
 C     imaginary parts
@@ -65,7 +72,7 @@ CMI   LOGICAL*1 ISFILE, FNDLAB,ARELABS,IS_OPEN
       ENDIF
 
       CALL INPREAD(N_B,ord_expon,ord_coe,R_ms,basis_n,
-     &              ang_pow,CAPOVLP,IPRCAP)
+     &         ang_pow,CAPOVLP,IPRCAP,NBASF,NANGPOW)
 
 CMI ... check the presence of PEMAT in order to decide whether to run 
 CMI   or not the CAP integral evaluation
@@ -98,7 +105,8 @@ CMI   ... evaluate CAP complex atomic untegrals
 
 CMI   ... evaluate integrals - fill array with them
        CALL AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     &         PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI)
+     &         PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
+     &         NBASF,NANGPOW)
         
 C ============================================================
 CMI     ... write complex atomic integrals into the file
@@ -224,7 +232,8 @@ C===============================================================================
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck inpread */
       SUBROUTINE INPREAD(
-     &  N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,CAPOVLP,IPRINT)
+     &  N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
+     &  CAPOVLP,IPRINT,NBASF,NANGPOW)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  Read the GAMESS-like input file with the basis set
@@ -240,28 +249,36 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
       
+CMI   static allocations are here !!!
       CHARACTER *1 shell_type,BLNK(5)
-      CHARACTER *2 shell_p(3),shell_d(6),Shell_arr(200)   
+C     CHARACTER *2 shell_p(3),shell_d(6),Shell_arr(200)   
+      CHARACTER *2 shell_p(3),shell_d(6),Shell_arr(400)   
       CHARACTER *3 shell_f(10)   
       CHARACTER *8 IA
 
-      character *3 Shell_basis(200)
+C     character *3 Shell_basis(200)
+      character *3 Shell_basis(400)
 
-      integer *4 Shell_atom(200)
+C     integer *4 Shell_atom(200)
+      integer *4 Shell_atom(400)
       
       integer *4 n_con_guass,nj,g_n,sh,n_c_g
       integer *4 angu_pow_S(1,3),angu_pow_P(3,3)
       integer *4 angu_pow_D(6,3),angu_pow_F(10,3)
       integer *4 n_b,ia_p
-      integer *4 ang_pow(250,3)
+C     integer *4 ang_pow(250,3)
+      integer *4 ang_pow(NANGPOW,3)
       integer *4 n_pg_atom(50)
       integer *4 k_m(3),k_n(3)
-      integer *4 basis_n(200)
+C     integer *4 basis_n(200)
+      integer *4 basis_n(NBASF)
       
       real *8 re(50,3),expon,coe
-      real *8 ord_expon(250),ord_coe(250)
+C     real *8 ord_expon(250),ord_coe(250)
+      real *8 ord_expon(NANGPOW),ord_coe(NANGPOW)
       real *8 R_m(4),R_n(4)
-      real *8 R_ms(200,3)
+C     real *8 R_ms(200,3)
+      real *8 R_ms(NBASF,3)
       LOGICAL CAPOVLP,DIRAC_NRM
 
       DATA BLNK /'E','S','P','D','F'/
@@ -282,7 +299,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CALL QENTER('INPREAD')
 
 C     ... zero array for number of contracted basis function
-      do i=1,200
+C     do i=1,200
+      do i=1,NBASF
         Basis_N(i)=0
       End do
 
@@ -566,7 +584,7 @@ C ==========================================================
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck aointegral */
       SUBROUTINE AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     *            PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI)      
+     & PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,NBASF,NANGPOW) 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Core routine for calculating CAP integrals.
@@ -593,14 +611,19 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbcap.h"
 
       integer *4 n_b
-      integer *4 ang_pow(250,3)
+C     integer *4 ang_pow(250,3)
+      integer *4 ang_pow(NANGPOW,3)
       integer *4 k_m(3),k_n(3)
-      integer *4 basis_n(200)
-      integer *4 basis_ord(300)
+C     integer *4 basis_n(200)
+      integer *4 basis_n(NBASF)
+C     integer *4 basis_ord(300)
+      integer *4 basis_ord(400)
      
-      real *8 ord_expon(250),ord_coe(250)
+C     real *8 ord_expon(250),ord_coe(250)
+      real *8 ord_expon(NANGPOW),ord_coe(NANGPOW)
       real *8 R_m(4),R_n(4)
-      real *8 R_ms(200,3)
+C     real *8 R_ms(200,3)
+      real *8 R_ms(NBASF,3)
 
       COMPLEX *16 PEINT,PEINT_D1X,PEINT_D1Y,PEINT_D1Z
 CMI   REAL*8 PE_AOr(25000),PE_AOi(25000)
@@ -1258,7 +1281,9 @@ CMI       ... relativistic Hamiltonian
            V0x  = V0D(M,THETA,LAMDA,X0,X )
            V0xy = V0D(M,THETA,LAMDA,X0,Xy)
            V1x  = V1D(M,THETA,LAMDA,X0,X )*DG
+C          V1x  = V1D(M,THETA,LAMDA,X0,X )*DG*DG
            V1xy = V1D(M,THETA,LAMDA,X0,Xy)*DGy
+C          V1xy = V1D(M,THETA,LAMDA,X0,Xy)*DGy*DGy
            VCAP_D1C  = (V0x +V1x +VADD )*GG
            VCAPy_D1C = (V0xy+V1xy+VADDy)*GGy
           ELSE
@@ -1369,7 +1394,7 @@ CMI   CA2 = CA2/DCMPLX(5.0D0*M/8.0D0)
       V0 = CA1 - CA2
       END
 
-CMI    ... new derived V0 for the DIRAC Hamiltonian
+CMI   ...  new derived V0 for the DIRAC Hamiltonian
       DOUBLE COMPLEX FUNCTION V0D(M,THETA,LAMBDA,X0,X)
       IMPLICIT NONE
 #include "priunit.h"
@@ -1378,6 +1403,7 @@ CMI    ... new derived V0 for the DIRAC Hamiltonian
       EXTERNAL F0,F1
       DOUBLE COMPLEX F0,F1
       CA1 = -0.50D0*(F1(THETA,LAMBDA,X0,X)/(F0(THETA,LAMBDA,X0,X)**2))
+C     CA1 = -0.50D0*( (F0(THETA,LAMBDA,X0,X)**(-2)) )
 CMI   write(LUPRI,*) 'V0D function:',CA1
       V0D = CA1 
       END
@@ -1400,6 +1426,7 @@ CMI  ... V1 for the DIRAC Hamiltonian
       EXTERNAL F0
       DOUBLE COMPLEX F0,CA
       CA  = ( DCMPLX(M)/F0(THETA,LAMBDA,X0,X) ) - DCMPLX(M)
+C     CA  = ( 1.0D0/F0(THETA,LAMBDA,X0,X) ) - 1.0D0
 C     CA  = ( DCMPLX(M) - CA1 ) / CA1
 CMI    write(LUPRI,*) 'V1D function:',CA
 C      write(LUPRI,*) 'V1D function:',CA, ' and F1:',CA1,
