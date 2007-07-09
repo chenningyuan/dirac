@@ -1545,6 +1545,10 @@ case $machine in
 # Otherwise there are undefined symbols restFP and saveFP
          LIB="-L/usr/lib -lgcc $LIB"
          ;;
+      xlf)
+         opt='-O2 -qextname'
+         c_opt='-O2'
+         ;;
       esac
       inc="-I$INCLUDE_DIR";;
    
@@ -1563,6 +1567,12 @@ fi
 if [ "$F77" = "mpif77" ]; then
    cpp="$cpp -DVAR_G77"
    ccp="$ccp -DVAR_G77"
+fi
+#
+# Replace spaces with commas if compiler is xlf.
+#
+if [ "$F77" = "xlf" ]; then
+   cpp="-WF,`echo $cpp | tr ' ' ','`"
 fi
 ###############################################################################
 # 
@@ -1595,13 +1605,11 @@ fi
 # Add the modifications that concern the module preprocessor statements
 #
 #
-case $machine in
-#
-#   IBM
-#
-   *-ibm) 
-# IBM should be comma delimited, the others take spaces
-     cpp="$cpp,\${MODS_IBM}";;
+case $F77 in
+   xlf) 
+# IBM's xlf should be comma delimited, the others take spaces
+     cpp="$cpp",'`echo $(MODS) | sed '\''s,^ *,,g'\'' | tr " " ,`'
+     ;;
    *)
      cpp="$cpp \${MODS}"
 esac
@@ -1780,7 +1788,7 @@ echo "compiled with the same compiler you are using now, otherwise it "
 echo "might be neccasary to link to additional runtime libraries "
 echo
 echo "Please check 'Known issues and problems' at"
-echo "   http://dirac.chem.sdu.dk"
+echo "   http://dirac.chem.sdu.dk/"
 echo "to see hints or/and problems concerning your platform."
 echo
 echo "Then run "

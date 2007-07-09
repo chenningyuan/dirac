@@ -464,7 +464,6 @@ make_makefile()
    #
    cat <<EOF> Makefile
 MODS=$MODS
-MODS_IBM=$MODS
 include ./Makefile.config
 
 #
@@ -1169,7 +1168,6 @@ for makefile in $dirs; do
       rm -f $makefile/Makefile
    fi
    echo MODS=$MODS > $makefile/Makefile
-   echo MODS_IBM=$MODS_IBM >> $makefile/Makefile
    cat $makefile/Makefile.in >> $makefile/Makefile
 done
 ##################################################
@@ -1208,7 +1206,6 @@ which_modules()
 #  
 #
 MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $CAPFLG $LRGMOLFLG $OOF_FLG"
-MODS_IBM="$ERIFLG,$DNFFLG,$FMMFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG,$EMBFLG,$CDFTFLG,$VISUALFLG,$CAPFLG,$LRGMOLFLG,$OOF_FLG"
 dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
