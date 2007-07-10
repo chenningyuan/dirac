@@ -88,6 +88,11 @@ C ... for calculating properties in pure 2comp. mode do adapt them
       IF (TWOCOMPBSS.AND.DOPRP) THEN
         CALL PROP2BSS(VMAT,WORK(KFREE),LFREE)
       ENDIF
+C ===============================================================================
+C ... export the Lowdin matrix adapted for 2c calculations,
+C ===============================================================================
+      CALL RFBSSMAT('VMAT2C  ',.TRUE.,'MAKE_H2C',
+     &        VMAT,N2BBASX,LUBSS,IPRHAM)
 C    .. close the BSSMAT file...
       CLOSE(LUBSS,STATUS='KEEP')
 
@@ -9293,4 +9298,3 @@ C
 C
       RETURN
       END
-
