@@ -76,6 +76,7 @@ C
      +          ALPHA(KPRIM, KAOVEC), CPRIMU(KPRIM, KPRIM, KAOVEC), 
      +          CPRIM(KPRIM,KPRIM, KAOVEC), ISGEN(KAOVEC)
 #include "cbirea.h"
+#include "dcbham.h"
 C*************************************************************
 C* Variable declarations:                                    *
 C*     BASNAM - A character variable that contains the name  *
@@ -103,7 +104,7 @@ C     that generate 3 small component p-functions. The maximum for
 C     other types of functions is scaled down by KHK(IQM+1) that
 C     gives the number of functions in the small component for that type.
       PARAMETER (MAX_IN_BLOCK=3*15)
-      LOGICAL SPLIT
+      LOGICAL SPLIT,TEST
 C
 
       BASTMP = '                                        '//
@@ -118,6 +119,16 @@ C
       SADLEJ = .FALSE.
       POLFUN = .FALSE.
       NQVD   = .FALSE.
+CDIRAC:..allow contraction only for elements Z.LE.36
+      TEST = UNCONT.OR.(INTQ.GT.36)
+      IF(INTQ.GT.36.AND.(.NOT.UNCONT)) THEN
+        WRITE(LUPRI,'(A)')
+     &    '*** WARNING(BASLIB) : Decontracting basis set '
+        WRITE(LUPRI,'(A,I5)')
+     &    ' - nuclear charge: ',INTQ
+        WRITE(LUPRI,'(A,A)')
+     &    ' - basis file    : ',BASNAM
+      ENDIF
       IF (ISET .EQ. 2) THEN
 C jan 2000 hjaaj:
 #ifdef STO3G_HUCKEL
@@ -223,7 +234,7 @@ C
 C     
  10      CONTINUE
 C
-         IF (UNCONT) THEN
+         IF (TEST) THEN
             INTORB = -INTORB
             IF (ANO .OR. SADLEJ) THEN
                WRITE (LUPRI,'(/A)') ' FATAL ERROR: '//
