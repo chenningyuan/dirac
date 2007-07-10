@@ -2732,6 +2732,8 @@ C              check for existing integral file.
                  CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
                  IF (KTRLVL.EQ.5) CALL QUIT (' Transforming only. ')
                END IF
+            ELSE
+              CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
             END IF
 C
             CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
@@ -4288,7 +4290,7 @@ C
      &     4X,'               and L Visscher',/,
      &     7X,'               J Chem Phys, 124,10 (2006) 104106',/,
      &     4X,'PARALLEL KRMC-LUCIAREL: S. Knecht, H J Aa Jensen,',/, 
-     &     4X,'               and T Fleig',/,
+     &     4X,'                        and T Fleig',/,
      &     7X,'               manuscript in preparation.',
      &     ///,
      &     1X,78('*'),//)
