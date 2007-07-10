@@ -68,6 +68,7 @@
 !     I2COFK     - integer number specifying which 2comp. Hamiltonian (in AO basis) is to be read in the ONEFCK routine
 !
 !     ALLAMFA    - flag about if all atoms are present for the AMFI contributions.
+!     CMPEIG     - for IOTC: compare eigenvalues of 2c and 4c Hamiltonian
 !
 !     GAUNT      - Include Gaunt interaction in the 2-e operator
 !
@@ -102,7 +103,7 @@
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
-     &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP
+     &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG
 
 ! keep and actualize here number of elements in the DCLHAM common block
 ! MI: in there not an automatic way how to keep this variable actual ?
@@ -115,7 +116,7 @@
      &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
-     &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP
+     &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG
 !
 ! aspg, 2006-04-21
 ! checking should be done as to whether or not HFXFAC can leave 

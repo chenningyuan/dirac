@@ -88,12 +88,6 @@ C ... for calculating properties in pure 2comp. mode do adapt them
       IF (TWOCOMPBSS.AND.DOPRP) THEN
         CALL PROP2BSS(VMAT,WORK(KFREE),LFREE)
       ENDIF
-
-C ===============================================================================
-C ... export the Lowdin matrix adapted for 2c calculations,
-C ===============================================================================
-      CALL RFBSSMAT('VMAT2C  ',.TRUE.,'MAKE_H2C',
-     &        VMAT,N2BBASX,LUBSS,IPRHAM)
 C    .. close the BSSMAT file...
       CLOSE(LUBSS,STATUS='KEEP')
 
@@ -265,34 +259,15 @@ C
 C     Print section
 C
       CALL HEADER('*** Output from MAKE_BSS ***',-1)
-
-      IF(YREQ1) THEN
-         WRITE(LUPRI,'(A)')
-     & '* Reference: ',
-     & 'H. J. Aa. Jensen and M. Ilias,',
-     & '  "Two-component relativistic methods based on the quaternion'//
-     &   ' modified Dirac equation. I:',
-     & '   from Douglas-Kroll-Hess second order method to the infi'//
-     &   'nite order two-component method.",',
-     & '  J. Chem. Phys., in preparation.'
-      ELSE
-         WRITE(LUPRI,'(A)')
-     & '* Reference: ',
-     & '  M. Ilias and T. Saue:',
-     & '  "Implementation of an infinite-order two-component '//
-     & 'relativistic Hamiltonian ',
-     & '  by a simple one-step transformation." ',
-     & '    J. Chem. Phys., 126 (2007) 064102. '
-      ENDIF
 C ======================================================================
 C            extract information about the BSS Hamiltonian 
 C ======================================================================
       CALL EXTR_BSS_INFO(IBSS,IPZ,SPINFR,DK2SO1,SAVESO1,ADD_AMFI,
      &     ONLYSO1,ONLYTRA,SF_BEG,ELIM_SF,NOPRTR,BLOCKD,
-     &     DO4C2C,USEDF,CONT2C,START2C,I2CHAM,
-     &     DO2C4C,INI2C,I2COFK,
+     &     DO4C2C,USEDF,CONT2C,START2C,I2CHAM,DO2C4C,INI2C,I2COFK,
      &     YREQ1,IC_AMFI,GETPCTM,IPRHAM)
-
+C  ... do not compare eigenvalues for ONLYSO1 = T
+      CMPEIG = CMPEIG.AND..NOT.ONLYSO1
 C     ... do initiate the important FreeParticleBasis flag!
 C     If .false., we use the one-step RKB approach.
       FPB = .NOT.NOPRTR
@@ -430,13 +405,12 @@ C   ===============================================================
 C transform H2C Hamitonian from FP "k" basis to the SO-AO  basis,
 C prepare the final picture change transformation matrix if wished,
 C save integrals (and pctmtx) into the file
-      IF (.NOT.ONLYSO1) THEN
+      IF(CMPEIG) THEN
 C       ... compare eigenvalues of 4c and 2c 1-el.Hamiltonians
         CALL CMP_EIGVAL(VMAT,WORK(KTMAT),WORK(KTBUF),WORK(KEIG),
      &              WORK(KIBEIG),WRITEH2C,SPINFR,SF_BEG,
      &          ONLYSO1,SAVESO1,USEDF,DO4C2C,START2C,
      &             IPRHAM,WORK(KFREE),LFREE)
-C  .... VMAT contains 2c adapted Lowdind matrix (VMAT2C label in BSSMAT)
       ENDIF
 
 C============================================================
@@ -908,7 +882,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       INQUIRE(FILE='BSSMAT',EXIST=IS_HERE,OPENED=IS_OPEN)
 
       IF (.NOT.IS_HERE) THEN
-       write(lupri,*) 'RFBSSMAT: BSSMAT file is not present !'
+       WRITE(LUPRI,*) 'RFBSSMAT from ',FROMSUB,
+     &   ': BSSMAT file is not present !'
        CALL QUIT('RFBSSMAT: BSSMAT file is not present !')
       ENDIF
 
@@ -931,8 +906,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      & '* RFBSSMAT: ',LBL,' record  was read from the file BSSMAT'
         ENDIF
       ELSE
-         WRITE(LUPRI,'(/2X,A,A,A)')
-     & 'RFBSSMAT: ',LBL,' record was'//
+         WRITE(LUPRI,*)
+     & 'RFBSSMAT from ',FROMSUB,': ',LBL,' record was'//
      & ' NOT FOUND in the file BSSMAT !'
        CALL QUIT('RFBSSMAT: Record NOT FOUND in the file BSSMAT!') 
       ENDIF
@@ -1009,7 +984,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       ENDIF
 
       IF (ISIZE.LE.0) THEN
-       write(lupri,*) 'Entering ISIZE=',ISIZE
+       WRITE(LUPRI,*) 'W2BSSMAT from ',FROMSUB,
+     &                ': Entering ISIZE=',ISIZE
        CALL QUIT('W2BSSMAT: wrong value of ISIZE !')
       ENDIF
 
@@ -1035,7 +1011,8 @@ C     ... find out about the BSSMAT file
        ENDIF
        CONTINUE
       ELSE
-        write(lupri,*) 'W2BSSMAT: dead branch !'
+       WRITE(LUPRI,*) 'W2BSSMAT from ',FROMSUB,
+     &                ': dead branch !'
        CALL QUIT('W2BSSMAT: dead branch, check routine !')
       ENDIF
 
@@ -1061,6 +1038,8 @@ C     ... find out about the BSSMAT file
            ENDIF
           ENDIF
         ELSE                                                       
+         WRITE(LUPRI,*) 
+     &     'W2BSSMAT from ',FROMSUB,': EOFLABEL not found on BSSMAT !'        
          CALL QUIT( 
      & 'W2BSSMAT: Error, EOFLABEL not found in BSSMAT file!')    
         ENDIF
@@ -1088,7 +1067,8 @@ C     ... find out about the BSSMAT file
      &  '* Code 6: Only the EOFLABEL was added.'
        ENDIF
       ELSE
-       write(lupri,*) 'W2BSSMAT: Entering code IW=',IW
+       WRITE(LUPRI,*) 'W2BSSMAT from ', FROMSUB,
+     &                ': Entering code IW=',IW
        CALL QUIT('W2BSSMAT: Wrong value of entering IW ! Must be 1-5 !')
       ENDIF
  
@@ -1352,6 +1332,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+C
       LOGICAL SPINFR,DK2SO1,SF0,ONLYSO1,ONLYTRA,ADD_AMFI,ELIM_SF,
      &      NOFPB,BLOCKD,YREQ1,DO4C2C,START2C,DO2C4C,
      &       USEDF,SAVESO1,GETPCTM,CONT2C
@@ -1409,8 +1390,6 @@ C      write(lupri,'(5X,A)') '...first (DKH1) !'
        CALL QUIT('MAKE_BSS: EXTR_BSS_INFO: Wrong value of'//
      &           ' IZ (should be 0,1,2,9) !')
       ENDIF
-CC    write(lupri,*)
-
 C      ... treat the NOFPB & BLOCKD
       IF (IPZ.EQ.9) THEN
        IF (NOFPB) THEN
@@ -1424,7 +1403,6 @@ C      ... treat the NOFPB & BLOCKD
        ENDIF
 C      ... by default do not use pure numerical block-diagonalizating approach
 C       this is still TODO ...
-C      BLOCKD = .FALSE.
        IF (BLOCKD) THEN
         WRITE(LUPRI,'(2X,A)')
      &  '* The block diagonalization method (QJACOBI) applied !'
@@ -1608,7 +1586,6 @@ C     ... can be full 999 or 999 and SPINFR
      &   ' is not possible !')
         ENDIF
       ENDIF
-
 C  ... set up I2COFK parameter for the ONEFCK according to the I2CHAM
       I2COFK = 1
       IF (ADD_AMFI) I2COFK=2
@@ -1628,9 +1605,6 @@ C     ... pure 2c mode after the DC-SCF ...
      &   ' is wrong (not 3/4/5/6) !' )
        ENDIF
       ENDIF
-
-C     WRITE(LUPRI,'(/2X,A,I2)') 'The I2COFK parameter=',I2COFK
-
       WRITE(LUPRI,*)
       CALL QEXIT('EXTR_BSS_INFO')
       RETURN

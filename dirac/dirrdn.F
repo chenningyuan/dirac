@@ -3698,11 +3698,11 @@ C
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
      &            '.ONECAP','.SPINF2','.NOSPIN','.USE_DF',
      &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
-     &            '.TROND ','.BLOCKD','.DO2C4C','.DO4C2C',
+     &            '.ONESTE','.BLOCKD','.DO2C4C','.DO4C2C',
      &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
      &            '.IOTC  ','.MIXVAC','.CAP   ','.NOVREF',
      &            '.POSVAC','.FDE   ','.IOTC4 ','.NONREL',
-     &            '.BSS4  ','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.BSS4  ','.CMPEIG','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -3767,6 +3767,7 @@ C     ... trasfer 2c-> 4c and 4c->2c
       DO4C2C  = .FALSE.
       USEDF   = .FALSE.
       CONT2C  = .FALSE.
+      CMPEIG  = .FALSE.
       I2CHAM  = -1
 C     ... default L&S components... needs discussion about relation to DO2C4C/DO4C2C
       MC      = 2
@@ -4064,8 +4065,7 @@ C&&&&   Solve R-equation 1
             YREQ1 = .TRUE.
             GO TO 100
   129     CONTINUE
-C&&&&  Do NOT do preliminary free-particle transformation
-CMI ...this is Trond's one step approch for the two-component infinite order ...
+C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
             NOPRTR = .TRUE.
             GO TO 100
   130     CONTINUE
@@ -4169,7 +4169,8 @@ C      as they need to be modified within BSS transformations
 C&&& BSS4: do BSS in 4c-mode
              GO TO 100
   146     CONTINUE
-C&&& XXXX
+C&&& CMPEIG: compare eigenvalues of 2c and 4c Hamiltonian
+             CMPEIG = .TRUE.
              GO TO 100
   147     CONTINUE
 C&&& XXXX
@@ -4335,26 +4336,49 @@ C
       IF(LEVYLE) THEN
         WRITE(LUPRI,'(A)') ' * Levy-Leblond Hamiltonian'
       ELSE IF (BSS) THEN
-        IF(IOTC) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &' * One-step Infinite-Order Two-component Hamiltonian'
+        IF(NOPRTR) THEN
+          WRITE(LUPRI,'(A)')
+     & ' * One-step Infinite-Order Two-component Hamiltonian'
+          WRITE(LUPRI,'(A)')
+     & '   Reference: ',
+     & '    M. Ilias and T. Saue:',
+     & '    "Implementation of an infinite-order two-component '//
+     & 'relativistic Hamiltonian ',
+     & '    by a simple one-step transformation." ',
+     & '    J. Chem. Phys., 126 (2007) 064102. '
         ELSE
-          WRITE(LUPRI,'(1X,A,I5)')
-     &' * Barysz-Sadlej-Snijders Hamiltonian. Type code:',IBSS
+          WRITE(LUPRI,'(A,I5)')
+     & ' * Barysz-Sadlej-Snijders Hamiltonian. Type code:',IBSS
+          WRITE(LUPRI,'(A)')
+     & '   Reference: ',
+     & '    H. J. Aa. Jensen and M. Ilias,',
+     & '    "Two-component relativistic methods based on the '//
+     & 'quaternion modified Dirac equation. I:',
+     & '     from Douglas-Kroll-Hess second order method to the '//
+     &   'infinite order two-component method.",',
+     & '     J. Chem. Phys., in preparation.'
         ENDIF
         IF(TWOCOMP) THEN
-          WRITE(LUPRI,'(1X,A)') ' - running in 2-component modus'
+          WRITE(LUPRI,'(1X,A)') '  - running in 2-component modus'
         ELSE
-          WRITE(LUPRI,'(1X,A)') ' - running in 4-component modus'
-        ENDIF
-        IF (NOPRTR) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &' - no preliminary free-particle transformation'
-        ELSE
-        WRITE(LUPRI,'(1X,A)')
-     &' - applied preliminary free-particle transformation'
+          WRITE(LUPRI,'(1X,A)') '  - running in 4-component modus'
         ENDIF
         IF (IBSS.GT.999) THEN
+          WRITE(LUPRI,'(A)')
+     &     ' * Spin-orbit corrections to the instantaneous Coulomb ',
+     &     '   interaction provided by the AFMI code. ',
+     &     '   References: ',
+     &     '     1) B. Schimmelpfennig, program AMFI, ',
+     &     '        Stockholm University, Sweden',
+     &     '     2) B. A. Hess, C. M. Marian, U. Wahlgren,'//
+     &     ' and O. Gropen',
+     &     '        Chem. Phys. Lett. 251, 365 (1996)',
+     &     '   Adding :',
+     &     '     Mean-field spin-same orbit'
+          IF (GAUNT) THEN
+            WRITE(LUPRI,'(A)')
+     &     '     Mean-field spin-other orbit'
+          ENDIF
           IF (IMFCH.NE.0) THEN
             WRITE(LUPRI,'(1X,A,I4)')
      &     ' * AMFI mean-field summations on individual atoms'//
@@ -4412,10 +4436,9 @@ C           ... check on identical nucleus numbers ....
               ENDDO
             ENDDO
           ENDIF
-C         write(lupri,*)
           ENDIF
         ENDIF
-
+        
         IF (DO2C4C) WRITE(LUPRI,'(1X,A,I1)')
      & '* after (few) two-component SCF iterations do'//
      & ' jump at the four-component level ! Code INI2C=',INI2C
@@ -4423,6 +4446,8 @@ C         write(lupri,*)
      & '* after finishing four-component SCF procedure '//
      & ' perform BSS transformation of Dirac-Fock operator'//
      & ' and continue at the 2comp. level ! Code I2CHAM= ',I2CHAM
+        IF(CMPEIG) WRITE(LUPRI,'(1X,A)')
+     & '* Comparing eigenvalues of 2c and 4c Hamiltonians.'
 
       ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
