@@ -76,6 +76,7 @@ C
      +          ALPHA(KPRIM, KAOVEC), CPRIMU(KPRIM, KPRIM, KAOVEC), 
      +          CPRIM(KPRIM,KPRIM, KAOVEC), ISGEN(KAOVEC)
 #include "cbirea.h"
+#include "dcbgen.h"
 #include "dcbham.h"
 C*************************************************************
 C* Variable declarations:                                    *
@@ -120,8 +121,10 @@ C
       POLFUN = .FALSE.
       NQVD   = .FALSE.
 CDIRAC:..allow contraction only for elements Z.LE.36
-      TEST = UNCONT.OR.(INTQ.GT.36)
-      IF(INTQ.GT.36.AND.(.NOT.UNCONT)) THEN
+C      except for 2c NR calculations
+      TEST = (TWOCOMP.AND.(.NOT.TWOCOMPBSS)).OR.LEVYLE
+      TEST = UNCONT.OR.((INTQ.GT.36).AND.(.NOT.TEST))
+      IF(TEST.AND.(.NOT.UNCONT)) THEN
         WRITE(LUPRI,'(A)')
      &    '*** WARNING(BASLIB) : Decontracting basis set '
         WRITE(LUPRI,'(A,I5)')

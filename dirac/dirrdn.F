@@ -6273,6 +6273,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbgen.h"
+#include "dcbham.h"
       CHARACTER WORD*7,PROMPT*1
 C
 C     Read menu file
@@ -6301,9 +6302,12 @@ C         if reading input from a terminal
 C
 C        Look for 2-component Hamiltonians
 C
-         IF (WORD.EQ.'.IOTC  ') TWOCOMP=.TRUE. 
-         IF (WORD.EQ.'.BSS   ') TWOCOMP=.TRUE. 
+         IF (WORD.EQ.'.IOTC  '.OR.WORD.EQ.'.BSS   ') THEN
+           TWOCOMP=.TRUE. 
+           TWOCOMPBSS=.TRUE.
+         ENDIF
          IF (WORD.EQ.'.NONREL') TWOCOMP=.TRUE. 
+         IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
          GOTO 930
       ELSE IF (PROMPT .EQ. '*') THEN
         RETURN
