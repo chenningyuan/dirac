@@ -11,7 +11,8 @@ Fluorine atom.
 .SPINFREE
 .BSS
 009
-.TROND
+.ONESTEP
+.CMPEIG
 .PRINT
 2
 **GENERAL

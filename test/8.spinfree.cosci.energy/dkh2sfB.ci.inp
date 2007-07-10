@@ -12,6 +12,7 @@ Fluorine atom.
 # ... second-order spin-free Douglas-Kroll-Hess
 .BSS
 102
+.CMPEIG
 .PRINT
 2
 **GENERAL

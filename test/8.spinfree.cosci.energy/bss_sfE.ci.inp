@@ -11,6 +11,7 @@ Fluorine atom.
 .SPINFREE
 .BSS
 009
+.CMPEIG
 .PRINT
 2
 **GENERAL

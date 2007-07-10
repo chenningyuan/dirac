@@ -12,6 +12,7 @@ Fluorine atom.
 #.LVCORR
 .BSS
 012
+.CMPEIG
 .PRINT
 2
 **WAVE FUNCTIONS
