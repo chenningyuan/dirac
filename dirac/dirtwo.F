@@ -4505,7 +4505,7 @@ C
         DO I = 1,NFMAT
           IREP = ISYMOP(I)-1
           IPAR = JBTOF(IREP,1)
-          DO IZ = 1,4
+          DO IZ = 1,NZC1
             IREPDM = IRQMAT(IZ,IREP)
             IQ     = IQMULT(1,JQBAS(IREPDM,IPAR),IZ)
             IQP    = IQTOPQ(IQ,IREP)
