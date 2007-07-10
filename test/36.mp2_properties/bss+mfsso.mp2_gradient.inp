@@ -8,6 +8,7 @@ Analytical first-order MP2 properties
 #.LVCORR
 .BSS
 2999
+.CMPEIG
 **WAVE FUNCTIONS
 .DHF
 .RELCCSD

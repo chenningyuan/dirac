@@ -7,6 +7,7 @@ Magnesium atom. Fockspace test calculations.
 **HAMILTONAIN    
 .BSS
 999
+.CMPEIG
 **WAVE FUNCTIONS
 .DHF
 .RELCCSD

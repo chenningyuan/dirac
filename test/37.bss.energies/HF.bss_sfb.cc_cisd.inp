@@ -23,6 +23,7 @@
 !.URKBAL
 .BSS
 109
+.CMPEIG
 .PRINT
 2
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)

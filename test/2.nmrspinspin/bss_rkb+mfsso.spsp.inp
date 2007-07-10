@@ -14,7 +14,8 @@ Water molecule. Restricted kinetic balance. Spin-spin couplings
 **HAMILTONIAN
 .BSS
 2999
-.TROND
+.ONESTEP
+.CMPEIG
 .PRINT
 2
 **WAVE FUNCTIONS

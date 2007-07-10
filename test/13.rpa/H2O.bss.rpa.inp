@@ -12,6 +12,7 @@ Water molecule. Dynamic polarizabilities
 #.LVCORR
 .BSS
 999
+.CMPEIG
 .PRINT
 2
 **INTEGRALS

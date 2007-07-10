@@ -6,6 +6,7 @@ Oxygen atom.
 .SPINFREE
 .BSS
 109
+.CMPEIG
 .PRINT
 2
 **WAVE FUNCTIONS

@@ -7,8 +7,8 @@ Water molecule.
 *OPTIMI
 .NUMGRA
 **HAMILTONIAN
-# Trond's one-step two-component relativistic approach
 .IOTC
+.CMPEIG
 .PRINT
 2
 **WAVE FUNCTIONS
