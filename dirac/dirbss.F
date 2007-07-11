@@ -406,7 +406,11 @@ C   ===============================================================
         CALL GETPCTMAT(WORK(KTBUF),WORK(KTMAT),VMAT,FPB,USEDF,
      &               IPRHAM,WORK(KFREE),LFREE)
       ENDIF
-
+C
+C     Prepare Lowdin matrix on 2c form
+C
+      CALL LOWD2C(VMAT,IPRINT)
+C
 C transform H2C Hamitonian from FP "k" basis to the SO-AO  basis,
 C prepare the final picture change transformation matrix if wished,
 C save integrals (and pctmtx) into the file
@@ -5182,7 +5186,8 @@ C  ======== End of handling Fock-Dirac 2c =========
 
 C      ... this option does not matter....
       DOJACOBI = .FALSE.
-      CALL LOWD2C(VMAT,IPRINT)
+      CALL RFBSSMAT('VMAT2C  ',.TRUE.,'CMP_EIGVAL',
+     &        VMAT,N2BBASX,LUBSS,IPRHAM)
 C ... read H_2c/FD_2c in SA-AO basis into TBUF
       IF (WRITEH2C) THEN
 C      ... transformed 1 electron Dirac Hamiltonian
