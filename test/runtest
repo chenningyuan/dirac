@@ -83,9 +83,15 @@ usage () {
 }
 
 # next line defines default test series
+#
+# MI/July07 - defaults "dirac.x" and "pam" are in the same $DIRAC directory 
+# from where the tests (runtest..) are called
+#
 arg_tests=short
-arg_pampath=
-arg_dirac=
+#arg_pampath=
+arg_pampath=${PWD%'/test'}
+#arg_dirac=
+arg_dirac=${PWD%'/test'}/dirac.x
 arg_tag=runtest
 arg_mpi=
 arg_nice=
