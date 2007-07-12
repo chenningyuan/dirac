@@ -1687,6 +1687,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 *
       character*72 ENVIRO
       character*6 SIGDEN_ROUTE
+      character*6 CIRUN
       character*1 COORD
       logical MCSCF
       dimension INTEG(1000)
@@ -1838,6 +1839,11 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
      &' diagonal integrals.'
       end if
 *
+*
+CSK      LMEMFREE = 0
+CSK      CALL MEMMAR(LMEMFREE,0,'SFREEM',2,'SEEFRM')
+CSK      WRITE(LUWRT,'(1X,A,1X,I20)')
+CSK     & '  Current available free memory in double words:',LMEMFREE
 *
 ************************************************
 * Set mark for flushing local memory
@@ -2322,7 +2328,7 @@ c    &                   ITRA_TYPE,INTITER)
 *
 *  Mark first free address
              IDUM = 0
-	     KDUM = 0
+             KDUM = 0
              call memmar(KDUM,IDUM,'MARK  ',IDUM,'ITRCTL')
 *
              IALLOCDIM = SYMDIM(IDIMGRP)
@@ -2437,19 +2443,55 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
      &                           ITRALINE,NDIM_TOT,NDIM_TOT2,
      &                           IHAM12,ISPINFREE,IMXDIM,DOUGRP)
           else if (SIGDEN_ROUTE.eq.'SIGDEN') then
+*
             call memmar(KISTR_CA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_CA')
             call memmar(KISTR_CB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_CB')
             call memmar(KISTR_AA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AA')
             call memmar(KISTR_AB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AB')
 *
-            call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-     &                            WORK(KLSOBEX),WORK(KT_CC),
-     &                            WORK(KISTR_CA),WORK(KISTR_CB),
-     &                            WORK(KISTR_AA),WORK(KISTR_AB),
-     &                            NDIM_TOT2,F1,F2,
-     &                            WORK(KMDIASV),WORK(KPOSDIA),IBOSYM,
-     &                            WORK(KLIBSOBEX),
-     &                            WORK(KLABEXTP),CIRUN,NTEST)
+            IF( CIRUN .eq. 'CIINII' )THEN
+*
+              CALL MEMMAR(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')
+*
+*             parallel run - broadcast integrals from MASTER if required
+*
+              IF( IIOMOD_REL .eq. 1 .or. MYPROC .eq. MASTER )THEN
+*
+                CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
+     &                                WORK(KINTI12),NTEST)
+*
+              END IF
+#if defined (VAR_MPI)
+              IF( IIOMOD_REL .eq. 0 )THEN
+*               ... slaves get the integrals
+                CALL MPI_BCAST(WORK(KINTI12),LEN_ALL_INT,MPI_REAL8,
+     &                         MASTER,MPI_COMM_WORLD,IERR)
+              END IF
+#endif
+*
+              call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
+     &                              WORK(KLSOBEX),WORK(KT_CC),
+     &                              WORK(KISTR_CA),WORK(KISTR_CB),
+     &                              WORK(KISTR_AA),WORK(KISTR_AB),
+     &                              NDIM_TOT2,F1,WORK(KINTI12),
+     &                              WORK(KMDIASV),WORK(KPOSDIA),IBOSYM,
+     &                              WORK(KLIBSOBEX),
+     &                              WORK(KLABEXTP),CIRUN,NTEST)
+*
+            ELSE
+*
+              call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
+     &                              WORK(KLSOBEX),WORK(KT_CC),
+     &                              WORK(KISTR_CA),WORK(KISTR_CB),
+     &                              WORK(KISTR_AA),WORK(KISTR_AB),
+     &                              NDIM_TOT2,F1,F2,
+     &                              WORK(KMDIASV),WORK(KPOSDIA),IBOSYM,
+     &                              WORK(KLIBSOBEX),
+     &                              WORK(KLABEXTP),CIRUN,NTEST)
+*
+            END IF
+*           ^ CIRUN eq CIINII
+*
 C     subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
 C                                 ISOBEX,T,
 C    &                            ISTR_CA,ISTR_CB,
@@ -2476,6 +2518,10 @@ C           stop 'AFTER DIST_INTS_SIGDEN.'
 *
 *  Flush local memory to mark set at beginning of do loop
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
+*
+CSK      CALL MEMMAR(LMEMFREE,0,'SFREEM',2,'SEEFRM')
+CSK      WRITE(LUWRT,'(1X,A,1X,I20)')
+CSK     & '  Current available free memory in double words again:',LMEMFREE
 *
       call qexit('ITRCTRL')
       return
