@@ -2162,6 +2162,7 @@ C
       DIMENSION WORK(*),CMO(*),CREF(*)
 C
 #include "../luciarel/clunit.inc"
+#include "../luciarel/lucipar_rel.inc"
 C
 #include "memint.h"
 C
@@ -2258,26 +2259,15 @@ C
 C
         CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
 
-C       Read two-electron integrals:
-C       ----------------------------
+C       read two-electron integrals in luciarel/transform_r.F 
+C       (subroutine itrctl)
 C
-CCC     CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
-     &               WORK,KFREE,LFREE)
-C        print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
-C        print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
-C
-C       Read integrals from 4IND1XXXX0:
+        LEN_ALL_INT = 0
+        LEN_ALL_INT = NASHT*NASHT*NNASHX*NZ*3
+        CALL MEMGET('REAL', KH2AC, 0, WORK, KFREE, LFREE)
 C
 C       FIXME: write me
 C              SPINFR=.TRUE. not yet implemented in RGETH2 (why?)
-C
-        CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
-     &               WORK(KFREE),LFREE,IPROPT)
-C
-C       Transform to a list of integrals...
-CCC     CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPROPT)
-CCC     CALL MEMREL('LUCI_RCIST.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
 C
       else
         CALL QUIT('LUCI_RCIST: Invalid flag I_IITP.')
@@ -2333,7 +2323,6 @@ C   memory is too small for CREF.
         END IF
       END IF
 C
-CSK      CALL MEMREL('LUCI_RCIST',WORK,KFREE,KFREE,KFREE,LFREE)
       CALL MEMREL('LUCI_RCIST',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C
@@ -3069,20 +3058,13 @@ C
 C       Read two-electron integrals:
 C       ----------------------------
 C
-        CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
-     &               WORK,KFREE,LFREE)
-C        print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
-C        print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
+C       ... now inside LUCIAREL (subroutine itrctl)
+        LEN_ALL_INT = NASHT*NASHT*NNASHX*NZ*3
 C
-C       Read integrals from 4IND1XXXX0:
-C
-C       FIXME: write me
-C              SPINFR=.TRUE. not yet implemented in RGETH2 (why?)
-C
-        IF( CIRUN .eq. 'CIINII' .AND. IIOMOD_REL .eq. 1 )THEN
-C
-          CALL RGETH21_LUCIPAR(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
-     &                         WORK(KFREE),LFREE,IPROPT)
+        IF( CIRUN .eq. 'CIINII' )THEN
+          CALL MEMGET('REAL',KH2AC,          0,WORK,KFREE,LFREE)
+        ELSE
+          CALL MEMGET('REAL',KH2AC,LEN_ALL_INT,WORK,KFREE,LFREE)
         END IF
 C
       else
