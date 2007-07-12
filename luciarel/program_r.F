@@ -155,11 +155,13 @@ C
 *     transfer NDET to common block LUCIPARREL
       L_COMBI = NDET 
 *
-*.Transfer to CANDS
+*     transfer to CANDS
       ICSM = ISM
       ISSM = ISM
       ICSPC = ISPC
       ISSPC = ISPC
+*     transfer to LUCIPARREL
+      IRC_SAVE = IRC
 *
       IF(NOCSF.EQ.1) THEN
         NVAR = NDET
@@ -168,51 +170,20 @@ C
       END IF
       IF (IPRNT.GE.5) WRITE(LUWRT,*) '  NVAR in GASCI ', NVAR
 *
-*. Partition CI vector - for all MS2 spaces into batches
-* (*_MS2 arrays are in CSTATE )
-      CALL Z_BLKFO_REL(IDC,NMS2VAL,
-     &                 ISPC,ISM,KPCLBT,KPCLEBT,KPCI1BT,KPCIBT,KPCBLTP,
-     &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
-     &                 IBAT_MS2,1,0,IDUMMY)
+*     partition CI vector - for all MS2 spaces into batches
+*     (*_MS2 arrays are in CSTATE )
 *
-      NUM_BLOCKS  = NBLOCK
-      NUM_BLOCKS2 = NBLOCK * IRC
-CSK      WRITE(LUWRT,*) '  NUM_BLOCKS2 in GASCI ', NUM_BLOCKS2
+      CALL Z_BLKFO_REL_START(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
+     &                       KNODELIST,KBLOCKLIST,KRCCTOS,
+     &                       NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
+     &                       IBAT_MS2,1,0,IDUMMY,IRC)
 *
-*
-*       allocate arrays needed in parallel calculations
-*       --> list of nodes <--> blocks, block length ...
-*
-      CALL MEMMAR(KNODELIST,NUM_BLOCKS,'ADDS  ',1,'NODELS')
-      CALL MEMMAR(KBLOCKLIST,NUM_BLOCKS,'ADDS  ',1,'BLCKLS')
-      CALL MEMMAR(KRCCTOS,NUM_BLOCKS2,'ADDS  ',1,'RCCTOS')
-*
-*
+*     set some variables ...
       MIN2  = - 2
       IZERO =   0
       IIONE =   1
 *
-*
-      CALL ISETVC(WORK(KNODELIST),MIN2,NUM_BLOCKS)
-      CALL ISETVC(WORK(KBLOCKLIST),IZERO,NUM_BLOCKS)
-      CALL ISETVC(WORK(KRCCTOS),IZERO,NUM_BLOCKS2)
-      CALL INI_BLOCKL(WORK(KBLOCKLIST),NBLOCK,WORK(KPCIBT))
-CSK      WRITE(LUWRT,*) 'This is my block array',myproc
-CSK      CALL IWRTMAMN(WORK(KBLOCKLIST),1,NBLOCK,1,NBLOCK,LUWRT)
-CSK      WRITE(LUWRT,*) 'This is my nodeblock array',myproc
-CSK      CALL IWRTMAMN(WORK(KNODELIST),1,NBLOCK,1,NBLOCK,LUWRT)
-*
-*
-*
 #if defined (VAR_MPI)
-*
-      IRC_SAVE = IRC
-*
-*
-      CALL BLOCK_DISTR_DRV_REL(WORK(KNODELIST),WORK(KBLOCKLIST),
-     &                         NBLOCK,WORK(KRCCTOS))
-CSK      WRITE(LUWRT,*) 'This is my RCCTOS'
-CSK      CALL IWRTMAMN(WORK(KRCCTOS),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
 *
       IF ( CIRUN .eq. 'DIAG  ' .or. CIRUN .eq. 'CIINII' .or.
      &     CIRUN .eq. 'SIGMA ' .or. CIRUN .eq. 'SIGMAD' .or. 
@@ -302,11 +273,11 @@ CSK      CALL IWRTMAMN(WORK(KRCCTOS),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
      & ( ' GASCI : CLSSEL not implemented for relativistic version' )
       END IF
 *
-*. Allocate memory : 2 vector blocks + 1 vector/scratch blocks
+*     allocate memory : 2 vector blocks + 1 vector/scratch blocks
       I_USE_SBLOCK=1
       IF(IDIAG.EQ.2.OR.I_USE_SBLOCK.EQ.1) THEN
-        CALL GET_3BLKS_REL(KVEC1,KVEC2,KVEC3,LSCR2,CIRUN)
-*. LSCR2 : Will be used for resolution matrices, save
+        CALL GET_3BLKS_REL(KVEC1,KVEC2,LSCR2,CIRUN)
+*       LSCR2 : Will be used for resolution matrices, save
         LCJRES = LSCR2
       END IF
 *
@@ -322,7 +293,13 @@ CSK      CALL IWRTMAMN(WORK(KRCCTOS),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
       IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
       END IF
-      WRITE(LUWRT,*) ' Diagonal will be written to unit ',LUDIA
+#if defined (VAR_MPI)
+      WRITE(LUWRT,*) ' Diagonal will be written to LUDIA.0 (unit)',
+     &                 LUDIA
+#else
+      WRITE(LUWRT,*) ' Diagonal will be written to LUDIA (unit)',
+     &                 LUDIA
+#endif
       IF(.NOT.(IDIAG.EQ.2.AND.IRESTR.EQ.1)) THEN
         ECOREP = ECORE
         IF(ICISTR.GE.2) CALL REWINO(LUDIA)

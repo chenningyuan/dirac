@@ -440,6 +440,7 @@ CM    IREW = 1
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GSTTBLD(CTT,IATP,IASM,IBTP,IBSM,
@@ -503,6 +504,32 @@ C?    WRITE(6,*) ' ISCALE and SCLFAC on return in GSTTBL',
 C?   &ISCALE,SCLFAC
 *
       RETURN
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE GSTTBLD2(CTT,LUC)
+*
+*     obtain  determinant block from disc
+*
+      IMPLICIT REAL*8  (A-H,O-Z)
+#include "ipoist8.inc"
+      DIMENSION CTT(*)
+*
+      NTEST = 000
+*
+      IF(NTEST.GE.100) THEN 
+        WRITE(6,*) ' LUC = ', LUC
+      END IF
+*     =================
+*     Read in from disc
+*     =================
+      CALL IFRMDS(LBL,1,-1,LUC)
+      CALL FRMDSC(CTT,LBL,-1,LUC,IMZERO,IAMPACK)
+*
       END
 ***********************************************************************
 *                                                                     *

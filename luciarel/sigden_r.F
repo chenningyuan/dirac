@@ -3310,12 +3310,17 @@ C?        WRITE(LUWRT,*) 'INT_IOFF1 in SIGDEN',INT_IOFF1
           IBSTP = IST_FOR_DT(2,IMK2_S)
           NOCTPA_S = NOCTYP(IASTP)
           NOCTPB_S = NOCTYP(IBSTP)
-*. Arrays giving allowed type combinations (of alpha and beta)
-          call memmar(KSIOIO,NOCTPA_S*NOCTPB_S,'ADDL  ',2,'SIOIO ')
+*
+*         arrays giving allowed type combinations (of alpha and beta)
+*         (integer!)
+          call memmar(KSIOIO,NOCTPA_S*NOCTPB_S,'ADDL  ',1,'SIOIO ')
+C         call memmar(KSIOIO,NOCTPA_S*NOCTPB_S,'ADDL  ',2,'SIOIO ')
           CALL IAIBCM_REL(ISSPC,IASTP,IBSTP,WORK(KSIOIO))
-*. Arrays giving block type
+*
+*         arrays giving block type (integer!)
           KSVST = 1
-          call memmar(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
+          call memmar(KSBLTP,NSMST,'ADDL  ',1,'SBLTP ')
+C         call memmar(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
           CALL ZBLTP_REL(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP))
 *
 * Loop over batches of sigma for this MK2_S projection value
@@ -3736,22 +3741,20 @@ C
             ISCALE = 1
 *
 *           well, read block in core
-            CALL GSTTBLD_PAR(SB(ISOFF),ISATP,ISASM,ISBTP,ISBSM,
-     &                       WORK(KNSTSO(IASTP)),
-     &                       WORK(KNSTSO2(IBSTP)),
-     &                       PSSIGN,IDC,PLSIGN,
-     &                       LUHC,C2,NSMST,ISCALE,XSCALE,
-     &                       IOFF_SCR_EXPL,LEN2)
+            CALL GSTTBLD_PAR2(SB(ISOFF),LUHC,IOFF_SCR_EXPL,LEN2)
 *
 #else
 *
             XDUM = 0.0D0
             ISCALE = 1
-*. Signs taken from CSTATE
-            CALL GSTTBLD(SB(ISOFF),ISATP,ISASM,ISBTP,ISBSM,
-     &                   WORK(KNSTSO(IASTP)),WORK(KNSTSO2(IBSTP)), 
-     &                   PSSIGN,IDC,PLSIGN,LUHC,C2,
-     &                   NSMST,ISCALE,XSCALE)
+*           signs taken from CSTATE
+*           
+CSK            CALL GSTTBLD(SB(ISOFF),ISATP,ISASM,ISBTP,ISBSM,
+CSK     &                   WORK(KNSTSO(IASTP)),WORK(KNSTSO2(IBSTP)), 
+CSK     &                   PSSIGN,IDC,PLSIGN,LUHC,C2,
+CSK     &                   NSMST,ISCALE,XSCALE)
+*
+            CALL GSTTBLD2(SB(ISOFF),LUHC)
 *
 #endif
 *
@@ -3864,12 +3867,12 @@ C
 *
 *     local scratch arrays for blocks of C and sigma
       L0BLOCK = MXSOOB
-      LSCR1 = MAX(L0BLOCK,L2BLOCK)
+CSK - this may cause problems      LSCR1 = MAX(L0BLOCK,L2BLOCK)
+      LSCR1 = MAX(L0BLOCK,LBLOCK)
 *     MXINKA is used for length of batch of strings and Toccs
 *     T-elements                       
       INTSCR = MIN(MXINKA**4,MX_TBLK_MX)
       call memmar(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
-C     call rmemchk
 *
 *     offsets for alpha and beta supergroups
       NOCTPA_C = NOCTYP(IACTP)
@@ -3883,22 +3886,26 @@ CSK   integer array ...
       call memmar(KCIOIO,NOCTPA_C*NOCTPB_C,'ADDL  ',1,'CIOIO ')
       CALL IAIBCM_REL(ICSPC,IACTP,IBCTP,WORK(KCIOIO))
 *
-      KCJRES = KVEC3
       LSIRES = MXINKA**4
 *
 *     proper allocation of these resolution matrices:
+*     sigma-part
       call memmar(KSIRES,LSIRES,'ADDL  ',2,'KSIRES')
+*     c-part
+      call memmar(KCJRES,LCJRES,'ADDL  ',2,'KCJRES')
 *
 *     arrays for storing NEL consecutive annihilations/creations
 *     (resolution matrices)
 *     number of alpha/beta excitation types
       CALL SPOBEX_TO_ABOBEX(WORK(KLSOBEX),NSPOBEX_TP,NGAS,
      &                      1,NAOBEX_TP,NBOBEX_TP,IDUMMY,IDUMMY)
-*     and the alpha-and beta-excitations
+*     and the alpha-and beta-excitations (integer arrays...)
       LENA = 2*NGAS*NAOBEX_TP
       LENB = 2*NGAS*NBOBEX_TP
-      call memmar(KLAOBEX,LENA,'ADDL  ',2,'IAOBEX')
-      call memmar(KLBOBEX,LENB,'ADDL  ',2,'IAOBEX')
+C     call memmar(KLAOBEX,LENA,'ADDL  ',2,'IAOBEX')
+C     call memmar(KLBOBEX,LENB,'ADDL  ',2,'IAOBEX')
+      call memmar(KLAOBEX,LENA,'ADDL  ',1,'IAOBEX')
+      call memmar(KLBOBEX,LENB,'ADDL  ',1,'IAOBEX')
       CALL SPOBEX_TO_ABOBEX(WORK(KLSOBEX),NSPOBEX_TP,NGAS,
      &                      0,NAOBEX_TP,NBOBEX_TP,
      &                      WORK(KLAOBEX),WORK(KLBOBEX))
@@ -4034,6 +4041,12 @@ C
 *
       CALL MEMMAR(KLISMDST,MAX_NSYMDIST,'ADDL  ',2,'ISMDST')
 *
+CSK      LFREEMEMACT = 0
+CSK      CALL MEMMAR(LFREEMEMACT,0,'SFREEM',2,'SEEFRM')
+CSK      WRITE(LUWRT,'(1X,A,1X,I20)')
+CSK     & '  Current available free memory in double words:',LFREEMEMACT
+              
+*
       CALL SIGDEN_REL4(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,WORK(KVEC3),
      &     WORK(KNSTSO(IASTP)),WORK(KNSTSO2(IBSTP)),
      &     WORK(KNSTSO(IACTP)),WORK(KNSTSO2(IBCTP)),
@@ -4058,7 +4071,7 @@ C
      &     LUHCLIST,INT_IOFF3,ISTART_BLK,LLUC
 #endif
      &     )
-*. Eliminate local memory
+*     eliminate local memory
       IDUM = 0
       call memmar(KDUM ,IDUM,'FLUSM ',2,'SIGDE3')
       RETURN
@@ -4389,20 +4402,26 @@ CSK     &                                JOFF
 *
 *                    well, read block in core
 *
-                     ISCALE = 1
-                     CALL GSTTBLD_PAR(CB(JOFF),JATP,JASM,JBTP,JBSM,
-     &                                WORK(KNSTSO(IACTP)),
-     &                                WORK(KNSTSO2(IBCTP)),
-     &                                PSSIGN,IDC,PLSIGN,
-     &                                LLUC,C2,NSMST,ISCALE,XSCALE,
-     &                                IOFF_SCR_C_EXPL,JLEN)
+CSK                     ISCALE = 1
+CSK                     CALL GSTTBLD_PAR(CB(JOFF),JATP,JASM,JBTP,JBSM,
+CSK     &                                WORK(KNSTSO(IACTP)),
+CSK     &                                WORK(KNSTSO2(IBCTP)),
+CSK     &                                PSSIGN,IDC,PLSIGN,
+CSK     &                                LLUC,C2,NSMST,ISCALE,XSCALE,
+CSK     &                                IOFF_SCR_C_EXPL,JLEN)
+*
+                     CALL GSTTBLD_PAR2(CB(JOFF),LLUC,
+     &                                 IOFF_SCR_C_EXPL,JLEN)
 *
 #else
-                     ISCALE = 1
-                     CALL GSTTBLD(CB(JOFF),JATP,JASM,JBTP,JBSM,
-     &                    WORK(KNSTSO(IACTP)),WORK(KNSTSO2(IBCTP)), 
-     &                    PSSIGN,IDC,PLSIGN,
-     &                    LUC,C2,NSMST,ISCALE,XSCALE)
+*
+CSK                     ISCALE = 1
+CSK                     CALL GSTTBLD(CB(JOFF),JATP,JASM,JBTP,JBSM,
+CSK     &                    WORK(KNSTSO(IACTP)),WORK(KNSTSO2(IBCTP)), 
+CSK     &                    PSSIGN,IDC,PLSIGN,
+CSK     &                    LUC,C2,NSMST,ISCALE,XSCALE)
+*
+                     CALL GSTTBLD2(CB(JOFF),LUC)
 #endif
 *
 * Do real/imaginary scaling according to:

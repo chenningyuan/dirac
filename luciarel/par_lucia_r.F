@@ -76,21 +76,21 @@ C     calculate number of 'active blocks'
       I_NZERO_LEN_SCR = 0
       I_NZERO_LEN     = 0
 C
-      CALL ISETVC(RCCTOS,NNULL,NDIM)
-C
-C     initialize also RCCTOS 
       DO IBLK = 1, NDIM
         IF( IBLOCKL( IBLK ) .ne. 0 ) THEN 
           I_NZERO_LEN_SCR = I_NZERO_LEN_SCR + 1
         END IF
       END DO
+C
+C     initialize also RCCTOS 
+      CALL ISETVC(RCCTOS,NNULL,NDIM)
       CALL I_DO_RCCTOS(IBLOCKL,RCCTOS,NUM_BLOCKS,1)
 C     transfer to common block /LUCIPARREL/
       I_NZERO_LEN = I_NZERO_LEN_SCR
 C
-      CALL MEMMAR(KCWEIGHTF,I_NZERO_LEN,'ADDL  ',1,'ICWGHT')
-      CALL MEMMAR(KAM_BLK_ACT,NUM_BLOCKS,'ADDL  ',1,'IM_BLK')
-      CALL MEMMAR(KICCTOS,  I_NZERO_LEN**2,'ADDL  ',1,'ICCTOS')
+      CALL MEMMAR(KCWEIGHTF,  I_NZERO_LEN,   'ADDL  ',1,'ICWGHT')
+      CALL MEMMAR(KAM_BLK_ACT,NUM_BLOCKS,    'ADDL  ',1,'IM_BLK')
+      CALL MEMMAR(KICCTOS,    I_NZERO_LEN**2,'ADDL  ',1,'ICCTOS')
 C
       CALL ISETVC(WORK(KICCTOS),NNULL,I_NZERO_LEN**2)
       CALL ISETVC(WORK(KAM_BLK_ACT),NNULL,NUM_BLOCKS)
@@ -101,17 +101,6 @@ C
 C
       CALL FIND_IMAT_SC_REL(RCCTOS,WORK(KICCTOS),WORK(KCWEIGHTF),
      &                      WORK(KAM_BLK_ACT),NDIM)
-C
-CSK      WRITE(LUWRT,*) ' THIS IS MY WEIGHTMAT AND CONNECTION MAT'
-CSK      CALL IWRTMAMN(WORK(KCWEIGHTF),1,I_NZERO_LEN,1,I_NZERO_LEN,LUWRT)
-CSK      CALL IWRTMAMN(WORK(KICCTOS),I_NZERO_LEN,I_NZERO_LEN,
-CSK     &              I_NZERO_LEN,I_NZERO_LEN,LUWRT)
-C
-C     for test purposes only!
-C
-CSK      CALL DISTBLKND_REL(NDIM,IBLOCKL,NPARBLOCK)
-C
-C     implement the missing stuff for a proper use of this routine
 C
       CALL BLOCK_DISTR_1(NDIM,IBLOCKL,NPARBLOCK,WORK(KCWEIGHTF))
 C
@@ -124,9 +113,6 @@ C     store information in RCCTOS
 C
       CALL FIND_CCTOS_REL(RCCTOS,NPARBLOCK,WORK(KICCTOS),IBLOCKL,
      &                    IRC_SAVE,NDIM)
-C
-CSK      WRITE(LUWRT,*)'  THIS IS MY RCCTOS'
-CSK      CALL IWRTMAMN(RCCTOS,1,NDIM,1,NDIM,LUWRT)
 C
 C     flush local memory
 C
@@ -1595,18 +1581,16 @@ C
 *     ==> IRILP = 1 even for NZ == 2
       IRILP = 1
 *
-CSK      WRITE(LUWRT,*) 'I_NZERO_LEN is', I_NZERO_LEN
-CSK      WRITE(LUWRT,*) 'MY ISCLFAC is'
-CSK      CALL IWRTMAMN(ISCLFAC,1,NDIM_B,1,NDIM_B,LUWRT)
-*
-*. Loop over vectors of sigma and C : MK2 space
+*     loop over vectors of sigma and C : MK2 space
       DO IRIS = 1,IRILP,1
 *
         INT_IOFF1  = 0
         INT_IOFF2  = 0
 *
         INT_IOFF1  = 1 +  I_NZERO_LEN * ( IRIS - 1 )
-CSK        WRITE(LUWRT,*) 'INT_IOFF1 in ...DRV1',INT_IOFF1
+*
+*       FIXME: find max allocation down in sigden_rel2
+        IVAL_ALLOC_SCR = 0
 *
 *       count the sigma blocks
 * 
@@ -1615,9 +1599,6 @@ CSK        WRITE(LUWRT,*) 'INT_IOFF1 in ...DRV1',INT_IOFF1
         JBATABS = 0
         DO IMK2_S = 1, NMS2VAL
           MK2_S = MS2VAL(IMK2_S)
-*
-CSK          WRITE(LUWRT,*) 'MK2_S and NBAT_MS2(IMK2_S) is',MK2_s,
-CSK     &                    NBAT_MS2(IMK2_S)
 *
           IASTP = IST_FOR_DT(1,IMK2_S)
           IBSTP = IST_FOR_DT(2,IMK2_S)
@@ -1777,7 +1758,7 @@ CSK                  WRITE(LUWRT,*) ' NEW OFFSET INT_IOFF1_C',INT_IOFF1_C
       NBEL_C = NELEC(IBCTP)
 *
 *. Arrays giving allowed type combinations
-      call memmar(KCIOIO,NOCTPA_C*NOCTPB_C,'ADDL  ',2,'CIOIO ')
+      call memmar(KCIOIO,NOCTPA_C*NOCTPB_C,'ADDL  ',1,'CIOIO ')
       CALL IAIBCM_REL(ICSPC,IACTP,IBCTP,WORK(KCIOIO))
 *
 *. Arrays for storing NEL consecutive annihilations/creations
@@ -1788,8 +1769,8 @@ CSK                  WRITE(LUWRT,*) ' NEW OFFSET INT_IOFF1_C',INT_IOFF1_C
 *. And the alpha-and beta-excitations
       LENA = 2*NGAS*NAOBEX_TP
       LENB = 2*NGAS*NBOBEX_TP
-      call memmar(KLAOBEX,LENA,'ADDL  ',2,'IAOBEX')
-      call memmar(KLBOBEX,LENB,'ADDL  ',2,'IAOBEX')
+      call memmar(KLAOBEX,LENA,'ADDL  ',1,'IAOBEX')
+      call memmar(KLBOBEX,LENB,'ADDL  ',1,'IAOBEX')
       CALL SPOBEX_TO_ABOBEX(WORK(KLSOBEX),NSPOBEX_TP,NGAS,
      &                      0,NAOBEX_TP,NBOBEX_TP,
      &                      WORK(KLAOBEX),WORK(KLBOBEX))
@@ -1833,10 +1814,10 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
       call memmar(KXI4S,LSCR3,'ADDL  ',2,'XI4S  ')
 *
 *. Arrays for storing occupations of T-operators
-      call memmar(KTOCC1,MX_ST_TSOSO_BLK_MX,'ADDL  ',2,'TOCC1 ')
-      call memmar(KTOCC2,MX_ST_TSOSO_BLK_MX,'ADDL  ',2,'TOCC2 ')
-      call memmar(KTOCC3,MX_ST_TSOSO_BLK_MX,'ADDL  ',2,'TOCC3 ')
-      call memmar(KTOCC4,MX_ST_TSOSO_BLK_MX,'ADDL  ',2,'TOCC4 ')
+      call memmar(KTOCC1,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'TOCC1 ')
+      call memmar(KTOCC2,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'TOCC2 ')
+      call memmar(KTOCC3,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'TOCC3 ')
+      call memmar(KTOCC4,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'TOCC4 ')
 *
 *.TTS arrays for partitioning of vector 
       NTTS = MXNTTS
@@ -1844,12 +1825,8 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
       call memmar(KLLEBT,NTTS  ,'ADDL  ',1,'LECTC ')
       call memmar(KLI1BT,2*NTTS,'ADDL  ',1,'I1BTC ')
       call memmar(KLIBT ,8*NTTS,'ADDL  ',1,'IBTC  ')
-*. For scaling for each TTS block
-      call memmar(KLSCLFAC ,NTTS,'ADDL  ',2,'SCLFAC')
 *. Arrays giving block type
-      call memmar(KCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
-*. Find batches of C - strings
-      call memmar(KCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
+      call memmar(KCBLTP,NSMST,'ADDL  ',1,'CBLTP ')
       CALL ZBLTP_REL(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP))
 *. Use all symmetryblocks of given TT
       ITTSS_ORD = 2
@@ -4390,6 +4367,45 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE GSTTBLD_PAR2(CTT,LUIN,IOFFSET_IN_LUIN,ILEN)
+C
+C     Adapted by  S. Knecht         - July 09 2007
+C
+C**********************************************************************
+C
+C     GET BLOCK FROM DISC using MPI-I/O
+C
+C     Last revision:     S. Knecht       - July  2007
+C
+************************************************************************
+      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar_rel.inc"
+      DIMENSION CTT(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
+*
+      NTEST = 000
+*
+*     read in from disc
+      CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
+     &                      CTT,ILEN,MPI_REAL8,ISTAT,IERR)
+*
+*
+      IF( NTEST .GE. 100 )THEN
+        CALL WRTMATMN(CTT,1,ILEN,1,ILEN,LUWRT)
+      END IF
+*
+      NTEST = 000
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
       SUBROUTINE P1_B_PAR_RL_1(VEC1,VEC2,SUBSPH,EIGAPR,RNRM,EIGSHF,
      &                      EIG,TEST,E_CONV,RTCNV,CONVER,ITER,MAXIT,
      &                      IROOT,LUIN1LIST,LUIN2LIST,LUOUTLIST,
@@ -6637,7 +6653,9 @@ C
 C     store some important information 
       LF2_ZERO = (2*NASHT)**4 * MZ
 C
-      IF( IIOMOD_REL .eq. 0 )THEN
+C     broadcast only for SIGMA and SIGMAD (current fix for large-scale 
+C     CIINII runs). FIXME: large-scale KR-MCSCF - SK - july 10, 2007
+      IF( CIRUN .ne. 'CIINII' )THEN
 C       ... integrals
         CALL MPI_BCAST(F2,NASHT*NASHT*NNASHX*NZ*3,MPI_REAL8,MASTER,
      &                 MPI_COMM_WORLD,IERR)
