@@ -383,12 +383,7 @@ C              including spin in symmetry
                GO TO 100
  32            CONTINUE
 C&&&  CIONLY: runnning only initial CI calculation
-               READ(LUCMD,*) ICIONLY
-               IF( ICIONLY .LT. 0 .OR. ICIONLY .GT. 1 )THEN
-                  WRITE(LUPRI,'(A,I10)') ' *** ERROR in KRMCINP ***'
-     &           //' Illegal value for CIONLY', ICIONLY
-                     CALL QUIT('*** ERROR in KRMCINP ***')
-               END IF 
+               ICIONLY = 1
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
