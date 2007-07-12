@@ -11,7 +11,7 @@ C
      &        IIOMOD_REL, NFLGRPS_REL, NROOT_SAVE, NVEC_SAVE,
      &        IRC_SAVE, JVEC_SF, NUM_BLOCKS2,L_COMBI,IAM_NOT_INV,
      &        I_NZERO_LEN, IBLOCKCOMM, ISHARE_DENSM, IPARALLELIO,
-     &        LF2_ZERO, ISMEMFAC
+     &        LF2_ZERO, ISMEMFAC, LEN_ALL_INT
 	PARAMETER (MSLVOUT_REL = 7)
       COMMON/LUCIPARREL/ MASTER, MYPROC, NMPROC, LUWRT, 
      &                   NPTEST_VAR, NUM_BLOCKS, IIOMOD_REL,
@@ -19,7 +19,7 @@ C
      &                   IRC_SAVE, JVEC_SF, NUM_BLOCKS2,L_COMBI,
      &                   IAM_NOT_INV, I_NZERO_LEN, IBLOCKCOMM, 
      &                   ISHARE_DENSM, IPARALLELIO, LF2_ZERO,
-     &                   ISMEMFAC
+     &                   ISMEMFAC, LEN_ALL_INT
 C
 C     MASTER: contains node number of master (0 in general)
 C
