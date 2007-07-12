@@ -46,6 +46,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/utsname.h>
+
 
 
 #include "alloc_mem.head"
@@ -60,20 +62,47 @@
 #include "alloc_mem.head"
 
 {
+   struct utsname *un;
+
+   un = (struct utsname *) malloc(sizeof(struct utsname));
+
+   if ( un != NULL )
+   {
+      uname(un);
+   }
+
    if (! get_memsize(mytid,size))
    {
       *size = INSTALL_WRKMEM;
    }
-   if ( ! mytid )
-      printf("Master : DIRAC allocating %i words of memory\n",*size);
+
+   if ( un != NULL )
+   {
+     if ( ! mytid )
+     {
+      printf("Master   ( %s ): DIRAC allocating %i words of memory\n",un->nodename,*size);
+      fflush( stdout );
+     }
+     else
+     {
+      printf("Node %3i ( %s ): DIRAC allocating %i words of memory\n",mytid,un->nodename,*size);
+      fflush( stdout );
+     }
+     free(un);
+   }
    else
    {
-      printf("Node %2i: DIRAC allocating %i words of memory\n",mytid,*size);
+     if ( ! mytid )
+     {
+      printf("Master : DIRAC allocating %i words of memory\n",*size);
       fflush( stdout );
+     }
+     else
+     {
+      printf("Node %3i : DIRAC allocating %i words of memory\n",mytid,*size);
+      fflush( stdout );
+     }
    }
+     
    return diracmalloc((size_t) SIZE_REAL*(*size));
 }
-
-
-
-
