@@ -21,7 +21,7 @@
      &            ITRANS,ISPEXP_INI,
      &            NATITER,INATIT,ISYM_T,
      &            IDCOMH,IFOCKEX,NORB_F(MXPIRR),
-     &            KRASYM,L2BLOCK
+     &            KRASYM,L2BLOCK,LBLOCK
       character*72 ENVIRO
       CHARACTER*6 PROPER,SIGDEN_ROUTE
       COMMON/CRUNCR/ENVIRO,SIGDEN_ROUTE,PROPER(20)
