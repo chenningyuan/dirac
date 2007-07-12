@@ -98,6 +98,7 @@ integer, intent(in) :: INDXPR
 
 logical :: is_square
 integer(kind=4) :: KPTRI, KONEIN, KFIRST
+integer(kind=4) :: IKFREE, ILFREE,IKSTART
 
  call QENTER('get_prop_saao')
 
@@ -144,13 +145,24 @@ integer(kind=4) :: KPTRI, KONEIN, KFIRST
 #endif
 
 
+   CALL MEMCHK('get_prop_saao',PW,1)
+
+
+   write(LUPRI,*) 'get_prop_saao: KFREE,LFREE,LWORK=',get_KFREE(),get_LFREE(),get_LWORK()
+   write(LUPRI,*) 'get_qmtx_kstart(propmat)=',get_qmtx_kstart(propmat)
+   call  print_mem_param
+     
+  ILFREE = get_LFREE(); IKFREE = get_KFREE(); IKSTART=get_qmtx_kstart(propmat)
+
      IF (IS_SQUARE) THEN
 ! call 'old' F77 routines
-       CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PW(get_qmtx_kstart(propmat)),PW(KONEIN),PW(KIRST), &
-                    PW(get_KFREE()),get_LFREE,IPRINT)
+       CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PW(get_qmtx_kstart(propmat)),PW(KONEIN),PW(KFIRST), &
+                  ! PW(get_KFREE()), get_LFREE, IPRINT )
+                    PW(get_KFREE()), ILFREE, IPRINT )
      ELSE
        CALL PRPMSAO(INDXPR,IDIMENS,PW(KPTRI),PW(get_qmtx_kstart(propmat)),PW(KONEIN),PW(KFIRST), &
-                    PW(get_KFREE()),get_LFREE,IPRINT )
+                    PW(get_KFREE()), ILFREE, IPRINT )
+                !   PW(get_KFREE()), get_LFREE, IPRINT )
      ENDIF
 
      CLOSE(LU1INT,STATUS = 'KEEP')

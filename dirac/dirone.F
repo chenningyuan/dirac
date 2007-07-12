@@ -986,6 +986,11 @@ C
       CALL QENTER('PRPMSAO')
 #include "memint.h"
 
+CMI     write(LUPRI,*) 'PRPMSAO: LWORK=',LWORK
+
+CMI ... first MEMCHK does not work !!!
+C      CALL MEMCHK('in PRPMSAO',WORK,1)
+
 C
 C     Extract symmetry information - ISYM, IREP, ITIM
 C     =============================

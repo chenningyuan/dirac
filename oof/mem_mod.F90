@@ -90,7 +90,8 @@ subroutine print_mem_param
 !************************************************************************
 #include "priunit.h"
 CALL QENTER('print_mem_param')
-write(LUPRI,'(3(A,I10,/),A,I10)')                &
+write(LUPRI,*) '*********************************************************************'
+write(LUPRI,'(3(A,I12,/),A,I12)')                &
    '  Actual memory parameters:   KWORK=',KWORK, &
    '----------------------------  KFREE=',KFREE, &
    '                              LFREE=',LFREE, &
@@ -107,6 +108,7 @@ if (associated(PW)) then
 else
    write(LUPRI,'(A)') '----> Pointer PW is NOT associated with the WORK array.'
 endif
+write(LUPRI,*) '*********************************************************************'
 CALL QEXIT('print_mem_param')
 end subroutine print_mem_param
 
@@ -208,31 +210,50 @@ FUNCTION get_kfree() result(kfree_out)
 !------------------------------------------------------------------------
 ! return the (private) KFREE value
 !------------------------------------------------------------------------
-integer :: kfree_out
+#include "priunit.h"
+!integer :: kfree_out
+integer(kind=4) :: kfree_out
 CALL QENTER('get_kfree')
  kfree_out = KFREE
+ if (iprmem >= 15) then
+  write(LUPRI,*) 'get_kfree: KFREE=',KFREE,'kfree_out=',kfree_out
+ endif
 CALL QEXIT('get_kfree')
 END FUNCTION get_kfree
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 FUNCTION get_lfree() result(lfree_out)
 !------------------------------------------------------------------------
-! return the (protected) LFREE value
+!
+!    return the (protected) LFREE value
+!
 !------------------------------------------------------------------------
-integer :: lfree_out
+#include "priunit.h"
+!integer :: lfree_out
+integer(kind=4) :: lfree_out
 CALL QENTER('get_lfree')
  lfree_out = LFREE
+ if (iprmem >= 15) then
+  write(LUPRI,*) 'get_lfree: LFREE=',LFREE,'lfree_out=',lfree_out
+ endif
 CALL QEXIT('get_lfree')
 END FUNCTION get_lfree
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 FUNCTION get_lwork() result(lwork_out)
 !------------------------------------------------------------------------
+!
 ! return the (protected) LWORK value
+!
 !------------------------------------------------------------------------
-integer :: lwork_out
+#include "priunit.h"
+!integer :: lwork_out
+integer (kind=4) :: lwork_out
 CALL QENTER('get_lwork')
  lwork_out = LWORK
+ if (iprmem >= 15) then
+  write(LUPRI,*) 'get_lwork: LWORK=',LWORK,'lwork_out=',lwork_out
+ endif
 CALL QEXIT('get_lwork')
 END FUNCTION get_lwork
 
