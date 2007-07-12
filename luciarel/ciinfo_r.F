@@ -980,7 +980,8 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,KC2,LSCR2,CIRUN)
+CSK      SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,KC2,LSCR2,CIRUN)
+      SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,LSCR2,CIRUN)
 *
 * Allocate the three blocks VEC1, VEC2, C2 used in sigma, densi etc
 *
@@ -1127,23 +1128,33 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
         L0BLOCK = MXSOOB
       END IF
 *
-*     L2BLOCK stored in crun.inc, proper dimensioning in Z_BLK_...
+*     L2BLOCK and LBLOCK stored in crun.inc, proper dimensioning in Z_BLK_...
 *
-      LBLOCK = MAX(L2BLOCK,L0BLOCK)
-      LSCR12 = MAX(LBLOCK,2*LSCR2)
+CSK...6-jul-07      LBLOCK = MAX(L2BLOCK,L0BLOCK)
+      L3BLOCK = MAX(L2BLOCK,L0BLOCK)
+CSK...6-jul-07 new
+      L3BLOCK = MIN(LBLOCK,L3BLOCK)
+CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
+CSK      LSCR12 = MAX(L3BLOCK,2*LSCR2)
+CSK testing...
+      LSCR12 = MAX(L3BLOCK,LSCR2)
+*
+      write(luwrt,*) 'L3BLOCK is',L3BLOCK
+      write(luwrt,*) 'LBLOCK is',LBLOCK
+      write(luwrt,*) 'LSCR2 is',LSCR2
+
 *
       call memmar(KDUM,KDUM,'FLUSM ',KDUM,'GET_3B')
 *
-      write(LUWRT,*)
       write(LUWRT,*) 
      &' Allocating LBLOCK in GET_3BLKS_REL: '
      &  ,LBLOCK
-      write(LUWRT,*)
+      CALL FLSHFO(LUWRT)
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
-      if (CIRUN.ne.'ANALYZ') then
-        call memmar(KC2,LSCR12,'ADDS  ',2,'C2    ')
-      end if
+CSK      if (CIRUN.ne.'ANALYZ') then
+CSK        call memmar(KC2,LSCR12,'ADDS  ',2,'C2    ')
+CSK      end if
 *
       END
 ***********************************************************************
@@ -3956,6 +3967,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
+#include "lucipar_rel.inc"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
       INTEGER IOCOC(NOCTPA,NOCTPB)
@@ -3972,16 +3984,16 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' =================='
-        WRITE(6,*) '     PART_CIV4     '
-        WRITE(6,*) ' =================='
-        WRITE(6,*) ' IDC = ', IDC
-        WRITE(6,*)
-        WRITE(6,*) ' NSSOA array ( input ) '
-        CALL IWRTMA(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA)
-        WRITE(6,*) ' NSSOB array ( input ) '
-        CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' =================='
+        WRITE(LUWRT,*) '     PART_CIV4     '
+        WRITE(LUWRT,*) ' =================='
+        WRITE(LUWRT,*) ' IDC = ', IDC
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' NSSOA array ( input ) '
+        CALL IWRTMAMN(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA,LUWRT)
+        WRITE(LUWRT,*) ' NSSOB array ( input ) '
+        CALL IWRTMAMN(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB,LUWRT)
       END IF
 *
 *. block  zero
@@ -4063,14 +4075,15 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
           N_TRY = N_TRY + 1
 *
           IF( N_TRY .gt. 1 .and. I_SAVE_IBLOCK .eq. IBLOCK ) THEN
-            WRITE(6,*) ' Not enough scratch space to include a '//
-     &                     ' single Block'
-            WRITE(6,*) ' Since I cannot procede I will stop '
-            WRITE(6,*) ' Insufficient buffer detected in '//
+            WRITE(LUWRT,*) ' Not enough scratch space to include'//
+     &                 ' two TT-blocks of different symmetry in'//
+     &                   'a batch'
+            WRITE(LUWRT,*) ' Since I cannot procede I will stop '
+            WRITE(LUWRT,*) ' Insufficient buffer detected in '//
      &                     ' PART_CIV4'
-            WRITE(6,*) '  LENGTH ',LENGTH
-            WRITE(6,*) ' Alter GAS space of raise Buffer from',MXLNG
-            CALL RMEMCHK
+            WRITE(LUWRT,*) ' block LENGTH, actual batch length ',
+     &                       LENGTH, LEBATCH(NBATCH)
+            WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from',MXLNG
             stop ' In PART_CIV4 because of N_TRY .ge. 1. '
           END IF
 *
@@ -4092,19 +4105,19 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
  2002 CONTINUE
 *
       IF(NTEST.NE.0) THEN
-        WRITE(6,*) 'Output from PART_CIV4'
-        WRITE(6,*) '====================='
-        WRITE(6,*)
-        WRITE(6,*) ' Number of added batches ', NBATCH-IOFFBTC+1
+        WRITE(LUWRT,*) 'Output from PART_CIV4'
+        WRITE(LUWRT,*) '====================='
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' Number of added batches ', NBATCH-IOFFBTC+1
         DO JBATCH = IOFFBTC, NBATCH
-          WRITE(6,*)
-          WRITE(6,*) ' Info on batch ', JBATCH
-          WRITE(6,*) ' *********************** '
-          WRITE(6,*)
-          WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) ' Info on batch ', JBATCH
+          WRITE(LUWRT,*) ' *********************** '
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) '  Number of blocks included ', LBATCH(JBATCH)
+          WRITE(LUWRT,*) '  TTSS and offsets and lenghts of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
-            WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
+            WRITE(LUWRT,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO
         END DO
       END IF
@@ -5405,6 +5418,7 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE Z_BLKFO_REL(IDC,NMS2VAL,ISPC,ISM,KPCLBT,KPCLEBT,
@@ -5514,20 +5528,321 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
       ELSE IF (I_SET_L2BLOCK .eq. -1 ) THEN
         L2BLOCK = 100 000
       END IF
-*    /\ I_SET_L2BLOCK 
+*     ^ I_SET_L2BLOCK 
 *
-*     set LBLOCK value
+*     test if L2BLOCK has become too large...
+*
+      LTEST_BLOCK = 0
+      LTEST_BLOCK = MIN(L2BLOCK,L_COMBI)
+*
+      IF( L2BLOCK .gt. LTEST_BLOCK )THEN
+*       reset to L_COMBI because that is already enough
+        L2BLOCK = LTEST_BLOCK
+*
+      END IF
+*
+*     ... set LBLOCK value
 *
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+      IF( I_SET_L2BLOCK .eq. 1) 
+     &  WRITE(LUWRT,*) ' allocating for three vectors of length:',LBLOCK
 *
 CACTU      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
 CTEST      LBLOCK  = MIN(L0BLOCK,L2BLOCK)
 *          old versions works without L0BLOCK and L2BLOCK
 CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
 *
-      IF(NTEST.GE.1000) THEN
-         WRITE(LUWRT,*) ' LBLOCK = ', LBLOCK
+CSK      IF(NTEST.GE.1000) THEN
+CSK      END IF
+*. Loop over MS2 spaces
+      DO IMS2 = 1, NMS2VAL
+        IATP = IST_FOR_DT(1,IMS2)
+        IBTP = IST_FOR_DT(2,IMS2)
+*
+        NOCTPA =  NOCTYP(IATP)
+        NOCTPB =  NOCTYP(IBTP)
+*
+        IOCTPA = IBSPGPFTP(IATP)
+        IOCTPB = IBSPGPFTP(IBTP)
+*. Info needed for generation of block info
+        call memmar(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
+        CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIO))
+*
+        CALL ZBLTP_REL(ISMOST(1,ISM),NSMST,IDC,WORK(KPCBLTP))
+*
+        IF(IMS2.EQ.1) THEN
+          IOFFBLK = 1
+          IOFFBTC = 1
+        ELSE
+          IOFFBLK = NBLOCK + 1
+          IOFFBTC = NBATCH + 1
+        END IF
+        IBLK_MS2(IMS2) = IOFFBLK
+        IBAT_MS2(IMS2) = IOFFBTC
+*. Number of batches and blocks obtained until now
+        IF(IMS2.EQ.1) THEN
+          NBATCHP = 0
+          NBLOCKP = 0
+        ELSE
+          NBATCHP = NBATCH
+          NBLOCKP = NBLOCK
+        END IF
+*. Batches of C vector
+        ITTSS_ORD = 2
+#if defined (VAR_MPI)
+        IF( I_USE_PC .eq. 1 ) THEN
+*
+*         special routine that uses only node-blocks to determine 
+*         batches of a CI-vector
+*
+          IDEBUGPRNT = 500
+*
+          CALL PART_CIV3_PAR(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                     WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                     IOFFBLK,IOFFBTC,
+     &                     NSMST,LBLOCK,WORK(KLCIOIO),
+     &                     ISMOST(1,ISM),
+     &                     NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                     WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
+     &                     NPARBLOCK,IDEBUGPRNT)
+*
+          GOTO 100
+*
+        ELSE IF( I_USE_PC .eq. 2 )THEN
+*
+*         special routine that uses only node-blocks to determine 
+*         batches of a CI-vector
+*
+          IDEBUGPRNT = 000
+*
+          CALL PART_CIV3_SPC(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                       WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                       IOFFBLK,IOFFBTC,
+     &                       NSMST,LBLOCK,WORK(KLCIOIO),
+     &                       ISMOST(1,ISM),
+     &                       NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                       WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
+     &                       NPARBLOCK,IDEBUGPRNT)
+*
+*     use this line as line 4 for testing more batches ...
+*     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
+          GOTO 100
+*
+        ELSE IF( I_USE_PC .eq. 3 )THEN
+*
+*         special routine that uses only node-blocks to determine 
+*         batches of a CI-vector
+*
+          IDEBUGPRNT = 000
+*
+          CALL PART_CIV4_SPC(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                       WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                       IOFFBLK,IOFFBTC,
+     &                       NSMST,LBLOCK,WORK(KLCIOIO),
+     &                       ISMOST(1,ISM),
+     &                       NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                       WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
+     &                       IDEBUGPRNT)
+*
+*     use this line as line 4 for testing more batches ...
+*     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
+          IDEBUGPRNT = 000
+          GOTO 100
+*
+*
+*
+        END IF
+#endif
+CSK        WRITE(LUWRT,*) ' I WILL CALL PART_CIV4'
+        CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                 WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                 IOFFBLK,IOFFBTC,
+     &                 NSMST,LBLOCK,WORK(KLCIOIO),
+     &                 ISMOST(1,ISM),
+     &                 NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
+Cold        CALL PART_CIV3(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+Cold     &                 WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+Cold     &                 IOFFBLK,IOFFBTC,
+Cold     &                 NSMST,LBLOCK,WORK(KLCIOIO),
+Cold     &                 ISMOST(1,ISM),
+Cold     &                 NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
+*
+ 100    CONTINUE
+*
+*. Number of BLOCKS hitherto
+        NBLOCK = IFRMR_REL(WORK(KPCI1BT),1,NBATCH)
+     &         + IFRMR_REL(WORK(KPCLBT),1,NBATCH) - 1
+*
+        NBLK_MS2(IMS2) = NBLOCK - NBLOCKP
+        NBAT_MS2(IMS2) = NBATCH - NBATCHP
+*
+      END DO
+*     ^ End of loop over MS2 values
+
+      IF(NTEST.GE.1) THEN
+       WRITE(LUWRT,*) ' Total number of batches', NBATCH
+       WRITE(LUWRT,*) ' Total number of blocks ', NBLOCK
+*
+       WRITE(LUWRT,*) ' Number of blocks and batches per MS2 value '
+       WRITE(LUWRT,*) ' ==========================================='
+       WRITE(LUWRT,*)
+       WRITE(LUWRT,*) ' IMS2    MS2      NBLOCK      NBATCH '
+       WRITE(LUWRT,*) ' ===================================='
+       DO IMS2 = 1, NMS2VAL
+         IATP = IST_FOR_DT(1,IMS2)
+         IBTP = IST_FOR_DT(2,IMS2)
+         IIMS2 = NELEC(IATP)-NELEC(IBTP)
+         WRITE(LUWRT,'(4(3X,I4))') 
+     &              IMS2,IIMS2,NBLK_MS2(IMS2),NBAT_MS2(IMS2)
+       END DO
+*
       END IF
+*
+* Transfer information to common block for KRMC - LUCIAREL
+* communication:
+      if (INTIMP.eq.6.or.INTIMP.eq.7) then
+        call civcinf_mc(WORK(KPCIBT),WORK(KPCLBT),WORK(KPCI1BT),
+     &                  WORK(KPCLEBT),NBAT_MS2,NMS2VAL,NBLOCK)
+      end if
+*
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLKF')
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE Z_BLKFO_REL_START(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
+     &                             KNODELIST,KBLOCKLIST,KRCCTOS,
+     &                             NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
+     &                             NBAT_MS2,IBAT_MS2,I_SET_L2BLOCK,
+     &                             I_USE_PC,NPARBLOCK,IRC)
+*
+* Construct information about batch and block structure of CI space
+* defined by ISPC,ISM.
+*
+* Output is given in the form of pointers to vectors in WORK
+* and  NBLK_MS2,IBLK_MS2 which should be dimensioned outside
+*
+* KPCLBT  : Length of each Batch ( in blocks)
+* KPCLEBT : Length of each Batch ( in elements)
+* KPCI1BT : Length of each block
+* KPCIBT  : Info on each block
+* KPCBLTP : Block type for each symmetry
+*
+* NBATCH : Number of batches
+* NBLOCK : Number of blocks
+*
+* NBLK_MS2 : Number of blocks with a given MS2 values
+* IBLK_MS2 : First block with a given MS2 value
+*
+* Jeppe Olsen, Feb. 98
+*
+* For relativistic program
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "cicisp.inc"
+#include "stinf.inc"
+#include "csm.inc"
+#include "strbas.inc"
+#include "crun.inc"
+#include "gasstr.inc"
+#include "strinp.inc"
+* new
+#include "lucipar_rel.inc"
+*
+*.output
+      INTEGER NBLK_MS2(*), IBLK_MS2(*)
+      INTEGER NBAT_MS2(*), IBAT_MS2(*)
+*
+      NTEST = 000
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*)
+        WRITE(6,*) ' ========================== '
+        WRITE(6,*) ' Output from Z_BLKFO_START  '
+        WRITE(6,*) ' ========================== '
+        WRITE(6,*)
+        WRITE(6,*) ' ISM, ISPC = ', ISM,ISPC
+      END IF
+*
+*     pointers to output arrays
+      NTTS = MXNTTS
+      CALL MEMMAR(KPCIBT ,8*MXNTTS,'ADDL  ',1,'CIBT  ')
+      CALL MEMMAR(KPCBLTP,   NSMST,'ADDL  ',1,'CBLTP ')
+*.    ^ These should be preserved after exit so put mark for 
+*       flushing after
+*
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'Z_BLKS')
+*
+*     moved here since they are not in use for GASCI_REL
+      call memmar(KPCLBT ,  MXNTTS,'ADDL  ',1,'CLBT  ')
+      call memmar(KPCLEBT,  MXNTTS,'ADDL  ',1,'CLEBT ')
+      call memmar(KPCI1BT,  MXNTTS,'ADDL  ',1,'CI1BT ')
+*
+      IDUM = 0
+*
+*     allowed length of each batch
+      IF(ICISTR.EQ.1) THEN
+*       assumes determinants
+        L0BLOCK = XISPSM(ISM,ISPC)
+      ELSE IF (ICISTR.EQ.2) THEN
+        L0BLOCK = MXSB
+      ELSE IF( ICISTR.EQ.3) THEN
+        L0BLOCK = MXSOOB
+      END IF
+CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
+CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
+*
+      IF( I_SET_L2BLOCK .eq. 1 ) THEN
+*
+*       L2BLOCK = max memory for c-vec and sigma-vec from
+*       ( curr. total mem - 3 mio for string info etc.) / 4
+*
+        L2BLOCK = 0
+*
+        CALL MEMMAR(L2BLOCK,0,'SFREEM',2,'SEEFRM')
+        WRITE(LUWRT,'(1X,A,1X,I20)')
+     & '  Current available free memory in double words:',L2BLOCK
+*
+*       we want to keep three blocks in memory at the same time
+*       CB,SB,VEC3(=C2). estimated scratch memory: 9 000 000 real*8
+*       division by a factor of 4 = safety!
+*
+        L2BLOCK = ( L2BLOCK - ( ISMEMFAC * 1 000 000 ) ) / 4
+*
+CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
+CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
+*
+        L2BLOCK = MIN(LCSBLK,L2BLOCK)
+*
+      ELSE IF (I_SET_L2BLOCK .eq. -1 ) THEN
+        L2BLOCK = 100 000
+      END IF
+*     ^ I_SET_L2BLOCK 
+*
+*     test if L2BLOCK has become too large...
+*
+      LTEST_BLOCK = 0
+      LTEST_BLOCK = MIN(L2BLOCK,L_COMBI)
+*
+      IF( L2BLOCK .gt. LTEST_BLOCK )THEN
+*       reset to L_COMBI because that is already enough
+        L2BLOCK = LTEST_BLOCK
+*
+      END IF
+*
+*     ... set LBLOCK value
+*
+      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+      IF( I_SET_L2BLOCK .eq. 1 .and. NTEST .ge. 100 ) 
+     &  WRITE(LUWRT,*) ' allocating for three vectors of length:',LBLOCK
+*
 *. Loop over MS2 spaces
       DO IMS2 = 1, NMS2VAL
         IATP = IST_FOR_DT(1,IMS2)
@@ -5634,15 +5949,225 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
      &                 ISMOST(1,ISM),
      &                 NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
      &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
-Cold        CALL PART_CIV3(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
-Cold     &                 WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
-Cold     &                 IOFFBLK,IOFFBTC,
-Cold     &                 NSMST,LBLOCK,WORK(KLCIOIO),
-Cold     &                 ISMOST(1,ISM),
-Cold     &                 NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
-Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
 *
  100    CONTINUE
+*
+*. Number of BLOCKS hitherto
+        NBLOCK = IFRMR_REL(WORK(KPCI1BT),1,NBATCH)
+     &         + IFRMR_REL(WORK(KPCLBT),1,NBATCH) - 1
+*
+        NBLK_MS2(IMS2) = NBLOCK - NBLOCKP
+        NBAT_MS2(IMS2) = NBATCH - NBATCHP
+*
+      END DO
+*     ^ End of loop over MS2 values
+
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLKS')
+*
+*     start second part...
+*
+      NUM_BLOCKS  = NBLOCK
+      NUM_BLOCKS2 = NBLOCK * IRC
+*
+      CALL MEMMAR(KNODELIST,  NUM_BLOCKS,'ADDS  ',1,'NODELS')
+      CALL MEMMAR(KBLOCKLIST, NUM_BLOCKS,'ADDS  ',1,'BLCKLS')
+      CALL MEMMAR(KRCCTOS,   NUM_BLOCKS2,'ADDS  ',1,'RCCTOS')
+*.    ^ These should be preserved after exit so put mark for
+*       flushing after
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'Z_BLK2')
+*
+      MIN2  = - 2
+      IZERO =   0
+      IIONE =   1
+*
+      CALL ISETVC(WORK(KNODELIST),  MIN2,NUM_BLOCKS)
+      CALL ISETVC(WORK(KBLOCKLIST),IZERO,NUM_BLOCKS)
+      CALL ISETVC(WORK(KRCCTOS),   IZERO,NUM_BLOCKS2)
+*     initialize block array
+      CALL INI_BLOCKL(WORK(KBLOCKLIST),NBLOCK,WORK(KPCIBT))
+*
+#if defined (VAR_MPI)
+*
+      CALL BLOCK_DISTR_DRV_REL(WORK(KNODELIST),WORK(KBLOCKLIST),
+     &                         NBLOCK,WORK(KRCCTOS))
+*
+#endif
+*     moved here since they are not in use for GASCI_REL
+      call memmar(KPCLBT ,  MXNTTS,'ADDL  ',1,'CLBT  ')
+      call memmar(KPCLEBT,  MXNTTS,'ADDL  ',1,'CLEBT ')
+      call memmar(KPCI1BT,  MXNTTS,'ADDL  ',1,'CI1BT ')
+*
+      IDUM = 0
+*
+*     allowed length of each batch
+      IF(ICISTR.EQ.1) THEN
+*       assumes determinants
+        L0BLOCK = XISPSM(ISM,ISPC)
+      ELSE IF (ICISTR.EQ.2) THEN
+        L0BLOCK = MXSB
+      ELSE IF( ICISTR.EQ.3) THEN
+        L0BLOCK = MXSOOB
+      END IF
+*
+      IF( I_SET_L2BLOCK .eq. 1 ) THEN
+*
+*       L2BLOCK = max memory for c-vec and sigma-vec from
+*       ( curr. total mem - 3 mio for string info etc.) / 4
+*
+        L2BLOCK = 0
+*
+        CALL MEMMAR(L2BLOCK,0,'SFREEM',2,'SEEFRM')
+        WRITE(LUWRT,'(1X,A,1X,I20)')
+     & '  Current available free memory in double words:',L2BLOCK
+*
+*       we want to keep three blocks in memory at the same time
+*       CB,SB,VEC3(=C2). estimated scratch memory: 9 000 000 real*8
+*       division by a factor of 4 = safety!
+*
+        L2BLOCK = ( L2BLOCK - ( ISMEMFAC * 1 000 000 ) ) / 4
+*
+CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
+CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
+*
+        L2BLOCK = MIN(LCSBLK,L2BLOCK)
+*
+      ELSE IF (I_SET_L2BLOCK .eq. -1 ) THEN
+        L2BLOCK = 100 000
+      END IF
+*     ^ I_SET_L2BLOCK 
+*
+*     test if L2BLOCK has become too large...
+*
+      LTEST_BLOCK = 0
+      LTEST_BLOCK = MIN(L2BLOCK,L_COMBI)
+*
+      IF( L2BLOCK .gt. LTEST_BLOCK )THEN
+*       reset to L_COMBI because that is already enough
+        L2BLOCK = LTEST_BLOCK
+*
+      END IF
+*
+*     ... set LBLOCK value
+*
+      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+      IF( I_SET_L2BLOCK .eq. 1 ) 
+     &  WRITE(LUWRT,*) ' allocating for three vectors of length:',LBLOCK
+*
+CACTU      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+CTEST      LBLOCK  = MIN(L0BLOCK,L2BLOCK)
+*          old versions works without L0BLOCK and L2BLOCK
+CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
+*
+      NBATCH = 0
+      NBLOCK = 0
+*. Loop over MS2 spaces
+      DO IMS2 = 1, NMS2VAL
+        IATP = IST_FOR_DT(1,IMS2)
+        IBTP = IST_FOR_DT(2,IMS2)
+*
+        NOCTPA =  NOCTYP(IATP)
+        NOCTPB =  NOCTYP(IBTP)
+*
+        IOCTPA = IBSPGPFTP(IATP)
+        IOCTPB = IBSPGPFTP(IBTP)
+*. Info needed for generation of block info
+        call memmar(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
+        CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIO))
+*
+        CALL ZBLTP_REL(ISMOST(1,ISM),NSMST,IDC,WORK(KPCBLTP))
+*
+        IF(IMS2.EQ.1) THEN
+          IOFFBLK = 1
+          IOFFBTC = 1
+        ELSE
+          IOFFBLK = NBLOCK + 1
+          IOFFBTC = NBATCH + 1
+        END IF
+        IBLK_MS2(IMS2) = IOFFBLK
+        IBAT_MS2(IMS2) = IOFFBTC
+*. Number of batches and blocks obtained until now
+        IF(IMS2.EQ.1) THEN
+          NBATCHP = 0
+          NBLOCKP = 0
+        ELSE
+          NBATCHP = NBATCH
+          NBLOCKP = NBLOCK
+        END IF
+*. Batches of C vector
+        ITTSS_ORD = 2
+#if defined (VAR_MPI)
+        IF( I_USE_PC .eq. 1 ) THEN
+*
+*         special routine that uses only node-blocks to determine 
+*         batches of a CI-vector
+*
+          IDEBUGPRNT = 500
+*
+          CALL PART_CIV3_PAR(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                     WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                     IOFFBLK,IOFFBTC,
+     &                     NSMST,LBLOCK,WORK(KLCIOIO),
+     &                     ISMOST(1,ISM),
+     &                     NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                     WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
+     &                     NPARBLOCK,IDEBUGPRNT)
+*
+          GOTO 200
+*
+        ELSE IF( I_USE_PC .eq. 2 )THEN
+*
+*         special routine that uses only node-blocks to determine 
+*         batches of a CI-vector
+*
+          IDEBUGPRNT = 000
+*
+          CALL PART_CIV3_SPC(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                       WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                       IOFFBLK,IOFFBTC,
+     &                       NSMST,LBLOCK,WORK(KLCIOIO),
+     &                       ISMOST(1,ISM),
+     &                       NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                       WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
+     &                       NPARBLOCK,IDEBUGPRNT)
+*
+*     use this line as line 4 for testing more batches ...
+*     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
+          GOTO 200
+*
+        ELSE IF( I_USE_PC .eq. 3 )THEN
+*
+*         special routine that uses only node-blocks to determine 
+*         batches of a CI-vector
+*
+          IDEBUGPRNT = 000
+*
+          CALL PART_CIV4_SPC(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                       WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                       IOFFBLK,IOFFBTC,
+     &                       NSMST,LBLOCK,WORK(KLCIOIO),
+     &                       ISMOST(1,ISM),
+     &                       NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                       WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
+     &                       IDEBUGPRNT)
+*
+*     use this line as line 4 for testing more batches ...
+*     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
+          IDEBUGPRNT = 000
+          GOTO 200
+*
+*
+*
+        END IF
+#endif
+        CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                 WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                 IOFFBLK,IOFFBTC,
+     &                 NSMST,LBLOCK,WORK(KLCIOIO),
+     &                 ISMOST(1,ISM),
+     &                 NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
+*
+ 200    CONTINUE
 *
 *. Number of BLOCKS hitherto
         NBLOCK = IFRMR_REL(WORK(KPCI1BT),1,NBATCH)
@@ -5673,14 +6198,13 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
 *
       END IF
 *
-* Transfer information to common block for KRMC - LUCIAREL
-* communication:
+*     transfer information to common block for KRMC - LUCIAREL
+*     communication:
       if (INTIMP.eq.6.or.INTIMP.eq.7) then
         call civcinf_mc(WORK(KPCIBT),WORK(KPCLBT),WORK(KPCI1BT),
      &                  WORK(KPCLEBT),NBAT_MS2,NMS2VAL,NBLOCK)
       end if
-*
-      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLKF')
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLK2')
 *
       END
 ***********************************************************************
