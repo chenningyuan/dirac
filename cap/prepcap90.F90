@@ -261,14 +261,18 @@ use Memory
 #include "dcbcap.h"
 #include "mxcent.h"
 #include "nuclei.h"
+#include "iratdef.h"
 
 type(Vect) :: icabfo, iobf1_2
 LOGICAL IS_FILE, IS_OPEN, CAPDIPVEL_SAVE
 DIMENSION WORK(LWORK)
+!INTEGER(KIND=8/IRAT) :: ILFREE
 
  CALL QENTER('CAP_STUFF')
 
  call set_vect_iprint(IPRCAP)
+
+ write(LUPRI,*) 'before stick into memory...LWORK=',LWORK
 
  call StickMemory(WORK,LWORK)
 
@@ -290,24 +294,36 @@ DIMENSION WORK(LWORK)
      CAPDIPVEL_SAVE = CAPDIPVEL
      CAPDIPVEL = .FALSE.
 
+    call print_mem_param()
+
+     ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE=',ILFREE
+
      IF (CAPOVLP) THEN
-         CALL DOSAJEEV(PW(get_kfree()),get_lfree())
+         write(LUPRI,*) 'calling DOSAJEEV..1'; CALL  FLSHFO(LUPRI)
+        ! CALL DOSAJEEV(PW(get_kfree()),get_lfree())
+         CALL DOSAJEEV(PW(get_kfree()), ILFREE )
          CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
-         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
+       ILFREE=get_lfree()
+        ! CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
+         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
          CALL CAP_OVLP_COMP
          call quit('CAP_STUFF: only integral comparison !')
      ELSE
        IF (.NOT.NOOVLP) THEN
 !      .... first compare DIRAC-CAP overlap integrals
          CAPOVLP=.TRUE.
-         CALL DOSAJEEV(PW(get_kfree()),get_lfree())
+        ! CALL DOSAJEEV(PW(get_kfree()),get_lfree())
+          ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE 2=',ILFREE
+         CALL DOSAJEEV(PW(get_kfree()),ILFREE)
          CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
+          
          CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
          CALL CAP_OVLP_COMP
        ENDIF
         CAPOVLP=.FALSE.
         IF (CAPDIPVEL_SAVE.AND..NOT.DONRCAP) THEN
           CAPDIPVEL = .TRUE.
+           write(LUPRI,*) 'calling DOSAJEEV..2'
           CALL DOSAJEEV(PW(get_kfree()),get_lfree())
           CALL CAP_DIRAC_AO(icabfo,iobf1_2)
           CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree()) 
@@ -315,9 +331,12 @@ DIMENSION WORK(LWORK)
           call QUIT('CAP_STUFF: comparison')
         ENDIF
         CAPDIPVEL = .FALSE.
+           write(LUPRI,*) 'calling DOSAJEEV..3'
         CALL DOSAJEEV(PW(get_kfree()),get_lfree())
         CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
-        CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
+          ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE 4=',ILFREE
+        !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
+        CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
         CAPDIPVEL = CAPDIPVEL_SAVE
      ENDIF
 
