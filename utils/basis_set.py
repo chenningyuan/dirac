@@ -4,15 +4,17 @@
 # Ch. R. Jacob <jacob@few.vu.nl>, Andre S.P. Gomes <a.gomes@few.vu.nl>, Dirac meeting 2006
 #
 
+import sys
 import re
 import copy
 import periodic_table
 
 class basis_set :
 
-	def __init__ (self) :
-		self.exponents   = {}
+	def __init__ (self, sameness_thr=1.0e-6) :
+		self.exponents    = {}
 		self.coefficients = {}
+		self.sameness     = sameness_thr 
 
 	def add_exponent (self, sym, exp) :
 
@@ -21,8 +23,9 @@ class basis_set :
 			self.coefficients[sym] = []
 		exp_already_there = False
 		for e in self.exponents[sym] :
-			if (abs((e-exp)/e) < 1e-6) :
+			if (abs((e-exp)/e) < self.sameness) :
 				exp_already_there = True
+				print "$ Warning: in symmetry %8s, exponent %14.10e is considered to be too close to one already present (%14.10e) and is not included. threshold: %4.2e"%(sym,exp,e,self.sameness)
 		if exp_already_there == False :
 			self.exponents[sym].append(exp)
 			self.coefficients[sym].append([]) 
@@ -94,10 +97,10 @@ class basis_set :
 
 class dyall_set :
 
-	def __init__ (self, element, filename) :
+	def __init__ (self, element, filename, sameness_thr=1.0e-6) :
 		self.element  = element
 		self.filename = filename
-		
+		self.sameness = sameness_thr 
 		self.pol_sets = {}
 
 	def comment_reader (self, read=False):
@@ -148,7 +151,7 @@ class dyall_set :
 				break
 		lines = lines[i+1:]
 
-		bs = basis_set ()
+		bs = basis_set (self.sameness)
 
 		sym = ''
 		for l in lines :
@@ -210,7 +213,7 @@ class dyall_set :
 		
 		f.close
 
-		bs = basis_set ()
+		bs = basis_set (self.sameness)
 		for s, e in zip(syms, exps) :
 			bs.add_exponent (s, e)
 
@@ -250,8 +253,10 @@ def parse_cmdline():
 	from optparse import OptionParser
 	
         usage   = "basis_set.py [options]"
-        version = "0.01"
-	parser  = OptionParser(usage,version=version)
+        version = "basis_set.py, version 0.01"
+	authors = "\nWritten by Ch. R. Jacob <jacob@few.vu.nl> and Andre S.P. Gomes <a.gomes@few.vu.nl>"
+	about   = "\nThis utility converts basis sets in different formats into the dirac/dalton basis set library format."
+	parser  = OptionParser(usage,version=version+authors+about)
 
         parser.add_option("--file",dest="raw_basis_file", default=None,
                      help="processes the raw basis set file (default=None)")
@@ -263,6 +268,8 @@ def parse_cmdline():
                      help="lists the types of extra polarization functions in the raw file (default=False)")
         parser.add_option("--uncontracted",action="store_true", default=False,dest="uncontracted", 
                      help="prints only the exponents, which is equivalent to an uncontracted set (default=False)")
+        parser.add_option("--equal_exponent_threshold",default=1.0e-6,dest="equal_exp_threshold", 
+                     help="Threshold for considering when exponents e1 and e2 are the same. computed as abs(e1 - e2)/e2 (default=1.0D-6)")
 
         parser.add_option("--print_scfbas",action="store_true", default=False,dest="print_scf_set", 
                      help="specifies the scf basis set should be printed (default=False)")
@@ -283,6 +290,7 @@ def parse_cmdline():
                      help="prints Spin-Free Dirac-Coulomb basis set (default=False)")
 
         (options, args) = parser.parse_args()
+	options.equal_exp_threshold = float(options.equal_exp_threshold)
         return options
 
 
@@ -309,11 +317,16 @@ def main():
 	for e in elements:
 		element_list = element_list+" "+e
 
+        print "$ "
+        print "$ Basis set library file automatically generatered by "+sys.argv[0]
+        print "$ "
+        invocation =  ' '.join(sys.argv)
+        print "$ invocation: "+invocation
+        print "$ "
         print "$ These are the sets of functions selected from the TCA archive (apart from SCF):"
-#       print "$ ",options.selected_pol_set
 	polarization_list = options.selected_pol_set.split(',') 
-#       print "$ ",options.selected_pol_set,polarization_list
         print "$ ",polarization_list
+        print "$ "
 
         if options.listelem :
 		print "The following elements are present in "+options.raw_basis_file
@@ -325,7 +338,7 @@ def main():
                 if options.listelem:
 			print e
 		else:
-			d = dyall_set(e,file)
+			d = dyall_set(e,file,options.equal_exp_threshold)
                 	if options.listpol :
 				print e+" = "+str(d.get_pol_set_types())
 			else :
