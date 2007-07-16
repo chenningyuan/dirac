@@ -532,6 +532,8 @@ C     DODBG = .TRUE.
       write(LUPRI,*)
       ENDIF
 
+      call FLSHFO(LUPRI)
+
       IF (IRCW.EQ.2) THEN
         ALLOCATE(EVI(N_TOTAL))
         DO I=1,N_TOTAL
@@ -568,16 +570,22 @@ C
         WRITE(LUPRI,*) 'PRT_EV: IRCW=',IRCW
         CALL QUIT('PRT_EV: wrong IRCW value !')
       ENDIF
+C
+C     write(LUPRI,*) 'in FS_ANALYSIS1...3'
+C     call FLSHFO(LUPRI)
 
       ILEVEL=0
       EW=0.0D0
       EWIM = 0.0D0
 
 CMI   EWF=EV(INDX(1))
-      EWF=EV(INDX(1),1)
+      EWF=EV(1,INDX(1))
       NEW=0
       AVER=0.0D0
       AVERIM=0.0D0
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...4'
+C     call FLSHFO(LUPRI)
 
       DO I=1,N_TOTAL
 
@@ -629,6 +637,9 @@ CMI     E = EV(INDX(I))
 
       ENDDO
 
+C     write(LUPRI,*) 'in FS_ANALYSIS1...5'
+C     call FLSHFO(LUPRI)
+
       IF (NEW.NE.0) THEN
 CMI    WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
         IF (IRCW.EQ.1) THEN
@@ -642,6 +653,9 @@ C    &    EV(2,INDX(I)),NEW
 
       WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
 
+C     write(LUPRI,*) 'in FS_ANALYSIS1...6'
+C     call FLSHFO(LUPRI)
+
 CMI  ... printout with symmetry classification ...real energies only...
       DO IRP1 = 1, N_IRPS, 8
       IRP2 = MIN0(N_IRPS,IRP1+7)
@@ -654,6 +668,9 @@ CMI   EWF=EV(INDX(1))
       DO JRP = IRP1, IRP2
          IND(JRP) = 0
       END DO
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...7'
+C     call FLSHFO(LUPRI)
 C
       DO 140 I=1,N_TOTAL
 CMI     E=EV(INDX(I))
@@ -675,11 +692,35 @@ CMI     E=EV(INDX(I))
           IND(IRPS(INDX(I))) = IND(IRPS(INDX(I))) + 1
           EW=((NEW-1)*EW+E)/DBLE(NEW)
         ENDIF
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...8'
+C     call FLSHFO(LUPRI)
+
  140    CONTINUE
-      IF (NEW.NE.0) WRITE(LUPRI,1030) ILEVEL,
-     &              XTEV*(EW-EWF),XTKAYS*(EW-EWF),
-     &              (IND(JRP),JRP=IRP1,IRP2)
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...8.1'
+C     call FLSHFO(LUPRI)
+
+      IF (NEW.NE.0) THEN
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...9.1'
+C     call FLSHFO(LUPRI)
+
+         WRITE(LUPRI,1030) ILEVEL,
+     &   XTEV*(EW-EWF),XTKAYS*(EW-EWF),
+     &   (IND(JRP),JRP=IRP1,IRP2)
+
+      ENDIF
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...9.2'
+C     call FLSHFO(LUPRI)
+
       ENDDO
+
+      write(LUPRI,*) 'PRT_EV done.'
+      call FLSHFO(LUPRI)
+
+
  1000 FORMAT(F17.8)
  1008 FORMAT(17X,I8,2X,16(A1),F16.8)
  1005 FORMAT(//' Energy eigenvalues in atomic units'
