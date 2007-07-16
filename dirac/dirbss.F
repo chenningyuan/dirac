@@ -409,7 +409,7 @@ C   ===============================================================
 C
 C     Prepare Lowdin matrix on 2c form
 C
-      CALL LOWD2C(VMAT,IPRINT)
+      CALL LOWD2C(VMAT,IPRHAM)
 C
 C transform H2C Hamitonian from FP "k" basis to the SO-AO  basis,
 C prepare the final picture change transformation matrix if wished,
