@@ -588,65 +588,8 @@ C=======================================================================
      &              + (X_b*X_c + X_c*X_b)*VXC(fXXX)
           ENDIF
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         ENDDO
       ENDIF
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       ibc = 2
       VXC_SCALAR = R_pq_b
@@ -693,10 +636,240 @@ C=======================================================================
      &            GAO1)
 
 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* SDFT_QR_ALTERNATIVE */
+      SUBROUTINE SDFT_QR_ALTERNATIVE2(ADD_R,
+     &                               ADD_S,
+     &                               ADD_GR,
+     &                               ADD_GS,
+     &                               DTRMAT,
+     &                               EXCMAT,
+     &                               ISYMOP,
+     &                               IHRMOP,
+     &                               GAO,
+     &                               GAO1,
+     &                               R_0,
+     &                               GR_0_NORM,
+     &                               GR_0,
+     &                               W,
+     &                               BUF)
+C=======================================================================
+C     describe me ...
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                               last revision: june 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "inforb.h"
+#include "cdft.h"
+#include "dftcom.h"
+#include "../dft/functionals.h"
+
+      LOGICAL   ADD_R,
+     &          ADD_S,
+     &          ADD_GR,
+     &          ADD_GS,
+     &          LBIT
+      DIMENSION DTRMAT(NBAST,NBAST,NZ,3),
+     &          EXCMAT(NBAST,NBAST,NZ,3),
+     &          ISYMOP(3),
+     &          IHRMOP(3),
+     &          GAO(*),
+     &          GAO1(*),
+     &          GR_0(3),
+     &          BUF(*),
+!
+     &          GR(  3,0:3),
+     &          GS(3,3,0:3),
+!
+     &          R(  0:3),
+     &          Z(  0:3),
+     &          S(3,0:3),
+     &          Y(3,0:3),
+     &          X(3,0:3),
+!
+     &          R_pq(  0:3),
+     &          Z_pq(  0:3),
+     &          S_pq(3,0:3),
+     &          Y_pq(3,0:3),
+     &          X_pq(3,0:3),
+!
+     &          Vxc_hs(    0:3),
+     &          Vxc_as(  3,0:3),
+     &          Vxc_hv(  3,0:3),
+     &          Vxc_av(3,3,0:3),
+!
+     &          Vxc(99) !dirty fix
+
+#include "ibtfun.h"
+
+      CALL DZERO(GR,4*3)
+      CALL DZERO(GS,4*3*3)
+
+      GR(1,0) = GR_0(1)
+      GR(2,0) = GR_0(2)
+      GR(3,0) = GR_0(3)
+
+      CALL DZERO(R,4)
+      CALL DZERO(Z,4)
+      CALL DZERO(S,4*3)
+      CALL DZERO(Y,4*3)
+      CALL DZERO(X,4*3)
+
+      CALL DZERO(R_pq,4)
+      CALL DZERO(Z_pq,4)
+      CALL DZERO(S_pq,4*3)
+      CALL DZERO(Y_pq,4*3)
+      CALL DZERO(X_pq,4*3)
+
+      CALL DZERO(Vxc_hs,4)
+      CALL DZERO(Vxc_as,4*3)
+      CALL DZERO(Vxc_hv,4*3)
+      CALL DZERO(Vxc_av,4*3*3)
+
+      DO ibc = 1,3
+        IF(ADD_R) THEN
+          CALL GETRHO(R(ibc),
+     &                ISYMOP(ibc)-1,
+     &                GAO,
+     &                DTRMAT(1,1,1,ibc),
+     &                BUF)
+        ENDIF
+        IF(ADD_GR) THEN
+          CALL DENSITY_GRADIENT_GENERAL(GR(1,ibc),
+     &                                  ISYMOP(ibc)-1,
+     &                                  GAO,
+     &                                  GAO1,
+     &                                  DTRMAT(1,1,1,ibc),
+     &                                  BUF)
+        ENDIF
+        IF(ADD_S) THEN
+          CALL GET_M(.TRUE.,
+     &               S(1,ibc),
+     &               ISYMOP(ibc)-1,
+     &               GAO,
+     &               UNUSED,
+     &               DTRMAT(1,1,1,ibc),
+     &               BUF)
+        ENDIF
+        IF(ADD_GS) THEN
+          CALL GET_M_DERVS(.TRUE.,
+     &                     GS(1,1,ibc),
+     &                     ISYMOP(ibc)-1,
+     &                     GAO,
+     &                     GAO1,
+     &                     DTRMAT(1,1,1,ibc),
+     &                     BUF)
+        ENDIF
+      ENDDO
+
+      IF(ADD_R .AND.       ADD_GR) CALL DFTPOT2(VXC,W,R_0,GR_0_NORM)
+      IF(ADD_R .AND. .NOT. ADD_GR) CALL DFTPOT2(VXC,W,R_0,D0)
+
+      Z(1) = DDOT(3,GR(1,1),1,GR(1,0),1)
+     &     + DDOT(3,GR(1,0),1,GR(1,1),1)
+      Z(2) = DDOT(3,GR(1,2),1,GR(1,0),1)
+     &     + DDOT(3,GR(1,0),1,GR(1,2),1)
+      Z(3) = DDOT(3,GR(1,3),1,GR(1,0),1)
+     &     + DDOT(3,GR(1,0),1,GR(1,3),1)
+     &     + DDOT(3,GR(1,1),1,GR(1,2),1)*D2
+     &     + DDOT(3,GR(1,2),1,GR(1,1),1)*D2
+
+      IF(ADD_R) THEN
+        R_pq(3) = R_pq(3) + Vxc(fR0)
+
+        R_pq(1) = R_pq(1)
+     &          + R(2)*Vxc(fRR)
+
+        R_pq(2) = R_pq(2)
+     &          + R(1)*Vxc(fRR)
+
+        R_pq(0) = R_pq(0)
+     &          + R(3)*Vxc(fRR)
+
+        R_pq(0) = R_pq(0)
+     &          + (R(1)*R(2) + R(2)*R(1))*Vxc(fRRR)
+      ENDIF
+
+      IF(ADD_GR) THEN
+        R_pq(1) = R_pq(1)
+     &          + Z(2)*Vxc(fRZ)
+
+        R_pq(2) = R_pq(2)
+     &          + Z(1)*Vxc(fRZ)
+
+        R_pq(0) = R_pq(0)
+     &          + Z(3)*Vxc(fRZ)
+
+        R_pq(0) = R_pq(0)
+     &          + (R(1)*Z(2) + R(2)*Z(1))*Vxc(fRRZ)
+     &          + (Z(1)*R(2) + Z(2)*R(1))*Vxc(fRRZ)
+     &          + (Z(1)*Z(2) + Z(2)*Z(1))*Vxc(fRZZ)
+
+        Z_pq(3) = Z_pq(3) + Vxc(fZ0)
+
+        Z_pq(1) = Z_pq(1)
+     &          + R(2)*Vxc(fRZ)
+     &          + Z(2)*Vxc(fZZ)
+
+        Z_pq(2) = Z_pq(2)
+     &          + R(1)*Vxc(fRZ)
+     &          + Z(1)*Vxc(fZZ)
+
+        Z_pq(0) = Z_pq(0)
+     &          + R(3)*Vxc(fRZ)
+     &          + Z(3)*Vxc(fZZ)
+
+        Z_pq(0) = Z_pq(0)
+     &          + (R(1)*R(2) + R(2)*R(1))*Vxc(fRRZ)
+     &          + (R(1)*Z(2) + R(2)*Z(1))*Vxc(fRZZ)
+     &          + (Z(1)*R(2) + Z(2)*R(1))*Vxc(fRZZ)
+     &          + (Z(1)*Z(2) + Z(2)*Z(1))*Vxc(fZZZ)
+      ENDIF
 
 
 
 
+!     IF(ADD_S) THEN
+!     ENDIF
+
+
+
+
+      Vxc_hs(1) = R_pq(2)
+      Vxc_hs(2) = R_pq(1)
+      Vxc_hs(3) = R_pq(0)
+
+      DO jxyz = 1,3
+        Vxc_hv(jxyz,1) =  Z_pq(2)*GR(jxyz,0) + Z_pq(3)*GR(jxyz,1)
+        Vxc_hv(jxyz,2) =  Z_pq(1)*GR(jxyz,0) + Z_pq(3)*GR(jxyz,2)
+        Vxc_hv(jxyz,3) =  Z_pq(0)*GR(jxyz,0) + Z_pq(3)*GR(jxyz,3)
+     &                 + (Z_pq(1)*GR(jxyz,1) + Z_pq(2)*GR(jxyz,2))*D2
+      ENDDO
+
+      CALL DSCAL(4*3,D2,Vxc_hv(1,0),1)
+
+      DO ibc = 1,3
+        CALL DOEXC2(Vxc_hs(ibc),
+     &              Vxc_hv(1,ibc),
+     &              ISYMOP(ibc)-1,
+     &              EXCMAT(1,1,1,ibc),
+     &              GAO,
+     &              GAO1)
+      ENDDO
 
       RETURN
       END
