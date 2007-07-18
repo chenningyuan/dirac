@@ -929,9 +929,16 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 #if defined (MOD_CDFT)
 !         magnetization (a.k.a. spin density) contribution
           IF(LBIT(LBIT_CDFT,1)) THEN
-            CALL SDFT_QR(DTRMAT,EXCMAT,
-     &                   ISYMOP,IHRMOP,GAO,GAO1,
-     &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+!           CALL SDFT_QR(DTRMAT,EXCMAT,
+!    &                   ISYMOP,IHRMOP,GAO,GAO1,
+!    &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+          CALL SDFT_QR_ALTERNATIVE(.FALSE.,
+     &                            .TRUE.,
+     &                            .FALSE.,
+     &                            .FALSE.,
+     &                            DTRMAT,EXCMAT,
+     &                            ISYMOP,IHRMOP,GAO,GAO1,
+     &                            RHO,RHOGRD,RHG,WGHT,BUF)
           ENDIF
 !         current density contribution
 !         IF(LBIT(LBIT_CDFT,2)) THEN
