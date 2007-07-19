@@ -32,8 +32,6 @@ C=======================================================================
 
 #include "memint.h"
 
-      CALL DZERO(QUANTITY_INTEGRAL,4)
-
       IF(LBIT(LBIT_VISUAL,3)) THEN !3D
 
         CALL AROUND('3D numerical integration')
@@ -58,6 +56,7 @@ C=======================================================================
      &              WORK(KW),
      &              LUNIT,NR_POINTS)
 
+        CALL DZERO(QUANTITY_INTEGRAL,4)
         CALL INTEGRATE_QUANTITY(DMAT_AO,
      &                          GAO,
      &                          GAO1,
@@ -103,11 +102,17 @@ C=======================================================================
         DO IORIENTATION = 2,2
 
           WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A12,A3,A17,A19,A20)') 'orientation:',
-     &                                        ORIENTATION(IORIENTATION),
-     &                                        'pieces',
-     &                                        'order',
-     &                                        'error'
+          WRITE(LUPRI,'(A12,A3)') 'orientation:',
+     &                            ORIENTATION(IORIENTATION)
+          WRITE(LUPRI,'(A)')
+          WRITE(LUPRI,'(A)')
+          WRITE(LUPRI,'(A12,A25,2A20,A14,2A13)') 'scalar',
+     &                                           'x-component',
+     &                                           'y-component',
+     &                                           'z-component',
+     &                                           'pieces',
+     &                                           'order',
+     &                                           'error'
           WRITE(LUPRI,'(A)')
 
           NR_PIECES = 5
@@ -135,6 +140,7 @@ C=======================================================================
      &                  WORK(KW),
      &                  LUNIT,NR_POINTS)
 
+            CALL DZERO(QUANTITY_INTEGRAL,4)
             CALL INTEGRATE_QUANTITY(DMAT_AO,
      &                              GAO,
      &                              GAO1,
@@ -157,8 +163,13 @@ C=======================================================================
               ERROR = ERROR + DABS(SOMETHING)
             ENDDO
 
-            WRITE(LUPRI,'(I30,I20,E30.10)') NR_PIECES, N, ERROR
-            IF(ERROR .LT. 1.0D-6) GOTO 3
+            WRITE(LUPRI,'(4E20.10,I8,I14,E23.10)') QUANTITY_INTEGRAL(0),
+     &                                             QUANTITY_INTEGRAL(1),
+     &                                             QUANTITY_INTEGRAL(2),
+     &                                             QUANTITY_INTEGRAL(3),
+     &                                             NR_PIECES, N, ERROR
+
+            IF(ERROR .LT. 1.0D-7) GOTO 3
 
             N = N + 10
 
@@ -166,20 +177,7 @@ C=======================================================================
             CALL DAXPY(4,D1,QUANTITY_INTEGRAL,1,
      &                      QUANTITY_INTEGRAL_LAST,1)
           ENDDO
-
  3        CONTINUE
-
-          WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A12,A25,2A20)') 'scalar',
-     &                                  'x-component',
-     &                                  'y-component',
-     &                                  'z-component'
-          WRITE(LUPRI,'(A)')
-
-          WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0),
-     &                             QUANTITY_INTEGRAL(1),
-     &                             QUANTITY_INTEGRAL(2),
-     &                             QUANTITY_INTEGRAL(3)
 
           WRITE(LUPRI,'(A)')
           CALL PRSYMB(LUPRI,'-',100,0)
