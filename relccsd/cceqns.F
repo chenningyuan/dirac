@@ -329,6 +329,7 @@ C
       CALL XTIME(5,1,'- T2 equations                  ')
 
       
+CMI  ... debugging output ...
       IF (DEBUG) THEN
         WRITE (*,111) "ho ",MYPROC,DDOT(RCW*NFOO,HO,1,HO,1)
         WRITE (*,111) "hv ",MYPROC,DDOT(RCW*NFVV,HV,1,HV,1)

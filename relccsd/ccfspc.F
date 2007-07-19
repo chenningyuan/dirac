@@ -323,7 +323,7 @@ C-------------------------------------------
       ELSEIF (ICURFSS.EQ.2) THEN
         TIT = '(0h,1p) space, electron affinities    '
         CALL XCOPY (IAVAV(NREP+1),A0,0,HEFF,1)
-C       Extract the Hamiltonian
+C       Extract the Hamiltonian from S1
         CALL EXTRT1 (S1,HEFF,1,1,3,3,LFA)
 C       Extract and add the Fock matrix elements
         CALL EXTRT1 (FVO,BUF1,1,1,3,3,LFA)
@@ -454,12 +454,13 @@ C
 C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
-C            Miro Ilias - complex eingenenergies carried in EV
+C            Miro Ilias - complex eingenenergies carried in EV, more output
 C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
 #include "complex.inc"
+#include "inpt.inc"
 C
 C---------------Calling variables--------------------------------------
 
@@ -473,6 +474,10 @@ C---------------Local variables -----------------------------------
       INTEGER , ALLOCATABLE :: INDX(:)
       REAL*8 FNOR(RCW),E_OFF
 C---------------Executable code--------------------------------------
+
+
+CMI    ... control print out
+
 C
 C....... Allocate memory for the diagonalization routine
 C
@@ -494,6 +499,16 @@ C        make a local copy
          ALLOCATE (VECI(NDT,NDT))
          CALL DCOPY (NDT2,H,2,HR,1)
          CALL DCOPY (NDT2,H(2,1,1),2,HI,1)
+
+         IF (IPRNT.GE.10) THEN
+CMI    ... control print out
+           WRITE(IW,'(2X,A)')
+     &'Output from SOLVE_CG - complex matrix (RCW=2) to be diagonalized'
+           CALL OUTPUT(HR,1,NDT,1,NDT,NDT,NDT,1,IW)
+           WRITE(IW,'(/2X,A)') 'Imaginary part'
+           CALL OUTPUT(HI,1,NDT,1,NDT,NDT,NDT,1,IW)
+         ENDIF
+
          CALL CG(NDT,NDT,HR,HI,EVR,EVI,1,VECR,VECI,
      &           SCR,SCR(1,2),SCR(1,3),IERR)
 Cluuk       uncomment when debugging, gives huge output
@@ -504,6 +519,12 @@ Cluuk       call output (hi,1,ndt,1,ndt,ndt,ndt,1,iw)
       ELSE
 Cluuk       uncomment when debugging, gives huge output
 Cluuk       call output (h,1,ndt,1,ndt,ndt,ndt,1,iw)
+            IF (IPRNT.GE.10) THEN
+CMI    ... control print out
+           WRITE(IW,'(2X,A)')
+     &'Output from SOLVE_CG - real matrix to be diagonalized'
+             CALL OUTPUT(H,1,NDT,1,NDT,NDT,NDT,1,IW)
+            ENDIF
             CALL RG(NDT,NDT,H,EVR,EVI,1,VECR,SCR,SCR(1,2),IERR)
       ENDIF
 C
