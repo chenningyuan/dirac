@@ -1,0 +1,20 @@
+  
+  Directory with HSMRCC program.
+
+  DIRAC reads input and makes integral files for the external HSMRCC program of Sham.
+
+ All codes are prefered to be in the Fotran90 language.
+
+-------
+
+ DIRAC generates (after SCF) the Gamess unformatted files  with data:
+
+      open(UMR1EINT,file=FileMR1EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
+      open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
+ $GMS_SRC/"gmsmod.f90"
+
+and one formatted file with symmetry information:
+
+      open(USYMINF,file=FileSYMINF)
+ $GMS_SRC/"syminf.f90" 
+
