@@ -4652,7 +4652,7 @@ C.....Transform coefficients to orthonormal basis
 C.....Find coefficients with smallest norm
       DO I = 1,NORB
         ARR(I) = QNRM2(NTMO,NZ,BUF(1,I,1),NTMO,NORB,1)
-        WRITE(6,*) 'TMP = ',I,ARR(I)
+!       WRITE(6,*) 'TMP = ',I,ARR(I)
       ENDDO
       CALL INDEXX(NORB,ARR,INDX)
       CALL DZERO(ARR,NORB)
