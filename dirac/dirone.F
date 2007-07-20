@@ -1978,9 +1978,9 @@ C
          SUB_BL = .TRUE.
       ENDIF
       IF (LINEAR) THEN
+C.......SUB_BL will be set true if linear symmetry works
         CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
         CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KFREE),LFREE)
-        SUB_BL = .TRUE.
       ENDIF
 C
 C     Construct right index transformed overlap matrix Saomo = Sao T
@@ -4752,6 +4752,7 @@ C
       ENDIF
 C
       CALL LINSYM(TMAT,VMAT,WORK(KTBUF),WORK(KEIG),WORK(KFREE),LFREE)
+      SUB_BL = .TRUE.
 
       IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A/)')
