@@ -36,6 +36,7 @@ usage()
    echo '     -cdft            : Include SDFT/CDFT module'
    echo '     -visual          : Include visualization module'
    echo '     -cap             : Include CAP module'
+   echo '     -hscc            : Include interface for the (external) HSMRCC code'
    echo '     -oof             : Include object oriented modularity of Fotran 90/95'
    echo '     tarfile=make     : only generate new Makefile'
    echo '     tarfile=export   : Make DIRAC.new.tar.gz'
@@ -210,7 +211,20 @@ setup()
 	 F90MODS=ALL_F90MODS
          echo " - CAP module"
     else
-        echo "CAP module not is included "
+        echo "CAP module is not included "
+    fi
+   #
+   #   HSMRCC Dirac-interface module
+   #
+   if [ -n "$HSCCMOD" ]; then
+         HSCCFLG='-DMOD_HSCC'
+         HSCCOBJ='$(HSCCOBJS)'
+         HSCCMAK=HSCC_OBJ
+         HSCCTAR=1
+	 F90MODS=ALL_F90MODS
+         echo " - HSMRCC interface module"
+    else
+        echo "HSMRCC interface module is not included "
     fi
    #
    # Object oriented fortran90/95 mocularity module
@@ -399,6 +413,11 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/cap/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
+   if [ "$HSCCTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/hsmrcc/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
    if [ "$ERITAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
@@ -457,8 +476,8 @@ make_makefile()
 {
    echo "*** Making general Makefile"
 #   echo
-   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $CDFTOBJ $VISUALOBJ $CAPOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
-   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $CDFTMAK $VISUALMAK $CAPMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
+   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $CDFTOBJ $VISUALOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $CDFTMAK $VISUALMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
    #
    # Write current Makefile
    #
@@ -734,6 +753,16 @@ cap/dircap.o cap/prepcap.o cap/prepcap90.o
 EOF
 fi
 #
+#  Object-files for the HSMRCC-interface module
+#
+if [ -n "$HSCCMOD" ]; then
+cat <<EOF>> Makefile
+
+HSCCOBJS = \\
+hsmrcc/prepare.o 
+EOF
+fi
+#
 #  Object-files for OOF module
 #
 if [ -n "$OOFMOD" ]; then
@@ -754,7 +783,7 @@ OBJSMXM = gp/mxmpack.o
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
 	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \\
         \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS) \\
-        \$(OOF_OBJS) \$(CAP_OBJS) \$(VISUALOBJS)
+        \$(OOF_OBJS) \$(CAPOBJS) \$(HSCCOBJS) \$(VISUALOBJS)
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
@@ -896,6 +925,9 @@ fi
 if [ -n "$CAPMOD" ]; then
    echo '	cd cap  ; $(MAKE) clean' >> Makefile
 fi
+if [ -n "$HSCCMOD" ]; then
+   echo '	cd hsmrcc  ; $(MAKE) clean' >> Makefile
+fi
 # cleaning of *.o files
 if [ -n "$OOFMOD" ]; then
    echo '	cd oof  ; $(MAKE) clean' >> Makefile
@@ -925,7 +957,10 @@ if [ -n "$MODULES" ]; then
      echo '     cd  oof  ; $(MAKE) mod ; cd .. ;\' >> Makefile
   fi
   if [ -n "$CAPMOD" ]; then
-     echo '     cd  cap  ; $(MAKE) mod ; cd .. ' >> Makefile
+     echo '     cd  cap  ; $(MAKE) mod ; cd .. ;\' >> Makefile
+  fi
+  if [ -n "$HSCCMOD" ]; then
+     echo '     cd  hsmrcc  ; $(MAKE) mod ; cd .. ' >> Makefile
   fi
 #
 #
@@ -1050,6 +1085,13 @@ CAP_OBJ :
 	cd cap; \$(MAKE) all
 EOF
 fi
+if [ -n "$HSCCMOD" ]; then
+cat <<EOF>> Makefile
+
+HSCC_OBJ :
+	cd hsmrcc; \$(MAKE) all
+EOF
+fi
 if [ -n "$OOFMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -1129,6 +1171,10 @@ if [ -n "$CAPMOD" ]; then
    TEMP="$TEMP cap"
    TEMPOOF="$TEMPOOF cap"
 fi
+if [ -n "$HSCCMOD" ]; then
+   TEMP="$TEMP hsmrcc"
+   TEMPOOF="$TEMPOOF hsmrcc"
+fi
 if [ -n "$OOFMOD" ]; then
    TEMP="$TEMP oof"
    TEMPOOF="$TEMPOOF oof"
@@ -1205,7 +1251,7 @@ which_modules()
 {
 #  
 #
-MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $CAPFLG $LRGMOLFLG $OOF_FLG"
+MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG"
 dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
@@ -1230,6 +1276,9 @@ if [ -n "$VISUALFLG" ]; then
 fi
 if [ -n "$CAPFLG" ]; then
    dirs="$dirs cap"
+fi
+if [ -n "$HSCCFLG" ]; then
+   dirs="$dirs hsmrcc"
 fi
 if [ -n "$OOF_FLG" ]; then
    dirs="$dirs oof"
@@ -1314,7 +1363,11 @@ while [ -n "$1" ]; do
          ;;
       -cap)
          CAPMOD=1
-#      ... now in Fortran 90 !
+         OOFMOD=1
+	 MODULES=1
+         ;;
+      -hscc)
+         HSCCMOD=1
          OOFMOD=1
 	 MODULES=1
          ;;
