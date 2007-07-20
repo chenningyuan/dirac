@@ -1244,12 +1244,14 @@ C
 C
 C
       DO 10 ITER = 2,MAXITR
+#if defined (MOD_DNF)
 C
 C        asymptotic correction
 C                GRAC                    SAOP
          IF(LBIT(LBIT_DFTAC,1) .OR. LBIT(LBIT_DFTAC,3)) THEN
            CALL DFTAC_EIGENVALUES(EIG,OLD_HOMO_EIGENVALUE)
          ENDIF
+#endif
 C
          NITER  = NITER + 1
          KITER  = KITER + 1
