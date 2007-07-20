@@ -3,7 +3,7 @@
 # FILE    : configure
 #
 # Shell script for configuring Makefile.config needed to build
-# the DIRAC relativistic molecular code and the pam script.
+# the DIRAC relativistic molecular code, the pam and runtest script.
 # The shell script is a heavily modified version of the script used for DALTON
 #
 # It tries to determine what platform we are on (although allowing builds
@@ -194,7 +194,7 @@ while [ $# != 0 ]; do
    esac
 done
 
-
+SRC_DIR=`pwd`
 opt=
 
 #
@@ -206,7 +206,7 @@ opt=
 #
 #
 echo
-echo '   Configuring the DIRAC Makefile.config and pam run script'
+echo '   Configuring the DIRAC Makefile.config + pam and runtest scripts'
 echo
 echo '   configure $Revision$'
 #
@@ -1907,29 +1907,32 @@ esac
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
-# Make pam shell script
+# Make pam and runtest shell script
 #
-# ksh is preferred - otherwise use sh
+# bash is preferred - otherwise use sh
 #
 $echo '\n\nChecking for /bin/ksh or /bin/bash: \c'
 if [ -f /bin/bash ]; then
    echo "found /bin/bash"
    echo '#!/bin/bash' > $INSTALL_DIR/pam
+   echo '#!/bin/bash' > $SRC_DIR/test/runtest
 elif [ -f /bin/ksh ]; then
    echo "found /bin/ksh"
    echo '#!/bin/ksh' > $INSTALL_DIR/pam
+   echo '#!/bin/ksh' > $SRC_DIR/test/runtest
 else
    echo ""
    echo "Neither ksh nor bash seems to be installed -> using sh."
    echo '#!/bin/sh' > $INSTALL_DIR/pam
+   echo '#!/bin/sh' > $SRC_DIR/test/runtest
 fi
 $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
 cat <<EOF>> $INSTALL_DIR/pam
 #
 SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
-SRC_DIR=`pwd`
-BASDIR=`pwd`/basis/:`pwd`/basis_dalton/
+SRC_DIR=$SRC_DIR
+BASDIR=$SRC_DIR/basis/:$SRC_DIR/basis_dalton/
 MPIRUN=$mpirun
 MACH_FILE=$mach_file
 LOCALDISKS=$localdisks
@@ -1943,6 +1946,15 @@ CLEANUP=
 EOF
 cat ./pam.in >> $INSTALL_DIR/pam
 chmod a+rx $INSTALL_DIR/pam
+echo "ok"
+echo
+$echo 'Preparing runtest shell script  : \c'
+cat <<EOF>> $SRC_DIR/test/runtest
+#
+BIN_DIR=$INSTALL_DIR
+EOF
+cat $SRC_DIR/test/runtest.in >> $SRC_DIR/test/runtest
+chmod a+rx $SRC_DIR/test/runtest
 echo "ok"
 echo
 #
