@@ -454,6 +454,11 @@ C
       CALL GTINFO(DAYTID)
       WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
 C
+
+#if defined (MOD_HSCC)
+      CALL HSCC_STUFF(WORK,LWORK)
+#endif
+
       CALL QEXIT('PAMTRA')
       CALL FLSHFO(LUPRI)
 C

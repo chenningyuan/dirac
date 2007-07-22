@@ -437,7 +437,7 @@ C
      &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
-     &            '.PAR4BS','.SCATTE','.MDCINT','xXXXXXX','xXXXXXX'/
+     &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','xXXXXXX'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -450,6 +450,9 @@ C
       LSPES  = .FALSE.
       LSPES2 = .FALSE.
       LSPES4 = .FALSE.
+
+CMI  ... no HSCC
+      DOHSCC = .FALSE.
 C
 C     Initialize /DCBTRA/
 C     ===================
@@ -706,6 +709,8 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
                   NOMDCINT = .FALSE.
                GO TO 100
    24          CONTINUE
+C&&&& HSMRCC - interface
+                  DOHSCC = .TRUE.
                GO TO 100
    25          CONTINUE
                GO TO 100
@@ -948,6 +953,14 @@ C
       WRITE(LUPRI,'(1X,A,I4)')
      &   '* Size of batches for strategy 4 (parallel only): ', IPAR4BS
 C
+
+#if defined (MOD_HSCC)
+      IF (DOHSCC) THEN
+       WRITE(LUPRI,*) 'HSCC stuf !'
+       CALL HSCCINP
+      ENDIF
+#endif
+
   999 CONTINUE
       RETURN
  1010 CONTINUE

@@ -759,7 +759,7 @@ if [ -n "$HSCCMOD" ]; then
 cat <<EOF>> Makefile
 
 HSCCOBJS = \\
-hsmrcc/prepare.o 
+hsmrcc/prepare.o  hsmrcc/stuff77.o
 EOF
 fi
 #

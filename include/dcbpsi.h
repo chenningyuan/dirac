@@ -1,4 +1,6 @@
+!
 ! *** Wave function module ***
+!
 !  DOSCF - either DODHF or DODFT true
 !  DODHF - perform Dirac-Hartee-Fock calculation
 !  DOMP2 - perform direct second-order Moeller-Plesset calculation
@@ -8,11 +10,15 @@
 !  DORES - resolution of open-shell manifold with GOSCIP
 !  DOMVO - make modified virtual orbitals
 !  DOCCM - perform coupled-cluster calculation with RELCCSD
+!  DOHSCC - perform HSMRCC calculation with external code
 !  DOCOSCI - perform CI calculation with GOSCIP
 !  DOCIM - perform CI calculation with DIRRCI/GOSCIP
 !  DOLUCT- perform CI calculation with LUCITA
+
       LOGICAL DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
-     &        DOLUCT, DOKRMC, DOLUCIAR, L1ORBM, L2ORBM, PHCOEF, DOCOSCI
+     &        DOHSCC, DOLUCT, DOKRMC, DOLUCIAR,                         &
+     &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI
+
       COMMON /DCLPSI/ DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM,  &
-     &                DOCIM, DOLUCT, DOKRMC, DOLUCIAR, L1ORBM, L2ORBM,  &
-     &                PHCOEF, DOCOSCI
+     &                DOCIM, DOHSCC, DOLUCT, DOKRMC, DOLUCIAR, L1ORBM,  &
+     &                L2ORBM, PHCOEF, DOCOSCI

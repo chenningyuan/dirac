@@ -1,10 +1,10 @@
 include ../Makefile.config
 
-F77_OBJS = 
+F77_OBJS = stuff77.o 
 
 F90_OBJS = prepare.o 
 
-F90_MODS = 
+F90_MODS = pointers.mod
 
 F_CPPS = $(F77_OBJS:.o=.i)
 
