@@ -58,10 +58,6 @@ typedef struct FirstDrv_  FirstDrv;
 typedef struct SecondDrv_ SecondDrv;
 typedef struct ThirdDrv_  ThirdDrv;
 
-typedef struct SpinPolarizedFirstDrv_  SpinPolarizedFirstDrv;
-typedef struct SpinPolarizedSecondDrv_ SpinPolarizedSecondDrv;
-typedef struct SpinPolarizedThirdDrv_  SpinPolarizedThirdDrv;
-
 /* Density evaluators */
 typedef struct DftDensity_  DftDensity;
 typedef struct DftGrid_     DftGrid;
@@ -90,51 +86,15 @@ struct DftDensity_ {
  *
  * But it took me some time to figure this out and I got very confused,
  * so maybe these lines are helpful when someone else looks at the code!
+ *
+ * thanks Christoph!
+ * energy and linear response needs cleanup,
+ * there Z is not (yet) \nabla R \cdot \nabla R
+ * ok for qr,
+ *        radovan
+ *
  */ 
 
-struct FirstDrv_ {
-    real fR;  /* d/drho F     */
-    real fZ;  /* d/zeta F     */
-};
-
-/* SecondDrv:  matrix  of  second  order functional  derivatives  with
- * respect  to two  parameters: density  rho and  SQUARE  of the
- * density gradient zeta.  The derivatives are computed for alpha-alpha
- * or beta-beta spin-orbital block (i.e. include triplet flag).
- */
-struct SecondDrv_ {
-    real fR; /* d/drho  F */
-    real fZ; /* d/dzeta F */
-    real fRR; /* d^2/drho^2 F */
-    real fRZ; /* d^2/(drho dzeta) F */
-    real fZZ; /* d^2/dzeta^2 F */
-};
-
-/* ThirdDrv: matrix of third derivatives with respect to two parameters:
-   density rho and SQUARE of the density gradient zeta.
-*/
-struct ThirdDrv_ {
-    real fR;   /* d/drho  F */
-    real fZ;   /* d/dzeta F */
-    real fRR;  /* d^2/drho^2 F */
-    real fRZ;  /* d^2/(drho dzeta) F */
-    real fZZ;  /* d^2/dzeta^2 F */
-    real fRRR; /* d^3/drho^3 F */
-    real fRRZ; /* d^3/(drho^2 dzeta) F */
-    real fRZZ; /* d^3/(drho dzeta^2) F */
-    real fZZZ; /* d^3/dzeta^3 F */
-};
-
-void dftpot0_(FirstDrv *ds, const real* weight,
-              const real* rho, const real* grad);
-void dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
-              const int* triplet);
-void dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
-              const int* triplet);
-
-
-
-#if defined(radovan_will_merge_me_later)
 /*
  *     R = \rho_\alpha + \rho_\beta
  *     S = \rho_\alpha - \rho_\beta
@@ -145,31 +105,61 @@ void dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
  */
 
 struct FirstDrv_ {
-       real fR; 
-       real fZ; 
+       real fR;
+       real fZ;
+       real fX;
 };
 
 struct SecondDrv_ {
-       real fR; 
-       real fZ; 
+       real fR;
+       real fZ;
+       real fX;
 
        real fRR;
-       real fRZ;
+       real fSS;
        real fZZ;
+       real fYY;
+       real fXX;
+       real fRZ;
+       real fSY;
+       real fZX;
+       real fRX;
 };
 
 struct ThirdDrv_ {
-       real fR; 
-       real fZ; 
+       real fR;
+       real fZ;
+       real fX;
 
        real fRR;
-       real fRZ;
+       real fSS;
        real fZZ;
+       real fYY;
+       real fXX;
+       real fRZ;
+       real fSY;
+       real fZX;
+       real fRX;
 
        real fRRR;
-       real fRRZ;
-       real fRZZ;
        real fZZZ;
+       real fXXX;
+       real fRSS;
+       real fRZZ;
+       real fRYY;
+       real fRXX;
+       real fRRZ;
+       real fSSZ;
+       real fRRX;
+       real fSSX;
+       real fZZX;
+       real fYYX;
+       real fRSY;
+       real fSZY;
+       real fRZX;
+       real fSYX;
+       real fZYY;
+       real fZXX;
 };
 
 void dftpot0_(FirstDrv *ds, 
@@ -186,52 +176,13 @@ void dftpot2_(ThirdDrv *ds,
               const real* weight,
               const real* rho, 
               const real* grad);
-#endif /* (radovan_will_merge_me_later) */
 
-struct SpinPolarizedSecondDrv_ {
-       real fX  ;
-     
-       real fSS ;
-       real fYY ;
-       real fXX ;
-       real fRX ;
-       real fSY ;
-       real fZX ;
-};
-
-struct SpinPolarizedThirdDrv_ {
-       real fX  ;
-     
-       real fSS ;
-       real fYY ;
-       real fXX ;
-       real fRX ;
-       real fSY ;
-       real fZX ;
-     
-       real fXXX;
-       real fRRX;
-       real fRSS;
-       real fRYY;
-       real fRXX;
-       real fSSZ;
-       real fSSX;
-       real fZZX;
-       real fZYY;
-       real fZXX;
-       real fYYX;
-       real fRSY;
-       real fRZX;
-       real fSZY;
-       real fSYX;
-};
-
-void sdftpot1_(SpinPolarizedSecondDrv *ds, 
+void sdftpot1_(SecondDrv *ds, 
                const real* weight,
                const real* rho, 
                const real* grad);
 
-void sdftpot2_(SpinPolarizedThirdDrv *ds, 
+void sdftpot2_(ThirdDrv *ds, 
                const real* weight,
                const real* rho, 
                const real* grad);

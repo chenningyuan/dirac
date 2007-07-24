@@ -146,7 +146,10 @@ doalda_(const int *alda)
 
 
 void
-dftpot0_(FirstDrv *ds, const real* weight, const real* rho, const real* grad)
+dftpot0_(FirstDrv *ds,
+         const real* weight,
+         const real* rho, 
+         const real* grad)
 {
     FunFirstFuncDrv drvs;
     FunDensProp dp;
@@ -162,8 +165,10 @@ dftpot0_(FirstDrv *ds, const real* weight, const real* rho, const real* grad)
 }
 
 void
-dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
-         const int* triplet)
+dftpot1_(SecondDrv *ds,
+         const real* weight,
+         const real* rho, 
+         const real* grad)
 {
     FunSecondFuncDrv drvs;
     FunDensProp dp;
@@ -174,9 +179,9 @@ dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
     dp.gradab = dp.grada * dp.gradb;
     dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
     if(do_alda)
-        LDAFunctional.second(&drvs, *w, &dp);
+        LDAFunctional.second(&drvs, *weight, &dp);
     else
-        selected_func->second(&drvs, *w, &dp);
+        selected_func->second(&drvs, *weight, &dp);
          
     ds->fR  = 0; /* NOT USED */
     ds->fZ  = drvs.df0010 + 0.5*drvs.df00001* *grad;
@@ -187,8 +192,10 @@ dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
 }
 
 void
-dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
-         const int* triplet)
+dftpot2_(ThirdDrv *ds,
+         const real* weight,
+         const real* rho, 
+         const real* grad)
 {
 /***********************************************************************/
 /*                                                                     */
@@ -237,9 +244,9 @@ dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
 
     /* Get the functional derivatives for the appropriate functional */
     if(do_alda)
-        LDAFunctional.third(&drvs, *w, &dp);
+        LDAFunctional.third(&drvs, *weight, &dp);
     else
-        selected_func->third(&drvs, *w, &dp);
+        selected_func->third(&drvs, *weight, &dp);
     
     /* Evaluate the different derivatives */
     ds->fR   = drvs.df1000;
@@ -258,7 +265,7 @@ dftpot2_(ThirdDrv *ds, const real* w, const real* rho, const real* grad,
 }
 
 void 
-sdftpot1_(SpinPolarizedSecondDrv *ds,
+sdftpot1_(SecondDrv *ds,
           const real* weight,
           const real* rho, 
           const real* grad)
@@ -316,7 +323,7 @@ sdftpot1_(SpinPolarizedSecondDrv *ds,
 }
 
 void 
-sdftpot2_(SpinPolarizedThirdDrv *ds,
+sdftpot2_(ThirdDrv *ds,
           const real* weight,
           const real* rho, 
           const real* grad)

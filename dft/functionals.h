@@ -253,124 +253,82 @@ int dft_isgga__(void);
       LOGICAL  DFTISGGA
       EXTERNAL DFTISGGA, DFTINPUT
 
-      INTEGER fR0
-      INTEGER fZ0
+      INTEGER fR0 
+      INTEGER fZ0 
 !     change me later to ...
-!     INTEGER fR
-!     INTEGER fZ
-      INTEGER fRR
-      INTEGER fRZ
-      INTEGER fZZ
-      INTEGER fRRR
-      INTEGER fRRZ
-      INTEGER fRZZ
-      INTEGER fZZZ
-
+!     INTEGER fR  
+!     INTEGER fZ  
       INTEGER fX  
+      INTEGER fRR 
       INTEGER fSS 
+      INTEGER fZZ 
       INTEGER fYY 
       INTEGER fXX 
-      INTEGER fRX 
+      INTEGER fRZ 
       INTEGER fSY 
       INTEGER fZX 
+      INTEGER fRX 
+      INTEGER fRRR
+      INTEGER fZZZ
       INTEGER fXXX
-      INTEGER fRRX
       INTEGER fRSS
+      INTEGER fRZZ
       INTEGER fRYY
       INTEGER fRXX
+      INTEGER fRRZ
       INTEGER fSSZ
+      INTEGER fRRX
       INTEGER fSSX
       INTEGER fZZX
-      INTEGER fZYY
-      INTEGER fZXX
       INTEGER fYYX
       INTEGER fRSY
-      INTEGER fRZX
       INTEGER fSZY
+      INTEGER fRZX
       INTEGER fSYX
+      INTEGER fZYY
+      INTEGER fZXX
 
-      INTEGER               DERVS1
-      INTEGER               DERVS2
-      INTEGER               DERVS3
-
-      INTEGER SPINPOLARIZED_DERVS1
-      INTEGER SPINPOLARIZED_DERVS2
-      INTEGER SPINPOLARIZED_DERVS3
+      INTEGER DERVS1
+      INTEGER DERVS2
+      INTEGER DERVS3
 
       PARAMETER (fR0  =  1)
       PARAMETER (fZ0  =  2)
 !     change me later to ...
 !     PARAMETER (fR   =  1)
 !     PARAMETER (fZ   =  2)
-      PARAMETER (fRR  =  3)
-      PARAMETER (fRZ  =  4)
-      PARAMETER (fZZ  =  5)
-      PARAMETER (fRRR =  6)
-      PARAMETER (fRRZ =  7)
-      PARAMETER (fRZZ =  8)
-      PARAMETER (fZZZ =  9)
+      PARAMETER (fX   =  3)
+      PARAMETER (fRR  =  4)
+      PARAMETER (fSS  =  5)
+      PARAMETER (fZZ  =  6)
+      PARAMETER (fYY  =  7)
+      PARAMETER (fXX  =  8)
+      PARAMETER (fRZ  =  9)
+      PARAMETER (fSY  = 10)
+      PARAMETER (fZX  = 11)
+      PARAMETER (fRX  = 12)
+      PARAMETER (fRRR = 13)
+      PARAMETER (fZZZ = 14)
+      PARAMETER (fXXX = 15)
+      PARAMETER (fRSS = 16)
+      PARAMETER (fRZZ = 17)
+      PARAMETER (fRYY = 18)
+      PARAMETER (fRXX = 19)
+      PARAMETER (fRRZ = 20)
+      PARAMETER (fSSZ = 21)
+      PARAMETER (fRRX = 22)
+      PARAMETER (fSSX = 23)
+      PARAMETER (fZZX = 24)
+      PARAMETER (fYYX = 25)
+      PARAMETER (fRSY = 26)
+      PARAMETER (fSZY = 27)
+      PARAMETER (fRZX = 28)
+      PARAMETER (fSYX = 29)
+      PARAMETER (fZYY = 30)
+      PARAMETER (fZXX = 31)
 
-      PARAMETER (fX   =  1)
-      PARAMETER (fSS  =  2)
-      PARAMETER (fYY  =  3)
-      PARAMETER (fXX  =  4)
-      PARAMETER (fRX  =  5)
-      PARAMETER (fSY  =  6)
-      PARAMETER (fZX  =  7)
-      PARAMETER (fXXX =  8)
-      PARAMETER (fRRX =  9)
-      PARAMETER (fRSS = 10)
-      PARAMETER (fRYY = 11)
-      PARAMETER (fRXX = 12)
-      PARAMETER (fSSZ = 13)
-      PARAMETER (fSSX = 14)
-      PARAMETER (fZZX = 15)
-      PARAMETER (fZYY = 16)
-      PARAMETER (fZXX = 17)
-      PARAMETER (fYYX = 18)
-      PARAMETER (fRSY = 19)
-      PARAMETER (fRZX = 20)
-      PARAMETER (fSZY = 21)
-      PARAMETER (fSYX = 22)
-
-!         1 (fR   =  1)
-!       100 (fZ   =  2)
-!     10000 (fX   =  3)
-!         2 (fRR  =  4)
-!        20 (fSS  =  5)
-!       200 (fZZ  =  6)
-!      2000 (fYY  =  7)
-!     20000 (fXX  =  8)
-!       101 (fRZ  =  9)
-!      1010 (fSY  = 10)
-!     10100 (fZX  = 11)
-!     10001 (fRX  = 12)
-!         3 (fRRR = 13)
-!       300 (fZZZ = 14)
-!     30000 (fXXX = 15)
-!        21 (fRSS = 16)
-!       201 (fRZZ = 17)
-!      2001 (fRYY = 18)
-!     20001 (fRXX = 19)
-!       102 (fRRZ = 20)
-!       120 (fSSZ = 21)
-!     10002 (fRRX = 22)
-!     10020 (fSSX = 23)
-!     10200 (fZZX = 24)
-!     12000 (fYYX = 25)
-!      1011 (fRSY = 26)
-!      1110 (fSZY = 27)
-!     10101 (fRZX = 28)
-!     11010 (fSYX = 29)
-!      2100 (fZYY = 30)
-!     20100 (fZXX = 31)
-
-      PARAMETER (              DERVS1 =  2)
-      PARAMETER (              DERVS2 =  5)
-      PARAMETER (              DERVS3 =  9)
+      PARAMETER (DERVS1 =  9)
+      PARAMETER (DERVS2 = 12)
+      PARAMETER (DERVS3 = 31)
                                          
-      PARAMETER (SPINPOLARIZED_DERVS1 =  1)
-      PARAMETER (SPINPOLARIZED_DERVS2 =  7)
-      PARAMETER (SPINPOLARIZED_DERVS3 = 22)
-
 #endif /* __CVERSION__ */

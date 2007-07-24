@@ -441,3 +441,84 @@ C=======================================================================
 
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      INTEGER FUNCTION I_DERIVATIVE(I)
+C=======================================================================
+C     describe me ...
+C-----------------------------------------------------------------------
+C                                                           radovan bast
+C                                               last revision: june 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+          IF(I .EQ.     1) THEN
+            I_DERIVATIVE =   1
+      ELSEIF(I .EQ.   100) THEN
+            I_DERIVATIVE =   2
+      ELSEIF(I .EQ. 10000) THEN
+            I_DERIVATIVE =   3
+      ELSEIF(I .EQ.     2) THEN
+            I_DERIVATIVE =   4
+      ELSEIF(I .EQ.    20) THEN
+            I_DERIVATIVE =   5
+      ELSEIF(I .EQ.   200) THEN
+            I_DERIVATIVE =   6
+      ELSEIF(I .EQ.  2000) THEN
+            I_DERIVATIVE =   7
+      ELSEIF(I .EQ. 20000) THEN
+            I_DERIVATIVE =   8
+      ELSEIF(I .EQ.   101) THEN
+            I_DERIVATIVE =   9
+      ELSEIF(I .EQ.  1010) THEN
+            I_DERIVATIVE =  10
+      ELSEIF(I .EQ. 10100) THEN
+            I_DERIVATIVE =  11
+      ELSEIF(I .EQ. 10001) THEN
+            I_DERIVATIVE =  12
+      ELSEIF(I .EQ.     3) THEN
+            I_DERIVATIVE =  13
+      ELSEIF(I .EQ.   300) THEN
+            I_DERIVATIVE =  14
+      ELSEIF(I .EQ. 30000) THEN
+            I_DERIVATIVE =  15
+      ELSEIF(I .EQ.    21) THEN
+            I_DERIVATIVE =  16
+      ELSEIF(I .EQ.   201) THEN
+            I_DERIVATIVE =  17
+      ELSEIF(I .EQ.  2001) THEN
+            I_DERIVATIVE =  18
+      ELSEIF(I .EQ. 20001) THEN
+            I_DERIVATIVE =  19
+      ELSEIF(I .EQ.   102) THEN
+            I_DERIVATIVE =  20
+      ELSEIF(I .EQ.   120) THEN
+            I_DERIVATIVE =  21
+      ELSEIF(I .EQ. 10002) THEN
+            I_DERIVATIVE =  22
+      ELSEIF(I .EQ. 10020) THEN
+            I_DERIVATIVE =  23
+      ELSEIF(I .EQ. 10200) THEN
+            I_DERIVATIVE =  24
+      ELSEIF(I .EQ. 12000) THEN
+            I_DERIVATIVE =  25
+      ELSEIF(I .EQ.  1011) THEN
+            I_DERIVATIVE =  26
+      ELSEIF(I .EQ.  1110) THEN
+            I_DERIVATIVE =  27
+      ELSEIF(I .EQ. 10101) THEN
+            I_DERIVATIVE =  28
+      ELSEIF(I .EQ. 11010) THEN
+            I_DERIVATIVE =  29
+      ELSEIF(I .EQ.  2100) THEN
+            I_DERIVATIVE =  30
+      ELSEIF(I .EQ. 20100) THEN
+            I_DERIVATIVE =  31
+      ELSE
+            I_DERIVATIVE =  99
+      ENDIF
+
+      RETURN
+      END
+
