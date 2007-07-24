@@ -1,3 +1,6 @@
+!
+!MI... some description would be usefull....
+!
       LOGICAL SHARE(MXSHEL), SEGM(MXSHEL), SPHR(MXSHEL)
       REAL*8 CENT(MXSHEL, 3, 2)
       INTEGER NHKT(MXSHEL), KHKT(MXSHEL), KCKT(MXSHEL), ISTBAO(MXSHEL), &
@@ -13,4 +16,4 @@
      &                NSMLSH, NORBS, KMAXTOT,                           &
      &                MST, MBSID, MBIDBT, NAUXSH, KMAXAUX, NORBAUX,     &
      &                IFSTSHAUX
-C     MBSID and MBIDBT have been added for multiple basis sets (WK/UniKA/31-10-2002).
+!     MBSID and MBIDBT have been added for multiple basis sets (WK/UniKA/31-10-2002).

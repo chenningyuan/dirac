@@ -270,6 +270,9 @@ DIMENSION WORK(LWORK)
 
  CALL QENTER('CAP_STUFF')
 
+!  ... control test... 
+    call test_oof_basis_fu(WORK,LWORK)
+
  call set_vect_iprint(IPRCAP)
 
  write(LUPRI,*) 'before stick into memory...LWORK=',LWORK

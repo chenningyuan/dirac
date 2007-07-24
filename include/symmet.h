@@ -1,5 +1,6 @@
 !TSAUE Modififed 240996
 !LVisscher Split in real and integer part
+
 !     Keep parameters with length of common block up to date !
       INTEGER NSYMMTI
       PARAMETER (NSYMMTI = 513+MXQN*MXAQN+62*MXCENT+9*MXCORB)
@@ -12,6 +13,7 @@
      &        ISOP(0:7), NROTS, NINVC, NREFL, IXVAL(0:7, 0:7),          &
      &        NCOS(8, 2), ICLASS(MXCORB), ICNTAO(MXCORB), IPAR(0:7),    &
      &        JSOP(0:7), ICOS(8, 2), I2COSX(8, 8, 2, 2), I2_SYMMTI
+
       COMMON /SYMMTI/ I1_SYMMTI, MAXREP, MAXOPR, MULT, ISYMAX, ISYMAO,  &
      &                NPARSU, NAOS, NPARNU, IPTSYM, IPTCNT, NCRREP,     &
      &                IPTCOR, NAXREP, IPTAX, IPTXYZ, IPTNUC, ISOP,      &

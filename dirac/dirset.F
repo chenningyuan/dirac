@@ -108,6 +108,8 @@ CMI  ... call of F90 routine
 !         call StickMemory(WORK,LWORK) ! stick again
 !         call cap_ovlp
         IF (CAP) CALL CAP_STUFF(WORK,LWORK)
+!    .... independent tests
+!       call test_oof_basis_fu(WORK,LWORK)
 #endif
 
       IF(DOHRM) THEN

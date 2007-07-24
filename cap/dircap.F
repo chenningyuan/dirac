@@ -254,6 +254,7 @@ CMI   static allocations are here !!!
 C     CHARACTER *2 shell_p(3),shell_d(6),Shell_arr(200)   
       CHARACTER *2 shell_p(3),shell_d(6),Shell_arr(400)   
       CHARACTER *3 shell_f(10)   
+
       CHARACTER *8 IA
 
 C     character *3 Shell_basis(200)
@@ -263,9 +264,12 @@ C     integer *4 Shell_atom(200)
       integer *4 Shell_atom(400)
       
       integer *4 n_con_guass,nj,g_n,sh,n_c_g
+!   ... powers on x,y,z
       integer *4 angu_pow_S(1,3),angu_pow_P(3,3)
       integer *4 angu_pow_D(6,3),angu_pow_F(10,3)
+
       integer *4 n_b,ia_p
+
 C     integer *4 ang_pow(250,3)
       integer *4 ang_pow(NANGPOW,3)
       integer *4 n_pg_atom(50)
@@ -279,6 +283,7 @@ C     real *8 ord_expon(250),ord_coe(250)
       real *8 R_m(4),R_n(4)
 C     real *8 R_ms(200,3)
       real *8 R_ms(NBASF,3)
+
       LOGICAL CAPOVLP,DIRAC_NRM
 
       DATA BLNK /'E','S','P','D','F'/
@@ -398,7 +403,7 @@ CMI       'F' shell
                    do ia_p=1,3
                    ang_pow(sh+(i-1)*n_con_guass,ia_p)=angu_pow_p(i,ia_p)
                    end do
-              end do                              
+             end do                              
            END DO
           
           do  iji=1,3
