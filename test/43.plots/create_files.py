@@ -5,7 +5,7 @@ from common import *
 
 #-------------------------------------------------------------------------------
 
-os.system('rm -f *.inp *.mol *out* *PLOT DFCOEF PAMXVC')
+os.system('rm -f *.inp *.mol *out* *PLOT DFCOEF* PAMXVC* *tgz*')
 
 #-------------------------------------------------------------------------------
 
