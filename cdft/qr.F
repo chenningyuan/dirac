@@ -101,7 +101,6 @@ C=======================================================================
      &             FO_SPIN_DENSITY(1,IBC),
      &             ISYMOP(IBC)-1,
      &             GAO,
-     &             UNUSED,
      &             DTRMAT(1,1,1,IBC),
      &             BUF)
 
@@ -130,7 +129,6 @@ C=======================================================================
      &             VXC_V(1,IBC),
      &             ISYMOP(IBC)-1,
      &             GAO,
-     &             UNUSED,
      &             EXCMAT(1,1,1,IBC),
      &             BUF)
       ENDDO
@@ -263,7 +261,6 @@ C=======================================================================
      &               S(1,ibc),
      &               ISYMOP(ibc)-1,
      &               GAO,
-     &               UNUSED,
      &               DTRMAT(1,1,1,ibc),
      &               BUF)
         ENDIF
@@ -433,7 +430,6 @@ C=======================================================================
      &               Vxc_as(1,ibc),
      &               ISYMOP(ibc)-1,
      &               GAO,
-     &               UNUSED,
      &               EXCMAT(1,1,1,ibc),
      &               BUF)
         ENDIF
@@ -549,7 +545,7 @@ C=======================================================================
 #include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_VARIABLES = 5)
+      PARAMETER (NR_VARS = 5)
 
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -566,7 +562,9 @@ C=======================================================================
      &          ADD_S,
      &          ADD_GR,
      &          ADD_GS,
-     &          LBIT
+     &          LBIT,
+     &          USE_VAR(NR_VARS),
+     &          VAR_IS_VECTOR(NR_VARS)
       DIMENSION DTRMAT(NBAST,NBAST,NZ,3),
      &          EXCMAT(NBAST,NBAST,NZ,3),
      &          ISYMOP(3),
@@ -579,19 +577,8 @@ C=======================================================================
      &          GR(  3,0:3),
      &          GS(3,3,0:3),
 !
-     &          R(  0:3),
-     &          Z(  0:3),
-     &          S(3,0:3),
-     &          Y(3,0:3),
-     &          X(3,0:3),
-     &          VARIABLE(3,0:3,NR_VARIABLES),
-     &          VARIABLE_pq(3,0:3,NR_VARIABLES),
-!
-     &          R_pq(  0:3),
-     &          Z_pq(  0:3),
-     &          S_pq(3,0:3),
-     &          Y_pq(3,0:3),
-     &          X_pq(3,0:3),
+     &          VAR(3,0:3,NR_VARS),
+     &          VAR_pq(3,0:3,NR_VARS),
 !
      &          Vxc_hs(    0:3),
      &          Vxc_as(  3,0:3),
@@ -602,23 +589,34 @@ C=======================================================================
 
 #include "ibtfun.h"
 
+      DO IVAR = 1,NR_VARS
+        USE_VAR(IVAR)       = .FALSE.
+        VAR_IS_VECTOR(IVAR) = .FALSE.
+      ENDDO
+
+      IF(ADD_R)  USE_VAR(1) = .TRUE.
+      IF(ADD_S)  USE_VAR(2) = .TRUE.
+      IF(ADD_GR) USE_VAR(3) = .TRUE.
+      IF(ADD_GS) USE_VAR(4) = .TRUE.
+      IF(ADD_GS) USE_VAR(5) = .TRUE.
+
+      VAR_IS_VECTOR(2) = .TRUE.
+      VAR_IS_VECTOR(4) = .TRUE.
+      VAR_IS_VECTOR(5) = .TRUE.
+
+
+
+
+
+
+
+
       CALL DZERO(GR,4*3)
       CALL DZERO(GS,4*3*3)
 
-      CALL DZERO(R,4)
-      CALL DZERO(Z,4)
-      CALL DZERO(S,4*3)
-      CALL DZERO(Y,4*3)
-      CALL DZERO(X,4*3)
 
-      CALL DZERO(R_pq,4)
-      CALL DZERO(Z_pq,4)
-      CALL DZERO(S_pq,4*3)
-      CALL DZERO(Y_pq,4*3)
-      CALL DZERO(X_pq,4*3)
-
-      CALL DZERO(VARIABLE,3*4*NR_VARIABLES)
-      CALL DZERO(VARIABLE_pq,3*4*NR_VARIABLES)
+      CALL DZERO(VAR,3*4*NR_VARS)
+      CALL DZERO(VAR_pq,3*4*NR_VARS)
 
       CALL DZERO(Vxc_hs,4)
       CALL DZERO(Vxc_as,4*3)
@@ -634,11 +632,12 @@ C=======================================================================
 
       DO ibc = 1,3
         IF(ADD_R .OR. ADD_S) THEN
-          CALL GETRHO(VARIABLE(3,ibc,1),
-     &                ISYMOP(ibc)-1,
-     &                GAO,
-     &                DTRMAT(1,1,1,ibc),
-     &                BUF)
+          CALL GET_R(.TRUE.,
+     &               VAR(3,ibc,1),
+     &               ISYMOP(ibc)-1,
+     &               GAO,
+     &               DTRMAT(1,1,1,ibc),
+     &               BUF)
         ENDIF
         IF(ADD_GR) THEN
           CALL DENSITY_GRADIENT_GENERAL(GR(1,ibc),
@@ -650,10 +649,9 @@ C=======================================================================
         ENDIF
         IF(ADD_S) THEN
           CALL GET_M(.TRUE.,
-     &               VARIABLE(1,ibc,2),
+     &               VAR(1,ibc,2),
      &               ISYMOP(ibc)-1,
      &               GAO,
-     &               UNUSED,
      &               DTRMAT(1,1,1,ibc),
      &               BUF)
         ENDIF
@@ -670,17 +668,23 @@ C=======================================================================
 
       IF(ADD_GR) THEN
         ibc = 1
-        VARIABLE(3,ibc,3) = DDOT(3,GR(1,     1),1,GR(1,     0),1)
-     &                    + DDOT(3,GR(1,     0),1,GR(1,     1),1)
+        VAR(3,ibc,3) = DDOT(3,GR(1,     1),1,GR(1,     0),1)
+     &               + DDOT(3,GR(1,     0),1,GR(1,     1),1)
         ibc = 2
-        VARIABLE(3,ibc,3) = DDOT(3,GR(1,     2),1,GR(1,     0),1)
-     &                    + DDOT(3,GR(1,     0),1,GR(1,     2),1)
+        VAR(3,ibc,3) = DDOT(3,GR(1,     2),1,GR(1,     0),1)
+     &               + DDOT(3,GR(1,     0),1,GR(1,     2),1)
         ibc = 3
-        VARIABLE(3,ibc,3) = DDOT(3,GR(1,     3),1,GR(1,     0),1)
-     &                    + DDOT(3,GR(1,     0),1,GR(1,     3),1)
-     &                    + DDOT(3,GR(1,     1),1,GR(1,     2),1)*D2
-     &                    + DDOT(3,GR(1,     2),1,GR(1,     1),1)*D2
+        VAR(3,ibc,3) = DDOT(3,GR(1,     3),1,GR(1,     0),1)
+     &               + DDOT(3,GR(1,     0),1,GR(1,     3),1)
+     &               + DDOT(3,GR(1,     1),1,GR(1,     2),1)*D2
+     &               + DDOT(3,GR(1,     2),1,GR(1,     1),1)*D2
       ENDIF
+
+
+
+
+
+
 !     IF(ADD_GR) THEN
 !       DO ixyz = ISTART,3
 !         Y(ixyz,1) = DDOT(3,GR(1,     1),1,GS(1,ixyz,0),1)
@@ -703,96 +707,89 @@ C=======================================================================
 !       ENDDO
 !     ENDIF
 
-      IF(ADD_R .AND.       ADD_GR) CALL DFTPOT2(VXC,W,R_0,GR_0_NORM)
-      IF(ADD_R .AND. .NOT. ADD_GR) CALL DFTPOT2(VXC,W,R_0,D0)
+      IF(ADD_R .AND.       ADD_GR) CALL  DFTPOT2(VXC,W,R_0,GR_0_NORM)
+      IF(ADD_R .AND. .NOT. ADD_GR) CALL  DFTPOT2(VXC,W,R_0,D0)
       IF(ADD_S .AND.       ADD_GS) CALL SDFTPOT2(VXC,W,R_0,GR_0_NORM)
       IF(ADD_S .AND. .NOT. ADD_GS) CALL SDFTPOT2(VXC,W,R_0,D0)
 
       Vxc(99) = D0
 
-      DO IVAR = 1,3
-         IF((IVAR .EQ. 3) .AND. .NOT. ADD_GR) GOTO 1
+      DO ixyz = 1,2
+        DO ibc = 1,3
+          VAR(ixyz,ibc,1) = VAR(3,ibc,1)
+          VAR(ixyz,ibc,3) = VAR(3,ibc,3)
+        ENDDO
+      ENDDO
 
+      DO ixyz = ISTART,3
 
+        DO IVAR = 1,NR_VARS
+          IF(USE_VAR(IVAR)) THEN
+            ICHECKSUM =             10**(IVAR-1)
+            DER = Vxc(I_DERIVATIVE(ICHECKSUM))
 
-         ICHECKSUM =             10**(IVAR-1)
-         DERIVATIVE = Vxc(I_DERIVATIVE(ICHECKSUM))
+            VAR_pq(ixyz,3,IVAR) = DER
 
-         VARIABLE_pq(3,3,IVAR) = DERIVATIVE
+            DO JVAR = 1,NR_VARS
+              IF(USE_VAR(JVAR)) THEN
+                JCHECKSUM = ICHECKSUM + 10**(JVAR-1)
+                DER = Vxc(I_DERIVATIVE(JCHECKSUM))
 
- 1       CONTINUE
-         DO JVAR = 1,3
-            IF((JVAR .EQ. 3) .AND. .NOT. ADD_GR) GOTO 2
-            JCHECKSUM = ICHECKSUM + 10**(JVAR-1)
-            DERIVATIVE = Vxc(I_DERIVATIVE(JCHECKSUM))
+                VAR_pq(ixyz,2,IVAR) = VAR_pq(ixyz,2,IVAR)
+     &                              + VAR(ixyz,1,JVAR)*DER
+                VAR_pq(ixyz,1,IVAR) = VAR_pq(ixyz,1,IVAR)
+     &                              + VAR(ixyz,2,JVAR)*DER
+                VAR_pq(ixyz,0,IVAR) = VAR_pq(ixyz,0,IVAR)
+     &                              + VAR(ixyz,3,JVAR)*DER
+         
+                DO KVAR = 1,NR_VARS
+                  IF(USE_VAR(KVAR)) THEN
+                    KCHECKSUM = JCHECKSUM + 10**(KVAR-1)
+                    DER = Vxc(I_DERIVATIVE(KCHECKSUM))
 
-            VARIABLE_pq(3,2,IVAR) = VARIABLE_pq(3,2,IVAR)
-     &                            + VARIABLE(3,1,JVAR)*DERIVATIVE
-!           write(lupri,*) 'debug', IVAR, JVAR, DERIVATIVE, JCHECKSUM
-            VARIABLE_pq(3,1,IVAR) = VARIABLE_pq(3,1,IVAR)
-     &                            + VARIABLE(3,2,JVAR)*DERIVATIVE
-            VARIABLE_pq(3,0,IVAR) = VARIABLE_pq(3,0,IVAR)
-     &                            + VARIABLE(3,3,JVAR)*DERIVATIVE
-
- 2          CONTINUE
-            DO KVAR = 1,3
-               IF((KVAR .EQ. 3) .AND. .NOT. ADD_GR) GOTO 3
-               KCHECKSUM = JCHECKSUM + 10**(KVAR-1)
-               DERIVATIVE = Vxc(I_DERIVATIVE(KCHECKSUM))
-
-               VARIABLE_pq(3,0,IVAR) = VARIABLE_pq(3,0,IVAR)
-     &                + VARIABLE(3,1,JVAR)*VARIABLE(3,2,KVAR)*DERIVATIVE
-     &                + VARIABLE(3,2,JVAR)*VARIABLE(3,1,KVAR)*DERIVATIVE
-
- 3          CONTINUE
-          ENDDO
+                    VAR_pq(ixyz,0,IVAR) = VAR_pq(ixyz,0,IVAR)
+     &                           + VAR(ixyz,1,JVAR)*VAR(ixyz,2,KVAR)*DER
+     &                           + VAR(ixyz,2,JVAR)*VAR(ixyz,1,KVAR)*DER
+               
+                  ENDIF
+                ENDDO
+              ENDIF
+            ENDDO
+          ENDIF
         ENDDO
       ENDDO
 
 
 
-!     IF(ADD_S) THEN
-!       DO ixyz = ISTART,3
-!         R_pq(0) = R_pq(0)
-!    &            + (S(ixyz,1)*S(ixyz,2)
-!    &            +  S(ixyz,2)*S(ixyz,1))*Vxc(fRSS)
 
-!         S_pq(ixyz,1) = S_pq(ixyz,1)
-!    &                 + S(ixyz,2)*Vxc(fSS)
 
-!         S_pq(ixyz,2) = S_pq(ixyz,2)
-!    &                 + S(ixyz,1)*Vxc(fSS)
 
-!         S_pq(ixyz,0) = S_pq(ixyz,0)
-!    &                 + S(ixyz,3)*Vxc(fSS)
 
-!         S_pq(ixyz,0) = S_pq(ixyz,0)
-!    &                 + (R(1)*S(ixyz,2) + R(2)*S(ixyz,1))*Vxc(fRSS)
-!    &                 + (S(ixyz,1)*R(2) + S(ixyz,2)*R(1))*Vxc(fRSS)
-!       ENDDO
-!     ENDIF
+
+
 
       IVAR = 1
-      Vxc_hs(1) = VARIABLE_pq(3,2,IVAR)
-      Vxc_hs(2) = VARIABLE_pq(3,1,IVAR)
-      Vxc_hs(3) = VARIABLE_pq(3,0,IVAR)
+      Vxc_hs(1) = VAR_pq(3,2,IVAR)
+      Vxc_hs(2) = VAR_pq(3,1,IVAR)
+      Vxc_hs(3) = VAR_pq(3,0,IVAR)
 
-!     DO ixyz = ISTART,3
-!       Vxc_as(ixyz,1) = S_pq(ixyz,2)
-!       Vxc_as(ixyz,2) = S_pq(ixyz,1)
-!       Vxc_as(ixyz,3) = S_pq(ixyz,0)
-!     ENDDO
+      IVAR = 2
+      DO ixyz = ISTART,3
+        Vxc_as(ixyz,1) = VAR_pq(ixyz,2,IVAR)
+        Vxc_as(ixyz,2) = VAR_pq(ixyz,1,IVAR)
+        Vxc_as(ixyz,3) = VAR_pq(ixyz,0,IVAR)
+      ENDDO
 
       IVAR = 3
       DO jxyz = 1,3
-        Vxc_hv(jxyz,1) = VARIABLE_pq(3,2,IVAR)*GR(jxyz,0) 
-     &                 + VARIABLE_pq(3,3,IVAR)*GR(jxyz,1)
-        Vxc_hv(jxyz,2) = VARIABLE_pq(3,1,IVAR)*GR(jxyz,0) 
-     &                 + VARIABLE_pq(3,3,IVAR)*GR(jxyz,2)
-        Vxc_hv(jxyz,3) = VARIABLE_pq(3,0,IVAR)*GR(jxyz,0) 
-     &                 + VARIABLE_pq(3,3,IVAR)*GR(jxyz,3)
-     &                 + VARIABLE_pq(3,1,IVAR)*GR(jxyz,1)*D2
-     &                 + VARIABLE_pq(3,2,IVAR)*GR(jxyz,2)*D2
+        Vxc_hv(jxyz,1) = VAR_pq(3,2,IVAR)*GR(jxyz,0)
+     &                 + VAR_pq(3,3,IVAR)*GR(jxyz,1)
+        Vxc_hv(jxyz,2) = VAR_pq(3,1,IVAR)*GR(jxyz,0)
+     &                 + VAR_pq(3,3,IVAR)*GR(jxyz,2)
+        Vxc_hv(jxyz,3) = VAR_pq(3,0,IVAR)*GR(jxyz,0)
+     &                 + VAR_pq(3,3,IVAR)*GR(jxyz,3)
+     &                 + VAR_pq(3,1,IVAR)*GR(jxyz,1)*D2
+     &                 + VAR_pq(3,2,IVAR)*GR(jxyz,2)*D2
       ENDDO
       CALL DSCAL(4*3,D2,Vxc_hv(1,0),1)
 
@@ -812,20 +809,19 @@ C=======================================================================
      &                GAO1)
         ENDIF
 
-!       WORTH_IT = MAX(
-!    &                 DABS(Vxc_as(1,ibc)),
-!    &                 DABS(Vxc_as(2,ibc)),
-!    &                 DABS(Vxc_as(3,ibc))
-!    &                )
-!       IF(WORTH_IT .GT. DFTHRL) THEN
-!         CALL GET_M(.FALSE.,
-!    &               Vxc_as(1,ibc),
-!    &               ISYMOP(ibc)-1,
-!    &               GAO,
-!    &               UNUSED,
-!    &               EXCMAT(1,1,1,ibc),
-!    &               BUF)
-!       ENDIF
+        WORTH_IT = MAX(
+     &                 DABS(Vxc_as(1,ibc)),
+     &                 DABS(Vxc_as(2,ibc)),
+     &                 DABS(Vxc_as(3,ibc))
+     &                )
+        IF(WORTH_IT .GT. DFTHRL) THEN
+          CALL GET_M(.FALSE.,
+     &               Vxc_as(1,ibc),
+     &               ISYMOP(ibc)-1,
+     &               GAO,
+     &               EXCMAT(1,1,1,ibc),
+     &               BUF)
+        ENDIF
       ENDDO
 
       RETURN
