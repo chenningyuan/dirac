@@ -249,12 +249,13 @@ C=======================================================================
      &                BUF)
         ENDIF
         IF(ADD_GR) THEN
-          CALL DENSITY_GRADIENT_GENERAL(GR(1,ibc),
-     &                                  ISYMOP(ibc)-1,
-     &                                  GAO,
-     &                                  GAO1,
-     &                                  DTRMAT(1,1,1,ibc),
-     &                                  BUF)
+          CALL GET_GR_NH(.TRUE.,
+     &                   GR(1,ibc),
+     &                   ISYMOP(ibc)-1,
+     &                   GAO,
+     &                   GAO1,
+     &                   DTRMAT(1,1,1,ibc),
+     &                   BUF)
         ENDIF
         IF(ADD_S) THEN
           CALL GET_M(.TRUE.,
@@ -577,6 +578,9 @@ C=======================================================================
      &          GR(  3,0:3),
      &          GS(3,3,0:3),
 !
+     &          GR_L(3,3,0:3,NR_VARS),
+     &          GR_R(3,3,0:3,NR_VARS),
+!
      &          VAR(3,0:3,NR_VARS),
      &          VAR_pq(3,0:3,NR_VARS),
 !
@@ -604,16 +608,11 @@ C=======================================================================
       VAR_IS_VECTOR(4) = .TRUE.
       VAR_IS_VECTOR(5) = .TRUE.
 
-
-
-
-
-
-
-
       CALL DZERO(GR,4*3)
       CALL DZERO(GS,4*3*3)
 
+      CALL DZERO(GR_L,4*3*3*NR_VARS)
+      CALL DZERO(GR_R,4*3*3*NR_VARS)
 
       CALL DZERO(VAR,3*4*NR_VARS)
       CALL DZERO(VAR_pq,3*4*NR_VARS)
@@ -623,15 +622,12 @@ C=======================================================================
       CALL DZERO(Vxc_hv,4*3)
       CALL DZERO(Vxc_av,4*3*3)
 
-      GR(1,0) = GR_0(1)
-      GR(2,0) = GR_0(2)
-      GR(3,0) = GR_0(3)
 
       ISTART = 1
       IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !collinear approximation
 
       DO ibc = 1,3
-        IF(ADD_R .OR. ADD_S) THEN
+        IF(USE_VAR(1)) THEN
           CALL GET_R(.TRUE.,
      &               VAR(3,ibc,1),
      &               ISYMOP(ibc)-1,
@@ -639,15 +635,7 @@ C=======================================================================
      &               DTRMAT(1,1,1,ibc),
      &               BUF)
         ENDIF
-        IF(ADD_GR) THEN
-          CALL DENSITY_GRADIENT_GENERAL(GR(1,ibc),
-     &                                  ISYMOP(ibc)-1,
-     &                                  GAO,
-     &                                  GAO1,
-     &                                  DTRMAT(1,1,1,ibc),
-     &                                  BUF)
-        ENDIF
-        IF(ADD_S) THEN
+        IF(USE_VAR(2)) THEN
           CALL GET_M(.TRUE.,
      &               VAR(1,ibc,2),
      &               ISYMOP(ibc)-1,
@@ -655,7 +643,16 @@ C=======================================================================
      &               DTRMAT(1,1,1,ibc),
      &               BUF)
         ENDIF
-!       IF(ADD_GS) THEN
+        IF(USE_VAR(3)) THEN
+          CALL GET_GR_NH(.TRUE.,
+     &                   GR(1,ibc),
+     &                   ISYMOP(ibc)-1,
+     &                   GAO,
+     &                   GAO1,
+     &                   DTRMAT(1,1,1,ibc),
+     &                   BUF)
+        ENDIF
+        IF(USE_VAR(4)) THEN
 !         CALL GET_M_DERVS(.TRUE.,
 !    &                     GS(1,1,ibc),
 !    &                     ISYMOP(ibc)-1,
@@ -663,49 +660,43 @@ C=======================================================================
 !    &                     GAO1,
 !    &                     DTRMAT(1,1,1,ibc),
 !    &                     BUF)
-!       ENDIF
+        ENDIF
       ENDDO
 
-      IF(ADD_GR) THEN
-        ibc = 1
-        VAR(3,ibc,3) = DDOT(3,GR(1,     1),1,GR(1,     0),1)
-     &               + DDOT(3,GR(1,     0),1,GR(1,     1),1)
-        ibc = 2
-        VAR(3,ibc,3) = DDOT(3,GR(1,     2),1,GR(1,     0),1)
-     &               + DDOT(3,GR(1,     0),1,GR(1,     2),1)
-        ibc = 3
-        VAR(3,ibc,3) = DDOT(3,GR(1,     3),1,GR(1,     0),1)
-     &               + DDOT(3,GR(1,     0),1,GR(1,     3),1)
-     &               + DDOT(3,GR(1,     1),1,GR(1,     2),1)*D2
-     &               + DDOT(3,GR(1,     2),1,GR(1,     1),1)*D2
-      ENDIF
+      GR(1,0) = GR_0(1)
+      GR(2,0) = GR_0(2)
+      GR(3,0) = GR_0(3)
 
+      DO ixyz = ISTART,3
+        DO ibc = 0,3
+          DO jxyz = 1,3
+            GR_L(jxyz,ixyz,ibc,3) = GR(jxyz,ibc)
+!           GR_L(ixyz,jxyz,ibc,4) = GR(jxyz,ibc)
+!           GR_L(ixyz,jxyz,ibc,5) = GS(jxyz,ixyz,ibc)
 
+            GR_R(jxyz,ixyz,ibc,3) = GR(jxyz,ibc)
+!           GR_R(ixyz,jxyz,ibc,4) = GS(jxyz,ixyz,ibc)
+!           GR_R(ixyz,jxyz,ibc,5) = GS(jxyz,ixyz,ibc)
+          ENDDO
+        ENDDO
+      ENDDO
 
+      DO ixyz = ISTART,3
+        DO ivar = 3,5
+          IF(USE_VAR(ivar)) THEN
+            DO ibc = 1,3
+              VAR(ixyz,ibc,ivar) =
+     &             DDOT(3,GR_L(1,ixyz,ibc,ivar),1,GR_R(1,ixyz,0,ivar),1)
+     &           + DDOT(3,GR_L(1,ixyz,0,ivar),1,GR_R(1,ixyz,ibc,ivar),1)
+            ENDDO
 
-
-
-!     IF(ADD_GR) THEN
-!       DO ixyz = ISTART,3
-!         Y(ixyz,1) = DDOT(3,GR(1,     1),1,GS(1,ixyz,0),1)
-!    &              + DDOT(3,GR(1,     0),1,GS(1,ixyz,1),1)
-!         Y(ixyz,2) = DDOT(3,GR(1,     2),1,GS(1,ixyz,0),1)
-!    &              + DDOT(3,GR(1,     0),1,GS(1,ixyz,2),1)
-!         Y(ixyz,3) = DDOT(3,GR(1,     3),1,GS(1,ixyz,0),1)
-!    &              + DDOT(3,GR(1,     0),1,GS(1,ixyz,3),1)
-!    &              + DDOT(3,GR(1,     1),1,GS(1,ixyz,2),1)*D2
-!    &              + DDOT(3,GR(1,     2),1,GS(1,ixyz,1),1)*D2
-
-!         X(ixyz,1) = DDOT(3,GS(1,ixyz,1),1,GS(1,ixyz,0),1)
-!    &              + DDOT(3,GS(1,ixyz,0),1,GS(1,ixyz,1),1)
-!         X(ixyz,2) = DDOT(3,GS(1,ixyz,2),1,GS(1,ixyz,0),1)
-!    &              + DDOT(3,GS(1,ixyz,0),1,GS(1,ixyz,2),1)
-!         X(ixyz,3) = DDOT(3,GS(1,ixyz,3),1,GS(1,ixyz,0),1)
-!    &              + DDOT(3,GS(1,ixyz,0),1,GS(1,ixyz,3),1)
-!    &              + DDOT(3,GS(1,ixyz,1),1,GS(1,ixyz,2),1)*D2
-!    &              + DDOT(3,GS(1,ixyz,2),1,GS(1,ixyz,1),1)*D2
-!       ENDDO
-!     ENDIF
+            ibc = 3
+              VAR(ixyz,ibc,ivar) = VAR(ixyz,ibc,ivar)
+     &          + DDOT(3,GR_L(1,ixyz,1,ivar),1,GR_R(1,ixyz,2,ivar),1)*D2
+     &          + DDOT(3,GR_L(1,ixyz,2,ivar),1,GR_R(1,ixyz,1,ivar),1)*D2
+          ENDIF
+        ENDDO
+      ENDDO
 
       IF(ADD_R .AND.       ADD_GR) CALL  DFTPOT2(VXC,W,R_0,GR_0_NORM)
       IF(ADD_R .AND. .NOT. ADD_GR) CALL  DFTPOT2(VXC,W,R_0,D0)
@@ -717,40 +708,39 @@ C=======================================================================
       DO ixyz = 1,2
         DO ibc = 1,3
           VAR(ixyz,ibc,1) = VAR(3,ibc,1)
-          VAR(ixyz,ibc,3) = VAR(3,ibc,3)
         ENDDO
       ENDDO
 
       DO ixyz = ISTART,3
 
-        DO IVAR = 1,NR_VARS
-          IF(USE_VAR(IVAR)) THEN
-            ICHECKSUM =             10**(IVAR-1)
+        DO ivar = 1,NR_VARS
+          IF(USE_VAR(ivar)) THEN
+            ICHECKSUM =             10**(ivar-1)
             DER = Vxc(I_DERIVATIVE(ICHECKSUM))
 
-            VAR_pq(ixyz,3,IVAR) = DER
+            VAR_pq(ixyz,3,ivar) = DER
 
-            DO JVAR = 1,NR_VARS
-              IF(USE_VAR(JVAR)) THEN
-                JCHECKSUM = ICHECKSUM + 10**(JVAR-1)
+            DO jvar = 1,NR_VARS
+              IF(USE_VAR(jvar)) THEN
+                JCHECKSUM = ICHECKSUM + 10**(jvar-1)
                 DER = Vxc(I_DERIVATIVE(JCHECKSUM))
 
-                VAR_pq(ixyz,2,IVAR) = VAR_pq(ixyz,2,IVAR)
-     &                              + VAR(ixyz,1,JVAR)*DER
-                VAR_pq(ixyz,1,IVAR) = VAR_pq(ixyz,1,IVAR)
-     &                              + VAR(ixyz,2,JVAR)*DER
-                VAR_pq(ixyz,0,IVAR) = VAR_pq(ixyz,0,IVAR)
-     &                              + VAR(ixyz,3,JVAR)*DER
-         
-                DO KVAR = 1,NR_VARS
-                  IF(USE_VAR(KVAR)) THEN
-                    KCHECKSUM = JCHECKSUM + 10**(KVAR-1)
+                VAR_pq(ixyz,2,ivar) = VAR_pq(ixyz,2,ivar)
+     &                              + VAR(ixyz,1,jvar)*DER
+                VAR_pq(ixyz,1,ivar) = VAR_pq(ixyz,1,ivar)
+     &                              + VAR(ixyz,2,jvar)*DER
+                VAR_pq(ixyz,0,ivar) = VAR_pq(ixyz,0,ivar)
+     &                              + VAR(ixyz,3,jvar)*DER
+
+                DO kvar = 1,NR_VARS
+                  IF(USE_VAR(kvar)) THEN
+                    KCHECKSUM = JCHECKSUM + 10**(kvar-1)
                     DER = Vxc(I_DERIVATIVE(KCHECKSUM))
 
-                    VAR_pq(ixyz,0,IVAR) = VAR_pq(ixyz,0,IVAR)
-     &                           + VAR(ixyz,1,JVAR)*VAR(ixyz,2,KVAR)*DER
-     &                           + VAR(ixyz,2,JVAR)*VAR(ixyz,1,KVAR)*DER
-               
+                    VAR_pq(ixyz,0,ivar) = VAR_pq(ixyz,0,ivar)
+     &                           + VAR(ixyz,1,jvar)*VAR(ixyz,2,kvar)*DER
+     &                           + VAR(ixyz,2,jvar)*VAR(ixyz,1,kvar)*DER
+
                   ENDIF
                 ENDDO
               ENDIF
@@ -768,7 +758,7 @@ C=======================================================================
 
 
 
-      IVAR = 1
+      ivar = 1
       Vxc_hs(1) = VAR_pq(3,2,IVAR)
       Vxc_hs(2) = VAR_pq(3,1,IVAR)
       Vxc_hs(3) = VAR_pq(3,0,IVAR)

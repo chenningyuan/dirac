@@ -161,63 +161,6 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* DENSITY_GRADIENT_GENERAL */
-      SUBROUTINE DENSITY_GRADIENT_GENERAL(DENSITY_GRADIENT,
-     &                                    IREPOP,
-     &                                    GAO,
-     &                                    GAO1,
-     &                                    DMAT,
-     &                                    BUF)
-C=======================================================================
-C     get density gradient in point
-C     for general density matrices
-C     there is always a better way to do this
-C     but for the moment ... this way
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                           last revision: february 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO1(NBAST,3)
-#else
-      DIMENSION GAO1(NTBAS(0),3)
-#endif
-      DIMENSION DENSITY_GRADIENT(3),
-     &          GAO(*),
-     &          DMAT(*),
-     &          BUF(*)
-
-#include "ibtfun.h"
-
-      DO IXYZ = 1,3
-        DENSITY_GRADIENT(IXYZ) = D0
-
-        DO IC = 1,MC
-          CALL GET_CURRENT_SUB(DENSITY_GRADIENT(IXYZ),
-     &                         D1,IC,IC,
-     &                         GAO,GAO1(1,IXYZ),
-     &                         IREPOP,DMAT,BUF)
-          CALL GET_CURRENT_SUB(DENSITY_GRADIENT(IXYZ),
-     &                         D1,IC,IC,
-     &                         GAO1(1,IXYZ),GAO,
-     &                         IREPOP,DMAT,BUF)
-        ENDDO
-      ENDDO
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getlrho */
       SUBROUTINE GETLRHO(RXX,RXY,RXZ,RYY,RYZ,RZZ,GAO,GAO1,GAO2,
      &                   DMAT,BUF)      

@@ -33,6 +33,48 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_GR */
+      SUBROUTINE GET_GR(LGET,
+     &                  VECTOR,
+     &                  IREPOP,
+     &                  GAO,
+     &                  GAO1,
+     &                  DMAT,
+     &                  BUF)
+C=======================================================================
+C                                                           radovan bast
+C                                               last revision: july 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "dummy.h"
+
+      LOGICAL   LGET
+      DIMENSION VECTOR(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          DMAT(*),
+     &          BUF(*)
+
+      IOPTION = 2211
+      IF(LGET) IOPTION = 1211
+
+      CALL GET_DENSITY(IOPTION,
+     &                 DUMMY,
+     &                 VECTOR,
+     &                 IREPOP,
+     &                 GAO,
+     &                 GAO1,
+     &                 DMAT,
+     &                 BUF)
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_M */
       SUBROUTINE GET_M(LGET,
      &                 VECTOR,
@@ -440,6 +482,140 @@ C=======================================================================
 
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_ROTJPARA */
+      SUBROUTINE GET_ROTJPARA(LGET,
+     &                        VECTOR,
+     &                        IREPOP,
+     &                        GAO,
+     &                        GAO1,
+     &                        DMAT,
+     &                        BUF)
+C=======================================================================
+C                                                           radovan bast
+C                                               last revision: july 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+      LOGICAL   LGET
+      DIMENSION VECTOR(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          DMAT(*),
+     &          BUF(*)
+
+#include "dcbbas.h"
+
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      joff = NBAST
+#else
+      joff = NTBAS(0)
+#endif
+
+      K = 1
+      L = 1
+      M = 2
+      N = 2
+      A = D1
+      B = D1
+      ITRANSFORM = 0
+
+      DO ixyz = 1,3
+
+        jxyz = ixyz + 1
+        kxyz = jxyz + 1
+
+        IF(jxyz .GT. 3) jxyz = jxyz - 3
+        IF(kxyz .GT. 3) kxyz = kxyz - 3
+
+        CALL GET_DENSITY_SUB(LGET,.TRUE.,
+     &                       VECTOR(ixyz),
+     &                       A,B,K,L,M,N,
+     &                       1,ITRANSFORM,IREPOP,
+     &                       GAO1(1+joff*(jxyz-1)),
+     &                       GAO1(1+joff*(kxyz-1)),
+     &                       DMAT,BUF)
+        CALL GET_DENSITY_SUB(LGET,.FALSE.,
+     &                       VECTOR(ixyz),
+     &                       -A,-B,K,L,M,N,
+     &                       1,ITRANSFORM,IREPOP,
+     &                       GAO1(1+joff*(kxyz-1)),
+     &                       GAO1(1+joff*(jxyz-1)),
+     &                       DMAT,BUF)
+
+      ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_GR_NH */
+      SUBROUTINE GET_GR_NH(LGET,
+     &                     VECTOR,
+     &                     IREPOP,
+     &                     GAO,
+     &                     GAO1,
+     &                     DMAT,
+     &                     BUF)
+C=======================================================================
+C                                                           radovan bast
+C                                               last revision: july 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+      LOGICAL   LGET
+      DIMENSION VECTOR(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          DMAT(*),
+     &          BUF(*)
+
+#include "dcbbas.h"
+
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      joff = NBAST
+#else
+      joff = NTBAS(0)
+#endif
+
+      K = 1
+      L = 1
+      M = 2
+      N = 2
+      A = D1
+      B = D1
+      ITRANSFORM = 0
+
+      DO ixyz = 1,3
+
+        CALL GET_DENSITY_SUB(LGET,.TRUE.,
+     &                       VECTOR(ixyz),
+     &                       A,B,K,L,M,N,
+     &                       1,ITRANSFORM,IREPOP,
+     &                       GAO,
+     &                       GAO1(1+joff*(ixyz-1)),
+     &                       DMAT,BUF)
+        CALL GET_DENSITY_SUB(LGET,.FALSE.,
+     &                       VECTOR(ixyz),
+     &                       A,B,K,L,M,N,
+     &                       1,ITRANSFORM,IREPOP,
+     &                       GAO1(1+joff*(ixyz-1)),
+     &                       GAO,
+     &                       DMAT,BUF)
+
+      ENDDO
+
+      RETURN
+      END
 
 
 
@@ -543,76 +719,6 @@ C=======================================================================
      &                 BUF)
 
       IF(LGET) CALL DSCAL(3,-DP12,VECTOR(1),1)
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_ROTJPARA */
-      SUBROUTINE GET_ROTJPARA(LGET,
-     &                        VECTOR,
-     &                        IREPOP,
-     &                        GAO,
-     &                        GAO1,
-     &                        DMAT,
-     &                        BUF)
-C=======================================================================
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-      LOGICAL   LGET
-      DIMENSION VECTOR(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          DMAT(*),
-     &          BUF(*)
-
-#include "dcbbas.h"
-
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      JOFF = NBAST
-#else
-      JOFF = NTBAS(0)
-#endif
-
-      K = 1
-      L = 1
-      M = 2
-      N = 2
-      A = D1
-      B = D1
-      ITRANSFORM = 0
-
-      DO IXYZ = 1,3
-
-        JXYZ = IXYZ + 1
-        KXYZ = JXYZ + 1
-
-        IF(JXYZ .GT. 3) JXYZ = JXYZ - 3
-        IF(KXYZ .GT. 3) KXYZ = KXYZ - 3
-
-        CALL GET_DENSITY_SUB(LGET,.TRUE.,
-     &                       VECTOR(IXYZ),
-     &                       A,B,K,L,M,N,
-     &                       1,ITRANSFORM,IREPOP,
-     &                       GAO1(1+JOFF*(JXYZ-1)),
-     &                       GAO1(1+JOFF*(KXYZ-1)),
-     &                       DMAT,BUF)
-        CALL GET_DENSITY_SUB(LGET,.FALSE.,
-     &                       VECTOR(IXYZ),
-     &                       -A,-B,K,L,M,N,
-     &                       1,ITRANSFORM,IREPOP,
-     &                       GAO1(1+JOFF*(KXYZ-1)),
-     &                       GAO1(1+JOFF*(JXYZ-1)),
-     &                       DMAT,BUF)
-
-      ENDDO
 
       RETURN
       END

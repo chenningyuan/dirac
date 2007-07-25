@@ -304,27 +304,54 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
      &               gao,gao1,
      &               dtrmat(1,1,1,1),buf)
       else
-        call density_gradient_general(grdrho_b,irepbop,
-     &                                gao,gao1,
-     &                                dtrmat(1,1,1,1),buf)
+#if defined (MOD_CDFT)
+        CALL GET_GR_NH(.TRUE.,
+     &                 grdrho_b,
+     &                 irepbop,
+     &                 GAO,
+     &                 GAO1,
+     &                 DTRMAT(1,1,1,1),
+     &                 BUF)
+
+#else
+        call quit('DFT-QR general case not implemented!')
+#endif
       endif
       if(ihrmop(2) .eq. 1) then
         call getgrho(grdrho_c,irepcop,
      &               gao,gao1,
      &               dtrmat(1,1,1,2),buf)
       else
-        call density_gradient_general(grdrho_c,irepcop,
-     &                                gao,gao1,
-     &                                dtrmat(1,1,1,2),buf)
+#if defined (MOD_CDFT)
+        CALL GET_GR_NH(.TRUE.,
+     &                 grdrho_c,
+     &                 irepcop,
+     &                 GAO,
+     &                 GAO1,
+     &                 DTRMAT(1,1,1,2),
+     &                 BUF)
+
+#else
+        call quit('DFT-QR general case not implemented!')
+#endif
       endif
       if(ihrmop(3) .eq. 1) then
         call getgrho(grdrho_bc,irepbcop,
      &               gao,gao1,
      &               dtrmat(1,1,1,3),buf)
       else
-        call density_gradient_general(grdrho_bc,irepbcop,
-     &                                gao,gao1,
-     &                                dtrmat(1,1,1,3),buf)
+#if defined (MOD_CDFT)
+        CALL GET_GR_NH(.TRUE.,
+     &                 grdrho_bc,
+     &                 irepbcop,
+     &                 GAO,
+     &                 GAO1,
+     &                 DTRMAT(1,1,1,3),
+     &                 BUF)
+
+#else
+        call quit('DFT-QR general case not implemented!')
+#endif
       endif
 !
 !     \zeta^B = \frac{\partial\zeta}{\partial\epsilon_B}
