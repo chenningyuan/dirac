@@ -653,13 +653,13 @@ C=======================================================================
      &                   BUF)
         ENDIF
         IF(USE_VAR(4)) THEN
-!         CALL GET_M_DERVS(.TRUE.,
-!    &                     GS(1,1,ibc),
-!    &                     ISYMOP(ibc)-1,
-!    &                     GAO,
-!    &                     GAO1,
-!    &                     DTRMAT(1,1,1,ibc),
-!    &                     BUF)
+          CALL GET_M_DERVS_NH(.TRUE.,
+     &                       GS(1,1,ibc)
+     &                       ISYMOP(ibc)-1,
+     &                       GAO,
+     &                       GAO1,
+     &                       DTRMAT(1,1,1,ibc),
+     &                       BUF)
         ENDIF
       ENDDO
 
@@ -671,12 +671,12 @@ C=======================================================================
         DO ibc = 0,3
           DO jxyz = 1,3
             GR_L(jxyz,ixyz,ibc,3) = GR(jxyz,ibc)
-!           GR_L(ixyz,jxyz,ibc,4) = GR(jxyz,ibc)
-!           GR_L(ixyz,jxyz,ibc,5) = GS(jxyz,ixyz,ibc)
+            GR_L(ixyz,jxyz,ibc,4) = GR(jxyz,ibc)
+            GR_L(ixyz,jxyz,ibc,5) = GS(jxyz,ixyz,ibc)
 
             GR_R(jxyz,ixyz,ibc,3) = GR(jxyz,ibc)
-!           GR_R(ixyz,jxyz,ibc,4) = GS(jxyz,ixyz,ibc)
-!           GR_R(ixyz,jxyz,ibc,5) = GS(jxyz,ixyz,ibc)
+            GR_R(ixyz,jxyz,ibc,4) = GS(jxyz,ixyz,ibc)
+            GR_R(ixyz,jxyz,ibc,5) = GS(jxyz,ixyz,ibc)
           ENDDO
         ENDDO
       ENDDO

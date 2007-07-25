@@ -616,11 +616,72 @@ C=======================================================================
 
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* GET_M_DERVS_NH */
+      SUBROUTINE GET_M_DERVS_NH(LGET,
+     &                          VECTOR_DERVS,
+     &                          IREPOP,
+     &                          GAO,
+     &                          GAO1,
+     &                          DMAT,
+     &                          BUF)
+C=======================================================================
+C                                                           radovan bast
+C                                               last revision: july 2007
+C=======================================================================
 
+#include "implicit.h"
+#include "priunit.h"
 
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
+      LOGICAL   LGET
+      DIMENSION VECTOR_DERVS(*),
+     &          GAO(*),
+     &          GAO1(*),
+     &          DMAT(*),
+     &          BUF(*)
 
+#include "dcbbas.h"
 
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      joff = NBAST
+#else
+      joff = NTBAS(0)
+#endif
+
+      K = 1
+      L = 1
+      M = 2
+      N = 2
+      A = D1
+      B = D1
+      ITRANSFORM = 2
+
+      DO ixyz = 1,3
+        DO jxyz = 1,3
+
+          CALL GET_DENSITY_SUB(LGET,.TRUE.,
+     &                         VECTOR_DERVS(jxyz+3*(ixyz-1)),
+     &                         A,B,K,L,M,N,
+     &                         ixyz,ITRANSFORM,IREPOP,
+     &                         GAO,
+     &                         GAO1(1+joff*(jxyz-1)),
+     &                         DMAT,BUF)
+          CALL GET_DENSITY_SUB(LGET,.FALSE.,
+     &                         VECTOR_DERVS(jxyz+3*(ixyz-1)),
+     &                         A,B,K,L,M,N,
+     &                         ixyz,ITRANSFORM,IREPOP,
+     &                         GAO1(1+joff*(jxyz-1)),
+     &                         GAO,
+     &                         DMAT,BUF)
+
+        ENDDO
+      ENDDO
+
+      RETURN
+      END
 
 
 
