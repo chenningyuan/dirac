@@ -164,12 +164,14 @@ C     -------
 C     MXSIZE: actual maximum size for one of all blocks
 C     MXNUMB: number of the current largest block
       INTEGER ITEMPN, IAMGPROC, IAMTPROC, MXNUMB, IRUN
+      INTEGER IMINUS2
       INTEGER*8 ITLTND,MXSIZE,MXSZTMP
       INTEGER*8 ITEMPL, ITEMPW1, ITEMPW2
       INTEGER*8 ILEN, ITOTBLCKL, IPRODLEN
       INTEGER*8 IIWEIGHTBLK, IILENGTH, IILENGTH_MAX
 C
       NPTEST = MAX(NPTEST_VAR,0)
+      IMINUS2 = 0
       IIWEIGHTBLK = 0
       IILENGTH = 0
       ITLTND = 0
@@ -257,7 +259,9 @@ CSK      WRITE(LUWRT,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
         NTEMPP = IMINNP
         IF( MYPROC .ge. ICOUNTABLK ) THEN 
           IAM_NOT_INV = 0
-          GOTO 101
+          IMINUS2 = - 2
+          CALL ISETVC(NPARBLOCK,IMINUS2,NDIM)
+          GOTO 8888
         END IF
       END IF
       IAM_NOT_INV = 1
@@ -395,6 +399,7 @@ C
      &   ITLTND
         END DO
       END IF
+8888  CONTINUE
 C
       END
 ***********************************************************************
