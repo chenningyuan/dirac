@@ -15,6 +15,8 @@
 ! CAPDIPVEL - flag for comparison between CAP and DIRAC dipole velocity (DIPVEL) integrals
 !            (only if DONRCAP=.false.)
 !
+! CAPNEW   - flag for new implementation of CAP completely based on DIRAC basis functions order
+!
 ! IPRCAP     - Print level in CAP related routines
 !
 ! IPCAPR     - Pointer to real part of the non-relativistic CAP operator
@@ -32,10 +34,10 @@
 !-----------------------------------------------------------------------------
 
       LOGICAL CAPOVLP, NOOVLP, DONRCAP, NOCAPRE,                        &
-     &        NOCAPIM, CAPIMRE, CAPDIPVEL
+     &        NOCAPIM, CAPIMRE, CAPDIPVEL, CAPNEW
 
       COMMON / DCCAPOVL / CAPOVLP, NOOVLP, DONRCAP,                     &
-     &        NOCAPRE, NOCAPIM, CAPIMRE, CAPDIPVEL
+     &        NOCAPRE, NOCAPIM, CAPIMRE, CAPDIPVEL, CAPNEW
 
       INTEGER  IPRCAP, IPCAPR, IPCAPI, IPCAP_DV,                        &
      &         IPCAP_DR, IPCAP_DI, IPCAP_S, LUPEMAT

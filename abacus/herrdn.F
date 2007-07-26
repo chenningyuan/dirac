@@ -8487,7 +8487,7 @@ C#include "mxcent.h"
 C#include "nuclei.h"
 
       LOGICAL SEG, NRMPRI
-      CHARACTER*1 BLNK(5)
+      CHARACTER*1 BLNK(8)
 C     CHARACTER CHRSEG*10,DEG*2
 
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
@@ -8495,7 +8495,7 @@ C     CHARACTER CHRSEG*10,DEG*2
      &     CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)
       DIMENSION IPCON(KPRIM)
 
-      DATA BLNK /'E','S','P','D','F'/
+      DATA BLNK /'E','S','P','D','F','G','H','I'/
 
       IF (IPRINT.GE.3) THEN
          write(LUPRI,*) '*** In WRIBAS ***'

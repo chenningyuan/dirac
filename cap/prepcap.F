@@ -26,7 +26,7 @@ C
       SAVE SET
       DATA TABLE /'.INPQD ','.INPCAP','.PRINT ','.OVLCAP',
      &            '.NOOVLP','.NONREL','.NOREAL','.NOIMAG',
-     &            '.IMASRE','.DIPVEL','.XXXXXX','.XXXXXX',
+     &            '.IMASRE','.DIPVEL','.CAPNEW','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
@@ -55,6 +55,7 @@ CMI   IF (LEVYLE) DONRCAP = .TRUE.
       NOCAPIM = .FALSE.
       CAPIMRE = .FALSE.
       CAPDIPVEL = .FALSE.    
+      CAPNEW = .FALSE.
 C
 C
 C     Process input for CAPINP
@@ -139,7 +140,8 @@ C&&& Do the comparison between CAP and DIRAC dipole velocity integrals
                  CAPDIPVEL = .TRUE.
                  GO TO 100
  11              CONTINUE
-C&&& XXXXXX
+C&&& New and more compact implementation of the CAP
+                 CAPNEW = .TRUE.
                  GO TO 100
  12              CONTINUE
 C&&& XXXXXX
@@ -221,6 +223,11 @@ C
          WRITE(LUPRI,'(2X,A)')
      &   '* Using IMAGINARY part of the CAP as REAL together with'//
      &   ' the ordinary REAL part in the correlation step.' 
+        ENDIF
+
+        IF (CAPNEW) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &'* New implementation of CAP in progress...'
         ENDIF
 
         WRITE(LUPRI,'(2X,A,F14.5)')
@@ -607,6 +614,7 @@ C      ... fill in DIRAC abfu characteristics
      &     ' >dirac unique fu #:',
      &        IOBF2(3,I)
           write(LUPRI,*)
+          CALL FLSHFO(LUPRI)
         ENDIF
 
       ENDDO
@@ -646,6 +654,7 @@ C       ... save function
          IF (MOD(I,8).EQ.0) WRITE(LUPRI,*)
        ENDDO
        WRITE(LUPRI,*)
+       CALL FLSHFO(LUPRI)
       ENDIF
 
 C   ... fill IOBF1_2 array !
@@ -1473,7 +1482,7 @@ C
 C   Return the unique number of the atomic basis 
 C  function in variable AO.
 C
-C  Functions are only up to F.
+C  Functions are only up to G
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -1488,6 +1497,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         AONUM = 3
       ELSE IF (AO.EQ.'PZ'.OR.AO.EQ.'pz') THEN
         AONUM = 4
+C   ... d shells ...
       ELSE IF (AO.EQ.'XX'.OR.AO.EQ.'dxx') THEN
         AONUM = 5
       ELSE IF (AO.EQ.'XY'.OR.AO.EQ.'dxy') THEN
@@ -1500,6 +1510,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         AONUM = 9
       ELSE IF (AO.EQ.'ZZ'.OR.AO.EQ.'dzz') THEN
         AONUM = 10
+C   .... f shells ...
       ELSE IF (AO.EQ.'XXX'.OR.AO.EQ.'fxxx') THEN
         AONUM = 11
       ELSE IF (AO.EQ.'XXY'.OR.AO.EQ.'fxxy') THEN
@@ -1520,11 +1531,42 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         AONUM = 19
       ELSE IF (AO.EQ.'ZZZ'.OR.AO.EQ.'fzzz') THEN
         AONUM = 20
+C    .... G shells
+      ELSE IF (AO.EQ.'XXXX'.OR.AO.EQ.'g400') THEN
+        AONUM = 21
+      ELSE IF (AO.EQ.'XXXY'.OR.AO.EQ.'g310') THEN
+        AONUM = 22
+      ELSE IF (AO.EQ.'XXXZ'.OR.AO.EQ.'g301') THEN
+        AONUM = 23
+      ELSE IF (AO.EQ.'XXYY'.OR.AO.EQ.'g220') THEN
+        AONUM = 24
+      ELSE IF (AO.EQ.'XXYZ'.OR.AO.EQ.'g211') THEN
+        AONUM = 25
+      ELSE IF (AO.EQ.'XXZZ'.OR.AO.EQ.'g202') THEN
+        AONUM = 26
+      ELSE IF (AO.EQ.'XYYY'.OR.AO.EQ.'g130') THEN
+        AONUM = 27
+      ELSE IF (AO.EQ.'XYYZ'.OR.AO.EQ.'g121') THEN
+        AONUM = 28
+      ELSE IF (AO.EQ.'XZZZ'.OR.AO.EQ.'g103') THEN
+        AONUM = 29
+      ELSE IF (AO.EQ.'YYYY'.OR.AO.EQ.'g040') THEN
+        AONUM = 30
+      ELSE IF (AO.EQ.'YYYZ'.OR.AO.EQ.'g031') THEN
+        AONUM = 31
+      ELSE IF (AO.EQ.'YYZZ'.OR.AO.EQ.'g022') THEN
+        AONUM = 32
+      ELSE IF (AO.EQ.'YZZZ'.OR.AO.EQ.'g013') THEN
+        AONUM = 33
+      ELSE IF (AO.EQ.'XYZZ'.OR.AO.EQ.'g112') THEN
+        AONUM = 34
+      ELSE IF (AO.EQ.'ZZZZ'.OR.AO.EQ.'g004') THEN
+        AONUM = 35
       ELSE
        write(LUPRI,*) '>>> fu AONUM: entering atomic orbital:',AO,
-     & ' is not in the list (which is up only to F functions) !'       
+     & ' is not in the list (which is up only to G functions) !'       
        CALL QUIT('fu AONUM: entering AO does not fit; basis'//
-     & ' set up to f functions only !')
+     & ' set up to G functions only !')
       ENDIF
 
       RETURN
@@ -1544,11 +1586,17 @@ C           GET_CAPAF_FAC =  1.0D0
             GET_CAPAF_FAC = DSQRT(15.0D0)
 C        XXY, XXZ, YYX, ZZX, YYZ, ZZY,              
          ELSE IF (I.EQ.12.OR.I.EQ.13.OR.I.EQ.14.OR.
-     &            I.EQ.16.OR.I.EQ.18.OR.I.EQ.19) THEN
+     &            I.EQ.16.OR.I.EQ.18.OR.I.EQ.19.OR.
+     &            I.EQ.28.OR.I.EQ.25.OR.I.EQ.34) THEN
             GET_CAPAF_FAC =  DSQRT(3.0D0)
 C        XYZ
-         ELSE IF (I.EQ.15) THEN
-            GET_CAPAF_FAC =  1.0D0
+         ELSE IF (I.EQ.35.OR.I.EQ.30.OR.I.EQ.21) THEN
+            GET_CAPAF_FAC =  DSQRT(105.0D0)
+         ELSE IF (I.EQ.33.OR.I.EQ.31.OR.I.EQ.29.OR.I.EQ.23.OR.
+     &            I.EQ.27.OR.I.EQ.22) THEN
+            GET_CAPAF_FAC =  DSQRT(15.0D0)
+         ELSE IF (I.EQ.32.OR.I.EQ.24.OR.I.EQ.26) THEN
+            GET_CAPAF_FAC =  DSQRT(9.0D0)
          ELSE
             GET_CAPAF_FAC = 1.0D0
          ENDIF

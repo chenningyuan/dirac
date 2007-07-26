@@ -69,6 +69,7 @@ CMI   LOGICAL*1 ISFILE, FNDLAB,ARELABS,IS_OPEN
 
       IF (IPRCAP.GE.2) THEN
         CALL HEADER('*** Output from SAJEEV ***',-1)
+        CALL FLSHFO(LUPRI)
       ENDIF
 
       CALL INPREAD(N_B,ord_expon,ord_coe,R_ms,basis_n,
@@ -246,27 +247,31 @@ C
 C  Called from: SAJEEV
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      PARAMETER(MSIZE=400)
 #include "implicit.h"
 #include "priunit.h"
       
 CMI   static allocations are here !!!
-      CHARACTER *1 shell_type,BLNK(5)
+      CHARACTER *1 shell_type,BLNK(6)
 C     CHARACTER *2 shell_p(3),shell_d(6),Shell_arr(200)   
-      CHARACTER *2 shell_p(3),shell_d(6),Shell_arr(400)   
-      CHARACTER *3 shell_f(10)   
+      CHARACTER *2 shell_p(3),shell_d(6)
+      CHARACTER *3 shell_f(10)
+      CHARACTER *4 shell_g(15), Shell_arr(MSIZE)   
 
       CHARACTER *8 IA
 
-C     character *3 Shell_basis(200)
-      character *3 Shell_basis(400)
+CMI   character *3 Shell_basis(200)
+CMI   character *3 Shell_basis(MSIZE)
+      character *4 Shell_basis(MSIZE)
 
 C     integer *4 Shell_atom(200)
-      integer *4 Shell_atom(400)
+      integer *4 Shell_atom(MSIZE)
       
       integer *4 n_con_guass,nj,g_n,sh,n_c_g
+
 !   ... powers on x,y,z
       integer *4 angu_pow_S(1,3),angu_pow_P(3,3)
-      integer *4 angu_pow_D(6,3),angu_pow_F(10,3)
+      integer *4 angu_pow_D(6,3),angu_pow_F(10,3),angu_pow_G(15,3)
 
       integer *4 n_b,ia_p
 
@@ -286,19 +291,36 @@ C     real *8 R_ms(200,3)
 
       LOGICAL CAPOVLP,DIRAC_NRM
 
-      DATA BLNK /'E','S','P','D','F'/
+      DATA BLNK /'E','S','P','D','F','G' /
+
       DATA shell_p /'PX','PY','PZ'/
       DATA shell_d /'XX','YY','ZZ','XY','XZ','YZ'/
       DATA shell_f /'XXX','YYY','ZZZ','XXY','XXZ','YYX','YYZ',
      &              'ZZX','ZZY','XYZ'/
+
+      DATA shell_g /'XXXX','YYYY','ZZZZ','XXXY','XXXZ','XYYY','YYYZ',
+     &   'XZZZ','YZZZ','XXYY','XXZZ','YYZZ','XXYZ','XYYZ','XYZZ'/
+
       DATA angu_pow_S /0,0,0/
-      DATA angu_pow_P /1,0,0,0,1,0,0,0,1/
+
+      DATA angu_pow_P /1,0,0,
+     &                 0,1,0,
+     &                 0,0,1/
+
       DATA angu_pow_D /2,0,0,1,1,0,
-     *     0,2,0,1,0,1,
-     *     0,0,2,0,1,1/
+     &                 0,2,0,1,0,1,
+     &                 0,0,2,0,1,1/
+
       DATA angu_pow_F /3,0,0,2,2,1,0,1,0,1,
-     *     0,3,0,1,0,2,2,0,1,1,
-     *     0,0,3,0,1,0,1,2,2,1/
+     &                 0,3,0,1,0,2,2,0,1,1,
+     &                 0,0,3,0,1,0,1,2,2,1 /
+
+C    ... newest...not defined in Gamess
+      DATA angu_pow_G /
+     & 4, 0, 0, 3, 3, 1, 0, 1, 0, 2, 2, 0, 2, 1, 1,               
+     & 0, 4, 0, 1, 0, 3, 3, 0, 1, 2, 0, 2, 1, 2, 1,
+     & 0, 0, 4, 0, 1, 0, 1, 3, 3, 0, 2, 2, 1, 1, 2
+     &  /
 
 #include "dummy.h"
       CALL QENTER('INPREAD')
@@ -317,6 +339,7 @@ C     ... open file for reading integrals
       IF (IPRINT.GE.3) THEN
        write(LUPRI,'(/2X,A)') 'Output for INPREAD'
        write(lupri,*) ' n_atoms= ',n_atoms
+        CALL FLSHFO(LUPRI)
       ENDIF
 
       g_n=1
@@ -354,6 +377,8 @@ CMI       'D' shell
             if(shell_type.eq.blnk(4)) go to 400
 CMI       'F' shell
             if(shell_type.eq.blnk(5)) go to 500
+CMI       'G' shell
+            if(shell_type.eq.blnk(6)) go to 600
               
  200        continue
           
@@ -364,11 +389,13 @@ CMI       'F' shell
              READ(LUinp,*)nj,expon,coe
 
           IF (IPRINT.GE.3) THEN
-            write(lupri,*)'S: nj=',nj,' expon=',expon,' contr.coef=',coe
+           write(lupri,'(2X,A,I2,A,F12.5,A,F12.6)')
+     & 'S: nj=',nj,' expon=',expon,' contr.coef=',coe
           ENDIF
 
                ord_expon(sh)=expon
                ord_coe(sh)=coe
+
                shell_arr(sh)=shell_type
                Shell_basis(g_n)=shell_type
                Shell_atom(g_n)=k
@@ -380,7 +407,7 @@ CMI       'F' shell
 
             END DO
               g_n=g_n+1
-              go to 600
+              go to 6000
              
  300         continue
              
@@ -389,7 +416,8 @@ CMI       'F' shell
                 READ(LUinp,*) nj,expon,coe
 
           IF (IPRINT.GE.3) THEN
-           write(lupri,*)
+C          write(lupri,*)
+           write(lupri,'(2X,A,I2,A,F12.5,A,F12.6)')
      &     'P: nj=',nj,' expon=',expon,' contr.coef=',coe
           ENDIF
 
@@ -409,18 +437,19 @@ CMI       'F' shell
           do  iji=1,3
              basis_n(g_n)=basis_n(g_n)+n_con_guass
              g_n=g_n+1
-             end do
-             sh=sh+2*n_con_guass
-             go to 600
+          end do
+          sh=sh+2*n_con_guass
+          go to 6000
              
- 400         continue
+ 400      continue
              
-             DO n_c_g=1,n_con_guass
-               sh=sh+1
-               READ(LUinp,*)nj,expon,coe
+        DO n_c_g=1,n_con_guass
+             sh=sh+1
+          READ(LUinp,*)nj,expon,coe
 
           IF (IPRINT.GE.3) THEN
-           write(lupri,*)'D: nj=',nj,' expon=',expon,' contr.coef=',coe
+           write(lupri,'(2X,A,I2,A,F12.5,A,F12.6)')
+     & 'D: nj=',nj,' expon=',expon,' contr.coef=',coe
           ENDIF
 
                 do i=1,6
@@ -436,15 +465,16 @@ CMI       'F' shell
                    end do
 
                 end do
-             END DO
+            END DO
        
              do  iji=1,6
                 basis_n(g_n)=basis_n(g_n)+n_con_guass
                 g_n=g_n+1
              end do
              sh=sh+5*n_con_guass
-             go to 600
+             go to 6000
              
+CMI  *********** F *****************************
  500         continue 
              
              DO  n_c_g=1,n_con_guass
@@ -453,7 +483,8 @@ CMI       'F' shell
                 READ(LUinp,*)nj,expon,coe
 
            IF (IPRINT.GE.3) THEN
-          write(lupri,*)'F: nj=',nj,' expon=',expon,' contr.coef=',coe
+           write(lupri,'(2X,A,I2,A,F12.5,A,F12.6)')
+     & 'F: nj=',nj,' expon=',expon,' contr.coef=',coe
            ENDIF
 
                 do i=1,10
@@ -474,28 +505,54 @@ CMI       'F' shell
                 g_n=g_n+1
              end do
              sh=sh+9*n_con_guass
-             
- 600         continue
-             
-          End  Do
- 201       continue
-          n_pg_atom(1)=1
-          n_pg_atom(k+1)=sh
-          do ii= n_pg_atom(k),sh
-             do isw=1,3
-                R_ms(iiii,isw)=re(k,isw)
+             go to 6000
+CMI  *********** G *****************************
+ 600         continue 
+      DO   n_c_g=1,n_con_guass
+              sh=sh+1
+              READ(LUinp,*)nj,expon,coe
+              do i=1,15
+                 shell_arr(sh+(i-1)*n_con_guass)=shell_G(i)
+                 Shell_basis(g_n+i-1)=shell_G(i)
+                 Shell_atom(g_n+i-1)=k
+                 ord_expon(sh+(i-1)*n_con_guass)=expon
+                 ord_coe(sh+(i-1)*n_con_guass)=coe
+                  do ia_p=1,3
+                   ang_pow(sh+(i-1)*n_con_guass,ia_p)=angu_pow_G(i,ia_p)
+                  end do
+               end do
+      END DO
+  
+             do  iji=1,15
+                basis_n(g_n)=basis_n(g_n)+n_con_guass
+                 g_n=g_n+1
              end do
-             iiii=iiii+1
-          end do
+             sh=sh+(14)*n_con_guass
+             go to 6000
+
+ 6000       continue
+     
+              End  Do
+
+ 201       continue
+                  n_pg_atom(1)=1
+                  n_pg_atom(k+1)=sh
+
+               do ii= n_pg_atom(k),sh
+                     do isw=1,3
+                       R_ms(iiii,isw)=re(k,isw)
+                     end do
+                     iiii=iiii+1
+                end do
        END DO
 
        close(LUinp,status="keep")
 
 CMI   ... get the total number of basis functions
-       n_b=g_n-1
+             n_b=g_n-1
        
        WRITE(LUPRI,'(/2X,A,I3,A,I3)')
-     & 'Number of primitive guassians / number of'//
+     & 'Total number of primitive guassians / total number of'//
      & ' contracted basis functions=',sh,'/',n_b
 
        LUCAP=0
@@ -506,7 +563,7 @@ CMI   ... get the total number of basis functions
        WRITE(LUPRI,*) 'CAP unique order of atomic basis functions'
 
        do i=1,n_b
-         write(LUPRI,'(2i4,A6,A,I3)')i,SHELL_ATOM(i),Shell_basis(i),
+          write(LUPRI,'(2i4,A6,A,I3)')i,SHELL_ATOM(i),Shell_basis(i),
      &   ' contr->',basis_n(i)  
 C        ... write into file
          WRITE(LUCAP,'(i4,2x,i3,2x,A6)') i,SHELL_ATOM(i),Shell_basis(i)
@@ -515,13 +572,13 @@ C        ... write into file
        CALL GPCLOSE(LUCAP,'KEEP')
 
        IF (IPRINT.GE.1) THEN
-        WRITE(LUPRI,'(2X,A)')
+         WRITE(LUPRI,'(2X,A)')
      &  'File "CAPLBL.inp" with CAP unique order of atomic basis'//
      &  ' functions ready.'
        ENDIF
        
        WRITE(LUPRI,'(/,2X,A)')
-     & ' sh_ty,Pgua_expo,nor_pg_coe,angu_pow,cartesian '
+     & '>>> sh_ty, Pgua_expo,nor_pg_coe,angu_pow, cartesian'
        
        DIRAC_NRM = .TRUE.
        IF (DIRAC_NRM) THEN
@@ -532,18 +589,18 @@ C!This normalization is compatible with the
 C!NORMF=1 NORMP=0 of gamess US
 C!For a different normalization procedure,
 C!one may have to modify this
-         do i=1,sh
-            do isw=1,3
-               R_m(isw)=R_ms(i,isw)
-               k_m(isw)=(ang_pow(i,isw))
-            end do
+          do i=1,sh
+           do isw=1,3
+             R_m(isw)=R_ms(i,isw)
+       k_m(isw)=(ang_pow(i,isw))
+           end do
 
-            R_m(4)=ord_expon(i)
+           R_m(4)=ord_expon(i)
 
-            CALL PEM(R_m,R_m,K_m,K_m,PEINT)
-            ord_coe(i)=ord_coe(i)/sqrt(PEINT)
+           CALL PEM(R_m,R_m,K_m,K_m,PEINT)
+           ord_coe(i)=ord_coe(i)/sqrt(PEINT)
 
-            write (LUPRI,*)i,'fu=',shell_arr(i),ord_expon(i),
+           write (LUPRI,*)i,'fu=',shell_arr(i),ord_expon(i),
      &             ord_coe(i),' nrm PEINT=',PEINT
 
 C           write (16,*)i,shell_arr(i),ord_expon(i),ord_coe(i)
@@ -885,19 +942,23 @@ C
 C Parameters:
 C            R_m,R_n
 C            K_m,K_n
-C            BETA
-C            Int_GR - output
+C            BETA (usually zero)
+C
+C            Int_GR - returns overlap integrals
 C
 C  Called from: PEM
 C               CAPM
+C
+C
+C  Output:  Int_GR
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
       integer *4 k_m,k_n
       real *8  R_m(2),R_n(2)
-      real *8 BETA, INT_GR
-      real *8 GAM,P,PA,PB,GAMP,RMULT,RMULTI,FINTM
+      real *8  BETA, INT_GR
+      real *8  GAM,P,PA,PB,GAMP,RMULT,RMULTI,FINTM
       data PI/3.14/
       EXTERNAL  IFACT
    
@@ -934,8 +995,18 @@ C         if (i.eq.4)write(*,*)IFACT(i),'IFA'
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE F_INT(k,PA,PB,k_m,K_n,FINTM) 
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  Called from SMAT
+C
+C
+C   Returns FINTM
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
       
-      IMPLICIT REAL*8 (A-H,O-Z)
+CMI   IMPLICIT REAL*8 (A-H,O-Z)
       integer *4 k_m,k_n
       real *8 Int
 C     REAL *8 PA,PB
@@ -973,7 +1044,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Called from AOINTEGRAL (from within the 4-fold cycle)
 C
-C   entering parameter theta is from the INPQD file
+C   entering parameter "theta" is from the INPQD file
 C
 C   returns: 
 C          VCAP - the total nonrel. scalar CAP term for DONRCAP=.true.

@@ -271,13 +271,17 @@ DIMENSION WORK(LWORK)
  CALL QENTER('CAP_STUFF')
 
 !  ... control test... 
-    call test_oof_basis_fu(WORK,LWORK)
+ !   call test_oof_basis_fu(WORK,LWORK)
 
  call set_vect_iprint(IPRCAP)
 
  write(LUPRI,*) 'before stick into memory...LWORK=',LWORK
 
+! ... stick the memory  ... 
  call StickMemory(WORK,LWORK)
+
+ if (CAPNEW) call CAP_new_stuff
+
 
      icabfo = MakeVector('INTE',NBASIS,'CAP-DIRAC correspondence')   
      iobf1_2 = MakeVector('INTE',NBASIS,'AO function types for obatining factors') 

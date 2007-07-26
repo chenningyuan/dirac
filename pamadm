@@ -749,7 +749,7 @@ if [ -n "$CAPMOD" ]; then
 cat <<EOF>> Makefile
 
 CAPOBJS = \\
-cap/dircap.o cap/prepcap.o cap/prepcap90.o
+cap/dircap.o cap/prepcap.o cap/prepcap90.o cap/capnew.o
 EOF
 fi
 #
