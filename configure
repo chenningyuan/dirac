@@ -1233,6 +1233,8 @@ case $machine in
             F77real=ifc
          elif "$F77" $mpishowopt | grep -q ifort; then
             F77real=ifort
+         elif "$F77" $mpishowopt | grep -q gfortran; then
+            F77real=gfortran
          elif "$F77" $mpishowopt | grep -q pgf90; then
             F77real=pgf90
          elif "$F77" $mpishowopt | grep -q pgf77; then
@@ -1568,6 +1570,8 @@ case $machine in
             F77real=ifc
          elif "$F77" $mpishowopt | grep -q ifort; then
             F77real=ifort
+         elif "$F77" $mpishowopt | grep -q gfortran; then
+            F77real=gfortran
          elif "$F77" $mpishowopt | grep -q pgf90; then
             F77real=pgf90
          elif "$F77" $mpishowopt | grep -q pgf77; then
