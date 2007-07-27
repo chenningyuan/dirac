@@ -31,9 +31,9 @@ C=======================================================================
 !                   5         6         7         8
      &            '.SKIPEP','.SKIPEE','.STRING','.INTEGR',
 !                   9        10        11        12
-     &            '.3DADD ','.CUBE  ','.COMMON','.XXXXXX',
+     &            '.3DADD ','.CUBE  ','.COMMON','.FREQ+H',
 !                  13        14        15        16
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.FREQ-H','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  17        18        19        20
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  21        22        23        24
@@ -173,7 +173,13 @@ C=======================================================================
           GOTO 100
 
    12     CONTINUE
+          CALL SET_LBIT(LBIT_VISUAL,9)
+          GOTO 100
+
    13     CONTINUE
+          CALL SET_LBIT(LBIT_VISUAL,10)
+          GOTO 100
+
    14     CONTINUE
    15     CONTINUE
    16     CONTINUE
