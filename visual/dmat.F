@@ -397,6 +397,15 @@ C=======================================================================
 
       CLOSE(LUNIT_XVECTOR,STATUS = 'KEEP')
 
+      IF(LBIT(LBIT_VISUAL,9)) THEN
+        IH_EE = 1
+        IH_EP = IH_EE
+      ENDIF
+      IF(LBIT(LBIT_VISUAL,10)) THEN
+        IH_EE = -1
+        IH_EP = IH_EE
+      ENDIF
+
 !     scatter vector onto MO density matrix
 
       IHERMITICITY = IH_EE
