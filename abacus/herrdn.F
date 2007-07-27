@@ -3282,13 +3282,13 @@ C Purpose: do the normalization of incoming atomic orbitals, GTO -> CGTP
 C
 C On entry:
 C           I - of 1 - IQM
-C           NRCIJ, NUCIJ - number of contracted/unkontracted AO
+C           NRCIJ, NUCIJ - number of contracted/uncontracted AO
 C           ALPHA - exponents  
 C           CPRIMU - contraction coefficients read from the basis set input
 C           KPRIM, NBLOCK - dimensions
 C
 C On output: 
-C            CPRIM - normalized contraction coefficients
+C            CPRIM - HERMIT style normalized contraction coefficients
 C
 C Description added by Miro ILIAS, March 2007, Tel Aviv
 C
@@ -3318,24 +3318,28 @@ C
   300    CONTINUE
   100 CONTINUE
 
-C     ... control print out
+C     ... control print-out
       IF (IPREAD.GE.10) THEN
        WRITE(LUPRI,'(/,2X,A,I3)')
-     & 'Output from NRMORB, block :',I
-       WRITE(LUPRI,'(2X,A,2I3)')
-     & 'NUCIJ,NRCIJ:',NUCIJ,NRCIJ
-       WRITE(LUPRI,'(2X,A)')
-     & 'CPRIMU - read contr.coeff. and CPRIM - normalized contr.coeff:'
+     & '***  Output from NRMORB, block #:',I
+       WRITE(LUPRI,'(2X,A,I3,A,I3)')
+     & 'uncontracted / contracted shells, NUCIJ/NRCIJ: ',NUCIJ,'/',NRCIJ
+C      WRITE(LUPRI,'(2X,A)')
+C    & 'CPRIMU - read contr.coeff. and CPRIM - normalized contr.coeff:'
        DO N = 1, NRCIJ
-        WRITE(LUPRI,*) N,'. CPRIMU:',(CPRIMU(L,N),L=1,NUCIJ)
-        WRITE(LUPRI,*) N,'.  CPRIM:',( CPRIM(L,N),L=1,NUCIJ)
+        WRITE(LUPRI,'(2X,A,I2)') ' contracted shell #',N
+        DO L = 1,NUCIJ
+         WRITE(LUPRI,'(2X,I3,3(A,F12.7))')
+     &   L,'. exponent:',ALPHA(L),' contr.coeff:',CPRIMU(L,N),
+     &   ' normalized contr.coeff.', CPRIM(L,N)
+        ENDDO
        ENDDO
       ENDIF
 
       RETURN
  1000 CONTINUE
         WRITE (LUPRI,'(/1X,A,2(I3,A),A1,A/A,2I4)')
-     &    'INPUT ERROR: CGTO no.',N,' for block',NBLOCK,
+     &    'NRMORB INPUT ERROR: CGTO no.',N,' for block',NBLOCK,
      &    ' of ',SPDCAR(I-1),' type has zero norm.',
      &    ' Contraction matrix: ',NUCIJ,NRCIJ
          CALL QUIT('CGTO with zero norm.')
