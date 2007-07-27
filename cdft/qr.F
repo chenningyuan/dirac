@@ -518,35 +518,35 @@ C=======================================================================
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* RECURSIVE_DFT_RESPONSE */
-      SUBROUTINE RECURSIVE_DFT_RESPONSE(ADD_R,
-     &                                  ADD_S,
-     &                                  ADD_GR,
-     &                                  ADD_GS,
-     &                                  DTRMAT,
-     &                                  EXCMAT,
-     &                                  ISYMOP,
-     &                                  IHRMOP,
-     &                                  GAO,
-     &                                  GAO1,
-     &                                  R_0,
-     &                                  GR_0_NORM,
-     &                                  GR_0,
-     &                                  W,
-     &                                  BUF)
-C=======================================================================
-C     describe me ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                               last revision: june 2007
-C=======================================================================
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c     /* dft_response */
+      subroutine dft_response(add_r,
+     &                        add_s,
+     &                        add_gr,
+     &                        add_gs,
+     &                        dtrmat,
+     &                        excmat,
+     &                        isymop,
+     &                        ihrmop,
+     &                        gao,
+     &                        gao1,
+     &                        r_0,
+     &                        gr_0_norm,
+     &                        gr_0,
+     &                        w,
+     &                        buf)
+c=======================================================================
+c     describe me ...
+c-----------------------------------------------------------------------
+c                                                           radovan bast
+c                                               last revision: june 2007
+c=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-      PARAMETER (NR_VARS = 5)
+      parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
+      parameter (nr_vars = 5)
 
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -559,260 +559,267 @@ C=======================================================================
 #include "dftcom.h"
 #include "../dft/functionals.h"
 
-      LOGICAL   ADD_R,
-     &          ADD_S,
-     &          ADD_GR,
-     &          ADD_GS,
-     &          LBIT,
-     &          USE_VAR(NR_VARS),
-     &          VAR_IS_VECTOR(NR_VARS)
-      DIMENSION DTRMAT(NBAST,NBAST,NZ,3),
-     &          EXCMAT(NBAST,NBAST,NZ,3),
-     &          ISYMOP(3),
-     &          IHRMOP(3),
-     &          GAO(*),
-     &          GAO1(*),
-     &          GR_0(3),
-     &          BUF(*),
+      logical   add_r,
+     &          add_s,
+     &          add_gr,
+     &          add_gs,
+     &          lbit,
+     &          use_var(nr_vars),
+     &          var_is_product(nr_vars)
+      dimension dtrmat(nbast,nbast,nz,3),
+     &          excmat(nbast,nbast,nz,3),
+     &          isymop(3),
+     &          ihrmop(3),
+     &          gao(*),
+     &          gao1(*),
+     &          gr_0(3),
+     &          buf(*),
 !
-     &          GR(  3,0:3),
-     &          GS(3,3,0:3),
+     &          gr(  3,0:3),
+     &          gs(3,3,0:3),
 !
-     &          GR_L(3,3,0:3,NR_VARS),
-     &          GR_R(3,3,0:3,NR_VARS),
+     &          gr_l(3,3,0:3,nr_vars),
+     &          gr_r(3,3,0:3,nr_vars),
 !
-     &          VAR(3,0:3,NR_VARS),
-     &          VAR_pq(3,0:3,NR_VARS),
+     &          var   (3,0:3,nr_vars),
+     &          var_pq(3,0:3,nr_vars),
 !
-     &          Vxc_hs(    0:3),
-     &          Vxc_as(  3,0:3),
-     &          Vxc_hv(  3,0:3),
-     &          Vxc_av(3,3,0:3),
+     &          ih_var(nr_vars),
 !
-     &          Vxc(99)
+     &          vxc_vector(0:3,3,0:3,2),
+!
+     &          vxc(99)
 
 #include "ibtfun.h"
 
-      DO IVAR = 1,NR_VARS
-        USE_VAR(IVAR)       = .FALSE.
-        VAR_IS_VECTOR(IVAR) = .FALSE.
-      ENDDO
+      ih_var(1) = 1
+      ih_var(2) = 2
+      ih_var(3) = 1
+      ih_var(4) = 2
+      ih_var(5) = 2
 
-      IF(ADD_R)  USE_VAR(1) = .TRUE.
-      IF(ADD_S)  USE_VAR(2) = .TRUE.
-      IF(ADD_GR) USE_VAR(3) = .TRUE.
-      IF(ADD_GS) USE_VAR(4) = .TRUE.
-      IF(ADD_GS) USE_VAR(5) = .TRUE.
+      do ivar = 1,nr_vars
+        use_var(ivar)        = .false.
+        var_is_product(ivar) = .false.
+      enddo
 
-      VAR_IS_VECTOR(2) = .TRUE.
-      VAR_IS_VECTOR(4) = .TRUE.
-      VAR_IS_VECTOR(5) = .TRUE.
+      if(add_r)  use_var(1) = .true.
+      if(add_s)  use_var(2) = .true.
+      if(add_gr) use_var(3) = .true.
+!     if(add_gs) use_var(4) = .true.
+!     if(add_gs) use_var(5) = .true.
 
-      CALL DZERO(GR,4*3)
-      CALL DZERO(GS,4*3*3)
+      var_is_product(3) = .true.
+      var_is_product(4) = .true.
+      var_is_product(5) = .true.
 
-      CALL DZERO(GR_L,4*3*3*NR_VARS)
-      CALL DZERO(GR_R,4*3*3*NR_VARS)
+      call dzero(gr,4*3)
+      call dzero(gs,4*3*3)
 
-      CALL DZERO(VAR,3*4*NR_VARS)
-      CALL DZERO(VAR_pq,3*4*NR_VARS)
+      call dzero(gr_l,nr_vars*4*3*3)
+      call dzero(gr_r,nr_vars*4*3*3)
 
-      CALL DZERO(Vxc_hs,4)
-      CALL DZERO(Vxc_as,4*3)
-      CALL DZERO(Vxc_hv,4*3)
-      CALL DZERO(Vxc_av,4*3*3)
+      call dzero(var,   nr_vars*4*4)
+      call dzero(var_pq,nr_vars*4*4)
 
+      call dzero(vxc_vector,4*3*4*2)
 
-      ISTART = 1
-      IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !collinear approximation
+      ixyz_start = 1
+      if(lbit(lbit_cdft,3)) ixyz_start = 3 !collinear approximation
 
-      DO ibc = 1,3
-        IF(USE_VAR(1)) THEN
-          CALL GET_R(.TRUE.,
-     &               VAR(3,ibc,1),
-     &               ISYMOP(ibc)-1,
-     &               GAO,
-     &               DTRMAT(1,1,1,ibc),
-     &               BUF)
-        ENDIF
-        IF(USE_VAR(2)) THEN
-          CALL GET_M(.TRUE.,
-     &               VAR(1,ibc,2),
-     &               ISYMOP(ibc)-1,
-     &               GAO,
-     &               DTRMAT(1,1,1,ibc),
-     &               BUF)
-        ENDIF
-        IF(USE_VAR(3)) THEN
-          CALL GET_GR_NH(.TRUE.,
-     &                   GR(1,ibc),
-     &                   ISYMOP(ibc)-1,
-     &                   GAO,
-     &                   GAO1,
-     &                   DTRMAT(1,1,1,ibc),
-     &                   BUF)
-        ENDIF
-        IF(USE_VAR(4)) THEN
-          CALL GET_M_DERVS_NH(.TRUE.,
-     &                       GS(1,1,ibc),
-     &                       ISYMOP(ibc)-1,
-     &                       GAO,
-     &                       GAO1,
-     &                       DTRMAT(1,1,1,ibc),
-     &                       BUF)
-        ENDIF
-      ENDDO
+      do ibc = 1,3
+        if(use_var(1)) then
+          call get_r(.true.,
+     &               var(3,ibc,1),
+     &               isymop(ibc)-1,
+     &               gao,
+     &               dtrmat(1,1,1,ibc),
+     &               buf)
+        endif
+        if(use_var(2)) then
+          call get_m(.true.,
+     &               var(1,ibc,2),
+     &               isymop(ibc)-1,
+     &               gao,
+     &               dtrmat(1,1,1,ibc),
+     &               buf)
+        endif
+        if(use_var(3)) then
+          call get_gr_nh(.true.,
+     &                   gr(1,ibc),
+     &                   isymop(ibc)-1,
+     &                   gao,
+     &                   gao1,
+     &                   dtrmat(1,1,1,ibc),
+     &                   buf)
+        endif
+        if(use_var(4)) then
+          call get_m_dervs_nh(.true.,
+     &                       gs(1,1,ibc),
+     &                       isymop(ibc)-1,
+     &                       gao,
+     &                       gao1,
+     &                       dtrmat(1,1,1,ibc),
+     &                       buf)
+        endif
+      enddo
 
-      GR(1,0) = GR_0(1)
-      GR(2,0) = GR_0(2)
-      GR(3,0) = GR_0(3)
+      gr(1,0) = gr_0(1)
+      gr(2,0) = gr_0(2)
+      gr(3,0) = gr_0(3)
 
-      DO ixyz = ISTART,3
-        DO ibc = 0,3
-          DO jxyz = 1,3
-            GR_L(jxyz,ixyz,ibc,3) = GR(jxyz,ibc)
-            GR_L(ixyz,jxyz,ibc,4) = GR(jxyz,ibc)
-            GR_L(ixyz,jxyz,ibc,5) = GS(jxyz,ixyz,ibc)
+      do ixyz = ixyz_start,3
+        do ibc = 0,3
+          do jxyz = 1,3
+            gr_l(jxyz,ixyz,ibc,3) = gr(jxyz,     ibc)
+            gr_l(jxyz,ixyz,ibc,4) = gr(jxyz,     ibc)
+            gr_l(jxyz,ixyz,ibc,5) = gs(jxyz,ixyz,ibc)
 
-            GR_R(jxyz,ixyz,ibc,3) = GR(jxyz,ibc)
-            GR_R(ixyz,jxyz,ibc,4) = GS(jxyz,ixyz,ibc)
-            GR_R(ixyz,jxyz,ibc,5) = GS(jxyz,ixyz,ibc)
-          ENDDO
-        ENDDO
-      ENDDO
+            gr_r(jxyz,ixyz,ibc,3) = gr(jxyz,     ibc)
+            gr_r(jxyz,ixyz,ibc,4) = gs(jxyz,ixyz,ibc)
+            gr_r(jxyz,ixyz,ibc,5) = gs(jxyz,ixyz,ibc)
+          enddo
+        enddo
+      enddo
 
-      DO ixyz = ISTART,3
-        DO ivar = 3,5
-          IF(USE_VAR(ivar)) THEN
-            DO ibc = 1,3
-              VAR(ixyz,ibc,ivar) =
-     &             DDOT(3,GR_L(1,ixyz,ibc,ivar),1,GR_R(1,ixyz,0,ivar),1)
-     &           + DDOT(3,GR_L(1,ixyz,0,ivar),1,GR_R(1,ixyz,ibc,ivar),1)
-            ENDDO
-
+      do ixyz = ixyz_start,3
+        do ivar = 3,5
+          if(use_var(ivar)) then
+            do ibc = 1,3
+              var(ixyz,ibc,ivar) = var(ixyz,ibc,ivar)
+     &         + ddot(3,gr_l(1,ixyz,ibc,ivar),1,gr_r(1,ixyz,0,  ivar),1)
+     &         + ddot(3,gr_l(1,ixyz,0,  ivar),1,gr_r(1,ixyz,ibc,ivar),1)
+            enddo
             ibc = 3
-              VAR(ixyz,ibc,ivar) = VAR(ixyz,ibc,ivar)
-     &          + DDOT(3,GR_L(1,ixyz,1,ivar),1,GR_R(1,ixyz,2,ivar),1)*D2
-     &          + DDOT(3,GR_L(1,ixyz,2,ivar),1,GR_R(1,ixyz,1,ivar),1)*D2
-          ENDIF
-        ENDDO
-      ENDDO
+              var(ixyz,ibc,ivar) = var(ixyz,ibc,ivar)
+     &         + ddot(3,gr_l(1,ixyz,1,ivar),1,gr_r(1,ixyz,2,ivar),1)*d2
+     &         + ddot(3,gr_l(1,ixyz,2,ivar),1,gr_r(1,ixyz,1,ivar),1)*d2
+          endif
+        enddo
+      enddo
 
-      IF(ADD_R .AND.       ADD_GR) CALL  DFTPOT2(VXC,W,R_0,GR_0_NORM)
-      IF(ADD_R .AND. .NOT. ADD_GR) CALL  DFTPOT2(VXC,W,R_0,D0)
-      IF(ADD_S .AND.       ADD_GS) CALL SDFTPOT2(VXC,W,R_0,GR_0_NORM)
-      IF(ADD_S .AND. .NOT. ADD_GS) CALL SDFTPOT2(VXC,W,R_0,D0)
+      if(add_r .and.       add_gr) call  dftpot2(vxc,w,r_0,gr_0_norm)
+      if(add_r .and. .not. add_gr) call  dftpot2(vxc,w,r_0,d0)
+      if(add_s .and.       add_gs) call sdftpot2(vxc,w,r_0,gr_0_norm)
+      if(add_s .and. .not. add_gs) call sdftpot2(vxc,w,r_0,d0)
 
-      Vxc(99) = D0
+      vxc(99) = d0
 
-      DO ixyz = 1,2
-        DO ibc = 1,3
-          VAR(ixyz,ibc,1) = VAR(3,ibc,1)
-        ENDDO
-      ENDDO
+      do ixyz = 1,2
+        do ibc = 1,3
+          var(ixyz,ibc,1) = var(3,ibc,1)
+        enddo
+      enddo
 
-      DO ixyz = ISTART,3
+      do ixyz = ixyz_start,3
 
-        DO ivar = 1,NR_VARS
-          IF(USE_VAR(ivar)) THEN
-            ICHECKSUM =             10**(ivar-1)
-            DER = Vxc(I_DERIVATIVE(ICHECKSUM))
+        do ivar = 1,nr_vars
+          if(use_var(ivar)) then
+            ichecksum =             10**(ivar-1)
+            der = vxc(i_derivative(ichecksum))
 
-            VAR_pq(ixyz,3,ivar) = DER
+            var_pq(ixyz,3,ivar) = der
 
-            DO jvar = 1,NR_VARS
-              IF(USE_VAR(jvar)) THEN
-                JCHECKSUM = ICHECKSUM + 10**(jvar-1)
-                DER = Vxc(I_DERIVATIVE(JCHECKSUM))
+            do jvar = 1,nr_vars
+              if(use_var(jvar)) then
+                jchecksum = ichecksum + 10**(jvar-1)
+                der = vxc(i_derivative(jchecksum))
 
-                VAR_pq(ixyz,2,ivar) = VAR_pq(ixyz,2,ivar)
-     &                              + VAR(ixyz,1,jvar)*DER
-                VAR_pq(ixyz,1,ivar) = VAR_pq(ixyz,1,ivar)
-     &                              + VAR(ixyz,2,jvar)*DER
-                VAR_pq(ixyz,0,ivar) = VAR_pq(ixyz,0,ivar)
-     &                              + VAR(ixyz,3,jvar)*DER
+                var_pq(ixyz,2,ivar) = var_pq(ixyz,2,ivar)
+     &                              + var(ixyz,1,jvar)*der
+                var_pq(ixyz,1,ivar) = var_pq(ixyz,1,ivar)
+     &                              + var(ixyz,2,jvar)*der
+                var_pq(ixyz,0,ivar) = var_pq(ixyz,0,ivar)
+     &                              + var(ixyz,3,jvar)*der
 
-                DO kvar = 1,NR_VARS
-                  IF(USE_VAR(kvar)) THEN
-                    KCHECKSUM = JCHECKSUM + 10**(kvar-1)
-                    DER = Vxc(I_DERIVATIVE(KCHECKSUM))
+                do kvar = 1,nr_vars
+                  if(use_var(kvar)) then
+                    kchecksum = jchecksum + 10**(kvar-1)
+                    der = vxc(i_derivative(kchecksum))
 
-                    VAR_pq(ixyz,0,ivar) = VAR_pq(ixyz,0,ivar)
-     &                           + VAR(ixyz,1,jvar)*VAR(ixyz,2,kvar)*DER
-     &                           + VAR(ixyz,2,jvar)*VAR(ixyz,1,kvar)*DER
+                    var_pq(ixyz,0,ivar) = var_pq(ixyz,0,ivar)
+     &                           + var(ixyz,1,jvar)*var(ixyz,2,kvar)*der
+     &                           + var(ixyz,2,jvar)*var(ixyz,1,kvar)*der
 
-                  ENDIF
-                ENDDO
-              ENDIF
-            ENDDO
-          ENDIF
-        ENDDO
-      ENDDO
+                  endif
+                enddo
+              endif
+            enddo
+          endif
+        enddo
+      enddo
 
+      do ixyz = ixyz_start,3
+        do ivar = 1,nr_vars
+          if(use_var(ivar) .and. .not. var_is_product(ivar)) then
+            do ibc = 1,3
+              vxc_vector(0,ixyz,ibc,ih_var(ivar)) 
+     &           = vxc_vector(0,ixyz,ibc,ih_var(ivar))
+     &           + var_pq(ixyz,3-ibc,ivar)
+            enddo
+          endif
+    
+          if(use_var(ivar) .and.       var_is_product(ivar)) then
+            do jxyz = 1,3
+              do ibc = 1,3
+                vxc_vector(jxyz,ixyz,ibc,ih_var(ivar)) 
+     &           = vxc_vector(jxyz,ixyz,ibc,ih_var(ivar))
+     &           + var_pq(ixyz,3-ibc,ivar)*gr_l(jxyz,ixyz,0,  ivar)
+     &           + var_pq(ixyz,3-ibc,ivar)*gr_r(jxyz,ixyz,0,  ivar)
+     &           + var_pq(ixyz,3,    ivar)*gr_l(jxyz,ixyz,ibc,ivar)
+     &           + var_pq(ixyz,3,    ivar)*gr_r(jxyz,ixyz,ibc,ivar)
+              enddo
+              ibc = 3
+                vxc_vector(jxyz,ixyz,ibc,ih_var(ivar)) 
+     &           = vxc_vector(jxyz,ixyz,ibc,ih_var(ivar))
+     &           + var_pq(ixyz,1,ivar)*gr_l(jxyz,ixyz,1,ivar)*d2
+     &           + var_pq(ixyz,1,ivar)*gr_r(jxyz,ixyz,1,ivar)*d2
+     &           + var_pq(ixyz,2,ivar)*gr_l(jxyz,ixyz,2,ivar)*d2
+     &           + var_pq(ixyz,2,ivar)*gr_r(jxyz,ixyz,2,ivar)*d2
+            enddo
+          endif
+        enddo
+      enddo
 
+!     because of the symmetrization later in the code
+!     the hermitian part is scaled inside doexc2
+!     call dscal(4*3*3,d2,vxc_av(1,1,0),1)
 
-
-
-
-
-
-
-
-      ivar = 1
-      Vxc_hs(1) = VAR_pq(3,2,IVAR)
-      Vxc_hs(2) = VAR_pq(3,1,IVAR)
-      Vxc_hs(3) = VAR_pq(3,0,IVAR)
-
-      IVAR = 2
-      DO ixyz = ISTART,3
-        Vxc_as(ixyz,1) = VAR_pq(ixyz,2,IVAR)
-        Vxc_as(ixyz,2) = VAR_pq(ixyz,1,IVAR)
-        Vxc_as(ixyz,3) = VAR_pq(ixyz,0,IVAR)
-      ENDDO
-
-      IVAR = 3
-      DO jxyz = 1,3
-        Vxc_hv(jxyz,1) = VAR_pq(3,2,IVAR)*GR(jxyz,0)
-     &                 + VAR_pq(3,3,IVAR)*GR(jxyz,1)
-        Vxc_hv(jxyz,2) = VAR_pq(3,1,IVAR)*GR(jxyz,0)
-     &                 + VAR_pq(3,3,IVAR)*GR(jxyz,2)
-        Vxc_hv(jxyz,3) = VAR_pq(3,0,IVAR)*GR(jxyz,0)
-     &                 + VAR_pq(3,3,IVAR)*GR(jxyz,3)
-     &                 + VAR_pq(3,1,IVAR)*GR(jxyz,1)*D2
-     &                 + VAR_pq(3,2,IVAR)*GR(jxyz,2)*D2
-      ENDDO
-      CALL DSCAL(4*3,D2,Vxc_hv(1,0),1)
-
-      DO ibc = 1,3
-        WORTH_IT = MAX(
-     &                 DABS(Vxc_hs(ibc)),
-     &                 DABS(Vxc_hv(1,ibc)),
-     &                 DABS(Vxc_hv(2,ibc)),
-     &                 DABS(Vxc_hv(3,ibc))
+      do ibc = 1,3
+        worth_it = max(
+     &                 dabs(vxc_vector(0,3,ibc,1)),
+     &                 dabs(vxc_vector(1,3,ibc,1)),
+     &                 dabs(vxc_vector(2,3,ibc,1)),
+     &                 dabs(vxc_vector(3,3,ibc,1))
      &                )
-        IF(WORTH_IT .GT. DFTHRL) THEN
-          CALL DOEXC2(Vxc_hs(ibc),
-     &                Vxc_hv(1,ibc),
-     &                ISYMOP(ibc)-1,
-     &                EXCMAT(1,1,1,ibc),
-     &                GAO,
-     &                GAO1)
-        ENDIF
+        if(worth_it .gt. dfthrl) then
+          call doexc2(vxc_vector(0,3,ibc,1),
+     &                vxc_vector(1,3,ibc,1),
+     &                isymop(ibc)-1,
+     &                excmat(1,1,1,ibc),
+     &                gao,
+     &                gao1)
+        endif
 
-        WORTH_IT = MAX(
-     &                 DABS(Vxc_as(1,ibc)),
-     &                 DABS(Vxc_as(2,ibc)),
-     &                 DABS(Vxc_as(3,ibc))
-     &                )
-        IF(WORTH_IT .GT. DFTHRL) THEN
-          CALL GET_M(.FALSE.,
-     &               Vxc_as(1,ibc),
-     &               ISYMOP(ibc)-1,
-     &               GAO,
-     &               EXCMAT(1,1,1,ibc),
-     &               BUF)
-        ENDIF
-      ENDDO
+        do ixyz = ixyz_start,3
+          worth_it = max(
+     &                   dabs(vxc_vector(0,ixyz,ibc,2)),
+     &                   dabs(vxc_vector(1,ixyz,ibc,2)),
+     &                   dabs(vxc_vector(2,ixyz,ibc,2)),
+     &                   dabs(vxc_vector(3,ixyz,ibc,2))
+     &                  )
+          if(worth_it .gt. dfthrl) then
+            call exc_m(.false.,
+     &                 vxc_vector(0,ixyz,ibc,2),
+     &                 vxc_vector(1,ixyz,ibc,2),
+     &                 ixyz,
+     &                 isymop(ibc),
+     &                 excmat(1,1,1,ibc),
+     &                 gao,
+     &                 gao1)
+          endif
+        enddo
+      enddo
 
-      RETURN
-      END
+      return
+      end

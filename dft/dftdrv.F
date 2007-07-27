@@ -913,30 +913,32 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 
 !       quadratic response
         IF(DOQR) THEN
-          CALL DFT_QR(DTRMAT,EXCMAT,
-     &                ISYMOP,IHRMOP,GAO,GAO1,
-     &                RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
-
 #if defined (MOD_CDFT)
 !         magnetization (a.k.a. spin density) contribution
           IF(LBIT(LBIT_CDFT,1)) THEN
-!           CALL SDFT_QR(DTRMAT,EXCMAT,
-!    &                   ISYMOP,IHRMOP,GAO,GAO1,
-!    &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
-          CALL SDFT_QR_ALTERNATIVE(.FALSE.,
-     &                            .TRUE.,
-     &                            .FALSE.,
-     &                            .FALSE.,
-     &                            DTRMAT,EXCMAT,
-     &                            ISYMOP,IHRMOP,GAO,GAO1,
-     &                            RHO,RHOGRD,RHG,WGHT,BUF)
+            CALL DFT_RESPONSE(.TRUE.,
+     &                        .TRUE.,
+     &                        DOGGA,
+     &                        DOGGA,
+     &                        DTRMAT,EXCMAT,
+     &                        ISYMOP,IHRMOP,GAO,GAO1,
+     &                        RHO,RHOGRD,RHG,WGHT,BUF)
+          ELSE
+!           CALL DFT_RESPONSE(.TRUE.,
+!    &                        .FALSE.,
+!    &                        DOGGA,
+!    &                        .FALSE.,
+!    &                        DTRMAT,EXCMAT,
+!    &                        ISYMOP,IHRMOP,GAO,GAO1,
+!    &                        RHO,RHOGRD,RHG,WGHT,BUF)
+            CALL DFT_QR(DTRMAT,EXCMAT,
+     &                  ISYMOP,IHRMOP,GAO,GAO1,
+     &                  RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
           ENDIF
-!         current density contribution
-!         IF(LBIT(LBIT_CDFT,2)) THEN
-!           CALL CDFT_QR(DTRMAT,EXCMAT,
-!    &                   ISYMOP,IHRMOP,GAO,GAO1,
-!    &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
-!         ENDIF
+#else
+          CALL DFT_QR(DTRMAT,EXCMAT,
+     &                ISYMOP,IHRMOP,GAO,GAO1,
+     &                RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
 #endif
         ENDIF
 
