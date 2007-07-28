@@ -402,7 +402,9 @@ C=======================================================================
         IH_EP = IH_EE
       ENDIF
       IF(LBIT(LBIT_VISUAL,10)) THEN
-        IH_EE = -1
+!       IH_EE = -1
+!       dirty trick to multiply the j part with i
+        IH_EE = 1
         IH_EP = IH_EE
       ENDIF
 
