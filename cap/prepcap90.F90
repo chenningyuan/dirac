@@ -280,7 +280,7 @@ DIMENSION WORK(LWORK)
 ! ... stick the memory  ... 
  call StickMemory(WORK,LWORK)
 
- if (CAPNEW) call CAP_new_stuff
+  if (CAPNEW) call CAP_new_stuff
 
 
      icabfo = MakeVector('INTE',NBASIS,'CAP-DIRAC correspondence')   
@@ -346,6 +346,9 @@ DIMENSION WORK(LWORK)
         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
         CAPDIPVEL = CAPDIPVEL_SAVE
      ENDIF
+
+! at the end run 'new' CAP implementation...
+! if (CAPNEW) call CAP_new_stuff
 
 ! release the memory
  call UnStickMemory
