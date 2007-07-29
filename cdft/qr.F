@@ -606,8 +606,8 @@ c=======================================================================
       if(add_r)  use_var(1) = .true.
       if(add_s)  use_var(2) = .true.
       if(add_gr) use_var(3) = .true.
-!     if(add_gs) use_var(4) = .true.
-!     if(add_gs) use_var(5) = .true.
+      if(add_gs) use_var(4) = .true.
+      if(add_gs) use_var(5) = .true.
 
       var_is_product(3) = .true.
       var_is_product(4) = .true.
@@ -760,6 +760,7 @@ c=======================================================================
           endif
     
           if(use_var(ivar) .and.       var_is_product(ivar)) then
+            if(ivar .eq. 4) goto 1
             do jxyz = 1,3
               do ibc = 1,3
                 vxc_vector(jxyz,ixyz,ibc,ih_var(ivar)) 
@@ -777,13 +778,34 @@ c=======================================================================
      &           + var_pq(ixyz,2,ivar)*gr_l(jxyz,ixyz,2,ivar)*d2
      &           + var_pq(ixyz,2,ivar)*gr_r(jxyz,ixyz,2,ivar)*d2
             enddo
+ 1          continue
+          endif
+    
+          if(use_var(ivar) .and. ivar .eq. 4) then
+            do jxyz = 1,3
+              do ibc = 1,3
+                vxc_vector(jxyz,ixyz,ibc,1)
+     &           = vxc_vector(jxyz,ixyz,ibc,1)
+     &           + var_pq(ixyz,3-ibc,ivar)*gr_r(jxyz,ixyz,0,  ivar)
+     &           + var_pq(ixyz,3,    ivar)*gr_r(jxyz,ixyz,ibc,ivar)
+                vxc_vector(jxyz,ixyz,ibc,2)
+     &           = vxc_vector(jxyz,ixyz,ibc,2)
+     &           + var_pq(ixyz,3-ibc,ivar)*gr_l(jxyz,ixyz,0,  ivar)
+     &           + var_pq(ixyz,3,    ivar)*gr_l(jxyz,ixyz,ibc,ivar)
+              enddo
+              ibc = 3
+                vxc_vector(jxyz,ixyz,ibc,1)
+     &           = vxc_vector(jxyz,ixyz,ibc,1)
+     &           + var_pq(ixyz,1,ivar)*gr_r(jxyz,ixyz,1,ivar)*d2
+     &           + var_pq(ixyz,2,ivar)*gr_r(jxyz,ixyz,2,ivar)*d2
+                vxc_vector(jxyz,ixyz,ibc,2)
+     &           = vxc_vector(jxyz,ixyz,ibc,2)
+     &           + var_pq(ixyz,1,ivar)*gr_l(jxyz,ixyz,1,ivar)*d2
+     &           + var_pq(ixyz,2,ivar)*gr_l(jxyz,ixyz,2,ivar)*d2
+            enddo
           endif
         enddo
       enddo
-
-!     because of the symmetrization later in the code
-!     the hermitian part is scaled inside doexc2
-!     call dscal(4*3*3,d2,vxc_av(1,1,0),1)
 
       do ibc = 1,3
         worth_it = max(
@@ -809,7 +831,14 @@ c=======================================================================
      &                   dabs(vxc_vector(3,ixyz,ibc,2))
      &                  )
           if(worth_it .gt. dfthrl) then
-            call exc_m(.false.,
+
+!           scaling only the anti-hermitian part to get symmetrization right
+!           the hermitian part is scaled inside doexc2
+            vxc_vector(1,ixyz,ibc,2) = vxc_vector(1,ixyz,ibc,2)*d2
+            vxc_vector(2,ixyz,ibc,2) = vxc_vector(2,ixyz,ibc,2)*d2
+            vxc_vector(3,ixyz,ibc,2) = vxc_vector(3,ixyz,ibc,2)*d2
+
+            call exc_m(add_gs,
      &                 vxc_vector(0,ixyz,ibc,2),
      &                 vxc_vector(1,ixyz,ibc,2),
      &                 ixyz,

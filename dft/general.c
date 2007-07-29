@@ -365,10 +365,10 @@ sdftpot2_(ThirdDrv *ds,
   dp.subsystem[0] = NULL;
   dp.subsystem[1] = NULL;
 
-/*if(do_alda)*/
+  if(do_alda)
     LDAFunctional.third(&drvs, *weight, &dp);
-/*else
-    selected_func->third(&drvs, *weight, &dp);*/
+  else
+    selected_func->third(&drvs, *weight, &dp);
 
 /*ds->fR   = drvs.df1000;
   ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
@@ -385,9 +385,7 @@ sdftpot2_(ThirdDrv *ds,
   ds->fRZZ = drvs.df10101*by16*bygrada +drvs.df10011*by16*bygrada +drvs.df1020*by64*bygrada2 +drvs.df1011*by32*bygrada2
             +drvs.df1002*by64*bygrada2 -drvs.df1010*by64*bygrada3 -drvs.df1001*by64*bygrada3 +drvs.df10002*by16;*/
 
-  ds->fSS  = drvs.df2000*by2 -drvs.df1100*by2;
-  ds->fRSS = drvs.df3000*by4 -drvs.df2100*by4;
-/*ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
+  ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
 
   ds->fSS  = drvs.df2000*by2 -drvs.df1100*by2;
   ds->fYY  = drvs.df0020*by8*bygrada2 -drvs.df0011*by8*bygrada2 -drvs.df0010*by8*bygrada3;
@@ -421,7 +419,7 @@ sdftpot2_(ThirdDrv *ds,
   ds->fSZY =                                                       drvs.df1020*by32*bygrada2 -drvs.df1002*by32*bygrada2
             -drvs.df1010*by32*bygrada3 +drvs.df1001*by32*bygrada3;
   ds->fSYX =                                                       drvs.df1020*by32*bygrada2 -drvs.df1002*by32*bygrada2
-            -drvs.df1010*by32*bygrada3 +drvs.df1001*by32*bygrada3;*/
+            -drvs.df1010*by32*bygrada3 +drvs.df1001*by32*bygrada3;
 
 /*ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
 
