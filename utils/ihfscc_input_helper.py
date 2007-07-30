@@ -220,11 +220,27 @@ class molecular_electronic_structure:
 				print "asked for ",int(npmp[2*i])," pm particles in irrep",irr,"but defined",symchk_part[irr]
 				sys.exit(-1)
 
-		print "\n Dirac Input:   &CCIH EHMIN="+str(ehmin - ehmin_delta_to_next)+ \
-                                            ", EHMAX="+str(ehmax - ehmax_delta_to_next)+ \
-                                            ", EPMIN="+str(epmin + epmin_delta_to_next)+ \
-                                            ", EPMAX="+str(epmax + epmax_delta_to_next)+ \
-                                             " &END\n\n"
+                self.ehmin              = ehmin - ehmin_delta_to_next
+                self.ehmax              = ehmax - ehmax_delta_to_next 
+                self.epmin              = epmin + epmin_delta_to_next 
+                self.epmax              = epmax + epmax_delta_to_next 
+
+
+		input = " Dirac Input:    &CCFSPC MAXIT=100, NACTH="
+                for m in nacth:
+                        input = input + str(m) + ","
+
+                input = input + " NACTP="
+                for m in nactp:
+                        input = input + str(m) + ","
+
+                input = input + " FSSECT=1,1,1,1,0,0, DOIH=T &END\n"
+		input = input + " Dirac Input:    &CCIH EHMIN="+str(self.ehmin)+ \
+                                ", EHMAX="+str(self.ehmax)+ \
+                                ", EPMIN="+str(self.epmin)+ \
+                                ", EPMAX="+str(self.epmax)+ \
+                                " &END\n"
+		print input
 
 
 
@@ -413,7 +429,7 @@ class dirac_menufile:
 
 		self.input = self.input + input
 
-	def print_fscc_menu(self,ih=True,nacth=[],nactp=[],sector=[1,1,1,1,0,0],ih_hole=['',''],ih_part=['','']):
+	def print_fscc_menu(self,nacth=[],nactp=[],sector=[1,1,1,1,0,0],ih_hole=['',''],ih_part=['',''],ih=True):
 		input = "\n" + \
 		        " &RELCCSD TIMING=T, IPRNT=1, INTERFACE='DIRAC6', DOSORT=F, DOENER=F, DOFSPC=T, DEBUG=F &END\n" + \
 		        " &CCSORT USEOE=F &END\n"+ \
@@ -441,11 +457,11 @@ class dirac_menufile:
 
 		self.input = self.input + input
 
-	def print_inpfile(self):
+	def print_inpfile(self,nacth=[5,5,6,6],nactp=[12,12,10,10],ih_hole=[-0.8,-0.5],ih_part=[0.21,0.365]):
 
-		self.print_hamiltonian_menu()
-		self.print_moltra_menu(2,-1.0,4.0)
-		self.print_fscc_menu(ih=True,nacth=[15,15,11,11],nactp=[7,7,9,9],ih_hole=[-0.8,-0.5],ih_part=[0.14,0.44])
+#	self.print_hamiltonian_menu()
+#	self.print_moltra_menu(2,-1.0,4.0)
+		self.print_fscc_menu(nacth,nactp,ih_hole,ih_part,ih=True)
 
 		print self.input
 
@@ -490,6 +506,6 @@ def main():
 	molecule.set_PmSpace_thresholds(options.nacth,options.npmh,options.nactp,options.npmp)
 
 #input = dirac_menufile()
-#input.print_inpfile()
+#input.print_inpfile(options.nacth,options.npmh,[molecule.ehmin,molecule.ehmax],[molecule.epmin,molecule.epmax])
 
 main()
