@@ -256,6 +256,9 @@ C=======================================================================
 #include "dcbbas.h"
 #include "dcbgen.h"
 
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+#endif
       LOGICAL   LGET,
      &          RESET
       DIMENSION GAO_LEFT(*),

@@ -578,25 +578,14 @@ c=======================================================================
      &          gr(  3,0:3),
      &          gs(3,3,0:3),
 !
-     &          gr_l(3,3,0:3,nr_vars),
-     &          gr_r(3,3,0:3,nr_vars),
-!
      &          var   (3,0:3,nr_vars),
      &          var_pq(3,0:3,nr_vars),
-!
-     &          ih_var(nr_vars),
 !
      &          vxc_vector(0:3,3,0:3,2),
 !
      &          vxc(99)
 
 #include "ibtfun.h"
-
-      ih_var(1) = 1
-      ih_var(2) = 2
-      ih_var(3) = 1
-      ih_var(4) = 2
-      ih_var(5) = 2
 
       do ivar = 1,nr_vars
         use_var(ivar)        = .false.
@@ -615,9 +604,6 @@ c=======================================================================
 
       call dzero(gr,4*3)
       call dzero(gs,4*3*3)
-
-      call dzero(gr_l,nr_vars*4*3*3)
-      call dzero(gr_r,nr_vars*4*3*3)
 
       call dzero(var,   nr_vars*4*4)
       call dzero(var_pq,nr_vars*4*4)
@@ -668,50 +654,56 @@ c=======================================================================
       gr(2,0) = gr_0(2)
       gr(3,0) = gr_0(3)
 
-      do ixyz = ixyz_start,3
-        do ibc = 0,3
-          do jxyz = 1,3
-            gr_l(jxyz,ixyz,ibc,3) = gr(jxyz,     ibc)
-            gr_l(jxyz,ixyz,ibc,4) = gr(jxyz,     ibc)
-            gr_l(jxyz,ixyz,ibc,5) = gs(jxyz,ixyz,ibc)
+!     Z = \nabla R \cdot \nabla R
+      ivar = 3
+      if(use_var(ivar)) then
+        ixyz = 3
+          var(ixyz,1,ivar) = ddot(3,gr(1,1),1,gr(1,0),1)*d2
+          var(ixyz,2,ivar) = ddot(3,gr(1,2),1,gr(1,0),1)*d2
+          var(ixyz,3,ivar) = ddot(3,gr(1,3),1,gr(1,0),1)*d2
+     &                     + ddot(3,gr(1,1),1,gr(1,2),1)*d4
+      endif
 
-            gr_r(jxyz,ixyz,ibc,3) = gr(jxyz,     ibc)
-            gr_r(jxyz,ixyz,ibc,4) = gs(jxyz,ixyz,ibc)
-            gr_r(jxyz,ixyz,ibc,5) = gs(jxyz,ixyz,ibc)
-          enddo
+!     Y = \nabla R \cdot \nabla S
+      ivar = 4
+      if(use_var(ivar)) then
+        do ixyz = ixyz_start,3
+          var(ixyz,1,ivar) = ddot(3,gs(1,ixyz,1),1,gr(1,0),1)
+          var(ixyz,2,ivar) = ddot(3,gs(1,ixyz,2),1,gr(1,0),1)
+          var(ixyz,3,ivar) = ddot(3,gs(1,ixyz,3),1,gr(1,0),1)
+     &                     + ddot(3,gs(1,ixyz,1),1,gr(1,2),1)*d2
+     &                     + ddot(3,gs(1,ixyz,2),1,gr(1,1),1)*d2
         enddo
-      enddo
+      endif
 
-      do ixyz = ixyz_start,3
-        do ivar = 3,5
-          if(use_var(ivar)) then
-            do ibc = 1,3
-              var(ixyz,ibc,ivar) = var(ixyz,ibc,ivar)
-     &         + ddot(3,gr_l(1,ixyz,ibc,ivar),1,gr_r(1,ixyz,0,  ivar),1)
-     &         + ddot(3,gr_l(1,ixyz,0,  ivar),1,gr_r(1,ixyz,ibc,ivar),1)
-            enddo
-            ibc = 3
-              var(ixyz,ibc,ivar) = var(ixyz,ibc,ivar)
-     &         + ddot(3,gr_l(1,ixyz,1,ivar),1,gr_r(1,ixyz,2,ivar),1)*d2
-     &         + ddot(3,gr_l(1,ixyz,2,ivar),1,gr_r(1,ixyz,1,ivar),1)*d2
-          endif
+!     X = \nabla S \cdot \nabla S
+      ivar = 5
+      if(use_var(ivar)) then
+        do ixyz = ixyz_start,3
+          var(ixyz,1,ivar) = d0
+          var(ixyz,2,ivar) = d0
+          var(ixyz,3,ivar) = ddot(3,gs(1,ixyz,1),1,gs(1,ixyz,2),1)*d4
         enddo
-      enddo
+      endif
 
       if(add_r .and.       add_gr) call  dftpot2(vxc,w,r_0,gr_0_norm)
       if(add_r .and. .not. add_gr) call  dftpot2(vxc,w,r_0,d0)
       if(add_s .and.       add_gs) call sdftpot2(vxc,w,r_0,gr_0_norm)
       if(add_s .and. .not. add_gs) call sdftpot2(vxc,w,r_0,d0)
 
+!     don't remove this
+!     if i_derivative() doesn't find a non-zero derivative
+!     it will return the pointer 99
       vxc(99) = d0
 
-      do ixyz = 1,2
+      do ixyz = ixyz_start,3
+
+!       dirty trick, this way i can use the loop over x, y, z
+!       also for purely collinear variables (R and Z)
         do ibc = 1,3
           var(ixyz,ibc,1) = var(3,ibc,1)
+          var(ixyz,ibc,3) = var(3,ibc,3)
         enddo
-      enddo
-
-      do ixyz = ixyz_start,3
 
         do ivar = 1,nr_vars
           if(use_var(ivar)) then
@@ -749,63 +741,88 @@ c=======================================================================
         enddo
       enddo
 
-      do ixyz = ixyz_start,3
-        do ivar = 1,nr_vars
-          if(use_var(ivar) .and. .not. var_is_product(ivar)) then
+!     R
+!     contributes to the h+ part
+      ivar = 1
+      if(use_var(ivar)) then
+        ixyz = 3
+          jxyz = 0
             do ibc = 1,3
-              vxc_vector(0,ixyz,ibc,ih_var(ivar)) 
-     &           = vxc_vector(0,ixyz,ibc,ih_var(ivar))
-     &           + var_pq(ixyz,3-ibc,ivar)
+              vxc_vector(jxyz,ixyz,ibc,1) = var_pq(ixyz,3-ibc,ivar)
             enddo
-          endif
-    
-          if(use_var(ivar) .and.       var_is_product(ivar)) then
-            if(ivar .eq. 4) goto 1
-            do jxyz = 1,3
-              do ibc = 1,3
-                vxc_vector(jxyz,ixyz,ibc,ih_var(ivar)) 
-     &           = vxc_vector(jxyz,ixyz,ibc,ih_var(ivar))
-     &           + var_pq(ixyz,3-ibc,ivar)*gr_l(jxyz,ixyz,0,  ivar)
-     &           + var_pq(ixyz,3-ibc,ivar)*gr_r(jxyz,ixyz,0,  ivar)
-     &           + var_pq(ixyz,3,    ivar)*gr_l(jxyz,ixyz,ibc,ivar)
-     &           + var_pq(ixyz,3,    ivar)*gr_r(jxyz,ixyz,ibc,ivar)
-              enddo
-              ibc = 3
-                vxc_vector(jxyz,ixyz,ibc,ih_var(ivar)) 
-     &           = vxc_vector(jxyz,ixyz,ibc,ih_var(ivar))
-     &           + var_pq(ixyz,1,ivar)*gr_l(jxyz,ixyz,1,ivar)*d2
-     &           + var_pq(ixyz,1,ivar)*gr_r(jxyz,ixyz,1,ivar)*d2
-     &           + var_pq(ixyz,2,ivar)*gr_l(jxyz,ixyz,2,ivar)*d2
-     &           + var_pq(ixyz,2,ivar)*gr_r(jxyz,ixyz,2,ivar)*d2
+      endif
+
+!     S
+!     contributes to the h- part
+      ivar = 2
+      if(use_var(ivar)) then
+        do ixyz = ixyz_start,3
+          jxyz = 0
+            do ibc = 1,3
+              vxc_vector(jxyz,ixyz,ibc,2) = var_pq(ixyz,3-ibc,ivar)
             enddo
- 1          continue
-          endif
-    
-          if(use_var(ivar) .and. ivar .eq. 4) then
-            do jxyz = 1,3
-              do ibc = 1,3
-                vxc_vector(jxyz,ixyz,ibc,1)
-     &           = vxc_vector(jxyz,ixyz,ibc,1)
-     &           + var_pq(ixyz,3-ibc,ivar)*gr_r(jxyz,ixyz,0,  ivar)
-     &           + var_pq(ixyz,3,    ivar)*gr_r(jxyz,ixyz,ibc,ivar)
-                vxc_vector(jxyz,ixyz,ibc,2)
-     &           = vxc_vector(jxyz,ixyz,ibc,2)
-     &           + var_pq(ixyz,3-ibc,ivar)*gr_l(jxyz,ixyz,0,  ivar)
-     &           + var_pq(ixyz,3,    ivar)*gr_l(jxyz,ixyz,ibc,ivar)
-              enddo
-              ibc = 3
-                vxc_vector(jxyz,ixyz,ibc,1)
-     &           = vxc_vector(jxyz,ixyz,ibc,1)
-     &           + var_pq(ixyz,1,ivar)*gr_r(jxyz,ixyz,1,ivar)*d2
-     &           + var_pq(ixyz,2,ivar)*gr_r(jxyz,ixyz,2,ivar)*d2
-                vxc_vector(jxyz,ixyz,ibc,2)
-     &           = vxc_vector(jxyz,ixyz,ibc,2)
-     &           + var_pq(ixyz,1,ivar)*gr_l(jxyz,ixyz,1,ivar)*d2
-     &           + var_pq(ixyz,2,ivar)*gr_l(jxyz,ixyz,2,ivar)*d2
-            enddo
-          endif
         enddo
-      enddo
+      endif
+
+!     Z = \nabla R \cdot \nabla R
+!     contributes to the h+ part
+      ivar = 3
+      if(use_var(ivar)) then
+        ixyz = 3
+          do jxyz = 1,3
+            do ibc = 1,3
+              vxc_vector(jxyz,ixyz,ibc,1) = vxc_vector(jxyz,ixyz,ibc,1)
+     &                         + var_pq(ixyz,3-ibc,ivar)*gr(jxyz,0  )*d2
+     &                         + var_pq(ixyz,3    ,ivar)*gr(jxyz,ibc)*d2
+            enddo
+            ibc = 3
+              vxc_vector(jxyz,ixyz,ibc,1) = vxc_vector(jxyz,ixyz,ibc,1)
+     &                         + var_pq(ixyz,1    ,ivar)*gr(jxyz,1  )*d4
+     &                         + var_pq(ixyz,2    ,ivar)*gr(jxyz,2  )*d4
+          enddo
+      endif
+
+!     Y = \nabla R \cdot \nabla S
+!     contributes to both h+ and h-
+      ivar = 4
+      if(use_var(ivar)) then
+        do ixyz = ixyz_start,3
+          do jxyz = 1,3
+            do ibc = 1,3
+              vxc_vector(jxyz,ixyz,ibc,2) = vxc_vector(jxyz,ixyz,ibc,2)
+     &                         + var_pq(ixyz,3-ibc,ivar)*gr(jxyz,0  )
+     &                         + var_pq(ixyz,3    ,ivar)*gr(jxyz,ibc)
+              vxc_vector(jxyz,ixyz,ibc,1) = vxc_vector(jxyz,ixyz,ibc,1)
+     &                        + var_pq(ixyz,3,ivar)*gs(jxyz,ixyz,ibc)
+            enddo
+            ibc = 3
+              vxc_vector(jxyz,ixyz,ibc,2) = vxc_vector(jxyz,ixyz,ibc,2)
+     &                         + var_pq(ixyz,1    ,ivar)*gr(jxyz,1  )*d2
+     &                         + var_pq(ixyz,2    ,ivar)*gr(jxyz,2  )*d2
+              vxc_vector(jxyz,ixyz,ibc,1) = vxc_vector(jxyz,ixyz,ibc,1)
+     &                        + var_pq(ixyz,1,ivar)*gs(jxyz,ixyz,1  )*d2
+     &                        + var_pq(ixyz,2,ivar)*gs(jxyz,ixyz,2  )*d2
+          enddo
+        enddo
+      endif
+
+!     X = \nabla S \cdot \nabla S
+!     contributes to the h- part
+      ivar = 5
+      if(use_var(ivar)) then
+        do ixyz = ixyz_start,3
+          do jxyz = 1,3
+            do ibc = 1,3
+              vxc_vector(jxyz,ixyz,ibc,2) = vxc_vector(jxyz,ixyz,ibc,2)
+     &                        + var_pq(ixyz,3,ivar)*gs(jxyz,ixyz,ibc)*d2
+            enddo
+            ibc = 3
+              vxc_vector(jxyz,ixyz,ibc,2) = vxc_vector(jxyz,ixyz,ibc,2)
+     &                        + var_pq(ixyz,1,ivar)*gs(jxyz,ixyz,1  )*d4
+     &                        + var_pq(ixyz,2,ivar)*gs(jxyz,ixyz,2  )*d4
+          enddo
+        enddo
+      endif
 
       do ibc = 1,3
         worth_it = max(
