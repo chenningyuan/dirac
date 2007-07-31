@@ -4,7 +4,8 @@ C  /* Deck sajeev */
      &   basis_n,ang_pow,ord_expon,
      &   ord_coe,r_ms,PE_AOr,PE_AOi,
      &   PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
-     &   WORK,LWORK,NBASF,NANGPOW)
+     &   NBASF,NANGPOW)
+C    &   WORK,LWORK,NBASF,NANGPOW)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Main program from Sajeev. Adapted into DIRAC enviroment
@@ -35,24 +36,30 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbcap.h"
 #include "capint.h"
       
-      DIMENSION WORK(LWORK)
+CMI   DIMENSION WORK(LWORK)
 
 CMI    ... arrays are entering subroutine, check the size !!!!!
 C     integer *4 basis_n(200)
       integer *4 basis_n(NBASF)
+
 C     integer *4 ang_pow(250,3)
       integer *4 ang_pow(NANGPOW,3)
+
       integer *4  N_B   
+
 C     real *8 ord_expon(250),ord_coe(250)
       real *8 ord_expon(NANGPOW), ord_coe(NANGPOW)
+
       real *8 R_m(4),R_n(4)
+
 C     real *8 R_ms(200,3)
       real *8 R_ms(NBASF,3)
 
 C     COMPLEX *16 PE_AO(25000) ! former variable split into real and
 C     imaginary parts
 CMI   REAL*8 PE_AOr(25000),PE_AOi(25000)
-      REAL*8 PE_AOr(NNBBASX),PE_AOi(NNBBASX)
+CMI   REAL*8 PE_AOr(NNBBASX),PE_AOi(NNBBASX)
+      REAL*8 PE_AOr(NNBBASX),PE_AOi(*)
       REAL*8 PEXR(*),PEXI(*),PEYR(*),PEYI(*),PEZR(*),PEZI(*)
       real *8 BETA0,PE0
       
@@ -69,6 +76,8 @@ CMI   LOGICAL*1 ISFILE, FNDLAB,ARELABS,IS_OPEN
 
       IF (IPRCAP.GE.2) THEN
         CALL HEADER('*** Output from SAJEEV ***',-1)
+CMI     write(LUPRI,*) 'LWORK=',LWORK
+        write(LUPRI,*) '>> NBASF=',NBASF,' NANGPOW=',NANGPOW
         CALL FLSHFO(LUPRI)
       ENDIF
 
@@ -106,8 +115,8 @@ CMI   ... evaluate CAP complex atomic untegrals
 
 CMI   ... evaluate integrals - fill array with them
        CALL AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     &         PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
-     &         NBASF,NANGPOW)
+     &      PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
+     &      NBASF,NANGPOW)
         
 C ============================================================
 CMI     ... write complex atomic integrals into the file
@@ -294,6 +303,7 @@ C     integer *4 ang_pow(250,3)
       integer *4 ang_pow(NANGPOW,3)
       integer *4 n_pg_atom(50)
       integer *4 k_m(3),k_n(3)
+
 C     integer *4 basis_n(200)
       integer *4 basis_n(NBASF)
       
@@ -424,6 +434,12 @@ CMI       'G' shell
                do ia_p=1,3
                   ang_pow(sh,ia_p)=angu_pow_S(1,ia_p)
                end do
+
+               if (g_n.gt.NBASF) then
+                write(LUPRI,*) 'INPREAD: g_n,NBASF=',g_n,NBASF
+                call QUIT('INPREAD: g_n > NBASF ! Increase NBASF')
+               endif
+
                basis_n(g_n)=n_con_guass
 
             END DO
@@ -456,6 +472,10 @@ C          write(lupri,*)
            END DO
           
           do  iji=1,3
+             if (g_n.gt.NBASF) then
+               write(LUPRI,*) 'INPREAD: g_n,NBASF=',g_n,NBASF
+               call QUIT('INPREAD: g_n > NBASF ! Increase NBASF')
+             endif
              basis_n(g_n)=basis_n(g_n)+n_con_guass
              g_n=g_n+1
           end do
@@ -489,6 +509,10 @@ C          write(lupri,*)
             END DO
        
              do  iji=1,6
+               if (g_n.gt.NBASF) then
+                 write(LUPRI,*) 'INPREAD: g_n,NBASF=',g_n,NBASF
+                 call QUIT('INPREAD: g_n > NBASF ! Increase NBASF')
+               endif
                 basis_n(g_n)=basis_n(g_n)+n_con_guass
                 g_n=g_n+1
              end do
@@ -522,6 +546,10 @@ CMI  *********** F *****************************
              END DO
              
              do  iji=1,10
+               if (g_n.gt.NBASF) then
+                 write(LUPRI,*) 'INPREAD: g_n,NBASF=',g_n,NBASF
+                 call QUIT('INPREAD: g_n > NBASF ! Increase NBASF')
+               endif
                 basis_n(g_n)=basis_n(g_n)+n_con_guass
                 g_n=g_n+1
              end do
@@ -545,6 +573,10 @@ CMI  *********** G *****************************
       END DO
   
              do  iji=1,15
+               if (g_n.gt.NBASF) then
+                 write(LUPRI,*) 'INPREAD: g_n,NBASF=',g_n,NBASF
+                 call QUIT('INPREAD: g_n > NBASF ! Increase NBASF')
+               endif
                 basis_n(g_n)=basis_n(g_n)+n_con_guass
                  g_n=g_n+1
              end do
@@ -555,16 +587,21 @@ CMI  *********** G *****************************
      
               End  Do
 
+CMI **** we are out of the cycle....
  201       continue
-                  n_pg_atom(1)=1
-                  n_pg_atom(k+1)=sh
+               n_pg_atom(1)=1
+               n_pg_atom(k+1)=sh
 
                do ii= n_pg_atom(k),sh
                      do isw=1,3
+                       if (iiii.gt.NBASF) then
+                         write(LUPRI,*) 'iiii,NBASF=',iiii,NBASF
+                    call QUIT('SAJEEV: iiii>NBASF ! Increase NBASF !')
+                       endif
                        R_ms(iiii,isw)=re(k,isw)
-                     end do
+                     enddo
                      iiii=iiii+1
-                end do
+               enddo
        END DO
 
        close(LUinp,status="keep")
@@ -612,7 +649,6 @@ C        ... write into file
      &    ' offset:',basis_ord(i)
          ENDIF
       end do
-
 
 CMI  ... control print out of exponents/contraction coefficients
 C       WRITE(LUPRI,*) 'basis_n(i=1,n_b)',(basis_n(i), i=1,n_b )
@@ -686,13 +722,15 @@ CMI .... normalization part for primitive gaussians first
            unnormcoe =  ord_coe(ii)
            ord_coe(ii) = unnormcoe/sqrt(PE_AO)
 
-           write (LUPRI,'(i2,A,A2,A,F12.8,A,F12.8,A,F12.8,A,F12.8)')
+           IF (IPRINT.GE.2) THEN
+            write (LUPRI,'(i4,A,A2,A,F12.8,A,F12.8,A,F12.8,A,F12.8)')
      &      ii,'.fu=',shell_arr(ii),
      &      ' expon:', ord_expon(ii),
      &      ' unnorm coeff=',unnormcoe,
      &      ' PE_AO=',PE_AO,' normalized coeff=',
      &      ord_coe(ii)
-  
+           ENDIF
+
           enddo
 
           ix = ix + basis_n(i)
@@ -1045,9 +1083,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PB=P-R_n(1)
       AB=R_m(1)-R_n(1) 
 
+CMI ... must be outside according to Sajeev !...
+      INT_GR=0.d0
+
       DO i=0,(K_m+k_n)/2
 C         if (i.eq.1)write(*,*)i
-         INT_GR=0.d0
+CMI      INT_GR=0.d0
          if (i.eq.0)go to 150
 C         if ((i/2)*2.ne.i)go to 100
      
