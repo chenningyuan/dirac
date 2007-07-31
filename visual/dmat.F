@@ -372,7 +372,7 @@ C=======================================================================
         ENDIF
       ENDIF
 
-      IF(.NOT. LBIT(LBIT_VISUAL,6)) THEN !"EP" part
+      IF(.NOT. LBIT(LBIT_VISUAL,5)) THEN !"EP" part
         IF(LBIT(LBIT_VISUAL,10)) THEN
           READ(LUNIT_XVECTOR)
           READ(LUNIT_XVECTOR)
@@ -387,12 +387,12 @@ C=======================================================================
           READ(LUNIT_XVECTOR)
         ENDIF
       ELSE
-        READ(LUNIT_XVECTOR)
-        READ(LUNIT_XVECTOR)
-        IF(LBIT(LBIT_VISUAL,9) .OR. LBIT(LBIT_VISUAL,10)) THEN
-          READ(LUNIT_XVECTOR)
-          READ(LUNIT_XVECTOR)
-        ENDIF
+!       READ(LUNIT_XVECTOR)
+!       READ(LUNIT_XVECTOR)
+!       IF(LBIT(LBIT_VISUAL,9) .OR. LBIT(LBIT_VISUAL,10)) THEN
+!         READ(LUNIT_XVECTOR)
+!         READ(LUNIT_XVECTOR)
+!       ENDIF
       ENDIF
 
       CLOSE(LUNIT_XVECTOR,STATUS = 'KEEP')
