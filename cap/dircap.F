@@ -4,8 +4,8 @@ C  /* Deck sajeev */
      &   basis_n,ang_pow,ord_expon,
      &   ord_coe,r_ms,PE_AOr,PE_AOi,
      &   PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
-     &   NBASF,NANGPOW)
-C    &   WORK,LWORK,NBASF,NANGPOW)
+C    &   NBASF,NANGPOW)
+     &   WORK,LWORK,NBASF,NANGPOW)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Main program from Sajeev. Adapted into DIRAC enviroment
@@ -36,7 +36,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbcap.h"
 #include "capint.h"
       
-CMI   DIMENSION WORK(LWORK)
+      DIMENSION WORK(LWORK)
 
 CMI    ... arrays are entering subroutine, check the size !!!!!
 C     integer *4 basis_n(200)
@@ -59,7 +59,7 @@ C     COMPLEX *16 PE_AO(25000) ! former variable split into real and
 C     imaginary parts
 CMI   REAL*8 PE_AOr(25000),PE_AOi(25000)
 CMI   REAL*8 PE_AOr(NNBBASX),PE_AOi(NNBBASX)
-      REAL*8 PE_AOr(NNBBASX),PE_AOi(*)
+      REAL*8 PE_AOr(*),PE_AOi(*)
       REAL*8 PEXR(*),PEXI(*),PEYR(*),PEYI(*),PEZR(*),PEZI(*)
       real *8 BETA0,PE0
       
@@ -81,8 +81,17 @@ CMI     write(LUPRI,*) 'LWORK=',LWORK
         CALL FLSHFO(LUPRI)
       ENDIF
 
+#include "memint.h"
+      CALL MEMGET('REAL',KTEST,1,WORK,KFREE,LFREE)
+      CALL MEMCHK('sajeev 1',WORK,1)
+  
       CALL INPREAD(N_B,ord_expon,ord_coe,R_ms,basis_n,
-     &         ang_pow,CAPOVLP,IPRCAP,NBASF,NANGPOW)
+     &         ang_pow,CAPOVLP,IPRCAP,NBASF,NANGPOW,WORK(KFREE),LFREE)
+
+      CALL MEMCHK('sajeev 2',WORK,1)
+
+C     CALL QEXIT('SAJEEV')
+C     RETURN
 
 CMI ... check the presence of PEMAT in order to decide whether to run 
 CMI   or not the CAP integral evaluation
@@ -254,7 +263,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck inpread */
       SUBROUTINE INPREAD(
      &  N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     &  CAPOVLP,IPRINT,NBASF,NANGPOW)
+     &  CAPOVLP,IPRINT,NBASF,NANGPOW,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  Read the GAMESS-like input file with the basis set
@@ -271,10 +280,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "priunit.h"
 #include "pi.h"
       PARAMETER(MSIZE=400)
+
+
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
      &           DP25 = 0.25D0, DP5 = 0.5D0, DP75 = 0.75D0,
      &           THRMIN = 1.D-17)
 
+      REAL*8 WORK(LWORK)
 CMI   static allocations are here !!!
       CHARACTER *1 shell_type,BLNK(6)
 C     CHARACTER *2 shell_p(3),shell_d(6),Shell_arr(200)   
@@ -314,6 +326,7 @@ C     integer *4 basis_n(200)
       real *8 re(50,3),expon,coe
 C     real *8 ord_expon(250),ord_coe(250)
       real *8 ord_expon(NANGPOW),ord_coe(NANGPOW)
+
       real *8 R_m(4),R_n(4)
 C     real *8 R_ms(200,3)
       real *8 R_ms(NBASF,3)
@@ -354,8 +367,6 @@ C    ... newest...not defined in Gamess
 #include "dummy.h"
       CALL QENTER('INPREAD')
 
-      PIPPI = (DP5/PI)**DP75
-
 C     ... zero array for number of contracted basis function
 C     do i=1,200
       do i=1,NBASF
@@ -387,6 +398,7 @@ C     ... open file for reading integrals
 
         IF (IPRINT.GE.3) THEN
            write(lupri,'(2X,A,3F13.7)') 'coordinate: ',(re(k,i),i=1,3)
+           CALL FLSHFO(LUPRI)
         ENDIF
           
         Do ISNEW=1,1000  
@@ -422,6 +434,7 @@ CMI       'G' shell
           IF (IPRINT.GE.3) THEN
            write(lupri,'(2X,A,I2,A,F12.5,A,F12.6)')
      & 'S: nj=',nj,' expon=',expon,' contr.coef=',coe
+           CALL FLSHFO(LUPRI)
           ENDIF
 
                ord_expon(sh)=expon
@@ -456,6 +469,7 @@ CMI       'G' shell
 C          write(lupri,*)
            write(lupri,'(2X,A,I2,A,F12.5,A,F12.6)')
      &     'P: nj=',nj,' expon=',expon,' contr.coef=',coe
+           CALL FLSHFO(LUPRI)
           ENDIF
 
              do i=1,3
@@ -490,7 +504,8 @@ C          write(lupri,*)
 
           IF (IPRINT.GE.3) THEN
            write(lupri,'(2X,A,I2,A,F12.5,A,F12.6)')
-     & 'D: nj=',nj,' expon=',expon,' contr.coef=',coe
+     &     'D: nj=',nj,' expon=',expon,' contr.coef=',coe
+           CALL FLSHFO(LUPRI)
           ENDIF
 
                 do i=1,6
@@ -555,6 +570,7 @@ CMI  *********** F *****************************
              end do
              sh=sh+9*n_con_guass
              go to 6000
+
 CMI  *********** G *****************************
  600         continue 
       DO   n_c_g=1,n_con_guass
@@ -585,9 +601,12 @@ CMI  *********** G *****************************
 
  6000       continue
      
-              End  Do
+           EndDo
 
+CMI *************************************************************
 CMI **** we are out of the cycle....
+CMI *************************************************************
+
  201       continue
                n_pg_atom(1)=1
                n_pg_atom(k+1)=sh
@@ -602,7 +621,7 @@ CMI **** we are out of the cycle....
                      enddo
                      iiii=iiii+1
                enddo
-       END DO
+       ENDDO
 
        close(LUinp,status="keep")
 
@@ -612,6 +631,15 @@ CMI   ... get the total number of basis functions
        WRITE(LUPRI,'(/2X,A,I3,A,I3)')
      & 'Total number of primitive guassians / total number of'//
      & ' contracted basis functions=',sh,'/',n_b
+       CALL FLSHFO(LUPRI)
+
+       WRITE(LUPRI,'(/2X,A,I3)') 'We have iiii of R_ms equal=',iiii
+       DO I=1,IIII
+        WRITE(LUPRI,'(2X,A,I3,A,3F12.6)')
+     &  'R_ms(',I,') x,y,z:',R_ms(I,1),R_ms(I,2),R_ms(I,3)
+       ENDDO
+       WRITE(LUPRI,*)
+       CALL FLSHFO(LUPRI)
 
        LUCAP=0
        CALL GPOPEN(LUCAP,
@@ -647,8 +675,9 @@ C        ... write into file
           WRITE(LUPRI,'(2X,A,I3,A,I3,A,I3)')
      &    'b.fu: ',i,' # of contr.shells:',basis_n(i),
      &    ' offset:',basis_ord(i)
+          CALL FLSHFO(LUPRI)
          ENDIF
-      end do
+      enddo
 
 CMI  ... control print out of exponents/contraction coefficients
 C       WRITE(LUPRI,*) 'basis_n(i=1,n_b)',(basis_n(i), i=1,n_b )
@@ -842,6 +871,7 @@ C ... prepare offsets for contracted basis functions
           WRITE(LUPRI,'(2X,A,I3,A,I3,A,I3)')
      &    'b.fu: ',i,' # of contr.shells:',basis_n(i),
      &    ' offset:',basis_ord(i)
+          CALL FLSHFO(LUPRI)
          ENDIF
       end do
 
