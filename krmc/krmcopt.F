@@ -347,6 +347,10 @@ C
       CALL ROPTST(IOPTST,3,CMO,CREF,IPROPT,WORK,KFREE,LFREE)
 C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
 C
+C     Only integral transformation done
+C
+      IF (KTRLVL.eq.5) GOTO 3000
+C
 C     Check if only do CI (no MCSCF iterations)
 C
       IF (MOPT_MXMACRO.LE.0.OR.NCIROOT.GE.2) THEN
@@ -2728,15 +2732,17 @@ C
 C              check for existing integral file.
                INQUIRE ( FILE = '4INDINFO', EXIST = EX )
                IF ( .NOT. EX ) THEN
-                 IF (KTRLVL.EQ.5) print*,'CALL RTRACTL Integrals only !'
+                 IF (KTRLVL.EQ.5)
+     &             WRITE(LUPRI,*) 'CALL RTRACTL for trafo only !'
                  CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
-                 IF (KTRLVL.EQ.5) CALL QUIT (' Transforming only. ')
                END IF
             ELSE
-              CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+               CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
             END IF
 C
-            CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
+            IF (KTRLVL.EQ.5) GOTO 2100
+C
+	    CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
 C
             IF (IPRINT .GE. 0) THEN
                IF (MAXCIT .GE. 0) THEN
