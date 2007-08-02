@@ -263,30 +263,20 @@ int dft_isgga__(void);
       INTEGER fSS 
       INTEGER fZZ 
       INTEGER fYY 
-      INTEGER fXX 
       INTEGER fRZ 
       INTEGER fSY 
-      INTEGER fZX 
       INTEGER fRX 
+      INTEGER fZX 
       INTEGER fRRR
       INTEGER fZZZ
-      INTEGER fXXX
       INTEGER fRSS
       INTEGER fRZZ
       INTEGER fRYY
-      INTEGER fRXX
       INTEGER fRRZ
       INTEGER fSSZ
-      INTEGER fRRX
-      INTEGER fSSX
-      INTEGER fZZX
-      INTEGER fYYX
       INTEGER fRSY
       INTEGER fSZY
-      INTEGER fRZX
-      INTEGER fSYX
       INTEGER fZYY
-      INTEGER fZXX
 
       INTEGER DERVS1
       INTEGER DERVS2
@@ -302,33 +292,23 @@ int dft_isgga__(void);
       PARAMETER (fSS  =  5)
       PARAMETER (fZZ  =  6)
       PARAMETER (fYY  =  7)
-      PARAMETER (fXX  =  8)
-      PARAMETER (fRZ  =  9)
-      PARAMETER (fSY  = 10)
+      PARAMETER (fRZ  =  8)
+      PARAMETER (fSY  =  9)
+      PARAMETER (fRX  = 10)
       PARAMETER (fZX  = 11)
-      PARAMETER (fRX  = 12)
-      PARAMETER (fRRR = 13)
-      PARAMETER (fZZZ = 14)
-      PARAMETER (fXXX = 15)
-      PARAMETER (fRSS = 16)
-      PARAMETER (fRZZ = 17)
-      PARAMETER (fRYY = 18)
-      PARAMETER (fRXX = 19)
-      PARAMETER (fRRZ = 20)
-      PARAMETER (fSSZ = 21)
-      PARAMETER (fRRX = 22)
-      PARAMETER (fSSX = 23)
-      PARAMETER (fZZX = 24)
-      PARAMETER (fYYX = 25)
-      PARAMETER (fRSY = 26)
-      PARAMETER (fSZY = 27)
-      PARAMETER (fRZX = 28)
-      PARAMETER (fSYX = 29)
-      PARAMETER (fZYY = 30)
-      PARAMETER (fZXX = 31)
+      PARAMETER (fRRR = 12)
+      PARAMETER (fZZZ = 13)
+      PARAMETER (fRSS = 14)
+      PARAMETER (fRZZ = 15)
+      PARAMETER (fRYY = 16)
+      PARAMETER (fRRZ = 17)
+      PARAMETER (fSSZ = 18)
+      PARAMETER (fRSY = 19)
+      PARAMETER (fSZY = 20)
+      PARAMETER (fZYY = 21)
 
-      PARAMETER (DERVS1 =  9)
-      PARAMETER (DERVS2 = 12)
-      PARAMETER (DERVS3 = 31)
-                                         
+      PARAMETER (DERVS1 =  3)
+      PARAMETER (DERVS2 = 11)
+      PARAMETER (DERVS3 = 21)
+
 #endif /* __CVERSION__ */

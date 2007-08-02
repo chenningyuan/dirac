@@ -88,9 +88,9 @@ struct DftDensity_ {
  * so maybe these lines are helpful when someone else looks at the code!
  *
  * thanks Christoph!
- * energy and linear response needs cleanup,
+ * potential and linear response need cleanup,
  * there Z is not (yet) \nabla R \cdot \nabla R
- * ok for qr,
+ * ok for QR,
  *        radovan
  *
  */ 
@@ -105,61 +105,47 @@ struct DftDensity_ {
  */
 
 struct FirstDrv_ {
-       real fR;
-       real fZ;
-       real fX;
+       real fR; 
+       real fZ; 
 };
 
 struct SecondDrv_ {
-       real fR;
-       real fZ;
+       real fR; 
+       real fZ; 
        real fX;
-
+ 
        real fRR;
        real fSS;
        real fZZ;
        real fYY;
-       real fXX;
        real fRZ;
        real fSY;
-       real fZX;
-       real fRX;
 };
 
 struct ThirdDrv_ {
-       real fR;
-       real fZ;
+       real fR; 
+       real fZ; 
        real fX;
-
+ 
        real fRR;
        real fSS;
        real fZZ;
        real fYY;
-       real fXX;
        real fRZ;
        real fSY;
-       real fZX;
        real fRX;
-
+       real fZX;
+ 
        real fRRR;
        real fZZZ;
-       real fXXX;
        real fRSS;
        real fRZZ;
        real fRYY;
-       real fRXX;
        real fRRZ;
        real fSSZ;
-       real fRRX;
-       real fSSX;
-       real fZZX;
-       real fYYX;
        real fRSY;
        real fSZY;
-       real fRZX;
-       real fSYX;
        real fZYY;
-       real fZXX;
 };
 
 void dftpot0_(FirstDrv *ds, 
