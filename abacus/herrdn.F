@@ -954,9 +954,9 @@ C         The following can be assigned for explicitely given basissets or Famil
       CONTAINS
 
 
-        SUBROUTINE ADD_ATOM(prevmol, firstatom, name,x)
+        SUBROUTINE ADD_ATOM(prevmol, fatom, name,x)
 C     JHS050707 Adds a new node to the atom list.
-          TYPE(atom), POINTER :: prevmol,firstatom,mol
+          TYPE(atom), POINTER :: prevmol,fatom,mol
           CHARACTER(LEN=*), INTENT(IN)     :: name
           REAL(KIND=8),INTENT(IN),OPTIONAL :: x(1:3)
           
@@ -967,14 +967,14 @@ C     JHS050707 Adds a new node to the atom list.
           IF (associated(prevmol)) THEN
             prevmol%next=>mol 
           ELSE
-            firstatom=>mol
+            fatom=>mol
           END IF
           prevmol=>mol
         END SUBROUTINE ADD_ATOM
 
-        SUBROUTINE ADD_BASIS(prevbas, firstbas,basdata,basnext)
+        SUBROUTINE ADD_BASIS(prevbas, fbas,basdata,basnext)
 C     JHS050707 Adds a new node to the basislist
-          TYPE(basistype),POINTER :: prevbas,firstbas
+          TYPE(basistype),POINTER :: prevbas,fbas
           TYPE(basistype),TARGET  :: basdata
           TYPE(basistype),POINTER :: bas
           TYPE(basistype),OPTIONAL,POINTER :: basnext
@@ -989,7 +989,7 @@ C     JHS050707 Adds a new node to the basislist
           IF (associated(prevbas)) THEN
             prevbas%next=>bas 
           ELSE
-            firstbas=>bas
+            fbas=>bas
           END IF
           prevbas=>bas
         END SUBROUTINE ADD_BASIS
@@ -1049,10 +1049,10 @@ C               And reads the needed coefficients from file.
           END SELECT
         END SUBROUTINE
 
-        SUBROUTINE READ_ATOMS(filenum, linelen,firstatom,lupri)
+        SUBROUTINE READ_ATOMS(filenum, linelen,fatom,lupri)
 C     JHS050707 Reads atom name and coordinates from the .XYZ file 
 C               and writes it to the atoms list.
-          TYPE(atom), POINTER, INTENT(INOUT) :: firstatom
+          TYPE(atom), POINTER, INTENT(INOUT) :: fatom
           INTEGER, INTENT(IN)                :: filenum, linelen,lupri
           TYPE(atom), POINTER                :: mol=>NULL()
           CHARACTER(LEN=namelen)             :: name
@@ -1073,20 +1073,20 @@ C               and writes it to the atoms list.
             IF (index<=1) CYCLE
             CALL READ_VAR(filenum, linelen,x(3), index)
 C     JHS050707 If coordinates are missing the atom is not added to the list.
-            CALL ADD_ATOM(mol,firstatom,name,x)            
+            CALL ADD_ATOM(mol,fatom,name,x)            
           END DO
 
         END SUBROUTINE READ_ATOMS
 
       
-        FUNCTION find_atom(firstatom, name)
+        FUNCTION find_atom(fatom, name)
 C     JHS050707 Returns a pointer to the next atom in the list with name 
 C               or NULL() if is no such atom. 
-           TYPE(atom), POINTER, INTENT(IN) :: firstatom 
+           TYPE(atom), POINTER, INTENT(IN) :: fatom 
            TYPE(atom), POINTER             :: find_atom
           CHARACTER(LEN=*), INTENT(IN)     :: name
            TYPE(atom), POINTER             :: mol
-           mol=>firstatom
+           mol=>fatom
            DO 
              IF (associated(mol)) THEN
                IF (mol%name==name) THEN
@@ -1103,15 +1103,15 @@ C               or NULL() if is no such atom.
         END FUNCTION find_atom
 
 
-        FUNCTION find_basis(firstbas, name)
+        FUNCTION find_basis(fbas, name)
 C     JHS050707 Returns a pointer to the next basisset with name in the list with basissets
 C               or NULL() if there is no such basis.
-           TYPE(basistype), POINTER, INTENT(IN) :: firstbas
+           TYPE(basistype), POINTER, INTENT(IN) :: fbas
            TYPE(basistype), POINTER                :: find_basis
            TYPE(basistype), POINTER                :: bas
            CHARACTER(LEN=*), INTENT(IN)        :: name
 
-           bas=>firstbas
+           bas=>fbas
            find_basis=>NULL()
            DO WHILE(ASSOCIATED(bas))
              IF (bas%name==name) THEN
@@ -1123,13 +1123,13 @@ C               or NULL() if there is no such basis.
 
         END FUNCTION find_basis
 
-        INTEGER FUNCTION count_atoms(firstatom, name)
+        INTEGER FUNCTION count_atoms(fatom, name)
 C     JHS050707 Counts the length of the atomlist.
-          TYPE(atom), POINTER, INTENT(IN) :: firstatom
+          TYPE(atom), POINTER, INTENT(IN) :: fatom
           TYPE(atom), POINTER             :: mol
           CHARACTER(LEN=*), OPTIONAL      :: name
           count_atoms=0
-          mol=>firstatom
+          mol=>fatom
           IF (PRESENT(name)) THEN
             DO WHILE (associated(mol))
               IF (name==mol%name) count_atoms=count_atoms+1
@@ -1154,11 +1154,11 @@ C     JHS050707 Returns the first index of key in chararray, or else len(chararr
           END DO
         END FUNCTION find_char
 
-        SUBROUTINE SORT_ATOMS(firstatom,firstbas,lupri)
+        SUBROUTINE SORT_ATOMS(fatom,fbas,lupri)
 C     JHS050707 Sorts the atomlist in the same order as the basissets 
 C               delets atoms that don't have a associated basisset
-          TYPE(atom),     POINTER,INTENT(INOUT) :: firstatom
-          TYPE(basistype),POINTER,INTENT(INOUT) :: firstbas
+          TYPE(atom),     POINTER,INTENT(INOUT) :: fatom
+          TYPE(basistype),POINTER,INTENT(INOUT) :: fbas
           INTEGER, INTENT(IN),OPTIONAL       :: lupri
           TYPE(atom), POINTER                :: mol=>NULL()
           TYPE(atom), POINTER                :: newmol=>NULL()
@@ -1166,8 +1166,8 @@ C               delets atoms that don't have a associated basisset
           TYPE(basistype), POINTER           :: bas=>NULL(),tmpbas
           CHARACTER(LEN=namelen)             :: name,oldname
           
-          mol=>firstatom
-          bas=>firstbas
+          mol=>fatom
+          bas=>fbas
           newfirstatom=>NULL()
           newmol=>newfirstatom
 
@@ -1179,7 +1179,7 @@ C     Look wether we have already ordered this species of atoms
               CYCLE
             END IF
 
-            mol=>firstatom               
+            mol=>fatom               
               mol=>find_atom(mol, bas%name)
             DO WHILE (ASSOCIATED(mol))
               CALL ADD_ATOM(newmol,newfirstatom,mol%name,mol%x)
@@ -1190,18 +1190,18 @@ C     Look wether we have already ordered this species of atoms
             END DO
             bas=>bas%next
           END DO
-          mol=>firstatom
+          mol=>fatom
           CALL DEL_ATOMS(mol)
-          firstatom=>newfirstatom       
+          fatom=>newfirstatom       
 
         END SUBROUTINE SORT_ATOMS
 
 
-        SUBROUTINE SORT_BASIS(firstatom,firstbas,usecomp,lupri)
+        SUBROUTINE SORT_BASIS(fatom,fbas,usecomp,lupri)
 C     JHS050707 Sorts the basisinput in the same order as the atoms 
 C               and issues warnings if no basis can be found
-          TYPE(atom),     POINTER, INTENT(INOUT) :: firstatom
-          TYPE(basistype),POINTER, INTENT(INOUT) :: firstbas
+          TYPE(atom),     POINTER, INTENT(INOUT) :: fatom
+          TYPE(basistype),POINTER, INTENT(INOUT) :: fbas
           INTEGER, INTENT(IN),OPTIONAL       :: lupri
           LOGICAL,INTENT(IN),OPTIONAL        :: usecomp
           LOGICAL                            :: first
@@ -1216,18 +1216,18 @@ C               and issues warnings if no basis can be found
           CHARACTER(LEN=namelen)             :: name,oldname
           CHARACTER(LEN=basislen)            :: comp
           
-          mol=>firstatom
-          bas=>firstbas
+          mol=>fatom
+          bas=>fbas
           newfirstbas=>NULL()
           newbas=>newfirstbas
           prevbas=>newfirstbas
           
 C     FIND DEFAULT BASIS.
-          default=>find_basis(firstbas,'DEFAULT')
+          default=>find_basis(fbas,'DEFAULT')
           IF (PRESENT(usecomp).AND.usecomp) THEN
             DO WHILE(ASSOCIATED(mol))
               first=.TRUE.
-              bas=>firstbas
+              bas=>fbas
               DO WHILE(ASSOCIATED(bas))
                 bas=>find_basis(bas, mol%name)
                 IF (first.AND..NOT.(ASSOCIATED(bas))) THEN
@@ -1270,7 +1270,7 @@ C     FIND DEFAULT BASIS.
             DO WHILE(ASSOCIATED(mol))
               first=.TRUE.
               DO 
-                bas=>find_basis(firstbas, mol%name)                  
+                bas=>find_basis(fbas, mol%name)                  
                 IF (first.AND..NOT.(ASSOCIATED(bas))) THEN
                   WRITE(lupri,*) 'Atom not found the given basissets.'
                   CALL QUIT('*** ERROR SORT_BASIS, basis 
@@ -1284,9 +1284,9 @@ C     FIND DEFAULT BASIS.
               mol=>mol%next
             END DO
           END IF
-          bas=>firstbas
+          bas=>fbas
           CALL DEL_BASIS(bas)
-          firstbas=>newfirstbas
+          fbas=>newfirstbas
 
         END SUBROUTINE SORT_BASIS
 
