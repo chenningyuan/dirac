@@ -130,8 +130,7 @@
       if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,numnod)) )
          printf("MPI_Comm_size error %i in ini_mpi()\n",ierr);
 
-      /* printf(" mytid and numnod %i %i\n",*mytid,*numnod); */
-/*       printf(" mytid and numnod %i %i\n",*mytid,*numnod); */
+      /*  printf(" mytid and numnod %i %i\n",*mytid,*numnod); */
 
       if ( *mytid == 0 ) sleep(1);
       /* if master then sleep 1 second
