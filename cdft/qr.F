@@ -93,6 +93,111 @@ C=======================================================================
       RETURN
       END
 c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c     /* qr_c */
+      subroutine qr_c(ivar,
+     &                jvar,
+     &                kvar,
+     &                der,
+     &                ixyz_start,
+     &                var,
+     &                var_pq,
+     &                use_var)
+c=======================================================================
+c     describe me ...
+c-----------------------------------------------------------------------
+c                                                           radovan bast
+c                                               last revision: june 2007
+c=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
+
+      logical   use_var(5)
+      dimension var   (3,0:3,5),
+     &          var_pq(3,0:3,5)
+
+      if(use_var(ivar) .and. use_var(jvar) .and. use_var(kvar)) then
+       do ixyz = ixyz_start,3
+        var_pq(ixyz,0,ivar) = var_pq(ixyz,0,ivar)
+     &                      + var(ixyz,1,jvar)*var(ixyz,2,kvar)*der
+     &                      + var(ixyz,2,jvar)*var(ixyz,1,kvar)*der
+       enddo
+      endif
+
+      return
+      end
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c     /* qr_b */
+      subroutine qr_b(ivar,
+     &                jvar,
+     &                der,
+     &                ixyz_start,
+     &                var,
+     &                var_pq,
+     &                use_var)
+c=======================================================================
+c     describe me ...
+c-----------------------------------------------------------------------
+c                                                           radovan bast
+c                                               last revision: june 2007
+c=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
+
+      logical   use_var(5)
+      dimension var   (3,0:3,5),
+     &          var_pq(3,0:3,5)
+
+      if(use_var(ivar) .and. use_var(jvar)) then
+       do ixyz = ixyz_start,3
+        var_pq(ixyz,0,ivar) = var_pq(ixyz,0,ivar) + var(ixyz,3,jvar)*der
+        var_pq(ixyz,1,ivar) = var_pq(ixyz,1,ivar) + var(ixyz,2,jvar)*der
+        var_pq(ixyz,2,ivar) = var_pq(ixyz,2,ivar) + var(ixyz,1,jvar)*der
+       enddo
+      endif
+
+      return
+      end
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c     /* qr_bx */
+      subroutine qr_bx(ivar,
+     &                 jvar,
+     &                 der,
+     &                 ixyz_start,
+     &                 var,
+     &                 var_pq,
+     &                 use_var)
+c=======================================================================
+c     describe me ...
+c-----------------------------------------------------------------------
+c                                                           radovan bast
+c                                               last revision: june 2007
+c=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
+
+      logical   use_var(5)
+      dimension var   (3,0:3,5),
+     &          var_pq(3,0:3,5)
+
+      if(use_var(ivar) .and. use_var(jvar)) then
+       do ixyz = ixyz_start,3
+        var_pq(ixyz,1,ivar) = var_pq(ixyz,1,ivar) + var(ixyz,2,jvar)*der
+        var_pq(ixyz,2,ivar) = var_pq(ixyz,2,ivar) + var(ixyz,1,jvar)*der
+       enddo
+      endif
+
+      return
+      end
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 c     /* dft_response */
       subroutine dft_response(add_r,
      &                        add_s,
@@ -265,6 +370,7 @@ c=======================================================================
       if(add_s .and.       add_gs) call sdftpot2(vxc,w,r_0,gr_0_norm)
       if(add_s .and. .not. add_gs) call sdftpot2(vxc,w,r_0,d0)
 
+#if defined brute_force_it
 !     don't remove this
 !     if i_derivative() doesn't find a non-zero derivative
 !     it will return the pointer 99
@@ -272,7 +378,7 @@ c=======================================================================
 
       do ixyz = ixyz_start,3
 
-!       dirty trick, this way i can use the loop over x, y, z
+!       this way i can use the loop over x, y, z
 !       also for purely collinear variables (R and Z)
         do ibc = 1,3
           var(ixyz,ibc,1) = var(3,ibc,1)
@@ -314,6 +420,106 @@ c=======================================================================
           endif
         enddo
       enddo
+#endif
+
+      do ixyz = ixyz_start,3
+
+!       this way i can use the loop over x, y, z
+!       also for purely collinear variables (R and Z)
+        do ibc = 1,3
+          var(ixyz,ibc,1) = var(3,ibc,1)
+          var(ixyz,ibc,3) = var(3,ibc,3)
+        enddo
+      enddo
+
+!     a(Z)
+      ivar = 3
+      ixyz = 3
+        var_pq(ixyz,3,ivar) = vxc(fZ0)
+
+!     a(X)
+      ivar = 5
+      do ixyz = ixyz_start,3
+        var_pq(ixyz,3,ivar) = vxc(fX)
+      enddo
+
+!     b(R,R)
+      call qr_b(1,1,vxc(fRR),3,var,var_pq,use_var)
+
+!     b(S,S)
+      call qr_b(2,2,vxc(fSS),ixyz_start,var,var_pq,use_var)
+
+!     b(Z,Z)
+      call qr_b(3,3,vxc(fZZ),3,var,var_pq,use_var)
+
+!     b(Y,Y)
+      call qr_b(4,4,vxc(fYY),ixyz_start,var,var_pq,use_var)
+
+!     b(R,Z)
+      call qr_b(1,3,vxc(fRZ),3,var,var_pq,use_var)
+      call qr_b(3,1,vxc(fRZ),3,var,var_pq,use_var)
+
+!     b(S,Y)
+      call qr_b(2,4,vxc(fSY),ixyz_start,var,var_pq,use_var)
+      call qr_b(4,2,vxc(fSY),ixyz_start,var,var_pq,use_var)
+
+!     b'(X,R)
+      call qr_bx(5,1,vxc(fRX),ixyz_start,var,var_pq,use_var)
+
+!     b'(X,Z)
+      call qr_bx(5,3,vxc(fZX),ixyz_start,var,var_pq,use_var)
+
+!     c(R,R,R)
+      call qr_c(1,1,1,vxc(fRRR),3,var,var_pq,use_var)
+
+!     c(Z,Z,Z)
+      call qr_c(3,3,3,vxc(fZZZ),3,var,var_pq,use_var)
+
+!     c(R,R,Z)
+      call qr_c(1,1,3,vxc(fRRZ),3,var,var_pq,use_var)
+      call qr_c(1,3,1,vxc(fRRZ),3,var,var_pq,use_var)
+      call qr_c(3,1,1,vxc(fRRZ),3,var,var_pq,use_var)
+
+!     c(R,S,S)
+      call qr_c(1,2,2,vxc(fRSS),ixyz_start,var,var_pq,use_var)
+      call qr_c(2,1,2,vxc(fRSS),ixyz_start,var,var_pq,use_var)
+      call qr_c(2,2,1,vxc(fRSS),ixyz_start,var,var_pq,use_var)
+
+!     c(S,S,Z)
+      call qr_c(2,2,3,vxc(fSSZ),ixyz_start,var,var_pq,use_var)
+      call qr_c(2,3,2,vxc(fSSZ),ixyz_start,var,var_pq,use_var)
+      call qr_c(3,2,2,vxc(fSSZ),ixyz_start,var,var_pq,use_var)
+
+!     c(R,Z,Z)
+      call qr_c(1,3,3,vxc(fRZZ),3,var,var_pq,use_var)
+      call qr_c(3,1,3,vxc(fRZZ),3,var,var_pq,use_var)
+      call qr_c(3,3,1,vxc(fRZZ),3,var,var_pq,use_var)
+
+!     c(R,Y,Y)
+      call qr_c(1,4,4,vxc(fRYY),ixyz_start,var,var_pq,use_var)
+      call qr_c(4,1,4,vxc(fRYY),ixyz_start,var,var_pq,use_var)
+      call qr_c(4,4,1,vxc(fRYY),ixyz_start,var,var_pq,use_var)
+
+!     c(Z,Y,Y)
+      call qr_c(3,4,4,vxc(fZYY),ixyz_start,var,var_pq,use_var)
+      call qr_c(4,3,4,vxc(fZYY),ixyz_start,var,var_pq,use_var)
+      call qr_c(4,4,3,vxc(fZYY),ixyz_start,var,var_pq,use_var)
+
+!     c(R,S,Y)
+      call qr_c(1,2,4,vxc(fRSY),ixyz_start,var,var_pq,use_var)
+      call qr_c(1,4,2,vxc(fRSY),ixyz_start,var,var_pq,use_var)
+      call qr_c(2,1,4,vxc(fRSY),ixyz_start,var,var_pq,use_var)
+      call qr_c(2,4,1,vxc(fRSY),ixyz_start,var,var_pq,use_var)
+      call qr_c(4,1,2,vxc(fRSY),ixyz_start,var,var_pq,use_var)
+      call qr_c(4,2,1,vxc(fRSY),ixyz_start,var,var_pq,use_var)
+
+!     c(S,Z,Y)
+      call qr_c(2,3,4,vxc(fSZY),ixyz_start,var,var_pq,use_var)
+      call qr_c(2,4,3,vxc(fSZY),ixyz_start,var,var_pq,use_var)
+      call qr_c(3,2,4,vxc(fSZY),ixyz_start,var,var_pq,use_var)
+      call qr_c(3,4,2,vxc(fSZY),ixyz_start,var,var_pq,use_var)
+      call qr_c(4,2,3,vxc(fSZY),ixyz_start,var,var_pq,use_var)
+      call qr_c(4,3,2,vxc(fSZY),ixyz_start,var,var_pq,use_var)
 
 !     R
 !     contributes to the h+ part
