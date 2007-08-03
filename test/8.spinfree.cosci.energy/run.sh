@@ -61,7 +61,7 @@ export MOL;
 #######################################
 echo "DKH2_sfB calculations"
 MENU=dkh2sfB.ci;
-MOL=F.lsym;
+MOL=F.lsym.mol;
 export MENU;
 export MOL;
 ../run.sh

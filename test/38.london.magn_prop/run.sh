@@ -19,7 +19,7 @@ else
 fi
 
 
-MOL=LiH.lsym.dir;
+MOL=LiH.lsym.dir.mol;
 FILTER=filter;
 export FILTER;
 export MOL;

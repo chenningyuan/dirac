@@ -2,7 +2,7 @@
 #
 # Set up calculation
 #
-MOL=HF.p-ccpvdz;
+MOL=HF.p-ccpvdz.mol;
 export MOL;
 ###############################
 echo "Zero field...DC"

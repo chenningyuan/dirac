@@ -2,7 +2,7 @@
 #
 # Set up calculation
 #
-MOL=Z80H.lsym.dir;
+MOL=Z80H.lsym.dir.mol;
 export MOL;
 ###############################
 echo "bss.ccsd run"
