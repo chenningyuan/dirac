@@ -23,7 +23,7 @@ end subroutine HSCCINP
 
   write(LUPRI,9001)
 
-9001 format(                                                                   ,/, &
+9001 format('                                                                 ',/, &
             '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',/, &
             '|        I N T E R F A C E                                      |',/, &
             '|      PROGRAM FOR EFFECTIVE AND INTERMEDIATE HAMILTONIAN       |',/, &
@@ -50,8 +50,7 @@ end subroutine HSCCINP
             '|                                                               |',/, &
             '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',/, &
             '|                INFORMATION ON CURRENT RUN                     |',/, &
-            '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',/, &
-           )
+            '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++' )
 
 
   end subroutine print_HSMRCC_Dirac_info

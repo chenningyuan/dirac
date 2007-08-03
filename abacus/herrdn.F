@@ -553,13 +553,15 @@ C     TMP adjust for an optional linewith.
 
           LOGICAL                       :: quoted=.FALSE.
           INTEGER :: iprev, ios, i
+          logical :: ios_temp
           CHARACTER(LEN=linewidth) :: str
           
           var=''; iprev=index
 
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
-          IF (.NOT.(ios)) THEN
+          !IF (.NOT.(ios)) THEN
+          IF (.NOT.(ios_temp)) THEN
             IF (present(fixedwidth)) THEN
               DO i=index,MIN(len(str), index+fixedwidth)
                 SELECT CASE (str(i:i))
@@ -582,14 +584,14 @@ C     TMP adjust for an optional linewith.
               DO i=index, len(str)
                 SELECT CASE (str(i:i))
                 CASE ('#')
-                  IF (not(quoted)) THEN
+                  IF (.NOT.(quoted)) THEN
                     IF (iprev<i-1) 
      &                var=str(iprev:i)
                     index=1
                     RETURN
                   END IF
                 CASE (' ')
-                  IF (not(quoted)) THEN
+                  IF (.not.(quoted)) THEN
                     IF (iprev==1.AND.iprev<i) THEN
                       var=str(iprev:i)
                       IF (present(skip).AND.skip) THEN
@@ -612,8 +614,8 @@ C     TMP adjust for an optional linewith.
                     iprev=i
                   END IF
                 CASE ('"')
-                  quoted=not(quoted)
-                  if (not(quoted)) THEN
+                  quoted=.not.(quoted)
+                  if (.not.(quoted)) THEN
                     var=str(iprev+1:i-1)
                     IF (present(skip).AND.skip) THEN
                       index=1
@@ -697,6 +699,7 @@ C     TMP adjust for an optional linewith.
           LOGICAL, INTENT(IN), OPTIONAL :: skip
           
           INTEGER :: iprev, ios, idot=0,i
+          logical :: ios_temp
           CHARACTER(LEN=linewidth) :: str
           
           var=0; iprev=index; idot=0
@@ -704,7 +707,8 @@ C     TMP adjust for an optional linewith.
 
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
-          IF (.NOT.(ios)) THEN
+         ! IF (.NOT.(ios)) THEN
+          IF (.NOT.(ios_temp)) THEN
             IF (present(fixedwidth)) THEN
               DO i=index+1,MIN(len(str), index+fixedwidth)
                 SELECT CASE (str(i:i))
@@ -769,12 +773,13 @@ C     TMP adjust for an optional linewith.
           
           INTEGER :: iprev, ios, idot=0,i
           CHARACTER(LEN=linewidth) :: str
-          
+          logical :: ios_temp 
           var=0; iprev=index; idot=0
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
 
-          IF (.NOT.(ios)) THEN
+         ! IF (.NOT.(ios)) THEN
+          IF (.NOT.(ios_temp)) THEN
             IF (present(fixedwidth)) THEN
               DO i=index+1,MIN(len(str), index+fixedwidth)
                 SELECT CASE (str(i:i))
@@ -838,12 +843,14 @@ C     TMP adjust for an optional linewith.
           LOGICAL, INTENT(IN), OPTIONAL :: skip
           
           INTEGER :: iprev, ios,i
+          logical :: ios_temp ! MI - fix for gfortran 
           CHARACTER(LEN=linewidth) :: str
           
           var=0; iprev=index
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
-          IF (.NOT.(ios)) THEN
+         ! IF (.NOT.(ios)) THEN
+          IF (.NOT.(ios_temp)) THEN  !!! needs be fixed !!!!
             IF (present(fixedwidth)) THEN
               DO i=index+1,MIN(len(str), index+fixedwidth)
                 SELECT CASE (str(i:i))
@@ -1052,7 +1059,8 @@ C               And reads the needed coefficients from file.
         SUBROUTINE READ_ATOMS(filenum, linelen,fatom,lupri)
 C     JHS050707 Reads atom name and coordinates from the .XYZ file 
 C               and writes it to the atoms list.
-          TYPE(atom), POINTER, INTENT(INOUT) :: fatom
+         ! TYPE(atom), POINTER, INTENT(INOUT) :: fatom
+          TYPE(atom), POINTER :: fatom
           INTEGER, INTENT(IN)                :: filenum, linelen,lupri
           TYPE(atom), POINTER                :: mol=>NULL()
           CHARACTER(LEN=namelen)             :: name
@@ -1082,7 +1090,8 @@ C     JHS050707 If coordinates are missing the atom is not added to the list.
         FUNCTION find_atom(fatom, name)
 C     JHS050707 Returns a pointer to the next atom in the list with name 
 C               or NULL() if is no such atom. 
-           TYPE(atom), POINTER, INTENT(IN) :: fatom 
+          ! TYPE(atom), POINTER, INTENT(IN) :: fatom 
+           TYPE(atom), POINTER :: fatom 
            TYPE(atom), POINTER             :: find_atom
           CHARACTER(LEN=*), INTENT(IN)     :: name
            TYPE(atom), POINTER             :: mol
@@ -1106,7 +1115,8 @@ C               or NULL() if is no such atom.
         FUNCTION find_basis(fbas, name)
 C     JHS050707 Returns a pointer to the next basisset with name in the list with basissets
 C               or NULL() if there is no such basis.
-           TYPE(basistype), POINTER, INTENT(IN) :: fbas
+          ! TYPE(basistype), POINTER, INTENT(IN) :: fbas
+           TYPE(basistype), POINTER :: fbas
            TYPE(basistype), POINTER                :: find_basis
            TYPE(basistype), POINTER                :: bas
            CHARACTER(LEN=*), INTENT(IN)        :: name
@@ -1125,7 +1135,8 @@ C               or NULL() if there is no such basis.
 
         INTEGER FUNCTION count_atoms(fatom, name)
 C     JHS050707 Counts the length of the atomlist.
-          TYPE(atom), POINTER, INTENT(IN) :: fatom
+         ! TYPE(atom), POINTER, INTENT(IN) :: fatom
+          TYPE(atom), POINTER :: fatom
           TYPE(atom), POINTER             :: mol
           CHARACTER(LEN=*), OPTIONAL      :: name
           count_atoms=0
@@ -1157,8 +1168,10 @@ C     JHS050707 Returns the first index of key in chararray, or else len(chararr
         SUBROUTINE SORT_ATOMS(fatom,fbas,lupri)
 C     JHS050707 Sorts the atomlist in the same order as the basissets 
 C               delets atoms that don't have a associated basisset
-          TYPE(atom),     POINTER,INTENT(INOUT) :: fatom
-          TYPE(basistype),POINTER,INTENT(INOUT) :: fbas
+         ! TYPE(atom),     POINTER,INTENT(INOUT) :: fatom
+          TYPE(atom),     POINTER :: fatom
+         ! TYPE(basistype),POINTER,INTENT(INOUT) :: fbas
+          TYPE(basistype),POINTER :: fbas
           INTEGER, INTENT(IN),OPTIONAL       :: lupri
           TYPE(atom), POINTER                :: mol=>NULL()
           TYPE(atom), POINTER                :: newmol=>NULL()
@@ -1200,8 +1213,10 @@ C     Look wether we have already ordered this species of atoms
         SUBROUTINE SORT_BASIS(fatom,fbas,usecomp,lupri)
 C     JHS050707 Sorts the basisinput in the same order as the atoms 
 C               and issues warnings if no basis can be found
-          TYPE(atom),     POINTER, INTENT(INOUT) :: fatom
-          TYPE(basistype),POINTER, INTENT(INOUT) :: fbas
+         ! TYPE(atom),     POINTER, INTENT(INOUT) :: fatom
+          TYPE(atom),     POINTER :: fatom
+         ! TYPE(basistype),POINTER, INTENT(INOUT) :: fbas
+          TYPE(basistype),POINTER :: fbas
           INTEGER, INTENT(IN),OPTIONAL       :: lupri
           LOGICAL,INTENT(IN),OPTIONAL        :: usecomp
           LOGICAL                            :: first
@@ -2085,7 +2100,8 @@ C
         END SUBROUTINE WRITE_BASIS
 
         SUBROUTINE PRINT_ATOMS(firstatom, lupri)
-          TYPE(atom), POINTER, INTENT(IN) :: firstatom
+          !TYPE(atom), POINTER, INTENT(IN) :: firstatom
+          TYPE(atom), POINTER :: firstatom
           INTEGER, INTENT(IN) :: lupri
           TYPE(atom), POINTER :: mol
 
@@ -2108,7 +2124,8 @@ C
         END SUBROUTINE PRINT_ATOMS
 
         SUBROUTINE PRINT_BASIS(firstbas, lupri)
-          TYPE(basistype), POINTER, INTENT(IN) :: firstbas
+          !TYPE(basistype), POINTER, INTENT(IN) :: firstbas
+          TYPE(basistype), POINTER :: firstbas
           INTEGER, INTENT(IN) :: lupri
           TYPE(basistype), POINTER :: bas
 
@@ -2134,7 +2151,8 @@ C
         SUBROUTINE DEL_ATOMS(firstatom, lupri)
 C     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
         
-          TYPE(atom),POINTER,INTENT(INOUT) :: firstatom
+          !TYPE(atom),POINTER,INTENT(INOUT) :: firstatom
+          TYPE(atom),POINTER :: firstatom
           INTEGER, OPTIONAL, INTENT(IN) :: lupri
           TYPE(atom), POINTER :: mol
 
@@ -2155,7 +2173,8 @@ C     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
         SUBROUTINE DEL_BASIS(firstbas, lupri)
 C     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
         
-          TYPE(basistype),POINTER,INTENT(INOUT) :: firstbas
+          !TYPE(basistype),POINTER,INTENT(INOUT) :: firstbas
+          TYPE(basistype),POINTER :: firstbas
           INTEGER, OPTIONAL, INTENT(IN) :: lupri
           TYPE(basistype), POINTER :: bas
 
