@@ -108,7 +108,7 @@ Command      : $0 $ARG_SAVE
 Hostname     : `hostname`
 Input dir    : $LOC
 Menu file    : $MENU
-Molecule file: $MOL
+Molecule file: $MOL$EXT
 Output file  : $OUTPUT_FILE
 
 EOF
@@ -513,12 +513,11 @@ copy_files()
    #
    # COPY MOLECULE AND MENU FILE
    #
-   $echo "   Copying $LOC/$MOL.mol to working directory : \c"
-#   if [ -a $LOC/$MOL.mol ]; then
-   if [ -f $LOC/$MOL.mol ]; then
-      cp $LOC/$MOL.mol MOLECULE.INP || \
+   $echo "   Copying $LOC/$MOL$EXT to working directory : \c"
+   if [ -f $LOC/$MOL$EXT ]; then
+      cp $LOC/$MOL$EXT MOLECULE$EXTOUT || \
          ( \
-            echo "   Error copying $LOC/$MOL.mol" ; \
+            echo "   Error copying $LOC/$MOL$EXT" ; \
             EXIT=1 ; \
             exitfunc \
          )
@@ -679,7 +678,7 @@ initialize()
    BASDIR="$LOC/:$BASDIR"
 
 # Files to include in the .tgz archive file.
-   ARCHIVE_FILES="MOLECULE.INP DIRAC.INP DFCOEF *.cube AOPROPER DFTMAT BSSMAT"
+   ARCHIVE_FILES="MOLECULE$EXT DIRAC.INP DFCOEF *.cube AOPROPER DFTMAT BSSMAT"
    DO_ARCHIVE=yes
 
 }
@@ -817,7 +816,16 @@ while [ -n "$1" ]; do
          exitfunc
          ;;
       *)
-         MOL=${1%\.mol}
+         MOL=$1
+         if test `expr index "$MOL" .` -eq 0; then
+           EXT='.mol'
+           EXTOUT='.MOL'
+         else   
+           EXT=$(expr match "$MOL" '.*\(\.[^.]*\)')
+# Convert the extension also to capitals.
+           EXTOUT=`echo $EXT | tr [a-z] [A-Z]`
+           MOL=${MOL:0:${#MOL}-${#EXT}}
+         fi
          shift 
          if [ -z "$1" ]; then
             echo "ERROR: No Dirac menu file given"
