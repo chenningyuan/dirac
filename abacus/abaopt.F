@@ -7181,8 +7181,19 @@ C
 #include "optinf.h"
 #include "gnrinf.h"
       CHARACTER*12 FILENM
+      LOGICAL :: ex
 C
-      CALL GPOPEN(LUMOL,'MOLECULE.INP','UNKNOWN',' ','FORMATTED',IDUMMY,
+C     ADJUST FOR XYZ FILES
+      INQUIRE(file='MOLECULE.MOL',exist=ex)
+      IF (.NOT.(ex)) THEN
+        INQUIRE(file='MOLECULE.XYZ', exist=ex)
+        IF (ex) WRITE(LUPRI,*) 'ERROR: abaopt.F PNCMOL not adjust for 
+     &       XYZ files.'
+        CALL QUIT('ERROR: abaopt.F(PNCMOL): MOLECULE FILE NOT FOUND.')
+      END IF
+
+
+      CALL GPOPEN(LUMOL,'MOLECULE.MOL','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND (LUMOL)
       DO 200 IMLINE = 1,NMLINE
@@ -7429,7 +7440,7 @@ C
 #include "maxorb.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
-      LOGICAL EXHER, EXSIR, EXABA, BIG
+      LOGICAL EXHER, EXSIR, EXABA, BIG, ex
       CHARACTER*4 NAME
       DIMENSION WORK(LWORK), COOR(3,MXCENT)
 C
@@ -7533,7 +7544,17 @@ C
 C Punch MOLECULE input with updated coordinates to LUMOL
 C
          LUMOL = 0
-         CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',
+C        ADJUST FOR XYZ FILES
+         INQUIRE(file='MOLECULE.MOL',exist=ex)
+         IF (.NOT.(ex)) THEN
+           INQUIRE(file='MOLECULE.XYZ', exist=ex)
+           IF (ex) WRITE(LUPRI,*) 'ERROR: abaopt.F PNCMOL not adjust 
+     &          for XYZ files.'
+           CALL QUIT('ERROR:abaopt(NUMGRD): MOLECULE FILE NOT FOUND.')
+         END IF
+
+
+         CALL GPOPEN(LUMOL,'MOLECULE.MOL','OLD',' ','FORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND (LUMOL)
          DO 200 IMLINE = 1,NMLINE

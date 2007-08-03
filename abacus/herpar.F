@@ -256,6 +256,8 @@ C     and transfer screening information to twocom.h
 C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
       SCRTHR = SCREEN
 CSK      write(6,*)'master has been here',master
+
+
 C
 C-----------------------
 C     Start calculation.
@@ -263,8 +265,10 @@ C-----------------------
 C
       CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
 CSK      write(6,*)'master has been here again',master
+
       CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+
 C
 C--------------------------------------
 C     Receive final results from nodes.
@@ -291,6 +295,7 @@ C
       IF (FIRST)  FIRST  = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
 C
+
  90   CONTINUE
       CALL MEMREL('HER_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('HER_PARDRV')
@@ -533,8 +538,6 @@ C
       IF (NEWGEO) THEN
          CALL MPI_BCAST(NMLINE,1,my_MPI_INTEGER,MPARID,
      &       MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MLINE,80*NMLINE,MPI_CHARACTER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
 C........inforb.h
          NUMELM=ICOMMSIZE(I1_INFORB,I2_INFORB)
          CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
@@ -555,6 +558,7 @@ C
       END IF
 C
 C     Send Panas value and screening threshold
+
       DSEND(1) = PANAS
       DSEND(2) = SCREEN
       CALL MPI_BCAST(DSEND,2,MPI_DOUBLE_PRECISION,MPARID,
@@ -570,6 +574,7 @@ C     Send SMLV1C and ONECAP,INTV1C
 #endif
 C
 C     Send parint.h
+
       NUMELM = ICOMMSIZE(I1_PARINT,I2_PARINT)
       CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -578,12 +583,14 @@ C........note that with icommsize COMMON blocks must be sent as integers...
      &               MPI_COMM_WORLD,IERR)
       ISEND(1) = NDMAT
       ISEND(2) = NFMAT
+      
       CALL MPI_BCAST(ISEND,2,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
         CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
       ENDIF
 C
+      
       IF(NFMAT.GT.0) THEN
         CALL MPI_BCAST(IREPDM,NDMAT,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -603,6 +610,7 @@ C
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(HFXMU,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+
 C
 C     ITYPE = 3 : direct SCF (AO-basis)
 C     ITYPE = 9 : direct SCF (SO-basis)
@@ -631,6 +639,7 @@ C       ... broadcast screening matrix
         CALL MPI_BCAST(DMRSO,N2RED*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &                 MPI_COMM_WORLD,IERR)
       END IF
+
 #endif
       RETURN
       END
@@ -650,6 +659,7 @@ C
 C
       DIMENSION INDEX(MTOTTK), NSTAT(NODES), ISHELL(2)
 C
+
       CALL IZERO(NSTAT,NODES)
 C
 C------------------------------------------
@@ -665,11 +675,14 @@ C
 C        Ready to receive request from any node.
 C
 #if defined (VAR_MPI)
+
+
          CALL MPI_RECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
 C
          CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
      &                 MPI_COMM_WORLD,IERR)
+
 #endif
 CSK         write(6,*)'send and recieve done',mytid
 C
@@ -712,6 +725,7 @@ C------------------------------------------------
 C     Instruct nodes to return the final results.
 C------------------------------------------------
 C
+
       NTEST = -1
       DO 400 I = 1,NODES
 C
@@ -1098,6 +1112,7 @@ C     ***************************************************
 C     ***** Receive initialization data from master *****
 C     ***************************************************
 C
+
       CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &            IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
      &            TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCREEN,
@@ -1110,6 +1125,7 @@ C     ***** Allocate memory *****
 C     ***************************
 C
 C
+
       IF (ITYPE .EQ. 2) THEN
          NUMGRA = MXCOOR
          IF (MAXDIF .GT. 1) THEN
@@ -1179,9 +1195,11 @@ C     ****************************************
 C     ***** Send final results to master *****
 C     ****************************************
 C
+      
       CALL SDRES(WORK(KFMAT),LFMAT,NUMGRA,
      &     NUMHES,NUMSUS,CPU1,WALL1,ITYPE,DINTSKP,
      &     WORK(KINDEX),WORK(KTIMES))
+
 C
 C     We want the slave program to go until there is nothing
 C     more to calculate, K.Ruud, May-95
@@ -1241,22 +1259,24 @@ C
       DIMENSION WORK(*), DSEND(2), ISEND(2)
       CHARACTER*6 NAVN
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH, LSEND(6)
+
 C
 C-----------------------------------------
 C     Receive initializations from master.
 C-----------------------------------------
 C
 #if defined (VAR_MPI)
+
       CALL MPI_BCAST(NMLINE,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+
       IF (NMLINE .LT. 0) THEN
          FINISH = .TRUE.
          RETURN
       ELSE IF (NMLINE .GT. 0) THEN
-         CALL MPI_BCAST(MLINE,80*NMLINE,MPI_CHARACTER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+
 C........inforb.h
          CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+     &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(I1_INFORB,NUMELM,my_MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
 C........
@@ -1266,9 +1286,10 @@ C........
      &                  MPI_COMM_WORLD,IERR)
          NEWGEO = .TRUE.
       ELSE
-         NEWGEO = .FALSE.
+        NEWGEO = .FALSE.
       END IF
-C
+
+
 C     Receive PANAS and screening threshold
       CALL MPI_BCAST(DSEND,2,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -1369,28 +1390,34 @@ C
       END IF
 C
       IF (NEWGEO) RDINPC = .FALSE.
-C
+C     
+
       CALL SETHER(0,NEWGEO,RELCAL,WORK(KFREE),LFREE)
+
 CMI   CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
 C
 C     Set common-block BLOCKS
 C
       CALL PAOVEC(WORK(KFREE),LFREE,0,0)
 C
+
 #if defined (VAR_MPI)
       CALL MPI_BCAST(ISEND,2,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       NDMAT = ISEND(1)
       NFMAT = ISEND(2)
+
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
         LDMAT = NDMAT*N2BASX
         CALL MEMGET('REAL',KDMAT,LDMAT,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KDMAT),LDMAT,MPI_DOUBLE_PRECISION,
-     &               MPARID,MPI_COMM_WORLD,IERR)
+     &                 MPARID,MPI_COMM_WORLD,IERR)
       ELSE
         KDMAT = KFREE
       ENDIF
+
       LFMAT = NFMAT*N2BASX
-      IF(NFMAT.GT.0) THEN
+
+      IF(NFMAT.GT.0) THEN       
         CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIRD,NDMAT,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KIRD),NDMAT,my_MPI_INTEGER,MPARID,
@@ -1436,6 +1463,7 @@ C
         KDMRAO = KFREE
         KGABAO = KFREE
       ENDIF
+
       IF(ITYPE.EQ.9) THEN
         CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,
      &               MPARID,MPI_COMM_WORLD,IERR)
@@ -2193,6 +2221,8 @@ C
 C
          ICA    = LCLASH(ISHELA)
          NCENTA = NCNTSH(ISHELA)
+
+
 C
 C        ******************************
 C        ***** Second Shell Index *****
