@@ -326,6 +326,1892 @@ C        Slaves are already initialized before coming here.
       ENDIF
       RETURN
       END
+
+
+
+C     !!! NEW MODULE FOR CONVERTING BETWEEN TYPES !!!
+C     OTHER SOLLUTIONS (C++) ARE MORE THAN WELCOME
+C     JHS, 11-04-2007
+      MODULE CONVERSION
+        PRIVATE
+        PUBLIC INTTOCHAR
+C     Maybe include priunit.h instead of passing output variable?
+        INTEGER, SAVE      :: zerochar=-1
+        INTEGER, PARAMETER :: maxint=11
+        
+      CONTAINS
+        CHARACTER(LEN=maxint) FUNCTION INTTOCHAR(n)
+          INTEGER, INTENT(IN) :: n
+          INTEGER             :: i,j
+          IF (zerochar<0) zerochar=IACHAR('0')
+          inttochar=''
+          DO i=0,maxint-1
+            IF (10**i>n) EXIT
+          END DO 
+          IF (i==maxint) i=i-1
+          DO j=i,0, -1
+            inttochar(i-j:i-j)=ACHAR(MOD(n/10**j, 10)+zerochar)
+          END DO
+        END FUNCTION INTTOCHAR
+
+      END MODULE CONVERSION
+
+C     !!! MODULE FOR HANDLING FILES !!!
+C     Contains
+C       - OPEN_FILE(filename) or OPEN_FILE(filename, filenum,formatted,output)
+C         Opens a file and returns the id. Which is a new number if only the
+C         name is given, otherwise it is equal to filenum.
+C         A negative or zero indicates an error.
+C       - GET_LENGTH(filename) or GET_LENGTH(filenum)
+C         Returns the maximum linelength of a file.
+C       - GET_EXTENSION(filename)
+C         Returns the first extension in the array filetypes for which
+C         filename.extension is an existing filename.
+C       - READ_VAR(filenum,linewidth,var,index,fixedwidth,skip)
+C         Reads a variable of character, integer or real type starting
+C         from position index.
+C         By default text is read from index tot the next unquoted space
+C         or one of the unqouted commentsigns: '#'
+C         if fixedwidth is given all characters between index and index+
+C         fixedwidth are read into var.
+C         The type of variable var determines how the text will be interpreted.
+C         If skip='TRUE', the filepointer is positioned to the next line.
+C         Index is set to the first non read character.
+C         If it is 0 the end of the file is reached.
+C         If it smaler than 0 an error has occured.
+C     For the errorcodes see the comments in the corresponding routines.
+C    
+C     JHS 05-07-07
+
+      MODULE FILE
+      IMPLICIT NONE
+
+      PRIVATE
+      PUBLIC OPEN_FILE, GET_LENGTH, GET_EXTENSION, READ_VAR
+
+        CHARACTER(LEN=8), DIMENSION(2), PARAMETER :: 
+     &       filetypes=(/'MOL', 'XYZ'/)
+        INTEGER :: linewidth=0
+
+        INTERFACE OPEN_FILE
+          MODULE PROCEDURE OPEN_FILE_NAME, OPEN_FILE_NUM
+        END INTERFACE
+        
+        INTERFACE READ_VAR
+
+          MODULE PROCEDURE READ_CHAR,READ_INT,READ_REAL,READ_REAL8
+        END INTERFACE  
+        
+        INTERFACE GET_LENGTH
+          MODULE PROCEDURE GET_LENGTH_NUM, GET_LENGTH_NAME
+        END INTERFACE
+
+
+      CONTAINS
+
+        INTEGER FUNCTION OPEN_FILE_NAME(filename)
+C     Opens a file and returns it's identifying number (>0) if the operation was succesful.
+C     If the opening was insuccesful a negative or 0 is returned. 
+C      0  -   File does not exists.
+C     -1  -   To many files opened.
+C     -99  -   Error while executing the open statement.
+          CHARACTER(LEN=*), INTENT(IN) :: filename
+          INTEGER, parameter :: maxfile=99
+          LOGICAL :: ex
+          INTEGER :: n
+
+          INQUIRE(file=filename, exist=ex)
+          IF (ex) THEN
+            DO n=1,maxfile
+              INQUIRE(n, opened=ex)
+              IF (.NOT.(ex)) THEN
+                OPEN(n, file=filename, err=563)   
+                EXIT
+              END IF
+            END DO
+ 563        open_file_name=-99
+            IF (n>maxfile) THEN
+              open_file_name=-1 ! To many files opened
+            ELSE
+               open_file_name=n ! Open file
+            END IF                  
+          ELSE
+            open_file_name=0 ! Filename does not exist
+          END IF
+
+        END FUNCTION OPEN_FILE_NAME
+
+        INTEGER FUNCTION OPEN_FILE_NUM(
+     &     filename, filenum, formatted, lupri)
+C     Opens a file and returns it's identifying number (>0) if the operation was succesful.
+C     If the opening was insuccesful a negative or 0 is returned. 
+C      0   -   File does not exists.
+C     -1   -   To many files opened.
+C     -2   -   Number already assigned
+C     -3   -   File already opened with a different number.
+C     -99  -   Error while executing the open statement.
+          CHARACTER(LEN=*), INTENT(IN)  :: filename
+          INTEGER, INTENT(IN)           :: filenum
+          CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: formatted
+          INTEGER, OPTIONAL, INTENT(IN) :: lupri
+          INTEGER, PARAMETER            :: maxfile=99
+          LOGICAL                       :: ex
+          INTEGER                       :: n
+
+          INQUIRE(file=filename, exist=ex)
+          IF (.NOT. ex) THEN
+            open_file_num=0
+            RETURN
+          END IF
+          INQUIRE(filenum, exist=ex)
+          IF (.NOT. ex) THEN
+            open_file_num=-2
+            RETURN
+          END IF
+          OPEN(filenum, file=filename, FORM=formatted, err=463)   
+          open_file_num=filenum
+
+          RETURN
+ 463      open_file_num=-99
+
+        END FUNCTION OPEN_FILE_NUM
+
+        INTEGER FUNCTION GET_LENGTH_NUM(filenum, lupri)
+C     Returns the maximum linelength of an already opened file.
+C
+          INTEGER, INTENT(IN) :: filenum
+          INTEGER, OPTIONAL, INTENT(IN) :: lupri
+          INTEGER             :: ios, newlength
+          CHARACTER(LEN=1)   :: tmpchr
+
+          REWIND(filenum)
+          get_length_num=0
+          DO
+            newlength=0
+            DO
+              READ(filenum, '(a)', iostat=ios, ADVANCE='no') tmpchr
+              IF (ios<0) THEN
+                get_length_num=MAX(get_length_num, newlength)
+                EXIT
+              ELSE
+                newlength=newlength+1
+              END IF
+            END DO
+            IF (ios==-1) THEN
+              EXIT
+            ELSE IF (.NOT.(ios==-2)) THEN
+              WRITE (lupri,'(A)') "WARNING problems encountered 
+     &                       while reading file."
+            END IF
+          END DO
+          REWIND(filenum)
+        END FUNCTION GET_LENGTH_NUM
+      
+        INTEGER FUNCTION GET_LENGTH_NAME(filename, lupri)
+C     Opens a file, returns the maximum line length and closes the file again
+C
+          CHARACTER(LEN=*), INTENT(IN) :: filename
+          INTEGER, OPTIONAL, INTENT(IN) :: lupri
+          INTEGER :: filenum
+          
+          filenum=open_file(filename)
+          IF (filenum>0) THEN
+            get_length_name=get_length_num(filenum)
+            close(filenum)
+          ELSE
+            WRITE(lupri,'(a)'), 'Could not open file. name=', filename
+            get_length_name=-1
+          END IF
+        END FUNCTION GET_LENGTH_NAME
+
+        FUNCTION GET_EXTENSION(filename)
+          CHARACTER(LEN=*), INTENT(IN) :: filename
+          CHARACTER(LEN=LEN(filetypes(1))) :: get_extension
+          INTEGER :: i
+          LOGICAL :: ex
+  
+          DO i=1, LEN(filetypes)           
+            INQUIRE(file=filename//'.'//TRIM(filetypes(i)), exist=ex)
+            IF (ex) THEN
+              get_extension=TRIM(filetypes(i))
+              EXIT
+            END IF
+        END DO
+          IF (i>LEN(filetypes))  get_extension=''
+        END FUNCTION
+               
+        SUBROUTINE READ_CHAR(filenum,linewidth,var,index,fixedwidth,
+     &                       skip)
+C     TMP adjust for an optional linewith.
+
+          INTEGER, INTENT(IN)           :: filenum
+          INTEGER, INTENT(IN)           :: linewidth
+          INTEGER, INTENT(INOUT)        :: index
+          CHARACTER(LEN=*), INTENT(OUT) :: var
+          INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
+          LOGICAL, INTENT(IN), OPTIONAL :: skip
+
+          LOGICAL                       :: quoted=.FALSE.
+          INTEGER :: iprev, ios, i
+          CHARACTER(LEN=linewidth) :: str
+          
+          var=''; iprev=index
+
+          READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
+
+          IF (.NOT.(ios)) THEN
+            IF (present(fixedwidth)) THEN
+              DO i=index,MIN(len(str), index+fixedwidth)
+                SELECT CASE (str(i:i))
+                CASE ('#')
+                  index=1
+                  EXIT                  
+                END SELECT 
+              END DO
+              IF (i-2>index.OR.fixedwidth==1) 
+     &          var=str(iprev:i-1)
+              IF (present(skip).AND.skip) THEN
+                index=1
+              ELSE IF (i-1>linewidth) THEN
+                index=1
+              ELSE
+                BACKSPACE(filenum)
+                index=i
+              END IF
+            ELSE  
+              DO i=index, len(str)
+                SELECT CASE (str(i:i))
+                CASE ('#')
+                  IF (not(quoted)) THEN
+                    IF (iprev<i-1) 
+     &                var=str(iprev:i)
+                    index=1
+                    RETURN
+                  END IF
+                CASE (' ')
+                  IF (not(quoted)) THEN
+                    IF (iprev==1.AND.iprev<i) THEN
+                      var=str(iprev:i)
+                      IF (present(skip).AND.skip) THEN
+                        index=1
+                      ELSE
+                        BACKSPACE(filenum)
+                        index=i
+                      END IF
+                      RETURN
+                    ELSE IF (iprev<i-1) THEN
+                      var=str(iprev+1:i)
+                      IF (present(skip).AND.skip) THEN
+                        index=1
+                      ELSE
+                        BACKSPACE(filenum)
+                        index=i
+                      END IF
+                      RETURN
+                    END IF
+                    iprev=i
+                  END IF
+                CASE ('"')
+                  quoted=not(quoted)
+                  if (not(quoted)) THEN
+                    var=str(iprev+1:i-1)
+                    IF (present(skip).AND.skip) THEN
+                      index=1
+                    ELSE
+                      BACKSPACE(filenum)
+                      index=i+1
+                    END IF
+                    RETURN
+                  END IF                    
+                END SELECT 
+              END DO             
+
+              var=str(iprev:i)
+              index=1
+            END IF
+          ELSE
+            index=-1
+          END IF
+        END SUBROUTINE READ_CHAR
+
+        REAL(KIND=8) FUNCTION READ_NUM8(filenum,iprev,i,ios,idot)
+          USE CONVERSION
+          INTEGER, INTENT(IN)    :: filenum, i, iprev
+          INTEGER, INTENT(IN), OPTIONAL :: idot
+          INTEGER, INTENT(OUT) :: ios
+          CHARACTER(LEN=64) :: chr
+         
+          
+          IF (present(idot) .AND. idot>0) THEN
+            chr='(t'//trim(inttochar(iprev+1))//', f'//
+     &           trim(inttochar(i-iprev-1))//'.'//
+     &           trim(inttochar(i-idot-1))//')'
+          ELSE
+            chr='(t'//trim(inttochar(iprev+1))//', f'//
+     &           trim(inttochar(i-iprev-1))//')'
+          END IF
+          BACKSPACE(filenum)
+          READ(filenum, chr,ADVANCE='yes', iostat=ios) READ_NUM8
+        END FUNCTION READ_NUM8
+
+        REAL FUNCTION READ_NUM(filenum,iprev,i,ios,idot)
+          USE CONVERSION
+          INTEGER, INTENT(IN)    :: filenum, i, iprev
+          INTEGER, INTENT(IN), OPTIONAL :: idot
+          INTEGER, INTENT(OUT) :: ios
+          CHARACTER(LEN=64) :: chr
+         
+          IF (present(idot) .AND. idot>0) THEN
+            chr='(t'//trim(inttochar(iprev+1))//', f'//
+     &           trim(inttochar(i-iprev-1))//'.'//
+     &           trim(inttochar(i-idot-1))//')'
+          ELSE
+            chr='(t'//trim(inttochar(iprev+1))//', f'//
+     &           trim(inttochar(i-iprev-1))//')'
+          END IF
+          BACKSPACE(filenum)
+          READ(filenum, chr,ADVANCE='yes', iostat=ios) READ_NUM
+        END FUNCTION READ_NUM
+
+      INTEGER FUNCTION READ_INTEGER(filenum,iprev,i,ios)
+          USE CONVERSION
+          INTEGER, INTENT(IN)    :: filenum, i, iprev
+          INTEGER, INTENT(OUT) :: ios
+          CHARACTER(LEN=64) :: chr
+         
+          chr='(t'//trim(inttochar(iprev+1))//', i'//
+     &         trim(inttochar(i-iprev-1))//')'
+
+          BACKSPACE(filenum)
+          READ(filenum, chr,ADVANCE='yes', iostat=ios) READ_INTEGER
+        END FUNCTION READ_INTEGER
+
+        SUBROUTINE READ_REAL8(filenum,linewidth,var,index,fixedwidth,
+     &                        skip)
+C     TMP adjust for an optional linewith.
+          INTEGER, INTENT(IN)           :: filenum
+          INTEGER, INTENT(IN)           :: linewidth
+          INTEGER, INTENT(INOUT)        :: index
+          REAL(KIND=8), INTENT(OUT) :: var
+          INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
+          LOGICAL, INTENT(IN), OPTIONAL :: skip
+          
+          INTEGER :: iprev, ios, idot=0,i
+          CHARACTER(LEN=linewidth) :: str
+          
+          var=0; iprev=index; idot=0
+
+
+          READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
+
+          IF (.NOT.(ios)) THEN
+            IF (present(fixedwidth)) THEN
+              DO i=index+1,MIN(len(str), index+fixedwidth)
+                SELECT CASE (str(i:i))
+                CASE ('#')
+                  EXIT
+                CASE ('.')
+                  idot=i
+                END SELECT               
+              END DO
+              IF (i-2>index.OR.fixedwidth==1) 
+     &          var=READ_NUM8(filenum,index,i-1,ios,idot)
+              IF (present(skip).AND.skip) THEN 
+                index=1
+              ELSE IF (i>linewidth) THEN 
+                index=1
+              ELSE
+                BACKSPACE(filenum)
+                index=i
+              END IF
+            ELSE
+              DO i=index, len(str)
+                SELECT CASE (str(i:i))
+                CASE ('#')
+                  IF (iprev<i-1) 
+     &              var=READ_NUM8(filenum,iprev,i,ios,idot)
+                  index=1
+                  RETURN
+                CASE (' ')
+                  IF (iprev<i-1.OR.(i==2.AND..NOT.(index==2))) THEN
+                    var=READ_NUM8(filenum,iprev,i,ios,idot)
+                    IF (present(skip).AND.skip) THEN 
+                      index=1
+                    ELSE
+                      BACKSPACE(filenum)
+                    index=i
+                    END IF
+                    RETURN
+                  END IF
+                  iprev=i
+                CASE ('.')
+                  idot=i
+                END SELECT 
+              END DO
+              var=READ_NUM8(filenum,iprev,i,ios,idot)
+              index=1
+            END IF
+          ELSE
+            index=-1
+           END IF
+        END SUBROUTINE READ_REAL8
+
+
+        SUBROUTINE READ_REAL(filenum,linewidth,var,index,fixedwidth,
+     &                       skip)
+C     TMP adjust for an optional linewith.
+          INTEGER, INTENT(IN)           :: filenum
+          INTEGER, INTENT(IN)           :: linewidth
+          INTEGER, INTENT(INOUT)        :: index
+          REAL, INTENT(OUT) :: var
+          INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
+          LOGICAL, INTENT(IN), OPTIONAL :: skip
+          
+          INTEGER :: iprev, ios, idot=0,i
+          CHARACTER(LEN=linewidth) :: str
+          
+          var=0; iprev=index; idot=0
+          READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
+
+
+          IF (.NOT.(ios)) THEN
+            IF (present(fixedwidth)) THEN
+              DO i=index+1,MIN(len(str), index+fixedwidth)
+                SELECT CASE (str(i:i))
+                CASE ('#')
+                  EXIT
+                CASE ('.')
+                  idot=i
+                END SELECT  
+              END DO
+              IF (i-2>index.OR.fixedwidth==1)
+     &          var=READ_NUM(filenum,index,i-1,ios,idot)
+              IF (present(skip).AND.skip) THEN 
+                index=1
+              ELSE IF (i>linewidth) THEN 
+                index=1
+              ELSE
+                BACKSPACE(filenum)
+                index=i
+              END IF
+            ELSE
+              DO i=index+1, len(str)
+                SELECT CASE (str(i:i))
+                CASE ('#')
+                  IF (iprev<i-1.OR.i==2) 
+     &              var=READ_NUM(filenum,iprev,i,ios,idot)
+                  index=1
+                  RETURN
+                CASE (' ')
+                  IF (iprev<i-1.OR.(i==2.AND..NOT.(index==2))) THEN
+                    var=READ_NUM(filenum,iprev,i,ios,idot)
+                    IF (present(skip).AND.skip) THEN 
+                      index=1
+                    ELSE
+                      BACKSPACE(filenum)
+                    index=i
+                    END IF
+                    RETURN
+                  END IF
+                  iprev=i
+                CASE ('.')
+                  idot=i
+                END SELECT 
+              END DO
+              var=READ_NUM(filenum,iprev,i,ios,idot)
+              index=1
+            END IF
+          ELSE
+            index=-1
+           END IF
+        END SUBROUTINE READ_REAL
+
+
+        SUBROUTINE READ_INT(filenum,linewidth,var,index,fixedwidth,
+     &                      skip)
+C     TMP adjust for an optional linewith.
+          INTEGER, INTENT(IN)           :: filenum
+          INTEGER, INTENT(IN)           :: linewidth
+          INTEGER, INTENT(INOUT)        :: index
+          INTEGER, INTENT(OUT) :: var
+          INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
+          LOGICAL, INTENT(IN), OPTIONAL :: skip
+          
+          INTEGER :: iprev, ios,i
+          CHARACTER(LEN=linewidth) :: str
+          
+          var=0; iprev=index
+          READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
+
+          IF (.NOT.(ios)) THEN
+            IF (present(fixedwidth)) THEN
+              DO i=index+1,MIN(len(str), index+fixedwidth)
+                SELECT CASE (str(i:i))
+                CASE ('#')
+                  EXIT
+                END SELECT  
+              END DO
+              IF (i-2>index.OR.fixedwidth==1)
+     &          var=READ_INTEGER(filenum,index,i-1,ios)
+              IF (present(skip).AND.skip) THEN 
+                index=1
+              ELSE IF (i>linewidth) THEN 
+                index=1
+              ELSE
+                BACKSPACE(filenum)
+                index=i
+              END IF
+            ELSE
+              DO i=index, len(str)
+                SELECT CASE (str(i:i))
+                CASE ('#')
+                  IF (iprev<i-1) 
+     &              var=READ_INTEGER(filenum,iprev,i,ios)
+                  index=1
+                  RETURN
+                CASE (' ')
+                  IF (iprev<i-1.OR.(i==2.AND..NOT.(index==2))) THEN
+                    var=READ_INTEGER(filenum,iprev,i,ios)
+                    IF (present(skip).AND.skip) THEN 
+                      index=1
+                    ELSE
+                      BACKSPACE(filenum)
+                    index=i
+                    END IF
+                    RETURN
+                  END IF
+                  iprev=i
+                END SELECT 
+              END DO
+              var=READ_INTEGER(filenum,iprev,i,ios)
+              index=1
+            END IF
+          ELSE
+            index=-1
+           END IF
+        END SUBROUTINE READ_INT
+
+      END MODULE FILE
+
+
+
+
+
+
+
+
+
+
+
+
+C     !!! MODULE FOR READING XYZ FILES !!!
+C     Module for reading xyz files. 
+C     The coordinates are given in the .xyz file.
+C     The basisset and possible charges and nuclear exponents are 
+C     specified in the .inp file
+C
+C     In the long run the readingsection for the .inp file move to dirac/dirrdn.F
+C     JHS 05-07-07
+
+      MODULE READFILE
+        USE FILE
+        IMPLICIT NONE
+
+        PRIVATE
+        PUBLIC READ_XYZ,WRITE_ATOMS,WRITE_BASIS,CLEAR_XYZ
+C     DETERMINES HOW DIFFERENT MOLECULE FILES SHOULD BE READ.
+C     !!! PAM CAPITALIZES THE EXTENSIONS !!!
+
+        INTEGER, PARAMETER :: namelen=8, basislen=32
+        REAL(KIND=8), PARAMETER :: D0 = 0.0D0
+        INTEGER            :: i
+
+        TYPE atom
+C     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
+          CHARACTER(LEN=namelen)  :: name=''
+          REAL(KIND=8)            :: x(3)=(/(0,i=1, 3)/)
+          REAL(KIND=8)            :: charge=0
+          REAL(KIND=8)            :: nucexp=0
+          TYPE(atom), POINTER     :: next=>NULL()
+        END TYPE atom
+        TYPE(atom), POINTER :: firstatom
+
+        TYPE basistype
+C     Defines a list for storing the information about the basis sets.
+          CHARACTER(LEN=namelen)     :: name=''
+          CHARACTER(LEN=basislen)    :: type=''
+          CHARACTER(LEN=basislen)    :: comp=''
+          CHARACTER(LEN=basislen)    :: file=''
+C         The following can be assigned for explicitely given basissets or Family type.
+          INTEGER, POINTER           :: JCO(:)
+          REAL, POINTER              :: FAM(:)
+          TYPE(basistype), POINTER   :: next=>NULL()
+        END TYPE basistype
+        TYPE(basistype), POINTER :: firstbas
+
+
+
+      CONTAINS
+
+
+        SUBROUTINE ADD_ATOM(prevmol, firstatom, name,x)
+C     JHS050707 Adds a new node to the atom list.
+          TYPE(atom), POINTER :: prevmol,firstatom,mol
+          CHARACTER(LEN=*), INTENT(IN)     :: name
+          REAL(KIND=8),INTENT(IN),OPTIONAL :: x(1:3)
+          
+          ALLOCATE(mol)
+          mol%name=name
+          IF (PRESENT(x)) mol%x=x
+          mol%next=>NULL()
+          IF (associated(prevmol)) THEN
+            prevmol%next=>mol 
+          ELSE
+            firstatom=>mol
+          END IF
+          prevmol=>mol
+        END SUBROUTINE ADD_ATOM
+
+        SUBROUTINE ADD_BASIS(prevbas, firstbas,basdata,basnext)
+C     JHS050707 Adds a new node to the basislist
+          TYPE(basistype),POINTER :: prevbas,firstbas
+          TYPE(basistype),TARGET  :: basdata
+          TYPE(basistype),POINTER :: bas
+          TYPE(basistype),OPTIONAL,POINTER :: basnext
+
+          ALLOCATE(bas)
+          bas=basdata
+          IF (PRESENT(basnext)) THEN
+            bas%next=>basnext
+          ELSE
+            bas%next=>NULL()
+          END IF
+          IF (associated(prevbas)) THEN
+            prevbas%next=>bas 
+          ELSE
+            firstbas=>bas
+          END IF
+          prevbas=>bas
+        END SUBROUTINE ADD_BASIS
+
+        SUBROUTINE ADD_JCO(bas,JCO)
+C     JHS050707 Assigns an array with JCO components.
+          TYPE(basistype)    :: bas
+          INTEGER            :: JCO(:)
+          INTEGER,TARGET,ALLOCATABLE,SAVE :: JCO2(:)
+          
+          ALLOCATE(JCO2(SIZE(JCO)))
+          JCO2=JCO
+          bas%jco=>JCO2
+        END SUBROUTINE
+
+        SUBROUTINE ADD_FAM(filenum,linelen,bas,index)
+C     JHS050707 Assigns for different types of family basissets an array FAM. 
+C               And reads the needed coefficients from file.
+          INTEGER,INTENT(IN) :: filenum,linelen
+          TYPE(basistype)    :: bas
+          REAL,TARGET,ALLOCATABLE,SAVE :: FAM(:)
+          INTEGER,INTENT(INOUT) :: index
+          INTEGER               :: i
+
+          SELECT CASE(bas%type)
+          CASE('WELLTEMP')
+            ALLOCATE(FAM(5))
+            DO i=1,5
+              CALL READ_VAR(filenum,linelen,FAM(i),index)
+            END DO
+            bas%fam=FAM
+          CASE('EVENTEMP')
+            ALLOCATE(FAM(5))
+            DO i=1,3
+              CALL READ_VAR(filenum,linelen,FAM(i),index)
+            END DO
+            bas%fam=FAM
+          CASE('GEOM')
+            ALLOCATE(FAM(5))
+            CALL READ_VAR(filenum,linelen,FAM(i),index)
+            CALL READ_VAR(filenum,linelen,FAM(i),index)
+            FAM(3)=D0
+            FAM(4)=D0
+            CALL READ_VAR(filenum,linelen,FAM(i),index)
+
+            bas%fam=FAM
+          CASE('FAMILY')
+            ALLOCATE(FAM(1))
+            CALL READ_VAR(filenum,linelen,FAM(1),index)
+            bas%fam=FAM
+          CASE('DUALFAMILY')
+            ALLOCATE(FAM(2))
+            DO i=1,2
+              CALL READ_VAR(filenum,linelen,FAM(i),index)
+            END DO
+            bas%fam=FAM
+          END SELECT
+        END SUBROUTINE
+
+        SUBROUTINE READ_ATOMS(filenum, linelen,firstatom,lupri)
+C     JHS050707 Reads atom name and coordinates from the .XYZ file 
+C               and writes it to the atoms list.
+          TYPE(atom), POINTER, INTENT(INOUT) :: firstatom
+          INTEGER, INTENT(IN)                :: filenum, linelen,lupri
+          TYPE(atom), POINTER                :: mol=>NULL()
+          CHARACTER(LEN=namelen)             :: name
+          REAL(KIND=8)                       :: x(3)
+          INTEGER                            :: i,index
+          
+          REWIND(filenum)
+          index=1
+          DO
+            name=''
+            x=0
+            IF (index<0) EXIT
+            CALL READ_VAR(filenum, linelen,name, index) 
+            IF (index<=1) CYCLE
+            CALL READ_VAR(filenum, linelen,x(1), index)
+            IF (index<=1) CYCLE
+            CALL READ_VAR(filenum, linelen,x(2), index)
+            IF (index<=1) CYCLE
+            CALL READ_VAR(filenum, linelen,x(3), index)
+C     JHS050707 If coordinates are missing the atom is not added to the list.
+            CALL ADD_ATOM(mol,firstatom,name,x)            
+          END DO
+
+        END SUBROUTINE READ_ATOMS
+
+      
+        FUNCTION find_atom(firstatom, name)
+C     JHS050707 Returns a pointer to the next atom in the list with name 
+C               or NULL() if is no such atom. 
+           TYPE(atom), POINTER, INTENT(IN) :: firstatom 
+           TYPE(atom), POINTER             :: find_atom
+          CHARACTER(LEN=*), INTENT(IN)     :: name
+           TYPE(atom), POINTER             :: mol
+           mol=>firstatom
+           DO 
+             IF (associated(mol)) THEN
+               IF (mol%name==name) THEN
+                 find_atom=>mol
+                 EXIT
+               END IF
+               mol=>mol%next
+             ELSE
+               find_atom=>NULL()
+               EXIT
+             ENDIF 
+           END DO
+
+        END FUNCTION find_atom
+
+
+        FUNCTION find_basis(firstbas, name)
+C     JHS050707 Returns a pointer to the next basisset with name in the list with basissets
+C               or NULL() if there is no such basis.
+           TYPE(basistype), POINTER, INTENT(IN) :: firstbas
+           TYPE(basistype), POINTER                :: find_basis
+           TYPE(basistype), POINTER                :: bas
+           CHARACTER(LEN=*), INTENT(IN)        :: name
+
+           bas=>firstbas
+           find_basis=>NULL()
+           DO WHILE(ASSOCIATED(bas))
+             IF (bas%name==name) THEN
+               find_basis=>bas
+               EXIT
+             END IF
+             bas=>bas%next
+           END DO
+
+        END FUNCTION find_basis
+
+        INTEGER FUNCTION count_atoms(firstatom, name)
+C     JHS050707 Counts the length of the atomlist.
+          TYPE(atom), POINTER, INTENT(IN) :: firstatom
+          TYPE(atom), POINTER             :: mol
+          CHARACTER(LEN=*), OPTIONAL      :: name
+          count_atoms=0
+          mol=>firstatom
+          IF (PRESENT(name)) THEN
+            DO WHILE (associated(mol))
+              IF (name==mol%name) count_atoms=count_atoms+1
+              mol=>mol%next
+            END DO
+          ELSE
+            DO WHILE (associated(mol))
+              count_atoms=count_atoms+1
+              mol=>mol%next
+            END DO
+          END IF
+        END FUNCTION count_atoms    
+
+        INTEGER FUNCTION find_char(key, chararray)
+C     JHS050707 Returns the first index of key in chararray, or else len(chararray)+1
+          CHARACTER(LEN=*), INTENT(IN) :: key
+          CHARACTER(LEN=*), INTENT(IN) :: chararray(:)
+        
+          DO i=1,len(chararray)
+            IF (chararray(i)==key) find_char=i
+            EXIT
+          END DO
+        END FUNCTION find_char
+
+        SUBROUTINE SORT_ATOMS(firstatom,firstbas,lupri)
+C     JHS050707 Sorts the atomlist in the same order as the basissets 
+C               delets atoms that don't have a associated basisset
+          TYPE(atom),     POINTER,INTENT(INOUT) :: firstatom
+          TYPE(basistype),POINTER,INTENT(INOUT) :: firstbas
+          INTEGER, INTENT(IN),OPTIONAL       :: lupri
+          TYPE(atom), POINTER                :: mol=>NULL()
+          TYPE(atom), POINTER                :: newmol=>NULL()
+          TYPE(atom), POINTER                :: newfirstatom=>NULL()
+          TYPE(basistype), POINTER           :: bas=>NULL(),tmpbas
+          CHARACTER(LEN=namelen)             :: name,oldname
+          
+          mol=>firstatom
+          bas=>firstbas
+          newfirstatom=>NULL()
+          newmol=>newfirstatom
+
+          DO WHILE(ASSOCIATED(bas))
+C     Look wether we have already ordered this species of atoms
+            mol=>find_atom(newfirstatom,bas%name)
+            IF (ASSOCIATED(mol)) THEN
+              bas=>bas%next
+              CYCLE
+            END IF
+
+            mol=>firstatom               
+              mol=>find_atom(mol, bas%name)
+            DO WHILE (ASSOCIATED(mol))
+              CALL ADD_ATOM(newmol,newfirstatom,mol%name,mol%x)
+              newmol%charge=mol%charge
+              newmol%nucexp=mol%nucexp
+              mol=>mol%next
+              mol=>find_atom(mol, bas%name)
+            END DO
+            bas=>bas%next
+          END DO
+          mol=>firstatom
+          CALL DEL_ATOMS(mol)
+          firstatom=>newfirstatom       
+
+        END SUBROUTINE SORT_ATOMS
+
+
+        SUBROUTINE SORT_BASIS(firstatom,firstbas,usecomp,lupri)
+C     JHS050707 Sorts the basisinput in the same order as the atoms 
+C               and issues warnings if no basis can be found
+          TYPE(atom),     POINTER, INTENT(INOUT) :: firstatom
+          TYPE(basistype),POINTER, INTENT(INOUT) :: firstbas
+          INTEGER, INTENT(IN),OPTIONAL       :: lupri
+          LOGICAL,INTENT(IN),OPTIONAL        :: usecomp
+          LOGICAL                            :: first
+          TYPE(atom), POINTER                :: mol=>NULL()
+          TYPE(basistype), POINTER           :: bas=>NULL()
+          TYPE(basistype), POINTER           :: tmpbas=>NULL()
+          TYPE(basistype), POINTER           :: tmpbas2=>NULL()
+          TYPE(basistype), POINTER           :: default=>NULL()
+          TYPE(basistype), POINTER           :: prevbas=>NULL()
+          TYPE(basistype), POINTER           :: newbas=>NULL()
+          TYPE(basistype), POINTER           :: newfirstbas=>NULL()
+          CHARACTER(LEN=namelen)             :: name,oldname
+          CHARACTER(LEN=basislen)            :: comp
+          
+          mol=>firstatom
+          bas=>firstbas
+          newfirstbas=>NULL()
+          newbas=>newfirstbas
+          prevbas=>newfirstbas
+          
+C     FIND DEFAULT BASIS.
+          default=>find_basis(firstbas,'DEFAULT')
+          IF (PRESENT(usecomp).AND.usecomp) THEN
+            DO WHILE(ASSOCIATED(mol))
+              first=.TRUE.
+              bas=>firstbas
+              DO WHILE(ASSOCIATED(bas))
+                bas=>find_basis(bas, mol%name)
+                IF (first.AND..NOT.(ASSOCIATED(bas))) THEN
+                  IF (.NOT.(ASSOCIATED(default)))
+     &              CALL QUIT('*** ERROR SORT_BASIS, no defaultbasis 
+     &                    found for atom')
+
+                  CALL ADD_BASIS(newbas, newfirstbas,default)               
+                  newbas%name=mol%name
+                END IF
+                IF (.NOT.(ASSOCIATED(bas))) EXIT
+                first=.FALSE.
+                tmpbas=>find_basis(newfirstbas,mol%name)
+                tmpbas2=>prevbas
+                DO
+                  IF (.NOT.(ASSOCIATED(tmpbas))) THEN                     
+                    CALL ADD_BASIS(newbas, newfirstbas,bas)
+                    EXIT
+                  END IF
+                  IF (bas%comp<tmpbas%comp) THEN
+                    CALL ADD_BASIS(tmpbas2,newfirstbas,bas,tmpbas)
+                    EXIT
+                  ELSE IF(.NOT.(tmpbas%name==mol%name)) THEN
+                    CALL ADD_BASIS(tmpbas2,newfirstbas,bas,tmpbas)
+                    EXIT                          
+                  END IF
+                  tmpbas2=>tmpbas
+                  tmpbas=>tmpbas%next
+                END DO                    
+                bas=>bas%next
+              END DO
+              prevbas=>newbas
+              oldname=mol%name
+              DO WHILE(ASSOCIATED(mol))
+                IF (.NOT.(mol%name==oldname)) EXIT
+                mol=>mol%next
+              END DO
+            END DO
+          ELSE
+            DO WHILE(ASSOCIATED(mol))
+              first=.TRUE.
+              DO 
+                bas=>find_basis(firstbas, mol%name)                  
+                IF (first.AND..NOT.(ASSOCIATED(bas))) THEN
+                  WRITE(lupri,*) 'Atom not found the given basissets.'
+                  CALL QUIT('*** ERROR SORT_BASIS, basis 
+     &                   not found for atom')                  
+                END IF
+                IF (.NOT.(ASSOCIATED(bas))) EXIT
+                CALL ADD_BASIS(newbas,newfirstbas,bas)
+                first=.FALSE.
+                bas=>bas%next
+              END DO                
+              mol=>mol%next
+            END DO
+          END IF
+          bas=>firstbas
+          CALL DEL_BASIS(bas)
+          firstbas=>newfirstbas
+
+        END SUBROUTINE SORT_BASIS
+
+        REAL FUNCTION FIND_CHARGE(atomname,LUPRI)
+C     JHS050707 For a given atomname the corresponding charge is searched for in nucdata.h
+          CHARACTER(LEN=*),INTENT(IN) :: atomname
+          INTEGER,OPTIONAL,INTENT(IN) :: LUPRI
+#include "nucdata.h"
+          INTEGER :: i
+          
+          find_charge=0.0
+          DO i=1,SIZE(NUCLABEL)
+            IF (atomname==NUCLABEL(i)) THEN
+              find_charge=NUCCHARGE(i)
+              RETURN
+            END IF
+          END DO
+          IF (PRESENT(LUPRI)) WRITE(LUPRI,*) 'WARING: 
+     &         No charge found for element', atomname
+
+        END FUNCTION
+
+
+        SUBROUTINE READ_BASIS(filenum,linelen,lupri)
+#include "codata.h"
+C     JHS050707 Reads basis names and possibly the coefficients typed in the DIRAC.INP file.
+C               Reads also Charges, nuclear exponents and the units of the XYZ file.
+C     Stores it in the the basis list.
+C     !!! TMP: TESTED FOR: 
+C                         - 'LARGE BASIS'
+C     (Implemented also for the rest)
+          INTEGER, INTENT(IN)                :: filenum, linelen,lupri
+          TYPE(atom), POINTER                :: mol=>NULL()
+          TYPE(atom)                         :: tmpmol
+          TYPE(basistype),POINTER            :: bas=>NULL()
+          TYPE(basistype)                    :: tmpbas
+
+C     FOR UNIT CONVERSION
+          REAL(KIND=8)      :: UNITS=1
+          CHARACTER(LEN=32) :: UNITNAME='a.u.', tmpunit=''
+        
+          CHARACTER(LEN=linelen)             :: str,section(3)
+          INTEGER                            :: i,j,index,iqm
+          CHARACTER(LEN=namelen)             :: name, prevname
+          REAL(KIND=8)                       :: charge, nucexp
+          LOGICAL                            :: CONT=.FALSE.
+
+C     FOR explicitely typed basissets.
+          INTEGER,TARGET,ALLOCATABLE         :: JCO(:)
+
+          WRITE(lupri,*) 'READING BASIS'
+          REWIND(filenum)
+          index=1
+          section=''
+          DO
+            CALL READ_VAR(filenum,linelen,str,index, skip=.TRUE.)          
+
+            IF (index<0) THEN
+              EXIT
+            ELSE IF (str(1:2)=='**') THEN
+              section(1)=str              
+            ELSE IF (str(1:1)=='*') THEN
+              IF (str=='*END') section=''
+              section(2)=str
+            ELSE IF (str(1:1)=='.') THEN
+               section(3)=str
+            ELSE IF(section(1)=='**MOLECULE') THEN
+              IF (section(2)=='*BASIS'.AND.section(3)=='.DEFAULT') THEN
+C     JHS050707 In the subsection .DEFAULT we give only give the name of a 'LARGE BASIS' type
+C               like cc-pVDZ etc. This will be the basisset for all atoms that are not
+C               specified in the .SPECIAL section.
+                BACKSPACE(filenum)
+                CALL READ_VAR(filenum,linelen,str,index, skip=.TRUE.)
+                IF (str>'') THEN
+                  tmpbas%name='DEFAULT'
+                  tmpbas%comp='LARGE'
+                  tmpbas%type='BASIS'
+                  tmpbas%file=str
+                  tmpbas%next=>NULL()
+                  CALL ADD_BASIS(bas,firstbas,tmpbas)
+                  CYCLE
+                END IF
+              ELSE IF(section(2)=='*BASIS'.AND.
+     &                section(3)=='.SPECIAL') THEN
+C     JHS050707 For some or all atoms we can give an other basisset than the .DEFAULT
+                BACKSPACE(filenum)
+                tmpbas%name=''
+                tmpbas%comp=''
+                tmpbas%type=''
+                tmpbas%file=''
+                tmpbas%next=>NULL()
+                
+                CALL READ_VAR(filenum,linelen,tmpbas%name,index)
+                IF (index<=1) CYCLE
+
+                CALL READ_VAR(filenum,linelen,tmpbas%comp,index)
+                IF (index<=1) CYCLE
+
+                CALL READ_VAR(filenum,linelen,tmpbas%type,index)                
+                IF (index<=1) THEN
+                  tmpbas%file=tmpbas%comp
+                  tmpbas%comp='LARGE'
+                  tmpbas%type='BASIS'
+                  CALL ADD_BASIS(bas,firstbas,tmpbas)
+                  CYCLE
+                END IF
+
+                SELECT CASE(tmpbas%type)
+                CASE ('BASIS','MOLFBAS')                                
+                  IF (index<=1) CYCLE              
+                  CALL READ_VAR(filenum,linelen,tmpbas%file,index, 
+     &                 skip=.TRUE.)
+                  CALL ADD_BASIS(bas,firstbas,tmpbas)
+  
+                CASE('INTGRL','EXPLICIT')
+C     FIRST read rest of the line and then read the explicit coefficients.
+C     TMP We read the coefficients in in the old way in write commonblock
+                  CALL READ_VAR(filenum,linelen,iqm,index)
+                  ALLOCATE(JCO(iqm))
+                  DO i=1,iqm-1
+                    CALL READ_VAR(filenum,linelen,JCO(i),index)
+                  END DO                 
+                  CALL READ_VAR(filenum,linelen,JCO(i),index,
+     &                 skip=.TRUE.)
+                  CALL ADD_JCO(tmpbas,JCO)
+                  CALL ADD_BASIS(bas,firstbas,tmpbas)
+                  DEALLOCATE(JCO)
+  
+                CASE('WELLTEMP','EVENTEMP','GEOM','FAMILY','DUALFAMILY')
+                  CALL ADD_FAM(filenum,linelen,tmpbas,index)
+               
+                  CALL READ_VAR(filenum,linelen,iqm,index)
+                  ALLOCATE(JCO(iqm))
+                  DO i=1,iqm-1
+                    CALL READ_VAR(filenum,linelen,JCO(i),index)
+                  END DO                 
+                  CALL READ_VAR(filenum,linelen,JCO(i),index,
+     &                 skip=.TRUE.)
+                  CALL ADD_JCO(tmpbas,JCO)
+                  CALL ADD_BASIS(bas,firstbas,tmpbas)
+                  DEALLOCATE(JCO)
+  
+                CASE DEFAULT
+                  READ(filenum,*)
+                  CYCLE
+                END SELECT
+C              ELSE IF (section(2)=='*BASIS') THEN
+C     JHS050707  TO BE IMPLEMENTED Specify an other coordinate system than cartesian.
+C                SELECT CASE (section(3))
+C                CASE ('.SPHERICAL'); coordintesys='S'
+C                CASE ('.OWN'); 
+C                 
+
+
+
+
+              ELSE IF (section(2)=='*CENTERS') THEN
+C     JHS050707 We specify the charges, the others are found in the table of nucdata.h
+                BACKSPACE(filenum)
+                name=''
+                charge=0
+                nucexp=0
+  
+                CALL READ_VAR(filenum,linelen,name,index)
+                IF (.NOT.(index>1)) CYCLE
+                CALL READ_VAR(filenum,linelen,charge,index)
+                IF (index>1) CALL READ_VAR(filenum,linelen,nucexp,index)
+                mol=>firstatom
+                DO 
+                  mol=>FIND_ATOM(mol,name)
+                  IF (associated(mol)) THEN 
+                    mol%charge=charge
+                    mol%nucexp=nucexp
+                    mol=>mol%next
+                  ELSE
+                    EXIT
+                  END IF
+                END DO
+              ELSE IF(section(2)=='*UNITS') THEN
+C     JHS050707 If a unit is specified, the coordinates in the .XYZ file are given in these 
+C               units and we have to transform them to a.u.
+C               The conversion factor may be given in Angstrom typed as 'ANGSTROM' or 'A'
+C               Note: Angstroms are known and can be specified by 'A' or 'ANGSTROM'
+                IF (str=='') CYCLE
+                SELECT CASE(str)
+                CASE('ANGSTROM', 'A')
+                  UNITS=1/XTANG
+                CASE DEFAULT
+                  BACKSPACE(filenum)
+                  CALL READ_VAR(filenum, linelen,unitname,index)
+                  CALL READ_VAR(filenum, linelen,UNITS,index)
+                  tmpunit=''
+                  IF(index>1) CALL READ_VAR(filenum,
+     &                 linelen,tmpunit,index,skip=.TRUE.)
+                  SELECT CASE(tmpunit)
+                  CASE ('ANGSTROM', 'A')
+                    UNITS=UNITS/XTANG
+                  END SELECT
+                END SELECT
+              END IF
+            END IF
+          END DO
+
+C     JHS050707 We now have add all data that was explicitly added in the .INP file.
+C     Add default basis.
+          CALL SORT_BASIS(firstatom,firstbas,.TRUE.,lupri)
+          WRITE(LUPRI,*) 'BASIS SORTED'
+          CALL PRINT_BASIS(firstbas,lupri)
+C     Sort the atoms according to the bases.
+          CALL SORT_ATOMS(firstatom,firstbas,lupri)
+          WRITE(LUPRI,*) 'ATOMS SORTED'
+C     Add charges if they are missing
+          mol=>firstatom
+          prevname=''
+          DO WHILE(ASSOCIATED(mol))
+            IF (mol%charge==0) THEN
+              IF(.NOT.(mol%name)==prevname) 
+     &              charge=FIND_CHARGE(mol%name,lupri)                
+              mol%charge=charge
+            END IF
+  
+            prevname=mol%name
+            mol=>mol%next
+          END DO
+
+
+C     Convert units
+          WRITE(LUPRI,*) 'Coordinates entered in ', unitname
+          WRITE(LUPRI,*) 'Converting ',unitname,'to atomic units'
+          WRITE(LUPRI,*) 'Conversion factor=', UNITS 
+          mol=>firstatom
+          DO WHILE (ASSOCIATED(mol))
+            mol%x=mol%x*UNITS
+            mol=>mol%next
+          END DO
+
+        END SUBROUTINE READ_BASIS
+
+
+
+        SUBROUTINE WRITE_ATOMS(lupri)
+C     JHS050707 Writes the data contained in the list of atoms to the common blocks.
+
+      IMPLICIT NONE
+
+C     CONSTANTS
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
+
+C     COMMONBLOCKS
+#include "clsfmm.h"
+#include "cbirea.h"
+
+      INTEGER, INTENT(IN)             :: lupri
+
+      INTEGER :: KATOM,natom,count
+      TYPE(atom), POINTER             :: mol
+
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "nucdata.h"
+
+      REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
+
+
+      WRITE(lupri,*) 'Writing atomic data...'
+      KATOM=count_atoms(firstatom)
+      IF (KATOM>MXCENT) THEN
+         WRITE(lupri,*) 'Number of atoms specified greater max number 
+     &        of atoms'
+         WRITE(lupri,*) 'Adjust maxorb.h'
+         CALL QUIT('*** ERROR (READIN) natom>mxcent')
+      END IF
+
+C     nuclei.h
+      NUCIND=0
+      mol=>firstatom
+      natom=0
+
+      DO
+
+        IF (.NOT.(associated(mol))) THEN
+          EXIT
+        ELSE
+          natom=natom+1
+C     write the atomic data.
+C     If we didn't read the nuclear model somewhere read the nuclear radius.
+
+C    WRITE NUCLEAR SHAPE. TMP To be changed, now always D0 is taken
+          IF (GAUNUC.AND.NINT(mol%charge).NE.0) THEN
+               
+            IF (mol%nucexp.EQ.D0) THEN
+              CALL NUCSIZ(mol%charge,mol%nucexp)
+            END IF
+            IF (mol%nucexp .LE. 1.0D8) THEN
+              WRITE(lupri,*) 'WARNING!!!'
+              WRITE(lupri,*) 'WARNING!!!'
+              WRITE(lupri,*) 'WARNING!!!'
+              WRITE(lupri,*) 'Nuclear gaussian exponent small: ',
+     &                         mol%nucexp
+            END IF
+            WRITE(lupri,'(/A,F8.3,A,1P,D20.10)')
+     &       '  Nuclear Gaussian exponent for atom of charge',
+     &       mol%charge,' :',mol%nucexp
+          ELSE
+            mol%nucexp=D0
+          END IF
+
+C     REALLY WRITE COMMONBLOCKS
+          NAMN(natom)=mol%name
+          CORD(:,natom)=mol%x
+          NAMEX(3*natom)=TRIM(mol%name)//' z'
+          NAMEX(3*natom-1)=TRIM(mol%name)//' y'
+          NAMEX(3*natom-2)=TRIM(mol%name)//' x'
+          CHARGE(natom)=mol%charge
+          GNUEXP(natom)=mol%nucexp
+          
+          mol=>mol%next
+        END IF
+      END DO
+
+C      IF (ADDSTO) CALL STOADD()
+C
+C     ***************************************
+C     ***** Process symmetry input data *****
+C     ***************************************
+C     TMP DETECT SYM?
+
+C      CALL SYMINP(NSYMOP,KASYM,IFXYZ, CLASS)
+
+C
+
+      NUCIND=natom
+
+        END SUBROUTINE WRITE_ATOMS
+
+        SUBROUTINE POS_FILE(infile,lupri,linelen,
+     &     section,subsection,name,comp)
+C     JHS050707 A function for later use, positions a file to a specific keyword.
+        
+          INTEGER, INTENT(IN)   :: infile,lupri,linelen
+          CHARACTER(LEN=*), INTENT(IN) ::section,subsection,name,comp
+          CHARACTER(LEN=linelen) :: str,pressect,pressub
+          INTEGER                :: index
+
+          REWIND(infile)
+          DO            
+            CALL READ_VAR(infile,linelen,str,index, skip=.TRUE.)          
+            WRITE(lupri,*) 'SECTION', section
+            WRITE(lupri,*) 'SUBSECTION', subsection
+            WRITE(lupri,*) 'STR', str
+            IF (index<0) THEN
+              WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
+              CALL QUIT('*** ERROR KEY NOT FOUND. ***')
+            ELSE IF (str(1:2)=='**') THEN
+              pressect=str              
+            ELSE IF (str(1:1)=='*') THEN
+              pressub=str
+            ELSE IF (pressect==section.AND.pressub==subsection) THEN
+              IF (str==name) THEN
+                BACKSPACE(infile)
+                CALL READ_VAR(infile,linelen,str,index)
+                CALL READ_VAR(infile,linelen,str,index,skip=.TRUE.)
+                IF (str==comp) EXIT
+              END IF
+            END IF
+          END DO
+        END SUBROUTINE POS_FILE
+
+        SUBROUTINE WRITE_BASIS(infile,lupri,WORK,LWORK,
+     &                  KANG,KSETS,KBLOCK,KPRIM,HERMIT)
+C     JHS050707 Writes the contained in the basisset list to the commonblocks.
+C               Note the routine is higly similar tot the subroutine READI1 for
+C               .MOL files, the main difference is the split between reading the files
+C               and writing them to the commonblocks
+      IMPLICIT NONE
+
+C     CONSTANTS
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
+
+C     COMMONBLOCKS
+#include "clsfmm.h"
+#include "cbirea.h"
+      REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
+
+      INTEGER,INTENT(IN)   :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
+      INTEGER,INTENT(INOUT)::LWORK
+
+      INTEGER      :: KLAST,NSYMOP,i,j,IBSFLAG, KAOVEC, NBLOCK,LINEAR,
+     &                katom,basindex,index
+
+      REAL(KIND=8) :: QEXP=D0
+      REAL         :: MXSPD
+      LOGICAL      :: HERMIT,DOOWN,ANG, ADDSYM=.TRUE.,NOORBTS,NOFITFS, 
+     &                CNTBAS=.FALSE.,DIRCON(2)=.FALSE.,IFXYZ(3)
+      CHARACTER(LEN=1)  :: KASYM(3,3)
+      CHARACTER(LEN=72) :: TTITLE(2)=''
+      CHARACTER(LEN=11) :: SYMTXT
+      CHARACTER(LEN=15) :: CLASS
+      CHARACTER(LEN=namelen) :: prevname
+
+      TYPE(basistype),POINTER       :: baspointer
+      TYPE(atom),POINTER            :: mol
+
+      REAL(KIND=8):: WORK(LWORK),
+     &               ALPHA(KPRIM,KBLOCK,KSETS), 
+     &               CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
+     &               CPRIMU(KPRIM,KPRIM,KBLOCK,MXBSETS)
+      INTEGER,ALLOCATABLE :: NONT(:),JCO(:,:,:),JCO2(:,:),IBLOCK(:),
+     &                       NUC(:,:),IQM(:,:),NRC(:,:),NBLCK(:,:),
+     &                       ISGEN(:)
+      LOGICAL,ALLOCATABLE :: SEG(:,:)
+      CHARACTER(LEN=80),ALLOCATABLE :: BASREF(:,:,:)
+
+C     JHS050707 For type conversion purposes.
+      INTEGER :: int8
+
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+C#include "primit.h"
+C#include "shells.h"
+C#include "symmet.h"
+C#include "aosotr.h"
+C#include "infpar.h"
+C#include "dcbrkb.h"
+C#ifdef PRG_DIRAC
+C#include "dcbgen.h"
+C#include "dgroup.h"
+C#else
+C#include "gnrinf.h"
+C      LOGICAL LINEAR
+C#endif
+C#include "ibtfun.h"
+      
+      
+      WRITE(lupri, '(a)') 'Writing commonblocks'
+      katom=count_atoms(firstatom)
+
+      WRITE(lupri, '(a)') 'Allocating memory...'
+
+      ALLOCATE(NONT(KATOM))
+      ALLOCATE(JCO(KANG,KATOM,KSETS))
+      ALLOCATE(JCO2(KANG,KATOM))
+      ALLOCATE(IBLOCK(MXBSETS))
+      ALLOCATE(NUC(KBLOCK,KSETS))
+      ALLOCATE(IQM(KATOM,KSETS))
+      ALLOCATE(NRC(KBLOCK,KSETS))
+      ALLOCATE(NBLCK(KATOM,KSETS))
+      ALLOCATE(ISGEN(KBLOCK))
+      ALLOCATE(SEG(KBLOCK,KSETS))
+      ALLOCATE(BASREF(10,KATOM,KSETS))
+      
+C     JHS050707 TMP Initialization (NEEDED?)
+      WRITE(lupri, '(a)') 'Initializing variables.......'
+
+      NONT=0
+      JCO=0
+      JCO2=0
+      IBLOCK=0
+      NUC=0
+      IQM=0
+      NRC=0
+      NBLCK=0
+      ISGEN=0
+      SEG=.FALSE.
+      BASREF=''
+      IBLOCK(1:4)=1
+
+C     ccom.h
+      THRS=THRMIN
+C     JHS050707 TMP change this for other coordinte systems
+      DOCART=.TRUE.
+      DOSPHE=.FALSE.
+      NHTYP=0
+
+C     nuclei.h
+      CALL SPHINP(infile, WORK, LWORK, DOOWN, MXSPD)
+
+      baspointer=>firstbas
+      mol=>firstatom
+      basindex=0
+
+      DO
+C     Loop over all basissets
+        NOORBTS=.TRUE.
+        NOFITFS=.TRUE.
+
+        IF (.NOT.(associated(baspointer))) THEN
+          EXIT
+        ELSE
+          basindex=basindex+1
+          NONT(basindex)=count_atoms(firstatom,baspointer%name)
+          BASREF(1,basindex,1) = ' Reference not found in input'
+          BASREF(2:10,basindex,1:3) = ' Not initialized'
+
+C     JHS060707 TMP We could introduce some additional error checks?
+          SELECT CASE (baspointer%type)
+          CASE ('INTGRL','EXPLICIT')
+            IBSFLAG=1
+            IQM(basindex,1)=SIZE(baspointer%jco)
+            DO i=1,IQM(basindex,1)
+              JCO(i,basindex,1)=baspointer%jco(i)
+            END DO           
+            BASNAM=baspointer%file
+            KAOVEC = KBLOCK + 1 - IBLOCK(1)
+
+C     POSITION the input file.
+            CALL POS_FILE(infile, lupri, GET_LENGTH(infile),
+     &           '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
+            CALL GTOINP(infile,IQM(basindex,1),JCO(1,basindex,1),
+     &           NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),
+     &           SEG(IBLOCK(1),1),
+     &           ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),
+     &           CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),
+     &           NBLOCK,KAOVEC,KPRIM)
+            NBLCK(basindex,1) = NBLOCK
+            BASREF(1,basindex,1) = 
+     &            "Basis set typed explicitly in input file "
+          CASE ('MOLFBAS')
+            IBSFLAG=2
+            BASNAM = baspointer%file
+            KLAST = 1 + (1+KPRIM)*KPRIM
+            IF (KLAST.GT.LWORK)
+     &        CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
+            DIRCON(1) = .TRUE.
+            CALL BFGINP(basindex,IBLOCK(1),1,WORK(1),WORK(1+KPRIM),
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,
+     &           baspointer%file,BASREF(1,1,1))
+          CASE ('BASIS')
+            IBSFLAG=3
+            BASNAM = baspointer%file
+            KAOVEC = KBLOCK + 1 - IBLOCK(1)
+
+            NBLOCK=basindex+1
+            mol=>find_atom(mol,baspointer%name)
+            CALL BASLIB(IQM(basindex,1),JCO(1,basindex,1),
+     &             NUC(IBLOCK(1),1),
+     &             NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),
+     &             ALPHA(1,IBLOCK(1),1),
+     &             CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),
+     &             NBLOCK,ISGEN(IBLOCK(1)),
+     &             KAOVEC,KPRIM,mol%charge,
+     &             1,DSM,BASREF(1,basindex,1))
+            WRITE(lupri,*) 'FINISHED CALLING BASLIB.'
+            NBLCK(basindex,1) = NBLOCK
+          CASE ('WELLTEMP','EVENTEMP','GEOM')
+            IBSFLAG=4
+            CALL POS_FILE(infile, lupri, GET_LENGTH(infile),
+     &           '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
+            CALL GENFAMEXP(infile,0)
+            i=SIZE(baspointer%fam)-1            
+            FAMPAR(1:i)=baspointer%fam(1:i)
+            NFAMEXP(1)=TRANSFER(baspointer%fam(i+1),int8)
+            KAOVEC = KBLOCK + 1 - IBLOCK(1)
+            CALL FAMBAS(infile,IQM(basindex,1),JCO(1,basindex,1),
+     &           NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),
+     &           SEG(IBLOCK(1),1),
+     &           ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),
+     &           CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),
+     &           NBLOCK,KAOVEC,KPRIM)
+            NBLCK(basindex,1) = NBLOCK
+            BASREF(1,basindex,1) = 
+     &   "Well-tempered basis set typed explicitly in input file "
+          CASE ('FAMILY','DUALFAMILY')
+            IBSFLAG=4
+            CALL POS_FILE(infile, lupri, GET_LENGTH(infile),
+     &           '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
+            IF (baspointer%type=='FAMILY') i=1
+            IF (baspointer%type=='DUALFAMILY') i=2
+            CALL GENFAMEXP(infile,i)
+            NFAMEXP(1:i)=TRANSFER(baspointer%fam(1:i),int8)
+            KAOVEC = KBLOCK + 1 - IBLOCK(1)
+            CALL FAMBAS(infile,IQM(basindex,1),JCO(1,basindex,1),
+     &           NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),
+     &           SEG(IBLOCK(1),1),
+     &           ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),
+     &           CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),
+     &           NBLOCK,KAOVEC,KPRIM)
+            NBLCK(basindex,1) = NBLOCK
+            BASREF(1,basindex,1) = 
+     &   "Well-tempered basis set typed explicitly in input file "
+          CASE DEFAULT
+            WRITE(lupri,*) 'BASISSET specification not implemented'
+            CALL QUIT('ERROR: READING BASISSET')
+          END SELECT
+
+C     PRINT BASISSET
+          NOORBTS=NOORBTS.AND.IQM(basindex,1).EQ.0
+          IF (IQM(basindex,1).GT.0) THEN
+            WRITE(lupri,'(3X,A)') 'Large component set:'
+            WRITE(lupri,'(6X,A,I5,A,12I5)')
+     &      'Max.ang.quantum no.:',(IQM(basindex,1)-1),
+     &      '  Blocks:',(JCO(i,basindex,1), i=1,  IQM(basindex,1))
+            NHTYP  =   MAX(NHTYP,IQM(basindex,1))
+          ENDIF
+
+          DO i = 1, NBLCK(basindex,1)
+             IF ((NUC(i,1).NE.NRC(i,1)).AND.(NRC(i,1).GT.0)) 
+     &            CNTBAS = .TRUE.
+          END DO
+          IF ( CNTBAS .AND. (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
+             DIRCON(1) = .TRUE.
+          END IF
+          
+          
+          WRITE(lupri,*) 'LARGE COMPONENT READ'
+          WRITE(lupri,*) 'READING SMALL COMPONENT'
+
+          IF (ASSOCIATED(baspointer%next)) THEN
+            IF (baspointer%next%name==baspointer%name) 
+     &            baspointer=>baspointer%next
+C     JHS060707 Move to small component.
+C               TMP We can extend it to include a search for the small component
+          END IF
+
+          IF (.NOT.(baspointer%comp(1:5)=='SMALL')) THEN 
+            WRITE(lupri,*) 'Small component not specified.'
+            WRITE(lupri,*) 'Assuming kinetic balance.'
+            IBSFLAG=4
+            CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,
+     &           INPTST,CNTBAS)
+            BASREF(1,basindex,2) = ' Derived from large component'
+
+          ELSE IF (baspointer%comp=='INTGRL'.OR.
+     &           baspointer%comp=='EXPLICIT') THEN
+            IBSFLAG=1
+            IQM(basindex,2)=SIZE(baspointer%jco)
+            DO i=1,IQM(basindex,2)
+              JCO(i,basindex,2)=baspointer%jco(i)
+            END DO            
+            BASNAM=baspointer%file
+            KAOVEC = KBLOCK + 1 - IBLOCK(2)
+C     POSITION the input file.
+            CALL POS_FILE(infile, lupri, GET_LENGTH(infile),
+     &           '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
+            CALL GTOINP(infile,IQM(basindex,2),JCO(1,basindex,2),
+     &           NUC(IBLOCK(2),2),NRC(IBLOCK(2),2),
+     &           SEG(IBLOCK(2),2),
+     &           ALPHA(1,IBLOCK(2),2),CPRIM(1,1,IBLOCK(2),2),
+     &           CPRIMU(1,1,IBLOCK(2),2),ISGEN(IBLOCK(2)),
+     &           NBLOCK,KAOVEC,KPRIM)
+            NBLCK(basindex,2) = NBLOCK
+            BASREF(1,basindex,2) = 
+     &            "Basis set typed explicitly in input file "
+          ELSE IF (baspointer%type(1:7)=='MOLFBAS') THEN
+            IBSFLAG=2
+            BASNAM=baspointer%file
+            KLAST = 1 + (1+KPRIM)*KPRIM
+            IF (KLAST.GT.LWORK)
+     &        CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
+            DIRCON(1) = .TRUE.
+            CALL BFGINP(basindex,IBLOCK(1),1,WORK(1),WORK(1+KPRIM),
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,
+     &           baspointer%file,BASREF(1,1,1))
+
+          ELSE IF (.NOT.(baspointer%type(1:6)=='KINBAL')) THEN
+            IBSFLAG=4
+            CALL KINBAL(basindex,
+     &           IBLOCK(1),IBLOCK(2),
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,
+     &           INPTST,CNTBAS)
+            BASREF(1,basindex,2) = ' Derived from large component'
+          END IF          
+
+          NOORBTS = NOORBTS.AND.IQM(basindex,2).EQ.0
+
+          IF (IQM(basindex,2).GT.0) THEN
+            WRITE(lupri,'(3X,A)') 'Small component set:'
+            WRITE(lupri,'(6X,A,I5,A,12I5)')
+     &        'Max.ang.quantum no.:',(IQM(basindex,2)-1),
+     &        '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
+          ENDIF
+
+          NHTYP = MAX(NHTYP,IQM(basindex,2))
+          
+          IF (IQM(basindex,2).GT.0) THEN
+            IF(INPTST) THEN
+               WRITE(lupri,'(3X,A)') 'Small component set:'
+               WRITE(lupri,'(6X,A,I5,A,12I5)')
+     &              'Max.ang.quantum no.:',(IQM(basindex,2)-1),
+     &              '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
+            ENDIF
+            NHTYP     = MAX(NHTYP,IQM(basindex,2))
+C            IF(NHTYP.GT.MXQN) GOTO 5000
+          ENDIF
+          
+          DO i = 1, NBLCK(basindex,2)
+            IF ((NUC(i,2).NE.NRC(i,2)).AND.(NRC(i,2).GT.0)) 
+     &            CNTBAS = .TRUE.
+          END DO
+          IF ( CNTBAS .AND. IBSFLAG .NE. 4 ) DIRCON(2) = .TRUE.
+
+
+          IBLOCK(1:2)=IBLOCK(1:2)+NBLCK(basindex,1:2)
+          NOORBT(basindex+1:NONT(basindex)+basindex) = NOORBTS
+          
+          DO i=3,4
+C     JHS060707 TMP Include also the reading of fitsets.
+            IBSFLAG=2
+            IBLOCK(i)=IBLOCK(i)+NBLCK(basindex,i)
+            
+          END DO
+          prevname=baspointer%name
+          DO WHILE (associated(baspointer))
+            IF (.NOT.(baspointer%name==prevname)) EXIT
+            baspointer=>baspointer%next
+          END DO
+        END IF
+      END DO
+
+      WRITE(lupri, '(a)') 'Writing basisset data......'
+      LINEAR = .FALSE.
+      CLASS = 'N/A'
+      IF (ADDSYM) THEN
+         CALL SYMADD(WORK,LWORK,basindex,NSYMOP,NONT,KATOM,KASYM,CLASS)
+         IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
+      END IF
+C
+C     ****************************************************
+C     ***** Adds an STO-3G basis if Extended Hueckel *****
+C     *****        wanted as starting orbitals       *****
+C     ****************************************************
+C
+C      IF (ADDSTO) CALL STOADD()
+C
+C     ***************************************
+C     ***** Process symmetry input data *****
+C     ***************************************
+C
+      CALL SYMINP(NSYMOP,KASYM,IFXYZ, CLASS)
+C
+C     ***************************************************
+C     ***** Process orbital and geometry input data *****
+C     ****************************************************
+C
+      CALL BASPRO(WORK,LWORK,basindex,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
+     &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
+     &            DOOWN)
+C
+C     *************************************************
+C     ***** Print orbital and geometry input data *****
+C     *************************************************
+C
+
+      CALL BASOUT(WORK,LWORK,basindex,NONT,IQM,NBLCK,JCO,BASREF,
+     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
+     &            KBLOCK,KPRIM,HERMIT)
+C
+C     TMP copy input to .out file.
+
+C     Default threshold for distinguishing classical and
+C     non-classical contributions to Coulomb integrals
+
+      THRCLS = THRS
+C
+C     ****************************************
+C     ***** Output on LUONEL *****************
+C     ****************************************
+C
+
+      IF (HERMIT) CALL WRONEL(TTITLE,basindex,NONT,IQM,IFXYZ,KATOM,JCO2,
+     &                        KANG)
+
+          WRITE(lupri,*) 'FINISHED WRITING TO COMMONBLOCKS'
+
+          DEALLOCATE(NONT)
+          DEALLOCATE(JCO)
+          DEALLOCATE(JCO2)
+          DEALLOCATE(IBLOCK)
+          DEALLOCATE(NUC)
+          DEALLOCATE(IQM)
+          DEALLOCATE(NRC)
+          DEALLOCATE(NBLCK)
+          DEALLOCATE(ISGEN)
+          DEALLOCATE(BASREF)
+          DEALLOCATE(SEG)
+
+          WRITE(lupri,*) 'Allocated arrays deleted.'
+      
+        END SUBROUTINE WRITE_BASIS
+
+        SUBROUTINE PRINT_ATOMS(firstatom, lupri)
+          TYPE(atom), POINTER, INTENT(IN) :: firstatom
+          INTEGER, INTENT(IN) :: lupri
+          TYPE(atom), POINTER :: mol
+
+          WRITE(lupri,'(a)'), 'ATOMS IN MEMORY'
+          WRITE(lupri,'(a)'), 'Label   x                        y
+     &                        z                        charge       
+     &            nuc exponent'
+          mol=>firstatom
+          DO
+            IF (associated(mol)) THEN
+              WRITE(lupri,'(a, f, f, f, f, f)'), 
+     &          TRIM(mol%name), mol%x, mol%charge, mol%nucexp
+              mol=>mol%next
+            ELSE
+              EXIT
+            ENDIF
+          END DO
+        WRITE(lupri,'(a)'), 'END DATA'
+
+        END SUBROUTINE PRINT_ATOMS
+
+        SUBROUTINE PRINT_BASIS(firstbas, lupri)
+          TYPE(basistype), POINTER, INTENT(IN) :: firstbas
+          INTEGER, INTENT(IN) :: lupri
+          TYPE(basistype), POINTER :: bas
+
+          WRITE(lupri,'(a)'), 'BASISSET IN MEMORY'
+          WRITE(lupri,'(A8,A32, A32, A32)')
+     &         'Label','component', 'inputtype','file'
+          bas=>firstbas
+          DO
+            IF (associated(bas)) THEN
+              WRITE(lupri,'(a8, a, a, a)'), 
+     &          TRIM(bas%name),bas%comp,bas%type,bas%file
+              WRITE(lupri,*) 'Coefficients', 
+     &          bas%jco, bas%fam
+              bas=>bas%next
+            ELSE
+              EXIT
+            ENDIF
+          END DO
+        WRITE(lupri,'(a)'), 'END DATA'
+
+        END SUBROUTINE PRINT_BASIS
+
+        SUBROUTINE DEL_ATOMS(firstatom, lupri)
+C     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
+        
+          TYPE(atom),POINTER,INTENT(INOUT) :: firstatom
+          INTEGER, OPTIONAL, INTENT(IN) :: lupri
+          TYPE(atom), POINTER :: mol
+
+          mol=>firstatom
+          DO
+            IF (associated(mol%next)) THEN
+              firstatom=>mol%next              
+              DEALLOCATE(mol)
+              mol=>firstatom
+            ELSE
+              NULLIFY(firstatom)
+              exit
+            ENDIF
+          END DO
+
+        END SUBROUTINE DEL_ATOMS
+
+        SUBROUTINE DEL_BASIS(firstbas, lupri)
+C     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
+        
+          TYPE(basistype),POINTER,INTENT(INOUT) :: firstbas
+          INTEGER, OPTIONAL, INTENT(IN) :: lupri
+          TYPE(basistype), POINTER :: bas
+
+          bas=>firstbas
+          DO
+            IF (associated(bas%next)) THEN
+              firstbas=>bas%next
+              IF (ASSOCIATED(bas%jco)) DEALLOCATE(bas%jco)
+              IF (ASSOCIATED(bas%fam)) DEALLOCATE(bas%fam)
+              DEALLOCATE(bas)
+              bas=>firstbas
+            ELSE
+              NULLIFY(firstbas)
+              exit
+            ENDIF
+          END DO
+
+        END SUBROUTINE DEL_BASIS
+
+        SUBROUTINE CLEAR_XYZ(lupri)
+C     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
+        
+          INTEGER, OPTIONAL, INTENT(IN) :: lupri
+          CALL DEL_ATOMS(firstatom, lupri)
+          CALL DEL_BASIS(firstbas, lupri)
+
+        END SUBROUTINE CLEAR_XYZ
+
+
+        SUBROUTINE READ_XYZ(molfile,inpfile, lupri)
+C     THE MAIN SUBROUTINE THAT READS AN XYZ FILE
+
+          INTEGER, INTENT(IN) :: molfile,inpfile,lupri
+
+          CALL READ_ATOMS(molfile,GET_LENGTH(molfile),firstatom,lupri)
+          WRITE(lupri,*) 'ATOMS READ'
+          CALL READ_BASIS(inpfile, GET_LENGTH(inpfile),lupri)
+
+          CALL PRINT_ATOMS(firstatom,lupri)
+          CALL PRINT_BASIS(firstbas,lupri)
+            
+
+
+        END SUBROUTINE READ_XYZ
+
+
+      END MODULE READFILE
+
+
+
+
+
+
+
+
+
 C  /* Deck readin */
       SUBROUTINE READIN(WORK,LWORK,HERMIT)
 C     Based on
@@ -352,6 +2238,9 @@ C               - common block MOLINP: deleted !!!
 C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
+        USE READFILE
+        USE FILE
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -368,9 +2257,19 @@ C
 #endif
 #include "cbirea.h"
 C
-      DIMENSION WORK(LWORK)
-      LOGICAL HERMIT,NEWFILE,SET
-      CHARACTER KEYWRD*6
+C     JHS TMP Change def of WORK
+C      DIMENSION WORK(LWORK)
+      CHARACTER(LEN=8) :: moltype
+      REAL(KIND=8)     :: WORK(LWORK)
+      LOGICAL          :: HERMIT,NEWFILE,SET
+      CHARACTER(LEN=6) :: KEYWRD
+      INTEGER          :: inpfile, rc=0
+
+C     JHS
+      CHARACTER(LEN=72) :: str
+      INTEGER :: i
+      REAL :: time1,time2
+
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
@@ -399,21 +2298,25 @@ C     PARHER is true for slaves, false for master.
 C     If (PARHER) then RDLINE reads from common block transferred
 C     from master, not from file LUINFO.
 C
-      NEWFILE = LUINFO .NE. LUCMD .AND. .NOT. PARHER
+      NEWFILE = LUINFO .NE. LUCMD
       IF (NEWFILE) THEN
-#if !defined (SYS_IBM)
-         OPEN (LUINFO,FILE='MOLECULE.INP',STATUS='OLD',
-     *         FORM='FORMATTED',ERR=5000)
-#endif
-#if defined (SYS_IBM)
-         OPEN (LUINFO,FILE='MOLINP',STATUS='OLD',
-     *         FORM='FORMATTED',ERR=5000)
-#endif
+        moltype=GET_EXTENSION('MOLECULE')
+        rc=OPEN_FILE('MOLECULE'//'.'//moltype, 
+     &               LUINFO, formatted='FORMATTED', lupri=LUPRI)
+      END IF
+      IF (rc <=0) THEN
+        WRITE (LUPRI,'(//A)') '*** ERROR *** unable to open MOLECULE.
+     &        '//moltype
+        CALL QUIT('*** ERROR (READIN) unable to open input file 
+     &       LUINFO')
       END IF
       ATOMDF  = .FALSE.
-C
-      IF (.NOT.PARHER) REWIND(LUINFO)
-      NMLINE = 0
+
+      REWIND(LUINFO)
+C     JHS TMP reset the variables with the read .mol file
+      MLINE=''
+      NMLINE=0
+
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A6)') KEYWRD
 #if !defined (PRG_DIRAC)
@@ -464,13 +2367,6 @@ C              ... maximum MXSHEL blocks
 C              (otherwise the program will stop later;
 C              and no reason to allocate all of memory here).
 C
-      KNUC   = KLAST
-      KNRC   = KNUC   +  KBLOCK*KSETS
-      KSEG   = KNRC   +  KBLOCK*KSETS
-      KA     = KSEG   +  KBLOCK*KSETS
-      KC     = KA     +  KBLOCK*KPRIM*KSETS
-      KCC    = KC     +  KBLOCK*KCMAT*KSETS
-      KLAST  = KCC    +  KBLOCK*KCMAT*KSETS
       IF(KLAST.GT.LWORK) GOTO 5020
       LWRK   = LWORK  -  KLAST + 1
 C
@@ -478,15 +2374,51 @@ C     ********************************************
 C     ***** Read input file and process data *****
 C     ********************************************
 C
-      CALL READI1(LUINFO,WORK(KLAST),LWRK,WORK(KNONT),WORK(KIQM),
-     &            WORK(KBLCK),WORK(KJCO),WORK(KJCO2),
-     &            WORK(KNUC),WORK(KNRC),WORK(KSEG),WORK(KA),
-     &            WORK(KC),WORK(KCC),KATOM,KANG,KSETS,KBLOCK,KPRIM, 
-     &            HERMIT)
-C     CALL RDLINE(LUINFO)
-C     READ (MLINE(NMLINE),'(A6)') KEYWRD
-C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
+C     JHS050707 .MOL files are treated in the old way
+C               .XYZ files are treated using the Module READFILE. In the long
+C                 run this module should also be able to read .MOL files
+C               These are the only two extensions at the moment.
+      SELECT CASE(TRIM(moltype))
+      CASE ('MOL')
+
+        CALL READI1(LUINFO,WORK(1),LWORK,
+     &              MXCENT,KANG,KSETS,KBLOCK,KPRIM, HERMIT)
+
+
+      CASE ('XYZ')
+C       JHS050707 Information of the basisset and charges are stored in the 
+C                 .INP file, which has to be opened and read.
+        inpfile=OPEN_FILE('DIRAC.INP') 
+        
+        IF (.NOT.(inpfile>0)) THEN
+          WRITE(LUPRI, '(a)'), 'ERROR, could not open DIRAC.INP'
+          CALL QUIT(' *** ERROR (READXYZ) unable to open DIRAC.INP')
+        END IF
+
+        WRITE(LUPRI,*) 'Start reading the xyz file.'
+
+C     JHS050707 Read the actual files.
+        CALL READ_XYZ(LUINFO, inpfile, LUPRI)
+
+C     JHS050707 Write the coordinates to the commonblocks
+        CALL WRITE_ATOMS(LUPRI)
+C     JHS050707 Write the basisset data to the commonblocks
+        CALL WRITE_BASIS(inpfile, LUPRI,WORK(1),LWORK,
+     &                      KANG,KSETS,KBLOCK,KPRIM,HERMIT)
+C     JHS050707 Free the reserved memory.
+        CALL CLEAR_XYZ(LUPRI)
+        WRITE(LUPRI,*) 'DONE XYZ'
+        CLOSE(inpfile)
+
+      CASE DEFAULT
+        WRITE(LUPRI, '(//A)') ' *** ERROR *** extension of MOLECULE 
+     &        FILE COULD NOT BE DETECTED.'
+        CALL QUIT(' *** ERROR (READIN) unable to detect extension')
+      END SELECT
+
+
       IF (IPREAD .GT. 20) CALL REAPRI
+
       RETURN
 C
 C Error messages:
@@ -498,12 +2430,11 @@ C
       CALL QUIT('Wrong keyword. Expecting INTGRL or BASIS')
  5020 CONTINUE
       CALL STOPIT('READIN','READI1',KLAST,LWORK)
-C5030 CONTINUE
+ 5030 CONTINUE
       CALL QUIT('Wrong keyword. Expecting FINISH')
       END
 C  /* Deck readi1 */
-      SUBROUTINE READI1(LUINFO,WORK,LWORK,NONT,IQM,NBLCK,JCO,JCO2,
-     &                  NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+      SUBROUTINE READI1(LUINFO,WORK,LWORK,
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 C******************************************************************************
 C
@@ -550,25 +2481,38 @@ C******************************************************************************
       PARAMETER (D0 = 0.0D0, THRMIN = 1.D-15)
 #include "clsfmm.h"
 #include "cbirea.h"
-      LOGICAL SEG,HERMIT,DOOWN,ZMAT
-      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),NBLCK(KATOM,KSETS),
-     &          JCO(KANG,KATOM,KSETS),JCO2(KANG,KATOM),
-     &          NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),SEG(KBLOCK,KSETS),
-     &          ALPHA(KPRIM,KBLOCK,KSETS),
-     &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS),
-     &          WORK(LWORK)
-C
-C       Local variables
-C
-      CHARACTER*80 BASREF(10,MXCENT,MXBSETS)
-C
+      REAL(KIND=8):: WORK(LWORK)
+      REAL(KIND=8) :: ALPHA(KPRIM,KBLOCK,KSETS), 
+     &                CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
+     &                CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
+
+C     JHS The following local arrays are allocated at runtime to make memory
+C         management easier.
+      INTEGER,ALLOCATABLE :: NONT(:),
+     &                       JCO(:,:,:),
+     &                       JCO2(:,:), 
+     &                       IBLOCK(:),
+     &                       NUC(:,:),
+     &                       IQM(:,:),
+     &                       NRC(:,:),
+     &                       NBLCK(:,:),
+     &                       ISGEN(:)
+      LOGICAL,ALLOCATABLE :: SEG(:,:)
+      CHARACTER(LEN=80),ALLOCATABLE :: BASREF(:,:,:)
+
+C     JHS
+      CHARACTER(LEN=72) :: str
+
+      LOGICAL :: HERMIT,DOOWN,ZMAT
+
+C     JHS The following variables come from a commonblock and are thus kept in F77
       CHARACTER*1 KASYM(3,3),ID3,SPDCAR,CRT
       CHARACTER*72 TTITLE(2)
       CHARACTER*11 SYMTXT
       CHARACTER*15 CLASS
       DIMENSION IFXYZ(3)
       LOGICAL ANG, ADDSYM
+
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
@@ -585,6 +2529,33 @@ C
       LOGICAL LINEAR
 #endif
 #include "ibtfun.h"
+
+C     JHS TMP For checking arraybounds overwrite KATOM with the max value
+
+      ALLOCATE(NONT(KATOM))
+      ALLOCATE(JCO(KANG,KATOM,KSETS))
+      ALLOCATE(JCO2(KANG,KATOM))
+      ALLOCATE(IBLOCK(MXBSETS))
+      ALLOCATE(NUC(KBLOCK,KSETS))
+      ALLOCATE(IQM(KATOM,KSETS))
+      ALLOCATE(NRC(KBLOCK,KSETS))
+      ALLOCATE(NBLCK(KATOM,KSETS))
+      ALLOCATE(ISGEN(KBLOCK))
+      ALLOCATE(SEG(KBLOCK,KSETS))
+      ALLOCATE(BASREF(10,MXCENT,MXBSETS))
+
+      NONT=0
+      JCO=0
+      JCO2=0
+      IBLOCK=0
+      NUC=0
+      IQM=0
+      NRC=0
+      NBLCK=0
+      ISGEN=0
+      SEG=.FALSE.
+      BASREF=''
+
       ZMAT = .FALSE.
 C
 C***********************************************************************
@@ -624,6 +2595,7 @@ C                 specify axis that are reversed under the operation
 C       THRS    - integral threshold
 C***********************************************************************
       CALL RDLINE(LUINFO)
+
       READ (MLINE(NMLINE),'(BN,A1,I4,I3,A11,A1,D10.2,6I5)')
      &     CRT,NONTYP,KCHARG,SYMTXT,ID3,THRS
       IF(NONTYP.GT.KATOM) GOTO 5000
@@ -720,22 +2692,23 @@ C        In 4-component mode Cartesian Gaussians are always used.
             ENDIF
         ENDIF
       ENDIF
+
       CALL SPHINP(LUINFO,WORK,LWORK,DOOWN,MXSPD)
 C
 C     ************************************************
 C     ***** Read orbital and geometry input data *****
 C     ************************************************
 C
-      KISGEN = 1
-      KLAST  = KISGEN + KBLOCK*KSETS
-      LWRK   = LWORK  -  KLAST + 1
 C#if !defined (MOD_DNF)
-      CALL BASINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NONT,
+C aspg, 2006-060-17: for the time being we go for density fitting
+C       using basinp...
+
+      CALL BASINP(LUINFO,WORK(KLAST),LWORK,NONTYP,NONT,
      &            IQM,NBLCK,JCO,BASREF,
-     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
+     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &            KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG,ZMAT)
 C#else
-C      CALL CENINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NONT,
+C      CALL CENINP(LUINFO,WORK(KLAST),LWORK,NONTYP,NONT,
 C     &            IQM,NBLCK,JCO,BASREF,
 C     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
 C     &            KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG)
@@ -755,12 +2728,14 @@ C     ***** Add symmetry to molecule if requested *****
 C     *****   Returns CLASS, the full symmetry    *****
 C     *************************************************
 C
+
       LINEAR = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
          CALL SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,CLASS)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
+
 C
 C     ****************************************************
 C     ***** Adds an STO-3G basis if Extended Hueckel *****
@@ -773,12 +2748,14 @@ C     ***************************************
 C     ***** Process symmetry input data *****
 C     ***************************************
 C
+
       CALL SYMINP(NSYMOP,KASYM,IFXYZ, CLASS)
 C
 C     ***************************************************
 C     ***** Process orbital and geometry input data *****
 C     ****************************************************
 C
+
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
      &            DOOWN)
@@ -787,15 +2764,18 @@ C     *************************************************
 C     ***** Print orbital and geometry input data *****
 C     *************************************************
 C
+
       CALL BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
      &            KBLOCK,KPRIM,HERMIT)
 C
+
       IF (IPREAD .GE. 2) THEN
          CALL HEADER('Copy of input to READIN',0)
          WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
          WRITE (LUPRI,'(/)')
       END IF
+
 
 C     Default threshold for distinguishing classical and
 C     non-classical contributions to Coulomb integrals
@@ -806,9 +2786,25 @@ C     ****************************************
 C     ***** Output on LUONEL *****************
 C     ****************************************
 C
+
       IF (HERMIT) CALL WRONEL(TTITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO2,
      &                        KANG)
-C
+
+C     JHS The check whether the arrays are still allocated is in principle redundand.
+      IF (ALLOCATED(NONT)) DEALLOCATE(NONT)
+      IF (ALLOCATED(JCO)) DEALLOCATE(JCO)
+      IF (ALLOCATED(JCO2)) DEALLOCATE(JCO2)
+      IF (ALLOCATED(IBLOCK)) DEALLOCATE(IBLOCK)
+      IF (ALLOCATED(NUC)) DEALLOCATE(NUC)
+      IF (ALLOCATED(IQM)) DEALLOCATE(IQM)
+      IF (ALLOCATED(NRC)) DEALLOCATE(NRC)
+      IF (ALLOCATED(NBLCK)) DEALLOCATE(NBLCK)
+      IF (ALLOCATED(ISGEN)) DEALLOCATE(ISGEN)
+      IF (ALLOCATED(BASREF)) DEALLOCATE(BASREF)
+      IF (ALLOCATED(SEG)) DEALLOCATE(SEG)
+
+      WRITE(LUPRI,*) 'FINISHED READI1, NODE', MYTID, 'MASTER', MPARID
+
       RETURN
 C
 C       Error messages:
@@ -949,6 +2945,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 #include "ibtfun.h"
+
 C
 C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
       MBSIP = 0
@@ -1007,6 +3004,8 @@ C
         IF(.NOT.ZMTTST) THEN
           IF (DIRAC) THEN
             ADDSTO = .FALSE.
+            READ(LUINFO,'(a)', ADVANCE='yes') str
+            BACKSPACE(LUINFO)
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)')
      &            Q,NONT(I),QEXP
           ELSE IF (.NOT.ZMTTST) THEN
@@ -1098,6 +3097,7 @@ C
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),'(A5,1X,A14)') BSET,BSKEYWORD
 C
+               
                IF ( BSET .NE. 'LARGE') THEN
                   WRITE(LUPRI,'(A,I5,A,/,A)')
      $                 'Expected keyword LARGE, read line no. ',
@@ -1209,7 +3209,7 @@ C
                   BASNAM = BASFIL
 C
                   KAOVEC = KBLOCK + 1 - IBLOCK(1)
-
+                  
                   CALL BASLIB(IQM(I,1),JCO(1,I,1),NUC(IBLOCK(1),1),
      &                 NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),
      &                 ALPHA(1,IBLOCK(1),1),
@@ -1377,6 +3377,7 @@ C              SMALL EXPLICIT     2    1    1  (IBSFLAG = 1)
 C              SMALL MOLFBAS H.bas (IBSFLAG = 2)
 C              SMALL KINBAL (IBSFLAG = 4)
 C
+               CALL FLUSH(LUPRI)
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),'(A5,1X,A7)') BSET,BSKEYWORD
 C
@@ -1935,6 +3936,7 @@ C
 #include "codata.h"
 #include "cbirea.h"
 #include "dcbgen.h"
+
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
       DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
@@ -1993,6 +3995,7 @@ C*****************************************************************************
       IPRIMD = 0
       IORB   = 0
       IORBD  = 0
+
       CALL ORBPRO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),NUC(1,1),
      &            NRC(1,1),SEG(1,1),
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
@@ -2007,6 +4010,7 @@ C*****************************************************************************
 C       Process orbital data for small components
 C*****************************************************************************
       LCOMP = 2
+
       CALL ORBPRO(NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),NUC(1,2),
      &            NRC(1,2),SEG(1,2),
      &            ALPHA(1,1,2),CPRIM(1,1,1,2),CPRIMU(1,1,1,2),
@@ -2016,6 +4020,7 @@ C*****************************************************************************
       IF (ISHELL.GT. MXSHEL) GOTO 5000
       IF (IORBD .GT. MXCORB) GOTO 5010
       IF (IPRIM .GT. MXPRIM) GOTO 5020
+
       IF (ADDSTO) THEN
          NSMLSH = ISHELL - NLRGSH
          NORBS  = IORB
@@ -3364,6 +5369,8 @@ C******************************************************************************
 #include "aovec.h"
 #include "maxaqn.h"
 #include "codata.h"
+C
+#include "infpar.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "cbirea.h"
@@ -3454,6 +5461,7 @@ C                    Basis-set identifier (WK/UniKa/04-11-2002).
 C                    MBSID(ISHELL) = MULBSI(ICENT)
                      IORB  = IORB  + NCOMP
                      IORBD = IORBD + NCOMP*NDEG
+                     
                      IF (.NOT. SEGM(ISHELL) .AND. LCOMP .EQ. 1)
      &                         SEGBAS = .FALSE.
                      IF (.NOT. SEGM(ISHELL) .AND. LCOMP .EQ. 3)
@@ -3980,6 +5988,7 @@ C
       NUCDEP    = 0
       NUCPRE(1) = 0
       NFLOAT    = 0
+
       DO 100 N = 1, NUCIND
          IVARB = ISTBNU(N)
          NDEG  = MULT(IVARB)
@@ -5453,6 +7462,8 @@ C
 C
    10 CONTINUE
       NMLINE = NMLINE + 1
+
+
       IF ( NMLINE .LT. NMLN_LASTREAD ) THEN
          WRITE(LUPRI,'(//A,2(/A,I5))')
      $        '*** ERROR ***: NMLINE < NMLN_LASTREAD in RDLINE',
@@ -5460,7 +7471,8 @@ C
      $        'NMLN_LASTREAD = ',NMLN_LASTREAD
          CALL QUIT('*** ERROR reading basis')
       ENDIF
-      IF (.NOT. PARHER .AND. NMLINE .GT. NMLN_LASTREAD)
+
+      IF (NMLINE .GT. NMLN_LASTREAD)
      $     READ (LUINFO,'(A)',END=11,ERR=11) MLINE(NMLINE)
       IF (NMLINE.GT.KMLINE) THEN
          WRITE (LUPRI,'(//A,/A,I5)')
@@ -5473,8 +7485,20 @@ C
      $     (MLINE(NMLINE)(1:1) .EQ. '$' ))
      &     GOTO 10
       NMLN_LASTREAD = NMLINE
+
       RETURN
+
    11 MLINE(NMLINE)='        '
+      WRITE(LUPRI,*) 'ERROR(READIN): Error in reading molecule.MOL. 
+     &     NODE=',MYTID
+      IF (NMLINE>1) THEN
+        WRITE(LUPRI,*) 'Line=', NMLINE, 'Prev line:',
+     &        MLINE(NMLINE-1)
+      ELSE
+        WRITE(LUPRI,*) 'Line=', NMLINE
+      END IF
+      
+
       RETURN
       END
 C  /* Deck wronel */
@@ -7048,7 +9072,6 @@ C
 C     Look if basis set file exists and, if so, read in data
 C     ======================================================
 C
-      IF (.NOT. PARHER) THEN
 C        ... this is the master, slaves will read from lines
 C        read into MLINE(*) by master
 C        
@@ -7058,41 +9081,41 @@ C
 C        We loop over these directories in search for the basis set and
 c        element given.
 C        
-         ISTART = 1
+       ISTART = 1
 C        
- 10      CONTINUE
+ 10    CONTINUE
 C        
 C        Find next colon in BASDIR
 C        
-         ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
+       ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
 C        
 C        In there are no colons, we are the last directory in BASDIR
 C        
-         IF ( ICOLON .EQ. ISTART - 1 ) THEN
+       IF ( ICOLON .EQ. ISTART - 1 ) THEN
 C           
 C           Find end of string
 C           
-            ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ' ' )
+         ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ' ' )
 C           
 C           If end of string = start of string there are no more
 C           directories, so we gracefully die...
 C           
-            IF ( ICOLON .EQ. ISTART )
-     &           GOTO 5025
-         END IF
-         IEND = ICOLON - 1
-         STRING = BASDIR(ISTART:IEND)
-         ISTART = ICOLON + 1
+         IF ( ICOLON .EQ. ISTART )
+     &        GOTO 5025
+       END IF
+       IEND = ICOLON - 1
+       STRING = BASDIR(ISTART:IEND)
+       ISTART = ICOLON + 1
 C        
 C        Add trailing slash if not present.
 C        
-         IEND = INDEX ( STRING(1:), ' ') - 1
-         IF ( STRING(IEND:IEND) .NE. '/' ) THEN
-            IEND = IEND + 1
-            STRING(IEND:IEND) = '/'
-         END IF
-         STRING = STRING(1:IEND)//FILNAM
-         IEND = INDEX(STRING(1:),' ') - 1
+       IEND = INDEX ( STRING(1:), ' ') - 1
+       IF ( STRING(IEND:IEND) .NE. '/' ) THEN
+          IEND = IEND + 1
+          STRING(IEND:IEND) = '/'
+       END IF
+       STRING = STRING(1:IEND)//FILNAM
+       IEND = INDEX(STRING(1:),' ') - 1
 CLV : Reactivate when debugging, otherwise see below.
 CLV      WRITE(LUPRI,'(3A/,A1,A,A1)')
 CLV  &        'BFGINP: Trying basis set file for ',
@@ -7101,12 +9124,11 @@ CLV  &        '"',STRING(1:IEND),'"'
 C        
 C        Inquire if "/path/basis-set" exists.
 C        
-         INQUIRE (FILE = STRING, EXIST = TOBE)
-         IF (.NOT.TOBE) GOTO 10
-         OPEN (LUBFIL,FILE=STRING,FORM='FORMATTED',STATUS='OLD')
-         REWIND (LUBFIL)
-      ENDIF
-C
+       INQUIRE (FILE = STRING, EXIST = TOBE)
+       IF (.NOT.TOBE) GOTO 10
+       OPEN (LUBFIL,FILE=STRING,FORM='FORMATTED',STATUS='OLD')
+       REWIND (LUBFIL)
+      
 C     Read info line of basis set file, copy this to BASREF array
 C     ===========================================================
 C
@@ -7161,9 +9183,7 @@ C
             IF (MOD(NPRIM,NE).NE.0) NSTEP = NSTEP + 1
             IF (MOD(NCONTR*NPRIM,NC).NE.0) NSTEP = NSTEP + 1
             DO 310 INIT = 1, NSTEP
-C              These lines should NOT be read in with RDLINE
-C              because they need not be communicated to the slaves.
-               IF (.NOT.PARHER) READ (LUBFIL,*,END=5021)
+               READ (LUBFIL,*,END=5021)
   310       CONTINUE
             GOTO 301
          ELSE
