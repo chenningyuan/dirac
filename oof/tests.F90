@@ -1,11 +1,10 @@
 !
 !    Tests of Object oriented Fortran90/95 features in DIRAC
 !
- ! SUBROUTINE TEST_OOF(work,llwork)
-  SUBROUTINE TEST_OOF
+  SUBROUTINE TEST_OOF(work,llwork)
+ ! SUBROUTINE TEST_OOF
 
    use QMatrixes
-
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -18,13 +17,20 @@
 #include "dcbdhf.h"
 #endif
 
-! double precision, intent(inout) :: work(llwork) ! for testing...
+  double precision, intent(inout) :: work(llwork) ! for testing...
 ! integer*4, intent(in) :: llwork
  type(QMtx) :: smat,pmat
+ logical :: domtx
 call qenter('TEST_OOF')
 
-CALL HEADER( 'in test_oof routine',-1)
+ !!!  CALL TEST_MEMGET_CHAR(work,llwork)
 
+domtx = .false.
+
+if (domtx) then
+
+CALL HEADER( 'in test_oof routine',-1)
+call StickMemory(work,llwork)  ! take in WORK(LWORK) array ...
 call set_iprqmtx(100)
 call set_iprmem(100)
 
@@ -36,12 +42,10 @@ write(LUPRI,*) 'test_oof: smat called ... '
 smat = MakeQMtx( set_qmtx_pck(NFBAS(1,0),NFBAS(1,0),NFBAS(2,0),NFBAS(2,0)) )
 call QMtxInfo(smat)
 write(LUPRI,*) 'test_oof: after smat called ... '
-
 !pmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1))
 pmat = MakeQMtx(  set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0))  )
 call QMtxInfo(pmat)
 write(LUPRI,*) 'test_oof: after pmat called ... '
-
  call DeAllocQMtx(pmat)
  call DeAllocQMtx(smat)
 
@@ -65,6 +69,8 @@ write(LUPRI,*) 'test_oof: after pmat called ... '
 !   call DeAllocate_QMATRIX(qmat)
 
 !  call UnStickArray
+
+ endif
 
  call qexit('TEST_OOF')
 
@@ -258,4 +264,81 @@ call StickMemory(WORK,LWORK)
 call QEXIT('test_oof_basis_fu')
 end subroutine test_oof_basis_fu
 
+
+  SUBROUTINE TEST_MEMGET_CHAR(work,lwork)
+! -------------------------------------------------------------
+!
+!
+!
+! -------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+  DIMENSION WORK(LWORK)
+  CALL QENTER('TEST_MEMGET_CHAR')
+
+  CALL HEADER( 'in TEST_MEMGET_CHAR routine',-1)
+
+#include "memint.h"
+  IS1_1 = 3; IS1_2=10
+  CALL MEMGET('CHAR',KCHAR1,IS1_1*IS1_2,WORK,KFREE,LFREE)
+  IS2_1 = 4; IS2_2 = 5; IS2_3 = IS1_2
+  CALL MEMGET('CHAR',KCHAR2,IS2_1*IS2_2*IS2_3,WORK,KFREE,LFREE)
+
+  write(LUPRI,*) 'allocated !!!!'
+
+  CALL TEST_CHAR_ARR(IS1_1,IS1_2,WORK(KCHAR1),IS2_1,IS2_2,IS2_3,WORK(KCHAR2))
+
+  CALL MEMREL('TEST_MEMGET_CHAR',WORK,KWORK,KCHAR1,KFREE,LFREE)
+
+! CALL QUIT('TEST_MEMGET_CHAR')
+  CALL QEXIT('TEST_MEMGET_CHAR')
+  END SUBROUTINE TEST_MEMGET_CHAR
+
+SUBROUTINE TEST_CHAR_ARR(N1_1,N1_2,ARR1,N2_1,N2_2,N2_3,ARR2)
+! ---------------------------------------------------------------------
+!
+!
+! ---------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+CHARACTER*3 ARR1(N1_2)
+!CHARACTER ARR1(N1_1,N1_2)
+!CHARACTER*4 ARR2(5,10)
+CHARACTER*4 ARR2(N2_2,N2_3)
+
+CALL QENTER('TEST_CHAR_ARR')
+
+DO I=1,N1_2
+  ARR1(I) = 'abcdefghi'
+  write(LUPRI,*) I,ARR1(I)
+  DO J = 1, N2_2
+    ARR2(I,J)='xyz123'
+    write(LUPRI,*) I,J,ARR2(I,J)
+  ENDDO
+ENDDO
+
+  CALL TEST_CHAR2(ARR2,N2_2,N2_3)
+
+CALL QEXIT('TEST_CHAR_ARR')
+RETURN
+END
+
+!===============================================================
+!
+!===============================================================
+SUBROUTINE  TEST_CHAR2(ARR2,N2_2,N2_3)
+#include "implicit.h"
+#include "priunit.h"
+CHARACTER*4 ARR2(N2_2,N2_3),Z
+
+ DO I=1, N2_3
+ DO J=1, N2_2
+   Z = ARR2(I,J); write(LUPRI,*) 'Z=',Z
+   ARR2(I,J)='nove'
+   write(LUPRI,*) I,J,Z,' new:',ARR2(I,J)
+ ENDDO
+ ENDDO
+
+RETURN
+END
 

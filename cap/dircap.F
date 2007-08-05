@@ -5,7 +5,7 @@ C  /* Deck sajeev */
      &   ord_coe,r_ms,PE_AOr,PE_AOi,
      &   PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
 C    &   NBASF,NANGPOW)
-     &   WORK,LWORK,NBASF,NANGPOW)
+     &   WORK,LWORK,NCBF,NUBF)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Main program from Sajeev. Adapted into DIRAC enviroment
@@ -17,8 +17,8 @@ C              ang_pow
 C              ord_expon
 C              ord_coe ...
 C
-C              NBASF
-C              NANGPOW
+C              NCBF - # of contracted basis functions
+C              NUBF - # of uncontracted (primitives) basis functions
 C
 C On output: 
 C            complex CAP integrals written into formatted file, or test
@@ -40,20 +40,20 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 CMI    ... arrays are entering subroutine, check the size !!!!!
 C     integer *4 basis_n(200)
-      integer *4 basis_n(NBASF)
+      integer *4 basis_n(NCBF)
 
 C     integer *4 ang_pow(250,3)
-      integer *4 ang_pow(NANGPOW,3)
+      integer *4 ang_pow(NUBF,3)
 
       integer *4  N_B   
 
 C     real *8 ord_expon(250),ord_coe(250)
-      real *8 ord_expon(NANGPOW), ord_coe(NANGPOW)
+      real *8 ord_expon(NUBF), ord_coe(NUBF)
 
       real *8 R_m(4),R_n(4)
 
 C     real *8 R_ms(200,3)
-      real *8 R_ms(NBASF,3)
+      real *8 R_ms(NUBF,3)
 
 C     COMPLEX *16 PE_AO(25000) ! former variable split into real and
 C     imaginary parts
@@ -77,7 +77,7 @@ CMI   LOGICAL*1 ISFILE, FNDLAB,ARELABS,IS_OPEN
       IF (IPRCAP.GE.2) THEN
         CALL HEADER('*** Output from SAJEEV ***',-1)
 CMI     write(LUPRI,*) 'LWORK=',LWORK
-        write(LUPRI,*) '>> NBASF=',NBASF,' NANGPOW=',NANGPOW
+        write(LUPRI,*) '>> NCBF=',NCBF,' NUBF=',NUBF
         CALL FLSHFO(LUPRI)
       ENDIF
 
@@ -86,7 +86,7 @@ CMI     write(LUPRI,*) 'LWORK=',LWORK
       CALL MEMCHK('sajeev 1',WORK,1)
   
       CALL INPREAD(N_B,ord_expon,ord_coe,R_ms,basis_n,
-     &         ang_pow,CAPOVLP,IPRCAP,NBASF,NANGPOW,WORK(KFREE),LFREE)
+     &         ang_pow,CAPOVLP,IPRCAP,NCBF,NUBF,WORK(KFREE),LFREE)
 
       CALL MEMCHK('sajeev 2',WORK,1)
 
@@ -125,7 +125,7 @@ CMI   ... evaluate CAP complex atomic untegrals
 CMI   ... evaluate integrals - fill array with them
        CALL AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
      &      PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
-     &      NBASF,NANGPOW)
+     &      NCBF,NUBF)
         
 C ============================================================
 CMI     ... write complex atomic integrals into the file
@@ -263,15 +263,24 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck inpread */
       SUBROUTINE INPREAD(
      &  N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     &  CAPOVLP,IPRINT,NBASF,NANGPOW,WORK,LWORK)
+     &  CAPOVLP,IPRINT,NCBF,NUBF,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Read the GAMESS-like input file with the basis set
+C  Read the GAMESS-like basis set input file 
 C
 C  Parameters:
 C
-C           CAPOVLP - calculate only overlap integrals (for comparison
-C           with DIRAC)
+C     CAPOVLP - calculate only overlap integrals (for comparison
+C               with DIRAC)
+C     
+C   fills these arrays:
+C -----------------------
+C     ord_expon
+C     ord_coe
+C     R_ms
+C     ang_pow
+C
+C
 C
 C  Called from: SAJEEV
 C
@@ -279,8 +288,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-      PARAMETER(MSIZE=400)
-
+      PARAMETER(MSIZE=500)
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
      &           DP25 = 0.25D0, DP5 = 0.5D0, DP75 = 0.75D0,
@@ -312,12 +320,12 @@ C     integer *4 Shell_atom(200)
       integer *4 n_b,ia_p
 
 C     integer *4 ang_pow(250,3)
-      integer *4 ang_pow(NANGPOW,3)
+      integer *4 ang_pow(NUBF,3)
       integer *4 n_pg_atom(50)
       integer *4 k_m(3),k_n(3)
 
 C     integer *4 basis_n(200)
-      integer *4 basis_n(NBASF)
+      integer *4 basis_n(NCBF)
       
       integer *4 basis_ord(MSIZE)
 
@@ -325,11 +333,11 @@ C     integer *4 basis_n(200)
 
       real *8 re(50,3),expon,coe
 C     real *8 ord_expon(250),ord_coe(250)
-      real *8 ord_expon(NANGPOW),ord_coe(NANGPOW)
+      real *8 ord_expon(NUBF),ord_coe(NUBF)
 
       real *8 R_m(4),R_n(4)
 C     real *8 R_ms(200,3)
-      real *8 R_ms(NBASF,3)
+      real *8 R_ms(NUBF,3)
 
       LOGICAL CAPOVLP,DIRAC_NRM
 
@@ -369,7 +377,7 @@ C    ... newest...not defined in Gamess
 
 C     ... zero array for number of contracted basis function
 C     do i=1,200
-      do i=1,NBASF
+      do i=1,NCBF
         Basis_N(i)=0
       End do
 
@@ -379,8 +387,8 @@ C     ... open file for reading integrals
       READ(LUinp,*) n_atoms
 
       IF (IPRINT.GE.3) THEN
-       CALL HEADER('  ****  Output for INPREAD',-1 )
-       write(lupri,'(2X,A,I3)') 'Number of atoms; n_atoms=',n_atoms
+       CALL HEADER('*****  Output for INPREAD  *****',-1 )
+       WRITE(LUPRI,'(2X,A,I3)') 'Number of atoms :',n_atoms
        CALL FLSHFO(LUPRI)
       ENDIF
 
@@ -394,10 +402,12 @@ C     ... open file for reading integrals
           write(lupri,*) '....label  IA=',IA
         ENDIF
 
+CMI  ... next line - coordinates
         READ(LUinp,*)(re(k,i),i=1,3)
 
         IF (IPRINT.GE.3) THEN
-           write(lupri,'(2X,A,3F13.7)') 'coordinate: ',(re(k,i),i=1,3)
+           write(lupri,'(2X,A,3F13.7)')
+     &    'nucleus coordinate: ',(re(k,i),i=1,3)
            CALL FLSHFO(LUPRI)
         ENDIF
           
@@ -406,8 +416,8 @@ C     ... open file for reading integrals
           READ(LUinp,*) shell_type, n_con_guass 
            
           IF (IPRINT.GE.3) THEN
-           write(lupri,'(2X,A,A2,A,I3)') 'shell_type=',shell_type,
-     &     ' n_con_guass=',n_con_guass 
+           write(lupri,'(2X,A,A2,A,I3)') 'shell_type:',shell_type,
+     &     ' # of contr. gauss:',n_con_guass 
           ENDIF
 
 CMI       'E', means end
@@ -448,8 +458,8 @@ CMI       'G' shell
                   ang_pow(sh,ia_p)=angu_pow_S(1,ia_p)
                end do
 
-               if (g_n.gt.NBASF) then
-                write(LUPRI,*) 'INPREAD: g_n,NBASF=',g_n,NBASF
+               if (g_n.gt.NCBF) then
+                write(LUPRI,*) 'INPREAD: g_n,NCBF=',g_n,NCBF
                 call QUIT('INPREAD: g_n > NBASF ! Increase NBASF')
                endif
 
@@ -462,7 +472,9 @@ CMI       'G' shell
  300         continue
              
              DO n_c_g=1,n_con_guass
+
                 sh=sh+1
+
                 READ(LUinp,*) nj,expon,coe
 
           IF (IPRINT.GE.3) THEN
@@ -473,20 +485,20 @@ C          write(lupri,*)
           ENDIF
 
              do i=1,3
-                   shell_arr(sh+(i-1)*n_con_guass)=shell_p(i)
-                   Shell_basis(g_n+i-1)=shell_p(i)
-                   Shell_atom(g_n+i-1)=k
+                 shell_arr(sh+(i-1)*n_con_guass)=shell_p(i)
+                 Shell_basis(g_n+i-1)=shell_p(i)
+                 Shell_atom(g_n+i-1)=k
 
-                   ord_expon(sh+(i-1)*n_con_guass)=expon
-                   ord_coe(sh+(i-1)*n_con_guass)=coe
-                   do ia_p=1,3
-                   ang_pow(sh+(i-1)*n_con_guass,ia_p)=angu_pow_p(i,ia_p)
-                   end do
+                 ord_expon(sh+(i-1)*n_con_guass)=expon
+                 ord_coe(sh+(i-1)*n_con_guass)=coe
+                do ia_p=1,3
+                 ang_pow(sh+(i-1)*n_con_guass,ia_p)=angu_pow_p(i,ia_p)
+                end do
              end do                              
            END DO
           
           do  iji=1,3
-             if (g_n.gt.NBASF) then
+             if (g_n.gt.NCBF) then
                write(LUPRI,*) 'INPREAD: g_n,NBASF=',g_n,NBASF
                call QUIT('INPREAD: g_n > NBASF ! Increase NBASF')
              endif
@@ -499,7 +511,7 @@ C          write(lupri,*)
  400      continue
              
         DO n_c_g=1,n_con_guass
-             sh=sh+1
+          sh=sh+1
           READ(LUinp,*)nj,expon,coe
 
           IF (IPRINT.GE.3) THEN
@@ -508,23 +520,23 @@ C          write(lupri,*)
            CALL FLSHFO(LUPRI)
           ENDIF
 
-                do i=1,6
+               do i=1,6
                    shell_arr(sh+(i-1)*n_con_guass)=shell_d(i)
                    Shell_basis(g_n+i-1)=shell_d(i)
                    Shell_atom(g_n+i-1)=k
-
+C         write(LUPRI,*) 'i,sh,n_con_guass,sh+(i-1)*n_con_guass=',
+C    &    i,sh,sh+(i-1)*n_con_guass
+C          CALL FLSHFO(LUPRI)
                    ord_expon(sh+(i-1)*n_con_guass)=expon
                    ord_coe(sh+(i-1)*n_con_guass)=coe
-
-                   do ia_p=1,3
+                do ia_p=1,3
                  ang_pow(sh+(i-1)*n_con_guass,ia_p)= angu_pow_d(i,ia_p)
-                   end do
-
-                end do
-            END DO
+                enddo
+               enddo
+            ENDDO
        
              do  iji=1,6
-               if (g_n.gt.NBASF) then
+               if (g_n.gt.NCBF) then
                  write(LUPRI,*) 'INPREAD: g_n,NBASF=',g_n,NBASF
                  call QUIT('INPREAD: g_n > NBASF ! Increase NBASF')
                endif
@@ -561,8 +573,8 @@ CMI  *********** F *****************************
              END DO
              
              do  iji=1,10
-               if (g_n.gt.NBASF) then
-                 write(LUPRI,*) 'INPREAD: g_n,NBASF=',g_n,NBASF
+               if (g_n.gt.NCBF) then
+                 write(LUPRI,*) 'INPREAD: g_n,NBASF=',g_n,NCBF
                  call QUIT('INPREAD: g_n > NBASF ! Increase NBASF')
                endif
                 basis_n(g_n)=basis_n(g_n)+n_con_guass
@@ -582,50 +594,59 @@ CMI  *********** G *****************************
                  Shell_atom(g_n+i-1)=k
                  ord_expon(sh+(i-1)*n_con_guass)=expon
                  ord_coe(sh+(i-1)*n_con_guass)=coe
-                  do ia_p=1,3
+                 do ia_p=1,3
                    ang_pow(sh+(i-1)*n_con_guass,ia_p)=angu_pow_G(i,ia_p)
-                  end do
+                 end do
                end do
       END DO
   
-             do  iji=1,15
-               if (g_n.gt.NBASF) then
-                 write(LUPRI,*) 'INPREAD: g_n,NBASF=',g_n,NBASF
-                 call QUIT('INPREAD: g_n > NBASF ! Increase NBASF')
+             do iji=1,15
+               if (g_n.gt.NCBF) then
+                 write(LUPRI,*) 'INPREAD: g_n,NCBF=',g_n,NCBF
+                 call QUIT('INPREAD: g_n > NCBF ! Increase NCBF')
                endif
-                basis_n(g_n)=basis_n(g_n)+n_con_guass
-                 g_n=g_n+1
-             end do
+               basis_n(g_n)=basis_n(g_n)+n_con_guass
+               g_n=g_n+1
+             enddo
              sh=sh+(14)*n_con_guass
              go to 6000
 
  6000       continue
      
-           EndDo
+           EndDo ! of ISNEW
 
 CMI *************************************************************
-CMI **** we are out of the cycle....
+CMI ***              we are out of the main cycle....
 CMI *************************************************************
 
  201       continue
-               n_pg_atom(1)=1
-               n_pg_atom(k+1)=sh
 
-               do ii= n_pg_atom(k),sh
-                     do isw=1,3
-                       if (iiii.gt.NBASF) then
-                         write(LUPRI,*) 'iiii,NBASF=',iiii,NBASF
-                    call QUIT('SAJEEV: iiii>NBASF ! Increase NBASF !')
-                       endif
-                       R_ms(iiii,isw)=re(k,isw)
-                     enddo
-                     iiii=iiii+1
-               enddo
-       ENDDO
+CMI ... important changes from SAJEEV !!!!
+           n_pg_atom(k)=sh
+
+           If(k.eq.1)then
+             INPG=0
+           else
+             INPG = n_pg_atom(k-1)
+           endif
+
+           do ii=INPG+1,sh
+              do isw=1,3
+                R_ms(ii,isw)=re(k,isw)
+              enddo
+              IF (IPRINT.GE.5) THEN
+               write(LUPRI,'(2X,I3,A,3F14.5)')
+     &         ii,'. R_ms x/y/z:',R_ms(ii,1),R_ms(ii,2),R_ms(ii,3)
+              ENDIF
+           enddo
+C ...................................................................................
+       ENDDO ! of k
 
        close(LUinp,status="keep")
 
-CMI   ... get the total number of basis functions
+C ===================================================================
+CMI   ... get the total number of contracted basis functions
+C ===================================================================
        n_b=g_n-1
        
        WRITE(LUPRI,'(/2X,A,I3,A,I3)')
@@ -633,8 +654,9 @@ CMI   ... get the total number of basis functions
      & ' contracted basis functions=',sh,'/',n_b
        CALL FLSHFO(LUPRI)
 
-       WRITE(LUPRI,'(/2X,A,I3)') 'We have iiii of R_ms equal=',iiii
-       DO I=1,IIII
+       WRITE(LUPRI,'(/2X,A,I3)')
+     & 'Number of R_ms elements (sh)=',sh
+       DO I=1,sh
         WRITE(LUPRI,'(2X,A,I3,A,3F12.6)')
      &  'R_ms(',I,') x,y,z:',R_ms(I,1),R_ms(I,2),R_ms(I,3)
        ENDDO
@@ -698,13 +720,24 @@ C       WRITE(LUPRI,*) 'contraction coefficients:'
 
           iangj = iangi
  
-          write(lupri,'(2X,A,I3)') 'contr. function #',i
+          write(lupri,'(/2X,A,I4)')
+     &    '*** contracted function #',i
 
-          write(lupri,*) 'contraction coefficients:'
-          write(lupri,*) (ord_coe(ix+k), k=0, basis_n(i)-1 )
+          write(lupri,'(2X,A,2I4,A,2I4)')
+     &    'contraction coefficients (indx from, to)',
+     &     ix, ix+basis_n(i)-1,' :',iangi+1,basis_ord(i)
 
-          write(lupri,*) 'corresponding exponents of decontr.functions:'
+CMI       write(lupri,*) (ord_coe(ix+k), k=0, basis_n(i)-1 )
+          write(lupri,*) (ord_coe(ii),ii=iangi+1,basis_ord(i) )
+
+          write(lupri,'(2X,A,2I4)')
+     &    'corresponding exponents of primitives'//
+     &    ' functions (indx from, to):',iangi+1,basis_ord(i)
+
           write(lupri,*) (ord_expon(ii),ii=iangi+1,basis_ord(i) )
+
+C         do ii=iangi+1,basis_ord(i)
+C         enddo
 
 CMI .... normalization part for primitive gaussians first
           do ii=iangi+1,basis_ord(i)
@@ -720,6 +753,8 @@ CMI .... normalization part for primitive gaussians first
           write(lupri,*) '1.normalized contraction coefficients:'
           write(lupri,*) (ord_coe(ix+k), k=0, basis_n(i)-1 )
 
+CMI  ... second normalization - get PE_AO first
+C ====================================================================
           do ii=iangi+1,basis_ord(i)
           do jj=iangj+1,basis_ord(j)
  
@@ -737,7 +772,7 @@ CMI .... normalization part for primitive gaussians first
            CALL PEM(R_m,R_n,K_m,K_n,PEINT)
            PE_AO= PE_AO+(COMUL*PEINT)
 
-           IF (IPRINT.GE.5) THEN
+           IF (IPRINT.GE.10) THEN
             write(LUPRI,'(2I3,A,2F12.8,2(A,F12.8))')
      &     ii,jj,' coeff:',ord_coe(ii),ord_coe(jj),
      &     ' PEINT=',PEINT,' PE_AO=',PE_AO
@@ -746,13 +781,14 @@ CMI .... normalization part for primitive gaussians first
           enddo
           enddo
 
+CMI  ... do second normalization - now apply PE_AO as the norm
           do ii=iangi+1,basis_ord(i)
 
            unnormcoe =  ord_coe(ii)
            ord_coe(ii) = unnormcoe/sqrt(PE_AO)
 
            IF (IPRINT.GE.2) THEN
-            write (LUPRI,'(i4,A,A2,A,F12.8,A,F12.8,A,F12.8,A,F12.8)')
+            write (LUPRI,'(i4,A,A2,A,F12.5,A,F12.5,A,F12.5,A,F12.5)')
      &      ii,'.fu=',shell_arr(ii),
      &      ' expon:', ord_expon(ii),
      &      ' unnorm coeff=',unnormcoe,
@@ -775,7 +811,7 @@ CMI .... normalization part for primitive gaussians first
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck aointegral */
       SUBROUTINE AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     & PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,NBASF,NANGPOW) 
+     & PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,NCBF,NUBF) 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Core routine for calculating CAP integrals.
@@ -793,7 +829,7 @@ C           ang_pow
 C           PW - theta
 C           PE_AOr,PE_AOi, PEXR... arrays for integrals
 C
-C    Called from SAJEEV
+C  Called from SAJEEV
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -804,12 +840,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       integer *4 n_b
 
 C     integer *4 ang_pow(250,3)
-      integer *4 ang_pow(NANGPOW,3)
+      integer *4 ang_pow(NUBF,3)
 
       integer *4 k_m(3),k_n(3)
 
 C     integer *4 basis_n(200)
-      integer *4 basis_n(NBASF)
+      integer *4 basis_n(NCBF)
 
 CMI ... locall array ...
 C     integer *4 basis_ord(300)
@@ -817,12 +853,12 @@ C     integer *4 basis_ord(300)
      
 CMI ... entering parameter
 C     real *8 ord_expon(250),ord_coe(250)
-      real *8 ord_expon(NANGPOW),ord_coe(NANGPOW)
+      real *8 ord_expon(NUBF),ord_coe(NUBF)
       real *8 R_m(4),R_n(4)
 
 CMI ... entering parameter
 C     real *8 R_ms(200,3)
-      real *8 R_ms(NBASF,3)
+      real *8 R_ms(NUBF,3)
 
       COMPLEX *16 PEINT,PEINT_D1X,PEINT_D1Y,PEINT_D1Z
 CMI   REAL*8 PE_AOr(25000),PE_AOi(25000)
@@ -1015,9 +1051,130 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IPOINTIJ=(ii*(ii-1)/2)+jj
       END 
 
+      SUBROUTINE PEM(A,B,KA,KB,PEINT)
+      IMPLICIT REAL*8 (A-H,O-Z)
+
+      real *8 A(4),B(4)
+      integer *4 KA(3),KB(3)
+      real *8 PEINT,PREMULT
+      real *8 GAMMA
+      real *8 AB(3),P(3),PA(3),PB(3)
+      REAL *8 OVINT(3)
+
+      GAMMA=(A(4))+(B(4))
+      DO ig=1,3
+         AB(ig)=(A(ig))-(B(ig))
+         P(ig)=((A(4))*(A(ig)) +(B(4))*(B(IG)))/GAMMA
+         PA(IG)=((P(IG))-(A(IG)))
+         PB(IG)=((P(IG))-(B(IG)))
+      END DO
+
+      ABSQ=(AB(1))*(AB(1))+(AB(2))*(AB(2))+(AB(3))*(AB(3))
+      PREMULT=DEXP(((-A(4))*(B(4))*ABSQ)/GAMMA)
+
+      DO I=1,3
+         KAI=KA(I)
+         KBI=KB(I)
+         PAI=PA(I)
+         PBI=PB(I)
+         CALL OVMAT(GAMMA,KAI,KBI,PAI,PBI,OVINTI)
+         OVINT(I)=OVINTI
+      END DO
+
+      PEINT=PREMULT*(OVINT(1))*(OVINT(2))*(OVINT(3))
+
+      RETURN
+      END
+
+      SUBROUTINE OVMAT(GAMMA,L1,L2,AP,BP,OVINT)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      INTEGER *4 LI,L2
+      REAL *8 GAMMA,KA,KB,AP
+      REAL *8 PI,GAMMA1,GAMMA2,PREMULT
+      REAL *8 BINC
+      INTEGER *4 IFI
+      EXTERNAL ISUMM
+      data PI/3.141592653589793/
+
+      OVINT=0.0d0
+      DO i=0,(L1+L2)/2
+         IFI=ISUMM(2*i)
+         GAMMA1=(2.0D0*GAMMA)**(i)
+         GAMMA2=(PI/GAMMA)**(0.50d0)
+         PREMULT=IFI*GAMMA2/GAMMA1
+         CALL BINCOEF(2*i,L1,L2,AP,BP,BINC)
+         OVINT=(OVINT)+(PREMULT*BINC)
+      END DO
+      RETURN
+      END
+
+      SUBROUTINE  BINCOEF(K,L1,L2,AP,BP,BINC)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      INTEGER *4 K,L1,L2
+      REAL *8 AP,BP,BINC
+      REAL *8 COEL1,COEL2,PRM1,PRM2,PRM3
+      REAL *8 PREMULT
+      EXTERNAL BINEXP
+      BINC=0.0D0
+
+      DO I=0,L1
+         DO J=0,L2
+            IF((I+J).EQ.K)THEN
+               COEL1=BINEXP(L1,I)
+               COEL2=BINEXP(L2,J)
+               PRM1=COEL1*COEL2
+               IL=L1-i
+               JL=L2-J
+               PRM2=(AP)**(IL)
+               PRM3=(BP)**(JL)
+               PREMULT=PRM1*PRM2*PRM3
+               BINC=BINC+PREMULT
+            ENDIF
+         END DO
+      END DO
+      RETURN
+      END
+
+      FUNCTION BINEXP(L,I)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      REAL *8 BINEXP
+      INTEGER *4 L,I,LP1,LP2,L3
+      INTEGER *4 NFACT
+      EXTERNAL NFACT
+      LP1=NFACT(L)
+      LP2=NFACT(I)
+      LP3=NFACT(L-I)
+      BINEXP=(LP1)/(LP2*LP3)
+      END
+
+      FUNCTION NFACT(I)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      INTEGER *4 I,K,KL,NFACT
+      KL=1
+      DO K=1,I
+         KL=KL*K
+      END DO
+      NFACT=KL
+      END
+
+      FUNCTION ISUMM(I)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      INTEGER *4 I,K,KL,M,ISUMM
+      KL=1
+      Do k=1,i
+         m=(k-((k/2)*2))
+         if(m.eq.0)go to 110
+         KL=kL*k
+ 110     continue
+      End Do
+      ISUMM=KL
+      END
+
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PEM */
-      SUBROUTINE PEM(R_m,R_n,K_m,K_n,PEINT)
+      SUBROUTINE PEMOLD(R_m,R_n,K_m,K_n,PEINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  On input: 
@@ -1078,10 +1235,46 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CALL QEXIT('PEM')
       RETURN
       END
+
+      subroutine SMAT(A,B,L1,L2,OVINT)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      integer *4 L1, L2
+      real *8  A(2),B(2)
+      real *8 GAMMA,P,PA,PB, AB, ABSQ
+      real *8 OVINT,RMULT,PREMULT, PI
+      INTEGER *4 IFI
+      real *8 GAMMA1, GAMMA2
+      real *8 BINC
+      data PI/3.141592653589793/
+      EXTERNAL  ISUMM
+
+      GAMMA=(A(2))+(B(2))
+      P=((A(1))*(A(2))+(B(1))*(B(2)))/GAMMA
+      PA=P-A(1)
+      PB=P-B(1)
+      AB=(A(1))-(B(1))
+      OVINT=0.0d0
+
+      DO i=0,(L1+l2)/2
+         IFI=ISUMM(2*i)
+         GAMMA1=(2.0D0*GAMMA)**(i)
+         GAMMA2=(PI/GAMMA)**(0.50d0)
+         RMULT=IFI*GAMMA2/GAMMA1
+         CALL BINCOEF(2*i,L1,L2,PA,PB,BINC)
+         OVINT=OVINT+(RMULT*BINC)
+      END DO
+      ABSQ=AB*AB
+      PREMULT=exp((-(A(2))*(B(2))*ABSQ)/gamma)
+      OVINT=OVINT*PREMULT
+
+      RETURN
+      END
+
+
  
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck SMAT */
-      subroutine SMAT(R_m,R_n,K_m,K_n,BETA,Int_GR)
+      subroutine SMAT_OLD(R_m,R_n,K_m,K_n,BETA,Int_GR)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C Parameters:
@@ -1321,8 +1514,12 @@ C           ... accumulate for each interval
 
          end do
 
-         CALL SMAT(R_KM,R_KN,K_KM,K_KN,0.d0,OVRLPK)
-         CALL SMAT(R_LM,R_LN,K_LM,K_LN,0.d0,OVRLPL)
+CMI ... old subroutines...
+CMI      CALL SMAT(R_KM,R_KN,K_KM,K_KN,0.d0,OVRLPK)
+CMI      CALL SMAT(R_LM,R_LN,K_LM,K_LN,0.d0,OVRLPL)
+
+         CALL SMAT(R_KM,R_KN,K_KM,K_KN,OVRLPK)
+         CALL SMAT(R_LM,R_LN,K_LM,K_LN,OVRLPL)
 
          IF (DONRCAP) THEN
            VCAPS(i)=VCAPS(i)*OVRLPK*OVRLPL
