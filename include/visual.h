@@ -63,4 +63,4 @@ C
      &                IREP_XVECTOR(MAX_NR_XVECTORS),                    &
      &                IWHICH_XVECTOR(MAX_NR_XVECTORS),                  &
      &                IOPTION_XVECTOR(MAX_NR_XVECTORS)
-      COMMON /CBVISR/ ADD_3D, COMMON_FACTOR
+      COMMON /CBVISR/ ADD_3D, COMMON_FACTOR, VISUAL_ORIGIN(3)

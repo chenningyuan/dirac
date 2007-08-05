@@ -411,7 +411,7 @@ C=======================================================================
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* LOBATTO_2D_GRID */
-      SUBROUTINE LOBATTO_2D_GRID(ORIENTATION,
+      SUBROUTINE LOBATTO_2D_GRID(GRID_ORIENTATION,
      &                           NR_PIECES,N,DIMI,DIMJ,LUNIT)
 C=======================================================================
 C     description in here ...
@@ -425,8 +425,10 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
       PARAMETER (NMAX = 1000)
 
+#include "visual.h"
+
       CHARACTER*30 FILE_NAME
-      CHARACTER*2  ORIENTATION
+      CHARACTER*2  GRID_ORIENTATION
       DIMENSION PX(NMAX*NMAX),
      &          PY(NMAX*NMAX),
      &          PZ(NMAX*NMAX),
@@ -444,7 +446,6 @@ C=======================================================================
       REWIND LUNIT
 
       CALL LOBATTO_1D_GRID(N,X,W)
-
       IPOINT = 0
       DO IPIECE = 0,NR_PIECES-1
         OFFI = IPIECE*DIMI/NR_PIECES
@@ -455,22 +456,22 @@ C=======================================================================
             DO J = 1,N
               IPOINT = IPOINT + 1
 
-              IF(ORIENTATION .EQ. 'xy') THEN
+              IF(GRID_ORIENTATION .EQ. 'xy') THEN
                 PX(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PY(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PZ(IPOINT) = D0
+                PZ(IPOINT) = VISUAL_ORIGIN(3)
               ENDIF
 
-              IF(ORIENTATION .EQ. 'xz') THEN
+              IF(GRID_ORIENTATION .EQ. 'xz') THEN
                 PX(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PZ(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PY(IPOINT) = D0
+                PY(IPOINT) = VISUAL_ORIGIN(2)
               ENDIF
 
-              IF(ORIENTATION .EQ. 'yz') THEN
+              IF(GRID_ORIENTATION .EQ. 'yz') THEN
                 PY(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PZ(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PX(IPOINT) = D0
+                PX(IPOINT) = VISUAL_ORIGIN(1)
               ENDIF
 
               WEIGHT(IPOINT) = W(I)*W(J)*DIMI*DIMJ

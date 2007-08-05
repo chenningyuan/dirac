@@ -33,7 +33,7 @@ C=======================================================================
 !                   9        10        11        12
      &            '.3DADD ','.CUBE  ','.COMMON','.FREQ+H',
 !                  13        14        15        16
-     &            '.FREQ-H','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.FREQ-H','.ORIGIN','.XXXXXX','.XXXXXX',
 !                  17        18        19        20
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  21        22        23        24
@@ -76,6 +76,10 @@ C=======================================================================
       NCUBE(1) = 80
       NCUBE(2) = 80
       NCUBE(3) = 80
+
+      VISUAL_ORIGIN(1) = D0
+      VISUAL_ORIGIN(2) = D0
+      VISUAL_ORIGIN(3) = D0
 
       ADD_3D        = 4.0D0
       COMMON_FACTOR = 1.0D0
@@ -181,6 +185,11 @@ C=======================================================================
           GOTO 100
 
    14     CONTINUE
+          READ(LUCMD,*) VISUAL_ORIGIN(1),
+     &                  VISUAL_ORIGIN(2),
+     &                  VISUAL_ORIGIN(3)
+          GOTO 100
+
    15     CONTINUE
    16     CONTINUE
    17     CONTINUE
