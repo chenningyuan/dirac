@@ -32,6 +32,7 @@ C=======================================================================
 
 #include "memint.h"
 
+      CALL DZERO(QUANTITY_INTEGRAL,4)
       IF(LBIT(LBIT_VISUAL,3)) THEN !3D
 
         CALL AROUND('3D numerical integration')
@@ -56,7 +57,6 @@ C=======================================================================
      &              WORK(KW),
      &              LUNIT,NR_POINTS)
 
-        CALL DZERO(QUANTITY_INTEGRAL,4)
         CALL INTEGRATE_QUANTITY(DMAT_AO,
      &                          GAO,
      &                          GAO1,
